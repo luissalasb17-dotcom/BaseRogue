@@ -1,0 +1,1880 @@
+/* BaseRogue Stylesheet */
+/* Overhauled for 8-Bit Retro Arcade Baseball theme */
+
+:root {
+  --bg-color: #07140e;
+  --panel-bg: rgba(0, 12, 6, 0.95);
+  --border-color: #10b981;
+  --primary-color: #00ff66; /* Vibrant retro green */
+  --primary-glow: rgba(0, 255, 102, 0.5);
+  --accent-color: #ffcc00; /* Retro yellow */
+  --accent-glow: rgba(255, 204, 0, 0.5);
+  --danger-color: #ff3333;
+  
+  --rarity-common: #8e9e98;
+  --rarity-rare: #00ccff;
+  --rarity-epic: #cc00ff;
+  --rarity-legendary: #ffcc00;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  border-radius: 0px !important; /* Force blocky NES style everywhere */
+}
+
+body {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  background-color: var(--bg-color);
+  /* Scanline CRT Arcade Screen Filter Effect */
+  background-image: 
+    linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.3) 50%), 
+    linear-gradient(90deg, rgba(0, 255, 0, 0.03), rgba(255, 0, 0, 0.02), rgba(0, 0, 255, 0.03));
+  background-size: 100% 4px, 6px 100%;
+  color: #f3f4f6;
+  min-height: 100vh;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header */
+header {
+  background-color: #000;
+  border-bottom: 4px double var(--primary-color);
+  padding: 16px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 0 #000;
+  z-index: 10;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo h1 {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 16px;
+  color: var(--primary-color);
+  text-shadow: 2px 2px 0px #000, 4px 4px 0px var(--primary-glow);
+  text-transform: uppercase;
+}
+
+.logo i {
+  color: var(--primary-color);
+  font-size: 20px;
+  text-shadow: 2px 2px 0 #000;
+}
+
+.game-hud {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.hud-item {
+  background: rgba(0, 0, 0, 0.6);
+  border: 3px double #ffffff;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 9px;
+  font-family: 'Press Start 2P', monospace;
+}
+
+.hud-item i {
+  color: var(--accent-color);
+}
+
+.hud-item.stage i {
+  color: var(--primary-color);
+}
+
+.main-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Retro double borders */
+.glass-panel {
+  background: var(--panel-bg);
+  border: 4px double var(--border-color);
+  box-shadow: 0 0 0 4px #000, 0 10px 20px rgba(0,0,0,0.5);
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+/* Headings */
+h2 {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 14px;
+  color: var(--primary-color);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  text-shadow: 2px 2px 0px #000;
+}
+
+h3 {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 11px;
+  color: #fff;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+h4 {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+p {
+  font-family: 'VT323', monospace;
+  font-size: 18px;
+  line-height: 1.4;
+  color: #a1a1aa;
+  margin-bottom: 12px;
+}
+
+/* Buttons */
+.btn {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 9px;
+  padding: 10px 16px;
+  background: var(--primary-color);
+  color: #000;
+  border: 4px double #ffffff;
+  box-shadow: 0 0 0 2px #000;
+  cursor: pointer;
+  text-transform: uppercase;
+  font-weight: bold;
+  transition: all 0.1s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn:hover {
+  background: #fff;
+  color: #000;
+  box-shadow: 0 0 8px var(--primary-glow);
+}
+
+.btn:active {
+  transform: translateY(2px);
+}
+
+.btn-secondary {
+  background: #1e293b;
+  color: #fff;
+  border-color: #64748b;
+}
+
+.btn-secondary:hover {
+  background: #334155;
+  color: #fff;
+}
+
+/* Roster Slots & Management */
+.roster-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.roster-slot-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(0,0,0,0.4);
+  border: 3px double rgba(255,255,255,0.08);
+  padding: 8px;
+  transition: transform 0.2s, background 0.2s;
+}
+
+.roster-slot-container.dragging {
+  opacity: 0.5;
+  transform: scale(0.95);
+}
+
+.roster-slot-container.drag-over {
+  background: rgba(255,255,255,0.1);
+  border-color: var(--accent-color);
+  transform: scale(1.05);
+}
+
+.roster-slot-header {
+  font-size: 8px;
+  color: var(--accent-color);
+  margin-bottom: 8px;
+  font-weight: bold;
+}
+
+.bench-container {
+  margin-top: 24px;
+  background: rgba(0,0,0,0.3);
+  padding: 16px;
+  border: 4px double rgba(255,255,255,0.05);
+}
+
+.bench-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  justify-items: center;
+}
+
+/* Cards System - Blocky 8-bit styling */
+.player-card {
+  width: 152px;
+  height: 220px;
+  position: relative;
+  background: #1e293b;
+  border: 4px double #ffffff;
+  box-shadow: 0 0 0 3px #000;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.player-card.rarity-Common {
+  border: 3px solid var(--rarity-common);
+  box-shadow: inset 0 0 5px rgba(255, 255, 255, 0.05);
+}
+.player-card.rarity-Rare {
+  border: 3px solid var(--rarity-rare);
+  box-shadow: 0 0 8px var(--rarity-rare), inset 0 0 8px rgba(0, 204, 255, 0.15);
+}
+.player-card.rarity-Epic {
+  border: 3px solid var(--rarity-epic);
+  box-shadow: 0 0 12px var(--rarity-epic), inset 0 0 10px rgba(204, 0, 255, 0.2);
+}
+.player-card.rarity-Legendary {
+  border: 3px double var(--rarity-legendary);
+  box-shadow: 0 0 16px var(--rarity-legendary), inset 0 0 12px rgba(255, 204, 0, 0.3);
+  animation: gold-glow-pulse 2s infinite alternate;
+}
+
+@keyframes gold-glow-pulse {
+  0% { box-shadow: 0 0 6px var(--rarity-legendary), inset 0 0 5px rgba(255, 204, 0, 0.15); }
+  100% { box-shadow: 0 0 18px var(--rarity-legendary), inset 0 0 15px rgba(255, 204, 0, 0.4); }
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 8px;
+  margin-bottom: 4px;
+}
+
+.card-position {
+  background: #000;
+  color: #fff;
+  padding: 2px 4px;
+}
+
+.card-year {
+  color: #9ca3af;
+}
+
+.card-name {
+  font-size: 8px;
+  font-weight: normal;
+  text-align: center;
+  color: #fff;
+  margin: 3px 0 2px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border-bottom: 2px dashed rgba(255,255,255,0.15);
+  padding-bottom: 2px;
+}
+
+.card-sec-pos {
+  font-size: 6px;
+  font-family: 'Press Start 2P', monospace;
+  color: #06b6d4;
+  text-align: center;
+  font-weight: bold;
+  margin: 2px 0 3px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+}
+
+/* Card stats area - high contrast box */
+.card-stats {
+  background: rgba(0, 0, 0, 0.85);
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+  padding: 6px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7px;
+  line-height: 1.4;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  margin: 1px 0;
+}
+
+.stat-label {
+  color: #9ca3af;
+}
+
+.stat-val {
+  font-weight: bold;
+  color: #fff;
+}
+
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  font-size: 8px;
+  margin-top: 4px;
+  border-top: 2px dashed rgba(255,255,255,0.15);
+  padding-top: 4px;
+}
+
+.card-stamina {
+  color: var(--primary-color);
+}
+.card-stamina.low { color: #f59e0b; }
+.card-stamina.critical { color: #ef4444; }
+
+/* 8-Bit Eras Colorizations */
+.era-genesis { background: #2a2421; }
+.era-genesis .stat-val { color: #ff8c00; }
+
+.era-deadball { background: #3c2f2f; }
+.era-deadball .stat-val { color: #f5d0a9; }
+
+.era-golden { background: #3b3a1a; }
+.era-golden .stat-val { color: #eab308; }
+
+.era-integration { background: #1f3b33; }
+.era-integration .stat-val { color: #22d3ee; }
+
+.era-expansion { background: #104f55; }
+.era-expansion .stat-val { color: #ff7e39; }
+
+.era-bighair { background: #1a2a3b; }
+.era-bighair .stat-val { color: #f472b6; }
+
+.era-steroid { background: #3b1f3c; }
+.era-steroid .stat-val { color: #a78bfa; }
+
+.era-efficiency { background: #1c2826; }
+.era-efficiency .stat-val { color: #a3e635; }
+
+.era-modern { background: #1e293b; }
+.era-modern .stat-val { color: #00ff66; }
+
+
+/* PRE-FIGHT SETUP */
+.pre-fight-row {
+  background: #000;
+  border: 3px double var(--primary-color);
+  padding: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.pre-fight-row.ko {
+  opacity: 0.45;
+  border-color: #ef4444;
+}
+.pre-fight-row .name {
+  font-size: 9px;
+  font-weight: bold;
+}
+.pre-fight-row .hp-text {
+  font-size: 8px;
+  color: #a1a1aa;
+}
+.pre-fight-row .hp-bar-container {
+  width: 70px;
+  height: 8px;
+  background: #111;
+  border: 1px solid #555;
+  overflow: hidden;
+}
+.pre-fight-row .hp-bar-fill {
+  height: 100%;
+}
+
+
+
+/* ==========================================================================
+   POKELIKE VISUAL MAP — ZONE SYSTEM
+   ========================================================================== */
+
+/* Map screen: allow vertical scroll inside center panel */
+#screen-map {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+#screen-map h2 { margin-bottom: 4px; }
+
+.map-viewport {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px 4px;
+}
+
+#map-nodes-container {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ── Zone Wrapper ─────────────────────────────────────────────────────────── */
+.zone-wrapper {
+  border: 2px solid rgba(255,255,255,0.08);
+  border-radius: 0;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.zone-wrapper.zone-active {
+  border-color: rgba(255,255,255,0.25);
+  box-shadow: 0 0 20px rgba(0,0,0,0.6);
+}
+
+.zone-wrapper.zone-done {
+  opacity: 0.6;
+  filter: saturate(0.4);
+}
+
+.zone-wrapper.zone-locked {
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+/* Zone themed backgrounds */
+.zone-minor    { background: linear-gradient(180deg, #0a1a0d 0%, #071208 100%); }
+.zone-major    { background: linear-gradient(180deg, #0a0e1a 0%, #060810 100%); }
+.zone-pennant  { background: linear-gradient(180deg, #150a22 0%, #0d0615 100%); }
+.zone-hof      { background: linear-gradient(180deg, #1a0e00 0%, #0f0800 100%); }
+
+/* ── Zone Header ──────────────────────────────────────────────────────────── */
+.zone-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+
+.zone-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.zone-icon {
+  font-size: 22px;
+  line-height: 1;
+}
+
+.zone-name {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 9px;
+  color: #fff;
+  margin-bottom: 3px;
+}
+
+.zone-subtitle {
+  font-family: 'VT323', monospace;
+  font-size: 14px;
+  color: #9ca3af;
+}
+
+.zone-badge {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7px;
+  padding: 4px 8px;
+  border: 1px solid;
+}
+
+.zone-badge-active  { color: #00ff66; border-color: #00ff66; background: rgba(0,255,102,0.06); }
+.zone-badge-done    { color: #10b981; border-color: #10b981; background: rgba(16,185,129,0.06); }
+.zone-badge-locked  { color: #475569; border-color: #475569; background: rgba(71,85,105,0.1); }
+
+/* ── Zone Canvas (SVG container) ────────────────────────────────────────── */
+.zone-canvas {
+  padding: 8px;
+  background: transparent;
+  border-radius: 8px;
+  margin-top: 6px;
+}
+
+.zone-canvas svg {
+  display: block;
+  width: 100%;
+}
+
+/* Legacy stubs - SVG handles all rendering now */
+.zone-paths-svg { display: none; }
+.zone-stage-row { display: none; }
+.zone-stage-row.boss-row { display: none; }
+
+/* ── Individual Visual Nodes (Circular like Pokelike) ───────────────────────── */
+.map-node-visual {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  min-height: 52px;
+  background: radial-gradient(circle at 30% 30%, #475569, #0f172a);
+  border: 3px solid var(--node-border, #64748b);
+  box-shadow: inset 0 -4px 6px rgba(0,0,0,0.6), 0 4px 6px rgba(0,0,0,0.5);
+  border-radius: 50% !important; /* Circular nodes overriding universal border-radius */
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  position: relative;
+  z-index: 3;
+}
+
+.map-node-visual .node-emoji {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 11px;
+  line-height: 1;
+  color: #fff;
+  filter: drop-shadow(0 2px 2px rgba(0,0,0,0.8));
+  transition: transform 0.2s ease;
+}
+
+.map-node-visual .node-type-label {
+  display: none; /* Hide labels inside nodes like Pokelike for space and clean look */
+}
+
+/* State: visited / past */
+.map-node-visual.node-visited {
+  opacity: 0.6;
+  filter: saturate(0.2) brightness(0.8);
+  cursor: default;
+}
+
+/* State: currently active/clickable */
+.map-node-visual.node-active {
+  border-color: var(--node-color, #00ff66);
+  box-shadow: 0 0 0 2px #000, 0 0 14px var(--node-color, rgba(0,255,102,0.7));
+  animation: nodeActivePulse 1.4s infinite alternate;
+  cursor: pointer;
+}
+
+.map-node-visual.node-active:hover {
+  transform: scale(1.08);
+}
+
+.map-node-visual.node-active:hover .node-emoji {
+  transform: scale(1.2);
+}
+
+/* State: locked/disabled */
+.map-node-visual.node-disabled {
+  opacity: 0.2;
+  pointer-events: none;
+  filter: grayscale(1);
+}
+
+/* State: boss node */
+.map-node-visual.node-boss {
+  width: 90px;
+  min-height: 90px;
+  border-width: 3px;
+  border-style: double;
+}
+
+.map-node-visual.node-boss.node-active {
+  animation: bossNodePulse 1.2s infinite alternate;
+}
+
+.map-node-visual.node-boss .node-emoji {
+  font-size: 32px;
+}
+
+.map-node-visual.node-boss .node-type-label {
+  font-size: 6px;
+}
+
+@keyframes nodeActivePulse {
+  0%   { box-shadow: 0 0 0 2px #000, 0 0 8px var(--node-color, rgba(0,255,102,0.5)); }
+  100% { box-shadow: 0 0 0 2px #000, 0 0 20px var(--node-color, rgba(0,255,102,0.9)); }
+}
+
+@keyframes bossNodePulse {
+  0%   { box-shadow: 0 0 0 3px #000, 0 0 12px rgba(255,215,0,0.5); }
+  100% { box-shadow: 0 0 0 3px #000, 0 0 30px rgba(255,215,0,0.95); transform: scale(1.04); }
+}
+
+/* SVG path animation class */
+.path-active-anim {
+  animation: dashTravel 1.5s linear infinite;
+  stroke-dasharray: 8,6;
+}
+
+@keyframes dashTravel {
+  to { stroke-dashoffset: -28; }
+}
+
+/* Keep .active-path class compat for the click handler targeting */
+.map-node-visual.active-path { /* handled by node-active */ }
+
+
+/* MATCH ARENA - 1v1 COMBAT */
+.match-arena {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 24px;
+}
+
+.scoreboard {
+  background: #000;
+  border: 4px double var(--primary-color);
+  box-shadow: 0 0 0 3px #000;
+  padding: 12px;
+}
+
+/* Fight Deck Slots */
+.rpg-fight-deck {
+  background: rgba(0,0,0,0.5);
+  border: 4px double rgba(255, 255, 255, 0.05);
+  padding: 20px;
+}
+
+.fight-card-slot {
+  min-width: 152px;
+  min-height: 220px;
+  border: 3px dashed #444;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.faceoff-panel {
+  background: #000;
+  border: 4px double var(--primary-color);
+  box-shadow: 0 0 0 3px #000;
+}
+
+.faceoff-name {
+  font-family: 'Press Start 2P', monospace;
+  color: #fff;
+  text-shadow: 1px 1px 0 #000;
+}
+
+.rotation-badge {
+  background: #222;
+  border: 2px solid #555;
+  color: #888;
+  padding: 4px 8px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  display: inline-block;
+}
+
+.rotation-badge.active {
+  background: #ef4444;
+  border-color: #fff;
+  color: #fff;
+  box-shadow: 0 0 8px #ef4444;
+}
+
+.rotation-badge.ko {
+  text-decoration: line-through;
+  background: #111;
+  color: #333;
+  border-color: #222;
+  opacity: 0.5;
+}
+
+/* Log Narrative */
+.match-log {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border: 4px double var(--primary-color);
+  box-shadow: 0 0 0 3px #000;
+}
+
+.match-log-header {
+  background: #000;
+  padding: 12px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 9px;
+  color: var(--primary-color);
+  border-bottom: 4px double var(--primary-color);
+}
+
+.match-log-content {
+  font-family: 'VT323', monospace;
+  font-size: 19px !important;
+  color: #00ff66 !important;
+  background: #000000 !important;
+  text-shadow: 0 0 3px rgba(0, 255, 102, 0.7);
+  padding: 16px;
+  flex: 1;
+  overflow-y: auto;
+  max-height: 480px;
+}
+
+.log-line {
+  margin-bottom: 10px;
+  border-bottom: 1px dashed rgba(0, 255, 102, 0.15);
+  padding-bottom: 4px;
+}
+
+.log-line.header-line {
+  color: var(--accent-color) !important;
+  text-shadow: 0 0 4px var(--accent-glow);
+  font-weight: bold;
+}
+
+.log-line.run-scored {
+  color: #ffff00 !important;
+  text-shadow: 0 0 4px rgba(255,255,0,0.5);
+}
+
+.log-line.bold {
+  font-weight: bold;
+}
+
+
+/* SHOP */
+.shop-shelf {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.shop-card {
+  background: #000;
+  border: 3px double #ffffff;
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.shop-item-name {
+  font-size: 9px;
+  font-weight: bold;
+  color: var(--primary-color);
+  margin-bottom: 4px;
+}
+
+.shop-item-desc {
+  font-family: 'VT323', monospace;
+  font-size: 16px;
+  color: #9ca3af;
+}
+
+.shop-item-price {
+  font-size: 11px;
+  font-weight: bold;
+  color: var(--accent-color);
+  margin-right: 12px;
+}
+
+
+/* TRAINING SCREEN */
+.training-choices {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.training-card {
+  background: #000;
+  border: 3px double rgba(255,255,255,0.15);
+  padding: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+}
+
+.training-card:hover, .training-card.selected {
+  border-color: var(--primary-color);
+  background: rgba(0, 255, 102, 0.05);
+}
+
+
+/* SYNERGIES SIDEBAR PANEL */
+.synergies-panel {
+  background: rgba(0,0,0,0.4);
+  border: 3px double rgba(255,255,255,0.1);
+  margin-bottom: 16px;
+  padding: 12px;
+}
+
+.synergies-header {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  color: var(--accent-color);
+  border-bottom: 2px dashed rgba(255,255,255,0.1);
+  padding-bottom: 6px;
+  margin-bottom: 8px;
+}
+
+.synergy-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.synergy-item {
+  background: #000;
+  border: 2px solid rgba(255,255,255,0.08);
+  padding: 8px;
+}
+
+.synergy-badge {
+  font-size: 7px;
+  color: var(--primary-color);
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.synergy-desc {
+  font-family: 'VT323', monospace;
+  font-size: 15px;
+  color: #9ca3af;
+}
+
+.perk-badge {
+  background: #1e293b;
+  border: 1px solid #475569;
+  color: #fff;
+  padding: 4px 6px;
+  font-size: 8px;
+  margin: 2px;
+  display: inline-block;
+}
+
+
+/* MODALS */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.85);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+  backdrop-filter: blur(4px);
+}
+
+.modal-content {
+  background: #000;
+  border: 4px double var(--primary-color);
+  box-shadow: 0 0 0 4px #000;
+  padding: 24px;
+  max-width: 480px;
+  width: 100%;
+}
+
+.swap-bench-item {
+  background: #111;
+  border: 2px solid #333;
+  padding: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 8px;
+}
+
+
+/* HISTORY / GAME OVER */
+.history-row {
+  background: #000;
+  border: 2px dashed rgba(255,255,255,0.1);
+  padding: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.history-row.won { color: var(--primary-color); border-color: var(--primary-color); }
+.history-row.lost { color: var(--danger-color); border-color: var(--danger-color); }
+
+
+/* UTILITIES */
+.hidden { display: none !important; }
+.center { text-align: center; }
+.margin-top { margin-top: 15px; }
+.flex-row { display: flex; gap: 20px; }
+.flex-1 { flex: 1; }
+@media (max-width: 800px) {
+  .flex-row { flex-direction: column; }
+  .match-arena { grid-template-columns: 1fr; }
+}
+
+/* Batting Order Controls */
+.order-btn-container {
+  display: flex;
+  gap: 4px;
+  margin-top: 6px;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+.order-btn {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  background: #111;
+  color: #fff;
+  border: 2px solid #555;
+  padding: 3px 6px;
+  cursor: pointer;
+  box-shadow: 0 2px 0 #000;
+}
+.order-btn:hover {
+  background: var(--primary-color);
+  color: #000;
+  border-color: #fff;
+}
+.order-badge {
+  font-size: 8px;
+  color: var(--accent-color);
+  font-family: 'Press Start 2P', monospace;
+  font-weight: bold;
+}
+
+/* Event Choice Buttons */
+.event-choices-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.event-choice-btn {
+  font-family: 'VT323', monospace;
+  font-size: 19px;
+  text-align: left;
+  width: 100%;
+  padding: 10px 14px;
+  background: rgba(0,0,0,0.4);
+  color: var(--primary-color);
+  border: 2px dashed var(--border-color);
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+.event-choice-btn:hover {
+  background: rgba(0, 255, 102, 0.08);
+  border-color: var(--primary-color);
+  color: #fff;
+}
+.event-choice-btn:disabled {
+  color: #555;
+  border-color: #333;
+  background: rgba(0,0,0,0.6);
+  cursor: not-allowed;
+}
+
+
+/* ==========================================================================
+   3-COLUMN WORKSPACE & PORTRAIT BATTING ROSTER SIDEBAR
+   ========================================================================== */
+
+/* Toggle scroll Lock when run is active */
+body.workspace-active {
+  height: 100vh;
+  overflow: hidden;
+}
+
+body.workspace-active .main-container {
+  height: calc(100vh - 75px);
+  max-width: 100%;
+  padding: 12px;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+#game-workspace {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.workspace-three-columns {
+  display: flex;
+  gap: 12px;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+/* Sidebar Containers */
+.workspace-sidebar {
+  background: var(--panel-bg);
+  border: 4px double var(--border-color);
+  box-shadow: 0 0 0 4px #000;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 10px;
+  flex-shrink: 0;
+}
+
+.left-sidebar {
+  width: 260px;
+}
+
+.right-sidebar {
+  width: 290px;
+}
+
+.workspace-center-panel {
+  flex: 1;
+  height: 100%;
+  overflow-y: auto;
+  min-width: 0; /* Prevents flex items from overflowing */
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header style for Sidebars */
+.sidebar-header {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  color: var(--primary-color);
+  border-bottom: 2px dashed var(--primary-color);
+  padding-bottom: 6px;
+  margin-bottom: 8px;
+  text-align: center;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+}
+
+/* Scrollable area inside Sidebars */
+.scrollable-sidebar-content {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+/* Scrollbars Retro Style */
+.scrollable-sidebar-content::-webkit-scrollbar,
+.workspace-center-panel::-webkit-scrollbar {
+  width: 6px;
+}
+.scrollable-sidebar-content::-webkit-scrollbar-track,
+.workspace-center-panel::-webkit-scrollbar-track {
+  background: #000;
+}
+.scrollable-sidebar-content::-webkit-scrollbar-thumb,
+.workspace-center-panel::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+}
+
+/* Vertical Roster Slots in Left Sidebar */
+.roster-vertical-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.roster-vertical-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 6px 8px;
+  position: relative;
+  cursor: grab;
+  transition: all 0.15s ease;
+}
+
+.roster-vertical-item.dragging {
+  opacity: 0.4;
+  border-color: var(--accent-color);
+}
+
+.roster-vertical-item.drag-over {
+  border: 2px dashed var(--accent-color);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.roster-vertical-item .pos-badge {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7px;
+  font-weight: bold;
+  background: #000;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--accent-color);
+  padding: 2px 4px;
+  width: 24px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.roster-vertical-item .player-name {
+  font-family: 'VT323', monospace;
+  font-size: 15px;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-grow: 1;
+}
+
+.roster-vertical-item .ovr-badge {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 6px;
+  padding: 1px 3px;
+  border-radius: 2px;
+  font-weight: bold;
+}
+
+.roster-vertical-item .stamina-bar-mini {
+  width: 30px;
+  height: 4px;
+  background: rgba(0,0,0,0.5);
+  border: 1px solid rgba(255,255,255,0.1);
+  overflow: hidden;
+  margin-top: 2px;
+}
+
+.roster-vertical-item .stamina-fill-mini {
+  height: 100%;
+}
+
+.roster-vertical-item .order-number {
+  font-size: 7px;
+  color: rgba(255,255,255,0.3);
+  font-family: 'Press Start 2P', monospace;
+  margin-right: 4px;
+}
+
+/* Trait Badges on Player Cards */
+.card-traits-box {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+  justify-content: center;
+}
+
+.card-trait-badge {
+  font-size: 5px;
+  padding: 2px 4px;
+  font-family: 'Press Start 2P', monospace;
+  font-weight: bold;
+  color: #000;
+  background: #8e9e98;
+}
+
+.card-trait-badge.trait-era {
+  background: var(--primary-color);
+}
+
+.card-trait-badge.trait-team {
+  background: var(--accent-color);
+}
+
+/* Synergy list and progress items in Right Sidebar */
+.synergy-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.synergy-list-item {
+  background: rgba(0, 0, 0, 0.4);
+  border: 2px dashed rgba(255, 255, 255, 0.15);
+  padding: 8px;
+  transition: all 0.2s ease;
+}
+
+.synergy-list-item.active {
+  border: 2px solid var(--primary-color);
+  box-shadow: 0 0 8px var(--primary-glow);
+  background: rgba(0, 255, 102, 0.03);
+}
+
+.synergy-list-item.active-level-2 {
+  border: 2px solid var(--accent-color);
+  box-shadow: 0 0 12px var(--accent-glow);
+  background: rgba(255, 204, 0, 0.03);
+}
+
+.synergy-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.synergy-item-name {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  font-weight: bold;
+  color: #fff;
+}
+
+.synergy-list-item.active .synergy-item-name {
+  color: var(--primary-color);
+}
+
+.synergy-list-item.active-level-2 .synergy-item-name {
+  color: var(--accent-color);
+}
+
+.synergy-item-count {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7px;
+  color: #9ca3af;
+}
+
+.synergy-progress-dots {
+  display: flex;
+  gap: 3px;
+  margin-bottom: 6px;
+}
+
+.synergy-dot {
+  width: 8px;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.synergy-dot.filled {
+  background: var(--primary-color);
+  border-color: #fff;
+}
+
+.synergy-list-item.active-level-2 .synergy-dot.filled {
+  background: var(--accent-color);
+}
+
+.synergy-item-desc {
+  font-family: 'VT323', monospace;
+  font-size: 13.5px;
+  line-height: 1.25;
+  color: #a1a1aa;
+}
+
+.synergy-list-item.active .synergy-item-desc {
+  color: #fff;
+}
+
+/* Synergy Helper Text in Draft Option Cards */
+.draft-synergy-helper {
+  background: rgba(0, 0, 0, 0.7);
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+  margin-top: 8px;
+  padding: 6px;
+  font-size: 7.5px;
+  font-family: 'Press Start 2P', monospace;
+  line-height: 1.4;
+  color: #a1a1aa;
+  text-align: center;
+  max-width: 152px;
+}
+
+.draft-synergy-helper strong {
+  color: var(--primary-color);
+}
+
+
+/* ==========================================================================
+   PLAYER CARD POPUP
+   ========================================================================== */
+
+#player-card-popup-overlay.hidden { display: none !important; }
+
+@keyframes fadeInOverlay {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+#popup-card-content {
+  animation: popupSlideIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes popupSlideIn {
+  from { transform: scale(0.85) translateY(20px); opacity: 0; }
+  to   { transform: scale(1) translateY(0);        opacity: 1; }
+}
+
+.popup-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.popup-rarity-badge {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7px;
+  padding: 3px 8px;
+  border: 1px solid;
+  letter-spacing: 1px;
+}
+
+.popup-close-btn {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: #9ca3af;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 2px 8px;
+  transition: all 0.15s ease;
+}
+.popup-close-btn:hover { background: rgba(239,68,68,0.2); color: #ef4444; border-color: #ef4444; }
+
+.popup-player-name {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 11px;
+  color: #fff;
+  text-align: center;
+  margin-bottom: 10px;
+  line-height: 1.5;
+}
+
+.popup-meta-row {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.popup-pos-badge {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  background: #000;
+  border: 1px solid rgba(255,255,255,0.3);
+  color: var(--accent-color);
+  padding: 3px 8px;
+}
+
+.popup-era-chip {
+  font-family: 'VT323', monospace;
+  font-size: 14px;
+  color: var(--primary-color);
+  border: 1px solid rgba(0,255,102,0.3);
+  padding: 1px 7px;
+  background: rgba(0,255,102,0.05);
+}
+
+.popup-team-chip {
+  font-family: 'VT323', monospace;
+  font-size: 14px;
+  color: var(--accent-color);
+  border: 1px solid rgba(255,204,0,0.25);
+  padding: 1px 7px;
+  background: rgba(255,204,0,0.04);
+}
+
+.popup-ovr-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: 1px solid;
+  padding: 8px 14px;
+  margin-bottom: 14px;
+}
+
+.popup-ovr-label {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  color: #9ca3af;
+}
+
+.popup-ovr-val {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 22px;
+  font-weight: bold;
+}
+
+.popup-ovr-grade {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.popup-stats-section {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-bottom: 12px;
+}
+
+.popup-stat-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.popup-stat-label {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7px;
+  color: #9ca3af;
+  width: 28px;
+  flex-shrink: 0;
+}
+
+.popup-stat-bar-track {
+  flex: 1;
+  height: 8px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  overflow: hidden;
+}
+
+.popup-stat-bar-fill {
+  height: 100%;
+  transition: width 0.4s ease;
+}
+
+.super-stat-bar {
+  animation: superStatFire 0.8s infinite alternate;
+  box-shadow: 0 0 8px rgba(255, 215, 0, 0.8), inset 0 0 6px rgba(255, 255, 255, 0.6);
+  border-right: 2px solid #fff;
+}
+
+@keyframes superStatFire {
+  0% { filter: hue-rotate(0deg) brightness(1.2); }
+  100% { filter: hue-rotate(-25deg) brightness(1.6); }
+}
+
+.popup-stat-val {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7px;
+  min-width: 42px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.popup-grade { font-size: 8px; font-weight: bold; }
+
+.popup-stamina-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.popup-stamina-track {
+  flex: 1;
+  height: 8px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  overflow: hidden;
+}
+
+.popup-stamina-fill { height: 100%; transition: width 0.4s ease; }
+
+.popup-upgrades-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  align-items: center;
+  margin-bottom: 8px;
+  padding: 6px;
+  background: rgba(0,255,102,0.04);
+  border: 1px dashed rgba(0,255,102,0.2);
+}
+
+.popup-upgrade-badge {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 6px;
+  padding: 2px 6px;
+  background: rgba(0,255,102,0.12);
+  border: 1px solid rgba(0,255,102,0.3);
+  color: var(--primary-color);
+}
+
+.popup-era-desc {
+  font-family: 'VT323', monospace;
+  font-size: 14px;
+  color: #94a3b8;
+  line-height: 1.3;
+  margin-bottom: 8px;
+  padding: 6px;
+  background: rgba(255,255,255,0.02);
+  border-left: 2px solid rgba(255,255,255,0.1);
+}
+
+.popup-year {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 6.5px;
+  color: #475569;
+  text-align: center;
+  margin-top: 6px;
+}
+
+.roster-vertical-item { cursor: pointer !important; }
+.roster-vertical-item:hover {
+  background: rgba(0, 255, 102, 0.05);
+  border-color: rgba(0, 255, 102, 0.3);
+}
+
+/* ── HP BAR SHAKE & FLASH ANIMATIONS ───────────────────────────────────── */
+@keyframes shake-dmg {
+  0%   { transform: translateX(0); }
+  15%  { transform: translateX(-6px); }
+  30%  { transform: translateX(5px); }
+  45%  { transform: translateX(-4px); }
+  60%  { transform: translateX(3px); }
+  75%  { transform: translateX(-2px); }
+  90%  { transform: translateX(1px); }
+  100% { transform: translateX(0); }
+}
+
+@keyframes flash-red {
+  0%   { filter: brightness(1); }
+  20%  { filter: brightness(2.5) saturate(3) hue-rotate(-20deg); }
+  50%  { filter: brightness(1.8) saturate(2); }
+  100% { filter: brightness(1); }
+}
+
+.hp-bar-hit {
+  animation: shake-dmg 0.45s ease-out, flash-red 0.45s ease-out;
+}
+
+.shield-bar-hit {
+  animation: shake-dmg 0.35s ease-out;
+}
+
+/* ── RATINGS INFO POPOVER (Starter Screen) ──────────────────────────────── */
+#ratings-info-btn {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #000;
+  border: 2px solid #3b82f6;
+  color: #3b82f6;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 11px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.35);
+  transition: all 0.2s ease;
+  z-index: 50;
+}
+#ratings-info-btn:hover {
+  background: #3b82f6;
+  color: #fff;
+  box-shadow: 0 0 18px rgba(59, 130, 246, 0.7);
+}
+
+#ratings-info-dropdown {
+  position: absolute;
+  top: 46px;
+  right: 14px;
+  width: 300px;
+  background: rgba(9, 13, 22, 0.98);
+  border: 2px solid #3b82f6;
+  border-radius: 12px;
+  padding: 14px;
+  box-shadow: 0 0 30px rgba(0,0,0,0.9), 0 0 15px rgba(59,130,246,0.25);
+  z-index: 100;
+  backdrop-filter: blur(8px);
+  font-size: 11px;
+  line-height: 1.6;
+  color: #e4e4e7;
+}
+
+/* ── MOBILE RESPONSIVE ──────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  /* Allow body and workspace to scroll vertically on mobile */
+  body, body.workspace-active {
+    height: auto !important;
+    min-height: 100vh !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+  }
+
+  body.workspace-active .main-container {
+    height: auto !important;
+    padding: 6px !important;
+    max-width: 100vw !important;
+  }
+
+  #game-workspace {
+    height: auto !important;
+  }
+
+  .main-container {
+    padding: 8px !important;
+    max-width: 100vw !important;
+  }
+
+  /* Hide sidebars by default on mobile so combat screen gets 100% space */
+  .workspace-sidebar.left-sidebar,
+  .workspace-sidebar.right-sidebar {
+    display: none !important;
+    width: 100% !important;
+  }
+
+  /* Overlay Drawers when toggled on mobile */
+  .workspace-sidebar.left-sidebar.mobile-drawer-open,
+  .workspace-sidebar.right-sidebar.mobile-drawer-open {
+    display: flex !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    z-index: 600 !important;
+    background: rgba(9, 13, 22, 0.98) !important;
+    padding: 20px 16px !important;
+    overflow-y: auto !important;
+    backdrop-filter: blur(12px) !important;
+    box-shadow: 0 0 40px rgba(0,0,0,0.9) !important;
+  }
+
+  /* Workspace Layout: 1 column, 100% width */
+  .workspace-three-columns {
+    display: flex !important;
+    flex-direction: column !important;
+    height: auto !important;
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: visible !important;
+  }
+
+  .workspace-center-panel {
+    width: 100% !important;
+    max-width: 100vw !important;
+    min-width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Glass panels full width */
+  .glass-panel {
+    padding: 12px 10px !important;
+    border-radius: 10px !important;
+    margin-bottom: 12px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  /* HUD Top Bar */
+  #game-hud {
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+    padding: 8px !important;
+    font-size: 8px !important;
+    justify-content: space-between !important;
+  }
+
+  .hud-item {
+    font-size: 8px !important;
+    padding: 4px 6px !important;
+  }
+
+  #btn-toggle-roster-view,
+  #btn-toggle-synergies-mobile {
+    font-size: 8px !important;
+    padding: 6px 8px !important;
+  }
+
+  /* Match Arena Layout */
+  .match-arena {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+    width: 100% !important;
+  }
+
+  /* Fight Cards Deck: fit side-by-side on mobile without clipping */
+  .rpg-fight-deck {
+    transform: none !important;
+    width: 100% !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    gap: 4px !important;
+    margin: 8px 0 !important;
+  }
+
+  .fight-card-slot {
+    flex: 1 !important;
+    max-width: 48% !important;
+    width: 48% !important;
+  }
+
+  .fight-card-slot .card {
+    width: 100% !important;
+    min-width: 0 !important;
+    font-size: 8.5px !important;
+    padding: 6px 4px !important;
+  }
+
+  .vs-circle {
+    font-size: 13px !important;
+    margin: 0 !important;
+  }
+
+  /* Faceoff panel & Scoreboard */
+  .faceoff-panel {
+    width: 100% !important;
+    padding: 8px 10px !important;
+  }
+
+  .scoreboard {
+    width: 100% !important;
+    font-size: 7.5px !important;
+    padding: 8px !important;
+  }
+
+  /* Battle Right Column (HP, zones, dice button) */
+  .match-arena > div:last-child {
+    width: 100% !important;
+    min-width: 100% !important;
+  }
+
+  /* Roll Dice Button: touch friendly */
+  #btn-roll-dice {
+    font-size: 12px !important;
+    padding: 16px 12px !important;
+    min-height: 52px !important;
+    width: 100% !important;
+  }
+
+  /* Map Nodes Container */
+  #map-nodes-container {
+    transform: scale(0.85);
+    transform-origin: top center;
+  }
+
+  /* Modals & Popups: fit mobile screens */
+  .battle-over-modal > div {
+    max-width: 95vw !important;
+    padding: 16px 12px !important;
+  }
+
+  #outcome-popup {
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    width: 90vw !important;
+  }
+
+  #combat-info-dropdown,
+  #ratings-info-dropdown {
+    width: 90vw !important;
+    right: 5vw !important;
+    left: 5vw !important;
+    top: 45px !important;
+  }
+
+  /* Starter pool & draft cards: full width vertical stack on mobile */
+  .starter-selection {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    gap: 12px !important;
+  }
+
+  .draft-cards-row {
+    flex-direction: column !important;
+    align-items: center !important;
+    width: 100% !important;
+    gap: 14px !important;
+  }
+
+  .starter-card-wrapper {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .starter-card-wrapper .card,
+  .player-card {
+    width: 100% !important;
+    min-width: 100% !important;
+    font-size: 11px !important;
+    padding: 12px 10px !important;
+    box-sizing: border-box !important;
+  }
+
+  .starter-card-wrapper .btn {
+    font-size: 13px !important;
+    padding: 14px !important;
+    min-height: 48px !important;
+  }
+
+  /* Starter Assignment Screen */
+  .starter-assign-layout {
+    flex-direction: column !important;
+    width: 100% !important;
+    gap: 16px !important;
+    align-items: stretch !important;
+  }
+
+  .starter-slots-wrap,
+  .starter-players-wrap {
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  h2 {
+    font-size: 14px !important;
+  }
+  h3 {
+    font-size: 11px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .starter-card-wrapper .card,
+  .player-card {
+    font-size: 10px !important;
+    padding: 8px 6px !important;
+  }
+
+  .fight-card-slot .card {
+    font-size: 7.5px !important;
+    padding: 4px 2px !important;
+  }
+}
