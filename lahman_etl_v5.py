@@ -14,7 +14,8 @@ DATA_DIR = Path(__file__).parent / "lahman_1871-2025"
 OUT_CSV  = Path(__file__).parent / "game_cards.csv"
 OUT_JS   = Path(__file__).parent / "game_cards_pool.js"
 
-MIN_AB_CAREER      = 100
+MIN_AB_CAREER      = 1500
+MIN_AB_ALLSTAR_HOF = 100
 PEAK_SEASONS       = 7
 W_PEAK             = 1.00
 W_CAREER           = 0.00
@@ -476,9 +477,9 @@ def paso_7_enriquecer_people(df, people):
 # ===========================================================================
 def paso_8_filtro_ingesta(df, allstar, hof, pure_pitcher_ids):
     """
-    CONDICION A (absoluta): posicion primaria != 'P' (ya excluidos en paso_2)
-    CONDICION B (al menos una):
-        career_ab >= 2000  OR  All-Star  OR  HoF (inducted=Y, category=Player)
+    CONDICION A: posicion primaria != 'P' (salvo excepcion Ohtani 'ohtansh01')
+    CONDICION B:
+        career_ab >= 1500  OR  ((All-Star OR HoF) AND career_ab >= 100)
     """
     print("\n  PASO 8: Filtro de ingesta del Card Pool...")
     allstar_ids = set(allstar["playerID"].unique()) if not allstar.empty else set()
@@ -488,13 +489,19 @@ def paso_8_filtro_ingesta(df, allstar, hof, pure_pitcher_ids):
         hof_ids = set(hof_inducted["playerID"].unique())
     print(f"  All-Stars: {len(allstar_ids):,}  |  HoF: {len(hof_ids):,}")
 
-    no_pitchers = df[~df["playerID"].isin(pure_pitcher_ids)].copy()
-    print(f"  No-pitchers disponibles: {len(no_pitchers):,}")
+    # Excepcion Ohtani
+    ohtani_id = 'ohtansh01'
+    effective_pure_pitchers = set(p for p in pure_pitcher_ids if p != ohtani_id)
+
+    no_pitchers = df[~df["playerID"].isin(effective_pure_pitchers)].copy()
+    print(f"  No-pitchers elegibles: {len(no_pitchers):,}")
 
     mask = (
         (no_pitchers["career_ab"] >= MIN_AB_CAREER) |
-        no_pitchers["playerID"].isin(allstar_ids) |
-        no_pitchers["playerID"].isin(hof_ids)
+        (
+            (no_pitchers["playerID"].isin(allstar_ids) | no_pitchers["playerID"].isin(hof_ids)) &
+            (no_pitchers["career_ab"] >= MIN_AB_ALLSTAR_HOF)
+        )
     )
     eligible = no_pitchers[mask].copy()
     eligible["is_allstar"] = eligible["playerID"].isin(allstar_ids)
