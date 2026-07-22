@@ -124,295 +124,280 @@
     { id: "t_sta", label: "Acondicionamiento Físico", desc: "Recupera +35 de Stamina y suma +5 de Stamina máxima.", price: 10, stat: "sta", val: 35 }
   ];
 
-  // ── 9-ROUND DRAFT SYSTEM ────────────────────────────────────────────────────────────
+  // ── 9-ROUND DRAFT SYSTEM ──────────────────────────────────────────────────
+  // Rarity color palette (5 tiers)
+  const RARITY_COLORS = {
+    Legendary: '#f59e0b',
+    Epic:      '#8b5cf6',
+    Rare:      '#3b82f6',
+    Uncommon:  '#10b981',
+    Common:    '#64748b'
+  };
 
-  /** Render the 3-pick panel for the current draft round */
+  const RARITY_BG = {
+    Legendary: 'rgba(245,158,11,0.12)',
+    Epic:      'rgba(139,92,246,0.12)',
+    Rare:      'rgba(59,130,246,0.12)',
+    Uncommon:  'rgba(16,185,129,0.12)',
+    Common:    'rgba(100,116,139,0.08)'
+  };
+
+  const SLOTS_ORDER = ['C','1B','2B','3B','SS','LF','CF','RF','DH'];
+
+  /** Master render for the 9-round draft. Called every time a pick is made. */
   function renderDraftRound() {
     try {
-      const round   = window.Game.draftRound; // 1-9
-      const picks   = window.Game.getDraftRoundPicks();
-      const pool    = el.starterPool;
+      const G = window.Game;
+      const round = G.draftRound; // 1–9
+
+      // If all 9 rounds are done → commit roster and start game
+      if (round > 9) {
+        const ok = G.finalizeDraftAndStart();
+        if (ok) {
+          el.hud.classList.remove('hidden');
+          el.workspace.classList.remove('remove');
+          el.workspace.classList.remove('hidden');
+          updateHUD();
+          renderActiveRoster();
+          renderMap();
+          renderSynergiesAndItems();
+          showScreen('screen-map');
+        }
+        return;
+      }
+
+      const info   = G.getDraftRoundInfo();
+      const picks  = G.getDraftRoundPicks();
+      const pool   = el.starterPool;
       pool.innerHTML = '';
 
-      // ── Round header ──
+      // ── Top header: round progress ──────────────────────────────────────
       const header = document.createElement('div');
-    header.style.cssText = 'width:100%;text-align:center;margin-bottom:16px;';
-    header.innerHTML = `
-      <div style="font-family:'Press Start 2P',monospace;font-size:11px;color:var(--primary-color);margin-bottom:6px;">
-        RONDA ${round} DE 3
-      </div>
-      <div style="display:flex;justify-content:center;gap:6px;">
-        ${Array.from({length:3},(_,i) =>
-          `<div style="width:10px;height:10px;border-radius:50%;background:${
-            i < round - 1 ? '#10b981' : i === round - 1 ? 'var(--accent-color)' : 'rgba(255,255,255,0.15)'
-          };"></div>`
-        ).join('')}
-      </div>
-      <p style="font-size:13px;color:#9ca3af;margin-top:10px;">Elige una estrella para tu roster. No hay restricciones.</p>
-    `;
-    pool.appendChild(header);
+      header.style.cssText = 'width:100%;text-align:center;padding:12px 0 16px;';
+      const roundDots = Array.from({length:9},(_,i) => {
+        let bg;
+        if (i < round - 1)      bg = '#10b981';        // picked
+        else if (i === round-1)  bg = RARITY_COLORS[info.rarities ? info.rarities[0] : 'Common'] || '#f59e0b';
+        else                     bg = 'rgba(255,255,255,0.12)'; // upcoming
+        const size = i === round-1 ? '14px' : '10px';
+        return `<div style="width:${size};height:${size};border-radius:50%;background:${bg};transition:all .3s;"></div>`;
+      }).join('');
 
-    // ── 3 pick cards ──
-    const cardsRow = document.createElement('div');
-    cardsRow.className = 'draft-cards-row';
-    cardsRow.style.cssText = 'display:flex;gap:20px;justify-content:center;flex-wrap:wrap;';
-
-    picks.forEach(player => {
-      const ovr = Math.round((player.con||40)*0.30 + (player.pwr||35)*0.30 + (player.spd||45)*0.15 + (player.def||40)*0.15 + (player.eye||40)*0.10);
-      const cardHTML = createCardHTML(player);
-
-      const wrapper = document.createElement('div');
-      wrapper.className = 'starter-card-wrapper';
-      wrapper.style.cssText = 'cursor:pointer;';
-      wrapper.innerHTML = `
-        <div style="pointer-events:none;">${cardHTML}</div>
-        <p style="font-size:11px;color:#9ca3af;margin-top:6px;text-align:center;">
-          ${player.pos} &bull; OVR ${ovr} &bull; ${player.rarity}
-        </p>
-        <button class="btn" style="width:100%;margin-top:6px;">Seleccionar ✔</button>
+      header.innerHTML = `
+        <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:${RARITY_COLORS[info.rarities ? info.rarities[0] : 'Legendary']};margin-bottom:8px;letter-spacing:1px;">
+          ⚾ DRAFT INICIAL — RONDA ${round} DE 9
+        </div>
+        <div style="display:flex;justify-content:center;gap:6px;align-items:center;margin-bottom:8px;">${roundDots}</div>
+        <div style="display:inline-block;background:${RARITY_BG[info.rarities ? info.rarities[0] : 'Legendary']};
+          border:1px solid ${RARITY_COLORS[info.rarities ? info.rarities[0] : 'Legendary']};
+          border-radius:20px;padding:4px 14px;font-size:11px;
+          color:${RARITY_COLORS[info.rarities ? info.rarities[0] : 'Legendary']};font-weight:bold;">
+          ${info.icon} ${info.label}
+        </div>
       `;
-      wrapper.addEventListener('click', () => {
-        window.Game.draftPickPlayer(player);
-        if (window.Game.draftRound > 3) {
-          // 3 picks complete → auto-fill lineup and start run directly
-          window.Game.autoFillLineup();
-          const ok = window.Game.finalizeLineup();
-          if (ok) {
-            el.screenMenu.classList.add('hidden');
-            el.hud.classList.remove('hidden');
-            el.workspace.classList.remove('remove');
-            el.workspace.classList.remove('hidden');
-            updateHUD();
-            renderActiveRoster();
-            renderMap();
-            renderSynergiesAndItems();
-            showScreen('screen-map');
-          }
+      pool.appendChild(header);
+
+      // ── 3-column layout: Roster | Pick Cards | Batting Order ───────────
+      const layout = document.createElement('div');
+      layout.style.cssText = 'display:grid;grid-template-columns:220px 1fr 200px;gap:16px;align-items:flex-start;width:100%;max-width:1100px;margin:0 auto;';
+
+      // ───── LEFT: Fielding Roster Panel ─────────────────────────────────
+      const rosterPanel = document.createElement('div');
+      rosterPanel.style.cssText = 'background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:12px;';
+      rosterPanel.innerHTML = `
+        <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#9ca3af;margin-bottom:10px;text-align:center;letter-spacing:1px;">
+          🧤 ALINEACIÓN
+        </div>
+      `;
+
+      SLOTS_ORDER.forEach(slot => {
+        const player = G.draftRoster[slot];
+        const rColor = player ? (RARITY_COLORS[player.rarity] || RARITY_COLORS.Common) : 'rgba(255,255,255,0.1)';
+        const slotRow = document.createElement('div');
+        slotRow.style.cssText = [
+          'display:flex','align-items:center','gap:8px',
+          `border-left:3px solid ${rColor}`,
+          'background:rgba(0,0,0,0.2)','border-radius:6px',
+          'padding:6px 8px','margin-bottom:6px','cursor:pointer','transition:all .2s'
+        ].join(';');
+        slotRow.id = `draft-slot-${slot}`;
+
+        if (player) {
+          const ovr = Math.round((player.con||40)*.3+(player.pwr||35)*.3+(player.spd||45)*.15+(player.def||40)*.15+(player.eye||40)*.1);
+          const isNative = player.pos === slot;
+          const secArr = player.sec_pos ? player.sec_pos.split(',').map(s=>s.trim()) : [];
+          const isSec   = secArr.includes(slot);
+          const posHint = isNative ? '✅' : (slot==='DH' ? 'DH' : (isSec ? '⚡' : '⚠️'));
+          slotRow.innerHTML = `
+            <span style="font-family:'Press Start 2P',monospace;font-size:7px;color:#94a3b8;min-width:24px;">${slot}</span>
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:10px;font-weight:bold;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${player.name}</div>
+              <div style="font-size:9px;color:${rColor};">${player.rarity} • OVR ${ovr} ${posHint}</div>
+            </div>
+          `;
+          // Click to re-assign: cycle through open slots
+          slotRow.title = 'Clic para mover a otro slot';
+          slotRow.addEventListener('click', () => {
+            // find next empty slot and move player there
+            const emptySlot = SLOTS_ORDER.find(s => s !== slot && !G.draftRoster[s]);
+            if (emptySlot) {
+              G.draftRoster[emptySlot] = G.draftRoster[slot];
+              G.draftRoster[slot] = null;
+              renderDraftRound();
+            }
+          });
         } else {
-          renderDraftRound();
+          slotRow.innerHTML = `
+            <span style="font-family:'Press Start 2P',monospace;font-size:7px;color:#374151;min-width:24px;">${slot}</span>
+            <span style="font-size:10px;color:#374151;">— VACÍO —</span>
+          `;
         }
+        rosterPanel.appendChild(slotRow);
       });
-      cardsRow.appendChild(wrapper);
-    });
-    pool.appendChild(cardsRow);
-    } catch (e) {
+
+      // ───── CENTER: 3 Pick Cards ─────────────────────────────────────────
+      const centerPanel = document.createElement('div');
+      centerPanel.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:16px;';
+
+      const cardsRow = document.createElement('div');
+      cardsRow.style.cssText = 'display:flex;gap:16px;justify-content:center;flex-wrap:wrap;';
+
+      picks.forEach(player => {
+        const rColor = RARITY_COLORS[player.rarity] || RARITY_COLORS.Common;
+        const rBg    = RARITY_BG[player.rarity]    || RARITY_BG.Common;
+        const ovr    = Math.round((player.con||40)*.3+(player.pwr||35)*.3+(player.spd||45)*.15+(player.def||40)*.15+(player.eye||40)*.1);
+        const cardHTML = createCardHTML(player);
+
+        const wrapper = document.createElement('div');
+        wrapper.style.cssText = [
+          'cursor:pointer','border-radius:12px',
+          `border:2px solid ${rColor}`,
+          `background:${rBg}`,
+          'padding:10px','transition:transform .15s,box-shadow .15s',
+          'display:flex','flex-direction:column','align-items:center','gap:8px',
+          'max-width:200px'
+        ].join(';');
+
+        wrapper.innerHTML = `
+          <div style="pointer-events:none;">${cardHTML}</div>
+          <div style="text-align:center;width:100%;">
+            <div style="font-size:10px;color:${rColor};font-weight:bold;">${player.rarity}</div>
+            <div style="font-size:9px;color:#9ca3af;">${player.pos} • OVR ${ovr}${player.sec_pos ? ' • SEC: '+player.sec_pos : ''}</div>
+          </div>
+          <button class="btn" style="width:100%;padding:8px;font-size:10px;background:${rColor};color:#000;border:none;">✔ SELECCIONAR</button>
+        `;
+
+        wrapper.addEventListener('mouseenter', () => {
+          wrapper.style.transform = 'translateY(-4px)';
+          wrapper.style.boxShadow = `0 8px 24px ${rColor}44`;
+        });
+        wrapper.addEventListener('mouseleave', () => {
+          wrapper.style.transform = '';
+          wrapper.style.boxShadow = '';
+        });
+        wrapper.addEventListener('click', () => {
+          G.draftPickPlayer(player);
+          renderDraftRound();
+        });
+        cardsRow.appendChild(wrapper);
+      });
+
+      centerPanel.appendChild(cardsRow);
+
+      // Round descriptor below cards
+      const pickHint = document.createElement('div');
+      pickHint.style.cssText = 'font-size:11px;color:#6b7280;text-align:center;max-width:400px;';
+      if (round <= 3) {
+        pickHint.textContent = `Esta es una ronda garantizada de élite. Aprovecha para asegurar un titular de calidad.`;
+      } else if (round <= 6) {
+        pickHint.textContent = `Ronda de Common. Estos jugadores llenarán los slots que te faltan y formarán tu banco.`;
+      } else {
+        pickHint.textContent = `Ronda libre: puede aparecer cualquier rareza del pool. ¡Buena suerte!`;
+      }
+      centerPanel.appendChild(pickHint);
+
+      // ───── RIGHT: Batting Order Panel ──────────────────────────────────
+      const orderPanel = document.createElement('div');
+      orderPanel.style.cssText = 'background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:12px;';
+      orderPanel.innerHTML = `
+        <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#9ca3af;margin-bottom:10px;text-align:center;letter-spacing:1px;">
+          ⚔️ BATTING ORDER
+        </div>
+      `;
+
+      function renderBattingOrderRows() {
+        const existing = orderPanel.querySelectorAll('.bo-row');
+        existing.forEach(e => e.remove());
+
+        G.draftBattingOrder.forEach((slot, idx) => {
+          const player = G.draftRoster[slot];
+          const rColor = player ? (RARITY_COLORS[player.rarity] || RARITY_COLORS.Common) : 'rgba(255,255,255,0.1)';
+          const row = document.createElement('div');
+          row.className = 'bo-row';
+          row.style.cssText = [
+            'display:flex','align-items:center','gap:6px',
+            'background:rgba(0,0,0,0.2)','border-radius:6px',
+            'padding:5px 7px','margin-bottom:5px',
+            `border-left:3px solid ${rColor}`
+          ].join(';');
+
+          const nameStr = player
+            ? `<span style="font-size:9px;color:#fff;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${player.name.split(' ').pop()}</span>`
+            : `<span style="font-size:9px;color:#374151;flex:1;">${slot} —</span>`;
+
+          row.innerHTML = `
+            <span style="font-family:'Press Start 2P',monospace;font-size:7px;color:#6b7280;min-width:12px;">${idx+1}</span>
+            <span style="font-size:8px;color:#94a3b8;min-width:20px;">${slot}</span>
+            ${nameStr}
+            <div style="display:flex;flex-direction:column;gap:1px;">
+              <button class="bo-up" data-idx="${idx}" style="background:none;border:1px solid rgba(255,255,255,0.1);color:#9ca3af;padding:0 4px;font-size:9px;border-radius:2px;cursor:pointer;line-height:1.4;">▲</button>
+              <button class="bo-dn" data-idx="${idx}" style="background:none;border:1px solid rgba(255,255,255,0.1);color:#9ca3af;padding:0 4px;font-size:9px;border-radius:2px;cursor:pointer;line-height:1.4;">▼</button>
+            </div>
+          `;
+          orderPanel.appendChild(row);
+        });
+
+        // Wire up buttons
+        orderPanel.querySelectorAll('.bo-up').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const i = parseInt(btn.dataset.idx);
+            if (i > 0) {
+              [G.draftBattingOrder[i-1], G.draftBattingOrder[i]] = [G.draftBattingOrder[i], G.draftBattingOrder[i-1]];
+              renderBattingOrderRows();
+            }
+          });
+        });
+        orderPanel.querySelectorAll('.bo-dn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const i = parseInt(btn.dataset.idx);
+            if (i < G.draftBattingOrder.length - 1) {
+              [G.draftBattingOrder[i], G.draftBattingOrder[i+1]] = [G.draftBattingOrder[i+1], G.draftBattingOrder[i]];
+              renderBattingOrderRows();
+            }
+          });
+        });
+      }
+      renderBattingOrderRows();
+
+      // Assemble 3-column layout
+      layout.appendChild(rosterPanel);
+      layout.appendChild(centerPanel);
+      layout.appendChild(orderPanel);
+      pool.appendChild(layout);
+
+    } catch(e) {
       console.error(e);
       const banner = document.getElementById('debug-error-banner');
       if (banner) {
         banner.style.display = 'block';
-        banner.innerText += 'renderDraftRound Error: ' + e.message + '\\n' + e.stack + '\\n\\n';
+        banner.innerText += 'renderDraftRound Error: ' + e.message + '\n' + e.stack + '\n\n';
       }
     }
   }
 
-  /** Render post-draft lineup assignment screen */
-  function renderLineupAssignment() {
-    const pool = el.starterPool;
-    pool.innerHTML = '';
-
-    const SLOTS = ['C','1B','2B','3B','SS','LF','CF','RF','DH'];
-    // Track which player is assigned where  (slot -> playerIndex | null)
-    const assignment = { C:null,'1B':null,'2B':null,'3B':null,SS:null,LF:null,CF:null,RF:null,DH:null };
-    // selectedPlayer: { playerIndex, el }
-    let selectedPlayer = null;
-
-    // ── header ──
-    const header = document.createElement('div');
-    header.style.cssText = 'text-align:center;margin-bottom:20px;';
-    header.innerHTML = `
-      <div style="font-family:'Press Start 2P',monospace;font-size:12px;color:var(--primary-color);margin-bottom:8px;">
-        ⚾ ARMA TU ALINEACIÓN
-      </div>
-      <p style="color:#9ca3af;font-size:13px;">Selecciona un jugador (abajo) y luego haz clic en la posición donde quieres ubicarlo.</p>
-    `;
-    pool.appendChild(header);
-
-    // ── Layout: left = 9 slots grid, right = drafted players pool ──
-    const layout = document.createElement('div');
-    layout.className = 'starter-assign-layout';
-    layout.style.cssText = 'display:flex;gap:24px;flex-wrap:wrap;justify-content:center;align-items:flex-start;';
-
-    // ---- SLOTS GRID ----
-    const slotsWrap = document.createElement('div');
-    slotsWrap.className = 'starter-slots-wrap';
-    slotsWrap.style.cssText = 'display:flex;flex-direction:column;gap:8px;min-width:240px;';
-
-    const slotEls = {};
-    SLOTS.forEach(slot => {
-      const row = document.createElement('div');
-      row.id = `lineup-slot-${slot}`;
-      row.style.cssText = [
-        'display:flex','align-items:center','gap:10px',
-        'background:rgba(255,255,255,0.04)','border:2px dashed rgba(255,255,255,0.12)',
-        'border-radius:8px','padding:8px 12px','cursor:pointer','transition:border-color .2s'
-      ].join(';');
-      row.innerHTML = `
-        <span style="font-family:'Press Start 2P',monospace;font-size:9px;color:#64748b;min-width:28px;">${slot}</span>
-        <span class="slot-player-name" style="font-size:13px;color:#64748b;flex:1;">-- VACIO --</span>
-        <span class="slot-pos-hint" style="font-size:10px;color:#374151;"></span>
-      `;
-      row.addEventListener('click', () => {
-        if (!selectedPlayer) return; // Nothing to place
-        const pIdx = selectedPlayer.playerIndex;
-        // Remove from old slot if already assigned
-        Object.keys(assignment).forEach(s => {
-          if (assignment[s] === pIdx) {
-            assignment[s] = null;
-            updateSlotDisplay(s);
-          }
-        });
-        assignment[slot] = pIdx;
-        updateSlotDisplay(slot);
-        // Deselect
-        selectedPlayer.el.style.outline = '';
-        selectedPlayer = null;
-        updateStartBtn();
-      });
-      slotEls[slot] = row;
-      slotsWrap.appendChild(row);
-    });
-
-    function updateSlotDisplay(slot) {
-      const el2 = slotEls[slot];
-      const nameSpan = el2.querySelector('.slot-player-name');
-      const hintSpan = el2.querySelector('.slot-pos-hint');
-      const pIdx = assignment[slot];
-      if (pIdx === null || pIdx === undefined) {
-        nameSpan.textContent = '-- VACIO --';
-        nameSpan.style.color = '#64748b';
-        hintSpan.textContent = '';
-        el2.style.borderColor = 'rgba(255,255,255,0.12)';
-      } else {
-        const p = window.Game.draftedPlayers[pIdx];
-        const isNative = p.pos === slot;
-        const isDH = slot === 'DH';
-        const secPosArray = p.sec_pos ? p.sec_pos.split(',').map(s => s.trim()) : [];
-        const isSecondary = secPosArray.includes(slot);
-
-        nameSpan.textContent = p.name;
-        if (isNative) {
-          nameSpan.style.color = '#10b981';
-          hintSpan.textContent = '✅ Nativo';
-          hintSpan.style.color = '#10b981';
-          el2.style.borderColor = '#10b981';
-        } else if (isSecondary) {
-          nameSpan.style.color = '#06b6d4';
-          hintSpan.textContent = '⚡ Secundario (-15%)';
-          hintSpan.style.color = '#06b6d4';
-          el2.style.borderColor = '#06b6d4';
-        } else if (isDH) {
-          nameSpan.style.color = '#9ca3af';
-          hintSpan.textContent = 'DH';
-          hintSpan.style.color = '#9ca3af';
-          el2.style.borderColor = '#64748b';
-        } else {
-          nameSpan.style.color = '#f59e0b';
-          hintSpan.textContent = '⚠️ Fuera pos (-50%)';
-          hintSpan.style.color = '#f59e0b';
-          el2.style.borderColor = '#f59e0b';
-        }
-      }
-    }
-
-    // ---- DRAFTED PLAYERS POOL ----
-    const playersWrap = document.createElement('div');
-    playersWrap.className = 'starter-players-wrap';
-    playersWrap.style.cssText = 'display:flex;flex-direction:column;gap:6px;min-width:260px;max-width:300px;';
-
-    const poolLabel = document.createElement('div');
-    poolLabel.style.cssText = 'font-size:11px;color:#9ca3af;margin-bottom:4px;font-weight:bold;';
-    poolLabel.textContent = 'TUS 9 JUGADORES DRAFTEADOS:';
-    playersWrap.appendChild(poolLabel);
-
-    const playerCardEls = [];
-    window.Game.draftedPlayers.forEach((p, idx) => {
-      const ovr = Math.round((p.con||40)*0.30 + (p.pwr||35)*0.30 + (p.spd||45)*0.15 + (p.def||40)*0.15 + (p.eye||40)*0.10);
-      const rarityColors = { Legendary:'#f59e0b', Epic:'#8b5cf6', Rare:'#3b82f6', Common:'#64748b' };
-      const rarityColor = rarityColors[p.rarity] || '#64748b';
-      const cardEl = document.createElement('div');
-      cardEl.style.cssText = [
-        'display:flex','align-items:center','gap:10px',
-        `border:2px solid ${rarityColor}`,
-        'border-radius:8px','padding:8px 12px','cursor:pointer',
-        'background:rgba(0,0,0,0.3)','transition:outline .1s'
-      ].join(';');
-      cardEl.innerHTML = `
-        <span style="font-family:'Press Start 2P',monospace;font-size:8px;background:#000;padding:2px 5px;border-radius:3px;">${p.pos}</span>
-        <div style="flex:1;">
-          <div style="font-size:12px;font-weight:bold;color:#fff;">${p.name}</div>
-          <div style="font-size:10px;color:#9ca3af;">OVR ${ovr} &bull; ${p.rarity} ${p.sec_pos ? `&bull; <span style="color:#06b6d4;">SEC: ${p.sec_pos}</span>` : ''}</div>
-        </div>
-        <span style="font-size:9px;color:${rarityColor};">OVR<br><b>${ovr}</b></span>
-      `;
-      cardEl.addEventListener('click', () => {
-        // Deselect previous
-        playerCardEls.forEach(c => c.style.outline = '');
-        if (selectedPlayer && selectedPlayer.playerIndex === idx) {
-          selectedPlayer = null; // Toggle off
-          return;
-        }
-        cardEl.style.outline = '3px solid var(--primary-color)';
-        selectedPlayer = { playerIndex: idx, el: cardEl };
-      });
-      playerCardEls.push(cardEl);
-      playersWrap.appendChild(cardEl);
-    });
-
-    layout.appendChild(slotsWrap);
-    layout.appendChild(playersWrap);
-    pool.appendChild(layout);
-
-    // ── Shield preview & START button ──
-    const bottomRow = document.createElement('div');
-    bottomRow.style.cssText = 'margin-top:20px;text-align:center;';
-    bottomRow.innerHTML = `
-      <div id="shield-preview" style="font-size:12px;color:#3b82f6;margin-bottom:12px;">
-        🛡️ Escudo Grupal: calcula cuando asignes todos los jugadores
-      </div>
-      <button id="btn-start-campaign" class="btn" style="
-        padding:14px 32px;font-size:14px;opacity:0.3;pointer-events:none;
-        background:linear-gradient(135deg,#10b981,#059669);
-      " disabled>
-        ⚾ Comenzar Campaña
-      </button>
-    `;
-    pool.appendChild(bottomRow);
-
-    function updateStartBtn() {
-      const allFilled = SLOTS.every(s => assignment[s] !== null && assignment[s] !== undefined);
-      const btn = document.getElementById('btn-start-campaign');
-      const shieldEl = document.getElementById('shield-preview');
-      if (allFilled) {
-        // Commit assignment to Game.roster
-        SLOTS.forEach(s => {
-          window.Game.assignPlayerToSlot(s, assignment[s]);
-        });
-        const shield = window.Game.calculateLineupShield();
-        shieldEl.innerHTML = `🛡️ Escudo Grupal inicial: <strong style="color:#10b981;">${shield} pts</strong>`;
-        btn.disabled = false;
-        btn.style.opacity = '1';
-        btn.style.pointerEvents = 'auto';
-        btn.onclick = () => {
-          const ok = window.Game.finalizeLineup();
-          if (ok) {
-            el.hud.classList.remove('hidden');
-            el.workspace.classList.remove('remove');
-            el.workspace.classList.remove('hidden');
-            updateHUD();
-            renderActiveRoster();
-            renderMap();
-            renderSynergiesAndItems();
-            showScreen('screen-map');
-          }
-        };
-      } else {
-        shieldEl.innerHTML = `🛡️ Escudo Grupal: asigna todos los jugadores para calcular`;
-        btn.disabled = true;
-        btn.style.opacity = '0.3';
-        btn.style.pointerEvents = 'none';
-      }
-    }
-  }
+  // renderLineupAssignment is no longer needed (handled inline in draft rounds)
+  // Keeping stub so any legacy references don't throw
+  function renderLineupAssignment() { renderDraftRound(); }
 
   // Initialize App
   function init() {
@@ -1160,7 +1145,7 @@
     const eraClass = (player.era || '').toLowerCase().replace(/[^a-z]/g,'').substring(0,8);
     const stam = player.stamina || 100;
     const stamColor = stam < 25 ? '#ef4444' : stam < 50 ? '#f59e0b' : '#00ff66';
-    const rarityColors = { Common: '#94a3b8', Rare: '#38bdf8', Epic: '#c084fc', Legendary: '#ffd700' };
+    const rarityColors = { Common: '#94a3b8', Uncommon: '#10b981', Rare: '#38bdf8', Epic: '#c084fc', Legendary: '#ffd700' };
     const rarityColor = rarityColors[player.rarity] || '#94a3b8';
 
     overlay.querySelector('#popup-card-content').innerHTML = `

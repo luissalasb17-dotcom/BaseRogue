@@ -164,9 +164,22 @@
       this.currentEnemy = null;
 
       // ── 9-round Draft State ───────────────────────────────────────────
-      // Start with fully empty roster — all 9 slots populated after draft
-      this.draftRound    = 1;   // Current round: 1 – 9
+      // Round structure:
+      //   Round 1: Epic or higher (guaranteed)
+      //   Round 2: Rare or higher (guaranteed)
+      //   Round 3: Uncommon or higher (guaranteed)
+      //   Rounds 4-6: Common ONLY (builds bench / filler)
+      //   Rounds 7-9: Any rarity from full pool
+      this.draftRound     = 1;   // Current round: 1–9
       this.draftedPlayers = [];  // Accumulated picks: list of up to 9 player objects
+
+      // draftRoster: slot → player instance (built live during draft)
+      this.draftRoster = {
+        C: null, "1B": null, "2B": null, "3B": null, SS: null,
+        LF: null, CF: null, RF: null, DH: null
+      };
+      // draftBattingOrder: ordered array of slot names for the batting lineup
+      this.draftBattingOrder = ['CF', 'LF', 'RF', '1B', '2B', '3B', 'SS', 'C', 'DH'];
 
       this.roster = {
         C: null, "1B": null, "2B": null, "3B": null, SS: null,
@@ -182,7 +195,7 @@
 
     // ── DRAFT: pick one player in the current round ──────────────────────────────
     draftPickPlayer(playerData) {
-      if (this.draftRound > 3) return false;
+      if (this.draftRound > 9) return false;
       const instance = {
         ...playerData,
         id: `player_${playerData.name.replace(/\s+/g, '')}_${Date.now()}`,
@@ -190,31 +203,85 @@
         upgrades: { con: 0, pwr: 0, eye: 0, spd: 0, def: 0, sta: 0 }
       };
       this.draftedPlayers.push(instance);
+
+      // Auto-assign to draftRoster: try native pos → secondary pos → any empty slot
+      const slots = ['C','1B','2B','3B','SS','LF','CF','RF','DH'];
+      let assigned = false;
+      if (!this.draftRoster[instance.pos]) {
+        this.draftRoster[instance.pos] = instance;
+        assigned = true;
+      } else if (instance.sec_pos) {
+        const secArr = instance.sec_pos.split(',').map(s => s.trim());
+        for (const s of secArr) {
+          if (slots.includes(s) && !this.draftRoster[s]) {
+            this.draftRoster[s] = instance;
+            assigned = true;
+            break;
+          }
+        }
+      }
+      if (!assigned) {
+        const emptySlot = slots.find(s => !this.draftRoster[s]);
+        if (emptySlot) this.draftRoster[emptySlot] = instance;
+      }
+
       this.draftRound++;
       return true;
     }
 
-    // ── DRAFT: get 3 random picks from pool (>= 40.0 rating) ───────────
+    // ── DRAFT: return info about the current round's rarity constraints ───
+    getDraftRoundInfo() {
+      const r = this.draftRound;
+      if (r === 1) return { label: 'EPIC O SUPERIOR', rarities: ['Legendary','Epic'], icon: '💎' };
+      if (r === 2) return { label: 'RARE O SUPERIOR',  rarities: ['Legendary','Epic','Rare'], icon: '🔵' };
+      if (r === 3) return { label: 'UNCOMMON O SUPERIOR', rarities: ['Legendary','Epic','Rare','Uncommon'], icon: '🟢' };
+      if (r >= 4 && r <= 6) return { label: 'COMMON OBLIGATORIO', rarities: ['Common'], icon: '⚪' };
+      return { label: 'RONDA LIBRE — CUALQUIER RAREZA', rarities: null, icon: '🎲' };
+    }
+
+    // ── DRAFT: get 3 random picks for the current round (rarity-filtered) ──
     getDraftRoundPicks() {
       const pool = window.PlayersDB.LAHMAN_POOL || [];
       if (pool.length === 0) return [];
-      // Avoid re-drafting the same player by name
+
       const draftedNames = new Set(this.draftedPlayers.map(p => p.name));
+      const info = this.getDraftRoundInfo();
+
+      // Filter by rarity constraint + not already drafted
       const available = pool.filter(p => {
         if (draftedNames.has(p.name)) return false;
-        const ovr = (p.con||0)*0.30 + (p.pwr||0)*0.30 + (p.spd||0)*0.15 + (p.def||0)*0.15 + (p.eye||0)*0.10;
-        return ovr >= 40.0;
+        if (info.rarities === null) return true; // free round: all rarities
+        return info.rarities.includes(p.rarity || 'Common');
       });
+
       const picks = [];
       const temp = [...available];
       while (picks.length < 3 && temp.length > 0) {
         const idx = Math.floor(Math.random() * temp.length);
         picks.push(temp.splice(idx, 1)[0]);
       }
+      // Fallback: if not enough picks after rarity filter, pull from full pool
+      if (picks.length < 3) {
+        const fallback = pool.filter(p => !draftedNames.has(p.name) && !picks.some(x => x.name === p.name));
+        while (picks.length < 3 && fallback.length > 0) {
+          const idx = Math.floor(Math.random() * fallback.length);
+          picks.push(fallback.splice(idx, 1)[0]);
+        }
+      }
       return picks;
     }
 
-    // ── AUTO-FILL LINEUP (After 3-round draft) ──
+    // ── FINALIZE DRAFT ROSTER → copy draftRoster + draftBattingOrder into active roster ──
+    commitDraftRoster() {
+      const slots = ['C','1B','2B','3B','SS','LF','CF','RF','DH'];
+      slots.forEach(slot => {
+        this.roster[slot] = this.draftRoster[slot] || null;
+      });
+      // Commit batting order from draft
+      this.battingOrder = [...this.draftBattingOrder];
+    }
+
+    // ── LEGACY AUTO-FILL (kept as internal fallback, not used in 9-round draft) ──
     autoFillLineup() {
       const slots = ['C','1B','2B','3B','SS','LF','CF','RF','DH'];
       const pool = window.PlayersDB.LAHMAN_POOL || [];
@@ -305,6 +372,12 @@
       this.runActive = true;
       this.generateMap();
       return true;
+    }
+
+    // ── 9-ROUND DRAFT COMPLETE: commit and launch campaign ───────────────
+    finalizeDraftAndStart() {
+      this.commitDraftRoster();
+      return this.finalizeLineup();
     }
 
     // ── SHIELD: calculate team shield from lineup assignment ──────────────────
@@ -706,74 +779,48 @@
       return synergies;
     }
 
+    // ── MID-GAME EVENT: FIRMA LEYENDA — picks Uncommon or higher ──────────
     getDraftPicks() {
-      const stage = this.currentStageIndex;
-      let commonChance = 0.60;
-      let rareChance = 0.30;
-      let epicChance = 0.08;
-      let legendaryChance = 0.02;
+      const pool = window.PlayersDB.LAHMAN_POOL || window.PlayersDB.PLAYERS_POOL || [];
+      const onRosterNames = new Set(Object.values(this.roster).filter(Boolean).map(x => x.name));
 
-      if (stage >= 4 && stage <= 7) {
-        commonChance = 0.25;
-        rareChance = 0.40;
-        epicChance = 0.25;
-        legendaryChance = 0.10;
-      } else if (stage > 7) {
-        commonChance = 0.05;
-        rareChance = 0.25;
-        epicChance = 0.45;
-        legendaryChance = 0.25;
-      }
+      // Sign Legend event: Uncommon or higher (no Commons)
+      const allowedRarities = ['Legendary', 'Epic', 'Rare', 'Uncommon'];
+      const filtered = pool.filter(p =>
+        !onRosterNames.has(p.name) && allowedRarities.includes(p.rarity || 'Common')
+      );
 
-      const pool = window.PlayersDB.PLAYERS_POOL;
       const selectedPicks = [];
-
-      while (selectedPicks.length < 3) {
-        const roll = Math.random();
-        let targetRarity = "Common";
-        if (roll < legendaryChance) {
-          targetRarity = "Legendary";
-        } else if (roll < legendaryChance + epicChance) {
-          targetRarity = "Epic";
-        } else if (roll < legendaryChance + epicChance + rareChance) {
-          targetRarity = "Rare";
-        }
-
-        let rarityPool = pool.filter(p => p.rarity === targetRarity);
-        if (rarityPool.length === 0) rarityPool = pool;
-
-        const candidate = rarityPool[Math.floor(Math.random() * rarityPool.length)];
-        
-        const onRoster = Object.values(this.roster).some(p => p.name === candidate.name);
-        const alreadySelected = selectedPicks.some(p => p.name === candidate.name);
-
-        if (!onRoster && !alreadySelected) {
-          selectedPicks.push(candidate);
-        }
-
-        if (selectedPicks.length < 3 && pool.every(p => 
-          Object.values(this.roster).some(x => x.name === p.name) ||
-          selectedPicks.some(x => x.name === p.name)
-        )) {
-          while (selectedPicks.length < 3) {
-            const fb = pool[Math.floor(Math.random() * pool.length)];
-            if (!selectedPicks.includes(fb)) selectedPicks.push(fb);
-          }
-          break;
+      const temp = [...filtered];
+      while (selectedPicks.length < 3 && temp.length > 0) {
+        const idx = Math.floor(Math.random() * temp.length);
+        selectedPicks.push(temp.splice(idx, 1)[0]);
+      }
+      // Fallback
+      if (selectedPicks.length < 3) {
+        const fallback = pool.filter(p => !onRosterNames.has(p.name) && !selectedPicks.some(x => x.name === p.name));
+        while (selectedPicks.length < 3 && fallback.length > 0) {
+          const idx = Math.floor(Math.random() * fallback.length);
+          selectedPicks.push(fallback.splice(idx, 1)[0]);
         }
       }
-
       return selectedPicks;
     }
 
     getPostMatchDraftPicks(isBoss = false) {
       const pool = window.PlayersDB.LAHMAN_POOL || [];
       if (pool.length === 0) return [];
-      
+
+      const onRosterNames = new Set(Object.values(this.roster).filter(Boolean).map(x => x.name));
+
+      // Normal match: Rare or higher | Boss: Epic or higher
+      const allowedRarities = isBoss
+        ? ['Legendary', 'Epic']
+        : ['Legendary', 'Epic', 'Rare'];
+
       const filtered = pool.filter(p => {
-        const ovr = (p.con||0)*0.30 + (p.pwr||0)*0.30 + (p.spd||0)*0.15 + (p.def||0)*0.15 + (p.eye||0)*0.10;
-        const onRoster = Object.values(this.roster).some(x => x && x.name === p.name);
-        return isBoss ? (ovr >= 60.0 && !onRoster) : (ovr >= 40.0 && !onRoster);
+        if (onRosterNames.has(p.name)) return false;
+        return allowedRarities.includes(p.rarity || 'Common');
       });
 
       const selected = [];
@@ -781,6 +828,14 @@
       while (selected.length < 3 && tempFiltered.length > 0) {
         const idx = Math.floor(Math.random() * tempFiltered.length);
         selected.push(tempFiltered.splice(idx, 1)[0]);
+      }
+      // Fallback if pool too small
+      if (selected.length < 3) {
+        const fallback = pool.filter(p => !onRosterNames.has(p.name) && !selected.some(x => x.name === p.name));
+        while (selected.length < 3 && fallback.length > 0) {
+          const idx = Math.floor(Math.random() * fallback.length);
+          selected.push(fallback.splice(idx, 1)[0]);
+        }
       }
       return selected;
     }

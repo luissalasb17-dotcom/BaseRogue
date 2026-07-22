@@ -14,8 +14,7 @@ DATA_DIR = Path(__file__).parent / "lahman_1871-2025"
 OUT_CSV  = Path(__file__).parent / "game_cards.csv"
 OUT_JS   = Path(__file__).parent / "game_cards_pool.js"
 
-MIN_AB_CAREER      = 1500
-MIN_AB_ALLSTAR_HOF = 100
+MIN_AB_CAREER      = 2000
 PEAK_SEASONS       = 7
 W_PEAK             = 1.00
 W_CAREER           = 0.00
@@ -46,11 +45,10 @@ GRADE_THRESHOLDS = [
 ]
 
 RARITY_THRESHOLDS = [
-    (66, "Legendary"),  # ~5% top tier
-    (56, "Epic"),       # ~10% siguiente
-    (48, "Rare"),       # ~15% siguiente
-    (39, "Uncommon"),   # ~30% siguiente
-    (0,  "Common"),     # ~40% base
+    (88, "Legendary"),
+    (78, "Epic"),
+    (65, "Rare"),
+    (0,  "Common"),
 ]
 
 POS_DISPLAY_MAP = {
@@ -478,9 +476,9 @@ def paso_7_enriquecer_people(df, people):
 # ===========================================================================
 def paso_8_filtro_ingesta(df, allstar, hof, pure_pitcher_ids):
     """
-    CONDICION A: posicion primaria != 'P' (salvo excepcion Ohtani 'ohtansh01')
-    CONDICION B:
-        career_ab >= 1500  OR  ((All-Star OR HoF) AND career_ab >= 100)
+    CONDICION A (absoluta): posicion primaria != 'P' (ya excluidos en paso_2)
+    CONDICION B (al menos una):
+        career_ab >= 2000  OR  All-Star  OR  HoF (inducted=Y, category=Player)
     """
     print("\n  PASO 8: Filtro de ingesta del Card Pool...")
     allstar_ids = set(allstar["playerID"].unique()) if not allstar.empty else set()
@@ -490,19 +488,13 @@ def paso_8_filtro_ingesta(df, allstar, hof, pure_pitcher_ids):
         hof_ids = set(hof_inducted["playerID"].unique())
     print(f"  All-Stars: {len(allstar_ids):,}  |  HoF: {len(hof_ids):,}")
 
-    # Excepcion Ohtani
-    ohtani_id = 'ohtansh01'
-    effective_pure_pitchers = set(p for p in pure_pitcher_ids if p != ohtani_id)
-
-    no_pitchers = df[~df["playerID"].isin(effective_pure_pitchers)].copy()
-    print(f"  No-pitchers elegibles: {len(no_pitchers):,}")
+    no_pitchers = df[~df["playerID"].isin(pure_pitcher_ids)].copy()
+    print(f"  No-pitchers disponibles: {len(no_pitchers):,}")
 
     mask = (
         (no_pitchers["career_ab"] >= MIN_AB_CAREER) |
-        (
-            (no_pitchers["playerID"].isin(allstar_ids) | no_pitchers["playerID"].isin(hof_ids)) &
-            (no_pitchers["career_ab"] >= MIN_AB_ALLSTAR_HOF)
-        )
+        no_pitchers["playerID"].isin(allstar_ids) |
+        no_pitchers["playerID"].isin(hof_ids)
     )
     eligible = no_pitchers[mask].copy()
     eligible["is_allstar"] = eligible["playerID"].isin(allstar_ids)
@@ -749,18 +741,16 @@ def paso_15_equipo_y_exportar(df, batting, teams, franchises):
         df["canonical_teamID"] = "UNK"
 
     if not teams.empty and "franchID" in teams.columns:
-        team_franch = teams[["teamID","franchID"]].drop_duplicates(subset=["teamID"])
+        team_franch = teams[["teamID","franchID"]].drop_duplicates()
         df = df.merge(team_franch, left_on="canonical_teamID", right_on="teamID", how="left")
         df.drop(columns=["teamID"], errors="ignore", inplace=True)
         if not franchises.empty and "franchName" in franchises.columns:
-            df = df.merge(franchises[["franchID","franchName"]].drop_duplicates(subset=["franchID"]), on="franchID", how="left")
+            df = df.merge(franchises[["franchID","franchName"]].drop_duplicates(), on="franchID", how="left")
             df.rename(columns={"franchName":"franchise_name"}, inplace=True)
         else:
             df["franchise_name"] = df.get("canonical_teamID","UNK")
     else:
         df["franchise_name"] = df.get("canonical_teamID","UNK")
-
-    df = df.drop_duplicates(subset=["playerID"]).copy()
 
     df["canonical_teamID"] = df["canonical_teamID"].fillna("UNK")
     df["franchise_name"]   = df["franchise_name"].fillna(df["canonical_teamID"])
