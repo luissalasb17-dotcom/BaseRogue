@@ -150,19 +150,9 @@
       const G = window.Game;
       const round = G.draftRound; // 1–9
 
-      // If all 9 rounds are done → commit roster and start game
+      // If all 9 rounds are done → render final team confirmation screen
       if (round > 9) {
-        const ok = G.finalizeDraftAndStart();
-        if (ok) {
-          el.hud.classList.remove('hidden');
-          el.workspace.classList.remove('remove');
-          el.workspace.classList.remove('hidden');
-          updateHUD();
-          renderActiveRoster();
-          renderMap();
-          renderSynergiesAndItems();
-          showScreen('screen-map');
-        }
+        renderFinalLineupConfirmation();
         return;
       }
 
@@ -431,6 +421,253 @@
   // renderLineupAssignment is no longer needed (handled inline in draft rounds)
   // Keeping stub so any legacy references don't throw
   function renderLineupAssignment() { renderDraftRound(); }
+
+  /** Final confirmation screen after completing all 9 draft rounds */
+  function renderFinalLineupConfirmation() {
+    try {
+      const G = window.Game;
+      const pool = el.starterPool;
+      pool.innerHTML = '';
+
+      const shield = G.calculateDraftShield();
+
+      // Top banner
+      const header = document.createElement('div');
+      header.style.cssText = 'width:100%;text-align:center;padding:12px 0 16px;';
+      header.innerHTML = `
+        <div style="font-family:'Press Start 2P',monospace;font-size:11px;color:#10b981;margin-bottom:8px;letter-spacing:1px;">
+          ⚾ ALINEACIÓN FINAL DE TEMPORADA
+        </div>
+        <p style="font-size:12px;color:#9ca3af;max-width:650px;margin:0 auto 12px;line-height:1.5;">
+          Has completado las 9 rondas del draft. Revisa tu estrategia, ajusta posiciones defensivas (Drag & Drop), ajusta el orden al bate y <strong>haz clic en cualquier jugador para inspeccionar su carta completa</strong>.
+        </p>
+        <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(59,130,246,0.12);border:1px solid #3b82f6;border-radius:20px;padding:6px 18px;font-size:12px;color:#3b82f6;font-weight:bold;">
+          🛡️ Escudo Grupal Inicial: <span style="color:#10b981;font-size:14px;">${shield} PTS</span>
+        </div>
+      `;
+      pool.appendChild(header);
+
+      // 2-column layout: Fielding Roster | Batting Order
+      const layout = document.createElement('div');
+      layout.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:flex-start;width:100%;max-width:980px;margin:0 auto 20px;';
+
+      // ───── LEFT: Fielding Roster Panel ─────────────────────────────────
+      const rosterPanel = document.createElement('div');
+      rosterPanel.style.cssText = 'background:rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:16px;';
+      rosterPanel.innerHTML = `
+        <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:#3b82f6;margin-bottom:12px;text-align:center;letter-spacing:1px;">
+          🧤 ALINEACIÓN DEFENSIVA (DRAG & DROP)
+        </div>
+      `;
+
+      SLOTS_ORDER.forEach(slot => {
+        const player = G.draftRoster[slot];
+        const rColor = player ? (RARITY_COLORS[player.rarity] || RARITY_COLORS.Common) : 'rgba(255,255,255,0.1)';
+        const slotRow = document.createElement('div');
+        slotRow.style.cssText = [
+          'display:flex','align-items:center','gap:10px',
+          `border-left:4px solid ${rColor}`,
+          'background:rgba(0,0,0,0.25)','border-radius:8px',
+          'padding:8px 10px','margin-bottom:8px','cursor:pointer','transition:all .2s'
+        ].join(';');
+
+        if (player) {
+          const ovr = Math.round((player.con||40)*.3+(player.pwr||35)*.3+(player.spd||45)*.15+(player.def||40)*.15+(player.eye||40)*.1);
+          const isNative = player.pos === slot;
+          const secArr = player.sec_pos ? player.sec_pos.split(',').map(s=>s.trim()) : [];
+          const isSec   = secArr.includes(slot);
+
+          let posHint = '';
+          const defBase = player.def || 40;
+          if (isNative) {
+            posHint = '<span style="color:#10b981">✅ Nativo</span>';
+          } else if (slot === 'DH') {
+            posHint = '<span style="color:#9ca3af">DH</span>';
+          } else if (isSec) {
+            const pen = Math.round(defBase * 0.15);
+            posHint = `<span style="color:#f59e0b">⚡ Secundario (-${pen} DEF)</span>`;
+          } else {
+            const pen = Math.round(defBase * 0.50);
+            posHint = `<span style="color:#ef4444">⚠️ Fuera pos (-${pen} DEF)</span>`;
+          }
+
+          slotRow.innerHTML = `
+            <span style="font-family:'Press Start 2P',monospace;font-size:8px;color:#94a3b8;min-width:28px;">${slot}</span>
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:11px;font-weight:bold;color:#fff;">${player.name}</div>
+              <div style="font-size:9.5px;color:${rColor};">${player.rarity} • OVR ${ovr} ${posHint}</div>
+            </div>
+            <button class="btn-inspect-player" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);color:#38bdf8;padding:4px 8px;font-size:9px;border-radius:4px;cursor:pointer;">🔍 CARTA</button>
+          `;
+
+          const inspectBtn = slotRow.querySelector('.btn-inspect-player');
+          inspectBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            showPlayerCardPopup(player, slot);
+          });
+          slotRow.addEventListener('click', () => {
+            showPlayerCardPopup(player, slot);
+          });
+
+          // Drag and drop setup
+          slotRow.setAttribute('draggable', 'true');
+          slotRow.addEventListener('dragstart', (e) => {
+            e.dataTransfer.setData('text/plain', slot);
+            slotRow.style.opacity = '0.5';
+          });
+          slotRow.addEventListener('dragend', () => {
+            slotRow.style.opacity = '1';
+          });
+        } else {
+          slotRow.innerHTML = `
+            <span style="font-family:'Press Start 2P',monospace;font-size:8px;color:#374151;min-width:28px;">${slot}</span>
+            <span style="font-size:11px;color:#374151;">— VACÍO —</span>
+          `;
+        }
+
+        slotRow.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          slotRow.style.background = 'rgba(255,255,255,0.1)';
+        });
+        slotRow.addEventListener('dragleave', (e) => {
+          slotRow.style.background = 'rgba(0,0,0,0.25)';
+        });
+        slotRow.addEventListener('drop', (e) => {
+          e.preventDefault();
+          slotRow.style.background = 'rgba(0,0,0,0.25)';
+          const sourceSlot = e.dataTransfer.getData('text/plain');
+          if (sourceSlot && sourceSlot !== slot) {
+            const temp = G.draftRoster[slot];
+            G.draftRoster[slot] = G.draftRoster[sourceSlot];
+            G.draftRoster[sourceSlot] = temp;
+            renderFinalLineupConfirmation();
+          }
+        });
+
+        rosterPanel.appendChild(slotRow);
+      });
+
+      // ───── RIGHT: Batting Order Panel ──────────────────────────────────
+      const orderPanel = document.createElement('div');
+      orderPanel.style.cssText = 'background:rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:16px;';
+      orderPanel.innerHTML = `
+        <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:#f59e0b;margin-bottom:12px;text-align:center;letter-spacing:1px;">
+          ⚔️ ORDEN AL BATE
+        </div>
+      `;
+
+      function renderConfirmationBattingRows() {
+        const existing = orderPanel.querySelectorAll('.bo-row');
+        existing.forEach(e => e.remove());
+
+        G.draftBattingOrder.forEach((slot, idx) => {
+          const player = G.draftRoster[slot];
+          const rColor = player ? (RARITY_COLORS[player.rarity] || RARITY_COLORS.Common) : 'rgba(255,255,255,0.1)';
+          const row = document.createElement('div');
+          row.className = 'bo-row';
+          row.style.cssText = [
+            'display:flex','align-items:center','gap:8px',
+            'background:rgba(0,0,0,0.25)','border-radius:8px',
+            'padding:6px 10px','margin-bottom:6px',
+            `border-left:4px solid ${rColor}`,
+            'cursor:pointer'
+          ].join(';');
+
+          if (player) {
+            const ovr = Math.round((player.con||40)*.3+(player.pwr||35)*.3+(player.spd||45)*.15+(player.def||40)*.15+(player.eye||40)*.1);
+            row.innerHTML = `
+              <span style="font-family:'Press Start 2P',monospace;font-size:8px;color:#f59e0b;min-width:16px;">${idx+1}</span>
+              <span style="font-size:9px;color:#94a3b8;min-width:24px;">${slot}</span>
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:10.5px;font-weight:bold;color:#fff;">${player.name}</div>
+                <div style="font-size:9px;color:${rColor};">OVR ${ovr} • ${player.rarity}</div>
+              </div>
+              <button class="btn-inspect-bo" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);color:#38bdf8;padding:3px 6px;font-size:8.5px;border-radius:3px;margin-right:4px;">🔍</button>
+              <div style="display:flex;flex-direction:column;gap:2px;">
+                <button class="bo-up" data-idx="${idx}" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;padding:1px 6px;font-size:9px;border-radius:3px;cursor:pointer;">▲</button>
+                <button class="bo-dn" data-idx="${idx}" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;padding:1px 6px;font-size:9px;border-radius:3px;cursor:pointer;">▼</button>
+              </div>
+            `;
+
+            row.querySelector('.btn-inspect-bo').addEventListener('click', (e) => {
+              e.stopPropagation();
+              showPlayerCardPopup(player, slot);
+            });
+            row.addEventListener('click', () => {
+              showPlayerCardPopup(player, slot);
+            });
+          } else {
+            row.innerHTML = `
+              <span style="font-family:'Press Start 2P',monospace;font-size:8px;color:#6b7280;min-width:16px;">${idx+1}</span>
+              <span style="font-size:9px;color:#374151;flex:1;">${slot} — VACÍO</span>
+            `;
+          }
+
+          orderPanel.appendChild(row);
+        });
+
+        orderPanel.querySelectorAll('.bo-up').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const i = parseInt(btn.dataset.idx);
+            if (i > 0) {
+              [G.draftBattingOrder[i-1], G.draftBattingOrder[i]] = [G.draftBattingOrder[i], G.draftBattingOrder[i-1]];
+              renderConfirmationBattingRows();
+            }
+          });
+        });
+        orderPanel.querySelectorAll('.bo-dn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const i = parseInt(btn.dataset.idx);
+            if (i < G.draftBattingOrder.length - 1) {
+              [G.draftBattingOrder[i], G.draftBattingOrder[i+1]] = [G.draftBattingOrder[i+1], G.draftBattingOrder[i]];
+              renderConfirmationBattingRows();
+            }
+          });
+        });
+      }
+
+      renderConfirmationBattingRows();
+
+      layout.appendChild(rosterPanel);
+      layout.appendChild(orderPanel);
+      pool.appendChild(layout);
+
+      // Bottom Confirm & Launch Campaign Button
+      const bottomBar = document.createElement('div');
+      bottomBar.style.cssText = 'text-align:center;padding:10px 0 20px;';
+      bottomBar.innerHTML = `
+        <button id="btn-confirm-final-lineup" class="btn" style="
+          padding:16px 40px;font-size:13px;
+          background:linear-gradient(135deg,#10b981,#059669);
+          border:2px solid #34d399;box-shadow:0 0 20px rgba(16,185,129,0.4);
+          cursor:pointer;font-family:'Press Start 2P',monospace;letter-spacing:1px;
+        ">
+          ⚾ CONFIRMAR EQUIPO E INICIAR CAMPAÑA
+        </button>
+      `;
+
+      bottomBar.querySelector('#btn-confirm-final-lineup').addEventListener('click', () => {
+        const ok = G.finalizeDraftAndStart();
+        if (ok) {
+          el.hud.classList.remove('hidden');
+          el.workspace.classList.remove('remove');
+          el.workspace.classList.remove('hidden');
+          updateHUD();
+          renderActiveRoster();
+          renderMap();
+          renderSynergiesAndItems();
+          showScreen('screen-map');
+        }
+      });
+
+      pool.appendChild(bottomBar);
+
+    } catch (e) {
+      console.error(e);
+    }
+  }
 
   // Initialize App
   function init() {

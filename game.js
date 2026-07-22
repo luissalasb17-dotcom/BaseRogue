@@ -408,6 +408,19 @@
       return Math.round(Math.max(0, Math.min(50, avgDef / 2)));
     }
 
+    calculateDraftShield() {
+      const defSlots = ['C','1B','2B','3B','SS','LF','CF','RF'];
+      let total = 0;
+      defSlots.forEach(slot => {
+        const p = this.draftRoster[slot];
+        if (!p) return;
+        const eff = this.getEffectiveStats(p, slot);
+        total += eff.def;
+      });
+      const avgDef = total / defSlots.length;
+      return Math.round(Math.max(0, Math.min(50, avgDef / 2)));
+    }
+
     // ── ZONE CONFIG ──────────────────────────────────────────────────────────
     // 4 zones × 4 stages = 16 total stages (indices 0 to 15)
     // zone 0 = "Opening Day (Inicio de temporada)" (stages 0-3)
