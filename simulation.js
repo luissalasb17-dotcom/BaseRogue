@@ -335,7 +335,6 @@
           }
           
           spdProc = (spdProc ? spdProc + ' | ' : '') + spdMsg;
-          stealMsgText = spdMsg;
         }
 
         pitcherDmg = this._applyDebuffToPitcherDmg(pitcherDmg);
@@ -587,7 +586,6 @@
             }
             
             spdProc = (spdProc ? spdProc + ' | ' : '') + spdMsg;
-            stealMsgText = spdMsg;
           }
         }
 
