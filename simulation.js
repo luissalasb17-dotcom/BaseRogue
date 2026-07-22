@@ -256,6 +256,7 @@
       let teamHpDmg  = 0;
       let shieldDmg  = 0;
       let runsThisTurn = 0;
+      let didSteal   = false;
       let spdProc    = null; // description of any SPD proc that fired
       let synergyProc = null; // description of any Era Synergy proc that fired
       let errorProc   = null; // description of Genesis Chaos error
