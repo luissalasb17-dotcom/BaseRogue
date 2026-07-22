@@ -748,16 +748,18 @@ def paso_15_equipo_y_exportar(df, batting, teams, franchises):
         df["canonical_teamID"] = "UNK"
 
     if not teams.empty and "franchID" in teams.columns:
-        team_franch = teams[["teamID","franchID"]].drop_duplicates()
+        team_franch = teams[["teamID","franchID"]].drop_duplicates(subset=["teamID"])
         df = df.merge(team_franch, left_on="canonical_teamID", right_on="teamID", how="left")
         df.drop(columns=["teamID"], errors="ignore", inplace=True)
         if not franchises.empty and "franchName" in franchises.columns:
-            df = df.merge(franchises[["franchID","franchName"]].drop_duplicates(), on="franchID", how="left")
+            df = df.merge(franchises[["franchID","franchName"]].drop_duplicates(subset=["franchID"]), on="franchID", how="left")
             df.rename(columns={"franchName":"franchise_name"}, inplace=True)
         else:
             df["franchise_name"] = df.get("canonical_teamID","UNK")
     else:
         df["franchise_name"] = df.get("canonical_teamID","UNK")
+
+    df = df.drop_duplicates(subset=["playerID"]).copy()
 
     df["canonical_teamID"] = df["canonical_teamID"].fillna("UNK")
     df["franchise_name"]   = df["franchise_name"].fillna(df["canonical_teamID"])
