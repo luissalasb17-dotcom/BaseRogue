@@ -46,11 +46,11 @@ GRADE_THRESHOLDS = [
 ]
 
 RARITY_THRESHOLDS = [
-    (66, "Legendary"),  # ~5% top tier
-    (56, "Epic"),       # ~10% siguiente
-    (48, "Rare"),       # ~15% siguiente
-    (39, "Uncommon"),   # ~30% siguiente
-    (0,  "Common"),     # ~40% base
+    (74, "Legendary"),  # ~4.5% elite all-time legends
+    (58, "Epic"),       # ~10% excelentes estrellas / HOF
+    (48, "Rare"),       # ~17% buenos titulares
+    (39, "Uncommon"),   # ~29% jugadores promedio
+    (0,  "Common"),     # ~39% base / utility
 ]
 
 POS_DISPLAY_MAP = {
