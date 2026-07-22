@@ -674,10 +674,12 @@ def paso_14_velocidad(df):
 
     # Calculamos el raw temporal para cada era
     def _calc_raw_speed(group):
-        sb_max = group["sb_score"].max()
-        xb_max = group["extra_base_freq"].max()
-        sb_c  = (group["sb_score"] / sb_max).fillna(0) if sb_max > 0 else pd.Series(0.0, index=group.index)
-        xb_c  = (group["extra_base_freq"].fillna(0) / xb_max) if xb_max > 0 else pd.Series(0.0, index=group.index)
+        qual = group[group["career_ab"] >= 300]
+        if qual.empty: qual = group
+        sb_max = qual["sb_score"].quantile(0.98)
+        xb_max = qual["extra_base_freq"].quantile(0.98)
+        sb_c  = (group["sb_score"] / sb_max).clip(upper=1.0).fillna(0) if sb_max > 0 else pd.Series(0.0, index=group.index)
+        xb_c  = (group["extra_base_freq"].fillna(0) / xb_max).clip(upper=1.0) if xb_max > 0 else pd.Series(0.0, index=group.index)
         
         # Combinacion de Option A
         group["speed_raw_temp"] = sb_c * 0.40 + xb_c * 0.40 + group["runs_br_norm"] * 0.20
