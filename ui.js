@@ -227,7 +227,21 @@
           const isNative = player.pos === slot;
           const secArr = player.sec_pos ? player.sec_pos.split(',').map(s=>s.trim()) : [];
           const isSec   = secArr.includes(slot);
-          const posHint = isNative ? '✅' : (slot==='DH' ? 'DH' : (isSec ? '⚡' : '⚠️'));
+          
+          let posHint = '';
+          const defBase = player.def || 40;
+          if (isNative) {
+            posHint = '<span style="color:#10b981">✅ Nativo</span>';
+          } else if (slot === 'DH') {
+            posHint = '<span style="color:#9ca3af">DH</span>';
+          } else if (isSec) {
+            const pen = Math.round(defBase * 0.15);
+            posHint = `<span style="color:#f59e0b">⚡ Secundario (-${pen} DEF)</span>`;
+          } else {
+            const pen = Math.round(defBase * 0.50);
+            posHint = `<span style="color:#ef4444">⚠️ Fuera pos (-${pen} DEF)</span>`;
+          }
+
           slotRow.innerHTML = `
             <span style="font-family:'Press Start 2P',monospace;font-size:7px;color:#94a3b8;min-width:24px;">${slot}</span>
             <div style="flex:1;min-width:0;">
@@ -235,23 +249,42 @@
               <div style="font-size:9px;color:${rColor};">${player.rarity} • OVR ${ovr} ${posHint}</div>
             </div>
           `;
-          // Click to re-assign: cycle through open slots
-          slotRow.title = 'Clic para mover a otro slot';
-          slotRow.addEventListener('click', () => {
-            // find next empty slot and move player there
-            const emptySlot = SLOTS_ORDER.find(s => s !== slot && !G.draftRoster[s]);
-            if (emptySlot) {
-              G.draftRoster[emptySlot] = G.draftRoster[slot];
-              G.draftRoster[slot] = null;
-              renderDraftRound();
-            }
-          });
+          slotRow.title = 'Arrastra para cambiar de posición';
         } else {
           slotRow.innerHTML = `
             <span style="font-family:'Press Start 2P',monospace;font-size:7px;color:#374151;min-width:24px;">${slot}</span>
             <span style="font-size:10px;color:#374151;">— VACÍO —</span>
           `;
         }
+
+        // DRAG AND DROP EVENTS
+        slotRow.setAttribute('draggable', 'true');
+        slotRow.addEventListener('dragstart', (e) => {
+          e.dataTransfer.setData('text/plain', slot);
+          slotRow.style.opacity = '0.5';
+        });
+        slotRow.addEventListener('dragend', () => {
+          slotRow.style.opacity = '1';
+        });
+        slotRow.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          slotRow.style.background = 'rgba(255,255,255,0.1)';
+        });
+        slotRow.addEventListener('dragleave', (e) => {
+          slotRow.style.background = 'rgba(0,0,0,0.2)';
+        });
+        slotRow.addEventListener('drop', (e) => {
+          e.preventDefault();
+          slotRow.style.background = 'rgba(0,0,0,0.2)';
+          const sourceSlot = e.dataTransfer.getData('text/plain');
+          if (sourceSlot && sourceSlot !== slot) {
+            const temp = G.draftRoster[slot];
+            G.draftRoster[slot] = G.draftRoster[sourceSlot];
+            G.draftRoster[sourceSlot] = temp;
+            renderDraftRound();
+          }
+        });
+
         rosterPanel.appendChild(slotRow);
       });
 

@@ -172,6 +172,7 @@
       //   Rounds 7-9: Any rarity from full pool
       this.draftRound     = 1;   // Current round: 1–9
       this.draftedPlayers = [];  // Accumulated picks: list of up to 9 player objects
+      this.currentDraftPicks = null; // Cache for the current round's 3 choices
 
       // draftRoster: slot → player instance (built live during draft)
       this.draftRoster = {
@@ -225,6 +226,7 @@
         if (emptySlot) this.draftRoster[emptySlot] = instance;
       }
 
+      this.currentDraftPicks = null; // Clear cached picks for the next round
       this.draftRound++;
       return true;
     }
@@ -241,6 +243,10 @@
 
     // ── DRAFT: get 3 random picks for the current round (rarity-filtered) ──
     getDraftRoundPicks() {
+      if (this.currentDraftPicks && this.currentDraftPicks.round === this.draftRound) {
+        return this.currentDraftPicks.picks;
+      }
+
       const pool = window.PlayersDB.LAHMAN_POOL || [];
       if (pool.length === 0) return [];
 
@@ -268,6 +274,7 @@
           picks.push(fallback.splice(idx, 1)[0]);
         }
       }
+      this.currentDraftPicks = { round: this.draftRound, picks };
       return picks;
     }
 
