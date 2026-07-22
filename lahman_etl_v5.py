@@ -14,7 +14,7 @@ DATA_DIR = Path(__file__).parent / "lahman_1871-2025"
 OUT_CSV  = Path(__file__).parent / "game_cards.csv"
 OUT_JS   = Path(__file__).parent / "game_cards_pool.js"
 
-MIN_AB_CAREER      = 2000
+MIN_AB_CAREER      = 100
 PEAK_SEASONS       = 7
 W_PEAK             = 1.00
 W_CAREER           = 0.00
@@ -664,47 +664,34 @@ def paso_13_bono_guante_de_oro(df):
 # ===========================================================================
 def paso_14_velocidad(df):
     """
-    speed_val (normalizado por Era y dificultad OPS+):
-        40% SB-score        = 0.65 * sb_efficiency + 0.35 * sb_volume_log_norm (normalizado al max de era)
-        40% extra_base_freq = (SB + 3B) / AB (normalizado al max de era)
+    speed_val (Metodo Global Puro):
+        40% SB-score        = 0.65 * sb_efficiency + 0.35 * sb_volume_log_norm (normalizado al max global)
+        40% extra_base_freq = (SB + 3B) / AB (normalizado al max global)
         20% runs_br_norm    = Corrido de bases inteligente (ya normalizado globalmente 0-1)
+    
+    NOTA: A diferencia del bateo (CON/PWR), la velocidad NO recibe ajuste de dificultad por Era (OPS+). 
+    Esto evita penalizar a leyendas (ej. Rickey Henderson) que jugaron en eras donde robar bases era mas comun.
     """
-    print("\n  PASO 14: SPD hibrido 40/40/20 (normalizado con ajuste OPS+)...")
+    print("\n  PASO 14: SPD hibrido 40/40/20 (Escala Global Pura, sin ajuste por Era)...")
     df = df.copy()
 
-    # Calculamos el raw temporal para cada era
-    def _calc_raw_speed(group):
-        qual = group[group["career_ab"] >= 300]
-        if qual.empty: qual = group
-        sb_max = qual["sb_score"].quantile(0.98)
-        xb_max = qual["extra_base_freq"].quantile(0.98)
-        sb_c  = (group["sb_score"] / sb_max).clip(upper=1.0).fillna(0) if sb_max > 0 else pd.Series(0.0, index=group.index)
-        xb_c  = (group["extra_base_freq"].fillna(0) / xb_max).clip(upper=1.0) if xb_max > 0 else pd.Series(0.0, index=group.index)
-        
-        # Combinacion de Option A
-        group["speed_raw_temp"] = sb_c * 0.40 + xb_c * 0.40 + group["runs_br_norm"] * 0.20
-        return group
-
-    df["era_temp_col"] = df["era_label"]
-    df = df.groupby("era_label", group_keys=False).apply(_calc_raw_speed)
-    df["era_label"] = df["era_temp_col"]
-    if "era_label" not in df.columns:
-        df = df.reset_index()
-
-    # Ajuste por dificultad de era (Metodo A) - 75% Blended
-    global_spd_mean = df["speed_raw_temp"].mean()
-    era_spd_means = df.groupby("era_label")["speed_raw_temp"].transform("mean")
+    qual = df[df["career_ab"] >= 200]
+    if qual.empty: qual = df
+    sb_max = qual["sb_score"].quantile(0.98)
+    xb_max = qual["extra_base_freq"].quantile(0.98)
     
-    diff_factor = global_spd_mean / era_spd_means.replace(0, 1)
-    blended_factor = 1.0 + 0.75 * (diff_factor - 1.0)
-    df["speed_raw_adj"] = df["speed_raw_temp"] * blended_factor
+    sb_c  = (df["sb_score"] / sb_max).clip(upper=1.0).fillna(0) if sb_max > 0 else pd.Series(0.0, index=df.index)
+    xb_c  = (df["extra_base_freq"].fillna(0) / xb_max).clip(upper=1.0) if xb_max > 0 else pd.Series(0.0, index=df.index)
     
+    df["speed_raw_global"] = sb_c * 0.40 + xb_c * 0.40 + df["runs_br_norm"] * 0.20
+    
+    # Normalizar usando la misma funcion de percentiles globales
     df["speed_val"] = (
-        normalize_series(df["speed_raw_adj"], 1, 99)
+        normalize_series(df["speed_raw_global"], 1, 99)
         .clip(1, 125)
         .round(1)
     )
-    print("  speed_val calculado con ajuste OPS+")
+    print("  speed_val calculado en escala global pura")
     return df
 
 
