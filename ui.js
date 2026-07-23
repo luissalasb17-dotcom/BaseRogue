@@ -749,21 +749,40 @@ function renderConfirmationBattingRows() {
   }
 
   function getStatGrade(val) {
-    if (val >= 100) return { text: "S", color: "#ffd700" };
-    if (val >= 80) return { text: "A", color: "#22d3ee" };
-    if (val >= 60) return { text: "B", color: "#4ade80" };
-    if (val >= 40) return { text: "C", color: "#94a3b8" };
-    if (val >= 20) return { text: "D", color: "#f97316" };
-    return { text: "F", color: "#ef4444" };
+    let letter = "F";
+    let color = "#ef4444";
+    let modifier = "";
+
+    if (val >= 100) {
+      letter = "S"; color = "#ffd700";
+      if (val >= 115) modifier = "+";
+      else if (val < 105) modifier = "-";
+    } else if (val >= 80) {
+      letter = "A"; color = "#22d3ee";
+      if (val >= 95) modifier = "+";
+      else if (val < 85) modifier = "-";
+    } else if (val >= 60) {
+      letter = "B"; color = "#4ade80";
+      if (val >= 75) modifier = "+";
+      else if (val < 65) modifier = "-";
+    } else if (val >= 40) {
+      letter = "C"; color = "#94a3b8";
+      if (val >= 55) modifier = "+";
+      else if (val < 45) modifier = "-";
+    } else if (val >= 20) {
+      letter = "D"; color = "#f97316";
+      if (val >= 35) modifier = "+";
+      else if (val < 25) modifier = "-";
+    } else {
+      letter = "F"; color = "#ef4444";
+      if (val >= 10) modifier = "+";
+    }
+
+    return { text: letter + modifier, color: color };
   }
 
   function getGrade(val) {
-    if (val >= 100) return 'S';
-    if (val >= 80) return 'A';
-    if (val >= 60) return 'B';
-    if (val >= 40) return 'C';
-    if (val >= 20) return 'D';
-    return 'F';
+    return getStatGrade(val).text;
   }
 
   function getShortEraName(era) {
