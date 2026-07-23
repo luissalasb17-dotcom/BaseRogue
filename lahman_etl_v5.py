@@ -692,7 +692,7 @@ def paso_14_velocidad(df):
         xb_c  = (group["extra_base_freq"].fillna(0) / xb_max).clip(upper=2.0) if xb_max > 0 else pd.Series(0.0, index=group.index)
         
         # Combinacion de SPD: mayor peso a SB y Triples/SB (xb_c) para reflejar velocidad pura
-        group["speed_raw_temp"] = sb_c * 0.50 + xb_c * 0.35 + group["runs_br_norm"] * 0.15
+        group["speed_raw_temp"] = sb_c * 0.45 + xb_c * 0.30 + group["runs_br_norm"] * 0.25
         return group
 
     df["era_temp_col"] = df["era_label"]
