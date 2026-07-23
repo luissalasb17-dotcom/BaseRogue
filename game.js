@@ -242,7 +242,7 @@
       drafted.forEach(item => {
          const p = item.p;
          // Use getEffectiveStats so it accounts for Batting Cage upgrades and Era traits
-         const eff = this.getEffectiveStats(p, item.slot) || p;
+         const eff = this.getEffectiveStats(p, item.slot, rosterDict) || p;
          const effCon = eff.con || 40;
          const effPwr = eff.pwr || 35;
          const effEye = eff.eye || 40;
@@ -674,7 +674,7 @@
       return this.map[this.currentStageIndex][this.currentNodeIndex];
     }
 
-    getEffectiveStats(player, slotPosition) {
+    getEffectiveStats(player, slotPosition, contextRoster = this.roster) {
       if (!player) return null;
 
       let con = (player.con || 0) + (player.upgrades.con || 0);
@@ -727,7 +727,7 @@
       def += this.activeItemBonuses.teamDef;
 
       // Synergy Bonuses
-      const synergies = this.calculateActiveSynergies();
+      const synergies = this.calculateActiveSynergies(contextRoster);
       synergies.forEach(syn => {
         if (syn.category === 'era') {
           if (syn.bonuses.con) con += syn.bonuses.con;
@@ -740,7 +740,7 @@
 
       // Franchise Team Morale Synergy
       if (player.team !== 'ROOK' && player.team !== 'None') {
-        const teamCount = this.getActiveFranchiseCounts()[player.team] || 0;
+        const teamCount = this.getActiveFranchiseCounts(contextRoster)[player.team] || 0;
         if (teamCount >= 4) {
           con += 10; pwr += 10; eye += 10; spd += 10; def += 10;
         } else if (teamCount >= 2) {
@@ -759,10 +759,10 @@
       };
     }
 
-    getActiveFranchiseCounts() {
+    getActiveFranchiseCounts(contextRoster = this.roster) {
       const counts = {};
-      Object.keys(this.roster).forEach(pos => {
-        const player = this.roster[pos];
+      Object.keys(contextRoster).forEach(pos => {
+        const player = contextRoster[pos];
         if (player && !player.isReplacement && player.team && player.team !== 'ROOK') {
           counts[player.team] = (counts[player.team] || 0) + 1;
         }
@@ -770,10 +770,10 @@
       return counts;
     }
 
-    calculateActiveSynergies() {
+    calculateActiveSynergies(contextRoster = this.roster) {
       const eraCounts = {};
-      Object.keys(this.roster).forEach(pos => {
-        const player = this.roster[pos];
+      Object.keys(contextRoster).forEach(pos => {
+        const player = contextRoster[pos];
         if (player && !player.isReplacement && player.era && player.era !== 'None') {
           eraCounts[player.era] = (eraCounts[player.era] || 0) + 1;
         }
