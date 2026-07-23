@@ -755,8 +755,7 @@ function renderConfirmationBattingRows() {
 
     if (val >= 100) {
       letter = "S"; color = "#ffd700";
-      if (val >= 115) modifier = "+";
-      else if (val < 105) modifier = "-";
+      modifier = "";
     } else if (val >= 80) {
       letter = "A"; color = "#22d3ee";
       if (val >= 95) modifier = "+";
@@ -775,7 +774,7 @@ function renderConfirmationBattingRows() {
       else if (val < 25) modifier = "-";
     } else {
       letter = "F"; color = "#ef4444";
-      if (val >= 10) modifier = "+";
+      modifier = "";
     }
 
     return { text: letter + modifier, color: color };
