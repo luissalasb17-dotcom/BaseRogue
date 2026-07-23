@@ -66,20 +66,7 @@ POS_DISPLAY_MAP = {
     "LF": "LF", "CF": "CF", "RF": "RF", "OF": "CF", "DH": "DH",
 }
 
-LEGEND_POS_OVERRIDES = {
-    "Joe DiMaggio": ("CF", "LF,RF"),
-    "Dom DiMaggio": ("CF", "LF,RF"),
-    "Vince DiMaggio": ("CF", "LF,RF"),
-    "Willie Mays": ("CF", "LF,RF"),
-    "Mickey Mantle": ("CF", "LF,RF"),
-    "Duke Snider": ("CF", "LF,RF"),
-    "Ken Griffey Jr.": ("CF", "LF,RF"),
-    "Barry Bonds": ("LF", "CF,RF"),
-    "Ted Williams": ("LF", "RF"),
-    "Hank Aaron": ("RF", "LF,CF"),
-    "Babe Ruth": ("RF", "LF"),
-    "Roberto Clemente": ("RF", "LF"),
-}
+LEGEND_POS_OVERRIDES = {}
 
 
 def assign_era(year):
