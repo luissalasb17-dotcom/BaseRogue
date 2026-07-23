@@ -430,6 +430,90 @@
       }
       renderBattingOrderRows();
 
+      // Botón Auto-Ordenar
+      const autoSortBtn = document.createElement('button');
+      autoSortBtn.className = 'btn btn-secondary';
+      autoSortBtn.style.cssText = 'width:100%;font-size:7px;padding:6px;margin-top:10px;background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.2);';
+      autoSortBtn.innerHTML = '⚙️ AUTO ORDEN';
+      autoSortBtn.title = 'Ordena lógicamente: Velocidad al 1ro, Poder al 4to, Mejores bates al 2do y 3ro.';
+      autoSortBtn.onclick = () => {
+        const players = G.draftBattingOrder.map(slot => ({ slot, p: G.draftRoster[slot] }));
+        const drafted = players.filter(item => item.p);
+        const empty = players.filter(item => !item.p);
+        
+        if (drafted.length < 2) return; // Not enough to sort
+        
+        drafted.forEach(item => {
+           const p = item.p;
+           item.speedScore = (p.spd||40)*1.5 + (p.con||40) + (p.eye||40);
+           item.powerScore = (p.pwr||35)*1.5 + (p.con||40);
+           item.overall = (p.con||40)*1.2 + (p.pwr||35) + (p.eye||40) + (p.spd||40)*0.2;
+           item.contact = (p.con||40) + (p.eye||40)*0.5;
+        });
+        
+        const newOrder = [];
+        
+        // 1. Leadoff (1st)
+        drafted.sort((a,b) => b.overall - a.overall);
+        let topHalf = drafted.slice(0, Math.max(2, Math.ceil(drafted.length/2)));
+        topHalf.sort((a,b) => b.speedScore - a.speedScore);
+        const leadoff = topHalf[0];
+        newOrder.push(leadoff);
+        drafted.splice(drafted.indexOf(leadoff), 1);
+        
+        // 4. Cleanup (4th)
+        if (drafted.length > 0) {
+          drafted.sort((a,b) => b.powerScore - a.powerScore);
+          const cleanup = drafted[0];
+          cleanup.targetSlot = 3; // index 3 is 4th
+          drafted.splice(0, 1);
+          newOrder.push(cleanup);
+        }
+        
+        // 3. Best overall (3rd)
+        if (drafted.length > 0) {
+          drafted.sort((a,b) => b.overall - a.overall);
+          const third = drafted[0];
+          third.targetSlot = 2; // index 2 is 3rd
+          drafted.splice(0, 1);
+          newOrder.push(third);
+        }
+        
+        // 2. Best contact (2nd)
+        if (drafted.length > 0) {
+          drafted.sort((a,b) => b.contact - a.contact);
+          const second = drafted[0];
+          second.targetSlot = 1; // index 1 is 2nd
+          drafted.splice(0, 1);
+          newOrder.push(second);
+        }
+        
+        // 5. Next best power (5th)
+        if (drafted.length > 0) {
+          drafted.sort((a,b) => b.powerScore - a.powerScore);
+          const fifth = drafted[0];
+          fifth.targetSlot = 4; // index 4 is 5th
+          drafted.splice(0, 1);
+          newOrder.push(fifth);
+        }
+        
+        // Rest (6th-9th)
+        drafted.sort((a,b) => b.overall - a.overall);
+        drafted.forEach((p, idx) => {
+           p.targetSlot = 5 + idx; // indexes 5 through 8
+           newOrder.push(p);
+        });
+        
+        // Reconstruct final array 0-8
+        newOrder.sort((a,b) => (a.targetSlot||0) - (b.targetSlot||0));
+        
+        // Combine with empty slots
+        const finalOrder = [...newOrder.map(x => x.slot), ...empty.map(x => x.slot)];
+        G.draftBattingOrder = finalOrder;
+        renderBattingOrderRows();
+      };
+      orderPanel.appendChild(autoSortBtn);
+
       // Assemble 3-column layout
       layout.appendChild(rosterPanel);
       layout.appendChild(centerPanel);
