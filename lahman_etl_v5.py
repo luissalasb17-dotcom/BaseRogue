@@ -138,6 +138,7 @@ def paso_1_cargar_datos():
         "batting":      "Batting.csv",
         "fielding":     "Fielding.csv",
         "fielding_of":  "FieldingOFsplit.csv",
+        "appearances":  "Appearances.csv",
         "allstar":      "AllstarFull.csv",
         "hof":          "HallOfFame.csv",
         "teams":        "Teams.csv",
@@ -397,68 +398,68 @@ def paso_5_hibrido(career, peak):
 
 
 # ===========================================================================
+# ===========================================================================
 # PASO 6 - POSICION PRIMARIA DE BATEADORES (excluye P)
 # ===========================================================================
-def paso_6_posicion_bateadores(fielding, fielding_of):
+def paso_6_posicion_bateadores(fielding, fielding_of, appearances=None):
     """
-    Posicion con mayor G excluyendo 'P'. Refinamiento LF/CF/RF via FieldingOFsplit.
-    fielding_pct y range_factor como proxy defensivo de respaldo.
+    Posicion con mayor G excluyendo 'P'. Usa Appearances.csv si esta disponible para desglosar LF/CF/RF
+    y secundarias rigurosamente en todas las eras historicas.
     """
     print("\n  PASO 6: Posicion primaria de bateadores y metricas proxy...")
-    if fielding.empty:
-        return pd.DataFrame(columns=["playerID","primary_pos","primary_g","fielding_pct","range_factor"])
 
-    field = fielding[fielding["POS"] != "P"].copy()
-    for col in ["G","PO","A","E"]:
-        if col in field.columns:
-            field[col] = pd.to_numeric(field[col], errors="coerce").fillna(0)
+    pos_games = pd.DataFrame()
+    if not fielding.empty:
+        field = fielding[fielding["POS"] != "P"].copy()
+        for col in ["G","PO","A","E"]:
+            if col in field.columns:
+                field[col] = pd.to_numeric(field[col], errors="coerce").fillna(0)
+        pos_games = field.groupby(["playerID","POS"])["G"].sum().reset_index()
 
-    pos_games = field.groupby(["playerID","POS"])["G"].sum().reset_index()
+    # Si Appearances.csv esta disponible, lo usamos como fuente primaria y rigurosa para desglosar todas las posiciones
+    if appearances is not None and not appearances.empty:
+        print("  [INFO] Usando Appearances.csv para desglose riguroso de posiciones y splits de OF...")
+        pos_cols = {'G_c': 'C', 'G_1b': '1B', 'G_2b': '2B', 'G_3b': '3B', 'G_ss': 'SS', 'G_lf': 'LF', 'G_cf': 'CF', 'G_rf': 'RF', 'G_dh': 'DH'}
+        melted = []
+        for col, pos in pos_cols.items():
+            if col in appearances.columns:
+                sub = appearances[['playerID', col]].dropna()
+                sub[col] = pd.to_numeric(sub[col], errors="coerce").fillna(0)
+                sub = sub[sub[col] > 0].rename(columns={col: 'G'})
+                sub['POS'] = pos
+                melted.append(sub)
+        if melted:
+            pos_games_app = pd.concat(melted, ignore_index=True)
+            pos_games = pos_games_app.groupby(['playerID', 'POS'])['G'].sum().reset_index()
+
+    if pos_games.empty:
+        return pd.DataFrame(columns=["playerID","primary_pos","primary_g","fielding_pct","range_factor","sec_pos"])
+
     primary = (
         pos_games.sort_values("G", ascending=False)
                  .drop_duplicates(subset="playerID")
                  .rename(columns={"POS":"primary_pos","G":"primary_g"})
     )
 
-    enriched_path = DATA_DIR / "FieldingOFsplit_enriched.csv"
-    if enriched_path.exists():
-        df_enr = pd.read_csv(enriched_path)
-        fielding_of = pd.concat([fielding_of, df_enr], ignore_index=True)
+    career_field = pd.DataFrame(columns=["playerID", "fielding_pct", "range_factor"])
+    if not fielding.empty:
+        field_all = fielding[fielding["POS"] != "P"].copy()
+        for col in ["G","PO","A","E"]:
+            if col in field_all.columns:
+                field_all[col] = pd.to_numeric(field_all[col], errors="coerce").fillna(0)
+        cf = field_all.groupby("playerID").agg(
+            total_po=("PO","sum"), total_a=("A","sum"),
+            total_e=("E","sum"),   total_fg=("G","sum"),
+        ).reset_index()
+        denom_f = (cf["total_po"] + cf["total_a"] + cf["total_e"]).replace(0, np.nan)
+        cf["fielding_pct"] = (cf["total_po"] + cf["total_a"]) / denom_f
+        cf["range_factor"] = (cf["total_po"] + cf["total_a"]) / cf["total_fg"].replace(0, np.nan)
+        career_field = cf[["playerID", "fielding_pct", "range_factor"]]
 
-    if not fielding_of.empty and "POS" in fielding_of.columns:
-        fof = fielding_of.copy()
-        fof["G"] = pd.to_numeric(fof.get("G", 0), errors="coerce").fillna(0)
-        of_pos = (
-            fof.groupby(["playerID","POS"])["G"].sum().reset_index()
-               .sort_values("G", ascending=False)
-               .drop_duplicates(subset="playerID")
-               .rename(columns={"POS":"of_pos"})
-        )
-        primary = primary.merge(of_pos[["playerID","of_pos"]], on="playerID", how="left")
-        mask_of = (primary["primary_pos"] == "OF") & primary["of_pos"].notna()
-        primary.loc[mask_of, "primary_pos"] = primary.loc[mask_of, "of_pos"]
-        primary.drop(columns=["of_pos"], inplace=True)
-
-    career_field = field.groupby("playerID").agg(
-        total_po=("PO","sum"), total_a=("A","sum"),
-        total_e=("E","sum"),   total_fg=("G","sum"),
-    ).reset_index()
-    denom_f = (career_field["total_po"] + career_field["total_a"] + career_field["total_e"]).replace(0, np.nan)
-    career_field["fielding_pct"] = (career_field["total_po"] + career_field["total_a"]) / denom_f
-    career_field["range_factor"] = (career_field["total_po"] + career_field["total_a"]) / career_field["total_fg"].replace(0, np.nan)
-
-    if not fielding_of.empty and "POS" in fielding_of.columns:
-        # Get all specific outfield games
-        of_games = fof.groupby(["playerID", "POS"])["G"].sum().reset_index()
-        # Remove generic 'OF' from pos_games and append specific OF games
-        pos_games = pos_games[pos_games["POS"] != "OF"]
-        pos_games = pd.concat([pos_games, of_games], ignore_index=True)
-
-    # Secondary positions: any mapped pos != primary_pos and != DH where G >= 75
+    # Secundarias: cualquier posicion != primary_pos y != DH donde G >= 75
     sec_df = pos_games.merge(primary[["playerID", "primary_pos"]], on="playerID", how="left")
     sec_df["pos_mapped"] = sec_df["POS"].map(POS_DISPLAY_MAP).fillna(sec_df["POS"])
     
-    # If there are any remaining generic 'OF' unmapped, let's just drop them or keep them
     sec_df = sec_df[(sec_df["pos_mapped"] != sec_df["primary_pos"]) & (sec_df["pos_mapped"] != "DH") & (sec_df["pos_mapped"] != "OF")]
     sec_pos_grouped = sec_df.groupby(["playerID", "pos_mapped"])["G"].sum().reset_index()
     sec_pos_grouped = sec_pos_grouped[sec_pos_grouped["G"] >= 75]
@@ -470,7 +471,7 @@ def paso_6_posicion_bateadores(fielding, fielding_of):
     result = primary.merge(career_field, on="playerID", how="left")
     result = result.merge(sec_pos_str, on="playerID", how="left")
     result["sec_pos"] = result["sec_pos"].fillna("")
-    print(f"  Posicion primaria para {len(result):,} bateadores (y sus posiciones secundarias)")
+    print(f"  Posicion primaria calculada para {len(result):,} bateadores (y secundarias con threshold G>=75)")
     return result
 
 
@@ -956,7 +957,8 @@ def main():
     career           = paso_3_carrera_batting(batting)
     peak             = paso_4_pico_batting(batting, war_bat, people)
     hybrid           = paso_5_hibrido(career, peak)
-    pos_data         = paso_6_posicion_bateadores(fielding, fielding_of)
+    appearances = dfs.get("appearances")
+    pos_data         = paso_6_posicion_bateadores(fielding, fielding_of, appearances)
     hybrid           = hybrid.merge(pos_data, on="playerID", how="left")
     hybrid           = paso_7_enriquecer_people(hybrid, people)
     eligible         = paso_8_filtro_ingesta(hybrid, allstar, hof, pure_pitcher_ids)
