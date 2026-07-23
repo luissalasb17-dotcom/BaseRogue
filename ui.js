@@ -2544,6 +2544,13 @@ function renderConfirmationBattingRows() {
     updateFaceoffPanel(initState);
     renderZones();
 
+    // Auto-open info legend for first time users
+    const dropdownInfo = document.getElementById('combat-info-dropdown');
+    if (dropdownInfo && !localStorage.getItem('baserogue_seen_combat_info')) {
+      dropdownInfo.classList.remove('hidden');
+      localStorage.setItem('baserogue_seen_combat_info', 'true');
+    }
+
     showScreen('screen-match');
   }
 
