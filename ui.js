@@ -604,30 +604,7 @@
         const btnAuto = document.getElementById('btn-auto-sort');
         if(btnAuto) {
            btnAuto.onclick = () => {
-             const players = G.draftBattingOrder.map(slot => ({slot: slot, p: G.draftRoster[slot]}));
-             const emptySlots = players.filter(x => !x.p).map(x => x.slot);
-             let pool = players.filter(x => x.p).map(x => {
-                const p = x.p;
-                p.ovr = Math.round((p.con||40)*.3+(p.pwr||35)*.3+(p.spd||45)*.15+(p.def||40)*.15+(p.eye||40)*.1);
-                return {slot: x.slot, p: p};
-             });
-             
-             let newOrder = [];
-             // 1: Max SPD
-             if (pool.length > 0) { pool.sort((a,b) => (b.p.spd||0) - (a.p.spd||0)); newOrder.push(pool.shift().slot); }
-             // 2: Max CON
-             if (pool.length > 0) { pool.sort((a,b) => (b.p.con||0) - (a.p.con||0)); newOrder.push(pool.shift().slot); }
-             // 3: Max OVR
-             if (pool.length > 0) { pool.sort((a,b) => b.p.ovr - a.p.ovr); newOrder.push(pool.shift().slot); }
-             // 4: Max PWR
-             if (pool.length > 0) { pool.sort((a,b) => (b.p.pwr||0) - (a.p.pwr||0)); newOrder.push(pool.shift().slot); }
-             // 5: Max PWR
-             if (pool.length > 0) { pool.sort((a,b) => (b.p.pwr||0) - (a.p.pwr||0)); newOrder.push(pool.shift().slot); }
-             // Rest by OVR
-             pool.sort((a,b) => b.p.ovr - a.p.ovr);
-             while(pool.length > 0) { newOrder.push(pool.shift().slot); }
-             
-             G.draftBattingOrder = newOrder.concat(emptySlots);
+             G.draftBattingOrder = G.autoSortBattingOrder(G.draftRoster, G.draftBattingOrder);
              renderConfirmationBattingRows();
            };
         }
