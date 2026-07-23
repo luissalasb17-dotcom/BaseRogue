@@ -260,11 +260,30 @@
         return info.rarities.includes(p.rarity || 'Common');
       });
 
+      // Determine missing positions in roster
+      const missingPos = Object.keys(this.draftRoster).filter(pos => !this.draftRoster[pos]);
+
+      // Assign weights: 6x probability if player fills a missing position (primary or secondary)
+      const weightedAvailable = available.map(p => {
+        let isNeeded = false;
+        if (missingPos.includes(p.pos)) isNeeded = true;
+        if (p.sec_pos && p.sec_pos.split(', ').some(sp => missingPos.includes(sp))) isNeeded = true;
+        return { player: p, weight: isNeeded ? 6 : 1 };
+      });
+
       const picks = [];
-      const temp = [...available];
-      while (picks.length < 3 && temp.length > 0) {
-        const idx = Math.floor(Math.random() * temp.length);
-        picks.push(temp.splice(idx, 1)[0]);
+      while (picks.length < 3 && weightedAvailable.length > 0) {
+        let totalWeight = weightedAvailable.reduce((sum, item) => sum + item.weight, 0);
+        let random = Math.random() * totalWeight;
+        let selectedIdx = weightedAvailable.length - 1;
+        for (let i = 0; i < weightedAvailable.length; i++) {
+          if (random < weightedAvailable[i].weight) {
+            selectedIdx = i;
+            break;
+          }
+          random -= weightedAvailable[i].weight;
+        }
+        picks.push(weightedAvailable.splice(selectedIdx, 1)[0].player);
       }
       // Fallback: if not enough picks after rarity filter, pull from full pool
       if (picks.length < 3) {
