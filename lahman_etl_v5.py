@@ -380,7 +380,7 @@ def paso_5_hibrido(career, peak):
 
     vol_max = df["sb_volume_log"].replace(0, np.nan).max()
     vol_max = vol_max if pd.notna(vol_max) and vol_max > 0 else 1.0
-    df["sb_score"] = df["sb_efficiency"] * 0.65 + (df["sb_volume_log"] / vol_max) * 0.35
+    df["sb_score"] = df["sb_efficiency"] * 0.30 + (df["sb_volume_log"] / vol_max) * 0.70
 
     print(f"  Metricas hibridas para {len(df):,} jugadores")
     return df
