@@ -391,10 +391,6 @@
             <span style="font-family:'Press Start 2P',monospace;font-size:7px;color:#6b7280;min-width:12px;">${idx+1}</span>
             <span style="font-size:8px;color:#94a3b8;min-width:20px;">${slot}</span>
             ${nameStr}
-            <div style="display:flex;flex-direction:column;gap:1px;">
-              <button class="bo-up" data-idx="${idx}" style="background:none;border:1px solid rgba(255,255,255,0.1);color:#9ca3af;padding:0 4px;font-size:9px;border-radius:2px;cursor:pointer;line-height:1.4;">▲</button>
-              <button class="bo-dn" data-idx="${idx}" style="background:none;border:1px solid rgba(255,255,255,0.1);color:#9ca3af;padding:0 4px;font-size:9px;border-radius:2px;cursor:pointer;line-height:1.4;">▼</button>
-            </div>
           `;
           orderPanel.appendChild(row);
         });
@@ -430,7 +426,6 @@
               renderConfirmationBattingRows();
             }
           });
-        });
         });
       }
       renderBattingOrderRows();
