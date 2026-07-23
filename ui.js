@@ -1007,6 +1007,13 @@
         btnLang.innerText = next === 'es' ? '🌐 ES' : '🌐 EN';
         applyLanguage(next);
       });
+
+    const btnCloseRoster = document.getElementById('btn-close-roster-mobile');
+    if (btnCloseRoster) {
+      btnCloseRoster.addEventListener('click', () => {
+        ui.rosterManagerPanel.classList.remove('mobile-drawer-open');
+      });
+    }
     }
 
     // Combat Info Dropdown Toggle

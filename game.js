@@ -490,13 +490,17 @@
         for (let idx = 0; idx < nodeCount; idx++) {
           let type = 'match';
           if (!isFixedMatch) {
-            const roll = Math.random();
-            // 30% match (mini battle), 25% draft, 25% event, 12% train, 8% rest
-            if (roll < 0.30)      type = 'match';
-            else if (roll < 0.55) type = 'draft';
-            else if (roll < 0.80) type = 'event';
-            else if (roll < 0.92) type = 'train';
-            else                  type = 'rest';
+            if (s === 0) {
+              type = 'match';
+            } else {
+              const roll = Math.random();
+              // 30% match (mini battle), 25% draft, 25% event, 12% train, 8% rest
+              if (roll < 0.30)      type = 'match';
+              else if (roll < 0.55) type = 'draft';
+              else if (roll < 0.80) type = 'event';
+              else if (roll < 0.92) type = 'train';
+              else                  type = 'rest';
+            }
           }
 
           let label = type.toUpperCase();

@@ -947,6 +947,13 @@ p {
   gap: 20px;
   margin-bottom: 24px;
 }
+
+.draft-cards {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
 @media (max-width: 800px) {
   .flex-row { flex-direction: column; }
   .match-arena { grid-template-columns: 1fr; }
@@ -1632,6 +1639,37 @@ body.workspace-active .main-container {
 
 /* ── MOBILE RESPONSIVE ──────────────────────────────────────────────────── */
 @media (max-width: 768px) {
+  /* Further scale down match arena on mobile to fit the screen */
+  .match-arena {
+    transform: scale(0.85);
+    transform-origin: top center;
+    margin-bottom: -15vh; /* Adjust space at bottom due to scale */
+  }
+
+  /* Compact the draft cards on mobile */
+  .draft-cards .player-card, .starter-selection .player-card, .draft-cards .card, .starter-selection .card, .starter-card-wrapper .card {
+    max-width: 85vw !important;
+    padding: 6px !important;
+    font-size: 8px !important;
+  }
+  
+  .popup-player-name {
+    font-size: 9px !important;
+    margin-bottom: 6px !important;
+  }
+
+  /* Hide synergy helpers in mobile draft to save space */
+  .draft-synergy-helper {
+    display: none !important;
+  }
+  
+  /* Make draft button smaller */
+  .btn-sign-draft {
+    padding: 8px !important;
+    font-size: 10px !important;
+    min-height: 32px !important;
+  }
+
   .pre-fight-columns {
     flex-direction: column !important;
     gap: 12px !important;
