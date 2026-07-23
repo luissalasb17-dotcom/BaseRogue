@@ -338,6 +338,25 @@
         pickHint.textContent = `Ronda libre: puede aparecer cualquier rareza del pool. ¡Buena suerte!`;
       }
       centerPanel.appendChild(pickHint);
+      const autoDraftBtn = document.createElement('button');
+      autoDraftBtn.className = 'btn btn-secondary';
+      autoDraftBtn.innerHTML = '🎲 ¡Sorpréndeme! (Auto-Completar)';
+      autoDraftBtn.style.cssText = 'margin-top: 15px; padding: 10px 20px; font-size: 11px;';
+      autoDraftBtn.onclick = () => {
+        while (G.draftRound <= 9) {
+          const picks = G.getDraftRoundPicks();
+          // Sort by OVR descending
+          picks.sort((a,b) => {
+             const ovrA = Math.round((a.con||40)*.3+(a.pwr||35)*.3+(a.spd||45)*.15+(a.def||40)*.15+(a.eye||40)*.1);
+             const ovrB = Math.round((b.con||40)*.3+(b.pwr||35)*.3+(b.spd||45)*.15+(b.def||40)*.15+(b.eye||40)*.1);
+             return ovrB - ovrA;
+          });
+          G.draftPickPlayer(picks[0]);
+        }
+        renderFinalLineupConfirmation();
+      };
+      centerPanel.appendChild(autoDraftBtn);
+
 
       // ───── RIGHT: Batting Order Panel ──────────────────────────────────
       const orderPanel = document.createElement('div');
@@ -381,23 +400,37 @@
         });
 
         // Wire up buttons
-        orderPanel.querySelectorAll('.bo-up').forEach(btn => {
-          btn.addEventListener('click', () => {
-            const i = parseInt(btn.dataset.idx);
-            if (i > 0) {
-              [G.draftBattingOrder[i-1], G.draftBattingOrder[i]] = [G.draftBattingOrder[i], G.draftBattingOrder[i-1]];
-              renderBattingOrderRows();
+        
+        // Drag and drop for batting order
+        const rows = orderPanel.querySelectorAll('.bo-row');
+        rows.forEach((row, rIdx) => {
+          row.setAttribute('draggable', 'true');
+          row.addEventListener('dragstart', (e) => {
+            e.dataTransfer.setData('text/plain', rIdx.toString());
+            row.style.opacity = '0.5';
+          });
+          row.addEventListener('dragend', () => {
+            row.style.opacity = '1';
+          });
+          row.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            row.style.background = 'rgba(255,255,255,0.1)';
+          });
+          row.addEventListener('dragleave', (e) => {
+            row.style.background = 'rgba(0,0,0,0.25)';
+          });
+          row.addEventListener('drop', (e) => {
+            e.preventDefault();
+            row.style.background = 'rgba(0,0,0,0.25)';
+            const sourceIdx = parseInt(e.dataTransfer.getData('text/plain'));
+            if (!isNaN(sourceIdx) && sourceIdx !== rIdx) {
+              const temp = G.draftBattingOrder[rIdx];
+              G.draftBattingOrder[rIdx] = G.draftBattingOrder[sourceIdx];
+              G.draftBattingOrder[sourceIdx] = temp;
+              renderConfirmationBattingRows();
             }
           });
         });
-        orderPanel.querySelectorAll('.bo-dn').forEach(btn => {
-          btn.addEventListener('click', () => {
-            const i = parseInt(btn.dataset.idx);
-            if (i < G.draftBattingOrder.length - 1) {
-              [G.draftBattingOrder[i], G.draftBattingOrder[i+1]] = [G.draftBattingOrder[i+1], G.draftBattingOrder[i]];
-              renderBattingOrderRows();
-            }
-          });
         });
       }
       renderBattingOrderRows();
@@ -550,13 +583,49 @@
       // ───── RIGHT: Batting Order Panel ──────────────────────────────────
       const orderPanel = document.createElement('div');
       orderPanel.style.cssText = 'background:rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:16px;';
+      
       orderPanel.innerHTML = `
-        <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:#f59e0b;margin-bottom:12px;text-align:center;letter-spacing:1px;">
-          ⚔️ ORDEN AL BATE
+        <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:#f59e0b;margin-bottom:12px;text-align:center;letter-spacing:1px;display:flex;justify-content:space-between;align-items:center;">
+          <span>⚔️ ORDEN AL BATE</span>
+          <button class="btn btn-secondary" id="btn-auto-sort" style="padding:4px 8px;font-size:8px;cursor:pointer;">🤖 AUTO-ORDEN</button>
         </div>
       `;
 
-      function renderConfirmationBattingRows() {
+
+      
+      setTimeout(() => {
+        const btnAuto = document.getElementById('btn-auto-sort');
+        if(btnAuto) {
+           btnAuto.onclick = () => {
+             const players = G.draftBattingOrder.map(slot => ({slot: slot, p: G.draftRoster[slot]}));
+             const emptySlots = players.filter(x => !x.p).map(x => x.slot);
+             let pool = players.filter(x => x.p).map(x => {
+                const p = x.p;
+                p.ovr = Math.round((p.con||40)*.3+(p.pwr||35)*.3+(p.spd||45)*.15+(p.def||40)*.15+(p.eye||40)*.1);
+                return {slot: x.slot, p: p};
+             });
+             
+             let newOrder = [];
+             // 1: Max SPD
+             if (pool.length > 0) { pool.sort((a,b) => (b.p.spd||0) - (a.p.spd||0)); newOrder.push(pool.shift().slot); }
+             // 2: Max CON
+             if (pool.length > 0) { pool.sort((a,b) => (b.p.con||0) - (a.p.con||0)); newOrder.push(pool.shift().slot); }
+             // 3: Max OVR
+             if (pool.length > 0) { pool.sort((a,b) => b.p.ovr - a.p.ovr); newOrder.push(pool.shift().slot); }
+             // 4: Max PWR
+             if (pool.length > 0) { pool.sort((a,b) => (b.p.pwr||0) - (a.p.pwr||0)); newOrder.push(pool.shift().slot); }
+             // 5: Max PWR
+             if (pool.length > 0) { pool.sort((a,b) => (b.p.pwr||0) - (a.p.pwr||0)); newOrder.push(pool.shift().slot); }
+             // Rest by OVR
+             pool.sort((a,b) => b.p.ovr - a.p.ovr);
+             while(pool.length > 0) { newOrder.push(pool.shift().slot); }
+             
+             G.draftBattingOrder = newOrder.concat(emptySlots);
+             renderConfirmationBattingRows();
+           };
+        }
+      }, 0);
+function renderConfirmationBattingRows() {
         const existing = orderPanel.querySelectorAll('.bo-row');
         existing.forEach(e => e.remove());
 
@@ -583,10 +652,7 @@
                 <div style="font-size:9px;color:${rColor};">OVR ${ovr} • ${player.rarity}</div>
               </div>
               <button class="btn-inspect-bo" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);color:#38bdf8;padding:3px 6px;font-size:8.5px;border-radius:3px;margin-right:4px;">🔍</button>
-              <div style="display:flex;flex-direction:column;gap:2px;">
-                <button class="bo-up" data-idx="${idx}" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;padding:1px 6px;font-size:9px;border-radius:3px;cursor:pointer;">▲</button>
-                <button class="bo-dn" data-idx="${idx}" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;padding:1px 6px;font-size:9px;border-radius:3px;cursor:pointer;">▼</button>
-              </div>
+              
             `;
 
             row.querySelector('.btn-inspect-bo').addEventListener('click', (e) => {
