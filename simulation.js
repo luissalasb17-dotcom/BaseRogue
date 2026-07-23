@@ -283,6 +283,13 @@
           synergyProc = `🚀 Three True Outcomes: ¡Boleto optimizado inflige +${extra} daño!`;
         }
 
+        pitcherDmg = this._applyDebuffToPitcherDmg(pitcherDmg);
+        this._damagePitcher(pitcherDmg);
+        
+        let batterPlayText = `🎲 [${roll}] [BASE POR BOLAS] ${batter.name} trabaja el conteo y saca pasaporte.` +
+          (runsThisTurn ? ` ¡Carrera de caballito! ` : ` Avanza a primera. `) +
+          `${pitcher.name} sufre ${pitcherDmg} HP de daño.`;
+
         // Steal Proc Logic on BB if batter ends on 1B and 2B is empty
         let stealChance = Math.min(0.85, 0.10 + ((effBatter.spd - 40) * 0.01));
         let stealHeal = 0;
@@ -338,12 +345,6 @@
           spdProc = (spdProc ? spdProc + ' | ' : '') + spdMsg;
         }
 
-        pitcherDmg = this._applyDebuffToPitcherDmg(pitcherDmg);
-        this._damagePitcher(pitcherDmg);
-        
-        let batterPlayText = `🎲 [${roll}] [BASE POR BOLAS] ${batter.name} trabaja el conteo y saca pasaporte.` +
-          (runsThisTurn ? ` ¡Carrera de caballito! ` : ` Avanza a primera. `) +
-          `${pitcher.name} sufre ${pitcherDmg} HP de daño.`;
         playText = batterPlayText + (spdProc ? ` ${spdProc}` : ``) + (synergyProc ? ` ${synergyProc}` : ``);
 
       } else if (roll <= bounds.soEnd) {
@@ -541,7 +542,19 @@
           pitcherDmg += 15 + (runsThisTurn * 10);
           eventType = '1B';
           playText = `🎲 [${roll}] [SENCILLO] ¡${batter.name} imparable raso! `;
+        }
 
+        if (batterEra === 'Golden Era (1920-1941)' && eraSynergy >= 1) {
+          const extraGolden = eraSynergy === 2 ? 12 : 6;
+          pitcherDmg += extraGolden;
+          synergyProc = (synergyProc ? synergyProc + ' | ' : '') + `🔥 Liveball Sluggers: +${extraGolden} daño.`;
+        }
+
+        this.runs += runsThisTurn;
+        pitcherDmg = this._applyDebuffToPitcherDmg(pitcherDmg);
+        this._damagePitcher(pitcherDmg);
+
+        if (eventType === '1B') {
           let stealChance = Math.min(0.85, 0.10 + ((effBatter.spd - 40) * 0.01));
           let stealHeal = 0;
           let extraStealDmg = 0;
@@ -595,16 +608,6 @@
             spdProc = (spdProc ? spdProc + ' | ' : '') + spdMsg;
           }
         }
-
-        if (batterEra === 'Golden Era (1920-1941)' && eraSynergy >= 1) {
-          const extraGolden = eraSynergy === 2 ? 12 : 6;
-          pitcherDmg += extraGolden;
-          synergyProc = (synergyProc ? synergyProc + ' | ' : '') + `🔥 Liveball Sluggers: +${extraGolden} daño.`;
-        }
-
-        this.runs += runsThisTurn;
-        pitcherDmg = this._applyDebuffToPitcherDmg(pitcherDmg);
-        this._damagePitcher(pitcherDmg);
 
         playText += `Anotan ${runsThisTurn} carreras. ${pitcher.name} sufre ${pitcherDmg} HP de daño.`;
         if (spdProc) playText += ` ${spdProc}`;
