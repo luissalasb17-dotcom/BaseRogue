@@ -675,12 +675,11 @@ def paso_14_velocidad(df):
     Combina metricas de carrera (robos, extrabases, carreras producidas en bases)
     para asignar un rating global de Velocidad (SPD) ajustado por la dificultad de la era.
     
-    Formula final:
-    60% SB-score        = 0.65 * sb_efficiency + 0.35 * sb_volume_log_norm (normalizado al max de era)
-    0%  extra_base_freq = (Eliminado para evitar sobrevalorar bateadores lentos de poder)
-    40% runs_br_norm    = Corrido de bases inteligente (ya normalizado globalmente con techo 2.0)
+    60% SB-score        = 0.50 * sb_efficiency + ... (normalizado al max de era)
+    30% extra_base_freq = (Frecuencia de Triples y SB)
+    10% runs_br_norm    = Corrido de bases inteligente (ya normalizado globalmente con techo 2.0)
     """
-    print("\n  PASO 14: SPD hibrido 60/40 (normalizado con ajuste OPS+ y techo 2.0)...")
+    print("\n  PASO 14: SPD hibrido (normalizado con ajuste OPS+ y techo 2.0)...")
     df = df.copy()
 
     # Calculamos el raw temporal para cada era
@@ -692,8 +691,8 @@ def paso_14_velocidad(df):
         sb_c  = (group["sb_score"] / sb_max).clip(upper=2.0).fillna(0) if sb_max > 0 else pd.Series(0.0, index=group.index)
         xb_c  = (group["extra_base_freq"].fillna(0) / xb_max).clip(upper=2.0) if xb_max > 0 else pd.Series(0.0, index=group.index)
         
-        # Combinacion de Option A
-        group["speed_raw_temp"] = sb_c * 0.60 + group["runs_br_norm"] * 0.40
+        # Combinacion de SPD: mayor peso a SB y Triples/SB (xb_c) para reflejar velocidad pura
+        group["speed_raw_temp"] = sb_c * 0.50 + xb_c * 0.35 + group["runs_br_norm"] * 0.15
         return group
 
     df["era_temp_col"] = df["era_label"]
