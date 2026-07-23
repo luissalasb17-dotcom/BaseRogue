@@ -232,6 +232,77 @@
     }
 
     // ── DRAFT: return info about the current round's rarity constraints ───
+    autoSortBattingOrder(rosterDict, orderArray) {
+      const players = orderArray.map(slot => ({ slot, p: rosterDict[slot] }));
+      const drafted = players.filter(item => item.p);
+      const empty = players.filter(item => !item.p);
+      
+      if (drafted.length < 2) return orderArray;
+      
+      drafted.forEach(item => {
+         const p = item.p;
+         const effCon = p.con || 40;
+         const effPwr = p.pwr || 35;
+         const effEye = p.eye || 40;
+         const effSpd = p.spd || 40;
+         item.speedScore = effSpd * 1.5 + effCon + effEye;
+         item.powerScore = effPwr * 1.5 + effCon;
+         item.overall = effCon * 1.2 + effPwr + effEye + effSpd * 0.2;
+         item.contact = effCon + effEye * 0.5;
+      });
+      
+      const newOrder = [];
+      
+      drafted.sort((a,b) => b.overall - a.overall);
+      let topHalf = drafted.slice(0, Math.max(2, Math.ceil(drafted.length/2)));
+      topHalf.sort((a,b) => b.speedScore - a.speedScore);
+      const leadoff = topHalf[0];
+      newOrder.push(leadoff);
+      drafted.splice(drafted.indexOf(leadoff), 1);
+      
+      if (drafted.length > 0) {
+        drafted.sort((a,b) => b.powerScore - a.powerScore);
+        const cleanup = drafted[0];
+        cleanup.targetSlot = 3;
+        drafted.splice(0, 1);
+        newOrder.push(cleanup);
+      }
+      
+      if (drafted.length > 0) {
+        drafted.sort((a,b) => b.overall - a.overall);
+        const third = drafted[0];
+        third.targetSlot = 2;
+        drafted.splice(0, 1);
+        newOrder.push(third);
+      }
+      
+      if (drafted.length > 0) {
+        drafted.sort((a,b) => b.contact - a.contact);
+        const second = drafted[0];
+        second.targetSlot = 1;
+        drafted.splice(0, 1);
+        newOrder.push(second);
+      }
+      
+      if (drafted.length > 0) {
+        drafted.sort((a,b) => b.powerScore - a.powerScore);
+        const fifth = drafted[0];
+        fifth.targetSlot = 4;
+        drafted.splice(0, 1);
+        newOrder.push(fifth);
+      }
+      
+      drafted.sort((a,b) => b.overall - a.overall);
+      drafted.forEach((p, idx) => {
+         p.targetSlot = 5 + idx;
+         newOrder.push(p);
+      });
+      
+      newOrder.sort((a,b) => (a.targetSlot||0) - (b.targetSlot||0));
+      return [...newOrder.map(x => x.slot), ...empty.map(x => x.slot)];
+    }
+
+    // ── DRAFT: return info about the current round's rarity constraints ───
     getDraftRoundInfo() {
       const r = this.draftRound;
       if (r === 1) return { label: 'EPIC O SUPERIOR', rarities: ['Legendary','Epic'], icon: '💎' };
