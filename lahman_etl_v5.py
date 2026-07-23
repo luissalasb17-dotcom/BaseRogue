@@ -63,7 +63,22 @@ RARITY_THRESHOLDS = [
 
 POS_DISPLAY_MAP = {
     "C":  "C",  "1B": "1B", "2B": "2B", "3B": "3B", "SS": "SS",
-    "LF": "LF", "CF": "CF", "RF": "RF", "OF": "RF", "DH": "DH",
+    "LF": "LF", "CF": "CF", "RF": "RF", "OF": "CF", "DH": "DH",
+}
+
+LEGEND_POS_OVERRIDES = {
+    "Joe DiMaggio": ("CF", "LF,RF"),
+    "Dom DiMaggio": ("CF", "LF,RF"),
+    "Vince DiMaggio": ("CF", "LF,RF"),
+    "Willie Mays": ("CF", "LF,RF"),
+    "Mickey Mantle": ("CF", "LF,RF"),
+    "Duke Snider": ("CF", "LF,RF"),
+    "Ken Griffey Jr.": ("CF", "LF,RF"),
+    "Barry Bonds": ("LF", "CF,RF"),
+    "Ted Williams": ("LF", "RF"),
+    "Hank Aaron": ("RF", "LF,CF"),
+    "Babe Ruth": ("RF", "LF"),
+    "Roberto Clemente": ("RF", "LF"),
 }
 
 
@@ -838,6 +853,10 @@ def paso_15_equipo_y_exportar(df, batting, teams, franchises):
         name_js = str(r.get("name", "")).replace('"',"'")
         pos_js  = str(r.get("pos",  "RF"))
         sec_pos_js = str(r.get("sec_pos", ""))
+        
+        if name_js in LEGEND_POS_OVERRIDES:
+            pos_js, sec_pos_js = LEGEND_POS_OVERRIDES[name_js]
+
         team_js = str(r.get(team_col,"UNK")).replace('"',"'")
         js_lines.append(
             f'    {{ '

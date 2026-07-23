@@ -1001,6 +1001,15 @@
       return true;
     }
 
+    swapDefensivePositions(slot1, slot2) {
+      if (!slot1 || !slot2 || slot1 === slot2) return false;
+      if (!this.roster[slot1] || !this.roster[slot2]) return false;
+      const temp = this.roster[slot1];
+      this.roster[slot1] = this.roster[slot2];
+      this.roster[slot2] = temp;
+      return true;
+    }
+
     getEnemyTeam() {
       if (this.currentEnemy) return this.currentEnemy;
 

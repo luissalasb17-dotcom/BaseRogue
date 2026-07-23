@@ -1550,10 +1550,51 @@ function renderConfirmationBattingRows() {
         </div>` : ''}
       <div class="popup-era-desc">${window.PlayersDB.EraTraits && window.PlayersDB.EraTraits[player.era] ? `<i>${window.PlayersDB.EraTraits[player.era].name}:</i> ${window.PlayersDB.EraTraits[player.era].desc}` : ''}</div>
       <div class="popup-year">Peak: ${player.year || player.peak_year || player.peakYear || '—'} &nbsp;|&nbsp; ${player.era || ''}</div>
+      ${!isDraft ? `
+        <div class="popup-def-swap-container" style="margin-top:12px; padding-top:10px; border-top:1px dashed rgba(255,255,255,0.15); display:flex; flex-direction:column; gap:6px;">
+          <div style="font-size:8px; color:var(--accent-color); font-family:'Press Start 2P',monospace; display:flex; align-items:center; gap:6px;">
+            <i class="fa-solid fa-arrows-rotate"></i> CAMBIAR POSICIÓN EN EL CAMPO:
+          </div>
+          <div style="font-size:8px; color:#9ca3af; line-height:1.3;">
+            Intercambia la posición defensiva de <b>${player.name}</b> con otro titular. <span style="color:#00ff66;">(NO altera tu orden al bate)</span>.
+          </div>
+          <select id="popup-def-swap-select" style="background:#090d16; color:#00ff66; border:1px solid #00ff66; border-radius:6px; padding:6px 8px; font-size:9px; font-family:'Press Start 2P',monospace; cursor:pointer; width:100%; margin-top:2px;">
+            ${['C','1B','2B','3B','SS','LF','CF','RF','DH'].map(targetSlot => {
+              const occupant = window.Game.roster[targetSlot];
+              const occName = occupant ? occupant.name : 'Vacante';
+              const isCurrent = (targetSlot === slot);
+              const isNat = (player.pos === targetSlot);
+              const secArr = player.sec_pos ? player.sec_pos.split(',').map(s=>s.trim()) : [];
+              const isSec = secArr.includes(targetSlot);
+              
+              let tag = "";
+              if (isCurrent) tag = " (Actual)";
+              else if (isNat) tag = " (Nativa ⭐ 100% Def)";
+              else if (isSec) tag = " (Secundaria 🛡️ 85% Def)";
+              else if (targetSlot !== 'DH') tag = " (Fuera Pos ⚠️ 50% Def)";
+              
+              return `<option value="${targetSlot}" ${isCurrent ? 'selected disabled' : ''}>${targetSlot} — ${occName}${tag}</option>`;
+            }).join('')}
+          </select>
+        </div>` : ''}
     `;
 
     overlay.classList.remove('hidden');
     overlay.classList.add('popup-visible');
+
+    const swapSelect = overlay.querySelector('#popup-def-swap-select');
+    if (swapSelect) {
+      swapSelect.addEventListener('change', (e) => {
+        const targetSlot = e.target.value;
+        if (targetSlot && targetSlot !== slot) {
+          window.Game.swapDefensivePositions(slot, targetSlot);
+          hidePlayerCardPopup();
+          renderActiveRoster();
+          renderSynergiesAndItems();
+          updateHUD();
+        }
+      });
+    }
 
     // Close button
     document.getElementById('btn-close-popup').addEventListener('click', hidePlayerCardPopup);
