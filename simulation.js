@@ -359,9 +359,14 @@
           }
         }
 
-        const soMult = this._strikeoutMultiplier();
-        const baseSoDmg = 12;
-        let finalSoDmg = Math.round(baseSoDmg * soMult);
+        let baseSoDmg = 18;
+        if (this.strikeoutChain === 2) {
+          baseSoDmg = 24;
+        } else if (this.strikeoutChain >= 3) {
+          baseSoDmg = 30;
+        }
+
+        let finalSoDmg = baseSoDmg;
         if (modernSoReduction) {
           finalSoDmg = Math.round(finalSoDmg * 0.5);
           synergyProc = `🚀 Three True Outcomes: Ponche causa -50% daño HP`;
@@ -369,7 +374,7 @@
         teamHpDmg = finalSoDmg;
 
         this.teamHP = Math.max(0, this.teamHP - teamHpDmg);
-        const chainLabel = this.strikeoutChain > 1 ? ` 🔥 RACHA ×${this.strikeoutChain} (${soMult}x)!` : '';
+        const chainLabel = this.strikeoutChain > 1 ? ` 🔥 RACHA ×${this.strikeoutChain} (-${baseSoDmg} HP)!` : '';
         playText = `🎲 [${roll}] [PONCHE] ¡${pitcher.name} poncha a ${batter.name}!${chainLabel}` +
           ` Daño directo: -${teamHpDmg} HP del equipo (¡ignora el escudo!).` +
           ` HP restante: ${this.teamHP}/100`;
@@ -391,7 +396,7 @@
         eventType = 'OUT';
         this.outs++;
         this.strikeoutChain = 0;
-        const outDmg = 8;
+        const outDmg = 10;
         if (this.teamShield > 0) {
           shieldDmg = Math.min(this.teamShield, outDmg);
           this.teamShield -= shieldDmg;

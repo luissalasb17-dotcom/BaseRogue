@@ -1179,6 +1179,12 @@ function renderConfirmationBattingRows() {
 
       const slot = btn.getAttribute('data-replace-slot');
       
+      // Deduct sign cost if executing a paid mid-run draft
+      if (currentDraftSelection && currentDraftSelection._signCost) {
+        window.Game.budget = Math.max(0, (window.Game.budget || 0) - currentDraftSelection._signCost);
+        delete currentDraftSelection._signCost;
+      }
+
       // Execute replace swap directly on active roster slot
       window.Game.replaceRosterPlayer(slot, currentDraftSelection);
 
@@ -2051,6 +2057,15 @@ function renderConfirmationBattingRows() {
     return predictionText;
   }
 
+  function getPlayerSignCost(player) {
+    const r = player ? (player.rarity || 'Common') : 'Common';
+    if (r === 'Legendary') return 20;
+    if (r === 'Epic') return 15;
+    if (r === 'Rare') return 10;
+    if (r === 'Uncommon') return 5;
+    return 3;
+  }
+
   // DRAFT SCREEN GENERATOR
   function setupDraftPickScreen() {
     el.draftOptionsRow.innerHTML = "";
@@ -2061,7 +2076,7 @@ function renderConfirmationBattingRows() {
     }
     const descEl = el.screenDraft.querySelector('p');
     if (descEl) {
-      descEl.innerText = "Selecciona una leyenda para unir a tu roster. Elige sabiamente para optimizar las posiciones y activar sinergias de Era o de Franquicia.";
+      descEl.innerText = "Selecciona una leyenda para contratar con tu presupuesto, o rechaza la firma para continuar la carrera.";
     }
 
     const options = window.Game.getDraftPicks();
@@ -2072,14 +2087,32 @@ function renderConfirmationBattingRows() {
       const cardCol = document.createElement('div');
       cardCol.className = "draft-card-option";
       
+      const cost = getPlayerSignCost(player);
+      const canAfford = (window.Game.budget || 0) >= cost;
+
       const btnSign = document.createElement('button');
-      btnSign.className = "btn";
-      btnSign.innerHTML = `<i class="fa-solid fa-file-signature"></i> Firmar Leyenda`;
+      if (canAfford) {
+        btnSign.className = "btn";
+        btnSign.innerHTML = `<i class="fa-solid fa-file-signature"></i> Firmar ($${cost})`;
+      } else {
+        btnSign.className = "btn btn-secondary";
+        btnSign.style.opacity = "0.5";
+        btnSign.style.cursor = "not-allowed";
+        btnSign.innerHTML = `<i class="fa-solid fa-lock"></i> Sin $ ($${cost})`;
+      }
+
       btnSign.addEventListener('click', () => {
-        // Execute draft sign
+        if (!canAfford) {
+          alert(`No tienes suficiente presupuesto para firmar a esta leyenda (Cuesta $${cost}, tienes $${window.Game.budget}).`);
+          return;
+        }
+
+        player._signCost = cost;
         const res = window.Game.addPlayerToRoster(player);
         if (res.success) {
-          alert(res.message);
+          window.Game.budget = Math.max(0, (window.Game.budget || 0) - cost);
+          delete player._signCost;
+          alert(res.message + ` (-$${cost} de Presupuesto)`);
           renderActiveRoster();
           renderSynergiesAndItems();
           updateHUD();
@@ -2094,11 +2127,36 @@ function renderConfirmationBattingRows() {
 
       cardCol.innerHTML = `
         <div>${cardHTML}</div>
+        <div style="font-size:10px; color:#f59e0b; font-weight:bold; margin-top:4px; text-align:center; font-family:'Press Start 2P',monospace;">Coste: $${cost}</div>
         <div class="draft-synergy-helper">${predictionText}</div>
       `;
       cardCol.appendChild(btnSign);
       el.draftOptionsRow.appendChild(cardCol);
     });
+
+    // Add a "Rechazar Firma" button option
+    const skipCol = document.createElement('div');
+    skipCol.className = "draft-card-option";
+    skipCol.style.cssText = "display:flex;flex-direction:column;justify-content:center;align-items:center;border:2px dashed rgba(255,255,255,0.15);padding:20px;border-radius:8px;height:350px;";
+
+    const btnSkip = document.createElement('button');
+    btnSkip.className = "btn btn-secondary";
+    btnSkip.style.width = "100%";
+    btnSkip.innerHTML = `<i class="fa-solid fa-ban"></i> Rechazar Firma / Continuar`;
+    btnSkip.addEventListener('click', () => {
+      closeNodeCompleted();
+    });
+
+    skipCol.innerHTML = `
+      <div style="font-size:44px;color:rgba(255,255,255,0.2);margin-bottom:16px;">
+        <i class="fa-solid fa-hand"></i>
+      </div>
+      <p style="font-size:11px;color:#9ca3af;text-align:center;margin-bottom:16px;line-height:1.4;">
+        ¿No deseas contratar a ninguna leyenda o prefieres guardar tu dinero? Puedes rechazar la firma y avanzar en el mapa.
+      </p>
+    `;
+    skipCol.appendChild(btnSkip);
+    el.draftOptionsRow.appendChild(skipCol);
 
     showScreen('screen-draft');
   }
