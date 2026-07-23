@@ -420,6 +420,11 @@ def paso_6_posicion_bateadores(fielding, fielding_of):
                  .rename(columns={"POS":"primary_pos","G":"primary_g"})
     )
 
+    enriched_path = DATA_DIR / "FieldingOFsplit_enriched.csv"
+    if enriched_path.exists():
+        df_enr = pd.read_csv(enriched_path)
+        fielding_of = pd.concat([fielding_of, df_enr], ignore_index=True)
+
     if not fielding_of.empty and "POS" in fielding_of.columns:
         fof = fielding_of.copy()
         fof["G"] = pd.to_numeric(fof.get("G", 0), errors="coerce").fillna(0)
