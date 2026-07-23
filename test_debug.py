@@ -608,7 +608,7 @@ def paso_11_motor_defensivo(df, war_bat, awards):
         np.nan
     )
     fp    = df["fielding_pct"].fillna(0.96)
-    rf    = (df["range_factor"].fillna(2.0) / 6.0).clip(0, 1)
+    rf    = (df["range_factor"].fillna(2.0) / 6.0).clip(lower=0, upper=2.0)
     proxy = W_RFIELD * fp + W_WARDEF * rf
     df["defense_base"]   = df["defense_base"].fillna(proxy)
     df["defense_source"] = np.where(has_war, "bbref_war", "lahman_proxy")
@@ -668,19 +668,16 @@ def paso_13_bono_guante_de_oro(df):
 
 
 # ===========================================================================
-# PASO 14 - VELOCIDAD HIBRIDA SPD 60% Robos / 40% Baserunning (normalizado por Era)
+# PASO 14 - VELOCIDAD HIBRIDA SPD 50/40/10 (normalizado por Era)
 # ===========================================================================
 def paso_14_velocidad(df):
     """
-    Combina metricas de carrera (robos, extrabases, carreras producidas en bases)
-    para asignar un rating global de Velocidad (SPD) ajustado por la dificultad de la era.
-    
-    Formula final:
-    60% SB-score        = 0.65 * sb_efficiency + 0.35 * sb_volume_log_norm (normalizado al max de era)
-    0%  extra_base_freq = (Eliminado para evitar sobrevalorar bateadores lentos de poder)
-    40% runs_br_norm    = Corrido de bases inteligente (ya normalizado globalmente con techo 2.0)
+    speed_val (normalizado por Era y dificultad OPS+):
+        40% SB-score        = 0.65 * sb_efficiency + 0.35 * sb_volume_log_norm (normalizado al max de era)
+        40% extra_base_freq = (SB + 3B) / AB (normalizado al max de era)
+        20% runs_br_norm    = Corrido de bases inteligente (ya normalizado globalmente 0-1)
     """
-    print("\n  PASO 14: SPD hibrido 60/40 (normalizado con ajuste OPS+ y techo 2.0)...")
+    print("\n  PASO 14: SPD hibrido 40/40/20 (normalizado con ajuste OPS+)...")
     df = df.copy()
 
     # Calculamos el raw temporal para cada era
@@ -690,7 +687,7 @@ def paso_14_velocidad(df):
         sb_max = qual["sb_score"].quantile(0.98)
         xb_max = qual["extra_base_freq"].quantile(0.98)
         sb_c  = (group["sb_score"] / sb_max).clip(upper=2.0).fillna(0) if sb_max > 0 else pd.Series(0.0, index=group.index)
-        xb_c  = (group["extra_base_freq"].fillna(0) / xb_max).clip(upper=2.0) if xb_max > 0 else pd.Series(0.0, index=group.index)
+        xb_c  = (group["extra_base_freq"].fillna(0) / xb_max).clip(upper=1.0) if xb_max > 0 else pd.Series(0.0, index=group.index)
         
         # Combinacion de Option A
         group["speed_raw_temp"] = sb_c * 0.60 + group["runs_br_norm"] * 0.40
@@ -769,12 +766,11 @@ def paso_15_equipo_y_exportar(df, batting, teams, franchises):
     df["franchise_name"]   = df["franchise_name"].fillna(df["canonical_teamID"])
 
     stat_cols = ["contact_val","power_val","eye_val","speed_val","defense_val"]
-    # 5. Promedio de Atributos Globales (OVR) usando formula 35/35/10/10/10
     df["avg_attr_score"] = (
-        df["contact_val"] * 0.35 +
-        df["power_val"]   * 0.35 +
-        df["speed_val"]   * 0.10 +
-        df["defense_val"] * 0.10 +
+        df["contact_val"] * 0.30 +
+        df["power_val"]   * 0.30 +
+        df["speed_val"]   * 0.15 +
+        df["defense_val"] * 0.15 +
         df["eye_val"]     * 0.10
     ).round(1)
     df["rarity"]         = df.apply(asignar_rareza, axis=1)
@@ -816,7 +812,7 @@ def paso_15_equipo_y_exportar(df, batting, teams, franchises):
     final.reset_index(drop=True, inplace=True)
     print(f"  DataFrame final: {len(final):,} jugadores x {len(final.columns)} columnas")
 
-    final.to_csv(OUT_CSV, index=False, encoding="utf-8")
+    pass # No CSV export in test
     print(f"  [OK]  game_cards.csv     ->  {OUT_CSV}")
 
     js_lines = [
@@ -862,8 +858,7 @@ def paso_15_equipo_y_exportar(df, batting, teams, franchises):
         "  if (typeof module !== 'undefined') module.exports = LAHMAN_POOL;",
         "})();",
     ]
-    with open(OUT_JS, "w", encoding="utf-8") as f:
-        f.write("\n".join(js_lines))
+    pass # No JS export in test)
     print(f"  [OK]  game_cards_pool.js ->  {OUT_JS}")
     return final
 
@@ -951,6 +946,28 @@ def main():
     final            = paso_15_equipo_y_exportar(eligible, batting, teams, franchises)
 
     reporte_final(final)
+    print("\n\n=== DEBUG DE COMPONENTES ===")
+    test_ids = ["jeterde01", "abreubo01"]
+    
+    test_players = final[final["playerID"].isin(test_ids)][["playerID", "name", "speed_val", "era"]]
+    test_raw = eligible[eligible["playerID"].isin(test_ids)][["playerID", "sb_score", "runs_br_norm", "speed_raw_temp", "speed_raw_adj"]]
+    
+    import pandas as pd
+    res = pd.merge(test_players, test_raw, on="playerID")
+    
+    # Let's also find what sb_max is for their era
+    # Jeter era: Steroid Era (1994-2005)
+    # Abreu era: Steroid Era (1994-2005)
+    # Let's recalculate sb_c for them manually to show it
+    qual = eligible[eligible["career_ab"] >= 300]
+    sb_max_era = qual[qual["era_label"] == "Steroid Era (1994-2005)"]["sb_score"].quantile(0.98)
+    res["sb_max_era"] = sb_max_era
+    res["sb_c"] = res["sb_score"] / sb_max_era
+    
+    pd.set_option("display.max_columns", None)
+    pd.set_option("display.width", 200)
+    print(res.to_string(index=False))
+    print("====================================================\n")
     return final
 
 
