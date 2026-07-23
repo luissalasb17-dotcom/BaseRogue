@@ -423,7 +423,7 @@
               const temp = G.draftBattingOrder[rIdx];
               G.draftBattingOrder[rIdx] = G.draftBattingOrder[sourceIdx];
               G.draftBattingOrder[sourceIdx] = temp;
-              renderConfirmationBattingRows();
+              renderBattingOrderRows();
             }
           });
         });
