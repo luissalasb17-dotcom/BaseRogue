@@ -2955,7 +2955,8 @@ function renderConfirmationBattingRows() {
     if (debuffBadge) {
       if (state.pitcherDebuff && state.pitcherDebuff.turnsLeft > 0) {
         const mult = Math.round((state.pitcherDebuff.multiplier - 1) * 100);
-        debuffBadge.innerText = `⚡ +${mult}% DAÑO RECIBIDO (${state.pitcherDebuff.turnsLeft}t)`;
+        const impLbl = state.pitcherDebuff.turnsLeft === 1 ? 'impacto' : 'impactos';
+        debuffBadge.innerText = `⚡ +${mult}% DAÑO RECIBIDO (${state.pitcherDebuff.turnsLeft} ${impLbl})`;
         debuffBadge.classList.remove('hidden');
       } else {
         debuffBadge.classList.add('hidden');

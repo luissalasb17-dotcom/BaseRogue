@@ -322,7 +322,8 @@
           
           let spdMsg = `🏃 ¡ROBO DE BASE! ${batter.name} se roba la segunda base.`;
           if (stealProcMsg) spdMsg += ` (${stealProcMsg})`;
-          spdMsg += ` Debuff de +20% daño (${this.pitcherDebuff.turnsLeft}t restantes).`;
+          const impLabel = this.pitcherDebuff.turnsLeft === 1 ? 'impacto restante' : 'impactos restantes';
+          spdMsg += ` Debuff de +20% daño (${this.pitcherDebuff.turnsLeft} ${impLabel}).`;
           
           if (stealHeal > 0) {
             batter.stamina = Math.min(100, (batter.stamina || 100) + stealHeal);
@@ -578,7 +579,8 @@
             
             let spdMsg = `🏃 ¡ROBO DE BASE! ${batter.name} se roba la segunda base.`;
             if (stealProcMsg) spdMsg += ` (${stealProcMsg})`;
-            spdMsg += ` Debuff de +20% daño (${this.pitcherDebuff.turnsLeft}t restantes).`;
+            const impLabel2 = this.pitcherDebuff.turnsLeft === 1 ? 'impacto restante' : 'impactos restantes';
+            spdMsg += ` Debuff de +20% daño (${this.pitcherDebuff.turnsLeft} ${impLabel2}).`;
             
             if (stealHeal > 0) {
               batter.stamina = Math.min(100, (batter.stamina || 100) + stealHeal);
@@ -630,6 +632,7 @@
       // Pitcher KO check
       const pitcher = this.activePitcher;
       if (pitcher && pitcher.hp <= 0) {
+        this.pitcherDebuff = null; // Clear debuff on pitcher KO
         this.logEvent('KO_PITCHER',
           `¡[K.O.] ${pitcher.name} ha sido derrotado! ¡Entra el relevo!`,
           'KO', pitcher.name);
@@ -649,6 +652,7 @@
         this.inning++;
         this.outs = 0;
         this.bases = [null, null, null];
+        this.pitcherDebuff = null; // Clear debuff when inning ends
         if (this.inning > 3) {
           this._checkEndConditions();
         }
