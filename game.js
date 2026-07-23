@@ -241,10 +241,12 @@
       
       drafted.forEach(item => {
          const p = item.p;
-         const effCon = p.con || 40;
-         const effPwr = p.pwr || 35;
-         const effEye = p.eye || 40;
-         const effSpd = p.spd || 40;
+         // Use getEffectiveStats so it accounts for Batting Cage upgrades and Era traits
+         const eff = this.getEffectiveStats(p, item.slot) || p;
+         const effCon = eff.con || 40;
+         const effPwr = eff.pwr || 35;
+         const effEye = eff.eye || 40;
+         const effSpd = eff.spd || 40;
          item.speedScore = effSpd * 1.5 + effCon + effEye;
          item.powerScore = effPwr * 1.5 + effCon;
          item.overall = effCon * 1.2 + effPwr + effEye + effSpd * 0.2;
