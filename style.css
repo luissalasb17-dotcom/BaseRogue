@@ -301,16 +301,27 @@ p {
 }
 
 .card-name {
+  font-family: 'Press Start 2P', monospace;
   font-size: 8px;
   font-weight: normal;
   text-align: center;
   color: #fff;
-  margin: 3px 0 2px 0;
+  margin: 2px 0 2px 0;
+  padding-top: 4px !important;
+  padding-bottom: 2px;
+  line-height: 1.3 !important;
+  overflow: visible !important;
   white-space: nowrap;
-  overflow: hidden;
   text-overflow: ellipsis;
   border-bottom: 2px dashed rgba(255,255,255,0.15);
-  padding-bottom: 2px;
+}
+
+/* Combat arena cards specific line height & padding adjustment */
+.fight-card-slot .card-name,
+#screen-match .card-name {
+  padding-top: 4px !important;
+  line-height: 1.3 !important;
+  overflow: visible !important;
 }
 
 .card-sec-pos {
@@ -727,7 +738,8 @@ p {
 .match-log {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  height: 200px !important;
+  max-height: 200px !important;
   border: 4px double var(--primary-color);
   box-shadow: 0 0 0 3px #000;
 }

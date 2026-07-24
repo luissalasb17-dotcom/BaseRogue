@@ -305,7 +305,9 @@
           <div style="pointer-events:none;">${cardHTML}</div>
           <div style="text-align:center;width:100%;">
             <div style="font-size:10px;color:${rColor};font-weight:bold;">${player.rarity}</div>
-            <div style="font-size:9px;color:#9ca3af;">${player.pos} • OVR ${ovr}${player.sec_pos ? ' • SEC: '+player.sec_pos : ''}</div>
+            <div style="font-size:8px;color:#9ca3af;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:148px;margin:0 auto;line-height:1.2;" title="${player.pos} • OVR ${ovr}${player.sec_pos ? ' • SEC: '+player.sec_pos : ''}">
+              ${player.pos} • OVR ${ovr}${player.sec_pos ? ' • SEC: '+player.sec_pos : ''}
+            </div>
           </div>
           <button class="btn" style="width:100%;padding:8px;font-size:10px;background:${rColor};color:#000;border:none;">✔ SELECCIONAR</button>
         `;
@@ -471,31 +473,28 @@
 
       const shield = G.calculateDraftShield();
 
-      // Top banner
+      // Compact Top banner with Shield centered below title
       const header = document.createElement('div');
-      header.style.cssText = 'width:100%;text-align:center;padding:12px 0 16px;';
+      header.style.cssText = 'width:100%;text-align:center;padding:2px 0 6px;';
       header.innerHTML = `
-        <div style="font-family:'Press Start 2P',monospace;font-size:11px;color:#10b981;margin-bottom:8px;letter-spacing:1px;">
-          ⚾ ALINEACIÓN FINAL DE TEMPORADA
+        <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:#10b981;margin-bottom:4px;letter-spacing:1px;">
+          ⚾ ALINEACIÓN PARA INICIAR LA TEMPORADA
         </div>
-        <p style="font-size:12px;color:#9ca3af;max-width:650px;margin:0 auto 12px;line-height:1.5;">
-          Has completado las 9 rondas del draft. Revisa tu estrategia, ajusta posiciones defensivas (Drag & Drop), ajusta el orden al bate y <strong>haz clic en cualquier jugador para inspeccionar su carta completa</strong>.
-        </p>
-        <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(59,130,246,0.12);border:1px solid #3b82f6;border-radius:20px;padding:6px 18px;font-size:12px;color:#3b82f6;font-weight:bold;">
-          🛡️ Escudo Grupal Inicial: <span style="color:#10b981;font-size:14px;">${shield} PTS</span>
+        <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(59,130,246,0.12);border:1px solid #3b82f6;border-radius:20px;padding:3px 14px;font-size:10px;color:#3b82f6;font-weight:bold;">
+          🛡️ Escudo Inicial: <span style="color:#10b981;font-size:12px;">${shield} PTS</span>
         </div>
       `;
       pool.appendChild(header);
 
       // 2-column layout: Fielding Roster | Batting Order
       const layout = document.createElement('div');
-      layout.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:flex-start;width:100%;max-width:980px;margin:0 auto 20px;';
+      layout.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:flex-start;width:100%;max-width:980px;margin:0 auto 4px;';
 
       // ───── LEFT: Fielding Roster Panel ─────────────────────────────────
       const rosterPanel = document.createElement('div');
-      rosterPanel.style.cssText = 'background:rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:16px;';
+      rosterPanel.style.cssText = 'background:rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:8px 12px;';
       rosterPanel.innerHTML = `
-        <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:#3b82f6;margin-bottom:12px;text-align:center;letter-spacing:1px;">
+        <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:#3b82f6;margin-bottom:6px;text-align:center;letter-spacing:1px;">
           🧤 ALINEACIÓN DEFENSIVA (DRAG & DROP)
         </div>
       `;
@@ -508,7 +507,7 @@
           'display:flex','align-items:center','gap:10px',
           `border-left:4px solid ${rColor}`,
           'background:rgba(0,0,0,0.25)','border-radius:8px',
-          'padding:8px 10px','margin-bottom:8px','cursor:pointer','transition:all .2s'
+          'padding:4px 8px','margin-bottom:3px','cursor:pointer','transition:all .2s'
         ].join(';');
 
         if (player) {
@@ -589,10 +588,10 @@
 
       // ───── RIGHT: Batting Order Panel ──────────────────────────────────
       const orderPanel = document.createElement('div');
-      orderPanel.style.cssText = 'background:rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:16px;';
+      orderPanel.style.cssText = 'background:rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:8px 12px;';
       
       orderPanel.innerHTML = `
-        <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:#f59e0b;margin-bottom:12px;text-align:center;letter-spacing:1px;display:flex;justify-content:space-between;align-items:center;">
+        <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:#f59e0b;margin-bottom:6px;text-align:center;letter-spacing:1px;display:flex;justify-content:space-between;align-items:center;">
           <span>⚔️ ORDEN AL BATE</span>
           <button class="btn btn-secondary" id="btn-auto-sort" style="padding:4px 8px;font-size:8px;cursor:pointer;">🤖 AUTO-ORDEN</button>
         </div>
@@ -621,10 +620,42 @@ function renderConfirmationBattingRows() {
           row.style.cssText = [
             'display:flex','align-items:center','gap:8px',
             'background:rgba(0,0,0,0.25)','border-radius:8px',
-            'padding:6px 10px','margin-bottom:6px',
+            'padding:4px 8px','margin-bottom:3px',
             `border-left:4px solid ${rColor}`,
             'cursor:pointer'
           ].join(';');
+
+          // Drag and drop setup for Batting Order rows
+          row.setAttribute('draggable', 'true');
+          row.addEventListener('dragstart', (e) => {
+            e.dataTransfer.setData('text/plain', String(idx));
+            row.style.opacity = '0.5';
+          });
+          row.addEventListener('dragend', () => {
+            row.style.opacity = '1';
+          });
+          row.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            row.style.background = 'rgba(255,255,255,0.15)';
+          });
+          row.addEventListener('dragleave', () => {
+            row.style.background = 'rgba(0,0,0,0.25)';
+          });
+          row.addEventListener('drop', (e) => {
+            e.preventDefault();
+            row.style.background = 'rgba(0,0,0,0.25)';
+            const fromIndexStr = e.dataTransfer.getData('text/plain');
+            if (fromIndexStr !== '' && fromIndexStr !== null) {
+              const fromIdx = parseInt(fromIndexStr, 10);
+              const toIdx = idx;
+              if (!isNaN(fromIdx) && fromIdx !== toIdx) {
+                const temp = G.draftBattingOrder[fromIdx];
+                G.draftBattingOrder[fromIdx] = G.draftBattingOrder[toIdx];
+                G.draftBattingOrder[toIdx] = temp;
+                renderConfirmationBattingRows();
+              }
+            }
+          });
 
           if (player) {
             const ovr = Math.round((player.con||40)*.3+(player.pwr||35)*.3+(player.spd||45)*.15+(player.def||40)*.15+(player.eye||40)*.1);
@@ -686,10 +717,10 @@ function renderConfirmationBattingRows() {
 
       // Bottom Confirm & Launch Campaign Button
       const bottomBar = document.createElement('div');
-      bottomBar.style.cssText = 'text-align:center;padding:10px 0 20px;';
+      bottomBar.style.cssText = 'text-align:center;padding:4px 0 0;';
       bottomBar.innerHTML = `
         <button id="btn-confirm-final-lineup" class="btn" style="
-          padding:16px 40px;font-size:13px;
+          padding:10px 28px;font-size:10px;
           background:linear-gradient(135deg,#10b981,#059669);
           border:2px solid #34d399;box-shadow:0 0 20px rgba(16,185,129,0.4);
           cursor:pointer;font-family:'Press Start 2P',monospace;letter-spacing:1px;
