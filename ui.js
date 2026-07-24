@@ -305,9 +305,7 @@
           <div style="pointer-events:none;">${cardHTML}</div>
           <div style="text-align:center;width:100%;">
             <div style="font-size:10px;color:${rColor};font-weight:bold;">${player.rarity}</div>
-            <div style="font-size:8px;color:#9ca3af;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:148px;margin:0 auto;line-height:1.2;" title="${player.pos}${player.sec_pos ? ' ('+player.sec_pos.split(',').map(s=>s.trim()).join('/')+')' : ''} • OVR ${ovr}">
-              ${player.pos}${player.sec_pos ? ' ('+player.sec_pos.split(',').map(s=>s.trim()).join('/')+')' : ''} • OVR ${ovr}
-            </div>
+            <div style="font-size:9.5px;color:#9ca3af;text-align:center;margin-top:2px;">${player.pos} • OVR ${ovr}</div>
           </div>
           <button class="btn" style="width:100%;padding:8px;font-size:10px;background:${rColor};color:#000;border:none;">✔ SELECCIONAR</button>
         `;
