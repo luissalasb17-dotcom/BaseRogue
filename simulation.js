@@ -635,7 +635,7 @@
       // Pitcher KO check
       const pitcher = this.activePitcher;
       if (pitcher && pitcher.hp <= 0) {
-        this.pitcherDebuff = null; // Clear debuff on pitcher KO
+        // Debuff persists across pitcher changes until impacts expire or inning ends
         this.logEvent('KO_PITCHER',
           `¡[K.O.] ${pitcher.name} ha sido derrotado! ¡Entra el relevo!`,
           'KO', pitcher.name);
