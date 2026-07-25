@@ -1,3 +1,18 @@
+  // Helper to format player names cleanly on retro card headers (e.g. "Cristóbal Torriente" -> "C. Torriente")
+  function formatCardDisplayName(fullName) {
+    if (!fullName || fullName.length <= 14) return fullName || '';
+    const parts = fullName.trim().split(' ');
+    if (parts.length >= 2) {
+      const firstInitial = parts[0].charAt(0).toUpperCase() + '.';
+      const lastName = parts.slice(1).join(' ');
+      const shortened = `${firstInitial} ${lastName}`;
+      if (shortened.length <= 15) {
+        return shortened;
+      }
+    }
+    return fullName;
+  }
+
 // BaseRogue UI Controller
 // Handles DOM interactions, rendering, simulation playback, and game loops
 
@@ -1017,11 +1032,11 @@ function renderConfirmationBattingRows() {
         </div>
         ${(() => {
           const pName = player.name || '';
-          const len = pName.length;
+          const displayName = formatCardDisplayName(pName);
+          const len = displayName.length;
           let fontSizeStyle = '';
-          if (len >= 19) fontSizeStyle = 'style="font-size: 5.5px !important;"';
-          else if (len >= 15) fontSizeStyle = 'style="font-size: 6.5px !important;"';
-          return `<div class="card-name" title="${pName}" ${fontSizeStyle}>${pName}</div>`;
+          if (len >= 17) fontSizeStyle = 'style="font-size: 7px !important;"';
+          return `<div class="card-name" title="${pName}" ${fontSizeStyle}>${displayName}</div>`;
         })()}
         ${player.sec_pos ? `<div class="card-sec-pos" title="Posiciones Secundarias: ${player.sec_pos}">SEC: ${player.sec_pos}</div>` : ''}
         <div class="card-traits-box">
