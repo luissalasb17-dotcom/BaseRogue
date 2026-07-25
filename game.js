@@ -146,6 +146,40 @@
   ];
 
   class GameState {
+    loadSeasonOpponents(year) {
+      if (!window.OpponentsDatabase) return;
+      const yearsAvailable = Object.keys(window.OpponentsDatabase).map(Number).sort((a,b)=>b-a);
+      
+      let targetYear = year;
+      if (year === 'random' || !year) {
+        targetYear = yearsAvailable[Math.floor(Math.random() * yearsAvailable.length)];
+      } else {
+        targetYear = parseInt(year, 10);
+      }
+
+      const seasonData = window.OpponentsDatabase[targetYear];
+      if (!seasonData) return;
+
+      this.currentSeasonYear = targetYear;
+      
+      const customPool = [];
+      if (seasonData.low && seasonData.low.length > 0) {
+        seasonData.low.forEach(t => customPool.push({...t, tier: 'Low'}));
+      }
+      if (seasonData.mid && seasonData.mid.length > 0) {
+        seasonData.mid.forEach(t => customPool.push({...t, tier: 'Mid'}));
+      }
+      if (seasonData.high && seasonData.high.length > 0) {
+        seasonData.high.forEach(t => customPool.push({...t, tier: 'High'}));
+      }
+      if (seasonData.boss) {
+        customPool.push({...seasonData.boss, tier: 'High', isBoss: true});
+      }
+
+      window.OpponentsPool = customPool;
+      this.seasonPoolData = seasonData;
+      console.log(`Loaded Story Mode Season ${targetYear} with ${customPool.length} teams`);
+    },
     constructor() {
       this.resetRun();
     }

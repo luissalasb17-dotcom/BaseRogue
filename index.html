@@ -48,6 +48,73 @@
   <!-- Main Viewport -->
   <main class="main-container">
 
+    
+    <!-- SCREEN 0: GAME MODE SELECTOR (POKELIKE STYLE) -->
+    <div class="glass-panel" id="screen-mode-select" style="position: relative; max-width: 900px; margin: 20px auto; text-align: center; padding: 30px 20px;">
+      
+      <div style="font-family: 'Press Start 2P', monospace; font-size: 22px; color: #10b981; margin-bottom: 8px; letter-spacing: 2px; text-shadow: 0 0 15px rgba(16,185,129,0.5);">
+        ⚾ BASE-ROGUE
+      </div>
+      <div style="font-size: 13px; color: #9ca3af; margin-bottom: 30px;">
+        SELECCIONA EL MODO DE JUEGO
+      </div>
+
+      <div class="mode-grid">
+        <!-- MODE 1: STORY MODE -->
+        <div class="mode-card story-card" id="card-mode-story">
+          <div class="mode-icon">📜</div>
+          <div class="mode-title">MODO HISTORIA</div>
+          <div class="mode-subtitle">TEMPORADAS 1901 – 2025</div>
+          <div class="mode-desc">
+            Compite en cualquier año histórico de la MLB. Enfréntate a los equipos reales de esa temporada y a sus 3 mejores lanzadores por WAR hasta llegar al Campeón de la Serie Mundial.
+          </div>
+          <button class="btn btn-mode" id="btn-select-story-mode">
+            ⚾ SELECCIONAR TEMPORADA
+          </button>
+        </div>
+
+        <!-- MODE 2: QUICK PLAY / CLASSIC -->
+        <div class="mode-card quick-card" id="card-mode-quick">
+          <div class="mode-icon">⚡</div>
+          <div class="mode-title">PARTIDA RÁPIDA</div>
+          <div class="mode-subtitle">MODO CLÁSICO</div>
+          <div class="mode-desc">
+            La experiencia clásica roguelite con nuestro pool curado de oponentes legendarios de distintas eras y jefes retro.
+          </div>
+          <button class="btn btn-mode" id="btn-select-quick-mode">
+            🚀 JUGAR MODO CLÁSICO
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- MODAL: SEASON SELECTOR (1901-2025) -->
+    <div id="modal-season-select" class="hidden" style="position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px;">
+      <div class="glass-panel" style="max-width: 500px; width: 100%; border: 2px solid #10b981; box-shadow: 0 0 30px rgba(16,185,129,0.3); padding: 25px; text-align: center; position: relative;">
+        
+        <button id="btn-close-season-modal" style="position: absolute; top: 12px; right: 14px; background: none; border: none; color: #9ca3af; font-size: 18px; cursor: pointer;">✕</button>
+
+        <div style="font-family: 'Press Start 2P', monospace; font-size: 13px; color: #10b981; margin-bottom: 10px;">
+          📜 SELECCIONA LA TEMPORADA
+        </div>
+        <p style="font-size: 11px; color: #9ca3af; line-height: 1.4; margin-bottom: 20px;">
+          Elige el año para competir contra todos los equipos reales de esa época con sus 3 mejores pitchers por WAR.
+        </p>
+
+        <div style="margin-bottom: 25px;">
+          <label style="display: block; font-family: 'Press Start 2P', monospace; font-size: 9px; color: #f59e0b; margin-bottom: 8px;">AÑO DE LA TEMPORADA:</label>
+          <select id="select-season-year" style="width: 100%; padding: 12px; font-family: 'Press Start 2P', monospace; font-size: 11px; background: #000; color: #10b981; border: 2px solid #10b981; border-radius: 8px; cursor: pointer; outline: none;">
+            <option value="random">🎲 Season Random (Año Aleatorio)</option>
+          </select>
+        </div>
+
+        <button id="btn-confirm-start-season" class="btn" style="width: 100%; padding: 14px; font-size: 11px; font-family: 'Press Start 2P', monospace; background: linear-gradient(135deg, #10b981, #059669); border: 2px solid #34d399; box-shadow: 0 0 15px rgba(16,185,129,0.4); cursor: pointer;">
+          ⚾ EMPEZAR TEMPORADA HISTÓRICA
+        </button>
+      </div>
+    </div>
+
     <!-- SCREEN 1: MAIN MENU & STARTER SELECTION -->
     <div class="glass-panel" id="screen-menu" style="position: relative;">
 
