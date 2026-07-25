@@ -179,7 +179,8 @@
       window.OpponentsPool = customPool;
       this.seasonPoolData = seasonData;
       console.log(`Loaded Story Mode Season ${targetYear} with ${customPool.length} teams`);
-    },
+    }
+
     constructor() {
       this.resetRun();
     }
