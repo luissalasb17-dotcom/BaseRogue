@@ -146,6 +146,7 @@
 
   /** Master render for the 9-round draft. Called every time a pick is made. */
   function renderDraftRound() {
+    window.renderDraftRound = renderDraftRound;
     try {
       const G = window.Game;
       const round = G.draftRound; // 1–9
@@ -271,7 +272,7 @@
             const temp = G.draftRoster[slot];
             G.draftRoster[slot] = G.draftRoster[sourceSlot];
             G.draftRoster[sourceSlot] = temp;
-            renderDraftRound();
+            if (window.renderDraftRound) window.renderDraftRound(); else if (typeof renderDraftRound === 'function') renderDraftRound();
           }
         });
 
@@ -320,7 +321,7 @@
         });
         wrapper.addEventListener('click', () => {
           G.draftPickPlayer(player);
-          renderDraftRound();
+          if (window.renderDraftRound) window.renderDraftRound(); else if (typeof renderDraftRound === 'function') renderDraftRound();
         });
         cardsRow.appendChild(wrapper);
       });
@@ -460,7 +461,7 @@
 
   // renderLineupAssignment is no longer needed (handled inline in draft rounds)
   // Keeping stub so any legacy references don't throw
-  function renderLineupAssignment() { renderDraftRound(); }
+  function renderLineupAssignment() { if (window.renderDraftRound) window.renderDraftRound(); else if (typeof renderDraftRound === 'function') renderDraftRound(); }
 
   /** Final confirmation screen after completing all 9 draft rounds */
   function renderFinalLineupConfirmation() {
@@ -807,7 +808,7 @@ function renderConfirmationBattingRows() {
         if (modalSeason) modalSeason.classList.add('hidden');
         screenMode.classList.add('hidden');
         screenMenu.classList.remove('hidden');
-        renderDraftRound();
+        if (window.renderDraftRound) window.renderDraftRound(); else if (typeof renderDraftRound === 'function') renderDraftRound();
       };
     }
 
@@ -826,7 +827,7 @@ function renderConfirmationBattingRows() {
         }
         screenMode.classList.add('hidden');
         screenMenu.classList.remove('hidden');
-        renderDraftRound();
+        if (window.renderDraftRound) window.renderDraftRound(); else if (typeof renderDraftRound === 'function') renderDraftRound();
       };
     }
   }
@@ -838,7 +839,7 @@ function renderConfirmationBattingRows() {
 
   function init() {
     initGameModeSelector();
-    renderDraftRound();
+    if (window.renderDraftRound) window.renderDraftRound(); else if (typeof renderDraftRound === 'function') renderDraftRound();
     setupEventListeners();
   }
 
@@ -1418,7 +1419,7 @@ function renderConfirmationBattingRows() {
       window.Game.resetRun();
       el.hud.classList.add('hidden');
       el.workspace.classList.add('hidden');
-      renderDraftRound();
+      if (window.renderDraftRound) window.renderDraftRound(); else if (typeof renderDraftRound === 'function') renderDraftRound();
       showScreen('screen-menu');
     });
 
@@ -3523,7 +3524,7 @@ function renderConfirmationBattingRows() {
         if (modalSeason) modalSeason.classList.add('hidden');
         screenMode.classList.add('hidden');
         screenMenu.classList.remove('hidden');
-        renderDraftRound();
+        if (window.renderDraftRound) window.renderDraftRound(); else if (typeof renderDraftRound === 'function') renderDraftRound();
       };
     }
 
@@ -3536,7 +3537,7 @@ function renderConfirmationBattingRows() {
         }
         screenMode.classList.add('hidden');
         screenMenu.classList.remove('hidden');
-        renderDraftRound();
+        if (window.renderDraftRound) window.renderDraftRound(); else if (typeof renderDraftRound === 'function') renderDraftRound();
       };
     }
   }

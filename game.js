@@ -162,6 +162,7 @@
 
       this.currentSeasonYear = targetYear;
       this.selectedSeasonYear = targetYear;
+      this.selectedMode = 'story';
       
       const customPool = [];
       if (seasonData.low && seasonData.low.length > 0) {
