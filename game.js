@@ -176,6 +176,7 @@
         customPool.push({...seasonData.boss, tier: 'High', isBoss: true});
       }
 
+      this.customSeasonPool = customPool;
       window.OpponentsPool = customPool;
       this.seasonPoolData = seasonData;
       console.log(`Loaded Story Mode Season ${targetYear} with ${customPool.length} teams`);
@@ -1051,7 +1052,11 @@
     getEnemyTeam() {
       if (this.currentEnemy) return this.currentEnemy;
 
-      const pool = window.OpponentsPool || [];
+      let pool = window.OpponentsPool || [];
+      if (this.selectedMode === 'story' && this.customSeasonPool && this.customSeasonPool.length > 0) {
+        pool = this.customSeasonPool;
+      }
+
       const stage = this.currentStageIndex;
 
       // Map 16-stage zone system to tiers
