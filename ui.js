@@ -1015,7 +1015,14 @@ function renderConfirmationBattingRows() {
           <span class="card-ovr" style="font-family: 'Press Start 2P', monospace; font-size: 6px; color: ${ovrGrade.color}; font-weight: bold; background: #000; padding: 2px 4px; border: 1px solid rgba(255,255,255,0.2);">CLASS ${ovrGrade.text}</span>
           <span class="card-year" style="font-size: 6px;">${year}</span>
         </div>
-        <div class="card-name" title="${player.name}">${player.name}</div>
+        ${(() => {
+          const pName = player.name || '';
+          const len = pName.length;
+          let fontSizeStyle = '';
+          if (len >= 19) fontSizeStyle = 'style="font-size: 5.5px !important;"';
+          else if (len >= 15) fontSizeStyle = 'style="font-size: 6.5px !important;"';
+          return `<div class="card-name" title="${pName}" ${fontSizeStyle}>${pName}</div>`;
+        })()}
         ${player.sec_pos ? `<div class="card-sec-pos" title="Posiciones Secundarias: ${player.sec_pos}">SEC: ${player.sec_pos}</div>` : ''}
         <div class="card-traits-box">
           <span class="card-trait-badge trait-era" title="${player.era}">${getShortEraName(player.era)}</span>
