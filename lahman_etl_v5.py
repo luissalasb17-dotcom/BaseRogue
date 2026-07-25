@@ -565,9 +565,9 @@ def paso_10_atributos_raw_bateo(df):
     df = df.copy()
     df["contact_raw"] = df["ba"].fillna(0) * 0.80 + (1.0 - df["k_rate"].fillna(0)) * 0.20
     df["power_raw"] = (
-        df["iso"].fillna(0)      * 0.50 +
-        df["xbh_rate"].fillna(0) * 0.30 +
-        df["hr_rate"].fillna(0)  * 0.20
+        df["hr_rate"].fillna(0)  * 0.40 +
+        df["iso"].fillna(0)      * 0.40 +
+        df["xbh_rate"].fillna(0) * 0.20
     )
     df["eye_raw"] = df["bb_rate"].fillna(0)
     print("  contact_raw, power_raw, eye_raw calculados")
