@@ -769,11 +769,11 @@ function renderConfirmationBattingRows() {
 
     // Populate Season dropdown (1901-2025)
     if (selectYear && selectYear.options.length <= 1) {
-      selectYear.innerHTML = '<option value="random">🎲 Season Random (Año Aleatorio)</option>';
-      for (let y = 2025; y >= 1901; y--) {
+      selectYear.innerHTML = '<option value="random">🎲 Random Season</option>';
+      for (let y = 1901; y <= 2025; y++) {
         const opt = document.createElement('option');
         opt.value = String(y);
-        opt.textContent = y === 2025 ? '2025 (Temporada Actual)' : String(y);
+        opt.textContent = String(y);
         selectYear.appendChild(opt);
       }
     }
@@ -3497,11 +3497,11 @@ function renderConfirmationBattingRows() {
 
     // Populate Season dropdown (1901-2025)
     if (selectYear && selectYear.options.length <= 1) {
-      selectYear.innerHTML = '<option value="random">🎲 Random Season (Año Aleatorio)</option>';
-      for (let y = 2025; y >= 1901; y--) {
+      selectYear.innerHTML = '<option value="random">🎲 Random Season</option>';
+      for (let y = 1901; y <= 2025; y++) {
         const opt = document.createElement('option');
         opt.value = String(y);
-        opt.textContent = y === 2025 ? '2025 (Temporada Actual)' : String(y);
+        opt.textContent = String(y);
         selectYear.appendChild(opt);
       }
     }
