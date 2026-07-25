@@ -925,11 +925,19 @@ function renderConfirmationBattingRows() {
     const isPitcher = player.pos === 'P';
 
     // Rarity styles
-    const rarityLabel = player.rarity || "Common";
+    let derivedRarity = player.rarity;
+    if (!derivedRarity) {
+      if (ovr >= 90) derivedRarity = "Legendary";
+      else if (ovr >= 80) derivedRarity = "Epic";
+      else if (ovr >= 65) derivedRarity = "Rare";
+      else if (ovr >= 50) derivedRarity = "Uncommon";
+      else derivedRarity = "Common";
+    }
+    const rarityLabel = derivedRarity;
 
     // Calculate OVR Overall rating
     const ovr = isPitcher
-      ? Math.round(((player.mov || 40) + (player.stf || 40) + (player.ctl || 40)) / 3)
+      ? Math.round((player.stf || 40)*0.30 + (player.ctl || 40)*0.30 + (player.mov || 40)*0.30 + (player.sta || 50)*0.10)
       : Math.round((player.con || 40)*0.30 + (player.pwr || 35)*0.30 + (player.spd || 45)*0.15 + (player.def || 40)*0.15 + (player.eye || 40)*0.10);
       
     // Get Rating letter grade
@@ -3204,16 +3212,26 @@ function renderConfirmationBattingRows() {
       const pitchTeam = pitcher.team || (enemyTeam ? (enemyTeam.teamID || 'PIT') : 'PIT');
       const pitchEra = pitcher.era || 'Efficiency & Shift (2006-2015)';
 
+      const pitchOvr = Math.round((pitcher.stf || 40)*0.30 + (pitcher.ctl || 40)*0.30 + (pitcher.mov || 40)*0.30 + (pitcher.sta || 50)*0.10);
+      let pitchRarity = pitcher.rarity;
+      if (!pitchRarity) {
+        if (pitchOvr >= 90) pitchRarity = 'Legendary';
+        else if (pitchOvr >= 80) pitchRarity = 'Epic';
+        else if (pitchOvr >= 65) pitchRarity = 'Rare';
+        else if (pitchOvr >= 50) pitchRarity = 'Uncommon';
+        else pitchRarity = 'Common';
+      }
+
       const tempPitcher = {
         name: pitcher.name, pos: 'P',
         era: pitchEra,
         team: pitchTeam,
         year: pitchYear,
-        mov: pitcher.mov, stf: pitcher.stf, ctl: pitcher.ctl,
+        mov: pitcher.mov, stf: pitcher.stf, ctl: pitcher.ctl, sta: pitcher.sta,
         hp: pitcher.hp, maxHp: pitcher.maxHp,
         stamina: Math.round((pitcher.hp / pitcher.maxHp) * 100),
-        ovr: pitcher.ovr,
-        rarity: pitcher.rarity || 'Common'
+        ovr: pitchOvr,
+        rarity: pitchRarity
       };
       el.arenaPitcherCardSlot.innerHTML = createCardHTML(tempPitcher, 'P');
 
