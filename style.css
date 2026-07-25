@@ -2136,3 +2136,30 @@ body.workspace-active .main-container {
   border: 1px solid #60a5fa;
   color: #fff;
 }
+
+
+/* Card name container styles (Single-line for short names, 2-line stacked for long names) */
+.card-name-single,
+.card-name-stacked {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7.5px;
+  font-weight: normal;
+  text-align: center;
+  color: #fff;
+  margin: 1px 0;
+  padding-top: 1px;
+  padding-bottom: 2px;
+  border-bottom: 2px dashed rgba(255,255,255,0.15);
+  min-height: 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.15;
+}
+
+.card-name-stacked span {
+  display: block;
+  white-space: nowrap;
+  overflow: visible;
+}

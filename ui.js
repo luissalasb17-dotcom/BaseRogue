@@ -1,16 +1,16 @@
-  // Helper to format player names cleanly on retro card headers (e.g. "Cristóbal Torriente" -> "C. Torriente")
+  // Helper to format player names cleanly on retro card headers:
+  // Names <= 14 chars fit on 1 line ("José Valentín", "Babe Ruth").
+  // Names > 14 chars stack full first and last name on 2 lines ("Cristóbal\nTorriente", "Javier\nValentín").
   function formatCardDisplayName(fullName) {
-    if (!fullName || fullName.length <= 14) return fullName || '';
-    const parts = fullName.trim().split(' ');
-    if (parts.length >= 2) {
-      const firstInitial = parts[0].charAt(0).toUpperCase() + '.';
-      const lastName = parts.slice(1).join(' ');
-      const shortened = `${firstInitial} ${lastName}`;
-      if (shortened.length <= 15) {
-        return shortened;
-      }
+    if (!fullName) return '';
+    const trimmed = fullName.trim();
+    if (trimmed.length <= 14 || !trimmed.includes(' ')) {
+      return `<div class="card-name-single" title="${trimmed}">${trimmed}</div>`;
     }
-    return fullName;
+    const parts = trimmed.split(' ');
+    const first = parts[0];
+    const last = parts.slice(1).join(' ');
+    return `<div class="card-name-stacked" title="${trimmed}"><span>${first}</span><span>${last}</span></div>`;
   }
 
 // BaseRogue UI Controller
@@ -1030,14 +1030,7 @@ function renderConfirmationBattingRows() {
           <span class="card-ovr" style="font-family: 'Press Start 2P', monospace; font-size: 6px; color: ${ovrGrade.color}; font-weight: bold; background: #000; padding: 2px 4px; border: 1px solid rgba(255,255,255,0.2);">CLASS ${ovrGrade.text}</span>
           <span class="card-year" style="font-size: 6px;">${year}</span>
         </div>
-        ${(() => {
-          const pName = player.name || '';
-          const displayName = formatCardDisplayName(pName);
-          const len = displayName.length;
-          let fontSizeStyle = '';
-          if (len >= 17) fontSizeStyle = 'style="font-size: 7px !important;"';
-          return `<div class="card-name" title="${pName}" ${fontSizeStyle}>${displayName}</div>`;
-        })()}
+        ${formatCardDisplayName(player.name)}
         ${player.sec_pos ? `<div class="card-sec-pos" title="Posiciones Secundarias: ${player.sec_pos}">SEC: ${player.sec_pos}</div>` : ''}
         <div class="card-traits-box">
           <span class="card-trait-badge trait-era" title="${player.era}">${getShortEraName(player.era)}</span>
