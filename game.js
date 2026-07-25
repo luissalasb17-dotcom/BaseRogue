@@ -161,6 +161,7 @@
       if (!seasonData) return;
 
       this.currentSeasonYear = targetYear;
+      this.selectedSeasonYear = targetYear;
       
       const customPool = [];
       if (seasonData.low && seasonData.low.length > 0) {
@@ -188,9 +189,6 @@
 
     resetRun() {
       this.budget = 10;
-      if (this.selectedMode === 'story' && this.selectedSeasonYear) {
-        this.loadSeasonOpponents(this.selectedSeasonYear);
-      }
       this.currentStageIndex = 0;
       this.currentNodeIndex = 0;
       this.runActive = false;

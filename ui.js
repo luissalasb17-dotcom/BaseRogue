@@ -796,12 +796,13 @@ function renderConfirmationBattingRows() {
         const yearVal = selectYear ? selectYear.value : 'random';
         if (window.Game) {
           window.Game.selectedMode = 'story';
-          if (window.Game.loadSeasonOpponents) {
-            window.Game.loadSeasonOpponents(yearVal);
-          }
+          window.Game.selectedSeasonYear = yearVal === 'random' ? null : parseInt(yearVal, 10);
         }
         if (window.Game && window.Game.resetRun) {
           window.Game.resetRun();
+        }
+        if (window.Game && window.Game.loadSeasonOpponents) {
+          window.Game.loadSeasonOpponents(yearVal);
         }
         if (modalSeason) modalSeason.classList.add('hidden');
         screenMode.classList.add('hidden');
