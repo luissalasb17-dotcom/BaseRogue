@@ -148,17 +148,18 @@
   class GameState {
     loadSeasonOpponents(year) {
       if (!window.OpponentsDatabase) return;
-      const yearsAvailable = Object.keys(window.OpponentsDatabase).map(Number).sort((a,b)=>b-a);
+      const yearsAvailable = Object.keys(window.OpponentsDatabase);
       
-      let targetYear = year;
+      let targetYear = String(year);
       if (year === 'random' || !year) {
         targetYear = yearsAvailable[Math.floor(Math.random() * yearsAvailable.length)];
-      } else {
-        targetYear = parseInt(year, 10);
       }
 
-      const seasonData = window.OpponentsDatabase[targetYear];
-      if (!seasonData) return;
+      const seasonData = window.OpponentsDatabase[targetYear] || window.OpponentsDatabase[String(targetYear)];
+      if (!seasonData) {
+        console.error(`Season data not found for year ${targetYear}`);
+        return;
+      }
 
       this.currentSeasonYear = targetYear;
       this.selectedSeasonYear = targetYear;
