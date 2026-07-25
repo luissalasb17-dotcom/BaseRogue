@@ -187,6 +187,9 @@
 
     resetRun() {
       this.budget = 10;
+      if (this.selectedMode === 'story' && this.selectedSeasonYear) {
+        this.loadSeasonOpponents(this.selectedSeasonYear);
+      }
       this.currentStageIndex = 0;
       this.currentNodeIndex = 0;
       this.runActive = false;

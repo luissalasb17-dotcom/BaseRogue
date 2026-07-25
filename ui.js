@@ -749,7 +749,91 @@ function renderConfirmationBattingRows() {
   }
 
   // Initialize App
+  function initGameModeSelector() {
+    const screenMode = document.getElementById('screen-mode-select');
+    const screenMenu = document.getElementById('screen-menu');
+    const modalSeason = document.getElementById('modal-season-select');
+    const selectYear = document.getElementById('select-season-year');
+    const btnStory = document.getElementById('btn-select-story-mode');
+    const btnQuick = document.getElementById('btn-select-quick-mode');
+    const btnCloseModal = document.getElementById('btn-close-season-modal');
+    const btnConfirmSeason = document.getElementById('btn-confirm-start-season');
+
+    if (!screenMode || !screenMenu) return;
+
+    // Show mode selector first on startup
+    screenMode.classList.remove('hidden');
+    screenMenu.classList.add('hidden');
+
+    // Populate Season dropdown (1901-2025)
+    if (selectYear && selectYear.options.length <= 1) {
+      selectYear.innerHTML = '<option value="random">🎲 Season Random (Año Aleatorio)</option>';
+      for (let y = 2025; y >= 1901; y--) {
+        const opt = document.createElement('option');
+        opt.value = String(y);
+        opt.textContent = y === 2025 ? '2025 (Temporada Actual)' : String(y);
+        selectYear.appendChild(opt);
+      }
+    }
+
+    // Story mode card click
+    if (btnStory) {
+      btnStory.onclick = () => {
+        if (modalSeason) modalSeason.classList.remove('hidden');
+      };
+    }
+
+    // Close season modal
+    if (btnCloseModal) {
+      btnCloseModal.onclick = () => {
+        if (modalSeason) modalSeason.classList.add('hidden');
+      };
+    }
+
+    // Confirm Start Season button
+    if (btnConfirmSeason) {
+      btnConfirmSeason.onclick = () => {
+        const yearVal = selectYear ? selectYear.value : 'random';
+        if (window.Game && window.Game.loadSeasonOpponents) {
+          window.Game.loadSeasonOpponents(yearVal);
+        }
+        if (window.Game && window.Game.resetRun) {
+          window.Game.resetRun();
+        }
+        if (modalSeason) modalSeason.classList.add('hidden');
+        screenMode.classList.add('hidden');
+        screenMenu.classList.remove('hidden');
+        renderDraftRound();
+      };
+    }
+
+    // Quick Play card click
+    if (btnQuick) {
+      btnQuick.onclick = () => {
+        if (window.Game) {
+          window.Game.selectedMode = 'quick';
+          window.Game.selectedSeasonYear = null;
+        }
+        if (window.OriginalOpponentsPool) {
+          window.OpponentsPool = window.OriginalOpponentsPool;
+        }
+        if (window.Game && window.Game.resetRun) {
+          window.Game.resetRun();
+        }
+        screenMode.classList.add('hidden');
+        screenMenu.classList.remove('hidden');
+        renderDraftRound();
+      };
+    }
+  }
+
+  // Backup original OpponentsPool on load
+  if (window.OpponentsPool && !window.OriginalOpponentsPool) {
+    window.OriginalOpponentsPool = [...window.OpponentsPool];
+  }
+
   function init() {
+    initGameModeSelector();
     renderDraftRound();
     setupEventListeners();
   }
