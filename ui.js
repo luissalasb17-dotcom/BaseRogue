@@ -3199,13 +3199,20 @@ function renderConfirmationBattingRows() {
         ? 'linear-gradient(90deg,#ffcc00,#ffeb60)'
         : 'linear-gradient(90deg,#00ff66,#66ffa6)';
 
+      const enemyTeam = (window.Game && window.Game.getEnemyTeam) ? window.Game.getEnemyTeam() : null;
+      const pitchYear = pitcher.year || (enemyTeam ? enemyTeam.year : 2008);
+      const pitchTeam = pitcher.team || (enemyTeam ? (enemyTeam.teamID || 'PIT') : 'PIT');
+      const pitchEra = pitcher.era || 'Efficiency & Shift (2006-2015)';
+
       const tempPitcher = {
         name: pitcher.name, pos: 'P',
-        era: pitcher.era || 'Golden Era (1920-1941)',
-        team: pitcher.team || 'None', year: pitcher.year || 1980,
+        era: pitchEra,
+        team: pitchTeam,
+        year: pitchYear,
         mov: pitcher.mov, stf: pitcher.stf, ctl: pitcher.ctl,
         hp: pitcher.hp, maxHp: pitcher.maxHp,
         stamina: Math.round((pitcher.hp / pitcher.maxHp) * 100),
+        ovr: pitcher.ovr,
         rarity: pitcher.rarity || 'Common'
       };
       el.arenaPitcherCardSlot.innerHTML = createCardHTML(tempPitcher, 'P');
