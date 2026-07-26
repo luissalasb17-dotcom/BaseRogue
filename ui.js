@@ -119,18 +119,18 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
 (function() {
   // Elements Cache
   const el = {
-    hud: document.getElementById('game-hud'),
-    hudStage: document.getElementById('hud-stage-val'),
-    hudBudget: document.getElementById('hud-budget-val'),
-    toggleRosterBtn: document.getElementById('btn-toggle-roster-view'),
+    get hud() { return document.getElementById('game-hud'); },
+    get hudStage() { return document.getElementById('hud-stage-val'); },
+    get hudBudget() { return document.getElementById('hud-budget-val'); },
+    get toggleRosterBtn() { return document.getElementById('btn-toggle-roster-view'); },
     
     // Screens
-    screenMenu: document.getElementById('screen-menu'),
-    starterPool: document.getElementById('starter-selection-pool') || document.getElementById('draft-options-row'),
+    get screenMenu() { return document.getElementById('screen-menu'); },
+    get starterPool() { return document.getElementById('starter-selection-pool') || document.getElementById('draft-options-row'); },
     
-    workspace: document.getElementById('game-workspace'),
-    screenMap: document.getElementById('screen-map'),
-    mapContainer: document.getElementById('map-nodes-container'),
+    get workspace() { return document.getElementById('game-workspace'); },
+    get screenMap() { return document.getElementById('screen-map'); },
+    get mapContainer() { return document.getElementById('map-nodes-container'); },
     
     screenMatch: document.getElementById('screen-match'),
     matchHeaderTitle: document.getElementById('match-header-title'),
@@ -275,7 +275,16 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
 
       const info   = G.getDraftRoundInfo();
       const picks  = G.getDraftRoundPicks();
-      const pool   = el.starterPool || document.getElementById('starter-selection-pool') || document.getElementById('draft-options-row');
+      let pool = el.starterPool || document.getElementById('starter-selection-pool') || document.getElementById('draft-options-row');
+      if (!pool) {
+        const screenDraft = document.getElementById('screen-draft');
+        if (screenDraft) {
+          pool = document.createElement('div');
+          pool.id = 'starter-selection-pool';
+          pool.className = 'draft-cards';
+          screenDraft.appendChild(pool);
+        }
+      }
       pool.innerHTML = '';
 
       // ── Top header: round progress ──────────────────────────────────────
