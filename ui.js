@@ -3,16 +3,22 @@
 window.showScreen = function(screenId) {
   const screenMode = document.getElementById('screen-mode-select');
   const screenMenu = document.getElementById('screen-menu');
+  const gameWorkspace = document.getElementById('game-workspace');
+  const hud = document.getElementById('game-hud');
 
   if (screenId === 'screen-mode-select') {
     if (screenMode) screenMode.classList.remove('hidden');
     if (screenMenu) screenMenu.classList.add('hidden');
+    if (gameWorkspace) gameWorkspace.classList.add('hidden');
+    if (hud) hud.classList.add('hidden');
     return;
   }
 
-  // Any in-game screen (draft, map, match, etc.) lives inside #screen-menu wrapper
+  // All in-game screens (draft, map, match, train, rest, event, pre-fight, gameover) live inside #game-workspace wrapper
   if (screenMode) screenMode.classList.add('hidden');
-  if (screenMenu) screenMenu.classList.remove('hidden');
+  if (screenMenu) screenMenu.classList.add('hidden');
+  if (gameWorkspace) gameWorkspace.classList.remove('hidden');
+  if (hud && window.Game && window.Game.runActive) hud.classList.remove('hidden');
 
   const innerScreens = ['screen-map', 'screen-pre-fight', 'screen-match', 'screen-event', 'screen-draft', 'screen-train', 'screen-rest', 'screen-gameover'];
   innerScreens.forEach(id => {
@@ -828,7 +834,6 @@ function renderConfirmationBattingRows() {
         const ok = G.finalizeDraftAndStart();
         if (ok) {
           el.hud.classList.remove('hidden');
-          el.workspace.classList.remove('remove');
           el.workspace.classList.remove('hidden');
           updateHUD();
           renderActiveRoster();
