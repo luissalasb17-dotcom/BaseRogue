@@ -1,11 +1,25 @@
 
-// Global helper for screen swapping
+// Global helper for screen swapping with proper parent-child container handling
 window.showScreen = function(screenId) {
-  const screens = ['screen-mode-select', 'screen-season-roulette', 'screen-menu', 'screen-map', 'screen-pre-fight', 'screen-match', 'screen-event', 'screen-draft', 'screen-train', 'screen-rest', 'screen-gameover'];
-  screens.forEach(id => {
+  const screenMode = document.getElementById('screen-mode-select');
+  const screenMenu = document.getElementById('screen-menu');
+
+  if (screenId === 'screen-mode-select') {
+    if (screenMode) screenMode.classList.remove('hidden');
+    if (screenMenu) screenMenu.classList.add('hidden');
+    return;
+  }
+
+  // Any in-game screen (draft, map, match, etc.) lives inside #screen-menu wrapper
+  if (screenMode) screenMode.classList.add('hidden');
+  if (screenMenu) screenMenu.classList.remove('hidden');
+
+  const innerScreens = ['screen-map', 'screen-pre-fight', 'screen-match', 'screen-event', 'screen-draft', 'screen-train', 'screen-rest', 'screen-gameover'];
+  innerScreens.forEach(id => {
     const s = document.getElementById(id);
     if (s) s.classList.add('hidden');
   });
+
   const target = document.getElementById(screenId);
   if (target) target.classList.remove('hidden');
 };
@@ -931,8 +945,7 @@ function initGameModeSelector() {
         if (window.Game && window.Game.resetRun) {
           window.Game.resetRun();
         }
-        screenMode.classList.add('hidden');
-        screenMenu.classList.remove('hidden');
+        window.showScreen('screen-draft');
         if (window.renderDraftRound) window.renderDraftRound(); else if (typeof renderDraftRound === 'function') renderDraftRound();
       };
     }
@@ -1158,24 +1171,8 @@ function initGameModeSelector() {
 
   // Main UI Screen Swapping
     function showScreen(screenId) {
-    // Hide all screens
-    if (el.screenMode) el.screenMode.classList.add('hidden');
-    if (el.screenSeasonRoulette) el.screenSeasonRoulette.classList.add('hidden');
-    if (el.screenMenu) el.screenMenu.classList.add('hidden');
-    if (el.screenMap) el.screenMap.classList.add('hidden');
-    if (el.screenPreFight) el.screenPreFight.classList.add('hidden');
-    if (el.screenMatch) el.screenMatch.classList.add('hidden');
-    if (el.screenEvent) el.screenEvent.classList.add('hidden');
-    if (el.screenDraft) el.screenDraft.classList.add('hidden');
-    if (el.screenTrain) el.screenTrain.classList.add('hidden');
-    if (el.screenRest) el.screenRest.classList.add('hidden');
-    if (el.screenGameOver) el.screenGameOver.classList.add('hidden');
-
-    // Show target screen
-    const target = document.getElementById(screenId);
-    if (target) target.classList.remove('hidden');
+    window.showScreen(screenId);
   }
-  window.showScreen = showScreen;
 
   // Handle auto-redraw on window resize so Bezier coordinates scale perfectly
   window.addEventListener('resize', () => {
