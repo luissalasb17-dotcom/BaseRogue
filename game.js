@@ -359,7 +359,7 @@
         return this.currentDraftPicks.picks;
       }
 
-      const pool = window.PlayersDB.LAHMAN_POOL || [];
+      const pool = (window.PlayersDB && window.PlayersDB.LAHMAN_POOL) ? window.PlayersDB.LAHMAN_POOL : (window.PlayersDB && window.PlayersDB.PLAYERS_POOL) ? window.PlayersDB.PLAYERS_POOL : (window.LAHMAN_POOL || []);
       if (pool.length === 0) return [];
 
       const draftedNames = new Set(this.draftedPlayers.map(p => p.name));
@@ -422,7 +422,7 @@
     // ── LEGACY AUTO-FILL (kept as internal fallback, not used in 9-round draft) ──
     autoFillLineup() {
       const slots = ['C','1B','2B','3B','SS','LF','CF','RF','DH'];
-      const pool = window.PlayersDB.LAHMAN_POOL || [];
+      const pool = (window.PlayersDB && window.PlayersDB.LAHMAN_POOL) ? window.PlayersDB.LAHMAN_POOL : (window.PlayersDB && window.PlayersDB.PLAYERS_POOL) ? window.PlayersDB.PLAYERS_POOL : (window.LAHMAN_POOL || []);
       const usedNames = new Set();
       
       // 1. Assign the 3 drafted superstars
@@ -963,7 +963,7 @@
     }
 
     getPostMatchDraftPicks(isBoss = false) {
-      const pool = window.PlayersDB.LAHMAN_POOL || [];
+      const pool = (window.PlayersDB && window.PlayersDB.LAHMAN_POOL) ? window.PlayersDB.LAHMAN_POOL : (window.PlayersDB && window.PlayersDB.PLAYERS_POOL) ? window.PlayersDB.PLAYERS_POOL : (window.LAHMAN_POOL || []);
       if (pool.length === 0) return [];
 
       const onRosterNames = new Set(Object.values(this.roster).filter(Boolean).map(x => x.name));

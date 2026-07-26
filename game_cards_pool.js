@@ -3456,12 +3456,10 @@
     { name: "Ed Caskin", pos: "SS", sec_pos: "", era: "The Genesis Era (1871-1900)", team: "NY1", year: 1879, con: 7, pwr: 1, eye: 12, spd: 1, def: 40, con_grade: "F", pwr_grade: "F", eye_grade: "F", spd_grade: "F", def_grade: "C-", rarity: "Common", allstars: 0, gold_gloves: 0, hof: false, def_source: "bbref_war" },
   ];
   if (typeof window !== 'undefined') {
-    if (window.PlayersDB) {
-      window.PlayersDB.LAHMAN_POOL  = LAHMAN_POOL;
-      window.PlayersDB.PLAYERS_POOL = LAHMAN_POOL;
-    } else {
-      window.LAHMAN_POOL = LAHMAN_POOL;
-    }
+    if (!window.PlayersDB) window.PlayersDB = {};
+    window.PlayersDB.LAHMAN_POOL  = LAHMAN_POOL;
+    window.PlayersDB.PLAYERS_POOL = LAHMAN_POOL;
+    window.LAHMAN_POOL = LAHMAN_POOL;
   }
   if (typeof module !== 'undefined') module.exports = LAHMAN_POOL;
 })();

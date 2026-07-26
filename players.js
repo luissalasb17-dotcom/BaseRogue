@@ -229,12 +229,13 @@
   ];
 
 
-  window.PlayersDB = {
+  window.PlayersDB = Object.assign(window.PlayersDB || {}, {
     Eras,
     FranchiseNames,
     REPLACEMENT_LEVEL_LINEUP,
     STARTERS,
-    PLAYERS_POOL,
+    PLAYERS_POOL: (window.PlayersDB && window.PlayersDB.LAHMAN_POOL) ? window.PlayersDB.LAHMAN_POOL : PLAYERS_POOL,
+    LAHMAN_POOL: (window.PlayersDB && window.PlayersDB.LAHMAN_POOL) ? window.PlayersDB.LAHMAN_POOL : PLAYERS_POOL,
     EraTraits
-  };
+  });
 })();
