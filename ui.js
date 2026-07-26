@@ -126,7 +126,7 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
     
     // Screens
     screenMenu: document.getElementById('screen-menu'),
-    starterPool: document.getElementById('starter-selection-pool'),
+    starterPool: document.getElementById('starter-selection-pool') || document.getElementById('draft-options-row'),
     
     workspace: document.getElementById('game-workspace'),
     screenMap: document.getElementById('screen-map'),
@@ -275,7 +275,7 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
 
       const info   = G.getDraftRoundInfo();
       const picks  = G.getDraftRoundPicks();
-      const pool   = el.starterPool;
+      const pool   = el.starterPool || document.getElementById('starter-selection-pool') || document.getElementById('draft-options-row');
       pool.innerHTML = '';
 
       // ── Top header: round progress ──────────────────────────────────────
