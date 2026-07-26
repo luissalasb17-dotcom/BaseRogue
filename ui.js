@@ -87,6 +87,7 @@
     btnRestCash: document.getElementById('btn-rest-get-cash'),
     
     screenGameOver: document.getElementById('screen-gameover'),
+    screenSeasonRoulette: document.getElementById('screen-season-roulette'),
     gameoverTitle: document.getElementById('gameover-title'),
     gameoverDesc: document.getElementById('gameover-desc'),
     gameoverHistoryLog: document.getElementById('gameover-history-log'),
@@ -877,7 +878,7 @@ function initGameModeSelector() {
             if (window.Game && window.Game.loadSeasonOpponents) {
               window.Game.loadSeasonOpponents(targetYear);
             }
-            screenMenu.classList.remove('hidden');
+            showScreen('screen-draft');
             if (window.renderDraftRound) window.renderDraftRound(); else if (typeof renderDraftRound === 'function') renderDraftRound();
           });
         } else {
@@ -1131,6 +1132,8 @@ function initGameModeSelector() {
   // Main UI Screen Swapping
   function showScreen(screenId) {
     // Hide all screens
+    if (el.screenMode) el.screenMode.classList.add('hidden');
+    if (el.screenSeasonRoulette) el.screenSeasonRoulette.classList.add('hidden');
     el.screenMenu.classList.add('hidden');
     el.screenMap.classList.add('hidden');
     el.screenPreFight.classList.add('hidden');
@@ -3650,7 +3653,7 @@ function initGameModeSelector() {
             if (window.Game && window.Game.loadSeasonOpponents) {
               window.Game.loadSeasonOpponents(targetYear);
             }
-            screenMenu.classList.remove('hidden');
+            showScreen('screen-draft');
             if (window.renderDraftRound) window.renderDraftRound(); else if (typeof renderDraftRound === 'function') renderDraftRound();
           });
         } else {
