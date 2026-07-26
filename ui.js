@@ -1157,7 +1157,7 @@ function initGameModeSelector() {
   }
 
   // Main UI Screen Swapping
-    function window.showScreen(screenId) {
+    function showScreen(screenId) {
     // Hide all screens
     if (el.screenMode) el.screenMode.classList.add('hidden');
     if (el.screenSeasonRoulette) el.screenSeasonRoulette.classList.add('hidden');
