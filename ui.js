@@ -751,7 +751,66 @@ function renderConfirmationBattingRows() {
   }
 
   // Initialize App
-  function initGameModeSelector() {
+  
+  // Helper for Era name lookup during roulette
+  function getEraNameForYear(year) {
+    const y = parseInt(year, 10);
+    if (y <= 1900) return "Genesis Chaos (1871-1900)";
+    if (y <= 1919) return "Deadball Grit (1901-1919)";
+    if (y <= 1941) return "Golden Age (1920-1941)";
+    if (y <= 1960) return "Integration Era (1942-1960)";
+    if (y <= 1976) return "Expansion & Turf (1961-1976)";
+    if (y <= 1993) return "Big Hair & Radar (1977-1993)";
+    if (y <= 2005) return "Steroid Sluggers (1994-2005)";
+    if (y <= 2015) return "Efficiency & Shift (2006-2015)";
+    return "Modern Statcast (2016-2025)";
+  }
+
+  //  SEASON ROULETTE ANIMATION FOR RANDOM SEASON 
+  function startSeasonRouletteAnimation(selectedYear, onComplete) {
+    showScreen('screen-season-roulette');
+    const yearEl = document.getElementById('roulette-year-number');
+    const eraEl = document.getElementById('roulette-era-name');
+    const msgEl = document.getElementById('roulette-status-msg');
+    const boxEl = document.getElementById('season-roulette-box');
+
+    if (boxEl) boxEl.classList.remove('winning-glow');
+    if (msgEl) msgEl.innerHTML = `<i class="fa-solid fa-dice-d20 fa-spin"></i> Seleccionando ano historico...`;
+
+    const years = [];
+    for (let y = 1901; y <= 2025; y++) years.push(y);
+
+    let currentTick = 0;
+    const maxTicks = 22;
+    let speed = 40; // ms initial fast speed
+
+    function runStep() {
+      currentTick++;
+      const randomYear = years[Math.floor(Math.random() * years.length)];
+      if (yearEl) yearEl.innerText = String(randomYear);
+      if (eraEl) eraEl.innerText = getEraNameForYear(randomYear);
+
+      if (currentTick < maxTicks) {
+        speed += 10; // Gradually slow down like a slot machine wheel!
+        setTimeout(runStep, speed);
+      } else {
+        // Lock final winning year
+        if (yearEl) yearEl.innerText = String(selectedYear);
+        if (eraEl) eraEl.innerText = getEraNameForYear(selectedYear);
+        if (boxEl) boxEl.classList.add('winning-glow');
+        if (msgEl) msgEl.innerHTML = `<span style="color: #ffd700; font-weight: bold; text-shadow: 0 0 10px rgba(255,215,0,0.8);">⚡ ¡TEMPORADA SELECCIONADA: ${selectedYear}! ⚡</span>`;
+
+        setTimeout(() => {
+          if (onComplete) onComplete();
+        }, 1300);
+      }
+    }
+
+    runStep();
+  }
+
+
+function initGameModeSelector() {
     const screenMode = document.getElementById('screen-mode-select');
     const screenMenu = document.getElementById('screen-menu');
     const modalSeason = document.getElementById('modal-season-select');
@@ -803,13 +862,31 @@ function renderConfirmationBattingRows() {
         if (window.Game && window.Game.resetRun) {
           window.Game.resetRun();
         }
-        if (window.Game && window.Game.loadSeasonOpponents) {
-          window.Game.loadSeasonOpponents(yearVal);
-        }
         if (modalSeason) modalSeason.classList.add('hidden');
         screenMode.classList.add('hidden');
-        screenMenu.classList.remove('hidden');
-        if (window.renderDraftRound) window.renderDraftRound(); else if (typeof renderDraftRound === 'function') renderDraftRound();
+
+        if (yearVal === 'random') {
+          const availableYears = Object.keys(window.OpponentsDatabase || {});
+          let targetYear = '1998';
+          if (availableYears.length > 0) {
+            targetYear = availableYears[Math.floor(Math.random() * availableYears.length)];
+          } else {
+            targetYear = String(Math.floor(Math.random() * 125) + 1901);
+          }
+          startSeasonRouletteAnimation(targetYear, () => {
+            if (window.Game && window.Game.loadSeasonOpponents) {
+              window.Game.loadSeasonOpponents(targetYear);
+            }
+            screenMenu.classList.remove('hidden');
+            if (window.renderDraftRound) window.renderDraftRound(); else if (typeof renderDraftRound === 'function') renderDraftRound();
+          });
+        } else {
+          if (window.Game && window.Game.loadSeasonOpponents) {
+            window.Game.loadSeasonOpponents(yearVal);
+          }
+          screenMenu.classList.remove('hidden');
+          if (window.renderDraftRound) window.renderDraftRound(); else if (typeof renderDraftRound === 'function') renderDraftRound();
+        }
       };
     }
 
@@ -3553,14 +3630,36 @@ function renderConfirmationBattingRows() {
         const yearVal = selectYear ? selectYear.value : 'random';
         if (window.Game) {
           window.Game.selectedMode = 'story';
-          if (window.Game.loadSeasonOpponents) {
-            window.Game.loadSeasonOpponents(yearVal);
-          }
+          window.Game.selectedSeasonYear = yearVal === 'random' ? null : parseInt(yearVal, 10);
+        }
+        if (window.Game && window.Game.resetRun) {
+          window.Game.resetRun();
         }
         if (modalSeason) modalSeason.classList.add('hidden');
         screenMode.classList.add('hidden');
-        screenMenu.classList.remove('hidden');
-        if (window.renderDraftRound) window.renderDraftRound(); else if (typeof renderDraftRound === 'function') renderDraftRound();
+
+        if (yearVal === 'random') {
+          const availableYears = Object.keys(window.OpponentsDatabase || {});
+          let targetYear = '1998';
+          if (availableYears.length > 0) {
+            targetYear = availableYears[Math.floor(Math.random() * availableYears.length)];
+          } else {
+            targetYear = String(Math.floor(Math.random() * 125) + 1901);
+          }
+          startSeasonRouletteAnimation(targetYear, () => {
+            if (window.Game && window.Game.loadSeasonOpponents) {
+              window.Game.loadSeasonOpponents(targetYear);
+            }
+            screenMenu.classList.remove('hidden');
+            if (window.renderDraftRound) window.renderDraftRound(); else if (typeof renderDraftRound === 'function') renderDraftRound();
+          });
+        } else {
+          if (window.Game && window.Game.loadSeasonOpponents) {
+            window.Game.loadSeasonOpponents(yearVal);
+          }
+          screenMenu.classList.remove('hidden');
+          if (window.renderDraftRound) window.renderDraftRound(); else if (typeof renderDraftRound === 'function') renderDraftRound();
+        }
       };
     }
 
