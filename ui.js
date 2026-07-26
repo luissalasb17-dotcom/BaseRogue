@@ -767,21 +767,6 @@ function renderConfirmationBattingRows() {
     return "Modern Statcast (2016-2025)";
   }
 
-  /
-  // Helper for Era name lookup during roulette
-  function getEraNameForYear(year) {
-    const y = parseInt(year, 10);
-    if (y <= 1900) return "Genesis Chaos (1871-1900)";
-    if (y <= 1919) return "Deadball Grit (1901-1919)";
-    if (y <= 1941) return "Golden Age (1920-1941)";
-    if (y <= 1960) return "Integration Era (1942-1960)";
-    if (y <= 1976) return "Expansion & Turf (1961-1976)";
-    if (y <= 1993) return "Big Hair & Radar (1977-1993)";
-    if (y <= 2005) return "Steroid Sluggers (1994-2005)";
-    if (y <= 2015) return "Efficiency & Shift (2006-2015)";
-    return "Modern Statcast (2016-2025)";
-  }
-
   //  SEASON ROULETTE ANIMATION INSIDE SEASON SELECTION MODAL 
   function startSeasonRouletteAnimation(selectedYear, onComplete) {
     const modalControls = document.getElementById('modal-season-controls');
