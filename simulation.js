@@ -711,9 +711,46 @@
 
     // ── INTERNAL: deal damage to active pitcher ─────────────────────
     _damagePitcher(dmg) {
-      const p = this.activePitcher;
-      if (!p) return;
-      p.hp = Math.max(0, p.hp - dmg);
+      let remainingDmg = dmg;
+      while (remainingDmg > 0 && this.activePitcher) {
+        const p = this.activePitcher;
+        if (p.hp <= 0) {
+          this.enemyPitcherIndex++;
+          continue;
+        }
+
+        if (remainingDmg >= p.hp) {
+          const overflow = remainingDmg - p.hp;
+          p.hp = 0;
+          this.logEvent('KO_PITCHER',
+            `[K.O.] ¡${p.name} ha sido derrotado!`,
+            'KO', p.name);
+
+          this.enemyPitcherIndex++;
+          const nextP = this.activePitcher;
+          if (nextP && overflow > 0) {
+            const residualDmg = Math.min(overflow, nextP.hp - 1);
+            if (residualDmg > 0) {
+              nextP.hp = Math.max(1, nextP.hp - residualDmg);
+              this.logEvent('RESIDUAL_DMG',
+                `⚡ ¡Daño residual! Entra al relevo ${nextP.name} absorbiendo -${residualDmg} HP de impacto (${nextP.hp}/${nextP.maxHp} HP restantes).`,
+                'RESIDUAL', nextP.name);
+            } else {
+              this.logEvent('NEXT_PITCHER',
+                `Entra al relevo: ${nextP.name} (${nextP.hp}/${nextP.maxHp} HP).`,
+                'NEXT', nextP.name);
+            }
+          } else if (nextP) {
+            this.logEvent('NEXT_PITCHER',
+              `Entra al relevo: ${nextP.name} (${nextP.hp}/${nextP.maxHp} HP).`,
+              'NEXT', nextP.name);
+          }
+          break;
+        } else {
+          p.hp -= remainingDmg;
+          remainingDmg = 0;
+        }
+      }
     }
 
     // ── INTERNAL: base-running helpers ──────────────────────────────
