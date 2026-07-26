@@ -1070,6 +1070,13 @@ function initGameModeSelector() {
     const year = player.year || 2026;
     const isPitcher = player.pos === 'P';
 
+    const con = player.con || 40;
+    const pwr = player.pwr || 35;
+    const spd = player.spd || 45;
+    const def = player.def || 40;
+    const eye = player.eye || 40;
+    const ovr = player.ovr || Math.round(con * 0.3 + pwr * 0.3 + spd * 0.15 + def * 0.15 + eye * 0.1);
+
     // Rarity styles
     let derivedRarity = player.rarity;
     if (!derivedRarity) {
