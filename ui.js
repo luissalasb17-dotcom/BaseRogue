@@ -1,4 +1,72 @@
 
+// Helper for Era name lookup during roulette
+function getEraNameForYear(year) {
+  const y = parseInt(year, 10);
+  if (y <= 1900) return "Genesis Chaos (1871-1900)";
+  if (y <= 1919) return "Deadball Grit (1901-1919)";
+  if (y <= 1941) return "Golden Age (1920-1941)";
+  if (y <= 1960) return "Integration Era (1942-1960)";
+  if (y <= 1976) return "Expansion & Turf (1961-1976)";
+  if (y <= 1993) return "Big Hair & Radar (1977-1993)";
+  if (y <= 2005) return "Steroid Sluggers (1994-2005)";
+  if (y <= 2015) return "Efficiency & Shift (2006-2015)";
+  return "Modern Statcast (2016-2025)";
+}
+
+// SEASON ROULETTE ANIMATION INSIDE SEASON SELECTION MODAL
+function startSeasonRouletteAnimation(selectedYear, onComplete) {
+  const modalControls = document.getElementById('modal-season-controls');
+  const rouletteContainer = document.getElementById('modal-roulette-container');
+  const yearEl = document.getElementById('roulette-year-number');
+  const eraEl = document.getElementById('roulette-era-name');
+  const msgEl = document.getElementById('roulette-status-msg');
+  const boxEl = document.getElementById('season-roulette-box');
+
+  if (modalControls) modalControls.style.display = 'none';
+  if (rouletteContainer) rouletteContainer.classList.remove('hidden');
+
+  if (boxEl) boxEl.classList.remove('winning-glow');
+  if (msgEl) msgEl.innerHTML = `<i class="fa-solid fa-dice-d20 fa-spin"></i> Seleccionando ano historico...`;
+
+  const years = [];
+  for (let y = 1901; y <= 2025; y++) years.push(y);
+
+  let currentTick = 0;
+  const maxTicks = 22;
+  let speed = 40;
+
+  function runStep() {
+    currentTick++;
+    const randomYear = years[Math.floor(Math.random() * years.length)];
+    if (yearEl) yearEl.innerText = String(randomYear);
+    if (eraEl) eraEl.innerText = getEraNameForYear(randomYear);
+
+    if (currentTick < maxTicks) {
+      speed += 10;
+      setTimeout(runStep, speed);
+    } else {
+      // Lock final winning year
+      if (yearEl) yearEl.innerText = String(selectedYear);
+      if (eraEl) eraEl.innerText = getEraNameForYear(selectedYear);
+      if (boxEl) boxEl.classList.add('winning-glow');
+      if (msgEl) msgEl.innerHTML = `<span style="color: #ffd700; font-weight: bold; text-shadow: 0 0 10px rgba(255,215,0,0.8);">⚡ ¡TEMPORADA SELECCIONADA: ${selectedYear}! ⚡</span>`;
+
+      setTimeout(() => {
+        // Reset modal controls for next time
+        if (rouletteContainer) rouletteContainer.classList.add('hidden');
+        if (modalControls) modalControls.style.display = 'block';
+        if (boxEl) boxEl.classList.remove('winning-glow');
+        
+        if (onComplete) onComplete();
+      }, 1300);
+    }
+  }
+
+  runStep();
+}
+window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
+
+
 // BaseRogue UI Controller
 // Handles DOM interactions, rendering, simulation playback, and game loops
 
@@ -753,71 +821,7 @@ function renderConfirmationBattingRows() {
 
   // Initialize App
   
-  // Helper for Era name lookup during roulette
-  function getEraNameForYear(year) {
-    const y = parseInt(year, 10);
-    if (y <= 1900) return "Genesis Chaos (1871-1900)";
-    if (y <= 1919) return "Deadball Grit (1901-1919)";
-    if (y <= 1941) return "Golden Age (1920-1941)";
-    if (y <= 1960) return "Integration Era (1942-1960)";
-    if (y <= 1976) return "Expansion & Turf (1961-1976)";
-    if (y <= 1993) return "Big Hair & Radar (1977-1993)";
-    if (y <= 2005) return "Steroid Sluggers (1994-2005)";
-    if (y <= 2015) return "Efficiency & Shift (2006-2015)";
-    return "Modern Statcast (2016-2025)";
-  }
-
-  //  SEASON ROULETTE ANIMATION INSIDE SEASON SELECTION MODAL 
-  function startSeasonRouletteAnimation(selectedYear, onComplete) {
-    const modalControls = document.getElementById('modal-season-controls');
-    const rouletteContainer = document.getElementById('modal-roulette-container');
-    const yearEl = document.getElementById('roulette-year-number');
-    const eraEl = document.getElementById('roulette-era-name');
-    const msgEl = document.getElementById('roulette-status-msg');
-    const boxEl = document.getElementById('season-roulette-box');
-
-    if (modalControls) modalControls.style.display = 'none';
-    if (rouletteContainer) rouletteContainer.classList.remove('hidden');
-
-    if (boxEl) boxEl.classList.remove('winning-glow');
-    if (msgEl) msgEl.innerHTML = `<i class="fa-solid fa-dice-d20 fa-spin"></i> Seleccionando ano historico...`;
-
-    const years = [];
-    for (let y = 1901; y <= 2025; y++) years.push(y);
-
-    let currentTick = 0;
-    const maxTicks = 22;
-    let speed = 40;
-
-    function runStep() {
-      currentTick++;
-      const randomYear = years[Math.floor(Math.random() * years.length)];
-      if (yearEl) yearEl.innerText = String(randomYear);
-      if (eraEl) eraEl.innerText = getEraNameForYear(randomYear);
-
-      if (currentTick < maxTicks) {
-        speed += 10;
-        setTimeout(runStep, speed);
-      } else {
-        // Lock final winning year
-        if (yearEl) yearEl.innerText = String(selectedYear);
-        if (eraEl) eraEl.innerText = getEraNameForYear(selectedYear);
-        if (boxEl) boxEl.classList.add('winning-glow');
-        if (msgEl) msgEl.innerHTML = `<span style="color: #ffd700; font-weight: bold; text-shadow: 0 0 10px rgba(255,215,0,0.8);">⚡ ¡TEMPORADA SELECCIONADA: ${selectedYear}! ⚡</span>`;
-
-        setTimeout(() => {
-          // Reset modal controls for next time
-          if (rouletteContainer) rouletteContainer.classList.add('hidden');
-          if (modalControls) modalControls.style.display = 'block';
-          if (boxEl) boxEl.classList.remove('winning-glow');
-          
-          if (onComplete) onComplete();
-        }, 1300);
-      }
-    }
-
-    runStep();
-  }
+  
 
 
 
