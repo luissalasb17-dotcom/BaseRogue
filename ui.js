@@ -1,4 +1,16 @@
 
+// Global helper for screen swapping
+window.showScreen = function(screenId) {
+  const screens = ['screen-mode-select', 'screen-season-roulette', 'screen-menu', 'screen-map', 'screen-pre-fight', 'screen-match', 'screen-event', 'screen-draft', 'screen-train', 'screen-rest', 'screen-gameover'];
+  screens.forEach(id => {
+    const s = document.getElementById(id);
+    if (s) s.classList.add('hidden');
+  });
+  const target = document.getElementById(screenId);
+  if (target) target.classList.remove('hidden');
+};
+
+
 // Helper for Era name lookup during roulette
 function getEraNameForYear(year) {
   const y = parseInt(year, 10);
@@ -808,7 +820,7 @@ function renderConfirmationBattingRows() {
           renderActiveRoster();
           renderMap();
           renderSynergiesAndItems();
-          showScreen('screen-map');
+          window.showScreen('screen-map');
         }
       });
 
@@ -892,7 +904,7 @@ function initGameModeSelector() {
             if (window.Game && window.Game.loadSeasonOpponents) {
               window.Game.loadSeasonOpponents(targetYear);
             }
-            showScreen('screen-draft');
+            (window.showScreen || showScreen)('screen-draft');
             if (window.renderDraftRound) window.renderDraftRound(); else if (typeof renderDraftRound === 'function') renderDraftRound();
           });
         } else {
@@ -900,7 +912,7 @@ function initGameModeSelector() {
           if (window.Game && window.Game.loadSeasonOpponents) {
             window.Game.loadSeasonOpponents(yearVal);
           }
-          showScreen('screen-draft');
+          (window.showScreen || showScreen)('screen-draft');
           if (window.renderDraftRound) window.renderDraftRound(); else if (typeof renderDraftRound === 'function') renderDraftRound();
         }
       };
@@ -1145,32 +1157,25 @@ function initGameModeSelector() {
   }
 
   // Main UI Screen Swapping
-  function showScreen(screenId) {
+    function window.showScreen(screenId) {
     // Hide all screens
     if (el.screenMode) el.screenMode.classList.add('hidden');
     if (el.screenSeasonRoulette) el.screenSeasonRoulette.classList.add('hidden');
-    el.screenMenu.classList.add('hidden');
-    el.screenMap.classList.add('hidden');
-    el.screenPreFight.classList.add('hidden');
-    el.screenMatch.classList.add('hidden');
-    el.screenEvent.classList.add('hidden');
-    el.screenDraft.classList.add('hidden');
-    el.screenTrain.classList.add('hidden');
-    el.screenRest.classList.add('hidden');
-    el.screenGameOver.classList.add('hidden');
+    if (el.screenMenu) el.screenMenu.classList.add('hidden');
+    if (el.screenMap) el.screenMap.classList.add('hidden');
+    if (el.screenPreFight) el.screenPreFight.classList.add('hidden');
+    if (el.screenMatch) el.screenMatch.classList.add('hidden');
+    if (el.screenEvent) el.screenEvent.classList.add('hidden');
+    if (el.screenDraft) el.screenDraft.classList.add('hidden');
+    if (el.screenTrain) el.screenTrain.classList.add('hidden');
+    if (el.screenRest) el.screenRest.classList.add('hidden');
+    if (el.screenGameOver) el.screenGameOver.classList.add('hidden');
 
     // Show target screen
-    document.getElementById(screenId).classList.remove('hidden');
-
-    if (screenId === 'screen-map') {
-      const currentZone = window.Game.getZoneForStage(window.Game.currentStageIndex);
-      // Redraw immediately and on small delays to ensure layout is ready
-      drawZonePaths(currentZone);
-      setTimeout(() => drawZonePaths(currentZone), 20);
-      setTimeout(() => drawZonePaths(currentZone), 100);
-      setTimeout(() => drawZonePaths(currentZone), 350);
-    }
+    const target = document.getElementById(screenId);
+    if (target) target.classList.remove('hidden');
   }
+  window.showScreen = showScreen;
 
   // Handle auto-redraw on window resize so Bezier coordinates scale perfectly
   window.addEventListener('resize', () => {
@@ -1533,7 +1538,7 @@ function initGameModeSelector() {
       el.hud.classList.add('hidden');
       el.workspace.classList.add('hidden');
       if (window.renderDraftRound) window.renderDraftRound(); else if (typeof renderDraftRound === 'function') renderDraftRound();
-      showScreen('screen-menu');
+      window.showScreen('screen-menu');
     });
 
     // Pre-Fight Screen triggers
@@ -1542,7 +1547,7 @@ function initGameModeSelector() {
     });
 
     el.btnPreFightBackMap.addEventListener('click', () => {
-      showScreen('screen-map');
+      window.showScreen('screen-map');
     });
   }
 
@@ -1557,7 +1562,7 @@ function initGameModeSelector() {
     } else if (node.type === 'train') {
       setupTrainingScreen();
     } else if (node.type === 'rest') {
-      showScreen('screen-rest');
+      window.showScreen('screen-rest');
     }
   }
 
@@ -1574,7 +1579,7 @@ function initGameModeSelector() {
 
     updateHUD();
     renderMap();
-    showScreen('screen-map');
+    window.showScreen('screen-map');
   }
 
   // UPDATE HEAD-UP DISPLAY
@@ -2430,7 +2435,7 @@ function initGameModeSelector() {
     skipCol.appendChild(btnSkip);
     el.draftOptionsRow.appendChild(skipCol);
 
-    showScreen('screen-draft');
+    (window.showScreen || showScreen)('screen-draft');
   }
 
   // POST-MATCH DRAFT SCREEN GENERATOR
@@ -2495,7 +2500,7 @@ function initGameModeSelector() {
     skipCol.appendChild(btnSkip);
     el.draftOptionsRow.appendChild(skipCol);
 
-    showScreen('screen-draft');
+    (window.showScreen || showScreen)('screen-draft');
   }
 
   // Populates full roster Swap Modal (Direct active roster replacement since no bench exists)
@@ -2560,7 +2565,7 @@ function initGameModeSelector() {
       el.eventChoicesContainer.appendChild(btn);
     });
     
-    showScreen('screen-event');
+    window.showScreen('screen-event');
   }
 
   // TRAINING SCREEN SETUP
@@ -2622,7 +2627,7 @@ function initGameModeSelector() {
       }
     });
 
-    showScreen('screen-train');
+    window.showScreen('screen-train');
   }
 
   // PRE-FIGHT SCREEN SETUP
@@ -2684,7 +2689,7 @@ function initGameModeSelector() {
       el.preFightEnemyRotation.appendChild(row);
     });
 
-    showScreen('screen-pre-fight');
+    window.showScreen('screen-pre-fight');
   }
 
   // ── START INTERACTIVE DICE BATTLE ────────────────────────────────────────────
@@ -2818,7 +2823,7 @@ function initGameModeSelector() {
       localStorage.setItem('baserogue_seen_combat_info', 'true');
     }
 
-    showScreen('screen-match');
+    window.showScreen('screen-match');
   }
 
 
@@ -3592,7 +3597,7 @@ function initGameModeSelector() {
       });
     }
 
-    showScreen('screen-gameover');
+    window.showScreen('screen-gameover');
   }
 
   // Self execute
@@ -3668,7 +3673,7 @@ function initGameModeSelector() {
             if (window.Game && window.Game.loadSeasonOpponents) {
               window.Game.loadSeasonOpponents(targetYear);
             }
-            showScreen('screen-draft');
+            (window.showScreen || showScreen)('screen-draft');
             if (window.renderDraftRound) window.renderDraftRound(); else if (typeof renderDraftRound === 'function') renderDraftRound();
           });
         } else {
