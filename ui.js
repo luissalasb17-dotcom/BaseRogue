@@ -767,13 +767,32 @@ function renderConfirmationBattingRows() {
     return "Modern Statcast (2016-2025)";
   }
 
-  //  SEASON ROULETTE ANIMATION FOR RANDOM SEASON 
+  /
+  // Helper for Era name lookup during roulette
+  function getEraNameForYear(year) {
+    const y = parseInt(year, 10);
+    if (y <= 1900) return "Genesis Chaos (1871-1900)";
+    if (y <= 1919) return "Deadball Grit (1901-1919)";
+    if (y <= 1941) return "Golden Age (1920-1941)";
+    if (y <= 1960) return "Integration Era (1942-1960)";
+    if (y <= 1976) return "Expansion & Turf (1961-1976)";
+    if (y <= 1993) return "Big Hair & Radar (1977-1993)";
+    if (y <= 2005) return "Steroid Sluggers (1994-2005)";
+    if (y <= 2015) return "Efficiency & Shift (2006-2015)";
+    return "Modern Statcast (2016-2025)";
+  }
+
+  //  SEASON ROULETTE ANIMATION INSIDE SEASON SELECTION MODAL 
   function startSeasonRouletteAnimation(selectedYear, onComplete) {
-    showScreen('screen-season-roulette');
+    const modalControls = document.getElementById('modal-season-controls');
+    const rouletteContainer = document.getElementById('modal-roulette-container');
     const yearEl = document.getElementById('roulette-year-number');
     const eraEl = document.getElementById('roulette-era-name');
     const msgEl = document.getElementById('roulette-status-msg');
     const boxEl = document.getElementById('season-roulette-box');
+
+    if (modalControls) modalControls.style.display = 'none';
+    if (rouletteContainer) rouletteContainer.classList.remove('hidden');
 
     if (boxEl) boxEl.classList.remove('winning-glow');
     if (msgEl) msgEl.innerHTML = `<i class="fa-solid fa-dice-d20 fa-spin"></i> Seleccionando ano historico...`;
@@ -783,7 +802,7 @@ function renderConfirmationBattingRows() {
 
     let currentTick = 0;
     const maxTicks = 22;
-    let speed = 40; // ms initial fast speed
+    let speed = 40;
 
     function runStep() {
       currentTick++;
@@ -792,7 +811,7 @@ function renderConfirmationBattingRows() {
       if (eraEl) eraEl.innerText = getEraNameForYear(randomYear);
 
       if (currentTick < maxTicks) {
-        speed += 10; // Gradually slow down like a slot machine wheel!
+        speed += 10;
         setTimeout(runStep, speed);
       } else {
         // Lock final winning year
@@ -802,6 +821,11 @@ function renderConfirmationBattingRows() {
         if (msgEl) msgEl.innerHTML = `<span style="color: #ffd700; font-weight: bold; text-shadow: 0 0 10px rgba(255,215,0,0.8);">⚡ ¡TEMPORADA SELECCIONADA: ${selectedYear}! ⚡</span>`;
 
         setTimeout(() => {
+          // Reset modal controls for next time
+          if (rouletteContainer) rouletteContainer.classList.add('hidden');
+          if (modalControls) modalControls.style.display = 'block';
+          if (boxEl) boxEl.classList.remove('winning-glow');
+          
           if (onComplete) onComplete();
         }, 1300);
       }
@@ -809,6 +833,7 @@ function renderConfirmationBattingRows() {
 
     runStep();
   }
+
 
 
 function initGameModeSelector() {
@@ -863,8 +888,6 @@ function initGameModeSelector() {
         if (window.Game && window.Game.resetRun) {
           window.Game.resetRun();
         }
-        if (modalSeason) modalSeason.classList.add('hidden');
-        screenMode.classList.add('hidden');
 
         if (yearVal === 'random') {
           const availableYears = Object.keys(window.OpponentsDatabase || {});
@@ -874,7 +897,9 @@ function initGameModeSelector() {
           } else {
             targetYear = String(Math.floor(Math.random() * 125) + 1901);
           }
+
           startSeasonRouletteAnimation(targetYear, () => {
+            if (modalSeason) modalSeason.classList.add('hidden');
             if (window.Game && window.Game.loadSeasonOpponents) {
               window.Game.loadSeasonOpponents(targetYear);
             }
@@ -882,10 +907,11 @@ function initGameModeSelector() {
             if (window.renderDraftRound) window.renderDraftRound(); else if (typeof renderDraftRound === 'function') renderDraftRound();
           });
         } else {
+          if (modalSeason) modalSeason.classList.add('hidden');
           if (window.Game && window.Game.loadSeasonOpponents) {
             window.Game.loadSeasonOpponents(yearVal);
           }
-          screenMenu.classList.remove('hidden');
+          showScreen('screen-draft');
           if (window.renderDraftRound) window.renderDraftRound(); else if (typeof renderDraftRound === 'function') renderDraftRound();
         }
       };

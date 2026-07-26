@@ -56,24 +56,7 @@
         ⚾ BASE-ROGUE
       </div>
 
-    <!-- SCREEN: SEASON ROULETTE (Random Season Roulette Wheel) -->
-    <div id="screen-season-roulette" class="screen hidden" style="max-width: 800px; margin: 40px auto; text-align: center; padding: 40px 20px; background: rgba(15, 23, 42, 0.95); border: 4px solid #ffd700; box-shadow: 0 0 30px rgba(255, 215, 0, 0.3);">
-      <div style="font-size: 22px; color: #ffd700; text-shadow: 0 0 10px rgba(255, 215, 0, 0.6); font-weight: bold; font-family: 'Press Start 2P', monospace; margin-bottom: 12px;">
-        🎲 SORTEANDO TEMPORADA 🎲
-      </div>
-      <p style="color: #94a3b8; font-size: 10px; margin-bottom: 30px; font-family: 'Press Start 2P', monospace;">
-        Girando entre 125 anos de historia (1901 - 2025)...
-      </p>
-
-      <!-- Big Glowing Digital Slot Box -->
-      <div id="season-roulette-box" class="roulette-box" style="margin: 0 auto 30px auto; width: 340px; padding: 30px 20px; background: #000; border: 4px solid #334155; border-radius: 12px; transition: all 0.3s ease;">
-        <div id="roulette-year-number" style="font-family: 'Press Start 2P', monospace; font-size: 52px; color: #00ff66; text-shadow: 0 0 20px rgba(0, 255, 102, 0.8); letter-spacing: 2px;">
-          1998
-        </div>
-        <div id="roulette-era-name" style="margin-top: 15px; font-family: 'Press Start 2P', monospace; font-size: 8px; color: #38bdf8; background: rgba(56, 189, 248, 0.1); padding: 6px 10px; border-radius: 4px; display: inline-block;">
-          Steroid Sluggers (1994-2005)
-        </div>
-      </div>
+    
 
       <div id="roulette-status-msg" style="font-family: 'Press Start 2P', monospace; font-size: 10px; color: #e2e8f0; min-height: 24px;">
         Buscando ano historico...
@@ -127,7 +110,8 @@
           Elige el año para competir contra todos los equipos reales de esa época con sus 3 mejores pitchers por WAR.
         </p>
 
-        <div style="margin-bottom: 25px;">
+        <div id="modal-season-controls">
+<div style="margin-bottom: 25px;">
           <label style="display: block; font-family: 'Press Start 2P', monospace; font-size: 9px; color: #f59e0b; margin-bottom: 8px;">AÑO DE LA TEMPORADA:</label>
           <select id="select-season-year" style="width: 100%; padding: 12px; font-family: 'Press Start 2P', monospace; font-size: 11px; background: #000; color: #10b981; border: 2px solid #10b981; border-radius: 8px; cursor: pointer; outline: none;">
             <option value="random">🎲 Random Season</option>
@@ -137,6 +121,26 @@
         <button id="btn-confirm-start-season" class="btn" style="width: 100%; padding: 14px; font-size: 11px; font-family: 'Press Start 2P', monospace; background: linear-gradient(135deg, #10b981, #059669); border: 2px solid #34d399; box-shadow: 0 0 15px rgba(16,185,129,0.4); cursor: pointer;">
           ⚾ EMPEZAR TEMPORADA HISTÓRICA
         </button>
+        </div>
+
+        <!-- ROULETTE ANIMATION INSIDE MODAL -->
+        <div id="modal-roulette-container" class="hidden" style="margin-top: 15px;">
+          <div style="font-family: 'Press Start 2P', monospace; font-size: 11px; color: #ffd700; margin-bottom: 12px;">
+            🎲 SORTEANDO TEMPORADA 🎲
+          </div>
+          <div id="season-roulette-box" class="roulette-box" style="margin: 0 auto 15px auto; width: 100%; padding: 20px 10px; background: #000; border: 3px solid #ffd700; border-radius: 10px; transition: all 0.3s ease;">
+            <div id="roulette-year-number" style="font-family: 'Press Start 2P', monospace; font-size: 46px; color: #00ff66; text-shadow: 0 0 15px rgba(0, 255, 102, 0.8); letter-spacing: 2px;">
+              1998
+            </div>
+            <div id="roulette-era-name" style="margin-top: 10px; font-family: 'Press Start 2P', monospace; font-size: 8px; color: #38bdf8; background: rgba(56, 189, 248, 0.1); padding: 4px 8px; border-radius: 4px; display: inline-block;">
+              Steroid Sluggers (1994-2005)
+            </div>
+          </div>
+          <div id="roulette-status-msg" style="font-family: 'Press Start 2P', monospace; font-size: 9px; color: #e2e8f0; min-height: 20px;">
+            Buscando ano historico...
+          </div>
+        </div>
+
       </div>
     </div>
 
