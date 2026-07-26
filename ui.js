@@ -5,6 +5,8 @@ window.showScreen = function(screenId) {
   const screenMenu = document.getElementById('screen-menu');
   const gameWorkspace = document.getElementById('game-workspace');
   const hud = document.getElementById('game-hud');
+  const leftSidebar = document.getElementById('roster-sidebar-panel');
+  const rightSidebar = document.querySelector('.workspace-sidebar.right-sidebar');
 
   if (screenId === 'screen-mode-select') {
     if (screenMode) screenMode.classList.remove('hidden');
@@ -18,7 +20,19 @@ window.showScreen = function(screenId) {
   if (screenMode) screenMode.classList.add('hidden');
   if (screenMenu) screenMenu.classList.add('hidden');
   if (gameWorkspace) gameWorkspace.classList.remove('hidden');
-  if (hud && window.Game && window.Game.runActive) hud.classList.remove('hidden');
+
+  // Clean layout during initial 9-round draft (hide sidebars & HUD until draft completes / run starts)
+  const isInitialDraft = screenId === 'screen-draft' && window.Game && window.Game.draftRound <= 9;
+  
+  if (isInitialDraft) {
+    if (hud) hud.classList.add('hidden');
+    if (leftSidebar) leftSidebar.classList.add('hidden');
+    if (rightSidebar) rightSidebar.classList.add('hidden');
+  } else {
+    if (hud && window.Game && window.Game.runActive) hud.classList.remove('hidden');
+    if (leftSidebar) leftSidebar.classList.remove('hidden');
+    if (rightSidebar) rightSidebar.classList.remove('hidden');
+  }
 
   const innerScreens = ['screen-map', 'screen-pre-fight', 'screen-match', 'screen-event', 'screen-draft', 'screen-train', 'screen-rest', 'screen-gameover'];
   innerScreens.forEach(id => {
