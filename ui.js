@@ -949,7 +949,8 @@ function renderConfirmationBattingRows() {
       const gMov = getStatGrade(player.mov || 40);
       const gStf = getStatGrade(player.stf || 40);
       const gCtl = getStatGrade(player.ctl || 40);
-      const gSta = getStatGrade(player.sta || 50);
+      const staVal = player.sta || (player.maxHp ? Math.max(15, Math.min(125, Math.round((player.maxHp - 15) / 0.85))) : 65);
+      const gSta = getStatGrade(staVal);
 
       statLines = `
         <div class="stat-row" style="display: flex; align-items: center; justify-content: space-between; font-size: 7px; margin: 3px 0;">
@@ -3212,7 +3213,8 @@ function renderConfirmationBattingRows() {
       const pitchTeam = pitcher.team || (enemyTeam ? (enemyTeam.teamID || 'PIT') : 'PIT');
       const pitchEra = pitcher.era || 'Efficiency & Shift (2006-2015)';
 
-      const pitchOvr = Math.round((pitcher.stf || 40)*0.30 + (pitcher.ctl || 40)*0.30 + (pitcher.mov || 40)*0.30 + (pitcher.sta || 50)*0.10);
+      const pitchSta = pitcher.sta || (pitcher.maxHp ? Math.max(15, Math.min(125, Math.round((pitcher.maxHp - 15) / 0.85))) : 65);
+      const pitchOvr = Math.round((pitcher.stf || 40)*0.30 + (pitcher.ctl || 40)*0.30 + (pitcher.mov || 40)*0.30 + pitchSta*0.10);
       let pitchRarity = pitcher.rarity;
       if (!pitchRarity) {
         if (pitchOvr >= 90) pitchRarity = 'Legendary';
@@ -3227,7 +3229,7 @@ function renderConfirmationBattingRows() {
         era: pitchEra,
         team: pitchTeam,
         year: pitchYear,
-        mov: pitcher.mov, stf: pitcher.stf, ctl: pitcher.ctl, sta: pitcher.sta,
+        mov: pitcher.mov, stf: pitcher.stf, ctl: pitcher.ctl, sta: pitchSta,
         hp: pitcher.hp, maxHp: pitcher.maxHp,
         stamina: Math.round((pitcher.hp / pitcher.maxHp) * 100),
         ovr: pitchOvr,
