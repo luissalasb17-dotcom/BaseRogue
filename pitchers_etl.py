@@ -416,12 +416,12 @@ def paso_5_filtro_ingesta(career, peak, allstar, hof, pure_pitcher_ids, pitching
         eligible["allstar_selections"] = 0
     eligible["allstar_selections"] = eligible["allstar_selections"].fillna(0).astype(int)
 
-    # Filtro adicional estricto para Ligas Negras: HoF, 2+ Allstars, 75+ GS, o 120+ G
+    # Filtro adicional estricto para Ligas Negras: HoF, 2+ Allstars, 35+ GS (SP), o 60+ G (RP)
     nl_leagues = {'NN1', 'NN2', 'ECL', 'NSL', 'NAL', 'AA', 'ANL'}
     if not pitching.empty and 'lgID' in pitching.columns:
         nl_pids = set(pitching[pitching['lgID'].isin(nl_leagues)]['playerID'].unique())
         nl_mask = eligible['playerID'].isin(nl_pids)
-        nl_keep = (eligible['is_hof']) | (eligible['allstar_selections'] >= 2) | (eligible['career_gs'] >= 75) | (eligible['career_g'] >= 120)
+        nl_keep = (eligible['is_hof']) | (eligible['allstar_selections'] >= 2) | (eligible['career_gs'] >= 35) | (eligible['career_g'] >= 60)
         eligible = eligible[~nl_mask | nl_keep].copy()
 
     # Marcar tipo de pitcher (SP = starter, RP = reliever)

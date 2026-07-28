@@ -532,12 +532,12 @@ def paso_8_filtro_ingesta(df, allstar, hof, pure_pitcher_ids, batting):
 
     eligible["allstar_selections"] = eligible["allstar_selections"].fillna(0).astype(int)
 
-    # Filtro adicional estricto para Ligas Negras: HoF, 2+ Allstars, o 1500+ AB
+    # Filtro adicional estricto para Ligas Negras: HoF, 2+ Allstars, o 500+ AB
     nl_leagues = {'NN1', 'NN2', 'ECL', 'NSL', 'NAL', 'AA', 'ANL'}
     if not batting.empty and 'lgID' in batting.columns:
         nl_pids = set(batting[batting['lgID'].isin(nl_leagues)]['playerID'].unique())
         nl_mask = eligible['playerID'].isin(nl_pids)
-        nl_keep = (eligible['is_hof']) | (eligible['allstar_selections'] >= 2) | (eligible['career_ab'] >= 1500)
+        nl_keep = (eligible['is_hof']) | (eligible['allstar_selections'] >= 2) | (eligible['career_ab'] >= 500)
         eligible = eligible[~nl_mask | nl_keep].copy()
 
     print(f"  Card Pool elegible: {len(eligible):,} jugadores")
