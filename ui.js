@@ -265,6 +265,7 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
     window.renderDraftRound = renderDraftRound;
     try {
       const G = window.Game;
+      if (!G) { alert('renderDraftRound: window.Game is NULL/undefined!'); return; }
       const round = G.draftRound; // 1–9
 
       // If all 9 rounds are done → render final team confirmation screen
@@ -576,6 +577,7 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
 
     } catch(e) {
       console.error(e);
+      alert('renderDraftRound ERROR: ' + e.message + '\n\nStack: ' + e.stack);
       const banner = document.getElementById('debug-error-banner');
       if (banner) {
         banner.style.display = 'block';
