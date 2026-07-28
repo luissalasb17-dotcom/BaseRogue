@@ -2387,7 +2387,7 @@ function initGameModeSelector() {
   }
 
   // DRAFT SCREEN GENERATOR
-  function setupSignLegendScreen() {
+  function setupDraftPickScreen() {
     let pool = el.draftOptionsRow || el.starterPool || document.getElementById('starter-selection-pool') || document.getElementById('draft-options-row');
     if (pool) {
       pool.innerHTML = "";
