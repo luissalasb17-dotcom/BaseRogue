@@ -262,9 +262,10 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
 
   /** Master render for the 9-round draft. Called every time a pick is made. */
   function renderDraftRound() {
-    window.renderDraftRound = renderDraftRound;
     try {
       const G = window.Game;
+      console.log('[Draft] renderDraftRound called. G =', G, 'draftRound =', G && G.draftRound, 'POOL =', window.PlayersDB && window.PlayersDB.LAHMAN_POOL && window.PlayersDB.LAHMAN_POOL.length);
+      if (!G) { console.error('[Draft] window.Game is null!'); return; }
       const round = G.draftRound; // 1–9
 
       // If all 9 rounds are done → render final team confirmation screen
@@ -584,9 +585,12 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
     }
   }
 
+  // Expose renderDraftRound to window immediately after declaration
+  window.renderDraftRound = renderDraftRound;
+
   // renderLineupAssignment is no longer needed (handled inline in draft rounds)
   // Keeping stub so any legacy references don't throw
-  function renderLineupAssignment() { if (window.renderDraftRound) window.renderDraftRound(); else if (typeof renderDraftRound === 'function') renderDraftRound(); }
+  function renderLineupAssignment() { renderDraftRound(); }
 
   /** Final confirmation screen after completing all 9 draft rounds */
   function renderFinalLineupConfirmation() {
@@ -986,7 +990,8 @@ function initGameModeSelector() {
 
   function init() {
     initGameModeSelector();
-    if (window.renderDraftRound) window.renderDraftRound(); else if (typeof renderDraftRound === 'function') renderDraftRound();
+    // NOTE: do NOT call renderDraftRound() here — window.Game doesn't exist yet on page load.
+    // It is called by initGameModeSelector handlers after the user selects a mode.
     setupEventListeners();
   }
 
