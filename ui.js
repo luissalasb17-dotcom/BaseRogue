@@ -975,9 +975,7 @@ function initGameModeSelector() {
         if (window.Game) {
           window.Game.selectedMode = 'quick';
           window.Game.selectedSeasonYear = null;
-        }
-        if (window.OriginalOpponentsPool) {
-          window.OpponentsPool = window.OriginalOpponentsPool;
+          window.Game.customSeasonPool = null;
         }
         if (window.Game && window.Game.resetRun) {
           window.Game.resetRun();
@@ -986,11 +984,6 @@ function initGameModeSelector() {
         if (window.renderDraftRound) window.renderDraftRound(); else if (typeof renderDraftRound === 'function') renderDraftRound();
       };
     }
-  }
-
-  // Backup original OpponentsPool on load
-  if (window.OpponentsPool && !window.OriginalOpponentsPool) {
-    window.OriginalOpponentsPool = [...window.OpponentsPool];
   }
 
   function init() {
