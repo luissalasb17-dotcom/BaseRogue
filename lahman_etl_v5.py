@@ -492,7 +492,7 @@ def paso_7_enriquecer_people(df, people):
 # ===========================================================================
 # PASO 8 - FILTRO DE INGESTA DEL CARD POOL
 # ===========================================================================
-def paso_8_filtro_ingesta(df, allstar, hof, pure_pitcher_ids):
+def paso_8_filtro_ingesta(df, allstar, hof, pure_pitcher_ids, batting):
     """
     CONDICION A: posicion primaria != 'P' (salvo excepcion Ohtani 'ohtansh01')
     CONDICION B:
@@ -531,6 +531,15 @@ def paso_8_filtro_ingesta(df, allstar, hof, pure_pitcher_ids):
         eligible["allstar_selections"] = 0
 
     eligible["allstar_selections"] = eligible["allstar_selections"].fillna(0).astype(int)
+
+    # Filtro adicional estricto para Ligas Negras: HoF, 2+ Allstars, o 1500+ AB
+    nl_leagues = {'NN1', 'NN2', 'ECL', 'NSL', 'NAL', 'AA', 'ANL'}
+    if not batting.empty and 'lgID' in batting.columns:
+        nl_pids = set(batting[batting['lgID'].isin(nl_leagues)]['playerID'].unique())
+        nl_mask = eligible['playerID'].isin(nl_pids)
+        nl_keep = (eligible['is_hof']) | (eligible['allstar_selections'] >= 2) | (eligible['career_ab'] >= 1500)
+        eligible = eligible[~nl_mask | nl_keep].copy()
+
     print(f"  Card Pool elegible: {len(eligible):,} jugadores")
     return eligible
 
@@ -781,20 +790,19 @@ NLB_TEAMS = {
     'MRM', 'NBY', 'ND', 'NE', 'NEW', 'NLG', 'NLS', 'NS', 'NWB', 'NYC',
     'NYI', 'OKM', 'PBG', 'PBK', 'PG', 'PHK', 'PS', 'PTG', 'QG', 'RIC',
     'SBS', 'SC1', 'SEN', 'SL2', 'SLS', 'SPG', 'STP', 'SYS', 'WAP', 'WBS',
-    'WNA', 'WNL', 'WP', 'WST', 'ML2', 'CL4', 'PH4', 'CN2', 'LS2', 'SL4',
-    'BLN', 'LS3', 'DTN', 'BFN', 'BL2', 'CL2', 'NY4', 'PRO', 'BR3', 'BL1',
-    'IN3', 'BS1', 'WS8', 'PH1', 'CL6', 'WOR', 'TRN', 'PH2', 'SL5', 'WS9',
-    'PT1', 'CN1', 'CL5', 'LS1', 'KC2', 'BR2', 'BRG', 'CBG', 'BUF', 'NY2', 'WSU'
+    'WNA', 'WNL', 'WP', 'WST', 'ML2'
 }
 
 def map_to_canonical_team(row):
     t = str(row.get("canonical_teamID", row.get("team", "UNK"))).strip()
     franch = str(row.get("franchID", "")).strip()
-    if t in NLB_TEAMS or franch in NLB_TEAMS or ("era_label" in row and row["era_label"] in ["Golden Era (1920-1941)", "Integration (1942-1960)"] and t not in FRANCHISE_MAP and franch not in FRANCHISE_MAP):
+    if t in NLB_TEAMS or franch in NLB_TEAMS:
         return "NLB"
     if franch in FRANCHISE_MAP:
         return FRANCHISE_MAP[franch]
-    return FRANCHISE_MAP.get(t, "NLB" if t in NLB_TEAMS else t)
+    if t in FRANCHISE_MAP:
+        return FRANCHISE_MAP[t]
+    return "HIST"
 
 
 def paso_15_equipo_y_exportar(df, batting, teams, franchises):
@@ -1011,7 +1019,7 @@ def main():
     pos_data         = paso_6_posicion_bateadores(fielding, fielding_of, appearances)
     hybrid           = hybrid.merge(pos_data, on="playerID", how="left")
     hybrid           = paso_7_enriquecer_people(hybrid, people)
-    eligible         = paso_8_filtro_ingesta(hybrid, allstar, hof, pure_pitcher_ids)
+    eligible         = paso_8_filtro_ingesta(hybrid, allstar, hof, pure_pitcher_ids, batting)
     eligible         = paso_9_asignar_era(eligible)
     eligible         = paso_10_atributos_raw_bateo(eligible)
     eligible         = paso_11_motor_defensivo(eligible, war_bat, awards)

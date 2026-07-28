@@ -376,7 +376,7 @@ def paso_4_pico_pitching(pitching, war_pitch, people):
 
 
 # ── PASO 5: Filtro de ingesta ────────────────────────────────────────────────
-def paso_5_filtro_ingesta(career, peak, allstar, hof, pure_pitcher_ids):
+def paso_5_filtro_ingesta(career, peak, allstar, hof, pure_pitcher_ids, pitching):
     """
     Solo pitchers puros (posicion primaria P).
     Criterio: GS_career >= 100 OR G_career >= 150 OR All-Star OR HoF
@@ -415,6 +415,14 @@ def paso_5_filtro_ingesta(career, peak, allstar, hof, pure_pitcher_ids):
     else:
         eligible["allstar_selections"] = 0
     eligible["allstar_selections"] = eligible["allstar_selections"].fillna(0).astype(int)
+
+    # Filtro adicional estricto para Ligas Negras: HoF, 2+ Allstars, 75+ GS, o 120+ G
+    nl_leagues = {'NN1', 'NN2', 'ECL', 'NSL', 'NAL', 'AA', 'ANL'}
+    if not pitching.empty and 'lgID' in pitching.columns:
+        nl_pids = set(pitching[pitching['lgID'].isin(nl_leagues)]['playerID'].unique())
+        nl_mask = eligible['playerID'].isin(nl_pids)
+        nl_keep = (eligible['is_hof']) | (eligible['allstar_selections'] >= 2) | (eligible['career_gs'] >= 75) | (eligible['career_g'] >= 120)
+        eligible = eligible[~nl_mask | nl_keep].copy()
 
     # Marcar tipo de pitcher (SP = starter, RP = reliever)
     eligible["role"] = np.where(
@@ -598,20 +606,19 @@ NLB_TEAMS = {
     'MRM', 'NBY', 'ND', 'NE', 'NEW', 'NLG', 'NLS', 'NS', 'NWB', 'NYC',
     'NYI', 'OKM', 'PBG', 'PBK', 'PG', 'PHK', 'PS', 'PTG', 'QG', 'RIC',
     'SBS', 'SC1', 'SEN', 'SL2', 'SLS', 'SPG', 'STP', 'SYS', 'WAP', 'WBS',
-    'WNA', 'WNL', 'WP', 'WST', 'ML2', 'CL4', 'PH4', 'CN2', 'LS2', 'SL4',
-    'BLN', 'LS3', 'DTN', 'BFN', 'BL2', 'CL2', 'NY4', 'PRO', 'BR3', 'BL1',
-    'IN3', 'BS1', 'WS8', 'PH1', 'CL6', 'WOR', 'TRN', 'PH2', 'SL5', 'WS9',
-    'PT1', 'CN1', 'CL5', 'LS1', 'KC2', 'BR2', 'BRG', 'CBG', 'BUF', 'NY2', 'WSU'
+    'WNA', 'WNL', 'WP', 'WST', 'ML2'
 }
 
 def map_to_canonical_team(row):
     t = str(row.get("canonical_teamID", row.get("team", "UNK"))).strip()
     franch = str(row.get("franchID", "")).strip()
-    if t in NLB_TEAMS or franch in NLB_TEAMS or ("era_label" in row and row["era_label"] in ["Golden Era (1920-1941)", "Integration (1942-1960)"] and t not in FRANCHISE_MAP and franch not in FRANCHISE_MAP):
+    if t in NLB_TEAMS or franch in NLB_TEAMS:
         return "NLB"
     if franch in FRANCHISE_MAP:
         return FRANCHISE_MAP[franch]
-    return FRANCHISE_MAP.get(t, "NLB" if t in NLB_TEAMS else t)
+    if t in FRANCHISE_MAP:
+        return FRANCHISE_MAP[t]
+    return "HIST"
 
 
 # ── PASO 12: Equipo canónico y exportar ──────────────────────────────────────
@@ -777,7 +784,7 @@ def main():
     pure_pitchers = paso_2_identificar_pitchers_puros(fielding)
     career        = paso_3_carrera_pitching(pitching)
     peak          = paso_4_pico_pitching(pitching, war_pitch, people)
-    eligible      = paso_5_filtro_ingesta(career, peak, allstar, hof, pure_pitchers)
+    eligible      = paso_5_filtro_ingesta(career, peak, allstar, hof, pure_pitchers, pitching)
     eligible      = paso_6_enriquecer_people(eligible, people)
     eligible      = paso_7_asignar_era(eligible)
     eligible      = paso_8_atributos_raw(eligible)
