@@ -176,7 +176,7 @@
         seasonData.high.forEach(t => customPool.push({...t, tier: 'High'}));
       }
       if (seasonData.boss) {
-        customPool.push({...seasonData.boss, tier: 'High', isBoss: true});
+        customPool.push({...seasonData.boss, tier: 'Final_Boss', isBoss: true});
       }
 
       this.customSeasonPool = customPool;
@@ -201,6 +201,7 @@
       };
       this.purchasedItems = [];
       this.currentEnemy = null;
+      this.encounteredTeams = new Set();
 
       // ── 9-round Draft State ───────────────────────────────────────────
       // Round structure:
@@ -1059,11 +1060,12 @@
 
       const stage = this.currentStageIndex;
 
-      // Map 16-stage zone system to tiers
-      // Zone 1 (stages 0-3): Low  | Zone 1 boss (stage 3): Low boss
-      // Zone 2 (stages 4-7): Mid  | Zone 2 boss (stage 7): Mid boss
-      // Zone 3 (stages 8-11): High | Zone 3 boss (stage 11): High boss
-      // Zone 4 (stages 12-15): Final_Boss | Zone 4 boss (stage 15): Final_Boss boss
+      // 16-Stage Tier Progression:
+      // Zone 1 (stages 0-3): Low tier (Stage 3 = Opening Day Boss)
+      // Zone 2 (stages 4-7): Mid tier (Stage 7 = All-Star Break Boss)
+      // Zone 3 (stages 8-11): High tier (Stage 11 = Pennant Champion Boss)
+      // Zone 4 (stages 12-14): Playoff Contenders (High tier)
+      // Zone 4 (stage 15): World Series Champion (Final_Boss)
       let targetTier = 'Low';
       const isBossStage = (stage === 3 || stage === 7 || stage === 11 || stage === 15);
 
@@ -1071,26 +1073,45 @@
         targetTier = 'Low';
       } else if (stage <= 7) {
         targetTier = 'Mid';
-      } else if (stage <= 11) {
+      } else if (stage <= 14) {
         targetTier = 'High';
       } else {
         targetTier = 'Final_Boss';
       }
 
-      // For boss stages: prefer isBoss:true entries from that tier
+      // Filter candidates for current target tier
       let candidates = pool.filter(e => e.tier === targetTier);
+
       if (isBossStage) {
         const bossOnly = candidates.filter(e => e.isBoss);
         if (bossOnly.length > 0) candidates = bossOnly;
       } else {
-        // For regular stages: prefer non-boss entries
+        // Regular stages: prefer non-boss entries
         const nonBoss = candidates.filter(e => !e.isBoss);
         if (nonBoss.length > 0) candidates = nonBoss;
       }
 
-      if (candidates.length === 0) candidates = pool; // absolute fallback
+      // Fallback if tier is empty
+      if (candidates.length === 0) {
+        if (targetTier === 'Final_Boss') {
+          candidates = pool.filter(e => e.isBoss);
+          if (candidates.length === 0) candidates = pool.filter(e => e.tier === 'High');
+        } else {
+          candidates = pool;
+        }
+      }
 
-      this.currentEnemy = candidates[Math.floor(Math.random() * candidates.length)];
+      // Exclude teams already encountered in this run to guarantee zero repetition
+      if (!this.encounteredTeams) this.encounteredTeams = new Set();
+      const unencountered = candidates.filter(e => !this.encounteredTeams.has(e.id || e.name));
+      if (unencountered.length > 0) {
+        candidates = unencountered;
+      }
+
+      // Pick random opponent from candidates
+      const chosen = candidates[Math.floor(Math.random() * candidates.length)];
+      this.encounteredTeams.add(chosen.id || chosen.name);
+      this.currentEnemy = chosen;
       return this.currentEnemy;
     }
 
