@@ -188,7 +188,7 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
     eventChoicesContainer: document.getElementById('event-choices-container'),
     
     screenDraft: document.getElementById('screen-draft'),
-    draftOptionsRow: document.getElementById('draft-options-row'),
+    get draftOptionsRow() { return document.getElementById('starter-selection-pool'); },
     
     screenTrain: document.getElementById('screen-train'),
     trainOptionsList: document.getElementById('training-options-list'),
@@ -3077,8 +3077,10 @@ function initGameModeSelector() {
 
             const batterOnlyText = hasSteal ? rawText.split('🏃 ¡ROBO DE BASE!')[0].trim() : rawText;
 
-            // Step 1: Batter outcome popup
-            showOutcomePopup(ev.eventType, batterOnlyText, ev);
+            // Step 1: Batter outcome popup (skip for KO events — shown in Step 3 below with proper delay)
+            if (ev.playType !== 'KO_PITCHER' && ev.eventType !== 'KO') {
+              showOutcomePopup(ev.eventType, batterOnlyText, ev);
+            }
 
             // Step 2: Steal outcome popup 1.2s later
             if (hasSteal) {
@@ -3088,6 +3090,14 @@ function initGameModeSelector() {
               }, 1200);
             }
           }, idx * (hasSteal ? 2200 : 1000));
+
+          // Step 3: KO popup — always shown AFTER the play outcome (minimum 1600ms delay)
+          if (ev.playType === 'KO_PITCHER' || ev.eventType === 'KO') {
+            const koPopupDelay = Math.max(idx * 1000 + 1600, 1600);
+            setTimeout(() => {
+              showOutcomePopup('KO', ev.playText || '', ev);
+            }, koPopupDelay);
+          }
         });
 
         const state = activeBattle.getState();
