@@ -287,6 +287,7 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
         }
       }
       pool.innerHTML = '';
+      pool.style.cssText = 'display:flex;flex-direction:column;align-items:center;width:100%;max-width:1200px;margin:0 auto;';
 
       // ── Top header: round progress ──────────────────────────────────────
       const header = document.createElement('div');
@@ -319,7 +320,7 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
 
       // ── 3-column layout: Roster | Pick Cards | Batting Order ───────────
       const layout = document.createElement('div');
-      layout.style.cssText = 'display:grid;grid-template-columns:220px 1fr 200px;gap:16px;align-items:flex-start;width:100%;max-width:1100px;margin:0 auto;';
+      layout.style.cssText = 'display:grid;grid-template-columns:210px 1fr 190px;gap:12px;align-items:flex-start;width:100%;max-width:1180px;margin:0 auto;';
 
       // ───── LEFT: Fielding Roster Panel ─────────────────────────────────
       const rosterPanel = document.createElement('div');
@@ -413,7 +414,7 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
       centerPanel.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:16px;';
 
       const cardsRow = document.createElement('div');
-      cardsRow.style.cssText = 'display:flex;gap:16px;justify-content:center;flex-wrap:wrap;';
+      cardsRow.style.cssText = 'display:flex;gap:10px;justify-content:center;align-items:flex-start;flex-wrap:nowrap;width:100%;';
 
       picks.forEach(player => {
         const rColor = RARITY_COLORS[player.rarity] || RARITY_COLORS.Common;
@@ -426,9 +427,9 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
           'cursor:pointer','border-radius:12px',
           `border:2px solid ${rColor}`,
           `background:${rBg}`,
-          'padding:10px','transition:transform .15s,box-shadow .15s',
-          'display:flex','flex-direction:column','align-items:center','gap:8px',
-          'max-width:200px'
+          'padding:6px','transition:transform .15s,box-shadow .15s',
+          'display:flex','flex-direction:column','align-items:center','gap:6px',
+          'flex:1','max-width:180px','box-sizing:border-box'
         ].join(';');
 
         wrapper.innerHTML = `
@@ -2386,8 +2387,12 @@ function initGameModeSelector() {
   }
 
   // DRAFT SCREEN GENERATOR
-  function setupDraftPickScreen() {
-    el.draftOptionsRow.innerHTML = "";
+  function setupSignLegendScreen() {
+    let pool = el.draftOptionsRow || el.starterPool || document.getElementById('starter-selection-pool') || document.getElementById('draft-options-row');
+    if (pool) {
+      pool.innerHTML = "";
+      pool.style.cssText = 'display:flex;flex-direction:row;justify-content:center;align-items:flex-start;gap:16px;flex-wrap:nowrap;width:100%;max-width:1100px;margin:0 auto;padding:10px 0;';
+    }
     
     const titleEl = el.screenDraft.querySelector('h2');
     if (titleEl) {
@@ -2405,6 +2410,7 @@ function initGameModeSelector() {
       const predictionText = getDraftSynergyPrediction(player);
       const cardCol = document.createElement('div');
       cardCol.className = "draft-card-option";
+      cardCol.style.cssText = "display:flex;flex-direction:column;align-items:center;gap:8px;flex:1;max-width:210px;box-sizing:border-box;";
       
       const cost = getPlayerSignCost(player);
       const canAfford = (window.Game.budget || 0) >= cost;
@@ -2456,7 +2462,7 @@ function initGameModeSelector() {
     // Add a "Rechazar Firma" button option
     const skipCol = document.createElement('div');
     skipCol.className = "draft-card-option";
-    skipCol.style.cssText = "display:flex;flex-direction:column;justify-content:center;align-items:center;border:2px dashed rgba(255,255,255,0.15);padding:20px;border-radius:8px;height:350px;";
+    skipCol.style.cssText = "display:flex;flex-direction:column;justify-content:center;align-items:center;border:2px dashed rgba(255,255,255,0.15);padding:16px;border-radius:12px;height:350px;flex:1;max-width:210px;box-sizing:border-box;";
 
     const btnSkip = document.createElement('button');
     btnSkip.className = "btn btn-secondary";
@@ -2482,7 +2488,11 @@ function initGameModeSelector() {
 
   // POST-MATCH DRAFT SCREEN GENERATOR
   function setupPostMatchDraftScreen(isBoss = false, earnings = 0) {
-    el.draftOptionsRow.innerHTML = "";
+    let pool = el.draftOptionsRow || el.starterPool || document.getElementById('starter-selection-pool') || document.getElementById('draft-options-row');
+    if (pool) {
+      pool.innerHTML = "";
+      pool.style.cssText = 'display:flex;flex-direction:row;justify-content:center;align-items:flex-start;gap:16px;flex-wrap:nowrap;width:100%;max-width:1100px;margin:0 auto;padding:10px 0;';
+    }
     
     const titleEl = el.screenDraft.querySelector('h2');
     if (titleEl) {
@@ -2500,6 +2510,7 @@ function initGameModeSelector() {
       const predictionText = getDraftSynergyPrediction(player);
       const cardCol = document.createElement('div');
       cardCol.className = "draft-card-option";
+      cardCol.style.cssText = "display:flex;flex-direction:column;align-items:center;gap:8px;flex:1;max-width:210px;box-sizing:border-box;";
       
       const btnSign = document.createElement('button');
       btnSign.className = "btn";
@@ -2521,7 +2532,7 @@ function initGameModeSelector() {
     // Add a "Skip Draft" button to let the player skip post-match draft
     const skipCol = document.createElement('div');
     skipCol.className = "draft-card-option";
-    skipCol.style.cssText = "display:flex;flex-direction:column;justify-content:center;align-items:center;border:2px dashed rgba(255,255,255,0.15);padding:20px;border-radius:8px;height:350px;";
+    skipCol.style.cssText = "display:flex;flex-direction:column;justify-content:center;align-items:center;border:2px dashed rgba(255,255,255,0.15);padding:16px;border-radius:12px;height:350px;flex:1;max-width:210px;box-sizing:border-box;";
 
     const btnSkip = document.createElement('button');
     btnSkip.className = "btn btn-secondary";
