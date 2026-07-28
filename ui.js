@@ -601,25 +601,26 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
       const G = window.Game;
       const pool = el.starterPool;
       pool.innerHTML = '';
+      pool.style.cssText = 'display:flex;flex-direction:column;align-items:center;width:100%;max-width:1000px;margin:0 auto;';
 
       const shield = G.calculateDraftShield();
 
       // Compact Top banner with Shield centered below title
       const header = document.createElement('div');
-      header.style.cssText = 'width:100%;text-align:center;padding:2px 0 6px;';
+      header.style.cssText = 'width:100%;text-align:center;padding:2px 0 12px;';
       header.innerHTML = `
-        <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:#10b981;margin-bottom:4px;letter-spacing:1px;">
+        <div style="font-family:'Press Start 2P',monospace;font-size:11px;color:#10b981;margin-bottom:6px;letter-spacing:1px;">
           ⚾ ALINEACIÓN PARA INICIAR LA TEMPORADA
         </div>
-        <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(59,130,246,0.12);border:1px solid #3b82f6;border-radius:20px;padding:3px 14px;font-size:10px;color:#3b82f6;font-weight:bold;">
-          🛡️ Escudo Inicial: <span style="color:#10b981;font-size:12px;">${shield} PTS</span>
+        <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(59,130,246,0.12);border:1px solid #3b82f6;border-radius:20px;padding:4px 16px;font-size:11px;color:#3b82f6;font-weight:bold;">
+          🛡️ Escudo Inicial: <span style="color:#10b981;font-size:13px;">${shield} PTS</span>
         </div>
       `;
       pool.appendChild(header);
 
-      // 2-column layout: Fielding Roster | Batting Order
+      // Centered 2-column layout: Fielding Roster | Batting Order
       const layout = document.createElement('div');
-      layout.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:flex-start;width:100%;max-width:980px;margin:0 auto 4px;';
+      layout.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:flex-start;width:100%;max-width:920px;margin:0 auto 16px;';
 
       // ───── LEFT: Fielding Roster Panel ─────────────────────────────────
       const rosterPanel = document.createElement('div');
@@ -848,10 +849,10 @@ function renderConfirmationBattingRows() {
 
       // Bottom Confirm & Launch Campaign Button
       const bottomBar = document.createElement('div');
-      bottomBar.style.cssText = 'text-align:center;padding:4px 0 0;';
+      bottomBar.style.cssText = 'width:100%;text-align:center;padding:8px 0 16px;margin-top:4px;';
       bottomBar.innerHTML = `
         <button id="btn-confirm-final-lineup" class="btn" style="
-          padding:10px 28px;font-size:10px;
+          padding:12px 36px;font-size:11px;
           background:linear-gradient(135deg,#10b981,#059669);
           border:2px solid #34d399;box-shadow:0 0 20px rgba(16,185,129,0.4);
           cursor:pointer;font-family:'Press Start 2P',monospace;letter-spacing:1px;
@@ -3070,8 +3071,8 @@ function initGameModeSelector() {
         // 'cursor' tracks the ms offset at which the NEXT popup should start.
         const events = activeBattle.rollDice(finalRoll) || [];
         const hasKO = events.some(ev => ev.playType === 'KO_PITCHER' || ev.eventType === 'KO');
-        const POPUP_DURATION = 1000; // ms a popup is visible
-        const POPUP_GAP      = 150;  // ms gap between consecutive popups
+        const POPUP_DURATION = 700; // ms a popup is visible
+        const POPUP_GAP      = 100; // ms gap between consecutive popups
         let cursor = 0;
 
         // Phase 1: build popup schedule in correct visual order.
