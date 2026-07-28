@@ -1075,7 +1075,9 @@ function initGameModeSelector() {
     const spd = player.spd || 45;
     const def = player.def || 40;
     const eye = player.eye || 40;
-    const ovr = player.ovr || Math.round(con * 0.3 + pwr * 0.3 + spd * 0.15 + def * 0.15 + eye * 0.1);
+    const ovr = isPitcher
+      ? Math.round((player.stf || 40)*0.30 + (player.ctl || 40)*0.30 + (player.mov || 40)*0.30 + (player.sta || 50)*0.10)
+      : (player.ovr || Math.round(con * 0.3 + pwr * 0.3 + spd * 0.15 + def * 0.15 + eye * 0.1));
 
     // Rarity styles
     let derivedRarity = player.rarity;
@@ -1087,11 +1089,6 @@ function initGameModeSelector() {
       else derivedRarity = "Common";
     }
     const rarityLabel = derivedRarity;
-
-    // Calculate OVR Overall rating
-    const ovr = isPitcher
-      ? Math.round((player.stf || 40)*0.30 + (player.ctl || 40)*0.30 + (player.mov || 40)*0.30 + (player.sta || 50)*0.10)
-      : Math.round((player.con || 40)*0.30 + (player.pwr || 35)*0.30 + (player.spd || 45)*0.15 + (player.def || 40)*0.15 + (player.eye || 40)*0.10);
       
     // Get Rating letter grade
     const ovrGrade = getStatGrade(ovr);
