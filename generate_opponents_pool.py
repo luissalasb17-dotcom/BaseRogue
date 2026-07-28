@@ -60,7 +60,7 @@ def pitcher_to_obj(row, is_reliever_only=False):
     hp = calc_hp(row)
     stf = clamp_stat(row["str_val"], 40, 99)
     ctl = clamp_stat(row["ctl_val"], 40, 99)
-    mov = clamp_stat(row["grt_val"], 40, 99)
+    mov = clamp_stat(row["grt_val"], 20, 99)
     sta = clamp_stat(row["sta_val"], 20, 99)
     if is_reliever_only or row["role"] == "RP":
         sta = max(20, min(35, sta))  # relievers tienen stamina corta

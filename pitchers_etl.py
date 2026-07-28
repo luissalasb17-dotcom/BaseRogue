@@ -533,7 +533,10 @@ def paso_10_normalizar_por_era(df):
     df = normalize_difficulty_adjusted(df, "ctl_raw", "ctl_val", invert=True)    # menos BB/9 = mejor
     df = normalize_difficulty_adjusted(df, "hr_raw",  "hr_val",  invert=True)    # menos HR/9 = mejor
     df = normalize_difficulty_adjusted(df, "sta_raw", "sta_val", invert=False)   # mas IP/GS = mejor
-    df = normalize_difficulty_adjusted(df, "grt_raw", "grt_val", invert=False)   # mas ERA+ = mejor
+
+    # GRT/MOV: Centrado en 50 con escala ERA+ (100 ERA+ = 50 MOV)
+    df["grt_val"] = (50.0 + (df["peak_era_plus"].fillna(100.0) - 100.0) * 0.65).clip(1.0, 125.0).round(1)
+
     df = normalize_difficulty_adjusted(df, "def_raw", "def_val", invert=False)   # mas RS_def = mejor
 
     print("  str_val, ctl_val, hr_val, sta_val, grt_val, def_val normalizados")
