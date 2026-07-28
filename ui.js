@@ -1071,11 +1071,11 @@ function initGameModeSelector() {
     const eraClass = eraClassMap[player.era] || "era-modern";
     const teamFranchise = player.team || "ROOK";
     const year = player.year || 2026;
-    const isPitcher = player.pos === 'P';
+    const isPitcher = player.pos === 'P' || player.pos === 'SP' || player.pos === 'RP' || player.role === 'P' || player.role === 'SP' || player.role === 'RP';
 
     // Calculate OVR Overall rating (MUST be before derivedRarity block)
     const ovr = isPitcher
-      ? Math.round((player.stf || 40)*0.30 + (player.ctl || 40)*0.30 + (player.mov || 40)*0.30 + (player.sta || 50)*0.10)
+      ? Math.round(((player.stf || player.con || 40))*0.30 + ((player.ctl || player.pwr || 40))*0.30 + ((player.mov || player.eye || 40))*0.30 + ((player.sta || player.spd || 50))*0.10)
       : Math.round((player.con || 40)*0.30 + (player.pwr || 35)*0.30 + (player.spd || 45)*0.15 + (player.def || 40)*0.15 + (player.eye || 40)*0.10);
 
     // Rarity styles
@@ -1096,10 +1096,14 @@ function initGameModeSelector() {
     // Format stats values
     let statLines = "";
     if (isPitcher) {
-      const gMov = getStatGrade(player.mov || 40);
-      const gStf = getStatGrade(player.stf || 40);
-      const gCtl = getStatGrade(player.ctl || 40);
-      const staVal = player.sta || (player.maxHp ? Math.max(15, Math.min(125, Math.round((player.maxHp - 15) / 0.85))) : 65);
+      const movVal = player.mov !== undefined ? player.mov : (player.eye !== undefined ? player.eye : 40);
+      const stfVal = player.stf !== undefined ? player.stf : (player.con !== undefined ? player.con : 40);
+      const ctlVal = player.ctl !== undefined ? player.ctl : (player.pwr !== undefined ? player.pwr : 40);
+      const staVal = player.sta !== undefined ? player.sta : (player.spd !== undefined ? player.spd : (player.maxHp ? Math.max(15, Math.min(125, Math.round((player.maxHp - 15) / 0.85))) : 65));
+
+      const gMov = getStatGrade(movVal);
+      const gStf = getStatGrade(stfVal);
+      const gCtl = getStatGrade(ctlVal);
       const gSta = getStatGrade(staVal);
 
       statLines = `
@@ -3398,17 +3402,18 @@ function initGameModeSelector() {
       }
 
       const tempPitcher = {
-        name: pitcher.name, pos: 'P',
+        name: pitcher.name, pos: pitcher.role || 'SP', role: pitcher.role || 'SP',
         era: pitchEra,
         team: pitchTeam,
         year: pitchYear,
         mov: pitcher.mov, stf: pitcher.stf, ctl: pitcher.ctl, sta: pitchSta,
+        con: pitcher.stf, pwr: pitcher.ctl, eye: pitcher.mov, spd: pitchSta,
         hp: pitcher.hp, maxHp: pitcher.maxHp,
         stamina: Math.round((pitcher.hp / pitcher.maxHp) * 100),
         ovr: pitchOvr,
         rarity: pitchRarity
       };
-      el.arenaPitcherCardSlot.innerHTML = createCardHTML(tempPitcher, 'P');
+      el.arenaPitcherCardSlot.innerHTML = createCardHTML(tempPitcher, tempPitcher.pos);
 
       // Rotation badges
       const total = pitcher.total || 1;
