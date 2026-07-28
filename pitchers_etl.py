@@ -563,6 +563,57 @@ def paso_11_ovr_rareza(df):
     return df
 
 
+
+FRANCHISE_MAP = {
+    'NYY': 'NYY', 'NYA': 'NYY',
+    'NYM': 'NYM', 'NYN': 'NYM',
+    'CHW': 'CHW', 'CHA': 'CHW',
+    'CHC': 'CHC', 'CHN': 'CHC',
+    'LAD': 'LAD', 'LAN': 'LAD', 'BRO': 'LAD',
+    'SFG': 'SFG', 'SFN': 'SFG', 'NY1': 'SFG',
+    'STL': 'STL', 'SLN': 'STL',
+    'BAL': 'BAL', 'SLA': 'BAL',
+    'ATL': 'ATL', 'BSN': 'ATL', 'ML1': 'ATL',
+    'OAK': 'OAK', 'PHA': 'OAK', 'KCA': 'OAK',
+    'MIN': 'MIN', 'WS1': 'MIN',
+    'WSH': 'WSH', 'MON': 'WSH', 'WAS': 'WSH',
+    'TEX': 'TEX', 'WS2': 'TEX',
+    'LAA': 'LAA', 'ANA': 'LAA', 'CAL': 'LAA',
+    'MIA': 'MIA', 'FLA': 'MIA', 'FLO': 'MIA',
+    'MIL': 'MIL', 'ML4': 'MIL', 'SE1': 'MIL',
+    'TB':  'TB',  'TBD': 'TB',  'TBA': 'TB',
+    'SDP': 'SDP', 'SDN': 'SDP',
+    'CIN': 'CIN', 'CLE': 'CLE', 'BOS': 'BOS', 'DET': 'DET', 'PIT': 'PIT',
+    'PHI': 'PHI', 'HOU': 'HOU', 'TOR': 'TOR', 'KCR': 'KCR', 'SEA': 'SEA',
+    'COL': 'COL', 'ARI': 'ARI',
+}
+
+NLB_TEAMS = {
+    'BEG', 'KCM', 'MRS', 'HG', 'CBE', 'CAG', 'PC', 'BE', 'IN9', 'BIR',
+    'KC1', 'HOM', 'DTW', 'NW2', 'NY5', 'NY6', 'AS2', 'MEM', 'BBB', 'BBS',
+    'BCA', 'BG1', 'BG2', 'BGS', 'CBR', 'CC1', 'CC2', 'CCC', 'CCG', 'CCG2',
+    'CGI', 'CIG', 'CLG', 'CLP', 'CLS', 'COS', 'CSG', 'CSG2', 'CSG3', 'CSW',
+    'CTG', 'CTS', 'CUP', 'CXG', 'DYM', 'ECK', 'FLP', 'GOR', 'HBG', 'HIL',
+    'JRC', 'KCG', 'KRG', 'LEL', 'LOU', 'LRG', 'LVB', 'MB', 'MGS', 'MOH',
+    'MRM', 'NBY', 'ND', 'NE', 'NEW', 'NLG', 'NLS', 'NS', 'NWB', 'NYC',
+    'NYI', 'OKM', 'PBG', 'PBK', 'PG', 'PHK', 'PS', 'PTG', 'QG', 'RIC',
+    'SBS', 'SC1', 'SEN', 'SL2', 'SLS', 'SPG', 'STP', 'SYS', 'WAP', 'WBS',
+    'WNA', 'WNL', 'WP', 'WST', 'ML2', 'CL4', 'PH4', 'CN2', 'LS2', 'SL4',
+    'BLN', 'LS3', 'DTN', 'BFN', 'BL2', 'CL2', 'NY4', 'PRO', 'BR3', 'BL1',
+    'IN3', 'BS1', 'WS8', 'PH1', 'CL6', 'WOR', 'TRN', 'PH2', 'SL5', 'WS9',
+    'PT1', 'CN1', 'CL5', 'LS1', 'KC2', 'BR2', 'BRG', 'CBG', 'BUF', 'NY2', 'WSU'
+}
+
+def map_to_canonical_team(row):
+    t = str(row.get("canonical_teamID", row.get("team", "UNK"))).strip()
+    franch = str(row.get("franchID", "")).strip()
+    if t in NLB_TEAMS or franch in NLB_TEAMS or ("era_label" in row and row["era_label"] in ["Golden Era (1920-1941)", "Integration (1942-1960)"] and t not in FRANCHISE_MAP and franch not in FRANCHISE_MAP):
+        return "NLB"
+    if franch in FRANCHISE_MAP:
+        return FRANCHISE_MAP[franch]
+    return FRANCHISE_MAP.get(t, "NLB" if t in NLB_TEAMS else t)
+
+
 # ── PASO 12: Equipo canónico y exportar ──────────────────────────────────────
 def paso_12_exportar(df, pitching, teams, franchises):
     print("\n  PASO 12: Equipo canonico y exportacion...")
@@ -583,20 +634,10 @@ def paso_12_exportar(df, pitching, teams, franchises):
         team_franch = teams[["teamID", "franchID"]].drop_duplicates(subset=["teamID"])
         df = df.merge(team_franch, left_on="canonical_teamID", right_on="teamID", how="left")
         df.drop(columns=["teamID"], errors="ignore", inplace=True)
-        if not franchises.empty and "franchName" in franchises.columns:
-            df = df.merge(
-                franchises[["franchID", "franchName"]].drop_duplicates(subset=["franchID"]),
-                on="franchID", how="left"
-            )
-            df.rename(columns={"franchName": "franchise_name"}, inplace=True)
-        else:
-            df["franchise_name"] = df.get("canonical_teamID", "UNK")
-    else:
-        df["franchise_name"] = df.get("canonical_teamID", "UNK")
-
+    
     df = df.drop_duplicates(subset=["playerID"]).copy()
-    df["canonical_teamID"] = df["canonical_teamID"].fillna("UNK")
-    df["franchise_name"]   = df["franchise_name"].fillna(df["canonical_teamID"])
+    df["canonical_teamID"] = df.apply(map_to_canonical_team, axis=1)
+    df["franchise_name"] = df["canonical_teamID"]
 
     keep_cols = [
         "playerID", "bbrefID", "full_name", "era_label",

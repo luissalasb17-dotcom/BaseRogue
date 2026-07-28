@@ -63,18 +63,37 @@
   };
 
   const FranchiseNames = {
+    NLB: "Ligas Negras",
     NYY: "New York Yankees",
-    BOS: "Boston Red Sox",
+    NYM: "New York Mets",
     LAD: "Los Angeles Dodgers",
     SFG: "San Francisco Giants",
+    CHW: "Chicago White Sox",
     CHC: "Chicago Cubs",
     STL: "St. Louis Cardinals",
-    OAK: "Oakland Athletics",
-    DET: "Detroit Tigers",
+    BOS: "Boston Red Sox",
+    ATL: "Atlanta Braves",
+    CIN: "Cincinnati Reds",
+    PHI: "Philadelphia Phillies",
     PIT: "Pittsburgh Pirates",
     CLE: "Cleveland Guardians",
-    ATL: "Atlanta Braves",
-    TEX: "Texas Rangers"
+    DET: "Detroit Tigers",
+    BAL: "Baltimore Orioles",
+    MIN: "Minnesota Twins",
+    OAK: "Oakland Athletics",
+    HOU: "Houston Astros",
+    WSH: "Washington Nationals",
+    TEX: "Texas Rangers",
+    LAA: "Los Angeles Angels",
+    SDP: "San Diego Padres",
+    SEA: "Seattle Mariners",
+    TOR: "Toronto Blue Jays",
+    KCR: "Kansas City Royals",
+    MIL: "Milwaukee Brewers",
+    TB:  "Tampa Bay Rays",
+    MIA: "Miami Marlins",
+    COL: "Colorado Rockies",
+    ARI: "Arizona Diamondbacks"
   };
 
   // Replacement Level Players - Starting Lineup (Offensive 20-45 stats)
