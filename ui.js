@@ -95,7 +95,7 @@ function startSeasonRouletteAnimation(selectedYear, onComplete) {
       if (yearEl) yearEl.innerText = String(selectedYear);
       if (eraEl) eraEl.innerText = getEraNameForYear(selectedYear);
       if (boxEl) boxEl.classList.add('winning-glow');
-      if (msgEl) msgEl.innerHTML = `<span style="color: #ffd700; font-weight: bold; text-shadow: 0 0 10px rgba(255,215,0,0.8);">⚡ ¡TEMPORADA SELECCIONADA: ${selectedYear}! ⚡</span>`;
+      if (msgEl) msgEl.innerHTML = `<span style="color: #ffd700; font-weight: bold; text-shadow: 0 0 10px rgba(255,215,0,0.8);">??? ??TEMPORADA SELECCIONADA: ${selectedYear}! ???</span>`;
 
       setTimeout(() => {
         // Reset modal controls for next time
@@ -221,7 +221,7 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
     btnCancelSwapDraft: document.getElementById('btn-cancel-swap-draft')
   };
 
-  // ── State local UI ──────────────────────────────────────────────────────────
+  // ?????? State local UI ??????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????
   let activeBattle       = null;   // InteractiveBattle instance (interactive dice mode)
   let currentDraftSelection = null; // Stored player data if modal swap needed
   let diceAnimInterval   = null;   // Dice roll animation interval handle
@@ -233,14 +233,14 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
   let _prevTeamShield  = null;
 
   const TrainingPlans = [
-    { id: "t_con", label: "Práctica de Contacto", desc: "Aumenta permanentemente el Contacto por +6.", price: 15, stat: "con", val: 6 },
+    { id: "t_con", label: "Pr??ctica de Contacto", desc: "Aumenta permanentemente el Contacto por +6.", price: 15, stat: "con", val: 6 },
     { id: "t_pwr", label: "Entrenamiento de Fuerza", desc: "Aumenta la Fuerza del jugador por +6.", price: 15, stat: "pwr", val: 6 },
     { id: "t_spd", label: "Carreras de Velocidad", desc: "Aumenta la Velocidad del jugador por +6.", price: 12, stat: "spd", val: 6 },
     { id: "t_def", label: "Ejercicios de Guante", desc: "Sube la Defensa del jugador por +6.", price: 10, stat: "def", val: 6 },
-    { id: "t_sta", label: "Acondicionamiento Físico", desc: "Recupera +35 de Stamina y suma +5 de Stamina máxima.", price: 10, stat: "sta", val: 35 }
+    { id: "t_sta", label: "Acondicionamiento F??sico", desc: "Recupera +35 de Stamina y suma +5 de Stamina m??xima.", price: 10, stat: "sta", val: 35 }
   ];
 
-  // ── 9-ROUND DRAFT SYSTEM ──────────────────────────────────────────────────
+  // ?????? 9-ROUND DRAFT SYSTEM ??????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????
   // Rarity color palette (5 tiers)
   const RARITY_COLORS = {
     Legendary: '#f59e0b',
@@ -265,10 +265,9 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
     window.renderDraftRound = renderDraftRound;
     try {
       const G = window.Game;
-      if (!G) { alert('renderDraftRound: window.Game is NULL/undefined!'); return; }
-      const round = G.draftRound; // 1–9
+      const round = G.draftRound; // 1???9
 
-      // If all 9 rounds are done → render final team confirmation screen
+      // If all 9 rounds are done ??? render final team confirmation screen
       if (round > 9) {
         renderFinalLineupConfirmation();
         return;
@@ -288,7 +287,7 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
       }
       pool.innerHTML = '';
 
-      // ── Top header: round progress ──────────────────────────────────────
+      // ?????? Top header: round progress ??????????????????????????????????????????????????????????????????????????????????????????????????????????????????
       const header = document.createElement('div');
       header.style.cssText = 'width:100%;text-align:center;padding:12px 0 16px;';
       const roundDots = Array.from({length:9},(_,i) => {
@@ -302,7 +301,7 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
 
       header.innerHTML = `
         <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:${RARITY_COLORS[info.rarities ? info.rarities[0] : 'Legendary']};margin-bottom:8px;letter-spacing:1px;">
-          ⚾ DRAFT INICIAL — RONDA ${round} DE 9
+          ??? DRAFT INICIAL ??? RONDA ${round} DE 9
         </div>
         <div style="display:flex;justify-content:center;gap:6px;align-items:center;margin-bottom:8px;">${roundDots}</div>
         <div style="display:inline-block;background:${RARITY_BG[info.rarities ? info.rarities[0] : 'Legendary']};
@@ -314,16 +313,16 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
       `;
       pool.appendChild(header);
 
-      // ── 3-column layout: Roster | Pick Cards | Batting Order ───────────
+      // ?????? 3-column layout: Roster | Pick Cards | Batting Order ?????????????????????????????????
       const layout = document.createElement('div');
       layout.style.cssText = 'display:grid;grid-template-columns:220px 1fr 200px;gap:16px;align-items:flex-start;width:100%;max-width:1100px;margin:0 auto;';
 
-      // ───── LEFT: Fielding Roster Panel ─────────────────────────────────
+      // ??????????????? LEFT: Fielding Roster Panel ???????????????????????????????????????????????????????????????????????????????????????????????????
       const rosterPanel = document.createElement('div');
       rosterPanel.style.cssText = 'background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:12px;';
       rosterPanel.innerHTML = `
         <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#9ca3af;margin-bottom:10px;text-align:center;letter-spacing:1px;">
-          🧤 ALINEACIÓN
+          ???? ALINEACI??N
         </div>
       `;
 
@@ -348,29 +347,29 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
           let posHint = '';
           const defBase = player.def || 40;
           if (isNative) {
-            posHint = '<span style="color:#10b981">✅ Nativo</span>';
+            posHint = '<span style="color:#10b981">??? Nativo</span>';
           } else if (slot === 'DH') {
             posHint = '<span style="color:#9ca3af">DH</span>';
           } else if (isSec) {
             const pen = Math.round(defBase * 0.15);
-            posHint = `<span style="color:#f59e0b">⚡ Secundario (-${pen} DEF)</span>`;
+            posHint = `<span style="color:#f59e0b">??? Secundario (-${pen} DEF)</span>`;
           } else {
             const pen = Math.round(defBase * 0.50);
-            posHint = `<span style="color:#ef4444">⚠️ Fuera pos (-${pen} DEF)</span>`;
+            posHint = `<span style="color:#ef4444">?????? Fuera pos (-${pen} DEF)</span>`;
           }
 
           slotRow.innerHTML = `
             <span style="font-family:'Press Start 2P',monospace;font-size:7px;color:#94a3b8;min-width:24px;">${slot}</span>
             <div style="flex:1;min-width:0;">
               <div style="font-size:10px;font-weight:bold;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${player.name}</div>
-              <div style="font-size:9px;color:${rColor};">${player.rarity} • OVR ${ovr} ${posHint}</div>
+              <div style="font-size:9px;color:${rColor};">${player.rarity} ??? OVR ${ovr} ${posHint}</div>
             </div>
           `;
-          slotRow.title = 'Arrastra para cambiar de posición';
+          slotRow.title = 'Arrastra para cambiar de posici??n';
         } else {
           slotRow.innerHTML = `
             <span style="font-family:'Press Start 2P',monospace;font-size:7px;color:#374151;min-width:24px;">${slot}</span>
-            <span style="font-size:10px;color:#374151;">— VACÍO —</span>
+            <span style="font-size:10px;color:#374151;">??? VAC??O ???</span>
           `;
         }
 
@@ -405,7 +404,7 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
         rosterPanel.appendChild(slotRow);
       });
 
-      // ───── CENTER: 3 Pick Cards ─────────────────────────────────────────
+      // ??????????????? CENTER: 3 Pick Cards ???????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????
       const centerPanel = document.createElement('div');
       centerPanel.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:16px;';
 
@@ -432,9 +431,9 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
           <div style="pointer-events:none;">${cardHTML}</div>
           <div style="text-align:center;width:100%;">
             <div style="font-size:10px;color:${rColor};font-weight:bold;">${player.rarity}</div>
-            <div style="font-size:9.5px;color:#9ca3af;text-align:center;margin-top:2px;">${player.pos} • OVR ${ovr}</div>
+            <div style="font-size:9.5px;color:#9ca3af;text-align:center;margin-top:2px;">${player.pos} ??? OVR ${ovr}</div>
           </div>
-          <button class="btn" style="width:100%;padding:8px;font-size:10px;background:${rColor};color:#000;border:none;">✔ SELECCIONAR</button>
+          <button class="btn" style="width:100%;padding:8px;font-size:10px;background:${rColor};color:#000;border:none;">??? SELECCIONAR</button>
         `;
 
         wrapper.addEventListener('mouseenter', () => {
@@ -458,16 +457,16 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
       const pickHint = document.createElement('div');
       pickHint.style.cssText = 'font-size:11px;color:#6b7280;text-align:center;max-width:400px;';
       if (round <= 3) {
-        pickHint.textContent = `Esta es una ronda garantizada de élite. Aprovecha para asegurar un titular de calidad.`;
+        pickHint.textContent = `Esta es una ronda garantizada de ??lite. Aprovecha para asegurar un titular de calidad.`;
       } else if (round <= 6) {
-        pickHint.textContent = `Ronda de Common. Estos jugadores llenarán los slots que te faltan y formarán tu banco.`;
+        pickHint.textContent = `Ronda de Common. Estos jugadores llenar??n los slots que te faltan y formar??n tu banco.`;
       } else {
-        pickHint.textContent = `Ronda libre: puede aparecer cualquier rareza del pool. ¡Buena suerte!`;
+        pickHint.textContent = `Ronda libre: puede aparecer cualquier rareza del pool. ??Buena suerte!`;
       }
       centerPanel.appendChild(pickHint);
       const autoDraftBtn = document.createElement('button');
       autoDraftBtn.className = 'btn btn-secondary';
-      autoDraftBtn.innerHTML = '🎲 ¡Sorpréndeme! (Auto-Completar)';
+      autoDraftBtn.innerHTML = '???? ??Sorpr??ndeme! (Auto-Completar)';
       autoDraftBtn.style.cssText = 'margin-top: 15px; padding: 10px 20px; font-size: 11px;';
       autoDraftBtn.onclick = () => {
         while (G.draftRound <= 9) {
@@ -485,12 +484,12 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
       centerPanel.appendChild(autoDraftBtn);
 
 
-      // ───── RIGHT: Batting Order Panel ──────────────────────────────────
+      // ??????????????? RIGHT: Batting Order Panel ??????????????????????????????????????????????????????????????????????????????????????????????????????
       const orderPanel = document.createElement('div');
       orderPanel.style.cssText = 'background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:12px;';
       orderPanel.innerHTML = `
         <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#9ca3af;margin-bottom:10px;text-align:center;letter-spacing:1px;">
-          ⚔️ BATTING ORDER
+          ?????? BATTING ORDER
         </div>
       `;
 
@@ -512,7 +511,7 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
 
           const nameStr = player
             ? `<span style="font-size:9px;color:#fff;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${player.name.split(' ').pop()}</span>`
-            : `<span style="font-size:9px;color:#374151;flex:1;">${slot} —</span>`;
+            : `<span style="font-size:9px;color:#374151;flex:1;">${slot} ???</span>`;
 
           row.innerHTML = `
             <span style="font-family:'Press Start 2P',monospace;font-size:7px;color:#6b7280;min-width:12px;">${idx+1}</span>
@@ -557,12 +556,12 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
       }
       renderBattingOrderRows();
 
-      // Botón Auto-Ordenar
+      // Bot??n Auto-Ordenar
       const autoSortBtn = document.createElement('button');
       autoSortBtn.className = 'btn btn-secondary';
       autoSortBtn.style.cssText = 'width:100%;font-size:7px;padding:6px;margin-top:10px;background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.2);';
-      autoSortBtn.innerHTML = '⚙️ AUTO ORDEN';
-      autoSortBtn.title = 'Ordena lógicamente: Velocidad al 1ro, Poder al 4to, Mejores bates al 2do y 3ro.';
+      autoSortBtn.innerHTML = '?????? AUTO ORDEN';
+      autoSortBtn.title = 'Ordena l??gicamente: Velocidad al 1ro, Poder al 4to, Mejores bates al 2do y 3ro.';
       autoSortBtn.onclick = () => {
         G.draftBattingOrder = G.autoSortBattingOrder(G.draftRoster, G.draftBattingOrder);
         renderBattingOrderRows();
@@ -577,7 +576,6 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
 
     } catch(e) {
       console.error(e);
-      alert('renderDraftRound ERROR: ' + e.message + '\n\nStack: ' + e.stack);
       const banner = document.getElementById('debug-error-banner');
       if (banner) {
         banner.style.display = 'block';
@@ -604,10 +602,10 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
       header.style.cssText = 'width:100%;text-align:center;padding:2px 0 6px;';
       header.innerHTML = `
         <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:#10b981;margin-bottom:4px;letter-spacing:1px;">
-          ⚾ ALINEACIÓN PARA INICIAR LA TEMPORADA
+          ??? ALINEACI??N PARA INICIAR LA TEMPORADA
         </div>
         <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(59,130,246,0.12);border:1px solid #3b82f6;border-radius:20px;padding:3px 14px;font-size:10px;color:#3b82f6;font-weight:bold;">
-          🛡️ Escudo Inicial: <span style="color:#10b981;font-size:12px;">${shield} PTS</span>
+          ??????? Escudo Inicial: <span style="color:#10b981;font-size:12px;">${shield} PTS</span>
         </div>
       `;
       pool.appendChild(header);
@@ -616,12 +614,12 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
       const layout = document.createElement('div');
       layout.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:flex-start;width:100%;max-width:980px;margin:0 auto 4px;';
 
-      // ───── LEFT: Fielding Roster Panel ─────────────────────────────────
+      // ??????????????? LEFT: Fielding Roster Panel ???????????????????????????????????????????????????????????????????????????????????????????????????
       const rosterPanel = document.createElement('div');
       rosterPanel.style.cssText = 'background:rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:8px 12px;';
       rosterPanel.innerHTML = `
         <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:#3b82f6;margin-bottom:6px;text-align:center;letter-spacing:1px;">
-          🧤 ALINEACIÓN DEFENSIVA (DRAG & DROP)
+          ???? ALINEACI??N DEFENSIVA (DRAG & DROP)
         </div>
       `;
 
@@ -645,24 +643,24 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
           let posHint = '';
           const defBase = player.def || 40;
           if (isNative) {
-            posHint = '<span style="color:#10b981">✅ Nativo</span>';
+            posHint = '<span style="color:#10b981">??? Nativo</span>';
           } else if (slot === 'DH') {
             posHint = '<span style="color:#9ca3af">DH</span>';
           } else if (isSec) {
             const pen = Math.round(defBase * 0.15);
-            posHint = `<span style="color:#f59e0b">⚡ Secundario (-${pen} DEF)</span>`;
+            posHint = `<span style="color:#f59e0b">??? Secundario (-${pen} DEF)</span>`;
           } else {
             const pen = Math.round(defBase * 0.50);
-            posHint = `<span style="color:#ef4444">⚠️ Fuera pos (-${pen} DEF)</span>`;
+            posHint = `<span style="color:#ef4444">?????? Fuera pos (-${pen} DEF)</span>`;
           }
 
           slotRow.innerHTML = `
             <span style="font-family:'Press Start 2P',monospace;font-size:8px;color:#94a3b8;min-width:28px;">${slot}</span>
             <div style="flex:1;min-width:0;">
               <div style="font-size:11px;font-weight:bold;color:#fff;">${player.name}</div>
-              <div style="font-size:9.5px;color:${rColor};">${player.rarity} • OVR ${ovr} ${posHint}</div>
+              <div style="font-size:9.5px;color:${rColor};">${player.rarity} ??? OVR ${ovr} ${posHint}</div>
             </div>
-            <button class="btn-inspect-player" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);color:#38bdf8;padding:4px 8px;font-size:9px;border-radius:4px;cursor:pointer;">🔍 CARTA</button>
+            <button class="btn-inspect-player" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);color:#38bdf8;padding:4px 8px;font-size:9px;border-radius:4px;cursor:pointer;">???? CARTA</button>
           `;
 
           const inspectBtn = slotRow.querySelector('.btn-inspect-player');
@@ -686,7 +684,7 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
         } else {
           slotRow.innerHTML = `
             <span style="font-family:'Press Start 2P',monospace;font-size:8px;color:#374151;min-width:28px;">${slot}</span>
-            <span style="font-size:11px;color:#374151;">— VACÍO —</span>
+            <span style="font-size:11px;color:#374151;">??? VAC??O ???</span>
           `;
         }
 
@@ -712,14 +710,14 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
         rosterPanel.appendChild(slotRow);
       });
 
-      // ───── RIGHT: Batting Order Panel ──────────────────────────────────
+      // ??????????????? RIGHT: Batting Order Panel ??????????????????????????????????????????????????????????????????????????????????????????????????????
       const orderPanel = document.createElement('div');
       orderPanel.style.cssText = 'background:rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:8px 12px;';
       
       orderPanel.innerHTML = `
         <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:#f59e0b;margin-bottom:6px;text-align:center;letter-spacing:1px;display:flex;justify-content:space-between;align-items:center;">
-          <span>⚔️ ORDEN AL BATE</span>
-          <button class="btn btn-secondary" id="btn-auto-sort" style="padding:4px 8px;font-size:8px;cursor:pointer;">🤖 AUTO-ORDEN</button>
+          <span>?????? ORDEN AL BATE</span>
+          <button class="btn btn-secondary" id="btn-auto-sort" style="padding:4px 8px;font-size:8px;cursor:pointer;">???? AUTO-ORDEN</button>
         </div>
       `;
 
@@ -790,9 +788,9 @@ function renderConfirmationBattingRows() {
               <span style="font-size:9px;color:#94a3b8;min-width:24px;">${slot}</span>
               <div style="flex:1;min-width:0;">
                 <div style="font-size:10.5px;font-weight:bold;color:#fff;">${player.name}</div>
-                <div style="font-size:9px;color:${rColor};">OVR ${ovr} • ${player.rarity}</div>
+                <div style="font-size:9px;color:${rColor};">OVR ${ovr} ??? ${player.rarity}</div>
               </div>
-              <button class="btn-inspect-bo" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);color:#38bdf8;padding:3px 6px;font-size:8.5px;border-radius:3px;margin-right:4px;">🔍</button>
+              <button class="btn-inspect-bo" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);color:#38bdf8;padding:3px 6px;font-size:8.5px;border-radius:3px;margin-right:4px;">????</button>
               
             `;
 
@@ -806,7 +804,7 @@ function renderConfirmationBattingRows() {
           } else {
             row.innerHTML = `
               <span style="font-family:'Press Start 2P',monospace;font-size:8px;color:#6b7280;min-width:16px;">${idx+1}</span>
-              <span style="font-size:9px;color:#374151;flex:1;">${slot} — VACÍO</span>
+              <span style="font-size:9px;color:#374151;flex:1;">${slot} ??? VAC??O</span>
             `;
           }
 
@@ -851,7 +849,7 @@ function renderConfirmationBattingRows() {
           border:2px solid #34d399;box-shadow:0 0 20px rgba(16,185,129,0.4);
           cursor:pointer;font-family:'Press Start 2P',monospace;letter-spacing:1px;
         ">
-          ⚾ CONFIRMAR EQUIPO E INICIAR CAMPAÑA
+          ??? CONFIRMAR EQUIPO E INICIAR CAMPA??A
         </button>
       `;
 
@@ -899,7 +897,7 @@ function initGameModeSelector() {
 
     // Populate Season dropdown (1901-2025)
     if (selectYear && selectYear.options.length <= 1) {
-      selectYear.innerHTML = '<option value="random">🎲 Random Season</option>';
+      selectYear.innerHTML = '<option value="random">???? Random Season</option>';
       for (let y = 1901; y <= 2025; y++) {
         const opt = document.createElement('option');
         opt.value = String(y);
@@ -1049,7 +1047,7 @@ function initGameModeSelector() {
         <div class="player-card" style="border: 2px dashed rgba(255,255,255,0.1); background: rgba(0,0,0,0.3); display: flex; justify-content: center; align-items: center;">
           <div style="text-align: center; color: #4b5563;">
             <i class="fa-solid fa-user-plus" style="font-size: 24px; margin-bottom: 8px;"></i>
-            <div style="font-size: 11px; font-weight:bold;">VACÍO</div>
+            <div style="font-size: 11px; font-weight:bold;">VAC??O</div>
           </div>
         </div>
       `;
@@ -1072,14 +1070,10 @@ function initGameModeSelector() {
     const year = player.year || 2026;
     const isPitcher = player.pos === 'P';
 
-    const con = player.con || 40;
-    const pwr = player.pwr || 35;
-    const spd = player.spd || 45;
-    const def = player.def || 40;
-    const eye = player.eye || 40;
+    // Calculate OVR Overall rating (must be BEFORE rarity derivation)
     const ovr = isPitcher
       ? Math.round((player.stf || 40)*0.30 + (player.ctl || 40)*0.30 + (player.mov || 40)*0.30 + (player.sta || 50)*0.10)
-      : (player.ovr || Math.round(con * 0.3 + pwr * 0.3 + spd * 0.15 + def * 0.15 + eye * 0.1));
+      : Math.round((player.con || 40)*0.30 + (player.pwr || 35)*0.30 + (player.spd || 45)*0.15 + (player.def || 40)*0.15 + (player.eye || 40)*0.10);
 
     // Rarity styles
     let derivedRarity = player.rarity;
@@ -1091,7 +1085,7 @@ function initGameModeSelector() {
       else derivedRarity = "Common";
     }
     const rarityLabel = derivedRarity;
-      
+
     // Get Rating letter grade
     const ovrGrade = getStatGrade(ovr);
 
@@ -1243,15 +1237,15 @@ function initGameModeSelector() {
       });
     }
 
-    // ── I18N TRANSLATIONS DICTIONARY ──────────────────────────────────────────
+    // ?????? I18N TRANSLATIONS DICTIONARY ??????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????
     const I18N = {
       es: {
-        btn_lineup: "Alineación",
+        btn_lineup: "Alineaci??n",
         btn_synergies: "Sinergias",
-        btn_roll_dice: "🎲 LANZAR DADO",
-        btn_simulate_all: "⚡ SIMULAR TODO",
+        btn_roll_dice: "???? LANZAR DADO",
+        btn_simulate_all: "??? SIMULAR TODO",
         match_title: "Bateadores al Combate",
-        pre_fight_title: "Preparación de la Serie",
+        pre_fight_title: "Preparaci??n de la Serie",
         map_title: "Mapa del Campeonato",
         outs_label: "OUTS:",
         runs_label: "CARRERAS:",
@@ -1261,22 +1255,22 @@ function initGameModeSelector() {
         history_label: "HISTORIAL DEL PARTIDO",
         upgrades_label: "MEJORAS",
         drag_reorder: "Arrastra para reordenar",
-        start_campaign: "⚾ Comenzar Campaña",
-        guides_ratings: "📊 GUÍA DE RATINGS",
-        damage_data: "⚙️ DATOS DE DAÑO & VALORES",
-        shield_header: "🛡️ CÓMO FUNCIONA EL ESCUDO (Tope 50 pts)",
-        out_title: "🤚 OUT (Groundout/Flyout):",
-        so_title: "💨 PONCHE (SO):",
-        pitcher_dmg_title: "⚾ DAÑO AL LANZADOR RIVAL (BASE):",
-        rbi_bonus_title: "🏆 Bonus por Carreras Impulsadas (RBI):",
-        steal_title: "🏃 ROBO DE BASES (SPD ≥ 40 — Grado C+):",
-        hit_upgrade_title: "⚡ UPGRADE DE BATAZOS:"
+        start_campaign: "??? Comenzar Campa??a",
+        guides_ratings: "???? GU??A DE RATINGS",
+        damage_data: "?????? DATOS DE DA??O & VALORES",
+        shield_header: "??????? C??MO FUNCIONA EL ESCUDO (Tope 50 pts)",
+        out_title: "???? OUT (Groundout/Flyout):",
+        so_title: "???? PONCHE (SO):",
+        pitcher_dmg_title: "??? DA??O AL LANZADOR RIVAL (BASE):",
+        rbi_bonus_title: "???? Bonus por Carreras Impulsadas (RBI):",
+        steal_title: "???? ROBO DE BASES (SPD ??? 40 ??? Grado C+):",
+        hit_upgrade_title: "??? UPGRADE DE BATAZOS:"
       },
       en: {
         btn_lineup: "Lineup",
         btn_synergies: "Synergies",
-        btn_roll_dice: "🎲 ROLL DICE",
-        btn_simulate_all: "⚡ SIMULATE ALL",
+        btn_roll_dice: "???? ROLL DICE",
+        btn_simulate_all: "??? SIMULATE ALL",
         match_title: "Batters to Combat",
         pre_fight_title: "Series Preparation",
         map_title: "Championship Map",
@@ -1288,16 +1282,16 @@ function initGameModeSelector() {
         history_label: "MATCH HISTORY",
         upgrades_label: "UPGRADES",
         drag_reorder: "Drag to reorder",
-        start_campaign: "⚾ Start Campaign",
-        guides_ratings: "📊 RATINGS GUIDE",
-        damage_data: "⚙️ DAMAGE DATA & VALUES",
-        shield_header: "🛡️ HOW SHIELD WORKS (50 pts Cap)",
-        out_title: "🤚 OUT (Groundout/Flyout):",
-        so_title: "💨 STRIKEOUT (SO):",
-        pitcher_dmg_title: "⚾ RIVAL PITCHER BASE DAMAGE:",
-        rbi_bonus_title: "🏆 RBI Bonus Damage:",
-        steal_title: "🏃 BASE STEALING (SPD ≥ 40 — Grade C+):",
-        hit_upgrade_title: "⚡ HIT UPGRADES:"
+        start_campaign: "??? Start Campaign",
+        guides_ratings: "???? RATINGS GUIDE",
+        damage_data: "?????? DAMAGE DATA & VALUES",
+        shield_header: "??????? HOW SHIELD WORKS (50 pts Cap)",
+        out_title: "???? OUT (Groundout/Flyout):",
+        so_title: "???? STRIKEOUT (SO):",
+        pitcher_dmg_title: "??? RIVAL PITCHER BASE DAMAGE:",
+        rbi_bonus_title: "???? RBI Bonus Damage:",
+        steal_title: "???? BASE STEALING (SPD ??? 40 ??? Grade C+):",
+        hit_upgrade_title: "??? HIT UPGRADES:"
       }
     };
 
@@ -1333,13 +1327,13 @@ function initGameModeSelector() {
     const btnLang = document.getElementById('btn-lang-toggle');
     if (btnLang) {
       const savedLang = localStorage.getItem('baserogue_lang') || 'es';
-      btnLang.innerText = savedLang === 'es' ? '🌐 ES' : '🌐 EN';
+      btnLang.innerText = savedLang === 'es' ? '???? ES' : '???? EN';
       applyLanguage(savedLang);
       btnLang.addEventListener('click', () => {
         const cur = localStorage.getItem('baserogue_lang') || 'es';
         const next = cur === 'es' ? 'en' : 'es';
         localStorage.setItem('baserogue_lang', next);
-        btnLang.innerText = next === 'es' ? '🌐 ES' : '🌐 EN';
+        btnLang.innerText = next === 'es' ? '???? ES' : '???? EN';
         applyLanguage(next);
       });
 
@@ -1475,7 +1469,7 @@ function initGameModeSelector() {
       });
       renderActiveRoster();
       renderSynergiesAndItems();
-      alert("¡Toda tu plantilla recupera +40 de energía!");
+      alert("??Toda tu plantilla recupera +40 de energ??a!");
       closeNodeCompleted();
     });
 
@@ -1483,7 +1477,7 @@ function initGameModeSelector() {
       window.Game.budget += 25;
       renderActiveRoster();
       updateHUD();
-      alert("¡Tu club recibe una bonificación de +$25 de patrocinadores!");
+      alert("??Tu club recibe una bonificaci??n de +$25 de patrocinadores!");
       closeNodeCompleted();
     });
 
@@ -1530,7 +1524,7 @@ function initGameModeSelector() {
       }
 
       window.Game.budget -= plan.price;
-      alert(`¡Entrenamiento completado! ${player.name} subió +${plan.val} en su stat.`);
+      alert(`??Entrenamiento completado! ${player.name} subi?? +${plan.val} en su stat.`);
 
       renderActiveRoster();
       renderSynergiesAndItems();
@@ -1539,7 +1533,7 @@ function initGameModeSelector() {
       closeNodeCompleted();
     });
 
-    // 🎲 LANZAR DADO — Interactive Dice Battler
+    // ???? LANZAR DADO ??? Interactive Dice Battler
     // The button is dynamically injected into #screen-match by setupAndStartMatchSimulation.
     // We delegate via event delegation on the screen so it works after DOM injection.
     document.getElementById('screen-match').addEventListener('click', (e) => {
@@ -1604,7 +1598,7 @@ function initGameModeSelector() {
 
     // Check if run won (exceeded stage 15)
     if (window.Game.currentStageIndex > 15) {
-      triggerGameOver(true, "¡CAMPEÓN DE LA ETERNIDAD! Conquistaste la Serie Mundial y ganaste los Playoffs.");
+      triggerGameOver(true, "??CAMPE??N DE LA ETERNIDAD! Conquistaste la Serie Mundial y ganaste los Playoffs.");
       return;
     }
 
@@ -1617,7 +1611,7 @@ function initGameModeSelector() {
   function updateHUD() {
     const zone = window.Game.getZoneForStage(window.Game.currentStageIndex);
     const zoneNames = ['Opening Day', 'All-Star Break', 'Pennant Chase', 'Playoffs'];
-    el.hudStage.innerText = `Etapa ${window.Game.currentStageIndex + 1}/16 — ${zoneNames[zone] || ''}`;
+    el.hudStage.innerText = `Etapa ${window.Game.currentStageIndex + 1}/16 ??? ${zoneNames[zone] || ''}`;
     el.hudBudget.innerText = `$${window.Game.budget}`;
   }
 
@@ -1735,7 +1729,7 @@ function initGameModeSelector() {
     });
   }
 
-  // ── PLAYER CARD POPUP ────────────────────────────────────────────────────
+  // ?????? PLAYER CARD POPUP ????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????
   function showPlayerCardPopup(player, slot) {
     const overlay = document.getElementById('player-card-popup-overlay');
     if (!overlay) return;
@@ -1783,13 +1777,13 @@ function initGameModeSelector() {
     overlay.querySelector('#popup-card-content').innerHTML = `
       <div class="popup-card-header">
         <div class="popup-rarity-badge" style="color:${rarityColor};border-color:${rarityColor};">${player.rarity || 'Common'}</div>
-        <button id="btn-close-popup" class="popup-close-btn">✕</button>
+        <button id="btn-close-popup" class="popup-close-btn">???</button>
       </div>
       <div class="popup-player-name">${player.name}</div>
       <div class="popup-meta-row">
         <span class="popup-pos-badge">${slot}</span>
         <span class="popup-era-chip">${(player.era||'').replace(/\(.*\)/,'').trim()}</span>
-        <span class="popup-team-chip">${player.team !== 'ROOK' ? player.team : '—'}</span>
+        <span class="popup-team-chip">${player.team !== 'ROOK' ? player.team : '???'}</span>
       </div>
       <div class="popup-ovr-banner" style="background:${ovrGrade.color}20;border-color:${ovrGrade.color};">
         <span class="popup-ovr-label">OVR</span>
@@ -1812,18 +1806,18 @@ function initGameModeSelector() {
       </div>
       ${player.upgrades && Object.values(player.upgrades).some(v => v > 0) ? `
         <div class="popup-upgrades-row">
-          <span style="font-size:8px;color:var(--primary-color);font-family:'Press Start 2P',monospace;">⬆ UPGRADES:</span>
+          <span style="font-size:8px;color:var(--primary-color);font-family:'Press Start 2P',monospace;">??? UPGRADES:</span>
           ${Object.entries(player.upgrades).filter(([k,v])=>v>0).map(([k,v])=>`<span class="popup-upgrade-badge">+${v} ${k.toUpperCase()}</span>`).join('')}
         </div>` : ''}
       <div class="popup-era-desc">${window.PlayersDB.EraTraits && window.PlayersDB.EraTraits[player.era] ? `<i>${window.PlayersDB.EraTraits[player.era].name}:</i> ${window.PlayersDB.EraTraits[player.era].desc}` : ''}</div>
-      <div class="popup-year">Peak: ${player.year || player.peak_year || player.peakYear || '—'} &nbsp;|&nbsp; ${player.era || ''}</div>
+      <div class="popup-year">Peak: ${player.year || player.peak_year || player.peakYear || '???'} &nbsp;|&nbsp; ${player.era || ''}</div>
       ${!isDraft ? `
         <div class="popup-def-swap-container" style="margin-top:12px; padding-top:10px; border-top:1px dashed rgba(255,255,255,0.15); display:flex; flex-direction:column; gap:6px;">
           <div style="font-size:8px; color:var(--accent-color); font-family:'Press Start 2P',monospace; display:flex; align-items:center; gap:6px;">
-            <i class="fa-solid fa-arrows-rotate"></i> CAMBIAR POSICIÓN EN EL CAMPO:
+            <i class="fa-solid fa-arrows-rotate"></i> CAMBIAR POSICI??N EN EL CAMPO:
           </div>
           <div style="font-size:8px; color:#9ca3af; line-height:1.3;">
-            Intercambia la posición defensiva de <b>${player.name}</b> con otro titular. <span style="color:#00ff66;">(NO altera tu orden al bate)</span>.
+            Intercambia la posici??n defensiva de <b>${player.name}</b> con otro titular. <span style="color:#00ff66;">(NO altera tu orden al bate)</span>.
           </div>
           <select id="popup-def-swap-select" style="background:#090d16; color:#00ff66; border:1px solid #00ff66; border-radius:6px; padding:6px 8px; font-size:9px; font-family:'Press Start 2P',monospace; cursor:pointer; width:100%; margin-top:2px;">
             ${['C','1B','2B','3B','SS','LF','CF','RF','DH'].map(targetSlot => {
@@ -1836,11 +1830,11 @@ function initGameModeSelector() {
               
               let tag = "";
               if (isCurrent) tag = " (Actual)";
-              else if (isNat) tag = " (Nativa ⭐ 100% Def)";
-              else if (isSec) tag = " (Secundaria 🛡️ 85% Def)";
-              else if (targetSlot !== 'DH') tag = " (Fuera Pos ⚠️ 50% Def)";
+              else if (isNat) tag = " (Nativa ??? 100% Def)";
+              else if (isSec) tag = " (Secundaria ??????? 85% Def)";
+              else if (targetSlot !== 'DH') tag = " (Fuera Pos ?????? 50% Def)";
               
-              return `<option value="${targetSlot}" ${isCurrent ? 'selected disabled' : ''}>${targetSlot} — ${occName}${tag}</option>`;
+              return `<option value="${targetSlot}" ${isCurrent ? 'selected disabled' : ''}>${targetSlot} ??? ${occName}${tag}</option>`;
             }).join('')}
           </select>
         </div>` : ''}
@@ -1878,7 +1872,7 @@ function initGameModeSelector() {
     }
   }
 
-  // ── NODE VISUAL CONFIG ───────────────────────────────────────────────────
+  // ?????? NODE VISUAL CONFIG ?????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????
   const NODE_VISUALS = {
     match:  { text: 'VS',   label: 'SERIE',    color: '#00ff66', bg: '#021a0e', border: '#00ff66' },
     boss:   { text: 'BOSS', label: 'JEFE',     color: '#ffd700', bg: '#1a0e00', border: '#ffd700' },
@@ -1908,16 +1902,16 @@ function initGameModeSelector() {
       const isZoneCompleted = (currentStage > zEnd);
       const isZoneLocked    = (zoneIdx > currentZone);
 
-      // ── Zone Wrapper ────────────────────────────────────────────────
+      // ?????? Zone Wrapper ????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????
       const zoneWrapper = document.createElement('div');
       zoneWrapper.className = `zone-wrapper ${zoneConfig.theme}${isCurrentZone ? ' zone-active' : ''}${isZoneCompleted ? ' zone-done' : ''}${isZoneLocked ? ' zone-locked' : ''}`;
 
-      // ── Zone Header ─────────────────────────────────────────────────
+      // ?????? Zone Header ???????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????
       const zoneStatusBadge = isZoneCompleted
-        ? `<span class="zone-badge zone-badge-done">✓ COMPLETADA</span>`
+        ? `<span class="zone-badge zone-badge-done">??? COMPLETADA</span>`
         : isZoneLocked
-          ? `<span class="zone-badge zone-badge-locked">🔒 BLOQUEADA</span>`
-          : `<span class="zone-badge zone-badge-active">▶ ACTIVA</span>`;
+          ? `<span class="zone-badge zone-badge-locked">???? BLOQUEADA</span>`
+          : `<span class="zone-badge zone-badge-active">??? ACTIVA</span>`;
 
       const zoneHeader = document.createElement('div');
       zoneHeader.className = 'zone-header';
@@ -1938,7 +1932,7 @@ function initGameModeSelector() {
         return;
       }
 
-      // ── Calculate node positions (SVG coords) ───────────────────────
+      // ?????? Calculate node positions (SVG coords) ?????????????????????????????????????????????????????????????????????
       // We render stages from bottom (zStart) to top (zEnd): stage zStart = bottom row
       const stagesInZone = zEnd - zStart + 1; // always 4
       const SVG_H = PADDING_Y * 2 + (stagesInZone - 1) * ROW_H;
@@ -1948,7 +1942,7 @@ function initGameModeSelector() {
       for (let s = zStart; s <= zEnd; s++) {
         const nodes = window.Game.map[s] || [];
         const count = nodes.length;
-        // row index from bottom: s=zStart → rowFromBottom=0 (bottom), s=zEnd → rowFromBottom=stagesInZone-1 (top)
+        // row index from bottom: s=zStart ??? rowFromBottom=0 (bottom), s=zEnd ??? rowFromBottom=stagesInZone-1 (top)
         const rowFromBottom = s - zStart;
         const y = SVG_H - PADDING_Y - rowFromBottom * ROW_H;
         nodePos[s] = nodes.map((_, idx) => ({
@@ -1959,7 +1953,7 @@ function initGameModeSelector() {
         }));
       }
 
-      // ── Determine active node indices for current stage ─────────────
+      // ?????? Determine active node indices for current stage ???????????????????????????????????????
       let activeNextNodeIdxs = [];
       if (currentStage >= zStart && currentStage <= zEnd) {
         if (currentStage === zStart) {
@@ -1972,7 +1966,7 @@ function initGameModeSelector() {
         }
       }
 
-      // ── Build SVG ───────────────────────────────────────────────────
+      // ?????? Build SVG ?????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????
       const svgNS = 'http://www.w3.org/2000/svg';
       const svg = document.createElementNS(svgNS, 'svg');
       svg.setAttribute('viewBox', `0 0 ${SVG_W} ${SVG_H}`);
@@ -1995,7 +1989,7 @@ function initGameModeSelector() {
       });
       svg.appendChild(defs);
 
-      // ── DRAW PATHS (behind nodes) ────────────────────────────────────
+      // ?????? DRAW PATHS (behind nodes) ????????????????????????????????????????????????????????????????????????????????????????????????????????????
       for (let s = zStart; s < zEnd; s++) {
         const stageNodes = window.Game.map[s] || [];
         stageNodes.forEach(node => {
@@ -2045,7 +2039,7 @@ function initGameModeSelector() {
         });
       }
 
-      // ── DRAW NODES (on top of paths) ────────────────────────────────
+      // ?????? DRAW NODES (on top of paths) ????????????????????????????????????????????????????????????????????????????????????????????????
       for (let s = zStart; s <= zEnd; s++) {
         const stageNodes = window.Game.map[s] || [];
         const isBossStage = (s === 3 || s === 7 || s === 11 || s === 15);
@@ -2120,7 +2114,7 @@ function initGameModeSelector() {
         });
       }
 
-      // ── Wrap SVG in canvas div ───────────────────────────────────────
+      // ?????? Wrap SVG in canvas div ?????????????????????????????????????????????????????????????????????????????????????????????????????????????????????
       const zoneCanvas = document.createElement('div');
       zoneCanvas.className = 'zone-canvas';
       zoneCanvas.id = `zone-canvas-${zoneIdx}`;
@@ -2131,7 +2125,7 @@ function initGameModeSelector() {
     });
   }
 
-  // Legacy stub – no longer needed (paths drawn inline with renderMap)
+  // Legacy stub ??? no longer needed (paths drawn inline with renderMap)
   function drawZonePaths(currentZone) { /* no-op */ }
 
   // RENDER SIDEBAR SYNERGIES & ITEMS
@@ -2142,8 +2136,8 @@ function initGameModeSelector() {
     const EraSynergyMeta = {
       "The Genesis Era (1871-1900)": {
         name: "Genesis Chaos",
-        desc1: "T1 (2+): 15% prob error en hit (+10 daño, avanza bases)",
-        desc2: "T2 (4+): 30% prob error en hit (+20 daño, avanza bases)"
+        desc1: "T1 (2+): 15% prob error en hit (+10 da??o, avanza bases)",
+        desc2: "T2 (4+): 30% prob error en hit (+20 da??o, avanza bases)"
       },
       "Deadball (1901-1919)": {
         name: "Small Ball",
@@ -2152,8 +2146,8 @@ function initGameModeSelector() {
       },
       "Golden Era (1920-1941)": {
         name: "Liveball Sluggers",
-        desc1: "T1 (2+): Todos los hits hacen +6 daño adicional",
-        desc2: "T2 (4+): Hits +12 daño; 30% de convertir 2B en 3B"
+        desc1: "T1 (2+): Todos los hits hacen +6 da??o adicional",
+        desc2: "T2 (4+): Hits +12 da??o; 30% de convertir 2B en 3B"
       },
       "Integration (1942-1960)": {
         name: "Five-Tool Legends",
@@ -2163,27 +2157,27 @@ function initGameModeSelector() {
       "Expansion (1961-1976)": {
         name: "Speed & Hustle",
         desc1: "T1 (2+): 50% robo en 1B; robo cura +10 Stamina",
-        desc2: "T2 (4+): 80% robo; robo cura +20 y hace 10 daño"
+        desc2: "T2 (4+): 80% robo; robo cura +20 y hace 10 da??o"
       },
       "Big Hair Era (1977-1993)": {
         name: "AstroTurf Speedsters",
-        desc1: "T1 (2+): Robos exitosos hacen +15 daño al lanzador",
-        desc2: "T2 (4+): Robos +30 daño y debuff de 3 turnos al rival"
+        desc1: "T1 (2+): Robos exitosos hacen +15 da??o al lanzador",
+        desc2: "T2 (4+): Robos +30 da??o y debuff de 3 turnos al rival"
       },
       "Steroid Era (1994-2005)": {
         name: "Bash Brothers",
-        desc1: "T1 (2+): Jonrones (HR) hacen +20 daño adicional",
-        desc2: "T2 (4+): HR hacen +40 daño; 50% fly sac anotador"
+        desc1: "T1 (2+): Jonrones (HR) hacen +20 da??o adicional",
+        desc2: "T2 (4+): HR hacen +40 da??o; 50% fly sac anotador"
       },
       "Efficiency (2006-2015)": {
         name: "Moneyball Analytics",
-        desc1: "T1 (2+): Bases por bolas (BB) hacen +10 daño extra",
-        desc2: "T2 (4+): BB hacen +20 daño; outs hacen +10 daño"
+        desc1: "T1 (2+): Bases por bolas (BB) hacen +10 da??o extra",
+        desc2: "T2 (4+): BB hacen +20 da??o; outs hacen +10 da??o"
       },
       "Modern Era (2016-Pres)": {
         name: "Three True Outcomes",
-        desc1: "T1 (2+): BB hacen 15 daño, Ponche -50% daño al equipo",
-        desc2: "T2 (4+): BB hacen 24 daño, Ponche -50% y no corta racha"
+        desc1: "T1 (2+): BB hacen 15 da??o, Ponche -50% da??o al equipo",
+        desc2: "T2 (4+): BB hacen 24 da??o, Ponche -50% y no corta racha"
       }
     };
 
@@ -2205,7 +2199,7 @@ function initGameModeSelector() {
     // A. Render Era Synergies (Render ALL 9 to guide the user)
     const eraListTitle = document.createElement('div');
     eraListTitle.style.cssText = "font-family: 'Press Start 2P', monospace; font-size: 7px; color: var(--accent-color); margin-top: 5px; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px;";
-    eraListTitle.innerText = "⏳ Eras del Roster";
+    eraListTitle.innerText = "??? Eras del Roster";
     el.synergiesList.appendChild(eraListTitle);
 
     Object.keys(EraSynergyMeta).forEach(eraName => {
@@ -2250,7 +2244,7 @@ function initGameModeSelector() {
     // B. Render Franchise Synergies (Only teams with count >= 1)
     const teamListTitle = document.createElement('div');
     teamListTitle.style.cssText = "font-family: 'Press Start 2P', monospace; font-size: 7px; color: var(--accent-color); margin-top: 15px; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px;";
-    teamListTitle.innerText = "⚾ Franquicias del Roster";
+    teamListTitle.innerText = "??? Franquicias del Roster";
     el.synergiesList.appendChild(teamListTitle);
 
     let hasTeams = false;
@@ -2276,8 +2270,8 @@ function initGameModeSelector() {
       }
 
       const desc = count >= 4 
-        ? `Dinastía: Jugadores de ${team} obtienen +10 a todos sus stats en combate.`
-        : `Química (2+): Jugadores de ${team} obtienen +4 a todos sus stats en combate.`;
+        ? `Dinast??a: Jugadores de ${team} obtienen +10 a todos sus stats en combate.`
+        : `Qu??mica (2+): Jugadores de ${team} obtienen +4 a todos sus stats en combate.`;
 
       item.innerHTML = `
         <div class="synergy-item-header">
@@ -2295,7 +2289,7 @@ function initGameModeSelector() {
     if (!hasTeams) {
       const noneEl = document.createElement('div');
       noneEl.style.cssText = "color: #64748b; font-size: 10px; text-align: center; padding: 5px;";
-      noneEl.innerText = "Ningún equipo registrado.";
+      noneEl.innerText = "Ning??n equipo registrado.";
       el.synergiesList.appendChild(noneEl);
     }
 
@@ -2347,18 +2341,18 @@ function initGameModeSelector() {
     } else if (currentEraCount === 3) {
       predictionText += `Firma activa Sinergia <strong>${eraShort} (T2)</strong>!<br>`;
     } else {
-      predictionText += `Era ${eraShort}: ${currentEraCount} ➡️ <strong>${currentEraCount + 1}/2</strong><br>`;
+      predictionText += `Era ${eraShort}: ${currentEraCount} ?????? <strong>${currentEraCount + 1}/2</strong><br>`;
     }
 
     // Team synergy impact
     if (player.team && player.team !== 'ROOK') {
       const teamShort = player.team;
       if (currentTeamCount === 1) {
-        predictionText += `Firma activa Química de <strong>${teamShort}</strong> (+4 stats)`;
+        predictionText += `Firma activa Qu??mica de <strong>${teamShort}</strong> (+4 stats)`;
       } else if (currentTeamCount === 3) {
-        predictionText += `Firma activa Dinastía de <strong>${teamShort}</strong> (+10 stats)`;
+        predictionText += `Firma activa Dinast??a de <strong>${teamShort}</strong> (+10 stats)`;
       } else {
-        predictionText += `Franquicia ${teamShort}: ${currentTeamCount} ➡️ <strong>${currentTeamCount + 1}/2</strong>`;
+        predictionText += `Franquicia ${teamShort}: ${currentTeamCount} ?????? <strong>${currentTeamCount + 1}/2</strong>`;
       }
     }
 
@@ -2460,7 +2454,7 @@ function initGameModeSelector() {
         <i class="fa-solid fa-hand"></i>
       </div>
       <p style="font-size:11px;color:#9ca3af;text-align:center;margin-bottom:16px;line-height:1.4;">
-        ¿No deseas contratar a ninguna leyenda o prefieres guardar tu dinero? Puedes rechazar la firma y avanzar en el mapa.
+        ??No deseas contratar a ninguna leyenda o prefieres guardar tu dinero? Puedes rechazar la firma y avanzar en el mapa.
       </p>
     `;
     skipCol.appendChild(btnSkip);
@@ -2475,11 +2469,11 @@ function initGameModeSelector() {
     
     const titleEl = el.screenDraft.querySelector('h2');
     if (titleEl) {
-      titleEl.innerHTML = `<i class="fa-solid fa-gift"></i> ¡Victoria! +$${earnings} y Recompensa`;
+      titleEl.innerHTML = `<i class="fa-solid fa-gift"></i> ??Victoria! +$${earnings} y Recompensa`;
     }
     const descEl = el.screenDraft.querySelector('p');
     if (descEl) {
-      descEl.innerText = "Selecciona una leyenda para unir a tu roster de forma permanente. Reemplazará a uno de tus novatos o estrellas actuales.";
+      descEl.innerText = "Selecciona una leyenda para unir a tu roster de forma permanente. Reemplazar?? a uno de tus novatos o estrellas actuales.";
     }
 
     const options = window.Game.getPostMatchDraftPicks(isBoss);
@@ -2525,7 +2519,7 @@ function initGameModeSelector() {
         <i class="fa-solid fa-forward"></i>
       </div>
       <p style="font-size:12px;color:#9ca3af;text-align:center;margin-bottom:20px;">
-        ¿No deseas cambiar a ningún jugador? Puedes omitir esta recompensa y continuar en el mapa.
+        ??No deseas cambiar a ning??n jugador? Puedes omitir esta recompensa y continuar en el mapa.
       </p>
     `;
     skipCol.appendChild(btnSkip);
@@ -2585,7 +2579,7 @@ function initGameModeSelector() {
           window.Game.purchasedItems.push(`${event.title}: ${choice.text.split(" (")[0].substring(0, 20)}...`);
         }
         
-        alert("¡Decisión tomada!");
+        alert("??Decisi??n tomada!");
         
         renderActiveRoster();
         renderSynergiesAndItems();
@@ -2723,15 +2717,15 @@ function initGameModeSelector() {
     window.showScreen('screen-pre-fight');
   }
 
-  // ── START INTERACTIVE DICE BATTLE ────────────────────────────────────────────
+  // ?????? START INTERACTIVE DICE BATTLE ????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????
   function setupAndStartMatchSimulation() {
     // Collapse roster panel (keep visible in 3-column layout)
     // el.rosterManagerPanel.classList.add('hidden');
 
     const enemy = window.Game.getEnemyTeam();
     el.matchHeaderTitle.innerHTML =
-      `<i class="fa-solid fa-dice"></i> 🎲 Combate Interactivo vs <span style="color:#ef4444;">${enemy.name}</span>`;
-    if (el.scoreEnemyName) el.scoreEnemyName.innerText = 'ROTACIÓN RIVAL';
+      `<i class="fa-solid fa-dice"></i> ???? Combate Interactivo vs <span style="color:#ef4444;">${enemy.name}</span>`;
+    if (el.scoreEnemyName) el.scoreEnemyName.innerText = 'ROTACI??N RIVAL';
 
     // Reset HUD
     el.scoreAwayR.innerText = '0';
@@ -2755,10 +2749,10 @@ function initGameModeSelector() {
     // Build lineups
     const teamLineups = window.Game.getSimLineups();
 
-    // ── Calculate team shield using position rules (native=100%, OOP=50%, DH=0%) ──
+    // ?????? Calculate team shield using position rules (native=100%, OOP=50%, DH=0%) ??????
     const avgDef = window.Game.calculateLineupShield();
 
-    // ── Create InteractiveBattle ──────────────────────────────────────────────
+    // ?????? Create InteractiveBattle ??????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????
     activeBattle = new window.InteractiveBattle(teamLineups.away, teamLineups.home, avgDef);
     isRolling = false;
 
@@ -2776,7 +2770,7 @@ function initGameModeSelector() {
     el.btnMatchAuto && el.btnMatchAuto.classList.add('hidden');
     el.btnMatchSkip && el.btnMatchSkip.classList.remove('hidden');
 
-    // ── Inject dice UI panel ─────────────────────────────────────────────────
+    // ?????? Inject dice UI panel ???????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????
     const dicePanel = document.createElement('div');
     dicePanel.id = 'dice-battle-panel';
     dicePanel.style.cssText = [
@@ -2790,20 +2784,20 @@ function initGameModeSelector() {
       <!-- Team vitals -->
       <div id="team-vitals" style="width:100%;display:flex;flex-direction:column;gap:6px;">
         <div style="display:flex;justify-content:space-between;align-items:center;">
-          <span style="font-size:11px;color:#9ca3af;">❤️ TEAM HP</span>
+          <span style="font-size:11px;color:#9ca3af;">?????? TEAM HP</span>
           <span id="team-hp-text" style="font-size:11px;font-weight:bold;color:#10b981;">100/100</span>
         </div>
         <div style="height:8px;background:rgba(255,255,255,0.08);border-radius:4px;overflow:hidden;">
           <div id="team-hp-bar" style="height:100%;width:100%;background:linear-gradient(90deg,#10b981,#34d399);transition:width .3s;"></div>
         </div>
         <div style="display:flex;justify-content:space-between;align-items:center;">
-          <span style="font-size:11px;color:#9ca3af;">🛡️ ESCUDO (DEF avg ${avgDef})</span>
+          <span style="font-size:11px;color:#9ca3af;">??????? ESCUDO (DEF avg ${avgDef})</span>
           <span id="team-shield-text" style="font-size:11px;font-weight:bold;color:#3b82f6;">${avgDef}/${avgDef}</span>
         </div>
         <div style="height:8px;background:rgba(255,255,255,0.08);border-radius:4px;overflow:hidden;">
           <div id="team-shield-bar" style="height:100%;width:100%;background:linear-gradient(90deg,#3b82f6,#60a5fa);transition:width .3s;"></div>
         </div>
-        <div style="font-size:11px;color:#f59e0b;text-align:center;" id="so-chain-display">🔥 Racha de Ponches: 0</div>
+        <div style="font-size:11px;color:#f59e0b;text-align:center;" id="so-chain-display">???? Racha de Ponches: 0</div>
       </div>
       <!-- Dice result display -->
       <div id="dice-result-display" style="
@@ -2815,10 +2809,10 @@ function initGameModeSelector() {
         width:80px;height:80px;
         display:flex;align-items:center;justify-content:center;
         letter-spacing:2px;
-      ">–</div>
+      ">???</div>
       <!-- Lucky zones panel -->
       <div id="zones-panel" style="width:100%;background:rgba(0,0,0,0.3);border-radius:8px;padding:8px;font-size:10px;">
-        <div style="color:#64748b;text-align:center;margin-bottom:4px;">🎯 Zonas de la suerte</div>
+        <div style="color:#64748b;text-align:center;margin-bottom:4px;">???? Zonas de la suerte</div>
         <div id="zones-lines" style="display:flex;flex-direction:column;gap:2px;"></div>
       </div>
       <!-- ROLL button -->
@@ -2831,7 +2825,7 @@ function initGameModeSelector() {
         box-shadow:0 0 20px rgba(124,58,237,0.5);
         transition:transform .1s,box-shadow .1s;
         width:100%;
-      ">🎲 LANZAR DADO</button>
+      ">???? LANZAR DADO</button>
     `;
 
     const diceSlot = el.screenMatch.querySelector('#dice-container-slot');
@@ -2858,7 +2852,7 @@ function initGameModeSelector() {
   }
 
 
-  // ── OUTCOME POPUP BANNER ─────────────────────────────────────────────────────
+  // ?????? OUTCOME POPUP BANNER ???????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????
   function showOutcomePopup(eventType, details, ev) {
     const parent = document.querySelector('.rpg-fight-deck');
     if (!parent) return;
@@ -2875,15 +2869,15 @@ function initGameModeSelector() {
         title = "BASE POR BOLAS";
         color = "#3b82f6";
         icon = "fa-walking";
-        dmgText = `🚶 ¡PITCHER RECIBE DAÑO!`;
+        dmgText = `???? ??PITCHER RECIBE DA??O!`;
         borderColor = "#3b82f6";
         boxShadow = "0 0 30px rgba(59, 130, 246, 0.5), 0 0 15px rgba(59, 130, 246, 0.3)";
         break;
       case 'SO':
-        title = "¡PONCHE!";
+        title = "??PONCHE!";
         color = "#ef4444";
         icon = "fa-circle-xmark";
-        dmgText = `💀 DAÑO DIRECTO (IGNORA ESCUDO)`;
+        dmgText = `???? DA??O DIRECTO (IGNORA ESCUDO)`;
         borderColor = "#ef4444";
         boxShadow = "0 0 30px rgba(239, 68, 68, 0.5), 0 0 15px rgba(239, 68, 68, 0.3)";
         break;
@@ -2891,7 +2885,7 @@ function initGameModeSelector() {
         title = "OUT";
         color = "#9ca3af";
         icon = "fa-thumbs-down";
-        dmgText = `🛡️ DAÑO AL ESCUDO`;
+        dmgText = `??????? DA??O AL ESCUDO`;
         borderColor = "#9ca3af";
         boxShadow = "0 0 30px rgba(156, 163, 175, 0.5), 0 0 15px rgba(156, 163, 175, 0.3)";
         break;
@@ -2899,56 +2893,56 @@ function initGameModeSelector() {
         title = "SENCILLO (1B)";
         color = "#a7f3d0";
         icon = "fa-baseball-bat-ball";
-        dmgText = `⚾ DAÑO AL PITCHER`;
+        dmgText = `??? DA??O AL PITCHER`;
         borderColor = "#10b981";
         boxShadow = "0 0 30px rgba(16, 185, 129, 0.5), 0 0 15px rgba(16, 185, 129, 0.3)";
         break;
       case '2B':
-        title = "DOBLE (2B) ⚡";
+        title = "DOBLE (2B) ???";
         color = "#10b981";
         icon = "fa-bolt-lightning";
-        dmgText = `⚡ DAÑO DUPLICADO`;
+        dmgText = `??? DA??O DUPLICADO`;
         borderColor = "#10b981";
         boxShadow = "0 0 30px rgba(16, 185, 129, 0.6), 0 0 15px rgba(16, 185, 129, 0.4)";
         break;
       case '3B':
-        title = "TRIPLE (3B) 🔥";
+        title = "TRIPLE (3B) ????";
         color = "#06b6d4";
         icon = "fa-fire";
-        dmgText = `🔥 DAÑO TRIPLICADO`;
+        dmgText = `???? DA??O TRIPLICADO`;
         borderColor = "#06b6d4";
         boxShadow = "0 0 30px rgba(6, 182, 212, 0.6), 0 0 15px rgba(6, 182, 212, 0.4)";
         break;
       case 'HR':
-        title = "¡JONRÓN! 🚀💥";
+        title = "??JONR??N! ????????";
         color = "#eab308";
         icon = "fa-rocket";
-        dmgText = `🚀 ¡DAÑO CRÍTICO MASIVO!`;
+        dmgText = `???? ??DA??O CR??TICO MASIVO!`;
         borderColor = "#eab308";
         boxShadow = "0 0 45px rgba(234, 179, 8, 0.7), 0 0 20px rgba(234, 179, 8, 0.5)";
         break;
       case 'STEAL':
-        title = "¡ROBO DE BASE! 🏃⚡";
+        title = "??ROBO DE BASE! ???????";
         color = "#38bdf8";
         icon = "fa-person-running";
-        dmgText = `⚡ PITCHER DEBUFF: +20% DAÑO RECIBIDO`;
+        dmgText = `??? PITCHER DEBUFF: +20% DA??O RECIBIDO`;
         borderColor = "#38bdf8";
         boxShadow = "0 0 35px rgba(56, 189, 248, 0.7)";
         break;
       case 'KO':
       case 'KO_PITCHER':
-        title = "¡K.O. AL LANZADOR! 💥";
+        title = "??K.O. AL LANZADOR! ????";
         color = "#f59e0b";
         icon = "fa-skull-crossbones";
-        dmgText = `🥊 ¡PITCHER RIVAL DERROTADO!`;
+        dmgText = `???? ??PITCHER RIVAL DERROTADO!`;
         borderColor = "#f59e0b";
         boxShadow = "0 0 35px rgba(245, 158, 11, 0.6)";
         break;
       case 'INNING_END':
         var nextIn = (ev && ev.inning) ? ev.inning : 2;
         if (nextIn > 3 || (activeBattle && activeBattle.battleOver)) return;
-        title = `¡ENTRADA ${nextIn}! ⚾`;
-        dmgText = `⚾ COMIENZA LA ENTRADA ${nextIn} DE 3`;
+        title = `??ENTRADA ${nextIn}! ???`;
+        dmgText = `??? COMIENZA LA ENTRADA ${nextIn} DE 3`;
         color = "#38bdf8";
         icon = "fa-rotate";
         borderColor = "#38bdf8";
@@ -2985,7 +2979,7 @@ function initGameModeSelector() {
       min-width: 240px;
     `;
 
-    const cleanDetails = details ? details.replace(/🎲 \[\d+\] \[[^\]]+\] /, '').replace(/−/g, '-') : '';
+    const cleanDetails = details ? details.replace(/???? \[\d+\] \[[^\]]+\] /, '').replace(/???/g, '-') : '';
 
     popup.innerHTML = `
       <div style="font-size: 36px; color: ${color}; margin-bottom: 12px; filter: drop-shadow(0 0 8px ${color});">
@@ -3019,7 +3013,7 @@ function initGameModeSelector() {
     }, 1500);
   }
 
-  // ── HANDLE ROLL DICE CLICK ───────────────────────────────────────────────────
+  // ?????? HANDLE ROLL DICE CLICK ?????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????
   function handleRollDice() {
     if (!activeBattle || activeBattle.battleOver || isRolling) return;
     isRolling = true;
@@ -3062,7 +3056,7 @@ function initGameModeSelector() {
         events.forEach((ev, idx) => {
           appendLogLine(ev);
           const rawText = ev.playText || '';
-          const hasSteal = rawText.includes('🏃 ¡ROBO DE BASE!');
+          const hasSteal = rawText.includes('???? ??ROBO DE BASE!');
 
           setTimeout(() => {
             if (ev.playType === 'KO_PITCHER' || ev.eventType === 'KO') {
@@ -3075,14 +3069,14 @@ function initGameModeSelector() {
               }
             }
 
-            const batterOnlyText = hasSteal ? rawText.split('🏃 ¡ROBO DE BASE!')[0].trim() : rawText;
+            const batterOnlyText = hasSteal ? rawText.split('???? ??ROBO DE BASE!')[0].trim() : rawText;
 
             // Step 1: Batter outcome popup
             showOutcomePopup(ev.eventType, batterOnlyText, ev);
 
             // Step 2: Steal outcome popup 1.2s later
             if (hasSteal) {
-              const stealOnlyText = '🏃 ¡ROBO DE BASE! ' + rawText.split('🏃 ¡ROBO DE BASE!')[1].trim();
+              const stealOnlyText = '???? ??ROBO DE BASE! ' + rawText.split('???? ??ROBO DE BASE!')[1].trim();
               setTimeout(() => {
                 showOutcomePopup('STEAL', stealOnlyText, ev);
               }, 1200);
@@ -3137,7 +3131,7 @@ function initGameModeSelector() {
     }, 55);
   }
 
-  // ── UPDATE MATCH HUD (HP bars, shield, chain, scoreboard) ───────────────────
+  // ?????? UPDATE MATCH HUD (HP bars, shield, chain, scoreboard) ?????????????????????????????????????????????????????????
   function triggerBarShake(element, cssClass) {
     if (!element) return;
     element.classList.remove(cssClass);
@@ -3155,7 +3149,7 @@ function initGameModeSelector() {
     el.scoreAwayH.innerText  = `${state.inning} / 3`;
     el.scoreHomeH.innerText  = state.activePitcher
       ? `${state.activePitcher.index} / ${state.activePitcher.total}`
-      : '–';
+      : '???';
 
     // Update SVG bases
     if (state.bases) {
@@ -3183,7 +3177,7 @@ function initGameModeSelector() {
       });
     }
 
-    // Team HP bar — shake on damage
+    // Team HP bar ??? shake on damage
     const hpBar     = document.getElementById('team-hp-bar');
     const hpBarWrap = document.getElementById('team-hp-wrap') || hpBar?.parentElement;
     const hpText    = document.getElementById('team-hp-text');
@@ -3202,7 +3196,7 @@ function initGameModeSelector() {
         : 'linear-gradient(90deg,#10b981,#34d399)';
     }
 
-    // Shield bar — shake on damage
+    // Shield bar ??? shake on damage
     const shBar     = document.getElementById('team-shield-bar');
     const shBarWrap = document.getElementById('team-shield-wrap') || shBar?.parentElement;
     const shText    = document.getElementById('team-shield-text');
@@ -3220,10 +3214,10 @@ function initGameModeSelector() {
     const chainEl = document.getElementById('so-chain-display');
     if (chainEl) {
       const chain = state.strikeoutChain || 0;
-      const flames = '🔥'.repeat(Math.min(chain, 4));
+      const flames = '????'.repeat(Math.min(chain, 4));
       chainEl.innerText = chain > 0
         ? `${flames} RACHA PONCHES: ${chain} (${['1.0x','1.5x','2.0x','3.0x'][Math.min(chain - 1, 3)]} dmg DIRECTO)`
-        : '🔥 Racha de Ponches: 0';
+        : '???? Racha de Ponches: 0';
       chainEl.style.color = chain >= 3 ? '#ef4444' : chain >= 2 ? '#f59e0b' : '#64748b';
     }
 
@@ -3232,7 +3226,7 @@ function initGameModeSelector() {
     if (el.ledO1 && state.outs >= 1) el.ledO1.className = 'led-dot active-out';
     if (el.ledO2 && state.outs >= 2) el.ledO2.className = 'led-dot active-out';
 
-    // Pitcher HP bar — shake on damage
+    // Pitcher HP bar ??? shake on damage
     if (!options.skipPitcherHP) {
       if (state.activePitcher && el.matchPitcherHpFill) {
         const pct = Math.max(0, Math.min(100, (state.activePitcher.hp / state.activePitcher.maxHp) * 100));
@@ -3264,7 +3258,7 @@ function initGameModeSelector() {
       if (state.pitcherDebuff && state.pitcherDebuff.turnsLeft > 0) {
         const mult = Math.round((state.pitcherDebuff.multiplier - 1) * 100);
         const impLbl = state.pitcherDebuff.turnsLeft === 1 ? 'impacto' : 'impactos';
-        debuffBadge.innerText = `⚡ +${mult}% DAÑO RECIBIDO (${state.pitcherDebuff.turnsLeft} ${impLbl})`;
+        debuffBadge.innerText = `??? +${mult}% DA??O RECIBIDO (${state.pitcherDebuff.turnsLeft} ${impLbl})`;
         debuffBadge.classList.remove('hidden');
       } else {
         debuffBadge.classList.add('hidden');
@@ -3272,24 +3266,24 @@ function initGameModeSelector() {
     }
   }
 
-  // ── RENDER ZONE LEGEND ────────────────────────────────────────────────────────
+  // ?????? RENDER ZONE LEGEND ????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????
   function renderZones() {
     const zonesEl = document.getElementById('zones-lines');
     if (!zonesEl || !activeBattle || activeBattle.battleOver) return;
     const b = activeBattle.currentBoundaries();
     if (!b) return;
     zonesEl.innerHTML = [
-      `<div style="display:flex;justify-content:space-between;padding:1px 0;white-space:nowrap;"><span style="color:#3b82f6;">⚾ Boleto (BB)</span><span style="color:#3b82f6;font-weight:bold;">  1 – ${b.bbEnd}</span></div>`,
-      `<div style="display:flex;justify-content:space-between;padding:1px 0;"><span style="color:#ef4444;">💨 Ponche (SO)</span><span style="color:#ef4444;font-weight:bold;">${b.bbEnd + 1} – ${b.soEnd}</span></div>`,
-      `<div style="display:flex;justify-content:space-between;padding:1px 0;"><span style="color:#9ca3af;">🤚 Out (Fly/GB)</span><span style="color:#9ca3af;font-weight:bold;">${b.soEnd + 1} – ${b.outEnd}</span></div>`,
-      `<div style="display:flex;justify-content:space-between;padding:1px 0;"><span style="color:#a7f3d0;">✅ Sencillo (1B)</span><span style="color:#a7f3d0;font-weight:bold;">${b.outEnd + 1} – ${b.singleEnd}</span></div>`,
-      `<div style="display:flex;justify-content:space-between;padding:1px 0;"><span style="color:#10b981;">✅ Doble (2B)</span><span style="color:#10b981;font-weight:bold;">${b.singleEnd + 1} – ${b.doubleEnd}</span></div>`,
-      `<div style="display:flex;justify-content:space-between;padding:1px 0;"><span style="color:#06b6d4;">✅ Triple (3B)</span><span style="color:#06b6d4;font-weight:bold;">${b.doubleEnd + 1} – ${b.tripleEnd}</span></div>`,
-      `<div style="display:flex;justify-content:space-between;padding:1px 0;"><span style="color:#eab308;font-weight:bold;">🔥 Jonrón (HR)</span><span style="color:#eab308;font-weight:bold;">${b.tripleEnd + 1} – 100</span></div>`
+      `<div style="display:flex;justify-content:space-between;padding:1px 0;white-space:nowrap;"><span style="color:#3b82f6;">??? Boleto (BB)</span><span style="color:#3b82f6;font-weight:bold;">  1 ??? ${b.bbEnd}</span></div>`,
+      `<div style="display:flex;justify-content:space-between;padding:1px 0;"><span style="color:#ef4444;">???? Ponche (SO)</span><span style="color:#ef4444;font-weight:bold;">${b.bbEnd + 1} ??? ${b.soEnd}</span></div>`,
+      `<div style="display:flex;justify-content:space-between;padding:1px 0;"><span style="color:#9ca3af;">???? Out (Fly/GB)</span><span style="color:#9ca3af;font-weight:bold;">${b.soEnd + 1} ??? ${b.outEnd}</span></div>`,
+      `<div style="display:flex;justify-content:space-between;padding:1px 0;"><span style="color:#a7f3d0;">??? Sencillo (1B)</span><span style="color:#a7f3d0;font-weight:bold;">${b.outEnd + 1} ??? ${b.singleEnd}</span></div>`,
+      `<div style="display:flex;justify-content:space-between;padding:1px 0;"><span style="color:#10b981;">??? Doble (2B)</span><span style="color:#10b981;font-weight:bold;">${b.singleEnd + 1} ??? ${b.doubleEnd}</span></div>`,
+      `<div style="display:flex;justify-content:space-between;padding:1px 0;"><span style="color:#06b6d4;">??? Triple (3B)</span><span style="color:#06b6d4;font-weight:bold;">${b.doubleEnd + 1} ??? ${b.tripleEnd}</span></div>`,
+      `<div style="display:flex;justify-content:space-between;padding:1px 0;"><span style="color:#eab308;font-weight:bold;">???? Jonr??n (HR)</span><span style="color:#eab308;font-weight:bold;">${b.tripleEnd + 1} ??? 100</span></div>`
     ].join('');
   }
 
-  // ── APPEND LOG LINE (replaces the old event-based playNextMatchEvent) ────────
+  // ?????? APPEND LOG LINE (replaces the old event-based playNextMatchEvent) ????????????????????????
   function appendLogLine(ev) {
     if (!ev || !el.matchLogLines) return;
     const logLine = document.createElement('div');
@@ -3307,7 +3301,7 @@ function initGameModeSelector() {
     el.matchLogLines.scrollTop = el.matchLogLines.scrollHeight;
   }
 
-  // ── UPDATE FACEOFF PANEL (uses battle state) ─────────────────────────────────
+  // ?????? UPDATE FACEOFF PANEL (uses battle state) ???????????????????????????????????????????????????????????????????????????????????????????????????
   function updateFaceoffPanel(stateOrEvent) {
     if (!stateOrEvent) return;
     const pitcher = stateOrEvent.activePitcher;
@@ -3438,7 +3432,7 @@ function initGameModeSelector() {
     requestAnimationFrame(render);
   }
 
-  // ── HANDLE BATTLE OVER (Victory / Defeat debrief modal) ────────────────────
+  // ?????? HANDLE BATTLE OVER (Victory / Defeat debrief modal) ????????????????????????????????????????????????????????????
   function handleBattleOver() {
     if (!activeBattle) return;
     const isWin = (activeBattle.winner === 'player');
@@ -3470,10 +3464,10 @@ function initGameModeSelector() {
 
     const bannerColor = isWin ? '#00ff66' : '#ef4444';
     const bannerGlow = isWin ? 'rgba(0, 255, 102, 0.6)' : 'rgba(239, 68, 68, 0.6)';
-    const titleText = isWin ? '🏆 ¡VICTORIA DE LA SERIE! 🏆' : '💀 DERROTA EN LA SERIE 💀';
+    const titleText = isWin ? '???? ??VICTORIA DE LA SERIE! ????' : '???? DERROTA EN LA SERIE ????';
     const subText = isWin
-      ? `¡Extraordinario! Lograste noquear a la rotación completa de ${activeBattle.homeTeam.name}.`
-      : `Los lanzadores de ${activeBattle.homeTeam.name} dominaron la serie. Tu HP llegó a 0.`;
+      ? `??Extraordinario! Lograste noquear a la rotaci??n completa de ${activeBattle.homeTeam.name}.`
+      : `Los lanzadores de ${activeBattle.homeTeam.name} dominaron la serie. Tu HP lleg?? a 0.`;
 
     modal.innerHTML = `
       <div style="
@@ -3569,9 +3563,9 @@ function initGameModeSelector() {
     outcomeLine.style.paddingTop = "10px";
     
     if (isWinnerAway) {
-      outcomeLine.innerHTML = `¡VICTORIA CONTUNDENTE! Has derrotado a la rotación completa de lanzadores.`;
+      outcomeLine.innerHTML = `??VICTORIA CONTUNDENTE! Has derrotado a la rotaci??n completa de lanzadores.`;
     } else {
-      outcomeLine.innerHTML = `DERROTA. Tu alineación ha sido noqueada por los lanzadores rivales.`;
+      outcomeLine.innerHTML = `DERROTA. Tu alineaci??n ha sido noqueada por los lanzadores rivales.`;
     }
     el.matchLogLines.appendChild(outcomeLine);
     el.matchLogLines.scrollTop = el.matchLogLines.scrollHeight;
@@ -3608,7 +3602,7 @@ function initGameModeSelector() {
 
   // GAME OVER VIEW
   function triggerGameOver(won, message) {
-    el.gameoverTitle.innerText = won ? "¡CAMPEONATO CONSEGUIDO!" : "¡Temporada Terminada!";
+    el.gameoverTitle.innerText = won ? "??CAMPEONATO CONSEGUIDO!" : "??Temporada Terminada!";
     el.gameoverTitle.style.color = won ? "var(--primary-color)" : "var(--danger-color)";
     el.gameoverDesc.innerText = message;
 
