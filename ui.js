@@ -3055,50 +3055,67 @@ function initGameModeSelector() {
           }
           diceDisplay.style.color = rollColor;
         }
-        // Process roll with staggered popups so KOs and Inning Ends don't overwrite play summaries
+        // ── Build an ordered popup queue ───────────────────────────────────────
+        // Popups fire in strict sequence: play outcome → steal → (next play) → KO last.
+        // 'cursor' tracks the ms offset at which the NEXT popup should start.
         const events = activeBattle.rollDice(finalRoll) || [];
         const hasKO = events.some(ev => ev.playType === 'KO_PITCHER' || ev.eventType === 'KO');
+        const POPUP_DURATION = 1500; // ms a popup is visible
+        const POPUP_GAP      = 300;  // ms gap between consecutive popups
+        let cursor = 0;
 
-        events.forEach((ev, idx) => {
-          appendLogLine(ev);
+        // Phase 1: build popup schedule in correct visual order.
+        // KO is always pushed last regardless of its position in events[].
+        const popupQueue = []; // { type, text, ev, at }
+        let koEntry = null;
+        let koEvent = null;
+
+        events.forEach(ev => {
+          appendLogLine(ev); // Log immediately (no delay)
           const rawText = ev.playText || '';
+          const isKO = ev.playType === 'KO_PITCHER' || ev.eventType === 'KO';
+
+          if (isKO) {
+            koEntry = { type: 'KO', text: rawText, ev };
+            koEvent = ev;
+            return; // defer to end
+          }
+
           const hasSteal = rawText.includes('🏃 ¡ROBO DE BASE!');
+          const batterText = hasSteal ? rawText.split('🏃 ¡ROBO DE BASE!')[0].trim() : rawText;
 
-          setTimeout(() => {
-            if (ev.playType === 'KO_PITCHER' || ev.eventType === 'KO') {
-              if (el.matchPitcherHpFill) {
-                el.matchPitcherHpFill.style.width = '0%';
-                if (el.matchPitcherHpText) el.matchPitcherHpText.innerText = '0 HP (K.O.)';
-                el.matchPitcherHpFill.style.background = 'linear-gradient(90deg,#ff3333,#ff6666)';
-                const pitcherHpWrap = el.matchPitcherHpFill.parentElement;
-                if (pitcherHpWrap) triggerBarShake(pitcherHpWrap, 'hp-bar-hit');
-              }
-            }
+          popupQueue.push({ type: ev.eventType, text: batterText, ev, at: cursor });
+          cursor += POPUP_DURATION + POPUP_GAP;
 
-            const batterOnlyText = hasSteal ? rawText.split('🏃 ¡ROBO DE BASE!')[0].trim() : rawText;
-
-            // Step 1: Batter outcome popup (skip for KO events — shown in Step 3 below with proper delay)
-            if (ev.playType !== 'KO_PITCHER' && ev.eventType !== 'KO') {
-              showOutcomePopup(ev.eventType, batterOnlyText, ev);
-            }
-
-            // Step 2: Steal outcome popup 1.2s later
-            if (hasSteal) {
-              const stealOnlyText = '🏃 ¡ROBO DE BASE! ' + rawText.split('🏃 ¡ROBO DE BASE!')[1].trim();
-              setTimeout(() => {
-                showOutcomePopup('STEAL', stealOnlyText, ev);
-              }, 1200);
-            }
-          }, idx * (hasSteal ? 2200 : 1000));
-
-          // Step 3: KO popup — always shown AFTER the play outcome (minimum 1600ms delay)
-          if (ev.playType === 'KO_PITCHER' || ev.eventType === 'KO') {
-            const koPopupDelay = Math.max(idx * 1000 + 1600, 1600);
-            setTimeout(() => {
-              showOutcomePopup('KO', ev.playText || '', ev);
-            }, koPopupDelay);
+          if (hasSteal) {
+            const stealText = '🏃 ¡ROBO DE BASE! ' + rawText.split('🏃 ¡ROBO DE BASE!')[1].trim();
+            popupQueue.push({ type: 'STEAL', text: stealText, ev, at: cursor });
+            cursor += POPUP_DURATION + POPUP_GAP;
           }
         });
+
+        // KO popup goes last — cursor is now past all play/steal popups
+        if (koEntry) {
+          popupQueue.push({ ...koEntry, at: cursor });
+          // HP bar update fires just before the KO popup appears
+          const koBarDelay = Math.max(cursor - POPUP_GAP, 0);
+          setTimeout(() => {
+            if (el.matchPitcherHpFill) {
+              el.matchPitcherHpFill.style.width = '0%';
+              if (el.matchPitcherHpText) el.matchPitcherHpText.innerText = '0 HP (K.O.)';
+              el.matchPitcherHpFill.style.background = 'linear-gradient(90deg,#ff3333,#ff6666)';
+              const pitcherHpWrap = el.matchPitcherHpFill.parentElement;
+              if (pitcherHpWrap) triggerBarShake(pitcherHpWrap, 'hp-bar-hit');
+            }
+          }, koBarDelay);
+          cursor += POPUP_DURATION + POPUP_GAP;
+        }
+
+        // Phase 2: fire all popups in computed order
+        popupQueue.forEach(({ type, text, ev, at }) => {
+          setTimeout(() => showOutcomePopup(type, text, ev), at);
+        });
+
 
         const state = activeBattle.getState();
 
@@ -3117,9 +3134,8 @@ function initGameModeSelector() {
           // Update rest of HUD except pitcher HP
           updateMatchHUD(state, { skipPitcherHP: true });
 
-          // Stagger the switch to the next pitcher if there is one
-          const koIdx = events.findIndex(ev => ev.playType === 'KO_PITCHER' || ev.eventType === 'KO');
-          const switchDelay = (koIdx >= 0 ? koIdx + 1 : 1) * 1000;
+          // Switch to the next pitcher after all popups have finished
+          const switchDelay = cursor; // wait for the full popup queue to finish
           setTimeout(() => {
             if (state.activePitcher && !activeBattle.battleOver) {
               updateMatchHUD(state);
@@ -3133,7 +3149,7 @@ function initGameModeSelector() {
         renderZones();
 
         if (activeBattle.battleOver) {
-          const delay = Math.max(600, events.length * 1000);
+          const delay = Math.max(600, cursor); // wait for all popups to finish first
           setTimeout(() => {
             handleBattleOver();
           }, delay);
@@ -3142,6 +3158,7 @@ function initGameModeSelector() {
           if (btn) btn.disabled = false;
           if (!hasKO) updateFaceoffPanel(state);
         }
+
         isRolling = false;
       }
     }, 55);
