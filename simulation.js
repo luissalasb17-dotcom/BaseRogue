@@ -552,7 +552,6 @@
 
         this.runs += runsThisTurn;
         pitcherDmg = this._applyDebuffToPitcherDmg(pitcherDmg);
-        this._damagePitcher(pitcherDmg);
 
         if (eventType === '1B') {
           let stealChance = Math.min(0.85, 0.10 + ((effBatter.spd - 40) * 0.01));
@@ -600,7 +599,6 @@
               spdMsg += ` (+${stealHeal} Stamina)`;
             }
             if (extraStealDmg > 0) {
-              this._damagePitcher(extraStealDmg);
               pitcherDmg += extraStealDmg;
               spdMsg += ` (+${extraStealDmg} daño extra al lanzador)`;
             }
@@ -618,11 +616,17 @@
       // Advance to next batter
       this.awayLineupIndex = (this.awayLineupIndex + 1) % this.awayTeam.lineup.length;
 
-      // Log event
+      // Log PLAY event first so log order is: Outcome -> KO -> Next Pitcher / Remnant Damage
       this.logEvent('PLAY', playText, eventType, batter.name, teamHpDmg, pitcherDmg);
+
+      // Now apply pitcher damage (which logs KO_PITCHER and RESIDUAL_DMG if pitcher is KO'd)
+      if (pitcherDmg > 0) {
+        this._damagePitcher(pitcherDmg);
+      }
 
       // Advance internal state immediately (outs -> innings, KO -> next pitcher)
       this._advanceState();
+
 
       // Check win/loss conditions after the play and state advance
       this._checkEndConditions();

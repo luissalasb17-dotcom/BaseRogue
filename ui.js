@@ -301,6 +301,9 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
       }).join('');
 
       header.innerHTML = `
+        <div style="max-width: 780px; margin: 0 auto 12px; padding: 10px 16px; background: rgba(0, 255, 102, 0.05); border: 1px solid rgba(0, 255, 102, 0.3); border-radius: 8px; font-size: 11px; color: #a7f3d0; line-height: 1.5; text-align: center;">
+          Elije a tus Jugadores en <strong style="color:#00ff66;">9 rondas de draft</strong> para armar tu alineación completa de 9 bateadores. Organiza su posición defensiva (Drag & Drop) y su orden al bate en tiempo real. Luego <strong style="color:#00ff66;">lanza el dado</strong> en cada turno para determinar el resultado al bate. Derrota la rotación rival antes de que tus <strong style="color:#ef4444;">100 HP</strong> lleguen a cero.
+        </div>
         <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:${RARITY_COLORS[info.rarities ? info.rarities[0] : 'Legendary']};margin-bottom:8px;letter-spacing:1px;">
           ⚾ DRAFT INICIAL — RONDA ${round} DE 9
         </div>
@@ -1563,13 +1566,20 @@ function initGameModeSelector() {
       if (activeBattle.battleOver) handleBattleOver();
     });
 
-    // Restart game click
+    // Restart game click - restarts run with same mode and season configuration
     el.btnRestartGame.addEventListener('click', () => {
+      const mode = window.Game.selectedMode;
+      const seasonYear = window.Game.selectedSeasonYear;
+
       window.Game.resetRun();
+
+      if (mode === 'story' && seasonYear) {
+        window.Game.loadSeasonOpponents(seasonYear);
+      }
+
       el.hud.classList.add('hidden');
-      el.workspace.classList.add('hidden');
+      window.showScreen('screen-draft');
       if (window.renderDraftRound) window.renderDraftRound(); else if (typeof renderDraftRound === 'function') renderDraftRound();
-      window.showScreen('screen-menu');
     });
 
     // Pre-Fight Screen triggers
@@ -3016,7 +3026,7 @@ function initGameModeSelector() {
       setTimeout(() => {
         popup.remove();
       }, 250);
-    }, 1500);
+    }, 1000);
   }
 
   // ── HANDLE ROLL DICE CLICK ───────────────────────────────────────────────────
@@ -3060,8 +3070,8 @@ function initGameModeSelector() {
         // 'cursor' tracks the ms offset at which the NEXT popup should start.
         const events = activeBattle.rollDice(finalRoll) || [];
         const hasKO = events.some(ev => ev.playType === 'KO_PITCHER' || ev.eventType === 'KO');
-        const POPUP_DURATION = 1500; // ms a popup is visible
-        const POPUP_GAP      = 300;  // ms gap between consecutive popups
+        const POPUP_DURATION = 1000; // ms a popup is visible
+        const POPUP_GAP      = 150;  // ms gap between consecutive popups
         let cursor = 0;
 
         // Phase 1: build popup schedule in correct visual order.
