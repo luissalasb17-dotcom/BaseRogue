@@ -1053,68 +1053,85 @@
     getEnemyTeam() {
       if (this.currentEnemy) return this.currentEnemy;
 
-      let pool = window.OpponentsPool || [];
-      if (this.selectedMode === 'story' && this.customSeasonPool && this.customSeasonPool.length > 0) {
-        pool = this.customSeasonPool;
+      // Mode 1: Story Mode - pick from customSeasonPool or OpponentsDatabase
+      if (this.selectedMode === 'story') {
+        let pool = (this.customSeasonPool && this.customSeasonPool.length > 0) ? this.customSeasonPool : (window.OpponentsPool || []);
+        if (!this.encounteredTeams) this.encounteredTeams = new Set();
+        let candidates = pool.filter(e => !this.encounteredTeams.has(e.id || e.name));
+        if (candidates.length === 0) candidates = pool;
+        const chosen = candidates[Math.floor(Math.random() * candidates.length)];
+        this.encounteredTeams.add(chosen.id || chosen.name);
+        this.currentEnemy = chosen;
+        return this.currentEnemy;
       }
 
+      // Mode 2: Quick Play Mode - Dynamic 3-pitcher team selection by rarity
+      const fullPool = window.PITCHERS_POOL || [];
       const stage = this.currentStageIndex;
-
-      // 16-Stage Map Progression (4 Maps):
-      // Mapa 1 (stages 0-3): Regular (stages 0,1,2) = Tiers F, D, C (OVR 0-59), Boss (stage 3) = Tier C (OVR 40-59)
-      // Mapa 2 (stages 4-7): Regular (stages 4,5,6) = Tiers D, C, B (OVR 20-79), Boss (stage 7) = Tier B (OVR 60-79)
-      // Mapa 3 (stages 8-11): Regular (stages 8,9,10) = Tiers C, B, A (OVR 40-99), Boss (stage 11) = Tier A (OVR 80-99)
-      // Mapa 4 (stages 12-15): Regular (stages 12,13,14) = Tiers B, A, S (OVR 60-125), Boss Final (stage 15) = Tier S (OVR 100-125)
-
-      let minOvr = 0;
-      let maxOvr = 125;
       const isBossStage = (stage === 3 || stage === 7 || stage === 11 || stage === 15);
 
+      // Define allowed rarities per map:
+      // Mapa 1 (0-3): Regular = Common/Uncommon, Boss (3) = Uncommon
+      // Mapa 2 (4-7): Regular = Uncommon/Rare, Boss (7) = Rare
+      // Mapa 3 (8-11): Regular = Rare/Epic, Boss (11) = Epic
+      // Mapa 4 (12-15): Regular = Epic/Legendary, Boss Final (15) = Legendary
+      let allowedRarities = [];
       if (stage <= 3) {
-        if (isBossStage) { minOvr = 40; maxOvr = 59; } // Boss Tier C
-        else { minOvr = 0; maxOvr = 59; }             // Regular Tiers F, D, C
+        allowedRarities = isBossStage ? ['Uncommon'] : ['Common', 'Uncommon'];
       } else if (stage <= 7) {
-        if (isBossStage) { minOvr = 60; maxOvr = 79; } // Boss Tier B
-        else { minOvr = 20; maxOvr = 79; }             // Regular Tiers D, C, B
+        allowedRarities = isBossStage ? ['Rare'] : ['Uncommon', 'Rare'];
       } else if (stage <= 11) {
-        if (isBossStage) { minOvr = 80; maxOvr = 99; } // Boss Tier A
-        else { minOvr = 40; maxOvr = 99; }             // Regular Tiers C, B, A
+        allowedRarities = isBossStage ? ['Epic'] : ['Rare', 'Epic'];
       } else {
-        if (isBossStage) { minOvr = 100; maxOvr = 125; } // Boss Tier S
-        else { minOvr = 60; maxOvr = 125; }              // Regular Tiers B, A, S
+        allowedRarities = isBossStage ? ['Legendary'] : ['Epic', 'Legendary'];
       }
 
-      // Filter candidates for current map & stage criteria
-      let candidates = pool.filter(e => {
-        const ovr = e.ovr || e._ovr || (e.pitchers && e.pitchers[0] ? e.pitchers[0].ovr : 50);
-        const matchBoss = isBossStage ? e.isBoss : !e.isBoss;
-        return ovr >= minOvr && ovr <= maxOvr && (e.isBoss === undefined ? true : matchBoss);
-      });
+      let candidatePitchers = fullPool.filter(p => allowedRarities.includes(p.rarity));
+      if (candidatePitchers.length < 3) candidatePitchers = fullPool;
 
-      // Fallback 1: if boss candidates empty for stage, pick highest OVR in range
-      if (candidates.length === 0 && isBossStage) {
-        candidates = pool.filter(e => {
-          const ovr = e.ovr || e._ovr || 50;
-          return ovr >= minOvr;
+      if (!this.encounteredPitchers) this.encounteredPitchers = new Set();
+      let available = candidatePitchers.filter(p => !this.encounteredPitchers.has(p.name + '_' + p.year));
+      if (available.length < 3) available = candidatePitchers;
+
+      // Sample 3 random distinct pitchers
+      const selected = [];
+      const poolCopy = [...available];
+
+      for (let i = 0; i < 3; i++) {
+        if (poolCopy.length === 0) break;
+        const randIdx = Math.floor(Math.random() * poolCopy.length);
+        const p = poolCopy.splice(randIdx, 1)[0];
+        this.encounteredPitchers.add(p.name + '_' + p.year);
+
+        const hp = (p.role === 'SP') ? Math.round(45 + (p.sta / 99) * 75) : Math.round(25 + (p.sta / 99) * 20);
+        selected.push({
+          name: p.name + ' (' + (p.year || '') + ')',
+          role: p.role,
+          hp: hp,
+          maxHp: hp,
+          stf: p.str,
+          ctl: p.ctl,
+          mov: p.grt,
+          sta: p.sta,
+          ovr: p.ovr,
+          rarity: p.rarity,
+          era: p.era,
+          team: p.team
         });
       }
 
-      // Fallback 2: general fallback to any available team
-      if (candidates.length === 0) {
-        candidates = pool;
-      }
+      const lead = selected[0] || { name: "Pitcher Team", ovr: 50, rarity: allowedRarities[0] };
+      const avgOvr = Math.round(selected.reduce((acc, p) => acc + (p.ovr || 50), 0) / Math.max(1, selected.length));
 
-      // Exclude teams already encountered in this run to guarantee zero repetition
-      if (!this.encounteredTeams) this.encounteredTeams = new Set();
-      const unencountered = candidates.filter(e => !this.encounteredTeams.has(e.id || e.name));
-      if (unencountered.length > 0) {
-        candidates = unencountered;
-      }
+      this.currentEnemy = {
+        id: `qp_team_stage_${stage}_${Date.now()}`,
+        name: isBossStage ? `BOSS: ${lead.name}` : `${lead.name} & Rotación`,
+        isBoss: isBossStage,
+        ovr: avgOvr,
+        rarity: lead.rarity,
+        pitchers: selected
+      };
 
-      // Pick random opponent from candidates
-      const chosen = candidates[Math.floor(Math.random() * candidates.length)];
-      this.encounteredTeams.add(chosen.id || chosen.name);
-      this.currentEnemy = chosen;
       return this.currentEnemy;
     }
 
