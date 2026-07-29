@@ -54,24 +54,24 @@
     const pCtl   = pitcher.ctl !== undefined ? pitcher.ctl : (pitcher.ctl_val !== undefined ? pitcher.ctl_val : 50);
     const pMov   = pitcher.mov !== undefined ? pitcher.mov : (pitcher.grt !== undefined ? pitcher.grt : (pitcher.grt_val !== undefined ? pitcher.grt_val : 50));
 
-    // BB rate: Batter Eye vs Pitcher Control
-    let pBB = 0.08 + (effEye - pCtl) * 0.0025;
+    // 1. BB rate: Batter Eye vs Pitcher Control (Base 10%, Slope 0.15%)
+    let pBB = 0.10 + (effEye - pCtl) * 0.0015;
     pBB = Math.max(0.04, Math.min(0.32, pBB));
 
-    // SO rate: Pitcher Stuff vs Batter Contact
-    let pSO = 0.15 + (pStf - effCon) * 0.0025;
-    pSO = Math.max(0.04, Math.min(0.38, pSO));
+    // 2. SO rate: Pitcher Stuff vs Batter Contact (Base 16%, Slope 0.15%)
+    let pSO = 0.16 + (pStf - effCon) * 0.0015;
+    pSO = Math.max(0.05, Math.min(0.35, pSO));
 
-    // HR rate: INDEPENDENT of standard hit rate (Quadratic scaling on Power - Pitcher Movement)
-    let pHR = 0.01 + (effPwr * effPwr) * 0.000018 - (pMov - 50) * 0.0012;
-    pHR = Math.max(0.005, pHR); // Floor at 0.5% HR chance
+    // 3. HR rate: Batter Power vs Pitcher Movement (Base 8%, Slope 0.15%)
+    let pHR = 0.08 + (effPwr - pMov) * 0.0015;
+    pHR = Math.max(0.02, Math.min(0.30, pHR));
 
-    // Regular HIT rate (1B, 2B, 3B): Base 35% + Contact vs Movement
-    let pRegularHit = 0.35 + (effCon - pMov) * 0.004;
-    pRegularHit = Math.max(0.10, Math.min(0.55, pRegularHit)); // Max 55%, Min 10%
+    // 4. Regular HIT rate (1B, 2B, 3B): Batter Contact vs Pitcher Movement (Base 35%, Slope 0.15%)
+    let pRegularHit = 0.35 + (effCon - pMov) * 0.0015;
+    pRegularHit = Math.max(0.12, Math.min(0.50, pRegularHit));
 
-    // OUT gets the rest
-    let pOut = Math.max(0.05, 1.0 - pBB - pSO - pHR - pRegularHit);
+    // 5. OUT gets the rest (Floor 10%)
+    let pOut = Math.max(0.10, 1.0 - pBB - pSO - pHR - pRegularHit);
 
     // Normalize to sum = 1
     const total = pBB + pSO + pOut + pRegularHit + pHR;
