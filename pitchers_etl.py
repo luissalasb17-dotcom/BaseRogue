@@ -532,10 +532,10 @@ def paso_10_normalizar_por_era(df):
     df = normalize_difficulty_adjusted(df, "str_raw", "str_val", invert=False)   # mas K/9 = mejor
     df = normalize_difficulty_adjusted(df, "ctl_raw", "ctl_val", invert=True)    # menos BB/9 = mejor
     df = normalize_difficulty_adjusted(df, "hr_raw",  "hr_val",  invert=True)    # menos HR/9 = mejor
-    # STA: Escala directa por carga de trabajo (7.5+ IP/GS = 90-115 A+/S para Abridores)
+    # STA: Escala ajustada (IP/GS de 6.5-7.0 = 75-85 A/A- para Abridores, max 110)
     is_sp = df["role"] == "SP"
-    sp_sta = (30.0 + (df["sta_raw"] / 7.5) * 60.0).clip(1.0, 125.0)
-    rp_sta = (15.0 + df["sta_raw"] * 10.0).clip(1.0, 35.0)
+    sp_sta = (30.0 + (df["sta_raw"] / 7.0) * 55.0).clip(35.0, 110.0)
+    rp_sta = (15.0 + df["sta_raw"] * 10.0).clip(15.0, 35.0)
     df["sta_val"] = np.where(is_sp, sp_sta, rp_sta).round(1)
 
     # GRT/MOV: Centrado en 50 con escala ERA+ (100 ERA+ = 50 MOV)
