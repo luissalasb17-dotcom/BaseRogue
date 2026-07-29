@@ -903,7 +903,8 @@ def paso_15_equipo_y_exportar(df, batting, teams, franchises):
         era_js  = str(r.get("era",  "Unknown")).replace('"',"'")
         name_js = str(r.get("name", "")).replace('"',"'")
         pos_js  = str(r.get("pos",  "RF"))
-        sec_pos_js = str(r.get("sec_pos", ""))
+        sec_val = r.get("sec_pos", "")
+        sec_pos_js = "" if pd.isna(sec_val) or str(sec_val).strip().lower() in ["nan", "none", "null"] else str(sec_val).strip()
         
         if name_js in LEGEND_POS_OVERRIDES:
             pos_js, sec_pos_js = LEGEND_POS_OVERRIDES[name_js]
