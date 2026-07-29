@@ -1066,7 +1066,31 @@
       }
 
       // Mode 2: Quick Play Mode - Dynamic 3-pitcher team selection by rarity
-      const fullPool = window.PITCHERS_POOL || [];
+      let fullPool = window.PITCHERS_POOL || [];
+      if (!fullPool || fullPool.length === 0) {
+        fullPool = [];
+        if (window.OpponentsPool) {
+          window.OpponentsPool.forEach(opp => {
+            if (opp.pitchers) {
+              opp.pitchers.forEach(p => {
+                fullPool.push({
+                  name: p.name ? p.name.replace(/\s\(\d+\)$/, '') : 'Pitcher',
+                  role: p.role || 'SP',
+                  str: p.stf || 50,
+                  ctl: p.ctl || 50,
+                  grt: p.mov || 50,
+                  sta: p.sta || 50,
+                  ovr: opp.ovr || opp._ovr || 50,
+                  rarity: opp.rarity || opp._rarity || 'Common',
+                  era: opp.era || opp._era || '',
+                  team: opp.team || opp._team || '',
+                  year: opp.year || opp._year || ''
+                });
+              });
+            }
+          });
+        }
+      }
       const stage = this.currentStageIndex;
       const isBossStage = (stage === 3 || stage === 7 || stage === 11 || stage === 15);
 
