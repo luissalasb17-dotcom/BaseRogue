@@ -1073,10 +1073,16 @@ function initGameModeSelector() {
     const year = player.year || 2026;
     const isPitcher = player.pos === 'P' || player.pos === 'SP' || player.pos === 'RP' || player.role === 'P' || player.role === 'SP' || player.role === 'RP';
 
-    // Calculate OVR Overall rating (MUST be before derivedRarity block)
-    const ovr = isPitcher
-      ? Math.round(((player.stf || player.con || 40))*0.30 + ((player.ctl || player.pwr || 40))*0.30 + ((player.mov || player.eye || 40))*0.30 + ((player.sta || player.spd || 50))*0.10)
-      : Math.round((player.con || 40)*0.30 + (player.pwr || 35)*0.30 + (player.spd || 45)*0.15 + (player.def || 40)*0.15 + (player.eye || 40)*0.10);
+    const stfForOvr = player.stf !== undefined ? player.stf : (player.str !== undefined ? player.str : (player.str_val !== undefined ? player.str_val : (player.con !== undefined ? player.con : 40)));
+    const ctlForOvr = player.ctl !== undefined ? player.ctl : (player.ctl_val !== undefined ? player.ctl_val : (player.pwr !== undefined ? player.pwr : 40));
+    const movForOvr = player.mov !== undefined ? player.mov : (player.grt !== undefined ? player.grt : (player.grt_val !== undefined ? player.grt_val : (player.eye !== undefined ? player.eye : 40)));
+    const staForOvr = player.sta !== undefined ? player.sta : (player.sta_val !== undefined ? player.sta_val : (player.spd !== undefined ? player.spd : 50));
+
+    const ovr = player.ovr !== undefined
+      ? Math.round(player.ovr)
+      : (isPitcher
+          ? Math.round(stfForOvr*0.30 + ctlForOvr*0.30 + movForOvr*0.30 + staForOvr*0.10)
+          : Math.round((player.con || 40)*0.30 + (player.pwr || 35)*0.30 + (player.spd || 45)*0.15 + (player.def || 40)*0.15 + (player.eye || 40)*0.10));
 
     // Rarity styles
     let derivedRarity = player.rarity;
@@ -1096,10 +1102,10 @@ function initGameModeSelector() {
     // Format stats values
     let statLines = "";
     if (isPitcher) {
-      const movVal = player.mov !== undefined ? player.mov : (player.eye !== undefined ? player.eye : 40);
-      const stfVal = player.stf !== undefined ? player.stf : (player.con !== undefined ? player.con : 40);
-      const ctlVal = player.ctl !== undefined ? player.ctl : (player.pwr !== undefined ? player.pwr : 40);
-      const staVal = player.sta !== undefined ? player.sta : (player.spd !== undefined ? player.spd : (player.maxHp ? Math.max(15, Math.min(125, Math.round((player.maxHp - 15) / 0.85))) : 65));
+      const movVal = player.mov !== undefined ? player.mov : (player.grt !== undefined ? player.grt : (player.grt_val !== undefined ? player.grt_val : (player.eye !== undefined ? player.eye : 50)));
+      const stfVal = player.stf !== undefined ? player.stf : (player.str !== undefined ? player.str : (player.str_val !== undefined ? player.str_val : (player.con !== undefined ? player.con : 50)));
+      const ctlVal = player.ctl !== undefined ? player.ctl : (player.ctl_val !== undefined ? player.ctl_val : (player.pwr !== undefined ? player.pwr : 50));
+      const staVal = player.sta !== undefined ? player.sta : (player.sta_val !== undefined ? player.sta_val : (player.spd !== undefined ? player.spd : (player.maxHp ? Math.max(15, Math.min(125, Math.round((player.maxHp - 15) / 0.85))) : 65)));
 
       const gMov = getStatGrade(movVal);
       const gStf = getStatGrade(stfVal);
