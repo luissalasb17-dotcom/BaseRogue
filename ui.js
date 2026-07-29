@@ -3392,28 +3392,25 @@ function initGameModeSelector() {
         : 'linear-gradient(90deg,#00ff66,#66ffa6)';
 
       const enemyTeam = (window.Game && window.Game.getEnemyTeam) ? window.Game.getEnemyTeam() : null;
-      const pitchYear = pitcher.year || (enemyTeam ? enemyTeam.year : 2008);
-      const pitchTeam = pitcher.team || (enemyTeam ? (enemyTeam.teamID || 'PIT') : 'PIT');
-      const pitchEra = pitcher.era || 'Efficiency & Shift (2006-2015)';
+      const pitchYear   = pitcher.year || pitcher._year || (enemyTeam ? (enemyTeam.year || enemyTeam._year) : 1941);
+      const pitchTeam   = pitcher.team || pitcher._team || (enemyTeam ? (enemyTeam.teamID || enemyTeam._team || 'OAK') : 'OAK');
+      const pitchEra    = pitcher.era  || pitcher._era  || (enemyTeam ? (enemyTeam.era || enemyTeam._era) : 'Golden Era (1920-1941)');
+      const pitchRarity = pitcher.rarity || pitcher._rarity || 'Common';
 
-      const pitchSta = pitcher.sta || (pitcher.maxHp ? Math.max(15, Math.min(125, Math.round((pitcher.maxHp - 15) / 0.85))) : 65);
-      const pitchOvr = Math.round((pitcher.stf || 40)*0.30 + (pitcher.ctl || 40)*0.30 + (pitcher.mov || 40)*0.30 + pitchSta*0.10);
-      let pitchRarity = pitcher.rarity;
-      if (!pitchRarity) {
-        if (pitchOvr >= 90) pitchRarity = 'Legendary';
-        else if (pitchOvr >= 80) pitchRarity = 'Epic';
-        else if (pitchOvr >= 65) pitchRarity = 'Rare';
-        else if (pitchOvr >= 50) pitchRarity = 'Uncommon';
-        else pitchRarity = 'Common';
-      }
+      const pitchStf = pitcher.stf !== undefined ? pitcher.stf : (pitcher.str !== undefined ? pitcher.str : 40);
+      const pitchCtl = pitcher.ctl !== undefined ? pitcher.ctl : (pitcher.ctl_val !== undefined ? pitcher.ctl_val : 40);
+      const pitchMov = pitcher.mov !== undefined ? pitcher.mov : (pitcher.grt !== undefined ? pitcher.grt : 50);
+      const pitchSta = pitcher.sta !== undefined ? pitcher.sta : (pitcher.maxHp ? Math.max(15, Math.min(125, Math.round((pitcher.maxHp - 15) / 0.85))) : 65);
+
+      const pitchOvr = pitcher.ovr || pitcher._ovr || Math.round(pitchStf*0.30 + pitchCtl*0.30 + pitchMov*0.30 + pitchSta*0.10);
 
       const tempPitcher = {
         name: pitcher.name, pos: pitcher.role || 'SP', role: pitcher.role || 'SP',
         era: pitchEra,
         team: pitchTeam,
         year: pitchYear,
-        mov: pitcher.mov, stf: pitcher.stf, ctl: pitcher.ctl, sta: pitchSta,
-        con: pitcher.stf, pwr: pitcher.ctl, eye: pitcher.mov, spd: pitchSta,
+        mov: pitchMov, stf: pitchStf, ctl: pitchCtl, sta: pitchSta,
+        con: pitchStf, pwr: pitchCtl, eye: pitchMov, spd: pitchSta,
         hp: pitcher.hp, maxHp: pitcher.maxHp,
         stamina: Math.round((pitcher.hp / pitcher.maxHp) * 100),
         ovr: pitchOvr,
