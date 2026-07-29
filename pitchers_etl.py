@@ -717,7 +717,7 @@ def paso_12_exportar(df, pitching, teams, franchises):
             f'k9: {float(r["peak_k9"]):.2f}, '
             f'bb9: {float(r["peak_bb9"]):.2f}, '
             f'hr9: {float(r["peak_hr9"]):.2f}, '
-            f'era_plus: {float(r["peak_era_plus"]):.1f}, '
+            f'era_plus: {0.0 if pd.isna(r["peak_era_plus"]) else float(r["peak_era_plus"]):.1f}, '
             f'war_peak: {float(r["peak_war"]):.1f}, '
             f'career_gs: {int(r["career_gs"])}, '
             f'career_sv: {int(r["career_sv"])}, '
