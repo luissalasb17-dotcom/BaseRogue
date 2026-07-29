@@ -1060,45 +1060,48 @@
 
       const stage = this.currentStageIndex;
 
-      // 16-Stage Tier Progression:
-      // Zone 1 (stages 0-3): Low tier (Stage 3 = Opening Day Boss)
-      // Zone 2 (stages 4-7): Mid tier (Stage 7 = All-Star Break Boss)
-      // Zone 3 (stages 8-11): High tier (Stage 11 = Pennant Champion Boss)
-      // Zone 4 (stages 12-14): Playoff Contenders (High tier)
-      // Zone 4 (stage 15): World Series Champion (Final_Boss)
-      let targetTier = 'Low';
+      // 16-Stage Map Progression (4 Maps):
+      // Mapa 1 (stages 0-3): Regular (stages 0,1,2) = Tiers F, D, C (OVR 0-59), Boss (stage 3) = Tier C (OVR 40-59)
+      // Mapa 2 (stages 4-7): Regular (stages 4,5,6) = Tiers D, C, B (OVR 20-79), Boss (stage 7) = Tier B (OVR 60-79)
+      // Mapa 3 (stages 8-11): Regular (stages 8,9,10) = Tiers C, B, A (OVR 40-99), Boss (stage 11) = Tier A (OVR 80-99)
+      // Mapa 4 (stages 12-15): Regular (stages 12,13,14) = Tiers B, A, S (OVR 60-125), Boss Final (stage 15) = Tier S (OVR 100-125)
+
+      let minOvr = 0;
+      let maxOvr = 125;
       const isBossStage = (stage === 3 || stage === 7 || stage === 11 || stage === 15);
 
       if (stage <= 3) {
-        targetTier = 'Low';
+        if (isBossStage) { minOvr = 40; maxOvr = 59; } // Boss Tier C
+        else { minOvr = 0; maxOvr = 59; }             // Regular Tiers F, D, C
       } else if (stage <= 7) {
-        targetTier = 'Mid';
-      } else if (stage <= 14) {
-        targetTier = 'High';
+        if (isBossStage) { minOvr = 60; maxOvr = 79; } // Boss Tier B
+        else { minOvr = 20; maxOvr = 79; }             // Regular Tiers D, C, B
+      } else if (stage <= 11) {
+        if (isBossStage) { minOvr = 80; maxOvr = 99; } // Boss Tier A
+        else { minOvr = 40; maxOvr = 99; }             // Regular Tiers C, B, A
       } else {
-        targetTier = 'Final_Boss';
+        if (isBossStage) { minOvr = 100; maxOvr = 125; } // Boss Tier S
+        else { minOvr = 60; maxOvr = 125; }              // Regular Tiers B, A, S
       }
 
-      // Filter candidates for current target tier
-      let candidates = pool.filter(e => e.tier === targetTier);
+      // Filter candidates for current map & stage criteria
+      let candidates = pool.filter(e => {
+        const ovr = e.ovr || e._ovr || (e.pitchers && e.pitchers[0] ? e.pitchers[0].ovr : 50);
+        const matchBoss = isBossStage ? e.isBoss : !e.isBoss;
+        return ovr >= minOvr && ovr <= maxOvr && (e.isBoss === undefined ? true : matchBoss);
+      });
 
-      if (isBossStage) {
-        const bossOnly = candidates.filter(e => e.isBoss);
-        if (bossOnly.length > 0) candidates = bossOnly;
-      } else {
-        // Regular stages: prefer non-boss entries
-        const nonBoss = candidates.filter(e => !e.isBoss);
-        if (nonBoss.length > 0) candidates = nonBoss;
+      // Fallback 1: if boss candidates empty for stage, pick highest OVR in range
+      if (candidates.length === 0 && isBossStage) {
+        candidates = pool.filter(e => {
+          const ovr = e.ovr || e._ovr || 50;
+          return ovr >= minOvr;
+        });
       }
 
-      // Fallback if tier is empty
+      // Fallback 2: general fallback to any available team
       if (candidates.length === 0) {
-        if (targetTier === 'Final_Boss') {
-          candidates = pool.filter(e => e.isBoss);
-          if (candidates.length === 0) candidates = pool.filter(e => e.tier === 'High');
-        } else {
-          candidates = pool;
-        }
+        candidates = pool;
       }
 
       // Exclude teams already encountered in this run to guarantee zero repetition
