@@ -56,7 +56,7 @@
 
     // BB rate: Batter Eye vs Pitcher Control
     let pBB = 0.08 + (effEye - pCtl) * 0.0025;
-    pBB = Math.max(0.04, Math.min(0.22, pBB));
+    pBB = Math.max(0.04, Math.min(0.32, pBB));
 
     // SO rate: Pitcher Stuff vs Batter Contact
     let pSO = 0.15 + (pStf - effCon) * 0.0025;
