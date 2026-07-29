@@ -50,9 +50,9 @@
     const effSpd = batter.spd || 50;
     
     // Pitcher attributes (new opponent system uses stf, ctl, mov)
-    const pStf   = pitcher.stf || 50;
-    const pCtl   = pitcher.ctl || 50;
-    const pMov   = pitcher.mov || 50;
+    const pStf   = pitcher.stf !== undefined ? pitcher.stf : (pitcher.str !== undefined ? pitcher.str : 50);
+    const pCtl   = pitcher.ctl !== undefined ? pitcher.ctl : (pitcher.ctl_val !== undefined ? pitcher.ctl_val : 50);
+    const pMov   = pitcher.mov !== undefined ? pitcher.mov : (pitcher.grt !== undefined ? pitcher.grt : (pitcher.grt_val !== undefined ? pitcher.grt_val : 50));
 
     // BB rate: Batter Eye vs Pitcher Control
     let pBB = 0.08 + (effEye - pCtl) * 0.0025;
@@ -832,16 +832,21 @@
         eventType,
         activeBatter,
         activePitcher: pitcher ? {
-          name:  pitcher.name,
-          hp:    pitcher.hp,
-          maxHp: pitcher.maxHp,
-          index: this.enemyPitcherIndex,
-          vel:   pitcher.vel,
-          stf:   pitcher.stf,
-          ctl:   pitcher.ctl,
-          era:   pitcher.era,
-          team:  pitcher.team,
-          rarity: pitcher.rarity
+          name:   pitcher.name,
+          hp:     pitcher.hp,
+          maxHp:  pitcher.maxHp,
+          index:  this.enemyPitcherIndex,
+          vel:    pitcher.vel,
+          stf:    pitcher.stf !== undefined ? pitcher.stf : (pitcher.str !== undefined ? pitcher.str : 40),
+          ctl:    pitcher.ctl !== undefined ? pitcher.ctl : (pitcher.ctl_val !== undefined ? pitcher.ctl_val : 40),
+          mov:    pitcher.mov !== undefined ? pitcher.mov : (pitcher.grt !== undefined ? pitcher.grt : (pitcher.grt_val !== undefined ? pitcher.grt_val : 50)),
+          sta:    pitcher.sta !== undefined ? pitcher.sta : 65,
+          role:   pitcher.role || 'SP',
+          year:   pitcher.year || pitcher._year,
+          era:    pitcher.era,
+          team:   pitcher.team,
+          rarity: pitcher.rarity,
+          grt:    pitcher.grt
         } : null,
         inning:          this.inning,
         outs:            this.outs,
@@ -898,11 +903,16 @@
           index:  this.enemyPitcherIndex,
           total:  this.homeTeam.pitchers.length,
           vel:    this.activePitcher.vel,
-          stf:    this.activePitcher.stf,
-          ctl:    this.activePitcher.ctl,
+          stf:    this.activePitcher.stf !== undefined ? this.activePitcher.stf : (this.activePitcher.str !== undefined ? this.activePitcher.str : 40),
+          ctl:    this.activePitcher.ctl !== undefined ? this.activePitcher.ctl : (this.activePitcher.ctl_val !== undefined ? this.activePitcher.ctl_val : 40),
+          mov:    this.activePitcher.mov !== undefined ? this.activePitcher.mov : (this.activePitcher.grt !== undefined ? this.activePitcher.grt : (this.activePitcher.grt_val !== undefined ? this.activePitcher.grt_val : 50)),
+          sta:    this.activePitcher.sta !== undefined ? this.activePitcher.sta : 65,
+          role:   this.activePitcher.role || 'SP',
+          year:   this.activePitcher.year || this.activePitcher._year,
           era:    this.activePitcher.era,
           team:   this.activePitcher.team,
-          rarity: this.activePitcher.rarity
+          rarity: this.activePitcher.rarity,
+          grt:    this.activePitcher.grt
         } : null,
         currentBatter:   this.awayTeam.lineup[this.awayLineupIndex] || null,
         lineupIndex:     this.awayLineupIndex,
