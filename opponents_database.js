@@ -797,7 +797,7 @@ window.OpponentsDatabase = {
       "year": 1901,
       "teamID": "CCG",
       "win_pct": 1.0,
-      "ovr": 81,
+      "ovr": 60,
       "pitchers": [
         {
           "name": "Will Horn",
@@ -811,6 +811,32 @@ window.OpponentsDatabase = {
           "sta": 73,
           "ovr": 81,
           "rarity": "Epic"
+        },
+        {
+          "name": "Relevista 1901",
+          "role": "RP",
+          "war": 0.0,
+          "hp": 35,
+          "maxHp": 35,
+          "stf": 50,
+          "ctl": 50,
+          "mov": 50,
+          "sta": 25,
+          "ovr": 50,
+          "rarity": "Uncommon"
+        },
+        {
+          "name": "Cerrador 1901",
+          "role": "CL",
+          "war": 0.0,
+          "hp": 35,
+          "maxHp": 35,
+          "stf": 50,
+          "ctl": 50,
+          "mov": 50,
+          "sta": 25,
+          "ovr": 50,
+          "rarity": "Uncommon"
         }
       ],
       "isBoss": true
@@ -2505,7 +2531,7 @@ window.OpponentsDatabase = {
         "year": 1903,
         "teamID": "CXG",
         "win_pct": 0.714,
-        "ovr": 72,
+        "ovr": 65,
         "pitchers": [
           {
             "name": "Rube Foster",
@@ -2532,6 +2558,19 @@ window.OpponentsDatabase = {
             "sta": 69,
             "ovr": 73,
             "rarity": "Epic"
+          },
+          {
+            "name": "Cerrador 1903",
+            "role": "CL",
+            "war": 0.0,
+            "hp": 35,
+            "maxHp": 35,
+            "stf": 50,
+            "ctl": 50,
+            "mov": 50,
+            "sta": 25,
+            "ovr": 50,
+            "rarity": "Uncommon"
           }
         ]
       }
@@ -3931,7 +3970,7 @@ window.OpponentsDatabase = {
         "year": 1905,
         "teamID": "LEL",
         "win_pct": 0.5,
-        "ovr": 54,
+        "ovr": 51,
         "pitchers": [
           {
             "name": "Johnny Davis",
@@ -3944,6 +3983,32 @@ window.OpponentsDatabase = {
             "mov": 40,
             "sta": 73,
             "ovr": 54,
+            "rarity": "Uncommon"
+          },
+          {
+            "name": "Relevista 1905",
+            "role": "RP",
+            "war": 0.0,
+            "hp": 35,
+            "maxHp": 35,
+            "stf": 50,
+            "ctl": 50,
+            "mov": 50,
+            "sta": 25,
+            "ovr": 50,
+            "rarity": "Uncommon"
+          },
+          {
+            "name": "Cerrador 1905",
+            "role": "CL",
+            "war": 0.0,
+            "hp": 35,
+            "maxHp": 35,
+            "stf": 50,
+            "ctl": 50,
+            "mov": 50,
+            "sta": 25,
+            "ovr": 50,
             "rarity": "Uncommon"
           }
         ]
@@ -4993,7 +5058,7 @@ window.OpponentsDatabase = {
         "year": 1906,
         "teamID": "LEL",
         "win_pct": 0.5,
-        "ovr": 56,
+        "ovr": 54,
         "pitchers": [
           {
             "name": "Will Horn",
@@ -5020,6 +5085,19 @@ window.OpponentsDatabase = {
             "sta": 86,
             "ovr": 56,
             "rarity": "Rare"
+          },
+          {
+            "name": "Cerrador 1906",
+            "role": "CL",
+            "war": 0.0,
+            "hp": 35,
+            "maxHp": 35,
+            "stf": 50,
+            "ctl": 50,
+            "mov": 50,
+            "sta": 25,
+            "ovr": 50,
+            "rarity": "Uncommon"
           }
         ]
       },
@@ -6561,7 +6639,7 @@ window.OpponentsDatabase = {
       "year": 1907,
       "teamID": "LEL",
       "win_pct": 1.0,
-      "ovr": 81,
+      "ovr": 71,
       "pitchers": [
         {
           "name": "Walter Ball",
@@ -6588,6 +6666,19 @@ window.OpponentsDatabase = {
           "sta": 73,
           "ovr": 74,
           "rarity": "Epic"
+        },
+        {
+          "name": "Cerrador 1907",
+          "role": "CL",
+          "war": 0.0,
+          "hp": 35,
+          "maxHp": 35,
+          "stf": 50,
+          "ctl": 50,
+          "mov": 50,
+          "sta": 25,
+          "ovr": 50,
+          "rarity": "Uncommon"
         }
       ],
       "isBoss": true
@@ -8576,7 +8667,7 @@ window.OpponentsDatabase = {
         "year": 1909,
         "teamID": "BRG",
         "win_pct": 0.75,
-        "ovr": 52,
+        "ovr": 51,
         "pitchers": [
           {
             "name": "Charles Earle",
@@ -8602,6 +8693,19 @@ window.OpponentsDatabase = {
             "mov": 59,
             "sta": 73,
             "ovr": 46,
+            "rarity": "Uncommon"
+          },
+          {
+            "name": "Cerrador 1909",
+            "role": "CL",
+            "war": 0.0,
+            "hp": 35,
+            "maxHp": 35,
+            "stf": 50,
+            "ctl": 50,
+            "mov": 50,
+            "sta": 25,
+            "ovr": 50,
             "rarity": "Uncommon"
           }
         ]
@@ -8716,7 +8820,7 @@ window.OpponentsDatabase = {
         "year": 1910,
         "teamID": "OKM",
         "win_pct": 0.273,
-        "ovr": 56,
+        "ovr": 54,
         "pitchers": [
           {
             "name": "Robert Boone",
@@ -8743,6 +8847,19 @@ window.OpponentsDatabase = {
             "sta": 67,
             "ovr": 62,
             "rarity": "Rare"
+          },
+          {
+            "name": "Cerrador 1910",
+            "role": "CL",
+            "war": 0.0,
+            "hp": 35,
+            "maxHp": 35,
+            "stf": 50,
+            "ctl": 50,
+            "mov": 50,
+            "sta": 25,
+            "ovr": 50,
+            "rarity": "Uncommon"
           }
         ]
       },
@@ -9638,7 +9755,7 @@ window.OpponentsDatabase = {
         "year": 1910,
         "teamID": "KRG",
         "win_pct": 0.667,
-        "ovr": 80,
+        "ovr": 60,
         "pitchers": [
           {
             "name": "Charles Childs",
@@ -9652,6 +9769,32 @@ window.OpponentsDatabase = {
             "sta": 73,
             "ovr": 80,
             "rarity": "Epic"
+          },
+          {
+            "name": "Relevista 1910",
+            "role": "RP",
+            "war": 0.0,
+            "hp": 35,
+            "maxHp": 35,
+            "stf": 50,
+            "ctl": 50,
+            "mov": 50,
+            "sta": 25,
+            "ovr": 50,
+            "rarity": "Uncommon"
+          },
+          {
+            "name": "Cerrador 1910",
+            "role": "CL",
+            "war": 0.0,
+            "hp": 35,
+            "maxHp": 35,
+            "stf": 50,
+            "ctl": 50,
+            "mov": 50,
+            "sta": 25,
+            "ovr": 50,
+            "rarity": "Uncommon"
           }
         ]
       },
@@ -10257,7 +10400,7 @@ window.OpponentsDatabase = {
         "year": 1911,
         "teamID": "WBS",
         "win_pct": 0.478,
-        "ovr": 61,
+        "ovr": 57,
         "pitchers": [
           {
             "name": "Dizzy Dismukes",
@@ -10284,6 +10427,19 @@ window.OpponentsDatabase = {
             "sta": 73,
             "ovr": 72,
             "rarity": "Epic"
+          },
+          {
+            "name": "Cerrador 1911",
+            "role": "CL",
+            "war": 0.0,
+            "hp": 35,
+            "maxHp": 35,
+            "stf": 50,
+            "ctl": 50,
+            "mov": 50,
+            "sta": 25,
+            "ovr": 50,
+            "rarity": "Uncommon"
           }
         ]
       },
@@ -11379,7 +11535,7 @@ window.OpponentsDatabase = {
         "year": 1912,
         "teamID": "WBS",
         "win_pct": 0.407,
-        "ovr": 58,
+        "ovr": 55,
         "pitchers": [
           {
             "name": "Steel Arm Johnny Taylor",
@@ -11405,6 +11561,19 @@ window.OpponentsDatabase = {
             "mov": 59,
             "sta": 61,
             "ovr": 45,
+            "rarity": "Uncommon"
+          },
+          {
+            "name": "Cerrador 1912",
+            "role": "CL",
+            "war": 0.0,
+            "hp": 35,
+            "maxHp": 35,
+            "stf": 50,
+            "ctl": 50,
+            "mov": 50,
+            "sta": 25,
+            "ovr": 50,
             "rarity": "Uncommon"
           }
         ]
@@ -11909,7 +12078,7 @@ window.OpponentsDatabase = {
         "year": 1912,
         "teamID": "KRG",
         "win_pct": 0.6,
-        "ovr": 68,
+        "ovr": 56,
         "pitchers": [
           {
             "name": "Chick Harper",
@@ -11923,6 +12092,32 @@ window.OpponentsDatabase = {
             "sta": 73,
             "ovr": 68,
             "rarity": "Rare"
+          },
+          {
+            "name": "Relevista 1912",
+            "role": "RP",
+            "war": 0.0,
+            "hp": 35,
+            "maxHp": 35,
+            "stf": 50,
+            "ctl": 50,
+            "mov": 50,
+            "sta": 25,
+            "ovr": 50,
+            "rarity": "Uncommon"
+          },
+          {
+            "name": "Cerrador 1912",
+            "role": "CL",
+            "war": 0.0,
+            "hp": 35,
+            "maxHp": 35,
+            "stf": 50,
+            "ctl": 50,
+            "mov": 50,
+            "sta": 25,
+            "ovr": 50,
+            "rarity": "Uncommon"
           }
         ]
       },
@@ -13314,7 +13509,7 @@ window.OpponentsDatabase = {
         "year": 1913,
         "teamID": "COG",
         "win_pct": 0.714,
-        "ovr": 52,
+        "ovr": 51,
         "pitchers": [
           {
             "name": "Sam Crawford",
@@ -13327,6 +13522,32 @@ window.OpponentsDatabase = {
             "mov": 59,
             "sta": 72,
             "ovr": 52,
+            "rarity": "Uncommon"
+          },
+          {
+            "name": "Relevista 1913",
+            "role": "RP",
+            "war": 0.0,
+            "hp": 35,
+            "maxHp": 35,
+            "stf": 50,
+            "ctl": 50,
+            "mov": 50,
+            "sta": 25,
+            "ovr": 50,
+            "rarity": "Uncommon"
+          },
+          {
+            "name": "Cerrador 1913",
+            "role": "CL",
+            "war": 0.0,
+            "hp": 35,
+            "maxHp": 35,
+            "stf": 50,
+            "ctl": 50,
+            "mov": 50,
+            "sta": 25,
+            "ovr": 50,
             "rarity": "Uncommon"
           }
         ]
@@ -17434,7 +17655,7 @@ window.OpponentsDatabase = {
         "year": 1916,
         "teamID": "BRG",
         "win_pct": 0.615,
-        "ovr": 64,
+        "ovr": 60,
         "pitchers": [
           {
             "name": "String Bean Williams",
@@ -17461,6 +17682,19 @@ window.OpponentsDatabase = {
             "sta": 60,
             "ovr": 62,
             "rarity": "Rare"
+          },
+          {
+            "name": "Cerrador 1916",
+            "role": "CL",
+            "war": 0.0,
+            "hp": 35,
+            "maxHp": 35,
+            "stf": 50,
+            "ctl": 50,
+            "mov": 50,
+            "sta": 25,
+            "ovr": 50,
+            "rarity": "Uncommon"
           }
         ]
       }
@@ -28728,7 +28962,7 @@ window.OpponentsDatabase = {
         "year": 1925,
         "teamID": "WMP",
         "win_pct": 0.323,
-        "ovr": 47,
+        "ovr": 49,
         "pitchers": [
           {
             "name": "Wayne Carr",
@@ -28741,6 +28975,32 @@ window.OpponentsDatabase = {
             "mov": 46,
             "sta": 74,
             "ovr": 47,
+            "rarity": "Uncommon"
+          },
+          {
+            "name": "Relevista 1925",
+            "role": "RP",
+            "war": 0.0,
+            "hp": 35,
+            "maxHp": 35,
+            "stf": 50,
+            "ctl": 50,
+            "mov": 50,
+            "sta": 25,
+            "ovr": 50,
+            "rarity": "Uncommon"
+          },
+          {
+            "name": "Cerrador 1925",
+            "role": "CL",
+            "war": 0.0,
+            "hp": 35,
+            "maxHp": 35,
+            "stf": 50,
+            "ctl": 50,
+            "mov": 50,
+            "sta": 25,
+            "ovr": 50,
             "rarity": "Uncommon"
           }
         ]
@@ -30110,6 +30370,19 @@ window.OpponentsDatabase = {
             "mov": 48,
             "sta": 59,
             "ovr": 46,
+            "rarity": "Uncommon"
+          },
+          {
+            "name": "Cerrador 1926",
+            "role": "CL",
+            "war": 0.0,
+            "hp": 35,
+            "maxHp": 35,
+            "stf": 50,
+            "ctl": 50,
+            "mov": 50,
+            "sta": 25,
+            "ovr": 50,
             "rarity": "Uncommon"
           }
         ]
@@ -42107,7 +42380,7 @@ window.OpponentsDatabase = {
         "year": 1934,
         "teamID": "BBS",
         "win_pct": 0.273,
-        "ovr": 55,
+        "ovr": 53,
         "pitchers": [
           {
             "name": "Bun Hayes",
@@ -42132,6 +42405,19 @@ window.OpponentsDatabase = {
             "ctl": 38,
             "mov": 40,
             "sta": 62,
+            "ovr": 50,
+            "rarity": "Uncommon"
+          },
+          {
+            "name": "Cerrador 1934",
+            "role": "CL",
+            "war": 0.0,
+            "hp": 35,
+            "maxHp": 35,
+            "stf": 50,
+            "ctl": 50,
+            "mov": 50,
+            "sta": 25,
             "ovr": 50,
             "rarity": "Uncommon"
           }

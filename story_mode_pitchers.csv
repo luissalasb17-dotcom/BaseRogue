@@ -1,5 +1,7 @@
 Year,TeamID,TeamName,WinPct,PlayerName,Role,WAR,HP,STF,STF_Grade,CTL,CTL_Grade,MOV,MOV_Grade,STA,STA_Grade,OVR,OVR_Grade,Rarity
 1901,CCG,Chicago Columbia Giants,1.0,Will Horn,SP,0.0,90,111,S,76,B+,59,C+,73,B,81,A-,Epic
+1901,CCG,Chicago Columbia Giants,1.0,Relevista 1901,RP,0.0,35,50,C,50,C,50,C,25,D,50,C,Uncommon
+1901,CCG,Chicago Columbia Giants,1.0,Cerrador 1901,CL,0.0,35,50,C,50,C,50,C,25,D,50,C,Uncommon
 1901,PIT,Pittsburgh Pirates,0.647,Jack Chesbro,SP,5.6,96,59,C+,86,A,69,B,81,A-,72,B,Epic
 1901,PIT,Pittsburgh Pirates,0.647,Deacon Phillippe,SP,5.5,91,44,C-,99,A+,73,B,75,B+,72,B,Epic
 1901,PIT,Pittsburgh Pirates,0.647,Jesse Tannehill,SP,4.6,87,62,B-,95,A+,82,A-,69,B,79,B+,Epic
@@ -104,6 +106,7 @@ Year,TeamID,TeamName,WinPct,PlayerName,Role,WAR,HP,STF,STF_Grade,CTL,CTL_Grade,M
 1903,AB,Algona Brownies,0.733,Johnny Davis,SP,0.0,90,93,A,125,S,59,C+,73,B,90,A,Legendary
 1903,CXG,Cuban X Giants,0.714,Rube Foster,SP,0.0,90,72,B,82,A-,59,C+,73,B,71,B,Epic
 1903,CXG,Cuban X Giants,0.714,Danny McClellan,SP,0.0,87,108,S,52,C,59,C+,69,B,73,B,Epic
+1903,CXG,Cuban X Giants,0.714,Cerrador 1903,CL,0.0,35,50,C,50,C,50,C,25,D,50,C,Uncommon
 1903,BOS,Boston Americans,0.659,Bill Dinneen,SP,6.6,89,66,B,76,B+,67,B,72,B,70,B,Epic
 1903,BOS,Boston Americans,0.659,Cy Young,SP,6.6,94,70,B,103,S,73,B,78,B+,82,A-,Epic
 1903,BOS,Boston Americans,0.659,Tom Hughes,SP,3.5,84,61,B-,70,B,58,C+,66,B,63,B-,Rare
@@ -243,6 +246,8 @@ Year,TeamID,TeamName,WinPct,PlayerName,Role,WAR,HP,STF,STF_Grade,CTL,CTL_Grade,M
 1905,BOS,Boston Americans,0.513,Jesse Tannehill,SP,5.0,88,54,C,77,B+,52,C,70,B,62,B-,Rare
 1905,BOS,Boston Americans,0.513,George Winter,SP,1.4,94,59,C+,80,A-,44,C-,78,B+,63,B-,Rare
 1905,LEL,Chicago Leland Giants,0.5,Johnny Davis,SP,0.0,90,41,C-,76,B+,40,C-,73,B,54,C,Uncommon
+1905,LEL,Chicago Leland Giants,0.5,Relevista 1905,RP,0.0,35,50,C,50,C,50,C,25,D,50,C,Uncommon
+1905,LEL,Chicago Leland Giants,0.5,Cerrador 1905,CL,0.0,35,50,C,50,C,50,C,25,D,50,C,Uncommon
 1905,CLE,Cleveland Naps,0.494,Addie Joss,SP,6.2,90,61,B-,91,A,66,B,73,B,73,B,Epic
 1905,CLE,Cleveland Naps,0.494,Earl Moore,SP,2.5,90,65,B,49,C,49,C,73,B,56,C+,Rare
 1905,CLE,Cleveland Naps,0.494,Bob Rhoads,SP,2.2,90,30,D,73,B,46,C,73,B,52,C,Uncommon
@@ -305,6 +310,7 @@ Year,TeamID,TeamName,WinPct,PlayerName,Role,WAR,HP,STF,STF_Grade,CTL,CTL_Grade,M
 1906,SLA,St. Louis Browns,0.51,Fred Glade,SP,3.7,87,45,C,76,B+,54,C,69,B,59,C+,Rare
 1906,LEL,Chicago Leland Giants,0.5,Will Horn,SP,0.0,87,64,B-,52,C,47,C,69,B,56,C+,Rare
 1906,LEL,Chicago Leland Giants,0.5,Johnny Davis,SP,0.0,100,53,C,47,C,59,C+,86,A,56,C+,Rare
+1906,LEL,Chicago Leland Giants,0.5,Cerrador 1906,CL,0.0,35,50,C,50,C,50,C,25,D,50,C,Uncommon
 1906,DET,Detroit Tigers,0.477,George Mullin,SP,4.7,86,47,C,50,C,51,C,68,B,51,C,Uncommon
 1906,DET,Detroit Tigers,0.477,Red Donahue,SP,4.4,88,42,C-,75,B+,56,C+,70,B,59,C+,Rare
 1906,DET,Detroit Tigers,0.477,Bill Donovan,SP,2.8,88,52,C,49,C,43,C-,70,B,50,C,Uncommon
@@ -337,6 +343,7 @@ Year,TeamID,TeamName,WinPct,PlayerName,Role,WAR,HP,STF,STF_Grade,CTL,CTL_Grade,M
 1906,BOS,Boston Americans,0.318,Jesse Tannehill,SP,1.6,83,54,C,81,A-,39,D+,64,B-,59,C+,Rare
 1907,LEL,Chicago Leland Giants,1.0,Walter Ball,SP,0.0,90,85,A,125,S,59,C+,73,B,88,A,Legendary
 1907,LEL,Chicago Leland Giants,1.0,Rube Foster,SP,0.0,90,59,C+,103,S,59,C+,73,B,74,B,Epic
+1907,LEL,Chicago Leland Giants,1.0,Cerrador 1907,CL,0.0,35,50,C,50,C,50,C,25,D,50,C,Uncommon
 1907,CHN,Chicago Cubs,0.704,Mordecai Brown,SP,5.8,88,61,B-,88,A,93,A,71,B,80,A-,Epic
 1907,CHN,Chicago Cubs,0.704,Carl Lundgren,SP,5.7,86,52,C,40,C-,116,S,68,B,69,B,Rare
 1907,CHN,Chicago Cubs,0.704,Orval Overall,SP,5.5,90,71,B,67,B,75,B+,73,B,71,B,Epic
@@ -462,6 +469,7 @@ Year,TeamID,TeamName,WinPct,PlayerName,Role,WAR,HP,STF,STF_Grade,CTL,CTL_Grade,M
 1909,SPG,St. Paul Gophers,0.846,Julius London,SP,0.0,75,83,A-,33,D,59,C+,53,C,58,C+,Rare
 1909,BRG,Brooklyn Royal Giants,0.75,Charles Earle,SP,0.0,90,36,D+,85,A,47,C,73,B,58,C+,Rare
 1909,BRG,Brooklyn Royal Giants,0.75,Harry Buckner,SP,0.0,90,25,D,45,C,59,C+,73,B,46,C,Uncommon
+1909,BRG,Brooklyn Royal Giants,0.75,Cerrador 1909,CL,0.0,35,50,C,50,C,50,C,25,D,50,C,Uncommon
 1909,PIT,Pittsburgh Pirates,0.724,Howie Camnitz,SP,5.5,92,63,B-,71,B,87,A,76,B+,74,B,Epic
 1909,PIT,Pittsburgh Pirates,0.724,Vic Willis,SP,4.4,86,41,C-,60,B-,59,C+,68,B,55,C+,Rare
 1909,PIT,Pittsburgh Pirates,0.724,Babe Adams,SP,4.0,99,67,B,87,A,119,S,85,A,90,A,Legendary
@@ -535,6 +543,8 @@ Year,TeamID,TeamName,WinPct,PlayerName,Role,WAR,HP,STF,STF_Grade,CTL,CTL_Grade,M
 1910,CHN,Chicago Cubs,0.675,Mordecai Brown,SP,4.8,92,65,B,77,B+,79,B+,76,B+,74,B,Epic
 1910,CHN,Chicago Cubs,0.675,Jack Pfiester,SP,2.2,84,42,C-,67,B,90,A,65,B,66,B,Rare
 1910,KRG,Kansas City Royal Giants,0.667,Charles Childs,SP,0.0,90,59,C+,125,S,59,C+,73,B,80,A-,Epic
+1910,KRG,Kansas City Royal Giants,0.667,Relevista 1910,RP,0.0,35,50,C,50,C,50,C,25,D,50,C,Uncommon
+1910,KRG,Kansas City Royal Giants,0.667,Cerrador 1910,CL,0.0,35,50,C,50,C,50,C,25,D,50,C,Uncommon
 1910,COG,Chicago Giants,0.652,Joe Williams,SP,0.0,92,113,S,96,A+,59,C+,76,B+,88,A,Legendary
 1910,COG,Chicago Giants,0.652,Steel Arm Johnny Taylor,SP,0.0,95,45,C,77,B+,59,C+,80,A-,62,B-,Rare
 1910,COG,Chicago Giants,0.652,Walter Ball,SP,0.0,88,74,B,88,A,48,C,71,B,70,B,Epic
@@ -591,6 +601,7 @@ Year,TeamID,TeamName,WinPct,PlayerName,Role,WAR,HP,STF,STF_Grade,CTL,CTL_Grade,M
 1910,SLA,St. Louis Browns,0.305,Barney Pelty,SP,0.4,88,35,D+,41,C-,34,D,71,B,40,C-,Common
 1910,OKM,Oklahoma Monarchs,0.273,Robert Boone,SP,0.0,85,48,C,54,C,40,C-,67,B,49,C,Uncommon
 1910,OKM,Oklahoma Monarchs,0.273,Arthur Gilliard,SP,0.0,85,57,C+,69,B,59,C+,67,B,62,B-,Rare
+1910,OKM,Oklahoma Monarchs,0.273,Cerrador 1910,CL,0.0,35,50,C,50,C,50,C,25,D,50,C,Uncommon
 1910,WBS,West Baden Sprudels,0.0,Ben Taylor,SP,0.0,100,53,C,47,C,59,C+,86,A,56,C+,Rare
 1910,WBS,West Baden Sprudels,0.0,C. I. Taylor,RP,0.0,45,81,A-,82,A-,44,C-,35,D+,66,B,Rare
 1910,WBS,West Baden Sprudels,0.0,Morten Clark,SP,0.0,74,58,C+,87,A,40,C-,52,C,61,B-,Rare
@@ -647,6 +658,7 @@ Year,TeamID,TeamName,WinPct,PlayerName,Role,WAR,HP,STF,STF_Grade,CTL,CTL_Grade,M
 1911,COG,Chicago Giants,0.478,Bill Gatewood,SP,0.0,96,73,B,93,A,59,C+,82,A-,76,B+,Epic
 1911,WBS,West Baden Sprudels,0.478,Dizzy Dismukes,SP,0.0,88,53,C,48,C,44,C-,70,B,50,C,Uncommon
 1911,WBS,West Baden Sprudels,0.478,C. I. Taylor,SP,0.0,90,125,S,49,C,40,C-,73,B,72,B,Epic
+1911,WBS,West Baden Sprudels,0.478,Cerrador 1911,CL,0.0,35,50,C,50,C,50,C,25,D,50,C,Uncommon
 1911,CIN,Cincinnati Reds,0.458,Bobby Keefe,SP,5.2,90,59,C+,51,C,60,B-,73,B,58,C+,Rare
 1911,CIN,Cincinnati Reds,0.458,George Suggs,SP,3.8,90,44,C-,56,C+,55,C+,73,B,54,C,Uncommon
 1911,CIN,Cincinnati Reds,0.458,Harry Gaspar,SP,3.4,84,36,D+,63,B-,47,C,66,B,50,C,Uncommon
@@ -690,6 +702,8 @@ Year,TeamID,TeamName,WinPct,PlayerName,Role,WAR,HP,STF,STF_Grade,CTL,CTL_Grade,M
 1912,CHN,Chicago Cubs,0.607,Lew Richie,SP,3.1,89,35,D+,54,C,55,C+,72,B,50,C,Uncommon
 1912,CHN,Chicago Cubs,0.607,Jimmy Lavender,SP,2.3,85,57,C+,48,C,52,C,67,B,54,C,Uncommon
 1912,KRG,Kansas City Royal Giants,0.6,Chick Harper,SP,0.0,90,115,S,49,C,40,C-,73,B,68,B,Rare
+1912,KRG,Kansas City Royal Giants,0.6,Relevista 1912,RP,0.0,35,50,C,50,C,50,C,25,D,50,C,Uncommon
+1912,KRG,Kansas City Royal Giants,0.6,Cerrador 1912,CL,0.0,35,50,C,50,C,50,C,25,D,50,C,Uncommon
 1912,WS1,Washington Senators,0.599,Walter Johnson,SP,14.2,94,118,S,80,A-,115,S,79,B+,102,S,Legendary
 1912,WS1,Washington Senators,0.599,Bob Groom,SP,4.2,84,78,B+,57,C+,67,B,66,B,67,B,Rare
 1912,WS1,Washington Senators,0.599,Hippo Vaughn,SP,1.3,85,92,A,30,D,51,C,67,B,59,C+,Rare
@@ -722,6 +736,7 @@ Year,TeamID,TeamName,WinPct,PlayerName,Role,WAR,HP,STF,STF_Grade,CTL,CTL_Grade,M
 1912,SLN,St. Louis Cardinals,0.412,Sandy Burk,RP,1.0,45,45,C,61,B-,72,B,35,D+,57,C+,Rare
 1912,WBS,West Baden Sprudels,0.407,Steel Arm Johnny Taylor,SP,0.0,91,48,C,104,S,59,C+,75,B+,71,B,Epic
 1912,WBS,West Baden Sprudels,0.407,Hub Miller,SP,0.0,81,23,F,48,C,59,C+,61,B-,45,C,Uncommon
+1912,WBS,West Baden Sprudels,0.407,Cerrador 1912,CL,0.0,35,50,C,50,C,50,C,25,D,50,C,Uncommon
 1912,BRG,Brooklyn Royal Giants,0.4,Pop Andrews,SP,0.0,86,41,C-,92,A,47,C,68,B,61,B-,Rare
 1912,BRG,Brooklyn Royal Giants,0.4,Hurley McNair,SP,0.0,120,61,B-,35,D+,43,C-,113,S,53,C,Uncommon
 1912,BRG,Brooklyn Royal Giants,0.4,Johnny Goodgame,SP,0.0,92,55,C+,32,D,45,C,76,B+,47,C,Uncommon
@@ -741,6 +756,8 @@ Year,TeamID,TeamName,WinPct,PlayerName,Role,WAR,HP,STF,STF_Grade,CTL,CTL_Grade,M
 1913,NLG,New York Lincoln Giants,0.727,Lee Wade,SP,0.0,86,32,D,63,B-,59,C+,68,B,53,C,Uncommon
 1913,NLG,New York Lincoln Giants,0.727,Dick Redding,SP,0.0,118,12,F,80,A-,40,C-,110,S,51,C,Uncommon
 1913,COG,Chicago Giants,0.714,Sam Crawford,SP,0.0,89,40,C-,52,C,59,C+,72,B,52,C,Uncommon
+1913,COG,Chicago Giants,0.714,Relevista 1913,RP,0.0,35,50,C,50,C,50,C,25,D,50,C,Uncommon
+1913,COG,Chicago Giants,0.714,Cerrador 1913,CL,0.0,35,50,C,50,C,50,C,25,D,50,C,Uncommon
 1913,NY1,New York Giants,0.664,Christy Mathewson,SP,7.1,88,37,D+,113,S,76,B+,71,B,75,B+,Epic
 1913,NY1,New York Giants,0.664,Rube Marquard,SP,5.4,88,71,B,88,A,61,B-,71,B,73,B,Epic
 1913,NY1,New York Giants,0.664,Jeff Tesreau,SP,5.4,82,82,A-,42,C-,72,B,63,B-,65,B,Rare
@@ -992,6 +1009,7 @@ Year,TeamID,TeamName,WinPct,PlayerName,Role,WAR,HP,STF,STF_Grade,CTL,CTL_Grade,M
 1916,NLG,New York Lincoln Giants,0.636,F. Banks,SP,0.0,72,38,D+,24,F,59,C+,49,C,41,C-,Common
 1916,BRG,Brooklyn Royal Giants,0.615,String Bean Williams,SP,0.0,94,83,A-,67,B,46,C,78,B+,67,B,Rare
 1916,BRG,Brooklyn Royal Giants,0.615,Lefty Harvey,SP,0.0,80,94,A,43,C-,49,C,60,B-,62,B-,Rare
+1916,BRG,Brooklyn Royal Giants,0.615,Cerrador 1916,CL,0.0,35,50,C,50,C,50,C,25,D,50,C,Uncommon
 1916,BRO,Brooklyn Robins,0.61,Jeff Pfeffer,SP,6.6,89,50,C,83,A-,71,B,72,B,68,B,Rare
 1916,BRO,Brooklyn Robins,0.61,Rube Marquard,SP,4.6,96,71,B,85,A,88,A,81,A-,81,A-,Epic
 1916,BRO,Brooklyn Robins,0.61,Sherry Smith,SP,2.6,92,37,D+,80,A-,56,C+,76,B+,60,B-,Rare
@@ -1809,6 +1827,8 @@ Year,TeamID,TeamName,WinPct,PlayerName,Role,WAR,HP,STF,STF_Grade,CTL,CTL_Grade,M
 1925,CSE,Cuban Stars East,0.381,Oscar Levis,SP,0.0,82,70,B,41,C-,59,C+,62,B-,57,C+,Rare
 1925,CSE,Cuban Stars East,0.381,Isidro Fabré,SP,0.0,95,35,D+,76,B+,59,C+,80,A-,59,C+,Rare
 1925,WMP,Wilmington Potomacs,0.323,Wayne Carr,SP,-0.2,90,39,D+,46,C,46,C,74,B,47,C,Uncommon
+1925,WMP,Wilmington Potomacs,0.323,Relevista 1925,RP,0.0,35,50,C,50,C,50,C,25,D,50,C,Uncommon
+1925,WMP,Wilmington Potomacs,0.323,Cerrador 1925,CL,0.0,35,50,C,50,C,50,C,25,D,50,C,Uncommon
 1925,BOS,Boston Red Sox,0.309,Howard Ehmke,SP,5.5,89,51,C,59,C+,64,B-,72,B,59,C+,Rare
 1925,BOS,Boston Red Sox,0.309,Ted Wingfield,SP,4.0,96,9,F,51,C,58,C+,81,A-,44,C-,Common
 1925,BOS,Boston Red Sox,0.309,Red Ruffing,SP,2.9,87,40,C-,55,C+,45,C,69,B,49,C,Uncommon
@@ -1916,6 +1936,7 @@ Year,TeamID,TeamName,WinPct,PlayerName,Role,WAR,HP,STF,STF_Grade,CTL,CTL_Grade,M
 1926,DM,Dayton Marcos,0.143,Deacon Meyers,SP,0.0,91,30,D,76,B+,49,C,75,B+,54,C,Uncommon
 1926,NS,Newark Stars,0.091,Wayne Carr,SP,0.0,85,26,D,74,B,51,C,67,B,52,C,Uncommon
 1926,NS,Newark Stars,0.091,Eli Juran,SP,0.0,79,64,B-,22,F,48,C,59,C+,46,C,Uncommon
+1926,NS,Newark Stars,0.091,Cerrador 1926,CL,0.0,35,50,C,50,C,50,C,25,D,50,C,Uncommon
 1927,NYA,New York Yankees,0.714,Wilcy Moore,RP,6.6,45,49,C,71,B,93,A,35,D+,67,B,Rare
 1927,NYA,New York Yankees,0.714,Waite Hoyt,SP,6.0,87,47,C,86,A,76,B+,69,B,70,B,Epic
 1927,NYA,New York Yankees,0.714,Herb Pennock,SP,3.2,87,31,D,82,A-,70,B,69,B,62,B-,Rare
@@ -2620,6 +2641,7 @@ Year,TeamID,TeamName,WinPct,PlayerName,Role,WAR,HP,STF,STF_Grade,CTL,CTL_Grade,M
 1934,KCM,Kansas City Monarchs,0.333,Andy Cooper,RP,0.0,45,99,A+,93,A,59,C+,35,D+,79,B+,Epic
 1934,BBS,Baltimore Black Sox,0.273,Bun Hayes,RP,0.0,45,71,B,65,B,51,C,35,D+,60,B-,Rare
 1934,BBS,Baltimore Black Sox,0.273,Half Pint Allen,SP,0.0,82,69,B,38,D+,40,C-,62,B-,50,C,Uncommon
+1934,BBS,Baltimore Black Sox,0.273,Cerrador 1934,CL,0.0,35,50,C,50,C,50,C,25,D,50,C,Uncommon
 1934,PBG,Philadelphia Bacharach Giants,0.2,Laymon Yokely,SP,0.0,88,63,B-,45,C,49,C,71,B,54,C,Uncommon
 1934,PBG,Philadelphia Bacharach Giants,0.2,Darltie Cooper,SP,0.0,94,32,D,45,C,46,C,78,B+,45,C,Uncommon
 1934,PBG,Philadelphia Bacharach Giants,0.2,Luther Farrell,SP,0.0,79,35,D+,46,C,48,C,59,C+,45,C,Uncommon
