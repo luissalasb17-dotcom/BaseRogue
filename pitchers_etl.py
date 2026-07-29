@@ -369,7 +369,7 @@ def paso_4_pico_pitching(pitching, war_pitch, people):
 
     # IP/GS del pico (stamina para starters)
     gs_p = peak["peak_gs"].replace(0, np.nan)
-    peak["peak_ip_per_gs"] = peak["peak_ip_per_gs"].fillna(peak["peak_ip"] / gs_p)
+    peak["peak_ip_per_gs"] = np.where(peak["peak_gs"] > 0, (peak["peak_ip"] / gs_p).clip(0.0, 9.5), 0.0)
 
     print(f"  Pico calculado para {len(peak):,} pitchers")
     return peak
@@ -532,7 +532,11 @@ def paso_10_normalizar_por_era(df):
     df = normalize_difficulty_adjusted(df, "str_raw", "str_val", invert=False)   # mas K/9 = mejor
     df = normalize_difficulty_adjusted(df, "ctl_raw", "ctl_val", invert=True)    # menos BB/9 = mejor
     df = normalize_difficulty_adjusted(df, "hr_raw",  "hr_val",  invert=True)    # menos HR/9 = mejor
-    df = normalize_difficulty_adjusted(df, "sta_raw", "sta_val", invert=False)   # mas IP/GS = mejor
+    # STA: Escala directa por carga de trabajo (7.5+ IP/GS = 90-115 A+/S para Abridores)
+    is_sp = df["role"] == "SP"
+    sp_sta = (30.0 + (df["sta_raw"] / 7.5) * 60.0).clip(1.0, 125.0)
+    rp_sta = (15.0 + df["sta_raw"] * 10.0).clip(1.0, 35.0)
+    df["sta_val"] = np.where(is_sp, sp_sta, rp_sta).round(1)
 
     # GRT/MOV: Centrado en 50 con escala ERA+ (100 ERA+ = 50 MOV)
     df["grt_val"] = (50.0 + (df["peak_era_plus"].fillna(100.0) - 100.0) * 0.65).clip(1.0, 125.0).round(1)
