@@ -789,57 +789,106 @@ window.OpponentsDatabase = {
             "rarity": "Epic"
           }
         ]
+      },
+      {
+        "id": "story_1901_CCG",
+        "name": "1901 Chicago Columbia Giants",
+        "year": 1901,
+        "teamID": "CCG",
+        "win_pct": 1.0,
+        "ovr": 60,
+        "pitchers": [
+          {
+            "name": "Will Horn",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 90,
+            "maxHp": 90,
+            "stf": 111,
+            "ctl": 76,
+            "mov": 59,
+            "sta": 73,
+            "ovr": 81,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Relevista 1901",
+            "role": "RP",
+            "war": 0.0,
+            "hp": 35,
+            "maxHp": 35,
+            "stf": 50,
+            "ctl": 50,
+            "mov": 50,
+            "sta": 25,
+            "ovr": 50,
+            "rarity": "Uncommon"
+          },
+          {
+            "name": "Cerrador 1901",
+            "role": "CL",
+            "war": 0.0,
+            "hp": 35,
+            "maxHp": 35,
+            "stf": 50,
+            "ctl": 50,
+            "mov": 50,
+            "sta": 25,
+            "ovr": 50,
+            "rarity": "Uncommon"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1901_CCG",
-      "name": "BOSS: 1901 Chicago Columbia Giants",
+      "id": "story_1901_STARS_BOSS",
+      "name": "\ud83d\udc51 1901 STARS",
       "year": 1901,
-      "teamID": "CCG",
+      "teamID": "STARS",
       "win_pct": 1.0,
-      "ovr": 60,
+      "isBoss": true,
+      "ovr": 77,
       "pitchers": [
         {
-          "name": "Will Horn",
+          "name": "Cy Young",
           "role": "SP",
-          "war": 0.0,
+          "war": 12.4,
           "hp": 90,
           "maxHp": 90,
-          "stf": 111,
-          "ctl": 76,
-          "mov": 59,
+          "stf": 56,
+          "ctl": 106,
+          "mov": 109,
           "sta": 73,
-          "ovr": 81,
+          "ovr": 89,
+          "rarity": "Legendary"
+        },
+        {
+          "name": "Christy Mathewson",
+          "role": "SP",
+          "war": 8.9,
+          "hp": 89,
+          "maxHp": 89,
+          "stf": 92,
+          "ctl": 59,
+          "mov": 72,
+          "sta": 72,
+          "ovr": 74,
           "rarity": "Epic"
         },
         {
-          "name": "Relevista 1901",
-          "role": "RP",
-          "war": 0.0,
-          "hp": 35,
-          "maxHp": 35,
-          "stf": 50,
-          "ctl": 50,
-          "mov": 50,
-          "sta": 25,
-          "ovr": 50,
-          "rarity": "Uncommon"
-        },
-        {
-          "name": "Cerrador 1901",
-          "role": "CL",
-          "war": 0.0,
-          "hp": 35,
-          "maxHp": 35,
-          "stf": 50,
-          "ctl": 50,
-          "mov": 50,
-          "sta": 25,
-          "ovr": 50,
-          "rarity": "Uncommon"
+          "name": "Vic Willis",
+          "role": "SP",
+          "war": 8.8,
+          "hp": 88,
+          "maxHp": 88,
+          "stf": 57,
+          "ctl": 68,
+          "mov": 77,
+          "sta": 71,
+          "ovr": 68,
+          "rarity": "Rare"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1902": {
@@ -1632,57 +1681,106 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
+      },
+      {
+        "id": "story_1902_PIT",
+        "name": "1902 Pittsburgh Pirates",
+        "year": 1902,
+        "teamID": "PIT",
+        "win_pct": 0.741,
+        "ovr": 72,
+        "pitchers": [
+          {
+            "name": "Jack Chesbro",
+            "role": "SP",
+            "war": 5.3,
+            "hp": 88,
+            "maxHp": 88,
+            "stf": 63,
+            "ctl": 77,
+            "mov": 69,
+            "sta": 71,
+            "ovr": 70,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Deacon Phillippe",
+            "role": "SP",
+            "war": 3.7,
+            "hp": 90,
+            "maxHp": 90,
+            "stf": 59,
+            "ctl": 107,
+            "mov": 73,
+            "sta": 73,
+            "ovr": 79,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Sam Leever",
+            "role": "SP",
+            "war": 3.1,
+            "hp": 88,
+            "maxHp": 88,
+            "stf": 50,
+            "ctl": 96,
+            "mov": 59,
+            "sta": 70,
+            "ovr": 68,
+            "rarity": "Rare"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1902_PIT",
-      "name": "BOSS: 1902 Pittsburgh Pirates",
+      "id": "story_1902_STARS_BOSS",
+      "name": "\ud83d\udc51 1902 STARS",
       "year": 1902,
-      "teamID": "PIT",
-      "win_pct": 0.741,
-      "ovr": 72,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 82,
       "pitchers": [
         {
-          "name": "Jack Chesbro",
+          "name": "Cy Young",
           "role": "SP",
-          "war": 5.3,
-          "hp": 88,
-          "maxHp": 88,
-          "stf": 63,
-          "ctl": 77,
-          "mov": 69,
-          "sta": 71,
-          "ovr": 70,
+          "war": 10.1,
+          "hp": 90,
+          "maxHp": 90,
+          "stf": 54,
+          "ctl": 96,
+          "mov": 84,
+          "sta": 73,
+          "ovr": 78,
           "rarity": "Epic"
         },
         {
-          "name": "Deacon Phillippe",
+          "name": "Jack Taylor",
           "role": "SP",
-          "war": 3.7,
-          "hp": 90,
-          "maxHp": 90,
-          "stf": 59,
-          "ctl": 107,
-          "mov": 73,
-          "sta": 73,
+          "war": 9.4,
+          "hp": 94,
+          "maxHp": 94,
+          "stf": 31,
+          "ctl": 97,
+          "mov": 110,
+          "sta": 78,
           "ovr": 79,
           "rarity": "Epic"
         },
         {
-          "name": "Sam Leever",
+          "name": "Rube Waddell",
           "role": "SP",
-          "war": 3.1,
-          "hp": 88,
-          "maxHp": 88,
-          "stf": 50,
-          "ctl": 96,
-          "mov": 59,
-          "sta": 70,
-          "ovr": 68,
-          "rarity": "Rare"
+          "war": 9.1,
+          "hp": 96,
+          "maxHp": 96,
+          "stf": 108,
+          "ctl": 73,
+          "mov": 89,
+          "sta": 81,
+          "ovr": 89,
+          "rarity": "Legendary"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1903": {
@@ -2573,57 +2671,106 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
+      },
+      {
+        "id": "story_1903_AB",
+        "name": "1903 Algona Brownies",
+        "year": 1903,
+        "teamID": "AB",
+        "win_pct": 0.733,
+        "ovr": 84,
+        "pitchers": [
+          {
+            "name": "Billy Holland",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 85,
+            "maxHp": 85,
+            "stf": 77,
+            "ctl": 84,
+            "mov": 59,
+            "sta": 67,
+            "ovr": 73,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Bert Jones",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 91,
+            "maxHp": 91,
+            "stf": 107,
+            "ctl": 104,
+            "mov": 59,
+            "sta": 75,
+            "ovr": 88,
+            "rarity": "Legendary"
+          },
+          {
+            "name": "Johnny Davis",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 90,
+            "maxHp": 90,
+            "stf": 93,
+            "ctl": 125,
+            "mov": 59,
+            "sta": 73,
+            "ovr": 90,
+            "rarity": "Legendary"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1903_AB",
-      "name": "BOSS: 1903 Algona Brownies",
+      "id": "story_1903_STARS_BOSS",
+      "name": "\ud83d\udc51 1903 STARS",
       "year": 1903,
-      "teamID": "AB",
-      "win_pct": 0.733,
-      "ovr": 84,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 76,
       "pitchers": [
         {
-          "name": "Billy Holland",
+          "name": "Joe McGinnity",
           "role": "SP",
-          "war": 0.0,
-          "hp": 85,
-          "maxHp": 85,
-          "stf": 77,
-          "ctl": 84,
-          "mov": 59,
-          "sta": 67,
-          "ovr": 73,
+          "war": 12.2,
+          "hp": 90,
+          "maxHp": 90,
+          "stf": 51,
+          "ctl": 69,
+          "mov": 73,
+          "sta": 73,
+          "ovr": 65,
+          "rarity": "Rare"
+        },
+        {
+          "name": "Christy Mathewson",
+          "role": "SP",
+          "war": 10.4,
+          "hp": 88,
+          "maxHp": 88,
+          "stf": 103,
+          "ctl": 63,
+          "mov": 77,
+          "sta": 71,
+          "ovr": 80,
           "rarity": "Epic"
         },
         {
-          "name": "Bert Jones",
+          "name": "Rube Waddell",
           "role": "SP",
-          "war": 0.0,
-          "hp": 91,
-          "maxHp": 91,
-          "stf": 107,
-          "ctl": 104,
-          "mov": 59,
-          "sta": 75,
-          "ovr": 88,
-          "rarity": "Legendary"
-        },
-        {
-          "name": "Johnny Davis",
-          "role": "SP",
-          "war": 0.0,
-          "hp": 90,
-          "maxHp": 90,
-          "stf": 93,
-          "ctl": 125,
-          "mov": 59,
-          "sta": 73,
-          "ovr": 90,
-          "rarity": "Legendary"
+          "war": 8.3,
+          "hp": 88,
+          "maxHp": 88,
+          "stf": 125,
+          "ctl": 66,
+          "mov": 65,
+          "sta": 70,
+          "ovr": 84,
+          "rarity": "Epic"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1904": {
@@ -2873,9 +3020,7 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      }
-    ],
-    "mid": [
+      },
       {
         "id": "story_1904_SLA",
         "name": "1904 St. Louis Browns",
@@ -2924,7 +3069,9 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      },
+      }
+    ],
+    "mid": [
       {
         "id": "story_1904_SLN",
         "name": "1904 St. Louis Cardinals",
@@ -3120,9 +3267,7 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      }
-    ],
-    "high": [
+      },
       {
         "id": "story_1904_CIN",
         "name": "1904 Cincinnati Reds",
@@ -3220,7 +3365,9 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      },
+      }
+    ],
+    "high": [
       {
         "id": "story_1904_CHN",
         "name": "1904 Chicago Cubs",
@@ -3465,57 +3612,106 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
+      },
+      {
+        "id": "story_1904_PG",
+        "name": "1904 Philadelphia Giants",
+        "year": 1904,
+        "teamID": "PG",
+        "win_pct": 0.769,
+        "ovr": 61,
+        "pitchers": [
+          {
+            "name": "Rube Foster",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 90,
+            "maxHp": 90,
+            "stf": 125,
+            "ctl": 69,
+            "mov": 41,
+            "sta": 73,
+            "ovr": 78,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Will Horn",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 88,
+            "maxHp": 88,
+            "stf": 53,
+            "ctl": 58,
+            "mov": 59,
+            "sta": 70,
+            "ovr": 58,
+            "rarity": "Rare"
+          },
+          {
+            "name": "William Bell",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 100,
+            "maxHp": 100,
+            "stf": 5,
+            "ctl": 63,
+            "mov": 59,
+            "sta": 86,
+            "ovr": 47,
+            "rarity": "Uncommon"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1904_PG",
-      "name": "BOSS: 1904 Philadelphia Giants",
+      "id": "story_1904_STARS_BOSS",
+      "name": "\ud83d\udc51 1904 STARS",
       "year": 1904,
-      "teamID": "PG",
-      "win_pct": 0.769,
-      "ovr": 61,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 79,
       "pitchers": [
         {
-          "name": "Rube Foster",
+          "name": "Rube Waddell",
           "role": "SP",
-          "war": 0.0,
-          "hp": 90,
-          "maxHp": 90,
+          "war": 11.3,
+          "hp": 87,
+          "maxHp": 87,
           "stf": 125,
-          "ctl": 69,
-          "mov": 41,
-          "sta": 73,
-          "ovr": 78,
+          "ctl": 72,
+          "mov": 85,
+          "sta": 69,
+          "ovr": 92,
+          "rarity": "Legendary"
+        },
+        {
+          "name": "Jack Chesbro",
+          "role": "SP",
+          "war": 10.6,
+          "hp": 89,
+          "maxHp": 89,
+          "stf": 71,
+          "ctl": 83,
+          "mov": 77,
+          "sta": 72,
+          "ovr": 76,
           "rarity": "Epic"
         },
         {
-          "name": "Will Horn",
+          "name": "Joe McGinnity",
           "role": "SP",
-          "war": 0.0,
-          "hp": 88,
-          "maxHp": 88,
-          "stf": 53,
-          "ctl": 58,
-          "mov": 59,
-          "sta": 70,
-          "ovr": 58,
-          "rarity": "Rare"
-        },
-        {
-          "name": "William Bell",
-          "role": "SP",
-          "war": 0.0,
-          "hp": 100,
-          "maxHp": 100,
-          "stf": 5,
-          "ctl": 63,
-          "mov": 59,
-          "sta": 86,
-          "ovr": 47,
-          "rarity": "Uncommon"
+          "war": 9.6,
+          "hp": 91,
+          "maxHp": 91,
+          "stf": 44,
+          "ctl": 78,
+          "mov": 85,
+          "sta": 75,
+          "ovr": 70,
+          "rarity": "Epic"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1905": {
@@ -3814,9 +4010,7 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      }
-    ],
-    "mid": [
+      },
       {
         "id": "story_1905_CXG",
         "name": "1905 Cuban X Giants",
@@ -3865,7 +4059,9 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      },
+      }
+    ],
+    "mid": [
       {
         "id": "story_1905_NYA",
         "name": "1905 New York Highlanders",
@@ -4110,9 +4306,7 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      }
-    ],
-    "high": [
+      },
       {
         "id": "story_1905_CIN",
         "name": "1905 Cincinnati Reds",
@@ -4210,7 +4404,9 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
-      },
+      }
+    ],
+    "high": [
       {
         "id": "story_1905_AC1",
         "name": "1905 All Cubans",
@@ -4504,57 +4700,106 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
+      },
+      {
+        "id": "story_1905_PG",
+        "name": "1905 Philadelphia Giants",
+        "year": 1905,
+        "teamID": "PG",
+        "win_pct": 1.0,
+        "ovr": 75,
+        "pitchers": [
+          {
+            "name": "Emmett Bowman",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 90,
+            "maxHp": 90,
+            "stf": 72,
+            "ctl": 69,
+            "mov": 59,
+            "sta": 73,
+            "ovr": 67,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Danny McClellan",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 90,
+            "maxHp": 90,
+            "stf": 54,
+            "ctl": 116,
+            "mov": 59,
+            "sta": 73,
+            "ovr": 76,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Rube Foster",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 98,
+            "maxHp": 98,
+            "stf": 92,
+            "ctl": 107,
+            "mov": 48,
+            "sta": 84,
+            "ovr": 82,
+            "rarity": "Epic"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1905_PG",
-      "name": "BOSS: 1905 Philadelphia Giants",
+      "id": "story_1905_STARS_BOSS",
+      "name": "\ud83d\udc51 1905 STARS",
       "year": 1905,
-      "teamID": "PG",
+      "teamID": "STARS",
       "win_pct": 1.0,
-      "ovr": 75,
+      "isBoss": true,
+      "ovr": 83,
       "pitchers": [
         {
-          "name": "Emmett Bowman",
+          "name": "Irv Young",
           "role": "SP",
-          "war": 0.0,
-          "hp": 90,
-          "maxHp": 90,
-          "stf": 72,
-          "ctl": 69,
-          "mov": 59,
-          "sta": 73,
-          "ovr": 67,
-          "rarity": "Rare"
-        },
-        {
-          "name": "Danny McClellan",
-          "role": "SP",
-          "war": 0.0,
+          "war": 9.9,
           "hp": 90,
           "maxHp": 90,
           "stf": 54,
-          "ctl": 116,
-          "mov": 59,
+          "ctl": 84,
+          "mov": 53,
           "sta": 73,
-          "ovr": 76,
-          "rarity": "Epic"
+          "ovr": 65,
+          "rarity": "Rare"
         },
         {
-          "name": "Rube Foster",
+          "name": "Christy Mathewson",
           "role": "SP",
-          "war": 0.0,
-          "hp": 98,
-          "maxHp": 98,
-          "stf": 92,
-          "ctl": 107,
-          "mov": 48,
-          "sta": 84,
-          "ovr": 82,
-          "rarity": "Epic"
+          "war": 9.6,
+          "hp": 90,
+          "maxHp": 90,
+          "stf": 84,
+          "ctl": 84,
+          "mov": 110,
+          "sta": 74,
+          "ovr": 91,
+          "rarity": "Legendary"
+        },
+        {
+          "name": "Rube Waddell",
+          "role": "SP",
+          "war": 9.4,
+          "hp": 93,
+          "maxHp": 93,
+          "stf": 125,
+          "ctl": 63,
+          "mov": 92,
+          "sta": 77,
+          "ovr": 92,
+          "rarity": "Legendary"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1906": {
@@ -5592,16 +5837,92 @@ window.OpponentsDatabase = {
             "rarity": "Common"
           }
         ]
+      },
+      {
+        "id": "story_1906_CHN",
+        "name": "1906 Chicago Cubs",
+        "year": 1906,
+        "teamID": "CHN",
+        "win_pct": 0.763,
+        "ovr": 76,
+        "pitchers": [
+          {
+            "name": "Mordecai Brown",
+            "role": "SP",
+            "war": 7.3,
+            "hp": 88,
+            "maxHp": 88,
+            "stf": 70,
+            "ctl": 76,
+            "mov": 116,
+            "sta": 71,
+            "ovr": 86,
+            "rarity": "Legendary"
+          },
+          {
+            "name": "Ed Reulbach",
+            "role": "SP",
+            "war": 4.5,
+            "hp": 90,
+            "maxHp": 90,
+            "stf": 56,
+            "ctl": 42,
+            "mov": 83,
+            "sta": 74,
+            "ovr": 62,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Jack Pfiester",
+            "role": "SP",
+            "war": 4.4,
+            "hp": 88,
+            "maxHp": 88,
+            "stf": 85,
+            "ctl": 69,
+            "mov": 89,
+            "sta": 71,
+            "ovr": 80,
+            "rarity": "Epic"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1906_CHN",
-      "name": "BOSS: 1906 Chicago Cubs",
+      "id": "story_1906_STARS_BOSS",
+      "name": "\ud83d\udc51 1906 STARS",
       "year": 1906,
-      "teamID": "CHN",
-      "win_pct": 0.763,
-      "ovr": 76,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 74,
       "pitchers": [
+        {
+          "name": "Vic Willis",
+          "role": "SP",
+          "war": 8.3,
+          "hp": 90,
+          "maxHp": 90,
+          "stf": 49,
+          "ctl": 72,
+          "mov": 87,
+          "sta": 73,
+          "ovr": 70,
+          "rarity": "Epic"
+        },
+        {
+          "name": "Al Orth",
+          "role": "SP",
+          "war": 8.1,
+          "hp": 88,
+          "maxHp": 88,
+          "stf": 50,
+          "ctl": 82,
+          "mov": 68,
+          "sta": 71,
+          "ovr": 67,
+          "rarity": "Rare"
+        },
         {
           "name": "Mordecai Brown",
           "role": "SP",
@@ -5614,35 +5935,8 @@ window.OpponentsDatabase = {
           "sta": 71,
           "ovr": 86,
           "rarity": "Legendary"
-        },
-        {
-          "name": "Ed Reulbach",
-          "role": "SP",
-          "war": 4.5,
-          "hp": 90,
-          "maxHp": 90,
-          "stf": 56,
-          "ctl": 42,
-          "mov": 83,
-          "sta": 74,
-          "ovr": 62,
-          "rarity": "Rare"
-        },
-        {
-          "name": "Jack Pfiester",
-          "role": "SP",
-          "war": 4.4,
-          "hp": 88,
-          "maxHp": 88,
-          "stf": 85,
-          "ctl": 69,
-          "mov": 89,
-          "sta": 71,
-          "ovr": 80,
-          "rarity": "Epic"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1907": {
@@ -5941,9 +6235,7 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
-      }
-    ],
-    "mid": [
+      },
       {
         "id": "story_1907_BRO",
         "name": "1907 Brooklyn Superbas",
@@ -5992,7 +6284,9 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
-      },
+      }
+    ],
+    "mid": [
       {
         "id": "story_1907_SLA",
         "name": "1907 St. Louis Browns",
@@ -6237,9 +6531,7 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      }
-    ],
-    "high": [
+      },
       {
         "id": "story_1907_CLE",
         "name": "1907 Cleveland Naps",
@@ -6337,7 +6629,9 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      },
+      }
+    ],
+    "high": [
       {
         "id": "story_1907_CHA",
         "name": "1907 Chicago White Sox",
@@ -6631,57 +6925,106 @@ window.OpponentsDatabase = {
             "rarity": "Epic"
           }
         ]
+      },
+      {
+        "id": "story_1907_LEL",
+        "name": "1907 Chicago Leland Giants",
+        "year": 1907,
+        "teamID": "LEL",
+        "win_pct": 1.0,
+        "ovr": 71,
+        "pitchers": [
+          {
+            "name": "Walter Ball",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 90,
+            "maxHp": 90,
+            "stf": 85,
+            "ctl": 125,
+            "mov": 59,
+            "sta": 73,
+            "ovr": 88,
+            "rarity": "Legendary"
+          },
+          {
+            "name": "Rube Foster",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 90,
+            "maxHp": 90,
+            "stf": 59,
+            "ctl": 103,
+            "mov": 59,
+            "sta": 73,
+            "ovr": 74,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Cerrador 1907",
+            "role": "CL",
+            "war": 0.0,
+            "hp": 35,
+            "maxHp": 35,
+            "stf": 50,
+            "ctl": 50,
+            "mov": 50,
+            "sta": 25,
+            "ovr": 50,
+            "rarity": "Uncommon"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1907_LEL",
-      "name": "BOSS: 1907 Chicago Leland Giants",
+      "id": "story_1907_STARS_BOSS",
+      "name": "\ud83d\udc51 1907 STARS",
       "year": 1907,
-      "teamID": "LEL",
+      "teamID": "STARS",
       "win_pct": 1.0,
-      "ovr": 71,
+      "isBoss": true,
+      "ovr": 74,
       "pitchers": [
         {
-          "name": "Walter Ball",
+          "name": "Christy Mathewson",
           "role": "SP",
-          "war": 0.0,
-          "hp": 90,
-          "maxHp": 90,
-          "stf": 85,
-          "ctl": 125,
-          "mov": 59,
-          "sta": 73,
-          "ovr": 88,
-          "rarity": "Legendary"
-        },
-        {
-          "name": "Rube Foster",
-          "role": "SP",
-          "war": 0.0,
-          "hp": 90,
-          "maxHp": 90,
-          "stf": 59,
-          "ctl": 103,
-          "mov": 59,
-          "sta": 73,
-          "ovr": 74,
+          "war": 8.6,
+          "hp": 88,
+          "maxHp": 88,
+          "stf": 77,
+          "ctl": 89,
+          "mov": 62,
+          "sta": 71,
+          "ovr": 75,
           "rarity": "Epic"
         },
         {
-          "name": "Cerrador 1907",
-          "role": "CL",
-          "war": 0.0,
-          "hp": 35,
-          "maxHp": 35,
-          "stf": 50,
-          "ctl": 50,
-          "mov": 50,
-          "sta": 25,
-          "ovr": 50,
-          "rarity": "Uncommon"
+          "name": "Ed Walsh",
+          "role": "SP",
+          "war": 7.7,
+          "hp": 90,
+          "maxHp": 90,
+          "stf": 65,
+          "ctl": 80,
+          "mov": 80,
+          "sta": 74,
+          "ovr": 75,
+          "rarity": "Epic"
+        },
+        {
+          "name": "Cy Young",
+          "role": "SP",
+          "war": 7.6,
+          "hp": 91,
+          "maxHp": 91,
+          "stf": 56,
+          "ctl": 94,
+          "mov": 67,
+          "sta": 75,
+          "ovr": 73,
+          "rarity": "Epic"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1908": {
@@ -7621,57 +7964,106 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
+      },
+      {
+        "id": "story_1908_LEL",
+        "name": "1908 Chicago Leland Giants",
+        "year": 1908,
+        "teamID": "LEL",
+        "win_pct": 0.682,
+        "ovr": 49,
+        "pitchers": [
+          {
+            "name": "Rube Foster",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 90,
+            "maxHp": 90,
+            "stf": 64,
+            "ctl": 49,
+            "mov": 49,
+            "sta": 73,
+            "ovr": 56,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Walter Ball",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 90,
+            "maxHp": 90,
+            "stf": 37,
+            "ctl": 46,
+            "mov": 59,
+            "sta": 74,
+            "ovr": 50,
+            "rarity": "Uncommon"
+          },
+          {
+            "name": "William Dewberry",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 85,
+            "maxHp": 85,
+            "stf": 40,
+            "ctl": 15,
+            "mov": 59,
+            "sta": 67,
+            "ovr": 41,
+            "rarity": "Common"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1908_LEL",
-      "name": "BOSS: 1908 Chicago Leland Giants",
+      "id": "story_1908_STARS_BOSS",
+      "name": "\ud83d\udc51 1908 STARS",
       "year": 1908,
-      "teamID": "LEL",
-      "win_pct": 0.682,
-      "ovr": 49,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 90,
       "pitchers": [
         {
-          "name": "Rube Foster",
+          "name": "Christy Mathewson",
           "role": "SP",
-          "war": 0.0,
+          "war": 11.8,
+          "hp": 89,
+          "maxHp": 89,
+          "stf": 93,
+          "ctl": 104,
+          "mov": 86,
+          "sta": 72,
+          "ovr": 92,
+          "rarity": "Legendary"
+        },
+        {
+          "name": "Ed Walsh",
+          "role": "SP",
+          "war": 10.3,
+          "hp": 92,
+          "maxHp": 92,
+          "stf": 80,
+          "ctl": 100,
+          "mov": 89,
+          "sta": 76,
+          "ovr": 88,
+          "rarity": "Legendary"
+        },
+        {
+          "name": "Cy Young",
+          "role": "SP",
+          "war": 9.4,
           "hp": 90,
           "maxHp": 90,
-          "stf": 64,
-          "ctl": 49,
-          "mov": 49,
+          "stf": 68,
+          "ctl": 100,
+          "mov": 106,
           "sta": 73,
-          "ovr": 56,
-          "rarity": "Rare"
-        },
-        {
-          "name": "Walter Ball",
-          "role": "SP",
-          "war": 0.0,
-          "hp": 90,
-          "maxHp": 90,
-          "stf": 37,
-          "ctl": 46,
-          "mov": 59,
-          "sta": 74,
-          "ovr": 50,
-          "rarity": "Uncommon"
-        },
-        {
-          "name": "William Dewberry",
-          "role": "SP",
-          "war": 0.0,
-          "hp": 85,
-          "maxHp": 85,
-          "stf": 40,
-          "ctl": 15,
-          "mov": 59,
-          "sta": 67,
-          "ovr": 41,
-          "rarity": "Common"
+          "ovr": 89,
+          "rarity": "Legendary"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1909": {
@@ -8709,57 +9101,106 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
+      },
+      {
+        "id": "story_1909_SPG",
+        "name": "1909 St. Paul Gophers",
+        "year": 1909,
+        "teamID": "SPG",
+        "win_pct": 0.846,
+        "ovr": 58,
+        "pitchers": [
+          {
+            "name": "Steel Arm Johnny Taylor",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 99,
+            "maxHp": 99,
+            "stf": 70,
+            "ctl": 85,
+            "mov": 48,
+            "sta": 85,
+            "ovr": 69,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Johnny Davis",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 80,
+            "maxHp": 80,
+            "stf": 34,
+            "ctl": 60,
+            "mov": 43,
+            "sta": 60,
+            "ovr": 47,
+            "rarity": "Uncommon"
+          },
+          {
+            "name": "Julius London",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 75,
+            "maxHp": 75,
+            "stf": 83,
+            "ctl": 33,
+            "mov": 59,
+            "sta": 53,
+            "ovr": 58,
+            "rarity": "Rare"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1909_SPG",
-      "name": "BOSS: 1909 St. Paul Gophers",
+      "id": "story_1909_STARS_BOSS",
+      "name": "\ud83d\udc51 1909 STARS",
       "year": 1909,
-      "teamID": "SPG",
-      "win_pct": 0.846,
-      "ovr": 58,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 82,
       "pitchers": [
         {
-          "name": "Steel Arm Johnny Taylor",
+          "name": "Christy Mathewson",
           "role": "SP",
-          "war": 0.0,
-          "hp": 99,
-          "maxHp": 99,
-          "stf": 70,
-          "ctl": 85,
-          "mov": 48,
-          "sta": 85,
-          "ovr": 69,
-          "rarity": "Rare"
+          "war": 9.7,
+          "hp": 87,
+          "maxHp": 87,
+          "stf": 74,
+          "ctl": 98,
+          "mov": 113,
+          "sta": 69,
+          "ovr": 92,
+          "rarity": "Legendary"
         },
         {
-          "name": "Johnny Davis",
+          "name": "Mordecai Brown",
           "role": "SP",
-          "war": 0.0,
-          "hp": 80,
-          "maxHp": 80,
-          "stf": 34,
-          "ctl": 60,
-          "mov": 43,
-          "sta": 60,
-          "ovr": 47,
-          "rarity": "Uncommon"
+          "war": 9.5,
+          "hp": 95,
+          "maxHp": 95,
+          "stf": 68,
+          "ctl": 92,
+          "mov": 105,
+          "sta": 80,
+          "ovr": 88,
+          "rarity": "Legendary"
         },
         {
-          "name": "Julius London",
+          "name": "Nap Rucker",
           "role": "SP",
-          "war": 0.0,
-          "hp": 75,
-          "maxHp": 75,
-          "stf": 83,
-          "ctl": 33,
-          "mov": 59,
-          "sta": 53,
-          "ovr": 58,
+          "war": 7.6,
+          "hp": 91,
+          "maxHp": 91,
+          "stf": 91,
+          "ctl": 50,
+          "mov": 57,
+          "sta": 75,
+          "ovr": 67,
           "rarity": "Rare"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1910": {
@@ -9944,57 +10385,106 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
+      },
+      {
+        "id": "story_1910_LEL",
+        "name": "1910 Chicago Leland Giants",
+        "year": 1910,
+        "teamID": "LEL",
+        "win_pct": 0.917,
+        "ovr": 74,
+        "pitchers": [
+          {
+            "name": "Frank Wickware",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 94,
+            "maxHp": 94,
+            "stf": 99,
+            "ctl": 96,
+            "mov": 50,
+            "sta": 79,
+            "ovr": 81,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Charles Dougherty",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 88,
+            "maxHp": 88,
+            "stf": 119,
+            "ctl": 44,
+            "mov": 47,
+            "sta": 71,
+            "ovr": 70,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Rube Foster",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 94,
+            "maxHp": 94,
+            "stf": 67,
+            "ctl": 99,
+            "mov": 48,
+            "sta": 79,
+            "ovr": 72,
+            "rarity": "Epic"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1910_LEL",
-      "name": "BOSS: 1910 Chicago Leland Giants",
+      "id": "story_1910_STARS_BOSS",
+      "name": "\ud83d\udc51 1910 STARS",
       "year": 1910,
-      "teamID": "LEL",
-      "win_pct": 0.917,
-      "ovr": 74,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 91,
       "pitchers": [
         {
-          "name": "Frank Wickware",
+          "name": "Russ Ford",
           "role": "SP",
-          "war": 0.0,
-          "hp": 94,
-          "maxHp": 94,
-          "stf": 99,
-          "ctl": 96,
-          "mov": 50,
-          "sta": 79,
-          "ovr": 81,
+          "war": 11.4,
+          "hp": 90,
+          "maxHp": 90,
+          "stf": 98,
+          "ctl": 73,
+          "mov": 81,
+          "sta": 74,
+          "ovr": 83,
           "rarity": "Epic"
         },
         {
-          "name": "Charles Dougherty",
+          "name": "Ed Walsh",
           "role": "SP",
-          "war": 0.0,
-          "hp": 88,
-          "maxHp": 88,
-          "stf": 119,
-          "ctl": 44,
-          "mov": 47,
-          "sta": 71,
-          "ovr": 70,
-          "rarity": "Epic"
+          "war": 11.1,
+          "hp": 96,
+          "maxHp": 96,
+          "stf": 98,
+          "ctl": 90,
+          "mov": 95,
+          "sta": 81,
+          "ovr": 93,
+          "rarity": "Legendary"
         },
         {
-          "name": "Rube Foster",
+          "name": "Walter Johnson",
           "role": "SP",
-          "war": 0.0,
-          "hp": 94,
-          "maxHp": 94,
-          "stf": 67,
-          "ctl": 99,
-          "mov": 48,
-          "sta": 79,
-          "ovr": 72,
-          "rarity": "Epic"
+          "war": 10.4,
+          "hp": 89,
+          "maxHp": 89,
+          "stf": 122,
+          "ctl": 80,
+          "mov": 100,
+          "sta": 72,
+          "ovr": 98,
+          "rarity": "Legendary"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1911": {
@@ -11228,57 +11718,106 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
+      },
+      {
+        "id": "story_1911_CAG",
+        "name": "1911 Chicago American Giants",
+        "year": 1911,
+        "teamID": "CAG",
+        "win_pct": 0.7,
+        "ovr": 70,
+        "pitchers": [
+          {
+            "name": "Charles Dougherty",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 88,
+            "maxHp": 88,
+            "stf": 90,
+            "ctl": 52,
+            "mov": 59,
+            "sta": 70,
+            "ovr": 67,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Frank Wickware",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 90,
+            "maxHp": 90,
+            "stf": 115,
+            "ctl": 42,
+            "mov": 59,
+            "sta": 74,
+            "ovr": 72,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Rube Foster",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 101,
+            "maxHp": 101,
+            "stf": 80,
+            "ctl": 78,
+            "mov": 49,
+            "sta": 88,
+            "ovr": 71,
+            "rarity": "Epic"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1911_CAG",
-      "name": "BOSS: 1911 Chicago American Giants",
+      "id": "story_1911_STARS_BOSS",
+      "name": "\ud83d\udc51 1911 STARS",
       "year": 1911,
-      "teamID": "CAG",
-      "win_pct": 0.7,
-      "ovr": 70,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 74,
       "pitchers": [
         {
-          "name": "Charles Dougherty",
+          "name": "Ed Walsh",
           "role": "SP",
-          "war": 0.0,
-          "hp": 88,
-          "maxHp": 88,
-          "stf": 90,
-          "ctl": 52,
-          "mov": 59,
-          "sta": 70,
-          "ovr": 67,
-          "rarity": "Rare"
+          "war": 9.2,
+          "hp": 94,
+          "maxHp": 94,
+          "stf": 97,
+          "ctl": 82,
+          "mov": 75,
+          "sta": 79,
+          "ovr": 84,
+          "rarity": "Epic"
         },
         {
-          "name": "Frank Wickware",
+          "name": "Vean Gregg",
           "role": "SP",
-          "war": 0.0,
-          "hp": 90,
-          "maxHp": 90,
-          "stf": 115,
-          "ctl": 42,
-          "mov": 59,
-          "sta": 74,
+          "war": 8.8,
+          "hp": 92,
+          "maxHp": 92,
+          "stf": 69,
+          "ctl": 48,
+          "mov": 99,
+          "sta": 76,
           "ovr": 72,
           "rarity": "Epic"
         },
         {
-          "name": "Rube Foster",
+          "name": "Nap Rucker",
           "role": "SP",
-          "war": 0.0,
-          "hp": 101,
-          "maxHp": 101,
-          "stf": 80,
-          "ctl": 78,
-          "mov": 49,
-          "sta": 88,
-          "ovr": 71,
-          "rarity": "Epic"
+          "war": 8.6,
+          "hp": 93,
+          "maxHp": 93,
+          "stf": 83,
+          "ctl": 48,
+          "mov": 59,
+          "sta": 77,
+          "ovr": 65,
+          "rarity": "Rare"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1912": {
@@ -12365,16 +12904,92 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
+      },
+      {
+        "id": "story_1912_BOS",
+        "name": "1912 Boston Red Sox",
+        "year": 1912,
+        "teamID": "BOS",
+        "win_pct": 0.691,
+        "ovr": 71,
+        "pitchers": [
+          {
+            "name": "Smoky Joe Wood",
+            "role": "SP",
+            "war": 10.2,
+            "hp": 90,
+            "maxHp": 90,
+            "stf": 107,
+            "ctl": 72,
+            "mov": 95,
+            "sta": 73,
+            "ovr": 90,
+            "rarity": "Legendary"
+          },
+          {
+            "name": "Ray Collins",
+            "role": "SP",
+            "war": 5.6,
+            "hp": 87,
+            "maxHp": 87,
+            "stf": 53,
+            "ctl": 78,
+            "mov": 66,
+            "sta": 69,
+            "ovr": 66,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Buck O'Brien",
+            "role": "SP",
+            "war": 5.3,
+            "hp": 85,
+            "maxHp": 85,
+            "stf": 54,
+            "ctl": 50,
+            "mov": 67,
+            "sta": 67,
+            "ovr": 58,
+            "rarity": "Rare"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1912_BOS",
-      "name": "BOSS: 1912 Boston Red Sox",
+      "id": "story_1912_STARS_BOSS",
+      "name": "\ud83d\udc51 1912 STARS",
       "year": 1912,
-      "teamID": "BOS",
-      "win_pct": 0.691,
-      "ovr": 71,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 90,
       "pitchers": [
+        {
+          "name": "Walter Johnson",
+          "role": "SP",
+          "war": 14.2,
+          "hp": 94,
+          "maxHp": 94,
+          "stf": 118,
+          "ctl": 80,
+          "mov": 115,
+          "sta": 79,
+          "ovr": 102,
+          "rarity": "Legendary"
+        },
+        {
+          "name": "Ed Walsh",
+          "role": "SP",
+          "war": 12.0,
+          "hp": 93,
+          "maxHp": 93,
+          "stf": 90,
+          "ctl": 71,
+          "mov": 75,
+          "sta": 77,
+          "ovr": 78,
+          "rarity": "Epic"
+        },
         {
           "name": "Smoky Joe Wood",
           "role": "SP",
@@ -12387,35 +13002,8 @@ window.OpponentsDatabase = {
           "sta": 73,
           "ovr": 90,
           "rarity": "Legendary"
-        },
-        {
-          "name": "Ray Collins",
-          "role": "SP",
-          "war": 5.6,
-          "hp": 87,
-          "maxHp": 87,
-          "stf": 53,
-          "ctl": 78,
-          "mov": 66,
-          "sta": 69,
-          "ovr": 66,
-          "rarity": "Rare"
-        },
-        {
-          "name": "Buck O'Brien",
-          "role": "SP",
-          "war": 5.3,
-          "hp": 85,
-          "maxHp": 85,
-          "stf": 54,
-          "ctl": 50,
-          "mov": 67,
-          "sta": 67,
-          "ovr": 58,
-          "rarity": "Rare"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1913": {
@@ -12763,9 +13351,7 @@ window.OpponentsDatabase = {
             "rarity": "Epic"
           }
         ]
-      }
-    ],
-    "mid": [
+      },
       {
         "id": "story_1913_BSN",
         "name": "1913 Boston Braves",
@@ -12814,7 +13400,9 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      },
+      }
+    ],
+    "mid": [
       {
         "id": "story_1913_MOH",
         "name": "1913 Schenectady Mohawk Giants",
@@ -13108,9 +13696,7 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      }
-    ],
-    "high": [
+      },
       {
         "id": "story_1913_BRG",
         "name": "1913 Brooklyn Royal Giants",
@@ -13208,7 +13794,9 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      },
+      }
+    ],
+    "high": [
       {
         "id": "story_1913_CHN",
         "name": "1913 Chicago Cubs",
@@ -13551,57 +14139,106 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
+      },
+      {
+        "id": "story_1913_NLG",
+        "name": "1913 New York Lincoln Giants",
+        "year": 1913,
+        "teamID": "NLG",
+        "win_pct": 0.727,
+        "ovr": 59,
+        "pitchers": [
+          {
+            "name": "Joe Williams",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 90,
+            "maxHp": 90,
+            "stf": 97,
+            "ctl": 70,
+            "mov": 51,
+            "sta": 74,
+            "ovr": 73,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Lee Wade",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 86,
+            "maxHp": 86,
+            "stf": 32,
+            "ctl": 63,
+            "mov": 59,
+            "sta": 68,
+            "ovr": 53,
+            "rarity": "Uncommon"
+          },
+          {
+            "name": "Dick Redding",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 118,
+            "maxHp": 118,
+            "stf": 12,
+            "ctl": 80,
+            "mov": 40,
+            "sta": 110,
+            "ovr": 51,
+            "rarity": "Uncommon"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1913_NLG",
-      "name": "BOSS: 1913 New York Lincoln Giants",
+      "id": "story_1913_STARS_BOSS",
+      "name": "\ud83d\udc51 1913 STARS",
       "year": 1913,
-      "teamID": "NLG",
-      "win_pct": 0.727,
-      "ovr": 59,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 81,
       "pitchers": [
         {
-          "name": "Joe Williams",
+          "name": "Walter Johnson",
           "role": "SP",
-          "war": 0.0,
-          "hp": 90,
-          "maxHp": 90,
-          "stf": 97,
-          "ctl": 70,
-          "mov": 51,
-          "sta": 74,
-          "ovr": 73,
+          "war": 15.2,
+          "hp": 93,
+          "maxHp": 93,
+          "stf": 99,
+          "ctl": 103,
+          "mov": 108,
+          "sta": 77,
+          "ovr": 101,
+          "rarity": "Legendary"
+        },
+        {
+          "name": "Reb Russell",
+          "role": "SP",
+          "war": 9.3,
+          "hp": 89,
+          "maxHp": 89,
+          "stf": 49,
+          "ctl": 69,
+          "mov": 82,
+          "sta": 72,
+          "ovr": 67,
+          "rarity": "Rare"
+        },
+        {
+          "name": "Babe Adams",
+          "role": "SP",
+          "war": 8.4,
+          "hp": 88,
+          "maxHp": 88,
+          "stf": 61,
+          "ctl": 92,
+          "mov": 69,
+          "sta": 70,
+          "ovr": 74,
           "rarity": "Epic"
-        },
-        {
-          "name": "Lee Wade",
-          "role": "SP",
-          "war": 0.0,
-          "hp": 86,
-          "maxHp": 86,
-          "stf": 32,
-          "ctl": 63,
-          "mov": 59,
-          "sta": 68,
-          "ovr": 53,
-          "rarity": "Uncommon"
-        },
-        {
-          "name": "Dick Redding",
-          "role": "SP",
-          "war": 0.0,
-          "hp": 118,
-          "maxHp": 118,
-          "stf": 12,
-          "ctl": 80,
-          "mov": 40,
-          "sta": 110,
-          "ovr": 51,
-          "rarity": "Uncommon"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1914": {
@@ -14047,9 +14684,7 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      }
-    ],
-    "mid": [
+      },
       {
         "id": "story_1914_SLA",
         "name": "1914 St. Louis Browns",
@@ -14098,7 +14733,9 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
-      },
+      }
+    ],
+    "mid": [
       {
         "id": "story_1914_PHI",
         "name": "1914 Philadelphia Phillies",
@@ -14490,9 +15127,7 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      }
-    ],
-    "high": [
+      },
       {
         "id": "story_1914_CSH",
         "name": "1914 Cuban Stars of Havana",
@@ -14590,7 +15225,9 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      },
+      }
+    ],
+    "high": [
       {
         "id": "story_1914_BLF",
         "name": "1914 Baltimore Terrapins",
@@ -15031,57 +15668,106 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
+      },
+      {
+        "id": "story_1914_NLS",
+        "name": "1914 New York Lincoln Stars",
+        "year": 1914,
+        "teamID": "NLS",
+        "win_pct": 1.0,
+        "ovr": 74,
+        "pitchers": [
+          {
+            "name": "Ad Lankford",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 82,
+            "maxHp": 82,
+            "stf": 103,
+            "ctl": 74,
+            "mov": 59,
+            "sta": 62,
+            "ovr": 77,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Walter Ball",
+            "role": "RP",
+            "war": 0.0,
+            "hp": 45,
+            "maxHp": 45,
+            "stf": 74,
+            "ctl": 108,
+            "mov": 59,
+            "sta": 35,
+            "ovr": 76,
+            "rarity": "Epic"
+          },
+          {
+            "name": "B. Brown",
+            "role": "RP",
+            "war": 0.0,
+            "hp": 45,
+            "maxHp": 45,
+            "stf": 114,
+            "ctl": 44,
+            "mov": 59,
+            "sta": 35,
+            "ovr": 69,
+            "rarity": "Rare"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1914_NLS",
-      "name": "BOSS: 1914 New York Lincoln Stars",
+      "id": "story_1914_STARS_BOSS",
+      "name": "\ud83d\udc51 1914 STARS",
       "year": 1914,
-      "teamID": "NLS",
+      "teamID": "STARS",
       "win_pct": 1.0,
-      "ovr": 74,
+      "isBoss": true,
+      "ovr": 83,
       "pitchers": [
         {
-          "name": "Ad Lankford",
+          "name": "Walter Johnson",
           "role": "SP",
-          "war": 0.0,
-          "hp": 82,
-          "maxHp": 82,
-          "stf": 103,
-          "ctl": 74,
-          "mov": 59,
-          "sta": 62,
-          "ovr": 77,
+          "war": 12.0,
+          "hp": 91,
+          "maxHp": 91,
+          "stf": 84,
+          "ctl": 81,
+          "mov": 86,
+          "sta": 75,
+          "ovr": 83,
           "rarity": "Epic"
         },
         {
-          "name": "Walter Ball",
-          "role": "RP",
-          "war": 0.0,
-          "hp": 45,
-          "maxHp": 45,
-          "stf": 74,
-          "ctl": 108,
-          "mov": 59,
-          "sta": 35,
-          "ovr": 76,
-          "rarity": "Epic"
+          "name": "Dutch Leonard",
+          "role": "SP",
+          "war": 9.7,
+          "hp": 90,
+          "maxHp": 90,
+          "stf": 112,
+          "ctl": 65,
+          "mov": 110,
+          "sta": 73,
+          "ovr": 93,
+          "rarity": "Legendary"
         },
         {
-          "name": "B. Brown",
-          "role": "RP",
-          "war": 0.0,
-          "hp": 45,
-          "maxHp": 45,
-          "stf": 114,
-          "ctl": 44,
-          "mov": 59,
-          "sta": 35,
-          "ovr": 69,
-          "rarity": "Rare"
+          "name": "Pete Alexander",
+          "role": "SP",
+          "war": 8.9,
+          "hp": 90,
+          "maxHp": 90,
+          "stf": 83,
+          "ctl": 78,
+          "mov": 60,
+          "sta": 74,
+          "ovr": 74,
+          "rarity": "Epic"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1915": {
@@ -15527,9 +16213,7 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
-      }
-    ],
-    "mid": [
+      },
       {
         "id": "story_1915_SLN",
         "name": "1915 St. Louis Cardinals",
@@ -15578,7 +16262,9 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
-      },
+      }
+    ],
+    "mid": [
       {
         "id": "story_1915_PIT",
         "name": "1915 Pittsburgh Pirates",
@@ -15970,9 +16656,7 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
-      }
-    ],
-    "high": [
+      },
       {
         "id": "story_1915_BSN",
         "name": "1915 Boston Braves",
@@ -16070,7 +16754,9 @@ window.OpponentsDatabase = {
             "rarity": "Epic"
           }
         ]
-      },
+      }
+    ],
+    "high": [
       {
         "id": "story_1915_PTF",
         "name": "1915 Pittsburgh Rebels",
@@ -16511,57 +17197,106 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
+      },
+      {
+        "id": "story_1915_NLG",
+        "name": "1915 New York Lincoln Giants",
+        "year": 1915,
+        "teamID": "NLG",
+        "win_pct": 0.739,
+        "ovr": 65,
+        "pitchers": [
+          {
+            "name": "Ad Lankford",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 95,
+            "maxHp": 95,
+            "stf": 72,
+            "ctl": 51,
+            "mov": 48,
+            "sta": 80,
+            "ovr": 59,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Joe Williams",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 91,
+            "maxHp": 91,
+            "stf": 85,
+            "ctl": 86,
+            "mov": 59,
+            "sta": 75,
+            "ovr": 76,
+            "rarity": "Epic"
+          },
+          {
+            "name": "F. Banks",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 72,
+            "maxHp": 72,
+            "stf": 53,
+            "ctl": 67,
+            "mov": 59,
+            "sta": 50,
+            "ovr": 59,
+            "rarity": "Rare"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1915_NLG",
-      "name": "BOSS: 1915 New York Lincoln Giants",
+      "id": "story_1915_STARS_BOSS",
+      "name": "\ud83d\udc51 1915 STARS",
       "year": 1915,
-      "teamID": "NLG",
-      "win_pct": 0.739,
-      "ovr": 65,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 86,
       "pitchers": [
         {
-          "name": "Ad Lankford",
+          "name": "Walter Johnson",
           "role": "SP",
-          "war": 0.0,
-          "hp": 95,
-          "maxHp": 95,
-          "stf": 72,
-          "ctl": 51,
-          "mov": 48,
-          "sta": 80,
-          "ovr": 59,
-          "rarity": "Rare"
+          "war": 11.9,
+          "hp": 88,
+          "maxHp": 88,
+          "stf": 83,
+          "ctl": 89,
+          "mov": 104,
+          "sta": 71,
+          "ovr": 90,
+          "rarity": "Legendary"
         },
         {
-          "name": "Joe Williams",
+          "name": "Pete Alexander",
           "role": "SP",
-          "war": 0.0,
-          "hp": 91,
-          "maxHp": 91,
-          "stf": 85,
-          "ctl": 86,
-          "mov": 59,
-          "sta": 75,
-          "ovr": 76,
+          "war": 11.0,
+          "hp": 90,
+          "maxHp": 90,
+          "stf": 89,
+          "ctl": 88,
+          "mov": 113,
+          "sta": 73,
+          "ovr": 94,
+          "rarity": "Legendary"
+        },
+        {
+          "name": "Dave Davenport",
+          "role": "SP",
+          "war": 8.7,
+          "hp": 88,
+          "maxHp": 88,
+          "stf": 80,
+          "ctl": 70,
+          "mov": 73,
+          "sta": 70,
+          "ovr": 74,
           "rarity": "Epic"
-        },
-        {
-          "name": "F. Banks",
-          "role": "SP",
-          "war": 0.0,
-          "hp": 72,
-          "maxHp": 72,
-          "stf": 53,
-          "ctl": 67,
-          "mov": 59,
-          "sta": 50,
-          "ovr": 59,
-          "rarity": "Rare"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1916": {
@@ -16909,9 +17644,7 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      }
-    ],
-    "mid": [
+      },
       {
         "id": "story_1916_CHN",
         "name": "1916 Chicago Cubs",
@@ -16960,7 +17693,9 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      },
+      }
+    ],
+    "mid": [
       {
         "id": "story_1916_WS1",
         "name": "1916 Washington Senators",
@@ -17254,9 +17989,7 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      }
-    ],
-    "high": [
+      },
       {
         "id": "story_1916_DET",
         "name": "1916 Detroit Tigers",
@@ -17354,7 +18087,9 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      },
+      }
+    ],
+    "high": [
       {
         "id": "story_1916_CHA",
         "name": "1916 Chicago White Sox",
@@ -17697,57 +18432,106 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
+      },
+      {
+        "id": "story_1916_NLG",
+        "name": "1916 New York Lincoln Giants",
+        "year": 1916,
+        "teamID": "NLG",
+        "win_pct": 0.636,
+        "ovr": 58,
+        "pitchers": [
+          {
+            "name": "Dick Redding",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 95,
+            "maxHp": 95,
+            "stf": 86,
+            "ctl": 60,
+            "mov": 50,
+            "sta": 80,
+            "ovr": 67,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Joe Williams",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 97,
+            "maxHp": 97,
+            "stf": 80,
+            "ctl": 64,
+            "mov": 50,
+            "sta": 83,
+            "ovr": 66,
+            "rarity": "Rare"
+          },
+          {
+            "name": "F. Banks",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 72,
+            "maxHp": 72,
+            "stf": 38,
+            "ctl": 24,
+            "mov": 59,
+            "sta": 49,
+            "ovr": 41,
+            "rarity": "Common"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1916_NLG",
-      "name": "BOSS: 1916 New York Lincoln Giants",
+      "id": "story_1916_STARS_BOSS",
+      "name": "\ud83d\udc51 1916 STARS",
       "year": 1916,
-      "teamID": "NLG",
-      "win_pct": 0.636,
-      "ovr": 58,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 77,
       "pitchers": [
         {
-          "name": "Dick Redding",
+          "name": "Pete Alexander",
           "role": "SP",
-          "war": 0.0,
-          "hp": 95,
-          "maxHp": 95,
+          "war": 11.0,
+          "hp": 88,
+          "maxHp": 88,
+          "stf": 56,
+          "ctl": 98,
+          "mov": 87,
+          "sta": 71,
+          "ovr": 79,
+          "rarity": "Epic"
+        },
+        {
+          "name": "Walter Johnson",
+          "role": "SP",
+          "war": 10.3,
+          "hp": 94,
+          "maxHp": 94,
           "stf": 86,
-          "ctl": 60,
-          "mov": 50,
-          "sta": 80,
-          "ovr": 67,
-          "rarity": "Rare"
+          "ctl": 76,
+          "mov": 84,
+          "sta": 78,
+          "ovr": 82,
+          "rarity": "Epic"
         },
         {
-          "name": "Joe Williams",
+          "name": "Babe Ruth",
           "role": "SP",
-          "war": 0.0,
-          "hp": 97,
-          "maxHp": 97,
-          "stf": 80,
-          "ctl": 64,
-          "mov": 50,
-          "sta": 83,
-          "ovr": 66,
+          "war": 8.8,
+          "hp": 84,
+          "maxHp": 84,
+          "stf": 71,
+          "ctl": 47,
+          "mov": 89,
+          "sta": 66,
+          "ovr": 69,
           "rarity": "Rare"
-        },
-        {
-          "name": "F. Banks",
-          "role": "SP",
-          "war": 0.0,
-          "hp": 72,
-          "maxHp": 72,
-          "stf": 38,
-          "ctl": 24,
-          "mov": 59,
-          "sta": 49,
-          "ovr": 41,
-          "rarity": "Common"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1917": {
@@ -18785,57 +19569,106 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
+      },
+      {
+        "id": "story_1917_CAG",
+        "name": "1917 Chicago American Giants",
+        "year": 1917,
+        "teamID": "CAG",
+        "win_pct": 0.778,
+        "ovr": 63,
+        "pitchers": [
+          {
+            "name": "Dick Redding",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 93,
+            "maxHp": 93,
+            "stf": 102,
+            "ctl": 60,
+            "mov": 59,
+            "sta": 77,
+            "ovr": 74,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Tom Williams",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 90,
+            "maxHp": 90,
+            "stf": 59,
+            "ctl": 74,
+            "mov": 50,
+            "sta": 73,
+            "ovr": 62,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Tom Johnson",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 86,
+            "maxHp": 86,
+            "stf": 50,
+            "ctl": 48,
+            "mov": 51,
+            "sta": 68,
+            "ovr": 52,
+            "rarity": "Uncommon"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1917_CAG",
-      "name": "BOSS: 1917 Chicago American Giants",
+      "id": "story_1917_STARS_BOSS",
+      "name": "\ud83d\udc51 1917 STARS",
       "year": 1917,
-      "teamID": "CAG",
-      "win_pct": 0.778,
-      "ovr": 63,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 74,
       "pitchers": [
         {
-          "name": "Dick Redding",
+          "name": "Eddie Cicotte",
           "role": "SP",
-          "war": 0.0,
-          "hp": 93,
-          "maxHp": 93,
-          "stf": 102,
-          "ctl": 60,
-          "mov": 59,
-          "sta": 77,
-          "ovr": 74,
+          "war": 11.9,
+          "hp": 94,
+          "maxHp": 94,
+          "stf": 57,
+          "ctl": 81,
+          "mov": 93,
+          "sta": 79,
+          "ovr": 77,
           "rarity": "Epic"
         },
         {
-          "name": "Tom Williams",
+          "name": "Pete Alexander",
           "role": "SP",
-          "war": 0.0,
-          "hp": 90,
-          "maxHp": 90,
-          "stf": 59,
-          "ctl": 74,
-          "mov": 50,
-          "sta": 73,
-          "ovr": 62,
-          "rarity": "Rare"
+          "war": 9.2,
+          "hp": 89,
+          "maxHp": 89,
+          "stf": 70,
+          "ctl": 95,
+          "mov": 79,
+          "sta": 72,
+          "ovr": 80,
+          "rarity": "Epic"
         },
         {
-          "name": "Tom Johnson",
+          "name": "Stan Coveleski",
           "role": "SP",
-          "war": 0.0,
+          "war": 8.5,
           "hp": 86,
           "maxHp": 86,
-          "stf": 50,
-          "ctl": 48,
-          "mov": 51,
+          "stf": 59,
+          "ctl": 53,
+          "mov": 80,
           "sta": 68,
-          "ovr": 52,
-          "rarity": "Uncommon"
+          "ovr": 64,
+          "rarity": "Rare"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1918": {
@@ -19183,9 +20016,7 @@ window.OpponentsDatabase = {
             "rarity": "Common"
           }
         ]
-      }
-    ],
-    "mid": [
+      },
       {
         "id": "story_1918_BRO",
         "name": "1918 Brooklyn Robins",
@@ -19234,7 +20065,9 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
-      },
+      }
+    ],
+    "mid": [
       {
         "id": "story_1918_CHA",
         "name": "1918 Chicago White Sox",
@@ -19528,9 +20361,7 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
-      }
-    ],
-    "high": [
+      },
       {
         "id": "story_1918_CIN",
         "name": "1918 Cincinnati Reds",
@@ -19628,7 +20459,9 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      },
+      }
+    ],
+    "high": [
       {
         "id": "story_1918_NLG",
         "name": "1918 New York Lincoln Giants",
@@ -19971,57 +20804,106 @@ window.OpponentsDatabase = {
             "rarity": "Common"
           }
         ]
+      },
+      {
+        "id": "story_1918_CAG",
+        "name": "1918 Chicago American Giants",
+        "year": 1918,
+        "teamID": "CAG",
+        "win_pct": 0.714,
+        "ovr": 48,
+        "pitchers": [
+          {
+            "name": "Dick Whitworth",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 106,
+            "maxHp": 106,
+            "stf": 60,
+            "ctl": 42,
+            "mov": 50,
+            "sta": 95,
+            "ovr": 55,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Frank Wickware",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 89,
+            "maxHp": 89,
+            "stf": 45,
+            "ctl": 47,
+            "mov": 59,
+            "sta": 72,
+            "ovr": 52,
+            "rarity": "Uncommon"
+          },
+          {
+            "name": "James Field",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 83,
+            "maxHp": 83,
+            "stf": 36,
+            "ctl": 21,
+            "mov": 47,
+            "sta": 64,
+            "ovr": 38,
+            "rarity": "Common"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1918_CAG",
-      "name": "BOSS: 1918 Chicago American Giants",
+      "id": "story_1918_STARS_BOSS",
+      "name": "\ud83d\udc51 1918 STARS",
       "year": 1918,
-      "teamID": "CAG",
-      "win_pct": 0.714,
-      "ovr": 48,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 69,
       "pitchers": [
         {
-          "name": "Dick Whitworth",
+          "name": "Walter Johnson",
           "role": "SP",
-          "war": 0.0,
-          "hp": 106,
-          "maxHp": 106,
-          "stf": 60,
-          "ctl": 42,
-          "mov": 50,
-          "sta": 95,
-          "ovr": 55,
+          "war": 10.4,
+          "hp": 100,
+          "maxHp": 100,
+          "stf": 67,
+          "ctl": 77,
+          "mov": 114,
+          "sta": 87,
+          "ovr": 86,
+          "rarity": "Legendary"
+        },
+        {
+          "name": "Stan Coveleski",
+          "role": "SP",
+          "war": 9.9,
+          "hp": 92,
+          "maxHp": 92,
+          "stf": 33,
+          "ctl": 70,
+          "mov": 88,
+          "sta": 76,
+          "ovr": 65,
           "rarity": "Rare"
         },
         {
-          "name": "Frank Wickware",
+          "name": "Scott Perry",
           "role": "SP",
-          "war": 0.0,
-          "hp": 89,
-          "maxHp": 89,
-          "stf": 45,
-          "ctl": 47,
-          "mov": 59,
-          "sta": 72,
-          "ovr": 52,
-          "rarity": "Uncommon"
-        },
-        {
-          "name": "James Field",
-          "role": "SP",
-          "war": 0.0,
-          "hp": 83,
-          "maxHp": 83,
-          "stf": 36,
-          "ctl": 21,
-          "mov": 47,
-          "sta": 64,
-          "ovr": 38,
-          "rarity": "Common"
+          "war": 8.3,
+          "hp": 91,
+          "maxHp": 91,
+          "stf": 28,
+          "ctl": 49,
+          "mov": 81,
+          "sta": 75,
+          "ovr": 55,
+          "rarity": "Rare"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1919": {
@@ -20369,9 +21251,7 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
-      }
-    ],
-    "mid": [
+      },
       {
         "id": "story_1919_SLA",
         "name": "1919 St. Louis Browns",
@@ -20420,7 +21300,9 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      },
+      }
+    ],
+    "mid": [
       {
         "id": "story_1919_BOS",
         "name": "1919 Boston Red Sox",
@@ -20714,9 +21596,7 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
-      }
-    ],
-    "high": [
+      },
       {
         "id": "story_1919_DET",
         "name": "1919 Detroit Tigers",
@@ -20814,7 +21694,9 @@ window.OpponentsDatabase = {
             "rarity": "Common"
           }
         ]
-      },
+      }
+    ],
+    "high": [
       {
         "id": "story_1919_NYA",
         "name": "1919 New York Yankees",
@@ -21157,57 +22039,106 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
+      },
+      {
+        "id": "story_1919_CIN",
+        "name": "1919 Cincinnati Reds",
+        "year": 1919,
+        "teamID": "CIN",
+        "win_pct": 0.686,
+        "ovr": 60,
+        "pitchers": [
+          {
+            "name": "Dutch Ruether",
+            "role": "SP",
+            "war": 3.9,
+            "hp": 87,
+            "maxHp": 87,
+            "stf": 40,
+            "ctl": 49,
+            "mov": 84,
+            "sta": 69,
+            "ovr": 59,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Slim Sallee",
+            "role": "SP",
+            "war": 3.9,
+            "hp": 85,
+            "maxHp": 85,
+            "stf": 7,
+            "ctl": 108,
+            "mov": 68,
+            "sta": 67,
+            "ovr": 62,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Jimmy Ring",
+            "role": "SP",
+            "war": 3.1,
+            "hp": 96,
+            "maxHp": 96,
+            "stf": 41,
+            "ctl": 62,
+            "mov": 67,
+            "sta": 81,
+            "ovr": 59,
+            "rarity": "Rare"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1919_CIN",
-      "name": "BOSS: 1919 Cincinnati Reds",
+      "id": "story_1919_STARS_BOSS",
+      "name": "\ud83d\udc51 1919 STARS",
       "year": 1919,
-      "teamID": "CIN",
-      "win_pct": 0.686,
-      "ovr": 60,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 82,
       "pitchers": [
         {
-          "name": "Dutch Ruether",
+          "name": "Walter Johnson",
           "role": "SP",
-          "war": 3.9,
-          "hp": 87,
-          "maxHp": 87,
-          "stf": 40,
-          "ctl": 49,
+          "war": 10.8,
+          "hp": 95,
+          "maxHp": 95,
+          "stf": 68,
+          "ctl": 87,
+          "mov": 119,
+          "sta": 80,
+          "ovr": 90,
+          "rarity": "Legendary"
+        },
+        {
+          "name": "Eddie Cicotte",
+          "role": "SP",
+          "war": 9.7,
+          "hp": 88,
+          "maxHp": 88,
+          "stf": 45,
+          "ctl": 91,
+          "mov": 89,
+          "sta": 71,
+          "ovr": 75,
+          "rarity": "Epic"
+        },
+        {
+          "name": "Pete Alexander",
+          "role": "SP",
+          "war": 7.4,
+          "hp": 88,
+          "maxHp": 88,
+          "stf": 70,
+          "ctl": 90,
           "mov": 84,
-          "sta": 69,
-          "ovr": 59,
-          "rarity": "Rare"
-        },
-        {
-          "name": "Slim Sallee",
-          "role": "SP",
-          "war": 3.9,
-          "hp": 85,
-          "maxHp": 85,
-          "stf": 7,
-          "ctl": 108,
-          "mov": 68,
-          "sta": 67,
-          "ovr": 62,
-          "rarity": "Rare"
-        },
-        {
-          "name": "Jimmy Ring",
-          "role": "SP",
-          "war": 3.1,
-          "hp": 96,
-          "maxHp": 96,
-          "stf": 41,
-          "ctl": 62,
-          "mov": 67,
-          "sta": 81,
-          "ovr": 59,
-          "rarity": "Rare"
+          "sta": 71,
+          "ovr": 80,
+          "rarity": "Epic"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1920": {
@@ -22588,57 +23519,106 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
+      },
+      {
+        "id": "story_1920_CAG",
+        "name": "1920 Chicago American Giants",
+        "year": 1920,
+        "teamID": "CAG",
+        "win_pct": 0.75,
+        "ovr": 68,
+        "pitchers": [
+          {
+            "name": "Tom Johnson",
+            "role": "SP",
+            "war": 3.2,
+            "hp": 88,
+            "maxHp": 88,
+            "stf": 57,
+            "ctl": 81,
+            "mov": 72,
+            "sta": 71,
+            "ovr": 70,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Tom Williams",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 93,
+            "maxHp": 93,
+            "stf": 55,
+            "ctl": 80,
+            "mov": 56,
+            "sta": 77,
+            "ovr": 65,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Dave Brown",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 94,
+            "maxHp": 94,
+            "stf": 93,
+            "ctl": 55,
+            "mov": 59,
+            "sta": 79,
+            "ovr": 70,
+            "rarity": "Epic"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1920_CAG",
-      "name": "BOSS: 1920 Chicago American Giants",
+      "id": "story_1920_STARS_BOSS",
+      "name": "\ud83d\udc51 1920 STARS",
       "year": 1920,
-      "teamID": "CAG",
-      "win_pct": 0.75,
-      "ovr": 68,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 73,
       "pitchers": [
         {
-          "name": "Tom Johnson",
+          "name": "Pete Alexander",
           "role": "SP",
-          "war": 3.2,
-          "hp": 88,
-          "maxHp": 88,
-          "stf": 57,
-          "ctl": 81,
-          "mov": 72,
-          "sta": 71,
-          "ovr": 70,
+          "war": 12.0,
+          "hp": 92,
+          "maxHp": 92,
+          "stf": 66,
+          "ctl": 91,
+          "mov": 89,
+          "sta": 76,
+          "ovr": 81,
           "rarity": "Epic"
         },
         {
-          "name": "Tom Williams",
+          "name": "Jim Bagby",
           "role": "SP",
-          "war": 0.0,
-          "hp": 93,
-          "maxHp": 93,
-          "stf": 55,
-          "ctl": 80,
-          "mov": 56,
-          "sta": 77,
-          "ovr": 65,
+          "war": 9.0,
+          "hp": 91,
+          "maxHp": 91,
+          "stf": 26,
+          "ctl": 81,
+          "mov": 71,
+          "sta": 75,
+          "ovr": 61,
           "rarity": "Rare"
         },
         {
-          "name": "Dave Brown",
+          "name": "Stan Coveleski",
           "role": "SP",
-          "war": 0.0,
-          "hp": 94,
-          "maxHp": 94,
-          "stf": 93,
-          "ctl": 55,
-          "mov": 59,
-          "sta": 79,
-          "ovr": 70,
+          "war": 8.7,
+          "hp": 88,
+          "maxHp": 88,
+          "stf": 59,
+          "ctl": 87,
+          "mov": 84,
+          "sta": 71,
+          "ovr": 76,
           "rarity": "Epic"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1921": {
@@ -24019,57 +24999,106 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
+      },
+      {
+        "id": "story_1921_CAG",
+        "name": "1921 Chicago American Giants",
+        "year": 1921,
+        "teamID": "CAG",
+        "win_pct": 0.667,
+        "ovr": 69,
+        "pitchers": [
+          {
+            "name": "Otis Starks",
+            "role": "SP",
+            "war": 0.9,
+            "hp": 88,
+            "maxHp": 88,
+            "stf": 65,
+            "ctl": 69,
+            "mov": 43,
+            "sta": 70,
+            "ovr": 60,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Dave Brown",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 94,
+            "maxHp": 94,
+            "stf": 103,
+            "ctl": 84,
+            "mov": 56,
+            "sta": 79,
+            "ovr": 81,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Tom Williams",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 93,
+            "maxHp": 93,
+            "stf": 66,
+            "ctl": 78,
+            "mov": 52,
+            "sta": 77,
+            "ovr": 66,
+            "rarity": "Rare"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1921_CAG",
-      "name": "BOSS: 1921 Chicago American Giants",
+      "id": "story_1921_STARS_BOSS",
+      "name": "\ud83d\udc51 1921 STARS",
       "year": 1921,
-      "teamID": "CAG",
-      "win_pct": 0.667,
-      "ovr": 69,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 70,
       "pitchers": [
         {
-          "name": "Otis Starks",
+          "name": "Red Faber",
           "role": "SP",
-          "war": 0.9,
-          "hp": 88,
-          "maxHp": 88,
-          "stf": 65,
-          "ctl": 69,
-          "mov": 43,
-          "sta": 70,
-          "ovr": 60,
-          "rarity": "Rare"
-        },
-        {
-          "name": "Dave Brown",
-          "role": "SP",
-          "war": 0.0,
-          "hp": 94,
-          "maxHp": 94,
-          "stf": 103,
-          "ctl": 84,
-          "mov": 56,
-          "sta": 79,
-          "ovr": 81,
+          "war": 11.4,
+          "hp": 89,
+          "maxHp": 89,
+          "stf": 53,
+          "ctl": 74,
+          "mov": 89,
+          "sta": 72,
+          "ovr": 72,
           "rarity": "Epic"
         },
         {
-          "name": "Tom Williams",
+          "name": "Urban Shocker",
           "role": "SP",
-          "war": 0.0,
-          "hp": 93,
-          "maxHp": 93,
-          "stf": 66,
-          "ctl": 78,
-          "mov": 52,
-          "sta": 77,
-          "ovr": 66,
+          "war": 8.0,
+          "hp": 90,
+          "maxHp": 90,
+          "stf": 56,
+          "ctl": 74,
+          "mov": 63,
+          "sta": 73,
+          "ovr": 65,
           "rarity": "Rare"
+        },
+        {
+          "name": "Burleigh Grimes",
+          "role": "SP",
+          "war": 7.8,
+          "hp": 90,
+          "maxHp": 90,
+          "stf": 62,
+          "ctl": 77,
+          "mov": 76,
+          "sta": 73,
+          "ovr": 72,
+          "rarity": "Epic"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1922": {
@@ -24515,9 +25544,7 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      }
-    ],
-    "mid": [
+      },
       {
         "id": "story_1922_WS1",
         "name": "1922 Washington Senators",
@@ -24566,7 +25593,9 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
-      },
+      }
+    ],
+    "mid": [
       {
         "id": "story_1922_NYB",
         "name": "1922 New York Bacharach Giants",
@@ -24958,9 +25987,7 @@ window.OpponentsDatabase = {
             "rarity": "Common"
           }
         ]
-      }
-    ],
-    "high": [
+      },
       {
         "id": "story_1922_CSE",
         "name": "1922 Cuban Stars East",
@@ -25058,7 +26085,9 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      },
+      }
+    ],
+    "high": [
       {
         "id": "story_1922_PIT",
         "name": "1922 Pittsburgh Pirates",
@@ -25499,57 +26528,106 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
+      },
+      {
+        "id": "story_1922_CAG",
+        "name": "1922 Chicago American Giants",
+        "year": 1922,
+        "teamID": "CAG",
+        "win_pct": 0.623,
+        "ovr": 64,
+        "pitchers": [
+          {
+            "name": "Juan Padr\u00f3n",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 91,
+            "maxHp": 91,
+            "stf": 67,
+            "ctl": 81,
+            "mov": 54,
+            "sta": 75,
+            "ovr": 68,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Dave Brown",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 102,
+            "maxHp": 102,
+            "stf": 91,
+            "ctl": 53,
+            "mov": 57,
+            "sta": 90,
+            "ovr": 69,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Dick Whitworth",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 94,
+            "maxHp": 94,
+            "stf": 61,
+            "ctl": 40,
+            "mov": 56,
+            "sta": 79,
+            "ovr": 55,
+            "rarity": "Rare"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1922_CAG",
-      "name": "BOSS: 1922 Chicago American Giants",
+      "id": "story_1922_STARS_BOSS",
+      "name": "\ud83d\udc51 1922 STARS",
       "year": 1922,
-      "teamID": "CAG",
-      "win_pct": 0.623,
-      "ovr": 64,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 65,
       "pitchers": [
         {
-          "name": "Juan Padr\u00f3n",
+          "name": "Red Faber",
           "role": "SP",
-          "war": 0.0,
-          "hp": 91,
-          "maxHp": 91,
-          "stf": 67,
-          "ctl": 81,
-          "mov": 54,
-          "sta": 75,
-          "ovr": 68,
-          "rarity": "Rare"
-        },
-        {
-          "name": "Dave Brown",
-          "role": "SP",
-          "war": 0.0,
-          "hp": 102,
-          "maxHp": 102,
-          "stf": 91,
-          "ctl": 53,
-          "mov": 57,
-          "sta": 90,
-          "ovr": 69,
-          "rarity": "Rare"
-        },
-        {
-          "name": "Dick Whitworth",
-          "role": "SP",
-          "war": 0.0,
+          "war": 9.6,
           "hp": 94,
           "maxHp": 94,
-          "stf": 61,
-          "ctl": 40,
-          "mov": 56,
-          "sta": 79,
-          "ovr": 55,
+          "stf": 59,
+          "ctl": 80,
+          "mov": 76,
+          "sta": 78,
+          "ovr": 72,
+          "rarity": "Epic"
+        },
+        {
+          "name": "Eddie Rommel",
+          "role": "SP",
+          "war": 7.5,
+          "hp": 91,
+          "maxHp": 91,
+          "stf": 20,
+          "ctl": 85,
+          "mov": 63,
+          "sta": 75,
+          "ovr": 58,
+          "rarity": "Rare"
+        },
+        {
+          "name": "Bob Shawkey",
+          "role": "SP",
+          "war": 7.3,
+          "hp": 91,
+          "maxHp": 91,
+          "stf": 60,
+          "ctl": 59,
+          "mov": 69,
+          "sta": 75,
+          "ovr": 64,
           "rarity": "Rare"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1923": {
@@ -27077,57 +28155,106 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
+      },
+      {
+        "id": "story_1923_MRS",
+        "name": "1923 Memphis Red Sox",
+        "year": 1923,
+        "teamID": "MRS",
+        "win_pct": 0.682,
+        "ovr": 65,
+        "pitchers": [
+          {
+            "name": "Willie Foster",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 82,
+            "maxHp": 82,
+            "stf": 97,
+            "ctl": 82,
+            "mov": 56,
+            "sta": 62,
+            "ovr": 77,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Square Moore",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 94,
+            "maxHp": 94,
+            "stf": 57,
+            "ctl": 56,
+            "mov": 59,
+            "sta": 78,
+            "ovr": 59,
+            "rarity": "Rare"
+          },
+          {
+            "name": "A. D. Young",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 92,
+            "maxHp": 92,
+            "stf": 62,
+            "ctl": 48,
+            "mov": 59,
+            "sta": 76,
+            "ovr": 58,
+            "rarity": "Rare"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1923_MRS",
-      "name": "BOSS: 1923 Memphis Red Sox",
+      "id": "story_1923_STARS_BOSS",
+      "name": "\ud83d\udc51 1923 STARS",
       "year": 1923,
-      "teamID": "MRS",
-      "win_pct": 0.682,
-      "ovr": 65,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 69,
       "pitchers": [
         {
-          "name": "Willie Foster",
+          "name": "Dolf Luque",
           "role": "SP",
-          "war": 0.0,
-          "hp": 82,
-          "maxHp": 82,
-          "stf": 97,
-          "ctl": 82,
-          "mov": 56,
-          "sta": 62,
-          "ovr": 77,
+          "war": 10.7,
+          "hp": 90,
+          "maxHp": 90,
+          "stf": 65,
+          "ctl": 72,
+          "mov": 110,
+          "sta": 74,
+          "ovr": 82,
           "rarity": "Epic"
         },
         {
-          "name": "Square Moore",
+          "name": "Jimmy Ring",
           "role": "SP",
-          "war": 0.0,
-          "hp": 94,
-          "maxHp": 94,
-          "stf": 57,
-          "ctl": 56,
-          "mov": 59,
-          "sta": 78,
-          "ovr": 59,
+          "war": 8.1,
+          "hp": 89,
+          "maxHp": 89,
+          "stf": 52,
+          "ctl": 49,
+          "mov": 61,
+          "sta": 72,
+          "ovr": 56,
           "rarity": "Rare"
         },
         {
-          "name": "A. D. Young",
+          "name": "Urban Shocker",
           "role": "SP",
-          "war": 0.0,
-          "hp": 92,
-          "maxHp": 92,
-          "stf": 62,
-          "ctl": 48,
-          "mov": 59,
-          "sta": 76,
-          "ovr": 58,
-          "rarity": "Rare"
+          "war": 6.2,
+          "hp": 87,
+          "maxHp": 87,
+          "stf": 55,
+          "ctl": 94,
+          "mov": 63,
+          "sta": 69,
+          "ovr": 70,
+          "rarity": "Epic"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1924": {
@@ -27622,9 +28749,7 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
-      }
-    ],
-    "mid": [
+      },
       {
         "id": "story_1924_BBB",
         "name": "1924 Birmingham Black Barons",
@@ -27673,7 +28798,9 @@ window.OpponentsDatabase = {
             "rarity": "Epic"
           }
         ]
-      },
+      }
+    ],
+    "mid": [
       {
         "id": "story_1924_CHA",
         "name": "1924 Chicago White Sox",
@@ -28114,9 +29241,7 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      }
-    ],
-    "high": [
+      },
       {
         "id": "story_1924_NLG",
         "name": "1924 New York Lincoln Giants",
@@ -28214,7 +29339,9 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      },
+      }
+    ],
+    "high": [
       {
         "id": "story_1924_DS",
         "name": "1924 Detroit Stars",
@@ -28704,57 +29831,106 @@ window.OpponentsDatabase = {
             "rarity": "Epic"
           }
         ]
+      },
+      {
+        "id": "story_1924_KCM",
+        "name": "1924 Kansas City Monarchs",
+        "year": 1924,
+        "teamID": "KCM",
+        "win_pct": 0.722,
+        "ovr": 47,
+        "pitchers": [
+          {
+            "name": "Hop Bartlett",
+            "role": "SP",
+            "war": 0.1,
+            "hp": 77,
+            "maxHp": 77,
+            "stf": 1,
+            "ctl": 10,
+            "mov": 41,
+            "sta": 56,
+            "ovr": 21,
+            "rarity": "Common"
+          },
+          {
+            "name": "Bullet Rogan",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 87,
+            "maxHp": 87,
+            "stf": 79,
+            "ctl": 60,
+            "mov": 57,
+            "sta": 69,
+            "ovr": 66,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Bill Drake",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 86,
+            "maxHp": 86,
+            "stf": 55,
+            "ctl": 48,
+            "mov": 59,
+            "sta": 68,
+            "ovr": 55,
+            "rarity": "Rare"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1924_KCM",
-      "name": "BOSS: 1924 Kansas City Monarchs",
+      "id": "story_1924_STARS_BOSS",
+      "name": "\ud83d\udc51 1924 STARS",
       "year": 1924,
-      "teamID": "KCM",
-      "win_pct": 0.722,
-      "ovr": 47,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 76,
       "pitchers": [
         {
-          "name": "Hop Bartlett",
+          "name": "Dazzy Vance",
           "role": "SP",
-          "war": 0.1,
-          "hp": 77,
-          "maxHp": 77,
-          "stf": 1,
-          "ctl": 10,
-          "mov": 41,
-          "sta": 56,
-          "ovr": 21,
-          "rarity": "Common"
+          "war": 10.5,
+          "hp": 92,
+          "maxHp": 92,
+          "stf": 115,
+          "ctl": 77,
+          "mov": 91,
+          "sta": 76,
+          "ovr": 92,
+          "rarity": "Legendary"
         },
         {
-          "name": "Bullet Rogan",
+          "name": "Howard Ehmke",
           "role": "SP",
-          "war": 0.0,
-          "hp": 87,
-          "maxHp": 87,
-          "stf": 79,
-          "ctl": 60,
-          "mov": 57,
-          "sta": 69,
+          "war": 8.3,
+          "hp": 90,
+          "maxHp": 90,
+          "stf": 53,
+          "ctl": 75,
+          "mov": 67,
+          "sta": 74,
           "ovr": 66,
           "rarity": "Rare"
         },
         {
-          "name": "Bill Drake",
+          "name": "Herb Pennock",
           "role": "SP",
-          "war": 0.0,
-          "hp": 86,
-          "maxHp": 86,
-          "stf": 55,
-          "ctl": 48,
-          "mov": 59,
-          "sta": 68,
-          "ovr": 55,
-          "rarity": "Rare"
+          "war": 8.1,
+          "hp": 89,
+          "maxHp": 89,
+          "stf": 50,
+          "ctl": 83,
+          "mov": 75,
+          "sta": 72,
+          "ovr": 70,
+          "rarity": "Epic"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1925": {
@@ -30282,57 +31458,106 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
+      },
+      {
+        "id": "story_1925_HIL",
+        "name": "1925 Hilldale Club",
+        "year": 1925,
+        "teamID": "HIL",
+        "win_pct": 0.746,
+        "ovr": 63,
+        "pitchers": [
+          {
+            "name": "Nip Winters",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 92,
+            "maxHp": 92,
+            "stf": 59,
+            "ctl": 77,
+            "mov": 49,
+            "sta": 76,
+            "ovr": 63,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Rube Curry",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 93,
+            "maxHp": 93,
+            "stf": 52,
+            "ctl": 88,
+            "mov": 48,
+            "sta": 77,
+            "ovr": 64,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Phil Cockrell",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 95,
+            "maxHp": 95,
+            "stf": 57,
+            "ctl": 70,
+            "mov": 53,
+            "sta": 80,
+            "ovr": 62,
+            "rarity": "Rare"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1925_HIL",
-      "name": "BOSS: 1925 Hilldale Club",
+      "id": "story_1925_STARS_BOSS",
+      "name": "\ud83d\udc51 1925 STARS",
       "year": 1925,
-      "teamID": "HIL",
-      "win_pct": 0.746,
-      "ovr": 63,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 69,
       "pitchers": [
         {
-          "name": "Nip Winters",
+          "name": "Herb Pennock",
           "role": "SP",
-          "war": 0.0,
-          "hp": 92,
-          "maxHp": 92,
-          "stf": 59,
-          "ctl": 77,
-          "mov": 49,
-          "sta": 76,
-          "ovr": 63,
+          "war": 6.6,
+          "hp": 91,
+          "maxHp": 91,
+          "stf": 44,
+          "ctl": 76,
+          "mov": 74,
+          "sta": 75,
+          "ovr": 66,
           "rarity": "Rare"
         },
         {
-          "name": "Rube Curry",
+          "name": "Eppa Rixey",
           "role": "SP",
-          "war": 0.0,
-          "hp": 93,
-          "maxHp": 93,
-          "stf": 52,
-          "ctl": 88,
-          "mov": 48,
-          "sta": 77,
-          "ovr": 64,
+          "war": 6.5,
+          "hp": 87,
+          "maxHp": 87,
+          "stf": 30,
+          "ctl": 97,
+          "mov": 76,
+          "sta": 69,
+          "ovr": 68,
           "rarity": "Rare"
         },
         {
-          "name": "Phil Cockrell",
+          "name": "Dolf Luque",
           "role": "SP",
-          "war": 0.0,
-          "hp": 95,
-          "maxHp": 95,
-          "stf": 57,
-          "ctl": 70,
-          "mov": 53,
-          "sta": 80,
-          "ovr": 62,
-          "rarity": "Rare"
+          "war": 6.3,
+          "hp": 88,
+          "maxHp": 88,
+          "stf": 67,
+          "ctl": 73,
+          "mov": 84,
+          "sta": 70,
+          "ovr": 74,
+          "rarity": "Epic"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1926": {
@@ -31860,57 +33085,106 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
+      },
+      {
+        "id": "story_1926_KCM",
+        "name": "1926 Kansas City Monarchs",
+        "year": 1926,
+        "teamID": "KCM",
+        "win_pct": 0.731,
+        "ovr": 66,
+        "pitchers": [
+          {
+            "name": "William Bell",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 94,
+            "maxHp": 94,
+            "stf": 54,
+            "ctl": 77,
+            "mov": 56,
+            "sta": 78,
+            "ovr": 64,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Bullet Rogan",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 98,
+            "maxHp": 98,
+            "stf": 76,
+            "ctl": 73,
+            "mov": 54,
+            "sta": 84,
+            "ovr": 69,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Chet Brewer",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 90,
+            "maxHp": 90,
+            "stf": 88,
+            "ctl": 48,
+            "mov": 57,
+            "sta": 74,
+            "ovr": 65,
+            "rarity": "Rare"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1926_KCM",
-      "name": "BOSS: 1926 Kansas City Monarchs",
+      "id": "story_1926_STARS_BOSS",
+      "name": "\ud83d\udc51 1926 STARS",
       "year": 1926,
-      "teamID": "KCM",
-      "win_pct": 0.731,
-      "ovr": 66,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 69,
       "pitchers": [
         {
-          "name": "William Bell",
+          "name": "George Uhle",
           "role": "SP",
-          "war": 0.0,
-          "hp": 94,
-          "maxHp": 94,
-          "stf": 54,
-          "ctl": 77,
-          "mov": 56,
-          "sta": 78,
-          "ovr": 64,
+          "war": 8.8,
+          "hp": 91,
+          "maxHp": 91,
+          "stf": 69,
+          "ctl": 50,
+          "mov": 78,
+          "sta": 75,
+          "ovr": 67,
           "rarity": "Rare"
         },
         {
-          "name": "Bullet Rogan",
+          "name": "Hal Carlson",
           "role": "SP",
-          "war": 0.0,
-          "hp": 98,
-          "maxHp": 98,
-          "stf": 76,
-          "ctl": 73,
-          "mov": 54,
-          "sta": 84,
-          "ovr": 69,
+          "war": 8.3,
+          "hp": 86,
+          "maxHp": 86,
+          "stf": 24,
+          "ctl": 94,
+          "mov": 69,
+          "sta": 68,
+          "ovr": 63,
           "rarity": "Rare"
         },
         {
-          "name": "Chet Brewer",
+          "name": "Lefty Grove",
           "role": "SP",
-          "war": 0.0,
-          "hp": 90,
-          "maxHp": 90,
-          "stf": 88,
+          "war": 7.5,
+          "hp": 86,
+          "maxHp": 86,
+          "stf": 102,
           "ctl": 48,
-          "mov": 57,
-          "sta": 74,
-          "ovr": 65,
-          "rarity": "Rare"
+          "mov": 88,
+          "sta": 68,
+          "ovr": 78,
+          "rarity": "Epic"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1927": {
@@ -33389,57 +34663,106 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
+      },
+      {
+        "id": "story_1927_NYA",
+        "name": "1927 New York Yankees",
+        "year": 1927,
+        "teamID": "NYA",
+        "win_pct": 0.714,
+        "ovr": 66,
+        "pitchers": [
+          {
+            "name": "Wilcy Moore",
+            "role": "RP",
+            "war": 6.6,
+            "hp": 45,
+            "maxHp": 45,
+            "stf": 49,
+            "ctl": 71,
+            "mov": 93,
+            "sta": 35,
+            "ovr": 67,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Waite Hoyt",
+            "role": "SP",
+            "war": 6.0,
+            "hp": 87,
+            "maxHp": 87,
+            "stf": 47,
+            "ctl": 86,
+            "mov": 76,
+            "sta": 69,
+            "ovr": 70,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Herb Pennock",
+            "role": "SP",
+            "war": 3.2,
+            "hp": 87,
+            "maxHp": 87,
+            "stf": 31,
+            "ctl": 82,
+            "mov": 70,
+            "sta": 69,
+            "ovr": 62,
+            "rarity": "Rare"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1927_NYA",
-      "name": "BOSS: 1927 New York Yankees",
+      "id": "story_1927_STARS_BOSS",
+      "name": "\ud83d\udc51 1927 STARS",
       "year": 1927,
-      "teamID": "NYA",
-      "win_pct": 0.714,
-      "ovr": 66,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 69,
       "pitchers": [
         {
-          "name": "Wilcy Moore",
-          "role": "RP",
-          "war": 6.6,
-          "hp": 45,
-          "maxHp": 45,
+          "name": "Tommy Thomas",
+          "role": "SP",
+          "war": 8.3,
+          "hp": 90,
+          "maxHp": 90,
           "stf": 49,
-          "ctl": 71,
-          "mov": 93,
-          "sta": 35,
-          "ovr": 67,
+          "ctl": 64,
+          "mov": 68,
+          "sta": 73,
+          "ovr": 62,
           "rarity": "Rare"
         },
         {
-          "name": "Waite Hoyt",
+          "name": "Dazzy Vance",
           "role": "SP",
-          "war": 6.0,
-          "hp": 87,
-          "maxHp": 87,
-          "stf": 47,
-          "ctl": 86,
-          "mov": 76,
-          "sta": 69,
-          "ovr": 70,
+          "war": 7.7,
+          "hp": 90,
+          "maxHp": 90,
+          "stf": 92,
+          "ctl": 76,
+          "mov": 75,
+          "sta": 73,
+          "ovr": 80,
           "rarity": "Epic"
         },
         {
-          "name": "Herb Pennock",
+          "name": "Ted Lyons",
           "role": "SP",
-          "war": 3.2,
-          "hp": 87,
-          "maxHp": 87,
-          "stf": 31,
-          "ctl": 82,
-          "mov": 70,
-          "sta": 69,
-          "ovr": 62,
+          "war": 7.3,
+          "hp": 92,
+          "maxHp": 92,
+          "stf": 29,
+          "ctl": 84,
+          "mov": 77,
+          "sta": 76,
+          "ovr": 65,
           "rarity": "Rare"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1928": {
@@ -34918,57 +36241,106 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
+      },
+      {
+        "id": "story_1928_NLG",
+        "name": "1928 New York Lincoln Giants",
+        "year": 1928,
+        "teamID": "NLG",
+        "win_pct": 0.714,
+        "ovr": 59,
+        "pitchers": [
+          {
+            "name": "Connie Rector",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 99,
+            "maxHp": 99,
+            "stf": 30,
+            "ctl": 86,
+            "mov": 51,
+            "sta": 85,
+            "ovr": 59,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Nip Winters",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 84,
+            "maxHp": 84,
+            "stf": 62,
+            "ctl": 60,
+            "mov": 48,
+            "sta": 65,
+            "ovr": 57,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Willie Gisentaner",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 82,
+            "maxHp": 82,
+            "stf": 49,
+            "ctl": 81,
+            "mov": 48,
+            "sta": 63,
+            "ovr": 60,
+            "rarity": "Rare"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1928_NLG",
-      "name": "BOSS: 1928 New York Lincoln Giants",
+      "id": "story_1928_STARS_BOSS",
+      "name": "\ud83d\udc51 1928 STARS",
       "year": 1928,
-      "teamID": "NLG",
-      "win_pct": 0.714,
-      "ovr": 59,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 79,
       "pitchers": [
         {
-          "name": "Connie Rector",
+          "name": "Dazzy Vance",
           "role": "SP",
-          "war": 0.0,
-          "hp": 99,
-          "maxHp": 99,
-          "stf": 30,
-          "ctl": 86,
-          "mov": 51,
-          "sta": 85,
-          "ovr": 59,
-          "rarity": "Rare"
+          "war": 10.1,
+          "hp": 90,
+          "maxHp": 90,
+          "stf": 97,
+          "ctl": 75,
+          "mov": 98,
+          "sta": 74,
+          "ovr": 88,
+          "rarity": "Legendary"
         },
         {
-          "name": "Nip Winters",
+          "name": "Lefty Grove",
           "role": "SP",
-          "war": 0.0,
-          "hp": 84,
-          "maxHp": 84,
-          "stf": 62,
-          "ctl": 60,
-          "mov": 48,
-          "sta": 65,
-          "ovr": 57,
-          "rarity": "Rare"
+          "war": 7.1,
+          "hp": 89,
+          "maxHp": 89,
+          "stf": 95,
+          "ctl": 78,
+          "mov": 80,
+          "sta": 72,
+          "ovr": 83,
+          "rarity": "Epic"
         },
         {
-          "name": "Willie Gisentaner",
+          "name": "Larry Benton",
           "role": "SP",
-          "war": 0.0,
-          "hp": 82,
-          "maxHp": 82,
-          "stf": 49,
-          "ctl": 81,
-          "mov": 48,
-          "sta": 63,
-          "ovr": 60,
+          "war": 7.0,
+          "hp": 91,
+          "maxHp": 91,
+          "stf": 39,
+          "ctl": 82,
+          "mov": 72,
+          "sta": 75,
+          "ovr": 65,
           "rarity": "Rare"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1929": {
@@ -36349,57 +37721,106 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
+      },
+      {
+        "id": "story_1929_KCM",
+        "name": "1929 Kansas City Monarchs",
+        "year": 1929,
+        "teamID": "KCM",
+        "win_pct": 0.785,
+        "ovr": 68,
+        "pitchers": [
+          {
+            "name": "William Bell",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 93,
+            "maxHp": 93,
+            "stf": 79,
+            "ctl": 89,
+            "mov": 52,
+            "sta": 77,
+            "ovr": 74,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Army Cooper",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 82,
+            "maxHp": 82,
+            "stf": 97,
+            "ctl": 47,
+            "mov": 55,
+            "sta": 62,
+            "ovr": 66,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Chet Brewer",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 97,
+            "maxHp": 97,
+            "stf": 53,
+            "ctl": 74,
+            "mov": 58,
+            "sta": 83,
+            "ovr": 64,
+            "rarity": "Rare"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1929_KCM",
-      "name": "BOSS: 1929 Kansas City Monarchs",
+      "id": "story_1929_STARS_BOSS",
+      "name": "\ud83d\udc51 1929 STARS",
       "year": 1929,
-      "teamID": "KCM",
-      "win_pct": 0.785,
-      "ovr": 68,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 69,
       "pitchers": [
         {
-          "name": "William Bell",
+          "name": "Willis Hudlin",
           "role": "SP",
-          "war": 0.0,
-          "hp": 93,
-          "maxHp": 93,
-          "stf": 79,
-          "ctl": 89,
-          "mov": 52,
-          "sta": 77,
-          "ovr": 74,
+          "war": 7.5,
+          "hp": 89,
+          "maxHp": 89,
+          "stf": 26,
+          "ctl": 75,
+          "mov": 71,
+          "sta": 72,
+          "ovr": 59,
+          "rarity": "Rare"
+        },
+        {
+          "name": "Lefty Grove",
+          "role": "SP",
+          "war": 7.3,
+          "hp": 84,
+          "maxHp": 84,
+          "stf": 85,
+          "ctl": 67,
+          "mov": 79,
+          "sta": 65,
+          "ovr": 76,
           "rarity": "Epic"
         },
         {
-          "name": "Army Cooper",
+          "name": "Firpo Marberry",
           "role": "SP",
-          "war": 0.0,
-          "hp": 82,
-          "maxHp": 82,
-          "stf": 97,
-          "ctl": 47,
-          "mov": 55,
-          "sta": 62,
-          "ovr": 66,
-          "rarity": "Rare"
-        },
-        {
-          "name": "Chet Brewer",
-          "role": "SP",
-          "war": 0.0,
-          "hp": 97,
-          "maxHp": 97,
-          "stf": 53,
-          "ctl": 74,
-          "mov": 58,
-          "sta": 83,
-          "ovr": 64,
-          "rarity": "Rare"
+          "war": 6.8,
+          "hp": 95,
+          "maxHp": 95,
+          "stf": 67,
+          "ctl": 71,
+          "mov": 75,
+          "sta": 80,
+          "ovr": 72,
+          "rarity": "Epic"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1930": {
@@ -37731,57 +39152,106 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
+      },
+      {
+        "id": "story_1930_SLS",
+        "name": "1930 St. Louis Stars",
+        "year": 1930,
+        "teamID": "SLS",
+        "win_pct": 0.747,
+        "ovr": 60,
+        "pitchers": [
+          {
+            "name": "Roosevelt Davis",
+            "role": "SP",
+            "war": 0.3,
+            "hp": 100,
+            "maxHp": 100,
+            "stf": 81,
+            "ctl": 47,
+            "mov": 46,
+            "sta": 86,
+            "ovr": 61,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Eggie Hensley",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 90,
+            "maxHp": 90,
+            "stf": 65,
+            "ctl": 61,
+            "mov": 48,
+            "sta": 74,
+            "ovr": 60,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Ted Trent",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 94,
+            "maxHp": 94,
+            "stf": 75,
+            "ctl": 45,
+            "mov": 49,
+            "sta": 79,
+            "ovr": 59,
+            "rarity": "Rare"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1930_SLS",
-      "name": "BOSS: 1930 St. Louis Stars",
+      "id": "story_1930_STARS_BOSS",
+      "name": "\ud83d\udc51 1930 STARS",
       "year": 1930,
-      "teamID": "SLS",
-      "win_pct": 0.747,
-      "ovr": 60,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 82,
       "pitchers": [
         {
-          "name": "Roosevelt Davis",
+          "name": "Lefty Grove",
           "role": "SP",
-          "war": 0.3,
-          "hp": 100,
-          "maxHp": 100,
-          "stf": 81,
-          "ctl": 47,
-          "mov": 46,
-          "sta": 86,
-          "ovr": 61,
+          "war": 10.4,
+          "hp": 92,
+          "maxHp": 92,
+          "stf": 98,
+          "ctl": 87,
+          "mov": 98,
+          "sta": 76,
+          "ovr": 92,
+          "rarity": "Legendary"
+        },
+        {
+          "name": "Wes Ferrell",
+          "role": "SP",
+          "war": 8.3,
+          "hp": 89,
+          "maxHp": 89,
+          "stf": 67,
+          "ctl": 52,
+          "mov": 73,
+          "sta": 72,
+          "ovr": 65,
           "rarity": "Rare"
         },
         {
-          "name": "Eggie Hensley",
+          "name": "Dazzy Vance",
           "role": "SP",
-          "war": 0.0,
-          "hp": 90,
-          "maxHp": 90,
-          "stf": 65,
-          "ctl": 61,
-          "mov": 48,
-          "sta": 74,
-          "ovr": 60,
-          "rarity": "Rare"
-        },
-        {
-          "name": "Ted Trent",
-          "role": "SP",
-          "war": 0.0,
-          "hp": 94,
-          "maxHp": 94,
-          "stf": 75,
-          "ctl": 45,
-          "mov": 49,
-          "sta": 79,
-          "ovr": 59,
-          "rarity": "Rare"
+          "war": 7.3,
+          "hp": 88,
+          "maxHp": 88,
+          "stf": 91,
+          "ctl": 86,
+          "mov": 95,
+          "sta": 71,
+          "ovr": 89,
+          "rarity": "Legendary"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1931": {
@@ -38178,9 +39648,7 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
-      }
-    ],
-    "mid": [
+      },
       {
         "id": "story_1931_BOS",
         "name": "1931 Boston Red Sox",
@@ -38229,7 +39697,9 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
-      },
+      }
+    ],
+    "mid": [
       {
         "id": "story_1931_SLA",
         "name": "1931 St. Louis Browns",
@@ -38572,9 +40042,7 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      }
-    ],
-    "high": [
+      },
       {
         "id": "story_1931_KCM",
         "name": "1931 Kansas City Monarchs",
@@ -38672,7 +40140,9 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      },
+      }
+    ],
+    "high": [
       {
         "id": "story_1931_AB2",
         "name": "1931 Indianapolis ABCs",
@@ -39064,57 +40534,106 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
+      },
+      {
+        "id": "story_1931_SLS",
+        "name": "1931 St. Louis Stars",
+        "year": 1931,
+        "teamID": "SLS",
+        "win_pct": 0.8,
+        "ovr": 67,
+        "pitchers": [
+          {
+            "name": "Ted Trent",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 94,
+            "maxHp": 94,
+            "stf": 106,
+            "ctl": 52,
+            "mov": 50,
+            "sta": 79,
+            "ovr": 70,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Eggie Hensley",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 102,
+            "maxHp": 102,
+            "stf": 51,
+            "ctl": 79,
+            "mov": 59,
+            "sta": 90,
+            "ovr": 66,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Joe Strong",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 84,
+            "maxHp": 84,
+            "stf": 86,
+            "ctl": 51,
+            "mov": 56,
+            "sta": 66,
+            "ovr": 64,
+            "rarity": "Rare"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1931_SLS",
-      "name": "BOSS: 1931 St. Louis Stars",
+      "id": "story_1931_STARS_BOSS",
+      "name": "\ud83d\udc51 1931 STARS",
       "year": 1931,
-      "teamID": "SLS",
-      "win_pct": 0.8,
-      "ovr": 67,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 73,
       "pitchers": [
         {
-          "name": "Ted Trent",
+          "name": "Lefty Grove",
           "role": "SP",
-          "war": 0.0,
-          "hp": 94,
-          "maxHp": 94,
-          "stf": 106,
-          "ctl": 52,
-          "mov": 50,
-          "sta": 79,
+          "war": 10.4,
+          "hp": 95,
+          "maxHp": 95,
+          "stf": 83,
+          "ctl": 85,
+          "mov": 112,
+          "sta": 80,
+          "ovr": 92,
+          "rarity": "Legendary"
+        },
+        {
+          "name": "Ray Benge",
+          "role": "SP",
+          "war": 6.2,
+          "hp": 87,
+          "maxHp": 87,
+          "stf": 66,
+          "ctl": 78,
+          "mov": 68,
+          "sta": 69,
           "ovr": 70,
           "rarity": "Epic"
         },
         {
-          "name": "Eggie Hensley",
+          "name": "Wes Ferrell",
           "role": "SP",
-          "war": 0.0,
-          "hp": 102,
-          "maxHp": 102,
-          "stf": 51,
-          "ctl": 79,
-          "mov": 59,
-          "sta": 90,
-          "ovr": 66,
-          "rarity": "Rare"
-        },
-        {
-          "name": "Joe Strong",
-          "role": "SP",
-          "war": 0.0,
-          "hp": 84,
-          "maxHp": 84,
-          "stf": 86,
-          "ctl": 51,
-          "mov": 56,
-          "sta": 66,
-          "ovr": 64,
+          "war": 6.2,
+          "hp": 86,
+          "maxHp": 86,
+          "stf": 62,
+          "ctl": 41,
+          "mov": 65,
+          "sta": 68,
+          "ovr": 57,
           "rarity": "Rare"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1932": {
@@ -40887,57 +42406,106 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
+      },
+      {
+        "id": "story_1932_DW",
+        "name": "1932 Detroit Wolves",
+        "year": 1932,
+        "teamID": "DW",
+        "win_pct": 0.8,
+        "ovr": 71,
+        "pitchers": [
+          {
+            "name": "Bert Hunter",
+            "role": "SP",
+            "war": 2.6,
+            "hp": 95,
+            "maxHp": 95,
+            "stf": 99,
+            "ctl": 73,
+            "mov": 71,
+            "sta": 80,
+            "ovr": 81,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Lefty Williams",
+            "role": "SP",
+            "war": 0.9,
+            "hp": 84,
+            "maxHp": 84,
+            "stf": 64,
+            "ctl": 63,
+            "mov": 77,
+            "sta": 65,
+            "ovr": 68,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Ted Trent",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 95,
+            "maxHp": 95,
+            "stf": 84,
+            "ctl": 45,
+            "mov": 53,
+            "sta": 80,
+            "ovr": 63,
+            "rarity": "Rare"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1932_DW",
-      "name": "BOSS: 1932 Detroit Wolves",
+      "id": "story_1932_STARS_BOSS",
+      "name": "\ud83d\udc51 1932 STARS",
       "year": 1932,
-      "teamID": "DW",
-      "win_pct": 0.8,
-      "ovr": 71,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 70,
       "pitchers": [
         {
-          "name": "Bert Hunter",
+          "name": "Lefty Grove",
           "role": "SP",
-          "war": 2.6,
-          "hp": 95,
-          "maxHp": 95,
-          "stf": 99,
-          "ctl": 73,
-          "mov": 71,
-          "sta": 80,
-          "ovr": 81,
+          "war": 9.5,
+          "hp": 96,
+          "maxHp": 96,
+          "stf": 88,
+          "ctl": 72,
+          "mov": 81,
+          "sta": 81,
+          "ovr": 80,
           "rarity": "Epic"
         },
         {
-          "name": "Lefty Williams",
+          "name": "Lon Warneke",
           "role": "SP",
-          "war": 0.9,
-          "hp": 84,
-          "maxHp": 84,
-          "stf": 64,
-          "ctl": 63,
-          "mov": 77,
-          "sta": 65,
-          "ovr": 68,
-          "rarity": "Rare"
+          "war": 6.9,
+          "hp": 90,
+          "maxHp": 90,
+          "stf": 54,
+          "ctl": 81,
+          "mov": 82,
+          "sta": 73,
+          "ovr": 72,
+          "rarity": "Epic"
         },
         {
-          "name": "Ted Trent",
+          "name": "Wes Ferrell",
           "role": "SP",
-          "war": 0.0,
-          "hp": 95,
-          "maxHp": 95,
-          "stf": 84,
-          "ctl": 45,
-          "mov": 53,
-          "sta": 80,
-          "ovr": 63,
+          "war": 6.9,
+          "hp": 89,
+          "maxHp": 89,
+          "stf": 51,
+          "ctl": 51,
+          "mov": 65,
+          "sta": 72,
+          "ovr": 57,
           "rarity": "Rare"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1933": {
@@ -41334,9 +42902,7 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      }
-    ],
-    "mid": [
+      },
       {
         "id": "story_1933_BRO",
         "name": "1933 Brooklyn Dodgers",
@@ -41385,7 +42951,9 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      },
+      }
+    ],
+    "mid": [
       {
         "id": "story_1933_SOX",
         "name": "1933 Baltimore Sox",
@@ -41728,9 +43296,7 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      }
-    ],
-    "high": [
+      },
       {
         "id": "story_1933_SLN",
         "name": "1933 St. Louis Cardinals",
@@ -41828,7 +43394,9 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      },
+      }
+    ],
+    "high": [
       {
         "id": "story_1933_CHN",
         "name": "1933 Chicago Cubs",
@@ -42220,57 +43788,106 @@ window.OpponentsDatabase = {
             "rarity": "Epic"
           }
         ]
+      },
+      {
+        "id": "story_1933_CAG",
+        "name": "1933 Chicago American Giants",
+        "year": 1933,
+        "teamID": "CAG",
+        "win_pct": 0.698,
+        "ovr": 74,
+        "pitchers": [
+          {
+            "name": "Willie Powell",
+            "role": "SP",
+            "war": 1.8,
+            "hp": 97,
+            "maxHp": 97,
+            "stf": 66,
+            "ctl": 94,
+            "mov": 102,
+            "sta": 83,
+            "ovr": 87,
+            "rarity": "Legendary"
+          },
+          {
+            "name": "Willie Cornelius",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 84,
+            "maxHp": 84,
+            "stf": 69,
+            "ctl": 47,
+            "mov": 51,
+            "sta": 66,
+            "ovr": 57,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Willie Foster",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 94,
+            "maxHp": 94,
+            "stf": 99,
+            "ctl": 85,
+            "mov": 54,
+            "sta": 78,
+            "ovr": 79,
+            "rarity": "Epic"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1933_CAG",
-      "name": "BOSS: 1933 Chicago American Giants",
+      "id": "story_1933_STARS_BOSS",
+      "name": "\ud83d\udc51 1933 STARS",
       "year": 1933,
-      "teamID": "CAG",
-      "win_pct": 0.698,
-      "ovr": 74,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 71,
       "pitchers": [
         {
-          "name": "Willie Powell",
+          "name": "Carl Hubbell",
           "role": "SP",
-          "war": 1.8,
-          "hp": 97,
-          "maxHp": 97,
-          "stf": 66,
-          "ctl": 94,
-          "mov": 102,
-          "sta": 83,
-          "ovr": 87,
+          "war": 9.0,
+          "hp": 94,
+          "maxHp": 94,
+          "stf": 70,
+          "ctl": 99,
+          "mov": 104,
+          "sta": 78,
+          "ovr": 90,
           "rarity": "Legendary"
         },
         {
-          "name": "Willie Cornelius",
+          "name": "Lefty Grove",
           "role": "SP",
-          "war": 0.0,
-          "hp": 84,
-          "maxHp": 84,
-          "stf": 69,
-          "ctl": 47,
-          "mov": 51,
-          "sta": 66,
-          "ovr": 57,
+          "war": 8.4,
+          "hp": 96,
+          "maxHp": 96,
+          "stf": 58,
+          "ctl": 65,
+          "mov": 68,
+          "sta": 81,
+          "ovr": 65,
           "rarity": "Rare"
         },
         {
-          "name": "Willie Foster",
+          "name": "Bump Hadley",
           "role": "SP",
-          "war": 0.0,
-          "hp": 94,
-          "maxHp": 94,
-          "stf": 99,
-          "ctl": 85,
-          "mov": 54,
-          "sta": 78,
-          "ovr": 79,
-          "rarity": "Epic"
+          "war": 7.4,
+          "hp": 90,
+          "maxHp": 90,
+          "stf": 65,
+          "ctl": 43,
+          "mov": 59,
+          "sta": 74,
+          "ovr": 57,
+          "rarity": "Rare"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1934": {
@@ -42667,9 +44284,7 @@ window.OpponentsDatabase = {
             "rarity": "Epic"
           }
         ]
-      }
-    ],
-    "mid": [
+      },
       {
         "id": "story_1934_NEG",
         "name": "1934 Nashville Elite Giants",
@@ -42718,7 +44333,9 @@ window.OpponentsDatabase = {
             "rarity": "Epic"
           }
         ]
-      },
+      }
+    ],
+    "mid": [
       {
         "id": "story_1934_WS1",
         "name": "1934 Washington Senators",
@@ -43061,9 +44678,7 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      }
-    ],
-    "high": [
+      },
       {
         "id": "story_1934_BSN",
         "name": "1934 Boston Braves",
@@ -43161,7 +44776,9 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
-      },
+      }
+    ],
+    "high": [
       {
         "id": "story_1934_HG",
         "name": "1934 Homestead Grays",
@@ -43553,57 +45170,106 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
+      },
+      {
+        "id": "story_1934_PS",
+        "name": "1934 Philadelphia Stars",
+        "year": 1934,
+        "teamID": "PS",
+        "win_pct": 0.717,
+        "ovr": 67,
+        "pitchers": [
+          {
+            "name": "Slim Jones",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 93,
+            "maxHp": 93,
+            "stf": 110,
+            "ctl": 81,
+            "mov": 53,
+            "sta": 77,
+            "ovr": 81,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Webster McDonald",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 93,
+            "maxHp": 93,
+            "stf": 42,
+            "ctl": 86,
+            "mov": 50,
+            "sta": 77,
+            "ovr": 61,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Rocky Ellis",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 86,
+            "maxHp": 86,
+            "stf": 56,
+            "ctl": 60,
+            "mov": 53,
+            "sta": 68,
+            "ovr": 58,
+            "rarity": "Rare"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1934_PS",
-      "name": "BOSS: 1934 Philadelphia Stars",
+      "id": "story_1934_STARS_BOSS",
+      "name": "\ud83d\udc51 1934 STARS",
       "year": 1934,
-      "teamID": "PS",
-      "win_pct": 0.717,
-      "ovr": 67,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 76,
       "pitchers": [
         {
-          "name": "Slim Jones",
+          "name": "Dizzy Dean",
           "role": "SP",
-          "war": 0.0,
-          "hp": 93,
-          "maxHp": 93,
-          "stf": 110,
-          "ctl": 81,
-          "mov": 53,
-          "sta": 77,
-          "ovr": 81,
+          "war": 8.9,
+          "hp": 94,
+          "maxHp": 94,
+          "stf": 86,
+          "ctl": 79,
+          "mov": 81,
+          "sta": 79,
+          "ovr": 82,
           "rarity": "Epic"
         },
         {
-          "name": "Webster McDonald",
+          "name": "Curt Davis",
           "role": "SP",
-          "war": 0.0,
-          "hp": 93,
-          "maxHp": 93,
-          "stf": 42,
-          "ctl": 86,
-          "mov": 50,
-          "sta": 77,
-          "ovr": 61,
-          "rarity": "Rare"
+          "war": 8.6,
+          "hp": 91,
+          "maxHp": 91,
+          "stf": 51,
+          "ctl": 84,
+          "mov": 81,
+          "sta": 75,
+          "ovr": 72,
+          "rarity": "Epic"
         },
         {
-          "name": "Rocky Ellis",
+          "name": "Lefty Gomez",
           "role": "SP",
-          "war": 0.0,
-          "hp": 86,
-          "maxHp": 86,
-          "stf": 56,
-          "ctl": 60,
-          "mov": 53,
-          "sta": 68,
-          "ovr": 58,
-          "rarity": "Rare"
+          "war": 8.4,
+          "hp": 90,
+          "maxHp": 90,
+          "stf": 77,
+          "ctl": 56,
+          "mov": 90,
+          "sta": 73,
+          "ovr": 74,
+          "rarity": "Epic"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1935": {
@@ -44837,57 +46503,106 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
+      },
+      {
+        "id": "story_1935_PC",
+        "name": "1935 Pittsburgh Crawfords",
+        "year": 1935,
+        "teamID": "PC",
+        "win_pct": 0.676,
+        "ovr": 68,
+        "pitchers": [
+          {
+            "name": "Bert Hunter",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 90,
+            "maxHp": 90,
+            "stf": 71,
+            "ctl": 66,
+            "mov": 48,
+            "sta": 74,
+            "ovr": 63,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Roosevelt Davis",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 101,
+            "maxHp": 101,
+            "stf": 78,
+            "ctl": 70,
+            "mov": 49,
+            "sta": 88,
+            "ovr": 68,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Leroy Matlock",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 91,
+            "maxHp": 91,
+            "stf": 74,
+            "ctl": 92,
+            "mov": 54,
+            "sta": 75,
+            "ovr": 74,
+            "rarity": "Epic"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1935_PC",
-      "name": "BOSS: 1935 Pittsburgh Crawfords",
+      "id": "story_1935_STARS_BOSS",
+      "name": "\ud83d\udc51 1935 STARS",
       "year": 1935,
-      "teamID": "PC",
-      "win_pct": 0.676,
-      "ovr": 68,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 69,
       "pitchers": [
         {
-          "name": "Bert Hunter",
+          "name": "Lefty Grove",
           "role": "SP",
-          "war": 0.0,
-          "hp": 90,
-          "maxHp": 90,
-          "stf": 71,
-          "ctl": 66,
-          "mov": 48,
-          "sta": 74,
-          "ovr": 63,
+          "war": 9.4,
+          "hp": 92,
+          "maxHp": 92,
+          "stf": 62,
+          "ctl": 80,
+          "mov": 94,
+          "sta": 76,
+          "ovr": 78,
+          "rarity": "Epic"
+        },
+        {
+          "name": "Wes Ferrell",
+          "role": "SP",
+          "war": 8.2,
+          "hp": 89,
+          "maxHp": 89,
+          "stf": 48,
+          "ctl": 57,
+          "mov": 68,
+          "sta": 72,
+          "ovr": 59,
           "rarity": "Rare"
         },
         {
-          "name": "Roosevelt Davis",
+          "name": "Mel Harder",
           "role": "SP",
-          "war": 0.0,
-          "hp": 101,
-          "maxHp": 101,
-          "stf": 78,
-          "ctl": 70,
-          "mov": 49,
-          "sta": 88,
-          "ovr": 68,
-          "rarity": "Rare"
-        },
-        {
-          "name": "Leroy Matlock",
-          "role": "SP",
-          "war": 0.0,
-          "hp": 91,
-          "maxHp": 91,
-          "stf": 74,
+          "war": 7.3,
+          "hp": 88,
+          "maxHp": 88,
+          "stf": 46,
           "ctl": 92,
-          "mov": 54,
-          "sta": 75,
-          "ovr": 74,
+          "mov": 74,
+          "sta": 70,
+          "ovr": 71,
           "rarity": "Epic"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1936": {
@@ -46072,57 +47787,106 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
+      },
+      {
+        "id": "story_1936_KCM",
+        "name": "1936 Kansas City Monarchs",
+        "year": 1936,
+        "teamID": "KCM",
+        "win_pct": 0.867,
+        "ovr": 75,
+        "pitchers": [
+          {
+            "name": "Floyd Kranson",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 114,
+            "maxHp": 114,
+            "stf": 120,
+            "ctl": 75,
+            "mov": 52,
+            "sta": 106,
+            "ovr": 85,
+            "rarity": "Legendary"
+          },
+          {
+            "name": "Barney Morris",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 105,
+            "maxHp": 105,
+            "stf": 125,
+            "ctl": 74,
+            "mov": 59,
+            "sta": 93,
+            "ovr": 87,
+            "rarity": "Legendary"
+          },
+          {
+            "name": "Lefty Wilson",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 84,
+            "maxHp": 84,
+            "stf": 50,
+            "ctl": 43,
+            "mov": 59,
+            "sta": 65,
+            "ovr": 52,
+            "rarity": "Uncommon"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1936_KCM",
-      "name": "BOSS: 1936 Kansas City Monarchs",
+      "id": "story_1936_STARS_BOSS",
+      "name": "\ud83d\udc51 1936 STARS",
       "year": 1936,
-      "teamID": "KCM",
-      "win_pct": 0.867,
-      "ovr": 75,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 80,
       "pitchers": [
         {
-          "name": "Floyd Kranson",
+          "name": "Lefty Grove",
           "role": "SP",
-          "war": 0.0,
-          "hp": 114,
-          "maxHp": 114,
-          "stf": 120,
+          "war": 11.2,
+          "hp": 89,
+          "maxHp": 89,
+          "stf": 71,
           "ctl": 75,
-          "mov": 52,
-          "sta": 106,
-          "ovr": 85,
-          "rarity": "Legendary"
+          "mov": 96,
+          "sta": 72,
+          "ovr": 80,
+          "rarity": "Epic"
         },
         {
-          "name": "Barney Morris",
+          "name": "Carl Hubbell",
           "role": "SP",
-          "war": 0.0,
-          "hp": 105,
-          "maxHp": 105,
-          "stf": 125,
-          "ctl": 74,
-          "mov": 59,
-          "sta": 93,
-          "ovr": 87,
-          "rarity": "Legendary"
+          "war": 9.7,
+          "hp": 91,
+          "maxHp": 91,
+          "stf": 57,
+          "ctl": 91,
+          "mov": 90,
+          "sta": 75,
+          "ovr": 79,
+          "rarity": "Epic"
         },
         {
-          "name": "Lefty Wilson",
+          "name": "Dizzy Dean",
           "role": "SP",
-          "war": 0.0,
-          "hp": 84,
-          "maxHp": 84,
-          "stf": 50,
-          "ctl": 43,
-          "mov": 59,
-          "sta": 65,
-          "ovr": 52,
-          "rarity": "Uncommon"
+          "war": 7.3,
+          "hp": 94,
+          "maxHp": 94,
+          "stf": 85,
+          "ctl": 96,
+          "mov": 61,
+          "sta": 78,
+          "ovr": 80,
+          "rarity": "Epic"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1937": {
@@ -46568,9 +48332,7 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
-      }
-    ],
-    "mid": [
+      },
       {
         "id": "story_1937_BRO",
         "name": "1937 Brooklyn Dodgers",
@@ -46619,7 +48381,9 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      },
+      }
+    ],
+    "mid": [
       {
         "id": "story_1937_BBB",
         "name": "1937 Birmingham Black Barons",
@@ -47011,9 +48775,7 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      }
-    ],
-    "high": [
+      },
       {
         "id": "story_1937_CLE",
         "name": "1937 Cleveland Indians",
@@ -47111,7 +48873,9 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
-      },
+      }
+    ],
+    "high": [
       {
         "id": "story_1937_PIT",
         "name": "1937 Pittsburgh Pirates",
@@ -47552,57 +49316,106 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
+      },
+      {
+        "id": "story_1937_KCM",
+        "name": "1937 Kansas City Monarchs",
+        "year": 1937,
+        "teamID": "KCM",
+        "win_pct": 0.739,
+        "ovr": 92,
+        "pitchers": [
+          {
+            "name": "Hilton Smith",
+            "role": "SP",
+            "war": 5.3,
+            "hp": 88,
+            "maxHp": 88,
+            "stf": 103,
+            "ctl": 87,
+            "mov": 99,
+            "sta": 70,
+            "ovr": 94,
+            "rarity": "Legendary"
+          },
+          {
+            "name": "Andy Cooper",
+            "role": "SP",
+            "war": 1.8,
+            "hp": 88,
+            "maxHp": 88,
+            "stf": 95,
+            "ctl": 95,
+            "mov": 101,
+            "sta": 71,
+            "ovr": 94,
+            "rarity": "Legendary"
+          },
+          {
+            "name": "Lefty Wilson",
+            "role": "SP",
+            "war": 1.1,
+            "hp": 84,
+            "maxHp": 84,
+            "stf": 95,
+            "ctl": 83,
+            "mov": 97,
+            "sta": 66,
+            "ovr": 89,
+            "rarity": "Legendary"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1937_KCM",
-      "name": "BOSS: 1937 Kansas City Monarchs",
+      "id": "story_1937_STARS_BOSS",
+      "name": "\ud83d\udc51 1937 STARS",
       "year": 1937,
-      "teamID": "KCM",
-      "win_pct": 0.739,
-      "ovr": 92,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 77,
       "pitchers": [
         {
-          "name": "Hilton Smith",
+          "name": "Lefty Grove",
           "role": "SP",
-          "war": 5.3,
+          "war": 9.8,
           "hp": 88,
           "maxHp": 88,
-          "stf": 103,
-          "ctl": 87,
-          "mov": 99,
+          "stf": 80,
+          "ctl": 62,
+          "mov": 83,
           "sta": 70,
-          "ovr": 94,
-          "rarity": "Legendary"
+          "ovr": 74,
+          "rarity": "Epic"
         },
         {
-          "name": "Andy Cooper",
+          "name": "Lefty Gomez",
           "role": "SP",
-          "war": 1.8,
+          "war": 9.2,
           "hp": 88,
           "maxHp": 88,
           "stf": 95,
-          "ctl": 95,
-          "mov": 101,
-          "sta": 71,
-          "ovr": 94,
-          "rarity": "Legendary"
+          "ctl": 58,
+          "mov": 100,
+          "sta": 70,
+          "ovr": 83,
+          "rarity": "Epic"
         },
         {
-          "name": "Lefty Wilson",
+          "name": "Red Ruffing",
           "role": "SP",
-          "war": 1.1,
-          "hp": 84,
-          "maxHp": 84,
-          "stf": 95,
-          "ctl": 83,
-          "mov": 97,
-          "sta": 66,
-          "ovr": 89,
-          "rarity": "Legendary"
+          "war": 6.2,
+          "hp": 88,
+          "maxHp": 88,
+          "stf": 71,
+          "ctl": 73,
+          "mov": 75,
+          "sta": 71,
+          "ovr": 73,
+          "rarity": "Epic"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1938": {
@@ -48048,9 +49861,7 @@ window.OpponentsDatabase = {
             "rarity": "Epic"
           }
         ]
-      }
-    ],
-    "mid": [
+      },
       {
         "id": "story_1938_BRO",
         "name": "1938 Brooklyn Dodgers",
@@ -48099,7 +49910,9 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      },
+      }
+    ],
+    "mid": [
       {
         "id": "story_1938_SLN",
         "name": "1938 St. Louis Cardinals",
@@ -48491,9 +50304,7 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      }
-    ],
-    "high": [
+      },
       {
         "id": "story_1938_DET",
         "name": "1938 Detroit Tigers",
@@ -48591,7 +50402,9 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
-      },
+      }
+    ],
+    "high": [
       {
         "id": "story_1938_NY1",
         "name": "1938 New York Giants",
@@ -49032,57 +50845,106 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
+      },
+      {
+        "id": "story_1938_HG",
+        "name": "1938 Homestead Grays",
+        "year": 1938,
+        "teamID": "HG",
+        "win_pct": 0.75,
+        "ovr": 67,
+        "pitchers": [
+          {
+            "name": "Ray Brown",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 106,
+            "maxHp": 106,
+            "stf": 75,
+            "ctl": 88,
+            "mov": 55,
+            "sta": 94,
+            "ovr": 75,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Edsall Walker",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 84,
+            "maxHp": 84,
+            "stf": 77,
+            "ctl": 67,
+            "mov": 59,
+            "sta": 65,
+            "ovr": 67,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Roy Partlow",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 87,
+            "maxHp": 87,
+            "stf": 80,
+            "ctl": 43,
+            "mov": 49,
+            "sta": 69,
+            "ovr": 58,
+            "rarity": "Rare"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1938_HG",
-      "name": "BOSS: 1938 Homestead Grays",
+      "id": "story_1938_STARS_BOSS",
+      "name": "\ud83d\udc51 1938 STARS",
       "year": 1938,
-      "teamID": "HG",
-      "win_pct": 0.75,
-      "ovr": 67,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 66,
       "pitchers": [
         {
-          "name": "Ray Brown",
+          "name": "Bill Lee",
           "role": "SP",
-          "war": 0.0,
-          "hp": 106,
-          "maxHp": 106,
-          "stf": 75,
-          "ctl": 88,
-          "mov": 55,
-          "sta": 94,
-          "ovr": 75,
+          "war": 8.0,
+          "hp": 86,
+          "maxHp": 86,
+          "stf": 58,
+          "ctl": 76,
+          "mov": 72,
+          "sta": 68,
+          "ovr": 69,
+          "rarity": "Rare"
+        },
+        {
+          "name": "Thornton Lee",
+          "role": "SP",
+          "war": 5.5,
+          "hp": 88,
+          "maxHp": 88,
+          "stf": 43,
+          "ctl": 49,
+          "mov": 71,
+          "sta": 70,
+          "ovr": 56,
+          "rarity": "Rare"
+        },
+        {
+          "name": "Paul Derringer",
+          "role": "SP",
+          "war": 5.4,
+          "hp": 88,
+          "maxHp": 88,
+          "stf": 60,
+          "ctl": 98,
+          "mov": 62,
+          "sta": 71,
+          "ovr": 73,
           "rarity": "Epic"
-        },
-        {
-          "name": "Edsall Walker",
-          "role": "SP",
-          "war": 0.0,
-          "hp": 84,
-          "maxHp": 84,
-          "stf": 77,
-          "ctl": 67,
-          "mov": 59,
-          "sta": 65,
-          "ovr": 67,
-          "rarity": "Rare"
-        },
-        {
-          "name": "Roy Partlow",
-          "role": "SP",
-          "war": 0.0,
-          "hp": 87,
-          "maxHp": 87,
-          "stf": 80,
-          "ctl": 43,
-          "mov": 49,
-          "sta": 69,
-          "ovr": 58,
-          "rarity": "Rare"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1939": {
@@ -49528,9 +51390,7 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
-      }
-    ],
-    "mid": [
+      },
       {
         "id": "story_1939_PIT",
         "name": "1939 Pittsburgh Pirates",
@@ -49579,7 +51439,9 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
-      },
+      }
+    ],
+    "mid": [
       {
         "id": "story_1939_MRS",
         "name": "1939 Memphis Red Sox",
@@ -49971,9 +51833,7 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      }
-    ],
-    "high": [
+      },
       {
         "id": "story_1939_DET",
         "name": "1939 Detroit Tigers",
@@ -50071,7 +51931,9 @@ window.OpponentsDatabase = {
             "rarity": "Epic"
           }
         ]
-      },
+      }
+    ],
+    "high": [
       {
         "id": "story_1939_BRO",
         "name": "1939 Brooklyn Dodgers",
@@ -50512,57 +52374,106 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
+      },
+      {
+        "id": "story_1939_NYA",
+        "name": "1939 New York Yankees",
+        "year": 1939,
+        "teamID": "NYA",
+        "win_pct": 0.702,
+        "ovr": 66,
+        "pitchers": [
+          {
+            "name": "Red Ruffing",
+            "role": "SP",
+            "war": 4.4,
+            "hp": 88,
+            "maxHp": 88,
+            "stf": 57,
+            "ctl": 61,
+            "mov": 74,
+            "sta": 71,
+            "ovr": 65,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Lefty Gomez",
+            "role": "SP",
+            "war": 3.0,
+            "hp": 84,
+            "maxHp": 84,
+            "stf": 71,
+            "ctl": 45,
+            "mov": 64,
+            "sta": 66,
+            "ovr": 61,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Marius Russo",
+            "role": "SP",
+            "war": 3.0,
+            "hp": 100,
+            "maxHp": 100,
+            "stf": 66,
+            "ctl": 53,
+            "mov": 92,
+            "sta": 86,
+            "ovr": 72,
+            "rarity": "Epic"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1939_NYA",
-      "name": "BOSS: 1939 New York Yankees",
+      "id": "story_1939_STARS_BOSS",
+      "name": "\ud83d\udc51 1939 STARS",
       "year": 1939,
-      "teamID": "NYA",
-      "win_pct": 0.702,
-      "ovr": 66,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 70,
       "pitchers": [
         {
-          "name": "Red Ruffing",
+          "name": "Bob Feller",
           "role": "SP",
-          "war": 4.4,
-          "hp": 88,
-          "maxHp": 88,
-          "stf": 57,
-          "ctl": 61,
-          "mov": 74,
-          "sta": 71,
+          "war": 9.2,
+          "hp": 89,
+          "maxHp": 89,
+          "stf": 112,
+          "ctl": 40,
+          "mov": 79,
+          "sta": 72,
+          "ovr": 76,
+          "rarity": "Epic"
+        },
+        {
+          "name": "Bucky Walters",
+          "role": "SP",
+          "war": 8.2,
+          "hp": 91,
+          "maxHp": 91,
+          "stf": 60,
+          "ctl": 56,
+          "mov": 86,
+          "sta": 75,
+          "ovr": 68,
+          "rarity": "Rare"
+        },
+        {
+          "name": "Bobo Newsom",
+          "role": "SP",
+          "war": 8.2,
+          "hp": 86,
+          "maxHp": 86,
+          "stf": 90,
+          "ctl": 44,
+          "mov": 61,
+          "sta": 68,
           "ovr": 65,
           "rarity": "Rare"
-        },
-        {
-          "name": "Lefty Gomez",
-          "role": "SP",
-          "war": 3.0,
-          "hp": 84,
-          "maxHp": 84,
-          "stf": 71,
-          "ctl": 45,
-          "mov": 64,
-          "sta": 66,
-          "ovr": 61,
-          "rarity": "Rare"
-        },
-        {
-          "name": "Marius Russo",
-          "role": "SP",
-          "war": 3.0,
-          "hp": 100,
-          "maxHp": 100,
-          "stf": 66,
-          "ctl": 53,
-          "mov": 92,
-          "sta": 86,
-          "ovr": 72,
-          "rarity": "Epic"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1940": {
@@ -51943,57 +53854,106 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
+      },
+      {
+        "id": "story_1940_KCM",
+        "name": "1940 Kansas City Monarchs",
+        "year": 1940,
+        "teamID": "KCM",
+        "win_pct": 0.745,
+        "ovr": 79,
+        "pitchers": [
+          {
+            "name": "Jack Matchett",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 90,
+            "maxHp": 90,
+            "stf": 96,
+            "ctl": 73,
+            "mov": 55,
+            "sta": 73,
+            "ovr": 74,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Hilton Smith",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 93,
+            "maxHp": 93,
+            "stf": 125,
+            "ctl": 81,
+            "mov": 56,
+            "sta": 77,
+            "ovr": 86,
+            "rarity": "Legendary"
+          },
+          {
+            "name": "Frank Bradley",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 94,
+            "maxHp": 94,
+            "stf": 125,
+            "ctl": 52,
+            "mov": 50,
+            "sta": 78,
+            "ovr": 76,
+            "rarity": "Epic"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1940_KCM",
-      "name": "BOSS: 1940 Kansas City Monarchs",
+      "id": "story_1940_STARS_BOSS",
+      "name": "\ud83d\udc51 1940 STARS",
       "year": 1940,
-      "teamID": "KCM",
-      "win_pct": 0.745,
-      "ovr": 79,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 76,
       "pitchers": [
         {
-          "name": "Jack Matchett",
+          "name": "Bob Feller",
           "role": "SP",
-          "war": 0.0,
+          "war": 9.9,
           "hp": 90,
           "maxHp": 90,
-          "stf": 96,
-          "ctl": 73,
-          "mov": 55,
+          "stf": 111,
+          "ctl": 50,
+          "mov": 84,
           "sta": 73,
-          "ovr": 74,
+          "ovr": 81,
           "rarity": "Epic"
         },
         {
-          "name": "Hilton Smith",
+          "name": "Bobo Newsom",
           "role": "SP",
-          "war": 0.0,
-          "hp": 93,
-          "maxHp": 93,
-          "stf": 125,
-          "ctl": 81,
-          "mov": 56,
-          "sta": 77,
-          "ovr": 86,
-          "rarity": "Legendary"
+          "war": 7.4,
+          "hp": 85,
+          "maxHp": 85,
+          "stf": 85,
+          "ctl": 49,
+          "mov": 83,
+          "sta": 67,
+          "ovr": 72,
+          "rarity": "Epic"
         },
         {
-          "name": "Frank Bradley",
+          "name": "Claude Passeau",
           "role": "SP",
-          "war": 0.0,
-          "hp": 94,
-          "maxHp": 94,
-          "stf": 125,
-          "ctl": 52,
-          "mov": 50,
-          "sta": 78,
-          "ovr": 76,
+          "war": 6.8,
+          "hp": 92,
+          "maxHp": 92,
+          "stf": 61,
+          "ctl": 86,
+          "mov": 79,
+          "sta": 76,
+          "ovr": 75,
           "rarity": "Epic"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1941": {
@@ -53325,57 +55285,106 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
+      },
+      {
+        "id": "story_1941_KCM",
+        "name": "1941 Kansas City Monarchs",
+        "year": 1941,
+        "teamID": "KCM",
+        "win_pct": 0.709,
+        "ovr": 90,
+        "pitchers": [
+          {
+            "name": "Satchel Paige",
+            "role": "SP",
+            "war": 2.0,
+            "hp": 74,
+            "maxHp": 74,
+            "stf": 116,
+            "ctl": 110,
+            "mov": 110,
+            "sta": 52,
+            "ovr": 106,
+            "rarity": "Legendary"
+          },
+          {
+            "name": "Hilton Smith",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 105,
+            "maxHp": 105,
+            "stf": 99,
+            "ctl": 107,
+            "mov": 55,
+            "sta": 93,
+            "ovr": 88,
+            "rarity": "Legendary"
+          },
+          {
+            "name": "Frank Bradley",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 92,
+            "maxHp": 92,
+            "stf": 102,
+            "ctl": 69,
+            "mov": 56,
+            "sta": 76,
+            "ovr": 76,
+            "rarity": "Epic"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1941_KCM",
-      "name": "BOSS: 1941 Kansas City Monarchs",
+      "id": "story_1941_STARS_BOSS",
+      "name": "\ud83d\udc51 1941 STARS",
       "year": 1941,
-      "teamID": "KCM",
-      "win_pct": 0.709,
-      "ovr": 90,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 72,
       "pitchers": [
         {
-          "name": "Satchel Paige",
+          "name": "Thornton Lee",
           "role": "SP",
-          "war": 2.0,
-          "hp": 74,
-          "maxHp": 74,
-          "stf": 116,
-          "ctl": 110,
-          "mov": 110,
-          "sta": 52,
-          "ovr": 106,
-          "rarity": "Legendary"
+          "war": 8.6,
+          "hp": 91,
+          "maxHp": 91,
+          "stf": 60,
+          "ctl": 64,
+          "mov": 87,
+          "sta": 75,
+          "ovr": 71,
+          "rarity": "Epic"
         },
         {
-          "name": "Hilton Smith",
+          "name": "Bob Feller",
           "role": "SP",
-          "war": 0.0,
-          "hp": 105,
-          "maxHp": 105,
-          "stf": 99,
-          "ctl": 107,
-          "mov": 55,
-          "sta": 93,
-          "ovr": 88,
-          "rarity": "Legendary"
+          "war": 8.2,
+          "hp": 90,
+          "maxHp": 90,
+          "stf": 103,
+          "ctl": 33,
+          "mov": 64,
+          "sta": 73,
+          "ovr": 67,
+          "rarity": "Rare"
         },
         {
-          "name": "Frank Bradley",
+          "name": "Whit Wyatt",
           "role": "SP",
-          "war": 0.0,
-          "hp": 92,
-          "maxHp": 92,
-          "stf": 102,
+          "war": 6.7,
+          "hp": 88,
+          "maxHp": 88,
+          "stf": 84,
           "ctl": 69,
-          "mov": 56,
-          "sta": 76,
-          "ovr": 76,
+          "mov": 83,
+          "sta": 71,
+          "ovr": 78,
           "rarity": "Epic"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1942": {
@@ -54707,57 +56716,106 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
+      },
+      {
+        "id": "story_1942_KCM",
+        "name": "1942 Kansas City Monarchs",
+        "year": 1942,
+        "teamID": "KCM",
+        "win_pct": 0.72,
+        "ovr": 79,
+        "pitchers": [
+          {
+            "name": "Norris Phillips",
+            "role": "SP",
+            "war": 0.2,
+            "hp": 85,
+            "maxHp": 85,
+            "stf": 84,
+            "ctl": 45,
+            "mov": 113,
+            "sta": 67,
+            "ovr": 79,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Hilton Smith",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 111,
+            "maxHp": 111,
+            "stf": 76,
+            "ctl": 90,
+            "mov": 56,
+            "sta": 101,
+            "ovr": 77,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Satchel Paige",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 80,
+            "maxHp": 80,
+            "stf": 100,
+            "ctl": 91,
+            "mov": 59,
+            "sta": 60,
+            "ovr": 81,
+            "rarity": "Epic"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1942_KCM",
-      "name": "BOSS: 1942 Kansas City Monarchs",
+      "id": "story_1942_STARS_BOSS",
+      "name": "\ud83d\udc51 1942 STARS",
       "year": 1942,
-      "teamID": "KCM",
-      "win_pct": 0.72,
-      "ovr": 79,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 72,
       "pitchers": [
         {
-          "name": "Norris Phillips",
+          "name": "Mort Cooper",
           "role": "SP",
-          "war": 0.2,
-          "hp": 85,
-          "maxHp": 85,
-          "stf": 84,
-          "ctl": 45,
-          "mov": 113,
-          "sta": 67,
-          "ovr": 79,
+          "war": 8.2,
+          "hp": 88,
+          "maxHp": 88,
+          "stf": 65,
+          "ctl": 86,
+          "mov": 103,
+          "sta": 71,
+          "ovr": 83,
           "rarity": "Epic"
         },
         {
-          "name": "Hilton Smith",
+          "name": "Tex Hughson",
           "role": "SP",
-          "war": 0.0,
-          "hp": 111,
-          "maxHp": 111,
-          "stf": 76,
-          "ctl": 90,
-          "mov": 56,
-          "sta": 101,
-          "ovr": 77,
-          "rarity": "Epic"
+          "war": 6.2,
+          "hp": 96,
+          "maxHp": 96,
+          "stf": 45,
+          "ctl": 81,
+          "mov": 77,
+          "sta": 81,
+          "ovr": 69,
+          "rarity": "Rare"
         },
         {
-          "name": "Satchel Paige",
+          "name": "Al Benton",
           "role": "SP",
-          "war": 0.0,
-          "hp": 80,
-          "maxHp": 80,
-          "stf": 100,
-          "ctl": 91,
-          "mov": 59,
-          "sta": 60,
-          "ovr": 81,
-          "rarity": "Epic"
+          "war": 5.6,
+          "hp": 86,
+          "maxHp": 86,
+          "stf": 56,
+          "ctl": 59,
+          "mov": 73,
+          "sta": 68,
+          "ovr": 63,
+          "rarity": "Rare"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1943": {
@@ -56138,57 +58196,106 @@ window.OpponentsDatabase = {
             "rarity": "Epic"
           }
         ]
+      },
+      {
+        "id": "story_1943_HG",
+        "name": "1943 Homestead Grays",
+        "year": 1943,
+        "teamID": "HG",
+        "win_pct": 0.788,
+        "ovr": 62,
+        "pitchers": [
+          {
+            "name": "Charlie Shields",
+            "role": "SP",
+            "war": 0.2,
+            "hp": 93,
+            "maxHp": 93,
+            "stf": 62,
+            "ctl": 34,
+            "mov": 68,
+            "sta": 77,
+            "ovr": 57,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Johnny Wright",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 90,
+            "maxHp": 90,
+            "stf": 62,
+            "ctl": 90,
+            "mov": 58,
+            "sta": 73,
+            "ovr": 70,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Spoon Carter",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 99,
+            "maxHp": 99,
+            "stf": 41,
+            "ctl": 74,
+            "mov": 55,
+            "sta": 85,
+            "ovr": 60,
+            "rarity": "Rare"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1943_HG",
-      "name": "BOSS: 1943 Homestead Grays",
+      "id": "story_1943_STARS_BOSS",
+      "name": "\ud83d\udc51 1943 STARS",
       "year": 1943,
-      "teamID": "HG",
-      "win_pct": 0.788,
-      "ovr": 62,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 75,
       "pitchers": [
         {
-          "name": "Charlie Shields",
+          "name": "Spud Chandler",
           "role": "SP",
-          "war": 0.2,
-          "hp": 93,
-          "maxHp": 93,
-          "stf": 62,
-          "ctl": 34,
-          "mov": 68,
-          "sta": 77,
-          "ovr": 57,
-          "rarity": "Rare"
+          "war": 6.4,
+          "hp": 91,
+          "maxHp": 91,
+          "stf": 63,
+          "ctl": 92,
+          "mov": 107,
+          "sta": 75,
+          "ovr": 86,
+          "rarity": "Legendary"
         },
         {
-          "name": "Johnny Wright",
+          "name": "Mort Cooper",
           "role": "SP",
-          "war": 0.0,
-          "hp": 90,
-          "maxHp": 90,
-          "stf": 62,
-          "ctl": 90,
-          "mov": 58,
-          "sta": 73,
-          "ovr": 70,
+          "war": 5.7,
+          "hp": 91,
+          "maxHp": 91,
+          "stf": 60,
+          "ctl": 77,
+          "mov": 81,
+          "sta": 75,
+          "ovr": 73,
           "rarity": "Epic"
         },
         {
-          "name": "Spoon Carter",
+          "name": "Tex Hughson",
           "role": "SP",
-          "war": 0.0,
-          "hp": 99,
-          "maxHp": 99,
-          "stf": 41,
-          "ctl": 74,
-          "mov": 55,
-          "sta": 85,
-          "ovr": 60,
+          "war": 5.7,
+          "hp": 90,
+          "maxHp": 90,
+          "stf": 48,
+          "ctl": 80,
+          "mov": 63,
+          "sta": 74,
+          "ovr": 65,
           "rarity": "Rare"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1944": {
@@ -57520,57 +59627,106 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
+      },
+      {
+        "id": "story_1944_SLN",
+        "name": "1944 St. Louis Cardinals",
+        "year": 1944,
+        "teamID": "SLN",
+        "win_pct": 0.682,
+        "ovr": 72,
+        "pitchers": [
+          {
+            "name": "Mort Cooper",
+            "role": "SP",
+            "war": 5.3,
+            "hp": 87,
+            "maxHp": 87,
+            "stf": 42,
+            "ctl": 87,
+            "mov": 80,
+            "sta": 69,
+            "ovr": 70,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Ted Wilks",
+            "role": "SP",
+            "war": 4.5,
+            "hp": 99,
+            "maxHp": 99,
+            "stf": 35,
+            "ctl": 88,
+            "mov": 70,
+            "sta": 85,
+            "ovr": 66,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Red Munger",
+            "role": "SP",
+            "war": 4.2,
+            "hp": 100,
+            "maxHp": 100,
+            "stf": 52,
+            "ctl": 66,
+            "mov": 117,
+            "sta": 86,
+            "ovr": 79,
+            "rarity": "Epic"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1944_SLN",
-      "name": "BOSS: 1944 St. Louis Cardinals",
+      "id": "story_1944_STARS_BOSS",
+      "name": "\ud83d\udc51 1944 STARS",
       "year": 1944,
-      "teamID": "SLN",
-      "win_pct": 0.682,
-      "ovr": 72,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 69,
       "pitchers": [
         {
-          "name": "Mort Cooper",
+          "name": "Dizzy Trout",
           "role": "SP",
-          "war": 5.3,
-          "hp": 87,
-          "maxHp": 87,
-          "stf": 42,
-          "ctl": 87,
-          "mov": 80,
-          "sta": 69,
-          "ovr": 70,
-          "rarity": "Epic"
-        },
-        {
-          "name": "Ted Wilks",
-          "role": "SP",
-          "war": 4.5,
-          "hp": 99,
-          "maxHp": 99,
-          "stf": 35,
+          "war": 9.2,
+          "hp": 93,
+          "maxHp": 93,
+          "stf": 46,
           "ctl": 88,
-          "mov": 70,
-          "sta": 85,
-          "ovr": 66,
-          "rarity": "Rare"
+          "mov": 91,
+          "sta": 77,
+          "ovr": 75,
+          "rarity": "Epic"
         },
         {
-          "name": "Red Munger",
+          "name": "Hal Newhouser",
           "role": "SP",
-          "war": 4.2,
-          "hp": 100,
-          "maxHp": 100,
-          "stf": 52,
-          "ctl": 66,
-          "mov": 117,
-          "sta": 86,
-          "ovr": 79,
+          "war": 7.7,
+          "hp": 95,
+          "maxHp": 95,
+          "stf": 72,
+          "ctl": 69,
+          "mov": 88,
+          "sta": 80,
+          "ovr": 77,
           "rarity": "Epic"
+        },
+        {
+          "name": "Rip Sewell",
+          "role": "SP",
+          "war": 6.0,
+          "hp": 92,
+          "maxHp": 92,
+          "stf": 30,
+          "ctl": 65,
+          "mov": 61,
+          "sta": 76,
+          "ovr": 54,
+          "rarity": "Uncommon"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1945": {
@@ -58902,57 +61058,106 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
+      },
+      {
+        "id": "story_1945_CBE",
+        "name": "1945 Cleveland Buckeyes",
+        "year": 1945,
+        "teamID": "CBE",
+        "win_pct": 0.776,
+        "ovr": 63,
+        "pitchers": [
+          {
+            "name": "Roosevelt Davis",
+            "role": "SP",
+            "war": 1.2,
+            "hp": 104,
+            "maxHp": 104,
+            "stf": 44,
+            "ctl": 79,
+            "mov": 115,
+            "sta": 92,
+            "ovr": 81,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Eugene Bremer",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 86,
+            "maxHp": 86,
+            "stf": 37,
+            "ctl": 91,
+            "mov": 55,
+            "sta": 68,
+            "ovr": 62,
+            "rarity": "Rare"
+          },
+          {
+            "name": "George Jefferson",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 84,
+            "maxHp": 84,
+            "stf": 30,
+            "ctl": 48,
+            "mov": 50,
+            "sta": 65,
+            "ovr": 45,
+            "rarity": "Uncommon"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1945_CBE",
-      "name": "BOSS: 1945 Cleveland Buckeyes",
+      "id": "story_1945_STARS_BOSS",
+      "name": "\ud83d\udc51 1945 STARS",
       "year": 1945,
-      "teamID": "CBE",
-      "win_pct": 0.776,
-      "ovr": 63,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 79,
       "pitchers": [
         {
-          "name": "Roosevelt Davis",
+          "name": "Hal Newhouser",
           "role": "SP",
-          "war": 1.2,
-          "hp": 104,
-          "maxHp": 104,
-          "stf": 44,
-          "ctl": 79,
-          "mov": 115,
-          "sta": 92,
-          "ovr": 81,
+          "war": 11.3,
+          "hp": 92,
+          "maxHp": 92,
+          "stf": 83,
+          "ctl": 64,
+          "mov": 107,
+          "sta": 76,
+          "ovr": 84,
           "rarity": "Epic"
         },
         {
-          "name": "Eugene Bremer",
+          "name": "Preacher Roe",
           "role": "SP",
-          "war": 0.0,
+          "war": 7.3,
           "hp": 86,
           "maxHp": 86,
-          "stf": 37,
-          "ctl": 91,
-          "mov": 55,
+          "stf": 76,
+          "ctl": 96,
+          "mov": 73,
           "sta": 68,
-          "ovr": 62,
-          "rarity": "Rare"
+          "ovr": 80,
+          "rarity": "Epic"
         },
         {
-          "name": "George Jefferson",
+          "name": "Nels Potter",
           "role": "SP",
-          "war": 0.0,
-          "hp": 84,
-          "maxHp": 84,
-          "stf": 30,
-          "ctl": 48,
-          "mov": 50,
-          "sta": 65,
-          "ovr": 45,
-          "rarity": "Uncommon"
+          "war": 7.2,
+          "hp": 88,
+          "maxHp": 88,
+          "stf": 59,
+          "ctl": 81,
+          "mov": 77,
+          "sta": 71,
+          "ovr": 72,
+          "rarity": "Epic"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1946": {
@@ -60284,57 +62489,106 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
+      },
+      {
+        "id": "story_1946_NE",
+        "name": "1946 Newark Eagles",
+        "year": 1946,
+        "teamID": "NE",
+        "win_pct": 0.742,
+        "ovr": 73,
+        "pitchers": [
+          {
+            "name": "Leon Day",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 94,
+            "maxHp": 94,
+            "stf": 103,
+            "ctl": 57,
+            "mov": 56,
+            "sta": 78,
+            "ovr": 73,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Max Manning",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 100,
+            "maxHp": 100,
+            "stf": 66,
+            "ctl": 95,
+            "mov": 53,
+            "sta": 86,
+            "ovr": 73,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Rufus Lewis",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 84,
+            "maxHp": 84,
+            "stf": 80,
+            "ctl": 87,
+            "mov": 51,
+            "sta": 65,
+            "ovr": 72,
+            "rarity": "Epic"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1946_NE",
-      "name": "BOSS: 1946 Newark Eagles",
+      "id": "story_1946_STARS_BOSS",
+      "name": "\ud83d\udc51 1946 STARS",
       "year": 1946,
-      "teamID": "NE",
-      "win_pct": 0.742,
-      "ovr": 73,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 83,
       "pitchers": [
         {
-          "name": "Leon Day",
+          "name": "Bob Feller",
           "role": "SP",
-          "war": 0.0,
-          "hp": 94,
-          "maxHp": 94,
-          "stf": 103,
-          "ctl": 57,
-          "mov": 56,
-          "sta": 78,
-          "ovr": 73,
+          "war": 10.0,
+          "hp": 93,
+          "maxHp": 93,
+          "stf": 119,
+          "ctl": 51,
+          "mov": 82,
+          "sta": 77,
+          "ovr": 83,
           "rarity": "Epic"
         },
         {
-          "name": "Max Manning",
+          "name": "Hal Newhouser",
           "role": "SP",
-          "war": 0.0,
-          "hp": 100,
-          "maxHp": 100,
-          "stf": 66,
-          "ctl": 95,
-          "mov": 53,
-          "sta": 86,
-          "ovr": 73,
-          "rarity": "Epic"
+          "war": 9.7,
+          "hp": 92,
+          "maxHp": 92,
+          "stf": 119,
+          "ctl": 67,
+          "mov": 101,
+          "sta": 76,
+          "ovr": 94,
+          "rarity": "Legendary"
         },
         {
-          "name": "Rufus Lewis",
+          "name": "Dizzy Trout",
           "role": "SP",
-          "war": 0.0,
-          "hp": 84,
-          "maxHp": 84,
-          "stf": 80,
-          "ctl": 87,
-          "mov": 51,
-          "sta": 65,
+          "war": 7.6,
+          "hp": 92,
+          "maxHp": 92,
+          "stf": 65,
+          "ctl": 64,
+          "mov": 84,
+          "sta": 76,
           "ovr": 72,
           "rarity": "Epic"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1947": {
@@ -61666,57 +63920,106 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
+      },
+      {
+        "id": "story_1947_CBE",
+        "name": "1947 Cleveland Buckeyes",
+        "year": 1947,
+        "teamID": "CBE",
+        "win_pct": 0.731,
+        "ovr": 54,
+        "pitchers": [
+          {
+            "name": "Vibert Clarke",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 94,
+            "maxHp": 94,
+            "stf": 70,
+            "ctl": 67,
+            "mov": 59,
+            "sta": 79,
+            "ovr": 67,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Doc Bracken",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 88,
+            "maxHp": 88,
+            "stf": 83,
+            "ctl": 15,
+            "mov": 51,
+            "sta": 70,
+            "ovr": 52,
+            "rarity": "Uncommon"
+          },
+          {
+            "name": "Eugene Bremer",
+            "role": "RP",
+            "war": 0.0,
+            "hp": 45,
+            "maxHp": 45,
+            "stf": 35,
+            "ctl": 51,
+            "mov": 47,
+            "sta": 35,
+            "ovr": 43,
+            "rarity": "Common"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1947_CBE",
-      "name": "BOSS: 1947 Cleveland Buckeyes",
+      "id": "story_1947_STARS_BOSS",
+      "name": "\ud83d\udc51 1947 STARS",
       "year": 1947,
-      "teamID": "CBE",
-      "win_pct": 0.731,
-      "ovr": 54,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 73,
       "pitchers": [
         {
-          "name": "Vibert Clarke",
+          "name": "Warren Spahn",
           "role": "SP",
-          "war": 0.0,
-          "hp": 94,
-          "maxHp": 94,
-          "stf": 70,
-          "ctl": 67,
-          "mov": 59,
-          "sta": 79,
-          "ovr": 67,
-          "rarity": "Rare"
+          "war": 9.5,
+          "hp": 90,
+          "maxHp": 90,
+          "stf": 48,
+          "ctl": 76,
+          "mov": 89,
+          "sta": 73,
+          "ovr": 71,
+          "rarity": "Epic"
         },
         {
-          "name": "Doc Bracken",
+          "name": "Ewell Blackwell",
           "role": "SP",
-          "war": 0.0,
+          "war": 9.4,
+          "hp": 90,
+          "maxHp": 90,
+          "stf": 87,
+          "ctl": 64,
+          "mov": 90,
+          "sta": 73,
+          "ovr": 80,
+          "rarity": "Epic"
+        },
+        {
+          "name": "Ralph Branca",
+          "role": "SP",
+          "war": 6.9,
           "hp": 88,
           "maxHp": 88,
-          "stf": 83,
-          "ctl": 15,
-          "mov": 51,
+          "stf": 62,
+          "ctl": 64,
+          "mov": 78,
           "sta": 70,
-          "ovr": 52,
-          "rarity": "Uncommon"
-        },
-        {
-          "name": "Eugene Bremer",
-          "role": "RP",
-          "war": 0.0,
-          "hp": 45,
-          "maxHp": 45,
-          "stf": 35,
-          "ctl": 51,
-          "mov": 47,
-          "sta": 35,
-          "ovr": 43,
-          "rarity": "Common"
+          "ovr": 68,
+          "rarity": "Rare"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1948": {
@@ -63048,57 +65351,106 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
+      },
+      {
+        "id": "story_1948_BBB",
+        "name": "1948 Birmingham Black Barons",
+        "year": 1948,
+        "teamID": "BBB",
+        "win_pct": 0.718,
+        "ovr": 66,
+        "pitchers": [
+          {
+            "name": "Alonzo Perry",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 84,
+            "maxHp": 84,
+            "stf": 50,
+            "ctl": 64,
+            "mov": 50,
+            "sta": 65,
+            "ovr": 56,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Jimmie Newberry",
+            "role": "RP",
+            "war": 0.0,
+            "hp": 45,
+            "maxHp": 45,
+            "stf": 68,
+            "ctl": 94,
+            "mov": 57,
+            "sta": 35,
+            "ovr": 69,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Bill Powell",
+            "role": "SP",
+            "war": 0.0,
+            "hp": 85,
+            "maxHp": 85,
+            "stf": 96,
+            "ctl": 68,
+            "mov": 52,
+            "sta": 67,
+            "ovr": 72,
+            "rarity": "Epic"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1948_BBB",
-      "name": "BOSS: 1948 Birmingham Black Barons",
+      "id": "story_1948_STARS_BOSS",
+      "name": "\ud83d\udc51 1948 STARS",
       "year": 1948,
-      "teamID": "BBB",
-      "win_pct": 0.718,
-      "ovr": 66,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 75,
       "pitchers": [
         {
-          "name": "Alonzo Perry",
+          "name": "Harry Brecheen",
           "role": "SP",
-          "war": 0.0,
-          "hp": 84,
-          "maxHp": 84,
-          "stf": 50,
-          "ctl": 64,
-          "mov": 50,
-          "sta": 65,
-          "ovr": 56,
-          "rarity": "Rare"
+          "war": 8.7,
+          "hp": 88,
+          "maxHp": 88,
+          "stf": 78,
+          "ctl": 93,
+          "mov": 99,
+          "sta": 70,
+          "ovr": 88,
+          "rarity": "Legendary"
         },
         {
-          "name": "Jimmie Newberry",
-          "role": "RP",
-          "war": 0.0,
-          "hp": 45,
-          "maxHp": 45,
-          "stf": 68,
-          "ctl": 94,
-          "mov": 57,
-          "sta": 35,
-          "ovr": 69,
-          "rarity": "Rare"
-        },
-        {
-          "name": "Bill Powell",
+          "name": "Johnny Sain",
           "role": "SP",
-          "war": 0.0,
-          "hp": 85,
-          "maxHp": 85,
-          "stf": 96,
-          "ctl": 68,
-          "mov": 52,
-          "sta": 67,
-          "ovr": 72,
+          "war": 8.5,
+          "hp": 89,
+          "maxHp": 89,
+          "stf": 49,
+          "ctl": 82,
+          "mov": 77,
+          "sta": 72,
+          "ovr": 70,
           "rarity": "Epic"
+        },
+        {
+          "name": "Hal Newhouser",
+          "role": "SP",
+          "war": 6.4,
+          "hp": 88,
+          "maxHp": 88,
+          "stf": 62,
+          "ctl": 61,
+          "mov": 78,
+          "sta": 70,
+          "ovr": 67,
+          "rarity": "Rare"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1949": {
@@ -63842,57 +66194,106 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
+      },
+      {
+        "id": "story_1949_BRO",
+        "name": "1949 Brooklyn Dodgers",
+        "year": 1949,
+        "teamID": "BRO",
+        "win_pct": 0.63,
+        "ovr": 69,
+        "pitchers": [
+          {
+            "name": "Preacher Roe",
+            "role": "SP",
+            "war": 5.8,
+            "hp": 88,
+            "maxHp": 88,
+            "stf": 60,
+            "ctl": 94,
+            "mov": 72,
+            "sta": 71,
+            "ovr": 75,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Don Newcombe",
+            "role": "SP",
+            "war": 5.5,
+            "hp": 88,
+            "maxHp": 88,
+            "stf": 74,
+            "ctl": 75,
+            "mov": 66,
+            "sta": 71,
+            "ovr": 72,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Jack Banta",
+            "role": "RP",
+            "war": 2.7,
+            "hp": 45,
+            "maxHp": 45,
+            "stf": 77,
+            "ctl": 47,
+            "mov": 61,
+            "sta": 35,
+            "ovr": 59,
+            "rarity": "Rare"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1949_BRO",
-      "name": "BOSS: 1949 Brooklyn Dodgers",
+      "id": "story_1949_STARS_BOSS",
+      "name": "\ud83d\udc51 1949 STARS",
       "year": 1949,
-      "teamID": "BRO",
-      "win_pct": 0.63,
-      "ovr": 69,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 66,
       "pitchers": [
         {
-          "name": "Preacher Roe",
+          "name": "Mel Parnell",
           "role": "SP",
-          "war": 5.8,
-          "hp": 88,
-          "maxHp": 88,
-          "stf": 60,
-          "ctl": 94,
-          "mov": 72,
-          "sta": 71,
-          "ovr": 75,
-          "rarity": "Epic"
+          "war": 8.0,
+          "hp": 94,
+          "maxHp": 94,
+          "stf": 46,
+          "ctl": 47,
+          "mov": 86,
+          "sta": 78,
+          "ovr": 62,
+          "rarity": "Rare"
         },
         {
-          "name": "Don Newcombe",
+          "name": "Virgil Trucks",
           "role": "SP",
-          "war": 5.5,
-          "hp": 88,
-          "maxHp": 88,
-          "stf": 74,
-          "ctl": 75,
-          "mov": 66,
-          "sta": 71,
+          "war": 6.9,
+          "hp": 92,
+          "maxHp": 92,
+          "stf": 66,
+          "ctl": 47,
+          "mov": 76,
+          "sta": 76,
+          "ovr": 64,
+          "rarity": "Rare"
+        },
+        {
+          "name": "Howie Pollet",
+          "role": "SP",
+          "war": 6.5,
+          "hp": 90,
+          "maxHp": 90,
+          "stf": 54,
+          "ctl": 84,
+          "mov": 79,
+          "sta": 73,
           "ovr": 72,
           "rarity": "Epic"
-        },
-        {
-          "name": "Jack Banta",
-          "role": "RP",
-          "war": 2.7,
-          "hp": 45,
-          "maxHp": 45,
-          "stf": 77,
-          "ctl": 47,
-          "mov": 61,
-          "sta": 35,
-          "ovr": 59,
-          "rarity": "Rare"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1950": {
@@ -64636,57 +67037,106 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
+      },
+      {
+        "id": "story_1950_NYA",
+        "name": "1950 New York Yankees",
+        "year": 1950,
+        "teamID": "NYA",
+        "win_pct": 0.636,
+        "ovr": 59,
+        "pitchers": [
+          {
+            "name": "Allie Reynolds",
+            "role": "SP",
+            "war": 3.2,
+            "hp": 90,
+            "maxHp": 90,
+            "stf": 81,
+            "ctl": 37,
+            "mov": 61,
+            "sta": 74,
+            "ovr": 61,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Eddie Lopat",
+            "role": "SP",
+            "war": 3.1,
+            "hp": 85,
+            "maxHp": 85,
+            "stf": 30,
+            "ctl": 80,
+            "mov": 62,
+            "sta": 67,
+            "ovr": 58,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Vic Raschi",
+            "role": "SP",
+            "war": 2.9,
+            "hp": 89,
+            "maxHp": 89,
+            "stf": 73,
+            "ctl": 47,
+            "mov": 54,
+            "sta": 72,
+            "ovr": 59,
+            "rarity": "Rare"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1950_NYA",
-      "name": "BOSS: 1950 New York Yankees",
+      "id": "story_1950_STARS_BOSS",
+      "name": "\ud83d\udc51 1950 STARS",
       "year": 1950,
-      "teamID": "NYA",
-      "win_pct": 0.636,
-      "ovr": 59,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 65,
       "pitchers": [
         {
-          "name": "Allie Reynolds",
+          "name": "Ewell Blackwell",
           "role": "SP",
-          "war": 3.2,
+          "war": 7.5,
           "hp": 90,
           "maxHp": 90,
-          "stf": 81,
-          "ctl": 37,
-          "mov": 61,
+          "stf": 89,
+          "ctl": 49,
+          "mov": 75,
+          "sta": 73,
+          "ovr": 71,
+          "rarity": "Epic"
+        },
+        {
+          "name": "Robin Roberts",
+          "role": "SP",
+          "war": 7.4,
+          "hp": 88,
+          "maxHp": 88,
+          "stf": 56,
+          "ctl": 84,
+          "mov": 66,
+          "sta": 70,
+          "ovr": 69,
+          "rarity": "Rare"
+        },
+        {
+          "name": "Ned Garver",
+          "role": "SP",
+          "war": 7.3,
+          "hp": 90,
+          "maxHp": 90,
+          "stf": 34,
+          "ctl": 50,
+          "mov": 74,
           "sta": 74,
-          "ovr": 61,
-          "rarity": "Rare"
-        },
-        {
-          "name": "Eddie Lopat",
-          "role": "SP",
-          "war": 3.1,
-          "hp": 85,
-          "maxHp": 85,
-          "stf": 30,
-          "ctl": 80,
-          "mov": 62,
-          "sta": 67,
-          "ovr": 58,
-          "rarity": "Rare"
-        },
-        {
-          "name": "Vic Raschi",
-          "role": "SP",
-          "war": 2.9,
-          "hp": 89,
-          "maxHp": 89,
-          "stf": 73,
-          "ctl": 47,
-          "mov": 54,
-          "sta": 72,
-          "ovr": 59,
+          "ovr": 55,
           "rarity": "Rare"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1951": {
@@ -65430,57 +67880,106 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
+      },
+      {
+        "id": "story_1951_NYA",
+        "name": "1951 New York Yankees",
+        "year": 1951,
+        "teamID": "NYA",
+        "win_pct": 0.636,
+        "ovr": 63,
+        "pitchers": [
+          {
+            "name": "Allie Reynolds",
+            "role": "SP",
+            "war": 3.6,
+            "hp": 91,
+            "maxHp": 91,
+            "stf": 68,
+            "ctl": 47,
+            "mov": 66,
+            "sta": 75,
+            "ovr": 62,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Eddie Lopat",
+            "role": "SP",
+            "war": 3.6,
+            "hp": 86,
+            "maxHp": 86,
+            "stf": 44,
+            "ctl": 74,
+            "mov": 69,
+            "sta": 68,
+            "ovr": 63,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Vic Raschi",
+            "role": "SP",
+            "war": 2.5,
+            "hp": 87,
+            "maxHp": 87,
+            "stf": 77,
+            "ctl": 54,
+            "mov": 59,
+            "sta": 69,
+            "ovr": 64,
+            "rarity": "Rare"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1951_NYA",
-      "name": "BOSS: 1951 New York Yankees",
+      "id": "story_1951_STARS_BOSS",
+      "name": "\ud83d\udc51 1951 STARS",
       "year": 1951,
-      "teamID": "NYA",
-      "win_pct": 0.636,
-      "ovr": 63,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 67,
       "pitchers": [
         {
-          "name": "Allie Reynolds",
+          "name": "Robin Roberts",
           "role": "SP",
-          "war": 3.6,
-          "hp": 91,
-          "maxHp": 91,
-          "stf": 68,
-          "ctl": 47,
-          "mov": 66,
-          "sta": 75,
-          "ovr": 62,
+          "war": 8.0,
+          "hp": 89,
+          "maxHp": 89,
+          "stf": 45,
+          "ctl": 95,
+          "mov": 65,
+          "sta": 72,
+          "ovr": 69,
           "rarity": "Rare"
         },
         {
-          "name": "Eddie Lopat",
+          "name": "Warren Spahn",
           "role": "SP",
-          "war": 3.6,
-          "hp": 86,
-          "maxHp": 86,
-          "stf": 44,
-          "ctl": 74,
-          "mov": 69,
-          "sta": 68,
-          "ovr": 63,
-          "rarity": "Rare"
-        },
-        {
-          "name": "Vic Raschi",
-          "role": "SP",
-          "war": 2.5,
-          "hp": 87,
-          "maxHp": 87,
-          "stf": 77,
-          "ctl": 54,
-          "mov": 59,
-          "sta": 69,
+          "war": 7.6,
+          "hp": 92,
+          "maxHp": 92,
+          "stf": 62,
+          "ctl": 64,
+          "mov": 63,
+          "sta": 76,
           "ovr": 64,
           "rarity": "Rare"
+        },
+        {
+          "name": "Sal Maglie",
+          "role": "SP",
+          "war": 6.6,
+          "hp": 89,
+          "maxHp": 89,
+          "stf": 57,
+          "ctl": 77,
+          "mov": 66,
+          "sta": 72,
+          "ovr": 67,
+          "rarity": "Rare"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1952": {
@@ -66224,57 +68723,106 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
+      },
+      {
+        "id": "story_1952_BRO",
+        "name": "1952 Brooklyn Dodgers",
+        "year": 1952,
+        "teamID": "BRO",
+        "win_pct": 0.627,
+        "ovr": 71,
+        "pitchers": [
+          {
+            "name": "Joe Black",
+            "role": "RP",
+            "war": 4.3,
+            "hp": 44,
+            "maxHp": 44,
+            "stf": 72,
+            "ctl": 77,
+            "mov": 88,
+            "sta": 34,
+            "ovr": 74,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Billy Loes",
+            "role": "SP",
+            "war": 4.1,
+            "hp": 94,
+            "maxHp": 94,
+            "stf": 74,
+            "ctl": 58,
+            "mov": 70,
+            "sta": 78,
+            "ovr": 68,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Carl Erskine",
+            "role": "SP",
+            "war": 4.0,
+            "hp": 88,
+            "maxHp": 88,
+            "stf": 77,
+            "ctl": 65,
+            "mov": 68,
+            "sta": 71,
+            "ovr": 70,
+            "rarity": "Epic"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1952_BRO",
-      "name": "BOSS: 1952 Brooklyn Dodgers",
+      "id": "story_1952_STARS_BOSS",
+      "name": "\ud83d\udc51 1952 STARS",
       "year": 1952,
-      "teamID": "BRO",
-      "win_pct": 0.627,
-      "ovr": 71,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 75,
       "pitchers": [
         {
-          "name": "Joe Black",
-          "role": "RP",
-          "war": 4.3,
-          "hp": 44,
-          "maxHp": 44,
-          "stf": 72,
-          "ctl": 77,
-          "mov": 88,
-          "sta": 34,
-          "ovr": 74,
+          "name": "Bobby Shantz",
+          "role": "SP",
+          "war": 8.8,
+          "hp": 91,
+          "maxHp": 91,
+          "stf": 64,
+          "ctl": 90,
+          "mov": 80,
+          "sta": 75,
+          "ovr": 78,
           "rarity": "Epic"
         },
         {
-          "name": "Billy Loes",
+          "name": "Robin Roberts",
           "role": "SP",
-          "war": 4.1,
+          "war": 8.4,
           "hp": 94,
           "maxHp": 94,
-          "stf": 74,
-          "ctl": 58,
-          "mov": 70,
+          "stf": 51,
+          "ctl": 109,
+          "mov": 72,
           "sta": 78,
-          "ovr": 68,
-          "rarity": "Rare"
+          "ovr": 77,
+          "rarity": "Epic"
         },
         {
-          "name": "Carl Erskine",
+          "name": "Billy Pierce",
           "role": "SP",
-          "war": 4.0,
+          "war": 7.3,
           "hp": 88,
           "maxHp": 88,
-          "stf": 77,
-          "ctl": 65,
-          "mov": 68,
+          "stf": 67,
+          "ctl": 72,
+          "mov": 75,
           "sta": 71,
-          "ovr": 70,
+          "ovr": 71,
           "rarity": "Epic"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1953": {
@@ -67018,57 +69566,106 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
+      },
+      {
+        "id": "story_1953_BRO",
+        "name": "1953 Brooklyn Dodgers",
+        "year": 1953,
+        "teamID": "BRO",
+        "win_pct": 0.682,
+        "ovr": 65,
+        "pitchers": [
+          {
+            "name": "Carl Erskine",
+            "role": "SP",
+            "war": 4.2,
+            "hp": 86,
+            "maxHp": 86,
+            "stf": 94,
+            "ctl": 56,
+            "mov": 60,
+            "sta": 68,
+            "ovr": 70,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Clem Labine",
+            "role": "RP",
+            "war": 2.8,
+            "hp": 45,
+            "maxHp": 45,
+            "stf": 44,
+            "ctl": 80,
+            "mov": 78,
+            "sta": 35,
+            "ovr": 64,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Bob Milliken",
+            "role": "RP",
+            "war": 1.7,
+            "hp": 45,
+            "maxHp": 45,
+            "stf": 66,
+            "ctl": 62,
+            "mov": 62,
+            "sta": 35,
+            "ovr": 60,
+            "rarity": "Rare"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1953_BRO",
-      "name": "BOSS: 1953 Brooklyn Dodgers",
+      "id": "story_1953_STARS_BOSS",
+      "name": "\ud83d\udc51 1953 STARS",
       "year": 1953,
-      "teamID": "BRO",
-      "win_pct": 0.682,
-      "ovr": 65,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 79,
       "pitchers": [
         {
-          "name": "Carl Erskine",
+          "name": "Robin Roberts",
           "role": "SP",
-          "war": 4.2,
-          "hp": 86,
-          "maxHp": 86,
-          "stf": 94,
-          "ctl": 56,
-          "mov": 60,
-          "sta": 68,
-          "ovr": 70,
+          "war": 9.8,
+          "hp": 91,
+          "maxHp": 91,
+          "stf": 68,
+          "ctl": 100,
+          "mov": 76,
+          "sta": 75,
+          "ovr": 81,
           "rarity": "Epic"
         },
         {
-          "name": "Clem Labine",
-          "role": "RP",
-          "war": 2.8,
-          "hp": 45,
-          "maxHp": 45,
-          "stf": 44,
-          "ctl": 80,
-          "mov": 78,
-          "sta": 35,
-          "ovr": 64,
-          "rarity": "Rare"
+          "name": "Warren Spahn",
+          "role": "SP",
+          "war": 8.8,
+          "hp": 90,
+          "maxHp": 90,
+          "stf": 66,
+          "ctl": 82,
+          "mov": 98,
+          "sta": 74,
+          "ovr": 81,
+          "rarity": "Epic"
         },
         {
-          "name": "Bob Milliken",
-          "role": "RP",
-          "war": 1.7,
-          "hp": 45,
-          "maxHp": 45,
-          "stf": 66,
-          "ctl": 62,
-          "mov": 62,
-          "sta": 35,
-          "ovr": 60,
-          "rarity": "Rare"
+          "name": "Harvey Haddix",
+          "role": "SP",
+          "war": 6.4,
+          "hp": 87,
+          "maxHp": 87,
+          "stf": 78,
+          "ctl": 80,
+          "mov": 69,
+          "sta": 69,
+          "ovr": 75,
+          "rarity": "Epic"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1954": {
@@ -67812,57 +70409,106 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
+      },
+      {
+        "id": "story_1954_CLE",
+        "name": "1954 Cleveland Indians",
+        "year": 1954,
+        "teamID": "CLE",
+        "win_pct": 0.721,
+        "ovr": 68,
+        "pitchers": [
+          {
+            "name": "Early Wynn",
+            "role": "SP",
+            "war": 5.2,
+            "hp": 86,
+            "maxHp": 86,
+            "stf": 68,
+            "ctl": 73,
+            "mov": 68,
+            "sta": 68,
+            "ovr": 70,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Mike Garcia",
+            "role": "SP",
+            "war": 4.9,
+            "hp": 87,
+            "maxHp": 87,
+            "stf": 58,
+            "ctl": 80,
+            "mov": 77,
+            "sta": 69,
+            "ovr": 71,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Bob Lemon",
+            "role": "SP",
+            "war": 4.2,
+            "hp": 88,
+            "maxHp": 88,
+            "stf": 48,
+            "ctl": 63,
+            "mov": 72,
+            "sta": 70,
+            "ovr": 62,
+            "rarity": "Rare"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1954_CLE",
-      "name": "BOSS: 1954 Cleveland Indians",
+      "id": "story_1954_STARS_BOSS",
+      "name": "\ud83d\udc51 1954 STARS",
       "year": 1954,
-      "teamID": "CLE",
-      "win_pct": 0.721,
-      "ovr": 68,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 73,
       "pitchers": [
         {
-          "name": "Early Wynn",
+          "name": "Robin Roberts",
           "role": "SP",
-          "war": 5.2,
-          "hp": 86,
-          "maxHp": 86,
-          "stf": 68,
-          "ctl": 73,
-          "mov": 68,
-          "sta": 68,
-          "ovr": 70,
+          "war": 9.0,
+          "hp": 94,
+          "maxHp": 94,
+          "stf": 65,
+          "ctl": 102,
+          "mov": 67,
+          "sta": 78,
+          "ovr": 78,
           "rarity": "Epic"
         },
         {
-          "name": "Mike Garcia",
+          "name": "Johnny Antonelli",
           "role": "SP",
-          "war": 4.9,
-          "hp": 87,
-          "maxHp": 87,
-          "stf": 58,
-          "ctl": 80,
-          "mov": 77,
-          "sta": 69,
-          "ovr": 71,
+          "war": 7.5,
+          "hp": 83,
+          "maxHp": 83,
+          "stf": 71,
+          "ctl": 61,
+          "mov": 90,
+          "sta": 64,
+          "ovr": 73,
           "rarity": "Epic"
         },
         {
-          "name": "Bob Lemon",
+          "name": "Steve Gromek",
           "role": "SP",
-          "war": 4.2,
+          "war": 5.6,
           "hp": 88,
           "maxHp": 88,
-          "stf": 48,
-          "ctl": 63,
-          "mov": 72,
-          "sta": 70,
-          "ovr": 62,
+          "stf": 45,
+          "ctl": 90,
+          "mov": 67,
+          "sta": 71,
+          "ovr": 68,
           "rarity": "Rare"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1955": {
@@ -68606,57 +71252,106 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
+      },
+      {
+        "id": "story_1955_BRO",
+        "name": "1955 Brooklyn Dodgers",
+        "year": 1955,
+        "teamID": "BRO",
+        "win_pct": 0.641,
+        "ovr": 63,
+        "pitchers": [
+          {
+            "name": "Don Newcombe",
+            "role": "SP",
+            "war": 2.9,
+            "hp": 86,
+            "maxHp": 86,
+            "stf": 74,
+            "ctl": 103,
+            "mov": 60,
+            "sta": 68,
+            "ovr": 78,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Carl Erskine",
+            "role": "SP",
+            "war": 2.2,
+            "hp": 82,
+            "maxHp": 82,
+            "stf": 49,
+            "ctl": 68,
+            "mov": 49,
+            "sta": 62,
+            "ovr": 56,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Clem Labine",
+            "role": "RP",
+            "war": 2.1,
+            "hp": 44,
+            "maxHp": 44,
+            "stf": 53,
+            "ctl": 57,
+            "mov": 63,
+            "sta": 33,
+            "ovr": 55,
+            "rarity": "Rare"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1955_BRO",
-      "name": "BOSS: 1955 Brooklyn Dodgers",
+      "id": "story_1955_STARS_BOSS",
+      "name": "\ud83d\udc51 1955 STARS",
       "year": 1955,
-      "teamID": "BRO",
-      "win_pct": 0.641,
-      "ovr": 63,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 75,
       "pitchers": [
         {
-          "name": "Don Newcombe",
+          "name": "Billy Pierce",
           "role": "SP",
-          "war": 2.9,
-          "hp": 86,
-          "maxHp": 86,
-          "stf": 74,
-          "ctl": 103,
-          "mov": 60,
-          "sta": 68,
-          "ovr": 78,
+          "war": 7.0,
+          "hp": 88,
+          "maxHp": 88,
+          "stf": 95,
+          "ctl": 72,
+          "mov": 101,
+          "sta": 71,
+          "ovr": 87,
+          "rarity": "Legendary"
+        },
+        {
+          "name": "Early Wynn",
+          "role": "SP",
+          "war": 6.1,
+          "hp": 85,
+          "maxHp": 85,
+          "stf": 63,
+          "ctl": 64,
+          "mov": 71,
+          "sta": 67,
+          "ovr": 66,
+          "rarity": "Rare"
+        },
+        {
+          "name": "Bob Friend",
+          "role": "SP",
+          "war": 6.0,
+          "hp": 100,
+          "maxHp": 100,
+          "stf": 57,
+          "ctl": 83,
+          "mov": 72,
+          "sta": 86,
+          "ovr": 72,
           "rarity": "Epic"
-        },
-        {
-          "name": "Carl Erskine",
-          "role": "SP",
-          "war": 2.2,
-          "hp": 82,
-          "maxHp": 82,
-          "stf": 49,
-          "ctl": 68,
-          "mov": 49,
-          "sta": 62,
-          "ovr": 56,
-          "rarity": "Rare"
-        },
-        {
-          "name": "Clem Labine",
-          "role": "RP",
-          "war": 2.1,
-          "hp": 44,
-          "maxHp": 44,
-          "stf": 53,
-          "ctl": 57,
-          "mov": 63,
-          "sta": 33,
-          "ovr": 55,
-          "rarity": "Rare"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1956": {
@@ -69400,57 +72095,106 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
+      },
+      {
+        "id": "story_1956_NYA",
+        "name": "1956 New York Yankees",
+        "year": 1956,
+        "teamID": "NYA",
+        "win_pct": 0.63,
+        "ovr": 67,
+        "pitchers": [
+          {
+            "name": "Whitey Ford",
+            "role": "SP",
+            "war": 5.2,
+            "hp": 86,
+            "maxHp": 86,
+            "stf": 76,
+            "ctl": 59,
+            "mov": 81,
+            "sta": 68,
+            "ovr": 72,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Don Larsen",
+            "role": "SP",
+            "war": 2.6,
+            "hp": 94,
+            "maxHp": 94,
+            "stf": 72,
+            "ctl": 40,
+            "mov": 58,
+            "sta": 78,
+            "ovr": 59,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Tom Sturdivant",
+            "role": "SP",
+            "war": 2.1,
+            "hp": 96,
+            "maxHp": 96,
+            "stf": 85,
+            "ctl": 68,
+            "mov": 58,
+            "sta": 81,
+            "ovr": 71,
+            "rarity": "Epic"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1956_NYA",
-      "name": "BOSS: 1956 New York Yankees",
+      "id": "story_1956_STARS_BOSS",
+      "name": "\ud83d\udc51 1956 STARS",
       "year": 1956,
-      "teamID": "NYA",
-      "win_pct": 0.63,
-      "ovr": 67,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 74,
       "pitchers": [
         {
-          "name": "Whitey Ford",
+          "name": "Early Wynn",
           "role": "SP",
-          "war": 5.2,
-          "hp": 86,
-          "maxHp": 86,
-          "stf": 76,
-          "ctl": 59,
-          "mov": 81,
-          "sta": 68,
+          "war": 7.8,
+          "hp": 88,
+          "maxHp": 88,
+          "stf": 68,
+          "ctl": 68,
+          "mov": 79,
+          "sta": 71,
           "ovr": 72,
           "rarity": "Epic"
         },
         {
-          "name": "Don Larsen",
+          "name": "Herb Score",
           "role": "SP",
-          "war": 2.6,
-          "hp": 94,
-          "maxHp": 94,
-          "stf": 72,
-          "ctl": 40,
-          "mov": 58,
-          "sta": 78,
-          "ovr": 59,
-          "rarity": "Rare"
+          "war": 7.3,
+          "hp": 86,
+          "maxHp": 86,
+          "stf": 125,
+          "ctl": 42,
+          "mov": 85,
+          "sta": 68,
+          "ovr": 82,
+          "rarity": "Epic"
         },
         {
-          "name": "Tom Sturdivant",
+          "name": "Johnny Antonelli",
           "role": "SP",
-          "war": 2.1,
-          "hp": 96,
-          "maxHp": 96,
-          "stf": 85,
-          "ctl": 68,
-          "mov": 58,
-          "sta": 81,
-          "ovr": 71,
-          "rarity": "Epic"
+          "war": 6.4,
+          "hp": 84,
+          "maxHp": 84,
+          "stf": 67,
+          "ctl": 76,
+          "mov": 66,
+          "sta": 66,
+          "ovr": 69,
+          "rarity": "Rare"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1957": {
@@ -70194,57 +72938,106 @@ window.OpponentsDatabase = {
             "rarity": "Legendary"
           }
         ]
+      },
+      {
+        "id": "story_1957_NYA",
+        "name": "1957 New York Yankees",
+        "year": 1957,
+        "teamID": "NYA",
+        "win_pct": 0.636,
+        "ovr": 69,
+        "pitchers": [
+          {
+            "name": "Tom Sturdivant",
+            "role": "SP",
+            "war": 3.8,
+            "hp": 84,
+            "maxHp": 84,
+            "stf": 70,
+            "ctl": 54,
+            "mov": 72,
+            "sta": 66,
+            "ovr": 65,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Bobby Shantz",
+            "role": "SP",
+            "war": 3.1,
+            "hp": 90,
+            "maxHp": 90,
+            "stf": 47,
+            "ctl": 89,
+            "mov": 74,
+            "sta": 73,
+            "ovr": 70,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Bob Turley",
+            "role": "SP",
+            "war": 2.8,
+            "hp": 87,
+            "maxHp": 87,
+            "stf": 109,
+            "ctl": 45,
+            "mov": 66,
+            "sta": 69,
+            "ovr": 73,
+            "rarity": "Epic"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1957_NYA",
-      "name": "BOSS: 1957 New York Yankees",
+      "id": "story_1957_STARS_BOSS",
+      "name": "\ud83d\udc51 1957 STARS",
       "year": 1957,
-      "teamID": "NYA",
-      "win_pct": 0.636,
-      "ovr": 69,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 77,
       "pitchers": [
         {
-          "name": "Tom Sturdivant",
+          "name": "Frank Sullivan",
           "role": "SP",
-          "war": 3.8,
-          "hp": 84,
-          "maxHp": 84,
-          "stf": 70,
-          "ctl": 54,
-          "mov": 72,
-          "sta": 66,
-          "ovr": 65,
-          "rarity": "Rare"
-        },
-        {
-          "name": "Bobby Shantz",
-          "role": "SP",
-          "war": 3.1,
-          "hp": 90,
-          "maxHp": 90,
-          "stf": 47,
-          "ctl": 89,
+          "war": 6.4,
+          "hp": 89,
+          "maxHp": 89,
+          "stf": 62,
+          "ctl": 95,
           "mov": 74,
-          "sta": 73,
-          "ovr": 70,
+          "sta": 72,
+          "ovr": 76,
           "rarity": "Epic"
         },
         {
-          "name": "Bob Turley",
+          "name": "Jim Bunning",
           "role": "SP",
-          "war": 2.8,
+          "war": 6.2,
+          "hp": 94,
+          "maxHp": 94,
+          "stf": 83,
+          "ctl": 81,
+          "mov": 69,
+          "sta": 78,
+          "ovr": 78,
+          "rarity": "Epic"
+        },
+        {
+          "name": "Don Drysdale",
+          "role": "SP",
+          "war": 6.0,
           "hp": 87,
           "maxHp": 87,
-          "stf": 109,
-          "ctl": 45,
-          "mov": 66,
+          "stf": 82,
+          "ctl": 79,
+          "mov": 77,
           "sta": 69,
-          "ovr": 73,
+          "ovr": 78,
           "rarity": "Epic"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1958": {
@@ -70988,57 +73781,106 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
+      },
+      {
+        "id": "story_1958_NYA",
+        "name": "1958 New York Yankees",
+        "year": 1958,
+        "teamID": "NYA",
+        "win_pct": 0.597,
+        "ovr": 74,
+        "pitchers": [
+          {
+            "name": "Whitey Ford",
+            "role": "SP",
+            "war": 4.3,
+            "hp": 86,
+            "maxHp": 86,
+            "stf": 81,
+            "ctl": 78,
+            "mov": 91,
+            "sta": 68,
+            "ovr": 82,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Bob Turley",
+            "role": "SP",
+            "war": 3.6,
+            "hp": 88,
+            "maxHp": 88,
+            "stf": 84,
+            "ctl": 41,
+            "mov": 59,
+            "sta": 71,
+            "ovr": 62,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Ryne Duren",
+            "role": "RP",
+            "war": 2.3,
+            "hp": 40,
+            "maxHp": 40,
+            "stf": 125,
+            "ctl": 37,
+            "mov": 92,
+            "sta": 28,
+            "ovr": 79,
+            "rarity": "Epic"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1958_NYA",
-      "name": "BOSS: 1958 New York Yankees",
+      "id": "story_1958_STARS_BOSS",
+      "name": "\ud83d\udc51 1958 STARS",
       "year": 1958,
-      "teamID": "NYA",
-      "win_pct": 0.597,
-      "ovr": 74,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 73,
       "pitchers": [
         {
-          "name": "Whitey Ford",
+          "name": "Frank Lary",
           "role": "SP",
-          "war": 4.3,
-          "hp": 86,
-          "maxHp": 86,
-          "stf": 81,
-          "ctl": 78,
-          "mov": 91,
-          "sta": 68,
-          "ovr": 82,
+          "war": 6.7,
+          "hp": 87,
+          "maxHp": 87,
+          "stf": 59,
+          "ctl": 82,
+          "mov": 70,
+          "sta": 69,
+          "ovr": 70,
           "rarity": "Epic"
         },
         {
-          "name": "Bob Turley",
+          "name": "Sam Jones",
           "role": "SP",
-          "war": 3.6,
+          "war": 6.2,
+          "hp": 84,
+          "maxHp": 84,
+          "stf": 114,
+          "ctl": 49,
+          "mov": 72,
+          "sta": 65,
+          "ovr": 77,
+          "rarity": "Epic"
+        },
+        {
+          "name": "Robin Roberts",
+          "role": "SP",
+          "war": 6.2,
           "hp": 88,
           "maxHp": 88,
-          "stf": 84,
-          "ctl": 41,
-          "mov": 59,
+          "stf": 56,
+          "ctl": 98,
+          "mov": 60,
           "sta": 71,
-          "ovr": 62,
-          "rarity": "Rare"
-        },
-        {
-          "name": "Ryne Duren",
-          "role": "RP",
-          "war": 2.3,
-          "hp": 40,
-          "maxHp": 40,
-          "stf": 125,
-          "ctl": 37,
-          "mov": 92,
-          "sta": 28,
-          "ovr": 79,
+          "ovr": 71,
           "rarity": "Epic"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1959": {
@@ -71782,57 +74624,106 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
+      },
+      {
+        "id": "story_1959_CHA",
+        "name": "1959 Chicago White Sox",
+        "year": 1959,
+        "teamID": "CHA",
+        "win_pct": 0.61,
+        "ovr": 68,
+        "pitchers": [
+          {
+            "name": "Bob Shaw",
+            "role": "SP",
+            "war": 4.8,
+            "hp": 94,
+            "maxHp": 94,
+            "stf": 42,
+            "ctl": 88,
+            "mov": 72,
+            "sta": 78,
+            "ovr": 68,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Early Wynn",
+            "role": "SP",
+            "war": 2.8,
+            "hp": 83,
+            "maxHp": 83,
+            "stf": 86,
+            "ctl": 46,
+            "mov": 60,
+            "sta": 64,
+            "ovr": 64,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Gerry Staley",
+            "role": "RP",
+            "war": 2.5,
+            "hp": 40,
+            "maxHp": 40,
+            "stf": 53,
+            "ctl": 92,
+            "mov": 90,
+            "sta": 28,
+            "ovr": 73,
+            "rarity": "Epic"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1959_CHA",
-      "name": "BOSS: 1959 Chicago White Sox",
+      "id": "story_1959_STARS_BOSS",
+      "name": "\ud83d\udc51 1959 STARS",
       "year": 1959,
-      "teamID": "CHA",
-      "win_pct": 0.61,
-      "ovr": 68,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 77,
       "pitchers": [
         {
-          "name": "Bob Shaw",
+          "name": "Camilo Pascual",
           "role": "SP",
-          "war": 4.8,
-          "hp": 94,
-          "maxHp": 94,
-          "stf": 42,
-          "ctl": 88,
-          "mov": 72,
-          "sta": 78,
-          "ovr": 68,
-          "rarity": "Rare"
+          "war": 7.8,
+          "hp": 88,
+          "maxHp": 88,
+          "stf": 97,
+          "ctl": 77,
+          "mov": 79,
+          "sta": 71,
+          "ovr": 83,
+          "rarity": "Epic"
         },
         {
-          "name": "Early Wynn",
+          "name": "Hoyt Wilhelm",
           "role": "SP",
-          "war": 2.8,
+          "war": 7.6,
+          "hp": 90,
+          "maxHp": 90,
+          "stf": 74,
+          "ctl": 66,
+          "mov": 90,
+          "sta": 74,
+          "ovr": 76,
+          "rarity": "Epic"
+        },
+        {
+          "name": "Larry Jackson",
+          "role": "SP",
+          "war": 7.3,
           "hp": 83,
           "maxHp": 83,
-          "stf": 86,
-          "ctl": 46,
-          "mov": 60,
+          "stf": 68,
+          "ctl": 85,
+          "mov": 67,
           "sta": 64,
-          "ovr": 64,
-          "rarity": "Rare"
-        },
-        {
-          "name": "Gerry Staley",
-          "role": "RP",
-          "war": 2.5,
-          "hp": 40,
-          "maxHp": 40,
-          "stf": 53,
-          "ctl": 92,
-          "mov": 90,
-          "sta": 28,
-          "ovr": 73,
+          "ovr": 72,
           "rarity": "Epic"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1960": {
@@ -72576,57 +75467,106 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
+      },
+      {
+        "id": "story_1960_NYA",
+        "name": "1960 New York Yankees",
+        "year": 1960,
+        "teamID": "NYA",
+        "win_pct": 0.63,
+        "ovr": 56,
+        "pitchers": [
+          {
+            "name": "Art Ditmar",
+            "role": "SP",
+            "war": 2.2,
+            "hp": 84,
+            "maxHp": 84,
+            "stf": 33,
+            "ctl": 78,
+            "mov": 56,
+            "sta": 65,
+            "ovr": 57,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Whitey Ford",
+            "role": "SP",
+            "war": 2.0,
+            "hp": 82,
+            "maxHp": 82,
+            "stf": 50,
+            "ctl": 66,
+            "mov": 58,
+            "sta": 62,
+            "ovr": 58,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Bob Turley",
+            "role": "SP",
+            "war": 1.7,
+            "hp": 84,
+            "maxHp": 84,
+            "stf": 59,
+            "ctl": 43,
+            "mov": 55,
+            "sta": 66,
+            "ovr": 54,
+            "rarity": "Uncommon"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1960_NYA",
-      "name": "BOSS: 1960 New York Yankees",
+      "id": "story_1960_STARS_BOSS",
+      "name": "\ud83d\udc51 1960 STARS",
       "year": 1960,
-      "teamID": "NYA",
-      "win_pct": 0.63,
-      "ovr": 56,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 82,
       "pitchers": [
         {
-          "name": "Art Ditmar",
+          "name": "Ernie Broglio",
           "role": "SP",
-          "war": 2.2,
-          "hp": 84,
-          "maxHp": 84,
-          "stf": 33,
-          "ctl": 78,
-          "mov": 56,
-          "sta": 65,
-          "ovr": 57,
-          "rarity": "Rare"
+          "war": 7.1,
+          "hp": 96,
+          "maxHp": 96,
+          "stf": 104,
+          "ctl": 48,
+          "mov": 75,
+          "sta": 82,
+          "ovr": 76,
+          "rarity": "Epic"
         },
         {
-          "name": "Whitey Ford",
+          "name": "Don Drysdale",
           "role": "SP",
-          "war": 2.0,
-          "hp": 82,
-          "maxHp": 82,
-          "stf": 50,
-          "ctl": 66,
-          "mov": 58,
-          "sta": 62,
-          "ovr": 58,
-          "rarity": "Rare"
+          "war": 7.0,
+          "hp": 86,
+          "maxHp": 86,
+          "stf": 116,
+          "ctl": 81,
+          "mov": 69,
+          "sta": 68,
+          "ovr": 87,
+          "rarity": "Legendary"
         },
         {
-          "name": "Bob Turley",
+          "name": "Jim Bunning",
           "role": "SP",
-          "war": 1.7,
-          "hp": 84,
-          "maxHp": 84,
-          "stf": 59,
-          "ctl": 43,
-          "mov": 55,
-          "sta": 66,
-          "ovr": 54,
-          "rarity": "Uncommon"
+          "war": 6.6,
+          "hp": 85,
+          "maxHp": 85,
+          "stf": 100,
+          "ctl": 84,
+          "mov": 72,
+          "sta": 67,
+          "ovr": 84,
+          "rarity": "Epic"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1961": {
@@ -72876,9 +75816,7 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
-      }
-    ],
-    "mid": [
+      },
       {
         "id": "story_1961_MIN",
         "name": "1961 Minnesota Twins",
@@ -72927,7 +75865,9 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      },
+      }
+    ],
+    "mid": [
       {
         "id": "story_1961_BOS",
         "name": "1961 Boston Red Sox",
@@ -73123,9 +76063,7 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      }
-    ],
-    "high": [
+      },
       {
         "id": "story_1961_CHA",
         "name": "1961 Chicago White Sox",
@@ -73223,7 +76161,9 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      },
+      }
+    ],
+    "high": [
       {
         "id": "story_1961_SFN",
         "name": "1961 San Francisco Giants",
@@ -73468,57 +76408,106 @@ window.OpponentsDatabase = {
             "rarity": "Epic"
           }
         ]
+      },
+      {
+        "id": "story_1961_NYA",
+        "name": "1961 New York Yankees",
+        "year": 1961,
+        "teamID": "NYA",
+        "win_pct": 0.673,
+        "ovr": 63,
+        "pitchers": [
+          {
+            "name": "Whitey Ford",
+            "role": "SP",
+            "war": 3.7,
+            "hp": 88,
+            "maxHp": 88,
+            "stf": 70,
+            "ctl": 63,
+            "mov": 58,
+            "sta": 70,
+            "ovr": 64,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Bill Stafford",
+            "role": "SP",
+            "war": 3.6,
+            "hp": 90,
+            "maxHp": 90,
+            "stf": 40,
+            "ctl": 68,
+            "mov": 72,
+            "sta": 74,
+            "ovr": 61,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Luis Arroyo",
+            "role": "RP",
+            "war": 3.2,
+            "hp": 41,
+            "maxHp": 41,
+            "stf": 69,
+            "ctl": 47,
+            "mov": 91,
+            "sta": 29,
+            "ovr": 65,
+            "rarity": "Rare"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1961_NYA",
-      "name": "BOSS: 1961 New York Yankees",
+      "id": "story_1961_STARS_BOSS",
+      "name": "\ud83d\udc51 1961 STARS",
       "year": 1961,
-      "teamID": "NYA",
-      "win_pct": 0.673,
-      "ovr": 63,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 64,
       "pitchers": [
         {
-          "name": "Whitey Ford",
+          "name": "Don Cardwell",
           "role": "SP",
-          "war": 3.7,
+          "war": 6.1,
+          "hp": 85,
+          "maxHp": 85,
+          "stf": 51,
+          "ctl": 60,
+          "mov": 55,
+          "sta": 67,
+          "ovr": 56,
+          "rarity": "Rare"
+        },
+        {
+          "name": "Jack Kralick",
+          "role": "SP",
+          "war": 6.0,
           "hp": 88,
           "maxHp": 88,
-          "stf": 70,
-          "ctl": 63,
-          "mov": 58,
-          "sta": 70,
-          "ovr": 64,
+          "stf": 47,
+          "ctl": 78,
+          "mov": 59,
+          "sta": 71,
+          "ovr": 62,
           "rarity": "Rare"
         },
         {
-          "name": "Bill Stafford",
+          "name": "Sandy Koufax",
           "role": "SP",
-          "war": 3.6,
-          "hp": 90,
-          "maxHp": 90,
-          "stf": 40,
-          "ctl": 68,
-          "mov": 72,
-          "sta": 74,
-          "ovr": 61,
-          "rarity": "Rare"
-        },
-        {
-          "name": "Luis Arroyo",
-          "role": "RP",
-          "war": 3.2,
-          "hp": 41,
-          "maxHp": 41,
-          "stf": 69,
-          "ctl": 47,
-          "mov": 91,
-          "sta": 29,
-          "ovr": 65,
-          "rarity": "Rare"
+          "war": 5.7,
+          "hp": 88,
+          "maxHp": 88,
+          "stf": 112,
+          "ctl": 51,
+          "mov": 60,
+          "sta": 70,
+          "ovr": 74,
+          "rarity": "Epic"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1962": {
@@ -74458,57 +77447,106 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
+      },
+      {
+        "id": "story_1962_SFN",
+        "name": "1962 San Francisco Giants",
+        "year": 1962,
+        "teamID": "SFN",
+        "win_pct": 0.624,
+        "ovr": 60,
+        "pitchers": [
+          {
+            "name": "Juan Marichal",
+            "role": "SP",
+            "war": 3.6,
+            "hp": 88,
+            "maxHp": 88,
+            "stf": 49,
+            "ctl": 59,
+            "mov": 54,
+            "sta": 70,
+            "ovr": 56,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Jack Sanford",
+            "role": "SP",
+            "war": 3.6,
+            "hp": 86,
+            "maxHp": 86,
+            "stf": 45,
+            "ctl": 58,
+            "mov": 56,
+            "sta": 68,
+            "ovr": 54,
+            "rarity": "Uncommon"
+          },
+          {
+            "name": "Billy O'Dell",
+            "role": "SP",
+            "war": 3.2,
+            "hp": 88,
+            "maxHp": 88,
+            "stf": 64,
+            "ctl": 85,
+            "mov": 57,
+            "sta": 70,
+            "ovr": 69,
+            "rarity": "Rare"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1962_SFN",
-      "name": "BOSS: 1962 San Francisco Giants",
+      "id": "story_1962_STARS_BOSS",
+      "name": "\ud83d\udc51 1962 STARS",
       "year": 1962,
-      "teamID": "SFN",
-      "win_pct": 0.624,
-      "ovr": 60,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 74,
       "pitchers": [
         {
-          "name": "Juan Marichal",
+          "name": "Hank Aguirre",
           "role": "SP",
-          "war": 3.6,
-          "hp": 88,
-          "maxHp": 88,
-          "stf": 49,
-          "ctl": 59,
-          "mov": 54,
-          "sta": 70,
-          "ovr": 56,
+          "war": 7.4,
+          "hp": 102,
+          "maxHp": 102,
+          "stf": 68,
+          "ctl": 69,
+          "mov": 96,
+          "sta": 89,
+          "ovr": 79,
+          "rarity": "Epic"
+        },
+        {
+          "name": "Bob Purkey",
+          "role": "SP",
+          "war": 7.2,
+          "hp": 90,
+          "maxHp": 90,
+          "stf": 36,
+          "ctl": 88,
+          "mov": 72,
+          "sta": 74,
+          "ovr": 66,
           "rarity": "Rare"
         },
         {
-          "name": "Jack Sanford",
+          "name": "Turk Farrell",
           "role": "SP",
-          "war": 3.6,
-          "hp": 86,
-          "maxHp": 86,
-          "stf": 45,
-          "ctl": 58,
-          "mov": 56,
-          "sta": 68,
-          "ovr": 54,
-          "rarity": "Uncommon"
-        },
-        {
-          "name": "Billy O'Dell",
-          "role": "SP",
-          "war": 3.2,
-          "hp": 88,
-          "maxHp": 88,
-          "stf": 64,
-          "ctl": 85,
-          "mov": 57,
-          "sta": 70,
-          "ovr": 69,
-          "rarity": "Rare"
+          "war": 7.0,
+          "hp": 94,
+          "maxHp": 94,
+          "stf": 84,
+          "ctl": 86,
+          "mov": 62,
+          "sta": 78,
+          "ovr": 77,
+          "rarity": "Epic"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1963": {
@@ -75448,57 +78486,106 @@ window.OpponentsDatabase = {
             "rarity": "Epic"
           }
         ]
+      },
+      {
+        "id": "story_1963_NYA",
+        "name": "1963 New York Yankees",
+        "year": 1963,
+        "teamID": "NYA",
+        "win_pct": 0.646,
+        "ovr": 69,
+        "pitchers": [
+          {
+            "name": "Jim Bouton",
+            "role": "SP",
+            "war": 4.8,
+            "hp": 94,
+            "maxHp": 94,
+            "stf": 50,
+            "ctl": 57,
+            "mov": 72,
+            "sta": 78,
+            "ovr": 61,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Whitey Ford",
+            "role": "SP",
+            "war": 4.3,
+            "hp": 88,
+            "maxHp": 88,
+            "stf": 65,
+            "ctl": 91,
+            "mov": 64,
+            "sta": 70,
+            "ovr": 73,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Al Downing",
+            "role": "SP",
+            "war": 3.8,
+            "hp": 92,
+            "maxHp": 92,
+            "stf": 102,
+            "ctl": 43,
+            "mov": 74,
+            "sta": 76,
+            "ovr": 73,
+            "rarity": "Epic"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1963_NYA",
-      "name": "BOSS: 1963 New York Yankees",
+      "id": "story_1963_STARS_BOSS",
+      "name": "\ud83d\udc51 1963 STARS",
       "year": 1963,
-      "teamID": "NYA",
-      "win_pct": 0.646,
-      "ovr": 69,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 82,
       "pitchers": [
         {
-          "name": "Jim Bouton",
+          "name": "Sandy Koufax",
           "role": "SP",
-          "war": 4.8,
-          "hp": 94,
-          "maxHp": 94,
-          "stf": 50,
-          "ctl": 57,
-          "mov": 72,
-          "sta": 78,
-          "ovr": 61,
-          "rarity": "Rare"
+          "war": 10.7,
+          "hp": 90,
+          "maxHp": 90,
+          "stf": 103,
+          "ctl": 96,
+          "mov": 84,
+          "sta": 74,
+          "ovr": 92,
+          "rarity": "Legendary"
         },
         {
-          "name": "Whitey Ford",
+          "name": "Dick Ellsworth",
           "role": "SP",
-          "war": 4.3,
-          "hp": 88,
-          "maxHp": 88,
-          "stf": 65,
-          "ctl": 91,
-          "mov": 64,
-          "sta": 70,
-          "ovr": 73,
+          "war": 10.2,
+          "hp": 91,
+          "maxHp": 91,
+          "stf": 56,
+          "ctl": 79,
+          "mov": 89,
+          "sta": 75,
+          "ovr": 75,
           "rarity": "Epic"
         },
         {
-          "name": "Al Downing",
+          "name": "Juan Marichal",
           "role": "SP",
-          "war": 3.8,
+          "war": 7.8,
           "hp": 92,
           "maxHp": 92,
-          "stf": 102,
-          "ctl": 43,
-          "mov": 74,
+          "stf": 74,
+          "ctl": 95,
+          "mov": 67,
           "sta": 76,
-          "ovr": 73,
+          "ovr": 78,
           "rarity": "Epic"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1964": {
@@ -76438,57 +79525,106 @@ window.OpponentsDatabase = {
             "rarity": "Epic"
           }
         ]
+      },
+      {
+        "id": "story_1964_NYA",
+        "name": "1964 New York Yankees",
+        "year": 1964,
+        "teamID": "NYA",
+        "win_pct": 0.611,
+        "ovr": 68,
+        "pitchers": [
+          {
+            "name": "Whitey Ford",
+            "role": "SP",
+            "war": 6.7,
+            "hp": 85,
+            "maxHp": 85,
+            "stf": 65,
+            "ctl": 85,
+            "mov": 91,
+            "sta": 67,
+            "ovr": 79,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Jim Bouton",
+            "role": "SP",
+            "war": 4.1,
+            "hp": 88,
+            "maxHp": 88,
+            "stf": 33,
+            "ctl": 88,
+            "mov": 58,
+            "sta": 71,
+            "ovr": 61,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Mel Stottlemyre",
+            "role": "SP",
+            "war": 2.8,
+            "hp": 92,
+            "maxHp": 92,
+            "stf": 39,
+            "ctl": 54,
+            "mov": 95,
+            "sta": 76,
+            "ovr": 64,
+            "rarity": "Rare"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1964_NYA",
-      "name": "BOSS: 1964 New York Yankees",
+      "id": "story_1964_STARS_BOSS",
+      "name": "\ud83d\udc51 1964 STARS",
       "year": 1964,
-      "teamID": "NYA",
-      "win_pct": 0.611,
-      "ovr": 68,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 85,
       "pitchers": [
         {
-          "name": "Whitey Ford",
+          "name": "Dean Chance",
           "role": "SP",
-          "war": 6.7,
-          "hp": 85,
-          "maxHp": 85,
-          "stf": 65,
-          "ctl": 85,
-          "mov": 91,
-          "sta": 67,
+          "war": 9.4,
+          "hp": 91,
+          "maxHp": 91,
+          "stf": 71,
+          "ctl": 67,
+          "mov": 109,
+          "sta": 75,
+          "ovr": 82,
+          "rarity": "Epic"
+        },
+        {
+          "name": "Don Drysdale",
+          "role": "SP",
+          "war": 7.8,
+          "hp": 92,
+          "maxHp": 92,
+          "stf": 70,
+          "ctl": 90,
+          "mov": 79,
+          "sta": 76,
           "ovr": 79,
           "rarity": "Epic"
         },
         {
-          "name": "Jim Bouton",
+          "name": "Sandy Koufax",
           "role": "SP",
-          "war": 4.1,
-          "hp": 88,
-          "maxHp": 88,
-          "stf": 33,
-          "ctl": 88,
-          "mov": 58,
-          "sta": 71,
-          "ovr": 61,
-          "rarity": "Rare"
-        },
-        {
-          "name": "Mel Stottlemyre",
-          "role": "SP",
-          "war": 2.8,
-          "hp": 92,
-          "maxHp": 92,
-          "stf": 39,
-          "ctl": 54,
-          "mov": 95,
-          "sta": 76,
-          "ovr": 64,
-          "rarity": "Rare"
+          "war": 7.3,
+          "hp": 91,
+          "maxHp": 91,
+          "stf": 105,
+          "ctl": 84,
+          "mov": 97,
+          "sta": 75,
+          "ovr": 93,
+          "rarity": "Legendary"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1965": {
@@ -77428,57 +80564,106 @@ window.OpponentsDatabase = {
             "rarity": "Epic"
           }
         ]
+      },
+      {
+        "id": "story_1965_MIN",
+        "name": "1965 Minnesota Twins",
+        "year": 1965,
+        "teamID": "MIN",
+        "win_pct": 0.63,
+        "ovr": 62,
+        "pitchers": [
+          {
+            "name": "Jim Perry",
+            "role": "SP",
+            "war": 2.6,
+            "hp": 96,
+            "maxHp": 96,
+            "stf": 41,
+            "ctl": 74,
+            "mov": 67,
+            "sta": 82,
+            "ovr": 63,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Mudcat Grant",
+            "role": "SP",
+            "war": 2.5,
+            "hp": 86,
+            "maxHp": 86,
+            "stf": 41,
+            "ctl": 87,
+            "mov": 52,
+            "sta": 68,
+            "ovr": 61,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Johnny Klippstein",
+            "role": "RP",
+            "war": 1.8,
+            "hp": 38,
+            "maxHp": 38,
+            "stf": 75,
+            "ctl": 47,
+            "mov": 80,
+            "sta": 25,
+            "ovr": 63,
+            "rarity": "Rare"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1965_MIN",
-      "name": "BOSS: 1965 Minnesota Twins",
+      "id": "story_1965_STARS_BOSS",
+      "name": "\ud83d\udc51 1965 STARS",
       "year": 1965,
-      "teamID": "MIN",
-      "win_pct": 0.63,
-      "ovr": 62,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 82,
       "pitchers": [
         {
-          "name": "Jim Perry",
+          "name": "Juan Marichal",
           "role": "SP",
-          "war": 2.6,
-          "hp": 96,
-          "maxHp": 96,
-          "stf": 41,
-          "ctl": 74,
-          "mov": 67,
-          "sta": 82,
-          "ovr": 63,
-          "rarity": "Rare"
+          "war": 10.3,
+          "hp": 92,
+          "maxHp": 92,
+          "stf": 80,
+          "ctl": 104,
+          "mov": 86,
+          "sta": 76,
+          "ovr": 89,
+          "rarity": "Legendary"
         },
         {
-          "name": "Mudcat Grant",
+          "name": "Sam McDowell",
           "role": "SP",
-          "war": 2.5,
-          "hp": 86,
-          "maxHp": 86,
-          "stf": 41,
-          "ctl": 87,
-          "mov": 52,
-          "sta": 68,
-          "ovr": 61,
-          "rarity": "Rare"
+          "war": 8.2,
+          "hp": 90,
+          "maxHp": 90,
+          "stf": 125,
+          "ctl": 40,
+          "mov": 87,
+          "sta": 74,
+          "ovr": 83,
+          "rarity": "Epic"
         },
         {
-          "name": "Johnny Klippstein",
-          "role": "RP",
-          "war": 1.8,
-          "hp": 38,
-          "maxHp": 38,
-          "stf": 75,
-          "ctl": 47,
-          "mov": 80,
-          "sta": 25,
-          "ovr": 63,
-          "rarity": "Rare"
+          "name": "Jim Maloney",
+          "role": "SP",
+          "war": 8.2,
+          "hp": 90,
+          "maxHp": 90,
+          "stf": 99,
+          "ctl": 45,
+          "mov": 79,
+          "sta": 74,
+          "ovr": 74,
+          "rarity": "Epic"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1966": {
@@ -78418,57 +81603,106 @@ window.OpponentsDatabase = {
             "rarity": "Epic"
           }
         ]
+      },
+      {
+        "id": "story_1966_BAL",
+        "name": "1966 Baltimore Orioles",
+        "year": 1966,
+        "teamID": "BAL",
+        "win_pct": 0.606,
+        "ovr": 63,
+        "pitchers": [
+          {
+            "name": "Steve Barber",
+            "role": "SP",
+            "war": 3.5,
+            "hp": 81,
+            "maxHp": 81,
+            "stf": 62,
+            "ctl": 53,
+            "mov": 79,
+            "sta": 61,
+            "ovr": 64,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Stu Miller",
+            "role": "RP",
+            "war": 3.4,
+            "hp": 41,
+            "maxHp": 41,
+            "stf": 69,
+            "ctl": 84,
+            "mov": 79,
+            "sta": 29,
+            "ovr": 72,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Jim Palmer",
+            "role": "SP",
+            "war": 2.2,
+            "hp": 86,
+            "maxHp": 86,
+            "stf": 65,
+            "ctl": 45,
+            "mov": 48,
+            "sta": 68,
+            "ovr": 54,
+            "rarity": "Uncommon"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1966_BAL",
-      "name": "BOSS: 1966 Baltimore Orioles",
+      "id": "story_1966_STARS_BOSS",
+      "name": "\ud83d\udc51 1966 STARS",
       "year": 1966,
-      "teamID": "BAL",
-      "win_pct": 0.606,
-      "ovr": 63,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 89,
       "pitchers": [
         {
-          "name": "Steve Barber",
+          "name": "Sandy Koufax",
           "role": "SP",
-          "war": 3.5,
-          "hp": 81,
-          "maxHp": 81,
-          "stf": 62,
-          "ctl": 53,
-          "mov": 79,
-          "sta": 61,
-          "ovr": 64,
-          "rarity": "Rare"
-        },
-        {
-          "name": "Stu Miller",
-          "role": "RP",
-          "war": 3.4,
-          "hp": 41,
-          "maxHp": 41,
-          "stf": 69,
+          "war": 10.3,
+          "hp": 91,
+          "maxHp": 91,
+          "stf": 103,
           "ctl": 84,
-          "mov": 79,
-          "sta": 29,
-          "ovr": 72,
-          "rarity": "Epic"
+          "mov": 100,
+          "sta": 75,
+          "ovr": 94,
+          "rarity": "Legendary"
         },
         {
-          "name": "Jim Palmer",
+          "name": "Juan Marichal",
           "role": "SP",
-          "war": 2.2,
-          "hp": 86,
-          "maxHp": 86,
-          "stf": 65,
-          "ctl": 45,
-          "mov": 48,
-          "sta": 68,
-          "ovr": 54,
-          "rarity": "Uncommon"
+          "war": 9.1,
+          "hp": 95,
+          "maxHp": 95,
+          "stf": 68,
+          "ctl": 113,
+          "mov": 84,
+          "sta": 80,
+          "ovr": 88,
+          "rarity": "Legendary"
+        },
+        {
+          "name": "Jim Bunning",
+          "role": "SP",
+          "war": 9.0,
+          "hp": 90,
+          "maxHp": 90,
+          "stf": 79,
+          "ctl": 99,
+          "mov": 76,
+          "sta": 73,
+          "ovr": 84,
+          "rarity": "Epic"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1967": {
@@ -79408,57 +82642,106 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
+      },
+      {
+        "id": "story_1967_SLN",
+        "name": "1967 St. Louis Cardinals",
+        "year": 1967,
+        "teamID": "SLN",
+        "win_pct": 0.627,
+        "ovr": 69,
+        "pitchers": [
+          {
+            "name": "Dick Hughes",
+            "role": "SP",
+            "war": 4.2,
+            "hp": 93,
+            "maxHp": 93,
+            "stf": 68,
+            "ctl": 89,
+            "mov": 61,
+            "sta": 77,
+            "ovr": 73,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Nelson Briles",
+            "role": "RP",
+            "war": 3.6,
+            "hp": 45,
+            "maxHp": 45,
+            "stf": 52,
+            "ctl": 79,
+            "mov": 72,
+            "sta": 35,
+            "ovr": 64,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Steve Carlton",
+            "role": "SP",
+            "war": 2.8,
+            "hp": 85,
+            "maxHp": 85,
+            "stf": 88,
+            "ctl": 64,
+            "mov": 59,
+            "sta": 67,
+            "ovr": 70,
+            "rarity": "Epic"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1967_SLN",
-      "name": "BOSS: 1967 St. Louis Cardinals",
+      "id": "story_1967_STARS_BOSS",
+      "name": "\ud83d\udc51 1967 STARS",
       "year": 1967,
-      "teamID": "SLN",
-      "win_pct": 0.627,
-      "ovr": 69,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 80,
       "pitchers": [
         {
-          "name": "Dick Hughes",
+          "name": "Jim Bunning",
           "role": "SP",
-          "war": 4.2,
+          "war": 7.8,
+          "hp": 89,
+          "maxHp": 89,
+          "stf": 83,
+          "ctl": 83,
+          "mov": 78,
+          "sta": 72,
+          "ovr": 80,
+          "rarity": "Epic"
+        },
+        {
+          "name": "Jim Merritt",
+          "role": "SP",
+          "war": 6.5,
           "hp": 93,
           "maxHp": 93,
-          "stf": 68,
-          "ctl": 89,
-          "mov": 61,
+          "stf": 66,
+          "ctl": 109,
+          "mov": 69,
           "sta": 77,
-          "ovr": 73,
+          "ovr": 81,
           "rarity": "Epic"
         },
         {
-          "name": "Nelson Briles",
-          "role": "RP",
-          "war": 3.6,
-          "hp": 45,
-          "maxHp": 45,
-          "stf": 52,
-          "ctl": 79,
-          "mov": 72,
-          "sta": 35,
-          "ovr": 64,
-          "rarity": "Rare"
-        },
-        {
-          "name": "Steve Carlton",
+          "name": "Gary Nolan",
           "role": "SP",
-          "war": 2.8,
-          "hp": 85,
-          "maxHp": 85,
-          "stf": 88,
-          "ctl": 64,
-          "mov": 59,
-          "sta": 67,
-          "ovr": 70,
+          "war": 6.3,
+          "hp": 87,
+          "maxHp": 87,
+          "stf": 93,
+          "ctl": 75,
+          "mov": 75,
+          "sta": 69,
+          "ovr": 80,
           "rarity": "Epic"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1968": {
@@ -80398,16 +83681,92 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
+      },
+      {
+        "id": "story_1968_DET",
+        "name": "1968 Detroit Tigers",
+        "year": 1968,
+        "teamID": "DET",
+        "win_pct": 0.636,
+        "ovr": 68,
+        "pitchers": [
+          {
+            "name": "Denny McLain",
+            "role": "SP",
+            "war": 7.4,
+            "hp": 93,
+            "maxHp": 93,
+            "stf": 83,
+            "ctl": 96,
+            "mov": 78,
+            "sta": 77,
+            "ovr": 85,
+            "rarity": "Legendary"
+          },
+          {
+            "name": "Earl Wilson",
+            "role": "SP",
+            "war": 2.4,
+            "hp": 85,
+            "maxHp": 85,
+            "stf": 71,
+            "ctl": 72,
+            "mov": 53,
+            "sta": 67,
+            "ovr": 66,
+            "rarity": "Rare"
+          },
+          {
+            "name": "John Hiller",
+            "role": "RP",
+            "war": 1.9,
+            "hp": 45,
+            "maxHp": 45,
+            "stf": 52,
+            "ctl": 48,
+            "mov": 65,
+            "sta": 35,
+            "ovr": 53,
+            "rarity": "Uncommon"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1968_DET",
-      "name": "BOSS: 1968 Detroit Tigers",
+      "id": "story_1968_STARS_BOSS",
+      "name": "\ud83d\udc51 1968 STARS",
       "year": 1968,
-      "teamID": "DET",
-      "win_pct": 0.636,
-      "ovr": 68,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 91,
       "pitchers": [
+        {
+          "name": "Bob Gibson",
+          "role": "SP",
+          "war": 11.2,
+          "hp": 97,
+          "maxHp": 97,
+          "stf": 89,
+          "ctl": 92,
+          "mov": 115,
+          "sta": 83,
+          "ovr": 97,
+          "rarity": "Legendary"
+        },
+        {
+          "name": "Luis Tiant",
+          "role": "SP",
+          "war": 8.5,
+          "hp": 92,
+          "maxHp": 92,
+          "stf": 108,
+          "ctl": 73,
+          "mov": 97,
+          "sta": 76,
+          "ovr": 91,
+          "rarity": "Legendary"
+        },
         {
           "name": "Denny McLain",
           "role": "SP",
@@ -80420,35 +83779,8 @@ window.OpponentsDatabase = {
           "sta": 77,
           "ovr": 85,
           "rarity": "Legendary"
-        },
-        {
-          "name": "Earl Wilson",
-          "role": "SP",
-          "war": 2.4,
-          "hp": 85,
-          "maxHp": 85,
-          "stf": 71,
-          "ctl": 72,
-          "mov": 53,
-          "sta": 67,
-          "ovr": 66,
-          "rarity": "Rare"
-        },
-        {
-          "name": "John Hiller",
-          "role": "RP",
-          "war": 1.9,
-          "hp": 45,
-          "maxHp": 45,
-          "stf": 52,
-          "ctl": 48,
-          "mov": 65,
-          "sta": 35,
-          "ovr": 53,
-          "rarity": "Uncommon"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1969": {
@@ -80796,9 +84128,7 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      }
-    ],
-    "mid": [
+      },
       {
         "id": "story_1969_CAL",
         "name": "1969 California Angels",
@@ -80847,7 +84177,9 @@ window.OpponentsDatabase = {
             "rarity": "Epic"
           }
         ]
-      },
+      }
+    ],
+    "mid": [
       {
         "id": "story_1969_NYA",
         "name": "1969 New York Yankees",
@@ -81141,9 +84473,7 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      }
-    ],
-    "high": [
+      },
       {
         "id": "story_1969_OAK",
         "name": "1969 Oakland Athletics",
@@ -81241,7 +84571,9 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
-      },
+      }
+    ],
+    "high": [
       {
         "id": "story_1969_CIN",
         "name": "1969 Cincinnati Reds",
@@ -81584,57 +84916,106 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
+      },
+      {
+        "id": "story_1969_BAL",
+        "name": "1969 Baltimore Orioles",
+        "year": 1969,
+        "teamID": "BAL",
+        "win_pct": 0.673,
+        "ovr": 65,
+        "pitchers": [
+          {
+            "name": "Mike Cuellar",
+            "role": "SP",
+            "war": 4.4,
+            "hp": 88,
+            "maxHp": 88,
+            "stf": 55,
+            "ctl": 76,
+            "mov": 78,
+            "sta": 71,
+            "ovr": 70,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Jim Palmer",
+            "role": "SP",
+            "war": 4.2,
+            "hp": 91,
+            "maxHp": 91,
+            "stf": 62,
+            "ctl": 56,
+            "mov": 80,
+            "sta": 75,
+            "ovr": 67,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Dave McNally",
+            "role": "SP",
+            "war": 2.4,
+            "hp": 84,
+            "maxHp": 84,
+            "stf": 54,
+            "ctl": 66,
+            "mov": 56,
+            "sta": 66,
+            "ovr": 59,
+            "rarity": "Rare"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1969_BAL",
-      "name": "BOSS: 1969 Baltimore Orioles",
+      "id": "story_1969_STARS_BOSS",
+      "name": "\ud83d\udc51 1969 STARS",
       "year": 1969,
-      "teamID": "BAL",
-      "win_pct": 0.673,
-      "ovr": 65,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 78,
       "pitchers": [
         {
-          "name": "Mike Cuellar",
+          "name": "Bob Gibson",
           "role": "SP",
-          "war": 4.4,
-          "hp": 88,
-          "maxHp": 88,
-          "stf": 55,
-          "ctl": 76,
-          "mov": 78,
-          "sta": 71,
-          "ovr": 70,
+          "war": 10.4,
+          "hp": 97,
+          "maxHp": 97,
+          "stf": 86,
+          "ctl": 68,
+          "mov": 88,
+          "sta": 83,
+          "ovr": 81,
           "rarity": "Epic"
         },
         {
-          "name": "Jim Palmer",
+          "name": "Larry Dierker",
           "role": "SP",
-          "war": 4.2,
-          "hp": 91,
-          "maxHp": 91,
-          "stf": 62,
-          "ctl": 56,
-          "mov": 80,
-          "sta": 75,
-          "ovr": 67,
-          "rarity": "Rare"
+          "war": 8.6,
+          "hp": 94,
+          "maxHp": 94,
+          "stf": 73,
+          "ctl": 84,
+          "mov": 79,
+          "sta": 78,
+          "ovr": 79,
+          "rarity": "Epic"
         },
         {
-          "name": "Dave McNally",
+          "name": "Bill Hands",
           "role": "SP",
-          "war": 2.4,
-          "hp": 84,
-          "maxHp": 84,
-          "stf": 54,
-          "ctl": 66,
-          "mov": 56,
-          "sta": 66,
-          "ovr": 59,
-          "rarity": "Rare"
+          "war": 8.4,
+          "hp": 88,
+          "maxHp": 88,
+          "stf": 52,
+          "ctl": 83,
+          "mov": 84,
+          "sta": 70,
+          "ovr": 73,
+          "rarity": "Epic"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1970": {
@@ -81982,9 +85363,7 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      }
-    ],
-    "mid": [
+      },
       {
         "id": "story_1970_CLE",
         "name": "1970 Cleveland Indians",
@@ -82033,7 +85412,9 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
-      },
+      }
+    ],
+    "mid": [
       {
         "id": "story_1970_ATL",
         "name": "1970 Atlanta Braves",
@@ -82327,9 +85708,7 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      }
-    ],
-    "high": [
+      },
       {
         "id": "story_1970_CAL",
         "name": "1970 California Angels",
@@ -82427,7 +85806,9 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      },
+      }
+    ],
+    "high": [
       {
         "id": "story_1970_BOS",
         "name": "1970 Boston Red Sox",
@@ -82770,57 +86151,106 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
+      },
+      {
+        "id": "story_1970_BAL",
+        "name": "1970 Baltimore Orioles",
+        "year": 1970,
+        "teamID": "BAL",
+        "win_pct": 0.667,
+        "ovr": 64,
+        "pitchers": [
+          {
+            "name": "Jim Palmer",
+            "role": "SP",
+            "war": 6.4,
+            "hp": 90,
+            "maxHp": 90,
+            "stf": 58,
+            "ctl": 62,
+            "mov": 69,
+            "sta": 74,
+            "ovr": 64,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Dave McNally",
+            "role": "SP",
+            "war": 3.8,
+            "hp": 88,
+            "maxHp": 88,
+            "stf": 55,
+            "ctl": 78,
+            "mov": 56,
+            "sta": 71,
+            "ovr": 64,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Mike Cuellar",
+            "role": "SP",
+            "war": 2.7,
+            "hp": 88,
+            "maxHp": 88,
+            "stf": 56,
+            "ctl": 85,
+            "mov": 51,
+            "sta": 71,
+            "ovr": 65,
+            "rarity": "Rare"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1970_BAL",
-      "name": "BOSS: 1970 Baltimore Orioles",
+      "id": "story_1970_STARS_BOSS",
+      "name": "\ud83d\udc51 1970 STARS",
       "year": 1970,
-      "teamID": "BAL",
-      "win_pct": 0.667,
-      "ovr": 64,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 73,
       "pitchers": [
         {
-          "name": "Jim Palmer",
+          "name": "Bob Gibson",
           "role": "SP",
-          "war": 6.4,
+          "war": 8.9,
+          "hp": 96,
+          "maxHp": 96,
+          "stf": 96,
+          "ctl": 69,
+          "mov": 71,
+          "sta": 81,
+          "ovr": 79,
+          "rarity": "Epic"
+        },
+        {
+          "name": "Sam McDowell",
+          "role": "SP",
+          "war": 8.3,
           "hp": 90,
           "maxHp": 90,
-          "stf": 58,
-          "ctl": 62,
-          "mov": 69,
+          "stf": 105,
+          "ctl": 45,
+          "mov": 68,
           "sta": 74,
-          "ovr": 64,
-          "rarity": "Rare"
+          "ovr": 73,
+          "rarity": "Epic"
         },
         {
-          "name": "Dave McNally",
+          "name": "Gaylord Perry",
           "role": "SP",
-          "war": 3.8,
-          "hp": 88,
-          "maxHp": 88,
-          "stf": 55,
-          "ctl": 78,
-          "mov": 56,
-          "sta": 71,
-          "ovr": 64,
-          "rarity": "Rare"
-        },
-        {
-          "name": "Mike Cuellar",
-          "role": "SP",
-          "war": 2.7,
-          "hp": 88,
-          "maxHp": 88,
-          "stf": 56,
-          "ctl": 85,
-          "mov": 51,
-          "sta": 71,
-          "ovr": 65,
+          "war": 7.6,
+          "hp": 92,
+          "maxHp": 92,
+          "stf": 58,
+          "ctl": 80,
+          "mov": 63,
+          "sta": 76,
+          "ovr": 68,
           "rarity": "Rare"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1971": {
@@ -83168,9 +86598,7 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      }
-    ],
-    "mid": [
+      },
       {
         "id": "story_1971_CAL",
         "name": "1971 California Angels",
@@ -83219,7 +86647,9 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      },
+      }
+    ],
+    "mid": [
       {
         "id": "story_1971_CIN",
         "name": "1971 Cincinnati Reds",
@@ -83513,9 +86943,7 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      }
-    ],
-    "high": [
+      },
       {
         "id": "story_1971_NYN",
         "name": "1971 New York Mets",
@@ -83613,7 +87041,9 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      },
+      }
+    ],
+    "high": [
       {
         "id": "story_1971_KCA",
         "name": "1971 Kansas City Royals",
@@ -83956,57 +87386,106 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
+      },
+      {
+        "id": "story_1971_BAL",
+        "name": "1971 Baltimore Orioles",
+        "year": 1971,
+        "teamID": "BAL",
+        "win_pct": 0.639,
+        "ovr": 62,
+        "pitchers": [
+          {
+            "name": "Jim Palmer",
+            "role": "SP",
+            "war": 4.1,
+            "hp": 90,
+            "maxHp": 90,
+            "stf": 58,
+            "ctl": 51,
+            "mov": 65,
+            "sta": 73,
+            "ovr": 60,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Pat Dobson",
+            "role": "SP",
+            "war": 3.1,
+            "hp": 90,
+            "maxHp": 90,
+            "stf": 60,
+            "ctl": 87,
+            "mov": 58,
+            "sta": 73,
+            "ovr": 69,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Dave McNally",
+            "role": "SP",
+            "war": 3.0,
+            "hp": 89,
+            "maxHp": 89,
+            "stf": 25,
+            "ctl": 79,
+            "mov": 57,
+            "sta": 72,
+            "ovr": 56,
+            "rarity": "Rare"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1971_BAL",
-      "name": "BOSS: 1971 Baltimore Orioles",
+      "id": "story_1971_STARS_BOSS",
+      "name": "\ud83d\udc51 1971 STARS",
       "year": 1971,
-      "teamID": "BAL",
-      "win_pct": 0.639,
-      "ovr": 62,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 89,
       "pitchers": [
         {
-          "name": "Jim Palmer",
+          "name": "Wilbur Wood",
           "role": "SP",
-          "war": 4.1,
-          "hp": 90,
-          "maxHp": 90,
-          "stf": 58,
-          "ctl": 51,
-          "mov": 65,
-          "sta": 73,
-          "ovr": 60,
-          "rarity": "Rare"
+          "war": 11.7,
+          "hp": 91,
+          "maxHp": 91,
+          "stf": 55,
+          "ctl": 96,
+          "mov": 98,
+          "sta": 75,
+          "ovr": 82,
+          "rarity": "Epic"
         },
         {
-          "name": "Pat Dobson",
+          "name": "Tom Seaver",
           "role": "SP",
-          "war": 3.1,
-          "hp": 90,
-          "maxHp": 90,
-          "stf": 60,
-          "ctl": 87,
-          "mov": 58,
-          "sta": 73,
-          "ovr": 69,
-          "rarity": "Rare"
+          "war": 10.2,
+          "hp": 93,
+          "maxHp": 93,
+          "stf": 107,
+          "ctl": 90,
+          "mov": 101,
+          "sta": 77,
+          "ovr": 97,
+          "rarity": "Legendary"
         },
         {
-          "name": "Dave McNally",
+          "name": "Fergie Jenkins",
           "role": "SP",
-          "war": 3.0,
-          "hp": 89,
-          "maxHp": 89,
-          "stf": 25,
-          "ctl": 79,
-          "mov": 57,
-          "sta": 72,
-          "ovr": 56,
-          "rarity": "Rare"
+          "war": 10.1,
+          "hp": 94,
+          "maxHp": 94,
+          "stf": 80,
+          "ctl": 114,
+          "mov": 71,
+          "sta": 78,
+          "ovr": 87,
+          "rarity": "Legendary"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1972": {
@@ -84354,9 +87833,7 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      }
-    ],
-    "mid": [
+      },
       {
         "id": "story_1972_CLE",
         "name": "1972 Cleveland Indians",
@@ -84405,7 +87882,9 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      },
+      }
+    ],
+    "mid": [
       {
         "id": "story_1972_SLN",
         "name": "1972 St. Louis Cardinals",
@@ -84699,9 +88178,7 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      }
-    ],
-    "high": [
+      },
       {
         "id": "story_1972_NYN",
         "name": "1972 New York Mets",
@@ -84799,7 +88276,9 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
-      },
+      }
+    ],
+    "high": [
       {
         "id": "story_1972_CHN",
         "name": "1972 Chicago Cubs",
@@ -85142,57 +88621,106 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
+      },
+      {
+        "id": "story_1972_PIT",
+        "name": "1972 Pittsburgh Pirates",
+        "year": 1972,
+        "teamID": "PIT",
+        "win_pct": 0.619,
+        "ovr": 68,
+        "pitchers": [
+          {
+            "name": "Steve Blass",
+            "role": "SP",
+            "war": 4.0,
+            "hp": 90,
+            "maxHp": 90,
+            "stf": 34,
+            "ctl": 60,
+            "mov": 69,
+            "sta": 74,
+            "ovr": 56,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Dave Giusti",
+            "role": "RP",
+            "war": 2.3,
+            "hp": 38,
+            "maxHp": 38,
+            "stf": 68,
+            "ctl": 77,
+            "mov": 94,
+            "sta": 25,
+            "ovr": 74,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Ramon Hernandez",
+            "role": "RP",
+            "war": 2.3,
+            "hp": 38,
+            "maxHp": 38,
+            "stf": 61,
+            "ctl": 66,
+            "mov": 107,
+            "sta": 25,
+            "ovr": 73,
+            "rarity": "Epic"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1972_PIT",
-      "name": "BOSS: 1972 Pittsburgh Pirates",
+      "id": "story_1972_STARS_BOSS",
+      "name": "\ud83d\udc51 1972 STARS",
       "year": 1972,
-      "teamID": "PIT",
-      "win_pct": 0.619,
-      "ovr": 68,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 78,
       "pitchers": [
         {
-          "name": "Steve Blass",
+          "name": "Steve Carlton",
           "role": "SP",
-          "war": 4.0,
+          "war": 12.1,
+          "hp": 94,
+          "maxHp": 94,
+          "stf": 91,
+          "ctl": 81,
+          "mov": 97,
+          "sta": 79,
+          "ovr": 89,
+          "rarity": "Legendary"
+        },
+        {
+          "name": "Gaylord Perry",
+          "role": "SP",
+          "war": 10.8,
+          "hp": 95,
+          "maxHp": 95,
+          "stf": 62,
+          "ctl": 84,
+          "mov": 89,
+          "sta": 80,
+          "ovr": 78,
+          "rarity": "Epic"
+        },
+        {
+          "name": "Wilbur Wood",
+          "role": "SP",
+          "war": 10.7,
           "hp": 90,
           "maxHp": 90,
-          "stf": 34,
-          "ctl": 60,
-          "mov": 69,
-          "sta": 74,
-          "ovr": 56,
+          "stf": 39,
+          "ctl": 94,
+          "mov": 65,
+          "sta": 73,
+          "ovr": 67,
           "rarity": "Rare"
-        },
-        {
-          "name": "Dave Giusti",
-          "role": "RP",
-          "war": 2.3,
-          "hp": 38,
-          "maxHp": 38,
-          "stf": 68,
-          "ctl": 77,
-          "mov": 94,
-          "sta": 25,
-          "ovr": 74,
-          "rarity": "Epic"
-        },
-        {
-          "name": "Ramon Hernandez",
-          "role": "RP",
-          "war": 2.3,
-          "hp": 38,
-          "maxHp": 38,
-          "stf": 61,
-          "ctl": 66,
-          "mov": 107,
-          "sta": 25,
-          "ovr": 73,
-          "rarity": "Epic"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1973": {
@@ -85540,9 +89068,7 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      }
-    ],
-    "mid": [
+      },
       {
         "id": "story_1973_CHN",
         "name": "1973 Chicago Cubs",
@@ -85591,7 +89117,9 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      },
+      }
+    ],
+    "mid": [
       {
         "id": "story_1973_CAL",
         "name": "1973 California Angels",
@@ -85885,9 +89413,7 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      }
-    ],
-    "high": [
+      },
       {
         "id": "story_1973_HOU",
         "name": "1973 Houston Astros",
@@ -85985,7 +89511,9 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      },
+      }
+    ],
+    "high": [
       {
         "id": "story_1973_DET",
         "name": "1973 Detroit Tigers",
@@ -86328,57 +89856,106 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
+      },
+      {
+        "id": "story_1973_CIN",
+        "name": "1973 Cincinnati Reds",
+        "year": 1973,
+        "teamID": "CIN",
+        "win_pct": 0.611,
+        "ovr": 56,
+        "pitchers": [
+          {
+            "name": "Jack Billingham",
+            "role": "SP",
+            "war": 3.1,
+            "hp": 88,
+            "maxHp": 88,
+            "stf": 42,
+            "ctl": 63,
+            "mov": 58,
+            "sta": 71,
+            "ovr": 56,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Pedro Borbon",
+            "role": "RP",
+            "war": 2.5,
+            "hp": 39,
+            "maxHp": 39,
+            "stf": 37,
+            "ctl": 72,
+            "mov": 86,
+            "sta": 26,
+            "ovr": 61,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Fred Norman",
+            "role": "SP",
+            "war": 2.5,
+            "hp": 85,
+            "maxHp": 85,
+            "stf": 61,
+            "ctl": 46,
+            "mov": 44,
+            "sta": 67,
+            "ovr": 52,
+            "rarity": "Uncommon"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1973_CIN",
-      "name": "BOSS: 1973 Cincinnati Reds",
+      "id": "story_1973_STARS_BOSS",
+      "name": "\ud83d\udc51 1973 STARS",
       "year": 1973,
-      "teamID": "CIN",
-      "win_pct": 0.611,
-      "ovr": 56,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 86,
       "pitchers": [
         {
-          "name": "Jack Billingham",
+          "name": "Tom Seaver",
           "role": "SP",
-          "war": 3.1,
-          "hp": 88,
-          "maxHp": 88,
-          "stf": 42,
-          "ctl": 63,
-          "mov": 58,
-          "sta": 71,
-          "ovr": 56,
-          "rarity": "Rare"
+          "war": 10.6,
+          "hp": 92,
+          "maxHp": 92,
+          "stf": 87,
+          "ctl": 88,
+          "mov": 90,
+          "sta": 76,
+          "ovr": 87,
+          "rarity": "Legendary"
         },
         {
-          "name": "Pedro Borbon",
+          "name": "Bert Blyleven",
+          "role": "SP",
+          "war": 9.8,
+          "hp": 93,
+          "maxHp": 93,
+          "stf": 77,
+          "ctl": 92,
+          "mov": 83,
+          "sta": 77,
+          "ovr": 83,
+          "rarity": "Epic"
+        },
+        {
+          "name": "John Hiller",
           "role": "RP",
-          "war": 2.5,
-          "hp": 39,
-          "maxHp": 39,
-          "stf": 37,
-          "ctl": 72,
-          "mov": 86,
-          "sta": 26,
-          "ovr": 61,
-          "rarity": "Rare"
-        },
-        {
-          "name": "Fred Norman",
-          "role": "SP",
-          "war": 2.5,
-          "hp": 85,
-          "maxHp": 85,
-          "stf": 61,
-          "ctl": 46,
-          "mov": 44,
-          "sta": 67,
-          "ovr": 52,
-          "rarity": "Uncommon"
+          "war": 7.9,
+          "hp": 41,
+          "maxHp": 41,
+          "stf": 104,
+          "ctl": 66,
+          "mov": 113,
+          "sta": 29,
+          "ovr": 88,
+          "rarity": "Legendary"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1974": {
@@ -86726,9 +90303,7 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
-      }
-    ],
-    "mid": [
+      },
       {
         "id": "story_1974_CLE",
         "name": "1974 Cleveland Indians",
@@ -86777,7 +90352,9 @@ window.OpponentsDatabase = {
             "rarity": "Common"
           }
         ]
-      },
+      }
+    ],
+    "mid": [
       {
         "id": "story_1974_KCA",
         "name": "1974 Kansas City Royals",
@@ -87071,9 +90648,7 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      }
-    ],
-    "high": [
+      },
       {
         "id": "story_1974_BOS",
         "name": "1974 Boston Red Sox",
@@ -87171,7 +90746,9 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      },
+      }
+    ],
+    "high": [
       {
         "id": "story_1974_SLN",
         "name": "1974 St. Louis Cardinals",
@@ -87514,57 +91091,106 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
+      },
+      {
+        "id": "story_1974_LAN",
+        "name": "1974 Los Angeles Dodgers",
+        "year": 1974,
+        "teamID": "LAN",
+        "win_pct": 0.63,
+        "ovr": 66,
+        "pitchers": [
+          {
+            "name": "Andy Messersmith",
+            "role": "SP",
+            "war": 5.3,
+            "hp": 89,
+            "maxHp": 89,
+            "stf": 72,
+            "ctl": 64,
+            "mov": 67,
+            "sta": 72,
+            "ovr": 68,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Mike Marshall",
+            "role": "RP",
+            "war": 3.1,
+            "hp": 41,
+            "maxHp": 41,
+            "stf": 63,
+            "ctl": 77,
+            "mov": 76,
+            "sta": 30,
+            "ovr": 68,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Tommy John",
+            "role": "SP",
+            "war": 2.6,
+            "hp": 86,
+            "maxHp": 86,
+            "stf": 39,
+            "ctl": 75,
+            "mov": 73,
+            "sta": 68,
+            "ovr": 63,
+            "rarity": "Rare"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1974_LAN",
-      "name": "BOSS: 1974 Los Angeles Dodgers",
+      "id": "story_1974_STARS_BOSS",
+      "name": "\ud83d\udc51 1974 STARS",
       "year": 1974,
-      "teamID": "LAN",
-      "win_pct": 0.63,
-      "ovr": 66,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 74,
       "pitchers": [
         {
-          "name": "Andy Messersmith",
+          "name": "Jon Matlack",
           "role": "SP",
-          "war": 5.3,
-          "hp": 89,
-          "maxHp": 89,
-          "stf": 72,
-          "ctl": 64,
-          "mov": 67,
-          "sta": 72,
-          "ovr": 68,
+          "war": 9.1,
+          "hp": 90,
+          "maxHp": 90,
+          "stf": 69,
+          "ctl": 72,
+          "mov": 82,
+          "sta": 74,
+          "ovr": 74,
+          "rarity": "Epic"
+        },
+        {
+          "name": "Gaylord Perry",
+          "role": "SP",
+          "war": 8.5,
+          "hp": 96,
+          "maxHp": 96,
+          "stf": 61,
+          "ctl": 67,
+          "mov": 74,
+          "sta": 81,
+          "ovr": 69,
           "rarity": "Rare"
         },
         {
-          "name": "Mike Marshall",
-          "role": "RP",
-          "war": 3.1,
-          "hp": 41,
-          "maxHp": 41,
-          "stf": 63,
-          "ctl": 77,
-          "mov": 76,
-          "sta": 30,
-          "ovr": 68,
-          "rarity": "Rare"
-        },
-        {
-          "name": "Tommy John",
+          "name": "Bert Blyleven",
           "role": "SP",
-          "war": 2.6,
-          "hp": 86,
-          "maxHp": 86,
-          "stf": 39,
+          "war": 7.8,
+          "hp": 90,
+          "maxHp": 90,
+          "stf": 90,
           "ctl": 75,
-          "mov": 73,
-          "sta": 68,
-          "ovr": 63,
-          "rarity": "Rare"
+          "mov": 75,
+          "sta": 73,
+          "ovr": 79,
+          "rarity": "Epic"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1975": {
@@ -87912,9 +91538,7 @@ window.OpponentsDatabase = {
             "rarity": "Common"
           }
         ]
-      }
-    ],
-    "mid": [
+      },
       {
         "id": "story_1975_CHN",
         "name": "1975 Chicago Cubs",
@@ -87963,7 +91587,9 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
-      },
+      }
+    ],
+    "mid": [
       {
         "id": "story_1975_CHA",
         "name": "1975 Chicago White Sox",
@@ -88257,9 +91883,7 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      }
-    ],
-    "high": [
+      },
       {
         "id": "story_1975_SLN",
         "name": "1975 St. Louis Cardinals",
@@ -88357,7 +91981,9 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      },
+      }
+    ],
+    "high": [
       {
         "id": "story_1975_PHI",
         "name": "1975 Philadelphia Phillies",
@@ -88700,57 +92326,106 @@ window.OpponentsDatabase = {
             "rarity": "Epic"
           }
         ]
+      },
+      {
+        "id": "story_1975_CIN",
+        "name": "1975 Cincinnati Reds",
+        "year": 1975,
+        "teamID": "CIN",
+        "win_pct": 0.667,
+        "ovr": 63,
+        "pitchers": [
+          {
+            "name": "Don Gullett",
+            "role": "SP",
+            "war": 3.1,
+            "hp": 88,
+            "maxHp": 88,
+            "stf": 53,
+            "ctl": 57,
+            "mov": 77,
+            "sta": 70,
+            "ovr": 63,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Gary Nolan",
+            "role": "SP",
+            "war": 2.6,
+            "hp": 84,
+            "maxHp": 84,
+            "stf": 18,
+            "ctl": 108,
+            "mov": 57,
+            "sta": 65,
+            "ovr": 61,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Rawly Eastwick",
+            "role": "RP",
+            "war": 1.8,
+            "hp": 39,
+            "maxHp": 39,
+            "stf": 62,
+            "ctl": 74,
+            "mov": 72,
+            "sta": 27,
+            "ovr": 65,
+            "rarity": "Rare"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1975_CIN",
-      "name": "BOSS: 1975 Cincinnati Reds",
+      "id": "story_1975_STARS_BOSS",
+      "name": "\ud83d\udc51 1975 STARS",
       "year": 1975,
-      "teamID": "CIN",
-      "win_pct": 0.667,
-      "ovr": 63,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 73,
       "pitchers": [
         {
-          "name": "Don Gullett",
+          "name": "Jim Palmer",
           "role": "SP",
-          "war": 3.1,
-          "hp": 88,
-          "maxHp": 88,
-          "stf": 53,
-          "ctl": 57,
-          "mov": 77,
-          "sta": 70,
-          "ovr": 63,
-          "rarity": "Rare"
+          "war": 8.4,
+          "hp": 94,
+          "maxHp": 94,
+          "stf": 51,
+          "ctl": 82,
+          "mov": 88,
+          "sta": 79,
+          "ovr": 74,
+          "rarity": "Epic"
         },
         {
-          "name": "Gary Nolan",
-          "role": "SP",
-          "war": 2.6,
-          "hp": 84,
-          "maxHp": 84,
-          "stf": 18,
-          "ctl": 108,
-          "mov": 57,
-          "sta": 65,
-          "ovr": 61,
-          "rarity": "Rare"
-        },
-        {
-          "name": "Rawly Eastwick",
+          "name": "Rich Gossage",
           "role": "RP",
-          "war": 1.8,
-          "hp": 39,
-          "maxHp": 39,
-          "stf": 62,
-          "ctl": 74,
-          "mov": 72,
-          "sta": 27,
-          "ovr": 65,
+          "war": 8.2,
+          "hp": 43,
+          "maxHp": 43,
+          "stf": 94,
+          "ctl": 39,
+          "mov": 115,
+          "sta": 32,
+          "ovr": 78,
+          "rarity": "Epic"
+        },
+        {
+          "name": "Catfish Hunter",
+          "role": "SP",
+          "war": 8.1,
+          "hp": 94,
+          "maxHp": 94,
+          "stf": 43,
+          "ctl": 80,
+          "mov": 74,
+          "sta": 79,
+          "ovr": 67,
           "rarity": "Rare"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1976": {
@@ -89098,9 +92773,7 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
-      }
-    ],
-    "mid": [
+      },
       {
         "id": "story_1976_DET",
         "name": "1976 Detroit Tigers",
@@ -89149,7 +92822,9 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
-      },
+      }
+    ],
+    "mid": [
       {
         "id": "story_1976_CHN",
         "name": "1976 Chicago Cubs",
@@ -89443,9 +93118,7 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      }
-    ],
-    "high": [
+      },
       {
         "id": "story_1976_MIN",
         "name": "1976 Minnesota Twins",
@@ -89543,7 +93216,9 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      },
+      }
+    ],
+    "high": [
       {
         "id": "story_1976_OAK",
         "name": "1976 Oakland Athletics",
@@ -89886,57 +93561,106 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
+      },
+      {
+        "id": "story_1976_CIN",
+        "name": "1976 Cincinnati Reds",
+        "year": 1976,
+        "teamID": "CIN",
+        "win_pct": 0.63,
+        "ovr": 67,
+        "pitchers": [
+          {
+            "name": "Pat Zachry",
+            "role": "SP",
+            "war": 3.6,
+            "hp": 88,
+            "maxHp": 88,
+            "stf": 65,
+            "ctl": 47,
+            "mov": 70,
+            "sta": 70,
+            "ovr": 62,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Gary Nolan",
+            "role": "SP",
+            "war": 2.8,
+            "hp": 86,
+            "maxHp": 86,
+            "stf": 34,
+            "ctl": 114,
+            "mov": 49,
+            "sta": 68,
+            "ovr": 66,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Rawly Eastwick",
+            "role": "RP",
+            "war": 2.8,
+            "hp": 39,
+            "maxHp": 39,
+            "stf": 58,
+            "ctl": 81,
+            "mov": 92,
+            "sta": 26,
+            "ovr": 72,
+            "rarity": "Epic"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1976_CIN",
-      "name": "BOSS: 1976 Cincinnati Reds",
+      "id": "story_1976_STARS_BOSS",
+      "name": "\ud83d\udc51 1976 STARS",
       "year": 1976,
-      "teamID": "CIN",
-      "win_pct": 0.63,
-      "ovr": 67,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 73,
       "pitchers": [
         {
-          "name": "Pat Zachry",
+          "name": "Mark Fidrych",
           "role": "SP",
-          "war": 3.6,
-          "hp": 88,
-          "maxHp": 88,
-          "stf": 65,
-          "ctl": 47,
-          "mov": 70,
-          "sta": 70,
-          "ovr": 62,
+          "war": 9.6,
+          "hp": 95,
+          "maxHp": 95,
+          "stf": 23,
+          "ctl": 90,
+          "mov": 84,
+          "sta": 80,
+          "ovr": 67,
           "rarity": "Rare"
         },
         {
-          "name": "Gary Nolan",
+          "name": "Vida Blue",
           "role": "SP",
-          "war": 2.8,
-          "hp": 86,
-          "maxHp": 86,
-          "stf": 34,
-          "ctl": 114,
-          "mov": 49,
-          "sta": 68,
-          "ovr": 66,
-          "rarity": "Rare"
-        },
-        {
-          "name": "Rawly Eastwick",
-          "role": "RP",
-          "war": 2.8,
-          "hp": 39,
-          "maxHp": 39,
-          "stf": 58,
-          "ctl": 81,
-          "mov": 92,
-          "sta": 26,
+          "war": 7.6,
+          "hp": 92,
+          "maxHp": 92,
+          "stf": 45,
+          "ctl": 90,
+          "mov": 78,
+          "sta": 76,
           "ovr": 72,
           "rarity": "Epic"
+        },
+        {
+          "name": "Frank Tanana",
+          "role": "SP",
+          "war": 7.5,
+          "hp": 94,
+          "maxHp": 94,
+          "stf": 93,
+          "ctl": 80,
+          "mov": 69,
+          "sta": 79,
+          "ovr": 80,
+          "rarity": "Epic"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1977": {
@@ -91170,57 +94894,106 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
+      },
+      {
+        "id": "story_1977_KCA",
+        "name": "1977 Kansas City Royals",
+        "year": 1977,
+        "teamID": "KCA",
+        "win_pct": 0.63,
+        "ovr": 59,
+        "pitchers": [
+          {
+            "name": "Dennis Leonard",
+            "role": "SP",
+            "war": 5.6,
+            "hp": 94,
+            "maxHp": 94,
+            "stf": 80,
+            "ctl": 77,
+            "mov": 70,
+            "sta": 78,
+            "ovr": 76,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Jim Colborn",
+            "role": "SP",
+            "war": 3.7,
+            "hp": 88,
+            "maxHp": 88,
+            "stf": 31,
+            "ctl": 60,
+            "mov": 56,
+            "sta": 70,
+            "ovr": 51,
+            "rarity": "Uncommon"
+          },
+          {
+            "name": "Paul Splittorff",
+            "role": "SP",
+            "war": 3.0,
+            "hp": 83,
+            "maxHp": 83,
+            "stf": 31,
+            "ctl": 54,
+            "mov": 59,
+            "sta": 64,
+            "ovr": 50,
+            "rarity": "Uncommon"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1977_KCA",
-      "name": "BOSS: 1977 Kansas City Royals",
+      "id": "story_1977_STARS_BOSS",
+      "name": "\ud83d\udc51 1977 STARS",
       "year": 1977,
-      "teamID": "KCA",
-      "win_pct": 0.63,
-      "ovr": 59,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 70,
       "pitchers": [
         {
-          "name": "Dennis Leonard",
+          "name": "Rick Reuschel",
           "role": "SP",
-          "war": 5.6,
-          "hp": 94,
-          "maxHp": 94,
-          "stf": 80,
-          "ctl": 77,
-          "mov": 70,
-          "sta": 78,
-          "ovr": 76,
+          "war": 9.5,
+          "hp": 87,
+          "maxHp": 87,
+          "stf": 60,
+          "ctl": 71,
+          "mov": 84,
+          "sta": 69,
+          "ovr": 71,
           "rarity": "Epic"
         },
         {
-          "name": "Jim Colborn",
+          "name": "Phil Niekro",
           "role": "SP",
-          "war": 3.7,
-          "hp": 88,
-          "maxHp": 88,
-          "stf": 31,
-          "ctl": 60,
+          "war": 8.9,
+          "hp": 92,
+          "maxHp": 92,
+          "stf": 75,
+          "ctl": 37,
           "mov": 56,
-          "sta": 70,
-          "ovr": 51,
-          "rarity": "Uncommon"
+          "sta": 76,
+          "ovr": 58,
+          "rarity": "Rare"
         },
         {
-          "name": "Paul Splittorff",
+          "name": "Frank Tanana",
           "role": "SP",
-          "war": 3.0,
-          "hp": 83,
-          "maxHp": 83,
-          "stf": 31,
-          "ctl": 54,
-          "mov": 59,
-          "sta": 64,
-          "ovr": 50,
-          "rarity": "Uncommon"
+          "war": 8.3,
+          "hp": 93,
+          "maxHp": 93,
+          "stf": 82,
+          "ctl": 82,
+          "mov": 79,
+          "sta": 77,
+          "ovr": 81,
+          "rarity": "Epic"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1978": {
@@ -92454,16 +96227,79 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
+      },
+      {
+        "id": "story_1978_NYA",
+        "name": "1978 New York Yankees",
+        "year": 1978,
+        "teamID": "NYA",
+        "win_pct": 0.613,
+        "ovr": 72,
+        "pitchers": [
+          {
+            "name": "Ron Guidry",
+            "role": "SP",
+            "war": 9.6,
+            "hp": 94,
+            "maxHp": 94,
+            "stf": 89,
+            "ctl": 79,
+            "mov": 110,
+            "sta": 78,
+            "ovr": 91,
+            "rarity": "Legendary"
+          },
+          {
+            "name": "Ed Figueroa",
+            "role": "SP",
+            "war": 4.0,
+            "hp": 90,
+            "maxHp": 90,
+            "stf": 23,
+            "ctl": 69,
+            "mov": 61,
+            "sta": 73,
+            "ovr": 53,
+            "rarity": "Uncommon"
+          },
+          {
+            "name": "Rich Gossage",
+            "role": "RP",
+            "war": 3.2,
+            "hp": 42,
+            "maxHp": 42,
+            "stf": 89,
+            "ctl": 43,
+            "mov": 94,
+            "sta": 31,
+            "ovr": 71,
+            "rarity": "Epic"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1978_NYA",
-      "name": "BOSS: 1978 New York Yankees",
+      "id": "story_1978_STARS_BOSS",
+      "name": "\ud83d\udc51 1978 STARS",
       "year": 1978,
-      "teamID": "NYA",
-      "win_pct": 0.613,
-      "ovr": 72,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 79,
       "pitchers": [
+        {
+          "name": "Phil Niekro",
+          "role": "SP",
+          "war": 10.0,
+          "hp": 94,
+          "maxHp": 94,
+          "stf": 69,
+          "ctl": 68,
+          "mov": 76,
+          "sta": 79,
+          "ovr": 72,
+          "rarity": "Epic"
+        },
         {
           "name": "Ron Guidry",
           "role": "SP",
@@ -92478,33 +96314,19 @@ window.OpponentsDatabase = {
           "rarity": "Legendary"
         },
         {
-          "name": "Ed Figueroa",
+          "name": "Mike Caldwell",
           "role": "SP",
-          "war": 4.0,
-          "hp": 90,
-          "maxHp": 90,
-          "stf": 23,
-          "ctl": 69,
-          "mov": 61,
-          "sta": 73,
-          "ovr": 53,
-          "rarity": "Uncommon"
-        },
-        {
-          "name": "Rich Gossage",
-          "role": "RP",
-          "war": 3.2,
-          "hp": 42,
-          "maxHp": 42,
-          "stf": 89,
-          "ctl": 43,
-          "mov": 94,
-          "sta": 31,
-          "ovr": 71,
+          "war": 8.2,
+          "hp": 98,
+          "maxHp": 98,
+          "stf": 33,
+          "ctl": 100,
+          "mov": 85,
+          "sta": 84,
+          "ovr": 74,
           "rarity": "Epic"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1979": {
@@ -93738,57 +97560,106 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
+      },
+      {
+        "id": "story_1979_BAL",
+        "name": "1979 Baltimore Orioles",
+        "year": 1979,
+        "teamID": "BAL",
+        "win_pct": 0.642,
+        "ovr": 66,
+        "pitchers": [
+          {
+            "name": "Mike Flanagan",
+            "role": "SP",
+            "war": 3.8,
+            "hp": 88,
+            "maxHp": 88,
+            "stf": 66,
+            "ctl": 79,
+            "mov": 66,
+            "sta": 71,
+            "ovr": 70,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Dennis Martinez",
+            "role": "SP",
+            "war": 3.7,
+            "hp": 91,
+            "maxHp": 91,
+            "stf": 34,
+            "ctl": 78,
+            "mov": 55,
+            "sta": 75,
+            "ovr": 58,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Scott McGregor",
+            "role": "SP",
+            "war": 2.6,
+            "hp": 92,
+            "maxHp": 92,
+            "stf": 35,
+            "ctl": 113,
+            "mov": 59,
+            "sta": 76,
+            "ovr": 70,
+            "rarity": "Epic"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1979_BAL",
-      "name": "BOSS: 1979 Baltimore Orioles",
+      "id": "story_1979_STARS_BOSS",
+      "name": "\ud83d\udc51 1979 STARS",
       "year": 1979,
-      "teamID": "BAL",
-      "win_pct": 0.642,
-      "ovr": 66,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 65,
       "pitchers": [
         {
-          "name": "Mike Flanagan",
+          "name": "Phil Niekro",
           "role": "SP",
-          "war": 3.8,
-          "hp": 88,
-          "maxHp": 88,
-          "stf": 66,
-          "ctl": 79,
-          "mov": 66,
-          "sta": 71,
-          "ovr": 70,
-          "rarity": "Epic"
-        },
-        {
-          "name": "Dennis Martinez",
-          "role": "SP",
-          "war": 3.7,
-          "hp": 91,
-          "maxHp": 91,
-          "stf": 34,
-          "ctl": 78,
-          "mov": 55,
-          "sta": 75,
-          "ovr": 58,
+          "war": 7.4,
+          "hp": 93,
+          "maxHp": 93,
+          "stf": 54,
+          "ctl": 62,
+          "mov": 58,
+          "sta": 77,
+          "ovr": 60,
           "rarity": "Rare"
         },
         {
-          "name": "Scott McGregor",
+          "name": "Dennis Eckersley",
           "role": "SP",
-          "war": 2.6,
-          "hp": 92,
-          "maxHp": 92,
-          "stf": 35,
-          "ctl": 113,
-          "mov": 59,
-          "sta": 76,
-          "ovr": 70,
+          "war": 7.2,
+          "hp": 91,
+          "maxHp": 91,
+          "stf": 54,
+          "ctl": 85,
+          "mov": 73,
+          "sta": 75,
+          "ovr": 71,
           "rarity": "Epic"
+        },
+        {
+          "name": "Jerry Koosman",
+          "role": "SP",
+          "war": 7.2,
+          "hp": 90,
+          "maxHp": 90,
+          "stf": 52,
+          "ctl": 66,
+          "mov": 67,
+          "sta": 74,
+          "ovr": 63,
+          "rarity": "Rare"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1980": {
@@ -95022,57 +98893,106 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
+      },
+      {
+        "id": "story_1980_NYA",
+        "name": "1980 New York Yankees",
+        "year": 1980,
+        "teamID": "NYA",
+        "win_pct": 0.636,
+        "ovr": 73,
+        "pitchers": [
+          {
+            "name": "Rudy May",
+            "role": "SP",
+            "war": 4.9,
+            "hp": 108,
+            "maxHp": 108,
+            "stf": 71,
+            "ctl": 90,
+            "mov": 82,
+            "sta": 97,
+            "ovr": 83,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Tommy John",
+            "role": "SP",
+            "war": 4.1,
+            "hp": 90,
+            "maxHp": 90,
+            "stf": 14,
+            "ctl": 93,
+            "mov": 62,
+            "sta": 74,
+            "ovr": 58,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Rich Gossage",
+            "role": "RP",
+            "war": 3.4,
+            "hp": 39,
+            "maxHp": 39,
+            "stf": 105,
+            "ctl": 51,
+            "mov": 92,
+            "sta": 27,
+            "ovr": 77,
+            "rarity": "Epic"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1980_NYA",
-      "name": "BOSS: 1980 New York Yankees",
+      "id": "story_1980_STARS_BOSS",
+      "name": "\ud83d\udc51 1980 STARS",
       "year": 1980,
-      "teamID": "NYA",
-      "win_pct": 0.636,
-      "ovr": 73,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 75,
       "pitchers": [
         {
-          "name": "Rudy May",
+          "name": "Steve Carlton",
           "role": "SP",
-          "war": 4.9,
-          "hp": 108,
-          "maxHp": 108,
-          "stf": 71,
-          "ctl": 90,
-          "mov": 82,
-          "sta": 97,
+          "war": 10.2,
+          "hp": 94,
+          "maxHp": 94,
+          "stf": 93,
+          "ctl": 71,
+          "mov": 86,
+          "sta": 79,
           "ovr": 83,
           "rarity": "Epic"
         },
         {
-          "name": "Tommy John",
+          "name": "Britt Burns",
           "role": "SP",
-          "war": 4.1,
+          "war": 7.0,
           "hp": 90,
           "maxHp": 90,
-          "stf": 14,
-          "ctl": 93,
-          "mov": 62,
+          "stf": 48,
+          "ctl": 79,
+          "mov": 74,
           "sta": 74,
-          "ovr": 58,
+          "ovr": 68,
           "rarity": "Rare"
         },
         {
-          "name": "Rich Gossage",
-          "role": "RP",
-          "war": 3.4,
-          "hp": 39,
-          "maxHp": 39,
-          "stf": 105,
-          "ctl": 51,
-          "mov": 92,
-          "sta": 27,
-          "ovr": 77,
+          "name": "Don Sutton",
+          "role": "SP",
+          "war": 6.3,
+          "hp": 88,
+          "maxHp": 88,
+          "stf": 53,
+          "ctl": 90,
+          "mov": 81,
+          "sta": 70,
+          "ovr": 74,
           "rarity": "Epic"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1981": {
@@ -96306,57 +100226,106 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
+      },
+      {
+        "id": "story_1981_CIN",
+        "name": "1981 Cincinnati Reds",
+        "year": 1981,
+        "teamID": "CIN",
+        "win_pct": 0.611,
+        "ovr": 60,
+        "pitchers": [
+          {
+            "name": "Tom Seaver",
+            "role": "SP",
+            "war": 4.0,
+            "hp": 90,
+            "maxHp": 90,
+            "stf": 43,
+            "ctl": 48,
+            "mov": 74,
+            "sta": 73,
+            "ovr": 57,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Mario Soto",
+            "role": "SP",
+            "war": 2.3,
+            "hp": 88,
+            "maxHp": 88,
+            "stf": 84,
+            "ctl": 57,
+            "mov": 56,
+            "sta": 71,
+            "ovr": 66,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Bruce Berenyi",
+            "role": "SP",
+            "war": 1.0,
+            "hp": 84,
+            "maxHp": 84,
+            "stf": 81,
+            "ctl": 25,
+            "mov": 58,
+            "sta": 65,
+            "ovr": 56,
+            "rarity": "Rare"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1981_CIN",
-      "name": "BOSS: 1981 Cincinnati Reds",
+      "id": "story_1981_STARS_BOSS",
+      "name": "\ud83d\udc51 1981 STARS",
       "year": 1981,
-      "teamID": "CIN",
-      "win_pct": 0.611,
-      "ovr": 60,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 75,
       "pitchers": [
         {
-          "name": "Tom Seaver",
+          "name": "Bert Blyleven",
           "role": "SP",
-          "war": 4.0,
-          "hp": 90,
-          "maxHp": 90,
-          "stf": 43,
-          "ctl": 48,
-          "mov": 74,
-          "sta": 73,
-          "ovr": 57,
-          "rarity": "Rare"
+          "war": 5.6,
+          "hp": 94,
+          "maxHp": 94,
+          "stf": 61,
+          "ctl": 82,
+          "mov": 67,
+          "sta": 79,
+          "ovr": 71,
+          "rarity": "Epic"
         },
         {
-          "name": "Mario Soto",
+          "name": "Steve Carlton",
           "role": "SP",
-          "war": 2.3,
-          "hp": 88,
-          "maxHp": 88,
-          "stf": 84,
-          "ctl": 57,
-          "mov": 56,
-          "sta": 71,
-          "ovr": 66,
-          "rarity": "Rare"
+          "war": 5.5,
+          "hp": 94,
+          "maxHp": 94,
+          "stf": 93,
+          "ctl": 63,
+          "mov": 80,
+          "sta": 78,
+          "ovr": 79,
+          "rarity": "Epic"
         },
         {
-          "name": "Bruce Berenyi",
+          "name": "Fernando Valenzuela",
           "role": "SP",
-          "war": 1.0,
-          "hp": 84,
-          "maxHp": 84,
-          "stf": 81,
-          "ctl": 25,
-          "mov": 58,
-          "sta": 65,
-          "ovr": 56,
-          "rarity": "Rare"
+          "war": 4.8,
+          "hp": 93,
+          "maxHp": 93,
+          "stf": 92,
+          "ctl": 65,
+          "mov": 71,
+          "sta": 77,
+          "ovr": 76,
+          "rarity": "Epic"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1982": {
@@ -97590,57 +101559,106 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
+      },
+      {
+        "id": "story_1982_ML4",
+        "name": "1982 Milwaukee Brewers",
+        "year": 1982,
+        "teamID": "ML4",
+        "win_pct": 0.586,
+        "ovr": 59,
+        "pitchers": [
+          {
+            "name": "Pete Vuckovich",
+            "role": "SP",
+            "war": 2.8,
+            "hp": 91,
+            "maxHp": 91,
+            "stf": 36,
+            "ctl": 42,
+            "mov": 60,
+            "sta": 75,
+            "ovr": 49,
+            "rarity": "Uncommon"
+          },
+          {
+            "name": "Rollie Fingers",
+            "role": "RP",
+            "war": 2.3,
+            "hp": 39,
+            "maxHp": 39,
+            "stf": 87,
+            "ctl": 82,
+            "mov": 77,
+            "sta": 27,
+            "ovr": 76,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Mike Caldwell",
+            "role": "SP",
+            "war": 2.1,
+            "hp": 92,
+            "maxHp": 92,
+            "stf": 13,
+            "ctl": 89,
+            "mov": 47,
+            "sta": 76,
+            "ovr": 52,
+            "rarity": "Uncommon"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1982_ML4",
-      "name": "BOSS: 1982 Milwaukee Brewers",
+      "id": "story_1982_STARS_BOSS",
+      "name": "\ud83d\udc51 1982 STARS",
       "year": 1982,
-      "teamID": "ML4",
-      "win_pct": 0.586,
-      "ovr": 59,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 74,
       "pitchers": [
         {
-          "name": "Pete Vuckovich",
+          "name": "Steve Rogers",
           "role": "SP",
-          "war": 2.8,
-          "hp": 91,
-          "maxHp": 91,
-          "stf": 36,
-          "ctl": 42,
-          "mov": 60,
-          "sta": 75,
-          "ovr": 49,
-          "rarity": "Uncommon"
-        },
-        {
-          "name": "Rollie Fingers",
-          "role": "RP",
-          "war": 2.3,
-          "hp": 39,
-          "maxHp": 39,
-          "stf": 87,
-          "ctl": 82,
-          "mov": 77,
-          "sta": 27,
+          "war": 7.6,
+          "hp": 94,
+          "maxHp": 94,
+          "stf": 58,
+          "ctl": 87,
+          "mov": 82,
+          "sta": 78,
           "ovr": 76,
           "rarity": "Epic"
         },
         {
-          "name": "Mike Caldwell",
+          "name": "Dave Stieb",
           "role": "SP",
-          "war": 2.1,
+          "war": 7.6,
           "hp": 92,
           "maxHp": 92,
-          "stf": 13,
-          "ctl": 89,
-          "mov": 47,
+          "stf": 39,
+          "ctl": 80,
+          "mov": 70,
           "sta": 76,
-          "ovr": 52,
-          "rarity": "Uncommon"
+          "ovr": 64,
+          "rarity": "Rare"
+        },
+        {
+          "name": "Mario Soto",
+          "role": "SP",
+          "war": 7.5,
+          "hp": 92,
+          "maxHp": 92,
+          "stf": 107,
+          "ctl": 76,
+          "mov": 68,
+          "sta": 76,
+          "ovr": 83,
+          "rarity": "Epic"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1983": {
@@ -98874,57 +102892,106 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
+      },
+      {
+        "id": "story_1983_CHA",
+        "name": "1983 Chicago White Sox",
+        "year": 1983,
+        "teamID": "CHA",
+        "win_pct": 0.611,
+        "ovr": 66,
+        "pitchers": [
+          {
+            "name": "Richard Dotson",
+            "role": "SP",
+            "war": 5.1,
+            "hp": 88,
+            "maxHp": 88,
+            "stf": 49,
+            "ctl": 43,
+            "mov": 67,
+            "sta": 70,
+            "ovr": 55,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Floyd Bannister",
+            "role": "SP",
+            "war": 4.0,
+            "hp": 84,
+            "maxHp": 84,
+            "stf": 87,
+            "ctl": 63,
+            "mov": 63,
+            "sta": 66,
+            "ovr": 70,
+            "rarity": "Epic"
+          },
+          {
+            "name": "LaMarr Hoyt",
+            "role": "SP",
+            "war": 3.7,
+            "hp": 90,
+            "maxHp": 90,
+            "stf": 49,
+            "ctl": 116,
+            "mov": 57,
+            "sta": 73,
+            "ovr": 74,
+            "rarity": "Epic"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1983_CHA",
-      "name": "BOSS: 1983 Chicago White Sox",
+      "id": "story_1983_STARS_BOSS",
+      "name": "\ud83d\udc51 1983 STARS",
       "year": 1983,
-      "teamID": "CHA",
-      "win_pct": 0.611,
-      "ovr": 66,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 71,
       "pitchers": [
         {
-          "name": "Richard Dotson",
+          "name": "John Denny",
           "role": "SP",
-          "war": 5.1,
-          "hp": 88,
-          "maxHp": 88,
+          "war": 7.4,
+          "hp": 87,
+          "maxHp": 87,
           "stf": 49,
-          "ctl": 43,
-          "mov": 67,
-          "sta": 70,
-          "ovr": 55,
+          "ctl": 91,
+          "mov": 82,
+          "sta": 69,
+          "ovr": 74,
+          "rarity": "Epic"
+        },
+        {
+          "name": "Dave Stieb",
+          "role": "SP",
+          "war": 7.0,
+          "hp": 93,
+          "maxHp": 93,
+          "stf": 61,
+          "ctl": 61,
+          "mov": 73,
+          "sta": 77,
+          "ovr": 66,
           "rarity": "Rare"
         },
         {
-          "name": "Floyd Bannister",
+          "name": "Mario Soto",
           "role": "SP",
-          "war": 4.0,
-          "hp": 84,
-          "maxHp": 84,
-          "stf": 87,
-          "ctl": 63,
-          "mov": 63,
-          "sta": 66,
-          "ovr": 70,
-          "rarity": "Epic"
-        },
-        {
-          "name": "LaMarr Hoyt",
-          "role": "SP",
-          "war": 3.7,
-          "hp": 90,
-          "maxHp": 90,
-          "stf": 49,
-          "ctl": 116,
-          "mov": 57,
-          "sta": 73,
-          "ovr": 74,
+          "war": 6.8,
+          "hp": 94,
+          "maxHp": 94,
+          "stf": 86,
+          "ctl": 58,
+          "mov": 70,
+          "sta": 79,
+          "ovr": 72,
           "rarity": "Epic"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1984": {
@@ -100158,57 +104225,106 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
+      },
+      {
+        "id": "story_1984_DET",
+        "name": "1984 Detroit Tigers",
+        "year": 1984,
+        "teamID": "DET",
+        "win_pct": 0.642,
+        "ovr": 68,
+        "pitchers": [
+          {
+            "name": "Willie Hernandez",
+            "role": "RP",
+            "war": 4.8,
+            "hp": 40,
+            "maxHp": 40,
+            "stf": 76,
+            "ctl": 81,
+            "mov": 109,
+            "sta": 28,
+            "ovr": 83,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Dan Petry",
+            "role": "SP",
+            "war": 3.5,
+            "hp": 86,
+            "maxHp": 86,
+            "stf": 55,
+            "ctl": 74,
+            "mov": 61,
+            "sta": 68,
+            "ovr": 64,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Jack Morris",
+            "role": "SP",
+            "war": 2.5,
+            "hp": 88,
+            "maxHp": 88,
+            "stf": 55,
+            "ctl": 54,
+            "mov": 55,
+            "sta": 70,
+            "ovr": 56,
+            "rarity": "Rare"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1984_DET",
-      "name": "BOSS: 1984 Detroit Tigers",
+      "id": "story_1984_STARS_BOSS",
+      "name": "\ud83d\udc51 1984 STARS",
       "year": 1984,
-      "teamID": "DET",
-      "win_pct": 0.642,
-      "ovr": 68,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 69,
       "pitchers": [
         {
-          "name": "Willie Hernandez",
-          "role": "RP",
-          "war": 4.8,
-          "hp": 40,
-          "maxHp": 40,
-          "stf": 76,
-          "ctl": 81,
-          "mov": 109,
-          "sta": 28,
-          "ovr": 83,
+          "name": "Dave Stieb",
+          "role": "SP",
+          "war": 7.9,
+          "hp": 92,
+          "maxHp": 92,
+          "stf": 69,
+          "ctl": 62,
+          "mov": 75,
+          "sta": 76,
+          "ovr": 69,
+          "rarity": "Rare"
+        },
+        {
+          "name": "Bert Blyleven",
+          "role": "SP",
+          "war": 7.2,
+          "hp": 92,
+          "maxHp": 92,
+          "stf": 64,
+          "ctl": 69,
+          "mov": 74,
+          "sta": 76,
+          "ovr": 70,
           "rarity": "Epic"
         },
         {
-          "name": "Dan Petry",
+          "name": "Doyle Alexander",
           "role": "SP",
-          "war": 3.5,
-          "hp": 86,
-          "maxHp": 86,
-          "stf": 55,
-          "ctl": 74,
-          "mov": 61,
-          "sta": 68,
-          "ovr": 64,
-          "rarity": "Rare"
-        },
-        {
-          "name": "Jack Morris",
-          "role": "SP",
-          "war": 2.5,
-          "hp": 88,
-          "maxHp": 88,
-          "stf": 55,
-          "ctl": 54,
-          "mov": 55,
-          "sta": 70,
-          "ovr": 56,
+          "war": 6.1,
+          "hp": 91,
+          "maxHp": 91,
+          "stf": 44,
+          "ctl": 89,
+          "mov": 67,
+          "sta": 75,
+          "ovr": 68,
           "rarity": "Rare"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1985": {
@@ -101442,16 +105558,79 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
+      },
+      {
+        "id": "story_1985_SLN",
+        "name": "1985 St. Louis Cardinals",
+        "year": 1985,
+        "teamID": "SLN",
+        "win_pct": 0.623,
+        "ovr": 70,
+        "pitchers": [
+          {
+            "name": "John Tudor",
+            "role": "SP",
+            "war": 8.1,
+            "hp": 92,
+            "maxHp": 92,
+            "stf": 54,
+            "ctl": 101,
+            "mov": 98,
+            "sta": 76,
+            "ovr": 84,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Danny Cox",
+            "role": "SP",
+            "war": 3.2,
+            "hp": 88,
+            "maxHp": 88,
+            "stf": 46,
+            "ctl": 79,
+            "mov": 63,
+            "sta": 70,
+            "ovr": 63,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Jeff Lahti",
+            "role": "RP",
+            "war": 2.3,
+            "hp": 38,
+            "maxHp": 38,
+            "stf": 53,
+            "ctl": 50,
+            "mov": 103,
+            "sta": 25,
+            "ovr": 64,
+            "rarity": "Rare"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1985_SLN",
-      "name": "BOSS: 1985 St. Louis Cardinals",
+      "id": "story_1985_STARS_BOSS",
+      "name": "\ud83d\udc51 1985 STARS",
       "year": 1985,
-      "teamID": "SLN",
-      "win_pct": 0.623,
-      "ovr": 70,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 86,
       "pitchers": [
+        {
+          "name": "Dwight Gooden",
+          "role": "SP",
+          "war": 12.2,
+          "hp": 94,
+          "maxHp": 94,
+          "stf": 96,
+          "ctl": 83,
+          "mov": 114,
+          "sta": 78,
+          "ovr": 96,
+          "rarity": "Legendary"
+        },
         {
           "name": "John Tudor",
           "role": "SP",
@@ -101466,33 +105645,19 @@ window.OpponentsDatabase = {
           "rarity": "Epic"
         },
         {
-          "name": "Danny Cox",
+          "name": "Bret Saberhagen",
           "role": "SP",
-          "war": 3.2,
-          "hp": 88,
-          "maxHp": 88,
-          "stf": 46,
-          "ctl": 79,
-          "mov": 63,
-          "sta": 70,
-          "ovr": 63,
-          "rarity": "Rare"
-        },
-        {
-          "name": "Jeff Lahti",
-          "role": "RP",
-          "war": 2.3,
-          "hp": 38,
-          "maxHp": 38,
-          "stf": 53,
-          "ctl": 50,
-          "mov": 103,
-          "sta": 25,
-          "ovr": 64,
-          "rarity": "Rare"
+          "war": 7.1,
+          "hp": 90,
+          "maxHp": 90,
+          "stf": 61,
+          "ctl": 105,
+          "mov": 73,
+          "sta": 74,
+          "ovr": 79,
+          "rarity": "Epic"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1986": {
@@ -102726,57 +106891,106 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
+      },
+      {
+        "id": "story_1986_NYN",
+        "name": "1986 New York Mets",
+        "year": 1986,
+        "teamID": "NYN",
+        "win_pct": 0.667,
+        "ovr": 70,
+        "pitchers": [
+          {
+            "name": "Bob Ojeda",
+            "role": "SP",
+            "war": 4.7,
+            "hp": 90,
+            "maxHp": 90,
+            "stf": 62,
+            "ctl": 85,
+            "mov": 72,
+            "sta": 73,
+            "ovr": 73,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Ron Darling",
+            "role": "SP",
+            "war": 4.6,
+            "hp": 88,
+            "maxHp": 88,
+            "stf": 74,
+            "ctl": 59,
+            "mov": 64,
+            "sta": 71,
+            "ovr": 66,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Dwight Gooden",
+            "role": "SP",
+            "war": 4.4,
+            "hp": 92,
+            "maxHp": 92,
+            "stf": 76,
+            "ctl": 65,
+            "mov": 66,
+            "sta": 76,
+            "ovr": 70,
+            "rarity": "Epic"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1986_NYN",
-      "name": "BOSS: 1986 New York Mets",
+      "id": "story_1986_STARS_BOSS",
+      "name": "\ud83d\udc51 1986 STARS",
       "year": 1986,
-      "teamID": "NYN",
-      "win_pct": 0.667,
-      "ovr": 70,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 84,
       "pitchers": [
         {
-          "name": "Bob Ojeda",
+          "name": "Teddy Higuera",
           "role": "SP",
-          "war": 4.7,
+          "war": 9.4,
           "hp": 90,
           "maxHp": 90,
-          "stf": 62,
-          "ctl": 85,
-          "mov": 72,
+          "stf": 80,
+          "ctl": 70,
+          "mov": 78,
           "sta": 73,
-          "ovr": 73,
+          "ovr": 76,
           "rarity": "Epic"
         },
         {
-          "name": "Ron Darling",
+          "name": "Roger Clemens",
           "role": "SP",
-          "war": 4.6,
-          "hp": 88,
-          "maxHp": 88,
-          "stf": 74,
-          "ctl": 59,
-          "mov": 64,
-          "sta": 71,
-          "ovr": 66,
-          "rarity": "Rare"
+          "war": 8.8,
+          "hp": 93,
+          "maxHp": 93,
+          "stf": 92,
+          "ctl": 79,
+          "mov": 86,
+          "sta": 77,
+          "ovr": 85,
+          "rarity": "Legendary"
         },
         {
-          "name": "Dwight Gooden",
+          "name": "Mike Scott",
           "role": "SP",
-          "war": 4.4,
-          "hp": 92,
-          "maxHp": 92,
-          "stf": 76,
-          "ctl": 65,
-          "mov": 66,
-          "sta": 76,
-          "ovr": 70,
-          "rarity": "Epic"
+          "war": 8.4,
+          "hp": 90,
+          "maxHp": 90,
+          "stf": 113,
+          "ctl": 80,
+          "mov": 84,
+          "sta": 74,
+          "ovr": 90,
+          "rarity": "Legendary"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1987": {
@@ -104010,57 +108224,106 @@ window.OpponentsDatabase = {
             "rarity": "Legendary"
           }
         ]
+      },
+      {
+        "id": "story_1987_DET",
+        "name": "1987 Detroit Tigers",
+        "year": 1987,
+        "teamID": "DET",
+        "win_pct": 0.605,
+        "ovr": 61,
+        "pitchers": [
+          {
+            "name": "Jack Morris",
+            "role": "SP",
+            "war": 5.1,
+            "hp": 94,
+            "maxHp": 94,
+            "stf": 74,
+            "ctl": 57,
+            "mov": 60,
+            "sta": 78,
+            "ovr": 65,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Frank Tanana",
+            "role": "SP",
+            "war": 3.0,
+            "hp": 84,
+            "maxHp": 84,
+            "stf": 61,
+            "ctl": 81,
+            "mov": 52,
+            "sta": 66,
+            "ovr": 65,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Walt Terrell",
+            "role": "SP",
+            "war": 2.6,
+            "hp": 88,
+            "maxHp": 88,
+            "stf": 51,
+            "ctl": 49,
+            "mov": 50,
+            "sta": 71,
+            "ovr": 52,
+            "rarity": "Uncommon"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1987_DET",
-      "name": "BOSS: 1987 Detroit Tigers",
+      "id": "story_1987_STARS_BOSS",
+      "name": "\ud83d\udc51 1987 STARS",
       "year": 1987,
-      "teamID": "DET",
-      "win_pct": 0.605,
-      "ovr": 61,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 77,
       "pitchers": [
         {
-          "name": "Jack Morris",
+          "name": "Roger Clemens",
           "role": "SP",
-          "war": 5.1,
+          "war": 9.4,
           "hp": 94,
           "maxHp": 94,
-          "stf": 74,
-          "ctl": 57,
-          "mov": 60,
+          "stf": 89,
+          "ctl": 71,
+          "mov": 80,
           "sta": 78,
-          "ovr": 65,
-          "rarity": "Rare"
+          "ovr": 80,
+          "rarity": "Epic"
         },
         {
-          "name": "Frank Tanana",
+          "name": "Frank Viola",
           "role": "SP",
-          "war": 3.0,
-          "hp": 84,
-          "maxHp": 84,
-          "stf": 61,
-          "ctl": 81,
-          "mov": 52,
-          "sta": 66,
-          "ovr": 65,
-          "rarity": "Rare"
-        },
-        {
-          "name": "Walt Terrell",
-          "role": "SP",
-          "war": 2.6,
+          "war": 8.1,
           "hp": 88,
           "maxHp": 88,
-          "stf": 51,
-          "ctl": 49,
-          "mov": 50,
+          "stf": 74,
+          "ctl": 79,
+          "mov": 79,
           "sta": 71,
-          "ovr": 52,
-          "rarity": "Uncommon"
+          "ovr": 77,
+          "rarity": "Epic"
+        },
+        {
+          "name": "Bret Saberhagen",
+          "role": "SP",
+          "war": 8.0,
+          "hp": 93,
+          "maxHp": 93,
+          "stf": 57,
+          "ctl": 94,
+          "mov": 67,
+          "sta": 77,
+          "ovr": 73,
+          "rarity": "Epic"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1988": {
@@ -105294,57 +109557,106 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
+      },
+      {
+        "id": "story_1988_OAK",
+        "name": "1988 Oakland Athletics",
+        "year": 1988,
+        "teamID": "OAK",
+        "win_pct": 0.642,
+        "ovr": 56,
+        "pitchers": [
+          {
+            "name": "Dave Stewart",
+            "role": "SP",
+            "war": 4.4,
+            "hp": 91,
+            "maxHp": 91,
+            "stf": 64,
+            "ctl": 48,
+            "mov": 63,
+            "sta": 75,
+            "ovr": 60,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Bob Welch",
+            "role": "SP",
+            "war": 2.9,
+            "hp": 87,
+            "maxHp": 87,
+            "stf": 58,
+            "ctl": 62,
+            "mov": 52,
+            "sta": 69,
+            "ovr": 58,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Storm Davis",
+            "role": "SP",
+            "war": 2.8,
+            "hp": 83,
+            "maxHp": 83,
+            "stf": 56,
+            "ctl": 42,
+            "mov": 52,
+            "sta": 64,
+            "ovr": 51,
+            "rarity": "Uncommon"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1988_OAK",
-      "name": "BOSS: 1988 Oakland Athletics",
+      "id": "story_1988_STARS_BOSS",
+      "name": "\ud83d\udc51 1988 STARS",
       "year": 1988,
-      "teamID": "OAK",
-      "win_pct": 0.642,
-      "ovr": 56,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 78,
       "pitchers": [
         {
-          "name": "Dave Stewart",
+          "name": "Mark Gubicza",
           "role": "SP",
-          "war": 4.4,
-          "hp": 91,
-          "maxHp": 91,
-          "stf": 64,
-          "ctl": 48,
-          "mov": 63,
-          "sta": 75,
-          "ovr": 60,
-          "rarity": "Rare"
+          "war": 7.8,
+          "hp": 93,
+          "maxHp": 93,
+          "stf": 62,
+          "ctl": 68,
+          "mov": 80,
+          "sta": 77,
+          "ovr": 71,
+          "rarity": "Epic"
         },
         {
-          "name": "Bob Welch",
+          "name": "Frank Viola",
           "role": "SP",
-          "war": 2.9,
-          "hp": 87,
-          "maxHp": 87,
-          "stf": 58,
-          "ctl": 62,
-          "mov": 52,
-          "sta": 69,
-          "ovr": 58,
-          "rarity": "Rare"
+          "war": 7.7,
+          "hp": 90,
+          "maxHp": 90,
+          "stf": 71,
+          "ctl": 92,
+          "mov": 79,
+          "sta": 73,
+          "ovr": 80,
+          "rarity": "Epic"
         },
         {
-          "name": "Storm Davis",
+          "name": "Teddy Higuera",
           "role": "SP",
-          "war": 2.8,
-          "hp": 83,
-          "maxHp": 83,
-          "stf": 56,
-          "ctl": 42,
-          "mov": 52,
-          "sta": 64,
-          "ovr": 51,
-          "rarity": "Uncommon"
+          "war": 7.4,
+          "hp": 90,
+          "maxHp": 90,
+          "stf": 82,
+          "ctl": 80,
+          "mov": 85,
+          "sta": 74,
+          "ovr": 82,
+          "rarity": "Epic"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1989": {
@@ -106578,57 +110890,106 @@ window.OpponentsDatabase = {
             "rarity": "Legendary"
           }
         ]
+      },
+      {
+        "id": "story_1989_OAK",
+        "name": "1989 Oakland Athletics",
+        "year": 1989,
+        "teamID": "OAK",
+        "win_pct": 0.611,
+        "ovr": 63,
+        "pitchers": [
+          {
+            "name": "Mike Moore",
+            "role": "SP",
+            "war": 5.4,
+            "hp": 88,
+            "maxHp": 88,
+            "stf": 66,
+            "ctl": 59,
+            "mov": 75,
+            "sta": 70,
+            "ovr": 67,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Dave Stewart",
+            "role": "SP",
+            "war": 3.8,
+            "hp": 89,
+            "maxHp": 89,
+            "stf": 53,
+            "ctl": 78,
+            "mov": 56,
+            "sta": 72,
+            "ovr": 63,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Bob Welch",
+            "role": "SP",
+            "war": 3.4,
+            "hp": 84,
+            "maxHp": 84,
+            "stf": 59,
+            "ctl": 51,
+            "mov": 65,
+            "sta": 66,
+            "ovr": 59,
+            "rarity": "Rare"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1989_OAK",
-      "name": "BOSS: 1989 Oakland Athletics",
+      "id": "story_1989_STARS_BOSS",
+      "name": "\ud83d\udc51 1989 STARS",
       "year": 1989,
-      "teamID": "OAK",
-      "win_pct": 0.611,
-      "ovr": 63,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 77,
       "pitchers": [
         {
-          "name": "Mike Moore",
+          "name": "Bret Saberhagen",
           "role": "SP",
-          "war": 5.4,
-          "hp": 88,
-          "maxHp": 88,
-          "stf": 66,
-          "ctl": 59,
-          "mov": 75,
-          "sta": 70,
-          "ovr": 67,
-          "rarity": "Rare"
+          "war": 9.7,
+          "hp": 91,
+          "maxHp": 91,
+          "stf": 69,
+          "ctl": 105,
+          "mov": 96,
+          "sta": 75,
+          "ovr": 88,
+          "rarity": "Legendary"
         },
         {
-          "name": "Dave Stewart",
+          "name": "Orel Hershiser",
           "role": "SP",
-          "war": 3.8,
-          "hp": 89,
-          "maxHp": 89,
-          "stf": 53,
+          "war": 7.0,
+          "hp": 93,
+          "maxHp": 93,
+          "stf": 64,
+          "ctl": 70,
+          "mov": 81,
+          "sta": 77,
+          "ovr": 72,
+          "rarity": "Epic"
+        },
+        {
+          "name": "Bruce Hurst",
+          "role": "SP",
+          "war": 6.5,
+          "hp": 90,
+          "maxHp": 90,
+          "stf": 68,
           "ctl": 78,
-          "mov": 56,
-          "sta": 72,
-          "ovr": 63,
-          "rarity": "Rare"
-        },
-        {
-          "name": "Bob Welch",
-          "role": "SP",
-          "war": 3.4,
-          "hp": 84,
-          "maxHp": 84,
-          "stf": 59,
-          "ctl": 51,
-          "mov": 65,
-          "sta": 66,
-          "ovr": 59,
-          "rarity": "Rare"
+          "mov": 68,
+          "sta": 74,
+          "ovr": 72,
+          "rarity": "Epic"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1990": {
@@ -107862,57 +112223,106 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
+      },
+      {
+        "id": "story_1990_OAK",
+        "name": "1990 Oakland Athletics",
+        "year": 1990,
+        "teamID": "OAK",
+        "win_pct": 0.636,
+        "ovr": 76,
+        "pitchers": [
+          {
+            "name": "Dave Stewart",
+            "role": "SP",
+            "war": 5.2,
+            "hp": 90,
+            "maxHp": 90,
+            "stf": 55,
+            "ctl": 67,
+            "mov": 76,
+            "sta": 74,
+            "ovr": 67,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Dennis Eckersley",
+            "role": "RP",
+            "war": 3.3,
+            "hp": 37,
+            "maxHp": 37,
+            "stf": 99,
+            "ctl": 125,
+            "mov": 116,
+            "sta": 24,
+            "ovr": 104,
+            "rarity": "Legendary"
+          },
+          {
+            "name": "Bob Welch",
+            "role": "SP",
+            "war": 2.9,
+            "hp": 87,
+            "maxHp": 87,
+            "stf": 44,
+            "ctl": 64,
+            "mov": 62,
+            "sta": 69,
+            "ovr": 58,
+            "rarity": "Rare"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1990_OAK",
-      "name": "BOSS: 1990 Oakland Athletics",
+      "id": "story_1990_STARS_BOSS",
+      "name": "\ud83d\udc51 1990 STARS",
       "year": 1990,
-      "teamID": "OAK",
-      "win_pct": 0.636,
-      "ovr": 76,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 79,
       "pitchers": [
         {
-          "name": "Dave Stewart",
+          "name": "Roger Clemens",
           "role": "SP",
-          "war": 5.2,
+          "war": 10.4,
           "hp": 90,
           "maxHp": 90,
-          "stf": 55,
-          "ctl": 67,
-          "mov": 76,
+          "stf": 90,
+          "ctl": 86,
+          "mov": 114,
           "sta": 74,
-          "ovr": 67,
-          "rarity": "Rare"
-        },
-        {
-          "name": "Dennis Eckersley",
-          "role": "RP",
-          "war": 3.3,
-          "hp": 37,
-          "maxHp": 37,
-          "stf": 99,
-          "ctl": 125,
-          "mov": 116,
-          "sta": 24,
-          "ovr": 104,
+          "ovr": 94,
           "rarity": "Legendary"
         },
         {
-          "name": "Bob Welch",
+          "name": "Chuck Finley",
           "role": "SP",
-          "war": 2.9,
-          "hp": 87,
-          "maxHp": 87,
-          "stf": 44,
-          "ctl": 64,
-          "mov": 62,
-          "sta": 69,
-          "ovr": 58,
-          "rarity": "Rare"
+          "war": 7.7,
+          "hp": 90,
+          "maxHp": 90,
+          "stf": 70,
+          "ctl": 59,
+          "mov": 82,
+          "sta": 74,
+          "ovr": 71,
+          "rarity": "Epic"
+        },
+        {
+          "name": "Ed Whitson",
+          "role": "SP",
+          "war": 7.0,
+          "hp": 89,
+          "maxHp": 89,
+          "stf": 47,
+          "ctl": 94,
+          "mov": 78,
+          "sta": 72,
+          "ovr": 73,
+          "rarity": "Epic"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1991": {
@@ -109146,57 +113556,106 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
+      },
+      {
+        "id": "story_1991_PIT",
+        "name": "1991 Pittsburgh Pirates",
+        "year": 1991,
+        "teamID": "PIT",
+        "win_pct": 0.605,
+        "ovr": 68,
+        "pitchers": [
+          {
+            "name": "Doug Drabek",
+            "role": "SP",
+            "war": 3.6,
+            "hp": 87,
+            "maxHp": 87,
+            "stf": 53,
+            "ctl": 79,
+            "mov": 61,
+            "sta": 69,
+            "ovr": 65,
+            "rarity": "Rare"
+          },
+          {
+            "name": "John Smiley",
+            "role": "SP",
+            "war": 3.5,
+            "hp": 85,
+            "maxHp": 85,
+            "stf": 55,
+            "ctl": 92,
+            "mov": 59,
+            "sta": 67,
+            "ovr": 68,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Zane Smith",
+            "role": "SP",
+            "war": 2.6,
+            "hp": 85,
+            "maxHp": 85,
+            "stf": 43,
+            "ctl": 114,
+            "mov": 58,
+            "sta": 67,
+            "ovr": 71,
+            "rarity": "Epic"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1991_PIT",
-      "name": "BOSS: 1991 Pittsburgh Pirates",
+      "id": "story_1991_STARS_BOSS",
+      "name": "\ud83d\udc51 1991 STARS",
       "year": 1991,
-      "teamID": "PIT",
-      "win_pct": 0.605,
-      "ovr": 68,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 76,
       "pitchers": [
         {
-          "name": "Doug Drabek",
+          "name": "Tom Glavine",
           "role": "SP",
-          "war": 3.6,
-          "hp": 87,
-          "maxHp": 87,
-          "stf": 53,
-          "ctl": 79,
-          "mov": 61,
-          "sta": 69,
-          "ovr": 65,
-          "rarity": "Rare"
+          "war": 8.5,
+          "hp": 90,
+          "maxHp": 90,
+          "stf": 74,
+          "ctl": 75,
+          "mov": 80,
+          "sta": 73,
+          "ovr": 76,
+          "rarity": "Epic"
         },
         {
-          "name": "John Smiley",
+          "name": "Roger Clemens",
           "role": "SP",
-          "war": 3.5,
-          "hp": 85,
-          "maxHp": 85,
-          "stf": 55,
-          "ctl": 92,
-          "mov": 59,
-          "sta": 67,
+          "war": 7.9,
+          "hp": 93,
+          "maxHp": 93,
+          "stf": 87,
+          "ctl": 85,
+          "mov": 87,
+          "sta": 77,
+          "ovr": 85,
+          "rarity": "Legendary"
+        },
+        {
+          "name": "Jim Abbott",
+          "role": "SP",
+          "war": 7.6,
+          "hp": 89,
+          "maxHp": 89,
+          "stf": 59,
+          "ctl": 70,
+          "mov": 75,
+          "sta": 72,
           "ovr": 68,
           "rarity": "Rare"
-        },
-        {
-          "name": "Zane Smith",
-          "role": "SP",
-          "war": 2.6,
-          "hp": 85,
-          "maxHp": 85,
-          "stf": 43,
-          "ctl": 114,
-          "mov": 58,
-          "sta": 67,
-          "ovr": 71,
-          "rarity": "Epic"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1992": {
@@ -110430,57 +114889,106 @@ window.OpponentsDatabase = {
             "rarity": "Epic"
           }
         ]
+      },
+      {
+        "id": "story_1992_ATL",
+        "name": "1992 Atlanta Braves",
+        "year": 1992,
+        "teamID": "ATL",
+        "win_pct": 0.605,
+        "ovr": 68,
+        "pitchers": [
+          {
+            "name": "Tom Glavine",
+            "role": "SP",
+            "war": 3.7,
+            "hp": 88,
+            "maxHp": 88,
+            "stf": 50,
+            "ctl": 67,
+            "mov": 74,
+            "sta": 70,
+            "ovr": 64,
+            "rarity": "Rare"
+          },
+          {
+            "name": "John Smoltz",
+            "role": "SP",
+            "war": 3.6,
+            "hp": 88,
+            "maxHp": 88,
+            "stf": 85,
+            "ctl": 64,
+            "mov": 67,
+            "sta": 71,
+            "ovr": 72,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Pete Smith",
+            "role": "SP",
+            "war": 2.4,
+            "hp": 89,
+            "maxHp": 89,
+            "stf": 46,
+            "ctl": 56,
+            "mov": 97,
+            "sta": 72,
+            "ovr": 67,
+            "rarity": "Rare"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1992_ATL",
-      "name": "BOSS: 1992 Atlanta Braves",
+      "id": "story_1992_STARS_BOSS",
+      "name": "\ud83d\udc51 1992 STARS",
       "year": 1992,
-      "teamID": "ATL",
-      "win_pct": 0.605,
-      "ovr": 68,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 79,
       "pitchers": [
         {
-          "name": "Tom Glavine",
+          "name": "Greg Maddux",
           "role": "SP",
-          "war": 3.7,
-          "hp": 88,
-          "maxHp": 88,
-          "stf": 50,
-          "ctl": 67,
-          "mov": 74,
-          "sta": 70,
-          "ovr": 64,
-          "rarity": "Rare"
-        },
-        {
-          "name": "John Smoltz",
-          "role": "SP",
-          "war": 3.6,
-          "hp": 88,
-          "maxHp": 88,
-          "stf": 85,
-          "ctl": 64,
-          "mov": 67,
-          "sta": 71,
-          "ovr": 72,
+          "war": 9.1,
+          "hp": 92,
+          "maxHp": 92,
+          "stf": 70,
+          "ctl": 80,
+          "mov": 90,
+          "sta": 76,
+          "ovr": 80,
           "rarity": "Epic"
         },
         {
-          "name": "Pete Smith",
+          "name": "Roger Clemens",
           "role": "SP",
-          "war": 2.4,
-          "hp": 89,
-          "maxHp": 89,
-          "stf": 46,
-          "ctl": 56,
-          "mov": 97,
-          "sta": 72,
-          "ovr": 67,
-          "rarity": "Rare"
+          "war": 8.7,
+          "hp": 93,
+          "maxHp": 93,
+          "stf": 81,
+          "ctl": 82,
+          "mov": 93,
+          "sta": 77,
+          "ovr": 84,
+          "rarity": "Epic"
+        },
+        {
+          "name": "Mike Mussina",
+          "role": "SP",
+          "war": 8.2,
+          "hp": 91,
+          "maxHp": 91,
+          "stf": 45,
+          "ctl": 96,
+          "mov": 82,
+          "sta": 75,
+          "ovr": 74,
+          "rarity": "Epic"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1993": {
@@ -111812,57 +116320,106 @@ window.OpponentsDatabase = {
             "rarity": "Legendary"
           }
         ]
+      },
+      {
+        "id": "story_1993_ATL",
+        "name": "1993 Atlanta Braves",
+        "year": 1993,
+        "teamID": "ATL",
+        "win_pct": 0.642,
+        "ovr": 69,
+        "pitchers": [
+          {
+            "name": "Greg Maddux",
+            "role": "SP",
+            "war": 5.8,
+            "hp": 90,
+            "maxHp": 90,
+            "stf": 69,
+            "ctl": 97,
+            "mov": 90,
+            "sta": 74,
+            "ovr": 84,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Steve Avery",
+            "role": "SP",
+            "war": 3.8,
+            "hp": 84,
+            "maxHp": 84,
+            "stf": 48,
+            "ctl": 97,
+            "mov": 71,
+            "sta": 66,
+            "ovr": 71,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Tom Glavine",
+            "role": "SP",
+            "war": 3.3,
+            "hp": 86,
+            "maxHp": 86,
+            "stf": 40,
+            "ctl": 50,
+            "mov": 65,
+            "sta": 68,
+            "ovr": 53,
+            "rarity": "Uncommon"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1993_ATL",
-      "name": "BOSS: 1993 Atlanta Braves",
+      "id": "story_1993_STARS_BOSS",
+      "name": "\ud83d\udc51 1993 STARS",
       "year": 1993,
-      "teamID": "ATL",
-      "win_pct": 0.642,
-      "ovr": 69,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 76,
       "pitchers": [
         {
-          "name": "Greg Maddux",
+          "name": "Kevin Appier",
           "role": "SP",
-          "war": 5.8,
+          "war": 9.3,
+          "hp": 88,
+          "maxHp": 88,
+          "stf": 74,
+          "ctl": 60,
+          "mov": 97,
+          "sta": 71,
+          "ovr": 76,
+          "rarity": "Epic"
+        },
+        {
+          "name": "Jose Rijo",
+          "role": "SP",
+          "war": 9.2,
+          "hp": 89,
+          "maxHp": 89,
+          "stf": 86,
+          "ctl": 85,
+          "mov": 83,
+          "sta": 72,
+          "ovr": 83,
+          "rarity": "Epic"
+        },
+        {
+          "name": "Mark Langston",
+          "role": "SP",
+          "war": 8.5,
           "hp": 90,
           "maxHp": 90,
-          "stf": 69,
-          "ctl": 97,
-          "mov": 90,
-          "sta": 74,
-          "ovr": 84,
-          "rarity": "Epic"
-        },
-        {
-          "name": "Steve Avery",
-          "role": "SP",
-          "war": 3.8,
-          "hp": 84,
-          "maxHp": 84,
-          "stf": 48,
-          "ctl": 97,
+          "stf": 72,
+          "ctl": 62,
           "mov": 71,
-          "sta": 66,
-          "ovr": 71,
-          "rarity": "Epic"
-        },
-        {
-          "name": "Tom Glavine",
-          "role": "SP",
-          "war": 3.3,
-          "hp": 86,
-          "maxHp": 86,
-          "stf": 40,
-          "ctl": 50,
-          "mov": 65,
-          "sta": 68,
-          "ovr": 53,
-          "rarity": "Uncommon"
+          "sta": 74,
+          "ovr": 69,
+          "rarity": "Rare"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1994": {
@@ -113194,57 +117751,106 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
+      },
+      {
+        "id": "story_1994_MON",
+        "name": "1994 Montreal Expos",
+        "year": 1994,
+        "teamID": "MON",
+        "win_pct": 0.649,
+        "ovr": 70,
+        "pitchers": [
+          {
+            "name": "Butch Henry",
+            "role": "SP",
+            "war": 3.3,
+            "hp": 91,
+            "maxHp": 91,
+            "stf": 44,
+            "ctl": 98,
+            "mov": 91,
+            "sta": 75,
+            "ovr": 77,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Ken Hill",
+            "role": "SP",
+            "war": 3.0,
+            "hp": 89,
+            "maxHp": 89,
+            "stf": 32,
+            "ctl": 77,
+            "mov": 68,
+            "sta": 72,
+            "ovr": 60,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Jeff Fassero",
+            "role": "SP",
+            "war": 2.7,
+            "hp": 88,
+            "maxHp": 88,
+            "stf": 66,
+            "ctl": 76,
+            "mov": 74,
+            "sta": 71,
+            "ovr": 72,
+            "rarity": "Epic"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1994_MON",
-      "name": "BOSS: 1994 Montreal Expos",
+      "id": "story_1994_STARS_BOSS",
+      "name": "\ud83d\udc51 1994 STARS",
       "year": 1994,
-      "teamID": "MON",
-      "win_pct": 0.649,
-      "ovr": 70,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 80,
       "pitchers": [
         {
-          "name": "Butch Henry",
+          "name": "Greg Maddux",
           "role": "SP",
-          "war": 3.3,
+          "war": 8.5,
+          "hp": 97,
+          "maxHp": 97,
+          "stf": 57,
+          "ctl": 105,
+          "mov": 120,
+          "sta": 83,
+          "ovr": 93,
+          "rarity": "Legendary"
+        },
+        {
+          "name": "David Cone",
+          "role": "SP",
+          "war": 6.9,
+          "hp": 94,
+          "maxHp": 94,
+          "stf": 57,
+          "ctl": 71,
+          "mov": 90,
+          "sta": 78,
+          "ovr": 73,
+          "rarity": "Epic"
+        },
+        {
+          "name": "Roger Clemens",
+          "role": "SP",
+          "war": 6.0,
           "hp": 91,
           "maxHp": 91,
-          "stf": 44,
-          "ctl": 98,
-          "mov": 91,
+          "stf": 79,
+          "ctl": 49,
+          "mov": 92,
           "sta": 75,
-          "ovr": 77,
-          "rarity": "Epic"
-        },
-        {
-          "name": "Ken Hill",
-          "role": "SP",
-          "war": 3.0,
-          "hp": 89,
-          "maxHp": 89,
-          "stf": 32,
-          "ctl": 77,
-          "mov": 68,
-          "sta": 72,
-          "ovr": 60,
-          "rarity": "Rare"
-        },
-        {
-          "name": "Jeff Fassero",
-          "role": "SP",
-          "war": 2.7,
-          "hp": 88,
-          "maxHp": 88,
-          "stf": 66,
-          "ctl": 76,
-          "mov": 74,
-          "sta": 71,
-          "ovr": 72,
+          "ovr": 74,
           "rarity": "Epic"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1995": {
@@ -114576,57 +119182,106 @@ window.OpponentsDatabase = {
             "rarity": "Epic"
           }
         ]
+      },
+      {
+        "id": "story_1995_CLE",
+        "name": "1995 Cleveland Indians",
+        "year": 1995,
+        "teamID": "CLE",
+        "win_pct": 0.694,
+        "ovr": 70,
+        "pitchers": [
+          {
+            "name": "Dennis Martinez",
+            "role": "SP",
+            "war": 5.7,
+            "hp": 88,
+            "maxHp": 88,
+            "stf": 30,
+            "ctl": 85,
+            "mov": 80,
+            "sta": 71,
+            "ovr": 66,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Jose Mesa",
+            "role": "RP",
+            "war": 3.9,
+            "hp": 36,
+            "maxHp": 36,
+            "stf": 71,
+            "ctl": 81,
+            "mov": 117,
+            "sta": 23,
+            "ovr": 83,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Orel Hershiser",
+            "role": "SP",
+            "war": 3.7,
+            "hp": 87,
+            "maxHp": 87,
+            "stf": 46,
+            "ctl": 73,
+            "mov": 61,
+            "sta": 69,
+            "ovr": 61,
+            "rarity": "Rare"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1995_CLE",
-      "name": "BOSS: 1995 Cleveland Indians",
+      "id": "story_1995_STARS_BOSS",
+      "name": "\ud83d\udc51 1995 STARS",
       "year": 1995,
-      "teamID": "CLE",
-      "win_pct": 0.694,
-      "ovr": 70,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 86,
       "pitchers": [
         {
-          "name": "Dennis Martinez",
+          "name": "Greg Maddux",
           "role": "SP",
-          "war": 5.7,
-          "hp": 88,
-          "maxHp": 88,
-          "stf": 30,
-          "ctl": 85,
-          "mov": 80,
-          "sta": 71,
-          "ovr": 66,
-          "rarity": "Rare"
+          "war": 9.7,
+          "hp": 94,
+          "maxHp": 94,
+          "stf": 67,
+          "ctl": 115,
+          "mov": 118,
+          "sta": 78,
+          "ovr": 98,
+          "rarity": "Legendary"
         },
         {
-          "name": "Jose Mesa",
-          "role": "RP",
-          "war": 3.9,
-          "hp": 36,
-          "maxHp": 36,
-          "stf": 71,
-          "ctl": 81,
-          "mov": 117,
-          "sta": 23,
-          "ovr": 83,
-          "rarity": "Epic"
-        },
-        {
-          "name": "Orel Hershiser",
+          "name": "Randy Johnson",
           "role": "SP",
-          "war": 3.7,
-          "hp": 87,
-          "maxHp": 87,
-          "stf": 46,
+          "war": 8.6,
+          "hp": 91,
+          "maxHp": 91,
+          "stf": 120,
           "ctl": 73,
-          "mov": 61,
-          "sta": 69,
-          "ovr": 61,
+          "mov": 104,
+          "sta": 75,
+          "ovr": 97,
+          "rarity": "Legendary"
+        },
+        {
+          "name": "David Cone",
+          "role": "SP",
+          "war": 7.0,
+          "hp": 94,
+          "maxHp": 94,
+          "stf": 64,
+          "ctl": 56,
+          "mov": 67,
+          "sta": 79,
+          "ovr": 64,
           "rarity": "Rare"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1996": {
@@ -115958,57 +120613,106 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
+      },
+      {
+        "id": "story_1996_CLE",
+        "name": "1996 Cleveland Indians",
+        "year": 1996,
+        "teamID": "CLE",
+        "win_pct": 0.615,
+        "ovr": 69,
+        "pitchers": [
+          {
+            "name": "Charles Nagy",
+            "role": "SP",
+            "war": 6.6,
+            "hp": 90,
+            "maxHp": 90,
+            "stf": 55,
+            "ctl": 79,
+            "mov": 75,
+            "sta": 73,
+            "ovr": 70,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Eric Plunk",
+            "role": "RP",
+            "war": 3.0,
+            "hp": 38,
+            "maxHp": 38,
+            "stf": 91,
+            "ctl": 48,
+            "mov": 106,
+            "sta": 25,
+            "ovr": 76,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Orel Hershiser",
+            "role": "SP",
+            "war": 2.6,
+            "hp": 86,
+            "maxHp": 86,
+            "stf": 39,
+            "ctl": 78,
+            "mov": 59,
+            "sta": 68,
+            "ovr": 60,
+            "rarity": "Rare"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1996_CLE",
-      "name": "BOSS: 1996 Cleveland Indians",
+      "id": "story_1996_STARS_BOSS",
+      "name": "\ud83d\udc51 1996 STARS",
       "year": 1996,
-      "teamID": "CLE",
-      "win_pct": 0.615,
-      "ovr": 69,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 75,
       "pitchers": [
         {
-          "name": "Charles Nagy",
+          "name": "Pat Hentgen",
           "role": "SP",
-          "war": 6.6,
-          "hp": 90,
-          "maxHp": 90,
-          "stf": 55,
-          "ctl": 79,
-          "mov": 75,
-          "sta": 73,
+          "war": 8.6,
+          "hp": 94,
+          "maxHp": 94,
+          "stf": 46,
+          "ctl": 62,
+          "mov": 83,
+          "sta": 79,
+          "ovr": 65,
+          "rarity": "Rare"
+        },
+        {
+          "name": "Kevin Brown",
+          "role": "SP",
+          "war": 7.9,
+          "hp": 92,
+          "maxHp": 92,
+          "stf": 48,
+          "ctl": 108,
+          "mov": 118,
+          "sta": 76,
+          "ovr": 90,
+          "rarity": "Legendary"
+        },
+        {
+          "name": "Roger Clemens",
+          "role": "SP",
+          "war": 7.7,
+          "hp": 91,
+          "maxHp": 91,
+          "stf": 87,
+          "ctl": 48,
+          "mov": 74,
+          "sta": 75,
           "ovr": 70,
           "rarity": "Epic"
-        },
-        {
-          "name": "Eric Plunk",
-          "role": "RP",
-          "war": 3.0,
-          "hp": 38,
-          "maxHp": 38,
-          "stf": 91,
-          "ctl": 48,
-          "mov": 106,
-          "sta": 25,
-          "ovr": 76,
-          "rarity": "Epic"
-        },
-        {
-          "name": "Orel Hershiser",
-          "role": "SP",
-          "war": 2.6,
-          "hp": 86,
-          "maxHp": 86,
-          "stf": 39,
-          "ctl": 78,
-          "mov": 59,
-          "sta": 68,
-          "ovr": 60,
-          "rarity": "Rare"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1997": {
@@ -117340,57 +122044,106 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
+      },
+      {
+        "id": "story_1997_ATL",
+        "name": "1997 Atlanta Braves",
+        "year": 1997,
+        "teamID": "ATL",
+        "win_pct": 0.623,
+        "ovr": 77,
+        "pitchers": [
+          {
+            "name": "Greg Maddux",
+            "role": "SP",
+            "war": 7.8,
+            "hp": 90,
+            "maxHp": 90,
+            "stf": 56,
+            "ctl": 120,
+            "mov": 104,
+            "sta": 74,
+            "ovr": 91,
+            "rarity": "Legendary"
+          },
+          {
+            "name": "Tom Glavine",
+            "role": "SP",
+            "war": 5.5,
+            "hp": 92,
+            "maxHp": 92,
+            "stf": 42,
+            "ctl": 67,
+            "mov": 75,
+            "sta": 76,
+            "ovr": 63,
+            "rarity": "Rare"
+          },
+          {
+            "name": "John Smoltz",
+            "role": "SP",
+            "war": 4.8,
+            "hp": 93,
+            "maxHp": 93,
+            "stf": 75,
+            "ctl": 85,
+            "mov": 73,
+            "sta": 77,
+            "ovr": 78,
+            "rarity": "Epic"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1997_ATL",
-      "name": "BOSS: 1997 Atlanta Braves",
+      "id": "story_1997_STARS_BOSS",
+      "name": "\ud83d\udc51 1997 STARS",
       "year": 1997,
-      "teamID": "ATL",
-      "win_pct": 0.623,
-      "ovr": 77,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 89,
       "pitchers": [
         {
-          "name": "Greg Maddux",
+          "name": "Roger Clemens",
           "role": "SP",
-          "war": 7.8,
-          "hp": 90,
-          "maxHp": 90,
-          "stf": 56,
-          "ctl": 120,
-          "mov": 104,
-          "sta": 74,
-          "ovr": 91,
+          "war": 11.9,
+          "hp": 95,
+          "maxHp": 95,
+          "stf": 92,
+          "ctl": 83,
+          "mov": 118,
+          "sta": 80,
+          "ovr": 96,
           "rarity": "Legendary"
         },
         {
-          "name": "Tom Glavine",
+          "name": "Pedro Martinez",
           "role": "SP",
-          "war": 5.5,
-          "hp": 92,
-          "maxHp": 92,
-          "stf": 42,
-          "ctl": 67,
-          "mov": 75,
-          "sta": 76,
-          "ovr": 63,
-          "rarity": "Rare"
+          "war": 9.0,
+          "hp": 96,
+          "maxHp": 96,
+          "stf": 108,
+          "ctl": 79,
+          "mov": 115,
+          "sta": 81,
+          "ovr": 99,
+          "rarity": "Legendary"
         },
         {
-          "name": "John Smoltz",
+          "name": "Andy Pettitte",
           "role": "SP",
-          "war": 4.8,
-          "hp": 93,
-          "maxHp": 93,
-          "stf": 75,
-          "ctl": 85,
-          "mov": 73,
-          "sta": 77,
-          "ovr": 78,
+          "war": 8.4,
+          "hp": 90,
+          "maxHp": 90,
+          "stf": 49,
+          "ctl": 80,
+          "mov": 88,
+          "sta": 73,
+          "ovr": 72,
           "rarity": "Epic"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1998": {
@@ -117836,9 +122589,7 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      }
-    ],
-    "mid": [
+      },
       {
         "id": "story_1998_OAK",
         "name": "1998 Oakland Athletics",
@@ -117887,7 +122638,9 @@ window.OpponentsDatabase = {
             "rarity": "Epic"
           }
         ]
-      },
+      }
+    ],
+    "mid": [
       {
         "id": "story_1998_PHI",
         "name": "1998 Philadelphia Phillies",
@@ -118279,9 +123032,7 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      }
-    ],
-    "high": [
+      },
       {
         "id": "story_1998_ANA",
         "name": "1998 Anaheim Angels",
@@ -118379,7 +123130,9 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      },
+      }
+    ],
+    "high": [
       {
         "id": "story_1998_TOR",
         "name": "1998 Toronto Blue Jays",
@@ -118820,57 +123573,106 @@ window.OpponentsDatabase = {
             "rarity": "Epic"
           }
         ]
+      },
+      {
+        "id": "story_1998_NYA",
+        "name": "1998 New York Yankees",
+        "year": 1998,
+        "teamID": "NYA",
+        "win_pct": 0.704,
+        "ovr": 73,
+        "pitchers": [
+          {
+            "name": "David Wells",
+            "role": "SP",
+            "war": 4.8,
+            "hp": 91,
+            "maxHp": 91,
+            "stf": 56,
+            "ctl": 109,
+            "mov": 63,
+            "sta": 75,
+            "ovr": 76,
+            "rarity": "Epic"
+          },
+          {
+            "name": "David Cone",
+            "role": "SP",
+            "war": 4.0,
+            "hp": 88,
+            "maxHp": 88,
+            "stf": 82,
+            "ctl": 77,
+            "mov": 65,
+            "sta": 71,
+            "ovr": 74,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Orlando Hernandez",
+            "role": "SP",
+            "war": 3.6,
+            "hp": 89,
+            "maxHp": 89,
+            "stf": 74,
+            "ctl": 59,
+            "mov": 76,
+            "sta": 72,
+            "ovr": 70,
+            "rarity": "Epic"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1998_NYA",
-      "name": "BOSS: 1998 New York Yankees",
+      "id": "story_1998_STARS_BOSS",
+      "name": "\ud83d\udc51 1998 STARS",
       "year": 1998,
-      "teamID": "NYA",
-      "win_pct": 0.704,
-      "ovr": 73,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 79,
       "pitchers": [
         {
-          "name": "David Wells",
+          "name": "Kevin Brown",
           "role": "SP",
-          "war": 4.8,
+          "war": 8.6,
+          "hp": 93,
+          "maxHp": 93,
+          "stf": 81,
+          "ctl": 97,
+          "mov": 92,
+          "sta": 77,
+          "ovr": 89,
+          "rarity": "Legendary"
+        },
+        {
+          "name": "Roger Clemens",
+          "role": "SP",
+          "war": 8.1,
           "hp": 91,
           "maxHp": 91,
-          "stf": 56,
-          "ctl": 109,
-          "mov": 63,
+          "stf": 97,
+          "ctl": 58,
+          "mov": 96,
           "sta": 75,
-          "ovr": 76,
+          "ovr": 83,
           "rarity": "Epic"
         },
         {
-          "name": "David Cone",
+          "name": "Kenny Rogers",
           "role": "SP",
-          "war": 4.0,
-          "hp": 88,
-          "maxHp": 88,
-          "stf": 82,
-          "ctl": 77,
-          "mov": 65,
-          "sta": 71,
-          "ovr": 74,
-          "rarity": "Epic"
-        },
-        {
-          "name": "Orlando Hernandez",
-          "role": "SP",
-          "war": 3.6,
-          "hp": 89,
-          "maxHp": 89,
-          "stf": 74,
-          "ctl": 59,
+          "war": 7.5,
+          "hp": 90,
+          "maxHp": 90,
+          "stf": 36,
+          "ctl": 78,
           "mov": 76,
-          "sta": 72,
-          "ovr": 70,
-          "rarity": "Epic"
+          "sta": 74,
+          "ovr": 64,
+          "rarity": "Rare"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "1999": {
@@ -119316,9 +124118,7 @@ window.OpponentsDatabase = {
             "rarity": "Common"
           }
         ]
-      }
-    ],
-    "mid": [
+      },
       {
         "id": "story_1999_SDN",
         "name": "1999 San Diego Padres",
@@ -119367,7 +124167,9 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
-      },
+      }
+    ],
+    "mid": [
       {
         "id": "story_1999_MIL",
         "name": "1999 Milwaukee Brewers",
@@ -119759,9 +124561,7 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      }
-    ],
-    "high": [
+      },
       {
         "id": "story_1999_TOR",
         "name": "1999 Toronto Blue Jays",
@@ -119859,7 +124659,9 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      },
+      }
+    ],
+    "high": [
       {
         "id": "story_1999_OAK",
         "name": "1999 Oakland Athletics",
@@ -120300,57 +125102,106 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
+      },
+      {
+        "id": "story_1999_ATL",
+        "name": "1999 Atlanta Braves",
+        "year": 1999,
+        "teamID": "ATL",
+        "win_pct": 0.636,
+        "ovr": 75,
+        "pitchers": [
+          {
+            "name": "Kevin Millwood",
+            "role": "SP",
+            "war": 6.2,
+            "hp": 90,
+            "maxHp": 90,
+            "stf": 71,
+            "ctl": 83,
+            "mov": 86,
+            "sta": 73,
+            "ovr": 79,
+            "rarity": "Epic"
+          },
+          {
+            "name": "John Smoltz",
+            "role": "SP",
+            "war": 4.4,
+            "hp": 87,
+            "maxHp": 87,
+            "stf": 64,
+            "ctl": 92,
+            "mov": 75,
+            "sta": 69,
+            "ovr": 76,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Greg Maddux",
+            "role": "SP",
+            "war": 3.2,
+            "hp": 88,
+            "maxHp": 88,
+            "stf": 41,
+            "ctl": 102,
+            "mov": 68,
+            "sta": 71,
+            "ovr": 70,
+            "rarity": "Epic"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_1999_ATL",
-      "name": "BOSS: 1999 Atlanta Braves",
+      "id": "story_1999_STARS_BOSS",
+      "name": "\ud83d\udc51 1999 STARS",
       "year": 1999,
-      "teamID": "ATL",
-      "win_pct": 0.636,
-      "ovr": 75,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 90,
       "pitchers": [
         {
-          "name": "Kevin Millwood",
+          "name": "Pedro Martinez",
           "role": "SP",
-          "war": 6.2,
+          "war": 9.8,
+          "hp": 93,
+          "maxHp": 93,
+          "stf": 125,
+          "ctl": 101,
+          "mov": 117,
+          "sta": 77,
+          "ovr": 111,
+          "rarity": "Legendary"
+        },
+        {
+          "name": "Randy Johnson",
+          "role": "SP",
+          "war": 9.1,
+          "hp": 95,
+          "maxHp": 95,
+          "stf": 116,
+          "ctl": 83,
+          "mov": 95,
+          "sta": 80,
+          "ovr": 96,
+          "rarity": "Legendary"
+        },
+        {
+          "name": "Mike Hampton",
+          "role": "SP",
+          "war": 6.7,
           "hp": 90,
           "maxHp": 90,
-          "stf": 71,
-          "ctl": 83,
-          "mov": 86,
-          "sta": 73,
-          "ovr": 79,
-          "rarity": "Epic"
-        },
-        {
-          "name": "John Smoltz",
-          "role": "SP",
-          "war": 4.4,
-          "hp": 87,
-          "maxHp": 87,
-          "stf": 64,
-          "ctl": 92,
-          "mov": 75,
-          "sta": 69,
-          "ovr": 76,
-          "rarity": "Epic"
-        },
-        {
-          "name": "Greg Maddux",
-          "role": "SP",
-          "war": 3.2,
-          "hp": 88,
-          "maxHp": 88,
-          "stf": 41,
-          "ctl": 102,
-          "mov": 68,
-          "sta": 71,
-          "ovr": 70,
-          "rarity": "Epic"
+          "stf": 54,
+          "ctl": 49,
+          "mov": 85,
+          "sta": 74,
+          "ovr": 64,
+          "rarity": "Rare"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "2000": {
@@ -120796,9 +125647,7 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      }
-    ],
-    "mid": [
+      },
       {
         "id": "story_2000_BAL",
         "name": "2000 Baltimore Orioles",
@@ -120847,7 +125696,9 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
-      },
+      }
+    ],
+    "mid": [
       {
         "id": "story_2000_SDN",
         "name": "2000 San Diego Padres",
@@ -121239,9 +126090,7 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      }
-    ],
-    "high": [
+      },
       {
         "id": "story_2000_ARI",
         "name": "2000 Arizona Diamondbacks",
@@ -121339,7 +126188,9 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      },
+      }
+    ],
+    "high": [
       {
         "id": "story_2000_LAN",
         "name": "2000 Los Angeles Dodgers",
@@ -121780,57 +126631,106 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
+      },
+      {
+        "id": "story_2000_SFN",
+        "name": "2000 San Francisco Giants",
+        "year": 2000,
+        "teamID": "SFN",
+        "win_pct": 0.599,
+        "ovr": 69,
+        "pitchers": [
+          {
+            "name": "Livan Hernandez",
+            "role": "SP",
+            "war": 3.4,
+            "hp": 92,
+            "maxHp": 92,
+            "stf": 48,
+            "ctl": 73,
+            "mov": 60,
+            "sta": 76,
+            "ovr": 62,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Robb Nen",
+            "role": "RP",
+            "war": 2.5,
+            "hp": 36,
+            "maxHp": 36,
+            "stf": 122,
+            "ctl": 76,
+            "mov": 116,
+            "sta": 22,
+            "ovr": 96,
+            "rarity": "Legendary"
+          },
+          {
+            "name": "Shawn Estes",
+            "role": "SP",
+            "war": 2.0,
+            "hp": 86,
+            "maxHp": 86,
+            "stf": 51,
+            "ctl": 36,
+            "mov": 56,
+            "sta": 68,
+            "ovr": 50,
+            "rarity": "Uncommon"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_2000_SFN",
-      "name": "BOSS: 2000 San Francisco Giants",
+      "id": "story_2000_STARS_BOSS",
+      "name": "\ud83d\udc51 2000 STARS",
       "year": 2000,
-      "teamID": "SFN",
-      "win_pct": 0.599,
-      "ovr": 69,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 95,
       "pitchers": [
         {
-          "name": "Livan Hernandez",
+          "name": "Pedro Martinez",
           "role": "SP",
-          "war": 3.4,
-          "hp": 92,
-          "maxHp": 92,
-          "stf": 48,
-          "ctl": 73,
-          "mov": 60,
-          "sta": 76,
-          "ovr": 62,
-          "rarity": "Rare"
-        },
-        {
-          "name": "Robb Nen",
-          "role": "RP",
-          "war": 2.5,
-          "hp": 36,
-          "maxHp": 36,
-          "stf": 122,
-          "ctl": 76,
-          "mov": 116,
-          "sta": 22,
-          "ovr": 96,
+          "war": 11.7,
+          "hp": 94,
+          "maxHp": 94,
+          "stf": 113,
+          "ctl": 107,
+          "mov": 114,
+          "sta": 78,
+          "ovr": 108,
           "rarity": "Legendary"
         },
         {
-          "name": "Shawn Estes",
+          "name": "Randy Johnson",
           "role": "SP",
-          "war": 2.0,
-          "hp": 86,
-          "maxHp": 86,
-          "stf": 51,
-          "ctl": 36,
-          "mov": 56,
-          "sta": 68,
-          "ovr": 50,
-          "rarity": "Uncommon"
+          "war": 8.1,
+          "hp": 91,
+          "maxHp": 91,
+          "stf": 122,
+          "ctl": 73,
+          "mov": 95,
+          "sta": 75,
+          "ovr": 94,
+          "rarity": "Legendary"
+        },
+        {
+          "name": "Kevin Brown",
+          "role": "SP",
+          "war": 7.0,
+          "hp": 90,
+          "maxHp": 90,
+          "stf": 75,
+          "ctl": 94,
+          "mov": 88,
+          "sta": 74,
+          "ovr": 84,
+          "rarity": "Epic"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "2001": {
@@ -122276,9 +127176,7 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
-      }
-    ],
-    "mid": [
+      },
       {
         "id": "story_2001_TEX",
         "name": "2001 Texas Rangers",
@@ -122327,7 +127225,9 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      },
+      }
+    ],
+    "mid": [
       {
         "id": "story_2001_ANA",
         "name": "2001 Anaheim Angels",
@@ -122719,9 +127619,7 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      }
-    ],
-    "high": [
+      },
       {
         "id": "story_2001_PHI",
         "name": "2001 Philadelphia Phillies",
@@ -122819,7 +127717,9 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      },
+      }
+    ],
+    "high": [
       {
         "id": "story_2001_ATL",
         "name": "2001 Atlanta Braves",
@@ -123260,57 +128160,106 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
+      },
+      {
+        "id": "story_2001_SEA",
+        "name": "2001 Seattle Mariners",
+        "year": 2001,
+        "teamID": "SEA",
+        "win_pct": 0.716,
+        "ovr": 76,
+        "pitchers": [
+          {
+            "name": "Freddy Garcia",
+            "role": "SP",
+            "war": 4.2,
+            "hp": 90,
+            "maxHp": 90,
+            "stf": 48,
+            "ctl": 76,
+            "mov": 73,
+            "sta": 74,
+            "ovr": 66,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Jamie Moyer",
+            "role": "SP",
+            "war": 3.4,
+            "hp": 86,
+            "maxHp": 86,
+            "stf": 34,
+            "ctl": 93,
+            "mov": 61,
+            "sta": 68,
+            "ovr": 63,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Arthur Rhodes",
+            "role": "RP",
+            "war": 2.5,
+            "hp": 36,
+            "maxHp": 36,
+            "stf": 104,
+            "ctl": 100,
+            "mov": 114,
+            "sta": 22,
+            "ovr": 98,
+            "rarity": "Legendary"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_2001_SEA",
-      "name": "BOSS: 2001 Seattle Mariners",
+      "id": "story_2001_STARS_BOSS",
+      "name": "\ud83d\udc51 2001 STARS",
       "year": 2001,
-      "teamID": "SEA",
-      "win_pct": 0.716,
-      "ovr": 76,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 91,
       "pitchers": [
         {
-          "name": "Freddy Garcia",
+          "name": "Randy Johnson",
           "role": "SP",
-          "war": 4.2,
-          "hp": 90,
-          "maxHp": 90,
-          "stf": 48,
-          "ctl": 76,
-          "mov": 73,
-          "sta": 74,
-          "ovr": 66,
-          "rarity": "Rare"
-        },
-        {
-          "name": "Jamie Moyer",
-          "role": "SP",
-          "war": 3.4,
-          "hp": 86,
-          "maxHp": 86,
-          "stf": 34,
-          "ctl": 93,
-          "mov": 61,
-          "sta": 68,
-          "ovr": 63,
-          "rarity": "Rare"
-        },
-        {
-          "name": "Arthur Rhodes",
-          "role": "RP",
-          "war": 2.5,
-          "hp": 36,
-          "maxHp": 36,
-          "stf": 104,
-          "ctl": 100,
-          "mov": 114,
-          "sta": 22,
+          "war": 10.1,
+          "hp": 93,
+          "maxHp": 93,
+          "stf": 125,
+          "ctl": 77,
+          "mov": 100,
+          "sta": 77,
           "ovr": 98,
           "rarity": "Legendary"
+        },
+        {
+          "name": "Curt Schilling",
+          "role": "SP",
+          "war": 8.8,
+          "hp": 93,
+          "maxHp": 93,
+          "stf": 96,
+          "ctl": 106,
+          "mov": 79,
+          "sta": 77,
+          "ovr": 92,
+          "rarity": "Legendary"
+        },
+        {
+          "name": "Mike Mussina",
+          "role": "SP",
+          "war": 7.1,
+          "hp": 89,
+          "maxHp": 89,
+          "stf": 74,
+          "ctl": 99,
+          "mov": 75,
+          "sta": 72,
+          "ovr": 82,
+          "rarity": "Epic"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "2002": {
@@ -123756,9 +128705,7 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
-      }
-    ],
-    "mid": [
+      },
       {
         "id": "story_2002_COL",
         "name": "2002 Colorado Rockies",
@@ -123807,7 +128754,9 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      },
+      }
+    ],
+    "mid": [
       {
         "id": "story_2002_CLE",
         "name": "2002 Cleveland Indians",
@@ -124199,9 +129148,7 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      }
-    ],
-    "high": [
+      },
       {
         "id": "story_2002_HOU",
         "name": "2002 Houston Astros",
@@ -124299,7 +129246,9 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      },
+      }
+    ],
+    "high": [
       {
         "id": "story_2002_SEA",
         "name": "2002 Seattle Mariners",
@@ -124740,57 +129689,106 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
+      },
+      {
+        "id": "story_2002_NYA",
+        "name": "2002 New York Yankees",
+        "year": 2002,
+        "teamID": "NYA",
+        "win_pct": 0.64,
+        "ovr": 68,
+        "pitchers": [
+          {
+            "name": "Mike Mussina",
+            "role": "SP",
+            "war": 4.5,
+            "hp": 88,
+            "maxHp": 88,
+            "stf": 65,
+            "ctl": 90,
+            "mov": 55,
+            "sta": 70,
+            "ovr": 70,
+            "rarity": "Epic"
+          },
+          {
+            "name": "David Wells",
+            "role": "SP",
+            "war": 3.7,
+            "hp": 88,
+            "maxHp": 88,
+            "stf": 46,
+            "ctl": 91,
+            "mov": 61,
+            "sta": 71,
+            "ovr": 66,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Orlando Hernandez",
+            "role": "SP",
+            "war": 3.7,
+            "hp": 88,
+            "maxHp": 88,
+            "stf": 58,
+            "ctl": 85,
+            "mov": 62,
+            "sta": 71,
+            "ovr": 69,
+            "rarity": "Rare"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_2002_NYA",
-      "name": "BOSS: 2002 New York Yankees",
+      "id": "story_2002_STARS_BOSS",
+      "name": "\ud83d\udc51 2002 STARS",
       "year": 2002,
-      "teamID": "NYA",
-      "win_pct": 0.64,
-      "ovr": 68,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 88,
       "pitchers": [
         {
-          "name": "Mike Mussina",
+          "name": "Randy Johnson",
           "role": "SP",
-          "war": 4.5,
-          "hp": 88,
-          "maxHp": 88,
-          "stf": 65,
-          "ctl": 90,
-          "mov": 55,
-          "sta": 70,
-          "ovr": 70,
+          "war": 10.7,
+          "hp": 94,
+          "maxHp": 94,
+          "stf": 111,
+          "ctl": 80,
+          "mov": 102,
+          "sta": 78,
+          "ovr": 96,
+          "rarity": "Legendary"
+        },
+        {
+          "name": "Curt Schilling",
+          "role": "SP",
+          "war": 8.6,
+          "hp": 93,
+          "maxHp": 93,
+          "stf": 104,
+          "ctl": 111,
+          "mov": 72,
+          "sta": 77,
+          "ovr": 94,
+          "rarity": "Legendary"
+        },
+        {
+          "name": "Roy Halladay",
+          "role": "SP",
+          "war": 7.3,
+          "hp": 90,
+          "maxHp": 90,
+          "stf": 50,
+          "ctl": 83,
+          "mov": 87,
+          "sta": 74,
+          "ovr": 73,
           "rarity": "Epic"
-        },
-        {
-          "name": "David Wells",
-          "role": "SP",
-          "war": 3.7,
-          "hp": 88,
-          "maxHp": 88,
-          "stf": 46,
-          "ctl": 91,
-          "mov": 61,
-          "sta": 71,
-          "ovr": 66,
-          "rarity": "Rare"
-        },
-        {
-          "name": "Orlando Hernandez",
-          "role": "SP",
-          "war": 3.7,
-          "hp": 88,
-          "maxHp": 88,
-          "stf": 58,
-          "ctl": 85,
-          "mov": 62,
-          "sta": 71,
-          "ovr": 69,
-          "rarity": "Rare"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "2003": {
@@ -125236,9 +130234,7 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      }
-    ],
-    "mid": [
+      },
       {
         "id": "story_2003_COL",
         "name": "2003 Colorado Rockies",
@@ -125287,7 +130283,9 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
-      },
+      }
+    ],
+    "mid": [
       {
         "id": "story_2003_PIT",
         "name": "2003 Pittsburgh Pirates",
@@ -125679,9 +130677,7 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
-      }
-    ],
-    "high": [
+      },
       {
         "id": "story_2003_PHI",
         "name": "2003 Philadelphia Phillies",
@@ -125779,7 +130775,9 @@ window.OpponentsDatabase = {
             "rarity": "Epic"
           }
         ]
-      },
+      }
+    ],
+    "high": [
       {
         "id": "story_2003_HOU",
         "name": "2003 Houston Astros",
@@ -126220,57 +131218,106 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
+      },
+      {
+        "id": "story_2003_NYA",
+        "name": "2003 New York Yankees",
+        "year": 2003,
+        "teamID": "NYA",
+        "win_pct": 0.623,
+        "ovr": 71,
+        "pitchers": [
+          {
+            "name": "Mike Mussina",
+            "role": "SP",
+            "war": 6.6,
+            "hp": 90,
+            "maxHp": 90,
+            "stf": 72,
+            "ctl": 98,
+            "mov": 68,
+            "sta": 73,
+            "ovr": 79,
+            "rarity": "Epic"
+          },
+          {
+            "name": "David Wells",
+            "role": "SP",
+            "war": 4.3,
+            "hp": 91,
+            "maxHp": 91,
+            "stf": 24,
+            "ctl": 118,
+            "mov": 54,
+            "sta": 75,
+            "ovr": 66,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Roger Clemens",
+            "role": "SP",
+            "war": 4.0,
+            "hp": 87,
+            "maxHp": 87,
+            "stf": 70,
+            "ctl": 79,
+            "mov": 57,
+            "sta": 69,
+            "ovr": 69,
+            "rarity": "Rare"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_2003_NYA",
-      "name": "BOSS: 2003 New York Yankees",
+      "id": "story_2003_STARS_BOSS",
+      "name": "\ud83d\udc51 2003 STARS",
       "year": 2003,
-      "teamID": "NYA",
-      "win_pct": 0.623,
-      "ovr": 71,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 89,
       "pitchers": [
         {
-          "name": "Mike Mussina",
+          "name": "Roy Halladay",
           "role": "SP",
-          "war": 6.6,
-          "hp": 90,
-          "maxHp": 90,
-          "stf": 72,
-          "ctl": 98,
-          "mov": 68,
-          "sta": 73,
-          "ovr": 79,
+          "war": 8.1,
+          "hp": 93,
+          "maxHp": 93,
+          "stf": 57,
+          "ctl": 112,
+          "mov": 76,
+          "sta": 77,
+          "ovr": 81,
           "rarity": "Epic"
         },
         {
-          "name": "David Wells",
+          "name": "Pedro Martinez",
           "role": "SP",
-          "war": 4.3,
-          "hp": 91,
-          "maxHp": 91,
-          "stf": 24,
-          "ctl": 118,
-          "mov": 54,
-          "sta": 75,
-          "ovr": 66,
-          "rarity": "Rare"
-        },
-        {
-          "name": "Roger Clemens",
-          "role": "SP",
-          "war": 4.0,
+          "war": 8.0,
           "hp": 87,
           "maxHp": 87,
-          "stf": 70,
-          "ctl": 79,
-          "mov": 57,
+          "stf": 92,
+          "ctl": 84,
+          "mov": 115,
           "sta": 69,
-          "ovr": 69,
-          "rarity": "Rare"
+          "ovr": 94,
+          "rarity": "Legendary"
+        },
+        {
+          "name": "Mark Prior",
+          "role": "SP",
+          "war": 7.4,
+          "hp": 90,
+          "maxHp": 90,
+          "stf": 98,
+          "ctl": 87,
+          "mov": 95,
+          "sta": 74,
+          "ovr": 91,
+          "rarity": "Legendary"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "2004": {
@@ -126716,9 +131763,7 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
-      }
-    ],
-    "mid": [
+      },
       {
         "id": "story_2004_DET",
         "name": "2004 Detroit Tigers",
@@ -126767,7 +131812,9 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      },
+      }
+    ],
+    "mid": [
       {
         "id": "story_2004_PIT",
         "name": "2004 Pittsburgh Pirates",
@@ -127159,9 +132206,7 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      }
-    ],
-    "high": [
+      },
       {
         "id": "story_2004_TEX",
         "name": "2004 Texas Rangers",
@@ -127259,7 +132304,9 @@ window.OpponentsDatabase = {
             "rarity": "Epic"
           }
         ]
-      },
+      }
+    ],
+    "high": [
       {
         "id": "story_2004_OAK",
         "name": "2004 Oakland Athletics",
@@ -127700,57 +132747,106 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
+      },
+      {
+        "id": "story_2004_SLN",
+        "name": "2004 St. Louis Cardinals",
+        "year": 2004,
+        "teamID": "SLN",
+        "win_pct": 0.648,
+        "ovr": 62,
+        "pitchers": [
+          {
+            "name": "Chris Carpenter",
+            "role": "SP",
+            "war": 3.3,
+            "hp": 88,
+            "maxHp": 88,
+            "stf": 64,
+            "ctl": 93,
+            "mov": 61,
+            "sta": 70,
+            "ovr": 72,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Jason Marquis",
+            "role": "SP",
+            "war": 2.4,
+            "hp": 86,
+            "maxHp": 86,
+            "stf": 48,
+            "ctl": 63,
+            "mov": 57,
+            "sta": 68,
+            "ovr": 57,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Woody Williams",
+            "role": "SP",
+            "war": 1.8,
+            "hp": 84,
+            "maxHp": 84,
+            "stf": 49,
+            "ctl": 72,
+            "mov": 52,
+            "sta": 66,
+            "ovr": 58,
+            "rarity": "Rare"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_2004_SLN",
-      "name": "BOSS: 2004 St. Louis Cardinals",
+      "id": "story_2004_STARS_BOSS",
+      "name": "\ud83d\udc51 2004 STARS",
       "year": 2004,
-      "teamID": "SLN",
-      "win_pct": 0.648,
-      "ovr": 62,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 90,
       "pitchers": [
         {
-          "name": "Chris Carpenter",
+          "name": "Johan Santana",
           "role": "SP",
-          "war": 3.3,
+          "war": 8.7,
           "hp": 88,
           "maxHp": 88,
-          "stf": 64,
-          "ctl": 93,
-          "mov": 61,
-          "sta": 70,
-          "ovr": 72,
+          "stf": 98,
+          "ctl": 87,
+          "mov": 94,
+          "sta": 71,
+          "ovr": 91,
+          "rarity": "Legendary"
+        },
+        {
+          "name": "Randy Johnson",
+          "role": "SP",
+          "war": 8.4,
+          "hp": 90,
+          "maxHp": 90,
+          "stf": 100,
+          "ctl": 100,
+          "mov": 94,
+          "sta": 74,
+          "ovr": 96,
+          "rarity": "Legendary"
+        },
+        {
+          "name": "Curt Schilling",
+          "role": "SP",
+          "war": 7.8,
+          "hp": 91,
+          "maxHp": 91,
+          "stf": 70,
+          "ctl": 105,
+          "mov": 77,
+          "sta": 75,
+          "ovr": 83,
           "rarity": "Epic"
-        },
-        {
-          "name": "Jason Marquis",
-          "role": "SP",
-          "war": 2.4,
-          "hp": 86,
-          "maxHp": 86,
-          "stf": 48,
-          "ctl": 63,
-          "mov": 57,
-          "sta": 68,
-          "ovr": 57,
-          "rarity": "Rare"
-        },
-        {
-          "name": "Woody Williams",
-          "role": "SP",
-          "war": 1.8,
-          "hp": 84,
-          "maxHp": 84,
-          "stf": 49,
-          "ctl": 72,
-          "mov": 52,
-          "sta": 66,
-          "ovr": 58,
-          "rarity": "Rare"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "2005": {
@@ -128196,9 +133292,7 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      }
-    ],
-    "mid": [
+      },
       {
         "id": "story_2005_SFN",
         "name": "2005 San Francisco Giants",
@@ -128247,7 +133341,9 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      },
+      }
+    ],
+    "mid": [
       {
         "id": "story_2005_ARI",
         "name": "2005 Arizona Diamondbacks",
@@ -128639,9 +133735,7 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      }
-    ],
-    "high": [
+      },
       {
         "id": "story_2005_NYN",
         "name": "2005 New York Mets",
@@ -128739,7 +133833,9 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      },
+      }
+    ],
+    "high": [
       {
         "id": "story_2005_OAK",
         "name": "2005 Oakland Athletics",
@@ -129180,57 +134276,106 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
+      },
+      {
+        "id": "story_2005_SLN",
+        "name": "2005 St. Louis Cardinals",
+        "year": 2005,
+        "teamID": "SLN",
+        "win_pct": 0.617,
+        "ovr": 72,
+        "pitchers": [
+          {
+            "name": "Chris Carpenter",
+            "role": "SP",
+            "war": 5.8,
+            "hp": 93,
+            "maxHp": 93,
+            "stf": 69,
+            "ctl": 93,
+            "mov": 80,
+            "sta": 77,
+            "ovr": 80,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Mark Mulder",
+            "role": "SP",
+            "war": 2.5,
+            "hp": 87,
+            "maxHp": 87,
+            "stf": 31,
+            "ctl": 65,
+            "mov": 61,
+            "sta": 69,
+            "ovr": 54,
+            "rarity": "Uncommon"
+          },
+          {
+            "name": "Alberto Reyes",
+            "role": "RP",
+            "war": 2.0,
+            "hp": 36,
+            "maxHp": 36,
+            "stf": 88,
+            "ctl": 70,
+            "mov": 104,
+            "sta": 22,
+            "ovr": 81,
+            "rarity": "Epic"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_2005_SLN",
-      "name": "BOSS: 2005 St. Louis Cardinals",
+      "id": "story_2005_STARS_BOSS",
+      "name": "\ud83d\udc51 2005 STARS",
       "year": 2005,
-      "teamID": "SLN",
-      "win_pct": 0.617,
-      "ovr": 72,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 82,
       "pitchers": [
         {
-          "name": "Chris Carpenter",
+          "name": "Roger Clemens",
           "role": "SP",
-          "war": 5.8,
-          "hp": 93,
-          "maxHp": 93,
-          "stf": 69,
-          "ctl": 93,
-          "mov": 80,
-          "sta": 77,
-          "ovr": 80,
+          "war": 7.8,
+          "hp": 88,
+          "maxHp": 88,
+          "stf": 68,
+          "ctl": 75,
+          "mov": 116,
+          "sta": 71,
+          "ovr": 85,
+          "rarity": "Legendary"
+        },
+        {
+          "name": "Dontrelle Willis",
+          "role": "SP",
+          "war": 7.3,
+          "hp": 90,
+          "maxHp": 90,
+          "stf": 52,
+          "ctl": 88,
+          "mov": 84,
+          "sta": 73,
+          "ovr": 74,
           "rarity": "Epic"
         },
         {
-          "name": "Mark Mulder",
+          "name": "Johan Santana",
           "role": "SP",
-          "war": 2.5,
-          "hp": 87,
-          "maxHp": 87,
-          "stf": 31,
-          "ctl": 65,
-          "mov": 61,
-          "sta": 69,
-          "ovr": 54,
-          "rarity": "Uncommon"
-        },
-        {
-          "name": "Alberto Reyes",
-          "role": "RP",
-          "war": 2.0,
-          "hp": 36,
-          "maxHp": 36,
-          "stf": 88,
-          "ctl": 70,
-          "mov": 104,
-          "sta": 22,
-          "ovr": 81,
-          "rarity": "Epic"
+          "war": 7.2,
+          "hp": 90,
+          "maxHp": 90,
+          "stf": 84,
+          "ctl": 96,
+          "mov": 81,
+          "sta": 74,
+          "ovr": 86,
+          "rarity": "Legendary"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "2006": {
@@ -129676,9 +134821,7 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      }
-    ],
-    "mid": [
+      },
       {
         "id": "story_2006_SFN",
         "name": "2006 San Francisco Giants",
@@ -129727,7 +134870,9 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      },
+      }
+    ],
+    "mid": [
       {
         "id": "story_2006_FLO",
         "name": "2006 Florida Marlins",
@@ -130119,9 +135264,7 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
-      }
-    ],
-    "high": [
+      },
       {
         "id": "story_2006_PHI",
         "name": "2006 Philadelphia Phillies",
@@ -130219,7 +135362,9 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
-      },
+      }
+    ],
+    "high": [
       {
         "id": "story_2006_TOR",
         "name": "2006 Toronto Blue Jays",
@@ -130660,57 +135805,106 @@ window.OpponentsDatabase = {
             "rarity": "Epic"
           }
         ]
+      },
+      {
+        "id": "story_2006_NYN",
+        "name": "2006 New York Mets",
+        "year": 2006,
+        "teamID": "NYN",
+        "win_pct": 0.599,
+        "ovr": 70,
+        "pitchers": [
+          {
+            "name": "Tom Glavine",
+            "role": "SP",
+            "war": 2.8,
+            "hp": 86,
+            "maxHp": 86,
+            "stf": 37,
+            "ctl": 64,
+            "mov": 57,
+            "sta": 68,
+            "ovr": 54,
+            "rarity": "Uncommon"
+          },
+          {
+            "name": "Billy Wagner",
+            "role": "RP",
+            "war": 2.2,
+            "hp": 36,
+            "maxHp": 36,
+            "stf": 102,
+            "ctl": 69,
+            "mov": 101,
+            "sta": 23,
+            "ovr": 84,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Pedro Feliciano",
+            "role": "RP",
+            "war": 1.9,
+            "hp": 36,
+            "maxHp": 36,
+            "stf": 61,
+            "ctl": 60,
+            "mov": 111,
+            "sta": 22,
+            "ovr": 72,
+            "rarity": "Epic"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_2006_NYN",
-      "name": "BOSS: 2006 New York Mets",
+      "id": "story_2006_STARS_BOSS",
+      "name": "\ud83d\udc51 2006 STARS",
       "year": 2006,
-      "teamID": "NYN",
-      "win_pct": 0.599,
-      "ovr": 70,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 73,
       "pitchers": [
         {
-          "name": "Tom Glavine",
+          "name": "Johan Santana",
           "role": "SP",
-          "war": 2.8,
-          "hp": 86,
-          "maxHp": 86,
-          "stf": 37,
-          "ctl": 64,
-          "mov": 57,
-          "sta": 68,
-          "ovr": 54,
-          "rarity": "Uncommon"
-        },
-        {
-          "name": "Billy Wagner",
-          "role": "RP",
-          "war": 2.2,
-          "hp": 36,
-          "maxHp": 36,
-          "stf": 102,
-          "ctl": 69,
-          "mov": 101,
-          "sta": 23,
-          "ovr": 84,
+          "war": 7.6,
+          "hp": 90,
+          "maxHp": 90,
+          "stf": 77,
+          "ctl": 90,
+          "mov": 82,
+          "sta": 74,
+          "ovr": 82,
           "rarity": "Epic"
         },
         {
-          "name": "Pedro Feliciano",
-          "role": "RP",
-          "war": 1.9,
-          "hp": 36,
-          "maxHp": 36,
-          "stf": 61,
-          "ctl": 60,
-          "mov": 111,
-          "sta": 22,
+          "name": "Brandon Webb",
+          "role": "SP",
+          "war": 7.0,
+          "hp": 92,
+          "maxHp": 92,
+          "stf": 47,
+          "ctl": 87,
+          "mov": 81,
+          "sta": 76,
           "ovr": 72,
           "rarity": "Epic"
+        },
+        {
+          "name": "Bronson Arroyo",
+          "role": "SP",
+          "war": 6.8,
+          "hp": 90,
+          "maxHp": 90,
+          "stf": 48,
+          "ctl": 75,
+          "mov": 71,
+          "sta": 74,
+          "ovr": 66,
+          "rarity": "Rare"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "2007": {
@@ -131156,9 +136350,7 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
-      }
-    ],
-    "mid": [
+      },
       {
         "id": "story_2007_HOU",
         "name": "2007 Houston Astros",
@@ -131207,7 +136399,9 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      },
+      }
+    ],
+    "mid": [
       {
         "id": "story_2007_TEX",
         "name": "2007 Texas Rangers",
@@ -131599,9 +136793,7 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      }
-    ],
-    "high": [
+      },
       {
         "id": "story_2007_CHN",
         "name": "2007 Chicago Cubs",
@@ -131699,7 +136891,9 @@ window.OpponentsDatabase = {
             "rarity": "Common"
           }
         ]
-      },
+      }
+    ],
+    "high": [
       {
         "id": "story_2007_DET",
         "name": "2007 Detroit Tigers",
@@ -132140,57 +137334,106 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
+      },
+      {
+        "id": "story_2007_CLE",
+        "name": "2007 Cleveland Indians",
+        "year": 2007,
+        "teamID": "CLE",
+        "win_pct": 0.593,
+        "ovr": 77,
+        "pitchers": [
+          {
+            "name": "CC Sabathia",
+            "role": "SP",
+            "war": 6.3,
+            "hp": 92,
+            "maxHp": 92,
+            "stf": 58,
+            "ctl": 101,
+            "mov": 73,
+            "sta": 76,
+            "ovr": 77,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Roberto Hernandez",
+            "role": "SP",
+            "war": 6.2,
+            "hp": 90,
+            "maxHp": 90,
+            "stf": 35,
+            "ctl": 71,
+            "mov": 78,
+            "sta": 73,
+            "ovr": 62,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Rafael Betancourt",
+            "role": "RP",
+            "war": 4.3,
+            "hp": 37,
+            "maxHp": 37,
+            "stf": 72,
+            "ctl": 110,
+            "mov": 115,
+            "sta": 24,
+            "ovr": 92,
+            "rarity": "Legendary"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_2007_CLE",
-      "name": "BOSS: 2007 Cleveland Indians",
+      "id": "story_2007_STARS_BOSS",
+      "name": "\ud83d\udc51 2007 STARS",
       "year": 2007,
-      "teamID": "CLE",
-      "win_pct": 0.593,
-      "ovr": 77,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 70,
       "pitchers": [
         {
-          "name": "CC Sabathia",
+          "name": "Roy Oswalt",
           "role": "SP",
-          "war": 6.3,
-          "hp": 92,
-          "maxHp": 92,
-          "stf": 58,
-          "ctl": 101,
-          "mov": 73,
-          "sta": 76,
+          "war": 6.6,
+          "hp": 89,
+          "maxHp": 89,
+          "stf": 44,
+          "ctl": 71,
+          "mov": 74,
+          "sta": 72,
+          "ovr": 64,
+          "rarity": "Rare"
+        },
+        {
+          "name": "Josh Beckett",
+          "role": "SP",
+          "war": 6.5,
+          "hp": 89,
+          "maxHp": 89,
+          "stf": 68,
+          "ctl": 90,
+          "mov": 75,
+          "sta": 72,
           "ovr": 77,
           "rarity": "Epic"
         },
         {
-          "name": "Roberto Hernandez",
+          "name": "Brandon Webb",
           "role": "SP",
-          "war": 6.2,
-          "hp": 90,
-          "maxHp": 90,
-          "stf": 35,
-          "ctl": 71,
-          "mov": 78,
-          "sta": 73,
-          "ovr": 62,
+          "war": 6.4,
+          "hp": 91,
+          "maxHp": 91,
+          "stf": 53,
+          "ctl": 66,
+          "mov": 85,
+          "sta": 75,
+          "ovr": 69,
           "rarity": "Rare"
-        },
-        {
-          "name": "Rafael Betancourt",
-          "role": "RP",
-          "war": 4.3,
-          "hp": 37,
-          "maxHp": 37,
-          "stf": 72,
-          "ctl": 110,
-          "mov": 115,
-          "sta": 24,
-          "ovr": 92,
-          "rarity": "Legendary"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "2008": {
@@ -132636,9 +137879,7 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      }
-    ],
-    "mid": [
+      },
       {
         "id": "story_2008_COL",
         "name": "2008 Colorado Rockies",
@@ -132687,7 +137928,9 @@ window.OpponentsDatabase = {
             "rarity": "Epic"
           }
         ]
-      },
+      }
+    ],
+    "mid": [
       {
         "id": "story_2008_KCA",
         "name": "2008 Kansas City Royals",
@@ -133079,9 +138322,7 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
-      }
-    ],
-    "high": [
+      },
       {
         "id": "story_2008_TOR",
         "name": "2008 Toronto Blue Jays",
@@ -133179,7 +138420,9 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      },
+      }
+    ],
+    "high": [
       {
         "id": "story_2008_MIN",
         "name": "2008 Minnesota Twins",
@@ -133620,57 +138863,106 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
+      },
+      {
+        "id": "story_2008_LAA",
+        "name": "2008 Los Angeles Angels of Anaheim",
+        "year": 2008,
+        "teamID": "LAA",
+        "win_pct": 0.617,
+        "ovr": 64,
+        "pitchers": [
+          {
+            "name": "Ervin Santana",
+            "role": "SP",
+            "war": 5.1,
+            "hp": 90,
+            "maxHp": 90,
+            "stf": 69,
+            "ctl": 87,
+            "mov": 64,
+            "sta": 74,
+            "ovr": 73,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Joe Saunders",
+            "role": "SP",
+            "war": 4.7,
+            "hp": 88,
+            "maxHp": 88,
+            "stf": 23,
+            "ctl": 75,
+            "mov": 66,
+            "sta": 70,
+            "ovr": 56,
+            "rarity": "Rare"
+          },
+          {
+            "name": "John Lackey",
+            "role": "SP",
+            "war": 3.5,
+            "hp": 90,
+            "maxHp": 90,
+            "stf": 51,
+            "ctl": 80,
+            "mov": 58,
+            "sta": 73,
+            "ovr": 64,
+            "rarity": "Rare"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_2008_LAA",
-      "name": "BOSS: 2008 Los Angeles Angels of Anaheim",
+      "id": "story_2008_STARS_BOSS",
+      "name": "\ud83d\udc51 2008 STARS",
       "year": 2008,
-      "teamID": "LAA",
-      "win_pct": 0.617,
-      "ovr": 64,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 71,
       "pitchers": [
         {
-          "name": "Ervin Santana",
+          "name": "Tim Lincecum",
           "role": "SP",
-          "war": 5.1,
+          "war": 7.8,
           "hp": 90,
           "maxHp": 90,
-          "stf": 69,
-          "ctl": 87,
-          "mov": 64,
+          "stf": 89,
+          "ctl": 51,
+          "mov": 90,
+          "sta": 74,
+          "ovr": 76,
+          "rarity": "Epic"
+        },
+        {
+          "name": "Johan Santana",
+          "role": "SP",
+          "war": 7.1,
+          "hp": 90,
+          "maxHp": 90,
+          "stf": 59,
+          "ctl": 74,
+          "mov": 85,
           "sta": 74,
           "ovr": 73,
           "rarity": "Epic"
         },
         {
-          "name": "Joe Saunders",
+          "name": "Ryan Dempster",
           "role": "SP",
-          "war": 4.7,
-          "hp": 88,
-          "maxHp": 88,
-          "stf": 23,
-          "ctl": 75,
-          "mov": 66,
-          "sta": 70,
-          "ovr": 56,
-          "rarity": "Rare"
-        },
-        {
-          "name": "John Lackey",
-          "role": "SP",
-          "war": 3.5,
-          "hp": 90,
-          "maxHp": 90,
-          "stf": 51,
-          "ctl": 80,
-          "mov": 58,
-          "sta": 73,
-          "ovr": 64,
+          "war": 6.9,
+          "hp": 87,
+          "maxHp": 87,
+          "stf": 62,
+          "ctl": 52,
+          "mov": 81,
+          "sta": 69,
+          "ovr": 65,
           "rarity": "Rare"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "2009": {
@@ -134116,9 +139408,7 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      }
-    ],
-    "mid": [
+      },
       {
         "id": "story_2009_TOR",
         "name": "2009 Toronto Blue Jays",
@@ -134167,7 +139457,9 @@ window.OpponentsDatabase = {
             "rarity": "Epic"
           }
         ]
-      },
+      }
+    ],
+    "mid": [
       {
         "id": "story_2009_OAK",
         "name": "2009 Oakland Athletics",
@@ -134559,9 +139851,7 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
-      }
-    ],
-    "high": [
+      },
       {
         "id": "story_2009_ATL",
         "name": "2009 Atlanta Braves",
@@ -134659,7 +139949,9 @@ window.OpponentsDatabase = {
             "rarity": "Epic"
           }
         ]
-      },
+      }
+    ],
+    "high": [
       {
         "id": "story_2009_TEX",
         "name": "2009 Texas Rangers",
@@ -135100,57 +140392,106 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
+      },
+      {
+        "id": "story_2009_NYA",
+        "name": "2009 New York Yankees",
+        "year": 2009,
+        "teamID": "NYA",
+        "win_pct": 0.636,
+        "ovr": 70,
+        "pitchers": [
+          {
+            "name": "CC Sabathia",
+            "role": "SP",
+            "war": 6.2,
+            "hp": 90,
+            "maxHp": 90,
+            "stf": 57,
+            "ctl": 69,
+            "mov": 72,
+            "sta": 73,
+            "ovr": 67,
+            "rarity": "Rare"
+          },
+          {
+            "name": "A. J. Burnett",
+            "role": "SP",
+            "war": 4.5,
+            "hp": 87,
+            "maxHp": 87,
+            "stf": 66,
+            "ctl": 41,
+            "mov": 57,
+            "sta": 69,
+            "ovr": 56,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Mariano Rivera",
+            "role": "RP",
+            "war": 3.6,
+            "hp": 36,
+            "maxHp": 36,
+            "stf": 80,
+            "ctl": 95,
+            "mov": 110,
+            "sta": 23,
+            "ovr": 88,
+            "rarity": "Legendary"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_2009_NYA",
-      "name": "BOSS: 2009 New York Yankees",
+      "id": "story_2009_STARS_BOSS",
+      "name": "\ud83d\udc51 2009 STARS",
       "year": 2009,
-      "teamID": "NYA",
-      "win_pct": 0.636,
-      "ovr": 70,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 84,
       "pitchers": [
         {
-          "name": "CC Sabathia",
+          "name": "Zack Greinke",
           "role": "SP",
-          "war": 6.2,
+          "war": 10.4,
           "hp": 90,
           "maxHp": 90,
-          "stf": 57,
-          "ctl": 69,
-          "mov": 72,
-          "sta": 73,
-          "ovr": 67,
-          "rarity": "Rare"
-        },
-        {
-          "name": "A. J. Burnett",
-          "role": "SP",
-          "war": 4.5,
-          "hp": 87,
-          "maxHp": 87,
-          "stf": 66,
-          "ctl": 41,
-          "mov": 57,
-          "sta": 69,
-          "ovr": 56,
-          "rarity": "Rare"
-        },
-        {
-          "name": "Mariano Rivera",
-          "role": "RP",
-          "war": 3.6,
-          "hp": 36,
-          "maxHp": 36,
-          "stf": 80,
-          "ctl": 95,
+          "stf": 77,
+          "ctl": 85,
           "mov": 110,
-          "sta": 23,
-          "ovr": 88,
+          "sta": 74,
+          "ovr": 89,
           "rarity": "Legendary"
+        },
+        {
+          "name": "Tim Lincecum",
+          "role": "SP",
+          "war": 7.4,
+          "hp": 91,
+          "maxHp": 91,
+          "stf": 88,
+          "ctl": 67,
+          "mov": 92,
+          "sta": 75,
+          "ovr": 82,
+          "rarity": "Epic"
+        },
+        {
+          "name": "Roy Halladay",
+          "role": "SP",
+          "war": 6.9,
+          "hp": 94,
+          "maxHp": 94,
+          "stf": 58,
+          "ctl": 103,
+          "mov": 82,
+          "sta": 79,
+          "ovr": 81,
+          "rarity": "Epic"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "2010": {
@@ -135596,9 +140937,7 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      }
-    ],
-    "mid": [
+      },
       {
         "id": "story_2010_MIL",
         "name": "2010 Milwaukee Brewers",
@@ -135647,7 +140986,9 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
-      },
+      }
+    ],
+    "mid": [
       {
         "id": "story_2010_NYN",
         "name": "2010 New York Mets",
@@ -136039,9 +141380,7 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
-      }
-    ],
-    "high": [
+      },
       {
         "id": "story_2010_SLN",
         "name": "2010 St. Louis Cardinals",
@@ -136139,7 +141478,9 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      },
+      }
+    ],
+    "high": [
       {
         "id": "story_2010_BOS",
         "name": "2010 Boston Red Sox",
@@ -136580,15 +141921,65 @@ window.OpponentsDatabase = {
             "rarity": "Epic"
           }
         ]
+      },
+      {
+        "id": "story_2010_PHI",
+        "name": "2010 Philadelphia Phillies",
+        "year": 2010,
+        "teamID": "PHI",
+        "win_pct": 0.599,
+        "ovr": 77,
+        "pitchers": [
+          {
+            "name": "Roy Halladay",
+            "role": "SP",
+            "war": 8.5,
+            "hp": 95,
+            "maxHp": 95,
+            "stf": 59,
+            "ctl": 109,
+            "mov": 86,
+            "sta": 80,
+            "ovr": 84,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Cole Hamels",
+            "role": "SP",
+            "war": 5.5,
+            "hp": 87,
+            "maxHp": 87,
+            "stf": 73,
+            "ctl": 69,
+            "mov": 66,
+            "sta": 69,
+            "ovr": 69,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Ryan Madson",
+            "role": "RP",
+            "war": 1.3,
+            "hp": 36,
+            "maxHp": 36,
+            "stf": 93,
+            "ctl": 80,
+            "mov": 84,
+            "sta": 22,
+            "ovr": 79,
+            "rarity": "Epic"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_2010_PHI",
-      "name": "BOSS: 2010 Philadelphia Phillies",
+      "id": "story_2010_STARS_BOSS",
+      "name": "\ud83d\udc51 2010 STARS",
       "year": 2010,
-      "teamID": "PHI",
-      "win_pct": 0.599,
-      "ovr": 77,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 76,
       "pitchers": [
         {
           "name": "Roy Halladay",
@@ -136604,33 +141995,32 @@ window.OpponentsDatabase = {
           "rarity": "Epic"
         },
         {
-          "name": "Cole Hamels",
+          "name": "Ubaldo Jimenez",
           "role": "SP",
-          "war": 5.5,
-          "hp": 87,
-          "maxHp": 87,
-          "stf": 73,
-          "ctl": 69,
-          "mov": 66,
-          "sta": 69,
-          "ovr": 69,
+          "war": 7.5,
+          "hp": 89,
+          "maxHp": 89,
+          "stf": 68,
+          "ctl": 46,
+          "mov": 87,
+          "sta": 72,
+          "ovr": 68,
           "rarity": "Rare"
         },
         {
-          "name": "Ryan Madson",
-          "role": "RP",
-          "war": 1.3,
-          "hp": 36,
-          "maxHp": 36,
-          "stf": 93,
-          "ctl": 80,
-          "mov": 84,
-          "sta": 22,
-          "ovr": 79,
+          "name": "Felix Hernandez",
+          "role": "SP",
+          "war": 7.2,
+          "hp": 94,
+          "maxHp": 94,
+          "stf": 64,
+          "ctl": 72,
+          "mov": 92,
+          "sta": 78,
+          "ovr": 76,
           "rarity": "Epic"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "2011": {
@@ -137076,9 +142466,7 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      }
-    ],
-    "mid": [
+      },
       {
         "id": "story_2011_COL",
         "name": "2011 Colorado Rockies",
@@ -137127,7 +142515,9 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      },
+      }
+    ],
+    "mid": [
       {
         "id": "story_2011_OAK",
         "name": "2011 Oakland Athletics",
@@ -137519,9 +142909,7 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      }
-    ],
-    "high": [
+      },
       {
         "id": "story_2011_SFN",
         "name": "2011 San Francisco Giants",
@@ -137619,7 +143007,9 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      },
+      }
+    ],
+    "high": [
       {
         "id": "story_2011_ATL",
         "name": "2011 Atlanta Braves",
@@ -138060,15 +143450,65 @@ window.OpponentsDatabase = {
             "rarity": "Legendary"
           }
         ]
+      },
+      {
+        "id": "story_2011_PHI",
+        "name": "2011 Philadelphia Phillies",
+        "year": 2011,
+        "teamID": "PHI",
+        "win_pct": 0.63,
+        "ovr": 81,
+        "pitchers": [
+          {
+            "name": "Roy Halladay",
+            "role": "SP",
+            "war": 8.8,
+            "hp": 94,
+            "maxHp": 94,
+            "stf": 66,
+            "ctl": 102,
+            "mov": 88,
+            "sta": 78,
+            "ovr": 85,
+            "rarity": "Legendary"
+          },
+          {
+            "name": "Cliff Lee",
+            "role": "SP",
+            "war": 8.5,
+            "hp": 93,
+            "maxHp": 93,
+            "stf": 74,
+            "ctl": 95,
+            "mov": 84,
+            "sta": 77,
+            "ovr": 84,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Cole Hamels",
+            "role": "SP",
+            "war": 6.4,
+            "hp": 91,
+            "maxHp": 91,
+            "stf": 61,
+            "ctl": 89,
+            "mov": 71,
+            "sta": 75,
+            "ovr": 74,
+            "rarity": "Epic"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_2011_PHI",
-      "name": "BOSS: 2011 Philadelphia Phillies",
+      "id": "story_2011_STARS_BOSS",
+      "name": "\ud83d\udc51 2011 STARS",
       "year": 2011,
-      "teamID": "PHI",
-      "win_pct": 0.63,
-      "ovr": 81,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 83,
       "pitchers": [
         {
           "name": "Roy Halladay",
@@ -138084,6 +143524,19 @@ window.OpponentsDatabase = {
           "rarity": "Legendary"
         },
         {
+          "name": "Justin Verlander",
+          "role": "SP",
+          "war": 8.6,
+          "hp": 94,
+          "maxHp": 94,
+          "stf": 71,
+          "ctl": 84,
+          "mov": 88,
+          "sta": 78,
+          "ovr": 81,
+          "rarity": "Epic"
+        },
+        {
           "name": "Cliff Lee",
           "role": "SP",
           "war": 8.5,
@@ -138095,22 +143548,8 @@ window.OpponentsDatabase = {
           "sta": 77,
           "ovr": 84,
           "rarity": "Epic"
-        },
-        {
-          "name": "Cole Hamels",
-          "role": "SP",
-          "war": 6.4,
-          "hp": 91,
-          "maxHp": 91,
-          "stf": 61,
-          "ctl": 89,
-          "mov": 71,
-          "sta": 75,
-          "ovr": 74,
-          "rarity": "Epic"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "2012": {
@@ -138556,9 +143995,7 @@ window.OpponentsDatabase = {
             "rarity": "Epic"
           }
         ]
-      }
-    ],
-    "mid": [
+      },
       {
         "id": "story_2012_NYN",
         "name": "2012 New York Mets",
@@ -138607,7 +144044,9 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      },
+      }
+    ],
+    "mid": [
       {
         "id": "story_2012_SEA",
         "name": "2012 Seattle Mariners",
@@ -138999,9 +144438,7 @@ window.OpponentsDatabase = {
             "rarity": "Epic"
           }
         ]
-      }
-    ],
-    "high": [
+      },
       {
         "id": "story_2012_SLN",
         "name": "2012 St. Louis Cardinals",
@@ -139099,7 +144536,9 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      },
+      }
+    ],
+    "high": [
       {
         "id": "story_2012_LAA",
         "name": "2012 Los Angeles Angels of Anaheim",
@@ -139540,57 +144979,106 @@ window.OpponentsDatabase = {
             "rarity": "Legendary"
           }
         ]
+      },
+      {
+        "id": "story_2012_WAS",
+        "name": "2012 Washington Nationals",
+        "year": 2012,
+        "teamID": "WAS",
+        "win_pct": 0.605,
+        "ovr": 70,
+        "pitchers": [
+          {
+            "name": "Gio Gonzalez",
+            "role": "SP",
+            "war": 5.0,
+            "hp": 86,
+            "maxHp": 86,
+            "stf": 76,
+            "ctl": 49,
+            "mov": 75,
+            "sta": 68,
+            "ovr": 67,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Jordan Zimmermann",
+            "role": "SP",
+            "war": 4.9,
+            "hp": 85,
+            "maxHp": 85,
+            "stf": 49,
+            "ctl": 86,
+            "mov": 70,
+            "sta": 67,
+            "ovr": 68,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Stephen Strasburg",
+            "role": "SP",
+            "war": 3.1,
+            "hp": 83,
+            "maxHp": 83,
+            "stf": 96,
+            "ctl": 67,
+            "mov": 65,
+            "sta": 64,
+            "ovr": 75,
+            "rarity": "Epic"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_2012_WAS",
-      "name": "BOSS: 2012 Washington Nationals",
+      "id": "story_2012_STARS_BOSS",
+      "name": "\ud83d\udc51 2012 STARS",
       "year": 2012,
-      "teamID": "WAS",
-      "win_pct": 0.605,
-      "ovr": 70,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 75,
       "pitchers": [
         {
-          "name": "Gio Gonzalez",
+          "name": "Justin Verlander",
           "role": "SP",
-          "war": 5.0,
-          "hp": 86,
-          "maxHp": 86,
-          "stf": 76,
-          "ctl": 49,
-          "mov": 75,
-          "sta": 68,
-          "ovr": 67,
-          "rarity": "Rare"
+          "war": 8.1,
+          "hp": 93,
+          "maxHp": 93,
+          "stf": 72,
+          "ctl": 78,
+          "mov": 84,
+          "sta": 77,
+          "ovr": 78,
+          "rarity": "Epic"
         },
         {
-          "name": "Jordan Zimmermann",
+          "name": "David Price",
           "role": "SP",
-          "war": 4.9,
-          "hp": 85,
-          "maxHp": 85,
-          "stf": 49,
-          "ctl": 86,
-          "mov": 70,
-          "sta": 67,
-          "ovr": 68,
-          "rarity": "Rare"
+          "war": 6.6,
+          "hp": 90,
+          "maxHp": 90,
+          "stf": 69,
+          "ctl": 72,
+          "mov": 79,
+          "sta": 73,
+          "ovr": 73,
+          "rarity": "Epic"
         },
         {
-          "name": "Stephen Strasburg",
+          "name": "Clayton Kershaw",
           "role": "SP",
-          "war": 3.1,
-          "hp": 83,
-          "maxHp": 83,
-          "stf": 96,
-          "ctl": 67,
-          "mov": 65,
-          "sta": 64,
+          "war": 6.4,
+          "hp": 90,
+          "maxHp": 90,
+          "stf": 72,
+          "ctl": 73,
+          "mov": 79,
+          "sta": 74,
           "ovr": 75,
           "rarity": "Epic"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "2013": {
@@ -140036,9 +145524,7 @@ window.OpponentsDatabase = {
             "rarity": "Epic"
           }
         ]
-      }
-    ],
-    "mid": [
+      },
       {
         "id": "story_2013_MIL",
         "name": "2013 Milwaukee Brewers",
@@ -140087,7 +145573,9 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      },
+      }
+    ],
+    "mid": [
       {
         "id": "story_2013_NYN",
         "name": "2013 New York Mets",
@@ -140479,9 +145967,7 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      }
-    ],
-    "high": [
+      },
       {
         "id": "story_2013_KCA",
         "name": "2013 Kansas City Royals",
@@ -140579,7 +146065,9 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      },
+      }
+    ],
+    "high": [
       {
         "id": "story_2013_TEX",
         "name": "2013 Texas Rangers",
@@ -141020,57 +146508,106 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
+      },
+      {
+        "id": "story_2013_BOS",
+        "name": "2013 Boston Red Sox",
+        "year": 2013,
+        "teamID": "BOS",
+        "win_pct": 0.599,
+        "ovr": 80,
+        "pitchers": [
+          {
+            "name": "Clay Buchholz",
+            "role": "SP",
+            "war": 4.3,
+            "hp": 90,
+            "maxHp": 90,
+            "stf": 60,
+            "ctl": 60,
+            "mov": 116,
+            "sta": 73,
+            "ovr": 78,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Koji Uehara",
+            "role": "RP",
+            "war": 3.5,
+            "hp": 36,
+            "maxHp": 36,
+            "stf": 108,
+            "ctl": 108,
+            "mov": 113,
+            "sta": 23,
+            "ovr": 101,
+            "rarity": "Legendary"
+          },
+          {
+            "name": "Jon Lester",
+            "role": "SP",
+            "war": 2.7,
+            "hp": 88,
+            "maxHp": 88,
+            "stf": 54,
+            "ctl": 64,
+            "mov": 57,
+            "sta": 70,
+            "ovr": 60,
+            "rarity": "Rare"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_2013_BOS",
-      "name": "BOSS: 2013 Boston Red Sox",
+      "id": "story_2013_STARS_BOSS",
+      "name": "\ud83d\udc51 2013 STARS",
       "year": 2013,
-      "teamID": "BOS",
-      "win_pct": 0.599,
-      "ovr": 80,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 79,
       "pitchers": [
         {
-          "name": "Clay Buchholz",
+          "name": "Clayton Kershaw",
           "role": "SP",
-          "war": 4.3,
-          "hp": 90,
-          "maxHp": 90,
-          "stf": 60,
-          "ctl": 60,
-          "mov": 116,
-          "sta": 73,
-          "ovr": 78,
-          "rarity": "Epic"
-        },
-        {
-          "name": "Koji Uehara",
-          "role": "RP",
-          "war": 3.5,
-          "hp": 36,
-          "maxHp": 36,
-          "stf": 108,
-          "ctl": 108,
-          "mov": 113,
-          "sta": 23,
-          "ovr": 101,
+          "war": 8.1,
+          "hp": 92,
+          "maxHp": 92,
+          "stf": 70,
+          "ctl": 86,
+          "mov": 104,
+          "sta": 76,
+          "ovr": 86,
           "rarity": "Legendary"
         },
         {
-          "name": "Jon Lester",
+          "name": "Hisashi Iwakuma",
           "role": "SP",
-          "war": 2.7,
-          "hp": 88,
-          "maxHp": 88,
-          "stf": 54,
-          "ctl": 64,
-          "mov": 57,
-          "sta": 70,
-          "ovr": 60,
-          "rarity": "Rare"
+          "war": 7.0,
+          "hp": 89,
+          "maxHp": 89,
+          "stf": 55,
+          "ctl": 92,
+          "mov": 70,
+          "sta": 72,
+          "ovr": 72,
+          "rarity": "Epic"
+        },
+        {
+          "name": "Cliff Lee",
+          "role": "SP",
+          "war": 6.6,
+          "hp": 92,
+          "maxHp": 92,
+          "stf": 71,
+          "ctl": 103,
+          "mov": 67,
+          "sta": 76,
+          "ovr": 80,
+          "rarity": "Epic"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "2014": {
@@ -141516,9 +147053,7 @@ window.OpponentsDatabase = {
             "rarity": "Legendary"
           }
         ]
-      }
-    ],
-    "mid": [
+      },
       {
         "id": "story_2014_CIN",
         "name": "2014 Cincinnati Reds",
@@ -141567,7 +147102,9 @@ window.OpponentsDatabase = {
             "rarity": "Epic"
           }
         ]
-      },
+      }
+    ],
+    "mid": [
       {
         "id": "story_2014_MIA",
         "name": "2014 Miami Marlins",
@@ -141959,9 +147496,7 @@ window.OpponentsDatabase = {
             "rarity": "Legendary"
           }
         ]
-      }
-    ],
-    "high": [
+      },
       {
         "id": "story_2014_CLE",
         "name": "2014 Cleveland Indians",
@@ -142059,7 +147594,9 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
-      },
+      }
+    ],
+    "high": [
       {
         "id": "story_2014_OAK",
         "name": "2014 Oakland Athletics",
@@ -142500,57 +148037,106 @@ window.OpponentsDatabase = {
             "rarity": "Epic"
           }
         ]
+      },
+      {
+        "id": "story_2014_LAA",
+        "name": "2014 Los Angeles Angels of Anaheim",
+        "year": 2014,
+        "teamID": "LAA",
+        "win_pct": 0.605,
+        "ovr": 69,
+        "pitchers": [
+          {
+            "name": "Garrett Richards",
+            "role": "SP",
+            "war": 4.4,
+            "hp": 88,
+            "maxHp": 88,
+            "stf": 69,
+            "ctl": 67,
+            "mov": 76,
+            "sta": 71,
+            "ovr": 71,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Jered Weaver",
+            "role": "SP",
+            "war": 2.8,
+            "hp": 87,
+            "maxHp": 87,
+            "stf": 50,
+            "ctl": 66,
+            "mov": 49,
+            "sta": 69,
+            "ovr": 56,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Joe Smith",
+            "role": "RP",
+            "war": 2.5,
+            "hp": 36,
+            "maxHp": 36,
+            "stf": 62,
+            "ctl": 90,
+            "mov": 106,
+            "sta": 22,
+            "ovr": 80,
+            "rarity": "Epic"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_2014_LAA",
-      "name": "BOSS: 2014 Los Angeles Angels of Anaheim",
+      "id": "story_2014_STARS_BOSS",
+      "name": "\ud83d\udc51 2014 STARS",
       "year": 2014,
-      "teamID": "LAA",
-      "win_pct": 0.605,
-      "ovr": 69,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 86,
       "pitchers": [
         {
-          "name": "Garrett Richards",
+          "name": "Corey Kluber",
           "role": "SP",
-          "war": 4.4,
-          "hp": 88,
-          "maxHp": 88,
-          "stf": 69,
-          "ctl": 67,
-          "mov": 76,
-          "sta": 71,
-          "ovr": 71,
+          "war": 8.1,
+          "hp": 90,
+          "maxHp": 90,
+          "stf": 86,
+          "ctl": 86,
+          "mov": 85,
+          "sta": 74,
+          "ovr": 84,
           "rarity": "Epic"
         },
         {
-          "name": "Jered Weaver",
+          "name": "Clayton Kershaw",
           "role": "SP",
-          "war": 2.8,
-          "hp": 87,
-          "maxHp": 87,
-          "stf": 50,
-          "ctl": 66,
-          "mov": 49,
-          "sta": 69,
-          "ovr": 56,
-          "rarity": "Rare"
+          "war": 7.7,
+          "hp": 94,
+          "maxHp": 94,
+          "stf": 93,
+          "ctl": 100,
+          "mov": 106,
+          "sta": 78,
+          "ovr": 97,
+          "rarity": "Legendary"
         },
         {
-          "name": "Joe Smith",
-          "role": "RP",
-          "war": 2.5,
-          "hp": 36,
-          "maxHp": 36,
-          "stf": 62,
-          "ctl": 90,
-          "mov": 106,
-          "sta": 22,
-          "ovr": 80,
+          "name": "Johnny Cueto",
+          "role": "SP",
+          "war": 6.6,
+          "hp": 92,
+          "maxHp": 92,
+          "stf": 71,
+          "ctl": 75,
+          "mov": 84,
+          "sta": 76,
+          "ovr": 77,
           "rarity": "Epic"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "2015": {
@@ -142996,9 +148582,7 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      }
-    ],
-    "mid": [
+      },
       {
         "id": "story_2015_SEA",
         "name": "2015 Seattle Mariners",
@@ -143047,7 +148631,9 @@ window.OpponentsDatabase = {
             "rarity": "Epic"
           }
         ]
-      },
+      }
+    ],
+    "mid": [
       {
         "id": "story_2015_CHA",
         "name": "2015 Chicago White Sox",
@@ -143439,9 +149025,7 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      }
-    ],
-    "high": [
+      },
       {
         "id": "story_2015_SFN",
         "name": "2015 San Francisco Giants",
@@ -143539,7 +149123,9 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      },
+      }
+    ],
+    "high": [
       {
         "id": "story_2015_HOU",
         "name": "2015 Houston Astros",
@@ -143980,57 +149566,106 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
+      },
+      {
+        "id": "story_2015_SLN",
+        "name": "2015 St. Louis Cardinals",
+        "year": 2015,
+        "teamID": "SLN",
+        "win_pct": 0.617,
+        "ovr": 69,
+        "pitchers": [
+          {
+            "name": "John Lackey",
+            "role": "SP",
+            "war": 5.8,
+            "hp": 89,
+            "maxHp": 89,
+            "stf": 51,
+            "ctl": 80,
+            "mov": 73,
+            "sta": 72,
+            "ovr": 68,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Jaime Garcia",
+            "role": "SP",
+            "war": 4.0,
+            "hp": 88,
+            "maxHp": 88,
+            "stf": 46,
+            "ctl": 83,
+            "mov": 87,
+            "sta": 70,
+            "ovr": 72,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Carlos Martinez",
+            "role": "SP",
+            "war": 3.9,
+            "hp": 86,
+            "maxHp": 86,
+            "stf": 74,
+            "ctl": 56,
+            "mov": 69,
+            "sta": 68,
+            "ovr": 66,
+            "rarity": "Rare"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_2015_SLN",
-      "name": "BOSS: 2015 St. Louis Cardinals",
+      "id": "story_2015_STARS_BOSS",
+      "name": "\ud83d\udc51 2015 STARS",
       "year": 2015,
-      "teamID": "SLN",
-      "win_pct": 0.617,
-      "ovr": 69,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 91,
       "pitchers": [
         {
-          "name": "John Lackey",
+          "name": "Zack Greinke",
           "role": "SP",
-          "war": 5.8,
-          "hp": 89,
-          "maxHp": 89,
-          "stf": 51,
-          "ctl": 80,
-          "mov": 73,
-          "sta": 72,
-          "ovr": 68,
-          "rarity": "Rare"
+          "war": 8.8,
+          "hp": 91,
+          "maxHp": 91,
+          "stf": 61,
+          "ctl": 95,
+          "mov": 114,
+          "sta": 75,
+          "ovr": 88,
+          "rarity": "Legendary"
         },
         {
-          "name": "Jaime Garcia",
+          "name": "Jake Arrieta",
           "role": "SP",
-          "war": 4.0,
-          "hp": 88,
-          "maxHp": 88,
-          "stf": 46,
-          "ctl": 83,
-          "mov": 87,
-          "sta": 70,
-          "ovr": 72,
-          "rarity": "Epic"
+          "war": 8.3,
+          "hp": 90,
+          "maxHp": 90,
+          "stf": 75,
+          "ctl": 88,
+          "mov": 115,
+          "sta": 74,
+          "ovr": 91,
+          "rarity": "Legendary"
         },
         {
-          "name": "Carlos Martinez",
+          "name": "Clayton Kershaw",
           "role": "SP",
-          "war": 3.9,
-          "hp": 86,
-          "maxHp": 86,
-          "stf": 74,
-          "ctl": 56,
-          "mov": 69,
-          "sta": 68,
-          "ovr": 66,
-          "rarity": "Rare"
+          "war": 7.2,
+          "hp": 91,
+          "maxHp": 91,
+          "stf": 102,
+          "ctl": 95,
+          "mov": 92,
+          "sta": 75,
+          "ovr": 94,
+          "rarity": "Legendary"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "2016": {
@@ -144476,9 +150111,7 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      }
-    ],
-    "mid": [
+      },
       {
         "id": "story_2016_LAA",
         "name": "2016 Los Angeles Angels of Anaheim",
@@ -144527,7 +150160,9 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
-      },
+      }
+    ],
+    "mid": [
       {
         "id": "story_2016_COL",
         "name": "2016 Colorado Rockies",
@@ -144919,9 +150554,7 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      }
-    ],
-    "high": [
+      },
       {
         "id": "story_2016_SLN",
         "name": "2016 St. Louis Cardinals",
@@ -145019,7 +150652,9 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
-      },
+      }
+    ],
+    "high": [
       {
         "id": "story_2016_SFN",
         "name": "2016 San Francisco Giants",
@@ -145460,57 +151095,106 @@ window.OpponentsDatabase = {
             "rarity": "Epic"
           }
         ]
+      },
+      {
+        "id": "story_2016_CHN",
+        "name": "2016 Chicago Cubs",
+        "year": 2016,
+        "teamID": "CHN",
+        "win_pct": 0.64,
+        "ovr": 70,
+        "pitchers": [
+          {
+            "name": "Jon Lester",
+            "role": "SP",
+            "war": 5.6,
+            "hp": 89,
+            "maxHp": 89,
+            "stf": 54,
+            "ctl": 77,
+            "mov": 89,
+            "sta": 72,
+            "ovr": 73,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Kyle Hendricks",
+            "role": "SP",
+            "war": 5.3,
+            "hp": 89,
+            "maxHp": 89,
+            "stf": 46,
+            "ctl": 82,
+            "mov": 104,
+            "sta": 72,
+            "ovr": 77,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Jake Arrieta",
+            "role": "SP",
+            "war": 3.7,
+            "hp": 90,
+            "maxHp": 90,
+            "stf": 53,
+            "ctl": 50,
+            "mov": 71,
+            "sta": 73,
+            "ovr": 60,
+            "rarity": "Rare"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_2016_CHN",
-      "name": "BOSS: 2016 Chicago Cubs",
+      "id": "story_2016_STARS_BOSS",
+      "name": "\ud83d\udc51 2016 STARS",
       "year": 2016,
-      "teamID": "CHN",
-      "win_pct": 0.64,
-      "ovr": 70,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 83,
       "pitchers": [
         {
-          "name": "Jon Lester",
+          "name": "Justin Verlander",
           "role": "SP",
-          "war": 5.6,
-          "hp": 89,
-          "maxHp": 89,
-          "stf": 54,
-          "ctl": 77,
-          "mov": 89,
-          "sta": 72,
+          "war": 7.4,
+          "hp": 92,
+          "maxHp": 92,
+          "stf": 68,
+          "ctl": 78,
+          "mov": 71,
+          "sta": 76,
           "ovr": 73,
           "rarity": "Epic"
         },
         {
-          "name": "Kyle Hendricks",
+          "name": "Max Scherzer",
           "role": "SP",
-          "war": 5.3,
-          "hp": 89,
-          "maxHp": 89,
-          "stf": 46,
-          "ctl": 82,
-          "mov": 104,
-          "sta": 72,
-          "ovr": 77,
+          "war": 6.3,
+          "hp": 92,
+          "maxHp": 92,
+          "stf": 81,
+          "ctl": 79,
+          "mov": 73,
+          "sta": 76,
+          "ovr": 78,
           "rarity": "Epic"
         },
         {
-          "name": "Jake Arrieta",
+          "name": "Clayton Kershaw",
           "role": "SP",
-          "war": 3.7,
-          "hp": 90,
-          "maxHp": 90,
-          "stf": 53,
-          "ctl": 50,
-          "mov": 71,
-          "sta": 73,
-          "ovr": 60,
-          "rarity": "Rare"
+          "war": 5.8,
+          "hp": 94,
+          "maxHp": 94,
+          "stf": 72,
+          "ctl": 117,
+          "mov": 115,
+          "sta": 79,
+          "ovr": 99,
+          "rarity": "Legendary"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "2017": {
@@ -145956,9 +151640,7 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
-      }
-    ],
-    "mid": [
+      },
       {
         "id": "story_2017_OAK",
         "name": "2017 Oakland Athletics",
@@ -146007,7 +151689,9 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
-      },
+      }
+    ],
+    "mid": [
       {
         "id": "story_2017_PIT",
         "name": "2017 Pittsburgh Pirates",
@@ -146399,9 +152083,7 @@ window.OpponentsDatabase = {
             "rarity": "Epic"
           }
         ]
-      }
-    ],
-    "high": [
+      },
       {
         "id": "story_2017_SLN",
         "name": "2017 St. Louis Cardinals",
@@ -146499,7 +152181,9 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      },
+      }
+    ],
+    "high": [
       {
         "id": "story_2017_MIL",
         "name": "2017 Milwaukee Brewers",
@@ -146940,57 +152624,106 @@ window.OpponentsDatabase = {
             "rarity": "Legendary"
           }
         ]
+      },
+      {
+        "id": "story_2017_LAN",
+        "name": "2017 Los Angeles Dodgers",
+        "year": 2017,
+        "teamID": "LAN",
+        "win_pct": 0.642,
+        "ovr": 87,
+        "pitchers": [
+          {
+            "name": "Clayton Kershaw",
+            "role": "SP",
+            "war": 5.0,
+            "hp": 90,
+            "maxHp": 90,
+            "stf": 72,
+            "ctl": 96,
+            "mov": 91,
+            "sta": 74,
+            "ovr": 85,
+            "rarity": "Legendary"
+          },
+          {
+            "name": "Alex Wood",
+            "role": "SP",
+            "war": 3.5,
+            "hp": 88,
+            "maxHp": 88,
+            "stf": 56,
+            "ctl": 79,
+            "mov": 79,
+            "sta": 70,
+            "ovr": 71,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Kenley Jansen",
+            "role": "RP",
+            "war": 3.0,
+            "hp": 36,
+            "maxHp": 36,
+            "stf": 117,
+            "ctl": 111,
+            "mov": 114,
+            "sta": 23,
+            "ovr": 105,
+            "rarity": "Legendary"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_2017_LAN",
-      "name": "BOSS: 2017 Los Angeles Dodgers",
+      "id": "story_2017_STARS_BOSS",
+      "name": "\ud83d\udc51 2017 STARS",
       "year": 2017,
-      "teamID": "LAN",
-      "win_pct": 0.642,
-      "ovr": 87,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 85,
       "pitchers": [
         {
-          "name": "Clayton Kershaw",
+          "name": "Corey Kluber",
           "role": "SP",
-          "war": 5.0,
-          "hp": 90,
-          "maxHp": 90,
-          "stf": 72,
-          "ctl": 96,
-          "mov": 91,
-          "sta": 74,
-          "ovr": 85,
+          "war": 7.9,
+          "hp": 94,
+          "maxHp": 94,
+          "stf": 87,
+          "ctl": 94,
+          "mov": 105,
+          "sta": 79,
+          "ovr": 94,
           "rarity": "Legendary"
         },
         {
-          "name": "Alex Wood",
+          "name": "Max Scherzer",
           "role": "SP",
-          "war": 3.5,
-          "hp": 88,
-          "maxHp": 88,
-          "stf": 56,
-          "ctl": 79,
-          "mov": 79,
-          "sta": 70,
-          "ovr": 71,
+          "war": 7.2,
+          "hp": 90,
+          "maxHp": 90,
+          "stf": 91,
+          "ctl": 73,
+          "mov": 92,
+          "sta": 74,
+          "ovr": 84,
           "rarity": "Epic"
         },
         {
-          "name": "Kenley Jansen",
-          "role": "RP",
-          "war": 3.0,
-          "hp": 36,
-          "maxHp": 36,
-          "stf": 117,
-          "ctl": 111,
-          "mov": 114,
-          "sta": 23,
-          "ovr": 105,
-          "rarity": "Legendary"
+          "name": "Justin Verlander",
+          "role": "SP",
+          "war": 6.9,
+          "hp": 88,
+          "maxHp": 88,
+          "stf": 63,
+          "ctl": 57,
+          "mov": 110,
+          "sta": 71,
+          "ovr": 76,
+          "rarity": "Epic"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "2018": {
@@ -147436,9 +153169,7 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
-      }
-    ],
-    "mid": [
+      },
       {
         "id": "story_2018_TOR",
         "name": "2018 Toronto Blue Jays",
@@ -147487,7 +153218,9 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
-      },
+      }
+    ],
+    "mid": [
       {
         "id": "story_2018_NYN",
         "name": "2018 New York Mets",
@@ -147879,9 +153612,7 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      }
-    ],
-    "high": [
+      },
       {
         "id": "story_2018_SEA",
         "name": "2018 Seattle Mariners",
@@ -147979,7 +153710,9 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
-      },
+      }
+    ],
+    "high": [
       {
         "id": "story_2018_TBA",
         "name": "2018 Tampa Bay Rays",
@@ -148420,57 +154153,106 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
+      },
+      {
+        "id": "story_2018_BOS",
+        "name": "2018 Boston Red Sox",
+        "year": 2018,
+        "teamID": "BOS",
+        "win_pct": 0.667,
+        "ovr": 75,
+        "pitchers": [
+          {
+            "name": "Chris Sale",
+            "role": "SP",
+            "war": 6.5,
+            "hp": 86,
+            "maxHp": 86,
+            "stf": 107,
+            "ctl": 86,
+            "mov": 111,
+            "sta": 68,
+            "ovr": 98,
+            "rarity": "Legendary"
+          },
+          {
+            "name": "David Price",
+            "role": "SP",
+            "war": 3.7,
+            "hp": 86,
+            "maxHp": 86,
+            "stf": 57,
+            "ctl": 71,
+            "mov": 62,
+            "sta": 68,
+            "ovr": 64,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Eduardo Rodriguez",
+            "role": "SP",
+            "war": 2.6,
+            "hp": 84,
+            "maxHp": 84,
+            "stf": 69,
+            "ctl": 57,
+            "mov": 59,
+            "sta": 66,
+            "ovr": 62,
+            "rarity": "Rare"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_2018_BOS",
-      "name": "BOSS: 2018 Boston Red Sox",
+      "id": "story_2018_STARS_BOSS",
+      "name": "\ud83d\udc51 2018 STARS",
       "year": 2018,
-      "teamID": "BOS",
-      "win_pct": 0.667,
-      "ovr": 75,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 85,
       "pitchers": [
         {
-          "name": "Chris Sale",
+          "name": "Aaron Nola",
           "role": "SP",
-          "war": 6.5,
-          "hp": 86,
-          "maxHp": 86,
-          "stf": 107,
-          "ctl": 86,
-          "mov": 111,
-          "sta": 68,
-          "ovr": 98,
+          "war": 9.7,
+          "hp": 90,
+          "maxHp": 90,
+          "stf": 62,
+          "ctl": 73,
+          "mov": 92,
+          "sta": 73,
+          "ovr": 75,
+          "rarity": "Epic"
+        },
+        {
+          "name": "Jacob deGrom",
+          "role": "SP",
+          "war": 9.4,
+          "hp": 92,
+          "maxHp": 92,
+          "stf": 81,
+          "ctl": 87,
+          "mov": 116,
+          "sta": 76,
+          "ovr": 93,
           "rarity": "Legendary"
         },
         {
-          "name": "David Price",
+          "name": "Max Scherzer",
           "role": "SP",
-          "war": 3.7,
-          "hp": 86,
-          "maxHp": 86,
-          "stf": 57,
-          "ctl": 71,
-          "mov": 62,
-          "sta": 68,
-          "ovr": 64,
-          "rarity": "Rare"
-        },
-        {
-          "name": "Eduardo Rodriguez",
-          "role": "SP",
-          "war": 2.6,
-          "hp": 84,
-          "maxHp": 84,
-          "stf": 69,
-          "ctl": 57,
-          "mov": 59,
-          "sta": 66,
-          "ovr": 62,
-          "rarity": "Rare"
+          "war": 7.9,
+          "hp": 91,
+          "maxHp": 91,
+          "stf": 93,
+          "ctl": 83,
+          "mov": 87,
+          "sta": 75,
+          "ovr": 86,
+          "rarity": "Legendary"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "2019": {
@@ -148916,9 +154698,7 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      }
-    ],
-    "mid": [
+      },
       {
         "id": "story_2019_LAA",
         "name": "2019 Los Angeles Angels of Anaheim",
@@ -148967,7 +154747,9 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      },
+      }
+    ],
+    "mid": [
       {
         "id": "story_2019_CHA",
         "name": "2019 Chicago White Sox",
@@ -149359,9 +155141,7 @@ window.OpponentsDatabase = {
             "rarity": "Epic"
           }
         ]
-      }
-    ],
-    "high": [
+      },
       {
         "id": "story_2019_NYN",
         "name": "2019 New York Mets",
@@ -149459,7 +155239,9 @@ window.OpponentsDatabase = {
             "rarity": "Legendary"
           }
         ]
-      },
+      }
+    ],
+    "high": [
       {
         "id": "story_2019_SLN",
         "name": "2019 St. Louis Cardinals",
@@ -149900,16 +155682,92 @@ window.OpponentsDatabase = {
             "rarity": "Epic"
           }
         ]
+      },
+      {
+        "id": "story_2019_HOU",
+        "name": "2019 Houston Astros",
+        "year": 2019,
+        "teamID": "HOU",
+        "win_pct": 0.66,
+        "ovr": 87,
+        "pitchers": [
+          {
+            "name": "Justin Verlander",
+            "role": "SP",
+            "war": 7.4,
+            "hp": 90,
+            "maxHp": 90,
+            "stf": 92,
+            "ctl": 92,
+            "mov": 90,
+            "sta": 74,
+            "ovr": 90,
+            "rarity": "Legendary"
+          },
+          {
+            "name": "Gerrit Cole",
+            "role": "SP",
+            "war": 6.6,
+            "hp": 90,
+            "maxHp": 90,
+            "stf": 111,
+            "ctl": 84,
+            "mov": 94,
+            "sta": 73,
+            "ovr": 94,
+            "rarity": "Legendary"
+          },
+          {
+            "name": "Will Harris",
+            "role": "RP",
+            "war": 1.9,
+            "hp": 36,
+            "maxHp": 36,
+            "stf": 60,
+            "ctl": 82,
+            "mov": 112,
+            "sta": 22,
+            "ovr": 78,
+            "rarity": "Epic"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_2019_HOU",
-      "name": "BOSS: 2019 Houston Astros",
+      "id": "story_2019_STARS_BOSS",
+      "name": "\ud83d\udc51 2019 STARS",
       "year": 2019,
-      "teamID": "HOU",
-      "win_pct": 0.66,
-      "ovr": 87,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 75,
       "pitchers": [
+        {
+          "name": "Mike Minor",
+          "role": "SP",
+          "war": 8.0,
+          "hp": 90,
+          "maxHp": 90,
+          "stf": 53,
+          "ctl": 62,
+          "mov": 72,
+          "sta": 74,
+          "ovr": 63,
+          "rarity": "Rare"
+        },
+        {
+          "name": "Lance Lynn",
+          "role": "SP",
+          "war": 7.7,
+          "hp": 89,
+          "maxHp": 89,
+          "stf": 75,
+          "ctl": 71,
+          "mov": 73,
+          "sta": 72,
+          "ovr": 73,
+          "rarity": "Epic"
+        },
         {
           "name": "Justin Verlander",
           "role": "SP",
@@ -149922,35 +155780,8 @@ window.OpponentsDatabase = {
           "sta": 74,
           "ovr": 90,
           "rarity": "Legendary"
-        },
-        {
-          "name": "Gerrit Cole",
-          "role": "SP",
-          "war": 6.6,
-          "hp": 90,
-          "maxHp": 90,
-          "stf": 111,
-          "ctl": 84,
-          "mov": 94,
-          "sta": 73,
-          "ovr": 94,
-          "rarity": "Legendary"
-        },
-        {
-          "name": "Will Harris",
-          "role": "RP",
-          "war": 1.9,
-          "hp": 36,
-          "maxHp": 36,
-          "stf": 60,
-          "ctl": 82,
-          "mov": 112,
-          "sta": 22,
-          "ovr": 78,
-          "rarity": "Epic"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "2020": {
@@ -150396,9 +156227,7 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
-      }
-    ],
-    "mid": [
+      },
       {
         "id": "story_2020_KCA",
         "name": "2020 Kansas City Royals",
@@ -150447,7 +156276,9 @@ window.OpponentsDatabase = {
             "rarity": "Epic"
           }
         ]
-      },
+      }
+    ],
+    "mid": [
       {
         "id": "story_2020_NYN",
         "name": "2020 New York Mets",
@@ -150839,9 +156670,7 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      }
-    ],
-    "high": [
+      },
       {
         "id": "story_2020_CIN",
         "name": "2020 Cincinnati Reds",
@@ -150939,7 +156768,9 @@ window.OpponentsDatabase = {
             "rarity": "Epic"
           }
         ]
-      },
+      }
+    ],
+    "high": [
       {
         "id": "story_2020_NYA",
         "name": "2020 New York Yankees",
@@ -151380,57 +157211,106 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
+      },
+      {
+        "id": "story_2020_LAN",
+        "name": "2020 Los Angeles Dodgers",
+        "year": 2020,
+        "teamID": "LAN",
+        "win_pct": 0.717,
+        "ovr": 78,
+        "pitchers": [
+          {
+            "name": "Clayton Kershaw",
+            "role": "SP",
+            "war": 1.8,
+            "hp": 86,
+            "maxHp": 86,
+            "stf": 63,
+            "ctl": 103,
+            "mov": 103,
+            "sta": 68,
+            "ovr": 87,
+            "rarity": "Legendary"
+          },
+          {
+            "name": "Dustin May",
+            "role": "SP",
+            "war": 1.5,
+            "hp": 84,
+            "maxHp": 84,
+            "stf": 37,
+            "ctl": 71,
+            "mov": 85,
+            "sta": 66,
+            "ovr": 64,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Tony Gonsolin",
+            "role": "SP",
+            "war": 1.4,
+            "hp": 86,
+            "maxHp": 86,
+            "stf": 55,
+            "ctl": 100,
+            "mov": 102,
+            "sta": 68,
+            "ovr": 84,
+            "rarity": "Epic"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_2020_LAN",
-      "name": "BOSS: 2020 Los Angeles Dodgers",
+      "id": "story_2020_STARS_BOSS",
+      "name": "\ud83d\udc51 2020 STARS",
       "year": 2020,
-      "teamID": "LAN",
-      "win_pct": 0.717,
-      "ovr": 78,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 89,
       "pitchers": [
         {
-          "name": "Clayton Kershaw",
+          "name": "Shane Bieber",
           "role": "SP",
-          "war": 1.8,
-          "hp": 86,
-          "maxHp": 86,
-          "stf": 63,
-          "ctl": 103,
-          "mov": 103,
-          "sta": 68,
-          "ovr": 87,
+          "war": 3.2,
+          "hp": 90,
+          "maxHp": 90,
+          "stf": 115,
+          "ctl": 74,
+          "mov": 113,
+          "sta": 73,
+          "ovr": 98,
           "rarity": "Legendary"
         },
         {
-          "name": "Dustin May",
+          "name": "Trevor Bauer",
           "role": "SP",
-          "war": 1.5,
-          "hp": 84,
-          "maxHp": 84,
-          "stf": 37,
-          "ctl": 71,
-          "mov": 85,
-          "sta": 66,
-          "ovr": 64,
-          "rarity": "Rare"
+          "war": 3.0,
+          "hp": 91,
+          "maxHp": 91,
+          "stf": 94,
+          "ctl": 82,
+          "mov": 111,
+          "sta": 75,
+          "ovr": 94,
+          "rarity": "Legendary"
         },
         {
-          "name": "Tony Gonsolin",
+          "name": "Hyun Jin Ryu",
           "role": "SP",
-          "war": 1.4,
-          "hp": 86,
-          "maxHp": 86,
-          "stf": 55,
-          "ctl": 100,
-          "mov": 102,
-          "sta": 68,
-          "ovr": 84,
+          "war": 2.9,
+          "hp": 84,
+          "maxHp": 84,
+          "stf": 64,
+          "ctl": 78,
+          "mov": 86,
+          "sta": 65,
+          "ovr": 75,
           "rarity": "Epic"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "2021": {
@@ -151876,9 +157756,7 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
-      }
-    ],
-    "mid": [
+      },
       {
         "id": "story_2021_COL",
         "name": "2021 Colorado Rockies",
@@ -151927,7 +157805,9 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      },
+      }
+    ],
+    "mid": [
       {
         "id": "story_2021_DET",
         "name": "2021 Detroit Tigers",
@@ -152319,9 +158199,7 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      }
-    ],
-    "high": [
+      },
       {
         "id": "story_2021_ATL",
         "name": "2021 Atlanta Braves",
@@ -152419,7 +158297,9 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
-      },
+      }
+    ],
+    "high": [
       {
         "id": "story_2021_SLN",
         "name": "2021 St. Louis Cardinals",
@@ -152860,57 +158740,106 @@ window.OpponentsDatabase = {
             "rarity": "Epic"
           }
         ]
+      },
+      {
+        "id": "story_2021_SFN",
+        "name": "2021 San Francisco Giants",
+        "year": 2021,
+        "teamID": "SFN",
+        "win_pct": 0.66,
+        "ovr": 70,
+        "pitchers": [
+          {
+            "name": "Kevin Gausman",
+            "role": "SP",
+            "war": 5.2,
+            "hp": 86,
+            "maxHp": 86,
+            "stf": 75,
+            "ctl": 76,
+            "mov": 76,
+            "sta": 68,
+            "ovr": 75,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Anthony DeSclafani",
+            "role": "SP",
+            "war": 4.2,
+            "hp": 83,
+            "maxHp": 83,
+            "stf": 47,
+            "ctl": 78,
+            "mov": 67,
+            "sta": 64,
+            "ovr": 64,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Logan Webb",
+            "role": "SP",
+            "war": 3.8,
+            "hp": 85,
+            "maxHp": 85,
+            "stf": 63,
+            "ctl": 80,
+            "mov": 74,
+            "sta": 67,
+            "ovr": 72,
+            "rarity": "Epic"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_2021_SFN",
-      "name": "BOSS: 2021 San Francisco Giants",
+      "id": "story_2021_STARS_BOSS",
+      "name": "\ud83d\udc51 2021 STARS",
       "year": 2021,
-      "teamID": "SFN",
-      "win_pct": 0.66,
-      "ovr": 70,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 77,
       "pitchers": [
         {
-          "name": "Kevin Gausman",
+          "name": "Zack Wheeler",
           "role": "SP",
-          "war": 5.2,
-          "hp": 86,
-          "maxHp": 86,
-          "stf": 75,
-          "ctl": 76,
-          "mov": 76,
-          "sta": 68,
+          "war": 7.5,
+          "hp": 91,
+          "maxHp": 91,
+          "stf": 73,
+          "ctl": 86,
+          "mov": 80,
+          "sta": 75,
+          "ovr": 79,
+          "rarity": "Epic"
+        },
+        {
+          "name": "Walker Buehler",
+          "role": "SP",
+          "war": 7.1,
+          "hp": 89,
+          "maxHp": 89,
+          "stf": 59,
+          "ctl": 78,
+          "mov": 89,
+          "sta": 72,
           "ovr": 75,
           "rarity": "Epic"
         },
         {
-          "name": "Anthony DeSclafani",
+          "name": "Robbie Ray",
           "role": "SP",
-          "war": 4.2,
-          "hp": 83,
-          "maxHp": 83,
-          "stf": 47,
-          "ctl": 78,
-          "mov": 67,
-          "sta": 64,
-          "ovr": 64,
-          "rarity": "Rare"
-        },
-        {
-          "name": "Logan Webb",
-          "role": "SP",
-          "war": 3.8,
-          "hp": 85,
-          "maxHp": 85,
-          "stf": 63,
-          "ctl": 80,
-          "mov": 74,
-          "sta": 67,
-          "ovr": 72,
+          "war": 6.9,
+          "hp": 88,
+          "maxHp": 88,
+          "stf": 85,
+          "ctl": 74,
+          "mov": 78,
+          "sta": 70,
+          "ovr": 78,
           "rarity": "Epic"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "2022": {
@@ -153356,9 +159285,7 @@ window.OpponentsDatabase = {
             "rarity": "Epic"
           }
         ]
-      }
-    ],
-    "mid": [
+      },
       {
         "id": "story_2022_LAA",
         "name": "2022 Los Angeles Angels of Anaheim",
@@ -153407,7 +159334,9 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
-      },
+      }
+    ],
+    "mid": [
       {
         "id": "story_2022_CHN",
         "name": "2022 Chicago Cubs",
@@ -153799,9 +159728,7 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      }
-    ],
-    "high": [
+      },
       {
         "id": "story_2022_MIL",
         "name": "2022 Milwaukee Brewers",
@@ -153899,7 +159826,9 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
-      },
+      }
+    ],
+    "high": [
       {
         "id": "story_2022_SDN",
         "name": "2022 San Diego Padres",
@@ -154340,57 +160269,106 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
+      },
+      {
+        "id": "story_2022_LAN",
+        "name": "2022 Los Angeles Dodgers",
+        "year": 2022,
+        "teamID": "LAN",
+        "win_pct": 0.685,
+        "ovr": 73,
+        "pitchers": [
+          {
+            "name": "Julio Urias",
+            "role": "SP",
+            "war": 4.6,
+            "hp": 84,
+            "maxHp": 84,
+            "stf": 51,
+            "ctl": 82,
+            "mov": 95,
+            "sta": 66,
+            "ovr": 75,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Tony Gonsolin",
+            "role": "SP",
+            "war": 4.3,
+            "hp": 83,
+            "maxHp": 83,
+            "stf": 48,
+            "ctl": 74,
+            "mov": 99,
+            "sta": 64,
+            "ovr": 73,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Tyler Anderson",
+            "role": "SP",
+            "war": 3.9,
+            "hp": 90,
+            "maxHp": 90,
+            "stf": 35,
+            "ctl": 91,
+            "mov": 83,
+            "sta": 73,
+            "ovr": 70,
+            "rarity": "Epic"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_2022_LAN",
-      "name": "BOSS: 2022 Los Angeles Dodgers",
+      "id": "story_2022_STARS_BOSS",
+      "name": "\ud83d\udc51 2022 STARS",
       "year": 2022,
-      "teamID": "LAN",
-      "win_pct": 0.685,
-      "ovr": 73,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 77,
       "pitchers": [
         {
-          "name": "Julio Urias",
+          "name": "Sandy Alcantara",
           "role": "SP",
-          "war": 4.6,
-          "hp": 84,
-          "maxHp": 84,
-          "stf": 51,
-          "ctl": 82,
-          "mov": 95,
-          "sta": 66,
-          "ovr": 75,
+          "war": 8.0,
+          "hp": 95,
+          "maxHp": 95,
+          "stf": 47,
+          "ctl": 85,
+          "mov": 96,
+          "sta": 80,
+          "ovr": 76,
           "rarity": "Epic"
         },
         {
-          "name": "Tony Gonsolin",
+          "name": "Dylan Cease",
           "role": "SP",
-          "war": 4.3,
-          "hp": 83,
-          "maxHp": 83,
-          "stf": 48,
-          "ctl": 74,
-          "mov": 99,
-          "sta": 64,
+          "war": 6.4,
+          "hp": 85,
+          "maxHp": 85,
+          "stf": 80,
+          "ctl": 46,
+          "mov": 95,
+          "sta": 67,
           "ovr": 73,
           "rarity": "Epic"
         },
         {
-          "name": "Tyler Anderson",
+          "name": "Shohei Ohtani",
           "role": "SP",
-          "war": 3.9,
-          "hp": 90,
-          "maxHp": 90,
-          "stf": 35,
-          "ctl": 91,
-          "mov": 83,
-          "sta": 73,
-          "ovr": 70,
+          "war": 6.2,
+          "hp": 87,
+          "maxHp": 87,
+          "stf": 89,
+          "ctl": 75,
+          "mov": 91,
+          "sta": 69,
+          "ovr": 83,
           "rarity": "Epic"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "2023": {
@@ -154836,9 +160814,7 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      }
-    ],
-    "mid": [
+      },
       {
         "id": "story_2023_PIT",
         "name": "2023 Pittsburgh Pirates",
@@ -154887,7 +160863,9 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
-      },
+      }
+    ],
+    "mid": [
       {
         "id": "story_2023_BOS",
         "name": "2023 Boston Red Sox",
@@ -155279,9 +161257,7 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      }
-    ],
-    "high": [
+      },
       {
         "id": "story_2023_MIA",
         "name": "2023 Miami Marlins",
@@ -155379,7 +161355,9 @@ window.OpponentsDatabase = {
             "rarity": "Epic"
           }
         ]
-      },
+      }
+    ],
+    "high": [
       {
         "id": "story_2023_SEA",
         "name": "2023 Seattle Mariners",
@@ -155820,57 +161798,106 @@ window.OpponentsDatabase = {
             "rarity": "Epic"
           }
         ]
+      },
+      {
+        "id": "story_2023_ATL",
+        "name": "2023 Atlanta Braves",
+        "year": 2023,
+        "teamID": "ATL",
+        "win_pct": 0.642,
+        "ovr": 61,
+        "pitchers": [
+          {
+            "name": "Charlie Morton",
+            "role": "SP",
+            "war": 3.0,
+            "hp": 83,
+            "maxHp": 83,
+            "stf": 69,
+            "ctl": 39,
+            "mov": 63,
+            "sta": 64,
+            "ovr": 58,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Spencer Strider",
+            "role": "SP",
+            "war": 3.0,
+            "hp": 86,
+            "maxHp": 86,
+            "stf": 108,
+            "ctl": 65,
+            "mov": 58,
+            "sta": 68,
+            "ovr": 76,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Bryce Elder",
+            "role": "SP",
+            "war": 2.7,
+            "hp": 84,
+            "maxHp": 84,
+            "stf": 32,
+            "ctl": 54,
+            "mov": 59,
+            "sta": 66,
+            "ovr": 50,
+            "rarity": "Uncommon"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_2023_ATL",
-      "name": "BOSS: 2023 Atlanta Braves",
+      "id": "story_2023_STARS_BOSS",
+      "name": "\ud83d\udc51 2023 STARS",
       "year": 2023,
-      "teamID": "ATL",
-      "win_pct": 0.642,
-      "ovr": 61,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 74,
       "pitchers": [
         {
-          "name": "Charlie Morton",
+          "name": "Gerrit Cole",
           "role": "SP",
-          "war": 3.0,
-          "hp": 83,
-          "maxHp": 83,
-          "stf": 69,
-          "ctl": 39,
-          "mov": 63,
-          "sta": 64,
-          "ovr": 58,
-          "rarity": "Rare"
-        },
-        {
-          "name": "Spencer Strider",
-          "role": "SP",
-          "war": 3.0,
-          "hp": 86,
-          "maxHp": 86,
-          "stf": 108,
-          "ctl": 65,
-          "mov": 58,
-          "sta": 68,
-          "ovr": 76,
+          "war": 7.4,
+          "hp": 89,
+          "maxHp": 89,
+          "stf": 63,
+          "ctl": 83,
+          "mov": 86,
+          "sta": 72,
+          "ovr": 77,
           "rarity": "Epic"
         },
         {
-          "name": "Bryce Elder",
+          "name": "Blake Snell",
           "role": "SP",
-          "war": 2.7,
+          "war": 6.5,
           "hp": 84,
           "maxHp": 84,
-          "stf": 32,
-          "ctl": 54,
-          "mov": 59,
+          "stf": 87,
+          "ctl": 35,
+          "mov": 99,
           "sta": 66,
-          "ovr": 50,
-          "rarity": "Uncommon"
+          "ovr": 73,
+          "rarity": "Epic"
+        },
+        {
+          "name": "Logan Webb",
+          "role": "SP",
+          "war": 5.6,
+          "hp": 90,
+          "maxHp": 90,
+          "stf": 47,
+          "ctl": 102,
+          "mov": 67,
+          "sta": 74,
+          "ovr": 72,
+          "rarity": "Epic"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "2024": {
@@ -156316,9 +162343,7 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
-      }
-    ],
-    "mid": [
+      },
       {
         "id": "story_2024_TEX",
         "name": "2024 Texas Rangers",
@@ -156367,7 +162392,9 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      },
+      }
+    ],
+    "mid": [
       {
         "id": "story_2024_TBA",
         "name": "2024 Tampa Bay Rays",
@@ -156759,9 +162786,7 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      }
-    ],
-    "high": [
+      },
       {
         "id": "story_2024_DET",
         "name": "2024 Detroit Tigers",
@@ -156859,7 +162884,9 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      },
+      }
+    ],
+    "high": [
       {
         "id": "story_2024_NYN",
         "name": "2024 New York Mets",
@@ -157300,57 +163327,106 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
+      },
+      {
+        "id": "story_2024_LAN",
+        "name": "2024 Los Angeles Dodgers",
+        "year": 2024,
+        "teamID": "LAN",
+        "win_pct": 0.605,
+        "ovr": 68,
+        "pitchers": [
+          {
+            "name": "Tyler Glasnow",
+            "role": "SP",
+            "war": 1.9,
+            "hp": 88,
+            "maxHp": 88,
+            "stf": 82,
+            "ctl": 76,
+            "mov": 59,
+            "sta": 70,
+            "ovr": 72,
+            "rarity": "Epic"
+          },
+          {
+            "name": "Gavin Stone",
+            "role": "SP",
+            "war": 1.8,
+            "hp": 84,
+            "maxHp": 84,
+            "stf": 40,
+            "ctl": 75,
+            "mov": 57,
+            "sta": 66,
+            "ovr": 58,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Yoshinobu Yamamoto",
+            "role": "SP",
+            "war": 1.8,
+            "hp": 80,
+            "maxHp": 80,
+            "stf": 74,
+            "ctl": 80,
+            "mov": 71,
+            "sta": 60,
+            "ovr": 74,
+            "rarity": "Epic"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_2024_LAN",
-      "name": "BOSS: 2024 Los Angeles Dodgers",
+      "id": "story_2024_STARS_BOSS",
+      "name": "\ud83d\udc51 2024 STARS",
       "year": 2024,
-      "teamID": "LAN",
-      "win_pct": 0.605,
-      "ovr": 68,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 80,
       "pitchers": [
         {
-          "name": "Tyler Glasnow",
+          "name": "Tarik Skubal",
           "role": "SP",
-          "war": 1.9,
+          "war": 6.4,
           "hp": 88,
           "maxHp": 88,
-          "stf": 82,
-          "ctl": 76,
-          "mov": 59,
+          "stf": 76,
+          "ctl": 93,
+          "mov": 92,
+          "sta": 71,
+          "ovr": 85,
+          "rarity": "Legendary"
+        },
+        {
+          "name": "Chris Sale",
+          "role": "SP",
+          "war": 6.2,
+          "hp": 88,
+          "maxHp": 88,
+          "stf": 84,
+          "ctl": 85,
+          "mov": 94,
           "sta": 70,
-          "ovr": 72,
-          "rarity": "Epic"
+          "ovr": 86,
+          "rarity": "Legendary"
         },
         {
-          "name": "Gavin Stone",
+          "name": "Hunter Greene",
           "role": "SP",
-          "war": 1.8,
-          "hp": 84,
-          "maxHp": 84,
-          "stf": 40,
-          "ctl": 75,
-          "mov": 57,
-          "sta": 66,
-          "ovr": 58,
+          "war": 6.2,
+          "hp": 85,
+          "maxHp": 85,
+          "stf": 69,
+          "ctl": 50,
+          "mov": 85,
+          "sta": 67,
+          "ovr": 68,
           "rarity": "Rare"
-        },
-        {
-          "name": "Yoshinobu Yamamoto",
-          "role": "SP",
-          "war": 1.8,
-          "hp": 80,
-          "maxHp": 80,
-          "stf": 74,
-          "ctl": 80,
-          "mov": 71,
-          "sta": 60,
-          "ovr": 74,
-          "rarity": "Epic"
         }
-      ],
-      "isBoss": true
+      ]
     }
   },
   "2025": {
@@ -157796,9 +163872,7 @@ window.OpponentsDatabase = {
             "rarity": "Uncommon"
           }
         ]
-      }
-    ],
-    "mid": [
+      },
       {
         "id": "story_2025_TBA",
         "name": "2025 Tampa Bay Rays",
@@ -157847,7 +163921,9 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      },
+      }
+    ],
+    "mid": [
       {
         "id": "story_2025_SLN",
         "name": "2025 St. Louis Cardinals",
@@ -158239,9 +164315,7 @@ window.OpponentsDatabase = {
             "rarity": "Epic"
           }
         ]
-      }
-    ],
-    "high": [
+      },
       {
         "id": "story_2025_HOU",
         "name": "2025 Houston Astros",
@@ -158339,7 +164413,9 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
-      },
+      }
+    ],
+    "high": [
       {
         "id": "story_2025_CLE",
         "name": "2025 Cleveland Guardians",
@@ -158780,57 +164856,106 @@ window.OpponentsDatabase = {
             "rarity": "Rare"
           }
         ]
+      },
+      {
+        "id": "story_2025_MIL",
+        "name": "2025 Milwaukee Brewers",
+        "year": 2025,
+        "teamID": "MIL",
+        "win_pct": 0.599,
+        "ovr": 67,
+        "pitchers": [
+          {
+            "name": "Freddy Peralta",
+            "role": "SP",
+            "war": 5.5,
+            "hp": 82,
+            "maxHp": 82,
+            "stf": 72,
+            "ctl": 51,
+            "mov": 79,
+            "sta": 63,
+            "ovr": 67,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Quinn Priester",
+            "role": "SP",
+            "war": 2.9,
+            "hp": 90,
+            "maxHp": 90,
+            "stf": 41,
+            "ctl": 64,
+            "mov": 64,
+            "sta": 74,
+            "ovr": 58,
+            "rarity": "Rare"
+          },
+          {
+            "name": "Abner Uribe",
+            "role": "RP",
+            "war": 2.6,
+            "hp": 36,
+            "maxHp": 36,
+            "stf": 76,
+            "ctl": 55,
+            "mov": 115,
+            "sta": 23,
+            "ovr": 76,
+            "rarity": "Epic"
+          }
+        ]
       }
     ],
     "boss": {
-      "id": "story_2025_MIL",
-      "name": "BOSS: 2025 Milwaukee Brewers",
+      "id": "story_2025_STARS_BOSS",
+      "name": "\ud83d\udc51 2025 STARS",
       "year": 2025,
-      "teamID": "MIL",
-      "win_pct": 0.599,
-      "ovr": 67,
+      "teamID": "STARS",
+      "win_pct": 1.0,
+      "isBoss": true,
+      "ovr": 86,
       "pitchers": [
         {
-          "name": "Freddy Peralta",
+          "name": "Cristopher Sanchez",
           "role": "SP",
-          "war": 5.5,
-          "hp": 82,
-          "maxHp": 82,
-          "stf": 72,
-          "ctl": 51,
-          "mov": 79,
-          "sta": 63,
-          "ovr": 67,
-          "rarity": "Rare"
-        },
-        {
-          "name": "Quinn Priester",
-          "role": "SP",
-          "war": 2.9,
-          "hp": 90,
-          "maxHp": 90,
-          "stf": 41,
-          "ctl": 64,
-          "mov": 64,
-          "sta": 74,
-          "ovr": 58,
-          "rarity": "Rare"
-        },
-        {
-          "name": "Abner Uribe",
-          "role": "RP",
-          "war": 2.6,
-          "hp": 36,
-          "maxHp": 36,
-          "stf": 76,
-          "ctl": 55,
-          "mov": 115,
-          "sta": 23,
-          "ovr": 76,
+          "war": 8.0,
+          "hp": 89,
+          "maxHp": 89,
+          "stf": 62,
+          "ctl": 85,
+          "mov": 95,
+          "sta": 72,
+          "ovr": 80,
           "rarity": "Epic"
+        },
+        {
+          "name": "Paul Skenes",
+          "role": "SP",
+          "war": 7.6,
+          "hp": 86,
+          "maxHp": 86,
+          "stf": 72,
+          "ctl": 84,
+          "mov": 115,
+          "sta": 68,
+          "ovr": 88,
+          "rarity": "Legendary"
+        },
+        {
+          "name": "Tarik Skubal",
+          "role": "SP",
+          "war": 6.5,
+          "hp": 89,
+          "maxHp": 89,
+          "stf": 80,
+          "ctl": 96,
+          "mov": 98,
+          "sta": 72,
+          "ovr": 89,
+          "rarity": "Legendary"
         }
-      ],
-      "isBoss": true
+      ]
     }
   }
 };

@@ -1053,8 +1053,43 @@
     getEnemyTeam() {
       if (this.currentEnemy) return this.currentEnemy;
 
-      // Mode 1: Story Mode - pick from customSeasonPool or OpponentsDatabase
+      // Mode 1: Story Mode - pick from customSeasonPool or OpponentsDatabase by Stage Tier
       if (this.selectedMode === 'story') {
+        const stage = this.currentStageIndex; // 0 to 15 (16 stages total)
+        const seasonData = this.seasonPoolData || (window.OpponentsDatabase && this.selectedSeasonYear ? window.OpponentsDatabase[this.selectedSeasonYear] : null);
+
+        if (seasonData) {
+          let tierPool = [];
+          if (stage === 15) {
+            // Stage 16 (index 15): Final Boss -> [YEAR] STARS
+            tierPool = seasonData.boss ? [seasonData.boss] : [];
+          } else if (stage <= 3) {
+            // Stages 1-4 (indices 0-3): Low tier
+            tierPool = seasonData.low || [];
+          } else if (stage <= 7) {
+            // Stages 5-8 (indices 4-7): Mid tier
+            tierPool = seasonData.mid || [];
+          } else if (stage <= 11) {
+            // Stages 9-12 (indices 8-11): High tier
+            tierPool = seasonData.high || [];
+          } else {
+            // Stages 13-15 (indices 12-14): High / contender teams
+            tierPool = (seasonData.high && seasonData.high.length > 0) ? seasonData.high : seasonData.mid;
+          }
+
+          if (!this.encounteredTeams) this.encounteredTeams = new Set();
+          let candidates = tierPool.filter(e => e && !this.encounteredTeams.has(e.id || e.name));
+          if (candidates.length === 0) candidates = tierPool;
+          if (candidates.length === 0) candidates = (this.customSeasonPool || []);
+
+          const chosen = candidates[Math.floor(Math.random() * candidates.length)];
+          if (chosen) {
+            this.encounteredTeams.add(chosen.id || chosen.name);
+            this.currentEnemy = chosen;
+            return this.currentEnemy;
+          }
+        }
+
         let pool = (this.customSeasonPool && this.customSeasonPool.length > 0) ? this.customSeasonPool : (window.OpponentsPool || []);
         if (!this.encounteredTeams) this.encounteredTeams = new Set();
         let candidates = pool.filter(e => !this.encounteredTeams.has(e.id || e.name));
