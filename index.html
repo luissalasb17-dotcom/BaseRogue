@@ -11,6 +11,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.tailwindcss.com"></script>
   
   <link rel="stylesheet" href="style.css?v=133">
 </head>
@@ -239,8 +240,8 @@
             </p>
             
             <div class="pre-fight-columns">
-              <!-- Left Column: Player's Batters -->
-              <div class="glass-panel flex-1" style="background: rgba(0,0,0,0.35); margin-bottom: 0; padding: 16px;">
+              <!-- Left Column: Player's Batters (Hidden on Mobile) -->
+              <div class="glass-panel flex-1 hidden md:block" style="background: rgba(0,0,0,0.35); margin-bottom: 0; padding: 16px;">
                 <h3 style="color: var(--primary-color); border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px; margin-bottom: 12px; font-size: 15px;" data-i18n-html="pre_fight.batters_title"><i class="fa-solid fa-users"></i> Tus Bateadores (HP)</h3>
                 <div id="pre-fight-player-lineup" style="display: flex; flex-direction: column; gap: 8px;">
                   <!-- Rendered via JS -->
@@ -540,7 +541,7 @@
         </div> <!-- End of workspace-center-panel -->
 
         <!-- Right Sidebar: Traits & Synergies -->
-        <div class="workspace-sidebar right-sidebar">
+        <div class="workspace-sidebar right-sidebar" id="synergies-sidebar-panel">
           <div class="sidebar-header">
             <i class="fa-solid fa-bolt"></i> SINERGIAS
           </div>
@@ -554,6 +555,24 @@
     </div> <!-- End of game-workspace -->
 
   </main>
+
+  <!-- Fixed Bottom Navigation Bar (Mobile Only) -->
+  <nav id="mobile-nav-bar" class="md:hidden fixed bottom-0 left-0 right-0 z-[500] bg-[#090d16]/95 border-t border-[#10b981]/40 backdrop-blur-md px-3 py-1.5 hidden">
+    <div class="grid grid-cols-3 gap-2 text-center max-w-md mx-auto">
+      <button id="btn-mobile-tab-action" class="mobile-nav-btn flex flex-col items-center justify-center py-1.5 px-1 rounded-lg text-[10px] font-mono transition-all duration-150 bg-[#00ff66]/15 text-[#00ff66] border border-[#00ff66]/40">
+        <span class="text-base mb-0.5">⚾</span>
+        <span>Juego/Draft</span>
+      </button>
+      <button id="btn-mobile-tab-roster" class="mobile-nav-btn flex flex-col items-center justify-center py-1.5 px-1 rounded-lg text-[10px] font-mono transition-all duration-150 text-gray-400 border border-transparent hover:text-white">
+        <span class="text-base mb-0.5">📋</span>
+        <span>Roster</span>
+      </button>
+      <button id="btn-mobile-tab-order" class="mobile-nav-btn flex flex-col items-center justify-center py-1.5 px-1 rounded-lg text-[10px] font-mono transition-all duration-150 text-gray-400 border border-transparent hover:text-white">
+        <span class="text-base mb-0.5">🔢</span>
+        <span>Orden</span>
+      </button>
+    </div>
+  </nav>
 
   <!-- MODAL: Draft Player Swap Resolver -->
   <div class="modal-overlay hidden" id="modal-swap-draft">

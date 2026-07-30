@@ -1,4 +1,83 @@
 
+let currentMobileTab = 'action';
+
+function setMobileTab(tab) {
+  currentMobileTab = tab;
+
+  // Update navbar buttons state
+  const btnAction = document.getElementById('btn-mobile-tab-action');
+  const btnRoster = document.getElementById('btn-mobile-tab-roster');
+  const btnOrder  = document.getElementById('btn-mobile-tab-order');
+
+  const navItems = [
+    { id: 'action', btn: btnAction },
+    { id: 'roster', btn: btnRoster },
+    { id: 'order',  btn: btnOrder }
+  ];
+
+  navItems.forEach(item => {
+    if (!item.btn) return;
+    if (item.id === tab) {
+      item.btn.classList.add('bg-[#00ff66]/15', 'text-[#00ff66]', 'border-[#00ff66]/40');
+      item.btn.classList.remove('text-gray-400', 'border-transparent');
+    } else {
+      item.btn.classList.remove('bg-[#00ff66]/15', 'text-[#00ff66]', 'border-[#00ff66]/40');
+      item.btn.classList.add('text-gray-400', 'border-transparent');
+    }
+  });
+
+  // Apply visibility classes to game workspace sidebars & center panel
+  const leftSidebar = document.getElementById('roster-sidebar-panel');
+  const centerPanel = document.querySelector('.workspace-center-panel');
+  const rightSidebar = document.getElementById('synergies-sidebar-panel');
+
+  if (leftSidebar && centerPanel && rightSidebar) {
+    leftSidebar.classList.remove('mobile-active');
+    centerPanel.classList.remove('mobile-active');
+    rightSidebar.classList.remove('mobile-active');
+
+    if (tab === 'action') {
+      centerPanel.classList.add('mobile-active');
+    } else if (tab === 'roster') {
+      rightSidebar.classList.add('mobile-active');
+    } else if (tab === 'order') {
+      leftSidebar.classList.add('mobile-active');
+    }
+  }
+
+  // Apply visibility to draft screen 3 columns if currently rendering draft
+  const draftRoster = document.getElementById('draft-col-roster');
+  const draftCards = document.getElementById('draft-col-cards');
+  const draftOrder = document.getElementById('draft-col-order');
+  if (draftRoster && draftCards && draftOrder) {
+    draftRoster.classList.remove('mobile-active');
+    draftCards.classList.remove('mobile-active');
+    draftOrder.classList.remove('mobile-active');
+
+    if (tab === 'action') draftCards.classList.add('mobile-active');
+    else if (tab === 'roster') draftRoster.classList.add('mobile-active');
+    else if (tab === 'order') draftOrder.classList.add('mobile-active');
+  }
+}
+window.setMobileTab = setMobileTab;
+
+function updateMobileNavVisibility() {
+  const navBar = document.getElementById('mobile-nav-bar');
+  if (!navBar) return;
+
+  const modeScreen = document.getElementById('screen-mode-select');
+  const menuScreen = document.getElementById('screen-menu');
+  const isOuterScreen = (modeScreen && !modeScreen.classList.contains('hidden')) ||
+                        (menuScreen && !menuScreen.classList.contains('hidden'));
+
+  if (isOuterScreen) {
+    navBar.classList.add('hidden');
+  } else {
+    navBar.classList.remove('hidden');
+  }
+}
+window.updateMobileNavVisibility = updateMobileNavVisibility;
+
 // Global helper for screen swapping with proper parent-child container handling
 window.showScreen = function(screenId) {
   const screenMode = document.getElementById('screen-mode-select');
@@ -6,13 +85,14 @@ window.showScreen = function(screenId) {
   const gameWorkspace = document.getElementById('game-workspace');
   const hud = document.getElementById('game-hud');
   const leftSidebar = document.getElementById('roster-sidebar-panel');
-  const rightSidebar = document.querySelector('.workspace-sidebar.right-sidebar');
+  const rightSidebar = document.getElementById('synergies-sidebar-panel') || document.querySelector('.workspace-sidebar.right-sidebar');
 
   if (screenId === 'screen-mode-select') {
     if (screenMode) screenMode.classList.remove('hidden');
     if (screenMenu) screenMenu.classList.add('hidden');
     if (gameWorkspace) gameWorkspace.classList.add('hidden');
     if (hud) hud.classList.add('hidden');
+    updateMobileNavVisibility();
     return;
   }
 
@@ -42,6 +122,9 @@ window.showScreen = function(screenId) {
 
   const target = document.getElementById(screenId);
   if (target) target.classList.remove('hidden');
+
+  updateMobileNavVisibility();
+  setMobileTab(currentMobileTab);
 };
 
 
@@ -340,10 +423,13 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
 
       // ── 3-column layout: Roster | Pick Cards | Batting Order ───────────
       const layout = document.createElement('div');
-      layout.style.cssText = 'display:grid;grid-template-columns:210px 1fr 190px;gap:12px;align-items:flex-start;width:100%;max-width:1180px;margin:0 auto;';
+      layout.id = 'draft-round-layout';
+      layout.className = 'workspace-three-columns draft-round-layout grid grid-cols-1 md:grid-cols-12 gap-3 items-start w-full max-w-[1180px] mx-auto';
 
       // ───── LEFT: Fielding Roster Panel ─────────────────────────────────
       const rosterPanel = document.createElement('div');
+      rosterPanel.id = 'draft-col-roster';
+      rosterPanel.className = 'draft-col md:col-span-3';
       rosterPanel.style.cssText = 'background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:12px;';
       rosterPanel.innerHTML = `
         <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#9ca3af;margin-bottom:10px;text-align:center;letter-spacing:1px;">
@@ -431,10 +517,11 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
 
       // ───── CENTER: 3 Pick Cards ─────────────────────────────────────────
       const centerPanel = document.createElement('div');
-      centerPanel.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:16px;';
+      centerPanel.id = 'draft-col-cards';
+      centerPanel.className = 'draft-col md:col-span-6 flex flex-col items-center gap-4';
 
       const cardsRow = document.createElement('div');
-      cardsRow.style.cssText = 'display:flex;gap:10px;justify-content:center;align-items:flex-start;flex-wrap:nowrap;width:100%;';
+      cardsRow.className = 'cards-row flex flex-col md:flex-row gap-3 justify-center items-center md:items-start w-full';
 
       picks.forEach(player => {
         const rColor = RARITY_COLORS[player.rarity] || RARITY_COLORS.Common;
@@ -443,14 +530,9 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
         const cardHTML = createCardHTML(player);
 
         const wrapper = document.createElement('div');
-        wrapper.style.cssText = [
-          'cursor:pointer','border-radius:12px',
-          `border:2px solid ${rColor}`,
-          `background:${rBg}`,
-          'padding:6px','transition:transform .15s,box-shadow .15s',
-          'display:flex','flex-direction:column','align-items:center','gap:6px',
-          'flex:1','max-width:180px','box-sizing:border-box'
-        ].join(';');
+        wrapper.className = 'draft-card-wrapper w-full max-w-[280px] md:max-w-[170px] cursor-pointer rounded-xl border-2 transition-transform duration-150 flex flex-col items-center gap-1.5 p-2 box-border';
+        wrapper.style.borderColor = rColor;
+        wrapper.style.background = rBg;
 
         wrapper.innerHTML = `
           <div style="pointer-events:none;">${cardHTML}</div>
@@ -511,6 +593,8 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
 
       // ───── RIGHT: Batting Order Panel ──────────────────────────────────
       const orderPanel = document.createElement('div');
+      orderPanel.id = 'draft-col-order';
+      orderPanel.className = 'draft-col md:col-span-3';
       orderPanel.style.cssText = 'background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:12px;';
       orderPanel.innerHTML = `
         <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#9ca3af;margin-bottom:10px;text-align:center;letter-spacing:1px;">
@@ -599,6 +683,8 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
       layout.appendChild(orderPanel);
       pool.appendChild(layout);
 
+      setMobileTab(currentMobileTab || 'action');
+
     } catch(e) {
       console.error(e);
       const banner = document.getElementById('debug-error-banner');
@@ -641,7 +727,8 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
 
       // Centered 2-column layout: Fielding Roster | Batting Order
       const layout = document.createElement('div');
-      layout.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:flex-start;width:100%;max-width:920px;margin:0 auto 16px;';
+      layout.id = 'final-lineup-layout';
+      layout.className = 'grid grid-cols-1 md:grid-cols-2 gap-4 items-start w-full max-w-[920px] mx-auto mb-4';
 
       // ───── LEFT: Fielding Roster Panel ─────────────────────────────────
       const rosterPanel = document.createElement('div');
@@ -1279,23 +1366,27 @@ function initGameModeSelector() {
     // The old starter-pick listener is removed (draft rounds handle player selection directly).
 
 
-    // Toggle roster panel collapse
+    // Mobile Bottom Tab Bar Event Listeners
+    const btnAction = document.getElementById('btn-mobile-tab-action');
+    const btnRoster = document.getElementById('btn-mobile-tab-roster');
+    const btnOrder  = document.getElementById('btn-mobile-tab-order');
+
+    if (btnAction) btnAction.addEventListener('click', () => setMobileTab('action'));
+    if (btnRoster) btnRoster.addEventListener('click', () => setMobileTab('roster'));
+    if (btnOrder)  btnOrder.addEventListener('click',  () => setMobileTab('order'));
+
+    // Toggle roster panel (HUD button)
     if (el.toggleRosterBtn) {
       el.toggleRosterBtn.addEventListener('click', () => {
-        if (window.innerWidth <= 768) {
-          el.rosterManagerPanel.classList.toggle('mobile-drawer-open');
-        } else {
-          el.rosterManagerPanel.classList.toggle('hidden');
-        }
+        setMobileTab(currentMobileTab === 'order' ? 'action' : 'order');
       });
     }
 
-    // Toggle synergies panel on mobile
+    // Toggle synergies panel (HUD button)
     const btnSynergiesMobile = document.getElementById('btn-toggle-synergies-mobile');
-    const synergiesPanel = document.querySelector('.workspace-sidebar.right-sidebar');
-    if (btnSynergiesMobile && synergiesPanel) {
+    if (btnSynergiesMobile) {
       btnSynergiesMobile.addEventListener('click', () => {
-        synergiesPanel.classList.toggle('mobile-drawer-open');
+        setMobileTab(currentMobileTab === 'roster' ? 'action' : 'roster');
       });
     }
 
@@ -1400,7 +1491,7 @@ function initGameModeSelector() {
     const btnCloseRoster = document.getElementById('btn-close-roster-mobile');
     if (btnCloseRoster) {
       btnCloseRoster.addEventListener('click', () => {
-        el.rosterManagerPanel.classList.remove('mobile-drawer-open');
+        setMobileTab('action');
       });
     }
 
@@ -2474,11 +2565,13 @@ function initGameModeSelector() {
   }
 
   // DRAFT SCREEN GENERATOR
+  // DRAFT SCREEN GENERATOR
   function setupDraftPickScreen() {
     let pool = el.draftOptionsRow || el.starterPool || document.getElementById('starter-selection-pool') || document.getElementById('draft-options-row');
     if (pool) {
       pool.innerHTML = "";
-      pool.style.cssText = 'display:flex;flex-direction:row;justify-content:center;align-items:flex-start;gap:16px;flex-wrap:nowrap;width:100%;max-width:1100px;margin:0 auto;padding:10px 0;';
+      pool.className = 'midrun-draft-options flex flex-col md:flex-row justify-center items-center md:items-start gap-4 w-full max-w-[1100px] mx-auto py-3';
+      pool.style.cssText = '';
     }
     
     const titleEl = el.screenDraft.querySelector('h2');
@@ -2496,8 +2589,7 @@ function initGameModeSelector() {
       const cardHTML = createCardHTML(player);
       const predictionText = getDraftSynergyPrediction(player);
       const cardCol = document.createElement('div');
-      cardCol.className = "draft-card-option";
-      cardCol.style.cssText = "display:flex;flex-direction:column;align-items:center;gap:8px;flex:1;max-width:210px;box-sizing:border-box;";
+      cardCol.className = "draft-card-option flex flex-col items-center gap-2 w-full max-w-[280px] md:max-w-[210px] box-border";
       
       const cost = getPlayerSignCost(player);
       const canAfford = (window.Game.budget || 0) >= cost;
@@ -2548,8 +2640,7 @@ function initGameModeSelector() {
 
     // Add a "Rechazar Firma" button option
     const skipCol = document.createElement('div');
-    skipCol.className = "draft-card-option";
-    skipCol.style.cssText = "display:flex;flex-direction:column;justify-content:center;align-items:center;border:2px dashed rgba(255,255,255,0.15);padding:16px;border-radius:12px;height:350px;flex:1;max-width:210px;box-sizing:border-box;";
+    skipCol.className = "draft-card-option flex flex-col justify-center items-center border-2 border-dashed border-white/15 p-4 rounded-xl w-full max-w-[280px] md:max-w-[210px] min-h-[140px] md:min-h-[350px] box-border";
 
     const btnSkip = document.createElement('button');
     btnSkip.className = "btn btn-secondary";
@@ -2578,7 +2669,8 @@ function initGameModeSelector() {
     let pool = el.draftOptionsRow || el.starterPool || document.getElementById('starter-selection-pool') || document.getElementById('draft-options-row');
     if (pool) {
       pool.innerHTML = "";
-      pool.style.cssText = 'display:flex;flex-direction:row;justify-content:center;align-items:flex-start;gap:16px;flex-wrap:nowrap;width:100%;max-width:1100px;margin:0 auto;padding:10px 0;';
+      pool.className = 'midrun-draft-options flex flex-col md:flex-row justify-center items-center md:items-start gap-4 w-full max-w-[1100px] mx-auto py-3';
+      pool.style.cssText = '';
     }
     
     const titleEl = el.screenDraft.querySelector('h2');
@@ -2596,8 +2688,7 @@ function initGameModeSelector() {
       const cardHTML = createCardHTML(player);
       const predictionText = getDraftSynergyPrediction(player);
       const cardCol = document.createElement('div');
-      cardCol.className = "draft-card-option";
-      cardCol.style.cssText = "display:flex;flex-direction:column;align-items:center;gap:8px;flex:1;max-width:210px;box-sizing:border-box;";
+      cardCol.className = "draft-card-option flex flex-col items-center gap-2 w-full max-w-[280px] md:max-w-[210px] box-border";
       
       const btnSign = document.createElement('button');
       btnSign.className = "btn";
@@ -2618,8 +2709,7 @@ function initGameModeSelector() {
 
     // Add a "Skip Draft" button to let the player skip post-match draft
     const skipCol = document.createElement('div');
-    skipCol.className = "draft-card-option";
-    skipCol.style.cssText = "display:flex;flex-direction:column;justify-content:center;align-items:center;border:2px dashed rgba(255,255,255,0.15);padding:16px;border-radius:12px;height:350px;flex:1;max-width:210px;box-sizing:border-box;";
+    skipCol.className = "draft-card-option flex flex-col justify-center items-center border-2 border-dashed border-white/15 p-4 rounded-xl w-full max-w-[280px] md:max-w-[210px] min-h-[140px] md:min-h-[350px] box-border";
 
     const btnSkip = document.createElement('button');
     btnSkip.className = "btn btn-secondary";
@@ -3415,18 +3505,26 @@ function initGameModeSelector() {
   // ── RENDER ZONE LEGEND ────────────────────────────────────────────────────────
   function renderZones() {
     const zonesEl = document.getElementById('zones-lines');
-    if (!zonesEl || !activeBattle || activeBattle.battleOver) return;
-    const b = activeBattle.currentBoundaries();
-    if (!b) return;
-    zonesEl.innerHTML = [
-      `<div style="display:flex;justify-content:space-between;padding:1px 0;white-space:nowrap;"><span style="color:#3b82f6;">⚾ ${t('match.bb')}</span><span style="color:#3b82f6;font-weight:bold;">  1 – ${b.bbEnd}</span></div>`,
-      `<div style="display:flex;justify-content:space-between;padding:1px 0;"><span style="color:#ef4444;">💨 ${t('match.so')}</span><span style="color:#ef4444;font-weight:bold;">${b.bbEnd + 1} – ${b.soEnd}</span></div>`,
-      `<div style="display:flex;justify-content:space-between;padding:1px 0;"><span style="color:#9ca3af;">🤚 ${t('match.out')}</span><span style="color:#9ca3af;font-weight:bold;">${b.soEnd + 1} – ${b.outEnd}</span></div>`,
-      `<div style="display:flex;justify-content:space-between;padding:1px 0;"><span style="color:#a7f3d0;">✅ ${t('match.single')}</span><span style="color:#a7f3d0;font-weight:bold;">${b.outEnd + 1} – ${b.singleEnd}</span></div>`,
-      `<div style="display:flex;justify-content:space-between;padding:1px 0;"><span style="color:#10b981;">✅ ${t('match.double')}</span><span style="color:#10b981;font-weight:bold;">${b.singleEnd + 1} – ${b.doubleEnd}</span></div>`,
-      `<div style="display:flex;justify-content:space-between;padding:1px 0;"><span style="color:#06b6d4;">✅ ${t('match.triple')}</span><span style="color:#06b6d4;font-weight:bold;">${b.doubleEnd + 1} – ${b.tripleEnd}</span></div>`,
-      `<div style="display:flex;justify-content:space-between;padding:1px 0;"><span style="color:#eab308;font-weight:bold;">🔥 ${t('match.hr')}</span><span style="color:#eab308;font-weight:bold;">${b.tripleEnd + 1} – 100</span></div>`
-    ].join('');
+    if (!zonesEl) return;
+    let b = (activeBattle && typeof activeBattle.currentBoundaries === 'function') ? activeBattle.currentBoundaries() : null;
+    if (!b) {
+      b = { bbEnd: 11, soEnd: 22, outEnd: 38, singleEnd: 61, doubleEnd: 74, tripleEnd: 81 };
+    }
+    zonesEl.innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px 10px;width:100%;font-size:7.5px;">
+        <div style="display:flex;flex-direction:column;gap:1.5px;">
+          <div style="display:flex;justify-content:space-between;padding:1px 2px;white-space:nowrap;"><span style="color:#3b82f6;">⚾ ${t('match.bb', 'Boleto')}</span><span style="color:#3b82f6;font-weight:bold;">1–${b.bbEnd}</span></div>
+          <div style="display:flex;justify-content:space-between;padding:1px 2px;white-space:nowrap;"><span style="color:#ef4444;">💨 ${t('match.so', 'Ponche')}</span><span style="color:#ef4444;font-weight:bold;">${b.bbEnd + 1}–${b.soEnd}</span></div>
+          <div style="display:flex;justify-content:space-between;padding:1px 2px;white-space:nowrap;"><span style="color:#9ca3af;">🤚 ${t('match.out', 'Out')}</span><span style="color:#9ca3af;font-weight:bold;">${b.soEnd + 1}–${b.outEnd}</span></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:1.5px;">
+          <div style="display:flex;justify-content:space-between;padding:1px 2px;white-space:nowrap;"><span style="color:#a7f3d0;">✅ ${t('match.single', 'Sencillo')}</span><span style="color:#a7f3d0;font-weight:bold;">${b.outEnd + 1}–${b.singleEnd}</span></div>
+          <div style="display:flex;justify-content:space-between;padding:1px 2px;white-space:nowrap;"><span style="color:#10b981;">⚡ ${t('match.double', 'Doble')}</span><span style="color:#10b981;font-weight:bold;">${b.singleEnd + 1}–${b.doubleEnd}</span></div>
+          <div style="display:flex;justify-content:space-between;padding:1px 2px;white-space:nowrap;"><span style="color:#06b6d4;">🔥 ${t('match.triple', 'Triple')}</span><span style="color:#06b6d4;font-weight:bold;">${b.doubleEnd + 1}–${b.tripleEnd}</span></div>
+          <div style="display:flex;justify-content:space-between;padding:1px 2px;white-space:nowrap;"><span style="color:#eab308;font-weight:bold;">🚀 ${t('match.hr', 'Jonrón')}</span><span style="color:#eab308;font-weight:bold;">${b.tripleEnd + 1}–100</span></div>
+        </div>
+      </div>
+    `;
   }
 
   // ── APPEND LOG LINE (replaces the old event-based playNextMatchEvent) ────────
@@ -3454,8 +3552,11 @@ function initGameModeSelector() {
     const batter  = stateOrEvent.currentBatter || null;
     const bName   = batter ? batter.name : (stateOrEvent.activeBatter || '');
 
+    const pNameRaw = pitcher ? pitcher.name : 'Cargando...';
+    const pNameClean = pNameRaw.replace(/\s*\(\d{4}\)$/, '').trim();
+
     el.matchBatterName.innerText  = bName || 'Cargando...';
-    el.matchPitcherName.innerText = pitcher ? pitcher.name : 'Cargando...';
+    el.matchPitcherName.innerText = pNameClean;
 
     // Batter card
     const bRosterObj = Object.values(window.Game.roster).find(p => p && p.name === bName);
