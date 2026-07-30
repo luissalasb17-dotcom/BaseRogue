@@ -276,9 +276,20 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
 
       const info   = G.getDraftRoundInfo();
       const picks  = G.getDraftRoundPicks();
+      const screenDraft = document.getElementById('screen-draft');
+      if (screenDraft) {
+        const titleEl = screenDraft.querySelector('h2');
+        if (titleEl) {
+          titleEl.innerHTML = `<i class="fa-solid fa-file-signature"></i> FIRMA DE JUGADORES (DRAFT)`;
+        }
+        const descEl = screenDraft.querySelector('p');
+        if (descEl) {
+          descEl.innerText = "Elige a tus Jugadores en 9 rondas de draft para armar tu alineación completa de 9 bateadores. Organiza su posición defensiva (Drag & Drop) y su orden al bate en tiempo real. Luego lanza el dado en cada turno para determinar el resultado al bate. Derrota la rotación rival antes de que tus 100 HP lleguen a cero.";
+        }
+      }
+
       let pool = el.starterPool || document.getElementById('starter-selection-pool') || document.getElementById('draft-options-row');
       if (!pool) {
-        const screenDraft = document.getElementById('screen-draft');
         if (screenDraft) {
           pool = document.createElement('div');
           pool.id = 'starter-selection-pool';
@@ -1927,12 +1938,20 @@ function initGameModeSelector() {
   };
 
   // RENDER VISUAL POKELIKE MAP - Math-based layout (no DOM measurement)
+  // RENDER VISUAL POKELIKE MAP - Math-based layout (Ascending bottom-to-top progression)
   function renderMap() {
     el.mapContainer.innerHTML = '';
 
     const currentStage = window.Game.currentStageIndex;
     const currentZone  = window.Game.getZoneForStage(currentStage);
-    const ZONE_STAGE_RANGES = [[0,3],[4,7],[8,11],[12,15]];
+    
+    // Render zones in ascending order from bottom to top (Playoffs at top, Opening Day at bottom)
+    const ZONE_STAGE_RANGES = [
+      { range: [12, 15], zoneIdx: 3 },
+      { range: [8, 11],  zoneIdx: 2 },
+      { range: [4, 7],   zoneIdx: 1 },
+      { range: [0, 3],   zoneIdx: 0 }
+    ];
 
     // Layout constants (SVG coordinate space)
     const NODE_R    = 26;   // node radius
@@ -1940,7 +1959,7 @@ function initGameModeSelector() {
     const ROW_H     = 100;  // pixels between stage rows
     const PADDING_Y = 60;   // top/bottom padding inside SVG
 
-    ZONE_STAGE_RANGES.forEach(([zStart, zEnd], zoneIdx) => {
+    ZONE_STAGE_RANGES.forEach(({ range: [zStart, zEnd], zoneIdx }) => {
       const zoneConfig     = window.Game.getZoneConfig(zoneIdx);
       const isCurrentZone  = (zoneIdx === currentZone);
       const isZoneCompleted = (currentStage > zEnd);
@@ -2021,7 +2040,7 @@ function initGameModeSelector() {
 
       // defs: glow filters
       const defs = document.createElementNS(svgNS, 'defs');
-      [['glow-active', '#ffd700', 4], ['glow-visited', '#10b981', 2]].forEach(([id, clr, dev]) => {
+      [['glow-active', '#00ff66', 5], ['glow-visited', '#10b981', 3]].forEach(([id, clr, dev]) => {
         const flt = document.createElementNS(svgNS, 'filter');
         flt.setAttribute('id', `${id}-z${zoneIdx}`);
         flt.setAttribute('x', '-50%'); flt.setAttribute('y', '-50%');
@@ -2050,9 +2069,9 @@ function initGameModeSelector() {
               const gp = document.createElementNS(svgNS, 'line');
               gp.setAttribute('x1', p1.x); gp.setAttribute('y1', p1.y);
               gp.setAttribute('x2', p2.x); gp.setAttribute('y2', p2.y);
-              gp.setAttribute('stroke', isActivePath ? '#ffd700' : '#10b981');
+              gp.setAttribute('stroke', isActivePath ? '#00ff66' : '#10b981');
               gp.setAttribute('stroke-width', '8');
-              gp.setAttribute('opacity', '0.35');
+              gp.setAttribute('opacity', '0.45');
               gp.setAttribute('filter', `url(#${isActivePath ? 'glow-active' : 'glow-visited'}-z${zoneIdx})`);
               svg.appendChild(gp);
             }
@@ -2062,20 +2081,20 @@ function initGameModeSelector() {
             line.setAttribute('x1', p1.x); line.setAttribute('y1', p1.y);
             line.setAttribute('x2', p2.x); line.setAttribute('y2', p2.y);
             line.setAttribute('fill', 'none');
-            line.setAttribute('stroke-linecap', 'round');
+            line.setAttribute('stroke-linecap', 'square');
 
             if (isActivePath) {
-              line.setAttribute('stroke', '#ffd700');
-              line.setAttribute('stroke-width', '3.5');
-              line.setAttribute('stroke-dasharray', '8,5');
+              line.setAttribute('stroke', '#00ff66');
+              line.setAttribute('stroke-width', '4');
+              line.setAttribute('stroke-dasharray', '8,4');
             } else if (isVisitedPath) {
               line.setAttribute('stroke', '#4ade80');
-              line.setAttribute('stroke-width', '2.5');
-              line.setAttribute('stroke-dasharray', '8,5');
-              line.setAttribute('opacity', '0.6');
+              line.setAttribute('stroke-width', '3');
+              line.setAttribute('stroke-dasharray', '8,4');
+              line.setAttribute('opacity', '0.7');
             } else {
-              line.setAttribute('stroke', 'rgba(255,255,255,0.22)');
-              line.setAttribute('stroke-width', '2');
+              line.setAttribute('stroke', 'rgba(255,255,255,0.3)');
+              line.setAttribute('stroke-width', '2.5');
               line.setAttribute('stroke-dasharray', '6,6');
             }
             svg.appendChild(line);
@@ -2102,43 +2121,53 @@ function initGameModeSelector() {
           if (isActive) {
             const glow = document.createElementNS(svgNS, 'circle');
             glow.setAttribute('cx', pos.x); glow.setAttribute('cy', pos.y);
-            glow.setAttribute('r', NODE_R + 8);
+            glow.setAttribute('r', NODE_R + 10);
             glow.setAttribute('fill', 'none');
-            glow.setAttribute('stroke', vis.color);
-            glow.setAttribute('stroke-width', '2');
-            glow.setAttribute('opacity', '0.5');
+            glow.setAttribute('stroke', '#00ff66');
+            glow.setAttribute('stroke-width', '3');
+            glow.setAttribute('stroke-dasharray', '6,3');
+            glow.setAttribute('opacity', '0.9');
             glow.setAttribute('filter', `url(#glow-active-z${zoneIdx})`);
             svg.appendChild(glow);
           }
 
+          // 8-Bit Pixel Outer Border Circle
+          const outerCircle = document.createElementNS(svgNS, 'circle');
+          outerCircle.setAttribute('cx', pos.x); outerCircle.setAttribute('cy', pos.y);
+          outerCircle.setAttribute('r', isBossStage ? NODE_R + 8 : NODE_R + 3);
+          outerCircle.setAttribute('fill', '#000000');
+          svg.appendChild(outerCircle);
+
           // Node circle
           const circle = document.createElementNS(svgNS, 'circle');
           circle.setAttribute('cx', pos.x); circle.setAttribute('cy', pos.y);
-          circle.setAttribute('r', isBossStage ? NODE_R + 6 : NODE_R);
+          circle.setAttribute('r', isBossStage ? NODE_R + 5 : NODE_R);
           circle.setAttribute('fill', isDisabled ? '#0f172a' : (isPast || isVisited ? '#1e293b' : vis.bg));
           circle.setAttribute('stroke', isDisabled ? '#334155' : vis.color);
-          circle.setAttribute('stroke-width', isBossStage ? '3' : '2.5');
+          circle.setAttribute('stroke-width', isBossStage ? '3.5' : '2.5');
           if (isDisabled) circle.setAttribute('opacity', '0.5');
           svg.appendChild(circle);
 
           // Node text label
           const txt = document.createElementNS(svgNS, 'text');
-          txt.setAttribute('x', pos.x); txt.setAttribute('y', pos.y + 4);
+          txt.setAttribute('x', pos.x); txt.setAttribute('y', pos.y + 3);
           txt.setAttribute('text-anchor', 'middle');
           txt.setAttribute('dominant-baseline', 'middle');
           txt.setAttribute('fill', isDisabled ? '#475569' : (isPast || isVisited ? '#64748b' : vis.color));
           txt.setAttribute('font-family', "'Press Start 2P', monospace");
           txt.setAttribute('font-size', isBossStage ? '8' : '7');
+          txt.setAttribute('font-weight', 'bold');
           txt.textContent = vis.text;
           svg.appendChild(txt);
 
           // Node type label below
           const lbl = document.createElementNS(svgNS, 'text');
-          lbl.setAttribute('x', pos.x); lbl.setAttribute('y', pos.y + NODE_R + 14);
+          lbl.setAttribute('x', pos.x); lbl.setAttribute('y', pos.y + NODE_R + 15);
           lbl.setAttribute('text-anchor', 'middle');
-          lbl.setAttribute('fill', isDisabled ? '#334155' : 'rgba(255,255,255,0.55)');
+          lbl.setAttribute('fill', isDisabled ? '#475569' : (isActive ? '#00ff66' : 'rgba(255,255,255,0.8)'));
           lbl.setAttribute('font-family', "'VT323', monospace");
-          lbl.setAttribute('font-size', '13');
+          lbl.setAttribute('font-size', '14');
+          lbl.setAttribute('font-weight', 'bold');
           lbl.textContent = node.label || vis.label;
           svg.appendChild(lbl);
 
@@ -2146,7 +2175,7 @@ function initGameModeSelector() {
           if (isActive) {
             const hit = document.createElementNS(svgNS, 'circle');
             hit.setAttribute('cx', pos.x); hit.setAttribute('cy', pos.y);
-            hit.setAttribute('r', NODE_R + 10);
+            hit.setAttribute('r', NODE_R + 12);
             hit.setAttribute('fill', 'transparent');
             hit.style.cursor = 'pointer';
             hit.setAttribute('id', `node_${s}_${idx}`);
@@ -2167,6 +2196,14 @@ function initGameModeSelector() {
       zoneWrapper.appendChild(zoneCanvas);
       el.mapContainer.appendChild(zoneWrapper);
     });
+
+    // Auto-scroll to current active stage node
+    setTimeout(() => {
+      const activeNodeEl = document.querySelector('.map-node-visual.active-path');
+      if (activeNodeEl) {
+        activeNodeEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 120);
   }
 
   // Legacy stub – no longer needed (paths drawn inline with renderMap)
