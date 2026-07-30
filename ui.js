@@ -233,11 +233,11 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
   let _prevTeamShield  = null;
 
   const TrainingPlans = [
-    { id: "t_con", label: "Práctica de Contacto", desc: "Aumenta permanentemente el Contacto por +6.", price: 15, stat: "con", val: 6 },
-    { id: "t_pwr", label: "Entrenamiento de Fuerza", desc: "Aumenta la Fuerza del jugador por +6.", price: 15, stat: "pwr", val: 6 },
-    { id: "t_spd", label: "Carreras de Velocidad", desc: "Aumenta la Velocidad del jugador por +6.", price: 12, stat: "spd", val: 6 },
-    { id: "t_def", label: "Ejercicios de Guante", desc: "Sube la Defensa del jugador por +6.", price: 10, stat: "def", val: 6 },
-    { id: "t_sta", label: "Acondicionamiento Físico", desc: "Recupera +35 de Stamina y suma +5 de Stamina máxima.", price: 10, stat: "sta", val: 35 }
+    { id: "t_con", get label() { return t('train_plans.con_label'); }, get desc() { return t('train_plans.con_desc'); }, price: 15, stat: "con", val: 6 },
+    { id: "t_pwr", get label() { return t('train_plans.pwr_label'); }, get desc() { return t('train_plans.pwr_desc'); }, price: 15, stat: "pwr", val: 6 },
+    { id: "t_spd", get label() { return t('train_plans.spd_label'); }, get desc() { return t('train_plans.spd_desc'); }, price: 12, stat: "spd", val: 6 },
+    { id: "t_def", get label() { return t('train_plans.def_label'); }, get desc() { return t('train_plans.def_desc'); }, price: 10, stat: "def", val: 6 },
+    { id: "t_sta", get label() { return t('train_plans.sta_label'); }, get desc() { return t('train_plans.sta_desc'); }, price: 10, stat: "sta", val: 35 }
   ];
 
   // ── 9-ROUND DRAFT SYSTEM ──────────────────────────────────────────────────
@@ -312,19 +312,28 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
         return `<div style="width:${size};height:${size};border-radius:50%;background:${bg};transition:all .3s;"></div>`;
       }).join('');
 
+      let roundBadgeKey = info.labelKey;
+      if (!roundBadgeKey) {
+        if (round === 1) roundBadgeKey = 'draft.round_1_label';
+        else if (round === 2) roundBadgeKey = 'draft.round_2_label';
+        else if (round === 3) roundBadgeKey = 'draft.round_3_label';
+        else if (round >= 4 && round <= 6) roundBadgeKey = 'draft.round_4_label';
+        else roundBadgeKey = 'draft.round_free_label';
+      }
+
       header.innerHTML = `
         <div style="max-width: 780px; margin: 0 auto 12px; padding: 10px 16px; background: rgba(0, 255, 102, 0.05); border: 1px solid rgba(0, 255, 102, 0.3); border-radius: 8px; font-size: 11px; color: #a7f3d0; line-height: 1.5; text-align: center;">
-          Elije a tus Jugadores en <strong style="color:#00ff66;">9 rondas de draft</strong> para armar tu alineación completa de 9 bateadores. Organiza su posición defensiva (Drag & Drop) y su orden al bate en tiempo real. Luego <strong style="color:#00ff66;">lanza el dado</strong> en cada turno para determinar el resultado al bate. Derrota la rotación rival antes de que tus <strong style="color:#ef4444;">100 HP</strong> lleguen a cero.
+          ${t('menu.intro_desc', { rounds: 9, hp: 100 })}
         </div>
         <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:${RARITY_COLORS[info.rarities ? info.rarities[0] : 'Legendary']};margin-bottom:8px;letter-spacing:1px;">
-          ⚾ DRAFT INICIAL — RONDA ${round} DE 9
+          ${t('draft.round_header', { round: round })}
         </div>
         <div style="display:flex;justify-content:center;gap:6px;align-items:center;margin-bottom:8px;">${roundDots}</div>
         <div style="display:inline-block;background:${RARITY_BG[info.rarities ? info.rarities[0] : 'Legendary']};
           border:1px solid ${RARITY_COLORS[info.rarities ? info.rarities[0] : 'Legendary']};
           border-radius:20px;padding:4px 14px;font-size:11px;
           color:${RARITY_COLORS[info.rarities ? info.rarities[0] : 'Legendary']};font-weight:bold;">
-          ${info.icon} ${info.label}
+          ${info.icon} ${t(roundBadgeKey)}
         </div>
       `;
       pool.appendChild(header);
@@ -338,7 +347,7 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
       rosterPanel.style.cssText = 'background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:12px;';
       rosterPanel.innerHTML = `
         <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#9ca3af;margin-bottom:10px;text-align:center;letter-spacing:1px;">
-          🧤 ALINEACIÓN
+          ${t('draft.roster_header')}
         </div>
       `;
 
@@ -363,15 +372,15 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
           let posHint = '';
           const defBase = player.def || player.defense_val || 40;
           if (isNative) {
-            posHint = '<span style="color:#10b981">✅ Nativo</span>';
+            posHint = `<span style="color:#10b981">${t('pos.native')}</span>`;
           } else if (slot === 'DH') {
             posHint = '<span style="color:#9ca3af">DH</span>';
           } else if (isSec) {
             const pen = Math.round(defBase * 0.15);
-            posHint = `<span style="color:#f59e0b">⚡ Secundario (-${pen} DEF)</span>`;
+            posHint = `<span style="color:#f59e0b">${t('pos.secondary', { pen: pen })}</span>`;
           } else {
             const pen = Math.round(defBase * 0.50);
-            posHint = `<span style="color:#ef4444">⚠️ Fuera pos (-${pen} DEF)</span>`;
+            posHint = `<span style="color:#ef4444">${t('pos.out_of_pos', { pen: pen })}</span>`;
           }
 
           slotRow.innerHTML = `
@@ -381,11 +390,11 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
               <div style="font-size:9px;color:${rColor};">${player.rarity} • OVR ${ovr} ${posHint}</div>
             </div>
           `;
-          slotRow.title = 'Arrastra para cambiar de posición';
+          slotRow.title = t('draft.drag_to_reorder');
         } else {
           slotRow.innerHTML = `
             <span style="font-family:'Press Start 2P',monospace;font-size:7px;color:#374151;min-width:24px;">${slot}</span>
-            <span style="font-size:10px;color:#374151;">— VACÍO —</span>
+            <span style="font-size:10px;color:#374151;">${t('pos.empty')}</span>
           `;
         }
 
@@ -449,7 +458,7 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
             <div style="font-size:10px;color:${rColor};font-weight:bold;">${player.rarity}</div>
             <div style="font-size:9.5px;color:#9ca3af;text-align:center;margin-top:2px;">${player.pos} • OVR ${ovr}</div>
           </div>
-          <button class="btn" style="width:100%;padding:8px;font-size:10px;background:${rColor};color:#000;border:none;">✔ SELECCIONAR</button>
+          <button class="btn" style="width:100%;padding:8px;font-size:10px;background:${rColor};color:#000;border:none;">${t('draft.select_btn')}</button>
         `;
 
         wrapper.addEventListener('mouseenter', () => {
@@ -473,16 +482,16 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
       const pickHint = document.createElement('div');
       pickHint.style.cssText = 'font-size:11px;color:#6b7280;text-align:center;max-width:400px;';
       if (round <= 3) {
-        pickHint.textContent = `Esta es una ronda garantizada de élite. Aprovecha para asegurar un titular de calidad.`;
+        pickHint.textContent = t('draft.round_elite_hint');
       } else if (round <= 6) {
-        pickHint.textContent = `Ronda de Common. Estos jugadores llenarán los slots que te faltan y formarán tu banco.`;
+        pickHint.textContent = t('draft.round_common_hint');
       } else {
-        pickHint.textContent = `Ronda libre: puede aparecer cualquier rareza del pool. ¡Buena suerte!`;
+        pickHint.textContent = t('draft.round_free_hint');
       }
       centerPanel.appendChild(pickHint);
       const autoDraftBtn = document.createElement('button');
       autoDraftBtn.className = 'btn btn-secondary';
-      autoDraftBtn.innerHTML = '🎲 ¡Sorpréndeme! (Auto-Completar)';
+      autoDraftBtn.innerHTML = t('draft.auto_complete_btn');
       autoDraftBtn.style.cssText = 'margin-top: 15px; padding: 10px 20px; font-size: 11px;';
       autoDraftBtn.onclick = () => {
         while (G.draftRound <= 9) {
@@ -505,7 +514,7 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
       orderPanel.style.cssText = 'background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:12px;';
       orderPanel.innerHTML = `
         <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#9ca3af;margin-bottom:10px;text-align:center;letter-spacing:1px;">
-          ⚔️ BATTING ORDER
+          ${t('draft.batting_order_header')}
         </div>
       `;
 
@@ -622,10 +631,10 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
       header.style.cssText = 'width:100%;text-align:center;padding:2px 0 12px;';
       header.innerHTML = `
         <div style="font-family:'Press Start 2P',monospace;font-size:11px;color:#10b981;margin-bottom:6px;letter-spacing:1px;">
-          ⚾ ALINEACIÓN PARA INICIAR LA TEMPORADA
+          ${t('draft.confirm_lineup_title')}
         </div>
         <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(59,130,246,0.12);border:1px solid #3b82f6;border-radius:20px;padding:4px 16px;font-size:11px;color:#3b82f6;font-weight:bold;">
-          🛡️ Escudo Inicial: <span style="color:#10b981;font-size:13px;">${shield} PTS</span>
+          ${t('draft.initial_shield', { shield: shield })}
         </div>
       `;
       pool.appendChild(header);
@@ -639,7 +648,7 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
       rosterPanel.style.cssText = 'background:rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:8px 12px;';
       rosterPanel.innerHTML = `
         <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:#3b82f6;margin-bottom:6px;text-align:center;letter-spacing:1px;">
-          🧤 ALINEACIÓN DEFENSIVA (DRAG & DROP)
+          ${t('draft.confirm_defensive_header')}
         </div>
       `;
 
@@ -663,15 +672,15 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
           let posHint = '';
           const defBase = player.def || 40;
           if (isNative) {
-            posHint = '<span style="color:#10b981">✅ Nativo</span>';
+            posHint = `<span style="color:#10b981">${t('pos.native')}</span>`;
           } else if (slot === 'DH') {
             posHint = '<span style="color:#9ca3af">DH</span>';
           } else if (isSec) {
             const pen = Math.round(defBase * 0.15);
-            posHint = `<span style="color:#f59e0b">⚡ Secundario (-${pen} DEF)</span>`;
+            posHint = `<span style="color:#f59e0b">${t('pos.secondary', { pen: pen })}</span>`;
           } else {
             const pen = Math.round(defBase * 0.50);
-            posHint = `<span style="color:#ef4444">⚠️ Fuera pos (-${pen} DEF)</span>`;
+            posHint = `<span style="color:#ef4444">${t('pos.out_of_pos', { pen: pen })}</span>`;
           }
 
           slotRow.innerHTML = `
@@ -704,7 +713,7 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
         } else {
           slotRow.innerHTML = `
             <span style="font-family:'Press Start 2P',monospace;font-size:8px;color:#374151;min-width:28px;">${slot}</span>
-            <span style="font-size:11px;color:#374151;">— VACÍO —</span>
+            <span style="font-size:11px;color:#374151;">${t('pos.empty')}</span>
           `;
         }
 
@@ -869,7 +878,7 @@ function renderConfirmationBattingRows() {
           border:2px solid #34d399;box-shadow:0 0 20px rgba(16,185,129,0.4);
           cursor:pointer;font-family:'Press Start 2P',monospace;letter-spacing:1px;
         ">
-          ⚾ CONFIRMAR EQUIPO E INICIAR CAMPAÑA
+          ${t('draft.start_campaign_btn')}
         </button>
       `;
 
@@ -1374,16 +1383,14 @@ function initGameModeSelector() {
     // Toggle Language (ES / EN)
     const btnLang = document.getElementById('btn-lang-toggle');
     if (btnLang) {
-      const savedLang = localStorage.getItem('baserogue_lang') || 'es';
-      btnLang.innerText = savedLang === 'es' ? '🌐 ES' : '🌐 EN';
-      applyLanguage(savedLang);
       btnLang.addEventListener('click', () => {
-        const cur = localStorage.getItem('baserogue_lang') || 'es';
+        const cur = window.i18n ? window.i18n.getCurrentLanguage() : (localStorage.getItem('baserogue_lang') || 'es');
         const next = cur === 'es' ? 'en' : 'es';
-        localStorage.setItem('baserogue_lang', next);
-        btnLang.innerText = next === 'es' ? '🌐 ES' : '🌐 EN';
-        applyLanguage(next);
+        if (window.i18n) {
+          window.i18n.changeLanguage(next);
+        }
       });
+    }
 
     const btnCloseRoster = document.getElementById('btn-close-roster-mobile');
     if (btnCloseRoster) {
@@ -1404,7 +1411,6 @@ function initGameModeSelector() {
            if (state) updateMatchHUD(state);
         }
       });
-    }
     }
 
     // Combat Info Dropdown Toggle
@@ -1666,7 +1672,7 @@ function initGameModeSelector() {
   function updateHUD() {
     const zone = window.Game.getZoneForStage(window.Game.currentStageIndex);
     const zoneNames = ['Opening Day', 'All-Star Break', 'Pennant Chase', 'Playoffs'];
-    el.hudStage.innerText = `Etapa ${window.Game.currentStageIndex + 1}/16 — ${zoneNames[zone] || ''}`;
+    el.hudStage.innerText = `${t('hud.stage')} ${window.Game.currentStageIndex + 1}/16 — ${zoneNames[zone] || ''}`;
     el.hudBudget.innerText = `$${window.Game.budget}`;
   }
 
@@ -1869,25 +1875,25 @@ function initGameModeSelector() {
       ${!isDraft ? `
         <div class="popup-def-swap-container" style="margin-top:12px; padding-top:10px; border-top:1px dashed rgba(255,255,255,0.15); display:flex; flex-direction:column; gap:6px;">
           <div style="font-size:8px; color:var(--accent-color); font-family:'Press Start 2P',monospace; display:flex; align-items:center; gap:6px;">
-            <i class="fa-solid fa-arrows-rotate"></i> CAMBIAR POSICIÓN EN EL CAMPO:
+            <i class="fa-solid fa-arrows-rotate"></i> ${t('card_popup.swap_pos_title')}
           </div>
           <div style="font-size:8px; color:#9ca3af; line-height:1.3;">
-            Intercambia la posición defensiva de <b>${player.name}</b> con otro titular. <span style="color:#00ff66;">(NO altera tu orden al bate)</span>.
+            ${t('card_popup.swap_pos_desc', { name: player.name })}
           </div>
           <select id="popup-def-swap-select" style="background:#090d16; color:#00ff66; border:1px solid #00ff66; border-radius:6px; padding:6px 8px; font-size:9px; font-family:'Press Start 2P',monospace; cursor:pointer; width:100%; margin-top:2px;">
             ${['C','1B','2B','3B','SS','LF','CF','RF','DH'].map(targetSlot => {
               const occupant = window.Game.roster[targetSlot];
-              const occName = occupant ? occupant.name : 'Vacante';
+              const occName = occupant ? occupant.name : (t('pos.empty'));
               const isCurrent = (targetSlot === slot);
               const isNat = (player.pos === targetSlot);
               const secArr = player.sec_pos ? player.sec_pos.split(',').map(s=>s.trim()) : [];
               const isSec = secArr.includes(targetSlot);
               
               let tag = "";
-              if (isCurrent) tag = " (Actual)";
-              else if (isNat) tag = " (Nativa ⭐ 100% Def)";
-              else if (isSec) tag = " (Secundaria 🛡️ 85% Def)";
-              else if (targetSlot !== 'DH') tag = " (Fuera Pos ⚠️ 50% Def)";
+              if (isCurrent) tag = t('card_popup.tag_current');
+              else if (isNat) tag = t('card_popup.tag_native');
+              else if (isSec) tag = t('card_popup.tag_secondary');
+              else if (targetSlot !== 'DH') tag = t('card_popup.tag_out_pos');
               
               return `<option value="${targetSlot}" ${isCurrent ? 'selected disabled' : ''}>${targetSlot} — ${occName}${tag}</option>`;
             }).join('')}
@@ -1971,10 +1977,12 @@ function initGameModeSelector() {
 
       // ── Zone Header ─────────────────────────────────────────────────
       const zoneStatusBadge = isZoneCompleted
-        ? `<span class="zone-badge zone-badge-done">✓ COMPLETADA</span>`
+        ? `<span class="zone-badge zone-badge-done">✓ ${t('map.completed', 'COMPLETADA')}</span>`
         : isZoneLocked
-          ? `<span class="zone-badge zone-badge-locked">🔒 BLOQUEADA</span>`
-          : `<span class="zone-badge zone-badge-active">▶ ACTIVA</span>`;
+          ? `<span class="zone-badge zone-badge-locked">🔒 ${t('map.locked')}</span>`
+          : `<span class="zone-badge zone-badge-active">▶ ${t('map.active')}</span>`;
+
+      const subText = zoneConfig.subtitleKey ? t(zoneConfig.subtitleKey) : zoneConfig.subtitle;
 
       const zoneHeader = document.createElement('div');
       zoneHeader.className = 'zone-header';
@@ -1983,7 +1991,7 @@ function initGameModeSelector() {
           <span class="zone-icon">${zoneConfig.bossIcon}</span>
           <div>
             <div class="zone-name">${zoneConfig.name}</div>
-            <div class="zone-subtitle">${zoneConfig.subtitle}</div>
+            <div class="zone-subtitle">${subText}</div>
           </div>
         </div>
         ${zoneStatusBadge}
@@ -2168,7 +2176,18 @@ function initGameModeSelector() {
           lbl.setAttribute('font-family', "'VT323', monospace");
           lbl.setAttribute('font-size', '14');
           lbl.setAttribute('font-weight', 'bold');
-          lbl.textContent = node.label || vis.label;
+          const rawLabel = node.label || vis.label;
+          let translatedLabel = rawLabel;
+          if (rawLabel === 'SERIE CLÁSICA') translatedLabel = t('map.node_classic');
+          else if (rawLabel === 'FIRMA LEYENDA') translatedLabel = t('draft.midrun_title_short', 'FIRMA LEYENDA');
+          else if (rawLabel === 'DECISIÓN') translatedLabel = t('map.node_decision');
+          else if (rawLabel === 'JAULA BATEO') translatedLabel = t('map.node_cage');
+          else if (rawLabel === 'CASA CLUB') translatedLabel = t('map.node_clubhouse');
+          else if (rawLabel === 'JUEGO APERTURA') translatedLabel = t('map.node_opener');
+          else if (rawLabel === 'ALL-STAR GAME') translatedLabel = 'ALL-STAR GAME';
+          else if (rawLabel === 'CAMPEÓN LIGA') translatedLabel = t('map.node_pennant', 'CAMPEÓN LIGA');
+          else if (rawLabel === 'SERIE MUNDIAL') translatedLabel = t('map.node_world_series', 'SERIE MUNDIAL');
+          lbl.textContent = translatedLabel;
           svg.appendChild(lbl);
 
           // Invisible click target for active nodes
@@ -2217,48 +2236,48 @@ function initGameModeSelector() {
     const EraSynergyMeta = {
       "The Genesis Era (1871-1900)": {
         name: "Genesis Chaos",
-        desc1: "T1 (2+): 15% prob error en hit (+10 daño, avanza bases)",
-        desc2: "T2 (4+): 30% prob error en hit (+20 daño, avanza bases)"
+        get desc1() { return t('eras.genesis_d1'); },
+        get desc2() { return t('eras.genesis_d2'); }
       },
       "Deadball (1901-1919)": {
         name: "Small Ball",
-        desc1: "T1 (2+): 20% prob en hit sencillo de avanzar 2 bases",
-        desc2: "T2 (4+): 40% prob en hit sencillo de avanzar 2 bases"
+        get desc1() { return t('eras.deadball_d1'); },
+        get desc2() { return t('eras.deadball_d2'); }
       },
       "Golden Era (1920-1941)": {
         name: "Liveball Sluggers",
-        desc1: "T1 (2+): Todos los hits hacen +6 daño adicional",
-        desc2: "T2 (4+): Hits +12 daño; 30% de convertir 2B en 3B"
+        get desc1() { return t('eras.golden_d1'); },
+        get desc2() { return t('eras.golden_d2'); }
       },
       "Integration (1942-1960)": {
         name: "Five-Tool Legends",
-        desc1: "T1 (2+): Jugador obtiene +4 a todos sus stats en turno",
-        desc2: "T2 (4+): Bateador +8 stats; outs curan +5 Stamina"
+        get desc1() { return t('eras.integration_d1'); },
+        get desc2() { return t('eras.integration_d2'); }
       },
       "Expansion (1961-1976)": {
         name: "Speed & Hustle",
-        desc1: "T1 (2+): 50% robo en 1B; robo cura +10 Stamina",
-        desc2: "T2 (4+): 80% robo; robo cura +20 y hace 10 daño"
+        get desc1() { return t('eras.speed_d1'); },
+        get desc2() { return t('eras.speed_d2'); }
       },
       "Big Hair Era (1977-1993)": {
         name: "AstroTurf Speedsters",
-        desc1: "T1 (2+): Robos exitosos hacen +15 daño al lanzador",
-        desc2: "T2 (4+): Robos +30 daño y debuff de 3 turnos al rival"
+        get desc1() { return t('eras.astroturf_d1'); },
+        get desc2() { return t('eras.astroturf_d2'); }
       },
       "Steroid Era (1994-2005)": {
         name: "Bash Brothers",
-        desc1: "T1 (2+): Jonrones (HR) hacen +20 daño adicional",
-        desc2: "T2 (4+): HR hacen +40 daño; 50% fly sac anotador"
+        get desc1() { return t('eras.steroid_d1'); },
+        get desc2() { return t('eras.steroid_d2'); }
       },
       "Efficiency (2006-2015)": {
         name: "Moneyball Analytics",
-        desc1: "T1 (2+): Bases por bolas (BB) hacen +10 daño extra",
-        desc2: "T2 (4+): BB hacen +20 daño; outs hacen +10 daño"
+        get desc1() { return t('eras.moneyball_d1'); },
+        get desc2() { return t('eras.moneyball_d2'); }
       },
       "Modern Era (2016-Pres)": {
         name: "Three True Outcomes",
-        desc1: "T1 (2+): BB hacen 15 daño, Ponche -50% daño al equipo",
-        desc2: "T2 (4+): BB hacen 24 daño, Ponche -50% y no corta racha"
+        get desc1() { return t('eras.tto_d1'); },
+        get desc2() { return t('eras.tto_d2'); }
       }
     };
 
@@ -2280,7 +2299,7 @@ function initGameModeSelector() {
     // A. Render Era Synergies (Render ALL 9 to guide the user)
     const eraListTitle = document.createElement('div');
     eraListTitle.style.cssText = "font-family: 'Press Start 2P', monospace; font-size: 7px; color: var(--accent-color); margin-top: 5px; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px;";
-    eraListTitle.innerText = "⏳ Eras del Roster";
+    eraListTitle.innerText = t('eras.header');
     el.synergiesList.appendChild(eraListTitle);
 
     Object.keys(EraSynergyMeta).forEach(eraName => {
@@ -2325,7 +2344,7 @@ function initGameModeSelector() {
     // B. Render Franchise Synergies (Only teams with count >= 1)
     const teamListTitle = document.createElement('div');
     teamListTitle.style.cssText = "font-family: 'Press Start 2P', monospace; font-size: 7px; color: var(--accent-color); margin-top: 15px; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px;";
-    teamListTitle.innerText = "⚾ Franquicias del Roster";
+    teamListTitle.innerText = t('eras.franchises_header');
     el.synergiesList.appendChild(teamListTitle);
 
     let hasTeams = false;
@@ -2351,8 +2370,8 @@ function initGameModeSelector() {
       }
 
       const desc = count >= 4 
-        ? `Dinastía: Jugadores de ${team} obtienen +10 a todos sus stats en combate.`
-        : `Química (2+): Jugadores de ${team} obtienen +4 a todos sus stats en combate.`;
+        ? t('sidebar.dynasty_desc', { team: team })
+        : t('sidebar.chemistry_desc', { team: team });
 
       item.innerHTML = `
         <div class="synergy-item-header">
@@ -2370,7 +2389,7 @@ function initGameModeSelector() {
     if (!hasTeams) {
       const noneEl = document.createElement('div');
       noneEl.style.cssText = "color: #64748b; font-size: 10px; text-align: center; padding: 5px;";
-      noneEl.innerText = "Ningún equipo registrado.";
+      noneEl.innerText = t('sidebar.no_teams', 'Ningún equipo registrado.');
       el.synergiesList.appendChild(noneEl);
     }
 
@@ -2459,11 +2478,11 @@ function initGameModeSelector() {
     
     const titleEl = el.screenDraft.querySelector('h2');
     if (titleEl) {
-      titleEl.innerHTML = `<i class="fa-solid fa-file-signature"></i> Firma de Jugadores (Draft)`;
+      titleEl.innerHTML = `<i class="fa-solid fa-file-signature"></i> ` + t('draft.title');
     }
     const descEl = el.screenDraft.querySelector('p');
     if (descEl) {
-      descEl.innerText = "Selecciona una leyenda para contratar con tu presupuesto, o rechaza la firma para continuar la carrera.";
+      descEl.innerText = t('draft.midrun_desc');
     }
 
     const options = window.Game.getDraftPicks();
@@ -2481,7 +2500,7 @@ function initGameModeSelector() {
       const btnSign = document.createElement('button');
       if (canAfford) {
         btnSign.className = "btn";
-        btnSign.innerHTML = `<i class="fa-solid fa-file-signature"></i> Firmar ($${cost})`;
+        btnSign.innerHTML = t('draft.sign_btn', { cost: cost });
       } else {
         btnSign.className = "btn btn-secondary";
         btnSign.style.opacity = "0.5";
@@ -2530,7 +2549,7 @@ function initGameModeSelector() {
     const btnSkip = document.createElement('button');
     btnSkip.className = "btn btn-secondary";
     btnSkip.style.width = "100%";
-    btnSkip.innerHTML = `<i class="fa-solid fa-ban"></i> Rechazar Firma / Continuar`;
+    btnSkip.innerHTML = t('draft.decline_btn');
     btnSkip.addEventListener('click', () => {
       closeNodeCompleted();
     });
@@ -2540,7 +2559,7 @@ function initGameModeSelector() {
         <i class="fa-solid fa-hand"></i>
       </div>
       <p style="font-size:11px;color:#9ca3af;text-align:center;margin-bottom:16px;line-height:1.4;">
-        ¿No deseas contratar a ninguna leyenda o prefieres guardar tu dinero? Puedes rechazar la firma y avanzar en el mapa.
+        ${t('draft.decline_desc')}
       </p>
     `;
     skipCol.appendChild(btnSkip);
@@ -2559,11 +2578,11 @@ function initGameModeSelector() {
     
     const titleEl = el.screenDraft.querySelector('h2');
     if (titleEl) {
-      titleEl.innerHTML = `<i class="fa-solid fa-gift"></i> ¡Victoria! +$${earnings} y Recompensa`;
+      titleEl.innerHTML = `<i class="fa-solid fa-file-signature"></i> ` + t('draft.title');
     }
     const descEl = el.screenDraft.querySelector('p');
     if (descEl) {
-      descEl.innerText = "Selecciona una leyenda para unir a tu roster de forma permanente. Reemplazará a uno de tus novatos o estrellas actuales.";
+      descEl.innerText = t('draft.midrun_desc');
     }
 
     const options = window.Game.getPostMatchDraftPicks(isBoss);
@@ -2577,7 +2596,7 @@ function initGameModeSelector() {
       
       const btnSign = document.createElement('button');
       btnSign.className = "btn";
-      btnSign.innerHTML = `<i class="fa-solid fa-file-signature"></i> Reemplazar Jugador`;
+      btnSign.innerHTML = t('draft.sign_btn', { cost: 0 });
       btnSign.addEventListener('click', () => {
         currentDraftSelection = player;
         el.swapNewPlayerName.innerText = player.name;
@@ -2600,7 +2619,7 @@ function initGameModeSelector() {
     const btnSkip = document.createElement('button');
     btnSkip.className = "btn btn-secondary";
     btnSkip.style.width = "100%";
-    btnSkip.innerText = "Omitir / Continuar";
+    btnSkip.innerHTML = t('draft.decline_btn');
     btnSkip.addEventListener('click', () => {
       closeNodeCompleted();
     });
@@ -2610,7 +2629,7 @@ function initGameModeSelector() {
         <i class="fa-solid fa-forward"></i>
       </div>
       <p style="font-size:12px;color:#9ca3af;text-align:center;margin-bottom:20px;">
-        ¿No deseas cambiar a ningún jugador? Puedes omitir esta recompensa y continuar en el mapa.
+        ${t('draft.decline_desc')}
       </p>
     `;
     skipCol.appendChild(btnSkip);
@@ -2749,7 +2768,7 @@ function initGameModeSelector() {
   // PRE-FIGHT SCREEN SETUP
   function setupAndShowPreFightScreen() {
     const enemy = window.Game.getEnemyTeam();
-    el.preFightSubtitle.innerHTML = `Te enfrentas a la serie contra <strong style="color: #ef4444;">${enemy.name}</strong>.`;
+    el.preFightSubtitle.innerHTML = t('pre_fight.subtitle', { team: `<strong style="color: #ef4444;">${enemy.name}</strong>` });
 
     // 1. Render player's batters
     el.preFightPlayerLineup.innerHTML = "";
@@ -2957,75 +2976,75 @@ function initGameModeSelector() {
 
     switch(eventType) {
       case 'BB':
-        title = "BASE POR BOLAS";
+        title = t('popup.bb_title');
         color = "#3b82f6";
         icon = "fa-walking";
-        dmgText = `🚶 ¡PITCHER RECIBE DAÑO!`;
+        dmgText = `🚶 ${t('popup.bb_dmg')}`;
         borderColor = "#3b82f6";
         boxShadow = "0 0 30px rgba(59, 130, 246, 0.5), 0 0 15px rgba(59, 130, 246, 0.3)";
         break;
       case 'SO':
-        title = "¡PONCHE!";
+        title = t('popup.so_title');
         color = "#ef4444";
         icon = "fa-circle-xmark";
-        dmgText = `💀 DAÑO DIRECTO (IGNORA ESCUDO)`;
+        dmgText = `💀 ${t('popup.so_dmg')}`;
         borderColor = "#ef4444";
         boxShadow = "0 0 30px rgba(239, 68, 68, 0.5), 0 0 15px rgba(239, 68, 68, 0.3)";
         break;
       case 'OUT':
-        title = "OUT";
+        title = t('popup.out_title');
         color = "#9ca3af";
         icon = "fa-thumbs-down";
-        dmgText = `🛡️ DAÑO AL ESCUDO`;
+        dmgText = `🛡️ ${t('popup.out_dmg')}`;
         borderColor = "#9ca3af";
         boxShadow = "0 0 30px rgba(156, 163, 175, 0.5), 0 0 15px rgba(156, 163, 175, 0.3)";
         break;
       case '1B':
-        title = "SENCILLO (1B)";
+        title = t('popup.single_title');
         color = "#a7f3d0";
         icon = "fa-baseball-bat-ball";
-        dmgText = `⚾ DAÑO AL PITCHER`;
+        dmgText = `⚾ ${t('popup.single_dmg')}`;
         borderColor = "#10b981";
         boxShadow = "0 0 30px rgba(16, 185, 129, 0.5), 0 0 15px rgba(16, 185, 129, 0.3)";
         break;
       case '2B':
-        title = "DOBLE (2B) ⚡";
+        title = t('popup.double_title');
         color = "#10b981";
         icon = "fa-bolt-lightning";
-        dmgText = `⚡ DAÑO DUPLICADO`;
+        dmgText = `⚡ ${t('popup.double_dmg')}`;
         borderColor = "#10b981";
         boxShadow = "0 0 30px rgba(16, 185, 129, 0.6), 0 0 15px rgba(16, 185, 129, 0.4)";
         break;
       case '3B':
-        title = "TRIPLE (3B) 🔥";
+        title = t('popup.triple_title');
         color = "#06b6d4";
         icon = "fa-fire";
-        dmgText = `🔥 DAÑO TRIPLICADO`;
+        dmgText = `🔥 ${t('popup.triple_dmg')}`;
         borderColor = "#06b6d4";
         boxShadow = "0 0 30px rgba(6, 182, 212, 0.6), 0 0 15px rgba(6, 182, 212, 0.4)";
         break;
       case 'HR':
-        title = "¡JONRÓN! 🚀💥";
+        title = t('popup.hr_title');
         color = "#eab308";
         icon = "fa-rocket";
-        dmgText = `🚀 ¡DAÑO CRÍTICO MASIVO!`;
+        dmgText = `🚀 ${t('popup.hr_dmg')}`;
         borderColor = "#eab308";
         boxShadow = "0 0 45px rgba(234, 179, 8, 0.7), 0 0 20px rgba(234, 179, 8, 0.5)";
         break;
       case 'STEAL':
-        title = "¡ROBO DE BASE! 🏃⚡";
+        title = t('popup.steal_title');
         color = "#38bdf8";
         icon = "fa-person-running";
-        dmgText = `⚡ PITCHER DEBUFF: +20% DAÑO RECIBIDO`;
+        dmgText = `⚡ ${t('popup.steal_dmg')}`;
         borderColor = "#38bdf8";
         boxShadow = "0 0 35px rgba(56, 189, 248, 0.7)";
         break;
       case 'KO':
       case 'KO_PITCHER':
-        title = "¡K.O. AL LANZADOR! 💥";
+        title = t('popup.ko_title');
         color = "#f59e0b";
         icon = "fa-skull-crossbones";
-        dmgText = `🥊 ¡PITCHER RIVAL DERROTADO!`;
+        dmgText = `🥊 ${t('popup.ko_dmg')}`;
         borderColor = "#f59e0b";
         boxShadow = "0 0 35px rgba(245, 158, 11, 0.6)";
         break;
@@ -3391,19 +3410,19 @@ function initGameModeSelector() {
     const b = activeBattle.currentBoundaries();
     if (!b) return;
     zonesEl.innerHTML = [
-      `<div style="display:flex;justify-content:space-between;padding:1px 0;white-space:nowrap;"><span style="color:#3b82f6;">⚾ Boleto (BB)</span><span style="color:#3b82f6;font-weight:bold;">  1 – ${b.bbEnd}</span></div>`,
-      `<div style="display:flex;justify-content:space-between;padding:1px 0;"><span style="color:#ef4444;">💨 Ponche (SO)</span><span style="color:#ef4444;font-weight:bold;">${b.bbEnd + 1} – ${b.soEnd}</span></div>`,
-      `<div style="display:flex;justify-content:space-between;padding:1px 0;"><span style="color:#9ca3af;">🤚 Out (Fly/GB)</span><span style="color:#9ca3af;font-weight:bold;">${b.soEnd + 1} – ${b.outEnd}</span></div>`,
-      `<div style="display:flex;justify-content:space-between;padding:1px 0;"><span style="color:#a7f3d0;">✅ Sencillo (1B)</span><span style="color:#a7f3d0;font-weight:bold;">${b.outEnd + 1} – ${b.singleEnd}</span></div>`,
-      `<div style="display:flex;justify-content:space-between;padding:1px 0;"><span style="color:#10b981;">✅ Doble (2B)</span><span style="color:#10b981;font-weight:bold;">${b.singleEnd + 1} – ${b.doubleEnd}</span></div>`,
-      `<div style="display:flex;justify-content:space-between;padding:1px 0;"><span style="color:#06b6d4;">✅ Triple (3B)</span><span style="color:#06b6d4;font-weight:bold;">${b.doubleEnd + 1} – ${b.tripleEnd}</span></div>`,
-      `<div style="display:flex;justify-content:space-between;padding:1px 0;"><span style="color:#eab308;font-weight:bold;">🔥 Jonrón (HR)</span><span style="color:#eab308;font-weight:bold;">${b.tripleEnd + 1} – 100</span></div>`
+      `<div style="display:flex;justify-content:space-between;padding:1px 0;white-space:nowrap;"><span style="color:#3b82f6;">⚾ ${t('match.bb')}</span><span style="color:#3b82f6;font-weight:bold;">  1 – ${b.bbEnd}</span></div>`,
+      `<div style="display:flex;justify-content:space-between;padding:1px 0;"><span style="color:#ef4444;">💨 ${t('match.so')}</span><span style="color:#ef4444;font-weight:bold;">${b.bbEnd + 1} – ${b.soEnd}</span></div>`,
+      `<div style="display:flex;justify-content:space-between;padding:1px 0;"><span style="color:#9ca3af;">🤚 ${t('match.out')}</span><span style="color:#9ca3af;font-weight:bold;">${b.soEnd + 1} – ${b.outEnd}</span></div>`,
+      `<div style="display:flex;justify-content:space-between;padding:1px 0;"><span style="color:#a7f3d0;">✅ ${t('match.single')}</span><span style="color:#a7f3d0;font-weight:bold;">${b.outEnd + 1} – ${b.singleEnd}</span></div>`,
+      `<div style="display:flex;justify-content:space-between;padding:1px 0;"><span style="color:#10b981;">✅ ${t('match.double')}</span><span style="color:#10b981;font-weight:bold;">${b.singleEnd + 1} – ${b.doubleEnd}</span></div>`,
+      `<div style="display:flex;justify-content:space-between;padding:1px 0;"><span style="color:#06b6d4;">✅ ${t('match.triple')}</span><span style="color:#06b6d4;font-weight:bold;">${b.doubleEnd + 1} – ${b.tripleEnd}</span></div>`,
+      `<div style="display:flex;justify-content:space-between;padding:1px 0;"><span style="color:#eab308;font-weight:bold;">🔥 ${t('match.hr')}</span><span style="color:#eab308;font-weight:bold;">${b.tripleEnd + 1} – 100</span></div>`
     ].join('');
   }
 
   // ── APPEND LOG LINE (replaces the old event-based playNextMatchEvent) ────────
   function appendLogLine(ev) {
-    if (!ev || !el.matchLogLines) return;
+    if (!ev || !ev.playText || !el.matchLogLines) return;
     const logLine = document.createElement('div');
     logLine.className = 'log-line';
     if (['START','END','KO_PITCHER','INNING_END','NEXT_PITCHER'].includes(ev.playType))
@@ -3580,10 +3599,10 @@ function initGameModeSelector() {
 
     const bannerColor = isWin ? '#00ff66' : '#ef4444';
     const bannerGlow = isWin ? 'rgba(0, 255, 102, 0.6)' : 'rgba(239, 68, 68, 0.6)';
-    const titleText = isWin ? '🏆 ¡VICTORIA DE LA SERIE! 🏆' : '💀 DERROTA EN LA SERIE 💀';
+    const titleText = isWin ? t('match.win_title') : t('match.loss_title');
     const subText = isWin
-      ? `¡Extraordinario! Lograste noquear a la rotación completa de ${activeBattle.homeTeam.name}.`
-      : `Los lanzadores de ${activeBattle.homeTeam.name} dominaron la serie. Tu HP llegó a 0.`;
+      ? t('match.win_desc', { team: activeBattle.homeTeam.name })
+      : t('match.loss_desc', { team: activeBattle.homeTeam.name });
 
     modal.innerHTML = `
       <div style="
@@ -3616,7 +3635,7 @@ function initGameModeSelector() {
           width: 100%;
           box-shadow: 0 0 15px ${bannerGlow};
         ">
-          ${isWin ? 'RECLAMAR RECOMPENSAS <i class="fa-solid fa-arrow-right"></i>' : 'VER RESULTADOS <i class="fa-solid fa-arrow-right"></i>'}
+          ${isWin ? t('match.claim_rewards') + ' <i class="fa-solid fa-arrow-right"></i>' : t('match.see_results') + ' <i class="fa-solid fa-arrow-right"></i>'}
         </button>
       </div>
     `;

@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+check_syntax.py
+fix_locales.py
+cwpa_official_all_years.csv
+genesis_sepia_portrait.jpg
+i18next.min.js

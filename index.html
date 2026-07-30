@@ -30,17 +30,17 @@
     <div class="game-hud hidden" id="game-hud">
       <div class="hud-item stage">
         <i class="fa-solid fa-map-location-dot"></i>
-        <span>Etapa: <strong id="hud-stage-val">1/10</strong></span>
+        <span><span data-i18n="hud.stage">Etapa:</span> <strong id="hud-stage-val">1/10</strong></span>
       </div>
       <div class="hud-item budget">
         <i class="fa-solid fa-money-bill-wave"></i>
-        <span>Presupuesto: <strong id="hud-budget-val">$100</strong></span>
+        <span><span data-i18n="hud.budget">Presupuesto:</span> <strong id="hud-budget-val">$100</strong></span>
       </div>
       <button class="btn btn-secondary" id="btn-toggle-roster-view" style="padding: 6px 12px; font-size: 13px;">
-        <i class="fa-solid fa-users-gear"></i> Alineación
+        <i class="fa-solid fa-users-gear"></i> <span data-i18n="hud.roster">Alineación</span>
       </button>
       <button class="btn btn-secondary" id="btn-toggle-synergies-mobile" style="padding: 6px 12px; font-size: 13px;">
-        <i class="fa-solid fa-bolt"></i> Sinergias
+        <i class="fa-solid fa-bolt"></i> <span data-i18n="hud.synergies">Sinergias</span>
       </button>
     </div>
   </header>
@@ -52,11 +52,11 @@
     <!-- SCREEN 0: GAME MODE SELECTOR (POKELIKE STYLE) -->
     <div class="glass-panel" id="screen-mode-select" style="position: relative; max-width: 900px; margin: 20px auto; text-align: center; padding: 30px 20px;">
       
-      <div style="font-family: 'Press Start 2P', monospace; font-size: 22px; color: #10b981; margin-bottom: 8px; letter-spacing: 2px; text-shadow: 0 0 15px rgba(16,185,129,0.5);">
+      <div style="font-family: 'Press Start 2P', monospace; font-size: 22px; color: #10b981; margin-bottom: 8px; letter-spacing: 2px; text-shadow: 0 0 15px rgba(16,185,129,0.5);" data-i18n="mode_select.app_title">
         ⚾ BASE-ROGUE
       </div>
 
-      <div style="font-size: 13px; color: #9ca3af; margin-bottom: 30px;">
+      <div style="font-size: 13px; color: #9ca3af; margin-bottom: 30px;" data-i18n="mode_select.select_mode">
         SELECCIONA EL MODO DE JUEGO
       </div>
 
@@ -64,12 +64,12 @@
         <!-- MODE 1: STORY MODE -->
         <div class="mode-card story-card" id="card-mode-story">
           <div class="mode-icon">📜</div>
-          <div class="mode-title">MODO HISTORIA</div>
-          <div class="mode-subtitle">TEMPORADAS 1901 – 2025</div>
-          <div class="mode-desc">
+          <div class="mode-title" data-i18n="mode_select.story_title">MODO HISTORIA</div>
+          <div class="mode-subtitle" data-i18n="mode_select.story_subtitle">TEMPORADAS 1901 – 2025</div>
+          <div class="mode-desc" data-i18n="mode_select.story_desc">
             Compite en cualquier año histórico de la MLB. Enfréntate a los equipos reales de esa temporada y a sus 3 mejores lanzadores hasta llegar al Campeón de la Serie Mundial.
           </div>
-          <button class="btn btn-mode" id="btn-select-story-mode">
+          <button class="btn btn-mode" id="btn-select-story-mode" data-i18n="mode_select.story_btn">
             ⚾ SELECCIONAR TEMPORADA
           </button>
         </div>
@@ -77,12 +77,12 @@
         <!-- MODE 2: QUICK PLAY / CLASSIC -->
         <div class="mode-card quick-card" id="card-mode-quick">
           <div class="mode-icon">⚡</div>
-          <div class="mode-title">PARTIDA RÁPIDA</div>
-          <div class="mode-subtitle">MODO CLÁSICO</div>
-          <div class="mode-desc">
+          <div class="mode-title" data-i18n="mode_select.quick_title">PARTIDA RÁPIDA</div>
+          <div class="mode-subtitle" data-i18n="mode_select.quick_subtitle">MODO CLÁSICO</div>
+          <div class="mode-desc" data-i18n="mode_select.quick_desc">
             La experiencia clásica BaseRogue, enfrentate a oponentes legendarios de distintas eras
           </div>
-          <button class="btn btn-mode" id="btn-select-quick-mode">
+          <button class="btn btn-mode" id="btn-select-quick-mode" data-i18n="mode_select.quick_btn">
             🚀 JUGAR MODO CLÁSICO
           </button>
         </div>
@@ -96,29 +96,29 @@
         
         <button id="btn-close-season-modal" style="position: absolute; top: 12px; right: 14px; background: none; border: none; color: #9ca3af; font-size: 18px; cursor: pointer;">✕</button>
 
-        <div style="font-family: 'Press Start 2P', monospace; font-size: 13px; color: #10b981; margin-bottom: 10px;">
+        <div style="font-family: 'Press Start 2P', monospace; font-size: 13px; color: #10b981; margin-bottom: 10px;" data-i18n="season_select.title">
           📜 SELECCIONA LA TEMPORADA
         </div>
-        <p style="font-size: 11px; color: #9ca3af; line-height: 1.4; margin-bottom: 20px;">
+        <p style="font-size: 11px; color: #9ca3af; line-height: 1.4; margin-bottom: 20px;" data-i18n="season_select.desc">
           Elige el año para competir contra todos los equipos reales de esa época con sus 3 mejores pitchers por WAR.
         </p>
 
         <div id="modal-season-controls">
-<div style="margin-bottom: 25px;">
-          <label style="display: block; font-family: 'Press Start 2P', monospace; font-size: 9px; color: #f59e0b; margin-bottom: 8px;">AÑO DE LA TEMPORADA:</label>
+        <div style="margin-bottom: 25px;">
+          <label style="display: block; font-family: 'Press Start 2P', monospace; font-size: 9px; color: #f59e0b; margin-bottom: 8px;" data-i18n="season_select.year_label">AÑO DE LA TEMPORADA:</label>
           <select id="select-season-year" style="width: 100%; padding: 12px; font-family: 'Press Start 2P', monospace; font-size: 11px; background: #000; color: #10b981; border: 2px solid #10b981; border-radius: 8px; cursor: pointer; outline: none;">
-            <option value="random">🎲 Random Season</option>
+            <option value="random" data-i18n="season_select.random">🎲 Random Season</option>
           </select>
         </div>
 
-        <button id="btn-confirm-start-season" class="btn" style="width: 100%; padding: 14px; font-size: 11px; font-family: 'Press Start 2P', monospace; background: linear-gradient(135deg, #10b981, #059669); border: 2px solid #34d399; box-shadow: 0 0 15px rgba(16,185,129,0.4); cursor: pointer;">
+        <button id="btn-confirm-start-season" class="btn" style="width: 100%; padding: 14px; font-size: 11px; font-family: 'Press Start 2P', monospace; background: linear-gradient(135deg, #10b981, #059669); border: 2px solid #34d399; box-shadow: 0 0 15px rgba(16,185,129,0.4); cursor: pointer;" data-i18n="season_select.start_btn">
           ⚾ EMPEZAR TEMPORADA HISTÓRICA
         </button>
         </div>
 
         <!-- ROULETTE ANIMATION INSIDE MODAL -->
         <div id="modal-roulette-container" class="hidden" style="margin-top: 15px;">
-          <div style="font-family: 'Press Start 2P', monospace; font-size: 11px; color: #ffd700; margin-bottom: 12px;">
+          <div style="font-family: 'Press Start 2P', monospace; font-size: 11px; color: #ffd700; margin-bottom: 12px;" data-i18n="season_select.roulette_title">
             🎲 SORTEANDO TEMPORADA 🎲
           </div>
           <div id="season-roulette-box" class="roulette-box" style="margin: 0 auto 15px auto; width: 100%; padding: 20px 10px; background: #000; border: 3px solid #ffd700; border-radius: 10px; transition: all 0.3s ease;">
@@ -129,7 +129,7 @@
               Steroid Sluggers (1994-2005)
             </div>
           </div>
-          <div id="roulette-status-msg" style="font-family: 'Press Start 2P', monospace; font-size: 9px; color: #e2e8f0; min-height: 20px;">
+          <div id="roulette-status-msg" style="font-family: 'Press Start 2P', monospace; font-size: 9px; color: #e2e8f0; min-height: 20px;" data-i18n="season_select.roulette_status">
             Buscando ano historico...
           </div>
         </div>
@@ -146,30 +146,30 @@
       <!-- Ratings Info Dropdown -->
       <div id="ratings-info-dropdown" class="hidden">
         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed rgba(255,255,255,0.2); padding-bottom: 8px; margin-bottom: 10px;">
-          <span style="font-family: 'Press Start 2P', monospace; font-size: 9px; color: #3b82f6;">📊 GUÍA DE RATINGS</span>
+          <span style="font-family: 'Press Start 2P', monospace; font-size: 9px; color: #3b82f6;" data-i18n="ratings_guide.title">📊 GUÍA DE RATINGS</span>
           <button id="btn-close-ratings-info" style="background:none;border:none;color:#9ca3af;font-size:14px;cursor:pointer;padding:0 4px;">&times;</button>
         </div>
         <div style="display: flex; flex-direction: column; gap: 8px; font-size: 10.5px;">
-          <div style="background:rgba(255,255,255,0.04);padding:6px 8px;border-radius:6px;border-left:3px solid #a7f3d0;">
+          <div style="background:rgba(255,255,255,0.04);padding:6px 8px;border-radius:6px;border-left:3px solid #a7f3d0;" data-i18n-html="ratings_guide.con">
             <strong style="color:#a7f3d0;">CON — Contacto:</strong> Determina la probabilidad de conectar un batazo. Jugadores con alto CON tienen más chances de sencillos e hits en general.
           </div>
-          <div style="background:rgba(255,255,255,0.04);padding:6px 8px;border-radius:6px;border-left:3px solid #f59e0b;">
+          <div style="background:rgba(255,255,255,0.04);padding:6px 8px;border-radius:6px;border-left:3px solid #f59e0b;" data-i18n-html="ratings_guide.pwr">
             <strong style="color:#f59e0b;">PWR — Poder:</strong> Probabilidad de conectar extra-bases (dobles, triples, jonrones). También aumenta el daño al pitcher rival en hits largos.
           </div>
-          <div style="background:rgba(255,255,255,0.04);padding:6px 8px;border-radius:6px;border-left:3px solid #3b82f6;">
+          <div style="background:rgba(255,255,255,0.04);padding:6px 8px;border-radius:6px;border-left:3px solid #3b82f6;" data-i18n-html="ratings_guide.eye">
             <strong style="color:#3b82f6;">EYE — Ojo/Vista:</strong> Probabilidad de obtener boletos (BB). Reduce la zona de ponches. Clave para no recibir daño directo al HP.
           </div>
-          <div style="background:rgba(255,255,255,0.04);padding:6px 8px;border-radius:6px;border-left:3px solid #38bdf8;">
+          <div style="background:rgba(255,255,255,0.04);padding:6px 8px;border-radius:6px;border-left:3px solid #38bdf8;" data-i18n-html="ratings_guide.spd">
             <strong style="color:#38bdf8;">SPD — Velocidad:</strong> Activa intentos de robo de base en sencillos (debuff +20% daño al pitcher). También mejora la probabilidad de convertir hits en extra-bases.
           </div>
-          <div style="background:rgba(255,255,255,0.04);padding:6px 8px;border-radius:6px;border-left:3px solid #a855f7;">
+          <div style="background:rgba(255,255,255,0.04);padding:6px 8px;border-radius:6px;border-left:3px solid #a855f7;" data-i18n-html="ratings_guide.def">
             <strong style="color:#a855f7;">DEF — Defensa:</strong> Contribuye al <strong>Escudo</strong> del equipo. Cuanto mayor DEF promedio, más escudo tienes disponible para absorber OUTs antes de perder HP.
           </div>
         </div>
       </div>
 
-      <h2>BaseRogue</h2>
-      <p style="font-size: 14px; max-width: 600px; margin: 0 auto 16px auto; color: #9ca3af; line-height: 1.6;">
+      <h2 data-i18n="menu.intro_title">BaseRogue</h2>
+      <p style="font-size: 14px; max-width: 600px; margin: 0 auto 16px auto; color: #9ca3af; line-height: 1.6;" data-i18n-html="menu.intro_desc" data-i18n-params='{"rounds":9,"hp":100}'>
         Elige a tus jugadores en <strong style="color:var(--primary-color);">9 rondas de draft</strong> para armar tu alineación completa de 9 bateadores.
         Organiza su posición defensiva (Drag & Drop) y su orden al bate en tiempo real.
         Luego <strong style="color:var(--primary-color);">lanza el dado</strong> en cada turno para determinar el resultado al bate.
@@ -186,10 +186,10 @@
         <!-- Left Sidebar: Active Team (Batting order) & Upgrades -->
         <div class="workspace-sidebar left-sidebar" id="roster-sidebar-panel">
           <div class="sidebar-header" style="display: flex; justify-content: space-between; align-items: center;">
-            <span><i class="fa-solid fa-users"></i> ALINEACIÓN</span>
+            <span><i class="fa-solid fa-users"></i> <span data-i18n="hud.roster">ALINEACIÓN</span></span>
             <button id="btn-close-roster-mobile" style="background: none; border: none; color: #9ca3af; font-size: 16px; cursor: pointer; display: none;"><i class="fa-solid fa-times"></i></button>
           </div>
-          <div style="font-size: 7px; color: #9ca3af; margin-bottom: 8px; text-align: center; text-transform: uppercase;">
+          <div style="font-size: 7px; color: #9ca3af; margin-bottom: 8px; text-align: center; text-transform: uppercase;" data-i18n="draft.drag_to_reorder">
             Arrastra para reordenar
           </div>
           <!-- Vertical Roster list -->
@@ -197,13 +197,13 @@
             <!-- 9 dynamic slots loaded via JS -->
           </div>
           
-          <button id="btn-auto-sort-global" class="btn btn-secondary" style="width: 100%; font-size: 7px; padding: 6px; margin-top: 8px; background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); margin-bottom: 8px;" title="Ordena lógicamente: Velocidad al 1ro, Poder al 4to, Mejores bates al 2do y 3ro.">
+          <button id="btn-auto-sort-global" class="btn btn-secondary" style="width: 100%; font-size: 7px; padding: 6px; margin-top: 8px; background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); margin-bottom: 8px;" data-i18n="draft.auto_sort" data-i18n-title="draft.auto_sort_title" title="Ordena lógicamente: Velocidad al 1ro, Poder al 4to, Mejores bates al 2do y 3ro.">
             ⚙️ AUTO ORDEN
           </button>
           
           <!-- Club Upgrades (items) -->
           <div class="upgrades-section" style="margin-top: auto; border-top: 4px double rgba(255,255,255,0.1); padding-top: 10px;">
-            <div class="sidebar-sub-header" style="margin-bottom: 6px; text-transform: uppercase; font-size: 9px; color: var(--accent-color); font-family: 'Press Start 2P', monospace;"><i class="fa-solid fa-suitcase"></i> MEJORAS</div>
+            <div class="sidebar-sub-header" style="margin-bottom: 6px; text-transform: uppercase; font-size: 9px; color: var(--accent-color); font-family: 'Press Start 2P', monospace;" data-i18n-html="sidebar.upgrades"><i class="fa-solid fa-suitcase"></i> MEJORAS</div>
             <div style="display:flex; flex-wrap:wrap; gap: 6px;" id="roster-purchased-items">
               <!-- Dynamically populated -->
             </div>
@@ -215,8 +215,8 @@
 
           <!-- SCREEN 2: Branching Run Map -->
           <div class="glass-panel hidden" id="screen-map">
-            <h2 style="margin-bottom: 8px;"><i class="fa-solid fa-map"></i> Mapa del Campeonato</h2>
-            <p style="color: #9ca3af; font-size: 14px; margin-bottom: 20px;">
+            <h2 style="margin-bottom: 8px;" data-i18n-html="headers.map"><i class="fa-solid fa-map"></i> Mapa del Campeonato</h2>
+            <p style="color: #9ca3af; font-size: 14px; margin-bottom: 20px;" data-i18n="map.desc">
               Elige tu camino. Gana partidos para conseguir dinero, recluta jugadores y entrena tu plantilla.
             </p>
             <div class="map-viewport" style="position: relative;">
@@ -229,15 +229,15 @@
 
           <!-- SCREEN 2.5: PRE-FIGHT (CHOOSE YOUR ORDER & LINEUP PREVIEW) -->
           <div class="glass-panel hidden" id="screen-pre-fight" style="max-width: 900px; margin: 0 auto 24px auto;">
-            <h2 style="margin-bottom: 8px; text-align: center;"><i class="fa-solid fa-shield-halved"></i> Preparación de la Serie</h2>
-            <p style="color: #9ca3af; font-size: 14px; margin-bottom: 24px; text-align: center;" id="pre-fight-subtitle">
+            <h2 style="margin-bottom: 8px; text-align: center;" data-i18n-html="pre_fight.title"><i class="fa-solid fa-shield-halved"></i> Preparación de la Serie</h2>
+            <p style="color: #9ca3af; font-size: 14px; margin-bottom: 24px; text-align: center;" id="pre-fight-subtitle" data-i18n="pre_fight.subtitle">
               Vas a enfrentarte a la rotación de lanzadores de un equipo. Asegúrate de que tus bateadores estén listos.
             </p>
             
             <div class="pre-fight-columns">
               <!-- Left Column: Player's Batters -->
               <div class="glass-panel flex-1" style="background: rgba(0,0,0,0.35); margin-bottom: 0; padding: 16px;">
-                <h3 style="color: var(--primary-color); border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px; margin-bottom: 12px; font-size: 15px;"><i class="fa-solid fa-users"></i> Tus Bateadores (HP)</h3>
+                <h3 style="color: var(--primary-color); border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px; margin-bottom: 12px; font-size: 15px;" data-i18n-html="pre_fight.batters_title"><i class="fa-solid fa-users"></i> Tus Bateadores (HP)</h3>
                 <div id="pre-fight-player-lineup" style="display: flex; flex-direction: column; gap: 8px;">
                   <!-- Rendered via JS -->
                 </div>
@@ -246,13 +246,13 @@
               <!-- Center area: VS / Fight button -->
               <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 160px; gap: 15px;">
                 <div style="font-size: 36px; font-weight: 800; color: var(--accent-color); text-shadow: 0 0 10px var(--accent-glow);">VS</div>
-                <button class="btn" id="btn-pre-fight-start" style="padding: 14px 28px; font-size: 18px; width: 100%;"><i class="fa-solid fa-fire-flame-curved"></i> ¡AL COMBATE!</button>
-                <button class="btn btn-secondary" id="btn-pre-fight-back-map" style="width: 100%; padding: 10px; font-size: 14px;"><i class="fa-solid fa-arrow-left"></i> Volver al Mapa</button>
+                <button class="btn" id="btn-pre-fight-start" style="padding: 14px 28px; font-size: 18px; width: 100%;" data-i18n-html="pre_fight.start_btn"><i class="fa-solid fa-fire-flame-curved"></i> ¡AL COMBATE!</button>
+                <button class="btn btn-secondary" id="btn-pre-fight-back-map" style="width: 100%; padding: 10px; font-size: 14px;" data-i18n-html="pre_fight.back_map_btn"><i class="fa-solid fa-arrow-left"></i> Volver al Mapa</button>
               </div>
               
               <!-- Right Column: Enemy Pitchers -->
               <div class="glass-panel flex-1" style="background: rgba(0,0,0,0.35); margin-bottom: 0; padding: 16px;">
-                <h3 style="color: #ef4444; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px; margin-bottom: 12px; font-size: 15px;"><i class="fa-solid fa-skull-crossbones"></i> Rotación Oponente (HP)</h3>
+                <h3 style="color: #ef4444; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px; margin-bottom: 12px; font-size: 15px;" data-i18n-html="pre_fight.pitchers_title"><i class="fa-solid fa-skull-crossbones"></i> Rotación Oponente (HP)</h3>
                 <div id="pre-fight-enemy-rotation" style="display: flex; flex-direction: column; gap: 8px;">
                   <!-- Rendered via JS -->
                 </div>
@@ -309,7 +309,7 @@
               </div>
             </div>
 
-            <h2 id="match-header-title" style="margin-bottom: 16px;"><i class="fa-solid fa-trophy"></i> Bateadores al Combate</h2>
+            <h2 id="match-header-title" style="margin-bottom: 16px;" data-i18n-html="headers.match"><i class="fa-solid fa-trophy"></i> Bateadores al Combate</h2>
             
             <div class="match-arena">
               <!-- Left Column: 1v1 Battle Arena -->
@@ -317,14 +317,14 @@
                 
                 <!-- LED Stats Board (Simple 8-bit indicators) -->
                  <div class="scoreboard" style="width: 100%; text-align: center; font-family: 'Press Start 2P', monospace; font-size: 10px; padding: 12px; line-height: 1.6;">
-                    <div id="scoreboard-inning-text" style="color: var(--accent-color); margin-bottom: 12px;">ARENA COMBATE</div>
+                    <div id="scoreboard-inning-text" style="color: var(--accent-color); margin-bottom: 12px;" data-i18n="match.arena">ARENA COMBATE</div>
                     <div style="display: flex; justify-content: space-around; font-size: 8px; margin-bottom: 8px;">
-                      <div>CARRERAS: <span id="score-away-r" style="color: var(--primary-color);">0</span></div>
-                      <div>OUTS: <span id="score-home-r" style="color: #ef4444;">0</span></div>
+                      <div><span data-i18n="match.runs">CARRERAS:</span> <span id="score-away-r" style="color: var(--primary-color);">0</span></div>
+                      <div><span data-i18n="match.outs">OUTS:</span> <span id="score-home-r" style="color: #ef4444;">0</span></div>
                     </div>
                     <div style="display: flex; justify-content: space-around; font-size: 8px; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 8px;">
-                      <div>INNING: <span id="score-away-h" style="color: var(--accent-color);">1 / 3</span></div>
-                      <div>K.O. RIVALES: <span id="score-home-h" style="color: #ca8a04;">0 / 3</span></div>
+                      <div><span data-i18n="match.inning">INNING:</span> <span id="score-away-h" style="color: var(--accent-color);">1 / 3</span></div>
+                      <div><span data-i18n="match.rival_ko">K.O. RIVALES:</span> <span id="score-home-h" style="color: #ca8a04;">0 / 3</span></div>
                       <span id="score-away-e" class="hidden">0</span>
                       <span id="score-home-e" class="hidden">0</span>
                     </div>
@@ -592,6 +592,8 @@
     });
   </script>
   <!-- Load Game Scripts -->
+  <script src="src/lib/i18next.min.js"></script>
+  <script src="src/i18n.js"></script>
   <script src="players.js?v=167"></script>
   <script src="pitchers_pool.js?v=167"></script>
   <script src="opponents_database.js?v=9"></script>

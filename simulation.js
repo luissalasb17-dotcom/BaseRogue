@@ -670,21 +670,21 @@
     _checkEndConditions() {
       if (this.battleOver) return;
 
+      const _t = (key, params, fallback) => (typeof window.t === 'function' ? window.t(key, params) : (fallback || key));
       const allPitchersDown = this.enemyPitcherIndex >= this.homeTeam.pitchers.length;
       const teamDead = this.teamHP <= 0;
-      const outOfInnings = this.inning > 3 && this.outs >= 3;
 
       if (allPitchersDown) {
         this.winner = 'player';
         this.battleOver = true;
         this.logEvent('END',
-          `🏆 ¡VICTORIA! ¡Has derrotado a toda la rotación de ${this.homeTeam.name}!`,
+          _t('match.log_victory', {}, `🏆 ¡VICTORIA! ¡Has derrotado a toda la rotación de ${this.homeTeam.name}!`),
           'END');
       } else if (teamDead) {
         this.winner = 'pitcher';
         this.battleOver = true;
         this.logEvent('END',
-          `💀 DERROTA. Tu equipo llegó a 0 HP. Los ponches acabaron con tu alineación.`,
+          _t('match.log_defeat', {}, `💀 DERROTA. Tu equipo llegó a 0 HP. Los ponches acabaron con tu alineación.`),
           'END');
       } else if (this.inning > 3) {
         this.winner = 'pitcher';
@@ -715,6 +715,7 @@
 
     // ── INTERNAL: deal damage to active pitcher ─────────────────────
     _damagePitcher(dmg) {
+      const _t = (key, params, fallback) => (typeof window.t === 'function' ? window.t(key, params) : (fallback || key));
       let remainingDmg = dmg;
       while (remainingDmg > 0 && this.activePitcher) {
         const p = this.activePitcher;
@@ -727,7 +728,7 @@
           const overflow = remainingDmg - p.hp;
           p.hp = 0;
           this.logEvent('KO_PITCHER',
-            `[K.O.] ¡${p.name} ha sido derrotado!`,
+            _t('match.log_ko', { name: p.name }, `[K.O.] ¡${p.name} ha sido derrotado!`),
             'KO', p.name);
 
           this.enemyPitcherIndex++;
@@ -737,16 +738,16 @@
             if (residualDmg > 0) {
               nextP.hp = Math.max(1, nextP.hp - residualDmg);
               this.logEvent('RESIDUAL_DMG',
-                `⚡ ¡Daño residual! Entra al relevo ${nextP.name} absorbiendo -${residualDmg} HP de impacto (${nextP.hp}/${nextP.maxHp} HP restantes).`,
+                _t('match.log_residual', { name: nextP.name, dmg: residualDmg, hp: nextP.hp, maxHp: nextP.maxHp }, `⚡ ¡Daño residual! Entra al relevo ${nextP.name} absorbiendo -${residualDmg} HP de impacto (${nextP.hp}/${nextP.maxHp} HP restantes).`),
                 'RESIDUAL', nextP.name);
             } else {
               this.logEvent('NEXT_PITCHER',
-                `Entra al relevo: ${nextP.name} (${nextP.hp}/${nextP.maxHp} HP).`,
+                _t('match.log_relief', { name: nextP.name, hp: nextP.hp, maxHp: nextP.maxHp }, `Entra al relevo: ${nextP.name} (${nextP.hp}/${nextP.maxHp} HP).`),
                 'NEXT', nextP.name);
             }
           } else if (nextP) {
             this.logEvent('NEXT_PITCHER',
-              `Entra al relevo: ${nextP.name} (${nextP.hp}/${nextP.maxHp} HP).`,
+              _t('match.log_relief', { name: nextP.name, hp: nextP.hp, maxHp: nextP.maxHp }, `Entra al relevo: ${nextP.name} (${nextP.hp}/${nextP.maxHp} HP).`),
               'NEXT', nextP.name);
           }
           break;

@@ -5,11 +5,11 @@
   const ManagerEventsList = [
     {
       id: "ev_cork",
-      title: "Bates de Contrabando",
-      desc: "Un misterioso comerciante te ofrece bates modificados con corcho. Aumentará la potencia de tu equipo, pero afectará el contacto de la bola.",
+      get title() { return window.t ? window.t("events.ev_cork_title") : "Bates de Contrabando"; },
+      get desc() { return window.t ? window.t("events.ev_cork_desc") : "Un misterioso comerciante te ofrece bates modificados con corcho. Aumentará la potencia de tu equipo, pero afectará el contacto de la bola."; },
       choices: [
         {
-          text: "Modificar bates (+15 Fuerza, -4 Contacto a todo el equipo)",
+          get text() { return window.t ? window.t("events.ev_cork_choice1") : "Modificar bates (+15 Fuerza, -4 Contacto a todo el equipo)"; },
           cost: 15,
           action: (G) => {
             G.activeItemBonuses.teamPwr += 15;
@@ -17,7 +17,7 @@
           }
         },
         {
-          text: "Rechazar oferta (No hacer nada)",
+          get text() { return window.t ? window.t("events.ev_cork_choice2") : "Rechazar oferta (No hacer nada)"; },
           cost: 0,
           action: (G) => {}
         }
@@ -25,11 +25,11 @@
     },
     {
       id: "ev_fitness",
-      title: "Preparador Físico Retro",
-      desc: "Un entrenador físico del campeonato de 1982 se ofrece a coordinar una rutina de acondicionamiento intensa para tu alineación.",
+      get title() { return window.t ? window.t("events.ev_fitness_title") : "Preparador Físico Retro"; },
+      get desc() { return window.t ? window.t("events.ev_fitness_desc") : "Un entrenador físico del campeonato de 1982 se ofrece a coordinar una rutina de acondicionamiento intensa para tu alineación."; },
       choices: [
         {
-          text: "Rutina cardiovascular (+40 Stamina a toda la alineación)",
+          get text() { return window.t ? window.t("events.ev_fitness_choice1") : "Rutina cardiovascular (+40 Stamina a toda la alineación)"; },
           cost: 20,
           action: (G) => {
             Object.keys(G.roster).forEach(pos => {
@@ -38,7 +38,7 @@
           }
         },
         {
-          text: "Continuar sin entrenar",
+          get text() { return window.t ? window.t("events.ev_fitness_choice2") : "Continuar sin entrenar"; },
           cost: 0,
           action: (G) => {}
         }
@@ -46,11 +46,11 @@
     },
     {
       id: "ev_cryo",
-      title: "Cápsula de Hidroterapia",
-      desc: "Instalas una cámara de recuperación avanzada en el vestuario. Cura a todo el equipo al instante, pero es costosa.",
+      get title() { return window.t ? window.t("events.ev_cryo_title") : "Cápsula de Hidroterapia"; },
+      get desc() { return window.t ? window.t("events.ev_cryo_desc") : "Instalas una cámara de recuperación avanzada en el vestuario. Cura a todo el equipo al instante, pero es costosa."; },
       choices: [
         {
-          text: "Criogenización (Recupera 100% de Stamina a todos)",
+          get text() { return window.t ? window.t("events.ev_cryo_choice1") : "Criogenización (Recupera 100% de Stamina a todos)"; },
           cost: 30,
           action: (G) => {
             Object.keys(G.roster).forEach(pos => {
@@ -59,7 +59,7 @@
           }
         },
         {
-          text: "Prescindir de la cámara",
+          get text() { return window.t ? window.t("events.ev_cryo_choice2") : "Prescindir de la cámara"; },
           cost: 0,
           action: (G) => {}
         }
@@ -67,18 +67,18 @@
     },
     {
       id: "ev_pinetar",
-      title: "Brea de Pino Japonesa",
-      desc: "Consigues un tarro de brea especial que mejora el agarre y agarre del bate, afinando el contacto.",
+      get title() { return window.t ? window.t("events.ev_pinetar_title") : "Brea de Pino Japonesa"; },
+      get desc() { return window.t ? window.t("events.ev_pinetar_desc") : "Consigues un tarro de brea especial que mejora el agarre y agarre del bate, afinando el contacto."; },
       choices: [
         {
-          text: "Comprar brea (+8 Contacto global a todo el equipo)",
+          get text() { return window.t ? window.t("events.ev_pinetar_choice1") : "Comprar brea (+8 Contacto global a todo el equipo)"; },
           cost: 12,
           action: (G) => {
             G.activeItemBonuses.teamCon += 8;
           }
         },
         {
-          text: "Seguir igual",
+          get text() { return window.t ? window.t("events.ev_pinetar_choice2") : "Seguir igual"; },
           cost: 0,
           action: (G) => {}
         }
@@ -86,18 +86,18 @@
     },
     {
       id: "ev_bribe",
-      title: "Cazatalento en Apuros",
-      desc: "Un caza-talentos te ofrece dinero del presupuesto del equipo rival a cambio de canjear un poco de enfoque deportivo.",
+      get title() { return window.t ? window.t("events.ev_bribe_title") : "Cazatalento en Apuros"; },
+      get desc() { return window.t ? window.t("events.ev_bribe_desc") : "Un caza-talentos te ofrece dinero del presupuesto del equipo rival a cambio de canjear un poco de enfoque deportivo."; },
       choices: [
         {
-          text: "Aceptar dinero (Ganas +$45 presupuesto, pero pierdes -5 Disciplina/Eye global)",
+          get text() { return window.t ? window.t("events.ev_bribe_choice1") : "Aceptar dinero (Ganas +$45 presupuesto, pero pierdes -5 Disciplina/Eye global)"; },
           cost: -45, // negative cost means gaining budget
           action: (G) => {
             G.activeItemBonuses.teamEye -= 5;
           }
         },
         {
-          text: "Denunciarlo al comisionado (Ganas +8 Disciplina/Eye global en tu equipo)",
+          get text() { return window.t ? window.t("events.ev_bribe_choice2") : "Denunciarlo al comisionado (Ganas +8 Disciplina/Eye global en tu equipo)"; },
           cost: 10,
           action: (G) => {
             G.activeItemBonuses.teamEye += 8;
@@ -347,11 +347,11 @@
     // ── DRAFT: return info about the current round's rarity constraints ───
     getDraftRoundInfo() {
       const r = this.draftRound;
-      if (r === 1) return { label: 'EPIC O SUPERIOR', rarities: ['Legendary','Epic'], icon: '💎' };
-      if (r === 2) return { label: 'RARE O SUPERIOR',  rarities: ['Legendary','Epic','Rare'], icon: '🔵' };
-      if (r === 3) return { label: 'UNCOMMON O SUPERIOR', rarities: ['Legendary','Epic','Rare','Uncommon'], icon: '🟢' };
-      if (r >= 4 && r <= 6) return { label: 'COMMON OBLIGATORIO', rarities: ['Common'], icon: '⚪' };
-      return { label: 'RONDA LIBRE — CUALQUIER RAREZA', rarities: null, icon: '🎲' };
+      if (r === 1) return { label: 'EPIC O SUPERIOR', labelKey: 'draft.round_1_label', rarities: ['Legendary','Epic'], icon: '💎' };
+      if (r === 2) return { label: 'RARE O SUPERIOR', labelKey: 'draft.round_2_label', rarities: ['Legendary','Epic','Rare'], icon: '🔵' };
+      if (r === 3) return { label: 'UNCOMMON O SUPERIOR', labelKey: 'draft.round_3_label', rarities: ['Legendary','Epic','Rare','Uncommon'], icon: '🟢' };
+      if (r >= 4 && r <= 6) return { label: 'COMMON OBLIGATORIO', labelKey: 'draft.round_4_label', rarities: ['Common'], icon: '⚪' };
+      return { label: 'RONDA LIBRE — CUALQUIER RAREZA', labelKey: 'draft.round_free_label', rarities: null, icon: '🎲' };
     }
 
     // ── DRAFT: get 3 random picks for the current round (rarity-filtered) ──
@@ -571,6 +571,7 @@
         {
           id: 0,
           name: "Opening Day",
+          subtitleKey: "map.stage_opening",
           subtitle: "Inicio de temporada - Dificultad: Normal",
           theme: "zone-minor",
           bossLabel: "Juego de Apertura",
@@ -580,6 +581,7 @@
         {
           id: 1,
           name: "All-Star Break",
+          subtitleKey: "map.stage_allstar",
           subtitle: "Mitad de temporada - Dificultad: Difícil",
           theme: "zone-major",
           bossLabel: "All-Star Game",
@@ -589,6 +591,7 @@
         {
           id: 2,
           name: "Pennant Chase",
+          subtitleKey: "map.stage_pennant",
           subtitle: "Final de temporada - Dificultad: Experto",
           theme: "zone-pennant",
           bossLabel: "Campeón de Liga",
@@ -598,6 +601,7 @@
         {
           id: 3,
           name: "Playoffs",
+          subtitleKey: "map.stage_playoffs",
           subtitle: "Fase Final - Dificultad: Leyenda",
           theme: "zone-hof",
           bossLabel: "Serie Mundial",
