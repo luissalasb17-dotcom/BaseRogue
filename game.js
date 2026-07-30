@@ -145,6 +145,37 @@
     }
   ];
 
+  function pickWeightedUnique(pool, count, weakPositionsSet) {
+    const selected = [];
+    const poolCopy = [...pool];
+
+    while (selected.length < count && poolCopy.length > 0) {
+      let totalWeight = 0;
+      const weights = poolCopy.map(p => {
+        const pos = p.pos || p.pos_display || p.primary_pos || '';
+        const isWeak = weakPositionsSet && weakPositionsSet.has(pos);
+        const w = isWeak ? 3.0 : 1.0;
+        totalWeight += w;
+        return w;
+      });
+
+      let randVal = Math.random() * totalWeight;
+      let chosenIdx = 0;
+
+      for (let i = 0; i < poolCopy.length; i++) {
+        randVal -= weights[i];
+        if (randVal <= 0) {
+          chosenIdx = i;
+          break;
+        }
+      }
+
+      selected.push(poolCopy.splice(chosenIdx, 1)[0]);
+    }
+
+    return selected;
+  }
+
   function sortPitchingStaff(pitchers) {
     if (!pitchers || !Array.isArray(pitchers) || pitchers.length === 0) return pitchers;
 
@@ -965,6 +996,24 @@
       return synergies;
     }
 
+    getWeakestRosterPositions() {
+      const positions = ['C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'DH'];
+      const posScores = positions.map(pos => {
+        const p = this.roster[pos];
+        let ovr = 0;
+        if (p) {
+          ovr = p.ovr !== undefined
+            ? p.ovr
+            : Math.round((p.con || 40) * 0.35 + (p.pwr || 35) * 0.30 + (p.spd || 45) * 0.10 + (p.def || 40) * 0.15 + (p.eye || 40) * 0.10);
+        }
+        return { pos, ovr };
+      });
+
+      // Sort ascending by OVR to find the 3 weakest positions
+      posScores.sort((a, b) => a.ovr - b.ovr);
+      return new Set(posScores.slice(0, 3).map(x => x.pos));
+    }
+
     // ── MID-GAME EVENT: FIRMA LEYENDA — picks Uncommon or higher ──────────
     getDraftPicks() {
       const pool = window.PlayersDB.LAHMAN_POOL || window.PlayersDB.PLAYERS_POOL || [];
@@ -976,19 +1025,14 @@
         !onRosterNames.has(p.name) && allowedRarities.includes(p.rarity || 'Common')
       );
 
-      const selectedPicks = [];
-      const temp = [...filtered];
-      while (selectedPicks.length < 3 && temp.length > 0) {
-        const idx = Math.floor(Math.random() * temp.length);
-        selectedPicks.push(temp.splice(idx, 1)[0]);
-      }
+      const weakPositionsSet = this.getWeakestRosterPositions();
+      const selectedPicks = pickWeightedUnique(filtered, 3, weakPositionsSet);
+
       // Fallback
       if (selectedPicks.length < 3) {
         const fallback = pool.filter(p => !onRosterNames.has(p.name) && !selectedPicks.some(x => x.name === p.name));
-        while (selectedPicks.length < 3 && fallback.length > 0) {
-          const idx = Math.floor(Math.random() * fallback.length);
-          selectedPicks.push(fallback.splice(idx, 1)[0]);
-        }
+        const extraPicks = pickWeightedUnique(fallback, 3 - selectedPicks.length, weakPositionsSet);
+        selectedPicks.push(...extraPicks);
       }
       return selectedPicks;
     }
@@ -1009,20 +1053,16 @@
         return allowedRarities.includes(p.rarity || 'Common');
       });
 
-      const selected = [];
-      const tempFiltered = [...filtered];
-      while (selected.length < 3 && tempFiltered.length > 0) {
-        const idx = Math.floor(Math.random() * tempFiltered.length);
-        selected.push(tempFiltered.splice(idx, 1)[0]);
-      }
+      const weakPositionsSet = this.getWeakestRosterPositions();
+      const selected = pickWeightedUnique(filtered, 3, weakPositionsSet);
+
       // Fallback if pool too small
       if (selected.length < 3) {
         const fallback = pool.filter(p => !onRosterNames.has(p.name) && !selected.some(x => x.name === p.name));
-        while (selected.length < 3 && fallback.length > 0) {
-          const idx = Math.floor(Math.random() * fallback.length);
-          selected.push(fallback.splice(idx, 1)[0]);
-        }
+        const extra = pickWeightedUnique(fallback, 3 - selected.length, weakPositionsSet);
+        selected.push(...extra);
       }
+      return selected;
       return selected;
     }
 
