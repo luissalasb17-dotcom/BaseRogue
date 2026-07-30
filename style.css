@@ -29,11 +29,15 @@ body {
   font-family: 'Press Start 2P', monospace;
   font-size: 10px;
   background-color: var(--bg-color);
-  /* Scanline CRT Arcade Screen Filter Effect */
+  /* 16-Bit Arcade Stadium Background & Scanline CRT Filter */
   background-image: 
-    linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.3) 50%), 
-    linear-gradient(90deg, rgba(0, 255, 0, 0.03), rgba(255, 0, 0, 0.02), rgba(0, 0, 255, 0.03));
-  background-size: 100% 4px, 6px 100%;
+    linear-gradient(180deg, rgba(3, 10, 6, 0.70) 0%, rgba(3, 10, 6, 0.85) 100%),
+    linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
+    url('assets/menu_stadium_bg.jpg');
+  background-size: cover, 100% 4px, cover;
+  background-position: center bottom, center, center bottom;
+  background-repeat: no-repeat, repeat, no-repeat;
+  background-attachment: fixed;
   color: #f3f4f6;
   min-height: 100vh;
   overflow-x: hidden;
@@ -2556,6 +2560,24 @@ body.workspace-active .main-container {
   #pre-fight-player-lineup .roster-slot, #pre-fight-enemy-rotation .roster-slot {
     padding: 4px 6px !important;
   }
+/* ── Main Menu & Mode Select Stadium Background ── */
+#screen-mode-select, #screen-menu {
+  position: relative;
+  background-color: rgba(7, 20, 14, 0.70) !important;
+  background-image: 
+    linear-gradient(180deg, rgba(7, 20, 14, 0.55) 0%, rgba(7, 20, 14, 0.75) 100%),
+    url('assets/menu_stadium_bg.jpg') !important;
+  background-size: cover !important;
+  background-position: center bottom !important;
+  background-repeat: no-repeat !important;
+  image-rendering: pixelated;
+  border: 2px solid #10b981;
+  box-shadow: 0 0 35px rgba(0, 0, 0, 0.95), inset 0 0 25px rgba(0, 0, 0, 0.85);
+  padding: 30px 20px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
   /* Hide the BaseRogue text in draft on mobile */
   #screen-menu > p {
     display: none !important;

@@ -498,8 +498,8 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
           const picks = G.getDraftRoundPicks();
           // Sort by OVR descending
           picks.sort((a,b) => {
-             const ovrA = Math.round((a.con||40)*.3+(a.pwr||35)*.3+(a.spd||45)*.15+(a.def||40)*.15+(a.eye||40)*.1);
-             const ovrB = Math.round((b.con||40)*.3+(b.pwr||35)*.3+(b.spd||45)*.15+(b.def||40)*.15+(b.eye||40)*.1);
+             const ovrA = Math.round((a.con||40)*.35+(a.pwr||35)*.3+(a.spd||45)*.10+(a.def||40)*.15+(a.eye||40)*.1);
+             const ovrB = Math.round((b.con||40)*.35+(b.pwr||35)*.3+(b.spd||45)*.10+(b.def||40)*.15+(b.eye||40)*.1);
              return ovrB - ovrA;
           });
           G.draftPickPlayer(picks[0]);
@@ -664,7 +664,7 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
         ].join(';');
 
         if (player) {
-          const ovr = Math.round((player.con||40)*.3+(player.pwr||35)*.3+(player.spd||45)*.15+(player.def||40)*.15+(player.eye||40)*.1);
+          const ovr = Math.round((player.con||40)*.35+(player.pwr||35)*.3+(player.spd||45)*.10+(player.def||40)*.15+(player.eye||40)*.1);
           const isNative = player.pos === slot;
           const secArr = player.sec_pos ? player.sec_pos.split(',').map(s=>s.trim()) : [];
           const isSec   = secArr.includes(slot);
@@ -811,7 +811,7 @@ function renderConfirmationBattingRows() {
           });
 
           if (player) {
-            const ovr = Math.round((player.con||40)*.3+(player.pwr||35)*.3+(player.spd||45)*.15+(player.def||40)*.15+(player.eye||40)*.1);
+            const ovr = Math.round((player.con||40)*.35+(player.pwr||35)*.3+(player.spd||45)*.10+(player.def||40)*.15+(player.eye||40)*.1);
             row.innerHTML = `
               <span style="font-family:'Press Start 2P',monospace;font-size:8px;color:#f59e0b;min-width:16px;">${idx+1}</span>
               <span style="font-size:9px;color:#94a3b8;min-width:24px;">${slot}</span>
@@ -1125,7 +1125,7 @@ function initGameModeSelector() {
       ? Math.round(player.ovr)
       : (isPitcher
           ? Math.round(stfForOvr*0.30 + ctlForOvr*0.30 + movForOvr*0.30 + staForOvr*0.10)
-          : Math.round((player.con || 40)*0.30 + (player.pwr || 35)*0.30 + (player.spd || 45)*0.15 + (player.def || 40)*0.15 + (player.eye || 40)*0.10));
+          : Math.round((player.con || 40)*0.35 + (player.pwr || 35)*0.30 + (player.spd || 45)*0.10 + (player.def || 40)*0.15 + (player.eye || 40)*0.10));
 
     // Rarity styles
     let derivedRarity = player.rarity;
@@ -1755,7 +1755,7 @@ function initGameModeSelector() {
         nameSpan.title = `${effectivePlayer.name} (${effectivePlayer.era})`;
         
         // OVR Badge
-        const ovr = Math.round((effectivePlayer.con||40)*0.30 + (effectivePlayer.pwr||35)*0.30 + (effectivePlayer.spd||45)*0.15 + (effectivePlayer.def||40)*0.15 + (effectivePlayer.eye||40)*0.10);
+        const ovr = Math.round((effectivePlayer.con||40)*0.35 + (effectivePlayer.pwr||35)*0.30 + (effectivePlayer.spd||45)*0.10 + (effectivePlayer.def||40)*0.15 + (effectivePlayer.eye||40)*0.10);
         const ovrGrade = getStatGrade(ovr);
         const ovrBadge = document.createElement('span');
         ovrBadge.className = "ovr-badge";
@@ -1803,7 +1803,7 @@ function initGameModeSelector() {
     const isDraft = (slot === 'draft');
     const effectivePlayer = window.Game.getEffectiveStats(player, isDraft ? null : slot);
 
-    const ovr = Math.round((effectivePlayer.con||40)*0.30 + (effectivePlayer.pwr||35)*0.30 + (effectivePlayer.spd||45)*0.15 + (effectivePlayer.def||40)*0.15 + (effectivePlayer.eye||40)*0.10);
+    const ovr = Math.round((effectivePlayer.con||40)*0.35 + (effectivePlayer.pwr||35)*0.30 + (effectivePlayer.spd||45)*0.10 + (effectivePlayer.def||40)*0.15 + (effectivePlayer.eye||40)*0.10);
     const ovrGrade = getStatGrade(ovr);
 
     const statBar = (label, statKey, color) => {

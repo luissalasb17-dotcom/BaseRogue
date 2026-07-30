@@ -463,7 +463,7 @@
 
       // 2. Fill the remaining slots with <= 39.9 players (Grade F and D)
       const lowPool = pool.filter(p => {
-        const ovr = (p.con||0)*0.30 + (p.pwr||0)*0.30 + (p.spd||0)*0.15 + (p.def||0)*0.15 + (p.eye||0)*0.10;
+        const ovr = (p.con||0)*0.35 + (p.pwr||0)*0.30 + (p.spd||0)*0.10 + (p.def||0)*0.15 + (p.eye||0)*0.10;
         return ovr <= 39.9;
       });
       slots.forEach(slot => {

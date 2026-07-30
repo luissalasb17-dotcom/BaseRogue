@@ -794,19 +794,18 @@ NLB_TEAMS = {
 }
 
 def map_to_canonical_team(row):
+    t = str(row.get("canonical_teamID", row.get("team", "UNK"))).strip()
+    franch = str(row.get("franchID", "")).strip()
 
     # Any player in Negro Leagues era (1901-1960) with no modern MLB franchise is NLB
     p_year = int(row.get("peak_year_display", row.get("yearID", 0)))
     if p_year >= 1901 and p_year <= 1960 and franch not in FRANCHISE_MAP and t not in FRANCHISE_MAP:
         return "NLB"
 
-
     p_name = str(row.get("name", "")).strip()
     if any(nlb_n.lower() in p_name.lower() for nlb_n in ['Turkey Stearnes', 'Wade Johnston', 'Oscar Charleston', 'Satchel Paige', 'Josh Gibson', 'Cool Papa Bell', 'Buck Leonard', 'Pop Lloyd', 'Bullet Rogan', 'Mule Suttles', 'Willie Wells']):
         return "NLB"
 
-    t = str(row.get("canonical_teamID", row.get("team", "UNK"))).strip()
-    franch = str(row.get("franchID", "")).strip()
     if t in NLB_TEAMS or franch in NLB_TEAMS:
         return "NLB"
     if franch in FRANCHISE_MAP:
@@ -853,13 +852,13 @@ def paso_15_equipo_y_exportar(df, batting, teams, franchises):
     df["franchise_name"]   = df["canonical_teamID"]
 
     stat_cols = ["contact_val","power_val","eye_val","speed_val","defense_val"]
-    # 5. Promedio de Atributos Globales (OVR) usando formula 35/35/10/10/10
+    # 5. Promedio de Atributos Globales (OVR) usando formula 35/30/15/10/10
     df["avg_attr_score"] = (
         df["contact_val"] * 0.35 +
-        df["power_val"]   * 0.35 +
-        df["speed_val"]   * 0.10 +
-        df["defense_val"] * 0.10 +
-        df["eye_val"]     * 0.10
+        df["power_val"]   * 0.30 +
+        df["defense_val"] * 0.15 +
+        df["eye_val"]     * 0.10 +
+        df["speed_val"]   * 0.10
     ).round(1)
     df["rarity"]         = df.apply(asignar_rareza, axis=1)
     df["pos_display"]    = df["primary_pos"].map(POS_DISPLAY_MAP).fillna("RF")
