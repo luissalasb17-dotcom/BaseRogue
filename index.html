@@ -400,7 +400,7 @@
                   <!-- Old step/auto buttons hidden by default; dice panel injected dynamically -->
                   <button class="btn hidden" id="btn-match-play-step"><i class="fa-solid fa-play"></i> Siguiente Turno</button>
                   <button class="btn btn-secondary hidden" id="btn-match-auto-fast"><i class="fa-solid fa-forward"></i> Simulación Rápida</button>
-                  <button class="btn btn-secondary hidden" id="btn-match-skip-game" style="background: #ef4444;"><i class="fa-solid fa-forward-step"></i> Simular Todo</button>
+                  <button class="btn btn-secondary hidden" id="btn-match-skip-game" style="background: #ef4444;" data-i18n="match.simulate_all"><i class="fa-solid fa-forward-step"></i> SIMULAR TODO</button>
                 </div>
 
               </div>
@@ -413,7 +413,7 @@
 
                 <div class="match-log" style="height: 200px; max-height: 200px; display: flex; flex-direction: column; flex: none;">
                   <div class="match-log-header">
-                    <span>HISTORIAL DEL PARTIDO</span>
+                    <span data-i18n="match.history">HISTORIAL DEL PARTIDO</span>
                     <i class="fa-solid fa-list-check" style="opacity:0.6;"></i>
                   </div>
                   <div class="match-log-content" id="match-play-log-lines" style="flex: 1; overflow-y: auto; max-height: 380px;">

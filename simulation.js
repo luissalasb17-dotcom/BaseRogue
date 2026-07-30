@@ -26,6 +26,13 @@
     return 'F';
   }
 
+  function _t(key, options, fallback) {
+    if (typeof window.t === 'function') {
+      return window.t(key, options);
+    }
+    return fallback;
+  }
+
   const HIGH_SPEED_GRADES = new Set(['S', 'A']);
 
   // ── PROBABILITY BOUNDARIES ──────────────────────────────────────────────────

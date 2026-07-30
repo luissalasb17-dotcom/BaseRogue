@@ -1088,7 +1088,13 @@ function initGameModeSelector() {
       "Modern Era (2016-Pres)": "era-modern"
     };
 
-    const year = player.year || player.peak_year_display || player.peak_year || "";
+    let year = player.year || player.peak_year_display || player.peak_year || "";
+    let cleanName = player.name || "";
+    const yearInNameMatch = cleanName.match(/\s*\((\d{4})\)$/);
+    if (yearInNameMatch) {
+      if (!year) year = yearInNameMatch[1];
+      cleanName = cleanName.replace(/\s*\(\d{4}\)$/, '').trim();
+    }
     
     // Dynamically resolve player era if missing or unmapped
     let resolvedEra = player.era;
@@ -1229,13 +1235,12 @@ function initGameModeSelector() {
           <span class="card-year" style="font-size: 6px;">${year}</span>
         </div>
         ${(() => {
-          const pName = player.name || '';
-          const len = pName.length;
+          const len = cleanName.length;
           let fontSizeStyle = '';
           if (len >= 20) fontSizeStyle = 'style="font-size: 5.5px !important;"';
           else if (len >= 16) fontSizeStyle = 'style="font-size: 6.5px !important;"';
           else if (len >= 14) fontSizeStyle = 'style="font-size: 7px !important;"';
-          return `<div class="card-name" title="${pName}" ${fontSizeStyle}>${pName}</div>`;
+          return `<div class="card-name" title="${cleanName}" ${fontSizeStyle}>${cleanName}</div>`;
         })()}
         <div class="card-traits-box">
           <span class="card-trait-badge trait-era" title="${player.era}">${getShortEraName(player.era)}</span>
@@ -2901,13 +2906,13 @@ function initGameModeSelector() {
           <div id="team-hp-bar" style="height:100%;width:100%;background:linear-gradient(90deg,#10b981,#34d399);transition:width .3s;"></div>
         </div>
         <div style="display:flex;justify-content:space-between;align-items:center;">
-          <span style="font-size:11px;color:#9ca3af;">🛡️ ESCUDO (DEF avg ${avgDef})</span>
+          <span style="font-size:11px;color:#9ca3af;">🛡️ ${t('match.shield_label', { avg: avgDef })}</span>
           <span id="team-shield-text" style="font-size:11px;font-weight:bold;color:#3b82f6;">${avgDef}/${avgDef}</span>
         </div>
         <div style="height:8px;background:rgba(255,255,255,0.08);border-radius:4px;overflow:hidden;">
           <div id="team-shield-bar" style="height:100%;width:100%;background:linear-gradient(90deg,#3b82f6,#60a5fa);transition:width .3s;"></div>
         </div>
-        <div style="font-size:11px;color:#f59e0b;text-align:center;" id="so-chain-display">🔥 Racha de Ponches: 0</div>
+        <div style="font-size:11px;color:#f59e0b;text-align:center;" id="so-chain-display">${t('match.so_streak_zero', '🔥 Racha de Ponches: 0')}</div>
       </div>
       <!-- Dice result display -->
       <div id="dice-result-display" style="
@@ -2922,7 +2927,7 @@ function initGameModeSelector() {
       ">–</div>
       <!-- Lucky zones panel -->
       <div id="zones-panel" style="width:100%;background:rgba(0,0,0,0.3);border-radius:8px;padding:8px;font-size:10px;">
-        <div style="color:#64748b;text-align:center;margin-bottom:4px;">🎯 Zonas de la suerte</div>
+        <div style="color:#64748b;text-align:center;margin-bottom:4px;">🎯 ${t('match.luck_zones')}</div>
         <div id="zones-lines" style="display:flex;flex-direction:column;gap:2px;"></div>
       </div>
       <!-- ROLL button -->
@@ -2935,8 +2940,12 @@ function initGameModeSelector() {
         box-shadow:0 0 20px rgba(124,58,237,0.5);
         transition:transform .1s,box-shadow .1s;
         width:100%;
-      ">🎲 LANZAR DADO</button>
+      ">${t('match.roll_dice')}</button>
     `;
+
+    if (el.btnMatchSkip) {
+      el.btnMatchSkip.innerHTML = '<i class="fa-solid fa-forward-step"></i> ' + t('match.simulate_all');
+    }
 
     const diceSlot = el.screenMatch.querySelector('#dice-container-slot');
     if (diceSlot) {
@@ -3353,8 +3362,8 @@ function initGameModeSelector() {
       const chain = state.strikeoutChain || 0;
       const flames = '🔥'.repeat(Math.min(chain, 4));
       chainEl.innerText = chain > 0
-        ? `${flames} RACHA PONCHES: ${chain} (${['1.0x','1.5x','2.0x','3.0x'][Math.min(chain - 1, 3)]} dmg DIRECTO)`
-        : '🔥 Racha de Ponches: 0';
+        ? t('match.so_streak', { count: chain, mult: ['1.0x','1.5x','2.0x','3.0x'][Math.min(chain - 1, 3)] })
+        : t('match.so_streak_zero', '🔥 Racha de Ponches: 0');
       chainEl.style.color = chain >= 3 ? '#ef4444' : chain >= 2 ? '#f59e0b' : '#64748b';
     }
 
