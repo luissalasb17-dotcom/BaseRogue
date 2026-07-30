@@ -253,8 +253,8 @@
     FranchiseNames,
     REPLACEMENT_LEVEL_LINEUP,
     STARTERS,
-    PLAYERS_POOL: (window.PlayersDB && window.PlayersDB.LAHMAN_POOL) ? window.PlayersDB.LAHMAN_POOL : PLAYERS_POOL,
-    LAHMAN_POOL: (window.PlayersDB && window.PlayersDB.LAHMAN_POOL) ? window.PlayersDB.LAHMAN_POOL : PLAYERS_POOL,
+    get PLAYERS_POOL() { return window.GAME_CARDS_POOL || (window.PlayersDB && window.PlayersDB.LAHMAN_POOL) || PLAYERS_POOL; },
+    get LAHMAN_POOL() { return window.GAME_CARDS_POOL || PLAYERS_POOL; },
     EraTraits
   });
 })();

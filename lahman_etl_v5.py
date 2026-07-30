@@ -794,6 +794,17 @@ NLB_TEAMS = {
 }
 
 def map_to_canonical_team(row):
+
+    # Any player in Negro Leagues era (1901-1960) with no modern MLB franchise is NLB
+    p_year = int(row.get("peak_year_display", row.get("yearID", 0)))
+    if p_year >= 1901 and p_year <= 1960 and franch not in FRANCHISE_MAP and t not in FRANCHISE_MAP:
+        return "NLB"
+
+
+    p_name = str(row.get("name", "")).strip()
+    if any(nlb_n.lower() in p_name.lower() for nlb_n in ['Turkey Stearnes', 'Wade Johnston', 'Oscar Charleston', 'Satchel Paige', 'Josh Gibson', 'Cool Papa Bell', 'Buck Leonard', 'Pop Lloyd', 'Bullet Rogan', 'Mule Suttles', 'Willie Wells']):
+        return "NLB"
+
     t = str(row.get("canonical_teamID", row.get("team", "UNK"))).strip()
     franch = str(row.get("franchID", "")).strip()
     if t in NLB_TEAMS or franch in NLB_TEAMS:

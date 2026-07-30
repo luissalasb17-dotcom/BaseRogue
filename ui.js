@@ -344,13 +344,13 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
         slotRow.id = `draft-slot-${slot}`;
 
         if (player) {
-          const ovr = Math.round((player.con||40)*.3+(player.pwr||35)*.3+(player.spd||45)*.15+(player.def||40)*.15+(player.eye||40)*.1);
+          const ovr = player.ovr !== undefined ? Math.round(player.ovr) : Math.round((player.con||player.contact_val||40)*.3+(player.pwr||player.power_val||35)*.3+(player.spd||player.speed_val||45)*.15+(player.def||player.defense_val||40)*.15+(player.eye||player.eye_val||40)*.1);
           const isNative = player.pos === slot;
           const secArr = player.sec_pos ? player.sec_pos.split(',').map(s=>s.trim()) : [];
           const isSec   = secArr.includes(slot);
           
           let posHint = '';
-          const defBase = player.def || 40;
+          const defBase = player.def || player.defense_val || 40;
           if (isNative) {
             posHint = '<span style="color:#10b981">✅ Nativo</span>';
           } else if (slot === 'DH') {
@@ -419,7 +419,7 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
       picks.forEach(player => {
         const rColor = RARITY_COLORS[player.rarity] || RARITY_COLORS.Common;
         const rBg    = RARITY_BG[player.rarity]    || RARITY_BG.Common;
-        const ovr    = Math.round((player.con||40)*.3+(player.pwr||35)*.3+(player.spd||45)*.15+(player.def||40)*.15+(player.eye||40)*.1);
+        const ovr    = player.ovr !== undefined ? Math.round(player.ovr) : Math.round((player.con||player.contact_val||40)*.3+(player.pwr||player.power_val||35)*.3+(player.spd||player.speed_val||45)*.15+(player.def||player.defense_val||40)*.15+(player.eye||player.eye_val||40)*.1);
         const cardHTML = createCardHTML(player);
 
         const wrapper = document.createElement('div');
@@ -1070,7 +1070,7 @@ function initGameModeSelector() {
 
     const eraClass = eraClassMap[player.era] || "era-modern";
     const teamFranchise = player.team || "ROOK";
-    const year = player.year || 2026;
+    const year = player.year || player.peak_year_display || player.peak_year || "";
     const isPitcher = player.pos === 'P' || player.pos === 'SP' || player.pos === 'RP' || player.role === 'P' || player.role === 'SP' || player.role === 'RP';
 
     const stfForOvr = player.stf !== undefined ? player.stf : (player.str !== undefined ? player.str : (player.str_val !== undefined ? player.str_val : (player.con !== undefined ? player.con : 40)));
@@ -1115,48 +1115,54 @@ function initGameModeSelector() {
       statLines = `
         <div class="stat-row" style="display: flex; align-items: center; justify-content: space-between; font-size: 7px; margin: 3px 0;">
           <span class="stat-label">MOV:</span>
-          <span style="background: ${gMov.color}; color: #000; font-family: 'Press Start 2P', monospace; font-size: 6px; padding: 2px 5px; border-radius: 3px; font-weight: bold;">${gMov.text}</span>
+          <span class="stat-badge" style="background: ${gMov.color}; color: ${gMov.text === 'F' ? '#fff' : '#000'}; font-family: 'Press Start 2P', monospace; font-size: 6px; padding: 2px 5px; border-radius: 3px; font-weight: bold; box-shadow: 0 1px 2px rgba(0,0,0,0.3);">${gMov.text}</span>
         </div>
         <div class="stat-row" style="display: flex; align-items: center; justify-content: space-between; font-size: 7px; margin: 3px 0;">
           <span class="stat-label">STF:</span>
-          <span style="background: ${gStf.color}; color: #000; font-family: 'Press Start 2P', monospace; font-size: 6px; padding: 2px 5px; border-radius: 3px; font-weight: bold;">${gStf.text}</span>
+          <span class="stat-badge" style="background: ${gStf.color}; color: ${gStf.text === 'F' ? '#fff' : '#000'}; font-family: 'Press Start 2P', monospace; font-size: 6px; padding: 2px 5px; border-radius: 3px; font-weight: bold; box-shadow: 0 1px 2px rgba(0,0,0,0.3);">${gStf.text}</span>
         </div>
         <div class="stat-row" style="display: flex; align-items: center; justify-content: space-between; font-size: 7px; margin: 3px 0;">
           <span class="stat-label">CTL:</span>
-          <span style="background: ${gCtl.color}; color: #000; font-family: 'Press Start 2P', monospace; font-size: 6px; padding: 2px 5px; border-radius: 3px; font-weight: bold;">${gCtl.text}</span>
+          <span class="stat-badge" style="background: ${gCtl.color}; color: ${gCtl.text === 'F' ? '#fff' : '#000'}; font-family: 'Press Start 2P', monospace; font-size: 6px; padding: 2px 5px; border-radius: 3px; font-weight: bold; box-shadow: 0 1px 2px rgba(0,0,0,0.3);">${gCtl.text}</span>
         </div>
         <div class="stat-row" style="display: flex; align-items: center; justify-content: space-between; font-size: 7px; margin: 3px 0;">
           <span class="stat-label">STA:</span>
-          <span style="background: ${gSta.color}; color: #000; font-family: 'Press Start 2P', monospace; font-size: 6px; padding: 2px 5px; border-radius: 3px; font-weight: bold;">${gSta.text}</span>
+          <span class="stat-badge" style="background: ${gSta.color}; color: ${gSta.text === 'F' ? '#fff' : '#000'}; font-family: 'Press Start 2P', monospace; font-size: 6px; padding: 2px 5px; border-radius: 3px; font-weight: bold; box-shadow: 0 1px 2px rgba(0,0,0,0.3);">${gSta.text}</span>
         </div>
       `;
     } else {
-      const gCon = getStatGrade(player.con || 40);
-      const gPwr = getStatGrade(player.pwr || 35);
-      const gEye = getStatGrade(player.eye || 40);
-      const gSpd = getStatGrade(player.spd || 45);
-      const gDef = getStatGrade(player.def || 40);
+      const conVal = player.con !== undefined ? player.con : (player.contact_val !== undefined ? player.contact_val : 40);
+      const pwrVal = player.pwr !== undefined ? player.pwr : (player.power_val !== undefined ? player.power_val : 35);
+      const eyeVal = player.eye !== undefined ? player.eye : (player.eye_val !== undefined ? player.eye_val : 40);
+      const spdVal = player.spd !== undefined ? player.spd : (player.speed_val !== undefined ? player.speed_val : 45);
+      const defVal = player.def !== undefined ? player.def : (player.defense_val !== undefined ? player.defense_val : 40);
+
+      const gCon = getStatGrade(conVal);
+      const gPwr = getStatGrade(pwrVal);
+      const gEye = getStatGrade(eyeVal);
+      const gSpd = getStatGrade(spdVal);
+      const gDef = getStatGrade(defVal);
 
       statLines = `
         <div class="stat-row" style="display: flex; align-items: center; justify-content: space-between; font-size: 7px; margin: 3px 0;">
           <span class="stat-label">CON:</span>
-          <span style="background: ${gCon.color}; color: #000; font-family: 'Press Start 2P', monospace; font-size: 6px; padding: 2px 5px; border-radius: 3px; font-weight: bold;">${gCon.text}</span>
+          <span class="stat-badge" style="background: ${gCon.color}; color: ${gCon.text === 'F' ? '#fff' : '#000'}; font-family: 'Press Start 2P', monospace; font-size: 6px; padding: 2px 5px; border-radius: 3px; font-weight: bold; box-shadow: 0 1px 2px rgba(0,0,0,0.3);">${gCon.text}</span>
         </div>
         <div class="stat-row" style="display: flex; align-items: center; justify-content: space-between; font-size: 7px; margin: 3px 0;">
           <span class="stat-label">POW:</span>
-          <span style="background: ${gPwr.color}; color: #000; font-family: 'Press Start 2P', monospace; font-size: 6px; padding: 2px 5px; border-radius: 3px; font-weight: bold;">${gPwr.text}</span>
+          <span class="stat-badge" style="background: ${gPwr.color}; color: ${gPwr.text === 'F' ? '#fff' : '#000'}; font-family: 'Press Start 2P', monospace; font-size: 6px; padding: 2px 5px; border-radius: 3px; font-weight: bold; box-shadow: 0 1px 2px rgba(0,0,0,0.3);">${gPwr.text}</span>
         </div>
         <div class="stat-row" style="display: flex; align-items: center; justify-content: space-between; font-size: 7px; margin: 3px 0;">
           <span class="stat-label">EYE:</span>
-          <span style="background: ${gEye.color}; color: #000; font-family: 'Press Start 2P', monospace; font-size: 6px; padding: 2px 5px; border-radius: 3px; font-weight: bold;">${gEye.text}</span>
+          <span class="stat-badge" style="background: ${gEye.color}; color: ${gEye.text === 'F' ? '#fff' : '#000'}; font-family: 'Press Start 2P', monospace; font-size: 6px; padding: 2px 5px; border-radius: 3px; font-weight: bold; box-shadow: 0 1px 2px rgba(0,0,0,0.3);">${gEye.text}</span>
         </div>
         <div class="stat-row" style="display: flex; align-items: center; justify-content: space-between; font-size: 7px; margin: 3px 0;">
           <span class="stat-label">SPD:</span>
-          <span style="background: ${gSpd.color}; color: #000; font-family: 'Press Start 2P', monospace; font-size: 6px; padding: 2px 5px; border-radius: 3px; font-weight: bold;">${gSpd.text}</span>
+          <span class="stat-badge" style="background: ${gSpd.color}; color: ${gSpd.text === 'F' ? '#fff' : '#000'}; font-family: 'Press Start 2P', monospace; font-size: 6px; padding: 2px 5px; border-radius: 3px; font-weight: bold; box-shadow: 0 1px 2px rgba(0,0,0,0.3);">${gSpd.text}</span>
         </div>
         <div class="stat-row" style="display: flex; align-items: center; justify-content: space-between; font-size: 7px; margin: 3px 0;">
           <span class="stat-label">DEF:</span>
-          <span style="background: ${gDef.color}; color: #000; font-family: 'Press Start 2P', monospace; font-size: 6px; padding: 2px 5px; border-radius: 3px; font-weight: bold;">${gDef.text}</span>
+          <span class="stat-badge" style="background: ${gDef.color}; color: ${gDef.text === 'F' ? '#fff' : '#000'}; font-family: 'Press Start 2P', monospace; font-size: 6px; padding: 2px 5px; border-radius: 3px; font-weight: bold; box-shadow: 0 1px 2px rgba(0,0,0,0.3);">${gDef.text}</span>
         </div>
       `;
     }
@@ -1194,18 +1200,18 @@ function initGameModeSelector() {
           else if (len >= 14) fontSizeStyle = 'style="font-size: 7px !important;"';
           return `<div class="card-name" title="${pName}" ${fontSizeStyle}>${pName}</div>`;
         })()}
-        ${player.sec_pos ? `<div class="card-sec-pos" title="Posiciones Secundarias: ${player.sec_pos}">SEC: ${player.sec_pos}</div>` : ''}
         <div class="card-traits-box">
           <span class="card-trait-badge trait-era" title="${player.era}">${getShortEraName(player.era)}</span>
           ${player.team && player.team !== 'ROOK' ? `<span class="card-trait-badge trait-team" title="${window.PlayersDB.FranchiseNames[player.team] || player.team}">${player.team}</span>` : ''}
         </div>
+        ${player.sec_pos ? `<div class="card-sec-pos-line" title="Posición Secundaria: ${player.sec_pos}">SEC: ${player.sec_pos}</div>` : ''}
         <div class="card-stats">
           ${statLines}
         </div>
         ${positionWarning}
         <div class="card-footer">
           <span>${teamFranchise}</span>
-          <span class="card-stamina ${stamClass}"><i class="fa-solid fa-bolt-lightning"></i> ${stam}</span>
+          <span class="card-stamina-badge ${stamClass}"><i class="fa-solid fa-bolt-lightning"></i> ${stam}</span>
         </div>
       </div>
     `;
