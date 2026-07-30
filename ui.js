@@ -1068,9 +1068,26 @@ function initGameModeSelector() {
       "Modern Era (2016-Pres)": "era-modern"
     };
 
-    const eraClass = eraClassMap[player.era] || "era-modern";
-    const teamFranchise = player.team || "ROOK";
     const year = player.year || player.peak_year_display || player.peak_year || "";
+    
+    // Dynamically resolve player era if missing or unmapped
+    let resolvedEra = player.era;
+    if (!resolvedEra || !eraClassMap[resolvedEra]) {
+      const y = parseInt(year || 2020, 10);
+      if (y <= 1900) resolvedEra = "The Genesis Era (1871-1900)";
+      else if (y <= 1919) resolvedEra = "Deadball (1901-1919)";
+      else if (y <= 1941) resolvedEra = "Golden Era (1920-1941)";
+      else if (y <= 1960) resolvedEra = "Integration (1942-1960)";
+      else if (y <= 1976) resolvedEra = "Expansion (1961-1976)";
+      else if (y <= 1993) resolvedEra = "Big Hair Era (1977-1993)";
+      else if (y <= 2005) resolvedEra = "Steroid Era (1994-2005)";
+      else if (y <= 2015) resolvedEra = "Efficiency Era (2006-2015)";
+      else resolvedEra = "Modern Era (2016-Pres)";
+      player.era = resolvedEra;
+    }
+
+    const eraClass = eraClassMap[resolvedEra] || "era-modern";
+    const teamFranchise = player.team || "ROOK";
     const isPitcher = player.pos === 'P' || player.pos === 'SP' || player.pos === 'RP' || player.role === 'P' || player.role === 'SP' || player.role === 'RP';
 
     const stfForOvr = player.stf !== undefined ? player.stf : (player.str !== undefined ? player.str : (player.str_val !== undefined ? player.str_val : (player.con !== undefined ? player.con : 40)));
