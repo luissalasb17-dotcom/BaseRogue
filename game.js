@@ -145,6 +145,32 @@
     }
   ];
 
+  function sortPitchingStaff(pitchers) {
+    if (!pitchers || !Array.isArray(pitchers) || pitchers.length === 0) return pitchers;
+
+    const sps = [];
+    const rps = [];
+
+    pitchers.forEach(p => {
+      const roleUpper = (p.role || '').toUpperCase();
+      const isSP = roleUpper === 'SP' || (!p.role && ((p.sta || p.sta_val || 50) >= 50));
+      if (isSP) {
+        sps.push(p);
+      } else {
+        rps.push(p);
+      }
+    });
+
+    // Sort SPs by stamina descending
+    sps.sort((a, b) => (b.sta || b.sta_val || 50) - (a.sta || a.sta_val || 50));
+
+    // Sort RPs by stamina descending
+    rps.sort((a, b) => (b.sta || b.sta_val || 50) - (a.sta || a.sta_val || 50));
+
+    // SPs first (highest stamina SP at Slot 0), RPs last (highest stamina RP first among relievers)
+    return [...sps, ...rps];
+  }
+
   class GameState {
     loadSeasonOpponents(year) {
       if (!window.OpponentsDatabase) return;
@@ -1089,6 +1115,7 @@
           const chosen = candidates[Math.floor(Math.random() * candidates.length)];
           if (chosen) {
             this.encounteredTeams.add(chosen.id || chosen.name);
+            chosen.pitchers = sortPitchingStaff(chosen.pitchers);
             this.currentEnemy = chosen;
             return this.currentEnemy;
           }
@@ -1100,6 +1127,7 @@
         if (candidates.length === 0) candidates = pool;
         const chosen = candidates[Math.floor(Math.random() * candidates.length)];
         this.encounteredTeams.add(chosen.id || chosen.name);
+        chosen.pitchers = sortPitchingStaff(chosen.pitchers);
         this.currentEnemy = chosen;
         return this.currentEnemy;
       }
@@ -1192,7 +1220,7 @@
         isBoss: isBossStage,
         ovr: avgOvr,
         rarity: lead.rarity,
-        pitchers: selected
+        pitchers: sortPitchingStaff(selected)
       };
 
       return this.currentEnemy;

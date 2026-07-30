@@ -62,7 +62,11 @@ def build_3pitcher_team(p1_row, p2_row, p3_row, idx=0, is_boss=False):
     p1 = pitcher_to_obj(p1_row)
     p2 = pitcher_to_obj(p2_row)
     p3 = pitcher_to_obj(p3_row)
-    pitchers = [p1, p2, p3]
+    raw_pitchers = [p1, p2, p3]
+    # SPs first (sorted by stamina desc), RPs last (sorted by stamina desc)
+    sps = sorted([p for p in raw_pitchers if p.get("role") == "SP"], key=lambda p: p.get("sta", 50), reverse=True)
+    rps = sorted([p for p in raw_pitchers if p.get("role") != "SP"], key=lambda p: p.get("sta", 50), reverse=True)
+    pitchers = sps + rps
 
     avg_ovr = round((p1["_ovr"] + p2["_ovr"] + p3["_ovr"]) / 3.0, 1)
     tier = ovr_to_tier(avg_ovr)
