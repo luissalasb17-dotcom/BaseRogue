@@ -1543,12 +1543,15 @@ p {
 }
 
 .fight-card-slot {
-  min-width: 152px;
-  min-height: 220px;
-  border: 3px dashed #444;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  min-width: 156px !important;
+  min-height: 248px !important;
+  height: 248px !important;
+  border: 3px dashed #444 !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  box-sizing: border-box !important;
+  padding: 10px 4px !important;
 }
 
 .faceoff-panel {
@@ -2501,9 +2504,18 @@ body.workspace-active .main-container {
   font-size: 11px;
   line-height: 1.6;
   color: #e4e4e7;
+/* Draft Card Container Bottom Padding (Prevents SELECCIONAR button from touching bottom dashed border) */
+.draft-card-option,
+.draft-card-wrapper {
+  padding-bottom: 24px !important;
+  box-sizing: border-box !important;
 }
 
-
+.draft-card-option .btn-sign-draft,
+.draft-card-wrapper .btn-sign-draft {
+  margin-top: 8px !important;
+  margin-bottom: 4px !important;
+}
 
 /* ── MOBILE RESPONSIVE ──────────────────────────────────────────────────── */
 @media (max-width: 768px) {
@@ -2917,18 +2929,20 @@ body.workspace-active .main-container {
     width: 100% !important;
   }
 
-  /* LED Scoreboard with Baseball Diamond SVG on the LEFT */
+  /* LED Scoreboard with Baseball Diamond SVG on the LEFT for Mobile */
   .scoreboard {
     width: 100% !important;
     font-size: 7.5px !important;
-    padding: 6px 10px !important;
+    padding: 6px 38px 6px 8px !important; /* 38px right padding prevents text from touching/colliding with yellow 'i' info button! */
     margin-bottom: 4px !important;
     border-radius: 8px !important;
     display: flex !important;
     flex-direction: row !important;
     align-items: center !important;
-    justify-content: space-between !important;
-    gap: 10px !important;
+    justify-content: flex-start !important;
+    gap: 8px !important;
+    box-sizing: border-box !important;
+    position: relative !important;
   }
 
   #scoreboard-inning-text {
@@ -2939,15 +2953,21 @@ body.workspace-active .main-container {
 
   #bases-display-row {
     display: flex !important;
+    order: -1 !important; /* Positions Diamond SVG on far LEFT of mobile scoreboard */
     border: none !important;
+    border-top: none !important;
     padding: 0 !important;
+    padding-top: 0 !important;
     margin: 0 !important;
-    flex: 0 0 42px !important;
+    margin-top: 0 !important;
+    flex: 0 0 36px !important;
+    width: 36px !important;
+    height: 36px !important;
   }
 
   #bases-display-row svg {
-    width: 40px !important;
-    height: 40px !important;
+    width: 36px !important;
+    height: 36px !important;
   }
 
   /* 1v1 Battle Arena Cards */
