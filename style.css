@@ -1543,12 +1543,21 @@ p {
 }
 
 .fight-card-slot {
-  min-width: 152px;
-  min-height: 220px;
+  min-width: 156px;
+  min-height: 236px;
+  height: 236px;
   border: 3px dashed #444;
   display: flex;
   justify-content: center;
   align-items: center;
+  box-sizing: border-box;
+  padding: 4px;
+}
+
+.fight-card-slot .card,
+.fight-card-slot .player-card {
+  max-height: 220px;
+  box-sizing: border-box;
 }
 
 .faceoff-panel {

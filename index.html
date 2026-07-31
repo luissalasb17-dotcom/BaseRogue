@@ -321,10 +321,21 @@
               <div style="display: flex; flex-direction: column; gap: 15px; justify-content: center; align-items: center; flex: 1.2;">
                 
                 <!-- LED Stats Board (Simple 8-bit indicators) -->
-                 <div class="scoreboard" style="width: 100%; font-family: 'Press Start 2P', monospace; font-size: 10px; padding: 8px 12px; line-height: 1.5; display: flex; align-items: center; justify-content: space-between; gap: 12px;">
-                    <!-- Baseball Diamond Visual Board (Left side) -->
-                    <div id="bases-display-row" style="flex: 0 0 45px; display: flex; justify-content: center; align-items: center; margin: 0; padding: 0; border: none;">
-                      <svg viewBox="0 0 100 100" style="width: 44px; height: 44px;">
+                 <div class="scoreboard" style="width: 100%; text-align: center; font-family: 'Press Start 2P', monospace; font-size: 10px; padding: 12px; line-height: 1.6;">
+                    <div id="scoreboard-inning-text" style="color: var(--accent-color); margin-bottom: 12px;" data-i18n="match.arena">ARENA COMBATE</div>
+                    <div style="display: flex; justify-content: space-around; font-size: 8px; margin-bottom: 8px;">
+                      <div><span data-i18n="match.runs">CARRERAS:</span> <span id="score-away-r" style="color: var(--primary-color);">0</span></div>
+                      <div><span data-i18n="match.outs">OUTS:</span> <span id="score-home-r" style="color: #ef4444;">0</span></div>
+                    </div>
+                    <div style="display: flex; justify-content: space-around; font-size: 8px; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 8px;">
+                      <div><span data-i18n="match.inning">INNING:</span> <span id="score-away-h" style="color: var(--accent-color);">1 / 3</span></div>
+                      <div><span data-i18n="match.rival_ko">K.O. RIVALES:</span> <span id="score-home-h" style="color: #ca8a04;">0 / 3</span></div>
+                      <span id="score-away-e" class="hidden">0</span>
+                      <span id="score-home-e" class="hidden">0</span>
+                    </div>
+                    <!-- Baseball Diamond Visual Board -->
+                    <div id="bases-display-row" style="border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 8px; margin-top: 8px; display: flex; justify-content: center; align-items: center;">
+                      <svg viewBox="0 0 100 100" style="width: 50px; height: 50px;">
                         <!-- Diamond base lines -->
                         <path d="M 50 15 L 85 50 L 50 85 L 15 50 Z" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="2" stroke-dasharray="2,2" />
                         
@@ -340,21 +351,6 @@
                         <!-- Home Plate (Bottom, decorative) -->
                         <polygon points="50,79 55,84 55,89 45,89 45,84" fill="rgba(255,255,255,0.2)" stroke="rgba(255,255,255,0.3)" stroke-width="1" />
                       </svg>
-                    </div>
-
-                    <!-- Right LED Text Block -->
-                    <div style="flex: 1; display: flex; flex-direction: column; gap: 4px; text-align: center;">
-                      <div id="scoreboard-inning-text" style="color: var(--accent-color); margin-bottom: 2px;" data-i18n="match.arena">ARENA COMBATE</div>
-                      <div style="display: flex; justify-content: space-around; font-size: 8px;">
-                        <div><span data-i18n="match.runs">CARRERAS:</span> <span id="score-away-r" style="color: var(--primary-color);">0</span></div>
-                        <div><span data-i18n="match.outs">OUTS:</span> <span id="score-home-r" style="color: #ef4444;">0</span></div>
-                      </div>
-                      <div style="display: flex; justify-content: space-around; font-size: 8px; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 4px;">
-                        <div><span data-i18n="match.inning">INNING:</span> <span id="score-away-h" style="color: var(--accent-color);">1 / 3</span></div>
-                        <div><span data-i18n="match.rival_ko">K.O. RIVALES:</span> <span id="score-home-h" style="color: #ca8a04;">0 / 3</span></div>
-                        <span id="score-away-e" class="hidden">0</span>
-                        <span id="score-home-e" class="hidden">0</span>
-                      </div>
                     </div>
                  </div>
 
