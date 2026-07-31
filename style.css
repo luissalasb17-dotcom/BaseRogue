@@ -2894,38 +2894,37 @@ body.workspace-active .main-container {
     width: 100% !important;
   }
 
-  /* Compact LED Scoreboard with Baseball Diamond SVG on the LEFT */
+  /* LED Scoreboard with Baseball Diamond SVG on the LEFT */
   .scoreboard {
     width: 100% !important;
-    font-size: 7px !important;
-    padding: 3px 6px !important;
-    margin-bottom: 2px !important;
-    border-radius: 6px !important;
-    line-height: 1.2 !important;
+    font-size: 7.5px !important;
+    padding: 6px 10px !important;
+    margin-bottom: 4px !important;
+    border-radius: 8px !important;
     display: flex !important;
     flex-direction: row !important;
     align-items: center !important;
     justify-content: space-between !important;
-    gap: 6px !important;
+    gap: 10px !important;
   }
 
   #scoreboard-inning-text {
-    display: none !important;
+    display: block !important;
+    margin-bottom: 2px !important;
+    font-size: 8px !important;
   }
 
-  /* Baseball Diamond SVG positioned on the LEFT via CSS order: -1 */
   #bases-display-row {
     display: flex !important;
-    order: -1 !important;
     border: none !important;
     padding: 0 !important;
-    margin: 0 4px 0 0 !important;
-    flex: 0 0 35px !important;
+    margin: 0 !important;
+    flex: 0 0 42px !important;
   }
 
   #bases-display-row svg {
-    width: 35px !important;
-    height: 35px !important;
+    width: 40px !important;
+    height: 40px !important;
   }
 
   /* 1v1 Battle Arena Cards */
