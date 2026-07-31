@@ -2844,6 +2844,27 @@ body.workspace-active .main-container {
   }
 }
 
+/* Default Luck Zones Styles (Desktop PC - 100% Original Font Sizes) */
+.luck-zones-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: 100%;
+}
+
+.zones-col {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.zone-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 2px 0;
+  white-space: nowrap;
+  font-size: 10.5px;
+}
 
 /* --- MINIMALIST SINGLE-SCREEN MOBILE BATTLE (< 768px) --- */
 @media (max-width: 768px) {
@@ -3037,19 +3058,27 @@ body.workspace-active .main-container {
     color: #38bdf8 !important;
   }
 
-  #zones-panel #zones-lines {
-    display: block !important;
+  .luck-zones-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 2px 8px !important;
     width: 100% !important;
   }
 
-  #zones-panel #zones-lines > div {
-    font-size: 6px !important;
-    padding: 1px 2px !important;
-    white-space: nowrap !important;
-    background: rgba(255, 255, 255, 0.05) !important;
-    border-radius: 3px !important;
+  .zones-col {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 1.5px !important;
+  }
+
+  .zone-row {
     display: flex !important;
     justify-content: space-between !important;
+    padding: 1px 2px !important;
+    white-space: nowrap !important;
+    font-size: 6px !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+    border-radius: 3px !important;
   }
 
   #team-vitals {

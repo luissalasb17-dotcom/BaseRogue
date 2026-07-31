@@ -1694,10 +1694,8 @@ function initGameModeSelector() {
       }
     });
 
-    // Skip button: immediately resolve the full battle (fast-forward)
-    el.btnMatchSkip && el.btnMatchSkip.addEventListener('click', () => {
+    function handleFastSimulateAll() {
       if (!activeBattle || activeBattle.battleOver) return;
-      // Roll automatically until battle ends
       let safety = 0;
       while (!activeBattle.battleOver && safety++ < 500) {
         const roll = Math.floor(Math.random() * 100) + 1;
@@ -1707,7 +1705,11 @@ function initGameModeSelector() {
       const finalState = activeBattle.getState();
       updateMatchHUD(finalState);
       if (activeBattle.battleOver) handleBattleOver();
-    });
+    }
+    window.handleFastSimulateAll = handleFastSimulateAll;
+
+    // Skip button: immediately resolve the full battle (fast-forward)
+    el.btnMatchSkip && el.btnMatchSkip.addEventListener('click', handleFastSimulateAll);
 
     // Restart game click - restarts run with same mode and season configuration
     el.btnRestartGame.addEventListener('click', () => {
@@ -3034,25 +3036,22 @@ function initGameModeSelector() {
         width:100%;
       ">${t('match.roll_dice')}</button>
 
-      <!-- FAST SIMULATE button right under LANZAR DADO -->
-      <button id="btn-match-skip-game" style="
+      <!-- FAST SIMULATE button (MOBILE ONLY) -->
+      <button id="btn-match-skip-mobile" class="btn btn-secondary md:hidden" style="
         font-family:'Press Start 2P',monospace;
         font-size:9.5px;padding:8px 16px;
         background:rgba(239,68,68,0.85);
         color:#fff;border:none;border-radius:8px;
         cursor:pointer;letter-spacing:1px;
         box-shadow:0 0 10px rgba(239,68,68,0.3);
-        width:100%;margin-top:2px;
+        width:100%;margin-top:4px;
         display:flex;align-items:center;justify-content:center;gap:6px;
       "><i class="fa-solid fa-forward-step"></i> ${t('match.simulate_all', 'SIMULAR TODO')}</button>
     `;
 
-    const skipBtn = dicePanel.querySelector('#btn-match-skip-game');
-    if (skipBtn) {
-      skipBtn.addEventListener('click', () => {
-        if (!activeBattle || activeBattle.battleOver) return;
-        activeBattle.skipRestOfMatch();
-      });
+    const mobileSkipBtn = dicePanel.querySelector('#btn-match-skip-mobile');
+    if (mobileSkipBtn) {
+      mobileSkipBtn.addEventListener('click', handleFastSimulateAll);
     }
 
     const diceSlot = el.screenMatch.querySelector('#dice-container-slot');
@@ -3529,17 +3528,17 @@ function initGameModeSelector() {
       b = { bbEnd: 11, soEnd: 22, outEnd: 38, singleEnd: 61, doubleEnd: 74, tripleEnd: 81 };
     }
     zonesEl.innerHTML = `
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px 10px;width:100%;font-size:7.5px;">
-        <div style="display:flex;flex-direction:column;gap:1.5px;">
-          <div style="display:flex;justify-content:space-between;padding:1px 2px;white-space:nowrap;"><span style="color:#3b82f6;">⚾ ${t('match.bb', 'Boleto')}</span><span style="color:#3b82f6;font-weight:bold;">1–${b.bbEnd}</span></div>
-          <div style="display:flex;justify-content:space-between;padding:1px 2px;white-space:nowrap;"><span style="color:#ef4444;">💨 ${t('match.so', 'Ponche')}</span><span style="color:#ef4444;font-weight:bold;">${b.bbEnd + 1}–${b.soEnd}</span></div>
-          <div style="display:flex;justify-content:space-between;padding:1px 2px;white-space:nowrap;"><span style="color:#9ca3af;">🤚 ${t('match.out', 'Out')}</span><span style="color:#9ca3af;font-weight:bold;">${b.soEnd + 1}–${b.outEnd}</span></div>
+      <div class="luck-zones-grid">
+        <div class="zones-col">
+          <div class="zone-row"><span style="color:#3b82f6;">⚾ ${t('match.bb', 'Boleto (BB)')}</span><span style="color:#3b82f6;font-weight:bold;">1 – ${b.bbEnd}</span></div>
+          <div class="zone-row"><span style="color:#ef4444;">💨 ${t('match.so', 'Ponche (SO)')}</span><span style="color:#ef4444;font-weight:bold;">${b.bbEnd + 1} – ${b.soEnd}</span></div>
+          <div class="zone-row"><span style="color:#9ca3af;">🤚 ${t('match.out', 'Out (Fly/GD)')}</span><span style="color:#9ca3af;font-weight:bold;">${b.soEnd + 1} – ${b.outEnd}</span></div>
         </div>
-        <div style="display:flex;flex-direction:column;gap:1.5px;">
-          <div style="display:flex;justify-content:space-between;padding:1px 2px;white-space:nowrap;"><span style="color:#a7f3d0;">✅ ${t('match.single', 'Sencillo')}</span><span style="color:#a7f3d0;font-weight:bold;">${b.outEnd + 1}–${b.singleEnd}</span></div>
-          <div style="display:flex;justify-content:space-between;padding:1px 2px;white-space:nowrap;"><span style="color:#10b981;">⚡ ${t('match.double', 'Doble')}</span><span style="color:#10b981;font-weight:bold;">${b.singleEnd + 1}–${b.doubleEnd}</span></div>
-          <div style="display:flex;justify-content:space-between;padding:1px 2px;white-space:nowrap;"><span style="color:#06b6d4;">🔥 ${t('match.triple', 'Triple')}</span><span style="color:#06b6d4;font-weight:bold;">${b.doubleEnd + 1}–${b.tripleEnd}</span></div>
-          <div style="display:flex;justify-content:space-between;padding:1px 2px;white-space:nowrap;"><span style="color:#eab308;font-weight:bold;">🚀 ${t('match.hr', 'Jonrón')}</span><span style="color:#eab308;font-weight:bold;">${b.tripleEnd + 1}–100</span></div>
+        <div class="zones-col">
+          <div class="zone-row"><span style="color:#a7f3d0;">✅ ${t('match.single', 'Sencillo (1B)')}</span><span style="color:#a7f3d0;font-weight:bold;">${b.outEnd + 1} – ${b.singleEnd}</span></div>
+          <div class="zone-row"><span style="color:#10b981;">⚡ ${t('match.double', 'Doble (2B)')}</span><span style="color:#10b981;font-weight:bold;">${b.singleEnd + 1} – ${b.doubleEnd}</span></div>
+          <div class="zone-row"><span style="color:#06b6d4;">🔥 ${t('match.triple', 'Triple (3B)')}</span><span style="color:#06b6d4;font-weight:bold;">${b.doubleEnd + 1} – ${b.tripleEnd}</span></div>
+          <div class="zone-row"><span style="color:#eab308;font-weight:bold;">🚀 ${t('match.hr', 'Jonrón (HR)')}</span><span style="color:#eab308;font-weight:bold;">${b.tripleEnd + 1} – 100</span></div>
         </div>
       </div>
     `;
