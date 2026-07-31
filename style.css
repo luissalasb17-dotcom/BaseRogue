@@ -247,17 +247,18 @@ p {
 /* Cards System - Blocky 8-bit styling */
 .player-card {
   width: 152px;
-  height: 220px;
+  height: 236px;
   position: relative;
   background: #1e293b;
   border: 4px double #ffffff;
   box-shadow: 0 0 0 3px #000;
-  padding: 8px;
+  padding: 7px 8px 6px 8px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   overflow: hidden;
   cursor: pointer;
+  box-sizing: border-box;
 }
 
 .player-card.rarity-Common {
@@ -384,8 +385,8 @@ p {
   font-size: 8px;
   margin-top: auto !important;
   border-top: 1px dashed rgba(255,255,255,0.2);
-  padding-top: 2px !important;
-  padding-bottom: 1px !important;
+  padding-top: 3px !important;
+  padding-bottom: 3px !important;
 }
 
 .card-stamina-badge {
@@ -1543,12 +1544,15 @@ p {
 }
 
 .fight-card-slot {
-  min-width: 152px;
-  min-height: 220px;
+  min-width: 156px;
+  min-height: 248px;
+  height: 248px;
   border: 3px dashed #444;
   display: flex;
   justify-content: center;
   align-items: center;
+  box-sizing: border-box;
+  padding: 4px;
 }
 
 .faceoff-panel {
@@ -1884,6 +1888,43 @@ p {
   border-color: #333;
   background: rgba(0,0,0,0.6);
   cursor: not-allowed;
+}
+
+/* Outcome Probabilities Panel */
+#zones-panel {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 10px 12px;
+  box-sizing: border-box;
+}
+
+#zones-panel-header {
+  color: #94a3b8;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10.5px;
+  text-align: center;
+  margin-bottom: 8px;
+  letter-spacing: 0.5px;
+}
+
+.outcome-probabilities-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 14px;
+  width: 100%;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10.5px;
+}
+
+.outcome-probabilities-grid .outcome-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 2.5px 5px;
+  white-space: nowrap;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.04);
 }
 
 

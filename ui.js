@@ -1245,19 +1245,19 @@ function initGameModeSelector() {
       const gSta = getStatGrade(staVal);
 
       statLines = `
-        <div class="stat-row" style="display: flex; align-items: center; justify-content: space-between; font-size: 7px; margin: 3px 0;">
+        <div class="stat-row" style="display: flex; align-items: center; justify-content: space-between; font-size: 7px; margin: 1.5px 0;">
           <span class="stat-label">MOV:</span>
           <span class="stat-badge" style="background: ${gMov.color}; color: ${gMov.text === 'F' ? '#fff' : '#000'}; font-family: 'Press Start 2P', monospace; font-size: 6px; padding: 2px 5px; border-radius: 3px; font-weight: bold; box-shadow: 0 1px 2px rgba(0,0,0,0.3);">${gMov.text}</span>
         </div>
-        <div class="stat-row" style="display: flex; align-items: center; justify-content: space-between; font-size: 7px; margin: 3px 0;">
+        <div class="stat-row" style="display: flex; align-items: center; justify-content: space-between; font-size: 7px; margin: 1.5px 0;">
           <span class="stat-label">STF:</span>
           <span class="stat-badge" style="background: ${gStf.color}; color: ${gStf.text === 'F' ? '#fff' : '#000'}; font-family: 'Press Start 2P', monospace; font-size: 6px; padding: 2px 5px; border-radius: 3px; font-weight: bold; box-shadow: 0 1px 2px rgba(0,0,0,0.3);">${gStf.text}</span>
         </div>
-        <div class="stat-row" style="display: flex; align-items: center; justify-content: space-between; font-size: 7px; margin: 3px 0;">
+        <div class="stat-row" style="display: flex; align-items: center; justify-content: space-between; font-size: 7px; margin: 1.5px 0;">
           <span class="stat-label">CTL:</span>
           <span class="stat-badge" style="background: ${gCtl.color}; color: ${gCtl.text === 'F' ? '#fff' : '#000'}; font-family: 'Press Start 2P', monospace; font-size: 6px; padding: 2px 5px; border-radius: 3px; font-weight: bold; box-shadow: 0 1px 2px rgba(0,0,0,0.3);">${gCtl.text}</span>
         </div>
-        <div class="stat-row" style="display: flex; align-items: center; justify-content: space-between; font-size: 7px; margin: 3px 0;">
+        <div class="stat-row" style="display: flex; align-items: center; justify-content: space-between; font-size: 7px; margin: 1.5px 0;">
           <span class="stat-label">STA:</span>
           <span class="stat-badge" style="background: ${gSta.color}; color: ${gSta.text === 'F' ? '#fff' : '#000'}; font-family: 'Press Start 2P', monospace; font-size: 6px; padding: 2px 5px; border-radius: 3px; font-weight: bold; box-shadow: 0 1px 2px rgba(0,0,0,0.3);">${gSta.text}</span>
         </div>
@@ -1276,23 +1276,23 @@ function initGameModeSelector() {
       const gDef = getStatGrade(defVal);
 
       statLines = `
-        <div class="stat-row" style="display: flex; align-items: center; justify-content: space-between; font-size: 7px; margin: 3px 0;">
+        <div class="stat-row" style="display: flex; align-items: center; justify-content: space-between; font-size: 7px; margin: 1.5px 0;">
           <span class="stat-label">CON:</span>
           <span class="stat-badge" style="background: ${gCon.color}; color: ${gCon.text === 'F' ? '#fff' : '#000'}; font-family: 'Press Start 2P', monospace; font-size: 6px; padding: 2px 5px; border-radius: 3px; font-weight: bold; box-shadow: 0 1px 2px rgba(0,0,0,0.3);">${gCon.text}</span>
         </div>
-        <div class="stat-row" style="display: flex; align-items: center; justify-content: space-between; font-size: 7px; margin: 3px 0;">
+        <div class="stat-row" style="display: flex; align-items: center; justify-content: space-between; font-size: 7px; margin: 1.5px 0;">
           <span class="stat-label">POW:</span>
           <span class="stat-badge" style="background: ${gPwr.color}; color: ${gPwr.text === 'F' ? '#fff' : '#000'}; font-family: 'Press Start 2P', monospace; font-size: 6px; padding: 2px 5px; border-radius: 3px; font-weight: bold; box-shadow: 0 1px 2px rgba(0,0,0,0.3);">${gPwr.text}</span>
         </div>
-        <div class="stat-row" style="display: flex; align-items: center; justify-content: space-between; font-size: 7px; margin: 3px 0;">
+        <div class="stat-row" style="display: flex; align-items: center; justify-content: space-between; font-size: 7px; margin: 1.5px 0;">
           <span class="stat-label">EYE:</span>
           <span class="stat-badge" style="background: ${gEye.color}; color: ${gEye.text === 'F' ? '#fff' : '#000'}; font-family: 'Press Start 2P', monospace; font-size: 6px; padding: 2px 5px; border-radius: 3px; font-weight: bold; box-shadow: 0 1px 2px rgba(0,0,0,0.3);">${gEye.text}</span>
         </div>
-        <div class="stat-row" style="display: flex; align-items: center; justify-content: space-between; font-size: 7px; margin: 3px 0;">
+        <div class="stat-row" style="display: flex; align-items: center; justify-content: space-between; font-size: 7px; margin: 1.5px 0;">
           <span class="stat-label">SPD:</span>
           <span class="stat-badge" style="background: ${gSpd.color}; color: ${gSpd.text === 'F' ? '#fff' : '#000'}; font-family: 'Press Start 2P', monospace; font-size: 6px; padding: 2px 5px; border-radius: 3px; font-weight: bold; box-shadow: 0 1px 2px rgba(0,0,0,0.3);">${gSpd.text}</span>
         </div>
-        <div class="stat-row" style="display: flex; align-items: center; justify-content: space-between; font-size: 7px; margin: 3px 0;">
+        <div class="stat-row" style="display: flex; align-items: center; justify-content: space-between; font-size: 7px; margin: 1.5px 0;">
           <span class="stat-label">DEF:</span>
           <span class="stat-badge" style="background: ${gDef.color}; color: ${gDef.text === 'F' ? '#fff' : '#000'}; font-family: 'Press Start 2P', monospace; font-size: 6px; padding: 2px 5px; border-radius: 3px; font-weight: bold; box-shadow: 0 1px 2px rgba(0,0,0,0.3);">${gDef.text}</span>
         </div>
@@ -1692,21 +1692,9 @@ function initGameModeSelector() {
       if (e.target.closest('#btn-roll-dice')) {
         handleRollDice();
       }
-    });
-
-    // Skip button: immediately resolve the full battle (fast-forward)
-    el.btnMatchSkip && el.btnMatchSkip.addEventListener('click', () => {
-      if (!activeBattle || activeBattle.battleOver) return;
-      // Roll automatically until battle ends
-      let safety = 0;
-      while (!activeBattle.battleOver && safety++ < 500) {
-        const roll = Math.floor(Math.random() * 100) + 1;
-        const ev = activeBattle.rollDice(roll);
-        if (ev) appendLogLine(ev);
+      if (e.target.closest('#btn-match-skip-game')) {
+        handleSimulateAll();
       }
-      const finalState = activeBattle.getState();
-      updateMatchHUD(finalState);
-      if (activeBattle.battleOver) handleBattleOver();
     });
 
     // Restart game click - restarts run with same mode and season configuration
@@ -3018,9 +3006,9 @@ function initGameModeSelector() {
         letter-spacing:2px;
       ">–</div>
       <!-- Lucky zones panel -->
-      <div id="zones-panel" style="width:100%;background:rgba(0,0,0,0.3);border-radius:8px;padding:8px;font-size:10px;">
-        <div style="color:#64748b;text-align:center;margin-bottom:4px;">🎯 ${t('match.luck_zones')}</div>
-        <div id="zones-lines" style="display:flex;flex-direction:column;gap:2px;"></div>
+      <div id="zones-panel">
+        <div id="zones-panel-header">🎯 ${t('match.luck_zones', 'Zonas de la Suerte')}</div>
+        <div id="zones-lines"></div>
       </div>
       <!-- ROLL button -->
       <button id="btn-roll-dice" style="
@@ -3032,11 +3020,28 @@ function initGameModeSelector() {
         box-shadow:0 0 20px rgba(124,58,237,0.5);
         transition:transform .1s,box-shadow .1s;
         width:100%;
-      ">${t('match.roll_dice')}</button>
+      ">${t('match.roll_dice', 'LANZAR DADO')}</button>
+      <!-- SIMULATE ALL button (placed directly below LANZAR DADO on both PC and mobile) -->
+      <button id="btn-match-skip-game" class="btn" style="
+        font-family:'Press Start 2P',monospace;
+        font-size:10.5px;
+        padding:12px 20px;
+        background:linear-gradient(135deg,#dc2626,#ef4444);
+        color:#fff;
+        border:none;
+        border-radius:10px;
+        cursor:pointer;
+        width:100%;
+        margin-top:10px;
+        letter-spacing:0.5px;
+        box-shadow:0 0 14px rgba(220,38,38,0.4);
+        transition:transform .1s,box-shadow .1s;
+      " data-i18n="match.simulate_all"><i class="fa-solid fa-forward-step"></i> ${t('match.simulate_all', '⚡ SIMULAR TODO')}</button>
     `;
 
+    el.btnMatchSkip = document.getElementById('btn-match-skip-game');
     if (el.btnMatchSkip) {
-      el.btnMatchSkip.innerHTML = '<i class="fa-solid fa-forward-step"></i> ' + t('match.simulate_all');
+      el.btnMatchSkip.innerHTML = '<i class="fa-solid fa-forward-step"></i> ' + t('match.simulate_all', '⚡ SIMULAR TODO');
     }
 
     const diceSlot = el.screenMatch.querySelector('#dice-container-slot');
@@ -3369,6 +3374,31 @@ function initGameModeSelector() {
     }, 55);
   }
 
+  function handleSimulateAll() {
+    if (!activeBattle || activeBattle.battleOver) return;
+
+    const btnRoll = document.getElementById('btn-roll-dice');
+    const btnSkip = document.getElementById('btn-match-skip-game');
+    if (btnRoll) btnRoll.disabled = true;
+    if (btnSkip) btnSkip.disabled = true;
+
+    let safety = 0;
+    while (!activeBattle.battleOver && safety++ < 500) {
+      const roll = Math.floor(Math.random() * 100) + 1;
+      const ev = activeBattle.rollDice(roll);
+      if (ev) appendLogLine(ev);
+    }
+
+    const finalState = activeBattle.getState();
+    updateMatchHUD(finalState);
+    updateFaceoffPanel(finalState);
+    renderZones();
+
+    if (activeBattle.battleOver) {
+      handleBattleOver();
+    }
+  }
+
   // ── UPDATE MATCH HUD (HP bars, shield, chain, scoreboard) ───────────────────
   function triggerBarShake(element, cssClass) {
     if (!element) return;
@@ -3513,17 +3543,17 @@ function initGameModeSelector() {
       b = { bbEnd: 11, soEnd: 22, outEnd: 38, singleEnd: 61, doubleEnd: 74, tripleEnd: 81 };
     }
     zonesEl.innerHTML = `
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px 10px;width:100%;font-size:7.5px;">
-        <div style="display:flex;flex-direction:column;gap:1.5px;">
-          <div style="display:flex;justify-content:space-between;padding:1px 2px;white-space:nowrap;"><span style="color:#3b82f6;">⚾ ${t('match.bb', 'Boleto')}</span><span style="color:#3b82f6;font-weight:bold;">1–${b.bbEnd}</span></div>
-          <div style="display:flex;justify-content:space-between;padding:1px 2px;white-space:nowrap;"><span style="color:#ef4444;">💨 ${t('match.so', 'Ponche')}</span><span style="color:#ef4444;font-weight:bold;">${b.bbEnd + 1}–${b.soEnd}</span></div>
-          <div style="display:flex;justify-content:space-between;padding:1px 2px;white-space:nowrap;"><span style="color:#9ca3af;">🤚 ${t('match.out', 'Out')}</span><span style="color:#9ca3af;font-weight:bold;">${b.soEnd + 1}–${b.outEnd}</span></div>
+      <div class="outcome-probabilities-grid">
+        <div style="display:flex;flex-direction:column;gap:3px;">
+          <div class="outcome-row"><span style="color:#3b82f6;">⚾ ${t('match.bb', 'Boleto')}</span><span style="color:#3b82f6;font-weight:bold;">1–${b.bbEnd}</span></div>
+          <div class="outcome-row"><span style="color:#ef4444;">💨 ${t('match.so', 'Ponche')}</span><span style="color:#ef4444;font-weight:bold;">${b.bbEnd + 1}–${b.soEnd}</span></div>
+          <div class="outcome-row"><span style="color:#9ca3af;">🤚 ${t('match.out', 'Out')}</span><span style="color:#9ca3af;font-weight:bold;">${b.soEnd + 1}–${b.outEnd}</span></div>
         </div>
-        <div style="display:flex;flex-direction:column;gap:1.5px;">
-          <div style="display:flex;justify-content:space-between;padding:1px 2px;white-space:nowrap;"><span style="color:#a7f3d0;">✅ ${t('match.single', 'Sencillo')}</span><span style="color:#a7f3d0;font-weight:bold;">${b.outEnd + 1}–${b.singleEnd}</span></div>
-          <div style="display:flex;justify-content:space-between;padding:1px 2px;white-space:nowrap;"><span style="color:#10b981;">⚡ ${t('match.double', 'Doble')}</span><span style="color:#10b981;font-weight:bold;">${b.singleEnd + 1}–${b.doubleEnd}</span></div>
-          <div style="display:flex;justify-content:space-between;padding:1px 2px;white-space:nowrap;"><span style="color:#06b6d4;">🔥 ${t('match.triple', 'Triple')}</span><span style="color:#06b6d4;font-weight:bold;">${b.doubleEnd + 1}–${b.tripleEnd}</span></div>
-          <div style="display:flex;justify-content:space-between;padding:1px 2px;white-space:nowrap;"><span style="color:#eab308;font-weight:bold;">🚀 ${t('match.hr', 'Jonrón')}</span><span style="color:#eab308;font-weight:bold;">${b.tripleEnd + 1}–100</span></div>
+        <div style="display:flex;flex-direction:column;gap:3px;">
+          <div class="outcome-row"><span style="color:#a7f3d0;">✅ ${t('match.single', 'Sencillo')}</span><span style="color:#a7f3d0;font-weight:bold;">${b.outEnd + 1}–${b.singleEnd}</span></div>
+          <div class="outcome-row"><span style="color:#10b981;">⚡ ${t('match.double', 'Doble')}</span><span style="color:#10b981;font-weight:bold;">${b.singleEnd + 1}–${b.doubleEnd}</span></div>
+          <div class="outcome-row"><span style="color:#06b6d4;">🔥 ${t('match.triple', 'Triple')}</span><span style="color:#06b6d4;font-weight:bold;">${b.doubleEnd + 1}–${b.tripleEnd}</span></div>
+          <div class="outcome-row"><span style="color:#eab308;font-weight:bold;">🚀 ${t('match.hr', 'Jonrón')}</span><span style="color:#eab308;font-weight:bold;">${b.tripleEnd + 1}–100</span></div>
         </div>
       </div>
     `;
