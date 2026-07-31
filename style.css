@@ -2900,15 +2900,15 @@ body.workspace-active .main-container {
     align-items: center !important;
   }
 
-  /* Mobile Match Simulator Viewport (Fits 100% inside 1 screen without scrolling!) */
+  /* Mobile Match Simulator Viewport (Fits 100% inside 1 screen and scrollable inside green box if screen is small) */
   #screen-match:not(.hidden) {
-    height: calc(100vh - 70px) !important;
+    height: auto !important;
     max-height: calc(100vh - 70px) !important;
-    overflow: hidden !important;
+    overflow-y: auto !important;
     display: flex !important;
     flex-direction: column !important;
-    justify-content: space-between !important;
-    padding: 3px 6px !important;
+    justify-content: flex-start !important;
+    padding: 3px 5px 12px 5px !important;
     margin: 0 !important;
     box-sizing: border-box !important;
   }
@@ -2920,10 +2920,10 @@ body.workspace-active .main-container {
   .match-arena {
     display: flex !important;
     flex-direction: column !important;
-    justify-content: space-between !important;
-    height: 100% !important;
-    max-height: 100% !important;
-    overflow: hidden !important;
+    justify-content: flex-start !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
     gap: 2px !important;
     margin: 0 !important;
     padding: 0 !important;
@@ -2977,13 +2977,14 @@ body.workspace-active .main-container {
 
   /* 1v1 Battle Arena Cards */
   .rpg-fight-deck {
-    transform: none !important;
+    transform: scale(0.88) !important;
+    transform-origin: center top !important;
     width: 100% !important;
     display: flex !important;
     justify-content: center !important;
     align-items: center !important;
     gap: 4px !important;
-    margin: 1px 0 !important;
+    margin: -4px 0 -22px 0 !important;
   }
 
   .fight-card-slot {
