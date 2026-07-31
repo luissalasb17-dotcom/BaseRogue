@@ -65,12 +65,14 @@ function updateMobileNavVisibility() {
   const navBar = document.getElementById('mobile-nav-bar');
   if (!navBar) return;
 
-  const modeScreen = document.getElementById('screen-mode-select');
-  const menuScreen = document.getElementById('screen-menu');
-  const isOuterScreen = (modeScreen && !modeScreen.classList.contains('hidden')) ||
-                        (menuScreen && !menuScreen.classList.contains('hidden'));
+  const modeScreen  = document.getElementById('screen-mode-select');
+  const menuScreen  = document.getElementById('screen-menu');
+  const matchScreen = document.getElementById('screen-match');
+  const isHideNavbar = (modeScreen  && !modeScreen.classList.contains('hidden')) ||
+                       (menuScreen  && !menuScreen.classList.contains('hidden')) ||
+                       (matchScreen && !matchScreen.classList.contains('hidden'));
 
-  if (isOuterScreen) {
+  if (isHideNavbar) {
     navBar.classList.add('hidden');
   } else {
     navBar.classList.remove('hidden');
