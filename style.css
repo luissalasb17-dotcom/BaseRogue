@@ -1543,24 +1543,12 @@ p {
 }
 
 .fight-card-slot {
-  min-width: 160px !important;
-  min-height: 256px !important;
-  height: 256px !important;
-  border: 3px dashed #444 !important;
-  display: flex !important;
-  justify-content: center !important;
-  align-items: center !important;
-  box-sizing: border-box !important;
-  padding: 12px 8px !important;
-}
-
-.fight-card-slot .card,
-.fight-card-slot .player-card {
-  max-height: 220px !important;
-  height: 220px !important;
-  width: 100% !important;
-  box-sizing: border-box !important;
-  margin: 0 auto !important;
+  min-width: 152px;
+  min-height: 220px;
+  border: 3px dashed #444;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .faceoff-panel {
@@ -2515,32 +2503,7 @@ body.workspace-active .main-container {
   color: #e4e4e7;
 }
 
-/* PC & Mobile Draft Card Wrapper Spacing (Prevents SELECCIONAR button from touching bottom dashed border) */
-.draft-card-wrapper,
-.draft-card-option {
-  min-height: 310px !important;
-  height: auto !important;
-  padding: 12px 10px 22px 10px !important;
-  box-sizing: border-box !important;
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-}
 
-.draft-card-wrapper .player-card,
-.draft-card-option .player-card {
-  height: 220px !important;
-  max-height: 220px !important;
-  margin-bottom: 8px !important;
-  box-sizing: border-box !important;
-}
-
-.draft-card-wrapper .btn-sign-draft,
-.draft-card-option .btn-sign-draft {
-  margin-top: 6px !important;
-  margin-bottom: 6px !important;
-}
 
 /* ── MOBILE RESPONSIVE ──────────────────────────────────────────────────── */
 @media (max-width: 768px) {
@@ -2954,20 +2917,18 @@ body.workspace-active .main-container {
     width: 100% !important;
   }
 
-  /* LED Scoreboard with Baseball Diamond SVG on the LEFT for Mobile */
+  /* LED Scoreboard with Baseball Diamond SVG on the LEFT */
   .scoreboard {
     width: 100% !important;
     font-size: 7.5px !important;
-    padding: 6px 36px 6px 8px !important; /* 36px right padding prevents text from colliding with yellow 'i' info button! */
+    padding: 6px 10px !important;
     margin-bottom: 4px !important;
     border-radius: 8px !important;
     display: flex !important;
     flex-direction: row !important;
     align-items: center !important;
-    justify-content: flex-start !important;
-    gap: 8px !important;
-    box-sizing: border-box !important;
-    position: relative !important;
+    justify-content: space-between !important;
+    gap: 10px !important;
   }
 
   #scoreboard-inning-text {
@@ -2978,21 +2939,15 @@ body.workspace-active .main-container {
 
   #bases-display-row {
     display: flex !important;
-    order: -1 !important;
     border: none !important;
-    border-top: none !important;
     padding: 0 !important;
-    padding-top: 0 !important;
     margin: 0 !important;
-    margin-top: 0 !important;
-    flex: 0 0 36px !important;
-    width: 36px !important;
-    height: 36px !important;
+    flex: 0 0 42px !important;
   }
 
   #bases-display-row svg {
-    width: 36px !important;
-    height: 36px !important;
+    width: 40px !important;
+    height: 40px !important;
   }
 
   /* 1v1 Battle Arena Cards */
