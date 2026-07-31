@@ -369,7 +369,7 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
         }
         const descEl = screenDraft.querySelector('p');
         if (descEl) {
-          descEl.innerText = "Elige a tus Jugadores en 9 rondas de draft para armar tu alineación completa de 9 bateadores. Organiza su posición defensiva (Drag & Drop) y su orden al bate en tiempo real. Luego lanza el dado en cada turno para determinar el resultado al bate. Derrota la rotación rival antes de que tus 100 HP lleguen a cero.";
+          descEl.style.display = 'none';
         }
       }
 
@@ -2570,6 +2570,7 @@ function initGameModeSelector() {
     }
     const descEl = el.screenDraft.querySelector('p');
     if (descEl) {
+      descEl.style.display = 'block';
       descEl.innerText = t('draft.midrun_desc');
     }
 
@@ -2669,6 +2670,7 @@ function initGameModeSelector() {
     }
     const descEl = el.screenDraft.querySelector('p');
     if (descEl) {
+      descEl.style.display = 'block';
       descEl.innerText = t('draft.midrun_desc');
     }
 
