@@ -1543,21 +1543,24 @@ p {
 }
 
 .fight-card-slot {
-  min-width: 156px;
-  min-height: 236px;
-  height: 236px;
+  min-width: 160px;
+  min-height: 248px;
+  height: 248px;
   border: 3px dashed #444;
   display: flex;
   justify-content: center;
   align-items: center;
   box-sizing: border-box;
-  padding: 4px;
+  padding: 10px !important;
 }
 
 .fight-card-slot .card,
 .fight-card-slot .player-card {
-  max-height: 220px;
-  box-sizing: border-box;
+  max-height: 220px !important;
+  height: 220px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  margin: 0 !important;
 }
 
 .faceoff-panel {
@@ -2512,6 +2515,23 @@ body.workspace-active .main-container {
   color: #e4e4e7;
 }
 
+/* PC & Mobile Draft Card Wrapper Spacing (Prevents SELECCIONAR button from touching bottom dashed border) */
+.draft-card-wrapper,
+.draft-card-option {
+  padding: 12px 10px 18px 10px !important;
+  box-sizing: border-box !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+}
+
+.draft-card-wrapper .btn-sign-draft,
+.draft-card-option .btn-sign-draft {
+  margin-top: 8px !important;
+  margin-bottom: 2px !important;
+}
+
 /* ── MOBILE RESPONSIVE ──────────────────────────────────────────────────── */
 @media (max-width: 768px) {
   /* Draft Cards: Stacked vertically, perfectly proportioned, max 280px wide */
@@ -2946,9 +2966,13 @@ body.workspace-active .main-container {
 
   #bases-display-row {
     display: flex !important;
+    order: -1 !important;
     border: none !important;
+    border-top: none !important;
     padding: 0 !important;
-    margin: 0 !important;
+    padding-top: 0 !important;
+    margin: 0 6px 0 0 !important;
+    margin-top: 0 !important;
     flex: 0 0 42px !important;
   }
 

@@ -3036,15 +3036,15 @@ function initGameModeSelector() {
         width:100%;
       ">${t('match.roll_dice')}</button>
 
-      <!-- FAST SIMULATE button (MOBILE ONLY) -->
-      <button id="btn-match-skip-mobile" class="btn btn-secondary md:hidden" style="
+      <!-- SINGLE FAST SIMULATE BUTTON FOR BOTH PC AND MOBILE -->
+      <button id="btn-match-skip-mobile" class="btn btn-secondary" style="
         font-family:'Press Start 2P',monospace;
         font-size:9.5px;padding:8px 16px;
         background:rgba(239,68,68,0.85);
         color:#fff;border:none;border-radius:8px;
         cursor:pointer;letter-spacing:1px;
         box-shadow:0 0 10px rgba(239,68,68,0.3);
-        width:100%;margin-top:4px;
+        width:100%;margin-top:6px;
         display:flex;align-items:center;justify-content:center;gap:6px;
       "><i class="fa-solid fa-forward-step"></i> ${t('match.simulate_all', 'SIMULAR TODO')}</button>
     `;
