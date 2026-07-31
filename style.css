@@ -2789,8 +2789,8 @@ body.workspace-active .main-container {
 
   /* Map Nodes Container */
   #map-nodes-container {
-    transform: scale(0.85);
-    transform-origin: top center;
+    transform: scale(0.98) !important;
+    transform-origin: top center !important;
   }
 
   /* Modals & Popups: fit mobile screens */
@@ -2900,16 +2900,15 @@ body.workspace-active .main-container {
     align-items: center !important;
   }
 
-  /* Mobile Match Simulator Viewport (Allows clean vertical layout & scrolling so nothing is cut off!) */
+  /* Mobile Match Simulator Viewport (Fits 100% inside 1 screen without scrolling!) */
   #screen-match:not(.hidden) {
-    height: auto !important;
-    min-height: calc(100vh - 70px) !important;
-    max-height: none !important;
-    overflow-y: auto !important;
+    height: calc(100vh - 70px) !important;
+    max-height: calc(100vh - 70px) !important;
+    overflow: hidden !important;
     display: flex !important;
     flex-direction: column !important;
-    justify-content: flex-start !important;
-    padding: 6px 6px 30px 6px !important;
+    justify-content: space-between !important;
+    padding: 3px 6px !important;
     margin: 0 !important;
     box-sizing: border-box !important;
   }
@@ -2921,11 +2920,11 @@ body.workspace-active .main-container {
   .match-arena {
     display: flex !important;
     flex-direction: column !important;
-    justify-content: flex-start !important;
-    height: auto !important;
-    max-height: none !important;
-    overflow: visible !important;
-    gap: 6px !important;
+    justify-content: space-between !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    overflow: hidden !important;
+    gap: 2px !important;
     margin: 0 !important;
     padding: 0 !important;
     transform: none !important;
@@ -2935,14 +2934,14 @@ body.workspace-active .main-container {
   .scoreboard {
     width: 100% !important;
     font-size: 7.5px !important;
-    padding: 6px 8px !important;
-    margin-bottom: 4px !important;
-    border-radius: 8px !important;
+    padding: 4px 6px !important;
+    margin-bottom: 2px !important;
+    border-radius: 6px !important;
     display: flex !important;
     flex-direction: row !important;
     align-items: center !important;
     justify-content: space-between !important;
-    gap: 8px !important;
+    gap: 6px !important;
     box-sizing: border-box !important;
   }
 
@@ -2952,8 +2951,8 @@ body.workspace-active .main-container {
   }
 
   #scoreboard-inning-text {
-    margin-bottom: 4px !important;
-    font-size: 8px !important;
+    margin-bottom: 2px !important;
+    font-size: 7.5px !important;
     text-align: center !important;
   }
 
@@ -2964,16 +2963,16 @@ body.workspace-active .main-container {
     border-top: none !important;
     padding: 0 !important;
     margin: 0 !important;
-    flex: 0 0 44px !important;
-    width: 44px !important;
-    height: 44px !important;
+    flex: 0 0 38px !important;
+    width: 38px !important;
+    height: 38px !important;
     align-items: center !important;
     justify-content: center !important;
   }
 
   #bases-display-row svg {
-    width: 42px !important;
-    height: 42px !important;
+    width: 36px !important;
+    height: 36px !important;
   }
 
   /* 1v1 Battle Arena Cards */
@@ -2984,7 +2983,7 @@ body.workspace-active .main-container {
     justify-content: center !important;
     align-items: center !important;
     gap: 4px !important;
-    margin: 2px 0 !important;
+    margin: 1px 0 !important;
   }
 
   .fight-card-slot {
@@ -3003,7 +3002,7 @@ body.workspace-active .main-container {
     flex: 1 !important;
     min-width: 0 !important;
     font-size: 7px !important;
-    padding: 4px 4px !important;
+    padding: 3px 3px !important;
     box-sizing: border-box !important;
     display: flex !important;
     flex-direction: column !important;
@@ -3039,11 +3038,11 @@ body.workspace-active .main-container {
   /* Active Batter / Pitcher HP Bar & Names */
   .faceoff-panel {
     width: 100% !important;
-    padding: 8px 10px !important;
+    padding: 4px 8px !important;
     box-sizing: border-box !important;
-    gap: 4px !important;
+    gap: 3px !important;
     margin: 0 !important;
-    border-radius: 8px !important;
+    border-radius: 6px !important;
   }
 
   .faceoff-panel > div:first-child > div {
@@ -3053,7 +3052,7 @@ body.workspace-active .main-container {
   }
 
   .faceoff-name {
-    font-size: 9.5px !important;
+    font-size: 9px !important;
     white-space: nowrap !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
@@ -3062,18 +3061,24 @@ body.workspace-active .main-container {
     box-sizing: border-box !important;
   }
 
+  #match-batter-stats-box {
+    margin-top: 4px !important;
+    line-height: 1.2 !important;
+    font-size: 7px !important;
+  }
+
   .hp-bar-container {
     width: 100% !important;
     max-width: 100% !important;
-    margin: 6px 0 2px 0 !important;
+    margin: 4px 0 2px 0 !important;
     box-sizing: border-box !important;
   }
 
   #match-pitcher-hp-text {
-    font-size: 8.5px !important;
+    font-size: 8px !important;
     text-align: right !important;
     transform-origin: right !important;
-    margin-top: 3px !important;
+    margin-top: 2px !important;
     color: #a7f3d0 !important;
   }
 
@@ -3083,11 +3088,11 @@ body.workspace-active .main-container {
 
   /* Dice Battle Container & Action Button (Bottom of screen) */
   #dice-battle-panel {
-    padding: 4px 8px !important;
+    padding: 3px 6px !important;
     margin-top: 0 !important;
-    gap: 3px !important;
+    gap: 2px !important;
     background: rgba(0, 0, 0, 0.6) !important;
-    border-radius: 8px !important;
+    border-radius: 6px !important;
     width: 100% !important;
     box-sizing: border-box !important;
   }
@@ -3096,8 +3101,8 @@ body.workspace-active .main-container {
   #zones-panel {
     display: block !important;
     width: 100% !important;
-    padding: 4px 8px !important;
-    margin: 2px 0 !important;
+    padding: 3px 6px !important;
+    margin: 1px 0 !important;
     background: rgba(0, 0, 0, 0.45) !important;
     border-radius: 6px !important;
     border: 1px solid rgba(255, 255, 255, 0.1) !important;
@@ -3105,8 +3110,8 @@ body.workspace-active .main-container {
   }
 
   #zones-panel > div:first-child {
-    font-size: 7px !important;
-    margin-bottom: 3px !important;
+    font-size: 6.5px !important;
+    margin-bottom: 2px !important;
     text-align: center !important;
     color: #38bdf8 !important;
   }
@@ -3131,27 +3136,33 @@ body.workspace-active .main-container {
   }
 
   #team-vitals span {
-    font-size: 7.5px !important;
+    font-size: 7px !important;
   }
 
   #so-chain-display {
-    font-size: 7.5px !important;
+    font-size: 7px !important;
   }
 
   #dice-result-display {
-    width: 60px !important;
-    height: 38px !important;
-    font-size: 20px !important;
+    width: 50px !important;
+    height: 32px !important;
+    font-size: 18px !important;
     border-radius: 6px !important;
     margin: 0 auto !important;
   }
 
   #btn-roll-dice {
-    font-size: 11px !important;
-    padding: 12px 10px !important;
-    min-height: 42px !important;
+    font-size: 10.5px !important;
+    padding: 8px 10px !important;
+    min-height: 36px !important;
     width: 100% !important;
     margin-top: 2px !important;
+  }
+
+  #btn-match-skip-game {
+    font-size: 9px !important;
+    padding: 6px 10px !important;
+    margin-top: 3px !important;
   }
 
   /* Hide raw text log box on mobile so everything sits inside 1 screen height */
