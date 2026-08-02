@@ -1829,6 +1829,108 @@ p {
   .match-arena { grid-template-columns: 1fr; }
 }
 
+/* --- LAPTOP / SMALL DESKTOP AUTO-SCALING (769px - 1380px) ---
+   Scales down battle arena elements proportionally so nothing overflows
+   on smaller laptop screens while preserving the 2-column PC layout.
+*/
+@media (min-width: 769px) and (max-width: 1380px) {
+  .match-arena {
+    gap: 14px !important;
+  }
+
+  /* Scale cards proportionally based on viewport width */
+  .rpg-fight-deck {
+    padding: 10px !important;
+    transform: scale(0.9) !important;
+    transform-origin: center top !important;
+    margin-bottom: -24px !important;
+  }
+
+  .fight-card-slot {
+    min-width: 130px !important;
+    min-height: 210px !important;
+    height: 210px !important;
+  }
+
+  .scoreboard {
+    font-size: 8px !important;
+    padding: 8px !important;
+  }
+
+  #scoreboard-inning-text {
+    font-size: 8px !important;
+    margin-bottom: 6px !important;
+  }
+
+  .faceoff-panel {
+    padding: 8px 10px !important;
+  }
+
+  .faceoff-name {
+    font-size: 11px !important;
+  }
+
+  #match-batter-stats-box {
+    font-size: 7px !important;
+    line-height: 1.4 !important;
+    margin-top: 6px !important;
+  }
+
+  #match-pitcher-hp-text {
+    font-size: 9px !important;
+  }
+
+  #dice-battle-panel {
+    padding: 8px 10px !important;
+    gap: 6px !important;
+  }
+
+  #team-vitals span {
+    font-size: 9px !important;
+  }
+
+  #so-chain-display {
+    font-size: 9px !important;
+  }
+
+  #dice-result-display {
+    width: 60px !important;
+    height: 60px !important;
+    font-size: 28px !important;
+  }
+
+  #btn-roll-dice {
+    font-size: 11px !important;
+    padding: 10px 20px !important;
+  }
+
+  #btn-match-skip-game {
+    font-size: 9px !important;
+    padding: 8px 16px !important;
+  }
+
+  .match-log {
+    height: 140px !important;
+    max-height: 140px !important;
+  }
+
+  .match-log-content {
+    font-size: 16px !important;
+  }
+
+  .outcome-probabilities-grid {
+    font-size: 9px !important;
+  }
+
+  #zones-panel > div:first-child {
+    font-size: 9px !important;
+  }
+
+  #zones-panel #zones-lines > div {
+    font-size: 9px !important;
+  }
+}
+
 /* Batting Order Controls */
 .order-btn-container {
   display: flex;
@@ -2975,16 +3077,16 @@ body.workspace-active .main-container {
     height: 36px !important;
   }
 
-  /* 1v1 Battle Arena Cards */
+  /* 1v1 Battle Arena Cards — scale down further to reclaim vertical space */
   .rpg-fight-deck {
-    transform: scale(0.88) !important;
+    transform: scale(0.82) !important;
     transform-origin: center top !important;
     width: 100% !important;
     display: flex !important;
     justify-content: center !important;
     align-items: center !important;
     gap: 4px !important;
-    margin: -4px 0 -22px 0 !important;
+    margin: -6px 0 -32px 0 !important;
   }
 
   .fight-card-slot {
@@ -3011,37 +3113,37 @@ body.workspace-active .main-container {
   }
 
   .fight-card-slot .player-card .card-stats {
-    padding: 2px 3px !important;
-    margin: 1px 0 !important;
+    padding: 1px 2px !important;
+    margin: 0 !important;
   }
 
   .fight-card-slot .player-card .stat-row {
-    margin: 1px 0 !important;
-    font-size: 6px !important;
+    margin: 0 !important;
+    font-size: 5.5px !important;
   }
 
   .fight-card-slot .player-card .card-name {
-    font-size: 7.5px !important;
-    padding: 1px 2px !important;
-    margin: 1px 0 !important;
+    font-size: 7px !important;
+    padding: 0 2px !important;
+    margin: 0 !important;
   }
 
   .fight-card-slot .player-card .card-header {
-    font-size: 7px !important;
-    margin-bottom: 2px !important;
+    font-size: 6.5px !important;
+    margin-bottom: 1px !important;
   }
 
   .vs-circle {
-    font-size: 11px !important;
+    font-size: 10px !important;
     margin: 0 !important;
   }
 
   /* Active Batter / Pitcher HP Bar & Names */
   .faceoff-panel {
     width: 100% !important;
-    padding: 4px 8px !important;
+    padding: 2px 6px !important;
     box-sizing: border-box !important;
-    gap: 3px !important;
+    gap: 2px !important;
     margin: 0 !important;
     border-radius: 6px !important;
   }
@@ -3053,7 +3155,7 @@ body.workspace-active .main-container {
   }
 
   .faceoff-name {
-    font-size: 9px !important;
+    font-size: 8.5px !important;
     white-space: nowrap !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
@@ -3063,9 +3165,9 @@ body.workspace-active .main-container {
   }
 
   #match-batter-stats-box {
-    margin-top: 4px !important;
-    line-height: 1.2 !important;
-    font-size: 7px !important;
+    margin-top: 2px !important;
+    line-height: 1.1 !important;
+    font-size: 6.5px !important;
   }
 
   .hp-bar-container {
