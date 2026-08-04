@@ -741,7 +741,9 @@
           this.enemyPitcherIndex++;
           const nextP = this.activePitcher;
           if (nextP && overflow > 0) {
-            const residualDmg = Math.min(overflow, nextP.hp - 1);
+            // Only half the overflow carries over to the next pitcher
+            const carryOver = Math.floor(overflow / 2);
+            const residualDmg = Math.min(carryOver, nextP.hp - 1);
             if (residualDmg > 0) {
               nextP.hp = Math.max(1, nextP.hp - residualDmg);
               this.logEvent('RESIDUAL_DMG',

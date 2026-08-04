@@ -554,6 +554,7 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
           wrapper.style.boxShadow = '';
         });
         wrapper.addEventListener('click', () => {
+          if (window.AudioManager) window.AudioManager.play('draft_pick');
           G.draftPickPlayer(player);
           if (window.renderDraftRound) window.renderDraftRound(); else if (typeof renderDraftRound === 'function') renderDraftRound();
         });
@@ -1100,6 +1101,33 @@ function initGameModeSelector() {
     // NOTE: do NOT call renderDraftRound() here — window.Game doesn't exist yet on page load.
     // It is called by initGameModeSelector handlers after the user selects a mode.
     setupEventListeners();
+
+    // ── Audio: unlock context on first user interaction + mute toggle button ──
+    if (window.AudioManager) {
+      window.AudioManager.updateMuteButton();
+
+      // Mute toggle button
+      const btnAudio = document.getElementById('btn-audio-toggle');
+      if (btnAudio) {
+        btnAudio.addEventListener('click', (e) => {
+          e.stopPropagation(); // don't trigger the global menu click below
+          window.AudioManager.toggleMute();
+        });
+      }
+
+      // Global menu-click sound: any .btn click that isn't a combat/draft-specific button
+      // We use a delegated listener on document so we don't need to touch each button.
+      const COMBAT_BTN_IDS = new Set(['btn-roll-dice', 'btn-match-skip-game', 'btn-audio-toggle']);
+      document.addEventListener('click', (e) => {
+        window.AudioManager.unlock(); // ensure context is resumed
+        const btn = e.target.closest('.btn');
+        if (!btn) return;
+        if (COMBAT_BTN_IDS.has(btn.id)) return;
+        // Draft card clicks have class 'draft-card-wrapper' — those use draft_pick
+        if (btn.closest('.draft-card-wrapper')) return;
+        window.AudioManager.play('menu_click');
+      }, { capture: false });
+    }
   }
 
   function getStatGrade(val) {
@@ -2953,6 +2981,9 @@ function initGameModeSelector() {
     activeBattle = new window.InteractiveBattle(teamLineups.away, teamLineups.home, avgDef);
     isRolling = false;
 
+    // ── Audio: Play Ball! ─────────────────────────────────────────────────────
+    if (window.AudioManager) window.AudioManager.play('play_ball');
+
     // Remove old dice panel / proceed buttons
     const oldDicePanel = el.screenMatch.querySelector('#dice-battle-panel');
     if (oldDicePanel) oldDicePanel.parentNode.removeChild(oldDicePanel);
@@ -3166,6 +3197,22 @@ function initGameModeSelector() {
         borderColor = "#38bdf8";
         boxShadow = "0 0 35px rgba(56, 189, 248, 0.6)";
         break;
+    }
+
+    // ── Audio: play sound for this outcome ───────────────────────────────────
+    if (window.AudioManager) {
+      switch (eventType) {
+        case 'HR':    window.AudioManager.play('hr');  break;
+        case '1B':
+        case '2B':
+        case '3B':    window.AudioManager.play('hit'); break;
+        case 'SO':    window.AudioManager.play('so');  break;
+        case 'OUT':   window.AudioManager.play('out'); break;
+        case 'BB':    window.AudioManager.play('bb');  break;
+        case 'KO':
+        case 'KO_PITCHER': window.AudioManager.play('hit'); break;
+        default: break;
+      }
     }
 
     if (!title) return; // Ignore non-play events like NEXT_PITCHER
@@ -3722,6 +3769,9 @@ function initGameModeSelector() {
 
     if (isWin) {
       launchConfetti();
+      if (window.AudioManager) window.AudioManager.play('win');
+    } else {
+      if (window.AudioManager) window.AudioManager.play('lose');
     }
 
     const modal = document.createElement('div');
