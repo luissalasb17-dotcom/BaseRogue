@@ -1220,18 +1220,55 @@
       let candidatePitchers = fullPool.filter(p => allowedRarities.includes(p.rarity));
       if (candidatePitchers.length < 3) candidatePitchers = fullPool;
 
+      // ── QUICK PLAY: Guarantee at least 1 SP as the opening pitcher ───────────
+      // Step 1: separate the candidate pool into SPs and non-SPs
+      const candidateSPs = candidatePitchers.filter(p => {
+        const roleUpper = (p.role || '').toUpperCase();
+        return roleUpper === 'SP' || (!p.role && (p.sta || 50) >= 50);
+      });
+      const candidateOther = candidatePitchers.filter(p => {
+        const roleUpper = (p.role || '').toUpperCase();
+        return roleUpper !== 'SP' && (p.role || (p.sta || 50) < 50);
+      });
+
+      // Step 2: pick 1 SP first (unused preferred; fall back to any SP if needed)
       if (!this.encounteredPitchers) this.encounteredPitchers = new Set();
-      let available = candidatePitchers.filter(p => !this.encounteredPitchers.has(p.name + '_' + p.year));
-      if (available.length < 3) available = candidatePitchers;
+      const availableSPs = candidateSPs.filter(p => !this.encounteredPitchers.has(p.name + '_' + p.year));
+      const spPool = availableSPs.length > 0 ? availableSPs : (candidateSPs.length > 0 ? candidateSPs : candidatePitchers);
 
-      // Sample 3 random distinct pitchers
-      const selected = [];
-      const poolCopy = [...available];
+      const openingPitcher = spPool[Math.floor(Math.random() * spPool.length)];
+      this.encounteredPitchers.add(openingPitcher.name + '_' + openingPitcher.year);
 
-      for (let i = 0; i < 3; i++) {
-        if (poolCopy.length === 0) break;
-        const randIdx = Math.floor(Math.random() * poolCopy.length);
-        const p = poolCopy.splice(randIdx, 1)[0];
+      // Step 3: fill the remaining 2 slots from the general available pool (excluding opener)
+      const remainingPool = candidatePitchers.filter(p =>
+        !(p.name === openingPitcher.name && p.year === openingPitcher.year)
+      );
+      let availableRest = remainingPool.filter(p => !this.encounteredPitchers.has(p.name + '_' + p.year));
+      if (availableRest.length < 2) availableRest = remainingPool;
+
+      const restCopy = [...availableRest];
+
+      // Build the opening SP entry in the game format
+      const spHp = Math.round(45 + ((openingPitcher.sta || 50) / 99) * 75);
+      const selected = [{
+        name: openingPitcher.name + ' (' + (openingPitcher.year || '') + ')',
+        role: openingPitcher.role,
+        hp: spHp,
+        maxHp: spHp,
+        stf: openingPitcher.str,
+        ctl: openingPitcher.ctl,
+        mov: openingPitcher.grt,
+        sta: openingPitcher.sta,
+        ovr: openingPitcher.ovr,
+        rarity: openingPitcher.rarity,
+        era: openingPitcher.era,
+        team: openingPitcher.team
+      }];
+
+      for (let i = 0; i < 2; i++) {
+        if (restCopy.length === 0) break;
+        const randIdx = Math.floor(Math.random() * restCopy.length);
+        const p = restCopy.splice(randIdx, 1)[0];
         this.encounteredPitchers.add(p.name + '_' + p.year);
 
         const hp = (p.role === 'SP') ? Math.round(45 + (p.sta / 99) * 75) : Math.round(25 + (p.sta / 99) * 20);
