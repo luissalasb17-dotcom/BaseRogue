@@ -3077,31 +3077,35 @@ body.workspace-active .main-container {
     height: 36px !important;
   }
 
-  /* 1v1 Battle Arena Cards — scale down further to reclaim vertical space */
+  /* 1v1 Battle Arena Cards — fixed compact height on mobile */
   .rpg-fight-deck {
-    transform: scale(0.82) !important;
-    transform-origin: center top !important;
+    transform: none !important;
     width: 100% !important;
     display: flex !important;
     justify-content: center !important;
-    align-items: center !important;
-    gap: 4px !important;
-    margin: -6px 0 -32px 0 !important;
+    align-items: flex-start !important;
+    gap: 6px !important;
+    margin: 0 !important;
   }
 
   .fight-card-slot {
     flex: 1 !important;
     max-width: 48% !important;
     width: 48% !important;
+    height: 172px !important;
+    min-height: 172px !important;
+    max-height: 172px !important;
     display: flex !important;
     flex-direction: column !important;
+    overflow: hidden !important;
   }
 
   .fight-card-slot .card,
   .fight-card-slot .player-card {
     width: 100% !important;
-    height: 100% !important;
-    min-height: 100% !important;
+    height: 172px !important;
+    min-height: 172px !important;
+    max-height: 172px !important;
     flex: 1 !important;
     min-width: 0 !important;
     font-size: 7px !important;
@@ -3110,6 +3114,7 @@ body.workspace-active .main-container {
     display: flex !important;
     flex-direction: column !important;
     justify-content: space-between !important;
+    overflow: hidden !important;
   }
 
   .fight-card-slot .player-card .card-stats {
