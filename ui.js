@@ -4303,10 +4303,13 @@ function initGameModeSelector() {
     if (closeBtn) closeBtn.onclick = () => modal.classList.add('hidden');
   }
 
-  // Wire up victory screen buttons (called after DOM ready)
+  // Wire up victory and gameover screen buttons (called after DOM ready)
   function initVictoryScreenButtons() {
     const btnSummary = document.getElementById('btn-show-run-summary');
     if (btnSummary) btnSummary.addEventListener('click', openRunSummaryModal);
+
+    const btnGameOverSummary = document.getElementById('btn-gameover-run-summary');
+    if (btnGameOverSummary) btnGameOverSummary.addEventListener('click', openRunSummaryModal);
 
     const btnPlayAgain = document.getElementById('btn-victory-play-again');
     if (btnPlayAgain) btnPlayAgain.addEventListener('click', () => {
