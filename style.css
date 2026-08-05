@@ -1962,34 +1962,100 @@ p {
   font-weight: bold;
 }
 
-/* Event Choice Buttons */
+/* Event Choice Buttons & Risk Badges */
 .event-choices-wrapper {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 .event-choice-btn {
-  font-family: 'VT323', monospace;
-  font-size: 19px;
+  font-family: 'Outfit', 'Segoe UI', sans-serif;
   text-align: left;
   width: 100%;
-  padding: 10px 14px;
-  background: rgba(0,0,0,0.4);
-  color: var(--primary-color);
-  border: 2px dashed var(--border-color);
+  padding: 14px 18px;
+  background: rgba(10, 15, 24, 0.85);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
   cursor: pointer;
-  transition: all 0.1s ease;
+  transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
 .event-choice-btn:hover {
-  background: rgba(0, 255, 102, 0.08);
+  transform: translateY(-3px);
+  background: rgba(16, 185, 129, 0.08);
   border-color: var(--primary-color);
-  color: #fff;
+  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.25);
+}
+.event-choice-btn.event-choice-risk-moderate:hover {
+  background: rgba(245, 158, 11, 0.08);
+  border-color: var(--accent-color);
+  box-shadow: 0 8px 25px rgba(245, 158, 11, 0.25);
+}
+.event-choice-btn.event-choice-risk-high:hover {
+  background: rgba(239, 68, 68, 0.08);
+  border-color: #ef4444;
+  box-shadow: 0 8px 25px rgba(239, 68, 68, 0.25);
 }
 .event-choice-btn:disabled {
   color: #555;
-  border-color: #333;
-  background: rgba(0,0,0,0.6);
+  border-color: rgba(255, 255, 255, 0.05);
+  background: rgba(0, 0, 0, 0.6);
   cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.choice-risk-tag {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  display: inline-block;
+}
+.choice-risk-tag.choice-risk-safe {
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+.choice-risk-tag.choice-risk-moderate {
+  color: #f59e0b;
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+.choice-risk-tag.choice-risk-high {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+/* Training Card Tiers & Reveal Animations */
+@keyframes cardPopIn {
+  0% {
+    opacity: 0;
+    transform: translateY(24px) scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.training-card-tier-gold:hover {
+  transform: translateY(-5px) scale(1.02) !important;
+  box-shadow: 0 0 35px rgba(245, 158, 11, 0.65), 0 8px 30px rgba(0, 0, 0, 0.5) !important;
+}
+
+.training-card-tier-silver:hover {
+  transform: translateY(-4px) scale(1.01) !important;
+  box-shadow: 0 0 25px rgba(59, 130, 246, 0.55), 0 8px 25px rgba(0, 0, 0, 0.5) !important;
+}
+
+.training-card-tier-normal:hover {
+  transform: translateY(-3px) !important;
+  box-shadow: 0 0 15px rgba(100, 116, 139, 0.4), 0 6px 20px rgba(0, 0, 0, 0.4) !important;
 }
 
 /* Outcome Probabilities Panel */
@@ -2232,6 +2298,42 @@ body.workspace-active .main-container {
 
 .card-trait-badge.trait-team {
   background: var(--accent-color);
+}
+
+.card-trait-badge.trait-clutch {
+  background: #dc2626;
+  color: #fff;
+  font-size: 6px;
+  padding: 1px 3.5px;
+  border-radius: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 0 5px rgba(220, 38, 38, 0.8);
+  cursor: help;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.card-trait-badge.trait-clutch:hover {
+  transform: scale(1.2);
+  box-shadow: 0 0 8px rgba(239, 68, 68, 1);
+  z-index: 10;
+}
+
+.card-trait-badge.trait-captain {
+  background: #0ea5e9;
+  color: #fff;
+  font-size: 6px;
+  padding: 1px 3px;
+  border-radius: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 0 5px rgba(14, 165, 233, 0.8);
+  cursor: help;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.card-trait-badge.trait-captain:hover {
+  transform: scale(1.2);
+  box-shadow: 0 0 8px rgba(56, 189, 248, 1);
+  z-index: 10;
 }
 
 /* Synergy list and progress items in Right Sidebar */

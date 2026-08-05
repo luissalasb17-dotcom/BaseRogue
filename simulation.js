@@ -50,7 +50,7 @@
    * @param {object} pitcher - Pitcher stats {stf, vel, ctl}
    * @returns {{ bbEnd, soEnd, outEnd, singleEnd, doubleEnd, tripleEnd, pBB, pSO, pOut, pHit }}
    */
-  function calcBoundaries(batter, pitcher) {
+  function calcBoundaries(batter, pitcher, simCtx) {
     const effCon = batter.con || 50;
     const effEye = batter.eye || 50;
     const effPwr = batter.pwr || 50;
@@ -79,6 +79,27 @@
 
     // 5. OUT gets the rest (Floor 10%)
     let pOut = Math.max(0.10, 1.0 - pBB - pSO - pHR - pRegularHit);
+
+    // ── Clutch Player Badge: +4% hit y +4% HR respectivamente en situación de clutch (total +8%) ──
+    // Condición: batter.clutch === true, corredor en 2ª o 3ª, y es la última entrada
+    if (batter.clutch && simCtx) {
+      const isLastInning = simCtx.inning >= 3;
+      const runnersInScoring = !!(simCtx.bases[1] || simCtx.bases[2]);
+      if (isLastInning && runnersInScoring) {
+        const hitBoost = 0.04;
+        const hrBoost  = 0.04;
+        const totalBoost = hitBoost + hrBoost;
+        const availableFromOut = Math.max(0, pOut - 0.10);
+        const actualBoost = Math.min(totalBoost, availableFromOut);
+        
+        const hitShare = actualBoost * 0.5;
+        const hrShare  = actualBoost * 0.5;
+        
+        pRegularHit += hitShare;
+        pHR         += hrShare;
+        pOut        -= actualBoost;
+      }
+    }
 
     // Normalize to sum = 1
     const total = pBB + pSO + pOut + pRegularHit + pHR;
@@ -243,7 +264,7 @@
       const batter  = this.awayTeam.lineup[this.awayLineupIndex];
       const pitcher = this.activePitcher;
       if (!batter || !pitcher) return null;
-      return calcBoundaries(batter, pitcher);
+      return calcBoundaries(batter, pitcher, this);
     }
 
     // ── MAIN PUBLIC API: process one dice roll ──────────────────────
@@ -272,7 +293,7 @@
         effBatter.def = (effBatter.def || 50) + boost;
       }
 
-      const bounds = calcBoundaries(effBatter, pitcher);
+      const bounds = calcBoundaries(effBatter, pitcher, this);
 
       let eventType, playText;
       let pitcherDmg = 0;

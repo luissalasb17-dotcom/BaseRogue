@@ -16,6 +16,10 @@
                 "roster": "Alineación",
                 "synergies": "Sinergias"
         },
+        "badge": {
+                "clutch_tooltip": "Clutch Player: +4% de probabilidad de hit y +4% de HR con corredores en posición de anotar durante la última entrada.",
+                "captain_tooltip": "Captain: +5 a todos los ratings de sus compañeros de equipo mientras esté en el roster activo."
+        },
         "sidebar": {
                 "upgrades": "<i class=\"fa-solid fa-suitcase\"></i> MEJORAS",
                 "no_items": "NADA COMPRADO",
@@ -307,6 +311,10 @@
                 "budget": "Budget:",
                 "roster": "Roster",
                 "synergies": "Synergies"
+        },
+        "badge": {
+                "clutch_tooltip": "Clutch Player: +4% hit probability and +4% HR probability with runners in scoring position during the final inning.",
+                "captain_tooltip": "Captain: +5 to all ratings for teammates while on the active roster."
         },
         "sidebar": {
                 "upgrades": "<i class=\"fa-solid fa-suitcase\"></i> UPGRADES",

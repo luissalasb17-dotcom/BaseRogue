@@ -104,7 +104,10 @@ def normalize_series(s, low=1.0, high=99.0):
 
 def normalize_difficulty_adjusted(df, col_raw, col_out):
     global_mean = df[col_raw].mean()
-    era_means = df.groupby("era_label")[col_raw].transform("mean")
+    if "league_group" in df.columns:
+        era_means = df.groupby(["era_label", "league_group"])[col_raw].transform("mean")
+    else:
+        era_means = df.groupby("era_label")[col_raw].transform("mean")
     diff_factor = global_mean / era_means.replace(0, 1)
     blended_factor = 1.0 + 0.75 * (diff_factor - 1.0)
     adjusted = df[col_raw] * blended_factor
@@ -572,6 +575,9 @@ def paso_8_filtro_ingesta(df, allstar, hof, pure_pitcher_ids, batting):
         nl_mask = eligible['playerID'].isin(nl_pids)
         nl_keep = (eligible['is_hof']) | (eligible['allstar_selections'] >= 2) | (eligible['career_ab'] >= 500)
         eligible = eligible[~nl_mask | nl_keep].copy()
+        eligible['league_group'] = np.where(eligible['playerID'].isin(nl_pids), 'NLB', 'MLB')
+    else:
+        eligible['league_group'] = 'MLB'
 
     print(f"  Card Pool elegible: {len(eligible):,} jugadores")
     return eligible
@@ -595,8 +601,8 @@ def paso_10_atributos_raw_bateo(df):
     """
     Formulas sobre metricas hibridas (k_rate y bb_rate ya corregidos con PA):
 
-    CON = 0.80 * BA_Final + 0.20 * (1 - k_rate_Final)
-         Habilidad de batear de hit y evitar el ponche.
+    CON = 0.80 * BA_Suavizado + 0.20 * (1 - k_rate_Final)
+         Suavizado Bayesiano suave (m = 50 AB) para muestras pequeñas.
 
     PWR = 0.50 * ISO_Final + 0.30 * XBH_rate_Final + 0.20 * HR_rate_Final
          Poder real de bate en extra-bases.
@@ -605,7 +611,14 @@ def paso_10_atributos_raw_bateo(df):
     """
     print("\n  PASO 10: Atributos RAW de bateo (CON, PWR, EYE)...")
     df = df.copy()
-    df["contact_raw"] = df["ba"].fillna(0) * 0.80 + (1.0 - df["k_rate"].fillna(0)) * 0.20
+
+    # Smooth BA on small AB samples (m = 50 ABs regressed to league avg .275)
+    # Gentle smoothing so genuine stars keep top grades while small-sample spikes are moderated.
+    ab = df["peak_ab"].fillna(df["career_ab"]).fillna(0)
+    h  = df["peak_h"].fillna(df["career_h"]).fillna(0)
+    ba_smoothed = (h + 50 * 0.275) / (ab + 50)
+
+    df["contact_raw"] = ba_smoothed * 0.80 + (1.0 - df["k_rate"].fillna(0)) * 0.20
     df["power_raw"] = (
         df["hr_rate"].fillna(0)  * 0.45 +
         df["iso"].fillna(0)      * 0.40 +
@@ -923,6 +936,22 @@ def paso_15_equipo_y_exportar(df, batting, teams, franchises):
     ]:
         df[gcol] = df[col].apply(to_grade)
 
+    # ── Badges: Clutch Player / Captain ─────────────────────────────────────
+    awards_path = DATA_DIR / "AwardsPlayers.csv"
+    if awards_path.exists():
+        awards_df = pd.read_csv(awards_path, low_memory=False)
+        clutch_award_ids = {'Babe Ruth Award', 'ALCS MVP', 'NLCS MVP', 'All-Star Game MVP', 'World Series MVP'}
+        captain_award_ids = {'Roberto Clemente Award', 'Lou Gehrig Memorial Award', 'Hutch Award', 'Branch Rickey Award'}
+        clutch_pids  = set(awards_df[awards_df['awardID'].isin(clutch_award_ids)]['playerID'].unique())
+        captain_pids = set(awards_df[awards_df['awardID'].isin(captain_award_ids)]['playerID'].unique())
+        df['is_clutch']  = df['playerID'].isin(clutch_pids)
+        df['is_captain'] = df['playerID'].isin(captain_pids)
+        print(f"  Badges: Clutch={df['is_clutch'].sum()} | Captain={df['is_captain'].sum()}")
+    else:
+        df['is_clutch']  = False
+        df['is_captain'] = False
+        print("  [!!] AwardsPlayers.csv no encontrado — is_clutch/is_captain = False")
+
     keep_cols = [
         "playerID","bbrefID","full_name","pos_display","sec_pos","era_label",
         "peak_year","peak_year_display","debut_year","last_year","canonical_teamID","franchise_name",
@@ -934,6 +963,7 @@ def paso_15_equipo_y_exportar(df, batting, teams, franchises):
         "avg_attr_score","rarity",
         "is_allstar","is_hof","allstar_selections","gold_gloves","gg_bonus",
         "defense_source",
+        "is_clutch","is_captain",
     ]
     keep_cols = [c for c in keep_cols if c in df.columns]
     final = df[keep_cols].copy()
@@ -988,6 +1018,8 @@ def paso_15_equipo_y_exportar(df, batting, teams, franchises):
             f'allstars: {int(r["allstar_selections"])}, '
             f'gold_gloves: {int(r["gold_gloves"])}, '
             f'hof: {"true" if r["is_hof"] else "false"}, '
+            f'clutch: {"true" if r.get("is_clutch", False) else "false"}, '
+            f'captain: {"true" if r.get("is_captain", False) else "false"}, '
             f'def_source: "{r.get("defense_source","lahman_proxy")}" '
             f'}},'
         )

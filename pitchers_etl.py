@@ -120,7 +120,10 @@ def normalize_difficulty_adjusted(df, col_raw, col_out, invert=False):
     if invert:
         s = -s  # invertir para que menor sea mejor
     global_mean = s.mean()
-    era_means = df.groupby("era_label")[col_raw].transform("mean")
+    if "league_group" in df.columns:
+        era_means = df.groupby(["era_label", "league_group"])[col_raw].transform("mean")
+    else:
+        era_means = df.groupby("era_label")[col_raw].transform("mean")
     if invert:
         era_means = -era_means
     diff_factor   = global_mean / era_means.replace(0, 1)
@@ -444,6 +447,9 @@ def paso_5_filtro_ingesta(career, peak, allstar, hof, pure_pitcher_ids, pitching
         nl_mask = eligible['playerID'].isin(nl_pids)
         nl_keep = (eligible['is_hof']) | (eligible['allstar_selections'] >= 2) | (eligible['career_gs'] >= 35) | (eligible['career_g'] >= 60)
         eligible = eligible[~nl_mask | nl_keep].copy()
+        eligible['league_group'] = np.where(eligible['playerID'].isin(nl_pids), 'NLB', 'MLB')
+    else:
+        eligible['league_group'] = 'MLB'
 
     print(f"  Elegibles: {len(eligible):,}  (SP: {(eligible['role']=='SP').sum():,} | RP: {(eligible['role']=='RP').sum():,})")
     return eligible
@@ -473,7 +479,7 @@ def paso_7_asignar_era(df):
 # ── PASO 8: Atributos RAW de pitching ────────────────────────────────────────
 def paso_8_atributos_raw(df):
     """
-    STR_raw:  K/9  → ponches por 9 (strikeout power)
+    STR_raw:  K/9  → ponches por 9 (strikeout power) con suavizado suave para muestras pequeñas de IP
     CTL_raw: -BB/9 → control (menor es mejor, por eso invertimos al normalizar)
     STA_raw:  IP/GS promedio en pico (duracion por apertura; 0 para relievers)
     GRT_raw:  ERA+ del pico (promedio; >100 = mejor que liga)
@@ -482,7 +488,12 @@ def paso_8_atributos_raw(df):
     print("\n  PASO 8: Atributos RAW de pitching...")
     df = df.copy()
 
-    df["str_raw"] = df["peak_k9"].fillna(0)
+    # Gentle IP sample smoothing for K9 (m_ip = 40 IP regressed to avg 5.5 K/9)
+    ip_k = df["peak_ip"].fillna(df["career_ip"]).fillna(0)
+    so_k = df["peak_so"].fillna(0)
+    k9_smoothed = (so_k + 40 * (5.5 / 9.0)) / (ip_k + 40) * 9.0
+
+    df["str_raw"] = k9_smoothed
     df["ctl_raw"] = df["peak_bb9"].fillna(9.0)   # invertido al normalizar
     df["hr_raw"]  = df["peak_hr9"].fillna(2.0)   # invertido al normalizar (menos HR = mejor)
 

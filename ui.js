@@ -318,12 +318,140 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
   let _prevTeamShield  = null;
 
   const TrainingPlans = [
-    { id: "t_con", get label() { return t('train_plans.con_label'); }, get desc() { return t('train_plans.con_desc'); }, price: 15, stat: "con", val: 6 },
-    { id: "t_pwr", get label() { return t('train_plans.pwr_label'); }, get desc() { return t('train_plans.pwr_desc'); }, price: 15, stat: "pwr", val: 6 },
-    { id: "t_spd", get label() { return t('train_plans.spd_label'); }, get desc() { return t('train_plans.spd_desc'); }, price: 12, stat: "spd", val: 6 },
-    { id: "t_def", get label() { return t('train_plans.def_label'); }, get desc() { return t('train_plans.def_desc'); }, price: 10, stat: "def", val: 6 },
-    { id: "t_sta", get label() { return t('train_plans.sta_label'); }, get desc() { return t('train_plans.sta_desc'); }, price: 10, stat: "sta", val: 35 }
+    {
+      id: "t_con_std",
+      stat: "con",
+      label: "🎯 Sesión de Contacto Estándar",
+      desc: "Práctica intensiva de swing. +5 a +7 Contacto garantizado (15% prob. de ¡Crítico +12!).",
+      price: 14,
+      risk: "safe",
+      icon: "🎯",
+      critChance: 0.15,
+      minVal: 5,
+      maxVal: 7,
+      critVal: 12
+    },
+    {
+      id: "t_pwr_std",
+      stat: "pwr",
+      label: "💥 Fuerza en la Jaula",
+      desc: "Repeticiones con bate pesado. +5 a +7 Fuerza garantizada (15% prob. de ¡Crítico +12!).",
+      price: 14,
+      risk: "safe",
+      icon: "💥",
+      critChance: 0.15,
+      minVal: 5,
+      maxVal: 7,
+      critVal: 12
+    },
+    {
+      id: "t_spd_std",
+      stat: "spd",
+      label: "⚡ Sprints de Agilidad",
+      desc: "Trabajo de aceleración en bases. +5 a +7 Velocidad (15% prob. de ¡Crítico +12!).",
+      price: 12,
+      risk: "safe",
+      icon: "⚡",
+      critChance: 0.15,
+      minVal: 5,
+      maxVal: 7,
+      critVal: 12
+    },
+    {
+      id: "t_def_std",
+      stat: "def",
+      label: "🧤 Fundamento Defensivo",
+      desc: "Ejercicios de fildeo y tiro. +5 a +7 Defensa (15% prob. de ¡Crítico +12!).",
+      price: 10,
+      risk: "safe",
+      icon: "🧤",
+      critChance: 0.15,
+      minVal: 5,
+      maxVal: 7,
+      critVal: 12
+    },
+    {
+      id: "t_sta_std",
+      stat: "sta",
+      label: "🔋 Recuperación Físico-Biológica",
+      desc: "Masajes y descanso activo. +35 a +45 Stamina (20% prob. de ¡Recuperación 100%!).",
+      price: 10,
+      risk: "safe",
+      icon: "🔋",
+      critChance: 0.20,
+      minVal: 35,
+      maxVal: 45,
+      critVal: 100
+    },
+    {
+      id: "t_extreme_pwr",
+      stat: "pwr",
+      label: "🔥 Entrenamiento Extremo de Poder",
+      desc: "Levantamiento súper-pesado. +12 a +14 PWR si resulta. 30% riesgo de tirón muscular (-15 Stamina).",
+      price: 10,
+      risk: "high",
+      icon: "🔥",
+      riskChance: 0.30,
+      minVal: 12,
+      maxVal: 14,
+      failPenalty: 15
+    },
+    {
+      id: "t_extreme_spd",
+      stat: "spd",
+      label: "🚀 Entrenamiento Turbo de Velocidad",
+      desc: "Sprints con resistencia. +12 a +14 SPD si resulta. 25% riesgo de sobrecarga (-10 Stamina).",
+      price: 9,
+      risk: "high",
+      icon: "🚀",
+      riskChance: 0.25,
+      minVal: 12,
+      maxVal: 14,
+      failPenalty: 10
+    }
   ];
+
+  // ── UNIVERSAL RETRO RESOLUTION MODAL (No alert()) ───────────────────────
+  function showRetroResultModal({ title, badgeText, badgeColor = '#10b981', icon = '✨', desc = '', stats = [], onClose }) {
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.88);backdrop-filter:blur(10px);z-index:900;display:flex;align-items:center;justify-content:center;animation:fadeIn 0.2s ease-out;';
+
+    const statsHTML = (stats || []).map(s => `
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:rgba(255,255,255,0.03);border:1px solid ${s.isPositive ? 'rgba(16,185,129,0.3)' : 'rgba(239,68,68,0.3)'};border-radius:8px;margin-bottom:6px;">
+        <span style="font-size:12px;color:#cbd5e1;">${s.label}</span>
+        <span style="font-family:'Press Start 2P',monospace;font-size:11px;color:${s.isPositive ? '#10b981' : '#ef4444'};">${s.value}</span>
+      </div>
+    `).join('');
+
+    overlay.innerHTML = `
+      <div style="background:#090d16;border:2px solid ${badgeColor};box-shadow:0 0 35px ${badgeColor}66;border-radius:16px;padding:26px;max-width:440px;width:92%;text-align:center;position:relative;">
+        <div style="font-size:48px;margin-bottom:10px;filter:drop-shadow(0 0 12px ${badgeColor});">${icon}</div>
+        <div style="display:inline-block;padding:4px 12px;background:${badgeColor}20;border:1px solid ${badgeColor};border-radius:20px;font-family:'Press Start 2P',monospace;font-size:9px;color:${badgeColor};margin-bottom:12px;">${badgeText}</div>
+        <h3 style="font-family:'Press Start 2P',monospace;font-size:13px;color:#fff;margin-bottom:10px;line-height:1.4;">${title}</h3>
+        <p style="font-size:12px;color:#94a3b8;line-height:1.5;margin-bottom:16px;">${desc}</p>
+        ${statsHTML ? `<div style="margin-bottom:20px;">${statsHTML}</div>` : ''}
+        <button id="btn-close-retro-result-modal" class="btn" style="background:linear-gradient(135deg, ${badgeColor}, ${badgeColor}dd);color:#000;font-weight:bold;font-size:11px;padding:12px 24px;width:100%;border:none;cursor:pointer;">
+          CONTINUAR <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    // Audio cue
+    if (window.AudioManager) {
+      if (badgeColor === '#ef4444') {
+        if (typeof window.AudioManager.playSound === 'function') window.AudioManager.playSound('error');
+      } else {
+        if (typeof window.AudioManager.playSound === 'function') window.AudioManager.playSound('purchase');
+      }
+    }
+
+    document.getElementById('btn-close-retro-result-modal').addEventListener('click', () => {
+      overlay.remove();
+      if (onClose) onClose();
+    });
+  }
 
   // ── 9-ROUND DRAFT SYSTEM ──────────────────────────────────────────────────
   // Rarity color palette (5 tiers)
@@ -349,9 +477,8 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
   function renderDraftRound() {
     try {
       const G = window.Game;
-      console.log('[Draft] renderDraftRound called. G =', G, 'draftRound =', G && G.draftRound, 'POOL =', window.PlayersDB && window.PlayersDB.LAHMAN_POOL && window.PlayersDB.LAHMAN_POOL.length);
-      if (!G) { console.error('[Draft] window.Game is null!'); return; }
-      const round = G.draftRound; // 1–9
+      if (!G) return;
+      const round = G.draftRound;
 
       // If all 9 rounds are done → render final team confirmation screen
       if (round > 9) {
@@ -1436,7 +1563,11 @@ function initGameModeSelector() {
         ${positionWarning}
         <div class="card-footer">
           <span>${teamFranchise}</span>
-          <span class="card-stamina-badge ${stamClass}"><i class="fa-solid fa-bolt-lightning"></i> ${stam}</span>
+          <div class="card-badges-footer" style="display: flex; gap: 3px; align-items: center;">
+            ${player.clutch ? `<span class="card-trait-badge trait-clutch" title="${window.t ? window.t('badge.clutch_tooltip', 'Clutch Player: +4% de probabilidad de hit y +4% de HR con corredores en posición de anotar durante la última entrada.') : 'Clutch Player: +4% de probabilidad de hit y +4% de HR con corredores en posición de anotar durante la última entrada.'}">⚡</span>` : ''}
+            ${player.captain ? `<span class="card-trait-badge trait-captain" title="${window.t ? window.t('badge.captain_tooltip', 'Captain: +5 a todos los ratings de sus compañeros de equipo mientras esté en el roster activo.') : 'Captain: +5 a todos los ratings de sus compañeros de equipo mientras esté en el roster activo.'}">C★</span>` : ''}
+            <span class="card-stamina-badge ${stamClass}"><i class="fa-solid fa-bolt-lightning"></i> ${stam}</span>
+          </div>
         </div>
       </div>
     `;
@@ -1715,69 +1846,38 @@ function initGameModeSelector() {
       });
       renderActiveRoster();
       renderSynergiesAndItems();
-      alert("¡Toda tu plantilla recupera +40 de energía!");
-      closeNodeCompleted();
+      showRetroResultModal({
+        title: 'Descanso en la Casa Club',
+        badgeText: '¡RESTAURACIÓN!',
+        badgeColor: '#10b981',
+        icon: '🛋️',
+        desc: 'Toda tu plantilla activa recupera +40 de Stamina para los próximos encuentros.',
+        stats: [{ label: 'Stamina del Equipo', value: '+40', isPositive: true }],
+        onClose: () => closeNodeCompleted()
+      });
     });
 
     el.btnRestCash.addEventListener('click', () => {
       window.Game.budget += 25;
       renderActiveRoster();
       updateHUD();
-      alert("¡Tu club recibe una bonificación de +$25 de patrocinadores!");
-      closeNodeCompleted();
+      showRetroResultModal({
+        title: 'Patrocinador Deportivo',
+        badgeText: '¡BONIFICACIÓN!',
+        badgeColor: '#f59e0b',
+        icon: '💰',
+        desc: 'Tu club recibe una inyección económica de los patrocinadores locales.',
+        stats: [{ label: 'Presupuesto del Club', value: '+$25', isPositive: true }],
+        onClose: () => closeNodeCompleted()
+      });
     });
 
-    // Training back/confirm
-    el.btnTrainBack.addEventListener('click', () => {
-      closeNodeCompleted();
-    });
-
-    el.btnConfirmTrain.addEventListener('click', () => {
-      const selectedPlanEl = el.trainOptionsList.querySelector('.training-card.selected');
-      if (!selectedPlanEl) {
-        alert("Selecciona un plan de entrenamiento.");
-        return;
-      }
-
-      const planId = selectedPlanEl.getAttribute('data-plan-id');
-      const plan = TrainingPlans.find(t => t.id === planId);
-
-      if (window.Game.budget < plan.price) {
-        alert("Presupuesto insuficiente.");
-        return;
-      }
-
-      // Check which player is selected
-      const selectedRadio = el.trainPlayerSelect.querySelector('input[type="radio"]:checked');
-      if (!selectedRadio) {
-        alert("Selecciona un jugador para entrenar.");
-        return;
-      }
-
-      const targetId = selectedRadio.value;
-      
-      // Find player on active roster
-      let player = Object.values(window.Game.roster).find(p => p && p.id === targetId);
-
-      if (!player) return;
-
-      // Apply training
-      if (plan.stat === 'sta') {
-        player.stamina = Math.min(100, player.stamina + plan.val);
-        player.upgrades.sta = (player.upgrades.sta || 0) + 5; // boost max stamina
-      } else {
-        player.upgrades[plan.stat] = (player.upgrades[plan.stat] || 0) + plan.val;
-      }
-
-      window.Game.budget -= plan.price;
-      alert(`¡Entrenamiento completado! ${player.name} subió +${plan.val} en su stat.`);
-
-      renderActiveRoster();
-      renderSynergiesAndItems();
-      updateHUD();
-      
-      closeNodeCompleted();
-    });
+    // Training back button
+    if (el.btnTrainBack) {
+      el.btnTrainBack.addEventListener('click', () => {
+        closeNodeCompleted();
+      });
+    }
 
     // 🎲 LANZAR DADO — Interactive Dice Battler
     // The button is dynamically injected into #screen-match by setupAndStartMatchSimulation.
@@ -2846,38 +2946,83 @@ function initGameModeSelector() {
   // MANAGER DECISION EVENT SCREEN SETUP
   function setupManagerEventScreen() {
     const event = window.Game.getRandomEvent();
-    el.eventTitle.innerText = event.title;
+    el.eventTitle.innerHTML = `<span style="font-size:28px;margin-right:10px;">${event.icon || '📜'}</span>${event.title}`;
     el.eventDesc.innerText = event.desc;
     
     el.eventChoicesContainer.innerHTML = "";
     event.choices.forEach(choice => {
       const btn = document.createElement('button');
-      btn.className = "event-choice-btn";
+      btn.className = `event-choice-btn event-choice-risk-${choice.risk || 'safe'}`;
       
-      const costLabel = choice.cost > 0 ? ` (Costo: $${choice.cost})` : (choice.cost < 0 ? ` (Recibe: +$${Math.abs(choice.cost)})` : "");
-      btn.innerHTML = `${choice.text}${costLabel}`;
+      const costText = choice.cost > 0 ? `-$${choice.cost}` : (choice.cost < 0 ? `+$${Math.abs(choice.cost)}` : "GRATIS");
+      const riskBadge = choice.risk === 'high' ? '🔴 ALTO RIESGO' : (choice.risk === 'moderate' ? '🟡 RIESGO MODERADO' : '🟢 SEGURO');
+      const chanceText = choice.successChance && choice.successChance < 1.0 ? ` (${Math.round(choice.successChance * 100)}% ÉXITO)` : '';
+
+      btn.innerHTML = `
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <span style="font-size:26px;">${choice.icon || '👉'}</span>
+            <div>
+              <div style="font-weight:bold;font-size:14px;color:#fff;">${choice.text}</div>
+              <div style="font-size:11px;color:#94a3b8;margin-top:2px;">
+                <span class="choice-risk-tag choice-risk-${choice.risk || 'safe'}">${riskBadge}</span>${chanceText}
+              </div>
+            </div>
+          </div>
+          <div style="font-family:'Press Start 2P',monospace;font-size:11px;color:${choice.cost < 0 ? '#10b981' : '#f59e0b'};">
+            ${costText}
+          </div>
+        </div>
+      `;
       
       // Check budget
       if (choice.cost > 0 && window.Game.budget < choice.cost) {
         btn.disabled = true;
+        btn.style.opacity = '0.5';
       }
       
       btn.addEventListener('click', () => {
-        // Apply costs and execute action
+        // Apply budget cost
         window.Game.budget -= choice.cost;
-        choice.action(window.Game);
         
-        // Log in purchased upgrades list
-        if (choice.cost !== 0) {
-          window.Game.purchasedItems.push(`${event.title}: ${choice.text.split(" (")[0].substring(0, 20)}...`);
+        const roll = Math.random();
+        const chance = choice.successChance !== undefined ? choice.successChance : 1.0;
+        const isSuccess = roll <= chance;
+
+        let title, badgeText, badgeColor, icon, desc;
+
+        if (isSuccess) {
+          choice.action(window.Game);
+          title = choice.text;
+          badgeText = choice.risk === 'high' ? '¡ÉXITO EN EL RIESGO!' : '¡DECISIÓN TOMADA!';
+          badgeColor = '#10b981';
+          icon = choice.icon || '✨';
+          desc = choice.successMsg || 'La decisión se ejecutó con éxito en tu plantilla.';
+        } else {
+          if (choice.failAction) choice.failAction(window.Game);
+          title = choice.text;
+          badgeText = '¡RIESGO FALLIDO!';
+          badgeColor = '#ef4444';
+          icon = '❌';
+          desc = choice.failMsg || 'La opción arriesgada no salió como esperabas y provocó consecuencias negativas.';
         }
-        
-        alert("¡Decisión tomada!");
-        
+
+        if (choice.cost !== 0) {
+          window.Game.purchasedItems.push(`${event.title}: ${choice.text.substring(0, 20)}...`);
+        }
+
         renderActiveRoster();
         renderSynergiesAndItems();
         updateHUD();
-        closeNodeCompleted();
+
+        showRetroResultModal({
+          title,
+          badgeText,
+          badgeColor,
+          icon,
+          desc,
+          onClose: () => closeNodeCompleted()
+        });
       });
       
       el.eventChoicesContainer.appendChild(btn);
@@ -2886,65 +3031,312 @@ function initGameModeSelector() {
     window.showScreen('screen-event');
   }
 
-  // TRAINING SCREEN SETUP
-  function setupTrainingScreen() {
-    el.trainOptionsList.innerHTML = "";
-    
-    // Choose 3 random distinct training plans
-    const shuffled = [...TrainingPlans].sort(() => 0.5 - Math.random());
-    const choices = shuffled.slice(0, 3);
+  // ── CENTRALIZED TRAINING TIER CONFIGURATION ─────────────────────────────
+  const TRAINING_TIER_CONFIG = {
+    // Weighted probabilities for tier rolling per card (sums to 1.0)
+    probabilities: {
+      Normal: 0.65, // 65% chance
+      Silver: 0.25, // 25% chance
+      Gold:   0.10  // 10% chance (rare "prize")
+    },
 
-    choices.forEach(plan => {
-      const item = document.createElement('div');
-      item.className = "training-card";
-      item.setAttribute('data-plan-id', plan.id);
-      
-      const disabled = window.Game.budget < plan.price ? "opacity: 0.6; pointer-events: none;" : "";
+    // Multipliers for stat gain and card price per tier
+    tiers: {
+      Normal: {
+        label: 'NORMAL',
+        color: '#64748b',       // Common palette
+        bgGlow: 'rgba(100,116,139,0.15)',
+        borderColor: 'rgba(255,255,255,0.12)',
+        statMult: 1.0,
+        priceMult: 1.0,
+        badgeBg: 'rgba(100,116,139,0.2)',
+        soundCue: 'purchase'
+      },
+      Silver: {
+        label: 'SILVER',
+        color: '#3b82f6',       // Rare palette (blue)
+        bgGlow: 'rgba(59,130,246,0.25)',
+        borderColor: '#3b82f6',
+        statMult: 1.5,          // 1.5x stat boost
+        priceMult: 1.6,         // 1.6x price
+        badgeBg: 'rgba(59,130,246,0.2)',
+        soundCue: 'purchase'
+      },
+      Gold: {
+        label: '✨ GOLD ✨',
+        color: '#f59e0b',       // Legendary palette (gold)
+        bgGlow: 'rgba(245,158,11,0.35)',
+        borderColor: '#f59e0b',
+        statMult: 2.3,          // 2.3x stat boost!
+        priceMult: 2.4,         // 2.4x price
+        badgeBg: 'rgba(245,158,11,0.25)',
+        soundCue: 'upgrade'     // High tier audio cue
+      }
+    }
+  };
 
-      item.innerHTML = `
-        <div style="width:70%;">
-          <div style="font-weight:bold; font-size:15px; color:#fff;">${plan.label}</div>
-          <div style="font-size:12px; color:#9ca3af; margin-top:3px;">${plan.desc}</div>
+  function rollTrainingTier() {
+    const r = Math.random();
+    if (r < TRAINING_TIER_CONFIG.probabilities.Gold) return 'Gold';
+    if (r < TRAINING_TIER_CONFIG.probabilities.Gold + TRAINING_TIER_CONFIG.probabilities.Silver) return 'Silver';
+    return 'Normal';
+  }
+
+  // ── MULTI-PURCHASE TRAINING CARDS SYSTEM ──────────────────────────────────
+  const MULTI_TRAIN_COST_MULTIPLIER = 1.0; // Adjustable price multiplier for consecutive purchases in same visit (e.g. 1.0 = static)
+
+  let currentTrainingOffers = [];
+  let purchasesInCurrentVisit = 0;
+
+  function generateTrainingOffers() {
+    const slots = ['C','1B','2B','3B','SS','LF','CF','RF','DH'];
+    const activePlayers = slots.map(s => ({ slot: s, player: window.Game.roster[s] })).filter(x => x.player !== null);
+    if (!activePlayers.length) return [];
+
+    const statTemplates = [
+      { stat: 'con', label: 'Contacto Estándar', desc: 'Práctica intensiva de swing', basePrice: 14, icon: '🎯', risk: 'safe', minVal: 5, maxVal: 7, critChance: 0.15, critVal: 12 },
+      { stat: 'pwr', label: 'Fuerza de Bateo', desc: 'Repeticiones con bate pesado', basePrice: 14, icon: '💥', risk: 'safe', minVal: 5, maxVal: 7, critChance: 0.15, critVal: 12 },
+      { stat: 'spd', label: 'Velocidad en Bases', desc: 'Trabajo de aceleración en bases', basePrice: 12, icon: '⚡', risk: 'safe', minVal: 5, maxVal: 7, critChance: 0.15, critVal: 12 },
+      { stat: 'def', label: 'Técnica Defensiva', desc: 'Ejercicios de fildeo y tiro', basePrice: 10, icon: '🧤', risk: 'safe', minVal: 5, maxVal: 7, critChance: 0.15, critVal: 12 },
+      { stat: 'sta', label: 'Masaje de Recuperación', desc: 'Masajes y descanso activo', basePrice: 10, icon: '🔋', risk: 'safe', minVal: 35, maxVal: 45, critChance: 0.20, critVal: 100 },
+      { stat: 'pwr', label: 'Fuerza Extrema', desc: 'Levantamiento súper-pesado (30% riesgo tirón)', basePrice: 10, icon: '🔥', risk: 'high', minVal: 12, maxVal: 14, riskChance: 0.30, failPenalty: 15 },
+      { stat: 'spd', label: 'Turbo Velocidad', desc: 'Sprints con resistencia (25% riesgo sobrecarga)', basePrice: 9, icon: '🚀', risk: 'high', minVal: 12, maxVal: 14, riskChance: 0.25, failPenalty: 10 }
+    ];
+
+    const offers = [];
+    for (let i = 0; i < 3; i++) {
+      const target = activePlayers[Math.floor(Math.random() * activePlayers.length)];
+      const tpl = statTemplates[Math.floor(Math.random() * statTemplates.length)];
+      const tierKey = rollTrainingTier();
+      const tierData = TRAINING_TIER_CONFIG.tiers[tierKey];
+
+      // Calculate scaled values per tier
+      const minVal = Math.round(tpl.minVal * tierData.statMult);
+      const maxVal = Math.round(tpl.maxVal * tierData.statMult);
+      const critVal = tpl.critVal ? Math.round(tpl.critVal * tierData.statMult) : undefined;
+      const basePrice = Math.round(tpl.basePrice * tierData.priceMult);
+
+      offers.push({
+        id: `offer_${i}_${Date.now()}`,
+        player: target.player,
+        slot: target.slot,
+        tier: tierKey,
+        tierData: tierData,
+        template: {
+          ...tpl,
+          minVal,
+          maxVal,
+          critVal,
+          basePrice
+        },
+        bought: false,
+        _soundPlayed: false
+      });
+    }
+    return offers;
+  }
+
+  function renderTrainingCardsContainer() {
+    const container = document.getElementById('training-cards-container');
+    if (!container) return;
+    container.innerHTML = '';
+
+    let playGoldSound = false;
+
+    currentTrainingOffers.forEach((offer, idx) => {
+      const p = offer.player;
+      const tpl = offer.template;
+      const tier = offer.tierData;
+
+      if (offer.tier === 'Gold' && !offer._soundPlayed) {
+        playGoldSound = true;
+        offer._soundPlayed = true;
+      }
+
+      const currentPrice = Math.round(tpl.basePrice * Math.pow(MULTI_TRAIN_COST_MULTIPLIER, purchasesInCurrentVisit));
+      const canAfford = window.Game.budget >= currentPrice;
+
+      const card = document.createElement('div');
+      card.className = `training-card-offer training-card-tier-${offer.tier.toLowerCase()}`;
+
+      const animDelay = idx * 0.12;
+      const goldGlow = offer.tier === 'Gold' ? `box-shadow: 0 0 25px ${tier.color}50, 0 4px 20px rgba(0,0,0,0.5);` : (offer.tier === 'Silver' ? `box-shadow: 0 0 15px ${tier.color}35, 0 4px 20px rgba(0,0,0,0.4);` : 'box-shadow: 0 4px 20px rgba(0,0,0,0.4);');
+
+      card.style.cssText = `
+        background: #090d16;
+        border: 2px solid ${offer.bought ? '#10b981' : tier.borderColor};
+        border-radius: 14px;
+        padding: 18px;
+        width: 100%;
+        max-width: 290px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        ${offer.bought ? 'box-shadow: 0 0 20px rgba(16,185,129,0.15);' : goldGlow}
+        opacity: ${offer.bought ? '0.75' : (canAfford ? '1' : '0.5')};
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        animation: cardPopIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) ${animDelay}s backwards;
+      `;
+
+      const riskTag = tpl.risk === 'high'
+        ? '<span class="choice-risk-tag choice-risk-high" style="font-size:7px;">🔴 ALTO RIESGO</span>'
+        : '<span class="choice-risk-tag choice-risk-safe" style="font-size:7px;">🟢 SEGURO</span>';
+
+      const tierBadge = `
+        <span style="
+          font-family:'Press Start 2P',monospace;
+          font-size:8px;
+          color:${tier.color};
+          background:${tier.badgeBg};
+          border:1px solid ${tier.color}66;
+          padding:3px 8px;
+          border-radius:12px;
+          display:inline-block;
+        ">${tier.label}</span>
+      `;
+
+      const statDescText = tpl.stat === 'sta' 
+        ? `+${tpl.minVal} a +${tpl.maxVal} Stamina` 
+        : `+${tpl.minVal} a +${tpl.maxVal} ${tpl.stat.toUpperCase()}`;
+
+      card.innerHTML = `
+        <div>
+          <!-- Top Row: Tier badge & Slot Tag -->
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+            ${tierBadge}
+            <span style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--primary-color);background:rgba(16,185,129,0.1);padding:3px 6px;border-radius:4px;">[${offer.slot}]</span>
+          </div>
+
+          <!-- Player name -->
+          <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px dashed rgba(255,255,255,0.1);padding-bottom:10px;margin-bottom:12px;">
+            <span style="font-weight:bold;font-size:14px;color:#fff;">${p.name}</span>
+            <span style="font-size:9px;color:#94a3b8;">${p.pos}</span>
+          </div>
+
+          <!-- Body: Stat Upgrade Plan -->
+          <div style="text-align:center;padding:8px 0;">
+            <div style="font-size:36px;margin-bottom:6px;filter:drop-shadow(0 0 10px ${tier.color});">${tpl.icon}</div>
+            <div style="font-weight:bold;font-size:13px;color:#e2e8f0;margin-bottom:4px;">${tpl.label}</div>
+            <div style="font-weight:bold;font-size:12px;color:${tier.color};margin-bottom:6px;">${statDescText}</div>
+            <div style="font-size:10px;color:#94a3b8;line-height:1.4;margin-bottom:10px;">${tpl.desc}</div>
+            <div>${riskTag}</div>
+          </div>
         </div>
-        <div style="text-align:right;">
-          <div style="font-weight:bold; color:var(--accent-color); font-size:14px; margin-bottom:5px;">$${plan.price}</div>
+
+        <!-- Footer: Price & Purchase Button -->
+        <div style="margin-top:16px;border-top:1px solid rgba(255,255,255,0.06);padding-top:12px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+            <span style="font-size:11px;color:#64748b;">Costo del Plan:</span>
+            <span style="font-family:'Press Start 2P',monospace;font-size:11px;color:${offer.tier === 'Gold' ? '#ffd700' : 'var(--accent-color)'};">$${currentPrice}</span>
+          </div>
+          <button class="btn btn-buy-training-card" ${offer.bought || !canAfford ? 'disabled' : ''} style="
+            width:100%;
+            padding:10px;
+            font-size:10px;
+            font-weight:bold;
+            background:${offer.bought ? '#10b981' : (canAfford ? `linear-gradient(135deg, ${tier.color}, ${tier.color}dd)` : '#334155')};
+            color:${offer.bought ? '#fff' : (canAfford ? '#000' : '#94a3b8')};
+            border:none;
+            border-radius:8px;
+            cursor:${offer.bought || !canAfford ? 'not-allowed' : 'pointer'};
+            box-shadow:${!offer.bought && canAfford ? `0 0 15px ${tier.color}44` : 'none'};
+          ">
+            ${offer.bought ? '<i class="fa-solid fa-check"></i> ADQUIRIDO' : (canAfford ? '<i class="fa-solid fa-cart-shopping"></i> COMPRAR OFERTA' : 'FONDOS INSUFICIENTES')}
+          </button>
         </div>
       `;
 
-      item.addEventListener('click', () => {
-        // Toggle selection
-        Array.from(el.trainOptionsList.children).forEach(c => c.classList.remove('selected'));
-        item.classList.add('selected');
-      });
-
-      el.trainOptionsList.appendChild(item);
-    });
-
-    // Populate radio buttons player list
-    el.trainPlayerSelect.innerHTML = "";
-    
-    // Active players
-    Object.keys(window.Game.roster).forEach(slot => {
-      const p = window.Game.roster[slot];
-      if (p) {
-        const row = document.createElement('label');
-        row.style.display = "flex";
-        row.style.alignItems = "center";
-        row.style.gap = "8px";
-        row.style.fontSize = "12px";
-        row.style.cursor = "pointer";
-        row.style.padding = "4px 8px";
-        row.style.background = "rgba(255,255,255,0.02)";
-        row.style.borderRadius = "4px";
-        
-        row.innerHTML = `
-          <input type="radio" name="train-player-radio" value="${p.id}">
-          <span>[${slot}] ${p.name} (${p.pos})</span>
-        `;
-        el.trainPlayerSelect.appendChild(row);
+      if (!offer.bought && canAfford) {
+        card.querySelector('.btn-buy-training-card').addEventListener('click', () => {
+          executeTrainingCardPurchase(offer, currentPrice);
+        });
       }
+
+      container.appendChild(card);
     });
 
+    if (playGoldSound && window.AudioManager && typeof window.AudioManager.playSound === 'function') {
+      window.AudioManager.playSound('upgrade');
+    }
+  }
+
+  function executeTrainingCardPurchase(offer, price) {
+    if (window.Game.budget < price || offer.bought) return;
+
+    window.Game.budget -= price;
+    offer.bought = true;
+    purchasesInCurrentVisit++;
+
+    const player = offer.player;
+    const tpl = offer.template;
+    const tier = offer.tierData;
+
+    let isCrit = false;
+    let isFail = false;
+    let gainVal = 0;
+    let stats = [];
+
+    if (tpl.risk === 'high') {
+      const roll = Math.random();
+      if (roll < tpl.riskChance) {
+        isFail = true;
+        player.stamina = Math.max(10, player.stamina - (tpl.failPenalty || 15));
+        stats.push({ label: 'Stamina del Jugador', value: `-${tpl.failPenalty || 15}`, isPositive: false });
+      } else {
+        gainVal = Math.floor(Math.random() * (tpl.maxVal - tpl.minVal + 1)) + tpl.minVal;
+        player.upgrades[tpl.stat] = (player.upgrades[tpl.stat] || 0) + gainVal;
+        stats.push({ label: tpl.stat.toUpperCase() + ' Aumentado', value: `+${gainVal}`, isPositive: true });
+      }
+    } else {
+      const roll = Math.random();
+      if (roll < (tpl.critChance || 0.15)) {
+        isCrit = true;
+        gainVal = tpl.critVal || Math.round(12 * tier.statMult);
+      } else {
+        gainVal = Math.floor(Math.random() * (tpl.maxVal - tpl.minVal + 1)) + tpl.minVal;
+      }
+
+      if (tpl.stat === 'sta') {
+        player.stamina = Math.min(100, player.stamina + gainVal);
+        player.upgrades.sta = (player.upgrades.sta || 0) + 5;
+        stats.push({ label: 'Stamina Recuperada', value: `+${gainVal}`, isPositive: true });
+      } else {
+        player.upgrades[tpl.stat] = (player.upgrades[tpl.stat] || 0) + gainVal;
+        stats.push({ label: tpl.stat.toUpperCase() + ' Aumentado', value: `+${gainVal}`, isPositive: true });
+      }
+    }
+
+    renderActiveRoster();
+    renderSynergiesAndItems();
+    updateHUD();
+
+    let title = `${player.name} [${offer.slot}]`;
+    let badgeText = isFail ? '¡SOBRECARGA MUSCULAR!' : (isCrit ? `¡CRÍTICO ${tier.label}! 🎉` : `¡ENTRENAMIENTO ${tier.label}!`);
+    let badgeColor = isFail ? '#ef4444' : (isCrit ? '#f59e0b' : tier.color);
+    let icon = isFail ? '💥' : (isCrit ? '🎉' : tpl.icon);
+    let desc = isFail
+      ? `El entrenamiento fue demasiado intenso y provocó fatiga en ${player.name}.`
+      : (isCrit
+          ? `¡Extraordinario desempeño! ${player.name} tuvo una sesión de nivel ${tier.label} e incrementó +${gainVal} en su estadística.`
+          : `${player.name} completó la rutina ${tier.label} con éxito.`);
+
+    showRetroResultModal({
+      title,
+      badgeText,
+      badgeColor,
+      icon,
+      desc,
+      stats,
+      onClose: () => renderTrainingCardsContainer()
+    });
+  }
+
+  // TRAINING SCREEN SETUP
+  function setupTrainingScreen() {
+    purchasesInCurrentVisit = 0;
+    currentTrainingOffers = generateTrainingOffers();
+    renderTrainingCardsContainer();
     window.showScreen('screen-train');
   }
 

@@ -5,32 +5,101 @@
   const ManagerEventsList = [
     {
       id: "ev_cork",
-      get title() { return window.t ? window.t("events.ev_cork_title") : "Bates de Contrabando"; },
-      get desc() { return window.t ? window.t("events.ev_cork_desc") : "Un misterioso comerciante te ofrece bates modificados con corcho. Aumentará la potencia de tu equipo, pero afectará el contacto de la bola."; },
+      icon: "🪵",
+      title: "Bates de Contrabando",
+      desc: "Un misterioso carpintero se aproxima al vestuario con bates modificados con corcho. Aumentan drásticamente el impacto de la bola, pero alteran el balance del swing.",
       choices: [
         {
-          get text() { return window.t ? window.t("events.ev_cork_choice1") : "Modificar bates (+15 Fuerza, -4 Contacto a todo el equipo)"; },
+          icon: "⚙️",
+          risk: "safe",
+          text: "Modificación Estándar (+10 PWR, -2 CON)",
           cost: 15,
+          successChance: 1.0,
           action: (G) => {
-            G.activeItemBonuses.teamPwr += 15;
-            G.activeItemBonuses.teamCon -= 4;
+            G.activeItemBonuses.teamPwr += 10;
+            G.activeItemBonuses.teamCon -= 2;
           }
         },
         {
-          get text() { return window.t ? window.t("events.ev_cork_choice2") : "Rechazar oferta (No hacer nada)"; },
+          icon: "🔥",
+          risk: "high",
+          text: "Corcho Masivo Ilegal (+25 PWR, -5 CON)",
+          cost: 5,
+          successChance: 0.60,
+          successMsg: "¡Bates modificados con éxito! Tu alineación obtiene +25 PWR y -5 CON.",
+          action: (G) => {
+            G.activeItemBonuses.teamPwr += 25;
+            G.activeItemBonuses.teamCon -= 5;
+          },
+          failMsg: "¡EL UMPIRE DESCUBRIÓ LOS BATES! La liga confisca los bates y te impone una multa de -$10.",
+          failAction: (G) => {
+            G.budget = Math.max(0, G.budget - 10);
+          }
+        },
+        {
+          icon: "🛡️",
+          risk: "safe",
+          text: "Rechazar Oferta (No hacer nada)",
           cost: 0,
+          successChance: 1.0,
+          action: (G) => {}
+        }
+      ]
+    },
+    {
+      id: "ev_sign_stealing",
+      icon: "📡",
+      title: "El Espía de Señas",
+      desc: "Un ex-receptor retirado afirma conocer la secuencia secreta de lanzamientos de los pitchers rivales de esta zona.",
+      choices: [
+        {
+          icon: "💼",
+          risk: "safe",
+          text: "Comprar Informe VIP (+15 EYE, +8 CON)",
+          cost: 22,
+          successChance: 1.0,
+          action: (G) => {
+            G.activeItemBonuses.teamEye += 15;
+            G.activeItemBonuses.teamCon += 8;
+          }
+        },
+        {
+          icon: "⚡",
+          risk: "moderate",
+          text: "Robo de Señas Callejero (+20 EYE)",
+          cost: 8,
+          successChance: 0.65,
+          successMsg: "¡Señas interceptadas! Tu equipo obtiene +20 EYE (Disciplina).",
+          action: (G) => {
+            G.activeItemBonuses.teamEye += 20;
+          },
+          failMsg: "¡Descubiertos en cámara! El comisionado sanciona al equipo con -$15 Presupuesto.",
+          failAction: (G) => {
+            G.budget = Math.max(0, G.budget - 15);
+          }
+        },
+        {
+          icon: "⚾",
+          risk: "safe",
+          text: "Jugar Limpio (Rechazar)",
+          cost: 0,
+          successChance: 1.0,
           action: (G) => {}
         }
       ]
     },
     {
       id: "ev_fitness",
-      get title() { return window.t ? window.t("events.ev_fitness_title") : "Preparador Físico Retro"; },
-      get desc() { return window.t ? window.t("events.ev_fitness_desc") : "Un entrenador físico del campeonato de 1982 se ofrece a coordinar una rutina de acondicionamiento intensa para tu alineación."; },
+      icon: "🏋️",
+      title: "Preparador Físico Retro",
+      desc: "Un legendario preparador físico del campeonato de 1982 se ofrece a coordinar una rutina de acondicionamiento para la plantilla.",
       choices: [
         {
-          get text() { return window.t ? window.t("events.ev_fitness_choice1") : "Rutina cardiovascular (+40 Stamina a toda la alineación)"; },
-          cost: 20,
+          icon: "🔋",
+          risk: "safe",
+          text: "Rutina Aeróbica Estándar (+40 Stamina a todos)",
+          cost: 18,
+          successChance: 1.0,
           action: (G) => {
             Object.keys(G.roster).forEach(pos => {
               if (G.roster[pos]) G.roster[pos].stamina = Math.min(100, G.roster[pos].stamina + 40);
@@ -38,20 +107,158 @@
           }
         },
         {
-          get text() { return window.t ? window.t("events.ev_fitness_choice2") : "Continuar sin entrenar"; },
+          icon: "⚡",
+          risk: "high",
+          text: "Acondicionamiento Extremo (100% Stamina)",
+          cost: 10,
+          successChance: 0.60,
+          successMsg: "¡Sesión milagrosa! Toda la plantilla recupera el 100% de Stamina.",
+          action: (G) => {
+            Object.keys(G.roster).forEach(pos => {
+              if (G.roster[pos]) G.roster[pos].stamina = 100;
+            });
+          },
+          failMsg: "¡Sobrecarga muscular masiva! El equipo se agota y pierde -15 Stamina.",
+          failAction: (G) => {
+            Object.keys(G.roster).forEach(pos => {
+              if (G.roster[pos]) G.roster[pos].stamina = Math.max(10, G.roster[pos].stamina - 15);
+            });
+          }
+        },
+        {
+          icon: "🚪",
+          risk: "safe",
+          text: "Continuar sin entrenar",
           cost: 0,
+          successChance: 1.0,
+          action: (G) => {}
+        }
+      ]
+    },
+    {
+      id: "ev_hypnosis",
+      icon: "🧠",
+      title: "Hipnosis de Bateo Focalizado",
+      desc: "Un psicólogo deportivo ofrece reprogramar la concentración mental de tus bateadores en el plato.",
+      choices: [
+        {
+          icon: "🎯",
+          risk: "moderate",
+          text: "Sesión de Trance Profundo (+14 EYE, +10 CON)",
+          cost: 14,
+          successChance: 0.70,
+          successMsg: "¡Mente lúcida! Tu equipo obtiene +14 EYE y +10 CON.",
+          action: (G) => {
+            G.activeItemBonuses.teamEye += 14;
+            G.activeItemBonuses.teamCon += 10;
+          },
+          failMsg: "¡Desorientación hipnótica! Los bateadores dudan en el conteo (-8 EYE).",
+          failAction: (G) => {
+            G.activeItemBonuses.teamEye -= 8;
+          }
+        },
+        {
+          icon: "🛡️",
+          risk: "safe",
+          text: "Rechazar Psicoterapia",
+          cost: 0,
+          successChance: 1.0,
+          action: (G) => {}
+        }
+      ]
+    },
+    {
+      id: "ev_graphene_bat",
+      icon: "🔬",
+      title: "Bates de Aleación Experimental",
+      desc: "Un laboratorio tecnológico propone probar bates con fibra de carbono y titanio en el próximo tramo del mapa.",
+      choices: [
+        {
+          icon: "💎",
+          risk: "safe",
+          text: "Comprar Modelo Homologado (+12 PWR)",
+          cost: 20,
+          successChance: 1.0,
+          action: (G) => {
+            G.activeItemBonuses.teamPwr += 12;
+          }
+        },
+        {
+          icon: "💥",
+          risk: "high",
+          text: "Prototipo Hyper-Carbono (+28 PWR)",
+          cost: 6,
+          successChance: 0.55,
+          successMsg: "¡Poder devastador! Tu equipo obtiene +28 PWR extra.",
+          action: (G) => {
+            G.activeItemBonuses.teamPwr += 28;
+          },
+          failMsg: "¡El bate se astilló en pedazos! Pierdes la inversión y restas -5 PWR.",
+          failAction: (G) => {
+            G.activeItemBonuses.teamPwr -= 5;
+          }
+        },
+        {
+          icon: "🚪",
+          risk: "safe",
+          text: "Pasar de la tecnología",
+          cost: 0,
+          successChance: 1.0,
+          action: (G) => {}
+        }
+      ]
+    },
+    {
+      id: "ev_tabloid",
+      icon: "📰",
+      title: "Prensa Sensacionalista",
+      desc: "Un importante periódico deportivo quiere la primicia del vestuario y ofrece dinero a cambio de una entrevista exclusiva.",
+      choices: [
+        {
+          icon: "💰",
+          risk: "moderate",
+          text: "Vender Exclusiva (+$35 Presupuesto)",
+          cost: -35,
+          successChance: 0.70,
+          successMsg: "¡Entrevista vendida con éxito! Recibes +$35 de presupuesto.",
+          action: (G) => {},
+          failMsg: "¡El artículo desató polémica! La presión mediática causa estrés (-15 Stamina a todos).",
+          failAction: (G) => {
+            Object.keys(G.roster).forEach(pos => {
+              if (G.roster[pos]) G.roster[pos].stamina = Math.max(10, G.roster[pos].stamina - 15);
+            });
+          }
+        },
+        {
+          icon: "🤝",
+          risk: "safe",
+          text: "Conferencia de Prensa Oficial (+$10 Presupuesto)",
+          cost: -10,
+          successChance: 1.0,
+          action: (G) => {}
+        },
+        {
+          icon: "🚪",
+          risk: "safe",
+          text: "Cerrar las Puertas (No hablar)",
+          cost: 0,
+          successChance: 1.0,
           action: (G) => {}
         }
       ]
     },
     {
       id: "ev_cryo",
-      get title() { return window.t ? window.t("events.ev_cryo_title") : "Cápsula de Hidroterapia"; },
-      get desc() { return window.t ? window.t("events.ev_cryo_desc") : "Instalas una cámara de recuperación avanzada en el vestuario. Cura a todo el equipo al instante, pero es costosa."; },
+      icon: "❄️",
+      title: "Cápsula de Hidroterapia",
+      desc: "Instalas una cámara de recuperación avanzada de criogenización en el vestuario para rejuvenecer a tus bateadores.",
       choices: [
         {
-          get text() { return window.t ? window.t("events.ev_cryo_choice1") : "Criogenización (Recupera 100% de Stamina a todos)"; },
-          cost: 30,
+          icon: "🧪",
+          risk: "safe",
+          text: "Criogenización Completa (100% Stamina a todos)",
+          cost: 28,
+          successChance: 1.0,
           action: (G) => {
             Object.keys(G.roster).forEach(pos => {
               if (G.roster[pos]) G.roster[pos].stamina = 100;
@@ -59,86 +266,170 @@
           }
         },
         {
-          get text() { return window.t ? window.t("events.ev_cryo_choice2") : "Prescindir de la cámara"; },
+          icon: "🧊",
+          risk: "safe",
+          text: "Bañera de Hielo Rápida (+40 Stamina a todos)",
+          cost: 12,
+          successChance: 1.0,
+          action: (G) => {
+            Object.keys(G.roster).forEach(pos => {
+              if (G.roster[pos]) G.roster[pos].stamina = Math.min(100, G.roster[pos].stamina + 40);
+            });
+          }
+        },
+        {
+          icon: "🚪",
+          risk: "safe",
+          text: "Prescindir de la cámara",
           cost: 0,
+          successChance: 1.0,
           action: (G) => {}
         }
       ]
     },
     {
       id: "ev_pinetar",
-      get title() { return window.t ? window.t("events.ev_pinetar_title") : "Brea de Pino Japonesa"; },
-      get desc() { return window.t ? window.t("events.ev_pinetar_desc") : "Consigues un tarro de brea especial que mejora el agarre y agarre del bate, afinando el contacto."; },
+      icon: "🍯",
+      title: "Brea de Pino Japonesa",
+      desc: "Un distribuidor importador ofrece resina de brea de pino especial que maximiza la firmeza del swing.",
       choices: [
         {
-          get text() { return window.t ? window.t("events.ev_pinetar_choice1") : "Comprar brea (+8 Contacto global a todo el equipo)"; },
+          icon: "✨",
+          risk: "safe",
+          text: "Brea de Grado Profesional (+8 CON)",
           cost: 12,
+          successChance: 1.0,
           action: (G) => {
             G.activeItemBonuses.teamCon += 8;
           }
         },
         {
-          get text() { return window.t ? window.t("events.ev_pinetar_choice2") : "Seguir igual"; },
+          icon: "🧪",
+          risk: "high",
+          text: "Fórmula Casera Ultra-Pegajosa (+18 CON)",
+          cost: 5,
+          successChance: 0.55,
+          successMsg: "¡Agarre extraordinario! Tu equipo gana +18 Contacto.",
+          action: (G) => {
+            G.activeItemBonuses.teamCon += 18;
+          },
+          failMsg: "¡El umpire nota el residuo ilícito! Te sanciona restando -10 Defensa.",
+          failAction: (G) => {
+            G.activeItemBonuses.teamDef -= 10;
+          }
+        },
+        {
+          icon: "🚪",
+          risk: "safe",
+          text: "Seguir igual",
           cost: 0,
+          successChance: 1.0,
           action: (G) => {}
         }
       ]
     },
     {
       id: "ev_bribe",
-      get title() { return window.t ? window.t("events.ev_bribe_title") : "Cazatalento en Apuros"; },
-      get desc() { return window.t ? window.t("events.ev_bribe_desc") : "Un caza-talentos te ofrece dinero del presupuesto del equipo rival a cambio de canjear un poco de enfoque deportivo."; },
+      icon: "💼",
+      title: "Cazatalento en Apuros",
+      desc: "Un cazatalentos te ofrece presupuesto del equipo rival a cambio de canjear un poco de enfoque deportivo.",
       choices: [
         {
-          get text() { return window.t ? window.t("events.ev_bribe_choice1") : "Aceptar dinero (Ganas +$45 presupuesto, pero pierdes -5 Disciplina/Eye global)"; },
-          cost: -45, // negative cost means gaining budget
+          icon: "💵",
+          risk: "moderate",
+          text: "Aceptar Dinero (+$45 Presupuesto, -5 EYE)",
+          cost: -45,
+          successChance: 1.0,
           action: (G) => {
             G.activeItemBonuses.teamEye -= 5;
           }
         },
         {
-          get text() { return window.t ? window.t("events.ev_bribe_choice2") : "Denunciarlo al comisionado (Ganas +8 Disciplina/Eye global en tu equipo)"; },
+          icon: "⚖️",
+          risk: "safe",
+          text: "Denunciarlo al Comisionado (+10 EYE, +5 DEF)",
           cost: 10,
+          successChance: 1.0,
           action: (G) => {
-            G.activeItemBonuses.teamEye += 8;
+            G.activeItemBonuses.teamEye += 10;
+            G.activeItemBonuses.teamDef += 5;
           }
+        },
+        {
+          icon: "🚪",
+          risk: "safe",
+          text: "Ignorar la llamada",
+          cost: 0,
+          successChance: 1.0,
+          action: (G) => {}
         }
       ]
     },
     {
       id: "ev_spikes",
+      icon: "👟",
       title: "Clavos Ligeros Experimentales",
-      desc: "Un fabricante local te ofrece calzado de clavos de aluminio ultraligeros para mejorar la velocidad.",
+      desc: "Un fabricante local te ofrece calzado de clavos de aluminio ultraligeros para mejorar la velocidad en bases.",
       choices: [
         {
-          text: "Equipar clavos (+12 Velocidad/Speed global)",
+          icon: "⚡",
+          risk: "safe",
+          text: "Equipar Calzado Profesional (+12 SPD)",
           cost: 15,
+          successChance: 1.0,
           action: (G) => {
             G.activeItemBonuses.teamSpd += 12;
           }
         },
         {
+          icon: "🚀",
+          risk: "moderate",
+          text: "Prototipo de Clavos Turbo (+25 SPD)",
+          cost: 8,
+          successChance: 0.65,
+          successMsg: "¡Velocidad explosiva! Tu equipo gana +25 SPD.",
+          action: (G) => {
+            G.activeItemBonuses.teamSpd += 25;
+          },
+          failMsg: "¡Mala tracción! Los clavos resbalan y causan torceduras (-10 Stamina a todos).",
+          failAction: (G) => {
+            Object.keys(G.roster).forEach(pos => {
+              if (G.roster[pos]) G.roster[pos].stamina = Math.max(10, G.roster[pos].stamina - 10);
+            });
+          }
+        },
+        {
+          icon: "🚪",
+          risk: "safe",
           text: "Rechazar",
           cost: 0,
+          successChance: 1.0,
           action: (G) => {}
         }
       ]
     },
     {
       id: "ev_gloves",
+      icon: "🧤",
       title: "Guantes de Piel Curtida",
-      desc: "Un coleccionista de antigüedades vende guantes clásicos pesados de béisbol que otorgan máxima protección defensiva.",
+      desc: "Un coleccionista de recuerdos ofrece guantes clásicos pesados que aportan máxima protección defensiva al cuadro.",
       choices: [
         {
-          text: "Comprar guantes (+12 Defensa global a todo el equipo)",
-          cost: 12,
+          icon: "🛡️",
+          risk: "safe",
+          text: "Comprar Guantes Legendarios (+14 DEF)",
+          cost: 14,
+          successChance: 1.0,
           action: (G) => {
-            G.activeItemBonuses.teamDef += 12;
+            G.activeItemBonuses.teamDef += 14;
           }
         },
         {
+          icon: "🚪",
+          risk: "safe",
           text: "Rechazar",
           cost: 0,
+          successChance: 1.0,
           action: (G) => {}
         }
       ]
@@ -977,6 +1268,15 @@
         } else if (teamCount >= 2) {
           con += 4; pwr += 4; eye += 4; spd += 4; def += 4;
         }
+      }
+
+      // Captain Badge: any teammate (not the player itself) with captain === true gives +5 to all stats
+      // Non-cumulative: multiple captains on the roster still give only +5 total, not stacked.
+      const hasCaptainTeammate = Object.values(contextRoster).some(p =>
+        p && p !== player && p.playerID !== player.playerID && p.captain === true
+      );
+      if (hasCaptainTeammate) {
+        con += 5; pwr += 5; eye += 5; spd += 5; def += 5;
       }
 
       return {
