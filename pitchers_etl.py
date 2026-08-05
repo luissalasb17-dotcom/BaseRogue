@@ -368,8 +368,16 @@ def paso_4_pico_pitching(pitching, war_pitch, people):
     peak["peak_era"] = peak["peak_er"]   / ip_p * 9.0
 
     # IP/GS del pico (stamina para starters)
-    gs_p = peak["peak_gs"].replace(0, np.nan)
-    peak["peak_ip_per_gs"] = np.where(peak["peak_gs"] > 0, (peak["peak_ip"] / gs_p).clip(0.0, 9.5), 0.0)
+    # Solo se toman las temporadas donde lanzó como Abridor (GS > 0) para que innings de relevo con 0 GS no distorsionen la estamina por apertura
+    gs_seasons = pico_df[pico_df["GS"] > 0]
+    if not gs_seasons.empty:
+        sp_sta = gs_seasons.groupby("playerID").apply(
+            lambda g: (g["IP_y"].sum() / g["GS"].sum()) if g["GS"].sum() > 0 else 0.0
+        ).reset_index(name="sp_ip_per_gs")
+        peak = peak.merge(sp_sta, on="playerID", how="left")
+        peak["peak_ip_per_gs"] = peak["sp_ip_per_gs"].fillna(0.0).clip(0.0, 9.5)
+    else:
+        peak["peak_ip_per_gs"] = 0.0
 
     print(f"  Pico calculado para {len(peak):,} pitchers")
     return peak

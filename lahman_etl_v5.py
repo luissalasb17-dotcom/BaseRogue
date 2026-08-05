@@ -354,9 +354,8 @@ def paso_4_pico_batting(batting, war_bat, people):
     peak["peak_sb_eff"]       = (peak["peak_sb"] / sb_cs_p).fillna(0.65)
     peak["peak_sb_vol_log"]   = np.log1p(peak["peak_sb"])
     peak["peak_extra_base_f"] = (peak["peak_sb"] + peak["peak_3b"]) / ab_p
-
     print(f"  Pico calculado para {len(peak):,} jugadores")
-    return peak
+    return peak, pico_df
 
 
 # ===========================================================================
@@ -398,15 +397,21 @@ def paso_5_hibrido(career, peak):
 
 
 # ===========================================================================
+# PASO 6 - POSICION PRIMARIA DE BATEADORES EN SUS MEJORES TEMPORADAS (PICO WAR)
 # ===========================================================================
-# PASO 6 - POSICION PRIMARIA DE BATEADORES (excluye P)
-# ===========================================================================
-def paso_6_posicion_bateadores(fielding, fielding_of, appearances=None):
+def paso_6_posicion_bateadores(fielding, fielding_of, appearances=None, pico_df=None):
     """
-    Posicion con mayor G excluyendo 'P'. Usa Appearances.csv si esta disponible para desglosar LF/CF/RF
-    y secundarias rigurosamente en todas las eras historicas.
+    Posicion primaria basada exclusivamente en las temporadas pico del jugador por WAR.
     """
-    print("\n  PASO 6: Posicion primaria de bateadores y metricas proxy...")
+    print("\n  PASO 6: Posicion primaria de bateadores basada en sus mejores temporadas (Pico WAR)...")
+
+    # Filtrar apariciones y fielding a las mejores temporadas por WAR
+    if pico_df is not None and not pico_df.empty:
+        peak_years = pico_df[['playerID', 'yearID']].drop_duplicates()
+        if appearances is not None and not appearances.empty:
+            appearances = appearances.merge(peak_years, on=['playerID', 'yearID'], how='inner')
+        if not fielding.empty:
+            fielding = fielding.merge(peak_years, on=['playerID', 'yearID'], how='inner')
 
     pos_games = pd.DataFrame()
     if not fielding.empty:
@@ -1024,10 +1029,10 @@ def main():
 
     pure_pitcher_ids = paso_2_filtrar_pitchers(fielding)
     career           = paso_3_carrera_batting(batting)
-    peak             = paso_4_pico_batting(batting, war_bat, people)
+    peak, pico_df    = paso_4_pico_batting(batting, war_bat, people)
     hybrid           = paso_5_hibrido(career, peak)
     appearances = dfs.get("appearances")
-    pos_data         = paso_6_posicion_bateadores(fielding, fielding_of, appearances)
+    pos_data         = paso_6_posicion_bateadores(fielding, fielding_of, appearances, pico_df)
     hybrid           = hybrid.merge(pos_data, on="playerID", how="left")
     hybrid           = paso_7_enriquecer_people(hybrid, people)
     eligible         = paso_8_filtro_ingesta(hybrid, allstar, hof, pure_pitcher_ids, batting)
