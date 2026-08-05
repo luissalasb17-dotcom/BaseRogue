@@ -3913,15 +3913,12 @@ function initGameModeSelector() {
         runsScored: state.runs,
         pitchersDefeated: state.activePitcher ? state.activePitcher.index : activeBattle.homeTeam.pitchers.length,
         awayLineup: activeBattle.awayTeam.lineup,
-        enemyPitchers: activeBattle.homeTeam.pitchers
+        enemyPitchers: activeBattle.homeTeam.pitchers,
+        matchEvents: activeBattle.events || []
       };
       activeBattle = null;
       const res = window.Game.postMatchDebrief(fakeResult);
-      if (res.won) {
-        setupPostMatchDraftScreen(res.isBossStage, res.earnings);
-      } else {
-        triggerGameOver(false, res.message);
-      }
+      handlePostMatchResult(res);
     });
   }
 
@@ -3974,35 +3971,120 @@ function initGameModeSelector() {
     proceedBtn.innerHTML = `Proceder al Resumen del Partido <i class="fa-solid fa-arrow-right"></i>`;
     
     proceedBtn.addEventListener('click', () => {
+      if (activeSimulationResult) activeSimulationResult.matchEvents = (activeSimulation && activeSimulation.events) ? activeSimulation.events : [];
       const res = window.Game.postMatchDebrief(activeSimulationResult);
-      
+
       // Clear simulations refs
       activeSimulation = null;
       activeSimulationResult = null;
       simulationEvents = [];
 
-      if (res.won) {
-        if (res.isSuperBossTrigger) {
-          showSuperBossIntroModal(() => {
-            startInteractiveMatch();
-          });
-        } else {
-          setupPostMatchDraftScreen(res.isBossStage, res.earnings);
-        }
-      } else {
-        // Game Over!
-        triggerGameOver(false, res.message);
-      }
+      handlePostMatchResult(res);
     });
 
     el.screenMatch.appendChild(proceedBtn);
   }
 
+  // ── CENTRAL POST-MATCH ROUTER ─────────────────────────────────────────
+  function handlePostMatchResult(res) {
+    if (!res.won) {
+      triggerGameOver(false, res.message);
+      return;
+    }
+    if (res.isTrueVictory) {
+      triggerTrueVictory();
+      return;
+    }
+    if (res.isSuperBossTrigger) {
+      showSuperBossIntroModal(() => startInteractiveMatch());
+      return;
+    }
+    if (res.isTraitReward && res.traitChoices) {
+      showTraitSelectionModal(res.traitChoices, res.earnings, () => {
+        setupPostMatchDraftScreen(true, 0);
+      });
+      return;
+    }
+    setupPostMatchDraftScreen(res.isBossStage, res.earnings);
+  }
+
+  // ── TRAIT SELECTION MODAL (after Boss Maps 1-3) ───────────────────────
+  function showTraitSelectionModal(traitChoices, earnings, onDone) {
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.92);backdrop-filter:blur(12px);z-index:800;display:flex;align-items:center;justify-content:center;';
+
+    const cardsHTML = traitChoices.map(t => `
+      <div class="trait-choice-card" data-id="${t.id}" style="
+        background:rgba(10,15,24,0.95);border:2px solid rgba(255,215,0,0.4);
+        border-radius:14px;padding:22px 18px;max-width:240px;flex:1;cursor:pointer;
+        text-align:center;transition:all 0.2s;position:relative;overflow:hidden;
+        box-shadow:0 4px 20px rgba(0,0,0,0.6);
+      ">
+        <div style="font-size:36px;margin-bottom:10px;">${t.icon}</div>
+        <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:#ffd700;margin-bottom:10px;line-height:1.5;">${t.name}</div>
+        <div style="font-size:11px;color:#cbd5e1;line-height:1.5;">${t.desc}</div>
+        <button class="btn btn-trait-pick" data-id="${t.id}" style="margin-top:18px;width:100%;background:linear-gradient(135deg,#ffd700,#f59e0b);color:#000;font-weight:bold;font-size:10px;padding:10px;">✨ Elegir</button>
+      </div>
+    `).join('');
+
+    overlay.innerHTML = `
+      <div style="max-width:850px;width:95%;padding:20px;">
+        <div style="text-align:center;margin-bottom:24px;">
+          <div style="font-family:'Press Start 2P',monospace;font-size:13px;color:#ffd700;text-shadow:0 0 15px rgba(255,215,0,0.7);margin-bottom:8px;">🏆 ¡VICTORIA DE JEFE! +$${earnings}</div>
+          <div style="font-size:12px;color:#e2e8f0;">Elige una Trait Pasiva que acompañará a tu equipo hasta el final de la run:</div>
+        </div>
+        <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
+          ${cardsHTML}
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    // Hover effects
+    overlay.querySelectorAll('.trait-choice-card').forEach(card => {
+      card.addEventListener('mouseenter', () => { card.style.borderColor = '#ffd700'; card.style.transform = 'translateY(-4px)'; card.style.boxShadow = '0 8px 30px rgba(255,215,0,0.3)'; });
+      card.addEventListener('mouseleave', () => { card.style.borderColor = 'rgba(255,215,0,0.4)'; card.style.transform = ''; card.style.boxShadow = '0 4px 20px rgba(0,0,0,0.6)'; });
+    });
+
+    overlay.querySelectorAll('.btn-trait-pick').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const traitId = btn.dataset.id;
+        window.Game.equipTrait(traitId);
+        overlay.remove();
+        renderEquippedTraits();
+        if (onDone) onDone();
+      });
+    });
+  }
+
+  function renderEquippedTraits() {
+    // Inject trait badges into synergies sidebar or create a dedicated section
+    let traitPanel = document.getElementById('equipped-traits-panel');
+    if (!traitPanel) {
+      traitPanel = document.createElement('div');
+      traitPanel.id = 'equipped-traits-panel';
+      traitPanel.style.cssText = 'margin-top:10px;padding:10px;border-top:1px dashed rgba(255,215,0,0.3);';
+      const sidebar = document.getElementById('synergies-list-container');
+      if (sidebar) sidebar.appendChild(traitPanel);
+    }
+    const traits = window.Game.equippedTraits || [];
+    if (!traits.length) { traitPanel.innerHTML = ''; return; }
+    traitPanel.innerHTML = `
+      <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#ffd700;margin-bottom:8px;">✨ TRAITS ACTIVAS</div>
+      ${traits.map(t => `
+        <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:8px;padding:8px;background:rgba(255,215,0,0.06);border-radius:8px;border:1px solid rgba(255,215,0,0.2);">
+          <span style="font-size:18px;flex-shrink:0;">${t.icon}</span>
+          <div><div style="font-size:9px;color:#fef08a;font-weight:bold;margin-bottom:3px;">${t.name}</div><div style="font-size:9px;color:#94a3b8;line-height:1.4;">${t.desc}</div></div>
+        </div>
+      `).join('')}
+    `;
+  }
+
+  // ── SUPER BOSS INTRO MODAL ────────────────────────────────────────────
   function showSuperBossIntroModal(onProceed) {
     const overlay = document.createElement('div');
-    overlay.className = "modal-overlay flex items-center justify-center z-[500]";
-    overlay.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,0.92);backdrop-filter:blur(10px);z-index:500;display:flex;align-items:center;justify-content:center;";
-
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.92);backdrop-filter:blur(10px);z-index:500;display:flex;align-items:center;justify-content:center;';
     overlay.innerHTML = `
       <div style="background:#090d16;border:3px solid #ffd700;border-radius:16px;padding:24px;max-width:440px;width:90%;text-align:center;box-shadow:0 0 40px rgba(255,215,0,0.5);">
         <div style="font-family:'Press Start 2P',monospace;font-size:14px;color:#ffd700;margin-bottom:12px;text-shadow:0 0 10px #ffd700;">⚡ SUPER BOSS FIGHT ⚡</div>
@@ -4014,17 +4096,11 @@ function initGameModeSelector() {
           🔥 <strong>Fase Final Especial (4 Pitchers Leyenda)</strong><br>
           Tu equipo ha recuperado +30 HP y Escudo Máximo.
         </div>
-        <button id="btn-start-super-boss" class="btn" style="background:linear-gradient(90deg,#ffd700,#f59e0b);color:#000;font-weight:bold;font-size:11px;padding:12px 24px;width:100%;border:none;cursor:pointer;">
-          ¡ENFRENTAR AL SUPER BOSS FINAL! ⚾
-        </button>
+        <button id="btn-start-super-boss" class="btn" style="background:linear-gradient(90deg,#ffd700,#f59e0b);color:#000;font-weight:bold;font-size:11px;padding:12px 24px;width:100%;border:none;cursor:pointer;">¡ENFRENTAR AL SUPER BOSS FINAL! ⚾</button>
       </div>
     `;
-
     document.body.appendChild(overlay);
-    document.getElementById('btn-start-super-boss').addEventListener('click', () => {
-      overlay.remove();
-      if (onProceed) onProceed();
-    });
+    document.getElementById('btn-start-super-boss').addEventListener('click', () => { overlay.remove(); if (onProceed) onProceed(); });
   }
 
   // GAME OVER VIEW
@@ -4052,6 +4128,196 @@ function initGameModeSelector() {
     window.showScreen('screen-gameover');
   }
 
+  // ── TRUE VICTORY SCREEN ──────────────────────────────────────────────────
+  function triggerTrueVictory() {
+    window.showScreen('screen-victory');
+    startFireworks();
+  }
+
+  function startFireworks() {
+    const canvas = document.getElementById('fireworks-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+
+    function resizeCanvas() {
+      canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    const particles = [];
+    const colors = ['#ffd700', '#ff4500', '#00ff66', '#22d3ee', '#a855f7', '#ff69b4', '#fff'];
+
+    function createBurst(x, y) {
+      const count = 50 + Math.floor(Math.random() * 40);
+      for (let i = 0; i < count; i++) {
+        const angle = (Math.PI * 2 / count) * i + (Math.random() - 0.5) * 0.3;
+        const speed = 2.5 + Math.random() * 4;
+        particles.push({
+          x, y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          life: 1.0,
+          decay: 0.012 + Math.random() * 0.015,
+          radius: 2 + Math.random() * 3,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          tail: []
+        });
+      }
+    }
+
+    // Auto-launch fireworks
+    const launchInterval = setInterval(() => {
+      const x = canvas.width * (0.15 + Math.random() * 0.70);
+      const y = canvas.height * (0.05 + Math.random() * 0.55);
+      createBurst(x, y);
+    }, 600);
+
+    // Initial burst for immediate wow
+    setTimeout(() => createBurst(canvas.width * 0.5, canvas.height * 0.3), 100);
+    setTimeout(() => createBurst(canvas.width * 0.25, canvas.height * 0.4), 350);
+    setTimeout(() => createBurst(canvas.width * 0.75, canvas.height * 0.35), 600);
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.08; // gravity
+        p.life -= p.decay;
+        if (p.life <= 0) { particles.splice(i, 1); continue; }
+        ctx.globalAlpha = p.life;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        ctx.fillStyle = p.color;
+        ctx.fill();
+        ctx.globalAlpha = p.life * 0.4;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius * 2.5, 0, Math.PI * 2);
+        ctx.fillStyle = p.color;
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+      requestAnimationFrame(draw);
+    }
+    draw();
+
+    // Stop launching after 20s but keep existing particles
+    setTimeout(() => clearInterval(launchInterval), 20000);
+    canvas._stopFireworks = () => clearInterval(launchInterval);
+  }
+
+  // ── RUN SUMMARY MODAL ─────────────────────────────────────────────────────
+  function openRunSummaryModal() {
+    const modal = document.getElementById('modal-run-summary');
+    if (!modal) return;
+    modal.classList.remove('hidden');
+
+    // Render batter stats
+    const tbodyB = document.getElementById('summary-tbody-batters');
+    const batterStats = window.Game.runBatterStats || {};
+    const rosterHistory = window.Game.runRosterHistory || {};
+    const allBatterNames = new Set([...Object.keys(batterStats), ...Object.keys(rosterHistory)]);
+
+    tbodyB.innerHTML = '';
+    if (!allBatterNames.size) {
+      tbodyB.innerHTML = '<tr><td colspan="10" style="padding:12px;color:#64748b;text-align:center;">Sin datos de bateo registrados.</td></tr>';
+    } else {
+      [...allBatterNames].forEach(name => {
+        const s = batterStats[name] || {};
+        const ab = s.ab || 0;
+        const h  = s.h  || 0;
+        const avg = ab > 0 ? (h / ab).toFixed(3) : '.000';
+        const rowColor = (s.hr || 0) >= 2 ? 'rgba(255,215,0,0.05)' : 'transparent';
+        const tr = document.createElement('tr');
+        tr.style.cssText = `border-bottom:1px solid rgba(255,255,255,0.06);background:${rowColor};`;
+        tr.innerHTML = `
+          <td style="padding:8px;color:#e2e8f0;font-weight:bold;">${name}</td>
+          <td style="padding:8px;color:#94a3b8;">${ab}</td>
+          <td style="padding:8px;color:#22d3ee;">${h}</td>
+          <td style="padding:8px;color:#f59e0b;">${s.doubles || 0}</td>
+          <td style="padding:8px;color:#f59e0b;">${s.triples || 0}</td>
+          <td style="padding:8px;color:#ef4444;">${s.hr || 0}</td>
+          <td style="padding:8px;color:#10b981;">${s.rbi || 0}</td>
+          <td style="padding:8px;color:#a78bfa;">${s.bb || 0}</td>
+          <td style="padding:8px;color:#f87171;">${s.so || 0}</td>
+          <td style="padding:8px;color:${parseFloat(avg) >= 0.300 ? '#ffd700' : '#94a3b8'};font-weight:bold;">${avg}</td>
+        `;
+        tbodyB.appendChild(tr);
+      });
+    }
+
+    // Render pitcher stats
+    const tbodyP = document.getElementById('summary-tbody-pitchers');
+    const pitcherStats = window.Game.runPitcherStats || {};
+    const pitcherNames = Object.keys(pitcherStats);
+
+    tbodyP.innerHTML = '';
+    if (!pitcherNames.length) {
+      tbodyP.innerHTML = '<tr><td colspan="8" style="padding:12px;color:#64748b;text-align:center;">Sin datos de lanzadores registrados.</td></tr>';
+    } else {
+      pitcherNames.forEach(name => {
+        const ps = pitcherStats[name];
+        const outs = ps.outs || 0;
+        const ip = `${Math.floor(outs / 3)}.${outs % 3}`;
+        const er  = ps.er || 0;
+        const era = outs > 0 ? ((er * 27) / outs).toFixed(2) : '--.--';
+        const tr = document.createElement('tr');
+        tr.style.cssText = 'border-bottom:1px solid rgba(255,255,255,0.06);';
+        tr.innerHTML = `
+          <td style="padding:8px;color:#e2e8f0;font-weight:bold;">${name}</td>
+          <td style="padding:8px;color:#22d3ee;">${ip}</td>
+          <td style="padding:8px;color:#a78bfa;">${ps.k || 0}</td>
+          <td style="padding:8px;color:#fbbf24;">${ps.bb || 0}</td>
+          <td style="padding:8px;color:#94a3b8;">${ps.h || 0}</td>
+          <td style="padding:8px;color:#ef4444;">${ps.hr || 0}</td>
+          <td style="padding:8px;color:#f87171;">${er}</td>
+          <td style="padding:8px;color:${parseFloat(era) > 4.5 ? '#ef4444' : '#10b981'};font-weight:bold;">${era}</td>
+        `;
+        tbodyP.appendChild(tr);
+      });
+    }
+
+    // Tab switching
+    const tabB  = document.getElementById('tab-summary-batters');
+    const tabP  = document.getElementById('tab-summary-pitchers');
+    const contB = document.getElementById('summary-content-batters');
+    const contP = document.getElementById('summary-content-pitchers');
+
+    if (tabB) tabB.onclick = () => {
+      contB.classList.remove('hidden'); contP.classList.add('hidden');
+      tabB.style.background = 'var(--primary-color)'; tabB.style.color = '#000';
+      tabP.style.background = 'rgba(255,255,255,0.1)'; tabP.style.color = '#fff';
+    };
+    if (tabP) tabP.onclick = () => {
+      contP.classList.remove('hidden'); contB.classList.add('hidden');
+      tabP.style.background = '#38bdf8'; tabP.style.color = '#000';
+      tabB.style.background = 'rgba(255,255,255,0.1)'; tabB.style.color = '#fff';
+    };
+
+    const closeBtn = document.getElementById('btn-close-run-summary');
+    if (closeBtn) closeBtn.onclick = () => modal.classList.add('hidden');
+  }
+
+  // Wire up victory screen buttons (called after DOM ready)
+  function initVictoryScreenButtons() {
+    const btnSummary = document.getElementById('btn-show-run-summary');
+    if (btnSummary) btnSummary.addEventListener('click', openRunSummaryModal);
+
+    const btnPlayAgain = document.getElementById('btn-victory-play-again');
+    if (btnPlayAgain) btnPlayAgain.addEventListener('click', () => {
+      const canvas = document.getElementById('fireworks-canvas');
+      if (canvas && canvas._stopFireworks) canvas._stopFireworks();
+      window.Game.resetRun();
+      window.showScreen('screen-starter');
+    });
+  }
+
   // Self execute
-  window.onload = init;
+  window.onload = function() {
+    init();
+    initVictoryScreenButtons();
+  };
 })();

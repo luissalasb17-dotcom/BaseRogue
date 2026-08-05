@@ -262,6 +262,17 @@
       this.encounteredPitchers = new Set();
       this.isSuperBossActive = false;
 
+      // ── Traits Passives ───────────────────────────────────────────────
+      this.equippedTraits = [];  // Up to 3 traits (one per boss map)
+
+      // ── Run Stats Tracking ────────────────────────────────────────────
+      // { playerName: { ab, h, bb, so, doubles, triples, hr, rbi, runs } }
+      this.runBatterStats = {};
+      // { pitcherName: { outs, k, bb, h, hr, er, ip } }
+      this.runPitcherStats = {};
+      // All players that were part of roster during the run
+      this.runRosterHistory = {};  // slot -> player snapshot
+
       // ── 9-round Draft State ───────────────────────────────────────────
       // Round structure:
       //   Round 1: Epic or higher (guaranteed)
@@ -293,7 +304,113 @@
       this.history = [];
     }
 
-    // ── DRAFT: pick one player in the current round ──────────────────────────────
+    // ── TRAITS: Full trait catalog ────────────────────────────────────────────
+    static get TRAITS_CATALOG() {
+      return [
+        { id: 'eagle_patience',    name: '🦅 Paciencia de Águila',       desc: 'Zona de Boleto (BB) aumenta +3 puntos. Cada BB regenera +5 Stamina al bateador.', icon: '🦅' },
+        { id: 'slugger_momentum',  name: '💥 Impulso de Jonronero',       desc: 'Cada HR inflige +30 HP de daño extra al pitcher rival.', icon: '💥' },
+        { id: 'surgical_contact',  name: '🎯 Contacto Quirúrgico',        desc: 'Zona de Ponche (SO) reducida en -3 puntos para toda la alineación.', icon: '🎯' },
+        { id: 'speed_demons',      name: '⚡ Velocistas Agresivos',       desc: 'Jugadores con SPD > 60 roban la base automáticamente en sencillos y boletos. Debuff al pitcher dura 3 impactos.', icon: '⚡' },
+        { id: 'extra_base_impact', name: '💣 Impacto Acumulado',          desc: 'Batazos de extra bases (2B, 3B, HR) infligen +10 HP de daño adicional al pitcher.', icon: '💣' },
+        { id: 'iron_shield',       name: '🛡️ Escudo de Hierro',          desc: 'El Escudo absorbe 75% del DEF promedio del roster (en lugar de 50%). Regenera +5 al inicio de cada entrada.', icon: '🛡️' },
+        { id: 'defensive_wall',    name: '🧱 Muro Defensivo',             desc: 'Outs normales reducen HP del equipo en 8 en lugar de 12.', icon: '🧱' },
+        { id: 'endless_stamina',   name: '🔋 Resistencia Inagotable',     desc: 'Los bateadores solo pierden 6 de Stamina por partido (en lugar de 12).', icon: '🔋' },
+        { id: 'clutch_legends',    name: '❤️ Resiliencia de Leyendas',   desc: 'Si Team HP cae por debajo de 35, activa estado Clutch: +15 a CON, PWR, EYE, SPD, DEF para toda la alineación.', icon: '❤️' },
+        { id: 'golden_glove',      name: '🧤 Guantelete Dorado',          desc: 'Todos los bateadores reciben +10 DEF, aumentando la capacidad del Escudo de equipo.', icon: '🧤' },
+        { id: 'secondary_master',  name: '🔄 Posición Secundaria Maestra',desc: 'Elimina la penalización (-15%) al colocar bateadores en su Posición Secundaria.', icon: '🔄' },
+        { id: 'era_accelerated',   name: '⏳ Sinergia de Era Acelerada',  desc: 'Solo necesitas 2 jugadores de la misma Era para activar la Sinergia de Nivel 2 (normalmente 4).', icon: '⏳' },
+        { id: 'elite_negotiator',  name: '💼 Negociador de Élite',        desc: 'Obtienes +$10 de presupuesto extra tras cada victoria.', icon: '💼' },
+        { id: 'scout_eye',         name: '🌟 Ojo de Cazatalentos',        desc: 'Las ofertas de draft muestran 4 jugadores en lugar de 3 y aumenta probabilidad de Epic/Legendary.', icon: '🌟' },
+        { id: 'veteran_rotation',  name: '🔋 Segunda Vida',               desc: 'Tu alineación completa recupera un +30% de Stamina al inicio de cada nuevo mapa.', icon: '🔋' },
+        { id: 'reliever_ambush',   name: '🔥 Emboscada al Relevista',     desc: 'El primer batazo contra un nuevo pitcher rival inflige +50% de daño extra.', icon: '🔥' },
+        { id: 'early_pressure',    name: '📈 Presión Temprana',           desc: 'El primer bateador de cada entrada gana +20 de CON y EYE para ese turno.', icon: '📈' },
+        { id: 'ghost_runners',     name: '🏃 Corredores Fantasma',        desc: 'Inicias la 3ª entrada de cada partido con un corredor en 2ª base automáticamente.', icon: '🏃' },
+        { id: 'legendary_domination', name: '👑 Dominio Legendario',      desc: 'Si tienes 2 o más jugadores Legendary en titular, todos reciben +10 a todas sus estadísticas.', icon: '👑' },
+        { id: 'back_to_back',      name: '💥 Cadena de Poder',            desc: 'Después de un HR, el siguiente bateador gana +20 de PWR y CON para ese turno.', icon: '💥' },
+      ];
+    }
+
+    hasTrait(id) { return this.equippedTraits.some(t => t.id === id); }
+
+    getRandomTraitChoices(count = 3) {
+      const catalog = GameState.TRAITS_CATALOG;
+      const equipped = new Set(this.equippedTraits.map(t => t.id));
+      const available = catalog.filter(t => !equipped.has(t.id));
+      const shuffled = available.sort(() => Math.random() - 0.5);
+      return shuffled.slice(0, count);
+    }
+
+    equipTrait(traitId) {
+      const trait = GameState.TRAITS_CATALOG.find(t => t.id === traitId);
+      if (trait && !this.hasTrait(traitId)) {
+        this.equippedTraits.push(trait);
+      }
+    }
+
+    // ── RUN STATS: record a match's events into cumulative per-run totals ─────
+    recordMatchStats(simEvents, enemyPitchers) {
+      if (!simEvents || !simEvents.length) return;
+
+      // Accumulate batter stats from events
+      for (const ev of simEvents) {
+        if (ev.type !== 'PLAY') continue;
+        const name = ev.batterName;
+        if (!name) continue;
+        if (!this.runBatterStats[name]) {
+          this.runBatterStats[name] = { ab: 0, h: 0, bb: 0, so: 0, doubles: 0, triples: 0, hr: 0, rbi: 0 };
+        }
+        const s = this.runBatterStats[name];
+        if (ev.eventType === 'BB') { s.bb++; }
+        else if (ev.eventType === 'SO') { s.ab++; s.so++; }
+        else if (ev.eventType === 'OUT') { s.ab++; }
+        else if (ev.eventType === '1B') { s.ab++; s.h++; }
+        else if (ev.eventType === '2B') { s.ab++; s.h++; s.doubles++; }
+        else if (ev.eventType === '3B') { s.ab++; s.h++; s.triples++; }
+        else if (ev.eventType === 'HR') { s.ab++; s.h++; s.hr++; }
+        // RBI approximation: runs scored in the play
+        if (ev.runsScored && ev.runsScored > 0) s.rbi += ev.runsScored;
+      }
+
+      // Accumulate pitcher stats
+      if (enemyPitchers && enemyPitchers.length) {
+        for (const p of enemyPitchers) {
+          const pName = (p.cleanName || p.name || 'Unknown Pitcher');
+          if (!this.runPitcherStats[pName]) {
+            this.runPitcherStats[pName] = { outs: 0, k: 0, bb: 0, h: 0, hr: 0, er: 0 };
+          }
+        }
+        // Count events against each pitcher from the log
+        let currentPitcherIdx = 0;
+        for (const ev of simEvents) {
+          if (ev.type === 'KO_PITCHER') { currentPitcherIdx++; continue; }
+          if (ev.type !== 'PLAY') continue;
+          const p = enemyPitchers[currentPitcherIdx];
+          if (!p) continue;
+          const pName = (p.cleanName || p.name || 'Unknown Pitcher');
+          if (!this.runPitcherStats[pName]) this.runPitcherStats[pName] = { outs: 0, k: 0, bb: 0, h: 0, hr: 0, er: 0 };
+          const ps = this.runPitcherStats[pName];
+          if (ev.eventType === 'SO') { ps.outs++; ps.k++; }
+          else if (ev.eventType === 'OUT') { ps.outs++; }
+          else if (ev.eventType === 'BB') { ps.bb++; }
+          else if (ev.eventType === '1B') { ps.h++; }
+          else if (ev.eventType === '2B') { ps.h++; }
+          else if (ev.eventType === '3B') { ps.h++; }
+          else if (ev.eventType === 'HR') { ps.h++; ps.hr++; }
+          if (ev.runsScored && ev.runsScored > 0) ps.er += ev.runsScored;
+        }
+      }
+
+      // Snapshot current roster for the run history
+      const slots = ['C','1B','2B','3B','SS','LF','CF','RF','DH'];
+      for (const slot of slots) {
+        const p = this.roster[slot];
+        if (p && !this.runRosterHistory[p.name]) {
+          this.runRosterHistory[p.name] = { name: p.name, pos: slot, rarity: p.rarity, era: p.era, ovr: p.avg_attr_score || p.ovr };
+        }
+      }
+    }
+
+
     draftPickPlayer(playerData) {
       if (this.draftRound > 9) return false;
       const instance = {
@@ -1394,13 +1511,17 @@
     }
 
     postMatchDebrief(simResult) {
-      // Reduce stamina of active batters (flat 12 loss for playing the 3-inning match)
+      // Trait: Resistencia Inagotable — batters lose 6 instead of 12 stamina
+      const staminaLoss = this.hasTrait('endless_stamina') ? 6 : 12;
       Object.keys(this.roster).forEach(pos => {
         const player = this.roster[pos];
         if (player) {
-          player.stamina = Math.max(0, player.stamina - 12);
+          player.stamina = Math.max(0, player.stamina - staminaLoss);
         }
       });
+
+      // Record cumulative run stats for this match
+      this.recordMatchStats(simResult.matchEvents || [], simResult.enemyPitchers || []);
 
       const currentEnemy = this.getEnemyTeam();
       const won = simResult.winner === 'away';
@@ -1409,7 +1530,7 @@
         stage: this.currentStageIndex,
         enemyName: currentEnemy.name,
         ourScore: simResult.runsScored,
-        enemyScore: simResult.enemyPitchers.length - simResult.pitchersDefeated,
+        enemyScore: simResult.enemyPitchers ? (simResult.enemyPitchers.length - simResult.pitchersDefeated) : 0,
         won
       });
 
@@ -1419,7 +1540,7 @@
         // Stage 15 (Map 4 Boss Fight #1) victory -> Trigger SUPER BOSS FIGHT Part 2!
         if (this.currentStageIndex === 15 && !this.isSuperBossActive) {
           this.isSuperBossActive = true;
-          this.currentEnemy = null; // Clear cached enemy so getEnemyTeam builds Super Boss
+          this.currentEnemy = null;
           const superBossTeam = this.getEnemyTeam();
           this.teamHP = Math.min(100, this.teamHP + 30);
           this.teamShield = this.teamShieldMax;
@@ -1431,20 +1552,44 @@
           };
         }
 
+        // Super Boss was active and player just won it -> TRUE VICTORY!
         if (this.isSuperBossActive) {
           this.isSuperBossActive = false;
+          this.currentEnemy = null;
+          return {
+            won: true,
+            isTrueVictory: true,
+            message: `🏆 ¡CAMPEÓN ABSOLUTO! ¡Derrotaste a la Rotación Suprema de 4 Leyendas! BaseRogue conquistado.`
+          };
         }
 
+        // Boss Maps 1-3: offer a Trait reward before continuing
+        const isTraitBossMap = (this.currentStageIndex === 3 || this.currentStageIndex === 7 || this.currentStageIndex === 11);
         const earnings = isBossStage ? 20 : 5;
-        this.budget += earnings;
-        this.currentEnemy = null; // Reset for next match
+        // Trait: Negociador de Élite — +$10 extra per win
+        const eliteBonus = this.hasTrait('elite_negotiator') ? 10 : 0;
+        this.budget += earnings + eliteBonus;
+        this.currentEnemy = null;
+
+        if (isTraitBossMap) {
+          const traitChoices = this.getRandomTraitChoices(3);
+          return {
+            won: true,
+            isBossStage: true,
+            isTraitReward: true,
+            traitChoices,
+            earnings: earnings + eliteBonus,
+            message: `¡Victoria de Jefe! +$${earnings + eliteBonus}. Elige una Trait Pasiva de Leyenda.`
+          };
+        }
+
         return {
           won: true,
           isBossStage,
-          earnings,
+          earnings: earnings + eliteBonus,
           message: isBossStage 
-            ? `¡Victoria! Derrotaste al JEFE ${currentEnemy.name}. ¡+$${earnings} y recompensa de élite!` 
-            : `¡Victoria! Derrotaste a la rotación de ${currentEnemy.name} en 3 innings. ¡+$${earnings}!`
+            ? `¡Victoria! Derrotaste al JEFE ${currentEnemy.name}. ¡+$${earnings + eliteBonus} y recompensa de élite!` 
+            : `¡Victoria! Derrotaste a la rotación de ${currentEnemy.name} en 3 innings. ¡+$${earnings + eliteBonus}!`
         };
       } else {
         this.runActive = false;
