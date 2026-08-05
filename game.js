@@ -1176,21 +1176,21 @@
       const stage = this.currentStageIndex;
       const isBossStage = (stage === 3 || stage === 7 || stage === 11 || stage === 15);
 
-      // Map 1 (0-3): 0-50 OVR | Map 2 (4-7): 50-60 OVR | Map 3 (8-11): 60-70 OVR | Map 4 (12-15): 70+ OVR
-      let minOvr = 0;
-      let maxOvr = 50;
+      // Map 1 (0-3): 60-73 OVR | Map 2 (4-7): 74-82 OVR | Map 3 (8-11): 83-90 OVR | Map 4 (12-15): 91+ OVR
+      let minOvr = 60;
+      let maxOvr = 73;
 
       if (stage <= 3) {
-        minOvr = 0;
-        maxOvr = 50;
-      } else if (stage <= 7) {
-        minOvr = 50;
-        maxOvr = 60;
-      } else if (stage <= 11) {
         minOvr = 60;
-        maxOvr = 70;
+        maxOvr = 73;
+      } else if (stage <= 7) {
+        minOvr = 74;
+        maxOvr = 82;
+      } else if (stage <= 11) {
+        minOvr = 83;
+        maxOvr = 90;
       } else {
-        minOvr = 70;
+        minOvr = 91;
         maxOvr = 150;
       }
 

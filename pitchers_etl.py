@@ -137,7 +137,8 @@ def normalize_difficulty_adjusted(df, col_raw, col_out, invert=False):
 def asignar_rareza(row):
     hof_b     = 8 if row["is_hof"] else 0
     ast_b     = min(row["allstar_selections"] * 0.5, 6)
-    eff_score = row["ovr"] + hof_b + ast_b
+    raw       = row.get("raw_ovr", row.get("ovr", 50))
+    eff_score = raw + hof_b + ast_b
     for thr, label in RARITY_THRESHOLDS:
         if eff_score >= thr:
             return label
@@ -570,16 +571,36 @@ def paso_11_ovr_rareza(df):
     """
     print("\n  PASO 11: OVR y Rareza...")
     df = df.copy()
-    df["ovr"] = (
+    raw_ovr = (
         df["str_val"] * 0.25 +
         df["ctl_val"] * 0.25 +
         df["grt_val"] * 0.25 +
         df["sta_val"] * 0.15 +
         df["hr_val"]  * 0.05 +
         df["def_val"] * 0.05
-    ).round(1)
+    )
 
+    def map_to_cosmetic_ovr_p(r):
+        if r is None or pd.isna(r):
+            return 60.0
+        val = float(r)
+        if val <= 30.0:
+            res = 50.0 + (val / 30.0) * 10.0
+        elif val <= 45.0:
+            res = 60.0 + ((val - 30.0) / 15.0) * 9.0
+        elif val <= 58.0:
+            res = 70.0 + ((val - 45.0) / 13.0) * 8.0
+        elif val <= 74.0:
+            res = 79.0 + ((val - 58.0) / 16.0) * 8.0
+        elif val <= 85.0:
+            res = 88.0 + ((val - 74.0) / 11.0) * 6.0
+        else:
+            res = 95.0 + min(4.0, ((val - 85.0) / 18.0) * 4.0)
+        return round(res, 1)
+
+    df["raw_ovr"] = raw_ovr
     df["rarity"] = df.apply(asignar_rareza, axis=1)
+    df["ovr"] = df["raw_ovr"].apply(map_to_cosmetic_ovr_p)
 
     for col, gcol in [
         ("str_val", "str_grade"), ("ctl_val", "ctl_grade"),

@@ -782,7 +782,8 @@ def paso_14_velocidad(df):
 def asignar_rareza(row):
     hof_b     = 8 if row["is_hof"] else 0
     ast_b     = min(row["allstar_selections"] * 0.5, 6)
-    eff_score = row["avg_attr_score"] + hof_b + ast_b
+    raw       = row.get("raw_ovr", row.get("avg_attr_score", 50))
+    eff_score = raw + hof_b + ast_b
     for thr, label in RARITY_THRESHOLDS:
         if eff_score >= thr:
             return label
@@ -848,6 +849,25 @@ def map_to_canonical_team(row):
     return "HIST"
 
 
+def map_to_cosmetic_ovr(r):
+    if r is None or pd.isna(r):
+        return 60.0
+    val = float(r)
+    if val <= 30.0:
+        res = 50.0 + (val / 30.0) * 10.0
+    elif val <= 45.0:
+        res = 60.0 + ((val - 30.0) / 15.0) * 9.0
+    elif val <= 58.0:
+        res = 70.0 + ((val - 45.0) / 13.0) * 8.0
+    elif val <= 74.0:
+        res = 79.0 + ((val - 58.0) / 16.0) * 8.0
+    elif val <= 85.0:
+        res = 88.0 + ((val - 74.0) / 11.0) * 6.0
+    else:
+        res = 95.0 + min(4.0, ((val - 85.0) / 18.0) * 4.0)
+    return round(res, 1)
+
+
 def paso_15_equipo_y_exportar(df, batting, teams, franchises):
     """
     Asigna equipo canonico (mayor numero de temporadas), construye el
@@ -885,15 +905,16 @@ def paso_15_equipo_y_exportar(df, batting, teams, franchises):
     df["franchise_name"]   = df["canonical_teamID"]
 
     stat_cols = ["contact_val","power_val","eye_val","speed_val","defense_val"]
-    # 5. Promedio de Atributos Globales (OVR) usando formula 35/30/15/10/10
-    df["avg_attr_score"] = (
+    # 5. Promedio de Atributos Globales (OVR) mapeado a escala MLB The Show (60-99)
+    df["raw_ovr"] = (
         df["contact_val"] * 0.35 +
         df["power_val"]   * 0.30 +
         df["defense_val"] * 0.15 +
         df["eye_val"]     * 0.10 +
         df["speed_val"]   * 0.10
-    ).round(1)
+    )
     df["rarity"]         = df.apply(asignar_rareza, axis=1)
+    df["avg_attr_score"] = df["raw_ovr"].apply(map_to_cosmetic_ovr)
     df["pos_display"]    = df["primary_pos"].map(POS_DISPLAY_MAP).fillna("RF")
 
     for col, gcol in [

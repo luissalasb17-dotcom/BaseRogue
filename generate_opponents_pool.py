@@ -16,11 +16,11 @@ OUT_JS   = BASE_DIR / "opponents_pool.js"
 TIERS = ["F", "D", "C", "B", "A", "S"]
 
 def ovr_to_tier(ovr):
-    if ovr >= 100: return "S"
-    if ovr >= 80:  return "A"
-    if ovr >= 60:  return "B"
-    if ovr >= 40:  return "C"
-    if ovr >= 20:  return "D"
+    if ovr >= 92: return "S"
+    if ovr >= 85: return "A"
+    if ovr >= 78: return "B"
+    if ovr >= 70: return "C"
+    if ovr >= 60: return "D"
     return "F"
 
 def calc_hp(row):
