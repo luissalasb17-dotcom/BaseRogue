@@ -353,28 +353,34 @@
 
       // Accumulate batter stats from events
       for (const ev of simEvents) {
-        if (ev.type !== 'PLAY') continue;
-        const name = ev.batterName;
-        if (!name) continue;
+        if (ev.playType !== 'PLAY' && ev.type !== 'PLAY') continue;
+        const rawName = ev.activeBatter || ev.batterName;
+        if (!rawName) continue;
+        const name = rawName.replace(/\s*\(\d{4}\)$/, '').trim();
+
         if (!this.runBatterStats[name]) {
           this.runBatterStats[name] = { ab: 0, h: 0, bb: 0, so: 0, doubles: 0, triples: 0, hr: 0, rbi: 0 };
         }
         const s = this.runBatterStats[name];
-        if (ev.eventType === 'BB') { s.bb++; }
-        else if (ev.eventType === 'SO') { s.ab++; s.so++; }
-        else if (ev.eventType === 'OUT') { s.ab++; }
-        else if (ev.eventType === '1B') { s.ab++; s.h++; }
-        else if (ev.eventType === '2B') { s.ab++; s.h++; s.doubles++; }
-        else if (ev.eventType === '3B') { s.ab++; s.h++; s.triples++; }
-        else if (ev.eventType === 'HR') { s.ab++; s.h++; s.hr++; }
-        // RBI approximation: runs scored in the play
-        if (ev.runsScored && ev.runsScored > 0) s.rbi += ev.runsScored;
+        const eventType = ev.eventType || ev.type;
+
+        if (eventType === 'BB') { s.bb++; }
+        else if (eventType === 'SO') { s.ab++; s.so++; }
+        else if (eventType === 'OUT') { s.ab++; }
+        else if (eventType === '1B') { s.ab++; s.h++; }
+        else if (eventType === '2B') { s.ab++; s.h++; s.doubles++; }
+        else if (eventType === '3B') { s.ab++; s.h++; s.triples++; }
+        else if (eventType === 'HR') { s.ab++; s.h++; s.hr++; }
+        
+        if (ev.runsThisTurn || ev.runsScored) {
+          s.rbi += (ev.runsThisTurn || ev.runsScored);
+        }
       }
 
       // Accumulate pitcher stats
       if (enemyPitchers && enemyPitchers.length) {
         for (const p of enemyPitchers) {
-          const pName = (p.cleanName || p.name || 'Unknown Pitcher');
+          const pName = (p.cleanName || p.name || 'Unknown Pitcher').replace(/\s*\(\d{4}\)$/, '').trim();
           if (!this.runPitcherStats[pName]) {
             this.runPitcherStats[pName] = { outs: 0, k: 0, bb: 0, h: 0, hr: 0, er: 0 };
           }
@@ -382,21 +388,23 @@
         // Count events against each pitcher from the log
         let currentPitcherIdx = 0;
         for (const ev of simEvents) {
-          if (ev.type === 'KO_PITCHER') { currentPitcherIdx++; continue; }
-          if (ev.type !== 'PLAY') continue;
+          if (ev.playType === 'KO_PITCHER' || ev.type === 'KO_PITCHER') { currentPitcherIdx++; continue; }
+          if (ev.playType !== 'PLAY' && ev.type !== 'PLAY') continue;
           const p = enemyPitchers[currentPitcherIdx];
           if (!p) continue;
-          const pName = (p.cleanName || p.name || 'Unknown Pitcher');
+          const pName = (p.cleanName || p.name || 'Unknown Pitcher').replace(/\s*\(\d{4}\)$/, '').trim();
           if (!this.runPitcherStats[pName]) this.runPitcherStats[pName] = { outs: 0, k: 0, bb: 0, h: 0, hr: 0, er: 0 };
           const ps = this.runPitcherStats[pName];
-          if (ev.eventType === 'SO') { ps.outs++; ps.k++; }
-          else if (ev.eventType === 'OUT') { ps.outs++; }
-          else if (ev.eventType === 'BB') { ps.bb++; }
-          else if (ev.eventType === '1B') { ps.h++; }
-          else if (ev.eventType === '2B') { ps.h++; }
-          else if (ev.eventType === '3B') { ps.h++; }
-          else if (ev.eventType === 'HR') { ps.h++; ps.hr++; }
-          if (ev.runsScored && ev.runsScored > 0) ps.er += ev.runsScored;
+          const eventType = ev.eventType || ev.type;
+
+          if (eventType === 'SO') { ps.outs++; ps.k++; }
+          else if (eventType === 'OUT') { ps.outs++; }
+          else if (eventType === 'BB') { ps.bb++; }
+          else if (eventType === '1B') { ps.h++; }
+          else if (eventType === '2B') { ps.h++; }
+          else if (eventType === '3B') { ps.h++; }
+          else if (eventType === 'HR') { ps.h++; ps.hr++; }
+          if (ev.runsThisTurn || ev.runsScored) ps.er += (ev.runsThisTurn || ev.runsScored);
         }
       }
 
@@ -404,8 +412,11 @@
       const slots = ['C','1B','2B','3B','SS','LF','CF','RF','DH'];
       for (const slot of slots) {
         const p = this.roster[slot];
-        if (p && !this.runRosterHistory[p.name]) {
-          this.runRosterHistory[p.name] = { name: p.name, pos: slot, rarity: p.rarity, era: p.era, ovr: p.avg_attr_score || p.ovr };
+        if (p) {
+          const name = p.name.replace(/\s*\(\d{4}\)$/, '').trim();
+          if (!this.runRosterHistory[name]) {
+            this.runRosterHistory[name] = { name: name, pos: slot, rarity: p.rarity, era: p.era, ovr: p.avg_attr_score || p.ovr };
+          }
         }
       }
     }

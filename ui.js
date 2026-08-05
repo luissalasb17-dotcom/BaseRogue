@@ -3502,8 +3502,12 @@ function initGameModeSelector() {
     let safety = 0;
     while (!activeBattle.battleOver && safety++ < 500) {
       const roll = Math.floor(Math.random() * 100) + 1;
-      const ev = activeBattle.rollDice(roll);
-      if (ev) appendLogLine(ev);
+      const evs = activeBattle.rollDice(roll);
+      if (evs && Array.isArray(evs)) {
+        evs.forEach(ev => appendLogLine(ev));
+      } else if (evs) {
+        appendLogLine(evs);
+      }
     }
 
     const finalState = activeBattle.getState();
