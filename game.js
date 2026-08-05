@@ -1004,7 +1004,7 @@
         if (p) {
           ovr = p.ovr !== undefined
             ? p.ovr
-            : Math.round((p.con || 40) * 0.35 + (p.pwr || 35) * 0.30 + (p.spd || 45) * 0.10 + (p.def || 40) * 0.15 + (p.eye || 40) * 0.10);
+            : (p.avg_attr_score !== undefined ? p.avg_attr_score : Math.round((p.con || 40) * 0.35 + (p.pwr || 35) * 0.30 + (p.spd || 45) * 0.10 + (p.def || 40) * 0.15 + (p.eye || 40) * 0.10));
         }
         return { pos, ovr };
       });

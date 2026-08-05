@@ -452,7 +452,7 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
         slotRow.id = `draft-slot-${slot}`;
 
         if (player) {
-          const ovr = player.ovr !== undefined ? Math.round(player.ovr) : Math.round((player.con||player.contact_val||40)*.3+(player.pwr||player.power_val||35)*.3+(player.spd||player.speed_val||45)*.15+(player.def||player.defense_val||40)*.15+(player.eye||player.eye_val||40)*.1);
+          const ovr = getPlayerOvr(player);
           const isNative = player.pos === slot;
           const secArr = player.sec_pos ? player.sec_pos.split(',').map(s=>s.trim()) : [];
           const isSec   = secArr.includes(slot);
@@ -528,7 +528,7 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
       picks.forEach(player => {
         const rColor = RARITY_COLORS[player.rarity] || RARITY_COLORS.Common;
         const rBg    = RARITY_BG[player.rarity]    || RARITY_BG.Common;
-        const ovr    = player.ovr !== undefined ? Math.round(player.ovr) : Math.round((player.con||player.contact_val||40)*.3+(player.pwr||player.power_val||35)*.3+(player.spd||player.speed_val||45)*.15+(player.def||player.defense_val||40)*.15+(player.eye||player.eye_val||40)*.1);
+        const ovr    = getPlayerOvr(player);
         const cardHTML = createCardHTML(player);
 
         const wrapper = document.createElement('div');
@@ -754,7 +754,7 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
         ].join(';');
 
         if (player) {
-          const ovr = Math.round((player.con||40)*.35+(player.pwr||35)*.3+(player.spd||45)*.10+(player.def||40)*.15+(player.eye||40)*.1);
+          const ovr = getPlayerOvr(player);
           const isNative = player.pos === slot;
           const secArr = player.sec_pos ? player.sec_pos.split(',').map(s=>s.trim()) : [];
           const isSec   = secArr.includes(slot);
@@ -901,7 +901,7 @@ function renderConfirmationBattingRows() {
           });
 
           if (player) {
-            const ovr = Math.round((player.con||40)*.35+(player.pwr||35)*.3+(player.spd||45)*.10+(player.def||40)*.15+(player.eye||40)*.1);
+            const ovr = getPlayerOvr(player);
             row.innerHTML = `
               <span style="font-family:'Press Start 2P',monospace;font-size:8px;color:#f59e0b;min-width:16px;">${idx+1}</span>
               <span style="font-size:9px;color:#94a3b8;min-width:24px;">${slot}</span>
@@ -1130,30 +1130,62 @@ function initGameModeSelector() {
     }
   }
 
+  function getPlayerOvr(p) {
+    if (!p) return 60;
+    if (p.ovr !== undefined) return Math.round(p.ovr);
+    if (p.avg_attr_score !== undefined) return Math.round(p.avg_attr_score);
+    if (p._ovr !== undefined) return Math.round(p._ovr);
+    const isPitcher = p.pos === 'P' || p.pos === 'SP' || p.pos === 'RP' || p.role === 'P' || p.role === 'SP' || p.role === 'RP';
+    if (isPitcher) {
+      const stf = p.stf !== undefined ? p.stf : (p.str !== undefined ? p.str : (p.str_val !== undefined ? p.str_val : 50));
+      const ctl = p.ctl !== undefined ? p.ctl : (p.ctl_val !== undefined ? p.ctl_val : 50);
+      const mov = p.mov !== undefined ? p.mov : (p.grt !== undefined ? p.grt : (p.grt_val !== undefined ? p.grt_val : 50));
+      const sta = p.sta !== undefined ? p.sta : (p.sta_val !== undefined ? p.sta_val : 50);
+      return Math.round(stf * 0.30 + ctl * 0.30 + mov * 0.30 + sta * 0.10);
+    }
+    const con = p.con !== undefined ? p.con : (p.contact_val !== undefined ? p.contact_val : 50);
+    const pwr = p.pwr !== undefined ? p.pwr : (p.power_val !== undefined ? p.power_val : 50);
+    const eye = p.eye !== undefined ? p.eye : (p.eye_val !== undefined ? p.eye_val : 50);
+    const spd = p.spd !== undefined ? p.spd : (p.speed_val !== undefined ? p.speed_val : 50);
+    const def = p.def !== undefined ? p.def : (p.defense_val !== undefined ? p.defense_val : 50);
+    const raw = con * 0.35 + pwr * 0.30 + def * 0.15 + eye * 0.10 + spd * 0.10;
+    if (raw <= 30) return Math.round(50 + (raw / 30) * 10);
+    if (raw <= 45) return Math.round(60 + ((raw - 30) / 15) * 9);
+    if (raw <= 58) return Math.round(70 + ((raw - 45) / 13) * 8);
+    if (raw <= 74) return Math.round(79 + ((raw - 58) / 16) * 8);
+    if (raw <= 85) return Math.round(88 + ((raw - 74) / 11) * 6);
+    return Math.round(95 + Math.min(4, ((raw - 85) / 18) * 4));
+  }
+
   function getStatGrade(val) {
     let letter = "F";
     let color = "#ef4444";
     let modifier = "";
 
-    if (val >= 100) {
+    if (val >= 95) {
       letter = "S"; color = "#ffd700";
       modifier = "";
+    } else if (val >= 88) {
+      letter = "A"; color = "#22d3ee";
+      modifier = "+";
     } else if (val >= 80) {
       letter = "A"; color = "#22d3ee";
-      if (val >= 95) modifier = "+";
-      else if (val < 85) modifier = "-";
-    } else if (val >= 60) {
+      modifier = "";
+    } else if (val >= 75) {
       letter = "B"; color = "#4ade80";
-      if (val >= 75) modifier = "+";
-      else if (val < 65) modifier = "-";
-    } else if (val >= 40) {
+      modifier = "+";
+    } else if (val >= 70) {
+      letter = "B"; color = "#4ade80";
+      modifier = "";
+    } else if (val >= 65) {
       letter = "C"; color = "#94a3b8";
-      if (val >= 55) modifier = "+";
-      else if (val < 45) modifier = "-";
-    } else if (val >= 20) {
+      modifier = "+";
+    } else if (val >= 60) {
+      letter = "C"; color = "#94a3b8";
+      modifier = "";
+    } else if (val >= 50) {
       letter = "D"; color = "#f97316";
-      if (val >= 35) modifier = "+";
-      else if (val < 25) modifier = "-";
+      modifier = "";
     } else {
       letter = "F"; color = "#ef4444";
       modifier = "";
@@ -1240,17 +1272,19 @@ function initGameModeSelector() {
 
     const ovr = player.ovr !== undefined
       ? Math.round(player.ovr)
-      : (isPitcher
-          ? Math.round(stfForOvr*0.30 + ctlForOvr*0.30 + movForOvr*0.30 + staForOvr*0.10)
-          : Math.round((player.con || 40)*0.35 + (player.pwr || 35)*0.30 + (player.spd || 45)*0.10 + (player.def || 40)*0.15 + (player.eye || 40)*0.10));
+      : (player.avg_attr_score !== undefined
+          ? Math.round(player.avg_attr_score)
+          : (isPitcher
+              ? Math.round(stfForOvr*0.30 + ctlForOvr*0.30 + movForOvr*0.30 + staForOvr*0.10)
+              : Math.round((player.con || player.contact_val || 40)*0.35 + (player.pwr || player.power_val || 35)*0.30 + (player.spd || player.speed_val || 45)*0.10 + (player.def || player.defense_val || 40)*0.15 + (player.eye || player.eye_val || 40)*0.10)));
 
     // Rarity styles
     let derivedRarity = player.rarity;
     if (!derivedRarity) {
-      if (ovr >= 90) derivedRarity = "Legendary";
-      else if (ovr >= 80) derivedRarity = "Epic";
-      else if (ovr >= 65) derivedRarity = "Rare";
-      else if (ovr >= 50) derivedRarity = "Uncommon";
+      if (ovr >= 95) derivedRarity = "Legendary";
+      else if (ovr >= 88) derivedRarity = "Epic";
+      else if (ovr >= 79) derivedRarity = "Rare";
+      else if (ovr >= 70) derivedRarity = "Uncommon";
       else derivedRarity = "Common";
     }
     const rarityLabel = derivedRarity;
@@ -1864,7 +1898,7 @@ function initGameModeSelector() {
         nameSpan.title = `${effectivePlayer.name} (${effectivePlayer.era})`;
         
         // OVR Badge
-        const ovr = Math.round((effectivePlayer.con||40)*0.35 + (effectivePlayer.pwr||35)*0.30 + (effectivePlayer.spd||45)*0.10 + (effectivePlayer.def||40)*0.15 + (effectivePlayer.eye||40)*0.10);
+        const ovr = getPlayerOvr(effectivePlayer);
         const ovrGrade = getStatGrade(ovr);
         const ovrBadge = document.createElement('span');
         ovrBadge.className = "ovr-badge";
@@ -1912,7 +1946,7 @@ function initGameModeSelector() {
     const isDraft = (slot === 'draft');
     const effectivePlayer = window.Game.getEffectiveStats(player, isDraft ? null : slot);
 
-    const ovr = Math.round((effectivePlayer.con||40)*0.35 + (effectivePlayer.pwr||35)*0.30 + (effectivePlayer.spd||45)*0.10 + (effectivePlayer.def||40)*0.15 + (effectivePlayer.eye||40)*0.10);
+    const ovr = getPlayerOvr(effectivePlayer);
     const ovrGrade = getStatGrade(ovr);
 
     const statBar = (label, statKey, color) => {
