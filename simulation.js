@@ -92,7 +92,18 @@
     // Subdivide Regular Hits into 1B, 2B, 3B
     let extraBasePower = Math.max(0, (effPwr - pMov) * 0.003); 
     let doubleWeight = 0.15 + (effSpd * 0.001) + (extraBasePower * 0.5);
-    let tripleWeight = 0.02 + (effSpd * 0.002);
+    
+    // Gated Triple Weight Curve by Speed (SPD):
+    // - SPD < 40 (Slow sluggers e.g. David Ortiz, Frank Thomas): ~0.1% triple weight (almost 0)
+    // - SPD 40-69 (Average runners): 0.5% - 2.0% triple weight
+    // - SPD >= 70 (Fast runners e.g. Ichiro, Rickey): 2.0% - 7.5% triple weight
+    let tripleWeight = 0.001;
+    if (effSpd >= 70) {
+      tripleWeight = 0.020 + (effSpd - 70) * 0.0018;
+    } else if (effSpd >= 40) {
+      tripleWeight = 0.005 + (effSpd - 40) * 0.0005;
+    }
+
     let singleWeight = Math.max(0.10, 1.0 - doubleWeight - tripleWeight);
     
     // Normalize weights inside regular hits
@@ -129,15 +140,20 @@
    */
   function determineHitType(batter, pitcher) {
     const effPwr = batter.pwr || 50;
+    const effSpd = batter.spd || 50;
     const pStf   = pitcher.stf || 50;
 
     let pHR = 0.05 + (effPwr - pStf) * 0.002;
     pHR = Math.max(0.02, Math.min(0.20, pHR));
 
+    let p3B = 0.001;
+    if (effSpd >= 70) p3B = 0.02 + (effSpd - 70) * 0.0018;
+    else if (effSpd >= 40) p3B = 0.005 + (effSpd - 40) * 0.0005;
+
     const r = Math.random();
     if (r < pHR)              return 'HR';
-    if (r < pHR + 0.07)       return '3B';
-    if (r < pHR + 0.07 + 0.22) return '2B';
+    if (r < pHR + p3B)        return '3B';
+    if (r < pHR + p3B + 0.25) return '2B';
     return '1B';
   }
 
