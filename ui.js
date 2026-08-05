@@ -1792,20 +1792,22 @@ function initGameModeSelector() {
     });
 
     // Restart game click - restarts run with same mode and season configuration
-    el.btnRestartGame.addEventListener('click', () => {
-      const mode = window.Game.selectedMode;
-      const seasonYear = window.Game.selectedSeasonYear;
+    if (el.btnRestartGame) {
+      el.btnRestartGame.addEventListener('click', () => {
+        const mode = window.Game.selectedMode;
+        const seasonYear = window.Game.selectedSeasonYear;
 
-      window.Game.resetRun();
+        window.Game.resetRun();
 
-      if (mode === 'story' && seasonYear) {
-        window.Game.loadSeasonOpponents(seasonYear);
-      }
+        if (mode === 'story' && seasonYear) {
+          window.Game.loadSeasonOpponents(seasonYear);
+        }
 
-      el.hud.classList.add('hidden');
-      window.showScreen('screen-draft');
-      if (window.renderDraftRound) window.renderDraftRound(); else if (typeof renderDraftRound === 'function') renderDraftRound();
-    });
+        el.hud.classList.add('hidden');
+        window.showScreen('screen-draft');
+        if (window.renderDraftRound) window.renderDraftRound(); else if (typeof renderDraftRound === 'function') renderDraftRound();
+      });
+    }
 
     // Pre-Fight Screen triggers
     el.btnPreFightStart.addEventListener('click', () => {
