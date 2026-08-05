@@ -660,13 +660,16 @@ def paso_11_motor_defensivo(df, war_bat, awards):
     print(f"  Motor avanzado: {n_war:,}  |  Proxy Lahman: {n_proxy:,}")
 
     has_war = df["rfield_career"].notna()
-    # Formula centrada en 50.0: 50.0 + 1.0 * Rfield + 2.0 * dWAR (0 Rfield = 50 DEF exactos)
-    def_centered = 50.0 + 1.0 * df["rfield_career"].fillna(0) + 2.0 * df["wardef_career"].fillna(0)
+    df["defense_base"] = np.where(
+        has_war,
+        W_RFIELD * df["rfield_career"].fillna(0) + W_WARDEF * (df["wardef_career"].fillna(0) * 10),
+        np.nan
+    )
     fp    = df["fielding_pct"].fillna(0.96)
     rf    = (df["range_factor"].fillna(2.0) / 6.0).clip(0, 1)
-    proxy = 50.0 + 15.0 * (fp - 0.96) / 0.04 + 10.0 * (rf - 0.5)
-    df["defense_val_base"] = np.where(has_war, def_centered, proxy).clip(1.0, 125.0).round(1)
-    df["defense_source"]   = np.where(has_war, "bbref_war", "lahman_proxy")
+    proxy = W_RFIELD * fp + W_WARDEF * rf
+    df["defense_base"]   = df["defense_base"].fillna(proxy)
+    df["defense_source"] = np.where(has_war, "bbref_war", "lahman_proxy")
 
     if not awards.empty and "awardID" in awards.columns:
         gg       = awards[awards["awardID"] == "Gold Glove"]
@@ -685,30 +688,32 @@ def paso_11_motor_defensivo(df, war_bat, awards):
 # ===========================================================================
 def paso_12_normalizar_por_era(df):
     """
-    Normaliza atributos ofensivos RAW usando el ajuste por dificultad de Era (estilo OPS+).
-    (La Defensa ya viene centrada exactamente en 50.0 para 0 Runs Saved).
+    Normaliza todos los atributos RAW usando el ajuste por dificultad de Era (estilo OPS+)
+    y luego normaliza globalmente en escala 1-99.
     """
-    print("\n  PASO 12: Normalizando por Era (OPS+ Dificultad)...")
+    print("\n  PASO 12: Normalizando por Era (OPS+ Dificultad) (percentil 2-98, escala 1-99)...")
     for raw, out in [
         ("contact_raw",  "contact_val"),
         ("power_raw",    "power_val"),
         ("eye_raw",      "eye_val"),
+        ("defense_base",  "defense_val_base"),
     ]:
         df = normalize_difficulty_adjusted(df, raw, out)
-    print("  contact_val, power_val, eye_val normalizados con ajuste OPS+")
+    print("  contact_val, power_val, eye_val, defense_val_base normalizados con ajuste OPS+")
     return df
 
 
 # ===========================================================================
-# PASO 13 - BONO DE GUANTE DE ORO (post-centrado 50.0)
+# PASO 13 - BONO DE GUANTE DE ORO (post-normalizacion)
 # ===========================================================================
 def paso_13_bono_guante_de_oro(df):
     """
-    defense_val = clip(defense_val_base + gold_gloves * 2.0, 1, 125)
+    defense_val = clip(defense_val_base + gold_gloves * GG_BONUS_PER_AWARD, 1, 99)
+    Bono maximo = GG_BONUS_MAX = 6 puntos sobre escala 1-99.
     """
-    print("\n  PASO 13: Bono de Guante de Oro...")
+    print("\n  PASO 13: Bono de Guante de Oro (post-normalizacion)...")
     df = df.copy()
-    gg_bonus = (df["gold_gloves"] * 2.0).clip(0, 12.0)
+    gg_bonus = (df["gold_gloves"] * GG_BONUS_PER_AWARD).clip(0, GG_BONUS_MAX)
     df["gg_bonus"]    = gg_bonus
     df["defense_val"] = (df["defense_val_base"] + gg_bonus).clip(1, 125).round(1)
     top_gg = df[df["gold_gloves"] > 0].nlargest(5, "gold_gloves")[

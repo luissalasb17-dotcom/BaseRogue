@@ -557,8 +557,7 @@ def paso_10_normalizar_por_era(df):
     # GRT/MOV: Centrado en 50 con escala ERA+ (100 ERA+ = 50 MOV)
     df["grt_val"] = (50.0 + (df["peak_era_plus"].fillna(100.0) - 100.0) * 0.65).clip(1.0, 125.0).round(1)
 
-    # DEF: Centrado en 50 (0 RS_def = 50 DEF exactos)
-    df["def_val"] = (50.0 + df["def_raw"] * 2.0).clip(1.0, 125.0).round(1)
+    df = normalize_difficulty_adjusted(df, "def_raw", "def_val", invert=False)   # mas RS_def = mejor
 
     print("  str_val, ctl_val, hr_val, sta_val, grt_val, def_val normalizados")
     return df
