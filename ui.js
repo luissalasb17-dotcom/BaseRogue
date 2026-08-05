@@ -4002,7 +4002,7 @@ function initGameModeSelector() {
       return;
     }
     if (res.isSuperBossTrigger) {
-      showSuperBossIntroModal(() => startInteractiveMatch());
+      showSuperBossIntroModal(() => setupAndStartMatchSimulation());
       return;
     }
     if (res.isTraitReward && res.traitChoices) {
