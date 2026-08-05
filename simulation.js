@@ -402,7 +402,7 @@
         eventType = 'OUT';
         this.outs++;
         this.strikeoutChain = 0;
-        const outDmg = 10;
+        const outDmg = 12;
         if (this.teamShield > 0) {
           shieldDmg = Math.min(this.teamShield, outDmg);
           this.teamShield -= shieldDmg;

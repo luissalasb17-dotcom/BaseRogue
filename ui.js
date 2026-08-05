@@ -1269,7 +1269,7 @@ function initGameModeSelector() {
       "Modern Era (2016-Pres)": "era-modern"
     };
 
-    let year = player.year || player.peak_year_display || player.peak_year || "";
+    let year = player.year || player._year || player.peak_year_display || player.peak_year || "";
     let cleanName = player.name || "";
     const yearInNameMatch = cleanName.match(/\s*\((\d{4})\)$/);
     if (yearInNameMatch) {
@@ -1278,7 +1278,7 @@ function initGameModeSelector() {
     }
     
     // Dynamically resolve player era if missing or unmapped
-    let resolvedEra = player.era;
+    let resolvedEra = player.era || player._era;
     if (!resolvedEra || !eraClassMap[resolvedEra]) {
       const y = parseInt(year || 2020, 10);
       if (y <= 1900) resolvedEra = "The Genesis Era (1871-1900)";
