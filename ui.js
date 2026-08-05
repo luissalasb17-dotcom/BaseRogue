@@ -1162,6 +1162,38 @@ function initGameModeSelector() {
     let color = "#ef4444";
     let modifier = "";
 
+    if (val >= 100) {
+      letter = "S"; color = "#ffd700";
+      modifier = "";
+    } else if (val >= 80) {
+      letter = "A"; color = "#22d3ee";
+      if (val >= 95) modifier = "+";
+      else if (val < 85) modifier = "-";
+    } else if (val >= 60) {
+      letter = "B"; color = "#4ade80";
+      if (val >= 75) modifier = "+";
+      else if (val < 65) modifier = "-";
+    } else if (val >= 40) {
+      letter = "C"; color = "#94a3b8";
+      if (val >= 55) modifier = "+";
+      else if (val < 45) modifier = "-";
+    } else if (val >= 20) {
+      letter = "D"; color = "#f97316";
+      if (val >= 35) modifier = "+";
+      else if (val < 25) modifier = "-";
+    } else {
+      letter = "F"; color = "#ef4444";
+      modifier = "";
+    }
+
+    return { text: letter + modifier, color: color };
+  }
+
+  function getClassGrade(val) {
+    let letter = "F";
+    let color = "#ef4444";
+    let modifier = "";
+
     if (val >= 95) {
       letter = "S"; color = "#ffd700";
       modifier = "";
@@ -1290,8 +1322,8 @@ function initGameModeSelector() {
     const rarityLabel = derivedRarity;
 
 
-    // Get Rating letter grade
-    const ovrGrade = getStatGrade(ovr);
+    // Get Rating letter grade for card class header
+    const ovrGrade = getClassGrade(ovr);
 
     // Format stats values
     let statLines = "";
@@ -1899,7 +1931,7 @@ function initGameModeSelector() {
         
         // OVR Badge
         const ovr = getPlayerOvr(effectivePlayer);
-        const ovrGrade = getStatGrade(ovr);
+        const ovrGrade = getClassGrade(ovr);
         const ovrBadge = document.createElement('span');
         ovrBadge.className = "ovr-badge";
         ovrBadge.style.cssText = `background: ${ovrGrade.color}; color: #000; margin-left: auto; flex-shrink: 0;`;
@@ -1947,7 +1979,7 @@ function initGameModeSelector() {
     const effectivePlayer = window.Game.getEffectiveStats(player, isDraft ? null : slot);
 
     const ovr = getPlayerOvr(effectivePlayer);
-    const ovrGrade = getStatGrade(ovr);
+    const ovrGrade = getClassGrade(ovr);
 
     const statBar = (label, statKey, color) => {
       const baseVal = player[statKey] || 0;
