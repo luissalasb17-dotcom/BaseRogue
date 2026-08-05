@@ -165,8 +165,14 @@ def main():
         js_lines.append(f'    pitchers: [')
         for p in entry["pitchers"]:
             p_name = p["name"].replace('"', "'")
+            p_year = p.get("year", p.get("_year", 1990))
+            p_era  = p.get("era", p.get("_era", ""))
+            p_rarity = p.get("rarity", p.get("_rarity", "Common"))
+            p_team = p.get("team", p.get("_team", "OAK"))
+            p_ovr  = p.get("ovr", p.get("_ovr", 50.0))
             js_lines.append(
-                f'      {{ name: "{p_name}", role: "{p["role"]}", '
+                f'      {{ name: "{p_name}", role: "{p["role"]}", pos: "{p["role"]}", '
+                f'year: {p_year}, era: "{p_era}", rarity: "{p_rarity}", team: "{p_team}", ovr: {p_ovr:.1f}, '
                 f'hp: {p["hp"]}, maxHp: {p["maxHp"]}, '
                 f'stf: {p["stf"]}, ctl: {p["ctl"]}, mov: {p["mov"]}, sta: {p["sta"]} }},'
             )
