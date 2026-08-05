@@ -397,24 +397,36 @@ def paso_5_filtro_ingesta(career, peak, allstar, hof, pure_pitcher_ids, pitching
     df = df.merge(peak, on="playerID", how="inner")
     print(f"  Pitchers puros con datos de pico: {len(df):,}")
 
-    # Filtro de ingesta
-    mask = (
-        (df["career_gs"] >= MIN_GS_CAREER) |
-        (df["career_g"]  >= MIN_G_CAREER)  |
-        df["playerID"].isin(allstar_ids)   |
-        df["playerID"].isin(hof_ids)
-    )
-    eligible = df[mask].copy()
-
-    eligible["is_allstar"] = eligible["playerID"].isin(allstar_ids)
-    eligible["is_hof"]     = eligible["playerID"].isin(hof_ids)
+    df["is_allstar"] = df["playerID"].isin(allstar_ids)
+    df["is_hof"]     = df["playerID"].isin(hof_ids)
 
     if not allstar.empty:
         as_count = allstar.groupby("playerID").size().reset_index(name="allstar_selections")
-        eligible = eligible.merge(as_count, on="playerID", how="left")
+        df = df.merge(as_count, on="playerID", how="left")
     else:
-        eligible["allstar_selections"] = 0
-    eligible["allstar_selections"] = eligible["allstar_selections"].fillna(0).astype(int)
+        df["allstar_selections"] = 0
+    df["allstar_selections"] = df["allstar_selections"].fillna(0).astype(int)
+
+    # Marcar tipo de pitcher (SP = starter, RP = reliever)
+    df["role"] = np.where(
+        (df["career_g"] > 0) & (df["career_gs"] / df["career_g"].replace(0, 1) >= 0.40) | (df["career_gs"] >= 50),
+        "SP", "RP"
+    )
+
+    # Criterio de Ingesta del Usuario:
+    # SP: GS >= 150 OR WAR >= 15.0 OR All-Star OR HoF
+    # RP: G >= 300 OR WAR >= 7.0 OR All-Star OR HoF
+    def is_eligible(r):
+        if r["is_allstar"] or r["is_hof"]:
+            return True
+        war_val = r.get("peak_war", 0) if pd.notna(r.get("peak_war")) else 0
+        if r["role"] == "SP":
+            return (r["career_gs"] >= 150) or (war_val >= 15.0)
+        else:
+            return (r["career_g"] >= 300) or (war_val >= 7.0)
+
+    mask = df.apply(is_eligible, axis=1)
+    eligible = df[mask].copy()
 
     # Filtro adicional estricto para Ligas Negras: HoF, 2+ Allstars, 35+ GS (SP), o 60+ G (RP)
     nl_leagues = {'NN1', 'NN2', 'ECL', 'NSL', 'NAL', 'AA', 'ANL'}
@@ -424,11 +436,6 @@ def paso_5_filtro_ingesta(career, peak, allstar, hof, pure_pitcher_ids, pitching
         nl_keep = (eligible['is_hof']) | (eligible['allstar_selections'] >= 2) | (eligible['career_gs'] >= 35) | (eligible['career_g'] >= 60)
         eligible = eligible[~nl_mask | nl_keep].copy()
 
-    # Marcar tipo de pitcher (SP = starter, RP = reliever)
-    eligible["role"] = np.where(
-        eligible["career_gs"] / eligible["career_g"].replace(0, 1) >= 0.40,
-        "SP", "RP"
-    )
     print(f"  Elegibles: {len(eligible):,}  (SP: {(eligible['role']=='SP').sum():,} | RP: {(eligible['role']=='RP').sum():,})")
     return eligible
 

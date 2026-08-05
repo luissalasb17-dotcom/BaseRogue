@@ -291,7 +291,6 @@
         }
 
         pitcherDmg = this._applyDebuffToPitcherDmg(pitcherDmg);
-        this._damagePitcher(pitcherDmg);
         
         let batterPlayText = `🎲 [${roll}] [BASE POR BOLAS] ${batter.name} trabaja el conteo y saca pasaporte.` +
           (runsThisTurn ? ` ¡Carrera de caballito! ` : ` Avanza a primera. `) +
@@ -344,7 +343,6 @@
             spdMsg += ` (+${stealHeal} Stamina)`;
           }
           if (extraStealDmg > 0) {
-            this._damagePitcher(extraStealDmg);
             pitcherDmg += extraStealDmg;
             spdMsg += ` (+${extraStealDmg} daño extra al lanzador)`;
           }
@@ -395,7 +393,6 @@
           synergyProc = (synergyProc ? synergyProc + ' | ' : '') + `🔋 Five-Tool: ¡OUT recupera +5 de Stamina a todos!`;
         }
         if (batterEra === 'Efficiency (2006-2015)' && eraSynergy === 2) {
-          this._damagePitcher(10);
           pitcherDmg += 10;
           synergyProc = (synergyProc ? synergyProc + ' | ' : '') + `📊 Moneyball Out Wear: +10 daño al lanzador.`;
         }
@@ -442,7 +439,6 @@
           synergyProc = (synergyProc ? synergyProc + ' | ' : '') + `🔋 Five-Tool: ¡OUT recupera +5 de Stamina a todos!`;
         }
         if (batterEra === 'Efficiency (2006-2015)' && eraSynergy === 2) {
-          this._damagePitcher(10);
           pitcherDmg += 10;
           synergyProc = (synergyProc ? synergyProc + ' | ' : '') + `📊 Moneyball Out Wear: +10 daño al lanzador.`;
         }
