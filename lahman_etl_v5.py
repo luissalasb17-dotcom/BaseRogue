@@ -401,53 +401,93 @@ def paso_5_hibrido(career, peak):
 # ===========================================================================
 def paso_6_posicion_bateadores(fielding, fielding_of, appearances=None, pico_df=None):
     """
-    Posicion primaria basada exclusivamente en las temporadas pico del jugador por WAR.
+    - Posicion primaria (pos): determinada por las temporadas PICO del jugador por WAR.
+    - Posiciones secundarias (sec_pos): determinadas a lo largo de toda su CARRERA (G >= 75).
     """
-    print("\n  PASO 6: Posicion primaria de bateadores basada en sus mejores temporadas (Pico WAR)...")
+    print("\n  PASO 6: Posicion primaria (Pico WAR) y posiciones secundarias (Carrera G >= 75)...")
 
-    # Filtrar apariciones y fielding a las mejores temporadas por WAR
+    # Guardar copias completas de la carrera para las secundarias
+    career_app = appearances.copy() if appearances is not None else None
+    career_f = fielding.copy() if not fielding.empty else None
+
+    # Filtrar a temporadas PICO para determinar la POSICION PRIMARIA
+    peak_app = appearances.copy() if appearances is not None else None
+    peak_f = fielding.copy() if not fielding.empty else None
     if pico_df is not None and not pico_df.empty:
         peak_years = pico_df[['playerID', 'yearID']].drop_duplicates()
-        if appearances is not None and not appearances.empty:
-            appearances = appearances.merge(peak_years, on=['playerID', 'yearID'], how='inner')
-        if not fielding.empty:
-            fielding = fielding.merge(peak_years, on=['playerID', 'yearID'], how='inner')
+        if peak_app is not None and not peak_app.empty:
+            peak_app = peak_app.merge(peak_years, on=['playerID', 'yearID'], how='inner')
+        if peak_f is not None and not peak_f.empty:
+            peak_f = peak_f.merge(peak_years, on=['playerID', 'yearID'], how='inner')
 
-    pos_games = pd.DataFrame()
-    if not fielding.empty:
-        field = fielding[fielding["POS"] != "P"].copy()
-        for col in ["G","PO","A","E"]:
-            if col in field.columns:
-                field[col] = pd.to_numeric(field[col], errors="coerce").fillna(0)
-        pos_games = field.groupby(["playerID","POS"])["G"].sum().reset_index()
-
-    # Si Appearances.csv esta disponible, lo usamos como fuente primaria y rigurosa para desglosar todas las posiciones
-    if appearances is not None and not appearances.empty:
-        print("  [INFO] Usando Appearances.csv para desglose riguroso de posiciones y splits de OF...")
+    # 1. Determinar POSICION PRIMARIA usando PEAK SEASONS
+    pos_games_peak = pd.DataFrame()
+    if peak_app is not None and not peak_app.empty:
         pos_cols = {'G_c': 'C', 'G_1b': '1B', 'G_2b': '2B', 'G_3b': '3B', 'G_ss': 'SS', 'G_lf': 'LF', 'G_cf': 'CF', 'G_rf': 'RF', 'G_dh': 'DH'}
         melted = []
         for col, pos in pos_cols.items():
-            if col in appearances.columns:
-                sub = appearances[['playerID', col]].dropna()
+            if col in peak_app.columns:
+                sub = peak_app[['playerID', col]].dropna()
                 sub[col] = pd.to_numeric(sub[col], errors="coerce").fillna(0)
                 sub = sub[sub[col] > 0].rename(columns={col: 'G'})
                 sub['POS'] = pos
                 melted.append(sub)
         if melted:
             pos_games_app = pd.concat(melted, ignore_index=True)
-            pos_games = pos_games_app.groupby(['playerID', 'POS'])['G'].sum().reset_index()
+            pos_games_peak = pos_games_app.groupby(['playerID', 'POS'])['G'].sum().reset_index()
 
-    if pos_games.empty:
+    if pos_games_peak.empty and peak_f is not None and not peak_f.empty:
+        field = peak_f[peak_f["POS"] != "P"].copy()
+        for col in ["G","PO","A","E"]:
+            if col in field.columns:
+                field[col] = pd.to_numeric(field[col], errors="coerce").fillna(0)
+        pos_games_peak = field.groupby(["playerID","POS"])["G"].sum().reset_index()
+
+    if pos_games_peak.empty:
         return pd.DataFrame(columns=["playerID","primary_pos","primary_g","fielding_pct","range_factor","sec_pos"])
 
     primary = (
-        pos_games.sort_values("G", ascending=False)
-                 .drop_duplicates(subset="playerID")
-                 .rename(columns={"POS":"primary_pos","G":"primary_g"})
+        pos_games_peak.sort_values("G", ascending=False)
+                      .drop_duplicates(subset="playerID")
+                      .rename(columns={"POS":"primary_pos","G":"primary_g"})
     )
 
+    # 2. Determinar POSICIONES SECUNDARIAS usando CARRERA COMPLETA (G >= 75)
+    pos_games_career = pd.DataFrame()
+    if career_app is not None and not career_app.empty:
+        pos_cols = {'G_c': 'C', 'G_1b': '1B', 'G_2b': '2B', 'G_3b': '3B', 'G_ss': 'SS', 'G_lf': 'LF', 'G_cf': 'CF', 'G_rf': 'RF', 'G_dh': 'DH'}
+        melted = []
+        for col, pos in pos_cols.items():
+            if col in career_app.columns:
+                sub = career_app[['playerID', col]].dropna()
+                sub[col] = pd.to_numeric(sub[col], errors="coerce").fillna(0)
+                sub = sub[sub[col] > 0].rename(columns={col: 'G'})
+                sub['POS'] = pos
+                melted.append(sub)
+        if melted:
+            pos_games_app = pd.concat(melted, ignore_index=True)
+            pos_games_career = pos_games_app.groupby(['playerID', 'POS'])['G'].sum().reset_index()
+
+    if pos_games_career.empty and career_f is not None and not career_f.empty:
+        field = career_f[career_f["POS"] != "P"].copy()
+        for col in ["G","PO","A","E"]:
+            if col in field.columns:
+                field[col] = pd.to_numeric(field[col], errors="coerce").fillna(0)
+        pos_games_career = field.groupby(["playerID","POS"])["G"].sum().reset_index()
+
+    sec_df = pos_games_career.merge(primary[["playerID", "primary_pos"]], on="playerID", how="left")
+    sec_df["pos_mapped"] = sec_df["POS"].map(POS_DISPLAY_MAP).fillna(sec_df["POS"])
+    
+    sec_df = sec_df[(sec_df["pos_mapped"] != sec_df["primary_pos"]) & (sec_df["pos_mapped"] != "DH") & (sec_df["pos_mapped"] != "OF")]
+    sec_pos_grouped = sec_df.groupby(["playerID", "pos_mapped"])["G"].sum().reset_index()
+    sec_pos_grouped = sec_pos_grouped[sec_pos_grouped["G"] >= 75]
+    
+    sec_pos_str = sec_pos_grouped.groupby("playerID")["pos_mapped"].apply(
+        lambda x: ",".join(sorted(list(set(x))))
+    ).reset_index().rename(columns={"pos_mapped": "sec_pos"})
+
     career_field = pd.DataFrame(columns=["playerID", "fielding_pct", "range_factor"])
-    if not fielding.empty:
+    if fielding is not None and not fielding.empty:
         field_all = fielding[fielding["POS"] != "P"].copy()
         for col in ["G","PO","A","E"]:
             if col in field_all.columns:
@@ -460,18 +500,6 @@ def paso_6_posicion_bateadores(fielding, fielding_of, appearances=None, pico_df=
         cf["fielding_pct"] = (cf["total_po"] + cf["total_a"]) / denom_f
         cf["range_factor"] = (cf["total_po"] + cf["total_a"]) / cf["total_fg"].replace(0, np.nan)
         career_field = cf[["playerID", "fielding_pct", "range_factor"]]
-
-    # Secundarias: cualquier posicion != primary_pos y != DH donde G >= 75
-    sec_df = pos_games.merge(primary[["playerID", "primary_pos"]], on="playerID", how="left")
-    sec_df["pos_mapped"] = sec_df["POS"].map(POS_DISPLAY_MAP).fillna(sec_df["POS"])
-    
-    sec_df = sec_df[(sec_df["pos_mapped"] != sec_df["primary_pos"]) & (sec_df["pos_mapped"] != "DH") & (sec_df["pos_mapped"] != "OF")]
-    sec_pos_grouped = sec_df.groupby(["playerID", "pos_mapped"])["G"].sum().reset_index()
-    sec_pos_grouped = sec_pos_grouped[sec_pos_grouped["G"] >= 75]
-    
-    sec_pos_str = sec_pos_grouped.groupby("playerID")["pos_mapped"].apply(
-        lambda x: ",".join(sorted(list(set(x))))
-    ).reset_index().rename(columns={"pos_mapped": "sec_pos"})
 
     result = primary.merge(career_field, on="playerID", how="left")
     result = result.merge(sec_pos_str, on="playerID", how="left")
