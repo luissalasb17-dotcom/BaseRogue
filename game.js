@@ -1241,40 +1241,48 @@
       const restCopy = [...availableRest];
 
       const spHp = Math.round(45 + ((openingPitcher.sta || 50) / 99) * 75);
+      const opYear = openingPitcher.year || openingPitcher._year || openingPitcher.peak_year_display || openingPitcher.peak_year || '';
+      const opName = opYear ? `${openingPitcher.name} (${opYear})` : openingPitcher.name;
       const selected = [{
-        name: openingPitcher.name + ' (' + (openingPitcher.year || '') + ')',
+        name: opName,
         role: openingPitcher.role || 'SP',
         hp: spHp,
         maxHp: spHp,
-        stf: openingPitcher.str || 50,
+        stf: openingPitcher.str || openingPitcher.stf || 50,
         ctl: openingPitcher.ctl || 50,
-        mov: openingPitcher.grt || 50,
+        mov: openingPitcher.grt || openingPitcher.mov || 50,
         sta: openingPitcher.sta || 50,
-        ovr: openingPitcher.ovr || 50,
-        rarity: openingPitcher.rarity || 'Common',
-        era: openingPitcher.era || '',
-        team: openingPitcher.team || ''
+        ovr: openingPitcher.ovr || openingPitcher._ovr || 50,
+        rarity: openingPitcher.rarity || openingPitcher._rarity || 'Common',
+        era: openingPitcher.era || openingPitcher._era || '',
+        team: openingPitcher.team || openingPitcher._team || '',
+        year: opYear,
+        _year: opYear
       }];
 
       for (let i = 0; i < 2; i++) {
         if (restCopy.length === 0) break;
         const randIdx = Math.floor(Math.random() * restCopy.length);
         const p = restCopy.splice(randIdx, 1)[0];
-        this.encounteredPitchers.add(p.name + '_' + p.year);
+        const pYear = p.year || p._year || p.peak_year_display || p.peak_year || '';
+        const pName = pYear ? `${p.name} (${pYear})` : p.name;
+        this.encounteredPitchers.add(p.name + '_' + pYear);
         const hp = (p.role === 'SP') ? Math.round(45 + (p.sta / 99) * 75) : Math.round(25 + (p.sta / 99) * 20);
         selected.push({
-          name: p.name + ' (' + (p.year || '') + ')',
+          name: pName,
           role: p.role || 'RP',
           hp: hp,
           maxHp: hp,
-          stf: p.str || 50,
+          stf: p.str || p.stf || 50,
           ctl: p.ctl || 50,
-          mov: p.grt || 50,
+          mov: p.grt || p.mov || 50,
           sta: p.sta || 50,
-          ovr: p.ovr || 50,
-          rarity: p.rarity || 'Common',
-          era: p.era || '',
-          team: p.team || ''
+          ovr: p.ovr || p._ovr || 50,
+          rarity: p.rarity || p._rarity || 'Common',
+          era: p.era || p._era || '',
+          team: p.team || p._team || '',
+          year: pYear,
+          _year: pYear
         });
       }
 
