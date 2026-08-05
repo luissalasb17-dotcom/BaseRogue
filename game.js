@@ -259,6 +259,8 @@
       this.purchasedItems = [];
       this.currentEnemy = null;
       this.encounteredTeams = new Set();
+      this.encounteredPitchers = new Set();
+      this.isSuperBossActive = false;
 
       // ── 9-round Draft State ───────────────────────────────────────────
       // Round structure:
@@ -1172,129 +1174,186 @@
         return this.currentEnemy;
       }
 
-      // Mode 2: Quick Play Mode - Select teams from OpponentsPool by Map OVR Range
-      const stage = this.currentStageIndex;
-      const isBossStage = (stage === 3 || stage === 7 || stage === 11 || stage === 15);
+      // Mode 2: Quick Play Mode - Fully Procedural Pitcher Generation (No presets)
+      if (this.currentEnemy) return this.currentEnemy;
 
-      // Map 1 (0-3): 60-73 OVR | Map 2 (4-7): 74-82 OVR | Map 3 (8-11): 83-90 OVR | Map 4 (12-15): 91+ OVR
-      let minOvr = 60;
-      let maxOvr = 73;
+      const stage = this.currentStageIndex; // 0 to 15
+      const fullPool = window.PITCHERS_POOL || [];
+      if (!this.encounteredPitchers) this.encounteredPitchers = new Set();
 
-      if (stage <= 3) {
-        minOvr = 60;
-        maxOvr = 73;
-      } else if (stage <= 7) {
-        minOvr = 74;
-        maxOvr = 82;
-      } else if (stage <= 11) {
-        minOvr = 83;
-        maxOvr = 90;
-      } else {
-        minOvr = 91;
-        maxOvr = 150;
-      }
-
-      if (window.OpponentsPool && window.OpponentsPool.length > 0) {
-        let candidateTeams = window.OpponentsPool.filter(team => {
-          const ovr = team.ovr || team._ovr || 50;
-          if (ovr < minOvr || ovr > maxOvr) return false;
-          if (isBossStage && !team.isBoss) return false;
-          return true;
-        });
-
-        if (candidateTeams.length === 0) {
-          candidateTeams = window.OpponentsPool.filter(team => {
-            const ovr = team.ovr || team._ovr || 50;
-            return ovr >= minOvr && ovr <= maxOvr;
-          });
+      const pickPitcher = (candidates, preferredRole = null) => {
+        let unvisited = candidates.filter(p => !this.encounteredPitchers.has((p.name || '') + '_' + (p.year || p.peak_year_display)));
+        if (unvisited.length === 0) unvisited = candidates;
+        if (preferredRole) {
+          const roleMatches = unvisited.filter(p => (p.role || '').toUpperCase() === preferredRole.toUpperCase());
+          if (roleMatches.length > 0) unvisited = roleMatches;
         }
-        if (candidateTeams.length === 0) candidateTeams = window.OpponentsPool;
+        if (unvisited.length === 0) unvisited = fullPool;
+        const chosen = unvisited[Math.floor(Math.random() * unvisited.length)];
+        this.encounteredPitchers.add((chosen.name || '') + '_' + (chosen.year || chosen.peak_year_display));
+        return chosen;
+      };
 
-        if (!this.encounteredTeams) this.encounteredTeams = new Set();
-        let freshCandidates = candidateTeams.filter(e => !this.encounteredTeams.has(e.id || e.name));
-        if (freshCandidates.length === 0) freshCandidates = candidateTeams;
+      const createPitcherObj = (p, roleOverride = null) => {
+        const role = roleOverride || p.role || 'SP';
+        const staVal = p.sta !== undefined ? p.sta : (p.sta_val !== undefined ? p.sta_val : 50);
+        const hp = (role === 'SP') ? Math.round(45 + (staVal / 99) * 75) : Math.round(25 + (staVal / 99) * 20);
+        const yearVal = p.year || p.peak_year_display || p.peak_year || 1990;
+        const nameVal = yearVal ? `${p.name} (${yearVal})` : p.name;
+        return {
+          name: nameVal,
+          cleanName: p.name,
+          role: role,
+          pos: role,
+          hp: hp,
+          maxHp: hp,
+          stf: p.str !== undefined ? p.str : (p.stf !== undefined ? p.stf : 50),
+          ctl: p.ctl !== undefined ? p.ctl : 50,
+          mov: p.grt !== undefined ? p.grt : (p.mov !== undefined ? p.mov : 50),
+          sta: staVal,
+          ovr: p.ovr || p._ovr || 50,
+          rarity: p.rarity || 'Common',
+          era: p.era || '',
+          team: p.team || '',
+          year: yearVal
+        };
+      };
 
-        const chosen = freshCandidates[Math.floor(Math.random() * freshCandidates.length)];
-        this.encounteredTeams.add(chosen.id || chosen.name);
-
-        const enemyTeam = JSON.parse(JSON.stringify(chosen));
-        enemyTeam.pitchers = sortPitchingStaff(enemyTeam.pitchers);
-        this.currentEnemy = enemyTeam;
+      // Check if Super Boss Fight is active (Stage 15 Part 2: 4 Legendary Pitchers!)
+      if (this.isSuperBossActive) {
+        const legPool = fullPool.filter(p => p.rarity === 'Legendary');
+        const p1 = createPitcherObj(pickPitcher(legPool, 'SP'), 'SP');
+        const p2 = createPitcherObj(pickPitcher(legPool, 'SP'), 'SP');
+        const p3 = createPitcherObj(pickPitcher(legPool, 'RP'), 'RP');
+        const p4 = createPitcherObj(pickPitcher(legPool, 'RP'), 'RP');
+        const selected = [p1, p2, p3, p4];
+        this.currentEnemy = {
+          id: `super_boss_${stage}_${Date.now()}`,
+          name: `⚡ SUPER BOSS: ${p1.cleanName}`,
+          tier: 'S',
+          isBoss: true,
+          isSuperBoss: true,
+          pitchers: selected,
+          _ovr: 96,
+          era: p1.era,
+          rarity: 'Legendary'
+        };
         return this.currentEnemy;
       }
 
-      // Fallback if OpponentsPool is missing: Dynamic 3-pitcher selection
-      let fullPool = window.PITCHERS_POOL || [];
-      let candidatePitchers = fullPool.filter(p => (p.ovr || 50) >= minOvr && (p.ovr || 50) <= maxOvr);
-      if (candidatePitchers.length < 3) candidatePitchers = fullPool;
-
-      const candidateSPs = candidatePitchers.filter(p => (p.role || '').toUpperCase() === 'SP' || (p.sta || 50) >= 50);
-      const spPool = candidateSPs.length > 0 ? candidateSPs : candidatePitchers;
-
-      if (!this.encounteredPitchers) this.encounteredPitchers = new Set();
-      const openingPitcher = spPool[Math.floor(Math.random() * spPool.length)];
-      this.encounteredPitchers.add(openingPitcher.name + '_' + openingPitcher.year);
-
-      const remainingPool = candidatePitchers.filter(p => !(p.name === openingPitcher.name && p.year === openingPitcher.year));
-      let availableRest = remainingPool.filter(p => !this.encounteredPitchers.has(p.name + '_' + p.year));
-      if (availableRest.length < 2) availableRest = remainingPool;
-      const restCopy = [...availableRest];
-
-      const spHp = Math.round(45 + ((openingPitcher.sta || 50) / 99) * 75);
-      const opYear = openingPitcher.year || openingPitcher._year || openingPitcher.peak_year_display || openingPitcher.peak_year || '';
-      const opName = opYear ? `${openingPitcher.name} (${opYear})` : openingPitcher.name;
-      const selected = [{
-        name: opName,
-        role: openingPitcher.role || 'SP',
-        hp: spHp,
-        maxHp: spHp,
-        stf: openingPitcher.str || openingPitcher.stf || 50,
-        ctl: openingPitcher.ctl || 50,
-        mov: openingPitcher.grt || openingPitcher.mov || 50,
-        sta: openingPitcher.sta || 50,
-        ovr: openingPitcher.ovr || openingPitcher._ovr || 50,
-        rarity: openingPitcher.rarity || openingPitcher._rarity || 'Common',
-        era: openingPitcher.era || openingPitcher._era || '',
-        team: openingPitcher.team || openingPitcher._team || '',
-        year: opYear,
-        _year: opYear
-      }];
-
-      for (let i = 0; i < 2; i++) {
-        if (restCopy.length === 0) break;
-        const randIdx = Math.floor(Math.random() * restCopy.length);
-        const p = restCopy.splice(randIdx, 1)[0];
-        const pYear = p.year || p._year || p.peak_year_display || p.peak_year || '';
-        const pName = pYear ? `${p.name} (${pYear})` : p.name;
-        this.encounteredPitchers.add(p.name + '_' + pYear);
-        const hp = (p.role === 'SP') ? Math.round(45 + (p.sta / 99) * 75) : Math.round(25 + (p.sta / 99) * 20);
-        selected.push({
-          name: pName,
-          role: p.role || 'RP',
-          hp: hp,
-          maxHp: hp,
-          stf: p.str || p.stf || 50,
-          ctl: p.ctl || 50,
-          mov: p.grt || p.mov || 50,
-          sta: p.sta || 50,
-          ovr: p.ovr || p._ovr || 50,
-          rarity: p.rarity || p._rarity || 'Common',
-          era: p.era || p._era || '',
-          team: p.team || p._team || '',
-          year: pYear,
-          _year: pYear
-        });
+      // Map 1 Boss (Stage 3): 1 Legendary, 1 Epic, 1 Rare
+      if (stage === 3) {
+        const legPool  = fullPool.filter(p => p.rarity === 'Legendary');
+        const epicPool = fullPool.filter(p => p.rarity === 'Epic');
+        const rarePool = fullPool.filter(p => p.rarity === 'Rare');
+        const p1 = createPitcherObj(pickPitcher(legPool, 'SP'), 'SP');
+        const p2 = createPitcherObj(pickPitcher(epicPool, 'SP'), 'SP');
+        const p3 = createPitcherObj(pickPitcher(rarePool, 'RP'), 'RP');
+        const selected = [p1, p2, p3];
+        this.currentEnemy = {
+          id: `boss_map1_${Date.now()}`,
+          name: `BOSS: ${p1.cleanName}`,
+          tier: 'A',
+          isBoss: true,
+          pitchers: selected,
+          _ovr: 88,
+          era: p1.era,
+          rarity: 'Legendary'
+        };
+        return this.currentEnemy;
       }
 
-      const lead = selected[0] || { name: "Pitcher Team", ovr: 50 };
-      const avgOvr = Math.round(selected.reduce((acc, p) => acc + (p.ovr || 50), 0) / Math.max(1, selected.length));
+      // Map 2 Boss (Stage 7): 1 Legendary, 2 Epic
+      if (stage === 7) {
+        const legPool  = fullPool.filter(p => p.rarity === 'Legendary');
+        const epicPool = fullPool.filter(p => p.rarity === 'Epic');
+        const p1 = createPitcherObj(pickPitcher(legPool, 'SP'), 'SP');
+        const p2 = createPitcherObj(pickPitcher(epicPool, 'SP'), 'SP');
+        const p3 = createPitcherObj(pickPitcher(epicPool, 'RP'), 'RP');
+        const selected = [p1, p2, p3];
+        this.currentEnemy = {
+          id: `boss_map2_${Date.now()}`,
+          name: `BOSS: ${p1.cleanName}`,
+          tier: 'S',
+          isBoss: true,
+          pitchers: selected,
+          _ovr: 91,
+          era: p1.era,
+          rarity: 'Legendary'
+        };
+        return this.currentEnemy;
+      }
+
+      // Map 3 Boss (Stage 11): 2 Legendary, 1 Epic
+      if (stage === 11) {
+        const legPool  = fullPool.filter(p => p.rarity === 'Legendary');
+        const epicPool = fullPool.filter(p => p.rarity === 'Epic');
+        const p1 = createPitcherObj(pickPitcher(legPool, 'SP'), 'SP');
+        const p2 = createPitcherObj(pickPitcher(legPool, 'SP'), 'SP');
+        const p3 = createPitcherObj(pickPitcher(epicPool, 'RP'), 'RP');
+        const selected = [p1, p2, p3];
+        this.currentEnemy = {
+          id: `boss_map3_${Date.now()}`,
+          name: `BOSS: ${p1.cleanName}`,
+          tier: 'S',
+          isBoss: true,
+          pitchers: selected,
+          _ovr: 94,
+          era: p1.era,
+          rarity: 'Legendary'
+        };
+        return this.currentEnemy;
+      }
+
+      // Map 4 Boss Fight #1 (Stage 15): 3 Legendary
+      if (stage === 15) {
+        const legPool = fullPool.filter(p => p.rarity === 'Legendary');
+        const p1 = createPitcherObj(pickPitcher(legPool, 'SP'), 'SP');
+        const p2 = createPitcherObj(pickPitcher(legPool, 'SP'), 'SP');
+        const p3 = createPitcherObj(pickPitcher(legPool, 'RP'), 'RP');
+        const selected = [p1, p2, p3];
+        this.currentEnemy = {
+          id: `boss_map4_part1_${Date.now()}`,
+          name: `BOSS FINAL: ${p1.cleanName}`,
+          tier: 'S',
+          isBoss: true,
+          pitchers: selected,
+          _ovr: 96,
+          era: p1.era,
+          rarity: 'Legendary'
+        };
+        return this.currentEnemy;
+      }
+
+      // Regular stages (Map 1 to 4)
+      let minOvr = 60, maxOvr = 74;
+      let allowedRarities = ['Common', 'Uncommon'];
+      if (stage >= 4 && stage <= 7) {
+        minOvr = 72; maxOvr = 82;
+        allowedRarities = ['Uncommon', 'Rare'];
+      } else if (stage >= 8 && stage <= 11) {
+        minOvr = 80; maxOvr = 88;
+        allowedRarities = ['Rare', 'Epic'];
+      } else if (stage >= 12) {
+        minOvr = 85; maxOvr = 95;
+        allowedRarities = ['Epic', 'Legendary'];
+      }
+
+      const stagePool = fullPool.filter(p => allowedRarities.includes(p.rarity) || ((p.ovr || 50) >= minOvr && (p.ovr || 50) <= maxOvr));
+      const p1 = createPitcherObj(pickPitcher(stagePool, 'SP'), 'SP');
+      const p2 = createPitcherObj(pickPitcher(stagePool), 'SP');
+      const p3 = createPitcherObj(pickPitcher(stagePool, 'RP'), 'RP');
+      const selected = [p1, p2, p3];
 
       this.currentEnemy = {
-        id: `qp_team_stage_${stage}_${Date.now()}`,
-        name: isBossStage ? `BOSS: ${lead.name}` : `${lead.name} & Rotación`,
-        isBoss: isBossStage,
-        ovr: avgOvr,
-        pitchers: sortPitchingStaff(selected)
+        id: `opp_team_stage_${stage}_${Date.now()}`,
+        name: `${p1.cleanName} & Rotación`,
+        tier: 'B',
+        isBoss: false,
+        pitchers: selected,
+        _ovr: p1.ovr,
+        era: p1.era,
+        rarity: p1.rarity
       };
 
       return this.currentEnemy;
@@ -1354,13 +1413,31 @@
         won
       });
 
-      this.currentEnemy = null; // Reset for next match
-
       const isBossStage = (this.currentStageIndex === 3 || this.currentStageIndex === 7 || this.currentStageIndex === 11 || this.currentStageIndex === 15);
 
       if (won) {
+        // Stage 15 (Map 4 Boss Fight #1) victory -> Trigger SUPER BOSS FIGHT Part 2!
+        if (this.currentStageIndex === 15 && !this.isSuperBossActive) {
+          this.isSuperBossActive = true;
+          this.currentEnemy = null; // Clear cached enemy so getEnemyTeam builds Super Boss
+          const superBossTeam = this.getEnemyTeam();
+          this.teamHP = Math.min(100, this.teamHP + 30);
+          this.teamShield = this.teamShieldMax;
+          return {
+            won: true,
+            isSuperBossTrigger: true,
+            superBossTeam,
+            message: `⚡ ¡SUPER BOSS FIGHT! ⚡ ¡Derrotaste al primer grupo de leyendas! AHORA ENFRENTA A LA ROTACIÓN SUPREMA DE 4 LEYENDAS.`
+          };
+        }
+
+        if (this.isSuperBossActive) {
+          this.isSuperBossActive = false;
+        }
+
         const earnings = isBossStage ? 20 : 5;
         this.budget += earnings;
+        this.currentEnemy = null; // Reset for next match
         return {
           won: true,
           isBossStage,
@@ -1371,6 +1448,7 @@
         };
       } else {
         this.runActive = false;
+        this.currentEnemy = null;
         return {
           won: false,
           message: `Derrota. Finalizaron los 3 innings (9 outs) antes de derrotar a toda la rotación de ${currentEnemy.name}.`

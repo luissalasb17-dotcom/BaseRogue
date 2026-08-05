@@ -3974,9 +3974,6 @@ function initGameModeSelector() {
     proceedBtn.innerHTML = `Proceder al Resumen del Partido <i class="fa-solid fa-arrow-right"></i>`;
     
     proceedBtn.addEventListener('click', () => {
-      // Restore Roster Manager panel
-      // el.rosterManagerPanel.classList.remove('hidden');
-
       const res = window.Game.postMatchDebrief(activeSimulationResult);
       
       // Clear simulations refs
@@ -3985,7 +3982,13 @@ function initGameModeSelector() {
       simulationEvents = [];
 
       if (res.won) {
-        setupPostMatchDraftScreen(res.isBossStage, res.earnings);
+        if (res.isSuperBossTrigger) {
+          showSuperBossIntroModal(() => {
+            startInteractiveMatch();
+          });
+        } else {
+          setupPostMatchDraftScreen(res.isBossStage, res.earnings);
+        }
       } else {
         // Game Over!
         triggerGameOver(false, res.message);
@@ -3993,6 +3996,35 @@ function initGameModeSelector() {
     });
 
     el.screenMatch.appendChild(proceedBtn);
+  }
+
+  function showSuperBossIntroModal(onProceed) {
+    const overlay = document.createElement('div');
+    overlay.className = "modal-overlay flex items-center justify-center z-[500]";
+    overlay.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,0.92);backdrop-filter:blur(10px);z-index:500;display:flex;align-items:center;justify-content:center;";
+
+    overlay.innerHTML = `
+      <div style="background:#090d16;border:3px solid #ffd700;border-radius:16px;padding:24px;max-width:440px;width:90%;text-align:center;box-shadow:0 0 40px rgba(255,215,0,0.5);">
+        <div style="font-family:'Press Start 2P',monospace;font-size:14px;color:#ffd700;margin-bottom:12px;text-shadow:0 0 10px #ffd700;">⚡ SUPER BOSS FIGHT ⚡</div>
+        <div style="font-size:12.5px;color:#fff;font-weight:bold;margin-bottom:16px;line-height:1.5;">
+          ¡Derrotaste al primer grupo del Playoffs!<br>
+          <span style="color:#22d3ee;">¡Pero las 4 Máximas Leyendas del Béisbol saltan al campo para la Batalla Final!</span>
+        </div>
+        <div style="background:rgba(255,215,0,0.1);border:1px solid #ffd700;border-radius:8px;padding:10px;font-size:11px;color:#fef08a;margin-bottom:20px;">
+          🔥 <strong>Fase Final Especial (4 Pitchers Leyenda)</strong><br>
+          Tu equipo ha recuperado +30 HP y Escudo Máximo.
+        </div>
+        <button id="btn-start-super-boss" class="btn" style="background:linear-gradient(90deg,#ffd700,#f59e0b);color:#000;font-weight:bold;font-size:11px;padding:12px 24px;width:100%;border:none;cursor:pointer;">
+          ¡ENFRENTAR AL SUPER BOSS FINAL! ⚾
+        </button>
+      </div>
+    `;
+
+    document.body.appendChild(overlay);
+    document.getElementById('btn-start-super-boss').addEventListener('click', () => {
+      overlay.remove();
+      if (onProceed) onProceed();
+    });
   }
 
   // GAME OVER VIEW
