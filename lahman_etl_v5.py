@@ -288,7 +288,7 @@ def paso_4_pico_batting(batting, war_bat, people):
     war_yearly = pd.DataFrame()
     if not war_bat.empty and not people.empty:
         war = war_bat.copy()
-        war_col = "WAR_off" if "WAR_off" in war.columns else "WAR"
+        war_col = "WAR" if "WAR" in war.columns else "WAR_off"
         war[war_col] = pd.to_numeric(
             war[war_col].replace("NULL", np.nan),
             errors="coerce"
@@ -300,7 +300,7 @@ def paso_4_pico_batting(batting, war_bat, people):
             war_season.merge(id_map, on="bbrefID", how="left")
                       .dropna(subset=["playerID"])[["playerID","yearID","war_season"]]
         )
-        print(f"  WAR_off anual para {war_yearly['playerID'].nunique():,} jugadores (BBRef)")
+        print(f"  WAR Total anual para {war_yearly['playerID'].nunique():,} jugadores (BBRef)")
     else:
         print("  WAR no disponible - usando OPS fallback")
 
@@ -710,16 +710,15 @@ def paso_11_motor_defensivo(df, war_bat, awards):
     print(f"  Motor avanzado: {n_war:,}  |  Proxy Lahman: {n_proxy:,}")
 
     has_war = df["rfield_career"].notna()
-    df["defense_base"] = np.where(
-        has_war,
-        W_RFIELD * df["rfield_career"].fillna(0) + W_WARDEF * (df["wardef_career"].fillna(0) * 10),
-        np.nan
-    )
+    raw_hybrid = 0.60 * df["rfield_career"].fillna(0) + 0.40 * (df["wardef_career"].fillna(0) * 10)
     fp    = df["fielding_pct"].fillna(0.96)
     rf    = (df["range_factor"].fillna(2.0) / 6.0).clip(0, 1)
-    proxy = W_RFIELD * fp + W_WARDEF * rf
-    df["defense_base"]   = df["defense_base"].fillna(proxy)
-    df["defense_source"] = np.where(has_war, "bbref_war", "lahman_proxy")
+    proxy = (fp * 0.6 + rf * 0.4 - 0.5) * 50.0
+
+    df["defense_base_raw"] = np.where(has_war, raw_hybrid, proxy)
+    # Centrado: 0.0 raw = 50.0 DEF base. +120 raw = 95.0 DEF base (antes de bono GG)
+    df["defense_val_base"] = (50.0 + (df["defense_base_raw"] / 120.0) * 45.0).clip(1.0, 120.0).round(1)
+    df["defense_source"]   = np.where(has_war, "bbref_war", "lahman_proxy")
 
     if not awards.empty and "awardID" in awards.columns:
         gg       = awards[awards["awardID"] == "Gold Glove"]
@@ -738,21 +737,19 @@ def paso_11_motor_defensivo(df, war_bat, awards):
 # ===========================================================================
 def paso_12_normalizar_por_era(df):
     """
-    Normaliza todos los atributos RAW usando el ajuste por dificultad de Era (estilo OPS+)
-    y luego normaliza globalmente en escala 1-99.
+    Normaliza bateo usando ajuste por dificultad de Era (estilo OPS+).
+    La Defensa se mantiene limpia (sin doble ajuste por era, centrada en 50.0 = 0.0).
     """
-    print("\n  PASO 12: Normalizando por Era (OPS+ Dificultad) (percentil 2-98, escala 1-99)...")
+    print("\n  PASO 12: Normalizando por Era (OPS+ Dificultad) bateo (escala 1-99)...")
     
-    # contact_raw already uses Dual Era Normalization (ba_rel * 0.90 + k_control_era * 0.10)
     df = normalize_globally(df, "contact_raw", "contact_val")
 
     for raw, out in [
-        ("power_raw",    "power_val"),
-        ("eye_raw",      "eye_val"),
-        ("defense_base",  "defense_val_base"),
+        ("power_raw", "power_val"),
+        ("eye_raw",   "eye_val"),
     ]:
         df = normalize_difficulty_adjusted(df, raw, out)
-    print("  contact_val, power_val, eye_val, defense_val_base normalizados con ajuste OPS+")
+    print("  contact_val, power_val, eye_val normalizados con ajuste OPS+ (Defensa centrada sin doble ajuste)")
     return df
 
 
