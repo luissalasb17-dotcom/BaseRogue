@@ -1,7 +1,7 @@
 // basedex.js
 (function() {
   const ERA_TABS = [
-    { key: 'all', label: 'TODOS' },
+    { key: 'all', get label() { return (typeof window.t === 'function' ? window.t('dex.era_all') : 'TODOS'); } },
     { key: 'The Genesis Era (1871-1900)', label: 'GENESIS' },
     { key: 'Deadball (1901-1919)', label: 'DEADBALL' },
     { key: 'Golden Era (1920-1941)', label: 'GOLDEN' },
@@ -143,7 +143,7 @@
       const pct = stats.total > 0 ? ((stats.unlocked / stats.total) * 100).toFixed(1) : 0;
       
       if (elText) {
-        elText.innerText = `${stats.unlocked} / ${stats.total} descubiertos (${pct}%)`;
+        elText.innerText = (typeof window.t === 'function') ? window.t('dex.counter', { unlocked: stats.unlocked, total: stats.total, pct }) : `${stats.unlocked} / ${stats.total} descubiertos (${pct}%)`;
       }
       if (elFill) {
         elFill.style.width = `${pct}%`;
@@ -215,7 +215,7 @@
               <i class="fa-solid fa-user" style="color:#374151;font-size:20px"></i>
             </div>
             <div style="font-size:7px;color:#4b5563;font-family:'Press Start 2P',monospace">???</div>
-            <div style="font-size:6px;color:#374151;margin-top:2px">BLOQUEADO</div>
+            <div style="font-size:6px;color:#374151;margin-top:2px">${(typeof window.t === 'function' ? window.t('dex.locked') : 'BLOQUEADO')}</div>
           `;
         }
         grid.appendChild(el);
@@ -229,7 +229,7 @@
       if (this.currentRendered < this.filteredPlayers.length) {
         const btn = document.createElement('button');
         btn.id = 'dex-load-more';
-        btn.innerText = 'Mostrar más';
+        btn.innerText = (typeof window.t === 'function' ? window.t('dex.load_more') : 'Mostrar más');
         btn.style.cssText = 'grid-column: 1 / -1; padding: 10px; background: rgba(255,255,255,0.1); color: #fff; border: none; border-radius: 6px; cursor: pointer; margin-top: 10px; font-family:"Press Start 2P", monospace; font-size: 8px;';
         btn.onclick = () => this.renderMore();
         grid.appendChild(btn);
@@ -288,7 +288,7 @@
       searchContainer.style.cssText = 'padding: 10px 16px; border-bottom: 1px solid rgba(255,255,255,0.1);';
       const searchInput = document.createElement('input');
       searchInput.type = 'text';
-      searchInput.placeholder = 'Buscar por nombre o equipo...';
+      searchInput.placeholder = (typeof window.t === 'function' ? window.t('dex.search_placeholder') : 'Buscar por nombre o equipo...');
       searchInput.style.cssText = 'width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 8px 12px; border-radius: 6px; font-size: 12px; outline: none;';
       searchInput.oninput = (e) => {
         this.currentSearchTerm = e.target.value;
@@ -394,14 +394,14 @@
           ${badgesHtml ? `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px">${badgesHtml}</div>` : ''}
           
           <div style="background:#111827;border-radius:8px;padding:12px">
-            <div style="font-family:'Press Start 2P',monospace;font-size:7px;color:#38bdf8;margin-bottom:10px;text-align:center">ESTADÍSTICAS DE CARRERA (MLB)</div>
+            <div style="font-family:'Press Start 2P',monospace;font-size:7px;color:#38bdf8;margin-bottom:10px;text-align:center">${(typeof window.t === 'function' ? window.t('dex.career_header') : 'CARRERA / CAREER (MLB)')}</div>
             <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:10px;text-align:center">
               <div><div style="font-size:13px;font-weight:bold;color:#fff">${careerStats.allstars}</div><div style="font-size:7px;color:#6b7280;margin-top:2px">ALL-STARS</div></div>
               <div><div style="font-size:13px;font-weight:bold;color:#ffd700">${careerStats.gg}</div><div style="font-size:7px;color:#6b7280;margin-top:2px">GG</div></div>
               <div><div style="font-size:13px;font-weight:bold;color:#eab308">${careerStats.mvp}</div><div style="font-size:7px;color:#6b7280;margin-top:2px">MVP</div></div>
               <div><div style="font-size:13px;font-weight:bold;color:#38bdf8">${careerStats.ss}</div><div style="font-size:7px;color:#6b7280;margin-top:2px">SS</div></div>
               <div><div style="font-size:13px;font-weight:bold;color:#a7f3d0">${careerStats.roy}</div><div style="font-size:7px;color:#6b7280;margin-top:2px">ROY</div></div>
-              <div><div style="font-size:13px;font-weight:bold;color:#00ff66">${careerStats.war}</div><div style="font-size:7px;color:#6b7280;margin-top:2px">WAR CARRERA</div></div>
+              <div><div style="font-size:13px;font-weight:bold;color:#00ff66">${careerStats.war}</div><div style="font-size:7px;color:#6b7280;margin-top:2px">${(typeof window.t === 'function' ? window.t('dex.war_label') : 'WAR')}</div></div>
             </div>
           </div>
         </div>

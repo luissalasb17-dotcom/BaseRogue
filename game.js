@@ -6,13 +6,13 @@
     {
       id: "ev_cork",
       icon: "🪵",
-      title: "Bates de Contrabando",
-      desc: "Un misterioso carpintero se aproxima al vestuario con bates modificados con corcho. Aumentan drásticamente el impacto de la bola, pero alteran el balance del swing.",
+      get title() { return typeof window.t==='function'?window.t('ev.cork.title'):'Bates de Contrabando'; },
+      get desc() { return typeof window.t==='function'?window.t('ev.cork.desc'):'Un misterioso carpintero se aproxima al vestuario con bates modificados con corcho.'; },
       choices: [
         {
           icon: "⚙️",
           risk: "safe",
-          text: "Modificación Estándar (+10 PWR, -2 CON)",
+          get text() { return typeof window.t==='function'?window.t('ev.cork.choice1'):'Modificación Estándar (+10 PWR, -2 CON)'; },
           cost: 15,
           successChance: 1.0,
           action: (G) => {
@@ -26,12 +26,12 @@
           text: "Corcho Masivo Ilegal (+25 PWR, -5 CON)",
           cost: 5,
           successChance: 0.60,
-          successMsg: "¡Bates modificados con éxito! Tu alineación obtiene +25 PWR y -5 CON.",
+          get successMsg() { return typeof window.t==='function'?window.t('ev.cork.suc'):'¡Bates modificados con éxito! Tu alineación obtiene +25 PWR y -5 CON.'; },
           action: (G) => {
             G.activeItemBonuses.teamPwr += 25;
             G.activeItemBonuses.teamCon -= 5;
           },
-          failMsg: "¡EL UMPIRE DESCUBRIÓ LOS BATES! La liga confisca los bates y te impone una multa de -$10.",
+          get failMsg() { return typeof window.t==='function'?window.t('ev.cork.fail'):'¡EL UMPIRE DESCUBRIÓ LOS BATES! La liga confisca los bates y te impone una multa de -$10.'; },
           failAction: (G) => {
             G.budget = Math.max(0, G.budget - 10);
           }
@@ -39,7 +39,7 @@
         {
           icon: "🛡️",
           risk: "safe",
-          text: "Rechazar Oferta (No hacer nada)",
+          get text() { return typeof window.t==='function'?window.t('ev.choice_reject'):'Rechazar Oferta (No hacer nada)'; },
           cost: 0,
           successChance: 1.0,
           action: (G) => {}
@@ -49,13 +49,13 @@
     {
       id: "ev_sign_stealing",
       icon: "📡",
-      title: "El Espía de Señas",
-      desc: "Un ex-receptor retirado afirma conocer la secuencia secreta de lanzamientos de los pitchers rivales de esta zona.",
+      get title() { return typeof window.t==='function'?window.t('ev.signs.title'):'El Espía de Señas'; },
+      get desc() { return typeof window.t==='function'?window.t('ev.signs.desc'):'Un ex-receptor retirado afirma conocer la secuencia secreta de lanzamientos.'; },
       choices: [
         {
           icon: "💼",
           risk: "safe",
-          text: "Comprar Informe VIP (+15 EYE, +8 CON)",
+          get text() { return typeof window.t==='function'?window.t('ev.signs.choice1'):'Comprar Informe VIP (+15 EYE, +8 CON)'; },
           cost: 22,
           successChance: 1.0,
           action: (G) => {
@@ -66,14 +66,14 @@
         {
           icon: "⚡",
           risk: "moderate",
-          text: "Robo de Señas Callejero (+20 EYE)",
+          get text() { return typeof window.t==='function'?window.t('ev.signs.choice2'):'Robo de Señas Callejero (+20 EYE)'; },
           cost: 8,
           successChance: 0.65,
-          successMsg: "¡Señas interceptadas! Tu equipo obtiene +20 EYE (Disciplina).",
+          get successMsg() { return typeof window.t==='function'?window.t('ev.signs.suc'):'¡Señas interceptadas! Tu equipo obtiene +20 EYE (Disciplina).'; },
           action: (G) => {
             G.activeItemBonuses.teamEye += 20;
           },
-          failMsg: "¡Descubiertos en cámara! El comisionado sanciona al equipo con -$15 Presupuesto.",
+          get failMsg() { return typeof window.t==='function'?window.t('ev.signs.fail'):'¡Descubiertos en cámara! El comisionado sanciona al equipo con -$15 Presupuesto.'; },
           failAction: (G) => {
             G.budget = Math.max(0, G.budget - 15);
           }
@@ -81,7 +81,7 @@
         {
           icon: "⚾",
           risk: "safe",
-          text: "Jugar Limpio (Rechazar)",
+          get text() { return typeof window.t==='function'?window.t('ev.choice_clean'):'Jugar Limpio (Rechazar)'; },
           cost: 0,
           successChance: 1.0,
           action: (G) => {}
@@ -91,13 +91,13 @@
     {
       id: "ev_fitness",
       icon: "🏋️",
-      title: "Preparador Físico Retro",
-      desc: "Un legendario preparador físico del campeonato de 1982 se ofrece a coordinar una rutina de acondicionamiento para la plantilla.",
+      get title() { return typeof window.t==='function'?window.t('ev.fitness.title'):'Preparador Físico Retro'; },
+      get desc() { return typeof window.t==='function'?window.t('ev.fitness.desc'):'Un legendario preparador físico del campeonato de 1982.'; },
       choices: [
         {
           icon: "🔋",
           risk: "safe",
-          text: "Rutina Aeróbica Estándar (+40 Stamina a todos)",
+          get text() { return typeof window.t==='function'?window.t('ev.fitness.choice1'):'Rutina Aeróbica Estándar (+40 Stamina a todos)'; },
           cost: 18,
           successChance: 1.0,
           action: (G) => {
@@ -109,16 +109,16 @@
         {
           icon: "⚡",
           risk: "high",
-          text: "Acondicionamiento Extremo (100% Stamina)",
+          get text() { return typeof window.t==='function'?window.t('ev.fitness.choice2'):'Acondicionamiento Extremo (100% Stamina)'; },
           cost: 10,
           successChance: 0.60,
-          successMsg: "¡Sesión milagrosa! Toda la plantilla recupera el 100% de Stamina.",
+          get successMsg() { return typeof window.t==='function'?window.t('ev.fitness.suc'):'¡Sesión milagrosa! Toda la plantilla recupera el 100% de Stamina.'; },
           action: (G) => {
             Object.keys(G.roster).forEach(pos => {
               if (G.roster[pos]) G.roster[pos].stamina = 100;
             });
           },
-          failMsg: "¡Sobrecarga muscular masiva! El equipo se agota y pierde -15 Stamina.",
+          get failMsg() { return typeof window.t==='function'?window.t('ev.fitness.fail'):'¡Sobrecarga muscular masiva! El equipo se agota y pierde -15 Stamina.'; },
           failAction: (G) => {
             Object.keys(G.roster).forEach(pos => {
               if (G.roster[pos]) G.roster[pos].stamina = Math.max(10, G.roster[pos].stamina - 15);
@@ -128,7 +128,7 @@
         {
           icon: "🚪",
           risk: "safe",
-          text: "Continuar sin entrenar",
+          get text() { return typeof window.t==='function'?window.t('ev.choice_skip'):'Continuar sin entrenar'; },
           cost: 0,
           successChance: 1.0,
           action: (G) => {}
@@ -138,21 +138,21 @@
     {
       id: "ev_hypnosis",
       icon: "🧠",
-      title: "Hipnosis de Bateo Focalizado",
-      desc: "Un psicólogo deportivo ofrece reprogramar la concentración mental de tus bateadores en el plato.",
+      get title() { return typeof window.t==='function'?window.t('ev.hyp.title'):'Hipnosis de Bateo Focalizado'; },
+      get desc() { return typeof window.t==='function'?window.t('ev.hyp.desc'):'Un psicólogo deportivo ofrece reprogramar la concentración mental de tus bateadores.'; },
       choices: [
         {
           icon: "🎯",
           risk: "moderate",
-          text: "Sesión de Trance Profundo (+14 EYE, +10 CON)",
+          get text() { return typeof window.t==='function'?window.t('ev.hyp.choice1'):'Sesión de Trance Profundo (+14 EYE, +10 CON)'; },
           cost: 14,
           successChance: 0.70,
-          successMsg: "¡Mente lúcida! Tu equipo obtiene +14 EYE y +10 CON.",
+          get successMsg() { return typeof window.t==='function'?window.t('ev.hyp.suc'):'¡Mente lúcida! Tu equipo obtiene +14 EYE y +10 CON.'; },
           action: (G) => {
             G.activeItemBonuses.teamEye += 14;
             G.activeItemBonuses.teamCon += 10;
           },
-          failMsg: "¡Desorientación hipnótica! Los bateadores dudan en el conteo (-8 EYE).",
+          get failMsg() { return typeof window.t==='function'?window.t('ev.hyp.fail'):'¡Desorientación hipnótica! Los bateadores dudan en el conteo (-8 EYE).'; },
           failAction: (G) => {
             G.activeItemBonuses.teamEye -= 8;
           }
@@ -160,7 +160,7 @@
         {
           icon: "🛡️",
           risk: "safe",
-          text: "Rechazar Psicoterapia",
+          get text() { return typeof window.t==='function'?window.t('ev.choice_reject_therapy'):'Rechazar Psicoterapia'; },
           cost: 0,
           successChance: 1.0,
           action: (G) => {}
@@ -170,8 +170,8 @@
     {
       id: "ev_graphene_bat",
       icon: "🔬",
-      title: "Bates de Aleación Experimental",
-      desc: "Un laboratorio tecnológico propone probar bates con fibra de carbono y titanio en el próximo tramo del mapa.",
+      get title() { return typeof window.t==='function'?window.t('ev.graphene.title'):'Bates de Aleación Experimental'; },
+      get desc() { return typeof window.t==='function'?window.t('ev.graphene.desc'):'Un laboratorio tecnológico propone probar bates con fibra de carbono y titanio.'; },
       choices: [
         {
           icon: "💎",
@@ -193,7 +193,7 @@
           action: (G) => {
             G.activeItemBonuses.teamPwr += 28;
           },
-          failMsg: "¡El bate se astilló en pedazos! Pierdes la inversión y restas -5 PWR.",
+          get failMsg() { return typeof window.t==='function'?window.t('ev.graphene.fail'):'¡El bate se astilló en pedazos! Pierdes la inversión y restas -5 PWR.'; },
           failAction: (G) => {
             G.activeItemBonuses.teamPwr -= 5;
           }
@@ -201,7 +201,7 @@
         {
           icon: "🚪",
           risk: "safe",
-          text: "Pasar de la tecnología",
+          get text() { return typeof window.t==='function'?window.t('ev.graphene.choice3'):'Pasar de la tecnología'; },
           cost: 0,
           successChance: 1.0,
           action: (G) => {}
@@ -211,8 +211,8 @@
     {
       id: "ev_tabloid",
       icon: "📰",
-      title: "Prensa Sensacionalista",
-      desc: "Un importante periódico deportivo quiere la primicia del vestuario y ofrece dinero a cambio de una entrevista exclusiva.",
+      get title() { return typeof window.t==='function'?window.t('ev.tabloid.title'):'Prensa Sensacionalista'; },
+      get desc() { return typeof window.t==='function'?window.t('ev.tabloid.desc'):'Un importante periódico deportivo quiere la primicia del vestuario.'; },
       choices: [
         {
           icon: "💰",
@@ -220,9 +220,9 @@
           text: "Vender Exclusiva (+$35 Presupuesto)",
           cost: -35,
           successChance: 0.70,
-          successMsg: "¡Entrevista vendida con éxito! Recibes +$35 de presupuesto.",
+          get successMsg() { return typeof window.t==='function'?window.t('ev.tabloid.suc'):'¡Entrevista vendida con éxito! Recibes +$35 de presupuesto.'; },
           action: (G) => {},
-          failMsg: "¡El artículo desató polémica! La presión mediática causa estrés (-15 Stamina a todos).",
+          get failMsg() { return typeof window.t==='function'?window.t('ev.tabloid.fail'):'¡El artículo desató polémica! La presión mediática causa estrés (-15 Stamina).'; },
           failAction: (G) => {
             Object.keys(G.roster).forEach(pos => {
               if (G.roster[pos]) G.roster[pos].stamina = Math.max(10, G.roster[pos].stamina - 15);
@@ -240,7 +240,7 @@
         {
           icon: "🚪",
           risk: "safe",
-          text: "Cerrar las Puertas (No hablar)",
+          get text() { return typeof window.t==='function'?window.t('ev.tabloid.choice3'):'Cerrar las Puertas (No hablar)'; },
           cost: 0,
           successChance: 1.0,
           action: (G) => {}
@@ -250,13 +250,13 @@
     {
       id: "ev_cryo",
       icon: "❄️",
-      title: "Cápsula de Hidroterapia",
-      desc: "Instalas una cámara de recuperación avanzada de criogenización en el vestuario para rejuvenecer a tus bateadores.",
+      get title() { return typeof window.t==='function'?window.t('ev.cryo.title'):'Cápsula de Hidroterapia'; },
+      get desc() { return typeof window.t==='function'?window.t('ev.cryo.desc'):'Instalas una cámara de criogenización para rejuvenecer a tus bateadores.'; },
       choices: [
         {
           icon: "🧪",
           risk: "safe",
-          text: "Criogenización Completa (100% Stamina a todos)",
+          get text() { return typeof window.t==='function'?window.t('ev.cryo.choice1'):'Criogenización Completa (100% Stamina a todos)'; },
           cost: 28,
           successChance: 1.0,
           action: (G) => {
@@ -268,7 +268,7 @@
         {
           icon: "🧊",
           risk: "safe",
-          text: "Bañera de Hielo Rápida (+40 Stamina a todos)",
+          get text() { return typeof window.t==='function'?window.t('ev.cryo.choice2'):'Bañera de Hielo Rápida (+40 Stamina a todos)'; },
           cost: 12,
           successChance: 1.0,
           action: (G) => {
@@ -280,7 +280,7 @@
         {
           icon: "🚪",
           risk: "safe",
-          text: "Prescindir de la cámara",
+          get text() { return typeof window.t==='function'?window.t('ev.cryo.choice3'):'Prescindir de la cámara'; },
           cost: 0,
           successChance: 1.0,
           action: (G) => {}
@@ -290,8 +290,8 @@
     {
       id: "ev_pinetar",
       icon: "🍯",
-      title: "Brea de Pino Japonesa",
-      desc: "Un distribuidor importador ofrece resina de brea de pino especial que maximiza la firmeza del swing.",
+      get title() { return typeof window.t==='function'?window.t('ev.pinetar.title'):'Brea de Pino Japonesa'; },
+      get desc() { return typeof window.t==='function'?window.t('ev.pinetar.desc'):'Un distribuidor ofrece resina de brea de pino especial.'; },
       choices: [
         {
           icon: "✨",
@@ -306,14 +306,14 @@
         {
           icon: "🧪",
           risk: "high",
-          text: "Fórmula Casera Ultra-Pegajosa (+18 CON)",
+          get text() { return typeof window.t==='function'?window.t('ev.pinetar.choice2'):'Fórmula Casera Ultra-Pegajosa (+18 CON)'; },
           cost: 5,
           successChance: 0.55,
           successMsg: "¡Agarre extraordinario! Tu equipo gana +18 Contacto.",
           action: (G) => {
             G.activeItemBonuses.teamCon += 18;
           },
-          failMsg: "¡El umpire nota el residuo ilícito! Te sanciona restando -10 Defensa.",
+          get failMsg() { return typeof window.t==='function'?window.t('ev.pinetar.fail'):'¡El umpire nota el residuo ilícito! Te sanciona restando -10 Defensa.'; },
           failAction: (G) => {
             G.activeItemBonuses.teamDef -= 10;
           }
@@ -368,8 +368,8 @@
     {
       id: "ev_spikes",
       icon: "👟",
-      title: "Clavos Ligeros Experimentales",
-      desc: "Un fabricante local te ofrece calzado de clavos de aluminio ultraligeros para mejorar la velocidad en bases.",
+      get title() { return typeof window.t==='function'?window.t('ev.spikes.title'):'Clavos Ligeros Experimentales'; },
+      get desc() { return typeof window.t==='function'?window.t('ev.spikes.desc'):'Un fabricante local te ofrece calzado de clavos de aluminio ultraligeros.'; },
       choices: [
         {
           icon: "⚡",
@@ -391,7 +391,7 @@
           action: (G) => {
             G.activeItemBonuses.teamSpd += 25;
           },
-          failMsg: "¡Mala tracción! Los clavos resbalan y causan torceduras (-10 Stamina a todos).",
+          get failMsg() { return typeof window.t==='function'?window.t('ev.spikes.fail'):'¡Mala tracción! Los clavos resbalan y causan torceduras (-10 Stamina a todos).'; },
           failAction: (G) => {
             Object.keys(G.roster).forEach(pos => {
               if (G.roster[pos]) G.roster[pos].stamina = Math.max(10, G.roster[pos].stamina - 10);
@@ -411,8 +411,8 @@
     {
       id: "ev_gloves",
       icon: "🧤",
-      title: "Guantes de Piel Curtida",
-      desc: "Un coleccionista de recuerdos ofrece guantes clásicos pesados que aportan máxima protección defensiva al cuadro.",
+      get title() { return typeof window.t==='function'?window.t('ev.gloves.title'):'Guantes de Piel Curtida'; },
+      get desc() { return typeof window.t==='function'?window.t('ev.gloves.desc'):'Un coleccionista ofrece guantes clásicos pesados.'; },
       choices: [
         {
           icon: "🛡️",
@@ -1141,12 +1141,13 @@
           let label = type.toUpperCase();
           if (isBossStage) {
             type = 'boss';
-            const bossLabels = { 3: 'JUEGO APERTURA', 7: 'ALL-STAR GAME', 11: 'CAMPEÓN LIGA', 15: 'SERIE MUNDIAL' };
+            const _bt = k => typeof window.t==='function'?window.t(k):k;
+const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11: _bt('map.boss_label.11'), 15: _bt('map.boss_label.15') };
             label = bossLabels[s] || 'SERIE MUNDIAL';
           } else if (type === 'match') {
-            label = 'SERIE CLÁSICA';
+            label = (typeof window.t==='function'?window.t('map.label_classic'):'SERIE CLÁSICA');
           } else if (type === 'event') {
-            label = 'DECISIÓN';
+            label = (typeof window.t==='function'?window.t('map.label_decision'):'DECISIÓN');
           } else if (type === 'train') {
             label = 'JAULA BATEO';
           } else if (type === 'rest') {
@@ -1359,81 +1360,81 @@
           if (count >= 4) {
             level = 2;
             bonuses = {};
-            desc = "Deadball: 40% prob en hit sencillo de avanzar 2 bases.";
+            desc = (typeof window.t==='function'?window.t('syn.deadball.lv2'):'Deadball: 40% chance on single to advance 2 bases.');
           } else {
             level = 1;
             bonuses = {};
-            desc = "Deadball: 20% prob en hit sencillo de avanzar 2 bases.";
+            desc = (typeof window.t==='function'?window.t('syn.deadball.lv1'):'Deadball: 20% chance on single to advance 2 bases.');
           }
         } else if (era === Eras.GOLDEN) {
           if (count >= 4) {
             level = 2;
             bonuses = {};
-            desc = "Golden Era: Hits +12 daño; 30% de convertir 2B en 3B.";
+            desc = (typeof window.t==='function'?window.t('syn.golden.lv2'):'Golden Era: Hits +12 damage; 30% convert 2B to 3B.');
           } else {
             level = 1;
             bonuses = {};
-            desc = "Golden Era: Todos los hits hacen +6 daño adicional.";
+            desc = (typeof window.t==='function'?window.t('syn.golden.lv1'):'Golden Era: All hits +6 extra damage.');
           }
         } else if (era === Eras.INTEGRATION) {
           if (count >= 4) {
             level = 2;
             bonuses = { con: 8, pwr: 8, eye: 8, spd: 8, def: 8 };
-            desc = "Integración: Bateador +8 stats; outs curan +5 Stamina.";
+            desc = (typeof window.t==='function'?window.t('syn.integration.lv2'):'Integration: Batter +8 stats; outs heal +5 Stamina.');
           } else {
             level = 1;
             bonuses = { con: 4, pwr: 4, eye: 4, spd: 4, def: 4 };
-            desc = "Integración: Jugador obtiene +4 a todos sus stats en turno.";
+            desc = (typeof window.t==='function'?window.t('syn.integration.lv1'):'Integration: Player gets +4 to all stats this turn.');
           }
         } else if (era === Eras.EXPANSION) {
           if (count >= 4) {
             level = 2;
             bonuses = {};
-            desc = "Expansion: 80% robo; robo cura +20 y hace 10 daño.";
+            desc = (typeof window.t==='function'?window.t('syn.expansion.lv2'):'Expansion: 80% steal; steal heals +20 and deals 10 damage.');
           } else {
             level = 1;
             bonuses = {};
-            desc = "Expansion: 50% robo en 1B; robo cura +10 Stamina.";
+            desc = (typeof window.t==='function'?window.t('syn.expansion.lv1'):'Expansion: 50% steal on 1B; steal heals +10 Stamina.');
           }
         } else if (era === Eras.BIGHAIR) {
           if (count >= 4) {
             level = 2;
             bonuses = {};
-            desc = "Big Hair: Robos +30 daño y debuff de 3 turnos al rival.";
+            desc = (typeof window.t==='function'?window.t('syn.bighair.lv2'):'Big Hair: Steals +30 damage and 3-turn debuff to rival.');
           } else {
             level = 1;
             bonuses = {};
-            desc = "Big Hair: Robos exitosos hacen +15 daño al lanzador.";
+            desc = (typeof window.t==='function'?window.t('syn.bighair.lv1'):'Big Hair: Successful steals deal +15 damage to pitcher.');
           }
         } else if (era === Eras.STEROID) {
           if (count >= 4) {
             level = 2;
             bonuses = {};
-            desc = "Bash Brothers: HR hacen +40 daño; 50% fly sac anotador.";
+            desc = (typeof window.t==='function'?window.t('syn.steroid.lv2'):'Bash Brothers: HR deal +40 damage; 50% sac fly scores.');
           } else {
             level = 1;
             bonuses = {};
-            desc = "Bash Brothers: Jonrones (HR) hacen +20 daño adicional.";
+            desc = (typeof window.t==='function'?window.t('syn.steroid.lv1'):'Bash Brothers: Home Runs deal +20 extra damage.');
           }
         } else if (era === Eras.EFFICIENCY) {
           if (count >= 4) {
             level = 2;
             bonuses = {};
-            desc = "Moneyball: BB hacen +20 daño; outs hacen +10 daño.";
+            desc = (typeof window.t==='function'?window.t('syn.efficiency.lv2'):'Moneyball: BB deal +20 damage; outs deal +10 damage.');
           } else {
             level = 1;
             bonuses = {};
-            desc = "Moneyball: Bases por bolas (BB) hacen +10 daño extra.";
+            desc = (typeof window.t==='function'?window.t('syn.efficiency.lv1'):'Moneyball: Walks (BB) deal +10 extra damage.');
           }
         } else if (era === Eras.MODERN) {
           if (count >= 4) {
             level = 2;
             bonuses = {};
-            desc = "Three True Outcomes: BB hacen 24 daño, Ponche -50% y no corta racha.";
+            desc = (typeof window.t==='function'?window.t('syn.modern.lv2'):'Three True Outcomes: BB deal 24 damage, SO -50% and no chain cut.');
           } else {
             level = 1;
             bonuses = {};
-            desc = "Three True Outcomes: BB hacen 15 daño, Ponche -50% daño al equipo.";
+            desc = (typeof window.t==='function'?window.t('syn.modern.lv1'):'Three True Outcomes: BB deal 15 damage, SO -50% team HP damage.');
           }
         }
 
@@ -1540,7 +1541,7 @@
       }
 
       // Roster has no replacement level at native position: trigger manual replace selection
-      return { success: false, message: "Alineación ocupada. Elige a quién reemplazar." };
+      return { success: false, message: (typeof window.t==='function'?window.t('game.lineup_full'):'Alineación ocupada. Elige a quién reemplazar.') };
     }
 
     replaceRosterPlayer(slot, newPlayerData) {
@@ -1883,7 +1884,7 @@
             won: true,
             isSuperBossTrigger: true,
             superBossTeam,
-            message: `⚡ ¡SUPER BOSS FIGHT! ⚡ ¡Derrotaste al primer grupo de leyendas! AHORA ENFRENTA A LA ROTACIÓN SUPREMA DE 4 LEYENDAS.`
+            message: (typeof window.t==='function'?window.t('game.super_boss_trigger'):`⚡ ¡SUPER BOSS FIGHT! ⚡ ¡Derrotaste al primer grupo de leyendas! AHORA ENFRENTA A LA ROTACIÓN SUPREMA DE 4 LEYENDAS.`)
           };
         }
 
@@ -1894,7 +1895,7 @@
           return {
             won: true,
             isTrueVictory: true,
-            message: `🏆 ¡CAMPEÓN ABSOLUTO! ¡Derrotaste a la Rotación Suprema de 4 Leyendas! BaseRogue conquistado.`
+            message: (typeof window.t==='function'?window.t('game.true_victory'):`🏆 ¡CAMPEÓN ABSOLUTO! ¡Derrotaste a la Rotación Suprema de 4 Leyendas! BaseRogue conquistado.`)
           };
         }
 
@@ -1914,7 +1915,7 @@
             isTraitReward: true,
             traitChoices,
             earnings: earnings + eliteBonus,
-            message: `¡Victoria de Jefe! +$${earnings + eliteBonus}. Elige una Trait Pasiva de Leyenda.`
+            message: (typeof window.t==='function'?window.t('game.boss_victory_trait', { earnings: earnings + eliteBonus }):`¡Victoria de Jefe! +$${earnings + eliteBonus}. Elige una Trait Pasiva de Leyenda.`)
           };
         }
 
@@ -1922,16 +1923,16 @@
           won: true,
           isBossStage,
           earnings: earnings + eliteBonus,
-          message: isBossStage 
-            ? `¡Victoria! Derrotaste al JEFE ${currentEnemy.name}. ¡+$${earnings + eliteBonus} y recompensa de élite!` 
-            : `¡Victoria! Derrotaste a la rotación de ${currentEnemy.name} en 3 innings. ¡+$${earnings + eliteBonus}!`
+          message: isBossStage
+            ? (typeof window.t==='function'?window.t('game.boss_win_msg', { name: currentEnemy.name, earnings: earnings + eliteBonus }):`¡Victoria! Derrotaste al JEFE ${currentEnemy.name}. ¡+$${earnings + eliteBonus}!`)
+            : (typeof window.t==='function'?window.t('game.win_msg', { name: currentEnemy.name, earnings: earnings + eliteBonus }):`¡Victoria! Derrotaste a la rotación de ${currentEnemy.name}. ¡+$${earnings + eliteBonus}!`)
         };
       } else {
         this.runActive = false;
         this.currentEnemy = null;
         return {
           won: false,
-          message: `Derrota. Finalizaron los 3 innings (9 outs) antes de derrotar a toda la rotación de ${currentEnemy.name}.`
+          message: (typeof window.t==='function'?window.t('game.defeat_msg', { name: currentEnemy.name }):`Derrota. Finalizaron los 3 innings (9 outs) antes de derrotar a toda la rotación de ${currentEnemy.name}.`)
         };
       }
     }

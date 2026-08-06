@@ -339,8 +339,8 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
     {
       id: "t_con_std",
       stat: "con",
-      label: "🎯 Sesión de Contacto Estándar",
-      desc: "Práctica intensiva de swing. +5 a +7 Contacto garantizado (15% prob. de ¡Crítico +12!).",
+      get label() { return typeof window.t==='function'?window.t('training.con.label'):'🎯 Sesión de Contacto Estándar'; },
+      get desc() { return typeof window.t==='function'?window.t('training.con.desc'):'Práctica intensiva de swing. +5 a +7 Contacto garantizado.'; },
       price: 14,
       risk: "safe",
       icon: "🎯",
@@ -353,7 +353,7 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
       id: "t_pwr_std",
       stat: "pwr",
       label: "💥 Fuerza en la Jaula",
-      desc: "Repeticiones con bate pesado. +5 a +7 Fuerza garantizada (15% prob. de ¡Crítico +12!).",
+      get desc() { return typeof window.t==='function'?window.t('training.pwr.desc'):'Repeticiones con bate pesado. +5 a +7 Fuerza garantizada.'; },
       price: 14,
       risk: "safe",
       icon: "💥",
@@ -366,7 +366,7 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
       id: "t_spd_std",
       stat: "spd",
       label: "⚡ Sprints de Agilidad",
-      desc: "Trabajo de aceleración en bases. +5 a +7 Velocidad (15% prob. de ¡Crítico +12!).",
+      get desc() { return typeof window.t==='function'?window.t('training.spd.desc'):'Trabajo de aceleración en bases. +5 a +7 Velocidad.'; },
       price: 12,
       risk: "safe",
       icon: "⚡",
@@ -379,7 +379,7 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
       id: "t_def_std",
       stat: "def",
       label: "🧤 Fundamento Defensivo",
-      desc: "Ejercicios de fildeo y tiro. +5 a +7 Defensa (15% prob. de ¡Crítico +12!).",
+      get desc() { return typeof window.t==='function'?window.t('training.def.desc'):'Ejercicios de fildeo y tiro. +5 a +7 Defensa.'; },
       price: 10,
       risk: "safe",
       icon: "🧤",
@@ -391,8 +391,8 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
     {
       id: "t_sta_std",
       stat: "sta",
-      label: "🔋 Recuperación Físico-Biológica",
-      desc: "Masajes y descanso activo. +35 a +45 Stamina (20% prob. de ¡Recuperación 100%!).",
+      get label() { return typeof window.t==='function'?window.t('training.sta.label'):'🔋 Recuperación Físico-Biológica'; },
+      get desc() { return typeof window.t==='function'?window.t('training.sta.desc'):'Masajes y descanso activo. +35 a +45 Stamina.'; },
       price: 10,
       risk: "safe",
       icon: "🔋",
@@ -405,7 +405,7 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
       id: "t_extreme_pwr",
       stat: "pwr",
       label: "🔥 Entrenamiento Extremo de Poder",
-      desc: "Levantamiento súper-pesado. +12 a +14 PWR si resulta. 30% riesgo de tirón muscular (-15 Stamina).",
+      get desc() { return typeof window.t==='function'?window.t('training.risk.desc'):'Levantamiento súper-pesado. +12 a +14 PWR si resulta. 30% riesgo de tirón muscular.'; },
       price: 10,
       risk: "high",
       icon: "🔥",
@@ -839,7 +839,7 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
       autoSortBtn.className = 'btn btn-secondary';
       autoSortBtn.style.cssText = 'width:100%;font-size:7px;padding:6px;margin-top:10px;background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.2);';
       autoSortBtn.innerHTML = '⚙️ AUTO ORDEN';
-      autoSortBtn.title = 'Ordena lógicamente: Velocidad al 1ro, Poder al 4to, Mejores bates al 2do y 3ro.';
+      autoSortBtn.title = (typeof window.t==='function'?window.t('ui.autosort_tooltip'):'Ordena lógicamente: Velocidad al 1ro, Poder al 4to, Mejores bates al 2do y 3ro.');
       autoSortBtn.onclick = () => {
         G.draftBattingOrder = G.autoSortBattingOrder(G.draftRoster, G.draftBattingOrder);
         renderBattingOrderRows();
@@ -1089,7 +1089,7 @@ function renderConfirmationBattingRows() {
           } else {
             row.innerHTML = `
               <span style="font-family:'Press Start 2P',monospace;font-size:8px;color:#6b7280;min-width:16px;">${idx+1}</span>
-              <span style="font-size:9px;color:#374151;flex:1;">${slot} — VACÍO</span>
+              <span style="font-size:9px;color:#374151;flex:1;">${slot} — ${(typeof window.t==="function"?window.t("ui.empty"):"VACÍO")}</span>
             `;
           }
 
@@ -1429,7 +1429,7 @@ function initGameModeSelector() {
         <div class="player-card" style="border: 2px dashed rgba(255,255,255,0.1); background: rgba(0,0,0,0.3); display: flex; justify-content: center; align-items: center;">
           <div style="text-align: center; color: #4b5563;">
             <i class="fa-solid fa-user-plus" style="font-size: 24px; margin-bottom: 8px;"></i>
-            <div style="font-size: 11px; font-weight:bold;">VACÍO</div>
+            <div style="font-size: 11px; font-weight:bold;">${(typeof window.t==="function"?window.t("ui.empty"):"VACÍO")}</div>
           </div>
         </div>
       `;
@@ -1631,7 +1631,7 @@ function initGameModeSelector() {
           <span class="card-trait-badge trait-era" title="${player.era}">${getShortEraName(player.era)}</span>
           ${player.team && player.team !== 'ROOK' ? `<span class="card-trait-badge trait-team" title="${window.PlayersDB.FranchiseNames[player.team] || player.team}">${player.team}</span>` : ''}
         </div>
-        ${player.sec_pos ? `<div class="card-sec-pos-line" title="Posición Secundaria: ${player.sec_pos}">SEC: ${player.sec_pos}</div>` : ''}
+        ${player.sec_pos ? `<div class="card-sec-pos-line" title="${(typeof window.t==="function"?window.t("ui.sec_pos_tooltip")+": "+player.sec_pos:"Posición Secundaria: "+player.sec_pos)}">SEC: ${player.sec_pos}</div>` : ''}
         <div class="card-stats">
           ${statLines}
         </div>
@@ -1954,10 +1954,10 @@ function initGameModeSelector() {
       renderSynergiesAndItems();
       showRetroResultModal({
         title: 'Descanso en la Casa Club',
-        badgeText: '¡RESTAURACIÓN!',
+        get badgeText() { return typeof window.t==='function'?window.t('rest.badge_restore'):'¡RESTAURACIÓN!'; },
         badgeColor: '#10b981',
         icon: '🛋️',
-        desc: 'Toda tu plantilla activa recupera +40 de Stamina para los próximos encuentros.',
+        get desc() { return typeof window.t==='function'?window.t('rest.stamina.desc'):'Toda tu plantilla activa recupera +40 de Stamina para los próximos encuentros.'; },
         stats: [{ label: 'Stamina del Equipo', value: '+40', isPositive: true }],
         onClose: () => closeNodeCompleted()
       });
@@ -1969,10 +1969,10 @@ function initGameModeSelector() {
       updateHUD();
       showRetroResultModal({
         title: 'Patrocinador Deportivo',
-        badgeText: '¡BONIFICACIÓN!',
+        get badgeText() { return typeof window.t==='function'?window.t('rest.badge_bonus'):'¡BONIFICACIÓN!'; },
         badgeColor: '#f59e0b',
         icon: '💰',
-        desc: 'Tu club recibe una inyección económica de los patrocinadores locales.',
+        get desc() { return typeof window.t==='function'?window.t('rest.money.desc'):'Tu club recibe una inyección económica de los patrocinadores locales.'; },
         stats: [{ label: 'Presupuesto del Club', value: '+$25', isPositive: true }],
         onClose: () => closeNodeCompleted()
       });
@@ -2047,7 +2047,7 @@ function initGameModeSelector() {
 
     // Check if run won (exceeded stage 15)
     if (window.Game.currentStageIndex > 15) {
-      triggerGameOver(true, "¡CAMPEÓN DE LA ETERNIDAD! Conquistaste la Serie Mundial y ganaste los Playoffs.");
+      triggerGameOver(true, (typeof window.t==='function'?window.t('game.champion_eternal'):'¡CAMPEÓN DE LA ETERNIDAD! Conquistaste la Serie Mundial y ganaste los Playoffs.'));
       return;
     }
 
@@ -2886,9 +2886,9 @@ function initGameModeSelector() {
     if (player.team && player.team !== 'ROOK') {
       const teamShort = player.team;
       if (currentTeamCount === 1) {
-        predictionText += `Firma activa Química de <strong>${teamShort}</strong> (+4 stats)`;
+        predictionText += (typeof window.t==='function'?window.t('sign.chemistry_active', { team: teamShort }):`Firma activa Química de <strong>${teamShort}</strong> (+4 stats)`);
       } else if (currentTeamCount === 3) {
-        predictionText += `Firma activa Dinastía de <strong>${teamShort}</strong> (+10 stats)`;
+        predictionText += (typeof window.t==='function'?window.t('sign.dynasty_active', { team: teamShort }):`Firma activa Dinastía de <strong>${teamShort}</strong> (+10 stats)`);
       } else {
         predictionText += `Franquicia ${teamShort}: ${currentTeamCount} ➡️ <strong>${currentTeamCount + 1}/2</strong>`;
       }
@@ -3150,17 +3150,17 @@ function initGameModeSelector() {
         if (isSuccess) {
           choice.action(window.Game);
           title = choice.text;
-          badgeText = choice.risk === 'high' ? '¡ÉXITO EN EL RIESGO!' : '¡DECISIÓN TOMADA!';
+          badgeText = choice.risk === 'high' ? (typeof window.t==='function'?window.t('ev.badge_risk_success'):'¡ÉXITO EN EL RIESGO!') : (typeof window.t==='function'?window.t('ev.badge_taken'):'¡DECISIÓN TOMADA!');
           badgeColor = '#10b981';
           icon = choice.icon || '✨';
-          desc = choice.successMsg || 'La decisión se ejecutó con éxito en tu plantilla.';
+          desc = choice.successMsg || (typeof window.t==='function'?window.t('ev.generic_success'):'La decisión se ejecutó con éxito en tu plantilla.');
         } else {
           if (choice.failAction) choice.failAction(window.Game);
           title = choice.text;
           badgeText = '¡RIESGO FALLIDO!';
           badgeColor = '#ef4444';
           icon = '❌';
-          desc = choice.failMsg || 'La opción arriesgada no salió como esperabas y provocó consecuencias negativas.';
+          desc = choice.failMsg || (typeof window.t==='function'?window.t('ev.generic_fail'):'La opción arriesgada no salió como esperabas y provocó consecuencias negativas.');
         }
 
         if (choice.cost !== 0) {
@@ -3468,14 +3468,14 @@ function initGameModeSelector() {
     updateHUD();
 
     let title = `${player.name} [${offer.slot}]`;
-    let badgeText = isFail ? '¡SOBRECARGA MUSCULAR!' : (isCrit ? `¡CRÍTICO ${tier.label}! 🎉` : `¡ENTRENAMIENTO ${tier.label}!`);
+    let badgeText = isFail ? (typeof window.t==='function'?window.t('training.badge_fail'):'¡SOBRECARGA MUSCULAR!') : (isCrit ? (typeof window.t==='function'?window.t('training.badge_crit', { label: tier.label }):`¡CRÍTICO ${tier.label}! 🎉`) : (typeof window.t==='function'?window.t('training.badge_ok', { label: tier.label }):`¡ENTRENAMIENTO ${tier.label}!`));
     let badgeColor = isFail ? '#ef4444' : (isCrit ? '#f59e0b' : tier.color);
     let icon = isFail ? '💥' : (isCrit ? '🎉' : tpl.icon);
     let desc = isFail
-      ? `El entrenamiento fue demasiado intenso y provocó fatiga en ${player.name}.`
+      ? (typeof window.t==='function'?window.t('training.result_fail', { name: player.name }):`El entrenamiento fue demasiado intenso y provocó fatiga en ${player.name}`)
       : (isCrit
-          ? `¡Extraordinario desempeño! ${player.name} tuvo una sesión de nivel ${tier.label} e incrementó +${gainVal} en su estadística.`
-          : `${player.name} completó la rutina ${tier.label} con éxito.`);
+          ? (typeof window.t==='function'?window.t('training.result_crit', { name: player.name, label: tier.label, val: gainVal }):`¡Extraordinario desempeño! ${player.name} tuvo una sesión de nivel ${tier.label} e incrementó +${gainVal} en su estadística.`)
+          : (typeof window.t==='function'?window.t('training.result_ok', { name: player.name, label: tier.label }):`${player.name} completó la rutina ${tier.label} con éxito.`));
 
     showRetroResultModal({
       title,
@@ -3566,7 +3566,7 @@ function initGameModeSelector() {
     const enemy = window.Game.getEnemyTeam();
     el.matchHeaderTitle.innerHTML =
       `<i class="fa-solid fa-dice"></i> 🎲 Combate Interactivo vs <span style="color:#ef4444;">${enemy.name}</span>`;
-    if (el.scoreEnemyName) el.scoreEnemyName.innerText = 'ROTACIÓN RIVAL';
+    if (el.scoreEnemyName) el.scoreEnemyName.innerText = (typeof window.t==='function'?window.t('match.rival_rotation'):'ROTACIÓN RIVAL');
 
     // Reset HUD
     el.scoreAwayR.innerText = '0';
@@ -4196,7 +4196,7 @@ function initGameModeSelector() {
       if (state.pitcherDebuff && state.pitcherDebuff.turnsLeft > 0) {
         const mult = Math.round((state.pitcherDebuff.multiplier - 1) * 100);
         const impLbl = state.pitcherDebuff.turnsLeft === 1 ? 'impacto' : 'impactos';
-        debuffBadge.innerText = `⚡ +${mult}% DAÑO RECIBIDO (${state.pitcherDebuff.turnsLeft} ${impLbl})`;
+        debuffBadge.innerText = `⚡ +${mult}% ${typeof window.t==='function'?window.t('match.debuff_badge'):'DAÑO RECIBIDO'} (${state.pitcherDebuff.turnsLeft} ${impLbl})`;
         debuffBadge.classList.remove('hidden');
       } else {
         debuffBadge.classList.add('hidden');
@@ -4554,9 +4554,9 @@ function initGameModeSelector() {
     outcomeLine.style.paddingTop = "10px";
     
     if (isWinnerAway) {
-      outcomeLine.innerHTML = `¡VICTORIA CONTUNDENTE! Has derrotado a la rotación completa de lanzadores.`;
+      outcomeLine.innerHTML = (typeof window.t==='function'?window.t('match.outcome_victory'):'¡VICTORIA CONTUNDENTE! Has derrotado a la rotación completa de lanzadores.');
     } else {
-      outcomeLine.innerHTML = `DERROTA. Tu alineación ha sido noqueada por los lanzadores rivales.`;
+      outcomeLine.innerHTML = (typeof window.t==='function'?window.t('match.outcome_defeat'):'DERROTA. Tu alineación ha sido noqueada por los lanzadores rivales.');
     }
     el.matchLogLines.appendChild(outcomeLine);
     el.matchLogLines.scrollTop = el.matchLogLines.scrollHeight;
@@ -4630,7 +4630,7 @@ function initGameModeSelector() {
       <div style="max-width:850px;width:95%;padding:20px;">
         <div style="text-align:center;margin-bottom:24px;">
           <div style="font-family:'Press Start 2P',monospace;font-size:13px;color:#ffd700;text-shadow:0 0 15px rgba(255,215,0,0.7);margin-bottom:8px;">🏆 ¡VICTORIA DE JEFE! +$${earnings}</div>
-          <div style="font-size:12px;color:#e2e8f0;">Elige una Trait Pasiva que acompañará a tu equipo hasta el final de la run:</div>
+          <div style="font-size:12px;color:#e2e8f0;">${typeof window.t==='function'?window.t('ui.trait_choose_desc'):'Elige una Trait Pasiva que acompañará a tu equipo hasta el final de la run:'}</div>
         </div>
         <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
           ${cardsHTML}
@@ -4689,11 +4689,11 @@ function initGameModeSelector() {
         <div style="font-family:'Press Start 2P',monospace;font-size:14px;color:#ffd700;margin-bottom:12px;text-shadow:0 0 10px #ffd700;">⚡ SUPER BOSS FIGHT ⚡</div>
         <div style="font-size:12.5px;color:#fff;font-weight:bold;margin-bottom:16px;line-height:1.5;">
           ¡Derrotaste al primer grupo del Playoffs!<br>
-          <span style="color:#22d3ee;">¡Pero las 4 Máximas Leyendas del Béisbol saltan al campo para la Batalla Final!</span>
+          <span style="color:#22d3ee;">${typeof window.t==='function'?window.t('ui.super_boss_desc'):'¡Pero las 4 Máximas Leyendas del Béisbol saltan al campo para la Batalla Final!'}</span>
         </div>
         <div style="background:rgba(255,215,0,0.1);border:1px solid #ffd700;border-radius:8px;padding:10px;font-size:11px;color:#fef08a;margin-bottom:20px;">
           🔥 <strong>Fase Final Especial (4 Pitchers Leyenda)</strong><br>
-          Tu equipo ha recuperado +30 HP y Escudo Máximo.
+          ${typeof window.t==='function'?window.t('ui.hp_restored'):'Tu equipo ha recuperado +30 HP y Escudo Máximo.'}
         </div>
         <button id="btn-start-super-boss" class="btn" style="background:linear-gradient(90deg,#ffd700,#f59e0b);color:#000;font-weight:bold;font-size:11px;padding:12px 24px;width:100%;border:none;cursor:pointer;">¡ENFRENTAR AL SUPER BOSS FINAL! ⚾</button>
       </div>

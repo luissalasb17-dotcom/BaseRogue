@@ -291,6 +291,7 @@
     rollDice(roll) {
       if (this.battleOver) return [];
 
+      const _t = (key, params, fallback) => (typeof window.t === 'function' ? window.t(key, params) : (fallback || key));
       const startIndex = this.events.length;
 
       const batter  = this.awayTeam.lineup[this.awayLineupIndex];
@@ -326,11 +327,11 @@
         const runnersInScoring = !!(this.bases[1] || this.bases[2]);
         if (isLastInning || runnersInScoring) {
           const reason = (isLastInning && runnersInScoring)
-            ? 'última entrada con corredores en posición de anotar'
+            ? _t('sim.clutch_reason_both', {}, 'última entrada con corredores en posición de anotar')
             : isLastInning
-              ? 'última entrada'
-              : 'corredores en posición de anotar';
-          clutchProc = `⚡ ¡CLUTCH PLAYER! ${batter.name} batea en momento decisivo (${reason}) — (+2% 1B/2B, +4% HR).`;
+              ? _t('sim.clutch_reason_inning', {}, 'última entrada')
+              : _t('sim.clutch_reason_runners', {}, 'corredores en posición de anotar');
+          clutchProc = `⚡ ¡CLUTCH PLAYER! ${batter.name} ${_t('sim.clutch_desc', {}, 'batea en momento decisivo')} (${reason}) — (+2% 1B/2B, +4% HR).`;
         }
       }
 
@@ -347,20 +348,20 @@
         if (batterEra === 'Efficiency (2006-2015)' && eraSynergy >= 1) {
           const extra = eraSynergy === 2 ? 20 : 10;
           pitcherDmg += extra;
-          synergyProc = `📊 Moneyball: ¡Boleto paciente inflige +${extra} daño!`;
+          synergyProc = _t('sim.syn_moneyball_bb', { extra }, `📊 Moneyball: ¡Boleto paciente inflige +${extra} daño!`);
         }
         // Modern Era BB boost
         else if (batterEra === 'Modern Era (2016-Pres)' && eraSynergy >= 1) {
           const extra = eraSynergy === 2 ? 24 : 12;
           pitcherDmg += extra;
-          synergyProc = `🚀 Three True Outcomes: ¡Boleto optimizado inflige +${extra} daño!`;
+          synergyProc = _t('sim.syn_tto_bb', { extra }, `🚀 Three True Outcomes: ¡Boleto optimizado inflige +${extra} daño!`);
         }
 
         pitcherDmg = this._applyDebuffToPitcherDmg(pitcherDmg);
         
-        let batterPlayText = `🎲 [${roll}] [BASE POR BOLAS] ${batter.name} trabaja el conteo y saca pasaporte.` +
-          (runsThisTurn ? ` ¡Carrera de caballito! ` : ` Avanza a primera. `) +
-          `${pitcher.name} sufre ${pitcherDmg} HP de daño.`;
+        let batterPlayText = `🎲 [${roll}] [${_t('sim.label_bb', {}, 'BASE POR BOLAS')}] ${batter.name} ${_t('sim.bb_desc', {}, 'trabaja el conteo y saca pasaporte')}.` +
+          (runsThisTurn ? ` ${_t('sim.bb_run', {}, '¡Carrera de caballito!')} ` : ` ${_t('sim.bb_advance', {}, 'Avanza a primera.')} `) +
+          `${pitcher.name} ${_t('sim.pitcher_dmg_txt', { dmg: pitcherDmg }, 'sufre ' + pitcherDmg + ' HP de daño')}.`;
 
         // Steal Proc Logic on BB if batter ends on 1B and 2B is empty
         let stealChance = Math.min(0.85, 0.10 + ((effBatter.spd - 40) * 0.01));
@@ -375,7 +376,7 @@
           stealChance = eraSynergy === 2 ? 0.80 : 0.50;
           stealHeal = eraSynergy === 2 ? 20 : 10;
           extraStealDmg = eraSynergy === 2 ? 10 : 0;
-          stealProcMsg = `Sinergia Expansion`;
+          stealProcMsg = _t('sim.syn_expansion', {}, 'Sinergia Expansion');
         }
         else if (batterEra === 'Big Hair Era (1977-1993)' && eraSynergy >= 1) {
           stealChance = Math.min(0.95, stealChance * 2);
@@ -384,7 +385,7 @@
             debuffTurns = 3;
             debuffMult = 1.30;
           }
-          stealProcMsg = `Sinergia Big Hair`;
+          stealProcMsg = _t('sim.syn_bighair', {}, 'Sinergia Big Hair');
         }
 
         if ((effBatter.spd || 0) >= 40 && this.bases[0] === batter && !this.bases[1] && Math.random() < stealChance) {
@@ -399,10 +400,10 @@
             this.pitcherDebuff = { turnsLeft: debuffTurns, multiplier: debuffMult };
           }
           
-          let spdMsg = `🏃 ¡ROBO DE BASE! ${batter.name} se roba la segunda base.`;
+          let spdMsg = `🏃 ${_t('sim.steal_label', {}, '¡ROBO DE BASE!')} ${batter.name} ${_t('sim.steal_desc', {}, 'se roba la segunda base')}.`;
           if (stealProcMsg) spdMsg += ` (${stealProcMsg})`;
-          const impLabel = this.pitcherDebuff.turnsLeft === 1 ? 'impacto restante' : 'impactos restantes';
-          spdMsg += ` Debuff de +20% daño (${this.pitcherDebuff.turnsLeft} ${impLabel}).`;
+          const impLabel = this.pitcherDebuff.turnsLeft === 1 ? _t('sim.debuff_turn_s', {}, 'impacto restante') : _t('sim.debuff_turns_p', {}, 'impactos restantes');
+          spdMsg += ` ${_t('sim.debuff_note', {}, 'Debuff de +20% daño')} (${this.pitcherDebuff.turnsLeft} ${impLabel}).`;
           
           if (stealHeal > 0) {
             batter.stamina = Math.min(100, (batter.stamina || 100) + stealHeal);
@@ -410,7 +411,7 @@
           }
           if (extraStealDmg > 0) {
             pitcherDmg += extraStealDmg;
-            spdMsg += ` (+${extraStealDmg} daño extra al lanzador)`;
+            spdMsg += ` (+${extraStealDmg} ${_t('sim.extra_dmg_pitcher', {}, 'daño extra al lanzador')})`;
           }
           
           spdProc = (spdProc ? spdProc + ' | ' : '') + spdMsg;
@@ -442,25 +443,25 @@
         let finalSoDmg = baseSoDmg;
         if (modernSoReduction) {
           finalSoDmg = Math.round(finalSoDmg * 0.5);
-          synergyProc = `🚀 Three True Outcomes: Ponche causa -50% daño HP`;
+          synergyProc = _t('sim.syn_tto_so', {}, '🚀 Three True Outcomes: Ponche causa -50% daño HP');
         }
         teamHpDmg = finalSoDmg;
 
         this.teamHP = Math.max(0, this.teamHP - teamHpDmg);
-        const chainLabel = this.strikeoutChain > 1 ? ` 🔥 RACHA ×${this.strikeoutChain} (-${baseSoDmg} HP)!` : '';
-        playText = `🎲 [${roll}] [PONCHE] ¡${pitcher.name} poncha a ${batter.name}!${chainLabel}` +
-          ` Daño directo: -${teamHpDmg} HP del equipo (¡ignora el escudo!).` +
-          ` HP restante: ${this.teamHP}/100`;
+        const chainLabel = this.strikeoutChain > 1 ? ` 🔥 ${_t('sim.streak_label', { count: this.strikeoutChain, dmg: baseSoDmg }, 'RACHA ×' + this.strikeoutChain + ' (-' + baseSoDmg + ' HP)!')}` : '';
+        playText = `🎲 [${roll}] [${_t('sim.label_so', {}, 'PONCHE')}] ¡${pitcher.name} ${_t('sim.so_pitcher_verb', { batter: batter.name }, 'poncha a ' + batter.name)}!${chainLabel}` +
+          ` ${_t('sim.so_direct_dmg', { dmg: teamHpDmg }, 'Daño directo: -' + teamHpDmg + ' HP del equipo (¡ignora el escudo!)')}.` +
+          ` ${_t('sim.hp_remaining', { hp: this.teamHP }, 'HP restante: ' + this.teamHP + '/100')}`;
 
         if (batterEra === 'Integration (1942-1960)' && eraSynergy === 2) {
           this.awayTeam.lineup.forEach(p => {
             if (p) p.stamina = Math.min(100, (p.stamina || 100) + 5);
           });
-          synergyProc = (synergyProc ? synergyProc + ' | ' : '') + `🔋 Five-Tool: ¡OUT recupera +5 de Stamina a todos!`;
+          synergyProc = (synergyProc ? synergyProc + ' | ' : '') + _t('sim.syn_fivetool_out', {}, '🔋 Five-Tool: ¡OUT recupera +5 de Stamina a todos!');
         }
         if (batterEra === 'Efficiency (2006-2015)' && eraSynergy === 2) {
           pitcherDmg += 10;
-          synergyProc = (synergyProc ? synergyProc + ' | ' : '') + `📊 Moneyball Out Wear: +10 daño al lanzador.`;
+          synergyProc = (synergyProc ? synergyProc + ' | ' : '') + _t('sim.syn_moneyball_out', {}, '📊 Moneyball Out Wear: +10 daño al lanzador.');
         }
 
       } else if (roll <= bounds.outEnd) {
@@ -482,19 +483,19 @@
           this.teamHP = Math.max(0, this.teamHP - outDmg);
         }
         const outTypes = [
-          'saca un rodado por el cuadro para out',
-          'conecta un elevado al jardín para out de rutina',
-          'línea quemante atrapada en el aire'
+          _t('sim.out_ground', {}, 'saca un rodado por el cuadro para out'),
+          _t('sim.out_fly', {}, 'conecta un elevado al jardín para out de rutina'),
+          _t('sim.out_line', {}, 'línea quemante atrapada en el aire')
         ];
         const outStr = outTypes[Math.floor(Math.random() * outTypes.length)];
-        playText = `🎲 [${roll}] [OUT] ${batter.name} ${outStr}.` +
-          ` Escudo -${shieldDmg} HP | Team HP -${teamHpDmg} HP.` +
-          ` (Escudo: ${this.teamShield}/${this.teamShieldMax} | HP: ${this.teamHP}/100)`;
+        playText = `🎲 [${roll}] [${_t('sim.label_out', {}, 'OUT')}] ${batter.name} ${outStr}.` +
+          ` ${_t('sim.out_dmg_label', { shield: shieldDmg, hp: teamHpDmg }, 'Escudo -' + shieldDmg + ' HP | Team HP -' + teamHpDmg + ' HP')}.` +
+          ` (${_t('sim.shield_status', { shield: this.teamShield, max: this.teamShieldMax, hp: this.teamHP }, 'Escudo: ' + this.teamShield + '/' + this.teamShieldMax + ' | HP: ' + this.teamHP + '/100')})`;
 
         if (this.bases[2] && batterEra === 'Steroid Era (1994-2005)' && eraSynergy === 2 && Math.random() < 0.50) {
           runsThisTurn++;
           this.bases[2] = null;
-          synergyProc = `💪 Bash Brothers Sac Fly: ¡Corredor en 3B anota carrera!`;
+          synergyProc = _t('sim.syn_bash_sacfly', {}, '💪 Bash Brothers Sac Fly: ¡Corredor en 3B anota carrera!');
           this.runs += runsThisTurn;
         }
 
@@ -502,11 +503,11 @@
           this.awayTeam.lineup.forEach(p => {
             if (p) p.stamina = Math.min(100, (p.stamina || 100) + 5);
           });
-          synergyProc = (synergyProc ? synergyProc + ' | ' : '') + `🔋 Five-Tool: ¡OUT recupera +5 de Stamina a todos!`;
+          synergyProc = (synergyProc ? synergyProc + ' | ' : '') + _t('sim.syn_fivetool_out', {}, '🔋 Five-Tool: ¡OUT recupera +5 de Stamina a todos!');
         }
         if (batterEra === 'Efficiency (2006-2015)' && eraSynergy === 2) {
           pitcherDmg += 10;
-          synergyProc = (synergyProc ? synergyProc + ' | ' : '') + `📊 Moneyball Out Wear: +10 daño al lanzador.`;
+          synergyProc = (synergyProc ? synergyProc + ' | ' : '') + _t('sim.syn_moneyball_out', {}, '📊 Moneyball Out Wear: +10 daño al lanzador.');
         }
 
       } else {
@@ -531,7 +532,7 @@
             const upgrade = { '1B': '2B', '2B': '3B', '3B': '3B', 'HR': 'HR' };
             const newType = upgrade[hitType];
             if (newType !== hitType) {
-              spdProc = `⚡ SPD Proc (Grado ${spdGrade}): ¡${hitType} convertido en ${newType}!`;
+              spdProc = _t('sim.spd_upgrade', { grade: spdGrade, from: hitType, to: newType }, `⚡ SPD Proc (Grado ${spdGrade}): ¡${hitType} convertido en ${newType}!`);
               hitType = newType;
             }
           }
@@ -539,7 +540,7 @@
 
         if (hitType === '2B' && batterEra === 'Golden Era (1920-1941)' && eraSynergy === 2 && Math.random() < 0.30) {
           hitType = '3B';
-          synergyProc = `🔥 Liveball Sluggers: ¡Doble convertido en Triple!`;
+          synergyProc = _t('sim.syn_liveball_upgrade', {}, '🔥 Liveball Sluggers: ¡Doble convertido en Triple!');
         }
 
         let genesisErrorSucceeded = false;
@@ -549,7 +550,7 @@
             genesisErrorSucceeded = true;
             const extraDmg = eraSynergy === 2 ? 20 : 10;
             pitcherDmg += extraDmg;
-            errorProc = `💥 Genesis Chaos: ¡Error rival! +${extraDmg} daño e incremento extra de bases.`;
+            errorProc = _t('sim.syn_genesis_error', { dmg: extraDmg }, `💥 Genesis Chaos: ¡Error rival! +${extraDmg} daño e incremento extra de bases.`);
           }
         }
 
@@ -561,12 +562,12 @@
           if (batterEra === 'Steroid Era (1994-2005)' && eraSynergy >= 1) {
             const extraHr = eraSynergy === 2 ? 40 : 20;
             hrDmg += extraHr;
-            synergyProc = `💪 Bash Brothers: ¡Jonrón inflige +${extraHr} daño!`;
+            synergyProc = _t('sim.syn_bash_hr', { extra: extraHr }, `💪 Bash Brothers: ¡Jonrón inflige +${extraHr} daño!`);
           }
           
           pitcherDmg += hrDmg;
           eventType = 'HR';
-          playText = `🎲 [${roll}] [JONRÓN] ¡${batter.name} CUADRANGULAR de ${runsThisTurn} carreras! `;
+          playText = `🎲 [${roll}] [${_t('sim.label_hr', {}, 'JONRÓN')}] ¡${batter.name} ${_t('sim.hr_desc', { runs: runsThisTurn }, 'CUADRANGULAR de ' + runsThisTurn + ' carreras')}! `;
 
         } else if (hitType === '3B') {
           runsThisTurn = this._advanceTriple(batter);
@@ -577,7 +578,7 @@
           }
           pitcherDmg += 45 + (runsThisTurn * 10);
           eventType = '3B';
-          playText = `🎲 [${roll}] [TRIPLE] ¡${batter.name} triple al rincón! `;
+          playText = `🎲 [${roll}] [${_t('sim.label_3b', {}, 'TRIPLE')}] ¡${batter.name} ${_t('sim.3b_desc', {}, 'triple al rincón')}! `;
 
         } else if (hitType === '2B') {
           runsThisTurn = this._advanceDouble(batter);
@@ -588,7 +589,7 @@
           }
           pitcherDmg += 30 + (runsThisTurn * 10);
           eventType = '2B';
-          playText = `🎲 [${roll}] [DOBLE] ¡${batter.name} línea violenta por la raya! `;
+          playText = `🎲 [${roll}] [${_t('sim.label_2b', {}, 'DOBLE')}] ¡${batter.name} ${_t('sim.2b_desc', {}, 'línea violenta por la raya')}! `;
 
         } else {
           let deadballDoubleAdvance = false;
@@ -596,7 +597,7 @@
             const doubleChance = eraSynergy === 2 ? 0.40 : 0.20;
             if (Math.random() < doubleChance) {
               deadballDoubleAdvance = true;
-              synergyProc = `⏳ Small Ball: ¡Avanzan 2 bases en sencillo!`;
+              synergyProc = _t('sim.syn_smallball', {}, '⏳ Small Ball: ¡Avanzan 2 bases en sencillo!');
             }
           }
 
@@ -610,13 +611,13 @@
 
           pitcherDmg += 15 + (runsThisTurn * 10);
           eventType = '1B';
-          playText = `🎲 [${roll}] [SENCILLO] ¡${batter.name} imparable raso! `;
+          playText = `🎲 [${roll}] [${_t('sim.label_1b', {}, 'SENCILLO')}] ¡${batter.name} ${_t('sim.1b_desc', {}, 'imparable raso')}! `;
         }
 
         if (batterEra === 'Golden Era (1920-1941)' && eraSynergy >= 1) {
           const extraGolden = eraSynergy === 2 ? 12 : 6;
           pitcherDmg += extraGolden;
-          synergyProc = (synergyProc ? synergyProc + ' | ' : '') + `🔥 Liveball Sluggers: +${extraGolden} daño.`;
+          synergyProc = (synergyProc ? synergyProc + ' | ' : '') + _t('sim.syn_liveball_dmg', { extra: extraGolden }, `🔥 Liveball Sluggers: +${extraGolden} daño.`);
         }
 
         this.runs += runsThisTurn;
@@ -658,10 +659,10 @@
               this.pitcherDebuff = { turnsLeft: debuffTurns, multiplier: debuffMult };
             }
             
-            let spdMsg = `🏃 ¡ROBO DE BASE! ${batter.name} se roba la segunda base.`;
+            let spdMsg = `🏃 ${_t('sim.steal_label', {}, '¡ROBO DE BASE!')} ${batter.name} ${_t('sim.steal_desc', {}, 'se roba la segunda base')}.`;
             if (stealProcMsg) spdMsg += ` (${stealProcMsg})`;
-            const impLabel2 = this.pitcherDebuff.turnsLeft === 1 ? 'impacto restante' : 'impactos restantes';
-            spdMsg += ` Debuff de +20% daño (${this.pitcherDebuff.turnsLeft} ${impLabel2}).`;
+            const impLabel2 = this.pitcherDebuff.turnsLeft === 1 ? _t('sim.debuff_turn_s', {}, 'impacto restante') : _t('sim.debuff_turns_p', {}, 'impactos restantes');
+            spdMsg += ` ${_t('sim.debuff_note', {}, 'Debuff de +20% daño')} (${this.pitcherDebuff.turnsLeft} ${impLabel2}).`;
             
             if (stealHeal > 0) {
               batter.stamina = Math.min(100, (batter.stamina || 100) + stealHeal);
@@ -669,14 +670,14 @@
             }
             if (extraStealDmg > 0) {
               pitcherDmg += extraStealDmg;
-              spdMsg += ` (+${extraStealDmg} daño extra al lanzador)`;
+              spdMsg += ` (+${extraStealDmg} ${_t('sim.extra_dmg_pitcher', {}, 'daño extra al lanzador')})`;
             }
             
             spdProc = (spdProc ? spdProc + ' | ' : '') + spdMsg;
           }
         }
 
-        playText += `Anotan ${runsThisTurn} carreras. ${pitcher.name} sufre ${pitcherDmg} HP de daño.`;
+        playText += _t('sim.runs_scored', { runs: runsThisTurn, pitcher: pitcher.name, dmg: pitcherDmg }, `Anotan ${runsThisTurn} carreras. ${pitcher.name} sufre ${pitcherDmg} HP de daño`) + '.';
         if (spdProc) playText += ` ${spdProc}`;
         if (errorProc) playText += ` ${errorProc}`;
         if (synergyProc) playText += ` ${synergyProc}`;
@@ -714,12 +715,12 @@
       if (pitcher && pitcher.hp <= 0) {
         // Debuff persists across pitcher changes until impacts expire or inning ends
         this.logEvent('KO_PITCHER',
-          `¡[K.O.] ${pitcher.name} ha sido derrotado! ¡Entra el relevo!`,
+          _t('match.log_ko', { name: pitcher.name }, `¡[K.O.] ${pitcher.name} ha sido derrotado! ¡Entra el relevo!`),
           'KO', pitcher.name);
         this.enemyPitcherIndex++;
         if (this.activePitcher) {
           this.logEvent('NEXT_PITCHER',
-            `⚾ Entra el relevo: ${this.activePitcher.name} (${this.activePitcher.hp}/${this.activePitcher.maxHp} HP).`,
+            _t('match.log_relief', { name: this.activePitcher.name, hp: this.activePitcher.hp, maxHp: this.activePitcher.maxHp }, `⚾ Entra al relevo: ${this.activePitcher.name} (${this.activePitcher.hp}/${this.activePitcher.maxHp} HP)`),
             'PITCHER_ENTER');
         }
         this._checkEndConditions();
@@ -727,7 +728,7 @@
       // 3 outs → end inning
       if (this.outs >= 3) {
         this.logEvent('INNING_END',
-          `--- FIN DE LA ENTRADA ${this.inning} (${this.runs} carreras anotadas) ---`,
+          _t('sim.inning_end', { inning: this.inning, runs: this.runs }, `--- FIN DE LA ENTRADA ${this.inning} (${this.runs} carreras anotadas) ---`),
           'INNING_END');
         this.inning++;
         this.outs = 0;
@@ -764,7 +765,7 @@
         this.battleOver = true;
         const remaining = this.homeTeam.pitchers.length - this.enemyPitcherIndex;
         this.logEvent('END',
-          `⏱ FIN DE PARTIDO (3 innings). Te faltaron ${remaining} lanzadores por derrotar.`,
+          _t('sim.match_timeout', { remaining }, `⏱ FIN DE PARTIDO (3 innings). Te faltaron ${remaining} lanzadores por derrotar.`),
           'END');
       }
     }
