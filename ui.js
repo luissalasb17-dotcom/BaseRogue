@@ -4199,17 +4199,18 @@ function initGameModeSelector() {
       b = { bbEnd: 11, soEnd: 22, outEnd: 38, singleEnd: 61, doubleEnd: 74, tripleEnd: 81 };
     }
 
-    let isClutchActive = false;
-    if (activeBattle) {
+    const isClutchActive = b.isClutchActive || (activeBattle && (function(){
       const batter = activeBattle.awayTeam ? activeBattle.awayTeam.lineup[activeBattle.awayLineupIndex] : null;
-      if (batter && (batter.clutch || batter.is_clutch)) {
-        const isLastInning = activeBattle.inning >= 3;
-        const runnersInScoring = !!(activeBattle.bases && (activeBattle.bases[1] || activeBattle.bases[2]));
-        if (isLastInning || runnersInScoring) {
-          isClutchActive = true;
-        }
-      }
-    }
+      if (!batter || !(batter.clutch || batter.is_clutch)) return false;
+      const isLastInning = activeBattle.inning >= 3;
+      const runnersInScoring = !!(activeBattle.bases && (activeBattle.bases[1] || activeBattle.bases[2]));
+      return isLastInning || runnersInScoring;
+    })());
+
+    const boost1BTag = isClutchActive ? `<span class="clutch-tag-badge boost">+2%</span>` : '';
+    const boost2BTag = isClutchActive ? `<span class="clutch-tag-badge boost">+2%</span>` : '';
+    const boostHRTag = isClutchActive ? `<span class="clutch-tag-badge hr-boost">+4%</span>` : '';
+    const penaltyOutTag = isClutchActive ? `<span class="clutch-tag-badge penalty">-8%</span>` : '';
 
     zonesEl.innerHTML = `
       ${isClutchActive ? `<div class="clutch-active-banner">⚡ ¡CLUTCH PLAYER ACTIVO!</div>` : ''}
@@ -4225,17 +4226,23 @@ function initGameModeSelector() {
           </div>
           <div class="outcome-row" style="${isClutchActive ? 'background:rgba(239,68,68,0.12);' : ''}">
             <span class="outcome-row-left" style="color:#9ca3af;">🤚 ${t('match.out', 'Out')}</span>
-            <span class="outcome-row-right" style="color:#9ca3af;font-weight:bold;">${b.soEnd + 1}–${b.outEnd}</span>
+            <span class="outcome-row-right">
+              <span style="color:#9ca3af;font-weight:bold;">${b.soEnd + 1}–${b.outEnd}</span>${penaltyOutTag}
+            </span>
           </div>
         </div>
         <div style="display:flex;flex-direction:column;gap:4px;">
           <div class="outcome-row" style="${isClutchActive ? 'background:rgba(0,255,102,0.1);' : ''}">
             <span class="outcome-row-left" style="color:#a7f3d0;">✅ ${t('match.single', 'Sencillo')}</span>
-            <span class="outcome-row-right" style="color:#a7f3d0;font-weight:bold;">${b.outEnd + 1}–${b.singleEnd}</span>
+            <span class="outcome-row-right">
+              <span style="color:#a7f3d0;font-weight:bold;">${b.outEnd + 1}–${b.singleEnd}</span>${boost1BTag}
+            </span>
           </div>
           <div class="outcome-row" style="${isClutchActive ? 'background:rgba(16,185,129,0.1);' : ''}">
             <span class="outcome-row-left" style="color:#10b981;">⚡ ${t('match.double', 'Doble')}</span>
-            <span class="outcome-row-right" style="color:#10b981;font-weight:bold;">${b.singleEnd + 1}–${b.doubleEnd}</span>
+            <span class="outcome-row-right">
+              <span style="color:#10b981;font-weight:bold;">${b.singleEnd + 1}–${b.doubleEnd}</span>${boost2BTag}
+            </span>
           </div>
           <div class="outcome-row">
             <span class="outcome-row-left" style="color:#06b6d4;">🔥 ${t('match.triple', 'Triple')}</span>
@@ -4243,7 +4250,9 @@ function initGameModeSelector() {
           </div>
           <div class="outcome-row" style="${isClutchActive ? 'background:rgba(234,179,8,0.15);' : ''}">
             <span class="outcome-row-left" style="color:#eab308;font-weight:bold;">🚀 ${t('match.hr', 'Jonrón')}</span>
-            <span class="outcome-row-right" style="color:#eab308;font-weight:bold;">${b.tripleEnd + 1}–100</span>
+            <span class="outcome-row-right">
+              <span style="color:#eab308;font-weight:bold;">${b.tripleEnd + 1}–100</span>${boostHRTag}
+            </span>
           </div>
         </div>
       </div>

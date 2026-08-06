@@ -168,7 +168,7 @@
     const singleWidth = Math.max(1, Math.round(pSingle * 100));
     const outEnd = Math.max(soEnd + 1, singleEnd - singleWidth);
 
-    return { bbEnd, soEnd, outEnd, singleEnd, doubleEnd, tripleEnd, pBB, pSO, pOut, pHit };
+    return { bbEnd, soEnd, outEnd, singleEnd, doubleEnd, tripleEnd, pBB, pSO, pOut, pHit, isClutchActive, clutchActualBoosts };
   }
 
   /**
@@ -951,7 +951,7 @@
       const batter  = this.awayTeam.lineup[this.awayLineupIndex];
       const pitcher = this.activePitcher;
       if (!batter || !pitcher) return null;
-      const b = calcBoundaries(batter, pitcher);
+      const b = calcBoundaries(batter, pitcher, this);
       return {
         batter, pitcher,
         bbEnd:  b.bbEnd,
@@ -959,7 +959,9 @@
         outEnd: b.outEnd,
         singleEnd: b.singleEnd,
         doubleEnd: b.doubleEnd,
-        tripleEnd: b.tripleEnd
+        tripleEnd: b.tripleEnd,
+        isClutchActive: b.isClutchActive,
+        clutchActualBoosts: b.clutchActualBoosts
       };
     }
 
