@@ -627,8 +627,11 @@ def paso_10_atributos_raw_bateo(df):
     b3 = df["peak_3b"].fillna(0)
 
     is_nlb = (df["league_group"] == "NLB") if "league_group" in df.columns else False
-    m_pa = np.where(is_nlb, 500, 100)
-    m_ab = np.where(is_nlb, 450, 90)
+    # Peak-aggregate Bayesian sample-size smoothing (m = 2200 PA / 1950 AB for NLB 7-year peak aggregates)
+    # This reflects a full 4-season sample weight for 7-year peak aggregates, regressing small-sample spikes
+    # while preserving the true top-tier immortals (Oscar Charleston, Josh Gibson, Willie Wells, Turkey Stearnes).
+    m_pa = np.where(is_nlb, 2200, 150)
+    m_ab = np.where(is_nlb, 1950, 135)
 
     df["ba_smoothed"] = (h + m_ab * 0.265) / (ab + m_ab)
 
@@ -914,16 +917,14 @@ def map_to_cosmetic_ovr(r):
     val = float(r)
     if val <= 30.0:
         res = 50.0 + (val / 30.0) * 10.0
-    elif val <= 45.0:
-        res = 60.0 + ((val - 30.0) / 15.0) * 9.0
-    elif val <= 58.0:
-        res = 70.0 + ((val - 45.0) / 13.0) * 8.0
-    elif val <= 74.0:
-        res = 79.0 + ((val - 58.0) / 16.0) * 8.0
-    elif val <= 85.0:
-        res = 88.0 + ((val - 74.0) / 11.0) * 6.0
+    elif val <= 50.0:
+        res = 60.0 + ((val - 30.0) / 20.0) * 12.0
+    elif val <= 70.0:
+        res = 72.0 + ((val - 50.0) / 20.0) * 12.0
+    elif val <= 88.0:
+        res = 84.0 + ((val - 70.0) / 18.0) * 8.0
     else:
-        res = 95.0 + min(4.0, ((val - 85.0) / 18.0) * 4.0)
+        res = 92.0 + min(7.9, ((val - 88.0) / 20.0) * 7.9)
     return round(res, 1)
 
 
