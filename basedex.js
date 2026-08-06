@@ -150,30 +150,30 @@
           const rColor = RARITY_COLORS[p.rarity] || RARITY_COLORS.Common;
           el.className = 'dex-card unlocked';
           el.style.cssText = `background: #0d1f12; border: 2px solid ${rColor}; border-radius: 8px; padding: 10px 6px; text-align: center; cursor: pointer; transition: transform 0.15s; display: flex; flex-direction: column; justify-content: space-between;`;
-          el.innerHTML = \`
+          el.innerHTML = `
             <div>
-              <div style="font-size:7px;color:#00ff66;font-family:'Press Start 2P',monospace;margin-bottom:4px">\${p.pos}</div>
-              <div style="font-size:7px;color:#e5e7eb;font-family:'Press Start 2P',monospace;line-height:1.3;word-break:break-word">\${p.name}</div>
-              <div style="font-size:6px;color:#9ca3af;margin-top:3px">\${p.team} '\${p.year}</div>
+              <div style="font-size:7px;color:#00ff66;font-family:'Press Start 2P',monospace;margin-bottom:4px">${p.pos}</div>
+              <div style="font-size:7px;color:#e5e7eb;font-family:'Press Start 2P',monospace;line-height:1.3;word-break:break-word">${p.name}</div>
+              <div style="font-size:6px;color:#9ca3af;margin-top:3px">${p.team} '${p.year}</div>
             </div>
             <div>
-              <div style="font-size:8px;font-weight:bold;color:\${rColor};margin-top:4px">OVR \${p.ovr}</div>
-              <div style="font-size:5px;background:\${rColor}22;color:\${rColor};padding:1px 4px;border-radius:3px;margin-top:3px;display:inline-block">\${p.rarity || 'Common'}</div>
+              <div style="font-size:8px;font-weight:bold;color:${rColor};margin-top:4px">OVR ${p.ovr}</div>
+              <div style="font-size:5px;background:${rColor}22;color:${rColor};padding:1px 4px;border-radius:3px;margin-top:3px;display:inline-block">${p.rarity || 'Common'}</div>
             </div>
-          \`;
+          `;
           el.onclick = () => this.showDetail(p);
           el.onmouseenter = () => el.style.transform = 'scale(1.05)';
           el.onmouseleave = () => el.style.transform = 'scale(1)';
         } else {
           el.className = 'dex-card locked';
           el.style.cssText = 'background: #111827; border: 2px solid #1f2937; border-radius: 8px; padding: 10px 6px; text-align: center; cursor: default';
-          el.innerHTML = \`
+          el.innerHTML = `
             <div style="width:50px;height:50px;background:#1f2937;border-radius:50%;margin:0 auto 6px;display:flex;align-items:center;justify-content:center">
               <i class="fa-solid fa-user" style="color:#374151;font-size:20px"></i>
             </div>
             <div style="font-size:7px;color:#4b5563;font-family:'Press Start 2P',monospace">???</div>
             <div style="font-size:6px;color:#374151;margin-top:2px">BLOQUEADO</div>
-          \`;
+          `;
         }
         grid.appendChild(el);
       });
@@ -250,10 +250,10 @@
         const btn = document.createElement('button');
         btn.innerText = tab.label;
         const isActive = this.currentFilterEra === tab.key;
-        btn.style.cssText = \`
+        btn.style.cssText = `
           padding: 6px 12px; border-radius: 20px; font-size: 10px; font-weight: bold; white-space: nowrap; border: none; cursor: pointer; transition: all 0.2s;
-          \${isActive ? 'background: #00ff66; color: #000;' : 'background: rgba(255,255,255,0.1); color: #fff;'}
-        \`;
+          ${isActive ? 'background: #00ff66; color: #000;' : 'background: rgba(255,255,255,0.1); color: #fff;'}
+        `;
         btn.onclick = () => {
           this.currentFilterEra = tab.key;
           Array.from(tabsContainer.children).forEach(c => {
@@ -303,48 +303,48 @@
       if (p.clutch || p.is_clutch) badgesHtml += '<span style="background:#ef444422;color:#ef4444;border:1px solid #ef4444;padding:2px 8px;border-radius:4px;font-size:8px">⚡ CLUTCH</span>';
       if (p.captain || p.is_captain) badgesHtml += '<span style="background:#3b82f622;color:#3b82f6;border:1px solid #3b82f6;padding:2px 8px;border-radius:4px;font-size:8px">👑 CAPTAIN</span>';
 
-      const renderStat = (lbl, val) => \`
+      const renderStat = (lbl, val) => `
         <div style="background:#111827;border-radius:6px;padding:8px 10px;display:flex;justify-content:space-between;align-items:center">
-          <span style="font-size:9px;color:#9ca3af">\${lbl}</span>
-          <span style="font-size:11px;font-weight:bold;color:\${getGradeColor(val)}">\${val} <small style="font-size:8px">\${getGrade(val)}</small></span>
+          <span style="font-size:9px;color:#9ca3af">${lbl}</span>
+          <span style="font-size:11px;font-weight:bold;color:${getGradeColor(val)}">${val} <small style="font-size:8px">${getGrade(val)}</small></span>
         </div>
-      \`;
+      `;
 
-      overlay.innerHTML = \`
-        <div style="background:#0a0f1a;border:3px solid \${rColor};border-radius:12px;width:100%;max-width:420px;padding:24px;position:relative">
+      overlay.innerHTML = `
+        <div style="background:#0a0f1a;border:3px solid ${rColor};border-radius:12px;width:100%;max-width:420px;padding:24px;position:relative">
           <button onclick="document.getElementById('dex-detail-overlay').remove()" style="position:absolute;top:12px;right:12px;background:none;border:none;color:#9ca3af;font-size:18px;cursor:pointer">✕</button>
           
           <div style="margin-bottom:16px">
-            <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:\${rColor};margin-bottom:4px">\${p.rarity || 'Common'} · \${eraShort}</div>
-            <h2 style="font-family:'Press Start 2P',monospace;font-size:13px;color:#fff;margin:0 0 4px 0;line-height:1.4">\${p.name}</h2>
-            <div style="font-size:12px;color:#9ca3af">\${teamFull} — \${p.year} · \${p.pos}</div>
+            <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:${rColor};margin-bottom:4px">${p.rarity || 'Common'} · ${eraShort}</div>
+            <h2 style="font-family:'Press Start 2P',monospace;font-size:13px;color:#fff;margin:0 0 4px 0;line-height:1.4">${p.name}</h2>
+            <div style="font-size:12px;color:#9ca3af">${teamFull} — ${p.year} · ${p.pos}</div>
           </div>
           
           <div style="text-align:center;margin-bottom:16px">
-            <div style="font-family:'Press Start 2P',monospace;font-size:32px;color:\${rColor};text-shadow:0 0 20px \${rColor}88">\${p.ovr}</div>
+            <div style="font-family:'Press Start 2P',monospace;font-size:32px;color:${rColor};text-shadow:0 0 20px ${rColor}88">${p.ovr}</div>
             <div style="font-size:10px;color:#6b7280">OVR</div>
           </div>
           
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px">
-            \${renderStat('CON', p.con || 40)}
-            \${renderStat('PWR', p.pwr || 40)}
-            \${renderStat('EYE', p.eye || 40)}
-            \${renderStat('SPD', p.spd || 40)}
-            \${renderStat('DEF', p.def || 40)}
+            ${renderStat('CON', p.con || 40)}
+            ${renderStat('PWR', p.pwr || 40)}
+            ${renderStat('EYE', p.eye || 40)}
+            ${renderStat('SPD', p.spd || 40)}
+            ${renderStat('DEF', p.def || 40)}
           </div>
           
-          \${badgesHtml ? \`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px">\${badgesHtml}</div>\` : ''}
+          ${badgesHtml ? `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px">${badgesHtml}</div>` : ''}
           
           <div style="background:#111827;border-radius:8px;padding:12px">
             <div style="font-family:'Press Start 2P',monospace;font-size:7px;color:#38bdf8;margin-bottom:8px">CARRERA</div>
             <div style="display:flex;justify-content:space-around;text-align:center">
-              <div><div style="font-size:14px;font-weight:bold;color:#fff">\${p.allstars || 0}</div><div style="font-size:7px;color:#6b7280">ALL-STARS</div></div>
-              <div><div style="font-size:14px;font-weight:bold;color:#ffd700">\${p.gold_gloves || 0}</div><div style="font-size:7px;color:#6b7280">ORO</div></div>
-              <div><div style="font-size:14px;font-weight:bold;color:#00ff66">\${eraShort}</div><div style="font-size:7px;color:#6b7280">ERA</div></div>
+              <div><div style="font-size:14px;font-weight:bold;color:#fff">${p.allstars || 0}</div><div style="font-size:7px;color:#6b7280">ALL-STARS</div></div>
+              <div><div style="font-size:14px;font-weight:bold;color:#ffd700">${p.gold_gloves || 0}</div><div style="font-size:7px;color:#6b7280">ORO</div></div>
+              <div><div style="font-size:14px;font-weight:bold;color:#00ff66">${eraShort}</div><div style="font-size:7px;color:#6b7280">ERA</div></div>
             </div>
           </div>
         </div>
-      \`;
+      `;
 
       if (this.container) {
         this.container.querySelector('div').appendChild(overlay);
