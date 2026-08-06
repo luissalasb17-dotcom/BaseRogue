@@ -388,7 +388,7 @@ def paso_4_pico_pitching(pitching, war_pitch, people):
         peak["peak_ip_per_gs"] = 0.0
 
     print(f"  Pico calculado para {len(peak):,} pitchers")
-    return peak
+    return peak, pico_df
 
 
 # ── PASO 5: Filtro de ingesta ────────────────────────────────────────────────
@@ -688,10 +688,20 @@ def map_to_canonical_team(row):
 
 
 # ── PASO 12: Equipo canónico y exportar ──────────────────────────────────────
-def paso_12_exportar(df, pitching, teams, franchises):
-    print("\n  PASO 12: Equipo canonico y exportacion...")
+def paso_12_exportar(df, pitching, teams, franchises, pico_df=None):
+    print("\n  PASO 12: Equipo canonico (Pico 7 WAR) y exportacion...")
 
-    if not pitching.empty:
+    if pico_df is not None and not pico_df.empty and not pitching.empty:
+        peak_seasons_teams = pico_df.merge(pitching[["playerID", "yearID", "teamID"]].drop_duplicates(), on=["playerID", "yearID"], how="left")
+        team_seasons = peak_seasons_teams.groupby(["playerID", "teamID"])["yearID"].count().reset_index()
+        team_seasons.columns = ["playerID", "teamID", "team_count"]
+        canonical = (
+            team_seasons.sort_values("team_count", ascending=False)
+                        .drop_duplicates(subset="playerID")
+                        .rename(columns={"teamID": "canonical_teamID"})
+        )
+        df = df.merge(canonical[["playerID", "canonical_teamID"]], on="playerID", how="left")
+    elif not pitching.empty:
         team_seasons = pitching.groupby(["playerID", "teamID"])["yearID"].count().reset_index()
         team_seasons.columns = ["playerID", "teamID", "team_count"]
         canonical = (
@@ -849,7 +859,7 @@ def main():
 
     pure_pitchers = paso_2_identificar_pitchers_puros(fielding)
     career        = paso_3_carrera_pitching(pitching)
-    peak          = paso_4_pico_pitching(pitching, war_pitch, people)
+    peak, pico_df = paso_4_pico_pitching(pitching, war_pitch, people)
     eligible      = paso_5_filtro_ingesta(career, peak, allstar, hof, pure_pitchers, pitching)
     eligible      = paso_6_enriquecer_people(eligible, people)
     eligible      = paso_7_asignar_era(eligible)
@@ -857,7 +867,7 @@ def main():
     eligible      = paso_9_fielding_pitchers(eligible, war_pitch, people)
     eligible      = paso_10_normalizar_por_era(eligible)
     eligible      = paso_11_ovr_rareza(eligible)
-    final         = paso_12_exportar(eligible, pitching, teams, franchises)
+    final         = paso_12_exportar(eligible, pitching, teams, franchises, pico_df)
 
     reporte_final(final)
     return final

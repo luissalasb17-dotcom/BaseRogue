@@ -927,14 +927,24 @@ def map_to_cosmetic_ovr(r):
     return round(res, 1)
 
 
-def paso_15_equipo_y_exportar(df, batting, teams, franchises):
+def paso_15_equipo_y_exportar(df, batting, teams, franchises, pico_df=None):
     """
-    Asigna equipo canonico (mayor numero de temporadas), construye el
-    DataFrame final y exporta game_cards.csv y game_cards_pool.js.
+    Asigna equipo canonico basandose en la mayor cantidad de temporadas dentro de sus 7 AÑOS PICO POR WAR,
+    construye el DataFrame final y exporta a game_cards.csv y game_cards_pool.js.
     """
-    print("\n  PASO 15: Equipo canonico, DataFrame final y exportacion...")
+    print("\n  PASO 15: Equipo canonico (Pico 7 WAR), DataFrame final y exportacion...")
 
-    if not batting.empty:
+    if pico_df is not None and not pico_df.empty and not batting.empty:
+        peak_seasons_teams = pico_df.merge(batting[["playerID", "yearID", "teamID"]].drop_duplicates(), on=["playerID", "yearID"], how="left")
+        team_seasons = peak_seasons_teams.groupby(["playerID", "teamID"])["yearID"].count().reset_index()
+        team_seasons.columns = ["playerID", "teamID", "team_count"]
+        canonical = (
+            team_seasons.sort_values("team_count", ascending=False)
+                        .drop_duplicates(subset="playerID")
+                        .rename(columns={"teamID": "canonical_teamID"})
+        )
+        df = df.merge(canonical[["playerID", "canonical_teamID"]], on="playerID", how="left")
+    elif not batting.empty:
         team_seasons = batting.groupby(["playerID","teamID"])["yearID"].count().reset_index()
         team_seasons.columns = ["playerID","teamID","team_count"]
         canonical = (
@@ -1172,7 +1182,7 @@ def main():
     eligible         = paso_12_normalizar_por_era(eligible)
     eligible         = paso_13_bono_guante_de_oro(eligible)
     eligible         = paso_14_velocidad(eligible)
-    final            = paso_15_equipo_y_exportar(eligible, batting, teams, franchises)
+    final            = paso_15_equipo_y_exportar(eligible, batting, teams, franchises, pico_df)
 
     reporte_final(final)
     return final
