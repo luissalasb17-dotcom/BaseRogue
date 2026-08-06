@@ -48,6 +48,22 @@
                 "tto_d2": "T2 (4+): BB hacen 24 daño, Ponche -50% y no corta racha"
         },
         "map": {
+                "title": "<i class=\"fa-solid fa-map\"></i> Mapa del Campeonato",
+                "desc": "Elige tu camino. Gana partidos para conseguir dinero, recluta jugadores y entrena tu plantilla.",
+                "stage_playoffs": "Playoffs — Fase Final - Dificultad: Leyenda",
+                "stage_pennant": "Pennant Chase — Final de temporada - Dificultad: Experto",
+                "stage_allstar": "All-Star Break — Mitad de temporada - Dificultad: Difícil",
+                "stage_opening": "Opening Day — Inicio de temporada - Dificultad: Normal",
+                "locked": "BLOQUEADA",
+                "active": "ACTIVA",
+                "completed": "COMPLETADA",
+                "node_opener": "JUEGO APERTURA",
+                "node_classic": "SERIE CLÁSICA",
+                "node_sign": "FIRMA LEYENDA",
+                "node_cage": "JAULA BATEO",
+                "node_clubhouse": "CASA CLUB",
+                "node_decision": "DECISIÓN",
+                "node_boss": "BOSS",
                 "boss_label": {
                         "3": "JUEGO APERTURA",
                         "7": "ALL-STAR GAME",
@@ -134,8 +150,55 @@
                 "back_map_btn": "<i class=\"fa-solid fa-arrow-left\"></i> Volver al Mapa"
         },
         "match": {
-                "rival_rotation": "ROTACIÓN RIVAL",
+                "title": "<i class=\"fa-solid fa-trophy\"></i> Bateadores al Combate",
+                "interactive_header": "<i class=\"fa-solid fa-baseball\"></i> COMBATE INTERACTIVO VS {{team}}",
+                "arena": "ARENA COMBATE",
+                "runs": "CARRERAS:",
+                "outs": "OUTS:",
+                "inning": "INNING:",
+                "rival_ko": "K.O. RIVALES:",
+                "active_turn": "TURNO ACTIVO",
+                "native_pos": "POS NATIVA:",
+                "team_hp": "TEAM HP",
+                "shield_label": "ESCUDO (DEF avg {{avg}})",
+                "so_streak": "🔥 RACHA PONCHES: {{count}} ({{mult}}x dmg DIRECTO)",
+                "so_streak_zero": "🔥 Racha de Ponches: 0",
                 "debuff_badge": "DAÑO RECIBIDO",
+                "luck_zones": "Zonas de la suerte",
+                "bb": "Boleto (BB)",
+                "so": "Ponche (SO)",
+                "out": "Out (Fly/GD)",
+                "single": "Sencillo (1B)",
+                "double": "Doble (2B)",
+                "triple": "Triple (3B)",
+                "hr": "Jonrón (HR)",
+                "roll_dice": "🎲 LANZAR DADO",
+                "simulate_all": "⚡ SIMULAR TODO",
+                "history": "HISTORIAL DEL PARTIDO",
+                "log_hr": "🎲 [{{roll}}] [JONRÓN] ¡{{batter}} CUADRANGULAR de {{runs}} carreras! Anotan {{runs}} carreras. {{pitcher}} sufre {{dmg}} HP de daño.",
+                "log_3b": "🎲 [{{roll}}] [TRIPLE] ¡{{batter}} triple al rincón! Anotan {{runs}} carreras. {{pitcher}} sufre {{dmg}} HP de daño.",
+                "log_2b": "🎲 [{{roll}}] [DOBLE] ¡{{batter}} línea violenta por la raya! Anotan {{runs}} carreras. {{pitcher}} sufre {{dmg}} HP de daño.",
+                "log_1b": "🎲 [{{roll}}] [SENCILLO] ¡{{batter}} imparable raso! Anotan {{runs}} carreras. {{pitcher}} sufre {{dmg}} HP de daño.",
+                "log_out": "🎲 [{{roll}}] [OUT] {{batter}} {{outStr}}. Escudo -{{shieldDmg}} HP | Team HP -{{teamHpDmg}} HP. (Escudo: {{shield}}/{{maxShield}} | HP: {{hp}}/100)",
+                "log_so": "🎲 [{{roll}}] [PONCHE] ¡{{pitcher}} poncha a {{batter}}!{{chain}} Daño directo: -{{dmg}} HP del equipo (¡ignora el escudo!). HP restante: {{hp}}/100",
+                "log_bb": "🎲 [{{roll}}] [BOLETO] ¡{{batter}} saca boleto (BB)! {{pitcher}} sufre {{dmg}} HP de daño por paciencia al bate.",
+                "out_ground": "saca un rodado por el cuadro para out",
+                "out_fly": "conecta un elevado al jardín para out de rutina",
+                "out_line": "línea quemante atrapada en el aire",
+                "log_ko": "[K.O.] ¡{{name}} ha sido derrotado!",
+                "log_relief": "Entra al relevo: {{name}} ({{hp}}/{{maxHp}} HP).",
+                "log_residual": "⚡ ¡Daño residual! Entra al relevo {{name}} absorbiendo -{{dmg}} HP de impacto ({{hp}}/{{maxHp}} HP).",
+                "log_steal": "🏃 ¡ROBO EXITOSO! {{batter}} roba la 2ª base!",
+                "log_runs_damage": "Anotan {{runs}} carreras. {{pitcher}} sufre {{dmg}} HP de daño.",
+                "log_defeat": "💀 DERROTA. Tu equipo llegó a 0 HP. Los ponches acabaron con tu alineación.",
+                "log_victory": "🏆 ¡VICTORIA! Derrotaste a la rotación rival.",
+                "win_title": "🏆 ¡VICTORIA DE LA SERIE! 🏆",
+                "loss_title": "💀 DERROTA EN LA SERIE 💀",
+                "win_desc": "¡Extraordinario! Lograste noquear a la rotación completa de {{team}}.",
+                "loss_desc": "Los lanzadores de {{team}} dominaron la serie. Tu HP llegó a 0.",
+                "claim_rewards": "RECLAMAR RECOMPENSAS",
+                "see_results": "VER RESULTADOS",
+                "rival_rotation": "ROTACIÓN RIVAL",
                 "outcome_victory": "¡VICTORIA CONTUNDENTE! Has derrotado a la rotación completa de lanzadores.",
                 "outcome_defeat": "DERROTA. Tu alineación ha sido noqueada por los lanzadores rivales."
         },
@@ -209,6 +272,14 @@
                 "back_btn": "<i class=\"fa-solid fa-arrow-left\"></i> Volver al Mapa"
         },
         "rest": {
+                "title": "<i class=\"fa-solid fa-couch\"></i> Casa Club (Descanso)",
+                "desc": "Un merecido descanso en la temporada. La fatiga acumulada en los partidos reduce el rendimiento de los jugadores.",
+                "heal_title": "Descanso Completo",
+                "heal_desc": "Recupera +40 de energía/estamina para todos los jugadores activos y del banquillo.",
+                "heal_btn": "<i class=\"fa-solid fa-heart-pulse\"></i> Dormir y Recuperar",
+                "sponsor_title": "Firma de Patrocinador",
+                "sponsor_desc": "Recibe una bonificación económica directa de +$25 para gastar en las tiendas.",
+                "sponsor_btn": "<i class=\"fa-solid fa-circle-dollar-to-slot\"></i> Cobrar Patrocinio",
                 "badge_restore": "¡RESTAURACIÓN!",
                 "stamina": {
                         "desc": "Toda tu plantilla activa recupera +40 de Stamina para los próximos encuentros."
@@ -223,6 +294,11 @@
                 "desc": "Toma una decisión crítica para el club. Cada elección tiene repercusiones en el presupuesto, salud o estadísticas del equipo."
         },
         "gameover": {
+                "title": "¡Fin de la Carrera!",
+                "history_title": "<i class=\"fa-solid fa-clock-rotate-left\"></i> Resumen de Temporada",
+                "replay_title": "¿Listo para otra temporada?",
+                "replay_desc": "Selecciona una nueva leyenda inicial y recluta diferentes plantillas para desbloquear otras sinergias históricas.",
+                "restart_btn": "<i class=\"fa-solid fa-rotate-right\"></i> Jugar de Nuevo",
                 "summary_btn": "<i class=\"fa-solid fa-chart-column\"></i> Ver Resumen Completo"
         },
         "pos": {
@@ -602,6 +678,22 @@
                 "tto_d2": "T2 (4+): BB deal 24 damage, Strikeouts -50% and don't break streak"
         },
         "map": {
+                "title": "<i class=\"fa-solid fa-map\"></i> Championship Map",
+                "desc": "Choose your path. Win matches to earn money, recruit players, and train your squad.",
+                "stage_playoffs": "Playoffs — Final Stage - Difficulty: Legend",
+                "stage_pennant": "Pennant Chase — Late Season - Difficulty: Expert",
+                "stage_allstar": "All-Star Break — Mid Season - Difficulty: Hard",
+                "stage_opening": "Opening Day — Season Opener - Difficulty: Normal",
+                "locked": "LOCKED",
+                "active": "ACTIVE",
+                "completed": "COMPLETED",
+                "node_opener": "OPENER",
+                "node_classic": "CLASSIC SERIES",
+                "node_sign": "LEGEND SIGN",
+                "node_cage": "BATTING CAGE",
+                "node_clubhouse": "CLUBHOUSE",
+                "node_decision": "DECISION",
+                "node_boss": "BOSS",
                 "boss_label": {
                         "3": "OPENING DAY",
                         "7": "ALL-STAR GAME",
@@ -688,8 +780,55 @@
                 "back_map_btn": "<i class=\"fa-solid fa-arrow-left\"></i> Back to Map"
         },
         "match": {
-                "rival_rotation": "RIVAL ROTATION",
+                "title": "<i class=\"fa-solid fa-trophy\"></i> Batters to Battle",
+                "interactive_header": "<i class=\"fa-solid fa-baseball\"></i> INTERACTIVE COMBAT VS {{team}}",
+                "arena": "COMBAT ARENA",
+                "runs": "RUNS:",
+                "outs": "OUTS:",
+                "inning": "INNING:",
+                "rival_ko": "OPPONENT K.O.:",
+                "active_turn": "ACTIVE AT-BAT",
+                "native_pos": "NATIVE POS:",
+                "team_hp": "TEAM HP",
+                "shield_label": "SHIELD (DEF avg {{avg}})",
+                "so_streak": "🔥 STRIKEOUT STREAK: {{count}} ({{mult}}x DIRECT dmg)",
+                "so_streak_zero": "🔥 Strikeout Streak: 0",
                 "debuff_badge": "DAMAGE RECEIVED",
+                "luck_zones": "Luck Zones",
+                "bb": "Walk (BB)",
+                "so": "Strikeout (SO)",
+                "out": "Out (Fly/GD)",
+                "single": "Single (1B)",
+                "double": "Double (2B)",
+                "triple": "Triple (3B)",
+                "hr": "Home Run (HR)",
+                "roll_dice": "🎲 ROLL DICE",
+                "simulate_all": "⚡ SIMULATE ALL",
+                "history": "MATCH HISTORY",
+                "log_hr": "🎲 [{{roll}}] [HOME RUN] {{batter}} {{runs}}-run HOME RUN! Scored {{runs}} runs. {{pitcher}} takes {{dmg}} HP damage.",
+                "log_3b": "🎲 [{{roll}}] [TRIPLE] {{batter}} triple to the corner! Scored {{runs}} runs. {{pitcher}} takes {{dmg}} HP damage.",
+                "log_2b": "🎲 [{{roll}}] [DOUBLE] {{batter}} sharp line drive down the line! Scored {{runs}} runs. {{pitcher}} takes {{dmg}} HP damage.",
+                "log_1b": "🎲 [{{roll}}] [SINGLE] {{batter}} ground ball single! Scored {{runs}} runs. {{pitcher}} takes {{dmg}} HP damage.",
+                "log_out": "🎲 [{{roll}}] [OUT] {{batter}} {{outStr}}. Shield -{{shieldDmg}} HP | Team HP -{{teamHpDmg}} HP. (Shield: {{shield}}/{{maxShield}} | HP: {{hp}}/100)",
+                "log_so": "🎲 [{{roll}}] [STRIKEOUT] {{pitcher}} strikes out {{batter}}!{{chain}} Direct damage: -{{dmg}} HP to team (ignores shield!). Remaining HP: {{hp}}/100",
+                "log_bb": "🎲 [{{roll}}] [WALK] {{batter}} draws a walk (BB)! {{pitcher}} takes {{dmg}} HP damage from patient at-bat.",
+                "out_ground": "grounds out to the infield",
+                "out_fly": "flies out to the outfield",
+                "out_line": "line drive caught in the air",
+                "log_ko": "[K.O.] {{name}} defeated!",
+                "log_relief": "Relief pitcher coming in: {{name}} ({{hp}}/{{maxHp}} HP).",
+                "log_residual": "⚡ Residual damage! {{name}} comes in relieving -{{dmg}} HP impact ({{hp}}/{{maxHp}} HP).",
+                "log_steal": "🏃 STOLEN BASE! {{batter}} steals 2nd base!",
+                "log_runs_damage": "{{runs}} runs scored. {{pitcher}} takes {{dmg}} HP damage.",
+                "log_defeat": "💀 DEFEAT. Your team reached 0 HP. Strikeouts wiped out your lineup.",
+                "log_victory": "🏆 VICTORY! You defeated the rival rotation.",
+                "win_title": "🏆 SERIES VICTORY! 🏆",
+                "loss_title": "💀 SERIES DEFEAT 💀",
+                "win_desc": "Extraordinary! You knocked out the full rotation of {{team}}.",
+                "loss_desc": "The pitchers of {{team}} dominated the series. Your HP reached 0.",
+                "claim_rewards": "CLAIM REWARDS",
+                "see_results": "VIEW RESULTS",
+                "rival_rotation": "RIVAL ROTATION",
                 "outcome_victory": "DECISIVE VICTORY! You have defeated the complete pitcher rotation.",
                 "outcome_defeat": "DEFEAT. Your lineup was knocked out by the rival pitchers."
         },
@@ -763,6 +902,14 @@
                 "back_btn": "<i class=\"fa-solid fa-arrow-left\"></i> Back to Map"
         },
         "rest": {
+                "title": "<i class=\"fa-solid fa-couch\"></i> Clubhouse (Rest)",
+                "desc": "A well-deserved rest in the season. Accumulated fatigue reduces player performance in matches.",
+                "heal_title": "Full Rest",
+                "heal_desc": "Recover +40 energy/stamina for all active and bench players.",
+                "heal_btn": "<i class=\"fa-solid fa-heart-pulse\"></i> Sleep and Recover",
+                "sponsor_title": "Sponsor Deal",
+                "sponsor_desc": "Receive a direct +$25 cash bonus to spend in shops.",
+                "sponsor_btn": "<i class=\"fa-solid fa-circle-dollar-to-slot\"></i> Collect Sponsorship",
                 "badge_restore": "RESTORATION!",
                 "stamina": {
                         "desc": "Your entire active roster recovers +40 Stamina for upcoming matches."
@@ -777,6 +924,11 @@
                 "desc": "Make a critical decision for the club. Each choice affects budget, health, or team stats."
         },
         "gameover": {
+                "title": "Run Over!",
+                "history_title": "<i class=\"fa-solid fa-clock-rotate-left\"></i> Season Summary",
+                "replay_title": "Ready for another season?",
+                "replay_desc": "Select a new starter legend and recruit different rosters to unlock other historical synergies.",
+                "restart_btn": "<i class=\"fa-solid fa-rotate-right\"></i> Play Again",
                 "summary_btn": "<i class=\"fa-solid fa-chart-column\"></i> View Full Summary"
         },
         "pos": {
@@ -1151,7 +1303,7 @@
     }
     if (typeof val === 'string' && options) {
       Object.keys(options).forEach(opt => {
-        val = val.replace(new RegExp(`{\\s*${opt}\\s*}`, 'g'), options[opt]);
+        val = val.replace(new RegExp(`{{\\s*${opt}\\s*}}`, 'g'), options[opt]);
       });
     }
     return val || key;
