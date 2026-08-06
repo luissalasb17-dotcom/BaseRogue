@@ -624,7 +624,7 @@
   "dex": {
     "era_all": "TODOS",
     "locked": "BLOQUEADO",
-    "search_placeholder": "Buscar por nombre o equipo...",
+    "search_placeholder": "Buscar por nombre, equipo o posición...",
     "load_more": "Mostrar más",
     "counter": "{{unlocked}} / {{total}} descubiertos ({{pct}}%)",
     "career_header": "CARRERA / CAREER (MLB)",

@@ -159,7 +159,9 @@
         if (term) {
           const nMatch = p.name && p.name.toLowerCase().includes(term);
           const tMatch = p.team && p.team.toLowerCase().includes(term);
-          if (!nMatch && !tMatch) return false;
+          const pMatch = p.pos && p.pos.toLowerCase().includes(term);
+          const spMatch = p.sec_pos && p.sec_pos.toLowerCase().includes(term);
+          if (!nMatch && !tMatch && !pMatch && !spMatch) return false;
         }
         return true;
       });
@@ -288,7 +290,7 @@
       searchContainer.style.cssText = 'padding: 10px 16px; border-bottom: 1px solid rgba(255,255,255,0.1);';
       const searchInput = document.createElement('input');
       searchInput.type = 'text';
-      searchInput.placeholder = (typeof window.t === 'function' ? window.t('dex.search_placeholder') : 'Buscar por nombre o equipo...');
+      searchInput.placeholder = (typeof window.t === 'function' ? window.t('dex.search_placeholder') : 'Buscar por nombre, equipo o posición (ej: C, SS, 1B)...');
       searchInput.style.cssText = 'width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 8px 12px; border-radius: 6px; font-size: 12px; outline: none;';
       searchInput.oninput = (e) => {
         this.currentSearchTerm = e.target.value;
