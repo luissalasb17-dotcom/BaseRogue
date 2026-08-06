@@ -52,7 +52,7 @@
   }
 
   function getPlayerCareerData(p) {
-    if (!p) return { war: '-', mvp: 0, roy: 0, ss: 0, gg: 0, allstars: 0 };
+    if (!p) return { war: '-', mvp: 0, roy: 0, ss: 0, gg: 0, allstars: 0, hof: false };
     const cleanName = p.name ? p.name.replace(/\s\(.*?\)$/, '').trim() : '';
     const db = window.CAREER_STATS_DB || {};
     const entry = db[cleanName] || db[p.name];
@@ -64,7 +64,8 @@
         roy: entry.roy || 0,
         ss: entry.ss || 0,
         gg: entry.gg || p.gold_gloves || 0,
-        allstars: entry.allstars || p.allstars || 0
+        allstars: entry.allstars || p.allstars || 0,
+        hof: entry.hof !== undefined ? entry.hof : (p.hof || false)
       };
     }
 
@@ -74,7 +75,8 @@
       roy: p.roy || 0,
       ss: p.ss || 0,
       gg: p.gold_gloves || 0,
-      allstars: p.allstars || 0
+      allstars: p.allstars || 0,
+      hof: p.hof || false
     };
   }
 
@@ -350,9 +352,12 @@
       const overlay = document.createElement('div');
       overlay.id = 'dex-detail-overlay';
       overlay.style.cssText = 'position:absolute;inset:0;background:rgba(0,0,0,0.85);z-index:10;display:flex;align-items:center;justify-content:center;padding:20px';
+
+      const careerStats = getPlayerCareerData(p);
+      const isHof = Boolean(p.hof || (careerStats && careerStats.hof));
       
       let badgesHtml = '';
-      if (p.hof) badgesHtml += '<span style="background:#ffd70022;color:#ffd700;border:1px solid #ffd700;padding:2px 8px;border-radius:4px;font-size:8px">🏆 HOF</span>';
+      if (isHof) badgesHtml += '<span style="background:#ffd70022;color:#ffd700;border:1px solid #ffd700;padding:2px 8px;border-radius:4px;font-size:8px">🏆 HOF</span>';
       if (p.clutch || p.is_clutch) badgesHtml += '<span style="background:#ef444422;color:#ef4444;border:1px solid #ef4444;padding:2px 8px;border-radius:4px;font-size:8px">⚡ CLUTCH</span>';
       if (p.captain || p.is_captain) badgesHtml += '<span style="background:#3b82f622;color:#3b82f6;border:1px solid #3b82f6;padding:2px 8px;border-radius:4px;font-size:8px">👑 CAPTAIN</span>';
 
@@ -362,8 +367,6 @@
           <span style="font-size:11px;font-weight:bold;color:${getGradeColor(val)}">${val} <small style="font-size:8px">${getGrade(val)}</small></span>
         </div>
       `;
-
-      const careerStats = getPlayerCareerData(p);
 
       overlay.innerHTML = `
         <div style="background:#0a0f1a;border:3px solid ${rColor};border-radius:12px;width:100%;max-width:440px;padding:24px;position:relative">
