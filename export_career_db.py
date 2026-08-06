@@ -27,11 +27,13 @@ NICKNAMES = {
     'cap': 'adrian', 'ty': 'tyrus', 'cy': 'denton', 'honus': 'johannes', 'tris': 'tristram',
     'shoeless': 'joseph', 'babe': 'george', 'lou': 'henry', 'ted': 'theodore',
     'jimmie': 'james', 'jimmy': 'james', 'cal': 'calvin', 'chipper': 'larry',
-    'buster': 'gerald', 'mookie': 'markus', 'shohei': 'shohei', 'aaron': 'aaron'
+    'buster': 'gerald', 'mookie': 'markus', 'shohei': 'shohei', 'aaron': 'aaron',
+    'buck': 'william'
 }
 
 # Explicit overrides matching current Baseball-Reference website summary headers
 MANUAL_OVERRIDE = {
+    'Buck Ewing': {'war': 48.0, 'mvp': 0, 'roy': 0, 'ss': 0, 'gg': 0, 'allstars': 0, 'hof': True},
     'Joe Morgan': {'war': 100.6, 'mvp': 2, 'roy': 0, 'ss': 1, 'gg': 5, 'allstars': 10, 'hof': True},
     'Joe Kelley': {'war': 50.6, 'mvp': 0, 'roy': 0, 'ss': 0, 'gg': 0, 'allstars': 0, 'hof': True},
     'Harry Stovey': {'war': 45.0, 'mvp': 0, 'roy': 0, 'ss': 0, 'gg': 0, 'allstars': 0, 'hof': False},
@@ -84,6 +86,21 @@ as_pid = allstar_df.groupby('playerID').size().to_dict()
 # Build comprehensive lookup dict indexed by normalized names
 name_stats_db = {}
 
+def update_db(name_key, stat_obj):
+    if not name_key:
+        return
+    if name_key not in name_stats_db:
+        name_stats_db[name_key] = stat_obj
+    else:
+        # Deduplication logic: prefer entry with HOF or higher WAR
+        cur = name_stats_db[name_key]
+        cur_war = cur['war'] if cur['war'] is not None else -999.0
+        new_war = stat_obj['war'] if stat_obj['war'] is not None else -999.0
+        
+        # If new entry is HOF and existing is not, or new entry has higher WAR, overwrite!
+        if (stat_obj['hof'] and not cur['hof']) or (new_war > cur_war):
+            name_stats_db[name_key] = stat_obj
+
 for _, row in people_df.iterrows():
     pid = row['playerID']
     f = str(row['nameFirst']).strip() if pd.notna(row['nameFirst']) else ''
@@ -113,10 +130,8 @@ for _, row in people_df.iterrows():
         if name_str.strip():
             n1 = norm(name_str)
             nf = norm_fuzzy(name_str)
-            if n1 and (n1 not in name_stats_db or war_val is not None):
-                name_stats_db[n1] = stat_obj
-            if nf and (nf not in name_stats_db or war_val is not None):
-                name_stats_db[nf] = stat_obj
+            update_db(n1, stat_obj)
+            update_db(nf, stat_obj)
 
 # Read game_cards_pool.js to extract all player objects/names
 with open('game_cards_pool.js', 'r', encoding='utf-8') as f:
@@ -161,6 +176,7 @@ for name in sorted(names):
     }
 
 print(f"Matched {matched_count} / {len(names)} unique player names in game_cards_pool.js")
+print("Buck Ewing entry:", career_map.get("Buck Ewing"))
 
 # Write to career_data.js
 js_output = f"// Auto-generated career stats mapping from BBRef & Lahman data\n(function() {{\n  window.CAREER_STATS_DB = {json.dumps(career_map, separators=(',', ':'))};\n}})();\n"
