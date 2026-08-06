@@ -120,10 +120,8 @@ def normalize_difficulty_adjusted(df, col_raw, col_out, invert=False):
     if invert:
         s = -s  # invertir para que menor sea mejor
     global_mean = s.mean()
-    if "league_group" in df.columns:
-        era_means = df.groupby(["era_label", "league_group"])[col_raw].transform("mean")
-    else:
-        era_means = df.groupby("era_label")[col_raw].transform("mean")
+    # Unified Era Normalization for pitchers
+    era_means = df.groupby("era_label")[col_raw].transform("mean")
     if invert:
         era_means = -era_means
     diff_factor   = global_mean / era_means.replace(0, 1)

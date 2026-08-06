@@ -104,10 +104,8 @@ def normalize_series(s, low=1.0, high=99.0):
 
 def normalize_difficulty_adjusted(df, col_raw, col_out):
     global_mean = df[col_raw].mean()
-    if "league_group" in df.columns:
-        era_means = df.groupby(["era_label", "league_group"])[col_raw].transform("mean")
-    else:
-        era_means = df.groupby("era_label")[col_raw].transform("mean")
+    # Unified Era Normalization: Compare all players in era (MLB + NLB) against the same era benchmark
+    era_means = df.groupby("era_label")[col_raw].transform("mean")
     diff_factor = global_mean / era_means.replace(0, 1)
     blended_factor = 1.0 + 0.75 * (diff_factor - 1.0)
     adjusted = df[col_raw] * blended_factor
@@ -290,18 +288,19 @@ def paso_4_pico_batting(batting, war_bat, people):
     war_yearly = pd.DataFrame()
     if not war_bat.empty and not people.empty:
         war = war_bat.copy()
-        war["WAR"] = pd.to_numeric(
-            war["WAR"].replace("NULL", np.nan) if "WAR" in war.columns else np.nan,
+        war_col = "WAR_off" if "WAR_off" in war.columns else "WAR"
+        war[war_col] = pd.to_numeric(
+            war[war_col].replace("NULL", np.nan),
             errors="coerce"
         ).fillna(0)
-        war_season = war.groupby(["player_ID","year_ID"])["WAR"].sum().reset_index()
+        war_season = war.groupby(["player_ID","year_ID"])[war_col].sum().reset_index()
         war_season.columns = ["bbrefID","yearID","war_season"]
         id_map = people[["playerID","bbrefID"]].dropna(subset=["bbrefID"])
         war_yearly = (
             war_season.merge(id_map, on="bbrefID", how="left")
                       .dropna(subset=["playerID"])[["playerID","yearID","war_season"]]
         )
-        print(f"  WAR anual para {war_yearly['playerID'].nunique():,} jugadores (BBRef)")
+        print(f"  WAR_off anual para {war_yearly['playerID'].nunique():,} jugadores (BBRef)")
     else:
         print("  WAR no disponible - usando OPS fallback")
 
@@ -519,6 +518,8 @@ def paso_7_enriquecer_people(df, people):
     if people.empty:
         return df
     slim = people[["playerID","nameFirst","nameLast","bbrefID","debut","bats"]].copy()
+    # Explicit bbrefID overrides for missing Lahman Negro League IDs
+    slim.loc[slim["playerID"] == "pearsle01", "bbrefID"] = "pearsle02"
     slim["full_name"] = (slim["nameFirst"].fillna("") + " " + slim["nameLast"].fillna("")).str.strip()
     result = df.merge(slim, on="playerID", how="left")
     print(f"  bbrefID para {result['bbrefID'].notna().sum():,} jugadores")
@@ -617,13 +618,21 @@ def paso_10_atributos_raw_bateo(df):
     print("\n  PASO 10: Atributos RAW de bateo (CON, PWR, EYE)...")
     df = df.copy()
 
-    # Smooth BA on small AB samples (m = 50 ABs regressed to league avg .275)
-    # Gentle smoothing so genuine stars keep top grades while small-sample spikes are moderated.
+    # Bayesian sample-size smoothing (m = 500 PA for NLB players to temper small-sample variance)
     ab = df["peak_ab"].fillna(df["career_ab"]).fillna(0)
     h  = df["peak_h"].fillna(df["career_h"]).fillna(0)
-    df["ba_smoothed"] = (h + 50 * 0.275) / (ab + 50)
+    pa = df["peak_pa"].fillna(df["career_pa"]).fillna(0)
+    hr = df["peak_hr"].fillna(0)
+    b2 = df["peak_2b"].fillna(0)
+    b3 = df["peak_3b"].fillna(0)
 
-    # Dual Era Normalization for Contact (90% Era-Relative BA / 10% Era-Relative K-Control)
+    is_nlb = (df["league_group"] == "NLB") if "league_group" in df.columns else False
+    m_pa = np.where(is_nlb, 500, 100)
+    m_ab = np.where(is_nlb, 450, 90)
+
+    df["ba_smoothed"] = (h + m_ab * 0.265) / (ab + m_ab)
+
+    # Unified Era Normalization for Contact (90% Era-Relative BA / 10% Era-Relative K-Control)
     era_ba_means = df.groupby("era_label")["ba_smoothed"].transform("mean")
     era_k_means = df.groupby("era_label")["k_rate"].transform("mean")
 
@@ -631,13 +640,22 @@ def paso_10_atributos_raw_bateo(df):
     k_control_era = (1.0 - 0.50 * (df["k_rate"].fillna(0) / era_k_means.replace(0, 0.15))).clip(0.0, 1.0)
 
     df["contact_raw"] = ba_rel * 0.90 + k_control_era * 0.10
+
+    # Bayesian sample-size smoothing for power metrics (m = 500 PA for NLB)
+    hr_smoothed = (hr + m_pa * 0.025) / (pa + m_pa)
+    tb_total = h + b2 + 2*b3 + 3*hr
+    slg = np.where(ab > 0, tb_total / ab, 0)
+    iso_raw = np.where(ab > 0, slg - (h / ab), 0)
+    iso_smoothed = (iso_raw * pa + m_pa * 0.140) / (pa + m_pa)
+    xbh_smoothed = (b2 + b3 + hr + m_pa * 0.075) / (pa + m_pa)
+
     df["power_raw"] = (
-        df["hr_rate"].fillna(0)  * 0.45 +
-        df["iso"].fillna(0)      * 0.40 +
-        df["xbh_rate"].fillna(0) * 0.15
+        hr_smoothed  * 0.45 +
+        iso_smoothed * 0.40 +
+        xbh_smoothed * 0.15
     )
     df["eye_raw"] = df["bb_rate"].fillna(0)
-    print("  contact_raw, power_raw, eye_raw calculados")
+    print("  contact_raw, power_raw (m=500 PA NLB smoothed), eye_raw calculados")
     return df
 
 
@@ -661,16 +679,23 @@ def paso_11_motor_defensivo(df, war_bat, awards):
                 war[col] = 0.0
         war["runs_defense"] = war["runs_defense"].clip(-80, 80)
         
-        # Use top PEAK_SEASONS (7) seasons by WAR to determine peak defensive and running metrics
-        war_sorted = war.sort_values(["player_ID", "WAR"], ascending=[True, False])
-        war_peak = war_sorted.groupby("player_ID").head(PEAK_SEASONS)
-        
-        war_career = war_peak.groupby("player_ID").agg(
+        # Defensive peak (7 best seasons by WAR_def)
+        war_sorted_def = war.sort_values(["player_ID", "WAR_def"], ascending=[True, False])
+        war_peak_def = war_sorted_def.groupby("player_ID").head(PEAK_SEASONS)
+        war_career_def = war_peak_def.groupby("player_ID").agg(
             rfield_career=("runs_defense","sum"),
             wardef_career=("WAR_def","sum"),
+        ).reset_index().rename(columns={"player_ID":"bbrefID"})
+
+        # Speed peak (7 best seasons by overall WAR)
+        war_sorted_spd = war.sort_values(["player_ID", "WAR"], ascending=[True, False])
+        war_peak_spd = war_sorted_spd.groupby("player_ID").head(PEAK_SEASONS)
+        war_career_spd = war_peak_spd.groupby("player_ID").agg(
             runs_br_peak=("runs_br","sum"),
         ).reset_index().rename(columns={"player_ID":"bbrefID"})
-        print(f"  Datos BBRef (Peak {PEAK_SEASONS}) para {len(war_career):,} jugadores")
+
+        war_career = war_career_def.merge(war_career_spd, on="bbrefID", how="outer")
+        print(f"  Datos BBRef Híbridos (Peak {PEAK_SEASONS}) para {len(war_career):,} jugadores")
     else:
         war_career = pd.DataFrame(columns=["bbrefID","rfield_career","wardef_career","runs_br_peak"])
 
