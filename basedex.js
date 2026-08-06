@@ -32,6 +32,33 @@
 
   // Authentic Career Stats & Awards Database for MLB Legends
   const CAREER_DB = {
+    "Harry Stovey": { war: 45.0, mvp: 0, roy: 0, ss: 0, gg: 0, allstars: 0 },
+    "King Kelly": { war: 45.3, mvp: 0, roy: 0, ss: 0, gg: 0, allstars: 0 },
+    "Dan Brouthers": { war: 78.7, mvp: 0, roy: 0, ss: 0, gg: 0, allstars: 0 },
+    "Cap Anson": { war: 94.3, mvp: 0, roy: 0, ss: 0, gg: 0, allstars: 0 },
+    "Billy Hamilton": { war: 63.2, mvp: 0, roy: 0, ss: 0, gg: 0, allstars: 0 },
+    "Hugh Duffy": { war: 43.2, mvp: 0, roy: 0, ss: 0, gg: 0, allstars: 0 },
+    "Ed Delahanty": { war: 69.6, mvp: 0, roy: 0, ss: 0, gg: 0, allstars: 0 },
+    "Sam Thompson": { war: 44.4, mvp: 0, roy: 0, ss: 0, gg: 0, allstars: 0 },
+    "Jesse Burkett": { war: 59.7, mvp: 0, roy: 0, ss: 0, gg: 0, allstars: 0 },
+    "Fred Dunlap": { war: 35.1, mvp: 0, roy: 0, ss: 0, gg: 0, allstars: 0 },
+    "Jake Beckley": { war: 61.1, mvp: 0, roy: 0, ss: 0, gg: 0, allstars: 0 },
+    "George Davis": { war: 84.5, mvp: 0, roy: 0, ss: 0, gg: 0, allstars: 0 },
+    "Bid McPhee": { war: 52.5, mvp: 0, roy: 0, ss: 0, gg: 0, allstars: 0 },
+    "Roger Connor": { war: 84.3, mvp: 0, roy: 0, ss: 0, gg: 0, allstars: 0 },
+    "Jim O'Rourke": { war: 52.1, mvp: 0, roy: 0, ss: 0, gg: 0, allstars: 0 },
+    "Shoeless Joe Jackson": { war: 62.2, mvp: 0, roy: 0, ss: 0, gg: 0, allstars: 0 },
+    "Frank Chance": { war: 45.7, mvp: 0, roy: 0, ss: 0, gg: 0, allstars: 0 },
+    "Johnny Evers": { war: 47.7, mvp: 1, roy: 0, ss: 0, gg: 0, allstars: 0 },
+    "Joe Tinker": { war: 53.2, mvp: 0, roy: 0, ss: 0, gg: 0, allstars: 0 },
+    "Fred Clarke": { war: 67.9, mvp: 0, roy: 0, ss: 0, gg: 0, allstars: 0 },
+    "Bobby Wallace": { war: 62.2, mvp: 0, roy: 0, ss: 0, gg: 0, allstars: 0 },
+    "Chief Meyers": { war: 23.3, mvp: 0, roy: 0, ss: 0, gg: 0, allstars: 0 },
+    "Harry Heilmann": { war: 72.5, mvp: 0, roy: 0, ss: 0, gg: 0, allstars: 0 },
+    "Paul Waner": { war: 72.7, mvp: 1, roy: 0, ss: 0, gg: 0, allstars: 4 },
+    "Lloyd Waner": { war: 24.1, mvp: 0, roy: 0, ss: 0, gg: 0, allstars: 1 },
+    "Pie Traynor": { war: 38.5, mvp: 0, roy: 0, ss: 0, gg: 0, allstars: 2 },
+    "Kiki Cuyler": { war: 67.1, mvp: 0, roy: 0, ss: 0, gg: 0, allstars: 1 },
     "Frank Robinson": { war: 107.2, mvp: 2, roy: 1, ss: 0, gg: 1, allstars: 14 },
     "Barry Bonds": { war: 162.8, mvp: 7, roy: 0, ss: 12, gg: 8, allstars: 14 },
     "Babe Ruth": { war: 182.6, mvp: 1, roy: 0, ss: 0, gg: 0, allstars: 2 },
@@ -153,19 +180,30 @@
       };
     }
 
-    // Dynamic estimation formula for other players based on peak OVR, allstars, gold_gloves & HOF status
+    // Improved estimation for non-mapped players
     const as = p.allstars || 0;
     const gg = p.gold_gloves || 0;
     const ovr = p.ovr || 70;
     const isHof = p.hof || false;
+    const isEarlyEra = p.era && (p.era.includes('Genesis') || p.era.includes('Deadball') || p.era.includes('Golden'));
 
-    // Career WAR estimation: peak season WAR approx (ovr/10) * estimated career length multiplier
-    let estWar = Number(((ovr / 10) * (1 + as * 0.4 + (isHof ? 2.5 : 0.5))).toFixed(1));
-    if (estWar < 0.5) estWar = 1.2;
+    let estWar = 0;
+    if (isEarlyEra) {
+      // Early era players didn't have All-Star games or Gold Gloves!
+      // Base career WAR on peak OVR & HOF status
+      const baseMult = isHof ? 0.75 : 0.50;
+      estWar = Number(((ovr - 40) * baseMult).toFixed(1));
+    } else {
+      // Modern era estimation
+      const baseMult = isHof ? 0.8 : 0.35;
+      estWar = Number(((ovr - 40) * baseMult + as * 2.2).toFixed(1));
+    }
 
-    const mvp = (p.mvp !== undefined) ? p.mvp : ((ovr >= 98 && (as >= 5 || isHof)) ? 1 : 0);
-    const roy = (p.roy !== undefined) ? p.roy : ((isHof && as >= 10 && Math.random() < 0.3) ? 1 : 0);
-    const ss = (p.ss !== undefined) ? p.ss : ((p.con > 88 || p.pwr > 88) ? Math.floor(as * 0.35) : 0);
+    if (isNaN(estWar) || estWar < 0.5) estWar = Number(((ovr / 10) * 1.5).toFixed(1));
+
+    const mvp = (p.mvp !== undefined) ? p.mvp : ((ovr >= 96 && (as >= 5 || isHof)) ? 1 : 0);
+    const roy = (p.roy !== undefined) ? p.roy : 0;
+    const ss = (p.ss !== undefined) ? p.ss : ((p.con > 88 || p.pwr > 88) ? Math.floor(as * 0.3) : 0);
 
     return {
       war: estWar,
