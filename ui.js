@@ -945,7 +945,7 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
               <div style="font-size:11px;font-weight:bold;color:#fff;">${player.name}${getPlayerBadgeIconsHTML(player)}</div>
               <div style="font-size:9.5px;color:${rColor};">${player.rarity} • OVR ${ovr} ${posHint}</div>
             </div>
-            <button class="btn-inspect-player" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);color:#38bdf8;padding:4px 8px;font-size:9px;border-radius:4px;cursor:pointer;">🔍 CARTA</button>
+            <button class="btn-inspect-player" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);color:#38bdf8;padding:4px 8px;font-size:9px;border-radius:4px;cursor:pointer;">🔍 ${t('draft.inspect_card', 'CARTA')}</button>
           `;
 
           const inspectBtn = slotRow.querySelector('.btn-inspect-player');
@@ -1001,8 +1001,8 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
       
       orderPanel.innerHTML = `
         <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:#f59e0b;margin-bottom:6px;text-align:center;letter-spacing:1px;display:flex;justify-content:space-between;align-items:center;">
-          <span>⚔️ ORDEN AL BATE</span>
-          <button class="btn btn-secondary" id="btn-auto-sort" style="padding:4px 8px;font-size:8px;cursor:pointer;">🤖 AUTO-ORDEN</button>
+          <span>⚔️ ${t('draft.batting_order_header', 'ORDEN AL BATE')}</span>
+          <button class="btn btn-secondary" id="btn-auto-sort" style="padding:4px 8px;font-size:8px;cursor:pointer;">🤖 ${t('draft.auto_sort', 'AUTO-ORDEN')}</button>
         </div>
       `;
 
