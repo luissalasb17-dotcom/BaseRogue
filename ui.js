@@ -4816,16 +4816,18 @@ function initGameModeSelector() {
 
     tbodyB.innerHTML = '';
     if (!allBatterNames.size) {
-      tbodyB.innerHTML = '<tr><td colspan="13" style="padding:12px;color:#64748b;text-align:center;">Sin datos de bateo registrados.</td></tr>';
+      tbodyB.innerHTML = '<tr><td colspan="15" style="padding:12px;color:#64748b;text-align:center;">Sin datos de bateo registrados.</td></tr>';
     } else {
       [...allBatterNames].forEach(name => {
         const s = batterStats[name] || {};
+        const g   = s.g  || 0;
         const ab  = s.ab || 0;
         const h   = s.h  || 0;
         const b2  = s.doubles || 0;
         const b3  = s.triples || 0;
         const hr  = s.hr || 0;
         const rbi = s.rbi || 0;
+        const sb  = s.sb || 0;
         const bb  = s.bb || 0;
         const so  = s.so || 0;
 
@@ -4848,12 +4850,14 @@ function initGameModeSelector() {
         tr.style.cssText = `border-bottom:1px solid rgba(255,255,255,0.06);background:${rowColor};`;
         tr.innerHTML = `
           <td style="padding:8px;color:#e2e8f0;font-weight:bold;">${name}</td>
+          <td style="padding:8px;color:#94a3b8;">${g}</td>
           <td style="padding:8px;color:#94a3b8;">${ab}</td>
           <td style="padding:8px;color:#22d3ee;">${h}</td>
           <td style="padding:8px;color:#f59e0b;">${b2}</td>
           <td style="padding:8px;color:#f59e0b;">${b3}</td>
           <td style="padding:8px;color:#ef4444;">${hr}</td>
           <td style="padding:8px;color:#10b981;">${rbi}</td>
+          <td style="padding:8px;color:#38bdf8;">${sb}</td>
           <td style="padding:8px;color:#a78bfa;">${bb}</td>
           <td style="padding:8px;color:#f87171;">${so}</td>
           <td style="padding:8px;color:${avgVal >= 0.300 ? '#ffd700' : '#94a3b8'};font-weight:bold;">${avg}</td>

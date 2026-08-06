@@ -690,7 +690,7 @@
       this.awayLineupIndex = (this.awayLineupIndex + 1) % this.awayTeam.lineup.length;
 
       // Log PLAY event first so log order is: Outcome -> KO -> Next Pitcher / Remnant Damage
-      this.logEvent('PLAY', playText, eventType, batter.name, teamHpDmg, pitcherDmg, runsThisTurn);
+      this.logEvent('PLAY', playText, eventType, batter.name, teamHpDmg, pitcherDmg, runsThisTurn, didSteal);
 
       // Now apply pitcher damage (which logs KO_PITCHER and RESIDUAL_DMG if pitcher is KO'd)
       if (pitcherDmg > 0) {
@@ -900,7 +900,7 @@
     }
 
     // ── INTERNAL: event logger ───────────────────────────────────────
-    logEvent(playType, playText, eventType, activeBatter = '', teamHpDmg = 0, pitcherDmg = 0, runsThisTurn = 0) {
+    logEvent(playType, playText, eventType, activeBatter = '', teamHpDmg = 0, pitcherDmg = 0, runsThisTurn = 0, didSteal = false) {
       const pitcher = this.activePitcher;
       const ev = {
         playType,
@@ -908,6 +908,7 @@
         eventType,
         activeBatter,
         runsThisTurn,
+        didSteal,
         activePitcher: pitcher ? {
           name:   pitcher.name,
           hp:     pitcher.hp,

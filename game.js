@@ -642,6 +642,23 @@
     recordMatchStats(simEvents, enemyPitchers) {
       if (!simEvents || !simEvents.length) return;
 
+      // Track games played (g) for each batter appearing in this match
+      const battersInMatch = new Set();
+      for (const ev of simEvents) {
+        if (ev.playType !== 'PLAY' && ev.type !== 'PLAY') continue;
+        const rawName = ev.activeBatter || ev.batterName;
+        if (!rawName) continue;
+        const name = rawName.replace(/\s*\(\d{4}\)$/, '').trim();
+        battersInMatch.add(name);
+      }
+
+      battersInMatch.forEach(name => {
+        if (!this.runBatterStats[name]) {
+          this.runBatterStats[name] = { g: 0, ab: 0, h: 0, bb: 0, so: 0, doubles: 0, triples: 0, hr: 0, rbi: 0, sb: 0 };
+        }
+        this.runBatterStats[name].g = (this.runBatterStats[name].g || 0) + 1;
+      });
+
       // Accumulate batter stats from events
       for (const ev of simEvents) {
         if (ev.playType !== 'PLAY' && ev.type !== 'PLAY') continue;
@@ -650,7 +667,7 @@
         const name = rawName.replace(/\s*\(\d{4}\)$/, '').trim();
 
         if (!this.runBatterStats[name]) {
-          this.runBatterStats[name] = { ab: 0, h: 0, bb: 0, so: 0, doubles: 0, triples: 0, hr: 0, rbi: 0 };
+          this.runBatterStats[name] = { g: 0, ab: 0, h: 0, bb: 0, so: 0, doubles: 0, triples: 0, hr: 0, rbi: 0, sb: 0 };
         }
         const s = this.runBatterStats[name];
         const eventType = ev.eventType || ev.type;
@@ -662,7 +679,11 @@
         else if (eventType === '2B') { s.ab++; s.h++; s.doubles++; }
         else if (eventType === '3B') { s.ab++; s.h++; s.triples++; }
         else if (eventType === 'HR') { s.ab++; s.h++; s.hr++; }
-        
+
+        if (ev.didSteal || (ev.playText && ev.playText.includes('ROBO DE BASE'))) {
+          s.sb = (s.sb || 0) + 1;
+        }
+
         if (ev.runsThisTurn || ev.runsScored) {
           s.rbi += (ev.runsThisTurn || ev.runsScored);
         }
