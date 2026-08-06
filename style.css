@@ -1691,6 +1691,7 @@ p {
   align-items: center;
   box-sizing: border-box;
   padding: 4px;
+  overflow: visible;
 }
 
 .faceoff-panel {
@@ -2213,6 +2214,24 @@ p {
   text-align: center;
   margin-bottom: 8px;
   letter-spacing: 0.5px;
+}
+
+.clutch-active-banner {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid #ef4444;
+  border-radius: 4px;
+  padding: 3px 8px;
+  font-size: 8px;
+  color: #ef4444;
+  font-family: 'Press Start 2P', monospace;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.25);
 }
 
 .outcome-probabilities-grid {
@@ -3333,12 +3352,14 @@ body.workspace-active .main-container {
     flex: 1 !important;
     max-width: 48% !important;
     width: 48% !important;
-    height: 172px !important;
-    min-height: 172px !important;
-    max-height: 172px !important;
+    height: 176px !important;
+    min-height: 176px !important;
+    max-height: 176px !important;
     display: flex !important;
     flex-direction: column !important;
-    overflow: hidden !important;
+    overflow: visible !important;
+    padding: 2px !important;
+    box-sizing: border-box !important;
   }
 
   .fight-card-slot .card,
@@ -3356,6 +3377,7 @@ body.workspace-active .main-container {
     flex-direction: column !important;
     justify-content: space-between !important;
     overflow: hidden !important;
+    margin-top: 0 !important;
   }
 
   .fight-card-slot .player-card .card-stats {
@@ -3456,6 +3478,23 @@ body.workspace-active .main-container {
     border-radius: 6px !important;
     border: 1px solid rgba(255, 255, 255, 0.1) !important;
     box-sizing: border-box !important;
+  }
+
+  .clutch-active-banner {
+    font-size: 7px !important;
+    padding: 2px 4px !important;
+    margin-bottom: 3px !important;
+    border-radius: 3px !important;
+  }
+
+  .outcome-probabilities-grid {
+    font-size: 7.5px !important;
+    gap: 2px 8px !important;
+  }
+
+  .outcome-probabilities-grid .outcome-row {
+    padding: 1.5px 4px !important;
+    font-size: 7.5px !important;
   }
 
   #zones-panel > div:first-child {

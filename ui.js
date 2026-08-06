@@ -3846,7 +3846,8 @@ function initGameModeSelector() {
       min-width: 240px;
     `;
 
-    const cleanDetails = details ? details.replace(/🎲 \[\d+\] \[[^\]]+\] /, '').replace(/−/g, '-') : '';
+    let cleanDetails = details ? details.replace(/🎲 \[\d+\] \[[^\]]+\] /, '').replace(/−/g, '-') : '';
+    cleanDetails = cleanDetails.replace(/⚡\s*¡?CLUTCH PLAYER!?[^—\n]*[—\.]\s*(\(\+[^)]+\)\.?)?\s*/gi, '').replace(/^⚡\s*¡?CLUTCH PLAYER!?[^\.]*\.\s*/gi, '').trim();
 
     popup.innerHTML = `
       <div style="font-size: 36px; color: ${color}; margin-bottom: 12px; filter: drop-shadow(0 0 8px ${color});">
@@ -4210,12 +4211,8 @@ function initGameModeSelector() {
       }
     }
 
-    const boostTag2 = `<span style="color:#00ff66; font-size:9px; font-weight:bold; font-family:'Press Start 2P',monospace; margin-right:6px;" title="Bonus Clutch">+2%</span>`;
-    const hrTag4    = `<span style="color:#ffd700; font-size:9px; font-weight:bold; font-family:'Press Start 2P',monospace; margin-right:6px;" title="Bonus Clutch Jonrón">+4%</span>`;
-    const penaltyTag8 = `<span style="color:#ef4444; font-size:9px; font-weight:bold; font-family:'Press Start 2P',monospace; margin-right:6px;" title="Reducción Out Clutch">-8%</span>`;
-
     zonesEl.innerHTML = `
-      ${isClutchActive ? `<div style="background:rgba(255,51,0,0.15); border:1px solid #ff3300; border-radius:4px; padding:4px 8px; font-size:7px; color:#ff3300; font-family:'Press Start 2P',monospace; font-weight:bold; text-align:center; margin-bottom:6px; display:flex; align-items:center; justify-content:center; gap:4px;">⚡ ¡CLUTCH PLAYER ACTIVO! (+2% 1B/2B, +4% HR)</div>` : ''}
+      ${isClutchActive ? `<div class="clutch-active-banner">⚡ ¡CLUTCH PLAYER ACTIVO!</div>` : ''}
       <div class="outcome-probabilities-grid">
         <div style="display:flex;flex-direction:column;gap:4px;">
           <div class="outcome-row">
@@ -4226,41 +4223,27 @@ function initGameModeSelector() {
             <span class="outcome-row-left" style="color:#ef4444;">💨 ${t('match.so', 'Ponche')}</span>
             <span class="outcome-row-right" style="color:#ef4444;font-weight:bold;">${b.bbEnd + 1}–${b.soEnd}</span>
           </div>
-          <div class="outcome-row" style="${isClutchActive ? 'border:1px dashed #ef4444; background:rgba(239,68,68,0.12);' : ''}">
+          <div class="outcome-row" style="${isClutchActive ? 'background:rgba(239,68,68,0.12);' : ''}">
             <span class="outcome-row-left" style="color:#9ca3af;">🤚 ${t('match.out', 'Out')}</span>
-            <span class="outcome-row-right">
-              ${isClutchActive ? penaltyTag8 : ''}
-              <span style="color:#9ca3af;font-weight:bold;">${b.soEnd + 1}–${b.outEnd}</span>
-            </span>
+            <span class="outcome-row-right" style="color:#9ca3af;font-weight:bold;">${b.soEnd + 1}–${b.outEnd}</span>
           </div>
         </div>
         <div style="display:flex;flex-direction:column;gap:4px;">
-          <div class="outcome-row" style="${isClutchActive ? 'border:1px solid #00ff66; background:rgba(0,255,102,0.12);' : ''}">
+          <div class="outcome-row" style="${isClutchActive ? 'background:rgba(0,255,102,0.1);' : ''}">
             <span class="outcome-row-left" style="color:#a7f3d0;">✅ ${t('match.single', 'Sencillo')}</span>
-            <span class="outcome-row-right">
-              ${isClutchActive ? boostTag2 : ''}
-              <span style="color:#a7f3d0;font-weight:bold;">${b.outEnd + 1}–${b.singleEnd}</span>
-            </span>
+            <span class="outcome-row-right" style="color:#a7f3d0;font-weight:bold;">${b.outEnd + 1}–${b.singleEnd}</span>
           </div>
-          <div class="outcome-row" style="${isClutchActive ? 'border:1px solid #00ff66; background:rgba(0,255,102,0.12);' : ''}">
+          <div class="outcome-row" style="${isClutchActive ? 'background:rgba(16,185,129,0.1);' : ''}">
             <span class="outcome-row-left" style="color:#10b981;">⚡ ${t('match.double', 'Doble')}</span>
-            <span class="outcome-row-right">
-              ${isClutchActive ? boostTag2 : ''}
-              <span style="color:#10b981;font-weight:bold;">${b.singleEnd + 1}–${b.doubleEnd}</span>
-            </span>
+            <span class="outcome-row-right" style="color:#10b981;font-weight:bold;">${b.singleEnd + 1}–${b.doubleEnd}</span>
           </div>
           <div class="outcome-row">
             <span class="outcome-row-left" style="color:#06b6d4;">🔥 ${t('match.triple', 'Triple')}</span>
-            <span class="outcome-row-right">
-              <span style="color:#06b6d4;font-weight:bold;">${b.doubleEnd + 1}–${b.tripleEnd}</span>
-            </span>
+            <span class="outcome-row-right" style="color:#06b6d4;font-weight:bold;">${b.doubleEnd + 1}–${b.tripleEnd}</span>
           </div>
-          <div class="outcome-row" style="${isClutchActive ? 'border:1px solid #eab308; background:rgba(234,179,8,0.15);' : ''}">
+          <div class="outcome-row" style="${isClutchActive ? 'background:rgba(234,179,8,0.15);' : ''}">
             <span class="outcome-row-left" style="color:#eab308;font-weight:bold;">🚀 ${t('match.hr', 'Jonrón')}</span>
-            <span class="outcome-row-right">
-              ${isClutchActive ? hrTag4 : ''}
-              <span style="color:#eab308;font-weight:bold;">${b.tripleEnd + 1}–100</span>
-            </span>
+            <span class="outcome-row-right" style="color:#eab308;font-weight:bold;">${b.tripleEnd + 1}–100</span>
           </div>
         </div>
       </div>
