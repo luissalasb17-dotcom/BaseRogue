@@ -453,7 +453,15 @@ def paso_5_filtro_ingesta(career, peak, allstar, hof, pure_pitcher_ids, pitching
         nl_mask = eligible['playerID'].isin(nl_pids)
         nl_keep = (eligible['is_hof']) | (eligible['allstar_selections'] >= 2) | (eligible['career_gs'] >= 35) | (eligible['career_g'] >= 60)
         eligible = eligible[~nl_mask | nl_keep].copy()
-        eligible['league_group'] = np.where(eligible['playerID'].isin(nl_pids), 'NLB', 'MLB')
+        
+        nl_ip_df = pitching[pitching['lgID'].isin(nl_leagues)].groupby('playerID')['IPouts'].sum().reset_index().rename(columns={'IPouts': 'nlb_ipouts'})
+        ml_ip_df = pitching[~pitching['lgID'].isin(nl_leagues)].groupby('playerID')['IPouts'].sum().reset_index().rename(columns={'IPouts': 'mlb_ipouts'})
+        
+        eligible = eligible.merge(nl_ip_df, on='playerID', how='left').merge(ml_ip_df, on='playerID', how='left')
+        eligible['nlb_ipouts'] = eligible['nlb_ipouts'].fillna(0)
+        eligible['mlb_ipouts'] = eligible['mlb_ipouts'].fillna(0)
+        eligible['league_group'] = np.where(eligible['nlb_ipouts'] > eligible['mlb_ipouts'], 'NLB', 'MLB')
+        eligible = eligible.drop(columns=['nlb_ipouts', 'mlb_ipouts'])
     else:
         eligible['league_group'] = 'MLB'
 
