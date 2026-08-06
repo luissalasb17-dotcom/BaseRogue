@@ -43,6 +43,14 @@
     return GRADE_COLORS[getGrade(val)];
   }
 
+  function getPosText(p) {
+    if (!p) return '';
+    if (p.sec_pos && String(p.sec_pos).trim() !== '') {
+      return `${p.pos} / ${p.sec_pos}`;
+    }
+    return p.pos || '';
+  }
+
   window.BaseballDex = {
     STORAGE_KEY: 'baserogue_dex_v1',
     unlocked: new Set(),
@@ -100,10 +108,16 @@
     },
 
     updateCounters() {
-      const el = document.getElementById('dex-counter');
-      if (el) {
-        const stats = this.getStats();
-        el.innerText = `${stats.unlocked} / ${stats.total} descubiertos`;
+      const elText = document.getElementById('dex-counter');
+      const elFill = document.getElementById('dex-progress-fill');
+      const stats = this.getStats();
+      const pct = stats.total > 0 ? ((stats.unlocked / stats.total) * 100).toFixed(1) : 0;
+      
+      if (elText) {
+        elText.innerText = `${stats.unlocked} / ${stats.total} descubiertos (${pct}%)`;
+      }
+      if (elFill) {
+        elFill.style.width = `${pct}%`;
       }
     },
 
@@ -152,7 +166,7 @@
           el.style.cssText = `background: #0d1f12; border: 2px solid ${rColor}; border-radius: 8px; padding: 10px 6px; text-align: center; cursor: pointer; transition: transform 0.15s; display: flex; flex-direction: column; justify-content: space-between;`;
           el.innerHTML = `
             <div>
-              <div style="font-size:7px;color:#00ff66;font-family:'Press Start 2P',monospace;margin-bottom:4px">${p.pos}</div>
+              <div style="font-size:7px;color:#00ff66;font-family:'Press Start 2P',monospace;margin-bottom:4px">${getPosText(p)}</div>
               <div style="font-size:7px;color:#e5e7eb;font-family:'Press Start 2P',monospace;line-height:1.3;word-break:break-word">${p.name}</div>
               <div style="font-size:6px;color:#9ca3af;margin-top:3px">${p.team} '${p.year}</div>
             </div>
@@ -204,7 +218,8 @@
 
       // Header
       const header = document.createElement('div');
-      header.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.3)';
+      header.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.3)';
+      
       const title = document.createElement('h2');
       title.style.cssText = 'font-family: "Press Start 2P", monospace; font-size: 14px; color: #00ff66; margin: 0;';
       title.innerText = '⚾ BASEBALL-DEX';
@@ -213,6 +228,15 @@
       counter.id = 'dex-counter';
       counter.style.cssText = 'font-family: "Press Start 2P", monospace; font-size: 8px; color: #9ca3af;';
       
+      // Progress Bar
+      const progressOuter = document.createElement('div');
+      progressOuter.style.cssText = 'width: 100%; max-width: 280px; height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; border: 1px solid rgba(0,255,102,0.3); overflow: hidden; margin-top: 4px;';
+      
+      const progressFill = document.createElement('div');
+      progressFill.id = 'dex-progress-fill';
+      progressFill.style.cssText = 'height: 100%; background: linear-gradient(90deg, #10b981, #00ff66); width: 0%; transition: width 0.4s ease;';
+      progressOuter.appendChild(progressFill);
+
       const closeBtn = document.createElement('button');
       closeBtn.innerText = '✕';
       closeBtn.style.cssText = 'background: none; border: none; color: #9ca3af; font-size: 20px; cursor: pointer; padding: 0 8px;';
@@ -221,9 +245,10 @@
       const headerLeft = document.createElement('div');
       headerLeft.style.display = 'flex';
       headerLeft.style.flexDirection = 'column';
-      headerLeft.style.gap = '8px';
+      headerLeft.style.gap = '4px';
       headerLeft.appendChild(title);
       headerLeft.appendChild(counter);
+      headerLeft.appendChild(progressOuter);
 
       header.appendChild(headerLeft);
       header.appendChild(closeBtn);
@@ -231,7 +256,7 @@
 
       // Search bar
       const searchContainer = document.createElement('div');
-      searchContainer.style.cssText = 'padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.1);';
+      searchContainer.style.cssText = 'padding: 10px 16px; border-bottom: 1px solid rgba(255,255,255,0.1);';
       const searchInput = document.createElement('input');
       searchInput.type = 'text';
       searchInput.placeholder = 'Buscar por nombre o equipo...';
@@ -243,15 +268,16 @@
       searchContainer.appendChild(searchInput);
       panel.appendChild(searchContainer);
 
-      // Era Tabs
+      // Era Tabs (Compact & Responsive Wrap)
       const tabsContainer = document.createElement('div');
-      tabsContainer.style.cssText = 'display: flex; gap: 8px; overflow-x: auto; padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.1); scrollbar-width: none;';
+      tabsContainer.style.cssText = 'display: flex; gap: 4px; flex-wrap: wrap; justify-content: center; padding: 8px 12px; border-bottom: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.15);';
+      
       ERA_TABS.forEach(tab => {
         const btn = document.createElement('button');
         btn.innerText = tab.label;
         const isActive = this.currentFilterEra === tab.key;
         btn.style.cssText = `
-          padding: 6px 12px; border-radius: 20px; font-size: 10px; font-weight: bold; white-space: nowrap; border: none; cursor: pointer; transition: all 0.2s;
+          padding: 4px 8px; border-radius: 12px; font-size: 8.5px; font-weight: bold; white-space: nowrap; border: none; cursor: pointer; transition: all 0.2s;
           ${isActive ? 'background: #00ff66; color: #000;' : 'background: rgba(255,255,255,0.1); color: #fff;'}
         `;
         btn.onclick = () => {
@@ -310,14 +336,19 @@
         </div>
       `;
 
+      const warVal = p.war || p.war_peak || (p.ovr ? (p.ovr / 10).toFixed(1) : '-');
+      const ssVal = p.ss || p.silver_sluggers || p.silver_slugger || 0;
+      const mvpVal = p.mvp || 0;
+      const royVal = p.roy || 0;
+
       overlay.innerHTML = `
-        <div style="background:#0a0f1a;border:3px solid ${rColor};border-radius:12px;width:100%;max-width:420px;padding:24px;position:relative">
+        <div style="background:#0a0f1a;border:3px solid ${rColor};border-radius:12px;width:100%;max-width:440px;padding:24px;position:relative">
           <button onclick="document.getElementById('dex-detail-overlay').remove()" style="position:absolute;top:12px;right:12px;background:none;border:none;color:#9ca3af;font-size:18px;cursor:pointer">✕</button>
           
           <div style="margin-bottom:16px">
             <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:${rColor};margin-bottom:4px">${p.rarity || 'Common'} · ${eraShort}</div>
             <h2 style="font-family:'Press Start 2P',monospace;font-size:13px;color:#fff;margin:0 0 4px 0;line-height:1.4">${p.name}</h2>
-            <div style="font-size:12px;color:#9ca3af">${teamFull} — ${p.year} · ${p.pos}</div>
+            <div style="font-size:12px;color:#9ca3af">${teamFull} — ${p.year} · ${getPosText(p)}</div>
           </div>
           
           <div style="text-align:center;margin-bottom:16px">
@@ -336,11 +367,14 @@
           ${badgesHtml ? `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px">${badgesHtml}</div>` : ''}
           
           <div style="background:#111827;border-radius:8px;padding:12px">
-            <div style="font-family:'Press Start 2P',monospace;font-size:7px;color:#38bdf8;margin-bottom:8px">CARRERA</div>
-            <div style="display:flex;justify-content:space-around;text-align:center">
-              <div><div style="font-size:14px;font-weight:bold;color:#fff">${p.allstars || 0}</div><div style="font-size:7px;color:#6b7280">ALL-STARS</div></div>
-              <div><div style="font-size:14px;font-weight:bold;color:#ffd700">${p.gold_gloves || 0}</div><div style="font-size:7px;color:#6b7280">ORO</div></div>
-              <div><div style="font-size:14px;font-weight:bold;color:#00ff66">${eraShort}</div><div style="font-size:7px;color:#6b7280">ERA</div></div>
+            <div style="font-family:'Press Start 2P',monospace;font-size:7px;color:#38bdf8;margin-bottom:10px;text-align:center">ESTADÍSTICAS DE CARRERA</div>
+            <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:10px;text-align:center">
+              <div><div style="font-size:13px;font-weight:bold;color:#fff">${p.allstars || 0}</div><div style="font-size:7px;color:#6b7280;margin-top:2px">ALL-STARS</div></div>
+              <div><div style="font-size:13px;font-weight:bold;color:#ffd700">${p.gold_gloves || 0}</div><div style="font-size:7px;color:#6b7280;margin-top:2px">GG</div></div>
+              <div><div style="font-size:13px;font-weight:bold;color:#eab308">${mvpVal}</div><div style="font-size:7px;color:#6b7280;margin-top:2px">MVP</div></div>
+              <div><div style="font-size:13px;font-weight:bold;color:#38bdf8">${ssVal}</div><div style="font-size:7px;color:#6b7280;margin-top:2px">SS</div></div>
+              <div><div style="font-size:13px;font-weight:bold;color:#a7f3d0">${royVal}</div><div style="font-size:7px;color:#6b7280;margin-top:2px">ROY</div></div>
+              <div><div style="font-size:13px;font-weight:bold;color:#00ff66">${warVal}</div><div style="font-size:7px;color:#6b7280;margin-top:2px">WAR</div></div>
             </div>
           </div>
         </div>
