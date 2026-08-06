@@ -719,6 +719,7 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
         });
         wrapper.addEventListener('click', () => {
           if (window.AudioManager) window.AudioManager.play('draft_pick');
+          if (window.BaseballDex) window.BaseballDex.unlock(player);
           G.draftPickPlayer(player);
           if (window.renderDraftRound) window.renderDraftRound(); else if (typeof renderDraftRound === 'function') renderDraftRound();
         });
@@ -751,6 +752,7 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
              const ovrB = Math.round((b.con||40)*.35+(b.pwr||35)*.3+(b.spd||45)*.10+(b.def||40)*.15+(b.eye||40)*.1);
              return ovrB - ovrA;
           });
+          if (window.BaseballDex) window.BaseballDex.unlock(picks[0]);
           G.draftPickPlayer(picks[0]);
         }
         renderFinalLineupConfirmation();
@@ -1265,6 +1267,18 @@ function initGameModeSelector() {
     // NOTE: do NOT call renderDraftRound() here — window.Game doesn't exist yet on page load.
     // It is called by initGameModeSelector handlers after the user selects a mode.
     setupEventListeners();
+
+    // ── BaseballDex: initialize and wire button ──────────────────────────────
+    if (window.BaseballDex) {
+      window.BaseballDex.init();
+      const btnDex = document.getElementById('btn-basedex-open');
+      if (btnDex) {
+        btnDex.addEventListener('click', (e) => {
+          e.stopPropagation();
+          window.BaseballDex.open();
+        });
+      }
+    }
 
     // ── Audio: unlock context on first user interaction + mute toggle button ──
     if (window.AudioManager) {
