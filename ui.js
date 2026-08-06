@@ -1813,7 +1813,7 @@ function initGameModeSelector() {
     const btnLang = document.getElementById('btn-lang-toggle');
     if (btnLang) {
       btnLang.addEventListener('click', () => {
-        const cur = window.i18n ? window.i18n.getCurrentLanguage() : (localStorage.getItem('baserogue_lang') || 'es');
+        const cur = window.i18n ? window.i18n.getCurrentLanguage() : (localStorage.getItem('baserogue_lang') || 'en');
         const next = cur === 'es' ? 'en' : 'es';
         if (window.i18n) {
           window.i18n.changeLanguage(next);

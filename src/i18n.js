@@ -1318,13 +1318,13 @@
     }
   };
 
-  let currentLang = localStorage.getItem(STORAGE_KEY) || 'es';
+  let currentLang = localStorage.getItem(STORAGE_KEY) || 'en';
 
   function init() {
     if (typeof i18next !== 'undefined') {
       i18next.init({
         lng: currentLang,
-        fallbackLng: 'es',
+        fallbackLng: 'en',
         resources: resources,
         interpolation: {
           escapeValue: false // React / standard HTML escape
@@ -1343,7 +1343,7 @@
       return i18next.t(key, options);
     }
     // Simple fallback if i18next is missing
-    const dict = resources[currentLang]?.translation || resources.es.translation;
+    const dict = resources[currentLang]?.translation || resources.en.translation;
     const keys = key.split('.');
     let val = dict;
     for (const k of keys) {
