@@ -30,6 +30,92 @@
     'F': '#ef4444'
   };
 
+  // Authentic Career Stats & Awards Database for MLB Legends
+  const CAREER_DB = {
+    "Frank Robinson": { war: 107.2, mvp: 2, roy: 1, ss: 0, gg: 1, allstars: 14 },
+    "Barry Bonds": { war: 162.8, mvp: 7, roy: 0, ss: 12, gg: 8, allstars: 14 },
+    "Babe Ruth": { war: 182.6, mvp: 1, roy: 0, ss: 0, gg: 0, allstars: 2 },
+    "Willie Mays": { war: 156.1, mvp: 2, roy: 1, ss: 0, gg: 12, allstars: 24 },
+    "Ted Williams": { war: 122.0, mvp: 2, roy: 0, ss: 0, gg: 0, allstars: 19 },
+    "Ty Cobb": { war: 151.5, mvp: 1, roy: 0, ss: 0, gg: 0, allstars: 0 },
+    "Hank Aaron": { war: 143.8, mvp: 1, roy: 0, ss: 0, gg: 3, allstars: 25 },
+    "Lou Gehrig": { war: 114.1, mvp: 2, roy: 0, ss: 0, gg: 0, allstars: 7 },
+    "Mickey Mantle": { war: 110.2, mvp: 3, roy: 0, ss: 0, gg: 1, allstars: 20 },
+    "Mike Schmidt": { war: 106.9, mvp: 3, roy: 0, ss: 6, gg: 10, allstars: 12 },
+    "Rogers Hornsby": { war: 127.1, mvp: 2, roy: 0, ss: 0, gg: 0, allstars: 2 },
+    "Stan Musial": { war: 128.6, mvp: 3, roy: 0, ss: 0, gg: 0, allstars: 24 },
+    "Rickey Henderson": { war: 111.1, mvp: 1, roy: 0, ss: 3, gg: 1, allstars: 10 },
+    "Alex Rodriguez": { war: 117.5, mvp: 3, roy: 0, ss: 10, gg: 2, allstars: 14 },
+    "Albert Pujols": { war: 101.5, mvp: 3, roy: 1, ss: 6, gg: 2, allstars: 11 },
+    "Ken Griffey Jr.": { war: 83.8, mvp: 1, roy: 0, ss: 7, gg: 10, allstars: 13 },
+    "Ken Griffey": { war: 83.8, mvp: 1, roy: 0, ss: 7, gg: 10, allstars: 13 },
+    "Mike Trout": { war: 85.2, mvp: 3, roy: 1, ss: 9, gg: 0, allstars: 11 },
+    "George Brett": { war: 88.6, mvp: 1, roy: 0, ss: 3, gg: 1, allstars: 13 },
+    "Cal Ripken": { war: 95.9, mvp: 2, roy: 1, ss: 8, gg: 2, allstars: 19 },
+    "Cal Ripken Jr.": { war: 95.9, mvp: 2, roy: 1, ss: 8, gg: 2, allstars: 19 },
+    "Tony Gwynn": { war: 69.2, mvp: 0, roy: 0, ss: 7, gg: 5, allstars: 15 },
+    "Wade Boggs": { war: 91.4, mvp: 0, roy: 0, ss: 8, gg: 2, allstars: 12 },
+    "Johnny Bench": { war: 75.2, mvp: 2, roy: 1, ss: 0, gg: 10, allstars: 14 },
+    "Yogi Berra": { war: 59.6, mvp: 3, roy: 0, ss: 0, gg: 0, allstars: 18 },
+    "Roy Campanella": { war: 41.8, mvp: 3, roy: 0, ss: 0, gg: 0, allstars: 11 },
+    "Joe DiMaggio": { war: 79.2, mvp: 3, roy: 0, ss: 0, gg: 0, allstars: 16 },
+    "Jimmie Foxx": { war: 93.4, mvp: 3, roy: 0, ss: 0, gg: 0, allstars: 9 },
+    "Carl Yastrzemski": { war: 96.5, mvp: 1, roy: 0, ss: 0, gg: 7, allstars: 18 },
+    "Roberto Clemente": { war: 94.8, mvp: 1, roy: 0, ss: 0, gg: 12, allstars: 15 },
+    "Al Kaline": { war: 92.8, mvp: 0, roy: 0, ss: 0, gg: 10, allstars: 18 },
+    "Eddie Murray": { war: 68.7, mvp: 0, roy: 1, ss: 3, gg: 3, allstars: 8 },
+    "Ernie Banks": { war: 67.7, mvp: 2, roy: 0, ss: 0, gg: 1, allstars: 14 },
+    "Jackie Robinson": { war: 63.9, mvp: 1, roy: 1, ss: 0, gg: 0, allstars: 6 },
+    "Honus Wagner": { war: 131.0, mvp: 0, roy: 0, ss: 0, gg: 0, allstars: 0 },
+    "Tris Speaker": { war: 134.9, mvp: 1, roy: 0, ss: 0, gg: 0, allstars: 0 },
+    "Nap Lajoie": { war: 106.9, mvp: 0, roy: 0, ss: 0, gg: 0, allstars: 0 },
+    "Shohei Ohtani": { war: 34.7, mvp: 3, roy: 1, ss: 3, gg: 0, allstars: 4 },
+    "Shohei Ohtani (DH)": { war: 34.7, mvp: 3, roy: 1, ss: 3, gg: 0, allstars: 4 },
+    "Aaron Judge": { war: 50.1, mvp: 2, roy: 1, ss: 3, gg: 0, allstars: 6 },
+    "Mookie Betts": { war: 69.5, mvp: 1, roy: 0, ss: 6, gg: 6, allstars: 8 },
+    "Miguel Cabrera": { war: 67.3, mvp: 2, roy: 0, ss: 7, gg: 0, allstars: 12 },
+    "Bryce Harper": { war: 50.3, mvp: 2, roy: 1, ss: 3, gg: 0, allstars: 8 },
+    "Derek Jeter": { war: 71.3, mvp: 0, roy: 1, ss: 5, gg: 5, allstars: 14 },
+    "Ichiro Suzuki": { war: 60.0, mvp: 1, roy: 1, ss: 3, gg: 10, allstars: 10 },
+    "Manny Ramirez": { war: 69.3, mvp: 0, roy: 0, ss: 9, gg: 0, allstars: 12 },
+    "David Ortiz": { war: 55.3, mvp: 0, roy: 0, ss: 7, gg: 0, allstars: 10 },
+    "Chipper Jones": { war: 85.3, mvp: 1, roy: 0, ss: 2, gg: 0, allstars: 8 },
+    "Ivan Rodriguez": { war: 68.7, mvp: 1, roy: 0, ss: 7, gg: 13, allstars: 14 },
+    "Craig Biggio": { war: 65.5, mvp: 0, roy: 0, ss: 5, gg: 4, allstars: 7 },
+    "Jeff Bagwell": { war: 79.9, mvp: 1, roy: 1, ss: 3, gg: 1, allstars: 4 },
+    "Ryne Sandberg": { war: 67.9, mvp: 1, roy: 0, ss: 7, gg: 9, allstars: 10 },
+    "Paul Molitor": { war: 75.7, mvp: 0, roy: 0, ss: 4, gg: 0, allstars: 7 },
+    "Robin Yount": { war: 77.4, mvp: 2, roy: 0, ss: 3, gg: 1, allstars: 3 },
+    "Gary Carter": { war: 70.1, mvp: 0, roy: 0, ss: 5, gg: 3, allstars: 11 },
+    "Carlton Fisk": { war: 68.4, mvp: 0, roy: 1, ss: 3, gg: 1, allstars: 11 },
+    "Andruw Jones": { war: 62.7, mvp: 0, roy: 0, ss: 1, gg: 10, allstars: 5 },
+    "Jeff Kent": { war: 55.4, mvp: 1, roy: 0, ss: 4, gg: 0, allstars: 5 },
+    "Jim Thome": { war: 73.1, mvp: 0, roy: 0, ss: 1, gg: 0, allstars: 5 },
+    "Todd Helton": { war: 61.8, mvp: 0, roy: 0, ss: 4, gg: 3, allstars: 5 },
+    "Scott Rolen": { war: 70.1, mvp: 0, roy: 1, ss: 1, gg: 8, allstars: 7 },
+    "Adrian Beltre": { war: 93.5, mvp: 0, roy: 0, ss: 4, gg: 5, allstars: 4 },
+    "Carlos Beltran": { war: 70.1, mvp: 0, roy: 1, ss: 2, gg: 3, allstars: 9 },
+    "Buster Posey": { war: 44.8, mvp: 1, roy: 1, ss: 5, gg: 1, allstars: 7 },
+    "Joey Votto": { war: 64.5, mvp: 1, roy: 0, ss: 0, gg: 1, allstars: 6 },
+    "Paul Goldschmidt": { war: 61.7, mvp: 1, roy: 0, ss: 5, gg: 4, allstars: 7 },
+    "Freddie Freeman": { war: 60.2, mvp: 1, roy: 0, ss: 3, gg: 1, allstars: 8 },
+    "Jose Altuve": { war: 53.5, mvp: 1, roy: 0, ss: 6, gg: 1, allstars: 8 },
+    "Manny Machado": { war: 54.8, mvp: 0, roy: 0, ss: 1, gg: 2, allstars: 6 },
+    "Nolan Arenado": { war: 54.5, mvp: 0, roy: 0, ss: 5, gg: 10, allstars: 8 },
+    "Giancarlo Stanton": { war: 44.7, mvp: 1, roy: 0, ss: 2, gg: 0, allstars: 5 },
+    "Willie McCovey": { war: 64.5, mvp: 1, roy: 1, ss: 0, gg: 0, allstars: 6 },
+    "Willie Stargell": { war: 57.5, mvp: 1, roy: 0, ss: 0, gg: 0, allstars: 7 },
+    "Brooks Robinson": { war: 78.4, mvp: 1, roy: 0, ss: 0, gg: 16, allstars: 18 },
+    "Dick Allen": { war: 58.7, mvp: 1, roy: 1, ss: 0, gg: 0, allstars: 7 },
+    "Fred McGriff": { war: 52.6, mvp: 0, roy: 0, ss: 3, gg: 0, allstars: 5 },
+    "Sammy Sosa": { war: 58.6, mvp: 1, roy: 0, ss: 6, gg: 0, allstars: 7 },
+    "Mark McGwire": { war: 62.2, mvp: 0, roy: 1, ss: 3, gg: 1, allstars: 12 },
+    "Rafael Palmeiro": { war: 71.9, mvp: 0, roy: 0, ss: 2, gg: 3, allstars: 4 },
+    "Moises Alou": { war: 39.9, mvp: 0, roy: 0, ss: 2, gg: 0, allstars: 6 },
+    "Carlos Delgado": { war: 44.4, mvp: 0, roy: 0, ss: 3, gg: 0, allstars: 2 },
+    "Jason Giambi": { war: 50.5, mvp: 1, roy: 0, ss: 2, gg: 0, allstars: 5 }
+  };
+
   function getGrade(val) {
     if (val >= 100) return 'S';
     if (val >= 80) return 'A';
@@ -49,6 +135,46 @@
       return `${p.pos} / ${p.sec_pos}`;
     }
     return p.pos || '';
+  }
+
+  function getPlayerCareerData(p) {
+    if (!p) return { war: '-', mvp: 0, roy: 0, ss: 0, gg: 0, allstars: 0 };
+    const cleanName = p.name ? p.name.replace(/\s\(.*?\)$/, '').trim() : '';
+    const known = CAREER_DB[cleanName] || CAREER_DB[p.name];
+    
+    if (known) {
+      return {
+        war: known.war,
+        mvp: known.mvp,
+        roy: known.roy,
+        ss: known.ss,
+        gg: known.gg !== undefined ? known.gg : (p.gold_gloves || 0),
+        allstars: known.allstars !== undefined ? known.allstars : (p.allstars || 0)
+      };
+    }
+
+    // Dynamic estimation formula for other players based on peak OVR, allstars, gold_gloves & HOF status
+    const as = p.allstars || 0;
+    const gg = p.gold_gloves || 0;
+    const ovr = p.ovr || 70;
+    const isHof = p.hof || false;
+
+    // Career WAR estimation: peak season WAR approx (ovr/10) * estimated career length multiplier
+    let estWar = Number(((ovr / 10) * (1 + as * 0.4 + (isHof ? 2.5 : 0.5))).toFixed(1));
+    if (estWar < 0.5) estWar = 1.2;
+
+    const mvp = (p.mvp !== undefined) ? p.mvp : ((ovr >= 98 && (as >= 5 || isHof)) ? 1 : 0);
+    const roy = (p.roy !== undefined) ? p.roy : ((isHof && as >= 10 && Math.random() < 0.3) ? 1 : 0);
+    const ss = (p.ss !== undefined) ? p.ss : ((p.con > 88 || p.pwr > 88) ? Math.floor(as * 0.35) : 0);
+
+    return {
+      war: estWar,
+      mvp: mvp,
+      roy: roy,
+      ss: ss,
+      gg: gg,
+      allstars: as
+    };
   }
 
   window.BaseballDex = {
@@ -336,10 +462,7 @@
         </div>
       `;
 
-      const warVal = p.war || p.war_peak || (p.ovr ? (p.ovr / 10).toFixed(1) : '-');
-      const ssVal = p.ss || p.silver_sluggers || p.silver_slugger || 0;
-      const mvpVal = p.mvp || 0;
-      const royVal = p.roy || 0;
+      const careerStats = getPlayerCareerData(p);
 
       overlay.innerHTML = `
         <div style="background:#0a0f1a;border:3px solid ${rColor};border-radius:12px;width:100%;max-width:440px;padding:24px;position:relative">
@@ -367,14 +490,14 @@
           ${badgesHtml ? `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px">${badgesHtml}</div>` : ''}
           
           <div style="background:#111827;border-radius:8px;padding:12px">
-            <div style="font-family:'Press Start 2P',monospace;font-size:7px;color:#38bdf8;margin-bottom:10px;text-align:center">ESTADÍSTICAS DE CARRERA</div>
+            <div style="font-family:'Press Start 2P',monospace;font-size:7px;color:#38bdf8;margin-bottom:10px;text-align:center">ESTADÍSTICAS DE CARRERA (MLB)</div>
             <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:10px;text-align:center">
-              <div><div style="font-size:13px;font-weight:bold;color:#fff">${p.allstars || 0}</div><div style="font-size:7px;color:#6b7280;margin-top:2px">ALL-STARS</div></div>
-              <div><div style="font-size:13px;font-weight:bold;color:#ffd700">${p.gold_gloves || 0}</div><div style="font-size:7px;color:#6b7280;margin-top:2px">GG</div></div>
-              <div><div style="font-size:13px;font-weight:bold;color:#eab308">${mvpVal}</div><div style="font-size:7px;color:#6b7280;margin-top:2px">MVP</div></div>
-              <div><div style="font-size:13px;font-weight:bold;color:#38bdf8">${ssVal}</div><div style="font-size:7px;color:#6b7280;margin-top:2px">SS</div></div>
-              <div><div style="font-size:13px;font-weight:bold;color:#a7f3d0">${royVal}</div><div style="font-size:7px;color:#6b7280;margin-top:2px">ROY</div></div>
-              <div><div style="font-size:13px;font-weight:bold;color:#00ff66">${warVal}</div><div style="font-size:7px;color:#6b7280;margin-top:2px">WAR</div></div>
+              <div><div style="font-size:13px;font-weight:bold;color:#fff">${careerStats.allstars}</div><div style="font-size:7px;color:#6b7280;margin-top:2px">ALL-STARS</div></div>
+              <div><div style="font-size:13px;font-weight:bold;color:#ffd700">${careerStats.gg}</div><div style="font-size:7px;color:#6b7280;margin-top:2px">GG</div></div>
+              <div><div style="font-size:13px;font-weight:bold;color:#eab308">${careerStats.mvp}</div><div style="font-size:7px;color:#6b7280;margin-top:2px">MVP</div></div>
+              <div><div style="font-size:13px;font-weight:bold;color:#38bdf8">${careerStats.ss}</div><div style="font-size:7px;color:#6b7280;margin-top:2px">SS</div></div>
+              <div><div style="font-size:13px;font-weight:bold;color:#a7f3d0">${careerStats.roy}</div><div style="font-size:7px;color:#6b7280;margin-top:2px">ROY</div></div>
+              <div><div style="font-size:13px;font-weight:bold;color:#00ff66">${careerStats.war}</div><div style="font-size:7px;color:#6b7280;margin-top:2px">WAR CARRERA</div></div>
             </div>
           </div>
         </div>
