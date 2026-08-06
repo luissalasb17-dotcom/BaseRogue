@@ -30,9 +30,13 @@ NICKNAMES = {
     'buster': 'gerald', 'mookie': 'markus', 'shohei': 'shohei', 'aaron': 'aaron'
 }
 
-MANUAL_OVERcalculator = {
-    'Frank Grant': {'war': 45.0, 'mvp': 0, 'roy': 0, 'ss': 0, 'gg': 0, 'allstars': 0},
-    'Robert Abernathy': {'war': 12.5, 'mvp': 0, 'roy': 0, 'ss': 0, 'gg': 0, 'allstars': 0}
+# Explicit overrides matching current Baseball-Reference website summary headers
+MANUAL_OVERRIDE = {
+    'Joe Morgan': {'war': 100.6, 'mvp': 2, 'roy': 0, 'ss': 1, 'gg': 5, 'allstars': 10, 'hof': True},
+    'Joe Kelley': {'war': 50.6, 'mvp': 0, 'roy': 0, 'ss': 0, 'gg': 0, 'allstars': 0, 'hof': True},
+    'Harry Stovey': {'war': 45.0, 'mvp': 0, 'roy': 0, 'ss': 0, 'gg': 0, 'allstars': 0, 'hof': False},
+    'Frank Grant': {'war': 45.0, 'mvp': 0, 'roy': 0, 'ss': 0, 'gg': 0, 'allstars': 0, 'hof': True},
+    'Robert Abernathy': {'war': 12.5, 'mvp': 0, 'roy': 0, 'ss': 0, 'gg': 0, 'allstars': 0, 'hof': False}
 }
 
 def norm_fuzzy(s):
@@ -67,6 +71,9 @@ people_df['career_war'] = people_df['bbrefID'].map(war_pid).fillna(people_df['pl
 
 awards_df = pd.read_csv('lahman_1871-2025/AwardsPlayers.csv')
 allstar_df = pd.read_csv('lahman_1871-2025/AllstarFull.csv')
+hof_df = pd.read_csv('lahman_1871-2025/HallOfFame.csv')
+
+hof_pids = set(hof_df[hof_df['inducted'] == 'Y']['playerID'].unique())
 
 mvp_pid = awards_df[awards_df['awardID'] == 'Most Valuable Player'].groupby('playerID').size().to_dict()
 roy_pid = awards_df[awards_df['awardID'] == 'Rookie of the Year'].groupby('playerID').size().to_dict()
@@ -95,7 +102,8 @@ for _, row in people_df.iterrows():
         'roy': int(roy_pid.get(pid, 0)),
         'ss': int(ss_pid.get(pid, 0)),
         'gg': int(gg_pid.get(pid, 0)),
-        'allstars': int(as_pid.get(pid, 0))
+        'allstars': int(as_pid.get(pid, 0)),
+        'hof': bool(pid in hof_pids)
     }
 
     full1 = f'{f} {l}'
@@ -122,9 +130,9 @@ matched_count = 0
 for name in sorted(names):
     clean_name = re.sub(r'\s\(.*?\)$', '', name).strip()
     
-    if clean_name in MANUAL_OVERcalculator:
+    if clean_name in MANUAL_OVERRIDE:
         matched_count += 1
-        career_map[clean_name] = MANUAL_OVERcalculator[clean_name]
+        career_map[clean_name] = MANUAL_OVERRIDE[clean_name]
         continue
 
     n1 = norm(clean_name)
@@ -148,7 +156,8 @@ for name in sorted(names):
         'roy': stats['roy'] if stats else 0,
         'ss': stats['ss'] if stats else 0,
         'gg': stats['gg'] if stats else 0,
-        'allstars': stats['allstars'] if stats else 0
+        'allstars': stats['allstars'] if stats else 0,
+        'hof': stats['hof'] if stats else False
     }
 
 print(f"Matched {matched_count} / {len(names)} unique player names in game_cards_pool.js")
