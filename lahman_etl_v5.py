@@ -621,9 +621,16 @@ def paso_10_atributos_raw_bateo(df):
     # Gentle smoothing so genuine stars keep top grades while small-sample spikes are moderated.
     ab = df["peak_ab"].fillna(df["career_ab"]).fillna(0)
     h  = df["peak_h"].fillna(df["career_h"]).fillna(0)
-    ba_smoothed = (h + 50 * 0.275) / (ab + 50)
+    df["ba_smoothed"] = (h + 50 * 0.275) / (ab + 50)
 
-    df["contact_raw"] = ba_smoothed * 0.80 + (1.0 - df["k_rate"].fillna(0)) * 0.20
+    # Dual Era Normalization for Contact (90% Era-Relative BA / 10% Era-Relative K-Control)
+    era_ba_means = df.groupby("era_label")["ba_smoothed"].transform("mean")
+    era_k_means = df.groupby("era_label")["k_rate"].transform("mean")
+
+    ba_rel = df["ba_smoothed"] / era_ba_means.replace(0, 0.260)
+    k_control_era = (1.0 - 0.50 * (df["k_rate"].fillna(0) / era_k_means.replace(0, 0.15))).clip(0.0, 1.0)
+
+    df["contact_raw"] = ba_rel * 0.90 + k_control_era * 0.10
     df["power_raw"] = (
         df["hr_rate"].fillna(0)  * 0.45 +
         df["iso"].fillna(0)      * 0.40 +
@@ -710,8 +717,11 @@ def paso_12_normalizar_por_era(df):
     y luego normaliza globalmente en escala 1-99.
     """
     print("\n  PASO 12: Normalizando por Era (OPS+ Dificultad) (percentil 2-98, escala 1-99)...")
+    
+    # contact_raw already uses Dual Era Normalization (ba_rel * 0.90 + k_control_era * 0.10)
+    df = normalize_globally(df, "contact_raw", "contact_val")
+
     for raw, out in [
-        ("contact_raw",  "contact_val"),
         ("power_raw",    "power_val"),
         ("eye_raw",      "eye_val"),
         ("defense_base",  "defense_val_base"),
