@@ -219,6 +219,23 @@
       tone(220.0,  0.40, 'triangle', 0.12, 0.60); // A3
     },
 
+    // 11. ROULETTE TICK — rapid arcade slot machine blip
+    roulette_tick(pitchMult = 1.0) {
+      const baseFreq = (750 + Math.floor(Math.random() * 150)) * pitchMult;
+      tone(baseFreq, 0.035, 'square', 0.09, 0, 0.001, 0.02);
+    },
+
+    // 12. ROULETTE WIN — jackpot/fanfare chime when season locks in
+    roulette_win() {
+      tone(523.25, 0.08, 'sine', 0.22, 0.00);  // C5
+      tone(659.25, 0.08, 'sine', 0.22, 0.06);  // E5
+      tone(783.99, 0.08, 'sine', 0.22, 0.12);  // G5
+      tone(1046.50, 0.12, 'sine', 0.25, 0.18); // C6
+      tone(1318.51, 0.12, 'sine', 0.25, 0.26); // E6
+      tone(1567.98, 0.25, 'sine', 0.28, 0.34); // G6
+      tone(2093.00, 0.35, 'triangle', 0.20, 0.44); // C7
+    },
+
   };
 
   // ── Public API ────────────────────────────────────────────────────────────────
@@ -228,12 +245,13 @@
     /**
      * Play a sound by key. Overlaps with any currently playing sound.
      * @param {string} key — e.g. 'hit', 'hr', 'out', 'so', 'menu_click', etc.
+     * @param {any} arg    — optional parameter passed to sound synthesizer
      */
-    play(key) {
+    play(key, arg) {
       if (_muted) return;
       try {
         const fn = sounds[key];
-        if (fn) fn();
+        if (fn) fn(arg);
       } catch (e) {
         // Fail silently — audio must never break game flow
       }

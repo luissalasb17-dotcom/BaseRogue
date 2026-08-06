@@ -123,7 +123,14 @@ window.showScreen = function(screenId) {
   });
 
   const target = document.getElementById(screenId);
-  if (target) target.classList.remove('hidden');
+  if (target) {
+    target.classList.remove('hidden');
+    if (screenId === 'screen-map') {
+      target.scrollTop = 0;
+      const vp = target.querySelector('.map-viewport');
+      if (vp) vp.scrollTop = 0;
+    }
+  }
 
   updateMobileNavVisibility();
   setMobileTab(currentMobileTab);
@@ -172,6 +179,12 @@ function startSeasonRouletteAnimation(selectedYear, onComplete) {
     if (yearEl) yearEl.innerText = String(randomYear);
     if (eraEl) eraEl.innerText = getEraNameForYear(randomYear);
 
+    // Play tick sound with pitch slightly rising as it decelerates towards final pick
+    if (window.AudioManager) {
+      const progress = currentTick / maxTicks;
+      window.AudioManager.play('roulette_tick', 1.0 + progress * 0.35);
+    }
+
     if (currentTick < maxTicks) {
       speed += 10;
       setTimeout(runStep, speed);
@@ -181,6 +194,11 @@ function startSeasonRouletteAnimation(selectedYear, onComplete) {
       if (eraEl) eraEl.innerText = getEraNameForYear(selectedYear);
       if (boxEl) boxEl.classList.add('winning-glow');
       if (msgEl) msgEl.innerHTML = `<span style="color: #ffd700; font-weight: bold; text-shadow: 0 0 10px rgba(255,215,0,0.8);">⚡ ¡TEMPORADA SELECCIONADA: ${selectedYear}! ⚡</span>`;
+
+      // Play winning jackpot sound fanfare
+      if (window.AudioManager) {
+        window.AudioManager.play('roulette_win');
+      }
 
       setTimeout(() => {
         // Reset modal controls for next time
@@ -474,6 +492,25 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
   const SLOTS_ORDER = ['C','1B','2B','3B','SS','LF','CF','RF','DH'];
 
   /** Master render for the 9-round draft. Called every time a pick is made. */
+  function getPlayerBadgeIconsHTML(player) {
+    if (!player) return '';
+    const isClutch = !!(player.clutch || player.is_clutch);
+    const isCaptain = !!(player.captain || player.is_captain);
+    if (!isClutch && !isCaptain) return '';
+
+    const clutchToolTip = window.t ? window.t('badge.clutch_tooltip', 'Clutch Player: +4% de probabilidad de hit y +4% de HR con corredores en posición de anotar durante la última entrada.') : 'Clutch Player: +4% de probabilidad de hit y +4% de HR con corredores en posición de anotar durante la última entrada.';
+    const captainToolTip = window.t ? window.t('badge.captain_tooltip', 'Captain: +5 a todos los ratings de sus compañeros de equipo mientras esté en el roster activo.') : 'Captain: +5 a todos los ratings de sus compañeros de equipo mientras esté en el roster activo.';
+
+    let icons = '';
+    if (isClutch) {
+      icons += `<span class="list-badge-icon badge-clutch" title="${clutchToolTip}" style="color:var(--badge-clutch,#ff3300); font-weight:bold; margin-left:3px; cursor:help; font-size:10px; display:inline-block;">⚡</span>`;
+    }
+    if (isCaptain) {
+      icons += `<span class="list-badge-icon badge-captain" title="${captainToolTip}" style="color:var(--badge-captain,#00d4ff); font-weight:bold; margin-left:3px; cursor:help; font-size:10px; display:inline-block;">C★</span>`;
+    }
+    return icons;
+  }
+
   function renderDraftRound() {
     try {
       const G = window.Game;
@@ -601,7 +638,7 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
           slotRow.innerHTML = `
             <span style="font-family:'Press Start 2P',monospace;font-size:7px;color:#94a3b8;min-width:24px;">${slot}</span>
             <div style="flex:1;min-width:0;">
-              <div style="font-size:10px;font-weight:bold;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${player.name}</div>
+              <div style="font-size:10px;font-weight:bold;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${player.name}${getPlayerBadgeIconsHTML(player)}</div>
               <div style="font-size:9px;color:${rColor};">${player.rarity} • OVR ${ovr} ${posHint}</div>
             </div>
           `;
@@ -749,7 +786,7 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
           ].join(';');
 
           const nameStr = player
-            ? `<span style="font-size:9px;color:#fff;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${player.name.split(' ').pop()}</span>`
+            ? `<span style="font-size:9px;color:#fff;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${player.name.split(' ').pop()}${getPlayerBadgeIconsHTML(player)}</span>`
             : `<span style="font-size:9px;color:#374151;flex:1;">${slot} —</span>`;
 
           row.innerHTML = `
@@ -903,7 +940,7 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
           slotRow.innerHTML = `
             <span style="font-family:'Press Start 2P',monospace;font-size:8px;color:#94a3b8;min-width:28px;">${slot}</span>
             <div style="flex:1;min-width:0;">
-              <div style="font-size:11px;font-weight:bold;color:#fff;">${player.name}</div>
+              <div style="font-size:11px;font-weight:bold;color:#fff;">${player.name}${getPlayerBadgeIconsHTML(player)}</div>
               <div style="font-size:9.5px;color:${rColor};">${player.rarity} • OVR ${ovr} ${posHint}</div>
             </div>
             <button class="btn-inspect-player" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);color:#38bdf8;padding:4px 8px;font-size:9px;border-radius:4px;cursor:pointer;">🔍 CARTA</button>
@@ -1537,8 +1574,32 @@ function initGameModeSelector() {
       }
     }
 
+    const isClutch = !!(player.clutch || player.is_clutch);
+    const isCaptain = !!(player.captain || player.is_captain);
+    const isDoubleBadge = isClutch && isCaptain;
+
+    const clutchToolTip = window.t ? window.t('badge.clutch_tooltip', 'Clutch Player: +4% de probabilidad de hit y +4% de HR con corredores en posición de anotar durante la última entrada.') : 'Clutch Player: +4% de probabilidad de hit y +4% de HR con corredores en posición de anotar durante la última entrada.';
+    const captainToolTip = window.t ? window.t('badge.captain_tooltip', 'Captain: +5 a todos los ratings de sus compañeros de equipo mientras esté en el roster activo.') : 'Captain: +5 a todos los ratings de sus compañeros de equipo mientras esté en el roster activo.';
+
+    let ribbonHTML = '';
+    if (isDoubleBadge) {
+      ribbonHTML = `
+        <div class="card-ribbon ribbon-bottom-left ribbon-stagger-1 ribbon-clutch" title="${clutchToolTip}">CLUTCH</div>
+        <div class="card-ribbon ribbon-bottom-left ribbon-stagger-2 ribbon-captain" title="${captainToolTip}">CAPTAIN</div>
+      `;
+    } else if (isClutch) {
+      ribbonHTML = `
+        <div class="card-ribbon ribbon-bottom-left ribbon-clutch" title="${clutchToolTip}">CLUTCH</div>
+      `;
+    } else if (isCaptain) {
+      ribbonHTML = `
+        <div class="card-ribbon ribbon-bottom-left ribbon-captain" title="${captainToolTip}">CAPTAIN</div>
+      `;
+    }
+
     return `
-      <div class="player-card ${eraClass} rarity-${rarityLabel}">
+      <div class="player-card ${eraClass} rarity-${rarityLabel} ${isClutch ? 'has-clutch' : ''} ${isCaptain ? 'has-captain' : ''}">
+        ${ribbonHTML}
         <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
           <span class="card-position" style="background: #000; color: #fff; padding: 2px 4px; font-weight: bold; font-size: 6px; border: 1px solid rgba(255,255,255,0.1);">${player.pos}</span>
           <span class="card-ovr" style="font-family: 'Press Start 2P', monospace; font-size: 6px; color: ${ovrGrade.color}; font-weight: bold; background: #000; padding: 2px 4px; border: 1px solid rgba(255,255,255,0.2);">CLASS ${ovrGrade.text}</span>
@@ -1563,11 +1624,7 @@ function initGameModeSelector() {
         ${positionWarning}
         <div class="card-footer">
           <span>${teamFranchise}</span>
-          <div class="card-badges-footer" style="display: flex; gap: 3px; align-items: center;">
-            ${player.clutch ? `<span class="card-trait-badge trait-clutch" title="${window.t ? window.t('badge.clutch_tooltip', 'Clutch Player: +4% de probabilidad de hit y +4% de HR con corredores en posición de anotar durante la última entrada.') : 'Clutch Player: +4% de probabilidad de hit y +4% de HR con corredores en posición de anotar durante la última entrada.'}">⚡</span>` : ''}
-            ${player.captain ? `<span class="card-trait-badge trait-captain" title="${window.t ? window.t('badge.captain_tooltip', 'Captain: +5 a todos los ratings de sus compañeros de equipo mientras esté en el roster activo.') : 'Captain: +5 a todos los ratings de sus compañeros de equipo mientras esté en el roster activo.'}">C★</span>` : ''}
-            <span class="card-stamina-badge ${stamClass}"><i class="fa-solid fa-bolt-lightning"></i> ${stam}</span>
-          </div>
+          <span class="card-stamina-badge ${stamClass}"><i class="fa-solid fa-bolt-lightning"></i> ${stam}</span>
         </div>
       </div>
     `;
@@ -1644,7 +1701,14 @@ function initGameModeSelector() {
         pitcher_dmg_title: "⚾ DAÑO AL LANZADOR RIVAL (BASE):",
         rbi_bonus_title: "🏆 Bonus por Carreras Impulsadas (RBI):",
         steal_title: "🏃 ROBO DE BASES (SPD ≥ 40 — Grado C+):",
-        hit_upgrade_title: "⚡ UPGRADE DE BATAZOS:"
+        hit_upgrade_title: "⚡ UPGRADE DE BATAZOS:",
+        ratings_con: '<strong style="color:#a7f3d0;">CON — Contacto:</strong> Determina la probabilidad de conectar un batazo. Jugadores con alto CON tienen más chances de sencillos e hits en general.',
+        ratings_pwr: '<strong style="color:#f59e0b;">PWR — Poder:</strong> Probabilidad de conectar extra-bases (dobles, triples, jonrones). También aumenta el daño al pitcher rival en hits largos.',
+        ratings_eye: '<strong style="color:#3b82f6;">EYE — Ojo/Vista:</strong> Probabilidad de obtener boletos (BB). Reduce la zona de ponches. Clave para no recibir daño directo al HP.',
+        ratings_spd: '<strong style="color:#38bdf8;">SPD — Velocidad:</strong> Activa intentos de robo de base en sencillos (debuff +20% daño al pitcher). También mejora la probabilidad de convertir hits en extra-bases.',
+        ratings_def: '<strong style="color:#a855f7;">DEF — Defensa:</strong> Contribuye al <strong>Escudo</strong> del equipo. Cuanto mayor DEF promedio, más escudo tienes disponible para absorber OUTs antes de perder HP.',
+        ratings_clutch: '<strong style="color:#ef4444;">⚡ CLUTCH PLAYER:</strong> +2% de probabilidad de sencillo y doble, +4% de HR con corredores en posición de anotar o durante la última entrada.',
+        ratings_captain: '<strong style="color:#eab308;">👑 CAPTAIN:</strong> +5 a todos los ratings de sus compañeros de equipo mientras esté en el roster activo.'
       },
       en: {
         btn_lineup: "Lineup",
@@ -1671,7 +1735,14 @@ function initGameModeSelector() {
         pitcher_dmg_title: "⚾ RIVAL PITCHER BASE DAMAGE:",
         rbi_bonus_title: "🏆 RBI Bonus Damage:",
         steal_title: "🏃 BASE STEALING (SPD ≥ 40 — Grade C+):",
-        hit_upgrade_title: "⚡ HIT UPGRADES:"
+        hit_upgrade_title: "⚡ HIT UPGRADES:",
+        ratings_con: '<strong style="color:#a7f3d0;">CON — Contact:</strong> Determines hitting probability. High CON batters have higher chances of singles and base hits.',
+        ratings_pwr: '<strong style="color:#f59e0b;">PWR — Power:</strong> Chance to hit extra-base hits (doubles, triples, home runs) and deal heavy pitcher damage.',
+        ratings_eye: '<strong style="color:#3b82f6;">EYE — Eye/Vision:</strong> Chance to draw walks (BB) and reduce strikeout frequency. Crucial to avoid direct HP damage.',
+        ratings_spd: '<strong style="color:#38bdf8;">SPD — Speed:</strong> Enables base stealing attempts on singles (+20% pitcher damage debuff) and extra-base upgrades.',
+        ratings_def: '<strong style="color:#a855f7;">DEF — Defense:</strong> Contributes to Team Shield. Higher average DEF grants more shield to absorb OUTs before losing HP.',
+        ratings_clutch: '<strong style="color:#ef4444;">⚡ CLUTCH PLAYER:</strong> +2% single and double chance, +4% HR chance with runners in scoring position or during the last inning.',
+        ratings_captain: '<strong style="color:#eab308;">👑 CAPTAIN:</strong> +5 to all ratings for all teammates while on the active roster.'
       }
     };
 
@@ -1701,6 +1772,27 @@ function initGameModeSelector() {
 
       const rightHeader = document.querySelector('.right-sidebar .sidebar-header');
       if (rightHeader) rightHeader.innerHTML = `<i class="fa-solid fa-bolt"></i> ${dict.btn_synergies.toUpperCase()}`;
+
+      const guideCon = document.querySelector('#ratings-info-dropdown [data-i18n-html="ratings_guide.con"]');
+      if (guideCon && dict.ratings_con) guideCon.innerHTML = dict.ratings_con;
+
+      const guidePwr = document.querySelector('#ratings-info-dropdown [data-i18n-html="ratings_guide.pwr"]');
+      if (guidePwr && dict.ratings_pwr) guidePwr.innerHTML = dict.ratings_pwr;
+
+      const guideEye = document.querySelector('#ratings-info-dropdown [data-i18n-html="ratings_guide.eye"]');
+      if (guideEye && dict.ratings_eye) guideEye.innerHTML = dict.ratings_eye;
+
+      const guideSpd = document.querySelector('#ratings-info-dropdown [data-i18n-html="ratings_guide.spd"]');
+      if (guideSpd && dict.ratings_spd) guideSpd.innerHTML = dict.ratings_spd;
+
+      const guideDef = document.querySelector('#ratings-info-dropdown [data-i18n-html="ratings_guide.def"]');
+      if (guideDef && dict.ratings_def) guideDef.innerHTML = dict.ratings_def;
+
+      const guideClutch = document.querySelector('#ratings-info-dropdown [data-i18n-html="ratings_guide.clutch"]');
+      if (guideClutch && dict.ratings_clutch) guideClutch.innerHTML = dict.ratings_clutch;
+
+      const guideCaptain = document.querySelector('#ratings-info-dropdown [data-i18n-html="ratings_guide.captain"]');
+      if (guideCaptain && dict.ratings_captain) guideCaptain.innerHTML = dict.ratings_captain;
     }
 
     // Toggle Language (ES / EN)
@@ -2028,7 +2120,7 @@ function initGameModeSelector() {
       nameSpan.className = "player-name";
       
       if (effectivePlayer) {
-        nameSpan.innerText = effectivePlayer.name;
+        nameSpan.innerHTML = `${effectivePlayer.name}${getPlayerBadgeIconsHTML(effectivePlayer)}`;
         nameSpan.title = `${effectivePlayer.name} (${effectivePlayer.era})`;
         
         // OVR Badge
@@ -2153,6 +2245,16 @@ function initGameModeSelector() {
           ${Object.entries(player.upgrades).filter(([k,v])=>v>0).map(([k,v])=>`<span class="popup-upgrade-badge">+${v} ${k.toUpperCase()}</span>`).join('')}
         </div>` : ''}
       <div class="popup-era-desc">${window.PlayersDB.EraTraits && window.PlayersDB.EraTraits[player.era] ? `<i>${window.PlayersDB.EraTraits[player.era].name}:</i> ${window.PlayersDB.EraTraits[player.era].desc}` : ''}</div>
+      ${(player.clutch || player.is_clutch) ? `
+        <div class="popup-badge-desc popup-badge-clutch" style="margin-top:6px; padding:6px 8px; background:rgba(255,51,0,0.12); border-left:3px solid var(--badge-clutch,#ff3300); border-radius:4px; font-size:8px; line-height:1.4;">
+          <span style="color:var(--badge-clutch,#ff3300); font-weight:bold; font-family:'Press Start 2P',monospace; display:block; margin-bottom:2px;">⚡ CLUTCH PLAYER</span>
+          <span style="color:#e2e8f0;">${window.t ? window.t('badge.clutch_tooltip', '+4% de probabilidad de hit y +4% de HR con corredores en posición de anotar durante la última entrada.') : '+4% de probabilidad de hit y +4% de HR con corredores en posición de anotar durante la última entrada.'}</span>
+        </div>` : ''}
+      ${(player.captain || player.is_captain) ? `
+        <div class="popup-badge-desc popup-badge-captain" style="margin-top:6px; padding:6px 8px; background:rgba(0,212,255,0.12); border-left:3px solid var(--badge-captain,#00d4ff); border-radius:4px; font-size:8px; line-height:1.4;">
+          <span style="color:var(--badge-captain,#00d4ff); font-weight:bold; font-family:'Press Start 2P',monospace; display:block; margin-bottom:2px;">C★ CAPTAIN</span>
+          <span style="color:#e2e8f0;">${window.t ? window.t('badge.captain_tooltip', '+5 a todos los ratings de sus compañeros de equipo mientras esté en el roster activo.') : '+5 a todos los ratings de sus compañeros de equipo mientras esté en el roster activo.'}</span>
+        </div>` : ''}
       <div class="popup-year">Peak: ${player.year || player.peak_year || player.peakYear || '—'} &nbsp;|&nbsp; ${player.era || ''}</div>
       ${!isDraft ? `
         <div class="popup-def-swap-container" style="margin-top:12px; padding-top:10px; border-top:1px dashed rgba(255,255,255,0.15); display:flex; flex-direction:column; gap:6px;">
@@ -2217,12 +2319,12 @@ function initGameModeSelector() {
 
   // ── NODE VISUAL CONFIG ───────────────────────────────────────────────────
   const NODE_VISUALS = {
-    match:  { text: 'VS',   label: 'SERIE',    color: '#00ff66', bg: '#021a0e', border: '#00ff66' },
-    boss:   { text: 'BOSS', label: 'JEFE',     color: '#ffd700', bg: '#1a0e00', border: '#ffd700' },
-    draft:  { text: 'SIGN', label: 'FIRMA',    color: '#38bdf8', bg: '#021526', border: '#38bdf8' },
-    event:  { text: 'EVT',  label: 'EVENTO',   color: '#fb923c', bg: '#1a0e00', border: '#fb923c' },
-    train:  { text: 'GYM',  label: 'ENTRENO',  color: '#22d3ee', bg: '#011a1a', border: '#22d3ee' },
-    rest:   { text: 'REST', label: 'DESCANSO', color: '#c084fc', bg: '#12001a', border: '#c084fc' },
+    match:  { iconClass: 'fa-solid fa-baseball-bat-ball', text: 'VS',   label: 'SERIE',    color: '#00ff66', bg: '#021a0e', border: '#00ff66' },
+    boss:   { iconClass: 'fa-solid fa-crown',             text: 'BOSS', label: 'JEFE',     color: '#ffd700', bg: '#1a0e00', border: '#ffd700' },
+    draft:  { iconClass: 'fa-solid fa-file-signature',    text: 'SIGN', label: 'FIRMA',    color: '#38bdf8', bg: '#021526', border: '#38bdf8' },
+    event:  { iconClass: 'fa-solid fa-clipboard-question',text: 'EVT',  label: 'EVENTO',   color: '#fb923c', bg: '#1a0e00', border: '#fb923c' },
+    train:  { iconClass: 'fa-solid fa-dumbbell',          text: 'GYM',  label: 'ENTRENO',  color: '#22d3ee', bg: '#011a1a', border: '#22d3ee' },
+    rest:   { iconClass: 'fa-solid fa-couch',             text: 'REST', label: 'DESCANSO', color: '#c084fc', bg: '#12001a', border: '#c084fc' },
   };
 
   // RENDER VISUAL POKELIKE MAP - Math-based layout (no DOM measurement)
@@ -2351,7 +2453,10 @@ function initGameModeSelector() {
             const p2 = nodePos[s + 1]?.[targetIdx];
             if (!p1 || !p2) return;
 
-            const isVisitedPath = node.visited && window.Game.map[s + 1]?.[targetIdx]?.visited;
+            const targetNode = window.Game.map[s + 1]?.[targetIdx];
+            const targetVis  = NODE_VISUALS[targetNode?.type] || NODE_VISUALS.match;
+
+            const isVisitedPath = node.visited && targetNode?.visited;
             const isActivePath  = (s + 1 === currentStage) && node.visited;
 
             // Glow behind active/visited
@@ -2359,9 +2464,9 @@ function initGameModeSelector() {
               const gp = document.createElementNS(svgNS, 'line');
               gp.setAttribute('x1', p1.x); gp.setAttribute('y1', p1.y);
               gp.setAttribute('x2', p2.x); gp.setAttribute('y2', p2.y);
-              gp.setAttribute('stroke', isActivePath ? '#00ff66' : '#10b981');
-              gp.setAttribute('stroke-width', '8');
-              gp.setAttribute('opacity', '0.45');
+              gp.setAttribute('stroke', targetVis.color);
+              gp.setAttribute('stroke-width', isActivePath ? '8' : '5');
+              gp.setAttribute('opacity', isActivePath ? '0.45' : '0.25');
               gp.setAttribute('filter', `url(#${isActivePath ? 'glow-active' : 'glow-visited'}-z${zoneIdx})`);
               svg.appendChild(gp);
             }
@@ -2371,21 +2476,24 @@ function initGameModeSelector() {
             line.setAttribute('x1', p1.x); line.setAttribute('y1', p1.y);
             line.setAttribute('x2', p2.x); line.setAttribute('y2', p2.y);
             line.setAttribute('fill', 'none');
-            line.setAttribute('stroke-linecap', 'square');
+            line.setAttribute('stroke-linecap', 'round');
 
             if (isActivePath) {
-              line.setAttribute('stroke', '#00ff66');
+              line.setAttribute('stroke', targetVis.color);
               line.setAttribute('stroke-width', '4');
               line.setAttribute('stroke-dasharray', '8,4');
+              line.classList.add('path-active-anim');
             } else if (isVisitedPath) {
-              line.setAttribute('stroke', '#4ade80');
+              line.setAttribute('stroke', targetVis.color);
               line.setAttribute('stroke-width', '3');
               line.setAttribute('stroke-dasharray', '8,4');
-              line.setAttribute('opacity', '0.7');
+              line.setAttribute('opacity', '0.5');
             } else {
-              line.setAttribute('stroke', 'rgba(255,255,255,0.3)');
+              // Future path tinted with destination node's color
+              line.setAttribute('stroke', targetVis.color);
               line.setAttribute('stroke-width', '2.5');
               line.setAttribute('stroke-dasharray', '6,6');
+              line.setAttribute('opacity', '0.35');
             }
             svg.appendChild(line);
           });
@@ -2402,18 +2510,19 @@ function initGameModeSelector() {
           if (!pos) return;
           const vis = NODE_VISUALS[node.type] || NODE_VISUALS.match;
 
-          const isVisited  = node.visited;
-          const isActive   = (s === currentStage) && activeNextNodeIdxs.includes(idx);
-          const isPast     = (s < currentStage);
-          const isDisabled = !isActive && !isPast && !isVisited;
+          const isVisited       = node.visited;
+          const isPast          = (s < currentStage);
+          const isActive        = (s === currentStage) && activeNextNodeIdxs.includes(idx);
+          const isFutureVisible = (s > currentStage) && !isVisited;
+          const isDisabled      = !isActive && !isPast && !isVisited && !isFutureVisible;
 
-          // Outer glow ring for active
+          // Outer glow ring for active nodes ONLY
           if (isActive) {
             const glow = document.createElementNS(svgNS, 'circle');
             glow.setAttribute('cx', pos.x); glow.setAttribute('cy', pos.y);
-            glow.setAttribute('r', NODE_R + 10);
+            glow.setAttribute('r', isBossStage ? NODE_R + 14 : NODE_R + 10);
             glow.setAttribute('fill', 'none');
-            glow.setAttribute('stroke', '#00ff66');
+            glow.setAttribute('stroke', vis.color);
             glow.setAttribute('stroke-width', '3');
             glow.setAttribute('stroke-dasharray', '6,3');
             glow.setAttribute('opacity', '0.9');
@@ -2432,29 +2541,62 @@ function initGameModeSelector() {
           const circle = document.createElementNS(svgNS, 'circle');
           circle.setAttribute('cx', pos.x); circle.setAttribute('cy', pos.y);
           circle.setAttribute('r', isBossStage ? NODE_R + 5 : NODE_R);
-          circle.setAttribute('fill', isDisabled ? '#0f172a' : (isPast || isVisited ? '#1e293b' : vis.bg));
-          circle.setAttribute('stroke', isDisabled ? '#334155' : vis.color);
-          circle.setAttribute('stroke-width', isBossStage ? '3.5' : '2.5');
-          if (isDisabled) circle.setAttribute('opacity', '0.5');
+
+          if (isActive) {
+            circle.setAttribute('fill', vis.bg);
+            circle.setAttribute('stroke', vis.color);
+            circle.setAttribute('stroke-width', isBossStage ? '4' : '3');
+          } else if (isFutureVisible) {
+            // Future visible node: attenuated color (borde/fondo con opacidad reducida, sin glow)
+            circle.setAttribute('fill', vis.bg);
+            circle.setAttribute('stroke', vis.color);
+            circle.setAttribute('stroke-width', isBossStage ? '3.5' : '2.5');
+            circle.setAttribute('opacity', '0.75');
+          } else if (isPast || isVisited) {
+            // Visited/past node: desaturated dark slate
+            circle.setAttribute('fill', '#1e293b');
+            circle.setAttribute('stroke', '#475569');
+            circle.setAttribute('stroke-width', '2');
+            circle.setAttribute('opacity', '0.5');
+          } else {
+            // Disabled/blocked node
+            circle.setAttribute('fill', '#0f172a');
+            circle.setAttribute('stroke', '#334155');
+            circle.setAttribute('stroke-width', '1.5');
+            circle.setAttribute('opacity', '0.3');
+          }
           svg.appendChild(circle);
 
-          // Node text label
-          const txt = document.createElementNS(svgNS, 'text');
-          txt.setAttribute('x', pos.x); txt.setAttribute('y', pos.y + 3);
-          txt.setAttribute('text-anchor', 'middle');
-          txt.setAttribute('dominant-baseline', 'middle');
-          txt.setAttribute('fill', isDisabled ? '#475569' : (isPast || isVisited ? '#64748b' : vis.color));
-          txt.setAttribute('font-family', "'Press Start 2P', monospace");
-          txt.setAttribute('font-size', isBossStage ? '8' : '7');
-          txt.setAttribute('font-weight', 'bold');
-          txt.textContent = vis.text;
-          svg.appendChild(txt);
+          // Node Font Awesome Icon via foreignObject
+          const iconSize = isBossStage ? 26 : 14;
+          const foSize   = isBossStage ? 48 : 32;
+          const iconColor = isActive 
+            ? vis.color 
+            : (isFutureVisible ? vis.color : (isPast || isVisited ? '#64748b' : '#334155'));
+          const iconOpacity = isActive ? '1.0' : (isFutureVisible ? '0.8' : '0.5');
+
+          const fo = document.createElementNS(svgNS, 'foreignObject');
+          fo.setAttribute('x', pos.x - foSize / 2);
+          fo.setAttribute('y', pos.y - foSize / 2);
+          fo.setAttribute('width', foSize);
+          fo.setAttribute('height', foSize);
+          fo.style.pointerEvents = 'none';
+
+          fo.innerHTML = `
+            <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:${iconColor};opacity:${iconOpacity};font-size:${iconSize}px;filter:drop-shadow(0 2px 3px rgba(0,0,0,0.8));">
+              <i class="${vis.iconClass}"></i>
+            </div>
+          `;
+          svg.appendChild(fo);
 
           // Node type label below
           const lbl = document.createElementNS(svgNS, 'text');
-          lbl.setAttribute('x', pos.x); lbl.setAttribute('y', pos.y + NODE_R + 15);
+          lbl.setAttribute('x', pos.x); 
+          lbl.setAttribute('y', pos.y + (isBossStage ? NODE_R + 20 : NODE_R + 15));
           lbl.setAttribute('text-anchor', 'middle');
-          lbl.setAttribute('fill', isDisabled ? '#475569' : (isActive ? '#00ff66' : 'rgba(255,255,255,0.8)'));
+          lbl.setAttribute('fill', isActive 
+            ? vis.color 
+            : (isFutureVisible ? 'rgba(255,255,255,0.75)' : (isPast || isVisited ? '#475569' : '#334155')));
           lbl.setAttribute('font-family', "'VT323', monospace");
           lbl.setAttribute('font-size', '14');
           lbl.setAttribute('font-weight', 'bold');
@@ -2476,7 +2618,7 @@ function initGameModeSelector() {
           if (isActive) {
             const hit = document.createElementNS(svgNS, 'circle');
             hit.setAttribute('cx', pos.x); hit.setAttribute('cy', pos.y);
-            hit.setAttribute('r', NODE_R + 12);
+            hit.setAttribute('r', isBossStage ? NODE_R + 16 : NODE_R + 12);
             hit.setAttribute('fill', 'transparent');
             hit.style.cursor = 'pointer';
             hit.setAttribute('id', `node_${s}_${idx}`);
@@ -2498,13 +2640,13 @@ function initGameModeSelector() {
       el.mapContainer.appendChild(zoneWrapper);
     });
 
-    // Auto-scroll to current active stage node
+    // Reset map viewport scroll to top so headers and title are fully visible from start
     setTimeout(() => {
-      const activeNodeEl = document.querySelector('.map-node-visual.active-path');
-      if (activeNodeEl) {
-        activeNodeEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
-    }, 120);
+      const mapViewport = document.querySelector('.map-viewport');
+      if (mapViewport) mapViewport.scrollTop = 0;
+      const screenMap = document.getElementById('screen-map');
+      if (screenMap) screenMap.scrollTop = 0;
+    }, 10);
   }
 
   // Legacy stub – no longer needed (paths drawn inline with renderMap)
@@ -4055,18 +4197,71 @@ function initGameModeSelector() {
     if (!b) {
       b = { bbEnd: 11, soEnd: 22, outEnd: 38, singleEnd: 61, doubleEnd: 74, tripleEnd: 81 };
     }
+
+    let isClutchActive = false;
+    if (activeBattle) {
+      const batter = activeBattle.awayTeam ? activeBattle.awayTeam.lineup[activeBattle.awayLineupIndex] : null;
+      if (batter && (batter.clutch || batter.is_clutch)) {
+        const isLastInning = activeBattle.inning >= 3;
+        const runnersInScoring = !!(activeBattle.bases && (activeBattle.bases[1] || activeBattle.bases[2]));
+        if (isLastInning || runnersInScoring) {
+          isClutchActive = true;
+        }
+      }
+    }
+
+    const boostTag2 = `<span style="color:#00ff66; font-size:9px; font-weight:bold; font-family:'Press Start 2P',monospace; margin-right:6px;" title="Bonus Clutch">+2%</span>`;
+    const hrTag4    = `<span style="color:#ffd700; font-size:9px; font-weight:bold; font-family:'Press Start 2P',monospace; margin-right:6px;" title="Bonus Clutch Jonrón">+4%</span>`;
+    const penaltyTag8 = `<span style="color:#ef4444; font-size:9px; font-weight:bold; font-family:'Press Start 2P',monospace; margin-right:6px;" title="Reducción Out Clutch">-8%</span>`;
+
     zonesEl.innerHTML = `
+      ${isClutchActive ? `<div style="background:rgba(255,51,0,0.15); border:1px solid #ff3300; border-radius:4px; padding:4px 8px; font-size:7px; color:#ff3300; font-family:'Press Start 2P',monospace; font-weight:bold; text-align:center; margin-bottom:6px; display:flex; align-items:center; justify-content:center; gap:4px;">⚡ ¡CLUTCH PLAYER ACTIVO! (+2% 1B/2B, +4% HR)</div>` : ''}
       <div class="outcome-probabilities-grid">
-        <div style="display:flex;flex-direction:column;gap:3px;">
-          <div class="outcome-row"><span style="color:#3b82f6;">⚾ ${t('match.bb', 'Boleto')}</span><span style="color:#3b82f6;font-weight:bold;">1–${b.bbEnd}</span></div>
-          <div class="outcome-row"><span style="color:#ef4444;">💨 ${t('match.so', 'Ponche')}</span><span style="color:#ef4444;font-weight:bold;">${b.bbEnd + 1}–${b.soEnd}</span></div>
-          <div class="outcome-row"><span style="color:#9ca3af;">🤚 ${t('match.out', 'Out')}</span><span style="color:#9ca3af;font-weight:bold;">${b.soEnd + 1}–${b.outEnd}</span></div>
+        <div style="display:flex;flex-direction:column;gap:4px;">
+          <div class="outcome-row">
+            <span class="outcome-row-left" style="color:#3b82f6;">⚾ ${t('match.bb', 'Boleto')}</span>
+            <span class="outcome-row-right" style="color:#3b82f6;font-weight:bold;">1–${b.bbEnd}</span>
+          </div>
+          <div class="outcome-row">
+            <span class="outcome-row-left" style="color:#ef4444;">💨 ${t('match.so', 'Ponche')}</span>
+            <span class="outcome-row-right" style="color:#ef4444;font-weight:bold;">${b.bbEnd + 1}–${b.soEnd}</span>
+          </div>
+          <div class="outcome-row" style="${isClutchActive ? 'border:1px dashed #ef4444; background:rgba(239,68,68,0.12);' : ''}">
+            <span class="outcome-row-left" style="color:#9ca3af;">🤚 ${t('match.out', 'Out')}</span>
+            <span class="outcome-row-right">
+              ${isClutchActive ? penaltyTag8 : ''}
+              <span style="color:#9ca3af;font-weight:bold;">${b.soEnd + 1}–${b.outEnd}</span>
+            </span>
+          </div>
         </div>
-        <div style="display:flex;flex-direction:column;gap:3px;">
-          <div class="outcome-row"><span style="color:#a7f3d0;">✅ ${t('match.single', 'Sencillo')}</span><span style="color:#a7f3d0;font-weight:bold;">${b.outEnd + 1}–${b.singleEnd}</span></div>
-          <div class="outcome-row"><span style="color:#10b981;">⚡ ${t('match.double', 'Doble')}</span><span style="color:#10b981;font-weight:bold;">${b.singleEnd + 1}–${b.doubleEnd}</span></div>
-          <div class="outcome-row"><span style="color:#06b6d4;">🔥 ${t('match.triple', 'Triple')}</span><span style="color:#06b6d4;font-weight:bold;">${b.doubleEnd + 1}–${b.tripleEnd}</span></div>
-          <div class="outcome-row"><span style="color:#eab308;font-weight:bold;">🚀 ${t('match.hr', 'Jonrón')}</span><span style="color:#eab308;font-weight:bold;">${b.tripleEnd + 1}–100</span></div>
+        <div style="display:flex;flex-direction:column;gap:4px;">
+          <div class="outcome-row" style="${isClutchActive ? 'border:1px solid #00ff66; background:rgba(0,255,102,0.12);' : ''}">
+            <span class="outcome-row-left" style="color:#a7f3d0;">✅ ${t('match.single', 'Sencillo')}</span>
+            <span class="outcome-row-right">
+              ${isClutchActive ? boostTag2 : ''}
+              <span style="color:#a7f3d0;font-weight:bold;">${b.outEnd + 1}–${b.singleEnd}</span>
+            </span>
+          </div>
+          <div class="outcome-row" style="${isClutchActive ? 'border:1px solid #00ff66; background:rgba(0,255,102,0.12);' : ''}">
+            <span class="outcome-row-left" style="color:#10b981;">⚡ ${t('match.double', 'Doble')}</span>
+            <span class="outcome-row-right">
+              ${isClutchActive ? boostTag2 : ''}
+              <span style="color:#10b981;font-weight:bold;">${b.singleEnd + 1}–${b.doubleEnd}</span>
+            </span>
+          </div>
+          <div class="outcome-row">
+            <span class="outcome-row-left" style="color:#06b6d4;">🔥 ${t('match.triple', 'Triple')}</span>
+            <span class="outcome-row-right">
+              <span style="color:#06b6d4;font-weight:bold;">${b.doubleEnd + 1}–${b.tripleEnd}</span>
+            </span>
+          </div>
+          <div class="outcome-row" style="${isClutchActive ? 'border:1px solid #eab308; background:rgba(234,179,8,0.15);' : ''}">
+            <span class="outcome-row-left" style="color:#eab308;font-weight:bold;">🚀 ${t('match.hr', 'Jonrón')}</span>
+            <span class="outcome-row-right">
+              ${isClutchActive ? hrTag4 : ''}
+              <span style="color:#eab308;font-weight:bold;">${b.tripleEnd + 1}–100</span>
+            </span>
+          </div>
         </div>
       </div>
     `;

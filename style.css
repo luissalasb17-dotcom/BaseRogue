@@ -16,6 +16,9 @@
   --rarity-rare: #00ccff;
   --rarity-epic: #cc00ff;
   --rarity-legendary: #ffcc00;
+
+  --badge-clutch: #ff3300;
+  --badge-captain: #00d4ff;
 }
 
 * {
@@ -286,6 +289,141 @@ p {
 @keyframes gold-glow-pulse {
   0% { box-shadow: 0 0 6px var(--rarity-legendary), inset 0 0 5px rgba(255, 204, 0, 0.15); }
   100% { box-shadow: 0 0 18px var(--rarity-legendary), inset 0 0 15px rgba(255, 204, 0, 0.4); }
+}
+
+/* ── BADGE CORNER RIBBONS & COMBINED GLOWS ────────────────────── */
+.card-ribbon {
+  position: absolute;
+  width: 85px;
+  text-align: center;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 5px;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+  padding: 1.5px 0;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.7);
+  z-index: 25;
+  cursor: help;
+  user-select: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.4);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.5);
+  transition: filter 0.2s ease;
+}
+
+/* Single Badge at Bottom-Left Corner (+45 deg diagonal angle) */
+.card-ribbon.ribbon-bottom-left {
+  bottom: 11px;
+  left: -26px;
+  transform: rotate(45deg);
+}
+
+.card-ribbon.ribbon-clutch {
+  background: linear-gradient(135deg, #ff4500, #dc2626);
+  color: #ffffff;
+  text-shadow: 0 1px 2px #000;
+}
+
+.card-ribbon.ribbon-captain {
+  background: linear-gradient(135deg, #00d4ff, #0284c7);
+  color: #ffffff;
+  text-shadow: 0 1px 2px #000;
+}
+
+/* Double Badge Staggered (Both maintain identical 45° diagonal angle & size) */
+.card-ribbon.ribbon-stagger-1 {
+  bottom: 21px;
+  left: -22px;
+  z-index: 26;
+}
+
+.card-ribbon.ribbon-stagger-2 {
+  bottom: 7px;
+  left: -29px;
+  z-index: 25;
+}
+
+.card-ribbon:hover {
+  filter: brightness(1.3);
+}
+
+/* Outcome Row Modifier Pills (Zonas de la Suerte) */
+.outcome-row-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.outcome-row-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.zone-modifier-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 6px;
+  font-weight: bold;
+  font-family: 'Press Start 2P', monospace;
+  padding: 1.5px 4px;
+  border-radius: 3px;
+  line-height: 1;
+  white-space: nowrap;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+.zone-modifier-pill.pill-boost {
+  background: rgba(0, 255, 102, 0.2);
+  border: 1px solid #00ff66;
+  color: #00ff66;
+}
+
+.zone-modifier-pill.pill-penalty {
+  background: rgba(239, 68, 68, 0.2);
+  border: 1px solid #ef4444;
+  color: #ef4444;
+}
+
+.zone-modifier-pill.pill-hr {
+  background: rgba(234, 179, 8, 0.25);
+  border: 1px solid #eab308;
+  color: #fef08a;
+}
+
+/* Combined Badge Glows (summed to Rarity Glow) */
+.player-card.has-clutch {
+  box-shadow: 0 0 10px var(--badge-clutch), inset 0 0 6px rgba(255, 51, 0, 0.2) !important;
+}
+
+.player-card.has-captain {
+  box-shadow: 0 0 10px var(--badge-captain), inset 0 0 6px rgba(0, 212, 255, 0.2) !important;
+}
+
+.player-card.has-clutch.has-captain {
+  box-shadow: -5px 0 12px var(--badge-clutch), 5px 0 12px var(--badge-captain), inset 0 0 8px rgba(255, 255, 255, 0.25) !important;
+}
+
+.player-card.rarity-Epic.has-clutch {
+  box-shadow: 0 0 12px var(--rarity-epic), 0 0 8px var(--badge-clutch), inset 0 0 8px rgba(204, 0, 255, 0.2) !important;
+}
+.player-card.rarity-Epic.has-captain {
+  box-shadow: 0 0 12px var(--rarity-epic), 0 0 8px var(--badge-captain), inset 0 0 8px rgba(204, 0, 255, 0.2) !important;
+}
+.player-card.rarity-Epic.has-clutch.has-captain {
+  box-shadow: 0 0 14px var(--rarity-epic), -5px 0 10px var(--badge-clutch), 5px 0 10px var(--badge-captain), inset 0 0 10px rgba(255, 255, 255, 0.25) !important;
+}
+
+.player-card.rarity-Legendary.has-clutch {
+  box-shadow: 0 0 16px var(--rarity-legendary), 0 0 10px var(--badge-clutch), inset 0 0 10px rgba(255, 204, 0, 0.3) !important;
+}
+.player-card.rarity-Legendary.has-captain {
+  box-shadow: 0 0 16px var(--rarity-legendary), 0 0 10px var(--badge-captain), inset 0 0 10px rgba(255, 204, 0, 0.3) !important;
+}
+.player-card.rarity-Legendary.has-clutch.has-captain {
+  box-shadow: 0 0 18px var(--rarity-legendary), -5px 0 12px var(--badge-clutch), 5px 0 12px var(--badge-captain), inset 0 0 12px rgba(255, 255, 255, 0.3) !important;
 }
 
 .card-header {
@@ -2704,13 +2842,13 @@ body.workspace-active .main-container {
   animation: shake-dmg 0.35s ease-out;
 }
 
-/* ── RATINGS INFO POPOVER (Starter Screen) ──────────────────────────────── */
+/* ── RATINGS INFO POPOVER (Draft Screen) ──────────────────────────────── */
 #ratings-info-btn {
   position: absolute;
-  top: 12px;
+  top: 14px;
   right: 14px;
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   background: #000;
   border: 2px solid #3b82f6;
@@ -2723,7 +2861,7 @@ body.workspace-active .main-container {
   justify-content: center;
   box-shadow: 0 0 10px rgba(59, 130, 246, 0.35);
   transition: all 0.2s ease;
-  z-index: 50;
+  z-index: 210;
 }
 #ratings-info-btn:hover {
   background: #3b82f6;
@@ -2733,15 +2871,16 @@ body.workspace-active .main-container {
 
 #ratings-info-dropdown {
   position: absolute;
-  top: 46px;
+  top: 50px;
   right: 14px;
-  width: 300px;
+  width: 340px;
+  max-width: calc(100vw - 32px);
   background: rgba(9, 13, 22, 0.98);
   border: 2px solid #3b82f6;
   border-radius: 12px;
   padding: 14px;
   box-shadow: 0 0 30px rgba(0,0,0,0.9), 0 0 15px rgba(59,130,246,0.25);
-  z-index: 100;
+  z-index: 250;
   backdrop-filter: blur(8px);
   font-size: 11px;
   line-height: 1.6;

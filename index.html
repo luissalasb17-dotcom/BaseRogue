@@ -155,34 +155,6 @@
     <!-- SCREEN 1: MAIN MENU & STARTER SELECTION -->
     <div class="glass-panel hidden" id="screen-menu" style="position: relative;">
 
-      <!-- Ratings Info Button -->
-      <button id="ratings-info-btn" title="¿Para qué sirve cada rating?">i</button>
-
-      <!-- Ratings Info Dropdown -->
-      <div id="ratings-info-dropdown" class="hidden">
-        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed rgba(255,255,255,0.2); padding-bottom: 8px; margin-bottom: 10px;">
-          <span style="font-family: 'Press Start 2P', monospace; font-size: 9px; color: #3b82f6;" data-i18n="ratings_guide.title">📊 GUÍA DE RATINGS</span>
-          <button id="btn-close-ratings-info" style="background:none;border:none;color:#9ca3af;font-size:14px;cursor:pointer;padding:0 4px;">&times;</button>
-        </div>
-        <div style="display: flex; flex-direction: column; gap: 8px; font-size: 10.5px;">
-          <div style="background:rgba(255,255,255,0.04);padding:6px 8px;border-radius:6px;border-left:3px solid #a7f3d0;" data-i18n-html="ratings_guide.con">
-            <strong style="color:#a7f3d0;">CON — Contacto:</strong> Determina la probabilidad de conectar un batazo. Jugadores con alto CON tienen más chances de sencillos e hits en general.
-          </div>
-          <div style="background:rgba(255,255,255,0.04);padding:6px 8px;border-radius:6px;border-left:3px solid #f59e0b;" data-i18n-html="ratings_guide.pwr">
-            <strong style="color:#f59e0b;">PWR — Poder:</strong> Probabilidad de conectar extra-bases (dobles, triples, jonrones). También aumenta el daño al pitcher rival en hits largos.
-          </div>
-          <div style="background:rgba(255,255,255,0.04);padding:6px 8px;border-radius:6px;border-left:3px solid #3b82f6;" data-i18n-html="ratings_guide.eye">
-            <strong style="color:#3b82f6;">EYE — Ojo/Vista:</strong> Probabilidad de obtener boletos (BB). Reduce la zona de ponches. Clave para no recibir daño directo al HP.
-          </div>
-          <div style="background:rgba(255,255,255,0.04);padding:6px 8px;border-radius:6px;border-left:3px solid #38bdf8;" data-i18n-html="ratings_guide.spd">
-            <strong style="color:#38bdf8;">SPD — Velocidad:</strong> Activa intentos de robo de base en sencillos (debuff +20% daño al pitcher). También mejora la probabilidad de convertir hits en extra-bases.
-          </div>
-          <div style="background:rgba(255,255,255,0.04);padding:6px 8px;border-radius:6px;border-left:3px solid #a855f7;" data-i18n-html="ratings_guide.def">
-            <strong style="color:#a855f7;">DEF — Defensa:</strong> Contribuye al <strong>Escudo</strong> del equipo. Cuanto mayor DEF promedio, más escudo tienes disponible para absorber OUTs antes de perder HP.
-          </div>
-        </div>
-      </div>
-
       <div style="text-align: center; margin-bottom: 16px;">
         <img src="assets/logo.png" alt="BaseRogue" style="max-width: 320px; width: 85%; height: auto; display: inline-block; filter: drop-shadow(0 4px 14px rgba(0,255,102,0.45));">
       </div>
@@ -459,17 +431,61 @@
               
               <div id="event-choices-container" style="display: flex; flex-direction: column; gap: 12px; margin-top: 20px;">
                 <!-- Dynamically rendered choice buttons -->
-              </div>
-            </div>
-          </div>
+                <div style="overflow-x:auto;">
+          <table style="width:100%;border-collapse:collapse;font-size:11px;text-align:left;">
+            <thead>
+              <tr style="border-bottom:2px solid rgba(255,255,255,0.2);color:#38bdf8;">
+                <th style="padding:8px;">Lanzador</th>
+                <th style="padding:8px;">IP</th>
+                <th style="padding:8px;">ER</th>
+                <th style="padding:8px;">K</th>
+                <th style="padding:8px;">ERA</th>
+              </tr>
+            </thead>
+            <tbody id="summary-tbody-pitchers">
+              <!-- Injected by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
 
           <!-- SCREEN 5: DRAFT PICK -->
-          
-        
+          <div class="glass-panel hidden" id="screen-draft" style="position: relative;">
+            <!-- Ratings Info Button -->
+            <button id="ratings-info-btn" title="¿Para qué sirve cada rating y badge?" style="position: absolute; top: 14px; right: 14px; width: 28px; height: 28px; border-radius: 50%; background: #000; border: 2px solid var(--accent-color); color: var(--accent-color); font-family: 'Press Start 2P', monospace; font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 10px rgba(250, 204, 21, 0.3); transition: all 0.2s ease; z-index: 210;">i</button>
 
-
-
-<div class="glass-panel hidden" id="screen-draft">
+            <!-- Ratings Info Dropdown -->
+            <div id="ratings-info-dropdown" class="hidden" style="position: absolute; top: 50px; right: 14px; width: 340px; background: rgba(9, 13, 22, 0.98); border: 2px solid var(--accent-color); border-radius: 12px; padding: 12px; box-shadow: 0 0 30px rgba(0,0,0,0.9), 0 0 15px rgba(250, 204, 21, 0.25); z-index: 250; backdrop-filter: blur(8px); font-size: 10px; line-height: 1.4; color: #e4e4e7;">
+              <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed rgba(255,255,255,0.2); padding-bottom: 8px; margin-bottom: 10px;">
+                <span style="font-family: 'Press Start 2P', monospace; font-size: 9px; color: #3b82f6;" data-i18n="ratings_guide.title">📊 GUÍA DE RATINGS</span>
+                <button id="btn-close-ratings-info" style="background:none;border:none;color:#9ca3af;font-size:14px;cursor:pointer;padding:0 4px;">&times;</button>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 8px; font-size: 10.5px;">
+                <div style="background:rgba(255,255,255,0.04);padding:6px 8px;border-radius:6px;border-left:3px solid #a7f3d0;" data-i18n-html="ratings_guide.con">
+                  <strong style="color:#a7f3d0;">CON — Contacto:</strong> Determina la probabilidad de conectar un batazo. Jugadores con alto CON tienen más chances de sencillos e hits en general.
+                </div>
+                <div style="background:rgba(255,255,255,0.04);padding:6px 8px;border-radius:6px;border-left:3px solid #f59e0b;" data-i18n-html="ratings_guide.pwr">
+                  <strong style="color:#f59e0b;">PWR — Poder:</strong> Probabilidad de conectar extra-bases (dobles, triples, jonrones). También aumenta el daño al pitcher rival en hits largos.
+                </div>
+                <div style="background:rgba(255,255,255,0.04);padding:6px 8px;border-radius:6px;border-left:3px solid #3b82f6;" data-i18n-html="ratings_guide.eye">
+                  <strong style="color:#3b82f6;">EYE — Ojo/Vista:</strong> Probabilidad de obtener boletos (BB). Reduce la zona de ponches. Clave para no recibir daño directo al HP.
+                </div>
+                <div style="background:rgba(255,255,255,0.04);padding:6px 8px;border-radius:6px;border-left:3px solid #38bdf8;" data-i18n-html="ratings_guide.spd">
+                  <strong style="color:#38bdf8;">SPD — Velocidad:</strong> Activa intentos de robo de base en sencillos (debuff +20% daño al pitcher). También mejora la probabilidad de convertir hits en extra-bases.
+                </div>
+                <div style="background:rgba(255,255,255,0.04);padding:6px 8px;border-radius:6px;border-left:3px solid #a855f7;" data-i18n-html="ratings_guide.def">
+                  <strong style="color:#a855f7;">DEF — Defensa:</strong> Contribuye al <strong>Escudo</strong> del equipo. Cuanto mayor DEF promedio, más escudo tienes disponible para absorber OUTs antes de perder HP.
+                </div>
+                <div style="background:rgba(255,255,255,0.04);padding:6px 8px;border-radius:6px;border-left:3px solid #ef4444;" data-i18n-html="ratings_guide.clutch">
+                  <strong style="color:#ef4444;">⚡ CLUTCH PLAYER:</strong> +2% de probabilidad de sencillo y doble, +4% de HR con corredores en posición de anotar o durante la última entrada.
+                </div>
+                <div style="background:rgba(255,255,255,0.04);padding:6px 8px;border-radius:6px;border-left:3px solid #eab308;" data-i18n-html="ratings_guide.captain">
+                  <strong style="color:#eab308;">👑 CAPTAIN:</strong> +5 a todos los ratings de sus compañeros de equipo mientras esté en el roster activo.
+                </div>
+              </div>
+            </div>
             <h2 style="margin-bottom: 8px;"><i class="fa-solid fa-file-signature"></i> Firma de Jugadores (Draft)</h2>
             <p style="color: #9ca3af; font-size: 14px;">
               Selecciona una leyenda para unir a tu roster. Elige sabiamente para optimizar las posiciones y activar sinergias de Era o de Franquicia.

@@ -1270,11 +1270,14 @@
         }
       }
 
-      // Captain Badge: any teammate (not the player itself) with captain === true gives +5 to all stats
+      // Captain Badge: any teammate (not the player itself) with captain === true or is_captain === true gives +5 to all stats
       // Non-cumulative: multiple captains on the roster still give only +5 total, not stacked.
-      const hasCaptainTeammate = Object.values(contextRoster).some(p =>
-        p && p !== player && p.playerID !== player.playerID && p.captain === true
-      );
+      const hasCaptainTeammate = Object.values(contextRoster).some(p => {
+        if (!p || p === player) return false;
+        if (p.name && player.name && p.name === player.name) return false;
+        if (p.id && player.id && p.id === player.id) return false;
+        return (p.captain === true || p.is_captain === true);
+      });
       if (hasCaptainTeammate) {
         con += 5; pwr += 5; eye += 5; spd += 5; def += 5;
       }

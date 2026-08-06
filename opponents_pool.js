@@ -49,10 +49,10 @@ window.OpponentsPool = [
     id: "opp_team_00004", name: "Nolan Ryan (1977)",
     tier: "A", isBoss: false,
     era: "Big Hair Era (1977-1993)", ovr: 85.4,
-    rarity: "Legendary", hof: true, allstars: 8,
+    rarity: "Epic", hof: true, allstars: 8,
     pitchers: [
       { name: "Ron Guidry", role: "SP", pos: "SP", year: 1978, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "NYY", ovr: 84.8, hp: 113, maxHp: 113, stf: 60, ctl: 73, mov: 73, sta: 91 },
-      { name: "Nolan Ryan", role: "SP", pos: "SP", year: 1977, era: "Big Hair Era (1977-1993)", rarity: "Legendary", team: "HOU", ovr: 85.1, hp: 112, maxHp: 112, stf: 125, ctl: 5, mov: 70, sta: 89 },
+      { name: "Nolan Ryan", role: "SP", pos: "SP", year: 1977, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "HOU", ovr: 85.1, hp: 112, maxHp: 112, stf: 125, ctl: 5, mov: 70, sta: 89 },
       { name: "Larry Andersen", role: "RP", pos: "RP", year: 1990, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "PHI", ovr: 86.2, hp: 30, maxHp: 30, stf: 72, ctl: 72, mov: 97, sta: 29 },
     ]
   },
@@ -86,7 +86,7 @@ window.OpponentsPool = [
     pitchers: [
       { name: "Steve Ontiveros", role: "SP", pos: "SP", year: 1994, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "OAK", ovr: 83.6, hp: 108, maxHp: 108, stf: 31, ctl: 67, mov: 102, sta: 84 },
       { name: "Pascual Perez", role: "SP", pos: "SP", year: 1988, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "ATL", ovr: 83.7, hp: 108, maxHp: 108, stf: 48, ctl: 83, mov: 69, sta: 83 },
-      { name: "Lee Smith", role: "RP", pos: "RP", year: 1983, era: "Big Hair Era (1977-1993)", rarity: "Legendary", team: "CHC", ovr: 85.4, hp: 30, maxHp: 30, stf: 96, ctl: 53, mov: 90, sta: 29 },
+      { name: "Lee Smith", role: "RP", pos: "RP", year: 1983, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "CHC", ovr: 85.4, hp: 30, maxHp: 30, stf: 96, ctl: 53, mov: 90, sta: 29 },
     ]
   },
   {
@@ -119,7 +119,7 @@ window.OpponentsPool = [
     pitchers: [
       { name: "Vida Blue", role: "SP", pos: "SP", year: 1971, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "OAK", ovr: 83.0, hp: 112, maxHp: 112, stf: 46, ctl: 68, mov: 72, sta: 89 },
       { name: "Dennis Martinez", role: "SP", pos: "SP", year: 1991, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "BAL", ovr: 82.9, hp: 109, maxHp: 109, stf: 36, ctl: 80, mov: 72, sta: 85 },
-      { name: "Rollie Fingers", role: "RP", pos: "RP", year: 1981, era: "Big Hair Era (1977-1993)", rarity: "Legendary", team: "OAK", ovr: 84.4, hp: 31, maxHp: 31, stf: 68, ctl: 75, mov: 88, sta: 32 },
+      { name: "Rollie Fingers", role: "RP", pos: "RP", year: 1981, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "OAK", ovr: 84.4, hp: 31, maxHp: 31, stf: 68, ctl: 75, mov: 88, sta: 32 },
     ]
   },
   {
@@ -141,7 +141,7 @@ window.OpponentsPool = [
     pitchers: [
       { name: "Danny Darwin", role: "SP", pos: "SP", year: 1993, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "TEX", ovr: 82.6, hp: 115, maxHp: 115, stf: 43, ctl: 73, mov: 71, sta: 93 },
       { name: "Steve Rogers", role: "SP", pos: "SP", year: 1982, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "WSH", ovr: 82.5, hp: 112, maxHp: 112, stf: 36, ctl: 67, mov: 79, sta: 89 },
-      { name: "Rich Gossage", role: "RP", pos: "RP", year: 1975, era: "Big Hair Era (1977-1993)", rarity: "Legendary", team: "NYY", ovr: 84.3, hp: 32, maxHp: 32, stf: 85, ctl: 41, mov: 101, sta: 35 },
+      { name: "Rich Gossage", role: "RP", pos: "RP", year: 1975, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "NYY", ovr: 84.3, hp: 32, maxHp: 32, stf: 85, ctl: 41, mov: 101, sta: 35 },
     ]
   },
   {
@@ -159,10 +159,10 @@ window.OpponentsPool = [
     id: "opp_team_00014", name: "Dennis Eckersley (1978)",
     tier: "B", isBoss: false,
     era: "Big Hair Era (1977-1993)", ovr: 82.5,
-    rarity: "Legendary", hof: true, allstars: 6,
+    rarity: "Epic", hof: true, allstars: 6,
     pitchers: [
       { name: "Greg Harris", role: "SP", pos: "SP", year: 1985, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "BOS", ovr: 82.3, hp: 124, maxHp: 124, stf: 61, ctl: 32, mov: 80, sta: 105 },
-      { name: "Dennis Eckersley", role: "SP", pos: "SP", year: 1978, era: "Big Hair Era (1977-1993)", rarity: "Legendary", team: "OAK", ovr: 82.3, hp: 110, maxHp: 110, stf: 44, ctl: 81, mov: 68, sta: 87 },
+      { name: "Dennis Eckersley", role: "SP", pos: "SP", year: 1978, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "OAK", ovr: 82.3, hp: 110, maxHp: 110, stf: 44, ctl: 81, mov: 68, sta: 87 },
       { name: "Dave Smith", role: "RP", pos: "RP", year: 1987, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "HOU", ovr: 82.8, hp: 30, maxHp: 30, stf: 61, ctl: 65, mov: 89, sta: 29 },
     ]
   },
@@ -401,9 +401,9 @@ window.OpponentsPool = [
     id: "opp_team_00036", name: "Jack Chesbro (1904)",
     tier: "A", isBoss: false,
     era: "Deadball (1901-1919)", ovr: 86.7,
-    rarity: "Legendary", hof: true, allstars: 0,
+    rarity: "Epic", hof: true, allstars: 0,
     pitchers: [
-      { name: "Jack Chesbro", role: "SP", pos: "SP", year: 1904, era: "Deadball (1901-1919)", rarity: "Legendary", team: "NYY", ovr: 85.0, hp: 119, maxHp: 119, stf: 48, ctl: 79, mov: 65, sta: 98 },
+      { name: "Jack Chesbro", role: "SP", pos: "SP", year: 1904, era: "Deadball (1901-1919)", rarity: "Epic", team: "NYY", ovr: 85.0, hp: 119, maxHp: 119, stf: 48, ctl: 79, mov: 65, sta: 98 },
       { name: "Doc White", role: "SP", pos: "SP", year: 1902, era: "Deadball (1901-1919)", rarity: "Epic", team: "CHW", ovr: 85.0, hp: 116, maxHp: 116, stf: 43, ctl: 84, mov: 65, sta: 95 },
       { name: "Greg Holland", role: "RP", pos: "RP", year: 2013, era: "Efficiency Era (2006-2015)", rarity: "Legendary", team: "KCR", ovr: 90.2, hp: 30, maxHp: 30, stf: 102, ctl: 43, mov: 123, sta: 25 },
     ]
@@ -445,10 +445,10 @@ window.OpponentsPool = [
     id: "opp_team_00040", name: "BOSS: Rube Marquard (1911)",
     tier: "B", isBoss: true,
     era: "Deadball (1901-1919)", ovr: 84.8,
-    rarity: "Legendary", hof: true, allstars: 0,
+    rarity: "Epic", hof: true, allstars: 0,
     pitchers: [
       { name: "Ed Reulbach", role: "SP", pos: "SP", year: 1905, era: "Deadball (1901-1919)", rarity: "Epic", team: "CHC", ovr: 82.9, hp: 120, maxHp: 120, stf: 44, ctl: 46, mov: 79, sta: 100 },
-      { name: "Rube Marquard", role: "SP", pos: "SP", year: 1911, era: "Deadball (1901-1919)", rarity: "Legendary", team: "SFG", ovr: 83.1, hp: 117, maxHp: 117, stf: 60, ctl: 68, mov: 67, sta: 95 },
+      { name: "Rube Marquard", role: "SP", pos: "SP", year: 1911, era: "Deadball (1901-1919)", rarity: "Epic", team: "SFG", ovr: 83.1, hp: 117, maxHp: 117, stf: 60, ctl: 68, mov: 67, sta: 95 },
       { name: "Mike Adams", role: "RP", pos: "RP", year: 2011, era: "Efficiency Era (2006-2015)", rarity: "Legendary", team: "SDP", ovr: 88.5, hp: 30, maxHp: 30, stf: 66, ctl: 69, mov: 125, sta: 25 },
     ]
   },
@@ -460,7 +460,7 @@ window.OpponentsPool = [
     pitchers: [
       { name: "Doc Ayers", role: "SP", pos: "SP", year: 1915, era: "Deadball (1901-1919)", rarity: "Epic", team: "MIN", ovr: 82.4, hp: 124, maxHp: 124, stf: 40, ctl: 65, mov: 66, sta: 105 },
       { name: "Cy Falkenberg", role: "SP", pos: "SP", year: 1914, era: "Deadball (1901-1919)", rarity: "Epic", team: "CLE", ovr: 82.6, hp: 118, maxHp: 118, stf: 61, ctl: 52, mov: 62, sta: 97 },
-      { name: "Darren O'Day", role: "RP", pos: "RP", year: 2015, era: "Efficiency Era (2006-2015)", rarity: "Legendary", team: "BAL", ovr: 86.8, hp: 29, maxHp: 29, stf: 70, ctl: 77, mov: 110, sta: 24 },
+      { name: "Darren O'Day", role: "RP", pos: "RP", year: 2015, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "BAL", ovr: 86.8, hp: 29, maxHp: 29, stf: 70, ctl: 77, mov: 110, sta: 24 },
     ]
   },
   {
@@ -665,9 +665,9 @@ window.OpponentsPool = [
     id: "opp_team_00060", name: "BOSS: David Price (2012)",
     tier: "B", isBoss: true,
     era: "Efficiency Era (2006-2015)", ovr: 84.8,
-    rarity: "Legendary", hof: false, allstars: 5,
+    rarity: "Epic", hof: false, allstars: 5,
     pitchers: [
-      { name: "David Price", role: "SP", pos: "SP", year: 2012, era: "Efficiency Era (2006-2015)", rarity: "Legendary", team: "TB", ovr: 86.5, hp: 107, maxHp: 107, stf: 68, ctl: 79, mov: 70, sta: 83 },
+      { name: "David Price", role: "SP", pos: "SP", year: 2012, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "TB", ovr: 86.5, hp: 107, maxHp: 107, stf: 68, ctl: 79, mov: 70, sta: 83 },
       { name: "Clay Buchholz", role: "SP", pos: "SP", year: 2010, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "BOS", ovr: 85.8, hp: 104, maxHp: 104, stf: 43, ctl: 60, mov: 106, sta: 79 },
       { name: "Jonathan Broxton", role: "RP", pos: "RP", year: 2006, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "LAD", ovr: 82.1, hp: 30, maxHp: 30, stf: 86, ctl: 48, mov: 80, sta: 25 },
     ]
@@ -676,9 +676,9 @@ window.OpponentsPool = [
     id: "opp_team_00061", name: "Felix Hernandez (2010)",
     tier: "B", isBoss: false,
     era: "Efficiency Era (2006-2015)", ovr: 84.5,
-    rarity: "Legendary", hof: false, allstars: 6,
+    rarity: "Epic", hof: false, allstars: 6,
     pitchers: [
-      { name: "Felix Hernandez", role: "SP", pos: "SP", year: 2010, era: "Efficiency Era (2006-2015)", rarity: "Legendary", team: "SEA", ovr: 85.8, hp: 108, maxHp: 108, stf: 63, ctl: 74, mov: 77, sta: 84 },
+      { name: "Felix Hernandez", role: "SP", pos: "SP", year: 2010, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "SEA", ovr: 85.8, hp: 108, maxHp: 108, stf: 63, ctl: 74, mov: 77, sta: 84 },
       { name: "Jon Lester", role: "SP", pos: "SP", year: 2009, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "BOS", ovr: 85.7, hp: 105, maxHp: 105, stf: 65, ctl: 66, mov: 76, sta: 80 },
       { name: "Joe Thatcher", role: "RP", pos: "RP", year: 2010, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "SDP", ovr: 82.1, hp: 29, maxHp: 29, stf: 73, ctl: 50, mov: 93, sta: 21 },
     ]
@@ -689,7 +689,7 @@ window.OpponentsPool = [
     era: "Efficiency Era (2006-2015)", ovr: 84.3,
     rarity: "Epic", hof: false, allstars: 3,
     pitchers: [
-      { name: "CC Sabathia", role: "SP", pos: "SP", year: 2008, era: "Efficiency Era (2006-2015)", rarity: "Legendary", team: "NYY", ovr: 85.6, hp: 109, maxHp: 109, stf: 53, ctl: 78, mov: 78, sta: 85 },
+      { name: "CC Sabathia", role: "SP", pos: "SP", year: 2008, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "NYY", ovr: 85.6, hp: 109, maxHp: 109, stf: 53, ctl: 78, mov: 78, sta: 85 },
       { name: "Adam Wainwright", role: "SP", pos: "SP", year: 2013, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "STL", ovr: 85.7, hp: 108, maxHp: 108, stf: 47, ctl: 81, mov: 76, sta: 83 },
       { name: "Jesse Crain", role: "RP", pos: "RP", year: 2011, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "MIN", ovr: 81.7, hp: 30, maxHp: 30, stf: 46, ctl: 46, mov: 125, sta: 25 },
     ]
@@ -940,10 +940,10 @@ window.OpponentsPool = [
     id: "opp_team_00085", name: "BOSS: Don Sutton (1972)",
     tier: "A", isBoss: true,
     era: "Expansion (1961-1976)", ovr: 87.4,
-    rarity: "Legendary", hof: true, allstars: 4,
+    rarity: "Epic", hof: true, allstars: 4,
     pitchers: [
-      { name: "Don Drysdale", role: "SP", pos: "SP", year: 1964, era: "Expansion (1961-1976)", rarity: "Legendary", team: "LAD", ovr: 85.2, hp: 112, maxHp: 112, stf: 66, ctl: 74, mov: 70, sta: 89 },
-      { name: "Don Sutton", role: "SP", pos: "SP", year: 1972, era: "Expansion (1961-1976)", rarity: "Legendary", team: "LAD", ovr: 87.0, hp: 111, maxHp: 111, stf: 59, ctl: 83, mov: 72, sta: 87 },
+      { name: "Don Drysdale", role: "SP", pos: "SP", year: 1964, era: "Expansion (1961-1976)", rarity: "Epic", team: "LAD", ovr: 85.2, hp: 112, maxHp: 112, stf: 66, ctl: 74, mov: 70, sta: 89 },
+      { name: "Don Sutton", role: "SP", pos: "SP", year: 1972, era: "Expansion (1961-1976)", rarity: "Epic", team: "LAD", ovr: 87.0, hp: 111, maxHp: 111, stf: 59, ctl: 83, mov: 72, sta: 87 },
       { name: "Bill Henry", role: "RP", pos: "RP", year: 1959, era: "Integration (1942-1960)", rarity: "Legendary", team: "CIN", ovr: 90.0, hp: 31, maxHp: 31, stf: 93, ctl: 78, mov: 105, sta: 32 },
     ]
   },
@@ -962,10 +962,10 @@ window.OpponentsPool = [
     id: "opp_team_00087", name: "Whitey Ford (1964)",
     tier: "B", isBoss: false,
     era: "Expansion (1961-1976)", ovr: 83.2,
-    rarity: "Legendary", hof: true, allstars: 10,
+    rarity: "Epic", hof: true, allstars: 10,
     pitchers: [
       { name: "Lindy McDaniel", role: "SP", pos: "SP", year: 1960, era: "Expansion (1961-1976)", rarity: "Epic", team: "STL", ovr: 84.6, hp: 124, maxHp: 124, stf: 47, ctl: 69, mov: 77, sta: 105 },
-      { name: "Whitey Ford", role: "SP", pos: "SP", year: 1964, era: "Expansion (1961-1976)", rarity: "Legendary", team: "NYY", ovr: 84.7, hp: 110, maxHp: 110, stf: 45, ctl: 69, mov: 79, sta: 87 },
+      { name: "Whitey Ford", role: "SP", pos: "SP", year: 1964, era: "Expansion (1961-1976)", rarity: "Epic", team: "NYY", ovr: 84.7, hp: 110, maxHp: 110, stf: 45, ctl: 69, mov: 79, sta: 87 },
       { name: "Gordon Maltzberger", role: "RP", pos: "RP", year: 1943, era: "Integration (1942-1960)", rarity: "Epic", team: "CHW", ovr: 80.4, hp: 32, maxHp: 32, stf: 37, ctl: 82, mov: 78, sta: 35 },
     ]
   },
@@ -984,10 +984,10 @@ window.OpponentsPool = [
     id: "opp_team_00089", name: "Jim Palmer (1975)",
     tier: "A", isBoss: false,
     era: "Expansion (1961-1976)", ovr: 86.7,
-    rarity: "Legendary", hof: true, allstars: 6,
+    rarity: "Epic", hof: true, allstars: 6,
     pitchers: [
-      { name: "Gaylord Perry", role: "SP", pos: "SP", year: 1972, era: "Expansion (1961-1976)", rarity: "Legendary", team: "SFG", ovr: 83.9, hp: 117, maxHp: 117, stf: 51, ctl: 74, mov: 71, sta: 95 },
-      { name: "Jim Palmer", role: "SP", pos: "SP", year: 1975, era: "Expansion (1961-1976)", rarity: "Legendary", team: "BAL", ovr: 83.9, hp: 115, maxHp: 115, stf: 34, ctl: 65, mov: 79, sta: 93 },
+      { name: "Gaylord Perry", role: "SP", pos: "SP", year: 1972, era: "Expansion (1961-1976)", rarity: "Epic", team: "SFG", ovr: 83.9, hp: 117, maxHp: 117, stf: 51, ctl: 74, mov: 71, sta: 95 },
+      { name: "Jim Palmer", role: "SP", pos: "SP", year: 1975, era: "Expansion (1961-1976)", rarity: "Epic", team: "BAL", ovr: 83.9, hp: 115, maxHp: 115, stf: 34, ctl: 65, mov: 79, sta: 93 },
       { name: "Kenley Jansen", role: "RP", pos: "RP", year: 2017, era: "Modern Era (2016-Pres)", rarity: "Legendary", team: "LAD", ovr: 92.2, hp: 30, maxHp: 30, stf: 97, ctl: 65, mov: 125, sta: 25 },
     ]
   },
@@ -1042,7 +1042,7 @@ window.OpponentsPool = [
     rarity: "Epic", hof: false, allstars: 0,
     pitchers: [
       { name: "Bobby Bolin", role: "SP", pos: "SP", year: 1968, era: "Expansion (1961-1976)", rarity: "Epic", team: "SFG", ovr: 82.7, hp: 122, maxHp: 122, stf: 62, ctl: 49, mov: 68, sta: 103 },
-      { name: "Jim Kaat", role: "SP", pos: "SP", year: 1975, era: "Expansion (1961-1976)", rarity: "Legendary", team: "MIN", ovr: 82.7, hp: 110, maxHp: 110, stf: 39, ctl: 89, mov: 63, sta: 87 },
+      { name: "Jim Kaat", role: "SP", pos: "SP", year: 1975, era: "Expansion (1961-1976)", rarity: "Epic", team: "MIN", ovr: 82.7, hp: 110, maxHp: 110, stf: 39, ctl: 89, mov: 63, sta: 87 },
       { name: "Raisel Iglesias", role: "RP", pos: "RP", year: 2024, era: "Modern Era (2016-Pres)", rarity: "Legendary", team: "CIN", ovr: 89.3, hp: 30, maxHp: 30, stf: 72, ctl: 73, mov: 125, sta: 26 },
     ]
   },
@@ -1053,7 +1053,7 @@ window.OpponentsPool = [
     rarity: "Epic", hof: false, allstars: 3,
     pitchers: [
       { name: "Mickey Lolich", role: "SP", pos: "SP", year: 1971, era: "Expansion (1961-1976)", rarity: "Epic", team: "DET", ovr: 82.6, hp: 112, maxHp: 112, stf: 68, ctl: 66, mov: 59, sta: 90 },
-      { name: "Catfish Hunter", role: "SP", pos: "SP", year: 1975, era: "Expansion (1961-1976)", rarity: "Legendary", team: "OAK", ovr: 82.5, hp: 113, maxHp: 113, stf: 36, ctl: 76, mov: 64, sta: 90 },
+      { name: "Catfish Hunter", role: "SP", pos: "SP", year: 1975, era: "Expansion (1961-1976)", rarity: "Epic", team: "OAK", ovr: 82.5, hp: 113, maxHp: 113, stf: 36, ctl: 76, mov: 64, sta: 90 },
       { name: "A. J. Minter", role: "RP", pos: "RP", year: 2022, era: "Modern Era (2016-Pres)", rarity: "Legendary", team: "ATL", ovr: 89.0, hp: 29, maxHp: 29, stf: 76, ctl: 62, mov: 125, sta: 24 },
     ]
   },
@@ -1120,7 +1120,7 @@ window.OpponentsPool = [
     pitchers: [
       { name: "Grant Jackson", role: "SP", pos: "SP", year: 1969, era: "Expansion (1961-1976)", rarity: "Epic", team: "BAL", ovr: 81.9, hp: 120, maxHp: 120, stf: 41, ctl: 51, mov: 73, sta: 100 },
       { name: "Joe Horlen", role: "SP", pos: "SP", year: 1967, era: "Expansion (1961-1976)", rarity: "Epic", team: "CHW", ovr: 81.9, hp: 108, maxHp: 108, stf: 26, ctl: 72, mov: 70, sta: 84 },
-      { name: "Mark Melancon", role: "RP", pos: "RP", year: 2016, era: "Modern Era (2016-Pres)", rarity: "Legendary", team: "PIT", ovr: 86.1, hp: 30, maxHp: 30, stf: 45, ctl: 88, mov: 110, sta: 25 },
+      { name: "Mark Melancon", role: "RP", pos: "RP", year: 2016, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "PIT", ovr: 86.1, hp: 30, maxHp: 30, stf: 45, ctl: 88, mov: 110, sta: 25 },
     ]
   },
   {
@@ -1306,7 +1306,7 @@ window.OpponentsPool = [
     rarity: "Legendary", hof: true, allstars: 3,
     pitchers: [
       { name: "Willie Foster", role: "SP", pos: "SP", year: 1926, era: "Golden Era (1920-1941)", rarity: "Legendary", team: "NLB", ovr: 88.6, hp: 123, maxHp: 123, stf: 58, ctl: 59, mov: 94, sta: 104 },
-      { name: "Joe Williams", role: "SP", pos: "SP", year: 1929, era: "Golden Era (1920-1941)", rarity: "Legendary", team: "NLB", ovr: 87.0, hp: 117, maxHp: 117, stf: 54, ctl: 87, mov: 68, sta: 96 },
+      { name: "Joe Williams", role: "SP", pos: "SP", year: 1929, era: "Golden Era (1920-1941)", rarity: "Epic", team: "NLB", ovr: 87.0, hp: 117, maxHp: 117, stf: 54, ctl: 87, mov: 68, sta: 96 },
       { name: "Dellin Betances", role: "RP", pos: "RP", year: 2015, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "NYY", ovr: 84.0, hp: 30, maxHp: 30, stf: 120, ctl: 26, mov: 84, sta: 26 },
     ]
   },
@@ -1314,10 +1314,10 @@ window.OpponentsPool = [
     id: "opp_team_00119", name: "Slim Jones (1934)",
     tier: "A", isBoss: false,
     era: "Golden Era (1920-1941)", ovr: 85.5,
-    rarity: "Legendary", hof: false, allstars: 2,
+    rarity: "Epic", hof: false, allstars: 2,
     pitchers: [
-      { name: "Slim Jones", role: "SP", pos: "SP", year: 1934, era: "Golden Era (1920-1941)", rarity: "Legendary", team: "NLB", ovr: 86.7, hp: 123, maxHp: 123, stf: 66, ctl: 58, mov: 90, sta: 104 },
-      { name: "Chet Brewer", role: "SP", pos: "SP", year: 1929, era: "Golden Era (1920-1941)", rarity: "Legendary", team: "NLB", ovr: 86.6, hp: 121, maxHp: 121, stf: 30, ctl: 57, mov: 118, sta: 101 },
+      { name: "Slim Jones", role: "SP", pos: "SP", year: 1934, era: "Golden Era (1920-1941)", rarity: "Epic", team: "NLB", ovr: 86.7, hp: 123, maxHp: 123, stf: 66, ctl: 58, mov: 90, sta: 104 },
+      { name: "Chet Brewer", role: "SP", pos: "SP", year: 1929, era: "Golden Era (1920-1941)", rarity: "Epic", team: "NLB", ovr: 86.6, hp: 121, maxHp: 121, stf: 30, ctl: 57, mov: 118, sta: 101 },
       { name: "Chad Green", role: "RP", pos: "RP", year: 2017, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "NYY", ovr: 83.3, hp: 30, maxHp: 30, stf: 80, ctl: 78, mov: 78, sta: 29 },
     ]
   },
@@ -1325,10 +1325,10 @@ window.OpponentsPool = [
     id: "opp_team_00120", name: "BOSS: Lefty Gomez (1937)",
     tier: "A", isBoss: true,
     era: "Golden Era (1920-1941)", ovr: 85.1,
-    rarity: "Legendary", hof: true, allstars: 7,
+    rarity: "Epic", hof: true, allstars: 7,
     pitchers: [
-      { name: "Lefty Gomez", role: "SP", pos: "SP", year: 1937, era: "Golden Era (1920-1941)", rarity: "Legendary", team: "NYY", ovr: 86.1, hp: 116, maxHp: 116, stf: 93, ctl: 39, mov: 78, sta: 95 },
-      { name: "Bob Feller", role: "SP", pos: "SP", year: 1946, era: "Golden Era (1920-1941)", rarity: "Legendary", team: "CLE", ovr: 86.0, hp: 116, maxHp: 116, stf: 125, ctl: 7, mov: 74, sta: 95 },
+      { name: "Lefty Gomez", role: "SP", pos: "SP", year: 1937, era: "Golden Era (1920-1941)", rarity: "Epic", team: "NYY", ovr: 86.1, hp: 116, maxHp: 116, stf: 93, ctl: 39, mov: 78, sta: 95 },
+      { name: "Bob Feller", role: "SP", pos: "SP", year: 1946, era: "Golden Era (1920-1941)", rarity: "Epic", team: "CLE", ovr: 86.0, hp: 116, maxHp: 116, stf: 125, ctl: 7, mov: 74, sta: 95 },
       { name: "Tyler Rogers", role: "RP", pos: "RP", year: 2021, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "SFG", ovr: 83.3, hp: 30, maxHp: 30, stf: 24, ctl: 97, mov: 104, sta: 25 },
     ]
   },
@@ -1347,10 +1347,10 @@ window.OpponentsPool = [
     id: "opp_team_00122", name: "Ray Brown (1940)",
     tier: "B", isBoss: false,
     era: "Golden Era (1920-1941)", ovr: 84.9,
-    rarity: "Legendary", hof: true, allstars: 2,
+    rarity: "Epic", hof: true, allstars: 2,
     pitchers: [
-      { name: "Ray Brown", role: "SP", pos: "SP", year: 1940, era: "Golden Era (1920-1941)", rarity: "Legendary", team: "NLB", ovr: 85.8, hp: 124, maxHp: 124, stf: 31, ctl: 66, mov: 98, sta: 104 },
-      { name: "Paul Derringer", role: "SP", pos: "SP", year: 1938, era: "Golden Era (1920-1941)", rarity: "Legendary", team: "CIN", ovr: 85.8, hp: 117, maxHp: 117, stf: 50, ctl: 92, mov: 62, sta: 96 },
+      { name: "Ray Brown", role: "SP", pos: "SP", year: 1940, era: "Golden Era (1920-1941)", rarity: "Epic", team: "NLB", ovr: 85.8, hp: 124, maxHp: 124, stf: 31, ctl: 66, mov: 98, sta: 104 },
+      { name: "Paul Derringer", role: "SP", pos: "SP", year: 1938, era: "Golden Era (1920-1941)", rarity: "Epic", team: "CIN", ovr: 85.8, hp: 117, maxHp: 117, stf: 50, ctl: 92, mov: 62, sta: 96 },
       { name: "Zack Britton", role: "RP", pos: "RP", year: 2016, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "BAL", ovr: 83.1, hp: 30, maxHp: 30, stf: 47, ctl: 47, mov: 125, sta: 25 },
     ]
   },
@@ -1424,10 +1424,10 @@ window.OpponentsPool = [
     id: "opp_team_00129", name: "Stan Coveleski (1918)",
     tier: "B", isBoss: false,
     era: "Golden Era (1920-1941)", ovr: 82.9,
-    rarity: "Legendary", hof: true, allstars: 0,
+    rarity: "Epic", hof: true, allstars: 0,
     pitchers: [
       { name: "Carl Glass", role: "SP", pos: "SP", year: 1928, era: "Golden Era (1920-1941)", rarity: "Epic", team: "NLB", ovr: 83.7, hp: 124, maxHp: 124, stf: 55, ctl: 72, mov: 56, sta: 105 },
-      { name: "Stan Coveleski", role: "SP", pos: "SP", year: 1918, era: "Golden Era (1920-1941)", rarity: "Legendary", team: "CLE", ovr: 83.7, hp: 117, maxHp: 117, stf: 29, ctl: 74, mov: 78, sta: 95 },
+      { name: "Stan Coveleski", role: "SP", pos: "SP", year: 1918, era: "Golden Era (1920-1941)", rarity: "Epic", team: "CLE", ovr: 83.7, hp: 117, maxHp: 117, stf: 29, ctl: 74, mov: 78, sta: 95 },
       { name: "Jeremy Jeffress", role: "RP", pos: "RP", year: 2018, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "MIL", ovr: 81.4, hp: 30, maxHp: 30, stf: 44, ctl: 41, mov: 125, sta: 25 },
     ]
   },
@@ -1490,9 +1490,9 @@ window.OpponentsPool = [
     id: "opp_team_00135", name: "BOSS: Red Faber (1921)",
     tier: "B", isBoss: true,
     era: "Golden Era (1920-1941)", ovr: 82.2,
-    rarity: "Legendary", hof: true, allstars: 0,
+    rarity: "Epic", hof: true, allstars: 0,
     pitchers: [
-      { name: "Red Faber", role: "SP", pos: "SP", year: 1921, era: "Golden Era (1920-1941)", rarity: "Legendary", team: "CHW", ovr: 83.0, hp: 117, maxHp: 117, stf: 39, ctl: 70, mov: 68, sta: 95 },
+      { name: "Red Faber", role: "SP", pos: "SP", year: 1921, era: "Golden Era (1920-1941)", rarity: "Epic", team: "CHW", ovr: 83.0, hp: 117, maxHp: 117, stf: 39, ctl: 70, mov: 68, sta: 95 },
       { name: "Luis Tiant", role: "SP", pos: "SP", year: 1946, era: "Golden Era (1920-1941)", rarity: "Epic", team: "NLB", ovr: 83.0, hp: 114, maxHp: 114, stf: 72, ctl: 38, mov: 72, sta: 92 },
       { name: "Caleb Thielbar", role: "RP", pos: "RP", year: 2013, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "MIN", ovr: 80.5, hp: 29, maxHp: 29, stf: 59, ctl: 65, mov: 84, sta: 24 },
     ]
@@ -1534,10 +1534,10 @@ window.OpponentsPool = [
     id: "opp_team_00139", name: "Leon Day (1946)",
     tier: "A", isBoss: false,
     era: "Golden Era (1920-1941)", ovr: 85.9,
-    rarity: "Legendary", hof: true, allstars: 7,
+    rarity: "Epic", hof: true, allstars: 7,
     pitchers: [
       { name: "Bill Swift", role: "SP", pos: "SP", year: 1935, era: "Golden Era (1920-1941)", rarity: "Epic", team: "PIT", ovr: 82.5, hp: 124, maxHp: 124, stf: 32, ctl: 90, mov: 58, sta: 105 },
-      { name: "Leon Day", role: "SP", pos: "SP", year: 1946, era: "Golden Era (1920-1941)", rarity: "Legendary", team: "NLB", ovr: 82.5, hp: 117, maxHp: 117, stf: 72, ctl: 32, mov: 81, sta: 95 },
+      { name: "Leon Day", role: "SP", pos: "SP", year: 1946, era: "Golden Era (1920-1941)", rarity: "Epic", team: "NLB", ovr: 82.5, hp: 117, maxHp: 117, stf: 72, ctl: 32, mov: 81, sta: 95 },
       { name: "Robb Nen", role: "RP", pos: "RP", year: 1998, era: "Steroid Era (1994-2005)", rarity: "Legendary", team: "SFG", ovr: 92.7, hp: 30, maxHp: 30, stf: 99, ctl: 73, mov: 110, sta: 26 },
     ]
   },
@@ -1581,7 +1581,7 @@ window.OpponentsPool = [
     rarity: "Epic", hof: false, allstars: 5,
     pitchers: [
       { name: "Terris McDuffie", role: "SP", pos: "SP", year: 1941, era: "Golden Era (1920-1941)", rarity: "Epic", team: "NLB", ovr: 82.2, hp: 118, maxHp: 118, stf: 38, ctl: 59, mov: 80, sta: 98 },
-      { name: "Red Ruffing", role: "SP", pos: "SP", year: 1932, era: "Golden Era (1920-1941)", rarity: "Legendary", team: "NYY", ovr: 82.1, hp: 116, maxHp: 116, stf: 58, ctl: 50, mov: 71, sta: 95 },
+      { name: "Red Ruffing", role: "SP", pos: "SP", year: 1932, era: "Golden Era (1920-1941)", rarity: "Epic", team: "NYY", ovr: 82.1, hp: 116, maxHp: 116, stf: 58, ctl: 50, mov: 71, sta: 95 },
       { name: "John Wetteland", role: "RP", pos: "RP", year: 1993, era: "Steroid Era (1994-2005)", rarity: "Legendary", team: "TEX", ovr: 89.5, hp: 30, maxHp: 30, stf: 92, ctl: 66, mov: 114, sta: 26 },
     ]
   },
@@ -1604,7 +1604,7 @@ window.OpponentsPool = [
     pitchers: [
       { name: "Herb Pennock", role: "SP", pos: "SP", year: 1924, era: "Golden Era (1920-1941)", rarity: "Epic", team: "NYY", ovr: 81.8, hp: 118, maxHp: 118, stf: 19, ctl: 79, mov: 69, sta: 96 },
       { name: "Cliff Melton", role: "SP", pos: "SP", year: 1937, era: "Golden Era (1920-1941)", rarity: "Epic", team: "SFG", ovr: 81.7, hp: 116, maxHp: 116, stf: 51, ctl: 66, mov: 60, sta: 94 },
-      { name: "Troy Percival", role: "RP", pos: "RP", year: 1996, era: "Steroid Era (1994-2005)", rarity: "Legendary", team: "LAA", ovr: 86.9, hp: 30, maxHp: 30, stf: 110, ctl: 40, mov: 101, sta: 25 },
+      { name: "Troy Percival", role: "RP", pos: "RP", year: 1996, era: "Steroid Era (1994-2005)", rarity: "Epic", team: "LAA", ovr: 86.9, hp: 30, maxHp: 30, stf: 110, ctl: 40, mov: 101, sta: 25 },
     ]
   },
   {
@@ -1768,7 +1768,7 @@ window.OpponentsPool = [
     rarity: "Epic", hof: false, allstars: 1,
     pitchers: [
       { name: "Don Mossi", role: "SP", pos: "SP", year: 1959, era: "Integration (1942-1960)", rarity: "Epic", team: "CLE", ovr: 86.7, hp: 119, maxHp: 119, stf: 60, ctl: 86, mov: 73, sta: 99 },
-      { name: "Hal Newhouser", role: "SP", pos: "SP", year: 1945, era: "Integration (1942-1960)", rarity: "Legendary", team: "DET", ovr: 86.5, hp: 117, maxHp: 117, stf: 68, ctl: 48, mov: 88, sta: 96 },
+      { name: "Hal Newhouser", role: "SP", pos: "SP", year: 1945, era: "Integration (1942-1960)", rarity: "Epic", team: "DET", ovr: 86.5, hp: 117, maxHp: 117, stf: 68, ctl: 48, mov: 88, sta: 96 },
       { name: "Bob Howry", role: "RP", pos: "RP", year: 2000, era: "Steroid Era (1994-2005)", rarity: "Epic", team: "CHW", ovr: 81.1, hp: 30, maxHp: 30, stf: 64, ctl: 64, mov: 83, sta: 25 },
     ]
   },
@@ -1779,7 +1779,7 @@ window.OpponentsPool = [
     rarity: "Epic", hof: false, allstars: 2,
     pitchers: [
       { name: "Rufus Lewis", role: "SP", pos: "SP", year: 1946, era: "Integration (1942-1960)", rarity: "Epic", team: "NLB", ovr: 86.2, hp: 115, maxHp: 115, stf: 55, ctl: 67, mov: 92, sta: 93 },
-      { name: "Billy Pierce", role: "SP", pos: "SP", year: 1952, era: "Integration (1942-1960)", rarity: "Legendary", team: "CHW", ovr: 86.1, hp: 115, maxHp: 115, stf: 68, ctl: 65, mov: 78, sta: 93 },
+      { name: "Billy Pierce", role: "SP", pos: "SP", year: 1952, era: "Integration (1942-1960)", rarity: "Epic", team: "CHW", ovr: 86.1, hp: 115, maxHp: 115, stf: 68, ctl: 65, mov: 78, sta: 93 },
       { name: "Chad Bradford", role: "RP", pos: "RP", year: 2003, era: "Steroid Era (1994-2005)", rarity: "Epic", team: "OAK", ovr: 80.9, hp: 29, maxHp: 29, stf: 30, ctl: 84, mov: 88, sta: 24 },
     ]
   },
@@ -1789,7 +1789,7 @@ window.OpponentsPool = [
     era: "Integration (1942-1960)", ovr: 84.2,
     rarity: "Epic", hof: false, allstars: 3,
     pitchers: [
-      { name: "Robin Roberts", role: "SP", pos: "SP", year: 1953, era: "Integration (1942-1960)", rarity: "Legendary", team: "PHI", ovr: 85.9, hp: 116, maxHp: 116, stf: 40, ctl: 98, mov: 73, sta: 95 },
+      { name: "Robin Roberts", role: "SP", pos: "SP", year: 1953, era: "Integration (1942-1960)", rarity: "Epic", team: "PHI", ovr: 85.9, hp: 116, maxHp: 116, stf: 40, ctl: 98, mov: 73, sta: 95 },
       { name: "Harvey Haddix", role: "SP", pos: "SP", year: 1953, era: "Integration (1942-1960)", rarity: "Epic", team: "PIT", ovr: 86.0, hp: 112, maxHp: 112, stf: 79, ctl: 79, mov: 63, sta: 89 },
       { name: "Alan Embree", role: "RP", pos: "RP", year: 2002, era: "Steroid Era (1994-2005)", rarity: "Epic", team: "BOS", ovr: 80.7, hp: 29, maxHp: 29, stf: 67, ctl: 64, mov: 76, sta: 23 },
     ]
@@ -1842,9 +1842,9 @@ window.OpponentsPool = [
     id: "opp_team_00167", name: "Warren Spahn (1947)",
     tier: "B", isBoss: false,
     era: "Integration (1942-1960)", ovr: 82.8,
-    rarity: "Legendary", hof: true, allstars: 16,
+    rarity: "Epic", hof: true, allstars: 16,
     pitchers: [
-      { name: "Warren Spahn", role: "SP", pos: "SP", year: 1947, era: "Integration (1942-1960)", rarity: "Legendary", team: "ATL", ovr: 84.2, hp: 116, maxHp: 116, stf: 43, ctl: 77, mov: 75, sta: 94 },
+      { name: "Warren Spahn", role: "SP", pos: "SP", year: 1947, era: "Integration (1942-1960)", rarity: "Epic", team: "ATL", ovr: 84.2, hp: 116, maxHp: 116, stf: 43, ctl: 77, mov: 75, sta: 94 },
       { name: "Dave Barnhill", role: "SP", pos: "SP", year: 1943, era: "Integration (1942-1960)", rarity: "Epic", team: "NLB", ovr: 84.1, hp: 113, maxHp: 113, stf: 54, ctl: 65, mov: 84, sta: 90 },
       { name: "Rudy Seanez", role: "RP", pos: "RP", year: 2005, era: "Steroid Era (1994-2005)", rarity: "Epic", team: "ATL", ovr: 80.1, hp: 30, maxHp: 30, stf: 84, ctl: 44, mov: 77, sta: 26 },
     ]
@@ -1945,7 +1945,7 @@ window.OpponentsPool = [
     pitchers: [
       { name: "Mike Fornieles", role: "SP", pos: "SP", year: 1960, era: "Integration (1942-1960)", rarity: "Epic", team: "BOS", ovr: 82.5, hp: 124, maxHp: 124, stf: 44, ctl: 57, mov: 74, sta: 105 },
       { name: "Mike Garcia", role: "SP", pos: "SP", year: 1952, era: "Integration (1942-1960)", rarity: "Epic", team: "CLE", ovr: 82.5, hp: 114, maxHp: 114, stf: 43, ctl: 68, mov: 67, sta: 92 },
-      { name: "Lee Smith", role: "RP", pos: "RP", year: 1983, era: "Big Hair Era (1977-1993)", rarity: "Legendary", team: "CHC", ovr: 85.4, hp: 30, maxHp: 30, stf: 96, ctl: 53, mov: 90, sta: 29 },
+      { name: "Lee Smith", role: "RP", pos: "RP", year: 1983, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "CHC", ovr: 85.4, hp: 30, maxHp: 30, stf: 96, ctl: 53, mov: 90, sta: 29 },
     ]
   },
   {
@@ -1978,7 +1978,7 @@ window.OpponentsPool = [
     pitchers: [
       { name: "Barney Morris", role: "SP", pos: "SP", year: 1938, era: "Integration (1942-1960)", rarity: "Epic", team: "NLB", ovr: 82.3, hp: 118, maxHp: 118, stf: 49, ctl: 46, mov: 79, sta: 98 },
       { name: "Frank Sullivan", role: "SP", pos: "SP", year: 1957, era: "Integration (1942-1960)", rarity: "Epic", team: "BOS", ovr: 82.1, hp: 112, maxHp: 112, stf: 52, ctl: 66, mov: 66, sta: 89 },
-      { name: "Rollie Fingers", role: "RP", pos: "RP", year: 1981, era: "Big Hair Era (1977-1993)", rarity: "Legendary", team: "OAK", ovr: 84.4, hp: 31, maxHp: 31, stf: 68, ctl: 75, mov: 88, sta: 32 },
+      { name: "Rollie Fingers", role: "RP", pos: "RP", year: 1981, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "OAK", ovr: 84.4, hp: 31, maxHp: 31, stf: 68, ctl: 75, mov: 88, sta: 32 },
     ]
   },
   {
@@ -2000,7 +2000,7 @@ window.OpponentsPool = [
     pitchers: [
       { name: "Spoon Carter", role: "SP", pos: "SP", year: 1943, era: "Integration (1942-1960)", rarity: "Epic", team: "NLB", ovr: 81.8, hp: 124, maxHp: 124, stf: 15, ctl: 69, mov: 81, sta: 105 },
       { name: "Larry Jansen", role: "SP", pos: "SP", year: 1951, era: "Integration (1942-1960)", rarity: "Epic", team: "SFG", ovr: 81.8, hp: 113, maxHp: 113, stf: 38, ctl: 89, mov: 58, sta: 90 },
-      { name: "Rich Gossage", role: "RP", pos: "RP", year: 1975, era: "Big Hair Era (1977-1993)", rarity: "Legendary", team: "NYY", ovr: 84.3, hp: 32, maxHp: 32, stf: 85, ctl: 41, mov: 101, sta: 35 },
+      { name: "Rich Gossage", role: "RP", pos: "RP", year: 1975, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "NYY", ovr: 84.3, hp: 32, maxHp: 32, stf: 85, ctl: 41, mov: 101, sta: 35 },
     ]
   },
   {
@@ -2172,10 +2172,10 @@ window.OpponentsPool = [
     id: "opp_team_00197", name: "Tarik Skubal (2025)",
     tier: "B", isBoss: false,
     era: "Modern Era (2016-Pres)", ovr: 84.5,
-    rarity: "Legendary", hof: false, allstars: 2,
+    rarity: "Epic", hof: false, allstars: 2,
     pitchers: [
-      { name: "Tarik Skubal", role: "SP", pos: "SP", year: 2025, era: "Modern Era (2016-Pres)", rarity: "Legendary", team: "DET", ovr: 86.7, hp: 101, maxHp: 101, stf: 73, ctl: 85, mov: 72, sta: 75 },
-      { name: "Brandon Woodruff", role: "SP", pos: "SP", year: 2021, era: "Modern Era (2016-Pres)", rarity: "Legendary", team: "MIL", ovr: 86.6, hp: 101, maxHp: 101, stf: 74, ctl: 78, mov: 76, sta: 75 },
+      { name: "Tarik Skubal", role: "SP", pos: "SP", year: 2025, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "DET", ovr: 86.7, hp: 101, maxHp: 101, stf: 73, ctl: 85, mov: 72, sta: 75 },
+      { name: "Brandon Woodruff", role: "SP", pos: "SP", year: 2021, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "MIL", ovr: 86.6, hp: 101, maxHp: 101, stf: 74, ctl: 78, mov: 76, sta: 75 },
       { name: "Tim Burke", role: "RP", pos: "RP", year: 1987, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "WSH", ovr: 80.1, hp: 30, maxHp: 30, stf: 45, ctl: 64, mov: 90, sta: 29 },
     ]
   },
@@ -2319,7 +2319,7 @@ window.OpponentsPool = [
     pitchers: [
       { name: "Kevin Gausman", role: "SP", pos: "SP", year: 2021, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "BAL", ovr: 82.7, hp: 102, maxHp: 102, stf: 62, ctl: 72, mov: 64, sta: 76 },
       { name: "Pablo Lopez", role: "SP", pos: "SP", year: 2023, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "MIA", ovr: 82.7, hp: 101, maxHp: 101, stf: 62, ctl: 74, mov: 63, sta: 74 },
-      { name: "Darren O'Day", role: "RP", pos: "RP", year: 2015, era: "Efficiency Era (2006-2015)", rarity: "Legendary", team: "BAL", ovr: 86.8, hp: 29, maxHp: 29, stf: 70, ctl: 77, mov: 110, sta: 24 },
+      { name: "Darren O'Day", role: "RP", pos: "RP", year: 2015, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "BAL", ovr: 86.8, hp: 29, maxHp: 29, stf: 70, ctl: 77, mov: 110, sta: 24 },
     ]
   },
   {
@@ -2592,7 +2592,7 @@ window.OpponentsPool = [
     era: "Steroid Era (1994-2005)", ovr: 85.5,
     rarity: "Legendary", hof: true, allstars: 8,
     pitchers: [
-      { name: "Mike Mussina", role: "SP", pos: "SP", year: 1992, era: "Steroid Era (1994-2005)", rarity: "Legendary", team: "BAL", ovr: 86.7, hp: 109, maxHp: 109, stf: 52, ctl: 94, mov: 78, sta: 85 },
+      { name: "Mike Mussina", role: "SP", pos: "SP", year: 1992, era: "Steroid Era (1994-2005)", rarity: "Epic", team: "BAL", ovr: 86.7, hp: 109, maxHp: 109, stf: 52, ctl: 94, mov: 78, sta: 85 },
       { name: "John Smoltz", role: "SP", pos: "SP", year: 1996, era: "Steroid Era (1994-2005)", rarity: "Legendary", team: "ATL", ovr: 88.4, hp: 108, maxHp: 108, stf: 63, ctl: 84, mov: 72, sta: 83 },
       { name: "Heath Bell", role: "RP", pos: "RP", year: 2007, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "SDP", ovr: 81.3, hp: 30, maxHp: 30, stf: 72, ctl: 58, mov: 78, sta: 26 },
     ]
@@ -2678,10 +2678,10 @@ window.OpponentsPool = [
     id: "opp_team_00243", name: "Tom Glavine (1991)",
     tier: "B", isBoss: false,
     era: "Steroid Era (1994-2005)", ovr: 81.7,
-    rarity: "Legendary", hof: true, allstars: 10,
+    rarity: "Epic", hof: true, allstars: 10,
     pitchers: [
       { name: "Byung-Hyun Kim", role: "SP", pos: "SP", year: 2002, era: "Steroid Era (1994-2005)", rarity: "Epic", team: "ARI", ovr: 82.3, hp: 115, maxHp: 115, stf: 76, ctl: 37, mov: 70, sta: 93 },
-      { name: "Tom Glavine", role: "SP", pos: "SP", year: 1991, era: "Steroid Era (1994-2005)", rarity: "Legendary", team: "ATL", ovr: 82.4, hp: 108, maxHp: 108, stf: 34, ctl: 67, mov: 78, sta: 84 },
+      { name: "Tom Glavine", role: "SP", pos: "SP", year: 1991, era: "Steroid Era (1994-2005)", rarity: "Epic", team: "ATL", ovr: 82.4, hp: 108, maxHp: 108, stf: 34, ctl: 67, mov: 78, sta: 84 },
       { name: "Grant Balfour", role: "RP", pos: "RP", year: 2008, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "TB", ovr: 80.3, hp: 30, maxHp: 30, stf: 76, ctl: 40, mov: 92, sta: 25 },
     ]
   },
@@ -2878,7 +2878,7 @@ window.OpponentsPool = [
     era: "The Genesis Era (1871-1900)", ovr: 88.0,
     rarity: "Epic", hof: false, allstars: 0,
     pitchers: [
-      { name: "Kid Nichols", role: "SP", pos: "SP", year: 1890, era: "The Genesis Era (1871-1900)", rarity: "Legendary", team: "ATL", ovr: 86.5, hp: 122, maxHp: 122, stf: 59, ctl: 66, mov: 84, sta: 102 },
+      { name: "Kid Nichols", role: "SP", pos: "SP", year: 1890, era: "The Genesis Era (1871-1900)", rarity: "Epic", team: "ATL", ovr: 86.5, hp: 122, maxHp: 122, stf: 59, ctl: 66, mov: 84, sta: 102 },
       { name: "Dupee Shaw", role: "SP", pos: "SP", year: 1884, era: "The Genesis Era (1871-1900)", rarity: "Epic", team: "NLB", ovr: 86.9, hp: 118, maxHp: 118, stf: 98, ctl: 72, mov: 46, sta: 97 },
       { name: "Emmanuel Clase", role: "RP", pos: "RP", year: 2024, era: "Modern Era (2016-Pres)", rarity: "Legendary", team: "CLE", ovr: 90.6, hp: 30, maxHp: 30, stf: 50, ctl: 93, mov: 125, sta: 25 },
     ]
@@ -2909,10 +2909,10 @@ window.OpponentsPool = [
     id: "opp_team_00264", name: "Pud Galvin (1884)",
     tier: "A", isBoss: false,
     era: "The Genesis Era (1871-1900)", ovr: 86.9,
-    rarity: "Legendary", hof: true, allstars: 0,
+    rarity: "Epic", hof: true, allstars: 0,
     pitchers: [
       { name: "George Bradley", role: "SP", pos: "SP", year: 1876, era: "The Genesis Era (1871-1900)", rarity: "Epic", team: "HIST", ovr: 85.8, hp: 121, maxHp: 121, stf: 1, ctl: 125, mov: 62, sta: 101 },
-      { name: "Pud Galvin", role: "SP", pos: "SP", year: 1884, era: "The Genesis Era (1871-1900)", rarity: "Legendary", team: "HIST", ovr: 85.9, hp: 120, maxHp: 120, stf: 19, ctl: 114, mov: 63, sta: 100 },
+      { name: "Pud Galvin", role: "SP", pos: "SP", year: 1884, era: "The Genesis Era (1871-1900)", rarity: "Epic", team: "HIST", ovr: 85.9, hp: 120, maxHp: 120, stf: 19, ctl: 114, mov: 63, sta: 100 },
       { name: "A. J. Minter", role: "RP", pos: "RP", year: 2022, era: "Modern Era (2016-Pres)", rarity: "Legendary", team: "ATL", ovr: 89.0, hp: 29, maxHp: 29, stf: 76, ctl: 62, mov: 125, sta: 24 },
     ]
   },
@@ -2920,9 +2920,9 @@ window.OpponentsPool = [
     id: "opp_team_00265", name: "BOSS: John Clarkson (1889)",
     tier: "A", isBoss: true,
     era: "The Genesis Era (1871-1900)", ovr: 86.6,
-    rarity: "Legendary", hof: true, allstars: 0,
+    rarity: "Epic", hof: true, allstars: 0,
     pitchers: [
-      { name: "John Clarkson", role: "SP", pos: "SP", year: 1889, era: "The Genesis Era (1871-1900)", rarity: "Legendary", team: "ATL", ovr: 85.8, hp: 119, maxHp: 119, stf: 72, ctl: 59, mov: 77, sta: 99 },
+      { name: "John Clarkson", role: "SP", pos: "SP", year: 1889, era: "The Genesis Era (1871-1900)", rarity: "Epic", team: "ATL", ovr: 85.8, hp: 119, maxHp: 119, stf: 72, ctl: 59, mov: 77, sta: 99 },
       { name: "Bobby Mathews", role: "SP", pos: "SP", year: 1874, era: "The Genesis Era (1871-1900)", rarity: "Epic", team: "OAK", ovr: 85.6, hp: 119, maxHp: 119, stf: 22, ctl: 117, mov: 62, sta: 99 },
       { name: "Roberto Osuna", role: "RP", pos: "RP", year: 2016, era: "Modern Era (2016-Pres)", rarity: "Legendary", team: "TOR", ovr: 88.4, hp: 30, maxHp: 30, stf: 64, ctl: 99, mov: 98, sta: 25 },
     ]
@@ -2978,8 +2978,8 @@ window.OpponentsPool = [
     rarity: "Epic", hof: false, allstars: 0,
     pitchers: [
       { name: "Tony Mullane", role: "SP", pos: "SP", year: 1884, era: "The Genesis Era (1871-1900)", rarity: "Epic", team: "CIN", ovr: 83.6, hp: 120, maxHp: 120, stf: 39, ctl: 62, mov: 67, sta: 100 },
-      { name: "Mickey Welch", role: "SP", pos: "SP", year: 1884, era: "The Genesis Era (1871-1900)", rarity: "Legendary", team: "SFG", ovr: 83.5, hp: 120, maxHp: 120, stf: 56, ctl: 58, mov: 67, sta: 99 },
-      { name: "Mark Melancon", role: "RP", pos: "RP", year: 2016, era: "Modern Era (2016-Pres)", rarity: "Legendary", team: "PIT", ovr: 86.1, hp: 30, maxHp: 30, stf: 45, ctl: 88, mov: 110, sta: 25 },
+      { name: "Mickey Welch", role: "SP", pos: "SP", year: 1884, era: "The Genesis Era (1871-1900)", rarity: "Epic", team: "SFG", ovr: 83.5, hp: 120, maxHp: 120, stf: 56, ctl: 58, mov: 67, sta: 99 },
+      { name: "Mark Melancon", role: "RP", pos: "RP", year: 2016, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "PIT", ovr: 86.1, hp: 30, maxHp: 30, stf: 45, ctl: 88, mov: 110, sta: 25 },
     ]
   },
   {
@@ -3195,10 +3195,10 @@ window.OpponentsPool = [
     id: "opp_team_00290", name: "Wayne Simpson (1970)",
     tier: "D", isBoss: false,
     era: "Expansion (1961-1976)", ovr: 65.5,
-    rarity: "Common", hof: false, allstars: 1,
+    rarity: "Uncommon", hof: false, allstars: 1,
     pitchers: [
-      { name: "Don Schwall", role: "SP", pos: "SP", year: 1961, era: "Expansion (1961-1976)", rarity: "Common", team: "PIT", ovr: 65.0, hp: 110, maxHp: 110, stf: 30, ctl: 3, mov: 44, sta: 87 },
-      { name: "Wayne Simpson", role: "SP", pos: "SP", year: 1970, era: "Expansion (1961-1976)", rarity: "Common", team: "CIN", ovr: 65.1, hp: 103, maxHp: 103, stf: 31, ctl: 12, mov: 44, sta: 77 },
+      { name: "Don Schwall", role: "SP", pos: "SP", year: 1961, era: "Expansion (1961-1976)", rarity: "Uncommon", team: "PIT", ovr: 65.0, hp: 110, maxHp: 110, stf: 30, ctl: 3, mov: 44, sta: 87 },
+      { name: "Wayne Simpson", role: "SP", pos: "SP", year: 1970, era: "Expansion (1961-1976)", rarity: "Uncommon", team: "CIN", ovr: 65.1, hp: 103, maxHp: 103, stf: 31, ctl: 12, mov: 44, sta: 77 },
       { name: "Sid Monge", role: "RP", pos: "RP", year: 1979, era: "Big Hair Era (1977-1993)", rarity: "Uncommon", team: "CLE", ovr: 66.3, hp: 31, maxHp: 31, stf: 42, ctl: 22, mov: 58, sta: 34 },
     ]
   },
@@ -3261,21 +3261,21 @@ window.OpponentsPool = [
     id: "opp_team_00296", name: "Vern Kennedy (1935)",
     tier: "D", isBoss: false,
     era: "Golden Era (1920-1941)", ovr: 64.4,
-    rarity: "Common", hof: false, allstars: 2,
+    rarity: "Uncommon", hof: false, allstars: 2,
     pitchers: [
-      { name: "Vern Kennedy", role: "SP", pos: "SP", year: 1935, era: "Golden Era (1920-1941)", rarity: "Common", team: "CHW", ovr: 64.3, hp: 114, maxHp: 114, stf: 22, ctl: 2, mov: 54, sta: 92 },
-      { name: "Dixie Davis", role: "SP", pos: "SP", year: 1920, era: "Golden Era (1920-1941)", rarity: "Common", team: "BAL", ovr: 64.2, hp: 111, maxHp: 111, stf: 26, ctl: 1, mov: 46, sta: 88 },
-      { name: "Jamie Easterly", role: "RP", pos: "RP", year: 1983, era: "Big Hair Era (1977-1993)", rarity: "Common", team: "ATL", ovr: 64.8, hp: 31, maxHp: 31, stf: 36, ctl: 17, mov: 50, sta: 34 },
+      { name: "Vern Kennedy", role: "SP", pos: "SP", year: 1935, era: "Golden Era (1920-1941)", rarity: "Uncommon", team: "CHW", ovr: 64.3, hp: 114, maxHp: 114, stf: 22, ctl: 2, mov: 54, sta: 92 },
+      { name: "Dixie Davis", role: "SP", pos: "SP", year: 1920, era: "Golden Era (1920-1941)", rarity: "Uncommon", team: "BAL", ovr: 64.2, hp: 111, maxHp: 111, stf: 26, ctl: 1, mov: 46, sta: 88 },
+      { name: "Jamie Easterly", role: "RP", pos: "RP", year: 1983, era: "Big Hair Era (1977-1993)", rarity: "Uncommon", team: "ATL", ovr: 64.8, hp: 31, maxHp: 31, stf: 36, ctl: 17, mov: 50, sta: 34 },
     ]
   },
   {
     id: "opp_team_00297", name: "Buck Ross (1940)",
     tier: "D", isBoss: false,
     era: "Golden Era (1920-1941)", ovr: 65.3,
-    rarity: "Common", hof: false, allstars: 0,
+    rarity: "Uncommon", hof: false, allstars: 0,
     pitchers: [
       { name: "Joe Coleman", role: "SP", pos: "SP", year: 1948, era: "Integration (1942-1960)", rarity: "Uncommon", team: "OAK", ovr: 68.9, hp: 113, maxHp: 113, stf: 25, ctl: 28, mov: 51, sta: 90 },
-      { name: "Buck Ross", role: "SP", pos: "SP", year: 1940, era: "Golden Era (1920-1941)", rarity: "Common", team: "OAK", ovr: 64.0, hp: 111, maxHp: 111, stf: 10, ctl: 32, mov: 43, sta: 88 },
+      { name: "Buck Ross", role: "SP", pos: "SP", year: 1940, era: "Golden Era (1920-1941)", rarity: "Uncommon", team: "OAK", ovr: 64.0, hp: 111, maxHp: 111, stf: 10, ctl: 32, mov: 43, sta: 88 },
       { name: "Mike Munoz", role: "RP", pos: "RP", year: 1999, era: "Big Hair Era (1977-1993)", rarity: "Common", team: "COL", ovr: 63.1, hp: 29, maxHp: 29, stf: 35, ctl: 16, mov: 55, sta: 23 },
     ]
   },
@@ -3327,10 +3327,10 @@ window.OpponentsPool = [
     id: "opp_team_00302", name: "Phil Marchildon (1941)",
     tier: "D", isBoss: false,
     era: "Integration (1942-1960)", ovr: 65.6,
-    rarity: "Common", hof: false, allstars: 0,
+    rarity: "Uncommon", hof: false, allstars: 0,
     pitchers: [
       { name: "Carrenza Howard", role: "SP", pos: "SP", year: 1944, era: "Integration (1942-1960)", rarity: "Common", team: "NLB", ovr: 63.7, hp: 118, maxHp: 118, stf: 24, ctl: 2, mov: 36, sta: 97 },
-      { name: "Phil Marchildon", role: "SP", pos: "SP", year: 1941, era: "Integration (1942-1960)", rarity: "Common", team: "OAK", ovr: 64.8, hp: 113, maxHp: 113, stf: 22, ctl: 4, mov: 50, sta: 91 },
+      { name: "Phil Marchildon", role: "SP", pos: "SP", year: 1941, era: "Integration (1942-1960)", rarity: "Uncommon", team: "OAK", ovr: 64.8, hp: 113, maxHp: 113, stf: 22, ctl: 4, mov: 50, sta: 91 },
       { name: "Will Ohman", role: "RP", pos: "RP", year: 2005, era: "Efficiency Era (2006-2015)", rarity: "Uncommon", team: "CHC", ovr: 68.3, hp: 29, maxHp: 29, stf: 64, ctl: 22, mov: 57, sta: 22 },
     ]
   },
@@ -3349,10 +3349,10 @@ window.OpponentsPool = [
     id: "opp_team_00304", name: "Josiah Gray (2023)",
     tier: "D", isBoss: false,
     era: "Modern Era (2016-Pres)", ovr: 67.2,
-    rarity: "Common", hof: false, allstars: 1,
+    rarity: "Uncommon", hof: false, allstars: 1,
     pitchers: [
       { name: "Joe Mays", role: "SP", pos: "SP", year: 2001, era: "Steroid Era (1994-2005)", rarity: "Uncommon", team: "MIN", ovr: 68.9, hp: 105, maxHp: 105, stf: 13, ctl: 62, mov: 45, sta: 80 },
-      { name: "Josiah Gray", role: "SP", pos: "SP", year: 2023, era: "Modern Era (2016-Pres)", rarity: "Common", team: "WSH", ovr: 64.7, hp: 99, maxHp: 99, stf: 52, ctl: 15, mov: 32, sta: 72 },
+      { name: "Josiah Gray", role: "SP", pos: "SP", year: 2023, era: "Modern Era (2016-Pres)", rarity: "Uncommon", team: "WSH", ovr: 64.7, hp: 99, maxHp: 99, stf: 52, ctl: 15, mov: 32, sta: 72 },
       { name: "Franklin Morales", role: "RP", pos: "RP", year: 2007, era: "Efficiency Era (2006-2015)", rarity: "Uncommon", team: "COL", ovr: 68.1, hp: 30, maxHp: 30, stf: 42, ctl: 34, mov: 57, sta: 29 },
     ]
   },
@@ -3470,11 +3470,11 @@ window.OpponentsPool = [
     id: "opp_team_00315", name: "George Haddock (1891)",
     tier: "D", isBoss: false,
     era: "The Genesis Era (1871-1900)", ovr: 64.2,
-    rarity: "Common", hof: false, allstars: 0,
+    rarity: "Uncommon", hof: false, allstars: 0,
     pitchers: [
-      { name: "George Haddock", role: "SP", pos: "SP", year: 1891, era: "The Genesis Era (1871-1900)", rarity: "Common", team: "LAD", ovr: 64.9, hp: 117, maxHp: 117, stf: 34, ctl: 4, mov: 49, sta: 96 },
+      { name: "George Haddock", role: "SP", pos: "SP", year: 1891, era: "The Genesis Era (1871-1900)", rarity: "Uncommon", team: "LAD", ovr: 64.9, hp: 117, maxHp: 117, stf: 34, ctl: 4, mov: 49, sta: 96 },
       { name: "Bill Hart", role: "SP", pos: "SP", year: 1895, era: "The Genesis Era (1871-1900)", rarity: "Common", team: "STL", ovr: 63.3, hp: 118, maxHp: 118, stf: 12, ctl: 10, mov: 45, sta: 96 },
-      { name: "Tim Byrdak", role: "RP", pos: "RP", year: 2009, era: "Efficiency Era (2006-2015)", rarity: "Common", team: "NYM", ovr: 64.4, hp: 29, maxHp: 29, stf: 61, ctl: 1, mov: 60, sta: 22 },
+      { name: "Tim Byrdak", role: "RP", pos: "RP", year: 2009, era: "Efficiency Era (2006-2015)", rarity: "Uncommon", team: "NYM", ovr: 64.4, hp: 29, maxHp: 29, stf: 61, ctl: 1, mov: 60, sta: 22 },
     ]
   },
   {
@@ -3485,7 +3485,7 @@ window.OpponentsPool = [
     pitchers: [
       { name: "George Hemming", role: "SP", pos: "SP", year: 1894, era: "The Genesis Era (1871-1900)", rarity: "Common", team: "NLB", ovr: 61.9, hp: 124, maxHp: 124, stf: 2, ctl: 1, mov: 47, sta: 105 },
       { name: "Kid Carsey", role: "SP", pos: "SP", year: 1892, era: "The Genesis Era (1871-1900)", rarity: "Common", team: "PHI", ovr: 62.5, hp: 120, maxHp: 120, stf: 1, ctl: 35, mov: 37, sta: 99 },
-      { name: "David Aardsma", role: "RP", pos: "RP", year: 2009, era: "Efficiency Era (2006-2015)", rarity: "Common", team: "SEA", ovr: 64.2, hp: 30, maxHp: 30, stf: 62, ctl: 9, mov: 50, sta: 25 },
+      { name: "David Aardsma", role: "RP", pos: "RP", year: 2009, era: "Efficiency Era (2006-2015)", rarity: "Uncommon", team: "SEA", ovr: 64.2, hp: 30, maxHp: 30, stf: 62, ctl: 9, mov: 50, sta: 25 },
     ]
   },
   {
@@ -3495,8 +3495,8 @@ window.OpponentsPool = [
     rarity: "Rare", hof: false, allstars: 0,
     pitchers: [
       { name: "Oil Can Boyd", role: "SP", pos: "SP", year: 1985, era: "Big Hair Era (1977-1993)", rarity: "Rare", team: "BOS", ovr: 77.9, hp: 108, maxHp: 108, stf: 35, ctl: 77, mov: 55, sta: 84 },
-      { name: "Britt Burns", role: "SP", pos: "SP", year: 1980, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "CHW", ovr: 77.9, hp: 108, maxHp: 108, stf: 48, ctl: 58, mov: 57, sta: 84 },
-      { name: "Gary Lavelle", role: "RP", pos: "RP", year: 1977, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "SFG", ovr: 77.5, hp: 31, maxHp: 31, stf: 56, ctl: 43, mov: 78, sta: 30 },
+      { name: "Britt Burns", role: "SP", pos: "SP", year: 1980, era: "Big Hair Era (1977-1993)", rarity: "Rare", team: "CHW", ovr: 77.9, hp: 108, maxHp: 108, stf: 48, ctl: 58, mov: 57, sta: 84 },
+      { name: "Gary Lavelle", role: "RP", pos: "RP", year: 1977, era: "Big Hair Era (1977-1993)", rarity: "Rare", team: "SFG", ovr: 77.5, hp: 31, maxHp: 31, stf: 56, ctl: 43, mov: 78, sta: 30 },
     ]
   },
   {
@@ -3514,9 +3514,9 @@ window.OpponentsPool = [
     id: "opp_team_00319", name: "BOSS: Mark Fidrych (1976)",
     tier: "C", isBoss: true,
     era: "Big Hair Era (1977-1993)", ovr: 77.6,
-    rarity: "Epic", hof: false, allstars: 2,
+    rarity: "Rare", hof: false, allstars: 2,
     pitchers: [
-      { name: "Mark Fidrych", role: "SP", pos: "SP", year: 1976, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "DET", ovr: 77.8, hp: 111, maxHp: 111, stf: 9, ctl: 82, mov: 61, sta: 88 },
+      { name: "Mark Fidrych", role: "SP", pos: "SP", year: 1976, era: "Big Hair Era (1977-1993)", rarity: "Rare", team: "DET", ovr: 77.8, hp: 111, maxHp: 111, stf: 9, ctl: 82, mov: 61, sta: 88 },
       { name: "Mike Boddicker", role: "SP", pos: "SP", year: 1990, era: "Big Hair Era (1977-1993)", rarity: "Rare", team: "BAL", ovr: 77.7, hp: 108, maxHp: 108, stf: 38, ctl: 61, mov: 63, sta: 83 },
       { name: "Tom Niedenfuer", role: "RP", pos: "RP", year: 1983, era: "Big Hair Era (1977-1993)", rarity: "Rare", team: "LAD", ovr: 77.2, hp: 30, maxHp: 30, stf: 62, ctl: 57, mov: 69, sta: 29 },
     ]
@@ -3536,9 +3536,9 @@ window.OpponentsPool = [
     id: "opp_team_00321", name: "Rick Rhoden (1986)",
     tier: "C", isBoss: false,
     era: "Big Hair Era (1977-1993)", ovr: 77.3,
-    rarity: "Epic", hof: false, allstars: 2,
+    rarity: "Rare", hof: false, allstars: 2,
     pitchers: [
-      { name: "Rick Rhoden", role: "SP", pos: "SP", year: 1986, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "PIT", ovr: 77.6, hp: 109, maxHp: 109, stf: 32, ctl: 68, mov: 60, sta: 84 },
+      { name: "Rick Rhoden", role: "SP", pos: "SP", year: 1986, era: "Big Hair Era (1977-1993)", rarity: "Rare", team: "PIT", ovr: 77.6, hp: 109, maxHp: 109, stf: 32, ctl: 68, mov: 60, sta: 84 },
       { name: "Tim Belcher", role: "SP", pos: "SP", year: 1996, era: "Big Hair Era (1977-1993)", rarity: "Rare", team: "LAD", ovr: 77.5, hp: 108, maxHp: 108, stf: 47, ctl: 54, mov: 60, sta: 83 },
       { name: "Al Holland", role: "RP", pos: "RP", year: 1983, era: "Big Hair Era (1977-1993)", rarity: "Rare", team: "SFG", ovr: 76.7, hp: 31, maxHp: 31, stf: 65, ctl: 50, mov: 67, sta: 32 },
     ]
@@ -3547,9 +3547,9 @@ window.OpponentsPool = [
     id: "opp_team_00322", name: "BOSS: Danny Jackson (1988)",
     tier: "C", isBoss: true,
     era: "Big Hair Era (1977-1993)", ovr: 77.1,
-    rarity: "Epic", hof: false, allstars: 2,
+    rarity: "Rare", hof: false, allstars: 2,
     pitchers: [
-      { name: "Danny Jackson", role: "SP", pos: "SP", year: 1988, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "KCR", ovr: 77.5, hp: 107, maxHp: 107, stf: 41, ctl: 49, mov: 64, sta: 83 },
+      { name: "Danny Jackson", role: "SP", pos: "SP", year: 1988, era: "Big Hair Era (1977-1993)", rarity: "Rare", team: "KCR", ovr: 77.5, hp: 107, maxHp: 107, stf: 41, ctl: 49, mov: 64, sta: 83 },
       { name: "Tom Browning", role: "SP", pos: "SP", year: 1990, era: "Big Hair Era (1977-1993)", rarity: "Rare", team: "CIN", ovr: 77.4, hp: 107, maxHp: 107, stf: 24, ctl: 77, mov: 65, sta: 82 },
       { name: "Tony Castillo", role: "RP", pos: "RP", year: 1995, era: "Big Hair Era (1977-1993)", rarity: "Rare", team: "TOR", ovr: 76.3, hp: 30, maxHp: 30, stf: 42, ctl: 61, mov: 81, sta: 29 },
     ]
@@ -3910,10 +3910,10 @@ window.OpponentsPool = [
     id: "opp_team_00355", name: "Dan Petry (1982)",
     tier: "C", isBoss: false,
     era: "Big Hair Era (1977-1993)", ovr: 72.0,
-    rarity: "Rare", hof: false, allstars: 1,
+    rarity: "Uncommon", hof: false, allstars: 1,
     pitchers: [
-      { name: "Jim Slaton", role: "SP", pos: "SP", year: 1976, era: "Big Hair Era (1977-1993)", rarity: "Rare", team: "MIL", ovr: 71.7, hp: 112, maxHp: 112, stf: 14, ctl: 54, mov: 53, sta: 89 },
-      { name: "Dan Petry", role: "SP", pos: "SP", year: 1982, era: "Big Hair Era (1977-1993)", rarity: "Rare", team: "DET", ovr: 71.9, hp: 108, maxHp: 108, stf: 24, ctl: 46, mov: 60, sta: 84 },
+      { name: "Jim Slaton", role: "SP", pos: "SP", year: 1976, era: "Big Hair Era (1977-1993)", rarity: "Uncommon", team: "MIL", ovr: 71.7, hp: 112, maxHp: 112, stf: 14, ctl: 54, mov: 53, sta: 89 },
+      { name: "Dan Petry", role: "SP", pos: "SP", year: 1982, era: "Big Hair Era (1977-1993)", rarity: "Uncommon", team: "DET", ovr: 71.9, hp: 108, maxHp: 108, stf: 24, ctl: 46, mov: 60, sta: 84 },
       { name: "Roger McDowell", role: "RP", pos: "RP", year: 1985, era: "Big Hair Era (1977-1993)", rarity: "Rare", team: "NYM", ovr: 72.4, hp: 31, maxHp: 31, stf: 23, ctl: 45, mov: 77, sta: 30 },
     ]
   },
@@ -3958,7 +3958,7 @@ window.OpponentsPool = [
     pitchers: [
       { name: "Rick Waits", role: "SP", pos: "SP", year: 1978, era: "Big Hair Era (1977-1993)", rarity: "Uncommon", team: "CLE", ovr: 70.9, hp: 112, maxHp: 112, stf: 16, ctl: 41, mov: 53, sta: 89 },
       { name: "Mike Norris", role: "SP", pos: "SP", year: 1980, era: "Big Hair Era (1977-1993)", rarity: "Uncommon", team: "OAK", ovr: 70.8, hp: 112, maxHp: 112, stf: 34, ctl: 39, mov: 44, sta: 89 },
-      { name: "George Frazier", role: "RP", pos: "RP", year: 1983, era: "Big Hair Era (1977-1993)", rarity: "Rare", team: "STL", ovr: 71.9, hp: 31, maxHp: 31, stf: 46, ctl: 37, mov: 66, sta: 32 },
+      { name: "George Frazier", role: "RP", pos: "RP", year: 1983, era: "Big Hair Era (1977-1993)", rarity: "Uncommon", team: "STL", ovr: 71.9, hp: 31, maxHp: 31, stf: 46, ctl: 37, mov: 66, sta: 32 },
     ]
   },
   {
@@ -3969,7 +3969,7 @@ window.OpponentsPool = [
     pitchers: [
       { name: "Mike LaCoss", role: "SP", pos: "SP", year: 1979, era: "Big Hair Era (1977-1993)", rarity: "Uncommon", team: "SFG", ovr: 70.5, hp: 110, maxHp: 110, stf: 20, ctl: 35, mov: 50, sta: 87 },
       { name: "Jack Armstrong", role: "SP", pos: "SP", year: 1990, era: "Big Hair Era (1977-1993)", rarity: "Uncommon", team: "CIN", ovr: 70.6, hp: 103, maxHp: 103, stf: 44, ctl: 38, mov: 45, sta: 78 },
-      { name: "Bobby Thigpen", role: "RP", pos: "RP", year: 1990, era: "Big Hair Era (1977-1993)", rarity: "Rare", team: "CHW", ovr: 71.9, hp: 30, maxHp: 30, stf: 45, ctl: 39, mov: 80, sta: 28 },
+      { name: "Bobby Thigpen", role: "RP", pos: "RP", year: 1990, era: "Big Hair Era (1977-1993)", rarity: "Uncommon", team: "CHW", ovr: 71.9, hp: 30, maxHp: 30, stf: 45, ctl: 39, mov: 80, sta: 28 },
     ]
   },
   {
@@ -4090,7 +4090,7 @@ window.OpponentsPool = [
     pitchers: [
       { name: "Lefty Leifield", role: "SP", pos: "SP", year: 1911, era: "Deadball (1901-1919)", rarity: "Rare", team: "PIT", ovr: 75.8, hp: 118, maxHp: 118, stf: 23, ctl: 50, mov: 62, sta: 96 },
       { name: "Lefty Tyler", role: "SP", pos: "SP", year: 1918, era: "Deadball (1901-1919)", rarity: "Rare", team: "ATL", ovr: 75.8, hp: 117, maxHp: 117, stf: 43, ctl: 39, mov: 56, sta: 96 },
-      { name: "Glen Perkins", role: "RP", pos: "RP", year: 2013, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "MIN", ovr: 77.8, hp: 30, maxHp: 30, stf: 52, ctl: 80, mov: 75, sta: 28 },
+      { name: "Glen Perkins", role: "RP", pos: "RP", year: 2013, era: "Efficiency Era (2006-2015)", rarity: "Rare", team: "MIN", ovr: 77.8, hp: 30, maxHp: 30, stf: 52, ctl: 80, mov: 75, sta: 28 },
     ]
   },
   {
@@ -4199,7 +4199,7 @@ window.OpponentsPool = [
     rarity: "Rare", hof: false, allstars: 0,
     pitchers: [
       { name: "Jim Shaw", role: "SP", pos: "SP", year: 1919, era: "Deadball (1901-1919)", rarity: "Rare", team: "MIN", ovr: 72.0, hp: 116, maxHp: 116, stf: 50, ctl: 11, mov: 53, sta: 95 },
-      { name: "Harry Harper", role: "SP", pos: "SP", year: 1916, era: "Deadball (1901-1919)", rarity: "Rare", team: "MIN", ovr: 71.9, hp: 111, maxHp: 111, stf: 56, ctl: 1, mov: 60, sta: 88 },
+      { name: "Harry Harper", role: "SP", pos: "SP", year: 1916, era: "Deadball (1901-1919)", rarity: "Uncommon", team: "MIN", ovr: 71.9, hp: 111, maxHp: 111, stf: 56, ctl: 1, mov: 60, sta: 88 },
       { name: "Jim Johnson", role: "RP", pos: "RP", year: 2011, era: "Efficiency Era (2006-2015)", rarity: "Rare", team: "BAL", ovr: 76.9, hp: 30, maxHp: 30, stf: 32, ctl: 71, mov: 81, sta: 26 },
     ]
   },
@@ -4231,7 +4231,7 @@ window.OpponentsPool = [
     era: "Efficiency Era (2006-2015)", ovr: 77.5,
     rarity: "Rare", hof: false, allstars: 0,
     pitchers: [
-      { name: "Yovani Gallardo", role: "SP", pos: "SP", year: 2015, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "MIL", ovr: 77.9, hp: 103, maxHp: 103, stf: 60, ctl: 48, mov: 59, sta: 78 },
+      { name: "Yovani Gallardo", role: "SP", pos: "SP", year: 2015, era: "Efficiency Era (2006-2015)", rarity: "Rare", team: "MIL", ovr: 77.9, hp: 103, maxHp: 103, stf: 60, ctl: 48, mov: 59, sta: 78 },
       { name: "Wei-Yin Chen", role: "SP", pos: "SP", year: 2015, era: "Efficiency Era (2006-2015)", rarity: "Rare", team: "MIA", ovr: 77.9, hp: 102, maxHp: 102, stf: 41, ctl: 79, mov: 50, sta: 76 },
       { name: "Russ Springer", role: "RP", pos: "RP", year: 2007, era: "Efficiency Era (2006-2015)", rarity: "Rare", team: "HOU", ovr: 76.7, hp: 29, maxHp: 29, stf: 51, ctl: 58, mov: 79, sta: 24 },
     ]
@@ -4240,9 +4240,9 @@ window.OpponentsPool = [
     id: "opp_team_00385", name: "C. J. Wilson (2010)",
     tier: "C", isBoss: false,
     era: "Efficiency Era (2006-2015)", ovr: 77.4,
-    rarity: "Epic", hof: false, allstars: 2,
+    rarity: "Rare", hof: false, allstars: 2,
     pitchers: [
-      { name: "C. J. Wilson", role: "SP", pos: "SP", year: 2010, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "TEX", ovr: 77.9, hp: 105, maxHp: 105, stf: 54, ctl: 38, mov: 69, sta: 79 },
+      { name: "C. J. Wilson", role: "SP", pos: "SP", year: 2010, era: "Efficiency Era (2006-2015)", rarity: "Rare", team: "TEX", ovr: 77.9, hp: 105, maxHp: 105, stf: 54, ctl: 38, mov: 69, sta: 79 },
       { name: "Kyle Lohse", role: "SP", pos: "SP", year: 2012, era: "Efficiency Era (2006-2015)", rarity: "Rare", team: "MIN", ovr: 77.7, hp: 104, maxHp: 104, stf: 22, ctl: 83, mov: 57, sta: 78 },
       { name: "Kiko Calero", role: "RP", pos: "RP", year: 2009, era: "Efficiency Era (2006-2015)", rarity: "Rare", team: "OAK", ovr: 76.5, hp: 29, maxHp: 29, stf: 72, ctl: 35, mov: 76, sta: 25 },
     ]
@@ -4515,9 +4515,9 @@ window.OpponentsPool = [
     id: "opp_team_00410", name: "Hector Santiago (2013)",
     tier: "C", isBoss: false,
     era: "Efficiency Era (2006-2015)", ovr: 72.2,
-    rarity: "Rare", hof: false, allstars: 1,
+    rarity: "Uncommon", hof: false, allstars: 1,
     pitchers: [
-      { name: "Hector Santiago", role: "SP", pos: "SP", year: 2013, era: "Efficiency Era (2006-2015)", rarity: "Rare", team: "CHW", ovr: 71.8, hp: 107, maxHp: 107, stf: 56, ctl: 23, mov: 55, sta: 83 },
+      { name: "Hector Santiago", role: "SP", pos: "SP", year: 2013, era: "Efficiency Era (2006-2015)", rarity: "Uncommon", team: "CHW", ovr: 71.8, hp: 107, maxHp: 107, stf: 56, ctl: 23, mov: 55, sta: 83 },
       { name: "Mike Pelfrey", role: "SP", pos: "SP", year: 2008, era: "Efficiency Era (2006-2015)", rarity: "Uncommon", team: "NYM", ovr: 70.6, hp: 102, maxHp: 102, stf: 12, ctl: 59, mov: 52, sta: 76 },
       { name: "Alexi Ogando", role: "RP", pos: "RP", year: 2011, era: "Efficiency Era (2006-2015)", rarity: "Rare", team: "TEX", ovr: 74.3, hp: 31, maxHp: 31, stf: 42, ctl: 51, mov: 77, sta: 34 },
     ]
@@ -4548,10 +4548,10 @@ window.OpponentsPool = [
     id: "opp_team_00413", name: "Joe Coleman (1973)",
     tier: "C", isBoss: false,
     era: "Expansion (1961-1976)", ovr: 76.6,
-    rarity: "Epic", hof: false, allstars: 1,
+    rarity: "Rare", hof: false, allstars: 1,
     pitchers: [
-      { name: "Bob Shaw", role: "SP", pos: "SP", year: 1965, era: "Expansion (1961-1976)", rarity: "Epic", team: "CHW", ovr: 77.8, hp: 115, maxHp: 115, stf: 20, ctl: 71, mov: 62, sta: 92 },
-      { name: "Joe Coleman", role: "SP", pos: "SP", year: 1973, era: "Expansion (1961-1976)", rarity: "Epic", team: "TEX", ovr: 77.8, hp: 111, maxHp: 111, stf: 56, ctl: 51, mov: 57, sta: 88 },
+      { name: "Bob Shaw", role: "SP", pos: "SP", year: 1965, era: "Expansion (1961-1976)", rarity: "Rare", team: "CHW", ovr: 77.8, hp: 115, maxHp: 115, stf: 20, ctl: 71, mov: 62, sta: 92 },
+      { name: "Joe Coleman", role: "SP", pos: "SP", year: 1973, era: "Expansion (1961-1976)", rarity: "Rare", team: "TEX", ovr: 77.8, hp: 111, maxHp: 111, stf: 56, ctl: 51, mov: 57, sta: 88 },
       { name: "Craig Breslow", role: "RP", pos: "RP", year: 2013, era: "Efficiency Era (2006-2015)", rarity: "Rare", team: "BOS", ovr: 74.1, hp: 30, maxHp: 30, stf: 41, ctl: 48, mov: 82, sta: 25 },
     ]
   },
@@ -4603,9 +4603,9 @@ window.OpponentsPool = [
     id: "opp_team_00418", name: "Gary Bell (1966)",
     tier: "C", isBoss: false,
     era: "Expansion (1961-1976)", ovr: 75.6,
-    rarity: "Epic", hof: false, allstars: 4,
+    rarity: "Rare", hof: false, allstars: 4,
     pitchers: [
-      { name: "Gary Bell", role: "SP", pos: "SP", year: 1966, era: "Expansion (1961-1976)", rarity: "Epic", team: "CLE", ovr: 76.8, hp: 114, maxHp: 114, stf: 49, ctl: 44, mov: 55, sta: 92 },
+      { name: "Gary Bell", role: "SP", pos: "SP", year: 1966, era: "Expansion (1961-1976)", rarity: "Rare", team: "CLE", ovr: 76.8, hp: 114, maxHp: 114, stf: 49, ctl: 44, mov: 55, sta: 92 },
       { name: "John Buzhardt", role: "SP", pos: "SP", year: 1963, era: "Expansion (1961-1976)", rarity: "Rare", team: "CHW", ovr: 76.7, hp: 107, maxHp: 107, stf: 19, ctl: 64, mov: 66, sta: 83 },
       { name: "Burke Badenhop", role: "RP", pos: "RP", year: 2014, era: "Efficiency Era (2006-2015)", rarity: "Rare", team: "MIA", ovr: 73.3, hp: 30, maxHp: 30, stf: 27, ctl: 71, mov: 62, sta: 26 },
     ]
@@ -4625,9 +4625,9 @@ window.OpponentsPool = [
     id: "opp_team_00420", name: "Mel Stottlemyre (1965)",
     tier: "C", isBoss: false,
     era: "Expansion (1961-1976)", ovr: 75.5,
-    rarity: "Epic", hof: false, allstars: 5,
+    rarity: "Rare", hof: false, allstars: 5,
     pitchers: [
-      { name: "Mel Stottlemyre", role: "SP", pos: "SP", year: 1965, era: "Expansion (1961-1976)", rarity: "Epic", team: "NYY", ovr: 76.6, hp: 112, maxHp: 112, stf: 17, ctl: 67, mov: 61, sta: 89 },
+      { name: "Mel Stottlemyre", role: "SP", pos: "SP", year: 1965, era: "Expansion (1961-1976)", rarity: "Rare", team: "NYY", ovr: 76.6, hp: 112, maxHp: 112, stf: 17, ctl: 67, mov: 61, sta: 89 },
       { name: "Jack Kralick", role: "SP", pos: "SP", year: 1961, era: "Expansion (1961-1976)", rarity: "Rare", team: "CLE", ovr: 76.5, hp: 111, maxHp: 111, stf: 32, ctl: 76, mov: 53, sta: 87 },
       { name: "Boone Logan", role: "RP", pos: "RP", year: 2010, era: "Efficiency Era (2006-2015)", rarity: "Rare", team: "NYY", ovr: 73.3, hp: 29, maxHp: 29, stf: 75, ctl: 33, mov: 64, sta: 22 },
     ]
@@ -4878,9 +4878,9 @@ window.OpponentsPool = [
     id: "opp_team_00443", name: "Clyde Wright (1970)",
     tier: "C", isBoss: false,
     era: "Expansion (1961-1976)", ovr: 71.6,
-    rarity: "Rare", hof: false, allstars: 1,
+    rarity: "Uncommon", hof: false, allstars: 1,
     pitchers: [
-      { name: "Clyde Wright", role: "SP", pos: "SP", year: 1970, era: "Expansion (1961-1976)", rarity: "Rare", team: "LAA", ovr: 71.8, hp: 110, maxHp: 110, stf: 1, ctl: 66, mov: 50, sta: 86 },
+      { name: "Clyde Wright", role: "SP", pos: "SP", year: 1970, era: "Expansion (1961-1976)", rarity: "Uncommon", team: "LAA", ovr: 71.8, hp: 110, maxHp: 110, stf: 1, ctl: 66, mov: 50, sta: 86 },
       { name: "Bill Bonham", role: "SP", pos: "SP", year: 1973, era: "Expansion (1961-1976)", rarity: "Uncommon", team: "CHC", ovr: 71.7, hp: 107, maxHp: 107, stf: 46, ctl: 32, mov: 50, sta: 82 },
       { name: "Ryan Cook", role: "RP", pos: "RP", year: 2012, era: "Efficiency Era (2006-2015)", rarity: "Uncommon", team: "OAK", ovr: 71.2, hp: 29, maxHp: 29, stf: 66, ctl: 32, mov: 52, sta: 24 },
     ]
@@ -4889,10 +4889,10 @@ window.OpponentsPool = [
     id: "opp_team_00444", name: "Ken McBride (1961)",
     tier: "C", isBoss: false,
     era: "Expansion (1961-1976)", ovr: 71.3,
-    rarity: "Rare", hof: false, allstars: 3,
+    rarity: "Uncommon", hof: false, allstars: 3,
     pitchers: [
       { name: "Steve Stone", role: "SP", pos: "SP", year: 1980, era: "Expansion (1961-1976)", rarity: "Uncommon", team: "CHC", ovr: 71.2, hp: 109, maxHp: 109, stf: 42, ctl: 38, mov: 50, sta: 86 },
-      { name: "Ken McBride", role: "SP", pos: "SP", year: 1961, era: "Expansion (1961-1976)", rarity: "Rare", team: "LAA", ovr: 71.6, hp: 106, maxHp: 106, stf: 42, ctl: 24, mov: 49, sta: 82 },
+      { name: "Ken McBride", role: "SP", pos: "SP", year: 1961, era: "Expansion (1961-1976)", rarity: "Uncommon", team: "LAA", ovr: 71.6, hp: 106, maxHp: 106, stf: 42, ctl: 24, mov: 49, sta: 82 },
       { name: "Nick Masset", role: "RP", pos: "RP", year: 2009, era: "Efficiency Era (2006-2015)", rarity: "Uncommon", team: "CIN", ovr: 71.0, hp: 30, maxHp: 30, stf: 47, ctl: 34, mov: 67, sta: 26 },
     ]
   },
@@ -4922,10 +4922,10 @@ window.OpponentsPool = [
     id: "opp_team_00447", name: "BOSS: Bill Hallahan (1931)",
     tier: "C", isBoss: true,
     era: "Golden Era (1920-1941)", ovr: 75.5,
-    rarity: "Epic", hof: false, allstars: 1,
+    rarity: "Rare", hof: false, allstars: 1,
     pitchers: [
-      { name: "Bill Walker", role: "SP", pos: "SP", year: 1931, era: "Golden Era (1920-1941)", rarity: "Epic", team: "SFG", ovr: 77.8, hp: 114, maxHp: 114, stf: 46, ctl: 43, mov: 65, sta: 92 },
-      { name: "Bill Hallahan", role: "SP", pos: "SP", year: 1931, era: "Golden Era (1920-1941)", rarity: "Epic", team: "STL", ovr: 77.9, hp: 112, maxHp: 112, stf: 75, ctl: 21, mov: 58, sta: 90 },
+      { name: "Bill Walker", role: "SP", pos: "SP", year: 1931, era: "Golden Era (1920-1941)", rarity: "Rare", team: "SFG", ovr: 77.8, hp: 114, maxHp: 114, stf: 46, ctl: 43, mov: 65, sta: 92 },
+      { name: "Bill Hallahan", role: "SP", pos: "SP", year: 1931, era: "Golden Era (1920-1941)", rarity: "Rare", team: "STL", ovr: 77.9, hp: 112, maxHp: 112, stf: 75, ctl: 21, mov: 58, sta: 90 },
       { name: "John Axford", role: "RP", pos: "RP", year: 2011, era: "Efficiency Era (2006-2015)", rarity: "Uncommon", team: "MIL", ovr: 70.7, hp: 30, maxHp: 30, stf: 79, ctl: 13, mov: 61, sta: 25 },
     ]
   },
@@ -4944,10 +4944,10 @@ window.OpponentsPool = [
     id: "opp_team_00449", name: "Bobo Newsom (1939)",
     tier: "C", isBoss: false,
     era: "Golden Era (1920-1941)", ovr: 75.2,
-    rarity: "Epic", hof: false, allstars: 4,
+    rarity: "Rare", hof: false, allstars: 4,
     pitchers: [
       { name: "Bullet Joe Bush", role: "SP", pos: "SP", year: 1916, era: "Golden Era (1920-1941)", rarity: "Rare", team: "OAK", ovr: 77.5, hp: 117, maxHp: 117, stf: 48, ctl: 31, mov: 61, sta: 96 },
-      { name: "Bobo Newsom", role: "SP", pos: "SP", year: 1939, era: "Golden Era (1920-1941)", rarity: "Epic", team: "MIN", ovr: 77.6, hp: 114, maxHp: 114, stf: 86, ctl: 11, mov: 63, sta: 92 },
+      { name: "Bobo Newsom", role: "SP", pos: "SP", year: 1939, era: "Golden Era (1920-1941)", rarity: "Rare", team: "MIN", ovr: 77.6, hp: 114, maxHp: 114, stf: 86, ctl: 11, mov: 63, sta: 92 },
       { name: "Joe Beimel", role: "RP", pos: "RP", year: 2008, era: "Efficiency Era (2006-2015)", rarity: "Uncommon", team: "PIT", ovr: 70.6, hp: 29, maxHp: 29, stf: 11, ctl: 54, mov: 82, sta: 23 },
     ]
   },
@@ -5234,7 +5234,7 @@ window.OpponentsPool = [
     pitchers: [
       { name: "Bob Smith", role: "SP", pos: "SP", year: 1930, era: "Golden Era (1920-1941)", rarity: "Rare", team: "ATL", ovr: 73.5, hp: 120, maxHp: 120, stf: 13, ctl: 61, mov: 55, sta: 100 },
       { name: "Joe Shaute", role: "SP", pos: "SP", year: 1924, era: "Golden Era (1920-1941)", rarity: "Rare", team: "CLE", ovr: 73.5, hp: 116, maxHp: 116, stf: 11, ctl: 59, mov: 53, sta: 95 },
-      { name: "Wes Stock", role: "RP", pos: "RP", year: 1964, era: "Expansion (1961-1976)", rarity: "Rare", team: "BAL", ovr: 71.9, hp: 31, maxHp: 31, stf: 61, ctl: 32, mov: 55, sta: 31 },
+      { name: "Wes Stock", role: "RP", pos: "RP", year: 1964, era: "Expansion (1961-1976)", rarity: "Uncommon", team: "BAL", ovr: 71.9, hp: 31, maxHp: 31, stf: 61, ctl: 32, mov: 55, sta: 31 },
     ]
   },
   {
@@ -5285,10 +5285,10 @@ window.OpponentsPool = [
     id: "opp_team_00480", name: "Jimmy Ring (1923)",
     tier: "C", isBoss: false,
     era: "Golden Era (1920-1941)", ovr: 72.8,
-    rarity: "Rare", hof: false, allstars: 0,
+    rarity: "Uncommon", hof: false, allstars: 0,
     pitchers: [
       { name: "Elam Vangilder", role: "SP", pos: "SP", year: 1923, era: "Golden Era (1920-1941)", rarity: "Uncommon", team: "BAL", ovr: 71.7, hp: 123, maxHp: 123, stf: 12, ctl: 34, mov: 62, sta: 103 },
-      { name: "Jimmy Ring", role: "SP", pos: "SP", year: 1923, era: "Golden Era (1920-1941)", rarity: "Rare", team: "PHI", ovr: 71.9, hp: 114, maxHp: 114, stf: 29, ctl: 34, mov: 56, sta: 92 },
+      { name: "Jimmy Ring", role: "SP", pos: "SP", year: 1923, era: "Golden Era (1920-1941)", rarity: "Uncommon", team: "PHI", ovr: 71.9, hp: 114, maxHp: 114, stf: 29, ctl: 34, mov: 56, sta: 92 },
       { name: "Frank Ulrich", role: "RP", pos: "RP", year: 1927, era: "Golden Era (1920-1941)", rarity: "Rare", team: "PHI", ovr: 74.7, hp: 32, maxHp: 32, stf: 22, ctl: 84, mov: 69, sta: 35 },
     ]
   },
@@ -5309,7 +5309,7 @@ window.OpponentsPool = [
     era: "Golden Era (1920-1941)", ovr: 71.9,
     rarity: "Uncommon", hof: false, allstars: 1,
     pitchers: [
-      { name: "George Mitchell", role: "SP", pos: "SP", year: 1927, era: "Golden Era (1920-1941)", rarity: "Rare", team: "HIST", ovr: 71.3, hp: 120, maxHp: 120, stf: 13, ctl: 34, mov: 59, sta: 100 },
+      { name: "George Mitchell", role: "SP", pos: "SP", year: 1927, era: "Golden Era (1920-1941)", rarity: "Uncommon", team: "HIST", ovr: 71.3, hp: 120, maxHp: 120, stf: 13, ctl: 34, mov: 59, sta: 100 },
       { name: "Oral Hildebrand", role: "SP", pos: "SP", year: 1933, era: "Golden Era (1920-1941)", rarity: "Uncommon", team: "CLE", ovr: 71.3, hp: 114, maxHp: 114, stf: 33, ctl: 24, mov: 60, sta: 91 },
       { name: "Harry Eisenstat", role: "RP", pos: "RP", year: 1938, era: "Golden Era (1920-1941)", rarity: "Rare", team: "CLE", ovr: 73.1, hp: 32, maxHp: 32, stf: 27, ctl: 80, mov: 54, sta: 35 },
     ]
@@ -5322,7 +5322,7 @@ window.OpponentsPool = [
     pitchers: [
       { name: "Joe Genewich", role: "SP", pos: "SP", year: 1923, era: "Golden Era (1920-1941)", rarity: "Uncommon", team: "ATL", ovr: 71.2, hp: 118, maxHp: 118, stf: 1, ctl: 68, mov: 45, sta: 98 },
       { name: "Ken Chase", role: "SP", pos: "SP", year: 1940, era: "Golden Era (1920-1941)", rarity: "Uncommon", team: "MIN", ovr: 71.1, hp: 111, maxHp: 111, stf: 66, ctl: 1, mov: 45, sta: 88 },
-      { name: "Ryne Duren", role: "RP", pos: "RP", year: 1959, era: "Integration (1942-1960)", rarity: "Epic", team: "NYY", ovr: 77.8, hp: 32, maxHp: 32, stf: 125, ctl: 1, mov: 57, sta: 35 },
+      { name: "Ryne Duren", role: "RP", pos: "RP", year: 1959, era: "Integration (1942-1960)", rarity: "Rare", team: "NYY", ovr: 77.8, hp: 32, maxHp: 32, stf: 125, ctl: 1, mov: 57, sta: 35 },
     ]
   },
   {
@@ -5362,10 +5362,10 @@ window.OpponentsPool = [
     id: "opp_team_00487", name: "BOSS: Gentry Jessup (1946)",
     tier: "C", isBoss: true,
     era: "Integration (1942-1960)", ovr: 76.8,
-    rarity: "Epic", hof: false, allstars: 6,
+    rarity: "Rare", hof: false, allstars: 6,
     pitchers: [
-      { name: "Bob Grim", role: "SP", pos: "SP", year: 1957, era: "Integration (1942-1960)", rarity: "Epic", team: "NYY", ovr: 77.7, hp: 124, maxHp: 124, stf: 56, ctl: 35, mov: 53, sta: 105 },
-      { name: "Gentry Jessup", role: "SP", pos: "SP", year: 1946, era: "Integration (1942-1960)", rarity: "Epic", team: "NLB", ovr: 77.9, hp: 116, maxHp: 116, stf: 34, ctl: 57, mov: 50, sta: 94 },
+      { name: "Bob Grim", role: "SP", pos: "SP", year: 1957, era: "Integration (1942-1960)", rarity: "Rare", team: "NYY", ovr: 77.7, hp: 124, maxHp: 124, stf: 56, ctl: 35, mov: 53, sta: 105 },
+      { name: "Gentry Jessup", role: "SP", pos: "SP", year: 1946, era: "Integration (1942-1960)", rarity: "Rare", team: "NLB", ovr: 77.9, hp: 116, maxHp: 116, stf: 34, ctl: 57, mov: 50, sta: 94 },
       { name: "Don Elston", role: "RP", pos: "RP", year: 1957, era: "Integration (1942-1960)", rarity: "Rare", team: "CHC", ovr: 74.9, hp: 31, maxHp: 31, stf: 83, ctl: 41, mov: 55, sta: 33 },
     ]
   },
@@ -5376,7 +5376,7 @@ window.OpponentsPool = [
     rarity: "Rare", hof: false, allstars: 0,
     pitchers: [
       { name: "Jack Harshman", role: "SP", pos: "SP", year: 1956, era: "Integration (1942-1960)", rarity: "Rare", team: "CHW", ovr: 77.7, hp: 114, maxHp: 114, stf: 70, ctl: 31, mov: 51, sta: 92 },
-      { name: "Connie Johnson", role: "SP", pos: "SP", year: 1956, era: "Integration (1942-1960)", rarity: "Epic", team: "NLB", ovr: 77.7, hp: 112, maxHp: 112, stf: 61, ctl: 44, mov: 59, sta: 89 },
+      { name: "Connie Johnson", role: "SP", pos: "SP", year: 1956, era: "Integration (1942-1960)", rarity: "Rare", team: "NLB", ovr: 77.7, hp: 112, maxHp: 112, stf: 61, ctl: 44, mov: 59, sta: 89 },
       { name: "Fritz Dorish", role: "RP", pos: "RP", year: 1952, era: "Integration (1942-1960)", rarity: "Rare", team: "CHW", ovr: 74.1, hp: 32, maxHp: 32, stf: 27, ctl: 55, mov: 79, sta: 35 },
     ]
   },
@@ -5395,10 +5395,10 @@ window.OpponentsPool = [
     id: "opp_team_00490", name: "Bob Turley (1958)",
     tier: "C", isBoss: false,
     era: "Integration (1942-1960)", ovr: 76.0,
-    rarity: "Epic", hof: false, allstars: 3,
+    rarity: "Rare", hof: false, allstars: 3,
     pitchers: [
-      { name: "Bob Turley", role: "SP", pos: "SP", year: 1958, era: "Integration (1942-1960)", rarity: "Epic", team: "NYY", ovr: 77.2, hp: 111, maxHp: 111, stf: 90, ctl: 1, mov: 60, sta: 88 },
-      { name: "Johnny Vander Meer", role: "SP", pos: "SP", year: 1948, era: "Integration (1942-1960)", rarity: "Epic", team: "CIN", ovr: 77.2, hp: 111, maxHp: 111, stf: 63, ctl: 21, mov: 60, sta: 88 },
+      { name: "Bob Turley", role: "SP", pos: "SP", year: 1958, era: "Integration (1942-1960)", rarity: "Rare", team: "NYY", ovr: 77.2, hp: 111, maxHp: 111, stf: 90, ctl: 1, mov: 60, sta: 88 },
+      { name: "Johnny Vander Meer", role: "SP", pos: "SP", year: 1948, era: "Integration (1942-1960)", rarity: "Rare", team: "CIN", ovr: 77.2, hp: 111, maxHp: 111, stf: 63, ctl: 21, mov: 60, sta: 88 },
       { name: "Ted Wilks", role: "RP", pos: "RP", year: 1948, era: "Integration (1942-1960)", rarity: "Rare", team: "STL", ovr: 73.6, hp: 32, maxHp: 32, stf: 28, ctl: 66, mov: 66, sta: 35 },
     ]
   },
@@ -5417,10 +5417,10 @@ window.OpponentsPool = [
     id: "opp_team_00492", name: "BOSS: Bud Daley (1959)",
     tier: "C", isBoss: true,
     era: "Integration (1942-1960)", ovr: 75.7,
-    rarity: "Epic", hof: false, allstars: 4,
+    rarity: "Rare", hof: false, allstars: 4,
     pitchers: [
       { name: "Bob Muncrief", role: "SP", pos: "SP", year: 1941, era: "Integration (1942-1960)", rarity: "Rare", team: "BAL", ovr: 76.9, hp: 119, maxHp: 119, stf: 15, ctl: 76, mov: 56, sta: 98 },
-      { name: "Bud Daley", role: "SP", pos: "SP", year: 1959, era: "Integration (1942-1960)", rarity: "Epic", team: "NYY", ovr: 76.9, hp: 117, maxHp: 117, stf: 52, ctl: 62, mov: 38, sta: 95 },
+      { name: "Bud Daley", role: "SP", pos: "SP", year: 1959, era: "Integration (1942-1960)", rarity: "Rare", team: "NYY", ovr: 76.9, hp: 117, maxHp: 117, stf: 52, ctl: 62, mov: 38, sta: 95 },
       { name: "Joe Berry", role: "RP", pos: "RP", year: 1944, era: "Integration (1942-1960)", rarity: "Rare", team: "OAK", ovr: 73.4, hp: 32, maxHp: 32, stf: 26, ctl: 70, mov: 59, sta: 35 },
     ]
   },
@@ -5430,7 +5430,7 @@ window.OpponentsPool = [
     era: "Integration (1942-1960)", ovr: 75.2,
     rarity: "Rare", hof: false, allstars: 3,
     pitchers: [
-      { name: "Bob Lemon", role: "SP", pos: "SP", year: 1949, era: "Integration (1942-1960)", rarity: "Epic", team: "CLE", ovr: 76.6, hp: 115, maxHp: 115, stf: 29, ctl: 42, mov: 69, sta: 93 },
+      { name: "Bob Lemon", role: "SP", pos: "SP", year: 1949, era: "Integration (1942-1960)", rarity: "Rare", team: "CLE", ovr: 76.6, hp: 115, maxHp: 115, stf: 29, ctl: 42, mov: 69, sta: 93 },
       { name: "Red Munger", role: "SP", pos: "SP", year: 1947, era: "Integration (1942-1960)", rarity: "Rare", team: "STL", ovr: 76.8, hp: 111, maxHp: 111, stf: 34, ctl: 44, mov: 68, sta: 88 },
       { name: "Leo Kiely", role: "RP", pos: "RP", year: 1951, era: "Integration (1942-1960)", rarity: "Rare", team: "BOS", ovr: 72.3, hp: 32, maxHp: 32, stf: 25, ctl: 53, mov: 74, sta: 35 },
     ]
@@ -5443,7 +5443,7 @@ window.OpponentsPool = [
     pitchers: [
       { name: "Chuck Stobbs", role: "SP", pos: "SP", year: 1956, era: "Integration (1942-1960)", rarity: "Rare", team: "MIN", ovr: 76.5, hp: 115, maxHp: 115, stf: 34, ctl: 57, mov: 59, sta: 93 },
       { name: "Vinegar Bend Mizell", role: "SP", pos: "SP", year: 1953, era: "Integration (1942-1960)", rarity: "Rare", team: "STL", ovr: 76.5, hp: 107, maxHp: 107, stf: 66, ctl: 31, mov: 56, sta: 82 },
-      { name: "Jim Konstanty", role: "RP", pos: "RP", year: 1950, era: "Integration (1942-1960)", rarity: "Rare", team: "PHI", ovr: 71.8, hp: 32, maxHp: 32, stf: 1, ctl: 73, mov: 77, sta: 35 },
+      { name: "Jim Konstanty", role: "RP", pos: "RP", year: 1950, era: "Integration (1942-1960)", rarity: "Uncommon", team: "PHI", ovr: 71.8, hp: 32, maxHp: 32, stf: 1, ctl: 73, mov: 77, sta: 35 },
     ]
   },
   {
@@ -5498,7 +5498,7 @@ window.OpponentsPool = [
     pitchers: [
       { name: "Murry Dickson", role: "SP", pos: "SP", year: 1950, era: "Integration (1942-1960)", rarity: "Rare", team: "STL", ovr: 75.7, hp: 120, maxHp: 120, stf: 26, ctl: 59, mov: 58, sta: 99 },
       { name: "Art Houtteman", role: "SP", pos: "SP", year: 1950, era: "Integration (1942-1960)", rarity: "Rare", team: "DET", ovr: 75.8, hp: 117, maxHp: 117, stf: 25, ctl: 64, mov: 54, sta: 96 },
-      { name: "Jordan Romano", role: "RP", pos: "RP", year: 2022, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "TOR", ovr: 77.9, hp: 29, maxHp: 29, stf: 74, ctl: 40, mov: 86, sta: 25 },
+      { name: "Jordan Romano", role: "RP", pos: "RP", year: 2022, era: "Modern Era (2016-Pres)", rarity: "Rare", team: "TOR", ovr: 77.9, hp: 29, maxHp: 29, stf: 74, ctl: 40, mov: 86, sta: 25 },
     ]
   },
   {
@@ -5509,7 +5509,7 @@ window.OpponentsPool = [
     pitchers: [
       { name: "Russ Christopher", role: "SP", pos: "SP", year: 1945, era: "Integration (1942-1960)", rarity: "Rare", team: "OAK", ovr: 75.6, hp: 120, maxHp: 120, stf: 27, ctl: 44, mov: 57, sta: 100 },
       { name: "Russ Meyer", role: "SP", pos: "SP", year: 1949, era: "Integration (1942-1960)", rarity: "Rare", team: "PHI", ovr: 75.7, hp: 110, maxHp: 110, stf: 25, ctl: 61, mov: 57, sta: 86 },
-      { name: "Ryan Helsley", role: "RP", pos: "RP", year: 2024, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "STL", ovr: 77.8, hp: 30, maxHp: 30, stf: 71, ctl: 32, mov: 88, sta: 26 },
+      { name: "Ryan Helsley", role: "RP", pos: "RP", year: 2024, era: "Modern Era (2016-Pres)", rarity: "Rare", team: "STL", ovr: 77.8, hp: 30, maxHp: 30, stf: 71, ctl: 32, mov: 88, sta: 26 },
     ]
   },
   {
@@ -5520,7 +5520,7 @@ window.OpponentsPool = [
     pitchers: [
       { name: "Randy Gumpert", role: "SP", pos: "SP", year: 1949, era: "Integration (1942-1960)", rarity: "Rare", team: "CHW", ovr: 75.5, hp: 123, maxHp: 123, stf: 9, ctl: 69, mov: 57, sta: 103 },
       { name: "Dave Koslo", role: "SP", pos: "SP", year: 1949, era: "Integration (1942-1960)", rarity: "Rare", team: "SFG", ovr: 75.4, hp: 117, maxHp: 117, stf: 17, ctl: 61, mov: 58, sta: 95 },
-      { name: "Robert Suarez", role: "RP", pos: "RP", year: 2025, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "SDP", ovr: 77.8, hp: 30, maxHp: 30, stf: 55, ctl: 64, mov: 76, sta: 25 },
+      { name: "Robert Suarez", role: "RP", pos: "RP", year: 2025, era: "Modern Era (2016-Pres)", rarity: "Rare", team: "SDP", ovr: 77.8, hp: 30, maxHp: 30, stf: 55, ctl: 64, mov: 76, sta: 25 },
     ]
   },
   {
@@ -5717,7 +5717,7 @@ window.OpponentsPool = [
     rarity: "Rare", hof: false, allstars: 1,
     pitchers: [
       { name: "Elmer Riddle", role: "SP", pos: "SP", year: 1941, era: "Integration (1942-1960)", rarity: "Rare", team: "CIN", ovr: 72.0, hp: 115, maxHp: 115, stf: 6, ctl: 44, mov: 57, sta: 94 },
-      { name: "Ted Gray", role: "SP", pos: "SP", year: 1949, era: "Integration (1942-1960)", rarity: "Rare", team: "DET", ovr: 71.9, hp: 109, maxHp: 109, stf: 66, ctl: 16, mov: 46, sta: 85 },
+      { name: "Ted Gray", role: "SP", pos: "SP", year: 1949, era: "Integration (1942-1960)", rarity: "Uncommon", team: "DET", ovr: 71.9, hp: 109, maxHp: 109, stf: 66, ctl: 16, mov: 46, sta: 85 },
       { name: "Brad Boxberger", role: "RP", pos: "RP", year: 2014, era: "Modern Era (2016-Pres)", rarity: "Rare", team: "TB", ovr: 75.7, hp: 29, maxHp: 29, stf: 81, ctl: 30, mov: 74, sta: 25 },
     ]
   },
@@ -5725,10 +5725,10 @@ window.OpponentsPool = [
     id: "opp_team_00520", name: "Johnny Kucks (1959)",
     tier: "C", isBoss: false,
     era: "Integration (1942-1960)", ovr: 73.1,
-    rarity: "Rare", hof: false, allstars: 1,
+    rarity: "Uncommon", hof: false, allstars: 1,
     pitchers: [
-      { name: "Tommy Byrne", role: "SP", pos: "SP", year: 1949, era: "Integration (1942-1960)", rarity: "Rare", team: "NYY", ovr: 71.8, hp: 113, maxHp: 113, stf: 56, ctl: 1, mov: 57, sta: 91 },
-      { name: "Johnny Kucks", role: "SP", pos: "SP", year: 1959, era: "Integration (1942-1960)", rarity: "Rare", team: "NYY", ovr: 71.9, hp: 113, maxHp: 113, stf: 15, ctl: 62, mov: 44, sta: 90 },
+      { name: "Tommy Byrne", role: "SP", pos: "SP", year: 1949, era: "Integration (1942-1960)", rarity: "Uncommon", team: "NYY", ovr: 71.8, hp: 113, maxHp: 113, stf: 56, ctl: 1, mov: 57, sta: 91 },
+      { name: "Johnny Kucks", role: "SP", pos: "SP", year: 1959, era: "Integration (1942-1960)", rarity: "Uncommon", team: "NYY", ovr: 71.9, hp: 113, maxHp: 113, stf: 15, ctl: 62, mov: 44, sta: 90 },
       { name: "Brandon Kintzler", role: "RP", pos: "RP", year: 2017, era: "Modern Era (2016-Pres)", rarity: "Rare", team: "MIL", ovr: 75.6, hp: 30, maxHp: 30, stf: 18, ctl: 80, mov: 80, sta: 25 },
     ]
   },
@@ -5738,7 +5738,7 @@ window.OpponentsPool = [
     era: "Integration (1942-1960)", ovr: 72.9,
     rarity: "Uncommon", hof: false, allstars: 0,
     pitchers: [
-      { name: "Al Javery", role: "SP", pos: "SP", year: 1942, era: "Integration (1942-1960)", rarity: "Rare", team: "ATL", ovr: 71.5, hp: 114, maxHp: 114, stf: 24, ctl: 44, mov: 37, sta: 91 },
+      { name: "Al Javery", role: "SP", pos: "SP", year: 1942, era: "Integration (1942-1960)", rarity: "Uncommon", team: "ATL", ovr: 71.5, hp: 114, maxHp: 114, stf: 24, ctl: 44, mov: 37, sta: 91 },
       { name: "Bill Wight", role: "SP", pos: "SP", year: 1950, era: "Integration (1942-1960)", rarity: "Uncommon", team: "CHW", ovr: 71.7, hp: 112, maxHp: 112, stf: 16, ctl: 35, mov: 60, sta: 89 },
       { name: "Blake Parker", role: "RP", pos: "RP", year: 2017, era: "Modern Era (2016-Pres)", rarity: "Rare", team: "CHC", ovr: 75.5, hp: 30, maxHp: 30, stf: 64, ctl: 56, mov: 67, sta: 25 },
     ]
@@ -5747,9 +5747,9 @@ window.OpponentsPool = [
     id: "opp_team_00522", name: "BOSS: Jim Bagby (1938)",
     tier: "C", isBoss: true,
     era: "Integration (1942-1960)", ovr: 72.6,
-    rarity: "Rare", hof: false, allstars: 2,
+    rarity: "Uncommon", hof: false, allstars: 2,
     pitchers: [
-      { name: "Jim Bagby", role: "SP", pos: "SP", year: 1938, era: "Integration (1942-1960)", rarity: "Rare", team: "CLE", ovr: 71.4, hp: 117, maxHp: 117, stf: 1, ctl: 57, mov: 50, sta: 96 },
+      { name: "Jim Bagby", role: "SP", pos: "SP", year: 1938, era: "Integration (1942-1960)", rarity: "Uncommon", team: "CLE", ovr: 71.4, hp: 117, maxHp: 117, stf: 1, ctl: 57, mov: 50, sta: 96 },
       { name: "Ray Scarborough", role: "SP", pos: "SP", year: 1948, era: "Integration (1942-1960)", rarity: "Uncommon", team: "MIN", ovr: 71.0, hp: 113, maxHp: 113, stf: 20, ctl: 40, mov: 51, sta: 91 },
       { name: "Tanner Scott", role: "RP", pos: "RP", year: 2024, era: "Modern Era (2016-Pres)", rarity: "Rare", team: "BAL", ovr: 75.5, hp: 29, maxHp: 29, stf: 84, ctl: 1, mov: 92, sta: 25 },
     ]
@@ -5783,7 +5783,7 @@ window.OpponentsPool = [
     rarity: "Uncommon", hof: false, allstars: 1,
     pitchers: [
       { name: "Jerry Walker", role: "SP", pos: "SP", year: 1959, era: "Integration (1942-1960)", rarity: "Uncommon", team: "BAL", ovr: 70.0, hp: 118, maxHp: 118, stf: 32, ctl: 34, mov: 46, sta: 96 },
-      { name: "Nestor Cortes", role: "SP", pos: "SP", year: 2022, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "NYY", ovr: 77.9, hp: 105, maxHp: 105, stf: 55, ctl: 66, mov: 50, sta: 80 },
+      { name: "Nestor Cortes", role: "SP", pos: "SP", year: 2022, era: "Modern Era (2016-Pres)", rarity: "Rare", team: "NYY", ovr: 77.9, hp: 105, maxHp: 105, stf: 55, ctl: 66, mov: 50, sta: 80 },
       { name: "Joe Jimenez", role: "RP", pos: "RP", year: 2024, era: "Modern Era (2016-Pres)", rarity: "Rare", team: "DET", ovr: 75.0, hp: 29, maxHp: 29, stf: 82, ctl: 46, mov: 56, sta: 24 },
     ]
   },
@@ -5793,7 +5793,7 @@ window.OpponentsPool = [
     era: "Modern Era (2016-Pres)", ovr: 76.9,
     rarity: "Rare", hof: false, allstars: 0,
     pitchers: [
-      { name: "Carlos Martinez", role: "SP", pos: "SP", year: 2016, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "STL", ovr: 77.8, hp: 108, maxHp: 108, stf: 54, ctl: 42, mov: 60, sta: 84 },
+      { name: "Carlos Martinez", role: "SP", pos: "SP", year: 2016, era: "Modern Era (2016-Pres)", rarity: "Rare", team: "STL", ovr: 77.8, hp: 108, maxHp: 108, stf: 54, ctl: 42, mov: 60, sta: 84 },
       { name: "Jon Gray", role: "SP", pos: "SP", year: 2019, era: "Modern Era (2016-Pres)", rarity: "Rare", team: "COL", ovr: 77.9, hp: 100, maxHp: 100, stf: 59, ctl: 54, mov: 57, sta: 74 },
       { name: "Trevor May", role: "RP", pos: "RP", year: 2015, era: "Modern Era (2016-Pres)", rarity: "Rare", team: "MIN", ovr: 75.0, hp: 30, maxHp: 30, stf: 72, ctl: 49, mov: 62, sta: 27 },
     ]
@@ -5802,10 +5802,10 @@ window.OpponentsPool = [
     id: "opp_team_00527", name: "BOSS: Tony Gonsolin (2022)",
     tier: "C", isBoss: true,
     era: "Modern Era (2016-Pres)", ovr: 76.6,
-    rarity: "Epic", hof: false, allstars: 1,
+    rarity: "Rare", hof: false, allstars: 1,
     pitchers: [
       { name: "Mike Fiers", role: "SP", pos: "SP", year: 2018, era: "Modern Era (2016-Pres)", rarity: "Rare", team: "MIL", ovr: 77.4, hp: 102, maxHp: 102, stf: 40, ctl: 71, mov: 60, sta: 76 },
-      { name: "Tony Gonsolin", role: "SP", pos: "SP", year: 2022, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "LAD", ovr: 77.7, hp: 99, maxHp: 99, stf: 47, ctl: 47, mov: 74, sta: 72 },
+      { name: "Tony Gonsolin", role: "SP", pos: "SP", year: 2022, era: "Modern Era (2016-Pres)", rarity: "Rare", team: "LAD", ovr: 77.7, hp: 99, maxHp: 99, stf: 47, ctl: 47, mov: 74, sta: 72 },
       { name: "Alex Claudio", role: "RP", pos: "RP", year: 2017, era: "Modern Era (2016-Pres)", rarity: "Rare", team: "TEX", ovr: 74.8, hp: 30, maxHp: 30, stf: 21, ctl: 78, mov: 75, sta: 25 },
     ]
   },
@@ -6022,10 +6022,10 @@ window.OpponentsPool = [
     id: "opp_team_00547", name: "BOSS: Bryce Elder (2023)",
     tier: "C", isBoss: true,
     era: "Modern Era (2016-Pres)", ovr: 72.1,
-    rarity: "Rare", hof: false, allstars: 1,
+    rarity: "Uncommon", hof: false, allstars: 1,
     pitchers: [
-      { name: "Martin Perez", role: "SP", pos: "SP", year: 2022, era: "Modern Era (2016-Pres)", rarity: "Rare", team: "TEX", ovr: 71.6, hp: 102, maxHp: 102, stf: 22, ctl: 47, mov: 58, sta: 76 },
-      { name: "Bryce Elder", role: "SP", pos: "SP", year: 2023, era: "Modern Era (2016-Pres)", rarity: "Rare", team: "ATL", ovr: 71.7, hp: 100, maxHp: 100, stf: 33, ctl: 49, mov: 48, sta: 74 },
+      { name: "Martin Perez", role: "SP", pos: "SP", year: 2022, era: "Modern Era (2016-Pres)", rarity: "Uncommon", team: "TEX", ovr: 71.6, hp: 102, maxHp: 102, stf: 22, ctl: 47, mov: 58, sta: 76 },
+      { name: "Bryce Elder", role: "SP", pos: "SP", year: 2023, era: "Modern Era (2016-Pres)", rarity: "Uncommon", team: "ATL", ovr: 71.7, hp: 100, maxHp: 100, stf: 33, ctl: 49, mov: 48, sta: 74 },
       { name: "Hunter Strickland", role: "RP", pos: "RP", year: 2017, era: "Modern Era (2016-Pres)", rarity: "Rare", team: "SFG", ovr: 72.9, hp: 29, maxHp: 29, stf: 43, ctl: 53, mov: 67, sta: 24 },
     ]
   },
@@ -6055,10 +6055,10 @@ window.OpponentsPool = [
     id: "opp_team_00550", name: "Barry Zito (2002)",
     tier: "C", isBoss: false,
     era: "Steroid Era (1994-2005)", ovr: 76.1,
-    rarity: "Epic", hof: false, allstars: 3,
+    rarity: "Rare", hof: false, allstars: 3,
     pitchers: [
       { name: "Mark Clark", role: "SP", pos: "SP", year: 1994, era: "Steroid Era (1994-2005)", rarity: "Rare", team: "CLE", ovr: 77.8, hp: 106, maxHp: 106, stf: 27, ctl: 78, mov: 54, sta: 82 },
-      { name: "Barry Zito", role: "SP", pos: "SP", year: 2002, era: "Steroid Era (1994-2005)", rarity: "Epic", team: "OAK", ovr: 77.9, hp: 106, maxHp: 106, stf: 48, ctl: 46, mov: 70, sta: 81 },
+      { name: "Barry Zito", role: "SP", pos: "SP", year: 2002, era: "Steroid Era (1994-2005)", rarity: "Rare", team: "OAK", ovr: 77.9, hp: 106, maxHp: 106, stf: 48, ctl: 46, mov: 70, sta: 81 },
       { name: "Dominic Leone", role: "RP", pos: "RP", year: 2017, era: "Modern Era (2016-Pres)", rarity: "Rare", team: "SEA", ovr: 72.7, hp: 30, maxHp: 30, stf: 60, ctl: 33, mov: 73, sta: 25 },
     ]
   },
@@ -6066,9 +6066,9 @@ window.OpponentsPool = [
     id: "opp_team_00551", name: "Ryan Franklin (2003)",
     tier: "C", isBoss: false,
     era: "Steroid Era (1994-2005)", ovr: 76.0,
-    rarity: "Epic", hof: false, allstars: 1,
+    rarity: "Rare", hof: false, allstars: 1,
     pitchers: [
-      { name: "Ryan Franklin", role: "SP", pos: "SP", year: 2003, era: "Steroid Era (1994-2005)", rarity: "Epic", team: "SEA", ovr: 77.8, hp: 108, maxHp: 108, stf: 17, ctl: 75, mov: 66, sta: 84 },
+      { name: "Ryan Franklin", role: "SP", pos: "SP", year: 2003, era: "Steroid Era (1994-2005)", rarity: "Rare", team: "SEA", ovr: 77.8, hp: 108, maxHp: 108, stf: 17, ctl: 75, mov: 66, sta: 84 },
       { name: "Todd Stottlemyre", role: "SP", pos: "SP", year: 1991, era: "Steroid Era (1994-2005)", rarity: "Rare", team: "TOR", ovr: 77.8, hp: 107, maxHp: 107, stf: 51, ctl: 53, mov: 54, sta: 82 },
       { name: "Alex Wilson", role: "RP", pos: "RP", year: 2016, era: "Modern Era (2016-Pres)", rarity: "Rare", team: "DET", ovr: 72.5, hp: 30, maxHp: 30, stf: 19, ctl: 72, mov: 69, sta: 26 },
     ]
@@ -6077,10 +6077,10 @@ window.OpponentsPool = [
     id: "opp_team_00552", name: "BOSS: Woody Williams (2003)",
     tier: "C", isBoss: true,
     era: "Steroid Era (1994-2005)", ovr: 75.9,
-    rarity: "Epic", hof: false, allstars: 1,
+    rarity: "Rare", hof: false, allstars: 1,
     pitchers: [
       { name: "Dustin Hermanson", role: "SP", pos: "SP", year: 1999, era: "Steroid Era (1994-2005)", rarity: "Rare", team: "WSH", ovr: 77.6, hp: 106, maxHp: 106, stf: 38, ctl: 58, mov: 67, sta: 82 },
-      { name: "Woody Williams", role: "SP", pos: "SP", year: 2003, era: "Steroid Era (1994-2005)", rarity: "Epic", team: "TOR", ovr: 77.8, hp: 106, maxHp: 106, stf: 36, ctl: 67, mov: 61, sta: 81 },
+      { name: "Woody Williams", role: "SP", pos: "SP", year: 2003, era: "Steroid Era (1994-2005)", rarity: "Rare", team: "TOR", ovr: 77.8, hp: 106, maxHp: 106, stf: 36, ctl: 67, mov: 61, sta: 81 },
       { name: "Brad Brach", role: "RP", pos: "RP", year: 2016, era: "Modern Era (2016-Pres)", rarity: "Rare", team: "BAL", ovr: 72.4, hp: 30, maxHp: 30, stf: 60, ctl: 25, mov: 76, sta: 26 },
     ]
   },
@@ -6091,7 +6091,7 @@ window.OpponentsPool = [
     rarity: "Rare", hof: false, allstars: 0,
     pitchers: [
       { name: "Carlos Silva", role: "SP", pos: "SP", year: 2004, era: "Steroid Era (1994-2005)", rarity: "Rare", team: "MIN", ovr: 77.5, hp: 108, maxHp: 108, stf: 6, ctl: 98, mov: 51, sta: 84 },
-      { name: "Andy Ashby", role: "SP", pos: "SP", year: 1995, era: "Steroid Era (1994-2005)", rarity: "Epic", team: "SDP", ovr: 77.4, hp: 106, maxHp: 106, stf: 35, ctl: 76, mov: 60, sta: 81 },
+      { name: "Andy Ashby", role: "SP", pos: "SP", year: 1995, era: "Steroid Era (1994-2005)", rarity: "Rare", team: "SDP", ovr: 77.4, hp: 106, maxHp: 106, stf: 35, ctl: 76, mov: 60, sta: 81 },
       { name: "Camilo Doval", role: "RP", pos: "RP", year: 2022, era: "Modern Era (2016-Pres)", rarity: "Rare", team: "SFG", ovr: 72.3, hp: 29, maxHp: 29, stf: 76, ctl: 12, mov: 66, sta: 25 },
     ]
   },
@@ -6114,7 +6114,7 @@ window.OpponentsPool = [
     pitchers: [
       { name: "Omar Daal", role: "SP", pos: "SP", year: 1999, era: "Steroid Era (1994-2005)", rarity: "Rare", team: "LAD", ovr: 77.3, hp: 109, maxHp: 109, stf: 38, ctl: 56, mov: 56, sta: 85 },
       { name: "Pedro Astacio", role: "SP", pos: "SP", year: 1999, era: "Steroid Era (1994-2005)", rarity: "Rare", team: "LAD", ovr: 77.3, hp: 106, maxHp: 106, stf: 48, ctl: 62, mov: 61, sta: 81 },
-      { name: "Shane Greene", role: "RP", pos: "RP", year: 2017, era: "Modern Era (2016-Pres)", rarity: "Rare", team: "DET", ovr: 71.9, hp: 30, maxHp: 30, stf: 54, ctl: 46, mov: 61, sta: 27 },
+      { name: "Shane Greene", role: "RP", pos: "RP", year: 2017, era: "Modern Era (2016-Pres)", rarity: "Uncommon", team: "DET", ovr: 71.9, hp: 30, maxHp: 30, stf: 54, ctl: 46, mov: 61, sta: 27 },
     ]
   },
   {
@@ -6136,7 +6136,7 @@ window.OpponentsPool = [
     pitchers: [
       { name: "Jose Lima", role: "SP", pos: "SP", year: 1999, era: "Steroid Era (1994-2005)", rarity: "Rare", team: "DET", ovr: 77.2, hp: 108, maxHp: 108, stf: 30, ctl: 94, mov: 48, sta: 84 },
       { name: "Mark Mulder", role: "SP", pos: "SP", year: 2003, era: "Steroid Era (1994-2005)", rarity: "Rare", team: "OAK", ovr: 77.1, hp: 107, maxHp: 107, stf: 31, ctl: 68, mov: 54, sta: 82 },
-      { name: "Kyle Finnegan", role: "RP", pos: "RP", year: 2025, era: "Modern Era (2016-Pres)", rarity: "Rare", team: "WSH", ovr: 71.6, hp: 30, maxHp: 30, stf: 52, ctl: 39, mov: 71, sta: 25 },
+      { name: "Kyle Finnegan", role: "RP", pos: "RP", year: 2025, era: "Modern Era (2016-Pres)", rarity: "Uncommon", team: "WSH", ovr: 71.6, hp: 30, maxHp: 30, stf: 52, ctl: 39, mov: 71, sta: 25 },
     ]
   },
   {
@@ -6158,7 +6158,7 @@ window.OpponentsPool = [
     pitchers: [
       { name: "Rolando Arrojo", role: "SP", pos: "SP", year: 1998, era: "Steroid Era (1994-2005)", rarity: "Rare", team: "BOS", ovr: 76.7, hp: 107, maxHp: 107, stf: 43, ctl: 53, mov: 56, sta: 82 },
       { name: "Orlando Hernandez", role: "SP", pos: "SP", year: 1999, era: "Steroid Era (1994-2005)", rarity: "Rare", team: "NYY", ovr: 76.7, hp: 105, maxHp: 105, stf: 54, ctl: 54, mov: 62, sta: 80 },
-      { name: "Clay Holmes", role: "RP", pos: "RP", year: 2025, era: "Modern Era (2016-Pres)", rarity: "Rare", team: "NYY", ovr: 71.5, hp: 30, maxHp: 30, stf: 52, ctl: 33, mov: 60, sta: 29 },
+      { name: "Clay Holmes", role: "RP", pos: "RP", year: 2025, era: "Modern Era (2016-Pres)", rarity: "Uncommon", team: "NYY", ovr: 71.5, hp: 30, maxHp: 30, stf: 52, ctl: 33, mov: 60, sta: 29 },
     ]
   },
   {
@@ -6429,10 +6429,10 @@ window.OpponentsPool = [
     id: "opp_team_00584", name: "Kip Wells (2003)",
     tier: "C", isBoss: false,
     era: "Steroid Era (1994-2005)", ovr: 73.2,
-    rarity: "Rare", hof: false, allstars: 0,
+    rarity: "Uncommon", hof: false, allstars: 0,
     pitchers: [
-      { name: "Jason Dickson", role: "SP", pos: "SP", year: 1997, era: "Steroid Era (1994-2005)", rarity: "Rare", team: "LAA", ovr: 71.6, hp: 105, maxHp: 105, stf: 17, ctl: 68, mov: 46, sta: 80 },
-      { name: "Kip Wells", role: "SP", pos: "SP", year: 2003, era: "Steroid Era (1994-2005)", rarity: "Rare", team: "PIT", ovr: 71.9, hp: 104, maxHp: 104, stf: 43, ctl: 33, mov: 52, sta: 78 },
+      { name: "Jason Dickson", role: "SP", pos: "SP", year: 1997, era: "Steroid Era (1994-2005)", rarity: "Uncommon", team: "LAA", ovr: 71.6, hp: 105, maxHp: 105, stf: 17, ctl: 68, mov: 46, sta: 80 },
+      { name: "Kip Wells", role: "SP", pos: "SP", year: 2003, era: "Steroid Era (1994-2005)", rarity: "Uncommon", team: "PIT", ovr: 71.9, hp: 104, maxHp: 104, stf: 43, ctl: 33, mov: 52, sta: 78 },
       { name: "Ron Mahay", role: "RP", pos: "RP", year: 2004, era: "Steroid Era (1994-2005)", rarity: "Rare", team: "TEX", ovr: 76.0, hp: 30, maxHp: 30, stf: 55, ctl: 30, mov: 98, sta: 26 },
     ]
   },
@@ -6506,9 +6506,9 @@ window.OpponentsPool = [
     id: "opp_team_00591", name: "Clark Griffith (1898)",
     tier: "C", isBoss: false,
     era: "The Genesis Era (1871-1900)", ovr: 76.6,
-    rarity: "Epic", hof: true, allstars: 0,
+    rarity: "Rare", hof: true, allstars: 0,
     pitchers: [
-      { name: "Clark Griffith", role: "SP", pos: "SP", year: 1898, era: "The Genesis Era (1871-1900)", rarity: "Epic", team: "CHC", ovr: 77.6, hp: 119, maxHp: 119, stf: 6, ctl: 73, mov: 72, sta: 99 },
+      { name: "Clark Griffith", role: "SP", pos: "SP", year: 1898, era: "The Genesis Era (1871-1900)", rarity: "Rare", team: "CHC", ovr: 77.6, hp: 119, maxHp: 119, stf: 6, ctl: 73, mov: 72, sta: 99 },
       { name: "Adonis Terry", role: "SP", pos: "SP", year: 1895, era: "The Genesis Era (1871-1900)", rarity: "Rare", team: "LAD", ovr: 77.5, hp: 119, maxHp: 119, stf: 50, ctl: 27, mov: 60, sta: 99 },
       { name: "Doug Brocail", role: "RP", pos: "RP", year: 1999, era: "Steroid Era (1994-2005)", rarity: "Rare", team: "SDP", ovr: 74.7, hp: 30, maxHp: 30, stf: 45, ctl: 60, mov: 74, sta: 29 },
     ]
@@ -6697,7 +6697,7 @@ window.OpponentsPool = [
     pitchers: [
       { name: "Mario Soto", role: "SP", pos: "SP", year: 1982, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "CIN", ovr: 83.8, hp: 115, maxHp: 115, stf: 83, ctl: 48, mov: 64, sta: 93 },
       { name: "Pascual Perez", role: "SP", pos: "SP", year: 1988, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "ATL", ovr: 83.7, hp: 108, maxHp: 108, stf: 48, ctl: 83, mov: 69, sta: 83 },
-      { name: "Rollie Fingers", role: "RP", pos: "RP", year: 1981, era: "Big Hair Era (1977-1993)", rarity: "Legendary", team: "OAK", ovr: 84.4, hp: 31, maxHp: 31, stf: 68, ctl: 75, mov: 88, sta: 32 },
+      { name: "Rollie Fingers", role: "RP", pos: "RP", year: 1981, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "OAK", ovr: 84.4, hp: 31, maxHp: 31, stf: 68, ctl: 75, mov: 88, sta: 32 },
     ]
   },
   {
@@ -6719,7 +6719,7 @@ window.OpponentsPool = [
     pitchers: [
       { name: "Teddy Higuera", role: "SP", pos: "SP", year: 1986, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "MIL", ovr: 83.5, hp: 109, maxHp: 109, stf: 66, ctl: 65, mov: 64, sta: 85 },
       { name: "Sid Fernandez", role: "SP", pos: "SP", year: 1992, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "NYM", ovr: 83.3, hp: 106, maxHp: 106, stf: 90, ctl: 46, mov: 61, sta: 81 },
-      { name: "Rich Gossage", role: "RP", pos: "RP", year: 1975, era: "Big Hair Era (1977-1993)", rarity: "Legendary", team: "NYY", ovr: 84.3, hp: 32, maxHp: 32, stf: 85, ctl: 41, mov: 101, sta: 35 },
+      { name: "Rich Gossage", role: "RP", pos: "RP", year: 1975, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "NYY", ovr: 84.3, hp: 32, maxHp: 32, stf: 85, ctl: 41, mov: 101, sta: 35 },
     ]
   },
   {
@@ -6772,7 +6772,7 @@ window.OpponentsPool = [
     era: "Big Hair Era (1977-1993)", ovr: 82.2,
     rarity: "Epic", hof: false, allstars: 1,
     pitchers: [
-      { name: "Dennis Eckersley", role: "SP", pos: "SP", year: 1978, era: "Big Hair Era (1977-1993)", rarity: "Legendary", team: "OAK", ovr: 82.3, hp: 110, maxHp: 110, stf: 44, ctl: 81, mov: 68, sta: 87 },
+      { name: "Dennis Eckersley", role: "SP", pos: "SP", year: 1978, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "OAK", ovr: 82.3, hp: 110, maxHp: 110, stf: 44, ctl: 81, mov: 68, sta: 87 },
       { name: "Andy Benes", role: "SP", pos: "SP", year: 1993, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "SDP", ovr: 82.4, hp: 107, maxHp: 107, stf: 70, ctl: 62, mov: 59, sta: 83 },
       { name: "Rob Murphy", role: "RP", pos: "RP", year: 1986, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "CIN", ovr: 81.9, hp: 30, maxHp: 30, stf: 76, ctl: 44, mov: 99, sta: 26 },
     ]
@@ -6917,7 +6917,7 @@ window.OpponentsPool = [
     pitchers: [
       { name: "Ed Whitson", role: "SP", pos: "SP", year: 1990, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "SDP", ovr: 80.3, hp: 108, maxHp: 108, stf: 28, ctl: 75, mov: 63, sta: 83 },
       { name: "Atlee Hammaker", role: "SP", pos: "SP", year: 1983, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "SFG", ovr: 80.2, hp: 108, maxHp: 108, stf: 40, ctl: 80, mov: 50, sta: 83 },
-      { name: "Norm Charlton", role: "RP", pos: "RP", year: 1990, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "CIN", ovr: 79.8, hp: 31, maxHp: 31, stf: 83, ctl: 36, mov: 82, sta: 31 },
+      { name: "Norm Charlton", role: "RP", pos: "RP", year: 1990, era: "Big Hair Era (1977-1993)", rarity: "Rare", team: "CIN", ovr: 79.8, hp: 31, maxHp: 31, stf: 83, ctl: 36, mov: 82, sta: 31 },
     ]
   },
   {
@@ -6928,7 +6928,7 @@ window.OpponentsPool = [
     pitchers: [
       { name: "Ken Forsch", role: "SP", pos: "SP", year: 1971, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "HOU", ovr: 80.1, hp: 115, maxHp: 115, stf: 13, ctl: 84, mov: 64, sta: 93 },
       { name: "Jack McDowell", role: "SP", pos: "SP", year: 1992, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "CHW", ovr: 80.2, hp: 109, maxHp: 109, stf: 54, ctl: 63, mov: 60, sta: 86 },
-      { name: "John Franco", role: "RP", pos: "RP", year: 1985, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "NYM", ovr: 79.8, hp: 30, maxHp: 30, stf: 52, ctl: 46, mov: 98, sta: 28 },
+      { name: "John Franco", role: "RP", pos: "RP", year: 1985, era: "Big Hair Era (1977-1993)", rarity: "Rare", team: "NYM", ovr: 79.8, hp: 30, maxHp: 30, stf: 52, ctl: 46, mov: 98, sta: 28 },
     ]
   },
   {
@@ -6939,7 +6939,7 @@ window.OpponentsPool = [
     pitchers: [
       { name: "Dennis Lamp", role: "SP", pos: "SP", year: 1978, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "CHC", ovr: 80.1, hp: 119, maxHp: 119, stf: 13, ctl: 75, mov: 69, sta: 98 },
       { name: "Jeff Russell", role: "SP", pos: "SP", year: 1992, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "TEX", ovr: 80.1, hp: 108, maxHp: 108, stf: 40, ctl: 53, mov: 77, sta: 84 },
-      { name: "Mel Rojas", role: "RP", pos: "RP", year: 1992, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "WSH", ovr: 79.3, hp: 30, maxHp: 30, stf: 70, ctl: 52, mov: 74, sta: 28 },
+      { name: "Mel Rojas", role: "RP", pos: "RP", year: 1992, era: "Big Hair Era (1977-1993)", rarity: "Rare", team: "WSH", ovr: 79.3, hp: 30, maxHp: 30, stf: 70, ctl: 52, mov: 74, sta: 28 },
     ]
   },
   {
@@ -6949,29 +6949,29 @@ window.OpponentsPool = [
     rarity: "Epic", hof: false, allstars: 7,
     pitchers: [
       { name: "Dave Stieb", role: "SP", pos: "SP", year: 1984, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "TOR", ovr: 80.1, hp: 111, maxHp: 111, stf: 34, ctl: 60, mov: 76, sta: 88 },
-      { name: "Charlie Leibrandt", role: "SP", pos: "SP", year: 1985, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "KCR", ovr: 79.9, hp: 107, maxHp: 107, stf: 24, ctl: 77, mov: 66, sta: 83 },
-      { name: "Tom Burgmeier", role: "RP", pos: "RP", year: 1980, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "BOS", ovr: 79.2, hp: 31, maxHp: 31, stf: 20, ctl: 77, mov: 94, sta: 33 },
+      { name: "Charlie Leibrandt", role: "SP", pos: "SP", year: 1985, era: "Big Hair Era (1977-1993)", rarity: "Rare", team: "KCR", ovr: 79.9, hp: 107, maxHp: 107, stf: 24, ctl: 77, mov: 66, sta: 83 },
+      { name: "Tom Burgmeier", role: "RP", pos: "RP", year: 1980, era: "Big Hair Era (1977-1993)", rarity: "Rare", team: "BOS", ovr: 79.2, hp: 31, maxHp: 31, stf: 20, ctl: 77, mov: 94, sta: 33 },
     ]
   },
   {
     id: "opp_team_00632", name: "Kevin Tapani (1991)",
     tier: "B", isBoss: false,
     era: "Big Hair Era (1977-1993)", ovr: 79.6,
-    rarity: "Epic", hof: false, allstars: 0,
+    rarity: "Rare", hof: false, allstars: 0,
     pitchers: [
-      { name: "Jose DeLeon", role: "SP", pos: "SP", year: 1991, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "STL", ovr: 79.8, hp: 107, maxHp: 107, stf: 75, ctl: 36, mov: 62, sta: 82 },
-      { name: "Kevin Tapani", role: "SP", pos: "SP", year: 1991, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "MIN", ovr: 79.9, hp: 106, maxHp: 106, stf: 40, ctl: 82, mov: 54, sta: 81 },
-      { name: "Eric Plunk", role: "RP", pos: "RP", year: 1996, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "CLE", ovr: 79.1, hp: 30, maxHp: 30, stf: 96, ctl: 10, mov: 90, sta: 30 },
+      { name: "Jose DeLeon", role: "SP", pos: "SP", year: 1991, era: "Big Hair Era (1977-1993)", rarity: "Rare", team: "STL", ovr: 79.8, hp: 107, maxHp: 107, stf: 75, ctl: 36, mov: 62, sta: 82 },
+      { name: "Kevin Tapani", role: "SP", pos: "SP", year: 1991, era: "Big Hair Era (1977-1993)", rarity: "Rare", team: "MIN", ovr: 79.9, hp: 106, maxHp: 106, stf: 40, ctl: 82, mov: 54, sta: 81 },
+      { name: "Eric Plunk", role: "RP", pos: "RP", year: 1996, era: "Big Hair Era (1977-1993)", rarity: "Rare", team: "CLE", ovr: 79.1, hp: 30, maxHp: 30, stf: 96, ctl: 10, mov: 90, sta: 30 },
     ]
   },
   {
     id: "opp_team_00633", name: "Terry Mulholland (1993)",
     tier: "B", isBoss: false,
     era: "Big Hair Era (1977-1993)", ovr: 81.4,
-    rarity: "Epic", hof: false, allstars: 1,
+    rarity: "Rare", hof: false, allstars: 1,
     pitchers: [
-      { name: "Terry Mulholland", role: "SP", pos: "SP", year: 1993, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "PHI", ovr: 79.8, hp: 110, maxHp: 110, stf: 26, ctl: 84, mov: 59, sta: 87 },
-      { name: "Len Barker", role: "SP", pos: "SP", year: 1982, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "CLE", ovr: 79.7, hp: 109, maxHp: 109, stf: 62, ctl: 46, mov: 53, sta: 85 },
+      { name: "Terry Mulholland", role: "SP", pos: "SP", year: 1993, era: "Big Hair Era (1977-1993)", rarity: "Rare", team: "PHI", ovr: 79.8, hp: 110, maxHp: 110, stf: 26, ctl: 84, mov: 59, sta: 87 },
+      { name: "Len Barker", role: "SP", pos: "SP", year: 1982, era: "Big Hair Era (1977-1993)", rarity: "Rare", team: "CLE", ovr: 79.7, hp: 109, maxHp: 109, stf: 62, ctl: 46, mov: 53, sta: 85 },
       { name: "Huston Street", role: "RP", pos: "RP", year: 2005, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "OAK", ovr: 84.7, hp: 30, maxHp: 30, stf: 62, ctl: 77, mov: 101, sta: 25 },
     ]
   },
@@ -6979,10 +6979,10 @@ window.OpponentsPool = [
     id: "opp_team_00634", name: "Dennis Leonard (1977)",
     tier: "B", isBoss: false,
     era: "Big Hair Era (1977-1993)", ovr: 81.1,
-    rarity: "Epic", hof: false, allstars: 0,
+    rarity: "Rare", hof: false, allstars: 0,
     pitchers: [
-      { name: "Jack Morris", role: "SP", pos: "SP", year: 1979, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "DET", ovr: 79.6, hp: 112, maxHp: 112, stf: 54, ctl: 54, mov: 66, sta: 90 },
-      { name: "Dennis Leonard", role: "SP", pos: "SP", year: 1977, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "KCR", ovr: 79.7, hp: 112, maxHp: 112, stf: 41, ctl: 72, mov: 58, sta: 89 },
+      { name: "Jack Morris", role: "SP", pos: "SP", year: 1979, era: "Big Hair Era (1977-1993)", rarity: "Rare", team: "DET", ovr: 79.6, hp: 112, maxHp: 112, stf: 54, ctl: 54, mov: 66, sta: 90 },
+      { name: "Dennis Leonard", role: "SP", pos: "SP", year: 1977, era: "Big Hair Era (1977-1993)", rarity: "Rare", team: "KCR", ovr: 79.7, hp: 112, maxHp: 112, stf: 41, ctl: 72, mov: 58, sta: 89 },
       { name: "Fernando Rodney", role: "RP", pos: "RP", year: 2012, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "DET", ovr: 84.1, hp: 30, maxHp: 30, stf: 74, ctl: 29, mov: 125, sta: 25 },
     ]
   },
@@ -6990,10 +6990,10 @@ window.OpponentsPool = [
     id: "opp_team_00635", name: "Chris Bosio (1989)",
     tier: "B", isBoss: false,
     era: "Big Hair Era (1977-1993)", ovr: 81.0,
-    rarity: "Epic", hof: false, allstars: 0,
+    rarity: "Rare", hof: false, allstars: 0,
     pitchers: [
-      { name: "Tommy John", role: "SP", pos: "SP", year: 1968, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "NYY", ovr: 79.4, hp: 110, maxHp: 110, stf: 14, ctl: 74, mov: 68, sta: 87 },
-      { name: "Chris Bosio", role: "SP", pos: "SP", year: 1989, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "MIL", ovr: 79.5, hp: 107, maxHp: 107, stf: 34, ctl: 74, mov: 61, sta: 83 },
+      { name: "Tommy John", role: "SP", pos: "SP", year: 1968, era: "Big Hair Era (1977-1993)", rarity: "Rare", team: "NYY", ovr: 79.4, hp: 110, maxHp: 110, stf: 14, ctl: 74, mov: 68, sta: 87 },
+      { name: "Chris Bosio", role: "SP", pos: "SP", year: 1989, era: "Big Hair Era (1977-1993)", rarity: "Rare", team: "MIL", ovr: 79.5, hp: 107, maxHp: 107, stf: 34, ctl: 74, mov: 61, sta: 83 },
       { name: "Jason Motte", role: "RP", pos: "RP", year: 2010, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "STL", ovr: 84.0, hp: 29, maxHp: 29, stf: 60, ctl: 68, mov: 109, sta: 24 },
     ]
   },
@@ -7001,10 +7001,10 @@ window.OpponentsPool = [
     id: "opp_team_00636", name: "BOSS: Bob Stanley (1982)",
     tier: "B", isBoss: true,
     era: "Big Hair Era (1977-1993)", ovr: 80.8,
-    rarity: "Epic", hof: false, allstars: 2,
+    rarity: "Rare", hof: false, allstars: 2,
     pitchers: [
-      { name: "Bob Stanley", role: "SP", pos: "SP", year: 1982, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "BOS", ovr: 79.4, hp: 124, maxHp: 124, stf: 1, ctl: 75, mov: 74, sta: 105 },
-      { name: "Mike Witt", role: "SP", pos: "SP", year: 1986, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "LAA", ovr: 79.4, hp: 110, maxHp: 110, stf: 49, ctl: 58, mov: 60, sta: 86 },
+      { name: "Bob Stanley", role: "SP", pos: "SP", year: 1982, era: "Big Hair Era (1977-1993)", rarity: "Rare", team: "BOS", ovr: 79.4, hp: 124, maxHp: 124, stf: 1, ctl: 75, mov: 74, sta: 105 },
+      { name: "Mike Witt", role: "SP", pos: "SP", year: 1986, era: "Big Hair Era (1977-1993)", rarity: "Rare", team: "LAA", ovr: 79.4, hp: 110, maxHp: 110, stf: 49, ctl: 58, mov: 60, sta: 86 },
       { name: "Joba Chamberlain", role: "RP", pos: "RP", year: 2008, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "NYY", ovr: 83.7, hp: 31, maxHp: 31, stf: 65, ctl: 40, mov: 125, sta: 32 },
     ]
   },
@@ -7012,10 +7012,10 @@ window.OpponentsPool = [
     id: "opp_team_00637", name: "Tom Hume (1979)",
     tier: "B", isBoss: false,
     era: "Big Hair Era (1977-1993)", ovr: 80.7,
-    rarity: "Epic", hof: false, allstars: 1,
+    rarity: "Rare", hof: false, allstars: 1,
     pitchers: [
-      { name: "Tom Hume", role: "SP", pos: "SP", year: 1979, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "CIN", ovr: 79.3, hp: 124, maxHp: 124, stf: 21, ctl: 63, mov: 63, sta: 105 },
-      { name: "Floyd Bannister", role: "SP", pos: "SP", year: 1982, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "CHW", ovr: 79.2, hp: 106, maxHp: 106, stf: 58, ctl: 59, mov: 61, sta: 81 },
+      { name: "Tom Hume", role: "SP", pos: "SP", year: 1979, era: "Big Hair Era (1977-1993)", rarity: "Rare", team: "CIN", ovr: 79.3, hp: 124, maxHp: 124, stf: 21, ctl: 63, mov: 63, sta: 105 },
+      { name: "Floyd Bannister", role: "SP", pos: "SP", year: 1982, era: "Big Hair Era (1977-1993)", rarity: "Rare", team: "CHW", ovr: 79.2, hp: 106, maxHp: 106, stf: 58, ctl: 59, mov: 61, sta: 81 },
       { name: "Brian Wilson", role: "RP", pos: "RP", year: 2010, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "SFG", ovr: 83.6, hp: 30, maxHp: 30, stf: 74, ctl: 36, mov: 114, sta: 25 },
     ]
   },
@@ -7023,10 +7023,10 @@ window.OpponentsPool = [
     id: "opp_team_00638", name: "Mark Gubicza (1988)",
     tier: "B", isBoss: false,
     era: "Big Hair Era (1977-1993)", ovr: 80.6,
-    rarity: "Epic", hof: false, allstars: 2,
+    rarity: "Rare", hof: false, allstars: 2,
     pitchers: [
-      { name: "Mark Gubicza", role: "SP", pos: "SP", year: 1988, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "KCR", ovr: 79.2, hp: 108, maxHp: 108, stf: 39, ctl: 56, mov: 64, sta: 84 },
-      { name: "Bill Gullickson", role: "SP", pos: "SP", year: 1986, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "WSH", ovr: 79.2, hp: 108, maxHp: 108, stf: 29, ctl: 80, mov: 56, sta: 84 },
+      { name: "Mark Gubicza", role: "SP", pos: "SP", year: 1988, era: "Big Hair Era (1977-1993)", rarity: "Rare", team: "KCR", ovr: 79.2, hp: 108, maxHp: 108, stf: 39, ctl: 56, mov: 64, sta: 84 },
+      { name: "Bill Gullickson", role: "SP", pos: "SP", year: 1986, era: "Big Hair Era (1977-1993)", rarity: "Rare", team: "WSH", ovr: 79.2, hp: 108, maxHp: 108, stf: 29, ctl: 80, mov: 56, sta: 84 },
       { name: "Kelvin Herrera", role: "RP", pos: "RP", year: 2014, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "KCR", ovr: 83.4, hp: 30, maxHp: 30, stf: 64, ctl: 67, mov: 100, sta: 25 },
     ]
   },
@@ -7034,10 +7034,10 @@ window.OpponentsPool = [
     id: "opp_team_00639", name: "LaMarr Hoyt (1982)",
     tier: "B", isBoss: false,
     era: "Big Hair Era (1977-1993)", ovr: 80.6,
-    rarity: "Epic", hof: false, allstars: 1,
+    rarity: "Rare", hof: false, allstars: 1,
     pitchers: [
-      { name: "LaMarr Hoyt", role: "SP", pos: "SP", year: 1982, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "CHW", ovr: 79.2, hp: 114, maxHp: 114, stf: 24, ctl: 98, mov: 42, sta: 91 },
-      { name: "Bob Knepper", role: "SP", pos: "SP", year: 1978, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "HOU", ovr: 79.2, hp: 108, maxHp: 108, stf: 31, ctl: 69, mov: 61, sta: 83 },
+      { name: "LaMarr Hoyt", role: "SP", pos: "SP", year: 1982, era: "Big Hair Era (1977-1993)", rarity: "Rare", team: "CHW", ovr: 79.2, hp: 114, maxHp: 114, stf: 24, ctl: 98, mov: 42, sta: 91 },
+      { name: "Bob Knepper", role: "SP", pos: "SP", year: 1978, era: "Big Hair Era (1977-1993)", rarity: "Rare", team: "HOU", ovr: 79.2, hp: 108, maxHp: 108, stf: 31, ctl: 69, mov: 61, sta: 83 },
       { name: "Ryan Madson", role: "RP", pos: "RP", year: 2017, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "PHI", ovr: 83.4, hp: 30, maxHp: 30, stf: 54, ctl: 79, mov: 97, sta: 26 },
     ]
   },
@@ -7045,10 +7045,10 @@ window.OpponentsPool = [
     id: "opp_team_00640", name: "Ed Halicki (1977)",
     tier: "B", isBoss: false,
     era: "Big Hair Era (1977-1993)", ovr: 80.4,
-    rarity: "Epic", hof: false, allstars: 0,
+    rarity: "Rare", hof: false, allstars: 0,
     pitchers: [
-      { name: "Ed Halicki", role: "SP", pos: "SP", year: 1977, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "SFG", ovr: 79.1, hp: 108, maxHp: 108, stf: 47, ctl: 62, mov: 49, sta: 83 },
-      { name: "Bob Ojeda", role: "SP", pos: "SP", year: 1986, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "BOS", ovr: 79.1, hp: 107, maxHp: 107, stf: 41, ctl: 59, mov: 60, sta: 82 },
+      { name: "Ed Halicki", role: "SP", pos: "SP", year: 1977, era: "Big Hair Era (1977-1993)", rarity: "Rare", team: "SFG", ovr: 79.1, hp: 108, maxHp: 108, stf: 47, ctl: 62, mov: 49, sta: 83 },
+      { name: "Bob Ojeda", role: "SP", pos: "SP", year: 1986, era: "Big Hair Era (1977-1993)", rarity: "Rare", team: "BOS", ovr: 79.1, hp: 107, maxHp: 107, stf: 41, ctl: 59, mov: 60, sta: 82 },
       { name: "Jordan Walden", role: "RP", pos: "RP", year: 2014, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "LAA", ovr: 82.9, hp: 29, maxHp: 29, stf: 84, ctl: 31, mov: 105, sta: 24 },
     ]
   },
@@ -7056,10 +7056,10 @@ window.OpponentsPool = [
     id: "opp_team_00641", name: "BOSS: Dave Rozema (1977)",
     tier: "B", isBoss: true,
     era: "Big Hair Era (1977-1993)", ovr: 80.3,
-    rarity: "Epic", hof: false, allstars: 0,
+    rarity: "Rare", hof: false, allstars: 0,
     pitchers: [
-      { name: "Dave Rozema", role: "SP", pos: "SP", year: 1977, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "DET", ovr: 79.1, hp: 120, maxHp: 120, stf: 2, ctl: 84, mov: 73, sta: 100 },
-      { name: "Pete Vuckovich", role: "SP", pos: "SP", year: 1978, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "MIL", ovr: 79.1, hp: 115, maxHp: 115, stf: 40, ctl: 53, mov: 62, sta: 92 },
+      { name: "Dave Rozema", role: "SP", pos: "SP", year: 1977, era: "Big Hair Era (1977-1993)", rarity: "Rare", team: "DET", ovr: 79.1, hp: 120, maxHp: 120, stf: 2, ctl: 84, mov: 73, sta: 100 },
+      { name: "Pete Vuckovich", role: "SP", pos: "SP", year: 1978, era: "Big Hair Era (1977-1993)", rarity: "Rare", team: "MIL", ovr: 79.1, hp: 115, maxHp: 115, stf: 40, ctl: 53, mov: 62, sta: 92 },
       { name: "Brad Ziegler", role: "RP", pos: "RP", year: 2008, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "ARI", ovr: 82.6, hp: 30, maxHp: 30, stf: 25, ctl: 58, mov: 125, sta: 25 },
     ]
   },
@@ -7100,10 +7100,10 @@ window.OpponentsPool = [
     id: "opp_team_00645", name: "Rube Marquard (1911)",
     tier: "B", isBoss: false,
     era: "Deadball (1901-1919)", ovr: 82.8,
-    rarity: "Legendary", hof: true, allstars: 0,
+    rarity: "Epic", hof: true, allstars: 0,
     pitchers: [
       { name: "Ed Reulbach", role: "SP", pos: "SP", year: 1905, era: "Deadball (1901-1919)", rarity: "Epic", team: "CHC", ovr: 82.9, hp: 120, maxHp: 120, stf: 44, ctl: 46, mov: 79, sta: 100 },
-      { name: "Rube Marquard", role: "SP", pos: "SP", year: 1911, era: "Deadball (1901-1919)", rarity: "Legendary", team: "SFG", ovr: 83.1, hp: 117, maxHp: 117, stf: 60, ctl: 68, mov: 67, sta: 95 },
+      { name: "Rube Marquard", role: "SP", pos: "SP", year: 1911, era: "Deadball (1901-1919)", rarity: "Epic", team: "SFG", ovr: 83.1, hp: 117, maxHp: 117, stf: 60, ctl: 68, mov: 67, sta: 95 },
       { name: "Pedro Strop", role: "RP", pos: "RP", year: 2012, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "CHC", ovr: 82.3, hp: 29, maxHp: 29, stf: 74, ctl: 33, mov: 108, sta: 24 },
     ]
   },
@@ -7276,10 +7276,10 @@ window.OpponentsPool = [
     id: "opp_team_00661", name: "BOSS: Al Demaree (1913)",
     tier: "B", isBoss: true,
     era: "Deadball (1901-1919)", ovr: 79.9,
-    rarity: "Epic", hof: false, allstars: 0,
+    rarity: "Rare", hof: false, allstars: 0,
     pitchers: [
-      { name: "Tom Hughes", role: "SP", pos: "SP", year: 1908, era: "Deadball (1901-1919)", rarity: "Epic", team: "MIN", ovr: 79.8, hp: 116, maxHp: 116, stf: 61, ctl: 46, mov: 54, sta: 95 },
-      { name: "Al Demaree", role: "SP", pos: "SP", year: 1913, era: "Deadball (1901-1919)", rarity: "Epic", team: "SFG", ovr: 79.9, hp: 115, maxHp: 115, stf: 26, ctl: 73, mov: 63, sta: 94 },
+      { name: "Tom Hughes", role: "SP", pos: "SP", year: 1908, era: "Deadball (1901-1919)", rarity: "Rare", team: "MIN", ovr: 79.8, hp: 116, maxHp: 116, stf: 61, ctl: 46, mov: 54, sta: 95 },
+      { name: "Al Demaree", role: "SP", pos: "SP", year: 1913, era: "Deadball (1901-1919)", rarity: "Rare", team: "SFG", ovr: 79.9, hp: 115, maxHp: 115, stf: 26, ctl: 73, mov: 63, sta: 94 },
       { name: "Matt Belisle", role: "RP", pos: "RP", year: 2012, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "COL", ovr: 80.1, hp: 30, maxHp: 30, stf: 43, ctl: 87, mov: 78, sta: 29 },
     ]
   },
@@ -7287,10 +7287,10 @@ window.OpponentsPool = [
     id: "opp_team_00662", name: "Guy Morton (1915)",
     tier: "B", isBoss: false,
     era: "Deadball (1901-1919)", ovr: 79.9,
-    rarity: "Epic", hof: false, allstars: 0,
+    rarity: "Rare", hof: false, allstars: 0,
     pitchers: [
-      { name: "George Winter", role: "SP", pos: "SP", year: 1907, era: "Deadball (1901-1919)", rarity: "Epic", team: "BOS", ovr: 79.7, hp: 121, maxHp: 121, stf: 19, ctl: 73, mov: 58, sta: 101 },
-      { name: "Guy Morton", role: "SP", pos: "SP", year: 1915, era: "Deadball (1901-1919)", rarity: "Epic", team: "CLE", ovr: 79.8, hp: 119, maxHp: 119, stf: 57, ctl: 41, mov: 62, sta: 98 },
+      { name: "George Winter", role: "SP", pos: "SP", year: 1907, era: "Deadball (1901-1919)", rarity: "Rare", team: "BOS", ovr: 79.7, hp: 121, maxHp: 121, stf: 19, ctl: 73, mov: 58, sta: 101 },
+      { name: "Guy Morton", role: "SP", pos: "SP", year: 1915, era: "Deadball (1901-1919)", rarity: "Rare", team: "CLE", ovr: 79.8, hp: 119, maxHp: 119, stf: 57, ctl: 41, mov: 62, sta: 98 },
       { name: "Casey Janssen", role: "RP", pos: "RP", year: 2011, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "TOR", ovr: 80.1, hp: 30, maxHp: 30, stf: 37, ctl: 84, mov: 79, sta: 27 },
     ]
   },
@@ -7298,65 +7298,65 @@ window.OpponentsPool = [
     id: "opp_team_00663", name: "Jeff Pfeffer (1914)",
     tier: "B", isBoss: false,
     era: "Deadball (1901-1919)", ovr: 79.7,
-    rarity: "Epic", hof: false, allstars: 0,
+    rarity: "Rare", hof: false, allstars: 0,
     pitchers: [
-      { name: "Slim Sallee", role: "SP", pos: "SP", year: 1912, era: "Deadball (1901-1919)", rarity: "Epic", team: "STL", ovr: 79.6, hp: 120, maxHp: 120, stf: 15, ctl: 80, mov: 65, sta: 100 },
-      { name: "Jeff Pfeffer", role: "SP", pos: "SP", year: 1914, era: "Deadball (1901-1919)", rarity: "Epic", team: "LAD", ovr: 79.6, hp: 119, maxHp: 119, stf: 25, ctl: 74, mov: 66, sta: 98 },
-      { name: "Justin Duchscherer", role: "RP", pos: "RP", year: 2008, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "OAK", ovr: 79.8, hp: 32, maxHp: 32, stf: 37, ctl: 76, mov: 80, sta: 35 },
+      { name: "Slim Sallee", role: "SP", pos: "SP", year: 1912, era: "Deadball (1901-1919)", rarity: "Rare", team: "STL", ovr: 79.6, hp: 120, maxHp: 120, stf: 15, ctl: 80, mov: 65, sta: 100 },
+      { name: "Jeff Pfeffer", role: "SP", pos: "SP", year: 1914, era: "Deadball (1901-1919)", rarity: "Rare", team: "LAD", ovr: 79.6, hp: 119, maxHp: 119, stf: 25, ctl: 74, mov: 66, sta: 98 },
+      { name: "Justin Duchscherer", role: "RP", pos: "RP", year: 2008, era: "Efficiency Era (2006-2015)", rarity: "Rare", team: "OAK", ovr: 79.8, hp: 32, maxHp: 32, stf: 37, ctl: 76, mov: 80, sta: 35 },
     ]
   },
   {
     id: "opp_team_00664", name: "Fred Toney (1915)",
     tier: "B", isBoss: false,
     era: "Deadball (1901-1919)", ovr: 79.5,
-    rarity: "Epic", hof: false, allstars: 0,
+    rarity: "Rare", hof: false, allstars: 0,
     pitchers: [
-      { name: "Earl Hamilton", role: "SP", pos: "SP", year: 1914, era: "Deadball (1901-1919)", rarity: "Epic", team: "BAL", ovr: 79.5, hp: 121, maxHp: 121, stf: 26, ctl: 48, mov: 77, sta: 102 },
-      { name: "Fred Toney", role: "SP", pos: "SP", year: 1915, era: "Deadball (1901-1919)", rarity: "Epic", team: "SFG", ovr: 79.6, hp: 116, maxHp: 116, stf: 19, ctl: 72, mov: 70, sta: 94 },
-      { name: "Andrew Bailey", role: "RP", pos: "RP", year: 2009, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "OAK", ovr: 79.4, hp: 30, maxHp: 30, stf: 64, ctl: 61, mov: 74, sta: 26 },
+      { name: "Earl Hamilton", role: "SP", pos: "SP", year: 1914, era: "Deadball (1901-1919)", rarity: "Rare", team: "BAL", ovr: 79.5, hp: 121, maxHp: 121, stf: 26, ctl: 48, mov: 77, sta: 102 },
+      { name: "Fred Toney", role: "SP", pos: "SP", year: 1915, era: "Deadball (1901-1919)", rarity: "Rare", team: "SFG", ovr: 79.6, hp: 116, maxHp: 116, stf: 19, ctl: 72, mov: 70, sta: 94 },
+      { name: "Andrew Bailey", role: "RP", pos: "RP", year: 2009, era: "Efficiency Era (2006-2015)", rarity: "Rare", team: "OAK", ovr: 79.4, hp: 30, maxHp: 30, stf: 64, ctl: 61, mov: 74, sta: 26 },
     ]
   },
   {
     id: "opp_team_00665", name: "Jeff Tesreau (1915)",
     tier: "B", isBoss: false,
     era: "Deadball (1901-1919)", ovr: 79.4,
-    rarity: "Epic", hof: false, allstars: 0,
+    rarity: "Rare", hof: false, allstars: 0,
     pitchers: [
-      { name: "Pat Ragan", role: "SP", pos: "SP", year: 1915, era: "Deadball (1901-1919)", rarity: "Epic", team: "LAD", ovr: 79.4, hp: 120, maxHp: 120, stf: 39, ctl: 53, mov: 64, sta: 100 },
-      { name: "Jeff Tesreau", role: "SP", pos: "SP", year: 1915, era: "Deadball (1901-1919)", rarity: "Epic", team: "SFG", ovr: 79.5, hp: 116, maxHp: 116, stf: 59, ctl: 39, mov: 62, sta: 94 },
-      { name: "Joel Peralta", role: "RP", pos: "RP", year: 2010, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "TB", ovr: 79.3, hp: 30, maxHp: 30, stf: 58, ctl: 71, mov: 67, sta: 26 },
+      { name: "Pat Ragan", role: "SP", pos: "SP", year: 1915, era: "Deadball (1901-1919)", rarity: "Rare", team: "LAD", ovr: 79.4, hp: 120, maxHp: 120, stf: 39, ctl: 53, mov: 64, sta: 100 },
+      { name: "Jeff Tesreau", role: "SP", pos: "SP", year: 1915, era: "Deadball (1901-1919)", rarity: "Rare", team: "SFG", ovr: 79.5, hp: 116, maxHp: 116, stf: 59, ctl: 39, mov: 62, sta: 94 },
+      { name: "Joel Peralta", role: "RP", pos: "RP", year: 2010, era: "Efficiency Era (2006-2015)", rarity: "Rare", team: "TB", ovr: 79.3, hp: 30, maxHp: 30, stf: 58, ctl: 71, mov: 67, sta: 26 },
     ]
   },
   {
     id: "opp_team_00666", name: "BOSS: Ed Siever (1902)",
     tier: "B", isBoss: true,
     era: "Deadball (1901-1919)", ovr: 79.3,
-    rarity: "Epic", hof: false, allstars: 0,
+    rarity: "Rare", hof: false, allstars: 0,
     pitchers: [
-      { name: "Ed Siever", role: "SP", pos: "SP", year: 1902, era: "Deadball (1901-1919)", rarity: "Epic", team: "DET", ovr: 79.4, hp: 119, maxHp: 119, stf: 12, ctl: 82, mov: 60, sta: 98 },
-      { name: "Jack Coombs", role: "SP", pos: "SP", year: 1910, era: "Deadball (1901-1919)", rarity: "Epic", team: "OAK", ovr: 79.3, hp: 119, maxHp: 119, stf: 53, ctl: 31, mov: 62, sta: 98 },
-      { name: "Shawn Kelley", role: "RP", pos: "RP", year: 2016, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "SEA", ovr: 79.1, hp: 29, maxHp: 29, stf: 75, ctl: 74, mov: 59, sta: 24 },
+      { name: "Ed Siever", role: "SP", pos: "SP", year: 1902, era: "Deadball (1901-1919)", rarity: "Rare", team: "DET", ovr: 79.4, hp: 119, maxHp: 119, stf: 12, ctl: 82, mov: 60, sta: 98 },
+      { name: "Jack Coombs", role: "SP", pos: "SP", year: 1910, era: "Deadball (1901-1919)", rarity: "Rare", team: "OAK", ovr: 79.3, hp: 119, maxHp: 119, stf: 53, ctl: 31, mov: 62, sta: 98 },
+      { name: "Shawn Kelley", role: "RP", pos: "RP", year: 2016, era: "Efficiency Era (2006-2015)", rarity: "Rare", team: "SEA", ovr: 79.1, hp: 29, maxHp: 29, stf: 75, ctl: 74, mov: 59, sta: 24 },
     ]
   },
   {
     id: "opp_team_00667", name: "Joe McGinnity (1903)",
     tier: "B", isBoss: false,
     era: "Deadball (1901-1919)", ovr: 79.2,
-    rarity: "Epic", hof: true, allstars: 0,
+    rarity: "Rare", hof: true, allstars: 0,
     pitchers: [
-      { name: "Joe McGinnity", role: "SP", pos: "SP", year: 1903, era: "Deadball (1901-1919)", rarity: "Epic", team: "SFG", ovr: 79.3, hp: 121, maxHp: 121, stf: 7, ctl: 69, mov: 72, sta: 101 },
-      { name: "Tully Sparks", role: "SP", pos: "SP", year: 1906, era: "Deadball (1901-1919)", rarity: "Epic", team: "PHI", ovr: 79.3, hp: 120, maxHp: 120, stf: 20, ctl: 70, mov: 57, sta: 99 },
-      { name: "Luis Ayala", role: "RP", pos: "RP", year: 2004, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "WSH", ovr: 79.0, hp: 30, maxHp: 30, stf: 25, ctl: 85, mov: 84, sta: 26 },
+      { name: "Joe McGinnity", role: "SP", pos: "SP", year: 1903, era: "Deadball (1901-1919)", rarity: "Rare", team: "SFG", ovr: 79.3, hp: 121, maxHp: 121, stf: 7, ctl: 69, mov: 72, sta: 101 },
+      { name: "Tully Sparks", role: "SP", pos: "SP", year: 1906, era: "Deadball (1901-1919)", rarity: "Rare", team: "PHI", ovr: 79.3, hp: 120, maxHp: 120, stf: 20, ctl: 70, mov: 57, sta: 99 },
+      { name: "Luis Ayala", role: "RP", pos: "RP", year: 2004, era: "Efficiency Era (2006-2015)", rarity: "Rare", team: "WSH", ovr: 79.0, hp: 30, maxHp: 30, stf: 25, ctl: 85, mov: 84, sta: 26 },
     ]
   },
   {
     id: "opp_team_00668", name: "Barney Pelty (1906)",
     tier: "B", isBoss: false,
     era: "Deadball (1901-1919)", ovr: 80.8,
-    rarity: "Epic", hof: false, allstars: 0,
+    rarity: "Rare", hof: false, allstars: 0,
     pitchers: [
-      { name: "Barney Pelty", role: "SP", pos: "SP", year: 1906, era: "Deadball (1901-1919)", rarity: "Epic", team: "BAL", ovr: 79.2, hp: 120, maxHp: 120, stf: 26, ctl: 64, mov: 57, sta: 100 },
-      { name: "Bill Dinneen", role: "SP", pos: "SP", year: 1902, era: "Deadball (1901-1919)", rarity: "Epic", team: "BOS", ovr: 79.1, hp: 120, maxHp: 120, stf: 29, ctl: 61, mov: 64, sta: 100 },
+      { name: "Barney Pelty", role: "SP", pos: "SP", year: 1906, era: "Deadball (1901-1919)", rarity: "Rare", team: "BAL", ovr: 79.2, hp: 120, maxHp: 120, stf: 26, ctl: 64, mov: 57, sta: 100 },
+      { name: "Bill Dinneen", role: "SP", pos: "SP", year: 1902, era: "Deadball (1901-1919)", rarity: "Rare", team: "BOS", ovr: 79.1, hp: 120, maxHp: 120, stf: 29, ctl: 61, mov: 64, sta: 100 },
       { name: "Tug McGraw", role: "RP", pos: "RP", year: 1980, era: "Expansion (1961-1976)", rarity: "Epic", team: "PHI", ovr: 84.2, hp: 31, maxHp: 31, stf: 75, ctl: 47, mov: 102, sta: 34 },
     ]
   },
@@ -7364,10 +7364,10 @@ window.OpponentsPool = [
     id: "opp_team_00669", name: "Frank Owen (1904)",
     tier: "B", isBoss: false,
     era: "Deadball (1901-1919)", ovr: 80.1,
-    rarity: "Epic", hof: false, allstars: 0,
+    rarity: "Rare", hof: false, allstars: 0,
     pitchers: [
-      { name: "Carl Lundgren", role: "SP", pos: "SP", year: 1907, era: "Deadball (1901-1919)", rarity: "Epic", team: "CHC", ovr: 79.0, hp: 120, maxHp: 120, stf: 37, ctl: 34, mov: 66, sta: 99 },
-      { name: "Frank Owen", role: "SP", pos: "SP", year: 1904, era: "Deadball (1901-1919)", rarity: "Epic", team: "CHW", ovr: 79.1, hp: 119, maxHp: 119, stf: 15, ctl: 80, mov: 48, sta: 98 },
+      { name: "Carl Lundgren", role: "SP", pos: "SP", year: 1907, era: "Deadball (1901-1919)", rarity: "Rare", team: "CHC", ovr: 79.0, hp: 120, maxHp: 120, stf: 37, ctl: 34, mov: 66, sta: 99 },
+      { name: "Frank Owen", role: "SP", pos: "SP", year: 1904, era: "Deadball (1901-1919)", rarity: "Rare", team: "CHW", ovr: 79.1, hp: 119, maxHp: 119, stf: 15, ctl: 80, mov: 48, sta: 98 },
       { name: "Joe Hoerner", role: "RP", pos: "RP", year: 1966, era: "Expansion (1961-1976)", rarity: "Epic", team: "STL", ovr: 82.2, hp: 30, maxHp: 30, stf: 63, ctl: 70, mov: 91, sta: 27 },
     ]
   },
@@ -7445,7 +7445,7 @@ window.OpponentsPool = [
     pitchers: [
       { name: "Josh Beckett", role: "SP", pos: "SP", year: 2007, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "BOS", ovr: 82.5, hp: 105, maxHp: 105, stf: 60, ctl: 71, mov: 67, sta: 80 },
       { name: "Zach Duke", role: "SP", pos: "SP", year: 2005, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "PIT", ovr: 82.5, hp: 105, maxHp: 105, stf: 31, ctl: 63, mov: 96, sta: 80 },
-      { name: "Bob Locker", role: "RP", pos: "RP", year: 1973, era: "Expansion (1961-1976)", rarity: "Epic", team: "CHW", ovr: 79.8, hp: 31, maxHp: 31, stf: 47, ctl: 70, mov: 69, sta: 30 },
+      { name: "Bob Locker", role: "RP", pos: "RP", year: 1973, era: "Expansion (1961-1976)", rarity: "Rare", team: "CHW", ovr: 79.8, hp: 31, maxHp: 31, stf: 47, ctl: 70, mov: 69, sta: 30 },
     ]
   },
   {
@@ -7456,7 +7456,7 @@ window.OpponentsPool = [
     pitchers: [
       { name: "Josh Johnson", role: "SP", pos: "SP", year: 2010, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "MIA", ovr: 82.4, hp: 106, maxHp: 106, stf: 56, ctl: 59, mov: 81, sta: 81 },
       { name: "Ian Kennedy", role: "SP", pos: "SP", year: 2011, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "ARI", ovr: 82.3, hp: 104, maxHp: 104, stf: 61, ctl: 65, mov: 63, sta: 79 },
-      { name: "Eddie Watt", role: "RP", pos: "RP", year: 1967, era: "Expansion (1961-1976)", rarity: "Epic", team: "BAL", ovr: 79.8, hp: 31, maxHp: 31, stf: 50, ctl: 52, mov: 78, sta: 32 },
+      { name: "Eddie Watt", role: "RP", pos: "RP", year: 1967, era: "Expansion (1961-1976)", rarity: "Rare", team: "BAL", ovr: 79.8, hp: 31, maxHp: 31, stf: 50, ctl: 52, mov: 78, sta: 32 },
     ]
   },
   {
@@ -7467,7 +7467,7 @@ window.OpponentsPool = [
     pitchers: [
       { name: "Doug Fister", role: "SP", pos: "SP", year: 2011, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "SEA", ovr: 81.6, hp: 105, maxHp: 105, stf: 27, ctl: 94, mov: 66, sta: 80 },
       { name: "Drew Smyly", role: "SP", pos: "SP", year: 2014, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "TB", ovr: 81.8, hp: 100, maxHp: 100, stf: 63, ctl: 70, mov: 70, sta: 73 },
-      { name: "Al Hrabosky", role: "RP", pos: "RP", year: 1975, era: "Expansion (1961-1976)", rarity: "Epic", team: "STL", ovr: 79.6, hp: 30, maxHp: 30, stf: 70, ctl: 30, mov: 89, sta: 28 },
+      { name: "Al Hrabosky", role: "RP", pos: "RP", year: 1975, era: "Expansion (1961-1976)", rarity: "Rare", team: "STL", ovr: 79.6, hp: 30, maxHp: 30, stf: 70, ctl: 30, mov: 89, sta: 28 },
     ]
   },
   {
@@ -7478,7 +7478,7 @@ window.OpponentsPool = [
     pitchers: [
       { name: "Jeff Samardzija", role: "SP", pos: "SP", year: 2014, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "CHC", ovr: 81.3, hp: 105, maxHp: 105, stf: 59, ctl: 72, mov: 57, sta: 80 },
       { name: "Francisco Liriano", role: "SP", pos: "SP", year: 2006, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "MIN", ovr: 81.2, hp: 104, maxHp: 104, stf: 72, ctl: 38, mov: 65, sta: 78 },
-      { name: "Mike Marshall", role: "RP", pos: "RP", year: 1979, era: "Expansion (1961-1976)", rarity: "Epic", team: "WSH", ovr: 79.4, hp: 31, maxHp: 31, stf: 47, ctl: 52, mov: 88, sta: 33 },
+      { name: "Mike Marshall", role: "RP", pos: "RP", year: 1979, era: "Expansion (1961-1976)", rarity: "Rare", team: "WSH", ovr: 79.4, hp: 31, maxHp: 31, stf: 47, ctl: 52, mov: 88, sta: 33 },
     ]
   },
   {
@@ -7573,10 +7573,10 @@ window.OpponentsPool = [
     id: "opp_team_00688", name: "Scott Kazmir (2007)",
     tier: "B", isBoss: false,
     era: "Efficiency Era (2006-2015)", ovr: 81.4,
-    rarity: "Epic", hof: false, allstars: 3,
+    rarity: "Rare", hof: false, allstars: 3,
     pitchers: [
-      { name: "Joe Blanton", role: "SP", pos: "SP", year: 2005, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "OAK", ovr: 79.8, hp: 106, maxHp: 106, stf: 28, ctl: 71, mov: 65, sta: 82 },
-      { name: "Scott Kazmir", role: "SP", pos: "SP", year: 2007, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "TB", ovr: 79.9, hp: 102, maxHp: 102, stf: 68, ctl: 44, mov: 63, sta: 76 },
+      { name: "Joe Blanton", role: "SP", pos: "SP", year: 2005, era: "Efficiency Era (2006-2015)", rarity: "Rare", team: "OAK", ovr: 79.8, hp: 106, maxHp: 106, stf: 28, ctl: 71, mov: 65, sta: 82 },
+      { name: "Scott Kazmir", role: "SP", pos: "SP", year: 2007, era: "Efficiency Era (2006-2015)", rarity: "Rare", team: "TB", ovr: 79.9, hp: 102, maxHp: 102, stf: 68, ctl: 44, mov: 63, sta: 76 },
       { name: "Brent Suter", role: "RP", pos: "RP", year: 2017, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "MIL", ovr: 84.5, hp: 31, maxHp: 31, stf: 37, ctl: 75, mov: 125, sta: 31 },
     ]
   },
@@ -7584,10 +7584,10 @@ window.OpponentsPool = [
     id: "opp_team_00689", name: "Jason Hammel (2014)",
     tier: "B", isBoss: false,
     era: "Efficiency Era (2006-2015)", ovr: 81.3,
-    rarity: "Epic", hof: false, allstars: 0,
+    rarity: "Rare", hof: false, allstars: 0,
     pitchers: [
-      { name: "Derek Holland", role: "SP", pos: "SP", year: 2013, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "TEX", ovr: 79.8, hp: 104, maxHp: 104, stf: 48, ctl: 59, mov: 70, sta: 78 },
-      { name: "Jason Hammel", role: "SP", pos: "SP", year: 2014, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "TB", ovr: 79.8, hp: 102, maxHp: 102, stf: 51, ctl: 74, mov: 53, sta: 75 },
+      { name: "Derek Holland", role: "SP", pos: "SP", year: 2013, era: "Efficiency Era (2006-2015)", rarity: "Rare", team: "TEX", ovr: 79.8, hp: 104, maxHp: 104, stf: 48, ctl: 59, mov: 70, sta: 78 },
+      { name: "Jason Hammel", role: "SP", pos: "SP", year: 2014, era: "Efficiency Era (2006-2015)", rarity: "Rare", team: "TB", ovr: 79.8, hp: 102, maxHp: 102, stf: 51, ctl: 74, mov: 53, sta: 75 },
       { name: "Ken Giles", role: "RP", pos: "RP", year: 2019, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "TOR", ovr: 84.2, hp: 30, maxHp: 30, stf: 85, ctl: 62, mov: 87, sta: 25 },
     ]
   },
@@ -7595,10 +7595,10 @@ window.OpponentsPool = [
     id: "opp_team_00690", name: "Erik Bedard (2007)",
     tier: "B", isBoss: false,
     era: "Efficiency Era (2006-2015)", ovr: 81.2,
-    rarity: "Epic", hof: false, allstars: 0,
+    rarity: "Rare", hof: false, allstars: 0,
     pitchers: [
-      { name: "A. J. Burnett", role: "SP", pos: "SP", year: 2009, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "MIA", ovr: 79.7, hp: 106, maxHp: 106, stf: 64, ctl: 43, mov: 60, sta: 81 },
-      { name: "Erik Bedard", role: "SP", pos: "SP", year: 2007, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "BAL", ovr: 79.7, hp: 102, maxHp: 102, stf: 64, ctl: 41, mov: 64, sta: 75 },
+      { name: "A. J. Burnett", role: "SP", pos: "SP", year: 2009, era: "Efficiency Era (2006-2015)", rarity: "Rare", team: "MIA", ovr: 79.7, hp: 106, maxHp: 106, stf: 64, ctl: 43, mov: 60, sta: 81 },
+      { name: "Erik Bedard", role: "SP", pos: "SP", year: 2007, era: "Efficiency Era (2006-2015)", rarity: "Rare", team: "BAL", ovr: 79.7, hp: 102, maxHp: 102, stf: 64, ctl: 41, mov: 64, sta: 75 },
       { name: "Will Harris", role: "RP", pos: "RP", year: 2015, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "HOU", ovr: 84.1, hp: 29, maxHp: 29, stf: 60, ctl: 75, mov: 99, sta: 24 },
     ]
   },
@@ -7606,10 +7606,10 @@ window.OpponentsPool = [
     id: "opp_team_00691", name: "BOSS: Brett Myers (2010)",
     tier: "B", isBoss: true,
     era: "Efficiency Era (2006-2015)", ovr: 81.1,
-    rarity: "Epic", hof: false, allstars: 0,
+    rarity: "Rare", hof: false, allstars: 0,
     pitchers: [
-      { name: "Brett Myers", role: "SP", pos: "SP", year: 2010, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "PHI", ovr: 79.7, hp: 107, maxHp: 107, stf: 52, ctl: 58, mov: 58, sta: 82 },
-      { name: "Brett Anderson", role: "SP", pos: "SP", year: 2019, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "OAK", ovr: 79.6, hp: 102, maxHp: 102, stf: 28, ctl: 78, mov: 65, sta: 76 },
+      { name: "Brett Myers", role: "SP", pos: "SP", year: 2010, era: "Efficiency Era (2006-2015)", rarity: "Rare", team: "PHI", ovr: 79.7, hp: 107, maxHp: 107, stf: 52, ctl: 58, mov: 58, sta: 82 },
+      { name: "Brett Anderson", role: "SP", pos: "SP", year: 2019, era: "Efficiency Era (2006-2015)", rarity: "Rare", team: "OAK", ovr: 79.6, hp: 102, maxHp: 102, stf: 28, ctl: 78, mov: 65, sta: 76 },
       { name: "Kirby Yates", role: "RP", pos: "RP", year: 2024, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "SDP", ovr: 84.1, hp: 29, maxHp: 29, stf: 98, ctl: 39, mov: 101, sta: 25 },
     ]
   },
@@ -7617,10 +7617,10 @@ window.OpponentsPool = [
     id: "opp_team_00692", name: "Gio Gonzalez (2017)",
     tier: "B", isBoss: false,
     era: "Efficiency Era (2006-2015)", ovr: 81.0,
-    rarity: "Epic", hof: false, allstars: 2,
+    rarity: "Rare", hof: false, allstars: 2,
     pitchers: [
-      { name: "Gio Gonzalez", role: "SP", pos: "SP", year: 2017, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "WSH", ovr: 79.6, hp: 103, maxHp: 103, stf: 64, ctl: 38, mov: 66, sta: 78 },
-      { name: "Rick Porcello", role: "SP", pos: "SP", year: 2016, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "DET", ovr: 79.5, hp: 103, maxHp: 103, stf: 37, ctl: 85, mov: 54, sta: 77 },
+      { name: "Gio Gonzalez", role: "SP", pos: "SP", year: 2017, era: "Efficiency Era (2006-2015)", rarity: "Rare", team: "WSH", ovr: 79.6, hp: 103, maxHp: 103, stf: 64, ctl: 38, mov: 66, sta: 78 },
+      { name: "Rick Porcello", role: "SP", pos: "SP", year: 2016, era: "Efficiency Era (2006-2015)", rarity: "Rare", team: "DET", ovr: 79.5, hp: 103, maxHp: 103, stf: 37, ctl: 85, mov: 54, sta: 77 },
       { name: "Dellin Betances", role: "RP", pos: "RP", year: 2015, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "NYY", ovr: 84.0, hp: 30, maxHp: 30, stf: 120, ctl: 26, mov: 84, sta: 26 },
     ]
   },
@@ -7628,10 +7628,10 @@ window.OpponentsPool = [
     id: "opp_team_00693", name: "Mark Buehrle (2007)",
     tier: "B", isBoss: false,
     era: "Efficiency Era (2006-2015)", ovr: 80.6,
-    rarity: "Epic", hof: false, allstars: 5,
+    rarity: "Rare", hof: false, allstars: 5,
     pitchers: [
-      { name: "Mark Buehrle", role: "SP", pos: "SP", year: 2007, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "CHW", ovr: 79.3, hp: 107, maxHp: 107, stf: 16, ctl: 89, mov: 68, sta: 83 },
-      { name: "Mike Leake", role: "SP", pos: "SP", year: 2015, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "CIN", ovr: 79.3, hp: 104, maxHp: 104, stf: 27, ctl: 90, mov: 54, sta: 79 },
+      { name: "Mark Buehrle", role: "SP", pos: "SP", year: 2007, era: "Efficiency Era (2006-2015)", rarity: "Rare", team: "CHW", ovr: 79.3, hp: 107, maxHp: 107, stf: 16, ctl: 89, mov: 68, sta: 83 },
+      { name: "Mike Leake", role: "SP", pos: "SP", year: 2015, era: "Efficiency Era (2006-2015)", rarity: "Rare", team: "CIN", ovr: 79.3, hp: 104, maxHp: 104, stf: 27, ctl: 90, mov: 54, sta: 79 },
       { name: "Chad Green", role: "RP", pos: "RP", year: 2017, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "NYY", ovr: 83.3, hp: 30, maxHp: 30, stf: 80, ctl: 78, mov: 78, sta: 29 },
     ]
   },
@@ -7639,10 +7639,10 @@ window.OpponentsPool = [
     id: "opp_team_00694", name: "Darren Oliver (1999)",
     tier: "B", isBoss: false,
     era: "Efficiency Era (2006-2015)", ovr: 80.6,
-    rarity: "Epic", hof: false, allstars: 0,
+    rarity: "Rare", hof: false, allstars: 0,
     pitchers: [
-      { name: "Darren Oliver", role: "SP", pos: "SP", year: 1999, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "TEX", ovr: 79.3, hp: 108, maxHp: 108, stf: 27, ctl: 50, mov: 82, sta: 84 },
-      { name: "Homer Bailey", role: "SP", pos: "SP", year: 2013, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "CIN", ovr: 79.1, hp: 103, maxHp: 103, stf: 51, ctl: 65, mov: 49, sta: 77 },
+      { name: "Darren Oliver", role: "SP", pos: "SP", year: 1999, era: "Efficiency Era (2006-2015)", rarity: "Rare", team: "TEX", ovr: 79.3, hp: 108, maxHp: 108, stf: 27, ctl: 50, mov: 82, sta: 84 },
+      { name: "Homer Bailey", role: "SP", pos: "SP", year: 2013, era: "Efficiency Era (2006-2015)", rarity: "Rare", team: "CIN", ovr: 79.1, hp: 103, maxHp: 103, stf: 51, ctl: 65, mov: 49, sta: 77 },
       { name: "Tyler Rogers", role: "RP", pos: "RP", year: 2021, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "SFG", ovr: 83.3, hp: 30, maxHp: 30, stf: 24, ctl: 97, mov: 104, sta: 25 },
     ]
   },
@@ -7650,10 +7650,10 @@ window.OpponentsPool = [
     id: "opp_team_00695", name: "Matt Garza (2009)",
     tier: "B", isBoss: false,
     era: "Efficiency Era (2006-2015)", ovr: 80.4,
-    rarity: "Epic", hof: false, allstars: 0,
+    rarity: "Rare", hof: false, allstars: 0,
     pitchers: [
-      { name: "Matt Garza", role: "SP", pos: "SP", year: 2009, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "MIL", ovr: 79.1, hp: 104, maxHp: 104, stf: 48, ctl: 61, mov: 56, sta: 79 },
-      { name: "Jaime Garcia", role: "SP", pos: "SP", year: 2015, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "STL", ovr: 79.0, hp: 103, maxHp: 103, stf: 44, ctl: 63, mov: 60, sta: 77 },
+      { name: "Matt Garza", role: "SP", pos: "SP", year: 2009, era: "Efficiency Era (2006-2015)", rarity: "Rare", team: "MIL", ovr: 79.1, hp: 104, maxHp: 104, stf: 48, ctl: 61, mov: 56, sta: 79 },
+      { name: "Jaime Garcia", role: "SP", pos: "SP", year: 2015, era: "Efficiency Era (2006-2015)", rarity: "Rare", team: "STL", ovr: 79.0, hp: 103, maxHp: 103, stf: 44, ctl: 63, mov: 60, sta: 77 },
       { name: "Ryan Brasier", role: "RP", pos: "RP", year: 2018, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "BOS", ovr: 83.1, hp: 29, maxHp: 29, stf: 48, ctl: 59, mov: 122, sta: 25 },
     ]
   },
@@ -7661,10 +7661,10 @@ window.OpponentsPool = [
     id: "opp_team_00696", name: "BOSS: Ted Lilly (2009)",
     tier: "B", isBoss: true,
     era: "Efficiency Era (2006-2015)", ovr: 82.3,
-    rarity: "Epic", hof: false, allstars: 2,
+    rarity: "Rare", hof: false, allstars: 2,
     pitchers: [
-      { name: "Whitey Ford", role: "SP", pos: "SP", year: 1964, era: "Expansion (1961-1976)", rarity: "Legendary", team: "NYY", ovr: 84.7, hp: 110, maxHp: 110, stf: 45, ctl: 69, mov: 79, sta: 87 },
-      { name: "Ted Lilly", role: "SP", pos: "SP", year: 2009, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "LAD", ovr: 79.0, hp: 104, maxHp: 104, stf: 49, ctl: 66, mov: 61, sta: 78 },
+      { name: "Whitey Ford", role: "SP", pos: "SP", year: 1964, era: "Expansion (1961-1976)", rarity: "Epic", team: "NYY", ovr: 84.7, hp: 110, maxHp: 110, stf: 45, ctl: 69, mov: 79, sta: 87 },
+      { name: "Ted Lilly", role: "SP", pos: "SP", year: 2009, era: "Efficiency Era (2006-2015)", rarity: "Rare", team: "LAD", ovr: 79.0, hp: 104, maxHp: 104, stf: 49, ctl: 66, mov: 61, sta: 78 },
       { name: "Zack Britton", role: "RP", pos: "RP", year: 2016, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "BAL", ovr: 83.1, hp: 30, maxHp: 30, stf: 47, ctl: 47, mov: 125, sta: 25 },
     ]
   },
@@ -7686,7 +7686,7 @@ window.OpponentsPool = [
     rarity: "Epic", hof: false, allstars: 4,
     pitchers: [
       { name: "Turk Farrell", role: "SP", pos: "SP", year: 1962, era: "Expansion (1961-1976)", rarity: "Epic", team: "PHI", ovr: 83.9, hp: 121, maxHp: 121, stf: 56, ctl: 76, mov: 67, sta: 101 },
-      { name: "Jim Palmer", role: "SP", pos: "SP", year: 1975, era: "Expansion (1961-1976)", rarity: "Legendary", team: "BAL", ovr: 83.9, hp: 115, maxHp: 115, stf: 34, ctl: 65, mov: 79, sta: 93 },
+      { name: "Jim Palmer", role: "SP", pos: "SP", year: 1975, era: "Expansion (1961-1976)", rarity: "Epic", team: "BAL", ovr: 83.9, hp: 115, maxHp: 115, stf: 34, ctl: 65, mov: 79, sta: 93 },
       { name: "Andrew Kittredge", role: "RP", pos: "RP", year: 2021, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "TB", ovr: 82.9, hp: 30, maxHp: 30, stf: 57, ctl: 80, mov: 93, sta: 26 },
     ]
   },
@@ -7694,9 +7694,9 @@ window.OpponentsPool = [
     id: "opp_team_00699", name: "Gaylord Perry (1972)",
     tier: "B", isBoss: false,
     era: "Expansion (1961-1976)", ovr: 83.4,
-    rarity: "Legendary", hof: true, allstars: 5,
+    rarity: "Epic", hof: true, allstars: 5,
     pitchers: [
-      { name: "Gaylord Perry", role: "SP", pos: "SP", year: 1972, era: "Expansion (1961-1976)", rarity: "Legendary", team: "SFG", ovr: 83.9, hp: 117, maxHp: 117, stf: 51, ctl: 74, mov: 71, sta: 95 },
+      { name: "Gaylord Perry", role: "SP", pos: "SP", year: 1972, era: "Expansion (1961-1976)", rarity: "Epic", team: "SFG", ovr: 83.9, hp: 117, maxHp: 117, stf: 51, ctl: 74, mov: 71, sta: 95 },
       { name: "Sam McDowell", role: "SP", pos: "SP", year: 1970, era: "Expansion (1961-1976)", rarity: "Epic", team: "CLE", ovr: 83.7, hp: 111, maxHp: 111, stf: 108, ctl: 14, mov: 74, sta: 88 },
       { name: "Alex Colome", role: "RP", pos: "RP", year: 2016, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "TB", ovr: 82.6, hp: 30, maxHp: 30, stf: 44, ctl: 58, mov: 118, sta: 28 },
     ]
@@ -7749,10 +7749,10 @@ window.OpponentsPool = [
     id: "opp_team_00704", name: "Jim Kaat (1975)",
     tier: "B", isBoss: false,
     era: "Expansion (1961-1976)", ovr: 82.1,
-    rarity: "Legendary", hof: true, allstars: 3,
+    rarity: "Epic", hof: true, allstars: 3,
     pitchers: [
       { name: "Mickey Lolich", role: "SP", pos: "SP", year: 1971, era: "Expansion (1961-1976)", rarity: "Epic", team: "DET", ovr: 82.6, hp: 112, maxHp: 112, stf: 68, ctl: 66, mov: 59, sta: 90 },
-      { name: "Jim Kaat", role: "SP", pos: "SP", year: 1975, era: "Expansion (1961-1976)", rarity: "Legendary", team: "MIN", ovr: 82.7, hp: 110, maxHp: 110, stf: 39, ctl: 89, mov: 63, sta: 87 },
+      { name: "Jim Kaat", role: "SP", pos: "SP", year: 1975, era: "Expansion (1961-1976)", rarity: "Epic", team: "MIN", ovr: 82.7, hp: 110, maxHp: 110, stf: 39, ctl: 89, mov: 63, sta: 87 },
       { name: "Tony Watson", role: "RP", pos: "RP", year: 2014, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "PIT", ovr: 81.1, hp: 29, maxHp: 29, stf: 41, ctl: 80, mov: 88, sta: 25 },
     ]
   },
@@ -7760,10 +7760,10 @@ window.OpponentsPool = [
     id: "opp_team_00705", name: "Catfish Hunter (1975)",
     tier: "B", isBoss: false,
     era: "Expansion (1961-1976)", ovr: 82.0,
-    rarity: "Legendary", hof: true, allstars: 8,
+    rarity: "Epic", hof: true, allstars: 8,
     pitchers: [
       { name: "Jon Matlack", role: "SP", pos: "SP", year: 1974, era: "Expansion (1961-1976)", rarity: "Epic", team: "NYM", ovr: 82.5, hp: 113, maxHp: 113, stf: 48, ctl: 75, mov: 68, sta: 91 },
-      { name: "Catfish Hunter", role: "SP", pos: "SP", year: 1975, era: "Expansion (1961-1976)", rarity: "Legendary", team: "OAK", ovr: 82.5, hp: 113, maxHp: 113, stf: 36, ctl: 76, mov: 64, sta: 90 },
+      { name: "Catfish Hunter", role: "SP", pos: "SP", year: 1975, era: "Expansion (1961-1976)", rarity: "Epic", team: "OAK", ovr: 82.5, hp: 113, maxHp: 113, stf: 36, ctl: 76, mov: 64, sta: 90 },
       { name: "Aaron Loup", role: "RP", pos: "RP", year: 2021, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "TOR", ovr: 81.0, hp: 29, maxHp: 29, stf: 44, ctl: 61, mov: 101, sta: 24 },
     ]
   },
@@ -7841,7 +7841,7 @@ window.OpponentsPool = [
     pitchers: [
       { name: "Mike Cuellar", role: "SP", pos: "SP", year: 1966, era: "Expansion (1961-1976)", rarity: "Epic", team: "BAL", ovr: 81.7, hp: 112, maxHp: 112, stf: 39, ctl: 73, mov: 65, sta: 89 },
       { name: "Ray Washburn", role: "SP", pos: "SP", year: 1968, era: "Expansion (1961-1976)", rarity: "Epic", team: "STL", ovr: 81.8, hp: 110, maxHp: 110, stf: 34, ctl: 73, mov: 68, sta: 86 },
-      { name: "David Bednar", role: "RP", pos: "RP", year: 2023, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "PIT", ovr: 79.8, hp: 30, maxHp: 30, stf: 76, ctl: 51, mov: 74, sta: 25 },
+      { name: "David Bednar", role: "RP", pos: "RP", year: 2023, era: "Modern Era (2016-Pres)", rarity: "Rare", team: "PIT", ovr: 79.8, hp: 30, maxHp: 30, stf: 76, ctl: 51, mov: 74, sta: 25 },
     ]
   },
   {
@@ -7852,7 +7852,7 @@ window.OpponentsPool = [
     pitchers: [
       { name: "Bob Moose", role: "SP", pos: "SP", year: 1969, era: "Expansion (1961-1976)", rarity: "Epic", team: "PIT", ovr: 81.6, hp: 113, maxHp: 113, stf: 50, ctl: 65, mov: 53, sta: 91 },
       { name: "Chris Short", role: "SP", pos: "SP", year: 1965, era: "Expansion (1961-1976)", rarity: "Epic", team: "PHI", ovr: 81.6, hp: 110, maxHp: 110, stf: 61, ctl: 65, mov: 62, sta: 86 },
-      { name: "Steve Cishek", role: "RP", pos: "RP", year: 2013, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "MIA", ovr: 79.8, hp: 29, maxHp: 29, stf: 58, ctl: 43, mov: 98, sta: 25 },
+      { name: "Steve Cishek", role: "RP", pos: "RP", year: 2013, era: "Modern Era (2016-Pres)", rarity: "Rare", team: "MIA", ovr: 79.8, hp: 29, maxHp: 29, stf: 58, ctl: 43, mov: 98, sta: 25 },
     ]
   },
   {
@@ -7863,7 +7863,7 @@ window.OpponentsPool = [
     pitchers: [
       { name: "Dave McNally", role: "SP", pos: "SP", year: 1968, era: "Expansion (1961-1976)", rarity: "Epic", team: "BAL", ovr: 81.4, hp: 110, maxHp: 110, stf: 34, ctl: 70, mov: 62, sta: 86 },
       { name: "Jim Perry", role: "SP", pos: "SP", year: 1969, era: "Expansion (1961-1976)", rarity: "Epic", team: "MIN", ovr: 81.3, hp: 110, maxHp: 110, stf: 22, ctl: 80, mov: 68, sta: 86 },
-      { name: "Chris Devenski", role: "RP", pos: "RP", year: 2016, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "HOU", ovr: 79.8, hp: 30, maxHp: 30, stf: 58, ctl: 74, mov: 70, sta: 28 },
+      { name: "Chris Devenski", role: "RP", pos: "RP", year: 2016, era: "Modern Era (2016-Pres)", rarity: "Rare", team: "HOU", ovr: 79.8, hp: 30, maxHp: 30, stf: 58, ctl: 74, mov: 70, sta: 28 },
     ]
   },
   {
@@ -7874,7 +7874,7 @@ window.OpponentsPool = [
     pitchers: [
       { name: "Juan Pizarro", role: "SP", pos: "SP", year: 1963, era: "Expansion (1961-1976)", rarity: "Epic", team: "CHW", ovr: 81.3, hp: 114, maxHp: 114, stf: 66, ctl: 40, mov: 66, sta: 92 },
       { name: "Bill Singer", role: "SP", pos: "SP", year: 1969, era: "Expansion (1961-1976)", rarity: "Epic", team: "LAD", ovr: 81.3, hp: 111, maxHp: 111, stf: 61, ctl: 56, mov: 59, sta: 88 },
-      { name: "Richard Bleier", role: "RP", pos: "RP", year: 2018, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "BAL", ovr: 79.7, hp: 29, maxHp: 29, stf: 8, ctl: 102, mov: 87, sta: 25 },
+      { name: "Richard Bleier", role: "RP", pos: "RP", year: 2018, era: "Modern Era (2016-Pres)", rarity: "Rare", team: "BAL", ovr: 79.7, hp: 29, maxHp: 29, stf: 8, ctl: 102, mov: 87, sta: 25 },
     ]
   },
   {
@@ -7885,7 +7885,7 @@ window.OpponentsPool = [
     pitchers: [
       { name: "Barry Latman", role: "SP", pos: "SP", year: 1958, era: "Expansion (1961-1976)", rarity: "Epic", team: "CLE", ovr: 81.2, hp: 120, maxHp: 120, stf: 44, ctl: 37, mov: 89, sta: 99 },
       { name: "Stan Williams", role: "SP", pos: "SP", year: 1961, era: "Expansion (1961-1976)", rarity: "Epic", team: "LAD", ovr: 81.3, hp: 113, maxHp: 113, stf: 69, ctl: 45, mov: 67, sta: 90 },
-      { name: "Andres Munoz", role: "RP", pos: "RP", year: 2025, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "SEA", ovr: 79.6, hp: 30, maxHp: 30, stf: 89, ctl: 36, mov: 70, sta: 25 },
+      { name: "Andres Munoz", role: "RP", pos: "RP", year: 2025, era: "Modern Era (2016-Pres)", rarity: "Rare", team: "SEA", ovr: 79.6, hp: 30, maxHp: 30, stf: 89, ctl: 36, mov: 70, sta: 25 },
     ]
   },
   {
@@ -7896,7 +7896,7 @@ window.OpponentsPool = [
     pitchers: [
       { name: "Don Gullett", role: "SP", pos: "SP", year: 1975, era: "Expansion (1961-1976)", rarity: "Epic", team: "CIN", ovr: 81.1, hp: 112, maxHp: 112, stf: 47, ctl: 48, mov: 67, sta: 89 },
       { name: "Fritz Peterson", role: "SP", pos: "SP", year: 1969, era: "Expansion (1961-1976)", rarity: "Epic", team: "NYY", ovr: 81.2, hp: 110, maxHp: 110, stf: 18, ctl: 101, mov: 56, sta: 86 },
-      { name: "Emilio Pagan", role: "RP", pos: "RP", year: 2019, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "SDP", ovr: 79.5, hp: 30, maxHp: 30, stf: 67, ctl: 72, mov: 70, sta: 26 },
+      { name: "Emilio Pagan", role: "RP", pos: "RP", year: 2019, era: "Modern Era (2016-Pres)", rarity: "Rare", team: "SDP", ovr: 79.5, hp: 30, maxHp: 30, stf: 67, ctl: 72, mov: 70, sta: 26 },
     ]
   },
   {
@@ -7907,7 +7907,7 @@ window.OpponentsPool = [
     pitchers: [
       { name: "Wilbur Wood", role: "SP", pos: "SP", year: 1971, era: "Expansion (1961-1976)", rarity: "Epic", team: "CHW", ovr: 81.1, hp: 116, maxHp: 116, stf: 28, ctl: 81, mov: 72, sta: 94 },
       { name: "Jim Lonborg", role: "SP", pos: "SP", year: 1974, era: "Expansion (1961-1976)", rarity: "Epic", team: "BOS", ovr: 80.9, hp: 110, maxHp: 110, stf: 42, ctl: 69, mov: 57, sta: 86 },
-      { name: "Hector Neris", role: "RP", pos: "RP", year: 2023, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "PHI", ovr: 79.4, hp: 30, maxHp: 30, stf: 77, ctl: 47, mov: 80, sta: 25 },
+      { name: "Hector Neris", role: "RP", pos: "RP", year: 2023, era: "Modern Era (2016-Pres)", rarity: "Rare", team: "PHI", ovr: 79.4, hp: 30, maxHp: 30, stf: 77, ctl: 47, mov: 80, sta: 25 },
     ]
   },
   {
@@ -7918,7 +7918,7 @@ window.OpponentsPool = [
     pitchers: [
       { name: "Al McBean", role: "SP", pos: "SP", year: 1964, era: "Expansion (1961-1976)", rarity: "Epic", team: "PIT", ovr: 80.7, hp: 124, maxHp: 124, stf: 30, ctl: 55, mov: 71, sta: 105 },
       { name: "Pat Dobson", role: "SP", pos: "SP", year: 1974, era: "Expansion (1961-1976)", rarity: "Epic", team: "NYY", ovr: 80.7, hp: 111, maxHp: 111, stf: 43, ctl: 67, mov: 55, sta: 88 },
-      { name: "Danny Coulombe", role: "RP", pos: "RP", year: 2025, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "MIN", ovr: 79.1, hp: 29, maxHp: 29, stf: 51, ctl: 55, mov: 92, sta: 24 },
+      { name: "Danny Coulombe", role: "RP", pos: "RP", year: 2025, era: "Modern Era (2016-Pres)", rarity: "Rare", team: "MIN", ovr: 79.1, hp: 29, maxHp: 29, stf: 51, ctl: 55, mov: 92, sta: 24 },
     ]
   },
   {
@@ -7950,7 +7950,7 @@ window.OpponentsPool = [
     rarity: "Epic", hof: true, allstars: 5,
     pitchers: [
       { name: "Phil Niekro", role: "SP", pos: "SP", year: 1978, era: "Expansion (1961-1976)", rarity: "Epic", team: "ATL", ovr: 80.0, hp: 113, maxHp: 113, stf: 48, ctl: 58, mov: 69, sta: 91 },
-      { name: "Ken Holtzman", role: "SP", pos: "SP", year: 1970, era: "Expansion (1961-1976)", rarity: "Epic", team: "CHC", ovr: 79.9, hp: 109, maxHp: 109, stf: 35, ctl: 69, mov: 59, sta: 85 },
+      { name: "Ken Holtzman", role: "SP", pos: "SP", year: 1970, era: "Expansion (1961-1976)", rarity: "Rare", team: "CHC", ovr: 79.9, hp: 109, maxHp: 109, stf: 35, ctl: 69, mov: 59, sta: 85 },
       { name: "Francisco Cordero", role: "RP", pos: "RP", year: 2004, era: "Steroid Era (1994-2005)", rarity: "Epic", team: "TEX", ovr: 84.5, hp: 30, maxHp: 30, stf: 79, ctl: 46, mov: 107, sta: 25 },
     ]
   },
@@ -7958,10 +7958,10 @@ window.OpponentsPool = [
     id: "opp_team_00723", name: "Larry Dierker (1969)",
     tier: "B", isBoss: false,
     era: "Expansion (1961-1976)", ovr: 81.2,
-    rarity: "Epic", hof: false, allstars: 2,
+    rarity: "Rare", hof: false, allstars: 2,
     pitchers: [
-      { name: "Larry Dierker", role: "SP", pos: "SP", year: 1969, era: "Expansion (1961-1976)", rarity: "Epic", team: "HOU", ovr: 79.8, hp: 110, maxHp: 110, stf: 47, ctl: 69, mov: 59, sta: 87 },
-      { name: "Ken Johnson", role: "SP", pos: "SP", year: 1963, era: "Expansion (1961-1976)", rarity: "Epic", team: "NLB", ovr: 79.8, hp: 108, maxHp: 108, stf: 38, ctl: 88, mov: 52, sta: 84 },
+      { name: "Larry Dierker", role: "SP", pos: "SP", year: 1969, era: "Expansion (1961-1976)", rarity: "Rare", team: "HOU", ovr: 79.8, hp: 110, maxHp: 110, stf: 47, ctl: 69, mov: 59, sta: 87 },
+      { name: "Ken Johnson", role: "SP", pos: "SP", year: 1963, era: "Expansion (1961-1976)", rarity: "Rare", team: "NLB", ovr: 79.8, hp: 108, maxHp: 108, stf: 38, ctl: 88, mov: 52, sta: 84 },
       { name: "Ugueth Urbina", role: "RP", pos: "RP", year: 1998, era: "Steroid Era (1994-2005)", rarity: "Epic", team: "WSH", ovr: 83.9, hp: 30, maxHp: 30, stf: 101, ctl: 39, mov: 98, sta: 27 },
     ]
   },
@@ -7969,10 +7969,10 @@ window.OpponentsPool = [
     id: "opp_team_00724", name: "Ray Herbert (1960)",
     tier: "B", isBoss: false,
     era: "Expansion (1961-1976)", ovr: 81.1,
-    rarity: "Epic", hof: false, allstars: 1,
+    rarity: "Rare", hof: false, allstars: 1,
     pitchers: [
-      { name: "Ray Herbert", role: "SP", pos: "SP", year: 1960, era: "Expansion (1961-1976)", rarity: "Epic", team: "NLB", ovr: 79.7, hp: 111, maxHp: 111, stf: 18, ctl: 75, mov: 72, sta: 88 },
-      { name: "Doug Rau", role: "SP", pos: "SP", year: 1976, era: "Expansion (1961-1976)", rarity: "Epic", team: "LAD", ovr: 79.7, hp: 108, maxHp: 108, stf: 31, ctl: 66, mov: 59, sta: 84 },
+      { name: "Ray Herbert", role: "SP", pos: "SP", year: 1960, era: "Expansion (1961-1976)", rarity: "Rare", team: "NLB", ovr: 79.7, hp: 111, maxHp: 111, stf: 18, ctl: 75, mov: 72, sta: 88 },
+      { name: "Doug Rau", role: "SP", pos: "SP", year: 1976, era: "Expansion (1961-1976)", rarity: "Rare", team: "LAD", ovr: 79.7, hp: 108, maxHp: 108, stf: 31, ctl: 66, mov: 59, sta: 84 },
       { name: "Michael Jackson", role: "RP", pos: "RP", year: 1998, era: "Steroid Era (1994-2005)", rarity: "Epic", team: "SEA", ovr: 83.8, hp: 30, maxHp: 30, stf: 64, ctl: 56, mov: 107, sta: 27 },
     ]
   },
@@ -7980,10 +7980,10 @@ window.OpponentsPool = [
     id: "opp_team_00725", name: "Ralph Terry (1962)",
     tier: "B", isBoss: false,
     era: "Expansion (1961-1976)", ovr: 80.9,
-    rarity: "Epic", hof: false, allstars: 1,
+    rarity: "Rare", hof: false, allstars: 1,
     pitchers: [
-      { name: "Ralph Terry", role: "SP", pos: "SP", year: 1962, era: "Expansion (1961-1976)", rarity: "Epic", team: "NYY", ovr: 79.7, hp: 110, maxHp: 110, stf: 27, ctl: 86, mov: 54, sta: 86 },
-      { name: "Dock Ellis", role: "SP", pos: "SP", year: 1970, era: "Expansion (1961-1976)", rarity: "Epic", team: "PIT", ovr: 79.6, hp: 108, maxHp: 108, stf: 28, ctl: 64, mov: 62, sta: 83 },
+      { name: "Ralph Terry", role: "SP", pos: "SP", year: 1962, era: "Expansion (1961-1976)", rarity: "Rare", team: "NYY", ovr: 79.7, hp: 110, maxHp: 110, stf: 27, ctl: 86, mov: 54, sta: 86 },
+      { name: "Dock Ellis", role: "SP", pos: "SP", year: 1970, era: "Expansion (1961-1976)", rarity: "Rare", team: "PIT", ovr: 79.6, hp: 108, maxHp: 108, stf: 28, ctl: 64, mov: 62, sta: 83 },
       { name: "Roberto Hernandez", role: "RP", pos: "RP", year: 1996, era: "Steroid Era (1994-2005)", rarity: "Epic", team: "CHW", ovr: 83.5, hp: 30, maxHp: 30, stf: 69, ctl: 50, mov: 108, sta: 26 },
     ]
   },
@@ -7991,10 +7991,10 @@ window.OpponentsPool = [
     id: "opp_team_00726", name: "BOSS: Nelson Briles (1973)",
     tier: "B", isBoss: true,
     era: "Expansion (1961-1976)", ovr: 80.7,
-    rarity: "Epic", hof: false, allstars: 0,
+    rarity: "Rare", hof: false, allstars: 0,
     pitchers: [
-      { name: "Nelson Briles", role: "SP", pos: "SP", year: 1973, era: "Expansion (1961-1976)", rarity: "Epic", team: "STL", ovr: 79.5, hp: 111, maxHp: 111, stf: 25, ctl: 81, mov: 58, sta: 88 },
-      { name: "Al Downing", role: "SP", pos: "SP", year: 1967, era: "Expansion (1961-1976)", rarity: "Epic", team: "NYY", ovr: 79.5, hp: 109, maxHp: 109, stf: 64, ctl: 38, mov: 58, sta: 85 },
+      { name: "Nelson Briles", role: "SP", pos: "SP", year: 1973, era: "Expansion (1961-1976)", rarity: "Rare", team: "STL", ovr: 79.5, hp: 111, maxHp: 111, stf: 25, ctl: 81, mov: 58, sta: 88 },
+      { name: "Al Downing", role: "SP", pos: "SP", year: 1967, era: "Expansion (1961-1976)", rarity: "Rare", team: "NYY", ovr: 79.5, hp: 109, maxHp: 109, stf: 64, ctl: 38, mov: 58, sta: 85 },
       { name: "Octavio Dotel", role: "RP", pos: "RP", year: 2002, era: "Steroid Era (1994-2005)", rarity: "Epic", team: "HOU", ovr: 83.2, hp: 30, maxHp: 30, stf: 108, ctl: 44, mov: 84, sta: 28 },
     ]
   },
@@ -8002,10 +8002,10 @@ window.OpponentsPool = [
     id: "opp_team_00727", name: "Ray Culp (1970)",
     tier: "B", isBoss: false,
     era: "Expansion (1961-1976)", ovr: 80.3,
-    rarity: "Epic", hof: false, allstars: 2,
+    rarity: "Rare", hof: false, allstars: 2,
     pitchers: [
-      { name: "Woodie Fryman", role: "SP", pos: "SP", year: 1976, era: "Expansion (1961-1976)", rarity: "Epic", team: "WSH", ovr: 79.3, hp: 110, maxHp: 110, stf: 50, ctl: 55, mov: 61, sta: 87 },
-      { name: "Ray Culp", role: "SP", pos: "SP", year: 1970, era: "Expansion (1961-1976)", rarity: "Epic", team: "BOS", ovr: 79.3, hp: 109, maxHp: 109, stf: 63, ctl: 45, mov: 55, sta: 86 },
+      { name: "Woodie Fryman", role: "SP", pos: "SP", year: 1976, era: "Expansion (1961-1976)", rarity: "Rare", team: "WSH", ovr: 79.3, hp: 110, maxHp: 110, stf: 50, ctl: 55, mov: 61, sta: 87 },
+      { name: "Ray Culp", role: "SP", pos: "SP", year: 1970, era: "Expansion (1961-1976)", rarity: "Rare", team: "BOS", ovr: 79.3, hp: 109, maxHp: 109, stf: 63, ctl: 45, mov: 55, sta: 86 },
       { name: "Alberto Reyes", role: "RP", pos: "RP", year: 2005, era: "Steroid Era (1994-2005)", rarity: "Epic", team: "MIL", ovr: 82.3, hp: 30, maxHp: 30, stf: 73, ctl: 22, mov: 124, sta: 26 },
     ]
   },
@@ -8013,10 +8013,10 @@ window.OpponentsPool = [
     id: "opp_team_00728", name: "Pat Jarvis (1970)",
     tier: "B", isBoss: false,
     era: "Expansion (1961-1976)", ovr: 80.2,
-    rarity: "Epic", hof: false, allstars: 0,
+    rarity: "Rare", hof: false, allstars: 0,
     pitchers: [
-      { name: "Pat Jarvis", role: "SP", pos: "SP", year: 1970, era: "Expansion (1961-1976)", rarity: "Epic", team: "ATL", ovr: 79.2, hp: 112, maxHp: 112, stf: 37, ctl: 68, mov: 58, sta: 89 },
-      { name: "Ray Sadecki", role: "SP", pos: "SP", year: 1961, era: "Expansion (1961-1976)", rarity: "Epic", team: "STL", ovr: 79.2, hp: 111, maxHp: 111, stf: 49, ctl: 52, mov: 57, sta: 88 },
+      { name: "Pat Jarvis", role: "SP", pos: "SP", year: 1970, era: "Expansion (1961-1976)", rarity: "Rare", team: "ATL", ovr: 79.2, hp: 112, maxHp: 112, stf: 37, ctl: 68, mov: 58, sta: 89 },
+      { name: "Ray Sadecki", role: "SP", pos: "SP", year: 1961, era: "Expansion (1961-1976)", rarity: "Rare", team: "STL", ovr: 79.2, hp: 111, maxHp: 111, stf: 49, ctl: 52, mov: 57, sta: 88 },
       { name: "Scot Shields", role: "RP", pos: "RP", year: 2003, era: "Steroid Era (1994-2005)", rarity: "Epic", team: "LAA", ovr: 82.2, hp: 31, maxHp: 31, stf: 68, ctl: 55, mov: 86, sta: 30 },
     ]
   },
@@ -8024,10 +8024,10 @@ window.OpponentsPool = [
     id: "opp_team_00729", name: "Dave Goltz (1978)",
     tier: "B", isBoss: false,
     era: "Expansion (1961-1976)", ovr: 80.0,
-    rarity: "Epic", hof: false, allstars: 0,
+    rarity: "Rare", hof: false, allstars: 0,
     pitchers: [
-      { name: "Dave Goltz", role: "SP", pos: "SP", year: 1978, era: "Expansion (1961-1976)", rarity: "Epic", team: "MIN", ovr: 79.0, hp: 112, maxHp: 112, stf: 28, ctl: 65, mov: 62, sta: 89 },
-      { name: "Bill Monbouquette", role: "SP", pos: "SP", year: 1960, era: "Expansion (1961-1976)", rarity: "Epic", team: "BOS", ovr: 79.0, hp: 111, maxHp: 111, stf: 36, ctl: 82, mov: 52, sta: 87 },
+      { name: "Dave Goltz", role: "SP", pos: "SP", year: 1978, era: "Expansion (1961-1976)", rarity: "Rare", team: "MIN", ovr: 79.0, hp: 112, maxHp: 112, stf: 28, ctl: 65, mov: 62, sta: 89 },
+      { name: "Bill Monbouquette", role: "SP", pos: "SP", year: 1960, era: "Expansion (1961-1976)", rarity: "Rare", team: "BOS", ovr: 79.0, hp: 111, maxHp: 111, stf: 36, ctl: 82, mov: 52, sta: 87 },
       { name: "Kazuhiro Sasaki", role: "RP", pos: "RP", year: 2000, era: "Steroid Era (1994-2005)", rarity: "Epic", team: "SEA", ovr: 82.1, hp: 30, maxHp: 30, stf: 83, ctl: 58, mov: 74, sta: 25 },
     ]
   },
@@ -8035,10 +8035,10 @@ window.OpponentsPool = [
     id: "opp_team_00730", name: "Phil Regan (1966)",
     tier: "B", isBoss: false,
     era: "Expansion (1961-1976)", ovr: 79.3,
-    rarity: "Epic", hof: false, allstars: 1,
+    rarity: "Rare", hof: false, allstars: 1,
     pitchers: [
-      { name: "Phil Regan", role: "SP", pos: "SP", year: 1966, era: "Expansion (1961-1976)", rarity: "Epic", team: "DET", ovr: 78.0, hp: 124, maxHp: 124, stf: 31, ctl: 64, mov: 62, sta: 105 },
-      { name: "Rick Wise", role: "SP", pos: "SP", year: 1972, era: "Expansion (1961-1976)", rarity: "Epic", team: "PHI", ovr: 78.0, hp: 110, maxHp: 110, stf: 29, ctl: 78, mov: 58, sta: 87 },
+      { name: "Phil Regan", role: "SP", pos: "SP", year: 1966, era: "Expansion (1961-1976)", rarity: "Rare", team: "DET", ovr: 78.0, hp: 124, maxHp: 124, stf: 31, ctl: 64, mov: 62, sta: 105 },
+      { name: "Rick Wise", role: "SP", pos: "SP", year: 1972, era: "Expansion (1961-1976)", rarity: "Rare", team: "PHI", ovr: 78.0, hp: 110, maxHp: 110, stf: 29, ctl: 78, mov: 58, sta: 87 },
       { name: "Gabe White", role: "RP", pos: "RP", year: 2000, era: "Steroid Era (1994-2005)", rarity: "Epic", team: "CIN", ovr: 82.0, hp: 30, maxHp: 30, stf: 54, ctl: 93, mov: 70, sta: 28 },
     ]
   },
@@ -8090,10 +8090,10 @@ window.OpponentsPool = [
     id: "opp_team_00735", name: "Stan Coveleski (1918)",
     tier: "B", isBoss: false,
     era: "Golden Era (1920-1941)", ovr: 82.7,
-    rarity: "Legendary", hof: true, allstars: 0,
+    rarity: "Epic", hof: true, allstars: 0,
     pitchers: [
       { name: "Carl Glass", role: "SP", pos: "SP", year: 1928, era: "Golden Era (1920-1941)", rarity: "Epic", team: "NLB", ovr: 83.7, hp: 124, maxHp: 124, stf: 55, ctl: 72, mov: 56, sta: 105 },
-      { name: "Stan Coveleski", role: "SP", pos: "SP", year: 1918, era: "Golden Era (1920-1941)", rarity: "Legendary", team: "CLE", ovr: 83.7, hp: 117, maxHp: 117, stf: 29, ctl: 74, mov: 78, sta: 95 },
+      { name: "Stan Coveleski", role: "SP", pos: "SP", year: 1918, era: "Golden Era (1920-1941)", rarity: "Epic", team: "CLE", ovr: 83.7, hp: 117, maxHp: 117, stf: 29, ctl: 74, mov: 78, sta: 95 },
       { name: "Justin Speier", role: "RP", pos: "RP", year: 2005, era: "Steroid Era (1994-2005)", rarity: "Epic", team: "TOR", ovr: 80.6, hp: 30, maxHp: 30, stf: 63, ctl: 66, mov: 77, sta: 26 },
     ]
   },
@@ -8156,11 +8156,11 @@ window.OpponentsPool = [
     id: "opp_team_00741", name: "BOSS: Red Faber (1921)",
     tier: "B", isBoss: true,
     era: "Golden Era (1920-1941)", ovr: 81.9,
-    rarity: "Legendary", hof: true, allstars: 0,
+    rarity: "Epic", hof: true, allstars: 0,
     pitchers: [
-      { name: "Red Faber", role: "SP", pos: "SP", year: 1921, era: "Golden Era (1920-1941)", rarity: "Legendary", team: "CHW", ovr: 83.0, hp: 117, maxHp: 117, stf: 39, ctl: 70, mov: 68, sta: 95 },
+      { name: "Red Faber", role: "SP", pos: "SP", year: 1921, era: "Golden Era (1920-1941)", rarity: "Epic", team: "CHW", ovr: 83.0, hp: 117, maxHp: 117, stf: 39, ctl: 70, mov: 68, sta: 95 },
       { name: "Luis Tiant", role: "SP", pos: "SP", year: 1946, era: "Golden Era (1920-1941)", rarity: "Epic", team: "NLB", ovr: 83.0, hp: 114, maxHp: 114, stf: 72, ctl: 38, mov: 72, sta: 92 },
-      { name: "Dan Wheeler", role: "RP", pos: "RP", year: 2005, era: "Steroid Era (1994-2005)", rarity: "Epic", team: "TB", ovr: 79.7, hp: 30, maxHp: 30, stf: 59, ctl: 70, mov: 76, sta: 26 },
+      { name: "Dan Wheeler", role: "RP", pos: "RP", year: 2005, era: "Steroid Era (1994-2005)", rarity: "Rare", team: "TB", ovr: 79.7, hp: 30, maxHp: 30, stf: 59, ctl: 70, mov: 76, sta: 26 },
     ]
   },
   {
@@ -8171,7 +8171,7 @@ window.OpponentsPool = [
     pitchers: [
       { name: "Rube Curry", role: "SP", pos: "SP", year: 1926, era: "Golden Era (1920-1941)", rarity: "Epic", team: "NLB", ovr: 82.9, hp: 121, maxHp: 121, stf: 28, ctl: 81, mov: 68, sta: 101 },
       { name: "Eppa Rixey", role: "SP", pos: "SP", year: 1925, era: "Golden Era (1920-1941)", rarity: "Epic", team: "CIN", ovr: 82.9, hp: 116, maxHp: 116, stf: 14, ctl: 83, mov: 73, sta: 95 },
-      { name: "Juan Rincon", role: "RP", pos: "RP", year: 2004, era: "Steroid Era (1994-2005)", rarity: "Epic", team: "MIN", ovr: 79.6, hp: 30, maxHp: 30, stf: 73, ctl: 46, mov: 69, sta: 27 },
+      { name: "Juan Rincon", role: "RP", pos: "RP", year: 2004, era: "Steroid Era (1994-2005)", rarity: "Rare", team: "MIN", ovr: 79.6, hp: 30, maxHp: 30, stf: 73, ctl: 46, mov: 69, sta: 27 },
     ]
   },
   {
@@ -8182,7 +8182,7 @@ window.OpponentsPool = [
     pitchers: [
       { name: "Leroy Matlock", role: "SP", pos: "SP", year: 1933, era: "Golden Era (1920-1941)", rarity: "Epic", team: "NLB", ovr: 82.8, hp: 121, maxHp: 121, stf: 35, ctl: 66, mov: 81, sta: 101 },
       { name: "Bob Shawkey", role: "SP", pos: "SP", year: 1920, era: "Golden Era (1920-1941)", rarity: "Epic", team: "NYY", ovr: 82.8, hp: 121, maxHp: 121, stf: 55, ctl: 51, mov: 65, sta: 101 },
-      { name: "Kyle Farnsworth", role: "RP", pos: "RP", year: 2005, era: "Steroid Era (1994-2005)", rarity: "Epic", team: "CHC", ovr: 79.3, hp: 30, maxHp: 30, stf: 77, ctl: 51, mov: 75, sta: 27 },
+      { name: "Kyle Farnsworth", role: "RP", pos: "RP", year: 2005, era: "Steroid Era (1994-2005)", rarity: "Rare", team: "CHC", ovr: 79.3, hp: 30, maxHp: 30, stf: 77, ctl: 51, mov: 75, sta: 27 },
     ]
   },
   {
@@ -8193,18 +8193,18 @@ window.OpponentsPool = [
     pitchers: [
       { name: "Porter Moss", role: "SP", pos: "SP", year: 1937, era: "Golden Era (1920-1941)", rarity: "Epic", team: "NLB", ovr: 82.7, hp: 117, maxHp: 117, stf: 50, ctl: 70, mov: 59, sta: 95 },
       { name: "Cy Blanton", role: "SP", pos: "SP", year: 1935, era: "Golden Era (1920-1941)", rarity: "Epic", team: "PIT", ovr: 82.6, hp: 111, maxHp: 111, stf: 64, ctl: 70, mov: 55, sta: 87 },
-      { name: "Steve Reed", role: "RP", pos: "RP", year: 1995, era: "Steroid Era (1994-2005)", rarity: "Epic", team: "COL", ovr: 79.3, hp: 30, maxHp: 30, stf: 45, ctl: 69, mov: 93, sta: 26 },
+      { name: "Steve Reed", role: "RP", pos: "RP", year: 1995, era: "Steroid Era (1994-2005)", rarity: "Rare", team: "COL", ovr: 79.3, hp: 30, maxHp: 30, stf: 45, ctl: 69, mov: 93, sta: 26 },
     ]
   },
   {
     id: "opp_team_00745", name: "Leon Day (1946)",
     tier: "B", isBoss: false,
     era: "Golden Era (1920-1941)", ovr: 81.4,
-    rarity: "Legendary", hof: true, allstars: 7,
+    rarity: "Epic", hof: true, allstars: 7,
     pitchers: [
       { name: "Bill Swift", role: "SP", pos: "SP", year: 1935, era: "Golden Era (1920-1941)", rarity: "Epic", team: "PIT", ovr: 82.5, hp: 124, maxHp: 124, stf: 32, ctl: 90, mov: 58, sta: 105 },
-      { name: "Leon Day", role: "SP", pos: "SP", year: 1946, era: "Golden Era (1920-1941)", rarity: "Legendary", team: "NLB", ovr: 82.5, hp: 117, maxHp: 117, stf: 72, ctl: 32, mov: 81, sta: 95 },
-      { name: "Bob Patterson", role: "RP", pos: "RP", year: 1995, era: "Steroid Era (1994-2005)", rarity: "Epic", team: "PIT", ovr: 79.2, hp: 30, maxHp: 30, stf: 52, ctl: 77, mov: 66, sta: 25 },
+      { name: "Leon Day", role: "SP", pos: "SP", year: 1946, era: "Golden Era (1920-1941)", rarity: "Epic", team: "NLB", ovr: 82.5, hp: 117, maxHp: 117, stf: 72, ctl: 32, mov: 81, sta: 95 },
+      { name: "Bob Patterson", role: "RP", pos: "RP", year: 1995, era: "Steroid Era (1994-2005)", rarity: "Rare", team: "PIT", ovr: 79.2, hp: 30, maxHp: 30, stf: 52, ctl: 77, mov: 66, sta: 25 },
     ]
   },
   {
@@ -8215,7 +8215,7 @@ window.OpponentsPool = [
     pitchers: [
       { name: "Andy Cooper", role: "SP", pos: "SP", year: 1925, era: "Golden Era (1920-1941)", rarity: "Epic", team: "NLB", ovr: 82.4, hp: 123, maxHp: 123, stf: 16, ctl: 88, mov: 72, sta: 104 },
       { name: "Willie Cornelius", role: "SP", pos: "SP", year: 1938, era: "Golden Era (1920-1941)", rarity: "Epic", team: "NLB", ovr: 82.4, hp: 123, maxHp: 123, stf: 49, ctl: 56, mov: 65, sta: 104 },
-      { name: "Dave Veres", role: "RP", pos: "RP", year: 1995, era: "Steroid Era (1994-2005)", rarity: "Epic", team: "STL", ovr: 79.1, hp: 30, maxHp: 30, stf: 64, ctl: 54, mov: 80, sta: 27 },
+      { name: "Dave Veres", role: "RP", pos: "RP", year: 1995, era: "Steroid Era (1994-2005)", rarity: "Rare", team: "STL", ovr: 79.1, hp: 30, maxHp: 30, stf: 64, ctl: 54, mov: 80, sta: 27 },
     ]
   },
   {
@@ -8226,7 +8226,7 @@ window.OpponentsPool = [
     pitchers: [
       { name: "Burleigh Grimes", role: "SP", pos: "SP", year: 1921, era: "Golden Era (1920-1941)", rarity: "Epic", team: "LAD", ovr: 82.4, hp: 118, maxHp: 118, stf: 33, ctl: 70, mov: 71, sta: 97 },
       { name: "Urban Shocker", role: "SP", pos: "SP", year: 1921, era: "Golden Era (1920-1941)", rarity: "Epic", team: "BAL", ovr: 82.4, hp: 118, maxHp: 118, stf: 34, ctl: 80, mov: 67, sta: 96 },
-      { name: "Mark Wohlers", role: "RP", pos: "RP", year: 1995, era: "Steroid Era (1994-2005)", rarity: "Epic", team: "ATL", ovr: 79.1, hp: 30, maxHp: 30, stf: 79, ctl: 45, mov: 72, sta: 26 },
+      { name: "Mark Wohlers", role: "RP", pos: "RP", year: 1995, era: "Steroid Era (1994-2005)", rarity: "Rare", team: "ATL", ovr: 79.1, hp: 30, maxHp: 30, stf: 79, ctl: 45, mov: 72, sta: 26 },
     ]
   },
   {
@@ -8247,7 +8247,7 @@ window.OpponentsPool = [
     rarity: "Epic", hof: false, allstars: 5,
     pitchers: [
       { name: "Terris McDuffie", role: "SP", pos: "SP", year: 1941, era: "Golden Era (1920-1941)", rarity: "Epic", team: "NLB", ovr: 82.2, hp: 118, maxHp: 118, stf: 38, ctl: 59, mov: 80, sta: 98 },
-      { name: "Red Ruffing", role: "SP", pos: "SP", year: 1932, era: "Golden Era (1920-1941)", rarity: "Legendary", team: "NYY", ovr: 82.1, hp: 116, maxHp: 116, stf: 58, ctl: 50, mov: 71, sta: 95 },
+      { name: "Red Ruffing", role: "SP", pos: "SP", year: 1932, era: "Golden Era (1920-1941)", rarity: "Epic", team: "NYY", ovr: 82.1, hp: 116, maxHp: 116, stf: 58, ctl: 50, mov: 71, sta: 95 },
       { name: "Jeff Montgomery", role: "RP", pos: "RP", year: 1989, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "KCR", ovr: 84.9, hp: 30, maxHp: 30, stf: 77, ctl: 62, mov: 101, sta: 28 },
     ]
   },
@@ -8259,7 +8259,7 @@ window.OpponentsPool = [
     pitchers: [
       { name: "Jim Willis", role: "SP", pos: "SP", year: 1934, era: "Golden Era (1920-1941)", rarity: "Epic", team: "NLB", ovr: 81.9, hp: 121, maxHp: 121, stf: 38, ctl: 87, mov: 50, sta: 100 },
       { name: "Rats Henderson", role: "SP", pos: "SP", year: 1926, era: "Golden Era (1920-1941)", rarity: "Epic", team: "NLB", ovr: 81.8, hp: 120, maxHp: 120, stf: 39, ctl: 53, mov: 76, sta: 100 },
-      { name: "Rollie Fingers", role: "RP", pos: "RP", year: 1981, era: "Big Hair Era (1977-1993)", rarity: "Legendary", team: "OAK", ovr: 84.4, hp: 31, maxHp: 31, stf: 68, ctl: 75, mov: 88, sta: 32 },
+      { name: "Rollie Fingers", role: "RP", pos: "RP", year: 1981, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "OAK", ovr: 84.4, hp: 31, maxHp: 31, stf: 68, ctl: 75, mov: 88, sta: 32 },
     ]
   },
   {
@@ -8281,7 +8281,7 @@ window.OpponentsPool = [
     pitchers: [
       { name: "Red Ryan", role: "SP", pos: "SP", year: 1924, era: "Golden Era (1920-1941)", rarity: "Epic", team: "NLB", ovr: 81.7, hp: 121, maxHp: 121, stf: 15, ctl: 71, mov: 84, sta: 101 },
       { name: "Pete Donohue", role: "SP", pos: "SP", year: 1925, era: "Golden Era (1920-1941)", rarity: "Epic", team: "CIN", ovr: 81.6, hp: 114, maxHp: 114, stf: 12, ctl: 94, mov: 57, sta: 92 },
-      { name: "Rich Gossage", role: "RP", pos: "RP", year: 1975, era: "Big Hair Era (1977-1993)", rarity: "Legendary", team: "NYY", ovr: 84.3, hp: 32, maxHp: 32, stf: 85, ctl: 41, mov: 101, sta: 35 },
+      { name: "Rich Gossage", role: "RP", pos: "RP", year: 1975, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "NYY", ovr: 84.3, hp: 32, maxHp: 32, stf: 85, ctl: 41, mov: 101, sta: 35 },
     ]
   },
   {
@@ -8411,7 +8411,7 @@ window.OpponentsPool = [
     era: "Golden Era (1920-1941)", ovr: 80.4,
     rarity: "Epic", hof: false, allstars: 0,
     pitchers: [
-      { name: "Ed Brandt", role: "SP", pos: "SP", year: 1931, era: "Golden Era (1920-1941)", rarity: "Epic", team: "ATL", ovr: 79.9, hp: 118, maxHp: 118, stf: 41, ctl: 60, mov: 58, sta: 97 },
+      { name: "Ed Brandt", role: "SP", pos: "SP", year: 1931, era: "Golden Era (1920-1941)", rarity: "Rare", team: "ATL", ovr: 79.9, hp: 118, maxHp: 118, stf: 41, ctl: 60, mov: 58, sta: 97 },
       { name: "Jesse Petty", role: "SP", pos: "SP", year: 1927, era: "Golden Era (1920-1941)", rarity: "Epic", team: "LAD", ovr: 80.1, hp: 114, maxHp: 114, stf: 26, ctl: 77, mov: 70, sta: 91 },
       { name: "Jesse Orosco", role: "RP", pos: "RP", year: 1983, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "NYM", ovr: 81.3, hp: 30, maxHp: 30, stf: 76, ctl: 39, mov: 95, sta: 29 },
     ]
@@ -8420,10 +8420,10 @@ window.OpponentsPool = [
     id: "opp_team_00765", name: "Jim Turner (1937)",
     tier: "B", isBoss: false,
     era: "Golden Era (1920-1941)", ovr: 80.3,
-    rarity: "Epic", hof: false, allstars: 1,
+    rarity: "Rare", hof: false, allstars: 1,
     pitchers: [
-      { name: "Jim Turner", role: "SP", pos: "SP", year: 1937, era: "Golden Era (1920-1941)", rarity: "Epic", team: "NYY", ovr: 79.9, hp: 116, maxHp: 116, stf: 14, ctl: 79, mov: 63, sta: 95 },
-      { name: "Bill Lee", role: "SP", pos: "SP", year: 1938, era: "Golden Era (1920-1941)", rarity: "Epic", team: "CHC", ovr: 79.8, hp: 114, maxHp: 114, stf: 37, ctl: 60, mov: 64, sta: 91 },
+      { name: "Jim Turner", role: "SP", pos: "SP", year: 1937, era: "Golden Era (1920-1941)", rarity: "Rare", team: "NYY", ovr: 79.9, hp: 116, maxHp: 116, stf: 14, ctl: 79, mov: 63, sta: 95 },
+      { name: "Bill Lee", role: "SP", pos: "SP", year: 1938, era: "Golden Era (1920-1941)", rarity: "Rare", team: "CHC", ovr: 79.8, hp: 114, maxHp: 114, stf: 37, ctl: 60, mov: 64, sta: 91 },
       { name: "Dan Quisenberry", role: "RP", pos: "RP", year: 1983, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "KCR", ovr: 81.3, hp: 31, maxHp: 31, stf: 1, ctl: 111, mov: 96, sta: 32 },
     ]
   },
@@ -8431,10 +8431,10 @@ window.OpponentsPool = [
     id: "opp_team_00766", name: "BOSS: George Mogridge (1921)",
     tier: "B", isBoss: true,
     era: "Golden Era (1920-1941)", ovr: 80.0,
-    rarity: "Epic", hof: false, allstars: 0,
+    rarity: "Rare", hof: false, allstars: 0,
     pitchers: [
-      { name: "Tom Glover", role: "SP", pos: "SP", year: 1937, era: "Golden Era (1920-1941)", rarity: "Epic", team: "NLB", ovr: 79.6, hp: 117, maxHp: 117, stf: 56, ctl: 57, mov: 42, sta: 96 },
-      { name: "George Mogridge", role: "SP", pos: "SP", year: 1921, era: "Golden Era (1920-1941)", rarity: "Epic", team: "NYY", ovr: 79.8, hp: 116, maxHp: 116, stf: 11, ctl: 78, mov: 61, sta: 95 },
+      { name: "Tom Glover", role: "SP", pos: "SP", year: 1937, era: "Golden Era (1920-1941)", rarity: "Rare", team: "NLB", ovr: 79.6, hp: 117, maxHp: 117, stf: 56, ctl: 57, mov: 42, sta: 96 },
+      { name: "George Mogridge", role: "SP", pos: "SP", year: 1921, era: "Golden Era (1920-1941)", rarity: "Rare", team: "NYY", ovr: 79.8, hp: 116, maxHp: 116, stf: 11, ctl: 78, mov: 61, sta: 95 },
       { name: "Steve Farr", role: "RP", pos: "RP", year: 1990, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "KCR", ovr: 80.5, hp: 31, maxHp: 31, stf: 67, ctl: 44, mov: 90, sta: 33 },
     ]
   },
@@ -8442,10 +8442,10 @@ window.OpponentsPool = [
     id: "opp_team_00767", name: "Luke Hamlin (1939)",
     tier: "B", isBoss: false,
     era: "Golden Era (1920-1941)", ovr: 79.7,
-    rarity: "Epic", hof: false, allstars: 0,
+    rarity: "Rare", hof: false, allstars: 0,
     pitchers: [
-      { name: "Sam Gray", role: "SP", pos: "SP", year: 1929, era: "Golden Era (1920-1941)", rarity: "Epic", team: "BAL", ovr: 79.4, hp: 121, maxHp: 121, stf: 38, ctl: 54, mov: 61, sta: 102 },
-      { name: "Luke Hamlin", role: "SP", pos: "SP", year: 1939, era: "Golden Era (1920-1941)", rarity: "Epic", team: "LAD", ovr: 79.5, hp: 114, maxHp: 114, stf: 42, ctl: 74, mov: 53, sta: 92 },
+      { name: "Sam Gray", role: "SP", pos: "SP", year: 1929, era: "Golden Era (1920-1941)", rarity: "Rare", team: "BAL", ovr: 79.4, hp: 121, maxHp: 121, stf: 38, ctl: 54, mov: 61, sta: 102 },
+      { name: "Luke Hamlin", role: "SP", pos: "SP", year: 1939, era: "Golden Era (1920-1941)", rarity: "Rare", team: "LAD", ovr: 79.5, hp: 114, maxHp: 114, stf: 42, ctl: 74, mov: 53, sta: 92 },
       { name: "Mike Henneman", role: "RP", pos: "RP", year: 1988, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "DET", ovr: 80.3, hp: 30, maxHp: 30, stf: 54, ctl: 58, mov: 88, sta: 28 },
     ]
   },
@@ -8453,10 +8453,10 @@ window.OpponentsPool = [
     id: "opp_team_00768", name: "Jesse Haines (1927)",
     tier: "B", isBoss: false,
     era: "Golden Era (1920-1941)", ovr: 79.6,
-    rarity: "Epic", hof: true, allstars: 0,
+    rarity: "Rare", hof: true, allstars: 0,
     pitchers: [
-      { name: "Jesse Haines", role: "SP", pos: "SP", year: 1927, era: "Golden Era (1920-1941)", rarity: "Epic", team: "STL", ovr: 79.4, hp: 116, maxHp: 116, stf: 22, ctl: 70, mov: 64, sta: 94 },
-      { name: "Lee Meadows", role: "SP", pos: "SP", year: 1927, era: "Golden Era (1920-1941)", rarity: "Epic", team: "PIT", ovr: 79.3, hp: 114, maxHp: 114, stf: 23, ctl: 68, mov: 59, sta: 92 },
+      { name: "Jesse Haines", role: "SP", pos: "SP", year: 1927, era: "Golden Era (1920-1941)", rarity: "Rare", team: "STL", ovr: 79.4, hp: 116, maxHp: 116, stf: 22, ctl: 70, mov: 64, sta: 94 },
+      { name: "Lee Meadows", role: "SP", pos: "SP", year: 1927, era: "Golden Era (1920-1941)", rarity: "Rare", team: "PIT", ovr: 79.3, hp: 114, maxHp: 114, stf: 23, ctl: 68, mov: 59, sta: 92 },
       { name: "Tim Burke", role: "RP", pos: "RP", year: 1987, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "WSH", ovr: 80.1, hp: 30, maxHp: 30, stf: 45, ctl: 64, mov: 90, sta: 29 },
     ]
   },
@@ -8464,10 +8464,10 @@ window.OpponentsPool = [
     id: "opp_team_00769", name: "George Uhle (1926)",
     tier: "B", isBoss: false,
     era: "Golden Era (1920-1941)", ovr: 79.5,
-    rarity: "Epic", hof: false, allstars: 0,
+    rarity: "Rare", hof: false, allstars: 0,
     pitchers: [
-      { name: "Si Johnson", role: "SP", pos: "SP", year: 1932, era: "Golden Era (1920-1941)", rarity: "Epic", team: "CIN", ovr: 79.2, hp: 117, maxHp: 117, stf: 28, ctl: 70, mov: 55, sta: 96 },
-      { name: "George Uhle", role: "SP", pos: "SP", year: 1926, era: "Golden Era (1920-1941)", rarity: "Epic", team: "CLE", ovr: 79.3, hp: 117, maxHp: 117, stf: 34, ctl: 59, mov: 62, sta: 95 },
+      { name: "Si Johnson", role: "SP", pos: "SP", year: 1932, era: "Golden Era (1920-1941)", rarity: "Rare", team: "CIN", ovr: 79.2, hp: 117, maxHp: 117, stf: 28, ctl: 70, mov: 55, sta: 96 },
+      { name: "George Uhle", role: "SP", pos: "SP", year: 1926, era: "Golden Era (1920-1941)", rarity: "Rare", team: "CLE", ovr: 79.3, hp: 117, maxHp: 117, stf: 34, ctl: 59, mov: 62, sta: 95 },
       { name: "Gene Garber", role: "RP", pos: "RP", year: 1978, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "ATL", ovr: 80.0, hp: 31, maxHp: 31, stf: 37, ctl: 78, mov: 80, sta: 33 },
     ]
   },
@@ -8475,22 +8475,22 @@ window.OpponentsPool = [
     id: "opp_team_00770", name: "Freddie Fitzsimmons (1938)",
     tier: "B", isBoss: false,
     era: "Golden Era (1920-1941)", ovr: 79.3,
-    rarity: "Epic", hof: false, allstars: 0,
+    rarity: "Rare", hof: false, allstars: 0,
     pitchers: [
-      { name: "Nip Winters", role: "SP", pos: "SP", year: 1924, era: "Golden Era (1920-1941)", rarity: "Epic", team: "NLB", ovr: 79.1, hp: 118, maxHp: 118, stf: 32, ctl: 52, mov: 72, sta: 98 },
-      { name: "Freddie Fitzsimmons", role: "SP", pos: "SP", year: 1938, era: "Golden Era (1920-1941)", rarity: "Epic", team: "SFG", ovr: 79.1, hp: 114, maxHp: 114, stf: 6, ctl: 81, mov: 69, sta: 92 },
-      { name: "Norm Charlton", role: "RP", pos: "RP", year: 1990, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "CIN", ovr: 79.8, hp: 31, maxHp: 31, stf: 83, ctl: 36, mov: 82, sta: 31 },
+      { name: "Nip Winters", role: "SP", pos: "SP", year: 1924, era: "Golden Era (1920-1941)", rarity: "Rare", team: "NLB", ovr: 79.1, hp: 118, maxHp: 118, stf: 32, ctl: 52, mov: 72, sta: 98 },
+      { name: "Freddie Fitzsimmons", role: "SP", pos: "SP", year: 1938, era: "Golden Era (1920-1941)", rarity: "Rare", team: "SFG", ovr: 79.1, hp: 114, maxHp: 114, stf: 6, ctl: 81, mov: 69, sta: 92 },
+      { name: "Norm Charlton", role: "RP", pos: "RP", year: 1990, era: "Big Hair Era (1977-1993)", rarity: "Rare", team: "CIN", ovr: 79.8, hp: 31, maxHp: 31, stf: 83, ctl: 36, mov: 82, sta: 31 },
     ]
   },
   {
     id: "opp_team_00771", name: "BOSS: Ray Kremer (1927)",
     tier: "B", isBoss: true,
     era: "Golden Era (1920-1941)", ovr: 79.3,
-    rarity: "Epic", hof: false, allstars: 0,
+    rarity: "Rare", hof: false, allstars: 0,
     pitchers: [
-      { name: "Ted Lyons", role: "SP", pos: "SP", year: 1927, era: "Golden Era (1920-1941)", rarity: "Epic", team: "CHW", ovr: 79.0, hp: 119, maxHp: 119, stf: 1, ctl: 71, mov: 76, sta: 98 },
-      { name: "Ray Kremer", role: "SP", pos: "SP", year: 1927, era: "Golden Era (1920-1941)", rarity: "Epic", team: "PIT", ovr: 79.0, hp: 115, maxHp: 115, stf: 8, ctl: 80, mov: 67, sta: 93 },
-      { name: "John Franco", role: "RP", pos: "RP", year: 1985, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "NYM", ovr: 79.8, hp: 30, maxHp: 30, stf: 52, ctl: 46, mov: 98, sta: 28 },
+      { name: "Ted Lyons", role: "SP", pos: "SP", year: 1927, era: "Golden Era (1920-1941)", rarity: "Rare", team: "CHW", ovr: 79.0, hp: 119, maxHp: 119, stf: 1, ctl: 71, mov: 76, sta: 98 },
+      { name: "Ray Kremer", role: "SP", pos: "SP", year: 1927, era: "Golden Era (1920-1941)", rarity: "Rare", team: "PIT", ovr: 79.0, hp: 115, maxHp: 115, stf: 8, ctl: 80, mov: 67, sta: 93 },
+      { name: "John Franco", role: "RP", pos: "RP", year: 1985, era: "Big Hair Era (1977-1993)", rarity: "Rare", team: "NYM", ovr: 79.8, hp: 30, maxHp: 30, stf: 52, ctl: 46, mov: 98, sta: 28 },
     ]
   },
   {
@@ -8501,7 +8501,7 @@ window.OpponentsPool = [
     pitchers: [
       { name: "Jim LaMarque", role: "SP", pos: "SP", year: 1948, era: "Integration (1942-1960)", rarity: "Epic", team: "NLB", ovr: 84.5, hp: 120, maxHp: 120, stf: 49, ctl: 72, mov: 65, sta: 99 },
       { name: "Harry Brecheen", role: "SP", pos: "SP", year: 1948, era: "Integration (1942-1960)", rarity: "Epic", team: "STL", ovr: 84.5, hp: 115, maxHp: 115, stf: 37, ctl: 77, mov: 77, sta: 93 },
-      { name: "Mel Rojas", role: "RP", pos: "RP", year: 1992, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "WSH", ovr: 79.3, hp: 30, maxHp: 30, stf: 70, ctl: 52, mov: 74, sta: 28 },
+      { name: "Mel Rojas", role: "RP", pos: "RP", year: 1992, era: "Big Hair Era (1977-1993)", rarity: "Rare", team: "WSH", ovr: 79.3, hp: 30, maxHp: 30, stf: 70, ctl: 52, mov: 74, sta: 28 },
     ]
   },
   {
@@ -8512,7 +8512,7 @@ window.OpponentsPool = [
     pitchers: [
       { name: "Mort Cooper", role: "SP", pos: "SP", year: 1942, era: "Integration (1942-1960)", rarity: "Epic", team: "STL", ovr: 84.3, hp: 114, maxHp: 114, stf: 40, ctl: 70, mov: 79, sta: 92 },
       { name: "Ewell Blackwell", role: "SP", pos: "SP", year: 1947, era: "Integration (1942-1960)", rarity: "Epic", team: "CIN", ovr: 84.2, hp: 114, maxHp: 114, stf: 69, ctl: 39, mov: 86, sta: 92 },
-      { name: "Tom Burgmeier", role: "RP", pos: "RP", year: 1980, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "BOS", ovr: 79.2, hp: 31, maxHp: 31, stf: 20, ctl: 77, mov: 94, sta: 33 },
+      { name: "Tom Burgmeier", role: "RP", pos: "RP", year: 1980, era: "Big Hair Era (1977-1993)", rarity: "Rare", team: "BOS", ovr: 79.2, hp: 31, maxHp: 31, stf: 20, ctl: 77, mov: 94, sta: 33 },
     ]
   },
   {
@@ -8522,8 +8522,8 @@ window.OpponentsPool = [
     rarity: "Epic", hof: false, allstars: 1,
     pitchers: [
       { name: "Roy Partlow", role: "SP", pos: "SP", year: 1942, era: "Integration (1942-1960)", rarity: "Epic", team: "NLB", ovr: 84.2, hp: 118, maxHp: 118, stf: 45, ctl: 57, mov: 88, sta: 97 },
-      { name: "Warren Spahn", role: "SP", pos: "SP", year: 1947, era: "Integration (1942-1960)", rarity: "Legendary", team: "ATL", ovr: 84.2, hp: 116, maxHp: 116, stf: 43, ctl: 77, mov: 75, sta: 94 },
-      { name: "Eric Plunk", role: "RP", pos: "RP", year: 1996, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "CLE", ovr: 79.1, hp: 30, maxHp: 30, stf: 96, ctl: 10, mov: 90, sta: 30 },
+      { name: "Warren Spahn", role: "SP", pos: "SP", year: 1947, era: "Integration (1942-1960)", rarity: "Epic", team: "ATL", ovr: 84.2, hp: 116, maxHp: 116, stf: 43, ctl: 77, mov: 75, sta: 94 },
+      { name: "Eric Plunk", role: "RP", pos: "RP", year: 1996, era: "Big Hair Era (1977-1993)", rarity: "Rare", team: "CLE", ovr: 79.1, hp: 30, maxHp: 30, stf: 96, ctl: 10, mov: 90, sta: 30 },
     ]
   },
   {
@@ -8794,10 +8794,10 @@ window.OpponentsPool = [
     id: "opp_team_00799", name: "Al Brazle (1949)",
     tier: "B", isBoss: false,
     era: "Integration (1942-1960)", ovr: 80.2,
-    rarity: "Epic", hof: false, allstars: 0,
+    rarity: "Rare", hof: false, allstars: 0,
     pitchers: [
-      { name: "Al Brazle", role: "SP", pos: "SP", year: 1949, era: "Integration (1942-1960)", rarity: "Epic", team: "STL", ovr: 79.9, hp: 124, maxHp: 124, stf: 21, ctl: 56, mov: 75, sta: 105 },
-      { name: "Billy Loes", role: "SP", pos: "SP", year: 1952, era: "Integration (1942-1960)", rarity: "Epic", team: "LAD", ovr: 79.9, hp: 114, maxHp: 114, stf: 53, ctl: 56, mov: 54, sta: 92 },
+      { name: "Al Brazle", role: "SP", pos: "SP", year: 1949, era: "Integration (1942-1960)", rarity: "Rare", team: "STL", ovr: 79.9, hp: 124, maxHp: 124, stf: 21, ctl: 56, mov: 75, sta: 105 },
+      { name: "Billy Loes", role: "SP", pos: "SP", year: 1952, era: "Integration (1942-1960)", rarity: "Rare", team: "LAD", ovr: 79.9, hp: 114, maxHp: 114, stf: 53, ctl: 56, mov: 54, sta: 92 },
       { name: "Drew Storen", role: "RP", pos: "RP", year: 2014, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "WSH", ovr: 80.9, hp: 29, maxHp: 29, stf: 59, ctl: 67, mov: 84, sta: 24 },
     ]
   },
@@ -8805,10 +8805,10 @@ window.OpponentsPool = [
     id: "opp_team_00800", name: "Bob Purkey (1962)",
     tier: "B", isBoss: false,
     era: "Integration (1942-1960)", ovr: 80.2,
-    rarity: "Epic", hof: false, allstars: 4,
+    rarity: "Rare", hof: false, allstars: 4,
     pitchers: [
-      { name: "Early Wynn", role: "SP", pos: "SP", year: 1956, era: "Integration (1942-1960)", rarity: "Epic", team: "CLE", ovr: 79.9, hp: 114, maxHp: 114, stf: 46, ctl: 48, mov: 70, sta: 92 },
-      { name: "Bob Purkey", role: "SP", pos: "SP", year: 1962, era: "Integration (1942-1960)", rarity: "Epic", team: "CIN", ovr: 79.9, hp: 112, maxHp: 112, stf: 19, ctl: 91, mov: 58, sta: 89 },
+      { name: "Early Wynn", role: "SP", pos: "SP", year: 1956, era: "Integration (1942-1960)", rarity: "Rare", team: "CLE", ovr: 79.9, hp: 114, maxHp: 114, stf: 46, ctl: 48, mov: 70, sta: 92 },
+      { name: "Bob Purkey", role: "SP", pos: "SP", year: 1962, era: "Integration (1942-1960)", rarity: "Rare", team: "CIN", ovr: 79.9, hp: 112, maxHp: 112, stf: 19, ctl: 91, mov: 58, sta: 89 },
       { name: "Trevor Rosenthal", role: "RP", pos: "RP", year: 2015, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "STL", ovr: 80.7, hp: 30, maxHp: 30, stf: 106, ctl: 30, mov: 66, sta: 25 },
     ]
   },
@@ -8816,10 +8816,10 @@ window.OpponentsPool = [
     id: "opp_team_00801", name: "BOSS: Lew Burdette (1954)",
     tier: "B", isBoss: true,
     era: "Integration (1942-1960)", ovr: 80.0,
-    rarity: "Epic", hof: false, allstars: 3,
+    rarity: "Rare", hof: false, allstars: 3,
     pitchers: [
-      { name: "Lew Burdette", role: "SP", pos: "SP", year: 1954, era: "Integration (1942-1960)", rarity: "Epic", team: "ATL", ovr: 79.8, hp: 117, maxHp: 117, stf: 13, ctl: 86, mov: 60, sta: 96 },
-      { name: "Eddie Lopat", role: "SP", pos: "SP", year: 1947, era: "Integration (1942-1960)", rarity: "Epic", team: "NYY", ovr: 79.8, hp: 113, maxHp: 113, stf: 14, ctl: 76, mov: 70, sta: 90 },
+      { name: "Lew Burdette", role: "SP", pos: "SP", year: 1954, era: "Integration (1942-1960)", rarity: "Rare", team: "ATL", ovr: 79.8, hp: 117, maxHp: 117, stf: 13, ctl: 86, mov: 60, sta: 96 },
+      { name: "Eddie Lopat", role: "SP", pos: "SP", year: 1947, era: "Integration (1942-1960)", rarity: "Rare", team: "NYY", ovr: 79.8, hp: 113, maxHp: 113, stf: 14, ctl: 76, mov: 70, sta: 90 },
       { name: "Matt Albers", role: "RP", pos: "RP", year: 2017, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "HOU", ovr: 80.4, hp: 30, maxHp: 30, stf: 31, ctl: 49, mov: 125, sta: 26 },
     ]
   },
@@ -8827,10 +8827,10 @@ window.OpponentsPool = [
     id: "opp_team_00802", name: "Red Barrett (1945)",
     tier: "B", isBoss: false,
     era: "Integration (1942-1960)", ovr: 79.9,
-    rarity: "Epic", hof: false, allstars: 1,
+    rarity: "Rare", hof: false, allstars: 1,
     pitchers: [
-      { name: "Patricio Scantlebury", role: "SP", pos: "SP", year: 1948, era: "Integration (1942-1960)", rarity: "Epic", team: "NLB", ovr: 79.6, hp: 124, maxHp: 124, stf: 27, ctl: 76, mov: 53, sta: 105 },
-      { name: "Red Barrett", role: "SP", pos: "SP", year: 1945, era: "Integration (1942-1960)", rarity: "Epic", team: "ATL", ovr: 79.7, hp: 116, maxHp: 116, stf: 1, ctl: 85, mov: 71, sta: 94 },
+      { name: "Patricio Scantlebury", role: "SP", pos: "SP", year: 1948, era: "Integration (1942-1960)", rarity: "Rare", team: "NLB", ovr: 79.6, hp: 124, maxHp: 124, stf: 27, ctl: 76, mov: 53, sta: 105 },
+      { name: "Red Barrett", role: "SP", pos: "SP", year: 1945, era: "Integration (1942-1960)", rarity: "Rare", team: "ATL", ovr: 79.7, hp: 116, maxHp: 116, stf: 1, ctl: 85, mov: 71, sta: 94 },
       { name: "Grant Balfour", role: "RP", pos: "RP", year: 2008, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "TB", ovr: 80.3, hp: 30, maxHp: 30, stf: 76, ctl: 40, mov: 92, sta: 25 },
     ]
   },
@@ -8838,10 +8838,10 @@ window.OpponentsPool = [
     id: "opp_team_00803", name: "Bob Rush (1955)",
     tier: "B", isBoss: false,
     era: "Integration (1942-1960)", ovr: 79.6,
-    rarity: "Epic", hof: false, allstars: 2,
+    rarity: "Rare", hof: false, allstars: 2,
     pitchers: [
-      { name: "Joe Black", role: "SP", pos: "SP", year: 1952, era: "Integration (1942-1960)", rarity: "Epic", team: "NLB", ovr: 79.2, hp: 124, maxHp: 124, stf: 39, ctl: 51, mov: 64, sta: 105 },
-      { name: "Bob Rush", role: "SP", pos: "SP", year: 1955, era: "Integration (1942-1960)", rarity: "Epic", team: "CHC", ovr: 79.4, hp: 111, maxHp: 111, stf: 42, ctl: 58, mov: 60, sta: 88 },
+      { name: "Joe Black", role: "SP", pos: "SP", year: 1952, era: "Integration (1942-1960)", rarity: "Rare", team: "NLB", ovr: 79.2, hp: 124, maxHp: 124, stf: 39, ctl: 51, mov: 64, sta: 105 },
+      { name: "Bob Rush", role: "SP", pos: "SP", year: 1955, era: "Integration (1942-1960)", rarity: "Rare", team: "CHC", ovr: 79.4, hp: 111, maxHp: 111, stf: 42, ctl: 58, mov: 60, sta: 88 },
       { name: "Matt Belisle", role: "RP", pos: "RP", year: 2012, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "COL", ovr: 80.1, hp: 30, maxHp: 30, stf: 43, ctl: 87, mov: 78, sta: 29 },
     ]
   },
@@ -8849,10 +8849,10 @@ window.OpponentsPool = [
     id: "opp_team_00804", name: "Warren Hacker (1952)",
     tier: "B", isBoss: false,
     era: "Integration (1942-1960)", ovr: 79.5,
-    rarity: "Epic", hof: false, allstars: 0,
+    rarity: "Rare", hof: false, allstars: 0,
     pitchers: [
-      { name: "Marius Russo", role: "SP", pos: "SP", year: 1939, era: "Integration (1942-1960)", rarity: "Epic", team: "NYY", ovr: 79.2, hp: 115, maxHp: 115, stf: 34, ctl: 51, mov: 64, sta: 94 },
-      { name: "Warren Hacker", role: "SP", pos: "SP", year: 1952, era: "Integration (1942-1960)", rarity: "Epic", team: "CHC", ovr: 79.2, hp: 115, maxHp: 115, stf: 31, ctl: 86, mov: 53, sta: 93 },
+      { name: "Marius Russo", role: "SP", pos: "SP", year: 1939, era: "Integration (1942-1960)", rarity: "Rare", team: "NYY", ovr: 79.2, hp: 115, maxHp: 115, stf: 34, ctl: 51, mov: 64, sta: 94 },
+      { name: "Warren Hacker", role: "SP", pos: "SP", year: 1952, era: "Integration (1942-1960)", rarity: "Rare", team: "CHC", ovr: 79.2, hp: 115, maxHp: 115, stf: 31, ctl: 86, mov: 53, sta: 93 },
       { name: "Casey Janssen", role: "RP", pos: "RP", year: 2011, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "TOR", ovr: 80.1, hp: 30, maxHp: 30, stf: 37, ctl: 84, mov: 79, sta: 27 },
     ]
   },
@@ -8860,11 +8860,11 @@ window.OpponentsPool = [
     id: "opp_team_00805", name: "Alvin Gipson (1945)",
     tier: "B", isBoss: false,
     era: "Integration (1942-1960)", ovr: 79.3,
-    rarity: "Epic", hof: false, allstars: 1,
+    rarity: "Rare", hof: false, allstars: 1,
     pitchers: [
-      { name: "Pedro Ramos", role: "SP", pos: "SP", year: 1960, era: "Integration (1942-1960)", rarity: "Epic", team: "MIN", ovr: 79.0, hp: 113, maxHp: 113, stf: 50, ctl: 72, mov: 51, sta: 91 },
-      { name: "Alvin Gipson", role: "SP", pos: "SP", year: 1945, era: "Integration (1942-1960)", rarity: "Epic", team: "NLB", ovr: 79.1, hp: 111, maxHp: 111, stf: 49, ctl: 59, mov: 41, sta: 87 },
-      { name: "Justin Duchscherer", role: "RP", pos: "RP", year: 2008, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "OAK", ovr: 79.8, hp: 32, maxHp: 32, stf: 37, ctl: 76, mov: 80, sta: 35 },
+      { name: "Pedro Ramos", role: "SP", pos: "SP", year: 1960, era: "Integration (1942-1960)", rarity: "Rare", team: "MIN", ovr: 79.0, hp: 113, maxHp: 113, stf: 50, ctl: 72, mov: 51, sta: 91 },
+      { name: "Alvin Gipson", role: "SP", pos: "SP", year: 1945, era: "Integration (1942-1960)", rarity: "Rare", team: "NLB", ovr: 79.1, hp: 111, maxHp: 111, stf: 49, ctl: 59, mov: 41, sta: 87 },
+      { name: "Justin Duchscherer", role: "RP", pos: "RP", year: 2008, era: "Efficiency Era (2006-2015)", rarity: "Rare", team: "OAK", ovr: 79.8, hp: 32, maxHp: 32, stf: 37, ctl: 76, mov: 80, sta: 35 },
     ]
   },
   {
@@ -8875,7 +8875,7 @@ window.OpponentsPool = [
     pitchers: [
       { name: "Walker Buehler", role: "SP", pos: "SP", year: 2021, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "LAD", ovr: 84.8, hp: 102, maxHp: 102, stf: 58, ctl: 66, mov: 88, sta: 76 },
       { name: "George Kirby", role: "SP", pos: "SP", year: 2023, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "SEA", ovr: 84.5, hp: 101, maxHp: 101, stf: 52, ctl: 107, mov: 54, sta: 75 },
-      { name: "Andrew Bailey", role: "RP", pos: "RP", year: 2009, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "OAK", ovr: 79.4, hp: 30, maxHp: 30, stf: 64, ctl: 61, mov: 74, sta: 26 },
+      { name: "Andrew Bailey", role: "RP", pos: "RP", year: 2009, era: "Efficiency Era (2006-2015)", rarity: "Rare", team: "OAK", ovr: 79.4, hp: 30, maxHp: 30, stf: 64, ctl: 61, mov: 74, sta: 26 },
     ]
   },
   {
@@ -8886,7 +8886,7 @@ window.OpponentsPool = [
     pitchers: [
       { name: "Yu Darvish", role: "SP", pos: "SP", year: 2013, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "SDP", ovr: 84.4, hp: 105, maxHp: 105, stf: 78, ctl: 57, mov: 75, sta: 80 },
       { name: "Garrett Crochet", role: "SP", pos: "SP", year: 2025, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "CHW", ovr: 84.2, hp: 100, maxHp: 100, stf: 85, ctl: 69, mov: 57, sta: 73 },
-      { name: "Joel Peralta", role: "RP", pos: "RP", year: 2010, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "TB", ovr: 79.3, hp: 30, maxHp: 30, stf: 58, ctl: 71, mov: 67, sta: 26 },
+      { name: "Joel Peralta", role: "RP", pos: "RP", year: 2010, era: "Efficiency Era (2006-2015)", rarity: "Rare", team: "TB", ovr: 79.3, hp: 30, maxHp: 30, stf: 58, ctl: 71, mov: 67, sta: 26 },
     ]
   },
   {
@@ -8897,7 +8897,7 @@ window.OpponentsPool = [
     pitchers: [
       { name: "Madison Bumgarner", role: "SP", pos: "SP", year: 2015, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "SFG", ovr: 84.1, hp: 106, maxHp: 106, stf: 57, ctl: 83, mov: 66, sta: 81 },
       { name: "Hyun Jin Ryu", role: "SP", pos: "SP", year: 2019, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "LAD", ovr: 84.1, hp: 102, maxHp: 102, stf: 45, ctl: 86, mov: 76, sta: 76 },
-      { name: "Shawn Kelley", role: "RP", pos: "RP", year: 2016, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "SEA", ovr: 79.1, hp: 29, maxHp: 29, stf: 75, ctl: 74, mov: 59, sta: 24 },
+      { name: "Shawn Kelley", role: "RP", pos: "RP", year: 2016, era: "Efficiency Era (2006-2015)", rarity: "Rare", team: "SEA", ovr: 79.1, hp: 29, maxHp: 29, stf: 75, ctl: 74, mov: 59, sta: 24 },
     ]
   },
   {
@@ -8908,7 +8908,7 @@ window.OpponentsPool = [
     pitchers: [
       { name: "Aaron Nola", role: "SP", pos: "SP", year: 2018, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "PHI", ovr: 83.3, hp: 104, maxHp: 104, stf: 68, ctl: 76, mov: 63, sta: 78 },
       { name: "Luis Severino", role: "SP", pos: "SP", year: 2017, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "NYY", ovr: 83.6, hp: 102, maxHp: 102, stf: 58, ctl: 66, mov: 81, sta: 76 },
-      { name: "Luis Ayala", role: "RP", pos: "RP", year: 2004, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "WSH", ovr: 79.0, hp: 30, maxHp: 30, stf: 25, ctl: 85, mov: 84, sta: 26 },
+      { name: "Luis Ayala", role: "RP", pos: "RP", year: 2004, era: "Efficiency Era (2006-2015)", rarity: "Rare", team: "WSH", ovr: 79.0, hp: 30, maxHp: 30, stf: 25, ctl: 85, mov: 84, sta: 26 },
     ]
   },
   {
@@ -9007,7 +9007,7 @@ window.OpponentsPool = [
     pitchers: [
       { name: "Trevor Bauer", role: "SP", pos: "SP", year: 2018, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "CLE", ovr: 82.5, hp: 104, maxHp: 104, stf: 65, ctl: 47, mov: 82, sta: 79 },
       { name: "Rich Hill", role: "SP", pos: "SP", year: 2016, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "BOS", ovr: 82.5, hp: 101, maxHp: 101, stf: 61, ctl: 55, mov: 82, sta: 74 },
-      { name: "Bob Locker", role: "RP", pos: "RP", year: 1973, era: "Expansion (1961-1976)", rarity: "Epic", team: "CHW", ovr: 79.8, hp: 31, maxHp: 31, stf: 47, ctl: 70, mov: 69, sta: 30 },
+      { name: "Bob Locker", role: "RP", pos: "RP", year: 1973, era: "Expansion (1961-1976)", rarity: "Rare", team: "CHW", ovr: 79.8, hp: 31, maxHp: 31, stf: 47, ctl: 70, mov: 69, sta: 30 },
     ]
   },
   {
@@ -9018,7 +9018,7 @@ window.OpponentsPool = [
     pitchers: [
       { name: "Cristopher Sanchez", role: "SP", pos: "SP", year: 2025, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "PHI", ovr: 82.4, hp: 105, maxHp: 105, stf: 49, ctl: 81, mov: 61, sta: 80 },
       { name: "Michael Pineda", role: "SP", pos: "SP", year: 2014, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "NYY", ovr: 82.4, hp: 101, maxHp: 101, stf: 53, ctl: 86, mov: 61, sta: 75 },
-      { name: "Eddie Watt", role: "RP", pos: "RP", year: 1967, era: "Expansion (1961-1976)", rarity: "Epic", team: "BAL", ovr: 79.8, hp: 31, maxHp: 31, stf: 50, ctl: 52, mov: 78, sta: 32 },
+      { name: "Eddie Watt", role: "RP", pos: "RP", year: 1967, era: "Expansion (1961-1976)", rarity: "Rare", team: "BAL", ovr: 79.8, hp: 31, maxHp: 31, stf: 50, ctl: 52, mov: 78, sta: 32 },
     ]
   },
   {
@@ -9029,7 +9029,7 @@ window.OpponentsPool = [
     pitchers: [
       { name: "Joe Musgrove", role: "SP", pos: "SP", year: 2021, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "SDP", ovr: 82.3, hp: 101, maxHp: 101, stf: 57, ctl: 79, mov: 60, sta: 75 },
       { name: "Nathan Eovaldi", role: "SP", pos: "SP", year: 2025, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "BOS", ovr: 82.1, hp: 102, maxHp: 102, stf: 48, ctl: 76, mov: 66, sta: 75 },
-      { name: "Al Hrabosky", role: "RP", pos: "RP", year: 1975, era: "Expansion (1961-1976)", rarity: "Epic", team: "STL", ovr: 79.6, hp: 30, maxHp: 30, stf: 70, ctl: 30, mov: 89, sta: 28 },
+      { name: "Al Hrabosky", role: "RP", pos: "RP", year: 1975, era: "Expansion (1961-1976)", rarity: "Rare", team: "STL", ovr: 79.6, hp: 30, maxHp: 30, stf: 70, ctl: 30, mov: 89, sta: 28 },
     ]
   },
   {
@@ -9040,7 +9040,7 @@ window.OpponentsPool = [
     pitchers: [
       { name: "Seth Lugo", role: "SP", pos: "SP", year: 2024, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "NYM", ovr: 82.1, hp: 108, maxHp: 108, stf: 50, ctl: 71, mov: 69, sta: 83 },
       { name: "Framber Valdez", role: "SP", pos: "SP", year: 2024, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "HOU", ovr: 81.9, hp: 105, maxHp: 105, stf: 53, ctl: 52, mov: 74, sta: 80 },
-      { name: "Mike Marshall", role: "RP", pos: "RP", year: 1979, era: "Expansion (1961-1976)", rarity: "Epic", team: "WSH", ovr: 79.4, hp: 31, maxHp: 31, stf: 47, ctl: 52, mov: 88, sta: 33 },
+      { name: "Mike Marshall", role: "RP", pos: "RP", year: 1979, era: "Expansion (1961-1976)", rarity: "Rare", team: "WSH", ovr: 79.4, hp: 31, maxHp: 31, stf: 47, ctl: 52, mov: 88, sta: 33 },
     ]
   },
   {
@@ -9203,7 +9203,7 @@ window.OpponentsPool = [
     era: "Modern Era (2016-Pres)", ovr: 81.1,
     rarity: "Epic", hof: false, allstars: 0,
     pitchers: [
-      { name: "Cole Ragans", role: "SP", pos: "SP", year: 2024, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "KCR", ovr: 79.9, hp: 102, maxHp: 102, stf: 75, ctl: 43, mov: 54, sta: 76 },
+      { name: "Cole Ragans", role: "SP", pos: "SP", year: 2024, era: "Modern Era (2016-Pres)", rarity: "Rare", team: "KCR", ovr: 79.9, hp: 102, maxHp: 102, stf: 75, ctl: 43, mov: 54, sta: 76 },
       { name: "Jameson Taillon", role: "SP", pos: "SP", year: 2018, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "PIT", ovr: 80.0, hp: 100, maxHp: 100, stf: 41, ctl: 82, mov: 56, sta: 74 },
       { name: "Tyler Rogers", role: "RP", pos: "RP", year: 2021, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "SFG", ovr: 83.3, hp: 30, maxHp: 30, stf: 24, ctl: 97, mov: 104, sta: 25 },
     ]
@@ -9212,10 +9212,10 @@ window.OpponentsPool = [
     id: "opp_team_00837", name: "Danny Salazar (2015)",
     tier: "B", isBoss: false,
     era: "Modern Era (2016-Pres)", ovr: 80.9,
-    rarity: "Epic", hof: false, allstars: 1,
+    rarity: "Rare", hof: false, allstars: 1,
     pitchers: [
-      { name: "Sandy Alcantara", role: "SP", pos: "SP", year: 2022, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "MIA", ovr: 79.8, hp: 105, maxHp: 105, stf: 41, ctl: 63, mov: 67, sta: 80 },
-      { name: "Danny Salazar", role: "SP", pos: "SP", year: 2015, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "CLE", ovr: 79.9, hp: 101, maxHp: 101, stf: 73, ctl: 47, mov: 58, sta: 74 },
+      { name: "Sandy Alcantara", role: "SP", pos: "SP", year: 2022, era: "Modern Era (2016-Pres)", rarity: "Rare", team: "MIA", ovr: 79.8, hp: 105, maxHp: 105, stf: 41, ctl: 63, mov: 67, sta: 80 },
+      { name: "Danny Salazar", role: "SP", pos: "SP", year: 2015, era: "Modern Era (2016-Pres)", rarity: "Rare", team: "CLE", ovr: 79.9, hp: 101, maxHp: 101, stf: 73, ctl: 47, mov: 58, sta: 74 },
       { name: "Ryan Brasier", role: "RP", pos: "RP", year: 2018, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "BOS", ovr: 83.1, hp: 29, maxHp: 29, stf: 48, ctl: 59, mov: 122, sta: 25 },
     ]
   },
@@ -9223,10 +9223,10 @@ window.OpponentsPool = [
     id: "opp_team_00838", name: "Alex Cobb (2014)",
     tier: "B", isBoss: false,
     era: "Modern Era (2016-Pres)", ovr: 80.9,
-    rarity: "Epic", hof: false, allstars: 1,
+    rarity: "Rare", hof: false, allstars: 1,
     pitchers: [
-      { name: "Tanner Roark", role: "SP", pos: "SP", year: 2016, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "WSH", ovr: 79.8, hp: 105, maxHp: 105, stf: 34, ctl: 68, mov: 70, sta: 80 },
-      { name: "Alex Cobb", role: "SP", pos: "SP", year: 2014, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "TB", ovr: 79.8, hp: 102, maxHp: 102, stf: 43, ctl: 68, mov: 62, sta: 75 },
+      { name: "Tanner Roark", role: "SP", pos: "SP", year: 2016, era: "Modern Era (2016-Pres)", rarity: "Rare", team: "WSH", ovr: 79.8, hp: 105, maxHp: 105, stf: 34, ctl: 68, mov: 70, sta: 80 },
+      { name: "Alex Cobb", role: "SP", pos: "SP", year: 2014, era: "Modern Era (2016-Pres)", rarity: "Rare", team: "TB", ovr: 79.8, hp: 102, maxHp: 102, stf: 43, ctl: 68, mov: 62, sta: 75 },
       { name: "Zack Britton", role: "RP", pos: "RP", year: 2016, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "BAL", ovr: 83.1, hp: 30, maxHp: 30, stf: 47, ctl: 47, mov: 125, sta: 25 },
     ]
   },
@@ -9234,10 +9234,10 @@ window.OpponentsPool = [
     id: "opp_team_00839", name: "Matt Harvey (2013)",
     tier: "B", isBoss: false,
     era: "Modern Era (2016-Pres)", ovr: 80.8,
-    rarity: "Epic", hof: false, allstars: 1,
+    rarity: "Rare", hof: false, allstars: 1,
     pitchers: [
-      { name: "Matt Harvey", role: "SP", pos: "SP", year: 2013, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "NYM", ovr: 79.7, hp: 102, maxHp: 102, stf: 49, ctl: 76, mov: 50, sta: 76 },
-      { name: "Lance McCullers", role: "SP", pos: "SP", year: 2021, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "HOU", ovr: 79.7, hp: 101, maxHp: 101, stf: 68, ctl: 33, mov: 65, sta: 74 },
+      { name: "Matt Harvey", role: "SP", pos: "SP", year: 2013, era: "Modern Era (2016-Pres)", rarity: "Rare", team: "NYM", ovr: 79.7, hp: 102, maxHp: 102, stf: 49, ctl: 76, mov: 50, sta: 76 },
+      { name: "Lance McCullers", role: "SP", pos: "SP", year: 2021, era: "Modern Era (2016-Pres)", rarity: "Rare", team: "HOU", ovr: 79.7, hp: 101, maxHp: 101, stf: 68, ctl: 33, mov: 65, sta: 74 },
       { name: "Craig Stammen", role: "RP", pos: "RP", year: 2012, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "WSH", ovr: 83.1, hp: 30, maxHp: 30, stf: 51, ctl: 71, mov: 105, sta: 28 },
     ]
   },
@@ -9245,10 +9245,10 @@ window.OpponentsPool = [
     id: "opp_team_00840", name: "Mike Minor (2019)",
     tier: "B", isBoss: false,
     era: "Modern Era (2016-Pres)", ovr: 80.8,
-    rarity: "Epic", hof: false, allstars: 0,
+    rarity: "Rare", hof: false, allstars: 0,
     pitchers: [
-      { name: "Mike Minor", role: "SP", pos: "SP", year: 2019, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "ATL", ovr: 79.7, hp: 103, maxHp: 103, stf: 46, ctl: 69, mov: 62, sta: 77 },
-      { name: "Nick Pivetta", role: "SP", pos: "SP", year: 2025, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "BOS", ovr: 79.7, hp: 102, maxHp: 102, stf: 69, ctl: 54, mov: 59, sta: 76 },
+      { name: "Mike Minor", role: "SP", pos: "SP", year: 2019, era: "Modern Era (2016-Pres)", rarity: "Rare", team: "ATL", ovr: 79.7, hp: 103, maxHp: 103, stf: 46, ctl: 69, mov: 62, sta: 77 },
+      { name: "Nick Pivetta", role: "SP", pos: "SP", year: 2025, era: "Modern Era (2016-Pres)", rarity: "Rare", team: "BOS", ovr: 79.7, hp: 102, maxHp: 102, stf: 69, ctl: 54, mov: 59, sta: 76 },
       { name: "Andrew Kittredge", role: "RP", pos: "RP", year: 2021, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "TB", ovr: 82.9, hp: 30, maxHp: 30, stf: 57, ctl: 80, mov: 93, sta: 26 },
     ]
   },
@@ -9256,10 +9256,10 @@ window.OpponentsPool = [
     id: "opp_team_00841", name: "BOSS: Mike Clevinger (2018)",
     tier: "B", isBoss: true,
     era: "Modern Era (2016-Pres)", ovr: 80.6,
-    rarity: "Epic", hof: false, allstars: 0,
+    rarity: "Rare", hof: false, allstars: 0,
     pitchers: [
-      { name: "German Marquez", role: "SP", pos: "SP", year: 2018, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "COL", ovr: 79.6, hp: 102, maxHp: 102, stf: 53, ctl: 65, mov: 58, sta: 76 },
-      { name: "Mike Clevinger", role: "SP", pos: "SP", year: 2018, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "CLE", ovr: 79.6, hp: 101, maxHp: 101, stf: 58, ctl: 48, mov: 69, sta: 75 },
+      { name: "German Marquez", role: "SP", pos: "SP", year: 2018, era: "Modern Era (2016-Pres)", rarity: "Rare", team: "COL", ovr: 79.6, hp: 102, maxHp: 102, stf: 53, ctl: 65, mov: 58, sta: 76 },
+      { name: "Mike Clevinger", role: "SP", pos: "SP", year: 2018, era: "Modern Era (2016-Pres)", rarity: "Rare", team: "CLE", ovr: 79.6, hp: 101, maxHp: 101, stf: 58, ctl: 48, mov: 69, sta: 75 },
       { name: "Alex Colome", role: "RP", pos: "RP", year: 2016, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "TB", ovr: 82.6, hp: 30, maxHp: 30, stf: 44, ctl: 58, mov: 118, sta: 28 },
     ]
   },
@@ -9267,10 +9267,10 @@ window.OpponentsPool = [
     id: "opp_team_00842", name: "Jordan Montgomery (2023)",
     tier: "B", isBoss: false,
     era: "Modern Era (2016-Pres)", ovr: 80.4,
-    rarity: "Epic", hof: false, allstars: 0,
+    rarity: "Rare", hof: false, allstars: 0,
     pitchers: [
-      { name: "Lucas Giolito", role: "SP", pos: "SP", year: 2019, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "CHW", ovr: 79.5, hp: 101, maxHp: 101, stf: 67, ctl: 50, mov: 64, sta: 75 },
-      { name: "Jordan Montgomery", role: "SP", pos: "SP", year: 2023, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "NYY", ovr: 79.6, hp: 99, maxHp: 99, stf: 48, ctl: 71, mov: 55, sta: 72 },
+      { name: "Lucas Giolito", role: "SP", pos: "SP", year: 2019, era: "Modern Era (2016-Pres)", rarity: "Rare", team: "CHW", ovr: 79.5, hp: 101, maxHp: 101, stf: 67, ctl: 50, mov: 64, sta: 75 },
+      { name: "Jordan Montgomery", role: "SP", pos: "SP", year: 2023, era: "Modern Era (2016-Pres)", rarity: "Rare", team: "NYY", ovr: 79.6, hp: 99, maxHp: 99, stf: 48, ctl: 71, mov: 55, sta: 72 },
       { name: "Jason Adam", role: "RP", pos: "RP", year: 2022, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "TB", ovr: 82.2, hp: 30, maxHp: 30, stf: 70, ctl: 47, mov: 102, sta: 25 },
     ]
   },
@@ -9278,10 +9278,10 @@ window.OpponentsPool = [
     id: "opp_team_00843", name: "Garrett Richards (2014)",
     tier: "B", isBoss: false,
     era: "Modern Era (2016-Pres)", ovr: 80.3,
-    rarity: "Epic", hof: false, allstars: 0,
+    rarity: "Rare", hof: false, allstars: 0,
     pitchers: [
-      { name: "Garrett Richards", role: "SP", pos: "SP", year: 2014, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "LAA", ovr: 79.5, hp: 105, maxHp: 105, stf: 43, ctl: 52, mov: 70, sta: 79 },
-      { name: "Chris Archer", role: "SP", pos: "SP", year: 2015, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "TB", ovr: 79.4, hp: 102, maxHp: 102, stf: 66, ctl: 53, mov: 53, sta: 76 },
+      { name: "Garrett Richards", role: "SP", pos: "SP", year: 2014, era: "Modern Era (2016-Pres)", rarity: "Rare", team: "LAA", ovr: 79.5, hp: 105, maxHp: 105, stf: 43, ctl: 52, mov: 70, sta: 79 },
+      { name: "Chris Archer", role: "SP", pos: "SP", year: 2015, era: "Modern Era (2016-Pres)", rarity: "Rare", team: "TB", ovr: 79.4, hp: 102, maxHp: 102, stf: 66, ctl: 53, mov: 53, sta: 76 },
       { name: "Dan Otero", role: "RP", pos: "RP", year: 2016, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "CLE", ovr: 82.1, hp: 30, maxHp: 30, stf: 17, ctl: 108, mov: 91, sta: 26 },
     ]
   },
@@ -9289,10 +9289,10 @@ window.OpponentsPool = [
     id: "opp_team_00844", name: "J. A. Happ (2016)",
     tier: "B", isBoss: false,
     era: "Modern Era (2016-Pres)", ovr: 80.3,
-    rarity: "Epic", hof: false, allstars: 1,
+    rarity: "Rare", hof: false, allstars: 1,
     pitchers: [
-      { name: "J. A. Happ", role: "SP", pos: "SP", year: 2016, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "TOR", ovr: 79.4, hp: 102, maxHp: 102, stf: 43, ctl: 58, mov: 72, sta: 76 },
-      { name: "Merrill Kelly", role: "SP", pos: "SP", year: 2023, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "ARI", ovr: 79.4, hp: 102, maxHp: 102, stf: 45, ctl: 65, mov: 63, sta: 76 },
+      { name: "J. A. Happ", role: "SP", pos: "SP", year: 2016, era: "Modern Era (2016-Pres)", rarity: "Rare", team: "TOR", ovr: 79.4, hp: 102, maxHp: 102, stf: 43, ctl: 58, mov: 72, sta: 76 },
+      { name: "Merrill Kelly", role: "SP", pos: "SP", year: 2023, era: "Modern Era (2016-Pres)", rarity: "Rare", team: "ARI", ovr: 79.4, hp: 102, maxHp: 102, stf: 45, ctl: 65, mov: 63, sta: 76 },
       { name: "Randy Rodríguez", role: "RP", pos: "RP", year: 2025, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "SFG", ovr: 82.0, hp: 30, maxHp: 30, stf: 59, ctl: 69, mov: 88, sta: 27 },
     ]
   },
@@ -9300,10 +9300,10 @@ window.OpponentsPool = [
     id: "opp_team_00845", name: "Michael Wacha (2024)",
     tier: "B", isBoss: false,
     era: "Modern Era (2016-Pres)", ovr: 80.0,
-    rarity: "Epic", hof: false, allstars: 1,
+    rarity: "Rare", hof: false, allstars: 1,
     pitchers: [
-      { name: "Michael Wacha", role: "SP", pos: "SP", year: 2024, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "STL", ovr: 79.4, hp: 101, maxHp: 101, stf: 41, ctl: 66, mov: 63, sta: 75 },
-      { name: "Andrew Heaney", role: "SP", pos: "SP", year: 2018, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "LAA", ovr: 79.3, hp: 100, maxHp: 100, stf: 61, ctl: 66, mov: 53, sta: 73 },
+      { name: "Michael Wacha", role: "SP", pos: "SP", year: 2024, era: "Modern Era (2016-Pres)", rarity: "Rare", team: "STL", ovr: 79.4, hp: 101, maxHp: 101, stf: 41, ctl: 66, mov: 63, sta: 75 },
+      { name: "Andrew Heaney", role: "SP", pos: "SP", year: 2018, era: "Modern Era (2016-Pres)", rarity: "Rare", team: "LAA", ovr: 79.3, hp: 100, maxHp: 100, stf: 61, ctl: 66, mov: 53, sta: 73 },
       { name: "Jeremy Jeffress", role: "RP", pos: "RP", year: 2018, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "MIL", ovr: 81.4, hp: 30, maxHp: 30, stf: 44, ctl: 41, mov: 125, sta: 25 },
     ]
   },
@@ -9311,10 +9311,10 @@ window.OpponentsPool = [
     id: "opp_team_00846", name: "BOSS: Eduardo Rodriguez (2019)",
     tier: "B", isBoss: true,
     era: "Modern Era (2016-Pres)", ovr: 79.8,
-    rarity: "Epic", hof: false, allstars: 0,
+    rarity: "Rare", hof: false, allstars: 0,
     pitchers: [
-      { name: "Mike Soroka", role: "SP", pos: "SP", year: 2019, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "ATL", ovr: 79.1, hp: 103, maxHp: 103, stf: 44, ctl: 54, mov: 71, sta: 77 },
-      { name: "Eduardo Rodriguez", role: "SP", pos: "SP", year: 2019, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "BOS", ovr: 79.2, hp: 101, maxHp: 101, stf: 59, ctl: 53, mov: 58, sta: 74 },
+      { name: "Mike Soroka", role: "SP", pos: "SP", year: 2019, era: "Modern Era (2016-Pres)", rarity: "Rare", team: "ATL", ovr: 79.1, hp: 103, maxHp: 103, stf: 44, ctl: 54, mov: 71, sta: 77 },
+      { name: "Eduardo Rodriguez", role: "SP", pos: "SP", year: 2019, era: "Modern Era (2016-Pres)", rarity: "Rare", team: "BOS", ovr: 79.2, hp: 101, maxHp: 101, stf: 59, ctl: 53, mov: 58, sta: 74 },
       { name: "Tony Watson", role: "RP", pos: "RP", year: 2014, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "PIT", ovr: 81.1, hp: 29, maxHp: 29, stf: 41, ctl: 80, mov: 88, sta: 25 },
     ]
   },
@@ -9380,7 +9380,7 @@ window.OpponentsPool = [
     rarity: "Epic", hof: false, allstars: 0,
     pitchers: [
       { name: "Jeff Fassero", role: "SP", pos: "SP", year: 1996, era: "Steroid Era (1994-2005)", rarity: "Epic", team: "WSH", ovr: 82.8, hp: 108, maxHp: 108, stf: 60, ctl: 63, mov: 69, sta: 84 },
-      { name: "Tom Glavine", role: "SP", pos: "SP", year: 1991, era: "Steroid Era (1994-2005)", rarity: "Legendary", team: "ATL", ovr: 82.4, hp: 108, maxHp: 108, stf: 34, ctl: 67, mov: 78, sta: 84 },
+      { name: "Tom Glavine", role: "SP", pos: "SP", year: 1991, era: "Steroid Era (1994-2005)", rarity: "Epic", team: "ATL", ovr: 82.4, hp: 108, maxHp: 108, stf: 34, ctl: 67, mov: 78, sta: 84 },
       { name: "Brad Hand", role: "RP", pos: "RP", year: 2017, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "MIA", ovr: 80.2, hp: 30, maxHp: 30, stf: 68, ctl: 49, mov: 86, sta: 27 },
     ]
   },
@@ -9403,7 +9403,7 @@ window.OpponentsPool = [
     pitchers: [
       { name: "Kelvim Escobar", role: "SP", pos: "SP", year: 2007, era: "Steroid Era (1994-2005)", rarity: "Epic", team: "TOR", ovr: 82.2, hp: 109, maxHp: 109, stf: 63, ctl: 53, mov: 66, sta: 86 },
       { name: "David Wells", role: "SP", pos: "SP", year: 1995, era: "Steroid Era (1994-2005)", rarity: "Epic", team: "TOR", ovr: 82.3, hp: 109, maxHp: 109, stf: 33, ctl: 100, mov: 64, sta: 85 },
-      { name: "David Bednar", role: "RP", pos: "RP", year: 2023, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "PIT", ovr: 79.8, hp: 30, maxHp: 30, stf: 76, ctl: 51, mov: 74, sta: 25 },
+      { name: "David Bednar", role: "RP", pos: "RP", year: 2023, era: "Modern Era (2016-Pres)", rarity: "Rare", team: "PIT", ovr: 79.8, hp: 30, maxHp: 30, stf: 76, ctl: 51, mov: 74, sta: 25 },
     ]
   },
   {
@@ -9414,7 +9414,7 @@ window.OpponentsPool = [
     pitchers: [
       { name: "Tim Hudson", role: "SP", pos: "SP", year: 2003, era: "Steroid Era (1994-2005)", rarity: "Epic", team: "ATL", ovr: 81.9, hp: 108, maxHp: 108, stf: 34, ctl: 73, mov: 73, sta: 83 },
       { name: "Rick Reed", role: "SP", pos: "SP", year: 1998, era: "Steroid Era (1994-2005)", rarity: "Epic", team: "NYM", ovr: 82.1, hp: 104, maxHp: 104, stf: 31, ctl: 102, mov: 59, sta: 79 },
-      { name: "Steve Cishek", role: "RP", pos: "RP", year: 2013, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "MIA", ovr: 79.8, hp: 29, maxHp: 29, stf: 58, ctl: 43, mov: 98, sta: 25 },
+      { name: "Steve Cishek", role: "RP", pos: "RP", year: 2013, era: "Modern Era (2016-Pres)", rarity: "Rare", team: "MIA", ovr: 79.8, hp: 29, maxHp: 29, stf: 58, ctl: 43, mov: 98, sta: 25 },
     ]
   },
   {
@@ -9425,7 +9425,7 @@ window.OpponentsPool = [
     pitchers: [
       { name: "Tom Gordon", role: "SP", pos: "SP", year: 2004, era: "Steroid Era (1994-2005)", rarity: "Epic", team: "KCR", ovr: 81.8, hp: 117, maxHp: 117, stf: 67, ctl: 32, mov: 80, sta: 95 },
       { name: "David Cone", role: "SP", pos: "SP", year: 1993, era: "Steroid Era (1994-2005)", rarity: "Epic", team: "NYM", ovr: 81.8, hp: 111, maxHp: 111, stf: 68, ctl: 42, mov: 80, sta: 87 },
-      { name: "Chris Devenski", role: "RP", pos: "RP", year: 2016, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "HOU", ovr: 79.8, hp: 30, maxHp: 30, stf: 58, ctl: 74, mov: 70, sta: 28 },
+      { name: "Chris Devenski", role: "RP", pos: "RP", year: 2016, era: "Modern Era (2016-Pres)", rarity: "Rare", team: "HOU", ovr: 79.8, hp: 30, maxHp: 30, stf: 58, ctl: 74, mov: 70, sta: 28 },
     ]
   },
   {
@@ -9436,7 +9436,7 @@ window.OpponentsPool = [
     pitchers: [
       { name: "Jason Schmidt", role: "SP", pos: "SP", year: 2004, era: "Steroid Era (1994-2005)", rarity: "Epic", team: "SFG", ovr: 81.7, hp: 106, maxHp: 106, stf: 64, ctl: 56, mov: 65, sta: 82 },
       { name: "Denny Neagle", role: "SP", pos: "SP", year: 1996, era: "Steroid Era (1994-2005)", rarity: "Epic", team: "PIT", ovr: 81.7, hp: 106, maxHp: 106, stf: 43, ctl: 75, mov: 60, sta: 81 },
-      { name: "Richard Bleier", role: "RP", pos: "RP", year: 2018, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "BAL", ovr: 79.7, hp: 29, maxHp: 29, stf: 8, ctl: 102, mov: 87, sta: 25 },
+      { name: "Richard Bleier", role: "RP", pos: "RP", year: 2018, era: "Modern Era (2016-Pres)", rarity: "Rare", team: "BAL", ovr: 79.7, hp: 29, maxHp: 29, stf: 8, ctl: 102, mov: 87, sta: 25 },
     ]
   },
   {
@@ -9447,7 +9447,7 @@ window.OpponentsPool = [
     pitchers: [
       { name: "Alex Fernandez", role: "SP", pos: "SP", year: 1996, era: "Steroid Era (1994-2005)", rarity: "Epic", team: "CHW", ovr: 81.4, hp: 108, maxHp: 108, stf: 44, ctl: 70, mov: 64, sta: 84 },
       { name: "Brad Radke", role: "SP", pos: "SP", year: 1999, era: "Steroid Era (1994-2005)", rarity: "Epic", team: "MIN", ovr: 81.6, hp: 107, maxHp: 107, stf: 31, ctl: 99, mov: 64, sta: 82 },
-      { name: "Andres Munoz", role: "RP", pos: "RP", year: 2025, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "SEA", ovr: 79.6, hp: 30, maxHp: 30, stf: 89, ctl: 36, mov: 70, sta: 25 },
+      { name: "Andres Munoz", role: "RP", pos: "RP", year: 2025, era: "Modern Era (2016-Pres)", rarity: "Rare", team: "SEA", ovr: 79.6, hp: 30, maxHp: 30, stf: 89, ctl: 36, mov: 70, sta: 25 },
     ]
   },
   {
@@ -9458,7 +9458,7 @@ window.OpponentsPool = [
     pitchers: [
       { name: "Jon Lieber", role: "SP", pos: "SP", year: 2001, era: "Steroid Era (1994-2005)", rarity: "Epic", team: "CHC", ovr: 81.3, hp: 108, maxHp: 108, stf: 42, ctl: 99, mov: 54, sta: 84 },
       { name: "Kerry Wood", role: "SP", pos: "SP", year: 2003, era: "Steroid Era (1994-2005)", rarity: "Epic", team: "CHC", ovr: 81.3, hp: 105, maxHp: 105, stf: 102, ctl: 24, mov: 64, sta: 80 },
-      { name: "Emilio Pagan", role: "RP", pos: "RP", year: 2019, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "SDP", ovr: 79.5, hp: 30, maxHp: 30, stf: 67, ctl: 72, mov: 70, sta: 26 },
+      { name: "Emilio Pagan", role: "RP", pos: "RP", year: 2019, era: "Modern Era (2016-Pres)", rarity: "Rare", team: "SDP", ovr: 79.5, hp: 30, maxHp: 30, stf: 67, ctl: 72, mov: 70, sta: 26 },
     ]
   },
   {
@@ -9469,7 +9469,7 @@ window.OpponentsPool = [
     pitchers: [
       { name: "Jamie Moyer", role: "SP", pos: "SP", year: 1999, era: "Steroid Era (1994-2005)", rarity: "Epic", team: "SEA", ovr: 81.2, hp: 107, maxHp: 107, stf: 27, ctl: 88, mov: 65, sta: 82 },
       { name: "John Burkett", role: "SP", pos: "SP", year: 2001, era: "Steroid Era (1994-2005)", rarity: "Epic", team: "SFG", ovr: 80.8, hp: 105, maxHp: 105, stf: 36, ctl: 82, mov: 55, sta: 80 },
-      { name: "Hector Neris", role: "RP", pos: "RP", year: 2023, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "PHI", ovr: 79.4, hp: 30, maxHp: 30, stf: 77, ctl: 47, mov: 80, sta: 25 },
+      { name: "Hector Neris", role: "RP", pos: "RP", year: 2023, era: "Modern Era (2016-Pres)", rarity: "Rare", team: "PHI", ovr: 79.4, hp: 30, maxHp: 30, stf: 77, ctl: 47, mov: 80, sta: 25 },
     ]
   },
   {
@@ -9480,7 +9480,7 @@ window.OpponentsPool = [
     pitchers: [
       { name: "Freddy Garcia", role: "SP", pos: "SP", year: 1999, era: "Steroid Era (1994-2005)", rarity: "Epic", team: "SEA", ovr: 80.8, hp: 106, maxHp: 106, stf: 43, ctl: 70, mov: 61, sta: 82 },
       { name: "Odalis Perez", role: "SP", pos: "SP", year: 2002, era: "Steroid Era (1994-2005)", rarity: "Epic", team: "LAD", ovr: 80.8, hp: 104, maxHp: 104, stf: 40, ctl: 80, mov: 52, sta: 78 },
-      { name: "Danny Coulombe", role: "RP", pos: "RP", year: 2025, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "MIN", ovr: 79.1, hp: 29, maxHp: 29, stf: 51, ctl: 55, mov: 92, sta: 24 },
+      { name: "Danny Coulombe", role: "RP", pos: "RP", year: 2025, era: "Modern Era (2016-Pres)", rarity: "Rare", team: "MIN", ovr: 79.1, hp: 29, maxHp: 29, stf: 51, ctl: 55, mov: 92, sta: 24 },
     ]
   },
   {
@@ -9522,7 +9522,7 @@ window.OpponentsPool = [
     era: "Steroid Era (1994-2005)", ovr: 81.4,
     rarity: "Epic", hof: false, allstars: 2,
     pitchers: [
-      { name: "Juan Guzman", role: "SP", pos: "SP", year: 1996, era: "Steroid Era (1994-2005)", rarity: "Epic", team: "TOR", ovr: 79.9, hp: 105, maxHp: 105, stf: 59, ctl: 34, mov: 69, sta: 80 },
+      { name: "Juan Guzman", role: "SP", pos: "SP", year: 1996, era: "Steroid Era (1994-2005)", rarity: "Rare", team: "TOR", ovr: 79.9, hp: 105, maxHp: 105, stf: 59, ctl: 34, mov: 69, sta: 80 },
       { name: "Brad Penny", role: "SP", pos: "SP", year: 2007, era: "Steroid Era (1994-2005)", rarity: "Epic", team: "MIA", ovr: 80.3, hp: 103, maxHp: 103, stf: 40, ctl: 72, mov: 62, sta: 78 },
       { name: "Ugueth Urbina", role: "RP", pos: "RP", year: 1998, era: "Steroid Era (1994-2005)", rarity: "Epic", team: "WSH", ovr: 83.9, hp: 30, maxHp: 30, stf: 101, ctl: 39, mov: 98, sta: 27 },
     ]
@@ -9531,10 +9531,10 @@ window.OpponentsPool = [
     id: "opp_team_00866", name: "BOSS: Rick Helling (2000)",
     tier: "B", isBoss: true,
     era: "Steroid Era (1994-2005)", ovr: 81.1,
-    rarity: "Epic", hof: false, allstars: 0,
+    rarity: "Rare", hof: false, allstars: 0,
     pitchers: [
-      { name: "Charles Nagy", role: "SP", pos: "SP", year: 1996, era: "Steroid Era (1994-2005)", rarity: "Epic", team: "CLE", ovr: 79.7, hp: 108, maxHp: 108, stf: 34, ctl: 72, mov: 62, sta: 83 },
-      { name: "Rick Helling", role: "SP", pos: "SP", year: 2000, era: "Steroid Era (1994-2005)", rarity: "Epic", team: "TEX", ovr: 79.8, hp: 105, maxHp: 105, stf: 37, ctl: 57, mov: 90, sta: 80 },
+      { name: "Charles Nagy", role: "SP", pos: "SP", year: 1996, era: "Steroid Era (1994-2005)", rarity: "Rare", team: "CLE", ovr: 79.7, hp: 108, maxHp: 108, stf: 34, ctl: 72, mov: 62, sta: 83 },
+      { name: "Rick Helling", role: "SP", pos: "SP", year: 2000, era: "Steroid Era (1994-2005)", rarity: "Rare", team: "TEX", ovr: 79.8, hp: 105, maxHp: 105, stf: 37, ctl: 57, mov: 90, sta: 80 },
       { name: "Michael Jackson", role: "RP", pos: "RP", year: 1998, era: "Steroid Era (1994-2005)", rarity: "Epic", team: "SEA", ovr: 83.8, hp: 30, maxHp: 30, stf: 64, ctl: 56, mov: 107, sta: 27 },
     ]
   },
@@ -9542,10 +9542,10 @@ window.OpponentsPool = [
     id: "opp_team_00867", name: "Esteban Loaiza (2003)",
     tier: "B", isBoss: false,
     era: "Steroid Era (1994-2005)", ovr: 80.9,
-    rarity: "Epic", hof: false, allstars: 2,
+    rarity: "Rare", hof: false, allstars: 2,
     pitchers: [
-      { name: "Esteban Loaiza", role: "SP", pos: "SP", year: 2003, era: "Steroid Era (1994-2005)", rarity: "Epic", team: "PIT", ovr: 79.6, hp: 106, maxHp: 106, stf: 40, ctl: 79, mov: 58, sta: 81 },
-      { name: "Aaron Sele", role: "SP", pos: "SP", year: 1999, era: "Steroid Era (1994-2005)", rarity: "Epic", team: "BOS", ovr: 79.6, hp: 104, maxHp: 104, stf: 45, ctl: 54, mov: 62, sta: 79 },
+      { name: "Esteban Loaiza", role: "SP", pos: "SP", year: 2003, era: "Steroid Era (1994-2005)", rarity: "Rare", team: "PIT", ovr: 79.6, hp: 106, maxHp: 106, stf: 40, ctl: 79, mov: 58, sta: 81 },
+      { name: "Aaron Sele", role: "SP", pos: "SP", year: 1999, era: "Steroid Era (1994-2005)", rarity: "Rare", team: "BOS", ovr: 79.6, hp: 104, maxHp: 104, stf: 45, ctl: 54, mov: 62, sta: 79 },
       { name: "Roberto Hernandez", role: "RP", pos: "RP", year: 1996, era: "Steroid Era (1994-2005)", rarity: "Epic", team: "CHW", ovr: 83.5, hp: 30, maxHp: 30, stf: 69, ctl: 50, mov: 108, sta: 26 },
     ]
   },
@@ -9553,10 +9553,10 @@ window.OpponentsPool = [
     id: "opp_team_00868", name: "Randy Wolf (2002)",
     tier: "B", isBoss: false,
     era: "Steroid Era (1994-2005)", ovr: 80.6,
-    rarity: "Epic", hof: false, allstars: 1,
+    rarity: "Rare", hof: false, allstars: 1,
     pitchers: [
-      { name: "Hideo Nomo", role: "SP", pos: "SP", year: 1996, era: "Steroid Era (1994-2005)", rarity: "Epic", team: "LAD", ovr: 79.3, hp: 106, maxHp: 106, stf: 78, ctl: 34, mov: 60, sta: 81 },
-      { name: "Randy Wolf", role: "SP", pos: "SP", year: 2002, era: "Steroid Era (1994-2005)", rarity: "Epic", team: "PHI", ovr: 79.4, hp: 105, maxHp: 105, stf: 45, ctl: 63, mov: 57, sta: 80 },
+      { name: "Hideo Nomo", role: "SP", pos: "SP", year: 1996, era: "Steroid Era (1994-2005)", rarity: "Rare", team: "LAD", ovr: 79.3, hp: 106, maxHp: 106, stf: 78, ctl: 34, mov: 60, sta: 81 },
+      { name: "Randy Wolf", role: "SP", pos: "SP", year: 2002, era: "Steroid Era (1994-2005)", rarity: "Rare", team: "PHI", ovr: 79.4, hp: 105, maxHp: 105, stf: 45, ctl: 63, mov: 57, sta: 80 },
       { name: "Octavio Dotel", role: "RP", pos: "RP", year: 2002, era: "Steroid Era (1994-2005)", rarity: "Epic", team: "HOU", ovr: 83.2, hp: 30, maxHp: 30, stf: 108, ctl: 44, mov: 84, sta: 28 },
     ]
   },
@@ -9564,10 +9564,10 @@ window.OpponentsPool = [
     id: "opp_team_00869", name: "Carl Pavano (2004)",
     tier: "B", isBoss: false,
     era: "Steroid Era (1994-2005)", ovr: 80.3,
-    rarity: "Epic", hof: false, allstars: 1,
+    rarity: "Rare", hof: false, allstars: 1,
     pitchers: [
-      { name: "Ismael Valdez", role: "SP", pos: "SP", year: 1997, era: "Steroid Era (1994-2005)", rarity: "Epic", team: "LAD", ovr: 79.3, hp: 106, maxHp: 106, stf: 37, ctl: 76, mov: 59, sta: 82 },
-      { name: "Carl Pavano", role: "SP", pos: "SP", year: 2004, era: "Steroid Era (1994-2005)", rarity: "Epic", team: "WSH", ovr: 79.3, hp: 106, maxHp: 106, stf: 26, ctl: 89, mov: 58, sta: 81 },
+      { name: "Ismael Valdez", role: "SP", pos: "SP", year: 1997, era: "Steroid Era (1994-2005)", rarity: "Rare", team: "LAD", ovr: 79.3, hp: 106, maxHp: 106, stf: 37, ctl: 76, mov: 59, sta: 82 },
+      { name: "Carl Pavano", role: "SP", pos: "SP", year: 2004, era: "Steroid Era (1994-2005)", rarity: "Rare", team: "WSH", ovr: 79.3, hp: 106, maxHp: 106, stf: 26, ctl: 89, mov: 58, sta: 81 },
       { name: "Alberto Reyes", role: "RP", pos: "RP", year: 2005, era: "Steroid Era (1994-2005)", rarity: "Epic", team: "MIL", ovr: 82.3, hp: 30, maxHp: 30, stf: 73, ctl: 22, mov: 124, sta: 26 },
     ]
   },
@@ -9575,10 +9575,10 @@ window.OpponentsPool = [
     id: "opp_team_00870", name: "Jarrod Washburn (2002)",
     tier: "B", isBoss: false,
     era: "Steroid Era (1994-2005)", ovr: 80.2,
-    rarity: "Epic", hof: false, allstars: 0,
+    rarity: "Rare", hof: false, allstars: 0,
     pitchers: [
-      { name: "Darryl Kile", role: "SP", pos: "SP", year: 1997, era: "Steroid Era (1994-2005)", rarity: "Epic", team: "HOU", ovr: 79.1, hp: 107, maxHp: 107, stf: 52, ctl: 48, mov: 60, sta: 83 },
-      { name: "Jarrod Washburn", role: "SP", pos: "SP", year: 2002, era: "Steroid Era (1994-2005)", rarity: "Epic", team: "LAA", ovr: 79.2, hp: 105, maxHp: 105, stf: 25, ctl: 70, mov: 63, sta: 79 },
+      { name: "Darryl Kile", role: "SP", pos: "SP", year: 1997, era: "Steroid Era (1994-2005)", rarity: "Rare", team: "HOU", ovr: 79.1, hp: 107, maxHp: 107, stf: 52, ctl: 48, mov: 60, sta: 83 },
+      { name: "Jarrod Washburn", role: "SP", pos: "SP", year: 2002, era: "Steroid Era (1994-2005)", rarity: "Rare", team: "LAA", ovr: 79.2, hp: 105, maxHp: 105, stf: 25, ctl: 70, mov: 63, sta: 79 },
       { name: "Scot Shields", role: "RP", pos: "RP", year: 2003, era: "Steroid Era (1994-2005)", rarity: "Epic", team: "LAA", ovr: 82.2, hp: 31, maxHp: 31, stf: 68, ctl: 55, mov: 86, sta: 30 },
     ]
   },
@@ -9586,10 +9586,10 @@ window.OpponentsPool = [
     id: "opp_team_00871", name: "BOSS: Kent Mercker (1997)",
     tier: "B", isBoss: true,
     era: "Steroid Era (1994-2005)", ovr: 81.8,
-    rarity: "Epic", hof: false, allstars: 0,
+    rarity: "Rare", hof: false, allstars: 0,
     pitchers: [
       { name: "Terry Larkin", role: "SP", pos: "SP", year: 1879, era: "The Genesis Era (1871-1900)", rarity: "Epic", team: "CHC", ovr: 84.2, hp: 120, maxHp: 120, stf: 18, ctl: 121, mov: 42, sta: 100 },
-      { name: "Kent Mercker", role: "SP", pos: "SP", year: 1997, era: "Steroid Era (1994-2005)", rarity: "Epic", team: "ATL", ovr: 79.0, hp: 108, maxHp: 108, stf: 50, ctl: 28, mov: 87, sta: 84 },
+      { name: "Kent Mercker", role: "SP", pos: "SP", year: 1997, era: "Steroid Era (1994-2005)", rarity: "Rare", team: "ATL", ovr: 79.0, hp: 108, maxHp: 108, stf: 50, ctl: 28, mov: 87, sta: 84 },
       { name: "Kazuhiro Sasaki", role: "RP", pos: "RP", year: 2000, era: "Steroid Era (1994-2005)", rarity: "Epic", team: "SEA", ovr: 82.1, hp: 30, maxHp: 30, stf: 83, ctl: 58, mov: 74, sta: 25 },
     ]
   },
@@ -9619,9 +9619,9 @@ window.OpponentsPool = [
     id: "opp_team_00874", name: "Mickey Welch (1884)",
     tier: "B", isBoss: false,
     era: "The Genesis Era (1871-1900)", ovr: 82.6,
-    rarity: "Legendary", hof: true, allstars: 0,
+    rarity: "Epic", hof: true, allstars: 0,
     pitchers: [
-      { name: "Mickey Welch", role: "SP", pos: "SP", year: 1884, era: "The Genesis Era (1871-1900)", rarity: "Legendary", team: "SFG", ovr: 83.5, hp: 120, maxHp: 120, stf: 56, ctl: 58, mov: 67, sta: 99 },
+      { name: "Mickey Welch", role: "SP", pos: "SP", year: 1884, era: "The Genesis Era (1871-1900)", rarity: "Epic", team: "SFG", ovr: 83.5, hp: 120, maxHp: 120, stf: 56, ctl: 58, mov: 67, sta: 99 },
       { name: "Dick McBride", role: "SP", pos: "SP", year: 1875, era: "The Genesis Era (1871-1900)", rarity: "Epic", team: "HIST", ovr: 83.3, hp: 120, maxHp: 120, stf: 1, ctl: 119, mov: 55, sta: 99 },
       { name: "Bob Howry", role: "RP", pos: "RP", year: 2000, era: "Steroid Era (1994-2005)", rarity: "Epic", team: "CHW", ovr: 81.1, hp: 30, maxHp: 30, stf: 64, ctl: 64, mov: 83, sta: 25 },
     ]
@@ -9699,7 +9699,7 @@ window.OpponentsPool = [
     rarity: "Epic", hof: false, allstars: 0,
     pitchers: [
       { name: "Ben Sanders", role: "SP", pos: "SP", year: 1888, era: "The Genesis Era (1871-1900)", rarity: "Epic", team: "PHI", ovr: 80.1, hp: 120, maxHp: 120, stf: 24, ctl: 79, mov: 61, sta: 99 },
-      { name: "Billy Rhines", role: "SP", pos: "SP", year: 1890, era: "The Genesis Era (1871-1900)", rarity: "Epic", team: "CIN", ovr: 79.4, hp: 118, maxHp: 118, stf: 31, ctl: 49, mov: 66, sta: 97 },
+      { name: "Billy Rhines", role: "SP", pos: "SP", year: 1890, era: "The Genesis Era (1871-1900)", rarity: "Rare", team: "CIN", ovr: 79.4, hp: 118, maxHp: 118, stf: 31, ctl: 49, mov: 66, sta: 97 },
       { name: "Rudy Seanez", role: "RP", pos: "RP", year: 2005, era: "Steroid Era (1994-2005)", rarity: "Epic", team: "ATL", ovr: 80.1, hp: 30, maxHp: 30, stf: 84, ctl: 44, mov: 77, sta: 26 },
     ]
   },
@@ -9743,7 +9743,7 @@ window.OpponentsPool = [
     rarity: "Epic", hof: false, allstars: 1,
     pitchers: [
       { name: "Greg Swindell", role: "SP", pos: "SP", year: 1988, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "CLE", ovr: 86.4, hp: 115, maxHp: 115, stf: 52, ctl: 90, mov: 73, sta: 92 },
-      { name: "Nolan Ryan", role: "SP", pos: "SP", year: 1977, era: "Big Hair Era (1977-1993)", rarity: "Legendary", team: "HOU", ovr: 85.1, hp: 112, maxHp: 112, stf: 125, ctl: 5, mov: 70, sta: 89 },
+      { name: "Nolan Ryan", role: "SP", pos: "SP", year: 1977, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "HOU", ovr: 85.1, hp: 112, maxHp: 112, stf: 125, ctl: 5, mov: 70, sta: 89 },
       { name: "Joe Sambito", role: "RP", pos: "RP", year: 1979, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "HOU", ovr: 86.5, hp: 30, maxHp: 30, stf: 69, ctl: 68, mov: 114, sta: 30 },
     ]
   },
@@ -9787,8 +9787,8 @@ window.OpponentsPool = [
     rarity: "Epic", hof: false, allstars: 0,
     pitchers: [
       { name: "Deacon Phillippe", role: "SP", pos: "SP", year: 1901, era: "Deadball (1901-1919)", rarity: "Epic", team: "PIT", ovr: 85.3, hp: 119, maxHp: 119, stf: 24, ctl: 103, mov: 69, sta: 99 },
-      { name: "Jack Chesbro", role: "SP", pos: "SP", year: 1904, era: "Deadball (1901-1919)", rarity: "Legendary", team: "NYY", ovr: 85.0, hp: 119, maxHp: 119, stf: 48, ctl: 79, mov: 65, sta: 98 },
-      { name: "Lee Smith", role: "RP", pos: "RP", year: 1983, era: "Big Hair Era (1977-1993)", rarity: "Legendary", team: "CHC", ovr: 85.4, hp: 30, maxHp: 30, stf: 96, ctl: 53, mov: 90, sta: 29 },
+      { name: "Jack Chesbro", role: "SP", pos: "SP", year: 1904, era: "Deadball (1901-1919)", rarity: "Epic", team: "NYY", ovr: 85.0, hp: 119, maxHp: 119, stf: 48, ctl: 79, mov: 65, sta: 98 },
+      { name: "Lee Smith", role: "RP", pos: "RP", year: 1983, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "CHC", ovr: 85.4, hp: 30, maxHp: 30, stf: 96, ctl: 53, mov: 90, sta: 29 },
     ]
   },
   {
@@ -9831,7 +9831,7 @@ window.OpponentsPool = [
     rarity: "Legendary", hof: false, allstars: 4,
     pitchers: [
       { name: "Cliff Lee", role: "SP", pos: "SP", year: 2011, era: "Efficiency Era (2006-2015)", rarity: "Legendary", team: "CLE", ovr: 88.7, hp: 109, maxHp: 109, stf: 53, ctl: 104, mov: 75, sta: 85 },
-      { name: "David Price", role: "SP", pos: "SP", year: 2012, era: "Efficiency Era (2006-2015)", rarity: "Legendary", team: "TB", ovr: 86.5, hp: 107, maxHp: 107, stf: 68, ctl: 79, mov: 70, sta: 83 },
+      { name: "David Price", role: "SP", pos: "SP", year: 2012, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "TB", ovr: 86.5, hp: 107, maxHp: 107, stf: 68, ctl: 79, mov: 70, sta: 83 },
       { name: "Pat Neshek", role: "RP", pos: "RP", year: 2017, era: "Efficiency Era (2006-2015)", rarity: "Legendary", team: "MIN", ovr: 89.5, hp: 29, maxHp: 29, stf: 68, ctl: 90, mov: 117, sta: 24 },
     ]
   },
@@ -9841,7 +9841,7 @@ window.OpponentsPool = [
     era: "Efficiency Era (2006-2015)", ovr: 86.7,
     rarity: "Epic", hof: false, allstars: 2,
     pitchers: [
-      { name: "Felix Hernandez", role: "SP", pos: "SP", year: 2010, era: "Efficiency Era (2006-2015)", rarity: "Legendary", team: "SEA", ovr: 85.8, hp: 108, maxHp: 108, stf: 63, ctl: 74, mov: 77, sta: 84 },
+      { name: "Felix Hernandez", role: "SP", pos: "SP", year: 2010, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "SEA", ovr: 85.8, hp: 108, maxHp: 108, stf: 63, ctl: 74, mov: 77, sta: 84 },
       { name: "Clay Buchholz", role: "SP", pos: "SP", year: 2010, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "BOS", ovr: 85.8, hp: 104, maxHp: 104, stf: 43, ctl: 60, mov: 106, sta: 79 },
       { name: "J. J. Putz", role: "RP", pos: "RP", year: 2007, era: "Efficiency Era (2006-2015)", rarity: "Legendary", team: "SEA", ovr: 88.6, hp: 30, maxHp: 30, stf: 79, ctl: 79, mov: 103, sta: 25 },
     ]
@@ -9861,11 +9861,11 @@ window.OpponentsPool = [
     id: "opp_team_00896", name: "CC Sabathia (2008)",
     tier: "A", isBoss: false,
     era: "Efficiency Era (2006-2015)", ovr: 87.6,
-    rarity: "Legendary", hof: true, allstars: 6,
+    rarity: "Epic", hof: true, allstars: 6,
     pitchers: [
       { name: "Tom Seaver", role: "SP", pos: "SP", year: 1973, era: "Expansion (1961-1976)", rarity: "Legendary", team: "NYM", ovr: 90.5, hp: 114, maxHp: 114, stf: 76, ctl: 78, mov: 85, sta: 92 },
-      { name: "CC Sabathia", role: "SP", pos: "SP", year: 2008, era: "Efficiency Era (2006-2015)", rarity: "Legendary", team: "NYY", ovr: 85.6, hp: 109, maxHp: 109, stf: 53, ctl: 78, mov: 78, sta: 85 },
-      { name: "Darren O'Day", role: "RP", pos: "RP", year: 2015, era: "Efficiency Era (2006-2015)", rarity: "Legendary", team: "BAL", ovr: 86.8, hp: 29, maxHp: 29, stf: 70, ctl: 77, mov: 110, sta: 24 },
+      { name: "CC Sabathia", role: "SP", pos: "SP", year: 2008, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "NYY", ovr: 85.6, hp: 109, maxHp: 109, stf: 53, ctl: 78, mov: 78, sta: 85 },
+      { name: "Darren O'Day", role: "RP", pos: "RP", year: 2015, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "BAL", ovr: 86.8, hp: 29, maxHp: 29, stf: 70, ctl: 77, mov: 110, sta: 24 },
     ]
   },
   {
@@ -9908,7 +9908,7 @@ window.OpponentsPool = [
     rarity: "Legendary", hof: true, allstars: 2,
     pitchers: [
       { name: "Bert Blyleven", role: "SP", pos: "SP", year: 1973, era: "Expansion (1961-1976)", rarity: "Legendary", team: "MIN", ovr: 88.1, hp: 114, maxHp: 114, stf: 67, ctl: 76, mov: 74, sta: 92 },
-      { name: "Don Sutton", role: "SP", pos: "SP", year: 1972, era: "Expansion (1961-1976)", rarity: "Legendary", team: "LAD", ovr: 87.0, hp: 111, maxHp: 111, stf: 59, ctl: 83, mov: 72, sta: 87 },
+      { name: "Don Sutton", role: "SP", pos: "SP", year: 1972, era: "Expansion (1961-1976)", rarity: "Epic", team: "LAD", ovr: 87.0, hp: 111, maxHp: 111, stf: 59, ctl: 83, mov: 72, sta: 87 },
       { name: "Joakim Soria", role: "RP", pos: "RP", year: 2010, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "KCR", ovr: 85.6, hp: 30, maxHp: 30, stf: 78, ctl: 71, mov: 107, sta: 25 },
     ]
   },
@@ -9916,10 +9916,10 @@ window.OpponentsPool = [
     id: "opp_team_00901", name: "Don Drysdale (1964)",
     tier: "A", isBoss: false,
     era: "Expansion (1961-1976)", ovr: 85.1,
-    rarity: "Legendary", hof: true, allstars: 9,
+    rarity: "Epic", hof: true, allstars: 9,
     pitchers: [
       { name: "Luis Tiant", role: "SP", pos: "SP", year: 1968, era: "Expansion (1961-1976)", rarity: "Epic", team: "BOS", ovr: 85.1, hp: 114, maxHp: 114, stf: 56, ctl: 70, mov: 76, sta: 91 },
-      { name: "Don Drysdale", role: "SP", pos: "SP", year: 1964, era: "Expansion (1961-1976)", rarity: "Legendary", team: "LAD", ovr: 85.2, hp: 112, maxHp: 112, stf: 66, ctl: 74, mov: 70, sta: 89 },
+      { name: "Don Drysdale", role: "SP", pos: "SP", year: 1964, era: "Expansion (1961-1976)", rarity: "Epic", team: "LAD", ovr: 85.2, hp: 112, maxHp: 112, stf: 66, ctl: 74, mov: 70, sta: 89 },
       { name: "Francisco Rodriguez", role: "RP", pos: "RP", year: 2006, era: "Efficiency Era (2006-2015)", rarity: "Epic", team: "MIL", ovr: 85.1, hp: 30, maxHp: 30, stf: 97, ctl: 32, mov: 109, sta: 26 },
     ]
   },
@@ -9960,10 +9960,10 @@ window.OpponentsPool = [
     id: "opp_team_00905", name: "Joe Williams (1929)",
     tier: "A", isBoss: false,
     era: "Golden Era (1920-1941)", ovr: 88.1,
-    rarity: "Legendary", hof: true, allstars: 0,
+    rarity: "Epic", hof: true, allstars: 0,
     pitchers: [
-      { name: "Slim Jones", role: "SP", pos: "SP", year: 1934, era: "Golden Era (1920-1941)", rarity: "Legendary", team: "NLB", ovr: 86.7, hp: 123, maxHp: 123, stf: 66, ctl: 58, mov: 90, sta: 104 },
-      { name: "Joe Williams", role: "SP", pos: "SP", year: 1929, era: "Golden Era (1920-1941)", rarity: "Legendary", team: "NLB", ovr: 87.0, hp: 117, maxHp: 117, stf: 54, ctl: 87, mov: 68, sta: 96 },
+      { name: "Slim Jones", role: "SP", pos: "SP", year: 1934, era: "Golden Era (1920-1941)", rarity: "Epic", team: "NLB", ovr: 86.7, hp: 123, maxHp: 123, stf: 66, ctl: 58, mov: 90, sta: 104 },
+      { name: "Joe Williams", role: "SP", pos: "SP", year: 1929, era: "Golden Era (1920-1941)", rarity: "Epic", team: "NLB", ovr: 87.0, hp: 117, maxHp: 117, stf: 54, ctl: 87, mov: 68, sta: 96 },
       { name: "Emmanuel Clase", role: "RP", pos: "RP", year: 2024, era: "Modern Era (2016-Pres)", rarity: "Legendary", team: "CLE", ovr: 90.6, hp: 30, maxHp: 30, stf: 50, ctl: 93, mov: 125, sta: 25 },
     ]
   },
@@ -9971,10 +9971,10 @@ window.OpponentsPool = [
     id: "opp_team_00906", name: "Chet Brewer (1929)",
     tier: "A", isBoss: false,
     era: "Golden Era (1920-1941)", ovr: 87.3,
-    rarity: "Legendary", hof: false, allstars: 2,
+    rarity: "Epic", hof: false, allstars: 2,
     pitchers: [
-      { name: "Chet Brewer", role: "SP", pos: "SP", year: 1929, era: "Golden Era (1920-1941)", rarity: "Legendary", team: "NLB", ovr: 86.6, hp: 121, maxHp: 121, stf: 30, ctl: 57, mov: 118, sta: 101 },
-      { name: "Lefty Gomez", role: "SP", pos: "SP", year: 1937, era: "Golden Era (1920-1941)", rarity: "Legendary", team: "NYY", ovr: 86.1, hp: 116, maxHp: 116, stf: 93, ctl: 39, mov: 78, sta: 95 },
+      { name: "Chet Brewer", role: "SP", pos: "SP", year: 1929, era: "Golden Era (1920-1941)", rarity: "Epic", team: "NLB", ovr: 86.6, hp: 121, maxHp: 121, stf: 30, ctl: 57, mov: 118, sta: 101 },
+      { name: "Lefty Gomez", role: "SP", pos: "SP", year: 1937, era: "Golden Era (1920-1941)", rarity: "Epic", team: "NYY", ovr: 86.1, hp: 116, maxHp: 116, stf: 93, ctl: 39, mov: 78, sta: 95 },
       { name: "Liam Hendriks", role: "RP", pos: "RP", year: 2019, era: "Modern Era (2016-Pres)", rarity: "Legendary", team: "OAK", ovr: 89.3, hp: 30, maxHp: 30, stf: 89, ctl: 89, mov: 91, sta: 26 },
     ]
   },
@@ -9982,9 +9982,9 @@ window.OpponentsPool = [
     id: "opp_team_00907", name: "BOSS: Bob Feller (1946)",
     tier: "A", isBoss: true,
     era: "Golden Era (1920-1941)", ovr: 87.1,
-    rarity: "Legendary", hof: true, allstars: 8,
+    rarity: "Epic", hof: true, allstars: 8,
     pitchers: [
-      { name: "Bob Feller", role: "SP", pos: "SP", year: 1946, era: "Golden Era (1920-1941)", rarity: "Legendary", team: "CLE", ovr: 86.0, hp: 116, maxHp: 116, stf: 125, ctl: 7, mov: 74, sta: 95 },
+      { name: "Bob Feller", role: "SP", pos: "SP", year: 1946, era: "Golden Era (1920-1941)", rarity: "Epic", team: "CLE", ovr: 86.0, hp: 116, maxHp: 116, stf: 125, ctl: 7, mov: 74, sta: 95 },
       { name: "Whit Wyatt", role: "SP", pos: "SP", year: 1941, era: "Golden Era (1920-1941)", rarity: "Epic", team: "LAD", ovr: 85.9, hp: 115, maxHp: 115, stf: 76, ctl: 59, mov: 73, sta: 92 },
       { name: "Raisel Iglesias", role: "RP", pos: "RP", year: 2024, era: "Modern Era (2016-Pres)", rarity: "Legendary", team: "CIN", ovr: 89.3, hp: 30, maxHp: 30, stf: 72, ctl: 73, mov: 125, sta: 26 },
     ]
@@ -9996,7 +9996,7 @@ window.OpponentsPool = [
     rarity: "Epic", hof: false, allstars: 0,
     pitchers: [
       { name: "William Bell", role: "SP", pos: "SP", year: 1926, era: "Golden Era (1920-1941)", rarity: "Epic", team: "NLB", ovr: 85.8, hp: 124, maxHp: 124, stf: 22, ctl: 87, mov: 87, sta: 105 },
-      { name: "Ray Brown", role: "SP", pos: "SP", year: 1940, era: "Golden Era (1920-1941)", rarity: "Legendary", team: "NLB", ovr: 85.8, hp: 124, maxHp: 124, stf: 31, ctl: 66, mov: 98, sta: 104 },
+      { name: "Ray Brown", role: "SP", pos: "SP", year: 1940, era: "Golden Era (1920-1941)", rarity: "Epic", team: "NLB", ovr: 85.8, hp: 124, maxHp: 124, stf: 31, ctl: 66, mov: 98, sta: 104 },
       { name: "A. J. Minter", role: "RP", pos: "RP", year: 2022, era: "Modern Era (2016-Pres)", rarity: "Legendary", team: "ATL", ovr: 89.0, hp: 29, maxHp: 29, stf: 76, ctl: 62, mov: 125, sta: 24 },
     ]
   },
@@ -10004,10 +10004,10 @@ window.OpponentsPool = [
     id: "opp_team_00909", name: "Paul Derringer (1938)",
     tier: "A", isBoss: false,
     era: "Golden Era (1920-1941)", ovr: 86.7,
-    rarity: "Legendary", hof: false, allstars: 6,
+    rarity: "Epic", hof: false, allstars: 6,
     pitchers: [
       { name: "George Harney", role: "SP", pos: "SP", year: 1926, era: "Golden Era (1920-1941)", rarity: "Epic", team: "NLB", ovr: 85.8, hp: 124, maxHp: 124, stf: 50, ctl: 75, mov: 67, sta: 105 },
-      { name: "Paul Derringer", role: "SP", pos: "SP", year: 1938, era: "Golden Era (1920-1941)", rarity: "Legendary", team: "CIN", ovr: 85.8, hp: 117, maxHp: 117, stf: 50, ctl: 92, mov: 62, sta: 96 },
+      { name: "Paul Derringer", role: "SP", pos: "SP", year: 1938, era: "Golden Era (1920-1941)", rarity: "Epic", team: "CIN", ovr: 85.8, hp: 117, maxHp: 117, stf: 50, ctl: 92, mov: 62, sta: 96 },
       { name: "Roberto Osuna", role: "RP", pos: "RP", year: 2016, era: "Modern Era (2016-Pres)", rarity: "Legendary", team: "TOR", ovr: 88.4, hp: 30, maxHp: 30, stf: 64, ctl: 99, mov: 98, sta: 25 },
     ]
   },
@@ -10051,7 +10051,7 @@ window.OpponentsPool = [
     rarity: "Epic", hof: false, allstars: 1,
     pitchers: [
       { name: "Don Mossi", role: "SP", pos: "SP", year: 1959, era: "Integration (1942-1960)", rarity: "Epic", team: "CLE", ovr: 86.7, hp: 119, maxHp: 119, stf: 60, ctl: 86, mov: 73, sta: 99 },
-      { name: "Hal Newhouser", role: "SP", pos: "SP", year: 1945, era: "Integration (1942-1960)", rarity: "Legendary", team: "DET", ovr: 86.5, hp: 117, maxHp: 117, stf: 68, ctl: 48, mov: 88, sta: 96 },
+      { name: "Hal Newhouser", role: "SP", pos: "SP", year: 1945, era: "Integration (1942-1960)", rarity: "Epic", team: "DET", ovr: 86.5, hp: 117, maxHp: 117, stf: 68, ctl: 48, mov: 88, sta: 96 },
       { name: "David Robertson", role: "RP", pos: "RP", year: 2011, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "NYY", ovr: 86.5, hp: 30, maxHp: 30, stf: 89, ctl: 38, mov: 124, sta: 25 },
     ]
   },
@@ -10062,8 +10062,8 @@ window.OpponentsPool = [
     rarity: "Epic", hof: false, allstars: 2,
     pitchers: [
       { name: "Rufus Lewis", role: "SP", pos: "SP", year: 1946, era: "Integration (1942-1960)", rarity: "Epic", team: "NLB", ovr: 86.2, hp: 115, maxHp: 115, stf: 55, ctl: 67, mov: 92, sta: 93 },
-      { name: "Billy Pierce", role: "SP", pos: "SP", year: 1952, era: "Integration (1942-1960)", rarity: "Legendary", team: "CHW", ovr: 86.1, hp: 115, maxHp: 115, stf: 68, ctl: 65, mov: 78, sta: 93 },
-      { name: "Mark Melancon", role: "RP", pos: "RP", year: 2016, era: "Modern Era (2016-Pres)", rarity: "Legendary", team: "PIT", ovr: 86.1, hp: 30, maxHp: 30, stf: 45, ctl: 88, mov: 110, sta: 25 },
+      { name: "Billy Pierce", role: "SP", pos: "SP", year: 1952, era: "Integration (1942-1960)", rarity: "Epic", team: "CHW", ovr: 86.1, hp: 115, maxHp: 115, stf: 68, ctl: 65, mov: 78, sta: 93 },
+      { name: "Mark Melancon", role: "RP", pos: "RP", year: 2016, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "PIT", ovr: 86.1, hp: 30, maxHp: 30, stf: 45, ctl: 88, mov: 110, sta: 25 },
     ]
   },
   {
@@ -10072,7 +10072,7 @@ window.OpponentsPool = [
     era: "Integration (1942-1960)", ovr: 86.0,
     rarity: "Epic", hof: false, allstars: 3,
     pitchers: [
-      { name: "Robin Roberts", role: "SP", pos: "SP", year: 1953, era: "Integration (1942-1960)", rarity: "Legendary", team: "PHI", ovr: 85.9, hp: 116, maxHp: 116, stf: 40, ctl: 98, mov: 73, sta: 95 },
+      { name: "Robin Roberts", role: "SP", pos: "SP", year: 1953, era: "Integration (1942-1960)", rarity: "Epic", team: "PHI", ovr: 85.9, hp: 116, maxHp: 116, stf: 40, ctl: 98, mov: 73, sta: 95 },
       { name: "Harvey Haddix", role: "SP", pos: "SP", year: 1953, era: "Integration (1942-1960)", rarity: "Epic", team: "PIT", ovr: 86.0, hp: 112, maxHp: 112, stf: 79, ctl: 79, mov: 63, sta: 89 },
       { name: "Mason Miller", role: "RP", pos: "RP", year: 2024, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "OAK", ovr: 86.0, hp: 30, maxHp: 30, stf: 99, ctl: 34, mov: 117, sta: 28 },
     ]
@@ -10139,7 +10139,7 @@ window.OpponentsPool = [
     rarity: "Legendary", hof: false, allstars: 1,
     pitchers: [
       { name: "Tanner Houck", role: "SP", pos: "SP", year: 2024, era: "Modern Era (2016-Pres)", rarity: "Legendary", team: "BOS", ovr: 88.1, hp: 103, maxHp: 103, stf: 48, ctl: 55, mov: 125, sta: 77 },
-      { name: "Tarik Skubal", role: "SP", pos: "SP", year: 2025, era: "Modern Era (2016-Pres)", rarity: "Legendary", team: "DET", ovr: 86.7, hp: 101, maxHp: 101, stf: 73, ctl: 85, mov: 72, sta: 75 },
+      { name: "Tarik Skubal", role: "SP", pos: "SP", year: 2025, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "DET", ovr: 86.7, hp: 101, maxHp: 101, stf: 73, ctl: 85, mov: 72, sta: 75 },
       { name: "Eric Gagne", role: "RP", pos: "RP", year: 2003, era: "Steroid Era (1994-2005)", rarity: "Legendary", team: "LAD", ovr: 90.6, hp: 30, maxHp: 30, stf: 107, ctl: 56, mov: 106, sta: 29 },
     ]
   },
@@ -10147,10 +10147,10 @@ window.OpponentsPool = [
     id: "opp_team_00922", name: "BOSS: Brandon Woodruff (2021)",
     tier: "A", isBoss: true,
     era: "Modern Era (2016-Pres)", ovr: 87.4,
-    rarity: "Legendary", hof: false, allstars: 2,
+    rarity: "Epic", hof: false, allstars: 2,
     pitchers: [
       { name: "Zack Wheeler", role: "SP", pos: "SP", year: 2021, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "PHI", ovr: 85.9, hp: 104, maxHp: 104, stf: 68, ctl: 80, mov: 73, sta: 79 },
-      { name: "Brandon Woodruff", role: "SP", pos: "SP", year: 2021, era: "Modern Era (2016-Pres)", rarity: "Legendary", team: "MIL", ovr: 86.6, hp: 101, maxHp: 101, stf: 74, ctl: 78, mov: 76, sta: 75 },
+      { name: "Brandon Woodruff", role: "SP", pos: "SP", year: 2021, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "MIL", ovr: 86.6, hp: 101, maxHp: 101, stf: 74, ctl: 78, mov: 76, sta: 75 },
       { name: "Trevor Hoffman", role: "RP", pos: "RP", year: 1998, era: "Steroid Era (1994-2005)", rarity: "Legendary", team: "SDP", ovr: 89.6, hp: 30, maxHp: 30, stf: 93, ctl: 75, mov: 109, sta: 26 },
     ]
   },
@@ -10184,7 +10184,7 @@ window.OpponentsPool = [
     pitchers: [
       { name: "Arthur Rhodes", role: "SP", pos: "SP", year: 2002, era: "Steroid Era (1994-2005)", rarity: "Legendary", team: "BAL", ovr: 91.0, hp: 105, maxHp: 105, stf: 80, ctl: 66, mov: 92, sta: 79 },
       { name: "Tyler Glasnow", role: "SP", pos: "SP", year: 2019, era: "Modern Era (2016-Pres)", rarity: "Epic", team: "TB", ovr: 85.0, hp: 103, maxHp: 103, stf: 89, ctl: 50, mov: 74, sta: 78 },
-      { name: "Troy Percival", role: "RP", pos: "RP", year: 1996, era: "Steroid Era (1994-2005)", rarity: "Legendary", team: "LAA", ovr: 86.9, hp: 30, maxHp: 30, stf: 110, ctl: 40, mov: 101, sta: 25 },
+      { name: "Troy Percival", role: "RP", pos: "RP", year: 1996, era: "Steroid Era (1994-2005)", rarity: "Epic", team: "LAA", ovr: 86.9, hp: 30, maxHp: 30, stf: 110, ctl: 40, mov: 101, sta: 25 },
     ]
   },
   {
@@ -10204,7 +10204,7 @@ window.OpponentsPool = [
     era: "Steroid Era (1994-2005)", ovr: 86.7,
     rarity: "Legendary", hof: true, allstars: 8,
     pitchers: [
-      { name: "Mike Mussina", role: "SP", pos: "SP", year: 1992, era: "Steroid Era (1994-2005)", rarity: "Legendary", team: "BAL", ovr: 86.7, hp: 109, maxHp: 109, stf: 52, ctl: 94, mov: 78, sta: 85 },
+      { name: "Mike Mussina", role: "SP", pos: "SP", year: 1992, era: "Steroid Era (1994-2005)", rarity: "Epic", team: "BAL", ovr: 86.7, hp: 109, maxHp: 109, stf: 52, ctl: 94, mov: 78, sta: 85 },
       { name: "John Smoltz", role: "SP", pos: "SP", year: 1996, era: "Steroid Era (1994-2005)", rarity: "Legendary", team: "ATL", ovr: 88.4, hp: 108, maxHp: 108, stf: 63, ctl: 84, mov: 72, sta: 83 },
       { name: "Armando Benitez", role: "RP", pos: "RP", year: 2004, era: "Steroid Era (1994-2005)", rarity: "Epic", team: "NYM", ovr: 85.0, hp: 30, maxHp: 30, stf: 113, ctl: 20, mov: 113, sta: 25 },
     ]
@@ -10279,9 +10279,9 @@ window.OpponentsPool = [
     id: "opp_team_00934", name: "Kid Nichols (1890)",
     tier: "A", isBoss: false,
     era: "The Genesis Era (1871-1900)", ovr: 86.1,
-    rarity: "Legendary", hof: true, allstars: 0,
+    rarity: "Epic", hof: true, allstars: 0,
     pitchers: [
-      { name: "Kid Nichols", role: "SP", pos: "SP", year: 1890, era: "The Genesis Era (1871-1900)", rarity: "Legendary", team: "ATL", ovr: 86.5, hp: 122, maxHp: 122, stf: 59, ctl: 66, mov: 84, sta: 102 },
+      { name: "Kid Nichols", role: "SP", pos: "SP", year: 1890, era: "The Genesis Era (1871-1900)", rarity: "Epic", team: "ATL", ovr: 86.5, hp: 122, maxHp: 122, stf: 59, ctl: 66, mov: 84, sta: 102 },
       { name: "Guy Hecker", role: "SP", pos: "SP", year: 1884, era: "The Genesis Era (1871-1900)", rarity: "Epic", team: "NLB", ovr: 86.4, hp: 121, maxHp: 121, stf: 37, ctl: 99, mov: 70, sta: 101 },
       { name: "Steve Howe", role: "RP", pos: "RP", year: 1983, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "NYY", ovr: 85.4, hp: 30, maxHp: 30, stf: 32, ctl: 92, mov: 111, sta: 28 },
     ]
@@ -10294,7 +10294,7 @@ window.OpponentsPool = [
     pitchers: [
       { name: "Al Spalding", role: "SP", pos: "SP", year: 1875, era: "The Genesis Era (1871-1900)", rarity: "Epic", team: "HIST", ovr: 86.4, hp: 120, maxHp: 120, stf: 1, ctl: 125, mov: 70, sta: 100 },
       { name: "Ed Morris", role: "SP", pos: "SP", year: 1885, era: "The Genesis Era (1871-1900)", rarity: "Epic", team: "PIT", ovr: 86.3, hp: 119, maxHp: 119, stf: 52, ctl: 88, mov: 58, sta: 98 },
-      { name: "Lee Smith", role: "RP", pos: "RP", year: 1983, era: "Big Hair Era (1977-1993)", rarity: "Legendary", team: "CHC", ovr: 85.4, hp: 30, maxHp: 30, stf: 96, ctl: 53, mov: 90, sta: 29 },
+      { name: "Lee Smith", role: "RP", pos: "RP", year: 1983, era: "Big Hair Era (1977-1993)", rarity: "Epic", team: "CHC", ovr: 85.4, hp: 30, maxHp: 30, stf: 96, ctl: 53, mov: 90, sta: 29 },
     ]
   },
   {
@@ -10304,7 +10304,7 @@ window.OpponentsPool = [
     rarity: "Epic", hof: false, allstars: 0,
     pitchers: [
       { name: "Tommy Bond", role: "SP", pos: "SP", year: 1879, era: "The Genesis Era (1871-1900)", rarity: "Epic", team: "ATL", ovr: 86.2, hp: 120, maxHp: 120, stf: 1, ctl: 125, mov: 66, sta: 100 },
-      { name: "Pud Galvin", role: "SP", pos: "SP", year: 1884, era: "The Genesis Era (1871-1900)", rarity: "Legendary", team: "HIST", ovr: 85.9, hp: 120, maxHp: 120, stf: 19, ctl: 114, mov: 63, sta: 100 },
+      { name: "Pud Galvin", role: "SP", pos: "SP", year: 1884, era: "The Genesis Era (1871-1900)", rarity: "Epic", team: "HIST", ovr: 85.9, hp: 120, maxHp: 120, stf: 19, ctl: 114, mov: 63, sta: 100 },
       { name: "Rafael Betancourt", role: "RP", pos: "RP", year: 2007, era: "Efficiency Era (2006-2015)", rarity: "Legendary", team: "CLE", ovr: 90.2, hp: 30, maxHp: 30, stf: 78, ctl: 92, mov: 107, sta: 25 },
     ]
   },
@@ -10315,7 +10315,7 @@ window.OpponentsPool = [
     rarity: "Epic", hof: false, allstars: 0,
     pitchers: [
       { name: "George Bradley", role: "SP", pos: "SP", year: 1876, era: "The Genesis Era (1871-1900)", rarity: "Epic", team: "HIST", ovr: 85.8, hp: 121, maxHp: 121, stf: 1, ctl: 125, mov: 62, sta: 101 },
-      { name: "John Clarkson", role: "SP", pos: "SP", year: 1889, era: "The Genesis Era (1871-1900)", rarity: "Legendary", team: "ATL", ovr: 85.8, hp: 119, maxHp: 119, stf: 72, ctl: 59, mov: 77, sta: 99 },
+      { name: "John Clarkson", role: "SP", pos: "SP", year: 1889, era: "The Genesis Era (1871-1900)", rarity: "Epic", team: "ATL", ovr: 85.8, hp: 119, maxHp: 119, stf: 72, ctl: 59, mov: 77, sta: 99 },
       { name: "Greg Holland", role: "RP", pos: "RP", year: 2013, era: "Efficiency Era (2006-2015)", rarity: "Legendary", team: "KCR", ovr: 90.2, hp: 30, maxHp: 30, stf: 102, ctl: 43, mov: 123, sta: 25 },
     ]
   },

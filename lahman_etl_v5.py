@@ -574,8 +574,13 @@ def paso_8_filtro_ingesta(df, allstar, hof, pure_pitcher_ids, batting):
         nl_pids = set(batting[batting['lgID'].isin(nl_leagues)]['playerID'].unique())
         nl_mask = eligible['playerID'].isin(nl_pids)
         nl_keep = (eligible['is_hof']) | (eligible['allstar_selections'] >= 2) | (eligible['career_ab'] >= 500)
-        eligible = eligible[~nl_mask | nl_keep].copy()
-        eligible['league_group'] = np.where(eligible['playerID'].isin(nl_pids), 'NLB', 'MLB')
+        nl_ab_df = batting[batting['lgID'].isin(nl_leagues)].groupby('playerID')['AB'].sum().reset_index().rename(columns={'AB': 'nlb_ab'})
+        mlb_ab_df = batting[~batting['lgID'].isin(nl_leagues)].groupby('playerID')['AB'].sum().reset_index().rename(columns={'AB': 'mlb_ab'})
+        eligible = eligible.merge(nl_ab_df, on='playerID', how='left').merge(mlb_ab_df, on='playerID', how='left')
+        eligible['nlb_ab'] = eligible['nlb_ab'].fillna(0)
+        eligible['mlb_ab'] = eligible['mlb_ab'].fillna(0)
+        eligible['league_group'] = np.where(eligible['nlb_ab'] > eligible['mlb_ab'], 'NLB', 'MLB')
+        eligible = eligible.drop(columns=['nlb_ab', 'mlb_ab'])
     else:
         eligible['league_group'] = 'MLB'
 
@@ -792,15 +797,21 @@ def paso_14_velocidad(df):
 # ===========================================================================
 # PASO 15 - EQUIPO CANONICO, DATAFRAME FINAL Y EXPORTACION
 # ===========================================================================
-def asignar_rareza(row):
-    hof_b     = 8 if row["is_hof"] else 0
-    ast_b     = min(row["allstar_selections"] * 0.5, 6)
-    raw       = row.get("raw_ovr", row.get("avg_attr_score", 50))
-    eff_score = raw + hof_b + ast_b
-    for thr, label in RARITY_THRESHOLDS:
-        if eff_score >= thr:
-            return label
-    return "Common"
+def asignar_rareza(ovr):
+    try:
+        v = float(ovr)
+    except (ValueError, TypeError):
+        v = 50.0
+    if v >= 88.0:
+        return "Legendary"
+    elif v >= 80.0:
+        return "Epic"
+    elif v >= 72.0:
+        return "Rare"
+    elif v >= 64.0:
+        return "Uncommon"
+    else:
+        return "Common"
 
 
 FRANCHISE_MAP = {
@@ -926,16 +937,6 @@ def paso_15_equipo_y_exportar(df, batting, teams, franchises):
         df["eye_val"]     * 0.10 +
         df["speed_val"]   * 0.10
     )
-    df["rarity"]         = df.apply(asignar_rareza, axis=1)
-    df["avg_attr_score"] = df["raw_ovr"].apply(map_to_cosmetic_ovr)
-    df["pos_display"]    = df["primary_pos"].map(POS_DISPLAY_MAP).fillna("RF")
-
-    for col, gcol in [
-        ("contact_val","con_grade"),("power_val","pow_grade"),
-        ("eye_val","eye_grade"),("speed_val","spd_grade"),("defense_val","def_grade"),
-    ]:
-        df[gcol] = df[col].apply(to_grade)
-
     # ── Badges: Clutch Player / Captain ─────────────────────────────────────
     awards_path = DATA_DIR / "AwardsPlayers.csv"
     if awards_path.exists():
@@ -951,6 +952,19 @@ def paso_15_equipo_y_exportar(df, batting, teams, franchises):
         df['is_clutch']  = False
         df['is_captain'] = False
         print("  [!!] AwardsPlayers.csv no encontrado — is_clutch/is_captain = False")
+
+    # ── OVR con boost de Badges (+4 por badge) & Rareza ─────────────────────
+    base_ovr = df["raw_ovr"].apply(map_to_cosmetic_ovr)
+    badge_boost = (df["is_clutch"].astype(int) * 4.0) + (df["is_captain"].astype(int) * 4.0)
+    df["avg_attr_score"] = (base_ovr + badge_boost).clip(50.0, 99.9).round(1)
+    df["rarity"]         = df["avg_attr_score"].apply(asignar_rareza)
+    df["pos_display"]    = df["primary_pos"].map(POS_DISPLAY_MAP).fillna("RF")
+
+    for col, gcol in [
+        ("contact_val","con_grade"),("power_val","pow_grade"),
+        ("eye_val","eye_grade"),("speed_val","spd_grade"),("defense_val","def_grade"),
+    ]:
+        df[gcol] = df[col].apply(to_grade)
 
     keep_cols = [
         "playerID","bbrefID","full_name","pos_display","sec_pos","era_label",

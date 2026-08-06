@@ -80,24 +80,40 @@
     // 5. OUT gets the rest (Floor 10%)
     let pOut = Math.max(0.10, 1.0 - pBB - pSO - pHR - pRegularHit);
 
-    // ── Clutch Player Badge: +4% hit y +4% HR respectivamente en situación de clutch (total +8%) ──
-    // Condición: batter.clutch === true, corredor en 2ª o 3ª, y es la última entrada
-    if (batter.clutch && simCtx) {
+    // ── Clutch Player Badge Config & Boost Application ───────────────────────
+    // Differentiated boosts: 1B: +2%, 2B: +2%, 3B: 0%, HR: +4% (Total +8% subtracted from Out)
+    const CLUTCH_BOOST_CONFIG = {
+      single: 0.02,
+      double: 0.02,
+      triple: 0.00,
+      hr:     0.04
+    };
+
+    let isClutchActive = false;
+    let clutchActualBoosts = { single: 0, double: 0, triple: 0, hr: 0, totalOutPenalty: 0 };
+
+    if ((batter.clutch || batter.is_clutch) && simCtx) {
       const isLastInning = simCtx.inning >= 3;
-      const runnersInScoring = !!(simCtx.bases[1] || simCtx.bases[2]);
-      if (isLastInning && runnersInScoring) {
-        const hitBoost = 0.04;
-        const hrBoost  = 0.04;
-        const totalBoost = hitBoost + hrBoost;
+      const runnersInScoring = !!(simCtx.bases && (simCtx.bases[1] || simCtx.bases[2]));
+      if (isLastInning || runnersInScoring) {
+        isClutchActive = true;
+        const totalDesired = CLUTCH_BOOST_CONFIG.single + CLUTCH_BOOST_CONFIG.double + CLUTCH_BOOST_CONFIG.triple + CLUTCH_BOOST_CONFIG.hr;
         const availableFromOut = Math.max(0, pOut - 0.10);
-        const actualBoost = Math.min(totalBoost, availableFromOut);
-        
-        const hitShare = actualBoost * 0.5;
-        const hrShare  = actualBoost * 0.5;
-        
-        pRegularHit += hitShare;
-        pHR         += hrShare;
-        pOut        -= actualBoost;
+        const actualTotalBoost = Math.min(totalDesired, availableFromOut);
+        const scale = totalDesired > 0 ? actualTotalBoost / totalDesired : 1.0;
+
+        clutchActualBoosts = {
+          single: CLUTCH_BOOST_CONFIG.single * scale,
+          double: CLUTCH_BOOST_CONFIG.double * scale,
+          triple: CLUTCH_BOOST_CONFIG.triple * scale,
+          hr:     CLUTCH_BOOST_CONFIG.hr * scale,
+          totalOutPenalty: actualTotalBoost
+        };
+
+        const regularHitBoost = clutchActualBoosts.single + clutchActualBoosts.double + clutchActualBoosts.triple;
+        pRegularHit += regularHitBoost;
+        pHR         += clutchActualBoosts.hr;
+        pOut        -= actualTotalBoost;
       }
     }
 
@@ -138,18 +154,18 @@
     const soWidth = Math.round(pSO * 100);
     const soEnd = bbEnd + Math.max(1, soWidth);
     
-    let hrWidth = Math.round(pHR * 100);
-    if (hrWidth < 1) hrWidth = 1;
+    let hrWidth = Math.max(1, Math.round(pHR * 100));
     
     const tripleEnd = Math.max(soEnd + 4, 100 - hrWidth);
     
-    const tripleWidth = Math.round(pTriple * 100);
+    // Ensure Triple has at least 1 percentage point width (e.g. 93-93) so ranges never invert
+    const tripleWidth = Math.max(1, Math.round(pTriple * 100));
     const doubleEnd = Math.max(soEnd + 3, tripleEnd - tripleWidth);
     
-    const doubleWidth = Math.round(pDouble * 100);
+    const doubleWidth = Math.max(1, Math.round(pDouble * 100));
     const singleEnd = Math.max(soEnd + 2, doubleEnd - doubleWidth);
     
-    const singleWidth = Math.round(pSingle * 100);
+    const singleWidth = Math.max(1, Math.round(pSingle * 100));
     const outEnd = Math.max(soEnd + 1, singleEnd - singleWidth);
 
     return { bbEnd, soEnd, outEnd, singleEnd, doubleEnd, tripleEnd, pBB, pSO, pOut, pHit };
@@ -304,6 +320,19 @@
       let spdProc    = null; // description of any SPD proc that fired
       let synergyProc = null; // description of any Era Synergy proc that fired
       let errorProc   = null; // description of Genesis Chaos error
+      let clutchProc  = null;
+      if (batter && (batter.clutch || batter.is_clutch)) {
+        const isLastInning = this.inning >= 3;
+        const runnersInScoring = !!(this.bases[1] || this.bases[2]);
+        if (isLastInning || runnersInScoring) {
+          const reason = (isLastInning && runnersInScoring)
+            ? 'última entrada con corredores en posición de anotar'
+            : isLastInning
+              ? 'última entrada'
+              : 'corredores en posición de anotar';
+          clutchProc = `⚡ ¡CLUTCH PLAYER! ${batter.name} batea en momento decisivo (${reason}) — (+2% 1B/2B, +4% HR).`;
+        }
+      }
 
       // ── DETERMINE OUTCOME ────────────────────────────────────────
       if (roll <= bounds.bbEnd) {
@@ -651,6 +680,10 @@
         if (spdProc) playText += ` ${spdProc}`;
         if (errorProc) playText += ` ${errorProc}`;
         if (synergyProc) playText += ` ${synergyProc}`;
+      }
+
+      if (clutchProc) {
+        playText = `${clutchProc} ${playText}`;
       }
 
       // Advance to next batter

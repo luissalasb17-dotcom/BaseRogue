@@ -137,15 +137,21 @@ def normalize_difficulty_adjusted(df, col_raw, col_out, invert=False):
     return df
 
 
-def asignar_rareza(row):
-    hof_b     = 8 if row["is_hof"] else 0
-    ast_b     = min(row["allstar_selections"] * 0.5, 6)
-    raw       = row.get("raw_ovr", row.get("ovr", 50))
-    eff_score = raw + hof_b + ast_b
-    for thr, label in RARITY_THRESHOLDS:
-        if eff_score >= thr:
-            return label
-    return "Common"
+def asignar_rareza(ovr):
+    try:
+        v = float(ovr)
+    except (ValueError, TypeError):
+        v = 50.0
+    if v >= 88.0:
+        return "Legendary"
+    elif v >= 80.0:
+        return "Epic"
+    elif v >= 72.0:
+        return "Rare"
+    elif v >= 64.0:
+        return "Uncommon"
+    else:
+        return "Common"
 
 
 # ── PASO 1: Cargar archivos ─────────────────────────────────────────────────
@@ -610,8 +616,8 @@ def paso_11_ovr_rareza(df):
         return round(res, 1)
 
     df["raw_ovr"] = raw_ovr
-    df["rarity"] = df.apply(asignar_rareza, axis=1)
-    df["ovr"] = df["raw_ovr"].apply(map_to_cosmetic_ovr_p)
+    df["ovr"]    = df["raw_ovr"].apply(map_to_cosmetic_ovr_p)
+    df["rarity"] = df["ovr"].apply(asignar_rareza)
 
     for col, gcol in [
         ("str_val", "str_grade"), ("ctl_val", "ctl_grade"),
