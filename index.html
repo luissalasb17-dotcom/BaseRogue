@@ -644,7 +644,7 @@
 
   <!-- MODAL: Full Run Summary / Box Score Stats -->
   <div class="modal-overlay hidden" id="modal-run-summary" style="position:fixed;inset:0;background:rgba(0,0,0,0.92);backdrop-filter:blur(10px);z-index:9000;display:flex;align-items:center;justify-content:center;">
-    <div style="background:#090d16;border:2px solid var(--accent-color);border-radius:16px;padding:24px;width:95%;max-width:900px;max-height:90vh;overflow-y:auto;box-shadow:0 0 50px rgba(0,0,0,0.9);position:relative;">
+    <div style="background:#090d16;border:2px solid var(--accent-color);border-radius:16px;padding:24px;width:95%;max-width:1040px;max-height:90vh;overflow-y:auto;box-shadow:0 0 50px rgba(0,0,0,0.9);position:relative;">
       <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px dashed rgba(255,255,255,0.2);padding-bottom:12px;margin-bottom:16px;">
         <h3 style="font-family:'Press Start 2P',monospace;font-size:12px;color:var(--accent-color);"><i class="fa-solid fa-baseball"></i> ESTADÍSTICAS COMPLETAS DE LA RUN</h3>
         <button id="btn-close-run-summary" style="background:none;border:none;color:#9ca3af;font-size:24px;cursor:pointer;">&times;</button>
@@ -670,6 +670,9 @@
                 <th style="padding:8px;">BB</th>
                 <th style="padding:8px;">SO</th>
                 <th style="padding:8px;">AVG</th>
+                <th style="padding:8px;">OBP</th>
+                <th style="padding:8px;">SLG</th>
+                <th style="padding:8px;">OPS</th>
               </tr>
             </thead>
             <tbody id="summary-tbody-batters">

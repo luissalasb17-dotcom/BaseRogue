@@ -4816,13 +4816,33 @@ function initGameModeSelector() {
 
     tbodyB.innerHTML = '';
     if (!allBatterNames.size) {
-      tbodyB.innerHTML = '<tr><td colspan="10" style="padding:12px;color:#64748b;text-align:center;">Sin datos de bateo registrados.</td></tr>';
+      tbodyB.innerHTML = '<tr><td colspan="13" style="padding:12px;color:#64748b;text-align:center;">Sin datos de bateo registrados.</td></tr>';
     } else {
       [...allBatterNames].forEach(name => {
         const s = batterStats[name] || {};
-        const ab = s.ab || 0;
-        const h  = s.h  || 0;
-        const avg = ab > 0 ? (h / ab).toFixed(3) : '.000';
+        const ab  = s.ab || 0;
+        const h   = s.h  || 0;
+        const b2  = s.doubles || 0;
+        const b3  = s.triples || 0;
+        const hr  = s.hr || 0;
+        const rbi = s.rbi || 0;
+        const bb  = s.bb || 0;
+        const so  = s.so || 0;
+
+        const b1 = Math.max(0, h - b2 - b3 - hr);
+        const pa = ab + bb;
+        const totalBases = b1 + (2 * b2) + (3 * b3) + (4 * hr);
+
+        const avgVal = ab > 0 ? (h / ab) : 0;
+        const obpVal = pa > 0 ? ((h + bb) / pa) : 0;
+        const slgVal = ab > 0 ? (totalBases / ab) : 0;
+        const opsVal = obpVal + slgVal;
+
+        const avg = ab > 0 ? avgVal.toFixed(3) : '.000';
+        const obp = pa > 0 ? obpVal.toFixed(3) : '.000';
+        const slg = ab > 0 ? slgVal.toFixed(3) : '.000';
+        const ops = (ab > 0 || pa > 0) ? opsVal.toFixed(3) : '.000';
+
         const rowColor = (s.hr || 0) >= 2 ? 'rgba(255,215,0,0.05)' : 'transparent';
         const tr = document.createElement('tr');
         tr.style.cssText = `border-bottom:1px solid rgba(255,255,255,0.06);background:${rowColor};`;
@@ -4830,13 +4850,16 @@ function initGameModeSelector() {
           <td style="padding:8px;color:#e2e8f0;font-weight:bold;">${name}</td>
           <td style="padding:8px;color:#94a3b8;">${ab}</td>
           <td style="padding:8px;color:#22d3ee;">${h}</td>
-          <td style="padding:8px;color:#f59e0b;">${s.doubles || 0}</td>
-          <td style="padding:8px;color:#f59e0b;">${s.triples || 0}</td>
-          <td style="padding:8px;color:#ef4444;">${s.hr || 0}</td>
-          <td style="padding:8px;color:#10b981;">${s.rbi || 0}</td>
-          <td style="padding:8px;color:#a78bfa;">${s.bb || 0}</td>
-          <td style="padding:8px;color:#f87171;">${s.so || 0}</td>
-          <td style="padding:8px;color:${parseFloat(avg) >= 0.300 ? '#ffd700' : '#94a3b8'};font-weight:bold;">${avg}</td>
+          <td style="padding:8px;color:#f59e0b;">${b2}</td>
+          <td style="padding:8px;color:#f59e0b;">${b3}</td>
+          <td style="padding:8px;color:#ef4444;">${hr}</td>
+          <td style="padding:8px;color:#10b981;">${rbi}</td>
+          <td style="padding:8px;color:#a78bfa;">${bb}</td>
+          <td style="padding:8px;color:#f87171;">${so}</td>
+          <td style="padding:8px;color:${avgVal >= 0.300 ? '#ffd700' : '#94a3b8'};font-weight:bold;">${avg}</td>
+          <td style="padding:8px;color:${obpVal >= 0.380 ? '#38bdf8' : '#94a3b8'};font-weight:bold;">${obp}</td>
+          <td style="padding:8px;color:${slgVal >= 0.500 ? '#f59e0b' : '#94a3b8'};font-weight:bold;">${slg}</td>
+          <td style="padding:8px;color:${opsVal >= 0.850 ? '#00ff66' : (opsVal >= 0.750 ? '#ffd700' : '#94a3b8')};font-weight:bold;">${ops}</td>
         `;
         tbodyB.appendChild(tr);
       });
