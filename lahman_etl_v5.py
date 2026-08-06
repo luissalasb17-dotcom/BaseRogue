@@ -569,8 +569,8 @@ def paso_8_filtro_ingesta(df, allstar, hof, pure_pitcher_ids, batting):
 
     eligible["allstar_selections"] = eligible["allstar_selections"].fillna(0).astype(int)
 
-    # Filtro adicional estricto para Ligas Negras: HoF, 2+ Allstars, o 500+ AB
-    nl_leagues = {'NN1', 'NN2', 'ECL', 'NSL', 'NAL', 'AA', 'ANL'}
+    # Comprehensive list of all Negro League lgID codes in Seamheads / Lahman:
+    nl_leagues = {'NNL', 'NN2', 'NAL', 'ECL', 'ANL', 'EWL', 'NSL', 'IND', 'EAS', 'NN1'}
     if not batting.empty and 'lgID' in batting.columns:
         nl_pids = set(batting[batting['lgID'].isin(nl_leagues)]['playerID'].unique())
         nl_mask = eligible['playerID'].isin(nl_pids)
