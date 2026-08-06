@@ -60,7 +60,9 @@
       "15": "WORLD SERIES"
     },
     "label_classic": "CLASSIC SERIES",
-    "label_decision": "DECISION"
+    "label_decision": "DECISION",
+    "node_pennant": "LEAGUE CHAMPION",
+    "node_world_series": "WORLD SERIES"
   },
   "ratings_guide": {
     "title": "📊 RATINGS GUIDE",
@@ -68,7 +70,9 @@
     "pwr": "<strong style=\"color:#f59e0b;\">PWR — Power:</strong> Probability of extra-base hits (doubles, triples, home runs). Also increases damage to opponent pitcher on deep hits.",
     "eye": "<strong style=\"color:#3b82f6;\">EYE — Vision/Eye:</strong> Probability of getting walks (BB). Reduces strikeout zone. Crucial to avoid direct HP damage.",
     "spd": "<strong style=\"color:#38bdf8;\">SPD — Speed:</strong> Triggers base stealing attempts on singles (+20% pitcher damage debuff). Also improves chance of converting hits to extra bases.",
-    "def": "<strong style=\"color:#a855f7;\">DEF — Defense:</strong> Contributes to team <strong>Shield</strong>. Higher average DEF gives you more shield to absorb OUTs before losing HP."
+    "def": "<strong style=\"color:#a855f7;\">DEF — Defense:</strong> Contributes to team <strong>Shield</strong>. Higher average DEF gives you more shield to absorb OUTs before losing HP.",
+    "captain": "<strong style=\"color:#eab308;\">👑 CAPTAIN:</strong> +5 to all ratings for all teammates while on the active roster.",
+    "clutch": "<strong style=\"color:#ef4444;\">⚡ CLUTCH PLAYER:</strong> +2% single and double chance, +4% HR chance with runners in scoring position or during the last inning."
   },
   "mode_select": {
     "app_title": "⚾ BASE-ROGUE",
@@ -305,7 +309,8 @@
     "train": "<i class=\"fa-solid fa-dumbbell\"></i> Batting Cage / Bullpen",
     "rest": "<i class=\"fa-solid fa-couch\"></i> Clubhouse (Rest)",
     "gameover": "Run Over!",
-    "synergies": "<i class=\"fa-solid fa-bolt\"></i> SYNERGIES"
+    "synergies": "<i class=\"fa-solid fa-bolt\"></i> SYNERGIES",
+    "draft": "<i class=\"fa-solid fa-file-signature\"></i> PLAYER SIGNINGS"
   },
   "summary": {
     "title": "<i class=\"fa-solid fa-baseball\"></i> COMPLETE RUN STATS",
@@ -624,5 +629,9 @@
     "counter": "{{unlocked}} / {{total}} discovered ({{pct}}%)",
     "career_header": "CAREER / CAREER (MLB)",
     "war_label": "WAR"
+  },
+  "badge": {
+    "captain_tooltip": "Captain: +5 to all ratings for teammates while on active roster.",
+    "clutch_tooltip": "Clutch Player: +2% single and double chance, +4% HR chance with runners in scoring position during final inning."
   }
 }

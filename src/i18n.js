@@ -71,7 +71,9 @@
                         "15": "SERIE MUNDIAL"
                 },
                 "label_classic": "SERIE CLÁSICA",
-                "label_decision": "DECISIÓN"
+                "label_decision": "DECISIÓN",
+                "node_pennant": "CAMPEÓN LIGA",
+                "node_world_series": "SERIE MUNDIAL"
         },
         "ratings_guide": {
                 "title": "📊 GUÍA DE RATINGS",
@@ -79,7 +81,9 @@
                 "pwr": "<strong style=\"color:#f59e0b;\">PWR — Poder:</strong> Probabilidad de conectar extra-bases (dobles, triples, jonrones). También aumenta el daño al pitcher rival en hits largos.",
                 "eye": "<strong style=\"color:#3b82f6;\">EYE — Ojo/Vista:</strong> Probabilidad de obtener boletos (BB). Reduce la zona de ponches. Clave para no recibir daño directo al HP.",
                 "spd": "<strong style=\"color:#38bdf8;\">SPD — Velocidad:</strong> Activa intentos de robo de base en sencillos (debuff +20% daño al pitcher). También mejora la probabilidad de convertir hits en extra-bases.",
-                "def": "<strong style=\"color:#a855f7;\">DEF — Defensa:</strong> Contribuye al <strong>Escudo</strong> del equipo. Cuanto mayor DEF promedio, más escudo tienes disponible para absorber OUTs antes de perder HP."
+                "def": "<strong style=\"color:#a855f7;\">DEF — Defensa:</strong> Contribuye al <strong>Escudo</strong> del equipo. Cuanto mayor DEF promedio, más escudo tienes disponible para absorber OUTs antes de perder HP.",
+                "captain": "<strong style=\"color:#eab308;\">👑 CAPTAIN:</strong> +5 a todos los ratings de sus compañeros de equipo mientras esté en el roster activo.",
+                "clutch": "<strong style=\"color:#ef4444;\">⚡ CLUTCH PLAYER:</strong> +2% de probabilidad de sencillo y doble, +4% de HR con corredores en posición de anotar o durante la última entrada."
         },
         "mode_select": {
                 "app_title": "⚾ BASE-ROGUE",
@@ -316,7 +320,8 @@
                 "train": "<i class=\"fa-solid fa-dumbbell\"></i> Jaula de Bateo / Bullpen",
                 "rest": "<i class=\"fa-solid fa-couch\"></i> Casa Club (Descanso)",
                 "gameover": "¡Fin de la Carrera!",
-                "synergies": "<i class=\"fa-solid fa-bolt\"></i> SINERGIAS"
+                "synergies": "<i class=\"fa-solid fa-bolt\"></i> SINERGIAS",
+                "draft": "<i class=\"fa-solid fa-file-signature\"></i> FIRMA DE JUGADORES"
         },
         "summary": {
                 "title": "<i class=\"fa-solid fa-baseball\"></i> ESTADÍSTICAS COMPLETAS DE LA RUN",
@@ -635,6 +640,10 @@
                 "counter": "{{unlocked}} / {{total}} descubiertos ({{pct}}%)",
                 "career_header": "CARRERA / CAREER (MLB)",
                 "war_label": "WAR"
+        },
+        "badge": {
+                "captain_tooltip": "Captain: +5 a todos los ratings de sus compañeros de equipo mientras esté en el roster activo.",
+                "clutch_tooltip": "Clutch Player: +2% de probabilidad de sencillo y doble, +4% de HR con corredores en posición de anotar o durante la última entrada."
         }
 }
     },
@@ -701,7 +710,9 @@
                         "15": "WORLD SERIES"
                 },
                 "label_classic": "CLASSIC SERIES",
-                "label_decision": "DECISION"
+                "label_decision": "DECISION",
+                "node_pennant": "LEAGUE CHAMPION",
+                "node_world_series": "WORLD SERIES"
         },
         "ratings_guide": {
                 "title": "📊 RATINGS GUIDE",
@@ -709,7 +720,9 @@
                 "pwr": "<strong style=\"color:#f59e0b;\">PWR — Power:</strong> Probability of extra-base hits (doubles, triples, home runs). Also increases damage to opponent pitcher on deep hits.",
                 "eye": "<strong style=\"color:#3b82f6;\">EYE — Vision/Eye:</strong> Probability of getting walks (BB). Reduces strikeout zone. Crucial to avoid direct HP damage.",
                 "spd": "<strong style=\"color:#38bdf8;\">SPD — Speed:</strong> Triggers base stealing attempts on singles (+20% pitcher damage debuff). Also improves chance of converting hits to extra bases.",
-                "def": "<strong style=\"color:#a855f7;\">DEF — Defense:</strong> Contributes to team <strong>Shield</strong>. Higher average DEF gives you more shield to absorb OUTs before losing HP."
+                "def": "<strong style=\"color:#a855f7;\">DEF — Defense:</strong> Contributes to team <strong>Shield</strong>. Higher average DEF gives you more shield to absorb OUTs before losing HP.",
+                "captain": "<strong style=\"color:#eab308;\">👑 CAPTAIN:</strong> +5 to all ratings for all teammates while on the active roster.",
+                "clutch": "<strong style=\"color:#ef4444;\">⚡ CLUTCH PLAYER:</strong> +2% single and double chance, +4% HR chance with runners in scoring position or during the last inning."
         },
         "mode_select": {
                 "app_title": "⚾ BASE-ROGUE",
@@ -946,7 +959,8 @@
                 "train": "<i class=\"fa-solid fa-dumbbell\"></i> Batting Cage / Bullpen",
                 "rest": "<i class=\"fa-solid fa-couch\"></i> Clubhouse (Rest)",
                 "gameover": "Run Over!",
-                "synergies": "<i class=\"fa-solid fa-bolt\"></i> SYNERGIES"
+                "synergies": "<i class=\"fa-solid fa-bolt\"></i> SYNERGIES",
+                "draft": "<i class=\"fa-solid fa-file-signature\"></i> PLAYER SIGNINGS"
         },
         "summary": {
                 "title": "<i class=\"fa-solid fa-baseball\"></i> COMPLETE RUN STATS",
@@ -1265,6 +1279,10 @@
                 "counter": "{{unlocked}} / {{total}} discovered ({{pct}}%)",
                 "career_header": "CAREER / CAREER (MLB)",
                 "war_label": "WAR"
+        },
+        "badge": {
+                "captain_tooltip": "Captain: +5 to all ratings for teammates while on active roster.",
+                "clutch_tooltip": "Clutch Player: +2% single and double chance, +4% HR chance with runners in scoring position during final inning."
         }
 }
     }
