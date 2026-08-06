@@ -633,5 +633,20 @@
   "badge": {
     "captain_tooltip": "Captain: +5 a todos los ratings de sus compañeros de equipo mientras esté en el roster activo.",
     "clutch_tooltip": "Clutch Player: +2% de probabilidad de sencillo y doble, +4% de HR con corredores en posición de anotar o durante la última entrada."
+  },
+  "combat_info": {
+    "title": "⚙️ DATOS DE DAÑO & VALORES",
+    "out": "<strong style=\"color: #9ca3af;\">🤚 OUT (Groundout/Flyout):</strong> Resta <span style=\"color:#ef4444;font-weight:bold;\">-12 HP</span> al Escudo (al romperlo, resta al HP del equipo).",
+    "so": "<strong style=\"color: #ef4444;\">💨 PONCHE (SO):</strong> Resta <span style=\"color:#ef4444;font-weight:bold;\">-18 HP</span> directos al HP (ignora escudo).<div style=\"font-size: 8.5px; color: #a855f7; margin-top: 2px;\">🔥 Racha: 1º (-18) • 2º (-24) • 3º+ (-30 HP)</div>",
+    "pitcher_title": "<strong style=\"color: #10b981;\">⚾ DAÑO AL LANZADOR RIVAL:</strong>",
+    "bb": "<span>🚶 BB: <b style=\"color:#3b82f6;\">10 HP</b></span>",
+    "single": "<span>✅ 1B: <b style=\"color:#a7f3d0;\">15 HP</b></span>",
+    "double": "<span>⚡ 2B: <b style=\"color:#10b981;\">30 HP</b></span>",
+    "triple": "<span>🔥 3B: <b style=\"color:#06b6d4;\">45 HP</b></span>",
+    "hr": "🚀 <strong>HR (Jonrón):</strong> <b style=\"color:#eab308;\">75 HP base</b>",
+    "rbi_bonus": "🏆 <strong>Bonus RBI:</strong> Cada carrera impulsada añade <strong style=\"color:#00ff66;\">+10 HP extra</strong> de daño al pitcher.",
+    "steal": "<strong style=\"color: #38bdf8;\">🏃 ROBO DE BASES (SPD ≥ 40):</strong><div style=\"font-size: 8.5px; color: #cbd5e1; margin-top: 2px;\">En 1B o BB con 2B libre, intenta robar (10% a 85% chance). Da <strong style=\"color:#38bdf8;\">+20% daño</strong> al pitcher en sus próximos 2 impactos (se resetea al cambiar de entrada o agotar impactos).</div>",
+    "upgrade": "<strong style=\"color: #a855f7;\">⚡ UPGRADE DE BATAZOS:</strong><div style=\"font-size: 8.5px; color: #cbd5e1; margin-top: 2px;\">• <strong>Grado A (SPD 80-99):</strong> 25% chance de subir hit (1B→2B, 2B→3B).<br>• <strong>Grado S (SPD 100-125):</strong> 50% chance.</div>",
+    "shield_max": "🛡️ Escudo máximo: 50 (50% de la DEF promedio de tus 8 alineados)."
   }
 }

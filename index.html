@@ -260,44 +260,44 @@
             
             <div id="combat-info-dropdown" class="hidden" style="position: absolute; top: 50px; right: 14px; width: 340px; background: rgba(9, 13, 22, 0.98); border: 2px solid var(--accent-color); border-radius: 12px; padding: 12px; box-shadow: 0 0 30px rgba(0,0,0,0.9), 0 0 15px rgba(250, 204, 21, 0.25); z-index: 250; backdrop-filter: blur(8px); font-size: 10px; line-height: 1.4; color: #e4e4e7;">
               <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed rgba(255,255,255,0.2); padding-bottom: 6px; margin-bottom: 8px;">
-                <span style="font-family: 'Press Start 2P', monospace; font-size: 8.5px; color: var(--accent-color); letter-spacing: 0.5px;">⚙️ DATOS DE DAÑO & VALORES</span>
+                <span style="font-family: 'Press Start 2P', monospace; font-size: 8.5px; color: var(--accent-color); letter-spacing: 0.5px;" data-i18n-html="combat_info.title">⚙️ DATOS DE DAÑO & VALORES</span>
                 <button id="btn-close-combat-info" style="background: none; border: none; color: #9ca3af; font-size: 14px; cursor: pointer; padding: 0 4px;">&times;</button>
               </div>
               <div style="display: flex; flex-direction: column; gap: 6px;">
-                <div style="background: rgba(255,255,255,0.04); padding: 5px 7px; border-radius: 6px; border-left: 3px solid #9ca3af;">
+                <div style="background: rgba(255,255,255,0.04); padding: 5px 7px; border-radius: 6px; border-left: 3px solid #9ca3af;" data-i18n-html="combat_info.out">
                   <strong style="color: #9ca3af;">🤚 OUT (Groundout/Flyout):</strong> Resta <span style="color:#ef4444;font-weight:bold;">-12 HP</span> al Escudo (al romperlo, resta al HP del equipo).
                 </div>
-                <div style="background: rgba(255,255,255,0.04); padding: 5px 7px; border-radius: 6px; border-left: 3px solid #ef4444;">
+                <div style="background: rgba(255,255,255,0.04); padding: 5px 7px; border-radius: 6px; border-left: 3px solid #ef4444;" data-i18n-html="combat_info.so">
                   <strong style="color: #ef4444;">💨 PONCHE (SO):</strong> Resta <span style="color:#ef4444;font-weight:bold;">-18 HP</span> directos al HP (ignora escudo).
                   <div style="font-size: 8.5px; color: #a855f7; margin-top: 2px;">🔥 Racha: 1º (-18) • 2º (-24) • 3º+ (-30 HP)</div>
                 </div>
                 <div style="background: rgba(255,255,255,0.04); padding: 5px 7px; border-radius: 6px; border-left: 3px solid #10b981;">
-                  <strong style="color: #10b981;">⚾ DAÑO AL LANZADOR RIVAL:</strong>
+                  <strong style="color: #10b981;" data-i18n-html="combat_info.pitcher_title">⚾ DAÑO AL LANZADOR RIVAL:</strong>
                   <div style="font-size: 9px; margin-top: 2px; display: grid; grid-template-columns: 1fr 1fr; gap: 3px; color: #cbd5e1;">
-                    <span>🚶 BB: <b style="color:#3b82f6;">10 HP</b></span>
-                    <span>✅ 1B: <b style="color:#a7f3d0;">15 HP</b></span>
-                    <span>⚡ 2B: <b style="color:#10b981;">30 HP</b></span>
-                    <span>🔥 3B: <b style="color:#06b6d4;">45 HP</b></span>
+                    <span data-i18n-html="combat_info.bb">🚶 BB: <b style="color:#3b82f6;">10 HP</b></span>
+                    <span data-i18n-html="combat_info.single">✅ 1B: <b style="color:#a7f3d0;">15 HP</b></span>
+                    <span data-i18n-html="combat_info.double">⚡ 2B: <b style="color:#10b981;">30 HP</b></span>
+                    <span data-i18n-html="combat_info.triple">🔥 3B: <b style="color:#06b6d4;">45 HP</b></span>
                   </div>
-                  <div style="font-size: 9px; margin-top: 3px; color: #eab308;">🚀 <strong>HR (Jonrón):</strong> <b style="color:#eab308;">75 HP base</b></div>
-                  <div style="font-size: 8.5px; color: #f59e0b; margin-top: 4px; border-top: 1px dashed rgba(255,255,255,0.15); padding-top: 3px;">
+                  <div style="font-size: 9px; margin-top: 3px; color: #eab308;" data-i18n-html="combat_info.hr">🚀 <strong>HR (Jonrón):</strong> <b style="color:#eab308;">75 HP base</b></div>
+                  <div style="font-size: 8.5px; color: #f59e0b; margin-top: 4px; border-top: 1px dashed rgba(255,255,255,0.15); padding-top: 3px;" data-i18n-html="combat_info.rbi_bonus">
                     🏆 <strong>Bonus RBI:</strong> Cada carrera impulsada añade <strong style="color:#00ff66;">+10 HP extra</strong> de daño al pitcher.
                   </div>
                 </div>
-                <div style="background: rgba(255,255,255,0.04); padding: 5px 7px; border-radius: 6px; border-left: 3px solid #38bdf8;">
+                <div style="background: rgba(255,255,255,0.04); padding: 5px 7px; border-radius: 6px; border-left: 3px solid #38bdf8;" data-i18n-html="combat_info.steal">
                   <strong style="color: #38bdf8;">🏃 ROBO DE BASES (SPD ≥ 40):</strong>
                   <div style="font-size: 8.5px; color: #cbd5e1; margin-top: 2px;">
                     En 1B o BB con 2B libre, intenta robar (10% a 85% chance). Da <strong style="color:#38bdf8;">+20% daño</strong> al pitcher en sus próximos 2 impactos (se resetea al cambiar de entrada o agotar impactos).
                   </div>
                 </div>
-                <div style="background: rgba(255,255,255,0.04); padding: 5px 7px; border-radius: 6px; border-left: 3px solid #a855f7;">
+                <div style="background: rgba(255,255,255,0.04); padding: 5px 7px; border-radius: 6px; border-left: 3px solid #a855f7;" data-i18n-html="combat_info.upgrade">
                   <strong style="color: #a855f7;">⚡ UPGRADE DE BATAZOS:</strong>
                   <div style="font-size: 8.5px; color: #cbd5e1; margin-top: 2px;">
                     • <strong>Grado A (SPD 80-99):</strong> 25% chance de subir hit (1B→2B, 2B→3B).<br>
                     • <strong>Grado S (SPD 100-125):</strong> 50% chance.
                   </div>
                 </div>
-                <div style="font-size: 8.5px; color: #9ca3af; text-align: center; border-top: 1px dashed rgba(255,255,255,0.15); padding-top: 4px; margin-top: 2px;">
+                <div style="font-size: 8.5px; color: #9ca3af; text-align: center; border-top: 1px dashed rgba(255,255,255,0.15); padding-top: 4px; margin-top: 2px;" data-i18n-html="combat_info.shield_max">
                   🛡️ Escudo máximo: 50 (50% de la DEF promedio de tus 8 alineados).
                 </div>
               </div>

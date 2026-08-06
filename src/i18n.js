@@ -644,6 +644,21 @@
         "badge": {
                 "captain_tooltip": "Captain: +5 a todos los ratings de sus compañeros de equipo mientras esté en el roster activo.",
                 "clutch_tooltip": "Clutch Player: +2% de probabilidad de sencillo y doble, +4% de HR con corredores en posición de anotar o durante la última entrada."
+        },
+        "combat_info": {
+                "title": "⚙️ DATOS DE DAÑO & VALORES",
+                "out": "<strong style=\"color: #9ca3af;\">🤚 OUT (Groundout/Flyout):</strong> Resta <span style=\"color:#ef4444;font-weight:bold;\">-12 HP</span> al Escudo (al romperlo, resta al HP del equipo).",
+                "so": "<strong style=\"color: #ef4444;\">💨 PONCHE (SO):</strong> Resta <span style=\"color:#ef4444;font-weight:bold;\">-18 HP</span> directos al HP (ignora escudo).<div style=\"font-size: 8.5px; color: #a855f7; margin-top: 2px;\">🔥 Racha: 1º (-18) • 2º (-24) • 3º+ (-30 HP)</div>",
+                "pitcher_title": "<strong style=\"color: #10b981;\">⚾ DAÑO AL LANZADOR RIVAL:</strong>",
+                "bb": "<span>🚶 BB: <b style=\"color:#3b82f6;\">10 HP</b></span>",
+                "single": "<span>✅ 1B: <b style=\"color:#a7f3d0;\">15 HP</b></span>",
+                "double": "<span>⚡ 2B: <b style=\"color:#10b981;\">30 HP</b></span>",
+                "triple": "<span>🔥 3B: <b style=\"color:#06b6d4;\">45 HP</b></span>",
+                "hr": "🚀 <strong>HR (Jonrón):</strong> <b style=\"color:#eab308;\">75 HP base</b>",
+                "rbi_bonus": "🏆 <strong>Bonus RBI:</strong> Cada carrera impulsada añade <strong style=\"color:#00ff66;\">+10 HP extra</strong> de daño al pitcher.",
+                "steal": "<strong style=\"color: #38bdf8;\">🏃 ROBO DE BASES (SPD ≥ 40):</strong><div style=\"font-size: 8.5px; color: #cbd5e1; margin-top: 2px;\">En 1B o BB con 2B libre, intenta robar (10% a 85% chance). Da <strong style=\"color:#38bdf8;\">+20% daño</strong> al pitcher en sus próximos 2 impactos (se resetea al cambiar de entrada o agotar impactos).</div>",
+                "upgrade": "<strong style=\"color: #a855f7;\">⚡ UPGRADE DE BATAZOS:</strong><div style=\"font-size: 8.5px; color: #cbd5e1; margin-top: 2px;\">• <strong>Grado A (SPD 80-99):</strong> 25% chance de subir hit (1B→2B, 2B→3B).<br>• <strong>Grado S (SPD 100-125):</strong> 50% chance.</div>",
+                "shield_max": "🛡️ Escudo máximo: 50 (50% de la DEF promedio de tus 8 alineados)."
         }
 }
     },
@@ -789,11 +804,11 @@
                 "subtitle": "You face the series against {{team}}. Make sure your batters are ready.",
                 "batters_title": "<i class=\"fa-solid fa-users\"></i> Your Batters (HP)",
                 "pitchers_title": "<i class=\"fa-solid fa-skull-crossbones\"></i> Opponent Rotation (HP)",
-                "start_btn": "<i class=\"fa-solid fa-fire-flame-curved\"></i> TO BATTLE!",
+                "start_btn": "<i class=\"fa-solid fa-fire-flame-curved\"></i> BATTLE!",
                 "back_map_btn": "<i class=\"fa-solid fa-arrow-left\"></i> Back to Map"
         },
         "match": {
-                "title": "<i class=\"fa-solid fa-trophy\"></i> Batters to Battle",
+                "title": "<i class=\"fa-solid fa-trophy\"></i> BATTLE",
                 "interactive_header": "<i class=\"fa-solid fa-baseball\"></i> INTERACTIVE COMBAT VS {{team}}",
                 "arena": "COMBAT ARENA",
                 "runs": "RUNS:",
@@ -954,7 +969,7 @@
         "headers": {
                 "map": "<i class=\"fa-solid fa-map\"></i> Championship Map",
                 "pre_fight": "<i class=\"fa-solid fa-shield-halved\"></i> Series Preparation",
-                "match": "<i class=\"fa-solid fa-trophy\"></i> Batters to Battle",
+                "match": "<i class=\"fa-solid fa-trophy\"></i> BATTLE",
                 "event": "<i class=\"fa-solid fa-clipboard-question\"></i> Manager's Office",
                 "train": "<i class=\"fa-solid fa-dumbbell\"></i> Batting Cage / Bullpen",
                 "rest": "<i class=\"fa-solid fa-couch\"></i> Clubhouse (Rest)",
@@ -1283,6 +1298,21 @@
         "badge": {
                 "captain_tooltip": "Captain: +5 to all ratings for teammates while on active roster.",
                 "clutch_tooltip": "Clutch Player: +2% single and double chance, +4% HR chance with runners in scoring position during final inning."
+        },
+        "combat_info": {
+                "title": "⚙️ DAMAGE DATA & VALUES",
+                "out": "<strong style=\"color: #9ca3af;\">🤚 OUT (Groundout/Flyout):</strong> Subtracts <span style=\"color:#ef4444;font-weight:bold;\">-12 HP</span> from Shield (upon breaking, subtracts from team HP).",
+                "so": "<strong style=\"color: #ef4444;\">💨 STRIKEOUT (SO):</strong> Subtracts <span style=\"color:#ef4444;font-weight:bold;\">-18 HP</span> directly from HP (ignores shield).<div style=\"font-size: 8.5px; color: #a855f7; margin-top: 2px;\">🔥 Streak: 1st (-18) • 2nd (-24) • 3rd+ (-30 HP)</div>",
+                "pitcher_title": "<strong style=\"color: #10b981;\">⚾ RIVAL PITCHER DAMAGE:</strong>",
+                "bb": "<span>🚶 BB: <b style=\"color:#3b82f6;\">10 HP</b></span>",
+                "single": "<span>✅ 1B: <b style=\"color:#a7f3d0;\">15 HP</b></span>",
+                "double": "<span>⚡ 2B: <b style=\"color:#10b981;\">30 HP</b></span>",
+                "triple": "<span>🔥 3B: <b style=\"color:#06b6d4;\">45 HP</b></span>",
+                "hr": "🚀 <strong>HR (Home Run):</strong> <b style=\"color:#eab308;\">75 HP base</b>",
+                "rbi_bonus": "🏆 <strong>RBI Bonus:</strong> Each RBI adds <strong style=\"color:#00ff66;\">+10 extra HP</strong> damage to pitcher.",
+                "steal": "<strong style=\"color: #38bdf8;\">🏃 BASE STEALING (SPD ≥ 40):</strong><div style=\"font-size: 8.5px; color: #cbd5e1; margin-top: 2px;\">On 1B or BB with 2B open, attempts to steal (10% to 85% chance). Grants <strong style=\"color:#38bdf8;\">+20% damage</strong> to pitcher on next 2 impacts.</div>",
+                "upgrade": "<strong style=\"color: #a855f7;\">⚡ HIT UPGRADES:</strong><div style=\"font-size: 8.5px; color: #cbd5e1; margin-top: 2px;\">• <strong>Grade A (SPD 80-99):</strong> 25% chance to upgrade hit (1B→2B, 2B→3B).<br>• <strong>Grade S (SPD 100-125):</strong> 50% chance.</div>",
+                "shield_max": "🛡️ Max shield: 50 (50% of average DEF of your 8 starters)."
         }
 }
     }
