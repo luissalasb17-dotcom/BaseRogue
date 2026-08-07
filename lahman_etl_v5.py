@@ -697,9 +697,19 @@ def paso_11_motor_defensivo(df, war_bat, awards):
                 war[col] = 0.0
         war["runs_defense"] = war["runs_defense"].clip(-80, 80)
         
-        # Defensive peak (7 best seasons by WAR_def)
-        war_sorted_def = war.sort_values(["player_ID", "WAR_def"], ascending=[True, False])
-        war_peak_def = war_sorted_def.groupby("player_ID").head(PEAK_SEASONS)
+        # Defensive peak (7 best seasons by WAR_def with G >= 81 games threshold)
+        if "G" in war.columns:
+            war["G"] = pd.to_numeric(war["G"], errors="coerce").fillna(0)
+            def _filter_def_peak(group):
+                qual = group[group["G"] >= 81]
+                if len(qual) < PEAK_SEASONS:
+                    qual = group.sort_values("G", ascending=False).head(PEAK_SEASONS)
+                return qual.sort_values("WAR_def", ascending=False).head(PEAK_SEASONS)
+            war_peak_def = war.groupby("player_ID", group_keys=True).apply(_filter_def_peak).reset_index(level=0)
+        else:
+            war_sorted_def = war.sort_values(["player_ID", "WAR_def"], ascending=[True, False])
+            war_peak_def = war_sorted_def.groupby("player_ID").head(PEAK_SEASONS)
+
         war_career_def = war_peak_def.groupby("player_ID").agg(
             rfield_career=("runs_defense","sum"),
             wardef_career=("WAR_def","sum"),
