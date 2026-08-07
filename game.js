@@ -692,20 +692,38 @@
       // Accumulate pitcher stats
       if (enemyPitchers && enemyPitchers.length) {
         for (const p of enemyPitchers) {
-          const pName = (p.cleanName || p.name || 'Unknown Pitcher').replace(/\s*\(\d{4}\)$/, '').trim();
+          const rawPName = p.cleanName || p.name || 'Unknown Pitcher';
+          const pName = rawPName.replace(/\s*\(\d{4}\)$/, '').trim();
           if (!this.runPitcherStats[pName]) {
             this.runPitcherStats[pName] = { outs: 0, k: 0, bb: 0, h: 0, hr: 0, er: 0 };
           }
         }
-        // Count events against each pitcher from the log
+
         let currentPitcherIdx = 0;
         for (const ev of simEvents) {
-          if (ev.playType === 'KO_PITCHER' || ev.type === 'KO_PITCHER') { currentPitcherIdx++; continue; }
+          if (ev.playType === 'KO_PITCHER' || ev.type === 'KO_PITCHER') {
+            if (currentPitcherIdx < enemyPitchers.length - 1) currentPitcherIdx++;
+            continue;
+          }
           if (ev.playType !== 'PLAY' && ev.type !== 'PLAY') continue;
-          const p = enemyPitchers[currentPitcherIdx];
-          if (!p) continue;
-          const pName = (p.cleanName || p.name || 'Unknown Pitcher').replace(/\s*\(\d{4}\)$/, '').trim();
-          if (!this.runPitcherStats[pName]) this.runPitcherStats[pName] = { outs: 0, k: 0, bb: 0, h: 0, hr: 0, er: 0 };
+
+          let pName = null;
+          if (ev.activePitcher && (ev.activePitcher.name || ev.activePitcher.cleanName)) {
+            const rawPName = ev.activePitcher.cleanName || ev.activePitcher.name;
+            pName = rawPName.replace(/\s*\(\d{4}\)$/, '').trim();
+          } else {
+            const p = enemyPitchers[currentPitcherIdx];
+            if (p) {
+              const rawPName = p.cleanName || p.name || 'Unknown Pitcher';
+              pName = rawPName.replace(/\s*\(\d{4}\)$/, '').trim();
+            }
+          }
+
+          if (!pName) continue;
+
+          if (!this.runPitcherStats[pName]) {
+            this.runPitcherStats[pName] = { outs: 0, k: 0, bb: 0, h: 0, hr: 0, er: 0 };
+          }
           const ps = this.runPitcherStats[pName];
           const eventType = ev.eventType || ev.type;
 
