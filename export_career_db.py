@@ -7,10 +7,9 @@ def norm(s):
     if not s:
         return ""
     s = re.sub(r'\s\(.*?\)$', '', s)
-    s = re.sub(r'\s+(Jr\.|Sr\.|III|II|IV)$', '', s, flags=re.IGNORECASE)
     s = s.replace('.', '')
     s = ''.join(c for c in unicodedata.normalize('NFD', s) if unicodedata.category(c) != 'Mn')
-    s = re.sub(r'[^a-zA-Z\s]', '', s)
+    s = re.sub(r'[^a-zA-Z0-9\s]', '', s)
     return s.lower().strip()
 
 NICKNAMES = {
@@ -38,7 +37,8 @@ MANUAL_OVERRIDE = {
     'Joe Kelley': {'war': 50.6, 'mvp': 0, 'roy': 0, 'ss': 0, 'gg': 0, 'allstars': 0, 'hof': True},
     'Harry Stovey': {'war': 45.0, 'mvp': 0, 'roy': 0, 'ss': 0, 'gg': 0, 'allstars': 0, 'hof': False},
     'Frank Grant': {'war': 45.0, 'mvp': 0, 'roy': 0, 'ss': 0, 'gg': 0, 'allstars': 0, 'hof': True},
-    'Robert Abernathy': {'war': 12.5, 'mvp': 0, 'roy': 0, 'ss': 0, 'gg': 0, 'allstars': 0, 'hof': False}
+    'Robert Abernathy': {'war': 12.5, 'mvp': 0, 'roy': 0, 'ss': 0, 'gg': 0, 'allstars': 0, 'hof': False},
+    'Lennie Pearson': {'war': 12.0, 'mvp': 0, 'roy': 0, 'ss': 0, 'gg': 0, 'allstars': 6, 'hof': False}
 }
 
 def norm_fuzzy(s):
@@ -83,26 +83,27 @@ ss_pid = awards_df[awards_df['awardID'] == 'Silver Slugger'].groupby('playerID')
 gg_pid = awards_df[awards_df['awardID'] == 'Gold Glove'].groupby('playerID').size().to_dict()
 as_pid = allstar_df.groupby('playerID').size().to_dict()
 
-# Build comprehensive lookup dict indexed by normalized names
-name_stats_db = {}
+SR_JR_EXPLICIT = {
+    "griffke01": "Ken Griffey Sr.",
+    "griffke02": "Ken Griffey Jr.",
+    "guerrvl01": "Vladimir Guerrero Sr.",
+    "guerrvl02": "Vladimir Guerrero Jr.",
+    "ripkeca01": "Cal Ripken Sr.",
+    "ripkeca02": "Cal Ripken Jr.",
+    "wittbo01":  "Bobby Witt Sr.",
+    "wittbo02":  "Bobby Witt Jr.",
+    "tatafe01":  "Fernando Tatis Sr.",
+    "tatafe02":  "Fernando Tatis Jr.",
+    "younger01": "Eric Young Sr.",
+    "younger03": "Eric Young Jr.",
+}
 
-def update_db(name_key, stat_obj):
-    if not name_key:
-        return
-    if name_key not in name_stats_db:
-        name_stats_db[name_key] = stat_obj
-    else:
-        # Deduplication logic: prefer entry with HOF or higher WAR
-        cur = name_stats_db[name_key]
-        cur_war = cur['war'] if cur['war'] is not None else -999.0
-        new_war = stat_obj['war'] if stat_obj['war'] is not None else -999.0
-        
-        # If new entry is HOF and existing is not, or new entry has higher WAR, overwrite!
-        if (stat_obj['hof'] and not cur['hof']) or (new_war > cur_war):
-            name_stats_db[name_key] = stat_obj
+# Build comprehensive lookup dict indexed by playerID and normalized names
+career_map = {}
+pid_stats_db = {}
 
 for _, row in people_df.iterrows():
-    pid = row['playerID']
+    pid = str(row['playerID']).strip()
     f = str(row['nameFirst']).strip() if pd.notna(row['nameFirst']) else ''
     l = str(row['nameLast']).strip() if pd.notna(row['nameLast']) else ''
     g = str(row['nameGiven']).strip() if pd.notna(row['nameGiven']) else ''
@@ -123,60 +124,27 @@ for _, row in people_df.iterrows():
         'hof': bool(pid in hof_pids)
     }
 
-    full1 = f'{f} {l}'
-    full2 = f'{g} {l}'
+    pid_stats_db[pid] = stat_obj
+    career_map[pid] = stat_obj
 
-    for name_str in [full1, full2]:
-        if name_str.strip():
-            n1 = norm(name_str)
-            nf = norm_fuzzy(name_str)
-            update_db(n1, stat_obj)
-            update_db(nf, stat_obj)
+    if pid in SR_JR_EXPLICIT:
+        explicit_name = SR_JR_EXPLICIT[pid]
+        career_map[explicit_name] = stat_obj
+        career_map[norm(explicit_name)] = stat_obj
+    else:
+        full1 = f'{f} {l}'
+        if full1.strip():
+            career_map[full1] = stat_obj
+            career_map[norm(full1)] = stat_obj
 
-# Read game_cards_pool.js to extract all player objects/names
-with open('game_cards_pool.js', 'r', encoding='utf-8') as f:
-    content = f.read()
+for k, v in MANUAL_OVERRIDE.items():
+    career_map[k] = v
 
-names = set(re.findall(r'name:\s*"([^"]+)"', content))
-
-career_map = {}
-matched_count = 0
-
-for name in sorted(names):
-    clean_name = re.sub(r'\s\(.*?\)$', '', name).strip()
-    
-    if clean_name in MANUAL_OVERRIDE:
-        matched_count += 1
-        career_map[clean_name] = MANUAL_OVERRIDE[clean_name]
-        continue
-
-    n1 = norm(clean_name)
-    nf = norm_fuzzy(clean_name)
-
-    stats = name_stats_db.get(n1) or name_stats_db.get(nf)
-    war_fallback = war_name_map.get(n1) or war_name_map.get(nf)
-    
-    final_war = None
-    if stats and stats['war'] is not None:
-        final_war = stats['war']
-    elif war_fallback is not None:
-        final_war = war_fallback
-
-    if final_war is not None:
-        matched_count += 1
-
-    career_map[clean_name] = {
-        'war': final_war,
-        'mvp': stats['mvp'] if stats else 0,
-        'roy': stats['roy'] if stats else 0,
-        'ss': stats['ss'] if stats else 0,
-        'gg': stats['gg'] if stats else 0,
-        'allstars': stats['allstars'] if stats else 0,
-        'hof': stats['hof'] if stats else False
-    }
-
-print(f"Matched {matched_count} / {len(names)} unique player names in game_cards_pool.js")
-print("Buck Ewing entry:", career_map.get("Buck Ewing"))
+print(f"Total entries in career_map: {len(career_map):,}")
+print("Ken Griffey Sr. (griffke01):", career_map.get("griffke01"))
+print("Ken Griffey Jr. (griffke02):", career_map.get("griffke02"))
+print("Vladimir Guerrero Sr. (guerrvl01):", career_map.get("guerrvl01"))
+print("Vladimir Guerrero Jr. (guerrvl02):", career_map.get("guerrvl02"))
 
 # Write to career_data.js
 js_output = f"// Auto-generated career stats mapping from BBRef & Lahman data\n(function() {{\n  window.CAREER_STATS_DB = {json.dumps(career_map, separators=(',', ':'))};\n}})();\n"

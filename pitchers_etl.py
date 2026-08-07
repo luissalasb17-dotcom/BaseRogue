@@ -370,6 +370,7 @@ def paso_4_pico_pitching(pitching, war_pitch, people):
     peak = peak.merge(peak_display, on="playerID", how="left")
 
     ip_p = peak["peak_ip"].replace(0, np.nan)
+    peak["peak_h9"]  = peak["peak_h"]    / ip_p * 9.0
     peak["peak_k9"]  = peak["peak_so"]   / ip_p * 9.0
     peak["peak_bb9"] = peak["peak_bb"]   / ip_p * 9.0
     peak["peak_hr9"] = peak["peak_hr_a"] / ip_p * 9.0
@@ -468,12 +469,30 @@ def paso_5_filtro_ingesta(career, peak, allstar, hof, pure_pitcher_ids, pitching
 
 
 # ── PASO 6: Enriquecer con People.csv ────────────────────────────────────────
+SR_JR_MAP = {
+    "griffke01": "Ken Griffey Sr.",
+    "griffke02": "Ken Griffey Jr.",
+    "guerrvl01": "Vladimir Guerrero Sr.",
+    "guerrvl02": "Vladimir Guerrero Jr.",
+    "ripkeca01": "Cal Ripken Sr.",
+    "ripkeca02": "Cal Ripken Jr.",
+    "wittbo01":  "Bobby Witt Sr.",
+    "wittbo02":  "Bobby Witt Jr.",
+    "tatafe01":  "Fernando Tatis Sr.",
+    "tatafe02":  "Fernando Tatis Jr.",
+    "younger01": "Eric Young Sr.",
+    "younger03": "Eric Young Jr.",
+}
+
 def paso_6_enriquecer_people(df, people):
     print("\n  PASO 6: Enriqueciendo con People.csv...")
     if people.empty:
         return df
     slim = people[["playerID", "nameFirst", "nameLast", "bbrefID"]].copy()
     slim["full_name"] = (slim["nameFirst"].fillna("") + " " + slim["nameLast"].fillna("")).str.strip()
+    for pid, explicit_name in SR_JR_MAP.items():
+        slim.loc[slim["playerID"] == pid, "full_name"] = explicit_name
+
     result = df.merge(slim, on="playerID", how="left")
     print(f"  bbrefID para {result['bbrefID'].notna().sum():,} pitchers")
     return result
@@ -488,119 +507,91 @@ def paso_7_asignar_era(df):
     return df
 
 
-# ── PASO 8: Atributos RAW de pitching ────────────────────────────────────────
+# ── PASO 8: Atributos RAW de pitching (MLB The Show Suite: H/9, K/9, BB/9, HR/9, STA) ──
 def paso_8_atributos_raw(df):
     """
-    STR_raw:  K/9  → ponches por 9 (strikeout power) con suavizado suave para muestras pequeñas de IP
-    CTL_raw: -BB/9 → control (menor es mejor, por eso invertimos al normalizar)
-    STA_raw:  IP/GS promedio en pico (duracion por apertura; 0 para relievers)
-    GRT_raw:  ERA+ del pico (promedio; >100 = mejor que liga)
-    DEF_raw:  RS_def_total de BBRef WAR (fielding pitcher, runs saved)
+    H9_raw:  H/9  → Hits permitidos por 9 IP (menor es mejor → invert=True) con suavizado bayesiano (m=40 IP a 8.5 H/9)
+    K9_raw:  K/9  → Ponches por 9 IP (mayor es mejor → invert=False) con suavizado bayesiano (m=40 IP a 5.5 K/9)
+    BB9_raw: BB/9 → Paseos por 9 IP (menor es mejor → invert=True) con suavizado bayesiano (m=40 IP a 3.2 BB/9)
+    HR9_raw: HR/9 → Jonrones por 9 IP (menor es mejor → invert=True) con suavizado bayesiano (m=40 IP a 0.9 HR/9)
+    STA_raw: IP/GS para abridores (SP), IP/G para relievistas (RP)
     """
-    print("\n  PASO 8: Atributos RAW de pitching...")
+    print("\n  PASO 8: Atributos RAW de pitching (MLB The Show Suite: H/9, K/9, BB/9, HR/9, STA)...")
     df = df.copy()
 
-    # Gentle IP sample smoothing for K9 (m_ip = 40 IP regressed to avg 5.5 K/9)
     ip_k = df["peak_ip"].fillna(df["career_ip"]).fillna(0)
+    h_k  = df["peak_h"].fillna(0)
     so_k = df["peak_so"].fillna(0)
-    k9_smoothed = (so_k + 40 * (5.5 / 9.0)) / (ip_k + 40) * 9.0
+    bb_k = df["peak_bb"].fillna(0)
+    hr_k = df["peak_hr_a"].fillna(0)
 
-    df["str_raw"] = k9_smoothed
-    df["ctl_raw"] = df["peak_bb9"].fillna(9.0)   # invertido al normalizar
-    df["hr_raw"]  = df["peak_hr9"].fillna(2.0)   # invertido al normalizar (menos HR = mejor)
+    # Suavizado bayesiano m = 40 IP a las medias historicas
+    df["h9_raw"]  = (h_k  + 40 * (8.5 / 9.0)) / (ip_k + 40) * 9.0
+    df["k9_raw"]  = (so_k + 40 * (5.5 / 9.0)) / (ip_k + 40) * 9.0
+    df["bb9_raw"] = (bb_k + 40 * (3.2 / 9.0)) / (ip_k + 40) * 9.0
+    df["hr9_raw"] = (hr_k + 40 * (0.9 / 9.0)) / (ip_k + 40) * 9.0
 
-    # Stamina: IP/GS para starters, IP/G para relievers
+    # Aliases de compatibilidad
+    df["str_raw"] = df["k9_raw"]
+    df["ctl_raw"] = df["bb9_raw"]
+    df["hr_raw"]  = df["hr9_raw"]
+
     is_sp = df["role"] == "SP"
     df["sta_raw"] = np.where(
         is_sp,
         df["peak_ip_per_gs"].fillna(df["career_ip"] / df["career_gs"].replace(0, np.nan)).fillna(0),
-        df["peak_ip"] / df["peak_g"].replace(0, np.nan)  # IP/G para relievers
+        df["peak_ip"] / df["peak_g"].replace(0, np.nan)
     )
     df["sta_raw"] = df["sta_raw"].fillna(0)
 
-    # Efectividad (GRT): ERA+ del pico (100 = liga media, >100 = mejor)
-    # Si no hay ERA+, usamos ERA invertido como proxy
-    df["grt_raw"] = df["peak_era_plus"].fillna(
-        100 / df["peak_era"].replace(0, np.nan) * 9  # proxy crudo
-    ).fillna(100)
-
-    print("  str_raw, ctl_raw, hr_raw, sta_raw, grt_raw calculados")
+    print("  h9_raw, k9_raw, bb9_raw, hr9_raw, sta_raw calculados con suavizado Bayesiano")
     return df
 
 
-# ── PASO 9: Fielding de pitchers ──────────────────────────────────────────────
+# ── PASO 9: Desactivacion de Fielding de Pitchers (DEF eliminada) ──────────────
 def paso_9_fielding_pitchers(df, war_pitch, people):
-    """
-    Usa RS_def_total de war_daily_pitch.txt para los pitchers con datos BBRef.
-    Proxy Lahman si no hay datos.
-    """
-    print("\n  PASO 9: Fielding de pitchers (RS_def de BBRef)...")
-    if not war_pitch.empty and not people.empty and "RS_def_total" in war_pitch.columns:
-        war = war_pitch.copy()
-        war["RS_def_total"] = pd.to_numeric(
-            war["RS_def_total"].replace("NULL", np.nan),
-            errors="coerce"
-        ).fillna(0)
-        # Top 7 seasons por WAR para calcular DEF pico
-        war["WAR_num"] = pd.to_numeric(war["WAR"].replace("NULL", np.nan), errors="coerce").fillna(0)
-        war_sorted = war.sort_values(["player_ID", "WAR_num"], ascending=[True, False])
-        war_peak = war_sorted.groupby("player_ID").head(PEAK_SEASONS)
-        def_df = war_peak.groupby("player_ID").agg(
-            def_runs=("RS_def_total", "sum")
-        ).reset_index().rename(columns={"player_ID": "bbrefID"})
-        id_map = people[["playerID", "bbrefID"]].dropna(subset=["bbrefID"])
-        def_df = def_df.merge(id_map, on="bbrefID", how="left").dropna(subset=["playerID"])
-        df = df.merge(def_df[["playerID", "def_runs"]], on="playerID", how="left")
-        df["def_raw"] = df["def_runs"].fillna(0)
-        df["defense_source"] = np.where(df["def_runs"].notna(), "bbref_war", "proxy_zero")
-        print(f"  DEF (BBRef RS_def) para {df['def_runs'].notna().sum():,} pitchers")
-    else:
-        df["def_raw"] = 0.0
-        df["defense_source"] = "proxy_zero"
-
+    print("\n  PASO 9: Fielding de pitchers (DEF eliminada del sistema)...")
+    df = df.copy()
+    df["def_raw"] = 0.0
+    df["def_val"] = 50.0
+    df["defense_source"] = "none"
     return df
 
 
 # ── PASO 10: Normalización por Era ───────────────────────────────────────────
 def paso_10_normalizar_por_era(df):
-    """
-    Mismo metodo OPS+ que bateadores: blended_factor = 1 + 0.75*(global/era - 1)
-    Valores menores son mejores para CTL (BB/9) y HR (HR/9) → invert=True
-    """
-    print("\n  PASO 10: Normalizando por Era (ajuste OPS+ 75%)...")
-    df = normalize_difficulty_adjusted(df, "str_raw", "str_val", invert=False)   # mas K/9 = mejor
-    df = normalize_difficulty_adjusted(df, "ctl_raw", "ctl_val", invert=True)    # menos BB/9 = mejor
-    df = normalize_difficulty_adjusted(df, "hr_raw",  "hr_val",  invert=True)    # menos HR/9 = mejor
-    # STA: Escala ajustada (IP/GS de 6.5-7.0 = 75-85 A/A- para Abridores, max 110)
+    print("\n  PASO 10: Normalizando por Era MLB The Show Suite (H/9, K/9, BB/9, HR/9, STA)...")
+    df = normalize_difficulty_adjusted(df, "h9_raw",  "h9_val",  invert=True)    # menos H/9 = mejor
+    df = normalize_difficulty_adjusted(df, "k9_raw",  "k9_val",  invert=False)   # mas K/9 = mejor
+    df = normalize_difficulty_adjusted(df, "bb9_raw", "bb9_val", invert=True)    # menos BB/9 = mejor
+    df = normalize_difficulty_adjusted(df, "hr9_raw", "hr9_val", invert=True)    # menos HR/9 = mejor
+
+    # Aliases para compatibilidad con UI y simulador
+    df["stf_val"] = df["k9_val"]
+    df["str_val"] = df["k9_val"]
+    df["ctl_val"] = df["bb9_val"]
+    df["mov_val"] = df["hr9_val"]
+    df["grt_val"] = df["h9_val"]
+
     is_sp = df["role"] == "SP"
     sp_sta = (30.0 + (df["sta_raw"] / 7.0) * 55.0).clip(35.0, 110.0)
     rp_sta = (15.0 + df["sta_raw"] * 10.0).clip(15.0, 35.0)
     df["sta_val"] = np.where(is_sp, sp_sta, rp_sta).round(1)
 
-    # GRT/MOV: Centrado en 50 con escala ERA+ (100 ERA+ = 50 MOV)
-    df["grt_val"] = (50.0 + (df["peak_era_plus"].fillna(100.0) - 100.0) * 0.65).clip(1.0, 125.0).round(1)
-
-    df = normalize_difficulty_adjusted(df, "def_raw", "def_val", invert=False)   # mas RS_def = mejor
-
-    print("  str_val, ctl_val, hr_val, sta_val, grt_val, def_val normalizados")
+    print("  h9_val, k9_val, bb9_val, hr9_val, sta_val normalizados")
     return df
 
 
-# ── PASO 11: OVR y Rareza ─────────────────────────────────────────────────────
+# ── PASO 11: OVR y Rareza (25% H/9, 25% K/9, 20% BB/9, 20% HR/9, 10% STA) ────────
 def paso_11_ovr_rareza(df):
-    """
-    OVR = STR*0.25 + CTL*0.25 + GRT*0.25 + STA*0.15 + DEF*0.05 + HR_val*0.05
-    Rareza con bono HoF +8 y bono AllStar 0.5/seleccion (max 6)
-    """
-    print("\n  PASO 11: OVR y Rareza...")
+    print("\n  PASO 11: OVR y Rareza (25% H/9, 25% K/9, 20% BB/9, 20% HR/9, 10% STA)...")
     df = df.copy()
     raw_ovr = (
-        df["str_val"] * 0.25 +
-        df["ctl_val"] * 0.25 +
-        df["grt_val"] * 0.25 +
-        df["sta_val"] * 0.15 +
-        df["hr_val"]  * 0.05 +
-        df["def_val"] * 0.05
+        df["h9_val"]  * 0.25 +
+        df["k9_val"]  * 0.25 +
+        df["bb9_val"] * 0.20 +
+        df["hr9_val"] * 0.20 +
+        df["sta_val"] * 0.10
     )
 
     def map_to_cosmetic_ovr_p(r):
@@ -626,9 +617,9 @@ def paso_11_ovr_rareza(df):
     df["rarity"] = df["ovr"].apply(asignar_rareza)
 
     for col, gcol in [
-        ("str_val", "str_grade"), ("ctl_val", "ctl_grade"),
-        ("grt_val", "grt_grade"), ("sta_val", "sta_grade"),
-        ("def_val", "def_grade"),
+        ("h9_val", "h9_grade"), ("k9_val", "k9_grade"),
+        ("bb9_val", "bb9_grade"), ("hr9_val", "hr9_grade"),
+        ("sta_val", "sta_grade"),
     ]:
         df[gcol] = df[col].apply(to_grade)
 
@@ -728,10 +719,12 @@ def paso_12_exportar(df, pitching, teams, franchises, pico_df=None):
         "canonical_teamID", "franchise_name", "role",
         "career_g", "career_gs", "career_sv", "career_ip", "career_w", "career_l",
         "career_so", "career_bb", "career_hr",
-        "peak_war", "peak_k9", "peak_bb9", "peak_hr9", "peak_era", "peak_era_plus",
+        "peak_war", "peak_h9", "peak_k9", "peak_bb9", "peak_hr9", "peak_era", "peak_era_plus",
         "peak_ip_per_gs",
-        "str_val", "ctl_val", "grt_val", "sta_val", "hr_val", "def_val",
-        "str_grade", "ctl_grade", "grt_grade", "sta_grade", "def_grade",
+        "h9_val", "k9_val", "bb9_val", "hr9_val", "sta_val",
+        "stf_val", "str_val", "ctl_val", "mov_val", "grt_val",
+        "h9_grade", "k9_grade", "bb9_grade", "hr9_grade", "sta_grade",
+        "str_grade", "ctl_grade", "grt_grade",
         "ovr", "rarity",
         "is_allstar", "is_hof", "allstar_selections",
         "defense_source",
@@ -744,7 +737,7 @@ def paso_12_exportar(df, pitching, teams, franchises, pico_df=None):
         "canonical_teamID": "team",
     }, inplace=True)
 
-    for col in ["peak_k9", "peak_bb9", "peak_hr9", "peak_era", "peak_era_plus", "peak_ip_per_gs", "peak_war"]:
+    for col in ["peak_h9", "peak_k9", "peak_bb9", "peak_hr9", "peak_era", "peak_era_plus", "peak_ip_per_gs", "peak_war"]:
         if col in final.columns:
             final[col] = final[col].round(2)
 
@@ -773,24 +766,28 @@ def paso_12_exportar(df, pitching, teams, franchises, pico_df=None):
             f'    {{ '
             f'name: "{name_js}", role: "{role_js}", era: "{era_js}", '
             f'team: "{team_js}", year: {int(r["peak_year_display"])}, '
-            f'str: {int(r["str_val"])}, ctl: {int(r["ctl_val"])}, '
-            f'grt: {int(r["grt_val"])}, sta: {int(r["sta_val"])}, '
-            f'def: {int(r["def_val"])}, '
-            f'str_grade: "{r["str_grade"]}", ctl_grade: "{r["ctl_grade"]}", '
-            f'grt_grade: "{r["grt_grade"]}", sta_grade: "{r["sta_grade"]}", '
-            f'def_grade: "{r["def_grade"]}", '
+            f'h9: {int(r["h9_val"])}, k9: {int(r["k9_val"])}, '
+            f'bb9: {int(r["bb9_val"])}, hr9: {int(r["hr9_val"])}, '
+            f'sta: {int(r["sta_val"])}, '
+            f'stf: {int(r["k9_val"])}, ctl: {int(r["bb9_val"])}, '
+            f'mov: {int(r["hr9_val"])}, grt: {int(r["h9_val"])}, '
+            f'h9_grade: "{r["h9_grade"]}", k9_grade: "{r["k9_grade"]}", '
+            f'bb9_grade: "{r["bb9_grade"]}", hr9_grade: "{r["hr9_grade"]}", '
+            f'sta_grade: "{r["sta_grade"]}", '
+            f'str_grade: "{r["k9_grade"]}", ctl_grade: "{r["bb9_grade"]}", '
+            f'grt_grade: "{r["h9_grade"]}", '
             f'ovr: {float(r["ovr"]):.1f}, '
             f'rarity: "{r["rarity"]}", '
             f'allstars: {int(r["allstar_selections"])}, '
             f'hof: {"true" if r["is_hof"] else "false"}, '
-            f'k9: {float(r["peak_k9"]):.2f}, '
-            f'bb9: {float(r["peak_bb9"]):.2f}, '
-            f'hr9: {float(r["peak_hr9"]):.2f}, '
-            f'era_plus: {0.0 if pd.isna(r["peak_era_plus"]) else float(r["peak_era_plus"]):.1f}, '
-            f'war_peak: {float(r["peak_war"]):.1f}, '
-            f'career_gs: {int(r["career_gs"])}, '
-            f'career_sv: {int(r["career_sv"])}, '
-            f'def_source: "{r.get("defense_source","proxy_zero")}" '
+            f'h9_stat: {float(r.get("peak_h9", 0.0)):.2f}, '
+            f'k9_stat: {float(r.get("peak_k9", 0.0)):.2f}, '
+            f'bb9_stat: {float(r.get("peak_bb9", 0.0)):.2f}, '
+            f'hr9_stat: {float(r.get("peak_hr9", 0.0)):.2f}, '
+            f'era_plus: {0.0 if pd.isna(r.get("peak_era_plus")) else float(r["peak_era_plus"]):.1f}, '
+            f'war_peak: {float(r.get("peak_war", 0.0)):.1f}, '
+            f'career_gs: {int(r.get("career_gs", 0))}, '
+            f'career_sv: {int(r.get("career_sv", 0))} '
             f'}},'
         )
     js_lines += [

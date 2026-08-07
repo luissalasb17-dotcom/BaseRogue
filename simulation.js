@@ -56,25 +56,26 @@
     const effPwr = batter.pwr || 50;
     const effSpd = batter.spd || 50;
     
-    // Pitcher attributes (new opponent system uses stf, ctl, mov)
-    const pStf   = pitcher.stf !== undefined ? pitcher.stf : (pitcher.str !== undefined ? pitcher.str : 50);
-    const pCtl   = pitcher.ctl !== undefined ? pitcher.ctl : (pitcher.ctl_val !== undefined ? pitcher.ctl_val : 50);
-    const pMov   = pitcher.mov !== undefined ? pitcher.mov : (pitcher.grt !== undefined ? pitcher.grt : (pitcher.grt_val !== undefined ? pitcher.grt_val : 50));
+    // Pitcher attributes (MLB The Show suite: h9, k9, bb9, hr9, sta)
+    const pH9  = pitcher.h9  !== undefined ? pitcher.h9  : (pitcher.grt !== undefined ? pitcher.grt : 50);
+    const pK9  = pitcher.k9  !== undefined ? pitcher.k9  : (pitcher.stf !== undefined ? pitcher.stf : 50);
+    const pBB9 = pitcher.bb9 !== undefined ? pitcher.bb9 : (pitcher.ctl !== undefined ? pitcher.ctl : 50);
+    const pHR9 = pitcher.hr9 !== undefined ? pitcher.hr9 : (pitcher.mov !== undefined ? pitcher.mov : 50);
 
-    // 1. BB rate: Batter Eye vs Pitcher Control (Base 10%, Slope 0.20%)
-    let pBB = 0.10 + (effEye - pCtl) * 0.0020;
+    // 1. BB rate: Batter Eye vs Pitcher BB/9 Control (Base 10%, Slope 0.20%)
+    let pBB = 0.10 + (effEye - pBB9) * 0.0020;
     pBB = Math.max(0.04, Math.min(0.35, pBB));
 
-    // 2. SO rate: Pitcher Stuff vs Batter Contact (Base 16%, Slope 0.20%)
-    let pSO = 0.16 + (pStf - effCon) * 0.0020;
+    // 2. SO rate: Pitcher K/9 Strikeout vs Batter Contact (Base 16%, Slope 0.20%)
+    let pSO = 0.16 + (pK9 - effCon) * 0.0020;
     pSO = Math.max(0.04, Math.min(0.35, pSO));
 
-    // 3. HR rate: Batter Power vs Pitcher Movement (Base 8%, Slope 0.20%)
-    let pHR = 0.08 + (effPwr - pMov) * 0.0020;
+    // 3. HR rate: Batter Power vs Pitcher HR/9 Prevention (Base 8%, Slope 0.20%)
+    let pHR = 0.08 + (effPwr - pHR9) * 0.0020;
     pHR = Math.max(0.02, Math.min(0.32, pHR));
 
-    // 4. Regular HIT rate (1B, 2B, 3B): Batter Contact vs Pitcher Movement (Base 38%, Slope 0.20%)
-    let pRegularHit = 0.38 + (effCon - pMov) * 0.0020;
+    // 4. Regular HIT rate (1B, 2B, 3B): Batter Contact vs Pitcher H/9 Hit Suppression (Base 38%, Slope 0.20%)
+    let pRegularHit = 0.38 + (effCon - pH9) * 0.0020;
     pRegularHit = Math.max(0.14, Math.min(0.55, pRegularHit));
 
     // 5. OUT gets the rest (Floor 10%)
@@ -127,7 +128,7 @@
     let pHit = pRegularHit + pHR;
 
     // Subdivide Regular Hits into 1B, 2B, 3B
-    let extraBasePower = Math.max(0, (effPwr - pMov) * 0.003); 
+    let extraBasePower = Math.max(0, (effPwr - pHR9) * 0.003); 
     let doubleWeight = 0.15 + (effSpd * 0.001) + (extraBasePower * 0.5);
     
     // Gated Triple Weight Curve by Speed (SPD):

@@ -35,10 +35,12 @@ def clamp_stat(val, lo=1, hi=125):
 
 def pitcher_to_obj(row):
     hp = calc_hp(row)
-    stf = clamp_stat(row["str_val"], 1, 125)
-    ctl = clamp_stat(row["ctl_val"], 1, 125)
-    mov = clamp_stat(row["grt_val"], 1, 125)
+    h9  = clamp_stat(row.get("h9_val",  row.get("grt_val", 50)), 1, 125)
+    k9  = clamp_stat(row.get("k9_val",  row.get("str_val", 50)), 1, 125)
+    bb9 = clamp_stat(row.get("bb9_val", row.get("ctl_val", 50)), 1, 125)
+    hr9 = clamp_stat(row.get("hr9_val", row.get("hr_val",  50)), 1, 125)
     sta = clamp_stat(row["sta_val"], 1, 125)
+
     name_safe = str(row["name"]).replace('"', "'")
     return {
         "name":     name_safe,
@@ -46,10 +48,15 @@ def pitcher_to_obj(row):
         "pos":      row["role"],
         "hp":       hp,
         "maxHp":    hp,
-        "stf":      stf,
-        "ctl":      ctl,
-        "mov":      mov,
+        "h9":       h9,
+        "k9":       k9,
+        "bb9":      bb9,
+        "hr9":      hr9,
         "sta":      sta,
+        "stf":      k9,
+        "ctl":      bb9,
+        "mov":      hr9,
+        "grt":      h9,
         "ovr":      float(row["ovr"]),
         "era":      str(row["era"]),
         "rarity":   str(row["rarity"]),

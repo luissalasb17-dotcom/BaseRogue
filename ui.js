@@ -1506,32 +1506,38 @@ function initGameModeSelector() {
     // Format stats values
     let statLines = "";
     if (isPitcher) {
-      const movVal = player.mov !== undefined ? player.mov : (player.grt !== undefined ? player.grt : (player.grt_val !== undefined ? player.grt_val : (player.eye !== undefined ? player.eye : 50)));
-      const stfVal = player.stf !== undefined ? player.stf : (player.str !== undefined ? player.str : (player.str_val !== undefined ? player.str_val : (player.con !== undefined ? player.con : 50)));
-      const ctlVal = player.ctl !== undefined ? player.ctl : (player.ctl_val !== undefined ? player.ctl_val : (player.pwr !== undefined ? player.pwr : 50));
-      const staVal = player.sta !== undefined ? player.sta : (player.sta_val !== undefined ? player.sta_val : (player.spd !== undefined ? player.spd : (player.maxHp ? Math.max(15, Math.min(125, Math.round((player.maxHp - 15) / 0.85))) : 65)));
+      const h9Val  = player.h9  !== undefined ? player.h9  : (player.h9_val  !== undefined ? player.h9_val  : (player.grt !== undefined ? player.grt : 50));
+      const k9Val  = player.k9  !== undefined ? player.k9  : (player.k9_val  !== undefined ? player.k9_val  : (player.stf !== undefined ? player.stf : (player.str !== undefined ? player.str : 50)));
+      const bb9Val = player.bb9 !== undefined ? player.bb9 : (player.bb9_val !== undefined ? player.bb9_val : (player.ctl !== undefined ? player.ctl : 50));
+      const hr9Val = player.hr9 !== undefined ? player.hr9 : (player.hr9_val !== undefined ? player.hr9_val : (player.mov !== undefined ? player.mov : 50));
+      const staVal = player.sta !== undefined ? player.sta : (player.sta_val !== undefined ? player.sta_val : 65);
 
-      const gMov = getStatGrade(movVal);
-      const gStf = getStatGrade(stfVal);
-      const gCtl = getStatGrade(ctlVal);
+      const gH9  = getStatGrade(h9Val);
+      const gK9  = getStatGrade(k9Val);
+      const gBB9 = getStatGrade(bb9Val);
+      const gHR9 = getStatGrade(hr9Val);
       const gSta = getStatGrade(staVal);
 
       statLines = `
-        <div class="stat-row" style="display: flex; align-items: center; justify-content: space-between; font-size: 7px; margin: 1.5px 0;">
-          <span class="stat-label">MOV:</span>
-          <span class="stat-badge" style="background: ${gMov.color}; color: ${gMov.text === 'F' ? '#fff' : '#000'}; font-family: 'Press Start 2P', monospace; font-size: 6px; padding: 2px 5px; border-radius: 3px; font-weight: bold; box-shadow: 0 1px 2px rgba(0,0,0,0.3);">${gMov.text}</span>
+        <div class="stat-row" style="display: flex; align-items: center; justify-content: space-between; font-size: 7px; margin: 1px 0;">
+          <span class="stat-label">H/9:</span>
+          <span class="stat-badge" style="background: ${gH9.color}; color: ${gH9.text === 'F' ? '#fff' : '#000'}; font-family: 'Press Start 2P', monospace; font-size: 6px; padding: 1px 4px; border-radius: 3px; font-weight: bold; box-shadow: 0 1px 2px rgba(0,0,0,0.3);">${gH9.text}</span>
         </div>
-        <div class="stat-row" style="display: flex; align-items: center; justify-content: space-between; font-size: 7px; margin: 1.5px 0;">
-          <span class="stat-label">STF:</span>
-          <span class="stat-badge" style="background: ${gStf.color}; color: ${gStf.text === 'F' ? '#fff' : '#000'}; font-family: 'Press Start 2P', monospace; font-size: 6px; padding: 2px 5px; border-radius: 3px; font-weight: bold; box-shadow: 0 1px 2px rgba(0,0,0,0.3);">${gStf.text}</span>
+        <div class="stat-row" style="display: flex; align-items: center; justify-content: space-between; font-size: 7px; margin: 1px 0;">
+          <span class="stat-label">K/9:</span>
+          <span class="stat-badge" style="background: ${gK9.color}; color: ${gK9.text === 'F' ? '#fff' : '#000'}; font-family: 'Press Start 2P', monospace; font-size: 6px; padding: 1px 4px; border-radius: 3px; font-weight: bold; box-shadow: 0 1px 2px rgba(0,0,0,0.3);">${gK9.text}</span>
         </div>
-        <div class="stat-row" style="display: flex; align-items: center; justify-content: space-between; font-size: 7px; margin: 1.5px 0;">
-          <span class="stat-label">CTL:</span>
-          <span class="stat-badge" style="background: ${gCtl.color}; color: ${gCtl.text === 'F' ? '#fff' : '#000'}; font-family: 'Press Start 2P', monospace; font-size: 6px; padding: 2px 5px; border-radius: 3px; font-weight: bold; box-shadow: 0 1px 2px rgba(0,0,0,0.3);">${gCtl.text}</span>
+        <div class="stat-row" style="display: flex; align-items: center; justify-content: space-between; font-size: 7px; margin: 1px 0;">
+          <span class="stat-label">BB/9:</span>
+          <span class="stat-badge" style="background: ${gBB9.color}; color: ${gBB9.text === 'F' ? '#fff' : '#000'}; font-family: 'Press Start 2P', monospace; font-size: 6px; padding: 1px 4px; border-radius: 3px; font-weight: bold; box-shadow: 0 1px 2px rgba(0,0,0,0.3);">${gBB9.text}</span>
         </div>
-        <div class="stat-row" style="display: flex; align-items: center; justify-content: space-between; font-size: 7px; margin: 1.5px 0;">
+        <div class="stat-row" style="display: flex; align-items: center; justify-content: space-between; font-size: 7px; margin: 1px 0;">
+          <span class="stat-label">HR/9:</span>
+          <span class="stat-badge" style="background: ${gHR9.color}; color: ${gHR9.text === 'F' ? '#fff' : '#000'}; font-family: 'Press Start 2P', monospace; font-size: 6px; padding: 1px 4px; border-radius: 3px; font-weight: bold; box-shadow: 0 1px 2px rgba(0,0,0,0.3);">${gHR9.text}</span>
+        </div>
+        <div class="stat-row" style="display: flex; align-items: center; justify-content: space-between; font-size: 7px; margin: 1px 0;">
           <span class="stat-label">STA:</span>
-          <span class="stat-badge" style="background: ${gSta.color}; color: ${gSta.text === 'F' ? '#fff' : '#000'}; font-family: 'Press Start 2P', monospace; font-size: 6px; padding: 2px 5px; border-radius: 3px; font-weight: bold; box-shadow: 0 1px 2px rgba(0,0,0,0.3);">${gSta.text}</span>
+          <span class="stat-badge" style="background: ${gSta.color}; color: ${gSta.text === 'F' ? '#fff' : '#000'}; font-family: 'Press Start 2P', monospace; font-size: 6px; padding: 1px 4px; border-radius: 3px; font-weight: bold; box-shadow: 0 1px 2px rgba(0,0,0,0.3);">${gSta.text}</span>
         </div>
       `;
     } else {
@@ -2240,11 +2246,19 @@ function initGameModeSelector() {
         <span class="popup-ovr-grade" style="color:${ovrGrade.color};">${ovrGrade.text}</span>
       </div>
       <div class="popup-stats-section">
-        ${statBar('CON', 'con', '#00ff66')}
-        ${statBar('PWR', 'pwr', '#f97316')}
-        ${statBar('SPD', 'spd', '#38bdf8')}
-        ${statBar('DEF', 'def', '#a78bfa')}
-        ${statBar('EYE', 'eye', '#fbbf24')}
+        ${(player.pos === 'P' || player.pos === 'SP' || player.pos === 'RP' || player.role === 'SP' || player.role === 'RP') ? `
+          ${statBar('H/9',  player.h9  !== undefined ? 'h9'  : 'grt', '#00ff66')}
+          ${statBar('K/9',  player.k9  !== undefined ? 'k9'  : (player.stf !== undefined ? 'stf' : 'str'), '#38bdf8')}
+          ${statBar('BB/9', player.bb9 !== undefined ? 'bb9' : 'ctl', '#fbbf24')}
+          ${statBar('HR/9', player.hr9 !== undefined ? 'hr9' : 'mov', '#f97316')}
+          ${statBar('STA',  'sta', '#a78bfa')}
+        ` : `
+          ${statBar('CON', 'con', '#00ff66')}
+          ${statBar('PWR', 'pwr', '#f97316')}
+          ${statBar('SPD', 'spd', '#38bdf8')}
+          ${statBar('DEF', 'def', '#a78bfa')}
+          ${statBar('EYE', 'eye', '#fbbf24')}
+        `}
       </div>
       <div class="popup-stamina-row">
         <span style="font-size:10px;color:#9ca3af;font-family:'Press Start 2P',monospace;">STAMINA</span>

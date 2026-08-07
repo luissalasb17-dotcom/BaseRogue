@@ -55,7 +55,7 @@
     if (!p) return { war: '-', mvp: 0, roy: 0, ss: 0, gg: 0, allstars: 0, hof: false };
     const cleanName = p.name ? p.name.replace(/\s\(.*?\)$/, '').trim() : '';
     const db = window.CAREER_STATS_DB || {};
-    const entry = db[cleanName] || db[p.name];
+    const entry = (p.playerID && db[p.playerID]) || db[cleanName] || db[p.name];
 
     if (entry) {
       return {
@@ -116,13 +116,35 @@
       }
     },
 
+    unlockAll() {
+      const pool = window.PlayersDB ? window.PlayersDB.LAHMAN_POOL : [];
+      this.unlocked = new Set();
+      pool.forEach(p => this.unlocked.add(`${p.name}_${p.year}`));
+      this.save();
+      if (this.container) this.renderPanel();
+      console.log(`⚾ BaseballDex: ¡Las ${pool.length} cartas han sido desbloqueadas!`);
+      return `¡Desbloqueadas ${pool.length} cartas!`;
+    },
+
+    lockAll() {
+      this.unlocked.clear();
+      this.save();
+      if (this.container) this.renderPanel();
+      console.log('⚾ BaseballDex: Todas las cartas han sido bloqueadas.');
+      return 'Todas las cartas bloqueadas.';
+    },
+
     isUnlocked(player) {
       return this.unlocked.has(`${player.name}_${player.year}`);
     },
 
     getStats() {
       const pool = window.PlayersDB ? window.PlayersDB.LAHMAN_POOL : [];
-      return { total: pool.length, unlocked: this.unlocked.size };
+      let validCount = 0;
+      for (let i = 0; i < pool.length; i++) {
+        if (this.isUnlocked(pool[i])) validCount++;
+      }
+      return { total: pool.length, unlocked: validCount };
     },
 
     open() {

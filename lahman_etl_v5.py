@@ -531,6 +531,21 @@ def paso_6_posicion_bateadores(fielding, fielding_of, appearances=None, pico_df=
 # ===========================================================================
 # PASO 7 - ENRIQUECER CON PEOPLE.CSV
 # ===========================================================================
+SR_JR_MAP = {
+    "griffke01": "Ken Griffey Sr.",
+    "griffke02": "Ken Griffey Jr.",
+    "guerrvl01": "Vladimir Guerrero Sr.",
+    "guerrvl02": "Vladimir Guerrero Jr.",
+    "ripkeca01": "Cal Ripken Sr.",
+    "ripkeca02": "Cal Ripken Jr.",
+    "wittbo01":  "Bobby Witt Sr.",
+    "wittbo02":  "Bobby Witt Jr.",
+    "tatafe01":  "Fernando Tatis Sr.",
+    "tatafe02":  "Fernando Tatis Jr.",
+    "younger01": "Eric Young Sr.",
+    "younger03": "Eric Young Jr.",
+}
+
 def paso_7_enriquecer_people(df, people):
     print("\n  PASO 7: Enriqueciendo con People.csv (nombre, bbrefID, bats)...")
     if people.empty:
@@ -539,6 +554,9 @@ def paso_7_enriquecer_people(df, people):
     # Explicit bbrefID overrides for missing Lahman Negro League IDs
     slim.loc[slim["playerID"] == "pearsle01", "bbrefID"] = "pearsle02"
     slim["full_name"] = (slim["nameFirst"].fillna("") + " " + slim["nameLast"].fillna("")).str.strip()
+    for pid, explicit_name in SR_JR_MAP.items():
+        slim.loc[slim["playerID"] == pid, "full_name"] = explicit_name
+
     result = df.merge(slim, on="playerID", how="left")
     print(f"  bbrefID para {result['bbrefID'].notna().sum():,} jugadores")
     return result
@@ -1013,24 +1031,34 @@ def paso_15_equipo_y_exportar(df, batting, teams, franchises, pico_df=None):
         df["speed_val"]   * 0.10
     )
     # ── Badges: Clutch Player / Captain ─────────────────────────────────────
+    OFFICIAL_CAPTAIN_PIDS = {
+        'gehrilo01', 'munsoth01', 'jeterde01', 'judgeaa01', 'mattido01', 'nettrgr01',
+        'randowi01', 'guidrro01', 'yastrca01', 'varitja01', 'ricji01', 'wrighda05',
+        'hernake01', 'cartega01', 'stargwi01', 'clemero01', 'puckeki01', 'mauerjo01',
+        'killeha01', 'brettge01', 'kalinal01', 'tramala01', 'cabremi01', 'ripkeca02',
+        'robinfo01', 'robinbr01', 'schmimi01', 'rolliji01', 'pujolal01', 'smithoz01',
+        'molinya01', 'musiasu01', 'mayswi01', 'poseybu01', 'reesep01', 'koufasa01',
+        'bankser01', 'santro01', 'fiskca01', 'thomafr01', 'troutmi01', 'griffke02',
+        'suzukic01', 'martied01', 'biggiig01', 'bagweje01', 'altuvjo01', 'delgado01'
+    }
     awards_path = DATA_DIR / "AwardsPlayers.csv"
     if awards_path.exists():
         awards_df = pd.read_csv(awards_path, low_memory=False)
         clutch_award_ids = {'Babe Ruth Award', 'ALCS MVP', 'NLCS MVP', 'All-Star Game MVP', 'World Series MVP'}
         captain_award_ids = {'Roberto Clemente Award', 'Lou Gehrig Memorial Award', 'Hutch Award', 'Branch Rickey Award'}
         clutch_pids  = set(awards_df[awards_df['awardID'].isin(clutch_award_ids)]['playerID'].unique())
-        captain_pids = set(awards_df[awards_df['awardID'].isin(captain_award_ids)]['playerID'].unique())
+        captain_pids = set(awards_df[awards_df['awardID'].isin(captain_award_ids)]['playerID'].unique()) | OFFICIAL_CAPTAIN_PIDS
         df['is_clutch']  = df['playerID'].isin(clutch_pids)
         df['is_captain'] = df['playerID'].isin(captain_pids)
         print(f"  Badges: Clutch={df['is_clutch'].sum()} | Captain={df['is_captain'].sum()}")
     else:
         df['is_clutch']  = False
-        df['is_captain'] = False
-        print("  [!!] AwardsPlayers.csv no encontrado — is_clutch/is_captain = False")
+        df['is_captain'] = df['playerID'].isin(OFFICIAL_CAPTAIN_PIDS)
+        print(f"  Badges: Clutch={df['is_clutch'].sum()} | Captain={df['is_captain'].sum()}")
 
-    # ── OVR con boost de Badges (+4 por badge) & Rareza ─────────────────────
+    # ── OVR con boost de Badges (+1 por badge) & Rareza ─────────────────────
     base_ovr = df["raw_ovr"].apply(map_to_cosmetic_ovr)
-    badge_boost = (df["is_clutch"].astype(int) * 4.0) + (df["is_captain"].astype(int) * 4.0)
+    badge_boost = (df["is_clutch"].astype(int) * 1.0) + (df["is_captain"].astype(int) * 1.0)
     df["avg_attr_score"] = (base_ovr + badge_boost).clip(50.0, 99.9).round(1)
     df["rarity"]         = df["avg_attr_score"].apply(asignar_rareza)
     df["pos_display"]    = df["primary_pos"].map(POS_DISPLAY_MAP).fillna("RF")
