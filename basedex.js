@@ -84,6 +84,7 @@
   window.BaseballDex = {
     STORAGE_KEY: 'baserogue_dex_v1',
     unlocked: new Set(),
+    activeCategory: 'legends', // 'legends' or 'opponents'
     currentFilterEra: 'all',
     currentSearchTerm: '',
     filteredPlayers: [],
@@ -140,7 +141,12 @@
     },
 
     getStats() {
-      const pool = window.PlayersDB ? window.PlayersDB.LAHMAN_POOL : [];
+      let pool = [];
+      if (this.activeCategory === 'opponents') {
+        pool = (window.PitchersDB && window.PitchersDB.PITCHERS_POOL) ? window.PitchersDB.PITCHERS_POOL : [];
+        return { total: pool.length, unlocked: pool.length };
+      }
+      pool = window.PlayersDB ? window.PlayersDB.LAHMAN_POOL : [];
       let validCount = 0;
       for (let i = 0; i < pool.length; i++) {
         if (this.isUnlocked(pool[i])) validCount++;
@@ -166,7 +172,8 @@
       const pct = stats.total > 0 ? ((stats.unlocked / stats.total) * 100).toFixed(1) : 0;
       
       if (elText) {
-        elText.innerText = (typeof window.t === 'function') ? window.t('dex.counter', { unlocked: stats.unlocked, total: stats.total, pct }) : `${stats.unlocked} / ${stats.total} descubiertos (${pct}%)`;
+        const catLabel = this.activeCategory === 'opponents' ? 'Oponentes Partida Rápida' : 'Cartas Descubiertas';
+        elText.innerText = `${stats.unlocked} / ${stats.total} (${catLabel})`;
       }
       if (elFill) {
         elFill.style.width = `${pct}%`;
@@ -174,7 +181,13 @@
     },
 
     applyFilters() {
-      const pool = window.PlayersDB ? window.PlayersDB.LAHMAN_POOL : [];
+      let pool = [];
+      if (this.activeCategory === 'opponents') {
+        pool = (window.PitchersDB && window.PitchersDB.PITCHERS_POOL) ? window.PitchersDB.PITCHERS_POOL : [];
+      } else {
+        pool = window.PlayersDB ? window.PlayersDB.LAHMAN_POOL : [];
+      }
+
       const term = this.currentSearchTerm.toLowerCase().trim();
       
       this.filteredPlayers = pool.filter(p => {
@@ -184,13 +197,17 @@
           const tMatch = p.team && p.team.toLowerCase().includes(term);
           const pMatch = p.pos && p.pos.toLowerCase().includes(term);
           const spMatch = p.sec_pos && p.sec_pos.toLowerCase().includes(term);
-          if (!nMatch && !tMatch && !pMatch && !spMatch) return false;
+          const rMatch = p.role && p.role.toLowerCase().includes(term);
+          if (!nMatch && !tMatch && !pMatch && !spMatch && !rMatch) return false;
         }
         return true;
       });
 
-      // Sort: unlocked first, then by OVR desc
+      // Sort: unlocked first for legends; by OVR desc for opponents
       this.filteredPlayers.sort((a, b) => {
+        if (this.activeCategory === 'opponents') {
+          return (b.ovr || 0) - (a.ovr || 0);
+        }
         const uA = this.isUnlocked(a) ? 1 : 0;
         const uB = this.isUnlocked(b) ? 1 : 0;
         if (uA !== uB) return uB - uA;
@@ -212,17 +229,22 @@
       const toRender = this.filteredPlayers.slice(this.currentRendered, this.currentRendered + this.renderLimit);
       
       toRender.forEach(p => {
-        const isUnl = this.isUnlocked(p);
+        const isUnl = this.activeCategory === 'opponents' ? true : this.isUnlocked(p);
         const el = document.createElement('div');
         if (isUnl) {
           const rColor = RARITY_COLORS[p.rarity] || RARITY_COLORS.Common;
           el.className = 'dex-card unlocked';
           el.style.cssText = `background: #0d1f12; border: 2px solid ${rColor}; border-radius: 8px; padding: 10px 6px; text-align: center; cursor: pointer; transition: transform 0.15s; display: flex; flex-direction: column; justify-content: space-between;`;
+          
+          const posLabel = p.role || p.pos || 'P';
+          const h9Val = p.h9 !== undefined ? p.h9 : (p.grt !== undefined ? p.grt : 50);
+          const subLabel = this.activeCategory === 'opponents' ? `H/9: ${getGrade(h9Val)}` : p.team;
+
           el.innerHTML = `
             <div>
-              <div style="font-size:7px;color:#00ff66;font-family:'Press Start 2P',monospace;margin-bottom:4px">${getPosText(p)}</div>
+              <div style="font-size:7px;color:#00ff66;font-family:'Press Start 2P',monospace;margin-bottom:4px">${posLabel}</div>
               <div style="font-size:7px;color:#e5e7eb;font-family:'Press Start 2P',monospace;line-height:1.3;word-break:break-word">${p.name}</div>
-              <div style="font-size:6px;color:#9ca3af;margin-top:3px">${p.team} '${p.year}</div>
+              <div style="font-size:6px;color:#9ca3af;margin-top:3px">${subLabel} '${p.year}</div>
             </div>
             <div>
               <div style="font-size:8px;font-weight:bold;color:${rColor};margin-top:4px">OVR ${p.ovr}</div>
@@ -308,12 +330,39 @@
       header.appendChild(closeBtn);
       panel.appendChild(header);
 
+      // Top Category Bar: [ LEYENDAS / JUGADORES ] vs [ OPONENTES (PARTIDA RÁPIDA) ]
+      const categoryBar = document.createElement('div');
+      categoryBar.style.cssText = 'display: flex; gap: 8px; justify-content: center; padding: 10px 16px; background: rgba(0,0,0,0.3); border-bottom: 1px solid rgba(255,255,255,0.1);';
+      
+      const btnLeg = document.createElement('button');
+      btnLeg.innerText = '⚾ LEYENDAS / BATEADORES';
+      const isLegActive = this.activeCategory === 'legends';
+      btnLeg.style.cssText = `padding: 6px 14px; border-radius: 6px; font-family:"Press Start 2P", monospace; font-size: 9px; font-weight: bold; cursor: pointer; transition: all 0.2s; border: 1px solid #10b981; ${isLegActive ? 'background: #10b981; color: #000;' : 'background: rgba(16,185,129,0.1); color: #10b981;'}`;
+
+      const btnOpp = document.createElement('button');
+      btnOpp.innerText = '🥊 OPONENTES (PARTIDA RÁPIDA)';
+      const isOppActive = this.activeCategory === 'opponents';
+      btnOpp.style.cssText = `padding: 6px 14px; border-radius: 6px; font-family:"Press Start 2P", monospace; font-size: 9px; font-weight: bold; cursor: pointer; transition: all 0.2s; border: 1px solid #38bdf8; ${isOppActive ? 'background: #38bdf8; color: #000;' : 'background: rgba(56,189,248,0.1); color: #38bdf8;'}`;
+
+      btnLeg.onclick = () => {
+        this.activeCategory = 'legends';
+        this.renderPanel();
+      };
+      btnOpp.onclick = () => {
+        this.activeCategory = 'opponents';
+        this.renderPanel();
+      };
+
+      categoryBar.appendChild(btnLeg);
+      categoryBar.appendChild(btnOpp);
+      panel.appendChild(categoryBar);
+
       // Search bar
       const searchContainer = document.createElement('div');
       searchContainer.style.cssText = 'padding: 10px 16px; border-bottom: 1px solid rgba(255,255,255,0.1);';
       const searchInput = document.createElement('input');
       searchInput.type = 'text';
-      searchInput.placeholder = (typeof window.t === 'function' ? window.t('dex.search_placeholder') : 'Buscar por nombre, equipo o posición...');
+      searchInput.placeholder = this.activeCategory === 'opponents' ? 'Buscar lanzador por nombre, era o rol (SP/RP)...' : (typeof window.t === 'function' ? window.t('dex.search_placeholder') : 'Buscar por nombre, equipo o posición...');
       searchInput.style.cssText = 'width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 8px 12px; border-radius: 6px; font-size: 12px; outline: none;';
       searchInput.oninput = (e) => {
         this.currentSearchTerm = e.target.value;
@@ -378,20 +427,62 @@
       overlay.id = 'dex-detail-overlay';
       overlay.style.cssText = 'position:absolute;inset:0;background:rgba(0,0,0,0.85);z-index:10;display:flex;align-items:center;justify-content:center;padding:20px';
 
+      const renderStat = (lbl, val) => {
+        if (typeof val !== 'number') {
+          return `
+            <div style="background:#111827;border-radius:6px;padding:8px 10px;display:flex;justify-content:space-between;align-items:center">
+              <span style="font-size:9px;color:#9ca3af">${lbl}</span>
+              <span style="font-size:11px;font-weight:bold;color:#38bdf8">${val}</span>
+            </div>
+          `;
+        }
+        return `
+          <div style="background:#111827;border-radius:6px;padding:8px 10px;display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:9px;color:#9ca3af">${lbl}</span>
+            <span style="font-size:11px;font-weight:bold;color:${getGradeColor(val)}">${val} <small style="font-size:8px">${getGrade(val)}</small></span>
+          </div>
+        `;
+      };
+
+      const isPitcher = (this.activeCategory === 'opponents') || p.h9 !== undefined || p.stf !== undefined || p.grt !== undefined || p.pos === 'P' || p.pos === 'SP' || p.pos === 'RP';
+
+      let statsHTML = '';
+      if (isPitcher) {
+        const h9  = p.h9 !== undefined ? p.h9 : (p.grt !== undefined ? p.grt : 50);
+        const k9  = p.k9 !== undefined ? p.k9 : (p.stf !== undefined ? p.stf : (p.str !== undefined ? p.str : 50));
+        const bb9 = p.bb9 !== undefined ? p.bb9 : (p.ctl !== undefined ? p.ctl : 50);
+        const hr9 = p.hr9 !== undefined ? p.hr9 : (p.mov !== undefined ? p.mov : 50);
+        const sta = p.sta !== undefined ? p.sta : 65;
+
+        statsHTML = `
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px">
+            ${renderStat('H/9 (Granito)', h9)}
+            ${renderStat('K/9 (Stuff)', k9)}
+            ${renderStat('BB/9 (Control)', bb9)}
+            ${renderStat('HR/9 (Movement)', hr9)}
+            ${renderStat('STA (Stamina)', sta)}
+            ${renderStat('ROL', p.role || p.pos || 'P')}
+          </div>
+        `;
+      } else {
+        statsHTML = `
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px">
+            ${renderStat('CON', p.con || 40)}
+            ${renderStat('PWR', p.pwr || 40)}
+            ${renderStat('EYE', p.eye || 40)}
+            ${renderStat('SPD', p.spd || 40)}
+            ${renderStat('DEF', p.def || 40)}
+          </div>
+        `;
+      }
+
       const careerStats = getPlayerCareerData(p);
-      const isHof = Boolean(p.hof || (careerStats && careerStats.hof));
+      const isHof = Boolean(p.hof || p.is_hof || (careerStats && careerStats.hof));
       
       let badgesHtml = '';
       if (isHof) badgesHtml += '<span style="background:#ffd70022;color:#ffd700;border:1px solid #ffd700;padding:2px 8px;border-radius:4px;font-size:8px">🏆 HOF</span>';
       if (p.clutch || p.is_clutch) badgesHtml += '<span style="background:#ef444422;color:#ef4444;border:1px solid #ef4444;padding:2px 8px;border-radius:4px;font-size:8px">⚡ CLUTCH</span>';
       if (p.captain || p.is_captain) badgesHtml += '<span style="background:#3b82f622;color:#3b82f6;border:1px solid #3b82f6;padding:2px 8px;border-radius:4px;font-size:8px">👑 CAPTAIN</span>';
-
-      const renderStat = (lbl, val) => `
-        <div style="background:#111827;border-radius:6px;padding:8px 10px;display:flex;justify-content:space-between;align-items:center">
-          <span style="font-size:9px;color:#9ca3af">${lbl}</span>
-          <span style="font-size:11px;font-weight:bold;color:${getGradeColor(val)}">${val} <small style="font-size:8px">${getGrade(val)}</small></span>
-        </div>
-      `;
 
       overlay.innerHTML = `
         <div style="background:#0a0f1a;border:3px solid ${rColor};border-radius:12px;width:100%;max-width:440px;padding:24px;position:relative">
@@ -400,7 +491,7 @@
           <div style="margin-bottom:16px">
             <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:${rColor};margin-bottom:4px">${p.rarity || 'Common'} · ${eraShort}</div>
             <h2 style="font-family:'Press Start 2P',monospace;font-size:13px;color:#fff;margin:0 0 4px 0;line-height:1.4">${p.name}</h2>
-            <div style="font-size:12px;color:#9ca3af">${teamFull} — ${p.year} · ${getPosText(p)}</div>
+            <div style="font-size:12px;color:#9ca3af">${teamFull} — ${p.year} · ${p.role || getPosText(p)}</div>
           </div>
           
           <div style="text-align:center;margin-bottom:16px">
@@ -408,13 +499,7 @@
             <div style="font-size:10px;color:#6b7280">OVR</div>
           </div>
           
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px">
-            ${renderStat('CON', p.con || 40)}
-            ${renderStat('PWR', p.pwr || 40)}
-            ${renderStat('EYE', p.eye || 40)}
-            ${renderStat('SPD', p.spd || 40)}
-            ${renderStat('DEF', p.def || 40)}
-          </div>
+          ${statsHTML}
           
           ${badgesHtml ? `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px">${badgesHtml}</div>` : ''}
           

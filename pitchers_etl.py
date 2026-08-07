@@ -93,7 +93,7 @@ def to_grade(val):
     return "F"
 
 
-def normalize_series(s, low=1.0, high=99.0):
+def normalize_series(s, low=5.0, high=105.0):
     s = pd.to_numeric(s, errors="coerce")
     valid = s.dropna()
     if valid.empty or valid.nunique() == 1:
@@ -349,6 +349,14 @@ def paso_4_pico_pitching(pitching, war_pitch, people):
                .rename(columns={"yearID": "peak_year_display"})
     )
 
+    # Identify NLB pitchers based on league ID or team ID in peak seasons
+    nl_leagues = {'NN1', 'NN2', 'EAL', 'NSL', 'NAL', 'ANL', 'EWL'}
+    pico_df["is_nlb_season"] = (
+        (pico_df["lgID"].isin(nl_leagues) if "lgID" in pico_df.columns else False) |
+        (pico_df["teamID"].isin(NLB_TEAMS) if "teamID" in pico_df.columns else False)
+    )
+    nlb_counts = pico_df.groupby("playerID")["is_nlb_season"].sum()
+
     peak = pico_df.groupby("playerID").agg(
         peak_ip      =("IP_y",       "sum"),
         peak_gs      =("GS",         "sum"),
@@ -365,6 +373,8 @@ def paso_4_pico_pitching(pitching, war_pitch, people):
         peak_era_plus=("era_plus_y", "mean"),   # promedio de ERA+ en peak
         peak_ip_per_gs=("ip_per_gs_y","mean"),  # stamina promedio
     ).reset_index()
+
+    peak["is_nlb"] = peak["playerID"].map(nlb_counts > 0).fillna(False)
 
     peak = peak.merge(peak_median,  on="playerID", how="left")
     peak = peak.merge(peak_display, on="playerID", how="left")
@@ -416,6 +426,17 @@ def paso_5_filtro_ingesta(career, peak, allstar, hof, pure_pitcher_ids, pitching
 
     df["is_allstar"] = df["playerID"].isin(allstar_ids)
     df["is_hof"]     = df["playerID"].isin(hof_ids)
+
+    # Identificar pitchers de Negro Leagues (NLB) basandose en IPouts
+    nl_leagues = {'NN1', 'NN2', 'EAL', 'NSL', 'NAL', 'ANL', 'EWL'}
+    if not pitching.empty and "lgID" in pitching.columns:
+        nlb_ip = pitching[pitching['lgID'].isin(nl_leagues) | pitching['teamID'].isin(NLB_TEAMS)].groupby('playerID')['IPouts'].sum()
+        mlb_ip = pitching[~pitching['lgID'].isin(nl_leagues) & ~pitching['teamID'].isin(NLB_TEAMS)].groupby('playerID')['IPouts'].sum()
+        df['nlb_ip'] = df['playerID'].map(nlb_ip).fillna(0)
+        df['mlb_ip'] = df['playerID'].map(mlb_ip).fillna(0)
+        df['is_nlb'] = df['nlb_ip'] > df['mlb_ip']
+    else:
+        df['is_nlb'] = False
 
     if not allstar.empty:
         as_count = allstar.groupby("playerID").size().reset_index(name="allstar_selections")
@@ -525,11 +546,14 @@ def paso_8_atributos_raw(df):
     bb_k = df["peak_bb"].fillna(0)
     hr_k = df["peak_hr_a"].fillna(0)
 
-    # Suavizado bayesiano m = 40 IP a las medias historicas
-    df["h9_raw"]  = (h_k  + 40 * (8.5 / 9.0)) / (ip_k + 40) * 9.0
-    df["k9_raw"]  = (so_k + 40 * (5.5 / 9.0)) / (ip_k + 40) * 9.0
-    df["bb9_raw"] = (bb_k + 40 * (3.2 / 9.0)) / (ip_k + 40) * 9.0
-    df["hr9_raw"] = (hr_k + 40 * (0.9 / 9.0)) / (ip_k + 40) * 9.0
+    # Suavizado bayesiano: m = 350 IP para NLB (debido a calendarios mas cortos con muestras pequeñas) vs m = 40 IP para MLB
+    is_nlb = df["is_nlb"].fillna(False) if "is_nlb" in df.columns else False
+    m_ip = np.where(is_nlb, 350.0, 40.0)
+
+    df["h9_raw"]  = (h_k  + m_ip * (8.5 / 9.0)) / (ip_k + m_ip) * 9.0
+    df["k9_raw"]  = (so_k + m_ip * (5.5 / 9.0)) / (ip_k + m_ip) * 9.0
+    df["bb9_raw"] = (bb_k + m_ip * (3.2 / 9.0)) / (ip_k + m_ip) * 9.0
+    df["hr9_raw"] = (hr_k + m_ip * (0.9 / 9.0)) / (ip_k + m_ip) * 9.0
 
     # Aliases de compatibilidad
     df["str_raw"] = df["k9_raw"]
@@ -582,16 +606,16 @@ def paso_10_normalizar_por_era(df):
     return df
 
 
-# ── PASO 11: OVR y Rareza (25% H/9, 25% K/9, 20% BB/9, 20% HR/9, 10% STA) ────────
+# ── PASO 11: OVR y Rareza (20% H/9, 20% K/9, 20% BB/9, 20% HR/9, 20% STA) ──
 def paso_11_ovr_rareza(df):
-    print("\n  PASO 11: OVR y Rareza (25% H/9, 25% K/9, 20% BB/9, 20% HR/9, 10% STA)...")
+    print("\n  PASO 11: OVR y Rareza (20% H/9, 20% K/9, 20% BB/9, 20% HR/9, 20% STA)...")
     df = df.copy()
     raw_ovr = (
-        df["h9_val"]  * 0.25 +
-        df["k9_val"]  * 0.25 +
+        df["h9_val"]  * 0.20 +
+        df["k9_val"]  * 0.20 +
         df["bb9_val"] * 0.20 +
         df["hr9_val"] * 0.20 +
-        df["sta_val"] * 0.10
+        df["sta_val"] * 0.20
     )
 
     def map_to_cosmetic_ovr_p(r):

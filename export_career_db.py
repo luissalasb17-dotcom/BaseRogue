@@ -50,15 +50,23 @@ def norm_fuzzy(s):
             return NICKNAMES[first] + ' ' + ' '.join(parts[1:])
     return n
 
-# Load Lahman & BBRef datasets
-war_df = pd.read_csv('lahman_1871-2025/war_daily_bat.txt', low_memory=False)
-war_df['WAR'] = pd.to_numeric(war_df['WAR'].replace('NULL', 0), errors='coerce').fillna(0)
+# Load Lahman & BBRef datasets (both Batting and Pitching WAR)
+war_bat_df = pd.read_csv('lahman_1871-2025/war_daily_bat.txt', low_memory=False)
+war_bat_df['WAR'] = pd.to_numeric(war_bat_df['WAR'].replace('NULL', 0), errors='coerce').fillna(0)
 
-# 1) WAR by player_ID in war_daily_bat.txt
-war_pid = war_df.groupby('player_ID')['WAR'].sum().to_dict()
+war_pitch_df = pd.read_csv('lahman_1871-2025/war_daily_pitch.txt', low_memory=False)
+war_pitch_df['WAR'] = pd.to_numeric(war_pitch_df['WAR'].replace('NULL', 0), errors='coerce').fillna(0)
 
-# 2) WAR by name_common in war_daily_bat.txt
-war_name_sum = war_df.groupby('name_common')['WAR'].sum().to_dict()
+war_combined = pd.concat([
+    war_bat_df[['player_ID', 'name_common', 'WAR']],
+    war_pitch_df[['player_ID', 'name_common', 'WAR']]
+], ignore_index=True)
+
+# 1) WAR by player_ID in combined daily war
+war_pid = war_combined.groupby('player_ID')['WAR'].sum().to_dict()
+
+# 2) WAR by name_common in combined daily war
+war_name_sum = war_combined.groupby('name_common')['WAR'].sum().to_dict()
 war_name_map = {}
 for k, v in war_name_sum.items():
     if isinstance(k, str):
