@@ -1646,7 +1646,14 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
       }
 
       // Mode 2: Quick Play Mode - Fully Procedural Pitcher Generation (No presets)
-      if (this.currentEnemy) return this.currentEnemy;
+      const unlockEnemyPitchers = (enemy) => {
+        if (enemy && enemy.pitchers && window.BaseballDex) {
+          enemy.pitchers.forEach(p => window.BaseballDex.unlockOpponent(p));
+        }
+        return enemy;
+      };
+
+      if (this.currentEnemy) return unlockEnemyPitchers(this.currentEnemy);
 
       const stage = this.currentStageIndex; // 0 to 15
       const fullPool = window.PITCHERS_POOL || [];
@@ -1827,7 +1834,7 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
         rarity: p1.rarity
       };
 
-      return this.currentEnemy;
+      return unlockEnemyPitchers(this.currentEnemy);
     }
 
     getSimLineups() {

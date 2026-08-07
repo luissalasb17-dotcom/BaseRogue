@@ -131,11 +131,16 @@
     },
 
     unlockOpponent(pitcher) {
-      if (!pitcher || !pitcher.name) return;
-      const key = `${pitcher.name}_${pitcher.year || ''}_${pitcher.role || 'P'}`;
+      if (!pitcher) return;
+      const rawName = (pitcher.cleanName || pitcher.name || '').replace(/\s*\(\d{4}\)/g, '').trim();
+      if (!rawName) return;
+      const year = pitcher.year || pitcher.peak_year_display || pitcher.peak_year || '';
+      const role = pitcher.role || pitcher.pos || 'SP';
+      const key = `${rawName}_${year}_${role}`;
       if (!this.unlockedOpponents.has(key)) {
         this.unlockedOpponents.add(key);
         this.save();
+        console.log('⚾ BaseballDex: Oponente desbloqueado ->', key);
       }
     },
 
@@ -144,13 +149,18 @@
       this.unlocked = new Set();
       pool.forEach(p => this.unlocked.add(`${p.name}_${p.year}`));
       
-      const pPool = (window.PitchersDB && window.PitchersDB.PITCHERS_POOL) ? window.PitchersDB.PITCHERS_POOL : [];
+      const pPool = (window.PitchersDB && window.PitchersDB.PITCHERS_POOL) ? window.PitchersDB.PITCHERS_POOL : (window.PITCHERS_POOL || []);
       this.unlockedOpponents = new Set();
-      pPool.forEach(p => this.unlockedOpponents.add(`${p.name}_${p.year || ''}_${p.role || 'P'}`));
+      pPool.forEach(p => {
+        const rawName = (p.cleanName || p.name || '').replace(/\s*\(\d{4}\)/g, '').trim();
+        const year = p.year || p.peak_year_display || p.peak_year || '';
+        const role = p.role || p.pos || 'SP';
+        this.unlockedOpponents.add(`${rawName}_${year}_${role}`);
+      });
 
       this.save();
       if (this.container) this.renderPanel();
-      console.log(`⚾ BaseballDex: ¡Las cartas han sido desbloqueadas!`);
+      console.log(`⚾ BaseballDex: ¡Todas las cartas han sido desbloqueadas!`);
       return `¡Desbloqueadas todas las cartas!`;
     },
 
@@ -165,7 +175,10 @@
 
     isUnlocked(player) {
       if (this.activeCategory === 'opponents') {
-        const key = `${player.name}_${player.year || ''}_${player.role || 'P'}`;
+        const rawName = (player.cleanName || player.name || '').replace(/\s*\(\d{4}\)/g, '').trim();
+        const year = player.year || player.peak_year_display || player.peak_year || '';
+        const role = player.role || player.pos || 'SP';
+        const key = `${rawName}_${year}_${role}`;
         return this.unlockedOpponents.has(key);
       }
       return this.unlocked.has(`${player.name}_${player.year}`);
