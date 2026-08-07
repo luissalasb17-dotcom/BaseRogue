@@ -2986,8 +2986,15 @@ function initGameModeSelector() {
         }
       });
 
+      const rColor = RARITY_COLORS[player.rarity] || RARITY_COLORS.Common;
+      const ovr    = getPlayerOvr(player);
+
       cardCol.innerHTML = `
         <div>${cardHTML}</div>
+        <div style="text-align:center;width:100%;margin-top:2px;">
+          <div style="font-size:10px;color:${rColor};font-weight:bold;">${player.rarity}</div>
+          <div style="font-size:9.5px;color:#9ca3af;text-align:center;margin-top:2px;font-family:'Press Start 2P',monospace;">${player.pos} • OVR ${ovr}</div>
+        </div>
         <div style="font-size:10px; color:#f59e0b; font-weight:bold; margin-top:4px; text-align:center; font-family:'Press Start 2P',monospace;">Coste: $${cost}</div>
         <div class="draft-synergy-helper">${predictionText}</div>
       `;
@@ -3057,8 +3064,15 @@ function initGameModeSelector() {
         populateSwapModalOptions(player);
       });
 
+      const rColor = RARITY_COLORS[player.rarity] || RARITY_COLORS.Common;
+      const ovr    = getPlayerOvr(player);
+
       cardCol.innerHTML = `
         <div>${cardHTML}</div>
+        <div style="text-align:center;width:100%;margin-top:2px;">
+          <div style="font-size:10px;color:${rColor};font-weight:bold;">${player.rarity}</div>
+          <div style="font-size:9.5px;color:#9ca3af;text-align:center;margin-top:2px;font-family:'Press Start 2P',monospace;">${player.pos} • OVR ${ovr}</div>
+        </div>
         <div class="draft-synergy-helper">${predictionText}</div>
       `;
       cardCol.appendChild(btnSign);
