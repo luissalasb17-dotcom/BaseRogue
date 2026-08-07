@@ -1865,12 +1865,43 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
     }
 
     postMatchDebrief(simResult) {
-      // Trait: Resistencia Inagotable — batters lose 6 instead of 12 stamina
-      const staminaLoss = this.hasTrait('endless_stamina') ? 6 : 12;
+      // Trait: Resistencia Inagotable — batters lose 7 instead of 15 stamina
+      const staminaLoss = this.hasTrait('endless_stamina') ? 7 : 15;
+      const retiredAlerts = [];
+      const pool = (window.PlayersDB && window.PlayersDB.LAHMAN_POOL) ? window.PlayersDB.LAHMAN_POOL : (window.PlayersDB && window.PlayersDB.PLAYERS_POOL) ? window.PlayersDB.PLAYERS_POOL : [];
+
       Object.keys(this.roster).forEach(pos => {
         const player = this.roster[pos];
         if (player) {
-          player.stamina = Math.max(0, player.stamina - staminaLoss);
+          player.stamina = Math.max(0, (player.stamina !== undefined ? player.stamina : 100) - staminaLoss);
+
+          if (player.stamina <= 0) {
+            // Player retired due to zero stamina -> replace with random Common player of same position!
+            const targetPos = player.pos || pos;
+            let commonMatches = pool.filter(p => p.rarity === 'Common' && (p.pos === targetPos || p.pos === pos));
+            if (!commonMatches.length) {
+              commonMatches = pool.filter(p => p.rarity === 'Common');
+            }
+            if (commonMatches.length > 0) {
+              const pick = commonMatches[Math.floor(Math.random() * commonMatches.length)];
+              const newInstance = {
+                ...pick,
+                id: `player_${pick.name.replace(/\s+/g, '')}_${Date.now()}_repl`,
+                stamina: 100,
+                upgrades: { con: 0, pwr: 0, eye: 0, spd: 0, def: 0, sta: 0 }
+              };
+              this.roster[pos] = newInstance;
+              retiredAlerts.push({
+                oldPlayerName: player.name,
+                oldPlayerPos: pos,
+                oldPlayerRarity: player.rarity,
+                newPlayerName: newInstance.name,
+                newPlayerPos: newInstance.pos,
+                newPlayerRarity: newInstance.rarity,
+                newPlayerOvr: newInstance.avg_attr_score || newInstance.ovr || 50
+              });
+            }
+          }
         }
       });
 
@@ -1902,6 +1933,7 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
             won: true,
             isSuperBossTrigger: true,
             superBossTeam,
+            retiredAlerts,
             message: (typeof window.t==='function'?window.t('game.super_boss_trigger'):`⚡ ¡SUPER BOSS FIGHT! ⚡ ¡Derrotaste al primer grupo de leyendas! AHORA ENFRENTA A LA ROTACIÓN SUPREMA DE 4 LEYENDAS.`)
           };
         }
@@ -1913,6 +1945,7 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
           return {
             won: true,
             isTrueVictory: true,
+            retiredAlerts,
             message: (typeof window.t==='function'?window.t('game.true_victory'):`🏆 ¡CAMPEÓN ABSOLUTO! ¡Derrotaste a la Rotación Suprema de 4 Leyendas! BaseRogue conquistado.`)
           };
         }
@@ -1933,6 +1966,7 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
             isTraitReward: true,
             traitChoices,
             earnings: earnings + eliteBonus,
+            retiredAlerts,
             message: (typeof window.t==='function'?window.t('game.boss_victory_trait', { earnings: earnings + eliteBonus }):`¡Victoria de Jefe! +$${earnings + eliteBonus}. Elige una Trait Pasiva de Leyenda.`)
           };
         }
@@ -1941,6 +1975,7 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
           won: true,
           isBossStage,
           earnings: earnings + eliteBonus,
+          retiredAlerts,
           message: isBossStage
             ? (typeof window.t==='function'?window.t('game.boss_win_msg', { name: currentEnemy.name, earnings: earnings + eliteBonus }):`¡Victoria! Derrotaste al JEFE ${currentEnemy.name}. ¡+$${earnings + eliteBonus}!`)
             : (typeof window.t==='function'?window.t('game.win_msg', { name: currentEnemy.name, earnings: earnings + eliteBonus }):`¡Victoria! Derrotaste a la rotación de ${currentEnemy.name}. ¡+$${earnings + eliteBonus}!`)
@@ -1950,6 +1985,7 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
         this.currentEnemy = null;
         return {
           won: false,
+          retiredAlerts,
           message: (typeof window.t==='function'?window.t('game.defeat_msg', { name: currentEnemy.name }):`Derrota. Finalizaron los 3 innings (9 outs) antes de derrotar a toda la rotación de ${currentEnemy.name}.`)
         };
       }

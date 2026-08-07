@@ -341,7 +341,7 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
       stat: "con",
       get label() { return typeof window.t==='function'?window.t('training.con.label'):'🎯 Sesión de Contacto Estándar'; },
       get desc() { return typeof window.t==='function'?window.t('training.con.desc'):'Práctica intensiva de swing. +5 a +7 Contacto garantizado.'; },
-      price: 14,
+      price: 3,
       risk: "safe",
       icon: "🎯",
       critChance: 0.15,
@@ -354,7 +354,7 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
       stat: "pwr",
       label: "💥 Fuerza en la Jaula",
       get desc() { return typeof window.t==='function'?window.t('training.pwr.desc'):'Repeticiones con bate pesado. +5 a +7 Fuerza garantizada.'; },
-      price: 14,
+      price: 3,
       risk: "safe",
       icon: "💥",
       critChance: 0.15,
@@ -367,7 +367,7 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
       stat: "spd",
       label: "⚡ Sprints de Agilidad",
       get desc() { return typeof window.t==='function'?window.t('training.spd.desc'):'Trabajo de aceleración en bases. +5 a +7 Velocidad.'; },
-      price: 12,
+      price: 3,
       risk: "safe",
       icon: "⚡",
       critChance: 0.15,
@@ -380,7 +380,7 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
       stat: "def",
       label: "🧤 Fundamento Defensivo",
       get desc() { return typeof window.t==='function'?window.t('training.def.desc'):'Ejercicios de fildeo y tiro. +5 a +7 Defensa.'; },
-      price: 10,
+      price: 2,
       risk: "safe",
       icon: "🧤",
       critChance: 0.15,
@@ -393,7 +393,7 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
       stat: "sta",
       get label() { return typeof window.t==='function'?window.t('training.sta.label'):'🔋 Recuperación Físico-Biológica'; },
       get desc() { return typeof window.t==='function'?window.t('training.sta.desc'):'Masajes y descanso activo. +35 a +45 Stamina.'; },
-      price: 10,
+      price: 2,
       risk: "safe",
       icon: "🔋",
       critChance: 0.20,
@@ -406,7 +406,7 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
       stat: "pwr",
       label: "🔥 Entrenamiento Extremo de Poder",
       get desc() { return typeof window.t==='function'?window.t('training.risk.desc'):'Levantamiento súper-pesado. +12 a +14 PWR si resulta. 30% riesgo de tirón muscular.'; },
-      price: 10,
+      price: 4,
       risk: "high",
       icon: "🔥",
       riskChance: 0.30,
@@ -419,7 +419,7 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
       stat: "spd",
       label: "🚀 Entrenamiento Turbo de Velocidad",
       desc: "Sprints con resistencia. +12 a +14 SPD si resulta. 25% riesgo de sobrecarga (-10 Stamina).",
-      price: 9,
+      price: 3,
       risk: "high",
       icon: "🚀",
       riskChance: 0.25,
@@ -3278,13 +3278,13 @@ function initGameModeSelector() {
     if (!activePlayers.length) return [];
 
     const statTemplates = [
-      { stat: 'con', label: 'Contacto Estándar', desc: 'Práctica intensiva de swing', basePrice: 14, icon: '🎯', risk: 'safe', minVal: 5, maxVal: 7, critChance: 0.15, critVal: 12 },
-      { stat: 'pwr', label: 'Fuerza de Bateo', desc: 'Repeticiones con bate pesado', basePrice: 14, icon: '💥', risk: 'safe', minVal: 5, maxVal: 7, critChance: 0.15, critVal: 12 },
-      { stat: 'spd', label: 'Velocidad en Bases', desc: 'Trabajo de aceleración en bases', basePrice: 12, icon: '⚡', risk: 'safe', minVal: 5, maxVal: 7, critChance: 0.15, critVal: 12 },
-      { stat: 'def', label: 'Técnica Defensiva', desc: 'Ejercicios de fildeo y tiro', basePrice: 10, icon: '🧤', risk: 'safe', minVal: 5, maxVal: 7, critChance: 0.15, critVal: 12 },
-      { stat: 'sta', label: 'Masaje de Recuperación', desc: 'Masajes y descanso activo', basePrice: 10, icon: '🔋', risk: 'safe', minVal: 35, maxVal: 45, critChance: 0.20, critVal: 100 },
-      { stat: 'pwr', label: 'Fuerza Extrema', desc: 'Levantamiento súper-pesado (30% riesgo tirón)', basePrice: 10, icon: '🔥', risk: 'high', minVal: 12, maxVal: 14, riskChance: 0.30, failPenalty: 15 },
-      { stat: 'spd', label: 'Turbo Velocidad', desc: 'Sprints con resistencia (25% riesgo sobrecarga)', basePrice: 9, icon: '🚀', risk: 'high', minVal: 12, maxVal: 14, riskChance: 0.25, failPenalty: 10 }
+      { stat: 'con', label: 'Contacto Estándar', desc: 'Práctica intensiva de swing', basePrice: 3, icon: '🎯', risk: 'safe', minVal: 5, maxVal: 7, critChance: 0.15, critVal: 12 },
+      { stat: 'pwr', label: 'Fuerza de Bateo', desc: 'Repeticiones con bate pesado', basePrice: 3, icon: '💥', risk: 'safe', minVal: 5, maxVal: 7, critChance: 0.15, critVal: 12 },
+      { stat: 'spd', label: 'Velocidad en Bases', desc: 'Trabajo de aceleración en bases', basePrice: 3, icon: '⚡', risk: 'safe', minVal: 5, maxVal: 7, critChance: 0.15, critVal: 12 },
+      { stat: 'def', label: 'Técnica Defensiva', desc: 'Ejercicios de fildeo y tiro', basePrice: 2, icon: '🧤', risk: 'safe', minVal: 5, maxVal: 7, critChance: 0.15, critVal: 12 },
+      { stat: 'sta', label: 'Masaje de Recuperación', desc: 'Masajes y descanso activo', basePrice: 2, icon: '🔋', risk: 'safe', minVal: 35, maxVal: 45, critChance: 0.20, critVal: 100 },
+      { stat: 'pwr', label: 'Fuerza Extrema', desc: 'Levantamiento súper-pesado (30% riesgo tirón)', basePrice: 4, icon: '🔥', risk: 'high', minVal: 12, maxVal: 14, riskChance: 0.30, failPenalty: 15 },
+      { stat: 'spd', label: 'Turbo Velocidad', desc: 'Sprints con resistencia (25% riesgo sobrecarga)', basePrice: 3, icon: '🚀', risk: 'high', minVal: 12, maxVal: 14, riskChance: 0.25, failPenalty: 10 }
     ];
 
     const offers = [];
@@ -3298,7 +3298,14 @@ function initGameModeSelector() {
       const minVal = Math.round(tpl.minVal * tierData.statMult);
       const maxVal = Math.round(tpl.maxVal * tierData.statMult);
       const critVal = tpl.critVal ? Math.round(tpl.critVal * tierData.statMult) : undefined;
-      const basePrice = Math.round(tpl.basePrice * tierData.priceMult);
+
+      // Pricing by Tier: Normal ($2-$4), Silver ($5-$7), Gold ($8-$10)
+      let basePrice = tpl.basePrice || 3;
+      if (tierKey === 'Silver') {
+        basePrice += 3;
+      } else if (tierKey === 'Gold') {
+        basePrice += 6;
+      }
 
       offers.push({
         id: `offer_${i}_${Date.now()}`,
@@ -4612,27 +4619,86 @@ function initGameModeSelector() {
     el.screenMatch.appendChild(proceedBtn);
   }
 
+  // ── EXHAUSTION / RETIREMENT MODAL ─────────────────────────────────────
+  function showStaminaExhaustionModal(retiredAlerts, onContinue) {
+    if (!retiredAlerts || !retiredAlerts.length) {
+      if (onContinue) onContinue();
+      return;
+    }
+
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black/90 backdrop-blur-md z-[900] flex items-center justify-center p-4';
+    
+    const itemsHTML = retiredAlerts.map(a => `
+      <div style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.4);border-radius:10px;padding:12px 16px;margin-bottom:10px;text-align:left;">
+        <div style="font-size:13px;color:#f87171;font-weight:bold;margin-bottom:4px;">
+          💀 ${a.oldPlayerName} <span style="font-size:11px;color:#9ca3af;">[${a.oldPlayerPos}]</span>
+        </div>
+        <div style="font-size:11px;color:#e4e4e7;line-height:1.4;">
+          ¡Se ha quedado sin Stamina (0 HP) y ha debido retirarse de la carrera!
+        </div>
+        <div style="font-size:11px;color:#34d399;font-weight:bold;margin-top:6px;">
+          🔄 Reemplazado por: <span style="color:#fff;">${a.newPlayerName}</span> (${a.newPlayerRarity} • ${a.newPlayerPos} • OVR ${a.newPlayerOvr})
+        </div>
+      </div>
+    `).join('');
+
+    modal.innerHTML = `
+      <div style="background:#0a0f1d;border:3px solid #ef4444;box-shadow:0 0 40px rgba(239,68,68,0.5);border-radius:16px;padding:24px 30px;max-width:500px;width:95%;text-align:center;">
+        <div style="font-size:40px;color:#ef4444;margin-bottom:10px;">⚡</div>
+        <h2 style="font-family:'Press Start 2P',monospace;font-size:14px;color:#ef4444;margin-bottom:12px;">¡EXHAUSTIÓN EN EL ROSTER!</h2>
+        <p style="font-size:11px;color:#9ca3af;margin-bottom:16px;line-height:1.4;">
+          Uno o varios bateadores han agotado completamente su energía (0 Stamina) y no pueden continuar. Han sido sustituidos por agentes libres categoría Common de su misma posición.
+        </p>
+        <div style="max-height:220px;overflow-y:auto;margin-bottom:20px;">
+          ${itemsHTML}
+        </div>
+        <button id="btn-ack-exhaustion" class="btn" style="width:100%;padding:12px;font-family:'Press Start 2P',monospace;font-size:10px;background:#ef4444;color:#fff;border:none;border-radius:8px;cursor:pointer;">
+          ENTENDIDO <i class="fa-solid fa-check"></i>
+        </button>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    document.getElementById('btn-ack-exhaustion').addEventListener('click', () => {
+      modal.remove();
+      renderActiveRoster();
+      renderSynergiesAndItems();
+      updateHUD();
+      if (onContinue) onContinue();
+    });
+  }
+
   // ── CENTRAL POST-MATCH ROUTER ─────────────────────────────────────────
   function handlePostMatchResult(res) {
-    if (!res.won) {
-      triggerGameOver(false, res.message);
-      return;
+    const continueRouting = () => {
+      if (!res.won) {
+        triggerGameOver(false, res.message);
+        return;
+      }
+      if (res.isTrueVictory) {
+        triggerTrueVictory();
+        return;
+      }
+      if (res.isSuperBossTrigger) {
+        showSuperBossIntroModal(() => setupAndStartMatchSimulation());
+        return;
+      }
+      if (res.isTraitReward && res.traitChoices) {
+        showTraitSelectionModal(res.traitChoices, res.earnings, () => {
+          setupPostMatchDraftScreen(true, 0);
+        });
+        return;
+      }
+      setupPostMatchDraftScreen(res.isBossStage, res.earnings);
+    };
+
+    if (res.retiredAlerts && res.retiredAlerts.length > 0) {
+      showStaminaExhaustionModal(res.retiredAlerts, continueRouting);
+    } else {
+      continueRouting();
     }
-    if (res.isTrueVictory) {
-      triggerTrueVictory();
-      return;
-    }
-    if (res.isSuperBossTrigger) {
-      showSuperBossIntroModal(() => setupAndStartMatchSimulation());
-      return;
-    }
-    if (res.isTraitReward && res.traitChoices) {
-      showTraitSelectionModal(res.traitChoices, res.earnings, () => {
-        setupPostMatchDraftScreen(true, 0);
-      });
-      return;
-    }
-    setupPostMatchDraftScreen(res.isBossStage, res.earnings);
   }
 
   // ── TRAIT SELECTION MODAL (after Boss Maps 1-3) ───────────────────────
