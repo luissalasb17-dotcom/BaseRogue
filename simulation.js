@@ -70,16 +70,19 @@
     let pSO = 0.16 + (pK9 - effCon) * 0.0020;
     pSO = Math.max(0.04, Math.min(0.35, pSO));
 
-    // 3. HR rate: Batter Power vs Pitcher HR/9 Prevention (Base 8%, Slope 0.20%)
-    let pHR = 0.08 + (effPwr - pHR9) * 0.0020;
-    pHR = Math.max(0.02, Math.min(0.32, pHR));
+    // 3. Total HIT rate (1B, 2B, 3B, HR): Batter Contact vs Pitcher H/9 Hit Suppression (Base 44%, Slope 0.22%)
+    let pTotalHit = 0.44 + (effCon - pH9) * 0.0022;
+    pTotalHit = Math.max(0.16, Math.min(0.60, pTotalHit));
 
-    // 4. Regular HIT rate (1B, 2B, 3B): Batter Contact vs Pitcher H/9 Hit Suppression (Base 38%, Slope 0.20%)
-    let pRegularHit = 0.38 + (effCon - pH9) * 0.0020;
-    pRegularHit = Math.max(0.14, Math.min(0.55, pRegularHit));
+    // 4. HR share of Hits: Batter Power vs Pitcher HR/9 Prevention (Base 10% of hits, Slope 0.35%)
+    let hrRatio = 0.10 + (effPwr - pHR9) * 0.0035;
+    hrRatio = Math.max(0.02, Math.min(0.45, hrRatio));
+
+    let pHR = pTotalHit * hrRatio;
+    let pRegularHit = pTotalHit - pHR;
 
     // 5. OUT gets the rest (Floor 10%)
-    let pOut = Math.max(0.10, 1.0 - pBB - pSO - pHR - pRegularHit);
+    let pOut = Math.max(0.10, 1.0 - pBB - pSO - pTotalHit);
 
     // ── Clutch Player Badge Config & Boost Application ───────────────────────
     // Differentiated boosts: 1B: +2%, 2B: +2%, 3B: 0%, HR: +4% (Total +8% subtracted from Out)

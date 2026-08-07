@@ -767,8 +767,10 @@ def paso_11_motor_defensivo(df, war_bat, awards):
     proxy = (fp * 0.6 + rf * 0.4 - 0.5) * 50.0
 
     df["defense_base_raw"] = np.where(has_war, raw_hybrid, proxy)
-    # Centrado: 0.0 raw = 50.0 DEF base. +120 raw = 95.0 DEF base (antes de bono GG)
-    df["defense_val_base"] = (50.0 + (df["defense_base_raw"] / 120.0) * 45.0).clip(1.0, 120.0).round(1)
+    # Stretched Defense Scale: min_raw (Grieve = -68.0) maps to 1.0 DEF base floor, p98 maps to 99.0 base
+    min_def_raw = df["defense_base_raw"].min()
+    p98_def_raw = df["defense_base_raw"].quantile(0.98)
+    df["defense_val_base"] = (1.0 + ((df["defense_base_raw"] - min_def_raw) / (p98_def_raw - min_def_raw)) * 98.0).clip(1.0, 120.0).round(1)
     df["defense_source"]   = np.where(has_war, "bbref_war", "lahman_proxy")
 
     if not awards.empty and "awardID" in awards.columns:
@@ -1121,9 +1123,10 @@ def paso_15_equipo_y_exportar(df, batting, teams, franchises, pico_df=None):
             pos_js, sec_pos_js = LEGEND_POS_OVERRIDES[name_js]
 
         team_js = str(r.get(team_col,"UNK")).replace('"',"'")
+        pid_js = str(r.get("playerID","")).replace('"',"'")
         js_lines.append(
             f'    {{ '
-            f'name: "{name_js}", pos: "{pos_js}", sec_pos: "{sec_pos_js}", era: "{era_js}", '
+            f'playerID: "{pid_js}", name: "{name_js}", pos: "{pos_js}", sec_pos: "{sec_pos_js}", era: "{era_js}", '
             f'team: "{team_js}", year: {int(r["peak_year_display"])}, ovr: {float(r["avg_attr_score"])}, '
             f'con: {int(r["contact_val"])}, pwr: {int(r["power_val"])}, '
             f'eye: {int(r["eye_val"])}, spd: {int(r["speed_val"])}, '

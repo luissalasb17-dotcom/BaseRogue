@@ -54,8 +54,9 @@
   function getPlayerCareerData(p) {
     if (!p) return { war: '-', mvp: 0, roy: 0, ss: 0, gg: 0, allstars: 0, hof: false };
     const cleanName = p.name ? p.name.replace(/\s\(.*?\)$/, '').trim() : '';
+    const keyWithYear = `${cleanName}_${p.year}`;
     const db = window.CAREER_STATS_DB || {};
-    const entry = (p.playerID && db[p.playerID]) || db[cleanName] || db[p.name];
+    const entry = (p.playerID && db[p.playerID]) || db[keyWithYear] || db[cleanName] || db[p.name];
 
     if (entry) {
       return {

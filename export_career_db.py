@@ -98,7 +98,7 @@ SR_JR_EXPLICIT = {
     "younger03": "Eric Young Jr.",
 }
 
-# Build comprehensive lookup dict indexed by playerID and normalized names
+# Build comprehensive lookup dict indexed by playerID, name_year, and homonym-aware fallback names
 career_map = {}
 pid_stats_db = {}
 
@@ -106,11 +106,10 @@ for _, row in people_df.iterrows():
     pid = str(row['playerID']).strip()
     f = str(row['nameFirst']).strip() if pd.notna(row['nameFirst']) else ''
     l = str(row['nameLast']).strip() if pd.notna(row['nameLast']) else ''
-    g = str(row['nameGiven']).strip() if pd.notna(row['nameGiven']) else ''
     
     war_val = row['career_war']
     if pd.isna(war_val):
-        war_val = None
+        war_val = 0.0
     else:
         war_val = round(float(war_val), 1)
 
@@ -132,19 +131,41 @@ for _, row in people_df.iterrows():
         career_map[explicit_name] = stat_obj
         career_map[norm(explicit_name)] = stat_obj
     else:
-        full1 = f'{f} {l}'
-        if full1.strip():
-            career_map[full1] = stat_obj
-            career_map[norm(full1)] = stat_obj
+        full1 = f'{f} {l}'.strip()
+        if full1:
+            # Handle homonyms: keep entry with higher WAR or HOF status
+            if full1 not in career_map:
+                career_map[full1] = stat_obj
+                career_map[norm(full1)] = stat_obj
+            else:
+                existing_war = career_map[full1].get('war') or -999.0
+                new_war = stat_obj.get('war') or -999.0
+                if stat_obj.get('hof') or new_war > existing_war:
+                    career_map[full1] = stat_obj
+                    career_map[norm(full1)] = stat_obj
+
+# Explicitly map all 3,452 game cards by playerID and name_year
+try:
+    gc_df = pd.read_csv('game_cards.csv')
+    for _, card in gc_df.iterrows():
+        c_pid = str(card['playerID']).strip()
+        c_name = str(card['name']).strip()
+        c_year = str(int(card['peak_year'])) if pd.notna(card['peak_year']) else ''
+        if c_pid in pid_stats_db:
+            c_obj = pid_stats_db[c_pid]
+            career_map[c_pid] = c_obj
+            if c_year:
+                career_map[f"{c_name}_{c_year}"] = c_obj
+                career_map[norm(f"{c_name}_{c_year}")] = c_obj
+except Exception as e:
+    print("Warning loading game_cards.csv for exact mapping:", e)
 
 for k, v in MANUAL_OVERRIDE.items():
     career_map[k] = v
 
 print(f"Total entries in career_map: {len(career_map):,}")
-print("Ken Griffey Sr. (griffke01):", career_map.get("griffke01"))
-print("Ken Griffey Jr. (griffke02):", career_map.get("griffke02"))
-print("Vladimir Guerrero Sr. (guerrvl01):", career_map.get("guerrvl01"))
-print("Vladimir Guerrero Jr. (guerrvl02):", career_map.get("guerrvl02"))
+print("Willie Davis (daviswi02):", career_map.get("daviswi02"))
+print("Willie Davis_1964:", career_map.get("Willie Davis_1964"))
 
 # Write to career_data.js
 js_output = f"// Auto-generated career stats mapping from BBRef & Lahman data\n(function() {{\n  window.CAREER_STATS_DB = {json.dumps(career_map, separators=(',', ':'))};\n}})();\n"
