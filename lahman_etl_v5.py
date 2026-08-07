@@ -285,49 +285,67 @@ def paso_4_pico_batting(batting, war_bat, people):
     bat_yearly["SLG_y"] = (bat_yearly["H"] + bat_yearly["B2"] + 2*bat_yearly["B3"] + 3*bat_yearly["HR"]) / ab_y
     bat_yearly["OPS_y"] = bat_yearly["OBP_y"].fillna(0) + bat_yearly["SLG_y"].fillna(0)
 
-    war_yearly = pd.DataFrame()
+    war_off_yearly = pd.DataFrame()
+    war_tot_yearly = pd.DataFrame()
     if not war_bat.empty and not people.empty:
         war = war_bat.copy()
-        war_col = "WAR" if "WAR" in war.columns else "WAR_off"
-        war[war_col] = pd.to_numeric(
-            war[war_col].replace("NULL", np.nan),
-            errors="coerce"
-        ).fillna(0)
-        war_season = war.groupby(["player_ID","year_ID"])[war_col].sum().reset_index()
-        war_season.columns = ["bbrefID","yearID","war_season"]
+        war["WAR_off"] = pd.to_numeric(war["WAR_off"].replace("NULL", np.nan), errors="coerce").fillna(0)
+        war["WAR"]     = pd.to_numeric(war["WAR"].replace("NULL", np.nan), errors="coerce").fillna(0)
+        
+        war_off_season = war.groupby(["player_ID","year_ID"])["WAR_off"].sum().reset_index()
+        war_off_season.columns = ["bbrefID","yearID","war_off"]
+        
+        war_tot_season = war.groupby(["player_ID","year_ID"])["WAR"].sum().reset_index()
+        war_tot_season.columns = ["bbrefID","yearID","war_total"]
+
         id_map = people[["playerID","bbrefID"]].dropna(subset=["bbrefID"])
-        war_yearly = (
-            war_season.merge(id_map, on="bbrefID", how="left")
-                      .dropna(subset=["playerID"])[["playerID","yearID","war_season"]]
-        )
-        print(f"  WAR Total anual para {war_yearly['playerID'].nunique():,} jugadores (BBRef)")
+        war_off_yearly = war_off_season.merge(id_map, on="bbrefID", how="left").dropna(subset=["playerID"])[["playerID","yearID","war_off"]]
+        war_tot_yearly = war_tot_season.merge(id_map, on="bbrefID", how="left").dropna(subset=["playerID"])[["playerID","yearID","war_total"]]
+        print(f"  WAR_off y WAR_total anual para {war_off_yearly['playerID'].nunique():,} jugadores (BBRef)")
     else:
         print("  WAR no disponible - usando OPS fallback")
 
-    if not war_yearly.empty:
-        bat_yearly = bat_yearly.merge(war_yearly, on=["playerID","yearID"], how="left")
+    if not war_off_yearly.empty:
+        bat_yearly = bat_yearly.merge(war_off_yearly, on=["playerID","yearID"], how="left")
+        bat_yearly = bat_yearly.merge(war_tot_yearly, on=["playerID","yearID"], how="left")
     else:
-        bat_yearly["war_season"] = np.nan
+        bat_yearly["war_off"] = np.nan
+        bat_yearly["war_total"] = np.nan
 
-    def seleccionar_pico(group):
+    def seleccionar_pico_off(group):
         g = group.copy()
-        if g["war_season"].notna().any():
-            g = g.sort_values("war_season", ascending=False, na_position="last")
+        if g["war_off"].notna().any():
+            g = g.sort_values("war_off", ascending=False, na_position="last")
         else:
             g = g.sort_values("OPS_y", ascending=False, na_position="last")
         return g.head(PEAK_SEASONS)
 
-    pico_df = bat_yearly.groupby("playerID", group_keys=True).apply(seleccionar_pico)
-    pico_df = pico_df.reset_index(level=0)
+    def seleccionar_pico_tot(group):
+        g = group.copy()
+        if g["war_total"].notna().any():
+            g = g.sort_values("war_total", ascending=False, na_position="last")
+        else:
+            g = g.sort_values("OPS_y", ascending=False, na_position="last")
+        return g.head(PEAK_SEASONS)
 
-    # El peak_year de era es la mediana de las 7 mejores temporadas (para determinar su era de forma representativa)
-    peak_median = pico_df.groupby("playerID")["yearID"].median().reset_index().rename(columns={"yearID": "peak_year"})
+    pico_off_df = bat_yearly.groupby("playerID", group_keys=True).apply(seleccionar_pico_off).reset_index(level=0)
+    pico_tot_df = bat_yearly.groupby("playerID", group_keys=True).apply(seleccionar_pico_tot).reset_index(level=0)
+
+    # El peak_year de era es la mediana de las 7 mejores temporadas por WAR Total
+    peak_median = pico_tot_df.groupby("playerID")["yearID"].median().reset_index().rename(columns={"yearID": "peak_year"})
     peak_median["peak_year"] = peak_median["peak_year"].round().astype(int)
 
-    # El peak_year_display es el año de su mejor rendimiento individual (máximo WAR/OPS, primera fila de cada grupo)
-    peak_display = pico_df.groupby("playerID").first().reset_index()[["playerID", "yearID"]].rename(columns={"yearID": "peak_year_display"})
+    # El peak_year_display es el año de su mejor rendimiento individual por WAR Total (primera fila del ranking bWAR)
+    peak_display = (
+        pico_tot_df.sort_values(["playerID", "war_total"], ascending=[True, False])
+                   .groupby("playerID")
+                   .first()
+                   .reset_index()[["playerID", "yearID"]]
+                   .rename(columns={"yearID": "peak_year_display"})
+    )
 
-    peak = pico_df.groupby("playerID").agg(
+    # Métricas de bateo agregadas de sus 7 mejores temporadas de OWAR (pico_off_df)
+    peak = pico_off_df.groupby("playerID").agg(
         peak_ab  =("AB",  "sum"), peak_h   =("H",   "sum"),
         peak_2b  =("B2",  "sum"), peak_3b  =("B3",  "sum"),
         peak_hr  =("HR",  "sum"), peak_bb  =("BB",  "sum"),
@@ -357,7 +375,7 @@ def paso_4_pico_batting(batting, war_bat, people):
     peak["peak_sb_vol_log"]   = np.log1p(peak["peak_sb"])
     peak["peak_extra_base_f"] = (peak["peak_sb"] + peak["peak_3b"]) / ab_p
     print(f"  Pico calculado para {len(peak):,} jugadores")
-    return peak, pico_df
+    return peak, pico_off_df, pico_tot_df
 
 
 # ===========================================================================
@@ -711,6 +729,11 @@ def paso_11_motor_defensivo(df, war_bat, awards):
 
     has_war = df["rfield_career"].notna()
     raw_hybrid = 0.60 * df["rfield_career"].fillna(0) + 0.40 * (df["wardef_career"].fillna(0) * 10)
+    
+    # Penalizacion posicional para DH puros (sin entradas defensivas reales)
+    is_dh = (df["primary_pos"] == "DH")
+    raw_hybrid = np.where(is_dh & (df["rfield_career"].fillna(0) >= -5.0) & (df["rfield_career"].fillna(0) <= 5.0), -35.0, raw_hybrid)
+
     fp    = df["fielding_pct"].fillna(0.96)
     rf    = (df["range_factor"].fillna(2.0) / 6.0).clip(0, 1)
     proxy = (fp * 0.6 + rf * 0.4 - 0.5) * 50.0
@@ -1166,10 +1189,10 @@ def main():
 
     pure_pitcher_ids = paso_2_filtrar_pitchers(fielding)
     career           = paso_3_carrera_batting(batting)
-    peak, pico_df    = paso_4_pico_batting(batting, war_bat, people)
+    peak, pico_off_df, pico_tot_df = paso_4_pico_batting(batting, war_bat, people)
     hybrid           = paso_5_hibrido(career, peak)
-    appearances = dfs.get("appearances")
-    pos_data         = paso_6_posicion_bateadores(fielding, fielding_of, appearances, pico_df)
+    appearances      = dfs.get("appearances")
+    pos_data         = paso_6_posicion_bateadores(fielding, fielding_of, appearances, pico_off_df)
     hybrid           = hybrid.merge(pos_data, on="playerID", how="left")
     hybrid           = paso_7_enriquecer_people(hybrid, people)
     eligible         = paso_8_filtro_ingesta(hybrid, allstar, hof, pure_pitcher_ids, batting)
@@ -1179,7 +1202,7 @@ def main():
     eligible         = paso_12_normalizar_por_era(eligible)
     eligible         = paso_13_bono_guante_de_oro(eligible)
     eligible         = paso_14_velocidad(eligible)
-    final            = paso_15_equipo_y_exportar(eligible, batting, teams, franchises, pico_df)
+    final            = paso_15_equipo_y_exportar(eligible, batting, teams, franchises, pico_tot_df)
 
     reporte_final(final)
     return final
