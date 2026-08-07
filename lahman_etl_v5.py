@@ -1058,9 +1058,9 @@ def paso_15_equipo_y_exportar(df, batting, teams, franchises, pico_df=None):
         df['is_captain'] = df['playerID'].isin(OFFICIAL_CAPTAIN_PIDS)
         print(f"  Badges: Clutch={df['is_clutch'].sum()} | Captain={df['is_captain'].sum()}")
 
-    # ── OVR con boost de Badges (+1 por badge) & Rareza ─────────────────────
+    # ── OVR con boost de Badges (+2 por badge) & Rareza ─────────────────────
     base_ovr = df["raw_ovr"].apply(map_to_cosmetic_ovr)
-    badge_boost = (df["is_clutch"].astype(int) * 1.0) + (df["is_captain"].astype(int) * 1.0)
+    badge_boost = (df["is_clutch"].astype(int) * 2.0) + (df["is_captain"].astype(int) * 2.0)
     df["avg_attr_score"] = (base_ovr + badge_boost).clip(50.0, 99.9).round(1)
     df["rarity"]         = df["avg_attr_score"].apply(asignar_rareza)
     df["pos_display"]    = df["primary_pos"].map(POS_DISPLAY_MAP).fillna("RF")
