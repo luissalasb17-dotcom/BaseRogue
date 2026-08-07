@@ -1004,11 +1004,11 @@ def paso_15_equipo_y_exportar(df, batting, teams, franchises, pico_df=None):
     df["franchise_name"]   = df["canonical_teamID"]
 
     stat_cols = ["contact_val","power_val","eye_val","speed_val","defense_val"]
-    # 5. Promedio de Atributos Globales (OVR) mapeado a escala MLB The Show (60-99)
+    # 5. Promedio de Atributos Globales (OVR) equilibrado (30% CON, 30% PWR, 20% DEF, 10% EYE, 10% SPD)
     df["raw_ovr"] = (
-        df["contact_val"] * 0.35 +
+        df["contact_val"] * 0.30 +
         df["power_val"]   * 0.30 +
-        df["defense_val"] * 0.15 +
+        df["defense_val"] * 0.20 +
         df["eye_val"]     * 0.10 +
         df["speed_val"]   * 0.10
     )
