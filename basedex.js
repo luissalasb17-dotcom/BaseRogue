@@ -83,7 +83,9 @@
 
   window.BaseballDex = {
     STORAGE_KEY: 'baserogue_dex_v1',
+    OPPONENTS_STORAGE_KEY: 'baserogue_dex_opponents_v1',
     unlocked: new Set(),
+    unlockedOpponents: new Set(),
     activeCategory: 'legends', // 'legends' or 'opponents'
     currentFilterEra: 'all',
     currentSearchTerm: '',
@@ -102,10 +104,20 @@
           this.unlocked = new Set();
         }
       }
+      const storedOpp = localStorage.getItem(this.OPPONENTS_STORAGE_KEY);
+      if (storedOpp) {
+        try {
+          const arrOpp = JSON.parse(storedOpp);
+          this.unlockedOpponents = new Set(arrOpp);
+        } catch (e) {
+          this.unlockedOpponents = new Set();
+        }
+      }
     },
 
     save() {
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify(Array.from(this.unlocked)));
+      localStorage.setItem(this.OPPONENTS_STORAGE_KEY, JSON.stringify(Array.from(this.unlockedOpponents)));
       this.updateCounters();
     },
 
@@ -118,18 +130,33 @@
       }
     },
 
+    unlockOpponent(pitcher) {
+      if (!pitcher || !pitcher.name) return;
+      const key = `${pitcher.name}_${pitcher.year || ''}_${pitcher.role || 'P'}`;
+      if (!this.unlockedOpponents.has(key)) {
+        this.unlockedOpponents.add(key);
+        this.save();
+      }
+    },
+
     unlockAll() {
       const pool = window.PlayersDB ? window.PlayersDB.LAHMAN_POOL : [];
       this.unlocked = new Set();
       pool.forEach(p => this.unlocked.add(`${p.name}_${p.year}`));
+      
+      const pPool = (window.PitchersDB && window.PitchersDB.PITCHERS_POOL) ? window.PitchersDB.PITCHERS_POOL : [];
+      this.unlockedOpponents = new Set();
+      pPool.forEach(p => this.unlockedOpponents.add(`${p.name}_${p.year || ''}_${p.role || 'P'}`));
+
       this.save();
       if (this.container) this.renderPanel();
-      console.log(`⚾ BaseballDex: ¡Las ${pool.length} cartas han sido desbloqueadas!`);
-      return `¡Desbloqueadas ${pool.length} cartas!`;
+      console.log(`⚾ BaseballDex: ¡Las cartas han sido desbloqueadas!`);
+      return `¡Desbloqueadas todas las cartas!`;
     },
 
     lockAll() {
       this.unlocked.clear();
+      this.unlockedOpponents.clear();
       this.save();
       if (this.container) this.renderPanel();
       console.log('⚾ BaseballDex: Todas las cartas han sido bloqueadas.');
@@ -137,6 +164,10 @@
     },
 
     isUnlocked(player) {
+      if (this.activeCategory === 'opponents') {
+        const key = `${player.name}_${player.year || ''}_${player.role || 'P'}`;
+        return this.unlockedOpponents.has(key);
+      }
       return this.unlocked.has(`${player.name}_${player.year}`);
     },
 
@@ -144,7 +175,11 @@
       let pool = [];
       if (this.activeCategory === 'opponents') {
         pool = (window.PitchersDB && window.PitchersDB.PITCHERS_POOL) ? window.PitchersDB.PITCHERS_POOL : [];
-        return { total: pool.length, unlocked: pool.length };
+        let validCount = 0;
+        for (let i = 0; i < pool.length; i++) {
+          if (this.isUnlocked(pool[i])) validCount++;
+        }
+        return { total: pool.length, unlocked: validCount };
       }
       pool = window.PlayersDB ? window.PlayersDB.LAHMAN_POOL : [];
       let validCount = 0;
@@ -172,7 +207,7 @@
       const pct = stats.total > 0 ? ((stats.unlocked / stats.total) * 100).toFixed(1) : 0;
       
       if (elText) {
-        const catLabel = this.activeCategory === 'opponents' ? 'Oponentes Partida Rápida' : 'Cartas Descubiertas';
+        const catLabel = this.activeCategory === 'opponents' ? 'Oponentes Enfrentados' : 'Cartas Descubiertas';
         elText.innerText = `${stats.unlocked} / ${stats.total} (${catLabel})`;
       }
       if (elFill) {
@@ -203,11 +238,8 @@
         return true;
       });
 
-      // Sort: unlocked first for legends; by OVR desc for opponents
+      // Sort: unlocked first, then by OVR desc
       this.filteredPlayers.sort((a, b) => {
-        if (this.activeCategory === 'opponents') {
-          return (b.ovr || 0) - (a.ovr || 0);
-        }
         const uA = this.isUnlocked(a) ? 1 : 0;
         const uB = this.isUnlocked(b) ? 1 : 0;
         if (uA !== uB) return uB - uA;
@@ -229,7 +261,7 @@
       const toRender = this.filteredPlayers.slice(this.currentRendered, this.currentRendered + this.renderLimit);
       
       toRender.forEach(p => {
-        const isUnl = this.activeCategory === 'opponents' ? true : this.isUnlocked(p);
+        const isUnl = this.isUnlocked(p);
         const el = document.createElement('div');
         if (isUnl) {
           const rColor = RARITY_COLORS[p.rarity] || RARITY_COLORS.Common;

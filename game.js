@@ -1842,6 +1842,9 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
       }).filter(Boolean);
 
       const enemy = this.getEnemyTeam();
+      if (enemy && enemy.pitchers && window.BaseballDex) {
+        enemy.pitchers.forEach(p => window.BaseballDex.unlockOpponent(p));
+      }
       
       const enemyPitchers = enemy.pitchers.map(p => {
         return {
