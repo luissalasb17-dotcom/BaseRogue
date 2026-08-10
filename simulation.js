@@ -411,11 +411,19 @@
           stealProcMsg = _t('sim.syn_expansion', {}, 'Sinergia Expansion');
         }
         else if (batterEra === 'Big Hair Era (1977-1993)' && eraSynergy >= 1) {
+          // Chance: 2x base (cap 95%) at every tier · Dmg: T1 15, T2/T3 30, T4 45
+          // Debuff: T1 2t/1.20x (default) · T2 3t/1.30x · T3 4t/1.30x · T4 5t/1.40x
           stealChance = Math.min(0.95, stealChance * 2);
-          extraStealDmg = eraSynergy === 2 ? 30 : 15;
+          extraStealDmg = eraSynergy === 4 ? 45 : eraSynergy >= 2 ? 30 : 15;
           if (eraSynergy === 2) {
             debuffTurns = 3;
             debuffMult = 1.30;
+          } else if (eraSynergy === 3) {
+            debuffTurns = 4;
+            debuffMult = 1.30;
+          } else if (eraSynergy === 4) {
+            debuffTurns = 5;
+            debuffMult = 1.40;
           }
           stealProcMsg = _t('sim.syn_bighair', {}, 'Sinergia Big Hair');
         }
@@ -703,12 +711,18 @@
           }
           else if (batterEra === 'Big Hair Era (1977-1993)' && eraSynergy >= 1) {
             stealChance = Math.min(0.95, stealChance * 2);
-            extraStealDmg = eraSynergy === 2 ? 30 : 15;
+            extraStealDmg = eraSynergy === 4 ? 45 : eraSynergy >= 2 ? 30 : 15;
             if (eraSynergy === 2) {
               debuffTurns = 3;
               debuffMult = 1.30;
+            } else if (eraSynergy === 3) {
+              debuffTurns = 4;
+              debuffMult = 1.30;
+            } else if (eraSynergy === 4) {
+              debuffTurns = 5;
+              debuffMult = 1.40;
             }
-            stealProcMsg = `Sinergia Big Hair`;
+            stealProcMsg = _t('sim.syn_bighair', {}, 'Sinergia Big Hair');
           }
 
           if ((effBatter.spd || 0) >= 40 && !this.bases[1] && Math.random() < stealChance) {

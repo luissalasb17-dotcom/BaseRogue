@@ -42,7 +42,7 @@
     },
     "Big Hair Era (1977-1993)": {
       name: "AstroTurf Speedsters",
-      desc: "T1 (2+): Robos hacen +15 daño extra. T2 (4+): Robos +30 daño y debuff de 3 turnos al rival.",
+      desc: "T1 (2+): Chance de robo x2 (tope 95%); +15 daño; debuff 2 turnos. T2 (4+): +30 daño; debuff 3 turnos. T3 (6+): +30 daño; debuff 4 turnos. T4 (8+): +45 daño; debuff 5 turnos.",
       applyStatBonus: (stats) => {}
     },
     "Steroid Era (1994-2005)": {
