@@ -868,6 +868,7 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
   window.renderDraftRound = renderDraftRound;
   window.renderSynergiesAndItems = renderSynergiesAndItems;
   window.showOutcomePopup = showOutcomePopup;
+  window.getDraftSynergyPrediction = getDraftSynergyPrediction;
 
   // renderLineupAssignment is no longer needed (handled inline in draft rounds)
   // Keeping stub so any legacy references don't throw
@@ -2905,18 +2906,27 @@ function initGameModeSelector() {
     });
 
     const currentEraCount = eraCounts[player.era] || 0;
+    const newEraCount = currentEraCount + 1;
     const currentTeamCount = teamCounts[player.team] || 0;
 
     let predictionText = "";
-    
-    // Era synergy impact
+
+    // Era synergy impact — uses Game.getEraTier so this matches the actual 4-tier /
+    // Build Era rules (only the active Build Era scales past T1; any other era with
+    // 2+ players stays fixed at T1 no matter how many more you sign).
     const eraShort = getShortEraName(player.era);
-    if (currentEraCount === 1) {
-      predictionText += `Firma activa Sinergia <strong>${eraShort} (T1)</strong>!<br>`;
-    } else if (currentEraCount === 3) {
-      predictionText += `Firma activa Sinergia <strong>${eraShort} (T2)</strong>!<br>`;
+    const isBuildEra = player.era && player.era === window.Game.buildEra;
+    const currentTier = window.Game.getEraTier(player.era, currentEraCount);
+    const newTier = window.Game.getEraTier(player.era, newEraCount);
+
+    if (newTier > currentTier) {
+      predictionText += `Firma activa Sinergia <strong>${eraShort} (T${newTier})</strong>!<br>`;
+    } else if (newEraCount < 2) {
+      predictionText += `Era ${eraShort}: ${currentEraCount} ➡️ <strong>${newEraCount}/2</strong><br>`;
+    } else if (!isBuildEra) {
+      predictionText += `Era ${eraShort}: ${newEraCount} jugadores (T1 fijo — no es tu Era de Build)<br>`;
     } else {
-      predictionText += `Era ${eraShort}: ${currentEraCount} ➡️ <strong>${currentEraCount + 1}/2</strong><br>`;
+      predictionText += `Era ${eraShort}: ${newEraCount} jugadores (T${newTier})<br>`;
     }
 
     // Team synergy impact
