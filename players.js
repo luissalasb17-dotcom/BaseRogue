@@ -22,7 +22,7 @@
     },
     "Deadball (1901-1919)": {
       name: "Small Ball",
-      desc: "T1 (2+): 20% prob. en sencillo 1B de avanzar 2 bases. T2 (4+): 40% prob. de avanzar 2 bases en sencillo.",
+      desc: "T1 (2+): 20% prob. en sencillo de avanzar 2 bases. T2 (4+): 40% prob. T3 (6+): 40% prob., y ahora también aplica a Boletos (BB). T4 (8+): 55% prob. en sencillos y boletos.",
       applyStatBonus: (stats) => {}
     },
     "Golden Era (1920-1941)": {

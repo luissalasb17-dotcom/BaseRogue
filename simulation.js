@@ -352,7 +352,18 @@
         // ── BASE ON BALLS ──────────────────────────────────────────
         eventType = 'BB';
         this.strikeoutChain = 0;
-        runsThisTurn = this._advanceWalk(batter);
+
+        // Small Ball T3+: BB also gets the "advance 2 bases" chance (T1/T2 only apply to 1B)
+        let bbDeadballDoubleAdvance = false;
+        if (batterEra === 'Deadball (1901-1919)' && eraSynergy >= 3) {
+          const bbDoubleChance = eraSynergy === 4 ? 0.55 : 0.40;
+          if (Math.random() < bbDoubleChance) {
+            bbDeadballDoubleAdvance = true;
+            synergyProc = _t('sim.syn_smallball', {}, '⏳ Small Ball: ¡Avanzan 2 bases en sencillo!');
+          }
+        }
+
+        runsThisTurn = this._advanceWalk(batter, bbDeadballDoubleAdvance);
         this.runs += runsThisTurn;
         pitcherDmg = 10 + (runsThisTurn * 10);
 
@@ -607,7 +618,8 @@
         } else {
           let deadballDoubleAdvance = false;
           if (batterEra === 'Deadball (1901-1919)' && eraSynergy >= 1) {
-            const doubleChance = eraSynergy === 2 ? 0.40 : 0.20;
+            // T1: 20% · T2/T3: 40% (T3 also unlocks the BB chance above) · T4: 55%
+            const doubleChance = eraSynergy === 4 ? 0.55 : eraSynergy >= 2 ? 0.40 : 0.20;
             if (Math.random() < doubleChance) {
               deadballDoubleAdvance = true;
               synergyProc = _t('sim.syn_smallball', {}, '⏳ Small Ball: ¡Avanzan 2 bases en sencillo!');
@@ -848,8 +860,17 @@
     }
 
     // ── INTERNAL: base-running helpers ──────────────────────────────
-    _advanceWalk(batter) {
+    _advanceWalk(batter, doubleAdvance = false) {
       let runs = 0;
+      if (doubleAdvance) {
+        // Small Ball T3+: existing runners advance 2 bases instead of 1 on this walk
+        // (mirrors _advanceSingle's doubleAdvance branch)
+        if (this.bases[2]) { runs++; this.bases[2] = null; }
+        if (this.bases[1]) { runs++; this.bases[1] = null; }
+        if (this.bases[0]) { this.bases[2] = this.bases[0]; this.bases[0] = null; }
+        this.bases[0] = batter;
+        return runs;
+      }
       if (!this.bases[0]) {
         this.bases[0] = batter;
       } else if (!this.bases[1]) {
