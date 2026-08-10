@@ -37,7 +37,7 @@
     },
     "Expansion (1961-1976)": {
       name: "Speed & Hustle",
-      desc: "T1 (2+): 50% robo en 1B/BB; robo cura +10 Stamina. T2 (4+): 80% robo; cura +20 y hace +10 daño al rival.",
+      desc: "T1 (2+): 50% robo en 1B/BB; cura +10 Stamina. T2 (4+): 80% robo; cura +20; +10 daño al pitcher. T3 (6+): igual, y el robo aplica debuff de pitcher por 3 turnos. T4 (8+): 90% robo; cura +30; +20 daño; debuff de 4 turnos.",
       applyStatBonus: (stats) => {}
     },
     "Big Hair Era (1977-1993)": {

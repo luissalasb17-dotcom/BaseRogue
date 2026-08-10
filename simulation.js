@@ -399,9 +399,15 @@
 
         // Expansion Era steal boost
         if (batterEra === 'Expansion (1961-1976)' && eraSynergy >= 1) {
-          stealChance = eraSynergy === 2 ? 0.80 : 0.50;
-          stealHeal = eraSynergy === 2 ? 20 : 10;
-          extraStealDmg = eraSynergy === 2 ? 10 : 0;
+          // T1: 50%/+10 heal · T2/T3: 80%/+20 heal/+10dmg · T4: 90%/+30 heal/+20dmg
+          stealChance = eraSynergy === 4 ? 0.90 : eraSynergy >= 2 ? 0.80 : 0.50;
+          stealHeal = eraSynergy === 4 ? 30 : eraSynergy >= 2 ? 20 : 10;
+          extraStealDmg = eraSynergy === 4 ? 20 : eraSynergy >= 2 ? 10 : 0;
+          // T3+: also apply the pitcher debuff (reusing Big Hair's multiplier, not a new one)
+          if (eraSynergy >= 3) {
+            debuffTurns = eraSynergy === 4 ? 4 : 3;
+            debuffMult = 1.30;
+          }
           stealProcMsg = _t('sim.syn_expansion', {}, 'Sinergia Expansion');
         }
         else if (batterEra === 'Big Hair Era (1977-1993)' && eraSynergy >= 1) {
@@ -686,10 +692,14 @@
           let stealProcMsg = "";
 
           if (batterEra === 'Expansion (1961-1976)' && eraSynergy >= 1) {
-            stealChance = eraSynergy === 2 ? 0.80 : 0.50;
-            stealHeal = eraSynergy === 2 ? 20 : 10;
-            extraStealDmg = eraSynergy === 2 ? 10 : 0;
-            stealProcMsg = `Sinergia Expansion`;
+            stealChance = eraSynergy === 4 ? 0.90 : eraSynergy >= 2 ? 0.80 : 0.50;
+            stealHeal = eraSynergy === 4 ? 30 : eraSynergy >= 2 ? 20 : 10;
+            extraStealDmg = eraSynergy === 4 ? 20 : eraSynergy >= 2 ? 10 : 0;
+            if (eraSynergy >= 3) {
+              debuffTurns = eraSynergy === 4 ? 4 : 3;
+              debuffMult = 1.30;
+            }
+            stealProcMsg = _t('sim.syn_expansion', {}, 'Sinergia Expansion');
           }
           else if (batterEra === 'Big Hair Era (1977-1993)' && eraSynergy >= 1) {
             stealChance = Math.min(0.95, stealChance * 2);
