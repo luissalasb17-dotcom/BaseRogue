@@ -866,6 +866,7 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
 
   // Expose renderDraftRound to window immediately after declaration
   window.renderDraftRound = renderDraftRound;
+  window.renderSynergiesAndItems = renderSynergiesAndItems;
 
   // renderLineupAssignment is no longer needed (handled inline in draft rounds)
   // Keeping stub so any legacy references don't throw
@@ -2688,48 +2689,39 @@ function initGameModeSelector() {
     const EraSynergyMeta = {
       "The Genesis Era (1871-1900)": {
         name: "Genesis Chaos",
-        get desc1() { return t('eras.genesis_d1'); },
-        get desc2() { return t('eras.genesis_d2'); }
+        get tiers() { return [t('eras.genesis_d1'), t('eras.genesis_d2'), t('eras.genesis_d3'), t('eras.genesis_d4')]; }
       },
       "Deadball (1901-1919)": {
         name: "Small Ball",
-        get desc1() { return t('eras.deadball_d1'); },
-        get desc2() { return t('eras.deadball_d2'); }
+        get tiers() { return [t('eras.deadball_d1'), t('eras.deadball_d2'), t('eras.deadball_d3'), t('eras.deadball_d4')]; }
       },
       "Golden Era (1920-1941)": {
         name: "Liveball Sluggers",
-        get desc1() { return t('eras.golden_d1'); },
-        get desc2() { return t('eras.golden_d2'); }
+        get tiers() { return [t('eras.golden_d1'), t('eras.golden_d2'), t('eras.golden_d3'), t('eras.golden_d4')]; }
       },
       "Integration (1942-1960)": {
         name: "Five-Tool Legends",
-        get desc1() { return t('eras.integration_d1'); },
-        get desc2() { return t('eras.integration_d2'); }
+        get tiers() { return [t('eras.integration_d1'), t('eras.integration_d2'), t('eras.integration_d3'), t('eras.integration_d4')]; }
       },
       "Expansion (1961-1976)": {
         name: "Speed & Hustle",
-        get desc1() { return t('eras.speed_d1'); },
-        get desc2() { return t('eras.speed_d2'); }
+        get tiers() { return [t('eras.speed_d1'), t('eras.speed_d2'), t('eras.speed_d3'), t('eras.speed_d4')]; }
       },
       "Big Hair Era (1977-1993)": {
         name: "AstroTurf Speedsters",
-        get desc1() { return t('eras.astroturf_d1'); },
-        get desc2() { return t('eras.astroturf_d2'); }
+        get tiers() { return [t('eras.astroturf_d1'), t('eras.astroturf_d2'), t('eras.astroturf_d3'), t('eras.astroturf_d4')]; }
       },
       "Steroid Era (1994-2005)": {
         name: "Bash Brothers",
-        get desc1() { return t('eras.steroid_d1'); },
-        get desc2() { return t('eras.steroid_d2'); }
+        get tiers() { return [t('eras.steroid_d1'), t('eras.steroid_d2'), t('eras.steroid_d3'), t('eras.steroid_d4')]; }
       },
-      "Efficiency (2006-2015)": {
+      "Efficiency Era (2006-2015)": {
         name: "Moneyball Analytics",
-        get desc1() { return t('eras.moneyball_d1'); },
-        get desc2() { return t('eras.moneyball_d2'); }
+        get tiers() { return [t('eras.moneyball_d1'), t('eras.moneyball_d2'), t('eras.moneyball_d3'), t('eras.moneyball_d4')]; }
       },
       "Modern Era (2016-Pres)": {
         name: "Three True Outcomes",
-        get desc1() { return t('eras.tto_d1'); },
-        get desc2() { return t('eras.tto_d2'); }
+        get tiers() { return [t('eras.tto_d1'), t('eras.tto_d2'), t('eras.tto_d3'), t('eras.tto_d4')]; }
       }
     };
 
@@ -2757,39 +2749,69 @@ function initGameModeSelector() {
     Object.keys(EraSynergyMeta).forEach(eraName => {
       const meta = EraSynergyMeta[eraName];
       const count = eraCounts[eraName] || 0;
-      
+      const tier = window.Game.getEraTier(eraName, count);
+      const isBuildEra = window.Game.buildEra === eraName;
+      const isLockedNonBuild = !isBuildEra && count >= 2; // has 2+ but capped at T1
+
       let itemClass = "synergy-list-item";
-      let isActive = false;
-      if (count >= 4) {
-        itemClass += " active-level-2";
-        isActive = true;
-      } else if (count >= 2) {
+      if (isBuildEra && tier >= 1) {
+        itemClass += " is-build-era";
+      } else if (tier >= 1) {
         itemClass += " active";
-        isActive = true;
       }
+      if (isLockedNonBuild) itemClass += " locked-era";
 
       const item = document.createElement('div');
       item.className = itemClass;
 
       let dotsHTML = "";
       for (let i = 1; i <= 4; i++) {
-        const filled = i <= count ? 'filled' : '';
+        const filled = i <= tier ? 'filled' : '';
         dotsHTML += `<span class="synergy-dot ${filled}"></span>`;
       }
 
-      const shortName = eraName.split(' ')[0] || eraName;
-      const desc = count >= 4 ? meta.desc2 : meta.desc1;
+      const buildBadgeHTML = isBuildEra
+        ? `<span class="build-era-tag-badge"><i class="fa-solid fa-star"></i> ${t('eras.build_badge')}</span>`
+        : '';
+
+      // Build Era: show all 4 tiers, current one highlighted, reached ones dimmed-but-legible, future ones muted.
+      // Non-build eras: just the single fixed T1 line (shown even at count 0, as a preview/hint), like before.
+      let descHTML;
+      if (isBuildEra) {
+        const rows = meta.tiers.map((text, idx) => {
+          const rowTier = idx + 1;
+          let rowClass = 'synergy-tier-row';
+          if (rowTier === tier) rowClass += ' tier-current';
+          else if (rowTier < tier) rowClass += ' tier-reached';
+          return `<div class="${rowClass}"><span class="tier-label">T${rowTier}</span>${text}</div>`;
+        }).join('');
+        descHTML = `<div class="synergy-tier-breakdown">${rows}</div>`;
+      } else {
+        descHTML = `<div class="synergy-item-desc" style="font-size: 11px;">${meta.tiers[0]}</div>`;
+        if (isLockedNonBuild) {
+          descHTML += `<div class="synergy-locked-note"><i class="fa-solid fa-lock"></i> ${t('eras.locked_note')}</div>`;
+        }
+      }
+
+      const btnLabel = isBuildEra ? t('eras.remove_build_btn') : t('eras.set_build_btn');
+      const btnClass = isBuildEra ? 'synergy-build-btn is-current' : 'synergy-build-btn';
 
       item.innerHTML = `
         <div class="synergy-item-header">
-          <span class="synergy-item-name">${meta.name}</span>
-          <span class="synergy-item-count">${count}/4</span>
+          <span class="synergy-item-name">${meta.name}${buildBadgeHTML}</span>
+          <span class="synergy-item-count">T${tier}/T4</span>
         </div>
         <div class="synergy-progress-dots">
           ${dotsHTML}
         </div>
-        <div class="synergy-item-desc" style="font-size: 11px;">${desc}</div>
+        ${descHTML}
+        <button type="button" class="${btnClass}" data-era="${eraName}">${btnLabel}</button>
       `;
+      const btn = item.querySelector('.synergy-build-btn');
+      btn.addEventListener('click', () => {
+        window.Game.setBuildEra(isBuildEra ? null : eraName);
+        renderSynergiesAndItems();
+      });
       el.synergiesList.appendChild(item);
     });
 

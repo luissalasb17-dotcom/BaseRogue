@@ -19,6 +19,8 @@
 
   --badge-clutch: #ff3300;
   --badge-captain: #00d4ff;
+  --badge-build-era: #ff2ec4;
+  --badge-build-era-glow: rgba(255, 46, 196, 0.5);
 }
 
 * {
@@ -2611,6 +2613,130 @@ body.workspace-active .main-container {
 
 .synergy-list-item.active .synergy-item-desc {
   color: #fff;
+}
+
+/* ── Build Era: the player's chosen era — visually distinct from T1/T2 active states ── */
+.synergy-list-item.is-build-era {
+  border: 2px solid var(--badge-build-era);
+  box-shadow: 0 0 14px var(--badge-build-era-glow), inset 0 0 8px rgba(255, 46, 196, 0.08);
+  background: rgba(255, 46, 196, 0.04);
+}
+
+.synergy-list-item.is-build-era .synergy-item-name {
+  color: var(--badge-build-era);
+  text-shadow: 0 0 4px var(--badge-build-era-glow);
+}
+
+.synergy-list-item.is-build-era .synergy-dot.filled {
+  background: var(--badge-build-era);
+  border-color: #fff;
+}
+
+.build-era-tag-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 6.5px;
+  font-weight: bold;
+  font-family: 'Press Start 2P', monospace;
+  padding: 2px 4px;
+  margin-left: 5px;
+  vertical-align: middle;
+  line-height: 1;
+  color: var(--badge-build-era);
+  background: rgba(255, 46, 196, 0.18);
+  border: 1px solid var(--badge-build-era);
+  text-shadow: 0 0 4px var(--badge-build-era-glow);
+}
+
+.synergy-build-btn {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 6.5px;
+  padding: 4px 6px;
+  margin-top: 6px;
+  width: 100%;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.04);
+  color: #9ca3af;
+  border: 1px dashed rgba(255, 255, 255, 0.25);
+  transition: all 0.15s ease;
+}
+
+.synergy-build-btn:hover {
+  color: var(--badge-build-era);
+  border-color: var(--badge-build-era);
+  background: rgba(255, 46, 196, 0.1);
+}
+
+.synergy-build-btn.is-current {
+  color: var(--badge-build-era);
+  border: 1px solid var(--badge-build-era);
+  background: rgba(255, 46, 196, 0.12);
+}
+
+/* Non-build era with 2+ players: locked at T1, won't scale further */
+.synergy-list-item.locked-era {
+  opacity: 0.72;
+}
+
+.synergy-locked-note {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: 'VT323', monospace;
+  font-size: 11.5px;
+  color: #6b7280;
+  margin-top: 4px;
+}
+
+.synergy-dot.locked {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.15);
+  position: relative;
+}
+
+.synergy-dot.locked::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+
+/* 4-tier description breakdown for the active Build Era */
+.synergy-tier-breakdown {
+  margin-top: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.synergy-tier-row {
+  font-family: 'VT323', monospace;
+  font-size: 11.5px;
+  line-height: 1.25;
+  padding: 3px 5px;
+  border-left: 2px solid transparent;
+  color: #6b7280;
+}
+
+.synergy-tier-row .tier-label {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 6.5px;
+  margin-right: 4px;
+}
+
+.synergy-tier-row.tier-current {
+  color: #fff;
+  border-left-color: var(--badge-build-era);
+  background: rgba(255, 46, 196, 0.06);
+}
+
+.synergy-tier-row.tier-current .tier-label {
+  color: var(--badge-build-era);
+}
+
+.synergy-tier-row.tier-reached {
+  color: #a1a1aa;
+  border-left-color: rgba(255, 255, 255, 0.15);
 }
 
 /* Synergy Helper Text in Draft Option Cards */

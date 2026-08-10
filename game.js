@@ -632,6 +632,17 @@
       return this.buildEra;
     }
 
+    // Display-only tier resolver — mirrors InteractiveBattle._calculateActiveSynergies
+    // in simulation.js exactly (T1=2, T2=4, T3=6, T4=8), for rendering the Synergies
+    // panel outside of combat. Not used by battle logic itself.
+    getEraTier(era, count) {
+      if (count < 2) return 0;
+      if (era === this.buildEra) {
+        return count >= 8 ? 4 : count >= 6 ? 3 : count >= 4 ? 2 : 1;
+      }
+      return 1;
+    }
+
     hasTrait(id) { return this.equippedTraits.some(t => t.id === id); }
 
     getRandomTraitChoices(count = 3) {
