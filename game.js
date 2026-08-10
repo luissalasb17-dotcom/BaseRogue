@@ -818,6 +818,10 @@
       
       if (drafted.length < 2) return orderArray;
       
+      // Leadoff's speedScore leans on EYE as an OBP proxy — sabermetric weight,
+      // kept as a named constant so it's easy to recalibrate later.
+      const LEADOFF_EYE_WEIGHT = 1.3;
+
       drafted.forEach(item => {
          const p = item.p;
          // Use getEffectiveStats so it accounts for Batting Cage upgrades and Era traits
@@ -826,29 +830,32 @@
          const effPwr = eff.pwr || 35;
          const effEye = eff.eye || 40;
          const effSpd = eff.spd || 40;
-         item.speedScore = effSpd * 1.5 + effCon + effEye;
+         item.speedScore = effSpd * 1.5 + effCon + effEye * LEADOFF_EYE_WEIGHT;
          item.powerScore = effPwr * 1.5 + effCon;
          item.overall = effCon * 1.2 + effPwr + effEye + effSpd * 0.2;
          item.contact = effCon + effEye * 0.5;
       });
-      
+
       const newOrder = [];
-      
-      drafted.sort((a,b) => b.overall - a.overall);
-      let topHalf = drafted.slice(0, Math.max(2, Math.ceil(drafted.length/2)));
-      topHalf.sort((a,b) => b.speedScore - a.speedScore);
-      const leadoff = topHalf[0];
-      newOrder.push(leadoff);
-      drafted.splice(drafted.indexOf(leadoff), 1);
-      
+
+      // Cleanup (4th) is the scarcest slot — reserve the single best pure power bat
+      // from the whole roster FIRST, before anyone else (including leadoff) can claim it.
+      drafted.sort((a,b) => b.powerScore - a.powerScore);
+      const cleanup = drafted[0];
+      cleanup.targetSlot = 3;
+      drafted.splice(0, 1);
+      newOrder.push(cleanup);
+
       if (drafted.length > 0) {
-        drafted.sort((a,b) => b.powerScore - a.powerScore);
-        const cleanup = drafted[0];
-        cleanup.targetSlot = 3;
-        drafted.splice(0, 1);
-        newOrder.push(cleanup);
+        drafted.sort((a,b) => b.overall - a.overall);
+        let topHalf = drafted.slice(0, Math.max(2, Math.ceil(drafted.length/2)));
+        topHalf.sort((a,b) => b.speedScore - a.speedScore);
+        const leadoff = topHalf[0];
+        leadoff.targetSlot = 0;
+        drafted.splice(drafted.indexOf(leadoff), 1);
+        newOrder.push(leadoff);
       }
-      
+
       if (drafted.length > 0) {
         drafted.sort((a,b) => b.overall - a.overall);
         const third = drafted[0];
@@ -856,7 +863,7 @@
         drafted.splice(0, 1);
         newOrder.push(third);
       }
-      
+
       if (drafted.length > 0) {
         drafted.sort((a,b) => b.contact - a.contact);
         const second = drafted[0];
@@ -864,7 +871,7 @@
         drafted.splice(0, 1);
         newOrder.push(second);
       }
-      
+
       if (drafted.length > 0) {
         drafted.sort((a,b) => b.powerScore - a.powerScore);
         const fifth = drafted[0];
@@ -872,13 +879,13 @@
         drafted.splice(0, 1);
         newOrder.push(fifth);
       }
-      
+
       drafted.sort((a,b) => b.overall - a.overall);
       drafted.forEach((p, idx) => {
          p.targetSlot = 5 + idx;
          newOrder.push(p);
       });
-      
+
       newOrder.sort((a,b) => (a.targetSlot||0) - (b.targetSlot||0));
       return [...newOrder.map(x => x.slot), ...empty.map(x => x.slot)];
     }
