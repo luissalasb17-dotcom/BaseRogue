@@ -371,8 +371,8 @@
         pitcherDmg = 10 + (runsThisTurn * 10);
 
         // Efficiency Era BB boost
-        if (batterEra === 'Efficiency (2006-2015)' && eraSynergy >= 1) {
-          const extra = eraSynergy === 2 ? 20 : 10;
+        if (batterEra === 'Efficiency Era (2006-2015)' && eraSynergy >= 1) {
+          const extra = eraSynergy === 4 ? 30 : eraSynergy >= 2 ? 20 : 10;
           pitcherDmg += extra;
           synergyProc = _t('sim.syn_moneyball_bb', { extra }, `📊 Moneyball: ¡Boleto paciente inflige +${extra} daño!`);
         }
@@ -473,10 +473,18 @@
           }
         }
 
+        // Moneyball T3/T4: this batter's own strikeout streak needs 1/2 extra
+        // strikeouts before the damage escalation (24/30) kicks in.
+        let soEscalationDelay = 0;
+        if (batterEra === 'Efficiency Era (2006-2015)' && eraSynergy >= 3) {
+          soEscalationDelay = eraSynergy === 4 ? 2 : 1;
+        }
+        const effectiveSoChain = Math.max(1, this.strikeoutChain - soEscalationDelay);
+
         let baseSoDmg = 18;
-        if (this.strikeoutChain === 2) {
+        if (effectiveSoChain === 2) {
           baseSoDmg = 24;
-        } else if (this.strikeoutChain >= 3) {
+        } else if (effectiveSoChain >= 3) {
           baseSoDmg = 30;
         }
 
@@ -505,9 +513,10 @@
             synergyProc += ' | ' + _t('sim.syn_fivetool_immune', { name: batter.name }, `🔋 Five-Tool: ¡${batter.name} es inmune al desgaste de Stamina de este partido!`);
           }
         }
-        if (batterEra === 'Efficiency (2006-2015)' && eraSynergy === 2) {
-          pitcherDmg += 10;
-          synergyProc = (synergyProc ? synergyProc + ' | ' : '') + _t('sim.syn_moneyball_out', {}, '📊 Moneyball Out Wear: +10 daño al lanzador.');
+        if (batterEra === 'Efficiency Era (2006-2015)' && eraSynergy >= 2) {
+          const outExtra = eraSynergy === 4 ? 20 : eraSynergy === 3 ? 15 : 10;
+          pitcherDmg += outExtra;
+          synergyProc = (synergyProc ? synergyProc + ' | ' : '') + _t('sim.syn_moneyball_out', { extra: outExtra }, `📊 Moneyball Out Wear: +${outExtra} daño al lanzador.`);
         }
         // Pre-existing bug: SO branch built playText above and never appended synergyProc,
         // so any era proc on a strikeout (Five-Tool, Moneyball) was silently invisible in the log.
@@ -553,9 +562,10 @@
             synergyProc += ' | ' + _t('sim.syn_fivetool_immune', { name: batter.name }, `🔋 Five-Tool: ¡${batter.name} es inmune al desgaste de Stamina de este partido!`);
           }
         }
-        if (batterEra === 'Efficiency (2006-2015)' && eraSynergy === 2) {
-          pitcherDmg += 10;
-          synergyProc = (synergyProc ? synergyProc + ' | ' : '') + _t('sim.syn_moneyball_out', {}, '📊 Moneyball Out Wear: +10 daño al lanzador.');
+        if (batterEra === 'Efficiency Era (2006-2015)' && eraSynergy >= 2) {
+          const outExtra = eraSynergy === 4 ? 20 : eraSynergy === 3 ? 15 : 10;
+          pitcherDmg += outExtra;
+          synergyProc = (synergyProc ? synergyProc + ' | ' : '') + _t('sim.syn_moneyball_out', { extra: outExtra }, `📊 Moneyball Out Wear: +${outExtra} daño al lanzador.`);
         }
         // Same pre-existing bug as the SO branch: append the proc message to the log.
         if (synergyProc) playText += ` ${synergyProc}`;

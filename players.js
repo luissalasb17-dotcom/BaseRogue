@@ -52,7 +52,7 @@
     },
     "Efficiency Era (2006-2015)": {
       name: "Moneyball Analytics",
-      desc: "T1 (2+): Boletos (BB) hacen +10 daño extra. T2 (4+): BB hacen +20 daño; outs hacen +10 daño al rival.",
+      desc: "T1 (2+): Boletos (BB) +10 daño. T2 (4+): BB +20 daño; outs +10 daño al rival. T3 (6+): BB +20, outs +15; la racha de ponches necesita 1 ponche más para escalar. T4 (8+): BB +30, outs +20; racha necesita 2 ponches más.",
       applyStatBonus: (stats) => {}
     },
     "Modern Era (2016-Pres)": {
