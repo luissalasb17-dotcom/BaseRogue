@@ -3087,6 +3087,25 @@ body.workspace-active .main-container {
   animation: die-settle-pulse 0.3s ease-out;
 }
 
+/* ── CARD DEAL-IN: reusable "dealt from a deck" reveal, used for the combat
+   faceoff cards, the draft round's choice cards, and any other freshly-
+   revealed player card. --deal-from-x/--deal-from-y set the origin offset
+   (deck position); default is a simple pop-and-flip with no travel. ── */
+@keyframes card-deal-in {
+  0%   { opacity: 0; transform: translateX(var(--deal-from-x, 0px)) translateY(var(--deal-from-y, 0px)) rotateY(100deg) scale(0.82); }
+  55%  { opacity: 1; transform: translateX(calc(var(--deal-from-x, 0px) * 0.12)) translateY(calc(var(--deal-from-y, 0px) * 0.12)) rotateY(12deg) scale(1.03); }
+  100% { opacity: 1; transform: translateX(0) translateY(0) rotateY(0deg) scale(1); }
+}
+
+.card-deal-in {
+  animation: card-deal-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  backface-visibility: hidden;
+}
+
+.card-deal-perspective {
+  perspective: 900px;
+}
+
 @keyframes die-settle-pulse {
   0%   { filter: brightness(1); }
   35%  { filter: brightness(1.8); }

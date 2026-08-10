@@ -3781,10 +3781,13 @@ function initGameModeSelector() {
       el.screenMatch.appendChild(dicePanel);
     }
 
-    // Initial render
+    // Initial render — the faceoff cards get dealt in from a "deck" on each side
+    // (batter from the left/your side, pitcher from the right/rival side) instead
+    // of appearing statically. Only this first render does it; mid-match faceoff
+    // changes (next batter, pitcher swap) stay instant.
     const initState = activeBattle.getState();
     updateMatchHUD(initState);
-    updateFaceoffPanel(initState);
+    updateFaceoffPanel(initState, { dealAnimation: true });
     renderZones();
 
     // Auto-open info legend for first time users
@@ -4433,8 +4436,29 @@ function initGameModeSelector() {
   }
 
   // ── UPDATE FACEOFF PANEL (uses battle state) ─────────────────────────────────
-  function updateFaceoffPanel(stateOrEvent) {
+  // Reusable "dealt from a deck" reveal for a freshly-inserted .player-card (or any
+  // single-root card markup) — slides in from (fromX, fromY) with a 3D flip via the
+  // .card-deal-in class/keyframe defined in style.css. Used for the combat faceoff
+  // cards now; the same helper backs the draft deal and other card reveals.
+  function dealCardIn(container, { fromX = 0, fromY = 0, delay = 0 } = {}) {
+    if (!container) return;
+    const card = container.firstElementChild;
+    if (!card) return;
+    container.classList.add('card-deal-perspective');
+    card.style.setProperty('--deal-from-x', `${fromX}px`);
+    card.style.setProperty('--deal-from-y', `${fromY}px`);
+    card.classList.remove('card-deal-in');
+    void card.offsetWidth; // restart the animation even if the class was already applied
+    card.style.animationDelay = `${delay}ms`;
+    card.classList.add('card-deal-in');
+    if (window.AudioManager) {
+      setTimeout(() => window.AudioManager.play('menu_click'), delay);
+    }
+  }
+
+  function updateFaceoffPanel(stateOrEvent, opts = {}) {
     if (!stateOrEvent) return;
+    const dealAnimation = !!opts.dealAnimation;
     const pitcher = stateOrEvent.activePitcher;
     const batter  = stateOrEvent.currentBatter || null;
     const bName   = batter ? batter.name : (stateOrEvent.activeBatter || '');
@@ -4454,6 +4478,7 @@ function initGameModeSelector() {
         statsBox.innerHTML = `CON: ${eff.con} | PWR: ${eff.pwr}<br>SPD: ${eff.spd} | DEF: ${eff.def}<br>POS NATIVA: ${eff.pos}`;
       }
       el.arenaBatterCardSlot.innerHTML = createCardHTML(eff, bRosterObj.pos);
+      if (dealAnimation) dealCardIn(el.arenaBatterCardSlot, { fromX: -70, delay: 0 });
     }
 
     // Pitcher card + HP bar
@@ -4493,6 +4518,7 @@ function initGameModeSelector() {
         rarity: pitchRarity
       };
       el.arenaPitcherCardSlot.innerHTML = createCardHTML(tempPitcher, tempPitcher.pos);
+      if (dealAnimation) dealCardIn(el.arenaPitcherCardSlot, { fromX: 70, delay: 150 });
 
       // Rotation badges
       const total = pitcher.total || 1;
