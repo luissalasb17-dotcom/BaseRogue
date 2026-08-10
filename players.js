@@ -47,7 +47,7 @@
     },
     "Steroid Era (1994-2005)": {
       name: "Bash Brothers",
-      desc: "T1 (2+): Jonrones (HR) hacen +15 daño adicional. T2 (4+): HR hacen +30 daño; 50% fly sac en 3B.",
+      desc: "T1 (2+): Jonrones (HR) +15 daño. T2 (4+): HR +30 daño. T3 (6+): HR +30 daño; cura +10 Stamina a todos. T4 (8+): HR +45 daño; cura +20 Stamina.",
       applyStatBonus: (stats) => {}
     },
     "Efficiency Era (2006-2015)": {

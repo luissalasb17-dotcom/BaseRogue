@@ -541,13 +541,6 @@
           ` ${_t('sim.out_dmg_label', { shield: shieldDmg, hp: teamHpDmg }, 'Escudo -' + shieldDmg + ' HP | Team HP -' + teamHpDmg + ' HP')}.` +
           ` (${_t('sim.shield_status', { shield: this.teamShield, max: this.teamShieldMax, hp: this.teamHP }, 'Escudo: ' + this.teamShield + '/' + this.teamShieldMax + ' | HP: ' + this.teamHP + '/100')})`;
 
-        if (this.bases[2] && batterEra === 'Steroid Era (1994-2005)' && eraSynergy === 2 && Math.random() < 0.50) {
-          runsThisTurn++;
-          this.bases[2] = null;
-          synergyProc = _t('sim.syn_bash_sacfly', {}, '💪 Bash Brothers Sac Fly: ¡Corredor en 3B anota carrera!');
-          this.runs += runsThisTurn;
-        }
-
         if (batterEra === 'Integration (1942-1960)' && eraSynergy >= 2) {
           // T2: +5 Stamina to all · T3: +10 · T4: +15, and this batter skips the post-match Stamina loss
           const healAmt = eraSynergy === 4 ? 15 : eraSynergy === 3 ? 10 : 5;
@@ -627,9 +620,17 @@
           let hrDmg = 75 + (runnersOnBase * 10);
           
           if (batterEra === 'Steroid Era (1994-2005)' && eraSynergy >= 1) {
-            const extraHr = eraSynergy === 2 ? 40 : 20;
+            // T1: +15 · T2/T3: +30 · T4: +45. T3+ also heals the team on HR (T3 +10, T4 +20).
+            const extraHr = eraSynergy === 4 ? 45 : eraSynergy >= 2 ? 30 : 15;
             hrDmg += extraHr;
             synergyProc = _t('sim.syn_bash_hr', { extra: extraHr }, `💪 Bash Brothers: ¡Jonrón inflige +${extraHr} daño!`);
+            if (eraSynergy >= 3) {
+              const hrHeal = eraSynergy === 4 ? 20 : 10;
+              this.awayTeam.lineup.forEach(p => {
+                if (p) p.stamina = Math.min(100, (p.stamina || 100) + hrHeal);
+              });
+              synergyProc += ' | ' + _t('sim.syn_bash_hr_heal', { amt: hrHeal }, `💪 Bash Brothers: ¡Jonrón recupera +${hrHeal} Stamina a todos!`);
+            }
           }
           
           pitcherDmg += hrDmg;
