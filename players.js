@@ -27,7 +27,7 @@
     },
     "Golden Era (1920-1941)": {
       name: "Liveball Sluggers",
-      desc: "T1 (2+): Todos los hits hacen +6 daño extra. T2 (4+): Hits +12 daño; 30% de transformar Dobles en Triples.",
+      desc: "T1 (2+): Todos los hits +6 daño. T2 (4+): Hits +12 daño; 30% de convertir Dobles en Triples. T3 (6+): Hits +12; 40% de convertir Dobles en Triples. T4 (8+): Hits +18; 50% Dobles→Triples, y 20% de convertir Triples en Jonrones.",
       applyStatBonus: (stats) => {}
     },
     "Integration (1942-1960)": {

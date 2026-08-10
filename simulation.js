@@ -561,9 +561,18 @@
           }
         }
 
-        if (hitType === '2B' && batterEra === 'Golden Era (1920-1941)' && eraSynergy === 2 && Math.random() < 0.30) {
-          hitType = '3B';
-          synergyProc = _t('sim.syn_liveball_upgrade', {}, '🔥 Liveball Sluggers: ¡Doble convertido en Triple!');
+        if (hitType === '2B' && batterEra === 'Golden Era (1920-1941)' && eraSynergy >= 2) {
+          // T2/T3: 2B→3B chance · T4: higher 2B→3B chance
+          const upgradeChance = eraSynergy === 4 ? 0.50 : eraSynergy === 3 ? 0.40 : 0.30;
+          if (Math.random() < upgradeChance) {
+            hitType = '3B';
+            synergyProc = _t('sim.syn_liveball_upgrade', {}, '🔥 Liveball Sluggers: ¡Doble convertido en Triple!');
+          }
+        }
+        // T4 only: 3B (original or just upgraded from 2B) has a further chance to become a HR
+        if (hitType === '3B' && batterEra === 'Golden Era (1920-1941)' && eraSynergy === 4 && Math.random() < 0.20) {
+          hitType = 'HR';
+          synergyProc = _t('sim.syn_liveball_upgrade_hr', {}, '🔥 Liveball Sluggers: ¡Triple convertido en Jonrón!');
         }
 
         let genesisErrorSucceeded = false;
@@ -640,7 +649,7 @@
         }
 
         if (batterEra === 'Golden Era (1920-1941)' && eraSynergy >= 1) {
-          const extraGolden = eraSynergy === 2 ? 12 : 6;
+          const extraGolden = eraSynergy === 4 ? 18 : eraSynergy >= 2 ? 12 : 6;
           pitcherDmg += extraGolden;
           synergyProc = (synergyProc ? synergyProc + ' | ' : '') + _t('sim.syn_liveball_dmg', { extra: extraGolden }, `🔥 Liveball Sluggers: +${extraGolden} daño.`);
         }
