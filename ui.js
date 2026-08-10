@@ -689,7 +689,22 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
       const cardsRow = document.createElement('div');
       cardsRow.className = 'cards-row flex flex-col md:flex-row gap-3 justify-center items-center md:items-start w-full';
 
-      picks.forEach(player => {
+      // Brief face-down shuffle stack before the round's cards deal in — kept short
+      // (shuffle ~0.35s + last card's stagger/flip ~0.5s) so 9 rounds a run stays snappy.
+      const shuffleStack = document.createElement('div');
+      shuffleStack.className = 'draft-shuffle-stack';
+      shuffleStack.innerHTML = `
+        <div class="draft-shuffle-card"></div>
+        <div class="draft-shuffle-card"></div>
+        <div class="draft-shuffle-card"></div>
+      `;
+      cardsRow.appendChild(shuffleStack);
+      if (window.AudioManager) window.AudioManager.play('menu_click');
+
+      const renderPickCards = () => {
+        shuffleStack.remove();
+        picks.forEach((player, pickIdx) => {
+        const dealDelay = pickIdx * 130;
         const rColor = RARITY_COLORS[player.rarity] || RARITY_COLORS.Common;
         const rBg    = RARITY_BG[player.rarity]    || RARITY_BG.Common;
         const ovr    = getPlayerOvr(player);
@@ -724,7 +739,17 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
           if (window.renderDraftRound) window.renderDraftRound(); else if (typeof renderDraftRound === 'function') renderDraftRound();
         });
         cardsRow.appendChild(wrapper);
-      });
+
+        // Deal this card in from the shuffle stack, staggered so the 3 cards read
+        // as a sequential deal rather than popping in together — same reusable
+        // .card-deal-in class the combat faceoff cards use.
+        wrapper.style.setProperty('--deal-from-y', '-90px');
+        wrapper.style.animationDelay = `${dealDelay}ms`;
+        wrapper.classList.add('card-deal-perspective', 'card-deal-in');
+        if (window.AudioManager) setTimeout(() => window.AudioManager.play('menu_click'), dealDelay);
+        });
+      };
+      setTimeout(renderPickCards, 350);
 
       centerPanel.appendChild(cardsRow);
 

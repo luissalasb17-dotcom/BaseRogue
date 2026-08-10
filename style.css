@@ -3106,6 +3106,35 @@ body.workspace-active .main-container {
   perspective: 900px;
 }
 
+/* ── DRAFT SHUFFLE: brief face-down stack shown before a round's 3 cards deal in ── */
+.draft-shuffle-stack {
+  position: relative;
+  width: 170px;
+  height: 236px;
+  margin: 0 auto;
+}
+
+.draft-shuffle-card {
+  position: absolute;
+  inset: 0;
+  border-radius: 10px;
+  background: repeating-linear-gradient(135deg, #0a1f14, #0a1f14 8px, #0f2b1c 8px, #0f2b1c 16px);
+  border: 2px solid var(--primary-color);
+  box-shadow: 0 0 14px var(--primary-glow);
+  animation: draft-shuffle-jitter 0.35s ease-in-out;
+}
+
+.draft-shuffle-card:nth-child(1) { animation-delay: 0s;    transform: rotate(-4deg) translateX(-3px); }
+.draft-shuffle-card:nth-child(2) { animation-delay: 0.05s; transform: rotate(2deg)  translateX(3px);  }
+.draft-shuffle-card:nth-child(3) { animation-delay: 0.1s;  transform: rotate(-1deg); }
+
+@keyframes draft-shuffle-jitter {
+  0%   { transform: translateX(0) rotate(0deg); opacity: 0.6; }
+  30%  { transform: translateX(-10px) rotate(-6deg); }
+  60%  { transform: translateX(8px) rotate(5deg); }
+  100% { transform: translateX(0) rotate(0deg); opacity: 1; }
+}
+
 @keyframes die-settle-pulse {
   0%   { filter: brightness(1); }
   35%  { filter: brightness(1.8); }
