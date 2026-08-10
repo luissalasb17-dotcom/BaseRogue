@@ -3135,6 +3135,57 @@ body.workspace-active .main-container {
   100% { transform: translateX(0) rotate(0deg); opacity: 1; }
 }
 
+/* ── CARD "PHYSICALITY" (Part 4 — reusable across every .player-card) ──────
+   Cursor-follow tilt on hover, foil shine for Legendary/Epic, and a flip-in
+   for any card newly added to the page — all driven generically by JS
+   event delegation / a MutationObserver, no per-screen wiring needed. */
+@media (prefers-reduced-motion: no-preference) {
+  .player-card {
+    transition: transform 0.12s ease-out, filter 0.12s ease-out;
+    will-change: transform;
+  }
+  .player-card.card-tilt-active {
+    transform: perspective(700px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg)) scale(1.035);
+    filter: drop-shadow(0 14px 22px rgba(0, 0, 0, 0.55));
+    z-index: 5;
+  }
+
+  /* Foil shine — Legendary/Epic only, sweeps diagonally on hover */
+  .player-card.rarity-Legendary,
+  .player-card.rarity-Epic {
+    overflow: hidden;
+  }
+  .player-card.rarity-Legendary::before,
+  .player-card.rarity-Epic::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(115deg, transparent 35%, rgba(255, 255, 255, 0.55) 48%, rgba(255, 255, 255, 0.15) 54%, transparent 65%);
+    background-size: 220% 220%;
+    background-position: -120% -120%;
+    opacity: 0;
+    transition: background-position 0.55s ease-out, opacity 0.15s ease-out;
+    z-index: 6;
+  }
+  .player-card.rarity-Legendary.card-tilt-active::before,
+  .player-card.rarity-Epic.card-tilt-active::before {
+    background-position: 120% 120%;
+    opacity: 1;
+  }
+}
+
+@keyframes card-flip-reveal {
+  0%   { opacity: 0; transform: rotateY(100deg) scale(0.9); }
+  60%  { opacity: 1; transform: rotateY(10deg) scale(1.02); }
+  100% { opacity: 1; transform: rotateY(0deg) scale(1); }
+}
+
+.card-flip-reveal {
+  animation: card-flip-reveal 0.4s ease-out both;
+  backface-visibility: hidden;
+}
+
 @keyframes die-settle-pulse {
   0%   { filter: brightness(1); }
   35%  { filter: brightness(1.8); }

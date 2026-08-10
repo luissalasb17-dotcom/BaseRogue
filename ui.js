@@ -5197,8 +5197,62 @@ function initGameModeSelector() {
   }
 
   // Self execute
+  // ── CARD "PHYSICALITY" (Part 4): reusable tilt/shine/flip for every .player-card,
+  // wired once via event delegation + a MutationObserver instead of per-screen code.
+  function initCardPhysicality() {
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) return;
+
+    // Cursor-follow tilt: skip entirely on touch/coarse-pointer devices per the brief
+    // (no real hover there anyway); CSS .card-flip-reveal/.card-deal-in still apply.
+    const supportsHoverTilt = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+    if (supportsHoverTilt) {
+      document.addEventListener('mousemove', (e) => {
+        const card = e.target.closest('.player-card');
+        if (!card) return;
+        const rect = card.getBoundingClientRect();
+        const px = (e.clientX - rect.left) / rect.width;
+        const py = (e.clientY - rect.top) / rect.height;
+        const tiltX = (0.5 - py) * 14; // look-toward-cursor tilt, kept subtle
+        const tiltY = (px - 0.5) * 14;
+        card.style.setProperty('--tilt-x', `${tiltX.toFixed(2)}deg`);
+        card.style.setProperty('--tilt-y', `${tiltY.toFixed(2)}deg`);
+        card.classList.add('card-tilt-active');
+      }, { passive: true });
+
+      document.addEventListener('mouseout', (e) => {
+        const card = e.target.closest('.player-card');
+        if (!card || card.contains(e.relatedTarget)) return;
+        card.classList.remove('card-tilt-active');
+      }, { passive: true });
+    }
+
+    // Flip-in for any .player-card newly added anywhere in the page — covers
+    // rewards, training cards, popups, etc. without touching each render site.
+    // Cards that already got an explicit deal animation (draft/combat, which
+    // include their own flip) are left alone so the two don't stack.
+    const flipObserver = new MutationObserver((mutations) => {
+      mutations.forEach(mutation => {
+        mutation.addedNodes.forEach(node => {
+          if (node.nodeType !== 1) return;
+          const cards = node.classList && node.classList.contains('player-card')
+            ? [node]
+            : (node.querySelectorAll ? [...node.querySelectorAll('.player-card')] : []);
+          cards.forEach(card => {
+            // Skip if this card (or a wrapper around it, e.g. the draft/combat
+            // deal-in wrapper) is already animating its own reveal.
+            if (card.closest('.card-deal-in, .card-flip-reveal')) return;
+            card.classList.add('card-flip-reveal');
+          });
+        });
+      });
+    });
+    flipObserver.observe(document.body, { childList: true, subtree: true });
+  }
+
   window.onload = function() {
     init();
     initVictoryScreenButtons();
+    initCardPhysicality();
   };
 })();
