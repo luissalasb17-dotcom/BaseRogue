@@ -3934,6 +3934,20 @@ function initGameModeSelector() {
       <div style="font-size: 11px; color: var(--badge-build-era); background: rgba(255, 46, 196, 0.12); border: 1px solid var(--badge-build-era); padding: 5px 8px; margin-bottom: 10px; max-width: 280px; line-height: 1.35; text-shadow: 0 0 4px var(--badge-build-era-glow);">
         <i class="fa-solid fa-star"></i> ${synergyText}
       </div>`;
+
+      // Layer a short chime on top of the base outcome sound already played above.
+      if (window.AudioManager) window.AudioManager.play('draft_pick');
+
+      // Genesis Chaos / Small Ball change base state beyond the normal play — flash
+      // whichever bases are occupied right after this play resolved, synced with the popup.
+      const eraName = synergyMatch[1];
+      if ((eraName === 'Genesis Chaos' || eraName === 'Small Ball') && ev && ev.bases) {
+        ['base-1', 'base-2', 'base-3'].forEach((id, idx) => {
+          if (ev.bases[idx] !== 'X') return;
+          const baseEl = document.getElementById(id);
+          if (baseEl) triggerBarShake(baseEl, 'base-synergy-flash');
+        });
+      }
     }
 
     popup.innerHTML = `
