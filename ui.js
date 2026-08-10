@@ -4548,7 +4548,8 @@ function initGameModeSelector() {
         pitchersDefeated: state.activePitcher ? state.activePitcher.index : activeBattle.homeTeam.pitchers.length,
         awayLineup: activeBattle.awayTeam.lineup,
         enemyPitchers: activeBattle.homeTeam.pitchers,
-        matchEvents: activeBattle.events || []
+        matchEvents: activeBattle.events || [],
+        staminaImmuneIds: activeBattle.staminaImmuneBatterIds || new Set()
       };
       activeBattle = null;
       const res = window.Game.postMatchDebrief(fakeResult);

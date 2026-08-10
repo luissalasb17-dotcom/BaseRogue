@@ -1888,13 +1888,18 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
     postMatchDebrief(simResult) {
       // Trait: Resistencia Inagotable — batters lose 7 instead of 15 stamina
       const staminaLoss = this.hasTrait('endless_stamina') ? 7 : 15;
+      // Five-Tool Legends T4: batters who triggered the OUT heal this match are spared this loss entirely
+      const staminaImmuneIds = simResult && simResult.staminaImmuneIds ? simResult.staminaImmuneIds : new Set();
       const retiredAlerts = [];
       const pool = (window.PlayersDB && window.PlayersDB.LAHMAN_POOL) ? window.PlayersDB.LAHMAN_POOL : (window.PlayersDB && window.PlayersDB.PLAYERS_POOL) ? window.PlayersDB.PLAYERS_POOL : [];
 
       Object.keys(this.roster).forEach(pos => {
         const player = this.roster[pos];
         if (player) {
-          player.stamina = Math.max(0, (player.stamina !== undefined ? player.stamina : 100) - staminaLoss);
+          const isStaminaImmune = staminaImmuneIds.has(player.id || player.name);
+          player.stamina = isStaminaImmune
+            ? Math.max(0, player.stamina !== undefined ? player.stamina : 100)
+            : Math.max(0, (player.stamina !== undefined ? player.stamina : 100) - staminaLoss);
 
           if (player.stamina <= 0) {
             // Player retired due to zero stamina -> replace with random Common player of same position!

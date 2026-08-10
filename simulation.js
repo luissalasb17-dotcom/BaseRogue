@@ -240,6 +240,9 @@
       // { turnsLeft: N, multiplier: 1.20 } – applied to pitcher dmg received
       this.pitcherDebuff = null;
 
+      // ── Five-Tool Legends T4: batters exempt from post-match Stamina loss ──
+      this.staminaImmuneBatterIds = new Set();
+
       // ── Combat log ───────────────────────────────────────────────
       this.events = [];
 
@@ -314,7 +317,7 @@
       // 1. Integration Era stat boost before calcBoundaries
       let effBatter = { ...batter };
       if (batterEra === 'Integration (1942-1960)' && eraSynergy >= 1) {
-        const boost = eraSynergy === 2 ? 8 : 4;
+        const boost = eraSynergy === 4 ? 12 : eraSynergy >= 2 ? 8 : 4;
         effBatter.con = (effBatter.con || 50) + boost;
         effBatter.pwr = (effBatter.pwr || 50) + boost;
         effBatter.eye = (effBatter.eye || 50) + boost;
@@ -476,16 +479,25 @@
           ` ${_t('sim.so_direct_dmg', { dmg: teamHpDmg }, 'Daño directo: -' + teamHpDmg + ' HP del equipo (¡ignora el escudo!)')}.` +
           ` ${_t('sim.hp_remaining', { hp: this.teamHP }, 'HP restante: ' + this.teamHP + '/100')}`;
 
-        if (batterEra === 'Integration (1942-1960)' && eraSynergy === 2) {
+        if (batterEra === 'Integration (1942-1960)' && eraSynergy >= 2) {
+          // T2: +5 Stamina to all · T3: +10 · T4: +15, and this batter skips the post-match Stamina loss
+          const healAmt = eraSynergy === 4 ? 15 : eraSynergy === 3 ? 10 : 5;
           this.awayTeam.lineup.forEach(p => {
-            if (p) p.stamina = Math.min(100, (p.stamina || 100) + 5);
+            if (p) p.stamina = Math.min(100, (p.stamina || 100) + healAmt);
           });
-          synergyProc = (synergyProc ? synergyProc + ' | ' : '') + _t('sim.syn_fivetool_out', {}, '🔋 Five-Tool: ¡OUT recupera +5 de Stamina a todos!');
+          synergyProc = (synergyProc ? synergyProc + ' | ' : '') + _t('sim.syn_fivetool_out', { amt: healAmt }, `🔋 Five-Tool: ¡OUT recupera +${healAmt} de Stamina a todos!`);
+          if (eraSynergy === 4) {
+            this.staminaImmuneBatterIds.add(batter.id || batter.name);
+            synergyProc += ' | ' + _t('sim.syn_fivetool_immune', { name: batter.name }, `🔋 Five-Tool: ¡${batter.name} es inmune al desgaste de Stamina de este partido!`);
+          }
         }
         if (batterEra === 'Efficiency (2006-2015)' && eraSynergy === 2) {
           pitcherDmg += 10;
           synergyProc = (synergyProc ? synergyProc + ' | ' : '') + _t('sim.syn_moneyball_out', {}, '📊 Moneyball Out Wear: +10 daño al lanzador.');
         }
+        // Pre-existing bug: SO branch built playText above and never appended synergyProc,
+        // so any era proc on a strikeout (Five-Tool, Moneyball) was silently invisible in the log.
+        if (synergyProc) playText += ` ${synergyProc}`;
 
       } else if (roll <= bounds.outEnd) {
         // ── GROUNDOUT / FLYOUT ────────────────────────────────────
@@ -522,16 +534,24 @@
           this.runs += runsThisTurn;
         }
 
-        if (batterEra === 'Integration (1942-1960)' && eraSynergy === 2) {
+        if (batterEra === 'Integration (1942-1960)' && eraSynergy >= 2) {
+          // T2: +5 Stamina to all · T3: +10 · T4: +15, and this batter skips the post-match Stamina loss
+          const healAmt = eraSynergy === 4 ? 15 : eraSynergy === 3 ? 10 : 5;
           this.awayTeam.lineup.forEach(p => {
-            if (p) p.stamina = Math.min(100, (p.stamina || 100) + 5);
+            if (p) p.stamina = Math.min(100, (p.stamina || 100) + healAmt);
           });
-          synergyProc = (synergyProc ? synergyProc + ' | ' : '') + _t('sim.syn_fivetool_out', {}, '🔋 Five-Tool: ¡OUT recupera +5 de Stamina a todos!');
+          synergyProc = (synergyProc ? synergyProc + ' | ' : '') + _t('sim.syn_fivetool_out', { amt: healAmt }, `🔋 Five-Tool: ¡OUT recupera +${healAmt} de Stamina a todos!`);
+          if (eraSynergy === 4) {
+            this.staminaImmuneBatterIds.add(batter.id || batter.name);
+            synergyProc += ' | ' + _t('sim.syn_fivetool_immune', { name: batter.name }, `🔋 Five-Tool: ¡${batter.name} es inmune al desgaste de Stamina de este partido!`);
+          }
         }
         if (batterEra === 'Efficiency (2006-2015)' && eraSynergy === 2) {
           pitcherDmg += 10;
           synergyProc = (synergyProc ? synergyProc + ' | ' : '') + _t('sim.syn_moneyball_out', {}, '📊 Moneyball Out Wear: +10 daño al lanzador.');
         }
+        // Same pre-existing bug as the SO branch: append the proc message to the log.
+        if (synergyProc) playText += ` ${synergyProc}`;
 
       } else {
         // ── HIT ───────────────────────────────────────────────────

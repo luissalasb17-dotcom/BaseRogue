@@ -32,7 +32,7 @@
     },
     "Integration (1942-1960)": {
       name: "Five-Tool Legends",
-      desc: "T1 (2+): Bateador obtiene +4 a todos sus stats en turno. T2 (4+): Bateador +8 stats; outs curan +5 Stamina.",
+      desc: "T1 (2+): Bateador +4 a todos sus stats en turno. T2 (4+): +8 stats; outs curan +5 Stamina a todos. T3 (6+): +8 stats; outs curan +10 Stamina. T4 (8+): +12 stats; outs curan +15 Stamina, y el bateador es inmune a la pérdida de Stamina de ese partido.",
       applyStatBonus: (stats) => {}
     },
     "Expansion (1961-1976)": {
