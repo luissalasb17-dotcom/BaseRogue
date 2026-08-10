@@ -867,6 +867,7 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
   // Expose renderDraftRound to window immediately after declaration
   window.renderDraftRound = renderDraftRound;
   window.renderSynergiesAndItems = renderSynergiesAndItems;
+  window.showOutcomePopup = showOutcomePopup;
 
   // renderLineupAssignment is no longer needed (handled inline in draft rounds)
   // Keeping stub so any legacy references don't throw
@@ -3920,6 +3921,21 @@ function initGameModeSelector() {
     let cleanDetails = details ? details.replace(/🎲 \[\d+\] \[[^\]]+\] /, '').replace(/−/g, '-') : '';
     cleanDetails = cleanDetails.replace(/⚡\s*¡?CLUTCH PLAYER!?[^—\n]*[—\.]\s*(\(\+[^)]+\)\.?)?\s*/gi, '').replace(/^⚡\s*¡?CLUTCH PLAYER!?[^\.]*\.\s*/gi, '').trim();
 
+    // Era synergy procs get their own highlighted strip instead of blending into the
+    // plain detail text — the era name itself is never translated, so matching on it
+    // works regardless of UI language. Text-based, doesn't touch simulation.js.
+    const SYNERGY_MARKER_RE = /\p{Extended_Pictographic}?\s*(Genesis Chaos|Small Ball|Liveball Sluggers|Five-Tool Legends|Bash Brothers|Moneyball Analytics|Three True Outcomes)[\s\S]*$/u;
+    let synergyHighlightHTML = '';
+    const synergyMatch = cleanDetails.match(SYNERGY_MARKER_RE);
+    if (synergyMatch && synergyMatch.index > 0) {
+      const synergyText = cleanDetails.slice(synergyMatch.index).trim();
+      cleanDetails = cleanDetails.slice(0, synergyMatch.index).trim();
+      synergyHighlightHTML = `
+      <div style="font-size: 11px; color: var(--badge-build-era); background: rgba(255, 46, 196, 0.12); border: 1px solid var(--badge-build-era); padding: 5px 8px; margin-bottom: 10px; max-width: 280px; line-height: 1.35; text-shadow: 0 0 4px var(--badge-build-era-glow);">
+        <i class="fa-solid fa-star"></i> ${synergyText}
+      </div>`;
+    }
+
     popup.innerHTML = `
       <div style="font-size: 36px; color: ${color}; margin-bottom: 12px; filter: drop-shadow(0 0 8px ${color});">
         <i class="fa-solid ${icon}"></i>
@@ -3930,6 +3946,7 @@ function initGameModeSelector() {
       <div style="font-size: 12px; color: #e4e4e7; max-width: 280px; line-height: 1.4; margin-bottom: 10px;">
         ${cleanDetails}
       </div>
+      ${synergyHighlightHTML}
       <div style="font-family:'Press Start 2P',monospace; font-size: 8px; color: #f59e0b; letter-spacing: 0.5px; border-top: 1px dashed rgba(255,255,255,0.15); width: 100%; padding-top: 10px; margin-top: 5px;">
         ${dmgText}
       </div>
