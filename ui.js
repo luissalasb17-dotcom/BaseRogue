@@ -3629,7 +3629,7 @@ function initGameModeSelector() {
     const avgDef = window.Game.calculateLineupShield();
 
     // ── Create InteractiveBattle ──────────────────────────────────────────────
-    activeBattle = new window.InteractiveBattle(teamLineups.away, teamLineups.home, avgDef);
+    activeBattle = new window.InteractiveBattle(teamLineups.away, teamLineups.home, avgDef, window.Game.buildEra);
     isRolling = false;
 
     // ── Audio: Play Ball! ─────────────────────────────────────────────────────

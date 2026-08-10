@@ -17,7 +17,7 @@
   const EraTraits = {
     "The Genesis Era (1871-1900)": {
       name: "Genesis Chaos",
-      desc: "T1 (2+): 20% prob. de error defensivo en hit (+1 base extra). T2 (4+): 35% prob. de error defensivo.",
+      desc: "T1 (2+): 15% prob. de error defensivo en hit (+10 daño, +1 base extra). T2 (4+): 30% prob. (+20 daño). T3 (6+): 30% prob. (+30 daño). T4 (8+): 40% prob. (+30 daño).",
       applyStatBonus: (stats) => {}
     },
     "Deadball (1901-1919)": {

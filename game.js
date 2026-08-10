@@ -588,6 +588,10 @@
         LF: null, CF: null, RF: null, DH: null
       };
 
+      // Era of Build: the single era the player actively commits their run to.
+      // Only this era's synergy scales past T1 (2+ players) — see setBuildEra().
+      this.buildEra = null;
+
       // Custom Batting Order (positions sequence)
       this.battingOrder = ['CF', 'LF', 'RF', '1B', '2B', '3B', 'SS', 'C', 'DH'];
 
@@ -619,6 +623,13 @@
         { id: 'legendary_domination', name: '👑 Dominio Legendario',      desc: 'Si tienes 2 o más jugadores Legendary en titular, todos reciben +10 a todas sus estadísticas.', icon: '👑' },
         { id: 'back_to_back',      name: '💥 Cadena de Poder',            desc: 'Después de un HR, el siguiente bateador gana +20 de PWR y CON para ese turno.', icon: '💥' },
       ];
+    }
+
+    // Set (or clear with null) the player's chosen Era of Build for this run.
+    setBuildEra(era) {
+      const validEras = window.PlayersDB ? Object.values(window.PlayersDB.Eras) : [];
+      this.buildEra = (era && validEras.includes(era)) ? era : null;
+      return this.buildEra;
     }
 
     hasTrait(id) { return this.equippedTraits.some(t => t.id === id); }

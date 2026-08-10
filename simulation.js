@@ -209,10 +209,12 @@
      * @param {object} awayTeam  - { name, lineup: Player[], pitchers: [] (unused in battle) }
      * @param {object} homeTeam  - { name, pitchers: Pitcher[] }
      * @param {number} teamShield - Sum(def_val of 9 batters) / 9  (pre-calculated by UI)
+     * @param {string} buildEra  - Player-chosen Era of Build (window.PlayersDB.Eras value) or null
      */
-    constructor(awayTeam, homeTeam, teamShield) {
+    constructor(awayTeam, homeTeam, teamShield, buildEra = null) {
       this.awayTeam = awayTeam;
       this.homeTeam = homeTeam;
+      this.buildEra = buildEra || null;
 
       // ── Team (player side) vitals ─────────────────────────────────
       this.teamHP    = 100;           // Fixed; strikeouts bite here directly
@@ -257,6 +259,9 @@
         'START');
     }
 
+    // Tier scale: T1=2+, T2=4+, T3=6+, T4=8+ players of that era in the roster.
+    // Only the active Build Era scales past T1 — any other era with 2+ players
+    // is locked at a fixed T1 effect no matter how many more it has.
     _calculateActiveSynergies(lineup) {
       const eraCounts = {};
       lineup.forEach(p => {
@@ -267,8 +272,11 @@
       const active = {};
       Object.keys(eraCounts).forEach(era => {
         const count = eraCounts[era];
-        if (count >= 2) {
-          active[era] = count >= 4 ? 2 : 1;
+        if (count < 2) return;
+        if (era === this.buildEra) {
+          active[era] = count >= 8 ? 4 : count >= 6 ? 3 : count >= 4 ? 2 : 1;
+        } else {
+          active[era] = 1;
         }
       });
       return active;
@@ -549,10 +557,11 @@
 
         let genesisErrorSucceeded = false;
         if (batterEra === 'The Genesis Era (1871-1900)' && eraSynergy >= 1) {
-          const errChance = eraSynergy === 2 ? 0.30 : 0.15;
+          // T1: 15%/+10dmg · T2: 30%/+20dmg · T3: 30%/+20dmg (+10 extra on top) · T4: 40%/+30dmg
+          const errChance = eraSynergy === 4 ? 0.40 : eraSynergy >= 2 ? 0.30 : 0.15;
           if (Math.random() < errChance) {
             genesisErrorSucceeded = true;
-            const extraDmg = eraSynergy === 2 ? 20 : 10;
+            const extraDmg = eraSynergy >= 3 ? 30 : eraSynergy === 2 ? 20 : 10;
             pitcherDmg += extraDmg;
             errorProc = _t('sim.syn_genesis_error', { dmg: extraDmg }, `💥 Genesis Chaos: ¡Error rival! +${extraDmg} daño e incremento extra de bases.`);
           }
