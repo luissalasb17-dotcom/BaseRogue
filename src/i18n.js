@@ -1425,10 +1425,11 @@
 
   window.t = t;
 
-  // Auto initialize on DOM ready
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
-  }
+  // Initialize immediately: this script tag sits after the game's data-i18n
+  // markup in the DOM, so those elements already exist by the time this
+  // executes — no need to wait for DOMContentLoaded, which would otherwise
+  // get gated behind several megabytes of unrelated data scripts loaded
+  // later in the page (career_data.js, opponents_database.js, etc.) and
+  // leave the Spanish fallback text visible on screen until those finish.
+  init();
 })();
