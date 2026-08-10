@@ -57,7 +57,7 @@
     },
     "Modern Era (2016-Pres)": {
       name: "Three True Outcomes",
-      desc: "T1 (2+): BB hacen +12 daño, Ponche -50% daño al equipo. T2 (4+): BB hacen +24 daño, Ponches no cortan racha.",
+      desc: "T1 (2+): BB +12 daño; Ponche hace -50% daño al equipo. T2 (4+): BB +24 daño; el ponche ya no incrementa tu propia racha. T3 (6+): igual, y el Jonrón también debilita al pitcher por 2 impactos. T4 (8+): BB +36 daño; el debuff del Jonrón sube a 3 impactos.",
       applyStatBonus: (stats) => {}
     }
   };

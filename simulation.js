@@ -378,7 +378,7 @@
         }
         // Modern Era BB boost
         else if (batterEra === 'Modern Era (2016-Pres)' && eraSynergy >= 1) {
-          const extra = eraSynergy === 2 ? 24 : 12;
+          const extra = eraSynergy === 4 ? 36 : eraSynergy >= 2 ? 24 : 12;
           pitcherDmg += extra;
           synergyProc = _t('sim.syn_tto_bb', { extra }, `🚀 Three True Outcomes: ¡Boleto optimizado inflige +${extra} daño!`);
         }
@@ -468,7 +468,7 @@
         let modernSoReduction = false;
         if (batterEra === 'Modern Era (2016-Pres)' && eraSynergy >= 1) {
           modernSoReduction = true;
-          if (eraSynergy === 2) {
+          if (eraSynergy >= 2) {
             this.strikeoutChain = Math.max(0, this.strikeoutChain - 1);
           }
         }
@@ -642,7 +642,21 @@
               synergyProc += ' | ' + _t('sim.syn_bash_hr_heal', { amt: hrHeal }, `💪 Bash Brothers: ¡Jonrón recupera +${hrHeal} Stamina a todos!`);
             }
           }
-          
+
+          // Three True Outcomes T3+: the HR itself also applies the pitcher debuff
+          // (same this.pitcherDebuff mechanism the steal procs use — T3 2t/1.20x, T4 3t/1.30x)
+          if (batterEra === 'Modern Era (2016-Pres)' && eraSynergy >= 3) {
+            const ttoDebuffTurns = eraSynergy === 4 ? 3 : 2;
+            const ttoDebuffMult = eraSynergy === 4 ? 1.30 : 1.20;
+            if (this.pitcherDebuff && this.pitcherDebuff.turnsLeft > 0) {
+              this.pitcherDebuff.turnsLeft += ttoDebuffTurns;
+              if (ttoDebuffMult > this.pitcherDebuff.multiplier) this.pitcherDebuff.multiplier = ttoDebuffMult;
+            } else {
+              this.pitcherDebuff = { turnsLeft: ttoDebuffTurns, multiplier: ttoDebuffMult };
+            }
+            synergyProc = (synergyProc ? synergyProc + ' | ' : '') + _t('sim.syn_tto_hr_debuff', { turns: ttoDebuffTurns }, `🚀 Three True Outcomes: ¡Jonrón debilita al lanzador por ${ttoDebuffTurns} impactos!`);
+          }
+
           pitcherDmg += hrDmg;
           eventType = 'HR';
           playText = `🎲 [${roll}] [${_t('sim.label_hr', {}, 'JONRÓN')}] ¡${batter.name} ${_t('sim.hr_desc', { runs: runsThisTurn }, 'CUADRANGULAR de ' + runsThisTurn + ' carreras')}! `;
