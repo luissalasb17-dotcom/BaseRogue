@@ -869,6 +869,8 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
   window.renderSynergiesAndItems = renderSynergiesAndItems;
   window.showOutcomePopup = showOutcomePopup;
   window.getDraftSynergyPrediction = getDraftSynergyPrediction;
+  window.setupAndStartMatchSimulation = setupAndStartMatchSimulation;
+  window.handleRollDice = handleRollDice;
 
   // renderLineupAssignment is no longer needed (handled inline in draft rounds)
   // Keeping stub so any legacy references don't throw
@@ -3711,17 +3713,28 @@ function initGameModeSelector() {
         </div>
         <div style="font-size:11px;color:#f59e0b;text-align:center;" id="so-chain-display">${t('match.so_streak_zero', '🔥 Racha de Ponches: 0')}</div>
       </div>
-      <!-- Dice result display -->
-      <div id="dice-result-display" style="
-        font-family:'Press Start 2P',monospace;
-        font-size:36px;color:#fff;
-        background:rgba(255,255,255,0.06);
-        border:2px solid rgba(255,255,255,0.15);
-        border-radius:12px;
-        width:80px;height:80px;
-        display:flex;align-items:center;justify-content:center;
-        letter-spacing:2px;
-      ">–</div>
+      <!-- d100 dice: two d10 cubes (tens + units) + a combined-total readout to resolve the 00/00=100 edge case unambiguously -->
+      <div id="dice-d100-panel" style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+        <div id="dice-d100-container" style="display:flex;gap:10px;">
+          ${['tens','units'].map(kind => `
+            <div class="d100-die" id="die-${kind}">
+              <div class="d100-die-cube" id="die-${kind}-cube">
+                <div class="d100-die-face face-front" id="die-${kind}-face-front">0</div>
+                <div class="d100-die-face face-back">0</div>
+                <div class="d100-die-face face-right">0</div>
+                <div class="d100-die-face face-left">0</div>
+                <div class="d100-die-face face-top">0</div>
+                <div class="d100-die-face face-bottom">0</div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+        <div id="dice-result-display" style="
+          font-family:'Press Start 2P',monospace;
+          font-size:14px;color:#fff;
+          letter-spacing:1px;
+        ">–</div>
+      </div>
       <!-- Lucky zones panel -->
       <div id="zones-panel">
         <div id="zones-panel-header">🎯 ${t('match.luck_zones', 'Zonas de la Suerte')}</div>
@@ -4002,18 +4015,49 @@ function initGameModeSelector() {
     if (btn) btn.disabled = true;
 
     const diceDisplay = document.getElementById('dice-result-display');
-    let ticks = 0;
-    const totalTicks = 12;
     const finalRoll = Math.floor(Math.random() * 100) + 1;
 
-    // Animate numbers
-    diceAnimInterval = setInterval(() => {
-      ticks++;
-      if (diceDisplay) {
-        diceDisplay.innerText = Math.floor(Math.random() * 100) + 1;
-      }
-      if (ticks >= totalTicks) {
-        clearInterval(diceAnimInterval);
+    // d100 as two d10s: tens digit + units digit (00/00 reads as 100, never as 0,
+    // since finalRoll is always 1-100 — the combined readout below removes any doubt).
+    const tensDigit  = Math.floor(finalRoll / 10) % 10;
+    const unitsDigit = finalRoll % 10;
+
+    // Units die settles first (shorter tumble), tens settles a beat after (longer
+    // tumble) — durations must match the CSS keyframe durations exactly.
+    const UNITS_TUMBLE_MS = 550;
+    const TENS_TUMBLE_MS  = 850;
+
+    const cubeUnits = document.getElementById('die-units-cube');
+    const cubeTens  = document.getElementById('die-tens-cube');
+    const faceUnits = document.getElementById('die-units-face-front');
+    const faceTens  = document.getElementById('die-tens-face-front');
+
+    // Decorative digits on the non-front faces (only glimpsed mid-spin) + the real
+    // final digit on the front face — the tumble always ends on a multiple of 360°
+    // on both axes, so the front face is guaranteed to be what's showing at rest.
+    ['tens', 'units'].forEach(kind => {
+      const die = document.getElementById(`die-${kind}`);
+      if (!die) return;
+      die.querySelectorAll('.d100-die-face:not(.face-front)').forEach(f => {
+        f.innerText = Math.floor(Math.random() * 10);
+      });
+    });
+    if (faceTens)  faceTens.innerText  = tensDigit;
+    if (faceUnits) faceUnits.innerText = unitsDigit;
+
+    if (cubeUnits) { cubeUnits.classList.remove('tumbling-units', 'die-settled'); void cubeUnits.offsetWidth; cubeUnits.classList.add('tumbling-units'); }
+    if (cubeTens)  { cubeTens.classList.remove('tumbling-tens', 'die-settled');   void cubeTens.offsetWidth;  cubeTens.classList.add('tumbling-tens'); }
+    if (window.AudioManager) window.AudioManager.play('menu_click');
+    if (diceDisplay) { diceDisplay.innerText = '–'; diceDisplay.style.color = '#9ca3af'; }
+
+    setTimeout(() => {
+      if (cubeUnits) cubeUnits.classList.add('die-settled');
+      if (window.AudioManager) window.AudioManager.play('menu_click');
+    }, UNITS_TUMBLE_MS);
+
+    diceAnimInterval = setTimeout(() => {
+        if (cubeTens) cubeTens.classList.add('die-settled');
+        if (window.AudioManager) window.AudioManager.play('menu_click');
         if (diceDisplay) {
           diceDisplay.innerText = finalRoll;
           const b = activeBattle.currentBoundaries();
@@ -4134,8 +4178,7 @@ function initGameModeSelector() {
         }
 
         isRolling = false;
-      }
-    }, 55);
+    }, TENS_TUMBLE_MS);
   }
 
   function handleSimulateAll() {
