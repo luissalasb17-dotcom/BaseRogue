@@ -1688,16 +1688,32 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
       const fullPool = window.PITCHERS_POOL || [];
       if (!this.encounteredPitchers) this.encounteredPitchers = new Set();
 
+      // Guards against picking the same real pitcher twice for one 3-pitcher
+      // roster — reset per getEnemyTeam() call (fresh closure each time).
+      const rosterPicks = new Set();
+
       const pickPitcher = (candidates, preferredRole = null) => {
-        let unvisited = candidates.filter(p => !this.encounteredPitchers.has((p.name || '') + '_' + (p.year || p.peak_year_display)));
+        const pitcherKey = (p) => (p.name || '') + '_' + (p.year || p.peak_year_display);
+
+        let unvisited = candidates.filter(p => !this.encounteredPitchers.has(pitcherKey(p)));
         if (unvisited.length === 0) unvisited = candidates;
         if (preferredRole) {
           const roleMatches = unvisited.filter(p => (p.role || '').toUpperCase() === preferredRole.toUpperCase());
           if (roleMatches.length > 0) unvisited = roleMatches;
         }
         if (unvisited.length === 0) unvisited = fullPool;
-        const chosen = unvisited[Math.floor(Math.random() * unvisited.length)];
-        this.encounteredPitchers.add((chosen.name || '') + '_' + (chosen.year || chosen.peak_year_display));
+
+        // When the encountered-pool fallback above has to reuse already-seen
+        // pitchers (small pools, e.g. Legendary-only for boss stages, exhausted
+        // over a long run), it could return the same pitcher already picked
+        // earlier in THIS roster — collapsing 2 of the 3 into one BaseballDex
+        // entry. Filter those out as a final backstop.
+        let candidatePool = unvisited.filter(p => !rosterPicks.has(pitcherKey(p)));
+        if (candidatePool.length === 0) candidatePool = unvisited;
+
+        const chosen = candidatePool[Math.floor(Math.random() * candidatePool.length)];
+        this.encounteredPitchers.add(pitcherKey(chosen));
+        rosterPicks.add(pitcherKey(chosen));
         return chosen;
       };
 
@@ -1716,13 +1732,23 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
           maxHp: hp,
           stf: p.str !== undefined ? p.str : (p.stf !== undefined ? p.stf : 50),
           ctl: p.ctl !== undefined ? p.ctl : 50,
-          mov: p.grt !== undefined ? p.grt : (p.mov !== undefined ? p.mov : 50),
+          mov: p.mov !== undefined ? p.mov : (p.hr9 !== undefined ? p.hr9 : 50),
           sta: staVal,
           ovr: p.ovr || p._ovr || 50,
           rarity: p.rarity || 'Common',
           era: p.era || '',
           team: p.team || '',
-          year: yearVal
+          year: yearVal,
+          // Explicit rate stats — without these, basedex.js/simulation.js's fallback
+          // chains for h9 (checks .h9 then .grt, neither of which this object used
+          // to carry) silently defaulted to a flat 50, so H/9 always graded a plain
+          // "C" and pitcher skill in H/9 never actually affected combat math. Also
+          // fixes the .mov field above, which was wrongly reading .grt (H9's value)
+          // instead of .mov/.hr9, so HR probability was using the wrong stat too.
+          h9:  p.h9  !== undefined ? p.h9  : (p.grt !== undefined ? p.grt : 50),
+          k9:  p.k9  !== undefined ? p.k9  : (p.stf !== undefined ? p.stf : 50),
+          bb9: p.bb9 !== undefined ? p.bb9 : (p.ctl !== undefined ? p.ctl : 50),
+          hr9: p.hr9 !== undefined ? p.hr9 : (p.mov !== undefined ? p.mov : 50)
         };
       };
 
