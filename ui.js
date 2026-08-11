@@ -1806,17 +1806,22 @@ function initGameModeSelector() {
       `;
     }
 
+    // Full-width top banner (not another diagonal corner ribbon) — those read
+    // fine for a short word like "CLUTCH" but a longer phrase like "OUT OF
+    // ERA" was illegible at ribbon size, so this gets its own clear strip.
+    let interEraBannerHTML = '';
     if (player.isInterEra) {
       const interEraTooltip = window.t ? window.t('badge.interera_tooltip') : 'Fuera de Época: este jugador no estaba activo en la temporada seleccionada — cuenta el doble para su sinergia.';
       const interEraLabel = window.t ? window.t('badge.interera_label') : 'FUERA DE ÉPOCA';
-      ribbonHTML += `
-        <div class="card-ribbon ribbon-top-right ribbon-interera" title="${interEraTooltip}">${interEraLabel}</div>
+      interEraBannerHTML = `
+        <div class="card-interera-banner" title="${interEraTooltip}">⏳ ${interEraLabel}</div>
       `;
     }
 
     return `
       <div class="player-card ${eraClass} rarity-${rarityLabel} ${isClutch ? 'has-clutch' : ''} ${isCaptain ? 'has-captain' : ''}">
         ${ribbonHTML}
+        ${interEraBannerHTML}
         <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
           <span class="card-position" style="background: #000; color: #fff; padding: 2px 4px; font-weight: bold; font-size: 6px; border: 1px solid rgba(255,255,255,0.1);">${player.pos}</span>
           <span class="card-ovr" style="font-family: 'Press Start 2P', monospace; font-size: 6px; color: ${ovrGrade.color}; font-weight: bold; background: #000; padding: 2px 4px; border: 1px solid rgba(255,255,255,0.2);">CLASS ${ovrGrade.text}</span>
