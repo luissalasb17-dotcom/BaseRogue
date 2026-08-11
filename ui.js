@@ -509,7 +509,7 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
       icons += `<span class="list-badge-icon badge-clutch" title="${clutchToolTip}" style="color:var(--badge-clutch,#ff3300); font-weight:bold; margin-left:3px; cursor:help; font-size:10px; display:inline-block;">⚡</span>`;
     }
     if (isCaptain) {
-      icons += `<span class="list-badge-icon badge-captain" title="${captainToolTip}" style="color:var(--badge-captain,#00d4ff); font-weight:bold; margin-left:3px; cursor:help; font-size:10px; display:inline-block;">C★</span>`;
+      icons += `<span class="list-badge-icon badge-captain" title="${captainToolTip}" style="color:var(--badge-captain,#00d4ff); font-weight:bold; margin-left:3px; cursor:help; font-size:10px; display:inline-block;">👑</span>`;
     }
     if (isInterEra) {
       icons += `<span class="list-badge-icon badge-interera" title="${interEraToolTip}" style="color:#f59e0b; font-weight:bold; margin-left:3px; cursor:help; font-size:10px; display:inline-block;">⏳</span>`;
@@ -2483,7 +2483,7 @@ function initGameModeSelector() {
         </div>` : ''}
       ${(player.captain || player.is_captain) ? `
         <div class="popup-badge-desc popup-badge-captain" style="margin-top:6px; padding:6px 8px; background:rgba(0,212,255,0.12); border-left:3px solid var(--badge-captain,#00d4ff); border-radius:4px; font-size:8px; line-height:1.4;">
-          <span style="color:var(--badge-captain,#00d4ff); font-weight:bold; font-family:'Press Start 2P',monospace; display:block; margin-bottom:2px;">C★ CAPTAIN</span>
+          <span style="color:var(--badge-captain,#00d4ff); font-weight:bold; font-family:'Press Start 2P',monospace; display:block; margin-bottom:2px;">👑 CAPTAIN</span>
           <span style="color:#e2e8f0;">${window.t ? window.t('badge.captain_tooltip', '+5 a todos los ratings de sus compañeros de equipo mientras esté en el roster activo.') : '+5 a todos los ratings de sus compañeros de equipo mientras esté en el roster activo.'}</span>
         </div>` : ''}
       <div class="popup-year">Peak: ${player.year || player.peak_year || player.peakYear || '—'} &nbsp;|&nbsp; ${player.era || ''}</div>
