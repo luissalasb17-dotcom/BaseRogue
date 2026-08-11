@@ -3642,6 +3642,7 @@ function initGameModeSelector() {
     let eraName = enemy.era || '';
     let teamName = enemy.name;
     let recordHTML = '';
+    let ovrDisplay = null;
 
     if (isStory) {
       eraName = getEraNameForYear(enemy.year);
@@ -3655,7 +3656,22 @@ function initGameModeSelector() {
       const recordKey = wp >= 0.560 ? 'record_dominant' : (wp >= 0.480 ? 'record_contender' : 'record_underdog');
       const pctText = (wp * 100).toFixed(1) + '%';
       recordHTML = `<div style="font-size:11px;color:#9ca3af;margin-top:4px;">${t('pre_fight.' + recordKey)} — <strong style="color:#e4e4e7;">${pctText}</strong> ${t('map.win_pct', 'win %')}</div>`;
+      ovrDisplay = enemy.ovr !== undefined && enemy.ovr !== null ? Math.round(enemy.ovr) : null;
+    } else {
+      // Quick Play rosters are 2-3 pitchers assembled independently from the
+      // whole pool (see createPitcherObj/pickPitcher in game.js) — they're not
+      // a real team. Naming the report after just the 1st pitcher and quoting
+      // only their era was misleading when the others came from elsewhere.
+      teamName = t('pre_fight.rival_rotation_label');
+      const pitcherEras = [...new Set((enemy.pitchers || []).map(p => p.era).filter(Boolean))];
+      eraName = pitcherEras.length === 1 ? pitcherEras[0] : (pitcherEras.length > 1 ? t('pre_fight.mixed_eras') : '');
+      const ovrs = (enemy.pitchers || []).map(p => p.ovr).filter(v => typeof v === 'number');
+      ovrDisplay = ovrs.length ? Math.round(ovrs.reduce((a, b) => a + b, 0) / ovrs.length) : (enemy._ovr || null);
     }
+
+    const ovrHTML = ovrDisplay !== null
+      ? `<div style="font-size:9px;color:#e4e4e7;margin-top:6px;padding-top:6px;border-top:1px dashed rgba(255,255,255,0.15);">${t('pre_fight.ovr_label')}: <strong>${ovrDisplay}</strong></div>`
+      : '';
 
     el.preFightScouting.innerHTML = `
       <div style="background:rgba(0,0,0,0.35);border:1px solid ${rColor};border-radius:10px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
@@ -3668,6 +3684,7 @@ function initGameModeSelector() {
         <div style="background:${rBg};border:1px solid ${rColor};border-radius:8px;padding:8px 14px;text-align:center;">
           <div style="font-size:9px;color:${rColor};font-weight:bold;letter-spacing:0.5px;">${rarity.toUpperCase()}</div>
           <div style="font-size:11px;color:#e4e4e7;margin-top:2px;">${threatLabel}</div>
+          ${ovrHTML}
         </div>
       </div>
     `;

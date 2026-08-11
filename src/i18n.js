@@ -190,7 +190,10 @@
                 "record_dominant": "Dominaron la temporada — favoritos claros al título",
                 "record_contender": "Equipo contendiente con récord ganador",
                 "record_underdog": "Equipo humilde, pero cuidado con las sorpresas",
-                "era_label": "Era"
+                "era_label": "Era",
+                "ovr_label": "OVR Promedio",
+                "rival_rotation_label": "Rotación de Lanzadores Rivales",
+                "mixed_eras": "Eras Variadas"
         },
         "match": {
                 "title": "<i class=\"fa-solid fa-trophy\"></i> Bateadores al Combate",
@@ -887,7 +890,10 @@
                 "record_dominant": "Dominated the season — clear title favorites",
                 "record_contender": "Contending team with a winning record",
                 "record_underdog": "Scrappy underdogs — but watch for upsets",
-                "era_label": "Era"
+                "era_label": "Era",
+                "ovr_label": "Avg OVR",
+                "rival_rotation_label": "Rival Pitching Rotation",
+                "mixed_eras": "Multiple Eras"
         },
         "match": {
                 "title": "<i class=\"fa-solid fa-trophy\"></i> BATTLE",
