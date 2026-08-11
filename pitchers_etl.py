@@ -37,6 +37,13 @@ MIN_GS_CAREER     = 100   # minimo aperturas de carrera
 MIN_G_CAREER      = 150   # minimo juegos como pitcher (relievers)
 MIN_GS_ALLSTAR    = 1     # al menos 1 GS para All-Stars / HoF como filtro secundario
 
+# Temporadas de relevo dominante quedan opacadas por temporadas mediocres de
+# abridor solo por volumen de innings (mismo WAR crudo, muchas mas IP). Este
+# boost se aplica UNICAMENTE al ranking usado para elegir las PEAK_SEASONS
+# mejores temporadas, nunca al war_season real que se guarda/muestra.
+RELIEF_WAR_BOOST         = 1.6   # punto de partida — ajustar tras revisar casos reales (ej. Eckersley)
+RELIEF_GS_RATIO_THRESHOLD = 0.40  # mismo umbral que ya usa el split de carrera SP/RP (ver mas abajo)
+
 ERA_THRESHOLDS = [
     (1871, 1900, "The Genesis Era (1871-1900)"),
     (1901, 1919, "Deadball (1901-1919)"),
@@ -323,11 +330,17 @@ def paso_4_pico_pitching(pitching, war_pitch, people):
         pit_yearly["war_season"] = np.nan
         pit_yearly["era_plus_y"] = np.nan
 
-    # Seleccionar top PEAK_SEASONS por WAR (o por ERA inverso si no hay WAR)
+    # Seleccionar top PEAK_SEASONS por WAR (o por ERA inverso si no hay WAR).
+    # Temporadas mayormente de relevo (GS/G bajo) reciben un boost SOLO para este
+    # ranking, para que no queden sistematicamente afuera frente a temporadas de
+    # abridor con mas volumen de innings pero WAR crudo similar o menor calidad.
     def seleccionar_pico(group):
         g = group.copy()
         if g["war_season"].notna().any():
-            g = g.sort_values("war_season", ascending=False, na_position="last")
+            gs_ratio = g["GS"] / g["G"].replace(0, np.nan)
+            is_relief_season = gs_ratio.fillna(0) < RELIEF_GS_RATIO_THRESHOLD
+            g["war_ranking"] = g["war_season"] * np.where(is_relief_season, RELIEF_WAR_BOOST, 1.0)
+            g = g.sort_values("war_ranking", ascending=False, na_position="last")
         else:
             g = g.sort_values("era_y", ascending=True, na_position="last")  # menor ERA = mejor
         return g.head(PEAK_SEASONS)
