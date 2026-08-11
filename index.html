@@ -155,6 +155,25 @@
       </div>
     </div>
 
+    <!-- MODAL: RUN INTRO ("hype" screen shown before every new run's draft, not just the first time) -->
+    <div id="modal-run-intro" class="hidden" style="position: fixed; inset: 0; background: rgba(0,0,0,0.9); backdrop-filter: blur(8px); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px;">
+      <div class="glass-panel" style="max-width: 520px; width: 100%; border: 2px solid var(--primary-color); box-shadow: 0 0 35px var(--primary-glow); padding: 28px; text-align: center; position: relative;">
+        <div style="font-family: 'Press Start 2P', monospace; font-size: 15px; color: var(--primary-color); text-shadow: 0 0 10px var(--primary-glow); margin-bottom: 16px; letter-spacing: 1px;" data-i18n="run_intro.title">
+          ⚾ ¡ARRANCA LA TEMPORADA!
+        </div>
+        <p style="font-size: 13px; color: #e4e4e7; line-height: 1.6; margin-bottom: 22px; text-align: left;" data-i18n-html="run_intro.desc">
+          Firmá a tus leyendas, armá tu alineación, y salí a la cancha. Ganá partidos para conseguir presupuesto y mejorá a tus jugadores. Sumá sinergias de era para potenciar tu equipo. Derrotá a los 3 pitchers rivales antes de que se acaben las 3 entradas — o antes de que tu HP llegue a 0.<br><br><strong style="color: var(--primary-color);">¿Tenés lo que hace falta para ser campeón?</strong>
+        </p>
+        <label style="display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 11px; color: #9ca3af; margin-bottom: 18px; cursor: pointer;">
+          <input type="checkbox" id="chk-run-intro-skip" style="width: 16px; height: 16px; cursor: pointer; accent-color: var(--primary-color);">
+          <span data-i18n="run_intro.dont_show_again">No volver a mostrar</span>
+        </label>
+        <button id="btn-run-intro-start" class="btn" style="width: 100%; padding: 14px; font-size: 12px; font-family: 'Press Start 2P', monospace; background: linear-gradient(135deg, var(--primary-color), #059669); border: 2px solid #34d399; box-shadow: 0 0 20px var(--primary-glow); cursor: pointer; color: #000;" data-i18n="run_intro.start_btn">
+          ⚾ ¡EMPEZAR!
+        </button>
+      </div>
+    </div>
+
     <!-- SCREEN 1: MAIN MENU & STARTER SELECTION -->
     <div class="glass-panel hidden" id="screen-menu" style="position: relative;">
 
@@ -744,7 +763,7 @@
   <script src="audio.js?v=1"></script>
   <script src="career_data.js?v=1"></script>
   <script src="basedex.js?v=1"></script>
-  <script src="ui.js?v=179"></script>
+  <script src="ui.js?v=180"></script>
 
 </body>
 </html>

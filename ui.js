@@ -1194,6 +1194,32 @@ function renderConfirmationBattingRows() {
 
 
 
+// Short "hype" intro shown before every new run's draft (not just the first time
+// ever — that's the combat-info dropdown's job). Skippable via a "don't show
+// again" checkbox persisted in localStorage.
+function showRunIntroThenStartDraft(startDraftFn) {
+  const modal = document.getElementById('modal-run-intro');
+  const skip = localStorage.getItem('baserogue_skip_run_intro') === 'true';
+  if (!modal || skip) {
+    startDraftFn();
+    return;
+  }
+  modal.classList.remove('hidden');
+  const btn = document.getElementById('btn-run-intro-start');
+  const chk = document.getElementById('chk-run-intro-skip');
+  if (chk) chk.checked = false;
+  if (btn) {
+    btn.onclick = () => {
+      if (chk && chk.checked) {
+        localStorage.setItem('baserogue_skip_run_intro', 'true');
+      }
+      modal.classList.add('hidden');
+      if (window.AudioManager) window.AudioManager.play('play_ball');
+      startDraftFn();
+    };
+  }
+}
+
 function initGameModeSelector() {
     const screenMode = document.getElementById('screen-mode-select');
     const screenMenu = document.getElementById('screen-menu');
@@ -1261,16 +1287,20 @@ function initGameModeSelector() {
             if (window.Game && window.Game.loadSeasonOpponents) {
               window.Game.loadSeasonOpponents(targetYear);
             }
-            (window.showScreen || showScreen)('screen-draft');
-            if (window.renderDraftRound) window.renderDraftRound(); else if (typeof renderDraftRound === 'function') renderDraftRound();
+            showRunIntroThenStartDraft(() => {
+              (window.showScreen || showScreen)('screen-draft');
+              if (window.renderDraftRound) window.renderDraftRound(); else if (typeof renderDraftRound === 'function') renderDraftRound();
+            });
           });
         } else {
           if (modalSeason) modalSeason.classList.add('hidden');
           if (window.Game && window.Game.loadSeasonOpponents) {
             window.Game.loadSeasonOpponents(yearVal);
           }
-          (window.showScreen || showScreen)('screen-draft');
-          if (window.renderDraftRound) window.renderDraftRound(); else if (typeof renderDraftRound === 'function') renderDraftRound();
+          showRunIntroThenStartDraft(() => {
+            (window.showScreen || showScreen)('screen-draft');
+            if (window.renderDraftRound) window.renderDraftRound(); else if (typeof renderDraftRound === 'function') renderDraftRound();
+          });
         }
       };
     }
@@ -1286,8 +1316,10 @@ function initGameModeSelector() {
         if (window.Game && window.Game.resetRun) {
           window.Game.resetRun();
         }
-        window.showScreen('screen-draft');
-        if (window.renderDraftRound) window.renderDraftRound(); else if (typeof renderDraftRound === 'function') renderDraftRound();
+        showRunIntroThenStartDraft(() => {
+          window.showScreen('screen-draft');
+          if (window.renderDraftRound) window.renderDraftRound(); else if (typeof renderDraftRound === 'function') renderDraftRound();
+        });
       };
     }
   }

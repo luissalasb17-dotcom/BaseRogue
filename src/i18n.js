@@ -133,6 +133,12 @@
                 "intro_title": "BaseRogue",
                 "intro_desc": "Elije a tus Jugadores en <strong style=\"color:#00ff66;\">{{rounds}} rondas de draft</strong> para armar tu alineación completa de 9 bateadores. Organiza su posición defensiva (Drag & Drop) y su orden al bate en tiempo real. Luego <strong style=\"color:#00ff66;\">lanza el dado</strong> en cada turno para determinar el resultado al bate. Derrota la rotación rival antes de que tus <strong style=\"color:#ef4444;\">{{hp}} HP</strong> lleguen a cero."
         },
+        "run_intro": {
+                "title": "⚾ ¡ARRANCA LA TEMPORADA!",
+                "desc": "Firmá a tus leyendas, armá tu alineación, y salí a la cancha. Ganá partidos para conseguir presupuesto y mejorá a tus jugadores. Sumá sinergias de era para potenciar tu equipo. Derrotá a los 3 pitchers rivales antes de que se acaben las 3 entradas — o antes de que tu HP llegue a 0.<br><br><strong style=\"color: var(--primary-color);\">¿Tenés lo que hace falta para ser campeón?</strong>",
+                "dont_show_again": "No volver a mostrar",
+                "start_btn": "⚾ ¡EMPEZAR!"
+        },
         "draft": {
                 "title": "<i class=\"fa-solid fa-file-signature\"></i> Firma de Jugadores (Draft)",
                 "desc": "Selecciona una leyenda para unir a tu roster. Elige sabiamente para optimizar las posiciones y activar sinergias de Era o de Franquicia.",
@@ -813,6 +819,12 @@
         "menu": {
                 "intro_title": "BaseRogue",
                 "intro_desc": "Pick your players in <strong style=\"color:#00ff66;\">{{rounds}} draft rounds</strong> to build your full 9-batter roster. Organize their defensive position (Drag & Drop) and batting order in real time. Then <strong style=\"color:#00ff66;\">roll the dice</strong> each turn to determine the at-bat outcome. Defeat the rival rotation before your <strong style=\"color:#ef4444;\">{{hp}} HP</strong> reaches zero."
+        },
+        "run_intro": {
+                "title": "⚾ THE SEASON STARTS NOW!",
+                "desc": "Sign your legends, build your lineup, and hit the field. Win matches to earn budget and upgrade your players. Stack era synergies to power up your team. Take down the 3 rival pitchers before 3 innings run out — or before your HP hits 0.<br><br><strong style=\"color: var(--primary-color);\">Got what it takes to be champion?</strong>",
+                "dont_show_again": "Don't show this again",
+                "start_btn": "⚾ LET'S GO!"
         },
         "draft": {
                 "title": "<i class=\"fa-solid fa-file-signature\"></i> Player Signings (Draft)",
