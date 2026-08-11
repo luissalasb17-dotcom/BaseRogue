@@ -20,15 +20,15 @@
                 "got_it": "Entendido",
                 "skip_all": "No mostrar tutorial",
                 "draft_roster_title": "📋 Arma tu roster",
-                "draft_roster_text": "Elegís un jugador por ronda durante 9 rondas hasta llenar tus 9 posiciones. Las primeras rondas garantizan una rareza mínima (mejor cuanto antes) — tocá el sobre para abrirlo y ver tus 3 opciones.",
+                "draft_roster_text": "Elige un jugador por ronda durante 9 rondas hasta llenar tus 9 posiciones. Las primeras rondas garantizan una rareza mínima (mejor cuanto antes) — toca el sobre para abrirlo y ver tus 3 opciones.",
                 "draft_synergies_title": "⚡ Sinergias de Era",
-                "draft_synergies_text": "Si 2 o más jugadores de tu roster son de la misma era, activás una sinergia con bonus en combate. Podés elegir una Era de Build para que sus bonus escalen aún más con más jugadores de esa era.",
+                "draft_synergies_text": "Si 2 o más jugadores de tu roster son de la misma era, se activa una sinergia con bonus en combate. Puedes elegir una Era de Build para que sus bonus escalen aún más con más jugadores de esa era.",
                 "map_basics_title": "🗺️ El mapa",
                 "map_basics_text": "16 etapas divididas en 4 zonas. Cada zona termina con un jefe. Los nodos son distintos tipos: partidos, firmas de jugadores, entrenamiento, descanso y eventos del mánager.",
                 "prefight_basics_title": "⚔️ Antes del combate",
-                "prefight_basics_text": "Tenés que derrotar a los 3 lanzadores rivales en orden, y tenés que hacerlo en 3 innings — si el partido termina y todavía te queda alguno por derrotar, perdés la serie. Tu equipo comparte 100 HP entre todos los bateadores; si llega a 0, también perdés.",
+                "prefight_basics_text": "Tienes que derrotar a los 3 lanzadores rivales en orden, y tienes que hacerlo en 3 innings — si el partido termina y todavía te queda alguno por derrotar, pierdes la serie. Tu equipo comparte 100 HP entre todos los bateadores; si llega a 0, también pierdes.",
                 "combat_dice_title": "🎲 Cómo se resuelve cada turno",
-                "combat_dice_text": "Tirás un dado de 1 a 100. Las Zonas de la Suerte muestran qué rango da Boleto, Ponche, Out o Hit para este enfrentamiento exacto. Bajarle todo el HP a un lanzador lo saca y entra el siguiente. Tocá el ícono ℹ️ arriba a la derecha si querés ver el desglose completo de daño."
+                "combat_dice_text": "Tiras un dado de 1 a 100. Las Zonas de la Suerte muestran qué rango da Boleto, Ponche, Out o Hit para este enfrentamiento exacto. Bajarle todo el HP a un lanzador lo saca y entra el siguiente. Toca el ícono ℹ️ arriba a la derecha si quieres ver el desglose completo de daño."
         },
         "sidebar": {
                 "upgrades": "<i class=\"fa-solid fa-suitcase\"></i> MEJORAS",
@@ -149,7 +149,7 @@
         },
         "run_intro": {
                 "title": "⚾ ¡ARRANCA LA TEMPORADA!",
-                "desc": "Firmá a tus leyendas, armá tu alineación, y salí a la cancha. Ganá partidos para conseguir presupuesto y mejorá a tus jugadores. Sumá sinergias de era para potenciar tu equipo. Derrotá a los 3 pitchers rivales antes de que se acaben las 3 entradas — o antes de que tu HP llegue a 0.<br><br><strong style=\"color: var(--primary-color);\">¿Tenés lo que hace falta para ser campeón?</strong>",
+                "desc": "Firma a tus leyendas, arma tu alineación, y sal a la cancha. Gana partidos para conseguir presupuesto y mejora a tus jugadores. Suma sinergias de era para potenciar tu equipo. Derrota a los 3 pitchers rivales antes de que se acaben las 3 entradas — o antes de que tu HP llegue a 0.<br><br><strong style=\"color: var(--primary-color);\">¿Tienes lo que hace falta para ser campeón?</strong>",
                 "dont_show_again": "No volver a mostrar",
                 "start_btn": "⚾ ¡EMPEZAR!"
         },
