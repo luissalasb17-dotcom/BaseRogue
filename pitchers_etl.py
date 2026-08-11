@@ -41,7 +41,7 @@ MIN_GS_ALLSTAR    = 1     # al menos 1 GS para All-Stars / HoF como filtro secun
 # abridor solo por volumen de innings (mismo WAR crudo, muchas mas IP). Este
 # boost se aplica UNICAMENTE al ranking usado para elegir las PEAK_SEASONS
 # mejores temporadas, nunca al war_season real que se guarda/muestra.
-RELIEF_WAR_BOOST         = 1.6   # punto de partida — ajustar tras revisar casos reales (ej. Eckersley)
+RELIEF_WAR_BOOST         = 2.0   # ajustado de 1.6 a 2.0 tras revisar casos reales (ej. Eckersley)
 RELIEF_GS_RATIO_THRESHOLD = 0.40  # mismo umbral que ya usa el split de carrera SP/RP (ver mas abajo)
 
 ERA_THRESHOLDS = [
