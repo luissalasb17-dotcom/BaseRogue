@@ -1037,7 +1037,15 @@
           era:    pitcher.era,
           team:   pitcher.team,
           rarity: pitcher.rarity,
-          grt:    pitcher.grt
+          grt:    pitcher.grt,
+          // Explicit passthrough — without these, downstream card renderers'
+          // h9 fallback (checks .h9 -> .grt) found neither on THIS reconstructed
+          // object (only .mov/.stf/.ctl), silently defaulting H/9 to 50 -> flat
+          // "C" on the in-combat pitcher card even after fixing the source data.
+          h9:     pitcher.h9,
+          k9:     pitcher.k9,
+          bb9:    pitcher.bb9,
+          hr9:    pitcher.hr9
         } : null,
         inning:          this.inning,
         outs:            this.outs,
@@ -1105,7 +1113,11 @@
           era:    this.activePitcher.era,
           team:   this.activePitcher.team,
           rarity: this.activePitcher.rarity,
-          grt:    this.activePitcher.grt
+          grt:    this.activePitcher.grt,
+          h9:     this.activePitcher.h9,
+          k9:     this.activePitcher.k9,
+          bb9:    this.activePitcher.bb9,
+          hr9:    this.activePitcher.hr9
         } : null,
         currentBatter:   this.awayTeam.lineup[this.awayLineupIndex] || null,
         lineupIndex:     this.awayLineupIndex,

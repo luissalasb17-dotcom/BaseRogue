@@ -4654,7 +4654,14 @@ function initGameModeSelector() {
         hp: pitcher.hp, maxHp: pitcher.maxHp,
         stamina: Math.round((pitcher.hp / pitcher.maxHp) * 100),
         ovr: pitchOvr,
-        rarity: pitchRarity
+        rarity: pitchRarity,
+        // Without these, createCardHTML's h9 fallback (checks .h9 -> .h9_val ->
+        // .grt, none of which this object set) silently defaulted to 50 -> flat
+        // "C" on the in-combat card, even after fixing the same bug elsewhere.
+        h9:  pitcher.h9  !== undefined ? pitcher.h9  : (pitcher.grt !== undefined ? pitcher.grt : 50),
+        k9:  pitcher.k9  !== undefined ? pitcher.k9  : pitchStf,
+        bb9: pitcher.bb9 !== undefined ? pitcher.bb9 : pitchCtl,
+        hr9: pitcher.hr9 !== undefined ? pitcher.hr9 : pitchMov
       };
       el.arenaPitcherCardSlot.innerHTML = createCardHTML(tempPitcher, tempPitcher.pos);
       if (dealAnimation) dealCardIn(el.arenaPitcherCardSlot, { fromX: 70, delay: 150 });
