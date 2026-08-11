@@ -708,8 +708,8 @@
         "badge": {
                 "captain_tooltip": "Captain: +5 a todos los ratings de sus compañeros de equipo mientras esté en el roster activo.",
                 "clutch_tooltip": "Clutch Player: +2% de probabilidad de sencillo y doble, +4% de HR con corredores en posición de anotar o durante la última entrada.",
-                "interera_label": "FUERA DE ÉPOCA",
-                "interera_tooltip": "Fuera de Época: este jugador no estaba activo en la temporada seleccionada — cuenta el doble para activar la sinergia de su propia era."
+                "interera_label": "VIAJERO EN EL TIEMPO",
+                "interera_tooltip": "Viajero en el Tiempo: este jugador no estaba activo en la temporada seleccionada — cuenta el doble para activar la sinergia de su propia era."
         },
         "combat_info": {
                 "title": "⚙️ DATOS DE DAÑO & VALORES",
@@ -1428,8 +1428,8 @@
         "badge": {
                 "captain_tooltip": "Captain: +5 to all ratings for teammates while on active roster.",
                 "clutch_tooltip": "Clutch Player: +2% single and double chance, +4% HR chance with runners in scoring position during final inning.",
-                "interera_label": "OUT OF ERA",
-                "interera_tooltip": "Out of Era: this player wasn't active during the selected season — counts double toward unlocking their own era's synergy."
+                "interera_label": "TIME TRAVELER",
+                "interera_tooltip": "Time Traveler: this player wasn't active during the selected season — counts double toward unlocking their own era's synergy."
         },
         "combat_info": {
                 "title": "⚙️ DAMAGE DATA & VALUES",
