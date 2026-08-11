@@ -39,9 +39,9 @@ function setMobileTab(tab) {
     if (tab === 'action') {
       centerPanel.classList.add('mobile-active');
     } else if (tab === 'roster') {
-      rightSidebar.classList.add('mobile-active');
+      leftSidebar.classList.add('mobile-active');   // lineup/alineación
     } else if (tab === 'order') {
-      leftSidebar.classList.add('mobile-active');
+      rightSidebar.classList.add('mobile-active');  // sinergias
     }
   }
 
@@ -571,6 +571,18 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
         else roundBadgeKey = 'draft.round_free_label';
       }
 
+      // Mobile-only compact strip so the player can see which positions are
+      // already filled without switching off the pick-cards tab (draft-col-roster
+      // has the full detail but lives behind a tab on mobile). Lives outside the
+      // 3-column tabbed layout, so no tab-system changes needed.
+      const posTrackerHTML = SLOTS_ORDER.map(slot => {
+        const player = G.draftRoster[slot];
+        const color = player ? (RARITY_COLORS[player.rarity] || RARITY_COLORS.Common) : 'rgba(255,255,255,0.15)';
+        const bg = player ? 'rgba(255,255,255,0.05)' : 'transparent';
+        const textColor = player ? color : '#4b5563';
+        return `<div title="${slot}${player ? ': ' + player.name : ''}" style="width:26px;height:26px;border-radius:6px;border:1.5px solid ${color};background:${bg};display:flex;align-items:center;justify-content:center;font-size:8px;font-family:'Press Start 2P',monospace;color:${textColor};">${slot}</div>`;
+      }).join('');
+
       header.innerHTML = `
         <div style="max-width: 780px; margin: 0 auto 12px; padding: 10px 16px; background: rgba(0, 255, 102, 0.05); border: 1px solid rgba(0, 255, 102, 0.3); border-radius: 8px; font-size: 11px; color: #a7f3d0; line-height: 1.5; text-align: center;">
           ${t('menu.intro_desc', { rounds: 9, hp: 100 })}
@@ -579,6 +591,7 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
           ${t('draft.round_header', { round: round })}
         </div>
         <div style="display:flex;justify-content:center;gap:6px;align-items:center;margin-bottom:8px;">${roundDots}</div>
+        <div class="md:hidden" style="display:flex;justify-content:center;gap:4px;flex-wrap:wrap;margin-bottom:10px;">${posTrackerHTML}</div>
         <div style="display:inline-block;background:${RARITY_BG[info.rarities ? info.rarities[0] : 'Legendary']};
           border:1px solid ${RARITY_COLORS[info.rarities ? info.rarities[0] : 'Legendary']};
           border-radius:20px;padding:4px 14px;font-size:11px;
