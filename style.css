@@ -348,6 +348,20 @@ p {
   filter: brightness(1.3);
 }
 
+/* Story Mode inter-era wildcard — top-right corner, independent of the
+   bottom-left clutch/captain ribbons so it never collides with them. */
+.card-ribbon.ribbon-top-right {
+  top: 11px;
+  right: -26px;
+  transform: rotate(45deg);
+}
+
+.card-ribbon.ribbon-interera {
+  background: linear-gradient(135deg, #f59e0b, #b45309);
+  color: #1a1002;
+  text-shadow: none;
+}
+
 /* Outcome Row Modifier Pills (Zonas de la Suerte) */
 .outcome-row-left {
   display: flex;

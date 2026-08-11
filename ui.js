@@ -497,10 +497,12 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
     if (!player) return '';
     const isClutch = !!(player.clutch || player.is_clutch);
     const isCaptain = !!(player.captain || player.is_captain);
-    if (!isClutch && !isCaptain) return '';
+    const isInterEra = !!player.isInterEra;
+    if (!isClutch && !isCaptain && !isInterEra) return '';
 
     const clutchToolTip = window.t ? window.t('badge.clutch_tooltip', 'Clutch Player: +4% de probabilidad de hit y +4% de HR con corredores en posición de anotar durante la última entrada.') : 'Clutch Player: +4% de probabilidad de hit y +4% de HR con corredores en posición de anotar durante la última entrada.';
     const captainToolTip = window.t ? window.t('badge.captain_tooltip', 'Captain: +5 a todos los ratings de sus compañeros de equipo mientras esté en el roster activo.') : 'Captain: +5 a todos los ratings de sus compañeros de equipo mientras esté en el roster activo.';
+    const interEraToolTip = window.t ? window.t('badge.interera_tooltip') : 'Fuera de Época: este jugador no estaba activo en la temporada seleccionada — cuenta el doble para su sinergia.';
 
     let icons = '';
     if (isClutch) {
@@ -508,6 +510,9 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
     }
     if (isCaptain) {
       icons += `<span class="list-badge-icon badge-captain" title="${captainToolTip}" style="color:var(--badge-captain,#00d4ff); font-weight:bold; margin-left:3px; cursor:help; font-size:10px; display:inline-block;">C★</span>`;
+    }
+    if (isInterEra) {
+      icons += `<span class="list-badge-icon badge-interera" title="${interEraToolTip}" style="color:#f59e0b; font-weight:bold; margin-left:3px; cursor:help; font-size:10px; display:inline-block;">⏳</span>`;
     }
     return icons;
   }
@@ -1798,6 +1803,14 @@ function initGameModeSelector() {
     } else if (isCaptain) {
       ribbonHTML = `
         <div class="card-ribbon ribbon-bottom-left ribbon-captain" title="${captainToolTip}">CAPTAIN</div>
+      `;
+    }
+
+    if (player.isInterEra) {
+      const interEraTooltip = window.t ? window.t('badge.interera_tooltip') : 'Fuera de Época: este jugador no estaba activo en la temporada seleccionada — cuenta el doble para su sinergia.';
+      const interEraLabel = window.t ? window.t('badge.interera_label') : 'FUERA DE ÉPOCA';
+      ribbonHTML += `
+        <div class="card-ribbon ribbon-top-right ribbon-interera" title="${interEraTooltip}">${interEraLabel}</div>
       `;
     }
 
