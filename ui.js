@@ -899,6 +899,7 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
   window.handleRollDice = handleRollDice;
   window.setupAndShowPreFightScreen = setupAndShowPreFightScreen;
   window.showSuperBossIntroModal = showSuperBossIntroModal;
+  window.openRunSummaryModal = openRunSummaryModal;
 
   // renderLineupAssignment is no longer needed (handled inline in draft rounds)
   // Keeping stub so any legacy references don't throw
