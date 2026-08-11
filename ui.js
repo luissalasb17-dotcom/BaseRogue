@@ -1318,12 +1318,17 @@ function showTutorialTip(id, anchorEl, titleKey, textKey, placement = 'bottom', 
   document.body.appendChild(callout);
 
   const rect = anchorEl.getBoundingClientRect();
-  const calloutRect = callout.getBoundingClientRect();
+  // offsetWidth/offsetHeight (layout box), not getBoundingClientRect, since the
+  // entrance animation's initial scale(0.96) transform would otherwise shrink
+  // the measured rect and let the clamp undershoot the real rendered size.
+  const calloutW = callout.offsetWidth;
+  const calloutH = callout.offsetHeight;
   const top = placement === 'top'
-    ? rect.top - calloutRect.height - 10
+    ? rect.top - calloutH - 10
     : rect.bottom + 10;
-  const left = Math.max(8, Math.min(window.innerWidth - calloutRect.width - 8, rect.left));
-  callout.style.top = `${Math.max(8, top)}px`;
+  const left = Math.max(8, Math.min(window.innerWidth - calloutW - 8, rect.left));
+  const clampedTop = Math.max(8, Math.min(top, window.innerHeight - calloutH - 8));
+  callout.style.top = `${clampedTop}px`;
   callout.style.left = `${left}px`;
 
   callout.querySelector('.tutorial-callout-ok').addEventListener('click', () => {

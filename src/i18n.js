@@ -26,9 +26,9 @@
                 "map_basics_title": "🗺️ El mapa",
                 "map_basics_text": "16 etapas divididas en 4 zonas. Cada zona termina con un jefe. Los nodos son distintos tipos: partidos, firmas de jugadores, entrenamiento, descanso y eventos del mánager.",
                 "prefight_basics_title": "⚔️ Antes del combate",
-                "prefight_basics_text": "Tenés que derrotar a los 3 lanzadores rivales en orden. Tu equipo comparte 100 HP entre todos los bateadores — si llega a 0, perdés la serie.",
+                "prefight_basics_text": "Tenés que derrotar a los 3 lanzadores rivales en orden, y tenés que hacerlo en 3 innings — si el partido termina y todavía te queda alguno por derrotar, perdés la serie. Tu equipo comparte 100 HP entre todos los bateadores; si llega a 0, también perdés.",
                 "combat_dice_title": "🎲 Cómo se resuelve cada turno",
-                "combat_dice_text": "Tirás un dado de 1 a 100. Las Zonas de la Suerte muestran qué rango da Boleto, Ponche, Out o Hit para este enfrentamiento exacto. Bajarle todo el HP a un lanzador lo saca y entra el siguiente."
+                "combat_dice_text": "Tirás un dado de 1 a 100. Las Zonas de la Suerte muestran qué rango da Boleto, Ponche, Out o Hit para este enfrentamiento exacto. Bajarle todo el HP a un lanzador lo saca y entra el siguiente. Tocá el ícono ℹ️ arriba a la derecha si querés ver el desglose completo de daño."
         },
         "sidebar": {
                 "upgrades": "<i class=\"fa-solid fa-suitcase\"></i> MEJORAS",
@@ -744,9 +744,9 @@
                 "map_basics_title": "🗺️ The map",
                 "map_basics_text": "16 stages across 4 zones. Every zone ends with a boss. Nodes vary by type: matches, player signings, training, rest, and manager events.",
                 "prefight_basics_title": "⚔️ Before the fight",
-                "prefight_basics_text": "You need to defeat all 3 rival pitchers in order. Your team shares a single 100 HP pool across every batter — if it hits 0, you lose the series.",
+                "prefight_basics_text": "You need to defeat all 3 rival pitchers in order, and you need to do it within 3 innings — if the match ends with any pitcher still standing, you lose the series. Your team shares a single 100 HP pool across every batter; if it hits 0, you also lose.",
                 "combat_dice_title": "🎲 How each turn resolves",
-                "combat_dice_text": "Roll a 1-100 die. The Luck Zones show exactly which range gives a Walk, Strikeout, Out, or Hit for this specific matchup. Draining a pitcher's HP knocks them out and brings in the next one."
+                "combat_dice_text": "Roll a 1-100 die. The Luck Zones show exactly which range gives a Walk, Strikeout, Out, or Hit for this specific matchup. Draining a pitcher's HP knocks them out and brings in the next one. Tap the ℹ️ icon in the top-right if you want the full damage breakdown."
         },
         "sidebar": {
                 "upgrades": "<i class=\"fa-solid fa-suitcase\"></i> UPGRADES",
