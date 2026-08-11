@@ -913,6 +913,8 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
   window.setupAndShowPreFightScreen = setupAndShowPreFightScreen;
   window.showSuperBossIntroModal = showSuperBossIntroModal;
   window.openRunSummaryModal = openRunSummaryModal;
+  window.renderActiveRoster = renderActiveRoster;
+  window.closeNodeCompleted = closeNodeCompleted;
 
   // renderLineupAssignment is no longer needed (handled inline in draft rounds)
   // Keeping stub so any legacy references don't throw
@@ -2138,6 +2140,7 @@ function initGameModeSelector() {
 
     updateHUD();
     renderMap();
+    renderActiveRoster();
     window.showScreen('screen-map');
   }
 
