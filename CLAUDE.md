@@ -1,0 +1,43 @@
+# BaseRogue — contexto para Claude Code
+
+Roguelike de béisbol por turnos (d100), sitio estático (HTML/CSS/JS plano, sin build). Ver `README.md` para estructura de archivos y cómo correr localmente. Este archivo es un resumen del trabajo reciente y convenciones aprendidas, para no tener que re-descubrirlas.
+
+## Convenciones de esta sesión (importante)
+
+- **No correr comandos de deploy salvo que el usuario lo pida explícitamente en el mensaje actual.** El default histórico en este proyecto es trabajar 100% local y que el usuario decida cuándo publicar.
+- **Cache-busting manual**: los `<script src="archivo.js?v=N">` en `index.html` necesitan que subas `N` a mano cada vez que edites ese archivo, si vas a probarlo en el navegador — si no, el browser (o un server estático nuevo en el mismo puerto) puede servir una versión vieja cacheada. Cuando esto genera confusión al testear, lo más confiable es levantar el server estático en un puerto NUEVO cada vez (evita cualquier caché de puerto/origen previo).
+- **Cómo testear sin jugar la partida entera**: varias funciones internas de `ui.js` están expuestas en `window.*` específicamente para poder testear desde la consola del navegador sin clickear toda la UI: `window.renderDraftRound`, `window.renderSynergiesAndItems`, `window.showOutcomePopup`, `window.getDraftSynergyPrediction`, `window.setupAndStartMatchSimulation`, `window.handleRollDice`. Para recargar código sin reiniciar el server: `fetch('/archivo.js?bust='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(eval)`.
+- El proyecto real vive en `C:\Users\Administrador\.gemini\antigravity\scratch\baserogue` — el working directory que a veces asigna el harness (`C:\Users\Administrador\.claude\ROGUE`) puede estar vacío; si eso pasa, confirmar con el usuario la ruta real antes de asumir que no hay proyecto.
+
+## Estado de las sinergias de era (rework grande, ya implementado)
+
+Cada era tiene 4 tramos (T1=2, T2=4, T3=6, T4=8 jugadores de esa era en el roster). Solo la **Era de Build** (elegida por el jugador, `window.Game.buildEra`, setter `Game.setBuildEra(era)`) escala más allá de T1 — cualquier otra era con 2+ jugadores queda fija en el efecto de T1 sin importar cuántos más tenga. Lógica en `simulation.js` (`_calculateActiveSynergies`, y los checks `batterEra === '...' && eraSynergy >= N` a lo largo de `rollDice()`). Las 9 eras están implementadas y probadas: Genesis Chaos, Small Ball, Liveball Sluggers, Five-Tool Legends, Speed & Hustle, AstroTurf Speedsters, Bash Brothers, Moneyball Analytics, Three True Outcomes.
+
+Visualmente: panel de Sinergias (`renderSynergiesAndItems` en `ui.js`) muestra el tramo actual, badge "BUILD" con acento rosa (`--badge-build-era` en `style.css`), candado + nota para eras no-Build ancladas en T1, y el desglose de los 4 tramos para la Build activa. Botón "Elegir/Quitar como Build" en cada era.
+
+**Pendiente, no implementado**: la sensación de progresión/escalada del run ("no se siente como la magia de llegar al campeón") — quedó como charla/brainstorm, sin diseño ni código todavía. El mapa ya tiene 16 etapas con jefes en 3/7/11/15 y un SuperBoss final de 4 leyendas en la 15, pero no hay feedback visual de que los rivales escalan, ni un momento especial para el jefe final.
+
+## Bugs reales encontrados y corregidos esta sesión (no solo texto)
+
+- **Idioma por defecto**: `src/i18n.js` esperaba `DOMContentLoaded`, que quedaba atascado detrás de varios MB de scripts de datos — se cambió a init síncrono. El default SIGUE siendo `'en'` en todo el código (confirmado, no hay ninguna ruta que devuelva `'es'`); si alguien reporta ver español por default, sospechar primero de una build vieja en producción (nunca se había deployado hasta esta sesión) antes que de un bug de código.
+- **Moneyball Analytics (Efficiency Era) nunca funcionaba**: el string de comparación de era en `simulation.js` decía `'Efficiency (2006-2015)'` pero el valor real es `"Efficiency Era (2006-2015)"` (con "Era"). Corregido en las 4 ocurrencias. Había el mismo bug duplicado en `ui.js` (el `EraSynergyMeta` del panel de Sinergias).
+- **Mensajes de sinergia perdidos en el log**: las ramas de PONCHE y OUT en `rollDice()` armaban `playText` antes de correr los checks de sinergia, y nunca concatenaban `synergyProc` después (a diferencia de las ramas BB/HIT que sí lo hacían). Corregido.
+- **Conteo de "pitchers enfrentados"**: `pitchersDefeated` (KO count) se usaba también como si significara "enfrentados", y en timeouts/derrotas con el pitcher actual todavía vivo, subcontaba en 1. Se agregó un campo `pitchersFaced` separado y correcto, mostrado en el historial de fin de run como "(X/3 pitchers enfrentados)".
+- **`autoSortBattingOrder`**: el orden de asignación viejo dejaba que el leadoff (resuelto primero) le robara el puesto de cleanup a un jugador dominante en power+speed a la vez. Invertido: cleanup se reserva primero.
+- **`getDraftSynergyPrediction`** (el hint de sinergias en las cartas del draft) tenía la lógica vieja de 2 tramos, sin awareness de Build Era — prometía "¡Sinergia T2!" en eras que en realidad quedan ancladas en T1. Corregido para usar `Game.getEraTier()`.
+- **`opponents_database.js` no tenía script fuente en el repo** — solo existía el archivo generado, con ~15 commits de ajustes de fórmula nunca documentados. Se escribió `story_pitchers_etl.py` desde cero (ver README) y se regeneró el archivo completo.
+
+## Balance / diseño (decisiones tomadas, con el usuario, no asumidas)
+
+- Base HIT rate en `calcBoundaries()` (`simulation.js`): bajó de 44% → 35% → **40% final** (el usuario probó 35% en partidas reales y lo sintió muy grindeado).
+- WAR de relevo en selección de picos de 7 años (`pitchers_etl.py`): boost de **1.6x** al WAR de temporadas mayormente de relevo (GS/G < 0.40) SOLO para decidir qué años entran en el top 7, no al WAR real guardado. Verificado con datos reales de Eckersley (antes: sus 7 años eran 100% de abridor; después: entran 1987 y 1990 como relevista).
+- Selección de roster de equipo en Story Mode (top 3 por WAR de esa temporada): **NO se le aplicó** un boost similar — se verificó con Eckersley 1990 y Sutter 1979 que un relevista dominante YA gana su lugar por WAR directo sin ayuda (a diferencia del caso de picos de carrera, acá no hay sesgo estructural porque se comparan jugadores distintos entre sí, no temporadas del mismo jugador).
+- Normalización de ratings en Story Mode: se probaron dos métodos (comparar cada temporada suelta contra sí misma/su era, vs. contra la población de picos de carrera de Quick Play). El usuario **prefirió comparar contra la propia era de temporadas sueltas** — acepta una tasa de Legendary más alta (~20% vs ~4.5% target del diseño original) a cambio de que un Cy Young como Cole 2023 puntúe como lo mejor de SU año, no comprimido contra carreras completas de leyendas. Esto ya está en el `opponents_database.js` regenerado.
+
+## Animaciones/UI agregadas esta sesión
+
+Dado d100 visual (dos cubos 3D CSS, decenas+unidades), reparto de cartas al iniciar combate (deck→slide→flip), shuffle+reparto en cada ronda de draft, y un sistema transversal reutilizable (delegación de eventos + `MutationObserver`) para tilt con el cursor, shine en Legendary/Epic, y flip-in en cualquier carta nueva — sin tocar cada pantalla individualmente. Pantalla de bienvenida ("hype") antes de cada run nueva, con opción de "no volver a mostrar" en `localStorage`.
+
+## Deploy
+
+Vercel conectado al repo de GitHub (`origin`), deploy automático al pushear a `main`. `npm`/`node`/`vercel` CLI no están disponibles en el entorno de este agente — el único mecanismo de deploy disponible acá es `git push origin main`.
