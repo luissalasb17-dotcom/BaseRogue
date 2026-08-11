@@ -220,6 +220,7 @@ def main():
     py["ctl"] = py["bb9_val"].round(0).astype(int)
     py["mov"] = py["hr9_val"].round(0).astype(int)
     py["sta"] = py["sta_val"].round(0).astype(int)
+    py["h9"]  = py["h9_val"].round(0).astype(int)
 
     # ── OVR: identico 20/20/20/20/20 (H9/K9/BB9/HR9/STA) + curva cosmetica ────
     raw_ovr = (py["h9_val"]*0.20 + py["k9_val"]*0.20 + py["bb9_val"]*0.20 + py["hr9_val"]*0.20 + py["sta_val"]*0.20)
@@ -248,6 +249,7 @@ def main():
             "war": round(float(row["war_season"]), 1) if pd.notna(row["war_season"]) else 0.0,
             "hp": int(row["hp"]), "maxHp": int(row["maxHp"]),
             "stf": int(row["stf"]), "ctl": int(row["ctl"]), "mov": int(row["mov"]), "sta": int(row["sta"]),
+            "h9": int(row["h9"]),
             "ovr": int(row["ovr"]), "rarity": row["rarity"],
         }
 
