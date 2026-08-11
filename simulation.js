@@ -274,7 +274,9 @@
       const eraCounts = {};
       lineup.forEach(p => {
         if (p && p.era && p.era !== 'None') {
-          eraCounts[p.era] = (eraCounts[p.era] || 0) + 1;
+          // Story Mode inter-era wildcards count double toward their OWN era's
+          // synergy threshold — an incentive to take the out-of-era pick.
+          eraCounts[p.era] = (eraCounts[p.era] || 0) + (p.isInterEra ? 2 : 1);
         }
       });
       const active = {};

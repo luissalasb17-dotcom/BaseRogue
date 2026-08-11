@@ -2921,7 +2921,9 @@ function initGameModeSelector() {
     Object.values(window.Game.roster).forEach(player => {
       if (player && !player.isReplacement) {
         if (player.era) {
-          eraCounts[player.era] = (eraCounts[player.era] || 0) + 1;
+          // Keep in sync with simulation.js's _calculateActiveSynergies — Story
+          // Mode inter-era wildcards count double toward their own era's synergy.
+          eraCounts[player.era] = (eraCounts[player.era] || 0) + (player.isInterEra ? 2 : 1);
         }
         if (player.team && player.team !== 'ROOK') {
           teamCounts[player.team] = (teamCounts[player.team] || 0) + 1;
