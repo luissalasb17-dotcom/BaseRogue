@@ -3343,6 +3343,92 @@ body.workspace-active .main-container {
   100% { opacity: 0; transform: translate(-50%, -50%) translate(var(--px, 0px), var(--py, 0px)) scale(0.3); }
 }
 
+/* ── FIRST-RUN TUTORIAL: anchored callout bubble ──────────────────────────
+   Positioned via JS (top/left set from the anchor element's bounding rect),
+   this block only owns visual styling + the directional arrow. ── */
+.tutorial-callout {
+  position: fixed;
+  z-index: 9500;
+  max-width: 260px;
+  background: #090d16;
+  border: 2px solid var(--primary-color, #00ff66);
+  border-radius: 10px;
+  padding: 12px 14px;
+  box-shadow: 0 0 20px rgba(0, 255, 102, 0.35), 0 8px 24px rgba(0, 0, 0, 0.6);
+  animation: tutorial-callout-in 0.25s ease-out both;
+}
+
+.tutorial-callout-title {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 9px;
+  color: var(--primary-color, #00ff66);
+  line-height: 1.5;
+  margin-bottom: 8px;
+}
+
+.tutorial-callout-text {
+  font-size: 12px;
+  color: #e4e4e7;
+  line-height: 1.5;
+  margin-bottom: 10px;
+}
+
+.tutorial-callout-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.tutorial-callout-skip {
+  background: none;
+  border: none;
+  color: #6b7280;
+  font-size: 9px;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 1;
+}
+
+.tutorial-callout-ok {
+  background: var(--primary-color, #00ff66);
+  color: #000;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.tutorial-callout::after {
+  content: '';
+  position: absolute;
+  left: 24px;
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+}
+
+.tutorial-callout--bottom::after {
+  top: -8px;
+  border-bottom: 8px solid var(--primary-color, #00ff66);
+}
+
+.tutorial-callout--top::after {
+  bottom: -8px;
+  border-top: 8px solid var(--primary-color, #00ff66);
+}
+
+@keyframes tutorial-callout-in {
+  0%   { opacity: 0; transform: translateY(6px) scale(0.96); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
 /* ── CARD "PHYSICALITY" (Part 4 — reusable across every .player-card) ──────
    Cursor-follow tilt on hover, foil shine for Legendary/Epic, and a flip-in
    for any card newly added to the page — all driven generically by JS

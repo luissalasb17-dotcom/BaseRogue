@@ -922,6 +922,17 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
 
       setMobileTab(currentMobileTab || 'action');
 
+      if (round === 1) {
+        showTutorialTip(
+          'draft-roster', document.getElementById('draft-col-roster'),
+          'tutorial.draft_roster_title', 'tutorial.draft_roster_text', 'bottom',
+          () => showTutorialTip(
+            'draft-synergies', document.getElementById('synergies-sidebar-panel'),
+            'tutorial.draft_synergies_title', 'tutorial.draft_synergies_text', 'bottom'
+          )
+        );
+      }
+
     } catch(e) {
       console.error(e);
       const banner = document.getElementById('debug-error-banner');
@@ -1266,6 +1277,64 @@ function showRunIntroThenStartDraft(startDraftFn) {
       startDraftFn();
     };
   }
+}
+
+// ── FIRST-RUN TUTORIAL: 5 anchored callouts across the core loop ──────────────
+// One localStorage key holding a JSON array of seen step ids (same flat-flag
+// spirit as baserogue_skip_run_intro, just one key instead of five).
+const TUTORIAL_SEEN_KEY = 'baserogue_tutorial_seen';
+const TUTORIAL_STEP_IDS = ['draft-roster', 'draft-synergies', 'map-basics', 'prefight-basics', 'combat-dice-zones'];
+
+function getTutorialSeen() {
+  try { return new Set(JSON.parse(localStorage.getItem(TUTORIAL_SEEN_KEY) || '[]')); }
+  catch (e) { return new Set(); }
+}
+function markTutorialSeen(id) {
+  const seen = getTutorialSeen();
+  seen.add(id);
+  localStorage.setItem(TUTORIAL_SEEN_KEY, JSON.stringify([...seen]));
+}
+function markAllTutorialSeen() {
+  localStorage.setItem(TUTORIAL_SEEN_KEY, JSON.stringify(TUTORIAL_STEP_IDS));
+}
+
+// Anchored callout bubble near `anchorEl`, auto-skipped once its id has been
+// seen. `onDismiss` (optional) fires after a normal "Got it" dismiss — used to
+// chain the two draft-screen tips one after another instead of stacking them.
+function showTutorialTip(id, anchorEl, titleKey, textKey, placement = 'bottom', onDismiss = null) {
+  if (!anchorEl || getTutorialSeen().has(id)) return;
+  document.querySelectorAll('.tutorial-callout').forEach(el => el.remove());
+
+  const callout = document.createElement('div');
+  callout.className = `tutorial-callout tutorial-callout--${placement}`;
+  callout.innerHTML = `
+    <div class="tutorial-callout-title">${t(titleKey)}</div>
+    <div class="tutorial-callout-text">${t(textKey)}</div>
+    <div class="tutorial-callout-actions">
+      <button class="tutorial-callout-skip">${t('tutorial.skip_all')}</button>
+      <button class="tutorial-callout-ok">${t('tutorial.got_it')}</button>
+    </div>
+  `;
+  document.body.appendChild(callout);
+
+  const rect = anchorEl.getBoundingClientRect();
+  const calloutRect = callout.getBoundingClientRect();
+  const top = placement === 'top'
+    ? rect.top - calloutRect.height - 10
+    : rect.bottom + 10;
+  const left = Math.max(8, Math.min(window.innerWidth - calloutRect.width - 8, rect.left));
+  callout.style.top = `${Math.max(8, top)}px`;
+  callout.style.left = `${left}px`;
+
+  callout.querySelector('.tutorial-callout-ok').addEventListener('click', () => {
+    markTutorialSeen(id);
+    callout.remove();
+    if (onDismiss) onDismiss();
+  });
+  callout.querySelector('.tutorial-callout-skip').addEventListener('click', () => {
+    markAllTutorialSeen();
+    callout.remove();
+  });
 }
 
 function initGameModeSelector() {
@@ -2786,6 +2855,11 @@ function initGameModeSelector() {
       const screenMap = document.getElementById('screen-map');
       if (screenMap) screenMap.scrollTop = 0;
     }, 10);
+
+    showTutorialTip(
+      'map-basics', document.getElementById('map-nodes-container'),
+      'tutorial.map_basics_title', 'tutorial.map_basics_text', 'bottom'
+    );
   }
 
   // Legacy stub – no longer needed (paths drawn inline with renderMap)
@@ -3797,6 +3871,11 @@ function initGameModeSelector() {
     });
 
     window.showScreen('screen-pre-fight');
+
+    showTutorialTip(
+      'prefight-basics', el.preFightEnemyRotation,
+      'tutorial.prefight_basics_title', 'tutorial.prefight_basics_text', 'top'
+    );
   }
 
   // ── START INTERACTIVE DICE BATTLE ────────────────────────────────────────────
@@ -3951,6 +4030,11 @@ function initGameModeSelector() {
     } else {
       el.screenMatch.appendChild(dicePanel);
     }
+
+    showTutorialTip(
+      'combat-dice-zones', document.getElementById('zones-panel'),
+      'tutorial.combat_dice_title', 'tutorial.combat_dice_text', 'top'
+    );
 
     // Initial render — the faceoff cards get dealt in from a "deck" on each side
     // (batter from the left/your side, pitcher from the right/rival side) instead
