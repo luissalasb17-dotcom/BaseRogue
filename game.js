@@ -923,26 +923,58 @@
       const missingPos = Object.keys(this.draftRoster).filter(pos => !this.draftRoster[pos]);
 
       // Assign weights: 6x probability if player fills a missing position (primary or secondary)
-      const weightedAvailable = available.map(p => {
+      const toWeighted = (p) => {
         let isNeeded = false;
         if (missingPos.includes(p.pos)) isNeeded = true;
         if (p.sec_pos && p.sec_pos.split(', ').some(sp => missingPos.includes(sp))) isNeeded = true;
         return { player: p, weight: isNeeded ? 6 : 1 };
-      });
+      };
+
+      // Story Mode: ~80% of offered cards are restricted to players actually
+      // active during the selected season (debut_year<=year<=last_year), the
+      // remaining ~20% is a wildcard from any era — flagged isInterEra so it
+      // gets a visual marker and a 2x synergy weight (see _calculateActiveSynergies
+      // / renderSynergiesAndItems), as a deliberate incentive to take it.
+      const isStoryYearAware = this.selectedMode === 'story' && this.selectedSeasonYear;
+      let activeWeighted = null;
+      let fullWeighted = available.map(toWeighted);
+      if (isStoryYearAware) {
+        const year = parseInt(this.selectedSeasonYear, 10);
+        activeWeighted = available
+          .filter(p => p.debut_year !== undefined && p.last_year !== undefined && p.debut_year <= year && p.last_year >= year)
+          .map(toWeighted);
+      }
+
+      const pickWeighted = (list) => {
+        if (!list.length) return null;
+        let totalWeight = list.reduce((sum, item) => sum + item.weight, 0);
+        let random = Math.random() * totalWeight;
+        let selectedIdx = list.length - 1;
+        for (let i = 0; i < list.length; i++) {
+          if (random < list[i].weight) { selectedIdx = i; break; }
+          random -= list[i].weight;
+        }
+        return list.splice(selectedIdx, 1)[0].player;
+      };
+      const removeFromList = (list, playerName) => {
+        const idx = list.findIndex(item => item.player.name === playerName);
+        if (idx !== -1) list.splice(idx, 1);
+      };
 
       const picks = [];
-      while (picks.length < 3 && weightedAvailable.length > 0) {
-        let totalWeight = weightedAvailable.reduce((sum, item) => sum + item.weight, 0);
-        let random = Math.random() * totalWeight;
-        let selectedIdx = weightedAvailable.length - 1;
-        for (let i = 0; i < weightedAvailable.length; i++) {
-          if (random < weightedAvailable[i].weight) {
-            selectedIdx = i;
-            break;
-          }
-          random -= weightedAvailable[i].weight;
+      while (picks.length < 3 && (fullWeighted.length > 0 || (activeWeighted && activeWeighted.length > 0))) {
+        const useActive = isStoryYearAware && activeWeighted.length > 0 && Math.random() < 0.8;
+        let chosen = useActive ? pickWeighted(activeWeighted) : pickWeighted(fullWeighted);
+        if (!chosen) chosen = useActive ? pickWeighted(fullWeighted) : (activeWeighted ? pickWeighted(activeWeighted) : null);
+        if (!chosen) break;
+        if (activeWeighted) removeFromList(activeWeighted, chosen.name);
+        removeFromList(fullWeighted, chosen.name);
+        if (isStoryYearAware && !useActive) {
+          const year = parseInt(this.selectedSeasonYear, 10);
+          const wasActive = chosen.debut_year !== undefined && chosen.last_year !== undefined && chosen.debut_year <= year && chosen.last_year >= year;
+          if (!wasActive) chosen = { ...chosen, isInterEra: true };
         }
-        picks.push(weightedAvailable.splice(selectedIdx, 1)[0].player);
+        picks.push(chosen);
       }
       // Fallback: if not enough picks after rarity filter, pull from full pool
       if (picks.length < 3) {
