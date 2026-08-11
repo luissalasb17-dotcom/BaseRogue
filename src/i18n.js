@@ -180,7 +180,17 @@
                 "batters_title": "<i class=\"fa-solid fa-users\"></i> Tus Bateadores (HP)",
                 "pitchers_title": "<i class=\"fa-solid fa-skull-crossbones\"></i> Rotación Oponente (HP)",
                 "start_btn": "<i class=\"fa-solid fa-fire-flame-curved\"></i> ¡AL COMBATE!",
-                "back_map_btn": "<i class=\"fa-solid fa-arrow-left\"></i> Volver al Mapa"
+                "back_map_btn": "<i class=\"fa-solid fa-arrow-left\"></i> Volver al Mapa",
+                "scouting_title": "📋 Informe de Scouting",
+                "threat_common": "Roster de Novatos",
+                "threat_uncommon": "Roster Sólido",
+                "threat_rare": "Contendientes Serios",
+                "threat_epic": "Élite de la Liga",
+                "threat_legendary": "Leyendas Históricas",
+                "record_dominant": "Dominaron la temporada — favoritos claros al título",
+                "record_contender": "Equipo contendiente con récord ganador",
+                "record_underdog": "Equipo humilde, pero cuidado con las sorpresas",
+                "era_label": "Era"
         },
         "match": {
                 "title": "<i class=\"fa-solid fa-trophy\"></i> Bateadores al Combate",
@@ -867,7 +877,17 @@
                 "batters_title": "<i class=\"fa-solid fa-users\"></i> Your Batters (HP)",
                 "pitchers_title": "<i class=\"fa-solid fa-skull-crossbones\"></i> Opponent Rotation (HP)",
                 "start_btn": "<i class=\"fa-solid fa-fire-flame-curved\"></i> BATTLE!",
-                "back_map_btn": "<i class=\"fa-solid fa-arrow-left\"></i> Back to Map"
+                "back_map_btn": "<i class=\"fa-solid fa-arrow-left\"></i> Back to Map",
+                "scouting_title": "📋 Scouting Report",
+                "threat_common": "Rookie Roster",
+                "threat_uncommon": "Solid Roster",
+                "threat_rare": "Serious Contenders",
+                "threat_epic": "League Elite",
+                "threat_legendary": "Historic Legends",
+                "record_dominant": "Dominated the season — clear title favorites",
+                "record_contender": "Contending team with a winning record",
+                "record_underdog": "Scrappy underdogs — but watch for upsets",
+                "era_label": "Era"
         },
         "match": {
                 "title": "<i class=\"fa-solid fa-trophy\"></i> BATTLE",

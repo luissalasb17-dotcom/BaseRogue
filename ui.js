@@ -282,6 +282,7 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
     preFightSubtitle: document.getElementById('pre-fight-subtitle'),
     preFightPlayerLineup: document.getElementById('pre-fight-player-lineup'),
     preFightEnemyRotation: document.getElementById('pre-fight-enemy-rotation'),
+    preFightScouting: document.getElementById('pre-fight-scouting'),
     btnPreFightStart: document.getElementById('btn-pre-fight-start'),
     btnPreFightBackMap: document.getElementById('btn-pre-fight-back-map'),
     
@@ -896,6 +897,8 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
   window.getDraftSynergyPrediction = getDraftSynergyPrediction;
   window.setupAndStartMatchSimulation = setupAndStartMatchSimulation;
   window.handleRollDice = handleRollDice;
+  window.setupAndShowPreFightScreen = setupAndShowPreFightScreen;
+  window.showSuperBossIntroModal = showSuperBossIntroModal;
 
   // renderLineupAssignment is no longer needed (handled inline in draft rounds)
   // Keeping stub so any legacy references don't throw
@@ -3623,10 +3626,58 @@ function initGameModeSelector() {
     window.showScreen('screen-train');
   }
 
+  // SCOUTING REPORT — communicates rising threat level before each match.
+  // Story Mode gets thematic content (franchise name, season era, win_pct-based
+  // flavor); Quick Play falls back to the pitcher pool's own era/rarity data.
+  function renderScoutingReport(enemy) {
+    if (!el.preFightScouting) return;
+
+    const rarity = enemy.rarity || 'Common';
+    const rColor = RARITY_COLORS[rarity] || RARITY_COLORS.Common;
+    const rBg = RARITY_BG[rarity] || RARITY_BG.Common;
+    const threatKeyMap = { Common: 'threat_common', Uncommon: 'threat_uncommon', Rare: 'threat_rare', Epic: 'threat_epic', Legendary: 'threat_legendary' };
+    const threatLabel = t('pre_fight.' + (threatKeyMap[rarity] || 'threat_common'));
+
+    const isStory = window.Game.selectedMode === 'story' && !!enemy.year;
+    let eraName = enemy.era || '';
+    let teamName = enemy.name;
+    let recordHTML = '';
+
+    if (isStory) {
+      eraName = getEraNameForYear(enemy.year);
+      let teamFull = enemy.teamID || enemy.name;
+      if (window.PlayersDB && window.PlayersDB.FranchiseNames) {
+        teamFull = window.PlayersDB.FranchiseNames[enemy.teamID] || teamFull;
+      }
+      teamName = `${teamFull} (${enemy.year})`;
+
+      const wp = enemy.win_pct || 0;
+      const recordKey = wp >= 0.560 ? 'record_dominant' : (wp >= 0.480 ? 'record_contender' : 'record_underdog');
+      const pctText = (wp * 100).toFixed(1) + '%';
+      recordHTML = `<div style="font-size:11px;color:#9ca3af;margin-top:4px;">${t('pre_fight.' + recordKey)} — <strong style="color:#e4e4e7;">${pctText}</strong> ${t('map.win_pct', 'win %')}</div>`;
+    }
+
+    el.preFightScouting.innerHTML = `
+      <div style="background:rgba(0,0,0,0.35);border:1px solid ${rColor};border-radius:10px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+        <div>
+          <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:${rColor};letter-spacing:0.5px;margin-bottom:6px;">${t('pre_fight.scouting_title')}</div>
+          <div style="font-size:13px;font-weight:bold;color:#e4e4e7;">${teamName}</div>
+          ${eraName ? `<div style="font-size:11px;color:#9ca3af;margin-top:2px;">${t('pre_fight.era_label')}: ${eraName}</div>` : ''}
+          ${recordHTML}
+        </div>
+        <div style="background:${rBg};border:1px solid ${rColor};border-radius:8px;padding:8px 14px;text-align:center;">
+          <div style="font-size:9px;color:${rColor};font-weight:bold;letter-spacing:0.5px;">${rarity.toUpperCase()}</div>
+          <div style="font-size:11px;color:#e4e4e7;margin-top:2px;">${threatLabel}</div>
+        </div>
+      </div>
+    `;
+  }
+
   // PRE-FIGHT SCREEN SETUP
   function setupAndShowPreFightScreen() {
     const enemy = window.Game.getEnemyTeam();
     el.preFightSubtitle.innerHTML = t('pre_fight.subtitle', { team: `<strong style="color: #ef4444;">${enemy.name}</strong>` });
+    renderScoutingReport(enemy);
 
     // 1. Render player's batters
     el.preFightPlayerLineup.innerHTML = "";
@@ -4974,6 +5025,18 @@ function initGameModeSelector() {
   function showSuperBossIntroModal(onProceed) {
     const overlay = document.createElement('div');
     overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.92);backdrop-filter:blur(10px);z-index:500;display:flex;align-items:center;justify-content:center;';
+
+    // Reveal the 4-legend roster one name at a time for a cinematic beat
+    // rather than dumping the whole roster on screen at once.
+    const legends = (window.Game.currentEnemy && window.Game.currentEnemy.pitchers) || [];
+    const legendRowsHTML = legends.map((p, i) => `
+      <div class="super-boss-legend-row" style="opacity:0;transform:translateY(8px);transition:opacity 0.4s ease-out,transform 0.4s ease-out;transition-delay:${0.3 + i * 0.35}s;display:flex;align-items:center;gap:8px;padding:6px 10px;background:rgba(255,215,0,0.08);border-radius:6px;margin-bottom:6px;">
+        <span style="font-size:14px;">⚾</span>
+        <span style="font-size:10.5px;color:#fef08a;font-weight:bold;">${p.cleanName || p.name}</span>
+        <span style="font-size:9px;color:#94a3b8;margin-left:auto;">${p.role || ''}</span>
+      </div>
+    `).join('');
+
     overlay.innerHTML = `
       <div style="background:#090d16;border:3px solid #ffd700;border-radius:16px;padding:24px;max-width:440px;width:90%;text-align:center;box-shadow:0 0 40px rgba(255,215,0,0.5);">
         <div style="font-family:'Press Start 2P',monospace;font-size:14px;color:#ffd700;margin-bottom:12px;text-shadow:0 0 10px #ffd700;">⚡ SUPER BOSS FIGHT ⚡</div>
@@ -4981,6 +5044,7 @@ function initGameModeSelector() {
           ¡Derrotaste al primer grupo del Playoffs!<br>
           <span style="color:#22d3ee;">${typeof window.t==='function'?window.t('ui.super_boss_desc'):'¡Pero las 4 Máximas Leyendas del Béisbol saltan al campo para la Batalla Final!'}</span>
         </div>
+        ${legendRowsHTML ? `<div style="margin-bottom:14px;">${legendRowsHTML}</div>` : ''}
         <div style="background:rgba(255,215,0,0.1);border:1px solid #ffd700;border-radius:8px;padding:10px;font-size:11px;color:#fef08a;margin-bottom:20px;">
           🔥 <strong>Fase Final Especial (4 Pitchers Leyenda)</strong><br>
           ${typeof window.t==='function'?window.t('ui.hp_restored'):'Tu equipo ha recuperado +30 HP y Escudo Máximo.'}
@@ -4989,6 +5053,17 @@ function initGameModeSelector() {
       </div>
     `;
     document.body.appendChild(overlay);
+    void overlay.offsetHeight; // force layout so the 0% state paints before we transition
+
+    // Trigger the staggered reveal transition on the next tick (setTimeout, not rAF —
+    // more reliably fires across environments/tabs than a raf callback here).
+    setTimeout(() => {
+      overlay.querySelectorAll('.super-boss-legend-row').forEach(row => {
+        row.style.opacity = '1';
+        row.style.transform = 'translateY(0)';
+      });
+    }, 20);
+
     document.getElementById('btn-start-super-boss').addEventListener('click', () => { overlay.remove(); if (onProceed) onProceed(); });
   }
 
