@@ -30,17 +30,32 @@
     'F': '#ef4444'
   };
 
+  // Matches ui.js's getStatGrade() +/- bands so BaseballDex doesn't flatten
+  // every mid-range value into one bare letter (was showing "C" for a wide
+  // 40-59 span with no C+/C- distinction, unlike the rest of the game's cards).
   function getGrade(val) {
-    if (val >= 100) return 'S';
-    if (val >= 80) return 'A';
-    if (val >= 60) return 'B';
-    if (val >= 40) return 'C';
-    if (val >= 20) return 'D';
-    return 'F';
+    let letter = 'F', modifier = '';
+    if (val >= 100) {
+      letter = 'S';
+    } else if (val >= 80) {
+      letter = 'A';
+      if (val >= 95) modifier = '+'; else if (val < 85) modifier = '-';
+    } else if (val >= 60) {
+      letter = 'B';
+      if (val >= 75) modifier = '+'; else if (val < 65) modifier = '-';
+    } else if (val >= 40) {
+      letter = 'C';
+      if (val >= 55) modifier = '+'; else if (val < 45) modifier = '-';
+    } else if (val >= 20) {
+      letter = 'D';
+      if (val >= 35) modifier = '+'; else if (val < 25) modifier = '-';
+    }
+    return letter + modifier;
   }
 
   function getGradeColor(val) {
-    return GRADE_COLORS[getGrade(val)];
+    const letter = getGrade(val).charAt(0);
+    return GRADE_COLORS[letter] || GRADE_COLORS.F;
   }
 
   function getPosText(p) {
