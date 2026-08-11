@@ -838,13 +838,21 @@
 
       const newOrder = [];
 
-      // Cleanup (4th) is the scarcest slot — reserve the single best pure power bat
-      // from the whole roster FIRST, before anyone else (including leadoff) can claim it.
-      drafted.sort((a,b) => b.powerScore - a.powerScore);
-      const cleanup = drafted[0];
-      cleanup.targetSlot = 3;
+      // 3rd is the scarcest slot — reserve the single best overall bat from the
+      // whole roster FIRST, before anyone else (including cleanup) can claim it.
+      drafted.sort((a,b) => b.overall - a.overall);
+      const third = drafted[0];
+      third.targetSlot = 2;
       drafted.splice(0, 1);
-      newOrder.push(cleanup);
+      newOrder.push(third);
+
+      if (drafted.length > 0) {
+        drafted.sort((a,b) => b.powerScore - a.powerScore);
+        const cleanup = drafted[0];
+        cleanup.targetSlot = 3;
+        drafted.splice(0, 1);
+        newOrder.push(cleanup);
+      }
 
       if (drafted.length > 0) {
         drafted.sort((a,b) => b.overall - a.overall);
@@ -854,14 +862,6 @@
         leadoff.targetSlot = 0;
         drafted.splice(drafted.indexOf(leadoff), 1);
         newOrder.push(leadoff);
-      }
-
-      if (drafted.length > 0) {
-        drafted.sort((a,b) => b.overall - a.overall);
-        const third = drafted[0];
-        third.targetSlot = 2;
-        drafted.splice(0, 1);
-        newOrder.push(third);
       }
 
       if (drafted.length > 0) {
