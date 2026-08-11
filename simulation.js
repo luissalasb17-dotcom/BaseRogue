@@ -70,8 +70,8 @@
     let pSO = 0.16 + (pK9 - effCon) * 0.0020;
     pSO = Math.max(0.04, Math.min(0.35, pSO));
 
-    // 3. Total HIT rate (1B, 2B, 3B, HR): Batter Contact vs Pitcher H/9 Hit Suppression (Base 40%, Slope 0.22%)
-    let pTotalHit = 0.40 + (effCon - pH9) * 0.0022;
+    // 3. Total HIT rate (1B, 2B, 3B, HR): Batter Contact vs Pitcher H/9 Hit Suppression (Base 45%, Slope 0.25%)
+    let pTotalHit = 0.45 + (effCon - pH9) * 0.0025;
     pTotalHit = Math.max(0.16, Math.min(0.60, pTotalHit));
 
     // 4. HR share of Hits: Batter Power vs Pitcher HR/9 Prevention (Base 10% of hits, Slope 0.35%)
