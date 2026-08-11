@@ -1960,6 +1960,11 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
         enemyName: currentEnemy.name,
         ourScore: simResult.runsScored,
         enemyScore: simResult.enemyPitchers ? (simResult.enemyPitchers.length - simResult.pitchersDefeated) : 0,
+        // Distinct from pitchersDefeated (KO count): this counts every pitcher the
+        // player actually threw a dice roll against, including one who survived a
+        // timeout/team-death loss — pitchersDefeated alone can't tell you that.
+        pitchersFaced: simResult.pitchersFaced !== undefined ? simResult.pitchersFaced : (simResult.enemyPitchers ? simResult.enemyPitchers.length : 0),
+        totalPitchers: simResult.enemyPitchers ? simResult.enemyPitchers.length : 0,
         won
       });
 

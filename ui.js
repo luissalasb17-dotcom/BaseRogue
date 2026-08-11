@@ -4735,6 +4735,12 @@ function initGameModeSelector() {
         winner: activeBattle.winner === 'player' ? 'away' : 'home',
         runsScored: state.runs,
         pitchersDefeated: state.activePitcher ? state.activePitcher.index : activeBattle.homeTeam.pitchers.length,
+        // Pitchers actually faced (thrown at least one dice roll against), not just
+        // KO'd — defeated + the current one if the series ended on a timeout/loss
+        // with them still standing. See CLAUDE session notes on the "2 of 3" bug.
+        pitchersFaced: state.activePitcher
+          ? Math.min(state.activePitcher.index + 1, activeBattle.homeTeam.pitchers.length)
+          : activeBattle.homeTeam.pitchers.length,
         awayLineup: activeBattle.awayTeam.lineup,
         enemyPitchers: activeBattle.homeTeam.pitchers,
         matchEvents: activeBattle.events || [],
@@ -5000,9 +5006,12 @@ function initGameModeSelector() {
       window.Game.history.forEach(h => {
         const row = document.createElement('div');
         row.className = `history-row ${h.won ? 'won' : 'lost'}`;
+        const facedLabel = (h.pitchersFaced !== undefined && h.totalPitchers)
+          ? ` <span style="color:#64748b;font-size:11px;">(${h.pitchersFaced}/${h.totalPitchers} pitchers enfrentados)</span>`
+          : '';
         row.innerHTML = `
           <span>Etapa ${h.stage + 1}: vs ${h.enemyName}</span>
-          <strong>${h.won ? 'VICTORIA' : 'DERROTA'} (${h.ourScore}-${h.enemyScore})</strong>
+          <strong>${h.won ? 'VICTORIA' : 'DERROTA'} (${h.ourScore}-${h.enemyScore})</strong>${facedLabel}
         `;
         el.gameoverHistoryLog.appendChild(row);
       });
