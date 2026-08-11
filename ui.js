@@ -703,18 +703,33 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
       const cardsRow = document.createElement('div');
       cardsRow.className = 'cards-row flex flex-col md:flex-row gap-3 justify-center items-center md:items-start w-full';
 
-      // Vintage foil pack that tears open before the round's 3 cards deal in —
-      // kept short (pack ~0.5s + last card's stagger/flip ~0.5s) so 9 rounds a
-      // run stays snappy.
+      // Tap-to-open vintage pack — themed per round's rarity floor (rounds 1-3
+      // can surface Epic/Legendary -> premium foil; rounds 4-6 are Common-only
+      // -> plain wax pack; free rounds 7-9 -> rainbow mystery pack). Tears open
+      // on click, then hands off to the existing staggered card deal-in.
+      const rarities = info.rarities || [];
+      let packTheme = 'random';
+      if (rarities.includes('Legendary') || rarities.includes('Epic')) packTheme = 'premium';
+      else if (rarities.length && rarities.every(r => r === 'Common')) packTheme = 'common';
+
       const pack = document.createElement('div');
-      pack.className = 'draft-pack';
-      pack.innerHTML = `<div class="draft-pack-label">⚾<br>BASEROGUE<br>PACK</div>`;
+      pack.className = `draft-pack draft-pack--${packTheme}`;
+      pack.innerHTML = `
+        <div class="draft-pack-crimp"></div>
+        <div class="draft-pack-badge">R${round}/9</div>
+        <div class="draft-pack-brand">⚾ BASEROGUE</div>
+        <div class="draft-pack-tagline">${t('draft.pack_tagline_' + packTheme)}</div>
+        <div class="draft-pack-open-prompt">
+          <span class="draft-pack-tap-icon">👆</span>
+          <span class="draft-pack-open-text">${t('draft.pack_open_prompt')}</span>
+        </div>
+      `;
       cardsRow.appendChild(pack);
       if (window.AudioManager) window.AudioManager.play('menu_click');
 
-      // Tear the pack open with a small particle burst partway through its
-      // entrance, then hand off to the existing staggered card deal-in.
-      setTimeout(() => {
+      pack.addEventListener('click', () => {
+        // Tear the pack open with a small particle burst, then hand off to the
+        // staggered card deal-in.
         pack.classList.add('pack-tearing');
         if (window.AudioManager) window.AudioManager.play('menu_click');
         for (let i = 0; i < 7; i++) {
@@ -727,7 +742,8 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
           particle.style.animationDelay = `${Math.random() * 60}ms`;
           pack.appendChild(particle);
         }
-      }, 220);
+        setTimeout(renderPickCards, 280);
+      }, { once: true });
 
       const renderPickCards = () => {
         pack.remove();
@@ -777,7 +793,6 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
         if (window.AudioManager) setTimeout(() => window.AudioManager.play('menu_click'), dealDelay);
         });
       };
-      setTimeout(renderPickCards, 500);
 
       centerPanel.appendChild(cardsRow);
 
