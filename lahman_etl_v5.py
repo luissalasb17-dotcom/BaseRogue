@@ -1128,6 +1128,7 @@ def paso_15_equipo_y_exportar(df, batting, teams, franchises, pico_df=None):
             f'    {{ '
             f'playerID: "{pid_js}", name: "{name_js}", pos: "{pos_js}", sec_pos: "{sec_pos_js}", era: "{era_js}", '
             f'team: "{team_js}", year: {int(r["peak_year_display"])}, ovr: {float(r["avg_attr_score"])}, '
+            f'debut_year: {int(r["debut_year"])}, last_year: {int(r["last_year"])}, '
             f'con: {int(r["contact_val"])}, pwr: {int(r["power_val"])}, '
             f'eye: {int(r["eye_val"])}, spd: {int(r["speed_val"])}, '
             f'def: {int(r["defense_val"])}, '
