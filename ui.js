@@ -703,20 +703,34 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
       const cardsRow = document.createElement('div');
       cardsRow.className = 'cards-row flex flex-col md:flex-row gap-3 justify-center items-center md:items-start w-full';
 
-      // Brief face-down shuffle stack before the round's cards deal in — kept short
-      // (shuffle ~0.35s + last card's stagger/flip ~0.5s) so 9 rounds a run stays snappy.
-      const shuffleStack = document.createElement('div');
-      shuffleStack.className = 'draft-shuffle-stack';
-      shuffleStack.innerHTML = `
-        <div class="draft-shuffle-card"></div>
-        <div class="draft-shuffle-card"></div>
-        <div class="draft-shuffle-card"></div>
-      `;
-      cardsRow.appendChild(shuffleStack);
+      // Vintage foil pack that tears open before the round's 3 cards deal in —
+      // kept short (pack ~0.5s + last card's stagger/flip ~0.5s) so 9 rounds a
+      // run stays snappy.
+      const pack = document.createElement('div');
+      pack.className = 'draft-pack';
+      pack.innerHTML = `<div class="draft-pack-label">⚾<br>BASEROGUE<br>PACK</div>`;
+      cardsRow.appendChild(pack);
       if (window.AudioManager) window.AudioManager.play('menu_click');
 
+      // Tear the pack open with a small particle burst partway through its
+      // entrance, then hand off to the existing staggered card deal-in.
+      setTimeout(() => {
+        pack.classList.add('pack-tearing');
+        if (window.AudioManager) window.AudioManager.play('menu_click');
+        for (let i = 0; i < 7; i++) {
+          const particle = document.createElement('div');
+          particle.className = 'pack-particle';
+          const angle = (Math.PI * 2 / 7) * i + (Math.random() - 0.5) * 0.4;
+          const dist = 40 + Math.random() * 30;
+          particle.style.setProperty('--px', `${Math.cos(angle) * dist}px`);
+          particle.style.setProperty('--py', `${Math.sin(angle) * dist - 20}px`);
+          particle.style.animationDelay = `${Math.random() * 60}ms`;
+          pack.appendChild(particle);
+        }
+      }, 220);
+
       const renderPickCards = () => {
-        shuffleStack.remove();
+        pack.remove();
         picks.forEach((player, pickIdx) => {
         const dealDelay = pickIdx * 130;
         const rColor = RARITY_COLORS[player.rarity] || RARITY_COLORS.Common;
@@ -763,7 +777,7 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
         if (window.AudioManager) setTimeout(() => window.AudioManager.play('menu_click'), dealDelay);
         });
       };
-      setTimeout(renderPickCards, 350);
+      setTimeout(renderPickCards, 500);
 
       centerPanel.appendChild(cardsRow);
 
