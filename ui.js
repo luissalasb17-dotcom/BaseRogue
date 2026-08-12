@@ -2598,6 +2598,10 @@ function initGameModeSelector() {
           : `<span class="zone-badge zone-badge-active">▶ ${t('map.active')}</span>`;
 
       const subText = zoneConfig.subtitleKey ? t(zoneConfig.subtitleKey) : zoneConfig.subtitle;
+      const zoneDivision = window.Game.selectedDivisions && window.Game.selectedDivisions[zoneIdx];
+      const divisionBannerHTML = zoneDivision
+        ? `<div class="zone-division-banner">⚾ ${zoneDivision.label.toUpperCase()} — ${window.Game.selectedSeasonYear}</div>`
+        : '';
 
       const zoneHeader = document.createElement('div');
       zoneHeader.className = 'zone-header';
@@ -2607,6 +2611,7 @@ function initGameModeSelector() {
           <div>
             <div class="zone-name">${zoneConfig.name}</div>
             <div class="zone-subtitle">${subText}</div>
+            ${divisionBannerHTML}
           </div>
         </div>
         ${zoneStatusBadge}

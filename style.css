@@ -1550,6 +1550,15 @@ p {
   font-weight: bold;
 }
 
+.zone-division-banner {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  color: #fbbf24;
+  letter-spacing: 0.5px;
+  margin-top: 5px;
+  text-shadow: 1px 1px 0px #000000;
+}
+
 .zone-badge {
   font-family: 'Press Start 2P', monospace;
   font-size: 7px;

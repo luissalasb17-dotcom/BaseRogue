@@ -242,10 +242,19 @@ def main():
     print(f"  {len(py):,} temporadas individuales elegibles (IP >= {MIN_IP_SEASON_ELIGIBLE})")
 
     # ── Construir rosters por equipo-anio ──────────────────────────────────
-    teams_slim = teams[["yearID","teamID","name","W","L"]].copy()
+    DIV_NAMES = {"E": "East", "W": "West", "C": "Central"}
+    teams_slim = teams[["yearID","teamID","name","lgID","divID","W","L"]].copy()
     teams_slim["W"] = pd.to_numeric(teams_slim["W"], errors="coerce").fillna(0)
     teams_slim["L"] = pd.to_numeric(teams_slim["L"], errors="coerce").fillna(0)
     teams_slim["win_pct"] = (teams_slim["W"] / (teams_slim["W"] + teams_slim["L"]).replace(0, np.nan)).fillna(0).round(3)
+    # division es null antes de 1969 (no existian divisiones en MLB todavia) -
+    # el downstream code (getEnemyTeam) cae de vuelta al sistema low/mid/high/boss
+    # por win_pct para esos anios, ver el plan de Story Mode divisiones.
+    teams_slim["division"] = teams_slim.apply(
+        lambda r: f"{r['lgID']} {DIV_NAMES.get(r['divID'], r['divID'])}" if pd.notna(r["divID"]) and pd.notna(r["lgID"]) else None,
+        axis=1
+    )
+    teams_slim["league"] = teams_slim["lgID"]
 
     def pitcher_json(row):
         return {
@@ -278,6 +287,8 @@ def main():
                 "year": int(year),
                 "teamID": trow["teamID"],
                 "win_pct": float(trow["win_pct"]),
+                "division": trow["division"] if pd.notna(trow["division"]) else None,
+                "league": trow["league"] if pd.notna(trow["league"]) else None,
                 "ovr": team_ovr,
                 "pitchers": [pitcher_json(r) for _, r in roster.iterrows()],
             }
@@ -306,7 +317,42 @@ def main():
                 "pitchers": [pitcher_json(r) for _, r in boss_roster.iterrows()],
             }
 
-        result[str(int(year))] = {"year": int(year), "low": low, "mid": mid, "high": high, "boss": boss}
+        # ── Divisiones reales (solo 1969+, ver DIV_NAMES arriba) ────────────
+        # Cada division agrupa sus equipos peor->mejor record, mas un boss
+        # (3 mejores pitchers por WAR, solo rareza Epic+, de cualquier equipo
+        # de esa division ese anio) — usado por getEnemyTeam() para mapas
+        # basados en division en vez de los tiers low/mid/high globales.
+        divisions = {}
+        div_teams_this_year = year_teams[year_teams["division"].notna()]
+        for div_label in sorted(div_teams_this_year["division"].unique()):
+            div_team_ids = set(div_teams_this_year[div_teams_this_year["division"] == div_label]["teamID"])
+            div_entries = [e for e in (low + mid + high) if e["teamID"] in div_team_ids]
+            div_entries.sort(key=lambda e: e["win_pct"])  # peor -> mejor
+
+            div_pitcher_pool = year_pitchers[year_pitchers["primary_team"].isin(div_team_ids)].copy()
+            div_pitcher_pool = div_pitcher_pool[div_pitcher_pool["rarity"].isin(["Epic", "Legendary"])]
+            div_pitcher_pool["war_sort"] = div_pitcher_pool["war_season"].fillna(div_pitcher_pool["IP_y"] / 50.0)
+            div_boss_roster = div_pitcher_pool.sort_values("war_sort", ascending=False).head(3)
+            div_boss = None
+            if not div_boss_roster.empty:
+                div_boss = {
+                    "id": f"story_{int(year)}_{div_label.replace(' ', '')}_BOSS",
+                    "name": f"\U0001F451 {int(year)} {div_label} ALL-STARS",
+                    "year": int(year),
+                    "teamID": f"{div_label.replace(' ', '')}_BOSS",
+                    "division": div_label,
+                    "win_pct": 1.0,
+                    "isBoss": True,
+                    "ovr": int(round(div_boss_roster["ovr"].mean())),
+                    "pitchers": [pitcher_json(r) for _, r in div_boss_roster.iterrows()],
+                }
+
+            divisions[div_label] = {"teams": div_entries, "boss": div_boss}
+
+        result[str(int(year))] = {
+            "year": int(year), "low": low, "mid": mid, "high": high, "boss": boss,
+            "divisions": divisions if divisions else None,
+        }
 
     print(f"  {len(result):,} anios procesados")
 

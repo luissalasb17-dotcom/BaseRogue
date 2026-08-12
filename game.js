@@ -530,7 +530,20 @@
       this.customSeasonPool = customPool;
       window.OpponentsPool = customPool;
       this.seasonPoolData = seasonData;
-      console.log(`Loaded Story Mode Season ${targetYear} with ${customPool.length} teams`);
+
+      // Division-based maps (1969+ only — pre-1969 seasons have no divID in
+      // Lahman, seasonData.divisions is null and Story Mode falls back to the
+      // existing low/mid/high tier system unchanged). Pick 4 divisions (all of
+      // them for 1969-1993, a random 4-of-6 for 1994+) and assign one per zone.
+      this.selectedDivisions = null;
+      if (seasonData.divisions) {
+        const labels = Object.keys(seasonData.divisions);
+        const shuffled = [...labels].sort(() => Math.random() - 0.5);
+        const picked = shuffled.slice(0, 4);
+        this.selectedDivisions = picked.map(label => ({ label, ...seasonData.divisions[label] }));
+      }
+
+      console.log(`Loaded Story Mode Season ${targetYear} with ${customPool.length} teams${this.selectedDivisions ? ` (${this.selectedDivisions.length} divisions)` : ''}`);
     }
 
     constructor() {
@@ -1686,6 +1699,38 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
         const seasonData = this.seasonPoolData || (window.OpponentsDatabase && this.selectedSeasonYear ? window.OpponentsDatabase[this.selectedSeasonYear] : null);
 
         if (seasonData) {
+          // Division-based maps (1969+ seasons only — see loadSeasonOpponents).
+          // Zone = one division; the zone's boss stage (local stage 3) draws
+          // from that division's Epic+ pool instead of the global tier boss.
+          // Stage 15 (the absolute Final Boss) is untouched by divisions.
+          if (this.selectedDivisions && stage !== 15) {
+            const zoneIdx = this.getZoneForStage(stage);
+            const division = this.selectedDivisions[zoneIdx];
+            if (division) {
+              const localIdx = stage - zoneIdx * 4;
+              const isZoneBossStage = (localIdx === 3);
+
+              if (!this.encounteredTeams) this.encounteredTeams = new Set();
+              let chosen = null;
+              if (isZoneBossStage && division.boss) {
+                chosen = division.boss;
+              } else {
+                const teams = division.teams || [];
+                let candidates = teams.filter(e => e && !this.encounteredTeams.has(e.id || e.name));
+                if (candidates.length === 0) candidates = teams;
+                if (candidates.length > 0) {
+                  chosen = candidates[Math.floor(Math.random() * candidates.length)];
+                }
+              }
+              if (chosen) {
+                this.encounteredTeams.add(chosen.id || chosen.name);
+                chosen = { ...chosen, pitchers: sortPitchingStaff(chosen.pitchers) };
+                this.currentEnemy = chosen;
+                return this.currentEnemy;
+              }
+            }
+          }
+
           let tierPool = [];
           if (stage === 15) {
             // Stage 16 (index 15): Final Boss -> [YEAR] STARS
@@ -2090,6 +2135,9 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
 
         if (isTraitBossMap) {
           const traitChoices = this.getRandomTraitChoices(3);
+          const divisionMsg = currentEnemy.division
+            ? (typeof window.t==='function'?window.t('game.division_defeated', { division: currentEnemy.division, year: this.selectedSeasonYear }):`¡Venciste a la División ${currentEnemy.division} de la ${this.selectedSeasonYear}!`) + ' '
+            : '';
           return {
             won: true,
             isBossStage: true,
@@ -2097,7 +2145,7 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
             traitChoices,
             earnings: earnings + eliteBonus,
             retiredAlerts,
-            message: (typeof window.t==='function'?window.t('game.boss_victory_trait', { earnings: earnings + eliteBonus }):`¡Victoria de Jefe! +$${earnings + eliteBonus}. Elige una Trait Pasiva de Leyenda.`)
+            message: divisionMsg + (typeof window.t==='function'?window.t('game.boss_victory_trait', { earnings: earnings + eliteBonus }):`¡Victoria de Jefe! +$${earnings + eliteBonus}. Elige una Trait Pasiva de Leyenda.`)
           };
         }
 
