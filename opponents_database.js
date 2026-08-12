@@ -92574,7 +92574,7 @@ window.OpponentsDatabase = {
           "division": "AL West",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 87,
+          "ovr": 85,
           "pitchers": [
             {
               "name": "Jim Perry",
@@ -92605,17 +92605,17 @@ window.OpponentsDatabase = {
               "rarity": "Legendary"
             },
             {
-              "name": "Ken Tatum",
-              "role": "RP",
-              "war": 4.3,
-              "hp": 32,
-              "maxHp": 32,
-              "stf": 62,
-              "ctl": 41,
-              "mov": 99,
-              "sta": 34,
-              "h9": 111,
-              "ovr": 85,
+              "name": "Wally Bunker",
+              "role": "SP",
+              "war": 4.2,
+              "hp": 110,
+              "maxHp": 110,
+              "stf": 40,
+              "ctl": 78,
+              "mov": 29,
+              "sta": 86,
+              "h9": 66,
+              "ovr": 80,
               "rarity": "Epic"
             }
           ]
@@ -93338,7 +93338,7 @@ window.OpponentsDatabase = {
           "division": "NL West",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 92,
+          "ovr": 94,
           "pitchers": [
             {
               "name": "Larry Dierker",
@@ -93369,17 +93369,17 @@ window.OpponentsDatabase = {
               "rarity": "Legendary"
             },
             {
-              "name": "Gaylord Perry",
+              "name": "Bill Singer",
               "role": "SP",
               "war": 6.5,
-              "hp": 117,
-              "maxHp": 117,
-              "stf": 62,
-              "ctl": 79,
-              "mov": 71,
-              "sta": 96,
-              "h9": 66,
-              "ovr": 88,
+              "hp": 115,
+              "maxHp": 115,
+              "stf": 73,
+              "ctl": 90,
+              "mov": 72,
+              "sta": 92,
+              "h9": 91,
+              "ovr": 93,
               "rarity": "Legendary"
             }
           ]
@@ -95462,7 +95462,7 @@ window.OpponentsDatabase = {
           "division": "AL West",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 84,
+          "ovr": 85,
           "pitchers": [
             {
               "name": "Tommy John",
@@ -95493,18 +95493,18 @@ window.OpponentsDatabase = {
               "rarity": "Epic"
             },
             {
-              "name": "Ken Sanders",
-              "role": "RP",
-              "war": 4.6,
-              "hp": 32,
-              "maxHp": 32,
-              "stf": 55,
-              "ctl": 77,
-              "mov": 100,
-              "sta": 34,
-              "h9": 96,
-              "ovr": 86,
-              "rarity": "Epic"
+              "name": "Bob Johnson",
+              "role": "SP",
+              "war": 4.5,
+              "hp": 117,
+              "maxHp": 117,
+              "stf": 100,
+              "ctl": 53,
+              "mov": 61,
+              "sta": 95,
+              "h9": 77,
+              "ovr": 90,
+              "rarity": "Legendary"
             }
           ]
         }
@@ -95844,7 +95844,7 @@ window.OpponentsDatabase = {
           "division": "NL East",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 90,
+          "ovr": 94,
           "pitchers": [
             {
               "name": "Bob Gibson",
@@ -95875,18 +95875,18 @@ window.OpponentsDatabase = {
               "rarity": "Legendary"
             },
             {
-              "name": "Ken Holtzman",
+              "name": "Tom Seaver",
               "role": "SP",
-              "war": 6.4,
-              "hp": 113,
-              "maxHp": 113,
-              "stf": 59,
-              "ctl": 67,
-              "mov": 47,
-              "sta": 90,
-              "h9": 56,
-              "ovr": 82,
-              "rarity": "Epic"
+              "war": 5.8,
+              "hp": 116,
+              "maxHp": 116,
+              "stf": 104,
+              "ctl": 77,
+              "mov": 70,
+              "sta": 93,
+              "h9": 86,
+              "ovr": 95,
+              "rarity": "Legendary"
             }
           ]
         }
@@ -97968,7 +97968,7 @@ window.OpponentsDatabase = {
           "division": "AL East",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 87,
+          "ovr": 85,
           "pitchers": [
             {
               "name": "Mickey Lolich",
@@ -97999,18 +97999,18 @@ window.OpponentsDatabase = {
               "rarity": "Epic"
             },
             {
-              "name": "Joe Coleman",
+              "name": "Jim Palmer",
               "role": "SP",
-              "war": 5.2,
-              "hp": 112,
-              "maxHp": 112,
-              "stf": 80,
-              "ctl": 65,
-              "mov": 79,
-              "sta": 89,
-              "h9": 76,
-              "ovr": 90,
-              "rarity": "Legendary"
+              "war": 4.1,
+              "hp": 113,
+              "maxHp": 113,
+              "stf": 51,
+              "ctl": 55,
+              "mov": 73,
+              "sta": 90,
+              "h9": 81,
+              "ovr": 85,
+              "rarity": "Epic"
             }
           ]
         }
@@ -102002,7 +102002,7 @@ window.OpponentsDatabase = {
           "division": "NL West",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 88,
+          "ovr": 90,
           "pitchers": [
             {
               "name": "Don Sutton",
@@ -102033,18 +102033,18 @@ window.OpponentsDatabase = {
               "rarity": "Epic"
             },
             {
-              "name": "Claude Osteen",
+              "name": "Don Wilson",
               "role": "SP",
-              "war": 5.1,
-              "hp": 113,
-              "maxHp": 113,
-              "stf": 9,
-              "ctl": 80,
-              "mov": 76,
-              "sta": 90,
-              "h9": 60,
-              "ovr": 82,
-              "rarity": "Epic"
+              "war": 4.9,
+              "hp": 109,
+              "maxHp": 109,
+              "stf": 67,
+              "ctl": 76,
+              "mov": 71,
+              "sta": 84,
+              "h9": 72,
+              "ovr": 88,
+              "rarity": "Legendary"
             }
           ]
         }
@@ -106663,16 +106663,16 @@ window.OpponentsDatabase = {
               "rarity": "Epic"
             },
             {
-              "name": "Jim Perry",
+              "name": "Pat Dobson",
               "role": "SP",
               "war": 4.3,
-              "hp": 109,
-              "maxHp": 109,
-              "stf": 1,
-              "ctl": 85,
-              "mov": 89,
-              "sta": 85,
-              "h9": 52,
+              "hp": 111,
+              "maxHp": 111,
+              "stf": 36,
+              "ctl": 82,
+              "mov": 63,
+              "sta": 87,
+              "h9": 43,
               "ovr": 81,
               "rarity": "Epic"
             }
@@ -107396,7 +107396,7 @@ window.OpponentsDatabase = {
           "division": "NL East",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 89,
+          "ovr": 87,
           "pitchers": [
             {
               "name": "Jon Matlack",
@@ -107413,31 +107413,31 @@ window.OpponentsDatabase = {
               "rarity": "Legendary"
             },
             {
-              "name": "Tom Seaver",
-              "role": "SP",
-              "war": 6.2,
-              "hp": 112,
-              "maxHp": 112,
-              "stf": 83,
-              "ctl": 69,
-              "mov": 64,
-              "sta": 88,
-              "h9": 75,
-              "ovr": 89,
-              "rarity": "Legendary"
-            },
-            {
-              "name": "Jerry Koosman",
+              "name": "Lynn McGlothen",
               "role": "SP",
               "war": 4.9,
               "hp": 113,
               "maxHp": 113,
-              "stf": 60,
-              "ctl": 68,
-              "mov": 78,
+              "stf": 42,
+              "ctl": 55,
+              "mov": 84,
               "sta": 90,
-              "h9": 49,
-              "ovr": 85,
+              "h9": 65,
+              "ovr": 84,
+              "rarity": "Epic"
+            },
+            {
+              "name": "Steve Carlton",
+              "role": "SP",
+              "war": 4.8,
+              "hp": 112,
+              "maxHp": 112,
+              "stf": 80,
+              "ctl": 32,
+              "mov": 70,
+              "sta": 89,
+              "h9": 73,
+              "ovr": 84,
               "rarity": "Epic"
             }
           ]
@@ -107778,7 +107778,7 @@ window.OpponentsDatabase = {
           "division": "NL West",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 86,
+          "ovr": 87,
           "pitchers": [
             {
               "name": "Phil Niekro",
@@ -107809,18 +107809,18 @@ window.OpponentsDatabase = {
               "rarity": "Epic"
             },
             {
-              "name": "Buzz Capra",
+              "name": "Andy Messersmith",
               "role": "SP",
-              "war": 5.4,
-              "hp": 116,
-              "maxHp": 116,
-              "stf": 47,
-              "ctl": 52,
-              "mov": 77,
-              "sta": 93,
-              "h9": 93,
-              "ovr": 86,
-              "rarity": "Epic"
+              "war": 5.3,
+              "hp": 112,
+              "maxHp": 112,
+              "stf": 68,
+              "ctl": 68,
+              "mov": 63,
+              "sta": 89,
+              "h9": 90,
+              "ovr": 89,
+              "rarity": "Legendary"
             }
           ]
         }
@@ -109902,7 +109902,7 @@ window.OpponentsDatabase = {
           "division": "AL West",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 87,
+          "ovr": 90,
           "pitchers": [
             {
               "name": "Rich Gossage",
@@ -109919,20 +109919,6 @@ window.OpponentsDatabase = {
               "rarity": "Epic"
             },
             {
-              "name": "Jim Kaat",
-              "role": "SP",
-              "war": 7.7,
-              "hp": 112,
-              "maxHp": 112,
-              "stf": 20,
-              "ctl": 85,
-              "mov": 74,
-              "sta": 88,
-              "h9": 32,
-              "ovr": 80,
-              "rarity": "Epic"
-            },
-            {
               "name": "Frank Tanana",
               "role": "SP",
               "war": 7.3,
@@ -109944,6 +109930,20 @@ window.OpponentsDatabase = {
               "sta": 91,
               "h9": 80,
               "ovr": 95,
+              "rarity": "Legendary"
+            },
+            {
+              "name": "Bert Blyleven",
+              "role": "SP",
+              "war": 6.0,
+              "hp": 115,
+              "maxHp": 115,
+              "stf": 83,
+              "ctl": 72,
+              "mov": 59,
+              "sta": 92,
+              "h9": 86,
+              "ovr": 90,
               "rarity": "Legendary"
             }
           ]
@@ -113554,7 +113554,7 @@ window.OpponentsDatabase = {
           "division": "NL West",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 84,
+          "ovr": 86,
           "pitchers": [
             {
               "name": "John Montefusco",
@@ -113585,17 +113585,17 @@ window.OpponentsDatabase = {
               "rarity": "Epic"
             },
             {
-              "name": "Jim Barr",
+              "name": "Randy Jones",
               "role": "SP",
-              "war": 5.5,
-              "hp": 108,
-              "maxHp": 108,
+              "war": 4.7,
+              "hp": 115,
+              "maxHp": 115,
               "stf": 1,
-              "ctl": 89,
-              "mov": 95,
-              "sta": 84,
-              "h9": 38,
-              "ovr": 81,
+              "ctl": 109,
+              "mov": 88,
+              "sta": 92,
+              "h9": 71,
+              "ovr": 86,
               "rarity": "Epic"
             }
           ]
@@ -115911,20 +115911,6 @@ window.OpponentsDatabase = {
               "rarity": "Legendary"
             },
             {
-              "name": "Nolan Ryan",
-              "role": "SP",
-              "war": 7.8,
-              "hp": 116,
-              "maxHp": 116,
-              "stf": 125,
-              "ctl": 1,
-              "mov": 94,
-              "sta": 94,
-              "h9": 116,
-              "ovr": 95,
-              "rarity": "Legendary"
-            },
-            {
               "name": "Bert Blyleven",
               "role": "SP",
               "war": 5.8,
@@ -115936,6 +115922,20 @@ window.OpponentsDatabase = {
               "sta": 92,
               "h9": 93,
               "ovr": 90,
+              "rarity": "Legendary"
+            },
+            {
+              "name": "Dennis Leonard",
+              "role": "SP",
+              "war": 5.6,
+              "hp": 115,
+              "maxHp": 115,
+              "stf": 82,
+              "ctl": 81,
+              "mov": 78,
+              "sta": 92,
+              "h9": 80,
+              "ovr": 93,
               "rarity": "Legendary"
             }
           ]
@@ -116276,7 +116276,7 @@ window.OpponentsDatabase = {
           "division": "NL East",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 88,
+          "ovr": 85,
           "pitchers": [
             {
               "name": "Rick Reuschel",
@@ -116307,18 +116307,18 @@ window.OpponentsDatabase = {
               "rarity": "Epic"
             },
             {
-              "name": "Bruce Sutter",
-              "role": "RP",
-              "war": 6.5,
-              "hp": 32,
-              "maxHp": 32,
-              "stf": 125,
-              "ctl": 89,
-              "mov": 82,
-              "sta": 32,
-              "h9": 109,
-              "ovr": 96,
-              "rarity": "Legendary"
+              "name": "Steve Carlton",
+              "role": "SP",
+              "war": 5.9,
+              "hp": 115,
+              "maxHp": 115,
+              "stf": 60,
+              "ctl": 70,
+              "mov": 60,
+              "sta": 92,
+              "h9": 86,
+              "ovr": 87,
+              "rarity": "Epic"
             }
           ]
         }
@@ -118998,7 +118998,7 @@ window.OpponentsDatabase = {
           "division": "AL West",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 87,
+          "ovr": 85,
           "pitchers": [
             {
               "name": "Dave Goltz",
@@ -119029,18 +119029,18 @@ window.OpponentsDatabase = {
               "rarity": "Legendary"
             },
             {
-              "name": "Fergie Jenkins",
+              "name": "Larry Gura",
               "role": "SP",
-              "war": 5.5,
-              "hp": 117,
-              "maxHp": 117,
-              "stf": 48,
-              "ctl": 106,
-              "mov": 62,
-              "sta": 95,
-              "h9": 65,
-              "ovr": 89,
-              "rarity": "Legendary"
+              "war": 4.5,
+              "hp": 118,
+              "maxHp": 118,
+              "stf": 6,
+              "ctl": 80,
+              "mov": 79,
+              "sta": 97,
+              "h9": 82,
+              "ovr": 84,
+              "rarity": "Epic"
             }
           ]
         }
@@ -119762,7 +119762,7 @@ window.OpponentsDatabase = {
           "division": "NL West",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 89,
+          "ovr": 87,
           "pitchers": [
             {
               "name": "Phil Niekro",
@@ -119793,18 +119793,18 @@ window.OpponentsDatabase = {
               "rarity": "Epic"
             },
             {
-              "name": "Vida Blue",
+              "name": "Burt Hooton",
               "role": "SP",
-              "war": 5.8,
+              "war": 5.1,
               "hp": 112,
               "maxHp": 112,
-              "stf": 54,
-              "ctl": 80,
-              "mov": 88,
+              "stf": 17,
+              "ctl": 83,
+              "mov": 70,
               "sta": 88,
-              "h9": 68,
-              "ovr": 89,
-              "rarity": "Legendary"
+              "h9": 82,
+              "ovr": 84,
+              "rarity": "Epic"
             }
           ]
         }
@@ -122484,7 +122484,7 @@ window.OpponentsDatabase = {
           "division": "NL East",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 85,
+          "ovr": 83,
           "pitchers": [
             {
               "name": "Rick Reuschel",
@@ -122501,20 +122501,6 @@ window.OpponentsDatabase = {
               "rarity": "Epic"
             },
             {
-              "name": "Bruce Sutter",
-              "role": "RP",
-              "war": 4.9,
-              "hp": 31,
-              "maxHp": 31,
-              "stf": 110,
-              "ctl": 68,
-              "mov": 92,
-              "sta": 31,
-              "h9": 106,
-              "ovr": 92,
-              "rarity": "Legendary"
-            },
-            {
               "name": "Craig Swan",
               "role": "SP",
               "war": 4.6,
@@ -122525,6 +122511,20 @@ window.OpponentsDatabase = {
               "mov": 66,
               "sta": 86,
               "h9": 57,
+              "ovr": 84,
+              "rarity": "Epic"
+            },
+            {
+              "name": "Steve Rogers",
+              "role": "SP",
+              "war": 3.8,
+              "hp": 108,
+              "maxHp": 108,
+              "stf": 39,
+              "ctl": 70,
+              "mov": 82,
+              "sta": 83,
+              "h9": 62,
               "ovr": 84,
               "rarity": "Epic"
             }
@@ -124801,17 +124801,17 @@ window.OpponentsDatabase = {
               "rarity": "Legendary"
             },
             {
-              "name": "Dave Stieb",
+              "name": "Moose Haas",
               "role": "SP",
-              "war": 4.9,
+              "war": 4.5,
               "hp": 113,
               "maxHp": 113,
-              "stf": 18,
-              "ctl": 63,
-              "mov": 86,
+              "stf": 40,
+              "ctl": 92,
+              "mov": 52,
               "sta": 90,
-              "h9": 57,
-              "ovr": 81,
+              "h9": 54,
+              "ovr": 83,
               "rarity": "Epic"
             }
           ]
@@ -125970,7 +125970,7 @@ window.OpponentsDatabase = {
           "division": "NL West",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 87,
+          "ovr": 85,
           "pitchers": [
             {
               "name": "Don Sutton",
@@ -125987,20 +125987,6 @@ window.OpponentsDatabase = {
               "rarity": "Epic"
             },
             {
-              "name": "Jerry Reuss",
-              "role": "SP",
-              "war": 5.2,
-              "hp": 115,
-              "maxHp": 115,
-              "stf": 24,
-              "ctl": 103,
-              "mov": 84,
-              "sta": 92,
-              "h9": 79,
-              "ovr": 89,
-              "rarity": "Legendary"
-            },
-            {
               "name": "Vida Blue",
               "role": "SP",
               "war": 5.0,
@@ -126012,6 +125998,20 @@ window.OpponentsDatabase = {
               "sta": 87,
               "h9": 68,
               "ovr": 85,
+              "rarity": "Epic"
+            },
+            {
+              "name": "Phil Niekro",
+              "role": "SP",
+              "war": 3.4,
+              "hp": 111,
+              "maxHp": 111,
+              "stf": 50,
+              "ctl": 71,
+              "mov": 45,
+              "sta": 87,
+              "h9": 62,
+              "ovr": 82,
               "rarity": "Epic"
             }
           ]
@@ -129074,7 +129074,7 @@ window.OpponentsDatabase = {
           "division": "NL West",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 91,
+          "ovr": 92,
           "pitchers": [
             {
               "name": "Fernando Valenzuela",
@@ -129105,17 +129105,17 @@ window.OpponentsDatabase = {
               "rarity": "Legendary"
             },
             {
-              "name": "Jerry Reuss",
+              "name": "Tom Seaver",
               "role": "SP",
-              "war": 4.1,
-              "hp": 109,
-              "maxHp": 109,
-              "stf": 3,
-              "ctl": 100,
-              "mov": 90,
-              "sta": 84,
-              "h9": 67,
-              "ovr": 84,
+              "war": 4.0,
+              "hp": 111,
+              "maxHp": 111,
+              "stf": 32,
+              "ctl": 50,
+              "mov": 77,
+              "sta": 87,
+              "h9": 100,
+              "ovr": 85,
               "rarity": "Epic"
             }
           ]
@@ -131009,17 +131009,17 @@ window.OpponentsDatabase = {
               "rarity": "Epic"
             },
             {
-              "name": "Jim Clancy",
+              "name": "Jim Palmer",
               "role": "SP",
-              "war": 5.0,
-              "hp": 107,
-              "maxHp": 107,
-              "stf": 30,
-              "ctl": 76,
-              "mov": 53,
-              "sta": 82,
-              "h9": 60,
-              "ovr": 80,
+              "war": 4.8,
+              "hp": 110,
+              "maxHp": 110,
+              "stf": 20,
+              "ctl": 78,
+              "mov": 54,
+              "sta": 86,
+              "h9": 76,
+              "ovr": 81,
               "rarity": "Epic"
             }
           ]
@@ -131414,7 +131414,7 @@ window.OpponentsDatabase = {
           "division": "AL West",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 84,
+          "ovr": 82,
           "pitchers": [
             {
               "name": "LaMarr Hoyt",
@@ -131445,17 +131445,17 @@ window.OpponentsDatabase = {
               "rarity": "Epic"
             },
             {
-              "name": "Bill Caudill",
-              "role": "RP",
-              "war": 4.4,
-              "hp": 31,
-              "maxHp": 31,
-              "stf": 118,
-              "ctl": 57,
-              "mov": 55,
-              "sta": 29,
-              "h9": 102,
-              "ovr": 86,
+              "name": "Bobby Castillo",
+              "role": "SP",
+              "war": 3.1,
+              "hp": 120,
+              "maxHp": 120,
+              "stf": 37,
+              "ctl": 52,
+              "mov": 39,
+              "sta": 99,
+              "h9": 70,
+              "ovr": 80,
               "rarity": "Epic"
             }
           ]
@@ -134900,7 +134900,7 @@ window.OpponentsDatabase = {
           "division": "NL East",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 87,
+          "ovr": 85,
           "pitchers": [
             {
               "name": "John Denny",
@@ -134917,20 +134917,6 @@ window.OpponentsDatabase = {
               "rarity": "Epic"
             },
             {
-              "name": "Steve Carlton",
-              "role": "SP",
-              "war": 5.5,
-              "hp": 113,
-              "maxHp": 113,
-              "stf": 105,
-              "ctl": 74,
-              "mov": 72,
-              "sta": 90,
-              "h9": 53,
-              "ovr": 91,
-              "rarity": "Legendary"
-            },
-            {
               "name": "Rick Rhoden",
               "role": "SP",
               "war": 4.9,
@@ -134942,6 +134928,20 @@ window.OpponentsDatabase = {
               "sta": 85,
               "h9": 39,
               "ovr": 83,
+              "rarity": "Epic"
+            },
+            {
+              "name": "Lee Smith",
+              "role": "RP",
+              "war": 4.8,
+              "hp": 31,
+              "maxHp": 31,
+              "stf": 82,
+              "ctl": 51,
+              "mov": 81,
+              "sta": 31,
+              "h9": 103,
+              "ovr": 85,
               "rarity": "Epic"
             }
           ]
@@ -137186,7 +137186,7 @@ window.OpponentsDatabase = {
           "division": "AL East",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 87,
+          "ovr": 86,
           "pitchers": [
             {
               "name": "Dave Stieb",
@@ -137217,17 +137217,17 @@ window.OpponentsDatabase = {
               "rarity": "Epic"
             },
             {
-              "name": "Doyle Alexander",
+              "name": "Mike Boddicker",
               "role": "SP",
-              "war": 6.1,
-              "hp": 112,
-              "maxHp": 112,
-              "stf": 32,
-              "ctl": 92,
-              "mov": 65,
-              "sta": 89,
-              "h9": 66,
-              "ovr": 84,
+              "war": 5.2,
+              "hp": 113,
+              "maxHp": 113,
+              "stf": 25,
+              "ctl": 71,
+              "mov": 60,
+              "sta": 90,
+              "h9": 81,
+              "ovr": 83,
               "rarity": "Epic"
             }
           ]
@@ -140726,7 +140726,7 @@ window.OpponentsDatabase = {
           "division": "AL West",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 85,
+          "ovr": 86,
           "pitchers": [
             {
               "name": "Bret Saberhagen",
@@ -140743,20 +140743,6 @@ window.OpponentsDatabase = {
               "rarity": "Legendary"
             },
             {
-              "name": "Charlie Leibrandt",
-              "role": "SP",
-              "war": 6.6,
-              "hp": 111,
-              "maxHp": 111,
-              "stf": 20,
-              "ctl": 76,
-              "mov": 71,
-              "sta": 87,
-              "h9": 61,
-              "ovr": 81,
-              "rarity": "Epic"
-            },
-            {
               "name": "Charlie Hough",
               "role": "SP",
               "war": 6.3,
@@ -140767,6 +140753,20 @@ window.OpponentsDatabase = {
               "mov": 57,
               "sta": 88,
               "h9": 90,
+              "ovr": 84,
+              "rarity": "Epic"
+            },
+            {
+              "name": "Mike Moore",
+              "role": "SP",
+              "war": 6.3,
+              "hp": 111,
+              "maxHp": 111,
+              "stf": 48,
+              "ctl": 77,
+              "mov": 70,
+              "sta": 87,
+              "h9": 62,
               "ovr": 84,
               "rarity": "Epic"
             }
@@ -141490,7 +141490,7 @@ window.OpponentsDatabase = {
           "division": "NL West",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 89,
+          "ovr": 85,
           "pitchers": [
             {
               "name": "Orel Hershiser",
@@ -141507,31 +141507,31 @@ window.OpponentsDatabase = {
               "rarity": "Legendary"
             },
             {
-              "name": "Fernando Valenzuela",
+              "name": "Dave Dravecky",
               "role": "SP",
-              "war": 5.4,
-              "hp": 114,
-              "maxHp": 114,
-              "stf": 70,
-              "ctl": 56,
-              "mov": 85,
-              "sta": 91,
-              "h9": 93,
-              "ovr": 91,
-              "rarity": "Legendary"
+              "war": 3.7,
+              "hp": 109,
+              "maxHp": 109,
+              "stf": 26,
+              "ctl": 81,
+              "mov": 62,
+              "sta": 84,
+              "h9": 62,
+              "ovr": 82,
+              "rarity": "Epic"
             },
             {
-              "name": "Bob Welch",
+              "name": "Tom Browning",
               "role": "SP",
-              "war": 4.2,
-              "hp": 111,
-              "maxHp": 111,
-              "stf": 39,
-              "ctl": 93,
-              "mov": 54,
-              "sta": 87,
-              "h9": 78,
-              "ovr": 85,
+              "war": 3.6,
+              "hp": 109,
+              "maxHp": 109,
+              "stf": 42,
+              "ctl": 78,
+              "mov": 44,
+              "sta": 84,
+              "h9": 63,
+              "ovr": 81,
               "rarity": "Epic"
             }
           ]
@@ -143830,7 +143830,7 @@ window.OpponentsDatabase = {
           "division": "AL West",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 87,
+          "ovr": 86,
           "pitchers": [
             {
               "name": "Mike Witt",
@@ -143861,17 +143861,17 @@ window.OpponentsDatabase = {
               "rarity": "Epic"
             },
             {
-              "name": "Kirk McCaskill",
+              "name": "Mark Gubicza",
               "role": "SP",
-              "war": 4.2,
+              "war": 3.4,
               "hp": 112,
               "maxHp": 112,
-              "stf": 79,
-              "ctl": 55,
-              "mov": 67,
+              "stf": 52,
+              "ctl": 34,
+              "mov": 88,
               "sta": 89,
-              "h9": 80,
-              "ovr": 87,
+              "h9": 76,
+              "ovr": 84,
               "rarity": "Epic"
             }
           ]
@@ -144212,7 +144212,7 @@ window.OpponentsDatabase = {
           "division": "NL East",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 87,
+          "ovr": 86,
           "pitchers": [
             {
               "name": "Rick Rhoden",
@@ -144243,17 +144243,17 @@ window.OpponentsDatabase = {
               "rarity": "Legendary"
             },
             {
-              "name": "Ron Darling",
+              "name": "Bruce Ruffin",
               "role": "SP",
-              "war": 4.6,
+              "war": 3.7,
               "hp": 109,
               "maxHp": 109,
-              "stf": 72,
-              "ctl": 63,
-              "mov": 59,
+              "stf": 25,
+              "ctl": 72,
+              "mov": 88,
               "sta": 85,
-              "h9": 77,
-              "ovr": 86,
+              "h9": 60,
+              "ovr": 83,
               "rarity": "Epic"
             }
           ]
@@ -146934,7 +146934,7 @@ window.OpponentsDatabase = {
           "division": "AL West",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 83,
+          "ovr": 85,
           "pitchers": [
             {
               "name": "Frank Viola",
@@ -146965,17 +146965,17 @@ window.OpponentsDatabase = {
               "rarity": "Epic"
             },
             {
-              "name": "Charlie Leibrandt",
+              "name": "Mark Langston",
               "role": "SP",
-              "war": 6.0,
-              "hp": 109,
-              "maxHp": 109,
-              "stf": 48,
-              "ctl": 71,
-              "mov": 54,
-              "sta": 84,
-              "h9": 53,
-              "ovr": 81,
+              "war": 5.9,
+              "hp": 114,
+              "maxHp": 114,
+              "stf": 103,
+              "ctl": 44,
+              "mov": 44,
+              "sta": 91,
+              "h9": 70,
+              "ovr": 85,
               "rarity": "Epic"
             }
           ]
@@ -147698,7 +147698,7 @@ window.OpponentsDatabase = {
           "division": "NL West",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 86,
+          "ovr": 87,
           "pitchers": [
             {
               "name": "Bob Welch",
@@ -147729,18 +147729,18 @@ window.OpponentsDatabase = {
               "rarity": "Epic"
             },
             {
-              "name": "Orel Hershiser",
+              "name": "Mike Scott",
               "role": "SP",
-              "war": 6.4,
-              "hp": 113,
-              "maxHp": 113,
-              "stf": 63,
-              "ctl": 78,
-              "mov": 76,
-              "sta": 89,
-              "h9": 62,
-              "ovr": 87,
-              "rarity": "Epic"
+              "war": 5.9,
+              "hp": 109,
+              "maxHp": 109,
+              "stf": 99,
+              "ctl": 68,
+              "mov": 62,
+              "sta": 84,
+              "h9": 87,
+              "ovr": 91,
+              "rarity": "Legendary"
             }
           ]
         }
@@ -153159,20 +153159,6 @@ window.OpponentsDatabase = {
               "rarity": "Legendary"
             },
             {
-              "name": "Mark Gubicza",
-              "role": "SP",
-              "war": 6.3,
-              "hp": 110,
-              "maxHp": 110,
-              "stf": 56,
-              "ctl": 86,
-              "mov": 93,
-              "sta": 86,
-              "h9": 51,
-              "ovr": 88,
-              "rarity": "Legendary"
-            },
-            {
               "name": "Bert Blyleven",
               "role": "SP",
               "war": 6.0,
@@ -153185,6 +153171,20 @@ window.OpponentsDatabase = {
               "h9": 62,
               "ovr": 86,
               "rarity": "Epic"
+            },
+            {
+              "name": "Mike Moore",
+              "role": "SP",
+              "war": 5.4,
+              "hp": 109,
+              "maxHp": 109,
+              "stf": 61,
+              "ctl": 62,
+              "mov": 80,
+              "sta": 84,
+              "h9": 88,
+              "ovr": 89,
+              "rarity": "Legendary"
             }
           ]
         }
@@ -153524,7 +153524,7 @@ window.OpponentsDatabase = {
           "division": "NL East",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 86,
+          "ovr": 85,
           "pitchers": [
             {
               "name": "Mark Langston",
@@ -153541,20 +153541,6 @@ window.OpponentsDatabase = {
               "rarity": "Legendary"
             },
             {
-              "name": "Bryn Smith",
-              "role": "SP",
-              "war": 5.1,
-              "hp": 108,
-              "maxHp": 108,
-              "stf": 43,
-              "ctl": 85,
-              "mov": 69,
-              "sta": 83,
-              "h9": 83,
-              "ovr": 86,
-              "rarity": "Epic"
-            },
-            {
               "name": "Greg Maddux",
               "role": "SP",
               "war": 5.0,
@@ -153566,6 +153552,20 @@ window.OpponentsDatabase = {
               "sta": 84,
               "h9": 62,
               "ovr": 83,
+              "rarity": "Epic"
+            },
+            {
+              "name": "Doug Drabek",
+              "role": "SP",
+              "war": 4.1,
+              "hp": 111,
+              "maxHp": 111,
+              "stf": 27,
+              "ctl": 77,
+              "mov": 61,
+              "sta": 86,
+              "h9": 72,
+              "ovr": 82,
               "rarity": "Epic"
             }
           ]
@@ -153906,7 +153906,7 @@ window.OpponentsDatabase = {
           "division": "NL West",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 88,
+          "ovr": 90,
           "pitchers": [
             {
               "name": "Orel Hershiser",
@@ -153937,18 +153937,18 @@ window.OpponentsDatabase = {
               "rarity": "Legendary"
             },
             {
-              "name": "Ed Whitson",
+              "name": "Scott Garrelts",
               "role": "SP",
-              "war": 6.5,
-              "hp": 109,
-              "maxHp": 109,
-              "stf": 30,
-              "ctl": 94,
-              "mov": 54,
-              "sta": 84,
-              "h9": 73,
-              "ovr": 84,
-              "rarity": "Epic"
+              "war": 4.0,
+              "hp": 107,
+              "maxHp": 107,
+              "stf": 46,
+              "ctl": 87,
+              "mov": 80,
+              "sta": 82,
+              "h9": 92,
+              "ovr": 90,
+              "rarity": "Legendary"
             }
           ]
         }
@@ -155827,20 +155827,6 @@ window.OpponentsDatabase = {
               "rarity": "Legendary"
             },
             {
-              "name": "Mike Boddicker",
-              "role": "SP",
-              "war": 5.9,
-              "hp": 108,
-              "maxHp": 108,
-              "stf": 48,
-              "ctl": 72,
-              "mov": 72,
-              "sta": 83,
-              "h9": 51,
-              "ovr": 83,
-              "rarity": "Epic"
-            },
-            {
               "name": "Dave Stieb",
               "role": "SP",
               "war": 5.9,
@@ -155852,6 +155838,20 @@ window.OpponentsDatabase = {
               "sta": 80,
               "h9": 76,
               "ovr": 85,
+              "rarity": "Epic"
+            },
+            {
+              "name": "Buddy Black",
+              "role": "SP",
+              "war": 3.5,
+              "hp": 107,
+              "maxHp": 107,
+              "stf": 29,
+              "ctl": 74,
+              "mov": 57,
+              "sta": 82,
+              "h9": 72,
+              "ovr": 82,
               "rarity": "Epic"
             }
           ]
@@ -159350,7 +159350,7 @@ window.OpponentsDatabase = {
           "division": "AL West",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 85,
+          "ovr": 89,
           "pitchers": [
             {
               "name": "Jim Abbott",
@@ -159367,20 +159367,6 @@ window.OpponentsDatabase = {
               "rarity": "Epic"
             },
             {
-              "name": "Mark Langston",
-              "role": "SP",
-              "war": 7.2,
-              "hp": 111,
-              "maxHp": 111,
-              "stf": 66,
-              "ctl": 51,
-              "mov": 36,
-              "sta": 87,
-              "h9": 93,
-              "ovr": 83,
-              "rarity": "Epic"
-            },
-            {
               "name": "Kevin Tapani",
               "role": "SP",
               "war": 6.8,
@@ -159393,6 +159379,20 @@ window.OpponentsDatabase = {
               "h9": 64,
               "ovr": 85,
               "rarity": "Epic"
+            },
+            {
+              "name": "Nolan Ryan",
+              "role": "SP",
+              "war": 5.2,
+              "hp": 106,
+              "maxHp": 106,
+              "stf": 125,
+              "ctl": 46,
+              "mov": 71,
+              "sta": 80,
+              "h9": 125,
+              "ovr": 96,
+              "rarity": "Legendary"
             }
           ]
         }
@@ -160114,7 +160114,7 @@ window.OpponentsDatabase = {
           "division": "NL West",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 90,
+          "ovr": 91,
           "pitchers": [
             {
               "name": "Tom Glavine",
@@ -160145,18 +160145,18 @@ window.OpponentsDatabase = {
               "rarity": "Legendary"
             },
             {
-              "name": "John Smoltz",
+              "name": "Mike Morgan",
               "role": "SP",
-              "war": 5.4,
-              "hp": 106,
-              "maxHp": 106,
-              "stf": 50,
-              "ctl": 64,
-              "mov": 72,
-              "sta": 80,
-              "h9": 69,
-              "ovr": 84,
-              "rarity": "Epic"
+              "war": 5.1,
+              "hp": 110,
+              "maxHp": 110,
+              "stf": 42,
+              "ctl": 83,
+              "mov": 85,
+              "sta": 86,
+              "h9": 81,
+              "ovr": 89,
+              "rarity": "Legendary"
             }
           ]
         }
@@ -162018,7 +162018,7 @@ window.OpponentsDatabase = {
           "division": "AL East",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 88,
+          "ovr": 90,
           "pitchers": [
             {
               "name": "Roger Clemens",
@@ -162049,18 +162049,18 @@ window.OpponentsDatabase = {
               "rarity": "Epic"
             },
             {
-              "name": "Frank Viola",
+              "name": "Charles Nagy",
               "role": "SP",
-              "war": 6.2,
-              "hp": 108,
-              "maxHp": 108,
-              "stf": 28,
-              "ctl": 55,
-              "mov": 82,
-              "sta": 83,
-              "h9": 68,
-              "ovr": 82,
-              "rarity": "Epic"
+              "war": 6.0,
+              "hp": 113,
+              "maxHp": 113,
+              "stf": 55,
+              "ctl": 91,
+              "mov": 90,
+              "sta": 90,
+              "h9": 54,
+              "ovr": 89,
+              "rarity": "Legendary"
             }
           ]
         }
@@ -163235,20 +163235,6 @@ window.OpponentsDatabase = {
               "rarity": "Legendary"
             },
             {
-              "name": "Greg Swindell",
-              "role": "SP",
-              "war": 5.4,
-              "hp": 110,
-              "maxHp": 110,
-              "stf": 50,
-              "ctl": 99,
-              "mov": 75,
-              "sta": 86,
-              "h9": 52,
-              "ovr": 86,
-              "rarity": "Epic"
-            },
-            {
               "name": "Bill Swift",
               "role": "SP",
               "war": 4.4,
@@ -163260,6 +163246,20 @@ window.OpponentsDatabase = {
               "sta": 89,
               "h9": 72,
               "ovr": 86,
+              "rarity": "Epic"
+            },
+            {
+              "name": "Tom Candiotti",
+              "role": "SP",
+              "war": 4.4,
+              "hp": 108,
+              "maxHp": 108,
+              "stf": 66,
+              "ctl": 70,
+              "mov": 76,
+              "sta": 83,
+              "h9": 74,
+              "ovr": 87,
               "rarity": "Epic"
             }
           ]
@@ -165666,7 +165666,7 @@ window.OpponentsDatabase = {
           "division": "AL West",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 88,
+          "ovr": 91,
           "pitchers": [
             {
               "name": "Kevin Appier",
@@ -165697,18 +165697,18 @@ window.OpponentsDatabase = {
               "rarity": "Epic"
             },
             {
-              "name": "David Cone",
+              "name": "Randy Johnson",
               "role": "SP",
-              "war": 7.2,
+              "war": 6.6,
               "hp": 112,
               "maxHp": 112,
-              "stf": 68,
-              "ctl": 37,
-              "mov": 66,
+              "stf": 125,
+              "ctl": 52,
+              "mov": 61,
               "sta": 89,
-              "h9": 86,
-              "ovr": 85,
-              "rarity": "Epic"
+              "h9": 103,
+              "ovr": 95,
+              "rarity": "Legendary"
             }
           ]
         }
@@ -166102,7 +166102,7 @@ window.OpponentsDatabase = {
           "division": "NL East",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 89,
+          "ovr": 86,
           "pitchers": [
             {
               "name": "Jeff Fassero",
@@ -166119,20 +166119,6 @@ window.OpponentsDatabase = {
               "rarity": "Epic"
             },
             {
-              "name": "John Wetteland",
-              "role": "RP",
-              "war": 4.2,
-              "hp": 30,
-              "maxHp": 30,
-              "stf": 125,
-              "ctl": 65,
-              "mov": 87,
-              "sta": 27,
-              "h9": 100,
-              "ovr": 92,
-              "rarity": "Legendary"
-            },
-            {
               "name": "Bryan Harvey",
               "role": "RP",
               "war": 4.0,
@@ -166145,6 +166131,20 @@ window.OpponentsDatabase = {
               "h9": 102,
               "ovr": 90,
               "rarity": "Legendary"
+            },
+            {
+              "name": "Terry Mulholland",
+              "role": "SP",
+              "war": 3.7,
+              "hp": 108,
+              "maxHp": 108,
+              "stf": 44,
+              "ctl": 94,
+              "mov": 48,
+              "sta": 84,
+              "h9": 63,
+              "ovr": 83,
+              "rarity": "Epic"
             }
           ]
         }
@@ -168473,17 +168473,17 @@ window.OpponentsDatabase = {
               "rarity": "Epic"
             },
             {
-              "name": "Kevin Appier",
+              "name": "Jack McDowell",
               "role": "SP",
-              "war": 4.5,
-              "hp": 108,
-              "maxHp": 108,
-              "stf": 80,
-              "ctl": 51,
-              "mov": 78,
-              "sta": 83,
-              "h9": 73,
-              "ovr": 86,
+              "war": 3.8,
+              "hp": 111,
+              "maxHp": 111,
+              "stf": 48,
+              "ctl": 90,
+              "mov": 81,
+              "sta": 87,
+              "h9": 47,
+              "ovr": 85,
               "rarity": "Epic"
             }
           ]
@@ -171909,16 +171909,16 @@ window.OpponentsDatabase = {
               "rarity": "Legendary"
             },
             {
-              "name": "Jose Mesa",
-              "role": "RP",
-              "war": 3.9,
-              "hp": 30,
-              "maxHp": 30,
-              "stf": 67,
-              "ctl": 78,
-              "mov": 84,
-              "sta": 25,
-              "h9": 87,
+              "name": "Alex Fernandez",
+              "role": "SP",
+              "war": 3.8,
+              "hp": 108,
+              "maxHp": 108,
+              "stf": 60,
+              "ctl": 71,
+              "mov": 66,
+              "sta": 83,
+              "h9": 55,
               "ovr": 84,
               "rarity": "Epic"
             }
@@ -172206,7 +172206,7 @@ window.OpponentsDatabase = {
           "division": "AL East",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 84,
+          "ovr": 85,
           "pitchers": [
             {
               "name": "David Cone",
@@ -172237,17 +172237,17 @@ window.OpponentsDatabase = {
               "rarity": "Epic"
             },
             {
-              "name": "Al Leiter",
+              "name": "David Wells",
               "role": "SP",
-              "war": 5.7,
-              "hp": 107,
-              "maxHp": 107,
-              "stf": 67,
-              "ctl": 9,
-              "mov": 72,
-              "sta": 81,
-              "h9": 73,
-              "ovr": 80,
+              "war": 5.4,
+              "hp": 109,
+              "maxHp": 109,
+              "stf": 42,
+              "ctl": 84,
+              "mov": 54,
+              "sta": 85,
+              "h9": 60,
+              "ovr": 82,
               "rarity": "Epic"
             }
           ]
@@ -172480,7 +172480,7 @@ window.OpponentsDatabase = {
           "division": "AL West",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 86,
+          "ovr": 89,
           "pitchers": [
             {
               "name": "Randy Johnson",
@@ -172511,18 +172511,18 @@ window.OpponentsDatabase = {
               "rarity": "Epic"
             },
             {
-              "name": "Roger Pavlik",
-              "role": "SP",
-              "war": 3.4,
-              "hp": 105,
-              "maxHp": 105,
-              "stf": 59,
-              "ctl": 36,
-              "mov": 62,
-              "sta": 79,
-              "h9": 69,
-              "ovr": 80,
-              "rarity": "Epic"
+              "name": "Troy Percival",
+              "role": "RP",
+              "war": 3.1,
+              "hp": 30,
+              "maxHp": 30,
+              "stf": 109,
+              "ctl": 63,
+              "mov": 70,
+              "sta": 27,
+              "h9": 125,
+              "ovr": 91,
+              "rarity": "Legendary"
             }
           ]
         }
@@ -173136,7 +173136,7 @@ window.OpponentsDatabase = {
           "division": "NL East",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 90,
+          "ovr": 88,
           "pitchers": [
             {
               "name": "Greg Maddux",
@@ -173153,20 +173153,6 @@ window.OpponentsDatabase = {
               "rarity": "Legendary"
             },
             {
-              "name": "Tom Glavine",
-              "role": "SP",
-              "war": 4.8,
-              "hp": 108,
-              "maxHp": 108,
-              "stf": 39,
-              "ctl": 68,
-              "mov": 93,
-              "sta": 84,
-              "h9": 68,
-              "ovr": 85,
-              "rarity": "Epic"
-            },
-            {
               "name": "Pedro Martinez",
               "role": "SP",
               "war": 4.7,
@@ -173178,6 +173164,20 @@ window.OpponentsDatabase = {
               "sta": 81,
               "h9": 87,
               "ovr": 87,
+              "rarity": "Epic"
+            },
+            {
+              "name": "Pat Rapp",
+              "role": "SP",
+              "war": 3.2,
+              "hp": 103,
+              "maxHp": 103,
+              "stf": 35,
+              "ctl": 40,
+              "mov": 84,
+              "sta": 77,
+              "h9": 62,
+              "ovr": 80,
               "rarity": "Epic"
             }
           ]
@@ -173410,7 +173410,7 @@ window.OpponentsDatabase = {
           "division": "NL West",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 88,
+          "ovr": 87,
           "pitchers": [
             {
               "name": "Andy Ashby",
@@ -173441,17 +173441,17 @@ window.OpponentsDatabase = {
               "rarity": "Legendary"
             },
             {
-              "name": "Joey Hamilton",
+              "name": "Kevin Ritz",
               "role": "SP",
-              "war": 4.6,
-              "hp": 108,
-              "maxHp": 108,
-              "stf": 34,
-              "ctl": 81,
-              "mov": 71,
-              "sta": 84,
-              "h9": 66,
-              "ovr": 84,
+              "war": 4.5,
+              "hp": 105,
+              "maxHp": 105,
+              "stf": 47,
+              "ctl": 58,
+              "mov": 66,
+              "sta": 79,
+              "h9": 55,
+              "ovr": 80,
               "rarity": "Epic"
             }
           ]
@@ -175642,7 +175642,7 @@ window.OpponentsDatabase = {
           "division": "AL East",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 87,
+          "ovr": 85,
           "pitchers": [
             {
               "name": "Pat Hentgen",
@@ -175673,18 +175673,18 @@ window.OpponentsDatabase = {
               "rarity": "Legendary"
             },
             {
-              "name": "Juan Guzman",
+              "name": "Andy Pettitte",
               "role": "SP",
-              "war": 6.7,
-              "hp": 109,
-              "maxHp": 109,
-              "stf": 74,
-              "ctl": 79,
-              "mov": 58,
-              "sta": 85,
-              "h9": 81,
-              "ovr": 89,
-              "rarity": "Legendary"
+              "war": 5.6,
+              "hp": 106,
+              "maxHp": 106,
+              "stf": 53,
+              "ctl": 69,
+              "mov": 59,
+              "sta": 81,
+              "h9": 45,
+              "ovr": 81,
+              "rarity": "Epic"
             }
           ]
         }
@@ -175916,7 +175916,7 @@ window.OpponentsDatabase = {
           "division": "AL West",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 84,
+          "ovr": 82,
           "pitchers": [
             {
               "name": "Ken Hill",
@@ -175947,18 +175947,18 @@ window.OpponentsDatabase = {
               "rarity": "Epic"
             },
             {
-              "name": "Troy Percival",
-              "role": "RP",
-              "war": 3.4,
-              "hp": 30,
-              "maxHp": 30,
-              "stf": 118,
-              "ctl": 51,
-              "mov": 58,
-              "sta": 27,
-              "h9": 125,
-              "ovr": 89,
-              "rarity": "Legendary"
+              "name": "Willie Adams",
+              "role": "SP",
+              "war": 1.8,
+              "hp": 106,
+              "maxHp": 106,
+              "stf": 67,
+              "ctl": 72,
+              "mov": 42,
+              "sta": 80,
+              "h9": 55,
+              "ovr": 82,
+              "rarity": "Epic"
             }
           ]
         }
@@ -176572,7 +176572,7 @@ window.OpponentsDatabase = {
           "division": "NL East",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 95,
+          "ovr": 94,
           "pitchers": [
             {
               "name": "Kevin Brown",
@@ -176603,17 +176603,17 @@ window.OpponentsDatabase = {
               "rarity": "Legendary"
             },
             {
-              "name": "Greg Maddux",
+              "name": "Jeff Fassero",
               "role": "SP",
-              "war": 7.2,
-              "hp": 109,
-              "maxHp": 109,
-              "stf": 49,
-              "ctl": 120,
-              "mov": 95,
-              "sta": 85,
-              "h9": 68,
-              "ovr": 93,
+              "war": 5.6,
+              "hp": 108,
+              "maxHp": 108,
+              "stf": 86,
+              "ctl": 90,
+              "mov": 70,
+              "sta": 84,
+              "h9": 64,
+              "ovr": 91,
               "rarity": "Legendary"
             }
           ]
@@ -176846,7 +176846,7 @@ window.OpponentsDatabase = {
           "division": "NL West",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 86,
+          "ovr": 88,
           "pitchers": [
             {
               "name": "Hideo Nomo",
@@ -176863,30 +176863,30 @@ window.OpponentsDatabase = {
               "rarity": "Legendary"
             },
             {
-              "name": "Ismael Valdez",
-              "role": "SP",
-              "war": 4.7,
-              "hp": 108,
-              "maxHp": 108,
-              "stf": 58,
-              "ctl": 89,
-              "mov": 68,
-              "sta": 84,
-              "h9": 57,
-              "ovr": 86,
-              "rarity": "Epic"
+              "name": "Trevor Hoffman",
+              "role": "RP",
+              "war": 3.8,
+              "hp": 31,
+              "maxHp": 31,
+              "stf": 113,
+              "ctl": 63,
+              "mov": 77,
+              "sta": 28,
+              "h9": 120,
+              "ovr": 91,
+              "rarity": "Legendary"
             },
             {
-              "name": "Pedro Astacio",
-              "role": "SP",
-              "war": 4.6,
-              "hp": 107,
-              "maxHp": 107,
-              "stf": 36,
-              "ctl": 71,
-              "mov": 70,
-              "sta": 82,
-              "h9": 56,
+              "name": "Bruce Ruffin",
+              "role": "RP",
+              "war": 1.5,
+              "hp": 30,
+              "maxHp": 30,
+              "stf": 85,
+              "ctl": 52,
+              "mov": 74,
+              "sta": 25,
+              "h9": 84,
               "ovr": 82,
               "rarity": "Epic"
             }
@@ -179352,7 +179352,7 @@ window.OpponentsDatabase = {
           "division": "AL West",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 87,
+          "ovr": 88,
           "pitchers": [
             {
               "name": "Randy Johnson",
@@ -179369,31 +179369,31 @@ window.OpponentsDatabase = {
               "rarity": "Legendary"
             },
             {
-              "name": "Jeff Fassero",
+              "name": "Chuck Finley",
               "role": "SP",
-              "war": 4.5,
-              "hp": 108,
-              "maxHp": 108,
-              "stf": 64,
-              "ctl": 62,
-              "mov": 68,
-              "sta": 83,
-              "h9": 59,
-              "ovr": 84,
+              "war": 3.1,
+              "hp": 107,
+              "maxHp": 107,
+              "stf": 82,
+              "ctl": 53,
+              "mov": 49,
+              "sta": 82,
+              "h9": 66,
+              "ovr": 83,
               "rarity": "Epic"
             },
             {
-              "name": "Jamie Moyer",
-              "role": "SP",
-              "war": 3.7,
-              "hp": 105,
-              "maxHp": 105,
-              "stf": 33,
-              "ctl": 91,
-              "mov": 55,
-              "sta": 79,
-              "h9": 54,
-              "ovr": 81,
+              "name": "John Wetteland",
+              "role": "RP",
+              "war": 2.8,
+              "hp": 30,
+              "maxHp": 30,
+              "stf": 74,
+              "ctl": 68,
+              "mov": 72,
+              "sta": 26,
+              "h9": 102,
+              "ovr": 84,
               "rarity": "Epic"
             }
           ]
@@ -180282,7 +180282,7 @@ window.OpponentsDatabase = {
           "division": "NL West",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 86,
+          "ovr": 87,
           "pitchers": [
             {
               "name": "Ismael Valdez",
@@ -180313,18 +180313,18 @@ window.OpponentsDatabase = {
               "rarity": "Epic"
             },
             {
-              "name": "Chan Ho Park",
-              "role": "SP",
-              "war": 3.5,
-              "hp": 107,
-              "maxHp": 107,
-              "stf": 72,
-              "ctl": 60,
-              "mov": 47,
-              "sta": 82,
-              "h9": 94,
-              "ovr": 86,
-              "rarity": "Epic"
+              "name": "Trevor Hoffman",
+              "role": "RP",
+              "war": 3.1,
+              "hp": 30,
+              "maxHp": 30,
+              "stf": 123,
+              "ctl": 74,
+              "mov": 57,
+              "sta": 27,
+              "h9": 95,
+              "ovr": 88,
+              "rarity": "Legendary"
             }
           ]
         }
@@ -182294,7 +182294,7 @@ window.OpponentsDatabase = {
           "division": "AL Central",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 83,
+          "ovr": 81,
           "pitchers": [
             {
               "name": "Brad Radke",
@@ -182325,17 +182325,17 @@ window.OpponentsDatabase = {
               "rarity": "Epic"
             },
             {
-              "name": "Michael Jackson",
-              "role": "RP",
-              "war": 3.8,
-              "hp": 30,
-              "maxHp": 30,
-              "stf": 62,
-              "ctl": 88,
-              "mov": 78,
-              "sta": 24,
-              "h9": 100,
-              "ovr": 85,
+              "name": "Justin Thompson",
+              "role": "SP",
+              "war": 2.9,
+              "hp": 107,
+              "maxHp": 107,
+              "stf": 44,
+              "ctl": 62,
+              "mov": 68,
+              "sta": 81,
+              "h9": 48,
+              "ovr": 80,
               "rarity": "Epic"
             }
           ]
@@ -183934,7 +183934,7 @@ window.OpponentsDatabase = {
           "division": "NL West",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 89,
+          "ovr": 92,
           "pitchers": [
             {
               "name": "Kevin Brown",
@@ -183951,20 +183951,6 @@ window.OpponentsDatabase = {
               "rarity": "Legendary"
             },
             {
-              "name": "Andy Ashby",
-              "role": "SP",
-              "war": 4.7,
-              "hp": 109,
-              "maxHp": 109,
-              "stf": 43,
-              "ctl": 86,
-              "mov": 61,
-              "sta": 84,
-              "h9": 55,
-              "ovr": 83,
-              "rarity": "Epic"
-            },
-            {
               "name": "Omar Daal",
               "role": "SP",
               "war": 4.2,
@@ -183977,6 +183963,20 @@ window.OpponentsDatabase = {
               "h9": 71,
               "ovr": 87,
               "rarity": "Epic"
+            },
+            {
+              "name": "Robb Nen",
+              "role": "RP",
+              "war": 3.4,
+              "hp": 30,
+              "maxHp": 30,
+              "stf": 110,
+              "ctl": 76,
+              "mov": 88,
+              "sta": 26,
+              "h9": 106,
+              "ovr": 92,
+              "rarity": "Legendary"
             }
           ]
         }
@@ -186548,7 +186548,7 @@ window.OpponentsDatabase = {
           "division": "AL West",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 83,
+          "ovr": 84,
           "pitchers": [
             {
               "name": "Jamie Moyer",
@@ -186565,20 +186565,6 @@ window.OpponentsDatabase = {
               "rarity": "Epic"
             },
             {
-              "name": "Freddy Garcia",
-              "role": "SP",
-              "war": 5.4,
-              "hp": 104,
-              "maxHp": 104,
-              "stf": 69,
-              "ctl": 41,
-              "mov": 68,
-              "sta": 78,
-              "h9": 49,
-              "ovr": 80,
-              "rarity": "Epic"
-            },
-            {
               "name": "Tim Hudson",
               "role": "SP",
               "war": 3.9,
@@ -186590,6 +186576,20 @@ window.OpponentsDatabase = {
               "sta": 81,
               "h9": 72,
               "ovr": 86,
+              "rarity": "Epic"
+            },
+            {
+              "name": "Jeff Zimmerman",
+              "role": "RP",
+              "war": 3.9,
+              "hp": 31,
+              "maxHp": 31,
+              "stf": 53,
+              "ctl": 80,
+              "mov": 60,
+              "sta": 28,
+              "h9": 120,
+              "ovr": 84,
               "rarity": "Epic"
             }
           ]
@@ -186930,7 +186930,7 @@ window.OpponentsDatabase = {
           "division": "NL Central",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 88,
+          "ovr": 82,
           "pitchers": [
             {
               "name": "Mike Hampton",
@@ -186947,32 +186947,32 @@ window.OpponentsDatabase = {
               "rarity": "Epic"
             },
             {
-              "name": "Jose Lima",
+              "name": "Darren Oliver",
               "role": "SP",
-              "war": 4.5,
-              "hp": 110,
-              "maxHp": 110,
-              "stf": 57,
-              "ctl": 104,
-              "mov": 49,
-              "sta": 85,
-              "h9": 44,
-              "ovr": 84,
+              "war": 3.3,
+              "hp": 107,
+              "maxHp": 107,
+              "stf": 34,
+              "ctl": 58,
+              "mov": 72,
+              "sta": 81,
+              "h9": 52,
+              "ovr": 80,
               "rarity": "Epic"
             },
             {
-              "name": "Billy Wagner",
-              "role": "RP",
-              "war": 3.8,
-              "hp": 30,
-              "maxHp": 30,
-              "stf": 125,
-              "ctl": 71,
-              "mov": 77,
-              "sta": 26,
-              "h9": 125,
-              "ovr": 94,
-              "rarity": "Legendary"
+              "name": "Todd Ritchie",
+              "role": "SP",
+              "war": 3.3,
+              "hp": 107,
+              "maxHp": 107,
+              "stf": 36,
+              "ctl": 72,
+              "mov": 62,
+              "sta": 82,
+              "h9": 56,
+              "ovr": 81,
+              "rarity": "Epic"
             }
           ]
         }
@@ -187258,7 +187258,7 @@ window.OpponentsDatabase = {
           "division": "NL East",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 89,
+          "ovr": 86,
           "pitchers": [
             {
               "name": "Kevin Millwood",
@@ -187289,18 +187289,18 @@ window.OpponentsDatabase = {
               "rarity": "Epic"
             },
             {
-              "name": "John Smoltz",
+              "name": "Dustin Hermanson",
               "role": "SP",
-              "war": 4.4,
+              "war": 3.4,
               "hp": 106,
               "maxHp": 106,
-              "stf": 67,
-              "ctl": 94,
-              "mov": 76,
+              "stf": 44,
+              "ctl": 71,
+              "mov": 66,
               "sta": 80,
-              "h9": 70,
-              "ovr": 90,
-              "rarity": "Legendary"
+              "h9": 44,
+              "ovr": 80,
+              "rarity": "Epic"
             }
           ]
         }
@@ -187586,7 +187586,7 @@ window.OpponentsDatabase = {
           "division": "NL West",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 91,
+          "ovr": 90,
           "pitchers": [
             {
               "name": "Randy Johnson",
@@ -187617,17 +187617,17 @@ window.OpponentsDatabase = {
               "rarity": "Legendary"
             },
             {
-              "name": "Omar Daal",
+              "name": "Andy Ashby",
               "role": "SP",
-              "war": 4.6,
-              "hp": 108,
-              "maxHp": 108,
-              "stf": 47,
-              "ctl": 60,
-              "mov": 63,
-              "sta": 83,
-              "h9": 75,
-              "ovr": 83,
+              "war": 3.0,
+              "hp": 107,
+              "maxHp": 107,
+              "stf": 39,
+              "ctl": 84,
+              "mov": 46,
+              "sta": 82,
+              "h9": 54,
+              "ovr": 81,
               "rarity": "Epic"
             }
           ]
@@ -189598,7 +189598,7 @@ window.OpponentsDatabase = {
           "division": "AL Central",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 82,
+          "ovr": 81,
           "pitchers": [
             {
               "name": "Bartolo Colon",
@@ -189615,30 +189615,30 @@ window.OpponentsDatabase = {
               "rarity": "Epic"
             },
             {
-              "name": "Chuck Finley",
+              "name": "Eric Milton",
               "role": "SP",
-              "war": 4.5,
-              "hp": 106,
-              "maxHp": 106,
-              "stf": 73,
-              "ctl": 37,
-              "mov": 58,
-              "sta": 80,
-              "h9": 58,
-              "ovr": 81,
+              "war": 3.5,
+              "hp": 104,
+              "maxHp": 104,
+              "stf": 62,
+              "ctl": 94,
+              "mov": 18,
+              "sta": 78,
+              "h9": 47,
+              "ovr": 80,
               "rarity": "Epic"
             },
             {
-              "name": "Dave Burba",
+              "name": "Jeff Weaver",
               "role": "SP",
-              "war": 3.7,
-              "hp": 103,
-              "maxHp": 103,
-              "stf": 82,
-              "ctl": 35,
-              "mov": 62,
-              "sta": 77,
-              "h9": 45,
+              "war": 3.2,
+              "hp": 107,
+              "maxHp": 107,
+              "stf": 45,
+              "ctl": 84,
+              "mov": 44,
+              "sta": 82,
+              "h9": 47,
               "ovr": 80,
               "rarity": "Epic"
             }
@@ -190217,20 +190217,6 @@ window.OpponentsDatabase = {
               "rarity": "Epic"
             },
             {
-              "name": "Barry Zito",
-              "role": "SP",
-              "war": 3.4,
-              "hp": 107,
-              "maxHp": 107,
-              "stf": 63,
-              "ctl": 37,
-              "mov": 79,
-              "sta": 82,
-              "h9": 102,
-              "ovr": 86,
-              "rarity": "Epic"
-            },
-            {
               "name": "Aaron Sele",
               "role": "SP",
               "war": 2.5,
@@ -190242,6 +190228,20 @@ window.OpponentsDatabase = {
               "sta": 79,
               "h9": 44,
               "ovr": 80,
+              "rarity": "Epic"
+            },
+            {
+              "name": "Barry Zito",
+              "role": "SP",
+              "war": 3.4,
+              "hp": 107,
+              "maxHp": 107,
+              "stf": 63,
+              "ctl": 37,
+              "mov": 79,
+              "sta": 82,
+              "h9": 102,
+              "ovr": 86,
               "rarity": "Epic"
             }
           ]
@@ -190910,7 +190910,7 @@ window.OpponentsDatabase = {
           "division": "NL East",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 86,
+          "ovr": 88,
           "pitchers": [
             {
               "name": "Greg Maddux",
@@ -190941,18 +190941,18 @@ window.OpponentsDatabase = {
               "rarity": "Epic"
             },
             {
-              "name": "Tom Glavine",
+              "name": "Al Leiter",
               "role": "SP",
-              "war": 4.9,
-              "hp": 109,
-              "maxHp": 109,
-              "stf": 38,
-              "ctl": 83,
-              "mov": 62,
-              "sta": 84,
-              "h9": 67,
-              "ovr": 83,
-              "rarity": "Epic"
+              "war": 4.8,
+              "hp": 108,
+              "maxHp": 108,
+              "stf": 86,
+              "ctl": 60,
+              "mov": 67,
+              "sta": 83,
+              "h9": 81,
+              "ovr": 89,
+              "rarity": "Legendary"
             }
           ]
         }
@@ -191238,7 +191238,7 @@ window.OpponentsDatabase = {
           "division": "NL West",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 92,
+          "ovr": 93,
           "pitchers": [
             {
               "name": "Randy Johnson",
@@ -191269,17 +191269,17 @@ window.OpponentsDatabase = {
               "rarity": "Legendary"
             },
             {
-              "name": "Chan Ho Park",
-              "role": "SP",
-              "war": 4.9,
-              "hp": 107,
-              "maxHp": 107,
-              "stf": 87,
-              "ctl": 17,
-              "mov": 66,
-              "sta": 82,
-              "h9": 96,
-              "ovr": 85,
+              "name": "Gabe White",
+              "role": "RP",
+              "war": 4.4,
+              "hp": 31,
+              "maxHp": 31,
+              "stf": 81,
+              "ctl": 95,
+              "mov": 75,
+              "sta": 27,
+              "h9": 90,
+              "ovr": 87,
               "rarity": "Epic"
             }
           ]
@@ -193578,7 +193578,7 @@ window.OpponentsDatabase = {
           "division": "AL East",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 93,
+          "ovr": 94,
           "pitchers": [
             {
               "name": "Mike Mussina",
@@ -193595,20 +193595,6 @@ window.OpponentsDatabase = {
               "rarity": "Legendary"
             },
             {
-              "name": "Roger Clemens",
-              "role": "SP",
-              "war": 5.7,
-              "hp": 108,
-              "maxHp": 108,
-              "stf": 87,
-              "ctl": 69,
-              "mov": 70,
-              "sta": 82,
-              "h9": 65,
-              "ovr": 88,
-              "rarity": "Legendary"
-            },
-            {
               "name": "Pedro Martinez",
               "role": "SP",
               "war": 5.1,
@@ -193620,6 +193606,20 @@ window.OpponentsDatabase = {
               "sta": 81,
               "h9": 100,
               "ovr": 98,
+              "rarity": "Legendary"
+            },
+            {
+              "name": "Roy Halladay",
+              "role": "SP",
+              "war": 3.0,
+              "hp": 107,
+              "maxHp": 107,
+              "stf": 73,
+              "ctl": 86,
+              "mov": 98,
+              "sta": 82,
+              "h9": 66,
+              "ovr": 92,
               "rarity": "Legendary"
             }
           ]
@@ -193852,7 +193852,7 @@ window.OpponentsDatabase = {
           "division": "AL West",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 86,
+          "ovr": 85,
           "pitchers": [
             {
               "name": "Mark Mulder",
@@ -193869,31 +193869,31 @@ window.OpponentsDatabase = {
               "rarity": "Epic"
             },
             {
-              "name": "Barry Zito",
+              "name": "Freddy Garcia",
               "role": "SP",
-              "war": 4.5,
-              "hp": 104,
-              "maxHp": 104,
-              "stf": 86,
-              "ctl": 58,
-              "mov": 71,
-              "sta": 78,
-              "h9": 79,
+              "war": 4.2,
+              "hp": 110,
+              "maxHp": 110,
+              "stf": 46,
+              "ctl": 78,
+              "mov": 81,
+              "sta": 85,
+              "h9": 84,
               "ovr": 88,
               "rarity": "Legendary"
             },
             {
-              "name": "Tim Hudson",
+              "name": "Jarrod Washburn",
               "role": "SP",
-              "war": 4.5,
-              "hp": 108,
-              "maxHp": 108,
-              "stf": 59,
-              "ctl": 75,
-              "mov": 70,
-              "sta": 83,
-              "h9": 67,
-              "ovr": 85,
+              "war": 3.8,
+              "hp": 106,
+              "maxHp": 106,
+              "stf": 41,
+              "ctl": 80,
+              "mov": 45,
+              "sta": 81,
+              "h9": 50,
+              "ovr": 80,
               "rarity": "Epic"
             }
           ]
@@ -194234,7 +194234,7 @@ window.OpponentsDatabase = {
           "division": "NL Central",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 87,
+          "ovr": 84,
           "pitchers": [
             {
               "name": "Wade Miller",
@@ -194265,18 +194265,18 @@ window.OpponentsDatabase = {
               "rarity": "Epic"
             },
             {
-              "name": "Roy Oswalt",
+              "name": "Jon Lieber",
               "role": "SP",
-              "war": 4.7,
-              "hp": 110,
-              "maxHp": 110,
-              "stf": 90,
-              "ctl": 102,
-              "mov": 66,
-              "sta": 86,
-              "h9": 72,
-              "ovr": 93,
-              "rarity": "Legendary"
+              "war": 3.9,
+              "hp": 108,
+              "maxHp": 108,
+              "stf": 39,
+              "ctl": 104,
+              "mov": 57,
+              "sta": 84,
+              "h9": 57,
+              "ovr": 84,
+              "rarity": "Epic"
             }
           ]
         }
@@ -194562,7 +194562,7 @@ window.OpponentsDatabase = {
           "division": "NL East",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 90,
+          "ovr": 89,
           "pitchers": [
             {
               "name": "Javier Vazquez",
@@ -194593,18 +194593,18 @@ window.OpponentsDatabase = {
               "rarity": "Legendary"
             },
             {
-              "name": "John Burkett",
+              "name": "Kevin Appier",
               "role": "SP",
-              "war": 4.8,
-              "hp": 106,
-              "maxHp": 106,
-              "stf": 71,
-              "ctl": 71,
-              "mov": 75,
-              "sta": 81,
-              "h9": 80,
-              "ovr": 89,
-              "rarity": "Legendary"
+              "war": 3.5,
+              "hp": 105,
+              "maxHp": 105,
+              "stf": 67,
+              "ctl": 73,
+              "mov": 58,
+              "sta": 79,
+              "h9": 75,
+              "ovr": 85,
+              "rarity": "Epic"
             }
           ]
         }
@@ -194890,7 +194890,7 @@ window.OpponentsDatabase = {
           "division": "NL West",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 93,
+          "ovr": 90,
           "pitchers": [
             {
               "name": "Randy Johnson",
@@ -194907,20 +194907,6 @@ window.OpponentsDatabase = {
               "rarity": "Legendary"
             },
             {
-              "name": "Curt Schilling",
-              "role": "SP",
-              "war": 8.8,
-              "hp": 111,
-              "maxHp": 111,
-              "stf": 115,
-              "ctl": 111,
-              "mov": 35,
-              "sta": 88,
-              "h9": 66,
-              "ovr": 93,
-              "rarity": "Legendary"
-            },
-            {
               "name": "Chan Ho Park",
               "role": "SP",
               "war": 4.2,
@@ -194933,6 +194919,20 @@ window.OpponentsDatabase = {
               "h9": 94,
               "ovr": 89,
               "rarity": "Legendary"
+            },
+            {
+              "name": "Russ Ortiz",
+              "role": "SP",
+              "war": 4.1,
+              "hp": 107,
+              "maxHp": 107,
+              "stf": 59,
+              "ctl": 48,
+              "mov": 86,
+              "sta": 82,
+              "h9": 79,
+              "ovr": 85,
+              "rarity": "Epic"
             }
           ]
         }
@@ -197230,7 +197230,7 @@ window.OpponentsDatabase = {
           "division": "AL East",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 93,
+          "ovr": 88,
           "pitchers": [
             {
               "name": "Roy Halladay",
@@ -197261,18 +197261,18 @@ window.OpponentsDatabase = {
               "rarity": "Legendary"
             },
             {
-              "name": "Pedro Martinez",
+              "name": "Mike Mussina",
               "role": "SP",
-              "war": 6.5,
+              "war": 4.5,
               "hp": 107,
               "maxHp": 107,
-              "stf": 120,
-              "ctl": 98,
-              "mov": 82,
-              "sta": 82,
-              "h9": 104,
-              "ovr": 98,
-              "rarity": "Legendary"
+              "stf": 69,
+              "ctl": 93,
+              "mov": 47,
+              "sta": 81,
+              "h9": 59,
+              "ovr": 85,
+              "rarity": "Epic"
             }
           ]
         }
@@ -197521,20 +197521,6 @@ window.OpponentsDatabase = {
               "rarity": "Epic"
             },
             {
-              "name": "Tim Hudson",
-              "role": "SP",
-              "war": 6.9,
-              "hp": 109,
-              "maxHp": 109,
-              "stf": 39,
-              "ctl": 85,
-              "mov": 74,
-              "sta": 85,
-              "h9": 53,
-              "ovr": 84,
-              "rarity": "Epic"
-            },
-            {
               "name": "Jamie Moyer",
               "role": "SP",
               "war": 5.6,
@@ -197545,6 +197531,20 @@ window.OpponentsDatabase = {
               "mov": 49,
               "sta": 83,
               "h9": 79,
+              "ovr": 84,
+              "rarity": "Epic"
+            },
+            {
+              "name": "Jarrod Washburn",
+              "role": "SP",
+              "war": 4.5,
+              "hp": 106,
+              "maxHp": 106,
+              "stf": 44,
+              "ctl": 78,
+              "mov": 66,
+              "sta": 81,
+              "h9": 73,
               "ovr": 84,
               "rarity": "Epic"
             }
@@ -197903,20 +197903,6 @@ window.OpponentsDatabase = {
               "rarity": "Legendary"
             },
             {
-              "name": "Wade Miller",
-              "role": "SP",
-              "war": 4.8,
-              "hp": 105,
-              "maxHp": 105,
-              "stf": 72,
-              "ctl": 58,
-              "mov": 70,
-              "sta": 80,
-              "h9": 67,
-              "ovr": 85,
-              "rarity": "Epic"
-            },
-            {
               "name": "Matt Clement",
               "role": "SP",
               "war": 4.4,
@@ -197929,6 +197915,20 @@ window.OpponentsDatabase = {
               "h9": 91,
               "ovr": 90,
               "rarity": "Legendary"
+            },
+            {
+              "name": "Matt Morris",
+              "role": "SP",
+              "war": 2.9,
+              "hp": 107,
+              "maxHp": 107,
+              "stf": 65,
+              "ctl": 74,
+              "mov": 76,
+              "sta": 82,
+              "h9": 52,
+              "ovr": 85,
+              "rarity": "Epic"
             }
           ]
         }
@@ -198542,7 +198542,7 @@ window.OpponentsDatabase = {
           "division": "NL West",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 94,
+          "ovr": 90,
           "pitchers": [
             {
               "name": "Randy Johnson",
@@ -198559,20 +198559,6 @@ window.OpponentsDatabase = {
               "rarity": "Legendary"
             },
             {
-              "name": "Curt Schilling",
-              "role": "SP",
-              "war": 8.6,
-              "hp": 112,
-              "maxHp": 112,
-              "stf": 125,
-              "ctl": 117,
-              "mov": 54,
-              "sta": 88,
-              "h9": 83,
-              "ovr": 97,
-              "rarity": "Legendary"
-            },
-            {
               "name": "Odalis Perez",
               "role": "SP",
               "war": 4.7,
@@ -198585,6 +198571,20 @@ window.OpponentsDatabase = {
               "h9": 86,
               "ovr": 90,
               "rarity": "Legendary"
+            },
+            {
+              "name": "Brian Lawrence",
+              "role": "SP",
+              "war": 3.3,
+              "hp": 108,
+              "maxHp": 108,
+              "stf": 50,
+              "ctl": 87,
+              "mov": 76,
+              "sta": 83,
+              "h9": 34,
+              "ovr": 83,
+              "rarity": "Epic"
             }
           ]
         }
@@ -200571,20 +200571,6 @@ window.OpponentsDatabase = {
               "rarity": "Legendary"
             },
             {
-              "name": "Bartolo Colon",
-              "role": "SP",
-              "war": 5.1,
-              "hp": 110,
-              "maxHp": 110,
-              "stf": 51,
-              "ctl": 81,
-              "mov": 47,
-              "sta": 86,
-              "h9": 67,
-              "ovr": 83,
-              "rarity": "Epic"
-            },
-            {
               "name": "Johan Santana",
               "role": "SP",
               "war": 4.1,
@@ -200597,6 +200583,20 @@ window.OpponentsDatabase = {
               "h9": 88,
               "ovr": 93,
               "rarity": "Legendary"
+            },
+            {
+              "name": "CC Sabathia",
+              "role": "SP",
+              "war": 3.7,
+              "hp": 107,
+              "maxHp": 107,
+              "stf": 50,
+              "ctl": 67,
+              "mov": 64,
+              "sta": 82,
+              "h9": 59,
+              "ovr": 82,
+              "rarity": "Epic"
             }
           ]
         }
@@ -201156,7 +201156,7 @@ window.OpponentsDatabase = {
           "division": "AL West",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 87,
+          "ovr": 86,
           "pitchers": [
             {
               "name": "Tim Hudson",
@@ -201173,31 +201173,31 @@ window.OpponentsDatabase = {
               "rarity": "Legendary"
             },
             {
-              "name": "Mark Mulder",
+              "name": "Jamie Moyer",
               "role": "SP",
-              "war": 5.8,
-              "hp": 110,
-              "maxHp": 110,
-              "stf": 46,
-              "ctl": 94,
-              "mov": 73,
-              "sta": 86,
-              "h9": 59,
-              "ovr": 86,
+              "war": 4.7,
+              "hp": 107,
+              "maxHp": 107,
+              "stf": 34,
+              "ctl": 74,
+              "mov": 68,
+              "sta": 81,
+              "h9": 66,
+              "ovr": 82,
               "rarity": "Epic"
             },
             {
-              "name": "Barry Zito",
-              "role": "SP",
-              "war": 5.3,
-              "hp": 107,
-              "maxHp": 107,
-              "stf": 38,
-              "ctl": 57,
-              "mov": 72,
-              "sta": 82,
-              "h9": 90,
-              "ovr": 84,
+              "name": "Brendan Donnelly",
+              "role": "RP",
+              "war": 3.4,
+              "hp": 30,
+              "maxHp": 30,
+              "stf": 87,
+              "ctl": 68,
+              "mov": 95,
+              "sta": 27,
+              "h9": 92,
+              "ovr": 87,
               "rarity": "Epic"
             }
           ]
@@ -201538,7 +201538,7 @@ window.OpponentsDatabase = {
           "division": "NL Central",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 91,
+          "ovr": 89,
           "pitchers": [
             {
               "name": "Mark Prior",
@@ -201555,32 +201555,32 @@ window.OpponentsDatabase = {
               "rarity": "Legendary"
             },
             {
-              "name": "Kerry Wood",
+              "name": "Kip Wells",
               "role": "SP",
-              "war": 6.1,
-              "hp": 107,
-              "maxHp": 107,
-              "stf": 125,
-              "ctl": 35,
-              "mov": 54,
-              "sta": 82,
-              "h9": 105,
-              "ovr": 91,
-              "rarity": "Legendary"
+              "war": 4.9,
+              "hp": 106,
+              "maxHp": 106,
+              "stf": 54,
+              "ctl": 56,
+              "mov": 49,
+              "sta": 80,
+              "h9": 77,
+              "ovr": 82,
+              "rarity": "Epic"
             },
             {
-              "name": "Carlos Zambrano",
-              "role": "SP",
-              "war": 5.4,
-              "hp": 108,
-              "maxHp": 108,
-              "stf": 61,
-              "ctl": 43,
-              "mov": 96,
-              "sta": 82,
-              "h9": 75,
-              "ovr": 86,
-              "rarity": "Epic"
+              "name": "Billy Wagner",
+              "role": "RP",
+              "war": 3.4,
+              "hp": 30,
+              "maxHp": 30,
+              "stf": 107,
+              "ctl": 79,
+              "mov": 65,
+              "sta": 26,
+              "h9": 114,
+              "ovr": 90,
+              "rarity": "Legendary"
             }
           ]
         }
@@ -201866,7 +201866,7 @@ window.OpponentsDatabase = {
           "division": "NL East",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 87,
+          "ovr": 83,
           "pitchers": [
             {
               "name": "Livan Hernandez",
@@ -201883,20 +201883,6 @@ window.OpponentsDatabase = {
               "rarity": "Epic"
             },
             {
-              "name": "Javier Vazquez",
-              "role": "SP",
-              "war": 6.0,
-              "hp": 108,
-              "maxHp": 108,
-              "stf": 99,
-              "ctl": 88,
-              "mov": 49,
-              "sta": 83,
-              "h9": 79,
-              "ovr": 91,
-              "rarity": "Legendary"
-            },
-            {
               "name": "Dontrelle Willis",
               "role": "SP",
               "war": 3.9,
@@ -201908,6 +201894,20 @@ window.OpponentsDatabase = {
               "sta": 77,
               "h9": 67,
               "ovr": 85,
+              "rarity": "Epic"
+            },
+            {
+              "name": "Jae Weong Seo",
+              "role": "SP",
+              "war": 3.3,
+              "hp": 104,
+              "maxHp": 104,
+              "stf": 31,
+              "ctl": 88,
+              "mov": 64,
+              "sta": 78,
+              "h9": 48,
+              "ovr": 81,
               "rarity": "Epic"
             }
           ]
@@ -202194,7 +202194,7 @@ window.OpponentsDatabase = {
           "division": "NL West",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 94,
+          "ovr": 93,
           "pitchers": [
             {
               "name": "Jason Schmidt",
@@ -202225,17 +202225,17 @@ window.OpponentsDatabase = {
               "rarity": "Legendary"
             },
             {
-              "name": "Curt Schilling",
+              "name": "Kevin Brown",
               "role": "SP",
-              "war": 6.0,
-              "hp": 109,
-              "maxHp": 109,
-              "stf": 111,
-              "ctl": 99,
-              "mov": 61,
-              "sta": 85,
-              "h9": 78,
-              "ovr": 95,
+              "war": 4.5,
+              "hp": 107,
+              "maxHp": 107,
+              "stf": 74,
+              "ctl": 83,
+              "mov": 90,
+              "sta": 82,
+              "h9": 76,
+              "ovr": 92,
               "rarity": "Legendary"
             }
           ]
@@ -204206,7 +204206,7 @@ window.OpponentsDatabase = {
           "division": "AL Central",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 88,
+          "ovr": 87,
           "pitchers": [
             {
               "name": "Johan Santana",
@@ -204223,20 +204223,6 @@ window.OpponentsDatabase = {
               "rarity": "Legendary"
             },
             {
-              "name": "Brad Radke",
-              "role": "SP",
-              "war": 5.8,
-              "hp": 106,
-              "maxHp": 106,
-              "stf": 41,
-              "ctl": 118,
-              "mov": 59,
-              "sta": 81,
-              "h9": 44,
-              "ovr": 84,
-              "rarity": "Epic"
-            },
-            {
               "name": "Jake Westbrook",
               "role": "SP",
               "war": 4.2,
@@ -204248,6 +204234,20 @@ window.OpponentsDatabase = {
               "sta": 86,
               "h9": 59,
               "ovr": 82,
+              "rarity": "Epic"
+            },
+            {
+              "name": "Mark Buehrle",
+              "role": "SP",
+              "war": 4.2,
+              "hp": 109,
+              "maxHp": 109,
+              "stf": 44,
+              "ctl": 97,
+              "mov": 41,
+              "sta": 85,
+              "h9": 43,
+              "ovr": 81,
               "rarity": "Epic"
             }
           ]
@@ -204534,7 +204534,7 @@ window.OpponentsDatabase = {
           "division": "AL East",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 88,
+          "ovr": 85,
           "pitchers": [
             {
               "name": "Curt Schilling",
@@ -204551,20 +204551,6 @@ window.OpponentsDatabase = {
               "rarity": "Legendary"
             },
             {
-              "name": "Pedro Martinez",
-              "role": "SP",
-              "war": 5.5,
-              "hp": 107,
-              "maxHp": 107,
-              "stf": 99,
-              "ctl": 80,
-              "mov": 50,
-              "sta": 82,
-              "h9": 73,
-              "ovr": 89,
-              "rarity": "Legendary"
-            },
-            {
               "name": "Rodrigo Lopez",
               "role": "SP",
               "war": 4.8,
@@ -204576,6 +204562,20 @@ window.OpponentsDatabase = {
               "sta": 88,
               "h9": 59,
               "ovr": 82,
+              "rarity": "Epic"
+            },
+            {
+              "name": "Ted Lilly",
+              "role": "SP",
+              "war": 4.2,
+              "hp": 104,
+              "maxHp": 104,
+              "stf": 70,
+              "ctl": 40,
+              "mov": 43,
+              "sta": 78,
+              "h9": 77,
+              "ovr": 81,
               "rarity": "Epic"
             }
           ]
@@ -205549,16 +205549,16 @@ window.OpponentsDatabase = {
               "rarity": "Epic"
             },
             {
-              "name": "Armando Benitez",
-              "role": "RP",
-              "war": 3.4,
-              "hp": 30,
-              "maxHp": 30,
-              "stf": 66,
-              "ctl": 72,
-              "mov": 68,
-              "sta": 26,
-              "h9": 123,
+              "name": "Jaret Wright",
+              "role": "SP",
+              "war": 2.9,
+              "hp": 102,
+              "maxHp": 102,
+              "stf": 70,
+              "ctl": 58,
+              "mov": 85,
+              "sta": 76,
+              "h9": 70,
               "ovr": 86,
               "rarity": "Epic"
             }
@@ -207858,7 +207858,7 @@ window.OpponentsDatabase = {
           "division": "AL Central",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 87,
+          "ovr": 88,
           "pitchers": [
             {
               "name": "Johan Santana",
@@ -207889,17 +207889,17 @@ window.OpponentsDatabase = {
               "rarity": "Epic"
             },
             {
-              "name": "Jon Garland",
+              "name": "Kevin Millwood",
               "role": "SP",
-              "war": 4.6,
-              "hp": 109,
-              "maxHp": 109,
-              "stf": 22,
-              "ctl": 96,
-              "mov": 51,
-              "sta": 84,
-              "h9": 60,
-              "ovr": 81,
+              "war": 4.0,
+              "hp": 106,
+              "maxHp": 106,
+              "stf": 57,
+              "ctl": 82,
+              "mov": 59,
+              "sta": 80,
+              "h9": 62,
+              "ovr": 84,
               "rarity": "Epic"
             }
           ]
@@ -208460,7 +208460,7 @@ window.OpponentsDatabase = {
           "division": "AL West",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 84,
+          "ovr": 83,
           "pitchers": [
             {
               "name": "John Lackey",
@@ -208477,20 +208477,6 @@ window.OpponentsDatabase = {
               "rarity": "Epic"
             },
             {
-              "name": "Bartolo Colon",
-              "role": "SP",
-              "war": 4.0,
-              "hp": 108,
-              "maxHp": 108,
-              "stf": 49,
-              "ctl": 100,
-              "mov": 52,
-              "sta": 83,
-              "h9": 58,
-              "ovr": 84,
-              "rarity": "Epic"
-            },
-            {
               "name": "Joe Blanton",
               "role": "SP",
               "war": 3.8,
@@ -208502,6 +208488,20 @@ window.OpponentsDatabase = {
               "sta": 78,
               "h9": 74,
               "ovr": 80,
+              "rarity": "Epic"
+            },
+            {
+              "name": "Chris Young",
+              "role": "SP",
+              "war": 2.9,
+              "hp": 99,
+              "maxHp": 99,
+              "stf": 66,
+              "ctl": 81,
+              "mov": 53,
+              "sta": 72,
+              "h9": 55,
+              "ovr": 83,
               "rarity": "Epic"
             }
           ]
@@ -208842,7 +208842,7 @@ window.OpponentsDatabase = {
           "division": "NL Central",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 91,
+          "ovr": 92,
           "pitchers": [
             {
               "name": "Roger Clemens",
@@ -208859,32 +208859,32 @@ window.OpponentsDatabase = {
               "rarity": "Legendary"
             },
             {
-              "name": "Andy Pettitte",
+              "name": "Chris Carpenter",
               "role": "SP",
-              "war": 6.8,
-              "hp": 108,
-              "maxHp": 108,
-              "stf": 58,
-              "ctl": 102,
-              "mov": 76,
-              "sta": 83,
-              "h9": 81,
-              "ovr": 91,
+              "war": 5.8,
+              "hp": 111,
+              "maxHp": 111,
+              "stf": 75,
+              "ctl": 96,
+              "mov": 77,
+              "sta": 88,
+              "h9": 82,
+              "ovr": 93,
               "rarity": "Legendary"
             },
             {
-              "name": "Roy Oswalt",
+              "name": "Carlos Zambrano",
               "role": "SP",
-              "war": 5.9,
-              "hp": 109,
-              "maxHp": 109,
-              "stf": 58,
-              "ctl": 99,
-              "mov": 77,
-              "sta": 84,
-              "h9": 51,
-              "ovr": 87,
-              "rarity": "Epic"
+              "war": 5.6,
+              "hp": 108,
+              "maxHp": 108,
+              "stf": 78,
+              "ctl": 56,
+              "mov": 65,
+              "sta": 83,
+              "h9": 97,
+              "ovr": 89,
+              "rarity": "Legendary"
             }
           ]
         }
@@ -211510,7 +211510,7 @@ window.OpponentsDatabase = {
           "division": "AL Central",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 92,
+          "ovr": 87,
           "pitchers": [
             {
               "name": "Johan Santana",
@@ -211541,18 +211541,18 @@ window.OpponentsDatabase = {
               "rarity": "Epic"
             },
             {
-              "name": "Francisco Liriano",
+              "name": "Jose Contreras",
               "role": "SP",
-              "war": 4.5,
-              "hp": 113,
-              "maxHp": 113,
-              "stf": 103,
-              "ctl": 78,
-              "mov": 72,
-              "sta": 89,
-              "h9": 94,
-              "ovr": 96,
-              "rarity": "Legendary"
+              "war": 3.8,
+              "hp": 107,
+              "maxHp": 107,
+              "stf": 41,
+              "ctl": 76,
+              "mov": 57,
+              "sta": 81,
+              "h9": 50,
+              "ovr": 80,
+              "rarity": "Epic"
             }
           ]
         }
@@ -212129,32 +212129,32 @@ window.OpponentsDatabase = {
               "rarity": "Epic"
             },
             {
-              "name": "John Lackey",
+              "name": "Dan Haren",
               "role": "SP",
-              "war": 4.6,
+              "war": 3.5,
               "hp": 107,
               "maxHp": 107,
-              "stf": 67,
-              "ctl": 64,
-              "mov": 80,
+              "stf": 56,
+              "ctl": 96,
+              "mov": 34,
               "sta": 82,
-              "h9": 61,
-              "ovr": 86,
+              "h9": 47,
+              "ovr": 81,
               "rarity": "Epic"
             },
             {
-              "name": "Francisco Rodriguez",
+              "name": "J. J. Putz",
               "role": "RP",
-              "war": 3.7,
+              "war": 2.8,
               "hp": 30,
               "maxHp": 30,
               "stf": 109,
-              "ctl": 53,
-              "mov": 67,
+              "ctl": 94,
+              "mov": 82,
               "sta": 26,
-              "h9": 93,
-              "ovr": 85,
-              "rarity": "Epic"
+              "h9": 87,
+              "ovr": 91,
+              "rarity": "Legendary"
             }
           ]
         }
@@ -212525,17 +212525,17 @@ window.OpponentsDatabase = {
               "rarity": "Epic"
             },
             {
-              "name": "Aaron Harang",
+              "name": "Carlos Zambrano",
               "role": "SP",
               "war": 5.2,
-              "hp": 108,
-              "maxHp": 108,
-              "stf": 75,
-              "ctl": 87,
-              "mov": 46,
-              "sta": 83,
-              "h9": 41,
-              "ovr": 83,
+              "hp": 106,
+              "maxHp": 106,
+              "stf": 82,
+              "ctl": 14,
+              "mov": 62,
+              "sta": 81,
+              "h9": 94,
+              "ovr": 84,
               "rarity": "Epic"
             }
           ]
@@ -215162,7 +215162,7 @@ window.OpponentsDatabase = {
           "division": "AL Central",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 86,
+          "ovr": 88,
           "pitchers": [
             {
               "name": "CC Sabathia",
@@ -215193,18 +215193,18 @@ window.OpponentsDatabase = {
               "rarity": "Epic"
             },
             {
-              "name": "Roberto Hernandez",
+              "name": "Johan Santana",
               "role": "SP",
-              "war": 6.2,
-              "hp": 108,
-              "maxHp": 108,
-              "stf": 34,
-              "ctl": 76,
-              "mov": 74,
-              "sta": 83,
-              "h9": 62,
-              "ovr": 83,
-              "rarity": "Epic"
+              "war": 5.0,
+              "hp": 107,
+              "maxHp": 107,
+              "stf": 96,
+              "ctl": 87,
+              "mov": 27,
+              "sta": 82,
+              "h9": 80,
+              "ovr": 88,
+              "rarity": "Legendary"
             }
           ]
         }
@@ -215764,7 +215764,7 @@ window.OpponentsDatabase = {
           "division": "AL West",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 85,
+          "ovr": 86,
           "pitchers": [
             {
               "name": "John Lackey",
@@ -215781,20 +215781,6 @@ window.OpponentsDatabase = {
               "rarity": "Epic"
             },
             {
-              "name": "Kelvim Escobar",
-              "role": "SP",
-              "war": 4.9,
-              "hp": 107,
-              "maxHp": 107,
-              "stf": 59,
-              "ctl": 63,
-              "mov": 85,
-              "sta": 81,
-              "h9": 61,
-              "ovr": 85,
-              "rarity": "Epic"
-            },
-            {
               "name": "Dan Haren",
               "role": "SP",
               "war": 4.5,
@@ -215807,6 +215793,20 @@ window.OpponentsDatabase = {
               "h9": 55,
               "ovr": 84,
               "rarity": "Epic"
+            },
+            {
+              "name": "J. J. Putz",
+              "role": "RP",
+              "war": 4.0,
+              "hp": 30,
+              "maxHp": 30,
+              "stf": 87,
+              "ctl": 90,
+              "mov": 66,
+              "sta": 26,
+              "h9": 121,
+              "ovr": 90,
+              "rarity": "Legendary"
             }
           ]
         }
@@ -216474,7 +216474,7 @@ window.OpponentsDatabase = {
           "division": "NL East",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 86,
+          "ovr": 83,
           "pitchers": [
             {
               "name": "Tim Hudson",
@@ -216491,20 +216491,6 @@ window.OpponentsDatabase = {
               "rarity": "Epic"
             },
             {
-              "name": "John Smoltz",
-              "role": "SP",
-              "war": 4.5,
-              "hp": 106,
-              "maxHp": 106,
-              "stf": 79,
-              "ctl": 89,
-              "mov": 66,
-              "sta": 80,
-              "h9": 57,
-              "ovr": 88,
-              "rarity": "Legendary"
-            },
-            {
               "name": "Cole Hamels",
               "role": "SP",
               "war": 4.1,
@@ -216516,6 +216502,20 @@ window.OpponentsDatabase = {
               "sta": 81,
               "h9": 69,
               "ovr": 85,
+              "rarity": "Epic"
+            },
+            {
+              "name": "Lee Gardner",
+              "role": "RP",
+              "war": 2.7,
+              "hp": 30,
+              "maxHp": 30,
+              "stf": 40,
+              "ctl": 80,
+              "mov": 93,
+              "sta": 27,
+              "h9": 55,
+              "ovr": 80,
               "rarity": "Epic"
             }
           ]
@@ -219173,17 +219173,17 @@ window.OpponentsDatabase = {
               "rarity": "Epic"
             },
             {
-              "name": "Daisuke Matsuzaka",
+              "name": "Mike Mussina",
               "role": "SP",
-              "war": 5.4,
-              "hp": 102,
-              "maxHp": 102,
-              "stf": 72,
-              "ctl": 11,
-              "mov": 75,
-              "sta": 75,
-              "h9": 92,
-              "ovr": 82,
+              "war": 5.1,
+              "hp": 103,
+              "maxHp": 103,
+              "stf": 50,
+              "ctl": 106,
+              "mov": 68,
+              "sta": 76,
+              "h9": 35,
+              "ovr": 84,
               "rarity": "Epic"
             }
           ]
@@ -220485,17 +220485,17 @@ window.OpponentsDatabase = {
               "rarity": "Legendary"
             },
             {
-              "name": "Brandon Webb",
+              "name": "Chad Billingsley",
               "role": "SP",
-              "war": 5.6,
-              "hp": 107,
-              "maxHp": 107,
-              "stf": 58,
-              "ctl": 75,
-              "mov": 85,
-              "sta": 82,
-              "h9": 65,
-              "ovr": 87,
+              "war": 4.8,
+              "hp": 105,
+              "maxHp": 105,
+              "stf": 85,
+              "ctl": 48,
+              "mov": 77,
+              "sta": 79,
+              "h9": 60,
+              "ovr": 85,
               "rarity": "Epic"
             }
           ]
@@ -223450,7 +223450,7 @@ window.OpponentsDatabase = {
           "division": "NL Central",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 88,
+          "ovr": 87,
           "pitchers": [
             {
               "name": "Chris Carpenter",
@@ -223467,20 +223467,6 @@ window.OpponentsDatabase = {
               "rarity": "Legendary"
             },
             {
-              "name": "Adam Wainwright",
-              "role": "SP",
-              "war": 6.2,
-              "hp": 108,
-              "maxHp": 108,
-              "stf": 73,
-              "ctl": 76,
-              "mov": 75,
-              "sta": 84,
-              "h9": 62,
-              "ovr": 87,
-              "rarity": "Epic"
-            },
-            {
               "name": "Ted Lilly",
               "role": "SP",
               "war": 5.0,
@@ -223492,6 +223478,20 @@ window.OpponentsDatabase = {
               "sta": 82,
               "h9": 76,
               "ovr": 86,
+              "rarity": "Epic"
+            },
+            {
+              "name": "Wandy Rodriguez",
+              "role": "SP",
+              "war": 4.7,
+              "hp": 105,
+              "maxHp": 105,
+              "stf": 76,
+              "ctl": 70,
+              "mov": 57,
+              "sta": 79,
+              "h9": 60,
+              "ovr": 84,
               "rarity": "Epic"
             }
           ]
@@ -223778,7 +223778,7 @@ window.OpponentsDatabase = {
           "division": "NL East",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 89,
+          "ovr": 84,
           "pitchers": [
             {
               "name": "Josh Johnson",
@@ -223809,18 +223809,18 @@ window.OpponentsDatabase = {
               "rarity": "Epic"
             },
             {
-              "name": "Javier Vazquez",
+              "name": "J. A. Happ",
               "role": "SP",
-              "war": 6.2,
-              "hp": 109,
-              "maxHp": 109,
-              "stf": 97,
-              "ctl": 96,
-              "mov": 64,
-              "sta": 84,
-              "h9": 82,
-              "ovr": 94,
-              "rarity": "Legendary"
+              "war": 4.2,
+              "hp": 111,
+              "maxHp": 111,
+              "stf": 45,
+              "ctl": 62,
+              "mov": 46,
+              "sta": 87,
+              "h9": 67,
+              "ovr": 81,
+              "rarity": "Epic"
             }
           ]
         }
@@ -224106,7 +224106,7 @@ window.OpponentsDatabase = {
           "division": "NL West",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 90,
+          "ovr": 91,
           "pitchers": [
             {
               "name": "Tim Lincecum",
@@ -224137,17 +224137,17 @@ window.OpponentsDatabase = {
               "rarity": "Legendary"
             },
             {
-              "name": "Matt Cain",
+              "name": "Ubaldo Jimenez",
               "role": "SP",
-              "war": 6.1,
+              "war": 5.5,
               "hp": 107,
               "maxHp": 107,
-              "stf": 55,
-              "ctl": 63,
-              "mov": 58,
+              "stf": 72,
+              "ctl": 50,
+              "mov": 83,
               "sta": 82,
-              "h9": 78,
-              "ovr": 84,
+              "h9": 79,
+              "ovr": 87,
               "rarity": "Epic"
             }
           ]
@@ -226446,7 +226446,7 @@ window.OpponentsDatabase = {
           "division": "AL East",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 87,
+          "ovr": 86,
           "pitchers": [
             {
               "name": "Clay Buchholz",
@@ -226463,20 +226463,6 @@ window.OpponentsDatabase = {
               "rarity": "Epic"
             },
             {
-              "name": "Jon Lester",
-              "role": "SP",
-              "war": 5.2,
-              "hp": 106,
-              "maxHp": 106,
-              "stf": 96,
-              "ctl": 48,
-              "mov": 78,
-              "sta": 81,
-              "h9": 86,
-              "ovr": 90,
-              "rarity": "Legendary"
-            },
-            {
               "name": "CC Sabathia",
               "role": "SP",
               "war": 4.8,
@@ -226488,6 +226474,20 @@ window.OpponentsDatabase = {
               "sta": 85,
               "h9": 71,
               "ovr": 86,
+              "rarity": "Epic"
+            },
+            {
+              "name": "David Price",
+              "role": "SP",
+              "war": 4.7,
+              "hp": 108,
+              "maxHp": 108,
+              "stf": 71,
+              "ctl": 53,
+              "mov": 76,
+              "sta": 83,
+              "h9": 83,
+              "ovr": 87,
               "rarity": "Epic"
             }
           ]
@@ -227133,17 +227133,17 @@ window.OpponentsDatabase = {
               "rarity": "Legendary"
             },
             {
-              "name": "Brett Myers",
+              "name": "Ted Lilly",
               "role": "SP",
-              "war": 4.9,
-              "hp": 108,
-              "maxHp": 108,
-              "stf": 58,
-              "ctl": 73,
-              "mov": 65,
-              "sta": 83,
-              "h9": 58,
-              "ovr": 84,
+              "war": 3.9,
+              "hp": 106,
+              "maxHp": 106,
+              "stf": 64,
+              "ctl": 89,
+              "mov": 19,
+              "sta": 81,
+              "h9": 76,
+              "ovr": 83,
               "rarity": "Epic"
             }
           ]
@@ -231082,7 +231082,7 @@ window.OpponentsDatabase = {
           "division": "NL East",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 94,
+          "ovr": 88,
           "pitchers": [
             {
               "name": "Roy Halladay",
@@ -231099,32 +231099,32 @@ window.OpponentsDatabase = {
               "rarity": "Legendary"
             },
             {
-              "name": "Cliff Lee",
+              "name": "Anibal Sanchez",
               "role": "SP",
-              "war": 8.5,
-              "hp": 111,
-              "maxHp": 111,
-              "stf": 89,
-              "ctl": 101,
-              "mov": 72,
-              "sta": 87,
-              "h9": 78,
-              "ovr": 95,
-              "rarity": "Legendary"
+              "war": 3.7,
+              "hp": 104,
+              "maxHp": 104,
+              "stf": 88,
+              "ctl": 65,
+              "mov": 57,
+              "sta": 78,
+              "h9": 57,
+              "ovr": 85,
+              "rarity": "Epic"
             },
             {
-              "name": "Cole Hamels",
+              "name": "R. A. Dickey",
               "role": "SP",
-              "war": 6.4,
-              "hp": 109,
-              "maxHp": 109,
-              "stf": 71,
-              "ctl": 95,
-              "mov": 66,
-              "sta": 85,
-              "h9": 90,
-              "ovr": 92,
-              "rarity": "Legendary"
+              "war": 3.6,
+              "hp": 107,
+              "maxHp": 107,
+              "stf": 35,
+              "ctl": 82,
+              "mov": 67,
+              "sta": 81,
+              "h9": 54,
+              "ovr": 82,
+              "rarity": "Epic"
             }
           ]
         }
@@ -233422,7 +233422,7 @@ window.OpponentsDatabase = {
           "division": "AL Central",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 89,
+          "ovr": 88,
           "pitchers": [
             {
               "name": "Justin Verlander",
@@ -233453,17 +233453,17 @@ window.OpponentsDatabase = {
               "rarity": "Legendary"
             },
             {
-              "name": "Jake Peavy",
-              "role": "SP",
-              "war": 5.0,
-              "hp": 108,
-              "maxHp": 108,
-              "stf": 69,
-              "ctl": 90,
-              "mov": 44,
-              "sta": 84,
-              "h9": 72,
-              "ovr": 86,
+              "name": "Kelvin Herrera",
+              "role": "RP",
+              "war": 2.6,
+              "hp": 30,
+              "maxHp": 30,
+              "stf": 65,
+              "ctl": 79,
+              "mov": 84,
+              "sta": 26,
+              "h9": 60,
+              "ovr": 81,
               "rarity": "Epic"
             }
           ]
@@ -233750,7 +233750,7 @@ window.OpponentsDatabase = {
           "division": "AL East",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 88,
+          "ovr": 86,
           "pitchers": [
             {
               "name": "David Price",
@@ -233781,18 +233781,18 @@ window.OpponentsDatabase = {
               "rarity": "Epic"
             },
             {
-              "name": "Fernando Rodney",
-              "role": "RP",
-              "war": 3.7,
-              "hp": 30,
-              "maxHp": 30,
-              "stf": 75,
-              "ctl": 87,
-              "mov": 93,
-              "sta": 25,
-              "h9": 113,
-              "ovr": 90,
-              "rarity": "Legendary"
+              "name": "Brandon Morrow",
+              "role": "SP",
+              "war": 3.1,
+              "hp": 103,
+              "maxHp": 103,
+              "stf": 63,
+              "ctl": 64,
+              "mov": 60,
+              "sta": 77,
+              "h9": 86,
+              "ovr": 85,
+              "rarity": "Epic"
             }
           ]
         }
@@ -234734,7 +234734,7 @@ window.OpponentsDatabase = {
           "division": "NL East",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 89,
+          "ovr": 91,
           "pitchers": [
             {
               "name": "R. A. Dickey",
@@ -234765,18 +234765,18 @@ window.OpponentsDatabase = {
               "rarity": "Legendary"
             },
             {
-              "name": "Jordan Zimmermann",
+              "name": "Cole Hamels",
               "role": "SP",
-              "war": 4.9,
-              "hp": 104,
-              "maxHp": 104,
-              "stf": 54,
-              "ctl": 91,
-              "mov": 63,
-              "sta": 78,
-              "h9": 57,
-              "ovr": 84,
-              "rarity": "Epic"
+              "war": 4.5,
+              "hp": 109,
+              "maxHp": 109,
+              "stf": 86,
+              "ctl": 86,
+              "mov": 51,
+              "sta": 85,
+              "h9": 70,
+              "ovr": 89,
+              "rarity": "Legendary"
             }
           ]
         }
@@ -237074,7 +237074,7 @@ window.OpponentsDatabase = {
           "division": "AL Central",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 93,
+          "ovr": 91,
           "pitchers": [
             {
               "name": "Chris Sale",
@@ -237105,18 +237105,18 @@ window.OpponentsDatabase = {
               "rarity": "Legendary"
             },
             {
-              "name": "Anibal Sanchez",
+              "name": "James Shields",
               "role": "SP",
-              "war": 6.1,
-              "hp": 105,
-              "maxHp": 105,
-              "stf": 98,
+              "war": 4.7,
+              "hp": 108,
+              "maxHp": 108,
+              "stf": 65,
               "ctl": 72,
-              "mov": 89,
-              "sta": 79,
-              "h9": 75,
-              "ovr": 93,
-              "rarity": "Legendary"
+              "mov": 66,
+              "sta": 83,
+              "h9": 59,
+              "ovr": 85,
+              "rarity": "Epic"
             }
           ]
         }
@@ -238058,7 +238058,7 @@ window.OpponentsDatabase = {
           "division": "NL Central",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 87,
+          "ovr": 88,
           "pitchers": [
             {
               "name": "Adam Wainwright",
@@ -238089,17 +238089,17 @@ window.OpponentsDatabase = {
               "rarity": "Epic"
             },
             {
-              "name": "Shelby Miller",
+              "name": "Mat Latos",
               "role": "SP",
-              "war": 3.5,
-              "hp": 101,
-              "maxHp": 101,
-              "stf": 80,
-              "ctl": 64,
-              "mov": 49,
-              "sta": 74,
-              "h9": 71,
-              "ovr": 84,
+              "war": 3.4,
+              "hp": 107,
+              "maxHp": 107,
+              "stf": 69,
+              "ctl": 78,
+              "mov": 79,
+              "sta": 82,
+              "h9": 60,
+              "ovr": 87,
               "rarity": "Epic"
             }
           ]
@@ -238714,7 +238714,7 @@ window.OpponentsDatabase = {
           "division": "NL West",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 89,
+          "ovr": 91,
           "pitchers": [
             {
               "name": "Clayton Kershaw",
@@ -238745,17 +238745,17 @@ window.OpponentsDatabase = {
               "rarity": "Epic"
             },
             {
-              "name": "Zack Greinke",
+              "name": "Madison Bumgarner",
               "role": "SP",
-              "war": 4.3,
+              "war": 4.0,
               "hp": 106,
               "maxHp": 106,
-              "stf": 61,
-              "ctl": 81,
+              "stf": 83,
+              "ctl": 70,
               "mov": 74,
-              "sta": 80,
-              "h9": 75,
-              "ovr": 88,
+              "sta": 81,
+              "h9": 100,
+              "ovr": 92,
               "rarity": "Legendary"
             }
           ]
@@ -241054,7 +241054,7 @@ window.OpponentsDatabase = {
           "division": "AL East",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 91,
+          "ovr": 94,
           "pitchers": [
             {
               "name": "Jon Lester",
@@ -241085,17 +241085,17 @@ window.OpponentsDatabase = {
               "rarity": "Legendary"
             },
             {
-              "name": "Alex Cobb",
-              "role": "SP",
-              "war": 4.0,
-              "hp": 104,
-              "maxHp": 104,
-              "stf": 69,
-              "ctl": 75,
-              "mov": 78,
-              "sta": 78,
-              "h9": 75,
-              "ovr": 89,
+              "name": "Dellin Betances",
+              "role": "RP",
+              "war": 3.7,
+              "hp": 31,
+              "maxHp": 31,
+              "stf": 125,
+              "ctl": 76,
+              "mov": 86,
+              "sta": 28,
+              "h9": 125,
+              "ovr": 96,
               "rarity": "Legendary"
             }
           ]
@@ -242038,7 +242038,7 @@ window.OpponentsDatabase = {
           "division": "NL East",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 89,
+          "ovr": 86,
           "pitchers": [
             {
               "name": "Cole Hamels",
@@ -242069,18 +242069,18 @@ window.OpponentsDatabase = {
               "rarity": "Epic"
             },
             {
-              "name": "Jordan Zimmermann",
+              "name": "Henderson Alvarez",
               "role": "SP",
               "war": 4.7,
               "hp": 105,
               "maxHp": 105,
-              "stf": 72,
-              "ctl": 109,
-              "mov": 80,
+              "stf": 28,
+              "ctl": 101,
+              "mov": 74,
               "sta": 79,
-              "h9": 62,
-              "ovr": 91,
-              "rarity": "Legendary"
+              "h9": 37,
+              "ovr": 82,
+              "rarity": "Epic"
             }
           ]
         }
@@ -242366,7 +242366,7 @@ window.OpponentsDatabase = {
           "division": "NL West",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 92,
+          "ovr": 90,
           "pitchers": [
             {
               "name": "Clayton Kershaw",
@@ -242383,20 +242383,6 @@ window.OpponentsDatabase = {
               "rarity": "Legendary"
             },
             {
-              "name": "Zack Greinke",
-              "role": "SP",
-              "war": 4.5,
-              "hp": 105,
-              "maxHp": 105,
-              "stf": 88,
-              "ctl": 93,
-              "mov": 62,
-              "sta": 80,
-              "h9": 60,
-              "ovr": 89,
-              "rarity": "Legendary"
-            },
-            {
               "name": "Madison Bumgarner",
               "role": "SP",
               "war": 3.7,
@@ -242409,6 +242395,20 @@ window.OpponentsDatabase = {
               "h9": 68,
               "ovr": 90,
               "rarity": "Legendary"
+            },
+            {
+              "name": "Huston Street",
+              "role": "RP",
+              "war": 2.8,
+              "hp": 30,
+              "maxHp": 30,
+              "stf": 65,
+              "ctl": 79,
+              "mov": 73,
+              "sta": 25,
+              "h9": 91,
+              "ovr": 83,
+              "rarity": "Epic"
             }
           ]
         }
@@ -245690,7 +245690,7 @@ window.OpponentsDatabase = {
           "division": "NL East",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 94,
+          "ovr": 93,
           "pitchers": [
             {
               "name": "Max Scherzer",
@@ -245721,18 +245721,18 @@ window.OpponentsDatabase = {
               "rarity": "Legendary"
             },
             {
-              "name": "Matt Harvey",
+              "name": "Cole Hamels",
               "role": "SP",
-              "war": 4.9,
+              "war": 4.3,
               "hp": 107,
               "maxHp": 107,
-              "stf": 83,
-              "ctl": 96,
-              "mov": 61,
-              "sta": 81,
-              "h9": 81,
-              "ovr": 92,
-              "rarity": "Legendary"
+              "stf": 87,
+              "ctl": 74,
+              "mov": 56,
+              "sta": 82,
+              "h9": 68,
+              "ovr": 87,
+              "rarity": "Epic"
             }
           ]
         }
@@ -246018,7 +246018,7 @@ window.OpponentsDatabase = {
           "division": "NL West",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 96,
+          "ovr": 93,
           "pitchers": [
             {
               "name": "Zack Greinke",
@@ -246035,20 +246035,6 @@ window.OpponentsDatabase = {
               "rarity": "Legendary"
             },
             {
-              "name": "Clayton Kershaw",
-              "role": "SP",
-              "war": 7.2,
-              "hp": 110,
-              "maxHp": 110,
-              "stf": 125,
-              "ctl": 101,
-              "mov": 80,
-              "sta": 85,
-              "h9": 106,
-              "ovr": 98,
-              "rarity": "Legendary"
-            },
-            {
               "name": "Madison Bumgarner",
               "role": "SP",
               "war": 5.0,
@@ -246060,6 +246046,20 @@ window.OpponentsDatabase = {
               "sta": 84,
               "h9": 81,
               "ovr": 94,
+              "rarity": "Legendary"
+            },
+            {
+              "name": "Tyson Ross",
+              "role": "SP",
+              "war": 3.3,
+              "hp": 103,
+              "maxHp": 103,
+              "stf": 96,
+              "ctl": 41,
+              "mov": 91,
+              "sta": 77,
+              "h9": 71,
+              "ovr": 89,
               "rarity": "Legendary"
             }
           ]
@@ -248061,16 +248061,16 @@ window.OpponentsDatabase = {
               "rarity": "Legendary"
             },
             {
-              "name": "Michael Fulmer",
+              "name": "Jose Quintana",
               "role": "SP",
-              "war": 5.4,
-              "hp": 104,
-              "maxHp": 104,
-              "stf": 51,
-              "ctl": 79,
-              "mov": 64,
-              "sta": 78,
-              "h9": 70,
+              "war": 5.3,
+              "hp": 106,
+              "maxHp": 106,
+              "stf": 57,
+              "ctl": 86,
+              "mov": 61,
+              "sta": 81,
+              "h9": 58,
               "ovr": 84,
               "rarity": "Epic"
             }
@@ -248686,7 +248686,7 @@ window.OpponentsDatabase = {
           "division": "AL West",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 86,
+          "ovr": 88,
           "pitchers": [
             {
               "name": "Cole Hamels",
@@ -248717,18 +248717,18 @@ window.OpponentsDatabase = {
               "rarity": "Legendary"
             },
             {
-              "name": "Sean Manaea",
-              "role": "SP",
-              "war": 3.0,
-              "hp": 104,
-              "maxHp": 104,
-              "stf": 54,
-              "ctl": 81,
-              "mov": 44,
-              "sta": 77,
-              "h9": 56,
-              "ovr": 81,
-              "rarity": "Epic"
+              "name": "Chris Devenski",
+              "role": "RP",
+              "war": 2.8,
+              "hp": 32,
+              "maxHp": 32,
+              "stf": 63,
+              "ctl": 94,
+              "mov": 95,
+              "sta": 35,
+              "h9": 90,
+              "ovr": 89,
+              "rarity": "Legendary"
             }
           ]
         }
@@ -249014,7 +249014,7 @@ window.OpponentsDatabase = {
           "division": "NL Central",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 88,
+          "ovr": 85,
           "pitchers": [
             {
               "name": "Carlos Martinez",
@@ -249045,18 +249045,18 @@ window.OpponentsDatabase = {
               "rarity": "Legendary"
             },
             {
-              "name": "Kyle Hendricks",
+              "name": "Dan Straily",
               "role": "SP",
-              "war": 5.3,
-              "hp": 105,
-              "maxHp": 105,
-              "stf": 60,
-              "ctl": 88,
-              "mov": 76,
-              "sta": 80,
-              "h9": 92,
-              "ovr": 91,
-              "rarity": "Legendary"
+              "war": 4.2,
+              "hp": 104,
+              "maxHp": 104,
+              "stf": 54,
+              "ctl": 52,
+              "mov": 29,
+              "sta": 78,
+              "h9": 81,
+              "ovr": 80,
+              "rarity": "Epic"
             }
           ]
         }
@@ -249359,20 +249359,6 @@ window.OpponentsDatabase = {
               "rarity": "Legendary"
             },
             {
-              "name": "Tanner Roark",
-              "role": "SP",
-              "war": 5.5,
-              "hp": 106,
-              "maxHp": 106,
-              "stf": 51,
-              "ctl": 60,
-              "mov": 75,
-              "sta": 80,
-              "h9": 77,
-              "ovr": 84,
-              "rarity": "Epic"
-            },
-            {
               "name": "Noah Syndergaard",
               "role": "SP",
               "war": 5.0,
@@ -249385,6 +249371,20 @@ window.OpponentsDatabase = {
               "h9": 60,
               "ovr": 92,
               "rarity": "Legendary"
+            },
+            {
+              "name": "Julio Teheran",
+              "role": "SP",
+              "war": 4.7,
+              "hp": 105,
+              "maxHp": 105,
+              "stf": 59,
+              "ctl": 91,
+              "mov": 54,
+              "sta": 79,
+              "h9": 75,
+              "ovr": 86,
+              "rarity": "Epic"
             }
           ]
         }
@@ -249670,7 +249670,7 @@ window.OpponentsDatabase = {
           "division": "NL West",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 93,
+          "ovr": 91,
           "pitchers": [
             {
               "name": "Clayton Kershaw",
@@ -249701,18 +249701,18 @@ window.OpponentsDatabase = {
               "rarity": "Legendary"
             },
             {
-              "name": "Madison Bumgarner",
+              "name": "Drew Pomeranz",
               "role": "SP",
-              "war": 4.8,
-              "hp": 107,
-              "maxHp": 107,
-              "stf": 89,
-              "ctl": 87,
-              "mov": 56,
-              "sta": 82,
-              "h9": 84,
-              "ovr": 91,
-              "rarity": "Legendary"
+              "war": 3.8,
+              "hp": 102,
+              "maxHp": 102,
+              "stf": 84,
+              "ctl": 53,
+              "mov": 48,
+              "sta": 75,
+              "h9": 80,
+              "ovr": 84,
+              "rarity": "Epic"
             }
           ]
         }
@@ -251682,7 +251682,7 @@ window.OpponentsDatabase = {
           "division": "AL Central",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 90,
+          "ovr": 87,
           "pitchers": [
             {
               "name": "Corey Kluber",
@@ -251713,18 +251713,18 @@ window.OpponentsDatabase = {
               "rarity": "Epic"
             },
             {
-              "name": "Carlos Carrasco",
+              "name": "Ervin Santana",
               "role": "SP",
-              "war": 5.2,
-              "hp": 105,
-              "maxHp": 105,
-              "stf": 91,
-              "ctl": 88,
-              "mov": 61,
-              "sta": 79,
-              "h9": 69,
-              "ovr": 90,
-              "rarity": "Legendary"
+              "war": 4.8,
+              "hp": 106,
+              "maxHp": 106,
+              "stf": 47,
+              "ctl": 75,
+              "mov": 38,
+              "sta": 80,
+              "h9": 75,
+              "ovr": 81,
+              "rarity": "Epic"
             }
           ]
         }
@@ -252683,20 +252683,6 @@ window.OpponentsDatabase = {
               "rarity": "Epic"
             },
             {
-              "name": "Corey Knebel",
-              "role": "RP",
-              "war": 3.7,
-              "hp": 30,
-              "maxHp": 30,
-              "stf": 125,
-              "ctl": 26,
-              "mov": 73,
-              "sta": 25,
-              "h9": 102,
-              "ovr": 85,
-              "rarity": "Epic"
-            },
-            {
               "name": "Kyle Hendricks",
               "role": "SP",
               "war": 3.5,
@@ -252708,6 +252694,20 @@ window.OpponentsDatabase = {
               "sta": 76,
               "h9": 61,
               "ovr": 82,
+              "rarity": "Epic"
+            },
+            {
+              "name": "Carlos Martinez",
+              "role": "SP",
+              "war": 3.0,
+              "hp": 106,
+              "maxHp": 106,
+              "stf": 82,
+              "ctl": 61,
+              "mov": 46,
+              "sta": 80,
+              "h9": 68,
+              "ovr": 84,
               "rarity": "Epic"
             }
           ]
@@ -252994,7 +252994,7 @@ window.OpponentsDatabase = {
           "division": "NL East",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 91,
+          "ovr": 89,
           "pitchers": [
             {
               "name": "Max Scherzer",
@@ -253011,32 +253011,32 @@ window.OpponentsDatabase = {
               "rarity": "Legendary"
             },
             {
-              "name": "Gio Gonzalez",
+              "name": "Aaron Nola",
               "role": "SP",
-              "war": 6.5,
+              "war": 4.4,
               "hp": 105,
               "maxHp": 105,
-              "stf": 66,
-              "ctl": 50,
-              "mov": 61,
+              "stf": 84,
+              "ctl": 73,
+              "mov": 60,
               "sta": 79,
-              "h9": 85,
-              "ovr": 84,
+              "h9": 59,
+              "ovr": 86,
               "rarity": "Epic"
             },
             {
-              "name": "Stephen Strasburg",
+              "name": "Jacob deGrom",
               "role": "SP",
-              "war": 6.3,
-              "hp": 105,
-              "maxHp": 105,
-              "stf": 94,
-              "ctl": 79,
-              "mov": 78,
-              "sta": 79,
-              "h9": 91,
-              "ovr": 94,
-              "rarity": "Legendary"
+              "war": 4.2,
+              "hp": 106,
+              "maxHp": 106,
+              "stf": 98,
+              "ctl": 74,
+              "mov": 42,
+              "sta": 81,
+              "h9": 64,
+              "ovr": 86,
+              "rarity": "Epic"
             }
           ]
         }
@@ -253322,7 +253322,7 @@ window.OpponentsDatabase = {
           "division": "NL West",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 89,
+          "ovr": 88,
           "pitchers": [
             {
               "name": "Zack Greinke",
@@ -253353,17 +253353,17 @@ window.OpponentsDatabase = {
               "rarity": "Legendary"
             },
             {
-              "name": "Robbie Ray",
+              "name": "Jon Gray",
               "role": "SP",
-              "war": 4.8,
-              "hp": 102,
-              "maxHp": 102,
-              "stf": 115,
-              "ctl": 40,
-              "mov": 41,
-              "sta": 76,
-              "h9": 96,
-              "ovr": 87,
+              "war": 3.2,
+              "hp": 101,
+              "maxHp": 101,
+              "stf": 70,
+              "ctl": 76,
+              "mov": 68,
+              "sta": 73,
+              "h9": 40,
+              "ovr": 83,
               "rarity": "Epic"
             }
           ]
@@ -255334,7 +255334,7 @@ window.OpponentsDatabase = {
           "division": "AL Central",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 91,
+          "ovr": 87,
           "pitchers": [
             {
               "name": "Trevor Bauer",
@@ -255351,31 +255351,31 @@ window.OpponentsDatabase = {
               "rarity": "Legendary"
             },
             {
-              "name": "Corey Kluber",
+              "name": "Brad Keller",
               "role": "SP",
-              "war": 6.0,
-              "hp": 107,
-              "maxHp": 107,
-              "stf": 79,
-              "ctl": 106,
-              "mov": 55,
-              "sta": 81,
-              "h9": 76,
-              "ovr": 91,
-              "rarity": "Legendary"
+              "war": 4.2,
+              "hp": 109,
+              "maxHp": 109,
+              "stf": 32,
+              "ctl": 58,
+              "mov": 90,
+              "sta": 85,
+              "h9": 53,
+              "ovr": 82,
+              "rarity": "Epic"
             },
             {
-              "name": "Mike Clevinger",
+              "name": "Jose Berrios",
               "role": "SP",
-              "war": 5.4,
-              "hp": 105,
-              "maxHp": 105,
-              "stf": 78,
-              "ctl": 63,
-              "mov": 61,
-              "sta": 79,
-              "h9": 78,
-              "ovr": 86,
+              "war": 3.5,
+              "hp": 103,
+              "maxHp": 103,
+              "stf": 80,
+              "ctl": 68,
+              "mov": 47,
+              "sta": 77,
+              "h9": 76,
+              "ovr": 85,
               "rarity": "Epic"
             }
           ]
@@ -255990,7 +255990,7 @@ window.OpponentsDatabase = {
           "division": "AL West",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 94,
+          "ovr": 90,
           "pitchers": [
             {
               "name": "Justin Verlander",
@@ -256007,20 +256007,6 @@ window.OpponentsDatabase = {
               "rarity": "Legendary"
             },
             {
-              "name": "Gerrit Cole",
-              "role": "SP",
-              "war": 5.2,
-              "hp": 105,
-              "maxHp": 105,
-              "stf": 123,
-              "ctl": 67,
-              "mov": 67,
-              "sta": 79,
-              "h9": 99,
-              "ovr": 95,
-              "rarity": "Legendary"
-            },
-            {
               "name": "Blake Treinen",
               "role": "RP",
               "war": 4.4,
@@ -256033,6 +256019,20 @@ window.OpponentsDatabase = {
               "h9": 112,
               "ovr": 92,
               "rarity": "Legendary"
+            },
+            {
+              "name": "Mike Minor",
+              "role": "SP",
+              "war": 3.8,
+              "hp": 101,
+              "maxHp": 101,
+              "stf": 52,
+              "ctl": 84,
+              "mov": 32,
+              "sta": 74,
+              "h9": 66,
+              "ovr": 81,
+              "rarity": "Epic"
             }
           ]
         }
@@ -256349,17 +256349,17 @@ window.OpponentsDatabase = {
               "rarity": "Epic"
             },
             {
-              "name": "Trevor Williams",
-              "role": "SP",
-              "war": 3.8,
-              "hp": 101,
-              "maxHp": 101,
-              "stf": 40,
-              "ctl": 66,
-              "mov": 70,
-              "sta": 73,
-              "h9": 71,
-              "ovr": 82,
+              "name": "Jared Hughes",
+              "role": "RP",
+              "war": 3.4,
+              "hp": 30,
+              "maxHp": 30,
+              "stf": 38,
+              "ctl": 70,
+              "mov": 86,
+              "sta": 26,
+              "h9": 88,
+              "ovr": 81,
               "rarity": "Epic"
             }
           ]
@@ -256974,7 +256974,7 @@ window.OpponentsDatabase = {
           "division": "NL West",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 88,
+          "ovr": 90,
           "pitchers": [
             {
               "name": "Kyle Freeland",
@@ -257005,18 +257005,18 @@ window.OpponentsDatabase = {
               "rarity": "Legendary"
             },
             {
-              "name": "German Marquez",
+              "name": "Walker Buehler",
               "role": "SP",
-              "war": 4.2,
+              "war": 3.6,
               "hp": 103,
               "maxHp": 103,
-              "stf": 96,
-              "ctl": 74,
-              "mov": 51,
+              "stf": 82,
+              "ctl": 78,
+              "mov": 70,
               "sta": 77,
-              "h9": 60,
-              "ovr": 86,
-              "rarity": "Epic"
+              "h9": 99,
+              "ovr": 92,
+              "rarity": "Legendary"
             }
           ]
         }
@@ -258986,7 +258986,7 @@ window.OpponentsDatabase = {
           "division": "AL Central",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 91,
+          "ovr": 88,
           "pitchers": [
             {
               "name": "Lucas Giolito",
@@ -259017,18 +259017,18 @@ window.OpponentsDatabase = {
               "rarity": "Legendary"
             },
             {
-              "name": "Mike Clevinger",
+              "name": "Jake Odorizzi",
               "role": "SP",
-              "war": 4.2,
-              "hp": 103,
-              "maxHp": 103,
-              "stf": 110,
-              "ctl": 72,
-              "mov": 74,
-              "sta": 77,
-              "h9": 86,
-              "ovr": 93,
-              "rarity": "Legendary"
+              "war": 3.8,
+              "hp": 99,
+              "maxHp": 99,
+              "stf": 87,
+              "ctl": 64,
+              "mov": 64,
+              "sta": 72,
+              "h9": 67,
+              "ovr": 85,
+              "rarity": "Epic"
             }
           ]
         }
@@ -259659,20 +259659,6 @@ window.OpponentsDatabase = {
               "rarity": "Epic"
             },
             {
-              "name": "Lance Lynn",
-              "role": "SP",
-              "war": 7.7,
-              "hp": 105,
-              "maxHp": 105,
-              "stf": 98,
-              "ctl": 76,
-              "mov": 63,
-              "sta": 80,
-              "h9": 55,
-              "ovr": 88,
-              "rarity": "Legendary"
-            },
-            {
               "name": "Justin Verlander",
               "role": "SP",
               "war": 7.4,
@@ -259684,6 +259670,20 @@ window.OpponentsDatabase = {
               "sta": 82,
               "h9": 119,
               "ovr": 96,
+              "rarity": "Legendary"
+            },
+            {
+              "name": "Liam Hendriks",
+              "role": "RP",
+              "war": 3.7,
+              "hp": 30,
+              "maxHp": 30,
+              "stf": 113,
+              "ctl": 80,
+              "mov": 83,
+              "sta": 26,
+              "h9": 90,
+              "ovr": 90,
               "rarity": "Legendary"
             }
           ]
@@ -259970,7 +259970,7 @@ window.OpponentsDatabase = {
           "division": "NL Central",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 90,
+          "ovr": 89,
           "pitchers": [
             {
               "name": "Sonny Gray",
@@ -260001,17 +260001,17 @@ window.OpponentsDatabase = {
               "rarity": "Legendary"
             },
             {
-              "name": "Luis Castillo",
+              "name": "Kyle Hendricks",
               "role": "SP",
-              "war": 5.2,
+              "war": 3.3,
               "hp": 103,
               "maxHp": 103,
-              "stf": 97,
-              "ctl": 45,
-              "mov": 55,
-              "sta": 77,
-              "h9": 95,
-              "ovr": 87,
+              "stf": 54,
+              "ctl": 99,
+              "mov": 60,
+              "sta": 76,
+              "h9": 53,
+              "ovr": 84,
               "rarity": "Epic"
             }
           ]
@@ -262638,7 +262638,7 @@ window.OpponentsDatabase = {
           "division": "AL Central",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 90,
+          "ovr": 88,
           "pitchers": [
             {
               "name": "Shane Bieber",
@@ -262669,18 +262669,18 @@ window.OpponentsDatabase = {
               "rarity": "Epic"
             },
             {
-              "name": "Zach Plesac",
+              "name": "Brad Keller",
               "role": "SP",
-              "war": 2.0,
-              "hp": 109,
-              "maxHp": 109,
-              "stf": 61,
-              "ctl": 100,
-              "mov": 46,
-              "sta": 84,
-              "h9": 89,
-              "ovr": 89,
-              "rarity": "Legendary"
+              "war": 1.8,
+              "hp": 104,
+              "maxHp": 104,
+              "stf": 26,
+              "ctl": 66,
+              "mov": 88,
+              "sta": 78,
+              "h9": 85,
+              "ovr": 84,
+              "rarity": "Epic"
             }
           ]
         }
@@ -266290,7 +266290,7 @@ window.OpponentsDatabase = {
           "division": "AL Central",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 89,
+          "ovr": 87,
           "pitchers": [
             {
               "name": "Lance Lynn",
@@ -266307,32 +266307,32 @@ window.OpponentsDatabase = {
               "rarity": "Legendary"
             },
             {
-              "name": "Carlos Rodon",
+              "name": "Cal Quantrill",
               "role": "SP",
-              "war": 5.1,
-              "hp": 101,
-              "maxHp": 101,
-              "stf": 117,
-              "ctl": 77,
-              "mov": 65,
-              "sta": 73,
-              "h9": 100,
-              "ovr": 95,
-              "rarity": "Legendary"
+              "war": 3.7,
+              "hp": 108,
+              "maxHp": 108,
+              "stf": 48,
+              "ctl": 68,
+              "mov": 60,
+              "sta": 84,
+              "h9": 69,
+              "ovr": 83,
+              "rarity": "Epic"
             },
             {
-              "name": "Lucas Giolito",
+              "name": "Jose Berrios",
               "role": "SP",
-              "war": 4.3,
-              "hp": 102,
-              "maxHp": 102,
-              "stf": 89,
-              "ctl": 74,
-              "mov": 36,
-              "sta": 75,
-              "h9": 79,
-              "ovr": 85,
-              "rarity": "Epic"
+              "war": 3.4,
+              "hp": 103,
+              "maxHp": 103,
+              "stf": 82,
+              "ctl": 87,
+              "mov": 56,
+              "sta": 77,
+              "h9": 76,
+              "ovr": 89,
+              "rarity": "Legendary"
             }
           ]
         }
@@ -266946,7 +266946,7 @@ window.OpponentsDatabase = {
           "division": "AL West",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 88,
+          "ovr": 87,
           "pitchers": [
             {
               "name": "Shohei Ohtani",
@@ -266977,17 +266977,17 @@ window.OpponentsDatabase = {
               "rarity": "Legendary"
             },
             {
-              "name": "Frankie Montas",
+              "name": "Kyle Gibson",
               "role": "SP",
-              "war": 3.7,
-              "hp": 102,
-              "maxHp": 102,
-              "stf": 87,
-              "ctl": 70,
-              "mov": 60,
-              "sta": 76,
-              "h9": 67,
-              "ovr": 86,
+              "war": 3.5,
+              "hp": 104,
+              "maxHp": 104,
+              "stf": 54,
+              "ctl": 59,
+              "mov": 68,
+              "sta": 78,
+              "h9": 68,
+              "ovr": 83,
               "rarity": "Epic"
             }
           ]
@@ -267274,7 +267274,7 @@ window.OpponentsDatabase = {
           "division": "NL Central",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 92,
+          "ovr": 88,
           "pitchers": [
             {
               "name": "Brandon Woodruff",
@@ -267291,20 +267291,6 @@ window.OpponentsDatabase = {
               "rarity": "Legendary"
             },
             {
-              "name": "Corbin Burnes",
-              "role": "SP",
-              "war": 5.2,
-              "hp": 103,
-              "maxHp": 103,
-              "stf": 123,
-              "ctl": 94,
-              "mov": 95,
-              "sta": 77,
-              "h9": 93,
-              "ovr": 98,
-              "rarity": "Legendary"
-            },
-            {
               "name": "Tyler Mahle",
               "role": "SP",
               "war": 4.9,
@@ -267316,6 +267302,20 @@ window.OpponentsDatabase = {
               "sta": 73,
               "h9": 66,
               "ovr": 84,
+              "rarity": "Epic"
+            },
+            {
+              "name": "Adam Wainwright",
+              "role": "SP",
+              "war": 3.7,
+              "hp": 106,
+              "maxHp": 106,
+              "stf": 54,
+              "ctl": 86,
+              "mov": 63,
+              "sta": 81,
+              "h9": 79,
+              "ovr": 86,
               "rarity": "Epic"
             }
           ]
@@ -267602,7 +267602,7 @@ window.OpponentsDatabase = {
           "division": "NL East",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 92,
+          "ovr": 97,
           "pitchers": [
             {
               "name": "Zack Wheeler",
@@ -267633,18 +267633,18 @@ window.OpponentsDatabase = {
               "rarity": "Legendary"
             },
             {
-              "name": "Ranger Suarez",
-              "role": "RP",
-              "war": 5.6,
-              "hp": 32,
-              "maxHp": 32,
-              "stf": 69,
-              "ctl": 68,
-              "mov": 94,
-              "sta": 35,
-              "h9": 97,
-              "ovr": 86,
-              "rarity": "Epic"
+              "name": "Jacob deGrom",
+              "role": "SP",
+              "war": 4.5,
+              "hp": 104,
+              "maxHp": 104,
+              "stf": 125,
+              "ctl": 106,
+              "mov": 80,
+              "sta": 78,
+              "h9": 125,
+              "ovr": 99,
+              "rarity": "Legendary"
             }
           ]
         }
@@ -267930,7 +267930,7 @@ window.OpponentsDatabase = {
           "division": "NL West",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 91,
+          "ovr": 90,
           "pitchers": [
             {
               "name": "Walker Buehler",
@@ -267961,17 +267961,17 @@ window.OpponentsDatabase = {
               "rarity": "Legendary"
             },
             {
-              "name": "Julio Urias",
+              "name": "Joe Musgrove",
               "role": "SP",
-              "war": 4.8,
-              "hp": 102,
-              "maxHp": 102,
-              "stf": 80,
-              "ctl": 94,
-              "mov": 63,
+              "war": 3.7,
+              "hp": 103,
+              "maxHp": 103,
+              "stf": 88,
+              "ctl": 72,
+              "mov": 52,
               "sta": 76,
-              "h9": 79,
-              "ovr": 90,
+              "h9": 85,
+              "ovr": 88,
               "rarity": "Legendary"
             }
           ]
@@ -273594,7 +273594,7 @@ window.OpponentsDatabase = {
           "division": "AL Central",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 88,
+          "ovr": 87,
           "pitchers": [
             {
               "name": "Sonny Gray",
@@ -273625,18 +273625,18 @@ window.OpponentsDatabase = {
               "rarity": "Epic"
             },
             {
-              "name": "Pablo Lopez",
+              "name": "Eduardo Rodriguez",
               "role": "SP",
-              "war": 3.5,
-              "hp": 104,
-              "maxHp": 104,
-              "stf": 100,
-              "ctl": 84,
-              "mov": 51,
-              "sta": 78,
-              "h9": 61,
-              "ovr": 88,
-              "rarity": "Legendary"
+              "war": 3.2,
+              "hp": 103,
+              "maxHp": 103,
+              "stf": 64,
+              "ctl": 68,
+              "mov": 65,
+              "sta": 76,
+              "h9": 73,
+              "ovr": 85,
+              "rarity": "Epic"
             }
           ]
         }
@@ -274906,7 +274906,7 @@ window.OpponentsDatabase = {
           "division": "NL East",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 85,
+          "ovr": 87,
           "pitchers": [
             {
               "name": "Jesus Luzardo",
@@ -274937,18 +274937,18 @@ window.OpponentsDatabase = {
               "rarity": "Epic"
             },
             {
-              "name": "Braxton Garrett",
+              "name": "Zack Wheeler",
               "role": "SP",
-              "war": 4.3,
-              "hp": 99,
-              "maxHp": 99,
-              "stf": 69,
-              "ctl": 98,
-              "mov": 50,
-              "sta": 72,
-              "h9": 50,
-              "ovr": 84,
-              "rarity": "Epic"
+              "war": 4.2,
+              "hp": 103,
+              "maxHp": 103,
+              "stf": 87,
+              "ctl": 95,
+              "mov": 62,
+              "sta": 77,
+              "h9": 67,
+              "ovr": 90,
+              "rarity": "Legendary"
             }
           ]
         }
@@ -277919,20 +277919,6 @@ window.OpponentsDatabase = {
               "rarity": "Epic"
             },
             {
-              "name": "Framber Valdez",
-              "role": "SP",
-              "war": 4.4,
-              "hp": 105,
-              "maxHp": 105,
-              "stf": 68,
-              "ctl": 69,
-              "mov": 78,
-              "sta": 80,
-              "h9": 82,
-              "ovr": 89,
-              "rarity": "Legendary"
-            },
-            {
               "name": "Bryce Miller",
               "role": "SP",
               "war": 3.4,
@@ -277944,6 +277930,20 @@ window.OpponentsDatabase = {
               "sta": 76,
               "h9": 95,
               "ovr": 89,
+              "rarity": "Legendary"
+            },
+            {
+              "name": "Kirby Yates",
+              "role": "RP",
+              "war": 3.3,
+              "hp": 30,
+              "maxHp": 30,
+              "stf": 96,
+              "ctl": 41,
+              "mov": 85,
+              "sta": 25,
+              "h9": 125,
+              "ovr": 88,
               "rarity": "Legendary"
             }
           ]
@@ -278230,7 +278230,7 @@ window.OpponentsDatabase = {
           "division": "NL Central",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 90,
+          "ovr": 91,
           "pitchers": [
             {
               "name": "Hunter Greene",
@@ -278261,17 +278261,17 @@ window.OpponentsDatabase = {
               "rarity": "Legendary"
             },
             {
-              "name": "Nick Martinez",
-              "role": "RP",
-              "war": 4.0,
-              "hp": 32,
-              "maxHp": 32,
-              "stf": 48,
-              "ctl": 110,
-              "mov": 68,
-              "sta": 35,
-              "h9": 62,
-              "ovr": 82,
+              "name": "Shota Imanaga",
+              "role": "SP",
+              "war": 3.0,
+              "hp": 103,
+              "maxHp": 103,
+              "stf": 73,
+              "ctl": 104,
+              "mov": 33,
+              "sta": 77,
+              "h9": 70,
+              "ovr": 86,
               "rarity": "Epic"
             }
           ]
@@ -278558,7 +278558,7 @@ window.OpponentsDatabase = {
           "division": "NL East",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 93,
+          "ovr": 91,
           "pitchers": [
             {
               "name": "Chris Sale",
@@ -278589,18 +278589,18 @@ window.OpponentsDatabase = {
               "rarity": "Legendary"
             },
             {
-              "name": "Reynaldo Lopez",
-              "role": "SP",
-              "war": 5.1,
-              "hp": 100,
-              "maxHp": 100,
-              "stf": 81,
-              "ctl": 69,
-              "mov": 78,
-              "sta": 73,
-              "h9": 80,
-              "ovr": 89,
-              "rarity": "Legendary"
+              "name": "Tanner Scott",
+              "role": "RP",
+              "war": 4.0,
+              "hp": 30,
+              "maxHp": 30,
+              "stf": 79,
+              "ctl": 32,
+              "mov": 89,
+              "sta": 25,
+              "h9": 102,
+              "ovr": 83,
+              "rarity": "Epic"
             }
           ]
         }
@@ -278886,7 +278886,7 @@ window.OpponentsDatabase = {
           "division": "NL West",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 88,
+          "ovr": 87,
           "pitchers": [
             {
               "name": "Dylan Cease",
@@ -278903,20 +278903,6 @@ window.OpponentsDatabase = {
               "rarity": "Legendary"
             },
             {
-              "name": "Mike King",
-              "role": "SP",
-              "war": 4.1,
-              "hp": 102,
-              "maxHp": 102,
-              "stf": 93,
-              "ctl": 57,
-              "mov": 65,
-              "sta": 76,
-              "h9": 76,
-              "ovr": 87,
-              "rarity": "Epic"
-            },
-            {
               "name": "Logan Webb",
               "role": "SP",
               "war": 3.6,
@@ -278928,6 +278914,20 @@ window.OpponentsDatabase = {
               "sta": 79,
               "h9": 46,
               "ovr": 85,
+              "rarity": "Epic"
+            },
+            {
+              "name": "Zac Gallen",
+              "role": "SP",
+              "war": 2.6,
+              "hp": 99,
+              "maxHp": 99,
+              "stf": 78,
+              "ctl": 56,
+              "mov": 70,
+              "sta": 72,
+              "h9": 62,
+              "ovr": 84,
               "rarity": "Epic"
             }
           ]
@@ -282210,7 +282210,7 @@ window.OpponentsDatabase = {
           "division": "NL East",
           "win_pct": 1.0,
           "isBoss": true,
-          "ovr": 90,
+          "ovr": 89,
           "pitchers": [
             {
               "name": "Cristopher Sanchez",
@@ -282227,31 +282227,31 @@ window.OpponentsDatabase = {
               "rarity": "Legendary"
             },
             {
-              "name": "Zack Wheeler",
+              "name": "Chris Sale",
               "role": "SP",
-              "war": 5.0,
+              "war": 4.0,
               "hp": 105,
               "maxHp": 105,
-              "stf": 108,
-              "ctl": 89,
-              "mov": 50,
+              "stf": 106,
+              "ctl": 80,
+              "mov": 70,
               "sta": 79,
-              "h9": 96,
-              "ovr": 94,
+              "h9": 77,
+              "ovr": 93,
               "rarity": "Legendary"
             },
             {
-              "name": "Ranger Suarez",
+              "name": "MacKenzie Gore",
               "role": "SP",
-              "war": 4.7,
-              "hp": 104,
-              "maxHp": 104,
-              "stf": 67,
-              "ctl": 84,
-              "mov": 70,
-              "sta": 78,
-              "h9": 47,
-              "ovr": 85,
+              "war": 3.0,
+              "hp": 99,
+              "maxHp": 99,
+              "stf": 92,
+              "ctl": 48,
+              "mov": 50,
+              "sta": 72,
+              "h9": 52,
+              "ovr": 81,
               "rarity": "Epic"
             }
           ]
