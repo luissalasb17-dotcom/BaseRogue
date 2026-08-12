@@ -2954,6 +2954,16 @@ function initGameModeSelector() {
       }
     });
 
+    // Default: until the player has ever manually set/removed a Build era,
+    // auto-preview whichever era currently has the most players in roster.
+    if (!window.Game.buildEraTouched) {
+      let leadingEra = null, leadingCount = 0;
+      Object.keys(eraCounts).forEach(era => {
+        if (eraCounts[era] > leadingCount) { leadingCount = eraCounts[era]; leadingEra = era; }
+      });
+      window.Game.autoAssignBuildEra(leadingEra);
+    }
+
     // A. Render Era Synergies (Render ALL 9 to guide the user)
     const eraListTitle = document.createElement('div');
     eraListTitle.style.cssText = "font-family: 'Press Start 2P', monospace; font-size: 7px; color: var(--accent-color); margin-top: 5px; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px;";

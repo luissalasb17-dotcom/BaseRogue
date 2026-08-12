@@ -604,6 +604,11 @@
       // Era of Build: the single era the player actively commits their run to.
       // Only this era's synergy scales past T1 (2+ players) — see setBuildEra().
       this.buildEra = null;
+      // True once the player has ever clicked "Set/Remove Build" — before
+      // that, the UI auto-previews the roster's leading era via
+      // autoAssignBuildEra() so a build is active by default without the
+      // player having to notice and click the button themselves.
+      this.buildEraTouched = false;
 
       // Custom Batting Order (positions sequence)
       this.battingOrder = ['CF', 'LF', 'RF', '1B', '2B', '3B', 'SS', 'C', 'DH'];
@@ -640,9 +645,20 @@
 
     // Set (or clear with null) the player's chosen Era of Build for this run.
     setBuildEra(era) {
+      this.buildEraTouched = true;
       const validEras = window.PlayersDB ? Object.values(window.PlayersDB.Eras) : [];
       this.buildEra = (era && validEras.includes(era)) ? era : null;
       return this.buildEra;
+    }
+
+    // Internal auto-default: previews the roster's currently-leading era as
+    // Build until the player manually sets/removes one via setBuildEra().
+    // Unlike setBuildEra(), this does NOT set buildEraTouched, so it keeps
+    // tracking the leading era as the roster changes pick to pick.
+    autoAssignBuildEra(era) {
+      if (this.buildEraTouched) return;
+      const validEras = window.PlayersDB ? Object.values(window.PlayersDB.Eras) : [];
+      this.buildEra = (era && validEras.includes(era)) ? era : null;
     }
 
     // Display-only tier resolver — mirrors InteractiveBattle._calculateActiveSynergies

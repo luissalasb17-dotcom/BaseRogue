@@ -2470,6 +2470,14 @@ body.workspace-active .main-container {
   flex-grow: 1;
 }
 
+/* VT323/Press Start 2P are pixel-art fonts with no emoji glyphs — inside
+   .player-name and similar retro-font contexts, badge emojis (👑 ⚡ ⏳) fell
+   back to those fonts' own placeholder glyph (a bare dash) instead of the
+   system emoji font. Force an emoji-capable stack on badge icons only. */
+.list-badge-icon {
+  font-family: 'Segoe UI Emoji', 'Noto Color Emoji', 'Apple Color Emoji', sans-serif !important;
+}
+
 .roster-vertical-item .ovr-badge {
   font-family: 'Press Start 2P', monospace;
   font-size: 6px;
