@@ -329,20 +329,21 @@ def main():
             div_entries = [e for e in (low + mid + high) if e["teamID"] in div_team_ids]
             div_entries.sort(key=lambda e: e["win_pct"])  # peor -> mejor
 
-            div_pitcher_pool = year_pitchers[year_pitchers["primary_team"].isin(div_team_ids)].copy()
-            div_pitcher_pool = div_pitcher_pool[div_pitcher_pool["rarity"].isin(["Epic", "Legendary"])]
-            div_pitcher_pool["war_sort"] = div_pitcher_pool["war_season"].fillna(div_pitcher_pool["IP_y"] / 50.0)
-            div_pitcher_pool = div_pitcher_pool.sort_values("war_sort", ascending=False)
-            # Max 1 pitcher per team so the "division All-Stars" boss can't end up
-            # an exact copy of whichever single team happens to have the best
-            # staff in the division (e.g. 2006 AL West: the Angels' top 3 by WAR
-            # were ALSO the division's top 3 overall) — pull the best pitcher from
-            # each team first, then only reuse a team if <3 teams have an Epic+ arm.
-            one_per_team = div_pitcher_pool.drop_duplicates(subset="primary_team", keep="first").head(3)
-            if len(one_per_team) < 3:
-                remaining = div_pitcher_pool[~div_pitcher_pool.index.isin(one_per_team.index)]
-                one_per_team = pd.concat([one_per_team, remaining]).head(3)
-            div_boss_roster = one_per_team
+            div_team_pool = year_pitchers[year_pitchers["primary_team"].isin(div_team_ids)].copy()
+            div_pitcher_pool = div_team_pool[div_team_pool["rarity"].isin(["Epic", "Legendary"])]
+            # Boss = 3 random picks from the division's Epic+ pool (not a fixed
+            # top-3 by WAR — the user wants variety run to run, not the same
+            # division "dream team" every time). If the division doesn't have 3
+            # Epic+ arms that year, fill the rest from Rare so a thin division
+            # still gets a 3-pitcher boss instead of failing/looking empty.
+            if len(div_pitcher_pool) < 3:
+                fallback_pool = div_team_pool[
+                    (div_team_pool["rarity"] == "Rare")
+                    & (~div_team_pool.index.isin(div_pitcher_pool.index))
+                ]
+                div_pitcher_pool = pd.concat([div_pitcher_pool, fallback_pool])
+            n_pick = min(3, len(div_pitcher_pool))
+            div_boss_roster = div_pitcher_pool.sample(n=n_pick, random_state=None) if n_pick > 0 else div_pitcher_pool
             div_boss = None
             if not div_boss_roster.empty:
                 div_boss = {
