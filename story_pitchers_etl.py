@@ -226,7 +226,12 @@ def main():
     raw_ovr = (py["h9_val"]*0.20 + py["k9_val"]*0.20 + py["bb9_val"]*0.20 + py["hr9_val"]*0.20 + py["sta_val"]*0.20)
     py["ovr"] = raw_ovr.apply(map_to_cosmetic_ovr_p).round(0).astype(int)
     py["rarity"] = py["ovr"].apply(asignar_rareza)
-    py["hp"] = py["ovr"].clip(upper=120)
+    # HP viene de la stamina, no del OVR — identico a game.js::createPitcherObj
+    # (SP: 45 + sta/99*75 | RP: 25 + sta/99*20), para que Quick Play y Story Mode
+    # calculen el HP de la misma forma.
+    sp_hp = 45.0 + (py["sta_val"] / 99.0) * 75.0
+    rp_hp = 25.0 + (py["sta_val"] / 99.0) * 20.0
+    py["hp"] = np.where(is_sp, sp_hp, rp_hp).round(0).astype(int)
     py["maxHp"] = py["hp"]
 
     # ── Nombres para mostrar ────────────────────────────────────────────────
