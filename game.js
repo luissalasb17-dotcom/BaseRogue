@@ -1573,7 +1573,31 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
       );
 
       const weakPositionsSet = this.getWeakestRosterPositions();
-      const selectedPicks = pickWeightedUnique(filtered, 3, weakPositionsSet);
+
+      // Story Mode: same 80/20 activity-based split as getDraftRoundPicks /
+      // getPostMatchDraftPicks — Sign Legend nodes were pulling from the raw
+      // global pool with no year-awareness or Time Traveler flag.
+      const isStoryYearAware = this.selectedMode === 'story' && this.selectedSeasonYear;
+      let selectedPicks = [];
+      if (isStoryYearAware) {
+        const year = parseInt(this.selectedSeasonYear, 10);
+        const isActive = p => p.debut_year !== undefined && p.last_year !== undefined && p.debut_year <= year && p.last_year >= year;
+        let activePool = filtered.filter(isActive);
+        let fullPool = [...filtered];
+        while (selectedPicks.length < 3 && (fullPool.length > 0 || activePool.length > 0)) {
+          const useActive = activePool.length > 0 && Math.random() < 0.8;
+          const source = useActive ? activePool : (fullPool.length > 0 ? fullPool : activePool);
+          const picked = pickWeightedUnique(source, 1, weakPositionsSet);
+          if (!picked.length) break;
+          let chosen = picked[0];
+          activePool = activePool.filter(x => x.name !== chosen.name);
+          fullPool = fullPool.filter(x => x.name !== chosen.name);
+          if (!useActive && !isActive(chosen)) chosen = { ...chosen, isInterEra: true };
+          selectedPicks.push(chosen);
+        }
+      } else {
+        selectedPicks = pickWeightedUnique(filtered, 3, weakPositionsSet);
+      }
 
       // Fallback
       if (selectedPicks.length < 3) {
@@ -1699,6 +1723,55 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
         const seasonData = this.seasonPoolData || (window.OpponentsDatabase && this.selectedSeasonYear ? window.OpponentsDatabase[this.selectedSeasonYear] : null);
 
         if (seasonData) {
+          // Super Boss Part 2 (post-Stage-15): Story Mode never had an
+          // equivalent to Quick Play's 4-Legendary-pitcher rotation — it just
+          // re-served the same seasonData.boss object, so the "second fight"
+          // looked identical to the first. Build a fresh squad of 4 random
+          // Legendary pitchers pulled from every pitcher baked into this
+          // season's data (falls back to Epic if a thin year has <4 Legendaries).
+          if (stage === 15 && this.isSuperBossActive) {
+            const allPitchers = [];
+            const addFrom = (arr) => { (arr || []).forEach(e => { (e.pitchers || []).forEach(p => allPitchers.push(p)); }); };
+            addFrom(seasonData.low); addFrom(seasonData.mid); addFrom(seasonData.high);
+            if (seasonData.boss) addFrom([seasonData.boss]);
+            if (seasonData.divisions) {
+              Object.values(seasonData.divisions).forEach(d => {
+                addFrom(d.teams);
+                if (d.boss) addFrom([d.boss]);
+              });
+            }
+            const seen = new Set();
+            const dedup = allPitchers.filter(p => {
+              if (!p || seen.has(p.name)) return false;
+              seen.add(p.name);
+              return true;
+            });
+            let legPool = dedup.filter(p => p.rarity === 'Legendary');
+            if (legPool.length < 4) {
+              const legNames = new Set(legPool.map(p => p.name));
+              const epicPool = dedup.filter(p => p.rarity === 'Epic' && !legNames.has(p.name));
+              legPool = legPool.concat(epicPool);
+            }
+            const shuffled = [...legPool].sort(() => Math.random() - 0.5);
+            const selected = shuffled.slice(0, Math.min(4, shuffled.length));
+            if (selected.length > 0) {
+              const avgOvr = Math.round(selected.reduce((s, p) => s + (p.ovr || 50), 0) / selected.length);
+              this.currentEnemy = {
+                id: `story_super_boss_${this.selectedSeasonYear}_${Date.now()}`,
+                name: `⚡ SUPER BOSS: ${selected[0].name}`,
+                tier: 'S',
+                isBoss: true,
+                isSuperBoss: true,
+                year: this.selectedSeasonYear,
+                win_pct: 1.0,
+                ovr: avgOvr,
+                pitchers: sortPitchingStaff(selected),
+                rarity: 'Legendary'
+              };
+              return this.currentEnemy;
+            }
+          }
+
           // Division-based maps (1969+ seasons only — see loadSeasonOpponents).
           // Zone = one division; the zone's boss stage (local stage 3) draws
           // from that division's Epic+ pool instead of the global tier boss.

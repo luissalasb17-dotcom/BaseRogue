@@ -300,10 +300,19 @@ def main():
             else:
                 mid.append(entry)
 
-        # Boss: mejores 3 pitchers del anio (cualquier equipo) por WAR
-        boss_pool = year_pitchers.copy()
-        boss_pool["war_sort"] = boss_pool["war_season"].fillna(boss_pool["IP_y"] / 50.0)
-        boss_roster = boss_pool.sort_values("war_sort", ascending=False).head(3)
+        # Boss: 3 pitchers al azar del anio (cualquier equipo) entre los de
+        # rareza Legendary -- antes era un top-3 por WAR fijo, lo que
+        # producia siempre el mismo trio "dream team" cada corrida del mismo
+        # anio. Si el anio no tiene 3 Legendary, se completa con Epic.
+        boss_pool = year_pitchers[year_pitchers["rarity"] == "Legendary"]
+        if len(boss_pool) < 3:
+            fallback_pool = year_pitchers[
+                (year_pitchers["rarity"] == "Epic")
+                & (~year_pitchers.index.isin(boss_pool.index))
+            ]
+            boss_pool = pd.concat([boss_pool, fallback_pool])
+        n_boss_pick = min(3, len(boss_pool))
+        boss_roster = boss_pool.sample(n=n_boss_pick, random_state=None) if n_boss_pick > 0 else boss_pool
         boss = None
         if not boss_roster.empty:
             boss = {
