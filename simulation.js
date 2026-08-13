@@ -67,10 +67,14 @@
     // rescaled by whatever happens to Hit/Out below.
     // 1. BB rate: Batter Eye vs Pitcher BB/9 Control (Base 10%, Slope 0.20%)
     let pBB = 0.10 + (effEye - pBB9) * 0.0020;
+    // eagle_patience: +3 points to the BB zone
+    if (simCtx && simCtx.hasTrait && simCtx.hasTrait('eagle_patience')) pBB += 0.03;
     pBB = Math.max(0.04, Math.min(0.35, pBB));
 
     // 2. SO rate: Pitcher K/9 Strikeout vs Batter Contact (Base 16%, Slope 0.20%)
     let pSO = 0.16 + (pK9 - effCon) * 0.0020;
+    // surgical_contact: -3 points to the SO zone
+    if (simCtx && simCtx.hasTrait && simCtx.hasTrait('surgical_contact')) pSO -= 0.03;
     pSO = Math.max(0.04, Math.min(0.35, pSO));
 
     const pInPlay = Math.max(0.10, 1.0 - pBB - pSO); // floor guards extreme BB+SO stacking
@@ -215,11 +219,13 @@
      * @param {object} homeTeam  - { name, pitchers: Pitcher[] }
      * @param {number} teamShield - Sum(def_val of 9 batters) / 9  (pre-calculated by UI)
      * @param {string} buildEra  - Player-chosen Era of Build (window.PlayersDB.Eras value) or null
+     * @param {string[]} traitIds - Ids of the player's currently equipped passive Traits
      */
-    constructor(awayTeam, homeTeam, teamShield, buildEra = null) {
+    constructor(awayTeam, homeTeam, teamShield, buildEra = null, traitIds = []) {
       this.awayTeam = awayTeam;
       this.homeTeam = homeTeam;
       this.buildEra = buildEra || null;
+      this.traitIds = new Set(traitIds || []);
 
       // ── Team (player side) vitals ─────────────────────────────────
       this.teamHP    = 100;           // Fixed; strikeouts bite here directly
@@ -248,6 +254,16 @@
       // ── Five-Tool Legends T4: batters exempt from post-match Stamina loss ──
       this.staminaImmuneBatterIds = new Set();
 
+      // ── Trait-driven turn state ─────────────────────────────────────
+      // reliever_ambush: true right after a new pitcher enters, consumed by the next hit
+      this.freshPitcherBonusAvailable = this.traitIds.has('reliever_ambush');
+      // early_pressure: true for the first plate appearance of each inning
+      this.firstBatterOfInningPending = this.traitIds.has('early_pressure');
+      // back_to_back: true for the plate appearance right after a HR
+      this.backToBackPending = false;
+      // ghost_runners: only place the free runner once, at the start of inning 3
+      this.ghostRunnerPlaced = false;
+
       // ── Combat log ───────────────────────────────────────────────
       this.events = [];
 
@@ -267,16 +283,24 @@
         'START');
     }
 
+    hasTrait(id) {
+      return this.traitIds.has(id);
+    }
+
     // Tier scale: T1=2+, T2=4+, T3=6+, T4=8+ players of that era in the roster.
     // Only the active Build Era scales past T1 — any other era with 2+ players
     // is locked at a fixed T1 effect no matter how many more it has.
     _calculateActiveSynergies(lineup) {
       const eraCounts = {};
       lineup.forEach(p => {
-        if (p && p.era && p.era !== 'None') {
+        // synergyBanned: set by a failed "Sinergia Prohibida" gamble — the
+        // player no longer counts toward any era synergy for the rest of the run.
+        if (p && p.era && p.era !== 'None' && !p.synergyBanned) {
           // Story Mode inter-era wildcards count double toward their OWN era's
           // synergy threshold — an incentive to take the out-of-era pick.
-          eraCounts[p.era] = (eraCounts[p.era] || 0) + (p.isInterEra ? 2 : 1);
+          // synergyWeight overrides this (e.g. a successful "Sinergia Prohibida" gamble sets it to 4).
+          const weight = p.synergyWeight || (p.isInterEra ? 2 : 1);
+          eraCounts[p.era] = (eraCounts[p.era] || 0) + weight;
         }
       });
       const active = {};
@@ -284,7 +308,9 @@
         const count = eraCounts[era];
         if (count < 2) return;
         if (era === this.buildEra) {
-          active[era] = count >= 8 ? 4 : count >= 6 ? 3 : count >= 4 ? 2 : 1;
+          // era_accelerated: only 2 players needed for T2 (instead of 4)
+          const t2Threshold = this.hasTrait('era_accelerated') ? 2 : 4;
+          active[era] = count >= 8 ? 4 : count >= 6 ? 3 : count >= t2Threshold ? 2 : 1;
         } else {
           active[era] = 1;
         }
@@ -332,6 +358,31 @@
         effBatter.def = (effBatter.def || 50) + boost;
       }
 
+      // 2. Per-turn Trait boosts (consumed this turn regardless of outcome)
+      let traitProc = null;
+      if (this.hasTrait('clutch_legends') && this.teamHP < 35) {
+        effBatter.con = (effBatter.con || 50) + 15;
+        effBatter.pwr = (effBatter.pwr || 50) + 15;
+        effBatter.eye = (effBatter.eye || 50) + 15;
+        effBatter.spd = (effBatter.spd || 50) + 15;
+        effBatter.def = (effBatter.def || 50) + 15;
+        traitProc = (traitProc ? traitProc + ' | ' : '') + '❤️ Resiliencia de Leyendas: +15 a todas las stats (HP de equipo bajo).';
+      }
+      const isFirstBatterOfInning = this.firstBatterOfInningPending;
+      if (isFirstBatterOfInning) {
+        effBatter.con = (effBatter.con || 50) + 20;
+        effBatter.eye = (effBatter.eye || 50) + 20;
+        traitProc = (traitProc ? traitProc + ' | ' : '') + '📈 Presión Temprana: +20 CON/EYE (primer bateador de la entrada).';
+        this.firstBatterOfInningPending = false;
+      }
+      const isBackToBackTurn = this.backToBackPending;
+      if (isBackToBackTurn) {
+        effBatter.pwr = (effBatter.pwr || 50) + 20;
+        effBatter.con = (effBatter.con || 50) + 20;
+        traitProc = (traitProc ? traitProc + ' | ' : '') + '💥 Cadena de Poder: +20 PWR/CON (turno post-jonrón).';
+        this.backToBackPending = false;
+      }
+
       const bounds = calcBoundaries(effBatter, pitcher, this);
 
       let eventType, playText;
@@ -376,6 +427,11 @@
         runsThisTurn = this._advanceWalk(batter, bbDeadballDoubleAdvance);
         this.runs += runsThisTurn;
         pitcherDmg = 10 + (runsThisTurn * 10);
+
+        // eagle_patience: each BB regenerates +5 Stamina to the batter
+        if (this.hasTrait('eagle_patience')) {
+          batter.stamina = Math.min(100, (batter.stamina || 100) + 5);
+        }
 
         // Efficiency Era BB boost
         if (batterEra === 'Efficiency Era (2006-2015)' && eraSynergy >= 1) {
@@ -433,6 +489,13 @@
             debuffMult = 1.40;
           }
           stealProcMsg = _t('sim.syn_bighair', {}, 'Sinergia Big Hair');
+        }
+
+        // speed_demons: SPD > 60 batters steal automatically, debuff never shorter than 3 turns
+        if (this.hasTrait('speed_demons') && (effBatter.spd || 0) > 60) {
+          stealChance = 1.0;
+          debuffTurns = Math.max(debuffTurns, 3);
+          stealProcMsg = (stealProcMsg ? stealProcMsg + ' + ' : '') + '⚡ Velocistas Agresivos';
         }
 
         if ((effBatter.spd || 0) >= 40 && this.bases[0] === batter && !this.bases[1] && Math.random() < stealChance) {
@@ -534,7 +597,7 @@
         eventType = 'OUT';
         this.outs++;
         this.strikeoutChain = 0;
-        const outDmg = 12;
+        const outDmg = this.hasTrait('defensive_wall') ? 8 : 12;
         if (this.teamShield > 0) {
           shieldDmg = Math.min(this.teamShield, outDmg);
           this.teamShield -= shieldDmg;
@@ -664,9 +727,17 @@
             synergyProc = (synergyProc ? synergyProc + ' | ' : '') + _t('sim.syn_tto_hr_debuff', { turns: ttoDebuffTurns }, `🚀 Three True Outcomes: ¡Jonrón debilita al lanzador por ${ttoDebuffTurns} impactos!`);
           }
 
+          // slugger_momentum: HR inflicts +30 extra HP damage
+          if (this.hasTrait('slugger_momentum')) hrDmg += 30;
+          // extra_base_impact: extra-base hits (2B/3B/HR) inflict +10 extra HP damage
+          if (this.hasTrait('extra_base_impact')) hrDmg += 10;
+
           pitcherDmg += hrDmg;
           eventType = 'HR';
           playText = `🎲 [${roll}] [${_t('sim.label_hr', {}, 'JONRÓN')}] ¡${batter.name} ${_t('sim.hr_desc', { runs: runsThisTurn }, 'CUADRANGULAR de ' + runsThisTurn + ' carreras')}! `;
+
+          // back_to_back: the NEXT batter gets +20 PWR/CON for their turn
+          if (this.hasTrait('back_to_back')) this.backToBackPending = true;
 
         } else if (hitType === '3B') {
           runsThisTurn = this._advanceTriple(batter);
@@ -676,6 +747,8 @@
             if (this.bases[0]) { runsThisTurn++; this.bases[0] = null; }
           }
           pitcherDmg += 45 + (runsThisTurn * 10);
+          // extra_base_impact: extra-base hits (2B/3B/HR) inflict +10 extra HP damage
+          if (this.hasTrait('extra_base_impact')) pitcherDmg += 10;
           eventType = '3B';
           playText = `🎲 [${roll}] [${_t('sim.label_3b', {}, 'TRIPLE')}] ¡${batter.name} ${_t('sim.3b_desc', {}, 'triple al rincón')}! `;
 
@@ -687,6 +760,8 @@
             if (this.bases[0]) { this.bases[2] = this.bases[0]; this.bases[0] = null; }
           }
           pitcherDmg += 30 + (runsThisTurn * 10);
+          // extra_base_impact: extra-base hits (2B/3B/HR) inflict +10 extra HP damage
+          if (this.hasTrait('extra_base_impact')) pitcherDmg += 10;
           eventType = '2B';
           playText = `🎲 [${roll}] [${_t('sim.label_2b', {}, 'DOBLE')}] ¡${batter.name} ${_t('sim.2b_desc', {}, 'línea violenta por la raya')}! `;
 
@@ -718,6 +793,13 @@
           const extraGolden = eraSynergy === 4 ? 18 : eraSynergy >= 2 ? 12 : 6;
           pitcherDmg += extraGolden;
           synergyProc = (synergyProc ? synergyProc + ' | ' : '') + _t('sim.syn_liveball_dmg', { extra: extraGolden }, `🔥 Liveball Sluggers: +${extraGolden} daño.`);
+        }
+
+        // reliever_ambush: the first hit against a newly-entered pitcher deals +50% damage
+        if (this.freshPitcherBonusAvailable) {
+          pitcherDmg = Math.round(pitcherDmg * 1.5);
+          traitProc = (traitProc ? traitProc + ' | ' : '') + '🔥 Emboscada al Relevista: +50% daño (primer batazo contra este lanzador).';
+          this.freshPitcherBonusAvailable = false;
         }
 
         this.runs += runsThisTurn;
@@ -755,6 +837,13 @@
               debuffMult = 1.40;
             }
             stealProcMsg = _t('sim.syn_bighair', {}, 'Sinergia Big Hair');
+          }
+
+          // speed_demons: SPD > 60 batters steal automatically, debuff never shorter than 3 turns
+          if (this.hasTrait('speed_demons') && (effBatter.spd || 0) > 60) {
+            stealChance = 1.0;
+            debuffTurns = Math.max(debuffTurns, 3);
+            stealProcMsg = (stealProcMsg ? stealProcMsg + ' + ' : '') + '⚡ Velocistas Agresivos';
           }
 
           if ((effBatter.spd || 0) >= 40 && !this.bases[1] && Math.random() < stealChance) {
@@ -795,6 +884,9 @@
 
       if (clutchProc) {
         playText = `${clutchProc} ${playText}`;
+      }
+      if (traitProc) {
+        playText += ` ${traitProc}`;
       }
 
       // Advance to next batter
@@ -844,6 +936,24 @@
         this.outs = 0;
         this.bases = [null, null, null];
         this.pitcherDebuff = null; // Clear debuff when inning ends
+
+        // early_pressure: the first batter of the new inning gets a boost
+        if (this.hasTrait('early_pressure')) this.firstBatterOfInningPending = true;
+
+        // iron_shield: regenerate +5 Shield at the start of each inning
+        if (this.hasTrait('iron_shield') && this.teamShield < this.teamShieldMax) {
+          this.teamShield = Math.min(this.teamShieldMax, this.teamShield + 5);
+        }
+
+        // ghost_runners: start inning 3 with a free runner already on 2nd base
+        if (this.hasTrait('ghost_runners') && this.inning === 3 && !this.ghostRunnerPlaced) {
+          this.bases[1] = { name: 'Corredor Fantasma', spd: 50, con: 50, pwr: 50, eye: 50, def: 50, isGhostRunner: true };
+          this.ghostRunnerPlaced = true;
+          this.logEvent('GHOST_RUNNER',
+            '🏃 Corredores Fantasma: ¡un corredor aparece en 2ª base para arrancar la 3ª entrada!',
+            'TRAIT');
+        }
+
         if (this.inning > 3) {
           this._checkEndConditions();
         }
@@ -916,6 +1026,7 @@
             'KO', p.name);
 
           this.enemyPitcherIndex++;
+          if (this.hasTrait('reliever_ambush')) this.freshPitcherBonusAvailable = true;
           const nextP = this.activePitcher;
           if (nextP && overflow > 0) {
             // Only half the overflow carries over to the next pitcher

@@ -21,6 +21,13 @@
   --badge-captain: #00d4ff;
   --badge-build-era: #ff2ec4;
   --badge-build-era-glow: rgba(255, 46, 196, 0.5);
+
+  /* Career Mode's own identity color — distinct from the core green/yellow
+     theme (Story Mode also keeps its own accents), kept as a real variable
+     instead of hardcoded hex so it can be reused consistently. */
+  --career-accent: #ec4899;
+  --career-accent-dim: #db2777;
+  --career-accent-glow: rgba(236, 72, 153, 0.45);
 }
 
 * {
@@ -1699,6 +1706,202 @@ p {
   display: grid;
   grid-template-columns: 1.2fr 1fr;
   gap: 24px;
+  position: relative;
+}
+
+/* Tension escalation overlay — driven by inning + team HP (computeDangerLevel in ui.js) */
+.match-arena::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 5;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+  background: radial-gradient(ellipse at center, rgba(0,0,0,0) 55%, rgba(239,68,68,0.35) 100%);
+}
+
+.match-arena.danger-1::after {
+  opacity: 0.35;
+}
+
+.match-arena.danger-2::after {
+  opacity: 0.6;
+  background: radial-gradient(ellipse at center, rgba(0,0,0,0) 40%, rgba(239,68,68,0.5) 100%);
+  animation: tension-pulse 2.4s ease-in-out infinite;
+}
+
+.match-arena.danger-3::after {
+  opacity: 0.85;
+  background: radial-gradient(ellipse at center, rgba(0,0,0,0) 25%, rgba(239,68,68,0.65) 100%);
+  animation: tension-pulse 1.1s ease-in-out infinite;
+}
+.match-arena.danger-3 {
+  animation: tension-tint 1.1s ease-in-out infinite;
+}
+
+@keyframes tension-pulse {
+  0%, 100% { opacity: 0.6; }
+  50%      { opacity: 0.9; }
+}
+
+@keyframes tension-tint {
+  0%, 100% { filter: brightness(1) saturate(1); }
+  50%      { filter: brightness(1.05) saturate(1.25) hue-rotate(-5deg); }
+}
+
+/* ── HIGH-STAKES GAMBLE NODE: coin flip ──────────────────────────────── */
+.gamble-coin-wrap {
+  width: 74px;
+  height: 74px;
+  flex-shrink: 0;
+  perspective: 600px;
+}
+
+.gamble-coin {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 1.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.gamble-coin-face {
+  position: absolute;
+  inset: 0;
+  border-radius: 50% !important; /* exception to the global blocky/NES reset — a coin must be round */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+  backface-visibility: hidden;
+  border: 3px solid rgba(255,255,255,0.35);
+  box-shadow: 0 0 20px rgba(0,0,0,0.4);
+}
+
+.gamble-coin-front {
+  background: radial-gradient(circle at 35% 30%, #34d399, #059669);
+}
+
+.gamble-coin-back {
+  background: radial-gradient(circle at 35% 30%, #f87171, #b91c1c);
+  transform: rotateY(180deg);
+}
+
+.gamble-coin-flipping {
+  animation: gamble-coin-shimmer 1.8s linear;
+}
+
+@keyframes gamble-coin-shimmer {
+  0%, 100% { filter: brightness(1); }
+  50%      { filter: brightness(1.3); }
+}
+
+.gamble-outcome-card {
+  width: 90px;
+  padding: 10px 6px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.1);
+}
+.gamble-outcome-win  { border-color: rgba(16,185,129,0.35); }
+.gamble-outcome-lose { border-color: rgba(239,68,68,0.35); }
+
+/* ── MANAGER EVENT RISK ROULETTE ─────────────────────────────────────── */
+.roulette-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(5,8,14,0.94);
+  backdrop-filter: blur(10px);
+  z-index: 850;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.roulette-modal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+}
+
+.roulette-title {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 12px;
+  color: var(--primary-color, #00ff66);
+  text-shadow: 0 0 12px rgba(0,255,102,0.5);
+}
+
+.roulette-wrap {
+  position: relative;
+  width: 220px;
+  height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.roulette-pointer {
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 26px;
+  color: #fff;
+  text-shadow: 0 0 6px rgba(0,0,0,0.8);
+  z-index: 2;
+}
+
+.roulette-wheel {
+  position: relative;
+  box-sizing: border-box;
+  width: 220px;
+  height: 220px;
+  /* The global `* { border-radius: 0 !important }` blocky/NES reset would otherwise
+     square off this wheel — a roulette is deliberately the one exception. */
+  border-radius: 50% !important;
+  border: 4px solid rgba(255,255,255,0.25);
+  box-shadow: 0 0 30px rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: rotate(0deg);
+}
+
+/* Thin radial ticks so it reads as a segmented roulette wheel, not a flat 2-tone pie */
+.roulette-wheel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50% !important;
+  background: repeating-conic-gradient(rgba(255,255,255,0.18) 0deg 1deg, transparent 1deg 30deg);
+  pointer-events: none;
+}
+
+.roulette-center {
+  width: 74px;
+  height: 74px;
+  border-radius: 50% !important;
+  background: #0a0f18;
+  border: 2px solid rgba(255,255,255,0.3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 13px;
+  color: #fff;
+  text-align: center;
+  line-height: 1.6;
+}
+
+.roulette-status {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 13px;
+  color: #94a3b8;
+  min-height: 18px;
 }
 
 .scoreboard {
@@ -3383,6 +3586,215 @@ body.workspace-active .main-container {
   100% { opacity: 0; transform: translate(-50%, -50%) translate(var(--px, 0px), var(--py, 0px)) scale(0.3); }
 }
 
+/* ══════════════════════════════════════════════════════════════
+   CAREER MODE — persistent panel, choice cards, event wheel.
+   Uses --career-accent (see :root) instead of hardcoded pink, and
+   reuses cardPopIn/pack-particle-burst from the sections above so
+   Career shares the same reveal/burst language as Train and the
+   pack-opening screen instead of inventing its own.
+   ══════════════════════════════════════════════════════════════ */
+
+.career-panel {
+  max-width: 280px;
+  margin: 0 auto;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid var(--career-accent-glow);
+  border-radius: 12px;
+  padding: 14px;
+}
+.career-panel__ovr {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+.career-panel__ovr-value {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 26px;
+  color: var(--career-accent);
+}
+.career-panel__ovr.is-breakout .career-panel__ovr-value {
+  animation: gold-glow-pulse 1.8s ease-in-out infinite;
+}
+.career-panel__name {
+  font-size: 10px;
+  color: #9ca3af;
+  text-align: center;
+  margin-bottom: 10px;
+}
+.career-panel__meta-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 9.5px;
+  color: #e4e4e7;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 6px 0;
+  margin-bottom: 8px;
+}
+.career-panel__contract-row {
+  font-size: 9px;
+  color: #9ca3af;
+  text-align: center;
+  margin-bottom: 8px;
+}
+.career-panel__totals-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 2px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  padding: 6px 2px;
+  margin-bottom: 10px;
+}
+.career-panel__totals-grid .label {
+  font-size: 7px;
+  color: #6b7280;
+}
+.career-panel__totals-grid .value {
+  font-size: 10.5px;
+  color: #fff;
+  font-weight: bold;
+}
+.career-panel__reputation-row {
+  margin-bottom: 8px;
+}
+.career-panel__reputation-track {
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+.career-panel__reputation-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.4s ease-out;
+}
+.career-panel__rating-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 10.5px;
+  color: #e4e4e7;
+}
+.career-panel__rating-row .delta { color: #6b7280; }
+.career-panel__rating-row.is-up .delta { color: #10b981; }
+.career-panel__rating-row.is-down .delta { color: #ef4444; }
+
+/* Choice/decision cards — same structural family as .training-card-offer
+   (tier badge, big icon, footer button, cardPopIn stagger), tier COLORS
+   are read from ui.js's TRAINING_TIER_CONFIG.tiers at render time so both
+   systems always look identical, not just similar. */
+.career-choice-card {
+  background: #090d16;
+  border-radius: 14px;
+  padding: 18px;
+  width: 100%;
+  max-width: 290px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: cardPopIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+}
+.career-choice-card:hover {
+  transform: translateY(-4px);
+}
+.career-stakes-badge {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7px;
+  padding: 3px 7px;
+  border-radius: 4px;
+  display: inline-block;
+  border: 1px solid currentColor;
+}
+
+/* Circular event wheel — size/prominence scales with the triggering
+   event's stakes tier (see CAREER_STAKES in career.js) so a routine
+   situational spin visibly reads as smaller/calmer than the season-moment
+   or World Series spin. */
+.career-wheel {
+  position: relative;
+  border-radius: 50% !important; /* Circular nodes overriding universal border-radius */
+  margin: 0 auto;
+  border: 3px solid var(--career-accent);
+  transition: box-shadow 0.3s ease;
+}
+.career-wheel--routine {
+  width: 160px;
+  height: 160px;
+  border-width: 3px;
+}
+.career-wheel--major {
+  width: 220px;
+  height: 220px;
+  border-width: 4px;
+  box-shadow: 0 0 20px var(--career-accent-glow);
+  animation: career-wheel-idle-pulse 2.4s ease-in-out infinite;
+}
+.career-wheel--critical {
+  width: 260px;
+  height: 260px;
+  border-width: 5px;
+  box-shadow: 0 0 32px var(--career-accent-glow), 0 0 60px rgba(245, 158, 11, 0.25);
+  animation: career-wheel-idle-pulse 1.8s ease-in-out infinite;
+}
+@keyframes career-wheel-idle-pulse {
+  0%, 100% { box-shadow: 0 0 20px var(--career-accent-glow); }
+  50% { box-shadow: 0 0 34px var(--career-accent-glow), 0 0 10px rgba(255,255,255,0.15); }
+}
+.career-wheel-pointer {
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-top: 16px solid #fff;
+  z-index: 2;
+  filter: drop-shadow(0 0 4px var(--career-accent-glow));
+}
+.career-wheel-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+  margin-top: 12px;
+}
+.career-wheel-legend__item {
+  font-size: 9px;
+  padding: 3px 8px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #9ca3af;
+  transition: all 0.2s ease;
+}
+.career-wheel-legend__item--active {
+  color: #fff;
+  border-color: currentColor;
+  transform: scale(1.08);
+  font-weight: bold;
+}
+.career-wheel-particle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  border-radius: 50% !important; /* Circular nodes overriding universal border-radius */
+  opacity: 0;
+  animation: pack-particle-burst 0.6s ease-out forwards;
+  pointer-events: none;
+  z-index: 3;
+}
+
 /* ── FIRST-RUN TUTORIAL: anchored callout bubble ──────────────────────────
    Positioned via JS (top/left set from the anchor element's bounding rect),
    this block only owns visual styling + the directional arrow. ── */
@@ -4251,9 +4663,30 @@ body.workspace-active .main-container {
 /* ── GAME MODE SELECTOR (POKELIKE STYLE) ────────────────────────────────── */
 .mode-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 20px;
   margin-top: 10px;
+}
+
+.career-card {
+  border-color: rgba(236, 72, 153, 0.4);
+  box-shadow: 0 0 20px rgba(236, 72, 153, 0.1);
+}
+
+.difficulty-option {
+  background: rgba(0, 0, 0, 0.4);
+  border: 2px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  padding: 14px 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.difficulty-option:hover {
+  transform: translateY(-2px);
+  border-color: #ec4899;
+  box-shadow: 0 4px 16px rgba(236, 72, 153, 0.25);
 }
 
 .mode-card {

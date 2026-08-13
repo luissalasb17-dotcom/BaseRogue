@@ -32,6 +32,7 @@
             G.activeItemBonuses.teamCon -= 5;
           },
           get failMsg() { return typeof window.t==='function'?window.t('ev.cork.fail'):'¡EL UMPIRE DESCUBRIÓ LOS BATES! La liga confisca los bates y te impone una multa de -$10.'; },
+          failPreview: "-$10 Presupuesto",
           failAction: (G) => {
             G.budget = Math.max(0, G.budget - 10);
           }
@@ -66,14 +67,16 @@
         {
           icon: "⚡",
           risk: "moderate",
-          get text() { return typeof window.t==='function'?window.t('ev.signs.choice2'):'Robo de Señas Callejero (+20 EYE)'; },
+          text: "Robo de Señas Callejero (+30 EYE, +10 CON)",
           cost: 8,
           successChance: 0.65,
-          get successMsg() { return typeof window.t==='function'?window.t('ev.signs.suc'):'¡Señas interceptadas! Tu equipo obtiene +20 EYE (Disciplina).'; },
+          get successMsg() { return typeof window.t==='function'?window.t('ev.signs.suc'):'¡Señas interceptadas! Tu equipo obtiene +30 EYE y +10 CON.'; },
           action: (G) => {
-            G.activeItemBonuses.teamEye += 20;
+            G.activeItemBonuses.teamEye += 30;
+            G.activeItemBonuses.teamCon += 10;
           },
           get failMsg() { return typeof window.t==='function'?window.t('ev.signs.fail'):'¡Descubiertos en cámara! El comisionado sanciona al equipo con -$15 Presupuesto.'; },
+          failPreview: "-$15 Presupuesto",
           failAction: (G) => {
             G.budget = Math.max(0, G.budget - 15);
           }
@@ -119,6 +122,7 @@
             });
           },
           get failMsg() { return typeof window.t==='function'?window.t('ev.fitness.fail'):'¡Sobrecarga muscular masiva! El equipo se agota y pierde -15 Stamina.'; },
+          failPreview: "-15 Stamina a todos",
           failAction: (G) => {
             Object.keys(G.roster).forEach(pos => {
               if (G.roster[pos]) G.roster[pos].stamina = Math.max(10, G.roster[pos].stamina - 15);
@@ -142,6 +146,17 @@
       get desc() { return typeof window.t==='function'?window.t('ev.hyp.desc'):'Un psicólogo deportivo ofrece reprogramar la concentración mental de tus bateadores.'; },
       choices: [
         {
+          icon: "🧘",
+          risk: "safe",
+          text: "Sesión Guiada Estándar (+8 EYE, +5 CON)",
+          cost: 18,
+          successChance: 1.0,
+          action: (G) => {
+            G.activeItemBonuses.teamEye += 8;
+            G.activeItemBonuses.teamCon += 5;
+          }
+        },
+        {
           icon: "🎯",
           risk: "moderate",
           get text() { return typeof window.t==='function'?window.t('ev.hyp.choice1'):'Sesión de Trance Profundo (+14 EYE, +10 CON)'; },
@@ -153,6 +168,7 @@
             G.activeItemBonuses.teamCon += 10;
           },
           get failMsg() { return typeof window.t==='function'?window.t('ev.hyp.fail'):'¡Desorientación hipnótica! Los bateadores dudan en el conteo (-8 EYE).'; },
+          failPreview: "-8 EYE",
           failAction: (G) => {
             G.activeItemBonuses.teamEye -= 8;
           }
@@ -194,6 +210,7 @@
             G.activeItemBonuses.teamPwr += 28;
           },
           get failMsg() { return typeof window.t==='function'?window.t('ev.graphene.fail'):'¡El bate se astilló en pedazos! Pierdes la inversión y restas -5 PWR.'; },
+          failPreview: "-5 PWR",
           failAction: (G) => {
             G.activeItemBonuses.teamPwr -= 5;
           }
@@ -217,12 +234,13 @@
         {
           icon: "💰",
           risk: "moderate",
-          text: "Vender Exclusiva (+$35 Presupuesto)",
-          cost: -35,
-          successChance: 0.70,
-          get successMsg() { return typeof window.t==='function'?window.t('ev.tabloid.suc'):'¡Entrevista vendida con éxito! Recibes +$35 de presupuesto.'; },
-          action: (G) => {},
-          get failMsg() { return typeof window.t==='function'?window.t('ev.tabloid.fail'):'¡El artículo desató polémica! La presión mediática causa estrés (-15 Stamina).'; },
+          text: "Vender Exclusiva (+$45 Presupuesto)",
+          cost: 0,
+          successChance: 0.65,
+          get successMsg() { return typeof window.t==='function'?window.t('ev.tabloid.suc'):'¡Entrevista vendida con éxito! Recibes +$45 de presupuesto.'; },
+          action: (G) => { G.budget += 45; },
+          get failMsg() { return typeof window.t==='function'?window.t('ev.tabloid.fail'):'¡El artículo desató polémica y no se vendió! La presión mediática causa estrés (-15 Stamina), sin presupuesto a cambio.'; },
+          failPreview: "-15 Stamina a todos, sin presupuesto",
           failAction: (G) => {
             Object.keys(G.roster).forEach(pos => {
               if (G.roster[pos]) G.roster[pos].stamina = Math.max(10, G.roster[pos].stamina - 15);
@@ -254,26 +272,34 @@
       get desc() { return typeof window.t==='function'?window.t('ev.cryo.desc'):'Instalas una cámara de criogenización para rejuvenecer a tus bateadores.'; },
       choices: [
         {
-          icon: "🧪",
-          risk: "safe",
-          get text() { return typeof window.t==='function'?window.t('ev.cryo.choice1'):'Criogenización Completa (100% Stamina a todos)'; },
-          cost: 28,
-          successChance: 1.0,
-          action: (G) => {
-            Object.keys(G.roster).forEach(pos => {
-              if (G.roster[pos]) G.roster[pos].stamina = 100;
-            });
-          }
-        },
-        {
           icon: "🧊",
           risk: "safe",
           get text() { return typeof window.t==='function'?window.t('ev.cryo.choice2'):'Bañera de Hielo Rápida (+40 Stamina a todos)'; },
-          cost: 12,
+          cost: 18,
           successChance: 1.0,
           action: (G) => {
             Object.keys(G.roster).forEach(pos => {
               if (G.roster[pos]) G.roster[pos].stamina = Math.min(100, G.roster[pos].stamina + 40);
+            });
+          }
+        },
+        {
+          icon: "🧪",
+          risk: "high",
+          get text() { return typeof window.t==='function'?window.t('ev.cryo.choice1'):'Criogenización Experimental (100% Stamina a todos)'; },
+          cost: 8,
+          successChance: 0.55,
+          successMsg: "¡Sesión perfecta! Toda la plantilla recupera el 100% de Stamina.",
+          action: (G) => {
+            Object.keys(G.roster).forEach(pos => {
+              if (G.roster[pos]) G.roster[pos].stamina = 100;
+            });
+          },
+          failMsg: "¡Choque térmico! La cámara falla y el frío extremo agota a la plantilla (-20 Stamina).",
+          failPreview: "-20 Stamina a todos",
+          failAction: (G) => {
+            Object.keys(G.roster).forEach(pos => {
+              if (G.roster[pos]) G.roster[pos].stamina = Math.max(10, G.roster[pos].stamina - 20);
             });
           }
         },
@@ -314,6 +340,7 @@
             G.activeItemBonuses.teamCon += 18;
           },
           get failMsg() { return typeof window.t==='function'?window.t('ev.pinetar.fail'):'¡El umpire nota el residuo ilícito! Te sanciona restando -10 Defensa.'; },
+          failPreview: "-10 DEF",
           failAction: (G) => {
             G.activeItemBonuses.teamDef -= 10;
           }
@@ -335,16 +362,6 @@
       desc: "Un cazatalentos te ofrece presupuesto del equipo rival a cambio de canjear un poco de enfoque deportivo.",
       choices: [
         {
-          icon: "💵",
-          risk: "moderate",
-          text: "Aceptar Dinero (+$45 Presupuesto, -5 EYE)",
-          cost: -45,
-          successChance: 1.0,
-          action: (G) => {
-            G.activeItemBonuses.teamEye -= 5;
-          }
-        },
-        {
           icon: "⚖️",
           risk: "safe",
           text: "Denunciarlo al Comisionado (+10 EYE, +5 DEF)",
@@ -353,6 +370,24 @@
           action: (G) => {
             G.activeItemBonuses.teamEye += 10;
             G.activeItemBonuses.teamDef += 5;
+          }
+        },
+        {
+          icon: "💵",
+          risk: "high",
+          text: "Trato Bajo la Mesa (+$60 Presupuesto, -5 EYE)",
+          cost: 0,
+          successChance: 0.60,
+          successMsg: "¡Trato cerrado sin que nadie se entere! +$60 de presupuesto (-5 EYE por la mala conciencia).",
+          action: (G) => {
+            G.budget += 60;
+            G.activeItemBonuses.teamEye -= 5;
+          },
+          failMsg: "¡Te descubrieron! La liga te multa -$20 y el escándalo distrae a tu alineación (-10 EYE).",
+          failPreview: "-$20 Presupuesto, -10 EYE",
+          failAction: (G) => {
+            G.budget = Math.max(0, G.budget - 20);
+            G.activeItemBonuses.teamEye -= 10;
           }
         },
         {
@@ -392,6 +427,7 @@
             G.activeItemBonuses.teamSpd += 25;
           },
           get failMsg() { return typeof window.t==='function'?window.t('ev.spikes.fail'):'¡Mala tracción! Los clavos resbalan y causan torceduras (-10 Stamina a todos).'; },
+          failPreview: "-10 Stamina a todos",
           failAction: (G) => {
             Object.keys(G.roster).forEach(pos => {
               if (G.roster[pos]) G.roster[pos].stamina = Math.max(10, G.roster[pos].stamina - 10);
@@ -425,6 +461,22 @@
           }
         },
         {
+          icon: "🥊",
+          risk: "high",
+          text: "Guante de Prototipo No Certificado (+28 DEF)",
+          cost: 6,
+          successChance: 0.55,
+          successMsg: "¡Ajuste perfecto! El prototipo funciona de maravilla: +28 DEF.",
+          action: (G) => {
+            G.activeItemBonuses.teamDef += 28;
+          },
+          failMsg: "¡El cuero se raja en pleno partido! Pierdes agarre: -8 DEF.",
+          failPreview: "-8 DEF",
+          failAction: (G) => {
+            G.activeItemBonuses.teamDef -= 8;
+          }
+        },
+        {
           icon: "🚪",
           risk: "safe",
           text: "Rechazar",
@@ -436,7 +488,175 @@
     }
   ];
 
-  function pickWeightedUnique(pool, count, weakPositionsSet) {
+  // Shared composite rating used to find the "worst"/"best" roster player for gambles.
+  const _gambleOvr = (p) => {
+    if (!p) return -Infinity;
+    const con = (p.con || 0) + ((p.upgrades && p.upgrades.con) || 0);
+    const pwr = (p.pwr || 0) + ((p.upgrades && p.upgrades.pwr) || 0);
+    const spd = (p.spd || 0) + ((p.upgrades && p.upgrades.spd) || 0);
+    const def = (p.def || 0) + ((p.upgrades && p.upgrades.def) || 0);
+    const eye = (p.eye || 0) + ((p.upgrades && p.upgrades.eye) || 0);
+    return con * 0.35 + pwr * 0.30 + spd * 0.10 + def * 0.15 + eye * 0.10;
+  };
+  const _gambleRarityOrder = ['Common', 'Uncommon', 'Rare', 'Epic', 'Legendary'];
+
+  const _playsPosition = (p, pos) => {
+    if (p.pos === pos) return true;
+    if (!p.sec_pos) return false;
+    return p.sec_pos.split(',').map(s => s.trim()).includes(pos);
+  };
+
+  // Picks a random player who can actually play `pos`. Tries `preferredRarities`
+  // first; if none of those exist at that position, widens to any rarity —
+  // but NEVER drops the position requirement (a Catcher slot must get a Catcher).
+  const _pickGambleCandidate = (pool, pos, preferredRarities) => {
+    let candidates = pool.filter(p => _playsPosition(p, pos) && preferredRarities.includes(p.rarity));
+    if (!candidates.length) candidates = pool.filter(p => _playsPosition(p, pos));
+    if (!candidates.length) return null;
+    return candidates[Math.floor(Math.random() * candidates.length)];
+  };
+
+  // ── HIGH-STAKES GAMBLE NODES ("apuesta de alto riesgo") ──────────────────
+  // Unlike ManagerEventsList (modest, always-safe-option stat tweaks), these are
+  // single all-or-nothing bets: one dice roll, no safe middle choice besides declining.
+  const HighStakesGamblesList = [
+    {
+      id: 'gamble_all_in_budget',
+      icon: '💰',
+      get title() { return typeof window.t==='function'?window.t('gamble.budget.title'):'Todo o Nada'; },
+      get desc() { return typeof window.t==='function'?window.t('gamble.budget.desc'):'Apostás TODO tu presupuesto actual a un tiro de dado. Si ganás, se duplica. Si perdés, lo perdés todo.'; },
+      chance: 0.50,
+      resolve(G) {
+        const staked = G.budget || 0;
+        const success = Math.random() <= this.chance;
+        G.budget = success ? staked * 2 : 0;
+        return {
+          success,
+          resultText: success
+            ? `¡Duplicaste tu apuesta! Presupuesto: $${staked} → $${G.budget}.`
+            : `Perdiste los $${staked} apostados. Presupuesto: $0.`
+        };
+      }
+    },
+    {
+      id: 'gamble_blind_trade',
+      icon: '🔄',
+      get title() { return typeof window.t==='function'?window.t('gamble.trade.title'):'Intercambio a Ciegas'; },
+      get desc() { return typeof window.t==='function'?window.t('gamble.trade.desc'):'Cambiás a tu jugador titular más débil por una oferta a ciegas. Si ganás, el reemplazo es de rareza SUPERIOR garantizada. Si perdés, el reemplazo es Common y esa posición queda bloqueada para draft por 2 nodos.'; },
+      chance: 0.50,
+      resolve(G) {
+        const pool = (window.PlayersDB && window.PlayersDB.LAHMAN_POOL) ? window.PlayersDB.LAHMAN_POOL : [];
+        let worstPos = null, worstOvr = Infinity;
+        Object.keys(G.roster).forEach(pos => {
+          const p = G.roster[pos];
+          const ovr = p ? _gambleOvr(p) : -Infinity;
+          if (ovr < worstOvr) { worstOvr = ovr; worstPos = pos; }
+        });
+        if (!worstPos) return { success: false, resultText: 'No hay roster titular para intercambiar.' };
+
+        const current = G.roster[worstPos];
+        const currentRarityIdx = current ? _gambleRarityOrder.indexOf(current.rarity || 'Common') : -1;
+        const success = Math.random() <= this.chance;
+
+        const pick = success
+          ? _pickGambleCandidate(pool, worstPos, _gambleRarityOrder.slice(Math.max(currentRarityIdx + 1, 0)))
+          : _pickGambleCandidate(pool, worstPos, ['Common']);
+        if (!pick) return { success, resultText: `No se encontró ningún jugador de ${worstPos} disponible.` };
+
+        const newInstance = {
+          ...pick,
+          id: `player_${pick.name.replace(/\s+/g, '')}_${Date.now()}_trade`,
+          stamina: 100,
+          upgrades: { con: 0, pwr: 0, eye: 0, spd: 0, def: 0, sta: 0 }
+        };
+        G.roster[worstPos] = newInstance;
+
+        if (!success) {
+          G.positionLocks = G.positionLocks || {};
+          G.positionLocks[worstPos] = 2;
+        }
+
+        return {
+          success,
+          resultText: success
+            ? `¡Buena oferta! ${current ? current.name : '(vacío)'} → ${newInstance.name} (${newInstance.rarity}) en ${worstPos}.`
+            : `Mal negocio: ${newInstance.name} (Common) reemplaza a ${current ? current.name : '(vacío)'} en ${worstPos}. Posición bloqueada 2 nodos.`
+        };
+      }
+    },
+    {
+      id: 'gamble_forbidden_synergy',
+      icon: '🧬',
+      requiresTargetPlayer: true,
+      get title() { return typeof window.t==='function'?window.t('gamble.synergy.title'):'Sinergia Prohibida'; },
+      get desc() { return typeof window.t==='function'?window.t('gamble.synergy.desc'):'Elegí un jugador de tu roster: si ganás, cuenta x4 para la sinergia de su Era. Si perdés, 2 jugadores al azar de tu roster pierden la elegibilidad de Era por el resto de la run.'; },
+      chance: 0.50,
+      resolve(G, targetPos) {
+        const target = G.roster[targetPos];
+        if (!target || !target.era) return { success: false, resultText: 'Elegí un jugador con Era válida.' };
+        const success = Math.random() <= this.chance;
+        if (success) {
+          target.synergyWeight = 4;
+          return { success, resultText: `${target.name} ahora cuenta x4 para la sinergia de ${target.era}.` };
+        }
+        const candidates = Object.keys(G.roster).filter(pos => pos !== targetPos && G.roster[pos] && G.roster[pos].era && !G.roster[pos].synergyBanned);
+        const shuffled = candidates.sort(() => Math.random() - 0.5).slice(0, 2);
+        const names = shuffled.map(pos => { G.roster[pos].synergyBanned = true; return G.roster[pos].name; });
+        return {
+          success,
+          resultText: names.length
+            ? `¡Falló! ${names.join(' y ')} pierden elegibilidad de Era por el resto de la run.`
+            : 'Falló, pero no había otros jugadores elegibles para penalizar.'
+        };
+      }
+    },
+    {
+      id: 'gamble_scout',
+      icon: '🕵️',
+      get title() { return typeof window.t==='function'?window.t('gamble.scout.title'):'Cazatalentos Misterioso'; },
+      get desc() { return typeof window.t==='function'?window.t('gamble.scout.desc'):'Un cazatalentos ofrece una carta Legendary para tu posición más débil. Si ganás, la firmás gratis. Si perdés, tu mejor jugador se lesiona: -20 en todas sus stats por el resto de la run.'; },
+      chance: 0.50,
+      resolve(G) {
+        const pool = (window.PlayersDB && window.PlayersDB.LAHMAN_POOL) ? window.PlayersDB.LAHMAN_POOL : [];
+        const success = Math.random() <= this.chance;
+
+        if (success) {
+          let worstPos = null, worstOvr = Infinity;
+          Object.keys(G.roster).forEach(pos => {
+            const p = G.roster[pos];
+            const ovr = p ? _gambleOvr(p) : -Infinity;
+            if (ovr < worstOvr) { worstOvr = ovr; worstPos = pos; }
+          });
+          if (!worstPos) return { success, resultText: 'No hay roster titular disponible.' };
+          const pick = _pickGambleCandidate(pool, worstPos, ['Legendary']);
+          if (!pick) return { success, resultText: `No se encontró ningún jugador de ${worstPos} disponible.` };
+          const newInstance = {
+            ...pick,
+            id: `player_${pick.name.replace(/\s+/g, '')}_${Date.now()}_scout`,
+            stamina: 100,
+            upgrades: { con: 0, pwr: 0, eye: 0, spd: 0, def: 0, sta: 0 }
+          };
+          const oldName = G.roster[worstPos] ? G.roster[worstPos].name : '(vacío)';
+          G.roster[worstPos] = newInstance;
+          return { success, resultText: `¡Fichaje legendario! ${newInstance.name} reemplaza a ${oldName} en ${worstPos}.` };
+        }
+
+        let bestPos = null, bestOvr = -Infinity;
+        Object.keys(G.roster).forEach(pos => {
+          const p = G.roster[pos];
+          if (!p) return;
+          const ovr = _gambleOvr(p);
+          if (ovr > bestOvr) { bestOvr = ovr; bestPos = pos; }
+        });
+        if (!bestPos) return { success, resultText: 'No había jugador titular para lesionar.' };
+        const p = G.roster[bestPos];
+        ['con', 'pwr', 'eye', 'spd', 'def'].forEach(k => { p.upgrades[k] = (p.upgrades[k] || 0) - 20; });
+        return { success, resultText: `${p.name} se lesiona: -20 en todas sus stats por el resto de la run.` };
+      }
+    }
+  ];
+
+  function pickWeightedUnique(pool, count, weakPositionsSet, rarityBoost = false) {
     const selected = [];
     const poolCopy = [...pool];
 
@@ -445,7 +665,9 @@
       const weights = poolCopy.map(p => {
         const pos = p.pos || p.pos_display || p.primary_pos || '';
         const isWeak = weakPositionsSet && weakPositionsSet.has(pos);
-        const w = isWeak ? 3.0 : 1.0;
+        let w = isWeak ? 3.0 : 1.0;
+        // scout_eye: increases the odds of Epic/Legendary showing up in draft offers
+        if (rarityBoost && (p.rarity === 'Epic' || p.rarity === 'Legendary')) w *= 2.5;
         totalWeight += w;
         return w;
       });
@@ -601,6 +823,10 @@
         LF: null, CF: null, RF: null, DH: null
       };
 
+      // positionLocks: pos → node-completions remaining before it can be
+      // drafted into again. Set by a failed "Intercambio a Ciegas" gamble.
+      this.positionLocks = {};
+
       // Era of Build: the single era the player actively commits their run to.
       // Only this era's synergy scales past T1 (2+ players) — see setBuildEra().
       this.buildEra = null;
@@ -667,7 +893,9 @@
     getEraTier(era, count) {
       if (count < 2) return 0;
       if (era === this.buildEra) {
-        return count >= 8 ? 4 : count >= 6 ? 3 : count >= 4 ? 2 : 1;
+        // era_accelerated: only 2 players needed for T2 (instead of 4)
+        const t2Threshold = this.hasTrait('era_accelerated') ? 2 : 4;
+        return count >= 8 ? 4 : count >= 6 ? 3 : count >= t2Threshold ? 2 : 1;
       }
       return 1;
     }
@@ -1144,7 +1372,9 @@
         total += eff.def;
       });
       const avgDef = total / defSlots.length;
-      return Math.round(Math.max(0, Math.min(50, avgDef / 2)));
+      // iron_shield: Shield absorbs 75% of avg DEF instead of 50%
+      const shieldPct = this.hasTrait('iron_shield') ? 0.75 : 0.5;
+      return Math.round(Math.max(0, Math.min(50, avgDef * shieldPct)));
     }
 
     calculateDraftShield() {
@@ -1157,7 +1387,8 @@
         total += eff.def;
       });
       const avgDef = total / defSlots.length;
-      return Math.round(Math.max(0, Math.min(50, avgDef / 2)));
+      const shieldPct = this.hasTrait('iron_shield') ? 0.75 : 0.5;
+      return Math.round(Math.max(0, Math.min(50, avgDef * shieldPct)));
     }
 
     // ── ZONE CONFIG ──────────────────────────────────────────────────────────
@@ -1237,12 +1468,14 @@
               type = 'match';
             } else {
               const roll = Math.random();
-              // 30% match (mini battle), 25% draft, 25% event, 10% train, 10% rest
+              // 30% match, 15% draft, 15% event, 15% train, 15% rest, 5% chest, 5% gamble
               if (roll < 0.30)      type = 'match';
-              else if (roll < 0.55) type = 'draft';
-              else if (roll < 0.80) type = 'event';
-              else if (roll < 0.90) type = 'train';
-              else                  type = 'rest';
+              else if (roll < 0.45) type = 'draft';
+              else if (roll < 0.60) type = 'event';
+              else if (roll < 0.75) type = 'train';
+              else if (roll < 0.90) type = 'rest';
+              else if (roll < 0.95) type = 'chest';
+              else                  type = 'gamble';
             }
           }
 
@@ -1262,6 +1495,10 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
             label = 'CASA CLUB';
           } else if (type === 'draft') {
             label = 'FIRMA LEYENDA';
+          } else if (type === 'chest') {
+            label = 'COFRE';
+          } else if (type === 'gamble') {
+            label = 'APUESTA';
           }
 
           stageNodes.push({
@@ -1365,11 +1602,15 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
       if (slotPosition && slotPosition !== 'DH' && player.pos !== slotPosition) {
         const secPosArray = player.sec_pos ? player.sec_pos.split(',').map(s => s.trim()) : [];
         if (secPosArray.includes(slotPosition)) {
-          def = Math.round(def * 0.85); // Secondary position: 85% defensive value
+          // secondary_master: removes the -15% penalty at a Secondary position entirely
+          def = this.hasTrait('secondary_master') ? def : Math.round(def * 0.85);
         } else {
           def = Math.round(def * 0.50); // Out of position: 50% defensive value
         }
       }
+
+      // golden_glove: every batter gets +10 DEF
+      if (this.hasTrait('golden_glove')) def += 10;
 
       // Manager Decision/Item Bonuses
       con += this.activeItemBonuses.teamCon;
@@ -1410,6 +1651,14 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
       });
       if (hasCaptainTeammate) {
         con += 5; pwr += 5; eye += 5; spd += 5; def += 5;
+      }
+
+      // legendary_domination: if 2+ Legendary players are in the starting lineup, everyone gets +10 to all stats
+      if (this.hasTrait('legendary_domination')) {
+        const legendaryCount = Object.values(contextRoster).filter(p => p && !p.isReplacement && p.rarity === 'Legendary').length;
+        if (legendaryCount >= 2) {
+          con += 10; pwr += 10; eye += 10; spd += 10; def += 10;
+        }
       }
 
       return {
@@ -1590,6 +1839,10 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
 
       const weakPositionsSet = this.getWeakestRosterPositions();
 
+      // scout_eye: draft offers show 4 cards instead of 3, with better Epic/Legendary odds
+      const hasScoutEye = this.hasTrait('scout_eye');
+      const offerCount = hasScoutEye ? 4 : 3;
+
       // Story Mode: same 80/20 activity-based split as getDraftRoundPicks /
       // getPostMatchDraftPicks — Sign Legend nodes were pulling from the raw
       // global pool with no year-awareness or Time Traveler flag.
@@ -1600,10 +1853,10 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
         const isActive = p => p.debut_year !== undefined && p.last_year !== undefined && p.debut_year <= year && p.last_year >= year;
         let activePool = filtered.filter(isActive);
         let fullPool = [...filtered];
-        while (selectedPicks.length < 3 && (fullPool.length > 0 || activePool.length > 0)) {
+        while (selectedPicks.length < offerCount && (fullPool.length > 0 || activePool.length > 0)) {
           const useActive = activePool.length > 0 && Math.random() < 0.8;
           const source = useActive ? activePool : (fullPool.length > 0 ? fullPool : activePool);
-          const picked = pickWeightedUnique(source, 1, weakPositionsSet);
+          const picked = pickWeightedUnique(source, 1, weakPositionsSet, hasScoutEye);
           if (!picked.length) break;
           let chosen = picked[0];
           activePool = activePool.filter(x => x.name !== chosen.name);
@@ -1612,13 +1865,13 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
           selectedPicks.push(chosen);
         }
       } else {
-        selectedPicks = pickWeightedUnique(filtered, 3, weakPositionsSet);
+        selectedPicks = pickWeightedUnique(filtered, offerCount, weakPositionsSet, hasScoutEye);
       }
 
       // Fallback
-      if (selectedPicks.length < 3) {
+      if (selectedPicks.length < offerCount) {
         const fallback = pool.filter(p => !onRosterNames.has(p.name) && !selectedPicks.some(x => x.name === p.name));
-        const extraPicks = pickWeightedUnique(fallback, 3 - selectedPicks.length, weakPositionsSet);
+        const extraPicks = pickWeightedUnique(fallback, offerCount - selectedPicks.length, weakPositionsSet, hasScoutEye);
         selectedPicks.push(...extraPicks);
       }
       return selectedPicks;
@@ -1685,12 +1938,14 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
       };
 
       const nativePos = playerInstance.pos;
-      if (this.roster[nativePos] && this.roster[nativePos].isReplacement) {
+      const nativeLocked = this.positionLocks && (this.positionLocks[nativePos] || 0) > 0;
+      if (!nativeLocked && this.roster[nativePos] && this.roster[nativePos].isReplacement) {
         this.roster[nativePos] = playerInstance;
         return { success: true, message: `¡${playerInstance.name} colocado directamente en ${nativePos}!` };
       }
 
-      if (nativePos !== 'DH' && this.roster.DH && this.roster.DH.isReplacement) {
+      const dhLocked = this.positionLocks && (this.positionLocks.DH || 0) > 0;
+      if (!dhLocked && nativePos !== 'DH' && this.roster.DH && this.roster.DH.isReplacement) {
         this.roster.DH = playerInstance;
         return { success: true, message: `¡${playerInstance.name} colocado como DH!` };
       }
@@ -1701,7 +1956,8 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
 
     replaceRosterPlayer(slot, newPlayerData) {
       if (!this.roster[slot]) return false;
-      
+      if (this.positionLocks && (this.positionLocks[slot] || 0) > 0) return false;
+
       const playerInstance = {
         ...newPlayerData,
         id: `player_${newPlayerData.name.replace(/\s+/g, '')}_${Date.now()}`,
@@ -1909,7 +2165,10 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
       const createPitcherObj = (p, roleOverride = null) => {
         const role = roleOverride || p.role || 'SP';
         const staVal = p.sta !== undefined ? p.sta : (p.sta_val !== undefined ? p.sta_val : 50);
-        const hp = (role === 'SP') ? Math.round(45 + (staVal / 99) * 75) : Math.round(25 + (staVal / 99) * 20);
+        // Anchored on the real sta range across both pools (20-110): SP 60-160 HP, RP/CL 45-80 HP.
+        const hp = (role === 'SP')
+          ? Math.round(60 + (staVal - 20) * (10 / 9))
+          : Math.round(45 + (staVal - 20) * (7 / 18));
         const yearVal = p.year || p.peak_year_display || p.peak_year || 1990;
         const nameVal = yearVal ? `${p.name} (${yearVal})` : p.name;
         return {
@@ -2261,6 +2520,17 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
     getRandomEvent() {
       const idx = Math.floor(Math.random() * ManagerEventsList.length);
       return ManagerEventsList[idx];
+    }
+
+    getRandomGamble() {
+      const idx = Math.floor(Math.random() * HighStakesGamblesList.length);
+      return HighStakesGamblesList[idx];
+    }
+
+    resolveGamble(gambleId, targetPos) {
+      const gamble = HighStakesGamblesList.find(g => g.id === gambleId);
+      if (!gamble) return { success: false, resultText: 'Apuesta inválida.' };
+      return gamble.resolve(this, targetPos);
     }
   }
 

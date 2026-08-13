@@ -458,9 +458,15 @@ def paso_5_filtro_ingesta(career, peak, allstar, hof, pure_pitcher_ids, pitching
         df["allstar_selections"] = 0
     df["allstar_selections"] = df["allstar_selections"].fillna(0).astype(int)
 
-    # Marcar tipo de pitcher (SP = starter, RP = reliever)
+    # Marcar tipo de pitcher (SP = starter, RP = reliever).
+    # Igual que la posicion primaria de los bateadores (paso_6_posicion_bateadores en
+    # lahman_etl_v5.py), esto se calcula sobre las 7 temporadas PICO por WAR, no sobre
+    # la carrera completa — un pitcher que empezo como abridor y paso el resto de su
+    # carrera de relevista (ej. Andrew Miller) debe clasificar como RP si sus temporadas
+    # pico fueron de relevo, aunque haya superado el umbral absoluto de aperturas en años
+    # tempranos que no entraron en su pico.
     df["role"] = np.where(
-        (df["career_g"] > 0) & (df["career_gs"] / df["career_g"].replace(0, 1) >= 0.40) | (df["career_gs"] >= 50),
+        (df["peak_g"] > 0) & (df["peak_gs"] / df["peak_g"].replace(0, 1) >= 0.40) | (df["peak_gs"] >= 50),
         "SP", "RP"
     )
 

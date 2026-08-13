@@ -164,7 +164,7 @@ function startSeasonRouletteAnimation(selectedYear, onComplete) {
   if (rouletteContainer) rouletteContainer.classList.remove('hidden');
 
   if (boxEl) boxEl.classList.remove('winning-glow');
-  if (msgEl) msgEl.innerHTML = `<i class="fa-solid fa-dice-d20 fa-spin"></i> Seleccionando ano historico...`;
+  if (msgEl) msgEl.innerHTML = `<i class="fa-solid fa-dice-d20 fa-spin"></i> ${t('season_select.roulette_status', 'Seleccionando año histórico...')}`;
 
   const years = [];
   for (let y = 1901; y <= 2025; y++) years.push(y);
@@ -236,6 +236,7 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
     get mapContainer() { return document.getElementById('map-nodes-container'); },
     
     screenMatch: document.getElementById('screen-match'),
+    get matchArena() { return document.querySelector('.match-arena'); },
     matchHeaderTitle: document.getElementById('match-header-title'),
     scoreInningText: document.getElementById('scoreboard-inning-text'),
     scoreEnemyName: document.getElementById('score-enemy-name'),
@@ -1451,8 +1452,1443 @@ function initGameModeSelector() {
     }
   }
 
+  // ── CAREER MODE (Player) — MVP scaffold: difficulty -> rookie pack pick ->
+  // random debut year (reuses the Story Mode roulette modal) -> random team
+  // -> career hub. Season simulation itself is future work. ─────────────────
+  function hideAllTopLevelScreens() {
+    ['screen-mode-select', 'screen-menu', 'screen-career-pack', 'screen-career-draft-reveal', 'screen-career-hub', 'screen-career-season', 'screen-career-season-end', 'screen-career-offseason', 'screen-career-profile', 'screen-career-standings'].forEach(id => {
+      const s = document.getElementById(id);
+      if (s) s.classList.add('hidden');
+    });
+    const gameWorkspace = document.getElementById('game-workspace');
+    if (gameWorkspace) gameWorkspace.classList.add('hidden');
+    const hud = document.getElementById('game-hud');
+    if (hud) hud.classList.add('hidden');
+  }
+
+  function showCareerScreen(id) {
+    hideAllTopLevelScreens();
+    const target = document.getElementById(id);
+    if (target) target.classList.remove('hidden');
+    if (window.updateMobileNavVisibility) window.updateMobileNavVisibility();
+  }
+
+  function renderCareerRookiePack(difficulty) {
+    const container = document.getElementById('career-pack-container');
+    if (!container || !window.Career) return;
+    container.innerHTML = '';
+
+    const picks = window.Career.getRookiePicks(difficulty);
+    if (!picks.length) {
+      container.innerHTML = `<div style="color:#ef4444;font-size:12px;">${t('career.no_picks', 'No hay jugadores disponibles para esta dificultad.')}</div>`;
+      return;
+    }
+
+    // Same tap-to-open pack as the 9-round draft: themed by the difficulty's
+    // rarity floor, tears open with a particle burst, then hands off to the
+    // staggered card deal-in below.
+    const rarities = picks.map(p => p.rarity || 'Common');
+    let packTheme = 'random';
+    if (rarities.includes('Legendary') || rarities.includes('Epic')) packTheme = 'premium';
+    else if (rarities.every(r => r === 'Common')) packTheme = 'common';
+
+    const pack = document.createElement('div');
+    pack.className = `draft-pack draft-pack--${packTheme}`;
+    pack.innerHTML = `
+      <div class="draft-pack-crimp"></div>
+      <div class="draft-pack-badge">🏆</div>
+      <div class="draft-pack-brand">⚾ BASEROGUE</div>
+      <div class="draft-pack-tagline">${t('draft.pack_tagline_' + packTheme)}</div>
+      <div class="draft-pack-open-prompt">
+        <span class="draft-pack-tap-icon">👆</span>
+        <span class="draft-pack-open-text">${t('draft.pack_open_prompt')}</span>
+      </div>
+    `;
+    container.appendChild(pack);
+    if (window.AudioManager) window.AudioManager.play('menu_click');
+
+    pack.addEventListener('click', () => {
+      pack.classList.add('pack-tearing');
+      if (window.AudioManager) window.AudioManager.play('menu_click');
+      for (let i = 0; i < 7; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'pack-particle';
+        const angle = (Math.PI * 2 / 7) * i + (Math.random() - 0.5) * 0.4;
+        const dist = 40 + Math.random() * 30;
+        particle.style.setProperty('--px', `${Math.cos(angle) * dist}px`);
+        particle.style.setProperty('--py', `${Math.sin(angle) * dist - 20}px`);
+        particle.style.animationDelay = `${Math.random() * 60}ms`;
+        pack.appendChild(particle);
+      }
+      setTimeout(() => {
+        pack.remove();
+        renderCareerRookieCards(container, picks, difficulty);
+      }, 280);
+    }, { once: true });
+  }
+
+  function renderCareerRookieCards(container, picks, difficulty) {
+    picks.forEach((player, idx) => {
+      const rColor = RARITY_COLORS[player.rarity] || RARITY_COLORS.Common;
+      const rBg = RARITY_BG[player.rarity] || RARITY_BG.Common;
+      const ovr = getPlayerOvr(player);
+      const cardHTML = createCardHTML(player);
+
+      const wrapper = document.createElement('div');
+      wrapper.className = 'draft-card-wrapper w-full max-w-[280px] md:max-w-[190px] cursor-pointer rounded-xl border-2 transition-transform duration-150 flex flex-col items-center gap-1.5 p-2 box-border';
+      wrapper.style.borderColor = rColor;
+      wrapper.style.background = rBg;
+      wrapper.innerHTML = `
+        <div style="pointer-events:none;">${cardHTML}</div>
+        <div style="text-align:center;width:100%;">
+          <div style="font-size:10px;color:${rColor};font-weight:bold;">${player.rarity}</div>
+          <div style="font-size:9.5px;color:#9ca3af;text-align:center;margin-top:2px;">${player.pos || player.role} • OVR ${ovr} (potencial)</div>
+        </div>
+        <button class="btn" style="width:100%;padding:8px;font-size:10px;background:${rColor};color:#000;border:none;">${t('career.pick_btn', 'ELEGIR')}</button>
+      `;
+      wrapper.style.setProperty('--deal-from-y', '-90px');
+      wrapper.style.animationDelay = `${idx * 130}ms`;
+      wrapper.classList.add('card-deal-perspective', 'card-deal-in');
+
+      wrapper.addEventListener('mouseenter', () => {
+        wrapper.style.transform = 'translateY(-4px)';
+        wrapper.style.boxShadow = `0 8px 24px ${rColor}44`;
+      });
+      wrapper.addEventListener('mouseleave', () => {
+        wrapper.style.transform = '';
+        wrapper.style.boxShadow = '';
+      });
+      wrapper.addEventListener('click', () => {
+        if (window.AudioManager) window.AudioManager.play('draft_pick');
+        window.Career.startCareer(difficulty, player);
+        startCareerPathwayRoulette();
+      });
+      container.appendChild(wrapper);
+    });
+  }
+
+  /** Debut-pathway wheel (see 12.3) — spins BEFORE the year/team reveal,
+   * deciding high-school-direct vs. junior-college vs. 3/4-year-college:
+   * a real trade-off between starting attribute floor and years of career
+   * runway (careerAge), not flavor. Reuses the same key-moment modal/wheel
+   * every other Career roulette uses instead of a new surface. */
+  function startCareerPathwayRoulette() {
+    const C = window.Career;
+    const modal = document.getElementById('modal-career-key-moment');
+    if (!modal) { startCareerDebutRoulette(); return; }
+    const titleEl = document.getElementById('key-moment-title');
+    const wheelContainer = document.getElementById('career-wheel-container');
+    const vitalsEl = document.getElementById('key-moment-vitals');
+    const btnContinue = document.getElementById('btn-key-moment-continue');
+
+    titleEl.textContent = `🎓 ${t('career.pathway_title', 'CAMINO AL DEBUT')}`;
+    vitalsEl.innerHTML = `<div style="font-size:10px; color:#9ca3af; margin-bottom:8px;">${t('career.pathway_prompt', '¿Cómo llegaste a las Mayores?')}</div>`;
+    btnContinue.classList.add('hidden');
+    modal.classList.remove('hidden');
+
+    const options = C.getDebutPathwayOptions();
+    const items = options.map(o => ({ key: o.key, weight: 1, color: o.color, label: `${o.label} (${o.age})` }));
+
+    renderCareerWheelWidget(wheelContainer, items, (chosenKey) => {
+      const chosen = C.applyDebutPathway(chosenKey);
+      vitalsEl.innerHTML = `
+        <div style="color:${chosen.color}; font-weight:bold; margin-bottom:6px;">${chosen.label} — ${t('career.hub_age', 'Edad')} ${chosen.age}</div>
+        <div>${chosen.desc}</div>
+      `;
+      btnContinue.classList.remove('hidden');
+    }, 'notable');
+
+    btnContinue.onclick = () => {
+      modal.classList.add('hidden');
+      startCareerDebutRoulette();
+    };
+  }
+
+  function startCareerDebutRoulette() {
+    const modalSeason = document.getElementById('modal-season-select');
+    if (!modalSeason || !window.startSeasonRouletteAnimation) {
+      finishCareerDebut();
+      return;
+    }
+    modalSeason.classList.remove('hidden');
+    const allYears = Object.keys(window.OpponentsDatabase || {});
+    // Constrain the debut-year roulette to a plausible window around the
+    // REAL player's real debut (e.g. a modern-era card like Joe Mauer,
+    // debut 2004, should never be able to land in 1949) — the pool cards
+    // already carry debut_year/last_year (same fields buildSeasonLeague
+    // uses), just never applied here before. Falls back to the full range
+    // if the card has no debut_year or nothing in-window has data.
+    const potential = window.Career && window.Career.potential;
+    let candidateYears = allYears;
+    if (potential && typeof potential.debut_year === 'number') {
+      const windowed = allYears.filter(y => {
+        const n = parseInt(y, 10);
+        return n >= potential.debut_year && n <= potential.debut_year + 3;
+      });
+      if (windowed.length) candidateYears = windowed;
+    }
+    let targetYear = candidateYears.length
+      ? candidateYears[Math.floor(Math.random() * candidateYears.length)]
+      : String(Math.floor(Math.random() * 125) + 1901);
+
+    window.startSeasonRouletteAnimation(targetYear, () => {
+      modalSeason.classList.add('hidden');
+      finishCareerDebut(parseInt(targetYear, 10));
+    });
+  }
+
+  function finishCareerDebut(year) {
+    const resolvedYear = year || (1901 + Math.floor(Math.random() * 125));
+    window.Career.setDebutYear(resolvedYear);
+
+    // Candidate pool: every real team from that year (all tiers combined),
+    // excluding Negro League teams (see Career.isCareerEligibleTeam) — this
+    // mode is built on the Lahman/MLB pool, a player should never be
+    // drafted onto a segregation-era Negro League club.
+    const yearData = (window.OpponentsDatabase || {})[resolvedYear] || (window.OpponentsDatabase || {})[String(resolvedYear)];
+    let allTeams = [];
+    if (yearData) {
+      ['low', 'mid', 'high'].forEach(t => { if (Array.isArray(yearData[t])) allTeams.push(...yearData[t]); });
+    }
+    if (window.CAREER_IS_ELIGIBLE_TEAM) allTeams = allTeams.filter(window.CAREER_IS_ELIGIBLE_TEAM);
+    const team = allTeams.length ? allTeams[Math.floor(Math.random() * allTeams.length)] : null;
+    window.Career.setTeam(team);
+
+    showCareerScreen('screen-career-draft-reveal');
+    runCareerDraftRoulette(allTeams, team);
+  }
+
+  function runCareerDraftRoulette(allTeams, finalTeam) {
+    const nameEl = document.getElementById('career-draft-team-name');
+    const boxEl = document.getElementById('career-draft-roulette-box');
+    const msgEl = document.getElementById('career-draft-status-msg');
+    const btnContinue = document.getElementById('btn-career-draft-continue');
+    if (!nameEl) { renderCareerHub(); showCareerScreen('screen-career-hub'); return; }
+
+    boxEl.classList.remove('winning-glow');
+    btnContinue.classList.add('hidden');
+    msgEl.textContent = t('career.draft_status', 'Sorteando equipo...');
+    const names = allTeams.length ? allTeams.map(tm => tm.name) : [finalTeam ? finalTeam.name : '???'];
+
+    let tick = 0;
+    const maxTicks = 20;
+    let speed = 40;
+    const step = () => {
+      tick++;
+      nameEl.textContent = names[Math.floor(Math.random() * names.length)];
+      if (window.AudioManager) window.AudioManager.play('roulette_tick', 1.0 + (tick / maxTicks) * 0.35);
+      if (tick < maxTicks) {
+        speed += 10;
+        setTimeout(step, speed);
+      } else {
+        nameEl.textContent = finalTeam ? finalTeam.name : '???';
+        boxEl.classList.add('winning-glow');
+        const role = window.Career ? window.Career.getProjectedRole(finalTeam) : 'rotation';
+        msgEl.innerHTML = `<span style="color:#ffd700;font-weight:bold;">⚡ ${t('career.draft_status_done', '¡Te draftea!')} ⚡</span><br><span style="font-size:9px;">${careerRoleBadgeHTML(role)}</span>`;
+        if (window.AudioManager) window.AudioManager.play('roulette_win');
+        btnContinue.classList.remove('hidden');
+      }
+    };
+    step();
+
+    btnContinue.onclick = () => {
+      renderCareerHub();
+      showCareerScreen('screen-career-hub');
+    };
+  }
+
+  function renderCareerHub() {
+    const container = document.getElementById('career-hub-container');
+    if (!container || !window.Career || !window.Career.player) return;
+    const C = window.Career;
+    const player = C.player;
+    const rColor = RARITY_COLORS[player.rarity] || RARITY_COLORS.Common;
+    const cardHTML = createCardHTML(player);
+    const teamName = C.team ? (C.team.name || C.team.teamID || '—') : '—';
+
+    const age = player.careerAge || 21;
+    const seasonsPlayed = C.seasonHistory.length;
+    const hofLine = seasonsPlayed
+      ? `<div>${t('career.hub_hof_score', 'Puntaje HOF')}: <strong style="color:#f59e0b;">${C.hofScore}</strong></div>`
+      : '';
+
+    container.innerHTML = `
+      <div style="display:flex; flex-wrap:wrap; gap:20px; justify-content:center; align-items:flex-start;">
+        <div>${cardHTML}</div>
+        <div style="text-align:left; min-width:220px; font-size:12px; color:#e4e4e7; line-height:1.8;">
+          <div><strong style="color:${rColor};">${player.name}</strong></div>
+          <div>${t('career.hub_debut', 'Debut')}: <strong>${C.debutYear}</strong></div>
+          <div>${t('career.hub_current_year', 'Temporada')}: <strong>${C.currentYear}</strong> (${t('career.hub_age', 'Edad')} ${age})</div>
+          <div>${t('career.hub_team', 'Equipo')}: <strong>${teamName}</strong></div>
+          <div>${t('career.hub_potential', 'Potencial (OVR)')}: <strong>${getPlayerOvr(C.potential)}</strong></div>
+          <div>${t('career.hub_current', 'OVR actual')}: <strong>${getPlayerOvr(player)}</strong></div>
+          <div>${t('career.hub_difficulty', 'Dificultad')}: <strong>${C.difficulty}</strong></div>
+          ${hofLine}
+        </div>
+      </div>
+      <button id="btn-career-play-season" class="btn" style="margin-top:22px; padding:12px 22px; font-size:12px; font-family:'Press Start 2P',monospace; background:linear-gradient(135deg,#ec4899,#db2777); border:2px solid #f472b6; cursor:pointer; color:#fff;">
+        ${C.offseasonPending
+          ? `📋 ${t('career.go_offseason', 'IR AL OFFSEASON')}`
+          : `▶ ${t('career.hub_play_season', 'JUGAR TEMPORADA')} ${C.currentYear}`}
+      </button>
+    `;
+
+    const btnPlaySeason = document.getElementById('btn-career-play-season');
+    if (btnPlaySeason) {
+      btnPlaySeason.onclick = () => {
+        if (C.offseasonPending) {
+          showCareerScreen('screen-career-offseason');
+          renderCareerOffseason();
+          return;
+        }
+        if (!C.seasonEvents || !C.seasonEvents.length) C.startSeason();
+        showCareerScreen('screen-career-season');
+        renderCareerSeason();
+      };
+    }
+
+    renderCareerRatingsInto('career-ratings-panel-hub');
+    renderCareerHistoryInto('career-history-sidebar-hub');
+  }
+
+  // ── Reusable spinning wheel (real circular wheel, not a text tick) —
+  // used for every probabilistic reveal in Career mode: season moment,
+  // playoff rounds, and (eventually) risk-card outcomes. Takes weighted
+  // segments, decides the winner by weight FIRST, then just animates the
+  // spin to land there — same "decide then animate" pattern the old tick
+  // roulette used, different visual.
+  function buildCareerWheelSegments(items) {
+    const total = items.reduce((sum, it) => sum + it.weight, 0) || 1;
+    let acc = 0;
+    return items.map(it => {
+      const start = (acc / total) * 100;
+      acc += it.weight;
+      const end = (acc / total) * 100;
+      return { ...it, start, end, centerDeg: ((start + end) / 2) / 100 * 360 };
+    });
+  }
+
+  function pickCareerWeighted(items) {
+    const total = items.reduce((sum, it) => sum + it.weight, 0);
+    let r = Math.random() * total;
+    for (const it of items) {
+      if (r < it.weight) return it;
+      r -= it.weight;
+    }
+    return items[items.length - 1];
+  }
+
+  /** Spins `wheelEl` (a round div) to land on `chosenKey` among `segments`
+   * (from buildCareerWheelSegments), calling onComplete when the CSS
+   * transition finishes. Pointer is assumed fixed at the top (0deg). */
+  function spinCareerWheel(wheelEl, segments, chosenKey, onComplete) {
+    const gradient = segments.map(s => `${s.color} ${s.start}% ${s.end}%`).join(', ');
+    wheelEl.style.background = `conic-gradient(${gradient})`;
+    wheelEl.style.transition = 'none';
+    wheelEl.style.transform = 'rotate(0deg)';
+    void wheelEl.offsetWidth;
+
+    const chosen = segments.find(s => s.key === chosenKey) || segments[0];
+    const arcWidthDeg = ((chosen.end - chosen.start) / 100) * 360;
+    const jitter = (Math.random() - 0.5) * Math.max(0, arcWidthDeg - 6);
+    const spins = 5 * 360;
+    const finalDeg = spins + (360 - chosen.centerDeg) + jitter;
+
+    if (window.AudioManager) window.AudioManager.play('roulette_tick');
+    // setTimeout instead of requestAnimationFrame: in some preview/testing
+    // environments (non-visible tab, no frame compositing) rAF never fires,
+    // silently leaving the wheel un-rotated even though the outcome logic
+    // still resolves correctly — setTimeout is more portable and still
+    // looks right in a real browser.
+    setTimeout(() => {
+      wheelEl.style.transition = 'transform 3.1s cubic-bezier(0.12,0.72,0.22,1)';
+      wheelEl.style.transform = `rotate(${finalDeg}deg)`;
+    }, 20);
+    setTimeout(() => {
+      if (window.AudioManager) window.AudioManager.play('roulette_win');
+      if (onComplete) onComplete();
+    }, 3200);
+  }
+
+  /** Maps a CAREER_STAKES value (see career.js) to the wheel's size/glow
+   * class — a routine situational spin should visibly read as calmer than
+   * the season-moment or World Series spin, not just differ by outcome. */
+  function careerWheelSizeClass(stakes) {
+    if (stakes === 'critical') return 'career-wheel--critical';
+    if (stakes === 'major') return 'career-wheel--major';
+    return 'career-wheel--routine';
+  }
+
+  /** Bursts a handful of particles (reusing the pack-opening's
+   * pack-particle-burst keyframe/--px/--py trick, see style.css) from the
+   * wheel's center in the winning segment's color when it lands. */
+  function spawnCareerWheelBurst(wrapEl, color) {
+    const count = 8;
+    for (let i = 0; i < count; i++) {
+      const p = document.createElement('div');
+      p.className = 'career-wheel-particle';
+      const angle = (Math.PI * 2 * i) / count;
+      const dist = 55 + Math.random() * 30;
+      p.style.setProperty('--px', `${Math.cos(angle) * dist}px`);
+      p.style.setProperty('--py', `${Math.sin(angle) * dist}px`);
+      p.style.background = color;
+      p.style.boxShadow = `0 0 6px 1px ${color}`;
+      wrapEl.appendChild(p);
+      setTimeout(() => p.remove(), 700);
+    }
+  }
+
+  /** Renders the wheel markup (wheel + fixed pointer + legend) into
+   * `container`, wired to spin on click and call onComplete(chosenKey).
+   * `stakes` ('routine'/'notable'/'major'/'critical', see CAREER_STAKES in
+   * career.js) drives the wheel's size/glow so bigger moments visibly look
+   * bigger, not just differ by the text of the outcome. */
+  function renderCareerWheelWidget(container, items, onComplete, stakes) {
+    const segments = buildCareerWheelSegments(items);
+    const sizeClass = careerWheelSizeClass(stakes);
+    const legendHTML = items.map(it => `<span class="career-wheel-legend__item" data-key="${it.key}" style="color:${it.color};"><span style="width:9px; height:9px; border-radius:2px; background:${it.color}; display:inline-block; margin-right:4px;"></span>${it.label}</span>`).join('');
+    container.innerHTML = `
+      <div style="position:relative; width:fit-content; margin:0 auto 10px auto;">
+        <div class="career-wheel-pointer"></div>
+        <div id="career-wheel-disc" class="career-wheel ${sizeClass}"></div>
+      </div>
+      <div class="career-wheel-legend">${legendHTML}</div>
+      <button id="btn-career-wheel-spin" class="btn" style="width:100%; padding:12px; font-size:12px; font-family:'Press Start 2P',monospace; background:linear-gradient(135deg,var(--career-accent),var(--career-accent-dim)); border:2px solid var(--career-accent); cursor:pointer; color:#fff;">🎡 ${t('career.spin_wheel', 'GIRAR')}</button>
+    `;
+    const disc = container.querySelector('#career-wheel-disc');
+    const wrap = disc.parentElement;
+    const btn = container.querySelector('#btn-career-wheel-spin');
+    disc.style.background = `conic-gradient(${segments.map(s => `${s.color} ${s.start}% ${s.end}%`).join(', ')})`;
+    btn.onclick = () => {
+      btn.disabled = true;
+      const chosen = pickCareerWeighted(items);
+      spinCareerWheel(disc, segments, chosen.key, () => {
+        spawnCareerWheelBurst(wrap, chosen.color);
+        const activeChip = container.querySelector(`.career-wheel-legend__item[data-key="${CSS && CSS.escape ? CSS.escape(chosen.key) : chosen.key}"]`);
+        if (activeChip) activeChip.classList.add('career-wheel-legend__item--active');
+        onComplete(chosen.key);
+      });
+    };
+  }
+
+  // ── Always-visible ratings panel: current CON/PWR/EYE/SPD/DEF/OVR plus
+  // this season's live delta from key-moment growth (see applyEventGrowth).
+  const CAREER_RATING_LABELS = { con: 'CON', pwr: 'PWR', eye: 'EYE', spd: 'SPD', def: 'DEF' };
+  /** Persistent player panel — the Copero-style card that stays visible on
+   * every Career screen (hub, season, offseason, not just Profile): a big
+   * OVR number, team/age/trophy row, then the 5 attribute rows with their
+   * live season delta. This is the single "how am I doing" surface the
+   * whole mode is built around, not a side detail. */
+  function renderCareerRatingsInto(elId) {
+    const el = document.getElementById(elId);
+    const C = window.Career;
+    if (!el || !C || !C.player) return;
+    const delta = C.seasonRatingDelta || { con: 0, pwr: 0, eye: 0, spd: 0, def: 0 };
+    const rows = Object.keys(CAREER_RATING_LABELS).map(k => {
+      const val = C.player[k] || 0;
+      const d = delta[k] || 0;
+      const state = d > 0 ? 'is-up' : d < 0 ? 'is-down' : '';
+      const dHTML = d > 0 ? `<span class="delta">▲${d}</span>` : d < 0 ? `<span class="delta">▼${Math.abs(d)}</span>` : `<span class="delta">–</span>`;
+      return `<div class="career-panel__rating-row ${state}"><span>${CAREER_RATING_LABELS[k]}</span><span><strong>${val}</strong> ${dHTML}</span></div>`;
+    }).join('');
+    const ovr = getPlayerOvr(C.player);
+    const potentialOvr = getPlayerOvr(C.potential);
+    const age = C.player.careerAge || 21;
+    const teamName = C.team ? (C.team.name || C.team.teamID) : '—';
+    const totals = C.getCareerTotals();
+    const isBreakout = ovr >= potentialOvr;
+    const reputation = typeof C.reputation === 'number' ? C.reputation : null;
+    const repColor = reputation === null ? '#6b7280' : reputation >= 65 ? '#10b981' : reputation <= 35 ? '#ef4444' : '#f59e0b';
+    const reputationHTML = reputation === null ? '' : `
+        <div class="career-panel__reputation-row">
+          <div style="display:flex; justify-content:space-between; font-size:8px; color:#9ca3af; margin-bottom:2px;">
+            <span>${t('career.reputation_label', 'Reputación')}</span>
+            <span style="color:${repColor};">${reputation}</span>
+          </div>
+          <div class="career-panel__reputation-track"><div class="career-panel__reputation-fill" style="width:${reputation}%; background:${repColor};"></div></div>
+        </div>`;
+    const wear = typeof C.wear === 'number' ? C.wear : null;
+    const wearColor = wear === null ? '#6b7280' : wear >= 70 ? '#ef4444' : wear >= 40 ? '#f59e0b' : '#10b981';
+    const wearHTML = wear === null ? '' : `
+        <div class="career-panel__reputation-row">
+          <div style="display:flex; justify-content:space-between; font-size:8px; color:#9ca3af; margin-bottom:2px;">
+            <span>${t('career.wear_label', 'Desgaste')}</span>
+            <span style="color:${wearColor};">${wear}</span>
+          </div>
+          <div class="career-panel__reputation-track"><div class="career-panel__reputation-fill" style="width:${wear}%; background:${wearColor};"></div></div>
+        </div>`;
+    const cashHTML = typeof C.cash === 'number' ? `<span>💵 <strong>$${C.cash}K</strong></span>` : '';
+    const nemesisHTML = C.nemesis ? `
+        <div style="font-size:8.5px; color:#9ca3af; text-align:center; margin-bottom:8px;">
+          ⚔️ ${t('career.nemesis_label', 'Rival de siempre')}: <strong style="color:#e4e4e7;">${C.nemesis.name}</strong>
+          (<span style="color:${C.nemesis.wins >= C.nemesis.losses ? '#10b981' : '#ef4444'};">${C.nemesis.wins}-${C.nemesis.losses}</span>)
+        </div>` : '';
+
+    el.innerHTML = `
+      <div class="career-panel">
+        <div class="career-panel__ovr ${isBreakout ? 'is-breakout' : ''}">
+          <span class="career-panel__ovr-value">${ovr}</span>
+          <span style="font-size:10px; color:#6b7280;">/ ${potentialOvr} ${t('career.potential_short', 'POT')}</span>
+        </div>
+        <div class="career-panel__name">${C.player.name}</div>
+        <div class="career-panel__meta-row">
+          <span>${t('career.hub_age', 'Edad')} <strong>${age}</strong></span>
+          <span>${teamName}</span>
+          <span>🏆 <strong>${totals.awards}</strong></span>
+        </div>
+        <div class="career-panel__contract-row">
+          ${t('career.contract_label', 'Contrato')}: <strong style="color:#e4e4e7;">${C.contractYearsLeft || 0} ${t('career.years_short', 'años')}</strong> · $${C.contractValue || 0}K ${cashHTML}
+        </div>
+        ${reputationHTML}
+        ${wearHTML}
+        ${nemesisHTML}
+        <div class="career-panel__totals-grid">
+          <div><div class="label">${t('career.totals_pj', 'PJ')}</div><div class="value">${totals.games}</div></div>
+          <div><div class="label">${t('career.totals_avg', 'AVG')}</div><div class="value">${totals.AVG.toFixed(3).replace(/^0/, '')}</div></div>
+          <div><div class="label">${t('career.totals_hr', 'HR')}</div><div class="value">${totals.HR}</div></div>
+          <div><div class="label">${t('career.totals_rbi', 'RBI')}</div><div class="value">${totals.RBI}</div></div>
+          <div><div class="label">${t('career.totals_seasons', 'AÑOS')}</div><div class="value">${totals.seasons}</div></div>
+        </div>
+        ${rows}
+      </div>
+    `;
+  }
+
+  /** Compact always-visible season-by-season history (year, AVG/HR/RBI,
+   * league rank) — same data as the Profile screen, but surfaced without
+   * having to leave the current career screen. */
+  function renderCareerHistoryInto(elId) {
+    const el = document.getElementById(elId);
+    const C = window.Career;
+    if (!el || !C) return;
+    if (!C.seasonHistory.length) { el.innerHTML = ''; return; }
+    const rows = C.seasonHistory.slice(-6).reverse().map(s => {
+      const jump = (typeof s.ovrEnd === 'number' && typeof s.ovrStart === 'number') ? s.ovrEnd - s.ovrStart : null;
+      const jumpHTML = jump === null ? '' : (jump > 0 ? `<span style="color:#10b981;">▲${jump}</span>` : jump < 0 ? `<span style="color:#ef4444;">▼${Math.abs(jump)}</span>` : `<span style="color:#6b7280;">–</span>`);
+      return `
+      <div style="display:flex; justify-content:space-between; gap:6px; font-size:9.5px; color:#e4e4e7; padding:2px 0;">
+        <span style="color:#ec4899;">${s.year}</span>
+        <span>OVR ${s.ovrEnd || '—'} ${jumpHTML}</span>
+        <span>${s.stats.AVG.toFixed(3)} · ${s.stats.HR}HR</span>
+        <span style="color:#9ca3af;">#${s.leagueRank}/${s.leagueSize}</span>
+      </div>`;
+    }).join('');
+    el.innerHTML = `
+      <div style="max-width:260px; margin:0 auto; background:rgba(0,0,0,0.35); border:1px solid rgba(236,72,153,0.25); border-radius:10px; padding:10px 14px;">
+        <div style="font-size:9px; color:#ec4899; font-weight:bold; margin-bottom:6px; text-align:center;">${t('career.progress_title', 'PROGRESIÓN')}</div>
+        ${rows}
+      </div>
+    `;
+  }
+
+  // ── CAREER SEASON: choice events + season-moment roulette ────────────────
+  // Copy for the 2 narrative choice events — kept in ui.js (display strings)
+  // separate from career.js (the rating deltas each choice applies).
+  // Flavor copy for the 10-template event pool (career.js EVENT_TEMPLATE_POOL
+  // owns the rating deltas; this only owns display text). Two are drawn at
+  // random each season so the same pair doesn't show up every year.
+  const CAREER_STAKES_COPY = {
+    routine: { label: 'RUTINA', color: '#64748b' },
+    notable: { label: 'RELEVANTE', color: '#3b82f6' },
+    major: { label: 'GRAN MOMENTO', color: '#f59e0b' },
+    critical: { label: 'DECISIVO', color: '#ef4444' }
+  };
+  /** ace_matchup's prompt names the real opposing team/pitcher when the
+   * event carries a rivalContext (see Career.getRivalTeamAndAce) instead of
+   * the generic "best pitcher in the league" fallback text. */
+  function careerSituationalPrompt(event, template) {
+    if (!template) return '';
+    if (event && event.id === 'ace_matchup' && event.rivalContext) {
+      const rc = event.rivalContext;
+      const pitcherName = rc.pitcher ? rc.pitcher.name : null;
+      return pitcherName
+        ? t('career.ace_matchup_named', 'Te toca enfrentar a {pitcher} de los {team}, con todos los ojos encima.').replace('{pitcher}', pitcherName).replace('{team}', rc.teamName)
+        : t('career.ace_matchup_team', 'Te toca enfrentar a los {team} y a su mejor brazo, con todos los ojos encima.').replace('{team}', rc.teamName);
+    }
+    return template.prompt;
+  }
+
+  /** Small badge naming how big a deal an event is (see CAREER_STAKES in
+   * career.js) — makes the "this matters more" signal legible in text, not
+   * just in the wheel's size. */
+  function careerStakesBadgeHTML(stakes) {
+    const copy = CAREER_STAKES_COPY[stakes] || CAREER_STAKES_COPY.routine;
+    return `<span class="career-stakes-badge" style="color:${copy.color};">${t('career.stakes_' + (stakes || 'routine'), copy.label)}</span>`;
+  }
+
+  const CAREER_EVENT_COPY = {
+    preseason_training: {
+      icon: '🏋️', title: 'PRETEMPORADA', prompt: 'Antes de arrancar la temporada, ¿cómo te preparás?',
+      choices: {
+        hard: 'Entrenar a fondo', technical: 'Trabajo técnico con el bate', careful: 'Cuidar el cuerpo'
+      }
+    },
+    batting_cage: {
+      icon: '⚾', title: 'JAULA DE BATEO', prompt: 'Tenés tiempo extra en la jaula. ¿En qué te enfocás?',
+      choices: { power_focus: 'Buscar más potencia', contact_focus: 'Afinar el contacto', balanced: 'Trabajo parejo' }
+    },
+    sprint_drills: {
+      icon: '🏃', title: 'TRABAJO DE VELOCIDAD', prompt: 'El preparador físico te ofrece un plan extra.',
+      choices: { speed_work: 'Sprints puros', agility: 'Agilidad y reflejos' }
+    },
+    film_study: {
+      icon: '🎥', title: 'ESTUDIO DE VIDEO', prompt: '¿Qué repasás en las sesiones de video?',
+      choices: { study_pitchers: 'Lanzadores rivales', study_defense: 'Posicionamiento defensivo' }
+    },
+    midseason_slump: {
+      icon: '📉', title: 'MITAD DE TEMPORADA', prompt: 'Llevás unas semanas irregulares. ¿Cómo lo manejás?',
+      choices: { push: 'Forzar el poder', patient: 'Jugar con paciencia', rest: 'Bajar el ritmo' }
+    },
+    clubhouse_leader: {
+      icon: '🗣️', title: 'VESTUARIO', prompt: 'El equipo necesita un líder. ¿Cuál es tu rol?',
+      choices: { vocal: 'Ser la voz del equipo', quiet: 'Liderar con el ejemplo' }
+    },
+    contract_pressure: {
+      icon: '💰', title: 'PRESIÓN DE CONTRATO', prompt: 'Se habla de tu futuro contrato en los medios.',
+      choices: { play_angry: 'Jugar con bronca', stay_cool: 'Mantener la cabeza fría' }
+    },
+    nagging_injury: {
+      icon: '🩹', title: 'MOLESTIA FÍSICA', prompt: 'Arrastrás una molestia menor.',
+      choices: { play_through: 'Jugar igual', sit_out: 'Cuidarte unos días' }
+    },
+    hitting_coach: {
+      icon: '🧢', title: 'COACH DE BATEO', prompt: 'El coach te propone un ajuste.',
+      choices: { new_stance: 'Probar una postura nueva', tweak_swing: 'Afinar el swing actual' }
+    },
+    road_trip: {
+      icon: '🚌', title: 'GIRA DE VISITANTE', prompt: 'Una gira larga por el camino.',
+      choices: { focus_travel: 'Rutina y descanso', party_hard: 'Salir con los compañeros' }
+    }
+  };
+
+
+  function renderCareerSeason() {
+    const C = window.Career;
+    if (!C) return;
+    const titleEl = document.getElementById('career-season-title');
+    if (titleEl) titleEl.textContent = `🏆 ${t('career.season_title', 'TEMPORADA')} ${C.currentYear} (${C.seasonGameCount || 162} ${t('career.games', 'partidos')}) — ${C.player.name}`;
+
+    const statlineEl = document.getElementById('career-season-statline');
+    if (statlineEl) statlineEl.innerHTML = '';
+    renderCareerRatingsInto('career-ratings-panel-season');
+    renderCareerHistoryInto('career-history-sidebar-season');
+
+    const calEl = document.getElementById('career-season-calendar');
+    const btnNext = document.getElementById('btn-career-play-next');
+    if (!calEl || !btnNext) return;
+
+    const event = C.getNextPendingEvent();
+    if (!event) {
+      calEl.innerHTML = `<div style="font-size:12px; color:#10b981; text-align:center;">${t('career.events_done', '¡Los eventos de la temporada están listos!')}</div>`;
+      btnNext.textContent = `🏁 ${t('career.finish_season', 'VER RESUMEN DE TEMPORADA')}`;
+      btnNext.onclick = () => finishCareerSeason();
+      btnNext.classList.remove('hidden');
+      return;
+    }
+
+    const doneCount = C.seasonEvents.filter(e => e.resolved).length;
+    const progressLabel = `${t('career.event_progress', 'Evento')} ${doneCount + 1}/${C.seasonEvents.length}`;
+    const stakesBadgeHTML = careerStakesBadgeHTML(event.stakes);
+
+    if (event.type === 'choice') {
+      const copy = CAREER_EVENT_COPY[event.id] || { icon: '🎲', title: event.id, prompt: '' };
+      // Each option rolled a tier when the season was generated (Normal ~65%
+      // / Silver ~25% / Gold ~10% — same TRAINING_TIER_CONFIG pattern as
+      // Quick Play's Train screen), so the 3 cards aren't always the same
+      // flat reward: a Gold card scales the OVR target up notably. Tier
+      // colors are read straight from TRAINING_TIER_CONFIG so this reads as
+      // the exact same visual language as Train's cards, not a lookalike.
+      const tieredOptions = C.getTieredChoiceOptions(event.id);
+      const cardsHTML = Object.keys(tieredOptions).map((key, idx) => {
+        const opt = tieredOptions[key];
+        const tierData = TRAINING_TIER_CONFIG.tiers[opt.tier] || TRAINING_TIER_CONFIG.tiers.Normal;
+        // Shown value is role-adjusted (see getRoleAdjustedOvrTarget) so the
+        // card's promise matches what resolving it will actually deliver —
+        // the raw tiered target gets scaled by the current role's growth
+        // multiplier before it lands on the player.
+        const shownOvr = C.getRoleAdjustedOvrTarget(opt.ovrTarget);
+        const label = (copy.choices && copy.choices[key]) || key;
+        const isRisky = window.CAREER_IS_RISKY_CHOICE && window.CAREER_IS_RISKY_CHOICE(event.id, key);
+        const riskTag = isRisky
+          ? `<span class="choice-risk-tag choice-risk-high">🔴 ${t('career.risk_tag', 'RIESGO REPUTACIONAL')}</span>`
+          : `<span class="choice-risk-tag choice-risk-safe">🟢 ${t('career.safe_tag', 'SEGURO')}</span>`;
+        const animDelay = idx * 0.12;
+        const glow = opt.tier === 'Gold' ? `0 0 25px ${tierData.color}50, 0 4px 20px rgba(0,0,0,0.5)` : (opt.tier === 'Silver' ? `0 0 15px ${tierData.color}35, 0 4px 20px rgba(0,0,0,0.4)` : `0 4px 20px rgba(0,0,0,0.4)`);
+        return `
+          <div class="career-choice-card" data-choice="${key}" style="border:2px solid ${tierData.borderColor}; box-shadow:${glow}; animation-delay:${animDelay}s;">
+            <div>
+              <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+                <span style="font-family:'Press Start 2P',monospace; font-size:8px; color:${tierData.color}; background:${tierData.badgeBg}; border:1px solid ${tierData.color}66; padding:3px 8px; border-radius:12px;">${tierData.label}</span>
+              </div>
+              <div style="text-align:center; padding:8px 0;">
+                <div style="font-size:34px; margin-bottom:6px; filter:drop-shadow(0 0 10px ${tierData.color});">${copy.icon}</div>
+                <div style="font-weight:bold; font-size:13px; color:#e2e8f0; margin-bottom:6px;">${label}</div>
+                <div style="font-weight:bold; font-size:12px; color:${tierData.color}; margin-bottom:8px;">▲ +${shownOvr} OVR</div>
+                <div>${riskTag}</div>
+              </div>
+            </div>
+            <div style="margin-top:14px; border-top:1px solid rgba(255,255,255,0.06); padding-top:12px;">
+              <button class="btn career-choice-pick-btn" style="width:100%; padding:10px; font-size:10px; font-weight:bold; background:linear-gradient(135deg, ${tierData.color}, ${tierData.color}dd); color:#000; border:none; border-radius:8px; cursor:pointer; box-shadow:0 0 15px ${tierData.color}44;">${t('career.choose_card', 'ELEGIR')}</button>
+            </div>
+          </div>`;
+      }).join('');
+      calEl.innerHTML = `
+        <div style="max-width:640px; margin:0 auto; text-align:center;">
+          <div style="font-size:10px; color:#9ca3af; margin-bottom:6px;">${progressLabel} · ${stakesBadgeHTML}</div>
+          <div style="font-family:'Press Start 2P',monospace; font-size:11px; color:var(--career-accent); margin-bottom:10px;">${copy.icon} ${copy.title}</div>
+          <div style="font-size:12px; color:#e4e4e7; margin-bottom:16px;">${copy.prompt}</div>
+          <div style="display:flex; flex-wrap:wrap; gap:14px; justify-content:center;">${cardsHTML}</div>
+        </div>
+      `;
+      calEl.querySelectorAll('.career-choice-card').forEach(card => {
+        const pick = () => {
+          const result = C.resolveChoiceEvent(event.id, card.getAttribute('data-choice'));
+          renderCareerSeason();
+          if (result) flashCareerGrowth(result.applied, result.ovrDelta);
+        };
+        card.querySelector('.career-choice-pick-btn').onclick = pick;
+      });
+      btnNext.classList.add('hidden');
+    } else if (event.type === 'crossroads') {
+      // Career Crossroads (13.2) — a Copero-style decision: occasional,
+      // full-screen, no tier/rarity badge (it's a life decision, not a
+      // purchase), and each option can move OVR/reputation/wear/cash at
+      // once instead of just OVR like the training cards above.
+      const template = window.CAREER_CROSSROADS_TEMPLATES ? window.CAREER_CROSSROADS_TEMPLATES[event.id] : null;
+      const options = C.getCrossroadsOptions(event.id);
+      const deltaChipHTML = (label, val, positiveIsGood = true) => {
+        if (!val) return '';
+        const good = positiveIsGood ? val > 0 : val < 0;
+        const color = good ? '#10b981' : '#ef4444';
+        const sign = val > 0 ? '+' : '';
+        return `<span style="color:${color}; margin-right:8px;">${label} ${sign}${val}</span>`;
+      };
+      const optionsHTML = Object.keys(options).map(key => {
+        const opt = options[key];
+        return `
+          <div class="career-choice-card" data-crossroads="${key}" style="max-width:340px; border:2px solid var(--career-accent);">
+            <div>
+              <div style="font-weight:bold; font-size:14px; color:#e2e8f0; margin-bottom:10px; text-align:center;">${opt.label}</div>
+              <div style="font-size:10.5px; color:#9ca3af; line-height:1.4; margin-bottom:12px; text-align:center;">${opt.desc}</div>
+              <div style="text-align:center; font-size:10px;">
+                ${deltaChipHTML('OVR', opt.ovr)}
+                ${deltaChipHTML(t('career.reputation_label', 'Reputación'), opt.reputation)}
+                ${deltaChipHTML(t('career.wear_label', 'Desgaste'), opt.wear, false)}
+                ${deltaChipHTML('$', opt.cash)}
+              </div>
+            </div>
+            <div style="margin-top:14px; border-top:1px solid rgba(255,255,255,0.06); padding-top:12px;">
+              <button class="btn career-crossroads-pick-btn" style="width:100%; padding:10px; font-size:10px; font-weight:bold; background:linear-gradient(135deg, var(--career-accent), var(--career-accent-dim)); color:#000; border:none; border-radius:8px; cursor:pointer;">${t('career.choose_card', 'ELEGIR')}</button>
+            </div>
+          </div>`;
+      }).join('');
+      calEl.innerHTML = `
+        <div style="max-width:720px; margin:0 auto; text-align:center;">
+          <div style="font-size:10px; color:#9ca3af; margin-bottom:6px;">${progressLabel} · ${stakesBadgeHTML}</div>
+          <div style="font-family:'Press Start 2P',monospace; font-size:13px; color:var(--career-accent); margin-bottom:12px;">${template ? template.icon : '🔀'} ${template ? template.title : event.id}</div>
+          <div style="font-size:13px; color:#e4e4e7; margin-bottom:18px;">${template ? template.prompt : ''}</div>
+          <div style="display:flex; flex-wrap:wrap; gap:16px; justify-content:center;">${optionsHTML}</div>
+        </div>
+      `;
+      calEl.querySelectorAll('[data-crossroads]').forEach(card => {
+        card.querySelector('.career-crossroads-pick-btn').onclick = () => {
+          const result = C.resolveCrossroadsEvent(event.id, card.getAttribute('data-crossroads'));
+          renderCareerSeason();
+          if (result) flashCareerGrowth({}, result.ovrDelta);
+        };
+      });
+      btnNext.classList.add('hidden');
+    } else if (event.type === 'situational') {
+      const template = window.CAREER_SITUATIONAL_TEMPLATES ? window.CAREER_SITUATIONAL_TEMPLATES[event.id] : null;
+      calEl.innerHTML = `
+        <div style="max-width:420px; margin:0 auto; text-align:center;">
+          <div style="font-size:10px; color:#9ca3af; margin-bottom:6px;">${progressLabel} · ${stakesBadgeHTML}</div>
+          <div style="font-family:'Press Start 2P',monospace; font-size:11px; color:var(--career-accent); margin-bottom:10px;">🎡 ${template ? template.label : event.id}</div>
+          <div style="font-size:12px; color:#e4e4e7; margin-bottom:16px;">${careerSituationalPrompt(event, template)}</div>
+        </div>
+      `;
+      btnNext.textContent = `🎡 ${t('career.play_situational', 'GIRAR LA RULETA')}`;
+      btnNext.onclick = () => openCareerSituationalRoulette(event, template);
+      btnNext.classList.remove('hidden');
+    } else {
+      // Season-moment roulette
+      calEl.innerHTML = `
+        <div style="max-width:420px; margin:0 auto; text-align:center;">
+          <div style="font-size:10px; color:#9ca3af; margin-bottom:6px;">${progressLabel} · ${stakesBadgeHTML}</div>
+          <div style="font-family:'Press Start 2P',monospace; font-size:11px; color:var(--career-accent); margin-bottom:10px;">🎡 ${t('career.signature_title', 'MOMENTO DE LA TEMPORADA')}</div>
+          <div style="font-size:12px; color:#e4e4e7; margin-bottom:16px;">${t('career.signature_desc', 'Girá la ruleta para ver cómo te fue en el tramo decisivo de la temporada.')}</div>
+        </div>
+      `;
+      btnNext.textContent = `🎡 ${t('career.play_signature', 'GIRAR LA RULETA')}`;
+      btnNext.onclick = () => openCareerSeasonMomentRoulette(event);
+      btnNext.classList.remove('hidden');
+    }
+  }
+
+  /** Situational events (Career.SITUATIONAL_EVENT_POOL) reuse the same
+   * wheel widget as the season moment, but their outcome weights come from
+   * the player's CURRENT attributes (career.js getSituationalOutcomes),
+   * not a fixed table. */
+  function openCareerSituationalRoulette(event, template) {
+    const C = window.Career;
+    const modal = document.getElementById('modal-career-key-moment');
+    const titleEl = document.getElementById('key-moment-title');
+    const wheelContainer = document.getElementById('career-wheel-container');
+    const vitalsEl = document.getElementById('key-moment-vitals');
+    const btnContinue = document.getElementById('btn-key-moment-continue');
+    if (!modal) return;
+
+    titleEl.textContent = `🎡 ${template ? template.label : event.id}`;
+    vitalsEl.innerHTML = `<div style="font-size:10px; color:#9ca3af; margin-bottom:8px;">${careerSituationalPrompt(event, template)}</div>`;
+    btnContinue.classList.add('hidden');
+    modal.classList.remove('hidden');
+
+    const outcomes = C.getSituationalOutcomes(event.id);
+    const items = outcomes.map(o => ({ key: o.key, weight: o.weight, color: o.color, label: o.label }));
+
+    renderCareerWheelWidget(wheelContainer, items, (chosenKey) => {
+      const result = C.resolveSituationalEvent(event.id, chosenKey);
+      if (!result) return;
+      const ovrText = result.ovrDelta > 0 ? `+${result.ovrDelta}` : `${result.ovrDelta}`;
+      const ovrColor = result.ovrDelta > 0 ? '#10b981' : (result.ovrDelta < 0 ? '#ef4444' : '#9ca3af');
+      vitalsEl.innerHTML = `
+        <div style="color:${result.outcome.color}; font-weight:bold; margin-bottom:6px;">${result.outcome.label}</div>
+        <div style="color:${ovrColor};">${ovrText} OVR</div>
+      `;
+      btnContinue.classList.remove('hidden');
+    }, event.stakes || 'notable');
+
+    btnContinue.onclick = () => {
+      modal.classList.add('hidden');
+      renderCareerSeason();
+    };
+  }
+
+  const CAREER_MOMENT_TIER_COPY = {
+    nightmare: { label: 'PESADILLA', color: '#ef4444', flavor: 'Una racha para el olvido — nada te salió bien.' },
+    poor: { label: 'FLOJA', color: '#f97316', flavor: 'Un tramo irregular, más sombras que luces.' },
+    modest: { label: 'DISCRETA', color: '#9ca3af', flavor: 'Nada memorable, pero sin sobresaltos.' },
+    solid: { label: 'SÓLIDA', color: '#10b981', flavor: 'Un tramo consistente que suma de a poco.' },
+    great: { label: 'GRANDE', color: '#3b82f6', flavor: '¡Un tramo grande! La afición lo notó.' },
+    historic: { label: 'HISTÓRICA', color: '#eab308', flavor: '¡Histórico! De esos que quedan en la memoria.' }
+  };
+
+  /** Spins the real wheel (renderCareerWheelWidget) for the season moment
+   * and reveals the result — no dice, no probability math on screen. */
+  function openCareerSeasonMomentRoulette(event) {
+    const C = window.Career;
+    const modal = document.getElementById('modal-career-key-moment');
+    const titleEl = document.getElementById('key-moment-title');
+    const wheelContainer = document.getElementById('career-wheel-container');
+    const vitalsEl = document.getElementById('key-moment-vitals');
+    const btnContinue = document.getElementById('btn-key-moment-continue');
+    if (!modal) return;
+
+    titleEl.textContent = `🎡 ${t('career.signature_title', 'MOMENTO DE LA TEMPORADA')}`;
+    vitalsEl.innerHTML = '';
+    btnContinue.classList.add('hidden');
+    modal.classList.remove('hidden');
+
+    const weights = C.getSeasonMomentWeights();
+    const items = weights.map(w => ({ key: w.key, weight: w.weight, color: CAREER_MOMENT_TIER_COPY[w.key].color, label: CAREER_MOMENT_TIER_COPY[w.key].label }));
+
+    renderCareerWheelWidget(wheelContainer, items, (chosenKey) => {
+      const result = C.resolveSeasonMoment(chosenKey);
+      if (!result) return;
+      const copy = CAREER_MOMENT_TIER_COPY[result.tier.key];
+      const line = result.line;
+      const avg = line.AB > 0 ? (line.H / line.AB).toFixed(3) : '.000';
+      const ovrText = result.ovrDelta > 0 ? `+${result.ovrDelta}` : `${result.ovrDelta}`;
+      const ovrColor = result.ovrDelta > 0 ? '#10b981' : (result.ovrDelta < 0 ? '#ef4444' : '#9ca3af');
+      vitalsEl.innerHTML = `
+        <div style="margin-bottom:6px; color:${copy.color}; font-weight:bold;">${copy.label}</div>
+        <div style="margin-bottom:6px;">${copy.flavor}</div>
+        <div>AVG ${avg} · H ${line.H} · HR ${line.HR} · BB ${line.BB} · K ${line.K}</div>
+        <div style="margin-top:6px; color:${ovrColor}; font-weight:bold;">${ovrText} OVR</div>
+      `;
+      btnContinue.classList.remove('hidden');
+    }, 'major');
+
+    btnContinue.onclick = () => {
+      modal.classList.add('hidden');
+      renderCareerSeason();
+    };
+  }
+
+
+  /** Brief toast summarizing the rating deltas a just-resolved key moment
+   * produced, so "doing well in the event" visibly pays off right away.
+   * Leads with the REAL resulting OVR change (ovrDelta) when given, since
+   * that's the number the player actually cares about. */
+  function flashCareerGrowth(growth, ovrDelta) {
+    const parts = Object.keys(growth || {}).filter(k => growth[k] !== 0)
+      .map(k => `${CAREER_RATING_LABELS[k] || k.toUpperCase()} ${growth[k] > 0 ? '+' : ''}${growth[k]}`);
+    if (typeof ovrDelta === 'number' && ovrDelta !== 0) {
+      parts.unshift(`OVR ${ovrDelta > 0 ? '+' : ''}${ovrDelta}`);
+    }
+    if (!parts.length) return;
+    const toast = document.createElement('div');
+    toast.style.cssText = 'position:fixed; top:70px; left:50%; transform:translateX(-50%); z-index:10000; background:rgba(0,0,0,0.85); border:2px solid #ec4899; border-radius:8px; padding:10px 16px; font-family:"Press Start 2P",monospace; font-size:10px; color:#10b981;';
+    toast.textContent = `📈 ${parts.join(' · ')}`;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 2200);
+  }
+
+  function finishCareerSeason() {
+    const C = window.Career;
+    const summary = C.finalizeSeason();
+    if (summary.playoffQualified && !summary.retired) {
+      openCareerPlayoffRound(summary);
+    } else {
+      renderCareerSeasonEnd(summary);
+      showCareerScreen('screen-career-season-end');
+    }
+  }
+
+  const CAREER_PLAYOFF_OUTCOME_COPY = {
+    win: { color: '#10b981', flavor: '¡Ganan la serie! Siguen con vida en la postemporada.' },
+    lose: { color: '#ef4444', flavor: 'Pierden la serie — se acaba la postemporada acá.' }
+  };
+
+  /** Loops through the playoff bracket (Career.getNextPlayoffRound), one
+   * wheel spin per round, until eliminated or crowned champion — then shows
+   * the season-end screen. */
+  function openCareerPlayoffRound(summary) {
+    const C = window.Career;
+    const round = C.getNextPlayoffRound();
+    if (!round) {
+      renderCareerSeasonEnd(summary);
+      showCareerScreen('screen-career-season-end');
+      return;
+    }
+
+    const modal = document.getElementById('modal-career-key-moment');
+    const titleEl = document.getElementById('key-moment-title');
+    const wheelContainer = document.getElementById('career-wheel-container');
+    const vitalsEl = document.getElementById('key-moment-vitals');
+    const btnContinue = document.getElementById('btn-key-moment-continue');
+    if (!modal) return;
+
+    titleEl.textContent = `🏆 ${round.label}`;
+    vitalsEl.innerHTML = round.opponent ? `<div style="font-size:10px; color:#9ca3af; margin-bottom:8px;">${t('career.playoff_vs', 'vs.')} ${round.opponent.teamName}</div>` : '';
+    btnContinue.classList.add('hidden');
+    modal.classList.remove('hidden');
+
+    const items = C.getPlayoffRoundWeights();
+    renderCareerWheelWidget(wheelContainer, items, (chosenKey) => {
+      const result = C.resolvePlayoffRound(chosenKey);
+      if (!result) return;
+      const copy = CAREER_PLAYOFF_OUTCOME_COPY[chosenKey];
+      const championHTML = result.champion ? `<div style="margin-top:8px; color:#f59e0b; font-weight:bold;">🏆 ¡CAMPEONES DE LA SERIE MUNDIAL!</div>` : '';
+      const ovrText = result.ovrDelta > 0 ? `+${result.ovrDelta}` : `${result.ovrDelta}`;
+      const ovrColor = result.ovrDelta > 0 ? '#10b981' : (result.ovrDelta < 0 ? '#ef4444' : '#9ca3af');
+      vitalsEl.innerHTML = `<div style="color:${copy.color}; font-weight:bold;">${copy.flavor}</div>${championHTML}<div style="margin-top:6px; color:${ovrColor};">${ovrText} OVR</div>`;
+      btnContinue.classList.remove('hidden');
+
+      btnContinue.onclick = () => {
+        modal.classList.add('hidden');
+        if (result.eliminated || result.champion) {
+          renderCareerSeasonEnd(summary);
+          showCareerScreen('screen-career-season-end');
+        } else {
+          openCareerPlayoffRound(summary);
+        }
+      };
+    }, round.stakes || 'major');
+  }
+
+  function renderCareerSeasonEnd(summary) {
+    const C = window.Career;
+    const container = document.getElementById('career-season-end-container');
+    const titleEl = document.getElementById('career-season-end-title');
+    if (titleEl) titleEl.textContent = `🏆 ${summary.year} — ${t('career.season_end_title', 'FIN DE TEMPORADA')}`;
+    if (!container) return;
+
+    const awardsHTML = summary.awards.length
+      ? summary.awards.map(a => `<span style="display:inline-block; margin:3px; padding:4px 10px; border-radius:6px; background:rgba(245,158,11,0.15); border:1px solid #f59e0b; color:#f59e0b; font-size:11px;">🏅 ${a}</span>`).join('')
+      : `<span style="color:#9ca3af; font-size:11px;">${t('career.no_awards', 'Sin premios esta temporada')}</span>`;
+
+    const retiredHTML = summary.retired
+      ? `<div style="margin-top:16px; padding:12px; border-radius:8px; background:rgba(245,158,11,0.1); border:1px solid #f59e0b; font-size:12px; color:#f59e0b;">
+          🎽 ${t('career.retired_msg', 'Tu jugador se retira.')}
+        </div>`
+      : '';
+
+    const mvpLabel = summary.mvpWinner === 'player'
+      ? `<strong style="color:#f59e0b;">🏆 ${C.player.name} (${t('career.you', 'VOS')})</strong>`
+      : `<strong style="color:#9ca3af;">${t('career.other_league_player', 'Otro jugador de la liga')}</strong>`;
+
+    // Real leaderboard: the player ranked against ~16 real batter cards
+    // active that year (Career.buildSeasonLeague), all resolved with the
+    // same sampling formula — no synthetic baseline, no probability roll.
+    const table = summary.leagueTable || [];
+    const tableRowsHTML = table.map((row, idx) => {
+      const rank = idx + 1;
+      const bg = row.isPlayer ? 'rgba(236,72,153,0.18)' : 'transparent';
+      const nameColor = row.isPlayer ? '#ec4899' : '#e4e4e7';
+      const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `${rank}.`;
+      return `
+        <div style="display:flex; justify-content:space-between; gap:8px; font-size:10.5px; padding:4px 8px; border-radius:5px; background:${bg}; color:${nameColor};">
+          <span>${medal} ${row.isPlayer ? `<strong>${row.name}</strong>` : row.name}</span>
+          <span>${row.avg.toFixed(3)} · ${Math.round(row.hr)}HR · ${Math.round(row.rbi)}RBI</span>
+        </div>`;
+    }).join('');
+
+    container.innerHTML = `
+      <div style="font-size:12px; color:#e4e4e7; line-height:1.8; text-align:left; max-width:420px; margin:0 auto;">
+        <div>AVG: <strong>${summary.stats.AVG.toFixed(3)}</strong> · OBP: <strong>${summary.stats.OBP.toFixed(3)}</strong> · SLG: <strong>${summary.stats.SLG.toFixed(3)}</strong></div>
+        <div>H: <strong>${summary.stats.H}</strong> · HR: <strong>${summary.stats.HR}</strong> · RBI: <strong>${summary.stats.RBI}</strong> · BB: <strong>${summary.stats.BB}</strong> · SB: <strong>${summary.stats.SB}</strong></div>
+        <div>${t('career.record', 'Récord')}: <strong>${summary.record.w}-${summary.record.l}</strong> (${summary.games || 162} ${t('career.games', 'partidos')})</div>
+        <div style="margin-top:10px;">${t('career.season_quality', 'Puntaje de temporada')}: <strong style="color:#ec4899;">${summary.quality}/100</strong></div>
+      </div>
+      <div style="margin-top:18px; max-width:420px; margin-left:auto; margin-right:auto; text-align:left;">
+        <div style="font-size:10px; color:#ec4899; font-weight:bold; margin-bottom:8px; text-align:center;">${t('career.leaderboard_title', 'TABLA DE LA LIGA')} (${summary.leagueRank}/${summary.leagueSize})</div>
+        <div style="max-height:220px; overflow-y:auto; display:flex; flex-direction:column; gap:2px;">${tableRowsHTML}</div>
+        <div style="margin-top:10px; text-align:center; font-size:11px; color:#e4e4e7;">${t('career.mvp_winner_label', 'MVP de la temporada')}: ${mvpLabel}</div>
+      </div>
+      <div style="margin-top:16px;">${awardsHTML}</div>
+      ${retiredHTML}
+    `;
+
+    renderCareerRatingsInto('career-ratings-panel-end');
+
+    const btnNext = document.getElementById('btn-career-next-season');
+    if (btnNext) {
+      if (summary.retired) {
+        btnNext.textContent = `🏛️ ${t('career.see_hof_verdict', 'VER VEREDICTO DEL SALÓN DE LA FAMA')}`;
+        btnNext.onclick = () => {
+          openCareerHofVoteModal(() => {
+            btnNext.textContent = `🏆 ${t('career.new_career', 'EMPEZAR NUEVA CARRERA')}`;
+            btnNext.onclick = () => {
+              C.clear();
+              showCareerScreen('screen-mode-select');
+            };
+          });
+        };
+      } else {
+        btnNext.textContent = `➡ ${t('career.go_offseason', 'IR AL OFFSEASON')} (${C.currentYear})`;
+        btnNext.onclick = () => {
+          showCareerScreen('screen-career-offseason');
+          renderCareerOffseason();
+        };
+      }
+    }
+  }
+
+  /** Dramatic HOF announcement reveal — resolves the vote once (see
+   * Career.resolveHofVote, idempotent) and ticks the percentage counter up
+   * from 0 to the final tally with setTimeout steps (not
+   * requestAnimationFrame — see CLAUDE.md, rAF never fires in this
+   * project's preview/testing tab), then reveals INDUCTED/NO INDUCTED. */
+  function openCareerHofVoteModal(onDone) {
+    const C = window.Career;
+    const modal = document.getElementById('modal-career-hof-vote');
+    if (!modal) { if (onDone) onDone(); return; }
+    const nameEl = document.getElementById('hof-vote-player-name');
+    const pctEl = document.getElementById('hof-vote-percent');
+    const countEl = document.getElementById('hof-vote-count');
+    const barEl = document.getElementById('hof-vote-bar');
+    const verdictEl = document.getElementById('hof-vote-verdict');
+    const btnContinue = document.getElementById('btn-hof-vote-continue');
+
+    const result = C.resolveHofVote();
+    nameEl.textContent = C.player ? C.player.name : '';
+    pctEl.textContent = '0%';
+    pctEl.style.color = '#e4e4e7';
+    countEl.textContent = '';
+    barEl.style.width = '0%';
+    barEl.style.background = 'linear-gradient(90deg, var(--career-accent-dim), var(--career-accent))';
+    verdictEl.textContent = '';
+    btnContinue.classList.add('hidden');
+    modal.classList.remove('hidden');
+
+    const steps = 40;
+    const stepMs = 40;
+    let i = 0;
+    const tick = () => {
+      i++;
+      const pct = Math.round((result.votePct * i) / steps);
+      pctEl.textContent = `${pct}%`;
+      barEl.style.width = `${pct}%`;
+      countEl.textContent = `${Math.round((result.votesFor * i) / steps)}/${result.votesTotal} ${t('career.hof_votes_label', 'votos')}`;
+      if (i < steps) {
+        setTimeout(tick, stepMs);
+      } else {
+        const inducted = result.inducted;
+        pctEl.style.color = inducted ? '#ffd700' : '#ef4444';
+        barEl.style.background = inducted ? 'linear-gradient(90deg, #f59e0b, #ffd700)' : 'linear-gradient(90deg, #7f1d1d, #ef4444)';
+        verdictEl.textContent = inducted ? `🏛️ ${t('career.hof_inducted', 'INGRESA AL SALÓN DE LA FAMA')}` : `${t('career.hof_not_inducted', 'NO INGRESA — 75% REQUERIDO')}`;
+        verdictEl.style.color = inducted ? '#ffd700' : '#ef4444';
+        if (window.AudioManager) window.AudioManager.play(inducted ? 'roulette_win' : 'roulette_tick');
+        btnContinue.classList.remove('hidden');
+      }
+    };
+    setTimeout(tick, 300);
+
+    btnContinue.onclick = () => {
+      modal.classList.add('hidden');
+      if (onDone) onDone();
+    };
+  }
+
+  // ── OFFSEASON: contract decision (stay vs. 2 free-agent offers) then an
+  // optional winter league risk/reward — a real weighted choice each year,
+  // not a rubber-stamp continue button. ────────────────────────────────────
+  function teamProspectLabel(team) {
+    const pct = team && typeof team.win_pct === 'number' ? team.win_pct : 0.5;
+    if (pct >= 0.560) return { label: t('career.team_tier_champion', 'Candidato al título'), color: '#f59e0b' };
+    if (pct >= 0.500) return { label: t('career.team_tier_competitive', 'Competitivo'), color: '#10b981' };
+    return { label: t('career.team_tier_rebuild', 'En reconstrucción'), color: '#9ca3af' };
+  }
+
+  const CAREER_ROLE_COPY = {
+    starter: { icon: '⭐', label: t('career.role_starter', 'Titular'), color: '#10b981', desc: t('career.role_starter_desc', 'Más turnos, más presión — crecés más rápido') },
+    rotation: { icon: '🔁', label: t('career.role_rotation', 'Rotación'), color: '#3b82f6', desc: t('career.role_rotation_desc', 'Juego parejo, desarrollo estándar') },
+    bench: { icon: '🪑', label: t('career.role_bench', 'Banca'), color: '#9ca3af', desc: t('career.role_bench_desc', 'Pocas chances, crecimiento lento pero seguro') }
+  };
+  function careerRoleBadgeHTML(roleKey) {
+    const r = CAREER_ROLE_COPY[roleKey] || CAREER_ROLE_COPY.rotation;
+    return `<span style="color:${r.color};">${r.icon} ${r.label}</span> — <span style="color:#9ca3af;">${r.desc}</span>`;
+  }
+
+  function renderCareerOffseason() {
+    const C = window.Career;
+    const container = document.getElementById('career-offseason-container');
+    if (!container || !C) return;
+    renderCareerRatingsInto('career-ratings-panel-offseason');
+    renderCareerHistoryInto('career-history-sidebar-offseason');
+
+    if (!C.contractResolved) {
+      const offers = C.getContractOffers();
+      window._careerContractOffers = offers; // stashed for the click handlers below
+      const teamCard = (team, key, isCurrent) => {
+        if (!team) return '';
+        const tier = teamProspectLabel(team);
+        const pct = Math.round((team.win_pct || 0.5) * 1000) / 10;
+        const role = C.getProjectedRole(team);
+        const years = team._offeredYears || 1;
+        return `
+          <button class="btn career-contract-btn" data-choice="${key}" style="display:block; width:100%; margin-bottom:10px; padding:14px; font-size:11px; text-align:left; background:rgba(236,72,153,0.12); border:2px solid #ec4899; color:#fff; cursor:pointer; border-radius:8px;">
+            <div style="font-weight:bold; margin-bottom:4px;">${isCurrent ? '🏠 ' : '✍️ '}${team.name}</div>
+            <div style="font-size:10px; color:${tier.color}; margin-bottom:3px;">${tier.label} · ${pct}% ${t('career.win_pct_label', 'de victorias')}</div>
+            <div style="font-size:9px; color:#9ca3af; margin-bottom:3px;">${t('career.contract_offer_years', 'Contrato de')} ${years} ${years === 1 ? t('career.year_singular', 'año') : t('career.years_short', 'años')}</div>
+            <div style="font-size:9.5px;">${careerRoleBadgeHTML(role)}</div>
+          </button>`;
+      };
+      container.innerHTML = `
+        <div style="font-size:12px; color:#e4e4e7; margin-bottom:16px;">${t('career.contract_prompt', '¿Te quedás en tu equipo o firmás en otro lado?')}</div>
+        ${teamCard(offers.current, 'current', true)}
+        ${teamCard(offers.offerA, 'offerA', false)}
+        ${teamCard(offers.offerB, 'offerB', false)}
+      `;
+      container.querySelectorAll('.career-contract-btn').forEach(btn => {
+        btn.onclick = () => {
+          C.resolveContract(btn.getAttribute('data-choice'), window._careerContractOffers);
+          renderCareerOffseason();
+        };
+      });
+      return;
+    }
+
+    if (!C.offseasonEventResolved) {
+      const outcomes = C.getOffseasonEventOutcomes();
+      C._pendingOffseasonOutcomes = outcomes; // so resolveOffseasonEvent uses the SAME rolled outcomes the wheel showed
+      const items = outcomes.map(o => ({ key: o.key, weight: o.weight, color: o.color, label: o.label }));
+      const renewedNote = C.contractYearsLeft > 0
+        ? `<div style="font-size:10px; color:#9ca3af; margin-bottom:10px;">${t('career.contract_auto_renew', 'Seguís bajo contrato')} — ${C.team ? C.team.name : ''} (${C.contractYearsLeft} ${C.contractYearsLeft === 1 ? t('career.year_singular', 'año') : t('career.years_short', 'años')} ${t('career.years_remaining', 'restantes')}).</div>`
+        : '';
+      container.innerHTML = `${renewedNote}<div style="font-size:12px; color:#e4e4e7; margin-bottom:12px;">${t('career.offseason_event_prompt', 'Algo pasa en el receso antes de la próxima temporada.')}</div><div id="career-offseason-wheel"></div>`;
+      renderCareerWheelWidget(document.getElementById('career-offseason-wheel'), items, (chosenKey) => {
+        const result = C.resolveOffseasonEvent(chosenKey);
+        renderCareerOffseason();
+        flashCareerOffseasonResult(result);
+      }, 'routine');
+      return;
+    }
+
+    container.innerHTML = `
+      <div style="font-size:12px; color:#10b981; margin-bottom:18px;">${t('career.offseason_done', '¡Offseason resuelto! Listo para la próxima temporada.')}</div>
+      <button class="btn" id="btn-offseason-continue" style="width:100%; padding:14px; font-size:12px; font-family:'Press Start 2P',monospace; background:linear-gradient(135deg,#10b981,#059669); border:2px solid #34d399; color:#000; cursor:pointer;">➡ ${t('career.continue', 'CONTINUAR')}</button>
+    `;
+    document.getElementById('btn-offseason-continue').onclick = () => {
+      C.offseasonPending = false;
+      C.save();
+      renderCareerHub();
+      showCareerScreen('screen-career-hub');
+    };
+  }
+
+  function flashCareerOffseasonResult(result) {
+    if (!result || !result.outcome) return;
+    const outcome = result.outcome;
+    const toast = document.createElement('div');
+    let color = '#9ca3af', text = outcome.label;
+    if (outcome.injuryAttr) {
+      color = '#ef4444';
+      text = `🤕 ${outcome.label}: ${CAREER_RATING_LABELS[outcome.injuryAttr]} -${outcome.injuryAmount} (${t('career.winter_injured_note', 'la próxima temporada')})`;
+    } else if (result.ovrDelta > 0) {
+      color = '#10b981';
+      text = `💪 ${outcome.label} (+${result.ovrDelta} OVR)`;
+    } else if (result.ovrDelta < 0) {
+      color = '#ef4444';
+      text = `⚠️ ${outcome.label} (${result.ovrDelta} OVR)`;
+    } else if (outcome.hof) {
+      color = '#f59e0b';
+      text = `🏆 ${outcome.label} (+${outcome.hof} HOF)`;
+    }
+    toast.style.cssText = `position:fixed; top:70px; left:50%; transform:translateX(-50%); z-index:10000; background:rgba(0,0,0,0.85); border:2px solid ${color}; border-radius:8px; padding:10px 16px; font-family:"Press Start 2P",monospace; font-size:9px; color:${color};`;
+    toast.textContent = text;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 2600);
+  }
+
+  // ── PROFILE / TROPHY CASE — season-by-season history, awards, HOF progress ──
+  function renderCareerProfile() {
+    const C = window.Career;
+    const container = document.getElementById('career-profile-container');
+    if (!container || !C || !C.player) return;
+
+    const historyRows = C.seasonHistory.map(s => {
+      const roleBadge = CAREER_ROLE_COPY[s.role] || CAREER_ROLE_COPY.rotation;
+      const awardsStr = s.awards && s.awards.length ? s.awards.map(a => `🏅${a}`).join(' ') : '—';
+      const jump = (typeof s.ovrEnd === 'number' && typeof s.ovrStart === 'number') ? s.ovrEnd - s.ovrStart : null;
+      const jumpHTML = jump === null ? '' : (jump > 0 ? `<span style="color:#10b981;">▲${jump}</span>` : jump < 0 ? `<span style="color:#ef4444;">▼${Math.abs(jump)}</span>` : `<span style="color:#6b7280;">–</span>`);
+      return `
+        <div style="display:grid; grid-template-columns: 50px 1fr 60px 90px 60px 1fr; gap:8px; font-size:10px; padding:5px 6px; border-bottom:1px solid rgba(255,255,255,0.06); align-items:center;">
+          <span style="color:#ec4899; font-weight:bold;">${s.year}</span>
+          <span style="color:#e4e4e7;">${s.team || '—'}</span>
+          <span>${s.ovrEnd || '—'} ${jumpHTML}</span>
+          <span style="color:${roleBadge.color};">${roleBadge.icon} ${roleBadge.label}</span>
+          <span style="color:#9ca3af;">#${s.leagueRank}/${s.leagueSize}</span>
+          <span style="color:#f59e0b;">${awardsStr}</span>
+        </div>`;
+    }).join('') || `<div style="font-size:11px; color:#9ca3af; text-align:center; padding:12px;">${t('career.profile_no_seasons', 'Todavía no jugaste ninguna temporada.')}</div>`;
+
+    const allAwards = C.seasonHistory.flatMap(s => (s.awards || []).map(a => ({ year: s.year, award: a })));
+    const trophyHTML = allAwards.length
+      ? allAwards.map(a => `<span style="display:inline-block; margin:3px; padding:6px 12px; border-radius:8px; background:rgba(245,158,11,0.12); border:1px solid #f59e0b; color:#f59e0b; font-size:10.5px;">🏆 ${a.award} '${String(a.year).slice(2)}</span>`).join('')
+      : `<span style="font-size:11px; color:#9ca3af;">${t('career.profile_no_trophies', 'Vitrina vacía — todavía.')}</span>`;
+
+    // HOF progress bar — no hard cap in the model, just a visual milestone
+    // reference (300 reads as "serious HOF conversation" at current pacing).
+    const hofPct = Math.max(2, Math.min(100, Math.round((C.hofScore / 300) * 100)));
+
+    container.innerHTML = `
+      <div style="display:flex; flex-wrap:wrap; gap:20px; justify-content:center; margin-bottom:22px;">
+        <div>${createCardHTML(C.player)}</div>
+        <div style="text-align:left; min-width:220px; font-size:12px; color:#e4e4e7; line-height:1.8;">
+          <div><strong style="color:#ec4899;">${C.player.name}</strong></div>
+          <div>${t('career.hub_debut', 'Debut')}: <strong>${C.debutYear}</strong></div>
+          <div>${t('career.hub_current_year', 'Temporada')}: <strong>${C.currentYear}</strong></div>
+          <div>${t('career.hub_potential', 'Potencial (OVR)')}: <strong>${getPlayerOvr(C.potential)}</strong></div>
+          <div>${t('career.hub_current', 'OVR actual')}: <strong>${getPlayerOvr(C.player)}</strong></div>
+        </div>
+      </div>
+
+      <div style="max-width:520px; margin:0 auto 22px auto;">
+        <div style="display:flex; justify-content:space-between; font-size:10px; color:#e4e4e7; margin-bottom:4px;">
+          <span>${t('career.hof_progress', 'Progreso al Salón de la Fama')}</span>
+          <span style="color:#f59e0b;">${C.hofScore}</span>
+        </div>
+        <div style="height:10px; background:rgba(255,255,255,0.08); border-radius:5px; overflow:hidden;">
+          <div style="height:100%; width:${hofPct}%; background:linear-gradient(90deg,#f59e0b,#fbbf24);"></div>
+        </div>
+      </div>
+
+      <div style="max-width:520px; margin:0 auto 22px auto;">
+        <div style="font-size:10px; color:#ec4899; font-weight:bold; margin-bottom:8px; text-align:center;">${t('career.profile_trophy_case', 'VITRINA DE PREMIOS')}</div>
+        <div style="text-align:center;">${trophyHTML}</div>
+      </div>
+
+      <div style="max-width:640px; margin:0 auto;">
+        <div style="font-size:10px; color:#ec4899; font-weight:bold; margin-bottom:8px; text-align:center;">${t('career.profile_history_title', 'HISTORIAL DE TEMPORADAS')}</div>
+        <div style="max-height:260px; overflow-y:auto;">${historyRows}</div>
+      </div>
+
+      <div id="career-ratings-panel-profile" style="margin-top:20px;"></div>
+    `;
+    renderCareerRatingsInto('career-ratings-panel-profile');
+  }
+
+  /** Real standings for the current career year (Career.getYearStandings)
+   * — the "liga viva" surface: every real team from OpponentsDatabase that
+   * season, grouped by league/division when the data has them, ranked by
+   * win_pct, with the player's own team highlighted. */
+  function renderCareerStandings() {
+    const C = window.Career;
+    const container = document.getElementById('career-standings-container');
+    const titleEl = document.getElementById('career-standings-title');
+    if (!container || !C) return;
+    if (titleEl) titleEl.textContent = `📊 ${t('career.standings_title', 'POSICIONES')} — ${C.currentYear}`;
+
+    const teams = C.getYearStandings(C.currentYear);
+    if (!teams.length) {
+      container.innerHTML = `<div style="font-size:11px; color:#9ca3af; text-align:center; padding:20px;">${t('career.standings_none', 'No hay datos de liga para este año.')}</div>`;
+      return;
+    }
+
+    const groups = {};
+    let hasGroups = false;
+    teams.forEach(team => {
+      const key = team.league ? `${team.league}${team.division ? ' - ' + team.division : ''}` : t('career.standings_league', 'Liga');
+      if (team.league || team.division) hasGroups = true;
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(team);
+    });
+    const groupKeys = hasGroups ? Object.keys(groups).sort() : [t('career.standings_league', 'Liga')];
+    if (!hasGroups) groups[groupKeys[0]] = teams;
+
+    const rowHTML = (team, rank) => {
+      const isPlayerTeam = C.team && team.teamID === C.team.teamID;
+      const pct = Math.round((team.win_pct || 0) * 1000) / 10;
+      return `
+        <div style="display:grid; grid-template-columns:28px 1fr 60px; gap:8px; font-size:10.5px; padding:5px 8px; border-radius:5px; background:${isPlayerTeam ? 'rgba(236,72,153,0.18)' : 'transparent'}; color:${isPlayerTeam ? 'var(--career-accent)' : '#e4e4e7'};">
+          <span>${rank}.</span>
+          <span>${isPlayerTeam ? `<strong>${team.name}</strong> ⚾` : team.name}</span>
+          <span style="text-align:right;">${pct}%</span>
+        </div>`;
+    };
+
+    container.innerHTML = groupKeys.map(key => {
+      const rows = groups[key].map((team, idx) => rowHTML(team, idx + 1)).join('');
+      return `
+        <div style="max-width:480px; margin:0 auto 18px auto; text-align:left;">
+          <div style="font-size:10px; color:var(--career-accent); font-weight:bold; margin-bottom:6px; text-align:center;">${key}</div>
+          ${rows}
+        </div>`;
+    }).join('');
+  }
+
+  /** Shop of real (non-cosmetic) perks bought with Career.cash — same
+   * tiered-card visual language as the choice cards (A3) and Train, since
+   * these are the same kind of decision: pick a card, pay a cost, get a
+   * mechanical effect. */
+  function renderCareerShop() {
+    const C = window.Career;
+    const container = document.getElementById('career-shop-container');
+    const cashEl = document.getElementById('career-shop-cash');
+    if (!container || !C) return;
+    cashEl.textContent = `💵 ${t('career.shop_balance', 'Saldo')}: $${C.cash || 0}K`;
+
+    const items = C.getShopCatalog();
+    container.innerHTML = items.map((item, idx) => {
+      const tierData = TRAINING_TIER_CONFIG.tiers[item.tier] || TRAINING_TIER_CONFIG.tiers.Normal;
+      const canAfford = (C.cash || 0) >= item.cost;
+      const activeSeasons = item.effectKey && C.shopEffects ? (C.shopEffects[item.effectKey] || 0) : 0;
+      const statusHTML = activeSeasons > 0
+        ? `<div style="font-size:9px; color:#10b981; margin-top:6px;">✅ ${t('career.shop_active_for', 'Activo')} ${activeSeasons} ${activeSeasons === 1 ? t('career.year_singular', 'año') : t('career.years_short', 'años')}</div>`
+        : '';
+      const animDelay = idx * 0.1;
+      return `
+        <div class="career-choice-card" data-item="${item.key}" style="border:2px solid ${tierData.borderColor}; opacity:${canAfford ? '1' : '0.55'}; cursor:${canAfford ? 'pointer' : 'not-allowed'}; animation-delay:${animDelay}s;">
+          <div>
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+              <span style="font-family:'Press Start 2P',monospace; font-size:8px; color:${tierData.color}; background:${tierData.badgeBg}; border:1px solid ${tierData.color}66; padding:3px 8px; border-radius:12px;">${tierData.label}</span>
+            </div>
+            <div style="text-align:center; padding:8px 0;">
+              <div style="font-weight:bold; font-size:13px; color:#e2e8f0; margin-bottom:6px;">${item.label}</div>
+              <div style="font-size:10.5px; color:#9ca3af; line-height:1.4;">${item.desc}</div>
+              ${statusHTML}
+            </div>
+          </div>
+          <div style="margin-top:14px; border-top:1px solid rgba(255,255,255,0.06); padding-top:12px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+              <span style="font-size:10px; color:#64748b;">${t('career.shop_cost', 'Costo')}</span>
+              <span style="font-family:'Press Start 2P',monospace; font-size:10px; color:${tierData.color};">$${item.cost}K</span>
+            </div>
+            <button class="btn career-shop-buy-btn" ${canAfford ? '' : 'disabled'} style="width:100%; padding:9px; font-size:9.5px; font-weight:bold; background:${canAfford ? `linear-gradient(135deg, ${tierData.color}, ${tierData.color}dd)` : '#334155'}; color:${canAfford ? '#000' : '#94a3b8'}; border:none; border-radius:8px; cursor:${canAfford ? 'pointer' : 'not-allowed'};">${canAfford ? t('career.shop_buy', 'COMPRAR') : t('career.shop_cant_afford', 'FONDOS INSUFICIENTES')}</button>
+          </div>
+        </div>`;
+    }).join('');
+
+    container.querySelectorAll('.career-shop-buy-btn').forEach((btn, idx) => {
+      if (btn.disabled) return;
+      btn.onclick = () => {
+        C.purchaseShopItem(items[idx].key);
+        renderCareerShop();
+        renderCareerRatingsInto('career-ratings-panel-hub');
+      };
+    });
+  }
+
+  function initCareerMode() {
+    const btnCareer = document.getElementById('btn-select-career-mode');
+    const modalDifficulty = document.getElementById('modal-career-difficulty');
+    const btnCloseDifficulty = document.getElementById('btn-close-career-difficulty-modal');
+
+    if (btnCareer && modalDifficulty) {
+      btnCareer.onclick = () => modalDifficulty.classList.remove('hidden');
+    }
+    if (btnCloseDifficulty && modalDifficulty) {
+      btnCloseDifficulty.onclick = () => modalDifficulty.classList.add('hidden');
+    }
+    document.querySelectorAll('#career-difficulty-options .difficulty-option').forEach(opt => {
+      opt.addEventListener('click', () => {
+        const difficulty = opt.getAttribute('data-difficulty');
+        if (modalDifficulty) modalDifficulty.classList.add('hidden');
+        showCareerScreen('screen-career-pack');
+        renderCareerRookiePack(difficulty);
+      });
+    });
+
+    // Resume an existing career straight to the hub if one is saved.
+    if (window.Career && window.Career.hasSave() && window.Career.load() && window.Career.active) {
+      // Don't auto-navigate on load; the hub is reachable once the user re-enters Career mode.
+    }
+
+    const btnCareerProfileOpen = document.getElementById('btn-career-open-profile');
+    const btnCareerProfileBack = document.getElementById('btn-career-profile-back');
+    if (btnCareerProfileOpen) {
+      btnCareerProfileOpen.onclick = () => {
+        renderCareerProfile();
+        showCareerScreen('screen-career-profile');
+      };
+    }
+    if (btnCareerProfileBack) {
+      btnCareerProfileBack.onclick = () => {
+        renderCareerHub();
+        showCareerScreen('screen-career-hub');
+      };
+    }
+
+    const btnCareerStandingsOpen = document.getElementById('btn-career-open-standings');
+    const btnCareerStandingsBack = document.getElementById('btn-career-standings-back');
+    if (btnCareerStandingsOpen) {
+      btnCareerStandingsOpen.onclick = () => {
+        renderCareerStandings();
+        showCareerScreen('screen-career-standings');
+      };
+    }
+    if (btnCareerStandingsBack) {
+      btnCareerStandingsBack.onclick = () => {
+        renderCareerHub();
+        showCareerScreen('screen-career-hub');
+      };
+    }
+
+    const btnCareerShopOpen = document.getElementById('btn-career-open-shop');
+    const btnCareerShopClose = document.getElementById('btn-career-shop-close');
+    const modalCareerShop = document.getElementById('modal-career-shop');
+    if (btnCareerShopOpen && modalCareerShop) {
+      btnCareerShopOpen.onclick = () => {
+        renderCareerShop();
+        modalCareerShop.classList.remove('hidden');
+      };
+    }
+    if (btnCareerShopClose && modalCareerShop) {
+      btnCareerShopClose.onclick = () => modalCareerShop.classList.add('hidden');
+    }
+  }
+  window.renderCareerRookiePack = renderCareerRookiePack;
+  window.renderCareerHub = renderCareerHub;
+  window.renderCareerSeason = renderCareerSeason;
+  window.finishCareerSeason = finishCareerSeason;
+  window.renderCareerOffseason = renderCareerOffseason;
+  window.renderCareerProfile = renderCareerProfile;
+
   function init() {
     initGameModeSelector();
+    initCareerMode();
     // NOTE: do NOT call renderDraftRound() here — window.Game doesn't exist yet on page load.
     // It is called by initGameModeSelector handlers after the user selects a mode.
     setupEventListeners();
@@ -2245,11 +3681,34 @@ function initGameModeSelector() {
       setupTrainingScreen();
     } else if (node.type === 'rest') {
       window.showScreen('screen-rest');
+    } else if (node.type === 'chest') {
+      openChestNode();
+    } else if (node.type === 'gamble') {
+      openGambleNode();
     }
   }
 
   // Return to Map view once action completes
   function closeNodeCompleted() {
+    // Tick down any position locks from a failed "Intercambio a Ciegas" gamble
+    if (window.Game.positionLocks) {
+      Object.keys(window.Game.positionLocks).forEach(pos => {
+        if (window.Game.positionLocks[pos] > 0) window.Game.positionLocks[pos]--;
+        if (window.Game.positionLocks[pos] <= 0) delete window.Game.positionLocks[pos];
+      });
+    }
+
+    // veteran_rotation: +30% Stamina to the whole roster when entering a new zone/map
+    if (window.Game.hasTrait('veteran_rotation')) {
+      const prevZone = window.Game.getZoneForStage(window.Game.currentStageIndex);
+      const nextZone = window.Game.getZoneForStage(window.Game.currentStageIndex + 1);
+      if (nextZone !== prevZone) {
+        Object.values(window.Game.roster).forEach(p => {
+          if (p) p.stamina = Math.min(100, (p.stamina || 100) + 30);
+        });
+      }
+    }
+
     // Advance current stage
     window.Game.currentStageIndex++;
 
@@ -2470,6 +3929,37 @@ function initGameModeSelector() {
         </div>
         <span style="color:${stamColor};font-size:10px;font-family:'Press Start 2P',monospace;">${stam}%</span>
       </div>
+      ${(() => {
+        const isPitcher = player.pos === 'P' || player.pos === 'SP' || player.pos === 'RP' || player.role === 'SP' || player.role === 'RP';
+        if (isPitcher || isDraft) return '';
+        const s = (window.Game.runBatterStats || {})[player.name];
+        if (!s || !((s.ab || 0) > 0 || (s.bb || 0) > 0)) return '';
+        const ab = s.ab || 0, h = s.h || 0, bb = s.bb || 0, so = s.so || 0, hr = s.hr || 0, rbi = s.rbi || 0, sb = s.sb || 0;
+        const b2 = s.doubles || 0, b3 = s.triples || 0;
+        const pa = ab + bb;
+        const totalBases = Math.max(0, h - b2 - b3 - hr) + (2 * b2) + (3 * b3) + (4 * hr);
+        const avg = ab > 0 ? (h / ab).toFixed(3).replace(/^0/, '') : '.000';
+        const obp = pa > 0 ? ((h + bb) / pa).toFixed(3).replace(/^0/, '') : '.000';
+        const slg = ab > 0 ? (totalBases / ab).toFixed(3).replace(/^0/, '') : '.000';
+        return `
+      <div class="popup-run-stats-row" style="margin-top:10px; padding-top:10px; border-top:1px dashed rgba(255,255,255,0.15);">
+        <div style="font-size:8px; color:var(--primary-color); font-family:'Press Start 2P',monospace; margin-bottom:6px;">📊 STATS DE ESTA RUN</div>
+        <div style="display:flex; flex-wrap:wrap; gap:6px; font-size:9px;">
+          <span class="popup-upgrade-badge">AB ${ab}</span>
+          <span class="popup-upgrade-badge">H ${h}</span>
+          <span class="popup-upgrade-badge">2B ${b2}</span>
+          <span class="popup-upgrade-badge">3B ${b3}</span>
+          <span class="popup-upgrade-badge">HR ${hr}</span>
+          <span class="popup-upgrade-badge">RBI ${rbi}</span>
+          <span class="popup-upgrade-badge">SB ${sb}</span>
+          <span class="popup-upgrade-badge">BB ${bb}</span>
+          <span class="popup-upgrade-badge">SO ${so}</span>
+          <span class="popup-upgrade-badge">AVG ${avg}</span>
+          <span class="popup-upgrade-badge">OBP ${obp}</span>
+          <span class="popup-upgrade-badge">SLG ${slg}</span>
+        </div>
+      </div>`;
+      })()}
       ${player.upgrades && Object.values(player.upgrades).some(v => v > 0) ? `
         <div class="popup-upgrades-row">
           <span style="font-size:8px;color:var(--primary-color);font-family:'Press Start 2P',monospace;">⬆ UPGRADES:</span>
@@ -2556,6 +4046,8 @@ function initGameModeSelector() {
     event:  { iconClass: 'fa-solid fa-clipboard-question',text: 'EVT',  label: 'EVENTO',   color: '#fb923c', bg: '#1a0e00', border: '#fb923c' },
     train:  { iconClass: 'fa-solid fa-dumbbell',          text: 'GYM',  label: 'ENTRENO',  color: '#22d3ee', bg: '#011a1a', border: '#22d3ee' },
     rest:   { iconClass: 'fa-solid fa-couch',             text: 'REST', label: 'DESCANSO', color: '#c084fc', bg: '#12001a', border: '#c084fc' },
+    chest:  { iconClass: 'fa-solid fa-gem',               text: 'LOOT', label: 'COFRE',    color: '#facc15', bg: '#1a1400', border: '#facc15' },
+    gamble: { iconClass: 'fa-solid fa-dice',              text: 'BET',  label: 'APUESTA',  color: '#ef4444', bg: '#1a0000', border: '#ef4444' },
   };
 
   // RENDER VISUAL POKELIKE MAP - Math-based layout (no DOM measurement)
@@ -2895,6 +4387,8 @@ function initGameModeSelector() {
 
   // RENDER SIDEBAR SYNERGIES & ITEMS
   function renderSynergiesAndItems() {
+    renderActiveItemBonuses();
+
     // 1. Synergies (Right Sidebar)
     el.synergiesList.innerHTML = "";
     
@@ -2943,10 +4437,12 @@ function initGameModeSelector() {
     // Count active roster players
     Object.values(window.Game.roster).forEach(player => {
       if (player && !player.isReplacement) {
-        if (player.era) {
+        if (player.era && !player.synergyBanned) {
           // Keep in sync with simulation.js's _calculateActiveSynergies — Story
-          // Mode inter-era wildcards count double toward their own era's synergy.
-          eraCounts[player.era] = (eraCounts[player.era] || 0) + (player.isInterEra ? 2 : 1);
+          // Mode inter-era wildcards count double toward their own era's synergy,
+          // and synergyWeight overrides that (e.g. a successful "Sinergia Prohibida" gamble sets it to 4).
+          const weight = player.synergyWeight || (player.isInterEra ? 2 : 1);
+          eraCounts[player.era] = (eraCounts[player.era] || 0) + weight;
         }
         if (player.team && player.team !== 'ROOK') {
           teamCounts[player.team] = (teamCounts[player.team] || 0) + 1;
@@ -3096,7 +4592,7 @@ function initGameModeSelector() {
     if (window.Game.purchasedItems.length === 0) {
       el.purchasedItemsList.innerHTML = `
         <div style="color: #64748b; font-size: 8px; text-align:center; padding: 10px 0; width: 100%; font-family: 'Press Start 2P', monospace;">
-          NADA COMPRADO
+          ${t('sidebar.no_items', 'NADA COMPRADO')}
         </div>
       `;
     } else {
@@ -3369,11 +4865,13 @@ function initGameModeSelector() {
     activeSlots.forEach(slot => {
       const player = window.Game.roster[slot];
       if (player) {
+        const nodesLeft = window.Game.positionLocks ? (window.Game.positionLocks[slot] || 0) : 0;
+        const locked = nodesLeft > 0;
         const item = document.createElement('div');
         item.className = "swap-bench-item";
         item.innerHTML = `
-          <div><strong>[${slot}]</strong> ${player.name} (${player.pos} | ${player.rarity})</div>
-          <button class="btn btn-secondary" style="padding: 4px 10px; font-size:11px; background:#ef4444;" data-replace-slot="${slot}">Reemplazar</button>
+          <div><strong>[${slot}]</strong> ${player.name} (${player.pos} | ${player.rarity})${locked ? ` <span style="color:#ef4444;font-size:10px;">🔒 bloqueado (${nodesLeft} nodos)</span>` : ''}</div>
+          <button class="btn btn-secondary" style="padding: 4px 10px; font-size:11px; background:${locked ? '#334155' : '#ef4444'};" data-replace-slot="${slot}" ${locked ? 'disabled title="Posición bloqueada por una apuesta fallida"' : ''}>Reemplazar</button>
         `;
         el.modalSwapList.appendChild(item);
       }
@@ -3387,15 +4885,19 @@ function initGameModeSelector() {
     const event = window.Game.getRandomEvent();
     el.eventTitle.innerHTML = `<span style="font-size:28px;margin-right:10px;">${event.icon || '📜'}</span>${event.title}`;
     el.eventDesc.innerText = event.desc;
-    
+
     el.eventChoicesContainer.innerHTML = "";
     event.choices.forEach(choice => {
       const btn = document.createElement('button');
       btn.className = `event-choice-btn event-choice-risk-${choice.risk || 'safe'}`;
-      
+
       const costText = choice.cost > 0 ? `-$${choice.cost}` : (choice.cost < 0 ? `+$${Math.abs(choice.cost)}` : "GRATIS");
       const riskBadge = choice.risk === 'high' ? '🔴 ALTO RIESGO' : (choice.risk === 'moderate' ? '🟡 RIESGO MODERADO' : '🟢 SEGURO');
-      const chanceText = choice.successChance && choice.successChance < 1.0 ? ` (${Math.round(choice.successChance * 100)}% ÉXITO)` : '';
+      const isRisky = choice.successChance !== undefined && choice.successChance < 1.0;
+      const chanceText = isRisky ? ` (${Math.round(choice.successChance * 100)}% ÉXITO)` : '';
+      const failPreviewHTML = (isRisky && choice.failPreview)
+        ? `<div style="font-size:10px;color:#ef4444;margin-top:3px;">❌ ${Math.round((1 - choice.successChance) * 100)}% FALLO → ${choice.failPreview}</div>`
+        : '';
 
       btn.innerHTML = `
         <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;">
@@ -3406,6 +4908,7 @@ function initGameModeSelector() {
               <div style="font-size:11px;color:#94a3b8;margin-top:2px;">
                 <span class="choice-risk-tag choice-risk-${choice.risk || 'safe'}">${riskBadge}</span>${chanceText}
               </div>
+              ${failPreviewHTML}
             </div>
           </div>
           <div style="font-family:'Press Start 2P',monospace;font-size:11px;color:${choice.cost < 0 ? '#10b981' : '#f59e0b'};">
@@ -3413,61 +4916,119 @@ function initGameModeSelector() {
           </div>
         </div>
       `;
-      
+
       // Check budget
       if (choice.cost > 0 && window.Game.budget < choice.cost) {
         btn.disabled = true;
         btn.style.opacity = '0.5';
       }
-      
+
       btn.addEventListener('click', () => {
         // Apply budget cost
         window.Game.budget -= choice.cost;
-        
-        const roll = Math.random();
+
         const chance = choice.successChance !== undefined ? choice.successChance : 1.0;
-        const isSuccess = roll <= chance;
+        const isSuccess = Math.random() <= chance;
 
-        let title, badgeText, badgeColor, icon, desc;
+        const resolveChoice = () => {
+          let title, badgeText, badgeColor, icon, desc;
 
-        if (isSuccess) {
-          choice.action(window.Game);
-          title = choice.text;
-          badgeText = choice.risk === 'high' ? (typeof window.t==='function'?window.t('ev.badge_risk_success'):'¡ÉXITO EN EL RIESGO!') : (typeof window.t==='function'?window.t('ev.badge_taken'):'¡DECISIÓN TOMADA!');
-          badgeColor = '#10b981';
-          icon = choice.icon || '✨';
-          desc = choice.successMsg || (typeof window.t==='function'?window.t('ev.generic_success'):'La decisión se ejecutó con éxito en tu plantilla.');
+          if (isSuccess) {
+            choice.action(window.Game);
+            title = choice.text;
+            badgeText = choice.risk === 'high' ? (typeof window.t==='function'?window.t('ev.badge_risk_success'):'¡ÉXITO EN EL RIESGO!') : (typeof window.t==='function'?window.t('ev.badge_taken'):'¡DECISIÓN TOMADA!');
+            badgeColor = '#10b981';
+            icon = choice.icon || '✨';
+            desc = choice.successMsg || (typeof window.t==='function'?window.t('ev.generic_success'):'La decisión se ejecutó con éxito en tu plantilla.');
+          } else {
+            if (choice.failAction) choice.failAction(window.Game);
+            title = choice.text;
+            badgeText = '¡RIESGO FALLIDO!';
+            badgeColor = '#ef4444';
+            icon = '❌';
+            desc = choice.failMsg || (typeof window.t==='function'?window.t('ev.generic_fail'):'La opción arriesgada no salió como esperabas y provocó consecuencias negativas.');
+          }
+
+          if (choice.cost !== 0) {
+            window.Game.purchasedItems.push(`${event.title}: ${choice.text.substring(0, 20)}...`);
+          }
+
+          renderActiveRoster();
+          renderSynergiesAndItems();
+          updateHUD();
+
+          showRetroResultModal({
+            title,
+            badgeText,
+            badgeColor,
+            icon,
+            desc,
+            onClose: () => closeNodeCompleted()
+          });
+        };
+
+        if (chance < 1.0) {
+          showRiskRouletteModal({ chance, isSuccess, onDone: resolveChoice });
         } else {
-          if (choice.failAction) choice.failAction(window.Game);
-          title = choice.text;
-          badgeText = '¡RIESGO FALLIDO!';
-          badgeColor = '#ef4444';
-          icon = '❌';
-          desc = choice.failMsg || (typeof window.t==='function'?window.t('ev.generic_fail'):'La opción arriesgada no salió como esperabas y provocó consecuencias negativas.');
+          resolveChoice();
         }
-
-        if (choice.cost !== 0) {
-          window.Game.purchasedItems.push(`${event.title}: ${choice.text.substring(0, 20)}...`);
-        }
-
-        renderActiveRoster();
-        renderSynergiesAndItems();
-        updateHUD();
-
-        showRetroResultModal({
-          title,
-          badgeText,
-          badgeColor,
-          icon,
-          desc,
-          onClose: () => closeNodeCompleted()
-        });
       });
-      
+
       el.eventChoicesContainer.appendChild(btn);
     });
-    
+
     window.showScreen('screen-event');
+  }
+
+  // ── RISK ROULETTE: spins to the pre-rolled outcome, then reveals it ────
+  function showRiskRouletteModal({ chance, isSuccess, onDone }) {
+    const overlay = document.createElement('div');
+    overlay.className = 'roulette-overlay';
+
+    const greenDeg = Math.max(6, Math.min(354, chance * 360));
+    const pad = 4;
+    let target;
+    if (isSuccess) {
+      const lo = pad, hi = Math.max(lo + 1, greenDeg - pad);
+      target = lo + Math.random() * (hi - lo);
+    } else {
+      const lo = greenDeg + pad, hi = Math.max(lo + 1, 360 - pad);
+      target = lo + Math.random() * (hi - lo);
+    }
+    // The wheel spins clockwise (positive deg), so the segment that ends up under the
+    // fixed pointer at the top is the one at (360 - rotation) in the gradient's own
+    // coordinates, not at `rotation` itself — rotate by the complement so `target`
+    // actually lands under the pointer instead of its mirror image.
+    const totalRotation = 5 * 360 + (360 - target);
+
+    overlay.innerHTML = `
+      <div class="roulette-modal">
+        <div class="roulette-title">🎡 RULETA DE RIESGO</div>
+        <div class="roulette-wrap">
+          <div class="roulette-pointer">▼</div>
+          <div class="roulette-wheel" id="roulette-wheel" style="background: conic-gradient(#10b981 0deg ${greenDeg}deg, #ef4444 ${greenDeg}deg 360deg);">
+            <div class="roulette-center">${Math.round(chance * 100)}%<br><span style="font-size:8px;">ÉXITO</span></div>
+          </div>
+        </div>
+        <div class="roulette-status" id="roulette-status">Girando...</div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+
+    const wheel = overlay.querySelector('#roulette-wheel');
+    wheel.style.transition = 'transform 3.2s cubic-bezier(0.15,0.65,0.15,1)';
+    void wheel.offsetWidth; // force reflow so the transition registers before the rotation change
+    wheel.style.transform = `rotate(${totalRotation}deg)`;
+
+    setTimeout(() => {
+      const status = overlay.querySelector('#roulette-status');
+      status.textContent = isSuccess ? '✅ ¡ÉXITO!' : '❌ FALLASTE';
+      status.style.color = isSuccess ? '#10b981' : '#ef4444';
+      setTimeout(() => {
+        overlay.remove();
+        onDone();
+      }, 900);
+    }, 3200);
   }
 
   // ── CENTRALIZED TRAINING TIER CONFIGURATION ─────────────────────────────
@@ -3942,6 +5503,8 @@ function initGameModeSelector() {
         el.style.filter = 'none';
       }
     });
+    // Reset tension escalation state for the new match
+    if (el.matchArena) el.matchArena.classList.remove('danger-1', 'danger-2', 'danger-3');
     el.matchLogLines.innerHTML = '';
     el.arenaBatterCardSlot.innerHTML = '';
     el.arenaPitcherCardSlot.innerHTML = '';
@@ -3954,7 +5517,7 @@ function initGameModeSelector() {
     const avgDef = window.Game.calculateLineupShield();
 
     // ── Create InteractiveBattle ──────────────────────────────────────────────
-    activeBattle = new window.InteractiveBattle(teamLineups.away, teamLineups.home, avgDef, window.Game.buildEra);
+    activeBattle = new window.InteractiveBattle(teamLineups.away, teamLineups.home, avgDef, window.Game.buildEra, window.Game.equippedTraits.map(t => t.id));
     isRolling = false;
 
     // ── Audio: Play Ball! ─────────────────────────────────────────────────────
@@ -4517,6 +6080,18 @@ function initGameModeSelector() {
     setTimeout(() => element.classList.remove(cssClass), 500);
   }
 
+  // Combines inning progression + team HP into a discrete danger tier (0-3),
+  // used to drive the .match-arena ambient tension effect as the game nears its end.
+  function computeDangerLevel(state) {
+    if (!state) return 0;
+    const inning = state.inning || 1;
+    const hp = state.teamHP;
+    let tier = inning >= 3 ? 2 : inning >= 2 ? 1 : 0;
+    if (hp <= 25) tier = 3;
+    else if (hp <= 50) tier = Math.max(tier, 2);
+    return tier;
+  }
+
   function updateMatchHUD(state, options = {}) {
     if (!state) return;
 
@@ -4571,6 +6146,13 @@ function initGameModeSelector() {
         : state.teamHP <= 50
         ? 'linear-gradient(90deg,#f59e0b,#fcd34d)'
         : 'linear-gradient(90deg,#10b981,#34d399)';
+    }
+
+    // Tension escalation: danger tier from inning + HP, drives .match-arena vignette/pulse
+    const dangerLevel = computeDangerLevel(state);
+    if (el.matchArena) {
+      el.matchArena.classList.remove('danger-1', 'danger-2', 'danger-3');
+      if (dangerLevel > 0) el.matchArena.classList.add(`danger-${dangerLevel}`);
     }
 
     // Shield bar — shake on damage
@@ -5198,21 +6780,207 @@ function initGameModeSelector() {
     if (!traitPanel) {
       traitPanel = document.createElement('div');
       traitPanel.id = 'equipped-traits-panel';
-      traitPanel.style.cssText = 'margin-top:10px;padding:10px;border-top:1px dashed rgba(255,215,0,0.3);';
-      const sidebar = document.getElementById('synergies-list-container');
+      traitPanel.style.cssText = 'margin-top:10px;padding:10px 4px;border-top:1px dashed rgba(255,215,0,0.3);';
+      const sidebar = document.getElementById('left-active-effects-panel');
       if (sidebar) sidebar.appendChild(traitPanel);
     }
     const traits = window.Game.equippedTraits || [];
     if (!traits.length) { traitPanel.innerHTML = ''; return; }
     traitPanel.innerHTML = `
-      <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#ffd700;margin-bottom:8px;">✨ TRAITS ACTIVAS</div>
-      ${traits.map(t => `
-        <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:8px;padding:8px;background:rgba(255,215,0,0.06);border-radius:8px;border:1px solid rgba(255,215,0,0.2);">
-          <span style="font-size:18px;flex-shrink:0;">${t.icon}</span>
-          <div><div style="font-size:9px;color:#fef08a;font-weight:bold;margin-bottom:3px;">${t.name}</div><div style="font-size:9px;color:#94a3b8;line-height:1.4;">${t.desc}</div></div>
-        </div>
-      `).join('')}
+      <div style="font-family:'Press Start 2P',monospace;font-size:7px;color:#ffd700;margin-bottom:6px;">✨ TRAITS ACTIVAS</div>
+      <div style="max-height:110px;overflow-y:auto;display:flex;flex-direction:column;gap:4px;">
+        ${traits.map(t => `
+          <div title="${t.desc.replace(/"/g, '&quot;')}" style="display:flex;align-items:center;gap:6px;padding:4px 6px;background:rgba(255,215,0,0.06);border-radius:6px;border:1px solid rgba(255,215,0,0.2);cursor:help;">
+            <span style="font-size:13px;flex-shrink:0;line-height:1;">${t.icon}</span>
+            <span style="font-size:8px;color:#fef08a;font-weight:bold;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${t.name}</span>
+          </div>
+        `).join('')}
+      </div>
     `;
+  }
+
+  // ── ACTIVE ITEM/MANAGER-DECISION BONUSES: makes stat changes from events visible ──
+  // (activeItemBonuses feeds getEffectiveStats() for every player, but was never
+  // surfaced anywhere in the UI — buffs/debuffs from Manager Events were real but invisible.)
+  function renderActiveItemBonuses() {
+    let panel = document.getElementById('active-item-bonuses-panel');
+    if (!panel) {
+      panel = document.createElement('div');
+      panel.id = 'active-item-bonuses-panel';
+      panel.style.cssText = 'margin-top:10px;padding:10px 4px;border-top:1px dashed rgba(56,189,248,0.3);';
+      const sidebar = document.getElementById('left-active-effects-panel');
+      if (sidebar) sidebar.appendChild(panel);
+    }
+    const bonuses = window.Game.activeItemBonuses || {};
+    const labels = { teamCon: 'CON', teamPwr: 'PWR', teamEye: 'EYE', teamSpd: 'SPD', teamDef: 'DEF' };
+    const entries = Object.keys(labels)
+      .map(key => ({ label: labels[key], val: bonuses[key] || 0 }))
+      .filter(e => e.val !== 0);
+
+    if (!entries.length) { panel.innerHTML = ''; return; }
+    panel.innerHTML = `
+      <div style="font-family:'Press Start 2P',monospace;font-size:7px;color:#38bdf8;margin-bottom:6px;">📋 DECISIONES ACTIVAS</div>
+      <div style="display:flex;flex-wrap:wrap;gap:4px;">
+        ${entries.map(e => `
+          <span style="font-size:9px;font-weight:bold;padding:3px 6px;border-radius:6px;background:${e.val > 0 ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)'};color:${e.val > 0 ? '#10b981' : '#ef4444'};border:1px solid ${e.val > 0 ? 'rgba(16,185,129,0.35)' : 'rgba(239,68,68,0.35)'};">
+            ${e.val > 0 ? '+' : ''}${e.val} ${e.label}
+          </span>
+        `).join('')}
+      </div>
+    `;
+  }
+
+  // ── CHEST NODE: free trait, no fight required ─────────────────────────
+  function openChestNode() {
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.92);backdrop-filter:blur(12px);z-index:800;display:flex;align-items:center;justify-content:center;';
+
+    const choices = window.Game.getRandomTraitChoices(1);
+    const trait = choices[0];
+
+    if (!trait) {
+      overlay.innerHTML = `
+        <div style="max-width:420px;width:90%;text-align:center;padding:24px;">
+          <div style="font-size:48px;margin-bottom:12px;">📦</div>
+          <div style="font-family:'Press Start 2P',monospace;font-size:12px;color:#facc15;margin-bottom:14px;">COFRE VACÍO</div>
+          <div style="font-size:12px;color:#cbd5e1;margin-bottom:20px;">Ya tenés todas las traits disponibles. El cofre te deja +$15 de consuelo.</div>
+          <button class="btn" id="btn-chest-claim" style="background:linear-gradient(135deg,#facc15,#f59e0b);color:#000;font-weight:bold;">Reclamar</button>
+        </div>`;
+      document.body.appendChild(overlay);
+      overlay.querySelector('#btn-chest-claim').addEventListener('click', () => {
+        window.Game.budget = (window.Game.budget || 0) + 15;
+        overlay.remove();
+        updateHUD();
+        closeNodeCompleted();
+      });
+      return;
+    }
+
+    overlay.innerHTML = `
+      <div style="max-width:340px;width:90%;text-align:center;padding:20px;">
+        <div class="chest-loot-icon" style="font-size:52px;margin-bottom:10px;">📦</div>
+        <div style="font-family:'Press Start 2P',monospace;font-size:12px;color:#facc15;text-shadow:0 0 15px rgba(250,204,21,0.6);margin-bottom:16px;">¡COFRE ENCONTRADO!</div>
+        <div class="trait-choice-card" style="
+          background:rgba(10,15,24,0.95);border:2px solid rgba(250,204,21,0.5);
+          border-radius:14px;padding:22px 18px;box-shadow:0 4px 24px rgba(250,204,21,0.15);
+        ">
+          <div style="font-size:36px;margin-bottom:10px;">${trait.icon}</div>
+          <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:#facc15;margin-bottom:10px;line-height:1.5;">${trait.name}</div>
+          <div style="font-size:11px;color:#cbd5e1;line-height:1.5;">${trait.desc}</div>
+        </div>
+        <button class="btn" id="btn-chest-claim" style="margin-top:18px;width:100%;background:linear-gradient(135deg,#facc15,#f59e0b);color:#000;font-weight:bold;">✨ Reclamar Trait</button>
+      </div>`;
+
+    document.body.appendChild(overlay);
+    overlay.querySelector('#btn-chest-claim').addEventListener('click', () => {
+      window.Game.equipTrait(trait.id);
+      overlay.remove();
+      renderEquippedTraits();
+      closeNodeCompleted();
+    });
+  }
+
+  // ── GAMBLE NODE: single all-or-nothing bet, dice-in-the-middle layout ─
+  function openGambleNode() {
+    const gamble = window.Game.getRandomGamble();
+    const overlay = document.createElement('div');
+    overlay.className = 'gamble-overlay';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(20,0,0,0.92);backdrop-filter:blur(12px);z-index:800;display:flex;align-items:center;justify-content:center;';
+
+    const rosterOptions = gamble.requiresTargetPlayer
+      ? Object.keys(window.Game.roster)
+          .filter(pos => window.Game.roster[pos] && window.Game.roster[pos].era)
+          .map(pos => `<option value="${pos}">[${pos}] ${window.Game.roster[pos].name} (${window.Game.roster[pos].era})</option>`)
+          .join('')
+      : '';
+
+    overlay.innerHTML = `
+      <div style="max-width:560px;width:92%;text-align:center;padding:20px;">
+        <div style="font-family:'Press Start 2P',monospace;font-size:12px;color:#ef4444;text-shadow:0 0 15px rgba(239,68,68,0.6);margin-bottom:6px;">🎲 APUESTA DE ALTO RIESGO</div>
+        <div style="font-size:22px;margin:6px 0 10px;">${gamble.icon} ${gamble.title}</div>
+        <div style="font-size:12px;color:#cbd5e1;margin-bottom:18px;line-height:1.5;">${gamble.desc}</div>
+
+        <div style="display:flex;align-items:center;justify-content:center;gap:18px;margin:20px 0;">
+          <div class="gamble-outcome-card gamble-outcome-win">
+            <div style="font-size:20px;">✅</div>
+            <div style="font-size:9px;color:#10b981;font-weight:bold;margin-top:4px;">ÉXITO (${Math.round(gamble.chance * 100)}%)</div>
+          </div>
+          <div class="gamble-coin-wrap">
+            <div class="gamble-coin" id="gamble-coin">
+              <div class="gamble-coin-face gamble-coin-front">✅</div>
+              <div class="gamble-coin-face gamble-coin-back">❌</div>
+            </div>
+          </div>
+          <div class="gamble-outcome-card gamble-outcome-lose">
+            <div style="font-size:20px;">❌</div>
+            <div style="font-size:9px;color:#ef4444;font-weight:bold;margin-top:4px;">FALLO (${100 - Math.round(gamble.chance * 100)}%)</div>
+          </div>
+        </div>
+
+        ${gamble.requiresTargetPlayer ? `
+          <div style="margin-bottom:16px;">
+            <label style="font-size:10px;color:#94a3b8;display:block;margin-bottom:6px;">Elegí el jugador objetivo:</label>
+            <select id="gamble-target-select" style="width:100%;padding:8px;background:#0a0f18;color:#fff;border:1px solid rgba(239,68,68,0.4);border-radius:8px;font-size:11px;">
+              ${rosterOptions || '<option disabled>Sin jugadores con Era válida</option>'}
+            </select>
+          </div>
+        ` : ''}
+
+        <div id="gamble-result" style="min-height:24px;font-size:12px;color:#fde68a;margin-bottom:12px;"></div>
+
+        <div style="display:flex;gap:12px;justify-content:center;">
+          <button class="btn" id="btn-gamble-bet" style="background:linear-gradient(135deg,#ef4444,#f59e0b);color:#000;font-weight:bold;">🪙 APOSTAR</button>
+          <button class="btn btn-secondary" id="btn-gamble-decline">🚪 Rechazar</button>
+        </div>
+      </div>`;
+
+    document.body.appendChild(overlay);
+
+    let betResolved = false;
+    const betBtn = overlay.querySelector('#btn-gamble-bet');
+    const declineBtn = overlay.querySelector('#btn-gamble-decline');
+
+    declineBtn.addEventListener('click', () => {
+      overlay.remove();
+      if (betResolved) {
+        renderActiveRoster();
+        renderSynergiesAndItems();
+        updateHUD();
+      }
+      closeNodeCompleted();
+    });
+
+    betBtn.addEventListener('click', () => {
+      const select = overlay.querySelector('#gamble-target-select');
+      if (gamble.requiresTargetPlayer && (!select || !select.value)) return;
+
+      betBtn.disabled = true;
+      declineBtn.disabled = true;
+
+      // Resolve the actual outcome FIRST, then animate the coin to match it exactly —
+      // never animate "blind" and reveal separately, or the visual can drift from the
+      // real result (this is the same bug class we just fixed on the risk roulette).
+      const result = window.Game.resolveGamble(gamble.id, select ? select.value : null);
+      betResolved = true;
+
+      const coin = overlay.querySelector('#gamble-coin');
+      coin.classList.add('gamble-coin-flipping');
+      const flips = 4;
+      // Front face (✅) rests at 0deg; landing on a multiple of 360 keeps it showing.
+      // Back face (❌) is pre-rotated 180deg; landing on 360k+180 brings IT to face the viewer.
+      const totalDeg = result.success ? flips * 360 : flips * 360 + 180;
+      coin.style.transform = `rotateY(${totalDeg}deg)`;
+
+      setTimeout(() => {
+        const resultEl = overlay.querySelector('#gamble-result');
+        resultEl.style.color = result.success ? '#10b981' : '#ef4444';
+        resultEl.textContent = result.resultText;
+
+        betBtn.style.display = 'none';
+        declineBtn.textContent = 'Continuar';
+        declineBtn.disabled = false;
+      }, 1900);
+    });
   }
 
   // ── SUPER BOSS INTRO MODAL ────────────────────────────────────────────
@@ -5444,25 +7212,29 @@ function initGameModeSelector() {
 
     tbodyP.innerHTML = '';
     if (!pitcherNames.length) {
-      tbodyP.innerHTML = '<tr><td colspan="8" style="padding:12px;color:#64748b;text-align:center;">Sin datos de lanzadores registrados.</td></tr>';
+      tbodyP.innerHTML = '<tr><td colspan="9" style="padding:12px;color:#64748b;text-align:center;">Sin datos de lanzadores registrados.</td></tr>';
     } else {
       pitcherNames.forEach(name => {
         const ps = pitcherStats[name];
         const outs = ps.outs || 0;
         const ip = `${Math.floor(outs / 3)}.${outs % 3}`;
         const er  = ps.er || 0;
+        const bb  = ps.bb || 0;
+        const h   = ps.h || 0;
         const era = outs > 0 ? ((er * 27) / outs).toFixed(2) : '--.--';
+        const whip = outs > 0 ? ((bb + h) / (outs / 3)).toFixed(2) : '--.--';
         const tr = document.createElement('tr');
         tr.style.cssText = 'border-bottom:1px solid rgba(255,255,255,0.06);';
         tr.innerHTML = `
           <td style="padding:8px;color:#e2e8f0;font-weight:bold;">${name}</td>
           <td style="padding:8px;color:#22d3ee;">${ip}</td>
           <td style="padding:8px;color:#a78bfa;">${ps.k || 0}</td>
-          <td style="padding:8px;color:#fbbf24;">${ps.bb || 0}</td>
-          <td style="padding:8px;color:#94a3b8;">${ps.h || 0}</td>
+          <td style="padding:8px;color:#fbbf24;">${bb}</td>
+          <td style="padding:8px;color:#94a3b8;">${h}</td>
           <td style="padding:8px;color:#ef4444;">${ps.hr || 0}</td>
           <td style="padding:8px;color:#f87171;">${er}</td>
           <td style="padding:8px;color:${parseFloat(era) > 4.5 ? '#ef4444' : '#10b981'};font-weight:bold;">${era}</td>
+          <td style="padding:8px;color:${parseFloat(whip) > 1.3 ? '#ef4444' : '#10b981'};font-weight:bold;">${whip}</td>
         `;
         tbodyP.appendChild(tr);
       });
