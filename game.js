@@ -2322,7 +2322,12 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
 
       const stagePool = fullPool.filter(p => allowedRarities.includes(p.rarity) || ((p.ovr || 50) >= minOvr && (p.ovr || 50) <= maxOvr));
       const p1 = createPitcherObj(pickPitcher(stagePool, 'SP'), 'SP');
-      const p2 = createPitcherObj(pickPitcher(stagePool), 'SP');
+      // p2 is picked with no role preference (any pitcher), so forcing roleOverride
+      // 'SP' here used to tag it as SP in the dex key even when the real pool card
+      // was an RP — that key never matched any pool entry, so this pitcher could
+      // never show as "unlocked" in the BaseballDex grid despite being fought.
+      // Let it keep its own natural role instead of forcing one.
+      const p2 = createPitcherObj(pickPitcher(stagePool));
       const p3 = createPitcherObj(pickPitcher(stagePool, 'RP'), 'RP');
       const selected = [p1, p2, p3];
 
