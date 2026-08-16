@@ -64,6 +64,7 @@
 
   const FranchiseNames = {
     NLB: "Ligas Negras",
+    HIST: "Franquicia Histórica",
     NYY: "New York Yankees",
     NYM: "New York Mets",
     LAD: "Los Angeles Dodgers",

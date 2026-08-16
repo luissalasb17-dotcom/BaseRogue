@@ -13,7 +13,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.tailwindcss.com"></script>
   
-  <link rel="stylesheet" href="style.css?v=155">
+  <link rel="stylesheet" href="style.css?v=168">
   <style>
     @keyframes bounce {
       0%, 100% { transform: translateY(0); }
@@ -114,10 +114,24 @@
           <div class="mode-title" data-i18n="mode_select.career_title">MODO CARRERA</div>
           <div class="mode-subtitle" data-i18n="mode_select.career_subtitle">DE ROOKIE AL SALÓN DE LA FAMA</div>
           <div class="mode-desc" data-i18n="mode_select.career_desc">
-            Elegí un rookie y llevá su carrera temporada a temporada, año real por año real, hasta el retiro. ¿Va a alcanzar su potencial... o va a quedar corto?
+            Elige un rookie y lleva su carrera temporada a temporada, año real por año real, hasta el retiro. ¿Alcanzará su potencial... o se quedará corto?
           </div>
           <button class="btn btn-mode" id="btn-select-career-mode" data-i18n="mode_select.career_btn">
             🏆 EMPEZAR CARRERA
+          </button>
+        </div>
+
+        <!-- MODE 4: 162-0 CHALLENGE — build a roster from unlocked winning-run
+             players and chase a perfect regular season. -->
+        <div class="mode-card challenge162-card" id="card-mode-challenge162">
+          <div class="mode-icon">🏆</div>
+          <div class="mode-title" data-i18n="mode_select.challenge162_title">162-0 CHALLENGE</div>
+          <div class="mode-subtitle" data-i18n="mode_select.challenge162_subtitle">TEMPORADA PERFECTA</div>
+          <div class="mode-desc" data-i18n="mode_select.challenge162_desc">
+            Arma un equipo con jugadores y lanzadores que ya desbloqueaste ganando runs de Partida Rápida o Modo Historia. Simula una temporada de 162 partidos. Ganalos todos y jugá los playoffs.
+          </div>
+          <button class="btn btn-mode" id="btn-select-challenge-mode" data-i18n="mode_select.challenge162_btn">
+            🏆 ARMAR EQUIPO
           </button>
         </div>
       </div>
@@ -144,7 +158,7 @@
         <button id="btn-close-career-difficulty-modal" style="position: absolute; top: 12px; right: 14px; background: none; border: none; color: #9ca3af; font-size: 18px; cursor: pointer;">✕</button>
 
         <div style="font-family: 'Press Start 2P', monospace; font-size: 13px; color: #ec4899; margin-bottom: 10px;" data-i18n="career.difficulty_title">
-          🏆 ELEGÍ LA DIFICULTAD
+          🏆 ELIGE LA DIFICULTAD
         </div>
         <p style="font-size: 11px; color: #9ca3af; line-height: 1.4; margin-bottom: 18px;" data-i18n="career.difficulty_desc">
           Define el tier de tus 3 opciones de rookie. Cuanto más bajo el tier, más difícil llegar al potencial y al Salón de la Fama.
@@ -173,7 +187,7 @@
     <!-- SCREEN: CAREER ROOKIE PACK PICK -->
     <div class="glass-panel hidden" id="screen-career-pack" style="position: relative; max-width: 900px; margin: 20px auto; text-align: center; padding: 30px 20px;">
       <div style="font-family: 'Press Start 2P', monospace; font-size: 13px; color: #ec4899; margin-bottom: 20px;" data-i18n="career.pack_title">
-        🏆 ELEGÍ TU ROOKIE
+        🏆 ELIGE TU ROOKIE
       </div>
       <div id="career-pack-container" style="display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; align-items: flex-start; min-height: 260px;"></div>
     </div>
@@ -312,6 +326,34 @@
       </button>
     </div>
 
+    <!-- SCREEN: 162-0 CHALLENGE — ROSTER BUILDER -->
+    <div class="glass-panel hidden" id="screen-challenge-roster" style="position: relative; max-width: 1440px; width: 95%; margin: 6px auto; padding: 10px 14px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+        <div style="font-family: 'Press Start 2P', monospace; font-size: 12px; color: var(--challenge162-accent);" data-i18n="challenge162.builder_title">🏆 CONSTRUYE TU EQUIPO</div>
+        <button id="btn-challenge162-back-menu" class="btn btn-secondary" style="padding:5px 10px; font-size:9px;" data-i18n="common.back_menu">← MENÚ</button>
+      </div>
+      <div id="challenge162-roster-container"></div>
+    </div>
+
+    <!-- SCREEN: 162-0 CHALLENGE — SEASON (standings + stats) -->
+    <div class="glass-panel hidden" id="screen-challenge-season" style="position: relative; max-width: 1320px; width: 95%; margin: 20px auto; padding: 26px 20px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;">
+        <div style="font-family: 'Press Start 2P', monospace; font-size: 13px; color: var(--challenge162-accent);" data-i18n="challenge162.title">🏆 162-0 CHALLENGE — TEMPORADA</div>
+        <button id="btn-challenge162-season-back-menu" class="btn btn-secondary" style="padding:6px 12px; font-size:10px;" data-i18n="common.back_menu">← MENÚ</button>
+      </div>
+      <div id="challenge162-season-container"></div>
+    </div>
+
+    <!-- SCREEN: 162-0 CHALLENGE — PLAYOFFS -->
+    <div class="glass-panel hidden" id="screen-challenge-playoffs" style="position: relative; max-width: 700px; margin: 20px auto; padding: 30px 20px;">
+      <div id="challenge162-playoffs-container"></div>
+    </div>
+
+    <!-- SCREEN: 162-0 CHALLENGE — RESULTS -->
+    <div class="glass-panel hidden" id="screen-challenge-results" style="position: relative; max-width: 600px; margin: 20px auto; padding: 30px 20px;">
+      <div id="challenge162-results-container"></div>
+    </div>
+
     <!-- MODAL: SEASON SELECTOR (1901-2025) -->
     <div id="modal-season-select" class="hidden" style="position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px;">
       <div class="glass-panel" style="max-width: 500px; width: 100%; border: 2px solid #10b981; box-shadow: 0 0 30px rgba(16,185,129,0.3); padding: 25px; text-align: center; position: relative;">
@@ -366,7 +408,7 @@
           ⚾ ¡ARRANCA LA TEMPORADA!
         </div>
         <p style="font-size: 13px; color: #e4e4e7; line-height: 1.6; margin-bottom: 22px; text-align: left;" data-i18n-html="run_intro.desc">
-          Firmá a tus leyendas, armá tu alineación, y salí a la cancha. Ganá partidos para conseguir presupuesto y mejorá a tus jugadores. Sumá sinergias de era para potenciar tu equipo. Derrotá a los 3 pitchers rivales antes de que se acaben las 3 entradas — o antes de que tu HP llegue a 0.<br><br><strong style="color: var(--primary-color);">¿Tenés lo que hace falta para ser campeón?</strong>
+          Firma a tus leyendas, arma tu alineación y sal al campo. Gana partidos para conseguir presupuesto y mejora a tus jugadores. Suma sinergias de era para potenciar tu equipo. Derrota a los 3 lanzadores rivales antes de que se acaben las 3 entradas — o antes de que tu HP llegue a 0.<br><br><strong style="color: var(--primary-color);">¿Tienes lo que hace falta para ser campeón?</strong>
         </p>
         <label style="display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 11px; color: #9ca3af; margin-bottom: 18px; cursor: pointer;">
           <input type="checkbox" id="chk-run-intro-skip" style="width: 16px; height: 16px; cursor: pointer; accent-color: var(--primary-color);">
@@ -687,7 +729,10 @@
                   <strong style="color:#f59e0b;">PWR — Poder:</strong> Probabilidad de conectar extra-bases (dobles, triples, jonrones). También aumenta el daño al pitcher rival en hits largos.
                 </div>
                 <div style="background:rgba(255,255,255,0.04);padding:6px 8px;border-radius:6px;border-left:3px solid #3b82f6;" data-i18n-html="ratings_guide.eye">
-                  <strong style="color:#3b82f6;">EYE — Ojo/Vista:</strong> Probabilidad de obtener boletos (BB). Reduce la zona de ponches. Clave para no recibir daño directo al HP.
+                  <strong style="color:#3b82f6;">EYE — Ojo/Vista:</strong> Probabilidad de obtener boletos (BB). Clave para avanzar corredores y desgastar al lanzador rival.
+                </div>
+                <div style="background:rgba(255,255,255,0.04);padding:6px 8px;border-radius:6px;border-left:3px solid #ec4899;" data-i18n-html="ratings_guide.k_avd">
+                  <strong style="color:#ec4899;">K/AVD — Evasión de Ponches:</strong> Reduce la zona de ponches (SO) en la tirada del dado. Clave para evitar el daño directo a la salud del equipo que provocan los ponches.
                 </div>
                 <div style="background:rgba(255,255,255,0.04);padding:6px 8px;border-radius:6px;border-left:3px solid #38bdf8;" data-i18n-html="ratings_guide.spd">
                   <strong style="color:#38bdf8;">SPD — Velocidad:</strong> Activa intentos de robo de base en sencillos (debuff +20% daño al pitcher). También mejora la probabilidad de convertir hits en extra-bases.
@@ -800,6 +845,16 @@
                 </button>
                 <button class="btn" id="btn-victory-play-again" style="background: linear-gradient(135deg, #10b981, #059669); font-size: 10px; padding: 14px 20px; flex: 1; min-width: 200px;" data-i18n-html="victory.replay_btn">
                   <i class="fa-solid fa-rotate-right"></i> Jugar Nuevamente
+                </button>
+              </div>
+
+              <div id="victory-challenge162-cta" style="max-width: 520px; margin: 22px auto 0 auto; padding: 14px 18px; border-radius: 12px; background: rgba(245,158,11,0.08); border: 1px solid rgba(255,215,0,0.35); box-shadow: 0 0 20px rgba(255,215,0,0.15);">
+                <div style="font-size: 12px; color: #ffd700; margin-bottom: 6px;" data-i18n="victory.challenge162_hint_title">🏆 ¿Le alcanza a este roster para el 162-0?</div>
+                <p style="font-size: 11px; color: #cbd5e1; margin: 0 0 12px 0; line-height: 1.5;" data-i18n="victory.challenge162_hint_desc">
+                  Los jugadores y lanzadores de esta run ya están desbloqueados para el 162-0 Challenge. Arma el equipo y prueba si aguanta una temporada completa.
+                </p>
+                <button class="btn btn-secondary" id="btn-victory-goto-challenge162" style="font-size: 10px; padding: 10px 18px;" data-i18n-html="victory.challenge162_hint_btn">
+                  <i class="fa-solid fa-trophy"></i> Probar en el 162-0 Challenge
                 </button>
               </div>
             </div>
@@ -949,18 +1004,20 @@
   </script>
   <!-- Load Game Scripts -->
   <script src="src/lib/i18next.min.js"></script>
-  <script src="src/i18n.js?v=33"></script>
-  <script src="players.js?v=168"></script>
-  <script src="pitchers_pool.js?v=170"></script>
+  <script src="src/i18n.js?v=38"></script>
+  <script src="players.js?v=169"></script>
+  <script src="pitchers_pool.js?v=172"></script>
+  <script src="player_team_history.js?v=2"></script>
   <script src="opponents_database.js?v=16"></script>
-  <script src="game_cards_pool.js?v=167"></script>
+  <script src="game_cards_pool.js?v=168"></script>
   <script src="simulation.js?v=174"></script>
-  <script src="game.js?v=180"></script>
+  <script src="game.js?v=181"></script>
   <script src="audio.js?v=1"></script>
   <script src="career_data.js?v=1"></script>
   <script src="career.js?v=26"></script>
-  <script src="basedex.js?v=2"></script>
-  <script src="ui.js?v=239"></script>
+  <script src="basedex.js?v=7"></script>
+  <script src="challenge162.js?v=65"></script>
+  <script src="ui.js?v=245"></script>
 
 </body>
 </html>

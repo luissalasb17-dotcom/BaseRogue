@@ -25,7 +25,7 @@ OUT_JS_PREVIEW = Path(__file__).parent / "opponents_database.preview.js"
 
 # ── Parametros — deben quedar en sync con pitchers_etl.py salvo donde se indique ──
 MIN_IP_SEASON_ELIGIBLE = 10.0   # piso minimo de IP en la temporada para entrar a un roster de equipo (evita ruido de 1-2 apariciones)
-GS_RATIO_SP_THRESHOLD  = 0.40   # mismo umbral que el split SP/RP de pitchers_etl.py
+GS_RATIO_SP_THRESHOLD  = 0.50   # umbral 50% para definir rol SP (GS/G >= 0.50) o RP (GS/G < 0.50)
 
 LOW_WINPCT_MAX  = 0.480   # < esto = tier "low"
 HIGH_WINPCT_MIN = 0.560   # >= esto = tier "high"  (entre medio = "mid")
@@ -123,9 +123,9 @@ def map_to_cosmetic_ovr_p(r):
     elif val <= 74.0:
         res = 79.0 + ((val - 58.0) / 16.0) * 8.0
     elif val <= 85.0:
-        res = 88.0 + ((val - 74.0) / 11.0) * 6.0
+        res = 88.0 + ((val - 74.0) / 11.0) * 7.0
     else:
-        res = 95.0 + min(4.0, ((val - 85.0) / 18.0) * 4.0)
+        res = 95.0 + min(4.9, ((val - 85.0) / 13.0) * 4.9)
     return round(res, 1)
 
 
@@ -175,17 +175,29 @@ def main():
 
     # ── WAR anual (BBRef), misma logica que pitchers_etl.py ───────────────────
     war = war_pitch.copy()
-    for col in ["WAR","GS","G","IPouts","ERA_plus"]:
+    for col in ["WAR","GS","G","IPouts","IPouts_start","IPouts_relief","ERA_plus"]:
         if col in war.columns:
             war[col] = pd.to_numeric(
                 war[col].replace("NULL", np.nan) if isinstance(war[col].iloc[0], str) else war[col],
                 errors="coerce"
             ).fillna(0)
-    war_season = war.groupby(["player_ID","year_ID"]).agg(war_season=("WAR","sum")).reset_index()
-    war_season.columns = ["bbrefID","yearID","war_season"]
+        else:
+            war[col] = 0.0
+    war_season = war.groupby(["player_ID","year_ID"]).agg(
+        war_season    =("WAR",           "sum"),
+        ipouts_start_y=("IPouts_start",  "sum"),
+        ipouts_rel_y  =("IPouts_relief", "sum"),
+    ).reset_index()
+    war_season.columns = ["bbrefID","yearID","war_season","ipouts_start_y","ipouts_rel_y"]
     id_map = people[["playerID","bbrefID"]].dropna(subset=["bbrefID"])
-    war_yearly = war_season.merge(id_map, on="bbrefID", how="left").dropna(subset=["playerID"])[["playerID","yearID","war_season"]]
+    war_yearly = war_season.merge(id_map, on="bbrefID", how="left").dropna(subset=["playerID"])[["playerID","yearID","war_season","ipouts_start_y","ipouts_rel_y"]]
     py = py.merge(war_yearly, on=["playerID","yearID"], how="left")
+
+    # Fallbacks limpios si no hay desglose de BBRef
+    has_start_outs = py["ipouts_start_y"].notna()
+    est_sp_outs = np.where(py["G"] > 0, (py["GS"] / py["G"]) * py["IPouts"], 0.0)
+    py["ipouts_start_clean"] = np.where(has_start_outs, py["ipouts_start_y"].fillna(0), est_sp_outs)
+    py["ipouts_rel_clean"]   = np.where(has_start_outs, py["ipouts_rel_y"].fillna(0), py["IPouts"] - est_sp_outs)
 
     # ── Rol por temporada (SP/RP) — mismo umbral que la nueva ponderacion de relevo ──
     gs_ratio = py["GS"] / py["G"].replace(0, np.nan)
@@ -199,9 +211,12 @@ def main():
     py["bb9_raw"] = (py["BB"]   + m_ip * (3.2/9.0)) / (ip_k + m_ip) * 9.0
     py["hr9_raw"] = (py["HR_a"] + m_ip * (0.9/9.0)) / (ip_k + m_ip) * 9.0
 
-    is_sp = py["role"] == "SP"
-    py["sta_raw"] = np.where(is_sp, py["IP_y"] / py["GS"].replace(0, np.nan), py["IP_y"] / py["G"].replace(0, np.nan))
-    py["sta_raw"] = py["sta_raw"].fillna(0)
+    is_sp = (py["role"] == "SP")
+    py["sta_raw"] = np.where(
+        is_sp,
+        (py["IP_y"] / py["GS"].replace(0, np.nan)).fillna(6.0),
+        (py["IP_y"] / py["G"].replace(0, np.nan)).fillna(1.2)
+    )
 
     py["era_label"] = py["yearID"].apply(assign_era)
 
@@ -211,10 +226,26 @@ def main():
     py = normalize_difficulty_adjusted(py, "bb9_raw", "bb9_val", invert=True)
     py = normalize_difficulty_adjusted(py, "hr9_raw", "hr9_val", invert=True)
 
-    is_sp = py["role"] == "SP"
-    sp_sta = (30.0 + (py["sta_raw"] / 7.0) * 55.0).clip(35.0, 110.0)
-    rp_sta = (15.0 + py["sta_raw"] * 10.0).clip(15.0, 35.0)
-    py["sta_val"] = np.where(is_sp, sp_sta, rp_sta).round(1)
+    # Stamina calibrada según IP de la temporada (sin penalización invertida por era):
+    def map_ip_to_sta(ip):
+        if ip is None or pd.isna(ip): return 45.0
+        val = float(ip)
+        if val <= 50.0:
+            return 15.0 + (val / 50.0) * 10.0
+        elif val <= 80.0:
+            return 25.0 + ((val - 50.0) / 30.0) * 15.0
+        elif val <= 130.0:
+            return 40.0 + ((val - 80.0) / 50.0) * 20.0
+        elif val <= 175.0:
+            return 60.0 + ((val - 130.0) / 45.0) * 18.0
+        elif val <= 225.0:
+            return 78.0 + ((val - 175.0) / 50.0) * 14.0
+        elif val <= 290.0:
+            return 92.0 + ((val - 225.0) / 65.0) * 14.0
+        else:
+            return 106.0 + min(19.0, ((val - 290.0) / 100.0) * 19.0)
+
+    py["sta_val"] = py["IP_y"].apply(map_ip_to_sta).round(1)
 
     py["stf"] = py["k9_val"].round(0).astype(int)
     py["ctl"] = py["bb9_val"].round(0).astype(int)
@@ -229,6 +260,7 @@ def main():
     # HP viene de la stamina, no del OVR — identico a game.js::createPitcherObj
     # (SP: 45 + sta/99*75 | RP: 25 + sta/99*20), para que Quick Play y Story Mode
     # calculen el HP de la misma forma.
+    is_sp = (py["role"] == "SP")
     sp_hp = 45.0 + (py["sta_val"] / 99.0) * 75.0
     rp_hp = 25.0 + (py["sta_val"] / 99.0) * 20.0
     py["hp"] = np.where(is_sp, sp_hp, rp_hp).round(0).astype(int)
@@ -276,7 +308,9 @@ def main():
 
         for _, trow in year_teams.iterrows():
             roster = year_pitchers[year_pitchers["primary_team"] == trow["teamID"]].copy()
-            roster["war_sort"] = roster["war_season"].fillna(roster["IP_y"] / 50.0)
+            is_relief = roster["role"] == "RP"
+            relief_mult = np.where(is_relief, 1.6, 1.0)
+            roster["war_sort"] = roster["war_season"].fillna(roster["IP_y"] / 50.0) * relief_mult
             roster = roster.sort_values("war_sort", ascending=False).head(3)
             if roster.empty:
                 continue
@@ -377,9 +411,9 @@ def main():
     print(f"  {len(result):,} anios procesados")
 
     js_content = "window.OpponentsDatabase = " + json.dumps(result, ensure_ascii=False, indent=2) + ";\n"
-    with open(OUT_JS_PREVIEW, "w", encoding="utf-8") as f:
+    with open(OUT_JS, "w", encoding="utf-8") as f:
         f.write(js_content)
-    print(f"  [OK] Preview escrito en {OUT_JS_PREVIEW} (NO se sobreescribio opponents_database.js)")
+    print(f"  [OK]  opponents_database.js -> {OUT_JS}")
 
 
 if __name__ == "__main__":

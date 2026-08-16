@@ -181,12 +181,12 @@
       id: 'slump_watch',
       label: 'Racha',
       stakes: 'notable',
-      prompt: 'Llevás varios juegos raros. La prensa empieza a preguntar.',
+      prompt: 'Llevas varios juegos discretos. La prensa empieza a preguntar.',
       getOutcomes(player) {
         const form = Math.max(15, Math.min(80, (player.con + player.eye) / 2));
         return [
-          { key: 'break_out', label: 'Rompés la racha', color: '#10b981', weight: form, ovr: 2 },
-          { key: 'stay_same', label: 'Seguís igual', color: '#9ca3af', weight: 100 - form, ovr: 0 }
+          { key: 'break_out', label: 'Rompes la racha', color: '#10b981', weight: form, ovr: 2 },
+          { key: 'stay_same', label: 'Sigues igual', color: '#9ca3af', weight: 100 - form, ovr: 0 }
         ];
       }
     },
@@ -212,8 +212,8 @@
         const clutch = Math.max(10, 100 - edge - strikeoutRisk);
         return [
           { key: 'clutch_hit', label: 'Batazo oportuno', color: '#f59e0b', weight: clutch, ovr: 3, rep: 2 },
-          { key: 'out', label: 'Fallás en el momento', color: '#9ca3af', weight: edge, ovr: 0 },
-          { key: 'strikeout', label: 'Te ponchás', color: '#ef4444', weight: strikeoutRisk, ovr: -2, rep: -1 }
+          { key: 'out', label: 'Fallas en el momento', color: '#9ca3af', weight: edge, ovr: 0 },
+          { key: 'strikeout', label: 'Te ponchas', color: '#ef4444', weight: strikeoutRisk, ovr: -2, rep: -1 }
         ];
       }
     },
@@ -225,8 +225,8 @@
       getOutcomes(player) {
         const stamina = Math.max(15, Math.min(75, (player.def + player.spd) / 2));
         return [
-          { key: 'hold_up', label: 'Aguantás el ritmo', color: '#10b981', weight: stamina, ovr: 1 },
-          { key: 'wear_down', label: 'Te desgastás', color: '#ef4444', weight: 100 - stamina, ovr: -1 }
+          { key: 'hold_up', label: 'Aguantas el ritmo', color: '#10b981', weight: stamina, ovr: 1 },
+          { key: 'wear_down', label: 'Te desgastas', color: '#ef4444', weight: 100 - stamina, ovr: -1 }
         ];
       }
     },
@@ -234,12 +234,12 @@
       id: 'media_pressure',
       label: 'Presión mediática',
       stakes: 'notable',
-      prompt: 'Se habla mucho de vos esta semana — contrato, comparaciones, todo.',
+      prompt: 'Se habla mucho de ti esta semana — contrato, comparaciones, todo.',
       getOutcomes(player) {
         const composure = Math.max(15, Math.min(75, player.eye));
         return [
-          { key: 'thrive', label: 'Rendís bajo presión', color: '#10b981', weight: composure, ovr: 2, rep: 2 },
-          { key: 'freeze', label: 'Te bloqueás', color: '#ef4444', weight: 100 - composure, ovr: -1, rep: -2 }
+          { key: 'thrive', label: 'Rindes bajo presión', color: '#10b981', weight: composure, ovr: 2, rep: 2 },
+          { key: 'freeze', label: 'Te bloqueas', color: '#ef4444', weight: 100 - composure, ovr: -1, rep: -2 }
         ];
       }
     },
@@ -276,8 +276,8 @@
       title: 'MENTOR DE UN ROOKIE',
       prompt: 'El equipo te pide ser mentor de un prospecto joven esta temporada.',
       options: {
-        accept: { label: 'Aceptar — menos foco en tu juego', ovr: -1, reputation: 6, wear: -3, desc: 'Le bajás el ritmo a tu propio juego, pero el vestuario y la dirigencia lo valoran.' },
-        decline: { label: 'Declinar — enfocarte en vos', ovr: 0, reputation: -1, wear: 0, desc: 'Seguís con tu rutina normal, sin ganar ni perder demasiado.' }
+        accept: { label: 'Aceptar — menos foco en tu juego', ovr: -1, reputation: 6, wear: -3, desc: 'Le bajas el ritmo a tu propio juego, pero el vestuario y la directiva lo valoran.' },
+        decline: { label: 'Declinar — enfocarte en ti', ovr: 0, reputation: -1, wear: 0, desc: 'Sigues con tu rutina normal, sin ganar ni perder demasiado.' }
       }
     },
     {
@@ -286,7 +286,7 @@
       title: 'PREGUNTA DIRECTA EN CONFERENCIA',
       prompt: 'Un periodista te pregunta en vivo si el equipo te va a extender el contrato.',
       options: {
-        confident: { label: 'Contestar con seguridad', ovr: 0, reputation: 4, wear: 0, desc: 'Te jugaste con la respuesta — la afición y la prensa lo valoran.' },
+        confident: { label: 'Contestar con seguridad', ovr: 0, reputation: 4, wear: 0, desc: 'Te arriesgaste con la respuesta — la afición y la prensa lo valoran.' },
         dodge: { label: 'Esquivar la pregunta', ovr: 0, reputation: 0, wear: 0, desc: 'Jugada segura, sin repercusión de ningún lado.' }
       }
     },
@@ -294,20 +294,20 @@
       id: 'allstar_with_injury',
       icon: '⭐',
       title: 'JUEGO DE ESTRELLAS CON MOLESTIA',
-      prompt: 'Te convocan al Juego de Estrellas, pero arrastrás una molestia física real.',
+      prompt: 'Te convocan al Juego de Estrellas, pero arrastras una molestia física real.',
       options: {
         play: { label: 'Jugar igual', ovr: 1, reputation: 8, wear: 10, desc: 'El prestigio vale la pena — pero el cuerpo lo paga.' },
-        decline: { label: 'Declinar la convocatoria', ovr: 0, reputation: -3, wear: -4, desc: 'Cuidás el cuerpo, aunque la afición se lo toma a mal.' }
+        decline: { label: 'Declinar la convocatoria', ovr: 0, reputation: -3, wear: -4, desc: 'Cuidas el cuerpo, aunque la afición se lo toma a mal.' }
       }
     },
     {
       id: 'turning_30_workload',
       icon: '🎂',
-      title: 'CUMPLÍS 30',
-      prompt: 'El cuerpo técnico te pregunta si querés bajar la carga de partidos de acá en adelante.',
+      title: 'CUMPLES 30',
+      prompt: 'El cuerpo técnico te pregunta si quieres bajar la carga de partidos de aquí en adelante.',
       options: {
         reduce: { label: 'Bajar la carga', ovr: 0, reputation: -2, wear: -15, desc: 'Vas a durar más, aunque el equipo lo nota menos presente.' },
-        keep: { label: 'Seguir al mismo ritmo', ovr: 1, reputation: 2, wear: 8, desc: 'Seguís siendo una pieza clave — al precio de siempre.' }
+        keep: { label: 'Seguir al mismo ritmo', ovr: 1, reputation: 2, wear: 8, desc: 'Sigues siendo una pieza clave — al precio de siempre.' }
       }
     },
     {
@@ -316,8 +316,8 @@
       title: 'RUMOR DE TRADE',
       prompt: 'Se filtra que tu nombre está en conversaciones de trade.',
       options: {
-        push: { label: 'Pedir que te definan la situación', ovr: 0, reputation: -4, cash: 30, desc: 'Presionás por claridad y mejor trato — no cae bien puertas adentro.' },
-        quiet: { label: 'No decir nada públicamente', ovr: 0, reputation: 2, cash: 0, desc: 'Mantenés el perfil bajo — el club lo valora.' }
+        push: { label: 'Pedir que te definan la situación', ovr: 0, reputation: -4, cash: 30, desc: 'Presionas por claridad y mejor trato — no cae bien en la gerencia.' },
+        quiet: { label: 'No decir nada públicamente', ovr: 0, reputation: 2, cash: 0, desc: 'Mantienes el perfil bajo — el club lo valora.' }
       }
     },
     {
@@ -327,7 +327,7 @@
       prompt: 'Un representante te propone invertir en tu imagen pública.',
       options: {
         invest: { label: 'Invertir ($50K)', ovr: 0, reputation: 10, cash: -50, desc: 'Un golpe al bolsillo, pero tu imagen mejora de verdad.' },
-        skip: { label: 'Declinar', ovr: 0, reputation: 0, cash: 0, desc: 'Ahorrás el dinero, sin cambios.' }
+        skip: { label: 'Declinar', ovr: 0, reputation: 0, cash: 0, desc: 'Ahorras el dinero, sin cambios.' }
       }
     }
   ];
@@ -568,10 +568,10 @@
      * weights — this is a life-path reveal, not a rigged wheel. */
     getDebutPathwayOptions() {
       return [
-        { key: 'high_school', label: 'Directo de high school', age: 19, ageBonus: 0, color: '#64748b', desc: 'Empezás 3 años más joven, con más margen para crecer — pero más crudo.' },
+        { key: 'high_school', label: 'Directo de high school', age: 19, ageBonus: 0, color: '#64748b', desc: 'Empiezas 3 años más joven, con más margen para crecer — pero más novato.' },
         { key: 'junior_college', label: 'Junior college (2 años)', age: 20, ageBonus: 2, color: '#3b82f6', desc: 'Un poco más de nivel de arranque, un año menos de desarrollo por delante.' },
-        { key: 'college_3', label: 'Universidad (3 años)', age: 21, ageBonus: 4, color: '#10b981', desc: 'Llegás más formado, con menos años de carrera por delante.' },
-        { key: 'college_4', label: 'Universidad (4 años)', age: 22, ageBonus: 6, color: '#f59e0b', desc: 'El mejor nivel de arranque — pero empezás con menos carrera por delante.' }
+        { key: 'college_3', label: 'Universidad (3 años)', age: 21, ageBonus: 4, color: '#10b981', desc: 'Llegas más formado, con menos años de carrera por delante.' },
+        { key: 'college_4', label: 'Universidad (4 años)', age: 22, ageBonus: 6, color: '#f59e0b', desc: 'El mejor nivel de arranque — pero empiezas con menos carrera por delante.' }
       ];
     }
 

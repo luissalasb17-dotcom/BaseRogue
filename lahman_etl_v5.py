@@ -53,14 +53,6 @@ GRADE_THRESHOLDS = [
     (0,   "F"),
 ]
 
-RARITY_THRESHOLDS = [
-    (74, "Legendary"),  # ~4.5% elite all-time legends
-    (58, "Epic"),       # ~10% excelentes estrellas / HOF
-    (48, "Rare"),       # ~17% buenos titulares
-    (39, "Uncommon"),   # ~29% jugadores promedio
-    (0,  "Common"),     # ~39% base / utility
-]
-
 POS_DISPLAY_MAP = {
     "C":  "C",  "1B": "1B", "2B": "2B", "3B": "3B", "SS": "SS",
     "LF": "LF", "CF": "CF", "RF": "RF", "OF": "CF", "DH": "DH",
@@ -312,10 +304,15 @@ def paso_4_pico_batting(batting, war_bat, people):
         bat_yearly["war_off"] = np.nan
         bat_yearly["war_total"] = np.nan
 
+    NLB_WAR_BOOST = 2.0
+    nl_leagues = {'NNL', 'NN2', 'NAL', 'ECL', 'ANL', 'EWL', 'NSL', 'IND', 'EAS', 'NN1'}
+
     def seleccionar_pico_off(group):
         g = group.copy()
         if g["war_off"].notna().any():
-            g = g.sort_values("war_off", ascending=False, na_position="last")
+            is_nlb = (g["lgID"].isin(nl_leagues) if "lgID" in g.columns else False) | (g["teamID"].isin(NLB_TEAMS) if "teamID" in g.columns else False)
+            g["war_off_rank"] = g["war_off"] * np.where(is_nlb, NLB_WAR_BOOST, 1.0)
+            g = g.sort_values("war_off_rank", ascending=False, na_position="last")
         else:
             g = g.sort_values("OPS_y", ascending=False, na_position="last")
         return g.head(PEAK_SEASONS)
@@ -323,7 +320,9 @@ def paso_4_pico_batting(batting, war_bat, people):
     def seleccionar_pico_tot(group):
         g = group.copy()
         if g["war_total"].notna().any():
-            g = g.sort_values("war_total", ascending=False, na_position="last")
+            is_nlb = (g["lgID"].isin(nl_leagues) if "lgID" in g.columns else False) | (g["teamID"].isin(NLB_TEAMS) if "teamID" in g.columns else False)
+            g["war_tot_rank"] = g["war_total"] * np.where(is_nlb, NLB_WAR_BOOST, 1.0)
+            g = g.sort_values("war_tot_rank", ascending=False, na_position="last")
         else:
             g = g.sort_values("OPS_y", ascending=False, na_position="last")
         return g.head(PEAK_SEASONS)
@@ -346,6 +345,7 @@ def paso_4_pico_batting(batting, war_bat, people):
 
     # Métricas de bateo agregadas de sus 7 mejores temporadas de OWAR (pico_off_df)
     peak = pico_off_df.groupby("playerID").agg(
+        total_seasons_in_peak=("yearID", "count"),
         peak_ab  =("AB",  "sum"), peak_h   =("H",   "sum"),
         peak_2b  =("B2",  "sum"), peak_3b  =("B3",  "sum"),
         peak_hr  =("HR",  "sum"), peak_bb  =("BB",  "sum"),
@@ -356,6 +356,9 @@ def paso_4_pico_batting(batting, war_bat, people):
 
     peak = peak.merge(peak_median, on="playerID", how="left")
     peak = peak.merge(peak_display, on="playerID", how="left")
+
+    peak_war_tot = pico_tot_df.groupby("playerID")["war_total"].sum().reset_index().rename(columns={"war_total": "peak_war"})
+    peak = peak.merge(peak_war_tot, on="playerID", how="left")
 
     peak["peak_pa"] = (peak["peak_ab"] + peak["peak_bb"] + peak["peak_hbp"] + peak["peak_sf"]).replace(0, np.nan)
     ab_p = peak["peak_ab"].replace(0, np.nan)
@@ -586,12 +589,13 @@ def paso_8_filtro_ingesta(df, allstar, hof, pure_pitcher_ids, batting):
     no_pitchers = df[~df["playerID"].isin(effective_pure_pitchers)].copy()
     print(f"  No-pitchers elegibles: {len(no_pitchers):,}")
 
+    MIN_AB_ALLSTAR = 100
+
     mask = (
         (no_pitchers["career_ab"] >= MIN_AB_CAREER) |
-        (
-            (no_pitchers["playerID"].isin(allstar_ids) | no_pitchers["playerID"].isin(hof_ids)) &
-            (no_pitchers["career_ab"] >= MIN_AB_ALLSTAR_HOF)
-        )
+        (no_pitchers["peak_war"].fillna(0) >= 7.5) |
+        (no_pitchers["playerID"].isin(hof_ids)) |
+        (no_pitchers["playerID"].isin(allstar_ids) & (no_pitchers["career_ab"] >= MIN_AB_ALLSTAR))
     )
     eligible = no_pitchers[mask].copy()
     eligible["is_allstar"] = eligible["playerID"].isin(allstar_ids)
@@ -608,9 +612,6 @@ def paso_8_filtro_ingesta(df, allstar, hof, pure_pitcher_ids, batting):
     # Comprehensive list of all Negro League lgID codes in Seamheads / Lahman:
     nl_leagues = {'NNL', 'NN2', 'NAL', 'ECL', 'ANL', 'EWL', 'NSL', 'IND', 'EAS', 'NN1'}
     if not batting.empty and 'lgID' in batting.columns:
-        nl_pids = set(batting[batting['lgID'].isin(nl_leagues)]['playerID'].unique())
-        nl_mask = eligible['playerID'].isin(nl_pids)
-        nl_keep = (eligible['is_hof']) | (eligible['allstar_selections'] >= 2) | (eligible['career_ab'] >= 500)
         nl_ab_df = batting[batting['lgID'].isin(nl_leagues)].groupby('playerID')['AB'].sum().reset_index().rename(columns={'AB': 'nlb_ab'})
         mlb_ab_df = batting[~batting['lgID'].isin(nl_leagues)].groupby('playerID')['AB'].sum().reset_index().rename(columns={'AB': 'mlb_ab'})
         eligible = eligible.merge(nl_ab_df, on='playerID', how='left').merge(mlb_ab_df, on='playerID', how='left')
@@ -663,19 +664,15 @@ def paso_10_atributos_raw_bateo(df):
     b3 = df["peak_3b"].fillna(0)
 
     is_nlb = (df["league_group"] == "NLB") if "league_group" in df.columns else False
-    m_pa = np.where(is_nlb, 500, 100)
-    m_ab = np.where(is_nlb, 450, 90)
+    m_pa = np.where(is_nlb, 500, 150)
+    m_ab = np.where(is_nlb, 450, 135)
 
     df["ba_smoothed"] = (h + m_ab * 0.265) / (ab + m_ab)
 
-    # Unified Era Normalization for Contact (90% Era-Relative BA / 10% Era-Relative K-Control)
+    # Unified Era Normalization for Contact (100% Era-Relative BA puro)
     era_ba_means = df.groupby("era_label")["ba_smoothed"].transform("mean")
-    era_k_means = df.groupby("era_label")["k_rate"].transform("mean")
-
-    ba_rel = df["ba_smoothed"] / era_ba_means.replace(0, 0.260)
-    k_control_era = (1.0 - 0.50 * (df["k_rate"].fillna(0) / era_k_means.replace(0, 0.15))).clip(0.0, 1.0)
-
-    df["contact_raw"] = ba_rel * 0.90 + k_control_era * 0.10
+    df["contact_raw"] = df["ba_smoothed"] / era_ba_means.replace(0, 0.260)
+    df["k_rate_clean"] = df["k_rate"].fillna(0.12)
 
     # Bayesian sample-size smoothing for power metrics (m = 500 PA for NLB)
     hr_smoothed = (hr + m_pa * 0.025) / (pa + m_pa)
@@ -691,7 +688,7 @@ def paso_10_atributos_raw_bateo(df):
         xbh_smoothed * 0.15
     )
     df["eye_raw"] = df["bb_rate"].fillna(0)
-    print("  contact_raw, power_raw (m=500 PA NLB smoothed), eye_raw calculados")
+    print("  contact_raw (100% BA), power_raw (m=500 PA NLB smoothed), eye_raw, k_rate_clean calculados")
     return df
 
 
@@ -802,7 +799,23 @@ def paso_12_normalizar_por_era(df):
         ("eye_raw",   "eye_val"),
     ]:
         df = normalize_difficulty_adjusted(df, raw, out)
-    print("  contact_val, power_val, eye_val normalizados con ajuste OPS+ (Defensa centrada sin doble ajuste)")
+
+    # K/AVD (Avoid K) - Evasión de ponches normalizada relativo a cada era (invertido: menor K% = mayor K/AVD)
+    def _calc_kavoid_norm(group):
+        k = group["k_rate_clean"]
+        q_low = k.quantile(0.02)
+        q_high = k.quantile(0.98)
+        denom = (q_high - q_low) if (q_high - q_low) > 0 else 0.10
+        norm = (q_high - k) / denom
+        group["k_avoid_val"] = (1.0 + norm * 98.0).clip(1.0, 125.0).round(1)
+        return group
+
+    era_groups = []
+    for _, grp in df.groupby("era_label", group_keys=False):
+        era_groups.append(_calc_kavoid_norm(grp.copy()))
+    df = pd.concat(era_groups, ignore_index=True)
+
+    print("  contact_val (100% BA), power_val, eye_val, k_avoid_val normalizados con ajuste OPS+")
     return df
 
 
@@ -906,10 +919,10 @@ FRANCHISE_MAP = {
     'CHC': 'CHC', 'CHN': 'CHC',
     'LAD': 'LAD', 'LAN': 'LAD', 'BRO': 'LAD',
     'SFG': 'SFG', 'SFN': 'SFG', 'NY1': 'SFG',
-    'STL': 'STL', 'SLN': 'STL',
-    'BAL': 'BAL', 'SLA': 'BAL',
-    'ATL': 'ATL', 'BSN': 'ATL', 'ML1': 'ATL',
-    'OAK': 'OAK', 'PHA': 'OAK', 'KCA': 'OAK',
+    'STL': 'STL', 'SLN': 'STL', 'SL4': 'STL',
+    'BAL': 'BAL', 'SLA': 'BAL', 'ML2': 'BAL',
+    'ATL': 'ATL', 'BSN': 'ATL', 'ML1': 'ATL', 'BS1': 'ATL', 'BS2': 'ATL',
+    'OAK': 'OAK', 'PHA': 'OAK', 'KCA': 'OAK', 'KC1': 'OAK',
     'MIN': 'MIN', 'WS1': 'MIN',
     'WSH': 'WSH', 'MON': 'WSH', 'WAS': 'WSH',
     'TEX': 'TEX', 'WS2': 'TEX',
@@ -918,43 +931,63 @@ FRANCHISE_MAP = {
     'MIL': 'MIL', 'ML4': 'MIL', 'SE1': 'MIL',
     'TB':  'TB',  'TBD': 'TB',  'TBA': 'TB',
     'SDP': 'SDP', 'SDN': 'SDP',
-    'CIN': 'CIN', 'CLE': 'CLE', 'BOS': 'BOS', 'DET': 'DET', 'PIT': 'PIT',
-    'PHI': 'PHI', 'HOU': 'HOU', 'TOR': 'TOR', 'KCR': 'KCR', 'SEA': 'SEA',
-    'COL': 'COL', 'ARI': 'ARI',
+    'CIN': 'CIN', 'CN1': 'CIN', 'CN2': 'CIN',
+    'CLE': 'CLE', 'CL4': 'CLE',
+    'BOS': 'BOS', 'BOS1': 'BOS',
+    'DET': 'DET',
+    'PIT': 'PIT', 'PIT1': 'PIT',
+    'PHI': 'PHI', 'PH1': 'PHI', 'PH2': 'PHI',
+    'HOU': 'HOU', 'HOU1': 'HOU',
+    'TOR': 'TOR',
+    'KCR': 'KCR',
+    'SEA': 'SEA',
+    'COL': 'COL',
+    'ARI': 'ARI',
 }
 
+NLB_LEGENDS = {
+    'Turkey Stearnes', 'Wade Johnston', 'Oscar Charleston', 'Satchel Paige', 'Josh Gibson',
+    'Cool Papa Bell', 'Buck Leonard', 'Pop Lloyd', 'Bullet Rogan', 'Mule Suttles',
+    'Willie Wells', 'Leon Day', 'Ray Brown', 'Smokey Joe Williams', 'Bill Byrd',
+    'Nip Winters', 'Hilton Smith', 'Cristóbal Torriente', 'Martin Dihigo', 'Jud Wilson',
+    'Biz Mackey', 'Louis Santop', 'Andy Cooper', 'Bill Foster', 'José Méndez',
+    'Willie Foster', 'George Scales', 'Dick Lundy', 'Alejandro Oms'
+}
+
+# Strictly Negro League teams (excluding 19th c. MLB franchises like LOU, SBS, CLS, WNL, etc.)
 NLB_TEAMS = {
     'BEG', 'KCM', 'MRS', 'HG', 'CBE', 'CAG', 'PC', 'BE', 'IN9', 'BIR',
-    'KC1', 'HOM', 'DTW', 'NW2', 'NY5', 'NY6', 'AS2', 'MEM', 'BBB', 'BBS',
+    'HOM', 'NW2', 'NY5', 'NY6', 'AS2', 'MEM', 'BBB', 'BBS',
     'BCA', 'BG1', 'BG2', 'BGS', 'CBR', 'CC1', 'CC2', 'CCC', 'CCG', 'CCG2',
-    'CGI', 'CIG', 'CLG', 'CLP', 'CLS', 'COS', 'CSG', 'CSG2', 'CSG3', 'CSW',
-    'CTG', 'CTS', 'CUP', 'CXG', 'DYM', 'ECK', 'FLP', 'GOR', 'HBG', 'HIL',
-    'JRC', 'KCG', 'KRG', 'LEL', 'LOU', 'LRG', 'LVB', 'MB', 'MGS', 'MOH',
-    'MRM', 'NBY', 'ND', 'NE', 'NEW', 'NLG', 'NLS', 'NS', 'NWB', 'NYC',
-    'NYI', 'OKM', 'PBG', 'PBK', 'PG', 'PHK', 'PS', 'PTG', 'QG', 'RIC',
-    'SBS', 'SC1', 'SEN', 'SL2', 'SLS', 'SPG', 'STP', 'SYS', 'WAP', 'WBS',
-    'WNA', 'WNL', 'WP', 'WST', 'ML2'
+    'CGI', 'CIG', 'CLG', 'COS', 'CSG', 'CSG2', 'CSG3', 'CSW',
+    'CTG', 'CTS', 'CUP', 'CXG', 'FLP', 'GOR', 'HBG', 'HIL',
+    'JRC', 'KCG', 'KRG', 'LEL', 'LRG', 'LVB', 'MB', 'MGS', 'MOH',
+    'MRM', 'NBY', 'ND', 'NE', 'NLG', 'NLS', 'NS', 'NWB', 'NYC',
+    'OKM', 'PBG', 'PBK', 'PG', 'PS', 'PTG', 'QG',
+    'SC1', 'SEN', 'SLS', 'SPG', 'WAP', 'WBS',
+    'WP'
 }
 
 def map_to_canonical_team(row):
     t = str(row.get("canonical_teamID", row.get("team", "UNK"))).strip()
     franch = str(row.get("franchID", "")).strip()
-
-    # Any player in Negro Leagues era (1901-1960) with no modern MLB franchise is NLB
-    p_year = int(row.get("peak_year_display", row.get("yearID", 0)))
-    if p_year >= 1901 and p_year <= 1960 and franch not in FRANCHISE_MAP and t not in FRANCHISE_MAP:
-        return "NLB"
-
     p_name = str(row.get("name", "")).strip()
-    if any(nlb_n.lower() in p_name.lower() for nlb_n in ['Turkey Stearnes', 'Wade Johnston', 'Oscar Charleston', 'Satchel Paige', 'Josh Gibson', 'Cool Papa Bell', 'Buck Leonard', 'Pop Lloyd', 'Bullet Rogan', 'Mule Suttles', 'Willie Wells']):
-        return "NLB"
 
-    if t in NLB_TEAMS or franch in NLB_TEAMS:
-        return "NLB"
+    # 1. Active modern MLB franchise lineage
     if franch in FRANCHISE_MAP:
         return FRANCHISE_MAP[franch]
     if t in FRANCHISE_MAP:
         return FRANCHISE_MAP[t]
+
+    # 2. Iconic Negro League legends
+    if any(nlb_n.lower() in p_name.lower() for nlb_n in NLB_LEGENDS):
+        return "NLB"
+
+    # 3. Strictly Negro Leagues team / franchise
+    if t in NLB_TEAMS or franch in NLB_TEAMS:
+        return "NLB"
+
+    # 4. Otherwise, defunct historical major league franchise
     return "HIST"
 
 
@@ -1023,13 +1056,22 @@ def paso_15_equipo_y_exportar(df, batting, teams, franchises, pico_df=None):
     df["canonical_teamID"] = df.apply(map_to_canonical_team, axis=1)
     df["franchise_name"]   = df["canonical_teamID"]
 
-    stat_cols = ["contact_val","power_val","eye_val","speed_val","defense_val"]
-    # 5. Promedio de Atributos Globales (OVR) equilibrado (30% CON, 30% PWR, 20% DEF, 10% EYE, 10% SPD)
+    # Factor de sostenibilidad por muestra en el pico:
+    # 1.0% por cada año faltante para completar las 7 temporadas (clip entre 1 y 7)
+    seasons_cnt = df["total_seasons_in_peak"].fillna(7).clip(lower=1, upper=7)
+    sustainability_factor = 1.0 - (7 - seasons_cnt) * 0.01
+
+    stat_cols = ["contact_val","power_val","eye_val","k_avoid_val","speed_val","defense_val"]
+    for col in stat_cols:
+        df[col] = (df[col] * sustainability_factor).round(1)
+
+    # 5. Promedio de Atributos Globales (OVR) equilibrado con 6 atributos (30% CON, 30% POW, 10% EYE, 10% K/AVD, 10% DEF, 10% SPD)
     df["raw_ovr"] = (
         df["contact_val"] * 0.30 +
         df["power_val"]   * 0.30 +
-        df["defense_val"] * 0.20 +
         df["eye_val"]     * 0.10 +
+        df["k_avoid_val"] * 0.10 +
+        df["defense_val"] * 0.10 +
         df["speed_val"]   * 0.10
     )
     # ── Badges: Clutch Player / Captain ─────────────────────────────────────
@@ -1067,7 +1109,8 @@ def paso_15_equipo_y_exportar(df, batting, teams, franchises, pico_df=None):
 
     for col, gcol in [
         ("contact_val","con_grade"),("power_val","pow_grade"),
-        ("eye_val","eye_grade"),("speed_val","spd_grade"),("defense_val","def_grade"),
+        ("eye_val","eye_grade"),("k_avoid_val","k_avd_grade"),
+        ("speed_val","spd_grade"),("defense_val","def_grade"),
     ]:
         df[gcol] = df[col].apply(to_grade)
 
@@ -1077,8 +1120,8 @@ def paso_15_equipo_y_exportar(df, batting, teams, franchises, pico_df=None):
         "career_ab","career_h","career_hr","career_sb","career_bb","career_so",
         "seasons","bats",
         "ba","obp","iso","k_rate","bb_rate",
-        "contact_val","power_val","eye_val","speed_val","defense_val",
-        "con_grade","pow_grade","eye_grade","spd_grade","def_grade",
+        "contact_val","power_val","eye_val","k_avoid_val","speed_val","defense_val",
+        "con_grade","pow_grade","eye_grade","k_avd_grade","spd_grade","def_grade",
         "avg_attr_score","rarity",
         "is_allstar","is_hof","allstar_selections","gold_gloves","gg_bonus",
         "defense_source",
@@ -1130,11 +1173,11 @@ def paso_15_equipo_y_exportar(df, batting, teams, franchises, pico_df=None):
             f'team: "{team_js}", year: {int(r["peak_year_display"])}, ovr: {float(r["avg_attr_score"])}, '
             f'debut_year: {int(r["debut_year"])}, last_year: {int(r["last_year"])}, '
             f'con: {int(r["contact_val"])}, pwr: {int(r["power_val"])}, '
-            f'eye: {int(r["eye_val"])}, spd: {int(r["speed_val"])}, '
+            f'eye: {int(r["eye_val"])}, k_avd: {int(r["k_avoid_val"])}, spd: {int(r["speed_val"])}, '
             f'def: {int(r["defense_val"])}, '
             f'con_grade: "{r["con_grade"]}", pwr_grade: "{r["pow_grade"]}", '
-            f'eye_grade: "{r["eye_grade"]}", spd_grade: "{r["spd_grade"]}", '
-            f'def_grade: "{r["def_grade"]}", '
+            f'eye_grade: "{r["eye_grade"]}", k_avd_grade: "{r["k_avd_grade"]}", '
+            f'spd_grade: "{r["spd_grade"]}", def_grade: "{r["def_grade"]}", '
             f'rarity: "{r["rarity"]}", '
             f'allstars: {int(r["allstar_selections"])}, '
             f'gold_gloves: {int(r["gold_gloves"])}, '

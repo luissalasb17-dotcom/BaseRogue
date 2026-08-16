@@ -13,6 +13,39 @@
     { key: 'Modern Era (2016-Pres)', label: 'MODERN' },
   ];
 
+  const BATTER_POS_TABS = [
+    { key: 'all', label: 'TODOS' },
+    { key: 'C', label: 'C' },
+    { key: '1B', label: '1B' },
+    { key: '2B', label: '2B' },
+    { key: '3B', label: '3B' },
+    { key: 'SS', label: 'SS' },
+    { key: 'LF', label: 'LF' },
+    { key: 'CF', label: 'CF' },
+    { key: 'RF', label: 'RF' },
+    { key: 'DH', label: 'DH' }
+  ];
+
+  const PITCHER_POS_TABS = [
+    { key: 'all', label: 'TODOS' },
+    { key: 'SP', label: 'SP' },
+    { key: 'RP', label: 'RP' }
+  ];
+
+  const POS_SYNONYMS = {
+    'c': 'C', 'catcher': 'C', 'receptor': 'C', 'cat': 'C',
+    '1b': '1B', 'first base': '1B', 'primera base': '1B', 'primera': '1B',
+    '2b': '2B', 'second base': '2B', 'segunda base': '2B', 'segunda': '2B',
+    '3b': '3B', 'third base': '3B', 'tercera base': '3B', 'tercera': '3B',
+    'ss': 'SS', 'shortstop': 'SS', 'campo corto': 'SS', 'campocorto': 'SS',
+    'lf': 'LF', 'left field': 'LF', 'left fielder': 'LF', 'jardinero izquierdo': 'LF', 'izquierdo': 'LF',
+    'cf': 'CF', 'center field': 'CF', 'center fielder': 'CF', 'jardinero central': 'CF', 'central': 'CF',
+    'rf': 'RF', 'right field': 'RF', 'right fielder': 'RF', 'jardinero derecho': 'RF', 'derecho': 'RF',
+    'dh': 'DH', 'designated hitter': 'DH', 'bateador designado': 'DH', 'designado': 'DH',
+    'sp': 'SP', 'starter': 'SP', 'starting pitcher': 'SP', 'abridor': 'SP', 'pitcher abridor': 'SP',
+    'rp': 'RP', 'reliever': 'RP', 'relief pitcher': 'RP', 'relevista': 'RP', 'closer': 'RP', 'cerrador': 'RP'
+  };
+
   const RARITY_COLORS = {
     Legendary: '#ffd700',
     Epic: '#a855f7',
@@ -103,7 +136,9 @@
     unlockedOpponents: new Set(),
     activeCategory: 'legends', // 'legends' or 'opponents'
     currentFilterEra: 'all',
+    currentFilterPos: 'all',
     currentSearchTerm: '',
+    challenge162Only: false,
     filteredPlayers: [],
     renderLimit: 200,
     currentRendered: 0,
@@ -251,17 +286,66 @@
         pool = window.PlayersDB ? window.PlayersDB.LAHMAN_POOL : [];
       }
 
-      const term = this.currentSearchTerm.toLowerCase().trim();
-      
+      const rawTerm = this.currentSearchTerm.toLowerCase().trim();
+      let term = rawTerm;
+      let explicitPos = null;
+
+      // Check for explicit "pos:C" or "pos:1B"
+      const posMatch = term.match(/^pos:([a-z0-9]+)\s*(.*)$/i);
+      if (posMatch) {
+        explicitPos = posMatch[1].toUpperCase();
+        term = posMatch[2].trim();
+      }
+
+      const activePosFilter = explicitPos || (this.currentFilterPos !== 'all' ? this.currentFilterPos : null);
+
       this.filteredPlayers = pool.filter(p => {
         if (this.currentFilterEra !== 'all' && p.era !== this.currentFilterEra) return false;
+        if (this.challenge162Only && !(window.Challenge162 && window.Challenge162.isUnlocked(p))) return false;
+
+        const pPos = (p.pos || p.role || '').toUpperCase();
+        const secPosArr = (p.sec_pos || '').toUpperCase().split(',').map(s => s.trim()).filter(Boolean);
+
+        // Position pill / explicit position filter
+        if (activePosFilter) {
+          const target = activePosFilter.toUpperCase();
+          const matchPos = pPos === target || secPosArr.includes(target);
+          if (!matchPos) return false;
+        }
+
         if (term) {
-          const nMatch = p.name && p.name.toLowerCase().includes(term);
-          const tMatch = p.team && p.team.toLowerCase().includes(term);
-          const pMatch = p.pos && p.pos.toLowerCase().includes(term);
-          const spMatch = p.sec_pos && p.sec_pos.toLowerCase().includes(term);
-          const rMatch = p.role && p.role.toLowerCase().includes(term);
-          if (!nMatch && !tMatch && !pMatch && !spMatch && !rMatch) return false;
+          const synPos = POS_SYNONYMS[term];
+          const nameLower = (p.name || '').toLowerCase();
+          const teamLower = (p.team || '').toLowerCase();
+          const pPosLower = (p.pos || p.role || '').toLowerCase();
+          const secPosLower = (p.sec_pos || '').toLowerCase();
+
+          // 1. If user typed a recognized position alias (e.g. "c", "catcher", "1b", "ss", "sp", "rp")
+          if (synPos) {
+            const isPosMatch = pPos === synPos || secPosArr.includes(synPos);
+            // Also allow matching names starting with this term (e.g. "Cain" when typing "c")
+            const nameWords = nameLower.split(/\s+/);
+            const isNamePrefix = nameWords.some(w => w.startsWith(term));
+            const isTeamMatch = teamLower === term;
+            if (!isPosMatch && !isNamePrefix && !isTeamMatch) return false;
+            return true;
+          }
+
+          // 2. Short search term (1-2 characters): match exact pos, exact team, or start of words in name
+          if (term.length <= 2) {
+            const isExactPos = pPosLower === term || secPosLower.split(',').map(s => s.trim()).includes(term);
+            const nameWords = nameLower.split(/\s+/);
+            const isNamePrefix = nameWords.some(w => w.startsWith(term));
+            const isTeamMatch = teamLower === term || teamLower.startsWith(term);
+            if (!isExactPos && !isNamePrefix && !isTeamMatch) return false;
+            return true;
+          }
+
+          // 3. Multi-character search term (3+ chars): substring match on name, team, position
+          const nMatch = nameLower.includes(term);
+          const tMatch = teamLower.includes(term);
+          const pMatch = pPosLower.includes(term) || secPosLower.includes(term);
+          if (!nMatch && !tMatch && !pMatch) return false;
         }
         return true;
       });
@@ -293,14 +377,17 @@
         const el = document.createElement('div');
         if (isUnl) {
           const rColor = RARITY_COLORS[p.rarity] || RARITY_COLORS.Common;
+          const isChallengeEligible = !!(window.Challenge162 && window.Challenge162.isUnlocked(p));
           el.className = 'dex-card unlocked';
-          el.style.cssText = `background: #0d1f12; border: 2px solid ${rColor}; border-radius: 8px; padding: 10px 6px; text-align: center; cursor: pointer; transition: transform 0.15s; display: flex; flex-direction: column; justify-content: space-between;`;
-          
+          el.style.cssText = `position: relative; background: #0d1f12; border: 2px solid ${rColor}; border-radius: 8px; padding: 10px 6px; text-align: center; cursor: pointer; transition: transform 0.15s; display: flex; flex-direction: column; justify-content: space-between;`;
+
           const posLabel = p.role || p.pos || 'P';
           const h9Val = p.h9 !== undefined ? p.h9 : (p.grt !== undefined ? p.grt : 50);
           const subLabel = this.activeCategory === 'opponents' ? `H/9: ${getGrade(h9Val)}` : p.team;
 
+          const challenge162Tooltip = (typeof window.t === 'function' ? window.t('dex.challenge162_badge_tooltip') : 'Elegible para el 162-0 Challenge');
           el.innerHTML = `
+            ${isChallengeEligible ? `<span title="${challenge162Tooltip}" style="position:absolute;top:4px;right:4px;font-size:11px;filter:drop-shadow(0 0 3px rgba(255,215,0,0.8));">🏆</span>` : ''}
             <div>
               <div style="font-size:7px;color:#00ff66;font-family:'Press Start 2P',monospace;margin-bottom:4px">${posLabel}</div>
               <div style="font-size:7px;color:#e5e7eb;font-family:'Press Start 2P',monospace;line-height:1.3;word-break:break-word">${p.name}</div>
@@ -395,21 +482,23 @@
       categoryBar.style.cssText = 'display: flex; gap: 8px; justify-content: center; padding: 10px 16px; background: rgba(0,0,0,0.3); border-bottom: 1px solid rgba(255,255,255,0.1);';
       
       const btnLeg = document.createElement('button');
-      btnLeg.innerText = '⚾ LEYENDAS / BATEADORES';
+      btnLeg.innerText = typeof window.t === 'function' ? window.t('dex.tab_legends') : '⚾ LEYENDAS / BATEADORES';
       const isLegActive = this.activeCategory === 'legends';
       btnLeg.style.cssText = `padding: 6px 14px; border-radius: 6px; font-family:"Press Start 2P", monospace; font-size: 9px; font-weight: bold; cursor: pointer; transition: all 0.2s; border: 1px solid #10b981; ${isLegActive ? 'background: #10b981; color: #000;' : 'background: rgba(16,185,129,0.1); color: #10b981;'}`;
 
       const btnOpp = document.createElement('button');
-      btnOpp.innerText = '🥊 OPONENTES (PARTIDA RÁPIDA)';
+      btnOpp.innerText = typeof window.t === 'function' ? window.t('dex.tab_opponents') : '🥊 OPONENTES (PARTIDA RÁPIDA)';
       const isOppActive = this.activeCategory === 'opponents';
       btnOpp.style.cssText = `padding: 6px 14px; border-radius: 6px; font-family:"Press Start 2P", monospace; font-size: 9px; font-weight: bold; cursor: pointer; transition: all 0.2s; border: 1px solid #38bdf8; ${isOppActive ? 'background: #38bdf8; color: #000;' : 'background: rgba(56,189,248,0.1); color: #38bdf8;'}`;
 
       btnLeg.onclick = () => {
         this.activeCategory = 'legends';
+        this.currentFilterPos = 'all';
         this.renderPanel();
       };
       btnOpp.onclick = () => {
         this.activeCategory = 'opponents';
+        this.currentFilterPos = 'all';
         this.renderPanel();
       };
 
@@ -422,14 +511,59 @@
       searchContainer.style.cssText = 'padding: 10px 16px; border-bottom: 1px solid rgba(255,255,255,0.1);';
       const searchInput = document.createElement('input');
       searchInput.type = 'text';
-      searchInput.placeholder = this.activeCategory === 'opponents' ? 'Buscar lanzador por nombre, era o rol (SP/RP)...' : (typeof window.t === 'function' ? window.t('dex.search_placeholder') : 'Buscar por nombre, equipo o posición...');
+      searchInput.value = this.currentSearchTerm;
+      searchInput.placeholder = this.activeCategory === 'opponents' ? (typeof window.t === 'function' ? window.t('dex.search_placeholder_pitchers') : 'Buscar lanzador por nombre, equipo, era o rol (SP/RP)...') : (typeof window.t === 'function' ? window.t('dex.search_placeholder') : 'Buscar por nombre, equipo o posición (C, 1B, SS...)...');
       searchInput.style.cssText = 'width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 8px 12px; border-radius: 6px; font-size: 12px; outline: none;';
       searchInput.oninput = (e) => {
         this.currentSearchTerm = e.target.value;
         this.applyFilters();
       };
       searchContainer.appendChild(searchInput);
+
+      const challenge162Toggle = document.createElement('label');
+      challenge162Toggle.style.cssText = 'display:flex;align-items:center;gap:6px;margin-top:8px;font-size:10px;color:#ffd700;cursor:pointer;';
+      const challenge162FilterLabel = (typeof window.t === 'function' ? window.t('dex.challenge162_filter') : '🏆 Solo elegibles para el 162-0 Challenge');
+      challenge162Toggle.innerHTML = `<input type="checkbox" ${this.challenge162Only ? 'checked' : ''} style="accent-color:#ffd700;cursor:pointer;"> ${challenge162FilterLabel}`;
+      challenge162Toggle.querySelector('input').onchange = (e) => {
+        this.challenge162Only = e.target.checked;
+        this.applyFilters();
+      };
+      searchContainer.appendChild(challenge162Toggle);
       panel.appendChild(searchContainer);
+
+      // Position / Role Filter Tabs (Dedicated Row)
+      const posTabsContainer = document.createElement('div');
+      posTabsContainer.style.cssText = 'display: flex; gap: 4px; flex-wrap: wrap; justify-content: center; align-items: center; padding: 6px 12px; border-bottom: 1px solid rgba(255,255,255,0.08); background: rgba(0,0,0,0.25);';
+
+      const posLabel = document.createElement('span');
+      posLabel.innerText = this.activeCategory === 'opponents' ? (typeof window.t === 'function' ? window.t('dex.role_label') : 'ROL:') : (typeof window.t === 'function' ? window.t('dex.pos_label') : 'POS:');
+      posLabel.style.cssText = 'font-family:"Press Start 2P", monospace; font-size: 8px; color: #9ca3af; margin-right: 4px;';
+      posTabsContainer.appendChild(posLabel);
+
+      const posTabs = this.activeCategory === 'opponents' ? PITCHER_POS_TABS : BATTER_POS_TABS;
+      const accentColor = this.activeCategory === 'opponents' ? '#38bdf8' : '#10b981';
+
+      posTabs.forEach(tab => {
+        const btn = document.createElement('button');
+        btn.innerText = (tab.key === 'all' && typeof window.t === 'function') ? window.t('dex.pos_all') : tab.label;
+        const isActive = this.currentFilterPos === tab.key;
+        btn.style.cssText = `
+          padding: 3px 8px; border-radius: 6px; font-family:"Press Start 2P", monospace; font-size: 8px; font-weight: bold; white-space: nowrap; border: 1px solid ${accentColor}44; cursor: pointer; transition: all 0.15s;
+          ${isActive ? `background: ${accentColor}; color: #000; font-weight: bold;` : `background: rgba(255,255,255,0.05); color: #e4e4e7;`}
+        `;
+        btn.onclick = () => {
+          this.currentFilterPos = tab.key;
+          Array.from(posTabsContainer.querySelectorAll('button')).forEach(c => {
+            c.style.background = 'rgba(255,255,255,0.05)';
+            c.style.color = '#e4e4e7';
+          });
+          btn.style.background = accentColor;
+          btn.style.color = '#000';
+          this.applyFilters();
+        };
+        posTabsContainer.appendChild(btn);
+      });
+      panel.appendChild(posTabsContainer);
 
       // Era Tabs (Compact & Responsive Wrap)
       const tabsContainer = document.createElement('div');
@@ -479,7 +613,11 @@
       const eraShort = eraTab ? eraTab.label : p.era;
       
       let teamFull = p.team;
-      if (window.PlayersDB && window.PlayersDB.FranchiseNames) {
+      if (p.team === 'HIST') {
+        teamFull = typeof window.t === 'function' ? window.t('dex.franchise_hist') : 'Franquicia Histórica';
+      } else if (p.team === 'NLB') {
+        teamFull = typeof window.t === 'function' ? window.t('dex.franchise_nlb') : 'Ligas Negras';
+      } else if (window.PlayersDB && window.PlayersDB.FranchiseNames) {
         teamFull = window.PlayersDB.FranchiseNames[p.team] || p.team;
       }
 
@@ -525,11 +663,13 @@
           </div>
         `;
       } else {
+        const kavd = p.k_avd !== undefined ? p.k_avd : (p.k_avoid !== undefined ? p.k_avoid : (p.k_avoid_val !== undefined ? p.k_avoid_val : (p.con || 40)));
         statsHTML = `
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px">
             ${renderStat('CON', p.con || 40)}
             ${renderStat('PWR', p.pwr || 40)}
             ${renderStat('EYE', p.eye || 40)}
+            ${renderStat('K/AVD', kavd)}
             ${renderStat('SPD', p.spd || 40)}
             ${renderStat('DEF', p.def || 40)}
           </div>
@@ -543,6 +683,10 @@
       if (isHof) badgesHtml += '<span style="background:#ffd70022;color:#ffd700;border:1px solid #ffd700;padding:2px 8px;border-radius:4px;font-size:8px">🏆 HOF</span>';
       if (p.clutch || p.is_clutch) badgesHtml += '<span style="background:#ef444422;color:#ef4444;border:1px solid #ef4444;padding:2px 8px;border-radius:4px;font-size:8px">⚡ CLUTCH</span>';
       if (p.captain || p.is_captain) badgesHtml += '<span style="background:#3b82f622;color:#3b82f6;border:1px solid #3b82f6;padding:2px 8px;border-radius:4px;font-size:8px">👑 CAPTAIN</span>';
+      if (window.Challenge162 && window.Challenge162.isUnlocked(p)) {
+        const challenge162BadgeLabel = (typeof window.t === 'function' ? window.t('dex.challenge162_badge_label') : '🏆 162-0 CHALLENGE');
+        badgesHtml += `<span style="background:#ffd70022;color:#ffd700;border:1px solid #ffd700;padding:2px 8px;border-radius:4px;font-size:8px">${challenge162BadgeLabel}</span>`;
+      }
 
       overlay.innerHTML = `
         <div style="background:#0a0f1a;border:3px solid ${rColor};border-radius:12px;width:100%;max-width:440px;padding:24px;position:relative">

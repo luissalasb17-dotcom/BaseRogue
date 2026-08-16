@@ -493,10 +493,11 @@
     if (!p) return -Infinity;
     const con = (p.con || 0) + ((p.upgrades && p.upgrades.con) || 0);
     const pwr = (p.pwr || 0) + ((p.upgrades && p.upgrades.pwr) || 0);
+    const eye = (p.eye || 0) + ((p.upgrades && p.upgrades.eye) || 0);
+    const kavd = (p.k_avd !== undefined ? p.k_avd : (p.k_avoid !== undefined ? p.k_avoid : (p.k_avoid_val !== undefined ? p.k_avoid_val : con))) + ((p.upgrades && p.upgrades.k_avd) || 0);
     const spd = (p.spd || 0) + ((p.upgrades && p.upgrades.spd) || 0);
     const def = (p.def || 0) + ((p.upgrades && p.upgrades.def) || 0);
-    const eye = (p.eye || 0) + ((p.upgrades && p.upgrades.eye) || 0);
-    return con * 0.35 + pwr * 0.30 + spd * 0.10 + def * 0.15 + eye * 0.10;
+    return con * 0.25 + pwr * 0.25 + eye * 0.15 + kavd * 0.15 + def * 0.10 + spd * 0.10;
   };
   const _gambleRarityOrder = ['Common', 'Uncommon', 'Rare', 'Epic', 'Legendary'];
 
@@ -524,7 +525,7 @@
       id: 'gamble_all_in_budget',
       icon: '💰',
       get title() { return typeof window.t==='function'?window.t('gamble.budget.title'):'Todo o Nada'; },
-      get desc() { return typeof window.t==='function'?window.t('gamble.budget.desc'):'Apostás TODO tu presupuesto actual a un tiro de dado. Si ganás, se duplica. Si perdés, lo perdés todo.'; },
+      get desc() { return typeof window.t==='function'?window.t('gamble.budget.desc'):'Apuestas TODO tu presupuesto actual a un tiro de dado. Si ganas, se duplica. Si pierdes, lo pierdes todo.'; },
       chance: 0.50,
       resolve(G) {
         const staked = G.budget || 0;
@@ -542,7 +543,7 @@
       id: 'gamble_blind_trade',
       icon: '🔄',
       get title() { return typeof window.t==='function'?window.t('gamble.trade.title'):'Intercambio a Ciegas'; },
-      get desc() { return typeof window.t==='function'?window.t('gamble.trade.desc'):'Cambiás a tu jugador titular más débil por una oferta a ciegas. Si ganás, el reemplazo es de rareza SUPERIOR garantizada. Si perdés, el reemplazo es Common y esa posición queda bloqueada para draft por 2 nodos.'; },
+      get desc() { return typeof window.t==='function'?window.t('gamble.trade.desc'):'Cambias a tu jugador titular más débil por una oferta a ciegas. Si ganas, el reemplazo es de rareza SUPERIOR garantizada. Si pierdes, el reemplazo es Common y esa posición queda bloqueada para draft por 2 nodos.'; },
       chance: 0.50,
       resolve(G) {
         const pool = (window.PlayersDB && window.PlayersDB.LAHMAN_POOL) ? window.PlayersDB.LAHMAN_POOL : [];
@@ -567,7 +568,7 @@
           ...pick,
           id: `player_${pick.name.replace(/\s+/g, '')}_${Date.now()}_trade`,
           stamina: 100,
-          upgrades: { con: 0, pwr: 0, eye: 0, spd: 0, def: 0, sta: 0 }
+          upgrades: { con: 0, pwr: 0, eye: 0, k_avd: 0, spd: 0, def: 0, sta: 0 }
         };
         G.roster[worstPos] = newInstance;
 
@@ -589,11 +590,11 @@
       icon: '🧬',
       requiresTargetPlayer: true,
       get title() { return typeof window.t==='function'?window.t('gamble.synergy.title'):'Sinergia Prohibida'; },
-      get desc() { return typeof window.t==='function'?window.t('gamble.synergy.desc'):'Elegí un jugador de tu roster: si ganás, cuenta x4 para la sinergia de su Era. Si perdés, 2 jugadores al azar de tu roster pierden la elegibilidad de Era por el resto de la run.'; },
+      get desc() { return typeof window.t==='function'?window.t('gamble.synergy.desc'):'Elige un jugador de tu roster: si ganas, cuenta x4 para la sinergia de su Era. Si pierdes, 2 jugadores al azar de tu roster pierden la elegibilidad de Era por el resto de la run.'; },
       chance: 0.50,
       resolve(G, targetPos) {
         const target = G.roster[targetPos];
-        if (!target || !target.era) return { success: false, resultText: 'Elegí un jugador con Era válida.' };
+        if (!target || !target.era) return { success: false, resultText: 'Elige un jugador con Era válida.' };
         const success = Math.random() <= this.chance;
         if (success) {
           target.synergyWeight = 4;
@@ -614,7 +615,7 @@
       id: 'gamble_scout',
       icon: '🕵️',
       get title() { return typeof window.t==='function'?window.t('gamble.scout.title'):'Cazatalentos Misterioso'; },
-      get desc() { return typeof window.t==='function'?window.t('gamble.scout.desc'):'Un cazatalentos ofrece una carta Legendary para tu posición más débil. Si ganás, la firmás gratis. Si perdés, tu mejor jugador se lesiona: -20 en todas sus stats por el resto de la run.'; },
+      get desc() { return typeof window.t==='function'?window.t('gamble.scout.desc'):'Un cazatalentos ofrece una carta Legendary para tu posición más débil. Si ganas, la firmas gratis. Si pierdes, tu mejor jugador se lesiona: -20 en todas sus stats por el resto de la run.'; },
       chance: 0.50,
       resolve(G) {
         const pool = (window.PlayersDB && window.PlayersDB.LAHMAN_POOL) ? window.PlayersDB.LAHMAN_POOL : [];
@@ -634,7 +635,7 @@
             ...pick,
             id: `player_${pick.name.replace(/\s+/g, '')}_${Date.now()}_scout`,
             stamina: 100,
-            upgrades: { con: 0, pwr: 0, eye: 0, spd: 0, def: 0, sta: 0 }
+            upgrades: { con: 0, pwr: 0, eye: 0, k_avd: 0, spd: 0, def: 0, sta: 0 }
           };
           const oldName = G.roster[worstPos] ? G.roster[worstPos].name : '(vacío)';
           G.roster[worstPos] = newInstance;
@@ -650,7 +651,7 @@
         });
         if (!bestPos) return { success, resultText: 'No había jugador titular para lesionar.' };
         const p = G.roster[bestPos];
-        ['con', 'pwr', 'eye', 'spd', 'def'].forEach(k => { p.upgrades[k] = (p.upgrades[k] || 0) - 20; });
+        ['con', 'pwr', 'eye', 'k_avd', 'spd', 'def'].forEach(k => { p.upgrades[k] = (p.upgrades[k] || 0) - 20; });
         return { success, resultText: `${p.name} se lesiona: -20 en todas sus stats por el resto de la run.` };
       }
     }
@@ -780,7 +781,7 @@
       this.starterChosen = false;
 
       this.activeItemBonuses = {
-        teamCon: 0, teamPwr: 0, teamEye: 0, teamSpd: 0, teamDef: 0
+        teamCon: 0, teamPwr: 0, teamEye: 0, teamKAvd: 0, teamSpd: 0, teamDef: 0
       };
       this.purchasedItems = [];
       this.currentEnemy = null;
@@ -798,6 +799,9 @@
       this.runPitcherStats = {};
       // All players that were part of roster during the run
       this.runRosterHistory = {};  // slot -> player snapshot
+      // Enemy pitchers defeated (won matches only) during the run — used by
+      // the 162-0 Challenge to gate Quick Play pitcher eligibility.
+      this.runDefeatedPitchers = [];
 
       // ── 9-round Draft State ───────────────────────────────────────────
       // Round structure:
@@ -1024,7 +1028,10 @@
         if (p) {
           const name = p.name.replace(/\s*\(\d{4}\)$/, '').trim();
           if (!this.runRosterHistory[name]) {
-            this.runRosterHistory[name] = { name: name, pos: slot, rarity: p.rarity, era: p.era, ovr: p.avg_attr_score || p.ovr };
+            this.runRosterHistory[name] = {
+              name: name, pos: slot, rarity: p.rarity, era: p.era, ovr: p.avg_attr_score || p.ovr,
+              playerID: p.playerID || null, year: p.year || null, id: p.id || null
+            };
           }
         }
       }
@@ -1037,7 +1044,7 @@
         ...playerData,
         id: `player_${playerData.name.replace(/\s+/g, '')}_${Date.now()}`,
         stamina: 100,
-        upgrades: { con: 0, pwr: 0, eye: 0, spd: 0, def: 0, sta: 0 }
+        upgrades: { con: 0, pwr: 0, eye: 0, k_avd: 0, spd: 0, def: 0, sta: 0 }
       };
       this.draftedPlayers.push(instance);
 
@@ -1320,7 +1327,7 @@
               ...pick,
               id: `player_${pick.name.replace(/\s+/g, '')}_${Date.now()}_auto`,
               stamina: 100,
-              upgrades: { con: 0, pwr: 0, eye: 0, spd: 0, def: 0, sta: 0 }
+              upgrades: { con: 0, pwr: 0, eye: 0, k_avd: 0, spd: 0, def: 0, sta: 0 }
             };
             this.roster[slot] = instance;
             usedNames.add(pick.name);
@@ -1566,11 +1573,12 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
     getEffectiveStats(player, slotPosition, contextRoster = this.roster) {
       if (!player) return null;
 
-      let con = (player.con || 0) + (player.upgrades.con || 0);
-      let pwr = (player.pwr || 0) + (player.upgrades.pwr || 0);
-      let eye = (player.eye || 0) + (player.upgrades.eye || 0);
-      let spd = (player.spd || 0) + (player.upgrades.spd || 0);
-      let def = (player.def || 0) + (player.upgrades.def || 0);
+      let con = (player.con || 0) + ((player.upgrades && player.upgrades.con) || 0);
+      let pwr = (player.pwr || 0) + ((player.upgrades && player.upgrades.pwr) || 0);
+      let eye = (player.eye || 0) + ((player.upgrades && player.upgrades.eye) || 0);
+      let kavd = (player.k_avd !== undefined ? player.k_avd : (player.k_avoid !== undefined ? player.k_avoid : (player.k_avoid_val !== undefined ? player.k_avoid_val : (player.con || 50)))) + ((player.upgrades && player.upgrades.k_avd) || 0);
+      let spd = (player.spd || 0) + ((player.upgrades && player.upgrades.spd) || 0);
+      let def = (player.def || 0) + ((player.upgrades && player.upgrades.def) || 0);
 
       // Stamina Penalty
       const stamina = player.stamina || 100;
@@ -1581,11 +1589,12 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
       con += staminaPenalty;
       pwr += staminaPenalty;
       eye += staminaPenalty;
+      kavd += staminaPenalty;
       spd += staminaPenalty;
       def += staminaPenalty;
 
       // Apply Era Passive Trait stat bonuses
-      const statsObj = { con, pwr, eye, spd, def };
+      const statsObj = { con, pwr, eye, kavd, spd, def };
       if (player.era && window.PlayersDB.EraTraits && window.PlayersDB.EraTraits[player.era]) {
         const trait = window.PlayersDB.EraTraits[player.era];
         if (trait.applyStatBonus) {
@@ -1593,6 +1602,7 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
           con = statsObj.con;
           pwr = statsObj.pwr;
           eye = statsObj.eye;
+          kavd = statsObj.kavd !== undefined ? statsObj.kavd : (statsObj.k_avd !== undefined ? statsObj.k_avd : kavd);
           spd = statsObj.spd;
           def = statsObj.def;
         }
@@ -1613,11 +1623,12 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
       if (this.hasTrait('golden_glove')) def += 10;
 
       // Manager Decision/Item Bonuses
-      con += this.activeItemBonuses.teamCon;
-      pwr += this.activeItemBonuses.teamPwr;
-      eye += this.activeItemBonuses.teamEye;
-      spd += this.activeItemBonuses.teamSpd;
-      def += this.activeItemBonuses.teamDef;
+      con += (this.activeItemBonuses.teamCon || 0);
+      pwr += (this.activeItemBonuses.teamPwr || 0);
+      eye += (this.activeItemBonuses.teamEye || 0);
+      kavd += (this.activeItemBonuses.teamKAvd || 0);
+      spd += (this.activeItemBonuses.teamSpd || 0);
+      def += (this.activeItemBonuses.teamDef || 0);
 
       // Synergy Bonuses
       const synergies = this.calculateActiveSynergies(contextRoster);
@@ -1626,6 +1637,7 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
           if (syn.bonuses.con) con += syn.bonuses.con;
           if (syn.bonuses.pwr) pwr += syn.bonuses.pwr;
           if (syn.bonuses.eye) eye += syn.bonuses.eye;
+          if (syn.bonuses.k_avd) kavd += syn.bonuses.k_avd;
           if (syn.bonuses.spd) spd += syn.bonuses.spd;
           if (syn.bonuses.def) def += syn.bonuses.def;
         }
@@ -1635,9 +1647,9 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
       if (player.team !== 'ROOK' && player.team !== 'None') {
         const teamCount = this.getActiveFranchiseCounts(contextRoster)[player.team] || 0;
         if (teamCount >= 4) {
-          con += 10; pwr += 10; eye += 10; spd += 10; def += 10;
+          con += 10; pwr += 10; eye += 10; kavd += 10; spd += 10; def += 10;
         } else if (teamCount >= 2) {
-          con += 4; pwr += 4; eye += 4; spd += 4; def += 4;
+          con += 4; pwr += 4; eye += 4; kavd += 4; spd += 4; def += 4;
         }
       }
 
@@ -1650,14 +1662,14 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
         return (p.captain === true || p.is_captain === true);
       });
       if (hasCaptainTeammate) {
-        con += 5; pwr += 5; eye += 5; spd += 5; def += 5;
+        con += 5; pwr += 5; eye += 5; kavd += 5; spd += 5; def += 5;
       }
 
       // legendary_domination: if 2+ Legendary players are in the starting lineup, everyone gets +10 to all stats
       if (this.hasTrait('legendary_domination')) {
         const legendaryCount = Object.values(contextRoster).filter(p => p && !p.isReplacement && p.rarity === 'Legendary').length;
         if (legendaryCount >= 2) {
-          con += 10; pwr += 10; eye += 10; spd += 10; def += 10;
+          con += 10; pwr += 10; eye += 10; kavd += 10; spd += 10; def += 10;
         }
       }
 
@@ -1666,6 +1678,7 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
         con: Math.max(1, Math.min(125, con)),
         pwr: Math.max(1, Math.min(125, pwr)),
         eye: Math.max(1, Math.min(125, eye)),
+        k_avd: Math.max(1, Math.min(125, kavd)),
         spd: Math.max(1, Math.min(125, spd)),
         def: Math.max(1, Math.min(125, def)),
         stamina: player.stamina
@@ -1934,7 +1947,7 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
         ...playerData,
         id: `player_${playerData.name.replace(/\s+/g, '')}_${Date.now()}`,
         stamina: 100,
-        upgrades: { con: 0, pwr: 0, eye: 0, spd: 0, def: 0, sta: 0 }
+        upgrades: { con: 0, pwr: 0, eye: 0, k_avd: 0, spd: 0, def: 0, sta: 0 }
       };
 
       const nativePos = playerInstance.pos;
@@ -1962,7 +1975,7 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
         ...newPlayerData,
         id: `player_${newPlayerData.name.replace(/\s+/g, '')}_${Date.now()}`,
         stamina: 100,
-        upgrades: { con: 0, pwr: 0, eye: 0, spd: 0, def: 0, sta: 0 }
+        upgrades: { con: 0, pwr: 0, eye: 0, k_avd: 0, spd: 0, def: 0, sta: 0 }
       };
 
       this.roster[slot] = playerInstance;
@@ -2366,7 +2379,7 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
           ...p,
           hp: p.hp || p.maxHp,
           maxHp: p.maxHp,
-          upgrades: { con: 0, pwr: 0, eye: 0, spd: 0, def: 0, sta: 0 }
+          upgrades: { con: 0, pwr: 0, eye: 0, k_avd: 0, spd: 0, def: 0, sta: 0 }
         };
       });
 
@@ -2411,7 +2424,7 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
                 ...pick,
                 id: `player_${pick.name.replace(/\s+/g, '')}_${Date.now()}_repl`,
                 stamina: 100,
-                upgrades: { con: 0, pwr: 0, eye: 0, spd: 0, def: 0, sta: 0 }
+                upgrades: { con: 0, pwr: 0, eye: 0, k_avd: 0, spd: 0, def: 0, sta: 0 }
               };
               this.roster[pos] = newInstance;
               retiredAlerts.push({
@@ -2433,6 +2446,13 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
 
       const currentEnemy = this.getEnemyTeam();
       const won = simResult.winner === 'away';
+
+      // Winning a match means the full enemy rotation for that match was
+      // knocked out — record them as "defeated" for this run (162-0 Challenge
+      // pitcher eligibility, Quick Play only, gated at unlock time).
+      if (won && simResult.enemyPitchers && simResult.enemyPitchers.length) {
+        simResult.enemyPitchers.forEach(p => this.runDefeatedPitchers.push(p));
+      }
 
       this.history.push({
         stage: this.currentStageIndex,

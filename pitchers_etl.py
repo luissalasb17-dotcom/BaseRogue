@@ -41,8 +41,8 @@ MIN_GS_ALLSTAR    = 1     # al menos 1 GS para All-Stars / HoF como filtro secun
 # abridor solo por volumen de innings (mismo WAR crudo, muchas mas IP). Este
 # boost se aplica UNICAMENTE al ranking usado para elegir las PEAK_SEASONS
 # mejores temporadas, nunca al war_season real que se guarda/muestra.
-RELIEF_WAR_BOOST         = 2.0   # ajustado de 1.6 a 2.0 tras revisar casos reales (ej. Eckersley)
-RELIEF_GS_RATIO_THRESHOLD = 0.40  # mismo umbral que ya usa el split de carrera SP/RP (ver mas abajo)
+RELIEF_WAR_BOOST          = 1.6   # boost 1.6x acordado para WAR de temporadas de relevo
+RELIEF_GS_RATIO_THRESHOLD = 0.50  # umbral 50% para definir temporada mayormente de relevo
 
 ERA_THRESHOLDS = [
     (1871, 1900, "The Genesis Era (1871-1900)"),
@@ -71,14 +71,6 @@ GRADE_THRESHOLDS = [
     (25,  "D"),
     (20,  "D-"),
     (0,   "F"),
-]
-
-RARITY_THRESHOLDS = [
-    (74, "Legendary"),
-    (58, "Epic"),
-    (48, "Rare"),
-    (39, "Uncommon"),
-    (0,  "Common"),
 ]
 
 
@@ -212,6 +204,9 @@ def paso_2_identificar_pitchers_puros(fielding):
                  .drop_duplicates(subset="playerID")
     )
     pure_pitchers = set(primary_pos[primary_pos["POS"] == "P"]["playerID"])
+    # Incluir variantes duales canónicas
+    for dual_id in ["eckerde01_sp", "eckerde01_rp", "smoltjo01_sp", "smoltjo01_rp"]:
+        pure_pitchers.add(dual_id)
     print(f"  {len(pure_pitchers):,} pitchers puros identificados")
     return pure_pitchers
 
@@ -228,6 +223,18 @@ def paso_3_carrera_pitching(pitching):
     for col in int_cols:
         if col in pit.columns:
             pit[col] = pd.to_numeric(pit[col], errors="coerce").fillna(0)
+
+    # Duplicar stints de carrera para dual pitchers (Eckersley y Smoltz)
+    dual_rows = []
+    for orig_id, (sp_id, rp_id) in [("eckerde01", ("eckerde01_sp", "eckerde01_rp")), ("smoltjo01", ("smoltjo01_sp", "smoltjo01_rp"))]:
+        stints = pit[pit["playerID"] == orig_id].copy()
+        stints_sp = stints.copy()
+        stints_sp["playerID"] = sp_id
+        stints_rp = stints.copy()
+        stints_rp["playerID"] = rp_id
+        dual_rows.extend([stints_sp, stints_rp])
+    if dual_rows:
+        pit = pd.concat([pit[~pit["playerID"].isin(["eckerde01", "smoltjo01"])]] + dual_rows, ignore_index=True)
 
     career = pit.groupby("playerID").agg(
         career_g     =("G",      "sum"),
@@ -303,43 +310,87 @@ def paso_4_pico_pitching(pitching, war_pitch, people):
     war_yearly = pd.DataFrame()
     if not war_pitch.empty and not people.empty:
         war = war_pitch.copy()
-        for col in ["WAR", "GS", "G", "IPouts", "ERA_plus"]:
+        for col in ["WAR", "GS", "G", "IPouts", "IPouts_start", "IPouts_relief", "ERA_plus"]:
             if col in war.columns:
                 war[col] = pd.to_numeric(
                     war[col].replace("NULL", np.nan) if isinstance(war[col].iloc[0], str) else war[col],
                     errors="coerce"
                 ).fillna(0)
+            else:
+                war[col] = 0.0
         war_season = war.groupby(["player_ID", "year_ID"]).agg(
-            war_season =("WAR",      "sum"),
-            era_plus_y =("ERA_plus", "mean"),  # media ponderada de stints
+            war_season    =("WAR",           "sum"),
+            era_plus_y    =("ERA_plus",      "mean"),  # media ponderada de stints
+            ipouts_start_y=("IPouts_start",  "sum"),
+            ipouts_rel_y  =("IPouts_relief", "sum"),
         ).reset_index()
-        war_season.columns = ["bbrefID", "yearID", "war_season", "era_plus_y"]
+        war_season.columns = ["bbrefID", "yearID", "war_season", "era_plus_y", "ipouts_start_y", "ipouts_rel_y"]
 
         id_map = people[["playerID", "bbrefID"]].dropna(subset=["bbrefID"])
         war_yearly = (
             war_season.merge(id_map, on="bbrefID", how="left")
-                      .dropna(subset=["playerID"])[["playerID", "yearID", "war_season", "era_plus_y"]]
+                      .dropna(subset=["playerID"])[["playerID", "yearID", "war_season", "era_plus_y", "ipouts_start_y", "ipouts_rel_y"]]
         )
         print(f"  WAR anual para {war_yearly['playerID'].nunique():,} pitchers (BBRef)")
     else:
         print("  WAR no disponible - usando ERA fallback")
 
+    # Duplicar stints de pit_yearly para dual pitchers con filtrado de rol (SP vs RP)
+    dual_pit_rows = []
+    for orig_id, (sp_id, rp_id) in [("eckerde01", ("eckerde01_sp", "eckerde01_rp")), ("smoltjo01", ("smoltjo01_sp", "smoltjo01_rp"))]:
+        stints = pit_yearly[pit_yearly["playerID"] == orig_id].copy()
+        stints_sp = stints[stints["GS"] / stints["G"].replace(0, 1) >= 0.50].copy()
+        stints_sp["playerID"] = sp_id
+        stints_rp = stints[stints["GS"] / stints["G"].replace(0, 1) < 0.50].copy()
+        stints_rp["playerID"] = rp_id
+        dual_pit_rows.extend([stints_sp, stints_rp])
+    if dual_pit_rows:
+        pit_yearly = pd.concat([pit_yearly[~pit_yearly["playerID"].isin(["eckerde01", "smoltjo01"])]] + dual_pit_rows, ignore_index=True)
+
     if not war_yearly.empty:
+        # Duplicar registros de war_yearly para dual pitchers
+        dual_war_rows = []
+        for orig_id, (sp_id, rp_id) in [("eckerde01", ("eckerde01_sp", "eckerde01_rp")), ("smoltjo01", ("smoltjo01_sp", "smoltjo01_rp"))]:
+            w_rows = war_yearly[war_yearly["playerID"] == orig_id].copy()
+            w_sp = w_rows.copy(); w_sp["playerID"] = sp_id
+            w_rp = w_rows.copy(); w_rp["playerID"] = rp_id
+            dual_war_rows.extend([w_sp, w_rp])
+        if dual_war_rows:
+            war_yearly = pd.concat([war_yearly[~war_yearly["playerID"].isin(["eckerde01", "smoltjo01"])]] + dual_war_rows, ignore_index=True)
+
         pit_yearly = pit_yearly.merge(war_yearly, on=["playerID", "yearID"], how="left")
     else:
         pit_yearly["war_season"] = np.nan
         pit_yearly["era_plus_y"] = np.nan
+        pit_yearly["ipouts_start_y"] = np.nan
+        pit_yearly["ipouts_rel_y"] = np.nan
+
+    # Fallbacks limpios si no hay desglose de BBRef para outs de apertura vs relevo
+    has_start_outs = pit_yearly["ipouts_start_y"].notna()
+    # Si no hay BBRef: si es 100% abridor (GS == G), todos los IPouts son de abridor; sino estimar proporcional
+    est_sp_outs = np.where(
+        pit_yearly["G"] > 0,
+        (pit_yearly["GS"] / pit_yearly["G"]) * pit_yearly["IPouts"],
+        0.0
+    )
+    pit_yearly["ipouts_start_clean"] = np.where(has_start_outs, pit_yearly["ipouts_start_y"].fillna(0), est_sp_outs)
+    pit_yearly["ipouts_rel_clean"]   = np.where(has_start_outs, pit_yearly["ipouts_rel_y"].fillna(0), pit_yearly["IPouts"] - est_sp_outs)
+
+    NLB_WAR_BOOST = 2.0
+    nl_leagues = {'NN1', 'NN2', 'EAL', 'NSL', 'NAL', 'ANL', 'EWL', 'NNL', 'ECL', 'IND'}
 
     # Seleccionar top PEAK_SEASONS por WAR (o por ERA inverso si no hay WAR).
-    # Temporadas mayormente de relevo (GS/G bajo) reciben un boost SOLO para este
-    # ranking, para que no queden sistematicamente afuera frente a temporadas de
-    # abridor con mas volumen de innings pero WAR crudo similar o menor calidad.
+    # Temporadas mayormente de relevo (GS/G < 0.50) reciben un boost 1.6x SOLO para este ranking.
+    # Temporadas de NLB (Ligas Negras) reciben un boost 2.0x SOLO para este ranking por volumen de calendario.
     def seleccionar_pico(group):
         g = group.copy()
         if g["war_season"].notna().any():
             gs_ratio = g["GS"] / g["G"].replace(0, np.nan)
             is_relief_season = gs_ratio.fillna(0) < RELIEF_GS_RATIO_THRESHOLD
-            g["war_ranking"] = g["war_season"] * np.where(is_relief_season, RELIEF_WAR_BOOST, 1.0)
+            relief_mult = np.where(is_relief_season, RELIEF_WAR_BOOST, 1.0)
+            is_nlb_season = (g["lgID"].isin(nl_leagues) if "lgID" in g.columns else False) | (g["teamID"].isin(NLB_TEAMS) if "teamID" in g.columns else False)
+            nlb_mult = np.where(is_nlb_season, NLB_WAR_BOOST, 1.0)
+            g["war_ranking"] = g["war_season"] * relief_mult * nlb_mult
             g = g.sort_values("war_ranking", ascending=False, na_position="last")
         else:
             g = g.sort_values("era_y", ascending=True, na_position="last")  # menor ERA = mejor
@@ -363,53 +414,77 @@ def paso_4_pico_pitching(pitching, war_pitch, people):
     )
 
     # Identify NLB pitchers based on league ID or team ID in peak seasons
-    nl_leagues = {'NN1', 'NN2', 'EAL', 'NSL', 'NAL', 'ANL', 'EWL'}
     pico_df["is_nlb_season"] = (
         (pico_df["lgID"].isin(nl_leagues) if "lgID" in pico_df.columns else False) |
         (pico_df["teamID"].isin(NLB_TEAMS) if "teamID" in pico_df.columns else False)
     )
     nlb_counts = pico_df.groupby("playerID")["is_nlb_season"].sum()
 
+    # Conteo de temporadas como SP en el pico (temporadas donde GS/G >= 0.50)
+    pico_df["is_sp_season"] = (pico_df["GS"] / pico_df["G"].replace(0, 1) >= 0.50)
+    sp_season_counts = pico_df.groupby("playerID")["is_sp_season"].sum().reset_index(name="sp_seasons_count")
+
     peak = pico_df.groupby("playerID").agg(
-        peak_ip      =("IP_y",       "sum"),
-        peak_gs      =("GS",         "sum"),
-        peak_g       =("G",          "sum"),
-        peak_sv      =("SV",         "sum"),
-        peak_so      =("SO",         "sum"),
-        peak_bb      =("BB",         "sum"),
-        peak_hr_a    =("HR_a",       "sum"),
-        peak_er      =("ER",         "sum"),
-        peak_h       =("H",          "sum"),
-        peak_w       =("W",          "sum"),
-        peak_l       =("L",          "sum"),
-        peak_war     =("war_season", "sum"),
-        peak_era_plus=("era_plus_y", "mean"),   # promedio de ERA+ en peak
-        peak_ip_per_gs=("ip_per_gs_y","mean"),  # stamina promedio
+        peak_ip          =("IP_y",               "sum"),
+        peak_gs          =("GS",                 "sum"),
+        peak_g           =("G",                  "sum"),
+        peak_sv          =("SV",                 "sum"),
+        peak_so          =("SO",                 "sum"),
+        peak_bb          =("BB",                 "sum"),
+        peak_hr_a        =("HR_a",               "sum"),
+        peak_er          =("ER",                 "sum"),
+        peak_h           =("H",                  "sum"),
+        peak_w           =("W",                  "sum"),
+        peak_l           =("L",                  "sum"),
+        peak_war         =("war_season",         "sum"),
+        peak_era_plus    =("era_plus_y",         "mean"),   # promedio de ERA+ en peak
     ).reset_index()
 
     peak["is_nlb"] = peak["playerID"].map(nlb_counts > 0).fillna(False)
 
+    peak = peak.merge(sp_season_counts, on="playerID", how="left")
+    peak["sp_seasons_count"] = peak["sp_seasons_count"].fillna(0).astype(int)
+
+    total_season_counts = pico_df.groupby("playerID")["yearID"].count().reset_index(name="total_seasons_in_peak")
+    peak = peak.merge(total_season_counts, on="playerID", how="left")
+    peak["total_seasons_in_peak"] = peak["total_seasons_in_peak"].fillna(1).astype(int)
+
+    # Rol por mayoria de temporadas que tenga en el pico (si 50% o mas son SP => SP, sino RP)
+    peak["role"] = np.where(peak["sp_seasons_count"] >= (peak["total_seasons_in_peak"] / 2.0), "SP", "RP")
+
+    # Stamina calculada según el Rol asignado:
+    # SP: IP / GS en sus temporadas de abridor
+    # RP: IP / G en sus temporadas de relevista
+    pico_df_role = pico_df.merge(peak[["playerID", "role"]], on="playerID")
+    def _calc_role_sta(g):
+        r = g["role"].iloc[0]
+        if r == "SP":
+            sp_seasons = g[g["is_sp_season"]]
+            if sp_seasons.empty or sp_seasons["GS"].sum() == 0:
+                sp_seasons = g
+            ip = sp_seasons["IP_y"].sum()
+            gs = sp_seasons["GS"].sum()
+            return (ip / gs) if gs > 0 else 6.0
+        else:
+            rp_seasons = g[~g["is_sp_season"]]
+            if rp_seasons.empty or rp_seasons["G"].sum() == 0:
+                rp_seasons = g
+            ip = rp_seasons["IP_y"].sum()
+            games = rp_seasons["G"].sum()
+            return (ip / games) if games > 0 else 1.2
+
+    sta_series = pico_df_role.groupby("playerID").apply(_calc_role_sta).reset_index(name="peak_sta_rate")
+    peak = peak.merge(sta_series, on="playerID", how="left")
+
     peak = peak.merge(peak_median,  on="playerID", how="left")
     peak = peak.merge(peak_display, on="playerID", how="left")
-
+    peak["ip_per_year"] = peak["peak_ip"] / peak["total_seasons_in_peak"].clip(lower=1)
     ip_p = peak["peak_ip"].replace(0, np.nan)
     peak["peak_h9"]  = peak["peak_h"]    / ip_p * 9.0
     peak["peak_k9"]  = peak["peak_so"]   / ip_p * 9.0
     peak["peak_bb9"] = peak["peak_bb"]   / ip_p * 9.0
     peak["peak_hr9"] = peak["peak_hr_a"] / ip_p * 9.0
     peak["peak_era"] = peak["peak_er"]   / ip_p * 9.0
-
-    # IP/GS del pico (stamina para starters)
-    # Solo se toman las temporadas donde lanzó como Abridor (GS > 0) para que innings de relevo con 0 GS no distorsionen la estamina por apertura
-    gs_seasons = pico_df[pico_df["GS"] > 0]
-    if not gs_seasons.empty:
-        sp_sta = gs_seasons.groupby("playerID").apply(
-            lambda g: (g["IP_y"].sum() / g["GS"].sum()) if g["GS"].sum() > 0 else 0.0
-        ).reset_index(name="sp_ip_per_gs")
-        peak = peak.merge(sp_sta, on="playerID", how="left")
-        peak["peak_ip_per_gs"] = peak["sp_ip_per_gs"].fillna(0.0).clip(0.0, 9.5)
-    else:
-        peak["peak_ip_per_gs"] = 0.0
 
     print(f"  Pico calculado para {len(peak):,} pitchers")
     return peak, pico_df
@@ -430,6 +505,14 @@ def paso_5_filtro_ingesta(career, peak, allstar, hof, pure_pitcher_ids, pitching
             (hof.get("category", pd.Series("Player", index=hof.index)) == "Player")
         ]
         hof_ids = set(hof_inducted["playerID"].unique())
+
+    # Propagar HoF y All-Star a variantes duales
+    for orig_id, (sp_id, rp_id) in [("eckerde01", ("eckerde01_sp", "eckerde01_rp")), ("smoltjo01", ("smoltjo01_sp", "smoltjo01_rp"))]:
+        if orig_id in allstar_ids:
+            allstar_ids.add(sp_id); allstar_ids.add(rp_id)
+        if orig_id in hof_ids:
+            hof_ids.add(sp_id); hof_ids.add(rp_id)
+
     print(f"  All-Stars: {len(allstar_ids):,}  |  HoF: {len(hof_ids):,}")
 
     # Solo pitchers puros
@@ -452,35 +535,39 @@ def paso_5_filtro_ingesta(career, peak, allstar, hof, pure_pitcher_ids, pitching
         df['is_nlb'] = False
 
     if not allstar.empty:
-        as_count = allstar.groupby("playerID").size().reset_index(name="allstar_selections")
+        as_copy = allstar.copy()
+        # Duplicar selecciones All-Star para dual pitchers
+        dual_as = []
+        for orig_id, (sp_id, rp_id) in [("eckerde01", ("eckerde01_sp", "eckerde01_rp")), ("smoltjo01", ("smoltjo01_sp", "smoltjo01_rp"))]:
+            as_rows = as_copy[as_copy["playerID"] == orig_id].copy()
+            as_sp = as_rows.copy(); as_sp["playerID"] = sp_id
+            as_rp = as_rows.copy(); as_rp["playerID"] = rp_id
+            dual_as.extend([as_sp, as_rp])
+        if dual_as:
+            as_copy = pd.concat([as_copy] + dual_as, ignore_index=True)
+        as_count = as_copy.groupby("playerID").size().reset_index(name="allstar_selections")
         df = df.merge(as_count, on="playerID", how="left")
     else:
         df["allstar_selections"] = 0
     df["allstar_selections"] = df["allstar_selections"].fillna(0).astype(int)
 
-    # Marcar tipo de pitcher (SP = starter, RP = reliever).
-    # Igual que la posicion primaria de los bateadores (paso_6_posicion_bateadores en
-    # lahman_etl_v5.py), esto se calcula sobre las 7 temporadas PICO por WAR, no sobre
-    # la carrera completa — un pitcher que empezo como abridor y paso el resto de su
-    # carrera de relevista (ej. Andrew Miller) debe clasificar como RP si sus temporadas
-    # pico fueron de relevo, aunque haya superado el umbral absoluto de aperturas en años
-    # tempranos que no entraron en su pico.
-    df["role"] = np.where(
-        (df["peak_g"] > 0) & (df["peak_gs"] / df["peak_g"].replace(0, 1) >= 0.40) | (df["peak_gs"] >= 50),
-        "SP", "RP"
-    )
-
     # Criterio de Ingesta del Usuario:
-    # SP: GS >= 150 OR WAR >= 15.0 OR All-Star OR HoF
-    # RP: G >= 300 OR WAR >= 7.0 OR All-Star OR HoF
+    # HoF: Incondicional (100% de miembros ingresan)
+    # All-Star: career_ip >= 35.0 IP
+    # SP: GS >= 100 OR WAR >= 10.0
+    # RP: G >= 200 OR WAR >= 5.0
+    MIN_IP_ALLSTAR = 35.0
+
     def is_eligible(r):
-        if r["is_allstar"] or r["is_hof"]:
+        if r["is_hof"]:
+            return True
+        if r["is_allstar"] and (r.get("career_ip", 0) >= MIN_IP_ALLSTAR):
             return True
         war_val = r.get("peak_war", 0) if pd.notna(r.get("peak_war")) else 0
         if r["role"] == "SP":
-            return (r["career_gs"] >= 150) or (war_val >= 15.0)
+            return (r["career_gs"] >= 100) or (war_val >= 10.0)
         else:
-            return (r["career_g"] >= 300) or (war_val >= 7.0)
+            return (r["career_g"] >= 200) or (war_val >= 5.0)
 
     mask = df.apply(is_eligible, axis=1)
     eligible = df[mask].copy()
@@ -488,11 +575,6 @@ def paso_5_filtro_ingesta(career, peak, allstar, hof, pure_pitcher_ids, pitching
     # Comprehensive list of all Negro League lgID codes in Seamheads / Lahman:
     nl_leagues = {'NNL', 'NN2', 'NAL', 'ECL', 'ANL', 'EWL', 'NSL', 'IND', 'EAS', 'NN1'}
     if not pitching.empty and 'lgID' in pitching.columns:
-        nl_pids = set(pitching[pitching['lgID'].isin(nl_leagues)]['playerID'].unique())
-        nl_mask = eligible['playerID'].isin(nl_pids)
-        nl_keep = (eligible['is_hof']) | (eligible['allstar_selections'] >= 2) | (eligible['career_gs'] >= 35) | (eligible['career_g'] >= 60)
-        eligible = eligible[~nl_mask | nl_keep].copy()
-        
         nl_ip_df = pitching[pitching['lgID'].isin(nl_leagues)].groupby('playerID')['IPouts'].sum().reset_index().rename(columns={'IPouts': 'nlb_ipouts'})
         ml_ip_df = pitching[~pitching['lgID'].isin(nl_leagues)].groupby('playerID')['IPouts'].sum().reset_index().rename(columns={'IPouts': 'mlb_ipouts'})
         
@@ -529,6 +611,16 @@ def paso_6_enriquecer_people(df, people):
     if people.empty:
         return df
     slim = people[["playerID", "nameFirst", "nameLast", "bbrefID"]].copy()
+
+    # Agregar registros para dual pitchers
+    dual_people = [
+        {"playerID": "eckerde01_sp", "nameFirst": "Dennis", "nameLast": "Eckersley", "bbrefID": "eckerde01"},
+        {"playerID": "eckerde01_rp", "nameFirst": "Dennis", "nameLast": "Eckersley", "bbrefID": "eckerde01"},
+        {"playerID": "smoltjo01_sp", "nameFirst": "John",   "nameLast": "Smoltz",    "bbrefID": "smoltjo01"},
+        {"playerID": "smoltjo01_rp", "nameFirst": "John",   "nameLast": "Smoltz",    "bbrefID": "smoltjo01"},
+    ]
+    slim = pd.concat([slim, pd.DataFrame(dual_people)], ignore_index=True)
+
     slim["full_name"] = (slim["nameFirst"].fillna("") + " " + slim["nameLast"].fillna("")).str.strip()
     for pid, explicit_name in SR_JR_MAP.items():
         slim.loc[slim["playerID"] == pid, "full_name"] = explicit_name
@@ -554,7 +646,7 @@ def paso_8_atributos_raw(df):
     K9_raw:  K/9  → Ponches por 9 IP (mayor es mejor → invert=False) con suavizado bayesiano (m=40 IP a 5.5 K/9)
     BB9_raw: BB/9 → Paseos por 9 IP (menor es mejor → invert=True) con suavizado bayesiano (m=40 IP a 3.2 BB/9)
     HR9_raw: HR/9 → Jonrones por 9 IP (menor es mejor → invert=True) con suavizado bayesiano (m=40 IP a 0.9 HR/9)
-    STA_raw: IP/GS para abridores (SP), IP/G para relievistas (RP)
+    STA_raw: IP por salida (Innings promedio por aparicion en el pico)
     """
     print("\n  PASO 8: Atributos RAW de pitching (MLB The Show Suite: H/9, K/9, BB/9, HR/9, STA)...")
     df = df.copy()
@@ -565,9 +657,9 @@ def paso_8_atributos_raw(df):
     bb_k = df["peak_bb"].fillna(0)
     hr_k = df["peak_hr_a"].fillna(0)
 
-    # Suavizado bayesiano: m = 350 IP para NLB (debido a calendarios mas cortos con muestras pequeñas) vs m = 40 IP para MLB
+    # Suavizado bayesiano: m = 350 IP para NLB (debido a calendarios mas cortos con muestras pequeñas) vs m = 50 IP para MLB
     is_nlb = df["is_nlb"].fillna(False) if "is_nlb" in df.columns else False
-    m_ip = np.where(is_nlb, 350.0, 40.0)
+    m_ip = np.where(is_nlb, 350.0, 50.0)
 
     df["h9_raw"]  = (h_k  + m_ip * (8.5 / 9.0)) / (ip_k + m_ip) * 9.0
     df["k9_raw"]  = (so_k + m_ip * (5.5 / 9.0)) / (ip_k + m_ip) * 9.0
@@ -579,15 +671,13 @@ def paso_8_atributos_raw(df):
     df["ctl_raw"] = df["bb9_raw"]
     df["hr_raw"]  = df["hr9_raw"]
 
-    is_sp = df["role"] == "SP"
-    df["sta_raw"] = np.where(
-        is_sp,
-        df["peak_ip_per_gs"].fillna(df["career_ip"] / df["career_gs"].replace(0, np.nan)).fillna(0),
-        df["peak_ip"] / df["peak_g"].replace(0, np.nan)
-    )
-    df["sta_raw"] = df["sta_raw"].fillna(0)
+    # IP anual promedio en el pico con factor de calendario 2.0x para NLB
+    is_nlb = df["is_nlb"].fillna(False) if "is_nlb" in df.columns else False
+    nlb_calendar_mult = np.where(is_nlb, 2.0, 1.0)
+    df["ip_per_year_raw"] = df["ip_per_year"].fillna(50.0) * nlb_calendar_mult
+    df["sta_raw"] = df["ip_per_year_raw"]
 
-    print("  h9_raw, k9_raw, bb9_raw, hr9_raw, sta_raw calculados con suavizado Bayesiano")
+    print("  h9_raw, k9_raw, bb9_raw, hr9_raw, sta_raw calculados con suavizado Bayesiano (m=50)")
     return df
 
 
@@ -609,6 +699,39 @@ def paso_10_normalizar_por_era(df):
     df = normalize_difficulty_adjusted(df, "bb9_raw", "bb9_val", invert=True)    # menos BB/9 = mejor
     df = normalize_difficulty_adjusted(df, "hr9_raw", "hr9_val", invert=True)    # menos HR/9 = mejor
 
+    # Stamina calibrada según IP anuales promedio reales (sin penalización invertida por era):
+    def map_ip_to_sta(ip):
+        if ip is None or pd.isna(ip): return 45.0
+        val = float(ip)
+        if val <= 50.0:
+            return 15.0 + (val / 50.0) * 10.0
+        elif val <= 80.0:
+            return 25.0 + ((val - 50.0) / 30.0) * 15.0
+        elif val <= 130.0:
+            return 40.0 + ((val - 80.0) / 50.0) * 20.0
+        elif val <= 175.0:
+            return 60.0 + ((val - 130.0) / 45.0) * 18.0
+        elif val <= 225.0:
+            return 78.0 + ((val - 175.0) / 50.0) * 14.0
+        elif val <= 290.0:
+            return 92.0 + ((val - 225.0) / 65.0) * 14.0
+        else:
+            return 106.0 + min(19.0, ((val - 290.0) / 100.0) * 19.0)
+
+    df["sta_val"] = df["ip_per_year_raw"].apply(map_ip_to_sta).round(1)
+
+    # Factor de sostenibilidad por muestra en el pico:
+    # 1.0% por cada año faltante para completar las 7 temporadas (clip entre 1 y 7)
+    seasons_cnt = df["total_seasons_in_peak"].fillna(7).clip(lower=1, upper=7)
+    sustainability_factor = 1.0 - (7 - seasons_cnt) * 0.01
+
+    # Aplicar directamente a los ratings de pitcheo
+    df["h9_val"]  = (df["h9_val"]  * sustainability_factor).round(1)
+    df["k9_val"]  = (df["k9_val"]  * sustainability_factor).round(1)
+    df["bb9_val"] = (df["bb9_val"] * sustainability_factor).round(1)
+    df["hr9_val"] = (df["hr9_val"] * sustainability_factor).round(1)
+    df["sta_val"] = (df["sta_val"] * sustainability_factor).round(1)
+
     # Aliases para compatibilidad con UI y simulador
     df["stf_val"] = df["k9_val"]
     df["str_val"] = df["k9_val"]
@@ -616,12 +739,7 @@ def paso_10_normalizar_por_era(df):
     df["mov_val"] = df["hr9_val"]
     df["grt_val"] = df["h9_val"]
 
-    is_sp = df["role"] == "SP"
-    sp_sta = (30.0 + (df["sta_raw"] / 7.0) * 55.0).clip(35.0, 110.0)
-    rp_sta = (15.0 + df["sta_raw"] * 10.0).clip(15.0, 35.0)
-    df["sta_val"] = np.where(is_sp, sp_sta, rp_sta).round(1)
-
-    print("  h9_val, k9_val, bb9_val, hr9_val, sta_val normalizados")
+    print("  h9_val, k9_val, bb9_val, hr9_val, sta_val normalizados y calibrados con factor de sostenibilidad")
     return df
 
 
@@ -629,7 +747,8 @@ def paso_10_normalizar_por_era(df):
 def paso_11_ovr_rareza(df):
     print("\n  PASO 11: OVR y Rareza (20% H/9, 20% K/9, 20% BB/9, 20% HR/9, 20% STA)...")
     df = df.copy()
-    raw_ovr = (
+
+    df["raw_ovr"] = (
         df["h9_val"]  * 0.20 +
         df["k9_val"]  * 0.20 +
         df["bb9_val"] * 0.20 +
@@ -650,12 +769,11 @@ def paso_11_ovr_rareza(df):
         elif val <= 74.0:
             res = 79.0 + ((val - 58.0) / 16.0) * 8.0
         elif val <= 85.0:
-            res = 88.0 + ((val - 74.0) / 11.0) * 6.0
+            res = 88.0 + ((val - 74.0) / 11.0) * 7.0
         else:
-            res = 95.0 + min(4.0, ((val - 85.0) / 18.0) * 4.0)
+            res = 95.0 + min(4.9, ((val - 85.0) / 13.0) * 4.9)
         return round(res, 1)
 
-    df["raw_ovr"] = raw_ovr
     df["ovr"]    = df["raw_ovr"].apply(map_to_cosmetic_ovr_p)
     df["rarity"] = df["ovr"].apply(asignar_rareza)
 
@@ -679,10 +797,10 @@ FRANCHISE_MAP = {
     'CHC': 'CHC', 'CHN': 'CHC',
     'LAD': 'LAD', 'LAN': 'LAD', 'BRO': 'LAD',
     'SFG': 'SFG', 'SFN': 'SFG', 'NY1': 'SFG',
-    'STL': 'STL', 'SLN': 'STL',
-    'BAL': 'BAL', 'SLA': 'BAL',
-    'ATL': 'ATL', 'BSN': 'ATL', 'ML1': 'ATL',
-    'OAK': 'OAK', 'PHA': 'OAK', 'KCA': 'OAK',
+    'STL': 'STL', 'SLN': 'STL', 'SL4': 'STL',
+    'BAL': 'BAL', 'SLA': 'BAL', 'ML2': 'BAL',
+    'ATL': 'ATL', 'BSN': 'ATL', 'ML1': 'ATL', 'BS1': 'ATL', 'BS2': 'ATL',
+    'OAK': 'OAK', 'PHA': 'OAK', 'KCA': 'OAK', 'KC1': 'OAK',
     'MIN': 'MIN', 'WS1': 'MIN',
     'WSH': 'WSH', 'MON': 'WSH', 'WAS': 'WSH',
     'TEX': 'TEX', 'WS2': 'TEX',
@@ -691,33 +809,63 @@ FRANCHISE_MAP = {
     'MIL': 'MIL', 'ML4': 'MIL', 'SE1': 'MIL',
     'TB':  'TB',  'TBD': 'TB',  'TBA': 'TB',
     'SDP': 'SDP', 'SDN': 'SDP',
-    'CIN': 'CIN', 'CLE': 'CLE', 'BOS': 'BOS', 'DET': 'DET', 'PIT': 'PIT',
-    'PHI': 'PHI', 'HOU': 'HOU', 'TOR': 'TOR', 'KCR': 'KCR', 'SEA': 'SEA',
-    'COL': 'COL', 'ARI': 'ARI',
+    'CIN': 'CIN', 'CN1': 'CIN', 'CN2': 'CIN',
+    'CLE': 'CLE', 'CL4': 'CLE',
+    'BOS': 'BOS', 'BOS1': 'BOS',
+    'DET': 'DET',
+    'PIT': 'PIT', 'PIT1': 'PIT',
+    'PHI': 'PHI', 'PH1': 'PHI', 'PH2': 'PHI',
+    'HOU': 'HOU', 'HOU1': 'HOU',
+    'TOR': 'TOR',
+    'KCR': 'KCR',
+    'SEA': 'SEA',
+    'COL': 'COL',
+    'ARI': 'ARI',
 }
 
+NLB_LEGENDS = {
+    'Turkey Stearnes', 'Wade Johnston', 'Oscar Charleston', 'Satchel Paige', 'Josh Gibson',
+    'Cool Papa Bell', 'Buck Leonard', 'Pop Lloyd', 'Bullet Rogan', 'Mule Suttles',
+    'Willie Wells', 'Leon Day', 'Ray Brown', 'Smokey Joe Williams', 'Bill Byrd',
+    'Nip Winters', 'Hilton Smith', 'Cristóbal Torriente', 'Martin Dihigo', 'Jud Wilson',
+    'Biz Mackey', 'Louis Santop', 'Andy Cooper', 'Bill Foster', 'José Méndez',
+    'Willie Foster', 'George Scales', 'Dick Lundy', 'Alejandro Oms'
+}
+
+# Strictly Negro League teams (excluding 19th c. MLB franchises like LOU, SBS, CLS, WNL, etc.)
 NLB_TEAMS = {
     'BEG', 'KCM', 'MRS', 'HG', 'CBE', 'CAG', 'PC', 'BE', 'IN9', 'BIR',
-    'KC1', 'HOM', 'DTW', 'NW2', 'NY5', 'NY6', 'AS2', 'MEM', 'BBB', 'BBS',
+    'HOM', 'NW2', 'NY5', 'NY6', 'AS2', 'MEM', 'BBB', 'BBS',
     'BCA', 'BG1', 'BG2', 'BGS', 'CBR', 'CC1', 'CC2', 'CCC', 'CCG', 'CCG2',
-    'CGI', 'CIG', 'CLG', 'CLP', 'CLS', 'COS', 'CSG', 'CSG2', 'CSG3', 'CSW',
-    'CTG', 'CTS', 'CUP', 'CXG', 'DYM', 'ECK', 'FLP', 'GOR', 'HBG', 'HIL',
-    'JRC', 'KCG', 'KRG', 'LEL', 'LOU', 'LRG', 'LVB', 'MB', 'MGS', 'MOH',
-    'MRM', 'NBY', 'ND', 'NE', 'NEW', 'NLG', 'NLS', 'NS', 'NWB', 'NYC',
-    'NYI', 'OKM', 'PBG', 'PBK', 'PG', 'PHK', 'PS', 'PTG', 'QG', 'RIC',
-    'SBS', 'SC1', 'SEN', 'SL2', 'SLS', 'SPG', 'STP', 'SYS', 'WAP', 'WBS',
-    'WNA', 'WNL', 'WP', 'WST', 'ML2'
+    'CGI', 'CIG', 'CLG', 'COS', 'CSG', 'CSG2', 'CSG3', 'CSW',
+    'CTG', 'CTS', 'CUP', 'CXG', 'FLP', 'GOR', 'HBG', 'HIL',
+    'JRC', 'KCG', 'KRG', 'LEL', 'LRG', 'LVB', 'MB', 'MGS', 'MOH',
+    'MRM', 'NBY', 'ND', 'NE', 'NLG', 'NLS', 'NS', 'NWB', 'NYC',
+    'OKM', 'PBG', 'PBK', 'PG', 'PS', 'PTG', 'QG',
+    'SC1', 'SEN', 'SLS', 'SPG', 'WAP', 'WBS',
+    'WP'
 }
 
 def map_to_canonical_team(row):
     t = str(row.get("canonical_teamID", row.get("team", "UNK"))).strip()
     franch = str(row.get("franchID", "")).strip()
-    if t in NLB_TEAMS or franch in NLB_TEAMS:
-        return "NLB"
+    p_name = str(row.get("name", row.get("full_name", ""))).strip()
+
+    # 1. Active modern MLB franchise lineage
     if franch in FRANCHISE_MAP:
         return FRANCHISE_MAP[franch]
     if t in FRANCHISE_MAP:
         return FRANCHISE_MAP[t]
+
+    # 2. Iconic Negro League legends
+    if any(nlb_n.lower() in p_name.lower() for nlb_n in NLB_LEGENDS):
+        return "NLB"
+
+    # 3. Strictly Negro Leagues team / franchise
+    if t in NLB_TEAMS or franch in NLB_TEAMS:
+        return "NLB"
+
+    # 4. Otherwise, defunct historical major league franchise
     return "HIST"
 
 

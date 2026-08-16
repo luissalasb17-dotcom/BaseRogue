@@ -53,6 +53,7 @@
   function calcBoundaries(batter, pitcher, simCtx) {
     const effCon = batter.con || 50;
     const effEye = batter.eye || 50;
+    const effKAvd = batter.k_avd !== undefined ? batter.k_avd : (batter.k_avoid !== undefined ? batter.k_avoid : (batter.k_avoid_val !== undefined ? batter.k_avoid_val : effCon));
     const effPwr = batter.pwr || 50;
     const effSpd = batter.spd || 50;
     
@@ -65,14 +66,14 @@
     // Stage A — discipline outcomes: BB vs SO vs "ball in play". These two are
     // independent of contact quality, so they're resolved first and never get
     // rescaled by whatever happens to Hit/Out below.
-    // 1. BB rate: Batter Eye vs Pitcher BB/9 Control (Base 10%, Slope 0.20%)
-    let pBB = 0.10 + (effEye - pBB9) * 0.0020;
+    // 1. BB rate: Batter Eye vs Pitcher BB/9 Control (Base 12%, Slope 0.25%)
+    let pBB = 0.12 + (effEye - pBB9) * 0.0025;
     // eagle_patience: +3 points to the BB zone
     if (simCtx && simCtx.hasTrait && simCtx.hasTrait('eagle_patience')) pBB += 0.03;
     pBB = Math.max(0.04, Math.min(0.35, pBB));
 
-    // 2. SO rate: Pitcher K/9 Strikeout vs Batter Contact (Base 16%, Slope 0.20%)
-    let pSO = 0.16 + (pK9 - effCon) * 0.0020;
+    // 2. SO rate: Pitcher K/9 Strikeout vs Batter K/AVD (Base 16%, Slope 0.25%)
+    let pSO = 0.16 + (pK9 - effKAvd) * 0.0025;
     // surgical_contact: -3 points to the SO zone
     if (simCtx && simCtx.hasTrait && simCtx.hasTrait('surgical_contact')) pSO -= 0.03;
     pSO = Math.max(0.04, Math.min(0.35, pSO));
@@ -354,6 +355,7 @@
         effBatter.con = (effBatter.con || 50) + boost;
         effBatter.pwr = (effBatter.pwr || 50) + boost;
         effBatter.eye = (effBatter.eye || 50) + boost;
+        effBatter.k_avd = (effBatter.k_avd !== undefined ? effBatter.k_avd : (effBatter.con || 50)) + boost;
         effBatter.spd = (effBatter.spd || 50) + boost;
         effBatter.def = (effBatter.def || 50) + boost;
       }
@@ -364,6 +366,7 @@
         effBatter.con = (effBatter.con || 50) + 15;
         effBatter.pwr = (effBatter.pwr || 50) + 15;
         effBatter.eye = (effBatter.eye || 50) + 15;
+        effBatter.k_avd = (effBatter.k_avd !== undefined ? effBatter.k_avd : (effBatter.con || 50)) + 15;
         effBatter.spd = (effBatter.spd || 50) + 15;
         effBatter.def = (effBatter.def || 50) + 15;
         traitProc = (traitProc ? traitProc + ' | ' : '') + '❤️ Resiliencia de Leyendas: +15 a todas las stats (HP de equipo bajo).';

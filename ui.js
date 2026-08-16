@@ -499,11 +499,13 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
     const isClutch = !!(player.clutch || player.is_clutch);
     const isCaptain = !!(player.captain || player.is_captain);
     const isInterEra = !!player.isInterEra;
-    if (!isClutch && !isCaptain && !isInterEra) return '';
+    const isChallengeWinner = !!(window.Challenge162 && window.Challenge162.isUnlocked(player));
+    if (!isClutch && !isCaptain && !isInterEra && !isChallengeWinner) return '';
 
     const clutchToolTip = window.t ? window.t('badge.clutch_tooltip', 'Clutch Player: +4% de probabilidad de hit y +4% de HR con corredores en posición de anotar durante la última entrada.') : 'Clutch Player: +4% de probabilidad de hit y +4% de HR con corredores en posición de anotar durante la última entrada.';
     const captainToolTip = window.t ? window.t('badge.captain_tooltip', 'Captain: +5 a todos los ratings de sus compañeros de equipo mientras esté en el roster activo.') : 'Captain: +5 a todos los ratings de sus compañeros de equipo mientras esté en el roster activo.';
     const interEraToolTip = window.t ? window.t('badge.interera_tooltip') : 'Fuera de Época: este jugador no estaba activo en la temporada seleccionada — cuenta el doble para su sinergia.';
+    const challengeWinnerToolTip = window.t ? window.t('badge.challenge162_tooltip', 'Elegible para el 162-0 Challenge: formó parte de un roster que ganó una run completa (Quick Play o Modo Historia).') : 'Elegible para el 162-0 Challenge: formó parte de un roster que ganó una run completa (Quick Play o Modo Historia).';
 
     let icons = '';
     if (isClutch) {
@@ -514,6 +516,9 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
     }
     if (isInterEra) {
       icons += `<span class="list-badge-icon badge-interera" title="${interEraToolTip}" style="color:#f59e0b; font-weight:bold; margin-left:3px; cursor:help; font-size:10px; display:inline-block;">⏳</span>`;
+    }
+    if (isChallengeWinner) {
+      icons += `<span class="list-badge-icon badge-challenge-winner" title="${challengeWinnerToolTip}" style="color:var(--badge-challenge-winner,#ffd700); font-weight:bold; margin-left:3px; cursor:help; font-size:10px; display:inline-block;">🏆</span>`;
     }
     return icons;
   }
@@ -2018,13 +2023,13 @@ function initGameModeSelector() {
 
   const CAREER_EVENT_COPY = {
     preseason_training: {
-      icon: '🏋️', title: 'PRETEMPORADA', prompt: 'Antes de arrancar la temporada, ¿cómo te preparás?',
+      icon: '🏋️', title: 'PRETEMPORADA', prompt: 'Antes de arrancar la temporada, ¿cómo te preparas?',
       choices: {
         hard: 'Entrenar a fondo', technical: 'Trabajo técnico con el bate', careful: 'Cuidar el cuerpo'
       }
     },
     batting_cage: {
-      icon: '⚾', title: 'JAULA DE BATEO', prompt: 'Tenés tiempo extra en la jaula. ¿En qué te enfocás?',
+      icon: '⚾', title: 'JAULA DE BATEO', prompt: 'Tienes tiempo extra en la jaula. ¿En qué te enfocas?',
       choices: { power_focus: 'Buscar más potencia', contact_focus: 'Afinar el contacto', balanced: 'Trabajo parejo' }
     },
     sprint_drills: {
@@ -2036,7 +2041,7 @@ function initGameModeSelector() {
       choices: { study_pitchers: 'Lanzadores rivales', study_defense: 'Posicionamiento defensivo' }
     },
     midseason_slump: {
-      icon: '📉', title: 'MITAD DE TEMPORADA', prompt: 'Llevás unas semanas irregulares. ¿Cómo lo manejás?',
+      icon: '📉', title: 'MITAD DE TEMPORADA', prompt: 'Llevas unas semanas irregulares. ¿Cómo lo manejas?',
       choices: { push: 'Forzar el poder', patient: 'Jugar con paciencia', rest: 'Bajar el ritmo' }
     },
     clubhouse_leader: {
@@ -2045,11 +2050,11 @@ function initGameModeSelector() {
     },
     contract_pressure: {
       icon: '💰', title: 'PRESIÓN DE CONTRATO', prompt: 'Se habla de tu futuro contrato en los medios.',
-      choices: { play_angry: 'Jugar con bronca', stay_cool: 'Mantener la cabeza fría' }
+      choices: { play_angry: 'Jugar con intensidad', stay_cool: 'Mantener la cabeza fría' }
     },
     nagging_injury: {
-      icon: '🩹', title: 'MOLESTIA FÍSICA', prompt: 'Arrastrás una molestia menor.',
-      choices: { play_through: 'Jugar igual', sit_out: 'Cuidarte unos días' }
+      icon: '🩹', title: 'MOLESTIA FÍSICA', prompt: 'Arrastras una molestia menor.',
+      choices: { play_through: 'Jugar así', sit_out: 'Cuidarte unos días' }
     },
     hitting_coach: {
       icon: '🧢', title: 'COACH DE BATEO', prompt: 'El coach te propone un ajuste.',
@@ -2415,7 +2420,7 @@ function initGameModeSelector() {
       : '';
 
     const mvpLabel = summary.mvpWinner === 'player'
-      ? `<strong style="color:#f59e0b;">🏆 ${C.player.name} (${t('career.you', 'VOS')})</strong>`
+      ? `<strong style="color:#f59e0b;">🏆 ${C.player.name} (${t('career.you', 'TÚ')})</strong>`
       : `<strong style="color:#9ca3af;">${t('career.other_league_player', 'Otro jugador de la liga')}</strong>`;
 
     // Real leaderboard: the player ranked against ~16 real batter cards
@@ -2576,7 +2581,7 @@ function initGameModeSelector() {
           </button>`;
       };
       container.innerHTML = `
-        <div style="font-size:12px; color:#e4e4e7; margin-bottom:16px;">${t('career.contract_prompt', '¿Te quedás en tu equipo o firmás en otro lado?')}</div>
+        <div style="font-size:12px; color:#e4e4e7; margin-bottom:16px;">${t('career.contract_prompt', '¿Te quedas en tu equipo o firmas en otro lado?')}</div>
         ${teamCard(offers.current, 'current', true)}
         ${teamCard(offers.offerA, 'offerA', false)}
         ${teamCard(offers.offerB, 'offerB', false)}
@@ -2595,7 +2600,7 @@ function initGameModeSelector() {
       C._pendingOffseasonOutcomes = outcomes; // so resolveOffseasonEvent uses the SAME rolled outcomes the wheel showed
       const items = outcomes.map(o => ({ key: o.key, weight: o.weight, color: o.color, label: o.label }));
       const renewedNote = C.contractYearsLeft > 0
-        ? `<div style="font-size:10px; color:#9ca3af; margin-bottom:10px;">${t('career.contract_auto_renew', 'Seguís bajo contrato')} — ${C.team ? C.team.name : ''} (${C.contractYearsLeft} ${C.contractYearsLeft === 1 ? t('career.year_singular', 'año') : t('career.years_short', 'años')} ${t('career.years_remaining', 'restantes')}).</div>`
+        ? `<div style="font-size:10px; color:#9ca3af; margin-bottom:10px;">${t('career.contract_auto_renew', 'Sigues bajo contrato')} — ${C.team ? C.team.name : ''} (${C.contractYearsLeft} ${C.contractYearsLeft === 1 ? t('career.year_singular', 'año') : t('career.years_short', 'años')} ${t('career.years_remaining', 'restantes')}).</div>`
         : '';
       container.innerHTML = `${renewedNote}<div style="font-size:12px; color:#e4e4e7; margin-bottom:12px;">${t('career.offseason_event_prompt', 'Algo pasa en el receso antes de la próxima temporada.')}</div><div id="career-offseason-wheel"></div>`;
       renderCareerWheelWidget(document.getElementById('career-offseason-wheel'), items, (chosenKey) => {
@@ -2949,9 +2954,10 @@ function initGameModeSelector() {
     const con = p.con !== undefined ? p.con : (p.contact_val !== undefined ? p.contact_val : 50);
     const pwr = p.pwr !== undefined ? p.pwr : (p.power_val !== undefined ? p.power_val : 50);
     const eye = p.eye !== undefined ? p.eye : (p.eye_val !== undefined ? p.eye_val : 50);
+    const kavd = p.k_avd !== undefined ? p.k_avd : (p.k_avoid !== undefined ? p.k_avoid : (p.k_avoid_val !== undefined ? p.k_avoid_val : 50));
     const spd = p.spd !== undefined ? p.spd : (p.speed_val !== undefined ? p.speed_val : 50);
     const def = p.def !== undefined ? p.def : (p.defense_val !== undefined ? p.defense_val : 50);
-    const raw = con * 0.35 + pwr * 0.30 + def * 0.15 + eye * 0.10 + spd * 0.10;
+    const raw = con * 0.30 + pwr * 0.30 + eye * 0.10 + kavd * 0.10 + def * 0.10 + spd * 0.10;
     if (raw <= 30) return Math.round(50 + (raw / 30) * 10);
     if (raw <= 45) return Math.round(60 + ((raw - 30) / 15) * 9);
     if (raw <= 58) return Math.round(70 + ((raw - 45) / 13) * 8);
@@ -3169,35 +3175,41 @@ function initGameModeSelector() {
       const conVal = player.con !== undefined ? player.con : (player.contact_val !== undefined ? player.contact_val : 40);
       const pwrVal = player.pwr !== undefined ? player.pwr : (player.power_val !== undefined ? player.power_val : 35);
       const eyeVal = player.eye !== undefined ? player.eye : (player.eye_val !== undefined ? player.eye_val : 40);
+      const kavdVal = player.k_avd !== undefined ? player.k_avd : (player.k_avoid !== undefined ? player.k_avoid : (player.k_avoid_val !== undefined ? player.k_avoid_val : 40));
       const spdVal = player.spd !== undefined ? player.spd : (player.speed_val !== undefined ? player.speed_val : 45);
       const defVal = player.def !== undefined ? player.def : (player.defense_val !== undefined ? player.defense_val : 40);
 
       const gCon = getStatGrade(conVal);
       const gPwr = getStatGrade(pwrVal);
       const gEye = getStatGrade(eyeVal);
+      const gKAvd = getStatGrade(kavdVal);
       const gSpd = getStatGrade(spdVal);
       const gDef = getStatGrade(defVal);
 
       statLines = `
-        <div class="stat-row" style="display: flex; align-items: center; justify-content: space-between; font-size: 7px; margin: 1.5px 0;">
+        <div class="stat-row" style="display: flex; align-items: center; justify-content: space-between; font-size: 7px; margin: 1px 0;">
           <span class="stat-label">CON:</span>
-          <span class="stat-badge" style="background: ${gCon.color}; color: ${gCon.text === 'F' ? '#fff' : '#000'}; font-family: 'Press Start 2P', monospace; font-size: 6px; padding: 2px 5px; border-radius: 3px; font-weight: bold; box-shadow: 0 1px 2px rgba(0,0,0,0.3);">${gCon.text}</span>
+          <span class="stat-badge" style="background: ${gCon.color}; color: ${gCon.text === 'F' ? '#fff' : '#000'}; font-family: 'Press Start 2P', monospace; font-size: 6px; padding: 1px 4px; border-radius: 3px; font-weight: bold; box-shadow: 0 1px 2px rgba(0,0,0,0.3);">${gCon.text}</span>
         </div>
-        <div class="stat-row" style="display: flex; align-items: center; justify-content: space-between; font-size: 7px; margin: 1.5px 0;">
+        <div class="stat-row" style="display: flex; align-items: center; justify-content: space-between; font-size: 7px; margin: 1px 0;">
           <span class="stat-label">POW:</span>
-          <span class="stat-badge" style="background: ${gPwr.color}; color: ${gPwr.text === 'F' ? '#fff' : '#000'}; font-family: 'Press Start 2P', monospace; font-size: 6px; padding: 2px 5px; border-radius: 3px; font-weight: bold; box-shadow: 0 1px 2px rgba(0,0,0,0.3);">${gPwr.text}</span>
+          <span class="stat-badge" style="background: ${gPwr.color}; color: ${gPwr.text === 'F' ? '#fff' : '#000'}; font-family: 'Press Start 2P', monospace; font-size: 6px; padding: 1px 4px; border-radius: 3px; font-weight: bold; box-shadow: 0 1px 2px rgba(0,0,0,0.3);">${gPwr.text}</span>
         </div>
-        <div class="stat-row" style="display: flex; align-items: center; justify-content: space-between; font-size: 7px; margin: 1.5px 0;">
+        <div class="stat-row" style="display: flex; align-items: center; justify-content: space-between; font-size: 7px; margin: 1px 0;">
           <span class="stat-label">EYE:</span>
-          <span class="stat-badge" style="background: ${gEye.color}; color: ${gEye.text === 'F' ? '#fff' : '#000'}; font-family: 'Press Start 2P', monospace; font-size: 6px; padding: 2px 5px; border-radius: 3px; font-weight: bold; box-shadow: 0 1px 2px rgba(0,0,0,0.3);">${gEye.text}</span>
+          <span class="stat-badge" style="background: ${gEye.color}; color: ${gEye.text === 'F' ? '#fff' : '#000'}; font-family: 'Press Start 2P', monospace; font-size: 6px; padding: 1px 4px; border-radius: 3px; font-weight: bold; box-shadow: 0 1px 2px rgba(0,0,0,0.3);">${gEye.text}</span>
         </div>
-        <div class="stat-row" style="display: flex; align-items: center; justify-content: space-between; font-size: 7px; margin: 1.5px 0;">
+        <div class="stat-row" style="display: flex; align-items: center; justify-content: space-between; font-size: 7px; margin: 1px 0;">
+          <span class="stat-label">K/AVD:</span>
+          <span class="stat-badge" style="background: ${gKAvd.color}; color: ${gKAvd.text === 'F' ? '#fff' : '#000'}; font-family: 'Press Start 2P', monospace; font-size: 6px; padding: 1px 4px; border-radius: 3px; font-weight: bold; box-shadow: 0 1px 2px rgba(0,0,0,0.3);">${gKAvd.text}</span>
+        </div>
+        <div class="stat-row" style="display: flex; align-items: center; justify-content: space-between; font-size: 7px; margin: 1px 0;">
           <span class="stat-label">SPD:</span>
-          <span class="stat-badge" style="background: ${gSpd.color}; color: ${gSpd.text === 'F' ? '#fff' : '#000'}; font-family: 'Press Start 2P', monospace; font-size: 6px; padding: 2px 5px; border-radius: 3px; font-weight: bold; box-shadow: 0 1px 2px rgba(0,0,0,0.3);">${gSpd.text}</span>
+          <span class="stat-badge" style="background: ${gSpd.color}; color: ${gSpd.text === 'F' ? '#fff' : '#000'}; font-family: 'Press Start 2P', monospace; font-size: 6px; padding: 1px 4px; border-radius: 3px; font-weight: bold; box-shadow: 0 1px 2px rgba(0,0,0,0.3);">${gSpd.text}</span>
         </div>
-        <div class="stat-row" style="display: flex; align-items: center; justify-content: space-between; font-size: 7px; margin: 1.5px 0;">
+        <div class="stat-row" style="display: flex; align-items: center; justify-content: space-between; font-size: 7px; margin: 1px 0;">
           <span class="stat-label">DEF:</span>
-          <span class="stat-badge" style="background: ${gDef.color}; color: ${gDef.text === 'F' ? '#fff' : '#000'}; font-family: 'Press Start 2P', monospace; font-size: 6px; padding: 2px 5px; border-radius: 3px; font-weight: bold; box-shadow: 0 1px 2px rgba(0,0,0,0.3);">${gDef.text}</span>
+          <span class="stat-badge" style="background: ${gDef.color}; color: ${gDef.text === 'F' ? '#fff' : '#000'}; font-family: 'Press Start 2P', monospace; font-size: 6px; padding: 1px 4px; border-radius: 3px; font-weight: bold; box-shadow: 0 1px 2px rgba(0,0,0,0.3);">${gDef.text}</span>
         </div>
       `;
     }
@@ -3208,11 +3220,13 @@ function initGameModeSelector() {
     if (stam < 50) stamClass = "low";
     if (stam < 25) stamClass = "critical";
 
-    // Out of position warning
+    // Out of position warning (applies only to fielders in fielding slots, never pitchers in pitching slots or DH)
     let positionWarning = "";
-    if (slotName && slotName !== 'DH' && slotName !== 'P' && player.pos !== slotName) {
+    const sName = slotName != null ? String(slotName).trim() : '';
+    const isPitcherSlot = !sName || sName === 'P' || sName.startsWith('SP') || sName.startsWith('RP') || sName === 'CL' || sName === 'SETUP';
+    if (!isPitcher && sName && sName !== 'DH' && !isPitcherSlot && player.pos !== sName) {
       const secPosArray = player.sec_pos ? player.sec_pos.split(',').map(s => s.trim()) : [];
-      if (secPosArray.includes(slotName)) {
+      if (secPosArray.includes(sName)) {
         positionWarning = `<div style="position: absolute; bottom: 35px; left: 0; right: 0; background: #06b6d4; color: #fff; font-size: 7.5px; text-align: center; font-weight: bold; padding: 2px 0; font-family: 'Press Start 2P', monospace; letter-spacing: 0.5px;">SEC POS (DEF -15%)</div>`;
       } else {
         positionWarning = `<div style="position: absolute; bottom: 35px; left: 0; right: 0; background: #ef4444; color: #fff; font-size: 7.5px; text-align: center; font-weight: bold; padding: 2px 0; font-family: 'Press Start 2P', monospace; letter-spacing: 0.5px;">OOF POS (DEF -50%)</div>`;
@@ -3254,13 +3268,15 @@ function initGameModeSelector() {
       `;
     }
 
+    const displayPos = player.pos || player.role || (isPitcher ? (player.sta >= 65 ? 'SP' : 'RP') : 'DH');
+
     return `
       <div class="player-card ${eraClass} rarity-${rarityLabel} ${isClutch ? 'has-clutch' : ''} ${isCaptain ? 'has-captain' : ''}">
         ${ribbonHTML}
         ${interEraBannerHTML}
         <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-          <span class="card-position" style="background: #000; color: #fff; padding: 2px 4px; font-weight: bold; font-size: 6px; border: 1px solid rgba(255,255,255,0.1);">${player.pos}</span>
-          <span class="card-ovr" style="font-family: 'Press Start 2P', monospace; font-size: 6px; color: ${ovrGrade.color}; font-weight: bold; background: #000; padding: 2px 4px; border: 1px solid rgba(255,255,255,0.2);">CLASS ${ovrGrade.text}</span>
+          <span class="card-position" style="background: #000; color: #fff; padding: 2px 4px; font-weight: bold; font-size: 6px; border: 1px solid rgba(255,255,255,0.1);">${displayPos}</span>
+          <span class="card-ovr" style="font-family: 'Press Start 2P', monospace; font-size: 6px; color: ${ovrGrade.color}; font-weight: bold; background: #000; padding: 2px 4px; border: 1px solid rgba(255,255,255,0.2);">OVR ${Math.round(ovr)}</span>
           <span class="card-year" style="font-size: 6px;">${year}</span>
         </div>
         ${(() => {
@@ -3287,6 +3303,7 @@ function initGameModeSelector() {
       </div>
     `;
   }
+  window.createCardHTML = createCardHTML;
 
   // Main UI Screen Swapping
     function showScreen(screenId) {
@@ -3362,7 +3379,8 @@ function initGameModeSelector() {
         hit_upgrade_title: "⚡ UPGRADE DE BATAZOS:",
         ratings_con: '<strong style="color:#a7f3d0;">CON — Contacto:</strong> Determina la probabilidad de conectar un batazo. Jugadores con alto CON tienen más chances de sencillos e hits en general.',
         ratings_pwr: '<strong style="color:#f59e0b;">PWR — Poder:</strong> Probabilidad de conectar extra-bases (dobles, triples, jonrones). También aumenta el daño al pitcher rival en hits largos.',
-        ratings_eye: '<strong style="color:#3b82f6;">EYE — Ojo/Vista:</strong> Probabilidad de obtener boletos (BB). Reduce la zona de ponches. Clave para no recibir daño directo al HP.',
+        ratings_eye: '<strong style="color:#3b82f6;">EYE — Ojo/Vista:</strong> Probabilidad de obtener boletos (BB). Clave para avanzar corredores y desgastar al lanzador rival.',
+        ratings_kavd: '<strong style="color:#ec4899;">K/AVD — Evasión de Ponches:</strong> Reduce la zona de ponches (SO) en la tirada del dado. Clave para evitar el daño directo a la salud del equipo que provocan los ponches.',
         ratings_spd: '<strong style="color:#38bdf8;">SPD — Velocidad:</strong> Activa intentos de robo de base en sencillos (debuff +20% daño al pitcher). También mejora la probabilidad de convertir hits en extra-bases.',
         ratings_def: '<strong style="color:#a855f7;">DEF — Defensa:</strong> Contribuye al <strong>Escudo</strong> del equipo. Cuanto mayor DEF promedio, más escudo tienes disponible para absorber OUTs antes de perder HP.',
         ratings_clutch: '<strong style="color:#ef4444;">⚡ CLUTCH PLAYER:</strong> +2% de probabilidad de sencillo y doble, +4% de HR con corredores en posición de anotar o durante la última entrada.',
@@ -3396,7 +3414,8 @@ function initGameModeSelector() {
         hit_upgrade_title: "⚡ HIT UPGRADES:",
         ratings_con: '<strong style="color:#a7f3d0;">CON — Contact:</strong> Determines hitting probability. High CON batters have higher chances of singles and base hits.',
         ratings_pwr: '<strong style="color:#f59e0b;">PWR — Power:</strong> Chance to hit extra-base hits (doubles, triples, home runs) and deal heavy pitcher damage.',
-        ratings_eye: '<strong style="color:#3b82f6;">EYE — Eye/Vision:</strong> Chance to draw walks (BB) and reduce strikeout frequency. Crucial to avoid direct HP damage.',
+        ratings_eye: '<strong style="color:#3b82f6;">EYE — Eye/Vision:</strong> Probability of drawing walks (BB). Key for advancing runners and wearing down the rival pitcher.',
+        ratings_kavd: '<strong style="color:#ec4899;">K/AVD — Strikeout Avoidance:</strong> Shrinks the strikeout (SO) zone on the dice roll. Essential for preventing direct HP damage caused by strikeouts.',
         ratings_spd: '<strong style="color:#38bdf8;">SPD — Speed:</strong> Enables base stealing attempts on singles (+20% pitcher damage debuff) and extra-base upgrades.',
         ratings_def: '<strong style="color:#a855f7;">DEF — Defense:</strong> Contributes to Team Shield. Higher average DEF grants more shield to absorb OUTs before losing HP.',
         ratings_clutch: '<strong style="color:#ef4444;">⚡ CLUTCH PLAYER:</strong> +2% single and double chance, +4% HR chance with runners in scoring position or during the last inning.',
@@ -3439,6 +3458,9 @@ function initGameModeSelector() {
 
       const guideEye = document.querySelector('#ratings-info-dropdown [data-i18n-html="ratings_guide.eye"]');
       if (guideEye && dict.ratings_eye) guideEye.innerHTML = dict.ratings_eye;
+
+      const guideKAvd = document.querySelector('#ratings-info-dropdown [data-i18n-html="ratings_guide.k_avd"]');
+      if (guideKAvd && dict.ratings_kavd) guideKAvd.innerHTML = dict.ratings_kavd;
 
       const guideSpd = document.querySelector('#ratings-info-dropdown [data-i18n-html="ratings_guide.spd"]');
       if (guideSpd && dict.ratings_spd) guideSpd.innerHTML = dict.ratings_spd;
@@ -3858,8 +3880,17 @@ function initGameModeSelector() {
     const ovrGrade = getClassGrade(ovr);
 
     const statBar = (label, statKey, color) => {
-      const baseVal = player[statKey] || 0;
-      const effVal = effectivePlayer[statKey] || 0;
+      let baseVal = player[statKey];
+      if (baseVal === undefined) {
+        if (statKey === 'k_avd') baseVal = player.k_avoid !== undefined ? player.k_avoid : (player.k_avoid_val !== undefined ? player.k_avoid_val : (player.con || 0));
+        else if (statKey === 'con') baseVal = player.contact_val || 0;
+        else if (statKey === 'pwr') baseVal = player.power_val || 0;
+        else if (statKey === 'eye') baseVal = player.eye_val || 0;
+        else if (statKey === 'spd') baseVal = player.speed_val || 0;
+        else if (statKey === 'def') baseVal = player.defense_val || 0;
+        else baseVal = 0;
+      }
+      const effVal = (effectivePlayer && effectivePlayer[statKey] !== undefined) ? effectivePlayer[statKey] : baseVal;
       const g = getGrade(effVal);
       const gradeColors = { 'S': '#ffd700', 'A': '#22d3ee', 'B': '#4ade80', 'C': '#94a3b8', 'D': '#f97316', 'F': '#ef4444' };
       const gc = gradeColors[g] || '#fff';
@@ -3917,9 +3948,10 @@ function initGameModeSelector() {
         ` : `
           ${statBar('CON', 'con', '#00ff66')}
           ${statBar('PWR', 'pwr', '#f97316')}
+          ${statBar('EYE', 'eye', '#fbbf24')}
+          ${statBar('K/AVD', 'k_avd', '#ec4899')}
           ${statBar('SPD', 'spd', '#38bdf8')}
           ${statBar('DEF', 'def', '#a78bfa')}
-          ${statBar('EYE', 'eye', '#fbbf24')}
         `}
       </div>
       <div class="popup-stamina-row">
@@ -5096,6 +5128,8 @@ function initGameModeSelector() {
     const statTemplates = [
       { stat: 'con', label: 'Contacto Estándar', desc: 'Práctica intensiva de swing', basePrice: 3, icon: '🎯', risk: 'safe', minVal: 5, maxVal: 7, critChance: 0.15, critVal: 12 },
       { stat: 'pwr', label: 'Fuerza de Bateo', desc: 'Repeticiones con bate pesado', basePrice: 3, icon: '💥', risk: 'safe', minVal: 5, maxVal: 7, critChance: 0.15, critVal: 12 },
+      { stat: 'eye', label: 'Disciplina de Boletos', desc: 'Paciencia en el plato y lectura de pitcheos', basePrice: 3, icon: '👓', risk: 'safe', minVal: 5, maxVal: 7, critChance: 0.15, critVal: 12 },
+      { stat: 'k_avd', label: 'Evasión de Ponches', desc: 'Afinar la zona de strike y reducir ponches', basePrice: 3, icon: '👁️', risk: 'safe', minVal: 5, maxVal: 7, critChance: 0.15, critVal: 12 },
       { stat: 'spd', label: 'Velocidad en Bases', desc: 'Trabajo de aceleración en bases', basePrice: 3, icon: '⚡', risk: 'safe', minVal: 5, maxVal: 7, critChance: 0.15, critVal: 12 },
       { stat: 'def', label: 'Técnica Defensiva', desc: 'Ejercicios de fildeo y tiro', basePrice: 2, icon: '🧤', risk: 'safe', minVal: 5, maxVal: 7, critChance: 0.15, critVal: 12 },
       { stat: 'sta', label: 'Masaje de Recuperación', desc: 'Masajes y descanso activo', basePrice: 2, icon: '🔋', risk: 'safe', minVal: 35, maxVal: 45, critChance: 0.20, critVal: 100 },
@@ -6352,7 +6386,8 @@ function initGameModeSelector() {
       const eff = window.Game.getEffectiveStats(bRosterObj, bRosterObj.pos);
       const statsBox = document.getElementById('match-batter-stats-box');
       if (statsBox) {
-        statsBox.innerHTML = `CON: ${eff.con} | PWR: ${eff.pwr}<br>SPD: ${eff.spd} | DEF: ${eff.def}<br>POS NATIVA: ${eff.pos}`;
+        const kavd = eff.k_avd !== undefined ? eff.k_avd : (eff.k_avoid !== undefined ? eff.k_avoid : (eff.k_avoid_val !== undefined ? eff.k_avoid_val : eff.con));
+        statsBox.innerHTML = `CON: ${eff.con} | PWR: ${eff.pwr} | EYE: ${eff.eye}<br>K/AVD: ${kavd} | SPD: ${eff.spd} | DEF: ${eff.def}<br>POS NATIVA: ${eff.pos}`;
       }
       el.arenaBatterCardSlot.innerHTML = createCardHTML(eff, bRosterObj.pos);
       if (dealAnimation) dealCardIn(el.arenaBatterCardSlot, { fromX: -70, delay: 0 });
@@ -6695,6 +6730,10 @@ function initGameModeSelector() {
 
   // ── CENTRAL POST-MATCH ROUTER ─────────────────────────────────────────
   function handlePostMatchResult(res) {
+    if (window.Game && window.Game.isChallenge162PlayoffMatch) {
+      if (window.Challenge162) window.Challenge162.onPlayoffMatchResolved(res);
+      return;
+    }
     const continueRouting = () => {
       if (!res.won) {
         triggerGameOver(false, res.message);
@@ -6843,7 +6882,7 @@ function initGameModeSelector() {
         <div style="max-width:420px;width:90%;text-align:center;padding:24px;">
           <div style="font-size:48px;margin-bottom:12px;">📦</div>
           <div style="font-family:'Press Start 2P',monospace;font-size:12px;color:#facc15;margin-bottom:14px;">COFRE VACÍO</div>
-          <div style="font-size:12px;color:#cbd5e1;margin-bottom:20px;">Ya tenés todas las traits disponibles. El cofre te deja +$15 de consuelo.</div>
+          <div style="font-size:12px;color:#cbd5e1;margin-bottom:20px;">Ya tienes todos los traits disponibles. El cofre te deja +$15 de consuelo.</div>
           <button class="btn" id="btn-chest-claim" style="background:linear-gradient(135deg,#facc15,#f59e0b);color:#000;font-weight:bold;">Reclamar</button>
         </div>`;
       document.body.appendChild(overlay);
@@ -6919,7 +6958,7 @@ function initGameModeSelector() {
 
         ${gamble.requiresTargetPlayer ? `
           <div style="margin-bottom:16px;">
-            <label style="font-size:10px;color:#94a3b8;display:block;margin-bottom:6px;">Elegí el jugador objetivo:</label>
+            <label style="font-size:10px;color:#94a3b8;display:block;margin-bottom:6px;">Elige el jugador objetivo:</label>
             <select id="gamble-target-select" style="width:100%;padding:8px;background:#0a0f18;color:#fff;border:1px solid rgba(239,68,68,0.4);border-radius:8px;font-size:11px;">
               ${rosterOptions || '<option disabled>Sin jugadores con Era válida</option>'}
             </select>
@@ -7059,8 +7098,24 @@ function initGameModeSelector() {
 
   // ── TRUE VICTORY SCREEN ──────────────────────────────────────────────────
   function triggerTrueVictory() {
+    if (window.Challenge162 && window.Game) {
+      window.Challenge162.unlockFromRun(window.Game);
+    }
     window.showScreen('screen-victory');
     startFireworks();
+
+    const goto162Btn = document.getElementById('btn-victory-goto-challenge162');
+    if (goto162Btn) {
+      goto162Btn.onclick = () => {
+        if (!window.Challenge162) return;
+        if (window.Challenge162.hasSave() && window.Challenge162.load() && window.Challenge162.state) {
+          window.Challenge162.showScreen('screen-challenge-season');
+          window.Challenge162.render();
+        } else {
+          window.Challenge162.startRosterBuilder();
+        }
+      };
+    }
   }
 
   function startFireworks() {
