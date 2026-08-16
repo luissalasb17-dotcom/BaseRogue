@@ -85,11 +85,13 @@
     "quick_title": "PARTIDA RÁPIDA",
     "quick_subtitle": "MODO CLÁSICO",
     "quick_desc": "La experiencia clásica BaseRogue, enfréntate a oponentes legendarios de distintas eras",
-    "quick_btn": "🚀 JUGAR MODO CLÁSICO",
     "challenge162_title": "162-0 CHALLENGE",
     "challenge162_subtitle": "TEMPORADA PERFECTA",
     "challenge162_desc": "Arma un equipo con jugadores y pitchers que ya desbloqueaste ganando runs de Partida Rápida o Modo Historia. Simula una temporada de 162 partidos. Termina con 10 derrotas o menos (o un 162-0 perfecto) para clasificar a playoffs.",
-    "challenge162_btn": "🏆 ARMAR EQUIPO"
+    "challenge162_btn": "🏆 ARMAR EQUIPO",
+    "challenge162_locked_desc": "🔒 Modo Bloqueado. Completa y gana tu primera run en Partida Rápida para desbloquear el desafío de la Temporada 162-0 y empezar a armar tu alineación.",
+    "challenge162_locked_btn": "🔒 BLOQUEADO (GANA PARTIDA RÁPIDA)",
+    "challenge162_continue_btn": "⚾ CONTINUAR TEMPORADA"
   },
   "common": {
     "back_menu": "← MENÚ"

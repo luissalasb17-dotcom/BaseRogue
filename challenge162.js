@@ -502,7 +502,65 @@
     unlockedPitchers: new Set(),
     state: null,
 
-    // ── Unlock store (badge eligibility) ──────────────────────────────────
+    // ── Unlock store (badge eligibility & mode gating) ───────────────────
+    isModeUnlocked() {
+      try {
+        return localStorage.getItem('baserogue_challenge162_unlocked') === '1';
+      } catch (e) { /* storage check fallback */ }
+      return false;
+    },
+    unlockMode() {
+      try {
+        localStorage.setItem('baserogue_challenge162_unlocked', '1');
+      } catch (e) {}
+      this.updateModeSelectCard();
+    },
+    lockMode() {
+      try {
+        localStorage.removeItem('baserogue_challenge162_unlocked');
+      } catch (e) {}
+      this.updateModeSelectCard();
+    },
+    updateModeSelectCard() {
+      const card = document.getElementById('card-mode-challenge162');
+      const btn = document.getElementById('btn-select-challenge-mode');
+      if (!card || !btn) return;
+
+      const icon = card.querySelector('.mode-icon');
+      const desc = document.getElementById('challenge162-card-desc') || card.querySelector('.mode-desc');
+      const unlocked = this.isModeUnlocked();
+
+      if (unlocked) {
+        card.classList.remove('is-locked');
+        card.removeAttribute('title');
+        if (icon) icon.textContent = '🏆';
+        if (desc) {
+          desc.textContent = typeof window.t === 'function' ? window.t('mode_select.challenge162_desc') : 'Arma un equipo con jugadores y lanzadores que ya desbloqueaste ganando runs de Partida Rápida o Modo Historia. Simula una temporada de 162 partidos. Termina con 10 derrotas o menos (o un 162-0 perfecto) para clasificar a playoffs.';
+        }
+        const hasActiveSave = this.hasSave() && this.load() && this.state && !this.state.finished;
+        btn.disabled = false;
+        btn.removeAttribute('data-locked');
+        const btnText = hasActiveSave
+          ? (typeof window.t === 'function' ? (window.t('mode_select.challenge162_continue_btn') || 'CONTINUAR TEMPORADA') : 'CONTINUAR TEMPORADA')
+          : (typeof window.t === 'function' ? (window.t('mode_select.challenge162_btn') || 'ARMAR EQUIPO') : 'ARMAR EQUIPO');
+        btn.innerHTML = hasActiveSave ? `⚾ ${btnText}` : `🏆 ${btnText}`;
+      } else {
+        card.classList.add('is-locked');
+        const lockedDesc = typeof window.t === 'function' 
+          ? (window.t('mode_select.challenge162_locked_desc') || '🔒 Modo Bloqueado. Completa y gana tu primera run en Partida Rápida para desbloquear el desafío de la Temporada 162-0.')
+          : '🔒 Modo Bloqueado. Completa y gana tu primera run en Partida Rápida para desbloquear el desafío de la Temporada 162-0.';
+        const lockedBtn = typeof window.t === 'function'
+          ? (window.t('mode_select.challenge162_locked_btn') || '🔒 BLOQUEADO (GANA PARTIDA RÁPIDA)')
+          : '🔒 BLOQUEADO (GANA PARTIDA RÁPIDA)';
+        card.setAttribute('title', lockedDesc);
+        if (icon) icon.textContent = '🔒';
+        if (desc) desc.textContent = lockedDesc;
+        btn.disabled = true;
+        btn.setAttribute('data-locked', 'true');
+        btn.innerHTML = lockedBtn;
+      }
+    },
+
     initUnlocks() {
       try {
         const raw = localStorage.getItem(UNLOCKS_KEY);
@@ -1545,9 +1603,16 @@
     },
 
     initUI() {
+      this.updateModeSelectCard();
       const btn = document.getElementById('btn-select-challenge-mode');
       if (btn) {
         btn.onclick = () => {
+          if (!this.isModeUnlocked()) {
+            if (typeof window.showToast === 'function') {
+              window.showToast('🔒 Completa una run de Partida Rápida para desbloquear el 162-0 Challenge');
+            }
+            return;
+          }
           if (this.hasSave() && this.load() && this.state) {
             this.showScreen('screen-challenge-season');
             this.render();
@@ -1556,7 +1621,10 @@
           }
         };
       }
-      const backToMenu = () => this.showScreen('screen-mode-select');
+      const backToMenu = () => {
+        this.showScreen('screen-mode-select');
+        this.updateModeSelectCard();
+      };
       const btnBack1 = document.getElementById('btn-challenge162-back-menu');
       const btnBack2 = document.getElementById('btn-challenge162-season-back-menu');
       if (btnBack1) btnBack1.onclick = backToMenu;

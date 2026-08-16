@@ -85,11 +85,13 @@
     "quick_title": "QUICK PLAY",
     "quick_subtitle": "CLASSIC MODE",
     "quick_desc": "The classic BaseRogue experience — face legendary opponents from different eras",
-    "quick_btn": "🚀 PLAY CLASSIC MODE",
     "challenge162_title": "162-0 CHALLENGE",
     "challenge162_subtitle": "PERFECT SEASON",
     "challenge162_desc": "Build a roster with batters and pitchers you have unlocked from winning runs in Quick Play or Story Mode. Simulate a 162-game season. Finish with 10 losses or fewer (or a perfect 162-0) to reach the playoffs.",
-    "challenge162_btn": "🏆 BUILD TEAM"
+    "challenge162_btn": "🏆 BUILD TEAM",
+    "challenge162_locked_desc": "🔒 Mode Locked. Win your first Quick Play run to unlock the 162-0 Season Challenge and begin drafting your dream roster.",
+    "challenge162_locked_btn": "🔒 LOCKED (WIN QUICK PLAY)",
+    "challenge162_continue_btn": "⚾ CONTINUE SEASON"
   },
   "common": {
     "back_menu": "← MENU"

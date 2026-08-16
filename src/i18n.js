@@ -137,11 +137,13 @@
                 "career_title": "MODO CARRERA",
                 "career_subtitle": "DE ROOKIE AL SALÓN DE LA FAMA",
                 "career_desc": "Elige un rookie y lleva su carrera temporada a temporada, año real por año real, hasta el retiro. ¿Alcanzará su potencial... o se quedará corto?",
-                "career_btn": "🏆 EMPEZAR CARRERA",
                 "challenge162_title": "162-0 CHALLENGE",
                 "challenge162_subtitle": "TEMPORADA PERFECTA",
                 "challenge162_desc": "Arma un equipo con jugadores y lanzadores que ya desbloqueaste ganando runs de Partida Rápida o Modo Historia. Simula una temporada de 162 partidos. Termina con 10 derrotas o menos (o un 162-0 perfecto) para clasificar a playoffs.",
-                "challenge162_btn": "🏆 ARMAR EQUIPO"
+                "challenge162_btn": "🏆 ARMAR EQUIPO",
+                "challenge162_locked_desc": "🔒 Modo Bloqueado. Completa y gana tu primera run en Partida Rápida para desbloquear el desafío de la Temporada 162-0 y empezar a armar tu alineación.",
+                "challenge162_locked_btn": "🔒 BLOQUEADO (GANA PARTIDA RÁPIDA)",
+                "challenge162_continue_btn": "⚾ CONTINUAR TEMPORADA"
         },
         "common": {
                 "back_menu": "← MENÚ"
@@ -1075,11 +1077,13 @@
                 "career_title": "CAREER MODE",
                 "career_subtitle": "FROM ROOKIE TO THE HALL OF FAME",
                 "career_desc": "Pick a rookie and carry their career season by season, real year by real year, all the way to retirement. Will they reach their potential... or fall short?",
-                "career_btn": "🏆 START CAREER",
                 "challenge162_title": "162-0 CHALLENGE",
                 "challenge162_subtitle": "PERFECT SEASON",
                 "challenge162_desc": "Build a roster with batters and pitchers you have unlocked from winning runs in Quick Play or Story Mode. Simulate a 162-game season. Finish with 10 losses or fewer (or a perfect 162-0) to reach the playoffs.",
-                "challenge162_btn": "🏆 BUILD TEAM"
+                "challenge162_btn": "🏆 BUILD TEAM",
+                "challenge162_locked_desc": "🔒 Mode Locked. Win your first Quick Play run to unlock the 162-0 Season Challenge and begin drafting your dream roster.",
+                "challenge162_locked_btn": "🔒 LOCKED (WIN QUICK PLAY)",
+                "challenge162_continue_btn": "⚾ CONTINUE SEASON"
         },
         "common": {
                 "back_menu": "← MENU"
@@ -1979,6 +1983,9 @@
       if (typeof window.UI.renderActiveRoster === 'function') window.UI.renderActiveRoster();
       if (typeof window.UI.renderSynergiesAndItems === 'function') window.UI.renderSynergiesAndItems();
       if (typeof window.UI.updateHUD === 'function') window.UI.updateHUD();
+    }
+    if (window.Challenge162 && typeof window.Challenge162.updateModeSelectCard === 'function') {
+      window.Challenge162.updateModeSelectCard();
     }
   }
 

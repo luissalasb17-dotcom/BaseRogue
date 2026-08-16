@@ -94,6 +94,9 @@ window.showScreen = function(screenId) {
     if (screenMenu) screenMenu.classList.add('hidden');
     if (gameWorkspace) gameWorkspace.classList.add('hidden');
     if (hud) hud.classList.add('hidden');
+    if (window.Challenge162 && typeof window.Challenge162.updateModeSelectCard === 'function') {
+      window.Challenge162.updateModeSelectCard();
+    }
     updateMobileNavVisibility();
     return;
   }
@@ -1368,6 +1371,9 @@ function initGameModeSelector() {
     // Show mode selector first on startup
     screenMode.classList.remove('hidden');
     screenMenu.classList.add('hidden');
+    if (window.Challenge162 && typeof window.Challenge162.updateModeSelectCard === 'function') {
+      window.Challenge162.updateModeSelectCard();
+    }
 
     // Populate Season dropdown (1901-2025)
     if (selectYear && selectYear.options.length <= 1) {
@@ -7098,11 +7104,26 @@ function initGameModeSelector() {
 
   // ── TRUE VICTORY SCREEN ──────────────────────────────────────────────────
   function triggerTrueVictory() {
+    const isQuickMode = window.Game && window.Game.selectedMode === 'quick';
+    const wasChallengeLocked = window.Challenge162 && !window.Challenge162.isModeUnlocked();
+
+    if (isQuickMode && window.Challenge162 && typeof window.Challenge162.unlockMode === 'function') {
+      window.Challenge162.unlockMode();
+    } else if (isQuickMode) {
+      try { localStorage.setItem('baserogue_challenge162_unlocked', '1'); } catch (e) {}
+    }
+
     if (window.Challenge162 && window.Game) {
       window.Challenge162.unlockFromRun(window.Game);
     }
     window.showScreen('screen-victory');
     startFireworks();
+
+    if (isQuickMode && wasChallengeLocked) {
+      if (typeof window.showToast === 'function') {
+        window.showToast('🏆 ¡MODO 162-0 CHALLENGE DESBLOQUEADO!');
+      }
+    }
 
     const goto162Btn = document.getElementById('btn-victory-goto-challenge162');
     if (goto162Btn) {
