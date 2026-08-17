@@ -387,15 +387,20 @@ p {
 .outcome-row-left {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .outcome-row-right {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 3px;
   margin-left: auto;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .zone-modifier-pill {
@@ -2547,15 +2552,18 @@ p {
 }
 
 .clutch-tag-badge {
-  display: inline-block;
-  font-size: 7px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 6px;
   font-weight: bold;
   font-family: 'Press Start 2P', monospace;
   padding: 1px 3px;
-  border-radius: 3px;
+  border-radius: 2px;
   margin-left: 3px;
-  vertical-align: top;
   line-height: 1;
+  flex-shrink: 0;
+  letter-spacing: -0.5px;
 }
 
 .clutch-tag-badge.boost {
@@ -2581,37 +2589,53 @@ p {
 
 .outcome-probabilities-grid {
   display: grid;
-  /* minmax(0, 1fr), not bare 1fr — a bare 1fr track still grows to fit a
-     row's nowrap min-content width, which is exactly what pushed the right
-     column (e.g. "Home Run  97-100") past the panel's edge on narrow
-     screens. Same fix as the header HUD grid. */
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 4px 14px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.12fr);
+  gap: 4px 10px;
   width: 100%;
   box-sizing: border-box;
   font-family: 'Press Start 2P', monospace;
-  font-size: 10.5px;
+  font-size: 8px;
 }
 
-/* The grid's direct children are flex-column wrappers (one per outcome
-   column), not the .outcome-row divs themselves — and a flex container's
-   default min-width is `auto`, meaning it refuses to shrink below its
-   nowrap children's content width no matter how the grid track above it is
-   constrained. That's what let the right column's rows escape the panel
-   even after the grid itself was properly clamped with minmax(0, 1fr). */
 .outcome-probabilities-grid > div {
   min-width: 0;
 }
 
 .outcome-probabilities-grid .outcome-row {
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  padding: 2.5px 5px;
+  padding: 3px 5px;
   white-space: nowrap;
   overflow: hidden;
   border-radius: 3px;
   background: rgba(255, 255, 255, 0.04);
   box-sizing: border-box;
+  font-size: 8px;
+  gap: 3px;
+}
+
+.outcome-probabilities-grid .outcome-row-left {
+  font-size: 7.5px;
+  letter-spacing: -0.3px;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.outcome-probabilities-grid .outcome-row-right {
+  font-size: 8px;
+  letter-spacing: -0.3px;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: auto;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 

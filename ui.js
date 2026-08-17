@@ -6532,16 +6532,16 @@ function initGameModeSelector() {
         <div style="display:flex;flex-direction:column;gap:4px;">
           <div class="outcome-row">
             <span class="outcome-row-left" style="color:#3b82f6;">⚾ ${t('match.bb', 'Boleto')}</span>
-            <span class="outcome-row-right" style="color:#3b82f6;font-weight:bold;">1–${b.bbEnd}</span>
+            <span class="outcome-row-right" style="color:#3b82f6;font-weight:bold;white-space:nowrap;">1–${b.bbEnd}</span>
           </div>
           <div class="outcome-row">
             <span class="outcome-row-left" style="color:#ef4444;">💨 ${t('match.so', 'Ponche')}</span>
-            <span class="outcome-row-right" style="color:#ef4444;font-weight:bold;">${b.bbEnd + 1}–${b.soEnd}</span>
+            <span class="outcome-row-right" style="color:#ef4444;font-weight:bold;white-space:nowrap;">${b.bbEnd + 1}–${b.soEnd}</span>
           </div>
           <div class="outcome-row" style="${isClutchActive ? 'background:rgba(239,68,68,0.12);' : ''}">
             <span class="outcome-row-left" style="color:#9ca3af;">🤚 ${t('match.out', 'Out')}</span>
             <span class="outcome-row-right">
-              <span style="color:#9ca3af;font-weight:bold;">${b.soEnd + 1}–${b.outEnd}</span>${penaltyOutTag}
+              <span style="color:#9ca3af;font-weight:bold;white-space:nowrap;">${b.soEnd + 1}–${b.outEnd}</span>${penaltyOutTag}
             </span>
           </div>
         </div>
@@ -6549,23 +6549,23 @@ function initGameModeSelector() {
           <div class="outcome-row" style="${isClutchActive ? 'background:rgba(0,255,102,0.1);' : ''}">
             <span class="outcome-row-left" style="color:#a7f3d0;">✅ ${t('match.single', 'Sencillo')}</span>
             <span class="outcome-row-right">
-              <span style="color:#a7f3d0;font-weight:bold;">${b.outEnd + 1}–${b.singleEnd}</span>${boost1BTag}
+              <span style="color:#a7f3d0;font-weight:bold;white-space:nowrap;">${b.outEnd + 1}–${b.singleEnd}</span>${boost1BTag}
             </span>
           </div>
           <div class="outcome-row" style="${isClutchActive ? 'background:rgba(16,185,129,0.1);' : ''}">
             <span class="outcome-row-left" style="color:#10b981;">⚡ ${t('match.double', 'Doble')}</span>
             <span class="outcome-row-right">
-              <span style="color:#10b981;font-weight:bold;">${b.singleEnd + 1}–${b.doubleEnd}</span>${boost2BTag}
+              <span style="color:#10b981;font-weight:bold;white-space:nowrap;">${b.singleEnd + 1}–${b.doubleEnd}</span>${boost2BTag}
             </span>
           </div>
           <div class="outcome-row">
             <span class="outcome-row-left" style="color:#06b6d4;">🔥 ${t('match.triple', 'Triple')}</span>
-            <span class="outcome-row-right" style="color:#06b6d4;font-weight:bold;">${b.doubleEnd + 1}–${b.tripleEnd}</span>
+            <span class="outcome-row-right" style="color:#06b6d4;font-weight:bold;white-space:nowrap;">${b.doubleEnd + 1}–${b.tripleEnd}</span>
           </div>
           <div class="outcome-row" style="${isClutchActive ? 'background:rgba(234,179,8,0.15);' : ''}">
             <span class="outcome-row-left" style="color:#eab308;font-weight:bold;">🚀 ${t('match.hr', 'Jonrón')}</span>
             <span class="outcome-row-right">
-              <span style="color:#eab308;font-weight:bold;">${b.tripleEnd + 1}–100</span>${boostHRTag}
+              <span style="color:#eab308;font-weight:bold;white-space:nowrap;">${b.tripleEnd + 1}–100</span>${boostHRTag}
             </span>
           </div>
         </div>
