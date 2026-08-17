@@ -717,24 +717,12 @@
 
         let genesisExtraAdvance = false;
         if (batterEra === 'The Genesis Era (1871-1900)' && eraSynergy >= 1) {
-          // T1: 30% / +10dmg · T2: 45% / +20dmg · T3: 60% / +30dmg + 1 debuff · T4: 80% / +40dmg + 2 debuffs
+          // T1: 30% / +10dmg · T2: 45% / +20dmg · T3: 60% / +30dmg · T4: 80% / +40dmg
           const advanceChance = eraSynergy === 4 ? 0.80 : eraSynergy === 3 ? 0.60 : eraSynergy === 2 ? 0.45 : 0.30;
           if (Math.random() < advanceChance) {
             genesisExtraAdvance = true;
             const extraDmg = eraSynergy === 4 ? 40 : eraSynergy === 3 ? 30 : eraSynergy === 2 ? 20 : 10;
             pitcherDmg += extraDmg;
-
-            if (eraSynergy >= 3) {
-              const genTurns = eraSynergy === 4 ? 2 : 1;
-              const genMult = 1.20;
-              if (this.pitcherDebuff && this.pitcherDebuff.turnsLeft > 0) {
-                this.pitcherDebuff.turnsLeft = Math.max(this.pitcherDebuff.turnsLeft, genTurns);
-                if (genMult > this.pitcherDebuff.multiplier) this.pitcherDebuff.multiplier = genMult;
-              } else {
-                this.pitcherDebuff = { turnsLeft: genTurns, multiplier: genMult };
-              }
-            }
-
             errorProc = _t('sim.syn_genesis_advance', { dmg: extraDmg }, `💥 Genesis Chaos: ¡Batazo agresivo! +${extraDmg} daño y avance de base adicional.`);
           }
         }
