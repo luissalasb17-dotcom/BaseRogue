@@ -2589,12 +2589,12 @@ p {
 
 .outcome-probabilities-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.12fr);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
   gap: 4px 10px;
   width: 100%;
   box-sizing: border-box;
   font-family: 'Press Start 2P', monospace;
-  font-size: 8px;
+  font-size: 8.5px;
 }
 
 .outcome-probabilities-grid > div {
@@ -2605,18 +2605,18 @@ p {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 3px 5px;
+  padding: 3.5px 6px;
   white-space: nowrap;
   overflow: hidden;
   border-radius: 3px;
   background: rgba(255, 255, 255, 0.04);
   box-sizing: border-box;
-  font-size: 8px;
+  font-size: 8.5px;
   gap: 3px;
 }
 
 .outcome-probabilities-grid .outcome-row-left {
-  font-size: 7.5px;
+  font-size: 8px;
   letter-spacing: -0.3px;
   display: flex;
   align-items: center;
@@ -2628,7 +2628,7 @@ p {
 }
 
 .outcome-probabilities-grid .outcome-row-right {
-  font-size: 8px;
+  font-size: 8.5px;
   letter-spacing: -0.3px;
   display: inline-flex;
   align-items: center;
