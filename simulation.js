@@ -448,11 +448,24 @@
           batter.stamina = Math.min(100, (batter.stamina || 100) + 5);
         }
 
-        // Efficiency Era BB boost
+        // Efficiency Era BB boost & On-Base Fatigue
         if (batterEra === 'Efficiency Era (2006-2015)' && eraSynergy >= 1) {
-          const extra = eraSynergy === 4 ? 30 : eraSynergy >= 2 ? 20 : 10;
+          const extra = eraSynergy === 4 ? 45 : eraSynergy === 3 ? 35 : eraSynergy === 2 ? 25 : 15;
           pitcherDmg += extra;
           synergyProc = _t('sim.syn_moneyball_bb', { extra }, `📊 Moneyball: ¡Boleto paciente inflige +${extra} daño!`);
+
+          if (eraSynergy >= 2) {
+            const mbTurns = eraSynergy >= 3 ? 2 : 1;
+            const mbMult = 1.20;
+            if (this.pitcherDebuff && this.pitcherDebuff.turnsLeft > 0) {
+              this.pitcherDebuff.turnsLeft = Math.max(this.pitcherDebuff.turnsLeft, mbTurns);
+              if (mbMult > this.pitcherDebuff.multiplier) this.pitcherDebuff.multiplier = mbMult;
+            } else {
+              this.pitcherDebuff = { turnsLeft: mbTurns, multiplier: mbMult };
+            }
+            const impLabel = mbTurns === 1 ? _t('sim.debuff_turn_s', {}, 'impacto restante') : _t('sim.debuff_turns_p', {}, 'impactos restantes');
+            synergyProc += ' | ' + _t('sim.syn_moneyball_fatigue', { turns: mbTurns }, `📊 Moneyball: ¡Fatiga al lanzador! Debuff de +20% daño (${mbTurns} ${impLabel}).`);
+          }
         }
         // Modern Era BB boost
         else if (batterEra === 'Modern Era (2016-Pres)' && eraSynergy >= 1) {
@@ -558,18 +571,10 @@
           }
         }
 
-        // Moneyball T3/T4: this batter's own strikeout streak needs 1/2 extra
-        // strikeouts before the damage escalation (24/30) kicks in.
-        let soEscalationDelay = 0;
-        if (batterEra === 'Efficiency Era (2006-2015)' && eraSynergy >= 3) {
-          soEscalationDelay = eraSynergy === 4 ? 2 : 1;
-        }
-        const effectiveSoChain = Math.max(1, this.strikeoutChain - soEscalationDelay);
-
         let baseSoDmg = 18;
-        if (effectiveSoChain === 2) {
+        if (this.strikeoutChain === 2) {
           baseSoDmg = 24;
-        } else if (effectiveSoChain >= 3) {
+        } else if (this.strikeoutChain >= 3) {
           baseSoDmg = 30;
         }
 
@@ -578,13 +583,41 @@
           finalSoDmg = Math.round(finalSoDmg * 0.5);
           synergyProc = _t('sim.syn_tto_so', {}, '🚀 Three True Outcomes: Ponche causa -50% daño HP');
         }
-        teamHpDmg = finalSoDmg;
 
-        this.teamHP = Math.max(0, this.teamHP - teamHpDmg);
+        // Moneyball T3/T4: Strikeouts damage Shield instead of HP; T4 also applies -50% damage
+        const isMoneyballShieldSo = (batterEra === 'Efficiency Era (2006-2015)' && eraSynergy >= 3);
+        if (batterEra === 'Efficiency Era (2006-2015)' && eraSynergy === 4) {
+          finalSoDmg = Math.round(finalSoDmg * 0.5);
+        }
+
+        if (isMoneyballShieldSo) {
+          if (this.teamShield > 0) {
+            shieldDmg = Math.min(this.teamShield, finalSoDmg);
+            this.teamShield -= shieldDmg;
+            const overflow = finalSoDmg - shieldDmg;
+            if (overflow > 0) {
+              teamHpDmg = overflow;
+              this.teamHP = Math.max(0, this.teamHP - overflow);
+            }
+          } else {
+            teamHpDmg = finalSoDmg;
+            this.teamHP = Math.max(0, this.teamHP - finalSoDmg);
+          }
+          const soMsg = (eraSynergy === 4)
+            ? _t('sim.syn_moneyball_so_t4', {}, '📊 Moneyball: ¡Ponche mitigado (-50%) y absorbido por el Escudo!')
+            : _t('sim.syn_moneyball_so_t3', {}, '📊 Moneyball: ¡Ponche absorbido por el Escudo (no afecta la vida)!');
+          synergyProc = (synergyProc ? synergyProc + ' | ' : '') + soMsg;
+        } else {
+          teamHpDmg = finalSoDmg;
+          this.teamHP = Math.max(0, this.teamHP - teamHpDmg);
+        }
+
         const chainLabel = this.strikeoutChain > 1 ? ` 🔥 ${_t('sim.streak_label', { count: this.strikeoutChain, dmg: baseSoDmg }, 'RACHA ×' + this.strikeoutChain + ' (-' + baseSoDmg + ' HP)!')}` : '';
         playText = `🎲 [${roll}] [${_t('sim.label_so', {}, 'PONCHE')}] ¡${pitcher.name} ${_t('sim.so_pitcher_verb', { batter: batter.name }, 'poncha a ' + batter.name)}!${chainLabel}` +
-          ` ${_t('sim.so_direct_dmg', { dmg: teamHpDmg }, 'Daño directo: -' + teamHpDmg + ' HP del equipo (¡ignora el escudo!)')}.` +
-          ` ${_t('sim.hp_remaining', { hp: this.teamHP }, 'HP restante: ' + this.teamHP + '/100')}`;
+          (isMoneyballShieldSo
+            ? ` ${_t('sim.out_dmg_label', { shield: shieldDmg, hp: teamHpDmg }, 'Escudo -' + shieldDmg + ' HP | Team HP -' + teamHpDmg + ' HP')}.`
+            : ` ${_t('sim.so_direct_dmg', { dmg: teamHpDmg }, 'Daño directo: -' + teamHpDmg + ' HP del equipo (¡ignora el escudo!)')}.`) +
+          ` (${_t('sim.shield_status', { shield: this.teamShield, max: this.teamShieldMax, hp: this.teamHP }, 'Escudo: ' + this.teamShield + '/' + this.teamShieldMax + ' | HP: ' + this.teamHP + '/100')})`;
 
         if (batterEra === 'Integration (1942-1960)' && eraSynergy >= 2) {
           // T2: +5 Stamina to all · T3: +10 · T4: +15, and this batter skips the post-match Stamina loss
@@ -598,13 +631,6 @@
             synergyProc += ' | ' + _t('sim.syn_fivetool_immune', { name: batter.name }, `🔋 Five-Tool: ¡${batter.name} es inmune al desgaste de Stamina de este partido!`);
           }
         }
-        if (batterEra === 'Efficiency Era (2006-2015)' && eraSynergy >= 2) {
-          const outExtra = eraSynergy === 4 ? 20 : eraSynergy === 3 ? 15 : 10;
-          pitcherDmg += outExtra;
-          synergyProc = (synergyProc ? synergyProc + ' | ' : '') + _t('sim.syn_moneyball_out', { extra: outExtra }, `📊 Moneyball Out Wear: +${outExtra} daño al lanzador.`);
-        }
-        // Pre-existing bug: SO branch built playText above and never appended synergyProc,
-        // so any era proc on a strikeout (Five-Tool, Moneyball) was silently invisible in the log.
         if (synergyProc) playText += ` ${synergyProc}`;
 
       } else if (roll <= bounds.outEnd) {
@@ -647,12 +673,6 @@
             synergyProc += ' | ' + _t('sim.syn_fivetool_immune', { name: batter.name }, `🔋 Five-Tool: ¡${batter.name} es inmune al desgaste de Stamina de este partido!`);
           }
         }
-        if (batterEra === 'Efficiency Era (2006-2015)' && eraSynergy >= 2) {
-          const outExtra = eraSynergy === 4 ? 20 : eraSynergy === 3 ? 15 : 10;
-          pitcherDmg += outExtra;
-          synergyProc = (synergyProc ? synergyProc + ' | ' : '') + _t('sim.syn_moneyball_out', { extra: outExtra }, `📊 Moneyball Out Wear: +${outExtra} daño al lanzador.`);
-        }
-        // Same pre-existing bug as the SO branch: append the proc message to the log.
         if (synergyProc) playText += ` ${synergyProc}`;
 
       } else {
@@ -796,6 +816,20 @@
 
         this.runs += runsThisTurn;
         pitcherDmg = this._applyDebuffToPitcherDmg(pitcherDmg);
+
+        // Efficiency Era (Moneyball) On-Base Fatigue on Hits (T2: 1 turn, T3/T4: 2 turns)
+        if (batterEra === 'Efficiency Era (2006-2015)' && eraSynergy >= 2) {
+          const mbTurns = eraSynergy >= 3 ? 2 : 1;
+          const mbMult = 1.20;
+          if (this.pitcherDebuff && this.pitcherDebuff.turnsLeft > 0) {
+            this.pitcherDebuff.turnsLeft = Math.max(this.pitcherDebuff.turnsLeft, mbTurns);
+            if (mbMult > this.pitcherDebuff.multiplier) this.pitcherDebuff.multiplier = mbMult;
+          } else {
+            this.pitcherDebuff = { turnsLeft: mbTurns, multiplier: mbMult };
+          }
+          const impLabel = mbTurns === 1 ? _t('sim.debuff_turn_s', {}, 'impacto restante') : _t('sim.debuff_turns_p', {}, 'impactos restantes');
+          synergyProc = (synergyProc ? synergyProc + ' | ' : '') + _t('sim.syn_moneyball_fatigue', { turns: mbTurns }, `📊 Moneyball: ¡Fatiga al lanzador! Debuff de +20% daño (${mbTurns} ${impLabel}).`);
+        }
 
         if (eventType === '1B') {
           let stealChance = Math.min(0.90, 0.15 + ((effBatter.spd - 40) * 0.0125));

@@ -31,8 +31,10 @@
     "astroturf_d2": "T2 (4+): Robos +30 daño y debuff de 3 turnos al rival",
     "steroid_d1": "T1 (2+): Jonrones (HR) hacen +20 daño adicional",
     "steroid_d2": "T2 (4+): HR hacen +40 daño; 50% fly sac anotador",
-    "moneyball_d1": "T1 (2+): Bases por bolas (BB) hacen +10 daño extra",
-    "moneyball_d2": "T2 (4+): BB hacen +20 daño; outs hacen +10 daño",
+    "moneyball_d1": "T1 (2+): Bases por bolas (BB) hacen +15 daño extra",
+    "moneyball_d2": "T2 (4+): BB +25 daño; al embasarte fatigas al rival 1 impacto (+20% daño)",
+    "moneyball_d3": "T3 (6+): BB +35 daño; fatiga 2 impactos; ponches van al escudo (no a vida)",
+    "moneyball_d4": "T4 (8+): BB +45 daño; fatiga 2 impactos; ponches van al escudo y con -50% daño",
     "tto_d1": "T1 (2+): BB hacen 15 daño, Ponche -50% daño al equipo",
     "tto_d2": "T2 (4+): BB hacen 24 daño, Ponche -50% y no corta racha"
   },
@@ -378,10 +380,12 @@
     "inning_end": "--- FIN DE LA ENTRADA {{inning}} ({{runs}} carreras anotadas) ---",
     "match_timeout": "⏱ FIN DE PARTIDO (3 innings). Te faltaron {{remaining}} lanzadores por derrotar.",
     "syn_moneyball_bb": "📊 Moneyball: ¡Boleto paciente inflige +{{extra}} daño!",
+    "syn_moneyball_fatigue": "📊 Moneyball: ¡Fatiga al lanzador! Debuff de +20% daño ({{turns}} impactos restantes).",
+    "syn_moneyball_so_t3": "📊 Moneyball: ¡Ponche absorbido por el Escudo (ignora daño directo a vida)!",
+    "syn_moneyball_so_t4": "📊 Moneyball: ¡Ponche mitigado (-50%) y absorbido por el Escudo!",
     "syn_tto_bb": "🚀 Three True Outcomes: ¡Boleto optimizado inflige +{{extra}} daño!",
     "syn_tto_so": "🚀 Three True Outcomes: Ponche causa -50% daño HP",
     "syn_fivetool_out": "🔋 Five-Tool: ¡OUT recupera +5 de Stamina a todos!",
-    "syn_moneyball_out": "📊 Moneyball Out Wear: +10 daño al lanzador.",
     "syn_bash_sacfly": "💪 Bash Brothers Sac Fly: ¡Corredor en 3B anota carrera!",
     "syn_bash_hr": "💪 Bash Brothers: ¡Jonrón inflige +{{extra}} daño!",
     "syn_liveball_upgrade": "🔥 Liveball Sluggers: ¡Doble convertido en Triple!",
@@ -417,8 +421,8 @@
       "lv2": "Bash Brothers: HR hacen +40 daño; 50% fly sac anotador."
     },
     "efficiency": {
-      "lv1": "Moneyball: Bases por bolas (BB) hacen +10 daño extra.",
-      "lv2": "Moneyball: BB hacen +20 daño; outs hacen +10 daño."
+      "lv1": "Moneyball: Bases por bolas (BB) hacen +15 daño extra.",
+      "lv2": "Moneyball: BB hacen +25 daño; al embasarte fatigas al rival 1 impacto (+20% daño)."
     },
     "modern": {
       "lv1": "Three True Outcomes: BB hacen 15 daño, Ponche -50% daño al equipo.",

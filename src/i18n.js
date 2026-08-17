@@ -70,10 +70,10 @@
                 "steroid_d2": "HR hacen +30 daño adicional",
                 "steroid_d3": "HR +30 daño; cura +10 Stamina a todos",
                 "steroid_d4": "HR +45 daño; cura +20 Stamina",
-                "moneyball_d1": "Bases por bolas (BB) hacen +10 daño extra",
-                "moneyball_d2": "BB hacen +20 daño; outs hacen +10 daño",
-                "moneyball_d3": "BB +20, outs +15; racha de ponches necesita 1 más para escalar",
-                "moneyball_d4": "BB +30, outs +20; racha necesita 2 ponches más",
+                "moneyball_d1": "Bases por bolas (BB) hacen +15 daño extra",
+                "moneyball_d2": "BB +25 daño; al embasarte fatigas al rival 1 impacto (+20% daño)",
+                "moneyball_d3": "BB +35 daño; fatiga 2 impactos; ponches van al escudo (no a vida)",
+                "moneyball_d4": "BB +45 daño; fatiga 2 impactos; ponches van al escudo y con -50% daño",
                 "tto_d1": "BB hacen +12 daño, Ponche hace -50% daño al equipo",
                 "tto_d2": "BB hacen +24 daño, el ponche no incrementa tu racha",
                 "tto_d3": "Igual, y el Jonrón también debilita al pitcher 2 turnos",
@@ -596,12 +596,14 @@
                 "inning_end": "--- FIN DE LA ENTRADA {{inning}} ({{runs}} carreras anotadas) ---",
                 "match_timeout": "⏱ FIN DE PARTIDO (3 innings). Te faltaron {{remaining}} lanzadores por derrotar.",
                 "syn_moneyball_bb": "📊 Moneyball: ¡Boleto paciente inflige +{{extra}} daño!",
+                "syn_moneyball_fatigue": "📊 Moneyball: ¡Fatiga al lanzador! Debuff de +20% daño ({{turns}} impactos restantes).",
+                "syn_moneyball_so_t3": "📊 Moneyball: ¡Ponche absorbido por el Escudo (ignora daño directo a vida)!",
+                "syn_moneyball_so_t4": "📊 Moneyball: ¡Ponche mitigado (-50%) y absorbido por el Escudo!",
                 "syn_tto_bb": "🚀 Three True Outcomes: ¡Boleto optimizado inflige +{{extra}} daño!",
                 "syn_tto_hr_debuff": "🚀 Three True Outcomes: ¡Jonrón debilita al lanzador por {{turns}} impactos!",
                 "syn_tto_so": "🚀 Three True Outcomes: Ponche causa -50% daño HP",
                 "syn_fivetool_out": "🔋 Five-Tool: ¡OUT recupera +{{amt}} de Stamina a todos!",
                 "syn_fivetool_immune": "🔋 Five-Tool: ¡{{name}} es inmune al desgaste de Stamina de este partido!",
-                "syn_moneyball_out": "📊 Moneyball Out Wear: +{{extra}} daño al lanzador.",
                 "syn_bash_sacfly": "💪 Bash Brothers Sac Fly: ¡Corredor en 3B anota carrera!",
                 "syn_bash_hr": "💪 Bash Brothers: ¡Jonrón inflige +{{extra}} daño!",
                 "syn_bash_hr_heal": "💪 Bash Brothers: ¡Jonrón recupera +{{amt}} Stamina a todos!",
@@ -639,8 +641,8 @@
                         "lv2": "Bash Brothers: HR hacen +40 daño; 50% fly sac anotador."
                 },
                 "efficiency": {
-                        "lv1": "Moneyball: Bases por bolas (BB) hacen +10 daño extra.",
-                        "lv2": "Moneyball: BB hacen +20 daño; outs hacen +10 daño."
+                        "lv1": "Moneyball: Bases por bolas (BB) hacen +15 daño extra.",
+                        "lv2": "Moneyball: BB hacen +25 daño; al embasarte fatigas al rival 1 impacto (+20% daño)."
                 },
                 "modern": {
                         "lv1": "Three True Outcomes: BB hacen 15 daño, Ponche -50% daño al equipo.",
@@ -1098,10 +1100,10 @@
                 "steroid_d2": "HR deal +30 additional damage",
                 "steroid_d3": "HR +30 damage; heals +10 Stamina to all",
                 "steroid_d4": "HR +45 damage; heals +20 Stamina",
-                "moneyball_d1": "Walks (BB) deal +10 extra damage",
-                "moneyball_d2": "BB deal +20 damage; outs deal +10 damage",
-                "moneyball_d3": "BB +20, outs +15; strikeout streak needs 1 more to escalate",
-                "moneyball_d4": "BB +30, outs +20; streak needs 2 more strikeouts",
+                "moneyball_d1": "Walks (BB) deal +15 extra damage",
+                "moneyball_d2": "BB +25 damage; getting on base inflicts 1-impact fatigue (+20% damage)",
+                "moneyball_d3": "BB +35 damage; 2-impact fatigue; strikeouts hit Shield instead of HP",
+                "moneyball_d4": "BB +45 damage; 2-impact fatigue; strikeouts hit Shield with -50% damage",
                 "tto_d1": "BB deal +12 damage, Strikeouts deal -50% team damage",
                 "tto_d2": "BB deal +24 damage, strikeouts don't grow your streak",
                 "tto_d3": "Same, and a Home Run also weakens the pitcher for 2 hits",
@@ -1624,12 +1626,14 @@
                 "inning_end": "--- END OF INNING {{inning}} ({{runs}} runs scored) ---",
                 "match_timeout": "⏱ MATCH OVER (3 innings). {{remaining}} pitchers remaining.",
                 "syn_moneyball_bb": "📊 Moneyball: Walk deals +{{extra}} damage!",
+                "syn_moneyball_fatigue": "📊 Moneyball: Pitcher fatigued! +20% damage debuff ({{turns}} impacts remaining).",
+                "syn_moneyball_so_t3": "📊 Moneyball: Strikeout absorbed by Shield (bypasses direct HP damage)!",
+                "syn_moneyball_so_t4": "📊 Moneyball: Strikeout mitigated (-50%) and absorbed by Shield!",
                 "syn_tto_bb": "🚀 Three True Outcomes: Walk deals +{{extra}} optimized damage!",
                 "syn_tto_hr_debuff": "🚀 Three True Outcomes: Home Run weakens the pitcher for {{turns}} hits!",
                 "syn_tto_so": "🚀 Three True Outcomes: Strikeout -50% HP damage",
                 "syn_fivetool_out": "🔋 Five-Tool: OUT restores +{{amt}} Stamina to all!",
                 "syn_fivetool_immune": "🔋 Five-Tool: {{name}} is immune to this match's Stamina wear!",
-                "syn_moneyball_out": "📊 Moneyball Out Wear: +{{extra}} damage to pitcher.",
                 "syn_bash_sacfly": "💪 Bash Brothers Sac Fly: Runner on 3B scores!",
                 "syn_bash_hr": "💪 Bash Brothers: Home Run deals +{{extra}} damage!",
                 "syn_bash_hr_heal": "💪 Bash Brothers: Home Run restores +{{amt}} Stamina to all!",
@@ -1667,8 +1671,8 @@
                         "lv2": "Bash Brothers: HR deal +40 damage; 50% sac fly scores."
                 },
                 "efficiency": {
-                        "lv1": "Moneyball: Walks (BB) deal +10 extra damage.",
-                        "lv2": "Moneyball: BB deal +20 damage; outs deal +10 damage."
+                        "lv1": "Moneyball: Walks (BB) deal +15 extra damage.",
+                        "lv2": "Moneyball: BB deal +25 damage; getting on base inflicts 1-impact fatigue (+20% damage)."
                 },
                 "modern": {
                         "lv1": "Three True Outcomes: BB deal 15 damage, Strikeouts -50% team damage.",

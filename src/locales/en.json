@@ -31,8 +31,10 @@
     "astroturf_d2": "T2 (4+): Steals +30 damage and 3-turn debuff to rival",
     "steroid_d1": "T1 (2+): Home Runs (HR) deal +20 additional damage",
     "steroid_d2": "T2 (4+): HR deal +40 damage; 50% sac fly scoring",
-    "moneyball_d1": "T1 (2+): Walks (BB) deal +10 extra damage",
-    "moneyball_d2": "T2 (4+): BB deal +20 damage; outs deal +10 damage",
+    "moneyball_d1": "T1 (2+): Walks (BB) deal +15 extra damage",
+    "moneyball_d2": "T2 (4+): BB +25 damage; getting on base inflicts 1-impact fatigue (+20% damage)",
+    "moneyball_d3": "T3 (6+): BB +35 damage; 2-impact fatigue; strikeouts hit Shield instead of HP",
+    "moneyball_d4": "T4 (8+): BB +45 damage; 2-impact fatigue; strikeouts hit Shield with -50% damage",
     "tto_d1": "T1 (2+): BB deal 15 damage, Strikeouts -50% team damage",
     "tto_d2": "T2 (4+): BB deal 24 damage, Strikeouts -50% and don't break streak"
   },
@@ -378,10 +380,12 @@
     "inning_end": "--- END OF INNING {{inning}} ({{runs}} runs scored) ---",
     "match_timeout": "⏱ MATCH OVER (3 innings). {{remaining}} pitchers remaining.",
     "syn_moneyball_bb": "📊 Moneyball: Walk deals +{{extra}} damage!",
+    "syn_moneyball_fatigue": "📊 Moneyball: Pitcher fatigued! +20% damage debuff ({{turns}} impacts remaining).",
+    "syn_moneyball_so_t3": "📊 Moneyball: Strikeout absorbed by Shield (bypasses direct HP damage)!",
+    "syn_moneyball_so_t4": "📊 Moneyball: Strikeout mitigated (-50%) and absorbed by Shield!",
     "syn_tto_bb": "🚀 Three True Outcomes: Walk deals +{{extra}} optimized damage!",
     "syn_tto_so": "🚀 Three True Outcomes: Strikeout -50% HP damage",
     "syn_fivetool_out": "🔋 Five-Tool: OUT restores +5 Stamina to all!",
-    "syn_moneyball_out": "📊 Moneyball Out Wear: +10 damage to pitcher.",
     "syn_bash_sacfly": "💪 Bash Brothers Sac Fly: Runner on 3B scores!",
     "syn_bash_hr": "💪 Bash Brothers: Home Run deals +{{extra}} damage!",
     "syn_liveball_upgrade": "🔥 Liveball Sluggers: Double upgraded to Triple!",
@@ -417,8 +421,8 @@
       "lv2": "Bash Brothers: HR deal +40 damage; 50% sac fly scores."
     },
     "efficiency": {
-      "lv1": "Moneyball: Walks (BB) deal +10 extra damage.",
-      "lv2": "Moneyball: BB deal +20 damage; outs deal +10 damage."
+      "lv1": "Moneyball: Walks (BB) deal +15 extra damage.",
+      "lv2": "Moneyball: BB deal +25 damage; getting on base inflicts 1-impact fatigue (+20% damage)."
     },
     "modern": {
       "lv1": "Three True Outcomes: BB deal 15 damage, Strikeouts -50% team damage.",

@@ -1814,11 +1814,11 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
           if (count >= 4) {
             level = 2;
             bonuses = {};
-            desc = (typeof window.t==='function'?window.t('syn.efficiency.lv2'):'Moneyball: BB deal +20 damage; outs deal +10 damage.');
+            desc = (typeof window.t==='function'?window.t('syn.efficiency.lv2'):'Moneyball: BB deal +25 damage; getting on base inflicts 1-impact fatigue (+20% damage).');
           } else {
             level = 1;
             bonuses = {};
-            desc = (typeof window.t==='function'?window.t('syn.efficiency.lv1'):'Moneyball: Walks (BB) deal +10 extra damage.');
+            desc = (typeof window.t==='function'?window.t('syn.efficiency.lv1'):'Moneyball: Walks (BB) deal +15 extra damage.');
           }
         } else if (era === Eras.MODERN) {
           if (count >= 4) {
