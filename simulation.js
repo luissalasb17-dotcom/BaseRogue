@@ -751,7 +751,7 @@
         } else if (hitType === '3B') {
           eventType = '3B';
           this.strikeoutChain = 0;
-          runsThisTurn = this._advanceBases(3, batter, genesisErrorSucceeded);
+          runsThisTurn = this._advanceTriple(batter, genesisErrorSucceeded);
           pitcherDmg = 45 + (runsThisTurn * 10);
           hitDesc = spdUpgraded
             ? _t('sim.spd_stretch_3b', { grade: spdUpgraded.grade }, `conecta batazo y estira a TERCERA BASE con velocidad (Grado ${spdUpgraded.grade})`)
@@ -760,7 +760,7 @@
         } else if (hitType === '2B') {
           eventType = '2B';
           this.strikeoutChain = 0;
-          runsThisTurn = this._advanceBases(2, batter, genesisErrorSucceeded);
+          runsThisTurn = this._advanceDouble(batter, genesisErrorSucceeded);
           pitcherDmg = 30 + (runsThisTurn * 10);
           hitDesc = spdUpgraded
             ? _t('sim.spd_stretch_2b', { grade: spdUpgraded.grade }, `conecta batazo y estira a SEGUNDA BASE con velocidad (Grado ${spdUpgraded.grade})`)
@@ -777,7 +777,7 @@
               synergyProc = (synergyProc ? synergyProc + ' | ' : '') + _t('sim.syn_smallball', {}, '⏳ Small Ball: ¡Avanzan 2 bases en sencillo!');
             }
           }
-          runsThisTurn = this._advanceBases(1, batter, genesisErrorSucceeded || deadballDoubleAdvance);
+          runsThisTurn = this._advanceSingle(batter, genesisErrorSucceeded || deadballDoubleAdvance);
           pitcherDmg = 15 + (runsThisTurn * 10);
           hitDesc = _t('sim.1b_desc', {}, 'imparable raso');
         }
