@@ -3195,14 +3195,6 @@ body.workspace-active .main-container {
   color: #fff;
 }
 
-.synergy-list-item.active .synergy-item-name {
-  color: var(--primary-color);
-}
-
-.synergy-list-item.active-level-2 .synergy-item-name {
-  color: var(--accent-color);
-}
-
 .synergy-item-count {
   font-family: 'Press Start 2P', monospace;
   font-size: 7px;
@@ -3223,12 +3215,8 @@ body.workspace-active .main-container {
 }
 
 .synergy-dot.filled {
-  background: var(--primary-color);
+  background: #ff2ec4;
   border-color: #fff;
-}
-
-.synergy-list-item.active-level-2 .synergy-dot.filled {
-  background: var(--accent-color);
 }
 
 .synergy-item-desc {
@@ -3238,97 +3226,122 @@ body.workspace-active .main-container {
   color: #a1a1aa;
 }
 
-.synergy-list-item.active .synergy-item-desc {
-  color: #fff;
-}
-
-/* ── Build Era: the player's chosen era — visually distinct from T1/T2 active states ── */
-.synergy-list-item.is-build-era {
-  border: 2px solid var(--badge-build-era);
-  box-shadow: 0 0 14px var(--badge-build-era-glow), inset 0 0 8px rgba(255, 46, 196, 0.08);
+/* ── Synergy Active States by Tier (Organic Progression) ── */
+/* Tier 1 (2+ players): Neon Purple / Magenta */
+.synergy-list-item.tier-1 {
+  border: 2px solid #ff2ec4;
+  box-shadow: 0 0 10px rgba(255, 46, 196, 0.4), inset 0 0 6px rgba(255, 46, 196, 0.08);
   background: rgba(255, 46, 196, 0.04);
 }
-
-.synergy-list-item.is-build-era .synergy-item-name {
-  color: var(--badge-build-era);
-  text-shadow: 0 0 4px var(--badge-build-era-glow);
+.synergy-list-item.tier-1 .synergy-item-name {
+  color: #ff2ec4;
+  text-shadow: 0 0 5px rgba(255, 46, 196, 0.6);
 }
-
-.synergy-list-item.is-build-era .synergy-dot.filled {
-  background: var(--badge-build-era);
+.synergy-list-item.tier-1 .synergy-item-count {
+  color: #ff8be3;
+}
+.synergy-list-item.tier-1 .synergy-dot.filled {
+  background: #ff2ec4;
   border-color: #fff;
+  box-shadow: 0 0 5px #ff2ec4;
+}
+.synergy-list-item.tier-1 .synergy-tier-row.tier-current {
+  color: #fff;
+  border-left-color: #ff2ec4;
+  background: rgba(255, 46, 196, 0.08);
+}
+.synergy-list-item.tier-1 .synergy-tier-row.tier-current .tier-label {
+  color: #ff2ec4;
 }
 
-.build-era-tag-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  font-size: 6.5px;
-  font-weight: bold;
-  font-family: 'Press Start 2P', monospace;
-  padding: 2px 4px;
-  margin-left: 5px;
-  vertical-align: middle;
-  line-height: 1;
-  color: var(--badge-build-era);
-  background: rgba(255, 46, 196, 0.18);
-  border: 1px solid var(--badge-build-era);
-  text-shadow: 0 0 4px var(--badge-build-era-glow);
+/* Tier 2 (4+ players): Cyan / Electric Blue */
+.synergy-list-item.tier-2 {
+  border: 2px solid #00f0ff;
+  box-shadow: 0 0 12px rgba(0, 240, 255, 0.45), inset 0 0 8px rgba(0, 240, 255, 0.1);
+  background: rgba(0, 240, 255, 0.05);
+}
+.synergy-list-item.tier-2 .synergy-item-name {
+  color: #00f0ff;
+  text-shadow: 0 0 6px rgba(0, 240, 255, 0.7);
+}
+.synergy-list-item.tier-2 .synergy-item-count {
+  color: #7df9ff;
+}
+.synergy-list-item.tier-2 .synergy-dot.filled {
+  background: #00f0ff;
+  border-color: #fff;
+  box-shadow: 0 0 6px #00f0ff;
+}
+.synergy-list-item.tier-2 .synergy-tier-row.tier-current {
+  color: #fff;
+  border-left-color: #00f0ff;
+  background: rgba(0, 240, 255, 0.08);
+}
+.synergy-list-item.tier-2 .synergy-tier-row.tier-current .tier-label {
+  color: #00f0ff;
 }
 
-.synergy-build-btn {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 6.5px;
-  padding: 4px 6px;
-  margin-top: 6px;
-  width: 100%;
-  cursor: pointer;
-  background: rgba(255, 255, 255, 0.04);
-  color: #9ca3af;
-  border: 1px dashed rgba(255, 255, 255, 0.25);
-  transition: all 0.15s ease;
+/* Tier 3 (6+ players): Neon Green / Emerald */
+.synergy-list-item.tier-3 {
+  border: 2px solid #00ff66;
+  box-shadow: 0 0 14px rgba(0, 255, 102, 0.5), inset 0 0 10px rgba(0, 255, 102, 0.12);
+  background: rgba(0, 255, 102, 0.06);
+}
+.synergy-list-item.tier-3 .synergy-item-name {
+  color: #00ff66;
+  text-shadow: 0 0 7px rgba(0, 255, 102, 0.8);
+}
+.synergy-list-item.tier-3 .synergy-item-count {
+  color: #86efac;
+}
+.synergy-list-item.tier-3 .synergy-dot.filled {
+  background: #00ff66;
+  border-color: #fff;
+  box-shadow: 0 0 7px #00ff66;
+}
+.synergy-list-item.tier-3 .synergy-tier-row.tier-current {
+  color: #fff;
+  border-left-color: #00ff66;
+  background: rgba(0, 255, 102, 0.1);
+}
+.synergy-list-item.tier-3 .synergy-tier-row.tier-current .tier-label {
+  color: #00ff66;
 }
 
-.synergy-build-btn:hover {
-  color: var(--badge-build-era);
-  border-color: var(--badge-build-era);
-  background: rgba(255, 46, 196, 0.1);
+/* Tier 4 (8+ players): Legendary Gold / Mythic */
+.synergy-list-item.tier-4 {
+  border: 2px solid #ffd700;
+  box-shadow: 0 0 18px rgba(255, 215, 0, 0.65), inset 0 0 12px rgba(255, 215, 0, 0.16);
+  background: rgba(255, 215, 0, 0.08);
+  animation: pulse-legendary-glow 2.5s infinite alternate;
+}
+.synergy-list-item.tier-4 .synergy-item-name {
+  color: #ffd700;
+  text-shadow: 0 0 8px rgba(255, 215, 0, 0.9);
+}
+.synergy-list-item.tier-4 .synergy-item-count {
+  color: #fde047;
+}
+.synergy-list-item.tier-4 .synergy-dot.filled {
+  background: #ffd700;
+  border-color: #fff;
+  box-shadow: 0 0 8px #ffd700;
+}
+.synergy-list-item.tier-4 .synergy-tier-row.tier-current {
+  color: #fff;
+  border-left-color: #ffd700;
+  background: rgba(255, 215, 0, 0.12);
+}
+.synergy-list-item.tier-4 .synergy-tier-row.tier-current .tier-label {
+  color: #ffd700;
 }
 
-.synergy-build-btn.is-current {
-  color: var(--badge-build-era);
-  border: 1px solid var(--badge-build-era);
-  background: rgba(255, 46, 196, 0.12);
+@keyframes pulse-legendary-glow {
+  0% { box-shadow: 0 0 12px rgba(255, 215, 0, 0.5), inset 0 0 8px rgba(255, 215, 0, 0.12); }
+  100% { box-shadow: 0 0 22px rgba(255, 215, 0, 0.8), inset 0 0 16px rgba(255, 215, 0, 0.22); }
 }
 
-/* Non-build era with 2+ players: locked at T1, won't scale further */
-.synergy-list-item.locked-era {
-  opacity: 0.72;
-}
-
-.synergy-locked-note {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-family: 'VT323', monospace;
-  font-size: 11.5px;
-  color: #6b7280;
-  margin-top: 4px;
-}
-
-.synergy-dot.locked {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.15);
-  position: relative;
-}
-
-.synergy-dot.locked::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-}
-
-/* 4-tier description breakdown for the active Build Era */
+/* 4-tier description breakdown */
 .synergy-tier-breakdown {
   margin-top: 6px;
   display: flex;
@@ -3351,19 +3364,9 @@ body.workspace-active .main-container {
   margin-right: 4px;
 }
 
-.synergy-tier-row.tier-current {
-  color: #fff;
-  border-left-color: var(--badge-build-era);
-  background: rgba(255, 46, 196, 0.06);
-}
-
-.synergy-tier-row.tier-current .tier-label {
-  color: var(--badge-build-era);
-}
-
 .synergy-tier-row.tier-reached {
   color: #a1a1aa;
-  border-left-color: rgba(255, 255, 255, 0.15);
+  border-left-color: rgba(255, 255, 255, 0.2);
 }
 
 /* Synergy Helper Text in Draft Option Cards */

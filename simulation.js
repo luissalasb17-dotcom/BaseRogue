@@ -319,13 +319,9 @@
       Object.keys(eraCounts).forEach(era => {
         const count = eraCounts[era];
         if (count < 2) return;
-        if (era === this.buildEra) {
-          // era_accelerated: only 2 players needed for T2 (instead of 4)
-          const t2Threshold = this.hasTrait('era_accelerated') ? 2 : 4;
-          active[era] = count >= 8 ? 4 : count >= 6 ? 3 : count >= t2Threshold ? 2 : 1;
-        } else {
-          active[era] = 1;
-        }
+        // era_accelerated: only 2 players needed for T2 (instead of 4)
+        const t2Threshold = this.hasTrait('era_accelerated') ? 2 : 4;
+        active[era] = count >= 8 ? 4 : count >= 6 ? 3 : count >= t2Threshold ? 2 : 1;
       });
       return active;
     }

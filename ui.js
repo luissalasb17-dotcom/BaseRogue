@@ -4659,16 +4659,11 @@ function initGameModeSelector() {
       const meta = EraSynergyMeta[eraName];
       const count = eraCounts[eraName] || 0;
       const tier = window.Game.getEraTier(eraName, count);
-      const isBuildEra = window.Game.buildEra === eraName;
-      const isLockedNonBuild = !isBuildEra && count >= 2; // has 2+ but capped at T1
 
       let itemClass = "synergy-list-item";
-      if (isBuildEra && tier >= 1) {
-        itemClass += " is-build-era";
-      } else if (tier >= 1) {
-        itemClass += " active";
+      if (tier >= 1) {
+        itemClass += ` active tier-${tier}`;
       }
-      if (isLockedNonBuild) itemClass += " locked-era";
 
       const item = document.createElement('div');
       item.className = itemClass;
@@ -4679,14 +4674,8 @@ function initGameModeSelector() {
         dotsHTML += `<span class="synergy-dot ${filled}"></span>`;
       }
 
-      const buildBadgeHTML = isBuildEra
-        ? `<span class="build-era-tag-badge"><i class="fa-solid fa-star"></i> ${t('eras.build_badge')}</span>`
-        : '';
-
-      // Build Era: show all 4 tiers, current one highlighted, reached ones dimmed-but-legible, future ones muted.
-      // Non-build eras: just the single fixed T1 line (shown even at count 0, as a preview/hint), like before.
       let descHTML;
-      if (isBuildEra) {
+      if (tier >= 1) {
         const rows = meta.tiers.map((text, idx) => {
           const rowTier = idx + 1;
           let rowClass = 'synergy-tier-row';
@@ -4697,30 +4686,18 @@ function initGameModeSelector() {
         descHTML = `<div class="synergy-tier-breakdown">${rows}</div>`;
       } else {
         descHTML = `<div class="synergy-item-desc" style="font-size: 11px;">${meta.tiers[0]}</div>`;
-        if (isLockedNonBuild) {
-          descHTML += `<div class="synergy-locked-note"><i class="fa-solid fa-lock"></i> ${t('eras.locked_note')}</div>`;
-        }
       }
-
-      const btnLabel = isBuildEra ? t('eras.remove_build_btn') : t('eras.set_build_btn');
-      const btnClass = isBuildEra ? 'synergy-build-btn is-current' : 'synergy-build-btn';
 
       item.innerHTML = `
         <div class="synergy-item-header">
-          <span class="synergy-item-name">${meta.name}${buildBadgeHTML}</span>
-          <span class="synergy-item-count">T${tier}/T4</span>
+          <span class="synergy-item-name">${meta.name}</span>
+          <span class="synergy-item-count">T${tier}/T4 (${count} jug.)</span>
         </div>
         <div class="synergy-progress-dots">
           ${dotsHTML}
         </div>
         ${descHTML}
-        <button type="button" class="${btnClass}" data-era="${eraName}">${btnLabel}</button>
       `;
-      const btn = item.querySelector('.synergy-build-btn');
-      btn.addEventListener('click', () => {
-        window.Game.setBuildEra(isBuildEra ? null : eraName);
-        renderSynergiesAndItems();
-      });
       el.synergiesList.appendChild(item);
     });
 
@@ -4828,12 +4805,13 @@ function initGameModeSelector() {
 
     if (newTier > currentTier) {
       predictionText += `Firma activa Sinergia <strong>${eraShort} (T${newTier})</strong>!<br>`;
-    } else if (newEraCount < 2) {
-      predictionText += `Era ${eraShort}: ${currentEraCount} ➡️ <strong>${newEraCount}/2</strong><br>`;
-    } else if (!isBuildEra) {
-      predictionText += `Era ${eraShort}: ${newEraCount} jugadores (T1 fijo — no es tu Era de Build)<br>`;
     } else {
-      predictionText += `Era ${eraShort}: ${newEraCount} jugadores (T${newTier})<br>`;
+      const nextTarget = newTier === 0 ? 2 : newTier === 1 ? (window.Game.hasTrait('era_accelerated') ? 2 : 4) : newTier === 2 ? 6 : 8;
+      if (newTier < 4) {
+        predictionText += `Era ${eraShort}: <strong>${newEraCount}/${nextTarget}</strong> (T${newTier})<br>`;
+      } else {
+        predictionText += `Era ${eraShort}: ${newEraCount} jugadores (T4 MAX)<br>`;
+      }
     }
 
     // Team synergy impact

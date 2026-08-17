@@ -905,12 +905,9 @@
     // panel outside of combat. Not used by battle logic itself.
     getEraTier(era, count) {
       if (count < 2) return 0;
-      if (era === this.buildEra) {
-        // era_accelerated: only 2 players needed for T2 (instead of 4)
-        const t2Threshold = this.hasTrait('era_accelerated') ? 2 : 4;
-        return count >= 8 ? 4 : count >= 6 ? 3 : count >= t2Threshold ? 2 : 1;
-      }
-      return 1;
+      // era_accelerated: only 2 players needed for T2 (instead of 4)
+      const t2Threshold = this.hasTrait('era_accelerated') ? 2 : 4;
+      return count >= 8 ? 4 : count >= 6 ? 3 : count >= t2Threshold ? 2 : 1;
     }
 
     hasTrait(id) { return this.equippedTraits.some(t => t.id === id); }
