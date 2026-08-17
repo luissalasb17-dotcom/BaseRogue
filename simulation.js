@@ -399,7 +399,7 @@
 
       const bounds = calcBoundaries(effBatter, pitcher, this);
 
-      let eventType, playText;
+      let eventType, playText, hitDesc;
       let pitcherDmg = 0;
       let teamHpDmg  = 0;
       let shieldDmg  = 0;
