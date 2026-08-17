@@ -2977,12 +2977,12 @@ function initGameModeSelector() {
       const hr9 = p.hr9 !== undefined ? p.hr9 : (p.hr9_val !== undefined ? p.hr9_val : (p.mov !== undefined ? p.mov : 50));
       const sta = p.sta !== undefined ? p.sta : (p.sta_val !== undefined ? p.sta_val : 65);
       const raw = h9 * 0.20 + k9 * 0.20 + bb9 * 0.20 + hr9 * 0.20 + sta * 0.20;
-      if (raw <= 30.0) return Math.round(50.0 + (raw / 30.0) * 10.0);
-      if (raw <= 45.0) return Math.round(60.0 + ((raw - 30.0) / 15.0) * 9.0);
-      if (raw <= 58.0) return Math.round(70.0 + ((raw - 45.0) / 13.0) * 8.0);
-      if (raw <= 74.0) return Math.round(79.0 + ((raw - 58.0) / 16.0) * 8.0);
-      if (raw <= 85.0) return Math.round(88.0 + ((raw - 74.0) / 11.0) * 7.0);
-      return Math.round(95.0 + Math.min(4.9, ((raw - 85.0) / 13.0) * 4.9));
+      if (raw <= 35.0) return Math.round(50.0 + (raw / 35.0) * 10.0);
+      if (raw <= 50.0) return Math.round(60.0 + ((raw - 35.0) / 15.0) * 8.0);
+      if (raw <= 65.0) return Math.round(68.0 + ((raw - 50.0) / 15.0) * 10.0);
+      if (raw <= 82.0) return Math.round(78.0 + ((raw - 65.0) / 17.0) * 10.0);
+      if (raw <= 95.0) return Math.round(88.0 + ((raw - 82.0) / 13.0) * 7.0);
+      return Math.round(95.0 + Math.min(4.9, ((raw - 95.0) / 15.0) * 4.9));
     }
     const con = p.con !== undefined ? p.con : (p.contact_val !== undefined ? p.contact_val : 50);
     const pwr = p.pwr !== undefined ? p.pwr : (p.power_val !== undefined ? p.power_val : 50);
@@ -3144,10 +3144,10 @@ function initGameModeSelector() {
     // Rarity styles
     let derivedRarity = player.rarity;
     if (!derivedRarity) {
-      if (ovr >= 95) derivedRarity = "Legendary";
-      else if (ovr >= 88) derivedRarity = "Epic";
-      else if (ovr >= 79) derivedRarity = "Rare";
-      else if (ovr >= 70) derivedRarity = "Uncommon";
+      if (ovr >= 88) derivedRarity = "Legendary";
+      else if (ovr >= 80) derivedRarity = "Epic";
+      else if (ovr >= 72) derivedRarity = "Rare";
+      else if (ovr >= 65) derivedRarity = "Uncommon";
       else derivedRarity = "Common";
     }
     const rarityLabel = derivedRarity;

@@ -145,7 +145,7 @@ def asignar_rareza(ovr):
         return "Epic"
     elif v >= 72.0:
         return "Rare"
-    elif v >= 64.0:
+    elif v >= 65.0:
         return "Uncommon"
     else:
         return "Common"
@@ -775,18 +775,18 @@ def paso_11_ovr_rareza(df):
         if r is None or pd.isna(r):
             return 60.0
         val = float(r)
-        if val <= 30.0:
-            res = 50.0 + (val / 30.0) * 10.0
-        elif val <= 45.0:
-            res = 60.0 + ((val - 30.0) / 15.0) * 9.0
-        elif val <= 58.0:
-            res = 70.0 + ((val - 45.0) / 13.0) * 8.0
-        elif val <= 74.0:
-            res = 79.0 + ((val - 58.0) / 16.0) * 8.0
-        elif val <= 85.0:
-            res = 88.0 + ((val - 74.0) / 11.0) * 7.0
+        if val <= 35.0:
+            res = 50.0 + (val / 35.0) * 10.0
+        elif val <= 50.0:
+            res = 60.0 + ((val - 35.0) / 15.0) * 8.0
+        elif val <= 65.0:
+            res = 68.0 + ((val - 50.0) / 15.0) * 10.0
+        elif val <= 82.0:
+            res = 78.0 + ((val - 65.0) / 17.0) * 10.0
+        elif val <= 95.0:
+            res = 88.0 + ((val - 82.0) / 13.0) * 7.0
         else:
-            res = 95.0 + min(4.9, ((val - 85.0) / 13.0) * 4.9)
+            res = 95.0 + min(4.9, ((val - 95.0) / 15.0) * 4.9)
         return round(res, 1)
 
     df["ovr"]    = df["raw_ovr"].apply(map_to_cosmetic_ovr_p)

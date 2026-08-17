@@ -916,7 +916,7 @@ def asignar_rareza(ovr):
         return "Epic"
     elif v >= 72.0:
         return "Rare"
-    elif v >= 64.0:
+    elif v >= 65.0:
         return "Uncommon"
     else:
         return "Common"
