@@ -627,7 +627,7 @@
         card.removeAttribute('title');
         if (icon) icon.textContent = '🏆';
         if (desc) {
-          desc.textContent = typeof window.t === 'function' ? window.t('mode_select.challenge162_desc') : 'Arma un equipo con jugadores y lanzadores que ya desbloqueaste ganando runs de Partida Rápida o Modo Historia. Simula una temporada de 162 partidos. Termina con 10 derrotas o menos (o un 162-0 perfecto) para clasificar a playoffs.';
+          desc.textContent = typeof window.t === 'function' ? window.t('mode_select.challenge162_desc') : 'Arma tu equipo con cartas desbloqueadas y simula una temporada de 162 juegos en busca de un récord perfecto.';
         }
         const hasActiveSave = this.hasSave() && this.load() && this.state && !this.state.finished;
         btn.disabled = false;
@@ -639,8 +639,8 @@
       } else {
         card.classList.add('is-locked');
         const lockedDesc = typeof window.t === 'function' 
-          ? (window.t('mode_select.challenge162_locked_desc') || '🔒 Modo Bloqueado. Completa y gana tu primera run en Partida Rápida para desbloquear el desafío de la Temporada 162-0.')
-          : '🔒 Modo Bloqueado. Completa y gana tu primera run en Partida Rápida para desbloquear el desafío de la Temporada 162-0.';
+          ? (window.t('mode_select.challenge162_locked_desc') || '🔒 Modo Bloqueado. Gana tu primera run en Partida Rápida para desbloquear el desafío 162-0.')
+          : '🔒 Modo Bloqueado. Gana tu primera run en Partida Rápida para desbloquear el desafío 162-0.';
         const lockedBtn = typeof window.t === 'function'
           ? (window.t('mode_select.challenge162_locked_btn') || '🔒 BLOQUEADO (GANA PARTIDA RÁPIDA)')
           : '🔒 BLOQUEADO (GANA PARTIDA RÁPIDA)';

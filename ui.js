@@ -90,6 +90,7 @@ window.showScreen = function(screenId) {
   const rightSidebar = document.getElementById('synergies-sidebar-panel') || document.querySelector('.workspace-sidebar.right-sidebar');
 
   if (screenId === 'screen-mode-select') {
+    document.body.classList.add('on-main-menu');
     if (screenMode) screenMode.classList.remove('hidden');
     if (screenMenu) screenMenu.classList.add('hidden');
     if (gameWorkspace) gameWorkspace.classList.add('hidden');
@@ -102,6 +103,7 @@ window.showScreen = function(screenId) {
   }
 
   // All in-game screens (draft, map, match, train, rest, event, pre-fight, gameover) live inside #game-workspace wrapper
+  document.body.classList.remove('on-main-menu');
   if (screenMode) screenMode.classList.add('hidden');
   if (screenMenu) screenMenu.classList.add('hidden');
   if (gameWorkspace) gameWorkspace.classList.remove('hidden');
@@ -5866,10 +5868,156 @@ function initGameModeSelector() {
   }
 
 
+  // ── ARCADE GAME JUICE: PITCHER KO & INNING CHANGE ───────────────────────────
+  function triggerPitcherKOJuice(defeatedPitcherName, nextPitcher) {
+    const arena = document.getElementById('screen-match') || document.querySelector('.match-arena') || document.querySelector('.rpg-fight-deck');
+    const deck = document.querySelector('.rpg-fight-deck') || arena;
+    if (!arena) return;
+
+    // Remove any leftover popups or banners
+    document.querySelectorAll('.arcade-transition-banner, .outcome-popup-overlay, .match-screen-flash').forEach(el => el.remove());
+
+    // 1. Screen flash & heavy screen shake applied to the arena
+    const flash = document.createElement('div');
+    flash.className = 'match-screen-flash';
+    arena.appendChild(flash);
+    setTimeout(() => flash.remove(), 450);
+
+    arena.classList.remove('screen-shake-heavy');
+    void arena.offsetWidth;
+    arena.classList.add('screen-shake-heavy');
+    setTimeout(() => arena.classList.remove('screen-shake-heavy'), 600);
+
+    // 2. Play synthesized heavy KO sound (explosion + sub-bass + victory gong)
+    if (window.AudioManager) window.AudioManager.play('pitcher_ko');
+
+    // 3. Stamp "K.O.!" badge directly on pitcher's card with defeat fall animation
+    if (el.arenaPitcherCardSlot) {
+      el.arenaPitcherCardSlot.querySelectorAll('.ko-stamp-badge').forEach(s => s.remove());
+
+      const stamp = document.createElement('div');
+      stamp.className = 'ko-stamp-badge';
+      stamp.innerHTML = `<i class="fa-solid fa-skull-crossbones"></i> K.O.!`;
+      el.arenaPitcherCardSlot.style.position = 'relative';
+      el.arenaPitcherCardSlot.appendChild(stamp);
+
+      const card = el.arenaPitcherCardSlot.querySelector('.player-card');
+      if (card) {
+        card.classList.remove('pitcher-card-defeated');
+        void card.offsetWidth;
+        card.classList.add('pitcher-card-defeated');
+      }
+    }
+
+    // 4. Arcade Cinematic Banner: PITCHER K.O.!
+    const koBanner = document.createElement('div');
+    koBanner.className = 'arcade-transition-banner banner-ko';
+    koBanner.innerHTML = `
+      <div class="arcade-banner-main">${t('match.banner_ko', '¡K.O. AL PITCHER! 🥊💥')}</div>
+      <div class="arcade-banner-sub">${defeatedPitcherName ? `${defeatedPitcherName} — ` : ''}${t('match.banner_ko_sub', '¡LANZADOR DERROTADO!')}</div>
+    `;
+    deck.appendChild(koBanner);
+    setTimeout(() => koBanner.remove(), 1550);
+
+    // 5. If a relief pitcher is entering, showcase the KO stamp for 1.5s then trigger bullpen transition
+    if (nextPitcher) {
+      setTimeout(() => {
+        // Animate defeated card and stamp exiting
+        if (el.arenaPitcherCardSlot) {
+          const card = el.arenaPitcherCardSlot.querySelector('.player-card');
+          if (card) {
+            card.classList.remove('pitcher-card-defeated');
+            card.classList.add('pitcher-card-exit');
+          }
+          const stamp = el.arenaPitcherCardSlot.querySelector('.ko-stamp-badge');
+          if (stamp) stamp.classList.add('pitcher-card-exit');
+        }
+
+        // Bullpen sound & banner
+        if (window.AudioManager) window.AudioManager.play('bullpen_enter');
+
+        document.querySelectorAll('.arcade-transition-banner').forEach(el => el.remove());
+
+        const nextName = nextPitcher.name || t('match.rival_rotation', 'Lanzador de Relevo');
+        const nextOvr = nextPitcher.ovr || (window.getPlayerOvr ? window.getPlayerOvr(nextPitcher) : 70);
+
+        const bullpenBanner = document.createElement('div');
+        bullpenBanner.className = 'arcade-transition-banner banner-bullpen';
+        bullpenBanner.innerHTML = `
+          <div class="arcade-banner-main">${t('match.banner_bullpen', '🚨 ¡ALERTA DE BULLPEN! 🚨')}</div>
+          <div class="arcade-banner-sub">${t('match.banner_bullpen_sub', { name: nextName, ovr: nextOvr })}</div>
+        `;
+        deck.appendChild(bullpenBanner);
+        setTimeout(() => bullpenBanner.remove(), 1450);
+
+        // Slide in the NEW relief pitcher card smoothly
+        setTimeout(() => {
+          if (activeBattle && !activeBattle.battleOver) {
+            updateFaceoffPanel(activeBattle.getState(), { reliefEntrance: true });
+          }
+        }, 350);
+      }, 1500);
+    }
+  }
+
+  function triggerInningChangeJuice(nextInning) {
+    const arena = document.getElementById('screen-match') || document.querySelector('.match-arena') || document.querySelector('.rpg-fight-deck');
+    const deck = document.querySelector('.rpg-fight-deck') || arena;
+    if (!arena) return;
+
+    // Remove any leftover popups or banners
+    document.querySelectorAll('.arcade-transition-banner, .outcome-popup-overlay, .match-screen-flash').forEach(el => el.remove());
+
+    // 1. Play synthesized umpire whistle & stadium chime
+    if (window.AudioManager) window.AudioManager.play('inning_change');
+
+    // 2. Screen flash
+    const flash = document.createElement('div');
+    flash.className = 'match-screen-flash';
+    arena.appendChild(flash);
+    setTimeout(() => flash.remove(), 450);
+
+    // 3. Clear bases with visual glow sweep
+    ['base-1', 'base-2', 'base-3'].forEach(id => {
+      const b = document.getElementById(id);
+      if (b) {
+        b.classList.remove('active');
+        b.classList.add('bases-cleared-glow');
+        setTimeout(() => b.classList.remove('bases-cleared-glow'), 700);
+      }
+    });
+
+    // 4. Inning Transition Arcade Banner
+    const inningBanner = document.createElement('div');
+    inningBanner.className = 'arcade-transition-banner banner-inning';
+    inningBanner.innerHTML = `
+      <div class="arcade-banner-main">${t('match.banner_inning', { inning: nextInning })}</div>
+      <div class="arcade-banner-sub">${t('match.banner_inning_sub', '¡CAMBIO DE ENTRADA — A LA CARGA!')}</div>
+    `;
+    deck.appendChild(inningBanner);
+    setTimeout(() => inningBanner.remove(), 1550);
+  }
+
+
   // ── OUTCOME POPUP BANNER ─────────────────────────────────────────────────────
   function showOutcomePopup(eventType, details, ev) {
     const parent = document.querySelector('.rpg-fight-deck');
     if (!parent) return;
+
+    // Delegate KO and INNING_END to arcade juice handlers
+    if (eventType === 'KO' || eventType === 'KO_PITCHER') {
+      const defName = ev ? (ev.detail || ev.activePitcher || '') : '';
+      const nextP = (activeBattle && activeBattle.activePitcher) ? activeBattle.activePitcher : null;
+      triggerPitcherKOJuice(defName, nextP);
+      return;
+    }
+
+    if (eventType === 'INNING_END') {
+      const nextIn = (ev && ev.inning) ? ev.inning : (activeBattle ? activeBattle.inning : 2);
+      if (nextIn > 3 || (activeBattle && activeBattle.battleOver)) return;
+      triggerInningChangeJuice(nextIn);
+      return;
+    }
 
     let title = "";
     let color = "#fff";
@@ -5943,25 +6091,6 @@ function initGameModeSelector() {
         borderColor = "#38bdf8";
         boxShadow = "0 0 35px rgba(56, 189, 248, 0.7)";
         break;
-      case 'KO':
-      case 'KO_PITCHER':
-        title = t('popup.ko_title');
-        color = "#f59e0b";
-        icon = "fa-skull-crossbones";
-        dmgText = `🥊 ${t('popup.ko_dmg')}`;
-        borderColor = "#f59e0b";
-        boxShadow = "0 0 35px rgba(245, 158, 11, 0.6)";
-        break;
-      case 'INNING_END':
-        var nextIn = (ev && ev.inning) ? ev.inning : 2;
-        if (nextIn > 3 || (activeBattle && activeBattle.battleOver)) return;
-        title = `¡ENTRADA ${nextIn}! ⚾`;
-        dmgText = `⚾ COMIENZA LA ENTRADA ${nextIn} DE 3`;
-        color = "#38bdf8";
-        icon = "fa-rotate";
-        borderColor = "#38bdf8";
-        boxShadow = "0 0 35px rgba(56, 189, 248, 0.6)";
-        break;
     }
 
     if (ev && ev.spdUpgraded) {
@@ -5987,8 +6116,6 @@ function initGameModeSelector() {
         case 'OUT':   window.AudioManager.play('out'); break;
         case 'BB':    window.AudioManager.play('bb');  break;
         case 'STEAL': window.AudioManager.play('draft_pick'); break;
-        case 'KO':
-        case 'KO_PITCHER': window.AudioManager.play('hit'); break;
         default: break;
       }
     }
@@ -6288,13 +6415,13 @@ function initGameModeSelector() {
           // Update rest of HUD except pitcher HP
           updateMatchHUD(state, { skipPitcherHP: true });
 
-          // Switch to the next pitcher after all popups have finished
-          const switchDelay = cursor; // wait for the full popup queue to finish
+          // Re-enable roll button and sync HUD after KO sequence and bullpen entrance finish
+          const switchDelay = cursor + 2500;
           setTimeout(() => {
             if (state.activePitcher && !activeBattle.battleOver) {
               updateMatchHUD(state);
-              updateFaceoffPanel(state);
             }
+            if (btn && !activeBattle.battleOver) btn.disabled = false;
           }, switchDelay);
         } else {
           updateMatchHUD(state);
@@ -6303,14 +6430,18 @@ function initGameModeSelector() {
         renderZones();
 
         if (activeBattle.battleOver) {
-          const delay = Math.max(600, cursor); // wait for all popups to finish first
+          const delay = Math.max(900, cursor + (hasKO ? 1800 : 0)); // wait for all popups/KO juice to finish first
           setTimeout(() => {
             handleBattleOver();
           }, delay);
         } else {
-          // Re-enable button & re-render faceoff cards
-          if (btn) btn.disabled = false;
-          if (!hasKO) updateFaceoffPanel(state);
+          // Re-enable button & re-render faceoff cards when popups finish
+          if (!hasKO) {
+            setTimeout(() => {
+              if (btn && !activeBattle.battleOver) btn.disabled = false;
+              updateFaceoffPanel(state);
+            }, Math.max(50, cursor));
+          }
         }
 
         isRolling = false;
@@ -6612,7 +6743,7 @@ function initGameModeSelector() {
     card.style.animationDelay = `${delay}ms`;
     card.classList.add('card-deal-in');
     if (window.AudioManager) {
-      setTimeout(() => window.AudioManager.play('menu_click'), delay);
+      setTimeout(() => window.AudioManager.play('card_deal'), delay);
     }
   }
 
@@ -6629,7 +6760,7 @@ function initGameModeSelector() {
     el.matchBatterName.innerText  = bName || t('common.loading', 'Cargando...');
     el.matchPitcherName.innerText = pNameClean;
 
-    // Batter card
+    // Batter card — only flip/re-render when batter actually changes or on initial deal
     const bRosterObj = Object.values(window.Game.roster).find(p => p && p.name === bName);
     if (bRosterObj) {
       const eff = window.Game.getEffectiveStats(bRosterObj, bRosterObj.pos);
@@ -6638,8 +6769,13 @@ function initGameModeSelector() {
         const kavd = eff.k_avd !== undefined ? eff.k_avd : (eff.k_avoid !== undefined ? eff.k_avoid : (eff.k_avoid_val !== undefined ? eff.k_avoid_val : eff.con));
         statsBox.innerHTML = `CON: ${eff.con} | PWR: ${eff.pwr} | EYE: ${eff.eye}<br>K/AVD: ${kavd} | SPD: ${eff.spd} | DEF: ${eff.def}<br>POS NATIVA: ${eff.pos}`;
       }
-      el.arenaBatterCardSlot.innerHTML = createCardHTML(eff, bRosterObj.pos);
-      if (dealAnimation) dealCardIn(el.arenaBatterCardSlot, { fromX: -70, delay: 0 });
+
+      const batterChanged = (el.arenaBatterCardSlot.dataset.renderedBatter !== bName);
+      if (batterChanged || dealAnimation) {
+        el.arenaBatterCardSlot.innerHTML = createCardHTML(eff, bRosterObj.pos);
+        el.arenaBatterCardSlot.dataset.renderedBatter = bName;
+        dealCardIn(el.arenaBatterCardSlot, { fromX: -70, delay: 0 });
+      }
     }
 
     // Pitcher card + HP bar
@@ -6653,35 +6789,49 @@ function initGameModeSelector() {
         ? 'linear-gradient(90deg,#ffcc00,#ffeb60)'
         : 'linear-gradient(90deg,#00ff66,#66ffa6)';
 
-      const enemyTeam = (window.Game && window.Game.getEnemyTeam) ? window.Game.getEnemyTeam() : null;
-      const pitchYear   = pitcher.year || pitcher._year || (enemyTeam ? (enemyTeam.year || enemyTeam._year) : 1941);
-      const pitchTeam   = pitcher.team || pitcher._team || (enemyTeam ? (enemyTeam.teamID || enemyTeam._team || 'OAK') : 'OAK');
-      const pitchEra    = pitcher.era  || pitcher._era  || (enemyTeam ? (enemyTeam.era || enemyTeam._era) : 'Golden Era (1920-1941)');
-      const pitchRarity = pitcher.rarity || pitcher._rarity || 'Common';
+      const pitcherChanged = (el.arenaPitcherCardSlot.dataset.renderedPitcher !== pitcher.name);
+      if (pitcherChanged || opts.reliefEntrance || dealAnimation) {
+        const enemyTeam = (window.Game && window.Game.getEnemyTeam) ? window.Game.getEnemyTeam() : null;
+        const pitchYear   = pitcher.year || pitcher._year || (enemyTeam ? (enemyTeam.year || enemyTeam._year) : 1941);
+        const pitchTeam   = pitcher.team || pitcher._team || (enemyTeam ? (enemyTeam.teamID || enemyTeam._team || 'OAK') : 'OAK');
+        const pitchEra    = pitcher.era  || pitcher._era  || (enemyTeam ? (enemyTeam.era || enemyTeam._era) : 'Golden Era (1920-1941)');
+        const pitchRarity = pitcher.rarity || pitcher._rarity || 'Common';
 
-      const pitchH9  = pitcher.h9  !== undefined ? pitcher.h9  : (pitcher.grt !== undefined ? pitcher.grt : (pitcher.h9_val !== undefined ? pitcher.h9_val : 50));
-      const pitchK9  = pitcher.k9  !== undefined ? pitcher.k9  : (pitcher.stf !== undefined ? pitcher.stf : (pitcher.str !== undefined ? pitcher.str : (pitcher.k9_val !== undefined ? pitcher.k9_val : 50)));
-      const pitchBB9 = pitcher.bb9 !== undefined ? pitcher.bb9 : (pitcher.ctl !== undefined ? pitcher.ctl : (pitcher.bb9_val !== undefined ? pitcher.bb9_val : 50));
-      const pitchHR9 = pitcher.hr9 !== undefined ? pitcher.hr9 : (pitcher.mov !== undefined ? pitcher.mov : (pitcher.hr9_val !== undefined ? pitcher.hr9_val : 50));
-      const pitchSta = pitcher.sta !== undefined ? pitcher.sta : (pitcher.sta_val !== undefined ? pitcher.sta_val : (pitcher.maxHp ? Math.max(15, Math.min(125, Math.round((pitcher.maxHp - 15) / 0.85))) : 65));
+        const pitchH9  = pitcher.h9  !== undefined ? pitcher.h9  : (pitcher.grt !== undefined ? pitcher.grt : (pitcher.h9_val !== undefined ? pitcher.h9_val : 50));
+        const pitchK9  = pitcher.k9  !== undefined ? pitcher.k9  : (pitcher.stf !== undefined ? pitcher.stf : (pitcher.str !== undefined ? pitcher.str : (pitcher.k9_val !== undefined ? pitcher.k9_val : 50)));
+        const pitchBB9 = pitcher.bb9 !== undefined ? pitcher.bb9 : (pitcher.ctl !== undefined ? pitcher.ctl : (pitcher.bb9_val !== undefined ? pitcher.bb9_val : 50));
+        const pitchHR9 = pitcher.hr9 !== undefined ? pitcher.hr9 : (pitcher.mov !== undefined ? pitcher.mov : (pitcher.hr9_val !== undefined ? pitcher.hr9_val : 50));
+        const pitchSta = pitcher.sta !== undefined ? pitcher.sta : (pitcher.sta_val !== undefined ? pitcher.sta_val : (pitcher.maxHp ? Math.max(15, Math.min(125, Math.round((pitcher.maxHp - 15) / 0.85))) : 65));
 
-      const tempPitcher = {
-        name: pitcher.name, pos: pitcher.role || 'SP', role: pitcher.role || 'SP',
-        era: pitchEra,
-        team: pitchTeam,
-        year: pitchYear,
-        mov: pitchHR9, stf: pitchK9, ctl: pitchBB9, sta: pitchSta, grt: pitchH9,
-        hp: pitcher.hp, maxHp: pitcher.maxHp,
-        stamina: Math.round((pitcher.hp / pitcher.maxHp) * 100),
-        rarity: pitchRarity,
-        h9:  pitchH9,
-        k9:  pitchK9,
-        bb9: pitchBB9,
-        hr9: pitchHR9
-      };
-      tempPitcher.ovr = pitcher.ovr !== undefined ? pitcher.ovr : (pitcher._ovr !== undefined ? pitcher._ovr : getPlayerOvr(tempPitcher));
-      el.arenaPitcherCardSlot.innerHTML = createCardHTML(tempPitcher, tempPitcher.pos);
-      if (dealAnimation) dealCardIn(el.arenaPitcherCardSlot, { fromX: 70, delay: 150 });
+        const tempPitcher = {
+          name: pitcher.name, pos: pitcher.role || 'SP', role: pitcher.role || 'SP',
+          era: pitchEra,
+          team: pitchTeam,
+          year: pitchYear,
+          mov: pitchHR9, stf: pitchK9, ctl: pitchBB9, sta: pitchSta, grt: pitchH9,
+          hp: pitcher.hp, maxHp: pitcher.maxHp,
+          stamina: Math.round((pitcher.hp / pitcher.maxHp) * 100),
+          rarity: pitchRarity,
+          h9:  pitchH9,
+          k9:  pitchK9,
+          bb9: pitchBB9,
+          hr9: pitchHR9
+        };
+        tempPitcher.ovr = pitcher.ovr !== undefined ? pitcher.ovr : (pitcher._ovr !== undefined ? pitcher._ovr : getPlayerOvr(tempPitcher));
+        
+        el.arenaPitcherCardSlot.innerHTML = createCardHTML(tempPitcher, tempPitcher.pos);
+        el.arenaPitcherCardSlot.dataset.renderedPitcher = pitcher.name;
+        el.arenaPitcherCardSlot.querySelectorAll('.ko-stamp-badge').forEach(s => s.remove());
+
+        if (opts.reliefEntrance) {
+          el.arenaPitcherCardSlot.classList.remove('pitcher-card-entrance');
+          void el.arenaPitcherCardSlot.offsetWidth;
+          el.arenaPitcherCardSlot.classList.add('pitcher-card-entrance');
+          setTimeout(() => el.arenaPitcherCardSlot.classList.remove('pitcher-card-entrance'), 550);
+        } else if (dealAnimation) {
+          dealCardIn(el.arenaPitcherCardSlot, { fromX: 70, delay: 150 });
+        }
+      }
 
       // Rotation badges
       const total = pitcher.total || 1;
@@ -6759,8 +6909,8 @@ function initGameModeSelector() {
     const isWin = (activeBattle.winner === 'player');
     const state = activeBattle.getState();
 
-    // Remove existing battle over modals if any
-    document.querySelectorAll('.battle-over-modal').forEach(m => m.remove());
+    // Remove existing battle over modals, banners, stamps, and popups
+    document.querySelectorAll('.battle-over-modal, .arcade-transition-banner, .outcome-popup-overlay, .ko-stamp-badge, .match-screen-flash').forEach(m => m.remove());
 
     if (isWin) {
       launchConfetti();

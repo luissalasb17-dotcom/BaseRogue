@@ -130,7 +130,7 @@
                 "select_mode": "SELECCIONA EL MODO DE JUEGO",
                 "story_title": "MODO HISTORIA",
                 "story_subtitle": "TEMPORADAS 1901 – 2025",
-                "story_desc": "Compite en cualquier año histórico de la MLB. Enfréntate a los equipos reales de esa temporada y a sus 3 mejores lanzadores hasta llegar al Campeón de la Serie Mundial.",
+                "story_desc": "Revive temporadas históricas de la MLB y derrota a los mejores equipos en tu camino a la Serie Mundial.",
                 "story_btn": "⚾ SELECCIONAR TEMPORADA",
                 "quick_title": "PARTIDA RÁPIDA",
                 "quick_subtitle": "MODO CLÁSICO",
@@ -141,9 +141,9 @@
                 "career_desc": "Elige un rookie y lleva su carrera temporada a temporada, año real por año real, hasta el retiro. ¿Alcanzará su potencial... o se quedará corto?",
                 "challenge162_title": "162-0 CHALLENGE",
                 "challenge162_subtitle": "TEMPORADA PERFECTA",
-                "challenge162_desc": "Arma un equipo con jugadores y lanzadores que ya desbloqueaste ganando runs de Partida Rápida o Modo Historia. Simula una temporada de 162 partidos. Termina con 10 derrotas o menos (o un 162-0 perfecto) para clasificar a playoffs.",
+                "challenge162_desc": "Arma tu equipo con cartas desbloqueadas y simula una temporada de 162 juegos en busca de un récord perfecto.",
                 "challenge162_btn": "🏆 ARMAR EQUIPO",
-                "challenge162_locked_desc": "🔒 Modo Bloqueado. Completa y gana tu primera run en Partida Rápida para desbloquear el desafío de la Temporada 162-0 y empezar a armar tu alineación.",
+                "challenge162_locked_desc": "🔒 Modo Bloqueado. Gana tu primera run en Partida Rápida para desbloquear el desafío 162-0.",
                 "challenge162_locked_btn": "🔒 BLOQUEADO (GANA PARTIDA RÁPIDA)",
                 "challenge162_continue_btn": "⚾ CONTINUAR TEMPORADA"
         },
@@ -414,7 +414,14 @@
                 "see_results": "VER RESULTADOS",
                 "rival_rotation": "ROTACIÓN RIVAL",
                 "outcome_victory": "¡VICTORIA CONTUNDENTE! Has derrotado a la rotación completa de lanzadores.",
-                "outcome_defeat": "DERROTA. Tu alineación ha sido noqueada por los lanzadores rivales."
+                "outcome_defeat": "DERROTA. Tu alineación ha sido noqueada por los lanzadores rivales.",
+                "banner_ko": "¡K.O. AL PITCHER! 🥊💥",
+                "banner_ko_sub": "¡LANZADOR DERROTADO!",
+                "banner_bullpen": "🚨 ¡ALERTA DE BULLPEN! 🚨",
+                "banner_bullpen_sub": "ENTRA AL RELEVO: {{name}} ({{ovr}} OVR)",
+                "banner_inning": "⚾ ¡ENTRADA {{inning}} DE 3! ⚾",
+                "banner_inning_sub": "¡CAMBIO DE ENTRADA — A LA CARGA!",
+                "bases_cleared": "🧹 ¡BASES LIMPIAS!"
         },
         "popup": {
                 "bb_title": "BASE POR BOLAS",
@@ -1144,7 +1151,7 @@
                 "select_mode": "SELECT GAME MODE",
                 "story_title": "STORY MODE",
                 "story_subtitle": "SEASONS 1901 – 2025",
-                "story_desc": "Compete in any historical MLB season. Face real teams from that era and their top 3 pitchers all the way to the World Series Champion.",
+                "story_desc": "Relive historic MLB seasons and defeat real teams on your journey to the World Series.",
                 "story_btn": "⚾ SELECT SEASON",
                 "quick_title": "QUICK PLAY",
                 "quick_subtitle": "CLASSIC MODE",
@@ -1155,9 +1162,9 @@
                 "career_desc": "Pick a rookie and carry their career season by season, real year by real year, all the way to retirement. Will they reach their potential... or fall short?",
                 "challenge162_title": "162-0 CHALLENGE",
                 "challenge162_subtitle": "PERFECT SEASON",
-                "challenge162_desc": "Build a roster with batters and pitchers you have unlocked from winning runs in Quick Play or Story Mode. Simulate a 162-game season. Finish with 10 losses or fewer (or a perfect 162-0) to reach the playoffs.",
+                "challenge162_desc": "Build your roster with unlocked cards and simulate a 162-game season chasing a perfect record.",
                 "challenge162_btn": "🏆 BUILD TEAM",
-                "challenge162_locked_desc": "🔒 Mode Locked. Win your first Quick Play run to unlock the 162-0 Season Challenge and begin drafting your dream roster.",
+                "challenge162_locked_desc": "🔒 Mode Locked. Win your first Quick Play run to unlock the 162-0 Challenge.",
                 "challenge162_locked_btn": "🔒 LOCKED (WIN QUICK PLAY)",
                 "challenge162_continue_btn": "⚾ CONTINUE SEASON"
         },
@@ -1428,7 +1435,14 @@
                 "see_results": "VIEW RESULTS",
                 "rival_rotation": "RIVAL ROTATION",
                 "outcome_victory": "DECISIVE VICTORY! You have defeated the complete pitcher rotation.",
-                "outcome_defeat": "DEFEAT. Your lineup was knocked out by the rival pitchers."
+                "outcome_defeat": "DEFEAT. Your lineup was knocked out by the rival pitchers.",
+                "banner_ko": "PITCHER K.O.! 🥊💥",
+                "banner_ko_sub": "RIVAL PITCHER DEFEATED!",
+                "banner_bullpen": "🚨 BULLPEN ALERT! 🚨",
+                "banner_bullpen_sub": "RELIEF PITCHER: {{name}} ({{ovr}} OVR)",
+                "banner_inning": "⚾ INNING {{inning}} OF 3! ⚾",
+                "banner_inning_sub": "INNING CHANGE — PLAY BALL!",
+                "bases_cleared": "🧹 BASES CLEARED!"
         },
         "popup": {
                 "bb_title": "WALK (BB)",

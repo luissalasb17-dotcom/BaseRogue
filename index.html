@@ -26,7 +26,7 @@
     #victory-title { animation: pulse-glow 2s ease-in-out infinite; }
   </style>
 </head>
-<body>
+<body class="on-main-menu">
 
   <!-- Game Header -->
   <header>
@@ -85,7 +85,7 @@
           <div class="mode-title" data-i18n="mode_select.story_title">MODO HISTORIA</div>
           <div class="mode-subtitle" data-i18n="mode_select.story_subtitle">TEMPORADAS 1901 – 2025</div>
           <div class="mode-desc" data-i18n="mode_select.story_desc">
-            Compite en cualquier año histórico de la MLB. Enfréntate a los equipos reales de esa temporada y a sus 3 mejores lanzadores hasta llegar al Campeón de la Serie Mundial.
+            Revive temporadas históricas de la MLB y derrota a los mejores equipos en tu camino a la Serie Mundial.
           </div>
           <button class="btn btn-mode" id="btn-select-story-mode" data-i18n="mode_select.story_btn">
             ⚾ SELECCIONAR TEMPORADA
@@ -128,7 +128,7 @@
           <div class="mode-title" data-i18n="mode_select.challenge162_title">162-0 CHALLENGE</div>
           <div class="mode-subtitle" data-i18n="mode_select.challenge162_subtitle">TEMPORADA PERFECTA</div>
           <div class="mode-desc" id="challenge162-card-desc">
-            🔒 Modo Bloqueado. Completa y gana tu primera run en Partida Rápida para desbloquear el desafío de la Temporada 162-0 y empezar a armar tu alineación.
+            🔒 Modo Bloqueado. Gana tu primera run en Partida Rápida para desbloquear el desafío 162-0.
           </div>
           <button class="btn btn-mode" id="btn-select-challenge-mode" disabled>
             🔒 BLOQUEADO (GANA PARTIDA RÁPIDA)
@@ -618,7 +618,7 @@
               </div>
 
                 <!-- 1v1 Fight Cards View -->
-                <div class="rpg-fight-deck" style="display: flex; align-items: center; gap: 20px; margin: 15px 0; justify-content: center; width: 100%; transform: scale(1.05); transform-origin: center top;">
+                <div class="rpg-fight-deck" style="display: flex; align-items: center; gap: 20px; margin: 15px 0; justify-content: center; width: 100%;">
                   <!-- Active Batter Card Slot -->
                   <div class="fight-card-slot" id="arena-batter-card-slot">
                     <!-- Rendered via JS -->

@@ -236,6 +236,47 @@
       tone(2093.00, 0.35, 'triangle', 0.20, 0.44); // C7
     },
 
+    // 13. PITCHER K.O. — heavy explosion crash + sub-bass drop + boxing bell gong
+    pitcher_ko() {
+      // Impact explosion
+      noise(0.35, 0.70, 0.0, 700, 'lowpass');
+      noise(0.18, 0.40, 0.0, 3000, 'highpass');
+      // Sub-bass thud
+      tone(120, 0.45, 'triangle', 0.45, 0.0, 0.005, 0.4);
+      // Boxing bell / victory gong resonance
+      tone(880.0, 0.55, 'triangle', 0.30, 0.04);
+      tone(1320.0, 0.65, 'sine', 0.25, 0.08);
+      tone(1760.0, 0.75, 'sine', 0.20, 0.12);
+    },
+
+    // 14. INNING CHANGE — umpire whistle + stadium fanfare + whoosh sweep
+    inning_change() {
+      // Umpire whistle trill
+      tone(1975.5, 0.09, 'sine', 0.22, 0.00);
+      tone(2349.3, 0.13, 'sine', 0.25, 0.07);
+      noise(0.22, 0.20, 0.04, 2000, 'bandpass');
+      // Bases-cleared whoosh
+      noise(0.35, 0.18, 0.18, 900, 'lowpass');
+      // 2-tone stadium cue
+      tone(587.33, 0.16, 'sawtooth', 0.20, 0.28); // D5
+      tone(880.00, 0.32, 'sawtooth', 0.24, 0.42); // A5
+    },
+
+    // 15. BULLPEN ENTER — rising siren / relief entrance stinger
+    bullpen_enter() {
+      noise(0.25, 0.22, 0.0, 1500, 'bandpass');
+      tone(440.00, 0.09, 'sawtooth', 0.22, 0.00);
+      tone(659.25, 0.10, 'sawtooth', 0.24, 0.08);
+      tone(987.77, 0.26, 'sawtooth', 0.28, 0.17);
+    },
+
+    // 16. CARD DEAL / BATTER SLIDE — crisp card sliding off deck and flipping
+    card_deal() {
+      noise(0.07, 0.11, 0.0, 3200, 'bandpass');
+      tone(440.0, 0.04, 'triangle', 0.12, 0.01, 0.002, 0.03);
+      tone(880.0, 0.035, 'sine', 0.08, 0.02, 0.002, 0.03);
+    },
+
   };
 
   // ── Public API ────────────────────────────────────────────────────────────────
