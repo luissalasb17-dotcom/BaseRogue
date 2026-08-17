@@ -1741,11 +1741,11 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
           if (count >= 4) {
             level = 2;
             bonuses = {};
-            desc = "Genesis Chaos: 30% prob de error rival en hit.";
+            desc = "Genesis Chaos: 45% prob de avanzar base adicional y +20 daño.";
           } else {
             level = 1;
             bonuses = {};
-            desc = "Genesis Chaos: 15% prob de error rival en hit.";
+            desc = "Genesis Chaos: 30% prob de avanzar base adicional y +10 daño.";
           }
         } else if (era === Eras.DEADBALL) {
           if (count >= 4) {

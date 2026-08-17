@@ -715,15 +715,27 @@
           synergyProc = _t('sim.syn_liveball_upgrade_hr', {}, '🔥 Liveball Sluggers: ¡Triple convertido en Jonrón!');
         }
 
-        let genesisErrorSucceeded = false;
+        let genesisExtraAdvance = false;
         if (batterEra === 'The Genesis Era (1871-1900)' && eraSynergy >= 1) {
-          // T1: 15%/+10dmg · T2: 30%/+20dmg · T3: 30%/+20dmg (+10 extra on top) · T4: 40%/+30dmg
-          const errChance = eraSynergy === 4 ? 0.40 : eraSynergy >= 2 ? 0.30 : 0.15;
-          if (Math.random() < errChance) {
-            genesisErrorSucceeded = true;
-            const extraDmg = eraSynergy >= 3 ? 30 : eraSynergy === 2 ? 20 : 10;
+          // T1: 30% / +10dmg · T2: 45% / +20dmg · T3: 60% / +30dmg + 1 debuff · T4: 80% / +40dmg + 2 debuffs
+          const advanceChance = eraSynergy === 4 ? 0.80 : eraSynergy === 3 ? 0.60 : eraSynergy === 2 ? 0.45 : 0.30;
+          if (Math.random() < advanceChance) {
+            genesisExtraAdvance = true;
+            const extraDmg = eraSynergy === 4 ? 40 : eraSynergy === 3 ? 30 : eraSynergy === 2 ? 20 : 10;
             pitcherDmg += extraDmg;
-            errorProc = _t('sim.syn_genesis_error', { dmg: extraDmg }, `💥 Genesis Chaos: ¡Error rival! +${extraDmg} daño e incremento extra de bases.`);
+
+            if (eraSynergy >= 3) {
+              const genTurns = eraSynergy === 4 ? 2 : 1;
+              const genMult = 1.20;
+              if (this.pitcherDebuff && this.pitcherDebuff.turnsLeft > 0) {
+                this.pitcherDebuff.turnsLeft = Math.max(this.pitcherDebuff.turnsLeft, genTurns);
+                if (genMult > this.pitcherDebuff.multiplier) this.pitcherDebuff.multiplier = genMult;
+              } else {
+                this.pitcherDebuff = { turnsLeft: genTurns, multiplier: genMult };
+              }
+            }
+
+            errorProc = _t('sim.syn_genesis_advance', { dmg: extraDmg }, `💥 Genesis Chaos: ¡Batazo agresivo! +${extraDmg} daño y avance de base adicional.`);
           }
         }
 
@@ -767,7 +779,7 @@
         } else if (hitType === '3B') {
           eventType = '3B';
           this.strikeoutChain = 0;
-          runsThisTurn = this._advanceTriple(batter, genesisErrorSucceeded);
+          runsThisTurn = this._advanceTriple(batter, genesisExtraAdvance);
           pitcherDmg = 45 + (runsThisTurn * 10);
           hitDesc = spdUpgraded
             ? _t('sim.spd_stretch_3b', { grade: spdUpgraded.grade }, `conecta batazo y estira a TERCERA BASE con velocidad (Grado ${spdUpgraded.grade})`)
@@ -776,7 +788,7 @@
         } else if (hitType === '2B') {
           eventType = '2B';
           this.strikeoutChain = 0;
-          runsThisTurn = this._advanceDouble(batter, genesisErrorSucceeded);
+          runsThisTurn = this._advanceDouble(batter, genesisExtraAdvance);
           pitcherDmg = 30 + (runsThisTurn * 10);
           hitDesc = spdUpgraded
             ? _t('sim.spd_stretch_2b', { grade: spdUpgraded.grade }, `conecta batazo y estira a SEGUNDA BASE con velocidad (Grado ${spdUpgraded.grade})`)
@@ -793,7 +805,7 @@
               synergyProc = (synergyProc ? synergyProc + ' | ' : '') + _t('sim.syn_smallball', {}, '⏳ Small Ball: ¡Avanzan 2 bases en sencillo!');
             }
           }
-          runsThisTurn = this._advanceSingle(batter, genesisErrorSucceeded || deadballDoubleAdvance);
+          runsThisTurn = this._advanceSingle(batter, genesisExtraAdvance || deadballDoubleAdvance);
           pitcherDmg = 15 + (runsThisTurn * 10);
           hitDesc = _t('sim.1b_desc', {}, 'imparable raso');
         }

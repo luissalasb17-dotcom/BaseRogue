@@ -17,8 +17,10 @@
   "eras": {
     "header": "⏳ ROSTER ERAS",
     "franchises_header": "⚾ ROSTER FRANCHISES",
-    "genesis_d1": "T1 (2+): 20% chance on hit (1B)+1 double, advances bases!",
-    "genesis_d2": "T2 (4+): 35% chance on hit (1B)+1 double, advances bases!",
+    "genesis_d1": "T1 (2+): 30% chance to advance extra base and +10 dmg",
+    "genesis_d2": "T2 (4+): 45% chance to advance extra base and +20 dmg",
+    "genesis_d3": "T3 (6+): 60% chance to advance extra base, +30 dmg, and +20% debuff on next hit",
+    "genesis_d4": "T4 (8+): 80% chance to advance extra base, +40 dmg, and +20% debuff on next 2 hits",
     "deadball_d1": "T1 (2+): 20% chance on single to advance 2 bases",
     "deadball_d2": "T2 (4+): 40% chance on single to advance 2 bases",
     "golden_d1": "T1 (2+): All hits deal +6 additional damage",
@@ -390,7 +392,7 @@
     "syn_bash_hr": "💪 Bash Brothers: Home Run deals +{{extra}} damage!",
     "syn_liveball_upgrade": "🔥 Liveball Sluggers: Double upgraded to Triple!",
     "syn_liveball_dmg": "🔥 Liveball Sluggers: +{{extra}} damage.",
-    "syn_genesis_error": "💥 Genesis Chaos: Rival error! +{{dmg}} damage and extra base advance.",
+    "syn_genesis_advance": "💥 Genesis Chaos: Aggressive hit! +{{dmg}} damage and extra base advance.",
     "syn_smallball": "⏳ Small Ball: Runners advance 2 bases on single!",
     "syn_expansion": "Expansion Synergy",
     "syn_bighair": "Big Hair Synergy"
