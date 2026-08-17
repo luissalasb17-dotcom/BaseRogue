@@ -5974,6 +5974,7 @@ function initGameModeSelector() {
         case 'SO':    window.AudioManager.play('so');  break;
         case 'OUT':   window.AudioManager.play('out'); break;
         case 'BB':    window.AudioManager.play('bb');  break;
+        case 'STEAL': window.AudioManager.play('draft_pick'); break;
         case 'KO':
         case 'KO_PITCHER': window.AudioManager.play('hit'); break;
         default: break;
@@ -5981,6 +5982,12 @@ function initGameModeSelector() {
     }
 
     if (!title) return; // Ignore non-play events like NEXT_PITCHER
+
+    // Visual diamond feedback on stolen base
+    if (eventType === 'STEAL') {
+      const base2El = document.getElementById('base-2');
+      if (base2El) triggerBarShake(base2El, 'base-synergy-flash');
+    }
 
     // Remove existing outcome popups to avoid stacking
     document.querySelectorAll('.outcome-popup-overlay').forEach(el => el.remove());
@@ -6167,14 +6174,28 @@ function initGameModeSelector() {
             return; // defer to end
           }
 
-          const hasSteal = rawText.includes('🏃 ¡ROBO DE BASE!');
-          const batterText = hasSteal ? rawText.split('🏃 ¡ROBO DE BASE!')[0].trim() : rawText;
+          const hasSteal = Boolean(ev.didSteal || (rawText && (rawText.includes('🏃') || /ROBO DE BASE|STOLEN BASE/i.test(rawText))));
+          let batterText = rawText;
+          let stealText = '';
+
+          if (hasSteal) {
+            const stealIdx = rawText.search(/🏃\s*(?:¡?ROBO DE BASE!?|STOLEN BASE!?)/i);
+            if (stealIdx !== -1) {
+              batterText = rawText.slice(0, stealIdx).trim();
+              stealText = rawText.slice(stealIdx).trim();
+            } else if (rawText.includes('🏃')) {
+              const parts = rawText.split('🏃');
+              batterText = parts[0].trim();
+              stealText = '🏃 ' + parts[1].trim();
+            } else {
+              stealText = `🏃 ${typeof window.t === 'function' ? window.t('sim.steal_label', '¡ROBO DE BASE!') : '¡ROBO DE BASE!'} ${ev.activeBatter || ''} ${typeof window.t === 'function' ? window.t('sim.steal_desc', 'se roba la segunda base') : 'se roba la segunda base'}.`;
+            }
+          }
 
           popupQueue.push({ type: ev.eventType, text: batterText, ev, at: cursor });
           cursor += POPUP_DURATION + POPUP_GAP;
 
           if (hasSteal) {
-            const stealText = '🏃 ¡ROBO DE BASE! ' + rawText.split('🏃 ¡ROBO DE BASE!')[1].trim();
             popupQueue.push({ type: 'STEAL', text: stealText, ev, at: cursor });
             cursor += POPUP_DURATION + POPUP_GAP;
           }
