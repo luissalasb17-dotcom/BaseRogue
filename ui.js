@@ -3858,7 +3858,7 @@ function initGameModeSelector() {
         // OVR Badge
         // Instrumented per a bug report we couldn't reproduce (some players
         // occasionally show "-" here instead of a grade letter, PC only,
-        // seen with Cal Ripken Sr., Brooks Robinson, Josh Hamilton — all
+        // seen with Cal Ripken Jr., Brooks Robinson, Josh Hamilton — all
         // isolated re-tests with their exact data rendered correctly). If
         // this fires again, the console.warn below has the real inputs.
         let ovrGrade;
