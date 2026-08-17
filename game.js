@@ -1057,7 +1057,7 @@
       };
       this.draftedPlayers.push(instance);
 
-      // Auto-assign to draftRoster: try native pos → secondary pos → any empty slot
+      // Auto-assign to draftRoster: try native pos → secondary pos → DH → any empty slot
       const slots = ['C','1B','2B','3B','SS','LF','CF','RF','DH'];
       let assigned = false;
       if (!this.draftRoster[instance.pos]) {
@@ -1072,6 +1072,11 @@
             break;
           }
         }
+      }
+      // If native and secondary positions are taken, prioritize DH before other slots
+      if (!assigned && !this.draftRoster['DH']) {
+        this.draftRoster['DH'] = instance;
+        assigned = true;
       }
       if (!assigned) {
         const emptySlot = slots.find(s => !this.draftRoster[s]);
@@ -1286,12 +1291,12 @@
       });
       sortedDrafted.forEach(p => {
         let assigned = false;
-        // Try native position first
+        // 1. Try native position first
         if (!this.roster[p.pos]) {
           this.roster[p.pos] = p;
           assigned = true;
         } else if (p.sec_pos) {
-          // Try secondary positions
+          // 2. Try secondary positions
           const sec = p.sec_pos.split(',').map(s=>s.trim());
           for (let s of sec) {
             if (s && slots.includes(s) && !this.roster[s]) {
@@ -1301,7 +1306,12 @@
             }
           }
         }
-        // Fallback to any empty slot
+        // 3. Try DH slot before falling back to other defensive slots
+        if (!assigned && !this.roster['DH']) {
+          this.roster['DH'] = p;
+          assigned = true;
+        }
+        // 4. Fallback to any empty slot
         if (!assigned) {
           const emptySlot = slots.find(s => !this.roster[s]);
           if (emptySlot) {
