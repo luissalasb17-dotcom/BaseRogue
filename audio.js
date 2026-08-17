@@ -278,7 +278,9 @@
     updateMuteButton() {
       const btn = document.getElementById('btn-audio-toggle');
       if (!btn) return;
-      btn.title = _muted ? 'Activar sonido' : 'Silenciar';
+      btn.title = _muted
+        ? (typeof window.t === 'function' ? window.t('ui.unmute_tooltip', 'Activar sonido') : 'Activar sonido')
+        : (typeof window.t === 'function' ? window.t('ui.mute_tooltip', 'Silenciar') : 'Silenciar');
       btn.innerHTML = _muted
         ? '<i class="fa-solid fa-volume-xmark"></i>'
         : '<i class="fa-solid fa-volume-high"></i>';

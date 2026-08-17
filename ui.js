@@ -769,13 +769,13 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
         const cardHTML = createCardHTML(player);
 
         const wrapper = document.createElement('div');
-        wrapper.className = 'draft-card-wrapper w-full max-w-[280px] md:max-w-[170px] cursor-pointer rounded-xl border-2 transition-transform duration-150 flex flex-col items-center gap-1.5 p-2 box-border';
+        wrapper.className = 'draft-card-wrapper w-[175px] max-w-[175px] cursor-pointer rounded-xl border-2 transition-transform duration-150 flex flex-col items-center gap-1.5 p-2 box-border';
         wrapper.style.borderColor = rColor;
         wrapper.style.background = rBg;
 
         wrapper.innerHTML = `
           <div style="pointer-events:none;">${cardHTML}</div>
-          <div style="text-align:center;width:100%;">
+          <div class="draft-card-caption" style="text-align:center;width:100%;">
             <div style="font-size:10px;color:${rColor};font-weight:bold;">${player.rarity}</div>
             <div style="font-size:9.5px;color:#9ca3af;text-align:center;margin-top:2px;">${player.pos} • OVR ${ovr}</div>
           </div>
@@ -1546,12 +1546,12 @@ function initGameModeSelector() {
       const cardHTML = createCardHTML(player);
 
       const wrapper = document.createElement('div');
-      wrapper.className = 'draft-card-wrapper w-full max-w-[280px] md:max-w-[190px] cursor-pointer rounded-xl border-2 transition-transform duration-150 flex flex-col items-center gap-1.5 p-2 box-border';
+      wrapper.className = 'draft-card-wrapper w-[175px] max-w-[175px] cursor-pointer rounded-xl border-2 transition-transform duration-150 flex flex-col items-center gap-1.5 p-2 box-border';
       wrapper.style.borderColor = rColor;
       wrapper.style.background = rBg;
       wrapper.innerHTML = `
         <div style="pointer-events:none;">${cardHTML}</div>
-        <div style="text-align:center;width:100%;">
+        <div class="draft-card-caption" style="text-align:center;width:100%;">
           <div style="font-size:10px;color:${rColor};font-weight:bold;">${player.rarity}</div>
           <div style="font-size:9.5px;color:#9ca3af;text-align:center;margin-top:2px;">${player.pos || player.role} • OVR ${ovr} (potencial)</div>
         </div>
@@ -2904,6 +2904,19 @@ function initGameModeSelector() {
     // It is called by initGameModeSelector handlers after the user selects a mode.
     setupEventListeners();
 
+    // ── Logo: click to reload back to the main menu (desktop only — on
+    // mobile the logo sits right above the HUD/back-and-forth tab bar where
+    // an accidental tap mid-run would be too easy and too costly). ──────────
+    const logoEl = document.querySelector('.logo');
+    if (logoEl) {
+      logoEl.style.cursor = 'pointer';
+      logoEl.addEventListener('click', () => {
+        if (window.innerWidth > 768) {
+          window.location.reload();
+        }
+      });
+    }
+
     // ── BaseballDex: initialize and wire button ──────────────────────────────
     if (window.BaseballDex) {
       window.BaseballDex.init();
@@ -2951,11 +2964,18 @@ function initGameModeSelector() {
     if (p._ovr !== undefined) return Math.round(p._ovr);
     const isPitcher = p.pos === 'P' || p.pos === 'SP' || p.pos === 'RP' || p.role === 'P' || p.role === 'SP' || p.role === 'RP';
     if (isPitcher) {
-      const stf = p.stf !== undefined ? p.stf : (p.str !== undefined ? p.str : (p.str_val !== undefined ? p.str_val : 50));
-      const ctl = p.ctl !== undefined ? p.ctl : (p.ctl_val !== undefined ? p.ctl_val : 50);
-      const mov = p.mov !== undefined ? p.mov : (p.grt !== undefined ? p.grt : (p.grt_val !== undefined ? p.grt_val : 50));
-      const sta = p.sta !== undefined ? p.sta : (p.sta_val !== undefined ? p.sta_val : 50);
-      return Math.round(stf * 0.30 + ctl * 0.30 + mov * 0.30 + sta * 0.10);
+      const h9  = p.h9  !== undefined ? p.h9  : (p.h9_val  !== undefined ? p.h9_val  : (p.grt !== undefined ? p.grt : 50));
+      const k9  = p.k9  !== undefined ? p.k9  : (p.k9_val  !== undefined ? p.k9_val  : (p.stf !== undefined ? p.stf : (p.str !== undefined ? p.str : 50)));
+      const bb9 = p.bb9 !== undefined ? p.bb9 : (p.bb9_val !== undefined ? p.bb9_val : (p.ctl !== undefined ? p.ctl : 50));
+      const hr9 = p.hr9 !== undefined ? p.hr9 : (p.hr9_val !== undefined ? p.hr9_val : (p.mov !== undefined ? p.mov : 50));
+      const sta = p.sta !== undefined ? p.sta : (p.sta_val !== undefined ? p.sta_val : 65);
+      const raw = h9 * 0.20 + k9 * 0.20 + bb9 * 0.20 + hr9 * 0.20 + sta * 0.20;
+      if (raw <= 30.0) return Math.round(50.0 + (raw / 30.0) * 10.0);
+      if (raw <= 45.0) return Math.round(60.0 + ((raw - 30.0) / 15.0) * 9.0);
+      if (raw <= 58.0) return Math.round(70.0 + ((raw - 45.0) / 13.0) * 8.0);
+      if (raw <= 74.0) return Math.round(79.0 + ((raw - 58.0) / 16.0) * 8.0);
+      if (raw <= 85.0) return Math.round(88.0 + ((raw - 74.0) / 11.0) * 7.0);
+      return Math.round(95.0 + Math.min(4.9, ((raw - 85.0) / 13.0) * 4.9));
     }
     const con = p.con !== undefined ? p.con : (p.contact_val !== undefined ? p.contact_val : 50);
     const pwr = p.pwr !== undefined ? p.pwr : (p.power_val !== undefined ? p.power_val : 50);
@@ -3112,18 +3132,7 @@ function initGameModeSelector() {
     const teamFranchise = player.team || "ROOK";
     const isPitcher = player.pos === 'P' || player.pos === 'SP' || player.pos === 'RP' || player.role === 'P' || player.role === 'SP' || player.role === 'RP';
 
-    const stfForOvr = player.stf !== undefined ? player.stf : (player.str !== undefined ? player.str : (player.str_val !== undefined ? player.str_val : (player.con !== undefined ? player.con : 40)));
-    const ctlForOvr = player.ctl !== undefined ? player.ctl : (player.ctl_val !== undefined ? player.ctl_val : (player.pwr !== undefined ? player.pwr : 40));
-    const movForOvr = player.mov !== undefined ? player.mov : (player.grt !== undefined ? player.grt : (player.grt_val !== undefined ? player.grt_val : (player.eye !== undefined ? player.eye : 40)));
-    const staForOvr = player.sta !== undefined ? player.sta : (player.sta_val !== undefined ? player.sta_val : (player.spd !== undefined ? player.spd : 50));
-
-    const ovr = player.ovr !== undefined
-      ? Math.round(player.ovr)
-      : (player.avg_attr_score !== undefined
-          ? Math.round(player.avg_attr_score)
-          : (isPitcher
-              ? Math.round(stfForOvr*0.30 + ctlForOvr*0.30 + movForOvr*0.30 + staForOvr*0.10)
-              : Math.round((player.con || player.contact_val || 40)*0.35 + (player.pwr || player.power_val || 35)*0.30 + (player.spd || player.speed_val || 45)*0.10 + (player.def || player.defense_val || 40)*0.15 + (player.eye || player.eye_val || 40)*0.10)));
+    const ovr = getPlayerOvr(player);
 
     // Rarity styles
     let derivedRarity = player.rarity;
@@ -3830,12 +3839,31 @@ function initGameModeSelector() {
       nameSpan.className = "player-name";
       
       if (effectivePlayer) {
-        nameSpan.innerHTML = `${effectivePlayer.name}${getPlayerBadgeIconsHTML(effectivePlayer)}`;
+        const badgeIconsHTML = getPlayerBadgeIconsHTML(effectivePlayer);
+        if (effectivePlayer.captain && !badgeIconsHTML.includes('badge-captain')) {
+          console.warn('[BaseRogue] captain badge missing for a captain=true player', { player: effectivePlayer.name, effectivePlayer });
+        }
+        nameSpan.innerHTML = `${effectivePlayer.name}${badgeIconsHTML}`;
         nameSpan.title = `${effectivePlayer.name} (${effectivePlayer.era})`;
-        
+
         // OVR Badge
-        const ovr = getPlayerOvr(effectivePlayer);
-        const ovrGrade = getClassGrade(ovr);
+        // Instrumented per a bug report we couldn't reproduce (some players
+        // occasionally show "-" here instead of a grade letter, PC only,
+        // seen with Cal Ripken Sr., Brooks Robinson, Josh Hamilton — all
+        // isolated re-tests with their exact data rendered correctly). If
+        // this fires again, the console.warn below has the real inputs.
+        let ovrGrade;
+        try {
+          const ovr = getPlayerOvr(effectivePlayer);
+          ovrGrade = getClassGrade(ovr);
+          if (!ovrGrade || typeof ovrGrade.text !== 'string' || !ovrGrade.text) {
+            console.warn('[BaseRogue] OVR badge: getClassGrade returned something unexpected', { player: effectivePlayer.name, ovr, ovrGrade });
+            ovrGrade = { text: '?', color: '#94a3b8' };
+          }
+        } catch (err) {
+          console.warn('[BaseRogue] OVR badge computation threw', { player: effectivePlayer && effectivePlayer.name, error: err, effectivePlayer });
+          ovrGrade = { text: '?', color: '#94a3b8' };
+        }
         const ovrBadge = document.createElement('span');
         ovrBadge.className = "ovr-badge";
         ovrBadge.style.cssText = `background: ${ovrGrade.color}; color: #000; margin-left: auto; flex-shrink: 0;`;
@@ -3843,6 +3871,7 @@ function initGameModeSelector() {
 
         // Stamina mini bar
         const stamContainer = document.createElement('div');
+        stamContainer.className = 'roster-item-stats';
         stamContainer.style.cssText = "display: flex; flex-direction: column; align-items: flex-end; gap: 2px;";
         
         const stamMini = document.createElement('div');
@@ -3862,7 +3891,7 @@ function initGameModeSelector() {
         slotContainer.appendChild(nameSpan);
         slotContainer.appendChild(stamContainer);
       } else {
-        nameSpan.innerText = "Vacante";
+        nameSpan.innerText = t('pos.empty', '— VACÍO —');
         nameSpan.style.color = "#64748b";
         nameSpan.style.fontStyle = "italic";
         slotContainer.appendChild(orderSpan);
@@ -4104,11 +4133,30 @@ function initGameModeSelector() {
       { range: [0, 3],   zoneIdx: 0 }
     ];
 
-    // Layout constants (SVG coordinate space)
+    // Layout constants (SVG coordinate space). The SVG scales via viewBox to
+    // whatever the container's real CSS width is (width="100%"), so node/icon/
+    // label sizes — all fixed SVG-unit values below — end up rendering at
+    // containerWidth/SVG_W times their nominal size. SVG_W=500 assumes a wide
+    // desktop panel; on a ~350-400px phone that ratio is under 1, so every
+    // node, icon and label shrinks well below its intended size. Narrowing
+    // SVG_W on mobile brings that ratio back above 1 (nodes render bigger, not
+    // smaller) while leaving inter-node spacing untouched, since rendered
+    // pixel spacing is containerWidth/(count+1) regardless of SVG_W.
+    // ROW_H/PADDING_Y are also trimmed on mobile: those don't affect node size
+    // (only SVG_W vs container width does), but the old 60/100 values left a
+    // lot of dead black space above/below/between rows relative to how little
+    // screen width a phone has to show it in — tightening them makes the same
+    // nodes fill noticeably more of the visible box instead of floating in a
+    // mostly-empty column.
+    const isMobileMap = window.innerWidth <= 768;
     const NODE_R    = 26;   // node radius
-    const SVG_W     = 500;  // SVG viewport width
-    const ROW_H     = 100;  // pixels between stage rows
-    const PADDING_Y = 60;   // top/bottom padding inside SVG
+    // 260 is close to the safe floor for this — any narrower and 3-per-row
+    // stages start touching (their outer border circles overlapped by 2px
+    // at 225, measured directly). Any further size increase has to come from
+    // row/label spacing instead, not from squeezing this further.
+    const SVG_W     = isMobileMap ? 260 : 500;  // SVG viewport width
+    const ROW_H     = isMobileMap ? 82 : 100;   // pixels between stage rows
+    const PADDING_Y = isMobileMap ? 38 : 60;    // top/bottom padding inside SVG
 
     ZONE_STAGE_RANGES.forEach(({ range: [zStart, zEnd], zoneIdx }) => {
       const zoneConfig     = window.Game.getZoneConfig(zoneIdx);
@@ -4188,13 +4236,25 @@ function initGameModeSelector() {
       }
 
       // ── Build SVG ───────────────────────────────────────────────────
+      // width="100%" combined with a fixed pixel `height` attribute is a
+      // mismatched pair: the two together force preserveAspectRatio's default
+      // "meet" behavior to scale by whichever dimension is MORE constrained —
+      // and since height is always set to exactly SVG_H (the viewBox height),
+      // that scale factor is always 1. The map never actually scaled up to
+      // fill a wide container; it just rendered at native size, centered,
+      // with the leftover width as dead margin on both sides (this is a
+      // pre-existing bug, not new — it was just easy to miss on narrower
+      // desktop windows and got much more obvious on a wide one). Letting
+      // height come from the CSS aspect-ratio instead — no fixed height
+      // attribute at all — makes both dimensions scale together correctly.
       const svgNS = 'http://www.w3.org/2000/svg';
       const svg = document.createElementNS(svgNS, 'svg');
       svg.setAttribute('viewBox', `0 0 ${SVG_W} ${SVG_H}`);
       svg.setAttribute('width',  '100%');
-      svg.setAttribute('height', SVG_H);
       svg.style.display = 'block';
       svg.style.overflow = 'visible';
+      svg.style.height = 'auto';
+      svg.style.aspectRatio = `${SVG_W} / ${SVG_H}`;
 
       // defs: glow filters
       const defs = document.createElementNS(svgNS, 'defs');
@@ -4296,6 +4356,20 @@ function initGameModeSelector() {
             svg.appendChild(glow);
           }
 
+          // Ground shadow — gives the node a sense of sitting "on" the map
+          // instead of floating flat against it (the reference the user
+          // pointed to — Pokelike's map — reads more physical/polished
+          // partly because of touches like this).
+          const nodeRadiusForShadow = isBossStage ? NODE_R + 8 : NODE_R + 3;
+          const shadow = document.createElementNS(svgNS, 'ellipse');
+          shadow.setAttribute('cx', pos.x);
+          shadow.setAttribute('cy', pos.y + nodeRadiusForShadow * 0.72);
+          shadow.setAttribute('rx', nodeRadiusForShadow * 0.85);
+          shadow.setAttribute('ry', nodeRadiusForShadow * 0.26);
+          shadow.setAttribute('fill', 'rgba(0,0,0,0.4)');
+          shadow.style.pointerEvents = 'none';
+          svg.appendChild(shadow);
+
           // 8-Bit Pixel Outer Border Circle
           const outerCircle = document.createElementNS(svgNS, 'circle');
           outerCircle.setAttribute('cx', pos.x); outerCircle.setAttribute('cy', pos.y);
@@ -4333,6 +4407,20 @@ function initGameModeSelector() {
           }
           svg.appendChild(circle);
 
+          // Glossy highlight sheen — a soft light patch toward the upper-left
+          // of every node, purely additive (no per-type gradients to manage),
+          // for the same "glossy pixel badge" pop the reference map has.
+          const sheenR = isBossStage ? NODE_R + 5 : NODE_R;
+          const sheen = document.createElementNS(svgNS, 'ellipse');
+          sheen.setAttribute('cx', pos.x - sheenR * 0.32);
+          sheen.setAttribute('cy', pos.y - sheenR * 0.38);
+          sheen.setAttribute('rx', sheenR * 0.55);
+          sheen.setAttribute('ry', sheenR * 0.32);
+          sheen.setAttribute('fill', 'rgba(255,255,255,0.22)');
+          sheen.setAttribute('opacity', (isActive || isFutureVisible) ? '1' : '0.35');
+          sheen.style.pointerEvents = 'none';
+          svg.appendChild(sheen);
+
           // Node Font Awesome Icon via foreignObject
           const iconSize = isBossStage ? 26 : 14;
           const foSize   = isBossStage ? 48 : 32;
@@ -4364,7 +4452,12 @@ function initGameModeSelector() {
             ? vis.color 
             : (isFutureVisible ? 'rgba(255,255,255,0.75)' : (isPast || isVisited ? '#475569' : '#334155')));
           lbl.setAttribute('font-family', "'VT323', monospace");
-          lbl.setAttribute('font-size', '14');
+          // Labels like "CLASSIC SERIES" / "BATTING CAGE" at the desktop
+          // size (14) are wider than a 3-per-row mobile slot (~65 SVG units
+          // at SVG_W=260), so neighboring labels ran into each other. Mobile
+          // gets a meaningfully smaller label size — the nodes themselves
+          // don't shrink, just the text underneath them.
+          lbl.setAttribute('font-size', isMobileMap ? '8' : '14');
           lbl.setAttribute('font-weight', 'bold');
           const rawLabel = node.label || vis.label;
           let translatedLabel = rawLabel;
@@ -4735,7 +4828,7 @@ function initGameModeSelector() {
       const cardHTML = createCardHTML(player);
       const predictionText = getDraftSynergyPrediction(player);
       const cardCol = document.createElement('div');
-      cardCol.className = "draft-card-option flex flex-col items-center gap-2 w-full max-w-[280px] md:max-w-[210px] box-border";
+      cardCol.className = "draft-card-option flex flex-col items-center gap-2 w-[175px] max-w-[175px] box-border";
       
       const cost = getPlayerSignCost(player);
       const canAfford = (window.Game.budget || 0) >= cost;
@@ -4748,12 +4841,12 @@ function initGameModeSelector() {
         btnSign.className = "btn btn-secondary";
         btnSign.style.opacity = "0.5";
         btnSign.style.cursor = "not-allowed";
-        btnSign.innerHTML = `<i class="fa-solid fa-lock"></i> Sin $ ($${cost})`;
+        btnSign.innerHTML = t('draft.insufficient_funds', { cost: cost });
       }
 
       btnSign.addEventListener('click', () => {
         if (!canAfford) {
-          alert(`No tienes suficiente presupuesto para firmar a esta leyenda (Cuesta $${cost}, tienes $${window.Game.budget}).`);
+          alert(t('draft.legend_no_budget', { cost: cost, budget: window.Game.budget }));
           return;
         }
 
@@ -4762,7 +4855,7 @@ function initGameModeSelector() {
         if (res.success) {
           window.Game.budget = Math.max(0, (window.Game.budget || 0) - cost);
           delete player._signCost;
-          alert(res.message + ` (-$${cost} de Presupuesto)`);
+          alert(res.message + t('draft.signed_cost_suffix', { cost: cost }));
           renderActiveRoster();
           renderSynergiesAndItems();
           updateHUD();
@@ -4770,7 +4863,7 @@ function initGameModeSelector() {
         } else {
           // Roster full: trigger Swap Modal
           currentDraftSelection = player;
-          el.swapNewPlayerName.innerText = player.name;
+          el.swapNewPlayerName.innerHTML = t('draft.swap_new_player', { name: `<span style="color:var(--primary-color);">${player.name}</span>` });
           populateSwapModalOptions(player);
         }
       });
@@ -4780,7 +4873,7 @@ function initGameModeSelector() {
 
       cardCol.innerHTML = `
         <div>${cardHTML}</div>
-        <div style="text-align:center;width:100%;margin-top:2px;">
+        <div class="draft-card-caption" style="text-align:center;width:100%;margin-top:2px;">
           <div style="font-size:10px;color:${rColor};font-weight:bold;">${player.rarity}</div>
           <div style="font-size:9.5px;color:#9ca3af;text-align:center;margin-top:2px;font-family:'Press Start 2P',monospace;">${player.pos} • OVR ${ovr}</div>
         </div>
@@ -4793,7 +4886,7 @@ function initGameModeSelector() {
 
     // Add a "Rechazar Firma" button option
     const skipCol = document.createElement('div');
-    skipCol.className = "draft-card-option flex flex-col justify-center items-center border-2 border-dashed border-white/15 p-4 rounded-xl w-full max-w-[280px] md:max-w-[210px] min-h-[140px] md:min-h-[350px] box-border";
+    skipCol.className = "draft-card-option flex flex-col justify-center items-center border-2 border-dashed border-white/15 p-4 rounded-xl w-[175px] max-w-[175px] min-h-[310px] box-border";
 
     const btnSkip = document.createElement('button');
     btnSkip.className = "btn btn-secondary";
@@ -4842,14 +4935,14 @@ function initGameModeSelector() {
       const cardHTML = createCardHTML(player);
       const predictionText = getDraftSynergyPrediction(player);
       const cardCol = document.createElement('div');
-      cardCol.className = "draft-card-option flex flex-col items-center gap-2 w-full max-w-[280px] md:max-w-[210px] box-border";
+      cardCol.className = "draft-card-option flex flex-col items-center gap-2 w-[175px] max-w-[175px] box-border";
       
       const btnSign = document.createElement('button');
       btnSign.className = "btn";
       btnSign.innerHTML = t('draft.sign_btn', { cost: 0 });
       btnSign.addEventListener('click', () => {
         currentDraftSelection = player;
-        el.swapNewPlayerName.innerText = player.name;
+        el.swapNewPlayerName.innerHTML = t('draft.swap_new_player', { name: `<span style="color:var(--primary-color);">${player.name}</span>` });
         populateSwapModalOptions(player);
       });
 
@@ -4858,7 +4951,7 @@ function initGameModeSelector() {
 
       cardCol.innerHTML = `
         <div>${cardHTML}</div>
-        <div style="text-align:center;width:100%;margin-top:2px;">
+        <div class="draft-card-caption" style="text-align:center;width:100%;margin-top:2px;">
           <div style="font-size:10px;color:${rColor};font-weight:bold;">${player.rarity}</div>
           <div style="font-size:9.5px;color:#9ca3af;text-align:center;margin-top:2px;font-family:'Press Start 2P',monospace;">${player.pos} • OVR ${ovr}</div>
         </div>
@@ -4870,7 +4963,7 @@ function initGameModeSelector() {
 
     // Add a "Skip Draft" button to let the player skip post-match draft
     const skipCol = document.createElement('div');
-    skipCol.className = "draft-card-option flex flex-col justify-center items-center border-2 border-dashed border-white/15 p-4 rounded-xl w-full max-w-[280px] md:max-w-[210px] min-h-[140px] md:min-h-[350px] box-border";
+    skipCol.className = "draft-card-option flex flex-col justify-center items-center border-2 border-dashed border-white/15 p-4 rounded-xl w-[175px] max-w-[175px] min-h-[310px] box-border";
 
     const btnSkip = document.createElement('button');
     btnSkip.className = "btn btn-secondary";
@@ -5628,38 +5721,46 @@ function initGameModeSelector() {
           letter-spacing:1px;
         ">–</div>
       </div>
-      <!-- Lucky zones panel -->
-      <div id="zones-panel">
-        <div id="zones-panel-header">🎯 ${t('match.luck_zones', 'Zonas de la Suerte')}</div>
-        <div id="zones-lines"></div>
+      <!-- Lucky zones panel. Clutch banner lives outside the <details> so it's
+           always visible even while the probability breakdown is collapsed
+           (collapsed by default on mobile only — see mobile CSS/JS). -->
+      <div id="zones-panel-wrap" style="width:100%;">
+        <div id="clutch-banner-slot"></div>
+        <details id="zones-panel" open>
+          <summary id="zones-panel-header">🎯 ${t('match.luck_zones', 'Zonas de la Suerte')}</summary>
+          <div id="zones-lines"></div>
+        </details>
       </div>
-      <!-- ROLL button -->
-      <button id="btn-roll-dice" style="
-        font-family:'Press Start 2P',monospace;
-        font-size:13px;padding:14px 32px;
-        background:linear-gradient(135deg,#7c3aed,#4f46e5);
-        color:#fff;border:none;border-radius:10px;
-        cursor:pointer;letter-spacing:1px;
-        box-shadow:0 0 20px rgba(124,58,237,0.5);
-        transition:transform .1s,box-shadow .1s;
-        width:100%;
-      ">${t('match.roll_dice', 'LANZAR DADO')}</button>
-      <!-- SIMULATE ALL button (placed directly below LANZAR DADO on both PC and mobile) -->
-      <button id="btn-match-skip-game" class="btn" style="
-        font-family:'Press Start 2P',monospace;
-        font-size:10.5px;
-        padding:12px 20px;
-        background:linear-gradient(135deg,#dc2626,#ef4444);
-        color:#fff;
-        border:none;
-        border-radius:10px;
-        cursor:pointer;
-        width:100%;
-        margin-top:10px;
-        letter-spacing:0.5px;
-        box-shadow:0 0 14px rgba(220,38,38,0.4);
-        transition:transform .1s,box-shadow .1s;
-      " data-i18n="match.simulate_all"><i class="fa-solid fa-forward-step"></i> ${t('match.simulate_all', '⚡ SIMULAR TODO')}</button>
+      <!-- Action bar: ROLL + SIMULATE ALL, wrapped together so it can stick to the
+           bottom of the mobile scroll viewport as one unit (see mobile CSS) -->
+      <div id="dice-action-bar">
+        <button id="btn-roll-dice" style="
+          font-family:'Press Start 2P',monospace;
+          font-size:13px;padding:14px 32px;
+          background:linear-gradient(135deg,#7c3aed,#4f46e5);
+          color:#fff;border:none;border-radius:10px;
+          cursor:pointer;letter-spacing:1px;
+          box-shadow:0 0 20px rgba(124,58,237,0.5);
+          transition:transform .1s,box-shadow .1s;
+          width:100%;
+        ">${t('match.roll_dice', 'LANZAR DADO')}</button>
+        <!-- SIMULATE ALL button (placed directly below LANZAR DADO on both PC and mobile) -->
+        <button id="btn-match-skip-game" class="btn" style="
+          font-family:'Press Start 2P',monospace;
+          font-size:10.5px;
+          padding:12px 20px;
+          background:linear-gradient(135deg,#dc2626,#ef4444);
+          color:#fff;
+          border:none;
+          border-radius:10px;
+          cursor:pointer;
+          width:100%;
+          margin-top:10px;
+          letter-spacing:0.5px;
+          box-shadow:0 0 14px rgba(220,38,38,0.4);
+          transition:transform .1s,box-shadow .1s;
+        " data-i18n="match.simulate_all"><i class="fa-solid fa-forward-step"></i> ${t('match.simulate_all', '⚡ SIMULAR TODO')}</button>
+      </div>
     `;
 
     el.btnMatchSkip = document.getElementById('btn-match-skip-game');
@@ -5672,6 +5773,16 @@ function initGameModeSelector() {
       diceSlot.appendChild(dicePanel);
     } else {
       el.screenMatch.appendChild(dicePanel);
+    }
+
+    // Luck Zones starts collapsed on phones only — it's the most "optional"
+    // section on the battle screen (the roll button and vitals matter more
+    // moment to moment), so starting it closed keeps the initial view calmer.
+    // Desktop keeps it open since there's room and players tend to reference
+    // it constantly there.
+    if (window.innerWidth <= 768) {
+      const zonesDetails = document.getElementById('zones-panel');
+      if (zonesDetails) zonesDetails.removeAttribute('open');
     }
 
     showTutorialTip(
@@ -6287,8 +6398,12 @@ function initGameModeSelector() {
     const boostHRTag = isClutchActive ? `<span class="clutch-tag-badge hr-boost">+4%</span>` : '';
     const penaltyOutTag = isClutchActive ? `<span class="clutch-tag-badge penalty">-8%</span>` : '';
 
+    const clutchSlot = document.getElementById('clutch-banner-slot');
+    if (clutchSlot) {
+      clutchSlot.innerHTML = isClutchActive ? `<div class="clutch-active-banner">⚡ ¡CLUTCH PLAYER ACTIVO!</div>` : '';
+    }
+
     zonesEl.innerHTML = `
-      ${isClutchActive ? `<div class="clutch-active-banner">⚡ ¡CLUTCH PLAYER ACTIVO!</div>` : ''}
       <div class="outcome-probabilities-grid">
         <div style="display:flex;flex-direction:column;gap:4px;">
           <div class="outcome-row">
@@ -6380,10 +6495,10 @@ function initGameModeSelector() {
     const batter  = stateOrEvent.currentBatter || null;
     const bName   = batter ? batter.name : (stateOrEvent.activeBatter || '');
 
-    const pNameRaw = pitcher ? pitcher.name : 'Cargando...';
+    const pNameRaw = pitcher ? pitcher.name : t('common.loading', 'Cargando...');
     const pNameClean = pNameRaw.replace(/\s*\(\d{4}\)$/, '').trim();
 
-    el.matchBatterName.innerText  = bName || 'Cargando...';
+    el.matchBatterName.innerText  = bName || t('common.loading', 'Cargando...');
     el.matchPitcherName.innerText = pNameClean;
 
     // Batter card
@@ -6416,32 +6531,27 @@ function initGameModeSelector() {
       const pitchEra    = pitcher.era  || pitcher._era  || (enemyTeam ? (enemyTeam.era || enemyTeam._era) : 'Golden Era (1920-1941)');
       const pitchRarity = pitcher.rarity || pitcher._rarity || 'Common';
 
-      const pitchStf = pitcher.stf !== undefined ? pitcher.stf : (pitcher.str !== undefined ? pitcher.str : 40);
-      const pitchCtl = pitcher.ctl !== undefined ? pitcher.ctl : (pitcher.ctl_val !== undefined ? pitcher.ctl_val : 40);
-      const pitchMov = pitcher.mov !== undefined ? pitcher.mov : (pitcher.grt !== undefined ? pitcher.grt : 50);
-      const pitchSta = pitcher.sta !== undefined ? pitcher.sta : (pitcher.maxHp ? Math.max(15, Math.min(125, Math.round((pitcher.maxHp - 15) / 0.85))) : 65);
-
-      const pitchOvr = pitcher.ovr || pitcher._ovr || Math.round(pitchStf*0.30 + pitchCtl*0.30 + pitchMov*0.30 + pitchSta*0.10);
+      const pitchH9  = pitcher.h9  !== undefined ? pitcher.h9  : (pitcher.grt !== undefined ? pitcher.grt : (pitcher.h9_val !== undefined ? pitcher.h9_val : 50));
+      const pitchK9  = pitcher.k9  !== undefined ? pitcher.k9  : (pitcher.stf !== undefined ? pitcher.stf : (pitcher.str !== undefined ? pitcher.str : (pitcher.k9_val !== undefined ? pitcher.k9_val : 50)));
+      const pitchBB9 = pitcher.bb9 !== undefined ? pitcher.bb9 : (pitcher.ctl !== undefined ? pitcher.ctl : (pitcher.bb9_val !== undefined ? pitcher.bb9_val : 50));
+      const pitchHR9 = pitcher.hr9 !== undefined ? pitcher.hr9 : (pitcher.mov !== undefined ? pitcher.mov : (pitcher.hr9_val !== undefined ? pitcher.hr9_val : 50));
+      const pitchSta = pitcher.sta !== undefined ? pitcher.sta : (pitcher.sta_val !== undefined ? pitcher.sta_val : (pitcher.maxHp ? Math.max(15, Math.min(125, Math.round((pitcher.maxHp - 15) / 0.85))) : 65));
 
       const tempPitcher = {
         name: pitcher.name, pos: pitcher.role || 'SP', role: pitcher.role || 'SP',
         era: pitchEra,
         team: pitchTeam,
         year: pitchYear,
-        mov: pitchMov, stf: pitchStf, ctl: pitchCtl, sta: pitchSta,
-        con: pitchStf, pwr: pitchCtl, eye: pitchMov, spd: pitchSta,
+        mov: pitchHR9, stf: pitchK9, ctl: pitchBB9, sta: pitchSta, grt: pitchH9,
         hp: pitcher.hp, maxHp: pitcher.maxHp,
         stamina: Math.round((pitcher.hp / pitcher.maxHp) * 100),
-        ovr: pitchOvr,
         rarity: pitchRarity,
-        // Without these, createCardHTML's h9 fallback (checks .h9 -> .h9_val ->
-        // .grt, none of which this object set) silently defaulted to 50 -> flat
-        // "C" on the in-combat card, even after fixing the same bug elsewhere.
-        h9:  pitcher.h9  !== undefined ? pitcher.h9  : (pitcher.grt !== undefined ? pitcher.grt : 50),
-        k9:  pitcher.k9  !== undefined ? pitcher.k9  : pitchStf,
-        bb9: pitcher.bb9 !== undefined ? pitcher.bb9 : pitchCtl,
-        hr9: pitcher.hr9 !== undefined ? pitcher.hr9 : pitchMov
+        h9:  pitchH9,
+        k9:  pitchK9,
+        bb9: pitchBB9,
+        hr9: pitchHR9
       };
+      tempPitcher.ovr = pitcher.ovr !== undefined ? pitcher.ovr : (pitcher._ovr !== undefined ? pitcher._ovr : getPlayerOvr(tempPitcher));
       el.arenaPitcherCardSlot.innerHTML = createCardHTML(tempPitcher, tempPitcher.pos);
       if (dealAnimation) dealCardIn(el.arenaPitcherCardSlot, { fromX: 70, delay: 150 });
 
@@ -6784,7 +6894,7 @@ function initGameModeSelector() {
         <div style="font-size:36px;margin-bottom:10px;">${t.icon}</div>
         <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:#ffd700;margin-bottom:10px;line-height:1.5;">${t.name}</div>
         <div style="font-size:11px;color:#cbd5e1;line-height:1.5;">${t.desc}</div>
-        <button class="btn btn-trait-pick" data-id="${t.id}" style="margin-top:18px;width:100%;background:linear-gradient(135deg,#ffd700,#f59e0b);color:#000;font-weight:bold;font-size:10px;padding:10px;">✨ Elegir</button>
+        <button class="btn btn-trait-pick" data-id="${t.id}" style="margin-top:18px;width:100%;background:linear-gradient(135deg,#ffd700,#f59e0b);color:#000;font-weight:bold;font-size:10px;padding:10px;">${typeof window.t==='function'?window.t('ui.trait_pick_btn'):'✨ Elegir'}</button>
       </div>
     `).join('');
 
@@ -6832,7 +6942,7 @@ function initGameModeSelector() {
     const traits = window.Game.equippedTraits || [];
     if (!traits.length) { traitPanel.innerHTML = ''; return; }
     traitPanel.innerHTML = `
-      <div style="font-family:'Press Start 2P',monospace;font-size:7px;color:#ffd700;margin-bottom:6px;">✨ TRAITS ACTIVAS</div>
+      <div style="font-family:'Press Start 2P',monospace;font-size:7px;color:#ffd700;margin-bottom:6px;">${t('ui.active_traits_header', '✨ TRAITS ACTIVAS')}</div>
       <div style="max-height:110px;overflow-y:auto;display:flex;flex-direction:column;gap:4px;">
         ${traits.map(t => `
           <div title="${t.desc.replace(/"/g, '&quot;')}" style="display:flex;align-items:center;gap:6px;padding:4px 6px;background:rgba(255,215,0,0.06);border-radius:6px;border:1px solid rgba(255,215,0,0.2);cursor:help;">
@@ -6887,9 +6997,9 @@ function initGameModeSelector() {
       overlay.innerHTML = `
         <div style="max-width:420px;width:90%;text-align:center;padding:24px;">
           <div style="font-size:48px;margin-bottom:12px;">📦</div>
-          <div style="font-family:'Press Start 2P',monospace;font-size:12px;color:#facc15;margin-bottom:14px;">COFRE VACÍO</div>
-          <div style="font-size:12px;color:#cbd5e1;margin-bottom:20px;">Ya tienes todos los traits disponibles. El cofre te deja +$15 de consuelo.</div>
-          <button class="btn" id="btn-chest-claim" style="background:linear-gradient(135deg,#facc15,#f59e0b);color:#000;font-weight:bold;">Reclamar</button>
+          <div style="font-family:'Press Start 2P',monospace;font-size:12px;color:#facc15;margin-bottom:14px;">${t('chest.empty_title', 'COFRE VACÍO')}</div>
+          <div style="font-size:12px;color:#cbd5e1;margin-bottom:20px;">${t('chest.empty_desc', 'Ya tienes todos los traits disponibles. El cofre te deja +$15 de consuelo.')}</div>
+          <button class="btn" id="btn-chest-claim" style="background:linear-gradient(135deg,#facc15,#f59e0b);color:#000;font-weight:bold;">${t('chest.claim_btn', 'Reclamar')}</button>
         </div>`;
       document.body.appendChild(overlay);
       overlay.querySelector('#btn-chest-claim').addEventListener('click', () => {
@@ -6904,7 +7014,7 @@ function initGameModeSelector() {
     overlay.innerHTML = `
       <div style="max-width:340px;width:90%;text-align:center;padding:20px;">
         <div class="chest-loot-icon" style="font-size:52px;margin-bottom:10px;">📦</div>
-        <div style="font-family:'Press Start 2P',monospace;font-size:12px;color:#facc15;text-shadow:0 0 15px rgba(250,204,21,0.6);margin-bottom:16px;">¡COFRE ENCONTRADO!</div>
+        <div style="font-family:'Press Start 2P',monospace;font-size:12px;color:#facc15;text-shadow:0 0 15px rgba(250,204,21,0.6);margin-bottom:16px;">${t('chest.found_title', '¡COFRE ENCONTRADO!')}</div>
         <div class="trait-choice-card" style="
           background:rgba(10,15,24,0.95);border:2px solid rgba(250,204,21,0.5);
           border-radius:14px;padding:22px 18px;box-shadow:0 4px 24px rgba(250,204,21,0.15);
@@ -6913,7 +7023,7 @@ function initGameModeSelector() {
           <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:#facc15;margin-bottom:10px;line-height:1.5;">${trait.name}</div>
           <div style="font-size:11px;color:#cbd5e1;line-height:1.5;">${trait.desc}</div>
         </div>
-        <button class="btn" id="btn-chest-claim" style="margin-top:18px;width:100%;background:linear-gradient(135deg,#facc15,#f59e0b);color:#000;font-weight:bold;">✨ Reclamar Trait</button>
+        <button class="btn" id="btn-chest-claim" style="margin-top:18px;width:100%;background:linear-gradient(135deg,#facc15,#f59e0b);color:#000;font-weight:bold;">${t('chest.claim_trait_btn', '✨ Reclamar Trait')}</button>
       </div>`;
 
     document.body.appendChild(overlay);
@@ -6941,32 +7051,29 @@ function initGameModeSelector() {
 
     overlay.innerHTML = `
       <div style="max-width:560px;width:92%;text-align:center;padding:20px;">
-        <div style="font-family:'Press Start 2P',monospace;font-size:12px;color:#ef4444;text-shadow:0 0 15px rgba(239,68,68,0.6);margin-bottom:6px;">🎲 APUESTA DE ALTO RIESGO</div>
+        <div style="font-family:'Press Start 2P',monospace;font-size:12px;color:#ef4444;text-shadow:0 0 15px rgba(239,68,68,0.6);margin-bottom:6px;">${t('gamble.header', '🎲 APUESTA DE ALTO RIESGO')}</div>
         <div style="font-size:22px;margin:6px 0 10px;">${gamble.icon} ${gamble.title}</div>
         <div style="font-size:12px;color:#cbd5e1;margin-bottom:18px;line-height:1.5;">${gamble.desc}</div>
 
         <div style="display:flex;align-items:center;justify-content:center;gap:18px;margin:20px 0;">
           <div class="gamble-outcome-card gamble-outcome-win">
             <div style="font-size:20px;">✅</div>
-            <div style="font-size:9px;color:#10b981;font-weight:bold;margin-top:4px;">ÉXITO (${Math.round(gamble.chance * 100)}%)</div>
+            <div style="font-size:9px;color:#10b981;font-weight:bold;margin-top:4px;">${t('gamble.success_pct', { pct: Math.round(gamble.chance * 100), defaultValue: `ÉXITO (${Math.round(gamble.chance * 100)}%)` })}</div>
           </div>
           <div class="gamble-coin-wrap">
-            <div class="gamble-coin" id="gamble-coin">
-              <div class="gamble-coin-face gamble-coin-front">✅</div>
-              <div class="gamble-coin-face gamble-coin-back">❌</div>
-            </div>
+            <div class="gamble-coin" id="gamble-coin">✅</div>
           </div>
           <div class="gamble-outcome-card gamble-outcome-lose">
             <div style="font-size:20px;">❌</div>
-            <div style="font-size:9px;color:#ef4444;font-weight:bold;margin-top:4px;">FALLO (${100 - Math.round(gamble.chance * 100)}%)</div>
+            <div style="font-size:9px;color:#ef4444;font-weight:bold;margin-top:4px;">${t('gamble.fail_pct', { pct: 100 - Math.round(gamble.chance * 100), defaultValue: `FALLO (${100 - Math.round(gamble.chance * 100)}%)` })}</div>
           </div>
         </div>
 
         ${gamble.requiresTargetPlayer ? `
           <div style="margin-bottom:16px;">
-            <label style="font-size:10px;color:#94a3b8;display:block;margin-bottom:6px;">Elige el jugador objetivo:</label>
+            <label style="font-size:10px;color:#94a3b8;display:block;margin-bottom:6px;">${t('gamble.choose_target', 'Elige el jugador objetivo:')}</label>
             <select id="gamble-target-select" style="width:100%;padding:8px;background:#0a0f18;color:#fff;border:1px solid rgba(239,68,68,0.4);border-radius:8px;font-size:11px;">
-              ${rosterOptions || '<option disabled>Sin jugadores con Era válida</option>'}
+              ${rosterOptions || `<option disabled>${t('gamble.no_valid_era_players', 'Sin jugadores con Era válida')}</option>`}
             </select>
           </div>
         ` : ''}
@@ -6974,8 +7081,8 @@ function initGameModeSelector() {
         <div id="gamble-result" style="min-height:24px;font-size:12px;color:#fde68a;margin-bottom:12px;"></div>
 
         <div style="display:flex;gap:12px;justify-content:center;">
-          <button class="btn" id="btn-gamble-bet" style="background:linear-gradient(135deg,#ef4444,#f59e0b);color:#000;font-weight:bold;">🪙 APOSTAR</button>
-          <button class="btn btn-secondary" id="btn-gamble-decline">🚪 Rechazar</button>
+          <button class="btn" id="btn-gamble-bet" style="background:linear-gradient(135deg,#ef4444,#f59e0b);color:#000;font-weight:bold;">${t('gamble.bet_btn', '🪙 APOSTAR')}</button>
+          <button class="btn btn-secondary" id="btn-gamble-decline">${t('gamble.reject_btn', '🚪 Rechazar')}</button>
         </div>
       </div>`;
 
@@ -7008,13 +7115,32 @@ function initGameModeSelector() {
       const result = window.Game.resolveGamble(gamble.id, select ? select.value : null);
       betResolved = true;
 
+      // A real 3D rotateY flip (two faces + backface-visibility) turned out
+      // unreliable — mid-spin, the back (❌) face could render mirrored/
+      // distorted and read as a corrupted version of the ✅ face instead of
+      // cleanly hidden until it turned to face the viewer. Swapping the
+      // emoji directly on a 2D "squash" pulse sidesteps 3D compositing
+      // entirely, so there's no face to render wrong — it can only ever
+      // show a clean ✅ or ❌, alternating, then land on the real result.
       const coin = overlay.querySelector('#gamble-coin');
       coin.classList.add('gamble-coin-flipping');
-      const flips = 4;
-      // Front face (✅) rests at 0deg; landing on a multiple of 360 keeps it showing.
-      // Back face (❌) is pre-rotated 180deg; landing on 360k+180 brings IT to face the viewer.
-      const totalDeg = result.success ? flips * 360 : flips * 360 + 180;
-      coin.style.transform = `rotateY(${totalDeg}deg)`;
+
+      const spinDurationMs = 1600;
+      const swapEveryMs = 110;
+      const totalSwaps = Math.floor(spinDurationMs / swapEveryMs);
+      let swapCount = 0;
+      const swapInterval = setInterval(() => {
+        swapCount++;
+        const showingFail = swapCount % 2 === 0;
+        coin.textContent = showingFail ? '❌' : '✅';
+        coin.classList.toggle('gamble-coin-fail', showingFail);
+        if (swapCount >= totalSwaps) {
+          clearInterval(swapInterval);
+          coin.classList.remove('gamble-coin-flipping');
+          coin.textContent = result.success ? '✅' : '❌';
+          coin.classList.toggle('gamble-coin-fail', !result.success);
+        }
+      }, swapEveryMs);
 
       setTimeout(() => {
         const resultEl = overlay.querySelector('#gamble-result');
@@ -7022,9 +7148,9 @@ function initGameModeSelector() {
         resultEl.textContent = result.resultText;
 
         betBtn.style.display = 'none';
-        declineBtn.textContent = 'Continuar';
+        declineBtn.textContent = t('career.continue', 'Continuar');
         declineBtn.disabled = false;
-      }, 1900);
+      }, spinDurationMs + 100);
     });
   }
 
@@ -7048,15 +7174,15 @@ function initGameModeSelector() {
       <div style="background:#090d16;border:3px solid #ffd700;border-radius:16px;padding:24px;max-width:440px;width:90%;text-align:center;box-shadow:0 0 40px rgba(255,215,0,0.5);">
         <div style="font-family:'Press Start 2P',monospace;font-size:14px;color:#ffd700;margin-bottom:12px;text-shadow:0 0 10px #ffd700;">⚡ SUPER BOSS FIGHT ⚡</div>
         <div style="font-size:12.5px;color:#fff;font-weight:bold;margin-bottom:16px;line-height:1.5;">
-          ¡Derrotaste al primer grupo del Playoffs!<br>
+          ${typeof window.t==='function'?window.t('ui.super_boss_defeated_first_group'):'¡Derrotaste al primer grupo del Playoffs!'}<br>
           <span style="color:#22d3ee;">${typeof window.t==='function'?window.t('ui.super_boss_desc'):'¡Pero las 4 Máximas Leyendas del Béisbol saltan al campo para la Batalla Final!'}</span>
         </div>
         ${legendRowsHTML ? `<div style="margin-bottom:14px;">${legendRowsHTML}</div>` : ''}
         <div style="background:rgba(255,215,0,0.1);border:1px solid #ffd700;border-radius:8px;padding:10px;font-size:11px;color:#fef08a;margin-bottom:20px;">
-          🔥 <strong>Fase Final Especial (4 Pitchers Leyenda)</strong><br>
+          ${typeof window.t==='function'?window.t('ui.super_boss_final_phase_html'):'🔥 <strong>Fase Final Especial (4 Pitchers Leyenda)</strong>'}<br>
           ${typeof window.t==='function'?window.t('ui.hp_restored'):'Tu equipo ha recuperado +30 HP y Escudo Máximo.'}
         </div>
-        <button id="btn-start-super-boss" class="btn" style="background:linear-gradient(90deg,#ffd700,#f59e0b);color:#000;font-weight:bold;font-size:11px;padding:12px 24px;width:100%;border:none;cursor:pointer;">¡ENFRENTAR AL SUPER BOSS FINAL! ⚾</button>
+        <button id="btn-start-super-boss" class="btn" style="background:linear-gradient(90deg,#ffd700,#f59e0b);color:#000;font-weight:bold;font-size:11px;padding:12px 24px;width:100%;border:none;cursor:pointer;">${typeof window.t==='function'?window.t('ui.super_boss_fight_btn'):'¡ENFRENTAR AL SUPER BOSS FINAL! ⚾'}</button>
       </div>
     `;
     document.body.appendChild(overlay);

@@ -13,7 +13,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.tailwindcss.com"></script>
   
-  <link rel="stylesheet" href="style.css?v=169">
+  <link rel="stylesheet" href="style.css?v=192">
   <style>
     @keyframes bounce {
       0%, 100% { transform: translateY(0); }
@@ -35,7 +35,7 @@
       <h1 style="display: none;">BaseRogue</h1>
     </div>
     
-    <div style="display: flex; align-items: center; gap: 10px;">
+    <div class="header-icon-actions" style="display: flex; align-items: center; gap: 10px;">
       <button class="btn btn-secondary" id="btn-basedex-open" style="padding: 6px 12px; font-size: 11px;" title="BaseballDex">
         <i class="fa-solid fa-book-open"></i>
       </button>
@@ -528,7 +528,7 @@
 
           <!-- SCREEN 3: MATCH SIMULATOR -->
           <div class="glass-panel hidden" id="screen-match" style="position: relative;">
-            <button id="btn-combat-info" title="Sistema de Daño y Reglas" style="position: absolute; top: 14px; right: 14px; width: 28px; height: 28px; border-radius: 50%; background: #000; border: 2px solid var(--accent-color); color: var(--accent-color); font-family: 'Press Start 2P', monospace; font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 10px rgba(250, 204, 21, 0.3); transition: all 0.2s ease; z-index: 210;">i</button>
+            <button id="btn-combat-info" title="Sistema de Daño y Reglas" data-i18n-title="combat_info.tooltip" style="position: absolute; top: 14px; right: 14px; width: 28px; height: 28px; border-radius: 50%; background: #000; border: 2px solid var(--accent-color); color: var(--accent-color); font-family: 'Press Start 2P', monospace; font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 10px rgba(250, 204, 21, 0.3); transition: all 0.2s ease; z-index: 210;">i</button>
             
             <div id="combat-info-dropdown" class="hidden" style="position: absolute; top: 50px; right: 14px; width: 340px; background: rgba(9, 13, 22, 0.98); border: 2px solid var(--accent-color); border-radius: 12px; padding: 12px; box-shadow: 0 0 30px rgba(0,0,0,0.9), 0 0 15px rgba(250, 204, 21, 0.25); z-index: 250; backdrop-filter: blur(8px); font-size: 10px; line-height: 1.4; color: #e4e4e7;">
               <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed rgba(255,255,255,0.2); padding-bottom: 6px; margin-bottom: 8px;">
@@ -699,8 +699,8 @@
             </p>
             
             <div class="glass-panel" style="background: #000; border: 3px double var(--primary-color); padding: 20px;">
-              <h3 id="event-title" style="color: var(--accent-color); font-size: 12px; margin-bottom: 12px;">Título del Evento</h3>
-              <p id="event-desc" style="font-family: 'VT323', monospace; font-size: 18px; color: #fff; margin-bottom: 20px; line-height: 1.4;">
+              <h3 id="event-title" style="color: var(--accent-color); font-size: 12px; margin-bottom: 12px;" data-i18n="event.placeholder_title">Título del Evento</h3>
+              <p id="event-desc" style="font-family: 'VT323', monospace; font-size: 18px; color: #fff; margin-bottom: 20px; line-height: 1.4;" data-i18n="event.placeholder_desc">
                 Descripción del evento...
               </p>
               
@@ -713,7 +713,7 @@
           <!-- SCREEN 5: DRAFT PICK -->
           <div class="glass-panel hidden" id="screen-draft" style="position: relative;">
             <!-- Ratings Info Button -->
-            <button id="ratings-info-btn" title="¿Para qué sirve cada rating y badge?" style="position: absolute; top: 14px; right: 14px; width: 28px; height: 28px; border-radius: 50%; background: #000; border: 2px solid var(--accent-color); color: var(--accent-color); font-family: 'Press Start 2P', monospace; font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 10px rgba(250, 204, 21, 0.3); transition: all 0.2s ease; z-index: 210;">i</button>
+            <button id="ratings-info-btn" title="¿Para qué sirve cada rating y badge?" data-i18n-title="ratings_guide.tooltip" style="position: absolute; top: 14px; right: 14px; width: 28px; height: 28px; border-radius: 50%; background: #000; border: 2px solid var(--accent-color); color: var(--accent-color); font-family: 'Press Start 2P', monospace; font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 10px rgba(250, 204, 21, 0.3); transition: all 0.2s ease; z-index: 210;">i</button>
 
             <!-- Ratings Info Dropdown -->
             <div id="ratings-info-dropdown" class="hidden" style="position: absolute; top: 50px; right: 14px; width: 340px; background: rgba(9, 13, 22, 0.98); border: 2px solid var(--accent-color); border-radius: 12px; padding: 12px; box-shadow: 0 0 30px rgba(0,0,0,0.9), 0 0 15px rgba(250, 204, 21, 0.25); z-index: 250; backdrop-filter: blur(8px); font-size: 10px; line-height: 1.4; color: #e4e4e7;">
@@ -898,18 +898,18 @@
   <!-- MODAL: Draft Player Swap Resolver -->
   <div class="modal-overlay hidden" id="modal-swap-draft">
     <div class="modal-content">
-      <h3 style="margin-bottom: 10px; color: var(--accent-color);"><i class="fa-solid fa-triangle-exclamation"></i> Roster Lleno</h3>
-      <p style="font-size: 13px; color: #9ca3af; margin-bottom: 16px;">
+      <h3 style="margin-bottom: 10px; color: var(--accent-color);" data-i18n-html="draft.swap_modal_title"><i class="fa-solid fa-triangle-exclamation"></i> Roster Lleno</h3>
+      <p style="font-size: 13px; color: #9ca3af; margin-bottom: 16px;" data-i18n="draft.swap_modal_desc">
         Tu banquillo y alineación están al completo. Selecciona a un jugador actual para sustituirlo permanentemente por la nueva firma:
       </p>
-      <h4 style="font-size: 14px; margin-bottom: 8px; color: #fff;">Firma Nueva: <span id="swap-new-player-name" style="color:var(--primary-color);"></span></h4>
-      
+      <h4 id="swap-new-player-name" style="font-size: 14px; margin-bottom: 8px; color: #fff;"></h4>
+
       <div class="swap-bench-list" id="modal-swap-list-players">
         <!-- Roster players list for replace selection -->
       </div>
-      
+
       <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
-        <button class="btn btn-secondary" id="btn-cancel-swap-draft">Rechazar Firma</button>
+        <button class="btn btn-secondary" id="btn-cancel-swap-draft" data-i18n="draft.swap_reject_btn">Rechazar Firma</button>
       </div>
     </div>
   </div>
@@ -932,7 +932,7 @@
           <table style="width:100%;border-collapse:collapse;font-size:11px;text-align:left;">
             <thead>
               <tr style="border-bottom:2px solid rgba(255,255,255,0.2);color:var(--accent-color);">
-                <th style="padding:8px;">Jugador</th>
+                <th style="padding:8px;" data-i18n="summary.player_col">Jugador</th>
                 <th style="padding:8px;">G</th>
                 <th style="padding:8px;">AB</th>
                 <th style="padding:8px;">H</th>
@@ -961,7 +961,7 @@
           <table style="width:100%;border-collapse:collapse;font-size:11px;text-align:left;">
             <thead>
               <tr style="border-bottom:2px solid rgba(255,255,255,0.2);color:#38bdf8;">
-                <th style="padding:8px;">Lanzador</th>
+                <th style="padding:8px;" data-i18n="summary.pitcher_col">Lanzador</th>
                 <th style="padding:8px;">IP</th>
                 <th style="padding:8px;">K</th>
                 <th style="padding:8px;">BB</th>
@@ -1004,20 +1004,20 @@
   </script>
   <!-- Load Game Scripts -->
   <script src="src/lib/i18next.min.js"></script>
-  <script src="src/i18n.js?v=39"></script>
+  <script src="src/i18n.js?v=42"></script>
   <script src="players.js?v=169"></script>
   <script src="pitchers_pool.js?v=172"></script>
   <script src="player_team_history.js?v=2"></script>
   <script src="opponents_database.js?v=16"></script>
   <script src="game_cards_pool.js?v=168"></script>
   <script src="simulation.js?v=174"></script>
-  <script src="game.js?v=181"></script>
-  <script src="audio.js?v=1"></script>
+  <script src="game.js?v=184"></script>
+  <script src="audio.js?v=2"></script>
   <script src="career_data.js?v=1"></script>
   <script src="career.js?v=26"></script>
   <script src="basedex.js?v=7"></script>
   <script src="challenge162.js?v=67"></script>
-  <script src="ui.js?v=247"></script>
+  <script src="ui.js?v=260"></script>
 
 </body>
 </html>

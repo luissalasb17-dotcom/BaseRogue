@@ -87,6 +87,7 @@
         "map": {
                 "title": "<i class=\"fa-solid fa-map\"></i> Mapa del Campeonato",
                 "desc": "Elige tu camino. Gana partidos para conseguir dinero, recluta jugadores y entrena tu plantilla.",
+                "win_pct": "% de victorias",
                 "stage_playoffs": "Playoffs — Fase Final - Dificultad: Leyenda",
                 "stage_pennant": "Pennant Chase — Final de temporada - Dificultad: Experto",
                 "stage_allstar": "All-Star Break — Mitad de temporada - Dificultad: Difícil",
@@ -102,7 +103,7 @@
                 "node_decision": "DECISIÓN",
                 "node_boss": "BOSS",
                 "boss_label": {
-                        "3": "JUEGO APERTURA",
+                        "3": "DUELO DE ASES",
                         "7": "ALL-STAR GAME",
                         "11": "CAMPEÓN LIGA",
                         "15": "SERIE MUNDIAL"
@@ -114,6 +115,7 @@
         },
         "ratings_guide": {
                 "title": "📊 GUÍA DE RATINGS",
+                "tooltip": "¿Para qué sirve cada rating y badge?",
                 "con": "<strong style=\"color:#a7f3d0;\">CON — Contacto:</strong> Determina la probabilidad de conectar un batazo. Jugadores con alto CON tienen más chances de sencillos e hits en general.",
                 "pwr": "<strong style=\"color:#f59e0b;\">PWR — Poder:</strong> Probabilidad de conectar extra-bases (dobles, triples, jonrones). También aumenta el daño al pitcher rival en hits largos.",
                 "eye": "<strong style=\"color:#3b82f6;\">EYE — Ojo/Vista:</strong> Probabilidad de obtener boletos (BB). Clave para avanzar corredores y desgastar al lanzador rival.",
@@ -146,7 +148,8 @@
                 "challenge162_continue_btn": "⚾ CONTINUAR TEMPORADA"
         },
         "common": {
-                "back_menu": "← MENÚ"
+                "back_menu": "← MENÚ",
+                "loading": "Cargando..."
         },
         "career": {
                 "difficulty_title": "🏆 ELIGE LA DIFICULTAD",
@@ -314,6 +317,9 @@
                 "select_btn": "✔ SELECCIONAR",
                 "inspect_card": "CARTA",
                 "sign_btn": "✍️ Firmar (${{cost}})",
+                "insufficient_funds": "<i class=\"fa-solid fa-lock\"></i> Sin $ (${{cost}})",
+                "legend_no_budget": "No tienes suficiente presupuesto para firmar a esta leyenda (Cuesta ${{cost}}, tienes ${{budget}}).",
+                "signed_cost_suffix": " (-${{cost}} de Presupuesto)",
                 "auto_complete_btn": "🎲 ¡Sorpréndeme! (Auto-Completar)",
                 "decline_btn": "🚫 Rechazar Firma / Continuar",
                 "decline_desc": "¿No deseas contratar a ninguna leyenda o prefieres guardar tu dinero? Puedes rechazar la firma y avanzar en el mapa.",
@@ -466,11 +472,7 @@
                 "ev_pinetar_title": "Brea de Pino Japonesa",
                 "ev_pinetar_desc": "Consigues un tarro de brea especial que mejora el agarre del bate, afinando el contacto.",
                 "ev_pinetar_choice1": "Comprar brea (+8 Contacto global a todo el equipo)",
-                "ev_pinetar_choice2": "Seguir igual",
-                "ev_bribe_title": "Cazatalento en Apuros",
-                "ev_bribe_desc": "Un caza-talentos te ofrece dinero del presupuesto del equipo rival a cambio de canjear un poco de enfoque deportivo.",
-                "ev_bribe_choice1": "Aceptar dinero (Ganas +$45 presupuesto, pero pierdes -5 Disciplina/Eye global)",
-                "ev_bribe_choice2": "Denunciarlo al comisionado (Ganas +8 Disciplina/Eye global en tu equipo)"
+                "ev_pinetar_choice2": "Seguir igual"
         },
         "train": {
                 "title": "<i class=\"fa-solid fa-dumbbell\"></i> Jaula de Bateo / Bullpen",
@@ -499,7 +501,9 @@
         },
         "event": {
                 "title": "<i class=\"fa-solid fa-clipboard-question\"></i> Oficina del Mánager",
-                "desc": "Toma una decisión crítica para el club. Cada elección tiene repercusiones en el presupuesto, salud o estadísticas del equipo."
+                "desc": "Toma una decisión crítica para el club. Cada elección tiene repercusiones en el presupuesto, salud o estadísticas del equipo.",
+                "placeholder_title": "Título del Evento",
+                "placeholder_desc": "Descripción del evento..."
         },
         "gameover": {
                 "title": "¡Fin de la Carrera!",
@@ -530,7 +534,9 @@
         "summary": {
                 "title": "<i class=\"fa-solid fa-baseball\"></i> ESTADÍSTICAS COMPLETAS DE LA RUN",
                 "tab_batters": "Mi Alineación (Bateo)",
-                "tab_pitchers": "Lanzadores Enfrentados"
+                "tab_pitchers": "Lanzadores Enfrentados",
+                "player_col": "Jugador",
+                "pitcher_col": "Lanzador"
         },
         "victory": {
                 "title": "¡CAMPEÓN ABSOLUTO DE BASEROGUE!",
@@ -641,7 +647,9 @@
                 "win_msg": "¡Victoria! Derrotaste a la rotación de {{name}} en 3 innings. ¡+${{earnings}}!",
                 "defeat_msg": "Derrota. Finalizaron los 3 innings (9 outs) antes de derrotar a toda la rotación de {{name}}.",
                 "champion_eternal": "🏆 ¡CAMPEÓN DE LA ETERNIDAD! Conquistaste la Serie Mundial y ganaste los Playoffs.",
-                "lineup_full": "Alineación ocupada. Elige a quién reemplazar."
+                "lineup_full": "Alineación ocupada. Elige a quién reemplazar.",
+                "player_placed_native": "¡{{name}} colocado directamente en {{pos}}!",
+                "player_placed_dh": "¡{{name}} colocado como DH!"
         },
         "training": {
                 "con": {
@@ -680,6 +688,7 @@
                         "title": "Bates de Contrabando",
                         "desc": "Un misterioso carpintero ofrece bates modificados con corcho. Aumentan el impacto pero alteran el balance del swing.",
                         "choice1": "Modificación Estándar (+10 PWR, -2 CON)",
+                        "choice2": "Corcho Masivo Ilegal (+25 PWR, -5 CON)",
                         "suc": "¡Bates modificados con éxito! Tu alineación obtiene +25 PWR y -5 CON.",
                         "fail": "¡EL UMPIRE DESCUBRIÓ LOS BATES! La liga confisca los bates y te impone una multa de -$10."
                 },
@@ -687,7 +696,7 @@
                         "title": "El Espía de Señas",
                         "desc": "Un ex-receptor retirado afirma conocer la secuencia secreta de lanzamientos de los pitchers rivales.",
                         "choice1": "Comprar Informe VIP (+15 EYE, +8 CON)",
-                        "choice2": "Robo de Señas Callejero (+20 EYE)",
+                        "choice2": "Robo de Señas Callejero (+30 EYE, +10 CON)",
                         "suc": "¡Señas interceptadas! Tu equipo obtiene +20 EYE (Disciplina).",
                         "fail": "¡Descubiertos en cámara! El comisionado sanciona al equipo con -$15 Presupuesto."
                 },
@@ -703,18 +712,24 @@
                         "title": "Hipnosis de Bateo Focalizado",
                         "desc": "Un psicólogo deportivo ofrece reprogramar la concentración mental de tus bateadores en el plato.",
                         "choice1": "Sesión de Trance Profundo (+14 EYE, +10 CON)",
+                        "choice2": "Sesión Guiada Estándar (+8 EYE, +5 CON)",
                         "suc": "¡Mente lúcida! Tu equipo obtiene +14 EYE y +10 CON.",
                         "fail": "¡Desorientación hipnótica! Los bateadores dudan en el conteo (-8 EYE)."
                 },
                 "graphene": {
                         "title": "Bates de Aleación Experimental",
                         "desc": "Un laboratorio tecnológico propone probar bates con fibra de carbono y titanio.",
+                        "choice1": "Comprar Modelo Homologado (+12 PWR)",
+                        "choice2": "Prototipo Hyper-Carbono (+28 PWR)",
                         "choice3": "Pasar de la tecnología",
+                        "suc": "¡Poder devastador! Tu equipo obtiene +28 PWR extra.",
                         "fail": "¡El bate se astilló en pedazos! Pierdes la inversión y restas -5 PWR."
                 },
                 "tabloid": {
                         "title": "Prensa Sensacionalista",
                         "desc": "Un importante periódico deportivo quiere la primicia del vestuario y ofrece dinero a cambio de una entrevista exclusiva.",
+                        "choice1": "Vender Exclusiva (+$45 Presupuesto)",
+                        "choice2": "Conferencia de Prensa Oficial (+$10 Presupuesto)",
                         "suc": "¡Entrevista vendida con éxito! Recibes +$35 de presupuesto.",
                         "fail": "¡El artículo desató polémica! La presión mediática causa estrés (-15 Stamina a todos).",
                         "choice3": "Cerrar las Puertas (No hablar)"
@@ -724,22 +739,43 @@
                         "desc": "Instalas una cámara de criogenización en el vestuario para rejuvenecer a tus bateadores.",
                         "choice1": "Criogenización Completa (100% Stamina a todos)",
                         "choice2": "Bañera de Hielo Rápida (+40 Stamina a todos)",
-                        "choice3": "Prescindir de la cámara"
+                        "choice3": "Prescindir de la cámara",
+                        "suc": "¡Sesión perfecta! Toda la plantilla recupera el 100% de Stamina.",
+                        "fail": "¡Choque térmico! La cámara falla y el frío extremo agota a la plantilla (-20 Stamina)."
                 },
                 "pinetar": {
                         "title": "Brea de Pino Japonesa",
                         "desc": "Un distribuidor importador ofrece resina de brea de pino especial que maximiza la firmeza del swing.",
+                        "choice1": "Brea de Grado Profesional (+8 CON)",
                         "choice2": "Fórmula Casera Ultra-Pegajosa (+18 CON)",
+                        "choice3": "Seguir igual",
+                        "suc": "¡Agarre extraordinario! Tu equipo gana +18 Contacto.",
                         "fail": "¡El umpire nota el residuo ilícito! Te sanciona restando -10 Defensa."
+                },
+                "bribe": {
+                        "title": "Cazatalento en Apuros",
+                        "desc": "Un cazatalentos te ofrece presupuesto del equipo rival a cambio de canjear un poco de enfoque deportivo.",
+                        "choice1": "Denunciarlo al Comisionado (+10 EYE, +5 DEF)",
+                        "choice2": "Trato Bajo la Mesa (+$60 Presupuesto, -5 EYE)",
+                        "choice3": "Ignorar la llamada",
+                        "suc": "¡Trato cerrado sin que nadie se entere! +$60 de presupuesto (-5 EYE por la mala conciencia).",
+                        "fail": "¡Te descubrieron! La liga te multa -$20 y el escándalo distrae a tu alineación (-10 EYE)."
                 },
                 "spikes": {
                         "title": "Clavos Ligeros Experimentales",
                         "desc": "Un fabricante local te ofrece calzado de clavos de aluminio ultraligeros para mejorar la velocidad en bases.",
+                        "choice1": "Equipar Calzado Profesional (+12 SPD)",
+                        "choice2": "Prototipo de Clavos Turbo (+25 SPD)",
+                        "suc": "¡Velocidad explosiva! Tu equipo gana +25 SPD.",
                         "fail": "¡Mala tracción! Los clavos resbalan y causan torceduras (-10 Stamina a todos)."
                 },
                 "gloves": {
                         "title": "Guantes de Piel Curtida",
-                        "desc": "Un coleccionista de recuerdos ofrece guantes clásicos pesados que aportan máxima protección defensiva al cuadro."
+                        "desc": "Un coleccionista de recuerdos ofrece guantes clásicos pesados que aportan máxima protección defensiva al cuadro.",
+                        "choice1": "Comprar Guantes Legendarios (+14 DEF)",
+                        "choice2": "Guante de Prototipo No Certificado (+28 DEF)",
+                        "suc": "¡Ajuste perfecto! El prototipo funciona de maravilla: +28 DEF.",
+                        "fail": "¡El cuero se raja en pleno partido! Pierdes agarre: -8 DEF."
                 },
                 "choice_reject": "Rechazar Oferta (No hacer nada)",
                 "choice_clean": "Jugar Limpio (Rechazar)",
@@ -753,20 +789,41 @@
         "gamble": {
                 "budget": {
                         "title": "Todo o Nada",
-                        "desc": "Apuestas TODO tu presupuesto actual a un tiro de dado. Si ganas, se duplica. Si pierdes, lo pierdes todo."
+                        "desc": "Apuestas TODO tu presupuesto actual a un tiro de dado. Si ganas, se duplica. Si pierdes, lo pierdes todo.",
+                        "result_win": "¡Duplicaste tu apuesta! Presupuesto: ${{staked}} → ${{newBudget}}.",
+                        "result_lose": "Perdiste los ${{staked}} apostados. Presupuesto: $0."
                 },
                 "trade": {
                         "title": "Intercambio a Ciegas",
-                        "desc": "Cambias a tu jugador titular más débil por una oferta a ciegas. Si ganas, el reemplazo es de rareza SUPERIOR garantizada. Si pierdes, el reemplazo es Common y esa posición queda bloqueada para draft por 2 nodos."
+                        "desc": "Cambias a tu jugador titular más débil por una oferta a ciegas. Si ganas, el reemplazo es de rareza SUPERIOR garantizada. Si pierdes, el reemplazo es Common y esa posición queda bloqueada para draft por 2 nodos.",
+                        "no_target": "No hay roster titular para intercambiar.",
+                        "result_win": "¡Buena oferta! {{oldName}} → {{newName}} ({{rarity}}) en {{pos}}.",
+                        "result_lose": "Mal negocio: {{newName}} (Common) reemplaza a {{oldName}} en {{pos}}. Posición bloqueada 2 nodos."
                 },
                 "synergy": {
                         "title": "Sinergia Prohibida",
-                        "desc": "Elige un jugador de tu roster: si ganas, cuenta x4 para la sinergia de su Era. Si pierdes, 2 jugadores al azar de tu roster pierden la elegibilidad de Era por el resto de la run."
+                        "desc": "Elige un jugador de tu roster: si ganas, cuenta x4 para la sinergia de su Era. Si pierdes, 2 jugadores al azar de tu roster pierden la elegibilidad de Era por el resto de la run.",
+                        "no_valid_target": "Elige un jugador con Era válida.",
+                        "result_win": "{{name}} ahora cuenta x4 para la sinergia de {{era}}.",
+                        "result_lose": "¡Falló! {{names}} pierden elegibilidad de Era por el resto de la run.",
+                        "result_lose_none": "Falló, pero no había otros jugadores elegibles para penalizar."
                 },
                 "scout": {
                         "title": "Cazatalentos Misterioso",
-                        "desc": "Un cazatalentos ofrece una carta Legendary para tu posición más débil. Si ganas, la firmas gratis. Si pierdes, tu mejor jugador se lesiona: -20 en todas sus stats por el resto de la run."
-                }
+                        "desc": "Un cazatalentos ofrece una carta Legendary para tu posición más débil. Si ganas, la firmas gratis. Si pierdes, tu mejor jugador se lesiona: -20 en todas sus stats por el resto de la run.",
+                        "no_target": "No hay roster titular disponible.",
+                        "result_win": "¡Fichaje legendario! {{newName}} reemplaza a {{oldName}} en {{pos}}.",
+                        "no_injury_target": "No había jugador titular para lesionar.",
+                        "result_lose": "{{name}} se lesiona: -20 en todas sus stats por el resto de la run."
+                },
+                "no_player_found": "No se encontró ningún jugador de {{pos}} disponible.",
+                "header": "🎲 APUESTA DE ALTO RIESGO",
+                "success_pct": "ÉXITO ({{pct}}%)",
+                "fail_pct": "FALLO ({{pct}}%)",
+                "choose_target": "Elige el jugador objetivo:",
+                "no_valid_era_players": "Sin jugadores con Era válida",
+                "bet_btn": "🪙 APOSTAR",
+                "reject_btn": "🚪 Rechazar"
         },
         "sign": {
                 "chemistry_active": "Firma activa Química de <strong>{{team}}</strong> (+4 stats)",
@@ -776,9 +833,23 @@
                 "empty": "VACÍO",
                 "autosort_tooltip": "Ordena lógicamente: Velocidad al 1ro, Mejor bate al 3ro, Poder al 4to, Contacto al 2do.",
                 "sec_pos_tooltip": "Posición Secundaria",
+                "mute_tooltip": "Silenciar",
+                "unmute_tooltip": "Activar sonido",
                 "trait_choose_desc": "Elige una Trait Pasiva que acompañará a tu equipo hasta el final de la run:",
                 "super_boss_desc": "¡Pero las 4 Máximas Leyendas del Béisbol saltan al campo para la Batalla Final!",
-                "hp_restored": "Tu equipo ha recuperado +30 HP y Escudo Máximo."
+                "hp_restored": "Tu equipo ha recuperado +30 HP y Escudo Máximo.",
+                "trait_pick_btn": "✨ Elegir",
+                "active_traits_header": "✨ TRAITS ACTIVAS",
+                "super_boss_defeated_first_group": "¡Derrotaste al primer grupo del Playoffs!",
+                "super_boss_final_phase_html": "🔥 <strong>Fase Final Especial (4 Pitchers Leyenda)</strong>",
+                "super_boss_fight_btn": "¡ENFRENTAR AL SUPER BOSS FINAL! ⚾"
+        },
+        "chest": {
+                "empty_title": "COFRE VACÍO",
+                "empty_desc": "Ya tienes todos los traits disponibles. El cofre te deja +$15 de consuelo.",
+                "claim_btn": "Reclamar",
+                "found_title": "¡COFRE ENCONTRADO!",
+                "claim_trait_btn": "✨ Reclamar Trait"
         },
         "trait": {
                 "eagle": {
@@ -933,6 +1004,7 @@
         },
         "combat_info": {
                 "title": "⚙️ DATOS DE DAÑO & VALORES",
+                "tooltip": "Sistema de Daño y Reglas",
                 "out": "<strong style=\"color: #9ca3af;\">🤚 OUT (Groundout/Flyout):</strong> Resta <span style=\"color:#ef4444;font-weight:bold;\">-12 HP</span> al Escudo (al romperlo, resta al HP del equipo).",
                 "so": "<strong style=\"color: #ef4444;\">💨 PONCHE (SO):</strong> Resta <span style=\"color:#ef4444;font-weight:bold;\">-18 HP</span> directos al HP (ignora escudo).<div style=\"font-size: 8.5px; color: #a855f7; margin-top: 2px;\">🔥 Racha: 1º (-18) • 2º (-24) • 3º+ (-30 HP)</div>",
                 "pitcher_title": "<strong style=\"color: #10b981;\">⚾ DAÑO AL LANZADOR RIVAL:</strong>",
@@ -1027,6 +1099,7 @@
         "map": {
                 "title": "<i class=\"fa-solid fa-map\"></i> Championship Map",
                 "desc": "Choose your path. Win matches to earn money, recruit players, and train your squad.",
+                "win_pct": "win %",
                 "stage_playoffs": "Playoffs — Final Stage - Difficulty: Legend",
                 "stage_pennant": "Pennant Chase — Late Season - Difficulty: Expert",
                 "stage_allstar": "All-Star Break — Mid Season - Difficulty: Hard",
@@ -1042,7 +1115,7 @@
                 "node_decision": "DECISION",
                 "node_boss": "BOSS",
                 "boss_label": {
-                        "3": "OPENING DAY",
+                        "3": "ACE SHOWDOWN",
                         "7": "ALL-STAR GAME",
                         "11": "LEAGUE CHAMPION",
                         "15": "WORLD SERIES"
@@ -1054,6 +1127,7 @@
         },
         "ratings_guide": {
                 "title": "📊 RATINGS GUIDE",
+                "tooltip": "What does each rating and badge mean?",
                 "con": "<strong style=\"color:#a7f3d0;\">CON — Contact:</strong> Determines the probability of making contact. High CON players have higher chances of singles and hits overall.",
                 "pwr": "<strong style=\"color:#f59e0b;\">PWR — Power:</strong> Probability of extra-base hits (doubles, triples, home runs). Also increases damage to opponent pitcher on deep hits.",
                 "eye": "<strong style=\"color:#3b82f6;\">EYE — Vision/Eye:</strong> Probability of getting walks (BB). Key for advancing runners and wearing down the rival pitcher.",
@@ -1086,7 +1160,8 @@
                 "challenge162_continue_btn": "⚾ CONTINUE SEASON"
         },
         "common": {
-                "back_menu": "← MENU"
+                "back_menu": "← MENU",
+                "loading": "Loading..."
         },
         "career": {
                 "difficulty_title": "🏆 CHOOSE DIFFICULTY",
@@ -1254,6 +1329,9 @@
                 "select_btn": "✔ SELECT",
                 "inspect_card": "CARD",
                 "sign_btn": "✍️ Sign (${{cost}})",
+                "insufficient_funds": "<i class=\"fa-solid fa-lock\"></i> Not enough $ (${{cost}})",
+                "legend_no_budget": "You don't have enough budget to sign this legend (Costs ${{cost}}, you have ${{budget}}).",
+                "signed_cost_suffix": " (-${{cost}} Budget)",
                 "auto_complete_btn": "🎲 Surprise me! (Auto-Complete)",
                 "decline_btn": "🚫 Decline Sign / Continue",
                 "decline_desc": "Don't want to sign any legend or prefer saving your money? You can decline the sign and advance on the map.",
@@ -1406,11 +1484,7 @@
                 "ev_pinetar_title": "Japanese Pine Tar",
                 "ev_pinetar_desc": "You acquire a tub of special pine tar that improves bat grip, sharpening contact.",
                 "ev_pinetar_choice1": "Buy pine tar (+8 global Contact for the whole team)",
-                "ev_pinetar_choice2": "Stay as is",
-                "ev_bribe_title": "Scout in Distress",
-                "ev_bribe_desc": "A scout offers budget money from the opposing team in exchange for sacrificing some focus.",
-                "ev_bribe_choice1": "Accept money (Gain +$45 budget, but lose -5 global Vision/Eye)",
-                "ev_bribe_choice2": "Report to commissioner (Gain +8 global Vision/Eye for your team)"
+                "ev_pinetar_choice2": "Stay as is"
         },
         "train": {
                 "title": "<i class=\"fa-solid fa-dumbbell\"></i> Batting Cage / Bullpen",
@@ -1439,7 +1513,9 @@
         },
         "event": {
                 "title": "<i class=\"fa-solid fa-clipboard-question\"></i> Manager's Office",
-                "desc": "Make a critical decision for the club. Each choice affects budget, health, or team stats."
+                "desc": "Make a critical decision for the club. Each choice affects budget, health, or team stats.",
+                "placeholder_title": "Event Title",
+                "placeholder_desc": "Event description..."
         },
         "gameover": {
                 "title": "Run Over!",
@@ -1470,7 +1546,9 @@
         "summary": {
                 "title": "<i class=\"fa-solid fa-baseball\"></i> COMPLETE RUN STATS",
                 "tab_batters": "My Lineup (Batting)",
-                "tab_pitchers": "Opponent Pitchers"
+                "tab_pitchers": "Opponent Pitchers",
+                "player_col": "Player",
+                "pitcher_col": "Pitcher"
         },
         "victory": {
                 "title": "ABSOLUTE BASEROGUE CHAMPION!",
@@ -1581,7 +1659,9 @@
                 "win_msg": "Victory! You defeated the rotation of {{name}} in 3 innings. +${{earnings}}!",
                 "defeat_msg": "Defeat. 3 innings ended before defeating the full rotation of {{name}}.",
                 "champion_eternal": "🏆 CHAMPION OF ETERNITY! You conquered the World Series and won the Playoffs.",
-                "lineup_full": "Lineup occupied. Choose who to replace."
+                "lineup_full": "Lineup occupied. Choose who to replace.",
+                "player_placed_native": "{{name}} placed directly at {{pos}}!",
+                "player_placed_dh": "{{name}} placed as DH!"
         },
         "training": {
                 "con": {
@@ -1620,6 +1700,7 @@
                         "title": "Contraband Bats",
                         "desc": "A mysterious carpenter offers corked bats. Boosts impact but alters swing balance.",
                         "choice1": "Standard Modification (+10 PWR, -2 CON)",
+                        "choice2": "Illegal Mass Corking (+25 PWR, -5 CON)",
                         "suc": "Bats modified successfully! Your lineup gets +25 PWR and -5 CON.",
                         "fail": "THE UMPIRE FOUND THE BATS! The league confiscates them and fines you -$10."
                 },
@@ -1627,7 +1708,7 @@
                         "title": "The Sign Spy",
                         "desc": "A retired catcher claims to know the secret pitching sequences of the rival pitchers.",
                         "choice1": "Buy VIP Report (+15 EYE, +8 CON)",
-                        "choice2": "Street Sign Stealing (+20 EYE)",
+                        "choice2": "Street Sign Stealing (+30 EYE, +10 CON)",
                         "suc": "Signs intercepted! Your team gets +20 EYE (Discipline).",
                         "fail": "Caught on camera! The commissioner fines the team -$15 Budget."
                 },
@@ -1643,18 +1724,24 @@
                         "title": "Focused Batting Hypnosis",
                         "desc": "A sports psychologist offers to reprogram the mental focus of your batters at the plate.",
                         "choice1": "Deep Trance Session (+14 EYE, +10 CON)",
+                        "choice2": "Standard Guided Session (+8 EYE, +5 CON)",
                         "suc": "Lucid mind! Your team gets +14 EYE and +10 CON.",
                         "fail": "Hypnotic disorientation! Batters hesitate at the count (-8 EYE)."
                 },
                 "graphene": {
                         "title": "Experimental Alloy Bats",
                         "desc": "A tech lab proposes testing carbon fiber and titanium bats for the next map stretch.",
+                        "choice1": "Buy Certified Model (+12 PWR)",
+                        "choice2": "Hyper-Carbon Prototype (+28 PWR)",
                         "choice3": "Pass on the technology",
+                        "suc": "Devastating power! Your team gets +28 extra PWR.",
                         "fail": "The bat splintered to pieces! You lose the investment and -5 PWR."
                 },
                 "tabloid": {
                         "title": "Sensationalist Press",
                         "desc": "A major sports newspaper wants a locker room exclusive and offers money for an interview.",
+                        "choice1": "Sell Exclusive (+$45 Budget)",
+                        "choice2": "Official Press Conference (+$10 Budget)",
                         "suc": "Interview sold successfully! You receive +$35 budget.",
                         "fail": "The article caused controversy! Media pressure causes stress (-15 Stamina to all).",
                         "choice3": "Close the Doors (No talking)"
@@ -1664,22 +1751,43 @@
                         "desc": "You install an advanced cryogenic recovery chamber in the locker room.",
                         "choice1": "Full Cryotherapy (100% Stamina to all)",
                         "choice2": "Quick Ice Bath (+40 Stamina to all)",
-                        "choice3": "Forego the chamber"
+                        "choice3": "Forego the chamber",
+                        "suc": "Perfect session! The whole roster recovers 100% Stamina.",
+                        "fail": "Thermal shock! The chamber malfunctions and the extreme cold exhausts the roster (-20 Stamina)."
                 },
                 "pinetar": {
                         "title": "Japanese Pine Tar",
                         "desc": "An importer offers special pine tar resin that maximizes swing firmness.",
+                        "choice1": "Professional Grade Pine Tar (+8 CON)",
                         "choice2": "Ultra-Sticky Home Formula (+18 CON)",
+                        "choice3": "Stay as is",
+                        "suc": "Extraordinary grip! Your team gains +18 Contact.",
                         "fail": "The umpire noticed the illicit residue! He penalizes -10 Defense."
+                },
+                "bribe": {
+                        "title": "Scout in a Bind",
+                        "desc": "A scout offers you budget from the rival team in exchange for trading away a bit of competitive focus.",
+                        "choice1": "Report to the Commissioner (+10 EYE, +5 DEF)",
+                        "choice2": "Under-the-Table Deal (+$60 Budget, -5 EYE)",
+                        "choice3": "Ignore the call",
+                        "suc": "Deal closed without anyone noticing! +$60 budget (-5 EYE from the guilty conscience).",
+                        "fail": "You got caught! The league fines you -$20 and the scandal distracts your lineup (-10 EYE)."
                 },
                 "spikes": {
                         "title": "Experimental Light Cleats",
                         "desc": "A local manufacturer offers ultra-light aluminum cleats to improve base running speed.",
+                        "choice1": "Equip Professional Footwear (+12 SPD)",
+                        "choice2": "Turbo Cleats Prototype (+25 SPD)",
+                        "suc": "Explosive speed! Your team gains +25 SPD.",
                         "fail": "Bad traction! The cleats slip and cause sprains (-10 Stamina to all)."
                 },
                 "gloves": {
                         "title": "Tanned Leather Gloves",
-                        "desc": "A memorabilia collector offers classic heavy gloves that provide maximum defensive protection."
+                        "desc": "A memorabilia collector offers classic heavy gloves that provide maximum defensive protection.",
+                        "choice1": "Buy Legendary Gloves (+14 DEF)",
+                        "choice2": "Uncertified Prototype Glove (+28 DEF)",
+                        "suc": "Perfect fit! The prototype works wonders: +28 DEF.",
+                        "fail": "The leather tears mid-game! You lose grip: -8 DEF."
                 },
                 "choice_reject": "Reject Offer (Do nothing)",
                 "choice_clean": "Play Clean (Decline)",
@@ -1693,20 +1801,41 @@
         "gamble": {
                 "budget": {
                         "title": "All or Nothing",
-                        "desc": "You bet your ENTIRE current budget on a dice roll. If you win, it doubles. If you lose, you lose it all."
+                        "desc": "You bet your ENTIRE current budget on a dice roll. If you win, it doubles. If you lose, you lose it all.",
+                        "result_win": "You doubled your bet! Budget: ${{staked}} → ${{newBudget}}.",
+                        "result_lose": "You lost the ${{staked}} you bet. Budget: $0."
                 },
                 "trade": {
                         "title": "Blind Trade",
-                        "desc": "You swap your weakest starter for a blind offer. If you win, the replacement is a guaranteed HIGHER rarity. If you lose, the replacement is Common and that position is locked from drafting for 2 nodes."
+                        "desc": "You swap your weakest starter for a blind offer. If you win, the replacement is a guaranteed HIGHER rarity. If you lose, the replacement is Common and that position is locked from drafting for 2 nodes.",
+                        "no_target": "No starting roster player available to trade.",
+                        "result_win": "Good offer! {{oldName}} → {{newName}} ({{rarity}}) at {{pos}}.",
+                        "result_lose": "Bad deal: {{newName}} (Common) replaces {{oldName}} at {{pos}}. Position locked for 2 nodes."
                 },
                 "synergy": {
                         "title": "Forbidden Synergy",
-                        "desc": "Pick a player from your roster: if you win, they count x4 toward their Era's synergy. If you lose, 2 random players on your roster lose Era eligibility for the rest of the run."
+                        "desc": "Pick a player from your roster: if you win, they count x4 toward their Era's synergy. If you lose, 2 random players on your roster lose Era eligibility for the rest of the run.",
+                        "no_valid_target": "Choose a player with a valid Era.",
+                        "result_win": "{{name}} now counts x4 toward the {{era}} synergy.",
+                        "result_lose": "Failed! {{names}} lose Era eligibility for the rest of the run.",
+                        "result_lose_none": "Failed, but there were no other eligible players to penalize."
                 },
                 "scout": {
                         "title": "Mysterious Scout",
-                        "desc": "A scout offers a Legendary card for your weakest position. If you win, you sign them for free. If you lose, your best player gets injured: -20 to all stats for the rest of the run."
-                }
+                        "desc": "A scout offers a Legendary card for your weakest position. If you win, you sign them for free. If you lose, your best player gets injured: -20 to all stats for the rest of the run.",
+                        "no_target": "No starting roster player available.",
+                        "result_win": "Legendary signing! {{newName}} replaces {{oldName}} at {{pos}}.",
+                        "no_injury_target": "There was no starting player to injure.",
+                        "result_lose": "{{name}} gets injured: -20 to all stats for the rest of the run."
+                },
+                "no_player_found": "No {{pos}} player found available.",
+                "header": "🎲 HIGH-STAKES GAMBLE",
+                "success_pct": "SUCCESS ({{pct}}%)",
+                "fail_pct": "FAILURE ({{pct}}%)",
+                "choose_target": "Choose the target player:",
+                "no_valid_era_players": "No players with a valid Era",
+                "bet_btn": "🪙 BET",
+                "reject_btn": "🚪 Decline"
         },
         "sign": {
                 "chemistry_active": "Active Chemistry for <strong>{{team}}</strong> (+4 stats)",
@@ -1716,9 +1845,23 @@
                 "empty": "EMPTY",
                 "autosort_tooltip": "Logically sorted: Speed 1st, Best hitter 3rd, Power 4th, Contact 2nd.",
                 "sec_pos_tooltip": "Secondary Position",
+                "mute_tooltip": "Mute",
+                "unmute_tooltip": "Unmute",
                 "trait_choose_desc": "Choose a Passive Trait that will accompany your team until the end of the run:",
                 "super_boss_desc": "But the 4 Greatest Baseball Legends jump onto the field for the Final Battle!",
-                "hp_restored": "Your team has recovered +30 HP and Max Shield."
+                "hp_restored": "Your team has recovered +30 HP and Max Shield.",
+                "trait_pick_btn": "✨ Pick",
+                "active_traits_header": "✨ ACTIVE TRAITS",
+                "super_boss_defeated_first_group": "You defeated the first Playoffs group!",
+                "super_boss_final_phase_html": "🔥 <strong>Special Final Phase (4 Legend Pitchers)</strong>",
+                "super_boss_fight_btn": "FACE THE FINAL SUPER BOSS! ⚾"
+        },
+        "chest": {
+                "empty_title": "EMPTY CHEST",
+                "empty_desc": "You already have every available trait. The chest leaves you +$15 as a consolation.",
+                "claim_btn": "Claim",
+                "found_title": "CHEST FOUND!",
+                "claim_trait_btn": "✨ Claim Trait"
         },
         "trait": {
                 "eagle": {
@@ -1873,6 +2016,7 @@
         },
         "combat_info": {
                 "title": "⚙️ DAMAGE DATA & VALUES",
+                "tooltip": "Damage & Rules System",
                 "out": "<strong style=\"color: #9ca3af;\">🤚 OUT (Groundout/Flyout):</strong> Subtracts <span style=\"color:#ef4444;font-weight:bold;\">-12 HP</span> from Shield (upon breaking, subtracts from team HP).",
                 "so": "<strong style=\"color: #ef4444;\">💨 STRIKEOUT (SO):</strong> Subtracts <span style=\"color:#ef4444;font-weight:bold;\">-18 HP</span> directly from HP (ignores shield).<div style=\"font-size: 8.5px; color: #a855f7; margin-top: 2px;\">🔥 Streak: 1st (-18) • 2nd (-24) • 3rd+ (-30 HP)</div>",
                 "pitcher_title": "<strong style=\"color: #10b981;\">⚾ RIVAL PITCHER DAMAGE:</strong>",
@@ -1978,11 +2122,28 @@
       el.innerHTML = t(key, params);
     });
 
+    // Update all static HTML elements with data-i18n-title (tooltip/title attribute)
+    const titleElements = document.querySelectorAll('[data-i18n-title]');
+    titleElements.forEach(el => {
+      const key = el.getAttribute('data-i18n-title');
+      const paramsAttr = el.getAttribute('data-i18n-params');
+      let params = {};
+      if (paramsAttr) {
+        try {
+          params = JSON.parse(paramsAttr);
+        } catch (e) {}
+      }
+      el.title = t(key, params);
+    });
+
     // Re-render components that depend on current language if active
     if (window.Game && window.UI) {
       if (typeof window.UI.renderActiveRoster === 'function') window.UI.renderActiveRoster();
       if (typeof window.UI.renderSynergiesAndItems === 'function') window.UI.renderSynergiesAndItems();
       if (typeof window.UI.updateHUD === 'function') window.UI.updateHUD();
+    }
+    if (window.AudioManager && typeof window.AudioManager.updateMuteButton === 'function') {
+      window.AudioManager.updateMuteButton();
     }
     if (window.Challenge162 && typeof window.Challenge162.updateModeSelectCard === 'function') {
       window.Challenge162.updateModeSelectCard();

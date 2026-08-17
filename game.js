@@ -23,7 +23,7 @@
         {
           icon: "🔥",
           risk: "high",
-          text: "Corcho Masivo Ilegal (+25 PWR, -5 CON)",
+          get text() { return typeof window.t==='function'?window.t('ev.cork.choice2'):'Corcho Masivo Ilegal (+25 PWR, -5 CON)'; },
           cost: 5,
           successChance: 0.60,
           get successMsg() { return typeof window.t==='function'?window.t('ev.cork.suc'):'¡Bates modificados con éxito! Tu alineación obtiene +25 PWR y -5 CON.'; },
@@ -67,7 +67,7 @@
         {
           icon: "⚡",
           risk: "moderate",
-          text: "Robo de Señas Callejero (+30 EYE, +10 CON)",
+          get text() { return typeof window.t==='function'?window.t('ev.signs.choice2'):'Robo de Señas Callejero (+30 EYE, +10 CON)'; },
           cost: 8,
           successChance: 0.65,
           get successMsg() { return typeof window.t==='function'?window.t('ev.signs.suc'):'¡Señas interceptadas! Tu equipo obtiene +30 EYE y +10 CON.'; },
@@ -148,7 +148,7 @@
         {
           icon: "🧘",
           risk: "safe",
-          text: "Sesión Guiada Estándar (+8 EYE, +5 CON)",
+          get text() { return typeof window.t==='function'?window.t('ev.hyp.choice2'):'Sesión Guiada Estándar (+8 EYE, +5 CON)'; },
           cost: 18,
           successChance: 1.0,
           action: (G) => {
@@ -192,7 +192,7 @@
         {
           icon: "💎",
           risk: "safe",
-          text: "Comprar Modelo Homologado (+12 PWR)",
+          get text() { return typeof window.t==='function'?window.t('ev.graphene.choice1'):'Comprar Modelo Homologado (+12 PWR)'; },
           cost: 20,
           successChance: 1.0,
           action: (G) => {
@@ -202,10 +202,10 @@
         {
           icon: "💥",
           risk: "high",
-          text: "Prototipo Hyper-Carbono (+28 PWR)",
+          get text() { return typeof window.t==='function'?window.t('ev.graphene.choice2'):'Prototipo Hyper-Carbono (+28 PWR)'; },
           cost: 6,
           successChance: 0.55,
-          successMsg: "¡Poder devastador! Tu equipo obtiene +28 PWR extra.",
+          get successMsg() { return typeof window.t==='function'?window.t('ev.graphene.suc'):'¡Poder devastador! Tu equipo obtiene +28 PWR extra.'; },
           action: (G) => {
             G.activeItemBonuses.teamPwr += 28;
           },
@@ -234,7 +234,7 @@
         {
           icon: "💰",
           risk: "moderate",
-          text: "Vender Exclusiva (+$45 Presupuesto)",
+          get text() { return typeof window.t==='function'?window.t('ev.tabloid.choice1'):'Vender Exclusiva (+$45 Presupuesto)'; },
           cost: 0,
           successChance: 0.65,
           get successMsg() { return typeof window.t==='function'?window.t('ev.tabloid.suc'):'¡Entrevista vendida con éxito! Recibes +$45 de presupuesto.'; },
@@ -250,7 +250,7 @@
         {
           icon: "🤝",
           risk: "safe",
-          text: "Conferencia de Prensa Oficial (+$10 Presupuesto)",
+          get text() { return typeof window.t==='function'?window.t('ev.tabloid.choice2'):'Conferencia de Prensa Oficial (+$10 Presupuesto)'; },
           cost: -10,
           successChance: 1.0,
           action: (G) => {}
@@ -289,13 +289,13 @@
           get text() { return typeof window.t==='function'?window.t('ev.cryo.choice1'):'Criogenización Experimental (100% Stamina a todos)'; },
           cost: 8,
           successChance: 0.55,
-          successMsg: "¡Sesión perfecta! Toda la plantilla recupera el 100% de Stamina.",
+          get successMsg() { return typeof window.t==='function'?window.t('ev.cryo.suc'):'¡Sesión perfecta! Toda la plantilla recupera el 100% de Stamina.'; },
           action: (G) => {
             Object.keys(G.roster).forEach(pos => {
               if (G.roster[pos]) G.roster[pos].stamina = 100;
             });
           },
-          failMsg: "¡Choque térmico! La cámara falla y el frío extremo agota a la plantilla (-20 Stamina).",
+          get failMsg() { return typeof window.t==='function'?window.t('ev.cryo.fail'):'¡Choque térmico! La cámara falla y el frío extremo agota a la plantilla (-20 Stamina).'; },
           failPreview: "-20 Stamina a todos",
           failAction: (G) => {
             Object.keys(G.roster).forEach(pos => {
@@ -322,7 +322,7 @@
         {
           icon: "✨",
           risk: "safe",
-          text: "Brea de Grado Profesional (+8 CON)",
+          get text() { return typeof window.t==='function'?window.t('ev.pinetar.choice1'):'Brea de Grado Profesional (+8 CON)'; },
           cost: 12,
           successChance: 1.0,
           action: (G) => {
@@ -335,7 +335,7 @@
           get text() { return typeof window.t==='function'?window.t('ev.pinetar.choice2'):'Fórmula Casera Ultra-Pegajosa (+18 CON)'; },
           cost: 5,
           successChance: 0.55,
-          successMsg: "¡Agarre extraordinario! Tu equipo gana +18 Contacto.",
+          get successMsg() { return typeof window.t==='function'?window.t('ev.pinetar.suc'):'¡Agarre extraordinario! Tu equipo gana +18 Contacto.'; },
           action: (G) => {
             G.activeItemBonuses.teamCon += 18;
           },
@@ -348,7 +348,7 @@
         {
           icon: "🚪",
           risk: "safe",
-          text: "Seguir igual",
+          get text() { return typeof window.t==='function'?window.t('ev.pinetar.choice3'):'Seguir igual'; },
           cost: 0,
           successChance: 1.0,
           action: (G) => {}
@@ -358,13 +358,13 @@
     {
       id: "ev_bribe",
       icon: "💼",
-      title: "Cazatalento en Apuros",
-      desc: "Un cazatalentos te ofrece presupuesto del equipo rival a cambio de canjear un poco de enfoque deportivo.",
+      get title() { return typeof window.t==='function'?window.t('ev.bribe.title'):'Cazatalento en Apuros'; },
+      get desc() { return typeof window.t==='function'?window.t('ev.bribe.desc'):'Un cazatalentos te ofrece presupuesto del equipo rival a cambio de canjear un poco de enfoque deportivo.'; },
       choices: [
         {
           icon: "⚖️",
           risk: "safe",
-          text: "Denunciarlo al Comisionado (+10 EYE, +5 DEF)",
+          get text() { return typeof window.t==='function'?window.t('ev.bribe.choice1'):'Denunciarlo al Comisionado (+10 EYE, +5 DEF)'; },
           cost: 10,
           successChance: 1.0,
           action: (G) => {
@@ -375,15 +375,15 @@
         {
           icon: "💵",
           risk: "high",
-          text: "Trato Bajo la Mesa (+$60 Presupuesto, -5 EYE)",
+          get text() { return typeof window.t==='function'?window.t('ev.bribe.choice2'):'Trato Bajo la Mesa (+$60 Presupuesto, -5 EYE)'; },
           cost: 0,
           successChance: 0.60,
-          successMsg: "¡Trato cerrado sin que nadie se entere! +$60 de presupuesto (-5 EYE por la mala conciencia).",
+          get successMsg() { return typeof window.t==='function'?window.t('ev.bribe.suc'):'¡Trato cerrado sin que nadie se entere! +$60 de presupuesto (-5 EYE por la mala conciencia).'; },
           action: (G) => {
             G.budget += 60;
             G.activeItemBonuses.teamEye -= 5;
           },
-          failMsg: "¡Te descubrieron! La liga te multa -$20 y el escándalo distrae a tu alineación (-10 EYE).",
+          get failMsg() { return typeof window.t==='function'?window.t('ev.bribe.fail'):'¡Te descubrieron! La liga te multa -$20 y el escándalo distrae a tu alineación (-10 EYE).'; },
           failPreview: "-$20 Presupuesto, -10 EYE",
           failAction: (G) => {
             G.budget = Math.max(0, G.budget - 20);
@@ -393,7 +393,7 @@
         {
           icon: "🚪",
           risk: "safe",
-          text: "Ignorar la llamada",
+          get text() { return typeof window.t==='function'?window.t('ev.bribe.choice3'):'Ignorar la llamada'; },
           cost: 0,
           successChance: 1.0,
           action: (G) => {}
@@ -409,7 +409,7 @@
         {
           icon: "⚡",
           risk: "safe",
-          text: "Equipar Calzado Profesional (+12 SPD)",
+          get text() { return typeof window.t==='function'?window.t('ev.spikes.choice1'):'Equipar Calzado Profesional (+12 SPD)'; },
           cost: 15,
           successChance: 1.0,
           action: (G) => {
@@ -419,10 +419,10 @@
         {
           icon: "🚀",
           risk: "moderate",
-          text: "Prototipo de Clavos Turbo (+25 SPD)",
+          get text() { return typeof window.t==='function'?window.t('ev.spikes.choice2'):'Prototipo de Clavos Turbo (+25 SPD)'; },
           cost: 8,
           successChance: 0.65,
-          successMsg: "¡Velocidad explosiva! Tu equipo gana +25 SPD.",
+          get successMsg() { return typeof window.t==='function'?window.t('ev.spikes.suc'):'¡Velocidad explosiva! Tu equipo gana +25 SPD.'; },
           action: (G) => {
             G.activeItemBonuses.teamSpd += 25;
           },
@@ -453,7 +453,7 @@
         {
           icon: "🛡️",
           risk: "safe",
-          text: "Comprar Guantes Legendarios (+14 DEF)",
+          get text() { return typeof window.t==='function'?window.t('ev.gloves.choice1'):'Comprar Guantes Legendarios (+14 DEF)'; },
           cost: 14,
           successChance: 1.0,
           action: (G) => {
@@ -463,14 +463,14 @@
         {
           icon: "🥊",
           risk: "high",
-          text: "Guante de Prototipo No Certificado (+28 DEF)",
+          get text() { return typeof window.t==='function'?window.t('ev.gloves.choice2'):'Guante de Prototipo No Certificado (+28 DEF)'; },
           cost: 6,
           successChance: 0.55,
-          successMsg: "¡Ajuste perfecto! El prototipo funciona de maravilla: +28 DEF.",
+          get successMsg() { return typeof window.t==='function'?window.t('ev.gloves.suc'):'¡Ajuste perfecto! El prototipo funciona de maravilla: +28 DEF.'; },
           action: (G) => {
             G.activeItemBonuses.teamDef += 28;
           },
-          failMsg: "¡El cuero se raja en pleno partido! Pierdes agarre: -8 DEF.",
+          get failMsg() { return typeof window.t==='function'?window.t('ev.gloves.fail'):'¡El cuero se raja en pleno partido! Pierdes agarre: -8 DEF.'; },
           failPreview: "-8 DEF",
           failAction: (G) => {
             G.activeItemBonuses.teamDef -= 8;
@@ -497,7 +497,7 @@
     const kavd = (p.k_avd !== undefined ? p.k_avd : (p.k_avoid !== undefined ? p.k_avoid : (p.k_avoid_val !== undefined ? p.k_avoid_val : con))) + ((p.upgrades && p.upgrades.k_avd) || 0);
     const spd = (p.spd || 0) + ((p.upgrades && p.upgrades.spd) || 0);
     const def = (p.def || 0) + ((p.upgrades && p.upgrades.def) || 0);
-    return con * 0.25 + pwr * 0.25 + eye * 0.15 + kavd * 0.15 + def * 0.10 + spd * 0.10;
+    return con * 0.30 + pwr * 0.30 + eye * 0.10 + kavd * 0.10 + def * 0.10 + spd * 0.10;
   };
   const _gambleRarityOrder = ['Common', 'Uncommon', 'Rare', 'Epic', 'Legendary'];
 
@@ -534,8 +534,8 @@
         return {
           success,
           resultText: success
-            ? `¡Duplicaste tu apuesta! Presupuesto: $${staked} → $${G.budget}.`
-            : `Perdiste los $${staked} apostados. Presupuesto: $0.`
+            ? (typeof window.t==='function'?window.t('gamble.budget.result_win', { staked, newBudget: G.budget }):`¡Duplicaste tu apuesta! Presupuesto: $${staked} → $${G.budget}.`)
+            : (typeof window.t==='function'?window.t('gamble.budget.result_lose', { staked }):`Perdiste los $${staked} apostados. Presupuesto: $0.`)
         };
       }
     },
@@ -553,7 +553,7 @@
           const ovr = p ? _gambleOvr(p) : -Infinity;
           if (ovr < worstOvr) { worstOvr = ovr; worstPos = pos; }
         });
-        if (!worstPos) return { success: false, resultText: 'No hay roster titular para intercambiar.' };
+        if (!worstPos) return { success: false, resultText: (typeof window.t==='function'?window.t('gamble.trade.no_target'):'No hay roster titular para intercambiar.') };
 
         const current = G.roster[worstPos];
         const currentRarityIdx = current ? _gambleRarityOrder.indexOf(current.rarity || 'Common') : -1;
@@ -562,7 +562,7 @@
         const pick = success
           ? _pickGambleCandidate(pool, worstPos, _gambleRarityOrder.slice(Math.max(currentRarityIdx + 1, 0)))
           : _pickGambleCandidate(pool, worstPos, ['Common']);
-        if (!pick) return { success, resultText: `No se encontró ningún jugador de ${worstPos} disponible.` };
+        if (!pick) return { success, resultText: (typeof window.t==='function'?window.t('gamble.no_player_found', { pos: worstPos }):`No se encontró ningún jugador de ${worstPos} disponible.`) };
 
         const newInstance = {
           ...pick,
@@ -580,8 +580,8 @@
         return {
           success,
           resultText: success
-            ? `¡Buena oferta! ${current ? current.name : '(vacío)'} → ${newInstance.name} (${newInstance.rarity}) en ${worstPos}.`
-            : `Mal negocio: ${newInstance.name} (Common) reemplaza a ${current ? current.name : '(vacío)'} en ${worstPos}. Posición bloqueada 2 nodos.`
+            ? (typeof window.t==='function'?window.t('gamble.trade.result_win', { oldName: current ? current.name : '(vacío)', newName: newInstance.name, rarity: newInstance.rarity, pos: worstPos }):`¡Buena oferta! ${current ? current.name : '(vacío)'} → ${newInstance.name} (${newInstance.rarity}) en ${worstPos}.`)
+            : (typeof window.t==='function'?window.t('gamble.trade.result_lose', { newName: newInstance.name, oldName: current ? current.name : '(vacío)', pos: worstPos }):`Mal negocio: ${newInstance.name} (Common) reemplaza a ${current ? current.name : '(vacío)'} en ${worstPos}. Posición bloqueada 2 nodos.`)
         };
       }
     },
@@ -594,11 +594,11 @@
       chance: 0.50,
       resolve(G, targetPos) {
         const target = G.roster[targetPos];
-        if (!target || !target.era) return { success: false, resultText: 'Elige un jugador con Era válida.' };
+        if (!target || !target.era) return { success: false, resultText: (typeof window.t==='function'?window.t('gamble.synergy.no_valid_target'):'Elige un jugador con Era válida.') };
         const success = Math.random() <= this.chance;
         if (success) {
           target.synergyWeight = 4;
-          return { success, resultText: `${target.name} ahora cuenta x4 para la sinergia de ${target.era}.` };
+          return { success, resultText: (typeof window.t==='function'?window.t('gamble.synergy.result_win', { name: target.name, era: target.era }):`${target.name} ahora cuenta x4 para la sinergia de ${target.era}.`) };
         }
         const candidates = Object.keys(G.roster).filter(pos => pos !== targetPos && G.roster[pos] && G.roster[pos].era && !G.roster[pos].synergyBanned);
         const shuffled = candidates.sort(() => Math.random() - 0.5).slice(0, 2);
@@ -606,8 +606,8 @@
         return {
           success,
           resultText: names.length
-            ? `¡Falló! ${names.join(' y ')} pierden elegibilidad de Era por el resto de la run.`
-            : 'Falló, pero no había otros jugadores elegibles para penalizar.'
+            ? (typeof window.t==='function'?window.t('gamble.synergy.result_lose', { names: names.join(' y ') }):`¡Falló! ${names.join(' y ')} pierden elegibilidad de Era por el resto de la run.`)
+            : (typeof window.t==='function'?window.t('gamble.synergy.result_lose_none'):'Falló, pero no había otros jugadores elegibles para penalizar.')
         };
       }
     },
@@ -628,9 +628,9 @@
             const ovr = p ? _gambleOvr(p) : -Infinity;
             if (ovr < worstOvr) { worstOvr = ovr; worstPos = pos; }
           });
-          if (!worstPos) return { success, resultText: 'No hay roster titular disponible.' };
+          if (!worstPos) return { success, resultText: (typeof window.t==='function'?window.t('gamble.scout.no_target'):'No hay roster titular disponible.') };
           const pick = _pickGambleCandidate(pool, worstPos, ['Legendary']);
-          if (!pick) return { success, resultText: `No se encontró ningún jugador de ${worstPos} disponible.` };
+          if (!pick) return { success, resultText: (typeof window.t==='function'?window.t('gamble.no_player_found', { pos: worstPos }):`No se encontró ningún jugador de ${worstPos} disponible.`) };
           const newInstance = {
             ...pick,
             id: `player_${pick.name.replace(/\s+/g, '')}_${Date.now()}_scout`,
@@ -639,7 +639,7 @@
           };
           const oldName = G.roster[worstPos] ? G.roster[worstPos].name : '(vacío)';
           G.roster[worstPos] = newInstance;
-          return { success, resultText: `¡Fichaje legendario! ${newInstance.name} reemplaza a ${oldName} en ${worstPos}.` };
+          return { success, resultText: (typeof window.t==='function'?window.t('gamble.scout.result_win', { newName: newInstance.name, oldName, pos: worstPos }):`¡Fichaje legendario! ${newInstance.name} reemplaza a ${oldName} en ${worstPos}.`) };
         }
 
         let bestPos = null, bestOvr = -Infinity;
@@ -649,10 +649,10 @@
           const ovr = _gambleOvr(p);
           if (ovr > bestOvr) { bestOvr = ovr; bestPos = pos; }
         });
-        if (!bestPos) return { success, resultText: 'No había jugador titular para lesionar.' };
+        if (!bestPos) return { success, resultText: (typeof window.t==='function'?window.t('gamble.scout.no_injury_target'):'No había jugador titular para lesionar.') };
         const p = G.roster[bestPos];
         ['con', 'pwr', 'eye', 'k_avd', 'spd', 'def'].forEach(k => { p.upgrades[k] = (p.upgrades[k] || 0) - 20; });
-        return { success, resultText: `${p.name} se lesiona: -20 en todas sus stats por el resto de la run.` };
+        return { success, resultText: (typeof window.t==='function'?window.t('gamble.scout.result_lose', { name: p.name }):`${p.name} se lesiona: -20 en todas sus stats por el resto de la run.`) };
       }
     }
   ];
@@ -849,27 +849,36 @@
 
     // ── TRAITS: Full trait catalog ────────────────────────────────────────────
     static get TRAITS_CATALOG() {
+      // Live getters (not pre-resolved strings) so that already-equipped traits
+      // (persisted in this.equippedTraits) still re-translate on language switch,
+      // same pattern as the getter-based title/desc used throughout ManagerEventsList.
+      const tr = (id, icon, key, fallbackName, fallbackDesc) => ({
+        id,
+        icon,
+        get name() { return typeof window.t==='function'?window.t(`trait.${key}.name`):fallbackName; },
+        get desc() { return typeof window.t==='function'?window.t(`trait.${key}.desc`):fallbackDesc; }
+      });
       return [
-        { id: 'eagle_patience',    name: '🦅 Paciencia de Águila',       desc: 'Zona de Boleto (BB) aumenta +3 puntos. Cada BB regenera +5 Stamina al bateador.', icon: '🦅' },
-        { id: 'slugger_momentum',  name: '💥 Impulso de Jonronero',       desc: 'Cada HR inflige +30 HP de daño extra al pitcher rival.', icon: '💥' },
-        { id: 'surgical_contact',  name: '🎯 Contacto Quirúrgico',        desc: 'Zona de Ponche (SO) reducida en -3 puntos para toda la alineación.', icon: '🎯' },
-        { id: 'speed_demons',      name: '⚡ Velocistas Agresivos',       desc: 'Jugadores con SPD > 60 roban la base automáticamente en sencillos y boletos. Debuff al pitcher dura 3 impactos.', icon: '⚡' },
-        { id: 'extra_base_impact', name: '💣 Impacto Acumulado',          desc: 'Batazos de extra bases (2B, 3B, HR) infligen +10 HP de daño adicional al pitcher.', icon: '💣' },
-        { id: 'iron_shield',       name: '🛡️ Escudo de Hierro',          desc: 'El Escudo absorbe 75% del DEF promedio del roster (en lugar de 50%). Regenera +5 al inicio de cada entrada.', icon: '🛡️' },
-        { id: 'defensive_wall',    name: '🧱 Muro Defensivo',             desc: 'Outs normales reducen HP del equipo en 8 en lugar de 12.', icon: '🧱' },
-        { id: 'endless_stamina',   name: '🔋 Resistencia Inagotable',     desc: 'Los bateadores solo pierden 6 de Stamina por partido (en lugar de 12).', icon: '🔋' },
-        { id: 'clutch_legends',    name: '❤️ Resiliencia de Leyendas',   desc: 'Si Team HP cae por debajo de 35, activa estado Clutch: +15 a CON, PWR, EYE, SPD, DEF para toda la alineación.', icon: '❤️' },
-        { id: 'golden_glove',      name: '🧤 Guantelete Dorado',          desc: 'Todos los bateadores reciben +10 DEF, aumentando la capacidad del Escudo de equipo.', icon: '🧤' },
-        { id: 'secondary_master',  name: '🔄 Posición Secundaria Maestra',desc: 'Elimina la penalización (-15%) al colocar bateadores en su Posición Secundaria.', icon: '🔄' },
-        { id: 'era_accelerated',   name: '⏳ Sinergia de Era Acelerada',  desc: 'Solo necesitas 2 jugadores de la misma Era para activar la Sinergia de Nivel 2 (normalmente 4).', icon: '⏳' },
-        { id: 'elite_negotiator',  name: '💼 Negociador de Élite',        desc: 'Obtienes +$10 de presupuesto extra tras cada victoria.', icon: '💼' },
-        { id: 'scout_eye',         name: '🌟 Ojo de Cazatalentos',        desc: 'Las ofertas de draft muestran 4 jugadores en lugar de 3 y aumenta probabilidad de Epic/Legendary.', icon: '🌟' },
-        { id: 'veteran_rotation',  name: '🔋 Segunda Vida',               desc: 'Tu alineación completa recupera un +30% de Stamina al inicio de cada nuevo mapa.', icon: '🔋' },
-        { id: 'reliever_ambush',   name: '🔥 Emboscada al Relevista',     desc: 'El primer batazo contra un nuevo pitcher rival inflige +50% de daño extra.', icon: '🔥' },
-        { id: 'early_pressure',    name: '📈 Presión Temprana',           desc: 'El primer bateador de cada entrada gana +20 de CON y EYE para ese turno.', icon: '📈' },
-        { id: 'ghost_runners',     name: '🏃 Corredores Fantasma',        desc: 'Inicias la 3ª entrada de cada partido con un corredor en 2ª base automáticamente.', icon: '🏃' },
-        { id: 'legendary_domination', name: '👑 Dominio Legendario',      desc: 'Si tienes 2 o más jugadores Legendary en titular, todos reciben +10 a todas sus estadísticas.', icon: '👑' },
-        { id: 'back_to_back',      name: '💥 Cadena de Poder',            desc: 'Después de un HR, el siguiente bateador gana +20 de PWR y CON para ese turno.', icon: '💥' },
+        tr('eagle_patience',    '🦅', 'eagle', '🦅 Paciencia de Águila', 'Zona de Boleto (BB) aumenta +3 puntos. Cada BB regenera +5 Stamina al bateador.'),
+        tr('slugger_momentum',  '💥', 'slugger', '💥 Impulso de Jonronero', 'Cada HR inflige +30 HP de daño extra al pitcher rival.'),
+        tr('surgical_contact',  '🎯', 'surgical', '🎯 Contacto Quirúrgico', 'Zona de Ponche (SO) reducida en -3 puntos para toda la alineación.'),
+        tr('speed_demons',      '⚡', 'speed', '⚡ Velocistas Agresivos', 'Jugadores con SPD > 60 roban la base automáticamente en sencillos y boletos. Debuff al pitcher dura 3 impactos.'),
+        tr('extra_base_impact', '💣', 'extrabase', '💣 Impacto Acumulado', 'Batazos de extra bases (2B, 3B, HR) infligen +10 HP de daño adicional al pitcher.'),
+        tr('iron_shield',       '🛡️', 'shield', '🛡️ Escudo de Hierro', 'El Escudo absorbe 75% del DEF promedio del roster (en lugar de 50%). Regenera +5 al inicio de cada entrada.'),
+        tr('defensive_wall',    '🧱', 'wall', '🧱 Muro Defensivo', 'Outs normales reducen HP del equipo en 8 en lugar de 12.'),
+        tr('endless_stamina',   '🔋', 'stamina', '🔋 Resistencia Inagotable', 'Los bateadores solo pierden 6 de Stamina por partido (en lugar de 12).'),
+        tr('clutch_legends',    '❤️', 'clutch', '❤️ Resiliencia de Leyendas', 'Si Team HP cae por debajo de 35, activa estado Clutch: +15 a CON, PWR, EYE, SPD, DEF para toda la alineación.'),
+        tr('golden_glove',      '🧤', 'glove', '🧤 Guantelete Dorado', 'Todos los bateadores reciben +10 DEF, aumentando la capacidad del Escudo de equipo.'),
+        tr('secondary_master',  '🔄', 'secondary', '🔄 Posición Secundaria Maestra', 'Elimina la penalización (-15%) al colocar bateadores en su Posición Secundaria.'),
+        tr('era_accelerated',   '⏳', 'era_acc', '⏳ Sinergia de Era Acelerada', 'Solo necesitas 2 jugadores de la misma Era para activar la Sinergia de Nivel 2 (normalmente 4).'),
+        tr('elite_negotiator',  '💼', 'elite', '💼 Negociador de Élite', 'Obtienes +$10 de presupuesto extra tras cada victoria.'),
+        tr('scout_eye',         '🌟', 'scout', '🌟 Ojo de Cazatalentos', 'Las ofertas de draft muestran 4 jugadores en lugar de 3 y aumenta probabilidad de Epic/Legendary.'),
+        tr('veteran_rotation',  '🔋', 'veteran', '🔋 Segunda Vida', 'Tu alineación completa recupera un +30% de Stamina al inicio de cada nuevo mapa.'),
+        tr('reliever_ambush',   '🔥', 'reliever', '🔥 Emboscada al Relevista', 'El primer batazo contra un nuevo pitcher rival inflige +50% de daño extra.'),
+        tr('early_pressure',    '📈', 'pressure', '📈 Presión Temprana', 'El primer bateador de cada entrada gana +20 de CON y EYE para ese turno.'),
+        tr('ghost_runners',     '🏃', 'ghost', '🏃 Corredores Fantasma', 'Inicias la 3ª entrada de cada partido con un corredor en 2ª base automáticamente.'),
+        tr('legendary_domination', '👑', 'legendary', '👑 Dominio Legendario', 'Si tienes 2 o más jugadores Legendary en titular, todos reciben +10 a todas sus estadísticas.'),
+        tr('back_to_back',      '💥', 'back2back', '💥 Cadena de Poder', 'Después de un HR, el siguiente bateador gana +20 de PWR y CON para ese turno.'),
       ];
     }
 
@@ -1400,7 +1409,12 @@
 
     // ── ZONE CONFIG ──────────────────────────────────────────────────────────
     // 4 zones × 4 stages = 16 total stages (indices 0 to 15)
-    // zone 0 = "Opening Day (Inicio de temporada)" (stages 0-3)
+    // zone 0 = "Opening Day (Inicio de temporada)" (stages 0-3); its boss (stage
+    // 3) is labeled "Ace Showdown"/"Duelo de Ases" (map.boss_label.3), NOT
+    // "Opening Day" — that was the original naming bug: the zone and its own
+    // boss shared a name, which reads oddly once you've already played 3
+    // games to reach that boss. The zone keeps "Opening Day" (fine — it's the
+    // whole early-season stretch), only the boss got renamed.
     // zone 1 = "All-Star Break (Mitad de temporada)" (stages 4-7)
     // zone 2 = "Pennant Chase (Final de temporada)" (stages 8-11)
     // zone 3 = "Playoffs (Fase Final)"              (stages 12-15)
@@ -1419,7 +1433,7 @@
           subtitleKey: "map.stage_opening",
           subtitle: "Inicio de temporada - Dificultad: Normal",
           theme: "zone-minor",
-          bossLabel: "Juego de Apertura",
+          bossLabel: "Duelo de Ases",
           bossIcon: "🌱",
           stages: [0, 1, 2, 3]
         },
@@ -1954,13 +1968,13 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
       const nativeLocked = this.positionLocks && (this.positionLocks[nativePos] || 0) > 0;
       if (!nativeLocked && this.roster[nativePos] && this.roster[nativePos].isReplacement) {
         this.roster[nativePos] = playerInstance;
-        return { success: true, message: `¡${playerInstance.name} colocado directamente en ${nativePos}!` };
+        return { success: true, message: (typeof window.t==='function'?window.t('game.player_placed_native', { name: playerInstance.name, pos: nativePos }):`¡${playerInstance.name} colocado directamente en ${nativePos}!`) };
       }
 
       const dhLocked = this.positionLocks && (this.positionLocks.DH || 0) > 0;
       if (!dhLocked && nativePos !== 'DH' && this.roster.DH && this.roster.DH.isReplacement) {
         this.roster.DH = playerInstance;
-        return { success: true, message: `¡${playerInstance.name} colocado como DH!` };
+        return { success: true, message: (typeof window.t==='function'?window.t('game.player_placed_dh', { name: playerInstance.name }):`¡${playerInstance.name} colocado como DH!`) };
       }
 
       // Roster has no replacement level at native position: trigger manual replace selection
@@ -2195,7 +2209,7 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
           ctl: p.ctl !== undefined ? p.ctl : 50,
           mov: p.mov !== undefined ? p.mov : (p.hr9 !== undefined ? p.hr9 : 50),
           sta: staVal,
-          ovr: p.ovr || p._ovr || 50,
+          ovr: p.ovr !== undefined ? p.ovr : (p._ovr !== undefined ? p._ovr : (window.UI && window.UI.getPlayerOvr ? window.UI.getPlayerOvr(p) : 50)),
           rarity: p.rarity || 'Common',
           era: p.era || '',
           team: p.team || '',

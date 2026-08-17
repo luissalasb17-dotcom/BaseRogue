@@ -796,14 +796,23 @@ p {
   align-items: center;
   gap: 2px;
   margin: 2px 0;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .card-trait-badge {
-  font-size: 6px;
+  font-size: 5px;
   font-family: 'Press Start 2P', monospace;
-  padding: 1px 5px;
+  padding: 1.5px 4px;
   border-radius: 2px;
   white-space: nowrap;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
 }
 
 /* Secondary position tag above ratings box */
@@ -1462,13 +1471,16 @@ p {
   overflow-y: auto;
   padding: 14px 10px;
   background-color: #040a07;
-  /* Pure 8-Bit CRT Retro Arcade Grid Canvas */
-  background-image: 
-    linear-gradient(rgba(0, 255, 102, 0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 255, 102, 0.04) 1px, transparent 1px);
-  background-size: 20px 20px;
+  /* Pure 8-Bit CRT Retro Arcade Grid Canvas — a soft green glow near the top
+     plus a brighter grid than before, so it reads as an atmospheric arcade
+     screen instead of a flat black box with faint gridlines. */
+  background-image:
+    radial-gradient(ellipse 90% 60% at 50% 15%, rgba(0, 255, 102, 0.12), transparent 65%),
+    linear-gradient(rgba(0, 255, 102, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 255, 102, 0.07) 1px, transparent 1px);
+  background-size: 100% 100%, 20px 20px, 20px 20px;
   border: 3px double #00ff66;
-  box-shadow: inset 0 0 20px #000000;
+  box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.9), inset 0 0 70px rgba(0, 255, 102, 0.1);
 }
 
 #map-nodes-container {
@@ -1594,6 +1606,15 @@ p {
 .zone-canvas svg {
   display: block;
   width: 100%;
+  /* Now that the SVG scales height WITH width correctly (see ui.js
+     renderMap — the old fixed pixel `height` attribute never let it scale
+     at all), an uncapped width:100% on a wide desktop panel scales node
+     size and total height right along with it — nodes the size of a fist
+     and a forced scrollbar. Capping the rendered width keeps node size
+     reasonable and stops the height from ballooning, while mobile is
+     already narrower than this cap so it's unaffected. */
+  max-width: 640px;
+  margin: 0 auto;
 }
 
 /* Legacy stubs - SVG handles all rendering now */
@@ -1760,46 +1781,40 @@ p {
   width: 74px;
   height: 74px;
   flex-shrink: 0;
-  perspective: 600px;
 }
 
+/* A real 3D rotateY flip (two faces + backface-visibility) turned out
+   unreliable — mid-spin, the back (❌) face could render mirrored/distorted
+   instead of staying cleanly hidden until it turned to face the viewer, so
+   it could look like a corrupted ✅ even when the coin was headed for
+   failure. This is a single flat element instead: the JS alternates its
+   emoji content directly, and this just handles the round shape + a 2D
+   "squash" pulse for the spinning feel — no 3D compositing involved, so
+   there's no face geometry left to render wrong. */
 .gamble-coin {
-  position: relative;
   width: 100%;
   height: 100%;
-  transform-style: preserve-3d;
-  transition: transform 1.8s cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-
-.gamble-coin-face {
-  position: absolute;
-  inset: 0;
   border-radius: 50% !important; /* exception to the global blocky/NES reset — a coin must be round */
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 30px;
-  backface-visibility: hidden;
   border: 3px solid rgba(255,255,255,0.35);
   box-shadow: 0 0 20px rgba(0,0,0,0.4);
-}
-
-.gamble-coin-front {
   background: radial-gradient(circle at 35% 30%, #34d399, #059669);
 }
 
-.gamble-coin-back {
+.gamble-coin.gamble-coin-fail {
   background: radial-gradient(circle at 35% 30%, #f87171, #b91c1c);
-  transform: rotateY(180deg);
 }
 
 .gamble-coin-flipping {
-  animation: gamble-coin-shimmer 1.8s linear;
+  animation: gamble-coin-squash 0.22s ease-in-out infinite;
 }
 
-@keyframes gamble-coin-shimmer {
-  0%, 100% { filter: brightness(1); }
-  50%      { filter: brightness(1.3); }
+@keyframes gamble-coin-squash {
+  0%, 100% { transform: scaleX(1); filter: brightness(1); }
+  50%      { transform: scaleX(0.25); filter: brightness(1.3); }
 }
 
 .gamble-outcome-card {
@@ -2303,7 +2318,7 @@ p {
     font-size: 9px !important;
   }
 
-  #zones-panel > div:first-child {
+  #zones-panel-header {
     font-size: 9px !important;
   }
 
@@ -2449,6 +2464,10 @@ p {
   box-sizing: border-box;
 }
 
+/* #zones-panel-header is a <summary> (its parent #zones-panel is a <details>,
+   collapsed by default on mobile only — see mobile CSS + the render-time JS
+   that strips its `open` attribute below 769px). list-style/marker removed
+   so it reads as plain text on desktop, where it's always open anyway. */
 #zones-panel-header {
   color: #94a3b8;
   font-family: 'Press Start 2P', monospace;
@@ -2456,6 +2475,12 @@ p {
   text-align: center;
   margin-bottom: 8px;
   letter-spacing: 0.5px;
+  cursor: pointer;
+  list-style: none;
+}
+
+#zones-panel-header::-webkit-details-marker {
+  display: none;
 }
 
 .clutch-active-banner {
@@ -2511,11 +2536,26 @@ p {
 
 .outcome-probabilities-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  /* minmax(0, 1fr), not bare 1fr — a bare 1fr track still grows to fit a
+     row's nowrap min-content width, which is exactly what pushed the right
+     column (e.g. "Home Run  97-100") past the panel's edge on narrow
+     screens. Same fix as the header HUD grid. */
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 4px 14px;
   width: 100%;
+  box-sizing: border-box;
   font-family: 'Press Start 2P', monospace;
   font-size: 10.5px;
+}
+
+/* The grid's direct children are flex-column wrappers (one per outcome
+   column), not the .outcome-row divs themselves — and a flex container's
+   default min-width is `auto`, meaning it refuses to shrink below its
+   nowrap children's content width no matter how the grid track above it is
+   constrained. That's what let the right column's rows escape the panel
+   even after the grid itself was properly clamped with minmax(0, 1fr). */
+.outcome-probabilities-grid > div {
+  min-width: 0;
 }
 
 .outcome-probabilities-grid .outcome-row {
@@ -2523,8 +2563,10 @@ p {
   justify-content: space-between;
   padding: 2.5px 5px;
   white-space: nowrap;
+  overflow: hidden;
   border-radius: 3px;
   background: rgba(255, 255, 255, 0.04);
+  box-sizing: border-box;
 }
 
 
@@ -2574,7 +2616,12 @@ body.workspace-active .main-container {
 }
 
 .left-sidebar {
-  width: 260px;
+  /* Was 260px — too narrow for real player names ("Spencer Torkelson",
+     "Paul Goldschmidt") alongside the position badge + grade badge +
+     stamina bar, forcing an ellipsis truncation the user didn't want.
+     The center map panel is flex:1 or (elsewhere on some screens) has
+     plenty of spare width to give up 40px without feeling cramped. */
+  width: 300px;
 }
 
 .right-sidebar {
@@ -2676,6 +2723,13 @@ body.workspace-active .main-container {
   overflow: hidden;
   text-overflow: ellipsis;
   flex-grow: 1;
+  /* Without this, a long name + multiple badge icons (captain/clutch/etc)
+     never actually triggers the ellipsis above — a flex item's default
+     min-width is its content's full width, so instead of truncating, the
+     name muscled its siblings (the grade badge) down to a few px wide,
+     rendering it basically illegible (looked like a single "-" in
+     screenshots, e.g. Brooks Robinson, Willie Randolph). */
+  min-width: 0;
 }
 
 /* VT323/Press Start 2P are pixel-art fonts with no emoji glyphs — inside
@@ -2688,10 +2742,23 @@ body.workspace-active .main-container {
 
 .roster-vertical-item .ovr-badge {
   font-family: 'Press Start 2P', monospace;
-  font-size: 6px;
-  padding: 1px 3px;
-  border-radius: 2px;
+  /* Was 6px/1px 3px padding — a "correctly" tiny 12px-wide box, not a bug,
+     but too small to reliably read at a glance (or in a phone photo of the
+     screen — this is what got mistaken for a "-" glitch in bug reports on
+     players like Brooks Robinson / Willie Randolph). */
+  font-size: 9px;
+  padding: 2px 5px;
+  min-width: 16px;
+  text-align: center;
+  border-radius: 3px;
   font-weight: bold;
+}
+
+/* Wrapper around the grade badge + stamina bar — protects them from being
+   squeezed to a sliver by a long player name (see .player-name's
+   min-width: 0 above for the other half of this fix). */
+.roster-vertical-item .roster-item-stats {
+  flex-shrink: 0;
 }
 
 .roster-vertical-item .stamina-bar-mini {
@@ -2714,9 +2781,19 @@ body.workspace-active .main-container {
   margin-right: 4px;
 }
 
-/* Trait Badges on Player Cards */
+/* Trait Badges on Player Cards.
+   This is the SECOND definition of .card-traits-box in this file (the first
+   is at line ~793, `flex-direction: column`) — this one wins the cascade
+   since it's later, but never explicitly set flex-direction, so it fell
+   back to the flex default (row) with wrap. That made card height depend on
+   whether a given player's era name + team code happened to fit on one line
+   or wrapped to two — different for almost every player, which is why two
+   cards with identical aspect-ratio math could still end up visibly
+   different heights. Forcing column here makes every card stack its badges
+   the same way regardless of text length. */
 .card-traits-box {
   display: flex;
+  flex-direction: column;
   flex-wrap: wrap;
   gap: 4px;
   margin-top: 4px;
@@ -3994,28 +4071,151 @@ body.workspace-active .main-container {
 
 /* ── MOBILE RESPONSIVE ──────────────────────────────────────────────────── */
 @media (max-width: 768px) {
-  /* Draft Cards: Stacked vertically, perfectly proportioned, max 280px wide */
-  .draft-card-wrapper {
-    width: 100% !important;
-    max-width: 280px !important;
+  /* Draft/Starter/Reward card wrappers: unified snug width (~175px) across all modes */
+  .draft-card-wrapper,
+  .starter-card-wrapper,
+  .draft-card-option {
+    width: 175px !important;
+    max-width: 175px !important;
+    min-width: 156px !important;
     margin: 0 auto !important;
     box-sizing: border-box !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
   }
 
-  .draft-card-wrapper .player-card,
-  .draft-cards .player-card,
-  .starter-selection .player-card {
+  .draft-card-wrapper > div:first-child,
+  .draft-card-option > div:first-child {
     width: 100% !important;
-    height: auto !important;
-    min-height: 190px !important;
-    font-size: 9.5px !important;
-    padding: 8px !important;
-    box-sizing: border-box !important;
+    display: flex !important;
+    justify-content: center !important;
   }
-  
+
+  .draft-card-caption {
+    width: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    margin: 3px 0 !important;
+  }
+
+  .draft-card-caption > div {
+    width: 100% !important;
+    display: block !important;
+    text-align: center !important;
+  }
+
+  /* Unified standard player card across ALL screens on mobile (Draft, Battle, Rewards, Roster) */
+  .player-card {
+    width: 152px !important;
+    height: 236px !important;
+    max-width: 152px !important;
+    min-width: 152px !important;
+    padding: 7px 8px 6px 8px !important;
+    font-size: 8px !important;
+    box-sizing: border-box !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    margin: 0 auto !important;
+    flex-shrink: 0 !important;
+    overflow: hidden !important;
+    isolation: isolate !important;
+    position: relative !important;
+  }
+
+  .player-card .card-position,
+  .player-card .card-ovr,
+  .player-card .card-year {
+    font-size: 6px !important;
+    padding: 2px 4px !important;
+  }
+
+  .player-card .card-name {
+    font-size: 7.5px !important;
+    line-height: 1.2 !important;
+    margin: 1px 0 !important;
+    padding: 1px 0 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  .player-card .card-traits-box {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 2px !important;
+    margin: 2px 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+  }
+
+  .player-card .card-trait-badge {
+    font-size: 5px !important;
+    padding: 1px 4px !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    text-align: center !important;
+  }
+
+  .player-card .card-sec-pos-line {
+    font-size: 6px !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    text-align: center !important;
+  }
+
+  .player-card .card-stats {
+    padding: 4px 5px !important;
+    margin: 1px 0 !important;
+    font-size: 7px !important;
+  }
+
+  .player-card .stat-row {
+    font-size: 7px !important;
+    margin: 1px 0 !important;
+  }
+
+  .player-card .stat-badge {
+    font-size: 6px !important;
+    padding: 1px 4px !important;
+  }
+
+  .player-card .card-footer {
+    font-size: 8px !important;
+    padding-top: 2px !important;
+    padding-bottom: 2px !important;
+  }
+
+  .player-card .card-stamina-badge {
+    font-size: 7px !important;
+  }
+
   .popup-player-name {
     font-size: 9px !important;
     margin-bottom: 6px !important;
+  }
+
+  /* Cards row in Draft & Rewards */
+  .cards-row,
+  .draft-cards-row {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    align-items: flex-start !important;
+    gap: 10px !important;
+    width: 100% !important;
   }
 
   /* Hide synergy helpers in mobile draft to save space */
@@ -4152,24 +4352,66 @@ body.workspace-active .main-container {
     box-sizing: border-box !important;
   }
 
-  /* HUD Top Bar */
-  #game-hud {
+  /* HUD Top Bar — header was staying in one un-wrapped row (logo | icon
+     buttons | game-hud), which squeezed the 4-item game-hud into whatever
+     leftover width remained (as little as ~165px on a 400px phone), so its
+     items stacked inside that narrow column and the stage text wrapped
+     across 2-3 lines. Force header onto two clean full-width rows instead:
+     row 1 = logo + icon buttons, row 2 = game-hud as a proper 2x2 grid. */
+  header {
     flex-wrap: wrap !important;
+    padding: 8px 10px !important;
     gap: 6px !important;
-    padding: 8px !important;
-    font-size: 8px !important;
-    justify-content: space-between !important;
+    row-gap: 8px !important;
+  }
+
+  .header-icon-actions {
+    margin-left: auto !important;
+  }
+
+  /* :not(.hidden) matters here — #game-hud (an ID selector) otherwise beats
+     .hidden's `display:none !important` on specificity alone (ID > class,
+     regardless of !important on both sides), which was forcing the HUD
+     bar to render on the main menu / mode-select screens, before any run
+     had even started. */
+  #game-hud:not(.hidden) {
+    flex: 1 1 100% !important;
+    width: 100% !important;
+    order: 3 !important;
+    display: grid !important;
+    /* minmax(0, 1fr), not bare 1fr — a bare 1fr track still grows to fit its
+       content's min-content size (nowrap text's *full* width), which is what
+       let the long "Etapa: <zone name>" text blow its column out to 295px
+       and push the budget column off the right edge of the screen. */
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+    gap: 6px !important;
   }
 
   .hud-item {
     font-size: 8px !important;
-    padding: 4px 6px !important;
+    padding: 6px 8px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    justify-content: center !important;
+    overflow: hidden !important;
+  }
+
+  .hud-item span {
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
   }
 
   #btn-toggle-roster-view,
   #btn-toggle-synergies-mobile {
     font-size: 8px !important;
     padding: 6px 8px !important;
+    width: 100% !important;
+    justify-content: center !important;
+    overflow: hidden !important;
+    white-space: nowrap !important;
+    text-overflow: ellipsis !important;
+    box-sizing: border-box !important;
   }
 
   /* Match Arena Layout */
@@ -4235,10 +4477,62 @@ body.workspace-active .main-container {
     width: 100% !important;
   }
 
-  /* Map Nodes Container */
+  /* Map screen — bigger nodes and a background texture so it reads as a
+     designed screen rather than a bare wireframe diagram on a small phone
+     canvas (the scale(0.98) here previously did essentially nothing). */
   #map-nodes-container {
-    transform: scale(0.98) !important;
-    transform-origin: top center !important;
+    gap: 16px !important;
+  }
+
+  .map-viewport {
+    padding: 16px 10px !important;
+    background-image:
+      linear-gradient(rgba(4, 10, 7, 0.55), rgba(4, 10, 7, 0.72)),
+      linear-gradient(rgba(0, 255, 102, 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 255, 102, 0.05) 1px, transparent 1px),
+      url('assets/menu_stadium_bg.jpg') !important;
+    background-size: cover, 20px 20px, 20px 20px, cover !important;
+    background-position: center, 0 0, 0 0, center bottom !important;
+    background-repeat: no-repeat, repeat, repeat, no-repeat !important;
+  }
+
+  .zone-header {
+    padding: 12px 14px !important;
+  }
+
+  .zone-icon {
+    font-size: 28px !important;
+  }
+
+  .zone-name {
+    font-size: 11px !important;
+  }
+
+  .zone-subtitle {
+    font-size: 16px !important;
+  }
+
+  .zone-canvas {
+    padding: 16px 14px !important;
+  }
+
+  .map-node-visual {
+    width: 60px !important;
+    height: 60px !important;
+    min-height: 60px !important;
+  }
+
+  .map-node-visual .node-emoji {
+    font-size: 14px !important;
+  }
+
+  .map-node-visual.node-boss {
+    width: 104px !important;
+    min-height: 104px !important;
+  }
+
+  .map-node-visual.node-boss .node-emoji {
+    font-size: 38px !important;
   }
 
   /* Modals & Popups: fit mobile screens */
@@ -4261,40 +4555,30 @@ body.workspace-active .main-container {
     top: 45px !important;
   }
 
-  /* Starter pool & draft cards: full width vertical stack on mobile */
+  /* Starter pool & draft cards: centered wrap on mobile */
   .starter-selection {
     display: flex !important;
-    flex-direction: column !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    justify-content: center !important;
     width: 100% !important;
     gap: 12px !important;
   }
 
   .draft-cards-row {
-    flex-direction: column !important;
-    align-items: center !important;
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    align-items: flex-start !important;
     width: 100% !important;
-    gap: 14px !important;
-  }
-
-  .starter-card-wrapper {
-    width: 100% !important;
-    max-width: 100% !important;
-    box-sizing: border-box !important;
-  }
-
-  .starter-card-wrapper .card,
-  .player-card {
-    width: 100% !important;
-    min-width: 100% !important;
-    font-size: 11px !important;
-    padding: 12px 10px !important;
-    box-sizing: border-box !important;
+    gap: 12px !important;
   }
 
   .starter-card-wrapper .btn {
-    font-size: 13px !important;
-    padding: 14px !important;
-    min-height: 48px !important;
+    font-size: 10px !important;
+    padding: 8px !important;
+    min-height: 36px !important;
   }
 
   /* Starter Assignment Screen */
@@ -4320,18 +4604,6 @@ body.workspace-active .main-container {
   }
 }
 
-@media (max-width: 480px) {
-  .starter-card-wrapper .card,
-  .player-card {
-    font-size: 10px !important;
-    padding: 8px 6px !important;
-  }
-
-  .fight-card-slot .card {
-    font-size: 7.5px !important;
-    padding: 4px 2px !important;
-  }
-}
 
 
 /* --- MINIMALIST SINGLE-SCREEN MOBILE BATTLE (< 768px) --- */
@@ -4349,10 +4621,15 @@ body.workspace-active .main-container {
   }
 
   /* Mobile Match Simulator Viewport (Fits 100% inside 1 screen and scrollable inside green box if screen is small) */
+  /* Previously this had its own max-height + overflow-y:auto, creating a scroll
+     box nested inside the page's own scroll — you'd have to scroll the page to
+     reveal the bottom of this panel, THEN scroll again inside it to reach the
+     luck zones / roll button. Letting it flow in the normal page scroll (like
+     every other screen) means there's one scroll instead of two, and it's what
+     lets #dice-action-bar's sticky positioning stick to the real viewport
+     bottom instead of an inner box that itself could be scrolled out of view. */
   #screen-match:not(.hidden) {
     height: auto !important;
-    max-height: calc(100vh - 70px) !important;
-    overflow-y: auto !important;
     display: flex !important;
     flex-direction: column !important;
     justify-content: flex-start !important;
@@ -4378,13 +4655,19 @@ body.workspace-active .main-container {
     transform: none !important;
   }
 
-  /* Compact LED Scoreboard with Baseball Diamond SVG on the LEFT */
+  /* Compact LED Scoreboard with Baseball Diamond SVG on the LEFT.
+     Thinner border + no outer glow ring on mobile — the base .scoreboard style
+     (4px double border + 3px black shadow ring) reads as a heavy standalone box;
+     flattened here so it sits as one calm strip instead of a boxed panel. */
   .scoreboard {
     width: 100% !important;
     font-size: 7.5px !important;
-    padding: 4px 6px !important;
-    margin-bottom: 2px !important;
-    border-radius: 6px !important;
+    padding: 6px 8px !important;
+    margin-bottom: 4px !important;
+    border-radius: 8px !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    box-shadow: none !important;
+    background: rgba(0, 0, 0, 0.35) !important;
     display: flex !important;
     flex-direction: row !important;
     align-items: center !important;
@@ -4423,26 +4706,28 @@ body.workspace-active .main-container {
     height: 36px !important;
   }
 
-  /* 1v1 Battle Arena Cards — fixed compact height on mobile */
+  /* 1v1 Battle Arena Cards — proportional and matching standard card size */
   .rpg-fight-deck {
     transform: none !important;
     width: 100% !important;
     display: flex !important;
     justify-content: center !important;
-    align-items: flex-start !important;
-    gap: 6px !important;
-    margin: 0 !important;
+    align-items: center !important;
+    gap: 8px !important;
+    margin: 4px 0 !important;
+    padding: 4px !important;
+    background: none !important;
+    border: none !important;
   }
 
   .fight-card-slot {
-    flex: 1 !important;
-    max-width: 48% !important;
-    width: 48% !important;
-    height: 176px !important;
-    min-height: 176px !important;
-    max-height: 176px !important;
+    flex: 1 1 48% !important;
+    max-width: 155px !important;
+    height: auto !important;
     display: flex !important;
     flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
     overflow: visible !important;
     padding: 2px !important;
     box-sizing: border-box !important;
@@ -4450,41 +4735,39 @@ body.workspace-active .main-container {
 
   .fight-card-slot .card,
   .fight-card-slot .player-card {
-    width: 100% !important;
-    height: 172px !important;
-    min-height: 172px !important;
-    max-height: 172px !important;
-    flex: 1 !important;
-    min-width: 0 !important;
-    font-size: 7px !important;
-    padding: 3px 3px !important;
+    width: 152px !important;
+    height: 236px !important;
+    max-width: 100% !important;
+    aspect-ratio: 152 / 236 !important;
+    font-size: 7.5px !important;
+    padding: 7px 8px 6px 8px !important;
     box-sizing: border-box !important;
     display: flex !important;
     flex-direction: column !important;
     justify-content: space-between !important;
     overflow: hidden !important;
-    margin-top: 0 !important;
+    margin: 0 auto !important;
   }
 
   .fight-card-slot .player-card .card-stats {
-    padding: 1px 2px !important;
-    margin: 0 !important;
+    padding: 3px 4px !important;
+    margin: 1px 0 !important;
   }
 
   .fight-card-slot .player-card .stat-row {
-    margin: 0 !important;
-    font-size: 5.5px !important;
+    margin: 1px 0 !important;
+    font-size: 7px !important;
   }
 
   .fight-card-slot .player-card .card-name {
-    font-size: 7px !important;
+    font-size: 7.5px !important;
     padding: 0 2px !important;
-    margin: 0 !important;
+    margin: 1px 0 !important;
   }
 
   .fight-card-slot .player-card .card-header {
-    font-size: 6.5px !important;
-    margin-bottom: 1px !important;
+    font-size: 6px !important;
+    margin-bottom: 2px !important;
   }
 
   .vs-circle {
@@ -4492,14 +4775,17 @@ body.workspace-active .main-container {
     margin: 0 !important;
   }
 
-  /* Active Batter / Pitcher HP Bar & Names */
+  /* Active Batter / Pitcher HP Bar & Names — same flattening as .scoreboard above */
   .faceoff-panel {
     width: 100% !important;
-    padding: 2px 6px !important;
+    padding: 6px 8px !important;
     box-sizing: border-box !important;
     gap: 2px !important;
-    margin: 0 !important;
-    border-radius: 6px !important;
+    margin: 4px 0 0 0 !important;
+    border-radius: 8px !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    box-shadow: none !important;
+    background: rgba(0, 0, 0, 0.35) !important;
   }
 
   .faceoff-panel > div:first-child > div {
@@ -4518,10 +4804,10 @@ body.workspace-active .main-container {
     box-sizing: border-box !important;
   }
 
+  /* Redundant with the ratings already printed on the batter's card above it —
+     hidden on mobile to cut clutter (kept on desktop where there's room). */
   #match-batter-stats-box {
-    margin-top: 2px !important;
-    line-height: 1.1 !important;
-    font-size: 6.5px !important;
+    display: none !important;
   }
 
   .hp-bar-container {
@@ -4543,57 +4829,107 @@ body.workspace-active .main-container {
     display: none !important; /* Hide 5-pitcher queue icons on mobile to save vertical space */
   }
 
-  /* Dice Battle Container & Action Button (Bottom of screen) */
+  /* Debuff badge ("+X% DAMAGE RECEIVED") was wrapping across 3 lines inside
+     the ~50%-width pitcher column — shrink it into one calm inline chip. */
+  #match-pitcher-debuff-badge {
+    font-size: 6.5px !important;
+    padding: 2px 4px !important;
+    margin-top: 3px !important;
+    box-shadow: none !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  /* Dice Battle Container: the ONE bordered panel that owns everything below the
+     faceoff (vitals, dice, luck zones). Nested panels inside it (zones, dice-d100)
+     go borderless/flat so the screen reads as a couple of calm sections instead of
+     boxes stacked inside boxes. */
   #dice-battle-panel {
-    padding: 3px 6px !important;
-    margin-top: 0 !important;
-    gap: 2px !important;
-    background: rgba(0, 0, 0, 0.6) !important;
-    border-radius: 6px !important;
+    padding: 12px !important;
+    margin-top: 6px !important;
+    gap: 10px !important;
+    background: rgba(0, 0, 0, 0.4) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    border-radius: 10px !important;
     width: 100% !important;
     box-sizing: border-box !important;
   }
 
-  /* 2-Column Grid for Luck Zones (Left: Boleto, Ponche, Out | Right: Sencillo, Doble, Triple, Jonron) */
+  /* Luck Zones: flat, no inner box — just a hairline divider from the section above */
   #zones-panel {
     display: block !important;
     width: 100% !important;
-    padding: 3px 6px !important;
-    margin: 1px 0 !important;
-    background: rgba(0, 0, 0, 0.45) !important;
-    border-radius: 6px !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    padding: 10px 0 0 0 !important;
+    margin: 2px 0 0 0 !important;
+    background: none !important;
+    border: none !important;
+    border-top: 1px dashed rgba(255, 255, 255, 0.12) !important;
     box-sizing: border-box !important;
   }
 
   .clutch-active-banner {
-    font-size: 7px !important;
-    padding: 2px 4px !important;
-    margin-bottom: 3px !important;
-    border-radius: 3px !important;
+    font-size: 8px !important;
+    padding: 3px 6px !important;
+    margin-bottom: 5px !important;
+    border-radius: 4px !important;
   }
 
   .clutch-tag-badge {
-    font-size: 6px !important;
+    font-size: 6.5px !important;
     padding: 0.5px 2px !important;
     margin-left: 2px !important;
   }
 
+  /* Single column instead of two — even with the overflow bug fixed, a
+     ~167px-wide column is too tight for "🚀 Home Run (HR)" plus a "82–100"
+     range to sit apart with any breathing room; text ran together edge to
+     edge. Full row width gives space between the label and the number. */
   .outcome-probabilities-grid {
-    font-size: 7.5px !important;
-    gap: 2px 8px !important;
+    grid-template-columns: 1fr !important;
+    font-size: 10px !important;
+    gap: 3px !important;
   }
 
   .outcome-probabilities-grid .outcome-row {
-    padding: 1.5px 4px !important;
-    font-size: 7.5px !important;
+    padding: 3px 6px !important;
+    font-size: 10px !important;
   }
 
-  #zones-panel > div:first-child {
-    font-size: 6.5px !important;
-    margin-bottom: 2px !important;
+  /* #zones-panel is a <details> on mobile (collapsed by default — see the JS
+     that removes its `open` attribute at render time) so the probability
+     breakdown doesn't compete with the roll button/vitals for attention
+     until the player actually wants it. #zones-panel-header is the
+     <summary> — style it as an obvious tap target with its own chevron
+     instead of the inconsistent native browser marker. */
+  #zones-panel-header {
+    font-size: 8px !important;
+    margin-bottom: 0 !important;
     text-align: center !important;
     color: #38bdf8 !important;
+    letter-spacing: 0.5px !important;
+    cursor: pointer !important;
+    list-style: none !important;
+    padding: 4px 0 !important;
+  }
+
+  #zones-panel-header::-webkit-details-marker {
+    display: none !important;
+  }
+
+  #zones-panel-header::after {
+    content: '▾' !important;
+    margin-left: 6px !important;
+    display: inline-block !important;
+    transition: transform 0.15s ease !important;
+  }
+
+  #zones-panel[open] #zones-panel-header::after {
+    transform: rotate(180deg) !important;
+  }
+
+  #zones-panel:not([open]) #zones-lines {
+    display: none !important;
   }
 
   #zones-panel #zones-lines {
@@ -4601,26 +4937,27 @@ body.workspace-active .main-container {
     width: 100% !important;
   }
 
-  #zones-panel #zones-lines > div {
-    font-size: 6.5px !important;
-    padding: 1px 3px !important;
-    white-space: nowrap !important;
-    background: rgba(255, 255, 255, 0.05) !important;
-    border-radius: 3px !important;
-    display: flex !important;
-    justify-content: space-between !important;
-  }
+  /* This used to style the individual outcome rows directly (back when
+     #zones-lines' children WERE the rows), but the DOM grew a
+     .outcome-probabilities-grid wrapper in between — so this selector was
+     silently hitting the GRID CONTAINER instead of each row, forcing
+     `display:flex !important` on it and overriding the grid layout
+     entirely (root cause of the 2-column-that-wouldn't-become-1-column
+     bug). The rows themselves are already styled correctly via
+     `.outcome-probabilities-grid .outcome-row` below — this rule is dead
+     weight now that it's pointed at the wrong element, so it's removed
+     rather than "fixed", since fixing it would just duplicate that rule. */
 
   #team-vitals {
-    gap: 2px !important;
+    gap: 4px !important;
   }
 
   #team-vitals span {
-    font-size: 7px !important;
+    font-size: 9px !important;
   }
 
   #so-chain-display {
-    font-size: 7px !important;
+    font-size: 9px !important;
   }
 
   #dice-result-display {
@@ -4631,18 +4968,48 @@ body.workspace-active .main-container {
     margin: 0 auto !important;
   }
 
-  #btn-roll-dice {
-    font-size: 10.5px !important;
-    padding: 8px 10px !important;
-    min-height: 36px !important;
+  /* d100 cubes: scale the whole 3D die uniformly (rather than resizing width/
+     height directly, which would desync from the faces' fixed translateZ and
+     break the cube geometry) so the idle "0 / 0" state doesn't dominate the
+     screen before the player has even rolled. */
+  #dice-d100-container {
+    gap: 4px !important;
+  }
+
+  .d100-die {
+    transform: scale(0.6) !important;
+    margin: -11px !important;
+  }
+
+  /* Action bar: sticks to the bottom of the mobile scroll viewport so ROLL DICE
+     is always one tap away, no matter how far the player has scrolled through
+     the luck zones / log above it. */
+  #dice-action-bar {
+    position: sticky !important;
+    bottom: 4px !important;
+    z-index: 30 !important;
+    display: flex !important;
+    flex-direction: column !important;
     width: 100% !important;
-    margin-top: 2px !important;
+    margin-top: 8px !important;
+    padding-top: 8px !important;
+    background: rgba(9, 13, 22, 0.92) !important;
+    backdrop-filter: blur(6px) !important;
+    border-radius: 10px !important;
+  }
+
+  #btn-roll-dice {
+    font-size: 11px !important;
+    padding: 12px 10px !important;
+    min-height: 44px !important;
+    width: 100% !important;
+    margin-top: 0 !important;
   }
 
   #btn-match-skip-game {
     font-size: 9px !important;
-    padding: 6px 10px !important;
-    margin-top: 3px !important;
+    padding: 8px 10px !important;
+    margin-top: 6px !important;
   }
 
   /* Hide raw text log box on mobile so everything sits inside 1 screen height */
@@ -4650,17 +5017,100 @@ body.workspace-active .main-container {
     display: none !important;
   }
 
-  /* Mid-run Reward Draft Options on Mobile: Vertical Stack */
+  /* Mid-run Reward Draft Options on Mobile: Centered Row / Grid */
   .midrun-draft-options {
-    flex-direction: column !important;
-    align-items: center !important;
-    gap: 16px !important;
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    align-items: stretch !important;
+    gap: 12px !important;
     width: 100% !important;
   }
 
   .draft-card-option {
+    width: 175px !important;
+    max-width: 175px !important;
+  }
+
+  .draft-card-option > div {
     width: 100% !important;
-    max-width: 280px !important;
+    display: flex !important;
+    justify-content: center !important;
+  }
+}
+
+/* ── BOSS TRAIT REWARD MODAL — MOBILE ─────────────────────────────────────
+   showTraitSelectionModal() in ui.js builds this overlay from inline styles;
+   the base recipe caps each choice card at max-width:240px so 3 can sit in a
+   row on desktop. On a phone they wrap to one per line anyway (3x240px never
+   fits ~340px), which is fine functionally, but leaves the cards small and
+   off-center with a lot of empty side margin. Let them use the full row. */
+@media (max-width: 768px) {
+  .trait-choice-card {
+    max-width: 100% !important;
+    width: 100% !important;
+    padding: 18px 16px !important;
+  }
+}
+
+/* ── RUN SUMMARY MODAL (end-of-run batter/pitcher stats) — MOBILE ─────────
+   #modal-run-summary is a desktop-only data table (15 batting columns / 9
+   pitching columns) with no mobile handling at all before this — it just
+   overflow-x:scrolled at full desktop density. Shrinks the type/padding so
+   more columns are visible per scroll, and pins the name column so it stays
+   in view while scrolling sideways through the stats. */
+@media (max-width: 768px) {
+  #modal-run-summary > div {
+    padding: 14px 10px !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+    max-height: 100vh !important;
+    border-radius: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  #modal-run-summary h3 {
+    font-size: 9px !important;
+  }
+
+  #modal-run-summary [id^="tab-summary-"] {
+    flex: 1 !important;
+    font-size: 9px !important;
+    padding: 10px 6px !important;
+    text-align: center !important;
+  }
+
+  #modal-run-summary table {
+    font-size: 9px !important;
+  }
+
+  #modal-run-summary th,
+  #modal-run-summary td {
+    padding: 6px 5px !important;
+    white-space: nowrap !important;
+  }
+
+  #modal-run-summary th:first-child,
+  #modal-run-summary td:first-child {
+    position: sticky !important;
+    left: 0 !important;
+    z-index: 2 !important;
+    background: #090d16 !important;
+    box-shadow: 2px 0 4px rgba(0, 0, 0, 0.4) !important;
+  }
+}
+
+/* ── END-OF-RUN SCREENS (defeat & victory) — MOBILE ────────────────────── */
+@media (max-width: 768px) {
+  #gameover-title {
+    font-size: 20px !important;
+  }
+
+  .history-row {
+    flex-wrap: wrap !important;
+    gap: 4px !important;
+    font-size: 12px !important;
   }
 }
 
