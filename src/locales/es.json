@@ -373,6 +373,8 @@
     "2b_desc": "línea violenta por la raya",
     "1b_desc": "imparable raso",
     "spd_upgrade": "⚡ SPD Proc (Grado {{grade}}): ¡{{from}} convertido en {{to}}!",
+    "spd_stretch_2b": "conecta batazo y estira a SEGUNDA BASE con velocidad (Grado {{grade}})",
+    "spd_stretch_3b": "conecta batazo y estira a TERCERA BASE con velocidad (Grado {{grade}})",
     "inning_end": "--- FIN DE LA ENTRADA {{inning}} ({{runs}} carreras anotadas) ---",
     "match_timeout": "⏱ FIN DE PARTIDO (3 innings). Te faltaron {{remaining}} lanzadores por derrotar.",
     "syn_moneyball_bb": "📊 Moneyball: ¡Boleto paciente inflige +{{extra}} daño!",

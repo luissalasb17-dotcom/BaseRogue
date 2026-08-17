@@ -5964,6 +5964,18 @@ function initGameModeSelector() {
         break;
     }
 
+    if (ev && ev.spdUpgraded) {
+      const isEs = (typeof window.t === 'function' && window.t('hud.stage') !== 'Stage:');
+      title = isEs
+        ? `⚡ ¡${ev.spdUpgraded.from} ➔ ${ev.spdUpgraded.to}! 🏃`
+        : `⚡ ${ev.spdUpgraded.from} ➔ ${ev.spdUpgraded.to}! 🏃`;
+      color = "#38bdf8";
+      icon = "fa-person-running";
+      borderColor = "#38bdf8";
+      boxShadow = "0 0 45px rgba(56, 189, 248, 0.8), 0 0 20px rgba(56, 189, 248, 0.5)";
+      dmgText = isEs ? `⚡ ¡EXTRABASE POR VELOCIDAD! (+30 HP)` : `⚡ EXTRA-BASE HIT BY SPEED! (+30 HP)`;
+    }
+
     // ── Audio: play sound for this outcome ───────────────────────────────────
     if (window.AudioManager) {
       switch (eventType) {
@@ -6105,13 +6117,14 @@ function initGameModeSelector() {
       popup.style.opacity = "1";
     }, 10);
 
+    const displayTime = (ev && ev.spdUpgraded) ? 1400 : 1000;
     setTimeout(() => {
       popup.style.transform = "translate(-50%, -50%) scale(0.85)";
       popup.style.opacity = "0";
       setTimeout(() => {
         popup.remove();
       }, 250);
-    }, 1000);
+    }, displayTime);
   }
 
   // ── HANDLE ROLL DICE CLICK ───────────────────────────────────────────────────
@@ -6225,8 +6238,9 @@ function initGameModeSelector() {
             }
           }
 
+          const thisPopupDuration = ev.spdUpgraded ? 1400 : POPUP_DURATION;
           popupQueue.push({ type: ev.eventType, text: batterText, ev, at: cursor });
-          cursor += POPUP_DURATION + POPUP_GAP;
+          cursor += thisPopupDuration + POPUP_GAP;
 
           if (hasSteal) {
             popupQueue.push({ type: 'STEAL', text: stealText, ev, at: cursor });
@@ -6572,6 +6586,10 @@ function initGameModeSelector() {
       logLine.classList.add('bold');
     if (ev.eventType === 'SO')
       logLine.style.color = '#ef4444';
+    if (ev.spdUpgraded || (ev.playText && /1B ➔ 2B|2B ➔ 3B|SPD Proc/i.test(ev.playText))) {
+      logLine.style.color = '#38bdf8';
+      logLine.style.textShadow = '0 0 6px rgba(56, 189, 248, 0.4)';
+    }
     logLine.innerText = ev.playText;
     el.matchLogLines.appendChild(logLine);
     el.matchLogLines.scrollTop = el.matchLogLines.scrollHeight;

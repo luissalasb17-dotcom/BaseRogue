@@ -753,14 +753,18 @@
           this.strikeoutChain = 0;
           runsThisTurn = this._advanceBases(3, batter, genesisErrorSucceeded);
           pitcherDmg = 45 + (runsThisTurn * 10);
-          hitDesc = _t('sim.3b_desc', {}, 'triple al rincón');
+          hitDesc = spdUpgraded
+            ? _t('sim.spd_stretch_3b', { grade: spdUpgraded.grade }, `conecta batazo y estira a TERCERA BASE con velocidad (Grado ${spdUpgraded.grade})`)
+            : _t('sim.3b_desc', {}, 'triple al rincón');
           if (this.hasTrait('extra_base_impact')) pitcherDmg += 10;
         } else if (hitType === '2B') {
           eventType = '2B';
           this.strikeoutChain = 0;
           runsThisTurn = this._advanceBases(2, batter, genesisErrorSucceeded);
           pitcherDmg = 30 + (runsThisTurn * 10);
-          hitDesc = _t('sim.2b_desc', {}, 'línea violenta por la raya');
+          hitDesc = spdUpgraded
+            ? _t('sim.spd_stretch_2b', { grade: spdUpgraded.grade }, `conecta batazo y estira a SEGUNDA BASE con velocidad (Grado ${spdUpgraded.grade})`)
+            : _t('sim.2b_desc', {}, 'línea violenta por la raya');
           if (this.hasTrait('extra_base_impact')) pitcherDmg += 10;
         } else {
           eventType = '1B';
@@ -863,6 +867,16 @@
           }
         }
 
+        const labelOutcome = spdUpgraded
+          ? `${spdUpgraded.from} ➔ ${hitType} ⚡`
+          : _t('sim.label_' + hitType.toLowerCase(), {}, hitType);
+        let batterPlayText = `🎲 [${roll}] [${labelOutcome}] ¡${batter.name} ${hitDesc}! `;
+        playText = batterPlayText;
+
+        if (this.pitcherDebuff && this.pitcherDebuff.turnsLeft > 0) {
+          this.pitcherDebuff.turnsLeft--;
+        }
+
         playText += _t('sim.runs_scored', { runs: runsThisTurn, pitcher: pitcher.name, dmg: pitcherDmg }, `Anotan ${runsThisTurn} carreras. ${pitcher.name} sufre ${pitcherDmg} HP de daño`) + '.';
         if (spdProc) playText += ` ${spdProc}`;
         if (errorProc) playText += ` ${errorProc}`;
@@ -880,7 +894,7 @@
       this.awayLineupIndex = (this.awayLineupIndex + 1) % this.awayTeam.lineup.length;
 
       // Log PLAY event first so log order is: Outcome -> KO -> Next Pitcher / Remnant Damage
-      this.logEvent('PLAY', playText, eventType, batter.name, teamHpDmg, pitcherDmg, runsThisTurn, didSteal);
+      this.logEvent('PLAY', playText, eventType, batter.name, teamHpDmg, pitcherDmg, runsThisTurn, didSteal, spdUpgraded);
 
       // Now apply pitcher damage (which logs KO_PITCHER and RESIDUAL_DMG if pitcher is KO'd)
       if (pitcherDmg > 0) {
