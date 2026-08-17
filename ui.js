@@ -6019,6 +6019,38 @@ function initGameModeSelector() {
     let cleanDetails = details ? details.replace(/🎲 \[\d+\] \[[^\]]+\] /, '').replace(/−/g, '-') : '';
     cleanDetails = cleanDetails.replace(/⚡\s*¡?CLUTCH PLAYER!?[^—\n]*[—\.]\s*(\(\+[^)]+\)\.?)?\s*/gi, '').replace(/^⚡\s*¡?CLUTCH PLAYER!?[^\.]*\.\s*/gi, '').trim();
 
+    // SPD Hit Upgrade Highlight (1B -> 2B or 2B -> 3B)
+    let spdUpgradeHTML = '';
+    const spdUp = (ev && ev.spdUpgraded) ? ev.spdUpgraded : null;
+    const spdMatch = cleanDetails.match(/⚡\s*SPD Proc\s*\(Grado\s*([^\)]+)\):\s*¡?([^!]+)!?/i);
+    if (spdUp || spdMatch) {
+      const fromType = spdUp ? spdUp.from : (spdMatch ? spdMatch[2].split('convertido en')[0].trim() : '1B');
+      const toType = spdUp ? spdUp.to : (eventType || '2B');
+      const grade = spdUp ? spdUp.grade : (spdMatch ? spdMatch[1].trim() : 'A');
+      const batterName = (ev && ev.activeBatter) ? ev.activeBatter : '';
+      
+      cleanDetails = cleanDetails.replace(/⚡\s*SPD Proc[^\|\n]*(\||\.)?/gi, '').trim();
+
+      const isEs = (typeof window.t === 'function' ? window.t('hud.stage') : 'Stage:') !== 'Stage:';
+      const badgeTitle = isEs ? '⚡ ¡BASE EXTRA POR VELOCIDAD!' : '⚡ EXTRA BASE BY SPEED!';
+      const badgeDesc = isEs
+        ? `${batterName ? `¡<strong>${batterName}</strong> ` : ''}estiró el batazo con su velocidad (Grado ${grade}) (<strong>${fromType} ➔ ${toType}</strong>)`
+        : `${batterName ? `<strong>${batterName}</strong> ` : ''}stretched the hit with elite speed (Grade ${grade}) (<strong>${fromType} ➔ ${toType}</strong>)`;
+
+      spdUpgradeHTML = `
+      <div style="font-family:'Press Start 2P',monospace; font-size: 9px; color: #38bdf8; background: rgba(56, 189, 248, 0.16); border: 1.5px solid #38bdf8; padding: 7px 10px; border-radius: 8px; margin-bottom: 10px; max-width: 280px; line-height: 1.4; box-shadow: 0 0 14px rgba(56, 189, 248, 0.4); text-shadow: 0 0 6px #38bdf8;">
+        ${badgeTitle}
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 11px; font-weight: normal; color: #e0f2fe; margin-top: 4px; line-height: 1.35;">
+          ${badgeDesc}
+        </div>
+      </div>`;
+
+      const targetBaseId = toType === '3B' ? 'base-3' : 'base-2';
+      const baseEl = document.getElementById(targetBaseId);
+      if (baseEl) triggerBarShake(baseEl, 'base-synergy-flash');
+      if (window.AudioManager) window.AudioManager.play('draft_pick');
+    }
+
     // Era synergy procs get their own highlighted strip instead of blending into the
     // plain detail text — the era name itself is never translated, so matching on it
     // works regardless of UI language. Text-based, doesn't touch simulation.js.
@@ -6055,6 +6087,7 @@ function initGameModeSelector() {
       <div style="font-family:'Press Start 2P',monospace; font-size: 13px; font-weight: bold; color: ${color}; text-shadow: 0 0 10px ${color}; margin-bottom: 12px;">
         ${title}
       </div>
+      ${spdUpgradeHTML}
       <div style="font-size: 12px; color: #e4e4e7; max-width: 280px; line-height: 1.4; margin-bottom: 10px;">
         ${cleanDetails}
       </div>

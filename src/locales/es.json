@@ -692,7 +692,7 @@
     "season_batters_title": "BATEADORES",
     "season_pitchers_title": "LANZADORES",
     "season_recent_games": "ÚLTIMOS PARTIDOS",
-    "season_no_games": "Todavía no jugaste ningún partido.",
+    "season_no_games": "Todavía no has jugado ningún partido.",
     "season_title": "162-0 CHALLENGE",
     "season_regular": "TEMPORADA REGULAR",
     "season_games_count": "Juego {{current}} / {{total}}",
@@ -715,8 +715,8 @@
     "triple": "<span>🔥 3B: <b style=\"color:#06b6d4;\">45 HP</b></span>",
     "hr": "🚀 <strong>HR (Jonrón):</strong> <b style=\"color:#eab308;\">75 HP base</b>",
     "rbi_bonus": "🏆 <strong>Bonus RBI:</strong> Cada carrera impulsada añade <strong style=\"color:#00ff66;\">+10 HP extra</strong> de daño al pitcher.",
-    "steal": "<strong style=\"color: #38bdf8;\">🏃 ROBO DE BASES (SPD ≥ 40):</strong><div style=\"font-size: 8.5px; color: #cbd5e1; margin-top: 2px;\">En 1B o BB con 2B libre, intenta robar (10% a 85% chance). Da <strong style=\"color:#38bdf8;\">+20% daño</strong> al pitcher en sus próximos 2 impactos (se resetea al cambiar de entrada o agotar impactos).</div>",
-    "upgrade": "<strong style=\"color: #a855f7;\">⚡ UPGRADE DE BATAZOS:</strong><div style=\"font-size: 8.5px; color: #cbd5e1; margin-top: 2px;\">• <strong>Grado A (SPD 80-99):</strong> 25% chance de subir hit (1B→2B, 2B→3B).<br>• <strong>Grado S (SPD 100-125):</strong> 50% chance.</div>",
+    "steal": "<strong style=\"color: #38bdf8;\">🏃 ROBO DE BASES (SPD ≥ 40):</strong><div style=\"font-size: 8.5px; color: #cbd5e1; margin-top: 2px;\">En 1B o BB con 2B libre, intenta robar (15% a 90% chance). Da <strong style=\"color:#38bdf8;\">+20% daño</strong> al pitcher en sus próximos 2 impactos (se resetea al cambiar de entrada o agotar impactos).</div>",
+    "upgrade": "<strong style=\"color: #a855f7;\">⚡ UPGRADE DE BATAZOS:</strong><div style=\"font-size: 8.5px; color: #cbd5e1; margin-top: 2px;\">• <strong>Grado B+ (SPD 70-79):</strong> 15% chance.<br>• <strong>Grado A (SPD 80-89):</strong> 25% chance.<br>• <strong>Grado A+ (SPD 90-99):</strong> 35% chance.<br>• <strong>Grado S (SPD 100-125):</strong> 50% chance de subir hit (1B→2B, 2B→3B).</div>",
     "shield_max": "🛡️ Escudo máximo: 50 (50% de la DEF promedio de tus 8 alineados)."
   }
 }

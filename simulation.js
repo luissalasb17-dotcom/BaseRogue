@@ -26,6 +26,17 @@
     return 'F';
   }
 
+  function getSpeedGrade(val) {
+    if (val >= 100) return 'S';
+    if (val >= 90) return 'A+';
+    if (val >= 80) return 'A';
+    if (val >= 70) return 'B+';
+    if (val >= 60) return 'B';
+    if (val >= 40) return 'C';
+    if (val >= 20) return 'D';
+    return 'F';
+  }
+
   function _t(key, options, fallback) {
     if (typeof window.t === 'function') {
       return window.t(key, options);
@@ -33,7 +44,7 @@
     return fallback;
   }
 
-  const HIGH_SPEED_GRADES = new Set(['S', 'A']);
+  const HIGH_SPEED_GRADES = new Set(['S', 'A+', 'A', 'B+']);
 
   // ── PROBABILITY BOUNDARIES ──────────────────────────────────────────────────
   /**
@@ -394,6 +405,7 @@
       let shieldDmg  = 0;
       let runsThisTurn = 0;
       let didSteal   = false;
+      let spdUpgraded = null; // metadata if speed upgraded the hit
       let spdProc    = null; // description of any SPD proc that fired
       let synergyProc = null; // description of any Era Synergy proc that fired
       let errorProc   = null; // description of Genesis Chaos error
@@ -456,7 +468,7 @@
           `${pitcher.name} ${_t('sim.pitcher_dmg_txt', { dmg: pitcherDmg }, 'sufre ' + pitcherDmg + ' HP de daño')}.`;
 
         // Steal Proc Logic on BB if batter ends on 1B and 2B is empty
-        let stealChance = Math.min(0.85, 0.10 + ((effBatter.spd - 40) * 0.01));
+        let stealChance = Math.min(0.90, 0.15 + ((effBatter.spd - 40) * 0.0125));
         let stealHeal = 0;
         let extraStealDmg = 0;
         let debuffTurns = 2;
@@ -658,14 +670,16 @@
           hitType = 'HR';
         }
 
-        const spdGrade = getGrade(effBatter.spd || 50);
-        if (HIGH_SPEED_GRADES.has(spdGrade)) {
-          const upgradeChance = spdGrade === 'S' ? 0.50 : (spdGrade === 'A+' ? 0.40 : 0.25);
+        const spdGrade = getSpeedGrade(effBatter.spd || 50);
+        const upgradeProbMap = { 'S': 0.50, 'A+': 0.35, 'A': 0.25, 'B+': 0.15 };
+        if (upgradeProbMap[spdGrade]) {
+          const upgradeChance = upgradeProbMap[spdGrade];
           if (Math.random() < upgradeChance) {
             const upgrade = { '1B': '2B', '2B': '3B', '3B': '3B', 'HR': 'HR' };
             const newType = upgrade[hitType];
             if (newType !== hitType) {
               spdProc = _t('sim.spd_upgrade', { grade: spdGrade, from: hitType, to: newType }, `⚡ SPD Proc (Grado ${spdGrade}): ¡${hitType} convertido en ${newType}!`);
+              spdUpgraded = { from: hitType, to: newType, grade: spdGrade };
               hitType = newType;
             }
           }
@@ -698,12 +712,13 @@
         }
 
         if (hitType === 'HR') {
+          eventType = 'HR';
+          this.strikeoutChain = 0;
           runsThisTurn = this._advanceHomeRun(batter);
           const runnersOnBase = Math.max(0, runsThisTurn - 1);
           let hrDmg = 75 + (runnersOnBase * 10);
           
           if (batterEra === 'Steroid Era (1994-2005)' && eraSynergy >= 1) {
-            // T1: +15 · T2/T3: +30 · T4: +45. T3+ also heals the team on HR (T3 +10, T4 +20).
             const extraHr = eraSynergy === 4 ? 45 : eraSynergy >= 2 ? 30 : 15;
             hrDmg += extraHr;
             synergyProc = _t('sim.syn_bash_hr', { extra: extraHr }, `💪 Bash Brothers: ¡Jonrón inflige +${extraHr} daño!`);
@@ -717,7 +732,6 @@
           }
 
           // Three True Outcomes T3+: the HR itself also applies the pitcher debuff
-          // (same this.pitcherDebuff mechanism the steal procs use — T3 2t/1.20x, T4 3t/1.30x)
           if (batterEra === 'Modern Era (2016-Pres)' && eraSynergy >= 3) {
             const ttoDebuffTurns = eraSynergy === 4 ? 3 : 2;
             const ttoDebuffMult = eraSynergy === 4 ? 1.30 : 1.20;
@@ -727,78 +741,49 @@
             } else {
               this.pitcherDebuff = { turnsLeft: ttoDebuffTurns, multiplier: ttoDebuffMult };
             }
-            synergyProc = (synergyProc ? synergyProc + ' | ' : '') + _t('sim.syn_tto_hr_debuff', { turns: ttoDebuffTurns }, `🚀 Three True Outcomes: ¡Jonrón debilita al lanzador por ${ttoDebuffTurns} impactos!`);
           }
-
-          // slugger_momentum: HR inflicts +30 extra HP damage
           if (this.hasTrait('slugger_momentum')) hrDmg += 30;
-          // extra_base_impact: extra-base hits (2B/3B/HR) inflict +10 extra HP damage
           if (this.hasTrait('extra_base_impact')) hrDmg += 10;
-
-          pitcherDmg += hrDmg;
-          eventType = 'HR';
-          playText = `🎲 [${roll}] [${_t('sim.label_hr', {}, 'JONRÓN')}] ¡${batter.name} ${_t('sim.hr_desc', { runs: runsThisTurn }, 'CUADRANGULAR de ' + runsThisTurn + ' carreras')}! `;
-
-          // back_to_back: the NEXT batter gets +20 PWR/CON for their turn
           if (this.hasTrait('back_to_back')) this.backToBackPending = true;
 
+          pitcherDmg = hrDmg;
+          hitDesc = _t('sim.hr_desc', { runs: runsThisTurn }, 'CUADRANGULAR de ' + runsThisTurn + ' carreras');
         } else if (hitType === '3B') {
-          runsThisTurn = this._advanceTriple(batter);
-          if (genesisErrorSucceeded) {
-            if (this.bases[2]) { runsThisTurn++; this.bases[2] = null; }
-            if (this.bases[1]) { runsThisTurn++; this.bases[1] = null; }
-            if (this.bases[0]) { runsThisTurn++; this.bases[0] = null; }
-          }
-          pitcherDmg += 45 + (runsThisTurn * 10);
-          // extra_base_impact: extra-base hits (2B/3B/HR) inflict +10 extra HP damage
-          if (this.hasTrait('extra_base_impact')) pitcherDmg += 10;
           eventType = '3B';
-          playText = `🎲 [${roll}] [${_t('sim.label_3b', {}, 'TRIPLE')}] ¡${batter.name} ${_t('sim.3b_desc', {}, 'triple al rincón')}! `;
-
-        } else if (hitType === '2B') {
-          runsThisTurn = this._advanceDouble(batter);
-          if (genesisErrorSucceeded) {
-            if (this.bases[2]) { runsThisTurn++; this.bases[2] = null; }
-            if (this.bases[1]) { runsThisTurn++; this.bases[1] = null; }
-            if (this.bases[0]) { this.bases[2] = this.bases[0]; this.bases[0] = null; }
-          }
-          pitcherDmg += 30 + (runsThisTurn * 10);
-          // extra_base_impact: extra-base hits (2B/3B/HR) inflict +10 extra HP damage
+          this.strikeoutChain = 0;
+          runsThisTurn = this._advanceBases(3, batter, genesisErrorSucceeded);
+          pitcherDmg = 45 + (runsThisTurn * 10);
+          hitDesc = _t('sim.3b_desc', {}, 'triple al rincón');
           if (this.hasTrait('extra_base_impact')) pitcherDmg += 10;
+        } else if (hitType === '2B') {
           eventType = '2B';
-          playText = `🎲 [${roll}] [${_t('sim.label_2b', {}, 'DOBLE')}] ¡${batter.name} ${_t('sim.2b_desc', {}, 'línea violenta por la raya')}! `;
-
+          this.strikeoutChain = 0;
+          runsThisTurn = this._advanceBases(2, batter, genesisErrorSucceeded);
+          pitcherDmg = 30 + (runsThisTurn * 10);
+          hitDesc = _t('sim.2b_desc', {}, 'línea violenta por la raya');
+          if (this.hasTrait('extra_base_impact')) pitcherDmg += 10;
         } else {
+          eventType = '1B';
+          this.strikeoutChain = 0;
           let deadballDoubleAdvance = false;
           if (batterEra === 'Deadball (1901-1919)' && eraSynergy >= 1) {
-            // T1: 20% · T2/T3: 40% (T3 also unlocks the BB chance above) · T4: 55%
             const doubleChance = eraSynergy === 4 ? 0.55 : eraSynergy >= 2 ? 0.40 : 0.20;
             if (Math.random() < doubleChance) {
               deadballDoubleAdvance = true;
-              synergyProc = _t('sim.syn_smallball', {}, '⏳ Small Ball: ¡Avanzan 2 bases en sencillo!');
+              synergyProc = (synergyProc ? synergyProc + ' | ' : '') + _t('sim.syn_smallball', {}, '⏳ Small Ball: ¡Avanzan 2 bases en sencillo!');
             }
           }
-
-          runsThisTurn = this._advanceSingle(batter, deadballDoubleAdvance);
-
-          if (genesisErrorSucceeded) {
-            if (this.bases[2]) { runsThisTurn++; this.bases[2] = null; }
-            if (this.bases[1]) { this.bases[2] = this.bases[1]; this.bases[1] = null; }
-            if (this.bases[0]) { this.bases[1] = this.bases[0]; this.bases[0] = null; }
-          }
-
-          pitcherDmg += 15 + (runsThisTurn * 10);
-          eventType = '1B';
-          playText = `🎲 [${roll}] [${_t('sim.label_1b', {}, 'SENCILLO')}] ¡${batter.name} ${_t('sim.1b_desc', {}, 'imparable raso')}! `;
+          runsThisTurn = this._advanceBases(1, batter, genesisErrorSucceeded || deadballDoubleAdvance);
+          pitcherDmg = 15 + (runsThisTurn * 10);
+          hitDesc = _t('sim.1b_desc', {}, 'imparable raso');
         }
 
-        if (batterEra === 'Golden Era (1920-1941)' && eraSynergy >= 1) {
+        if (batterEra === 'Liveball (1942-1960)' && eraSynergy >= 1) {
           const extraGolden = eraSynergy === 4 ? 18 : eraSynergy >= 2 ? 12 : 6;
           pitcherDmg += extraGolden;
           synergyProc = (synergyProc ? synergyProc + ' | ' : '') + _t('sim.syn_liveball_dmg', { extra: extraGolden }, `🔥 Liveball Sluggers: +${extraGolden} daño.`);
         }
 
-        // reliever_ambush: the first hit against a newly-entered pitcher deals +50% damage
         if (this.freshPitcherBonusAvailable) {
           pitcherDmg = Math.round(pitcherDmg * 1.5);
           traitProc = (traitProc ? traitProc + ' | ' : '') + '🔥 Emboscada al Relevista: +50% daño (primer batazo contra este lanzador).';
@@ -809,7 +794,7 @@
         pitcherDmg = this._applyDebuffToPitcherDmg(pitcherDmg);
 
         if (eventType === '1B') {
-          let stealChance = Math.min(0.85, 0.10 + ((effBatter.spd - 40) * 0.01));
+          let stealChance = Math.min(0.90, 0.15 + ((effBatter.spd - 40) * 0.0125));
           let stealHeal = 0;
           let extraStealDmg = 0;
           let debuffTurns = 2;
@@ -842,7 +827,6 @@
             stealProcMsg = _t('sim.syn_bighair', {}, 'Sinergia Big Hair');
           }
 
-          // speed_demons: SPD > 60 batters steal automatically, debuff never shorter than 3 turns
           if (this.hasTrait('speed_demons') && (effBatter.spd || 0) > 60) {
             stealChance = 1.0;
             debuffTurns = Math.max(debuffTurns, 3);
@@ -863,8 +847,8 @@
             
             let spdMsg = `🏃 ${_t('sim.steal_label', {}, '¡ROBO DE BASE!')} ${batter.name} ${_t('sim.steal_desc', {}, 'se roba la segunda base')}.`;
             if (stealProcMsg) spdMsg += ` (${stealProcMsg})`;
-            const impLabel2 = this.pitcherDebuff.turnsLeft === 1 ? _t('sim.debuff_turn_s', {}, 'impacto restante') : _t('sim.debuff_turns_p', {}, 'impactos restantes');
-            spdMsg += ` ${_t('sim.debuff_note', {}, 'Debuff de +20% daño')} (${this.pitcherDebuff.turnsLeft} ${impLabel2}).`;
+            const impLabel = this.pitcherDebuff.turnsLeft === 1 ? _t('sim.debuff_turn_s', {}, 'impacto restante') : _t('sim.debuff_turns_p', {}, 'impactos restantes');
+            spdMsg += ` ${_t('sim.debuff_note', {}, 'Debuff de +20% daño')} (${this.pitcherDebuff.turnsLeft} ${impLabel}).`;
             
             if (stealHeal > 0) {
               batter.stamina = Math.min(100, (batter.stamina || 100) + stealHeal);
@@ -1134,7 +1118,7 @@
     }
 
     // ── INTERNAL: event logger ───────────────────────────────────────
-    logEvent(playType, playText, eventType, activeBatter = '', teamHpDmg = 0, pitcherDmg = 0, runsThisTurn = 0, didSteal = false) {
+    logEvent(playType, playText, eventType, activeBatter = '', teamHpDmg = 0, pitcherDmg = 0, runsThisTurn = 0, didSteal = false, spdUpgraded = null) {
       const pitcher = this.activePitcher;
       const ev = {
         playType,
@@ -1143,6 +1127,7 @@
         activeBatter,
         runsThisTurn,
         didSteal,
+        spdUpgraded,
         activePitcher: pitcher ? {
           name:   pitcher.name,
           hp:     pitcher.hp,

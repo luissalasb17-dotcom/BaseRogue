@@ -715,8 +715,8 @@
     "triple": "<span>🔥 3B: <b style=\"color:#06b6d4;\">45 HP</b></span>",
     "hr": "🚀 <strong>HR (Home Run):</strong> <b style=\"color:#eab308;\">75 HP base</b>",
     "rbi_bonus": "🏆 <strong>RBI Bonus:</strong> Each RBI adds <strong style=\"color:#00ff66;\">+10 extra HP</strong> damage to pitcher.",
-    "steal": "<strong style=\"color: #38bdf8;\">🏃 BASE STEALING (SPD ≥ 40):</strong><div style=\"font-size: 8.5px; color: #cbd5e1; margin-top: 2px;\">On 1B or BB with 2B open, attempts to steal (10% to 85% chance). Grants <strong style=\"color:#38bdf8;\">+20% damage</strong> to pitcher on next 2 impacts.</div>",
-    "upgrade": "<strong style=\"color: #a855f7;\">⚡ HIT UPGRADES:</strong><div style=\"font-size: 8.5px; color: #cbd5e1; margin-top: 2px;\">• <strong>Grade A (SPD 80-99):</strong> 25% chance to upgrade hit (1B→2B, 2B→3B).<br>• <strong>Grade S (SPD 100-125):</strong> 50% chance.</div>",
+    "steal": "<strong style=\"color: #38bdf8;\">🏃 BASE STEALING (SPD ≥ 40):</strong><div style=\"font-size: 8.5px; color: #cbd5e1; margin-top: 2px;\">On 1B or BB with 2B open, attempts to steal (15% to 90% chance). Grants <strong style=\"color:#38bdf8;\">+20% damage</strong> to pitcher on next 2 impacts.</div>",
+    "upgrade": "<strong style=\"color: #a855f7;\">⚡ HIT UPGRADES:</strong><div style=\"font-size: 8.5px; color: #cbd5e1; margin-top: 2px;\">• <strong>Grade B+ (SPD 70-79):</strong> 15% chance.<br>• <strong>Grade A (SPD 80-89):</strong> 25% chance.<br>• <strong>Grade A+ (SPD 90-99):</strong> 35% chance.<br>• <strong>Grade S (SPD 100-125):</strong> 50% chance to upgrade hit (1B→2B, 2B→3B).</div>",
     "shield_max": "🛡️ Max shield: 50 (50% of average DEF of your 8 starters)."
   }
 }
