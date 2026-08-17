@@ -100,7 +100,7 @@
   }
 
   function getPlayerCareerData(p) {
-    if (!p) return { war: '-', mvp: 0, roy: 0, ss: 0, gg: 0, allstars: 0, hof: false };
+    if (!p) return { war: '-', mvp: 0, roy: 0, ss: 0, gg: 0, cy: 0, rel: 0, allstars: 0, hof: false };
     const cleanName = p.name ? p.name.replace(/\s\(.*?\)$/, '').trim() : '';
     const keyWithYear = `${cleanName}_${p.year}`;
     const db = window.CAREER_STATS_DB || {};
@@ -109,11 +109,13 @@
     if (entry) {
       return {
         war: (entry.war !== null && entry.war !== undefined) ? entry.war : (p.ovr ? (p.ovr / 10).toFixed(1) : '-'),
-        mvp: entry.mvp || 0,
-        roy: entry.roy || 0,
-        ss: entry.ss || 0,
-        gg: entry.gg || p.gold_gloves || 0,
-        allstars: entry.allstars || p.allstars || 0,
+        mvp: entry.mvp !== undefined ? entry.mvp : (p.mvp || 0),
+        roy: entry.roy !== undefined ? entry.roy : (p.roy || 0),
+        ss: entry.ss !== undefined ? entry.ss : (p.silver_sluggers || p.ss || 0),
+        gg: entry.gg !== undefined ? entry.gg : (p.gold_gloves || p.gg || 0),
+        cy: entry.cy !== undefined ? entry.cy : (p.cy_youngs || p.cy || 0),
+        rel: entry.rel !== undefined ? entry.rel : (p.reliever_awards || p.rel || 0),
+        allstars: entry.allstars !== undefined ? entry.allstars : (p.allstars || 0),
         hof: entry.hof !== undefined ? entry.hof : (p.hof || false)
       };
     }
@@ -122,8 +124,10 @@
       war: p.ovr ? (p.ovr / 10).toFixed(1) : '-',
       mvp: p.mvp || 0,
       roy: p.roy || 0,
-      ss: p.ss || 0,
-      gg: p.gold_gloves || 0,
+      ss: p.silver_sluggers || p.ss || 0,
+      gg: p.gold_gloves || p.gg || 0,
+      cy: p.cy_youngs || p.cy || 0,
+      rel: p.reliever_awards || p.rel || 0,
       allstars: p.allstars || 0,
       hof: p.hof || false
     };
@@ -710,12 +714,21 @@
           <div style="background:#111827;border-radius:8px;padding:12px">
             <div style="font-family:'Press Start 2P',monospace;font-size:7px;color:#38bdf8;margin-bottom:10px;text-align:center">${(typeof window.t === 'function' ? window.t('dex.career_header') : 'CARRERA / CAREER (MLB)')}</div>
             <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:10px;text-align:center">
-              <div><div style="font-size:13px;font-weight:bold;color:#fff">${careerStats.allstars}</div><div style="font-size:7px;color:#6b7280;margin-top:2px">ALL-STARS</div></div>
-              <div><div style="font-size:13px;font-weight:bold;color:#ffd700">${careerStats.gg}</div><div style="font-size:7px;color:#6b7280;margin-top:2px">GG</div></div>
-              <div><div style="font-size:13px;font-weight:bold;color:#eab308">${careerStats.mvp}</div><div style="font-size:7px;color:#6b7280;margin-top:2px">MVP</div></div>
-              <div><div style="font-size:13px;font-weight:bold;color:#38bdf8">${careerStats.ss}</div><div style="font-size:7px;color:#6b7280;margin-top:2px">SS</div></div>
-              <div><div style="font-size:13px;font-weight:bold;color:#a7f3d0">${careerStats.roy}</div><div style="font-size:7px;color:#6b7280;margin-top:2px">ROY</div></div>
-              <div><div style="font-size:13px;font-weight:bold;color:#00ff66">${careerStats.war}</div><div style="font-size:7px;color:#6b7280;margin-top:2px">${(typeof window.t === 'function' ? window.t('dex.war_label') : 'WAR')}</div></div>
+              ${isPitcher ? `
+                <div><div style="font-size:13px;font-weight:bold;color:#fff">${careerStats.allstars}</div><div style="font-size:7px;color:#6b7280;margin-top:2px" title="All-Star">${(typeof window.t === 'function' ? window.t('dex.allstars_label') : 'ALL-STARS')}</div></div>
+                <div><div style="font-size:13px;font-weight:bold;color:#38bdf8">${careerStats.cy}</div><div style="font-size:7px;color:#6b7280;margin-top:2px" title="Cy Young Award">${(typeof window.t === 'function' ? window.t('dex.cy_label') : 'CY YOUNG')}</div></div>
+                <div><div style="font-size:13px;font-weight:bold;color:#eab308">${careerStats.mvp}</div><div style="font-size:7px;color:#6b7280;margin-top:2px" title="Most Valuable Player">${(typeof window.t === 'function' ? window.t('dex.mvp_label') : 'MVP')}</div></div>
+                <div><div style="font-size:13px;font-weight:bold;color:#f59e0b">${careerStats.rel}</div><div style="font-size:7px;color:#6b7280;margin-top:2px" title="Reliever of the Year / Fireman of the Year">${(typeof window.t === 'function' ? window.t('dex.rel_label') : 'RELEVISTA')}</div></div>
+                <div><div style="font-size:13px;font-weight:bold;color:#ffd700">${careerStats.gg}</div><div style="font-size:7px;color:#6b7280;margin-top:2px" title="Gold Glove">${(typeof window.t === 'function' ? window.t('dex.gg_label') : 'GG')}</div></div>
+                <div><div style="font-size:13px;font-weight:bold;color:#00ff66">${careerStats.war}</div><div style="font-size:7px;color:#6b7280;margin-top:2px" title="Wins Above Replacement">${(typeof window.t === 'function' ? window.t('dex.war_label') : 'WAR')}</div></div>
+              ` : `
+                <div><div style="font-size:13px;font-weight:bold;color:#fff">${careerStats.allstars}</div><div style="font-size:7px;color:#6b7280;margin-top:2px" title="All-Star">${(typeof window.t === 'function' ? window.t('dex.allstars_label') : 'ALL-STARS')}</div></div>
+                <div><div style="font-size:13px;font-weight:bold;color:#ffd700">${careerStats.gg}</div><div style="font-size:7px;color:#6b7280;margin-top:2px" title="Gold Glove">${(typeof window.t === 'function' ? window.t('dex.gg_label') : 'GG')}</div></div>
+                <div><div style="font-size:13px;font-weight:bold;color:#eab308">${careerStats.mvp}</div><div style="font-size:7px;color:#6b7280;margin-top:2px" title="Most Valuable Player">${(typeof window.t === 'function' ? window.t('dex.mvp_label') : 'MVP')}</div></div>
+                <div><div style="font-size:13px;font-weight:bold;color:#38bdf8">${careerStats.ss}</div><div style="font-size:7px;color:#6b7280;margin-top:2px" title="Silver Slugger">${(typeof window.t === 'function' ? window.t('dex.ss_label') : 'SS')}</div></div>
+                <div><div style="font-size:13px;font-weight:bold;color:#a7f3d0">${careerStats.roy}</div><div style="font-size:7px;color:#6b7280;margin-top:2px" title="Rookie of the Year">${(typeof window.t === 'function' ? window.t('dex.roy_label') : 'ROY')}</div></div>
+                <div><div style="font-size:13px;font-weight:bold;color:#00ff66">${careerStats.war}</div><div style="font-size:7px;color:#6b7280;margin-top:2px" title="Wins Above Replacement">${(typeof window.t === 'function' ? window.t('dex.war_label') : 'WAR')}</div></div>
+              `}
             </div>
           </div>
         </div>

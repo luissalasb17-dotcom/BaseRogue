@@ -89,6 +89,19 @@ mvp_pid = awards_df[awards_df['awardID'] == 'Most Valuable Player'].groupby('pla
 roy_pid = awards_df[awards_df['awardID'] == 'Rookie of the Year'].groupby('playerID').size().to_dict()
 ss_pid = awards_df[awards_df['awardID'] == 'Silver Slugger'].groupby('playerID').size().to_dict()
 gg_pid = awards_df[awards_df['awardID'] == 'Gold Glove'].groupby('playerID').size().to_dict()
+cy_pid = awards_df[awards_df['awardID'] == 'Cy Young Award'].groupby('playerID').size().to_dict()
+
+# Reliever of the Year (Reliever of the Year, TSN Reliever of the Year, TSN Fireman of the Year, Rolaids Relief Man)
+reliever_ids = [
+    'Reliever of the Year Award',
+    'Reliever of the Year',
+    'TSN Reliever of the Year',
+    'TSN Fireman of the Year',
+    'This Year in Baseball Closer of the Year'
+]
+rel_df = awards_df[awards_df['awardID'].isin(reliever_ids)]
+rel_pid = rel_df.groupby(['playerID', 'yearID']).size().reset_index().groupby('playerID').size().to_dict()
+
 as_pid = allstar_df.groupby('playerID').size().to_dict()
 
 SR_JR_EXPLICIT = {
@@ -127,6 +140,8 @@ for _, row in people_df.iterrows():
         'roy': int(roy_pid.get(pid, 0)),
         'ss': int(ss_pid.get(pid, 0)),
         'gg': int(gg_pid.get(pid, 0)),
+        'cy': int(cy_pid.get(pid, 0)),
+        'rel': int(rel_pid.get(pid, 0)),
         'allstars': int(as_pid.get(pid, 0)),
         'hof': bool(pid in hof_pids)
     }
