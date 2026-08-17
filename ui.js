@@ -106,10 +106,11 @@ window.showScreen = function(screenId) {
   if (screenMenu) screenMenu.classList.add('hidden');
   if (gameWorkspace) gameWorkspace.classList.remove('hidden');
 
-  // Clean layout during initial 9-round draft (hide sidebars & HUD until draft completes / run starts)
+  // Clean layout during initial 9-round draft or challenge playoff matches
   const isInitialDraft = screenId === 'screen-draft' && window.Game && window.Game.draftRound <= 9;
+  const isChallengePlayoffs = window.Game && window.Game.isChallenge162PlayoffMatch;
   
-  if (isInitialDraft) {
+  if (isInitialDraft || isChallengePlayoffs) {
     if (hud) hud.classList.add('hidden');
     if (leftSidebar) leftSidebar.classList.add('hidden');
     if (rightSidebar) rightSidebar.classList.add('hidden');
@@ -123,6 +124,12 @@ window.showScreen = function(screenId) {
   innerScreens.forEach(id => {
     const s = document.getElementById(id);
     if (s) s.classList.add('hidden');
+  });
+
+  const allChallengeScreens = ['screen-challenge-roster', 'screen-challenge-season', 'screen-challenge-playoffs', 'screen-challenge-results'];
+  allChallengeScreens.forEach(id => {
+    const s = document.getElementById(id);
+    if (s && id !== screenId) s.classList.add('hidden');
   });
 
   const target = document.getElementById(screenId);
@@ -3573,7 +3580,7 @@ function initGameModeSelector() {
 
     // Map node clicks
     el.mapContainer.addEventListener('click', (e) => {
-      const nodeEl = e.target.closest('.map-node-visual.active-path, .map-node.active-path');
+      const nodeEl = e.target.closest('.map-node-visual.active-path, .map-node.active-path, .map-node-group.node-is-active');
       if (!nodeEl) return;
 
       const stage = parseInt(nodeEl.getAttribute('data-stage'));
@@ -4285,19 +4292,27 @@ function initGameModeSelector() {
             const isVisitedPath = node.visited && targetNode?.visited;
             const isActivePath  = (s + 1 === currentStage) && node.visited;
 
-            // Glow behind active/visited
-            if (isVisitedPath || isActivePath) {
+            // Glow behind active paths
+            if (isActivePath) {
               const gp = document.createElementNS(svgNS, 'line');
               gp.setAttribute('x1', p1.x); gp.setAttribute('y1', p1.y);
               gp.setAttribute('x2', p2.x); gp.setAttribute('y2', p2.y);
               gp.setAttribute('stroke', targetVis.color);
-              gp.setAttribute('stroke-width', isActivePath ? '8' : '5');
-              gp.setAttribute('opacity', isActivePath ? '0.45' : '0.25');
-              gp.setAttribute('filter', `url(#${isActivePath ? 'glow-active' : 'glow-visited'}-z${zoneIdx})`);
+              gp.setAttribute('stroke-width', '8');
+              gp.setAttribute('opacity', '0.5');
+              gp.setAttribute('filter', `url(#glow-active-z${zoneIdx})`);
+              svg.appendChild(gp);
+            } else if (isVisitedPath) {
+              const gp = document.createElementNS(svgNS, 'line');
+              gp.setAttribute('x1', p1.x); gp.setAttribute('y1', p1.y);
+              gp.setAttribute('x2', p2.x); gp.setAttribute('y2', p2.y);
+              gp.setAttribute('stroke', '#10b981');
+              gp.setAttribute('stroke-width', '4');
+              gp.setAttribute('opacity', '0.25');
               svg.appendChild(gp);
             }
 
-            // Main dashed line
+            // Main line
             const line = document.createElementNS(svgNS, 'line');
             line.setAttribute('x1', p1.x); line.setAttribute('y1', p1.y);
             line.setAttribute('x2', p2.x); line.setAttribute('y2', p2.y);
@@ -4310,16 +4325,15 @@ function initGameModeSelector() {
               line.setAttribute('stroke-dasharray', '8,4');
               line.classList.add('path-active-anim');
             } else if (isVisitedPath) {
-              line.setAttribute('stroke', targetVis.color);
-              line.setAttribute('stroke-width', '3');
-              line.setAttribute('stroke-dasharray', '8,4');
-              line.setAttribute('opacity', '0.5');
-            } else {
-              // Future path tinted with destination node's color
-              line.setAttribute('stroke', targetVis.color);
+              line.setAttribute('stroke', '#10b981');
               line.setAttribute('stroke-width', '2.5');
-              line.setAttribute('stroke-dasharray', '6,6');
-              line.setAttribute('opacity', '0.35');
+              line.setAttribute('stroke-dasharray', '6,4');
+              line.setAttribute('opacity', '0.6');
+            } else {
+              // Future / inactive path: subtle, unobtrusive dark line
+              line.setAttribute('stroke', 'rgba(255, 255, 255, 0.12)');
+              line.setAttribute('stroke-width', '1.5');
+              line.setAttribute('stroke-dasharray', '4,4');
             }
             svg.appendChild(line);
           });
@@ -4340,94 +4354,121 @@ function initGameModeSelector() {
           const isPast          = (s < currentStage);
           const isActive        = (s === currentStage) && activeNextNodeIdxs.includes(idx);
           const isFutureVisible = (s > currentStage) && !isVisited;
-          const isDisabled      = !isActive && !isPast && !isVisited && !isFutureVisible;
 
-          // Outer glow ring for active nodes ONLY
+          const group = document.createElementNS(svgNS, 'g');
+          group.setAttribute('class', `map-node-group ${isActive ? 'node-is-active' : (isVisited ? 'node-is-visited' : (isFutureVisible ? 'node-is-future' : 'node-is-past'))}`);
           if (isActive) {
+            group.setAttribute('data-stage', s);
+            group.setAttribute('data-index', idx);
+            group.setAttribute('id', `node_${s}_${idx}`);
+            group.style.cursor = 'pointer';
+          }
+
+          // Outer radar & glow pulse for ACTIVE nodes
+          if (isActive) {
+            const radar = document.createElementNS(svgNS, 'circle');
+            radar.setAttribute('cx', pos.x); radar.setAttribute('cy', pos.y);
+            radar.setAttribute('r', isBossStage ? NODE_R + 10 : NODE_R + 6);
+            radar.setAttribute('fill', 'none');
+            radar.setAttribute('stroke', vis.color);
+            radar.setAttribute('stroke-width', '2');
+            radar.classList.add('map-radar-pulse');
+            group.appendChild(radar);
+
             const glow = document.createElementNS(svgNS, 'circle');
             glow.setAttribute('cx', pos.x); glow.setAttribute('cy', pos.y);
-            glow.setAttribute('r', isBossStage ? NODE_R + 14 : NODE_R + 10);
+            glow.setAttribute('r', isBossStage ? NODE_R + 14 : NODE_R + 9);
             glow.setAttribute('fill', 'none');
             glow.setAttribute('stroke', vis.color);
             glow.setAttribute('stroke-width', '3');
-            glow.setAttribute('stroke-dasharray', '6,3');
+            glow.setAttribute('stroke-dasharray', '5,3');
             glow.setAttribute('opacity', '0.9');
             glow.setAttribute('filter', `url(#glow-active-z${zoneIdx})`);
-            svg.appendChild(glow);
+            group.appendChild(glow);
           }
 
-          // Ground shadow — gives the node a sense of sitting "on" the map
-          // instead of floating flat against it (the reference the user
-          // pointed to — Pokelike's map — reads more physical/polished
-          // partly because of touches like this).
+          // Ground shadow
           const nodeRadiusForShadow = isBossStage ? NODE_R + 8 : NODE_R + 3;
           const shadow = document.createElementNS(svgNS, 'ellipse');
           shadow.setAttribute('cx', pos.x);
           shadow.setAttribute('cy', pos.y + nodeRadiusForShadow * 0.72);
           shadow.setAttribute('rx', nodeRadiusForShadow * 0.85);
           shadow.setAttribute('ry', nodeRadiusForShadow * 0.26);
-          shadow.setAttribute('fill', 'rgba(0,0,0,0.4)');
+          shadow.setAttribute('fill', 'rgba(0,0,0,0.5)');
           shadow.style.pointerEvents = 'none';
-          svg.appendChild(shadow);
+          group.appendChild(shadow);
 
-          // 8-Bit Pixel Outer Border Circle
+          // Outer Border Circle (Black retro ring)
           const outerCircle = document.createElementNS(svgNS, 'circle');
           outerCircle.setAttribute('cx', pos.x); outerCircle.setAttribute('cy', pos.y);
           outerCircle.setAttribute('r', isBossStage ? NODE_R + 8 : NODE_R + 3);
           outerCircle.setAttribute('fill', '#000000');
-          svg.appendChild(outerCircle);
+          outerCircle.setAttribute('stroke', isActive ? vis.color : (isFutureVisible ? 'rgba(255,255,255,0.08)' : (isVisited ? '#10b981' : '#1e293b')));
+          outerCircle.setAttribute('stroke-width', isActive ? '2' : '1');
+          group.appendChild(outerCircle);
 
-          // Node circle
+          // Node Main Circle
           const circle = document.createElementNS(svgNS, 'circle');
           circle.setAttribute('cx', pos.x); circle.setAttribute('cy', pos.y);
           circle.setAttribute('r', isBossStage ? NODE_R + 5 : NODE_R);
+          circle.setAttribute('class', 'node-circle-main');
 
           if (isActive) {
             circle.setAttribute('fill', vis.bg);
             circle.setAttribute('stroke', vis.color);
             circle.setAttribute('stroke-width', isBossStage ? '4' : '3');
           } else if (isFutureVisible) {
-            // Future visible node: attenuated color (borde/fondo con opacidad reducida, sin glow)
-            circle.setAttribute('fill', vis.bg);
-            circle.setAttribute('stroke', vis.color);
-            circle.setAttribute('stroke-width', isBossStage ? '3.5' : '2.5');
-            circle.setAttribute('opacity', '0.75');
-          } else if (isPast || isVisited) {
-            // Visited/past node: desaturated dark slate
-            circle.setAttribute('fill', '#1e293b');
-            circle.setAttribute('stroke', '#475569');
+            // Future inactive node: Dark slate background + dimmed muted border
+            circle.setAttribute('fill', isBossStage ? '#181206' : '#0a101d');
+            circle.setAttribute('stroke', isBossStage ? '#854d0e' : (vis.color || '#38bdf8'));
+            circle.setAttribute('stroke-opacity', isBossStage ? '0.6' : '0.35');
+            circle.setAttribute('stroke-width', isBossStage ? '2.5' : '1.5');
+            circle.setAttribute('stroke-dasharray', '4,3');
+          } else if (isVisited) {
+            // Visited node: Dark green tint + emerald border
+            circle.setAttribute('fill', '#051b11');
+            circle.setAttribute('stroke', '#10b981');
             circle.setAttribute('stroke-width', '2');
-            circle.setAttribute('opacity', '0.5');
           } else {
-            // Disabled/blocked node
-            circle.setAttribute('fill', '#0f172a');
-            circle.setAttribute('stroke', '#334155');
-            circle.setAttribute('stroke-width', '1.5');
-            circle.setAttribute('opacity', '0.3');
+            // Past skipped node: Dark disabled
+            circle.setAttribute('fill', '#070a10');
+            circle.setAttribute('stroke', '#1e293b');
+            circle.setAttribute('stroke-width', '1');
+            circle.setAttribute('opacity', '0.4');
           }
-          svg.appendChild(circle);
+          group.appendChild(circle);
 
-          // Glossy highlight sheen — a soft light patch toward the upper-left
-          // of every node, purely additive (no per-type gradients to manage),
-          // for the same "glossy pixel badge" pop the reference map has.
+          // Glossy highlight sheen
           const sheenR = isBossStage ? NODE_R + 5 : NODE_R;
           const sheen = document.createElementNS(svgNS, 'ellipse');
           sheen.setAttribute('cx', pos.x - sheenR * 0.32);
           sheen.setAttribute('cy', pos.y - sheenR * 0.38);
           sheen.setAttribute('rx', sheenR * 0.55);
           sheen.setAttribute('ry', sheenR * 0.32);
-          sheen.setAttribute('fill', 'rgba(255,255,255,0.22)');
-          sheen.setAttribute('opacity', (isActive || isFutureVisible) ? '1' : '0.35');
+          sheen.setAttribute('fill', 'rgba(255,255,255,0.25)');
+          sheen.setAttribute('opacity', isActive ? '1' : (isFutureVisible ? '0.12' : (isVisited ? '0.2' : '0.05')));
           sheen.style.pointerEvents = 'none';
-          svg.appendChild(sheen);
+          group.appendChild(sheen);
 
-          // Node Font Awesome Icon via foreignObject
+          // Node Font Awesome Icon
           const iconSize = isBossStage ? 26 : 14;
           const foSize   = isBossStage ? 48 : 32;
-          const iconColor = isActive 
-            ? vis.color 
-            : (isFutureVisible ? vis.color : (isPast || isVisited ? '#64748b' : '#334155'));
-          const iconOpacity = isActive ? '1.0' : (isFutureVisible ? '0.8' : '0.5');
+          
+          let iconColor, iconOpacity;
+          if (isActive) {
+            iconColor = vis.color;
+            iconOpacity = '1.0';
+          } else if (isVisited) {
+            iconColor = '#10b981';
+            iconOpacity = '0.85';
+          } else if (isFutureVisible) {
+            // Inactive future: muted icon
+            iconColor = isBossStage ? '#a16207' : (vis.color || '#64748b');
+            iconOpacity = '0.45';
+          } else {
+            iconColor = '#334155';
+            iconOpacity = '0.25';
+          }
 
           const fo = document.createElementNS(svgNS, 'foreignObject');
           fo.setAttribute('x', pos.x - foSize / 2);
@@ -4436,29 +4477,43 @@ function initGameModeSelector() {
           fo.setAttribute('height', foSize);
           fo.style.pointerEvents = 'none';
 
+          const iconHtml = isVisited
+            ? `<i class="fa-solid fa-check" style="color:#10b981;font-size:${iconSize}px;"></i>`
+            : `<i class="${vis.iconClass}"></i>`;
+
           fo.innerHTML = `
-            <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:${iconColor};opacity:${iconOpacity};font-size:${iconSize}px;filter:drop-shadow(0 2px 3px rgba(0,0,0,0.8));">
-              <i class="${vis.iconClass}"></i>
+            <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:${iconColor};opacity:${iconOpacity};font-size:${iconSize}px;filter:${isActive ? 'drop-shadow(0 2px 4px rgba(0,0,0,0.9))' : 'none'};">
+              ${iconHtml}
             </div>
           `;
-          svg.appendChild(fo);
+          group.appendChild(fo);
 
           // Node type label below
           const lbl = document.createElementNS(svgNS, 'text');
           lbl.setAttribute('x', pos.x); 
           lbl.setAttribute('y', pos.y + (isBossStage ? NODE_R + 20 : NODE_R + 15));
           lbl.setAttribute('text-anchor', 'middle');
-          lbl.setAttribute('fill', isActive 
-            ? vis.color 
-            : (isFutureVisible ? 'rgba(255,255,255,0.75)' : (isPast || isVisited ? '#475569' : '#334155')));
           lbl.setAttribute('font-family', "'VT323', monospace");
-          // Labels like "CLASSIC SERIES" / "BATTING CAGE" at the desktop
-          // size (14) are wider than a 3-per-row mobile slot (~65 SVG units
-          // at SVG_W=260), so neighboring labels ran into each other. Mobile
-          // gets a meaningfully smaller label size — the nodes themselves
-          // don't shrink, just the text underneath them.
           lbl.setAttribute('font-size', isMobileMap ? '8' : '14');
-          lbl.setAttribute('font-weight', 'bold');
+
+          if (isActive) {
+            lbl.setAttribute('fill', vis.color);
+            lbl.setAttribute('font-weight', 'bold');
+            lbl.style.filter = `drop-shadow(0 0 6px ${vis.color}88)`;
+          } else if (isVisited) {
+            lbl.setAttribute('fill', '#10b981');
+            lbl.setAttribute('font-weight', 'bold');
+            lbl.setAttribute('opacity', '0.65');
+          } else if (isFutureVisible) {
+            // Future label: clean muted slate
+            lbl.setAttribute('fill', isBossStage ? '#ca8a04' : '#64748b');
+            lbl.setAttribute('font-weight', 'normal');
+            lbl.setAttribute('opacity', '0.75');
+          } else {
+            lbl.setAttribute('fill', '#334155');
+            lbl.setAttribute('opacity', '0.25');
+          }
+
           const rawLabel = node.label || vis.label;
           let translatedLabel = rawLabel;
           if (rawLabel === 'SERIE CLÁSICA') translatedLabel = t('map.node_classic');
@@ -4471,21 +4526,22 @@ function initGameModeSelector() {
           else if (rawLabel === 'CAMPEÓN LIGA') translatedLabel = t('map.node_pennant', 'CAMPEÓN LIGA');
           else if (rawLabel === 'SERIE MUNDIAL') translatedLabel = t('map.node_world_series', 'SERIE MUNDIAL');
           lbl.textContent = translatedLabel;
-          svg.appendChild(lbl);
+          group.appendChild(lbl);
 
-          // Invisible click target for active nodes
+          // Click target for active nodes
           if (isActive) {
             const hit = document.createElementNS(svgNS, 'circle');
             hit.setAttribute('cx', pos.x); hit.setAttribute('cy', pos.y);
             hit.setAttribute('r', isBossStage ? NODE_R + 16 : NODE_R + 12);
             hit.setAttribute('fill', 'transparent');
             hit.style.cursor = 'pointer';
-            hit.setAttribute('id', `node_${s}_${idx}`);
+            hit.classList.add('map-node-visual', 'active-path');
             hit.setAttribute('data-stage', s);
             hit.setAttribute('data-index', idx);
-            hit.classList.add('map-node-visual', 'active-path');
-            svg.appendChild(hit);
+            group.appendChild(hit);
           }
+
+          svg.appendChild(group);
         });
       }
 

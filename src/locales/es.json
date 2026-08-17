@@ -693,6 +693,9 @@
     "season_pitchers_title": "LANZADORES",
     "season_recent_games": "ÚLTIMOS PARTIDOS",
     "season_no_games": "Todavía no jugaste ningún partido.",
+    "season_title": "162-0 CHALLENGE",
+    "season_regular": "TEMPORADA REGULAR",
+    "season_games_count": "Juego {{current}} / {{total}}",
     "table_player": "Jugador",
     "game_counter": "Partido {{current}} / {{total}}"
   },

@@ -204,8 +204,8 @@ def paso_2_identificar_pitchers_puros(fielding):
                  .drop_duplicates(subset="playerID")
     )
     pure_pitchers = set(primary_pos[primary_pos["POS"] == "P"]["playerID"])
-    # Incluir variantes duales canónicas
-    for dual_id in ["eckerde01_sp", "eckerde01_rp", "smoltjo01_sp", "smoltjo01_rp"]:
+    # Incluir variantes duales canónicas y leyendas históricas de dos vías (Ruth)
+    for dual_id in ["eckerde01_sp", "eckerde01_rp", "smoltjo01_sp", "smoltjo01_rp", "ruthba01"]:
         pure_pitchers.add(dual_id)
     print(f"  {len(pure_pitchers):,} pitchers puros identificados")
     return pure_pitchers
@@ -420,9 +420,11 @@ def paso_4_pico_pitching(pitching, war_pitch, people):
     )
     nlb_counts = pico_df.groupby("playerID")["is_nlb_season"].sum()
 
-    # Conteo de temporadas como SP en el pico (temporadas donde GS/G >= 0.50)
-    pico_df["is_sp_season"] = (pico_df["GS"] / pico_df["G"].replace(0, 1) >= 0.50)
+    # Índice de Dedicación Anual en el pico (GS / G en cada temporada)
+    pico_df["sp_dedication"] = (pico_df["GS"] / pico_df["G"].replace(0, np.nan)).fillna(0.0)
+    pico_df["is_sp_season"] = (pico_df["sp_dedication"] >= 0.50)
     sp_season_counts = pico_df.groupby("playerID")["is_sp_season"].sum().reset_index(name="sp_seasons_count")
+    mean_dedication = pico_df.groupby("playerID")["sp_dedication"].mean().reset_index(name="mean_sp_dedication")
 
     peak = pico_df.groupby("playerID").agg(
         peak_ip          =("IP_y",               "sum"),
@@ -445,12 +447,25 @@ def paso_4_pico_pitching(pitching, war_pitch, people):
     peak = peak.merge(sp_season_counts, on="playerID", how="left")
     peak["sp_seasons_count"] = peak["sp_seasons_count"].fillna(0).astype(int)
 
+    peak = peak.merge(mean_dedication, on="playerID", how="left")
+    peak["mean_sp_dedication"] = peak["mean_sp_dedication"].fillna(0.0)
+
     total_season_counts = pico_df.groupby("playerID")["yearID"].count().reset_index(name="total_seasons_in_peak")
     peak = peak.merge(total_season_counts, on="playerID", how="left")
     peak["total_seasons_in_peak"] = peak["total_seasons_in_peak"].fillna(1).astype(int)
 
-    # Rol por mayoria de temporadas que tenga en el pico (si 50% o mas son SP => SP, sino RP)
-    peak["role"] = np.where(peak["sp_seasons_count"] >= (peak["total_seasons_in_peak"] / 2.0), "SP", "RP")
+    # Rol por % de Dedicación Promedio en el Pico (>= 50% => SP, sino RP)
+    is_dual_sp = peak["playerID"].isin(["eckerde01_sp", "smoltjo01_sp"])
+    is_dual_rp = peak["playerID"].isin(["eckerde01_rp", "smoltjo01_rp"])
+    peak["role"] = np.where(
+        is_dual_sp,
+        "SP",
+        np.where(
+            is_dual_rp,
+            "RP",
+            np.where(peak["mean_sp_dedication"] >= 0.50, "SP", "RP")
+        )
+    )
 
     # Stamina calculada según el Rol asignado:
     # SP: IP / GS en sus temporadas de abridor

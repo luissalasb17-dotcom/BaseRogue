@@ -662,6 +662,8 @@ def paso_10_atributos_raw_bateo(df):
     hr = df["peak_hr"].fillna(0)
     b2 = df["peak_2b"].fillna(0)
     b3 = df["peak_3b"].fillna(0)
+    bb = df["peak_bb"].fillna(df["career_bb"]).fillna(0)
+    so = df["peak_so"].fillna(df["career_so"]).fillna(0)
 
     is_nlb = (df["league_group"] == "NLB") if "league_group" in df.columns else False
     m_pa = np.where(is_nlb, 500, 150)
@@ -672,7 +674,16 @@ def paso_10_atributos_raw_bateo(df):
     # Unified Era Normalization for Contact (100% Era-Relative BA puro)
     era_ba_means = df.groupby("era_label")["ba_smoothed"].transform("mean")
     df["contact_raw"] = df["ba_smoothed"] / era_ba_means.replace(0, 0.260)
-    df["k_rate_clean"] = df["k_rate"].fillna(0.12)
+
+    # Suavizado Bayesiano de Boletos (EYE)
+    df["eye_raw"] = (bb + m_pa * 0.085) / (pa + m_pa)
+
+    # Suavizado Bayesiano de Ponches (K/AVD) para NLB con datos faltantes
+    era_k_means = df.groupby("era_label")["k_rate"].transform(lambda s: s[s >= 0.020].mean() if len(s[s >= 0.020]) > 0 else 0.070)
+    era_k_means = era_k_means.fillna(0.070)
+    is_missing_so = (is_nlb & (df["k_rate"] < 0.020)) | (df["k_rate"].isna())
+    k_imputed = (so + m_pa * era_k_means) / (pa + m_pa)
+    df["k_rate_clean"] = np.where(is_missing_so, k_imputed, df["k_rate"].fillna(era_k_means))
 
     # Bayesian sample-size smoothing for power metrics (m = 500 PA for NLB)
     hr_smoothed = (hr + m_pa * 0.025) / (pa + m_pa)
@@ -687,7 +698,6 @@ def paso_10_atributos_raw_bateo(df):
         iso_smoothed * 0.40 +
         xbh_smoothed * 0.15
     )
-    df["eye_raw"] = df["bb_rate"].fillna(0)
     print("  contact_raw (100% BA), power_raw (m=500 PA NLB smoothed), eye_raw, k_rate_clean calculados")
     return df
 

@@ -9,20 +9,16 @@
   const SLOTS = ['C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'DH'];
   const BATTING_ORDER = ['CF', 'LF', 'RF', '1B', '2B', '3B', 'SS', 'C', 'DH'];
   const SEASON_LENGTH = 162;
-  // Real playoff races don't require a perfect record — the best teams in
-  // baseball still lose 40-60 games a year. A maxed-out 162-0 roster plays a
-  // much higher tier of ball than that, so the bar stays tough (must win the
-  // clear majority of games) without demanding literal perfection: finish
-  // with this many losses or fewer and the postseason still unlocks. Going
-  // the full 162-0 stays its own distinct, harder-to-reach achievement.
-  const PLAYOFF_MAX_LOSSES = 10;
+  // Playoff Qualification: 100 wins is the iconic MLB century mark for powerhouse teams.
+  // Reach 100+ wins in 162 games to advance to the 3-round postseason gauntlet.
+  const PLAYOFF_MIN_WINS = 100;
   const UNLOCKS_KEY = 'baserogue_challenge_unlocks_v1';
   const SAVE_KEY = 'baserogue_162challenge_v1';
 
   const PLAYOFF_ROUNDS = [
-    { key: 'division', label: 'SERIE DIVISIONAL', rarities: ['Rare', 'Epic'] },
-    { key: 'championship', label: 'SERIE DE CAMPEONATO', rarities: ['Epic', 'Legendary'] },
-    { key: 'world', label: 'SERIE MUNDIAL', rarities: ['Legendary'] }
+    { key: 'division', label: 'SERIE DIVISIONAL', round: 1, difficulty: 'Dificultad: Experto', desc: 'Ronda 1: Enfrenta al 3er mejor equipo', statBoost: 6, hpMult: 1.25, rarities: ['Rare', 'Epic'] },
+    { key: 'championship', label: 'SERIE DE CAMPEONATO', round: 2, difficulty: 'Dificultad: Leyenda', desc: 'Ronda 2: Enfrenta al 2do mejor equipo', statBoost: 12, hpMult: 1.50, rarities: ['Epic', 'Legendary'] },
+    { key: 'world', label: '🏆 SERIE MUNDIAL [JEFE FINAL]', round: 3, difficulty: 'DIFICULTAD: PESADILLA', desc: 'Jefe Final: El #1 invicto de la liga', statBoost: 20, hpMult: 1.80, rarities: ['Legendary'] }
   ];
 
   function getBatterPool() {
@@ -42,6 +38,59 @@
   function pitcherUnlockKey(p) {
     if (!p) return '';
     return `${cleanName(p)}_${p.year || p.peak_year_display || p.peak_year || ''}`;
+  }
+
+  // ── Sabermetric WAR Calculations (Shared across Season & Results) ────────
+  function calcBatterWAR(s, pos = 'DH', defVal = 50) {
+    if (!s) return '0.0';
+    const ab = s.ab || 0;
+    const h = s.h || 0;
+    const d = s.doubles || 0;
+    const t = s.triples || 0;
+    const hr = s.hr || 0;
+    const bb = s.bb || 0;
+    const sb = s.sb || 0;
+    const singles = Math.max(0, h - (d + t + hr));
+    const outs = Math.max(0, ab - h);
+    const pa = ab + bb;
+    if (pa <= 0) return '0.0';
+
+    // Linear weights wRAA (Wins Above Average runs)
+    const wraa = (bb * 0.32) + (singles * 0.46) + (d * 0.78) + (t * 1.05) + (hr * 1.40) + (sb * 0.20) - (outs * 0.27);
+
+    // Positional adjustment per 600 PA (runs)
+    const posAdjTable = { C: 9.0, SS: 7.0, '2B': 3.0, '3B': 2.0, CF: 2.5, LF: -7.0, RF: -7.0, '1B': -12.0, DH: -15.0 };
+    const posAdj = (posAdjTable[(pos || 'DH').toUpperCase()] || 0.0) * (pa / 600.0);
+
+    // Fielding value from DEF rating
+    const defRuns = (defVal - 50) * 0.16 * (pa / 600.0);
+
+    // Replacement level baseline (20 runs per 600 PA)
+    const repRuns = 20.0 * (pa / 600.0);
+
+    const war = (wraa + posAdj + defRuns + repRuns) / 10.0;
+    return war.toFixed(1);
+  }
+
+  function calcPitcherWAR(s, role = 'SP') {
+    if (!s) return '0.0';
+    const outs = s.outs || 0;
+    const ip = outs / 3.0;
+    if (ip <= 0) return '0.0';
+    const er = s.er || 0;
+    const bb = s.bb || 0;
+    const k = s.so || 0;
+    const sv = s.sv || 0;
+
+    // Replacement baseline against ~4.80 replacement ERA
+    const repRuns = ip * (4.80 / 9.0);
+    const actualRA = er * 1.05;
+    const kBbAdj = (k * 0.020) - (bb * 0.010);
+    const isSP = (role || 'SP').toUpperCase() === 'SP';
+    const svLeverage = !isSP ? (sv * 0.45) : 0.0;
+
+    const war = Math.max(0.0, (repRuns - actualRA + kBbAdj + svLeverage) / 10.0);
+    return war.toFixed(1);
   }
 
   function buildEnemyPitcherObj(p, role) {
@@ -288,10 +337,10 @@
 
   // Playoff opponents are the strongest real rivals THIS challenge's season
   // actually generated (this.state.leagueTeams — the same 30 franchise-decade
-  // teams the regular season schedule drew from), not a fresh random
-  // Frankenstein roster unrelated to anything the player has seen all season.
-  // Round 1 (Divisional) gets the 3rd-strongest team, escalating up to the
-  // single strongest team for the World Series.
+  // teams the regular season schedule drew from).
+  // Round 0 (Divisional): 3rd-strongest franchise (+25% HP, +6 Stats)
+  // Round 1 (Championship): 2nd-strongest franchise (+50% HP, +12 Stats)
+  // Round 2 (World Series): #1 ABSOLUTE STRONGEST FRANCHISE (+80% HP, +20 Stats, Ruthless Boss Ace & Closer)
   function generatePlayoffEnemyTeam(round, leagueTeams) {
     const cfg = PLAYOFF_ROUNDS[round];
     const ranked = (leagueTeams || [])
@@ -301,24 +350,60 @@
       })
       .sort((a, b) => b.strength - a.strength);
 
-    // Round 0 -> 3rd best, round 1 -> 2nd best, round 2 (World Series) -> best.
+    // Round 0 -> 3rd best, round 1 -> 2nd best, round 2 (World Series) -> absolute #1 team in the league.
     const pickIndex = Math.min(ranked.length - 1, Math.max(0, (PLAYOFF_ROUNDS.length - 1) - round));
     const chosen = ranked[pickIndex] || ranked[0];
     const franchiseTeam = chosen.team;
 
-    const batters = franchiseTeam.lineup;
-    const p1 = franchiseTeam.pitcher;
-    const p3 = franchiseTeam.reliever;
+    // Escalating boss buffs:
+    const hpMult = round === 2 ? 1.80 : (round === 1 ? 1.50 : 1.25);
+    const statBuff = round === 2 ? 20 : (round === 1 ? 12 : 6);
+
+    const boostPitcher = (p, role) => {
+      if (!p) return null;
+      const baseObj = buildEnemyPitcherObj(p, role);
+      const boostedHp = Math.round(baseObj.maxHp * hpMult);
+      return {
+        ...baseObj,
+        maxHp: boostedHp,
+        hp: boostedHp,
+        h9: Math.min(125, baseObj.h9 + statBuff),
+        k9: Math.min(125, baseObj.k9 + statBuff),
+        bb9: Math.min(125, baseObj.bb9 + statBuff),
+        hr9: Math.min(125, baseObj.hr9 + statBuff),
+        stf: Math.min(125, baseObj.stf + statBuff),
+        ctl: Math.min(125, baseObj.ctl + statBuff),
+        upgrades: {
+          con: statBuff, pwr: statBuff, eye: statBuff, spd: statBuff, def: statBuff, sta: statBuff
+        }
+      };
+    };
+
+    const boostedBatters = franchiseTeam.lineup.map(b => ({
+      ...b,
+      con: Math.min(125, (b.con || 50) + statBuff),
+      pwr: Math.min(125, (b.pwr || 50) + statBuff),
+      eye: Math.min(125, (b.eye || 50) + statBuff),
+      def: Math.min(125, (b.def || 50) + statBuff),
+      upgrades: { con: statBuff, pwr: statBuff, eye: statBuff, spd: 0, def: statBuff, sta: 0 }
+    }));
+
+    const p1 = boostPitcher(franchiseTeam.pitcher, 'SP');
+    const p3 = boostPitcher(franchiseTeam.reliever, 'RP');
     const secondSP = _pickSecondFranchisePitcher(chosen.t.code, chosen.t.decade, pitcherUnlockKey(franchiseTeam.pitcher));
-    const p2 = secondSP ? buildEnemyPitcherObj(secondSP, 'SP') : p1;
+    const p2 = secondSP ? boostPitcher(secondSP, 'SP') : p1;
 
     return {
       id: `challenge162_playoff_${cfg.key}_${Date.now()}`,
       name: `${cfg.label}: ${franchiseTeam.name}`,
-      tier: 'S', isBoss: true,
+      tier: round === 2 ? 'BOSS_S' : 'S',
+      isBoss: true,
+      isWorldSeries: round === 2,
       pitchers: [p1, p2, p3],
-      _ovr: p1.ovr, era: p1.era, rarity: p1.rarity,
-      _batters: batters
+      _ovr: Math.min(99, (p1.ovr || 75) + statBuff),
+      era: p1.era,
+      rarity: round === 2 ? 'Legendary' : 'Epic',
+      _batters: boostedBatters
     };
   }
 
@@ -403,8 +488,9 @@
     const pHR9 = pitcher.hr9 !== undefined ? pitcher.hr9 : 50;
 
     // BB: ~9.2% baseline with authentic discipline scaling for patience masters (Ott, Hack, Murray, Williams)
+    // Minimum 5.0% floor ensures even aggressive free-swingers draw 28-38 walks across a full season:
     let pBB = 0.092 + (eye - 50) * 0.00185 - (pBB9 - 50) * 0.0007;
-    pBB = Math.max(0.025, Math.min(0.24, pBB));
+    pBB = Math.max(0.050, Math.min(0.24, pBB));
 
     // Soft compression for low floor (CON < 35) and high ceiling (CON > 90):
     let conEffective = con;
@@ -414,36 +500,42 @@
       conEffective = 90 + (con - 90) * 0.45;
     }
 
-    const pwrEffective = pwr <= 90 ? pwr : (90 + (pwr - 90) * 0.55);
+    let pwrEffective = pwr;
+    if (pwr > 75 && pwr <= 90) {
+      pwrEffective = 75 + (pwr - 75) * 0.70;
+    } else if (pwr > 90) {
+      pwrEffective = 75 + (15 * 0.70) + (pwr - 90) * 0.45;
+    }
 
     // SO: Driven directly by dedicated K Avoidance attribute (k_avd / k_avoid) & Pitcher K/9:
-    // Elite strikeout aces (K/9 85-110+ e.g. Sale, Pedro, Ryan, Fernandez) generate authentic 260-310 K.
+    // Elite strikeout aces (K/9 85-110+ e.g. Sale, Pedro, Ryan, Score) generate authentic 250-295 K in 220-240 IP.
     // Quality starters (K/9 50-65 e.g. Santana, Root) generate 140-175 K.
     // Soft-tossers / sinkerballers (K/9 10-35 e.g. Bill Lee, Randy Jones) generate 65-105 K.
     const rawKAvd = batter.k_avd !== undefined ? batter.k_avd : (batter.k_avoid !== undefined ? batter.k_avoid : (batter.k_avoid_val !== undefined ? batter.k_avoid_val : conEffective));
     const kAvoid = rawKAvd < 35 ? (42 + (rawKAvd - 35) * 0.35) : (rawKAvd > 90 ? (90 + (rawKAvd - 90) * 0.50) : rawKAvd);
-    const kPitcherBoost = pK9 <= 65 ? (pK9 - 50) * 0.0024 : (15 * 0.0024 + (pK9 - 65) * 0.0042);
-    let pSO = 0.170 - (kAvoid - 50) * 0.00165 + kPitcherBoost;
-    pSO = Math.max(0.035, Math.min(0.46, pSO));
+    const kPitcherBoost = pK9 <= 65 ? (pK9 - 50) * 0.0022 : (15 * 0.0022 + (pK9 - 65) * 0.0034);
+    let pSO = 0.185 - (kAvoid - 50) * 0.00165 + kPitcherBoost;
+    pSO = Math.max(0.040, Math.min(0.42, pSO));
 
     const pInPlay = Math.max(0.20, 1 - pBB - pSO);
 
-    // Hits: Separated contact model for authentic Batting AVG vs authentic Pitcher ERA suppression.
+    // Hits: Target Batting Average scaled across non-walk at-bats (1 - pBB)
+    // Ensures high-walk sluggers (130+ BB e.g. Ruth, Bonds, Williams) keep their authentic .370-.395 AVG:
     const defEfficiency = (pitcher && pitcher._fieldingDef) !== undefined ? pitcher._fieldingDef : 50;
     const defAdj = (defEfficiency - 50) * 0.0004;
 
-    let pTotalHit, pHR;
+    let targetAvg, pHR;
     if (isUserBatting) {
-      // User Batting: 0.258 baseline preserves authentic MLB batting averages for mid-tier (.265-.295) and elite (.315-.355) hitters:
-      pTotalHit = 0.258 + (conEffective - 50) * 0.00160 - (pH9 - 50) * 0.00065 - defAdj;
-      pHR = 0.025 + (pwrEffective - 50) * 0.00095 - (pHR9 - 50) * 0.00040;
+      targetAvg = 0.268 + (conEffective - 50) * 0.00165 - (pH9 - 50) * 0.00070 - defAdj;
+      pHR = 0.028 + (pwrEffective - 50) * 0.00110 - (pHR9 - 50) * 0.00030;
     } else {
-      // User Pitching: 0.236 baseline delivers authentic 2.30-2.80 Ace ERAs and 3.15-3.65 quality starter ERAs:
-      pTotalHit = 0.236 + (conEffective - 50) * 0.00140 - (pH9 - 50) * 0.00125 - defAdj;
-      pHR = 0.025 + (pwrEffective - 50) * 0.00095 - (pHR9 - 50) * 0.00055;
+      // Opponent batting vs User pitching: calibrated to deliver authentic 2.20-3.30 ERAs for quality starters and 1.80-2.80 for elite relievers:
+      targetAvg = 0.240 + (conEffective - 50) * 0.00140 - (pH9 - 50) * 0.00095 - defAdj;
+      pHR = 0.028 + (pwrEffective - 50) * 0.00110 - (pHR9 - 50) * 0.00045;
     }
 
-    pTotalHit = Math.max(0.11, Math.min(0.44, pTotalHit));
+    targetAvg = Math.max(0.14, Math.min(0.42, targetAvg));
+    let pTotalHit = (1 - pBB) * targetAvg;
     pTotalHit = Math.min(pTotalHit, pInPlay - 0.01);
 
     pHR = Math.max(0.001, Math.min(0.095, pHR));
@@ -668,17 +760,17 @@
 
     // Stamina-driven starting pitcher depth:
     // Converts pitcher's STA attribute (30-125+) into realistic inning capacity per start.
-    // Starters average 6.4-7.0 IP/start (~215-235 IP/season), leaving authentic ~75-95 IP for each reliever.
+    // Starters average 6.1-6.8 IP/start (~195-225 IP/season), leaving authentic ~65-80 IP for drafted relievers.
     _getStarterMaxInnings(sp) {
       if (!sp) return 6;
       const sta = sp.sta !== undefined ? sp.sta : (sp.sta_val !== undefined ? sp.sta_val : (sp.stamina !== undefined ? sp.stamina : 70));
-      // Base innings: STA 20 -> 4.8, STA 70 -> 6.3, STA 90 -> 6.8, STA 105+ -> 7.3
-      const base = 4.8 + (Math.max(20, Math.min(125, sta)) - 20) * 0.029;
-      const roll = (Math.random() - 0.5) * 1.2;
+      // Base innings: STA 20 -> 4.8, STA 70 -> 6.0, STA 90 -> 6.5, STA 105+ -> 7.0
+      const base = 4.8 + (Math.max(20, Math.min(125, sta)) - 20) * 0.024;
+      const roll = (Math.random() - 0.5) * 1.0;
       let maxInn = Math.max(5, Math.min(9, Math.round(base + roll)));
 
       // High stamina complete games for workhorse aces
-      if (sta >= 90 && Math.random() < 0.06) maxInn = 9;
+      if (sta >= 95 && Math.random() < 0.04) maxInn = 9;
 
       return maxInn;
     },
@@ -693,30 +785,30 @@
       const middle = relievers[0];
 
       const runDiff = userRuns - oppRuns;
-      const isBlowout = Math.abs(runDiff) >= 7;
-      const isSaveSituation = (runDiff >= 1 && runDiff <= 4) || runDiff === 0;
+      const isSaveSituation = (runDiff >= 1 && runDiff <= 3) || (runDiff === 0) || (runDiff === -1 && inning >= 9);
 
-      // In massive blowouts (margin of 7+ runs) in late innings (8+), mop-up relief helps
-      if (isBlowout && inning >= 8) {
-        return null;
-      }
-
-      if (inning === 9) {
-        // Closer enters in save/close situations (yields authentic ~82-96 IP & 35-50 SV)
-        if (isSaveSituation && (gameIdx % 6 !== 0)) {
+      if (inning >= 9) {
+        // Closer enters in save, tie, or close games (within 3 runs)
+        if (isSaveSituation || (Math.abs(runDiff) <= 3 && gameIdx % 5 !== 0)) {
           return closer;
         }
         return (gameIdx % 2 === 0) ? setup : middle;
       }
       if (inning === 8) {
-        return (gameIdx % 2 === 0) ? setup : middle;
+        if (isSaveSituation || Math.abs(runDiff) <= 3) {
+          return (gameIdx % 4 !== 0) ? setup : middle;
+        }
+        return (gameIdx % 2 === 0) ? middle : setup;
       }
-      if (inning < 8) {
+      if (inning === 7) {
         return (gameIdx % 2 === 0) ? middle : setup;
       }
 
-      // Extra innings (10+)
-      return (inning === 10) ? closer : (inning === 11 ? setup : null);
+      // Early relief (innings 5-6) or extra innings (10+)
+      if (inning >= 10) {
+        return (inning === 10) ? closer : ((gameIdx % 2 === 0) ? setup : middle);
+      }
+      return (gameIdx % 2 === 0) ? middle : setup;
     },
 
     // The challenge's outcome (W/L) is decided independently of the box score —
@@ -794,7 +886,7 @@
       if (S.gameLog.length > 30) S.gameLog.shift();
 
       if (S.gamesPlayed >= SEASON_LENGTH) {
-        S.playoffs.unlocked = (S.losses <= PLAYOFF_MAX_LOSSES);
+        S.playoffs.unlocked = (S.wins >= PLAYOFF_MIN_WINS);
       }
 
       this.save();
@@ -822,18 +914,22 @@
         ? fielders.reduce((s, p) => s + (p.def !== undefined ? p.def : (p.defense_val || 50)), 0) / fielders.length
         : 50;
 
-      // Each game, 1 batting slot takes a routine rest day or late blowout substitution (~1 in 10 games off, yielding 145-152 games / 540-600 AB):
-      const restedSlotIdx = (gameIdx % 10 < 9) ? (gameIdx % 10) : -1;
+      // Each game, 1 batting slot takes a routine rest day (~1 in 9 games off, yielding ~144 games / 540-580 AB per starter):
+      const restedSlotIdx = gameIdx % 9;
 
       while (inning <= 9 || (userRuns === oppRuns && inning <= inningLimit)) {
         const oppPitcherToday = inning <= oppMaxInnings ? opp.pitcher : opp.reliever;
         oppPitcherToday._fieldingDef = 50; // Neutral opponent defense
 
+        const runDiff = userRuns - oppRuns;
+        const isBlowout = Math.abs(runDiff) >= 5 && inning >= 8;
+
         userRuns += this._playHalfInning(() => {
           const slot = userIdx % userLineup.length;
           const currentBatter = userLineup[slot];
           userIdx++;
-          if (slot === restedSlotIdx) {
+          // Routine rest or late-game blowout substitution by bench:
+          if (slot === restedSlotIdx || isBlowout) {
             return { name: "Bench", con: 50, pwr: 45, eye: 45, spd: 45, def: 50, _isBench: true };
           }
           return currentBatter;
@@ -958,9 +1054,37 @@
       return results;
     },
 
+    toggleAutoSim() {
+      if (this._autoSimTimer) {
+        this.stopAutoSim();
+        this.renderSeason();
+      } else {
+        this.startAutoSim();
+      }
+    },
+    startAutoSim() {
+      if (this._autoSimTimer) return;
+      this._autoSimTimer = setInterval(() => {
+        if (!this.state || this.state.gamesPlayed >= SEASON_LENGTH) {
+          this.stopAutoSim();
+          this.renderSeason();
+          return;
+        }
+        this.simulateGame();
+        this.renderSeason();
+      }, 120);
+      this.renderSeason();
+    },
+    stopAutoSim() {
+      if (this._autoSimTimer) {
+        clearInterval(this._autoSimTimer);
+        this._autoSimTimer = null;
+      }
+    },
+
     // ── Playoffs (reuses the real dice-battle screen) ─────────────────────
     canStartPlayoffs() {
-      return this.state && this.state.gamesPlayed >= SEASON_LENGTH && this.state.losses <= PLAYOFF_MAX_LOSSES && !this.state.playoffs.finished;
+      return this.state && this.state.gamesPlayed >= SEASON_LENGTH && this.state.wins >= PLAYOFF_MIN_WINS && !this.state.playoffs.finished;
     },
     startPlayoffRound() {
       const G = window.Game;
@@ -979,13 +1103,22 @@
         lineup[slot] = p ? { ...p, stamina: 100, upgrades: { con: 0, pwr: 0, eye: 0, spd: 0, def: 0, sta: 0 } } : null;
       });
       G.roster = lineup;
-      G.battingOrder = this.state.roster.battingOrder.slice();
+
+      // Auto-sort batting order sabermetrically for playoffs:
+      const rawOrder = SLOTS.filter(s => lineup[s]);
+      if (typeof G.autoSortBattingOrder === 'function') {
+        G.battingOrder = G.autoSortBattingOrder(lineup, rawOrder);
+      } else {
+        G.battingOrder = this.state.roster.battingOrder ? this.state.roster.battingOrder.slice() : rawOrder;
+      }
+
       G.currentEnemy = enemyTeam;
       G.runActive = true;
-      G.currentStageIndex = 1;
+      G.currentStageIndex = round + 1;
       G.equippedTraits = [];
       G.isChallenge162PlayoffMatch = true;
 
+      this.hideAllTopLevelScreens();
       window.showScreen('screen-match');
       if (window.setupAndStartMatchSimulation) window.setupAndStartMatchSimulation();
     },
@@ -1027,6 +1160,7 @@
       if (hud) hud.classList.add('hidden');
     },
     showScreen(id) {
+      if (id !== 'screen-challenge-season') this.stopAutoSim();
       this.hideAllTopLevelScreens();
       const target = document.getElementById(id);
       if (target) target.classList.remove('hidden');
@@ -1034,16 +1168,32 @@
     },
 
     render() {
-      if (!this.state) return;
-      if (this.state.playoffs.finished) { this.renderResults(); return; }
-      if (this.canStartPlayoffs() || this.state.playoffs.round > 0) { this.renderPlayoffs(); return; }
+      if (!this.state) {
+        this.startRosterBuilder();
+        return;
+      }
+      if (this.state.playoffs && this.state.playoffs.finished) {
+        this.showScreen('screen-challenge-results');
+        this.renderResults();
+        return;
+      }
+      if (this.canStartPlayoffs() || (this.state.playoffs && this.state.playoffs.round > 0)) {
+        this.showScreen('screen-challenge-playoffs');
+        this.renderPlayoffs();
+        return;
+      }
+      this.showScreen('screen-challenge-season');
       this.renderSeason();
     },
 
     startRosterBuilder() {
+      if (!this.unlockedBatters || !this.unlockedPitchers) {
+        this.initUnlocks();
+      }
       this._draftLineup = {};
       this._draftPitchers = { SP: [], RP: [] };
       this._activeSlot = null;
+      this._searchTerm = '';
       this.showScreen('screen-challenge-roster');
       this.renderRosterBuilder();
     },
@@ -1079,211 +1229,225 @@
       const container = document.getElementById('challenge162-roster-container');
       if (!container) return;
 
-      const eligibleBatters = this.getEligibleBatters();
-      const eligiblePitchers = this.getEligiblePitchers();
+      try {
+        if (!this.unlockedBatters || !this.unlockedPitchers) {
+          this.initUnlocks();
+        }
+        if (!this._draftLineup) this._draftLineup = {};
+        if (!this._draftPitchers) this._draftPitchers = { SP: [], RP: [] };
+        if (!Array.isArray(this._draftPitchers.SP)) this._draftPitchers.SP = [];
+        if (!Array.isArray(this._draftPitchers.RP)) this._draftPitchers.RP = [];
 
-      const infieldSlots = ['C', '1B', '2B', '3B', 'SS'];
-      const outfieldSlots = ['LF', 'CF', 'RF', 'DH'];
+        const eligibleBatters = this.getEligibleBatters() || [];
+        const eligiblePitchers = this.getEligiblePitchers() || [];
 
-      const infieldSlotsHTML = infieldSlots.map(slot => {
-        const assigned = this._draftLineup[slot];
-        const isActive = this._activeSlot && this._activeSlot.kind === 'batter' && this._activeSlot.key === slot;
-        return this._renderTradingCardHTML(assigned, slot, isActive, 'batter', slot);
-      }).join('');
+        const infieldSlots = ['C', '1B', '2B', '3B', 'SS'];
+        const outfieldSlots = ['LF', 'CF', 'RF', 'DH'];
 
-      const outfieldSlotsHTML = outfieldSlots.map(slot => {
-        const assigned = this._draftLineup[slot];
-        const isActive = this._activeSlot && this._activeSlot.kind === 'batter' && this._activeSlot.key === slot;
-        return this._renderTradingCardHTML(assigned, slot, isActive, 'batter', slot);
-      }).join('');
-
-      const spSlotsHTML = [0, 1, 2, 3, 4].map(i => {
-        const assigned = this._draftPitchers.SP[i];
-        const isActive = this._activeSlot && this._activeSlot.kind === 'SP' && this._activeSlot.key === i;
-        return this._renderTradingCardHTML(assigned, `SP${i + 1}`, isActive, 'SP', i);
-      }).join('');
-
-      const rpSlotsHTML = [0, 1, 2].map(i => {
-        const assigned = this._draftPitchers.RP[i];
-        const label = i === 2 ? 'CL' : (i === 1 ? 'SETUP' : 'RP');
-        const isActive = this._activeSlot && this._activeSlot.kind === 'RP' && this._activeSlot.key === i;
-        return this._renderTradingCardHTML(assigned, label, isActive, 'RP', i);
-      }).join('');
-
-      const filledBatters = SLOTS.filter(s => this._draftLineup[s]).length;
-      const filledSPs = this._draftPitchers.SP.filter(Boolean).length;
-      const filledRPs = this._draftPitchers.RP.filter(Boolean).length;
-      const filledCount = filledBatters + filledSPs + filledRPs;
-      const complete = filledCount === 17;
-
-      const usedBatterKeys = new Set(SLOTS.map(s => this._draftLineup[s]).filter(Boolean).map(batterUnlockKey));
-      const usedPitcherKeys = new Set([...this._draftPitchers.SP, ...this._draftPitchers.RP].filter(Boolean).map(pitcherUnlockKey));
-
-      let candidatesDrawerHTML = '';
-      if (this._activeSlot) {
-        const isPitcherSlot = this._activeSlot.kind !== 'batter';
-        const slotName = this._activeSlot.key;
-        const slotDisplay = this._activeSlot.kind === 'batter' ? slotName : (this._activeSlot.kind === 'SP' ? `SP${this._activeSlot.key + 1}` : (this._activeSlot.key === 2 ? 'CL' : `RP${this._activeSlot.key + 1}`));
-
-        let pool = isPitcherSlot
-          ? eligiblePitchers.filter(p => (p.role || 'SP').toUpperCase() === this._activeSlot.kind)
-          : (slotName === 'DH' ? eligibleBatters : eligibleBatters.filter(p => {
-              if (p.pos === slotName) return true;
-              const secPos = (p.sec_pos || '').split(',').map(s => s.trim());
-              return secPos.includes(slotName);
-            }));
-
-        // Exclude cards already assigned
-        pool = isPitcherSlot
-          ? pool.filter(p => !usedPitcherKeys.has(pitcherUnlockKey(p)))
-          : pool.filter(p => !usedBatterKeys.has(batterUnlockKey(p)));
-
-        // Sort by OVR descending
-        pool.sort((a, b) => (b.ovr || 50) - (a.ovr || 50));
-
-        const term = (this._searchTerm || '').toLowerCase();
-        const filtered = pool.filter(p => !term || p.name.toLowerCase().includes(term) || (p.team && p.team.toLowerCase().includes(term)));
-
-        const candidateCardsHTML = filtered.map(p => {
-          const cardHTML = typeof window.createCardHTML === 'function'
-            ? window.createCardHTML(p, slotName)
-            : `<div class="player-card"><div class="card-name">${p.name}</div></div>`;
-
-          return `
-            <div class="c162-candidate-wrap challenge162-candidate-btn" data-name="${encodeURIComponent(p.name)}" data-year="${p.year}">
-              ${cardHTML}
-            </div>
-          `;
+        const infieldSlotsHTML = infieldSlots.map(slot => {
+          const assigned = this._draftLineup[slot];
+          const isActive = this._activeSlot && this._activeSlot.kind === 'batter' && this._activeSlot.key === slot;
+          return this._renderTradingCardHTML(assigned, slot, isActive, 'batter', slot);
         }).join('');
 
-        candidatesDrawerHTML = `
-          <div class="c162-picker-drawer">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
-              <div style="font-family:'Press Start 2P',monospace;font-size:11px;color:var(--challenge162-accent);">
-                🎴 ELEGIR CARTA PARA [${slotDisplay}] (${filtered.length} DISPONIBLES)
+        const outfieldSlotsHTML = outfieldSlots.map(slot => {
+          const assigned = this._draftLineup[slot];
+          const isActive = this._activeSlot && this._activeSlot.kind === 'batter' && this._activeSlot.key === slot;
+          return this._renderTradingCardHTML(assigned, slot, isActive, 'batter', slot);
+        }).join('');
+
+        const spSlotsHTML = [0, 1, 2, 3, 4].map(i => {
+          const assigned = this._draftPitchers.SP[i];
+          const isActive = this._activeSlot && this._activeSlot.kind === 'SP' && this._activeSlot.key === i;
+          return this._renderTradingCardHTML(assigned, `SP${i + 1}`, isActive, 'SP', i);
+        }).join('');
+
+        const rpSlotsHTML = [0, 1, 2].map(i => {
+          const assigned = this._draftPitchers.RP[i];
+          const label = i === 2 ? 'CL' : (i === 1 ? 'SETUP' : 'RP');
+          const isActive = this._activeSlot && this._activeSlot.kind === 'RP' && this._activeSlot.key === i;
+          return this._renderTradingCardHTML(assigned, label, isActive, 'RP', i);
+        }).join('');
+
+        const filledBatters = SLOTS.filter(s => this._draftLineup[s]).length;
+        const filledSPs = this._draftPitchers.SP.filter(Boolean).length;
+        const filledRPs = this._draftPitchers.RP.filter(Boolean).length;
+        const filledCount = filledBatters + filledSPs + filledRPs;
+        const complete = filledCount === 17;
+
+        const usedBatterKeys = new Set(SLOTS.map(s => this._draftLineup[s]).filter(Boolean).map(batterUnlockKey));
+        const usedPitcherKeys = new Set([...this._draftPitchers.SP, ...this._draftPitchers.RP].filter(Boolean).map(pitcherUnlockKey));
+
+        let candidatesDrawerHTML = '';
+        if (this._activeSlot) {
+          const isPitcherSlot = this._activeSlot.kind !== 'batter';
+          const slotName = this._activeSlot.key;
+          const slotDisplay = this._activeSlot.kind === 'batter' ? slotName : (this._activeSlot.kind === 'SP' ? `SP${this._activeSlot.key + 1}` : (this._activeSlot.key === 2 ? 'CL' : `RP${this._activeSlot.key + 1}`));
+
+          let pool = isPitcherSlot
+            ? eligiblePitchers.filter(p => (p.role || 'SP').toUpperCase() === this._activeSlot.kind)
+            : (slotName === 'DH' ? eligibleBatters : eligibleBatters.filter(p => {
+                if (p.pos === slotName) return true;
+                const secPos = (p.sec_pos || '').split(',').map(s => s.trim());
+                return secPos.includes(slotName);
+              }));
+
+          // Exclude cards already assigned
+          pool = isPitcherSlot
+            ? pool.filter(p => !usedPitcherKeys.has(pitcherUnlockKey(p)))
+            : pool.filter(p => !usedBatterKeys.has(batterUnlockKey(p)));
+
+          // Sort by OVR descending
+          pool.sort((a, b) => (b.ovr || 50) - (a.ovr || 50));
+
+          const term = (this._searchTerm || '').toLowerCase();
+          const filtered = pool.filter(p => !term || (p.name && p.name.toLowerCase().includes(term)) || (p.team && p.team.toLowerCase().includes(term)));
+
+          const candidateCardsHTML = filtered.map(p => {
+            const cardHTML = typeof window.createCardHTML === 'function'
+              ? window.createCardHTML(p, slotName)
+              : `<div class="player-card"><div class="card-name">${p.name}</div></div>`;
+
+            return `
+              <div class="c162-candidate-wrap challenge162-candidate-btn" data-name="${encodeURIComponent(p.name)}" data-year="${p.year || ''}">
+                ${cardHTML}
               </div>
-              <button id="btn-challenge162-close-drawer" class="btn btn-secondary" style="padding:6px 12px;font-size:10px;">✕ CERRAR</button>
+            `;
+          }).join('');
+
+          candidatesDrawerHTML = `
+            <div class="c162-picker-drawer">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
+                <div style="font-family:'Press Start 2P',monospace;font-size:11px;color:var(--challenge162-accent);">
+                  🎴 ELEGIR CARTA PARA [${slotDisplay}] (${filtered.length} DISPONIBLES)
+                </div>
+                <button id="btn-challenge162-close-drawer" class="btn btn-secondary" style="padding:6px 12px;font-size:10px;">✕ CERRAR</button>
+              </div>
+              <input id="challenge162-search" type="text" placeholder="Buscar jugador o equipo..." value="${this._searchTerm || ''}"
+                style="width:100%;padding:10px 14px;margin-bottom:14px;border-radius:8px;border:1px solid rgba(255,255,255,0.18);background:rgba(0,0,0,0.5);color:#fff;font-size:12px;box-sizing:border-box;">
+              <div class="c162-gallery-grid">
+                ${candidateCardsHTML || `<div style="width:100%;color:#94a3af;font-size:12px;text-align:center;padding:30px;">No se encontraron cartas desbloqueadas para esta posición.</div>`}
+              </div>
             </div>
-            <input id="challenge162-search" type="text" placeholder="Buscar jugador o equipo..." value="${this._searchTerm || ''}"
-              style="width:100%;padding:10px 14px;margin-bottom:14px;border-radius:8px;border:1px solid rgba(255,255,255,0.18);background:rgba(0,0,0,0.5);color:#fff;font-size:12px;box-sizing:border-box;">
-            <div class="c162-gallery-grid">
-              ${candidateCardsHTML || `<div style="width:100%;color:#94a3af;font-size:12px;text-align:center;padding:30px;">No se encontraron cartas desbloqueadas para esta posición.</div>`}
+          `;
+        }
+
+        const startSeasonText = typeof window.t === 'function' ? window.t('challenge162.builder_start_season') : '⚾ EMPEZAR TEMPORADA 162-0';
+
+        container.innerHTML = `
+          <!-- Top Status Bar -->
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;background:rgba(0,0,0,0.35);padding:8px 14px;border-radius:8px;border:1px solid rgba(255,255,255,0.08);">
+            <div style="font-size:10px;color:#9ca3af;font-family:'Press Start 2P',monospace;">
+              COLECCIÓN: <span style="color:var(--challenge162-accent);">${filledCount}/17 CARTAS</span>
             </div>
+            <div style="font-size:10px;color:#cbd5e1;">
+              ${complete ? '<span style="color:#34d399;font-weight:bold;">✔ ROSTER COMPLETO</span>' : 'Selecciona una casilla para insertar una carta'}
+            </div>
+          </div>
+
+          <!-- Section 1: Batting Lineup (9 Cards) -->
+          <div class="c162-roster-section">
+            <div class="c162-section-header">
+              <span>⚾</span> <span>ALINEACIÓN TITULAR (LINEUP - 9 CARTAS)</span>
+            </div>
+            <div style="margin-bottom:10px;">
+              <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#94a3af;margin-bottom:8px;text-align:center;">— CUADRO / INFIELD —</div>
+              <div class="c162-cards-row">${infieldSlotsHTML}</div>
+            </div>
+            <div>
+              <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#94a3af;margin-bottom:8px;text-align:center;">— JARDINES Y DESIGNADO / OUTFIELD & DH —</div>
+              <div class="c162-cards-row">${outfieldSlotsHTML}</div>
+            </div>
+          </div>
+
+          <!-- Section 2: Starting Rotation (5 Cards) -->
+          <div class="c162-roster-section">
+            <div class="c162-section-header">
+              <span>🧢</span> <span>ROTACIÓN DE ABRIDORES (ROTATION - 5 CARTAS)</span>
+            </div>
+            <div class="c162-cards-row">${spSlotsHTML}</div>
+          </div>
+
+          <!-- Section 3: Bullpen (3 Cards) -->
+          <div class="c162-roster-section">
+            <div class="c162-section-header">
+              <span>🔥</span> <span>CUERPO DE RELEVISTAS (BULLPEN - 3 CARTAS)</span>
+            </div>
+            <div class="c162-cards-row">${rpSlotsHTML}</div>
+          </div>
+
+          <!-- Candidate Cards Drawer / Gallery -->
+          ${candidatesDrawerHTML}
+
+          <!-- Start Season CTA -->
+          <div style="text-align:center;margin-top:6px;">
+            <button id="challenge162-start-season-btn" class="btn" ${complete ? '' : 'disabled'}
+              style="padding:8px 22px;font-size:11px;font-family:'Press Start 2P',monospace;background:${complete ? 'linear-gradient(135deg,var(--challenge162-accent),#f59e0b)' : '#334155'};color:${complete ? '#000' : '#94a3af'};border:none;border-radius:10px;cursor:${complete ? 'pointer' : 'not-allowed'};box-shadow:${complete ? '0 0 24px rgba(255,215,0,0.4)' : 'none'};transition:all 0.2s ease;">
+              ${startSeasonText} (${filledCount}/17)
+            </button>
           </div>
         `;
-      }
 
-      const startSeasonText = typeof window.t === 'function' ? window.t('challenge162.builder_start_season') : '⚾ EMPEZAR TEMPORADA 162-0';
+        container.querySelectorAll('.challenge162-slot-btn').forEach(btn => {
+          btn.onclick = () => {
+            const kind = btn.getAttribute('data-kind');
+            const rawKey = btn.getAttribute('data-key');
+            const key = kind === 'batter' ? rawKey : parseInt(rawKey, 10);
+            
+            if (this._activeSlot && this._activeSlot.kind === kind && this._activeSlot.key === key) {
+              this._activeSlot = null;
+            } else {
+              this._activeSlot = { kind, key };
+            }
+            this._searchTerm = '';
+            this.renderRosterBuilder();
+          };
+        });
 
-      container.innerHTML = `
-        <!-- Top Status Bar -->
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;background:rgba(0,0,0,0.35);padding:8px 14px;border-radius:8px;border:1px solid rgba(255,255,255,0.08);">
-          <div style="font-size:10px;color:#9ca3af;font-family:'Press Start 2P',monospace;">
-            COLECCIÓN: <span style="color:var(--challenge162-accent);">${filledCount}/17 CARTAS</span>
-          </div>
-          <div style="font-size:10px;color:#cbd5e1;">
-            ${complete ? '<span style="color:#34d399;font-weight:bold;">✔ ROSTER COMPLETO</span>' : 'Selecciona una casilla para insertar una carta'}
-          </div>
-        </div>
-
-        <!-- Section 1: Batting Lineup (9 Cards) -->
-        <div class="c162-roster-section">
-          <div class="c162-section-header">
-            <span>⚾</span> <span>ALINEACIÓN TITULAR (LINEUP - 9 CARTAS)</span>
-          </div>
-          <div style="margin-bottom:10px;">
-            <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#94a3af;margin-bottom:8px;text-align:center;">— CUADRO / INFIELD —</div>
-            <div class="c162-cards-row">${infieldSlotsHTML}</div>
-          </div>
-          <div>
-            <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#94a3af;margin-bottom:8px;text-align:center;">— JARDINES Y DESIGNADO / OUTFIELD & DH —</div>
-            <div class="c162-cards-row">${outfieldSlotsHTML}</div>
-          </div>
-        </div>
-
-        <!-- Section 2: Starting Rotation (5 Cards) -->
-        <div class="c162-roster-section">
-          <div class="c162-section-header">
-            <span>🧢</span> <span>ROTACIÓN DE ABRIDORES (ROTATION - 5 CARTAS)</span>
-          </div>
-          <div class="c162-cards-row">${spSlotsHTML}</div>
-        </div>
-
-        <!-- Section 3: Bullpen (3 Cards) -->
-        <div class="c162-roster-section">
-          <div class="c162-section-header">
-            <span>🔥</span> <span>CUERPO DE RELEVISTAS (BULLPEN - 3 CARTAS)</span>
-          </div>
-          <div class="c162-cards-row">${rpSlotsHTML}</div>
-        </div>
-
-        <!-- Candidate Cards Drawer / Gallery -->
-        ${candidatesDrawerHTML}
-
-        <!-- Start Season CTA -->
-        <div style="text-align:center;margin-top:6px;">
-          <button id="challenge162-start-season-btn" class="btn" ${complete ? '' : 'disabled'}
-            style="padding:8px 22px;font-size:11px;font-family:'Press Start 2P',monospace;background:${complete ? 'linear-gradient(135deg,var(--challenge162-accent),#f59e0b)' : '#334155'};color:${complete ? '#000' : '#94a3af'};border:none;border-radius:10px;cursor:${complete ? 'pointer' : 'not-allowed'};box-shadow:${complete ? '0 0 24px rgba(255,215,0,0.4)' : 'none'};transition:all 0.2s ease;">
-            ${startSeasonText} (${filledCount}/17)
-          </button>
-        </div>
-      `;
-
-      container.querySelectorAll('.challenge162-slot-btn').forEach(btn => {
-        btn.onclick = () => {
-          const kind = btn.getAttribute('data-kind');
-          const rawKey = btn.getAttribute('data-key');
-          const key = kind === 'batter' ? rawKey : parseInt(rawKey, 10);
-          
-          if (this._activeSlot && this._activeSlot.kind === kind && this._activeSlot.key === key) {
+        container.querySelectorAll('.challenge162-candidate-btn').forEach(btn => {
+          btn.onclick = () => {
+            const name = decodeURIComponent(btn.getAttribute('data-name'));
+            const yearStr = btn.getAttribute('data-year');
+            const year = yearStr ? parseInt(yearStr, 10) : null;
+            const kind = this._activeSlot.kind;
+            if (kind === 'batter') {
+              const p = eligibleBatters.find(b => b.name === name && (!year || b.year === year));
+              if (p) this._draftLineup[this._activeSlot.key] = p;
+            } else {
+              const p = eligiblePitchers.find(b => b.name === name && (!year || b.year === year) && (b.role || 'SP').toUpperCase() === kind);
+              if (p) this._draftPitchers[kind][this._activeSlot.key] = p;
+            }
             this._activeSlot = null;
-          } else {
-            this._activeSlot = { kind, key };
-          }
-          this._searchTerm = '';
-          this.renderRosterBuilder();
-        };
-      });
+            this.renderRosterBuilder();
+          };
+        });
 
-      container.querySelectorAll('.challenge162-candidate-btn').forEach(btn => {
-        btn.onclick = () => {
-          const name = decodeURIComponent(btn.getAttribute('data-name'));
-          const year = parseInt(btn.getAttribute('data-year'), 10);
-          const kind = this._activeSlot.kind;
-          if (kind === 'batter') {
-            const p = eligibleBatters.find(b => b.name === name && b.year === year);
-            if (p) this._draftLineup[this._activeSlot.key] = p;
-          } else {
-            const p = eligiblePitchers.find(b => b.name === name && b.year === year && (b.role || 'SP').toUpperCase() === kind);
-            if (p) this._draftPitchers[kind][this._activeSlot.key] = p;
-          }
-          this._activeSlot = null;
-          this.renderRosterBuilder();
-        };
-      });
+        const closeDrawerBtn = document.getElementById('btn-challenge162-close-drawer');
+        if (closeDrawerBtn) {
+          closeDrawerBtn.onclick = () => {
+            this._activeSlot = null;
+            this.renderRosterBuilder();
+          };
+        }
 
-      const closeDrawerBtn = document.getElementById('btn-challenge162-close-drawer');
-      if (closeDrawerBtn) {
-        closeDrawerBtn.onclick = () => {
-          this._activeSlot = null;
-          this.renderRosterBuilder();
-        };
-      }
+        const searchInput = document.getElementById('challenge162-search');
+        if (searchInput) {
+          searchInput.oninput = (e) => { this._searchTerm = e.target.value; this.renderRosterBuilder(); };
+          searchInput.focus();
+          searchInput.setSelectionRange(searchInput.value.length, searchInput.value.length);
+        }
 
-      const searchInput = document.getElementById('challenge162-search');
-      if (searchInput) {
-        searchInput.oninput = (e) => { this._searchTerm = e.target.value; this.renderRosterBuilder(); };
-        searchInput.focus();
-        searchInput.setSelectionRange(searchInput.value.length, searchInput.value.length);
-      }
-
-      const startBtn = document.getElementById('challenge162-start-season-btn');
-      if (startBtn && complete) {
-        startBtn.onclick = () => {
-          this.startNewChallenge(this._draftLineup, this._draftPitchers);
-          this.showScreen('screen-challenge-season');
-          this.renderSeason();
-        };
+        const startBtn = document.getElementById('challenge162-start-season-btn');
+        if (startBtn && complete) {
+          startBtn.onclick = () => {
+            this.startNewChallenge(this._draftLineup, this._draftPitchers);
+            this.showScreen('screen-challenge-season');
+            this.renderSeason();
+          };
+        }
+      } catch (err) {
+        console.error('Error rendering Challenge162 Roster Builder:', err);
+        container.innerHTML = `<div style="text-align:center;padding:30px;color:#f87171;">Error al cargar el constructor de equipo: ${err.message}<br><button class="btn" style="margin-top:14px;" onclick="window.Challenge162.startRosterBuilder()">Reintentar</button></div>`;
       }
     },
 
@@ -1300,8 +1464,8 @@
 
       const td = (val, opts) => `<td class="c162-td${opts && opts.num ? ' c162-td-num' : ''}"${opts && opts.accent ? ' style="color:var(--challenge162-accent);font-weight:bold;"' : (opts && opts.style ? ` style="${opts.style}"` : '')}>${val}</td>`;
 
-      // ── Batters Rows (with OBP, SLG, OPS) ─────────────────────────────────
-      const batterRows = Object.values(S.batterStats).map((s, i) => {
+      // ── Batters Rows (with OBP, SLG, OPS, WAR) ───────────────────────────
+      const batterRows = Object.entries(S.batterStats).map(([key, s], i) => {
         const avg = s.ab > 0 ? (s.h / s.ab).toFixed(3).replace(/^0/, '') : '.000';
         const pa = s.ab + s.bb;
         const obp = pa > 0 ? ((s.h + s.bb) / pa).toFixed(3).replace(/^0/, '') : '.000';
@@ -1309,6 +1473,13 @@
         const tb = singles + (s.doubles || 0) * 2 + (s.triples || 0) * 3 + (s.hr || 0) * 4;
         const slg = s.ab > 0 ? (tb / s.ab).toFixed(3).replace(/^0/, '') : '.000';
         const ops = (parseFloat(obp) + parseFloat(slg)).toFixed(3).replace(/^0/, '');
+
+        const pos = (S.roster && S.roster.lineup)
+          ? Object.keys(S.roster.lineup).find(slot => batterUnlockKey(S.roster.lineup[slot]) === key) || 'DH'
+          : 'DH';
+        const rawBatterObj = (S.roster && S.roster.lineup && S.roster.lineup[pos]) || {};
+        const defVal = rawBatterObj.def !== undefined ? rawBatterObj.def : (rawBatterObj.defense_val || 50);
+        const war = calcBatterWAR(s, pos, defVal);
 
         return `<tr class="c162-tr${i % 2 ? ' c162-tr-alt' : ''}">
           ${td(s.name)}
@@ -1325,11 +1496,12 @@
           ${td(avg, { num: true })}
           ${td(obp, { num: true })}
           ${td(slg, { num: true })}
-          ${td(ops, { num: true, accent: true })}
+          ${td(ops, { num: true })}
+          ${td(war, { num: true, accent: true })}
         </tr>`;
       }).join('');
 
-      // ── Pitchers Rows (with Role tag, WHIP, ERA) ──────────────────────────
+      // ── Pitchers Rows (with Role tag, WHIP, ERA, WAR) ─────────────────────
       // Identify highest OVR RP as designated closer
       const rpList = (S.roster && S.roster.pitchers && S.roster.pitchers.RP) || [];
       const topCloserObj = rpList.slice().sort((a, b) => (b.ovr || 50) - (a.ovr || 50))[0];
@@ -1347,6 +1519,7 @@
         const roleColor = isSP ? '#38bdf8' : (isCloser ? '#fbbf24' : '#34d399');
         const roleBg = isSP ? 'rgba(56,189,248,0.15)' : (isCloser ? 'rgba(251,191,36,0.15)' : 'rgba(52,211,153,0.15)');
         const roleBadge = `<span class="c162-tag-role" style="color:${roleColor};background:${roleBg};">${roleLabel}</span>`;
+        const war = calcPitcherWAR(s, roleLabel);
 
         return `<tr class="c162-tr${i % 2 ? ' c162-tr-alt' : ''}">
           ${td(s.name)}
@@ -1360,7 +1533,8 @@
           ${td(s.l, { num: true })}
           ${td(s.sv, { num: true, style: isCloser ? 'color:#fbbf24;font-weight:bold;' : '' })}
           ${td(whip, { num: true })}
-          ${td(era, { num: true, accent: true })}
+          ${td(era, { num: true })}
+          ${td(war, { num: true, accent: true })}
         </tr>`;
       }).join('');
 
@@ -1407,32 +1581,37 @@
       }
 
       let actionHTML = '';
-      const sim1Text = typeof window.t === 'function' ? window.t('challenge162.season_sim_1') : '▶ SIMULAR 1 PARTIDO';
+      const sim1Text = typeof window.t === 'function' ? window.t('challenge162.season_sim_1') : '▶ SIMULAR 1';
       const sim10Text = typeof window.t === 'function' ? window.t('challenge162.season_sim_10') : '⏩ SIMULAR 10';
-      const simUntilText = typeof window.t === 'function' ? window.t('challenge162.season_sim_until') : '⏭ HASTA LA PRÓXIMA DERROTA';
+      const simUntilText = typeof window.t === 'function' ? window.t('challenge162.season_sim_until') : '⏭ HASTA DERROTA';
 
       if (!seasonOver) {
+        const isAutoRunning = Boolean(this._autoSimTimer);
         actionHTML = `
+          <button id="challenge162-play-auto" class="btn" style="padding:10px 16px;font-size:10px;margin:4px;background:${isAutoRunning ? 'linear-gradient(135deg,#ef4444,#dc2626)' : 'linear-gradient(135deg,#06b6d4,#3b82f6)'};color:#fff;border:1px solid #fff;box-shadow:${isAutoRunning ? '0 0 14px rgba(239,68,68,0.6)' : '0 0 14px rgba(6,182,212,0.5)'};cursor:pointer;">
+            ${isAutoRunning ? '⏸️ PAUSAR AUTO SIM' : '⚡ AUTO SIM (1 A 1)'}
+          </button>
           <button id="challenge162-play-1" class="btn" style="padding:10px 16px;font-size:10px;margin:4px;">${sim1Text}</button>
           <button id="challenge162-play-10" class="btn btn-secondary" style="padding:10px 16px;font-size:10px;margin:4px;">${sim10Text}</button>
           <button id="challenge162-play-until" class="btn btn-secondary" style="padding:10px 16px;font-size:10px;margin:4px;">${simUntilText}</button>
         `;
       } else if (S.playoffs.unlocked && !S.playoffs.finished) {
+        this.stopAutoSim();
         const gotoPlayoffsText = typeof window.t === 'function' ? window.t('challenge162.season_goto_playoffs') : '▶ IR A PLAYOFFS';
         let title;
-        if (S.losses === 0) {
+        if (S.wins === SEASON_LENGTH) {
           title = typeof window.t === 'function' ? window.t('challenge162.season_perfect_title') : '🏆 ¡TEMPORADA PERFECTA (162-0)! Playoffs desbloqueados.';
         } else {
-          title = typeof window.t === 'function' ? window.t('challenge162.season_qualified_title', { wins: S.wins, losses: S.losses }) : `🎉 ¡Clasificaste a Playoffs! (${S.wins}-${S.losses})`;
+          title = `🎉 ¡Clasificaste a Playoffs! (${S.wins}-${S.losses} — Superaste las ${PLAYOFF_MIN_WINS} Victorias)`;
         }
         actionHTML = `<div style="color:var(--challenge162-accent);font-size:13px;margin-bottom:10px;">${title}</div>
           <button id="challenge162-goto-playoffs" class="btn" style="padding:12px 20px;font-size:11px;">${gotoPlayoffsText}</button>`;
       } else {
-        const lostTitle = typeof window.t === 'function' ? window.t('challenge162.season_missed_title', { wins: S.wins, losses: S.losses, maxLosses: PLAYOFF_MAX_LOSSES }) : `Temporada terminada ${S.wins}-${S.losses} — no alcanzó el récord de playoffs (máximo ${PLAYOFF_MAX_LOSSES} derrotas).`;
+        this.stopAutoSim();
+        const needed = PLAYOFF_MIN_WINS - S.wins;
+        const lostTitle = `Temporada terminada ${S.wins}-${S.losses} — se necesitaban al menos ${PLAYOFF_MIN_WINS} victorias para clasificar (faltaron ${needed} victorias).`;
         const viewResultsText = typeof window.t === 'function' ? window.t('challenge162.season_view_results') : 'VER RESULTADO FINAL';
-        const overBy = S.losses - PLAYOFF_MAX_LOSSES;
-        const nearMissKey = overBy <= 3 ? 'season_near_miss' : 'season_try_again';
-        const nearMissText = typeof window.t === 'function' ? window.t(`challenge162.${nearMissKey}`) : (overBy <= 3 ? '¡Tan cerca! Ajustá el roster e intentalo de nuevo.' : 'Reforzá el roster e intentalo de nuevo.');
+        const nearMissText = needed <= 5 ? '¡Tan cerca de las 100 victorias! Reforzá el roster e intentalo de nuevo.' : 'Necesitas al menos 100 victorias para clasificar a Playoffs. ¡Reforzá el roster e intentalo de nuevo!';
         actionHTML = `<div style="color:#f87171;font-size:12px;margin-bottom:6px;">${lostTitle}</div>
           <div style="color:#fbbf24;font-size:11px;margin-bottom:10px;">${nearMissText}</div>
           <button id="challenge162-view-results" class="btn btn-secondary" style="padding:10px 16px;font-size:10px;">${viewResultsText}</button>`;
@@ -1450,74 +1629,102 @@
         </div>`;
       }
 
-      const gameCounterText = typeof window.t === 'function' ? window.t('challenge162.game_counter', { current: Math.min(S.gamesPlayed + 1, SEASON_LENGTH), total: SEASON_LENGTH }) : `Partido ${Math.min(S.gamesPlayed + 1, SEASON_LENGTH)} / ${SEASON_LENGTH}`;
-      const battersTitle = typeof window.t === 'function' ? window.t('challenge162.season_batters_title') : 'BATEADORES';
-      const pitchersTitle = typeof window.t === 'function' ? window.t('challenge162.season_pitchers_title') : 'LANZADORES';
-      const recentGamesTitle = typeof window.t === 'function' ? window.t('challenge162.season_recent_games') : 'ÚLTIMOS PARTIDOS';
-      const noGamesText = typeof window.t === 'function' ? window.t('challenge162.season_no_games') : 'Todavía no jugaste ningún partido.';
-      const playerColText = typeof window.t === 'function' ? window.t('challenge162.table_player') : 'Jugador';
+      const completedPct = Math.round((S.gamesPlayed / SEASON_LENGTH) * 100);
+      const titleText = (typeof window.t === 'function' && window.t('challenge162.season_title') !== 'challenge162.season_title') ? window.t('challenge162.season_title') : '162-0 CHALLENGE';
+      const regularSeasonText = (typeof window.t === 'function' && window.t('challenge162.season_regular') !== 'challenge162.season_regular') ? window.t('challenge162.season_regular') : 'TEMPORADA REGULAR';
+      const gamesCountText = (typeof window.t === 'function' && window.t('challenge162.season_games_count', { current: S.gamesPlayed, total: SEASON_LENGTH }) !== 'challenge162.season_games_count') ? window.t('challenge162.season_games_count', { current: S.gamesPlayed, total: SEASON_LENGTH }) : `Juego ${S.gamesPlayed} / ${SEASON_LENGTH}`;
+      const battersTitle = (typeof window.t === 'function' && window.t('challenge162.season_batters_title') !== 'challenge162.season_batters_title') ? window.t('challenge162.season_batters_title') : 'BATEADORES';
+      const pitchersTitle = (typeof window.t === 'function' && window.t('challenge162.season_pitchers_title') !== 'challenge162.season_pitchers_title') ? window.t('challenge162.season_pitchers_title') : 'LANZADORES';
+      const recentGamesTitle = (typeof window.t === 'function' && window.t('challenge162.season_recent_games') !== 'challenge162.season_recent_games') ? window.t('challenge162.season_recent_games') : 'ÚLTIMOS PARTIDOS';
+      const noGamesText = (typeof window.t === 'function' && window.t('challenge162.season_no_games') !== 'challenge162.season_no_games') ? window.t('challenge162.season_no_games') : 'No hay juegos disputados aún';
 
       container.innerHTML = `
-        <div style="text-align:center;margin-bottom:16px;">
-          <div style="font-family:'Press Start 2P',monospace;font-size:22px;color:var(--challenge162-accent);letter-spacing:1px;">${S.wins}-${S.losses}</div>
-          <div style="font-size:11px;color:#9ca3af;margin-top:4px;">${gameCounterText}</div>
+        <div style="font-family:'Press Start 2P',monospace;font-size:16px;color:var(--challenge162-accent);letter-spacing:1px;margin-bottom:4px;">
+          ${titleText}
+        </div>
+        <div style="font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">
+          ${regularSeasonText} &middot; ${gamesCountText}
+        </div>
+
+        <div style="display:inline-block;padding:12px 28px;border-radius:12px;background:rgba(0,0,0,0.5);border:1px solid rgba(255,215,0,0.25);margin-bottom:12px;">
+          <div style="font-family:'Press Start 2P',monospace;font-size:24px;color:#ffd700;">
+            ${S.wins} - ${S.losses}
+          </div>
+          <div style="font-size:10px;color:#9ca3af;margin-top:4px;">
+            Game ${S.gamesPlayed} / ${SEASON_LENGTH}
+          </div>
           ${streakHTML}
         </div>
-        ${nextGameHTML}
-        <div style="text-align:center;margin-bottom:20px;">${actionHTML}</div>
 
+        <!-- Progress bar -->
+        <div style="max-width:540px;margin:0 auto 16px auto;background:rgba(255,255,255,0.08);border-radius:6px;height:8px;overflow:hidden;">
+          <div style="background:linear-gradient(90deg,var(--challenge162-accent),#34d399);height:100%;width:${completedPct}%;transition:width 0.3s ease;"></div>
+        </div>
+
+        ${nextGameHTML}
+
+        <div style="margin-bottom:18px;">
+          ${actionHTML}
+        </div>
+
+        <!-- Two column layout: Left (Tables) + Right (Game Log Feed) -->
         <div class="c162-season-grid">
-          <!-- Main Left Panel: Batters + Pitchers Tables -->
           <div class="c162-main-panel">
-            <!-- Batters Table Card -->
-            <div style="background:rgba(0,0,0,0.32);border:1px solid rgba(255,255,255,0.09);border-radius:10px;padding:14px;overflow-x:auto;">
-              <div style="font-size:10px;color:#38bdf8;margin-bottom:10px;font-family:'Press Start 2P',monospace;display:flex;align-items:center;gap:6px;">
-                <span>⚾</span> <span>${battersTitle}</span>
+            <!-- Batters -->
+            <div style="margin-bottom:18px;">
+              <div style="font-size:11px;color:#ffd700;margin-bottom:6px;text-align:left;font-family:'Press Start 2P',monospace;">
+                ⚾ ${battersTitle}
               </div>
-              <table class="c162-table">
-                <thead><tr>
-                  <th class="c162-th c162-th-name">${playerColText}</th>
-                  <th class="c162-th">AB</th>
-                  <th class="c162-th">H</th>
-                  <th class="c162-th">2B</th>
-                  <th class="c162-th">3B</th>
-                  <th class="c162-th">HR</th>
-                  <th class="c162-th">RBI</th>
-                  <th class="c162-th">BB</th>
-                  <th class="c162-th">SO</th>
-                  <th class="c162-th">SB</th>
-                  <th class="c162-th">R</th>
-                  <th class="c162-th">AVG</th>
-                  <th class="c162-th">OBP</th>
-                  <th class="c162-th">SLG</th>
-                  <th class="c162-th" style="color:var(--challenge162-accent);">OPS</th>
-                </tr></thead>
-                <tbody>${batterRows}</tbody>
-              </table>
+              <div class="c162-table-wrap">
+                <table class="c162-table">
+                  <thead><tr>
+                    <th class="c162-th">Player</th>
+                    <th class="c162-th">AB</th>
+                    <th class="c162-th">H</th>
+                    <th class="c162-th">2B</th>
+                    <th class="c162-th">3B</th>
+                    <th class="c162-th">HR</th>
+                    <th class="c162-th">RBI</th>
+                    <th class="c162-th">BB</th>
+                    <th class="c162-th">SO</th>
+                    <th class="c162-th">SB</th>
+                    <th class="c162-th">R</th>
+                    <th class="c162-th">AVG</th>
+                    <th class="c162-th">OBP</th>
+                    <th class="c162-th">SLG</th>
+                    <th class="c162-th">OPS</th>
+                    <th class="c162-th" style="color:var(--challenge162-accent);">WAR</th>
+                  </tr></thead>
+                  <tbody>${batterRows}</tbody>
+                </table>
+              </div>
             </div>
 
-            <!-- Pitchers Table Card -->
-            <div style="background:rgba(0,0,0,0.32);border:1px solid rgba(255,255,255,0.09);border-radius:10px;padding:14px;overflow-x:auto;">
-              <div style="font-size:10px;color:#38bdf8;margin-bottom:10px;font-family:'Press Start 2P',monospace;display:flex;align-items:center;gap:6px;">
-                <span>🧢</span> <span>${pitchersTitle}</span>
+            <!-- Pitchers -->
+            <div>
+              <div style="font-size:11px;color:#38bdf8;margin-bottom:6px;text-align:left;font-family:'Press Start 2P',monospace;">
+                🧢 ${pitchersTitle}
               </div>
-              <table class="c162-table">
-                <thead><tr>
-                  <th class="c162-th c162-th-name">${playerColText}</th>
-                  <th class="c162-th" style="text-align:center;">ROL</th>
-                  <th class="c162-th">IP</th>
-                  <th class="c162-th">H</th>
-                  <th class="c162-th">ER</th>
-                  <th class="c162-th">BB</th>
-                  <th class="c162-th">K</th>
-                  <th class="c162-th">W</th>
-                  <th class="c162-th">L</th>
-                  <th class="c162-th">SV</th>
-                  <th class="c162-th">WHIP</th>
-                  <th class="c162-th" style="color:var(--challenge162-accent);">ERA</th>
-                </tr></thead>
-                <tbody>${pitcherRows}</tbody>
-              </table>
+              <div class="c162-table-wrap">
+                <table class="c162-table">
+                  <thead><tr>
+                    <th class="c162-th">Player</th>
+                    <th class="c162-th" style="text-align:center;">ROL</th>
+                    <th class="c162-th">IP</th>
+                    <th class="c162-th">H</th>
+                    <th class="c162-th">ER</th>
+                    <th class="c162-th">BB</th>
+                    <th class="c162-th">K</th>
+                    <th class="c162-th">W</th>
+                    <th class="c162-th">L</th>
+                    <th class="c162-th">SV</th>
+                    <th class="c162-th">WHIP</th>
+                    <th class="c162-th">ERA</th>
+                    <th class="c162-th" style="color:var(--challenge162-accent);">WAR</th>
+                  </tr></thead>
+                  <tbody>${pitcherRows}</tbody>
+                </table>
+              </div>
             </div>
           </div>
 
@@ -1534,72 +1741,364 @@
         </div>
       `;
 
+      const btnAuto = document.getElementById('challenge162-play-auto');
       const btn1 = document.getElementById('challenge162-play-1');
       const btn10 = document.getElementById('challenge162-play-10');
       const btnUntil = document.getElementById('challenge162-play-until');
       const btnPlayoffs = document.getElementById('challenge162-goto-playoffs');
       const btnResults = document.getElementById('challenge162-view-results');
-      if (btn1) btn1.onclick = () => { this.simulateGame(); this.renderSeason(); };
-      if (btn10) btn10.onclick = () => { this.simulateBatch(10); this.renderSeason(); };
-      if (btnUntil) btnUntil.onclick = () => { this.simulateUntilLossOrEnd(); this.renderSeason(); };
-      if (btnPlayoffs) btnPlayoffs.onclick = () => { this.showScreen('screen-challenge-playoffs'); this.renderPlayoffs(); };
-      if (btnResults) btnResults.onclick = () => { this.state.playoffs.finished = true; this.save(); this.showScreen('screen-challenge-results'); this.renderResults(); };
+      if (btnAuto) btnAuto.onclick = () => this.toggleAutoSim();
+      if (btn1) btn1.onclick = () => { this.stopAutoSim(); this.simulateGame(); this.renderSeason(); };
+      if (btn10) btn10.onclick = () => { this.stopAutoSim(); this.simulateBatch(10); this.renderSeason(); };
+      if (btnUntil) btnUntil.onclick = () => { this.stopAutoSim(); this.simulateUntilLossOrEnd(); this.renderSeason(); };
+      if (btnPlayoffs) btnPlayoffs.onclick = () => { this.stopAutoSim(); this.showScreen('screen-challenge-playoffs'); this.renderPlayoffs(); };
+      if (btnResults) btnResults.onclick = () => { this.stopAutoSim(); this.state.playoffs.finished = true; this.save(); this.showScreen('screen-challenge-results'); this.renderResults(); };
     },
 
     renderPlayoffs() {
+      this.stopAutoSim();
       const container = document.getElementById('challenge162-playoffs-container');
       if (!container || !this.state) return;
-      const round = this.state.playoffs.round;
+      const S = this.state;
+      const round = S.playoffs.round;
       const cfg = PLAYOFF_ROUNDS[round];
+      if (!cfg) return;
+
+      const oppFranchise = generatePlayoffEnemyTeam(round, S.leagueTeams);
+      const oppSP = (oppFranchise.pitchers && oppFranchise.pitchers[0]) || { cleanName: 'As Rival', name: 'As Rival', ovr: 85, hp: 100 };
+      const oppBatters = oppFranchise._batters || [];
+      const topOppBatter = oppBatters.slice().sort((a, b) => (b.ovr || 0) - (a.ovr || 0))[0] || { name: 'Bateador Rival', ovr: 85 };
+
+      // Your Ace Pitcher (SP1) & Top Slugger
+      const topSP = (S.roster.pitchers.SP && S.roster.pitchers.SP[0]) || null;
+      const topSPStats = topSP ? S.pitcherStats[pitcherUnlockKey(topSP)] : null;
+      const spEra = topSPStats && topSPStats.outs > 0 ? ((topSPStats.er * 27) / topSPStats.outs).toFixed(2) : '3.00';
+      
+      let topBatter = null, topHR = -1;
+      SLOTS.forEach(slot => {
+        const p = S.roster.lineup[slot];
+        if (p) {
+          const stats = S.batterStats[batterUnlockKey(p)];
+          if (stats && stats.hr > topHR) { topHR = stats.hr; topBatter = p; }
+        }
+      });
+
+      // 3-step bracket stepper
+      const stepperHTML = PLAYOFF_ROUNDS.map((r, idx) => {
+        let badgeClass = 'c162-step-locked', badgeText = '🔒 BLOQUEADA';
+        if (idx < round) { badgeClass = 'c162-step-done'; badgeText = '✔ SUPERADA'; }
+        else if (idx === round) { badgeClass = 'c162-step-active'; badgeText = '⚔ EN DISPUTA'; }
+        return `
+          <div class="c162-step-card ${badgeClass}">
+            <div style="font-size:9px;color:#9ca3af;font-family:'Press Start 2P',monospace;">RONDA ${r.round}</div>
+            <div style="font-size:12px;font-weight:bold;color:#f3f4f6;margin:4px 0;">${r.label}</div>
+            <div class="c162-step-badge">${badgeText}</div>
+          </div>
+        `;
+      }).join('');
+
       container.innerHTML = `
-        <div style="text-align:center;">
-          <div style="font-family:'Press Start 2P',monospace;font-size:16px;color:var(--challenge162-accent);margin-bottom:10px;">${cfg.label}</div>
-          <div style="font-size:12px;color:#9ca3af;margin-bottom:20px;">Ronda ${round + 1} de ${PLAYOFF_ROUNDS.length}. Un partido, dados en mano, todo o nada.</div>
-          <button id="challenge162-play-playoff-match" class="btn" style="padding:14px 24px;font-size:12px;font-family:'Press Start 2P',monospace;">🎲 JUGAR PARTIDO</button>
+        <!-- Header -->
+        <div style="text-align:center;margin-bottom:20px;">
+          <div style="font-size:32px;margin-bottom:4px;">🏆</div>
+          <div style="font-family:'Press Start 2P',monospace;font-size:16px;color:#ffd700;letter-spacing:1px;margin-bottom:6px;">
+            POSTEMPORADA DE BASEROGUE
+          </div>
+          <div style="font-size:12px;color:#cbd5e1;">
+            3 Rondas a Partido Único (Muerte Súbita) &middot; ${cfg.desc}
+          </div>
+        </div>
+
+        <!-- Bracket Stepper -->
+        <div class="c162-bracket-stepper" style="display:grid;grid-template-columns:repeat(3, 1fr);gap:12px;margin-bottom:24px;">
+          ${stepperHTML}
+        </div>
+
+        <!-- Tale of the Tape (Cara a Cara) -->
+        <div class="c162-tale-container" style="display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:center;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.12);border-radius:14px;padding:20px;margin-bottom:24px;">
+          
+          <!-- Your Team Card -->
+          <div style="background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.3);border-radius:12px;padding:16px;text-align:center;">
+            <div style="font-family:'Press Start 2P',monospace;font-size:11px;color:#34d399;margin-bottom:10px;">
+              ⚾ TU EQUIPO (${S.wins}-${S.losses})
+            </div>
+            <div style="font-size:12px;color:#f3f4f6;font-weight:bold;margin-bottom:12px;">
+              As Abridor: <span style="color:#ffd700;">${topSP ? topSP.name : 'SP'}</span>
+            </div>
+            <div style="font-size:11px;color:#9ca3af;line-height:1.6;margin-bottom:10px;text-align:left;background:rgba(0,0,0,0.3);padding:10px;border-radius:8px;">
+              <div>🧢 <strong>ERA Temporada:</strong> ${spEra}</div>
+              <div>🔥 <strong>Líder Ofensivo:</strong> ${topBatter ? topBatter.name : 'Bateador'}</div>
+              <div>⭐ <strong>Récord de Roster:</strong> 17 Cartas Drafteadas</div>
+            </div>
+          </div>
+
+          <!-- VS Badge -->
+          <div style="text-align:center;padding:0 8px;">
+            <div style="font-family:'Press Start 2P',monospace;font-size:20px;color:#ffd700;text-shadow:0 0 16px rgba(255,215,0,0.6);margin-bottom:6px;">VS</div>
+            <div style="font-size:18px;">⚔️</div>
+          </div>
+
+          <!-- Enemy Team Card -->
+          <div style="background:${round === 2 ? 'rgba(239,68,68,0.08)' : 'rgba(56,189,248,0.06)'};border:1px solid ${round === 2 ? 'rgba(239,68,68,0.4)' : 'rgba(56,189,248,0.3)'};border-radius:12px;padding:16px;text-align:center;">
+            <div style="font-family:'Press Start 2P',monospace;font-size:11px;color:${round === 2 ? '#f87171' : '#38bdf8'};margin-bottom:10px;">
+              👑 ${oppFranchise.name}
+            </div>
+            <div style="font-size:12px;color:#f3f4f6;font-weight:bold;margin-bottom:12px;">
+              As Rival: <span style="color:#ffd700;">${oppSP.cleanName || oppSP.name} (OVR ${oppSP.ovr})</span>
+            </div>
+            <div style="font-size:11px;color:#9ca3af;line-height:1.6;margin-bottom:10px;text-align:left;background:rgba(0,0,0,0.3);padding:10px;border-radius:8px;">
+              <div>⚡ <strong>Dificultad Boss:</strong> +${cfg.statBoost} a todas las stats</div>
+              <div>🩸 <strong>Vida SP Rival:</strong> ${oppSP.hp} HP (${Math.round((cfg.hpMult - 1) * 100)}% extra)</div>
+              <div>💣 <strong>Peligro Ofensivo:</strong> ${topOppBatter ? topOppBatter.name : 'Rival'} (OVR ${topOppBatter ? topOppBatter.ovr : 85})</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Button -->
+        <div style="display:flex;justify-content:center;gap:14px;flex-wrap:wrap;">
+          <button id="challenge162-play-playoff-match" class="btn" style="padding:14px 26px;font-size:12px;font-family:'Press Start 2P',monospace;background:linear-gradient(135deg,#ffd700,#f59e0b);color:#000;border:2px solid #fff;box-shadow:0 0 24px rgba(255,215,0,0.5);cursor:pointer;transition:transform 0.15s ease;">
+            🎲 ¡DISPUTAR ${cfg.label}! (PARTIDO A MUERTE)
+          </button>
+          <button id="challenge162-playoff-back-season" class="btn btn-secondary" style="padding:14px 22px;font-size:11px;">
+            📊 VER TABLA DE STATS
+          </button>
         </div>
       `;
+
       const btn = document.getElementById('challenge162-play-playoff-match');
       if (btn) btn.onclick = () => this.startPlayoffRound();
+      const backBtn = document.getElementById('challenge162-playoff-back-season');
+      if (backBtn) backBtn.onclick = () => { this.showScreen('screen-challenge-season'); this.renderSeason(); };
     },
 
     renderResults() {
+      this.stopAutoSim();
       const container = document.getElementById('challenge162-results-container');
       if (!container || !this.state) return;
       const S = this.state;
-      let playoffMsg = '';
-      if (S.losses === 0) {
-        playoffMsg += '<div style="color:var(--challenge162-accent);font-size:12px;margin-top:10px;">🏆 TEMPORADA PERFECTA (162-0)</div>';
-      } else if (S.playoffs.unlocked) {
-        playoffMsg += `<div style="color:#9ca3af;font-size:11px;margin-top:10px;">Clasificó a Playoffs (máximo ${PLAYOFF_MAX_LOSSES} derrotas)</div>`;
-      }
-      if (S.playoffs.round > 0 || S.playoffs.finished) {
-        if (S.playoffs.won) {
-          playoffMsg += '<div style="color:var(--challenge162-accent);font-size:14px;margin-top:10px;">🏆 ¡CAMPEÓN DE LA SERIE MUNDIAL!</div>';
-        } else if (S.playoffs.finished) {
-          playoffMsg += `<div style="color:#f87171;font-size:13px;margin-top:10px;">Eliminado en: ${PLAYOFF_ROUNDS[S.playoffs.round].label}</div>`;
-          const roundsLeft = PLAYOFF_ROUNDS.length - 1 - S.playoffs.round;
-          const encouragement = roundsLeft === 0
-            ? '¡Tan cerca del título! Vuelve a intentarlo — tienes lo necesario.'
-            : (roundsLeft === 1 ? 'Estuviste a una serie de la Mundial. ¡Intentalo de nuevo!' : 'Reforzá el roster para llegar más lejos. ¡Intentalo de nuevo!');
-          playoffMsg += `<div style="color:#fbbf24;font-size:11px;margin-top:6px;">${encouragement}</div>`;
+      const wonWS = S.playoffs && S.playoffs.won;
+      const isPerfect = S.losses === 0;
+
+      // Map slot positions and DEF for batters:
+      const batterSlotMap = {};
+      SLOTS.forEach(slot => {
+        const p = S.roster.lineup[slot];
+        if (p) {
+          batterSlotMap[batterUnlockKey(p)] = { pos: slot, def: p.def || 50 };
         }
-      } else if (!S.playoffs.unlocked) {
-        const overBy = S.losses - PLAYOFF_MAX_LOSSES;
-        const encouragement = overBy <= 3
-          ? '¡Tan cerca! Ajustá el roster e intentalo de nuevo.'
-          : 'Reforzá el roster e intentalo de nuevo.';
-        playoffMsg += `<div style="color:#fbbf24;font-size:11px;margin-top:10px;">${encouragement}</div>`;
+      });
+
+      // Calculate Dynasty Awards with real WAR:
+      let mvp = null, mvpWAR = -999;
+      let hrKing = null, maxHR = -1;
+      let battingChamp = null, bestAVG = -1;
+
+      Object.entries(S.batterStats || {}).forEach(([k, b]) => {
+        const info = batterSlotMap[k] || { pos: 'DH', def: 50 };
+        const warVal = parseFloat(calcBatterWAR(b, info.pos, info.def)) || 0;
+        b._war = warVal;
+
+        if (warVal > mvpWAR) { mvpWAR = warVal; mvp = b; }
+        if (b.hr > maxHR) { maxHR = b.hr; hrKing = b; }
+        if (b.ab >= 100) {
+          const avg = b.h / b.ab;
+          if (avg > bestAVG) { bestAVG = avg; battingChamp = b; }
+        }
+      });
+
+      let cyYoung = null, cyWAR = -999;
+      let topReliever = null, bestRelieverScore = -999;
+
+      // Identify SP keys vs RP keys:
+      const spKeys = new Set((S.roster.pitchers.SP || []).map(pitcherUnlockKey));
+
+      Object.entries(S.pitcherStats || {}).forEach(([k, p]) => {
+        const isSP = spKeys.has(k) || p.role === 'SP' || (p.outs >= 150);
+        const warVal = parseFloat(calcPitcherWAR(p, isSP ? 'SP' : 'RP')) || 0;
+        p._war = warVal;
+
+        if (isSP) {
+          if (warVal > cyWAR) { cyWAR = warVal; cyYoung = p; }
+        } else {
+          const score = (p.sv * 2) + warVal;
+          if (score > bestRelieverScore) { bestRelieverScore = score; topReliever = p; }
+        }
+      });
+
+      // Format stat lines
+      const mvpLine = mvp ? `${mvp.name} · .${bestAVG > 0 ? (mvp.h / Math.max(1, mvp.ab)).toFixed(3).replace(/^0\./, '') : '000'} AVG / ${mvp.hr} HR / ${mvp.rbi} RBI (${mvpWAR.toFixed(1)} WAR)` : 'N/A';
+      const cyEra = cyYoung && cyYoung.outs > 0 ? ((cyYoung.er * 27) / cyYoung.outs).toFixed(2) : '0.00';
+      const cyLine = cyYoung ? `${cyYoung.name} · ${cyYoung.w}-${cyYoung.l}, ${cyEra} ERA, ${cyYoung.so} K (${cyWAR.toFixed(1)} WAR)` : 'N/A';
+      const hrLine = hrKing ? `${hrKing.name} · ${hrKing.hr} Jonrones (${hrKing.rbi} RBI)` : 'N/A';
+      const rpEra = topReliever && topReliever.outs > 0 ? ((topReliever.er * 27) / topReliever.outs).toFixed(2) : '0.00';
+      const rpLine = topReliever ? `${topReliever.name} · ${topReliever.sv} SV, ${rpEra} ERA (${(topReliever._war || 0).toFixed(1)} WAR)` : 'N/A';
+
+      // Ring of Champions: 9 Lineup cards in Row 1 + 8 Pitchers cards in Row 2
+      const lineupCards = [];
+      SLOTS.forEach(slot => {
+        const p = S.roster.lineup[slot];
+        if (p) lineupCards.push({ player: p, label: slot });
+      });
+
+      const pitcherCards = [];
+      (S.roster.pitchers.SP || []).forEach((p, i) => {
+        if (p) pitcherCards.push({ player: p, label: `SP${i + 1}` });
+      });
+      (S.roster.pitchers.RP || []).forEach((p, i) => {
+        if (p) pitcherCards.push({ player: p, label: i === 2 ? 'CL' : `RP${i + 1}` });
+      });
+
+      const renderCardWrap = ({ player, label }) => {
+        const cardHTML = typeof window.createCardHTML === 'function'
+          ? window.createCardHTML(player, label)
+          : `<div class="player-card"><div class="card-name">${player.name}</div></div>`;
+        return `
+          <div class="c162-result-card-wrap">
+            ${cardHTML}
+          </div>
+        `;
+      };
+
+      const lineupCardsHTML = lineupCards.map(renderCardWrap).join('');
+      const pitcherCardsHTML = pitcherCards.map(renderCardWrap).join('');
+
+      let headerHTML = '';
+      if (wonWS) {
+        if (isPerfect) {
+          headerHTML = `
+            <div style="text-align:center;margin-bottom:8px;">
+              <div style="font-size:28px;margin-bottom:2px;filter:drop-shadow(0 0 16px #ffd700);animation:bounce 2s infinite;">👑</div>
+              <div style="font-family:'Press Start 2P',monospace;font-size:13px;color:#ffd700;letter-spacing:1.5px;text-shadow:0 0 20px rgba(255,215,0,0.9);margin-bottom:3px;">
+                ¡TEMPORADA PERFECTA 162-0 & CAMPEÓN MUNDIAL!
+              </div>
+              <div style="font-size:10.5px;color:#34d399;font-weight:bold;">
+                🏆 162-0 REGULAR + 3-0 PLAYOFFS (165-0 INVICTO) · ¡INMORTALIDAD LOGRADA!
+              </div>
+            </div>
+          `;
+        } else {
+          headerHTML = `
+            <div style="text-align:center;margin-bottom:8px;">
+              <div style="font-size:26px;margin-bottom:2px;filter:drop-shadow(0 0 14px #ffd700);animation:bounce 2s infinite;">🏆</div>
+              <div style="font-family:'Press Start 2P',monospace;font-size:13px;color:#ffd700;letter-spacing:1.5px;text-shadow:0 0 20px rgba(255,215,0,0.8);margin-bottom:3px;">
+                ¡CAMPEÓN DE LA SERIE MUNDIAL!
+              </div>
+              <div style="font-size:10.5px;color:#cbd5e1;">
+                👑 Alzaste el Trofeo (${S.wins}-${S.losses} en Regular + 3-0 en Playoffs) &middot; <span style="color:#fbbf24;">¿Podrás lograr el 162-0 Invicto?</span>
+              </div>
+            </div>
+          `;
+        }
+      } else if (S.playoffs && S.playoffs.finished) {
+        const roundName = PLAYOFF_ROUNDS[S.playoffs.round] ? PLAYOFF_ROUNDS[S.playoffs.round].label : 'Playoffs';
+        headerHTML = `
+          <div style="text-align:center;margin-bottom:8px;">
+            <div style="font-size:24px;margin-bottom:2px;">🥈</div>
+            <div style="font-family:'Press Start 2P',monospace;font-size:12.5px;color:#f87171;letter-spacing:1px;margin-bottom:3px;">
+              FIN DE LA POSTEMPORADA
+            </div>
+            <div style="font-size:10.5px;color:#f3f4f6;">
+              Gran campaña finalizada en: <span style="color:#ffd700;font-weight:bold;">${roundName}</span>
+            </div>
+          </div>
+        `;
+      } else {
+        headerHTML = `
+          <div style="text-align:center;margin-bottom:8px;">
+            <div style="font-size:22px;margin-bottom:2px;">⚾</div>
+            <div style="font-family:'Press Start 2P',monospace;font-size:12.5px;color:var(--challenge162-accent);letter-spacing:1px;margin-bottom:3px;">
+              TEMPORADA REGULAR FINALIZADA
+            </div>
+            <div style="font-size:10.5px;color:#9ca3af;">Récord: <span style="color:#ffd700;font-weight:bold;">${S.wins}-${S.losses}</span> (Mínimo 100 victorias para clasificar)</div>
+          </div>
+        `;
       }
+
       container.innerHTML = `
-        <div style="text-align:center;">
-          <div style="font-family:'Press Start 2P',monospace;font-size:22px;color:var(--challenge162-accent);">${S.wins}-${S.losses}</div>
-          <div style="font-size:11px;color:#9ca3af;margin-top:6px;">Temporada Regular</div>
-          ${playoffMsg}
-          <button id="challenge162-new-challenge-btn" class="btn" style="margin-top:24px;padding:12px 20px;font-size:11px;">🔄 EMPEZAR NUEVO CHALLENGE</button>
+        ${headerHTML}
+
+        <!-- Top Record Bar -->
+        <div style="display:flex;justify-content:space-around;align-items:center;background:rgba(0,0,0,0.45);border:1px solid rgba(255,215,0,0.25);border-radius:8px;padding:6px 12px;margin-bottom:8px;flex-wrap:wrap;gap:6px;text-align:center;">
+          <div>
+            <div style="font-size:7.5px;color:#9ca3af;font-family:'Press Start 2P',monospace;">TEMPORADA REGULAR</div>
+            <div style="font-size:13px;font-family:'Press Start 2P',monospace;color:#ffd700;margin-top:2px;">${S.wins}-${S.losses}</div>
+          </div>
+          <div>
+            <div style="font-size:7.5px;color:#9ca3af;font-family:'Press Start 2P',monospace;">POSTEMPORADA</div>
+            <div style="font-size:13px;font-family:'Press Start 2P',monospace;color:${wonWS ? '#34d399' : (S.playoffs.unlocked ? '#f87171' : '#6b7280')};margin-top:2px;">
+              ${wonWS ? '3 - 0 🏆' : (S.playoffs.unlocked ? `${S.playoffs.round} Victoria(s)` : 'No Clasificó')}
+            </div>
+          </div>
+          <div>
+            <div style="font-size:7.5px;color:#9ca3af;font-family:'Press Start 2P',monospace;">ESTATUS DINASTÍA</div>
+            <div style="font-size:11px;font-weight:bold;color:${wonWS ? '#ffd700' : '#38bdf8'};margin-top:2px;">
+              ${wonWS ? (isPerfect ? '👑 INVICTO SUPREMO' : '👑 CAMPEÓN MUNDIAL') : (S.playoffs.unlocked ? '🥈 FINALISTA' : '⚾ CONTENDIENTE')}
+            </div>
+          </div>
+        </div>
+
+        <!-- Awards Grid -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(210px, 1fr));gap:8px;margin-bottom:8px;">
+          <div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.3);border-radius:6px;padding:6px 10px;">
+            <div style="font-family:'Press Start 2P',monospace;font-size:7.5px;color:#ffd700;margin-bottom:2px;">🏆 MVP DE LA DINASTÍA</div>
+            <div style="font-size:10.5px;color:#f3f4f6;font-weight:bold;">${mvp ? mvp.name : 'N/A'}</div>
+            <div style="font-size:8.5px;color:#9ca3af;margin-top:1px;">${mvpLine}</div>
+          </div>
+
+          <div style="background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.3);border-radius:6px;padding:6px 10px;">
+            <div style="font-family:'Press Start 2P',monospace;font-size:7.5px;color:#38bdf8;margin-bottom:2px;">🧢 PREMIO CY YOUNG</div>
+            <div style="font-size:10.5px;color:#f3f4f6;font-weight:bold;">${cyYoung ? cyYoung.name : 'N/A'}</div>
+            <div style="font-size:8.5px;color:#9ca3af;margin-top:1px;">${cyLine}</div>
+          </div>
+
+          <div style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.3);border-radius:6px;padding:6px 10px;">
+            <div style="font-family:'Press Start 2P',monospace;font-size:7.5px;color:#f87171;margin-bottom:2px;">💣 REY DEL CUADRANGULAR</div>
+            <div style="font-size:10.5px;color:#f3f4f6;font-weight:bold;">${hrKing ? hrKing.name : 'N/A'}</div>
+            <div style="font-size:8.5px;color:#9ca3af;margin-top:1px;">${hrLine}</div>
+          </div>
+
+          <div style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.3);border-radius:6px;padding:6px 10px;">
+            <div style="font-family:'Press Start 2P',monospace;font-size:7.5px;color:#34d399;margin-bottom:2px;">🔥 RELEVISTA DEL AÑO</div>
+            <div style="font-size:10.5px;color:#f3f4f6;font-weight:bold;">${topReliever ? topReliever.name : 'N/A'}</div>
+            <div style="font-size:8.5px;color:#9ca3af;margin-top:1px;">${rpLine}</div>
+          </div>
+        </div>
+
+        <!-- Ring of Champions (All 17 Trading Cards in 2 neat rows) -->
+        <div style="background:rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:12px 10px 18px 10px;margin-bottom:14px;">
+          <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:var(--challenge162-accent);margin-bottom:16px;text-align:center;letter-spacing:0.5px;">
+            💍 PLANTILLA DE 17 CAMPEONES (ROSTER COMPLETO)
+          </div>
+          <div class="c162-all-champions-grid">
+            <div class="c162-champions-row">
+              ${lineupCardsHTML}
+            </div>
+            <div class="c162-champions-row" style="margin-top:14px;">
+              ${pitcherCardsHTML}
+            </div>
+          </div>
+        </div>
+
+        <!-- Action CTAs -->
+        <div style="display:flex;justify-content:center;gap:10px;flex-wrap:wrap;">
+          <button id="challenge162-new-challenge-btn" class="btn" style="padding:8px 16px;font-size:9.5px;font-family:'Press Start 2P',monospace;background:linear-gradient(135deg,#ffd700,#f59e0b);color:#000;border:2px solid #fff;box-shadow:0 0 14px rgba(255,215,0,0.4);cursor:pointer;">
+            🔄 EMPEZAR NUEVO CHALLENGE
+          </button>
+          <button id="challenge162-results-view-stats-btn" class="btn btn-secondary" style="padding:8px 14px;font-size:9.5px;">
+            📊 VER ESTADÍSTICAS
+          </button>
+          <button id="challenge162-results-back-btn" class="btn btn-secondary" style="padding:8px 14px;font-size:9.5px;">
+            ← VOLVER AL MENÚ
+          </button>
         </div>
       `;
-      const btn = document.getElementById('challenge162-new-challenge-btn');
-      if (btn) btn.onclick = () => { this.clear(); this.startRosterBuilder(); };
+
+      const btnNew = document.getElementById('challenge162-new-challenge-btn');
+      if (btnNew) btnNew.onclick = () => { this.clear(); this.startRosterBuilder(); };
+      const btnStats = document.getElementById('challenge162-results-view-stats-btn');
+      if (btnStats) btnStats.onclick = () => { this.showScreen('screen-challenge-season'); this.renderSeason(); };
+      const btnBack = document.getElementById('challenge162-results-back-btn');
+      if (btnBack) btnBack.onclick = () => { this.showScreen('screen-mode-select'); this.updateModeSelectCard(); };
     },
 
     initUI() {
@@ -1614,7 +2113,6 @@
             return;
           }
           if (this.hasSave() && this.load() && this.state) {
-            this.showScreen('screen-challenge-season');
             this.render();
           } else {
             this.startRosterBuilder();

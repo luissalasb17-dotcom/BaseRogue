@@ -693,6 +693,9 @@
     "season_pitchers_title": "PITCHERS",
     "season_recent_games": "RECENT GAMES",
     "season_no_games": "No games played yet.",
+    "season_title": "162-0 CHALLENGE",
+    "season_regular": "REGULAR SEASON",
+    "season_games_count": "Game {{current}} / {{total}}",
     "table_player": "Player",
     "game_counter": "Game {{current}} / {{total}}"
   },
