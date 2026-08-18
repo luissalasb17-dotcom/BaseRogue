@@ -689,20 +689,42 @@
     }
   }
 
-  // Auto-unlock audio once on very first user interaction
+  // Ultra-early auto-unlock: attempts immediate play on load + on first hover/scroll/touch/keypress/click
   if (typeof document !== 'undefined') {
     let unlocked = false;
     const unlockOnce = () => {
       if (unlocked) return;
       unlocked = true;
       AudioManager.unlock();
-      ['pointerdown', 'touchstart', 'mousedown', 'keydown', 'click'].forEach(evt => {
-        try { document.removeEventListener(evt, unlockOnce, true); } catch (e) {}
+      const events = ['pointermove', 'mousemove', 'wheel', 'scroll', 'pointerdown', 'touchstart', 'mousedown', 'keydown', 'click', 'focus'];
+      events.forEach(evt => {
+        try {
+          window.removeEventListener(evt, unlockOnce, true);
+          document.removeEventListener(evt, unlockOnce, true);
+        } catch (e) {}
       });
     };
-    ['pointerdown', 'touchstart', 'mousedown', 'keydown', 'click'].forEach(evt => {
+
+    const events = ['pointermove', 'mousemove', 'wheel', 'scroll', 'pointerdown', 'touchstart', 'mousedown', 'keydown', 'click', 'focus'];
+    events.forEach(evt => {
+      window.addEventListener(evt, unlockOnce, { capture: true, once: true, passive: true });
       document.addEventListener(evt, unlockOnce, { capture: true, once: true, passive: true });
     });
+
+    // Attempt instant start right on page load
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => {
+        if (!_muted) {
+          AudioManager.setBGM('menu');
+          AudioManager.unlock();
+        }
+      });
+    } else {
+      if (!_muted) {
+        AudioManager.setBGM('menu');
+        AudioManager.unlock();
+      }
+    }
   }
 
   window.AudioManager = AudioManager;
