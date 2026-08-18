@@ -99,6 +99,7 @@ window.showScreen = function(screenId) {
       window.Challenge162.updateModeSelectCard();
     }
     updateMobileNavVisibility();
+    if (window.AudioManager) window.AudioManager.setBGM('menu');
     return;
   }
 
@@ -141,6 +142,17 @@ window.showScreen = function(screenId) {
       target.scrollTop = 0;
       const vp = target.querySelector('.map-viewport');
       if (vp) vp.scrollTop = 0;
+    }
+  }
+
+  // Seamless Ambient BGM switching
+  if (window.AudioManager) {
+    if (screenId === 'screen-match') {
+      window.AudioManager.setBGM('match');
+    } else if (screenId === 'screen-gameover') {
+      window.AudioManager.setBGM('off');
+    } else {
+      window.AudioManager.setBGM('menu');
     }
   }
 
