@@ -127,14 +127,15 @@
   let bgmIntervalTimer = null;
   let activeTrackGain = null;
   let activeBGMNodes = [];
+  let currentBattleIntensity = 0; // 0 (normal), 1 (tension/runners), 2 (clutch/2 outs), 3 (climax/KO alert)
 
   // Frequencies in Hz
   const N = {
-    D2: 73.42, F2: 87.31, G2: 98.00, A2: 110.00, Bb2: 116.54, C3: 130.81, D3: 146.83,
-    E3: 164.81, F3: 174.61, G3: 196.00, A3: 220.00, Bb3: 233.08, B3: 246.94,
-    C4: 261.63, D4: 293.66, E4: 329.63, F4: 349.23, G4: 392.00, A4: 440.00, Bb4: 466.16, B4: 493.88,
-    C5: 523.25, D5: 587.33, E5: 659.25, F5: 698.46, G5: 783.99, A5: 880.00, Bb5: 932.33,
-    C6: 1046.50, D6: 1174.66, E6: 1318.51
+    D2: 73.42, E2: 82.41, F2: 87.31, G2: 98.00, A2: 110.00, Bb2: 116.54, B2: 123.47,
+    C3: 130.81, D3: 146.83, E3: 164.81, F3: 174.61, G3: 196.00, A3: 220.00, Bb3: 233.08, B3: 246.94,
+    C4: 261.63, D4: 293.66, Eb4: 311.13, E4: 329.63, F4: 349.23, G4: 392.00, A4: 440.00, Bb4: 466.16, B4: 493.88,
+    C5: 523.25, D5: 587.33, Eb5: 622.25, E5: 659.25, F5: 698.46, G5: 783.99, A5: 880.00, Bb5: 932.33, B5: 987.77,
+    C6: 1046.50, D6: 1174.66, E6: 1318.51, F6: 1396.91, G6: 1567.98
   };
 
   function getTrackBus() {
@@ -156,7 +157,6 @@
       bgmIntervalTimer = null;
     }
     if (activeTrackGain && c) {
-      // Instantly cut off sound without clicks
       activeTrackGain.gain.setValueAtTime(activeTrackGain.gain.value, c.currentTime);
       activeTrackGain.gain.linearRampToValueAtTime(0, c.currentTime + 0.03);
       const oldBus = activeTrackGain;
@@ -174,30 +174,74 @@
   }
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // TRACK 1: MENU & MAP ("Cozy Clubhouse Lofi & Soft Retro Chords")
-  // Warm, relaxing Rhodes/jazz chords at 90 BPM (Cmaj7 -> Am7 -> Dm7 -> G7)
+  // TRACK 1: PROCEDURAL INFINITE MENU ("Cozy Clubhouse Generative Lofi")
+  // Generates unique jazz-lofi chord progressions & algorithmic pentatonic melodies
   // ─────────────────────────────────────────────────────────────────────────────
-  const MENU_BPM = 90;
-  const MENU_BEAT = 60 / MENU_BPM; // ~0.666s
-  const MENU_SIXTEENTH = MENU_BEAT / 4; // ~0.166s
+  const MENU_BPM = 88;
+  const MENU_BEAT = 60 / MENU_BPM; // ~0.681s
+  const MENU_SIXTEENTH = MENU_BEAT / 4; // ~0.170s
 
-  // Warm Rhodes chords: [frequencies]
-  const COZY_CHORDS = [
-    { notes: [N.C4, N.E4, N.G4, N.B4], bass: N.C3, t: 0 },   // Cmaj7
-    { notes: [N.A3, N.C4, N.E4, N.G4], bass: N.A2, t: 16 },  // Am7
-    { notes: [N.D4, N.F4, N.A4, N.C5], bass: N.D3, t: 32 },  // Dm7
-    { notes: [N.G3, N.B3, N.D4, N.F4], bass: N.G2, t: 48 }   // G7
+  const COZY_PROGRESSIONS = [
+    // Progression A: Cmaj7 -> Am7 -> Dm7 -> G7
+    [
+      { notes: [N.C4, N.E4, N.G4, N.B4], bass: N.C3, t: 0 },
+      { notes: [N.A3, N.C4, N.E4, N.G4], bass: N.A2, t: 16 },
+      { notes: [N.D4, N.F4, N.A4, N.C5], bass: N.D3, t: 32 },
+      { notes: [N.G3, N.B3, N.D4, N.F4], bass: N.G2, t: 48 }
+    ],
+    // Progression B: Fmaj7 -> Em7 -> Dm7 -> Cmaj7
+    [
+      { notes: [N.F3, N.A3, N.C4, N.E4], bass: N.F2, t: 0 },
+      { notes: [N.E3, N.G3, N.B3, N.D4], bass: N.E2, t: 16 },
+      { notes: [N.D4, N.F4, N.A4, N.C5], bass: N.D3, t: 32 },
+      { notes: [N.C4, N.E4, N.G4, N.B4], bass: N.C3, t: 48 }
+    ],
+    // Progression C: Cmaj7 -> Em7 -> Fmaj7 -> G7
+    [
+      { notes: [N.C4, N.E4, N.G4, N.B4], bass: N.C3, t: 0 },
+      { notes: [N.E3, N.G3, N.B3, N.D4], bass: N.E2, t: 16 },
+      { notes: [N.F3, N.A3, N.C4, N.E4], bass: N.F2, t: 32 },
+      { notes: [N.G3, N.B3, N.D4, N.F4], bass: N.G2, t: 48 }
+    ],
+    // Progression D: Am7 -> D7 -> Dm7 -> G7 (Dugout Jazz)
+    [
+      { notes: [N.A3, N.C4, N.E4, N.G4], bass: N.A2, t: 0 },
+      { notes: [N.D4, N.F4, N.A4, N.C5], bass: N.D3, t: 16 },
+      { notes: [N.F3, N.A3, N.C4, N.E4], bass: N.F2, t: 32 },
+      { notes: [N.G3, N.B3, N.D4, N.F4], bass: N.G2, t: 48 }
+    ]
   ];
 
-  // Gentle melody floating on top
-  const COZY_MELODY = [
-    { f: N.E5, d: 3, t: 4 }, { f: N.G5, d: 2, t: 8 }, { f: N.D5, d: 4, t: 12 },
-    { f: N.C5, d: 3, t: 20 }, { f: N.E5, d: 2, t: 24 }, { f: N.B4, d: 4, t: 28 },
-    { f: N.A4, d: 3, t: 36 }, { f: N.C5, d: 2, t: 40 }, { f: N.F5, d: 2, t: 44 }, { f: N.E5, d: 2, t: 46 },
-    { f: N.D5, d: 4, t: 52 }, { f: N.B4, d: 4, t: 58 }
-  ];
-
+  const PENTATONIC_SCALE = [N.C4, N.D4, N.E4, N.G4, N.A4, N.C5, N.D5, N.E5, N.G5, N.A5, N.C6];
   let nextMenuLoopTime = 0;
+  let menuProgressionIndex = 0;
+
+  function generateProceduralMenuMelody() {
+    const melody = [];
+    let curScaleIdx = 4 + Math.floor(Math.random() * 3); // Start near C5
+    const stepSlots = [4, 8, 12, 20, 24, 28, 36, 40, 44, 46, 52, 56];
+
+    stepSlots.forEach(t => {
+      // 25% chance of musical breath/rest
+      if (Math.random() < 0.25 && t !== 4 && t !== 20 && t !== 36 && t !== 52) return;
+
+      // Voice-leading step: 60% step adjacent, 25% skip 2 degrees, 15% hold/leap
+      const r = Math.random();
+      if (r < 0.60) {
+        curScaleIdx += (Math.random() < 0.5 ? 1 : -1);
+      } else if (r < 0.85) {
+        curScaleIdx += (Math.random() < 0.5 ? 2 : -2);
+      } else {
+        curScaleIdx += (Math.random() < 0.5 ? 3 : -3);
+      }
+      curScaleIdx = Math.max(0, Math.min(PENTATONIC_SCALE.length - 1, curScaleIdx));
+
+      const dur = Math.random() < 0.6 ? 3 : 2; // 16th duration
+      melody.push({ f: PENTATONIC_SCALE[curScaleIdx], d: dur, t: t });
+    });
+
+    return melody;
+  }
 
   function scheduleMenuMusicLoop() {
     const c = getCtx();
@@ -205,23 +249,27 @@
     const bus = getTrackBus();
     if (!bus) return;
 
-    const loopDur = 64 * MENU_SIXTEENTH; // ~10.66s
+    const loopDur = 64 * MENU_SIXTEENTH; // ~10.88s
     const now = Math.max(c.currentTime + 0.05, nextMenuLoopTime);
     nextMenuLoopTime = now + loopDur;
 
-    // 1. Warm electric piano / Rhodes chord pads
-    COZY_CHORDS.forEach(chordObj => {
+    // 1. Procedural Progression Shift
+    const currentProg = COZY_PROGRESSIONS[menuProgressionIndex % COZY_PROGRESSIONS.length];
+    menuProgressionIndex++;
+
+    // Render Chords & Warm Sub-Bass
+    currentProg.forEach(chordObj => {
       const startTime = now + (chordObj.t * MENU_SIXTEENTH);
       const dur = 14 * MENU_SIXTEENTH;
 
       chordObj.notes.forEach(freq => {
         const osc = c.createOscillator();
         const gain = c.createGain();
-        osc.type = 'sine'; // Softest, warmest tone
+        osc.type = 'sine';
         osc.frequency.setValueAtTime(freq, startTime);
 
         gain.gain.setValueAtTime(0, startTime);
-        gain.gain.linearRampToValueAtTime(0.045, startTime + 0.12);
+        gain.gain.linearRampToValueAtTime(0.040, startTime + 0.12);
         gain.gain.exponentialRampToValueAtTime(0.001, startTime + dur);
 
         osc.connect(gain);
@@ -231,14 +279,13 @@
         activeBGMNodes.push(osc);
       });
 
-      // Warm round bass note
       const bassOsc = c.createOscillator();
       const bassGain = c.createGain();
       bassOsc.type = 'triangle';
       bassOsc.frequency.setValueAtTime(chordObj.bass, startTime);
 
       bassGain.gain.setValueAtTime(0, startTime);
-      bassGain.gain.linearRampToValueAtTime(0.08, startTime + 0.08);
+      bassGain.gain.linearRampToValueAtTime(0.075, startTime + 0.08);
       bassGain.gain.exponentialRampToValueAtTime(0.001, startTime + dur);
 
       bassOsc.connect(bassGain);
@@ -248,8 +295,9 @@
       activeBGMNodes.push(bassOsc);
     });
 
-    // 2. Soft, cozy lead melody
-    COZY_MELODY.forEach(note => {
+    // 2. Procedural Melody Improvisation
+    const dynamicMelody = generateProceduralMenuMelody();
+    dynamicMelody.forEach(note => {
       const startTime = now + (note.t * MENU_SIXTEENTH);
       const dur = note.d * MENU_SIXTEENTH * 0.90;
 
@@ -259,7 +307,7 @@
       osc.frequency.setValueAtTime(note.f, startTime);
 
       gain.gain.setValueAtTime(0, startTime);
-      gain.gain.linearRampToValueAtTime(0.055, startTime + 0.04);
+      gain.gain.linearRampToValueAtTime(0.050, startTime + 0.04);
       gain.gain.exponentialRampToValueAtTime(0.001, startTime + dur);
 
       osc.connect(gain);
@@ -269,12 +317,12 @@
       activeBGMNodes.push(osc);
     });
 
-    // 3. Relaxing lofi vinyl brush beat (gentle shakers)
+    // 3. Relaxing lofi percussion
     for (let s = 0; s < 64; s += 4) {
       const startTime = now + (s * MENU_SIXTEENTH);
       const isBackbeat = (s % 16 === 8);
       const dur = isBackbeat ? 0.08 : 0.035;
-      const vol = isBackbeat ? 0.035 : 0.015;
+      const vol = isBackbeat ? 0.030 : 0.012;
 
       const bufSize = Math.max(64, Math.floor(c.sampleRate * dur));
       const buf = c.createBuffer(1, bufSize, c.sampleRate);
@@ -302,38 +350,17 @@
   }
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // TRACK 2: BATTLE & MATCH ("Arcade RPG Boss / Challenge Faceoff")
-  // Driving 128 BPM minor key tension (D minor -> Bb -> C -> Dm) with galloping bass
+  // TRACK 2: ADAPTIVE DYNAMIC BATTLE ("Arcade RPG Showdown & Tension Scaling")
+  // Reacts in real-time to outs, runners in scoring position, and pitcher HP
   // ─────────────────────────────────────────────────────────────────────────────
   const MATCH_BPM = 128;
   const MATCH_BEAT = 60 / MATCH_BPM; // ~0.468s
   const MATCH_SIXTEENTH = MATCH_BEAT / 4; // ~0.117s
 
-  // Driving 16th-note galloping bassline (Dm / Bb / C / Dm)
-  const BATTLE_BASS_PATTERN = [
-    // Bar 1: Dm
-    N.D3, N.D3, N.F3, N.D3,  N.D3, N.D3, N.A3, N.D3,  N.D3, N.D3, N.F3, N.D3,  N.D3, N.D3, N.C4, N.A3,
-    // Bar 2: Bb
-    N.Bb2, N.Bb2, N.D3, N.Bb2, N.Bb2, N.Bb2, N.F3, N.Bb2, N.Bb2, N.Bb2, N.D3, N.Bb2, N.Bb2, N.Bb2, N.F3, N.D3,
-    // Bar 3: C
-    N.C3, N.C3, N.E3, N.C3,  N.C3, N.C3, N.G3, N.C3,  N.C3, N.C3, N.E3, N.C3,  N.C3, N.C3, N.G3, N.E3,
-    // Bar 4: Dm Turnaround
-    N.D3, N.D3, N.F3, N.D3,  N.D3, N.D3, N.A3, N.D3,  N.D3, N.F3, N.G3, N.A3,  N.C4, N.A3, N.G3, N.F3
-  ];
-
-  // Challenging, driving battle melody stabs
-  const BATTLE_LEAD_NOTES = [
-    // Bar 1
-    { f: N.D4, d: 2, t: 0 }, { f: N.F4, d: 2, t: 4 }, { f: N.A4, d: 3, t: 8 }, { f: N.D5, d: 3, t: 12 },
-    // Bar 2
-    { f: N.F5, d: 2, t: 16 }, { f: N.E5, d: 2, t: 20 }, { f: N.D5, d: 3, t: 24 }, { f: N.Bb4, d: 3, t: 28 },
-    // Bar 3
-    { f: N.C5, d: 2, t: 32 }, { f: N.E5, d: 2, t: 36 }, { f: N.G5, d: 3, t: 40 }, { f: N.F5, d: 2, t: 44 }, { f: N.E5, d: 2, t: 46 },
-    // Bar 4: Climax stab
-    { f: N.D5, d: 4, t: 48 }, { f: N.A5, d: 4, t: 54 }, { f: N.D6, d: 4, t: 60 }
-  ];
+  const BATTLE_SCALE = [N.D4, N.E4, N.F4, N.G4, N.A4, N.Bb4, N.C5, N.D5, N.E5, N.F5, N.G5, N.A5, N.D6];
 
   let nextMatchLoopTime = 0;
+  let matchVariationCount = 0;
 
   function scheduleMatchMusicLoop() {
     const c = getCtx();
@@ -344,47 +371,88 @@
     const loopDur = 64 * MATCH_SIXTEENTH; // ~7.5s
     const now = Math.max(c.currentTime + 0.05, nextMatchLoopTime);
     nextMatchLoopTime = now + loopDur;
+    matchVariationCount++;
 
-    // 1. Driving Synth Bassline (Punchy Gallop)
-    BATTLE_BASS_PATTERN.forEach((freq, idx) => {
-      const startTime = now + (idx * MATCH_SIXTEENTH);
-      const dur = MATCH_SIXTEENTH * 0.85;
+    const intensity = currentBattleIntensity; // 0 to 3
 
-      const osc = c.createOscillator();
-      const gain = c.createGain();
-      osc.type = 'sawtooth'; // Punchy battle synth
-      osc.frequency.setValueAtTime(freq, startTime);
+    // 1. Driving Bassline (scales from 8th-note pulse to full 16th-note galloping bass under tension)
+    const bassChords = [N.D3, N.Bb2, N.C3, N.D3];
+    bassChords.forEach((rootNote, barIdx) => {
+      const barStart = barIdx * 16;
+      // Normal: 8th notes (0, 2, 4, 6...); Intensity >= 1: 16th galloping (0, 1, 2, 3...)
+      const stepInterval = intensity >= 1 ? 1 : 2;
 
-      // Low-pass filter for crisp arcade bass
-      const filter = c.createBiquadFilter();
-      filter.type = 'lowpass';
-      filter.frequency.setValueAtTime(650, startTime);
-      filter.Q.setValueAtTime(2.0, startTime);
+      for (let step = 0; step < 16; step += stepInterval) {
+        const startTime = now + ((barStart + step) * MATCH_SIXTEENTH);
+        const dur = MATCH_SIXTEENTH * 0.85;
 
-      gain.gain.setValueAtTime(0, startTime);
-      gain.gain.linearRampToValueAtTime(0.09, startTime + 0.01);
-      gain.gain.exponentialRampToValueAtTime(0.001, startTime + dur);
+        const osc = c.createOscillator();
+        const gain = c.createGain();
+        osc.type = 'sawtooth';
 
-      osc.connect(filter);
-      filter.connect(gain);
-      gain.connect(bus);
-      osc.start(startTime);
-      osc.stop(startTime + dur + 0.02);
-      activeBGMNodes.push(osc);
+        // Add octave/5th bounce on syncopated beats
+        let noteFreq = rootNote;
+        if (step % 4 === 2) noteFreq = rootNote * 1.5; // 5th
+        else if (step % 8 === 4) noteFreq = rootNote * 2.0; // Octave
+
+        osc.frequency.setValueAtTime(noteFreq, startTime);
+
+        // Filter resonance opens up as intensity increases
+        const filter = c.createBiquadFilter();
+        filter.type = 'lowpass';
+        const cutoff = 550 + (intensity * 250); // Opens up from 550Hz to 1300Hz
+        filter.frequency.setValueAtTime(cutoff, startTime);
+        filter.Q.setValueAtTime(1.8 + intensity * 0.6, startTime);
+
+        gain.gain.setValueAtTime(0, startTime);
+        gain.gain.linearRampToValueAtTime(0.080 + (intensity * 0.015), startTime + 0.01);
+        gain.gain.exponentialRampToValueAtTime(0.001, startTime + dur);
+
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(bus);
+        osc.start(startTime);
+        osc.stop(startTime + dur + 0.02);
+        activeBGMNodes.push(osc);
+      }
     });
 
-    // 2. Challenge Lead Melody Stabs
-    BATTLE_LEAD_NOTES.forEach(note => {
+    // 2. Procedural Lead Battle Riffs / Fanfares
+    const leadPatterns = [
+      // Pattern 1: Rhythmic stabs
+      [
+        { f: N.D4, d: 2, t: 0 }, { f: N.F4, d: 2, t: 4 }, { f: N.A4, d: 3, t: 8 }, { f: N.D5, d: 3, t: 12 },
+        { f: N.F5, d: 2, t: 16 }, { f: N.E5, d: 2, t: 20 }, { f: N.D5, d: 3, t: 24 }, { f: N.Bb4, d: 3, t: 28 },
+        { f: N.C5, d: 2, t: 32 }, { f: N.E5, d: 2, t: 36 }, { f: N.G5, d: 3, t: 40 }, { f: N.A5, d: 4, t: 48 }
+      ],
+      // Pattern 2: Dramatic descending tension
+      [
+        { f: N.A5, d: 3, t: 0 }, { f: N.G5, d: 2, t: 4 }, { f: N.F5, d: 3, t: 8 }, { f: N.D5, d: 4, t: 12 },
+        { f: N.Bb4, d: 2, t: 16 }, { f: N.D5, d: 2, t: 20 }, { f: N.F5, d: 3, t: 24 }, { f: N.G5, d: 3, t: 28 },
+        { f: N.E5, d: 3, t: 32 }, { f: N.C5, d: 2, t: 36 }, { f: N.E5, d: 3, t: 40 }, { f: N.D5, d: 4, t: 48 }
+      ],
+      // Pattern 3: High-clutch climbing arpeggios
+      [
+        { f: N.D4, d: 2, t: 0 }, { f: N.F4, d: 2, t: 4 }, { f: N.A4, d: 2, t: 8 }, { f: N.D5, d: 2, t: 12 },
+        { f: N.F5, d: 2, t: 16 }, { f: N.A5, d: 2, t: 20 }, { f: N.D6, d: 4, t: 24 }, { f: N.A5, d: 3, t: 32 },
+        { f: N.G5, d: 2, t: 36 }, { f: N.F5, d: 2, t: 40 }, { f: N.E5, d: 2, t: 44 }, { f: N.D5, d: 4, t: 48 }
+      ]
+    ];
+
+    const chosenLead = leadPatterns[matchVariationCount % leadPatterns.length];
+    chosenLead.forEach(note => {
       const startTime = now + (note.t * MATCH_SIXTEENTH);
       const dur = note.d * MATCH_SIXTEENTH * 0.90;
 
       const osc = c.createOscillator();
       const gain = c.createGain();
       osc.type = 'triangle';
-      osc.frequency.setValueAtTime(note.f, startTime);
+      // Shift up an octave if at maximum intensity/climax!
+      const freq = (intensity >= 3 && Math.random() < 0.5) ? note.f * 2 : note.f;
+      osc.frequency.setValueAtTime(freq, startTime);
 
       gain.gain.setValueAtTime(0, startTime);
-      gain.gain.linearRampToValueAtTime(0.085, startTime + 0.02);
+      gain.gain.linearRampToValueAtTime(0.080 + (intensity * 0.02), startTime + 0.02);
       gain.gain.exponentialRampToValueAtTime(0.001, startTime + dur);
 
       osc.connect(gain);
@@ -394,16 +462,45 @@
       activeBGMNodes.push(osc);
     });
 
-    // 3. Driving Kick Drum on every beat (0, 4, 8, 12, ...)
-    for (let b = 0; b < 64; b += 4) {
+    // 3. High Intensity Arpeggio Layer (Active on Intensity >= 1: Runners on base / 2 outs)
+    if (intensity >= 1) {
+      for (let s = 0; s < 64; s += 2) {
+        const startTime = now + (s * MATCH_SIXTEENTH);
+        const dur = MATCH_SIXTEENTH * 0.75;
+        const arpIdx = (s / 2) % BATTLE_SCALE.length;
+
+        const osc = c.createOscillator();
+        const gain = c.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(BATTLE_SCALE[arpIdx], startTime);
+
+        gain.gain.setValueAtTime(0, startTime);
+        gain.gain.linearRampToValueAtTime(0.035 + (intensity * 0.015), startTime + 0.01);
+        gain.gain.exponentialRampToValueAtTime(0.001, startTime + dur);
+
+        osc.connect(gain);
+        gain.connect(bus);
+        osc.start(startTime);
+        osc.stop(startTime + dur + 0.02);
+        activeBGMNodes.push(osc);
+      }
+    }
+
+    // 4. Punchy Dynamic Drum Beats
+    // Kick Drum on 1 & 3 (and double kick on intensity >= 2)
+    const kickBeats = (intensity >= 2)
+      ? [0, 6, 8, 14, 16, 22, 24, 30, 32, 38, 40, 46, 48, 54, 56, 62]
+      : [0, 8, 16, 24, 32, 40, 48, 56];
+
+    kickBeats.forEach(b => {
       const startTime = now + (b * MATCH_SIXTEENTH);
       const osc = c.createOscillator();
       const gain = c.createGain();
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(130, startTime);
-      osc.frequency.exponentialRampToValueAtTime(42, startTime + 0.08);
+      osc.frequency.setValueAtTime(125, startTime);
+      osc.frequency.exponentialRampToValueAtTime(38, startTime + 0.08);
 
-      gain.gain.setValueAtTime(0.14, startTime);
+      gain.gain.setValueAtTime(0.13, startTime);
       gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.10);
 
       osc.connect(gain);
@@ -411,9 +508,9 @@
       osc.start(startTime);
       osc.stop(startTime + 0.12);
       activeBGMNodes.push(osc);
-    }
+    });
 
-    // 4. Punchy Snare on Beat 2 and 4 (4, 12, 20, 28, ...)
+    // Snare on 2 & 4
     for (let b = 4; b < 64; b += 8) {
       const startTime = now + (b * MATCH_SIXTEENTH);
       const dur = 0.08;
@@ -431,7 +528,7 @@
       filter.frequency.setValueAtTime(1800, startTime);
 
       const gain = c.createGain();
-      gain.gain.setValueAtTime(0.065, startTime);
+      gain.gain.setValueAtTime(0.060, startTime);
       gain.gain.exponentialRampToValueAtTime(0.001, startTime + dur);
 
       src.connect(filter);
@@ -643,6 +740,25 @@
         ? '<i class="fa-solid fa-volume-xmark"></i>'
         : '<i class="fa-solid fa-volume-high"></i>';
       btn.style.opacity = _muted ? '0.5' : '1';
+    },
+
+    /**
+     * Update match battle intensity level based on match state.
+     * Evaluates outs, runners in scoring position, inning, and pitcher HP.
+     */
+    updateBattleIntensity(state) {
+      if (!state) {
+        currentBattleIntensity = 0;
+        return;
+      }
+      let score = 0;
+      if (state.outs === 2) score += 1;
+      if (state.inning >= 3) score += 1;
+      if (state.bases && (state.bases[1] || state.bases[2])) score += 1; // 2B or 3B runner
+      if (state.activePitcher && typeof state.activePitcher.hp === 'number' && state.activePitcher.hp <= 25) score += 1;
+      if (typeof state.teamHp === 'number' && state.teamHp <= 30) score += 1;
+
+      currentBattleIntensity = Math.max(0, Math.min(3, score));
     },
 
     /**

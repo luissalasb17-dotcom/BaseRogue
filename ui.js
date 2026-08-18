@@ -6518,6 +6518,10 @@ function initGameModeSelector() {
   function updateMatchHUD(state, options = {}) {
     if (!state) return;
 
+    if (window.AudioManager && typeof window.AudioManager.updateBattleIntensity === 'function') {
+      window.AudioManager.updateBattleIntensity(state);
+    }
+
     // Classic scoreboard
     el.scoreAwayR.innerText  = state.runs;
     el.scoreHomeR.innerText  = state.outs;
