@@ -1871,6 +1871,10 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
 
       const weakPositionsSet = this.getWeakestRosterPositions();
 
+      // scout_eye: draft offers show 4 cards instead of 3, with better Epic/Legendary odds
+      const hasScoutEye = this.hasTrait('scout_eye');
+      const offerCount = hasScoutEye ? 4 : 3;
+
       // Story Mode: same 80/20 activity-based split as the draft round picks
       // (see getDraftRoundPicks) — applies to Sign Legend node + post-match
       // win rewards alike so the wildcard mechanic is consistent everywhere.
@@ -1881,10 +1885,10 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
         const isActive = p => p.debut_year !== undefined && p.last_year !== undefined && p.debut_year <= year && p.last_year >= year;
         let activePool = filtered.filter(isActive);
         let fullPool = [...filtered];
-        while (selected.length < 3 && (fullPool.length > 0 || activePool.length > 0)) {
+        while (selected.length < offerCount && (fullPool.length > 0 || activePool.length > 0)) {
           const useActive = activePool.length > 0 && Math.random() < 0.8;
           const source = useActive ? activePool : (fullPool.length > 0 ? fullPool : activePool);
-          const picked = pickWeightedUnique(source, 1, weakPositionsSet);
+          const picked = pickWeightedUnique(source, 1, weakPositionsSet, hasScoutEye);
           if (!picked.length) break;
           let chosen = picked[0];
           activePool = activePool.filter(x => x.name !== chosen.name);
@@ -1893,13 +1897,13 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
           selected.push(chosen);
         }
       } else {
-        selected = pickWeightedUnique(filtered, 3, weakPositionsSet);
+        selected = pickWeightedUnique(filtered, offerCount, weakPositionsSet, hasScoutEye);
       }
 
       // Fallback if pool too small
-      if (selected.length < 3) {
+      if (selected.length < offerCount) {
         const fallback = pool.filter(p => !onRosterNames.has(p.name) && !selected.some(x => x.name === p.name));
-        const extra = pickWeightedUnique(fallback, 3 - selected.length, weakPositionsSet);
+        const extra = pickWeightedUnique(fallback, offerCount - selected.length, weakPositionsSet, hasScoutEye);
         selected.push(...extra);
       }
       return selected;
