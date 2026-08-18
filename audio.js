@@ -245,7 +245,7 @@
 
   function scheduleMenuMusicLoop() {
     const c = getCtx();
-    if (!c || currentBGMMode !== 'menu' || _muted) return;
+    if (!c || currentBGMMode !== 'menu' || _muted || (typeof document !== 'undefined' && document.hidden)) return;
     const bus = getTrackBus();
     if (!bus) return;
 
@@ -364,7 +364,7 @@
 
   function scheduleMatchMusicLoop() {
     const c = getCtx();
-    if (!c || currentBGMMode !== 'match' || _muted) return;
+    if (!c || currentBGMMode !== 'match' || _muted || (typeof document !== 'undefined' && document.hidden)) return;
     const bus = getTrackBus();
     if (!bus) return;
 
@@ -779,7 +779,7 @@
   };
 
   function ensureAudioPlaying() {
-    if (_muted || currentBGMMode === 'off' || currentBGMMode === 'none') return;
+    if (_muted || currentBGMMode === 'off' || currentBGMMode === 'none' || (typeof document !== 'undefined' && document.hidden)) return;
     const c = getCtx();
     if (!c || c.state === 'suspended') return;
     initGains();
@@ -788,6 +788,7 @@
       if (!bgmIntervalTimer) {
         scheduleMenuMusicLoop();
         bgmIntervalTimer = setInterval(() => {
+          if (typeof document !== 'undefined' && document.hidden) return;
           if (currentBGMMode === 'menu' && !_muted) {
             scheduleMenuMusicLoop();
           }
@@ -797,6 +798,7 @@
       if (!bgmIntervalTimer) {
         scheduleMatchMusicLoop();
         bgmIntervalTimer = setInterval(() => {
+          if (typeof document !== 'undefined' && document.hidden) return;
           if (currentBGMMode === 'match' && !_muted) {
             scheduleMatchMusicLoop();
           }
@@ -842,15 +844,34 @@
       }
     }
 
-    // Auto-pause audio when switching tabs / window hidden, resume when returning
+    // Auto-pause audio when switching tabs / minimizing window, resume when returning
     const handleVisibilityChange = () => {
       const c = getCtx();
       if (!c) return;
+
       if (document.hidden) {
+        // Tab is hidden / switched: completely stop audio and timers
+        if (bgmIntervalTimer) {
+          clearInterval(bgmIntervalTimer);
+          bgmIntervalTimer = null;
+        }
+        if (activeTrackGain) {
+          try { activeTrackGain.gain.setValueAtTime(0, c.currentTime); } catch (e) {}
+        }
+        activeBGMNodes.forEach(n => {
+          try { if (typeof n.stop === 'function') n.stop(); n.disconnect(); } catch (e) {}
+        });
+        activeBGMNodes = [];
         if (c.state === 'running') {
           c.suspend().catch(() => {});
         }
       } else {
+        // Tab is visible again: restore bus gain and resume smoothly
+        nextMenuLoopTime = 0;
+        nextMatchLoopTime = 0;
+        if (activeTrackGain) {
+          try { activeTrackGain.gain.setValueAtTime(1.0, c.currentTime); } catch (e) {}
+        }
         if (!_muted && currentBGMMode !== 'off' && currentBGMMode !== 'none') {
           if (c.state === 'suspended') {
             c.resume().then(() => {
@@ -864,12 +885,6 @@
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    window.addEventListener('blur', () => {
-      if (document.hidden) handleVisibilityChange();
-    });
-    window.addEventListener('focus', () => {
-      if (!document.hidden) handleVisibilityChange();
-    });
   }
 
   window.AudioManager = AudioManager;
