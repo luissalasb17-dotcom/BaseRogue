@@ -1750,22 +1750,22 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
         } else if (era === Eras.DEADBALL) {
           if (count >= 4) {
             level = 2;
-            bonuses = {};
-            desc = (typeof window.t==='function'?window.t('syn.deadball.lv2'):'Deadball: 40% chance on single to advance 2 bases.');
+            bonuses = { con: 18, k_avd: 18 };
+            desc = "Deadball: +18 CON/K-AVD; sencillos +25 daño.";
           } else {
             level = 1;
-            bonuses = {};
-            desc = (typeof window.t==='function'?window.t('syn.deadball.lv1'):'Deadball: 20% chance on single to advance 2 bases.');
+            bonuses = { con: 10, k_avd: 10 };
+            desc = "Deadball: +10 CON/K-AVD; sencillos +15 daño.";
           }
         } else if (era === Eras.GOLDEN) {
           if (count >= 4) {
             level = 2;
-            bonuses = {};
-            desc = (typeof window.t==='function'?window.t('syn.golden.lv2'):'Golden Era: Hits +12 damage; 30% convert 2B to 3B.');
+            bonuses = { pwr: 15 };
+            desc = "Golden Era: +15 PWR; hits +25 daño; 40% 2B→3B.";
           } else {
             level = 1;
-            bonuses = {};
-            desc = (typeof window.t==='function'?window.t('syn.golden.lv1'):'Golden Era: All hits +6 extra damage.');
+            bonuses = { pwr: 8 };
+            desc = "Golden Era: +8 PWR; hits +15 daño.";
           }
         } else if (era === Eras.INTEGRATION) {
           if (count >= 4) {
@@ -1780,32 +1780,32 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
         } else if (era === Eras.EXPANSION) {
           if (count >= 4) {
             level = 2;
-            bonuses = {};
-            desc = (typeof window.t==='function'?window.t('syn.expansion.lv2'):'Expansion: 80% steal; steal heals +20 and deals 10 damage.');
+            bonuses = { spd: 15, eye: 10 };
+            desc = "Expansion: +15 SPD / +10 EYE; +35% robo; robo cura +25 y +20 daño.";
           } else {
             level = 1;
-            bonuses = {};
-            desc = (typeof window.t==='function'?window.t('syn.expansion.lv1'):'Expansion: 50% steal on 1B; steal heals +10 Stamina.');
+            bonuses = { spd: 10 };
+            desc = "Expansion: +10 SPD; +20% robo; robo cura +15 Stamina.";
           }
         } else if (era === Eras.BIGHAIR) {
           if (count >= 4) {
             level = 2;
-            bonuses = {};
-            desc = (typeof window.t==='function'?window.t('syn.bighair.lv2'):'Big Hair: Steals +30 damage and 3-turn debuff to rival.');
+            bonuses = { def: 20, spd: 20 };
+            desc = "Big Hair: +20 DEF/SPD (+20 Escudo); robos +35 daño y debuff 3 impactos.";
           } else {
             level = 1;
-            bonuses = {};
-            desc = (typeof window.t==='function'?window.t('syn.bighair.lv1'):'Big Hair: Successful steals deal +15 damage to pitcher.');
+            bonuses = { def: 10, spd: 10 };
+            desc = "Big Hair: +10 DEF/SPD (+10 Escudo); robos +20 daño.";
           }
         } else if (era === Eras.STEROID) {
           if (count >= 4) {
             level = 2;
-            bonuses = {};
-            desc = (typeof window.t==='function'?window.t('syn.steroid.lv2'):'Bash Brothers: HR deal +40 damage; 50% sac fly scores.');
+            bonuses = { pwr: 20 };
+            desc = "Bash Brothers: +20 PWR; HR +50 daño y curan +15 Stamina a todos.";
           } else {
             level = 1;
-            bonuses = {};
-            desc = (typeof window.t==='function'?window.t('syn.steroid.lv1'):'Bash Brothers: Home Runs deal +20 extra damage.');
+            bonuses = { pwr: 10 };
+            desc = "Bash Brothers: +10 PWR; HR +30 daño.";
           }
         } else if (era === Eras.EFFICIENCY) {
           if (count >= 4) {
@@ -1820,12 +1820,12 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
         } else if (era === Eras.MODERN) {
           if (count >= 4) {
             level = 2;
-            bonuses = {};
-            desc = (typeof window.t==='function'?window.t('syn.modern.lv2'):'Three True Outcomes: BB deal 24 damage, SO -50% and no chain cut.');
+            bonuses = { eye: 20, pwr: 20 };
+            desc = "Three True Outcomes: +20 EYE/PWR; BB +35 daño; Ponche no incrementa racha.";
           } else {
             level = 1;
-            bonuses = {};
-            desc = (typeof window.t==='function'?window.t('syn.modern.lv1'):'Three True Outcomes: BB deal 15 damage, SO -50% team HP damage.');
+            bonuses = { eye: 10, pwr: 10 };
+            desc = "Three True Outcomes: +10 EYE/PWR; BB +20 daño; Ponche -50% daño.";
           }
         }
 
