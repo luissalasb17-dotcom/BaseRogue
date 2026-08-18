@@ -1751,7 +1751,7 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
           const boost = level === 4 ? 13 : level === 3 ? 9 : level === 2 ? 6 : 3;
           bonuses = { pwr: boost };
         } else if (era === Eras.INTEGRATION) {
-          const boost = level === 4 ? 8 : level === 3 ? 6 : level === 2 ? 4 : 2;
+          const boost = level === 4 ? 12 : level === 3 ? 9 : level === 2 ? 6 : 3;
           bonuses = { con: boost, pwr: boost, eye: boost, k_avd: boost, spd: boost, def: boost };
         } else if (era === Eras.EXPANSION) {
           const spdBoost = level === 4 ? 13 : level === 3 ? 9 : level === 2 ? 6 : 3;

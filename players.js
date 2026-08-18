@@ -32,7 +32,7 @@
     },
     "Integration (1942-1960)": {
       name: "Five-Tool Legends",
-      desc: "T1 (2+): +4 todos los stats. T2 (4+): +8 stats; outs curan +5 Stamina a todos. T3 (6+): +8 stats; outs curan +10 Stamina. T4 (8+): +12 stats; outs curan +15; inmune a desgaste de Stamina.",
+      desc: "T1 (2+): +3 todos los stats. T2 (4+): +6 stats; hits +10 daño; outs curan +8 Stamina. T3 (6+): +9 stats; hits +18 daño; outs curan +12 Stamina. T4 (8+): +12 stats; hits +26 daño; outs curan +16; inmune a fatiga.",
       applyStatBonus: (stats) => {}
     },
     "Expansion (1961-1976)": {

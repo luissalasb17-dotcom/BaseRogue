@@ -349,9 +349,9 @@
       const moneyballTier = this.activeSynergies['Efficiency Era (2006-2015)'] || 0;
       const modernTier = this.activeSynergies['Modern Era (2016-Pres)'] || 0;
 
-      // Integration (1942-1960): +2/+4/+6/+8 all stats
+      // Integration (1942-1960): +3/+6/+9/+12 all stats
       if (integrationTier >= 1) {
-        const boost = integrationTier === 4 ? 8 : integrationTier === 3 ? 6 : integrationTier === 2 ? 4 : 2;
+        const boost = integrationTier === 4 ? 12 : integrationTier === 3 ? 9 : integrationTier === 2 ? 6 : 3;
         effBatter.con = (effBatter.con || 50) + boost;
         effBatter.pwr = (effBatter.pwr || 50) + boost;
         effBatter.eye = (effBatter.eye || 50) + boost;
@@ -429,9 +429,9 @@
 
       let effBatter = { ...batter };
 
-      // Integration (1942-1960): +2/+4/+6/+8 all stats
+      // Integration (1942-1960): +3/+6/+9/+12 all stats
       if (integrationTier >= 1) {
-        const boost = integrationTier === 4 ? 8 : integrationTier === 3 ? 6 : integrationTier === 2 ? 4 : 2;
+        const boost = integrationTier === 4 ? 12 : integrationTier === 3 ? 9 : integrationTier === 2 ? 6 : 3;
         effBatter.con = (effBatter.con || 50) + boost;
         effBatter.pwr = (effBatter.pwr || 50) + boost;
         effBatter.eye = (effBatter.eye || 50) + boost;
@@ -723,8 +723,8 @@
           ` (${_t('sim.shield_status', { shield: this.teamShield, max: this.teamShieldMax, hp: this.teamHP }, 'Escudo: ' + this.teamShield + '/' + this.teamShieldMax + ' | HP: ' + this.teamHP + '/100')})`;
 
         if (integrationTier >= 2) {
-          // T2: +5 Stamina to all · T3: +10 · T4: +15, and this batter skips the post-match Stamina loss
-          const healAmt = integrationTier === 4 ? 15 : integrationTier === 3 ? 10 : 5;
+          // T2: +8 Stamina to all · T3: +12 · T4: +16, and this batter skips the post-match Stamina loss
+          const healAmt = integrationTier === 4 ? 16 : integrationTier === 3 ? 12 : 8;
           this.awayTeam.lineup.forEach(p => {
             if (p) p.stamina = Math.min(100, (p.stamina || 100) + healAmt);
           });
@@ -771,8 +771,8 @@
           ` (${_t('sim.shield_status', { shield: this.teamShield, max: this.teamShieldMax, hp: this.teamHP }, 'Escudo: ' + this.teamShield + '/' + this.teamShieldMax + ' | HP: ' + this.teamHP + '/100')})`;
 
         if (integrationTier >= 2) {
-          // T2: +5 Stamina to all · T3: +10 · T4: +15, and this batter skips the post-match Stamina loss
-          const healAmt = integrationTier === 4 ? 15 : integrationTier === 3 ? 10 : 5;
+          // T2: +8 Stamina to all · T3: +12 · T4: +16, and this batter skips the post-match Stamina loss
+          const healAmt = integrationTier === 4 ? 16 : integrationTier === 3 ? 12 : 8;
           this.awayTeam.lineup.forEach(p => {
             if (p) p.stamina = Math.min(100, (p.stamina || 100) + healAmt);
           });
@@ -924,6 +924,13 @@
           const extraGolden = goldenTier === 4 ? 24 : goldenTier === 3 ? 18 : goldenTier === 2 ? 12 : 6;
           pitcherDmg += extraGolden;
           synergyProc = (synergyProc ? synergyProc + ' | ' : '') + _t('sim.syn_liveball_dmg', { extra: extraGolden }, `🔥 Liveball Sluggers: +${extraGolden} daño.`);
+        }
+
+        // Integration Era (1942-1960) Universal Hit Damage
+        if (integrationTier >= 2) {
+          const extraHitDmg = integrationTier === 4 ? 26 : integrationTier === 3 ? 18 : 10;
+          pitcherDmg += extraHitDmg;
+          synergyProc = (synergyProc ? synergyProc + ' | ' : '') + _t('sim.syn_fivetool_hit', { extra: extraHitDmg }, `🌟 Five-Tool: ¡Batazo integral inflige +${extraHitDmg} daño!`);
         }
 
         if (this.freshPitcherBonusAvailable) {
