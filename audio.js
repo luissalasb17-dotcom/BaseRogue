@@ -598,30 +598,16 @@
      * Switch BGM mode: 'menu' (chill retro melody) | 'match' (stadium ambiance & organ) | 'off'
      */
     setBGM(mode) {
-      if (currentBGMMode === mode) return;
+      if (currentBGMMode === mode && bgmIntervalTimer !== null) return;
+      if (currentBGMMode === mode && mode !== 'off') {
+        ensureAudioPlaying();
+        return;
+      }
       currentBGMMode = mode;
       stopAllBGM();
 
       if (_muted || mode === 'off' || !mode) return;
-
-      const c = getCtx();
-      if (!c) return;
-
-      if (mode === 'menu') {
-        scheduleMenuMusicLoop();
-        bgmIntervalTimer = setInterval(() => {
-          if (currentBGMMode === 'menu' && !_muted) {
-            scheduleMenuMusicLoop();
-          }
-        }, 4000);
-      } else if (mode === 'match') {
-        scheduleMatchMusicLoop();
-        bgmIntervalTimer = setInterval(() => {
-          if (currentBGMMode === 'match' && !_muted) {
-            scheduleMatchMusicLoop();
-          }
-        }, 3000);
-      }
+      ensureAudioPlaying();
     },
 
     /**
@@ -634,10 +620,7 @@
       this.updateMuteButton();
 
       if (!_muted) {
-        // Resume BGM for current mode
-        const mode = currentBGMMode;
-        currentBGMMode = 'none';
-        this.setBGM(mode || 'menu');
+        ensureAudioPlaying();
       } else {
         stopAllBGM();
       }
@@ -669,35 +652,57 @@
       const c = getCtx();
       if (!c) return;
       initGains();
-      const targetMode = (currentBGMMode && currentBGMMode !== 'none') ? currentBGMMode : 'menu';
-
       if (c.state === 'suspended') {
         c.resume().then(() => {
-          if (!_muted && targetMode !== 'off') {
-            currentBGMMode = 'none';
-            this.setBGM(targetMode);
-          }
+          ensureAudioPlaying();
         }).catch(() => {});
-      } else if (!_muted && targetMode !== 'off') {
-        currentBGMMode = 'none';
-        this.setBGM(targetMode);
+      } else {
+        ensureAudioPlaying();
       }
     },
   };
 
-  // Auto-unlock audio on any pointer down / click / touch
+  function ensureAudioPlaying() {
+    if (_muted || currentBGMMode === 'off' || currentBGMMode === 'none') return;
+    const c = getCtx();
+    if (!c || c.state === 'suspended') return;
+    initGains();
+
+    if (currentBGMMode === 'menu') {
+      if (!bgmIntervalTimer) {
+        scheduleMenuMusicLoop();
+        bgmIntervalTimer = setInterval(() => {
+          if (currentBGMMode === 'menu' && !_muted) {
+            scheduleMenuMusicLoop();
+          }
+        }, 4000);
+      }
+    } else if (currentBGMMode === 'match') {
+      if (!bgmIntervalTimer) {
+        scheduleMatchMusicLoop();
+        bgmIntervalTimer = setInterval(() => {
+          if (currentBGMMode === 'match' && !_muted) {
+            scheduleMatchMusicLoop();
+          }
+        }, 3000);
+      }
+    }
+  }
+
+  // Auto-unlock audio once on very first user interaction
   if (typeof document !== 'undefined') {
-    const unlockHandler = () => {
+    let unlocked = false;
+    const unlockOnce = () => {
+      if (unlocked) return;
+      unlocked = true;
       AudioManager.unlock();
-      document.removeEventListener('pointerdown', unlockHandler);
-      document.removeEventListener('touchstart', unlockHandler);
-      document.removeEventListener('keydown', unlockHandler);
-      document.removeEventListener('click', unlockHandler);
+      ['pointerdown', 'touchstart', 'mousedown', 'keydown', 'click'].forEach(evt => {
+        try { document.removeEventListener(evt, unlockOnce, true); } catch (e) {}
+      });
     };
-    document.addEventListener('pointerdown', unlockHandler, { passive: true });
-    document.addEventListener('touchstart', unlockHandler, { passive: true });
-    document.addEventListener('keydown', unlockHandler, { passive: true });
-    document.addEventListener('click', unlockHandler, { passive: true });
+    ['pointerdown', 'touchstart', 'mousedown', 'keydown', 'click'].forEach(evt => {
+      document.addEventListener(evt, unlockOnce, { capture: true, once: true, passive: true });
+    });
   }
 
   window.AudioManager = AudioManager;
