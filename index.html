@@ -13,7 +13,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.tailwindcss.com"></script>
   
-  <link rel="stylesheet" href="style.css?v=201">
+  <link rel="stylesheet" href="style.css?v=203">
   <style>
     @keyframes bounce {
       0%, 100% { transform: translateY(0); }
@@ -71,14 +71,14 @@
     <div class="glass-panel" id="screen-mode-select" style="position: relative; max-width: 900px; margin: 20px auto; text-align: center; padding: 30px 20px;">
       
       <!-- Integrated Brand Header Lockup (Pokelike Style) -->
-      <div class="main-logo-lockup">
-        <img src="assets/logo.png" alt="BaseRogue" class="menu-main-logo">
-        <div class="menu-tagline-container">
-          <div class="menu-tagline-line"></div>
-          <div class="menu-tagline">
-            <span data-i18n="mode_select.tagline">BASEBALL ROGUELIKE</span><span class="menu-tagline-pipe">|</span><span class="menu-tagline-ver">v1.0</span>
+      <div class="main-logo-lockup" style="display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 0 auto 22px auto; text-align: center;">
+        <img src="assets/logo.png" alt="BaseRogue" class="menu-main-logo" style="max-width: 270px; width: 65%; height: auto; display: block; margin: 0 auto 6px auto; filter: drop-shadow(0 3px 14px rgba(0, 255, 102, 0.45));">
+        <div class="menu-tagline-container" style="display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; max-width: 330px; margin: 0 auto;">
+          <div class="menu-tagline-line" style="flex: 1; height: 1px; background: linear-gradient(90deg, transparent 0%, rgba(56, 189, 248, 0.4) 40%, rgba(56, 189, 248, 0.85) 100%);"></div>
+          <div class="menu-tagline" style="font-family: 'Press Start 2P', monospace; font-size: 7.5px; color: #7dd3fc; letter-spacing: 1.2px; text-shadow: 0 0 8px rgba(56, 189, 248, 0.5); white-space: nowrap;">
+            <span data-i18n="mode_select.tagline">BASEBALL ROGUELIKE</span><span class="menu-tagline-pipe" style="color: rgba(255, 255, 255, 0.3); margin: 0 6px;">|</span><span class="menu-tagline-ver" style="color: #fef08a;">v1.0</span>
           </div>
-          <div class="menu-tagline-line line-right"></div>
+          <div class="menu-tagline-line line-right" style="flex: 1; height: 1px; background: linear-gradient(90deg, rgba(56, 189, 248, 0.85) 0%, rgba(56, 189, 248, 0.4) 60%, transparent 100%);"></div>
         </div>
       </div>
 
