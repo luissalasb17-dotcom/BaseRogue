@@ -1668,9 +1668,9 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
       if (player.team !== 'ROOK' && player.team !== 'None') {
         const teamCount = this.getActiveFranchiseCounts(contextRoster)[player.team] || 0;
         if (teamCount >= 4) {
-          con += 10; pwr += 10; eye += 10; kavd += 10; spd += 10; def += 10;
+          con += 5; pwr += 5; eye += 5; kavd += 5; spd += 5; def += 5;
         } else if (teamCount >= 2) {
-          con += 4; pwr += 4; eye += 4; kavd += 4; spd += 4; def += 4;
+          con += 2; pwr += 2; eye += 2; kavd += 2; spd += 2; def += 2;
         }
       }
 
@@ -1742,29 +1742,29 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
         if (era === Eras.GENESIS) {
           bonuses = {};
         } else if (era === Eras.DEADBALL) {
-          const boost = level === 4 ? 35 : level === 3 ? 26 : level === 2 ? 18 : 10;
+          const boost = level === 4 ? 16 : level === 3 ? 12 : level === 2 ? 8 : 4;
           bonuses = { con: boost, k_avd: boost };
         } else if (era === Eras.GOLDEN) {
-          const boost = level === 4 ? 30 : level === 3 ? 20 : level === 2 ? 15 : 8;
+          const boost = level === 4 ? 18 : level === 3 ? 14 : level === 2 ? 9 : 5;
           bonuses = { pwr: boost };
         } else if (era === Eras.INTEGRATION) {
-          const boost = level === 4 ? 12 : level >= 2 ? 8 : 4;
+          const boost = level === 4 ? 8 : level === 3 ? 6 : level === 2 ? 4 : 2;
           bonuses = { con: boost, pwr: boost, eye: boost, k_avd: boost, spd: boost, def: boost };
         } else if (era === Eras.EXPANSION) {
-          const spdBoost = level === 4 ? 25 : level === 3 ? 20 : level === 2 ? 15 : 10;
-          const eyeBoost = level === 4 ? 25 : level === 3 ? 20 : level === 2 ? 10 : 0;
+          const spdBoost = level === 4 ? 18 : level === 3 ? 14 : level === 2 ? 10 : 5;
+          const eyeBoost = level === 4 ? 12 : level === 3 ? 8 : level === 2 ? 4 : 0;
           bonuses = { spd: spdBoost };
           if (eyeBoost > 0) bonuses.eye = eyeBoost;
         } else if (era === Eras.BIGHAIR) {
-          const boost = level === 4 ? 40 : level === 3 ? 30 : level === 2 ? 20 : 10;
+          const boost = level === 4 ? 24 : level === 3 ? 18 : level === 2 ? 12 : 6;
           bonuses = { def: boost, spd: boost };
         } else if (era === Eras.STEROID) {
-          const boost = level === 4 ? 40 : level === 3 ? 30 : level === 2 ? 20 : 10;
+          const boost = level === 4 ? 25 : level === 3 ? 18 : level === 2 ? 12 : 6;
           bonuses = { pwr: boost };
         } else if (era === Eras.EFFICIENCY) {
           bonuses = {};
         } else if (era === Eras.MODERN) {
-          const boost = level === 4 ? 40 : level === 3 ? 30 : level === 2 ? 20 : 10;
+          const boost = level === 4 ? 20 : level === 3 ? 15 : level === 2 ? 10 : 5;
           bonuses = { eye: boost, pwr: boost };
         }
 

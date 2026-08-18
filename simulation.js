@@ -349,9 +349,9 @@
       const moneyballTier = this.activeSynergies['Efficiency Era (2006-2015)'] || 0;
       const modernTier = this.activeSynergies['Modern Era (2016-Pres)'] || 0;
 
-      // Integration (1942-1960): +4/+8/+8/+12 all stats
+      // Integration (1942-1960): +2/+4/+6/+8 all stats
       if (integrationTier >= 1) {
-        const boost = integrationTier === 4 ? 12 : integrationTier >= 2 ? 8 : 4;
+        const boost = integrationTier === 4 ? 8 : integrationTier === 3 ? 6 : integrationTier === 2 ? 4 : 2;
         effBatter.con = (effBatter.con || 50) + boost;
         effBatter.pwr = (effBatter.pwr || 50) + boost;
         effBatter.eye = (effBatter.eye || 50) + boost;
@@ -360,43 +360,43 @@
         effBatter.def = (effBatter.def || 50) + boost;
       }
 
-      // Deadball (1901-1919): +10/+18/+26/+35 CON and K-AVD
+      // Deadball (1901-1919): +4/+8/+12/+16 CON and K-AVD
       if (deadballTier >= 1) {
-        const conBoost = deadballTier === 4 ? 35 : deadballTier === 3 ? 26 : deadballTier === 2 ? 18 : 10;
+        const conBoost = deadballTier === 4 ? 16 : deadballTier === 3 ? 12 : deadballTier === 2 ? 8 : 4;
         effBatter.con = (effBatter.con || 50) + conBoost;
         effBatter.k_avd = (effBatter.k_avd !== undefined ? effBatter.k_avd : (effBatter.con || 50)) + conBoost;
       }
 
-      // Golden Era (1920-1941): +8/+15/+20/+30 PWR
+      // Golden Era (1920-1941): +5/+9/+14/+18 PWR
       if (goldenTier >= 1) {
-        const pwrBoost = goldenTier === 4 ? 30 : goldenTier === 3 ? 20 : goldenTier === 2 ? 15 : 8;
+        const pwrBoost = goldenTier === 4 ? 18 : goldenTier === 3 ? 14 : goldenTier === 2 ? 9 : 5;
         effBatter.pwr = (effBatter.pwr || 50) + pwrBoost;
       }
 
-      // Expansion (1961-1976): +10/+15/+20/+25 SPD and +0/+10/+20/+25 EYE
+      // Expansion (1961-1976): +5/+10/+14/+18 SPD and +0/+4/+8/+12 EYE
       if (expansionTier >= 1) {
-        const spdBoost = expansionTier === 4 ? 25 : expansionTier === 3 ? 20 : expansionTier === 2 ? 15 : 10;
-        const eyeBoost = expansionTier === 4 ? 25 : expansionTier === 3 ? 20 : expansionTier === 2 ? 10 : 0;
+        const spdBoost = expansionTier === 4 ? 18 : expansionTier === 3 ? 14 : expansionTier === 2 ? 10 : 5;
+        const eyeBoost = expansionTier === 4 ? 12 : expansionTier === 3 ? 8 : expansionTier === 2 ? 4 : 0;
         effBatter.spd = (effBatter.spd || 50) + spdBoost;
         if (eyeBoost > 0) effBatter.eye = (effBatter.eye || 50) + eyeBoost;
       }
 
-      // Big Hair Era (1977-1993): +10/+20/+30/+40 DEF and SPD
+      // Big Hair Era (1977-1993): +6/+12/+18/+24 DEF and SPD
       if (bigHairTier >= 1) {
-        const defSpdBoost = bigHairTier === 4 ? 40 : bigHairTier === 3 ? 30 : bigHairTier === 2 ? 20 : 10;
+        const defSpdBoost = bigHairTier === 4 ? 24 : bigHairTier === 3 ? 18 : bigHairTier === 2 ? 12 : 6;
         effBatter.def = (effBatter.def || 50) + defSpdBoost;
         effBatter.spd = (effBatter.spd || 50) + defSpdBoost;
       }
 
-      // Steroid Era (1994-2005): +10/+20/+30/+40 PWR
+      // Steroid Era (1994-2005): +6/+12/+18/+25 PWR
       if (steroidTier >= 1) {
-        const pwrBoost = steroidTier === 4 ? 40 : steroidTier === 3 ? 30 : steroidTier === 2 ? 20 : 10;
+        const pwrBoost = steroidTier === 4 ? 25 : steroidTier === 3 ? 18 : steroidTier === 2 ? 12 : 6;
         effBatter.pwr = (effBatter.pwr || 50) + pwrBoost;
       }
 
-      // Modern Era (2016-Pres): +10/+20/+30/+40 EYE and PWR
+      // Modern Era (2016-Pres): +5/+10/+15/+20 EYE and PWR
       if (modernTier >= 1) {
-        const ttoBoost = modernTier === 4 ? 40 : modernTier === 3 ? 30 : modernTier === 2 ? 20 : 10;
+        const ttoBoost = modernTier === 4 ? 20 : modernTier === 3 ? 15 : modernTier === 2 ? 10 : 5;
         effBatter.eye = (effBatter.eye || 50) + ttoBoost;
         effBatter.pwr = (effBatter.pwr || 50) + ttoBoost;
       }
@@ -429,9 +429,9 @@
 
       let effBatter = { ...batter };
 
-      // Integration (1942-1960): +4/+8/+8/+12 all stats
+      // Integration (1942-1960): +2/+4/+6/+8 all stats
       if (integrationTier >= 1) {
-        const boost = integrationTier === 4 ? 12 : integrationTier >= 2 ? 8 : 4;
+        const boost = integrationTier === 4 ? 8 : integrationTier === 3 ? 6 : integrationTier === 2 ? 4 : 2;
         effBatter.con = (effBatter.con || 50) + boost;
         effBatter.pwr = (effBatter.pwr || 50) + boost;
         effBatter.eye = (effBatter.eye || 50) + boost;
@@ -440,43 +440,43 @@
         effBatter.def = (effBatter.def || 50) + boost;
       }
 
-      // Deadball (1901-1919): +10/+18/+26/+35 CON and K-AVD
+      // Deadball (1901-1919): +4/+8/+12/+16 CON and K-AVD
       if (deadballTier >= 1) {
-        const conBoost = deadballTier === 4 ? 35 : deadballTier === 3 ? 26 : deadballTier === 2 ? 18 : 10;
+        const conBoost = deadballTier === 4 ? 16 : deadballTier === 3 ? 12 : deadballTier === 2 ? 8 : 4;
         effBatter.con = (effBatter.con || 50) + conBoost;
         effBatter.k_avd = (effBatter.k_avd !== undefined ? effBatter.k_avd : (effBatter.con || 50)) + conBoost;
       }
 
-      // Golden Era (1920-1941): +8/+15/+20/+30 PWR
+      // Golden Era (1920-1941): +5/+9/+14/+18 PWR
       if (goldenTier >= 1) {
-        const pwrBoost = goldenTier === 4 ? 30 : goldenTier === 3 ? 20 : goldenTier === 2 ? 15 : 8;
+        const pwrBoost = goldenTier === 4 ? 18 : goldenTier === 3 ? 14 : goldenTier === 2 ? 9 : 5;
         effBatter.pwr = (effBatter.pwr || 50) + pwrBoost;
       }
 
-      // Expansion (1961-1976): +10/+15/+20/+25 SPD and +0/+10/+20/+25 EYE
+      // Expansion (1961-1976): +5/+10/+14/+18 SPD and +0/+4/+8/+12 EYE
       if (expansionTier >= 1) {
-        const spdBoost = expansionTier === 4 ? 25 : expansionTier === 3 ? 20 : expansionTier === 2 ? 15 : 10;
-        const eyeBoost = expansionTier === 4 ? 25 : expansionTier === 3 ? 20 : expansionTier === 2 ? 10 : 0;
+        const spdBoost = expansionTier === 4 ? 18 : expansionTier === 3 ? 14 : expansionTier === 2 ? 10 : 5;
+        const eyeBoost = expansionTier === 4 ? 12 : expansionTier === 3 ? 8 : expansionTier === 2 ? 4 : 0;
         effBatter.spd = (effBatter.spd || 50) + spdBoost;
         if (eyeBoost > 0) effBatter.eye = (effBatter.eye || 50) + eyeBoost;
       }
 
-      // Big Hair Era (1977-1993): +10/+20/+30/+40 DEF and SPD
+      // Big Hair Era (1977-1993): +6/+12/+18/+24 DEF and SPD
       if (bigHairTier >= 1) {
-        const defSpdBoost = bigHairTier === 4 ? 40 : bigHairTier === 3 ? 30 : bigHairTier === 2 ? 20 : 10;
+        const defSpdBoost = bigHairTier === 4 ? 24 : bigHairTier === 3 ? 18 : bigHairTier === 2 ? 12 : 6;
         effBatter.def = (effBatter.def || 50) + defSpdBoost;
         effBatter.spd = (effBatter.spd || 50) + defSpdBoost;
       }
 
-      // Steroid Era (1994-2005): +10/+20/+30/+40 PWR
+      // Steroid Era (1994-2005): +6/+12/+18/+25 PWR
       if (steroidTier >= 1) {
-        const pwrBoost = steroidTier === 4 ? 40 : steroidTier === 3 ? 30 : steroidTier === 2 ? 20 : 10;
+        const pwrBoost = steroidTier === 4 ? 25 : steroidTier === 3 ? 18 : steroidTier === 2 ? 12 : 6;
         effBatter.pwr = (effBatter.pwr || 50) + pwrBoost;
       }
 
-      // Modern Era (2016-Pres): +10/+20/+30/+40 EYE and PWR
+      // Modern Era (2016-Pres): +5/+10/+15/+20 EYE and PWR
       if (modernTier >= 1) {
-        const ttoBoost = modernTier === 4 ? 40 : modernTier === 3 ? 30 : modernTier === 2 ? 20 : 10;
+        const ttoBoost = modernTier === 4 ? 20 : modernTier === 3 ? 15 : modernTier === 2 ? 10 : 5;
         effBatter.eye = (effBatter.eye || 50) + ttoBoost;
         effBatter.pwr = (effBatter.pwr || 50) + ttoBoost;
       }
@@ -545,7 +545,7 @@
 
         // Deadball (1901-1919) T3/T4 run bonus on BB
         if (runsThisTurn > 0 && deadballTier >= 3) {
-          const runBonus = (deadballTier === 4 ? 35 : 20) * runsThisTurn;
+          const runBonus = (deadballTier === 4 ? 20 : 12) * runsThisTurn;
           pitcherDmg += runBonus;
           synergyProc = (synergyProc ? synergyProc + ' | ' : '') + _t('sim.syn_deadball_run', { bonus: runBonus, runs: runsThisTurn }, `⏳ Small Ball: ¡Manufactura de ${runsThisTurn} carrera(s) inflige +${runBonus} daño de impacto!`);
         }
@@ -557,7 +557,7 @@
 
         // Efficiency Era BB boost & On-Base Fatigue
         if (moneyballTier >= 1) {
-          const extra = moneyballTier === 4 ? 45 : moneyballTier === 3 ? 35 : moneyballTier === 2 ? 25 : 15;
+          const extra = moneyballTier === 4 ? 32 : moneyballTier === 3 ? 24 : moneyballTier === 2 ? 16 : 10;
           pitcherDmg += extra;
           synergyProc = _t('sim.syn_moneyball_bb', { extra }, `📊 Moneyball: ¡Boleto paciente inflige +${extra} daño!`);
 
@@ -576,7 +576,7 @@
         }
         // Modern Era BB boost
         else if (modernTier >= 1) {
-          const extra = modernTier === 4 ? 65 : modernTier === 3 ? 50 : modernTier === 2 ? 35 : 20;
+          const extra = modernTier === 4 ? 35 : modernTier === 3 ? 25 : modernTier === 2 ? 18 : 12;
           pitcherDmg += extra;
           synergyProc = _t('sim.syn_tto_bb', { extra }, `🚀 Three True Outcomes: ¡Boleto optimizado inflige +${extra} daño!`);
         }
@@ -599,13 +599,13 @@
         if (expansionTier >= 1) {
           const extraChance = expansionTier === 4 ? 1.0 : expansionTier === 3 ? 0.50 : expansionTier === 2 ? 0.35 : 0.20;
           stealChance = expansionTier === 4 ? 1.0 : Math.min(0.95, stealChance + extraChance);
-          stealHeal = expansionTier === 4 ? 45 : expansionTier === 3 ? 35 : expansionTier === 2 ? 25 : 15;
-          extraStealDmg = expansionTier === 4 ? 40 : expansionTier === 3 ? 30 : expansionTier === 2 ? 20 : 0;
+          stealHeal = expansionTier === 4 ? 25 : expansionTier === 3 ? 20 : expansionTier === 2 ? 15 : 10;
+          extraStealDmg = expansionTier === 4 ? 30 : expansionTier === 3 ? 22 : expansionTier === 2 ? 15 : 8;
           stealProcMsg = _t('sim.syn_expansion', {}, 'Sinergia Expansion');
         }
         else if (bigHairTier >= 1) {
           stealChance = Math.min(0.95, stealChance + 0.20);
-          extraStealDmg = bigHairTier === 4 ? 60 : bigHairTier === 3 ? 45 : bigHairTier === 2 ? 35 : 20;
+          extraStealDmg = bigHairTier === 4 ? 35 : bigHairTier === 3 ? 26 : bigHairTier === 2 ? 18 : 10;
           if (bigHairTier === 2) {
             debuffTurns = 3;
             debuffMult = 1.30;
@@ -831,11 +831,11 @@
 
         let genesisExtraAdvance = false;
         if (genesisTier >= 1) {
-          // T1: 30% / +10dmg · T2: 45% / +20dmg · T3: 60% / +30dmg · T4: 80% / +40dmg
+          // T1: 30% / +8dmg · T2: 45% / +12dmg · T3: 60% / +18dmg · T4: 80% / +25dmg
           const advanceChance = genesisTier === 4 ? 0.80 : genesisTier === 3 ? 0.60 : genesisTier === 2 ? 0.45 : 0.30;
           if (Math.random() < advanceChance) {
             genesisExtraAdvance = true;
-            const extraDmg = genesisTier === 4 ? 40 : genesisTier === 3 ? 30 : genesisTier === 2 ? 20 : 10;
+            const extraDmg = genesisTier === 4 ? 25 : genesisTier === 3 ? 18 : genesisTier === 2 ? 12 : 8;
             pitcherDmg += extraDmg;
             errorProc = _t('sim.syn_genesis_advance', { dmg: extraDmg }, `💥 Genesis Chaos: ¡Batazo agresivo! +${extraDmg} daño y avance de base adicional.`);
           }
@@ -849,11 +849,11 @@
           let hrDmg = 75 + (runnersOnBase * 10);
           
           if (steroidTier >= 1) {
-            const extraHr = steroidTier === 4 ? 90 : steroidTier === 3 ? 70 : steroidTier === 2 ? 50 : 30;
+            const extraHr = steroidTier === 4 ? 50 : steroidTier === 3 ? 38 : steroidTier === 2 ? 25 : 15;
             hrDmg += extraHr;
             synergyProc = _t('sim.syn_bash_hr', { extra: extraHr }, `💪 Bash Brothers: ¡Jonrón nuclear inflige +${extraHr} daño!`);
             if (steroidTier >= 2) {
-              const hrHeal = steroidTier === 4 ? 40 : steroidTier === 3 ? 25 : 15;
+              const hrHeal = steroidTier === 4 ? 20 : steroidTier === 3 ? 15 : 10;
               this.awayTeam.lineup.forEach(p => {
                 if (p) p.stamina = Math.min(100, (p.stamina || 100) + hrHeal);
               });
@@ -906,7 +906,7 @@
 
           // Deadball Era 1B damage bonus
           if (deadballTier >= 1) {
-            const extra1B = deadballTier === 4 ? 45 : deadballTier === 3 ? 35 : deadballTier === 2 ? 25 : 15;
+            const extra1B = deadballTier === 4 ? 28 : deadballTier === 3 ? 20 : deadballTier === 2 ? 14 : 8;
             pitcherDmg += extra1B;
             synergyProc = (synergyProc ? synergyProc + ' | ' : '') + _t('sim.syn_deadball_1b', { extra: extra1B }, `⏳ Small Ball: ¡Sencillo colocado inflige +${extra1B} daño!`);
           }
@@ -914,14 +914,14 @@
 
         // Deadball (1901-1919) T3/T4 run bonus on hits
         if (runsThisTurn > 0 && deadballTier >= 3) {
-          const runBonus = (deadballTier === 4 ? 35 : 20) * runsThisTurn;
+          const runBonus = (deadballTier === 4 ? 20 : 12) * runsThisTurn;
           pitcherDmg += runBonus;
           synergyProc = (synergyProc ? synergyProc + ' | ' : '') + _t('sim.syn_deadball_run', { bonus: runBonus, runs: runsThisTurn }, `⏳ Small Ball: ¡Manufactura de ${runsThisTurn} carrera(s) inflige +${runBonus} daño de impacto!`);
         }
 
         // Golden Era (1920-1941) flat damage on all hits
         if (goldenTier >= 1) {
-          const extraGolden = goldenTier === 4 ? 45 : goldenTier === 3 ? 35 : goldenTier === 2 ? 25 : 15;
+          const extraGolden = goldenTier === 4 ? 24 : goldenTier === 3 ? 18 : goldenTier === 2 ? 12 : 6;
           pitcherDmg += extraGolden;
           synergyProc = (synergyProc ? synergyProc + ' | ' : '') + _t('sim.syn_liveball_dmg', { extra: extraGolden }, `🔥 Liveball Sluggers: +${extraGolden} daño.`);
         }
