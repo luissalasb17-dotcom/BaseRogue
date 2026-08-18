@@ -17,47 +17,47 @@
   const EraTraits = {
     "The Genesis Era (1871-1900)": {
       name: "Genesis Chaos",
-      desc: "T1 (2+): 15% prob. de error defensivo en hit (+10 daño, +1 base extra). T2 (4+): 30% prob. (+20 daño). T3 (6+): 30% prob. (+30 daño). T4 (8+): 40% prob. (+30 daño).",
+      desc: "T1 (2+): 30% prob. avance extra y +10 daño. T2 (4+): 45% prob. y +20 daño. T3 (6+): 60% prob. y +30 daño. T4 (8+): 80% prob. y +40 daño.",
       applyStatBonus: (stats) => {}
     },
     "Deadball (1901-1919)": {
       name: "Small Ball",
-      desc: "T1 (2+): 20% prob. en sencillo de avanzar 2 bases. T2 (4+): 40% prob. T3 (6+): 40% prob., y ahora también aplica a Boletos (BB). T4 (8+): 55% prob. en sencillos y boletos.",
+      desc: "T1 (2+): +10 CON/K-AVD; 1B +15 daño. T2 (4+): +18 CON/K-AVD; 1B +25 daño. T3 (6+): +26 CON/K-AVD; 1B +35 daño y carreras anotadas +20 daño. T4 (8+): +35 CON/K-AVD; 1B +45 daño y carreras +35 daño.",
       applyStatBonus: (stats) => {}
     },
     "Golden Era (1920-1941)": {
       name: "Liveball Sluggers",
-      desc: "T1 (2+): Todos los hits +6 daño. T2 (4+): Hits +12 daño; 30% de convertir Dobles en Triples. T3 (6+): Hits +12; 40% de convertir Dobles en Triples. T4 (8+): Hits +18; 50% Dobles→Triples, y 20% de convertir Triples en Jonrones.",
+      desc: "T1 (2+): +8 PWR; hits +15 daño. T2 (4+): +15 PWR; hits +25 daño; 40% 2B→3B. T3 (6+): +20 PWR; hits +35 daño; 50% 2B→3B y 25% 3B→HR. T4 (8+): +30 PWR; hits +45 daño; 60% 2B→3B y 40% 3B→HR.",
       applyStatBonus: (stats) => {}
     },
     "Integration (1942-1960)": {
       name: "Five-Tool Legends",
-      desc: "T1 (2+): Bateador +4 a todos sus stats en turno. T2 (4+): +8 stats; outs curan +5 Stamina a todos. T3 (6+): +8 stats; outs curan +10 Stamina. T4 (8+): +12 stats; outs curan +15 Stamina, y el bateador es inmune a la pérdida de Stamina de ese partido.",
+      desc: "T1 (2+): +4 todos los stats. T2 (4+): +8 stats; outs curan +5 Stamina a todos. T3 (6+): +8 stats; outs curan +10 Stamina. T4 (8+): +12 stats; outs curan +15; inmune a desgaste de Stamina.",
       applyStatBonus: (stats) => {}
     },
     "Expansion (1961-1976)": {
       name: "Speed & Hustle",
-      desc: "T1 (2+): 50% robo en 1B/BB; cura +10 Stamina. T2 (4+): 80% robo; cura +20; +10 daño al pitcher. T3 (6+): igual, y el robo aplica debuff de pitcher por 3 turnos. T4 (8+): 90% robo; cura +30; +20 daño; debuff de 4 turnos.",
+      desc: "T1 (2+): +10 SPD; +20% robo; robo cura +15 Stamina. T2 (4+): +15 SPD / +10 EYE; +35% robo; cura +25 y +20 daño. T3 (6+): +20 SPD / +20 EYE; +50% robo; cura +35 y +30 daño. T4 (8+): +25 SPD / +25 EYE; 100% robo; cura +45 y +40 daño.",
       applyStatBonus: (stats) => {}
     },
     "Big Hair Era (1977-1993)": {
       name: "AstroTurf Speedsters",
-      desc: "T1 (2+): Chance de robo x2 (tope 95%); +15 daño; debuff 2 turnos. T2 (4+): +30 daño; debuff 3 turnos. T3 (6+): +30 daño; debuff 4 turnos. T4 (8+): +45 daño; debuff 5 turnos.",
+      desc: "T1 (2+): +10 DEF/SPD (+10 Escudo); robos +20 daño. T2 (4+): +20 DEF/SPD (+20 Escudo); robos +35 daño y debuff 3 impactos. T3 (6+): +30 DEF/SPD (+30 Escudo); robos +45 daño y debuff 4 impactos. T4 (8+): +40 DEF/SPD (+40 Escudo); robos +60 daño, debuff 5 impactos y outs -50% daño.",
       applyStatBonus: (stats) => {}
     },
     "Steroid Era (1994-2005)": {
       name: "Bash Brothers",
-      desc: "T1 (2+): Jonrones (HR) +15 daño. T2 (4+): HR +30 daño. T3 (6+): HR +30 daño; cura +10 Stamina a todos. T4 (8+): HR +45 daño; cura +20 Stamina.",
+      desc: "T1 (2+): +10 PWR; Jonrones (HR) +30 daño. T2 (4+): +20 PWR; HR +50 daño y curan +15 Stamina a todos. T3 (6+): +30 PWR; HR +70 daño y curan +25 Stamina. T4 (8+): +40 PWR; HR +90 daño y curan +40 Stamina.",
       applyStatBonus: (stats) => {}
     },
     "Efficiency Era (2006-2015)": {
       name: "Moneyball Analytics",
-      desc: "T1 (2+): Boletos (BB) +10 daño. T2 (4+): BB +20 daño; outs +10 daño al rival. T3 (6+): BB +20, outs +15; la racha de ponches necesita 1 ponche más para escalar. T4 (8+): BB +30, outs +20; racha necesita 2 ponches más.",
+      desc: "T1 (2+): Boletos (BB) +15 daño. T2 (4+): BB +25 daño; al embasarte fatigas al rival 1 impacto (+20% daño). T3 (6+): BB +35 daño; fatiga 2 impactos; ponches van al Escudo. T4 (8+): BB +45 daño; fatiga 2 impactos; ponches van al Escudo con -50% daño.",
       applyStatBonus: (stats) => {}
     },
     "Modern Era (2016-Pres)": {
       name: "Three True Outcomes",
-      desc: "T1 (2+): BB +12 daño; Ponche hace -50% daño al equipo. T2 (4+): BB +24 daño; el ponche ya no incrementa tu propia racha. T3 (6+): igual, y el Jonrón también debilita al pitcher por 2 impactos. T4 (8+): BB +36 daño; el debuff del Jonrón sube a 3 impactos.",
+      desc: "T1 (2+): +10 EYE/PWR; BB +20 daño; Ponche -50% daño al equipo. T2 (4+): +20 EYE/PWR; BB +35 daño; Ponche no incrementa racha. T3 (6+): +30 EYE/PWR; BB +50 daño; HR aplica debuff 3 impactos. T4 (8+): +40 EYE/PWR; BB +65 daño; Ponche hace 0 daño (anulado).",
       applyStatBonus: (stats) => {}
     }
   };

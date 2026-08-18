@@ -1733,100 +1733,37 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
         const count = eraCounts[era];
         if (count < 2) return;
 
-        let level = 1;
+        let level = count >= 8 ? 4 : count >= 6 ? 3 : count >= 4 ? 2 : 1;
         let bonuses = {};
         let desc = "";
 
         if (era === Eras.GENESIS) {
-          if (count >= 4) {
-            level = 2;
-            bonuses = {};
-            desc = "Genesis Chaos: 45% prob de avanzar base adicional y +20 daño.";
-          } else {
-            level = 1;
-            bonuses = {};
-            desc = "Genesis Chaos: 30% prob de avanzar base adicional y +10 daño.";
-          }
+          bonuses = {};
         } else if (era === Eras.DEADBALL) {
-          if (count >= 4) {
-            level = 2;
-            bonuses = { con: 18, k_avd: 18 };
-            desc = "Deadball: +18 CON/K-AVD; sencillos +25 daño.";
-          } else {
-            level = 1;
-            bonuses = { con: 10, k_avd: 10 };
-            desc = "Deadball: +10 CON/K-AVD; sencillos +15 daño.";
-          }
+          const boost = level === 4 ? 35 : level === 3 ? 26 : level === 2 ? 18 : 10;
+          bonuses = { con: boost, k_avd: boost };
         } else if (era === Eras.GOLDEN) {
-          if (count >= 4) {
-            level = 2;
-            bonuses = { pwr: 15 };
-            desc = "Golden Era: +15 PWR; hits +25 daño; 40% 2B→3B.";
-          } else {
-            level = 1;
-            bonuses = { pwr: 8 };
-            desc = "Golden Era: +8 PWR; hits +15 daño.";
-          }
+          const boost = level === 4 ? 30 : level === 3 ? 20 : level === 2 ? 15 : 8;
+          bonuses = { pwr: boost };
         } else if (era === Eras.INTEGRATION) {
-          if (count >= 4) {
-            level = 2;
-            bonuses = { con: 8, pwr: 8, eye: 8, spd: 8, def: 8 };
-            desc = (typeof window.t==='function'?window.t('syn.integration.lv2'):'Integration: Batter +8 stats; outs heal +5 Stamina.');
-          } else {
-            level = 1;
-            bonuses = { con: 4, pwr: 4, eye: 4, spd: 4, def: 4 };
-            desc = (typeof window.t==='function'?window.t('syn.integration.lv1'):'Integration: Player gets +4 to all stats this turn.');
-          }
+          const boost = level === 4 ? 12 : level >= 2 ? 8 : 4;
+          bonuses = { con: boost, pwr: boost, eye: boost, k_avd: boost, spd: boost, def: boost };
         } else if (era === Eras.EXPANSION) {
-          if (count >= 4) {
-            level = 2;
-            bonuses = { spd: 15, eye: 10 };
-            desc = "Expansion: +15 SPD / +10 EYE; +35% robo; robo cura +25 y +20 daño.";
-          } else {
-            level = 1;
-            bonuses = { spd: 10 };
-            desc = "Expansion: +10 SPD; +20% robo; robo cura +15 Stamina.";
-          }
+          const spdBoost = level === 4 ? 25 : level === 3 ? 20 : level === 2 ? 15 : 10;
+          const eyeBoost = level === 4 ? 25 : level === 3 ? 20 : level === 2 ? 10 : 0;
+          bonuses = { spd: spdBoost };
+          if (eyeBoost > 0) bonuses.eye = eyeBoost;
         } else if (era === Eras.BIGHAIR) {
-          if (count >= 4) {
-            level = 2;
-            bonuses = { def: 20, spd: 20 };
-            desc = "Big Hair: +20 DEF/SPD (+20 Escudo); robos +35 daño y debuff 3 impactos.";
-          } else {
-            level = 1;
-            bonuses = { def: 10, spd: 10 };
-            desc = "Big Hair: +10 DEF/SPD (+10 Escudo); robos +20 daño.";
-          }
+          const boost = level === 4 ? 40 : level === 3 ? 30 : level === 2 ? 20 : 10;
+          bonuses = { def: boost, spd: boost };
         } else if (era === Eras.STEROID) {
-          if (count >= 4) {
-            level = 2;
-            bonuses = { pwr: 20 };
-            desc = "Bash Brothers: +20 PWR; HR +50 daño y curan +15 Stamina a todos.";
-          } else {
-            level = 1;
-            bonuses = { pwr: 10 };
-            desc = "Bash Brothers: +10 PWR; HR +30 daño.";
-          }
+          const boost = level === 4 ? 40 : level === 3 ? 30 : level === 2 ? 20 : 10;
+          bonuses = { pwr: boost };
         } else if (era === Eras.EFFICIENCY) {
-          if (count >= 4) {
-            level = 2;
-            bonuses = {};
-            desc = (typeof window.t==='function'?window.t('syn.efficiency.lv2'):'Moneyball: BB deal +25 damage; getting on base inflicts 1-impact fatigue (+20% damage).');
-          } else {
-            level = 1;
-            bonuses = {};
-            desc = (typeof window.t==='function'?window.t('syn.efficiency.lv1'):'Moneyball: Walks (BB) deal +15 extra damage.');
-          }
+          bonuses = {};
         } else if (era === Eras.MODERN) {
-          if (count >= 4) {
-            level = 2;
-            bonuses = { eye: 20, pwr: 20 };
-            desc = "Three True Outcomes: +20 EYE/PWR; BB +35 daño; Ponche no incrementa racha.";
-          } else {
-            level = 1;
-            bonuses = { eye: 10, pwr: 10 };
-            desc = "Three True Outcomes: +10 EYE/PWR; BB +20 daño; Ponche -50% daño.";
-          }
+          const boost = level === 4 ? 40 : level === 3 ? 30 : level === 2 ? 20 : 10;
+          bonuses = { eye: boost, pwr: boost };
         }
 
         synergies.push({
