@@ -1,7 +1,7 @@
 // BaseRogue Baseball RPG — Interactive Dice Battler Engine
 // Each plate appearance is resolved by a manual dice roll (1–100).
 // New damage model:
-//   OUT (groundout/flyout): 8 dmg -> shields first, then 100 HP team
+//   OUT (groundout/flyout): 18 dmg -> shields first, then 100 HP team
 //   SO  (strikeout):        Bypasses shield! Direct HP dmg with chain mult
 //   BB  (base on balls):    10 + (EYE/10) damage to pitcher
 //   1B  (single):           15 * (1 + CON/100)  to pitcher
@@ -278,6 +278,9 @@
       this.backToBackPending = false;
       // ghost_runners: only place the free runner once, at the start of inning 3
       this.ghostRunnerPlaced = false;
+
+      // ── Mid-Inning Defense state ──────────────────────────────────
+      this.pendingDefenseEvent = null;
 
       // ── Combat log ───────────────────────────────────────────────
       this.events = [];
@@ -741,7 +744,7 @@
         eventType = 'OUT';
         this.outs++;
         this.strikeoutChain = 0;
-        let outDmg = this.hasTrait('defensive_wall') ? 8 : 12;
+        let outDmg = this.hasTrait('defensive_wall') ? 12 : 18;
 
         if (bigHairTier === 4) {
           outDmg = Math.round(outDmg * 0.5);
@@ -1086,6 +1089,7 @@
       }
       // 3 outs → end inning
       if (this.outs >= 3) {
+        const endedInning = this.inning;
         this.logEvent('INNING_END',
           _t('sim.inning_end', { inning: this.inning, runs: this.runs }, `--- FIN DE LA ENTRADA ${this.inning} (${this.runs} carreras anotadas) ---`),
           'INNING_END');
@@ -1093,6 +1097,11 @@
         this.outs = 0;
         this.bases = [null, null, null];
         this.pitcherDebuff = null; // Clear debuff when inning ends
+
+        // Trigger Mid-Inning Defense for Inning 1 (-> 2) and Inning 2 (-> 3)
+        if ((endedInning === 1 || endedInning === 2) && !this.battleOver) {
+          this.pendingDefenseEvent = this.generateMidInningDefenseEvent(endedInning);
+        }
 
         // early_pressure: the first batter of the new inning gets a boost
         if (this.hasTrait('early_pressure')) this.firstBatterOfInningPending = true;
@@ -1115,6 +1124,141 @@
           this._checkEndConditions();
         }
       }
+    }
+
+    // ── MID-INNING DEFENSE CHALLENGE (Bottom of the Inning Event) ─────────────
+    generateMidInningDefenseEvent(forInning) {
+      const defPositions = ['C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF'];
+      const pos = defPositions[Math.floor(Math.random() * defPositions.length)];
+
+      const scenarios = {
+        'C': {
+          title: _t('sim.def_title_c', {}, '¡INTENTO DE ROBO EN SEGUNDA BASE!'),
+          desc: _t('sim.def_desc_c', {}, 'El corredor rival despega a toda velocidad hacia 2B. Tu receptor se para y dispara un misil a la almohadilla.'),
+          icon: '🧤'
+        },
+        '1B': {
+          title: _t('sim.def_title_1b', {}, '¡LÍNEA RASANTE POR LA RAYA DE PRIMERA!'),
+          desc: _t('sim.def_desc_1b', {}, 'Batazo violento que busca internarse en el rincón derecho. Tu inicialista se tiende de cabeza para cortar.'),
+          icon: '⚡'
+        },
+        '2B': {
+          title: _t('sim.def_title_2b', {}, '¡ROLETASO CON OJOS POR EL MEDIO DEL CAMPO!'),
+          desc: _t('sim.def_desc_2b', {}, 'Batazo colocado detrás de la segunda almohadilla. Tu camarero corre, fildea en giro y dispara a primera.'),
+          icon: '🏃'
+        },
+        '3B': {
+          title: _t('sim.def_title_3b', {}, '¡LÍNEA CANDENTE EN LA ESQUINA CALIENTE!'),
+          desc: _t('sim.def_desc_3b', {}, 'Misil quemante pegado a la raya de cal de tercera. Reflejos puros para evitar el extrabase.'),
+          icon: '🔥'
+        },
+        'SS': {
+          title: _t('sim.def_title_ss', {}, '¡ROBANDO EL HIT EN EL HUECO DEL SS!'),
+          desc: _t('sim.def_desc_ss', {}, 'Fuerte roletazo entre tercera y el campocorto. Tu torpedero se desliza en el pasto y mete el guante.'),
+          icon: '💎'
+        },
+        'LF': {
+          title: _t('sim.def_title_lf', {}, '¡ELEVADO CORTO POR LA ZONA DE FAUL!'),
+          desc: _t('sim.def_desc_lf', {}, 'Batazo peligroso contra la baranda del jardín izquierdo. Tu jardinero corre arriesgando el físico.'),
+          icon: '⚾'
+        },
+        'CF': {
+          title: _t('sim.def_title_cf', {}, '¡BATAZO PROFUNDO AL PIE DE LA PARED!'),
+          desc: _t('sim.def_desc_cf', {}, 'Conexión enorme que amenaza con bañarlo. Tu jardinero central mide la pared y salta en lo más alto.'),
+          icon: '🚀'
+        },
+        'RF': {
+          title: _t('sim.def_title_rf', {}, '¡LÍNEA CORTADA CONTRA EL MURO DERECHO!'),
+          desc: _t('sim.def_desc_rf', {}, 'Fuerte conexión que dobla hacia el poste. Tu guardabosque derecho corta la trayectoria de aire.'),
+          icon: '🌟'
+        }
+      };
+
+      const scenario = scenarios[pos] || scenarios['SS'];
+
+      // Find player on lineup in this defensive position (by assigned slot first, fallback to pos)
+      const player = (this.awayTeam && this.awayTeam.lineup)
+        ? (this.awayTeam.lineup.find(p => p.slot === pos) || this.awayTeam.lineup.find(p => p.pos === pos) || this.awayTeam.lineup[0])
+        : { name: 'Defensor', pos, def: 50, slot: pos };
+
+      const effDef = player.def || 50;
+
+      // Check native / secondary position
+      const nativePos = (player.pos || '').trim();
+      const secPosArr = (player.sec_pos || '').split(',').map(s => s.trim());
+      const isNative = (nativePos === pos);
+      const isSecondary = secPosArr.includes(pos);
+      const isOOP = (!isNative && !isSecondary && pos !== 'DH');
+
+      // Formula: 1 DEF = 1%, 125 DEF = 100% (Linear: (effDef / 125) * 100, min 1%, max 100%)
+      const successThreshold = Math.max(1, Math.min(100, Math.round((effDef / 125) * 100)));
+      const successChance = successThreshold / 100;
+
+      return {
+        inning: forInning,
+        pos,
+        player,
+        effDef,
+        isNative,
+        isSecondary,
+        isOOP,
+        scenarioTitle: scenario.title,
+        scenarioDesc: scenario.desc,
+        scenarioIcon: scenario.icon,
+        successChance,
+        successThreshold
+      };
+    }
+
+    resolveMidInningDefense(roll, eventData) {
+      const isSuccess = roll <= eventData.successThreshold;
+      let hpHealed = 0;
+      let shieldHealed = 0;
+      let teamHpDmg = 0;
+      let shieldDmg = 0;
+
+      if (isSuccess) {
+        hpHealed = Math.min(100 - this.teamHP, 30);
+        this.teamHP = Math.min(100, this.teamHP + 30);
+        shieldHealed = Math.min(this.teamShieldMax - this.teamShield, 15);
+        this.teamShield = Math.min(this.teamShieldMax, this.teamShield + 15);
+
+        const playText = `🛡️ [${_t('sim.def_success_title', {}, '¡JUGADA DE GUANTE DE ORO!')}] ${eventData.player.name} (${eventData.pos}) ${_t('sim.def_success_desc', { roll, thresh: eventData.successThreshold }, `completa una atrapada sensacional (Dado: ${roll}/${eventData.successThreshold})`)}. ${_t('sim.def_success_reward', {}, '¡Recuperas +30 HP y +15 de Escudo!')}`;
+        this.logEvent('DEFENSE_PLAY', playText, 'DEF_WIN', eventData.player.name, 0, 0, 0);
+      } else {
+        const outDmg = 20;
+        if (this.teamShield > 0) {
+          shieldDmg = Math.min(this.teamShield, outDmg);
+          this.teamShield -= shieldDmg;
+          const overflow = outDmg - shieldDmg;
+          if (overflow > 0) {
+            teamHpDmg = overflow;
+            this.teamHP = Math.max(0, this.teamHP - overflow);
+          }
+        } else {
+          teamHpDmg = outDmg;
+          this.teamHP = Math.max(0, this.teamHP - outDmg);
+        }
+
+        const playText = `⚠️ [${_t('sim.def_fail_title', {}, '¡BATAZO RIVAL / ERROR!')}] ${eventData.player.name} (${eventData.pos}) ${_t('sim.def_fail_desc', { roll, thresh: eventData.successThreshold }, `no logra fildear el batazo rival (Dado: ${roll}/${eventData.successThreshold})`)}. ${_t('sim.def_fail_penalty', { dmg: outDmg }, `¡Sufres -${outDmg} de daño!`)}`;
+        this.logEvent('DEFENSE_PLAY', playText, 'DEF_LOSE', eventData.player.name, teamHpDmg, 0, 0);
+      }
+
+      this.pendingDefenseEvent = null;
+      this._checkEndConditions();
+
+      return {
+        isSuccess,
+        roll,
+        hpHealed,
+        shieldHealed,
+        teamHpDmg,
+        shieldDmg,
+        teamHP: this.teamHP,
+        teamShield: this.teamShield,
+        battleOver: this.battleOver,
+        winner: this.winner
+      };
     }
 
     // ── INTERNAL: win/loss check ─────────────────────────────────────
@@ -1398,6 +1542,7 @@
         currentBatter:   this.awayTeam.lineup[this.awayLineupIndex] || null,
         lineupIndex:     this.awayLineupIndex,
         pitcherDebuff:   this.pitcherDebuff,
+        pendingDefenseEvent: this.pendingDefenseEvent,
         battleOver:      this.battleOver,
         winner:          this.winner,
         events:          this.events
