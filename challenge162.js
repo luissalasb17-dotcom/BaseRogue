@@ -760,17 +760,17 @@
 
     // Stamina-driven starting pitcher depth:
     // Converts pitcher's STA attribute (30-125+) into realistic inning capacity per start.
-    // Starters average 6.1-6.8 IP/start (~195-225 IP/season), leaving authentic ~65-80 IP for drafted relievers.
+    // Starters average 6.8-7.5 IP/start (~215-245 IP/season, adding +15 IP per starter), leaving authentic workload for bullpen.
     _getStarterMaxInnings(sp) {
       if (!sp) return 6;
       const sta = sp.sta !== undefined ? sp.sta : (sp.sta_val !== undefined ? sp.sta_val : (sp.stamina !== undefined ? sp.stamina : 70));
-      // Base innings: STA 20 -> 4.8, STA 70 -> 6.0, STA 90 -> 6.5, STA 105+ -> 7.0
-      const base = 4.8 + (Math.max(20, Math.min(125, sta)) - 20) * 0.024;
-      const roll = (Math.random() - 0.5) * 1.0;
-      let maxInn = Math.max(5, Math.min(9, Math.round(base + roll)));
+      // Base innings: STA 20 -> 5.2, STA 70 -> 6.6, STA 90 -> 7.1, STA 105+ -> 7.5
+      const base = 5.2 + (Math.max(20, Math.min(125, sta)) - 20) * 0.024;
+      const roll = (Math.random() - 0.5) * 0.8;
+      let maxInn = Math.max(6, Math.min(9, Math.round(base + roll)));
 
       // High stamina complete games for workhorse aces
-      if (sta >= 95 && Math.random() < 0.04) maxInn = 9;
+      if (sta >= 95 && Math.random() < 0.05) maxInn = 9;
 
       return maxInn;
     },
@@ -785,30 +785,35 @@
       const middle = relievers[0];
 
       const runDiff = userRuns - oppRuns;
+      const isBlowout = Math.abs(runDiff) >= 6;
       const isSaveSituation = (runDiff >= 1 && runDiff <= 3) || (runDiff === 0) || (runDiff === -1 && inning >= 9);
 
+      // In massive blowout games (6+ run margin in 9th inning) or bridge before 6th, mop-up support absorbs:
+      if (isBlowout && inning >= 9) {
+        return null;
+      }
+      if (inning < 6) {
+        return null;
+      }
+
       if (inning >= 9) {
-        // Closer enters in save, tie, or close games (within 3 runs)
-        if (isSaveSituation || (Math.abs(runDiff) <= 3 && gameIdx % 5 !== 0)) {
+        // Closer enters in 9th for saves, ties, 1-run deficits, or leads up to 4 runs:
+        if (isSaveSituation || (runDiff >= 1 && runDiff <= 4) || (Math.abs(runDiff) <= 3 && gameIdx % 3 !== 0)) {
           return closer;
         }
         return (gameIdx % 2 === 0) ? setup : middle;
       }
       if (inning === 8) {
-        if (isSaveSituation || Math.abs(runDiff) <= 3) {
-          return (gameIdx % 4 !== 0) ? setup : middle;
-        }
-        return (gameIdx % 2 === 0) ? middle : setup;
+        return (gameIdx % 2 === 0) ? setup : middle;
       }
       if (inning === 7) {
         return (gameIdx % 2 === 0) ? middle : setup;
       }
-
-      // Early relief (innings 5-6) or extra innings (10+)
-      if (inning >= 10) {
-        return (inning === 10) ? closer : ((gameIdx % 2 === 0) ? setup : middle);
+      if (inning === 6) {
+        return (gameIdx % 2 !== 0) ? middle : setup;
       }
-      return (gameIdx % 2 === 0) ? middle : setup;
+
+      return (inning >= 10) ? closer : middle;
     },
 
     // The challenge's outcome (W/L) is decided independently of the box score —
@@ -1595,17 +1600,20 @@
           <button id="challenge162-play-10" class="btn btn-secondary" style="padding:10px 16px;font-size:10px;margin:4px;">${sim10Text}</button>
           <button id="challenge162-play-until" class="btn btn-secondary" style="padding:10px 16px;font-size:10px;margin:4px;">${simUntilText}</button>
         `;
-      } else if (S.playoffs.unlocked && !S.playoffs.finished) {
+      } else if (S.wins >= PLAYOFF_MIN_WINS) {
         this.stopAutoSim();
-        const gotoPlayoffsText = typeof window.t === 'function' ? window.t('challenge162.season_goto_playoffs') : '▶ IR A PLAYOFFS';
-        let title;
-        if (S.wins === SEASON_LENGTH) {
-          title = typeof window.t === 'function' ? window.t('challenge162.season_perfect_title') : '🏆 ¡TEMPORADA PERFECTA (162-0)! Playoffs desbloqueados.';
+        if (!S.playoffs.finished) {
+          const gotoPlayoffsText = typeof window.t === 'function' ? window.t('challenge162.season_goto_playoffs') : '▶ IR A PLAYOFFS';
+          const title = S.wins === SEASON_LENGTH
+            ? (typeof window.t === 'function' ? window.t('challenge162.season_perfect_title') : '🏆 ¡TEMPORADA PERFECTA (162-0)! Playoffs desbloqueados.')
+            : `🎉 ¡Clasificaste a Playoffs! (${S.wins}-${S.losses} — Superaste las ${PLAYOFF_MIN_WINS} Victorias)`;
+          actionHTML = `<div style="color:var(--challenge162-accent);font-size:13px;margin-bottom:10px;">${title}</div>
+            <button id="challenge162-goto-playoffs" class="btn" style="padding:12px 20px;font-size:11px;">${gotoPlayoffsText}</button>`;
         } else {
-          title = `🎉 ¡Clasificaste a Playoffs! (${S.wins}-${S.losses} — Superaste las ${PLAYOFF_MIN_WINS} Victorias)`;
+          const viewResultsText = typeof window.t === 'function' ? window.t('challenge162.season_view_results') : 'VER RESULTADO FINAL';
+          actionHTML = `<div style="color:#ffd700;font-size:12px;margin-bottom:6px;">🏆 Temporada regular (${S.wins}-${S.losses}) & Postemporada finalizadas.</div>
+            <button id="challenge162-view-results" class="btn btn-secondary" style="padding:10px 16px;font-size:10px;">${viewResultsText}</button>`;
         }
-        actionHTML = `<div style="color:var(--challenge162-accent);font-size:13px;margin-bottom:10px;">${title}</div>
-          <button id="challenge162-goto-playoffs" class="btn" style="padding:12px 20px;font-size:11px;">${gotoPlayoffsText}</button>`;
       } else {
         this.stopAutoSim();
         const needed = PLAYOFF_MIN_WINS - S.wins;
