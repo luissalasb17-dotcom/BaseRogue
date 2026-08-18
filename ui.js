@@ -5852,6 +5852,12 @@ function initGameModeSelector() {
     const deck = document.querySelector('.rpg-fight-deck') || arena;
     if (!arena) return;
 
+    if (defeatedPitcherName && typeof defeatedPitcherName === 'object') {
+      defeatedPitcherName = defeatedPitcherName.name || '';
+    }
+    defeatedPitcherName = (defeatedPitcherName || '').toString().trim();
+    if (defeatedPitcherName === '[object Object]') defeatedPitcherName = '';
+
     // Remove any leftover popups or banners
     document.querySelectorAll('.arcade-transition-banner, .outcome-popup-overlay, .match-screen-flash').forEach(el => el.remove());
 
@@ -5995,7 +6001,16 @@ function initGameModeSelector() {
 
     // Delegate KO and INNING_END to arcade juice handlers
     if (eventType === 'KO' || eventType === 'KO_PITCHER') {
-      const defName = ev ? (ev.detail || ev.activePitcher || '') : '';
+      let defName = '';
+      if (ev) {
+        if (typeof ev.activeBatter === 'string' && ev.activeBatter && ev.eventType === 'KO') {
+          defName = ev.activeBatter;
+        } else if (ev.activePitcher) {
+          defName = typeof ev.activePitcher === 'object' ? (ev.activePitcher.name || '') : ev.activePitcher;
+        } else if (ev.detail) {
+          defName = typeof ev.detail === 'object' ? (ev.detail.name || '') : ev.detail;
+        }
+      }
       const nextP = (activeBattle && activeBattle.activePitcher) ? activeBattle.activePitcher : null;
       triggerPitcherKOJuice(defName, nextP);
       return;
