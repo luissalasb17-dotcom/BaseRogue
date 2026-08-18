@@ -70,12 +70,17 @@
     <!-- SCREEN 0: GAME MODE SELECTOR (POKELIKE STYLE) -->
     <div class="glass-panel" id="screen-mode-select" style="position: relative; max-width: 900px; margin: 20px auto; text-align: center; padding: 30px 20px;">
       
-      <div style="text-align: center; margin-bottom: 16px;">
+      <div style="text-align: center; margin-bottom: 12px;">
         <img src="assets/logo.png" alt="BaseRogue" style="max-width: 440px; width: 90%; height: auto; display: inline-block; filter: drop-shadow(0 4px 20px rgba(0,255,102,0.6));">
       </div>
 
-      <div style="font-size: 13px; color: #9ca3af; margin-bottom: 30px;" data-i18n="mode_select.select_mode">
-        SELECCIONA EL MODO DE JUEGO
+      <!-- Pokelike-style Subtitle & Version -->
+      <div class="menu-tagline-container">
+        <div class="menu-tagline-line"></div>
+        <div class="menu-tagline">
+          <span data-i18n="mode_select.tagline">BASEBALL ROGUELIKE</span><span class="menu-tagline-pipe">|</span><span class="menu-tagline-ver">v1.0</span>
+        </div>
+        <div class="menu-tagline-line line-right"></div>
       </div>
 
       <div class="mode-grid">

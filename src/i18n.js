@@ -127,6 +127,7 @@
         },
         "mode_select": {
                 "app_title": "⚾ BASE-ROGUE",
+                "tagline": "BASEBALL ROGUELIKE",
                 "select_mode": "SELECCIONA EL MODO DE JUEGO",
                 "story_title": "MODO HISTORIA",
                 "story_subtitle": "TEMPORADAS 1901 – 2025",
@@ -1163,6 +1164,7 @@
         },
         "mode_select": {
                 "app_title": "⚾ BASE-ROGUE",
+                "tagline": "BASEBALL ROGUELIKE",
                 "select_mode": "SELECT GAME MODE",
                 "story_title": "STORY MODE",
                 "story_subtitle": "SEASONS 1901 – 2025",

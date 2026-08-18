@@ -4583,6 +4583,45 @@ body.workspace-active .main-container {
   margin: 0 auto;
 }
 
+/* ── Pokelike-Style Menu Tagline & Version Banner ── */
+.menu-tagline-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  max-width: 520px;
+  width: 90%;
+  margin: 0 auto 28px auto;
+}
+
+.menu-tagline-line {
+  flex: 1;
+  height: 1.5px;
+  background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.4), rgba(56, 189, 248, 0.8));
+}
+
+.menu-tagline-line.line-right {
+  background: linear-gradient(90deg, rgba(56, 189, 248, 0.8), rgba(56, 189, 248, 0.4), transparent);
+}
+
+.menu-tagline {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8.5px;
+  color: #38bdf8;
+  letter-spacing: 1.5px;
+  text-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+  white-space: nowrap;
+}
+
+.menu-tagline-pipe {
+  color: rgba(255, 255, 255, 0.35);
+  margin: 0 6px;
+}
+
+.menu-tagline-ver {
+  color: #fef08a;
+}
+
 #screen-menu {
   position: relative;
   background-color: rgba(7, 20, 14, 0.70) !important;
