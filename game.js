@@ -1721,19 +1721,21 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
       const eraCounts = {};
       Object.keys(contextRoster).forEach(pos => {
         const player = contextRoster[pos];
-        if (player && !player.isReplacement && player.era && player.era !== 'None') {
-          eraCounts[player.era] = (eraCounts[player.era] || 0) + 1;
+        if (player && !player.isReplacement && player.era && player.era !== 'None' && !player.synergyBanned) {
+          const weight = player.synergyWeight || (player.isInterEra ? 2 : 1);
+          eraCounts[player.era] = (eraCounts[player.era] || 0) + weight;
         }
       });
 
       const synergies = [];
       const Eras = window.PlayersDB.Eras;
+      const t2Threshold = this.hasTrait('era_accelerated') ? 2 : 4;
 
       Object.keys(eraCounts).forEach(era => {
         const count = eraCounts[era];
         if (count < 2) return;
 
-        let level = count >= 8 ? 4 : count >= 6 ? 3 : count >= 4 ? 2 : 1;
+        let level = count >= 8 ? 4 : count >= 6 ? 3 : count >= t2Threshold ? 2 : 1;
         let bonuses = {};
         let desc = "";
 
