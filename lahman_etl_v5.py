@@ -475,7 +475,7 @@ def paso_6_posicion_bateadores(fielding, fielding_of, appearances=None, pico_df=
                       .rename(columns={"POS":"primary_pos","G":"primary_g"})
     )
 
-    # 2. Determinar POSICIONES SECUNDARIAS usando CARRERA COMPLETA (G >= 75)
+    # 2. Determinar POSICIONES SECUNDARIAS usando % de DEDICACION (>= 10% en Carrera o Pico)
     pos_games_career = pd.DataFrame()
     if career_app is not None and not career_app.empty:
         pos_cols = {'G_c': 'C', 'G_1b': '1B', 'G_2b': '2B', 'G_3b': '3B', 'G_ss': 'SS', 'G_lf': 'LF', 'G_cf': 'CF', 'G_rf': 'RF', 'G_dh': 'DH'}
@@ -498,14 +498,48 @@ def paso_6_posicion_bateadores(fielding, fielding_of, appearances=None, pico_df=
                 field[col] = pd.to_numeric(field[col], errors="coerce").fillna(0)
         pos_games_career = field.groupby(["playerID","POS"])["G"].sum().reset_index()
 
-    sec_df = pos_games_career.merge(primary[["playerID", "primary_pos"]], on="playerID", how="left")
-    sec_df["pos_mapped"] = sec_df["POS"].map(POS_DISPLAY_MAP).fillna(sec_df["POS"])
-    
-    sec_df = sec_df[(sec_df["pos_mapped"] != sec_df["primary_pos"]) & (sec_df["pos_mapped"] != "DH") & (sec_df["pos_mapped"] != "OF")]
-    sec_pos_grouped = sec_df.groupby(["playerID", "pos_mapped"])["G"].sum().reset_index()
-    sec_pos_grouped = sec_pos_grouped[sec_pos_grouped["G"] >= 75]
-    
-    sec_pos_str = sec_pos_grouped.groupby("playerID")["pos_mapped"].apply(
+    pos_games_career["pos_mapped"] = pos_games_career["POS"].map(POS_DISPLAY_MAP).fillna(pos_games_career["POS"])
+    pos_games_career = pos_games_career[pos_games_career["pos_mapped"] != "DH"]
+    pos_games_career_grouped = pos_games_career.groupby(["playerID", "pos_mapped"])["G"].sum().reset_index()
+
+    career_tot = pos_games_career_grouped.groupby("playerID")["G"].sum().reset_index(name="tot_g_career")
+    pos_games_career_grouped = pos_games_career_grouped.merge(career_tot, on="playerID")
+    pos_games_career_grouped["career_pct"] = pos_games_career_grouped["G"] / pos_games_career_grouped["tot_g_career"]
+
+    # Pico pos games
+    pos_games_peak_grouped = pos_games_peak.copy()
+    pos_games_peak_grouped["pos_mapped"] = pos_games_peak_grouped["POS"].map(POS_DISPLAY_MAP).fillna(pos_games_peak_grouped["POS"])
+    pos_games_peak_grouped = pos_games_peak_grouped[pos_games_peak_grouped["pos_mapped"] != "DH"]
+    pos_games_peak_grouped = pos_games_peak_grouped.groupby(["playerID", "pos_mapped"])["G"].sum().reset_index()
+
+    peak_tot = pos_games_peak_grouped.groupby("playerID")["G"].sum().reset_index(name="tot_g_peak")
+    pos_games_peak_grouped = pos_games_peak_grouped.merge(peak_tot, on="playerID")
+    pos_games_peak_grouped["peak_pct"] = pos_games_peak_grouped["G"] / pos_games_peak_grouped["tot_g_peak"]
+
+    # Combinar carrera y pico
+    sec_df = pos_games_career_grouped.merge(
+        pos_games_peak_grouped[["playerID", "pos_mapped", "G", "peak_pct"]].rename(columns={"G": "peak_G"}),
+        on=["playerID", "pos_mapped"],
+        how="left"
+    )
+    sec_df["peak_G"] = sec_df["peak_G"].fillna(0)
+    sec_df["peak_pct"] = sec_df["peak_pct"].fillna(0.0)
+
+    sec_df = sec_df.merge(primary[["playerID", "primary_pos"]], on="playerID", how="left")
+    sec_df = sec_df[(sec_df["pos_mapped"] != sec_df["primary_pos"]) & (sec_df["pos_mapped"] != "OF")]
+
+    # Umbral de Dedicación del 10% (con pisos mínimos de seguridad)
+    PCT_THRESH = 0.10
+    MIN_CAREER_G = 20
+    MIN_PEAK_G = 15
+
+    qual_mask = (
+        ((sec_df["career_pct"] >= PCT_THRESH) & (sec_df["G"] >= MIN_CAREER_G)) |
+        ((sec_df["peak_pct"] >= PCT_THRESH) & (sec_df["peak_G"] >= MIN_PEAK_G))
+    )
+    sec_pos_qual = sec_df[qual_mask]
+
+    sec_pos_str = sec_pos_qual.groupby("playerID")["pos_mapped"].apply(
         lambda x: ",".join(sorted(list(set(x))))
     ).reset_index().rename(columns={"pos_mapped": "sec_pos"})
 
@@ -527,7 +561,7 @@ def paso_6_posicion_bateadores(fielding, fielding_of, appearances=None, pico_df=
     result = primary.merge(career_field, on="playerID", how="left")
     result = result.merge(sec_pos_str, on="playerID", how="left")
     result["sec_pos"] = result["sec_pos"].fillna("")
-    print(f"  Posicion primaria calculada para {len(result):,} bateadores (y secundarias con threshold G>=75)")
+    print(f"  Posicion primaria calculada para {len(result):,} bateadores (y secundarias con dedicacion >= {PCT_THRESH:.0%})")
     return result
 
 
