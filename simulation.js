@@ -360,43 +360,43 @@
         effBatter.def = (effBatter.def || 50) + boost;
       }
 
-      // Deadball (1901-1919): +4/+8/+12/+16 CON and K-AVD
+      // Deadball (1901-1919): +3/+6/+9/+12 CON and K-AVD
       if (deadballTier >= 1) {
-        const conBoost = deadballTier === 4 ? 16 : deadballTier === 3 ? 12 : deadballTier === 2 ? 8 : 4;
+        const conBoost = deadballTier === 4 ? 12 : deadballTier === 3 ? 9 : deadballTier === 2 ? 6 : 3;
         effBatter.con = (effBatter.con || 50) + conBoost;
         effBatter.k_avd = (effBatter.k_avd !== undefined ? effBatter.k_avd : (effBatter.con || 50)) + conBoost;
       }
 
-      // Golden Era (1920-1941): +5/+9/+14/+18 PWR
+      // Golden Era (1920-1941): +3/+6/+9/+13 PWR
       if (goldenTier >= 1) {
-        const pwrBoost = goldenTier === 4 ? 18 : goldenTier === 3 ? 14 : goldenTier === 2 ? 9 : 5;
+        const pwrBoost = goldenTier === 4 ? 13 : goldenTier === 3 ? 9 : goldenTier === 2 ? 6 : 3;
         effBatter.pwr = (effBatter.pwr || 50) + pwrBoost;
       }
 
-      // Expansion (1961-1976): +5/+10/+14/+18 SPD and +0/+4/+8/+12 EYE
+      // Expansion (1961-1976): +3/+6/+9/+13 SPD and +0/+3/+6/+9 EYE
       if (expansionTier >= 1) {
-        const spdBoost = expansionTier === 4 ? 18 : expansionTier === 3 ? 14 : expansionTier === 2 ? 10 : 5;
-        const eyeBoost = expansionTier === 4 ? 12 : expansionTier === 3 ? 8 : expansionTier === 2 ? 4 : 0;
+        const spdBoost = expansionTier === 4 ? 13 : expansionTier === 3 ? 9 : expansionTier === 2 ? 6 : 3;
+        const eyeBoost = expansionTier === 4 ? 9 : expansionTier === 3 ? 6 : expansionTier === 2 ? 3 : 0;
         effBatter.spd = (effBatter.spd || 50) + spdBoost;
         if (eyeBoost > 0) effBatter.eye = (effBatter.eye || 50) + eyeBoost;
       }
 
-      // Big Hair Era (1977-1993): +6/+12/+18/+24 DEF and SPD
+      // Big Hair Era (1977-1993): +3/+6/+10/+14 DEF and SPD
       if (bigHairTier >= 1) {
-        const defSpdBoost = bigHairTier === 4 ? 24 : bigHairTier === 3 ? 18 : bigHairTier === 2 ? 12 : 6;
+        const defSpdBoost = bigHairTier === 4 ? 14 : bigHairTier === 3 ? 10 : bigHairTier === 2 ? 6 : 3;
         effBatter.def = (effBatter.def || 50) + defSpdBoost;
         effBatter.spd = (effBatter.spd || 50) + defSpdBoost;
       }
 
-      // Steroid Era (1994-2005): +6/+12/+18/+25 PWR
+      // Steroid Era (1994-2005): +4/+7/+11/+15 PWR
       if (steroidTier >= 1) {
-        const pwrBoost = steroidTier === 4 ? 25 : steroidTier === 3 ? 18 : steroidTier === 2 ? 12 : 6;
+        const pwrBoost = steroidTier === 4 ? 15 : steroidTier === 3 ? 11 : steroidTier === 2 ? 7 : 4;
         effBatter.pwr = (effBatter.pwr || 50) + pwrBoost;
       }
 
-      // Modern Era (2016-Pres): +5/+10/+15/+20 EYE and PWR
+      // Modern Era (2016-Pres): +3/+6/+9/+12 EYE and PWR
       if (modernTier >= 1) {
-        const ttoBoost = modernTier === 4 ? 20 : modernTier === 3 ? 15 : modernTier === 2 ? 10 : 5;
+        const ttoBoost = modernTier === 4 ? 12 : modernTier === 3 ? 9 : modernTier === 2 ? 6 : 3;
         effBatter.eye = (effBatter.eye || 50) + ttoBoost;
         effBatter.pwr = (effBatter.pwr || 50) + ttoBoost;
       }
@@ -440,43 +440,43 @@
         effBatter.def = (effBatter.def || 50) + boost;
       }
 
-      // Deadball (1901-1919): +4/+8/+12/+16 CON and K-AVD
+      // Deadball (1901-1919): +3/+6/+9/+12 CON and K-AVD
       if (deadballTier >= 1) {
-        const conBoost = deadballTier === 4 ? 16 : deadballTier === 3 ? 12 : deadballTier === 2 ? 8 : 4;
+        const conBoost = deadballTier === 4 ? 12 : deadballTier === 3 ? 9 : deadballTier === 2 ? 6 : 3;
         effBatter.con = (effBatter.con || 50) + conBoost;
         effBatter.k_avd = (effBatter.k_avd !== undefined ? effBatter.k_avd : (effBatter.con || 50)) + conBoost;
       }
 
-      // Golden Era (1920-1941): +5/+9/+14/+18 PWR
+      // Golden Era (1920-1941): +3/+6/+9/+13 PWR
       if (goldenTier >= 1) {
-        const pwrBoost = goldenTier === 4 ? 18 : goldenTier === 3 ? 14 : goldenTier === 2 ? 9 : 5;
+        const pwrBoost = goldenTier === 4 ? 13 : goldenTier === 3 ? 9 : goldenTier === 2 ? 6 : 3;
         effBatter.pwr = (effBatter.pwr || 50) + pwrBoost;
       }
 
-      // Expansion (1961-1976): +5/+10/+14/+18 SPD and +0/+4/+8/+12 EYE
+      // Expansion (1961-1976): +3/+6/+9/+13 SPD and +0/+3/+6/+9 EYE
       if (expansionTier >= 1) {
-        const spdBoost = expansionTier === 4 ? 18 : expansionTier === 3 ? 14 : expansionTier === 2 ? 10 : 5;
-        const eyeBoost = expansionTier === 4 ? 12 : expansionTier === 3 ? 8 : expansionTier === 2 ? 4 : 0;
+        const spdBoost = expansionTier === 4 ? 13 : expansionTier === 3 ? 9 : expansionTier === 2 ? 6 : 3;
+        const eyeBoost = expansionTier === 4 ? 9 : expansionTier === 3 ? 6 : expansionTier === 2 ? 3 : 0;
         effBatter.spd = (effBatter.spd || 50) + spdBoost;
         if (eyeBoost > 0) effBatter.eye = (effBatter.eye || 50) + eyeBoost;
       }
 
-      // Big Hair Era (1977-1993): +6/+12/+18/+24 DEF and SPD
+      // Big Hair Era (1977-1993): +3/+6/+10/+14 DEF and SPD
       if (bigHairTier >= 1) {
-        const defSpdBoost = bigHairTier === 4 ? 24 : bigHairTier === 3 ? 18 : bigHairTier === 2 ? 12 : 6;
+        const defSpdBoost = bigHairTier === 4 ? 14 : bigHairTier === 3 ? 10 : bigHairTier === 2 ? 6 : 3;
         effBatter.def = (effBatter.def || 50) + defSpdBoost;
         effBatter.spd = (effBatter.spd || 50) + defSpdBoost;
       }
 
-      // Steroid Era (1994-2005): +6/+12/+18/+25 PWR
+      // Steroid Era (1994-2005): +4/+7/+11/+15 PWR
       if (steroidTier >= 1) {
-        const pwrBoost = steroidTier === 4 ? 25 : steroidTier === 3 ? 18 : steroidTier === 2 ? 12 : 6;
+        const pwrBoost = steroidTier === 4 ? 15 : steroidTier === 3 ? 11 : steroidTier === 2 ? 7 : 4;
         effBatter.pwr = (effBatter.pwr || 50) + pwrBoost;
       }
 
-      // Modern Era (2016-Pres): +5/+10/+15/+20 EYE and PWR
+      // Modern Era (2016-Pres): +3/+6/+9/+12 EYE and PWR
       if (modernTier >= 1) {
-        const ttoBoost = modernTier === 4 ? 20 : modernTier === 3 ? 15 : modernTier === 2 ? 10 : 5;
+        const ttoBoost = modernTier === 4 ? 12 : modernTier === 3 ? 9 : modernTier === 2 ? 6 : 3;
         effBatter.eye = (effBatter.eye || 50) + ttoBoost;
         effBatter.pwr = (effBatter.pwr || 50) + ttoBoost;
       }

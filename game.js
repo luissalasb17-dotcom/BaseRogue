@@ -1742,29 +1742,29 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
         if (era === Eras.GENESIS) {
           bonuses = {};
         } else if (era === Eras.DEADBALL) {
-          const boost = level === 4 ? 16 : level === 3 ? 12 : level === 2 ? 8 : 4;
+          const boost = level === 4 ? 12 : level === 3 ? 9 : level === 2 ? 6 : 3;
           bonuses = { con: boost, k_avd: boost };
         } else if (era === Eras.GOLDEN) {
-          const boost = level === 4 ? 18 : level === 3 ? 14 : level === 2 ? 9 : 5;
+          const boost = level === 4 ? 13 : level === 3 ? 9 : level === 2 ? 6 : 3;
           bonuses = { pwr: boost };
         } else if (era === Eras.INTEGRATION) {
           const boost = level === 4 ? 8 : level === 3 ? 6 : level === 2 ? 4 : 2;
           bonuses = { con: boost, pwr: boost, eye: boost, k_avd: boost, spd: boost, def: boost };
         } else if (era === Eras.EXPANSION) {
-          const spdBoost = level === 4 ? 18 : level === 3 ? 14 : level === 2 ? 10 : 5;
-          const eyeBoost = level === 4 ? 12 : level === 3 ? 8 : level === 2 ? 4 : 0;
+          const spdBoost = level === 4 ? 13 : level === 3 ? 9 : level === 2 ? 6 : 3;
+          const eyeBoost = level === 4 ? 9 : level === 3 ? 6 : level === 2 ? 3 : 0;
           bonuses = { spd: spdBoost };
           if (eyeBoost > 0) bonuses.eye = eyeBoost;
         } else if (era === Eras.BIGHAIR) {
-          const boost = level === 4 ? 24 : level === 3 ? 18 : level === 2 ? 12 : 6;
+          const boost = level === 4 ? 14 : level === 3 ? 10 : level === 2 ? 6 : 3;
           bonuses = { def: boost, spd: boost };
         } else if (era === Eras.STEROID) {
-          const boost = level === 4 ? 25 : level === 3 ? 18 : level === 2 ? 12 : 6;
+          const boost = level === 4 ? 15 : level === 3 ? 11 : level === 2 ? 7 : 4;
           bonuses = { pwr: boost };
         } else if (era === Eras.EFFICIENCY) {
           bonuses = {};
         } else if (era === Eras.MODERN) {
-          const boost = level === 4 ? 20 : level === 3 ? 15 : level === 2 ? 10 : 5;
+          const boost = level === 4 ? 12 : level === 3 ? 9 : level === 2 ? 6 : 3;
           bonuses = { eye: boost, pwr: boost };
         }
 
