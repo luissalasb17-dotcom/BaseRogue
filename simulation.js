@@ -77,14 +77,14 @@
     // Stage A — discipline outcomes: BB vs SO vs "ball in play". These two are
     // independent of contact quality, so they're resolved first and never get
     // rescaled by whatever happens to Hit/Out below.
-    // 1. BB rate: Batter Eye vs Pitcher BB/9 Control (Base 12%, Slope 0.25%)
-    let pBB = 0.12 + (effEye - pBB9) * 0.0025;
+    // 1. BB rate: Batter Eye vs Pitcher BB/9 Control (Base 10%, Slope 0.25%)
+    let pBB = 0.10 + (effEye - pBB9) * 0.0025;
     // eagle_patience: +3 points to the BB zone
     if (simCtx && simCtx.hasTrait && simCtx.hasTrait('eagle_patience')) pBB += 0.03;
-    pBB = Math.max(0.04, Math.min(0.35, pBB));
+    pBB = Math.max(0.03, Math.min(0.35, pBB));
 
-    // 2. SO rate: Pitcher K/9 Strikeout vs Batter K/AVD (Base 16%, Slope 0.25%)
-    let pSO = 0.16 + (pK9 - effKAvd) * 0.0025;
+    // 2. SO rate: Pitcher K/9 Strikeout vs Batter K/AVD (Base 18%, Slope 0.25%)
+    let pSO = 0.18 + (pK9 - effKAvd) * 0.0025;
     // surgical_contact: -3 points to the SO zone
     if (simCtx && simCtx.hasTrait && simCtx.hasTrait('surgical_contact')) pSO -= 0.03;
     pSO = Math.max(0.04, Math.min(0.35, pSO));
@@ -94,9 +94,9 @@
     // Stage B — within "in play": Hit vs Out are one complementary pair (an
     // at-bat that isn't a walk or strikeout is either a hit or an out), instead
     // of Out being whatever's left over after every other category is summed.
-    // 3. Total HIT rate (1B, 2B, 3B, HR): Batter Contact vs Pitcher H/9 Hit Suppression (Base 45%, Slope 0.25%)
-    let pTotalHit = 0.45 + (effCon - pH9) * 0.0025;
-    pTotalHit = Math.max(0.16, Math.min(0.60, pTotalHit));
+    // 3. Total HIT rate (1B, 2B, 3B, HR): Batter Contact vs Pitcher H/9 Hit Suppression (Base 42%, Slope 0.25%)
+    let pTotalHit = 0.42 + (effCon - pH9) * 0.0025;
+    pTotalHit = Math.max(0.14, Math.min(0.60, pTotalHit));
     pTotalHit = Math.min(pTotalHit, pInPlay - 0.05); // always leave >=5% Out room within what's in play
 
     let pOut = pInPlay - pTotalHit;

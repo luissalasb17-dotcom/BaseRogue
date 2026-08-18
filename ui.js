@@ -7506,6 +7506,9 @@ function initGameModeSelector() {
 
   // GAME OVER VIEW
   function triggerGameOver(won, message) {
+    if (window.BaseballDex && window.Game && window.Game.roster) {
+      window.BaseballDex.unlockRoster(window.Game.roster);
+    }
     el.gameoverTitle.innerText = won ? "¡CAMPEONATO CONSEGUIDO!" : "¡Temporada Terminada!";
     el.gameoverTitle.style.color = won ? "var(--primary-color)" : "var(--danger-color)";
     el.gameoverDesc.innerText = message;
@@ -7534,6 +7537,9 @@ function initGameModeSelector() {
 
   // ── TRUE VICTORY SCREEN ──────────────────────────────────────────────────
   function triggerTrueVictory() {
+    if (window.BaseballDex && window.Game && window.Game.roster) {
+      window.BaseballDex.unlockRoster(window.Game.roster);
+    }
     const isQuickMode = window.Game && window.Game.selectedMode === 'quick';
     const wasChallengeLocked = window.Challenge162 && !window.Challenge162.isModeUnlocked();
 
@@ -7646,6 +7652,12 @@ function initGameModeSelector() {
 
   // ── RUN SUMMARY MODAL ─────────────────────────────────────────────────────
   function openRunSummaryModal() {
+    if (window.BaseballDex && window.Game && window.Game.roster) {
+      window.BaseballDex.unlockRoster(window.Game.roster);
+      if (window.Game.runRosterHistory) {
+        Object.values(window.Game.runRosterHistory).forEach(p => window.BaseballDex.unlock(p));
+      }
+    }
     const modal = document.getElementById('modal-run-summary');
     if (!modal) return;
     modal.classList.remove('hidden');

@@ -175,13 +175,52 @@
       this.updateCounters();
     },
 
-    unlock(player) {
-      if (!player) return;
-      const key = `${player.name}_${player.year}`;
-      if (!this.unlocked.has(key)) {
-        this.unlocked.add(key);
-        this.save();
+    _getPlayerKeys(player) {
+      if (!player) return [];
+      const keys = [];
+      const rawName = (player.cleanName || player.name || '').replace(/\s*\(\d{4}\)/g, '').replace(/\s*\(.*?\)/g, '').trim();
+      const year = player.year || player.peak_year || '';
+      if (rawName && year) {
+        keys.push(`${rawName}_${year}`);
       }
+      if (player.name && player.year) {
+        keys.push(`${player.name}_${player.year}`);
+      }
+      if (player.playerID) {
+        keys.push(`id_${player.playerID}`);
+      }
+      return keys;
+    },
+
+    unlock(player) {
+      if (!player || player.isReplacement) return;
+      const keys = this._getPlayerKeys(player);
+      let changed = false;
+      keys.forEach(k => {
+        if (!this.unlocked.has(k)) {
+          this.unlocked.add(k);
+          changed = true;
+        }
+      });
+      if (changed) this.save();
+    },
+
+    unlockRoster(roster) {
+      if (!roster) return;
+      const players = Array.isArray(roster) ? roster : Object.values(roster);
+      let changed = false;
+      players.forEach(p => {
+        if (p && !p.isReplacement) {
+          const keys = this._getPlayerKeys(p);
+          keys.forEach(k => {
+            if (!this.unlocked.has(k)) {
+              this.unlocked.add(k);
+              changed = true;
+            }
+          });
+        }
+      });
+      if (changed) this.save();
     },
 
     unlockOpponent(pitcher) {
@@ -201,7 +240,10 @@
     unlockAll() {
       const pool = window.PlayersDB ? window.PlayersDB.LAHMAN_POOL : [];
       this.unlocked = new Set();
-      pool.forEach(p => this.unlocked.add(`${p.name}_${p.year}`));
+      pool.forEach(p => {
+        const keys = this._getPlayerKeys(p);
+        keys.forEach(k => this.unlocked.add(k));
+      });
       
       const pPool = (window.PitchersDB && window.PitchersDB.PITCHERS_POOL) ? window.PitchersDB.PITCHERS_POOL : (window.PITCHERS_POOL || []);
       this.unlockedOpponents = new Set();
@@ -228,6 +270,7 @@
     },
 
     isUnlocked(player) {
+      if (!player) return false;
       if (this.activeCategory === 'opponents') {
         const rawName = (player.cleanName || player.name || '').replace(/\s*\(\d{4}\)/g, '').trim();
         const year = player.year || player.peak_year_display || player.peak_year || '';
@@ -235,7 +278,8 @@
         const key = `${rawName}_${year}_${role}`;
         return this.unlockedOpponents.has(key);
       }
-      return this.unlocked.has(`${player.name}_${player.year}`);
+      const keys = this._getPlayerKeys(player);
+      return keys.some(k => this.unlocked.has(k));
     },
 
     getStats() {

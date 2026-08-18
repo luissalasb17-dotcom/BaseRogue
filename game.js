@@ -1053,6 +1053,7 @@
         upgrades: { con: 0, pwr: 0, eye: 0, k_avd: 0, spd: 0, def: 0, sta: 0 }
       };
       this.draftedPlayers.push(instance);
+      if (window.BaseballDex) window.BaseballDex.unlock(instance);
 
       // Auto-assign to draftRoster: try native pos → secondary pos → DH → any empty slot
       const slots = ['C','1B','2B','3B','SS','LF','CF','RF','DH'];
@@ -1350,6 +1351,7 @@
           }
         }
       });
+      if (window.BaseballDex) window.BaseballDex.unlockRoster(this.roster);
     }
 
     // ── LINEUP ASSIGNMENT: assign drafted player to a slot ────────────────────
@@ -1367,6 +1369,7 @@
       if (!allFilled) return false;
       this.starterChosen = true;
       this.runActive = true;
+      if (window.BaseballDex) window.BaseballDex.unlockRoster(this.roster);
       this.generateMap();
       return true;
     }
@@ -1909,6 +1912,7 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
         stamina: 100,
         upgrades: { con: 0, pwr: 0, eye: 0, k_avd: 0, spd: 0, def: 0, sta: 0 }
       };
+      if (window.BaseballDex) window.BaseballDex.unlock(playerInstance);
 
       const nativePos = playerInstance.pos;
       const nativeLocked = this.positionLocks && (this.positionLocks[nativePos] || 0) > 0;
@@ -1937,6 +1941,7 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
         stamina: 100,
         upgrades: { con: 0, pwr: 0, eye: 0, k_avd: 0, spd: 0, def: 0, sta: 0 }
       };
+      if (window.BaseballDex) window.BaseballDex.unlock(playerInstance);
 
       this.roster[slot] = playerInstance;
       return true;
@@ -2387,6 +2392,7 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
                 upgrades: { con: 0, pwr: 0, eye: 0, k_avd: 0, spd: 0, def: 0, sta: 0 }
               };
               this.roster[pos] = newInstance;
+              if (window.BaseballDex) window.BaseballDex.unlock(newInstance);
               retiredAlerts.push({
                 oldPlayerName: player.name,
                 oldPlayerPos: pos,
@@ -2406,6 +2412,9 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
 
       const currentEnemy = this.getEnemyTeam();
       const won = simResult.winner === 'away';
+
+      // Always unlock entire active roster in Dex upon completing match
+      if (window.BaseballDex) window.BaseballDex.unlockRoster(this.roster);
 
       // Winning a match means the full enemy rotation for that match was
       // knocked out — record them as "defeated" for this run (162-0 Challenge
