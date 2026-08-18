@@ -49,7 +49,7 @@ body {
   /* Clean 16-Bit Arcade Stadium Background */
   background-image: 
     linear-gradient(180deg, rgba(3, 10, 6, 0.72) 0%, rgba(3, 10, 6, 0.88) 100%),
-    url('assets/TEST.png');
+    url('assets/TEST.webp');
   background-size: cover;
   background-position: center bottom;
   background-repeat: no-repeat;
@@ -64,7 +64,7 @@ body {
 body.on-main-menu {
   background-image: 
     linear-gradient(180deg, rgba(3, 10, 6, 0.65) 0%, rgba(3, 10, 6, 0.82) 100%),
-    url('assets/TEST3.png') !important;
+    url('assets/TEST3.webp') !important;
 }
 
 /* Header */
@@ -1471,7 +1471,7 @@ p {
   background-color: rgba(3, 10, 6, 0.85) !important;
   background-image: 
     linear-gradient(180deg, rgba(3, 8, 5, 0.60) 0%, rgba(3, 8, 5, 0.85) 100%),
-    url('assets/TEST2.png') !important;
+    url('assets/TEST2.webp') !important;
   background-size: cover !important;
   background-position: center bottom !important;
   background-repeat: no-repeat !important;
@@ -4585,7 +4585,7 @@ body.on-main-menu .main-container {
   background-color: rgba(7, 20, 14, 0.70) !important;
   background-image: 
     linear-gradient(180deg, rgba(7, 20, 14, 0.55) 0%, rgba(7, 20, 14, 0.75) 100%),
-    url('assets/TEST3.png') !important;
+    url('assets/TEST3.webp') !important;
   background-size: cover !important;
   background-position: center bottom !important;
   background-repeat: no-repeat !important;
@@ -4662,7 +4662,7 @@ body.on-main-menu .main-container {
   background-color: rgba(7, 20, 14, 0.70) !important;
   background-image: 
     linear-gradient(180deg, rgba(7, 20, 14, 0.55) 0%, rgba(7, 20, 14, 0.75) 100%),
-    url('assets/TEST.png') !important;
+    url('assets/TEST.webp') !important;
   background-size: cover !important;
   background-position: center bottom !important;
   background-repeat: no-repeat !important;

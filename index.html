@@ -13,7 +13,10 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.tailwindcss.com"></script>
   
-  <link rel="stylesheet" href="style.css?v=209">
+  <link rel="preload" as="image" href="assets/TEST3.webp">
+  <link rel="preload" as="image" href="assets/TEST.webp">
+  <link rel="preload" as="image" href="assets/logo.webp">
+  <link rel="stylesheet" href="style.css?v=210">
   <style>
     @keyframes bounce {
       0%, 100% { transform: translateY(0); }
@@ -31,7 +34,7 @@
   <!-- Game Header -->
   <header style="padding: 10px 24px; min-height: 58px; display: flex; align-items: center; justify-content: space-between;">
     <div class="logo" style="display: flex; align-items: center; gap: 8px;">
-      <img src="assets/logo.png" alt="BaseRogue Logo" style="height: 36px; max-height: 36px; width: auto; object-fit: contain; filter: drop-shadow(0 2px 8px rgba(0,255,102,0.6));">
+      <img src="assets/logo.webp" alt="BaseRogue Logo" style="height: 36px; max-height: 36px; width: auto; object-fit: contain; filter: drop-shadow(0 2px 8px rgba(0,255,102,0.6));">
       <h1 style="display: none;">BaseRogue</h1>
     </div>
     
@@ -72,7 +75,7 @@
       
       <!-- Integrated Brand Header Lockup (Pokelike Style) -->
       <div class="main-logo-lockup" style="display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 0 auto clamp(36px, 5vh, 56px) auto; text-align: center;">
-        <img src="assets/logo.png" alt="BaseRogue" class="menu-main-logo" style="max-width: 360px; width: 80%; height: auto; display: block; margin: 0 auto 8px auto; filter: drop-shadow(0 4px 18px rgba(0, 255, 102, 0.55));">
+        <img src="assets/logo.webp" alt="BaseRogue" class="menu-main-logo" style="max-width: 360px; width: 80%; height: auto; display: block; margin: 0 auto 8px auto; filter: drop-shadow(0 4px 18px rgba(0, 255, 102, 0.55));">
         <div class="menu-tagline-container" style="display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%; max-width: 420px; margin: 0 auto;">
           <div class="menu-tagline-line" style="flex: 1; height: 1px; background: linear-gradient(90deg, transparent 0%, rgba(56, 189, 248, 0.4) 40%, rgba(56, 189, 248, 0.85) 100%);"></div>
           <div class="menu-tagline" style="font-family: 'Press Start 2P', monospace; font-size: 8.5px; color: #7dd3fc; letter-spacing: 1.5px; text-shadow: 0 0 10px rgba(56, 189, 248, 0.6); white-space: nowrap;">
@@ -428,7 +431,7 @@
     <div class="glass-panel hidden" id="screen-menu" style="position: relative;">
 
       <div style="text-align: center; margin-bottom: 16px;">
-        <img src="assets/logo.png" alt="BaseRogue" style="max-width: 320px; width: 85%; height: auto; display: inline-block; filter: drop-shadow(0 4px 14px rgba(0,255,102,0.45));">
+        <img src="assets/logo.webp" alt="BaseRogue" style="max-width: 320px; width: 85%; height: auto; display: inline-block; filter: drop-shadow(0 4px 14px rgba(0,255,102,0.45));">
       </div>
 
       <h2 data-i18n="menu.intro_title">BaseRogue</h2>
@@ -1016,7 +1019,7 @@
   <script src="game_cards_pool.js?v=169"></script>
   <script src="simulation.js?v=186"></script>
   <script src="game.js?v=197"></script>
-  <script src="audio.js?v=6"></script>
+  <script src="audio.js?v=7"></script>
   <script src="career_data.js?v=2"></script>
   <script src="career.js?v=30"></script>
   <script src="basedex.js?v=10"></script>

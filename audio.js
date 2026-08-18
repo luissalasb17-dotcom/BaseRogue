@@ -667,27 +667,37 @@
      */
     unlock() {
       const c = getCtx();
-      if (c && c.state === 'suspended') {
+      if (!c) return;
+      initGains();
+      const targetMode = (currentBGMMode && currentBGMMode !== 'none') ? currentBGMMode : 'menu';
+
+      if (c.state === 'suspended') {
         c.resume().then(() => {
-          if (!_muted && currentBGMMode !== 'off') {
-            this.setBGM(currentBGMMode || 'menu');
+          if (!_muted && targetMode !== 'off') {
+            currentBGMMode = 'none';
+            this.setBGM(targetMode);
           }
         }).catch(() => {});
-      } else if (c && !_muted && currentBGMMode === 'none') {
-        this.setBGM('menu');
+      } else if (!_muted && targetMode !== 'off') {
+        currentBGMMode = 'none';
+        this.setBGM(targetMode);
       }
     },
   };
 
-  // Auto-unlock audio on any pointer down / click
+  // Auto-unlock audio on any pointer down / click / touch
   if (typeof document !== 'undefined') {
     const unlockHandler = () => {
       AudioManager.unlock();
       document.removeEventListener('pointerdown', unlockHandler);
+      document.removeEventListener('touchstart', unlockHandler);
       document.removeEventListener('keydown', unlockHandler);
+      document.removeEventListener('click', unlockHandler);
     };
-    document.addEventListener('pointerdown', unlockHandler);
-    document.addEventListener('keydown', unlockHandler);
+    document.addEventListener('pointerdown', unlockHandler, { passive: true });
+    document.addEventListener('touchstart', unlockHandler, { passive: true });
+    document.addEventListener('keydown', unlockHandler, { passive: true });
+    document.addEventListener('click', unlockHandler, { passive: true });
   }
 
   window.AudioManager = AudioManager;
