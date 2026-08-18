@@ -4576,7 +4576,7 @@ body.on-main-menu .main-container {
   justify-content: flex-start !important;
   align-items: center !important;
   min-height: calc(100vh - 64px) !important;
-  padding: 12px 20px 24px 20px !important;
+  padding: 8px 20px 30px 20px !important;
 }
 
 /* ── Main Menu & Mode Select Stadium Background ── */
@@ -4592,10 +4592,10 @@ body.on-main-menu .main-container {
   image-rendering: pixelated;
   border: 2px solid #10b981;
   box-shadow: 0 0 35px rgba(0, 0, 0, 0.95), inset 0 0 25px rgba(0, 0, 0, 0.85);
-  padding: 28px 28px 36px 28px !important;
+  padding: 20px 28px 45px 28px !important;
   max-width: 980px !important;
   width: 100% !important;
-  margin: 1.5vh auto 30px auto !important;
+  margin: 10px auto 40px auto !important;
 }
 
 /* ── Pokelike-Style Menu Brand Lockup ── */
@@ -4604,13 +4604,13 @@ body.on-main-menu .main-container {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  margin: 4px auto 38px auto !important;
+  margin: 0 auto clamp(48px, 6.5vh, 75px) auto !important;
   text-align: center;
 }
 
 .menu-main-logo {
-  max-width: 290px !important;
-  width: 70% !important;
+  max-width: 280px !important;
+  width: 68% !important;
   height: auto !important;
   display: block !important;
   margin: 0 auto 6px auto !important;
