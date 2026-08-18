@@ -6276,6 +6276,9 @@ function initGameModeSelector() {
     }, displayTime);
   }
 
+  const UNITS_TUMBLE_MS = 550;
+  const TENS_TUMBLE_MS  = 850;
+
   // ── HANDLE ROLL DICE CLICK ───────────────────────────────────────────────────
   function handleRollDice() {
     if (!activeBattle || activeBattle.battleOver || isRolling) return;
@@ -6291,11 +6294,6 @@ function initGameModeSelector() {
     // since finalRoll is always 1-100 — the combined readout below removes any doubt).
     const tensDigit  = Math.floor(finalRoll / 10) % 10;
     const unitsDigit = finalRoll % 10;
-
-    // Units die settles first (shorter tumble), tens settles a beat after (longer
-    // tumble) — durations must match the CSS keyframe durations exactly.
-    const UNITS_TUMBLE_MS = 550;
-    const TENS_TUMBLE_MS  = 850;
 
     const cubeUnits = document.getElementById('die-units-cube');
     const cubeTens  = document.getElementById('die-tens-cube');
@@ -6456,6 +6454,22 @@ function initGameModeSelector() {
           setTimeout(() => {
             handleBattleOver();
           }, delay);
+        } else if (activeBattle.pendingDefenseEvent) {
+          const defEvent = activeBattle.pendingDefenseEvent;
+          const delay = Math.max(100, cursor + (hasKO ? 1200 : 0));
+          setTimeout(() => {
+            showMidInningDefenseModal(defEvent, () => {
+              const freshState = activeBattle.getState();
+              updateMatchHUD(freshState);
+              updateFaceoffPanel(freshState);
+              renderZones();
+              if (activeBattle.battleOver) {
+                handleBattleOver();
+              } else {
+                if (btn && !activeBattle.battleOver) btn.disabled = false;
+              }
+            });
+          }, delay);
         } else {
           // Re-enable button & re-render faceoff cards when popups finish
           if (!hasKO) {
@@ -6468,6 +6482,216 @@ function initGameModeSelector() {
 
         isRolling = false;
     }, TENS_TUMBLE_MS);
+  }
+
+  function showMidInningDefenseModal(defEvent, onComplete) {
+    const modal = document.getElementById('modal-mid-inning-defense');
+    if (!modal || !defEvent) {
+      if (onComplete) onComplete();
+      return;
+    }
+
+    const badgeEl = document.getElementById('def-modal-inning-badge');
+    const titleEl = document.getElementById('def-modal-title');
+    const descEl = document.getElementById('def-modal-scenario');
+    const fielderCardEl = document.getElementById('def-modal-fielder-card');
+    const actionZone = document.getElementById('def-modal-action-zone');
+    const resultZone = document.getElementById('def-modal-result-zone');
+    const btnRoll = document.getElementById('btn-def-modal-roll');
+    const defCubeUnits = document.getElementById('def-die-units-cube');
+    const defCubeTens  = document.getElementById('def-die-tens-cube');
+    const defFaceUnits = document.getElementById('def-die-units-face-front');
+    const defFaceTens  = document.getElementById('def-die-tens-face-front');
+    const defDiceDisplay = document.getElementById('def-dice-result-display');
+    const catchBar = document.getElementById('def-gauge-catch-bar');
+    const needleEl = document.getElementById('def-gauge-needle');
+    const threshVal = document.getElementById('def-gauge-thresh-val');
+    const errorStartVal = document.getElementById('def-gauge-error-start');
+
+    // Play tension intro audio
+    if (window.AudioManager) window.AudioManager.play('defense_tension_intro');
+
+    if (badgeEl) {
+      badgeEl.innerHTML = typeof window.t === 'function'
+        ? window.t('sim.def_badge', { inning: defEvent.inning }, `🛡️ BAJA DEL INNING ${defEvent.inning} • DUELO DEFENSIVO`)
+        : `🛡️ BAJA DEL INNING ${defEvent.inning} • DUELO DEFENSIVO`;
+    }
+    if (titleEl) titleEl.innerText = defEvent.scenarioTitle || '¡BATAZO DE PELIGRO RIVAL!';
+    if (descEl) descEl.innerText = defEvent.scenarioDesc || 'El rival conecta una línea quemante hacia la posición defensiva.';
+
+    // Setup Probability Gauge
+    const thresh = Math.max(1, Math.min(99, defEvent.successThreshold || 75));
+    if (catchBar) catchBar.style.width = `${thresh}%`;
+    if (threshVal) threshVal.innerText = thresh;
+    if (errorStartVal) errorStartVal.innerText = Math.min(100, thresh + 1);
+    if (needleEl) {
+      needleEl.style.display = 'none';
+      needleEl.style.left = '0%';
+    }
+
+    // Reset 3D dice cubes
+    if (defFaceTens) defFaceTens.innerText = '0';
+    if (defFaceUnits) defFaceUnits.innerText = '0';
+    if (defDiceDisplay) {
+      defDiceDisplay.innerText = '–';
+      defDiceDisplay.style.color = '#fff';
+    }
+    if (defCubeTens) defCubeTens.classList.remove('tumbling-tens', 'die-settled');
+    if (defCubeUnits) defCubeUnits.classList.remove('tumbling-units', 'die-settled');
+
+    const p = defEvent.player || {};
+    const gradeObj = getStatGrade(defEvent.effDef || 50);
+    const isGoldGlove = (defEvent.effDef >= 90);
+    const oopBadge = (!defEvent.isNative && !defEvent.isSecondary && defEvent.pos !== 'DH')
+      ? `<span style="font-size:8px;color:#f87171;font-weight:bold;margin-left:4px;">⚠️ (Fuera de Posición -35% DEF)</span>`
+      : (isGoldGlove ? `<span style="font-size:8px;color:#fef08a;font-weight:bold;margin-left:4px;">🥇 GUANTE DE ORO</span>` : '');
+
+    if (fielderCardEl) {
+      fielderCardEl.innerHTML = `
+        <div class="def-fielder-avatar">
+          ${defEvent.scenarioIcon || '🧤'}
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-weight:bold;color:#fff;font-size:13px;display:flex;align-items:center;gap:6px;">
+            <span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:0.5px;">${p.name || 'Defensor'}</span>
+            <span style="font-family:'Press Start 2P',monospace;font-size:8.5px;color:#38bdf8;flex-shrink:0;">[${defEvent.pos}]</span>
+          </div>
+          <div style="font-size:11px;color:#cbd5e1;margin-top:3px;">
+            Defensa Total: <strong style="color:${gradeObj.color};font-size:12px;">${defEvent.effDef} (Grado ${gradeObj.text})</strong> ${oopBadge}
+          </div>
+          <div style="font-size:11px;color:#38bdf8;margin-top:4px;font-family:'Press Start 2P',monospace;font-size:8px;">
+            Meta de Atrapada: <strong style="color:#4ade80;">Dado 1 al ${defEvent.successThreshold}</strong> (${defEvent.successThreshold}%)
+          </div>
+        </div>
+      `;
+    }
+
+    actionZone.classList.remove('hidden');
+    resultZone.classList.add('hidden');
+    resultZone.innerHTML = '';
+    btnRoll.disabled = false;
+    btnRoll.innerHTML = typeof window.t === 'function'
+      ? window.t('sim.def_roll_btn', {}, '🎲 ¡LANZAR DADOS DEFENSIVOS!')
+      : '🎲 ¡LANZAR DADOS DEFENSIVOS!';
+    modal.classList.remove('hidden');
+    modal.style.display = 'flex';
+
+    btnRoll.onclick = () => {
+      btnRoll.disabled = true;
+      btnRoll.innerHTML = typeof window.t === 'function'
+        ? window.t('sim.def_rolling', {}, '🎲 FILDEANDO...')
+        : '🎲 FILDEANDO...';
+
+      const finalRoll = Math.floor(Math.random() * 100) + 1;
+
+      let tensDigit, unitsDigit;
+      if (finalRoll === 100) {
+        tensDigit = 0;
+        unitsDigit = 0;
+      } else {
+        tensDigit  = Math.floor(finalRoll / 10);
+        unitsDigit = finalRoll % 10;
+      }
+
+      ['tens', 'units'].forEach(kind => {
+        const die = document.getElementById(`def-die-${kind}`);
+        if (!die) return;
+        die.querySelectorAll('.d100-die-face:not(.face-front)').forEach(f => {
+          f.innerText = Math.floor(Math.random() * 10);
+        });
+      });
+      if (defFaceTens)  defFaceTens.innerText  = tensDigit;
+      if (defFaceUnits) defFaceUnits.innerText = unitsDigit;
+
+      if (defCubeUnits) { defCubeUnits.classList.remove('tumbling-units', 'die-settled'); void defCubeUnits.offsetWidth; defCubeUnits.classList.add('tumbling-units'); }
+      if (defCubeTens)  { defCubeTens.classList.remove('tumbling-tens', 'die-settled');   void defCubeTens.offsetWidth;  defCubeTens.classList.add('tumbling-tens'); }
+      
+      // Play high-tension escalating roll audio
+      if (window.AudioManager) window.AudioManager.play('defense_dice_roll');
+      if (defDiceDisplay) { defDiceDisplay.innerText = '–'; defDiceDisplay.style.color = '#9ca3af'; }
+
+      setTimeout(() => {
+        if (defCubeUnits) defCubeUnits.classList.add('die-settled');
+        if (window.AudioManager) window.AudioManager.play('menu_click');
+      }, UNITS_TUMBLE_MS);
+
+      setTimeout(() => {
+        if (defCubeTens) defCubeTens.classList.add('die-settled');
+        const isSuccess = finalRoll <= defEvent.successThreshold;
+        
+        // Show gauge needle position
+        if (needleEl) {
+          needleEl.style.display = 'block';
+          needleEl.style.left = `${Math.min(100, Math.max(0, finalRoll))}%`;
+          needleEl.style.background = isSuccess ? '#4ade80' : '#f43f5e';
+          needleEl.style.boxShadow = isSuccess ? '0 0 10px #4ade80, 0 0 16px #34d399' : '0 0 10px #f43f5e, 0 0 16px #e11d48';
+        }
+
+        if (defDiceDisplay) {
+          defDiceDisplay.innerText = finalRoll;
+          defDiceDisplay.style.color = isSuccess ? '#4ade80' : '#f43f5e';
+          defDiceDisplay.style.textShadow = isSuccess ? '0 0 15px rgba(74, 222, 128, 0.8)' : '0 0 15px rgba(244, 63, 94, 0.8)';
+        }
+
+        const result = activeBattle.resolveMidInningDefense(finalRoll, defEvent);
+
+        if (result.isSuccess) {
+          if (window.AudioManager) window.AudioManager.play('defense_gold_glove');
+          showOutcomePopup('DEF_WIN', `🛡️ ¡JUGADA DE GUANTE DE ORO!\n+15 HP & +15 ESCUDO`);
+        } else {
+          if (window.AudioManager) window.AudioManager.play('defense_error');
+          showOutcomePopup('DEF_LOSE', `⚠️ ¡BATAZO RIVAL / ERROR!\n-20 DAÑO AL EQUIPO`);
+          const modalBox = modal.querySelector('.def-modal-box');
+          if (modalBox) {
+            modalBox.style.animation = 'none';
+            void modalBox.offsetWidth;
+            modalBox.style.animation = 'shake 0.5s ease';
+          }
+        }
+
+        actionZone.classList.add('hidden');
+        resultZone.classList.remove('hidden');
+
+        const nextInningNum = (defEvent.inning || 1) + 1;
+        const continueBtnText = typeof window.t === 'function'
+          ? window.t('sim.def_continue', { nextInning: nextInningNum }, `⚾ CONTINUAR AL INNING ${nextInningNum}`)
+          : `⚾ CONTINUAR AL INNING ${nextInningNum}`;
+
+        resultZone.innerHTML = `
+          <div class="${result.isSuccess ? 'def-result-card-success' : 'def-result-card-error'}">
+            <div style="font-family:'Press Start 2P',monospace;font-size:11px;margin-bottom:8px;letter-spacing:0.5px;">
+              ${result.isSuccess ? '🥇 ¡JUGADA DE GUANTE DE ORO!' : '⚠️ ¡BATAZO RIVAL / ERROR DEFENSIVO!'}
+            </div>
+            <div style="font-size:12px;margin-bottom:8px;color:#fff;">
+              Resultado del Dado: <strong style="font-size:16px;color:${result.isSuccess ? '#4ade80' : '#f87171'};">${finalRoll}</strong> (Zona Segura: 1–${defEvent.successThreshold})
+            </div>
+            <div style="font-size:12px;font-weight:bold;margin-bottom:14px;color:${result.isSuccess ? '#a7f3d0' : '#fecdd3'};">
+              ${result.isSuccess ? '🟢 ¡Atrapada espectacular! Recuperas +15 HP y +15 de Escudo.' : '🔴 ¡Batazo inalcanzable! El equipo sufre -20 de daño.'}
+            </div>
+            <button class="def-roll-btn" id="btn-def-modal-continue" style="background:linear-gradient(135deg,#059669,#047857)!important;border-color:#34d399!important;box-shadow:0 0 15px rgba(52,211,153,0.4)!important;">
+              ${continueBtnText} ➔
+            </button>
+          </div>
+        `;
+
+        const curState = activeBattle.getState();
+        updateMatchHUD(curState);
+        if (!result.isSuccess) {
+          if (el.matchTeamHpFill && el.matchTeamHpFill.parentElement) {
+            triggerBarShake(el.matchTeamHpFill.parentElement, 'hp-bar-hit');
+          }
+        }
+
+        const btnContinue = document.getElementById('btn-def-modal-continue');
+        if (btnContinue) {
+          btnContinue.onclick = () => {
+            modal.classList.add('hidden');
+            modal.style.display = 'none';
+            if (onComplete) onComplete();
+          };
+        }
+      }, TENS_TUMBLE_MS);
+    };
   }
 
   function handleSimulateAll() {
@@ -6486,6 +6710,10 @@ function initGameModeSelector() {
         evs.forEach(ev => appendLogLine(ev));
       } else if (evs) {
         appendLogLine(evs);
+      }
+      if (activeBattle.pendingDefenseEvent && !activeBattle.battleOver) {
+        const defRoll = Math.floor(Math.random() * 100) + 1;
+        const defRes = activeBattle.resolveMidInningDefense(defRoll, activeBattle.pendingDefenseEvent);
       }
     }
 

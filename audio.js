@@ -674,6 +674,60 @@
       tone(880.0, 0.035, 'sine', 0.08, 0.02, 0.002, 0.03);
     },
 
+    // 17. DEFENSE TENSION INTRO — dramatic sub-bass heartbeat & cinematic riser
+    defense_tension_intro() {
+      // First heartbeat thump
+      tone(65, 0.22, 'sine', 0.35, 0.00, 0.005, 0.18);
+      tone(95, 0.16, 'triangle', 0.28, 0.00, 0.005, 0.12);
+      noise(0.12, 0.15, 0.00, 150, 'lowpass');
+      // Second heartbeat thump
+      tone(60, 0.30, 'sine', 0.38, 0.22, 0.005, 0.25);
+      tone(85, 0.20, 'triangle', 0.30, 0.22, 0.005, 0.15);
+      noise(0.15, 0.18, 0.22, 120, 'lowpass');
+      // Amber tension sonar radar ping
+      tone(1174.66, 0.45, 'sine', 0.12, 0.38, 0.01, 0.35); // D6
+      tone(1760.00, 0.35, 'sine', 0.08, 0.42, 0.01, 0.28); // A6
+    },
+
+    // 18. DEFENSE DICE ROLL — high-tension escalating tumble & pitch sweep
+    defense_dice_roll() {
+      for (let i = 0; i < 7; i++) {
+        const d = i * 0.06;
+        tone(300 + (i * 80), 0.04, 'triangle', 0.15 + (i * 0.02), d, 0.002, 0.03);
+        noise(0.04, 0.08, d, 2500, 'bandpass');
+      }
+    },
+
+    // 19. DEFENSE GOLD GLOVE — heroic fanfare, crowd cheer, golden sparkle
+    defense_gold_glove() {
+      // Crisp glove pop
+      noise(0.08, 0.50, 0.00, 3500, 'bandpass');
+      tone(180, 0.15, 'triangle', 0.25, 0.01);
+      // Heroic brass chord (C Major triumphant)
+      tone(523.25, 0.35, 'sawtooth', 0.20, 0.08, 0.01, 0.30); // C5
+      tone(659.25, 0.35, 'sawtooth', 0.22, 0.14, 0.01, 0.30); // E5
+      tone(783.99, 0.45, 'sawtooth', 0.25, 0.20, 0.01, 0.38); // G5
+      tone(1046.50, 0.60, 'sawtooth', 0.28, 0.28, 0.01, 0.50); // C6
+      // Golden shimmer sparkle
+      tone(1318.51, 0.40, 'sine', 0.18, 0.35, 0.01, 0.35); // E6
+      tone(1567.98, 0.50, 'sine', 0.20, 0.42, 0.01, 0.45); // G6
+      tone(2093.00, 0.60, 'sine', 0.22, 0.50, 0.01, 0.55); // C7
+      // Crowd cheer swell
+      noise(1.10, 0.22, 0.15, 600, 'bandpass');
+    },
+
+    // 20. DEFENSE ERROR — heavy impact, low alarm buzzer, shield crack
+    defense_error() {
+      // Crack & heavy thud
+      noise(0.12, 0.65, 0.00, 4500, 'highpass');
+      tone(120, 0.35, 'sawtooth', 0.30, 0.00, 0.005, 0.30);
+      tone(75, 0.50, 'sine', 0.40, 0.02, 0.005, 0.45);
+      // Warning buzzer dissonant interval
+      tone(233.08, 0.35, 'sawtooth', 0.25, 0.10, 0.01, 0.30); // Bb3
+      tone(220.00, 0.40, 'sawtooth', 0.25, 0.12, 0.01, 0.35); // A3 (minor second clash)
+      noise(0.60, 0.20, 0.10, 300, 'lowpass');
+    },
+
   };
 
   // ── Public API ────────────────────────────────────────────────────────────────

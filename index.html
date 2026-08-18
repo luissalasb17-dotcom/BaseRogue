@@ -988,6 +988,96 @@
     </div>
   </div>
 
+  <!-- MODAL: Mid-Inning Defensive Challenge (High-End Tension Event) -->
+  <div class="modal-overlay def-modal-backdrop hidden" id="modal-mid-inning-defense" style="position:fixed;inset:0;z-index:9000;display:flex;align-items:center;justify-content:center;padding:16px;">
+    <div class="def-modal-box" style="padding:24px 22px;max-width:480px;width:100%;text-align:center;">
+      <div class="def-scanline-bar"></div>
+      
+      <!-- Inning / Phase Header with Pulsing Radar Badge -->
+      <div class="def-badge-radar" id="def-modal-inning-badge" style="margin-bottom:12px;">
+        🛡️ BAJA DEL INNING 1 • DUELO DEFENSIVO
+      </div>
+      
+      <h3 style="font-family:'Press Start 2P',monospace;font-size:11px;color:#fff;margin:0 0 6px 0;line-height:1.5;text-shadow:0 0 10px rgba(56,189,248,0.5);" id="def-modal-title">
+        ¡BATAZO DE PELIGRO RIVAL!
+      </h3>
+      
+      <p style="font-size:11px;color:#94a3b8;margin:0 0 14px 0;line-height:1.4;" id="def-modal-scenario">
+        El rival conecta una línea quemante hacia la posición defensiva.
+      </p>
+
+      <!-- Fielder Spotlight Card -->
+      <div id="def-modal-fielder-card" class="def-fielder-card" style="margin-bottom:12px;">
+        <!-- Injected via JS -->
+      </div>
+
+      <!-- Probability Tension Gauge -->
+      <div id="def-modal-gauge-zone" style="margin-bottom:14px;">
+        <div style="display:flex;justify-content:space-between;font-family:'Press Start 2P',monospace;font-size:7.5px;margin-bottom:4px;">
+          <span style="color:#34d399;" id="def-gauge-catch-label">🟢 ZONA DE ATRAPADA (1–<span id="def-gauge-thresh-val">75</span>)</span>
+          <span style="color:#f43f5e;" id="def-gauge-error-label">🔴 ERROR (<span id="def-gauge-error-start">76</span>–100)</span>
+        </div>
+        <div class="def-gauge-wrapper">
+          <div class="def-gauge-catch" id="def-gauge-catch-bar" style="width:75%;"></div>
+          <div class="def-gauge-error"></div>
+          <div class="def-gauge-needle" id="def-gauge-needle" style="left:0%;display:none;"></div>
+        </div>
+      </div>
+
+      <!-- Stakes Box: Rewards & Penalties -->
+      <div class="def-stakes-container">
+        <div class="def-stake-success">
+          <div style="font-weight:bold;margin-bottom:3px;">🟢 ÉXITO (GUANTE DE ORO)</div>
+          <div>+15 HP & +15 ESCUDO</div>
+        </div>
+        <div class="def-stake-fail">
+          <div style="font-weight:bold;margin-bottom:3px;">🔴 FALLO (ERROR DEFENSIVO)</div>
+          <div>-20 DAÑO DE IMPACTO</div>
+        </div>
+      </div>
+
+      <!-- 3D D100 Dice for Defensive Challenge -->
+      <div id="def-dice-d100-panel" style="display:flex;flex-direction:column;align-items:center;gap:6px;margin-bottom:14px;">
+        <div id="def-dice-d100-container" style="display:flex;gap:10px;">
+          <div class="d100-die" id="def-die-tens">
+            <div class="d100-die-cube" id="def-die-tens-cube">
+              <div class="d100-die-face face-front" id="def-die-tens-face-front">0</div>
+              <div class="d100-die-face face-back">0</div>
+              <div class="d100-die-face face-right">0</div>
+              <div class="d100-die-face face-left">0</div>
+              <div class="d100-die-face face-top">0</div>
+              <div class="d100-die-face face-bottom">0</div>
+            </div>
+          </div>
+          <div class="d100-die" id="def-die-units">
+            <div class="d100-die-cube" id="def-die-units-cube">
+              <div class="d100-die-face face-front" id="def-die-units-face-front">0</div>
+              <div class="d100-die-face face-back">0</div>
+              <div class="d100-die-face face-right">0</div>
+              <div class="d100-die-face face-left">0</div>
+              <div class="d100-die-face face-top">0</div>
+              <div class="d100-die-face face-bottom">0</div>
+            </div>
+          </div>
+        </div>
+        <div id="def-dice-result-display" style="font-family:'Press Start 2P',monospace;font-size:16px;color:#fff;letter-spacing:1px;text-shadow:0 0 10px rgba(255,255,255,0.6);">–</div>
+      </div>
+
+      <!-- Action Button -->
+      <div id="def-modal-action-zone">
+        <button class="def-roll-btn" id="btn-def-modal-roll">
+          🎲 ¡LANZAR DADOS DEFENSIVOS!
+        </button>
+      </div>
+
+      <!-- Result Display -->
+      <div id="def-modal-result-zone" class="hidden" style="margin-top:14px;">
+        <!-- Injected via JS after roll -->
+      </div>
+
+    </div>
+  </div>
+
   <!-- Player Card Popup Overlay -->
   <div id="player-card-popup-overlay" class="hidden" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:9999;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);">
     <div id="popup-card-content" style="background:#0a0f18;border:3px double var(--primary-color);box-shadow:0 0 40px rgba(0,255,102,0.3),0 0 0 4px #000;padding:20px;min-width:300px;max-width:380px;max-height:85vh;overflow-y:auto;position:relative;">
@@ -1011,20 +1101,20 @@
   </script>
   <!-- Load Game Scripts -->
   <script src="src/lib/i18next.min.js"></script>
-  <script src="src/i18n.js?v=53"></script>
+  <script src="src/i18n.js?v=54"></script>
   <script src="players.js?v=172"></script>
   <script src="pitchers_pool.js?v=173"></script>
   <script src="player_team_history.js?v=3"></script>
   <script src="opponents_database.js?v=17"></script>
   <script src="game_cards_pool.js?v=169"></script>
-  <script src="simulation.js?v=190"></script>
+  <script src="simulation.js?v=192"></script>
   <script src="game.js?v=203"></script>
   <script src="audio.js?v=12"></script>
   <script src="career_data.js?v=2"></script>
   <script src="career.js?v=30"></script>
   <script src="basedex.js?v=11"></script>
   <script src="challenge162.js?v=94"></script>
-  <script src="ui.js?v=278"></script>
+  <script src="ui.js?v=282"></script>
 
 </body>
 </html>
