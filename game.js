@@ -1206,9 +1206,9 @@
         return { player: p, weight: isNeeded ? 6 : 1 };
       };
 
-      // Story Mode: ~80% of offered cards are restricted to players actually
+      // Story Mode: ~95% of offered cards are restricted to players actually
       // active during the selected season (debut_year<=year<=last_year), the
-      // remaining ~20% is a wildcard from any era — flagged isInterEra so it
+      // remaining ~5% is a wildcard from any era — flagged isInterEra so it
       // gets a visual marker and a 2x synergy weight (see _calculateActiveSynergies
       // / renderSynergiesAndItems), as a deliberate incentive to take it.
       const isStoryYearAware = this.selectedMode === 'story' && this.selectedSeasonYear;
@@ -1239,7 +1239,7 @@
 
       const picks = [];
       while (picks.length < 3 && (fullWeighted.length > 0 || (activeWeighted && activeWeighted.length > 0))) {
-        const useActive = isStoryYearAware && activeWeighted.length > 0 && Math.random() < 0.8;
+        const useActive = isStoryYearAware && activeWeighted.length > 0 && Math.random() < 0.95;
         let chosen = useActive ? pickWeighted(activeWeighted) : pickWeighted(fullWeighted);
         if (!chosen) chosen = useActive ? pickWeighted(fullWeighted) : (activeWeighted ? pickWeighted(activeWeighted) : null);
         if (!chosen) break;
@@ -1819,7 +1819,7 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
       const hasScoutEye = this.hasTrait('scout_eye');
       const offerCount = hasScoutEye ? 4 : 3;
 
-      // Story Mode: same 80/20 activity-based split as getDraftRoundPicks /
+      // Story Mode: same 95/5 activity-based split as getDraftRoundPicks /
       // getPostMatchDraftPicks — Sign Legend nodes were pulling from the raw
       // global pool with no year-awareness or Time Traveler flag.
       const isStoryYearAware = this.selectedMode === 'story' && this.selectedSeasonYear;
@@ -1830,7 +1830,7 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
         let activePool = filtered.filter(isActive);
         let fullPool = [...filtered];
         while (selectedPicks.length < offerCount && (fullPool.length > 0 || activePool.length > 0)) {
-          const useActive = activePool.length > 0 && Math.random() < 0.8;
+          const useActive = activePool.length > 0 && Math.random() < 0.95;
           const source = useActive ? activePool : (fullPool.length > 0 ? fullPool : activePool);
           const picked = pickWeightedUnique(source, 1, weakPositionsSet, hasScoutEye);
           if (!picked.length) break;
@@ -1875,7 +1875,7 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
       const hasScoutEye = this.hasTrait('scout_eye');
       const offerCount = hasScoutEye ? 4 : 3;
 
-      // Story Mode: same 80/20 activity-based split as the draft round picks
+      // Story Mode: same 95/5 activity-based split as the draft round picks
       // (see getDraftRoundPicks) — applies to Sign Legend node + post-match
       // win rewards alike so the wildcard mechanic is consistent everywhere.
       const isStoryYearAware = this.selectedMode === 'story' && this.selectedSeasonYear;
@@ -1886,7 +1886,7 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
         let activePool = filtered.filter(isActive);
         let fullPool = [...filtered];
         while (selected.length < offerCount && (fullPool.length > 0 || activePool.length > 0)) {
-          const useActive = activePool.length > 0 && Math.random() < 0.8;
+          const useActive = activePool.length > 0 && Math.random() < 0.95;
           const source = useActive ? activePool : (fullPool.length > 0 ? fullPool : activePool);
           const picked = pickWeightedUnique(source, 1, weakPositionsSet, hasScoutEye);
           if (!picked.length) break;
