@@ -40,11 +40,11 @@
       masterGain.connect(c.destination);
 
       sfxGain = c.createGain();
-      sfxGain.gain.value = 0.70;
+      sfxGain.gain.value = 0.65;
       sfxGain.connect(masterGain);
 
       bgmGain = c.createGain();
-      bgmGain.gain.value = 0.08; // Soft, chill background level
+      bgmGain.gain.value = 0.28; // Clear, pleasant background volume
       bgmGain.connect(masterGain);
     }
   }
@@ -126,24 +126,24 @@
   let currentBGMMode = 'none'; // 'menu' | 'match' | 'off'
   let bgmIntervalTimer = null;
   let crowdSourceNodes = [];
-  let organTimeoutTimer = null;
 
-  // 1. Menu Chiptune BGM Sequencer
-  // Melodic, nostalgic 16-beat retro progression in C major at 108 BPM (smooth, soft volume)
-  const MENU_BPM = 108;
-  const BEAT_LEN = 60 / MENU_BPM; // ~0.555s per beat
-  const SIXTEENTH = BEAT_LEN / 4; // ~0.138s
-
-  // Melodic notes (frequencies in Hz)
+  // Frequencies in Hz
   const N = {
     C3: 130.81, D3: 146.83, E3: 164.81, F3: 174.61, G3: 196.00, A3: 220.00, B3: 246.94,
     C4: 261.63, D4: 293.66, E4: 329.63, F4: 349.23, G4: 392.00, A4: 440.00, B4: 493.88,
-    C5: 523.25, D5: 587.33, E5: 659.25, G5: 783.99, A5: 880.00
+    C5: 523.25, D5: 587.33, E5: 659.25, F5: 698.46, G5: 783.99, A5: 880.00, B5: 987.77,
+    C6: 1046.50, D6: 1174.66, E6: 1318.51, G6: 1567.98
   };
 
-  // 4-bar chill baseball melody
+  // ─────────────────────────────────────────────────────────────────────────────
+  // TRACK 1: MENU & MAP BGM ("Retro 16-Bit Baseball Lounge")
+  // ─────────────────────────────────────────────────────────────────────────────
+  const MENU_BPM = 110;
+  const MENU_BEAT = 60 / MENU_BPM; // ~0.545s
+  const MENU_SIXTEENTH = MENU_BEAT / 4; // ~0.136s
+
   const MENU_LEAD_NOTES = [
-    // Bar 1: C Major - Opening bounce
+    // Bar 1: C Major - Upbeat bounce
     { f: N.E4, d: 2, t: 0 }, { f: N.G4, d: 2, t: 2 }, { f: N.C5, d: 3, t: 4 }, { f: N.E5, d: 1, t: 7 },
     { f: N.D5, d: 2, t: 8 }, { f: N.C5, d: 2, t: 10 }, { f: N.A4, d: 4, t: 12 },
     // Bar 2: A Minor / F - Nostalgic roll
@@ -158,13 +158,9 @@
   ];
 
   const MENU_BASS_NOTES = [
-    // Bar 1: C
     { f: N.C3, t: 0 }, { f: N.G3, t: 4 }, { f: N.C3, t: 8 }, { f: N.G3, t: 12 },
-    // Bar 2: Am
     { f: N.A3, t: 16 }, { f: N.E3, t: 20 }, { f: N.A3, t: 24 }, { f: N.E3, t: 28 },
-    // Bar 3: F
     { f: N.F3, t: 32 }, { f: N.C3, t: 36 }, { f: N.F3, t: 40 }, { f: N.C3, t: 44 },
-    // Bar 4: G
     { f: N.G3, t: 48 }, { f: N.D3, t: 52 }, { f: N.G3, t: 56 }, { f: N.B3, t: 60 }
   ];
 
@@ -175,22 +171,22 @@
     if (!c || currentBGMMode !== 'menu' || _muted) return;
     initGains();
 
-    const loopDur = 64 * SIXTEENTH; // ~8.88 seconds per 4 bars
+    const loopDur = 64 * MENU_SIXTEENTH; // ~8.72s
     const now = Math.max(c.currentTime + 0.05, nextMenuLoopTime);
     nextMenuLoopTime = now + loopDur;
 
-    // Schedule Lead Notes
+    // Lead Melody
     MENU_LEAD_NOTES.forEach(note => {
-      const startTime = now + (note.t * SIXTEENTH);
-      const noteDur = Math.max(0.08, note.d * SIXTEENTH * 0.90);
+      const startTime = now + (note.t * MENU_SIXTEENTH);
+      const noteDur = Math.max(0.08, note.d * MENU_SIXTEENTH * 0.90);
 
       const osc = c.createOscillator();
       const gain = c.createGain();
-      osc.type = 'triangle'; // Warm, gentle retro wave
+      osc.type = 'triangle';
       osc.frequency.setValueAtTime(note.f, startTime);
 
       gain.gain.setValueAtTime(0, startTime);
-      gain.gain.linearRampToValueAtTime(0.045, startTime + 0.02); // Soft volume
+      gain.gain.linearRampToValueAtTime(0.18, startTime + 0.02);
       gain.gain.exponentialRampToValueAtTime(0.001, startTime + noteDur);
 
       osc.connect(gain);
@@ -200,18 +196,18 @@
       osc.stop(startTime + noteDur + 0.05);
     });
 
-    // Schedule Bass Notes
+    // Bassline
     MENU_BASS_NOTES.forEach(note => {
-      const startTime = now + (note.t * SIXTEENTH);
-      const noteDur = SIXTEENTH * 3.6;
+      const startTime = now + (note.t * MENU_SIXTEENTH);
+      const noteDur = MENU_SIXTEENTH * 3.6;
 
       const osc = c.createOscillator();
       const gain = c.createGain();
-      osc.type = 'sine'; // Super smooth sub bass
+      osc.type = 'sine';
       osc.frequency.setValueAtTime(note.f, startTime);
 
       gain.gain.setValueAtTime(0, startTime);
-      gain.gain.linearRampToValueAtTime(0.055, startTime + 0.03);
+      gain.gain.linearRampToValueAtTime(0.22, startTime + 0.03);
       gain.gain.exponentialRampToValueAtTime(0.001, startTime + noteDur);
 
       osc.connect(gain);
@@ -221,13 +217,13 @@
       osc.stop(startTime + noteDur + 0.05);
     });
 
-    // Schedule gentle percussion brushes (soft noise hi-hat on every 2nd sixteenth)
+    // Percussion
     for (let s = 0; s < 64; s += 2) {
-      const startTime = now + (s * SIXTEENTH);
+      const startTime = now + (s * MENU_SIXTEENTH);
       const isSnare = (s % 8 === 4);
-      const dur = isSnare ? 0.06 : 0.03;
-      const vol = isSnare ? 0.025 : 0.012;
-      const freq = isSnare ? 1200 : 3500;
+      const dur = isSnare ? 0.07 : 0.035;
+      const vol = isSnare ? 0.08 : 0.035;
+      const freq = isSnare ? 1400 : 4000;
 
       const bufSize = Math.max(64, Math.floor(c.sampleRate * dur));
       const buf = c.createBuffer(1, bufSize, c.sampleRate);
@@ -243,7 +239,7 @@
 
       const gain = c.createGain();
       gain.gain.setValueAtTime(vol, startTime);
-      gain.gain.exponentialRampToValueAtTime(0.0005, startTime + dur);
+      gain.gain.exponentialRampToValueAtTime(0.001, startTime + dur);
 
       src.connect(filter);
       filter.connect(gain);
@@ -254,27 +250,178 @@
     }
   }
 
-  // 2. Stadium Match Ambiance & Ballpark Organ Generator
+  // ─────────────────────────────────────────────────────────────────────────────
+  // TRACK 2: BATTLE & MATCH BGM ("Live Ballpark Stadium Organ & Claps")
+  // ─────────────────────────────────────────────────────────────────────────────
+  const MATCH_BPM = 126;
+  const MATCH_BEAT = 60 / MATCH_BPM; // ~0.476s
+  const MATCH_SIXTEENTH = MATCH_BEAT / 4; // ~0.119s
+
+  // Ballpark Organ Chords (Voicings: [root, 3rd, 5th, octave])
+  const ORGAN_CHORD_C = [N.C4, N.E4, N.G4, N.C5];
+  const ORGAN_CHORD_F = [N.F4, N.A4, N.C5, N.F5];
+  const ORGAN_CHORD_G = [N.G4, N.B4, N.D5, N.G5];
+  const ORGAN_CHORD_AM = [N.A4, N.C5, N.E5, N.A5];
+
+  // 4-Bar Ballpark Progression: Bar 1 (C) -> Bar 2 (F) -> Bar 3 (G) -> Bar 4 (Turnaround / Fanfare)
+  const MATCH_ORGAN_BARS = [
+    // Bar 1: C Chord syncopation (Beats 1, 2.5, 3, 4)
+    { chord: ORGAN_CHORD_C, beats: [0, 6, 8, 12] },
+    // Bar 2: F Chord syncopation
+    { chord: ORGAN_CHORD_F, beats: [16, 22, 24, 28] },
+    // Bar 3: G Chord syncopation
+    { chord: ORGAN_CHORD_G, beats: [32, 38, 40, 44] },
+    // Bar 4: C Chord + High Fanfare Hit
+    { chord: ORGAN_CHORD_C, beats: [48, 52, 56, 60] }
+  ];
+
+  // Periodic stadium organ riff overlaid on Bar 4 (every 2 loops)
+  const MATCH_ORGAN_RIFF = [
+    { f: N.G5, d: 2, t: 48 }, { f: N.A5, d: 2, t: 50 }, { f: N.B5, d: 2, t: 52 },
+    { f: N.C6, d: 4, t: 54 }, { f: N.G5, d: 2, t: 58 }, { f: N.C6, d: 4, t: 60 }
+  ];
+
+  let nextMatchLoopTime = 0;
+  let matchLoopCount = 0;
+
+  function scheduleMatchMusicLoop() {
+    const c = getCtx();
+    if (!c || currentBGMMode !== 'match' || _muted) return;
+    initGains();
+
+    const loopDur = 64 * MATCH_SIXTEENTH; // ~7.62s
+    const now = Math.max(c.currentTime + 0.05, nextMatchLoopTime);
+    nextMatchLoopTime = now + loopDur;
+    matchLoopCount++;
+
+    // 1. Play Organ Chords (Rich drawbar organ harmonic: Fundamental + Octave)
+    MATCH_ORGAN_BARS.forEach(bar => {
+      bar.beats.forEach(b => {
+        const startTime = now + (b * MATCH_SIXTEENTH);
+        const dur = MATCH_SIXTEENTH * 2.2;
+
+        bar.chord.forEach(freq => {
+          const osc1 = c.createOscillator();
+          const osc2 = c.createOscillator();
+          const gain = c.createGain();
+
+          osc1.type = 'triangle';
+          osc1.frequency.setValueAtTime(freq, startTime);
+
+          osc2.type = 'sine';
+          osc2.frequency.setValueAtTime(freq * 2, startTime); // Rich organ harmonic
+
+          gain.gain.setValueAtTime(0, startTime);
+          gain.gain.linearRampToValueAtTime(0.085, startTime + 0.015);
+          gain.gain.exponentialRampToValueAtTime(0.001, startTime + dur);
+
+          osc1.connect(gain);
+          osc2.connect(gain);
+          if (bgmGain) gain.connect(bgmGain);
+
+          osc1.start(startTime);
+          osc1.stop(startTime + dur + 0.03);
+          osc2.start(startTime);
+          osc2.stop(startTime + dur + 0.03);
+        });
+      });
+    });
+
+    // 2. Play Organ Melodic Fanfare on alternating loops
+    if (matchLoopCount % 2 === 0) {
+      MATCH_ORGAN_RIFF.forEach(n => {
+        const startTime = now + (n.t * MATCH_SIXTEENTH);
+        const dur = n.d * MATCH_SIXTEENTH * 0.95;
+
+        const osc = c.createOscillator();
+        const gain = c.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(n.f, startTime);
+
+        gain.gain.setValueAtTime(0, startTime);
+        gain.gain.linearRampToValueAtTime(0.14, startTime + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, startTime + dur);
+
+        osc.connect(gain);
+        if (bgmGain) gain.connect(bgmGain);
+
+        osc.start(startTime);
+        osc.stop(startTime + dur + 0.04);
+      });
+    }
+
+    // 3. Play Rhythmic Stadium Claps (Classic "Clap! Clap! Clap-Clap-Clap!")
+    // Claps land on: Beat 1 (0), Beat 2 (4), Beat 3 (8), Beat 3.5 (10), Beat 4 (12)
+    const clapPattern = [0, 4, 8, 10, 12, 16, 20, 24, 26, 28, 32, 36, 40, 42, 44, 48, 52, 56, 58, 60];
+    clapPattern.forEach(b => {
+      const startTime = now + (b * MATCH_SIXTEENTH);
+      const dur = 0.06;
+
+      const bufSize = Math.max(64, Math.floor(c.sampleRate * dur));
+      const buf = c.createBuffer(1, bufSize, c.sampleRate);
+      const data = buf.getChannelData(0);
+      for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1);
+
+      const src = c.createBufferSource();
+      src.buffer = buf;
+
+      // Realistic stadium clap acoustic filter
+      const filter = c.createBiquadFilter();
+      filter.type = 'bandpass';
+      filter.frequency.setValueAtTime(1600, startTime);
+      filter.Q.setValueAtTime(1.2, startTime);
+
+      const gain = c.createGain();
+      gain.gain.setValueAtTime(0.12, startTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, startTime + dur);
+
+      src.connect(filter);
+      filter.connect(gain);
+      if (bgmGain) gain.connect(bgmGain);
+
+      src.start(startTime);
+      src.stop(startTime + dur + 0.02);
+    });
+
+    // 4. Low Stadium Kick Drum on Beat 1 and 3 of every measure
+    [0, 8, 16, 24, 32, 40, 48, 56].forEach(b => {
+      const startTime = now + (b * MATCH_SIXTEENTH);
+      const osc = c.createOscillator();
+      const gain = c.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(110, startTime);
+      osc.frequency.exponentialRampToValueAtTime(45, startTime + 0.08);
+
+      gain.gain.setValueAtTime(0.20, startTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.12);
+
+      osc.connect(gain);
+      if (bgmGain) gain.connect(bgmGain);
+
+      osc.start(startTime);
+      osc.stop(startTime + 0.14);
+    });
+  }
+
+  // Continuous Stadium Crowd Murmur Layer
   function startStadiumAmbiance() {
     stopStadiumAmbiance();
     const c = getCtx();
-    if (!c || currentBGMMode !== 'match') return;
+    if (!c || currentBGMMode !== 'match' || _muted) return;
     initGains();
 
-    // 2A. Looping crowd murmur using pink/brown noise through a gentle resonant filter
     try {
-      const bufferSize = c.sampleRate * 4; // 4 second continuous loop buffer
+      const bufferSize = c.sampleRate * 4;
       const noiseBuffer = c.createBuffer(2, bufferSize, c.sampleRate);
       for (let ch = 0; ch < 2; ch++) {
         const out = noiseBuffer.getChannelData(ch);
         let b0 = 0, b1 = 0, b2 = 0;
         for (let i = 0; i < bufferSize; i++) {
           const white = Math.random() * 2 - 1;
-          // Pink noise filter algorithm
           b0 = 0.99886 * b0 + white * 0.0555179;
           b1 = 0.99332 * b1 + white * 0.0750759;
           b2 = 0.96900 * b2 + white * 0.1538520;
-          out[i] = (b0 + b1 + b2) * 0.18;
+          out[i] = (b0 + b1 + b2) * 0.25;
         }
       }
 
@@ -282,15 +429,14 @@
       crowdSource.buffer = noiseBuffer;
       crowdSource.loop = true;
 
-      // Bandpass centered at warm crowd chatter frequencies (400Hz - 850Hz)
       const crowdFilter = c.createBiquadFilter();
       crowdFilter.type = 'bandpass';
-      crowdFilter.frequency.setValueAtTime(520, c.currentTime);
-      crowdFilter.Q.setValueAtTime(0.6, c.currentTime);
+      crowdFilter.frequency.setValueAtTime(580, c.currentTime);
+      crowdFilter.Q.setValueAtTime(0.7, c.currentTime);
 
       const crowdGain = c.createGain();
       crowdGain.gain.setValueAtTime(0.001, c.currentTime);
-      crowdGain.gain.linearRampToValueAtTime(0.045, c.currentTime + 1.2); // Soft stadium whisper
+      crowdGain.gain.linearRampToValueAtTime(0.10, c.currentTime + 0.8); // Clear stadium presence
 
       crowdSource.connect(crowdFilter);
       crowdFilter.connect(crowdGain);
@@ -299,97 +445,9 @@
       crowdSource.start(0);
       crowdSourceNodes.push(crowdSource, crowdGain);
     } catch (e) {}
-
-    // 2B. Schedule periodic classic stadium organ riffs
-    scheduleRandomStadiumOrgan();
-  }
-
-  function scheduleRandomStadiumOrgan() {
-    if (organTimeoutTimer) clearTimeout(organTimeoutTimer);
-    if (currentBGMMode !== 'match' || _muted) return;
-
-    // Trigger an organ cheer every 16 to 26 seconds
-    const delay = 14000 + Math.random() * 12000;
-    organTimeoutTimer = setTimeout(() => {
-      if (currentBGMMode === 'match' && !_muted) {
-        playBallparkOrganRiff();
-        scheduleRandomStadiumOrgan();
-      }
-    }, delay);
-  }
-
-  // Authentic ballpark drawbar organ synthesizer (sine + 3rd harmonic drawbar)
-  function playBallparkOrganRiff() {
-    const c = getCtx();
-    if (!c || _muted) return;
-    initGains();
-
-    const riffs = [
-      // Riff 1: Classic "Charge!" (D - G - B - D ... G)
-      [
-        { f: 587.33, d: 0.14, t: 0.0 },   // D5
-        { f: 783.99, d: 0.14, t: 0.15 },  // G5
-        { f: 987.77, d: 0.14, t: 0.30 },  // B5
-        { f: 1174.66, d: 0.28, t: 0.45 }, // D6
-        { f: 987.77, d: 0.12, t: 0.85 },  // B5
-        { f: 1174.66, d: 0.45, t: 1.00 }  // D6 (fanfare hold)
-      ],
-      // Riff 2: "Take Me Out" melody snippet (C - C - A - G - E - G)
-      [
-        { f: 523.25, d: 0.22, t: 0.0 },   // C5
-        { f: 1046.50, d: 0.28, t: 0.24 }, // C6
-        { f: 880.00, d: 0.22, t: 0.54 },  // A5
-        { f: 783.99, d: 0.24, t: 0.78 },  // G5
-        { f: 659.25, d: 0.22, t: 1.04 },  // E5
-        { f: 783.99, d: 0.45, t: 1.28 }   // G5 (hold)
-      ],
-      // Riff 3: Ascending 3-chord ballpark chime
-      [
-        { f: 659.25, d: 0.18, t: 0.0 },   // E5
-        { f: 783.99, d: 0.18, t: 0.20 },  // G5
-        { f: 1046.50, d: 0.38, t: 0.40 }, // C6
-        { f: 1318.51, d: 0.50, t: 0.65 }  // E6
-      ]
-    ];
-
-    const chosen = riffs[Math.floor(Math.random() * riffs.length)];
-    const now = c.currentTime + 0.05;
-
-    chosen.forEach(note => {
-      const startTime = now + note.t;
-      const dur = note.d;
-
-      // Fundamental drawbar
-      const osc1 = c.createOscillator();
-      const osc2 = c.createOscillator();
-      const gain = c.createGain();
-
-      osc1.type = 'sine';
-      osc1.frequency.setValueAtTime(note.f, startTime);
-
-      osc2.type = 'sine';
-      osc2.frequency.setValueAtTime(note.f * 2, startTime); // 8va harmonic
-
-      gain.gain.setValueAtTime(0, startTime);
-      gain.gain.linearRampToValueAtTime(0.040, startTime + 0.02); // Soft background volume
-      gain.gain.exponentialRampToValueAtTime(0.001, startTime + dur);
-
-      osc1.connect(gain);
-      osc2.connect(gain);
-      if (bgmGain) gain.connect(bgmGain);
-
-      osc1.start(startTime);
-      osc1.stop(startTime + dur + 0.05);
-      osc2.start(startTime);
-      osc2.stop(startTime + dur + 0.05);
-    });
   }
 
   function stopStadiumAmbiance() {
-    if (organTimeoutTimer) {
-      clearTimeout(organTimeoutTimer);
-      organTimeoutTimer = null;
-    }
     crowdSourceNodes.forEach(node => {
       try {
         if (typeof node.stop === 'function') node.stop();
@@ -406,6 +464,7 @@
     }
     stopStadiumAmbiance();
     nextMenuLoopTime = 0;
+    nextMatchLoopTime = 0;
   }
 
   // ── Sound definitions ─────────────────────────────────────────────────────────
@@ -574,7 +633,6 @@
 
       if (mode === 'menu') {
         scheduleMenuMusicLoop();
-        // Schedule next loops every 4 seconds
         bgmIntervalTimer = setInterval(() => {
           if (currentBGMMode === 'menu' && !_muted) {
             scheduleMenuMusicLoop();
@@ -582,6 +640,12 @@
         }, 3500);
       } else if (mode === 'match') {
         startStadiumAmbiance();
+        scheduleMatchMusicLoop();
+        bgmIntervalTimer = setInterval(() => {
+          if (currentBGMMode === 'match' && !_muted) {
+            scheduleMatchMusicLoop();
+          }
+        }, 3200);
       }
     },
 
