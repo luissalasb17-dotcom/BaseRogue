@@ -113,10 +113,15 @@ window.showScreen = function(screenId) {
   const isInitialDraft = screenId === 'screen-draft' && window.Game && window.Game.draftRound <= 9;
   const isChallengePlayoffs = window.Game && window.Game.isChallenge162PlayoffMatch;
   
-  if (isInitialDraft || isChallengePlayoffs) {
+  if (isInitialDraft) {
     if (hud) hud.classList.add('hidden');
     if (leftSidebar) leftSidebar.classList.add('hidden');
     if (rightSidebar) rightSidebar.classList.add('hidden');
+  } else if (isChallengePlayoffs) {
+    if (hud) hud.classList.add('hidden');
+    if (leftSidebar) leftSidebar.classList.remove('hidden');
+    if (rightSidebar) rightSidebar.classList.add('hidden');
+    if (window.renderRosterSidebar) window.renderRosterSidebar();
   } else {
     if (hud && window.Game && window.Game.runActive) hud.classList.remove('hidden');
     if (leftSidebar) leftSidebar.classList.remove('hidden');

@@ -99,8 +99,9 @@
       ? Math.round(60 + (staVal - 20) * (10 / 9))
       : Math.round(45 + (staVal - 20) * (7 / 18));
     const yearVal = p.year || p.peak_year_display || p.peak_year || 1990;
+    const cName = cleanName(p);
     return {
-      name: `${p.name} (${yearVal})`, cleanName: p.name, role, pos: role,
+      name: cName, cleanName: cName, role, pos: role,
       hp, maxHp: hp, ovr: p.ovr || 50, rarity: p.rarity || 'Common', era: p.era || '', team: p.team || '', year: yearVal,
       h9: p.h9 !== undefined ? p.h9 : 50, k9: p.k9 !== undefined ? p.k9 : 50,
       bb9: p.bb9 !== undefined ? p.bb9 : 50, hr9: p.hr9 !== undefined ? p.hr9 : 50,
@@ -1918,18 +1919,21 @@
       let topReliever = null, bestRelieverScore = -999;
 
       // Identify SP keys vs RP keys:
+      const rpKeys = new Set((S.roster.pitchers.RP || []).map(pitcherUnlockKey));
       const spKeys = new Set((S.roster.pitchers.SP || []).map(pitcherUnlockKey));
 
       Object.entries(S.pitcherStats || {}).forEach(([k, p]) => {
-        const isSP = spKeys.has(k) || p.role === 'SP' || (p.outs >= 150);
+        const isRP = rpKeys.has(k) || p.role === 'RP' || p.role === 'CL';
+        const isSP = spKeys.has(k) || (!isRP && p.outs >= 300);
         const warVal = parseFloat(calcPitcherWAR(p, isSP ? 'SP' : 'RP')) || 0;
         p._war = warVal;
 
+        if (isRP) {
+          const score = (p.sv * 2.5) + (warVal * 2) + (p.so * 0.05);
+          if (score > bestRelieverScore) { bestRelieverScore = score; topReliever = p; }
+        }
         if (isSP) {
           if (warVal > cyWAR) { cyWAR = warVal; cyYoung = p; }
-        } else {
-          const score = (p.sv * 2) + warVal;
-          if (score > bestRelieverScore) { bestRelieverScore = score; topReliever = p; }
         }
       });
 
