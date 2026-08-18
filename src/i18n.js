@@ -419,8 +419,10 @@
                 "banner_ko_sub": "¡LANZADOR DERROTADO!",
                 "banner_bullpen": "🚨 ¡ALERTA DE BULLPEN! 🚨",
                 "banner_bullpen_sub": "ENTRA AL RELEVO: {{name}} ({{ovr}} OVR)",
-                "banner_inning": "⚾ ¡ENTRADA {{inning}} DE 3! ⚾",
-                "banner_inning_sub": "¡CAMBIO DE ENTRADA — A LA CARGA!",
+                "banner_inning": "⚾ ENTRADA {{inning}} / 3 ⚾",
+                "banner_inning_sub": "¡Te quedan {{outs}} outs restantes!",
+                "banner_inning_last": "🔥 ¡ÚLTIMA ENTRADA! (3/3) 🔥",
+                "banner_inning_last_sub": "¡Última oportunidad: te quedan 3 outs!",
                 "bases_cleared": "🧹 ¡BASES LIMPIAS!"
         },
         "popup": {
@@ -1453,8 +1455,10 @@
                 "banner_ko_sub": "RIVAL PITCHER DEFEATED!",
                 "banner_bullpen": "🚨 BULLPEN ALERT! 🚨",
                 "banner_bullpen_sub": "RELIEF PITCHER: {{name}} ({{ovr}} OVR)",
-                "banner_inning": "⚾ INNING {{inning}} OF 3! ⚾",
-                "banner_inning_sub": "INNING CHANGE — PLAY BALL!",
+                "banner_inning": "⚾ INNING {{inning}} / 3 ⚾",
+                "banner_inning_sub": "You have {{outs}} outs left!",
+                "banner_inning_last": "🔥 LAST INNING! (3/3) 🔥",
+                "banner_inning_last_sub": "Last chance: you have 3 outs left!",
                 "bases_cleared": "🧹 BASES CLEARED!"
         },
         "popup": {

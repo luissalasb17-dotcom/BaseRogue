@@ -2003,6 +2003,13 @@ p {
   box-shadow: 0 0 35px rgba(56, 189, 248, 0.8), inset 0 0 20px rgba(56, 189, 248, 0.3);
 }
 
+.arcade-transition-banner.banner-last-inning {
+  background: linear-gradient(90deg, transparent 0%, rgba(234, 88, 12, 0.95) 15%, rgba(185, 28, 28, 0.95) 85%, transparent 100%);
+  border-top: 3px double #f97316;
+  border-bottom: 3px double #f97316;
+  box-shadow: 0 0 40px rgba(234, 88, 12, 0.9), inset 0 0 20px rgba(254, 240, 138, 0.4);
+}
+
 .arcade-banner-main {
   font-family: 'Press Start 2P', monospace;
   font-size: 15px;

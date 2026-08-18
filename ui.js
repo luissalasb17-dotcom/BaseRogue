@@ -5965,15 +5965,26 @@ function initGameModeSelector() {
       }
     });
 
-    // 4. Inning Transition Arcade Banner
+    // 4. Inning Transition Arcade Banner with remaining outs
+    const isLastInning = (nextInning >= 3);
+    const outsRemaining = Math.max(3, (4 - nextInning) * 3);
+
+    const mainText = isLastInning
+      ? t('match.banner_inning_last', '🔥 ¡ÚLTIMA ENTRADA! (3/3) 🔥')
+      : t('match.banner_inning', { inning: nextInning });
+
+    const subText = isLastInning
+      ? t('match.banner_inning_last_sub', '¡Última oportunidad: te quedan 3 outs!')
+      : t('match.banner_inning_sub', { outs: outsRemaining });
+
     const inningBanner = document.createElement('div');
-    inningBanner.className = 'arcade-transition-banner banner-inning';
+    inningBanner.className = 'arcade-transition-banner banner-inning' + (isLastInning ? ' banner-last-inning' : '');
     inningBanner.innerHTML = `
-      <div class="arcade-banner-main">${t('match.banner_inning', { inning: nextInning })}</div>
-      <div class="arcade-banner-sub">${t('match.banner_inning_sub', '¡CAMBIO DE ENTRADA — A LA CARGA!')}</div>
+      <div class="arcade-banner-main">${mainText}</div>
+      <div class="arcade-banner-sub">${subText}</div>
     `;
     deck.appendChild(inningBanner);
-    setTimeout(() => inningBanner.remove(), 1550);
+    setTimeout(() => inningBanner.remove(), 1650);
   }
 
 
@@ -5991,7 +6002,8 @@ function initGameModeSelector() {
     }
 
     if (eventType === 'INNING_END') {
-      const nextIn = (ev && ev.inning) ? ev.inning : (activeBattle ? activeBattle.inning : 2);
+      // ev.inning records the inning that just ended (e.g. 1). The upcoming inning is ev.inning + 1 (e.g. 2)
+      const nextIn = (ev && typeof ev.inning === 'number') ? (ev.inning + 1) : 2;
       if (nextIn > 3 || (activeBattle && activeBattle.battleOver)) return;
       triggerInningChangeJuice(nextIn);
       return;
