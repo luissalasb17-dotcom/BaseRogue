@@ -841,6 +841,35 @@
         AudioManager.unlock();
       }
     }
+
+    // Auto-pause audio when switching tabs / window hidden, resume when returning
+    const handleVisibilityChange = () => {
+      const c = getCtx();
+      if (!c) return;
+      if (document.hidden) {
+        if (c.state === 'running') {
+          c.suspend().catch(() => {});
+        }
+      } else {
+        if (!_muted && currentBGMMode !== 'off' && currentBGMMode !== 'none') {
+          if (c.state === 'suspended') {
+            c.resume().then(() => {
+              ensureAudioPlaying();
+            }).catch(() => {});
+          } else {
+            ensureAudioPlaying();
+          }
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('blur', () => {
+      if (document.hidden) handleVisibilityChange();
+    });
+    window.addEventListener('focus', () => {
+      if (!document.hidden) handleVisibilityChange();
+    });
   }
 
   window.AudioManager = AudioManager;
