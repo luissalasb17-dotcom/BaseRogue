@@ -6444,10 +6444,10 @@ function initGameModeSelector() {
           // Re-enable roll button and sync HUD after KO sequence and bullpen entrance finish
           const switchDelay = cursor + 2500;
           setTimeout(() => {
-            if (state.activePitcher && !activeBattle.battleOver) {
+            if (activeBattle && state.activePitcher && !activeBattle.battleOver) {
               updateMatchHUD(state);
             }
-            if (btn && !activeBattle.battleOver) btn.disabled = false;
+            if (btn && activeBattle && !activeBattle.battleOver) btn.disabled = false;
           }, switchDelay);
         } else {
           updateMatchHUD(state);
@@ -6455,24 +6455,28 @@ function initGameModeSelector() {
 
         renderZones();
 
-        if (activeBattle.battleOver) {
+        if (activeBattle && activeBattle.battleOver) {
           const delay = Math.max(900, cursor + (hasKO ? 1800 : 0)); // wait for all popups/KO juice to finish first
           setTimeout(() => {
-            handleBattleOver();
+            if (activeBattle && activeBattle.battleOver) {
+              handleBattleOver();
+            }
           }, delay);
-        } else if (activeBattle.pendingDefenseEvent) {
+        } else if (activeBattle && activeBattle.pendingDefenseEvent) {
           const defEvent = activeBattle.pendingDefenseEvent;
           const delay = Math.max(100, cursor + (hasKO ? 1200 : 0));
           setTimeout(() => {
+            if (!activeBattle) return;
             showMidInningDefenseModal(defEvent, () => {
+              if (!activeBattle) return;
               const freshState = activeBattle.getState();
               updateMatchHUD(freshState);
               updateFaceoffPanel(freshState);
               renderZones();
-              if (activeBattle.battleOver) {
+              if (activeBattle && activeBattle.battleOver) {
                 handleBattleOver();
               } else {
-                if (btn && !activeBattle.battleOver) btn.disabled = false;
+                if (btn && activeBattle && !activeBattle.battleOver) btn.disabled = false;
               }
             });
           }, delay);
@@ -6480,8 +6484,8 @@ function initGameModeSelector() {
           // Re-enable button & re-render faceoff cards when popups finish
           if (!hasKO) {
             setTimeout(() => {
-              if (btn && !activeBattle.battleOver) btn.disabled = false;
-              updateFaceoffPanel(state);
+              if (btn && activeBattle && !activeBattle.battleOver) btn.disabled = false;
+              if (activeBattle) updateFaceoffPanel(state);
             }, Math.max(50, cursor));
           }
         }
@@ -6834,7 +6838,8 @@ function initGameModeSelector() {
 
         const gainBanner = _t('sim.def_gain_success', { hp: result.hpHealed, shield: result.shieldHealed }, `🟢 ¡GANASTE +${result.hpHealed} HP Y +${result.shieldHealed} ESCUDO!`);
         const lossBanner = _t('sim.def_loss_fail', { dmg: totalLostDmg, shieldDmg: result.shieldDmg, hpDmg: result.teamHpDmg }, `🔴 ¡PERDISTE -${totalLostDmg} DE DAÑO! (Escudo: -${result.shieldDmg} • HP: -${result.teamHpDmg})`);
-        const teamStatus = _t('sim.def_team_status', { hp: result.teamHP, shield: result.teamShield, shieldMax: activeBattle.teamShieldMax }, `Equipo: HP ${result.teamHP}/100 • Escudo ${result.teamShield}/${activeBattle.teamShieldMax}`);
+        const maxShield = activeBattle ? activeBattle.teamShieldMax : 50;
+        const teamStatus = _t('sim.def_team_status', { hp: result.teamHP, shield: result.teamShield, shieldMax: maxShield }, `Equipo: HP ${result.teamHP}/100 • Escudo ${result.teamShield}/${maxShield}`);
 
         resultZone.innerHTML = `
           <div class="${isSuccess ? 'def-result-card-success' : 'def-result-card-error'}">
@@ -6858,8 +6863,10 @@ function initGameModeSelector() {
           </div>
         `;
 
-        const curState = activeBattle.getState();
-        updateMatchHUD(curState);
+        if (activeBattle) {
+          const curState = activeBattle.getState();
+          updateMatchHUD(curState);
+        }
         if (!result.isSuccess) {
           if (el.matchTeamHpFill && el.matchTeamHpFill.parentElement) {
             triggerBarShake(el.matchTeamHpFill.parentElement, 'hp-bar-hit');
