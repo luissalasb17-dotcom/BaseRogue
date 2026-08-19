@@ -1722,6 +1722,12 @@
       }
 
       this.renderRosterBuilder();
+      setTimeout(() => {
+        const btn = document.getElementById('challenge162-start-season-btn');
+        if (btn) {
+          btn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 50);
     },
 
     clearDraftRoster() {
@@ -1936,6 +1942,11 @@
             </div>
 
             <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+              ${complete ? `
+                <button id="btn-challenge162-start-top" class="btn" style="padding:6px 14px;font-size:9px;font-family:'Press Start 2P',monospace;background:linear-gradient(135deg,var(--challenge162-accent),#f59e0b);color:#000;border:none;border-radius:6px;cursor:pointer;box-shadow:0 0 16px rgba(255,215,0,0.5);">
+                  ▶ ${startSeasonText}
+                </button>
+              ` : ''}
               <button id="btn-challenge162-autofill" class="btn" style="padding:6px 12px;font-size:9px;font-family:'Press Start 2P',monospace;background:linear-gradient(135deg,#38bdf8,#0284c7);color:#000;border:none;border-radius:6px;cursor:pointer;">
                 ⚡ ${autoFillText}
               </button>
@@ -2073,6 +2084,13 @@
         const startBtn = document.getElementById('challenge162-start-season-btn');
         if (startBtn && complete) {
           startBtn.onclick = () => {
+            this.startNewChallenge(this._draftLineup, this._draftPitchers, this.getModeConfig());
+          };
+        }
+
+        const startTopBtn = document.getElementById('btn-challenge162-start-top');
+        if (startTopBtn && complete) {
+          startTopBtn.onclick = () => {
             this.startNewChallenge(this._draftLineup, this._draftPitchers, this.getModeConfig());
           };
         }
