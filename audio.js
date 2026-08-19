@@ -4,6 +4,7 @@
  * Synthesizes all game audio, background music (BGM), and stadium ambiance
  * using the Web Audio API.
  * No external files required — zero bandwidth, works 100% offline, smooth background levels.
+ * Optimized for mobile memory management & zero audio graph leaks.
  */
 
 (function () {
@@ -15,12 +16,19 @@
     if (!ctx) {
       try {
         const AudioCtx = window.AudioContext || window.webkitAudioContext;
-        if (AudioCtx) ctx = new AudioCtx();
+        if (AudioCtx) {
+          ctx = new AudioCtx({ latencyHint: 'playback' });
+          ctx.onstatechange = () => {
+            if (ctx && (ctx.state === 'suspended' || ctx.state === 'interrupted') && !_muted && currentBGMMode !== 'off') {
+              // Soft auto-resume
+            }
+          };
+        }
       } catch (e) {
         return null;
       }
     }
-    if (ctx && ctx.state === 'suspended') {
+    if (ctx && (ctx.state === 'suspended' || ctx.state === 'interrupted')) {
       ctx.resume().catch(() => {});
     }
     return ctx;
@@ -67,7 +75,19 @@
     return node;
   }
 
-  // ── Synthesizer helpers ───────────────────────────────────────────────────────
+  // ── Shared Pre-generated Noise Buffer (Avoids GC thrashing on mobile) ──────────
+  let sharedNoiseBuffer = null;
+  function getNoiseBuffer(c) {
+    if (!sharedNoiseBuffer || sharedNoiseBuffer.sampleRate !== c.sampleRate) {
+      const size = Math.floor(c.sampleRate * 2.0); // 2 seconds of pre-generated white noise
+      sharedNoiseBuffer = c.createBuffer(1, size, c.sampleRate);
+      const data = sharedNoiseBuffer.getChannelData(0);
+      for (let i = 0; i < size; i++) data[i] = Math.random() * 2 - 1;
+    }
+    return sharedNoiseBuffer;
+  }
+
+  // ── Synthesizer helpers with automatic node garbage collection ────────────────
 
   function tone(freq, dur, type = 'sine', vol = 0.3, delay = 0, attack = 0.005, release = null) {
     const c = getCtx();
@@ -88,6 +108,14 @@
     osc.connect(gain);
     connectSFX(gain);
 
+    // Auto-cleanup node from Web Audio graph when sound finishes
+    osc.onended = () => {
+      try {
+        osc.disconnect();
+        gain.disconnect();
+      } catch (e) {}
+    };
+
     osc.start(now);
     osc.stop(now + dur + 0.05);
   }
@@ -96,13 +124,9 @@
     const c = getCtx();
     if (!c) return;
     initGains();
-    const bufSize = Math.max(128, Math.floor(c.sampleRate * (dur + 0.05)));
-    const buf = c.createBuffer(1, bufSize, c.sampleRate);
-    const data = buf.getChannelData(0);
-    for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
 
     const src = c.createBufferSource();
-    src.buffer = buf;
+    src.buffer = getNoiseBuffer(c);
 
     const filter = c.createBiquadFilter();
     filter.type = filterType;
@@ -118,6 +142,15 @@
     filter.connect(gain);
     connectSFX(gain);
 
+    // Auto-cleanup node from Web Audio graph
+    src.onended = () => {
+      try {
+        src.disconnect();
+        filter.disconnect();
+        gain.disconnect();
+      } catch (e) {}
+    };
+
     src.start(now);
     src.stop(now + dur + 0.05);
   }
@@ -126,8 +159,19 @@
   let currentBGMMode = 'none'; // 'menu' | 'match' | 'off'
   let bgmIntervalTimer = null;
   let activeTrackGain = null;
-  let activeBGMNodes = [];
+  const activeBGMNodes = new Set();
   let currentBattleIntensity = 0; // 0 (normal), 1 (tension/runners), 2 (clutch/2 outs), 3 (climax/KO alert)
+
+  function registerBGMNode(sourceNode, ...auxNodes) {
+    activeBGMNodes.add(sourceNode);
+    sourceNode.onended = () => {
+      activeBGMNodes.delete(sourceNode);
+      try { sourceNode.disconnect(); } catch (e) {}
+      auxNodes.forEach(n => {
+        try { if (n && n.disconnect) n.disconnect(); } catch (e) {}
+      });
+    };
+  }
 
   // Frequencies in Hz
   const N = {
@@ -157,8 +201,10 @@
       bgmIntervalTimer = null;
     }
     if (activeTrackGain && c) {
-      activeTrackGain.gain.setValueAtTime(activeTrackGain.gain.value, c.currentTime);
-      activeTrackGain.gain.linearRampToValueAtTime(0, c.currentTime + 0.03);
+      try {
+        activeTrackGain.gain.setValueAtTime(activeTrackGain.gain.value, c.currentTime);
+        activeTrackGain.gain.linearRampToValueAtTime(0, c.currentTime + 0.03);
+      } catch (e) {}
       const oldBus = activeTrackGain;
       setTimeout(() => {
         try { oldBus.disconnect(); } catch (e) {}
@@ -166,9 +212,12 @@
       activeTrackGain = null;
     }
     activeBGMNodes.forEach(n => {
-      try { if (typeof n.stop === 'function') n.stop(); n.disconnect(); } catch (e) {}
+      try {
+        if (typeof n.stop === 'function') n.stop();
+        n.disconnect();
+      } catch (e) {}
     });
-    activeBGMNodes = [];
+    activeBGMNodes.clear();
     nextMenuLoopTime = 0;
     nextMatchLoopTime = 0;
   }
@@ -225,7 +274,7 @@
       // 25% chance of musical breath/rest
       if (Math.random() < 0.25 && t !== 4 && t !== 20 && t !== 36 && t !== 52) return;
 
-      // Voice-leading step: 60% step adjacent, 25% skip 2 degrees, 15% hold/leap
+      // Voice-leading step
       const r = Math.random();
       if (r < 0.60) {
         curScaleIdx += (Math.random() < 0.5 ? 1 : -1);
@@ -274,9 +323,9 @@
 
         osc.connect(gain);
         gain.connect(bus);
+        registerBGMNode(osc, gain);
         osc.start(startTime);
         osc.stop(startTime + dur + 0.05);
-        activeBGMNodes.push(osc);
       });
 
       const bassOsc = c.createOscillator();
@@ -290,9 +339,9 @@
 
       bassOsc.connect(bassGain);
       bassGain.connect(bus);
+      registerBGMNode(bassOsc, bassGain);
       bassOsc.start(startTime);
       bassOsc.stop(startTime + dur + 0.05);
-      activeBGMNodes.push(bassOsc);
     });
 
     // 2. Procedural Melody Improvisation
@@ -312,25 +361,20 @@
 
       osc.connect(gain);
       gain.connect(bus);
+      registerBGMNode(osc, gain);
       osc.start(startTime);
       osc.stop(startTime + dur + 0.05);
-      activeBGMNodes.push(osc);
     });
 
-    // 3. Relaxing lofi percussion
+    // 3. Relaxing lofi percussion (using shared noise buffer)
     for (let s = 0; s < 64; s += 4) {
       const startTime = now + (s * MENU_SIXTEENTH);
       const isBackbeat = (s % 16 === 8);
       const dur = isBackbeat ? 0.08 : 0.035;
       const vol = isBackbeat ? 0.030 : 0.012;
 
-      const bufSize = Math.max(64, Math.floor(c.sampleRate * dur));
-      const buf = c.createBuffer(1, bufSize, c.sampleRate);
-      const data = buf.getChannelData(0);
-      for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1);
-
       const src = c.createBufferSource();
-      src.buffer = buf;
+      src.buffer = getNoiseBuffer(c);
 
       const filter = c.createBiquadFilter();
       filter.type = 'bandpass';
@@ -343,9 +387,9 @@
       src.connect(filter);
       filter.connect(gain);
       gain.connect(bus);
+      registerBGMNode(src, filter, gain);
       src.start(startTime);
       src.stop(startTime + dur + 0.02);
-      activeBGMNodes.push(src);
     }
   }
 
@@ -375,11 +419,10 @@
 
     const intensity = currentBattleIntensity; // 0 to 3
 
-    // 1. Driving Bassline (scales from 8th-note pulse to full 16th-note galloping bass under tension)
+    // 1. Driving Bassline
     const bassChords = [N.D3, N.Bb2, N.C3, N.D3];
     bassChords.forEach((rootNote, barIdx) => {
       const barStart = barIdx * 16;
-      // Normal: 8th notes (0, 2, 4, 6...); Intensity >= 1: 16th galloping (0, 1, 2, 3...)
       const stepInterval = intensity >= 1 ? 1 : 2;
 
       for (let step = 0; step < 16; step += stepInterval) {
@@ -390,17 +433,15 @@
         const gain = c.createGain();
         osc.type = 'sawtooth';
 
-        // Add octave/5th bounce on syncopated beats
         let noteFreq = rootNote;
         if (step % 4 === 2) noteFreq = rootNote * 1.5; // 5th
         else if (step % 8 === 4) noteFreq = rootNote * 2.0; // Octave
 
         osc.frequency.setValueAtTime(noteFreq, startTime);
 
-        // Filter resonance opens up as intensity increases
         const filter = c.createBiquadFilter();
         filter.type = 'lowpass';
-        const cutoff = 550 + (intensity * 250); // Opens up from 550Hz to 1300Hz
+        const cutoff = 550 + (intensity * 250);
         filter.frequency.setValueAtTime(cutoff, startTime);
         filter.Q.setValueAtTime(1.8 + intensity * 0.6, startTime);
 
@@ -411,9 +452,9 @@
         osc.connect(filter);
         filter.connect(gain);
         gain.connect(bus);
+        registerBGMNode(osc, filter, gain);
         osc.start(startTime);
         osc.stop(startTime + dur + 0.02);
-        activeBGMNodes.push(osc);
       }
     });
 
@@ -447,7 +488,6 @@
       const osc = c.createOscillator();
       const gain = c.createGain();
       osc.type = 'triangle';
-      // Shift up an octave if at maximum intensity/climax!
       const freq = (intensity >= 3 && Math.random() < 0.5) ? note.f * 2 : note.f;
       osc.frequency.setValueAtTime(freq, startTime);
 
@@ -457,9 +497,9 @@
 
       osc.connect(gain);
       gain.connect(bus);
+      registerBGMNode(osc, gain);
       osc.start(startTime);
       osc.stop(startTime + dur + 0.03);
-      activeBGMNodes.push(osc);
     });
 
     // 3. High Intensity Arpeggio Layer (Active on Intensity >= 1: Runners on base / 2 outs)
@@ -480,14 +520,13 @@
 
         osc.connect(gain);
         gain.connect(bus);
+        registerBGMNode(osc, gain);
         osc.start(startTime);
         osc.stop(startTime + dur + 0.02);
-        activeBGMNodes.push(osc);
       }
     }
 
     // 4. Punchy Dynamic Drum Beats
-    // Kick Drum on 1 & 3 (and double kick on intensity >= 2)
     const kickBeats = (intensity >= 2)
       ? [0, 6, 8, 14, 16, 22, 24, 30, 32, 38, 40, 46, 48, 54, 56, 62]
       : [0, 8, 16, 24, 32, 40, 48, 56];
@@ -505,23 +544,18 @@
 
       osc.connect(gain);
       gain.connect(bus);
+      registerBGMNode(osc, gain);
       osc.start(startTime);
       osc.stop(startTime + 0.12);
-      activeBGMNodes.push(osc);
     });
 
-    // Snare on 2 & 4
+    // Snare on 2 & 4 (using shared noise buffer)
     for (let b = 4; b < 64; b += 8) {
       const startTime = now + (b * MATCH_SIXTEENTH);
       const dur = 0.08;
 
-      const bufSize = Math.max(64, Math.floor(c.sampleRate * dur));
-      const buf = c.createBuffer(1, bufSize, c.sampleRate);
-      const data = buf.getChannelData(0);
-      for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1);
-
       const src = c.createBufferSource();
-      src.buffer = buf;
+      src.buffer = getNoiseBuffer(c);
 
       const filter = c.createBiquadFilter();
       filter.type = 'bandpass';
@@ -534,9 +568,9 @@
       src.connect(filter);
       filter.connect(gain);
       gain.connect(bus);
+      registerBGMNode(src, filter, gain);
       src.start(startTime);
       src.stop(startTime + dur + 0.02);
-      activeBGMNodes.push(src);
     }
   }
 
@@ -676,15 +710,14 @@
 
     // 17. DEFENSE TENSION INTRO — dramatic sub-bass heartbeat & cinematic riser
     defense_tension_intro() {
-      // First heartbeat thump
       tone(65, 0.22, 'sine', 0.35, 0.00, 0.005, 0.18);
       tone(95, 0.16, 'triangle', 0.28, 0.00, 0.005, 0.12);
       noise(0.12, 0.15, 0.00, 150, 'lowpass');
-      // Second heartbeat thump
+
       tone(60, 0.30, 'sine', 0.38, 0.22, 0.005, 0.25);
       tone(85, 0.20, 'triangle', 0.30, 0.22, 0.005, 0.15);
       noise(0.15, 0.18, 0.22, 120, 'lowpass');
-      // Amber tension sonar radar ping
+
       tone(1174.66, 0.45, 'sine', 0.12, 0.38, 0.01, 0.35); // D6
       tone(1760.00, 0.35, 'sine', 0.08, 0.42, 0.01, 0.28); // A6
     },
@@ -700,31 +733,29 @@
 
     // 19. DEFENSE GOLD GLOVE — heroic fanfare, crowd cheer, golden sparkle
     defense_gold_glove() {
-      // Crisp glove pop
       noise(0.08, 0.50, 0.00, 3500, 'bandpass');
       tone(180, 0.15, 'triangle', 0.25, 0.01);
-      // Heroic brass chord (C Major triumphant)
+
       tone(523.25, 0.35, 'sawtooth', 0.20, 0.08, 0.01, 0.30); // C5
       tone(659.25, 0.35, 'sawtooth', 0.22, 0.14, 0.01, 0.30); // E5
       tone(783.99, 0.45, 'sawtooth', 0.25, 0.20, 0.01, 0.38); // G5
       tone(1046.50, 0.60, 'sawtooth', 0.28, 0.28, 0.01, 0.50); // C6
-      // Golden shimmer sparkle
+
       tone(1318.51, 0.40, 'sine', 0.18, 0.35, 0.01, 0.35); // E6
       tone(1567.98, 0.50, 'sine', 0.20, 0.42, 0.01, 0.45); // G6
       tone(2093.00, 0.60, 'sine', 0.22, 0.50, 0.01, 0.55); // C7
-      // Crowd cheer swell
+
       noise(1.10, 0.22, 0.15, 600, 'bandpass');
     },
 
     // 20. DEFENSE ERROR — heavy impact, low alarm buzzer, shield crack
     defense_error() {
-      // Crack & heavy thud
       noise(0.12, 0.65, 0.00, 4500, 'highpass');
       tone(120, 0.35, 'sawtooth', 0.30, 0.00, 0.005, 0.30);
       tone(75, 0.50, 'sine', 0.40, 0.02, 0.005, 0.45);
-      // Warning buzzer dissonant interval
+
       tone(233.08, 0.35, 'sawtooth', 0.25, 0.10, 0.01, 0.30); // Bb3
-      tone(220.00, 0.40, 'sawtooth', 0.25, 0.12, 0.01, 0.35); // A3 (minor second clash)
+      tone(220.00, 0.40, 'sawtooth', 0.25, 0.12, 0.01, 0.35); // A3
       noise(0.60, 0.20, 0.10, 300, 'lowpass');
     },
 
@@ -808,7 +839,7 @@
       let score = 0;
       if (state.outs === 2) score += 1;
       if (state.inning >= 3) score += 1;
-      if (state.bases && (state.bases[1] || state.bases[2])) score += 1; // 2B or 3B runner
+      if (state.bases && (state.bases[1] || state.bases[2])) score += 1;
       if (state.activePitcher && typeof state.activePitcher.hp === 'number' && state.activePitcher.hp <= 25) score += 1;
       if (typeof state.teamHp === 'number' && state.teamHp <= 30) score += 1;
 
@@ -816,13 +847,13 @@
     },
 
     /**
-     * Unlock the AudioContext on the first user interaction.
+     * Unlock the AudioContext on user interaction.
      */
     unlock() {
       const c = getCtx();
       if (!c) return;
       initGains();
-      if (c.state === 'suspended') {
+      if (c.state === 'suspended' || c.state === 'interrupted') {
         c.resume().then(() => {
           ensureAudioPlaying();
         }).catch(() => {});
@@ -835,33 +866,35 @@
   function ensureAudioPlaying() {
     if (_muted || currentBGMMode === 'off' || currentBGMMode === 'none' || (typeof document !== 'undefined' && document.hidden)) return;
     const c = getCtx();
-    if (!c || c.state === 'suspended') return;
+    if (!c || c.state === 'suspended' || c.state === 'interrupted') return;
     initGains();
 
-    if (currentBGMMode === 'menu') {
-      if (!bgmIntervalTimer) {
-        scheduleMenuMusicLoop();
-        bgmIntervalTimer = setInterval(() => {
-          if (typeof document !== 'undefined' && document.hidden) return;
-          if (currentBGMMode === 'menu' && !_muted) {
+    if (!bgmIntervalTimer) {
+      // Immediate initial schedule
+      if (currentBGMMode === 'menu') scheduleMenuMusicLoop();
+      else if (currentBGMMode === 'match') scheduleMatchMusicLoop();
+
+      // Lookahead scheduler runs every 800ms
+      bgmIntervalTimer = setInterval(() => {
+        if (typeof document !== 'undefined' && document.hidden) return;
+        if (_muted || currentBGMMode === 'off' || currentBGMMode === 'none') return;
+        const curCtx = getCtx();
+        if (!curCtx || curCtx.state === 'suspended' || curCtx.state === 'interrupted') return;
+
+        if (currentBGMMode === 'menu') {
+          if (nextMenuLoopTime <= curCtx.currentTime + 1.5) {
             scheduleMenuMusicLoop();
           }
-        }, 4000);
-      }
-    } else if (currentBGMMode === 'match') {
-      if (!bgmIntervalTimer) {
-        scheduleMatchMusicLoop();
-        bgmIntervalTimer = setInterval(() => {
-          if (typeof document !== 'undefined' && document.hidden) return;
-          if (currentBGMMode === 'match' && !_muted) {
+        } else if (currentBGMMode === 'match') {
+          if (nextMatchLoopTime <= curCtx.currentTime + 1.5) {
             scheduleMatchMusicLoop();
           }
-        }, 3000);
-      }
+        }
+      }, 800);
     }
   }
 
-  // Ultra-early auto-unlock: attempts immediate play on load + on first hover/scroll/touch/keypress/click
+  // Ultra-early auto-unlock: attempts immediate play on load + on user interactions
   if (typeof document !== 'undefined') {
     let unlocked = false;
     const unlockOnce = () => {
@@ -883,7 +916,7 @@
       document.addEventListener(evt, unlockOnce, { capture: true, once: true, passive: true });
     });
 
-    // Attempt instant start right on page load
+    // Attempt instant start on page load
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', () => {
         if (!_muted) {
@@ -904,7 +937,7 @@
       if (!c) return;
 
       if (document.hidden) {
-        // Tab is hidden / switched: completely stop audio and timers
+        // Tab hidden: stop all nodes and suspend context
         if (bgmIntervalTimer) {
           clearInterval(bgmIntervalTimer);
           bgmIntervalTimer = null;
@@ -915,19 +948,19 @@
         activeBGMNodes.forEach(n => {
           try { if (typeof n.stop === 'function') n.stop(); n.disconnect(); } catch (e) {}
         });
-        activeBGMNodes = [];
+        activeBGMNodes.clear();
         if (c.state === 'running') {
           c.suspend().catch(() => {});
         }
       } else {
-        // Tab is visible again: restore bus gain and resume smoothly
+        // Tab visible again: restore bus gain and resume
         nextMenuLoopTime = 0;
         nextMatchLoopTime = 0;
         if (activeTrackGain) {
           try { activeTrackGain.gain.setValueAtTime(1.0, c.currentTime); } catch (e) {}
         }
         if (!_muted && currentBGMMode !== 'off' && currentBGMMode !== 'none') {
-          if (c.state === 'suspended') {
+          if (c.state === 'suspended' || c.state === 'interrupted') {
             c.resume().then(() => {
               ensureAudioPlaying();
             }).catch(() => {});
