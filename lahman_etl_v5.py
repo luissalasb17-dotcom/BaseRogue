@@ -710,8 +710,8 @@ def paso_10_atributos_raw_bateo(df):
     so = df["peak_so"].fillna(df["career_so"]).fillna(0)
 
     is_nlb = (df["league_group"] == "NLB") if "league_group" in df.columns else False
-    m_pa = np.where(is_nlb, 500, 150)
-    m_ab = np.where(is_nlb, 450, 135)
+    m_pa = 500
+    m_ab = 450
 
     df["ba_smoothed"] = (h + m_ab * 0.265) / (ab + m_ab)
 
@@ -729,7 +729,7 @@ def paso_10_atributos_raw_bateo(df):
     k_imputed = (so + m_pa * era_k_means) / (pa + m_pa)
     df["k_rate_clean"] = np.where(is_missing_so, k_imputed, df["k_rate"].fillna(era_k_means))
 
-    # Bayesian sample-size smoothing for power metrics (m = 500 PA for NLB)
+    # Bayesian sample-size smoothing for power metrics (m = 500 PA)
     hr_smoothed = (hr + m_pa * 0.025) / (pa + m_pa)
     tb_total = h + b2 + 2*b3 + 3*hr
     slg = np.where(ab > 0, tb_total / ab, 0)
@@ -742,7 +742,7 @@ def paso_10_atributos_raw_bateo(df):
         iso_smoothed * 0.40 +
         xbh_smoothed * 0.15
     )
-    print("  contact_raw (100% BA), power_raw (m=500 PA NLB smoothed), eye_raw, k_rate_clean calculados")
+    print("  contact_raw (100% BA), power_raw (m=500 PA smoothed), eye_raw, k_rate_clean calculados")
     return df
 
 
@@ -954,13 +954,13 @@ def asignar_rareza(ovr):
         v = float(ovr)
     except (ValueError, TypeError):
         v = 50.0
-    if v >= 88.0:
+    if v >= 90.0:
         return "Legendary"
     elif v >= 80.0:
         return "Epic"
-    elif v >= 72.0:
+    elif v >= 70.0:
         return "Rare"
-    elif v >= 65.0:
+    elif v >= 60.0:
         return "Uncommon"
     else:
         return "Common"
@@ -1047,20 +1047,18 @@ def map_to_canonical_team(row):
 
 def map_to_cosmetic_ovr(r):
     if r is None or pd.isna(r):
-        return 60.0
+        return 50.0
     val = float(r)
-    if val <= 30.0:
-        res = 50.0 + (val / 30.0) * 10.0
-    elif val <= 45.0:
-        res = 60.0 + ((val - 30.0) / 15.0) * 9.0
-    elif val <= 58.0:
-        res = 70.0 + ((val - 45.0) / 13.0) * 8.0
-    elif val <= 74.0:
-        res = 79.0 + ((val - 58.0) / 16.0) * 8.0
-    elif val <= 85.0:
-        res = 88.0 + ((val - 74.0) / 11.0) * 6.0
+    if val <= 37.0:
+        res = 50.0 + ((val - 10.0) / 27.0) * 9.9
+    elif val <= 48.0:
+        res = 60.0 + ((val - 37.0) / 11.0) * 9.9
+    elif val <= 62.0:
+        res = 70.0 + ((val - 48.0) / 14.0) * 9.9
+    elif val <= 76.0:
+        res = 80.0 + ((val - 62.0) / 14.0) * 9.9
     else:
-        res = 95.0 + min(4.0, ((val - 85.0) / 18.0) * 4.0)
+        res = 90.0 + min(9.9, ((val - 76.0) / 18.0) * 9.9)
     return round(res, 1)
 
 
@@ -1110,30 +1108,21 @@ def paso_15_equipo_y_exportar(df, batting, teams, franchises, pico_df=None):
     df["canonical_teamID"] = df.apply(map_to_canonical_team, axis=1)
     df["franchise_name"]   = df["canonical_teamID"]
 
-    # Factor de sostenibilidad por muestra en el pico:
-    # 1.0% por cada año faltante para completar las 7 temporadas (clip entre 1 y 7)
-    seasons_cnt = df["total_seasons_in_peak"].fillna(7).clip(lower=1, upper=7)
-    sustainability_factor = 1.0 - (7 - seasons_cnt) * 0.01
-
-    stat_cols = ["contact_val","power_val","eye_val","k_avoid_val","speed_val","defense_val"]
-    for col in stat_cols:
-        df[col] = (df[col] * sustainability_factor).round(1)
-
-    # 5. Promedio de Atributos Globales (OVR) equilibrado con 6 atributos (30% CON, 30% POW, 10% EYE, 10% K/AVD, 10% DEF, 10% SPD)
+    # 5. Promedio de Atributos Globales (OVR): 28% CON, 28% PWR, 12% EYE, 12% DEF, 10% SPD, 10% K/AVD
     df["raw_ovr"] = (
-        df["contact_val"] * 0.30 +
-        df["power_val"]   * 0.30 +
-        df["eye_val"]     * 0.10 +
-        df["k_avoid_val"] * 0.10 +
-        df["defense_val"] * 0.10 +
-        df["speed_val"]   * 0.10
+        df["contact_val"] * 0.28 +
+        df["power_val"]   * 0.28 +
+        df["eye_val"]     * 0.12 +
+        df["defense_val"] * 0.12 +
+        df["speed_val"]   * 0.10 +
+        df["k_avoid_val"] * 0.10
     )
     # ── Badges: Clutch Player / Captain ─────────────────────────────────────
     OFFICIAL_CAPTAIN_PIDS = {
         'gehrilo01', 'munsoth01', 'jeterde01', 'judgeaa01', 'mattido01', 'nettrgr01',
         'randowi01', 'guidrro01', 'yastrca01', 'varitja01', 'ricji01', 'wrighda05',
         'hernake01', 'cartega01', 'stargwi01', 'clemero01', 'puckeki01', 'mauerjo01',
-        'killeha01', 'brettge01', 'kalinal01', 'tramala01', 'cabremi01', 'ripkeca02',
+        'killeha01', 'brettge01', 'kalinal01', 'tramala01', 'cabremi01', 'ripkeca01',
         'robinfo01', 'robinbr01', 'schmimi01', 'rolliji01', 'pujolal01', 'smithoz01',
         'molinya01', 'musiasu01', 'mayswi01', 'poseybu01', 'reesep01', 'koufasa01',
         'bankser01', 'santro01', 'fiskca01', 'thomafr01', 'troutmi01', 'griffke02',
@@ -1191,6 +1180,7 @@ def paso_15_equipo_y_exportar(df, batting, teams, franchises, pico_df=None):
     for col in ["ba","obp","iso","k_rate","bb_rate"]:
         if col in final.columns:
             final[col] = final[col].round(3)
+    stat_cols = ["contact_val","power_val","eye_val","k_avoid_val","speed_val","defense_val"]
     for col in stat_cols + ["avg_attr_score"]:
         if col in final.columns:
             final[col] = final[col].round(1)

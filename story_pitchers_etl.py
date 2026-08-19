@@ -53,18 +53,18 @@ def assign_era(year):
 
 
 def asignar_rareza(ovr):
-    # Identico a pitchers_etl.py::asignar_rareza
+    # Identico a pitchers_etl.py::def asignar_rareza(ovr):
     try:
         v = float(ovr)
     except (ValueError, TypeError):
         v = 50.0
-    if v >= 88.0:
+    if v >= 90.0:
         return "Legendary"
     elif v >= 80.0:
         return "Epic"
-    elif v >= 72.0:
+    elif v >= 70.0:
         return "Rare"
-    elif v >= 65.0:
+    elif v >= 60.0:
         return "Uncommon"
     else:
         return "Common"
@@ -112,20 +112,18 @@ def normalize_difficulty_adjusted(df, col_raw, col_out, invert=False):
 def map_to_cosmetic_ovr_p(r):
     # Identico a pitchers_etl.py::paso_11_ovr_rareza::map_to_cosmetic_ovr_p
     if r is None or pd.isna(r):
-        return 60.0
+        return 50.0
     val = float(r)
-    if val <= 35.0:
-        res = 50.0 + (val / 35.0) * 10.0
-    elif val <= 50.0:
-        res = 60.0 + ((val - 35.0) / 15.0) * 8.0
-    elif val <= 65.0:
-        res = 68.0 + ((val - 50.0) / 15.0) * 10.0
-    elif val <= 82.0:
-        res = 78.0 + ((val - 65.0) / 17.0) * 10.0
-    elif val <= 95.0:
-        res = 88.0 + ((val - 82.0) / 13.0) * 7.0
+    if val <= 48.0:
+        res = 50.0 + ((val - 15.0) / 33.0) * 9.9
+    elif val <= 56.0:
+        res = 60.0 + ((val - 48.0) / 8.0) * 9.9
+    elif val <= 66.0:
+        res = 70.0 + ((val - 56.0) / 10.0) * 9.9
+    elif val <= 78.0:
+        res = 80.0 + ((val - 66.0) / 12.0) * 9.9
     else:
-        res = 95.0 + min(4.9, ((val - 95.0) / 15.0) * 4.9)
+        res = 90.0 + min(9.9, ((val - 78.0) / 18.0) * 9.9)
     return round(res, 1)
 
 

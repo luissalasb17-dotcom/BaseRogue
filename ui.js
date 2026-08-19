@@ -2996,12 +2996,11 @@ function initGameModeSelector() {
       const hr9 = p.hr9 !== undefined ? p.hr9 : (p.hr9_val !== undefined ? p.hr9_val : (p.mov !== undefined ? p.mov : 50));
       const sta = p.sta !== undefined ? p.sta : (p.sta_val !== undefined ? p.sta_val : 65);
       const raw = h9 * 0.20 + k9 * 0.20 + bb9 * 0.20 + hr9 * 0.20 + sta * 0.20;
-      if (raw <= 35.0) return Math.round(50.0 + (raw / 35.0) * 10.0);
-      if (raw <= 50.0) return Math.round(60.0 + ((raw - 35.0) / 15.0) * 8.0);
-      if (raw <= 65.0) return Math.round(68.0 + ((raw - 50.0) / 15.0) * 10.0);
-      if (raw <= 82.0) return Math.round(78.0 + ((raw - 65.0) / 17.0) * 10.0);
-      if (raw <= 95.0) return Math.round(88.0 + ((raw - 82.0) / 13.0) * 7.0);
-      return Math.round(95.0 + Math.min(4.9, ((raw - 95.0) / 15.0) * 4.9));
+      if (raw <= 48.0) return Math.round(50.0 + ((raw - 15.0) / 33.0) * 9.9);
+      if (raw <= 56.0) return Math.round(60.0 + ((raw - 48.0) / 8.0) * 9.9);
+      if (raw <= 66.0) return Math.round(70.0 + ((raw - 56.0) / 10.0) * 9.9);
+      if (raw <= 78.0) return Math.round(80.0 + ((raw - 66.0) / 12.0) * 9.9);
+      return Math.round(90.0 + Math.min(9.9, ((raw - 78.0) / 18.0) * 9.9));
     }
     const con = p.con !== undefined ? p.con : (p.contact_val !== undefined ? p.contact_val : 50);
     const pwr = p.pwr !== undefined ? p.pwr : (p.power_val !== undefined ? p.power_val : 50);
@@ -3009,13 +3008,12 @@ function initGameModeSelector() {
     const kavd = p.k_avd !== undefined ? p.k_avd : (p.k_avoid !== undefined ? p.k_avoid : (p.k_avoid_val !== undefined ? p.k_avoid_val : 50));
     const spd = p.spd !== undefined ? p.spd : (p.speed_val !== undefined ? p.speed_val : 50);
     const def = p.def !== undefined ? p.def : (p.defense_val !== undefined ? p.defense_val : 50);
-    const raw = con * 0.30 + pwr * 0.30 + eye * 0.10 + kavd * 0.10 + def * 0.10 + spd * 0.10;
-    if (raw <= 30) return Math.round(50 + (raw / 30) * 10);
-    if (raw <= 45) return Math.round(60 + ((raw - 30) / 15) * 9);
-    if (raw <= 58) return Math.round(70 + ((raw - 45) / 13) * 8);
-    if (raw <= 74) return Math.round(79 + ((raw - 58) / 16) * 8);
-    if (raw <= 85) return Math.round(88 + ((raw - 74) / 11) * 6);
-    return Math.round(95 + Math.min(4, ((raw - 85) / 18) * 4));
+    const raw = con * 0.28 + pwr * 0.28 + eye * 0.12 + def * 0.12 + spd * 0.10 + kavd * 0.10;
+    if (raw <= 37.0) return Math.round(50.0 + ((raw - 10.0) / 27.0) * 9.9);
+    if (raw <= 48.0) return Math.round(60.0 + ((raw - 37.0) / 11.0) * 9.9);
+    if (raw <= 62.0) return Math.round(70.0 + ((raw - 48.0) / 14.0) * 9.9);
+    if (raw <= 76.0) return Math.round(80.0 + ((raw - 62.0) / 14.0) * 9.9);
+    return Math.round(90.0 + Math.min(9.9, ((raw - 76.0) / 18.0) * 9.9));
   }
 
   function getStatGrade(val) {
@@ -3163,10 +3161,10 @@ function initGameModeSelector() {
     // Rarity styles
     let derivedRarity = player.rarity;
     if (!derivedRarity) {
-      if (ovr >= 88) derivedRarity = "Legendary";
+      if (ovr >= 90) derivedRarity = "Legendary";
       else if (ovr >= 80) derivedRarity = "Epic";
-      else if (ovr >= 72) derivedRarity = "Rare";
-      else if (ovr >= 65) derivedRarity = "Uncommon";
+      else if (ovr >= 70) derivedRarity = "Rare";
+      else if (ovr >= 60) derivedRarity = "Uncommon";
       else derivedRarity = "Common";
     }
     const rarityLabel = derivedRarity;
