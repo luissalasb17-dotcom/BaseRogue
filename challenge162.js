@@ -2277,7 +2277,7 @@
                 <table class="c162-table">
                   <thead><tr>
                     <th class="c162-th">POS</th>
-                    <th class="c162-th">JUGADOR</th>
+                    <th class="c162-th">${_t('challenge162.table_player', 'PLAYER')}</th>
                     <th class="c162-th">AB</th>
                     <th class="c162-th">H</th>
                     <th class="c162-th">2B</th>
@@ -2286,7 +2286,7 @@
                     <th class="c162-th">RBI</th>
                     <th class="c162-th">BB</th>
                     <th class="c162-th">SO</th>
-                    <th class="c162-th">BR</th>
+                    <th class="c162-th">SB</th>
                     <th class="c162-th">R</th>
                     <th class="c162-th">AVG</th>
                     <th class="c162-th">OBP</th>
@@ -2307,11 +2307,11 @@
               <div class="c162-table-wrap">
                 <table class="c162-table">
                   <thead><tr>
-                    <th class="c162-th">LANZADOR</th>
-                    <th class="c162-th">ROL</th>
+                    <th class="c162-th">${_t('challenge162.table_pitcher', 'PITCHER')}</th>
+                    <th class="c162-th">ROLE</th>
                     <th class="c162-th">IP</th>
                     <th class="c162-th">H</th>
-                    <th class="c162-th">CL</th>
+                    <th class="c162-th">ER</th>
                     <th class="c162-th">BB</th>
                     <th class="c162-th">SO</th>
                     <th class="c162-th">W</th>
