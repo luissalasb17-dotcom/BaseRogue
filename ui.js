@@ -996,6 +996,8 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
   window.handleRollDice = handleRollDice;
   window.setupAndShowPreFightScreen = setupAndShowPreFightScreen;
   window.showSuperBossIntroModal = showSuperBossIntroModal;
+  window.showZoneBossIntroModal = showZoneBossIntroModal;
+  window.showStorySeasonIntroModal = showStorySeasonIntroModal;
   window.openRunSummaryModal = openRunSummaryModal;
   window.renderActiveRoster = renderActiveRoster;
   window.closeNodeCompleted = closeNodeCompleted;
@@ -1281,6 +1283,10 @@ function renderConfirmationBattingRows() {
           renderMap();
           renderSynergiesAndItems();
           window.showScreen('screen-map');
+
+          if (G.selectedMode === 'story') {
+            showStorySeasonIntroModal();
+          }
         }
       });
 
@@ -3729,7 +3735,16 @@ function initGameModeSelector() {
 
     // Pre-Fight Screen triggers
     el.btnPreFightStart.addEventListener('click', () => {
-      setupAndStartMatchSimulation();
+      const isStory = window.Game.selectedMode === 'story';
+      const stage = window.Game.currentStageIndex;
+      const isZoneBoss = isStory && (stage % 4 === 3) && stage !== 15;
+      const enemy = window.Game.getEnemyTeam();
+
+      if (isZoneBoss && enemy && enemy.isBoss) {
+        showZoneBossIntroModal(enemy, () => setupAndStartMatchSimulation());
+      } else {
+        setupAndStartMatchSimulation();
+      }
     });
 
     el.btnPreFightBackMap.addEventListener('click', () => {
@@ -4208,8 +4223,17 @@ function initGameModeSelector() {
 
       const subText = zoneConfig.subtitleKey ? t(zoneConfig.subtitleKey) : zoneConfig.subtitle;
       const zoneDivision = window.Game.selectedDivisions && window.Game.selectedDivisions[zoneIdx];
+      let divIcon = '⚾';
+      if (zoneDivision) {
+        const lbl = zoneDivision.label.toLowerCase();
+        if (lbl.includes('negro') || lbl.includes('champions') || lbl.includes('classic') || lbl.includes('pennant')) {
+          divIcon = '👑';
+        } else if (lbl.includes('federal')) {
+          divIcon = '⚡';
+        }
+      }
       const divisionBannerHTML = zoneDivision
-        ? `<div class="zone-division-banner">⚾ ${zoneDivision.label.toUpperCase()} — ${window.Game.selectedSeasonYear}</div>`
+        ? `<div class="zone-division-banner">${divIcon} ${zoneDivision.label.toUpperCase()} — ${window.Game.selectedSeasonYear}</div>`
         : '';
 
       const zoneHeader = document.createElement('div');
@@ -5559,15 +5583,47 @@ function initGameModeSelector() {
     if (isStory) {
       eraName = getEraNameForYear(enemy.year);
       let teamFull = enemy.teamID || enemy.name;
-      if (window.PlayersDB && window.PlayersDB.FranchiseNames) {
-        teamFull = window.PlayersDB.FranchiseNames[enemy.teamID] || teamFull;
+      if (window.PlayersDB && window.PlayersDB.FranchiseNames && window.PlayersDB.FranchiseNames[enemy.teamID]) {
+        teamFull = window.PlayersDB.FranchiseNames[enemy.teamID];
       }
-      teamName = `${teamFull} (${enemy.year})`;
+      teamName = enemy.isBoss ? enemy.name : `${teamFull} (${enemy.year})`;
 
-      const wp = enemy.win_pct || 0;
-      const recordKey = wp >= 0.560 ? 'record_dominant' : (wp >= 0.480 ? 'record_contender' : 'record_underdog');
-      const pctText = (wp * 100).toFixed(1) + '%';
-      recordHTML = `<div style="font-size:11px;color:#9ca3af;margin-top:4px;">${t('pre_fight.' + recordKey)} — <strong style="color:#e4e4e7;">${pctText}</strong> ${t('pre_fight.win_pct_label', 'Prob. Victoria')}</div>`;
+      const currentZoneIdx = (typeof window.Game.getZoneForStage === 'function') ? window.Game.getZoneForStage(window.Game.currentStageIndex) : 0;
+      const zoneDivision = window.Game.selectedDivisions && window.Game.selectedDivisions[currentZoneIdx];
+      const divLabel = zoneDivision ? zoneDivision.label : (enemy.division || enemy.league || '');
+
+      let divIcon = '⚾';
+      if (divLabel.toLowerCase().includes('negro') || divLabel.toLowerCase().includes('all-stars') || divLabel.toLowerCase().includes('pennant') || divLabel.toLowerCase().includes('classic') || divLabel.toLowerCase().includes('champion')) {
+        divIcon = '👑';
+      } else if (divLabel.toLowerCase().includes('federal')) {
+        divIcon = '⚡';
+      }
+
+      const divBadgeHTML = divLabel ? `
+        <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,215,0,0.12);border:1px solid rgba(255,215,0,0.4);border-radius:4px;padding:3px 8px;margin-top:6px;margin-bottom:4px;font-size:10px;font-weight:bold;color:#fef08a;letter-spacing:0.5px;">
+          <span>${divIcon}</span>
+          <span>${divLabel.toUpperCase()} — ${enemy.year}</span>
+        </div>
+      ` : '';
+
+      if (enemy.isBoss) {
+        recordHTML = `
+          ${divBadgeHTML}
+          <div style="font-size:11px;color:#fde047;font-weight:bold;margin-top:4px;">
+            👑 ${typeof window.t === 'function' ? window.t('pre_fight.boss_all_star_desc', 'Rotación All-Star: Los mejores brazos del circuito') : 'Rotación All-Star: Los mejores brazos del circuito'}
+          </div>
+        `;
+      } else {
+        const wp = enemy.win_pct || 0;
+        const recordKey = wp >= 0.560 ? 'record_dominant' : (wp >= 0.480 ? 'record_contender' : 'record_underdog');
+        const pctText = (wp * 100).toFixed(1) + '%';
+        recordHTML = `
+          ${divBadgeHTML}
+          <div style="font-size:11px;color:#9ca3af;margin-top:4px;">
+            ${t('pre_fight.' + recordKey)} — <strong style="color:#e4e4e7;">${pctText}</strong> ${t('pre_fight.win_pct_label', 'Prob. Victoria')}
+          </div>
+        `;
+      }
       ovrDisplay = enemy.ovr !== undefined && enemy.ovr !== null ? Math.floor(enemy.ovr) : null;
     } else {
       // Quick Play rosters are 2-3 pitchers assembled independently from the
@@ -5677,8 +5733,13 @@ function initGameModeSelector() {
     // el.rosterManagerPanel.classList.add('hidden');
 
     const enemy = window.Game.getEnemyTeam();
-    el.matchHeaderTitle.innerHTML =
-      `<i class="fa-solid fa-dice"></i> 🎲 Combate Interactivo vs <span style="color:#ef4444;">${enemy.name}</span>`;
+    if (enemy && enemy.isBoss) {
+      el.matchHeaderTitle.innerHTML =
+        `<i class="fa-solid fa-crown" style="color:#ffd700;"></i> 👑 <span style="color:#ffd700;font-weight:bold;">${enemy.name}</span> <span style="font-size:10px;background:rgba(255,215,0,0.2);color:#ffd700;border:1px solid #ffd700;padding:2px 6px;border-radius:4px;margin-left:6px;font-family:'Press Start 2P',monospace;">BOSS BATTLE</span>`;
+    } else {
+      el.matchHeaderTitle.innerHTML =
+        `<i class="fa-solid fa-dice"></i> 🎲 Combate Interactivo vs <span style="color:#ef4444;">${enemy.name}</span>`;
+    }
     if (el.scoreEnemyName) el.scoreEnemyName.innerText = (typeof window.t==='function'?window.t('match.rival_rotation'):'ROTACIÓN RIVAL');
 
     // Reset HUD
@@ -7874,6 +7935,138 @@ function initGameModeSelector() {
         declineBtn.textContent = t('career.continue', 'Continuar');
         declineBtn.disabled = false;
       }, spinDurationMs + 100);
+    });
+  }
+
+  // ── STORY SEASON INTRO MODAL (Kickoff of Story Mode Campaign) ────────
+  function showStorySeasonIntroModal(onProceed) {
+    if (!window.Game || window.Game.selectedMode !== 'story') {
+      if (onProceed) onProceed();
+      return;
+    }
+    const year = window.Game.selectedSeasonYear;
+    const zones = window.Game.selectedDivisions || [];
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.92);backdrop-filter:blur(10px);z-index:500;display:flex;align-items:center;justify-content:center;';
+
+    const zonesListHTML = zones.map((z, i) => {
+      let icon = '⚾';
+      const lbl = (z.label || '').toLowerCase();
+      if (lbl.includes('negro') || lbl.includes('all-stars') || lbl.includes('classic') || lbl.includes('pennant') || lbl.includes('champion')) icon = '👑';
+      else if (lbl.includes('federal')) icon = '⚡';
+
+      const bossName = z.boss ? (z.boss.name || 'All-Stars').replace('👑 ', '').replace('⚡ ', '') : 'All-Stars';
+      const teamCount = z.teams ? z.teams.length : 0;
+
+      return `
+        <div class="story-zone-card" style="opacity:0;transform:translateY(8px);transition:opacity 0.4s ease-out,transform 0.4s ease-out;transition-delay:${0.15 + i * 0.2}s;display:flex;align-items:center;gap:10px;padding:8px 12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.15);border-radius:8px;margin-bottom:6px;">
+          <span style="font-size:16px;">${icon}</span>
+          <div style="text-align:left;flex:1;">
+            <div style="font-size:11px;font-weight:bold;color:#fef08a;">ZONA ${i + 1}: ${(z.label || '').toUpperCase()}</div>
+            <div style="font-size:9.5px;color:#94a3b8;">${teamCount} equipos • Boss: ${bossName}</div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    overlay.innerHTML = `
+      <div style="background:#090d16;border:2px solid #3b82f6;border-radius:16px;padding:24px;max-width:480px;width:92%;text-align:center;box-shadow:0 0 40px rgba(59,130,246,0.4);">
+        <div style="font-family:'Press Start 2P',monospace;font-size:12px;color:#60a5fa;margin-bottom:8px;letter-spacing:1px;">
+          ⚾ MODO HISTORIA: ${year} ⚾
+        </div>
+        <div style="font-size:13px;color:#fff;font-weight:bold;margin-bottom:8px;">
+          ${typeof window.t==='function'?window.t('ui.story_intro_title', '¡Comienza la Campaña Histórica!'):'¡Comienza la Campaña Histórica!'}
+        </div>
+        <div style="font-size:11px;color:#94a3b8;margin-bottom:16px;line-height:1.4;">
+          Deberás conquistar las 4 zonas del mapa derrotando a los equipos y a los <strong>Jefes All-Stars</strong> de cada circuito:
+        </div>
+        ${zonesListHTML ? `<div style="margin-bottom:18px;">${zonesListHTML}</div>` : ''}
+        <button id="btn-start-story-campaign" class="btn" style="background:linear-gradient(90deg,#3b82f6,#1d4ed8);color:#fff;font-weight:bold;font-size:11px;padding:12px 24px;width:100%;border:none;cursor:pointer;border-radius:8px;letter-spacing:0.5px;box-shadow:0 0 15px rgba(59,130,246,0.4);">
+          ¡ENTRAR AL MAPA! 🗺️
+        </button>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+    void overlay.offsetHeight;
+
+    setTimeout(() => {
+      overlay.querySelectorAll('.story-zone-card').forEach(row => {
+        row.style.opacity = '1';
+        row.style.transform = 'translateY(0)';
+      });
+    }, 20);
+
+    document.getElementById('btn-start-story-campaign').addEventListener('click', () => {
+      overlay.remove();
+      if (onProceed) onProceed();
+    });
+  }
+
+  // ── ZONE BOSS INTRO MODAL (Stages 3, 7, 11) ─────────────────────────
+  function showZoneBossIntroModal(bossEnemy, onProceed) {
+    if (!bossEnemy) {
+      if (onProceed) onProceed();
+      return;
+    }
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.92);backdrop-filter:blur(10px);z-index:500;display:flex;align-items:center;justify-content:center;';
+
+    const currentZoneIdx = (typeof window.Game.getZoneForStage === 'function') ? window.Game.getZoneForStage(window.Game.currentStageIndex) : 0;
+    const zoneDivision = window.Game.selectedDivisions && window.Game.selectedDivisions[currentZoneIdx];
+    const divName = zoneDivision ? zoneDivision.label : (bossEnemy.division || bossEnemy.league || 'All-Stars');
+
+    let divIcon = '👑';
+    if (divName.toLowerCase().includes('federal')) divIcon = '⚡';
+
+    const pitchers = bossEnemy.pitchers || [];
+    const pitcherRowsHTML = pitchers.map((p, i) => {
+      const rarityColor = RARITY_COLORS[p.rarity] || '#ffd700';
+      const rarityBg = RARITY_BG[p.rarity] || 'rgba(255,215,0,0.1)';
+      return `
+        <div class="zone-boss-pitcher-row" style="opacity:0;transform:translateY(8px);transition:opacity 0.4s ease-out,transform 0.4s ease-out;transition-delay:${0.25 + i * 0.3}s;display:flex;align-items:center;gap:10px;padding:8px 12px;background:${rarityBg};border:1px solid ${rarityColor};border-radius:8px;margin-bottom:8px;">
+          <span style="font-size:16px;">${divIcon}</span>
+          <div style="text-align:left;">
+            <div style="font-size:11.5px;color:#fff;font-weight:bold;">${p.cleanName || p.name}</div>
+            <div style="font-size:9.5px;color:#94a3b8;">${p.role || 'SP'} • STF ${p.stf || 50} • CTL ${p.ctl || 50} • H9 ${p.h9 || 50}</div>
+          </div>
+          <div style="margin-left:auto;text-align:right;">
+            <span style="font-size:9px;font-weight:bold;color:${rarityColor};text-transform:uppercase;background:rgba(0,0,0,0.4);padding:2px 6px;border-radius:4px;">${p.rarity || 'Epic'}</span>
+            <div style="font-size:10px;font-weight:bold;color:#fef08a;margin-top:2px;">OVR ${p.ovr || 50}</div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    overlay.innerHTML = `
+      <div style="background:#090d16;border:2px solid #ffd700;border-radius:16px;padding:24px;max-width:460px;width:90%;text-align:center;box-shadow:0 0 35px rgba(255,215,0,0.4);">
+        <div style="font-family:'Press Start 2P',monospace;font-size:11px;color:#ffd700;margin-bottom:10px;text-shadow:0 0 8px #ffd700;">
+          ${divIcon} ¡DESAFÍO DIVISIONAL! ${divIcon}
+        </div>
+        <div style="font-size:14px;color:#fff;font-weight:bold;margin-bottom:6px;">
+          ${bossEnemy.name}
+        </div>
+        <div style="font-size:11px;color:#94a3b8;margin-bottom:16px;">
+          ${typeof window.t==='function'?window.t('ui.zone_boss_subtitle','Los 3 mejores lanzadores de esta liga defienden su circuito'):'Los 3 mejores lanzadores de esta liga defienden su circuito'}:
+        </div>
+        ${pitcherRowsHTML ? `<div style="margin-bottom:16px;">${pitcherRowsHTML}</div>` : ''}
+        <button id="btn-start-zone-boss" class="btn" style="background:linear-gradient(90deg,#ffd700,#f59e0b);color:#000;font-weight:bold;font-size:11px;padding:12px 24px;width:100%;border:none;cursor:pointer;border-radius:8px;letter-spacing:0.5px;">
+          ¡A BATEAR CONTRA EL JEFE! ⚾
+        </button>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+    void overlay.offsetHeight;
+
+    setTimeout(() => {
+      overlay.querySelectorAll('.zone-boss-pitcher-row').forEach(row => {
+        row.style.opacity = '1';
+        row.style.transform = 'translateY(0)';
+      });
+    }, 20);
+
+    document.getElementById('btn-start-zone-boss').addEventListener('click', () => {
+      overlay.remove();
+      if (onProceed) onProceed();
     });
   }
 

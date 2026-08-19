@@ -45,6 +45,23 @@ ERA_THRESHOLDS = [
     (2016, 9999, "Modern Era (2016-Pres)"),
 ]
 
+LEAGUE_LABELS = {
+    "AL": "American League",
+    "NL": "National League",
+    "FL": "Federal League",
+    "NNL": "Negro National League",
+    "NN2": "Negro National League",
+    "NAL": "Negro American League",
+    "ECL": "Eastern Colored League",
+    "ANL": "American Negro League",
+    "EWL": "East-West League",
+    "NSL": "Negro Southern League",
+    "AA": "American Association",
+    "PL": "Players' League",
+    "UA": "Union Association",
+    "NA": "National Association",
+}
+
 def assign_era(year):
     for start, end, label in ERA_THRESHOLDS:
         if start <= int(year) <= end:
@@ -166,8 +183,8 @@ def main():
     primary_team = (
         stint_ip.sort_values("IP_stint", ascending=False)
                 .drop_duplicates(subset=["playerID","yearID"])
-                [["playerID","yearID","teamID"]]
-                .rename(columns={"teamID":"primary_team"})
+                [["playerID","yearID","teamID","lgID"]]
+                .rename(columns={"teamID":"primary_team", "lgID":"primary_lg"})
     )
     py = py.merge(primary_team, on=["playerID","yearID"], how="left")
 
@@ -297,12 +314,164 @@ def main():
             "ovr": int(row["ovr"]), "rarity": row["rarity"],
         }
 
+    def make_boss(pitcher_pool, boss_id, boss_name, year, label=None):
+        if pitcher_pool.empty:
+            return None
+        epic_plus = pitcher_pool[pitcher_pool["rarity"].isin(["Epic", "Legendary"])]
+        if len(epic_plus) < 3:
+            fallback = pitcher_pool[(pitcher_pool["rarity"] == "Rare") & (~pitcher_pool.index.isin(epic_plus.index))]
+            boss_pool = pd.concat([epic_plus, fallback])
+        else:
+            boss_pool = epic_plus
+        if len(boss_pool) < 3:
+            boss_pool = pitcher_pool
+
+        n_pick = min(3, len(boss_pool))
+        sampled = boss_pool.sample(n=n_pick, random_state=None) if n_pick > 0 else boss_pool
+        if sampled.empty:
+            return None
+        return {
+            "id": boss_id,
+            "name": f"\U0001F451 {boss_name}",
+            "year": int(year),
+            "teamID": boss_id,
+            "label": label or boss_name,
+            "win_pct": 1.0,
+            "isBoss": True,
+            "ovr": int(round(sampled["ovr"].mean())),
+            "pitchers": [pitcher_json(r) for _, r in sampled.iterrows()]
+        }
+
+    def build_pre1969_zones(year, year_pitchers, valid_teams):
+        league_team_counts = {}
+        for t in valid_teams:
+            lg = t.get("league")
+            if lg:
+                league_team_counts[lg] = league_team_counts.get(lg, 0) + 1
+
+        major_leagues = sorted([lg for lg, count in league_team_counts.items() if count >= 3])
+        if not major_leagues:
+            major_leagues = sorted(list(set(t["league"] for t in valid_teams if t.get("league"))))
+
+        zones = []
+
+        def pitchers_for_league(lg_code):
+            p = year_pitchers[year_pitchers["primary_lg"] == lg_code]
+            if p.empty or len(p) < 3:
+                p = year_pitchers
+            return p
+
+        # CASE A: 3 or more major distinct leagues (e.g. FL + AL + NL in 1914-1915, or NNL + ECL + AL + NL in 1924)
+        if len(major_leagues) >= 3:
+            alt_order = ["FL", "NNL", "NN2", "ECL", "NAL", "ANL", "EWL", "NSL", "AA", "PL", "UA", "AL", "NL"]
+            sorted_lgs = sorted(major_leagues, key=lambda x: alt_order.index(x) if x in alt_order else 99)
+
+            if len(sorted_lgs) >= 4:
+                picked_lgs = sorted_lgs[:4]
+                for lg in picked_lgs:
+                    lg_teams = [t for t in valid_teams if t["league"] == lg]
+                    lg_teams.sort(key=lambda t: t["win_pct"])
+                    lg_name = LEAGUE_LABELS.get(lg, lg)
+                    boss = make_boss(pitchers_for_league(lg), f"story_{year}_{lg}_BOSS", f"{year} {lg_name} ALL-STARS", year, lg_name)
+                    zones.append({
+                        "label": f"{lg_name}",
+                        "league": lg,
+                        "teams": lg_teams,
+                        "boss": boss
+                    })
+            else:  # Exactly 3 leagues (e.g. FL, AL, NL in 1914)
+                alt_lg = sorted_lgs[0]
+                alt_teams = [t for t in valid_teams if t["league"] == alt_lg]
+                alt_teams.sort(key=lambda t: t["win_pct"])
+                alt_name = LEAGUE_LABELS.get(alt_lg, alt_lg)
+                boss0 = make_boss(pitchers_for_league(alt_lg), f"story_{year}_{alt_lg}_BOSS", f"{year} {alt_name} ALL-STARS", year, alt_name)
+                zones.append({"label": alt_name, "league": alt_lg, "teams": alt_teams, "boss": boss0})
+
+                lg2 = sorted_lgs[1]
+                lg2_teams = [t for t in valid_teams if t["league"] == lg2]
+                lg2_teams.sort(key=lambda t: t["win_pct"])
+                lg2_name = LEAGUE_LABELS.get(lg2, lg2)
+                boss1 = make_boss(pitchers_for_league(lg2), f"story_{year}_{lg2}_BOSS", f"{year} {lg2_name} ALL-STARS", year, lg2_name)
+                zones.append({"label": lg2_name, "league": lg2, "teams": lg2_teams, "boss": boss1})
+
+                lg3 = sorted_lgs[2]
+                lg3_teams = [t for t in valid_teams if t["league"] == lg3]
+                lg3_teams.sort(key=lambda t: t["win_pct"])
+                lg3_name = LEAGUE_LABELS.get(lg3, lg3)
+                boss2 = make_boss(pitchers_for_league(lg3), f"story_{year}_{lg3}_BOSS", f"{year} {lg3_name} ALL-STARS", year, lg3_name)
+                zones.append({"label": lg3_name, "league": lg3, "teams": lg3_teams, "boss": boss2})
+
+                top_teams = sorted(valid_teams, key=lambda t: t["win_pct"], reverse=True)[:6]
+                top_teams.sort(key=lambda t: t["win_pct"])
+                champ_boss = make_boss(year_pitchers, f"story_{year}_CHAMP_BOSS", f"{year} CHAMPIONSHIP ALL-STARS", year, "The Championship Chase")
+                zones.append({"label": "The Championship Chase", "league": "CHAMP", "teams": top_teams, "boss": champ_boss})
+
+        # CASE B: Exactly 2 Leagues (e.g. AL & NL 1901-1913, 1949-1968, AA & NL 1882-1891)
+        elif len(major_leagues) == 2:
+            lg1, lg2 = major_leagues[0], major_leagues[1]
+            lg1_name, lg2_name = LEAGUE_LABELS.get(lg1, lg1), LEAGUE_LABELS.get(lg2, lg2)
+            lg1_teams = sorted([t for t in valid_teams if t["league"] == lg1], key=lambda t: t["win_pct"])
+            lg2_teams = sorted([t for t in valid_teams if t["league"] == lg2], key=lambda t: t["win_pct"])
+
+            mid1 = max(1, len(lg1_teams) // 2)
+            mid2 = max(1, len(lg2_teams) // 2)
+
+            z0_teams = lg1_teams[:mid1]
+            boss0 = make_boss(pitchers_for_league(lg1), f"story_{year}_{lg1}_Z0_BOSS", f"{year} {lg1_name} RISING STARS", year, f"{lg1_name} (Second Div)")
+            zones.append({"label": f"{lg1_name} (Second Div)", "league": lg1, "teams": z0_teams, "boss": boss0})
+
+            z1_teams = lg2_teams[:mid2]
+            boss1 = make_boss(pitchers_for_league(lg2), f"story_{year}_{lg2}_Z1_BOSS", f"{year} {lg2_name} RISING STARS", year, f"{lg2_name} (Second Div)")
+            zones.append({"label": f"{lg2_name} (Second Div)", "league": lg2, "teams": z1_teams, "boss": boss1})
+
+            z2_teams = lg1_teams[mid1:-1] + lg2_teams[mid2:-1]
+            if not z2_teams:
+                z2_teams = lg1_teams[mid1:] + lg2_teams[mid2:]
+            z2_teams.sort(key=lambda t: t["win_pct"])
+            boss2 = make_boss(year_pitchers, f"story_{year}_PENNANT_BOSS", f"{year} PENNANT CONTENDERS ALL-STARS", year, "The Pennant Chase")
+            zones.append({"label": "The Pennant Chase", "league": "MLB", "teams": z2_teams, "boss": boss2})
+
+            z3_teams = [lg1_teams[-1], lg2_teams[-1]]
+            if len(lg1_teams) > 1 and len(lg2_teams) > 1:
+                z3_teams = [lg1_teams[-2], lg2_teams[-2], lg1_teams[-1], lg2_teams[-1]]
+            z3_teams.sort(key=lambda t: t["win_pct"])
+            boss3 = make_boss(year_pitchers, f"story_{year}_WS_BOSS", f"{year} WORLD SERIES ALL-STARS", year, "The Fall Classic")
+            zones.append({"label": "The Fall Classic", "league": "WS", "teams": z3_teams, "boss": boss3})
+
+        # CASE C: 1 League (e.g. 1876-1881)
+        else:
+            lg = major_leagues[0] if major_leagues else "NL"
+            lg_name = LEAGUE_LABELS.get(lg, "League")
+            sorted_teams = sorted(valid_teams, key=lambda t: t["win_pct"])
+            n = len(sorted_teams)
+            q1, q2, q3 = max(1, n // 4), max(2, n // 2), max(3, (3 * n) // 4)
+
+            z0 = sorted_teams[:q1]
+            z1 = sorted_teams[q1:q2]
+            z2 = sorted_teams[q2:q3]
+            z3 = sorted_teams[q3:]
+
+            b0 = make_boss(year_pitchers, f"story_{year}_Q0_BOSS", f"{year} {lg_name} RISING STARS", year, f"{lg_name} Underdogs")
+            b1 = make_boss(year_pitchers, f"story_{year}_Q1_BOSS", f"{year} {lg_name} MID-SEASON ACES", year, f"{lg_name} Contenders")
+            b2 = make_boss(year_pitchers, f"story_{year}_Q2_BOSS", f"{year} {lg_name} PENNANT ACES", year, f"{lg_name} Pennant Race")
+            b3 = make_boss(year_pitchers, f"story_{year}_Q3_BOSS", f"{year} {lg_name} CHAMPIONS", year, f"{lg_name} Champions")
+
+            zones = [
+                {"label": f"{lg_name} - Underdogs", "league": lg, "teams": z0, "boss": b0},
+                {"label": f"{lg_name} - Contenders", "league": lg, "teams": z1, "boss": b1},
+                {"label": f"{lg_name} - Pennant Race", "league": lg, "teams": z2, "boss": b2},
+                {"label": f"{lg_name} - Champions", "league": lg, "teams": z3, "boss": b3},
+            ]
+
+        return zones
+
     result = {}
     years = sorted(py["yearID"].unique())
     for year in years:
         year_pitchers = py[py["yearID"] == year].copy()
         year_teams = teams_slim[teams_slim["yearID"] == year]
         low, mid, high = [], [], []
+        valid_teams_for_zones = []
 
         for _, trow in year_teams.iterrows():
             roster = year_pitchers[year_pitchers["primary_team"] == trow["teamID"]].copy()
@@ -310,7 +479,8 @@ def main():
             relief_mult = np.where(is_relief, 1.6, 1.0)
             roster["war_sort"] = roster["war_season"].fillna(roster["IP_y"] / 50.0) * relief_mult
             roster = roster.sort_values("war_sort", ascending=False).head(3)
-            if roster.empty:
+            # Solo equipos con al menos 3 lanzadores reales son elegibles como oponentes
+            if len(roster) < 3:
                 continue
             team_ovr = int(round(roster["ovr"].mean()))
             entry = {
@@ -331,11 +501,9 @@ def main():
                 high.append(entry)
             else:
                 mid.append(entry)
+            valid_teams_for_zones.append(entry)
 
-        # Boss: 3 pitchers al azar del anio (cualquier equipo) entre los de
-        # rareza Legendary -- antes era un top-3 por WAR fijo, lo que
-        # producia siempre el mismo trio "dream team" cada corrida del mismo
-        # anio. Si el anio no tiene 3 Legendary, se completa con Epic.
+        # Global Boss (3 pitchers al azar del anio entre Legendary/Epic)
         boss_pool = year_pitchers[year_pitchers["rarity"] == "Legendary"]
         if len(boss_pool) < 3:
             fallback_pool = year_pitchers[
@@ -358,52 +526,51 @@ def main():
                 "pitchers": [pitcher_json(r) for _, r in boss_roster.iterrows()],
             }
 
-        # ── Divisiones reales (solo 1969+, ver DIV_NAMES arriba) ────────────
-        # Cada division agrupa sus equipos peor->mejor record, mas un boss
-        # (3 mejores pitchers por WAR, solo rareza Epic+, de cualquier equipo
-        # de esa division ese anio) — usado por getEnemyTeam() para mapas
-        # basados en division en vez de los tiers low/mid/high globales.
-        divisions = {}
-        div_teams_this_year = year_teams[year_teams["division"].notna()]
-        for div_label in sorted(div_teams_this_year["division"].unique()):
-            div_team_ids = set(div_teams_this_year[div_teams_this_year["division"] == div_label]["teamID"])
-            div_entries = [e for e in (low + mid + high) if e["teamID"] in div_team_ids]
-            div_entries.sort(key=lambda e: e["win_pct"])  # peor -> mejor
+        # ── 1969+: Divisiones reales ─────────────────────────────────────────
+        divisions = None
+        zones = None
 
-            div_team_pool = year_pitchers[year_pitchers["primary_team"].isin(div_team_ids)].copy()
-            div_pitcher_pool = div_team_pool[div_team_pool["rarity"].isin(["Epic", "Legendary"])]
-            # Boss = 3 random picks from the division's Epic+ pool (not a fixed
-            # top-3 by WAR — the user wants variety run to run, not the same
-            # division "dream team" every time). If the division doesn't have 3
-            # Epic+ arms that year, fill the rest from Rare so a thin division
-            # still gets a 3-pitcher boss instead of failing/looking empty.
-            if len(div_pitcher_pool) < 3:
-                fallback_pool = div_team_pool[
-                    (div_team_pool["rarity"] == "Rare")
-                    & (~div_team_pool.index.isin(div_pitcher_pool.index))
-                ]
-                div_pitcher_pool = pd.concat([div_pitcher_pool, fallback_pool])
-            n_pick = min(3, len(div_pitcher_pool))
-            div_boss_roster = div_pitcher_pool.sample(n=n_pick, random_state=None) if n_pick > 0 else div_pitcher_pool
-            div_boss = None
-            if not div_boss_roster.empty:
-                div_boss = {
-                    "id": f"story_{int(year)}_{div_label.replace(' ', '')}_BOSS",
-                    "name": f"\U0001F451 {int(year)} {div_label} ALL-STARS",
-                    "year": int(year),
-                    "teamID": f"{div_label.replace(' ', '')}_BOSS",
-                    "division": div_label,
-                    "win_pct": 1.0,
-                    "isBoss": True,
-                    "ovr": int(round(div_boss_roster["ovr"].mean())),
-                    "pitchers": [pitcher_json(r) for _, r in div_boss_roster.iterrows()],
-                }
+        if int(year) >= 1969:
+            divisions = {}
+            div_teams_this_year = year_teams[year_teams["division"].notna()]
+            for div_label in sorted(div_teams_this_year["division"].unique()):
+                div_team_ids = set(div_teams_this_year[div_teams_this_year["division"] == div_label]["teamID"])
+                div_entries = [e for e in (low + mid + high) if e["teamID"] in div_team_ids]
+                div_entries.sort(key=lambda e: e["win_pct"])  # peor -> mejor
 
-            divisions[div_label] = {"teams": div_entries, "boss": div_boss}
+                div_team_pool = year_pitchers[year_pitchers["primary_team"].isin(div_team_ids)].copy()
+                div_pitcher_pool = div_team_pool[div_team_pool["rarity"].isin(["Epic", "Legendary"])]
+                if len(div_pitcher_pool) < 3:
+                    fallback_pool = div_team_pool[
+                        (div_team_pool["rarity"] == "Rare")
+                        & (~div_team_pool.index.isin(div_pitcher_pool.index))
+                    ]
+                    div_pitcher_pool = pd.concat([div_pitcher_pool, fallback_pool])
+                n_pick = min(3, len(div_pitcher_pool))
+                div_boss_roster = div_pitcher_pool.sample(n=n_pick, random_state=None) if n_pick > 0 else div_pitcher_pool
+                div_boss = None
+                if not div_boss_roster.empty:
+                    div_boss = {
+                        "id": f"story_{int(year)}_{div_label.replace(' ', '')}_BOSS",
+                        "name": f"\U0001F451 {int(year)} {div_label} ALL-STARS",
+                        "year": int(year),
+                        "teamID": f"{div_label.replace(' ', '')}_BOSS",
+                        "division": div_label,
+                        "win_pct": 1.0,
+                        "isBoss": True,
+                        "ovr": int(round(div_boss_roster["ovr"].mean())),
+                        "pitchers": [pitcher_json(r) for _, r in div_boss_roster.iterrows()],
+                    }
+
+                divisions[div_label] = {"teams": div_entries, "boss": div_boss}
+        else:
+            # ── Pre-1969: 4 Zonas Estructuradas por Ligas / Circuitos ──────────
+            zones = build_pre1969_zones(year, year_pitchers, valid_teams_for_zones)
 
         result[str(int(year))] = {
             "year": int(year), "low": low, "mid": mid, "high": high, "boss": boss,
             "divisions": divisions if divisions else None,
+            "zones": zones if zones else None,
         }
 
     print(f"  {len(result):,} anios procesados")

@@ -754,19 +754,20 @@
       window.OpponentsPool = customPool;
       this.seasonPoolData = seasonData;
 
-      // Division-based maps (1969+ only — pre-1969 seasons have no divID in
-      // Lahman, seasonData.divisions is null and Story Mode falls back to the
-      // existing low/mid/high tier system unchanged). Pick 4 divisions (all of
-      // them for 1969-1993, a random 4-of-6 for 1994+) and assign one per zone.
+      // Zone / Division-based maps:
+      // For pre-1969 seasons: seasonData.zones contains the 4 structured historical zones in order.
+      // For 1969+ seasons: seasonData.divisions contains the divisional map (pick 4).
       this.selectedDivisions = null;
-      if (seasonData.divisions) {
+      if (seasonData.zones && seasonData.zones.length > 0) {
+        this.selectedDivisions = seasonData.zones.map(z => ({ label: z.label, ...z }));
+      } else if (seasonData.divisions) {
         const labels = Object.keys(seasonData.divisions);
         const shuffled = [...labels].sort(() => Math.random() - 0.5);
         const picked = shuffled.slice(0, 4);
         this.selectedDivisions = picked.map(label => ({ label, ...seasonData.divisions[label] }));
       }
 
-      console.log(`Loaded Story Mode Season ${targetYear} with ${customPool.length} teams${this.selectedDivisions ? ` (${this.selectedDivisions.length} divisions)` : ''}`);
+      console.log(`Loaded Story Mode Season ${targetYear} with ${customPool.length} teams${this.selectedDivisions ? ` (${this.selectedDivisions.length} zones/divisions)` : ''}`);
     }
 
     constructor() {
@@ -1988,6 +1989,12 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
             const addFrom = (arr) => { (arr || []).forEach(e => { (e.pitchers || []).forEach(p => allPitchers.push(p)); }); };
             addFrom(seasonData.low); addFrom(seasonData.mid); addFrom(seasonData.high);
             if (seasonData.boss) addFrom([seasonData.boss]);
+            if (seasonData.zones) {
+              seasonData.zones.forEach(z => {
+                addFrom(z.teams);
+                if (z.boss) addFrom([z.boss]);
+              });
+            }
             if (seasonData.divisions) {
               Object.values(seasonData.divisions).forEach(d => {
                 addFrom(d.teams);
