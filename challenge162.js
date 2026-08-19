@@ -1026,7 +1026,7 @@
       const targetWinProb = winProbability(userStrength, oppStrength, S.streak || 0);
       const targetWin = Math.random() < targetWinProb;
 
-      const MAX_ATTEMPTS = 3;
+      const MAX_ATTEMPTS = 2;
       let attempt = null;
       for (let i = 0; i < MAX_ATTEMPTS; i++) {
         attempt = this._simulateNaturalGame(userLineup, userSP, userRelievers, opp, gameIdx);
