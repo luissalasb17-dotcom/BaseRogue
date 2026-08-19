@@ -58,7 +58,9 @@ POS_DISPLAY_MAP = {
     "LF": "LF", "CF": "CF", "RF": "RF", "OF": "CF", "DH": "DH",
 }
 
-LEGEND_POS_OVERRIDES = {}
+LEGEND_POS_OVERRIDES = {
+    "Larry Doby": ("CF", "2B"),
+}
 
 
 def assign_era(year):
@@ -1186,6 +1188,13 @@ def paso_15_equipo_y_exportar(df, batting, teams, franchises, pico_df=None):
     for col in stat_cols + ["avg_attr_score"]:
         if col in final.columns:
             final[col] = final[col].round(1)
+
+    for idx, r in final.iterrows():
+        name_val = r["name"]
+        if name_val in LEGEND_POS_OVERRIDES:
+            p_pos, s_pos = LEGEND_POS_OVERRIDES[name_val]
+            final.at[idx, "pos"] = p_pos
+            final.at[idx, "sec_pos"] = s_pos
 
     final.sort_values(["era","avg_attr_score"], ascending=[True,False], inplace=True)
     final.reset_index(drop=True, inplace=True)
