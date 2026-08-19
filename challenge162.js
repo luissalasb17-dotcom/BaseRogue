@@ -572,16 +572,16 @@
     // Hits: Target Batting Average scaled across non-walk at-bats (1 - pBB)
     // Ensures high-walk sluggers (130+ BB e.g. Ruth, Bonds, Williams) keep their authentic .370-.395 AVG:
     const defEfficiency = (pitcher && pitcher._fieldingDef) !== undefined ? pitcher._fieldingDef : 50;
-    const defAdj = (defEfficiency - 50) * 0.0004;
+    const defAdj = (defEfficiency - 50) * 0.00028;
 
     let targetAvg, pHR;
     if (isUserBatting) {
       targetAvg = 0.268 + (conEffective - 50) * 0.00165 - (pH9 - 50) * 0.00070 - defAdj;
       pHR = 0.028 + (pwrEffective - 50) * 0.00110 - (pHR9 - 50) * 0.00030;
     } else {
-      // Opponent batting vs User pitching: calibrated to deliver authentic 2.20-3.30 ERAs for quality starters and 1.80-2.80 for elite relievers:
-      targetAvg = 0.240 + (conEffective - 50) * 0.00140 - (pH9 - 50) * 0.00095 - defAdj;
-      pHR = 0.028 + (pwrEffective - 50) * 0.00110 - (pHR9 - 50) * 0.00045;
+      // Opponent batting vs User pitching: calibrated to deliver authentic 2.20-3.50 ERAs for quality starters and 1.80-2.80 for elite relievers:
+      targetAvg = 0.252 + (conEffective - 50) * 0.00140 - (pH9 - 50) * 0.00075 - defAdj;
+      pHR = 0.030 + (pwrEffective - 50) * 0.00110 - (pHR9 - 50) * 0.00032;
     }
 
     targetAvg = Math.max(0.14, Math.min(0.42, targetAvg));
