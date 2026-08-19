@@ -16,9 +16,9 @@
   const SAVE_KEY = 'baserogue_162challenge_v1';
 
   const PLAYOFF_ROUNDS = [
-    { key: 'division', label: 'SERIE DIVISIONAL', round: 1, difficulty: 'Dificultad: Experto', desc: 'Ronda 1: Enfrenta al 3er mejor equipo', statBoost: 6, hpMult: 1.25, rarities: ['Rare', 'Epic'] },
-    { key: 'championship', label: 'SERIE DE CAMPEONATO', round: 2, difficulty: 'Dificultad: Leyenda', desc: 'Ronda 2: Enfrenta al 2do mejor equipo', statBoost: 12, hpMult: 1.50, rarities: ['Epic', 'Legendary'] },
-    { key: 'world', label: '🏆 SERIE MUNDIAL [JEFE FINAL]', round: 3, difficulty: 'DIFICULTAD: PESADILLA', desc: 'Jefe Final: El #1 invicto de la liga', statBoost: 20, hpMult: 1.80, rarities: ['Legendary'] }
+    { key: 'division', label: 'SERIE DIVISIONAL', round: 1, difficulty: 'Dificultad: Experto', desc: 'Ronda 1: Enfrenta al 3er mejor equipo', statBoost: 2, hpMult: 1.05, rarities: ['Rare', 'Epic'] },
+    { key: 'championship', label: 'SERIE DE CAMPEONATO', round: 2, difficulty: 'Dificultad: Leyenda', desc: 'Ronda 2: Enfrenta al 2do mejor equipo', statBoost: 4, hpMult: 1.12, rarities: ['Epic', 'Legendary'] },
+    { key: 'world', label: '🏆 SERIE MUNDIAL [JEFE FINAL]', round: 3, difficulty: 'DIFICULTAD: PESADILLA', desc: 'Jefe Final: El #1 invicto de la liga', statBoost: 6, hpMult: 1.20, rarities: ['Legendary'] }
   ];
 
   const RECORDS_KEY = 'baserogue_162challenge_records_v1';
@@ -405,9 +405,9 @@
     const chosen = ranked[pickIndex] || ranked[0];
     const franchiseTeam = chosen.team;
 
-    // Escalating boss buffs:
-    const hpMult = round === 2 ? 1.80 : (round === 1 ? 1.50 : 1.25);
-    const statBuff = round === 2 ? 20 : (round === 1 ? 12 : 6);
+    // Escalating boss buffs calibrated for fair & thrilling playoff showdowns:
+    const hpMult = (cfg && cfg.hpMult) ? cfg.hpMult : (round === 2 ? 1.20 : (round === 1 ? 1.12 : 1.05));
+    const statBuff = (cfg && cfg.statBoost !== undefined) ? cfg.statBoost : (round === 2 ? 6 : (round === 1 ? 4 : 2));
 
     const boostPitcher = (p, role) => {
       if (!p) return null;
@@ -634,9 +634,11 @@
 
   function winProbability(userStrength, oppStrength, streak) {
     const diff = userStrength - oppStrength;
-    let p = 1 / (1 + Math.exp(-diff * 0.15));
-    p += Math.min(0.10, streak * 0.0012);
-    return Math.max(0.03, Math.min(0.99, p));
+    // Baseball parity logit: a +10 OVR difference produces ~68-72% expected win rate
+    // Teams with 90+ OVR will average 105-125 wins over 162 games.
+    let p = 1 / (1 + Math.exp(-diff * 0.080));
+    p += Math.min(0.03, streak * 0.0008);
+    return Math.max(0.12, Math.min(0.92, p));
   }
 
   window.Challenge162 = {
@@ -983,7 +985,7 @@
       const targetWinProb = winProbability(userStrength, oppStrength, S.streak || 0);
       const targetWin = Math.random() < targetWinProb;
 
-      const MAX_ATTEMPTS = 8;
+      const MAX_ATTEMPTS = 3;
       let attempt = null;
       for (let i = 0; i < MAX_ATTEMPTS; i++) {
         attempt = this._simulateNaturalGame(userLineup, userSP, userRelievers, opp, gameIdx);
@@ -1254,6 +1256,20 @@
       } else {
         G.battingOrder = this.state.roster.battingOrder ? this.state.roster.battingOrder.slice() : rawOrder;
       }
+
+      // Determine dominant era for active synergy in playoffs:
+      const eraCounts = {};
+      Object.values(lineup).filter(Boolean).forEach(p => {
+        if (p.era) eraCounts[p.era] = (eraCounts[p.era] || 0) + 1;
+      });
+      let dominantEra = (this.state.modeConfig && this.state.modeConfig.targetEra) || null;
+      if (!dominantEra) {
+        let maxC = 0;
+        Object.entries(eraCounts).forEach(([era, count]) => {
+          if (count > maxC) { maxC = count; dominantEra = era; }
+        });
+      }
+      G.buildEra = dominantEra;
 
       G.currentEnemy = enemyTeam;
       G.runActive = true;

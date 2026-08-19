@@ -743,14 +743,18 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
       const cardsRow = document.createElement('div');
       cardsRow.className = 'cards-row flex flex-col md:flex-row gap-3 justify-center items-center md:items-start w-full';
 
-      // Tap-to-open vintage pack — themed per round's rarity floor (rounds 1-3
-      // can surface Epic/Legendary -> premium foil; rounds 4-6 are Common-only
-      // -> plain wax pack; free rounds 7-9 -> rainbow mystery pack). Tears open
-      // on click, then hands off to the existing staggered card deal-in.
-      const rarities = info.rarities || [];
+      // Tap-to-open vintage pack — themed per round's rarity floor:
+      // Round 1 -> epic (Gold / Epic foil)
+      // Round 2 -> rare (Sapphire Blue foil)
+      // Round 3 -> uncommon (Emerald Green foil)
+      // Rounds 4-6 -> common (Vintage plain wax pack)
+      // Rounds 7-9 -> random (Rainbow mystery pack)
       let packTheme = 'random';
-      if (rarities.includes('Legendary') || rarities.includes('Epic')) packTheme = 'premium';
-      else if (rarities.length && rarities.every(r => r === 'Common')) packTheme = 'common';
+      if (round === 1) packTheme = 'epic';
+      else if (round === 2) packTheme = 'rare';
+      else if (round === 3) packTheme = 'uncommon';
+      else if (round >= 4 && round <= 6) packTheme = 'common';
+      else packTheme = 'random';
 
       const pack = document.createElement('div');
       pack.className = `draft-pack draft-pack--${packTheme}`;
@@ -1526,8 +1530,11 @@ function initGameModeSelector() {
     // staggered card deal-in below.
     const rarities = picks.map(p => p.rarity || 'Common');
     let packTheme = 'random';
-    if (rarities.includes('Legendary') || rarities.includes('Epic')) packTheme = 'premium';
+    if (rarities.includes('Legendary') || rarities.includes('Epic')) packTheme = 'epic';
+    else if (rarities.includes('Rare')) packTheme = 'rare';
+    else if (rarities.includes('Uncommon')) packTheme = 'uncommon';
     else if (rarities.every(r => r === 'Common')) packTheme = 'common';
+    else packTheme = 'random';
 
     const pack = document.createElement('div');
     pack.className = `draft-pack draft-pack--${packTheme}`;
