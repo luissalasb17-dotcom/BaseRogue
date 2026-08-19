@@ -58,9 +58,7 @@ POS_DISPLAY_MAP = {
     "LF": "LF", "CF": "CF", "RF": "RF", "OF": "CF", "DH": "DH",
 }
 
-LEGEND_POS_OVERRIDES = {
-    "Larry Doby": ("CF", "2B"),
-}
+LEGEND_POS_OVERRIDES = {}
 
 
 def assign_era(year):
@@ -437,9 +435,25 @@ def paso_6_posicion_bateadores(fielding, fielding_of, appearances=None, pico_df=
     career_app = appearances.copy() if appearances is not None else None
     career_f = fielding.copy() if not fielding.empty else None
 
+    # Multiplicador 1.6x de calendario para Ligas Negras (alineado con la estandarizacion de WAR de 60G a 96G+)
+    NL_LEAGUES = {'NNL', 'NN2', 'NAL', 'ECL', 'ANL', 'EWL', 'NSL', 'IND', 'EAS', 'NN1'}
+    if career_app is not None and not career_app.empty:
+        is_nlb_app = career_app['lgID'].isin(NL_LEAGUES) if 'lgID' in career_app.columns else career_app['teamID'].isin(NLB_TEAMS)
+        mult_app = np.where(is_nlb_app, 1.6, 1.0)
+        pos_cols = ['G_c', 'G_1b', 'G_2b', 'G_3b', 'G_ss', 'G_lf', 'G_cf', 'G_rf', 'G_dh']
+        for col in pos_cols:
+            if col in career_app.columns:
+                career_app[col] = pd.to_numeric(career_app[col], errors='coerce').fillna(0) * mult_app
+
+    if career_f is not None and not career_f.empty:
+        is_nlb_f = career_f['lgID'].isin(NL_LEAGUES) if 'lgID' in career_f.columns else career_f['teamID'].isin(NLB_TEAMS)
+        mult_f = np.where(is_nlb_f, 1.6, 1.0)
+        if 'G' in career_f.columns:
+            career_f['G'] = pd.to_numeric(career_f['G'], errors='coerce').fillna(0) * mult_f
+
     # Filtrar a temporadas PICO para determinar la POSICION PRIMARIA
-    peak_app = appearances.copy() if appearances is not None else None
-    peak_f = fielding.copy() if not fielding.empty else None
+    peak_app = career_app.copy() if career_app is not None else None
+    peak_f = career_f.copy() if career_f is not None else None
     if pico_df is not None and not pico_df.empty:
         peak_years = pico_df[['playerID', 'yearID']].drop_duplicates()
         if peak_app is not None and not peak_app.empty:
