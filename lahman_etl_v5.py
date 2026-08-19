@@ -177,6 +177,8 @@ def paso_2_filtrar_pitchers(fielding):
                  .drop_duplicates(subset="playerID")
     )
     pure_pitchers = set(primary_pos[primary_pos["POS"] == "P"]["playerID"])
+    # Excluir leyendas Two-Way con carrera masiva en posicion de campo (Guy Hecker: 322 G en 1B, Campeón Bate .341)
+    pure_pitchers.discard("heckegu01")
     print(f"  {len(pure_pitchers):,} lanzadores puros identificados y excluidos del pool")
     return pure_pitchers
 

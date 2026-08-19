@@ -134,7 +134,7 @@ window.showScreen = function(screenId) {
     if (s) s.classList.add('hidden');
   });
 
-  const allChallengeScreens = ['screen-challenge-roster', 'screen-challenge-season', 'screen-challenge-playoffs', 'screen-challenge-results'];
+  const allChallengeScreens = ['screen-challenge-hub', 'screen-challenge-roster', 'screen-challenge-season', 'screen-challenge-playoffs', 'screen-challenge-results'];
   allChallengeScreens.forEach(id => {
     const s = document.getElementById(id);
     if (s && id !== screenId) s.classList.add('hidden');

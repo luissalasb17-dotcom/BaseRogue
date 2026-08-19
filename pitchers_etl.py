@@ -204,8 +204,8 @@ def paso_2_identificar_pitchers_puros(fielding):
                  .drop_duplicates(subset="playerID")
     )
     pure_pitchers = set(primary_pos[primary_pos["POS"] == "P"]["playerID"])
-    # Incluir variantes duales canónicas y leyendas históricas de dos vías (Ruth)
-    for dual_id in ["eckerde01_sp", "eckerde01_rp", "smoltjo01_sp", "smoltjo01_rp", "ruthba01"]:
+    # Incluir variantes duales canónicas y leyendas históricas de dos vías (Ruth, Rogan, Ward, Caruthers, Wood)
+    for dual_id in ["eckerde01_sp", "eckerde01_rp", "smoltjo01_sp", "smoltjo01_rp", "ruthba01", "roganbu99", "wardjo01", "carutbo01", "woodjo02"]:
         pure_pitchers.add(dual_id)
     print(f"  {len(pure_pitchers):,} pitchers puros identificados")
     return pure_pitchers
@@ -682,9 +682,8 @@ def paso_8_atributos_raw(df):
     bb_k = df["peak_bb"].fillna(0)
     hr_k = df["peak_hr_a"].fillna(0)
 
-    # Suavizado bayesiano: m = 350 IP para NLB (debido a calendarios mas cortos con muestras pequeñas) vs m = 50 IP para MLB
-    is_nlb = df["is_nlb"].fillna(False) if "is_nlb" in df.columns else False
-    m_ip = np.where(is_nlb, 350.0, 50.0)
+    # Suavizado bayesiano: m = 200 IP unificado para todos (equivalente a 1 temporada de lanzador abridor)
+    m_ip = 200.0
 
     df["h9_raw"]  = (h_k  + m_ip * (8.5 / 9.0)) / (ip_k + m_ip) * 9.0
     df["k9_raw"]  = (so_k + m_ip * (5.5 / 9.0)) / (ip_k + m_ip) * 9.0
@@ -702,7 +701,7 @@ def paso_8_atributos_raw(df):
     df["ip_per_year_raw"] = df["ip_per_year"].fillna(50.0) * nlb_calendar_mult
     df["sta_raw"] = df["ip_per_year_raw"]
 
-    print("  h9_raw, k9_raw, bb9_raw, hr9_raw, sta_raw calculados con suavizado Bayesiano (m=50)")
+    print("  h9_raw, k9_raw, bb9_raw, hr9_raw, sta_raw calculados con suavizado Bayesiano (m=200)")
     return df
 
 
@@ -745,18 +744,6 @@ def paso_10_normalizar_por_era(df):
 
     df["sta_val"] = df["ip_per_year_raw"].apply(map_ip_to_sta).round(1)
 
-    # Factor de sostenibilidad por muestra en el pico:
-    # 1.0% por cada año faltante para completar las 7 temporadas (clip entre 1 y 7)
-    seasons_cnt = df["total_seasons_in_peak"].fillna(7).clip(lower=1, upper=7)
-    sustainability_factor = 1.0 - (7 - seasons_cnt) * 0.01
-
-    # Aplicar directamente a los ratings de pitcheo
-    df["h9_val"]  = (df["h9_val"]  * sustainability_factor).round(1)
-    df["k9_val"]  = (df["k9_val"]  * sustainability_factor).round(1)
-    df["bb9_val"] = (df["bb9_val"] * sustainability_factor).round(1)
-    df["hr9_val"] = (df["hr9_val"] * sustainability_factor).round(1)
-    df["sta_val"] = (df["sta_val"] * sustainability_factor).round(1)
-
     # Aliases para compatibilidad con UI y simulador
     df["stf_val"] = df["k9_val"]
     df["str_val"] = df["k9_val"]
@@ -764,7 +751,7 @@ def paso_10_normalizar_por_era(df):
     df["mov_val"] = df["hr9_val"]
     df["grt_val"] = df["h9_val"]
 
-    print("  h9_val, k9_val, bb9_val, hr9_val, sta_val normalizados y calibrados con factor de sostenibilidad")
+    print("  h9_val, k9_val, bb9_val, hr9_val, sta_val normalizados")
     return df
 
 
