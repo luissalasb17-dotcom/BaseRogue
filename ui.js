@@ -2985,9 +2985,9 @@ function initGameModeSelector() {
 
   function getPlayerOvr(p) {
     if (!p) return 60;
-    if (p.ovr !== undefined) return Math.round(p.ovr);
-    if (p.avg_attr_score !== undefined) return Math.round(p.avg_attr_score);
-    if (p._ovr !== undefined) return Math.round(p._ovr);
+    if (p.ovr !== undefined) return Math.floor(p.ovr);
+    if (p.avg_attr_score !== undefined) return Math.floor(p.avg_attr_score);
+    if (p._ovr !== undefined) return Math.floor(p._ovr);
     const isPitcher = p.pos === 'P' || p.pos === 'SP' || p.pos === 'RP' || p.role === 'P' || p.role === 'SP' || p.role === 'RP';
     if (isPitcher) {
       const h9  = p.h9  !== undefined ? p.h9  : (p.h9_val  !== undefined ? p.h9_val  : (p.grt !== undefined ? p.grt : 50));
@@ -2996,11 +2996,11 @@ function initGameModeSelector() {
       const hr9 = p.hr9 !== undefined ? p.hr9 : (p.hr9_val !== undefined ? p.hr9_val : (p.mov !== undefined ? p.mov : 50));
       const sta = p.sta !== undefined ? p.sta : (p.sta_val !== undefined ? p.sta_val : 65);
       const raw = h9 * 0.20 + k9 * 0.20 + bb9 * 0.20 + hr9 * 0.20 + sta * 0.20;
-      if (raw <= 48.0) return Math.round(50.0 + ((raw - 15.0) / 33.0) * 9.9);
-      if (raw <= 56.0) return Math.round(60.0 + ((raw - 48.0) / 8.0) * 9.9);
-      if (raw <= 66.0) return Math.round(70.0 + ((raw - 56.0) / 10.0) * 9.9);
-      if (raw <= 78.0) return Math.round(80.0 + ((raw - 66.0) / 12.0) * 9.9);
-      return Math.round(90.0 + Math.min(9.9, ((raw - 78.0) / 18.0) * 9.9));
+      if (raw <= 48.0) return Math.floor(50.0 + ((raw - 15.0) / 33.0) * 9.9);
+      if (raw <= 56.0) return Math.floor(60.0 + ((raw - 48.0) / 8.0) * 9.9);
+      if (raw <= 66.0) return Math.floor(70.0 + ((raw - 56.0) / 10.0) * 9.9);
+      if (raw <= 78.0) return Math.floor(80.0 + ((raw - 66.0) / 12.0) * 9.9);
+      return Math.floor(90.0 + Math.min(9.9, ((raw - 78.0) / 18.0) * 9.9));
     }
     const con = p.con !== undefined ? p.con : (p.contact_val !== undefined ? p.contact_val : 50);
     const pwr = p.pwr !== undefined ? p.pwr : (p.power_val !== undefined ? p.power_val : 50);
@@ -3009,11 +3009,11 @@ function initGameModeSelector() {
     const spd = p.spd !== undefined ? p.spd : (p.speed_val !== undefined ? p.speed_val : 50);
     const def = p.def !== undefined ? p.def : (p.defense_val !== undefined ? p.defense_val : 50);
     const raw = con * 0.28 + pwr * 0.28 + eye * 0.12 + def * 0.12 + spd * 0.10 + kavd * 0.10;
-    if (raw <= 37.0) return Math.round(50.0 + ((raw - 10.0) / 27.0) * 9.9);
-    if (raw <= 48.0) return Math.round(60.0 + ((raw - 37.0) / 11.0) * 9.9);
-    if (raw <= 62.0) return Math.round(70.0 + ((raw - 48.0) / 14.0) * 9.9);
-    if (raw <= 76.0) return Math.round(80.0 + ((raw - 62.0) / 14.0) * 9.9);
-    return Math.round(90.0 + Math.min(9.9, ((raw - 76.0) / 18.0) * 9.9));
+    if (raw <= 37.0) return Math.floor(50.0 + ((raw - 10.0) / 27.0) * 9.9);
+    if (raw <= 48.0) return Math.floor(60.0 + ((raw - 37.0) / 11.0) * 9.9);
+    if (raw <= 62.0) return Math.floor(70.0 + ((raw - 48.0) / 14.0) * 9.9);
+    if (raw <= 76.0) return Math.floor(80.0 + ((raw - 62.0) / 14.0) * 9.9);
+    return Math.floor(90.0 + Math.min(9.9, ((raw - 76.0) / 18.0) * 9.9));
   }
 
   function getStatGrade(val) {
@@ -3315,7 +3315,7 @@ function initGameModeSelector() {
         ${interEraBannerHTML}
         <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
           <span class="card-position" style="background: #000; color: #fff; padding: 2px 4px; font-weight: bold; font-size: 6px; border: 1px solid rgba(255,255,255,0.1);">${displayPos}</span>
-          <span class="card-ovr" style="font-family: 'Press Start 2P', monospace; font-size: 6px; color: ${ovrGrade.color}; font-weight: bold; background: #000; padding: 2px 4px; border: 1px solid rgba(255,255,255,0.2);">OVR ${Math.round(ovr)}</span>
+          <span class="card-ovr" style="font-family: 'Press Start 2P', monospace; font-size: 6px; color: ${ovrGrade.color}; font-weight: bold; background: #000; padding: 2px 4px; border: 1px solid rgba(255,255,255,0.2);">OVR ${Math.floor(ovr)}</span>
           <span class="card-year" style="font-size: 6px;">${year}</span>
         </div>
         ${(() => {
@@ -5561,7 +5561,7 @@ function initGameModeSelector() {
       const recordKey = wp >= 0.560 ? 'record_dominant' : (wp >= 0.480 ? 'record_contender' : 'record_underdog');
       const pctText = (wp * 100).toFixed(1) + '%';
       recordHTML = `<div style="font-size:11px;color:#9ca3af;margin-top:4px;">${t('pre_fight.' + recordKey)} — <strong style="color:#e4e4e7;">${pctText}</strong> ${t('map.win_pct', 'win %')}</div>`;
-      ovrDisplay = enemy.ovr !== undefined && enemy.ovr !== null ? Math.round(enemy.ovr) : null;
+      ovrDisplay = enemy.ovr !== undefined && enemy.ovr !== null ? Math.floor(enemy.ovr) : null;
     } else {
       // Quick Play rosters are 2-3 pitchers assembled independently from the
       // whole pool (see createPitcherObj/pickPitcher in game.js) — they're not
@@ -5571,7 +5571,7 @@ function initGameModeSelector() {
       const pitcherEras = [...new Set((enemy.pitchers || []).map(p => p.era).filter(Boolean))];
       eraName = pitcherEras.length === 1 ? pitcherEras[0] : (pitcherEras.length > 1 ? t('pre_fight.mixed_eras') : '');
       const ovrs = (enemy.pitchers || []).map(p => p.ovr).filter(v => typeof v === 'number');
-      ovrDisplay = ovrs.length ? Math.round(ovrs.reduce((a, b) => a + b, 0) / ovrs.length) : (enemy._ovr || null);
+      ovrDisplay = ovrs.length ? Math.floor(ovrs.reduce((a, b) => a + b, 0) / ovrs.length) : (enemy._ovr || null);
     }
 
     const ovrHTML = ovrDisplay !== null
@@ -6489,6 +6489,8 @@ function initGameModeSelector() {
       return;
     }
 
+    const _t = (key, params, fallback) => (typeof window.t === 'function' ? window.t(key, params) : (fallback || key));
+
     const badgeEl = document.getElementById('def-modal-inning-badge');
     const titleEl = document.getElementById('def-modal-title');
     const descEl = document.getElementById('def-modal-scenario');
@@ -6505,27 +6507,161 @@ function initGameModeSelector() {
     const needleEl = document.getElementById('def-gauge-needle');
     const threshVal = document.getElementById('def-gauge-thresh-val');
     const errorStartVal = document.getElementById('def-gauge-error-start');
+    const catchLabelEl = document.getElementById('def-gauge-catch-label');
+    const errorLabelEl = document.getElementById('def-gauge-error-label');
+    const tacticSafe = document.getElementById('def-tactic-safe');
+    const tacticClutch = document.getElementById('def-tactic-clutch');
+    const speedTag = document.getElementById('def-field-speed-val');
+    const posTag = document.getElementById('def-field-pos-val');
+    const svgTrajectory = document.getElementById('def-svg-trajectory');
+    const svgBall = document.getElementById('def-svg-ball');
+    const svgPositionsGroup = document.getElementById('def-svg-positions-group');
 
     // Play tension intro audio
     if (window.AudioManager) window.AudioManager.play('defense_tension_intro');
 
-    if (badgeEl) {
-      badgeEl.innerHTML = typeof window.t === 'function'
-        ? window.t('sim.def_badge', { inning: defEvent.inning }, `🛡️ BAJA DEL INNING ${defEvent.inning} • DUELO DEFENSIVO`)
-        : `🛡️ BAJA DEL INNING ${defEvent.inning} • DUELO DEFENSIVO`;
-    }
-    if (titleEl) titleEl.innerText = defEvent.scenarioTitle || '¡BATAZO DE PELIGRO RIVAL!';
-    if (descEl) descEl.innerText = defEvent.scenarioDesc || 'El rival conecta una línea quemante hacia la posición defensiva.';
+    const targetPos = defEvent.pos || 'SS';
 
-    // Setup Probability Gauge
-    const thresh = Math.max(1, Math.min(99, defEvent.successThreshold || 75));
-    if (catchBar) catchBar.style.width = `${thresh}%`;
-    if (threshVal) threshVal.innerText = thresh;
-    if (errorStartVal) errorStartVal.innerText = Math.min(100, thresh + 1);
-    if (needleEl) {
-      needleEl.style.display = 'none';
-      needleEl.style.left = '0%';
+    if (badgeEl) {
+      badgeEl.innerHTML = _t('sim.def_badge', { inning: defEvent.inning }, `🛡️ BAJA DEL INNING ${defEvent.inning} • PRUEBA DEFENSIVA`);
     }
+    if (titleEl) {
+      titleEl.innerText = _t(`sim.def_title_${targetPos.toLowerCase()}`, {}, defEvent.scenarioTitle || '¡BATAZO DE PELIGRO RIVAL!');
+    }
+    if (descEl) {
+      descEl.innerText = _t(`sim.def_desc_${targetPos.toLowerCase()}`, {}, defEvent.scenarioDesc || 'El rival conecta una línea quemante hacia la posición defensiva.');
+    }
+
+    // ── Field Coordinates & Interactive SVG Diamond ─────────────────────────
+    const POS_COORDS = {
+      'C':  { x: 150, y: 156, label: 'C' },
+      '1B': { x: 212, y: 114, label: '1B' },
+      '2B': { x: 175, y: 78,  label: '2B' },
+      '3B': { x: 88,  y: 114, label: '3B' },
+      'SS': { x: 125, y: 78,  label: 'SS' },
+      'LF': { x: 75,  y: 42,  label: 'LF' },
+      'CF': { x: 150, y: 25,  label: 'CF' },
+      'RF': { x: 225, y: 42,  label: 'RF' }
+    };
+
+    const targetCoord = POS_COORDS[targetPos] || POS_COORDS['SS'];
+
+    const speedLabel = _t('sim.def_speed_label', {}, 'VELOCIDAD');
+    const zoneLabel = _t('sim.def_zone_label', {}, 'ZONA');
+
+    if (speedTag && speedTag.parentElement) {
+      speedTag.parentElement.innerHTML = `<span style="color:#ef4444;">⚡ ${speedLabel}:</span> <span id="def-field-speed-val">${defEvent.exitVelocity || 104} MPH</span>`;
+    }
+    if (posTag && posTag.parentElement) {
+      posTag.parentElement.innerHTML = `🎯 <span>${zoneLabel}:</span> <span id="def-field-pos-val">${targetPos}</span>`;
+    }
+
+    if (svgTrajectory) {
+      svgTrajectory.setAttribute('x1', '150');
+      svgTrajectory.setAttribute('y1', '155');
+      svgTrajectory.setAttribute('x2', String(targetCoord.x));
+      svgTrajectory.setAttribute('y2', String(targetCoord.y));
+    }
+
+    if (svgBall) {
+      svgBall.setAttribute('cx', '150');
+      svgBall.setAttribute('cy', '155');
+      svgBall.setAttribute('fill', '#ffffff');
+      svgBall.setAttribute('stroke', '#ef4444');
+    }
+
+    if (svgPositionsGroup) {
+      let groupHtml = '';
+      Object.keys(POS_COORDS).forEach(k => {
+        const c = POS_COORDS[k];
+        const isTarget = (k === targetPos);
+        if (isTarget) {
+          groupHtml += `
+            <g class="def-pos-target-node" transform="translate(${c.x}, ${c.y})">
+              <circle r="14" fill="none" stroke="#fbbf24" stroke-width="1.5" opacity="0.8">
+                <animate attributeName="r" values="8;20" dur="1.4s" repeatCount="indefinite" />
+                <animate attributeName="opacity" values="0.9;0" dur="1.4s" repeatCount="indefinite" />
+              </circle>
+              <circle r="10" fill="#0f172a" stroke="#fbbf24" stroke-width="2" />
+              <text y="1" font-size="7" font-weight="bold" fill="#fef08a">${c.label}</text>
+            </g>
+          `;
+        } else {
+          groupHtml += `
+            <g class="def-pos-node" transform="translate(${c.x}, ${c.y})">
+              <circle r="7" fill="rgba(15,23,42,0.8)" stroke="#64748b" stroke-width="1" />
+              <text y="1" font-size="6" fill="#94a3b8">${c.label}</text>
+            </g>
+          `;
+        }
+      });
+      svgPositionsGroup.innerHTML = groupHtml;
+    }
+
+    // ── Tactical Strategy Choice & Gauge Setup ─────────────────────────────
+    let isClutch = false;
+    const baseThresh = Math.max(20, Math.min(99, defEvent.successThreshold || 75));
+
+    function updateTacticsUI() {
+      const currentThresh = isClutch ? Math.max(10, baseThresh - 12) : baseThresh;
+      if (catchBar) catchBar.style.width = `${currentThresh}%`;
+      
+      const catchZoneText = _t('sim.def_catch_zone', {}, 'ZONA DE ATRAPADA');
+      const errorZoneText = _t('sim.def_error_zone', {}, 'ERROR');
+
+      if (catchLabelEl) {
+        catchLabelEl.innerHTML = `🟢 ${catchZoneText} (1–<span id="def-gauge-thresh-val">${currentThresh}</span>)`;
+      }
+      if (errorLabelEl) {
+        errorLabelEl.innerHTML = `🔴 ${errorZoneText} (<span id="def-gauge-error-start">${Math.min(100, currentThresh + 1)}</span>–100)`;
+      }
+
+      if (needleEl) {
+        needleEl.style.display = 'none';
+        needleEl.style.left = '0%';
+      }
+
+      if (tacticSafe) {
+        tacticSafe.classList.toggle('active', !isClutch);
+        const safeTitle = tacticSafe.querySelector('.def-tactic-title');
+        const safeDesc = tacticSafe.querySelector('.def-tactic-desc');
+        if (safeTitle) safeTitle.innerText = _t('sim.def_safe_tactic_title', {}, '🛡️ JUGADA REGULAR');
+        if (safeDesc) safeDesc.innerText = _t('sim.def_safe_tactic_desc', {}, 'Asegurar el guante (Meta estándar • +30 HP)');
+      }
+      if (tacticClutch) {
+        tacticClutch.classList.toggle('active', isClutch);
+        const clutchTitle = tacticClutch.querySelector('.def-tactic-title');
+        const clutchDesc = tacticClutch.querySelector('.def-tactic-desc');
+        if (clutchTitle) clutchTitle.innerText = _t('sim.def_clutch_tactic_title', {}, '⚡ JUGADA DE LUJO');
+        if (clutchDesc) clutchDesc.innerText = _t('sim.def_clutch_tactic_desc', {}, 'Tirarse de cabeza (-12% Meta • +40 HP & +25 Escudo)');
+      }
+
+      if (btnRoll) {
+        btnRoll.innerHTML = isClutch
+          ? _t('sim.def_clutch_btn_label', { thresh: currentThresh }, `⚡ ¡TIRARSE DE CABEZA! (Dado 1 al ${currentThresh})`)
+          : _t('sim.def_safe_btn_label', { thresh: currentThresh }, `🧤 ¡ASEGURAR EL GUANTE! (Dado 1 al ${currentThresh})`);
+      }
+    }
+
+    if (tacticSafe) {
+      tacticSafe.onclick = () => {
+        if (btnRoll && btnRoll.disabled) return;
+        isClutch = false;
+        updateTacticsUI();
+        if (window.AudioManager) window.AudioManager.play('menu_click');
+      };
+    }
+
+    if (tacticClutch) {
+      tacticClutch.onclick = () => {
+        if (btnRoll && btnRoll.disabled) return;
+        isClutch = true;
+        updateTacticsUI();
+        if (window.AudioManager) window.AudioManager.play('menu_click');
+      };
+    }
+
+    updateTacticsUI();
 
     // Reset 3D dice cubes
     if (defFaceTens) defFaceTens.innerText = '0';
@@ -6541,8 +6677,13 @@ function initGameModeSelector() {
     const gradeObj = getStatGrade(defEvent.effDef || 50);
     const isGoldGlove = (defEvent.effDef >= 90);
     const oopBadge = defEvent.isOOP
-      ? `<span style="font-size:8px;color:#f87171;font-weight:bold;margin-left:4px;">⚠️ (Fuera de Posición -35% DEF)</span>`
-      : (isGoldGlove ? `<span style="font-size:8px;color:#fef08a;font-weight:bold;margin-left:4px;">🥇 GUANTE DE ORO</span>` : '');
+      ? `<span style="font-size:8px;color:#f87171;font-weight:bold;margin-left:4px;">${_t('sim.def_oop_badge', {}, '⚠️ (Fuera de Posición -35% DEF)')}</span>`
+      : (isGoldGlove ? `<span style="font-size:8px;color:#fef08a;font-weight:bold;margin-left:4px;">${_t('sim.def_gold_glove_badge', {}, '🥇 GUANTE DE ORO')}</span>` : '');
+
+    const statTotalLabel = _t('sim.def_stat_total', {}, 'Defensa Total:');
+    const gradeLabel = _t('sim.def_grade_label', {}, 'Grado');
+    const hitTypeLabel = _t('sim.def_hit_type', {}, 'Batazo:');
+    const localizedBallType = _t(`sim.def_ball_${targetPos.toLowerCase()}`, {}, defEvent.ballType || 'Línea de peligro');
 
     if (fielderCardEl) {
       fielderCardEl.innerHTML = `
@@ -6550,15 +6691,15 @@ function initGameModeSelector() {
           ${defEvent.scenarioIcon || '🧤'}
         </div>
         <div style="flex:1;min-width:0;">
-          <div style="font-weight:bold;color:#fff;font-size:13px;display:flex;align-items:center;gap:6px;">
+          <div style="font-weight:bold;color:#fff;font-size:12.5px;display:flex;align-items:center;gap:6px;">
             <span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:0.5px;">${p.name || 'Defensor'}</span>
             <span style="font-family:'Press Start 2P',monospace;font-size:8.5px;color:#38bdf8;flex-shrink:0;">[${defEvent.pos}]</span>
           </div>
-          <div style="font-size:11px;color:#cbd5e1;margin-top:3px;">
-            Defensa Total: <strong style="color:${gradeObj.color};font-size:12px;">${defEvent.effDef} (Grado ${gradeObj.text})</strong> ${oopBadge}
+          <div style="font-size:10.5px;color:#cbd5e1;margin-top:2px;">
+            ${statTotalLabel} <strong style="color:${gradeObj.color};font-size:11.5px;">${defEvent.effDef} (${gradeLabel} ${gradeObj.text})</strong> ${oopBadge}
           </div>
-          <div style="font-size:11px;color:#38bdf8;margin-top:4px;font-family:'Press Start 2P',monospace;font-size:8px;">
-            Meta de Atrapada: <strong style="color:#4ade80;">Dado 1 al ${defEvent.successThreshold}</strong> (${defEvent.successThreshold}%)
+          <div style="font-size:9.5px;color:#94a3b8;margin-top:2px;">
+            ${hitTypeLabel} <strong style="color:#fecdd3;">${localizedBallType}</strong> (${defEvent.exitVelocity || 104} MPH)
           </div>
         </div>
       `;
@@ -6568,17 +6709,33 @@ function initGameModeSelector() {
     resultZone.classList.add('hidden');
     resultZone.innerHTML = '';
     btnRoll.disabled = false;
-    btnRoll.innerHTML = typeof window.t === 'function'
-      ? window.t('sim.def_roll_btn', {}, '🎲 ¡LANZAR DADOS DEFENSIVOS!')
-      : '🎲 ¡LANZAR DADOS DEFENSIVOS!';
     modal.classList.remove('hidden');
     modal.style.display = 'flex';
 
     btnRoll.onclick = () => {
       btnRoll.disabled = true;
-      btnRoll.innerHTML = typeof window.t === 'function'
-        ? window.t('sim.def_rolling', {}, '🎲 FILDEANDO...')
-        : '🎲 FILDEANDO...';
+      btnRoll.innerHTML = _t('sim.def_rolling', {}, '⚾ ¡FILDEANDO EN EL CAMPO...!');
+
+      // Animate Ball Flight from Home to Target Position
+      if (svgBall) {
+        const startTime = Date.now();
+        const duration = UNITS_TUMBLE_MS;
+        const startX = 150, startY = 155;
+        const endX = targetCoord.x, endY = targetCoord.y;
+
+        const animateBall = () => {
+          const elapsed = Date.now() - startTime;
+          const progress = Math.min(1, elapsed / duration);
+          const currentX = startX + (endX - startX) * progress;
+          const currentY = startY + (endY - startY) * progress;
+          svgBall.setAttribute('cx', String(currentX));
+          svgBall.setAttribute('cy', String(currentY));
+          if (progress < 1) {
+            requestAnimationFrame(animateBall);
+          }
+        };
+        requestAnimationFrame(animateBall);
+      }
 
       const finalRoll = Math.floor(Math.random() * 100) + 1;
 
@@ -6615,7 +6772,10 @@ function initGameModeSelector() {
 
       setTimeout(() => {
         if (defCubeTens) defCubeTens.classList.add('die-settled');
-        const isSuccess = finalRoll <= defEvent.successThreshold;
+        
+        const result = activeBattle.resolveMidInningDefense(finalRoll, defEvent, isClutch);
+        const isSuccess = result.isSuccess;
+        const totalLostDmg = (result.shieldDmg || 0) + (result.teamHpDmg || 0);
         
         // Show gauge needle position
         if (needleEl) {
@@ -6631,14 +6791,21 @@ function initGameModeSelector() {
           defDiceDisplay.style.textShadow = isSuccess ? '0 0 15px rgba(74, 222, 128, 0.8)' : '0 0 15px rgba(244, 63, 94, 0.8)';
         }
 
-        const result = activeBattle.resolveMidInningDefense(finalRoll, defEvent);
-
-        if (result.isSuccess) {
+        if (isSuccess) {
+          if (svgBall) {
+            svgBall.setAttribute('fill', '#fef08a');
+            svgBall.setAttribute('stroke', '#ca8a04');
+          }
           if (window.AudioManager) window.AudioManager.play('defense_gold_glove');
-          showOutcomePopup('DEF_WIN', `🛡️ ¡JUGADA DE GUANTE DE ORO!\n+30 HP & +15 ESCUDO`);
+          showOutcomePopup('DEF_WIN', `🛡️ ${_t('sim.def_success_banner_title', {}, '¡JUGADA DE GUANTE DE ORO!')}\n+${result.hpHealed} HP | +${result.shieldHealed} ${_t('common.shield', {}, 'ESCUDO')}`);
         } else {
+          if (svgBall) {
+            svgBall.setAttribute('fill', '#ef4444');
+            svgBall.setAttribute('cx', String(targetCoord.x + (targetCoord.x > 150 ? 25 : -25)));
+            svgBall.setAttribute('cy', String(targetCoord.y - 15));
+          }
           if (window.AudioManager) window.AudioManager.play('defense_error');
-          showOutcomePopup('DEF_LOSE', `⚠️ ¡BATAZO RIVAL / ERROR!\n-15 DAÑO AL EQUIPO`);
+          showOutcomePopup('DEF_LOSE', `⚠️ ${_t('sim.def_fail_banner_title', {}, '¡ERROR DEFENSIVO!')}\n-${totalLostDmg} ${_t('common.damage', {}, 'DAÑO')}`);
           const modalBox = modal.querySelector('.def-modal-box');
           if (modalBox) {
             modalBox.style.animation = 'none';
@@ -6651,22 +6818,33 @@ function initGameModeSelector() {
         resultZone.classList.remove('hidden');
 
         const nextInningNum = (defEvent.inning || 1) + 1;
-        const continueBtnText = typeof window.t === 'function'
-          ? window.t('sim.def_continue', { nextInning: nextInningNum }, `⚾ CONTINUAR AL INNING ${nextInningNum}`)
-          : `⚾ CONTINUAR AL INNING ${nextInningNum}`;
+        const continueBtnText = _t('sim.def_continue', { nextInning: nextInningNum }, `⚾ CONTINUAR AL INNING ${nextInningNum}`);
+        const tacticName = isClutch ? _t('sim.def_clutch_name', {}, '⚡ Jugada de Lujo') : _t('sim.def_safe_name', {}, '🛡️ Jugada Regular');
+        const stratLabel = _t('sim.def_strategy_label', {}, 'Estrategia:');
+        const rollLabel = _t('sim.def_roll_label', {}, 'Dado:');
+        const targetLabel = _t('sim.def_target_label', {}, 'Meta:');
+
+        const gainBanner = _t('sim.def_gain_success', { hp: result.hpHealed, shield: result.shieldHealed }, `🟢 ¡GANASTE +${result.hpHealed} HP Y +${result.shieldHealed} ESCUDO!`);
+        const lossBanner = _t('sim.def_loss_fail', { dmg: totalLostDmg, shieldDmg: result.shieldDmg, hpDmg: result.teamHpDmg }, `🔴 ¡PERDISTE -${totalLostDmg} DE DAÑO! (Escudo: -${result.shieldDmg} • HP: -${result.teamHpDmg})`);
+        const teamStatus = _t('sim.def_team_status', { hp: result.teamHP, shield: result.teamShield, shieldMax: activeBattle.teamShieldMax }, `Equipo: HP ${result.teamHP}/100 • Escudo ${result.teamShield}/${activeBattle.teamShieldMax}`);
 
         resultZone.innerHTML = `
-          <div class="${result.isSuccess ? 'def-result-card-success' : 'def-result-card-error'}">
-            <div style="font-family:'Press Start 2P',monospace;font-size:11px;margin-bottom:8px;letter-spacing:0.5px;">
-              ${result.isSuccess ? '🥇 ¡JUGADA DE GUANTE DE ORO!' : '⚠️ ¡BATAZO RIVAL / ERROR DEFENSIVO!'}
+          <div class="${isSuccess ? 'def-result-card-success' : 'def-result-card-error'}">
+            <div style="font-family:'Press Start 2P',monospace;font-size:10.5px;margin-bottom:6px;letter-spacing:0.5px;color:${isSuccess ? '#fef08a' : '#fda4af'};">
+              ${isSuccess ? _t('sim.def_success_banner_title', {}, '🥇 ¡JUGADA DE GUANTE DE ORO!') : _t('sim.def_fail_banner_title', {}, '⚠️ ¡BATAZO DE HIT / ERROR DEFENSIVO!')}
             </div>
-            <div style="font-size:12px;margin-bottom:8px;color:#fff;">
-              Resultado del Dado: <strong style="font-size:16px;color:${result.isSuccess ? '#4ade80' : '#f87171'};">${finalRoll}</strong> (Zona Segura: 1–${defEvent.successThreshold})
+            <div style="font-size:11px;margin-bottom:8px;color:${isSuccess ? '#ecfdf5' : '#fff1f2'};">
+              ${stratLabel} <strong>${tacticName}</strong> • ${rollLabel} <strong style="font-size:14px;color:${isSuccess ? '#4ade80' : '#f87171'};">${finalRoll}</strong> (${targetLabel} 1–${result.targetThreshold})
             </div>
-            <div style="font-size:12px;font-weight:bold;margin-bottom:14px;color:${result.isSuccess ? '#a7f3d0' : '#fecdd3'};">
-              ${result.isSuccess ? '🟢 ¡Atrapada espectacular! Recuperas +30 HP y +15 de Escudo.' : '🔴 ¡Batazo inalcanzable! El equipo sufre -15 de daño.'}
+            <div style="background:rgba(0,0,0,0.35);border:1px solid ${isSuccess ? '#34d399' : '#f43f5e'};border-radius:8px;padding:8px 10px;margin-bottom:10px;">
+              <div style="font-size:12.5px;font-weight:bold;color:${isSuccess ? '#4ade80' : '#f87171'};letter-spacing:0.5px;">
+                ${isSuccess ? gainBanner : lossBanner}
+              </div>
+              <div style="font-size:10px;color:#cbd5e1;margin-top:4px;">
+                ${teamStatus}
+              </div>
             </div>
-            <button class="def-roll-btn" id="btn-def-modal-continue" style="background:linear-gradient(135deg,#059669,#047857)!important;border-color:#34d399!important;box-shadow:0 0 15px rgba(52,211,153,0.4)!important;">
+            <button class="def-roll-btn" id="btn-def-modal-continue" style="background:${isSuccess ? 'linear-gradient(135deg,#059669,#047857)' : 'linear-gradient(135deg,#e11d48,#be123c)'}!important;border-color:${isSuccess ? '#34d399' : '#f43f5e'}!important;box-shadow:0 0 15px ${isSuccess ? 'rgba(52,211,153,0.4)' : 'rgba(244,63,94,0.4)'}!important;">
               ${continueBtnText} ➔
             </button>
           </div>

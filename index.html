@@ -993,34 +993,101 @@
     </div>
   </div>
 
-  <!-- MODAL: Mid-Inning Defensive Challenge (High-End Tension Event) -->
+  <!-- MODAL: Mid-Inning Defensive Challenge (Immersive High-End Radar Field) -->
   <div class="modal-overlay def-modal-backdrop hidden" id="modal-mid-inning-defense" style="position:fixed;inset:0;z-index:9000;display:flex;align-items:center;justify-content:center;padding:16px;">
-    <div class="def-modal-box" style="padding:24px 22px;max-width:480px;width:100%;text-align:center;">
+    <div class="def-modal-box" style="padding:22px 20px;max-width:500px;width:100%;text-align:center;">
       <div class="def-scanline-bar"></div>
       
       <!-- Inning / Phase Header with Pulsing Radar Badge -->
-      <div class="def-badge-radar" id="def-modal-inning-badge" style="margin-bottom:12px;">
-        🛡️ BAJA DEL INNING 1 • DUELO DEFENSIVO
+      <div class="def-badge-radar" id="def-modal-inning-badge" style="margin-bottom:10px;">
+        🛡️ BAJA DEL INNING 1 • PRUEBA DEFENSIVA
       </div>
       
-      <h3 style="font-family:'Press Start 2P',monospace;font-size:11px;color:#fff;margin:0 0 6px 0;line-height:1.5;text-shadow:0 0 10px rgba(56,189,248,0.5);" id="def-modal-title">
+      <h3 style="font-family:'Press Start 2P',monospace;font-size:11px;color:#fff;margin:0 0 4px 0;line-height:1.5;text-shadow:0 0 10px rgba(56,189,248,0.5);" id="def-modal-title" data-i18n="sim.def_title_ss">
         ¡BATAZO DE PELIGRO RIVAL!
       </h3>
       
-      <p style="font-size:11px;color:#94a3b8;margin:0 0 14px 0;line-height:1.4;" id="def-modal-scenario">
+      <p style="font-size:10.5px;color:#94a3b8;margin:0 0 10px 0;line-height:1.35;" id="def-modal-scenario" data-i18n="sim.def_desc_ss">
         El rival conecta una línea quemante hacia la posición defensiva.
       </p>
 
+      <!-- Interactive Retro Baseball Field Radar -->
+      <div class="def-field-radar-card" id="def-field-radar-card">
+        <svg id="def-mini-diamond-svg" viewBox="0 0 300 175" style="width:100%;height:100%;display:block;">
+          <!-- Outfield Grass & Wall -->
+          <path d="M 15 40 Q 150 8 285 40 L 150 160 Z" fill="#092014" stroke="#10b981" stroke-width="1.5" opacity="0.95" />
+          
+          <!-- Foul Lines -->
+          <line x1="150" y1="160" x2="15" y2="40" stroke="#ffffff" stroke-width="1.5" stroke-dasharray="3,3" opacity="0.5" />
+          <line x1="150" y1="160" x2="285" y2="40" stroke="#ffffff" stroke-width="1.5" stroke-dasharray="3,3" opacity="0.5" />
+          
+          <!-- Infield Dirt Circle -->
+          <ellipse cx="150" cy="115" rx="55" ry="38" fill="#361f0d" stroke="#854d0e" stroke-width="1" />
+          
+          <!-- Infield Grass Diamond -->
+          <polygon points="150,152 202,115 150,78 98,115" fill="#0d2e1c" stroke="#10b981" stroke-width="1" />
+          
+          <!-- Base Paths -->
+          <line x1="150" y1="156" x2="208" y2="115" stroke="#cbd5e1" stroke-width="1.5" />
+          <line x1="208" y1="115" x2="150" y2="74" stroke="#cbd5e1" stroke-width="1.5" />
+          <line x1="150" y1="74" x2="92" y2="115" stroke="#cbd5e1" stroke-width="1.5" />
+          <line x1="92" y1="115" x2="150" y2="156" stroke="#cbd5e1" stroke-width="1.5" />
+          
+          <!-- Bases Bags -->
+          <rect x="204" y="111" width="7" height="7" fill="#ffffff" transform="rotate(45 207.5 114.5)" />
+          <rect x="146.5" y="70.5" width="7" height="7" fill="#ffffff" transform="rotate(45 150 74)" />
+          <rect x="88.5" y="111" width="7" height="7" fill="#ffffff" transform="rotate(45 92 114.5)" />
+          <polygon points="150,158 155,153 155,149 145,149 145,153" fill="#ffffff" />
+          
+          <!-- Pitcher Mound -->
+          <circle cx="150" cy="115" r="5" fill="#ca8a04" stroke="#fef08a" stroke-width="1" />
+          
+          <!-- Animated Trajectory Laser Line -->
+          <line id="def-svg-trajectory" x1="150" y1="155" x2="125" y2="78" stroke="#f43f5e" stroke-width="2.5" stroke-dasharray="4,4" class="def-trajectory-laser" />
+          
+          <!-- Animated Baseball Projectile -->
+          <circle id="def-svg-ball" cx="150" cy="155" r="4.5" fill="#ffffff" stroke="#ef4444" stroke-width="1.5">
+            <animate attributeName="opacity" values="1;0.7;1" dur="0.4s" repeatCount="indefinite" />
+          </circle>
+          
+          <!-- Position Nodes Container -->
+          <g id="def-svg-positions-group">
+            <!-- Rendered dynamically by JS -->
+          </g>
+        </svg>
+        
+        <!-- Ball Speed HUD Overlay -->
+        <div id="def-field-speed-tag" style="position: absolute; top: 8px; left: 10px; font-family: 'Press Start 2P', monospace; font-size: 7px; background: rgba(0,0,0,0.8); border: 1px solid #f43f5e; color: #fecdd3; padding: 3px 7px; border-radius: 4px; display: flex; align-items: center; gap: 4px;">
+          <span style="color:#ef4444;">⚡ <span data-i18n="sim.def_speed_label">VELOCIDAD</span>:</span> <span id="def-field-speed-val">104 MPH</span>
+        </div>
+
+        <div id="def-field-target-tag" style="position: absolute; top: 8px; right: 10px; font-family: 'Press Start 2P', monospace; font-size: 7px; background: rgba(0,0,0,0.8); border: 1px solid #38bdf8; color: #7dd3fc; padding: 3px 7px; border-radius: 4px;">
+          🎯 <span data-i18n="sim.def_zone_label">ZONA</span>: <span id="def-field-pos-val">SS</span>
+        </div>
+      </div>
+
       <!-- Fielder Spotlight Card -->
-      <div id="def-modal-fielder-card" class="def-fielder-card" style="margin-bottom:12px;">
+      <div id="def-modal-fielder-card" class="def-fielder-card" style="margin-bottom:10px;">
         <!-- Injected via JS -->
       </div>
 
+      <!-- Tactical Strategy Selector -->
+      <div class="def-tactics-selector" id="def-tactics-selector">
+        <div class="def-tactic-card active" id="def-tactic-safe">
+          <div class="def-tactic-title" data-i18n="sim.def_safe_tactic_title">🛡️ JUGADA REGULAR</div>
+          <div class="def-tactic-desc" data-i18n="sim.def_safe_tactic_desc">Asegurar el guante (Meta estándar • +30 HP)</div>
+        </div>
+        <div class="def-tactic-card" id="def-tactic-clutch">
+          <div class="def-tactic-title" data-i18n="sim.def_clutch_tactic_title">⚡ JUGADA DE LUJO</div>
+          <div class="def-tactic-desc" data-i18n="sim.def_clutch_tactic_desc">Tirarse de cabeza (-12% Meta • +40 HP & +25 Escudo)</div>
+        </div>
+      </div>
+
       <!-- Probability Tension Gauge -->
-      <div id="def-modal-gauge-zone" style="margin-bottom:14px;">
-        <div style="display:flex;justify-content:space-between;font-family:'Press Start 2P',monospace;font-size:7.5px;margin-bottom:4px;">
-          <span style="color:#34d399;" id="def-gauge-catch-label">🟢 ZONA DE ATRAPADA (1–<span id="def-gauge-thresh-val">75</span>)</span>
-          <span style="color:#f43f5e;" id="def-gauge-error-label">🔴 ERROR (<span id="def-gauge-error-start">76</span>–100)</span>
+      <div id="def-modal-gauge-zone" style="margin-bottom:12px;">
+        <div style="display:flex;justify-content:space-between;font-family:'Press Start 2P',monospace;font-size:7px;margin-bottom:4px;">
+          <span style="color:#34d399;" id="def-gauge-catch-label">🟢 <span data-i18n="sim.def_catch_zone">ZONA DE ATRAPADA</span> (1–<span id="def-gauge-thresh-val">75</span>)</span>
+          <span style="color:#f43f5e;" id="def-gauge-error-label">🔴 <span data-i18n="sim.def_error_zone">ERROR</span> (<span id="def-gauge-error-start">76</span>–100)</span>
         </div>
         <div class="def-gauge-wrapper">
           <div class="def-gauge-catch" id="def-gauge-catch-bar" style="width:75%;"></div>
@@ -1029,20 +1096,8 @@
         </div>
       </div>
 
-      <!-- Stakes Box: Rewards & Penalties -->
-      <div class="def-stakes-container">
-        <div class="def-stake-success">
-          <div style="font-weight:bold;margin-bottom:3px;">🟢 ÉXITO (GUANTE DE ORO)</div>
-          <div>+30 HP & +15 ESCUDO</div>
-        </div>
-        <div class="def-stake-fail">
-          <div style="font-weight:bold;margin-bottom:3px;">🔴 FALLO (ERROR DEFENSIVO)</div>
-          <div>-15 DAÑO DE IMPACTO</div>
-        </div>
-      </div>
-
       <!-- 3D D100 Dice for Defensive Challenge -->
-      <div id="def-dice-d100-panel" style="display:flex;flex-direction:column;align-items:center;gap:6px;margin-bottom:14px;">
+      <div id="def-dice-d100-panel" style="display:flex;flex-direction:column;align-items:center;gap:4px;margin-bottom:12px;">
         <div id="def-dice-d100-container" style="display:flex;gap:10px;">
           <div class="d100-die" id="def-die-tens">
             <div class="d100-die-cube" id="def-die-tens-cube">
@@ -1065,18 +1120,18 @@
             </div>
           </div>
         </div>
-        <div id="def-dice-result-display" style="font-family:'Press Start 2P',monospace;font-size:16px;color:#fff;letter-spacing:1px;text-shadow:0 0 10px rgba(255,255,255,0.6);">–</div>
+        <div id="def-dice-result-display" style="font-family:'Press Start 2P',monospace;font-size:15px;color:#fff;letter-spacing:1px;text-shadow:0 0 10px rgba(255,255,255,0.6);">–</div>
       </div>
 
       <!-- Action Button -->
       <div id="def-modal-action-zone">
         <button class="def-roll-btn" id="btn-def-modal-roll">
-          🎲 ¡LANZAR DADOS DEFENSIVOS!
+          🧤 ¡EJECUTAR JUGADA DEFENSIVA!
         </button>
       </div>
 
       <!-- Result Display -->
-      <div id="def-modal-result-zone" class="hidden" style="margin-top:14px;">
+      <div id="def-modal-result-zone" class="hidden" style="margin-top:12px;">
         <!-- Injected via JS after roll -->
       </div>
 

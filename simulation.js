@@ -1194,6 +1194,21 @@
       const successThreshold = Math.max(20, Math.min(100, Math.round(20 + (effDef * 0.70))));
       const successChance = successThreshold / 100;
 
+      // Realistic baseball hit metrics for immersion
+      const exitVelocity = Math.floor(Math.random() * 16) + 95; // 95 - 110 MPH
+      const ballTypeKey = `sim.def_ball_${pos.toLowerCase()}`;
+      const defaultBallTypes = {
+        'C': 'Lanzamiento descontrolado / Robo',
+        '1B': 'Línea quemante por la raya de 1B',
+        '2B': 'Roletazo colocado detrás de 2B',
+        '3B': 'Misil a la esquina caliente',
+        'SS': 'Roletazo duro en el hueco de SS',
+        'LF': 'Línea tendida al jardín izquierdo',
+        'CF': 'Batazo profundo al callejón',
+        'RF': 'Línea con efecto al rincón derecho'
+      };
+      const ballType = _t(ballTypeKey, {}, defaultBallTypes[pos] || 'Línea de peligro');
+
       return {
         inning: forInning,
         pos,
@@ -1202,6 +1217,8 @@
         isNative,
         isSecondary,
         isOOP,
+        exitVelocity,
+        ballType,
         scenarioTitle: scenario.title,
         scenarioDesc: scenario.desc,
         scenarioIcon: scenario.icon,
@@ -1210,23 +1227,30 @@
       };
     }
 
-    resolveMidInningDefense(roll, eventData) {
-      const isSuccess = roll <= eventData.successThreshold;
+    resolveMidInningDefense(roll, eventData, isClutchPlay = false) {
+      // If clutch play: -10 to threshold (harder), but bigger reward on win (+40 HP, +20 Shield) vs bigger damage on loss (-22 HP)
+      const targetThreshold = isClutchPlay
+        ? Math.max(10, eventData.successThreshold - 12)
+        : eventData.successThreshold;
+
+      const isSuccess = roll <= targetThreshold;
       let hpHealed = 0;
       let shieldHealed = 0;
       let teamHpDmg = 0;
       let shieldDmg = 0;
 
       if (isSuccess) {
-        hpHealed = Math.min(100 - this.teamHP, 30);
-        this.teamHP = Math.min(100, this.teamHP + 30);
-        shieldHealed = Math.min(this.teamShieldMax - this.teamShield, 15);
-        this.teamShield = Math.min(this.teamShieldMax, this.teamShield + 15);
+        const baseHpReward = isClutchPlay ? 40 : 30;
+        const baseShieldReward = isClutchPlay ? 25 : 15;
+        hpHealed = Math.min(100 - this.teamHP, baseHpReward);
+        this.teamHP = Math.min(100, this.teamHP + baseHpReward);
+        shieldHealed = Math.min(this.teamShieldMax - this.teamShield, baseShieldReward);
+        this.teamShield = Math.min(this.teamShieldMax, this.teamShield + baseShieldReward);
 
-        const playText = `🛡️ [${_t('sim.def_success_title', {}, '¡JUGADA DE GUANTE DE ORO!')}] ${eventData.player.name} (${eventData.pos}) ${_t('sim.def_success_desc', { roll, thresh: eventData.successThreshold }, `completa una atrapada sensacional (Dado: ${roll}/${eventData.successThreshold})`)}. ${_t('sim.def_success_reward', {}, '¡Recuperas +30 HP y +15 de Escudo!')}`;
+        const playText = `🛡️ [${_t('sim.def_success_title', {}, '¡JUGADA DE GUANTE DE ORO!')}] ${eventData.player.name} (${eventData.pos}) ${_t('sim.def_success_desc', { roll, thresh: targetThreshold }, `completa una atrapada sensacional (Dado: ${roll}/${targetThreshold})`)}. ${_t('sim.def_success_reward', { hp: baseHpReward, shield: baseShieldReward }, `¡Recuperas +${baseHpReward} HP y +${baseShieldReward} de Escudo!`)}`;
         this.logEvent('DEFENSE_PLAY', playText, 'DEF_WIN', eventData.player.name, 0, 0, 0);
       } else {
-        const outDmg = 15;
+        const outDmg = isClutchPlay ? 22 : 15;
         if (this.teamShield > 0) {
           shieldDmg = Math.min(this.teamShield, outDmg);
           this.teamShield -= shieldDmg;
@@ -1240,7 +1264,7 @@
           this.teamHP = Math.max(0, this.teamHP - outDmg);
         }
 
-        const playText = `⚠️ [${_t('sim.def_fail_title', {}, '¡BATAZO RIVAL / ERROR!')}] ${eventData.player.name} (${eventData.pos}) ${_t('sim.def_fail_desc', { roll, thresh: eventData.successThreshold }, `no logra fildear el batazo rival (Dado: ${roll}/${eventData.successThreshold})`)}. ${_t('sim.def_fail_penalty', { dmg: outDmg }, `¡Sufres -${outDmg} de daño!`)}`;
+        const playText = `⚠️ [${_t('sim.def_fail_title', {}, '¡BATAZO RIVAL / ERROR!')}] ${eventData.player.name} (${eventData.pos}) ${_t('sim.def_fail_desc', { roll, thresh: targetThreshold }, `no logra fildear el batazo rival (Dado: ${roll}/${targetThreshold})`)}. ${_t('sim.def_fail_penalty', { dmg: outDmg }, `¡Sufres -${outDmg} de daño!`)}`;
         this.logEvent('DEFENSE_PLAY', playText, 'DEF_LOSE', eventData.player.name, teamHpDmg, 0, 0);
       }
 
@@ -1249,7 +1273,9 @@
 
       return {
         isSuccess,
+        isClutchPlay,
         roll,
+        targetThreshold,
         hpHealed,
         shieldHealed,
         teamHpDmg,

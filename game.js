@@ -1790,9 +1790,9 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
         const p = this.roster[pos];
         let ovr = 0;
         if (p) {
-          ovr = p.ovr !== undefined
-            ? p.ovr
-            : (p.avg_attr_score !== undefined ? p.avg_attr_score : Math.round((p.con || 40) * 0.35 + (p.pwr || 35) * 0.30 + (p.spd || 45) * 0.10 + (p.def || 40) * 0.15 + (p.eye || 40) * 0.10));
+          ovr = typeof window !== 'undefined' && window.getPlayerOvr
+            ? window.getPlayerOvr(p)
+            : Math.floor(p.ovr || p.avg_attr_score || 50);
         }
         return { pos, ovr };
       });

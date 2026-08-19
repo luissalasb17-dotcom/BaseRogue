@@ -6107,12 +6107,102 @@ body.on-main-menu .main-container {
   animation: def-radar-sweep 2.5s ease-in-out infinite;
 }
 
+/* ── RETRO BASEBALL FIELD RADAR ─────────────────────────────────────────── */
+.def-field-radar-card {
+  position: relative;
+  width: 100%;
+  height: 185px;
+  background: radial-gradient(circle at 50% 85%, #0d281a 0%, #041009 100%);
+  border: 2px solid #10b981;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 12px;
+  box-shadow: inset 0 0 35px rgba(0, 0, 0, 0.85), 0 0 20px rgba(16, 185, 129, 0.25);
+}
+
+@keyframes def-target-ring-pulse {
+  0% { r: 8; opacity: 1; stroke-width: 2; }
+  100% { r: 24; opacity: 0; stroke-width: 1; }
+}
+
+@keyframes def-laser-dash {
+  0% { stroke-dashoffset: 24; }
+  100% { stroke-dashoffset: 0; }
+}
+
+.def-trajectory-laser {
+  animation: def-laser-dash 0.6s linear infinite;
+}
+
+.def-pos-node text {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7.5px;
+  fill: #94a3b8;
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+
+.def-pos-target-node text {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  font-weight: bold;
+  fill: #fef08a;
+  text-anchor: middle;
+  dominant-baseline: central;
+  filter: drop-shadow(0 0 4px rgba(251, 191, 36, 0.8));
+}
+
+/* Tactics Selector */
+.def-tactics-selector {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.def-tactic-card {
+  background: rgba(15, 23, 42, 0.8);
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  padding: 10px 8px;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.2s ease;
+  font-family: 'Press Start 2P', monospace;
+}
+
+.def-tactic-card:hover {
+  border-color: #38bdf8;
+  background: rgba(56, 189, 248, 0.12);
+  transform: translateY(-2px);
+}
+
+.def-tactic-card.active {
+  border-color: #fbbf24;
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.15) 0%, rgba(217, 119, 6, 0.25) 100%);
+  box-shadow: 0 0 16px rgba(251, 191, 36, 0.35);
+  transform: scale(1.02);
+}
+
+.def-tactic-title {
+  font-size: 8.5px;
+  color: #fff;
+  margin-bottom: 4px;
+  letter-spacing: 0.5px;
+}
+
+.def-tactic-desc {
+  font-size: 7px;
+  color: #94a3b8;
+  line-height: 1.3;
+}
+
 .def-fielder-card {
   background: linear-gradient(135deg, rgba(30, 41, 59, 0.85) 0%, rgba(15, 23, 42, 0.95) 100%);
   border: 1px solid rgba(251, 191, 36, 0.4);
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.6), inset 0 0 15px rgba(251, 191, 36, 0.08);
   border-radius: 12px;
-  padding: 14px;
+  padding: 12px 14px;
   display: flex;
   align-items: center;
   gap: 14px;
@@ -6121,8 +6211,8 @@ body.on-main-menu .main-container {
 
 .def-fielder-avatar {
   font-size: 28px;
-  width: 52px;
-  height: 52px;
+  width: 48px;
+  height: 48px;
   background: linear-gradient(135deg, rgba(56, 189, 248, 0.2) 0%, rgba(251, 191, 36, 0.2) 100%);
   border: 2px solid #fbbf24;
   border-radius: 10px;
@@ -6207,7 +6297,7 @@ body.on-main-menu .main-container {
   width: 100%;
   padding: 15px;
   font-family: 'Press Start 2P', monospace;
-  font-size: 10px;
+  font-size: 10.5px;
   background: linear-gradient(135deg, #0284c7 0%, #0369a1 50%, #075985 100%) !important;
   border: 2px solid #38bdf8 !important;
   box-shadow: 0 0 20px rgba(56, 189, 248, 0.45), 0 4px 0 #000 !important;

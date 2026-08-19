@@ -392,15 +392,14 @@
    * career.js doesn't depend on ui.js load order. */
   function ovrOf(p) {
     if (!p) return 60;
-    if (typeof p.ovr === 'number') return Math.round(p.ovr);
-    const con = p.con || 50, pwr = p.pwr || 50, eye = p.eye || 50, spd = p.spd || 50, def = p.def || 50;
-    const raw = con * 0.35 + pwr * 0.30 + def * 0.15 + eye * 0.10 + spd * 0.10;
-    if (raw <= 30) return Math.round(50 + (raw / 30) * 10);
-    if (raw <= 45) return Math.round(60 + ((raw - 30) / 15) * 9);
-    if (raw <= 58) return Math.round(70 + ((raw - 45) / 13) * 8);
-    if (raw <= 74) return Math.round(79 + ((raw - 58) / 16) * 8);
-    if (raw <= 85) return Math.round(88 + ((raw - 74) / 11) * 6);
-    return Math.round(95 + Math.min(4, ((raw - 85) / 18) * 4));
+    if (typeof p.ovr === 'number') return Math.floor(p.ovr);
+    const con = p.con || 50, pwr = p.pwr || 50, eye = p.eye || 50, spd = p.spd || 50, def = p.def || 50, kavd = p.k_avd || 50;
+    const raw = con * 0.28 + pwr * 0.28 + eye * 0.12 + def * 0.12 + spd * 0.10 + kavd * 0.10;
+    if (raw <= 37.0) return Math.floor(50.0 + ((raw - 10.0) / 27.0) * 9.9);
+    if (raw <= 48.0) return Math.floor(60.0 + ((raw - 37.0) / 11.0) * 9.9);
+    if (raw <= 62.0) return Math.floor(70.0 + ((raw - 48.0) / 14.0) * 9.9);
+    if (raw <= 76.0) return Math.floor(80.0 + ((raw - 62.0) / 14.0) * 9.9);
+    return Math.floor(90.0 + Math.min(9.9, ((raw - 76.0) / 18.0) * 9.9));
   }
 
   // ── OVR-targeted growth ────────────────────────────────────────────────
