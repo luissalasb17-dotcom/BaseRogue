@@ -591,7 +591,7 @@
           `${pitcher.name} ${_t('sim.pitcher_dmg_txt', { dmg: pitcherDmg }, 'sufre ' + pitcherDmg + ' HP de daño')}.`;
 
         // Steal Proc Logic on BB if batter ends on 1B and 2B is empty
-        let stealChance = Math.min(0.90, 0.15 + ((effBatter.spd - 40) * 0.0125));
+        let stealChance = Math.min(1.0, Math.max(0.05, (15 + ((effBatter.spd || 50) * 0.70)) / 100));
         let stealHeal = 0;
         let extraStealDmg = 0;
         let debuffTurns = 2;
@@ -601,13 +601,13 @@
         // Expansion Era steal boost
         if (expansionTier >= 1) {
           const extraChance = expansionTier === 4 ? 1.0 : expansionTier === 3 ? 0.50 : expansionTier === 2 ? 0.35 : 0.20;
-          stealChance = expansionTier === 4 ? 1.0 : Math.min(0.95, stealChance + extraChance);
+          stealChance = expansionTier === 4 ? 1.0 : Math.min(1.0, stealChance + extraChance);
           stealHeal = expansionTier === 4 ? 25 : expansionTier === 3 ? 20 : expansionTier === 2 ? 15 : 10;
           extraStealDmg = expansionTier === 4 ? 30 : expansionTier === 3 ? 22 : expansionTier === 2 ? 15 : 8;
           stealProcMsg = _t('sim.syn_expansion', {}, 'Sinergia Expansion');
         }
         else if (bigHairTier >= 1) {
-          stealChance = Math.min(0.95, stealChance + 0.20);
+          stealChance = Math.min(1.0, stealChance + 0.20);
           extraStealDmg = bigHairTier === 4 ? 35 : bigHairTier === 3 ? 26 : bigHairTier === 2 ? 18 : 10;
           if (bigHairTier === 2) {
             debuffTurns = 3;
@@ -674,11 +674,11 @@
           }
         }
 
-        let baseSoDmg = 18;
+        let baseSoDmg = 16;
         if (this.strikeoutChain === 2) {
-          baseSoDmg = 24;
+          baseSoDmg = 22;
         } else if (this.strikeoutChain >= 3) {
-          baseSoDmg = 30;
+          baseSoDmg = 28;
         }
 
         let finalSoDmg = baseSoDmg;
@@ -744,7 +744,7 @@
         eventType = 'OUT';
         this.outs++;
         this.strikeoutChain = 0;
-        let outDmg = this.hasTrait('defensive_wall') ? 12 : 18;
+        let outDmg = this.hasTrait('defensive_wall') ? 10 : 16;
 
         if (bigHairTier === 4) {
           outDmg = Math.round(outDmg * 0.5);
@@ -849,7 +849,7 @@
           this.strikeoutChain = 0;
           runsThisTurn = this._advanceHomeRun(batter);
           const runnersOnBase = Math.max(0, runsThisTurn - 1);
-          let hrDmg = 75 + (runnersOnBase * 10);
+          let hrDmg = 70 + (runnersOnBase * 10);
           
           if (steroidTier >= 1) {
             const extraHr = steroidTier === 4 ? 50 : steroidTier === 3 ? 38 : steroidTier === 2 ? 25 : 15;
@@ -960,7 +960,7 @@
         }
 
         if (eventType === '1B') {
-          let stealChance = Math.min(0.90, 0.15 + ((effBatter.spd - 40) * 0.0125));
+          let stealChance = Math.min(1.0, Math.max(0.05, (15 + ((effBatter.spd || 50) * 0.70)) / 100));
           let stealHeal = 0;
           let extraStealDmg = 0;
           let debuffTurns = 2;
@@ -969,13 +969,13 @@
 
           if (expansionTier >= 1) {
             const extraChance = expansionTier === 4 ? 1.0 : expansionTier === 3 ? 0.50 : expansionTier === 2 ? 0.35 : 0.20;
-            stealChance = expansionTier === 4 ? 1.0 : Math.min(0.95, stealChance + extraChance);
+            stealChance = expansionTier === 4 ? 1.0 : Math.min(1.0, stealChance + extraChance);
             stealHeal = expansionTier === 4 ? 45 : expansionTier === 3 ? 35 : expansionTier === 2 ? 25 : 15;
             extraStealDmg = expansionTier === 4 ? 40 : expansionTier === 3 ? 30 : expansionTier === 2 ? 20 : 0;
             stealProcMsg = _t('sim.syn_expansion', {}, 'Sinergia Expansion');
           }
           else if (bigHairTier >= 1) {
-            stealChance = Math.min(0.95, stealChance + 0.20);
+            stealChance = Math.min(1.0, stealChance + 0.20);
             extraStealDmg = bigHairTier === 4 ? 60 : bigHairTier === 3 ? 45 : bigHairTier === 2 ? 35 : 20;
             if (bigHairTier === 2) {
               debuffTurns = 3;
@@ -1190,8 +1190,8 @@
       const isSecondary = secPosArr.includes(pos);
       const isOOP = (!isNative && !isSecondary && pos !== 'DH');
 
-      // Formula: 1 DEF = 1%, 125 DEF = 100% (Linear: (effDef / 125) * 100, min 1%, max 100%)
-      const successThreshold = Math.max(1, Math.min(100, Math.round((effDef / 125) * 100)));
+      // Formula: 20% Base + (0.70 * DEF), min 20%, max 100%
+      const successThreshold = Math.max(20, Math.min(100, Math.round(20 + (effDef * 0.70))));
       const successChance = successThreshold / 100;
 
       return {
@@ -1226,7 +1226,7 @@
         const playText = `🛡️ [${_t('sim.def_success_title', {}, '¡JUGADA DE GUANTE DE ORO!')}] ${eventData.player.name} (${eventData.pos}) ${_t('sim.def_success_desc', { roll, thresh: eventData.successThreshold }, `completa una atrapada sensacional (Dado: ${roll}/${eventData.successThreshold})`)}. ${_t('sim.def_success_reward', {}, '¡Recuperas +30 HP y +15 de Escudo!')}`;
         this.logEvent('DEFENSE_PLAY', playText, 'DEF_WIN', eventData.player.name, 0, 0, 0);
       } else {
-        const outDmg = 20;
+        const outDmg = 15;
         if (this.teamShield > 0) {
           shieldDmg = Math.min(this.teamShield, outDmg);
           this.teamShield -= shieldDmg;

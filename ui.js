@@ -6542,7 +6542,7 @@ function initGameModeSelector() {
     const p = defEvent.player || {};
     const gradeObj = getStatGrade(defEvent.effDef || 50);
     const isGoldGlove = (defEvent.effDef >= 90);
-    const oopBadge = (!defEvent.isNative && !defEvent.isSecondary && defEvent.pos !== 'DH')
+    const oopBadge = defEvent.isOOP
       ? `<span style="font-size:8px;color:#f87171;font-weight:bold;margin-left:4px;">⚠️ (Fuera de Posición -35% DEF)</span>`
       : (isGoldGlove ? `<span style="font-size:8px;color:#fef08a;font-weight:bold;margin-left:4px;">🥇 GUANTE DE ORO</span>` : '');
 
@@ -6637,10 +6637,10 @@ function initGameModeSelector() {
 
         if (result.isSuccess) {
           if (window.AudioManager) window.AudioManager.play('defense_gold_glove');
-          showOutcomePopup('DEF_WIN', `🛡️ ¡JUGADA DE GUANTE DE ORO!\n+15 HP & +15 ESCUDO`);
+          showOutcomePopup('DEF_WIN', `🛡️ ¡JUGADA DE GUANTE DE ORO!\n+30 HP & +15 ESCUDO`);
         } else {
           if (window.AudioManager) window.AudioManager.play('defense_error');
-          showOutcomePopup('DEF_LOSE', `⚠️ ¡BATAZO RIVAL / ERROR!\n-20 DAÑO AL EQUIPO`);
+          showOutcomePopup('DEF_LOSE', `⚠️ ¡BATAZO RIVAL / ERROR!\n-15 DAÑO AL EQUIPO`);
           const modalBox = modal.querySelector('.def-modal-box');
           if (modalBox) {
             modalBox.style.animation = 'none';
@@ -6666,7 +6666,7 @@ function initGameModeSelector() {
               Resultado del Dado: <strong style="font-size:16px;color:${result.isSuccess ? '#4ade80' : '#f87171'};">${finalRoll}</strong> (Zona Segura: 1–${defEvent.successThreshold})
             </div>
             <div style="font-size:12px;font-weight:bold;margin-bottom:14px;color:${result.isSuccess ? '#a7f3d0' : '#fecdd3'};">
-              ${result.isSuccess ? '🟢 ¡Atrapada espectacular! Recuperas +15 HP y +15 de Escudo.' : '🔴 ¡Batazo inalcanzable! El equipo sufre -20 de daño.'}
+              ${result.isSuccess ? '🟢 ¡Atrapada espectacular! Recuperas +30 HP y +15 de Escudo.' : '🔴 ¡Batazo inalcanzable! El equipo sufre -15 de daño.'}
             </div>
             <button class="def-roll-btn" id="btn-def-modal-continue" style="background:linear-gradient(135deg,#059669,#047857)!important;border-color:#34d399!important;box-shadow:0 0 15px rgba(52,211,153,0.4)!important;">
               ${continueBtnText} ➔

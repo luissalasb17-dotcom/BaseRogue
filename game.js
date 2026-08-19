@@ -2335,6 +2335,7 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
         const eff = this.getEffectiveStats(player, slot);
         eff.hp = 100;
         eff.maxHp = 100;
+        eff.slot = slot;
         return eff;
       }).filter(Boolean);
 
