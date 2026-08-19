@@ -1023,27 +1023,28 @@ NLB_LEGENDS = {
     'Willie Wells', 'Leon Day', 'Ray Brown', 'Smokey Joe Williams', 'Bill Byrd',
     'Nip Winters', 'Hilton Smith', 'Cristóbal Torriente', 'Martin Dihigo', 'Jud Wilson',
     'Biz Mackey', 'Louis Santop', 'Andy Cooper', 'Bill Foster', 'José Méndez',
-    'Willie Foster', 'George Scales', 'Dick Lundy', 'Alejandro Oms'
+    'Willie Foster', 'George Scales', 'Dick Lundy', 'Alejandro Oms', 'Frank Grant',
+    'Pete Hill', 'Ben Taylor', 'Bruce Petway', 'Pelayo Chacón', 'Bartolo Portuondo'
 }
 
 # Strictly Negro League teams (excluding 19th c. MLB franchises like LOU, SBS, CLS, WNL, etc.)
 NLB_TEAMS = {
-    'BEG', 'KCM', 'MRS', 'HG', 'CBE', 'CAG', 'PC', 'BE', 'IN9', 'BIR',
-    'HOM', 'NW2', 'NY5', 'NY6', 'AS2', 'MEM', 'BBB', 'BBS',
-    'BCA', 'BG1', 'BG2', 'BGS', 'CBR', 'CC1', 'CC2', 'CCC', 'CCG', 'CCG2',
-    'CGI', 'CIG', 'CLG', 'COS', 'CSG', 'CSG2', 'CSG3', 'CSW',
-    'CTG', 'CTS', 'CUP', 'CXG', 'FLP', 'GOR', 'HBG', 'HIL',
-    'JRC', 'KCG', 'KRG', 'LEL', 'LRG', 'LVB', 'MB', 'MGS', 'MOH',
-    'MRM', 'NBY', 'ND', 'NE', 'NLG', 'NLS', 'NS', 'NWB', 'NYC',
-    'OKM', 'PBG', 'PBK', 'PG', 'PS', 'PTG', 'QG',
-    'SC1', 'SEN', 'SLS', 'SPG', 'WAP', 'WBS',
-    'WP'
+    'AB2', 'AB3', 'ABC', 'ACB', 'ACG', 'BBB', 'BBS', 'BCA', 'BE', 'BEG', 'BG2', 'BR2', 'BRG',
+    'CAG', 'CBB', 'CBE', 'CBN', 'CBR', 'CC', 'CC2', 'CCB', 'CCU', 'CEG', 'CEL', 'CHT', 'CIC',
+    'CL2', 'CLS', 'COB', 'COG', 'COT', 'CRS', 'CS', 'CSE', 'CSW', 'CT', 'CTG', 'CTS', 'CUP',
+    'DM', 'DS', 'DTS', 'DW', 'DYM', 'HBG', 'HG', 'HIL', 'HSS', 'IA', 'IAB', 'IC', 'ID',
+    'JRC', 'KCM', 'LOW', 'LRG', 'LVB', 'MB', 'MGS', 'MRM', 'MRS', 'NBY', 'ND', 'NE', 'NEG',
+    'NLG', 'NS', 'NWB', 'NYC', 'PBG', 'PBK', 'PC', 'PK', 'PS', 'PTG', 'SEN', 'SL2', 'SL3',
+    'SLG', 'SLS', 'SNH', 'SNS', 'SOX', 'TC', 'TC2', 'TIC', 'TT', 'WAP', 'WEG', 'WMP', 'WP',
+    'HOM', 'NW2', 'NY5', 'NY6', 'AS2', 'MEM', 'BG1', 'BGS', 'CC1', 'CCC', 'CCG', 'CCG2',
+    'CGI', 'CIG', 'CLG', 'COS', 'CSG', 'CSG2', 'CSG3', 'FLP', 'GOR', 'KCG', 'KRG', 'LEL',
+    'MOH', 'NWB', 'PG', 'QG', 'SC1', 'SPG', 'WBS'
 }
 
 def map_to_canonical_team(row):
     t = str(row.get("canonical_teamID", row.get("team", "UNK"))).strip()
     franch = str(row.get("franchID", "")).strip()
-    p_name = str(row.get("name", "")).strip()
+    p_name = str(row.get("full_name", row.get("name", row.get("nameFull", row.get("display_name", ""))))).strip()
 
     # 1. Active modern MLB franchise lineage
     if franch in FRANCHISE_MAP:
