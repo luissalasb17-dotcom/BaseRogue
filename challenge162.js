@@ -900,57 +900,88 @@
 
     // Stamina-driven starting pitcher depth:
     // Converts pitcher's STA attribute (30-125+) into realistic inning capacity per start.
-    // Starters average 6.8-7.5 IP/start (~215-245 IP/season, adding +15 IP per starter), leaving authentic workload for bullpen.
+    // Starters average 6.8-7.5 IP/start (~225-245 IP/season), leaving authentic ~280 IP for the bullpen.
     _getStarterMaxInnings(sp) {
       if (!sp) return 6;
       const sta = sp.sta !== undefined ? sp.sta : (sp.sta_val !== undefined ? sp.sta_val : (sp.stamina !== undefined ? sp.stamina : 70));
-      // Base innings: STA 20 -> 5.2, STA 70 -> 6.6, STA 90 -> 7.1, STA 105+ -> 7.5
-      const base = 5.2 + (Math.max(20, Math.min(125, sta)) - 20) * 0.024;
-      const roll = (Math.random() - 0.5) * 0.8;
+      // Base innings: STA 20 -> 6.0, STA 70 -> 7.0, STA 90 -> 7.4, STA 105+ -> 7.8
+      const base = 6.0 + (Math.max(20, Math.min(125, sta)) - 20) * 0.018;
+      const roll = (Math.random() - 0.5) * 1.0;
       let maxInn = Math.max(6, Math.min(9, Math.round(base + roll)));
 
-      // High stamina complete games for workhorse aces
-      if (sta >= 95 && Math.random() < 0.05) maxInn = 9;
+      // High stamina complete games for workhorse aces (STA >= 85)
+      if (sta >= 85 && Math.random() < 0.08) maxInn = 9;
 
       return maxInn;
     },
 
-    // Bullpen delegation based on game situation and rest:
+    // Bullpen delegation driven by role, situation, and Stamina (STA):
     // relievers = [middleRelief, setupRelief, closerRelief]
     _pitcherForInning(inning, sp, relievers, spMaxInnings, gameIdx, userRuns, oppRuns) {
       if (inning <= spMaxInnings) return sp;
 
       const closer = relievers[2] || relievers[1] || relievers[0];
-      const setup = relievers[1] || relievers[0];
+      const setup  = relievers[1] || relievers[0];
       const middle = relievers[0];
 
       const runDiff = userRuns - oppRuns;
-      const isBlowout = Math.abs(runDiff) >= 6;
-      const isSaveSituation = (runDiff >= 1 && runDiff <= 3) || (runDiff === 0) || (runDiff === -1 && inning >= 9);
+      const isSaveSituation = (runDiff >= 1 && runDiff <= 3);
+      const isClose = (runDiff === 0 || Math.abs(runDiff) <= 2);
 
-      // In massive blowout games (6+ run margin in 9th inning) or bridge before 6th, mop-up support absorbs:
-      if (isBlowout && inning >= 9) {
+      // Extract reliever stamina attributes:
+      const staMR = middle && (middle.sta !== undefined ? middle.sta : (middle.sta_val !== undefined ? middle.sta_val : (middle.stamina !== undefined ? middle.stamina : 65)));
+      const staSU = setup && (setup.sta !== undefined ? setup.sta : (setup.sta_val !== undefined ? setup.sta_val : (setup.stamina !== undefined ? setup.stamina : 40)));
+      const staCL = closer && (closer.sta !== undefined ? closer.sta : (closer.sta_val !== undefined ? closer.sta_val : (closer.stamina !== undefined ? closer.stamina : 35)));
+
+      // In massive runaway blowouts in 9th (margin >= 6 runs), mop-up bench arm finishes to protect bullpen:
+      if (Math.abs(runDiff) >= 6 && inning >= 9) {
         return null;
       }
       if (inning < 6) {
-        return null;
+        return (staMR >= 60) ? middle : null;
       }
 
+      // ── 9th inning and Extra Innings (10+) ──────────────────────────────────
       if (inning >= 9) {
-        // Closer enters in 9th for saves, ties, 1-run deficits, or leads up to 4 runs:
-        if (isSaveSituation || (runDiff >= 1 && runDiff <= 4) || (Math.abs(runDiff) <= 3 && gameIdx % 3 !== 0)) {
+        if (isSaveSituation) {
+          // Closer pitches ~85% of save opportunities; Setup covers ~15% on rest days:
+          if (gameIdx % 6 !== 0 || staCL >= 45) {
+            return closer;
+          }
+          return setup;
+        }
+
+        // Close game (tie, 1-run deficit) in 9th or Extras:
+        if (isClose && gameIdx % 2 === 0) {
           return closer;
         }
-        return (gameIdx % 2 === 0) ? setup : middle;
+
+        // Runaway lead (4+ runs) or multi-run deficit:
+        // Middle / long reliever finishes the game to preserve Closer & Setup:
+        return middle;
       }
+
+      // ── 8th Inning (Setup Inning) ───────────────────────────────────────────
       if (inning === 8) {
-        return (gameIdx % 2 === 0) ? setup : middle;
+        if ((runDiff >= 1 && runDiff <= 3) || runDiff === 0) {
+          // Setup reliever handles 8th inning in competitive games (~80% of time):
+          if (gameIdx % 5 !== 0 || staSU >= 45) {
+            return setup;
+          }
+          return middle;
+        }
+        // Blowouts or deficits in 8th -> Middle relief
+        return middle;
       }
-      if (inning === 7) {
+
+      // ── 6th and 7th Inning (Bridge / Middle Relief) ─────────────────────────
+      if (inning <= 7) {
+        // High stamina middle relievers (STA >= 55, e.g. McDaniel, Gossage, Wilhelm) handle multi-inning bridge work:
+        if (staMR >= 55) {
+          return middle;
+        }
+        // If middle reliever has low stamina, alternate with Setup:
         return (gameIdx % 2 === 0) ? middle : setup;
-      }
-      if (inning === 6) {
-        return (gameIdx % 2 !== 0) ? middle : setup;
       }
 
       return (inning >= 10) ? closer : middle;
@@ -969,11 +1000,13 @@
       const rpList = S.roster.pitchers.RP;
       const userSP = spList[gameIdx % spList.length];
 
-      // Rank relievers by OVR: Highest OVR is designated Closer, 2nd is Setup, 3rd is Middle
-      const rankedRPs = rpList.slice().sort((a, b) => (b.ovr || 50) - (a.ovr || 50));
-      const closer = rankedRPs[0];
-      const setup = rankedRPs[1] || rankedRPs[0];
-      const middle = rankedRPs[2] || setup;
+      // Respect user's explicit roster slot roles:
+      // RP[0] = Middle Reliever (RP)
+      // RP[1] = Setup Reliever (SETUP)
+      // RP[2] = Designated Closer (CL)
+      const middle = rpList[0] || rpList[1] || rpList[2];
+      const setup  = rpList[1] || rpList[0] || rpList[2];
+      const closer = rpList[2] || rpList[1] || rpList[0];
       const userRelievers = [middle, setup, closer];
 
       const sched = S.schedule[gameIdx];
