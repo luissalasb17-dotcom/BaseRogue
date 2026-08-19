@@ -478,7 +478,9 @@
     "def_fail_banner_title": "⚠️ ¡BATAZO DE HIT / ERROR DEFENSIVO!",
     "def_success_banner_desc": "¡Atrapada limpia en el diamante! Recuperas vida y escudo para el equipo.",
     "def_fail_banner_desc": "¡El batazo superó al defensor! El equipo recibe daño de impacto.",
-    "def_continue": "⚾ CONTINUAR AL INNING {{nextInning}}"
+    "def_continue": "⚾ CONTINUAR AL INNING {{nextInning}}",
+    "def_safe_btn_label": "🧤 ¡ASEGURAR EL GUANTE! (Dado 1 al {{thresh}})",
+    "def_clutch_btn_label": "⚡ ¡TIRARSE DE CABEZA! (Dado 1 al {{thresh}})"
   },
   "syn": {
     "deadball": {

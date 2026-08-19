@@ -478,7 +478,9 @@
     "def_fail_banner_title": "⚠️ OPPONENT HIT / DEFENSIVE ERROR!",
     "def_success_banner_desc": "Sensational catch on the diamond! Team HP and Shield restored.",
     "def_fail_banner_desc": "The ball gets past the fielder! Team takes impact damage.",
-    "def_continue": "⚾ ADVANCE TO INNING {{nextInning}}"
+    "def_continue": "⚾ ADVANCE TO INNING {{nextInning}}",
+    "def_safe_btn_label": "🧤 SECURE GLOVE! (Roll 1 to {{thresh}})",
+    "def_clutch_btn_label": "⚡ HIGHLIGHT DIVE! (Roll 1 to {{thresh}})"
   },
   "syn": {
     "deadball": {
