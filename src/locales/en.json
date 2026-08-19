@@ -25,9 +25,9 @@
     "deadball_d2": "T2 (4+): +6 CON/K-AVD; singles deal +14 extra dmg",
     "deadball_d3": "T3 (6+): +9 CON/K-AVD; singles +20 dmg; runs scored deal +12 extra impact dmg",
     "deadball_d4": "T4 (8+): +12 CON/K-AVD; singles +28 dmg; runs scored deal +20 extra impact dmg",
-    "golden_d1": "T1 (2+): +3 PWR to team; all hits deal +6 extra dmg",
-    "golden_d2": "T2 (4+): +6 PWR; hits +12 dmg; 40% chance 2B→3B",
-    "golden_d3": "T3 (6+): +9 PWR; hits +18 dmg; 50% 2B→3B and 25% 3B→HR",
+    "golden_d1": "Golden Era: All hits deal +6 extra damage.",
+    "golden_d2": "Golden Era: Hits +12 damage; 30% chance to convert 2B into 3B.",
+    "golden_d3": "Golden Era: Hits +18 damage; 50% convert 2B into 3B; +10% HR chance.",
     "integration_d1": "T1 (2+): Team gains +3 to all stats in combat",
     "integration_d2": "T2 (4+): Team +6 stats; hits deal +10 dmg; outs restore +8 Stamina to all",
     "integration_d3": "T3 (6+): Team +9 stats; hits deal +18 dmg; outs restore +12 Stamina to all",
@@ -51,7 +51,8 @@
     "tto_d1": "T1 (2+): +3 EYE and +3 PWR; BB deal +12 dmg; Strikeout deals -50% team dmg",
     "tto_d2": "T2 (4+): +6 EYE/PWR; BB +18 dmg; Strikeouts don't grow enemy streak",
     "tto_d3": "T3 (6+): +9 EYE/PWR; BB +25 dmg; HR inflicts 3-impact debuff (+30% dmg)",
-    "tto_d4": "T4 (8+): +12 EYE/PWR; BB +35 dmg; Strikeouts deal 0 damage to team (nullified)"
+    "tto_d4": "T4 (8+): +12 EYE/PWR; BB +35 dmg; Strikeouts deal 0 damage to team (nullified)",
+    "golden_d4": "Golden Era: Hits +25 damage! 75% convert 2B into 3B; +20% HR chance & +20 starting Shield."
   },
   "map": {
     "title": "<i class=\"fa-solid fa-map\"></i> Championship Map",
@@ -79,7 +80,8 @@
     "label_classic": "CLASSIC SERIES",
     "label_decision": "DECISION",
     "node_pennant": "LEAGUE CHAMPION",
-    "node_world_series": "WORLD SERIES"
+    "node_world_series": "WORLD SERIES",
+    "win_pct": "Win Chance: {{pct}}%"
   },
   "ratings_guide": {
     "title": "📊 RATINGS GUIDE",
@@ -90,7 +92,8 @@
     "spd": "<strong style=\"color:#38bdf8;\">SPD — Speed:</strong> Triggers base stealing attempts on singles (+20% pitcher damage debuff). Also improves chance of converting hits to extra bases.",
     "def": "<strong style=\"color:#a855f7;\">DEF — Defense:</strong> Contributes to team <strong>Shield</strong>. Higher average DEF gives you more shield to absorb OUTs before losing HP.",
     "captain": "<strong style=\"color:#eab308;\">👑 CAPTAIN:</strong> +5 to all ratings for all teammates while on the active roster.",
-    "clutch": "<strong style=\"color:#ef4444;\">⚡ CLUTCH PLAYER:</strong> +2% single and double chance, +4% HR chance with runners in scoring position or during the last inning."
+    "clutch": "<strong style=\"color:#ef4444;\">⚡ CLUTCH PLAYER:</strong> +2% single and double chance, +4% HR chance with runners in scoring position or during the last inning.",
+    "tooltip": "Player Ratings & Attribute Guide"
   },
   "mode_select": {
     "app_title": "⚾ BASE-ROGUE",
@@ -108,10 +111,19 @@
     "challenge162_btn": "🏆 BUILD TEAM",
     "challenge162_locked_desc": "🔒 Mode Locked. Win your first Quick Play run to unlock the 162-0 Season Challenge and begin drafting your dream roster.",
     "challenge162_locked_btn": "🔒 LOCKED (WIN QUICK PLAY)",
-    "challenge162_continue_btn": "⚾ CONTINUE SEASON"
+    "challenge162_continue_btn": "⚾ CONTINUE SEASON",
+    "tagline": "BASEBALL ROGUELIKE",
+    "quick_btn": "⚡ QUICK PLAY",
+    "career_title": "CAREER MODE",
+    "career_subtitle": "FROM ROOKIE TO HALL OF FAME",
+    "career_desc": "Create and guide your custom ballplayer from the Draft to superstardom. Make crucial choices, overcome challenges, and cement your legacy.",
+    "career_btn": "⭐ START CAREER"
   },
   "common": {
-    "back_menu": "← MENU"
+    "back_menu": "← MENU",
+    "damage": "DAMAGE",
+    "shield": "SHIELD",
+    "loading": "Loading..."
   },
   "season_select": {
     "title": "📜 SELECT THE SEASON",
@@ -159,7 +171,19 @@
     "round_4_label": "MANDATORY COMMON",
     "round_free_label": "FREE ROUND — ANY RARITY",
     "initial_shield": "🛡️ Initial Shield: <span style=\"color:#10b981;font-size:13px;\">{{shield}} PTS</span>",
-    "drag_to_reorder": "Drag to reorder"
+    "drag_to_reorder": "Drag to reorder",
+    "pack_open_prompt": "Click to open the pack!",
+    "pack_tagline_standard": "Standard Pack",
+    "pack_tagline_premium": "Elite or Better Pack",
+    "pack_tagline_legendary": "Legendary Pack",
+    "pack_tagline_vintage": "Vintage Classics Pack",
+    "pack_tagline_speed": "Speedsters Pack",
+    "pack_tagline_power": "Sluggers Pack",
+    "pack_tagline_contact": "Contact Hitters Pack",
+    "pack_tagline_pitcher": "Pitchers Pack",
+    "insufficient_funds": "Insufficient budget",
+    "legend_no_budget": "Not enough budget to sign legends",
+    "signed_cost_suffix": "signed for"
   },
   "pre_fight": {
     "title": "<i class=\"fa-solid fa-shield-halved\"></i> Series Preparation",
@@ -167,7 +191,12 @@
     "batters_title": "<i class=\"fa-solid fa-users\"></i> Your Batters (HP)",
     "pitchers_title": "<i class=\"fa-solid fa-skull-crossbones\"></i> Opponent Rotation (HP)",
     "start_btn": "<i class=\"fa-solid fa-fire-flame-curved\"></i> BATTLE!",
-    "back_map_btn": "<i class=\"fa-solid fa-arrow-left\"></i> Back to Map"
+    "back_map_btn": "<i class=\"fa-solid fa-arrow-left\"></i> Back to Map",
+    "scouting_title": "RIVAL SCOUTING REPORT",
+    "rival_rotation_label": "RIVAL ROTATION:",
+    "ovr_label": "AVERAGE (OVR):",
+    "era_label": "DOMINANT ERA:",
+    "mixed_eras": "Mixed Era"
   },
   "match": {
     "title": "<i class=\"fa-solid fa-trophy\"></i> BATTLE",
@@ -220,7 +249,15 @@
     "see_results": "VIEW RESULTS",
     "rival_rotation": "RIVAL ROTATION",
     "outcome_victory": "DECISIVE VICTORY! You have defeated the complete pitcher rotation.",
-    "outcome_defeat": "DEFEAT. Your lineup was knocked out by the rival pitchers."
+    "outcome_defeat": "DEFEAT. Your lineup was knocked out by the rival pitchers.",
+    "banner_inning": "INNING {{inning}}",
+    "banner_inning_sub": "TOP OF THE INNING! BATTERS AT COMBAT",
+    "banner_inning_last": "FINAL INNING",
+    "banner_inning_last_sub": "CLUTCH MOMENT! ALL OR NOTHING",
+    "banner_ko": "PITCHER KNOCKED OUT!",
+    "banner_ko_sub": "RIVAL ROTATION TAKES CRITICAL DAMAGE",
+    "banner_bullpen": "RIVAL BULLPEN ENTERS",
+    "banner_bullpen_sub": "A NEW RELIEVER STEPS ONTO THE MOUND"
   },
   "popup": {
     "bb_title": "WALK (BB)",
@@ -311,7 +348,9 @@
   },
   "event": {
     "title": "<i class=\"fa-solid fa-clipboard-question\"></i> Manager's Office",
-    "desc": "Make a critical decision for the club. Each choice affects budget, health, or team stats."
+    "desc": "Make a critical decision for the club. Each choice affects budget, health, or team stats.",
+    "placeholder_title": "SPECIAL CLUBHOUSE EVENT",
+    "placeholder_desc": "Tactical opportunity in the clubhouse."
   },
   "gameover": {
     "title": "Run Over!",
@@ -342,7 +381,9 @@
   "summary": {
     "title": "<i class=\"fa-solid fa-baseball\"></i> COMPLETE RUN STATS",
     "tab_batters": "My Lineup (Batting)",
-    "tab_pitchers": "Opponent Pitchers"
+    "tab_pitchers": "Opponent Pitchers",
+    "player_col": "Batter",
+    "pitcher_col": "Pitcher"
   },
   "victory": {
     "title": "ABSOLUTE BASEROGUE CHAMPION!",
@@ -480,7 +521,8 @@
     "def_fail_banner_desc": "The ball gets past the fielder! Team takes impact damage.",
     "def_continue": "⚾ ADVANCE TO INNING {{nextInning}}",
     "def_safe_btn_label": "🧤 SECURE GLOVE! (Roll 1 to {{thresh}})",
-    "def_clutch_btn_label": "⚡ HIGHLIGHT DIVE! (Roll 1 to {{thresh}})"
+    "def_clutch_btn_label": "⚡ HIGHLIGHT DIVE! (Roll 1 to {{thresh}})",
+    "syn_expansion": "Expansion Era Synergy"
   },
   "syn": {
     "deadball": {
@@ -524,7 +566,10 @@
     "win_msg": "Victory! You defeated the rotation of {{name}} in 3 innings. +${{earnings}}!",
     "defeat_msg": "Defeat. 3 innings ended before defeating the full rotation of {{name}}.",
     "champion_eternal": "🏆 CHAMPION OF ETERNITY! You conquered the World Series and won the Playoffs.",
-    "lineup_full": "Lineup occupied. Choose who to replace."
+    "lineup_full": "Lineup occupied. Choose who to replace.",
+    "division_defeated": "DIVISION DEFEATED!",
+    "player_placed_dh": "{{name}} assigned as Designated Hitter (DH)",
+    "player_placed_native": "{{name}} assigned to primary position ({{pos}})"
   },
   "training": {
     "con": {
@@ -560,11 +605,13 @@
   },
   "ev": {
     "cork": {
-      "title": "Contraband Bats",
-      "desc": "A mysterious carpenter offers corked bats. Boosts impact but alters swing balance.",
-      "choice1": "Standard Modification (+10 PWR, -2 CON)",
-      "suc": "Bats modified successfully! Your lineup gets +25 PWR and -5 CON.",
-      "fail": "THE UMPIRE FOUND THE BATS! The league confiscates them and fines you -$10."
+      "title": "Corked Bat Offer",
+      "desc": "You are offered altered bats with a corked center to increase swing speed.",
+      "choice1": "Use legal regulation bat",
+      "suc": "Supersonic exit velocity! Extra pop in every at-bat.",
+      "fail": "The bat snapped in two! Fine and suspension issued.",
+      "choice2": "Hidden Corked Bat (HIGH RISK)",
+      "choice3": "Decline the offer"
     },
     "signs": {
       "title": "The Sign Spy",
@@ -583,55 +630,85 @@
       "fail": "Massive muscle overload! The team exhausts and loses -15 Stamina."
     },
     "hyp": {
-      "title": "Focused Batting Hypnosis",
-      "desc": "A sports psychologist offers to reprogram the mental focus of your batters at the plate.",
-      "choice1": "Deep Trance Session (+14 EYE, +10 CON)",
-      "suc": "Lucid mind! Your team gets +14 EYE and +10 CON.",
-      "fail": "Hypnotic disorientation! Batters hesitate at the count (-8 EYE)."
+      "title": "Sports Hypnosis Session",
+      "desc": "A sports psychologist offers deep focus mental training.",
+      "choice1": "Motivational Talk",
+      "suc": "Laser focus! Strike zone vision and discipline sharpened.",
+      "fail": "Mental confusion! Batters lose swing timing.",
+      "choice2": "Deep Trance Hypnosis (RISK)",
+      "choice3": "Skip participation"
     },
     "graphene": {
       "title": "Experimental Alloy Bats",
-      "desc": "A tech lab proposes testing carbon fiber and titanium bats for the next map stretch.",
+      "desc": "A tech lab proposes testing carbon fiber and titanium bats for the next stretch of games.",
       "choice3": "Pass on the technology",
-      "fail": "The bat splintered to pieces! You lose the investment and -5 PWR."
+      "fail": "The bat shattered! Commissioner sanctions and stat penalties applied.",
+      "choice1": "Buy Regulation Certified Model (-$20)",
+      "choice2": "Hyper-Carbon Prototype (HIGH RISK)",
+      "suc": "Devastating power! Your hitters crush balls with unbelievable exit velocity."
     },
     "tabloid": {
-      "title": "Sensationalist Press",
-      "desc": "A major sports newspaper wants a locker room exclusive and offers money for an interview.",
-      "suc": "Interview sold successfully! You receive +$35 budget.",
-      "fail": "The article caused controversy! Media pressure causes stress (-15 Stamina to all).",
-      "choice3": "Close the Doors (No talking)"
+      "title": "Sensational Tabloid Press",
+      "desc": "A major sports newspaper requests an exclusive interview with your franchise star.",
+      "suc": "Interview sold successfully! Substantial budget boost added.",
+      "fail": "The article sparked drama in the clubhouse! Morale and stamina dropped.",
+      "choice3": "Close Doors to Media",
+      "choice1": "Sell Exclusive Story (+$$ • RISK)",
+      "choice2": "Official Press Conference"
     },
     "cryo": {
-      "title": "Hydrotherapy Chamber",
-      "desc": "You install an advanced cryogenic recovery chamber in the locker room.",
-      "choice1": "Full Cryotherapy (100% Stamina to all)",
-      "choice2": "Quick Ice Bath (+40 Stamina to all)",
-      "choice3": "Forego the chamber"
+      "title": "Cryotherapy & Hydrotherapy Pod",
+      "desc": "You install a state-of-the-art cryotherapy chamber in the clubhouse.",
+      "choice1": "Experimental Deep Freeze (HIGH RISK)",
+      "choice2": "Quick Ice Bath Session",
+      "choice3": "Skip the recovery chamber",
+      "suc": "Flawless session! Entire team stamina restored to peak condition.",
+      "fail": "Thermal shock! Muscle stiffness leads to roster fatigue."
     },
     "pinetar": {
-      "title": "Japanese Pine Tar",
-      "desc": "An importer offers special pine tar resin that maximizes swing firmness.",
-      "choice2": "Ultra-Sticky Home Formula (+18 CON)",
-      "fail": "The umpire noticed the illicit residue! He penalizes -10 Defense."
+      "title": "Special Japanese Pine Tar",
+      "desc": "A specialty supplier offers high-grade grip resin for your batters' bats.",
+      "choice2": "Ultra-Sticky Homemade Blend (RISK)",
+      "fail": "Umpire notices excessive pine tar! Warning and stat penalty.",
+      "choice1": "Pro Grade Pine Tar (-$15)",
+      "choice3": "Stick with standard gear",
+      "suc": "Incredible grip! Immediate boost to barrel control."
     },
     "spikes": {
-      "title": "Experimental Light Cleats",
-      "desc": "A local manufacturer offers ultra-light aluminum cleats to improve base running speed.",
-      "fail": "Bad traction! The cleats slip and cause sprains (-10 Stamina to all)."
+      "title": "Experimental Lightweight Cleats",
+      "desc": "A local manufacturer offers ultralight carbon spikes for faster base running.",
+      "fail": "Poor traction! Cleats broke causing base running blunders.",
+      "choice1": "Equip Pro Cleats (-$15)",
+      "choice2": "Titanium Spike Prototype (RISK)",
+      "choice3": "Keep standard footwear",
+      "suc": "Explosive speed! The lineup flies around the base paths."
     },
     "gloves": {
-      "title": "Tanned Leather Gloves",
-      "desc": "A memorabilia collector offers classic heavy gloves that provide maximum defensive protection."
+      "title": "Custom Tanned Leather Gloves",
+      "desc": "A craftsman offers premium cured leather gloves for your infielders.",
+      "choice1": "Buy Legendary Gloves (-$25)",
+      "choice2": "Quick Prototype Glove (RISK)",
+      "choice3": "Keep current fielding gloves",
+      "suc": "Perfect fit! Your defense turns into an iron wall.",
+      "fail": "Leather tore mid-game! Costly defensive fielding errors."
     },
     "choice_reject": "Reject Offer (Do nothing)",
     "choice_clean": "Play Clean (Decline)",
     "choice_skip": "Continue without training",
     "choice_reject_therapy": "Decline Psychotherapy",
-    "badge_risk_success": "RISK SUCCESSFUL!",
+    "badge_risk_success": "RISK SUCCEEDED!",
     "badge_taken": "DECISION MADE!",
-    "generic_success": "The decision was executed successfully for your roster.",
-    "generic_fail": "The risky option didn't go as expected and caused negative consequences."
+    "generic_success": "The decision paid off greatly for the ballclub!",
+    "generic_fail": "The risky gamble did not turn out as planned.",
+    "bribe": {
+      "title": "Desperate Scout Proposition",
+      "desc": "A rogue scout offers confidential scouting reports on the rival rotation for cash.",
+      "choice1": "Report to the Commissioner",
+      "choice2": "Under-the-Table Deal (+$ • RISK)",
+      "choice3": "Ignore the call",
+      "suc": "Deal closed cleanly! Key scouting advantages unlocked.",
+      "fail": "Caught red-handed! League issues a hefty financial fine."
+    }
   },
   "sign": {
     "chemistry_active": "Active Chemistry for <strong>{{team}}</strong> (+4 stats)",
@@ -643,7 +720,12 @@
     "sec_pos_tooltip": "Secondary Position",
     "trait_choose_desc": "Choose a Passive Trait that will accompany your team until the end of the run:",
     "super_boss_desc": "But the 4 Greatest Baseball Legends jump onto the field for the Final Battle!",
-    "hp_restored": "Your team has recovered +30 HP and Max Shield."
+    "hp_restored": "Your team has recovered +30 HP and Max Shield.",
+    "active_traits_header": "ACTIVE TEAM TRAITS",
+    "trait_pick_btn": "EQUIP TRAIT",
+    "super_boss_fight_btn": "⚔️ FACE THE SUPER BOSS!",
+    "super_boss_defeated_first_group": "PHASE 1 COMPLETE! Super Boss summons legendary bullpen arms.",
+    "super_boss_final_phase_html": "⚡ <strong>FINAL PHASE!</strong> Defeat the shutdown closer to win the run."
   },
   "trait": {
     "eagle": {
@@ -747,7 +829,14 @@
     "war_label": "WAR",
     "challenge162_filter": "🏆 Only 162-0 Challenge eligible",
     "challenge162_badge_tooltip": "Eligible for the 162-0 Challenge",
-    "challenge162_badge_label": "🏆 162-0 CHALLENGE"
+    "challenge162_badge_label": "🏆 162-0 CHALLENGE",
+    "allstars_label": "All-Star",
+    "cy_label": "Cy Young",
+    "gg_label": "Gold Glove",
+    "mvp_label": "MVP",
+    "rel_label": "Reliever of the Year",
+    "roy_label": "Rookie of the Year",
+    "ss_label": "Silver Slugger"
   },
   "challenge162": {
     "title": "🏆 162-0 CHALLENGE",
@@ -789,13 +878,102 @@
     "season_title": "162-0 CHALLENGE",
     "season_regular": "REGULAR SEASON",
     "season_games_count": "Game {{current}} / {{total}}",
-    "table_player": "Player",
-    "game_counter": "Game {{current}} / {{total}}"
+    "table_player": "PLAYER",
+    "game_counter": "Game {{current}} / {{total}}",
+    "hub_title": "162-0 CHALLENGE HUB",
+    "hub_subtitle": "Choose your regular season and postseason format",
+    "best_streak": "BEST STREAK",
+    "world_series": "WORLD SERIES",
+    "seasons_played": "SEASONS",
+    "total_collection": "TOTAL COLLECTION",
+    "wins_count": "{{count}} WINS",
+    "titles_count": "{{count}} TITLES",
+    "seasons_count": "{{count}} PLAYED",
+    "cards_count": "{{count}} CARDS",
+    "active_run": "SEASON IN PROGRESS: {{mode}}",
+    "current_record": "Current record: {{wins}} - {{losses}} ({{current}}/{{total}} games)",
+    "resume": "CONTINUE",
+    "abandon": "ABANDON",
+    "abandon_confirm": "Are you sure you want to abandon the current season? All progress will be lost.",
+    "free_draft_badge": "FREE DRAFT",
+    "all_star_title": "ALL-STAR DREAM TEAM",
+    "all_star_desc": "Build your ultimate dream lineup and pitching staff without restrictions using any card in your collection.",
+    "play_all_star": "PLAY ALL-STAR",
+    "mono_team_badge": "MONO-TEAM",
+    "mono_team_title": "MONO-TEAM CHALLENGE",
+    "mono_team_desc": "Compete exclusively with players who wore the jersey of your selected franchise.",
+    "play_with_team": "PLAY WITH {{code}}",
+    "mono_era_badge": "HISTORIC ERA",
+    "mono_era_title": "MONO-ERA CHALLENGE",
+    "mono_era_desc": "Travel back in time and compete exclusively with stars from one of baseball's 9 golden eras.",
+    "play_with_era": "PLAY {{era}}",
+    "autofill": "AUTO-FILL",
+    "clear_roster": "CLEAR",
+    "hub_btn": "HUB",
+    "team_ovr": "TEAM OVR",
+    "roster_count": "ROSTER",
+    "choose_card_for": "CHOOSE CARD FOR [{{slot}}]",
+    "cards_available": "{{count}} cards available for this position",
+    "search_placeholder": "Search player by name or team...",
+    "no_cards_found": "No unlocked cards found for [{{slot}}] in this mode.",
+    "close": "CLOSE",
+    "infield": "INFIELD",
+    "outfield_dh": "OUTFIELD & DH",
+    "lineup_title": "STARTING LINEUP (9 CARDS)",
+    "rotation_title": "STARTING ROTATION (5 CARDS)",
+    "bullpen_title": "BULLPEN RELIEVERS (3 CARDS)",
+    "start_season": "START 162-0 SEASON",
+    "auto_sim_run": "PAUSE AUTO SIM",
+    "auto_sim_start": "AUTO SIM (1 BY 1)",
+    "main_menu": "MAIN MENU",
+    "playoffs_title": "BASEROGUE POSTSEASON",
+    "playoffs_subtitle": "3 Single-Elimination Rounds (Sudden Death) · {{desc}}",
+    "bracket_round": "ROUND {{round}}",
+    "step_locked": "🔒 LOCKED",
+    "step_done": "✔ CLEARED",
+    "step_active": "⚔ ACTIVE",
+    "your_team": "YOUR TEAM ({{wins}}-{{losses}})",
+    "ace_pitcher": "Ace Pitcher",
+    "season_era": "Season ERA",
+    "offensive_leader": "Offensive Leader",
+    "roster_record": "Roster Depth",
+    "drafted_cards": "17 Drafted Cards",
+    "boss_difficulty": "Boss Difficulty",
+    "stat_boost": "+{{boost}} to all ratings",
+    "rival_sp_hp": "Rival SP HP",
+    "extra_hp": "{{pct}}% extra",
+    "offensive_danger": "Offensive Threat",
+    "play_playoff_btn": "🎲 PLAY {{label}}! (DO OR DIE MATCH)",
+    "view_stats_table": "📊 VIEW STATS TABLE",
+    "perfect_champion_title": "👑 PERFECT 162-0 SEASON & WORLD CHAMPION!",
+    "perfect_champion_desc": "🏆 162-0 REGULAR + 3-0 PLAYOFFS (165-0 UNDEFEATED) · IMMORTALITY ACHIEVED!",
+    "ws_champion_title": "🏆 WORLD SERIES CHAMPION!",
+    "ws_champion_desc": "👑 You lifted the trophy ({{wins}}-{{losses}} Regular + 3-0 Playoffs)",
+    "playoff_end_title": "END OF POSTSEASON",
+    "playoff_end_desc": "Great campaign ended in: {{round}}",
+    "regular_end_title": "REGULAR SEASON FINISHED",
+    "regular_end_desc": "Record: {{wins}}-{{losses}} (Minimum 100 wins required to qualify)",
+    "postseason_label": "POSTSEASON",
+    "dynasty_status": "DYNASTY STATUS",
+    "status_undefeated": "👑 SUPREME UNDEFEATED",
+    "status_champion": "👑 WORLD CHAMPION",
+    "status_finalist": "🥈 FINALIST",
+    "status_contender": "⚾ CONTENDER",
+    "mvp_award": "🏆 DYNASTY MVP",
+    "cy_young_award": "🧢 CY YOUNG AWARD",
+    "hr_king_award": "💣 HOME RUN KING",
+    "reliever_award": "🔥 RELIEVER OF THE YEAR",
+    "ring_of_champions": "💍 RING OF 17 CHAMPIONS (FULL ROSTER)",
+    "new_challenge_btn": "🔄 START NEW CHALLENGE",
+    "table_pitcher": "PITCHER",
+    "table_role": "ROLE"
   },
   "badge": {
     "captain_tooltip": "Captain: +5 to all ratings for teammates while on active roster.",
     "clutch_tooltip": "Clutch Player: +2% single and double chance, +4% HR chance with runners in scoring position during final inning.",
-    "challenge162_tooltip": "Eligible for the 162-0 Challenge: was part of a roster that won a full run (Quick Play or Story Mode)."
+    "challenge162_tooltip": "Eligible for the 162-0 Challenge: was part of a roster that won a full run (Quick Play or Story Mode).",
+    "interera_label": "TIME TRAVELER",
+    "interera_tooltip": "Time Traveler: this player was not active during the selected season — counts double toward unlocking their own era's synergy."
   },
   "combat_info": {
     "title": "⚙️ DAMAGE DATA & VALUES",
@@ -811,6 +989,210 @@
     "defense": "<strong style=\"color: #38bdf8;\">🛡️ DEFENSIVE DUEL (Bottom of Inning):</strong><div style=\"font-size: 8.5px; color: #cbd5e1; margin-top: 2px;\">Success (20% + 0.70×DEF): <strong style=\"color:#4ade80;\">+30 HP & +15 Shield</strong> • Error: <strong style=\"color:#f87171;\">-15 Damage</strong>.</div>",
     "steal": "<strong style=\"color: #38bdf8;\">🏃 BASE STEALING (SPD ≥ 40):</strong><div style=\"font-size: 8.5px; color: #cbd5e1; margin-top: 2px;\">On 1B or BB with 2B open: attempts to steal (15% + 0.70×SPD). Grants <strong style=\"color:#38bdf8;\">+20% damage</strong> to pitcher for 2 impacts.</div>",
     "upgrade": "<strong style=\"color: #a855f7;\">⚡ HIT UPGRADES:</strong><div style=\"font-size: 8.5px; color: #cbd5e1; margin-top: 2px;\">With <strong>SPD ≥ 70</strong> (Grades B+ to S), runners have <strong>15% to 50% chance</strong> to stretch hits into extra bases (1B→2B→3B).</div>",
-    "shield_max": "🛡️ Max shield: 50 (50% of average DEF of your 8 starters)."
-  }
+    "shield_max": "🛡️ Max shield: 50 (50% of average DEF of your 8 starters).",
+    "tooltip": "Damage System & Combat Rules"
+  },
+  "run_intro": {
+    "title": "WELCOME TO BASEROGUE",
+    "desc": "Build your 9-batter lineup through draft rounds, arrange them tactically on the field, and advance by defeating rival pitching rotations. Roll the dice each turn to claim the championship!",
+    "dont_show_again": "Don't show again",
+    "start_btn": "⚾ START RUN!"
+  },
+  "traits": {
+    "eagle_patience": "Eagle Patience",
+    "veteran_rotation": "Veteran Rotation",
+    "clutch_legends": "Clutch Legends",
+    "speed_demons": "Speed Demons",
+    "slugger_momentum": "Slugger Momentum",
+    "defensive_wall": "Defensive Wall",
+    "surgical_contact": "Surgical Contact",
+    "early_pressure": "Early Pressure",
+    "reliever_ambush": "Reliever Ambush",
+    "iron_shield": "Iron Shield",
+    "ghost_runners": "Ghost Runners",
+    "extra_base_impact": "Extra Base Impact",
+    "era_accelerated": "Era Accelerated",
+    "golden_glove": "Gold Glove",
+    "legendary_domination": "Legendary Domination",
+    "secondary_master": "Secondary Position Master",
+    "scout_eye": "Scout's Eye",
+    "elite_negotiator": "Elite Negotiator",
+    "endless_stamina": "Endless Stamina"
+  },
+  "chest": {
+    "claim_btn": "CLAIM REWARD",
+    "claim_trait_btn": "EQUIP TRAIT",
+    "empty_desc": "The treasure chest was empty in this stadium sector.",
+    "empty_title": "EMPTY CHEST",
+    "found_title": "YOU FOUND A TREASURE CHEST!"
+  },
+  "gamble": {
+    "header": "CLUBHOUSE BETTING & DEALS",
+    "choose_target": "Select target player:",
+    "bet_btn": "🎲 GAMBLE",
+    "reject_btn": "PASS BY",
+    "success_pct": "Success Chance",
+    "fail_pct": "Failure Chance",
+    "no_player_found": "No eligible players found",
+    "no_valid_era_players": "No players from this era",
+    "budget": {
+      "title": "Clubhouse Financial Gamble",
+      "desc": "Invest funds in sponsorship markets for potential cash gains.",
+      "result_win": "Great return! Added +$ budget.",
+      "result_lose": "Bad investment. Lost the wagered funds."
+    },
+    "scout": {
+      "title": "Special Training Drill",
+      "desc": "Intensive drill session to boost a chosen player's ratings.",
+      "no_injury_target": "No injured players",
+      "no_target": "No valid target",
+      "result_win": "Training succeeded! Ratings increased.",
+      "result_lose": "Overexertion! Player suffered fatigue."
+    },
+    "synergy": {
+      "title": "Era Alchemy Pact",
+      "desc": "Attempt to forge player affinity with your primary era synergy.",
+      "no_valid_target": "No eligible players",
+      "result_win": "Affinity successfully established!",
+      "result_lose": "No synergy connection formed.",
+      "result_lose_none": "No synergy changes."
+    },
+    "trade": {
+      "title": "Surprise Mystery Trade",
+      "desc": "Negotiate a blind player swap with the league office.",
+      "no_target": "No cards available to trade",
+      "result_win": "Star player acquired in the deal!",
+      "result_lose": "Trade resulted in a minor role player."
+    }
+  },
+  "tutorial": {
+    "got_it": "GOT IT!",
+    "skip_all": "SKIP TUTORIAL"
+  },
+  "career": {
+    "ace_matchup_named": "Facing {{pitcher}} of the {{team}}, all eyes on you.",
+    "ace_matchup_team": "Facing the {{team}} and their top ace, all eyes on you.",
+    "choose_card": "SELECT",
+    "continue": "Continue",
+    "contract_auto_renew": "Still under contract",
+    "contract_label": "Contract",
+    "contract_offer_years": "{{years}}-Year Contract",
+    "contract_prompt": "Stay with your current team or sign elsewhere?",
+    "diff_easy": "Easy",
+    "diff_medium": "Medium",
+    "diff_hard": "Hard",
+    "diff_impossible": "Impossible",
+    "diff_random": "Random",
+    "difficulty_desc": "Choose your career difficulty level:",
+    "difficulty_title": "CAREER DIFFICULTY",
+    "draft_continue": "CONTINUE DRAFT",
+    "draft_reveal_title": "TEAM ASSIGNED!",
+    "draft_status": "Lottery in progress...",
+    "draft_status_done": "Drafted!",
+    "event_progress": "Event {{current}} of {{total}}",
+    "events_done": "Season events complete!",
+    "finish_season": "VIEW SEASON SUMMARY",
+    "games": "games",
+    "go_offseason": "PROCEED TO OFFSEASON",
+    "hof_inducted": "ELECTED TO THE HALL OF FAME",
+    "hof_not_inducted": "NOT ELECTED • 75% REQUIRED",
+    "hof_progress": "Hall of Fame Progress",
+    "hof_votes_label": "votes",
+    "hub_age": "Age",
+    "hub_current": "Current OVR",
+    "hub_current_year": "Season",
+    "hub_debut": "Debut",
+    "hub_difficulty": "Difficulty",
+    "hub_hof_score": "HOF Score",
+    "hub_play_season": "PLAY SEASON",
+    "hub_potential": "Potential (OVR)",
+    "hub_team": "Team",
+    "hub_title": "CAREER HUB",
+    "leaderboard_title": "LEAGUE STANDINGS",
+    "mvp_winner_label": "Season MVP",
+    "nemesis_label": "Career Nemesis",
+    "new_career": "START NEW CAREER",
+    "no_awards": "No awards this season",
+    "no_picks": "No prospects available for this difficulty.",
+    "offseason_done": "Offseason complete! Ready for the next season.",
+    "offseason_event_prompt": "Offseason development opportunity unfolds.",
+    "other_league_player": "Other league player",
+    "pack_title": "SELECT YOUR PROSPECT",
+    "pathway_prompt": "How did you reach the Major Leagues?",
+    "pathway_title": "PATHWAY TO DEBUT",
+    "pick_btn": "SELECT",
+    "play_signature": "SPIN ROULETTE",
+    "play_situational": "SPIN ROULETTE",
+    "playoff_vs": "vs.",
+    "potential_short": "POT",
+    "profile_history_title": "SEASON HISTORY",
+    "profile_no_seasons": "No seasons played yet.",
+    "profile_no_trophies": "Empty trophy case — for now.",
+    "profile_trophy_case": "TROPHY CASE",
+    "progress_title": "PROGRESSION",
+    "record": "Record",
+    "reputation_label": "Reputation",
+    "retired_msg": "Your player has retired.",
+    "risk_tag": "REPUTATION RISK",
+    "role_bench": "Bench",
+    "role_bench_desc": "Fewer opportunities, slow and steady growth",
+    "role_rotation": "Rotation",
+    "role_rotation_desc": "Balanced playing time, standard development",
+    "role_starter": "Starter",
+    "role_starter_desc": "More at-bats, high pressure — faster development",
+    "safe_tag": "SAFE",
+    "season_end_title": "SEASON FINALE",
+    "season_quality": "Season Score",
+    "season_title": "SEASON",
+    "see_hof_verdict": "VIEW HALL OF FAME VERDICT",
+    "shop_active_for": "Active for",
+    "shop_balance": "Balance",
+    "shop_buy": "PURCHASE",
+    "shop_cant_afford": "INSUFFICIENT FUNDS",
+    "shop_cost": "Cost",
+    "signature_desc": "Spin the roulette wheel to determine your performance in the decisive stretch.",
+    "signature_title": "MOMENT OF THE SEASON",
+    "spin_wheel": "SPIN",
+    "stakes_routine": "ROUTINE",
+    "stakes_notable": "NOTABLE",
+    "stakes_decisive": "DECISIVE",
+    "standings_league": "League",
+    "standings_none": "No league data available for this year.",
+    "standings_title": "STANDINGS",
+    "team_tier_champion": "Title Contender",
+    "team_tier_competitive": "Competitive",
+    "team_tier_rebuild": "Rebuilding",
+    "totals_avg": "AVG",
+    "totals_hr": "HR",
+    "totals_pj": "G",
+    "totals_rbi": "RBI",
+    "totals_seasons": "YRS",
+    "wear_label": "Wear & Tear",
+    "win_pct_label": "win rate",
+    "winter_injured_note": "next season",
+    "year_singular": "year",
+    "years_remaining": "remaining",
+    "years_short": "years",
+    "you": "You"
+  },
+  "eagle_patience": "Eagle Patience",
+  "veteran_rotation": "Veteran Rotation",
+  "clutch_legends": "Clutch Legends",
+  "speed_demons": "Speed Demons",
+  "slugger_momentum": "Slugger Momentum",
+  "defensive_wall": "Defensive Wall",
+  "surgical_contact": "Surgical Contact",
+  "early_pressure": "Early Pressure",
+  "reliever_ambush": "Reliever Ambush",
+  "iron_shield": "Iron Shield",
+  "ghost_runners": "Ghost Runners",
+  "extra_base_impact": "Extra Base Impact",
+  "era_accelerated": "Era Accelerated",
+  "golden_glove": "Gold Glove",
+  "legendary_domination": "Legendary Domination",
+  "secondary_master": "Secondary Position Master",
+  "scout_eye": "Scout's Eye",
+  "elite_negotiator": "Elite Negotiator",
+  "endless_stamina": "Endless Stamina",
+  "back_to_back": "Back-to-Back Blast"
 }

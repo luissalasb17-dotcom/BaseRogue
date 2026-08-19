@@ -192,6 +192,22 @@
       return keys;
     },
 
+    _getOpponentKeys(pitcher) {
+      if (!pitcher) return [];
+      const keys = [];
+      const clean = (pitcher.cleanName || pitcher.name || '').replace(/\s*\(\d{4}\)/g, '').replace(/\s*\(.*?\)/g, '').trim();
+      const name = (pitcher.name || '').trim();
+      const year = pitcher.year || pitcher.peak_year_display || pitcher.peak_year || '';
+      const role = (pitcher.role || pitcher.pos || 'SP').toUpperCase();
+
+      if (clean && year && role) keys.push(`${clean}_${year}_${role}`);
+      if (clean && year) keys.push(`${clean}_${year}`);
+      if (name && year && role) keys.push(`${name}_${year}_${role}`);
+      if (name && year) keys.push(`${name}_${year}`);
+      if (pitcher.playerID) keys.push(`id_${pitcher.playerID}`);
+      return keys;
+    },
+
     unlock(player) {
       if (!player || player.isReplacement) return;
       const keys = this._getPlayerKeys(player);
@@ -225,15 +241,17 @@
 
     unlockOpponent(pitcher) {
       if (!pitcher) return;
-      const rawName = (pitcher.cleanName || pitcher.name || '').replace(/\s*\(\d{4}\)/g, '').trim();
-      if (!rawName) return;
-      const year = pitcher.year || pitcher.peak_year_display || pitcher.peak_year || '';
-      const role = pitcher.role || pitcher.pos || 'SP';
-      const key = `${rawName}_${year}_${role}`;
-      if (!this.unlockedOpponents.has(key)) {
-        this.unlockedOpponents.add(key);
+      const keys = this._getOpponentKeys(pitcher);
+      let changed = false;
+      keys.forEach(k => {
+        if (!this.unlockedOpponents.has(k)) {
+          this.unlockedOpponents.add(k);
+          changed = true;
+        }
+      });
+      if (changed) {
         this.save();
-        console.log('⚾ BaseballDex: Oponente desbloqueado ->', key);
+        console.log('⚾ BaseballDex: Oponente desbloqueado ->', keys[0]);
       }
     },
 
@@ -248,10 +266,8 @@
       const pPool = (window.PitchersDB && window.PitchersDB.PITCHERS_POOL) ? window.PitchersDB.PITCHERS_POOL : (window.PITCHERS_POOL || []);
       this.unlockedOpponents = new Set();
       pPool.forEach(p => {
-        const rawName = (p.cleanName || p.name || '').replace(/\s*\(\d{4}\)/g, '').trim();
-        const year = p.year || p.peak_year_display || p.peak_year || '';
-        const role = p.role || p.pos || 'SP';
-        this.unlockedOpponents.add(`${rawName}_${year}_${role}`);
+        const keys = this._getOpponentKeys(p);
+        keys.forEach(k => this.unlockedOpponents.add(k));
       });
 
       this.save();
@@ -272,11 +288,8 @@
     isUnlocked(player) {
       if (!player) return false;
       if (this.activeCategory === 'opponents') {
-        const rawName = (player.cleanName || player.name || '').replace(/\s*\(\d{4}\)/g, '').trim();
-        const year = player.year || player.peak_year_display || player.peak_year || '';
-        const role = player.role || player.pos || 'SP';
-        const key = `${rawName}_${year}_${role}`;
-        return this.unlockedOpponents.has(key);
+        const keys = this._getOpponentKeys(player);
+        return keys.some(k => this.unlockedOpponents.has(k));
       }
       const keys = this._getPlayerKeys(player);
       return keys.some(k => this.unlocked.has(k));

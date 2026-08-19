@@ -5665,6 +5665,7 @@ function initGameModeSelector() {
 
   // ── START INTERACTIVE DICE BATTLE ────────────────────────────────────────────
   function setupAndStartMatchSimulation() {
+    if (typeof renderActiveRoster === 'function') renderActiveRoster();
     // Collapse roster panel (keep visible in 3-column layout)
     // el.rosterManagerPanel.classList.add('hidden');
 
