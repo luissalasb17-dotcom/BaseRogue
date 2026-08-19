@@ -201,7 +201,16 @@
     "rival_rotation_label": "RIVAL ROTATION:",
     "ovr_label": "AVERAGE (OVR):",
     "era_label": "DOMINANT ERA:",
-    "mixed_eras": "Mixed Era"
+    "mixed_eras": "Mixed Era",
+    "threat_common": "Standard Rotation",
+    "threat_uncommon": "Solid Rotation",
+    "threat_rare": "Dangerous Rotation",
+    "threat_epic": "Elite Rotation",
+    "threat_legendary": "Legendary Rotation",
+    "record_dominant": "Dominant Team",
+    "record_contender": "Contender Team",
+    "record_underdog": "Underdog Team",
+    "win_pct_label": "Win Rate"
   },
   "match": {
     "title": "<i class=\"fa-solid fa-trophy\"></i> BATTLE",

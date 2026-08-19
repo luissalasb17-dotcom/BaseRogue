@@ -212,7 +212,16 @@
             "rival_rotation_label": "ROTACIÓN RIVAL:",
             "ovr_label": "MEDIA (OVR):",
             "era_label": "ERA PREDOMINANTE:",
-            "mixed_eras": "Era Mixta"
+            "mixed_eras": "Era Mixta",
+            "threat_common": "Rotación Estándar",
+            "threat_uncommon": "Rotación Sólida",
+            "threat_rare": "Rotación Peligrosa",
+            "threat_epic": "Rotación Élite",
+            "threat_legendary": "Rotación Legendaria",
+            "record_dominant": "Equipo Dominante",
+            "record_contender": "Equipo Contendiente",
+            "record_underdog": "Equipo Desafiante",
+            "win_pct_label": "Prob. Victoria"
       },
       "match": {
             "title": "<i class=\"fa-solid fa-trophy\"></i> Bateadores al Combate",
@@ -1417,7 +1426,16 @@
             "rival_rotation_label": "RIVAL ROTATION:",
             "ovr_label": "AVERAGE (OVR):",
             "era_label": "DOMINANT ERA:",
-            "mixed_eras": "Mixed Era"
+            "mixed_eras": "Mixed Era",
+            "threat_common": "Standard Rotation",
+            "threat_uncommon": "Solid Rotation",
+            "threat_rare": "Dangerous Rotation",
+            "threat_epic": "Elite Rotation",
+            "threat_legendary": "Legendary Rotation",
+            "record_dominant": "Dominant Team",
+            "record_contender": "Contender Team",
+            "record_underdog": "Underdog Team",
+            "win_pct_label": "Win Rate"
       },
       "match": {
             "title": "<i class=\"fa-solid fa-trophy\"></i> BATTLE",

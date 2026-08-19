@@ -3995,7 +3995,7 @@ function initGameModeSelector() {
       </div>
       <div class="popup-player-name">${player.name}</div>
       <div class="popup-meta-row">
-        <span class="popup-pos-badge">${slot}</span>
+        <span class="popup-pos-badge" title="Posición Natural / Natural Position">${player.sec_pos && String(player.sec_pos).trim() ? `${player.pos || slot} / ${player.sec_pos}` : (player.pos || slot)}</span>
         <span class="popup-era-chip">${(player.era||'').replace(/\(.*\)/,'').trim()}</span>
         <span class="popup-team-chip">${player.team !== 'ROOK' ? player.team : '—'}</span>
       </div>
@@ -5567,7 +5567,7 @@ function initGameModeSelector() {
       const wp = enemy.win_pct || 0;
       const recordKey = wp >= 0.560 ? 'record_dominant' : (wp >= 0.480 ? 'record_contender' : 'record_underdog');
       const pctText = (wp * 100).toFixed(1) + '%';
-      recordHTML = `<div style="font-size:11px;color:#9ca3af;margin-top:4px;">${t('pre_fight.' + recordKey)} — <strong style="color:#e4e4e7;">${pctText}</strong> ${t('map.win_pct', 'win %')}</div>`;
+      recordHTML = `<div style="font-size:11px;color:#9ca3af;margin-top:4px;">${t('pre_fight.' + recordKey)} — <strong style="color:#e4e4e7;">${pctText}</strong> ${t('pre_fight.win_pct_label', 'Prob. Victoria')}</div>`;
       ovrDisplay = enemy.ovr !== undefined && enemy.ovr !== null ? Math.floor(enemy.ovr) : null;
     } else {
       // Quick Play rosters are 2-3 pitchers assembled independently from the
