@@ -443,8 +443,7 @@
           el.style.cssText = `position: relative; background: #0d1f12; border: 2px solid ${rColor}; border-radius: 8px; padding: 10px 6px; text-align: center; cursor: pointer; transition: transform 0.15s; display: flex; flex-direction: column; justify-content: space-between;`;
 
           const posLabel = p.role || p.pos || 'P';
-          const h9Val = p.h9 !== undefined ? p.h9 : (p.grt !== undefined ? p.grt : 50);
-          const subLabel = this.activeCategory === 'opponents' ? `H/9: ${getGrade(h9Val)}` : p.team;
+          const subLabel = p.team || '';
 
           const challenge162Tooltip = (typeof window.t === 'function' ? window.t('dex.challenge162_badge_tooltip') : 'Elegible para el 162-0 Challenge');
           el.innerHTML = `
