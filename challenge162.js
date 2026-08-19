@@ -904,13 +904,13 @@
     _getStarterMaxInnings(sp) {
       if (!sp) return 6;
       const sta = sp.sta !== undefined ? sp.sta : (sp.sta_val !== undefined ? sp.sta_val : (sp.stamina !== undefined ? sp.stamina : 70));
-      // Base innings: STA 20 -> 6.0, STA 70 -> 7.0, STA 90 -> 7.4, STA 105+ -> 7.8
-      const base = 6.0 + (Math.max(20, Math.min(125, sta)) - 20) * 0.018;
+      // Base innings: STA 20 -> 6.2, STA 70 -> 7.1, STA 90 -> 7.5, STA 105+ -> 7.8
+      const base = 6.2 + (Math.max(20, Math.min(125, sta)) - 20) * 0.016;
       const roll = (Math.random() - 0.5) * 1.0;
       let maxInn = Math.max(6, Math.min(9, Math.round(base + roll)));
 
       // High stamina complete games for workhorse aces (STA >= 85)
-      if (sta >= 85 && Math.random() < 0.08) maxInn = 9;
+      if (sta >= 85 && Math.random() < 0.06) maxInn = 9;
 
       return maxInn;
     },
@@ -926,15 +926,15 @@
 
       const runDiff = userRuns - oppRuns;
       const isSaveSituation = (runDiff >= 1 && runDiff <= 3);
-      const isClose = (runDiff === 0 || Math.abs(runDiff) <= 2);
+      const isExtremeBlowout = Math.abs(runDiff) >= 7;
 
       // Extract reliever stamina attributes:
       const staMR = middle && (middle.sta !== undefined ? middle.sta : (middle.sta_val !== undefined ? middle.sta_val : (middle.stamina !== undefined ? middle.stamina : 65)));
       const staSU = setup && (setup.sta !== undefined ? setup.sta : (setup.sta_val !== undefined ? setup.sta_val : (setup.stamina !== undefined ? setup.stamina : 40)));
       const staCL = closer && (closer.sta !== undefined ? closer.sta : (closer.sta_val !== undefined ? closer.sta_val : (closer.stamina !== undefined ? closer.stamina : 35)));
 
-      // In massive runaway blowouts in 9th (margin >= 6 runs), mop-up bench arm finishes to protect bullpen:
-      if (Math.abs(runDiff) >= 6 && inning >= 9) {
+      // In massive runaway blowouts in 9th (margin >= 8 runs), mop-up bench arm finishes to protect bullpen:
+      if (Math.abs(runDiff) >= 8 && inning >= 9) {
         return null;
       }
       if (inning < 6) {
@@ -944,33 +944,41 @@
       // ── 9th inning and Extra Innings (10+) ──────────────────────────────────
       if (inning >= 9) {
         if (isSaveSituation) {
-          // Closer pitches ~85% of save opportunities; Setup covers ~15% on rest days:
-          if (gameIdx % 6 !== 0 || staCL >= 45) {
+          // Closer pitches ~88% of save opportunities; Setup covers ~12% on rest days:
+          if (gameIdx % 8 !== 0 || staCL >= 45) {
+            return closer;
+          }
+          return setup;
+        }
+
+        // Leads of 1 to 5 runs: Closer pitches to stay sharp (~65% of appearances):
+        if (runDiff >= 1 && runDiff <= 5) {
+          if (gameIdx % 3 !== 0) {
             return closer;
           }
           return setup;
         }
 
         // Close game (tie, 1-run deficit) in 9th or Extras:
-        if (isClose && gameIdx % 2 === 0) {
+        if (runDiff === 0 || runDiff === -1) {
           return closer;
         }
 
-        // Runaway lead (4+ runs) or multi-run deficit:
+        // Heavy blowout lead (6+ runs) or multi-run deficit:
         // Middle / long reliever finishes the game to preserve Closer & Setup:
         return middle;
       }
 
       // ── 8th Inning (Setup Inning) ───────────────────────────────────────────
       if (inning === 8) {
-        if ((runDiff >= 1 && runDiff <= 3) || runDiff === 0) {
-          // Setup reliever handles 8th inning in competitive games (~80% of time):
+        if (!isExtremeBlowout && runDiff >= -2) {
+          // Setup reliever handles 8th inning in leads up to 6 runs and close games (~80% of time):
           if (gameIdx % 5 !== 0 || staSU >= 45) {
             return setup;
           }
           return middle;
         }
-        // Blowouts or deficits in 8th -> Middle relief
+        // Extreme blowouts (7+ runs) or deep deficits in 8th -> Middle relief
         return middle;
       }
 
