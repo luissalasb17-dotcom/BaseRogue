@@ -1520,7 +1520,8 @@
             "store_category_consumable": "🧪 CONSUMIBLE DE ENERGÍA",
             "stamina_penalty_badge": "⚡ PENALIZACIÓN DE STAMINA"
       }
-},
+}
+    },
     en: {
       translation: {
       "hud": {
