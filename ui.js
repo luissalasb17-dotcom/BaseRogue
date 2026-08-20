@@ -7377,7 +7377,13 @@ function initGameModeSelector() {
       return;
     }
 
-    const _t = (key, params, fallback) => (typeof window.t === 'function' ? window.t(key, params) : (fallback || key));
+    const _t = (key, params, fallback) => {
+      if (typeof window.t === 'function') {
+        const val = window.t(key, { ...(params || {}), defaultValue: fallback });
+        if (val && val !== key) return val;
+      }
+      return fallback || key;
+    };
 
     const badgeEl = document.getElementById('def-modal-inning-badge');
     const titleEl = document.getElementById('def-modal-title');
