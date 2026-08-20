@@ -2312,10 +2312,8 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
       const createPitcherObj = (p, roleOverride = null) => {
         const role = roleOverride || p.role || 'SP';
         const staVal = p.sta !== undefined ? p.sta : (p.sta_val !== undefined ? p.sta_val : 50);
-        // Anchored on the real sta range across both pools (20-110): SP 60-160 HP, RP/CL 45-80 HP.
-        const hp = (role === 'SP')
-          ? Math.round(60 + (staVal - 20) * (10 / 9))
-          : Math.round(45 + (staVal - 20) * (7 / 18));
+        // Unified stamina-driven HP scaling across all pitchers (STA 20-110 maps smoothly from 75 to 200 HP)
+        const hp = Math.max(75, Math.round(75 + (staVal - 20) * (125 / 90)));
         const yearVal = p.year || p.peak_year_display || p.peak_year || 1990;
         const nameVal = yearVal ? `${p.name} (${yearVal})` : p.name;
         return {
@@ -2503,10 +2501,14 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
       }
       
       const enemyPitchers = enemy.pitchers.map(p => {
+        const staVal = p.sta !== undefined ? p.sta : (p.sta_val !== undefined ? p.sta_val : 50);
+        const calculatedHp = (p.hp && p.maxHp) ? p.maxHp : Math.max(75, Math.round(75 + (staVal - 20) * (125 / 90)));
+        const finalHp = p.hp || calculatedHp;
+        const finalMaxHp = p.maxHp || calculatedHp;
         return {
           ...p,
-          hp: p.hp || p.maxHp,
-          maxHp: p.maxHp,
+          hp: finalHp,
+          maxHp: finalMaxHp,
           upgrades: { con: 0, pwr: 0, eye: 0, k_avd: 0, spd: 0, def: 0, sta: 0 }
         };
       });
