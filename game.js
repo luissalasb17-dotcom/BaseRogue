@@ -2305,18 +2305,13 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
         return chosen;
       };
 
-      const stageIdx = (this.currentStageIndex !== undefined ? this.currentStageIndex : 0);
-      const stageTier = Math.min(4, Math.floor(stageIdx / 4) + 1);
-      const stageHpScale = (stageTier === 1) ? 0.75 : (stageTier === 2) ? 0.88 : (stageTier === 3) ? 1.00 : 1.10;
-
       const createPitcherObj = (p, roleOverride = null) => {
         const role = roleOverride || p.role || 'SP';
         const staVal = p.sta !== undefined ? p.sta : (p.sta_val !== undefined ? p.sta_val : 50);
-        // Anchored on the real sta range across both pools (20-110): SP 60-160 HP, RP/CL 45-80 HP, scaled progressively by stage tier
-        const baseHp = (role === 'SP')
+        // Anchored on the real sta range across both pools (20-110): SP 60-160 HP, RP/CL 45-80 HP.
+        const hp = (role === 'SP')
           ? Math.round(60 + (staVal - 20) * (10 / 9))
           : Math.round(45 + (staVal - 20) * (7 / 18));
-        const hp = Math.max(30, Math.round(baseHp * stageHpScale));
         const yearVal = p.year || p.peak_year_display || p.peak_year || 1990;
         const nameVal = yearVal ? `${p.name} (${yearVal})` : p.name;
         return {
@@ -2500,17 +2495,11 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
         enemy.pitchers.forEach(p => window.BaseballDex.unlockOpponent(p));
       }
       
-      const stageIdx = (this.currentStageIndex !== undefined ? this.currentStageIndex : 0);
-      const stageTier = Math.min(4, Math.floor(stageIdx / 4) + 1);
-      const stageHpScale = (stageTier === 1) ? 0.75 : (stageTier === 2) ? 0.88 : (stageTier === 3) ? 1.00 : 1.10;
-
       const enemyPitchers = enemy.pitchers.map(p => {
-        const rawHp = p.hp || p.maxHp || 100;
-        const scaledHp = Math.max(30, Math.round(rawHp * stageHpScale));
         return {
           ...p,
-          hp: scaledHp,
-          maxHp: scaledHp,
+          hp: p.hp || p.maxHp,
+          maxHp: p.maxHp,
           upgrades: { con: 0, pwr: 0, eye: 0, k_avd: 0, spd: 0, def: 0, sta: 0 }
         };
       });
