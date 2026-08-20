@@ -3147,9 +3147,18 @@
       i18next.changeLanguage(lang, function(err, t) {
         if (err) console.error('i18next changeLanguage error:', err);
         updateDOM();
-        if (window.renderActiveRoster) window.renderActiveRoster();
-        if (window.renderSynergiesAndItems) window.renderSynergiesAndItems();
+        if (typeof window.applyRatingsGuideTranslations === 'function') {
+          window.applyRatingsGuideTranslations(lang);
+        }
+        if (typeof window.renderActiveRoster === 'function') window.renderActiveRoster();
+        if (typeof window.renderSynergiesAndItems === 'function') window.renderSynergiesAndItems();
+        if (typeof window.renderZones === 'function') window.renderZones();
+        if (window.Challenge162 && typeof window.Challenge162.updateModeSelectCard === 'function') {
+          window.Challenge162.updateModeSelectCard();
+        }
       });
+    } else {
+      updateDOM();
     }
   }
 
@@ -3167,6 +3176,11 @@
 
   function updateDOM() {
     if (typeof document === 'undefined') return;
+
+    const btnLang = document.getElementById('btn-lang-toggle');
+    if (btnLang) {
+      btnLang.innerHTML = `<i class="fa-solid fa-globe"></i> ${currentLang.toUpperCase()}`;
+    }
 
     document.querySelectorAll('[data-i18n]').forEach(el => {
       const key = el.getAttribute('data-i18n');
@@ -3197,14 +3211,18 @@
     });
   }
 
-  window.I18n = {
+  const api = {
     init,
     setLanguage,
+    changeLanguage: setLanguage,
     getLanguage,
     getCurrentLanguage: getLanguage,
     t,
     updateDOM
   };
+
+  window.I18n = api;
+  window.i18n = api;
   window.t = t;
 
   if (document.readyState === 'loading') {
