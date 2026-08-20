@@ -7633,6 +7633,9 @@ function initGameModeSelector() {
     btnRoll.disabled = false;
     modal.classList.remove('hidden');
     modal.style.display = 'flex';
+    modal.scrollTop = 0;
+    const defBoxEl = modal.querySelector('.def-modal-box');
+    if (defBoxEl) defBoxEl.scrollTop = 0;
 
     btnRoll.onclick = () => {
       btnRoll.disabled = true;

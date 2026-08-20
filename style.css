@@ -6468,6 +6468,228 @@ body.on-main-menu .main-container {
   color: #fff1f2;
 }
 
+/* ── DEFENSIVE EVENT MODAL MOBILE RESPONSIVENESS ────────────────────────── */
+@media (max-width: 600px) {
+  #modal-mid-inning-defense {
+    padding: 8px !important;
+    align-items: center !important;
+  }
+
+  .def-modal-box {
+    padding: 14px 12px !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    max-height: 94vh !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 12px !important;
+  }
+
+  .def-badge-radar {
+    font-size: 7px !important;
+    padding: 4px 10px !important;
+    margin-bottom: 6px !important;
+    gap: 4px !important;
+  }
+
+  #def-modal-title {
+    font-size: 9.5px !important;
+    margin-bottom: 2px !important;
+    line-height: 1.35 !important;
+  }
+
+  #def-modal-scenario {
+    font-size: 8.5px !important;
+    margin-bottom: 6px !important;
+    line-height: 1.25 !important;
+  }
+
+  .def-field-radar-card {
+    height: 130px !important;
+    margin-bottom: 8px !important;
+    border-radius: 8px !important;
+  }
+
+  #def-field-speed-tag,
+  #def-field-target-tag {
+    font-size: 6px !important;
+    padding: 2px 5px !important;
+    top: 4px !important;
+  }
+
+  #def-field-speed-tag { left: 6px !important; }
+  #def-field-target-tag { right: 6px !important; }
+
+  .def-fielder-card {
+    padding: 8px 10px !important;
+    gap: 8px !important;
+    margin-bottom: 6px !important;
+    border-radius: 8px !important;
+  }
+
+  .def-fielder-avatar {
+    width: 34px !important;
+    height: 34px !important;
+    font-size: 18px !important;
+    border-radius: 6px !important;
+  }
+
+  #def-modal-hp-status {
+    padding: 5px 8px !important;
+    margin-bottom: 6px !important;
+    font-size: 6.5px !important;
+    border-radius: 6px !important;
+  }
+
+  .def-tactics-selector {
+    gap: 6px !important;
+    margin-bottom: 6px !important;
+  }
+
+  .def-tactic-card {
+    padding: 6px 4px !important;
+    border-radius: 8px !important;
+  }
+
+  .def-tactic-title {
+    font-size: 7px !important;
+    margin-bottom: 2px !important;
+  }
+
+  .def-tactic-desc {
+    font-size: 5.5px !important;
+    line-height: 1.2 !important;
+  }
+
+  #def-modal-gauge-zone {
+    margin-bottom: 6px !important;
+  }
+
+  #def-modal-gauge-zone span {
+    font-size: 6px !important;
+  }
+
+  .def-gauge-wrapper {
+    height: 12px !important;
+    margin: 4px 0 2px 0 !important;
+  }
+
+  #def-dice-d100-panel {
+    margin-bottom: 6px !important;
+    gap: 2px !important;
+  }
+
+  #def-dice-d100-container {
+    transform: scale(0.85);
+    margin: -4px 0 !important;
+    gap: 6px !important;
+  }
+
+  #def-dice-result-display {
+    font-size: 12px !important;
+  }
+
+  .def-roll-btn {
+    padding: 11px 8px !important;
+    font-size: 8.5px !important;
+    border-radius: 6px !important;
+  }
+
+  .def-result-card-success,
+  .def-result-card-error {
+    padding: 8px 10px !important;
+    font-size: 8px !important;
+    border-radius: 8px !important;
+  }
+}
+
+/* ── RUN SUMMARY MODAL MOBILE RESPONSIVENESS ────────────────────────────── */
+@media (max-width: 768px) {
+  #modal-run-summary > div {
+    padding: 14px 10px !important;
+    width: 98% !important;
+    max-height: 94vh !important;
+    border-radius: 12px !important;
+  }
+
+  #modal-run-summary h3 {
+    font-size: 9.5px !important;
+  }
+
+  #summary-team-totals-header > div {
+    padding: 8px 10px !important;
+    gap: 8px !important;
+  }
+
+  #summary-team-totals-header div:first-child {
+    font-size: 8.5px !important;
+  }
+
+  #summary-team-totals-header div:last-child {
+    gap: 4px !important;
+    font-size: 8px !important;
+  }
+
+  #summary-team-totals-header span {
+    padding: 3px 6px !important;
+    font-size: 7.5px !important;
+  }
+
+  #tab-summary-batters,
+  #tab-summary-pitchers {
+    padding: 6px 10px !important;
+    font-size: 8.5px !important;
+  }
+
+  #summary-content-batters table,
+  #summary-content-pitchers table {
+    font-size: 9.5px !important;
+  }
+
+  #summary-thead-batters-row th,
+  #summary-thead-pitchers-row th,
+  #summary-tbody-batters td,
+  #summary-tbody-pitchers td {
+    padding: 5px 6px !important;
+    white-space: nowrap;
+  }
+
+  #summary-thead-batters-row th:first-child,
+  #summary-thead-pitchers-row th:first-child,
+  #summary-tbody-batters td:first-child,
+  #summary-tbody-pitchers td:first-child {
+    position: sticky !important;
+    left: 0 !important;
+    z-index: 2 !important;
+    background: #090d16 !important;
+    box-shadow: 2px 0 4px rgba(0, 0, 0, 0.4) !important;
+  }
+}
+
+/* ── GENERAL MODALS MOBILE RESPONSIVENESS ───────────────────────────────── */
+@media (max-width: 600px) {
+  #modal-season-select > div,
+  #modal-run-intro > div,
+  #modal-career-difficulty > div,
+  #modal-swap-draft .modal-content {
+    padding: 16px 12px !important;
+    max-height: 94vh !important;
+    overflow-y: auto !important;
+  }
+
+  #modal-season-select div:first-child,
+  #modal-run-intro div:first-child {
+    font-size: 11px !important;
+  }
+
+  #modal-season-select p,
+  #modal-run-intro p {
+    font-size: 11px !important;
+    line-height: 1.4 !important;
+    margin-bottom: 14px !important;
+  }
+}
+
 /* ── 162-0 CHALLENGE HUB & THEMED RUNS (HIGH-END ARCADE) ─────────────────── */
 .c162-hub-wrap {
   display: flex;
