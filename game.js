@@ -2337,13 +2337,17 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
         };
       };
 
-      // Check if Super Boss Fight is active (Stage 15 Part 2: 4 Legendary Pitchers!)
+      // Helper for OVR calculation
+      const getOvr = (p) => (p.ovr !== undefined ? p.ovr : (p._ovr !== undefined ? p._ovr : (window.UI && window.UI.getPlayerOvr ? window.UI.getPlayerOvr(p) : 50)));
+
+      // Check if Super Boss Fight is active (Stage 15 Part 2: 4 Legendary Pitchers 95+ OVR!)
       if (this.isSuperBossActive) {
-        const legPool = fullPool.filter(p => p.rarity === 'Legendary');
-        const p1 = createPitcherObj(pickPitcher(legPool, 'SP'), 'SP');
-        const p2 = createPitcherObj(pickPitcher(legPool, 'SP'), 'SP');
-        const p3 = createPitcherObj(pickPitcher(legPool, 'RP'), 'RP');
-        const p4 = createPitcherObj(pickPitcher(legPool, 'RP'), 'RP');
+        let leg95Pool = fullPool.filter(p => p.rarity === 'Legendary' && getOvr(p) >= 95);
+        if (leg95Pool.length < 4) leg95Pool = fullPool.filter(p => p.rarity === 'Legendary');
+        const p1 = createPitcherObj(pickPitcher(leg95Pool, 'SP'), 'SP');
+        const p2 = createPitcherObj(pickPitcher(leg95Pool, 'SP'), 'SP');
+        const p3 = createPitcherObj(pickPitcher(leg95Pool, 'RP'), 'RP');
+        const p4 = createPitcherObj(pickPitcher(leg95Pool, 'RP'), 'RP');
         const selected = [p1, p2, p3, p4];
         this.currentEnemy = {
           id: `super_boss_${stage}_${Date.now()}`,
@@ -2359,13 +2363,14 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
         return this.currentEnemy;
       }
 
-      // Map 1 Boss (Stage 3): Progressive starter boss (1 Rare, 2 Uncommon)
+      // Map 1 Boss (Stage 3): 1 Rare, 1 Uncommon, 1 Common
       if (stage === 3) {
         const rarePool   = fullPool.filter(p => p.rarity === 'Rare');
         const uncommPool = fullPool.filter(p => p.rarity === 'Uncommon');
-        const p1 = createPitcherObj(pickPitcher(rarePool.length ? rarePool : uncommPool, 'SP'), 'SP');
+        const commPool   = fullPool.filter(p => p.rarity === 'Common');
+        const p1 = createPitcherObj(pickPitcher(rarePool.length ? rarePool : fullPool, 'SP'), 'SP');
         const p2 = createPitcherObj(pickPitcher(uncommPool.length ? uncommPool : fullPool, 'SP'), 'SP');
-        const p3 = createPitcherObj(pickPitcher(uncommPool.length ? uncommPool : fullPool, 'RP'), 'RP');
+        const p3 = createPitcherObj(pickPitcher(commPool.length ? commPool : fullPool, 'RP'), 'RP');
         const selected = [p1, p2, p3];
         this.currentEnemy = {
           id: `boss_map1_${Date.now()}`,
@@ -2380,13 +2385,14 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
         return this.currentEnemy;
       }
 
-      // Map 2 Boss (Stage 7): 1 Epic, 2 Rare
+      // Map 2 Boss (Stage 7): 1 Epic, 1 Rare, 1 Uncommon
       if (stage === 7) {
-        const epicPool = fullPool.filter(p => p.rarity === 'Epic');
-        const rarePool = fullPool.filter(p => p.rarity === 'Rare');
-        const p1 = createPitcherObj(pickPitcher(epicPool.length ? epicPool : rarePool, 'SP'), 'SP');
+        const epicPool   = fullPool.filter(p => p.rarity === 'Epic');
+        const rarePool   = fullPool.filter(p => p.rarity === 'Rare');
+        const uncommPool = fullPool.filter(p => p.rarity === 'Uncommon');
+        const p1 = createPitcherObj(pickPitcher(epicPool.length ? epicPool : fullPool, 'SP'), 'SP');
         const p2 = createPitcherObj(pickPitcher(rarePool.length ? rarePool : fullPool, 'SP'), 'SP');
-        const p3 = createPitcherObj(pickPitcher(rarePool.length ? rarePool : fullPool, 'RP'), 'RP');
+        const p3 = createPitcherObj(pickPitcher(uncommPool.length ? uncommPool : fullPool, 'RP'), 'RP');
         const selected = [p1, p2, p3];
         this.currentEnemy = {
           id: `boss_map2_${Date.now()}`,
@@ -2406,8 +2412,8 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
         const legPool  = fullPool.filter(p => p.rarity === 'Legendary');
         const epicPool = fullPool.filter(p => p.rarity === 'Epic');
         const rarePool = fullPool.filter(p => p.rarity === 'Rare');
-        const p1 = createPitcherObj(pickPitcher(legPool.length ? legPool : epicPool, 'SP'), 'SP');
-        const p2 = createPitcherObj(pickPitcher(epicPool.length ? epicPool : rarePool, 'SP'), 'SP');
+        const p1 = createPitcherObj(pickPitcher(legPool.length ? legPool : fullPool, 'SP'), 'SP');
+        const p2 = createPitcherObj(pickPitcher(epicPool.length ? epicPool : fullPool, 'SP'), 'SP');
         const p3 = createPitcherObj(pickPitcher(rarePool.length ? rarePool : fullPool, 'RP'), 'RP');
         const selected = [p1, p2, p3];
         this.currentEnemy = {
@@ -2427,9 +2433,9 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
       if (stage === 15) {
         const legPool  = fullPool.filter(p => p.rarity === 'Legendary');
         const epicPool = fullPool.filter(p => p.rarity === 'Epic');
-        const p1 = createPitcherObj(pickPitcher(legPool, 'SP'), 'SP');
-        const p2 = createPitcherObj(pickPitcher(legPool.length > 1 ? legPool : epicPool, 'SP'), 'SP');
-        const p3 = createPitcherObj(pickPitcher(epicPool.length ? epicPool : legPool, 'RP'), 'RP');
+        const p1 = createPitcherObj(pickPitcher(legPool.length ? legPool : fullPool, 'SP'), 'SP');
+        const p2 = createPitcherObj(pickPitcher(legPool.length > 1 ? legPool : fullPool, 'SP'), 'SP');
+        const p3 = createPitcherObj(pickPitcher(epicPool.length ? epicPool : fullPool, 'RP'), 'RP');
         const selected = [p1, p2, p3];
         this.currentEnemy = {
           id: `boss_map4_part1_${Date.now()}`,
@@ -2444,21 +2450,21 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
         return this.currentEnemy;
       }
 
-      // Regular stages (Map 1 to 4) progressive scaling
-      let minOvr = 50, maxOvr = 68;
-      let allowedRarities = ['Common', 'Uncommon'];
+      // Regular stages (Map 1 to 4) exact OVR bands
+      let minOvr = 50, maxOvr = 64.9;
       if (stage >= 4 && stage <= 7) {
-        minOvr = 65; maxOvr = 78;
-        allowedRarities = ['Uncommon', 'Rare'];
+        minOvr = 65; maxOvr = 74.9;
       } else if (stage >= 8 && stage <= 11) {
-        minOvr = 75; maxOvr = 86;
-        allowedRarities = ['Rare', 'Epic'];
+        minOvr = 75; maxOvr = 84.9;
       } else if (stage >= 12) {
-        minOvr = 82; maxOvr = 94;
-        allowedRarities = ['Epic', 'Legendary'];
+        minOvr = 85; maxOvr = 94.9;
       }
 
-      const stagePool = fullPool.filter(p => allowedRarities.includes(p.rarity) || ((p.ovr || 50) >= minOvr && (p.ovr || 50) <= maxOvr));
+      let stagePool = fullPool.filter(p => {
+        const o = getOvr(p);
+        return o >= minOvr && o <= maxOvr;
+      });
+      if (stagePool.length === 0) stagePool = fullPool;
       const p1 = createPitcherObj(pickPitcher(stagePool, 'SP'), 'SP');
       const p2 = createPitcherObj(pickPitcher(stagePool));
       const p3 = createPitcherObj(pickPitcher(stagePool, 'RP'), 'RP');
