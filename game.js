@@ -657,7 +657,7 @@
     }
   ];
 
-  function pickWeightedUnique(pool, count, weakPositionsSet, rarityBoost = false) {
+  function pickWeightedUnique(pool, count, weakPositionsSet, rarityBoost = false, rarityWeights = null) {
     const selected = [];
     const poolCopy = [...pool];
 
@@ -672,6 +672,11 @@
 
         const isWeak = weakPositionsSet && (weakPositionsSet.has(primaryPos) || secPositions.some(sp => weakPositionsSet.has(sp)));
         let w = isWeak ? 3.0 : 1.0;
+
+        // Stage-based Rarity Multiplier
+        if (rarityWeights && rarityWeights[p.rarity]) {
+          w *= rarityWeights[p.rarity];
+        }
 
         // scout_eye: increases the odds of Epic/Legendary showing up in draft offers
         if (rarityBoost && (p.rarity === 'Epic' || p.rarity === 'Legendary')) w *= 2.5;
@@ -1847,6 +1852,29 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
       return new Set(posScores.slice(0, 3).map(x => x.pos));
     }
 
+    getSignLegendRarityWeights() {
+      const stage = (this.currentStageIndex !== undefined ? this.currentStageIndex : 0) + 1;
+      const map = {
+        1: { Uncommon: 1.0, Rare: 1.0, Epic: 0.90, Legendary: 0.70 },
+        2: { Uncommon: 0.50, Rare: 1.10, Epic: 1.60, Legendary: 1.40 },
+        3: { Uncommon: 0.20, Rare: 0.80, Epic: 2.70, Legendary: 2.90 },
+        4: { Uncommon: 0.05, Rare: 0.40, Epic: 4.00, Legendary: 5.00 },
+      };
+      return map[stage] || map[4];
+    }
+
+    getMatchRewardRarityWeights(isBoss = false) {
+      if (isBoss) return null;
+      const stage = (this.currentStageIndex !== undefined ? this.currentStageIndex : 0) + 1;
+      const map = {
+        1: { Uncommon: 1.50, Rare: 0.90, Epic: 0.45, Legendary: 0.25 },
+        2: { Uncommon: 0.80, Rare: 1.10, Epic: 0.85, Legendary: 0.60 },
+        3: { Uncommon: 0.35, Rare: 1.00, Epic: 1.60, Legendary: 1.50 },
+        4: { Uncommon: 0.12, Rare: 0.70, Epic: 2.50, Legendary: 2.70 },
+      };
+      return map[stage] || map[4];
+    }
+
     // ── MID-GAME EVENT: FIRMA LEYENDA — picks Uncommon or higher ──────────
     getDraftPicks() {
       const pool = window.PlayersDB.LAHMAN_POOL || window.PlayersDB.PLAYERS_POOL || [];
@@ -1859,6 +1887,7 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
       );
 
       const weakPositionsSet = this.getWeakestRosterPositions();
+      const stageWeights = this.getSignLegendRarityWeights();
 
       // scout_eye: draft offers show 4 cards instead of 3, with better Epic/Legendary odds
       const hasScoutEye = this.hasTrait('scout_eye');
@@ -1877,7 +1906,7 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
         while (selectedPicks.length < offerCount && (fullPool.length > 0 || activePool.length > 0)) {
           const useActive = activePool.length > 0 && Math.random() < 0.95;
           const source = useActive ? activePool : (fullPool.length > 0 ? fullPool : activePool);
-          const picked = pickWeightedUnique(source, 1, weakPositionsSet, hasScoutEye);
+          const picked = pickWeightedUnique(source, 1, weakPositionsSet, hasScoutEye, stageWeights);
           if (!picked.length) break;
           let chosen = picked[0];
           activePool = activePool.filter(x => x.name !== chosen.name);
@@ -1886,13 +1915,13 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
           selectedPicks.push(chosen);
         }
       } else {
-        selectedPicks = pickWeightedUnique(filtered, offerCount, weakPositionsSet, hasScoutEye);
+        selectedPicks = pickWeightedUnique(filtered, offerCount, weakPositionsSet, hasScoutEye, stageWeights);
       }
 
       // Fallback
       if (selectedPicks.length < offerCount) {
         const fallback = pool.filter(p => !onRosterNames.has(p.name) && !selectedPicks.some(x => x.name === p.name));
-        const extraPicks = pickWeightedUnique(fallback, offerCount - selectedPicks.length, weakPositionsSet, hasScoutEye);
+        const extraPicks = pickWeightedUnique(fallback, offerCount - selectedPicks.length, weakPositionsSet, hasScoutEye, stageWeights);
         selectedPicks.push(...extraPicks);
       }
       return selectedPicks;
@@ -1904,10 +1933,10 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
 
       const onRosterNames = new Set(Object.values(this.roster).filter(Boolean).map(x => x.name));
 
-      // Normal match: Rare or higher | Boss: Epic or higher
+      // Normal match: Uncommon, Rare, Epic, Legendary | Boss: Epic or Legendary exclusively
       const allowedRarities = isBoss
         ? ['Legendary', 'Epic']
-        : ['Legendary', 'Epic', 'Rare'];
+        : ['Legendary', 'Epic', 'Rare', 'Uncommon'];
 
       const filtered = pool.filter(p => {
         if (onRosterNames.has(p.name)) return false;
@@ -1915,6 +1944,7 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
       });
 
       const weakPositionsSet = this.getWeakestRosterPositions();
+      const stageWeights = this.getMatchRewardRarityWeights(isBoss);
 
       // scout_eye: draft offers show 4 cards instead of 3, with better Epic/Legendary odds
       const hasScoutEye = this.hasTrait('scout_eye');
@@ -1933,7 +1963,7 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
         while (selected.length < offerCount && (fullPool.length > 0 || activePool.length > 0)) {
           const useActive = activePool.length > 0 && Math.random() < 0.95;
           const source = useActive ? activePool : (fullPool.length > 0 ? fullPool : activePool);
-          const picked = pickWeightedUnique(source, 1, weakPositionsSet, hasScoutEye);
+          const picked = pickWeightedUnique(source, 1, weakPositionsSet, hasScoutEye, stageWeights);
           if (!picked.length) break;
           let chosen = picked[0];
           activePool = activePool.filter(x => x.name !== chosen.name);
@@ -1942,13 +1972,13 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
           selected.push(chosen);
         }
       } else {
-        selected = pickWeightedUnique(filtered, offerCount, weakPositionsSet, hasScoutEye);
+        selected = pickWeightedUnique(filtered, offerCount, weakPositionsSet, hasScoutEye, stageWeights);
       }
 
       // Fallback if pool too small
       if (selected.length < offerCount) {
         const fallback = pool.filter(p => !onRosterNames.has(p.name) && !selected.some(x => x.name === p.name));
-        const extra = pickWeightedUnique(fallback, offerCount - selected.length, weakPositionsSet, hasScoutEye);
+        const extra = pickWeightedUnique(fallback, offerCount - selected.length, weakPositionsSet, hasScoutEye, stageWeights);
         selected.push(...extra);
       }
       return selected;

@@ -5327,11 +5327,11 @@ function initGameModeSelector() {
 
   function getPlayerSignCost(player) {
     const r = player ? (player.rarity || 'Common') : 'Common';
-    if (r === 'Legendary') return 20;
-    if (r === 'Epic') return 15;
-    if (r === 'Rare') return 10;
-    if (r === 'Uncommon') return 5;
-    return 3;
+    if (r === 'Legendary') return 50;
+    if (r === 'Epic') return 35;
+    if (r === 'Rare') return 20;
+    if (r === 'Uncommon') return 10;
+    return 5;
   }
 
   // DRAFT SCREEN GENERATOR
