@@ -282,7 +282,7 @@
     "banner_ko_sub": "LA ROTACIÓN RIVAL RECIBE DAÑO CRÍTICO",
     "banner_bullpen": "ENTRA EL BULLPEN RIVAL",
     "banner_bullpen_sub": "UN NUEVO LANZADOR SUBE A LA LOMA",
-    "extra_innings_hud_desc": "Outs: 28 HP • Ks: 28/34/40 HP • ¡Fallo en la baja = Walk-Off!",
+    "extra_innings_hud_desc": "Outs: -30 HP • Ks: 30/36/42 HP • ¡Fallo en la baja = Walk-Off!",
     "sudden_death_title": "⚡ ¡MUERTE SÚBITA! ⚡",
     "extra_innings_hud_title": "⚡ ¡EXTRA INNINGS • MUERTE SÚBITA! ⚡"
   },
@@ -802,11 +802,11 @@
     },
     "shield": {
       "name": "🛡️ Escudo de Hierro",
-      "desc": "El Escudo absorbe 75% del DEF promedio del roster (en lugar de 50%). Regenera +5 al inicio de cada entrada."
+      "desc": "Repara automáticamente +25 de Escudo al inicio de cada entrada (hasta el límite de tu equipo)."
     },
     "wall": {
       "name": "🧱 Muro Defensivo",
-      "desc": "Outs normales reducen HP del equipo en 8 en lugar de 12."
+      "desc": "Outs normales reducen daño a -13 HP en lugar de -20 HP."
     },
     "stamina": {
       "name": "🔋 Resistencia Inagotable",
@@ -1029,8 +1029,8 @@
   },
   "combat_info": {
     "title": "⚙️ DATOS DE DAÑO & VALORES",
-    "out": "<strong style=\"color: #9ca3af;\">🤚 OUT (Flyout/Groundout):</strong> Resta <span style=\"color:#ef4444;font-weight:bold;\">-18 HP</span> al Escudo (al romperlo, resta a la vida). En Extra Innings: <span style=\"color:#ef4444;font-weight:bold;\">-28 HP</span>.",
-    "so": "<strong style=\"color: #ef4444;\">💨 PONCHE (SO):</strong> Resta daño directo a la vida (ignora escudo).<div style=\"font-size: 8.5px; color: #a855f7; margin-top: 2px;\">🔥 Racha: 1º (-18 HP) • 2º (-24 HP) • 3º+ (-30 HP)<br>⚡ Extra Innings: 1º (-28) • 2º (-34) • 3º+ (-40 HP)</div>",
+    "out": "<strong style=\"color: #9ca3af;\">✋ OUT (Flyout/Groundout):</strong> Resta <span style=\"color:#ef4444;font-weight:bold;\">-20 HP</span> al Escudo (al romperlo, resta a la vida). En Extra Innings: <span style=\"color:#ef4444;font-weight:bold;\">-30 HP</span>.",
+    "so": "<strong style=\"color: #ef4444;\">💨 PONCHE (SO):</strong> Resta daño directo a la vida (ignora escudo).<div style=\"font-size: 8.5px; color: #a855f7; margin-top: 2px;\">🔥 Racha: 1º (-20 HP) • 2º (-26 HP) • 3º+ (-32 HP)<br>⚡ Extra Innings: 1º (-30) • 2º (-36) • 3º+ (-42 HP)</div>",
     "pitcher_title": "<strong style=\"color: #10b981;\">⚾ DAÑO AL LANZADOR RIVAL:</strong>",
     "bb": "<span>🚶 BB: <b style=\"color:#3b82f6;\">10 HP</b></span>",
     "single": "<span>✅ 1B: <b style=\"color:#a7f3d0;\">15 HP</b></span>",
@@ -1041,7 +1041,7 @@
     "defense": "<strong style=\"color: #38bdf8;\">🛡️ DUELO DEFENSIVO (Baja de Entrada):</strong><div style=\"font-size: 8.5px; color: #cbd5e1; margin-top: 2px;\">🛡️ Regular: <strong style=\"color:#4ade80;\">+30 HP & +15 Escudo</strong> (Fallo: -15 HP)<br>⚡ De Lujo: <strong style=\"color:#4ade80;\">+50 HP & +30 Escudo</strong> (Fallo: -25 HP)<br>💀 En Extra Innings: ¡Cualquier fallo = Walk-Off rival!</div>",
     "steal": "<strong style=\"color: #38bdf8;\">🏃 ROBO DE BASES:</strong><div style=\"font-size: 8.5px; color: #cbd5e1; margin-top: 2px;\">• <strong>Robo de 2B (en 1B/BB, SPD ≥ 40):</strong> Éxito igual a la SPD del corredor (SPD %).<br>• <strong>Robo de 3B (en 2B, SPD ≥ 50):</strong> Éxito a la mitad de la SPD (SPD / 2 %).<br><em>Robar cualquier base desestabiliza al lanzador (+20% daño en 2 impactos).</em></div>",
     "upgrade": "<strong style=\"color: #a855f7;\">⚡ UPGRADE DE BATAZOS:</strong><div style=\"font-size: 8.5px; color: #cbd5e1; margin-top: 2px;\">Con <strong>SPD ≥ 70</strong> (Grados B+ a S), tienes de <strong>15% a 50% chance</strong> de estirar hits a bases extra (1B→2B→3B).</div>",
-    "shield_max": "🛡️ Escudo: 50% de la DEF promedio de tus 8 defensores.",
+    "shield_max": "🛡️ Escudo: DEF promedio de tus 8 defensores (1 a 100).",
     "tooltip": "Sistema de Daño y Reglas de Combate"
   },
   "run_intro": {
@@ -1543,9 +1543,9 @@
     "title": "⚡ ¡EXTRA INNINGS! ⚡",
     "subtitle": "💀 MUERTE SÚBITA 💀",
     "rule1_title": "OUTS MORTALES:",
-    "rule1_desc": "Cada Out regular ahora inflige 28 HP de daño al equipo.",
+    "rule1_desc": "Cada Out regular ahora inflige 30 HP de daño al equipo.",
     "rule2_title": "PONCHES BRUTALES:",
-    "rule2_desc": "Los ponches directos a la vida aumentan a 28 / 34 / 40 HP en racha.",
+    "rule2_desc": "Los ponches directos a la vida aumentan a 30 / 36 / 42 HP en racha.",
     "rule3_title": "DEFENSA TODO O NADA:",
     "rule3_desc": "Cualquier fallo en la prueba defensiva de la baja es Walk-Off Rival (Derrota Inmediata).",
     "btn": "🔥 ¡ENTRAR AL COMBATE! 🔥"

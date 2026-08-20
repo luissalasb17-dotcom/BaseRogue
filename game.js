@@ -878,8 +878,8 @@
         tr('surgical_contact',  '🎯', 'surgical', '🎯 Contacto Quirúrgico', 'Zona de Ponche (SO) reducida en -3 puntos para toda la alineación.'),
         tr('speed_demons',      '⚡', 'speed', '⚡ Velocistas Agresivos', 'Jugadores con SPD > 60 roban la base automáticamente en sencillos y boletos. Debuff al pitcher dura 3 impactos.'),
         tr('extra_base_impact', '💣', 'extrabase', '💣 Impacto Acumulado', 'Batazos de extra bases (2B, 3B, HR) infligen +10 HP de daño adicional al pitcher.'),
-        tr('iron_shield',       '🛡️', 'shield', '🛡️ Escudo de Hierro', 'El Escudo absorbe 75% del DEF promedio del roster (en lugar de 50%). Regenera +5 al inicio de cada entrada.'),
-        tr('defensive_wall',    '🧱', 'wall', '🧱 Muro Defensivo', 'Outs normales reducen HP del equipo en 8 en lugar de 12.'),
+        tr('iron_shield',       '🛡️', 'shield', '🛡️ Escudo de Hierro', 'Repara automáticamente +25 de Escudo al inicio de cada entrada (hasta el límite de tu equipo).'),
+        tr('defensive_wall',    '🧱', 'wall', '🧱 Muro Defensivo', 'Outs normales reducen daño a -13 HP en lugar de -20 HP.'),
         tr('endless_stamina',   '🔋', 'stamina', '🔋 Resistencia Inagotable', 'Los bateadores solo pierden 6 de Stamina por partido (en lugar de 12).'),
         tr('clutch_legends',    '❤️', 'clutch', '❤️ Resiliencia de Leyendas', 'Si Team HP cae por debajo de 35, activa estado Clutch: +15 a CON, PWR, EYE, SPD, DEF para toda la alineación.'),
         tr('golden_glove',      '🧤', 'glove', '🧤 Guantelete Dorado', 'Todos los bateadores reciben +10 DEF, aumentando la capacidad del Escudo de equipo.'),
@@ -1429,9 +1429,7 @@
         total += eff.def;
       });
       const avgDef = total / defSlots.length;
-      // iron_shield: Shield absorbs 75% of avg DEF instead of 50%
-      const shieldPct = this.hasTrait('iron_shield') ? 0.75 : 0.5;
-      return Math.round(Math.max(0, Math.min(100, avgDef * shieldPct)));
+      return Math.round(Math.max(0, Math.min(100, avgDef)));
     }
 
     calculateDraftShield() {
@@ -1444,8 +1442,7 @@
         total += eff.def;
       });
       const avgDef = total / defSlots.length;
-      const shieldPct = this.hasTrait('iron_shield') ? 0.75 : 0.5;
-      return Math.round(Math.max(0, Math.min(100, avgDef * shieldPct)));
+      return Math.round(Math.max(0, Math.min(100, avgDef)));
     }
 
     // ── ZONE CONFIG ──────────────────────────────────────────────────────────

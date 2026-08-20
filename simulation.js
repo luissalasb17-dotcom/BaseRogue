@@ -244,7 +244,7 @@
       this.activeSynergies = this._calculateActiveSynergies(awayTeam.lineup);
       const bigHairTier = this.activeSynergies['Big Hair Era (1977-1993)'] || 0;
       const bigHairDef = bigHairTier === 4 ? 30 : bigHairTier === 3 ? 20 : bigHairTier === 2 ? 12 : bigHairTier === 1 ? 5 : 0;
-      this.teamShield = Math.min(100, Math.round((teamShield || 0) + bigHairDef));  // Absorbs groundouts/flyouts (capped at 50)
+      this.teamShield = Math.min(100, Math.round(teamShield || 0));  // 1:1 with average DEF (capped at 100)
       this.teamShieldMax = this.teamShield;
 
       // ── Pitcher side ──────────────────────────────────────────────
@@ -695,11 +695,11 @@
         }
 
         const isExtraInnings = this.inning >= 4;
-        let baseSoDmg = isExtraInnings ? 28 : 18;
+        let baseSoDmg = isExtraInnings ? 30 : 20;
         if (this.strikeoutChain === 2) {
-          baseSoDmg = isExtraInnings ? 34 : 24;
+          baseSoDmg = isExtraInnings ? 36 : 26;
         } else if (this.strikeoutChain >= 3) {
-          baseSoDmg = isExtraInnings ? 40 : 30;
+          baseSoDmg = isExtraInnings ? 42 : 32;
         }
 
         let finalSoDmg = baseSoDmg;
@@ -805,7 +805,7 @@
           this.outs++;
           this.strikeoutChain = 0;
           const isExtraInnings = this.inning >= 4;
-          let outDmg = isExtraInnings ? 28 : (this.hasTrait('defensive_wall') ? 11 : 18);
+          let outDmg = isExtraInnings ? 30 : (this.hasTrait('defensive_wall') ? 13 : 20);
 
           if (bigHairTier === 4) {
             outDmg = Math.round(outDmg * 0.5);
@@ -1197,9 +1197,27 @@
         // early_pressure: the first batter of the new inning gets a boost
         if (this.hasTrait('early_pressure')) this.firstBatterOfInningPending = true;
 
-        // iron_shield: regenerate +5 Shield at the start of each inning
-        if (this.hasTrait('iron_shield') && this.teamShield < this.teamShieldMax) {
-          this.teamShield = Math.min(this.teamShieldMax, this.teamShield + 5);
+        // Inning shield regeneration: iron_shield trait (+25) and Big Hair synergy
+        let totalShieldRegen = 0;
+        let regenReasons = [];
+
+        if (this.hasTrait('iron_shield')) {
+          totalShieldRegen += 25;
+          regenReasons.push('🛡️ Escudo de Hierro (+25)');
+        }
+        if (bigHairTier >= 1) {
+          const bhRegen = bigHairTier === 4 ? 20 : bigHairTier === 3 ? 15 : bigHairTier === 2 ? 10 : 5;
+          totalShieldRegen += bhRegen;
+          regenReasons.push(`🛼 AstroTurf (+${bhRegen})`);
+        }
+
+        if (totalShieldRegen > 0 && this.teamShield < this.teamShieldMax) {
+          const oldShield = this.teamShield;
+          this.teamShield = Math.min(this.teamShieldMax, this.teamShield + totalShieldRegen);
+          const gained = this.teamShield - oldShield;
+          if (gained > 0) {
+            this.logEvent('TRAIT', `🛡️ ${_t('sim.shield_regen_log', { gained: gained, reasons: regenReasons.join(' + ') }, `Regeneración de Escudo: +${gained} Escudo reparado (${regenReasons.join(' + ')})`)}`, 'TRAIT');
+          }
         }
 
         // ghost_runners: start inning 3 and every extra inning (4+) with a free runner on 2nd base
