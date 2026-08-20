@@ -9507,6 +9507,10 @@ function initGameModeSelector() {
     renderBattersTable();
 
     // ── Pitcher data preparation & sorting ──────────────────────────────
+    const tbodyP = document.getElementById('summary-tbody-pitchers');
+    const pitcherStats = (window.Game && window.Game.runPitcherStats) || {};
+    const pitcherNames = Object.keys(pitcherStats);
+
     const processedPitchers = pitcherNames.map(name => {
       const ps = pitcherStats[name] || {};
       const outs = ps.outs || 0;
