@@ -2367,14 +2367,13 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
         return this.currentEnemy;
       }
 
-      // Map 1 Boss (Stage 3): 1 Rare, 1 Uncommon, 1 Common
+      // Map 1 Boss (Stage 3): 1 Rare, 2 Uncommon
       if (stage === 3) {
         const rarePool   = fullPool.filter(p => p.rarity === 'Rare');
         const uncommPool = fullPool.filter(p => p.rarity === 'Uncommon');
-        const commPool   = fullPool.filter(p => p.rarity === 'Common');
         const p1 = createPitcherObj(pickPitcher(rarePool.length ? rarePool : fullPool, 'SP'), 'SP');
         const p2 = createPitcherObj(pickPitcher(uncommPool.length ? uncommPool : fullPool, 'SP'), 'SP');
-        const p3 = createPitcherObj(pickPitcher(commPool.length ? commPool : fullPool, 'RP'), 'RP');
+        const p3 = createPitcherObj(pickPitcher(uncommPool.length > 1 ? uncommPool : fullPool, 'RP'), 'RP');
         const selected = [p1, p2, p3];
         this.currentEnemy = {
           id: `boss_map1_${Date.now()}`,
@@ -2389,14 +2388,13 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
         return this.currentEnemy;
       }
 
-      // Map 2 Boss (Stage 7): 1 Epic, 1 Rare, 1 Uncommon
+      // Map 2 Boss (Stage 7): 1 Epic, 2 Rare
       if (stage === 7) {
         const epicPool   = fullPool.filter(p => p.rarity === 'Epic');
         const rarePool   = fullPool.filter(p => p.rarity === 'Rare');
-        const uncommPool = fullPool.filter(p => p.rarity === 'Uncommon');
         const p1 = createPitcherObj(pickPitcher(epicPool.length ? epicPool : fullPool, 'SP'), 'SP');
         const p2 = createPitcherObj(pickPitcher(rarePool.length ? rarePool : fullPool, 'SP'), 'SP');
-        const p3 = createPitcherObj(pickPitcher(uncommPool.length ? uncommPool : fullPool, 'RP'), 'RP');
+        const p3 = createPitcherObj(pickPitcher(rarePool.length > 1 ? rarePool : fullPool, 'RP'), 'RP');
         const selected = [p1, p2, p3];
         this.currentEnemy = {
           id: `boss_map2_${Date.now()}`,
