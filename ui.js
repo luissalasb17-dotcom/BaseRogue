@@ -9352,6 +9352,9 @@ function initGameModeSelector() {
     const modal = document.getElementById('modal-run-summary');
     if (!modal) return;
     modal.classList.remove('hidden');
+    modal.scrollTop = 0;
+    const boxEl = modal.querySelector('.modal-run-summary-box');
+    if (boxEl) boxEl.scrollTop = 0;
 
     // Render batter stats
     const tbodyB = document.getElementById('summary-tbody-batters');

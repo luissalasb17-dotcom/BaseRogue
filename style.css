@@ -5634,10 +5634,19 @@ body.on-main-menu .main-container {
     font-size: 20px !important;
   }
 
+  #gameover-history-log {
+    max-height: 220px !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    padding-right: 4px;
+    margin-bottom: 8px;
+  }
+
   .history-row {
     flex-wrap: wrap !important;
     gap: 4px !important;
-    font-size: 12px !important;
+    font-size: 11px !important;
+    padding: 8px 10px !important;
   }
 }
 
@@ -6639,6 +6648,14 @@ body.on-main-menu .main-container {
   #tab-summary-pitchers {
     padding: 6px 10px !important;
     font-size: 8.5px !important;
+  }
+
+  .run-summary-table-scroll {
+    overflow-x: auto !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    touch-action: pan-x pan-y !important;
+    max-height: 52vh !important;
   }
 
   #summary-content-batters table,
