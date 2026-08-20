@@ -1049,9 +1049,9 @@
             "hr": "🚀 <strong>HR (Jonrón):</strong> <b style=\"color:#eab308;\">70 HP base</b>",
             "rbi_bonus": "🏆 <strong>Bonus RBI:</strong> Cada carrera impulsada añade <strong style=\"color:#00ff66;\">+10 HP extra</strong> de daño al pitcher.",
             "defense": "<strong style=\"color: #38bdf8;\">🛡️ DUELO DEFENSIVO (Baja de Entrada):</strong><div style=\"font-size: 8.5px; color: #cbd5e1; margin-top: 2px;\">🛡️ Regular: <strong style=\"color:#4ade80;\">+30 HP & +15 Escudo</strong> (Fallo: -15 HP)<br>⚡ De Lujo: <strong style=\"color:#4ade80;\">+50 HP & +30 Escudo</strong> (Fallo: -25 HP)<br>💀 En Extra Innings: ¡Cualquier fallo = Walk-Off rival!</div>",
-            "steal": "<strong style=\"color: #38bdf8;\">🏃 ROBO DE BASES (SPD ≥ 40):</strong><div style=\"font-size: 8.5px; color: #cbd5e1; margin-top: 2px;\">En 1B o BB con 2B libre: intenta robar (15% + 0.70×SPD). Otorga <strong style=\"color:#38bdf8;\">+20% daño</strong> al pitcher en 2 impactos.</div>",
+            "steal": "<strong style=\"color: #38bdf8;\">🏃 ROBO DE BASES (SPD ≥ 40):</strong><div style=\"font-size: 8.5px; color: #cbd5e1; margin-top: 2px;\">En 1B o Boleto (con 2B libre): el corredor corre al robo. <strong>A mayor Velocidad (SPD), mayor probabilidad de éxito.</strong> Otorga <strong style=\"color:#38bdf8;\">+20% daño</strong> al pitcher en 2 impactos.</div>",
             "upgrade": "<strong style=\"color: #a855f7;\">⚡ UPGRADE DE BATAZOS:</strong><div style=\"font-size: 8.5px; color: #cbd5e1; margin-top: 2px;\">Con <strong>SPD ≥ 70</strong> (Grados B+ a S), tienes de <strong>15% a 50% chance</strong> de estirar hits a bases extra (1B→2B→3B).</div>",
-            "shield_max": "🛡️ Escudo máximo: 50 (50% de la DEF promedio de tus 8 alineados).",
+            "shield_max": "🛡️ Escudo: 50% de la DEF promedio de tus 8 defensores (hasta 100 con defensores de élite o Escudo de Hierro).",
             "tooltip": "Sistema de Daño y Reglas de Combate"
       },
       "run_intro": {
@@ -2602,9 +2602,9 @@
             "hr": "🚀 <strong>HR (Home Run):</strong> <b style=\"color:#eab308;\">70 HP base</b>",
             "rbi_bonus": "🏆 <strong>RBI Bonus:</strong> Each RBI adds <strong style=\"color:#00ff66;\">+10 extra HP</strong> damage to pitcher.",
             "defense": "<strong style=\"color: #38bdf8;\">🛡️ DEFENSIVE DUEL (Bottom of the Inning):</strong><div style=\"font-size: 8.5px; color: #cbd5e1; margin-top: 2px;\">🛡️ Safe: <strong style=\"color:#4ade80;\">+30 HP & +15 Shield</strong> (Fail: -15 HP)<br>⚡ Clutch: <strong style=\"color:#4ade80;\">+50 HP & +30 Shield</strong> (Fail: -25 HP)<br>💀 In Extra Innings: Any error = Walk-Off Defeat!</div>",
-            "steal": "<strong style=\"color: #38bdf8;\">🏃 BASE STEALING (SPD ≥ 40):</strong><div style=\"font-size: 8.5px; color: #cbd5e1; margin-top: 2px;\">On 1B or BB with 2B open: attempts to steal (15% + 0.70×SPD). Grants <strong style=\"color:#38bdf8;\">+20% damage</strong> to pitcher for 2 impacts.</div>",
+            "steal": "<strong style=\"color: #38bdf8;\">🏃 BASE STEALING (SPD ≥ 40):</strong><div style=\"font-size: 8.5px; color: #cbd5e1; margin-top: 2px;\">On 1B or Walk with 2B open: runner takes off. <strong>Higher Speed (SPD) gives higher success chance.</strong> Grants <strong style=\"color:#38bdf8;\">+20% damage</strong> to pitcher for 2 impacts.</div>",
             "upgrade": "<strong style=\"color: #a855f7;\">⚡ HIT UPGRADES:</strong><div style=\"font-size: 8.5px; color: #cbd5e1; margin-top: 2px;\">With <strong>SPD ≥ 70</strong> (Grades B+ to S), runners have <strong>15% to 50% chance</strong> to stretch hits into extra bases (1B→2B→3B).</div>",
-            "shield_max": "🛡️ Max shield: 50 (50% of average DEF of your 8 starters).",
+            "shield_max": "🛡️ Shield: 50% of average DEF of your 8 starters (up to 100 with elite defense or Iron Shield).",
             "tooltip": "Damage System & Combat Rules"
       },
       "run_intro": {
