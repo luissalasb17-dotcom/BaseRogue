@@ -420,7 +420,7 @@
           ⚾ ¡ARRANCA LA TEMPORADA!
         </div>
         <p style="font-size: 13px; color: #e4e4e7; line-height: 1.6; margin-bottom: 22px; text-align: left;" data-i18n-html="run_intro.desc">
-          Firma a tus leyendas, arma tu alineación y sal al campo. Gana partidos para conseguir presupuesto y mejora a tus jugadores. Suma sinergias de era para potenciar tu equipo. Derrota a los 3 lanzadores rivales antes de que se acaben las 3 entradas — o antes de que tu HP llegue a 0.<br><br><strong style="color: var(--primary-color);">¿Tienes lo que hace falta para ser campeón?</strong>
+          Firma a tus leyendas, arma tu alineación y sal al campo. Gana partidos para conseguir presupuesto y mejorar a tus jugadores. Suma sinergias de era para potenciar tu equipo. Derrota a la rotación de lanzadores rivales antes de que tu HP llegue a 0. Si el partido se alarga, ¡se define en Extra Innings a muerte súbita!<br><br><strong style="color: var(--primary-color);">¿Tienes lo que hace falta para ser campeón?</strong>
         </p>
         <label style="display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 11px; color: #9ca3af; margin-bottom: 18px; cursor: pointer;">
           <input type="checkbox" id="chk-run-intro-skip" style="width: 16px; height: 16px; cursor: pointer; accent-color: var(--primary-color);">
@@ -1161,6 +1161,41 @@
     </div>
   </div>
 
+  <!-- Extra Innings Sudden Death Intro Modal -->
+  <div id="modal-extra-innings-intro" class="hidden" style="position: fixed; inset: 0; z-index: 10500; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; padding: 16px;">
+    <div style="background: radial-gradient(circle at center, #1a0505 0%, #090202 100%); border: 3px solid #ef4444; box-shadow: 0 0 35px rgba(239, 68, 68, 0.6), inset 0 0 20px rgba(239, 68, 68, 0.3); border-radius: 12px; max-width: 480px; width: 100%; padding: 22px; text-align: center; font-family: 'Press Start 2P', monospace; color: #fff; animation: bounce 0.4s ease-out;">
+      <div style="font-size: 14px; color: #ef4444; text-shadow: 0 0 12px #ef4444; margin-bottom: 8px; animation: pulse-fast 1s infinite;" data-i18n="extra_modal.title">
+        ⚡ ¡EXTRA INNINGS! ⚡
+      </div>
+      <div style="font-size: 11px; color: #f59e0b; text-shadow: 0 0 10px #f59e0b; margin-bottom: 18px; letter-spacing: 1px;" data-i18n="extra_modal.subtitle">
+        💀 MUERTE SÚBITA 💀
+      </div>
+      
+      <div style="background: rgba(0,0,0,0.6); border: 1px dashed rgba(239,68,68,0.5); border-radius: 8px; padding: 14px 12px; margin-bottom: 18px; display: flex; flex-direction: column; gap: 10px; font-size: 8px; line-height: 1.6; text-align: left;">
+        <div style="display: flex; align-items: flex-start; gap: 8px; color: #fca5a5;">
+          <span style="font-size: 12px;">🩸</span>
+          <div><strong style="color: #ef4444;" data-i18n="extra_modal.rule1_title">OUTS MORTALES:</strong> <span data-i18n="extra_modal.rule1_desc">Cada Out regular ahora inflige 28 HP de daño al equipo.</span></div>
+        </div>
+        <div style="display: flex; align-items: flex-start; gap: 8px; color: #fde047;">
+          <span style="font-size: 12px;">💨</span>
+          <div><strong style="color: #eab308;" data-i18n="extra_modal.rule2_title">PONCHES BRUTALES:</strong> <span data-i18n="extra_modal.rule2_desc">Los ponches directos a la vida aumentan a 28 / 34 / 40 HP en racha.</span></div>
+        </div>
+        <div style="display: flex; align-items: flex-start; gap: 8px; color: #93c5fd;">
+          <span style="font-size: 12px;">🛡️</span>
+          <div><strong style="color: #38bdf8;" data-i18n="extra_modal.rule3_title">DEFENSA TODO O NADA:</strong> <span data-i18n="extra_modal.rule3_desc">Cualquier fallo en la prueba defensiva de la baja es Walk-Off Rival (Derrota Inmediata).</span></div>
+        </div>
+        <div style="display: flex; align-items: flex-start; gap: 8px; color: #86efac;">
+          <span style="font-size: 12px;">🏃</span>
+          <div><strong style="color: #22c55e;" data-i18n="extra_modal.rule4_title">GHOST RUNNERS:</strong> <span data-i18n="extra_modal.rule4_desc">Si equipaste la pasiva, arrancas con un corredor gratis en 2ª base.</span></div>
+        </div>
+      </div>
+
+      <button id="btn-close-extra-innings-intro" class="btn" style="width: 100%; padding: 12px; background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); border: 2px solid #fecaca; color: #fff; font-family: 'Press Start 2P', monospace; font-size: 9px; cursor: pointer; border-radius: 6px; box-shadow: 0 0 15px rgba(239, 68, 68, 0.6); transition: all 0.2s ease;" data-i18n="extra_modal.btn">
+        🔥 ¡ENTRAR AL COMBATE! 🔥
+      </button>
+    </div>
+  </div>
+
   <!-- Player Card Popup Overlay -->
   <div id="player-card-popup-overlay" class="hidden" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:9999;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);">
     <div id="popup-card-content" style="background:#0a0f18;border:3px double var(--primary-color);box-shadow:0 0 40px rgba(0,255,102,0.3),0 0 0 4px #000;padding:20px;min-width:300px;max-width:380px;max-height:85vh;overflow-y:auto;position:relative;">
@@ -1184,21 +1219,21 @@
   </script>
   <!-- Load Game Scripts -->
   <script src="src/lib/i18next.min.js"></script>
-  <script src="src/i18n.js?v=82"></script>
+  <script src="src/i18n.js?v=83"></script>
   <script src="players.js?v=172"></script>
   <script src="pitchers_pool.js?v=173"></script>
   <script src="player_team_history.js?v=3"></script>
   <script src="opponents_database.js?v=22"></script>
   <script src="game_cards_pool.js?v=170"></script>
   <script src="items_database.js?v=1"></script>
-  <script src="simulation.js?v=204"></script>
+  <script src="simulation.js?v=205"></script>
   <script src="game.js?v=221"></script>
   <script src="audio.js?v=16"></script>
   <script src="career_data.js?v=2"></script>
   <script src="career.js?v=30"></script>
   <script src="basedex.js?v=12"></script>
-  <script src="challenge162.js?v=105"></script>
-  <script src="ui.js?v=327"></script>
+  <script src="challenge162.js?v=106"></script>
+  <script src="ui.js?v=328"></script>
 
 </body>
 </html>

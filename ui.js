@@ -7364,7 +7364,14 @@ function initGameModeSelector() {
               if (activeBattle && activeBattle.battleOver) {
                 handleBattleOver();
               } else {
-                if (btn && activeBattle && !activeBattle.battleOver) btn.disabled = false;
+                if (freshState.inning >= 4 && !activeBattle._seenExtraInningsIntro) {
+                  activeBattle._seenExtraInningsIntro = true;
+                  showExtraInningsIntroModal(() => {
+                    if (btn && activeBattle && !activeBattle.battleOver) btn.disabled = false;
+                  });
+                } else {
+                  if (btn && activeBattle && !activeBattle.battleOver) btn.disabled = false;
+                }
               }
             });
           }, delay);
@@ -7380,6 +7387,27 @@ function initGameModeSelector() {
 
         isRolling = false;
     }, TENS_TUMBLE_MS);
+  }
+
+  function showExtraInningsIntroModal(onClose) {
+    const modal = document.getElementById('modal-extra-innings-intro');
+    if (!modal) {
+      if (onClose) onClose();
+      return;
+    }
+    modal.classList.remove('hidden');
+    if (window.AudioManager && typeof window.AudioManager.play === 'function') {
+      window.AudioManager.play('danger_stinger');
+    }
+    const btn = document.getElementById('btn-close-extra-innings-intro');
+    if (btn) {
+      const handleClose = () => {
+        modal.classList.add('hidden');
+        btn.removeEventListener('click', handleClose);
+        if (onClose) onClose();
+      };
+      btn.addEventListener('click', handleClose);
+    }
   }
 
   function showMidInningDefenseModal(defEvent, onComplete) {
@@ -7429,8 +7457,9 @@ function initGameModeSelector() {
     const targetPos = defEvent.pos || 'SS';
 
     if (badgeEl) {
-      if (defEvent.isExtraInning) {
-        badgeEl.innerHTML = `<span style="color:#ef4444;text-shadow:0 0 10px #ef4444;font-weight:bold;animation:pulse-fast 1s infinite;">💀 BAJA DEL EXTRA INNING ${defEvent.inning} • ¡PELIGRO DE WALK-OFF! 💀</span>`;
+      if (defEvent.inning >= 3) {
+        const walkOffBadge = _t('sim.def_walkoff_badge', { inning: defEvent.inning }, `💀 BAJA DE LA ENTRADA ${defEvent.inning} • ¡PELIGRO DE WALK-OFF! 💀`);
+        badgeEl.innerHTML = `<span style="color:#ef4444;text-shadow:0 0 10px #ef4444;font-weight:bold;animation:pulse-fast 1s infinite;">${walkOffBadge}</span>`;
         badgeEl.style.borderColor = '#ef4444';
         badgeEl.style.background = 'rgba(239, 68, 68, 0.2)';
       } else {

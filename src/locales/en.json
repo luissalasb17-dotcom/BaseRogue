@@ -561,7 +561,8 @@
     "def_clutch_save_desc": "{{player}} ({{pos}}) makes a heroic dive and prevents the walk-off (Roll: {{roll}}/{{thresh}})! You recover +{{hp}} HP and +{{shield}} Shield!",
     "extra_innings_announcement": "⚡ EXTRA INNINGS - SUDDEN DEATH! Out and Strikeout damage increased to 28/34/40. Any defensive error in the bottom half is a Walk-Off!",
     "syn_genesis_error": "💥 Genesis Chaos: Fielding error (E)! Out cancelled, batter safe on 1B, pitcher fatigued (+20% dmg for 2 impacts).",
-    "syn_genesis_heal": "💥 Genesis Chaos: Rival chaos restores +10 Team HP!"
+    "syn_genesis_heal": "💥 Genesis Chaos: Rival chaos restores +10 Team HP!",
+    "def_walkoff_badge": "💀 BOTTOM OF INNING {{inning}} • WALK-OFF DANGER! 💀"
   },
   "syn": {
     "deadball": {
@@ -602,8 +603,8 @@
     "true_victory": "🏆 ABSOLUTE CHAMPION! You defeated the Supreme Rotation of 4 Legends! BaseRogue conquered.",
     "boss_victory_trait": "Boss Victory! +${{earnings}}. Choose a Legendary Passive Trait.",
     "boss_win_msg": "Victory! You defeated BOSS {{name}}. +${{earnings}} and elite reward!",
-    "win_msg": "Victory! You defeated the rotation of {{name}} in 3 innings. +${{earnings}}!",
-    "defeat_msg": "Defeat. 3 innings ended before defeating the full rotation of {{name}}.",
+    "win_msg": "Victory! You defeated the rotation of {{name}}. +${{earnings}}!",
+    "defeat_msg": "Defeat. Your team reached 0 HP against the rotation of {{name}}.",
     "champion_eternal": "🏆 CHAMPION OF ETERNITY! You conquered the World Series and won the Playoffs.",
     "lineup_full": "Lineup occupied. Choose who to replace.",
     "division_defeated": "DIVISION DEFEATED!",
@@ -1142,7 +1143,17 @@
   },
   "tutorial": {
     "got_it": "GOT IT!",
-    "skip_all": "SKIP TUTORIAL"
+    "skip_all": "SKIP TUTORIAL",
+    "draft_roster_title": "📋 BUILD YOUR LINEUP",
+    "draft_roster_text": "Draft batters for each field position. You can drag them in the sidebar to fine-tune your batting order.",
+    "draft_synergies_title": "⚡ ERA SYNERGIES",
+    "draft_synergies_text": "Pairing players from the same Era or archetype activates powerful global buffs for your entire roster.",
+    "map_basics_title": "🗺️ CHOOSE YOUR PATH",
+    "map_basics_text": "Progress across map nodes. Every victory earns budget to sign legends, train, and buy items.",
+    "prefight_basics_title": "⚔️ MATCH PREVIEW",
+    "prefight_basics_text": "Inspect the rival pitching staff and their starter before shouting Play Ball.",
+    "combat_dice_title": "🎲 LUCK ZONES & COMBAT",
+    "combat_dice_text": "Roll the dice for each at-bat. Defeat the enemy pitching rotation before your Team HP hits 0. If tied, enter Sudden Death Extra Innings!"
   },
   "career": {
     "ace_matchup_named": "Facing {{pitcher}} of the {{team}}, all eyes on you.",
@@ -1520,5 +1531,18 @@
     "store_category_accessory": "👓 TACTICAL ACCESSORY",
     "store_category_consumable": "🧪 ENERGY CONSUMABLE",
     "stamina_penalty_badge": "⚡ STAMINA PENALTY"
+  },
+  "extra_modal": {
+    "title": "⚡ EXTRA INNINGS! ⚡",
+    "subtitle": "💀 SUDDEN DEATH 💀",
+    "rule1_title": "LETHAL OUTS:",
+    "rule1_desc": "Every regular Out now inflicts 28 HP damage to your team.",
+    "rule2_title": "BRUTAL STRIKEOUTS:",
+    "rule2_desc": "Direct strikeout damage increases to 28 / 34 / 40 HP in streak.",
+    "rule3_title": "ALL-OR-NOTHING DEFENSE:",
+    "rule3_desc": "Any defensive error in the bottom half is an instant Walk-Off Defeat.",
+    "rule4_title": "GHOST RUNNERS:",
+    "rule4_desc": "If equipped with the trait, you start with a free runner on 2nd base.",
+    "btn": "🔥 ENTER THE BATTLE! 🔥"
   }
 }

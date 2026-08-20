@@ -292,7 +292,7 @@
       // Log opening
       const totalPitchers = this.homeTeam.pitchers.length;
       this.logEvent('START',
-        `--- INICIO DEL COMBATE INTERACTIVO (3 INNINGS) ---\n` +
+        `--- INICIO DEL COMBATE INTERACTIVO ---\n` +
         `${awayTeam.name} (HP: ${this.teamHP} | Escudo: ${this.teamShield}) vs ` +
         `${homeTeam.name} (${totalPitchers} lanzadores)`,
         'START');

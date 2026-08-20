@@ -144,9 +144,7 @@
 
   function buildEnemyPitcherObj(p, role) {
     const staVal = p.sta !== undefined ? p.sta : 50;
-    const hp = (role === 'SP')
-      ? Math.round(60 + (staVal - 20) * (10 / 9))
-      : Math.round(45 + (staVal - 20) * (7 / 18));
+    const hp = Math.max(75, Math.round(75 + (staVal - 20) * (125 / 90)));
     const yearVal = p.year || p.peak_year_display || p.peak_year || 1990;
     const cName = cleanName(p);
     return {
@@ -405,9 +403,9 @@
     const chosen = ranked[pickIndex] || ranked[0];
     const franchiseTeam = chosen.team;
 
-    // Escalating boss buffs calibrated for fair & thrilling playoff showdowns:
-    const hpMult = (cfg && cfg.hpMult) ? cfg.hpMult : (round === 2 ? 1.20 : (round === 1 ? 1.12 : 1.05));
-    const statBuff = (cfg && cfg.statBoost !== undefined) ? cfg.statBoost : (round === 2 ? 6 : (round === 1 ? 4 : 2));
+    // Authentic playoff team stats without artificial inflation:
+    const hpMult = 1.0;
+    const statBuff = 0;
 
     const boostPitcher = (p, role) => {
       if (!p) return null;
