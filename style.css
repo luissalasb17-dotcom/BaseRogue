@@ -124,6 +124,12 @@ header {
   color: var(--primary-color);
 }
 
+/* Mobile-only toggle buttons — hidden on desktop where 3 columns are always visible */
+#btn-toggle-roster-view,
+#btn-toggle-synergies-mobile {
+  display: none;
+}
+
 .main-container {
   flex: 1;
   display: flex;
@@ -4932,6 +4938,8 @@ body.on-main-menu .main-container {
 
   #btn-toggle-roster-view,
   #btn-toggle-synergies-mobile {
+    display: flex !important;
+    align-items: center !important;
     font-size: 8px !important;
     padding: 6px 8px !important;
     width: 100% !important;
