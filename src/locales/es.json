@@ -547,7 +547,9 @@
     "def_continue": "⚾ CONTINUAR AL INNING {{nextInning}}",
     "def_safe_btn_label": "🧤 ¡ASEGURAR EL GUANTE! (Dado 1 al {{thresh}})",
     "def_clutch_btn_label": "⚡ ¡TIRARSE DE CABEZA! (Dado 1 al {{thresh}})",
-    "syn_expansion": "Sinergia Expansión"
+    "syn_expansion": "Sinergia Expansión",
+    "def_current_hp_label": "❤️ HP DEL EQUIPO",
+    "def_current_shield_label": "🛡️ ESCUDO"
   },
   "syn": {
     "deadball": {

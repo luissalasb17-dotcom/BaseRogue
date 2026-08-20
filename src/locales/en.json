@@ -547,7 +547,9 @@
     "def_continue": "⚾ ADVANCE TO INNING {{nextInning}}",
     "def_safe_btn_label": "🧤 SECURE GLOVE! (Roll 1 to {{thresh}})",
     "def_clutch_btn_label": "⚡ HIGHLIGHT DIVE! (Roll 1 to {{thresh}})",
-    "syn_expansion": "Expansion Era Synergy"
+    "syn_expansion": "Expansion Era Synergy",
+    "def_current_hp_label": "❤️ CURRENT TEAM HP",
+    "def_current_shield_label": "🛡️ SHIELD"
   },
   "syn": {
     "deadball": {

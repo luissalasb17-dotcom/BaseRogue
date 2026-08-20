@@ -7486,6 +7486,34 @@ function initGameModeSelector() {
       svgPositionsGroup.innerHTML = groupHtml;
     }
 
+    // ── Current Team HP & Shield Indicator ──────────────────────────────────
+    const hpStatusEl = document.getElementById('def-modal-hp-status');
+    const currentHp = (defEvent.currentHP !== undefined) ? defEvent.currentHP : ((window.Game && window.Game.teamHP) || 100);
+    const currentShield = (defEvent.currentShield !== undefined) ? defEvent.currentShield : 0;
+    const maxShield = (defEvent.maxShield !== undefined) ? defEvent.maxShield : 0;
+
+    let hpColor = '#10b981';
+    if (currentHp <= 25) hpColor = '#ef4444';
+    else if (currentHp <= 50) hpColor = '#f59e0b';
+
+    const hpLabel = _t('sim.def_current_hp_label', {}, '❤️ HP DEL EQUIPO');
+    const shieldLabel = _t('sim.def_current_shield_label', {}, '🛡️ ESCUDO');
+
+    if (hpStatusEl) {
+      hpStatusEl.innerHTML = `
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span style="color:#94a3b8;font-size:7px;">${hpLabel}:</span>
+          <strong style="color:${hpColor};font-size:10px;text-shadow:0 0 8px ${hpColor}66;">${currentHp}/100</strong>
+        </div>
+        ${maxShield > 0 ? `
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span style="color:#38bdf8;font-size:7px;">${shieldLabel}:</span>
+            <strong style="color:#7dd3fc;font-size:9px;">${currentShield}/${maxShield}</strong>
+          </div>
+        ` : ''}
+      `;
+    }
+
     // ── Tactical Strategy Choice & Gauge Setup ─────────────────────────────
     let isClutch = false;
     const baseThresh = Math.max(20, Math.min(99, defEvent.successThreshold || 75));
@@ -9363,97 +9391,201 @@ function initGameModeSelector() {
       `;
     }
 
-    tbodyB.innerHTML = '';
-    if (!allBatterNames.size) {
-      tbodyB.innerHTML = '<tr><td colspan="16" style="padding:12px;color:#64748b;text-align:center;">Sin datos de bateo registrados.</td></tr>';
-    } else {
-      [...allBatterNames].forEach(name => {
-        const s = batterStats[name] || {};
-        const g   = s.g  || 0;
-        const ab  = s.ab || 0;
-        const h   = s.h  || 0;
-        const b2  = s.doubles || 0;
-        const b3  = s.triples || 0;
-        const hr  = s.hr || 0;
-        const rbi = s.rbi || 0;
-        const sb  = s.sb || 0;
-        const bb  = s.bb || 0;
-        const so  = s.so || 0;
-        const e   = s.e  || 0;
+    // ── Batter data preparation & sorting ──────────────────────────────
+    const processedBatters = [...allBatterNames].map(name => {
+      const s = batterStats[name] || {};
+      const g   = s.g  || 0;
+      const ab  = s.ab || 0;
+      const h   = s.h  || 0;
+      const b2  = s.doubles || 0;
+      const b3  = s.triples || 0;
+      const hr  = s.hr || 0;
+      const rbi = s.rbi || 0;
+      const sb  = s.sb || 0;
+      const bb  = s.bb || 0;
+      const so  = s.so || 0;
+      const e   = s.e  || 0;
 
-        const b1 = Math.max(0, h - b2 - b3 - hr);
-        const pa = ab + bb;
-        const totalBases = b1 + (2 * b2) + (3 * b3) + (4 * hr);
+      const b1 = Math.max(0, h - b2 - b3 - hr);
+      const pa = ab + bb;
+      const totalBases = b1 + (2 * b2) + (3 * b3) + (4 * hr);
 
-        const avgVal = ab > 0 ? (h / ab) : 0;
-        const obpVal = pa > 0 ? ((h + bb) / pa) : 0;
-        const slgVal = ab > 0 ? (totalBases / ab) : 0;
-        const opsVal = obpVal + slgVal;
+      const avgVal = ab > 0 ? (h / ab) : 0;
+      const obpVal = pa > 0 ? ((h + bb) / pa) : 0;
+      const slgVal = ab > 0 ? (totalBases / ab) : 0;
+      const opsVal = obpVal + slgVal;
 
-        const avg = ab > 0 ? avgVal.toFixed(3) : '.000';
-        const obp = pa > 0 ? obpVal.toFixed(3) : '.000';
-        const slg = ab > 0 ? slgVal.toFixed(3) : '.000';
-        const ops = (ab > 0 || pa > 0) ? opsVal.toFixed(3) : '.000';
+      return { name, g, ab, h, b2, b3, hr, rbi, sb, bb, so, e, avgVal, obpVal, slgVal, opsVal };
+    });
 
-        const rowColor = (s.hr || 0) >= 2 ? 'rgba(255,215,0,0.05)' : 'transparent';
+    let currentBatterSortCol = 'opsVal';
+    let currentBatterSortAsc = false;
+
+    function renderBattersTable() {
+      if (!processedBatters.length) {
+        tbodyB.innerHTML = '<tr><td colspan="16" style="padding:12px;color:#64748b;text-align:center;">Sin datos de bateo registrados.</td></tr>';
+        return;
+      }
+
+      processedBatters.sort((a, b) => {
+        let valA = a[currentBatterSortCol];
+        let valB = b[currentBatterSortCol];
+        if (typeof valA === 'string') {
+          return currentBatterSortAsc ? valA.localeCompare(valB) : valB.localeCompare(valA);
+        }
+        return currentBatterSortAsc ? (valA - valB) : (valB - valA);
+      });
+
+      // Update headers indicators
+      const ths = document.querySelectorAll('#summary-thead-batters-row th');
+      ths.forEach(th => {
+        const col = th.dataset.sort;
+        const rawText = th.getAttribute('data-original-label') || th.innerText.replace(/[ ▲▼]/g, '');
+        if (!th.getAttribute('data-original-label')) th.setAttribute('data-original-label', rawText);
+        if (col === currentBatterSortCol) {
+          th.innerHTML = `${rawText} <span style="font-size:9px;color:#facc15;">${currentBatterSortAsc ? '▲' : '▼'}</span>`;
+          th.style.color = '#facc15';
+        } else {
+          th.innerHTML = rawText;
+          th.style.color = (col === 'e' ? '#f87171' : 'var(--accent-color)');
+        }
+      });
+
+      tbodyB.innerHTML = '';
+      processedBatters.forEach(s => {
+        const avg = s.ab > 0 ? s.avgVal.toFixed(3) : '.000';
+        const obp = (s.ab + s.bb) > 0 ? s.obpVal.toFixed(3) : '.000';
+        const slg = s.ab > 0 ? s.slgVal.toFixed(3) : '.000';
+        const ops = (s.ab > 0 || (s.ab + s.bb) > 0) ? s.opsVal.toFixed(3) : '.000';
+
+        const rowColor = (s.hr >= 2) ? 'rgba(255,215,0,0.05)' : 'transparent';
         const tr = document.createElement('tr');
         tr.style.cssText = `border-bottom:1px solid rgba(255,255,255,0.06);background:${rowColor};`;
         tr.innerHTML = `
-          <td style="padding:8px;color:#e2e8f0;font-weight:bold;">${name}</td>
-          <td style="padding:8px;color:#94a3b8;">${g}</td>
-          <td style="padding:8px;color:#94a3b8;">${ab}</td>
-          <td style="padding:8px;color:#22d3ee;">${h}</td>
-          <td style="padding:8px;color:#f59e0b;">${b2}</td>
-          <td style="padding:8px;color:#f59e0b;">${b3}</td>
-          <td style="padding:8px;color:#ef4444;">${hr}</td>
-          <td style="padding:8px;color:#10b981;">${rbi}</td>
-          <td style="padding:8px;color:#38bdf8;">${sb}</td>
-          <td style="padding:8px;color:#a78bfa;">${bb}</td>
-          <td style="padding:8px;color:#f87171;">${so}</td>
-          <td style="padding:8px;color:${e > 0 ? '#f87171' : '#64748b'};font-weight:${e > 0 ? 'bold' : 'normal'};">${e}</td>
-          <td style="padding:8px;color:${avgVal >= 0.300 ? '#ffd700' : '#94a3b8'};font-weight:bold;">${avg}</td>
-          <td style="padding:8px;color:${obpVal >= 0.380 ? '#38bdf8' : '#94a3b8'};font-weight:bold;">${obp}</td>
-          <td style="padding:8px;color:${slgVal >= 0.500 ? '#f59e0b' : '#94a3b8'};font-weight:bold;">${slg}</td>
-          <td style="padding:8px;color:${opsVal >= 0.850 ? '#00ff66' : (opsVal >= 0.750 ? '#ffd700' : '#94a3b8')};font-weight:bold;">${ops}</td>
+          <td style="padding:8px;color:#e2e8f0;font-weight:bold;">${s.name}</td>
+          <td style="padding:8px;color:#94a3b8;">${s.g}</td>
+          <td style="padding:8px;color:#94a3b8;">${s.ab}</td>
+          <td style="padding:8px;color:#22d3ee;">${s.h}</td>
+          <td style="padding:8px;color:#f59e0b;">${s.b2}</td>
+          <td style="padding:8px;color:#f59e0b;">${s.b3}</td>
+          <td style="padding:8px;color:#ef4444;">${s.hr}</td>
+          <td style="padding:8px;color:#10b981;">${s.rbi}</td>
+          <td style="padding:8px;color:#38bdf8;">${s.sb}</td>
+          <td style="padding:8px;color:#a78bfa;">${s.bb}</td>
+          <td style="padding:8px;color:#f87171;">${s.so}</td>
+          <td style="padding:8px;color:${s.e > 0 ? '#f87171' : '#64748b'};font-weight:${s.e > 0 ? 'bold' : 'normal'};">${s.e}</td>
+          <td style="padding:8px;color:${s.avgVal >= 0.300 ? '#ffd700' : '#94a3b8'};font-weight:bold;">${avg}</td>
+          <td style="padding:8px;color:${s.obpVal >= 0.380 ? '#38bdf8' : '#94a3b8'};font-weight:bold;">${obp}</td>
+          <td style="padding:8px;color:${s.slgVal >= 0.500 ? '#f59e0b' : '#94a3b8'};font-weight:bold;">${slg}</td>
+          <td style="padding:8px;color:${s.opsVal >= 0.850 ? '#00ff66' : (s.opsVal >= 0.750 ? '#ffd700' : '#94a3b8')};font-weight:bold;">${ops}</td>
         `;
         tbodyB.appendChild(tr);
       });
     }
 
-    // Render pitcher stats
-    const tbodyP = document.getElementById('summary-tbody-pitchers');
-    const pitcherStats = window.Game.runPitcherStats || {};
-    const pitcherNames = Object.keys(pitcherStats);
+    // Attach click listeners to Batter headers
+    const batterThs = document.querySelectorAll('#summary-thead-batters-row th');
+    batterThs.forEach(th => {
+      th.onclick = () => {
+        const col = th.dataset.sort;
+        if (!col) return;
+        if (currentBatterSortCol === col) {
+          currentBatterSortAsc = !currentBatterSortAsc;
+        } else {
+          currentBatterSortCol = col;
+          currentBatterSortAsc = (col === 'name');
+        }
+        renderBattersTable();
+      };
+    });
+    renderBattersTable();
 
-    tbodyP.innerHTML = '';
-    if (!pitcherNames.length) {
-      tbodyP.innerHTML = '<tr><td colspan="9" style="padding:12px;color:#64748b;text-align:center;">Sin datos de lanzadores registrados.</td></tr>';
-    } else {
-      pitcherNames.forEach(name => {
-        const ps = pitcherStats[name];
-        const outs = ps.outs || 0;
-        const ip = `${Math.floor(outs / 3)}.${outs % 3}`;
-        const er  = ps.er || 0;
-        const bb  = ps.bb || 0;
-        const h   = ps.h || 0;
-        const era = outs > 0 ? ((er * 27) / outs).toFixed(2) : '--.--';
-        const whip = outs > 0 ? ((bb + h) / (outs / 3)).toFixed(2) : '--.--';
+    // ── Pitcher data preparation & sorting ──────────────────────────────
+    const processedPitchers = pitcherNames.map(name => {
+      const ps = pitcherStats[name] || {};
+      const outs = ps.outs || 0;
+      const er  = ps.er || 0;
+      const bb  = ps.bb || 0;
+      const h   = ps.h || 0;
+      const k   = ps.k || 0;
+      const hr  = ps.hr || 0;
+      const eraVal = outs > 0 ? ((er * 27) / outs) : 99.0;
+      const whipVal = outs > 0 ? ((bb + h) / (outs / 3)) : 99.0;
+
+      return { name, outs, er, bb, h, k, hr, eraVal, whipVal };
+    });
+
+    let currentPitcherSortCol = 'outs';
+    let currentPitcherSortAsc = false;
+
+    function renderPitchersTable() {
+      if (!processedPitchers.length) {
+        tbodyP.innerHTML = '<tr><td colspan="9" style="padding:12px;color:#64748b;text-align:center;">Sin datos de lanzadores registrados.</td></tr>';
+        return;
+      }
+
+      processedPitchers.sort((a, b) => {
+        let valA = a[currentPitcherSortCol];
+        let valB = b[currentPitcherSortCol];
+        if (typeof valA === 'string') {
+          return currentPitcherSortAsc ? valA.localeCompare(valB) : valB.localeCompare(valA);
+        }
+        return currentPitcherSortAsc ? (valA - valB) : (valB - valA);
+      });
+
+      // Update headers indicators
+      const ths = document.querySelectorAll('#summary-thead-pitchers-row th');
+      ths.forEach(th => {
+        const col = th.dataset.sort;
+        const rawText = th.getAttribute('data-original-label') || th.innerText.replace(/[ ▲▼]/g, '');
+        if (!th.getAttribute('data-original-label')) th.setAttribute('data-original-label', rawText);
+        if (col === currentPitcherSortCol) {
+          th.innerHTML = `${rawText} <span style="font-size:9px;color:#facc15;">${currentPitcherSortAsc ? '▲' : '▼'}</span>`;
+          th.style.color = '#facc15';
+        } else {
+          th.innerHTML = rawText;
+          th.style.color = '#38bdf8';
+        }
+      });
+
+      tbodyP.innerHTML = '';
+      processedPitchers.forEach(ps => {
+        const ip = `${Math.floor(ps.outs / 3)}.${ps.outs % 3}`;
+        const era = ps.outs > 0 ? ps.eraVal.toFixed(2) : '--.--';
+        const whip = ps.outs > 0 ? ps.whipVal.toFixed(2) : '--.--';
         const tr = document.createElement('tr');
         tr.style.cssText = 'border-bottom:1px solid rgba(255,255,255,0.06);';
         tr.innerHTML = `
-          <td style="padding:8px;color:#e2e8f0;font-weight:bold;">${name}</td>
+          <td style="padding:8px;color:#e2e8f0;font-weight:bold;">${ps.name}</td>
           <td style="padding:8px;color:#22d3ee;">${ip}</td>
-          <td style="padding:8px;color:#a78bfa;">${ps.k || 0}</td>
-          <td style="padding:8px;color:#fbbf24;">${bb}</td>
-          <td style="padding:8px;color:#94a3b8;">${h}</td>
-          <td style="padding:8px;color:#ef4444;">${ps.hr || 0}</td>
-          <td style="padding:8px;color:#f87171;">${er}</td>
+          <td style="padding:8px;color:#a78bfa;">${ps.k}</td>
+          <td style="padding:8px;color:#fbbf24;">${ps.bb}</td>
+          <td style="padding:8px;color:#94a3b8;">${ps.h}</td>
+          <td style="padding:8px;color:#ef4444;">${ps.hr}</td>
+          <td style="padding:8px;color:#f87171;">${ps.er}</td>
           <td style="padding:8px;color:${parseFloat(era) > 4.5 ? '#ef4444' : '#10b981'};font-weight:bold;">${era}</td>
           <td style="padding:8px;color:${parseFloat(whip) > 1.3 ? '#ef4444' : '#10b981'};font-weight:bold;">${whip}</td>
         `;
         tbodyP.appendChild(tr);
       });
     }
+
+    // Attach click listeners to Pitcher headers
+    const pitcherThs = document.querySelectorAll('#summary-thead-pitchers-row th');
+    pitcherThs.forEach(th => {
+      th.onclick = () => {
+        const col = th.dataset.sort;
+        if (!col) return;
+        if (currentPitcherSortCol === col) {
+          currentPitcherSortAsc = !currentPitcherSortAsc;
+        } else {
+          currentPitcherSortCol = col;
+          currentPitcherSortAsc = (col === 'name' || col === 'eraVal' || col === 'whipVal');
+        }
+        renderPitchersTable();
+      };
+    });
+    renderPitchersTable();
 
     // Tab switching
     const tabB  = document.getElementById('tab-summary-batters');

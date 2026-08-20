@@ -1223,7 +1223,10 @@
         scenarioDesc: scenario.desc,
         scenarioIcon: scenario.icon,
         successChance,
-        successThreshold
+        successThreshold,
+        currentHP: this.teamHP,
+        currentShield: this.teamShield,
+        maxShield: this.teamShieldMax
       };
     }
 
