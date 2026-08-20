@@ -1560,7 +1560,7 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
           } else if (type === 'chest') {
             label = 'COFRE';
           } else if (type === 'gamble') {
-            label = 'APUESTA';
+            label = 'LUCK';
           }
 
           stageNodes.push({

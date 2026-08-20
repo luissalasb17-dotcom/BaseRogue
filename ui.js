@@ -4430,7 +4430,7 @@ function initGameModeSelector() {
     train:  { iconClass: 'fa-solid fa-dumbbell',          text: 'GYM',  label: 'ENTRENO',  color: '#22d3ee', bg: '#011a1a', border: '#22d3ee' },
     rest:   { iconClass: 'fa-solid fa-couch',             text: 'REST', label: 'DESCANSO', color: '#c084fc', bg: '#12001a', border: '#c084fc' },
     chest:  { iconClass: 'fa-solid fa-gem',               text: 'LOOT', label: 'COFRE',    color: '#facc15', bg: '#1a1400', border: '#facc15' },
-    gamble: { iconClass: 'fa-solid fa-dice',              text: 'BET',  label: 'APUESTA',  color: '#ef4444', bg: '#1a0000', border: '#ef4444' },
+    gamble: { iconClass: 'fa-solid fa-clover',            text: 'LUCK', label: 'LUCK',     color: '#10b981', bg: '#022c22', border: '#10b981' },
   };
 
   // RENDER VISUAL POKELIKE MAP - Math-based layout (no DOM measurement)
@@ -8862,9 +8862,9 @@ function initGameModeSelector() {
     const gambleDesc = gamble.desc;
 
     overlay.innerHTML = `
-      <div class="gamble-tension-box" style="max-width:580px;width:92%;text-align:center;padding:24px;background:#0d111a;border:2.5px solid #ef4444;box-shadow:0 0 50px rgba(239,68,68,0.4), inset 0 0 25px rgba(0,0,0,0.9);border-radius:18px;">
-        <div style="display:inline-flex;align-items:center;gap:8px;padding:6px 16px;background:rgba(239,68,68,0.18);border:1.5px solid #ef4444;border-radius:20px;font-family:'Press Start 2P',monospace;font-size:9.5px;color:#ff6b6b;text-shadow:0 0 12px rgba(239,68,68,0.8);letter-spacing:1px;margin-bottom:12px;">
-          <i class="fa-solid fa-triangle-exclamation"></i> ${typeof t === 'function' ? t('gamble.header', 'HIGH-STAKES UNDERGROUND GAMBLE') : 'HIGH-STAKES UNDERGROUND GAMBLE'}
+      <div class="gamble-tension-box" style="max-width:580px;width:92%;text-align:center;padding:24px;background:#090d16;border:2.5px solid #10b981;box-shadow:0 0 50px rgba(16,185,129,0.35), inset 0 0 25px rgba(0,0,0,0.9);border-radius:18px;">
+        <div style="display:inline-flex;align-items:center;gap:8px;padding:6px 16px;background:rgba(16,185,129,0.18);border:1.5px solid #10b981;border-radius:20px;font-family:'Press Start 2P',monospace;font-size:9.5px;color:#34d399;text-shadow:0 0 12px rgba(16,185,129,0.8);letter-spacing:1px;margin-bottom:12px;">
+          <i class="fa-solid fa-clover"></i> ${typeof t === 'function' ? t('gamble.header', '🍀 EVENTO DE SUERTE (LUCK)') : '🍀 EVENTO DE SUERTE (LUCK)'}
         </div>
         <div style="font-size:24px;margin:4px 0 10px;font-family:'Outfit',sans-serif;font-weight:bold;color:#fff;">
           <span style="margin-right:8px;filter:drop-shadow(0 0 10px rgba(250,204,21,0.6));">${gamble.icon}</span>${gambleTitle}
@@ -8875,16 +8875,16 @@ function initGameModeSelector() {
 
         <div style="display:flex;align-items:center;justify-content:center;gap:18px;margin:16px 0;">
           <div class="gamble-outcome-card gamble-outcome-win" style="flex:1;max-width:140px;background:rgba(16,185,129,0.12);border:1.5px solid #10b981;border-radius:10px;padding:10px 8px;box-shadow:0 0 15px rgba(16,185,129,0.2);">
-            <div style="font-size:24px;">✅</div>
+            <div style="font-size:26px;">🍀</div>
             <div style="font-size:8px;color:#10b981;font-weight:bold;font-family:'Press Start 2P',monospace;margin-top:6px;">
               ${typeof t === 'function' ? t('gamble.success_chance', 'ÉXITO (50%)') : 'ÉXITO (50%)'}
             </div>
           </div>
-          <div class="gamble-coin-wrap" style="width:80px;height:80px;">
-            <div class="gamble-coin" id="gamble-coin" style="font-size:34px;box-shadow:0 0 25px rgba(250,204,21,0.5);border:3px solid #facc15;">🪙</div>
+          <div class="gamble-coin-wrap" style="width:84px;height:84px;">
+            <div class="gamble-coin" id="gamble-coin" style="font-size:38px;box-shadow:0 0 30px rgba(16,185,129,0.6);border:3px solid #34d399;">🍀</div>
           </div>
           <div class="gamble-outcome-card gamble-outcome-lose" style="flex:1;max-width:140px;background:rgba(239,68,68,0.12);border:1.5px solid #ef4444;border-radius:10px;padding:10px 8px;box-shadow:0 0 15px rgba(239,68,68,0.2);">
-            <div style="font-size:24px;">❌</div>
+            <div style="font-size:26px;">💀</div>
             <div style="font-size:8px;color:#ef4444;font-weight:bold;font-family:'Press Start 2P',monospace;margin-top:6px;">
               ${typeof t === 'function' ? t('gamble.fail_chance', 'FALLO (50%)') : 'FALLO (50%)'}
             </div>
@@ -8894,7 +8894,7 @@ function initGameModeSelector() {
         ${gamble.requiresTargetPlayer ? `
           <div style="margin-bottom:16px;text-align:left;">
             <label style="font-size:10px;color:#94a3b8;display:block;margin-bottom:6px;font-family:'Press Start 2P',monospace;">${typeof t === 'function' ? t('gamble.choose_target', 'Elige el jugador objetivo:') : 'Elige el jugador objetivo:'}</label>
-            <select id="gamble-target-select" style="width:100%;padding:10px;background:#0a0f18;color:#fff;border:1px solid rgba(239,68,68,0.4);border-radius:8px;font-size:11px;">
+            <select id="gamble-target-select" style="width:100%;padding:10px;background:#0a0f18;color:#fff;border:1px solid rgba(16,185,129,0.4);border-radius:8px;font-size:11px;">
               ${rosterOptions || `<option disabled>${typeof t === 'function' ? t('gamble.no_valid_era_players', 'Sin jugadores con Era válida') : 'Sin jugadores con Era válida'}</option>`}
             </select>
           </div>
@@ -8903,8 +8903,8 @@ function initGameModeSelector() {
         <div id="gamble-result" style="min-height:28px;font-size:12.5px;font-weight:bold;margin:12px 0;line-height:1.4;"></div>
 
         <div style="display:flex;gap:12px;justify-content:center;margin-top:8px;">
-          <button class="btn" id="btn-gamble-bet" style="background:linear-gradient(135deg,#ef4444,#f59e0b);color:#000;font-weight:bold;font-family:'Press Start 2P',monospace;font-size:9.5px;padding:12px 20px;border:none;box-shadow:0 4px 15px rgba(239,68,68,0.4);">
-            ${typeof t === 'function' ? t('gamble.bet_btn', '🪙 APOSTAR') : '🪙 APOSTAR'}
+          <button class="btn" id="btn-gamble-bet" style="background:linear-gradient(135deg,#10b981,#059669);color:#000;font-weight:bold;font-family:'Press Start 2P',monospace;font-size:9.5px;padding:12px 20px;border:none;box-shadow:0 4px 15px rgba(16,185,129,0.4);">
+            ${typeof t === 'function' ? t('gamble.bet_btn', '🍀 PROBAR SUERTE') : '🍀 PROBAR SUERTE'}
           </button>
           <button class="btn btn-secondary" id="btn-gamble-decline" style="font-family:'Press Start 2P',monospace;font-size:9px;padding:12px 18px;border:1px solid rgba(255,255,255,0.2);">
             ${typeof t === 'function' ? t('gamble.reject_btn', '🚪 PASAR') : '🚪 PASAR'}
@@ -8924,10 +8924,10 @@ function initGameModeSelector() {
         window.Game.logRunNode({
           type: 'gamble_skip',
           icon: '🚪',
-          title: `Apuesta Declinada`,
-          titleEN: `Gamble Passed`,
-          desc: `Decidiste no arriesgarte en el casino clandestino`,
-          descEN: `Decided not to risk anything at the underground casino`,
+          title: `Suerte Declinada`,
+          titleEN: `Luck Passed`,
+          desc: `Decidiste no arriesgarte en el nodo de la suerte`,
+          descEN: `Decided not to risk anything at the luck event`,
           status: 'neutral'
         });
       }
@@ -8964,7 +8964,7 @@ function initGameModeSelector() {
       const swapInterval = setInterval(() => {
         swapCount++;
         const showingFail = swapCount % 2 === 0;
-        coin.textContent = showingFail ? '❌' : '✅';
+        coin.textContent = showingFail ? '💀' : '🍀';
         coin.classList.toggle('gamble-coin-fail', showingFail);
         if (window.AudioManager && typeof window.AudioManager.play === 'function') {
           window.AudioManager.play('roulette_tick');
@@ -8972,7 +8972,7 @@ function initGameModeSelector() {
         if (swapCount >= totalSwaps) {
           clearInterval(swapInterval);
           coin.classList.remove('gamble-coin-flipping');
-          coin.textContent = result.success ? '✅' : '❌';
+          coin.textContent = result.success ? '🍀' : '💀';
           coin.classList.toggle('gamble-coin-fail', !result.success);
         }
       }, swapEveryMs);
@@ -8986,9 +8986,9 @@ function initGameModeSelector() {
         if (window.Game && typeof window.Game.logRunNode === 'function') {
           window.Game.logRunNode({
             type: 'gamble',
-            icon: result.success ? '🪙' : '💀',
-            title: result.success ? `Apuesta Ganada: ${gamble.title}` : `Apuesta Perdida: ${gamble.title}`,
-            titleEN: result.success ? `Gamble Won: ${gamble.title}` : `Gamble Lost: ${gamble.title}`,
+            icon: result.success ? '🍀' : '💀',
+            title: result.success ? `Suerte Exitosa: ${gamble.title}` : `Mala Suerte: ${gamble.title}`,
+            titleEN: result.success ? `Luck Success: ${gamble.title}` : `Unlucky: ${gamble.title}`,
             desc: result.resultText || '',
             descEN: result.resultText || '',
             status: result.success ? 'success' : 'danger'

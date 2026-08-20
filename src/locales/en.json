@@ -1058,9 +1058,9 @@
     "found_title": "YOU FOUND A TREASURE CHEST!"
   },
   "gamble": {
-    "header": "🎲 HIGH-STAKES UNDERGROUND GAMBLE",
+    "header": "🍀 LUCK EVENT (HIGH STAKES)",
     "choose_target": "Select target player:",
-    "bet_btn": "🪙 GAMBLE",
+    "bet_btn": "🍀 TRY YOUR LUCK",
     "reject_btn": "🚪 PASS BY",
     "success_pct": "Success Chance",
     "fail_pct": "Failure Chance",

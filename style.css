@@ -2067,44 +2067,40 @@ p {
 }
 
 /* ── HIGH-STAKES GAMBLE NODE: coin flip ──────────────────────────────── */
+/* ── HIGH-STAKES LUCK EVENT: Lucky Clover Orb ───────────────────────── */
 .gamble-coin-wrap {
-  width: 74px;
-  height: 74px;
+  width: 84px;
+  height: 84px;
   flex-shrink: 0;
 }
 
-/* A real 3D rotateY flip (two faces + backface-visibility) turned out
-   unreliable — mid-spin, the back (❌) face could render mirrored/distorted
-   instead of staying cleanly hidden until it turned to face the viewer, so
-   it could look like a corrupted ✅ even when the coin was headed for
-   failure. This is a single flat element instead: the JS alternates its
-   emoji content directly, and this just handles the round shape + a 2D
-   "squash" pulse for the spinning feel — no 3D compositing involved, so
-   there's no face geometry left to render wrong. */
 .gamble-coin {
   width: 100%;
   height: 100%;
-  border-radius: 50% !important; /* exception to the global blocky/NES reset — a coin must be round */
+  border-radius: 50% !important;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 30px;
-  border: 3px solid rgba(255,255,255,0.35);
-  box-shadow: 0 0 20px rgba(0,0,0,0.4);
-  background: radial-gradient(circle at 35% 30%, #34d399, #059669);
+  font-size: 38px;
+  border: 3px solid #34d399;
+  box-shadow: 0 0 30px rgba(16, 185, 129, 0.6), inset 0 0 15px rgba(255, 215, 0, 0.3);
+  background: radial-gradient(circle at 35% 30%, #10b981 0%, #065f46 65%, #022c22 100%);
+  transition: all 0.25s ease;
 }
 
 .gamble-coin.gamble-coin-fail {
-  background: radial-gradient(circle at 35% 30%, #f87171, #b91c1c);
+  background: radial-gradient(circle at 35% 30%, #ef4444 0%, #991b1b 65%, #450a0a 100%);
+  border-color: #f87171;
+  box-shadow: 0 0 30px rgba(239, 68, 68, 0.6), inset 0 0 15px rgba(0, 0, 0, 0.6);
 }
 
 .gamble-coin-flipping {
-  animation: gamble-coin-squash 0.22s ease-in-out infinite;
+  animation: gamble-coin-squash 0.2s ease-in-out infinite;
 }
 
 @keyframes gamble-coin-squash {
-  0%, 100% { transform: scaleX(1); filter: brightness(1); }
-  50%      { transform: scaleX(0.25); filter: brightness(1.3); }
+  0%, 100% { transform: scale(1) rotate(0deg); filter: brightness(1); }
+  50%      { transform: scaleX(0.2) scaleY(1.1) rotate(15deg); filter: brightness(1.4); }
 }
 
 .gamble-outcome-card {

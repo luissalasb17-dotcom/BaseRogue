@@ -1070,9 +1070,9 @@
             "found_title": "¡HAS ENCONTRADO UN COFRE DE TESORO!"
       },
       "gamble": {
-            "header": "🎲 APUESTA CLANDESTINA DE ALTO RIESGO",
+            "header": "🍀 EVENTO DE SUERTE (LUCK)",
             "choose_target": "Elige el jugador objetivo:",
-            "bet_btn": "🪙 APOSTAR",
+            "bet_btn": "🍀 PROBAR SUERTE",
             "reject_btn": "🚪 PASAR",
             "success_pct": "Probabilidad de Éxito",
             "fail_pct": "Probabilidad de Fallo",
@@ -2583,9 +2583,9 @@
             "found_title": "YOU FOUND A TREASURE CHEST!"
       },
       "gamble": {
-            "header": "🎲 HIGH-STAKES UNDERGROUND GAMBLE",
+            "header": "🍀 LUCK EVENT (HIGH STAKES)",
             "choose_target": "Select target player:",
-            "bet_btn": "🪙 GAMBLE",
+            "bet_btn": "🍀 TRY YOUR LUCK",
             "reject_btn": "🚪 PASS BY",
             "success_pct": "Success Chance",
             "fail_pct": "Failure Chance",
