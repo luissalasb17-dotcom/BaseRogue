@@ -461,7 +461,7 @@ def paso_6_posicion_bateadores(fielding, fielding_of, appearances=None, pico_df=
         if peak_f is not None and not peak_f.empty:
             peak_f = peak_f.merge(peak_years, on=['playerID', 'yearID'], how='inner')
 
-    # 1. Determinar POSICION PRIMARIA usando PEAK SEASONS
+    # 1. Juegos en el Pico (Peak)
     pos_games_peak = pd.DataFrame()
     if peak_app is not None and not peak_app.empty:
         pos_cols = {'G_c': 'C', 'G_1b': '1B', 'G_2b': '2B', 'G_3b': '3B', 'G_ss': 'SS', 'G_lf': 'LF', 'G_cf': 'CF', 'G_rf': 'RF', 'G_dh': 'DH'}
@@ -487,13 +487,7 @@ def paso_6_posicion_bateadores(fielding, fielding_of, appearances=None, pico_df=
     if pos_games_peak.empty:
         return pd.DataFrame(columns=["playerID","primary_pos","primary_g","fielding_pct","range_factor","sec_pos"])
 
-    primary = (
-        pos_games_peak.sort_values("G", ascending=False)
-                      .drop_duplicates(subset="playerID")
-                      .rename(columns={"POS":"primary_pos","G":"primary_g"})
-    )
-
-    # 2. Determinar POSICIONES SECUNDARIAS usando % de DEDICACION (>= 10% en Carrera o Pico)
+    # 2. Juegos en Carrera (Career)
     pos_games_career = pd.DataFrame()
     if career_app is not None and not career_app.empty:
         pos_cols = {'G_c': 'C', 'G_1b': '1B', 'G_2b': '2B', 'G_3b': '3B', 'G_ss': 'SS', 'G_lf': 'LF', 'G_cf': 'CF', 'G_rf': 'RF', 'G_dh': 'DH'}
@@ -516,37 +510,42 @@ def paso_6_posicion_bateadores(fielding, fielding_of, appearances=None, pico_df=
                 field[col] = pd.to_numeric(field[col], errors="coerce").fillna(0)
         pos_games_career = field.groupby(["playerID","POS"])["G"].sum().reset_index()
 
-    pos_games_career["pos_mapped"] = pos_games_career["POS"].map(POS_DISPLAY_MAP).fillna(pos_games_career["POS"])
-    pos_games_career = pos_games_career[pos_games_career["pos_mapped"] != "DH"]
-    pos_games_career_grouped = pos_games_career.groupby(["playerID", "pos_mapped"])["G"].sum().reset_index()
-
-    career_tot = pos_games_career_grouped.groupby("playerID")["G"].sum().reset_index(name="tot_g_career")
-    pos_games_career_grouped = pos_games_career_grouped.merge(career_tot, on="playerID")
-    pos_games_career_grouped["career_pct"] = pos_games_career_grouped["G"] / pos_games_career_grouped["tot_g_career"]
-
-    # Pico pos games
-    pos_games_peak_grouped = pos_games_peak.copy()
-    pos_games_peak_grouped["pos_mapped"] = pos_games_peak_grouped["POS"].map(POS_DISPLAY_MAP).fillna(pos_games_peak_grouped["POS"])
-    pos_games_peak_grouped = pos_games_peak_grouped[pos_games_peak_grouped["pos_mapped"] != "DH"]
-    pos_games_peak_grouped = pos_games_peak_grouped.groupby(["playerID", "pos_mapped"])["G"].sum().reset_index()
-
-    peak_tot = pos_games_peak_grouped.groupby("playerID")["G"].sum().reset_index(name="tot_g_peak")
-    pos_games_peak_grouped = pos_games_peak_grouped.merge(peak_tot, on="playerID")
+    # Mapeo y agrupamiento por posición normalizada
+    pos_games_peak["pos_mapped"] = pos_games_peak["POS"].map(POS_DISPLAY_MAP).fillna(pos_games_peak["POS"])
+    pos_games_peak_grouped = pos_games_peak.groupby(["playerID", "pos_mapped"])["G"].sum().reset_index()
+    tot_peak = pos_games_peak_grouped.groupby("playerID")["G"].sum().reset_index(name="tot_g_peak")
+    pos_games_peak_grouped = pos_games_peak_grouped.merge(tot_peak, on="playerID")
     pos_games_peak_grouped["peak_pct"] = pos_games_peak_grouped["G"] / pos_games_peak_grouped["tot_g_peak"]
 
-    # Combinar carrera y pico
-    sec_df = pos_games_career_grouped.merge(
+    pos_games_career["pos_mapped"] = pos_games_career["POS"].map(POS_DISPLAY_MAP).fillna(pos_games_career["POS"])
+    pos_games_career_grouped = pos_games_career.groupby(["playerID", "pos_mapped"])["G"].sum().reset_index()
+    tot_car = pos_games_career_grouped.groupby("playerID")["G"].sum().reset_index(name="tot_g_career")
+    pos_games_career_grouped = pos_games_career_grouped.merge(tot_car, on="playerID")
+    pos_games_career_grouped["career_pct"] = pos_games_career_grouped["G"] / pos_games_career_grouped["tot_g_career"]
+
+    # FÓRMULA HÍBRIDA 80/20 PARA POSICIÓN PRIMARIA (80% Pico WAR + 20% Carrera Completa)
+    merged_pos = pos_games_career_grouped.merge(
         pos_games_peak_grouped[["playerID", "pos_mapped", "G", "peak_pct"]].rename(columns={"G": "peak_G"}),
         on=["playerID", "pos_mapped"],
-        how="left"
+        how="outer"
     )
-    sec_df["peak_G"] = sec_df["peak_G"].fillna(0)
-    sec_df["peak_pct"] = sec_df["peak_pct"].fillna(0.0)
+    merged_pos["G"] = merged_pos["G"].fillna(0)
+    merged_pos["peak_G"] = merged_pos["peak_G"].fillna(0)
+    merged_pos["career_pct"] = merged_pos["career_pct"].fillna(0.0)
+    merged_pos["peak_pct"] = merged_pos["peak_pct"].fillna(0.0)
 
-    sec_df = sec_df.merge(primary[["playerID", "primary_pos"]], on="playerID", how="left")
-    sec_df = sec_df[(sec_df["pos_mapped"] != sec_df["primary_pos"]) & (sec_df["pos_mapped"] != "OF")]
+    merged_pos["hybrid_score"] = 0.80 * merged_pos["peak_pct"] + 0.20 * merged_pos["career_pct"]
 
-    # Umbral de Dedicación del 10% (con pisos mínimos de seguridad)
+    primary = (
+        merged_pos.sort_values("hybrid_score", ascending=False)
+                  .drop_duplicates(subset="playerID")
+                  .rename(columns={"pos_mapped": "primary_pos", "peak_G": "primary_g"})
+    )
+
+    # 3. Determinar POSICIONES SECUNDARIAS usando % de DEDICACION (>= 10% en Carrera o Pico)
+    sec_df = merged_pos.merge(primary[["playerID", "primary_pos"]], on="playerID", how="left")
+    sec_df = sec_df[(sec_df["pos_mapped"] != sec_df["primary_pos"]) & (sec_df["pos_mapped"] != "OF") & (sec_df["pos_mapped"] != "DH")]
+
     PCT_THRESH = 0.10
     MIN_CAREER_G = 20
     MIN_PEAK_G = 15
