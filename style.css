@@ -538,9 +538,8 @@ p {
   border-bottom: 2px dashed rgba(255,255,255,0.15);
 }
 
-.card-name.name-xs { font-size: 5px !important; letter-spacing: -0.4px !important; }
-.card-name.name-sm { font-size: 5.5px !important; letter-spacing: -0.2px !important; }
-.card-name.name-md { font-size: 6.5px !important; }
+.card-name.name-xs { font-size: 6.0px !important; letter-spacing: -0.2px !important; }
+.card-name.name-sm { font-size: 6.8px !important; }
 .card-name.name-lg { font-size: 7.5px; }
 
 /* Combat arena cards specific line height & padding adjustment */
