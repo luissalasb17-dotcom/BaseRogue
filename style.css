@@ -538,9 +538,10 @@ p {
   border-bottom: 2px dashed rgba(255,255,255,0.15);
 }
 
-.card-name.name-xs { font-size: 6.0px !important; letter-spacing: -0.2px !important; }
-.card-name.name-sm { font-size: 6.8px !important; }
-.card-name.name-lg { font-size: 7.5px; }
+.card-name.name-xxs { font-size: 5.2px !important; letter-spacing: -0.35px !important; }
+.card-name.name-xs  { font-size: 5.8px !important; letter-spacing: -0.2px !important; }
+.card-name.name-sm  { font-size: 6.6px !important; letter-spacing: -0.1px !important; }
+.card-name.name-lg  { font-size: 7.5px; }
 
 /* Combat arena cards specific line height & padding adjustment */
 .fight-card-slot .card-name,
@@ -557,6 +558,12 @@ p {
   max-width: 100% !important;
   box-sizing: border-box !important;
 }
+.fight-card-slot .card-name.name-xxs,
+#screen-match .card-name.name-xxs { font-size: 5.4px !important; letter-spacing: -0.35px !important; }
+.fight-card-slot .card-name.name-xs,
+#screen-match .card-name.name-xs  { font-size: 6.2px !important; letter-spacing: -0.2px !important; }
+.fight-card-slot .card-name.name-sm,
+#screen-match .card-name.name-sm  { font-size: 7.0px !important; letter-spacing: -0.1px !important; }
 
 .card-sec-pos {
   font-size: 6px;

@@ -3353,8 +3353,9 @@ function initGameModeSelector() {
         ${(() => {
           const len = cleanName.length;
           let nameSizeClass = 'name-lg';
-          if (len >= 19) nameSizeClass = 'name-xs';
-          else if (len >= 16) nameSizeClass = 'name-sm';
+          if (len >= 18) nameSizeClass = 'name-xxs';
+          else if (len >= 15) nameSizeClass = 'name-xs';
+          else if (len >= 12) nameSizeClass = 'name-sm';
           return `<div class="card-name ${nameSizeClass}" title="${cleanName}">${cleanName}</div>`;
         })()}
         <div class="card-traits-box">
