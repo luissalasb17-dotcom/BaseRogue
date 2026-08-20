@@ -294,7 +294,9 @@
             "banner_ko_sub": "LA ROTACIÓN RIVAL RECIBE DAÑO CRÍTICO",
             "banner_bullpen": "ENTRA EL BULLPEN RIVAL",
             "banner_bullpen_sub": "UN NUEVO LANZADOR SUBE A LA LOMA",
-            "extra_innings_hud_desc": "Outs: 28 HP • Ks: 28/34/40 HP • ¡Fallo en la baja = Walk-Off!"
+            "extra_innings_hud_desc": "Outs: 28 HP • Ks: 28/34/40 HP • ¡Fallo en la baja = Walk-Off!",
+            "sudden_death_title": "⚡ ¡MUERTE SÚBITA! ⚡",
+            "extra_innings_hud_title": "⚡ ¡EXTRA INNINGS • MUERTE SÚBITA! ⚡"
       },
       "popup": {
             "bb_title": "BASE POR BOLAS",
@@ -1818,7 +1820,9 @@
             "banner_ko_sub": "RIVAL ROTATION TAKES CRITICAL DAMAGE",
             "banner_bullpen": "RIVAL BULLPEN ENTERS",
             "banner_bullpen_sub": "A NEW RELIEVER STEPS ONTO THE MOUND",
-            "extra_innings_hud_desc": "Outs: 28 HP • Ks: 28/34/40 HP • Bottom error = Walk-Off!"
+            "extra_innings_hud_desc": "Outs: 28 HP • Ks: 28/34/40 HP • Bottom error = Walk-Off Defeat!",
+            "sudden_death_title": "⚡ SUDDEN DEATH! ⚡",
+            "extra_innings_hud_title": "⚡ EXTRA INNINGS • SUDDEN DEATH! ⚡"
       },
       "popup": {
             "bb_title": "WALK (BB)",

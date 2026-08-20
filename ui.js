@@ -7903,10 +7903,17 @@ function initGameModeSelector() {
     const extraBanner = document.getElementById('extra-innings-hud-banner');
     if (state.inning >= 4) {
       el.scoreAwayH.innerHTML = `<span style="color:#ef4444;text-shadow:0 0 8px #ef4444;animation:pulse-fast 1s infinite;font-weight:bold;">🔥 EX ${state.inning}</span>`;
+      const suddenDeathTitle = typeof window.t === 'function' ? window.t('match.sudden_death_title', { defaultValue: '⚡ ¡MUERTE SÚBITA! ⚡' }) : '⚡ ¡MUERTE SÚBITA! ⚡';
       if (el.scoreInningText) {
-        el.scoreInningText.innerHTML = `<span style="color:#f59e0b;text-shadow:0 0 10px #f59e0b;font-weight:bold;animation:pulse-fast 1s infinite;">⚡ ¡MUERTE SÚBITA! ⚡</span>`;
+        el.scoreInningText.innerHTML = `<span style="color:#f59e0b;text-shadow:0 0 10px #f59e0b;font-weight:bold;animation:pulse-fast 1s infinite;">${suddenDeathTitle}</span>`;
       }
-      if (extraBanner) extraBanner.classList.remove('hidden');
+      if (extraBanner) {
+        extraBanner.classList.remove('hidden');
+        const extraTitleEl = document.getElementById('extra-innings-hud-title');
+        const extraDescEl = document.getElementById('extra-innings-hud-desc');
+        if (extraTitleEl && typeof window.t === 'function') extraTitleEl.innerText = window.t('match.extra_innings_hud_title');
+        if (extraDescEl && typeof window.t === 'function') extraDescEl.innerText = window.t('match.extra_innings_hud_desc');
+      }
     } else {
       el.scoreAwayH.innerText  = `${state.inning} / 3`;
       if (el.scoreInningText) {

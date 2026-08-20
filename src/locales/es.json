@@ -282,7 +282,9 @@
     "banner_ko_sub": "LA ROTACIÓN RIVAL RECIBE DAÑO CRÍTICO",
     "banner_bullpen": "ENTRA EL BULLPEN RIVAL",
     "banner_bullpen_sub": "UN NUEVO LANZADOR SUBE A LA LOMA",
-    "extra_innings_hud_desc": "Outs: 28 HP • Ks: 28/34/40 HP • ¡Fallo en la baja = Walk-Off!"
+    "extra_innings_hud_desc": "Outs: 28 HP • Ks: 28/34/40 HP • ¡Fallo en la baja = Walk-Off!",
+    "sudden_death_title": "⚡ ¡MUERTE SÚBITA! ⚡",
+    "extra_innings_hud_title": "⚡ ¡EXTRA INNINGS • MUERTE SÚBITA! ⚡"
   },
   "popup": {
     "bb_title": "BASE POR BOLAS",
