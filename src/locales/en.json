@@ -7,12 +7,14 @@
   },
   "sidebar": {
     "upgrades": "<i class=\"fa-solid fa-suitcase\"></i> UPGRADES",
-    "no_items": "NOTHING PURCHASED",
+    "no_items": "EMPTY BACKPACK",
     "eras_header": "ROSTER ERAS",
     "franchises_header": "ROSTER FRANCHISES",
     "no_teams": "No registered team.",
     "dynasty_desc": "Dynasty (4+): {{team}} players gain +5 to all stats in combat.",
-    "chemistry_desc": "Chemistry (2+): {{team}} players gain +2 to all stats in combat."
+    "chemistry_desc": "Chemistry (2+): {{team}} players gain +2 to all stats in combat.",
+    "items": "<i class=\"fa-solid fa-toolbox\"></i> ITEMS",
+    "items_drag_hint": "⚡ Drag to a player"
   },
   "eras": {
     "header": "⏳ ROSTER ERAS",
@@ -139,10 +141,10 @@
     "intro_desc": "Pick your players in <strong style=\"color:#00ff66;\">{{rounds}} draft rounds</strong> to build your full 9-batter roster. Organize their defensive position (Drag & Drop) and batting order in real time. Then <strong style=\"color:#00ff66;\">roll the dice</strong> each turn to determine the at-bat outcome. Defeat the rival rotation before your <strong style=\"color:#ef4444;\">{{hp}} HP</strong> reaches zero."
   },
   "draft": {
-    "title": "<i class=\"fa-solid fa-file-signature\"></i> Player Signings (Draft)",
+    "title": "Player Signings",
     "desc": "Select a legend to join your roster. Choose wisely to optimize positions and activate Era or Franchise synergies.",
     "midrun_desc": "Select a legend to sign with your budget, or decline the sign to continue the run.",
-    "midrun_title_short": "LEGEND SIGN",
+    "midrun_title_short": "PLAYER SIGNING",
     "round_header": "⚾ INITIAL DRAFT — ROUND {{round}} OF 9",
     "roster_header": "🧤 ROSTER",
     "batting_order_header": "⚔️ BATTING ORDER",
@@ -150,9 +152,9 @@
     "auto_sort_title": "Sort logically: Speed 1st, Power 4th, Best batters 2nd & 3rd.",
     "select_btn": "✔ SELECT",
     "inspect_card": "CARD",
-    "sign_btn": "✍️ Sign (${{cost}})",
+    "sign_btn": "SIGN (${{cost}})",
     "auto_complete_btn": "🎲 Surprise me! (Auto-Complete)",
-    "decline_btn": "🚫 Decline Sign / Continue",
+    "decline_btn": "DECLINE SIGN / CONTINUE",
     "decline_desc": "Don't want to sign any legend or prefer saving your money? You can decline the sign and advance on the map.",
     "confirm_lineup_title": "⚾ ROSTER TO START THE SEASON",
     "confirm_defensive_header": "🧤 DEFENSIVE LINEUP (DRAG & DROP)",
@@ -188,7 +190,13 @@
     "pack_tagline_rare": "Rare or Better Pack",
     "pack_tagline_uncommon": "Uncommon or Better Pack",
     "pack_tagline_common": "Guaranteed Common Pack",
-    "pack_tagline_random": "Any Rarity Mystery Pack"
+    "pack_tagline_random": "Any Rarity Mystery Pack",
+    "legend_title": "Player Signings",
+    "sign_contract_btn": "✍️ SIGN CONTRACT (${{cost}})",
+    "cost_label": "Cost: ${{cost}}",
+    "replace_btn": "RELEASE",
+    "locked_slot": "🔒 locked ({{count}} nodes)",
+    "locked_title": "Position locked by a failed gamble"
   },
   "pre_fight": {
     "title": "<i class=\"fa-solid fa-shield-halved\"></i> Series Preparation",
@@ -397,7 +405,10 @@
     "tab_batters": "My Lineup (Batting)",
     "tab_pitchers": "Opponent Pitchers",
     "player_col": "Batter",
-    "pitcher_col": "Pitcher"
+    "pitcher_col": "Pitcher",
+    "defensive_errors": "Defensive Errors",
+    "team_defense_badge": "🛡️ DEFENSE & RUN TOTALS",
+    "errors_label": "Errors (E)"
   },
   "victory": {
     "title": "ABSOLUTE BASEROGUE CHAMPION!",
@@ -725,8 +736,12 @@
     }
   },
   "sign": {
-    "chemistry_active": "Active Chemistry for <strong>{{team}}</strong> (+4 stats)",
-    "dynasty_active": "Active Dynasty for <strong>{{team}}</strong> (+10 stats)"
+    "chemistry_active": "Signing activates <strong>{{team}}</strong> Chemistry (+4 stats)",
+    "dynasty_active": "Signing activates <strong>{{team}}</strong> Dynasty (+10 stats)",
+    "synergy_active": "Signing activates <strong>{{era}} (T{{tier}})</strong> Synergy!",
+    "era_progress": "Era {{era}}: <strong>{{count}}/{{target}}</strong> (T{{tier}})",
+    "era_max": "Era {{era}}: {{count}} players (T4 MAX)",
+    "franchise_progress": "Franchise {{team}}: {{count}} ➡️ <strong>{{next}}/2</strong>"
   },
   "ui": {
     "empty": "EMPTY",
@@ -1041,43 +1056,74 @@
     "found_title": "YOU FOUND A TREASURE CHEST!"
   },
   "gamble": {
-    "header": "CLUBHOUSE BETTING & DEALS",
+    "header": "🎲 HIGH-STAKES UNDERGROUND GAMBLE",
     "choose_target": "Select target player:",
-    "bet_btn": "🎲 GAMBLE",
-    "reject_btn": "PASS BY",
+    "bet_btn": "🪙 GAMBLE",
+    "reject_btn": "🚪 PASS BY",
     "success_pct": "Success Chance",
     "fail_pct": "Failure Chance",
     "no_player_found": "No eligible players found",
-    "no_valid_era_players": "No players from this era",
+    "no_valid_era_players": "No players with valid Era",
     "budget": {
-      "title": "Clubhouse Financial Gamble",
-      "desc": "Invest funds in sponsorship markets for potential cash gains.",
-      "result_win": "Great return! Added +$ budget.",
-      "result_lose": "Bad investment. Lost the wagered funds."
+      "title": "All or Nothing (Triple Lottery)",
+      "desc": "Bet ALL your current budget on a single roll! If you win (50%), you TRIPLE your money (3x)! If you lose (50%), you walk away with $0.",
+      "stakes_label": "BUDGET AT STAKE:",
+      "win_label": "🟢 50% IF YOU WIN:",
+      "win_detail": "(You receive 3x!)",
+      "lose_label": "🔴 50% IF YOU LOSE:",
+      "lose_detail": "(Lose everything)",
+      "result_win": "Total lottery triumph! You tripled your ${{staked}} and now have ${{newBudget}}.",
+      "result_lose": "The house wins! You lost your ${{staked}} stake. Current budget: $0."
     },
     "scout": {
-      "title": "Special Training Drill",
-      "desc": "Intensive drill session to boost a chosen player's ratings.",
-      "no_injury_target": "No injured players",
-      "no_target": "No valid target",
-      "result_win": "Training succeeded! Ratings increased.",
-      "result_lose": "Overexertion! Player suffered fatigue."
+      "title": "Mysterious Scout",
+      "desc": "A scout offers a free Legendary player for your weakest position. If you win, you sign them for free. If you lose, your best player suffers an injury: -20 to all stats.",
+      "stakes_label": "ELITE RECRUITMENT OFFER:",
+      "win_label": "🟢 50% IF YOU WIN:",
+      "win_title": "Free LEGENDARY Player!",
+      "win_detail": "(Star upgrade for your weakest position)",
+      "lose_label": "🔴 50% IF YOU LOSE:",
+      "lose_title": "Severe Injury: -20 to All Stats",
+      "lose_detail": "(Afflicts your highest OVR player)",
+      "result_win": "Legendary signing! {{newName}} joins the team at [{{pos}}] replacing {{oldName}}.",
+      "result_lose": "Disaster! {{name}} suffers a severe injury: -20 to all stats for the rest of the run."
     },
     "synergy": {
       "title": "Era Alchemy Pact",
-      "desc": "Attempt to forge player affinity with your primary era synergy.",
-      "no_valid_target": "No eligible players",
-      "result_win": "Affinity successfully established!",
-      "result_lose": "No synergy connection formed.",
-      "result_lose_none": "No synergy changes."
+      "desc": "Choose a player from your lineup: if you win, they count 4x toward their Era synergy. If you lose, 2 random teammates permanently lose Era synergy eligibility.",
+      "stakes_label": "SELECTED ERA PLAYER:",
+      "win_label": "🟢 50% IF YOU WIN:",
+      "win_title": "4x Power for their Era Synergy!",
+      "win_detail": "(Counts as 4 players toward synergy tiers)",
+      "lose_label": "🔴 50% IF YOU LOSE:",
+      "lose_title": "2 Teammates Lose Era Synergy",
+      "lose_detail": "(Permanent penalty for the run)",
+      "result_win": "Alchemy success! {{name}} now counts 4x toward the {{era}} synergy.",
+      "result_lose": "Pact failed! {{names}} lost their Era synergy eligibility for the rest of the run."
     },
     "trade": {
-      "title": "Surprise Mystery Trade",
-      "desc": "Negotiate a blind player swap with the league office.",
-      "no_target": "No cards available to trade",
-      "result_win": "Star player acquired in the deal!",
-      "result_lose": "Trade resulted in a minor role player."
-    }
+      "title": "Blind Trade",
+      "desc": "Trade your weakest starting player for a blind offer. If you win, the replacement is guaranteed to be of a HIGHER rarity. If you lose, it's Common and the position gets locked for 2 nodes.",
+      "stakes_label": "WEAKEST STARTER AT STAKE:",
+      "win_label": "🟢 50% IF YOU WIN:",
+      "win_title": "Guaranteed Higher Rarity",
+      "win_detail": "(Epic or Legendary upgrade)",
+      "lose_label": "🔴 50% IF YOU LOSE:",
+      "lose_title": "Common Player + 🔒 2-Node Lock",
+      "lose_detail": "(No drafting at that position for 2 nodes)",
+      "result_win": "Great deal! {{oldName}} ➡️ {{newName}} ({{rarity}}) at [{{pos}}].",
+      "result_lose": "Bad deal: {{newName}} (Common) replaces {{oldName}} at [{{pos}}]. Position locked for 2 nodes."
+    },
+    "btn_view_log": "📜 VIEW RUN LOG",
+    "log_modal_title": "📜 RUN PROGRESS LOG",
+    "log_empty": "No events recorded in this run yet.",
+    "budget_at_stake": "BUDGET AT STAKE:",
+    "if_win_label": "🟢 50% IF YOU WIN:",
+    "triple_received": "(You receive 3x!)",
+    "if_lose_label": "🔴 50% IF YOU LOSE:",
+    "lose_all": "(Lose everything)",
+    "success_chance": "SUCCESS CHANCE",
+    "fail_chance": "FAILURE CHANCE"
   },
   "tutorial": {
     "got_it": "GOT IT!",
@@ -1208,5 +1254,256 @@
   "scout_eye": "Scout's Eye",
   "elite_negotiator": "Elite Negotiator",
   "endless_stamina": "Endless Stamina",
-  "back_to_back": "Back-to-Back Blast"
+  "back_to_back": "Back-to-Back Blast",
+  "items": {
+    "bat_samurai": {
+      "title": "Precision Samurai Bat",
+      "desc": "A Japanese master craftsman offers a finely balanced maple bat designed for maximum contact.",
+      "safe_name": "Traditional Maple Bat",
+      "safe_text": "Buy Standard Bat (+20 CON)",
+      "risky_name": "Master Samurai Bat",
+      "risky_text": "Test Prototype Bat (+35 CON)",
+      "suc_msg": "Masterful test! The batter masters the Master Samurai Bat (+35 CON).",
+      "fail_msg": "The bat splinters during testing! The batter suffers fatigue (-35 Stamina)."
+    },
+    "bat_power": {
+      "title": "Pure Power Club",
+      "desc": "An old-school heavy birch bat engineered to launch baseballs to monumental distances.",
+      "safe_name": "Heavy Power Bat",
+      "safe_text": "Buy Standard Club (+20 PWR)",
+      "risky_name": "Titanic Legend Club",
+      "risky_text": "Test Massive Club (+35 PWR)",
+      "suc_msg": "Tremendous power! The batter conquers the Titanic Club (+35 PWR).",
+      "fail_msg": "Excessive weight causes a muscle pull! The batter loses -35 Stamina."
+    },
+    "bat_discipline": {
+      "title": "Discipline & Eye Bat",
+      "desc": "Bat with zone alignment markers and non-slip grip to avoid strikeouts and work the count.",
+      "safe_name": "Zone Control Bat",
+      "safe_text": "Buy Control Bat (+15 K-AVD, +15 EYE)",
+      "risky_name": "Biometric Perfect Zone Bat",
+      "risky_text": "Test High-Precision Bat (+25 K-AVD, +25 EYE)",
+      "suc_msg": "Flawless zone recognition! Biometric Bat calibrated (+25 K-AVD, +25 EYE).",
+      "fail_msg": "Calibration fails and strains the batter vision! (-35 Stamina)."
+    },
+    "bat_hybrid": {
+      "title": "Balanced Composite Bat",
+      "desc": "Graphene-wood hybrid alloy that evenly enhances both contact and slugging force.",
+      "safe_name": "Approved Composite Bat",
+      "safe_text": "Buy Hybrid Bat (+10 CON, +10 PWR)",
+      "risky_name": "Balanced Hyper-Carbon Bat",
+      "risky_text": "Test Hyper-Carbon Prototype (+18 CON, +18 PWR)",
+      "suc_msg": "Devastating balance! Hyper-Carbon Bat acquired (+18 CON, +18 PWR).",
+      "fail_msg": "Impact resonance failure! The batter suffers exhaustion (-35 Stamina)."
+    },
+    "spikes_speed": {
+      "title": "Ultralight Sprinter Spikes",
+      "desc": "Carbon-soled footwear for maximum acceleration around the bases and stealing bags.",
+      "safe_name": "Light Traction Spikes",
+      "safe_text": "Buy Light Spikes (+25 SPD)",
+      "risky_name": "Lou Brock Gold Spikes",
+      "risky_text": "Test Gold Footwear (+45 SPD)",
+      "suc_msg": "Supersonic speed! Gold Spikes equipped (+45 SPD).",
+      "fail_msg": "Extreme sprint exhausts the runners legs! (-35 Stamina)."
+    },
+    "shoes_contact": {
+      "title": "Traction & Contact Cleats",
+      "desc": "Batter box stabilizing shoes to anchor and propel the leadoff hitter.",
+      "safe_name": "Balance & Track Cleats",
+      "safe_text": "Buy Cleats (+15 SPD, +10 CON)",
+      "risky_name": "Turbo Track Cleats",
+      "risky_text": "Test Turbo Cleats (+25 SPD, +20 CON)",
+      "suc_msg": "Perfect burst! Turbo Cleats equipped (+25 SPD, +20 CON).",
+      "fail_msg": "Rigid footwear causes severe cramping in testing! (-35 Stamina)."
+    },
+    "shoes_defense": {
+      "title": "Fielding & Reaction Cleats",
+      "desc": "Designed for infielders and outfielders covering massive ground on defense.",
+      "safe_name": "All-Terrain Spikes",
+      "safe_text": "Buy Cleats (+15 SPD, +15 DEF)",
+      "risky_name": "Quick-Reaction Armored Spikes",
+      "risky_text": "Test Armored Spikes (+25 SPD, +25 DEF)",
+      "suc_msg": "Feline reflexes! Armored Spikes equipped (+25 SPD, +25 DEF).",
+      "fail_msg": "Intense fielding drills exhaust the player! (-35 Stamina)."
+    },
+    "shoes_endurance": {
+      "title": "Endurance Muscle Cleats",
+      "desc": "Shock-absorbing insoles and ergonomic soles that significantly cut fatigue per game.",
+      "safe_name": "Pro Orthopedic Insoles",
+      "safe_text": "Buy Insoles (+15 SPD, -50% Energy Drain)",
+      "risky_name": "Infinite Biomechanical Wrap",
+      "risky_text": "Test Biomechanical Wrap (+30 SPD, Fatigue Immune)",
+      "suc_msg": "Infinite stamina! The player will never lose energy (+30 SPD).",
+      "fail_msg": "Improper wrapping causes a hamstring pull! (-35 Stamina)."
+    },
+    "glove_gold": {
+      "title": "Handcrafted Gold Leather Glove",
+      "desc": "Hand-oiled leather with deep web pocket to snag impossible drives.",
+      "safe_name": "Quality Leather Gauntlet",
+      "safe_text": "Buy Handcrafted Glove (+25 DEF)",
+      "risky_name": "Legendary Rawlings Gold Glove",
+      "risky_text": "Test Legendary Gold Glove (+45 DEF)",
+      "suc_msg": "Defensive wall! Legendary Gold Glove equipped (+45 DEF).",
+      "fail_msg": "The leather tears during testing! The fielder loses -35 Stamina."
+    },
+    "glove_power": {
+      "title": "Leather & Power Wristbands",
+      "desc": "Reinforced wrist support for corner power fielders anchoring the hot corners.",
+      "safe_name": "Classic Cotton Wristbands",
+      "safe_text": "Buy Wristbands (+15 DEF, +10 PWR)",
+      "risky_name": "Armored Kevlar Wristbands",
+      "risky_text": "Test Armored Wristbands (+25 DEF, +20 PWR)",
+      "suc_msg": "Strength and security! Kevlar Wristbands equipped (+25 DEF, +20 PWR).",
+      "fail_msg": "Tight binding causes hand numbness! (-35 Stamina)."
+    },
+    "glove_contact": {
+      "title": "Contact & Soft Hands Mitt",
+      "desc": "Flexible trapeze mesh mitt for middle infielders combining bat control and soft glove work.",
+      "safe_name": "Light Fielding Mitt",
+      "safe_text": "Buy Mitt (+15 DEF, +10 CON)",
+      "risky_name": "Japanese Trapeze Mitt",
+      "risky_text": "Test Trapeze Mitt (+25 DEF, +20 CON)",
+      "suc_msg": "Silky hands! Trapeze Mitt equipped (+25 DEF, +20 CON).",
+      "fail_msg": "The player overexerts in reflex trials! (-35 Stamina)."
+    },
+    "glove_energy": {
+      "title": "Chest Protector of Energy",
+      "desc": "Ergonomic body armor that absorbs impact trauma and preserves player stamina.",
+      "safe_name": "Padded Foam Protector",
+      "safe_text": "Buy Protector (+15 DEF, -50% Energy Drain)",
+      "risky_name": "Titanium Catcher Armor",
+      "risky_text": "Test Titanium Armor (+25 DEF, Fatigue Immune)",
+      "suc_msg": "Complete shielding! The player will never lose energy (+25 DEF).",
+      "fail_msg": "Direct impacts during testing exhaust the player! (-35 Stamina)."
+    },
+    "acc_glasses": {
+      "title": "High-Definition Polarized Shades",
+      "desc": "Precision anti-glare shades for crystal clear pitch tracking and strike zone recognition.",
+      "safe_name": "Pro Anti-Glare Shades",
+      "safe_text": "Buy Shades (+25 EYE)",
+      "risky_name": "Holographic Thermal Visor",
+      "risky_text": "Test Holographic Visor (+45 EYE)",
+      "suc_msg": "Cybernetic vision! Holographic Visor equipped (+45 EYE).",
+      "fail_msg": "Faulty lens calibration causes severe eye strain! (-35 Stamina)."
+    },
+    "acc_wristband": {
+      "title": "Tactical Scouting Wristband",
+      "desc": "Pitching tendency card on wrist to anticipate pitch sequences and sit on heaters.",
+      "safe_name": "Traditional Scouting Card",
+      "safe_text": "Buy Wristband (+15 EYE, +10 CON)",
+      "risky_name": "Digital Advanced Scouting Band",
+      "risky_text": "Test Digital Wristband (+25 EYE, +20 CON)",
+      "suc_msg": "Flawless scouting! Digital Wristband equipped (+25 EYE, +20 CON).",
+      "fail_msg": "Information overload confuses the batter! (-35 Stamina)."
+    },
+    "acc_helmet": {
+      "title": "Jaw-Guard Armored Helmet",
+      "desc": "Aerodynamic batting helmet with jaw extension to dig into the box fearlessly.",
+      "safe_name": "Pro Reinforced Helmet",
+      "safe_text": "Buy Reinforced Helmet (+25 K-AVD)",
+      "risky_name": "Titanium Armored Helmet",
+      "risky_text": "Test Titanium Helmet (+45 K-AVD)",
+      "suc_msg": "Fearless confidence in the box! Titanium Helmet (+45 K-AVD).",
+      "fail_msg": "Helmet weight strains the batters neck! (-35 Stamina)."
+    },
+    "acc_gum": {
+      "title": "World Series Lucky Bubblegum",
+      "desc": "Blessed 80s chewing gum that lifts team morale and boosts all attributes.",
+      "safe_name": "Classic Energy Bubblegum",
+      "safe_text": "Buy Bubblegum (+10 to All Stats)",
+      "risky_name": "Golden Grand Slam Gum",
+      "risky_text": "Test Golden Gum (+18 to All Stats)",
+      "suc_msg": "Championship aura! Golden Gum chewed (+18 to All Stats).",
+      "fail_msg": "Stomach indigestion! The player loses -35 Stamina."
+    },
+    "energy_drink": {
+      "title": "Electrolyte Isotonic Drink",
+      "desc": "Rapid cellular hydration formula to revitalize muscles and replenish stamina.",
+      "safe_name": "Rehydrating Energy Drink",
+      "safe_text": "Buy Drink (+50 Energy)",
+      "risky_name": "Concentrated Energy Formula",
+      "risky_text": "Test Formula (+100% Energy, +5 CON/SPD/DEF Perm.)",
+      "suc_msg": "Full revitalization! +100% Energy and +5 CON, +5 SPD, +5 DEF permanent.",
+      "fail_msg": "Allergic reaction to electrolytes! The player loses -35 Stamina."
+    },
+    "energy_icebath": {
+      "title": "Ice Bath & Cryotherapy",
+      "desc": "Extreme cold immersion therapy to reduce tendon inflammation and refresh the entire squad.",
+      "safe_name": "Standard Ice Therapy",
+      "safe_text": "Buy Ice Bath (+40 Player, +20 Team)",
+      "risky_name": "Advanced Cryo Chamber",
+      "risky_text": "Test Cryo Chamber (+70 Energy to All Team)",
+      "suc_msg": "Massive recovery! +70 Energy restored to the entire squad.",
+      "fail_msg": "Thermal shock in chamber! The test player loses -35 Stamina."
+    },
+    "energy_massage": {
+      "title": "Massage & Physical Therapy",
+      "desc": "Myofascial release and chiropractic alignment to soothe aches and sharpen senses.",
+      "safe_name": "Relaxing Sports Massage",
+      "safe_text": "Buy Massage (+70 Energy)",
+      "risky_name": "Master Chiropractic Treatment",
+      "risky_text": "Test Master Session (+100% Energy, +10 EYE/K-AVD Perm.)",
+      "suc_msg": "Total clarity and relaxation! +100% Energy and +10 EYE, +10 K-AVD permanent.",
+      "fail_msg": "Muscle strain on the table! The player loses -35 Stamina."
+    },
+    "energy_shake": {
+      "title": "Concentrated Protein Shake",
+      "desc": "High-density amino acid nutrition shake to build mass and explosive swinging power.",
+      "safe_name": "Dugout Protein Shake",
+      "safe_text": "Buy Shake (+40 Energy, +5 PWR Perm.)",
+      "risky_name": "High-Potency Heavy Shake",
+      "risky_text": "Test High-Potency Shake (+80 Energy, +10 PWR Perm.)",
+      "suc_msg": "Explosive power! +80 Energy and +10 permanent PWR forever.",
+      "fail_msg": "Caffeine overdose and fatigue! The player loses -35 Stamina."
+    }
+  },
+  "equip": {
+    "slot_empty": "Empty Slot (No Item)",
+    "slot_title": "🎒 Equipment / Item",
+    "btn_equip": "Equip Item",
+    "btn_unequip": "Unequip to Backpack",
+    "backpack_title": "🎒 Team Backpack & Equipment",
+    "backpack_empty": "Your backpack is empty. Obtain gear in route workshops and events.",
+    "test_cage_title": "⚾ BATTING CAGE / WORKSHOP",
+    "test_cage_desc": "Select which batter will enter to test this experimental prototype:",
+    "test_cage_btn": "🔥 Enter Risk Test (60% Success)",
+    "auto_unequipped_alert": "🎒 {{item}} unequipped and returned to your backpack.",
+    "item_equipped_alert": "✅ {{item}} equipped on {{player}}.",
+    "item_unequipped_alert": "🎒 {{item}} stored in backpack.",
+    "select_item_to_equip": "Select an item from your backpack to equip on {{player}}:",
+    "no_items_in_backpack": "No items available in backpack.",
+    "event_workshop_title": "🛠️ EQUIPMENT & GEAR WORKSHOP",
+    "event_reject_btn": "Decline Offer (Continue without spending)",
+    "choice_safe_badge": "🟢 SAFE (100%)",
+    "choice_risky_badge": "🔴 RISK (60% CAGE)",
+    "choice_reject_badge": "⚪ PASS",
+    "consumable_tag": "🧪 SINGLE-USE CONSUMABLE",
+    "equipable_tag": "🎒 PERMANENT EQUIPMENT",
+    "consumed_success": "{{item}} consumed by {{player}}!",
+    "equipped_success": "{{item}} equipped on {{player}}!",
+    "roulette_title": "🎡 BATTING CAGE: PROTOTYPE ROULETTE",
+    "roulette_spinning": "⏳ Testing prototype in cage...",
+    "roulette_success": "✅ SUCCESS! PROTOTYPE APPROVED!",
+    "roulette_fail": "❌ FAIL! PROTOTYPE BROKE",
+    "roulette_center_success": "SUCCESS",
+    "roulette_center_fail": "FAIL",
+    "result_cage_success_title": "🏆 LEGENDARY PROTOTYPE UNLOCKED!",
+    "result_cage_fail_title": "💥 BATTING CAGE TEST FAILED!",
+    "result_safe_buy_title": "🎉 EQUIPMENT PURCHASED!",
+    "store_safe_card_title": "🟢 SAFE PURCHASE (100%)",
+    "store_safe_card_desc": "Direct risk-free purchase. Stored in your ITEMS backpack.",
+    "store_risky_card_title": "🔴 BATTING CAGE (60% RISK)",
+    "store_risky_card_desc": "Massive discount to test the prototype. If it passes you get the Legendary version; if it fails, tester loses -35 Stamina.",
+    "store_reject_card_title": "⚪ DECLINE OFFER",
+    "store_reject_card_desc": "Continue your run without spending budget.",
+    "store_btn_buy_safe": "BUY FOR ${{cost}}",
+    "store_btn_test_risky": "TEST PROTOTYPE (${{cost}})",
+    "store_btn_reject": "DECLINE OFFER",
+    "store_category_bat": "🪵 OFFENSIVE BAT",
+    "store_category_shoes": "👟 SHOES & SPEED",
+    "store_category_glove": "🧤 GLOVE & DEFENSE",
+    "store_category_accessory": "👓 TACTICAL ACCESSORY",
+    "store_category_consumable": "🧪 ENERGY CONSUMABLE",
+    "stamina_penalty_badge": "⚡ STAMINA PENALTY"
+  }
 }

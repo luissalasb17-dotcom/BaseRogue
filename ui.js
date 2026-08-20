@@ -461,9 +461,12 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
   ];
 
   // ── UNIVERSAL RETRO RESOLUTION MODAL (No alert()) ───────────────────────
-  function showRetroResultModal({ title, badgeText, badgeColor = '#10b981', icon = '✨', desc = '', stats = [], onClose }) {
+  function showRetroResultModal({ title, badgeText, badgeColor = '#10b981', icon = '✨', desc = '', stats = [], itemData = null, testerPlayer = null, onClose }) {
     const overlay = document.createElement('div');
     overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.88);backdrop-filter:blur(10px);z-index:900;display:flex;align-items:center;justify-content:center;animation:fadeIn 0.2s ease-out;';
+
+    const isFailure = badgeColor === '#ef4444';
+    const continueText = (typeof t === 'function' ? t('common.continue', 'CONTINUAR') : 'CONTINUAR').toUpperCase();
 
     const statsHTML = (stats || []).map(s => `
       <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:rgba(255,255,255,0.03);border:1px solid ${s.isPositive ? 'rgba(16,185,129,0.3)' : 'rgba(239,68,68,0.3)'};border-radius:8px;margin-bottom:6px;">
@@ -472,15 +475,31 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
       </div>
     `).join('');
 
+    let cardExtraHTML = '';
+    if (isFailure && testerPlayer) {
+      cardExtraHTML = `
+        <div style="margin: 12px 0 16px 0; padding: 10px 14px; background: rgba(239,68,68,0.12); border: 1.5px solid rgba(239,68,68,0.4); border-radius: 10px; display: flex; align-items: center; justify-content: space-between;">
+          <div style="text-align: left;">
+            <div style="font-size: 8px; color: #ef4444; font-family: 'Press Start 2P', monospace;">${typeof t === 'function' ? t('equip.stamina_penalty_badge', '⚡ PENALIZACIÓN DE STAMINA') : '⚡ PENALIZACIÓN DE STAMINA'}</div>
+            <div style="font-size: 11px; font-weight: bold; color: #fff; margin-top: 2px;">${testerPlayer.name} (${testerPlayer.pos || 'Bateador'})</div>
+          </div>
+          <div style="font-family: 'Press Start 2P', monospace; font-size: 13px; color: #ef4444; font-weight: bold;">
+            -35 STA
+          </div>
+        </div>
+      `;
+    }
+
     overlay.innerHTML = `
-      <div style="background:#090d16;border:2px solid ${badgeColor};box-shadow:0 0 35px ${badgeColor}66;border-radius:16px;padding:26px;max-width:440px;width:92%;text-align:center;position:relative;">
-        <div style="font-size:48px;margin-bottom:10px;filter:drop-shadow(0 0 12px ${badgeColor});">${icon}</div>
-        <div style="display:inline-block;padding:4px 12px;background:${badgeColor}20;border:1px solid ${badgeColor};border-radius:20px;font-family:'Press Start 2P',monospace;font-size:9px;color:${badgeColor};margin-bottom:12px;">${badgeText}</div>
-        <h3 style="font-family:'Press Start 2P',monospace;font-size:13px;color:#fff;margin-bottom:10px;line-height:1.4;">${title}</h3>
-        <p style="font-size:12px;color:#94a3b8;line-height:1.5;margin-bottom:16px;">${desc}</p>
-        ${statsHTML ? `<div style="margin-bottom:20px;">${statsHTML}</div>` : ''}
-        <button id="btn-close-retro-result-modal" class="btn" style="background:linear-gradient(135deg, ${badgeColor}, ${badgeColor}dd);color:#000;font-weight:bold;font-size:11px;padding:12px 24px;width:100%;border:none;cursor:pointer;">
-          CONTINUAR <i class="fa-solid fa-arrow-right"></i>
+      <div class="${isFailure ? 'retro-shake-anim' : ''}" style="background:#090d16;border:2px solid ${badgeColor};box-shadow:0 0 45px ${badgeColor}66;border-radius:18px;padding:26px;max-width:440px;width:92%;text-align:center;position:relative;">
+        <div style="font-size:52px;margin-bottom:12px;filter:drop-shadow(0 0 16px ${badgeColor});">${icon}</div>
+        <div style="display:inline-block;padding:5px 14px;background:${badgeColor}25;border:1.5px solid ${badgeColor};border-radius:20px;font-family:'Press Start 2P',monospace;font-size:9px;color:${badgeColor};margin-bottom:12px;box-shadow:0 0 10px ${badgeColor}33;">${badgeText}</div>
+        <h3 style="font-family:'Press Start 2P',monospace;font-size:12.5px;color:#fff;margin-bottom:10px;line-height:1.4;">${title}</h3>
+        <p style="font-size:12px;color:#94a3b8;line-height:1.5;margin-bottom:14px;">${desc}</p>
+        ${cardExtraHTML}
+        ${statsHTML ? `<div style="margin-bottom:16px;">${statsHTML}</div>` : ''}
+        <button id="btn-close-retro-result-modal" class="btn" style="background:linear-gradient(135deg, ${badgeColor}, ${badgeColor}cc);color:${isFailure ? '#fff' : '#000'};font-weight:bold;font-size:11px;padding:12px 24px;width:100%;border:none;cursor:pointer;font-family:'Press Start 2P',monospace;">
+          ${continueText} <i class="fa-solid fa-arrow-right"></i>
         </button>
       </div>
     `;
@@ -489,7 +508,7 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
 
     // Audio cue
     if (window.AudioManager) {
-      if (badgeColor === '#ef4444') {
+      if (isFailure) {
         if (typeof window.AudioManager.playSound === 'function') window.AudioManager.playSound('error');
       } else {
         if (typeof window.AudioManager.playSound === 'function') window.AudioManager.playSound('purchase');
@@ -3531,10 +3550,13 @@ function initGameModeSelector() {
     const btnLang = document.getElementById('btn-lang-toggle');
     if (btnLang) {
       btnLang.addEventListener('click', () => {
-        const cur = window.i18n ? window.i18n.getCurrentLanguage() : (localStorage.getItem('baserogue_lang') || 'en');
+        const cur = window.i18n ? window.i18n.getCurrentLanguage() : (localStorage.getItem('baserogue_lang') || 'es');
         const next = cur === 'es' ? 'en' : 'es';
         if (window.i18n) {
           window.i18n.changeLanguage(next);
+        }
+        if (window.Challenge162 && typeof window.Challenge162.updateModeSelectCard === 'function') {
+          window.Challenge162.updateModeSelectCard();
         }
       });
     }
@@ -3648,6 +3670,10 @@ function initGameModeSelector() {
       }
 
       // Execute replace swap directly on active roster slot
+      if (window.AudioManager && typeof window.AudioManager.play === 'function') {
+        window.AudioManager.play('player_release');
+        window.AudioManager.play('money');
+      }
       window.Game.replaceRosterPlayer(slot, currentDraftSelection);
 
       el.modalSwap.classList.add('hidden');
@@ -3662,6 +3688,20 @@ function initGameModeSelector() {
 
     // Rest choices
     el.btnRestHeal.addEventListener('click', () => {
+      if (window.AudioManager && typeof window.AudioManager.play === 'function') {
+        window.AudioManager.play('item_use');
+      }
+      if (window.Game && typeof window.Game.logRunNode === 'function') {
+        window.Game.logRunNode({
+          type: 'rest',
+          icon: '🛋️',
+          title: `Descanso en Casa Club`,
+          titleEN: `Clubhouse Rest`,
+          desc: `Toda la alineación recuperó +40 de Stamina`,
+          descEN: `Entire lineup recovered +40 Stamina`,
+          status: 'success'
+        });
+      }
       // Heal stamina of all roster players
       Object.keys(window.Game.roster).forEach(pos => {
         if (window.Game.roster[pos]) {
@@ -3682,6 +3722,20 @@ function initGameModeSelector() {
     });
 
     el.btnRestCash.addEventListener('click', () => {
+      if (window.AudioManager && typeof window.AudioManager.play === 'function') {
+        window.AudioManager.play('money');
+      }
+      if (window.Game && typeof window.Game.logRunNode === 'function') {
+        window.Game.logRunNode({
+          type: 'rest',
+          icon: '💰',
+          title: `Patrocinio Deportivo`,
+          titleEN: `Team Sponsor`,
+          desc: `El club recibió +$25 de presupuesto`,
+          descEN: `Club received +$25 budget`,
+          status: 'success'
+        });
+      }
       window.Game.budget += 25;
       renderActiveRoster();
       updateHUD();
@@ -3754,6 +3808,10 @@ function initGameModeSelector() {
 
   // Open Node Screen logic
   function openNode(node) {
+    if (window.AudioManager && typeof window.AudioManager.play === 'function' && node.type !== 'gamble' && node.type !== 'match' && node.type !== 'boss') {
+      window.AudioManager.play('map_node_select');
+    }
+
     if (node.type === 'match' || node.type === 'boss') {
       setupAndShowPreFightScreen();
     } else if (node.type === 'draft') {
@@ -3841,22 +3899,59 @@ function initGameModeSelector() {
 
       slotContainer.addEventListener('dragend', (e) => {
         slotContainer.classList.remove('dragging');
-        document.querySelectorAll('.roster-vertical-item').forEach(el => el.classList.remove('drag-over'));
+        document.querySelectorAll('.roster-vertical-item').forEach(el => {
+          el.classList.remove('drag-over');
+          el.style.borderColor = '';
+          el.style.boxShadow = '';
+        });
       });
 
       slotContainer.addEventListener('dragover', (e) => {
         e.preventDefault();
         e.dataTransfer.dropEffect = 'move';
         slotContainer.classList.add('drag-over');
+        slotContainer.style.borderColor = '#00ff66';
+        slotContainer.style.boxShadow = '0 0 10px rgba(0,255,102,0.4)';
       });
 
       slotContainer.addEventListener('dragleave', (e) => {
         slotContainer.classList.remove('drag-over');
+        slotContainer.style.borderColor = '';
+        slotContainer.style.boxShadow = '';
       });
 
       slotContainer.addEventListener('drop', (e) => {
         e.preventDefault();
         slotContainer.classList.remove('drag-over');
+        slotContainer.style.borderColor = '';
+        slotContainer.style.boxShadow = '';
+
+        // 1. Check if an item from backpack was dropped on this player
+        const itemIdxStr = e.dataTransfer.getData('baserogue-item-index');
+        if (itemIdxStr !== '' && itemIdxStr !== null && itemIdxStr !== undefined) {
+          const itemIdx = parseInt(itemIdxStr, 10);
+          if (!isNaN(itemIdx) && window.Game.itemsInventory && window.Game.itemsInventory[itemIdx]) {
+            const item = window.Game.itemsInventory[itemIdx];
+            if (item.isConsumable) {
+              if (window.AudioManager && typeof window.AudioManager.play === 'function') {
+                window.AudioManager.play('item_use');
+              }
+              window.Game.useConsumableItem(item, slot);
+              window.Game.itemsInventory.splice(itemIdx, 1);
+            } else {
+              if (window.AudioManager && typeof window.AudioManager.play === 'function') {
+                window.AudioManager.play('item_equip');
+              }
+              window.Game.equipItem(itemIdx, slot);
+            }
+            renderActiveRoster();
+            renderSynergiesAndItems();
+            updateHUD();
+            return;
+          }
+        }
+
+        // 2. Otherwise handle batting order swap
         const fromIndex = parseInt(e.dataTransfer.getData('text/plain'), 10);
         const toIndex = index;
         if (fromIndex !== toIndex && !isNaN(fromIndex)) {
@@ -3886,10 +3981,11 @@ function initGameModeSelector() {
       
       if (effectivePlayer) {
         const badgeIconsHTML = getPlayerBadgeIconsHTML(effectivePlayer);
+        const itemIconHTML = player && player.equipped_item ? `<span title="${player.equipped_item.name} (${player.equipped_item.statDesc || ''})" style="margin-left:4px; font-size:11px; filter:drop-shadow(0 0 3px #00ff66);">${player.equipped_item.icon || '🎒'}</span>` : '';
         if (effectivePlayer.captain && !badgeIconsHTML.includes('badge-captain')) {
           console.warn('[BaseRogue] captain badge missing for a captain=true player', { player: effectivePlayer.name, effectivePlayer });
         }
-        nameSpan.innerHTML = `${effectivePlayer.name}${badgeIconsHTML}`;
+        nameSpan.innerHTML = `${effectivePlayer.name}${badgeIconsHTML}${itemIconHTML}`;
         nameSpan.title = `${effectivePlayer.name} (${effectivePlayer.era})`;
 
         // OVR Badge
@@ -4047,7 +4143,7 @@ function initGameModeSelector() {
         if (isPitcher || isDraft) return '';
         const s = (window.Game.runBatterStats || {})[player.name];
         if (!s || !((s.ab || 0) > 0 || (s.bb || 0) > 0)) return '';
-        const ab = s.ab || 0, h = s.h || 0, bb = s.bb || 0, so = s.so || 0, hr = s.hr || 0, rbi = s.rbi || 0, sb = s.sb || 0;
+        const ab = s.ab || 0, h = s.h || 0, bb = s.bb || 0, so = s.so || 0, hr = s.hr || 0, rbi = s.rbi || 0, sb = s.sb || 0, e = s.e || 0;
         const b2 = s.doubles || 0, b3 = s.triples || 0;
         const pa = ab + bb;
         const totalBases = Math.max(0, h - b2 - b3 - hr) + (2 * b2) + (3 * b3) + (4 * hr);
@@ -4067,6 +4163,7 @@ function initGameModeSelector() {
           <span class="popup-upgrade-badge">SB ${sb}</span>
           <span class="popup-upgrade-badge">BB ${bb}</span>
           <span class="popup-upgrade-badge">SO ${so}</span>
+          <span class="popup-upgrade-badge" style="background:${e > 0 ? 'rgba(239,68,68,0.2)' : 'rgba(255,255,255,0.06)'};color:${e > 0 ? '#f87171' : '#94a3b8'};">E ${e}</span>
           <span class="popup-upgrade-badge">AVG ${avg}</span>
           <span class="popup-upgrade-badge">OBP ${obp}</span>
           <span class="popup-upgrade-badge">SLG ${slg}</span>
@@ -4091,7 +4188,34 @@ function initGameModeSelector() {
         </div>` : ''}
       <div class="popup-year">Peak: ${player.year || player.peak_year || player.peakYear || '—'} &nbsp;|&nbsp; ${player.era || ''}</div>
       ${!isDraft ? `
-        <div class="popup-def-swap-container" style="margin-top:12px; padding-top:10px; border-top:1px dashed rgba(255,255,255,0.15); display:flex; flex-direction:column; gap:6px;">
+        <div class="popup-item-slot-container" style="margin-top:10px; padding:10px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.15); border-radius:8px;">
+          <div style="font-size:8px; color:var(--accent-color); font-family:'Press Start 2P',monospace; margin-bottom:6px; display:flex; align-items:center; gap:6px;">
+            🎒 ${t('equip.slot_title', 'EQUIPAMIENTO / ÍTEM')}
+          </div>
+          ${player.equipped_item ? `
+            <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(0,255,102,0.08); border:1px solid #00ff66; border-radius:6px; padding:8px 10px;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span style="font-size:20px;">${player.equipped_item.icon || '🎒'}</span>
+                <div>
+                  <div style="font-size:9.5px; font-weight:bold; color:#00ff66;">${player.equipped_item.name}</div>
+                  <div style="font-size:8.5px; color:#cbd5e1; margin-top:2px;">${player.equipped_item.statDesc || ''}</div>
+                </div>
+              </div>
+              <button id="btn-popup-unequip-item" style="background:#ef4444; color:#fff; border:none; border-radius:4px; padding:5px 8px; font-size:7.5px; font-family:'Press Start 2P',monospace; cursor:pointer; transition:all 0.15s ease;">
+                ${t('equip.btn_unequip', 'Desequipar')}
+              </button>
+            </div>
+          ` : `
+            <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.02); border:1px dashed rgba(255,255,255,0.2); border-radius:6px; padding:8px 10px;">
+              <div style="font-size:8.5px; color:#9ca3af;">${t('equip.slot_empty', 'Ranura Vacía (Sin Ítem)')}</div>
+              <button id="btn-popup-equip-item" style="background:#3b82f6; color:#fff; border:none; border-radius:4px; padding:5px 8px; font-size:7.5px; font-family:'Press Start 2P',monospace; cursor:pointer; transition:all 0.15s ease;">
+                ${t('equip.btn_equip', '+ Equipar')}
+              </button>
+            </div>
+          `}
+        </div>
+
+        <div class="popup-def-swap-container" style="margin-top:10px; padding-top:10px; border-top:1px dashed rgba(255,255,255,0.15); display:flex; flex-direction:column; gap:6px;">
           <div style="font-size:8px; color:var(--accent-color); font-family:'Press Start 2P',monospace; display:flex; align-items:center; gap:6px;">
             <i class="fa-solid fa-arrows-rotate"></i> ${t('card_popup.swap_pos_title')}
           </div>
@@ -4122,6 +4246,25 @@ function initGameModeSelector() {
     overlay.classList.remove('hidden');
     overlay.classList.add('popup-visible');
 
+    // Equip / Unequip handlers
+    const btnUnequip = overlay.querySelector('#btn-popup-unequip-item');
+    if (btnUnequip) {
+      btnUnequip.addEventListener('click', () => {
+        window.Game.unequipItem(slot);
+        renderActiveRoster();
+        renderSynergiesAndItems();
+        updateHUD();
+        showPlayerCardPopup(player, slot);
+      });
+    }
+
+    const btnEquip = overlay.querySelector('#btn-popup-equip-item');
+    if (btnEquip) {
+      btnEquip.addEventListener('click', () => {
+        showBackpackEquipModal(slot);
+      });
+    }
+
     const swapSelect = overlay.querySelector('#popup-def-swap-select');
     if (swapSelect) {
       swapSelect.addEventListener('change', (e) => {
@@ -4141,6 +4284,133 @@ function initGameModeSelector() {
     overlay.addEventListener('click', (e) => {
       if (e.target === overlay) hidePlayerCardPopup();
     }, { once: true });
+  }
+
+  // ── BACKPACK EQUIP MODAL: choose an item from backpack to equip on player ──
+  function showBackpackEquipModal(targetSlot) {
+    const player = window.Game.roster[targetSlot];
+    if (!player) return;
+
+    const overlay = document.createElement('div');
+    overlay.className = 'backpack-modal-overlay';
+    overlay.style.cssText = `
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(8px);
+      z-index: 10000; display: flex; align-items: center; justify-content: center;
+      padding: 16px; animation: fadeIn 0.2s ease-out;
+    `;
+
+    const items = window.Game.itemsInventory || [];
+
+    overlay.innerHTML = `
+      <div style="background:#090d16; border:2px solid #38bdf8; border-radius:14px; padding:20px; max-width:440px; width:100%; box-shadow:0 0 30px rgba(0,0,0,0.9), 0 0 15px rgba(56,189,248,0.3); font-family:'Press Start 2P',monospace;">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px dashed rgba(255,255,255,0.2); padding-bottom:10px; margin-bottom:12px;">
+          <span style="font-size:10px; color:#38bdf8;">🎒 ${t('equip.backpack_title', 'MOCHILA DEL CLUB')}</span>
+          <button id="btn-close-backpack-modal" style="background:none; border:none; color:#9ca3af; font-size:16px; cursor:pointer;">&times;</button>
+        </div>
+        <div style="font-size:8px; color:#cbd5e1; line-height:1.5; margin-bottom:14px; font-family:sans-serif;">
+          ${t('equip.select_item_to_equip', { player: player.name })}
+        </div>
+        <div style="display:flex; flex-direction:column; gap:8px; max-height:260px; overflow-y:auto; padding-right:4px;">
+          ${items.length === 0 ? `
+            <div style="font-size:8.5px; color:#64748b; text-align:center; padding:20px 0; font-family:'Press Start 2P',monospace;">
+              ${t('equip.no_items_in_backpack', 'No tienes ítems disponibles en la mochila.')}
+            </div>
+          ` : items.map((item, idx) => `
+            <button class="backpack-item-pick-btn" data-index="${idx}" style="display:flex; align-items:center; justify-content:space-between; background:rgba(255,255,255,0.04); border:1px solid rgba(56,189,248,0.3); border-radius:8px; padding:10px 12px; cursor:pointer; text-align:left; transition:all 0.15s ease; width:100%;">
+              <div style="display:flex; align-items:center; gap:10px;">
+                <span style="font-size:22px;">${item.icon || '🎒'}</span>
+                <div>
+                  <div style="font-size:11px; font-weight:bold; color:#38bdf8; font-family:sans-serif;">${item.name}</div>
+                  <div style="font-size:8.5px; color:#94a3b8; margin-top:2px;">${item.statDesc || ''}</div>
+                </div>
+              </div>
+              <span style="font-size:8px; color:#00ff66; font-family:'Press Start 2P',monospace;">EQUIPAR</span>
+            </button>
+          `).join('')}
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    overlay.querySelector('#btn-close-backpack-modal').onclick = () => overlay.remove();
+
+    overlay.querySelectorAll('.backpack-item-pick-btn').forEach(btn => {
+      btn.onclick = () => {
+        const idx = parseInt(btn.getAttribute('data-index'), 10);
+        window.Game.equipItem(idx, targetSlot);
+        overlay.remove();
+        renderActiveRoster();
+        renderSynergiesAndItems();
+        updateHUD();
+        showPlayerCardPopup(player, targetSlot);
+      };
+    });
+  }
+
+  // ── BATTER SELECTOR MODAL: select a batter for test cage or consumable ──
+  function showBatterSelectorModal({ title, subtitle, onSelect, onCancel }) {
+    const overlay = document.createElement('div');
+    overlay.className = 'player-selector-modal-overlay';
+    overlay.style.cssText = `
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.88); backdrop-filter: blur(8px);
+      z-index: 9999; display: flex; align-items: center; justify-content: center;
+      padding: 16px; animation: fadeIn 0.2s ease-out;
+    `;
+
+    const slots = ['C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'DH'];
+    const playersList = slots.map(slot => ({ slot, player: window.Game.roster[slot] })).filter(item => item.player);
+
+    overlay.innerHTML = `
+      <div style="background:#090d16; border:2px solid #f59e0b; border-radius:14px; padding:20px; max-width:440px; width:100%; box-shadow:0 0 30px rgba(0,0,0,0.9), 0 0 15px rgba(245,158,11,0.3); font-family:'Press Start 2P',monospace;">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px dashed rgba(255,255,255,0.2); padding-bottom:10px; margin-bottom:12px;">
+          <span style="font-size:10px; color:#f59e0b;">${title || t('equip.test_cage_title', '⚾ JAULA DE PRUEBAS')}</span>
+          <button id="btn-close-selector-modal" style="background:none; border:none; color:#9ca3af; font-size:16px; cursor:pointer;">&times;</button>
+        </div>
+        <div style="font-size:9.5px; color:#cbd5e1; line-height:1.5; margin-bottom:14px; font-family:sans-serif;">
+          ${subtitle || t('equip.test_cage_desc', 'Selecciona qué bateador entrará a probar este prototipo:')}
+        </div>
+        <div style="display:flex; flex-direction:column; gap:8px; max-height:280px; overflow-y:auto; padding-right:4px;" id="batter-selector-list">
+          ${playersList.map(({ slot, player }) => {
+            const stam = player.stamina || 100;
+            const stamColor = stam < 25 ? '#ef4444' : stam < 50 ? '#f59e0b' : '#00ff66';
+            const equippedBadge = player.equipped_item ? `<span style="font-size:7.5px; color:#00ff66; background:rgba(0,255,102,0.1); padding:2px 4px; border-radius:3px; margin-left:4px;">${player.equipped_item.icon || '🎒'} ${player.equipped_item.name}</span>` : '';
+            return `
+              <button class="selector-player-btn" data-slot="${slot}" style="display:flex; align-items:center; justify-content:space-between; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.15); border-radius:8px; padding:10px 12px; cursor:pointer; text-align:left; transition:all 0.15s ease; width:100%;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <span style="font-size:8.5px; color:var(--primary-color); font-family:'Press Start 2P',monospace; min-width:24px;">${slot}</span>
+                  <div>
+                    <div style="font-size:11px; font-weight:bold; color:#fff; font-family:sans-serif;">${player.name}</div>
+                    <div style="font-size:8px; color:#94a3b8; margin-top:2px;">${equippedBadge}</div>
+                  </div>
+                </div>
+                <div style="text-align:right;">
+                  <div style="font-size:8px; color:${stamColor}; font-family:'Press Start 2P',monospace;">⚡ ${stam}%</div>
+                </div>
+              </button>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    overlay.querySelector('#btn-close-selector-modal').onclick = () => {
+      overlay.remove();
+      if (onCancel) onCancel();
+    };
+
+    overlay.querySelectorAll('.selector-player-btn').forEach(btn => {
+      btn.onclick = () => {
+        const slot = btn.getAttribute('data-slot');
+        const player = window.Game.roster[slot];
+        overlay.remove();
+        if (onSelect) onSelect(player, slot);
+      };
+    });
   }
 
   function hidePlayerCardPopup() {
@@ -4685,6 +4955,26 @@ function initGameModeSelector() {
       }
     });
 
+    // Check if new synergy tier unlocked to play uplifting chime
+    let currentTotalTiers = 0;
+    Object.keys(eraCounts).forEach(era => {
+      const count = eraCounts[era] || 0;
+      if (count >= 7) currentTotalTiers += 4;
+      else if (count >= 5) currentTotalTiers += 3;
+      else if (count >= 3) currentTotalTiers += 2;
+      else if (count >= 2) currentTotalTiers += 1;
+    });
+    Object.keys(teamCounts).forEach(tm => {
+      if (teamCounts[tm] >= 2) currentTotalTiers += (teamCounts[tm] >= 4 ? 2 : 1);
+    });
+
+    if (window.Game && window.Game._lastSynergyTiersCount !== undefined && currentTotalTiers > window.Game._lastSynergyTiersCount) {
+      if (window.AudioManager && typeof window.AudioManager.play === 'function') {
+        window.AudioManager.play('synergy_tier_up');
+      }
+    }
+    if (window.Game) window.Game._lastSynergyTiersCount = currentTotalTiers;
+
     // Default: until the player has ever manually set/removed a Build era,
     // auto-preview whichever era currently has the most players in roster.
     if (!window.Game.buildEraTouched) {
@@ -4799,30 +5089,193 @@ function initGameModeSelector() {
       el.synergiesList.appendChild(noneEl);
     }
 
-    // 2. Purchased Items (Left Sidebar)
+    // 2. PokeLike Items Grid & Backpack (Left Sidebar - 4 Slots)
     el.purchasedItemsList.innerHTML = "";
-    if (window.Game.purchasedItems.length === 0) {
-      el.purchasedItemsList.innerHTML = `
-        <div style="color: #64748b; font-size: 8px; text-align:center; padding: 10px 0; width: 100%; font-family: 'Press Start 2P', monospace;">
-          ${t('sidebar.no_items', 'NADA COMPRADO')}
-        </div>
+    const backpackItems = window.Game.itemsInventory || [];
+    const totalSlots = 4;
+
+    const gridContainer = document.createElement('div');
+    gridContainer.style.cssText = "display:grid; grid-template-columns:repeat(4, 1fr); gap:6px; width:100%; margin-top:2px;";
+
+    for (let slotIdx = 0; slotIdx < totalSlots; slotIdx++) {
+      const it = backpackItems[slotIdx];
+      const slotTile = document.createElement('div');
+      slotTile.style.cssText = `
+        aspect-ratio: 1; min-height: 42px; border-radius: 6px;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        position: relative; transition: all 0.15s ease; user-select: none;
       `;
-    } else {
-      window.Game.purchasedItems.forEach(item => {
-        const badge = document.createElement('span');
-        badge.style.background = "rgba(16, 185, 129, 0.1)";
-        badge.style.border = "1px solid rgba(16, 185, 129, 0.3)";
-        badge.style.color = "var(--primary-color)";
-        badge.style.padding = "2px 4px";
-        badge.style.margin = "2px";
-        badge.style.fontSize = "7px";
-        badge.style.fontFamily = "'Press Start 2P', monospace";
-        badge.style.fontWeight = "bold";
-        badge.innerText = item;
-        
-        el.purchasedItemsList.appendChild(badge);
-      });
+
+      if (it) {
+        const isConsumable = it.isConsumable === true;
+        const borderCol = isConsumable ? '#c084fc' : '#38bdf8';
+        const bgCol = isConsumable ? 'rgba(192, 132, 252, 0.15)' : 'rgba(56, 189, 248, 0.12)';
+        const tagText = isConsumable ? '🧪' : '🎒';
+        const typeName = isConsumable ? t('equip.consumable_tag', '🧪 CONSUMIBLE (1 SOLO USO)') : t('equip.equipable_tag', '🎒 EQUIPAMIENTO');
+
+        slotTile.style.background = bgCol;
+        slotTile.style.border = `1.5px solid ${borderCol}`;
+        slotTile.style.boxShadow = `0 0 8px ${isConsumable ? 'rgba(192,132,252,0.25)' : 'rgba(56,189,248,0.25)'}`;
+        slotTile.style.cursor = 'grab';
+        slotTile.draggable = true;
+        slotTile.title = `${it.name}\n${typeName}\n${it.statDesc || ''}\n(Arrastra a un jugador o haz clic para usar)`;
+
+        slotTile.innerHTML = `
+          <span style="font-size: 20px; line-height: 1; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8));">${it.icon || '🎒'}</span>
+          <span style="position: absolute; top: 2px; right: 2px; font-size: 8px; line-height: 1;">${tagText}</span>
+        `;
+
+        // Drag & Drop
+        slotTile.addEventListener('dragstart', (e) => {
+          e.dataTransfer.setData('baserogue-item-index', slotIdx);
+          e.dataTransfer.effectAllowed = 'copyMove';
+          slotTile.style.opacity = '0.5';
+        });
+
+        slotTile.addEventListener('dragend', () => {
+          slotTile.style.opacity = '1';
+        });
+
+        // Click alternative (modal for mobile / tap)
+        slotTile.addEventListener('click', () => {
+          showBatterSelectorModal({
+            title: `${tagText} ${it.name}`,
+            subtitle: isConsumable
+              ? t('equip.select_item_to_equip', { player: it.name }) + ` (${typeName})`
+              : t('equip.select_item_to_equip', { player: it.name }),
+            onSelect: (player, targetSlotKey) => {
+              if (isConsumable) {
+                window.Game.useConsumableItem(it, targetSlotKey);
+                window.Game.itemsInventory.splice(slotIdx, 1);
+              } else {
+                window.Game.equipItem(slotIdx, targetSlotKey);
+              }
+              renderActiveRoster();
+              renderSynergiesAndItems();
+              updateHUD();
+            }
+          });
+        });
+
+        // Hover animations
+        slotTile.addEventListener('mouseenter', () => {
+          slotTile.style.transform = 'scale(1.08)';
+          slotTile.style.borderColor = '#00ff66';
+        });
+        slotTile.addEventListener('mouseleave', () => {
+          slotTile.style.transform = 'scale(1)';
+          slotTile.style.borderColor = borderCol;
+        });
+
+      } else {
+        // Empty slot
+        slotTile.style.background = 'rgba(255, 255, 255, 0.02)';
+        slotTile.style.border = '1px dashed rgba(255, 255, 255, 0.12)';
+        slotTile.innerHTML = `<span style="font-size: 10px; color: rgba(255,255,255,0.15);">•</span>`;
+      }
+
+      gridContainer.appendChild(slotTile);
     }
+
+    el.purchasedItemsList.appendChild(gridContainer);
+
+    // Clean Run Log Button below 4-slot grid
+    const btnRunLog = document.createElement('button');
+    btnRunLog.style.cssText = "width:100%; margin-top:8px; padding:6px; font-family:'Press Start 2P',monospace; font-size:7px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:4px; color:#94a3b8; cursor:pointer; transition:all 0.15s ease; display:flex; align-items:center; justify-content:center; gap:6px;";
+    btnRunLog.innerHTML = `<span>📜</span> <span>${typeof t === 'function' ? t('gamble.btn_view_log', '📜 REGISTRO DE RUN') : '📜 REGISTRO DE RUN'}</span>`;
+    btnRunLog.addEventListener('mouseenter', () => {
+      btnRunLog.style.background = 'rgba(255,255,255,0.08)';
+      btnRunLog.style.color = '#fff';
+      btnRunLog.style.borderColor = 'rgba(255,255,255,0.25)';
+    });
+    btnRunLog.addEventListener('mouseleave', () => {
+      btnRunLog.style.background = 'rgba(255,255,255,0.04)';
+      btnRunLog.style.color = '#94a3b8';
+      btnRunLog.style.borderColor = 'rgba(255,255,255,0.12)';
+    });
+    btnRunLog.addEventListener('click', () => {
+      showRunLogModal();
+    });
+
+    el.purchasedItemsList.appendChild(btnRunLog);
+  }
+
+  // ── RUN LOG MODAL ────────────────────────────────────────────────────────
+  function showRunLogModal() {
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(10px);z-index:920;display:flex;align-items:center;justify-content:center;animation:fadeIn 0.2s ease-out;';
+
+    const history = (window.Game && window.Game.runNodeHistory && window.Game.runNodeHistory.length > 0)
+      ? window.Game.runNodeHistory
+      : (window.Game && window.Game.purchasedItems && window.Game.purchasedItems.length > 0 ? window.Game.purchasedItems.map(p => ({ title: p, icon: '📜', status: 'info' })) : []);
+
+    const isEN = (typeof i18next !== 'undefined' && i18next.language === 'en');
+    const logTitle = typeof t === 'function' ? t('gamble.log_modal_title', '📜 HISTORIAL DE LA RUN') : '📜 HISTORIAL DE LA RUN';
+    const emptyText = typeof t === 'function' ? t('gamble.log_empty', 'Aún no hay eventos registrados en esta run.') : 'Aún no hay eventos registrados en esta run.';
+
+    let listHTML = '';
+    if (history.length === 0) {
+      listHTML = `<div style="text-align:center;color:#64748b;font-size:11px;padding:24px 0;font-family:'VT323',monospace;font-size:18px;">${emptyText}</div>`;
+    } else {
+      listHTML = history.slice().reverse().map((entry, idx) => {
+        const itemNum = history.length - idx;
+        const stageText = entry.stage ? (isEN ? `Stage ${entry.stage}` : `Etapa ${entry.stage}`) : '';
+        const nodeText = (entry.nodeIndex !== undefined) ? (isEN ? `Node #${entry.nodeIndex + 1}` : `Nodo #${entry.nodeIndex + 1}`) : '';
+        const headerBadge = [stageText, nodeText].filter(Boolean).join(' · ');
+
+        let statusBorder = 'rgba(255,255,255,0.1)';
+        let statusBg = 'rgba(255,255,255,0.03)';
+        if (entry.status === 'success') {
+          statusBorder = 'rgba(16,185,129,0.4)';
+          statusBg = 'rgba(16,185,129,0.06)';
+        } else if (entry.status === 'danger') {
+          statusBorder = 'rgba(239,68,68,0.4)';
+          statusBg = 'rgba(239,68,68,0.06)';
+        } else if (entry.status === 'info') {
+          statusBorder = 'rgba(56,189,248,0.4)';
+          statusBg = 'rgba(56,189,248,0.06)';
+        }
+
+        const title = isEN ? (entry.titleEN || entry.title) : entry.title;
+        const desc = isEN ? (entry.descEN || entry.desc) : entry.desc;
+
+        return `
+          <div style="display:flex;gap:12px;padding:10px 12px;background:${statusBg};border:1px solid ${statusBorder};border-radius:8px;margin-bottom:8px;align-items:flex-start;">
+            <div style="font-size:24px;line-height:1;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5));">${entry.icon || '⚾'}</div>
+            <div style="flex:1;min-width:0;">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;flex-wrap:wrap;gap:6px;">
+                <span style="font-family:'Press Start 2P',monospace;font-size:7.5px;color:#f59e0b;">#${itemNum} ${headerBadge ? `(${headerBadge})` : ''}</span>
+              </div>
+              <div style="font-weight:bold;font-size:12px;color:#fff;font-family:'Outfit',sans-serif;line-height:1.3;margin-bottom:${desc ? '3px' : '0'};">
+                ${title}
+              </div>
+              ${desc ? `<div style="font-size:10.5px;color:#94a3b8;font-family:'Outfit',sans-serif;line-height:1.4;">${desc}</div>` : ''}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    overlay.innerHTML = `
+      <div style="background:#0b0f19;border:2px solid rgba(250,204,21,0.4);box-shadow:0 0 35px rgba(0,0,0,0.8);border-radius:14px;padding:22px;max-width:500px;width:92%;max-height:82vh;display:flex;flex-direction:column;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:10px;">
+          <h3 style="font-family:'Press Start 2P',monospace;font-size:11px;color:#facc15;margin:0;">${logTitle}</h3>
+          <button id="btn-close-run-log-modal" style="background:none;border:none;color:#94a3b8;font-size:16px;cursor:pointer;"><i class="fa-solid fa-times"></i></button>
+        </div>
+        <div style="overflow-y:auto;flex:1;padding-right:4px;max-height:400px;">
+          ${listHTML}
+        </div>
+        <button id="btn-ok-run-log-modal" class="btn" style="margin-top:14px;width:100%;font-family:'Press Start 2P',monospace;font-size:9.5px;padding:10px;">
+          OK
+        </button>
+      </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    const closeLog = () => overlay.remove();
+    overlay.querySelector('#btn-close-run-log-modal').addEventListener('click', closeLog);
+    overlay.querySelector('#btn-ok-run-log-modal').addEventListener('click', closeLog);
   }
 
   function getDraftSynergyPrediction(player) {
@@ -4841,22 +5294,19 @@ function initGameModeSelector() {
 
     let predictionText = "";
 
-    // Era synergy impact — uses Game.getEraTier so this matches the actual 4-tier /
-    // Build Era rules (only the active Build Era scales past T1; any other era with
-    // 2+ players stays fixed at T1 no matter how many more you sign).
+    // Era synergy impact
     const eraShort = getShortEraName(player.era);
-    const isBuildEra = player.era && player.era === window.Game.buildEra;
     const currentTier = window.Game.getEraTier(player.era, currentEraCount);
     const newTier = window.Game.getEraTier(player.era, newEraCount);
 
     if (newTier > currentTier) {
-      predictionText += `Firma activa Sinergia <strong>${eraShort} (T${newTier})</strong>!<br>`;
+      predictionText += (typeof t === 'function' ? t('sign.synergy_active', { era: eraShort, tier: newTier, defaultValue: `Signing activates <strong>${eraShort} (T${newTier})</strong> Synergy!` }) : `Signing activates <strong>${eraShort} (T${newTier})</strong> Synergy!`) + '<br>';
     } else {
       const nextTarget = newTier === 0 ? 2 : newTier === 1 ? (window.Game.hasTrait('era_accelerated') ? 2 : 4) : newTier === 2 ? 6 : 8;
       if (newTier < 4) {
-        predictionText += `Era ${eraShort}: <strong>${newEraCount}/${nextTarget}</strong> (T${newTier})<br>`;
+        predictionText += (typeof t === 'function' ? t('sign.era_progress', { era: eraShort, count: newEraCount, target: nextTarget, tier: newTier, defaultValue: `Era ${eraShort}: <strong>${newEraCount}/${nextTarget}</strong> (T${newTier})` }) : `Era ${eraShort}: <strong>${newEraCount}/${nextTarget}</strong> (T${newTier})`) + '<br>';
       } else {
-        predictionText += `Era ${eraShort}: ${newEraCount} jugadores (T4 MAX)<br>`;
+        predictionText += (typeof t === 'function' ? t('sign.era_max', { era: eraShort, count: newEraCount, defaultValue: `Era ${eraShort}: ${newEraCount} players (T4 MAX)` }) : `Era ${eraShort}: ${newEraCount} players (T4 MAX)`) + '<br>';
       }
     }
 
@@ -4864,11 +5314,11 @@ function initGameModeSelector() {
     if (player.team && player.team !== 'ROOK') {
       const teamShort = player.team;
       if (currentTeamCount === 1) {
-        predictionText += (typeof window.t==='function'?window.t('sign.chemistry_active', { team: teamShort }):`Firma activa Química de <strong>${teamShort}</strong> (+4 stats)`);
+        predictionText += (typeof t === 'function' ? t('sign.chemistry_active', { team: teamShort, defaultValue: `Signing activates <strong>${teamShort}</strong> Chemistry (+4 stats)` }) : `Signing activates <strong>${teamShort}</strong> Chemistry (+4 stats)`);
       } else if (currentTeamCount === 3) {
-        predictionText += (typeof window.t==='function'?window.t('sign.dynasty_active', { team: teamShort }):`Firma activa Dinastía de <strong>${teamShort}</strong> (+10 stats)`);
+        predictionText += (typeof t === 'function' ? t('sign.dynasty_active', { team: teamShort, defaultValue: `Signing activates <strong>${teamShort}</strong> Dynasty (+10 stats)` }) : `Signing activates <strong>${teamShort}</strong> Dynasty (+10 stats)`);
       } else {
-        predictionText += `Franquicia ${teamShort}: ${currentTeamCount} ➡️ <strong>${currentTeamCount + 1}/2</strong>`;
+        predictionText += (typeof t === 'function' ? t('sign.franchise_progress', { team: teamShort, count: currentTeamCount, next: currentTeamCount + 1, defaultValue: `Franchise ${teamShort}: ${currentTeamCount} ➡️ <strong>${currentTeamCount + 1}/2</strong>` }) : `Franchise ${teamShort}: ${currentTeamCount} ➡️ <strong>${currentTeamCount + 1}/2</strong>`);
       }
     }
 
@@ -4885,7 +5335,6 @@ function initGameModeSelector() {
   }
 
   // DRAFT SCREEN GENERATOR
-  // DRAFT SCREEN GENERATOR
   function setupDraftPickScreen() {
     let pool = el.draftOptionsRow || el.starterPool || document.getElementById('starter-selection-pool') || document.getElementById('draft-options-row');
     if (pool) {
@@ -4896,7 +5345,7 @@ function initGameModeSelector() {
     
     const titleEl = el.screenDraft.querySelector('h2');
     if (titleEl) {
-      titleEl.innerHTML = `<i class="fa-solid fa-file-signature"></i> ` + t('draft.title');
+      titleEl.innerHTML = `<i class="fa-solid fa-file-signature"></i> ` + (typeof t === 'function' ? t('draft.title', 'Player Signings') : 'Player Signings');
     }
     const descEl = el.screenDraft.querySelector('p');
     if (descEl) {
@@ -4935,8 +5384,23 @@ function initGameModeSelector() {
         player._signCost = cost;
         const res = window.Game.addPlayerToRoster(player);
         if (res.success) {
+          if (window.AudioManager && typeof window.AudioManager.play === 'function') {
+            window.AudioManager.play('money');
+            window.AudioManager.play('draft_pick');
+          }
           window.Game.budget = Math.max(0, (window.Game.budget || 0) - cost);
           delete player._signCost;
+          if (window.Game && typeof window.Game.logRunNode === 'function') {
+            window.Game.logRunNode({
+              type: 'draft',
+              icon: '✍️',
+              title: `Firma: ${player.name} (${player.pos} · ${player.rarity})`,
+              titleEN: `Signed: ${player.name} (${player.pos} · ${player.rarity})`,
+              desc: `Costo: $${cost}`,
+              descEN: `Cost: $${cost}`,
+              status: 'info'
+            });
+          }
           alert(res.message + t('draft.signed_cost_suffix', { cost: cost }));
           renderActiveRoster();
           renderSynergiesAndItems();
@@ -4959,7 +5423,7 @@ function initGameModeSelector() {
           <div style="font-size:10px;color:${rColor};font-weight:bold;">${player.rarity}</div>
           <div style="font-size:9.5px;color:#9ca3af;text-align:center;margin-top:2px;font-family:'Press Start 2P',monospace;">${player.pos} • OVR ${ovr}</div>
         </div>
-        <div style="font-size:10px; color:#f59e0b; font-weight:bold; margin-top:4px; text-align:center; font-family:'Press Start 2P',monospace;">Coste: $${cost}</div>
+        <div style="font-size:10px; color:#f59e0b; font-weight:bold; margin-top:4px; text-align:center; font-family:'Press Start 2P',monospace;">${typeof t === 'function' ? t('draft.cost_label', { cost: cost, defaultValue: `Cost: $${cost}` }) : `Cost: $${cost}`}</div>
         <div class="draft-synergy-helper">${predictionText}</div>
       `;
       cardCol.appendChild(btnSign);
@@ -4975,6 +5439,17 @@ function initGameModeSelector() {
     btnSkip.style.width = "100%";
     btnSkip.innerHTML = t('draft.decline_btn');
     btnSkip.addEventListener('click', () => {
+      if (window.Game && typeof window.Game.logRunNode === 'function') {
+        window.Game.logRunNode({
+          type: 'draft_skip',
+          icon: '🚪',
+          title: `Firma Declinada`,
+          titleEN: `Signing Declined`,
+          desc: `Decidiste no contratar a ningún jugador`,
+          descEN: `Chose not to sign any player`,
+          status: 'neutral'
+        });
+      }
       closeNodeCompleted();
     });
 
@@ -5059,7 +5534,7 @@ function initGameModeSelector() {
       <div style="font-size:48px;color:rgba(255,255,255,0.15);margin-bottom:20px;">
         <i class="fa-solid fa-forward"></i>
       </div>
-      <p style="font-size:12px;color:#9ca3af;text-align:center;margin-bottom:20px;">
+      <p style="font-size:12px;color:#94a3b8;text-align:center;margin-bottom:20px;">
         ${t('draft.decline_desc')}
       </p>
     `;
@@ -5082,9 +5557,13 @@ function initGameModeSelector() {
         const locked = nodesLeft > 0;
         const item = document.createElement('div');
         item.className = "swap-bench-item";
+        const lockText = typeof t === 'function' ? t('draft.locked_slot', { count: nodesLeft, defaultValue: `🔒 locked (${nodesLeft} nodes)` }) : `🔒 locked (${nodesLeft} nodes)`;
+        const lockTitle = typeof t === 'function' ? t('draft.locked_title', 'Position locked by a failed gamble') : 'Position locked by a failed gamble';
+        const replaceText = typeof t === 'function' ? t('draft.replace_btn', 'RELEASE') : 'RELEASE';
+
         item.innerHTML = `
-          <div><strong>[${slot}]</strong> ${player.name} (${player.pos} | ${player.rarity})${locked ? ` <span style="color:#ef4444;font-size:10px;">🔒 bloqueado (${nodesLeft} nodos)</span>` : ''}</div>
-          <button class="btn btn-secondary" style="padding: 4px 10px; font-size:11px; background:${locked ? '#334155' : '#ef4444'};" data-replace-slot="${slot}" ${locked ? 'disabled title="Posición bloqueada por una apuesta fallida"' : ''}>Reemplazar</button>
+          <div><strong>[${slot}]</strong> ${player.name} (${player.pos} | ${player.rarity})${locked ? ` <span style="color:#ef4444;font-size:10px;">${lockText}</span>` : ''}</div>
+          <button class="btn btn-secondary" style="padding: 4px 10px; font-size:11px; background:${locked ? '#334155' : '#ef4444'};" data-replace-slot="${slot}" ${locked ? `disabled title="${lockTitle}"` : ''}>${replaceText}</button>
         `;
         el.modalSwapList.appendChild(item);
       }
@@ -5093,110 +5572,387 @@ function initGameModeSelector() {
     el.modalSwap.classList.remove('hidden');
   }
 
-  // MANAGER DECISION EVENT SCREEN SETUP
+  // MANAGER DECISION EVENT / EQUIPMENT WORKSHOP SCREEN SETUP (STORE OVERHAUL)
   function setupManagerEventScreen() {
     const event = window.Game.getRandomEvent();
-    el.eventTitle.innerHTML = `<span style="font-size:28px;margin-right:10px;">${event.icon || '📜'}</span>${event.title}`;
+    el.eventTitle.innerHTML = `<span style="font-size:28px;margin-right:10px;filter:drop-shadow(0 0 10px rgba(250,204,21,0.5));">${event.icon || '🛠️'}</span>${event.title}`;
     el.eventDesc.innerText = event.desc;
-
     el.eventChoicesContainer.innerHTML = "";
-    event.choices.forEach(choice => {
-      const btn = document.createElement('button');
-      btn.className = `event-choice-btn event-choice-risk-${choice.risk || 'safe'}`;
+    el.eventChoicesContainer.className = "event-store-grid";
 
-      const costText = choice.cost > 0 ? `-$${choice.cost}` : (choice.cost < 0 ? `+$${Math.abs(choice.cost)}` : "GRATIS");
-      const riskBadge = choice.risk === 'high' ? '🔴 ALTO RIESGO' : (choice.risk === 'moderate' ? '🟡 RIESGO MODERADO' : '🟢 SEGURO');
-      const isRisky = choice.successChance !== undefined && choice.successChance < 1.0;
-      const chanceText = isRisky ? ` (${Math.round(choice.successChance * 100)}% ÉXITO)` : '';
-      const failPreviewHTML = (isRisky && choice.failPreview)
-        ? `<div style="font-size:10px;color:#ef4444;margin-top:3px;">❌ ${Math.round((1 - choice.successChance) * 100)}% FALLO → ${choice.failPreview}</div>`
-        : '';
+    // If it's a 20-Item system event
+    if (event.safeOption && event.riskyOption) {
+      const isConsumable = event.safeOption.isConsumable === true;
+      const typeTag = isConsumable 
+        ? (typeof t === 'function' ? t('equip.consumable_tag', '🧪 CONSUMIBLE (1 SOLO USO)') : '🧪 CONSUMIBLE (1 SOLO USO)')
+        : (typeof t === 'function' ? t('equip.equipable_tag', '🎒 EQUIPAMIENTO PERMANENTE') : '🎒 EQUIPAMIENTO PERMANENTE');
 
-      btn.innerHTML = `
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;">
-          <div style="display:flex;align-items:center;gap:12px;">
-            <span style="font-size:26px;">${choice.icon || '👉'}</span>
+      // ── CARD 1: SAFE OPTION ─────────────────────────────────────────────
+      const safeCard = document.createElement('div');
+      safeCard.className = 'event-store-card event-store-card-safe';
+      const safeAffordable = (window.Game.budget || 0) >= event.safeOption.cost;
+
+      safeCard.innerHTML = `
+        <div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <span style="font-family:'Press Start 2P',monospace; font-size:8px; color:#10b981; background:rgba(16,185,129,0.15); border:1px solid #10b981; padding:3px 8px; border-radius:12px;">
+              ${typeof t === 'function' ? t('equip.store_safe_card_title', '🟢 COMPRA SEGURA (100%)') : '🟢 COMPRA SEGURA (100%)'}
+            </span>
+            <span style="font-family:'Press Start 2P',monospace; font-size:12px; color:#f59e0b; font-weight:bold;">
+              $${event.safeOption.cost}
+            </span>
+          </div>
+
+          <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
+            <div style="font-size:36px; line-height:1; filter:drop-shadow(0 2px 8px rgba(0,0,0,0.6));">${event.safeOption.icon || '🎒'}</div>
             <div>
-              <div style="font-weight:bold;font-size:14px;color:#fff;">${choice.text}</div>
-              <div style="font-size:11px;color:#94a3b8;margin-top:2px;">
-                <span class="choice-risk-tag choice-risk-${choice.risk || 'safe'}">${riskBadge}</span>${chanceText}
-              </div>
-              ${failPreviewHTML}
+              <div style="font-weight:bold; font-size:14px; color:#fff; font-family:'Outfit', sans-serif;">${event.safeOption.name}</div>
+              <div style="font-size:10px; color:#38bdf8; font-weight:bold; margin-top:2px;">${typeTag}</div>
             </div>
           </div>
-          <div style="font-family:'Press Start 2P',monospace;font-size:11px;color:${choice.cost < 0 ? '#10b981' : '#f59e0b'};">
-            ${costText}
+
+          <div style="padding:10px; background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.25); border-radius:8px; margin-bottom:14px;">
+            <div style="font-size:13px; font-weight:bold; color:#00ff66; font-family:'Press Start 2P',monospace;">
+              ${event.safeOption.statDesc}
+            </div>
+            <div style="font-size:10.5px; color:#94a3b8; margin-top:4px; line-height:1.4;">
+              ${typeof t === 'function' ? t('equip.store_safe_card_desc', 'Compra inmediata sin riesgos. Se guarda en tu mochila de ITEMS.') : 'Compra inmediata sin riesgos. Se guarda en tu mochila de ITEMS.'}
+            </div>
           </div>
         </div>
+
+        <button class="btn" id="btn-buy-safe-item" style="background:#10b981; color:#000; font-weight:bold; font-family:'Press Start 2P',monospace; font-size:9.5px; padding:12px; width:100%; border:none;" ${!safeAffordable ? 'disabled style="opacity:0.4; cursor:not-allowed;"' : ''}>
+          ${!safeAffordable ? (typeof t === 'function' ? t('draft.insufficient_funds', { cost: event.safeOption.cost }) : 'SIN FONDOS') : (typeof t === 'function' ? t('equip.store_btn_buy_safe', { cost: event.safeOption.cost }) : `COMPRAR POR $${event.safeOption.cost}`)}
+        </button>
       `;
 
-      // Check budget
-      if (choice.cost > 0 && window.Game.budget < choice.cost) {
-        btn.disabled = true;
-        btn.style.opacity = '0.5';
-      }
-
-      btn.addEventListener('click', () => {
-        // Apply budget cost
-        window.Game.budget -= choice.cost;
-
-        const chance = choice.successChance !== undefined ? choice.successChance : 1.0;
-        const isSuccess = Math.random() <= chance;
-
-        const resolveChoice = () => {
-          let title, badgeText, badgeColor, icon, desc;
-
-          if (isSuccess) {
-            choice.action(window.Game);
-            title = choice.text;
-            badgeText = choice.risk === 'high' ? (typeof window.t==='function'?window.t('ev.badge_risk_success'):'¡ÉXITO EN EL RIESGO!') : (typeof window.t==='function'?window.t('ev.badge_taken'):'¡DECISIÓN TOMADA!');
-            badgeColor = '#10b981';
-            icon = choice.icon || '✨';
-            desc = choice.successMsg || (typeof window.t==='function'?window.t('ev.generic_success'):'La decisión se ejecutó con éxito en tu plantilla.');
-          } else {
-            if (choice.failAction) choice.failAction(window.Game);
-            title = choice.text;
-            badgeText = '¡RIESGO FALLIDO!';
-            badgeColor = '#ef4444';
-            icon = '❌';
-            desc = choice.failMsg || (typeof window.t==='function'?window.t('ev.generic_fail'):'La opción arriesgada no salió como esperabas y provocó consecuencias negativas.');
-          }
-
-          if (choice.cost !== 0) {
-            window.Game.purchasedItems.push(`${event.title}: ${choice.text.substring(0, 20)}...`);
-          }
-
-          renderActiveRoster();
-          renderSynergiesAndItems();
-          updateHUD();
-
-          showRetroResultModal({
-            title,
-            badgeText,
-            badgeColor,
-            icon,
-            desc,
-            onClose: () => closeNodeCompleted()
-          });
-        };
-
-        if (chance < 1.0) {
-          showRiskRouletteModal({ chance, isSuccess, onDone: resolveChoice });
-        } else {
-          resolveChoice();
+      safeCard.querySelector('#btn-buy-safe-item').addEventListener('click', () => {
+        if (!safeAffordable) return;
+        if (window.AudioManager && typeof window.AudioManager.play === 'function') {
+          window.AudioManager.play('money');
         }
+        window.Game.budget = Math.max(0, window.Game.budget - event.safeOption.cost);
+
+        if (!window.Game.itemsInventory) window.Game.itemsInventory = [];
+        window.Game.itemsInventory.push(event.safeOption);
+        window.Game.purchasedItems.push(`${event.safeOption.name} (${event.safeOption.statDesc})`);
+
+        if (window.Game && typeof window.Game.logRunNode === 'function') {
+          window.Game.logRunNode({
+            type: 'store',
+            icon: event.safeOption.icon || '🎒',
+            title: `Comprado: ${event.safeOption.name}`,
+            titleEN: `Purchased: ${event.safeOption.name}`,
+            desc: `${event.safeOption.statDesc} (-$${event.safeOption.cost})`,
+            descEN: `${event.safeOption.statDesc} (-$${event.safeOption.cost})`,
+            status: 'info'
+          });
+        }
+
+        renderActiveRoster();
+        renderSynergiesAndItems();
+        updateHUD();
+
+        const resultDesc = isConsumable
+          ? `¡${event.safeOption.name} guardado en tu panel de ITEMS! Es de 1 SOLO USO: arrástralo sobre cualquier jugador para consumirlo.`
+          : `¡${event.safeOption.name} guardado en tu panel de ITEMS! Arrástralo a cualquier jugador de tu alineación para equiparlo.`;
+
+        showRetroResultModal({
+          title: event.safeOption.name,
+          badgeText: typeof t === 'function' ? t('equip.result_safe_buy_title', '🎉 ¡EQUIPAMIENTO ADQUIRIDO!') : '🎉 ¡EQUIPAMIENTO ADQUIRIDO!',
+          badgeColor: '#10b981',
+          icon: event.safeOption.icon || '🎒',
+          desc: resultDesc,
+          onClose: () => closeNodeCompleted()
+        });
       });
 
-      el.eventChoicesContainer.appendChild(btn);
-    });
+      el.eventChoicesContainer.appendChild(safeCard);
 
-    window.showScreen('screen-event');
+      // ── CARD 2: RISKY OPTION (BATTING CAGE TEST) ───────────────────────
+      const riskyCard = document.createElement('div');
+      riskyCard.className = 'event-store-card event-store-card-risky';
+      const riskyAffordable = (window.Game.budget || 0) >= event.riskyOption.cost;
+
+      riskyCard.innerHTML = `
+        <div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <span style="font-family:'Press Start 2P',monospace; font-size:8px; color:#ef4444; background:rgba(239,68,68,0.15); border:1px solid #ef4444; padding:3px 8px; border-radius:12px;">
+              ${typeof t === 'function' ? t('equip.store_risky_card_title', '🔴 JAULA DE PRUEBAS (60% RIESGO)') : '🔴 JAULA DE PRUEBAS (60% RIESGO)'}
+            </span>
+            <span style="font-family:'Press Start 2P',monospace; font-size:12px; color:#f59e0b; font-weight:bold;">
+              $${event.riskyOption.cost}
+            </span>
+          </div>
+
+          <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
+            <div style="font-size:36px; line-height:1; filter:drop-shadow(0 2px 8px rgba(0,0,0,0.6));">${event.riskyOption.icon || '🔥'}</div>
+            <div>
+              <div style="font-weight:bold; font-size:14px; color:#fff; font-family:'Outfit', sans-serif;">${event.riskyOption.name}</div>
+              <div style="font-size:10px; color:#f59e0b; font-weight:bold; margin-top:2px;">✨ VERSIÓN LEGENDARIA</div>
+            </div>
+          </div>
+
+          <div style="padding:10px; background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.25); border-radius:8px; margin-bottom:14px;">
+            <div style="font-size:12px; font-weight:bold; color:#f59e0b; font-family:'Press Start 2P',monospace;">
+              🏆 ${event.riskyOption.statDesc}
+            </div>
+            <div style="font-size:10px; color:#ef4444; margin-top:6px; font-weight:bold; line-height:1.4;">
+              ❌ 40% FALLO: El bateador probado sufre -${event.riskyOption.failStaminaCost || 35} Stamina.
+            </div>
+          </div>
+        </div>
+
+        <button class="btn" id="btn-test-risky-item" style="background:#ef4444; color:#fff; font-weight:bold; font-family:'Press Start 2P',monospace; font-size:9.5px; padding:12px; width:100%; border:none; box-shadow:0 0 15px rgba(239,68,68,0.4);" ${!riskyAffordable ? 'disabled style="opacity:0.4; cursor:not-allowed;"' : ''}>
+          ${!riskyAffordable ? (typeof t === 'function' ? t('draft.insufficient_funds', { cost: event.riskyOption.cost }) : 'SIN FONDOS') : (typeof t === 'function' ? t('equip.store_btn_test_risky', { cost: event.riskyOption.cost }) : `PROBAR PROTOTIPO ($${event.riskyOption.cost})`)}
+        </button>
+      `;
+
+      riskyCard.querySelector('#btn-test-risky-item').addEventListener('click', () => {
+        if (!riskyAffordable) return;
+        showBatterSelectorModal({
+          title: `⚾ ${event.riskyOption.name}`,
+          subtitle: typeof t === 'function' ? t('equip.test_cage_desc', 'Selecciona qué bateador entrará a la jaula de pruebas para este prototipo:') : 'Selecciona qué bateador entrará a la jaula de pruebas para este prototipo:',
+          onSelect: (player, slotKey) => {
+            if (window.AudioManager && typeof window.AudioManager.play === 'function') {
+              window.AudioManager.play('money');
+            }
+            window.Game.budget = Math.max(0, window.Game.budget - event.riskyOption.cost);
+            const chance = event.riskyOption.successChance || 0.60;
+            const isSuccess = Math.random() <= chance;
+
+            const resolveRiskyChoice = () => {
+              let title, badgeText, badgeColor, icon, desc;
+
+              if (isSuccess) {
+                if (event.riskyOption.isConsumable) {
+                  window.Game.useConsumableItem(event.riskyOption, slotKey);
+                } else {
+                  if (player.equipped_item) {
+                    if (!window.Game.itemsInventory) window.Game.itemsInventory = [];
+                    window.Game.itemsInventory.push(player.equipped_item);
+                  }
+                  player.equipped_item = event.riskyOption;
+                }
+
+                window.Game.purchasedItems.push(`${event.riskyOption.name} (${event.riskyOption.statDesc})`);
+
+                title = event.riskyOption.name;
+                badgeText = typeof t === 'function' ? t('equip.result_cage_success_title', '🏆 ¡PROTOTIPO LEGENDARIO DESBLOQUEADO!') : '🏆 ¡PROTOTIPO LEGENDARIO DESBLOQUEADO!';
+                badgeColor = '#10b981';
+                icon = event.riskyOption.icon || '🏆';
+                desc = event.riskyOption.successMsg || `¡Prueba magistral! ${player.name} domina el prototipo legendario (${event.riskyOption.statDesc}).`;
+                if (window.Game && typeof window.Game.logRunNode === 'function') {
+                  window.Game.logRunNode({
+                    type: 'store_test',
+                    icon: '🏆',
+                    title: `Jaula de Pruebas: ÉXITO (${player.name})`,
+                    titleEN: `Batting Cage: SUCCESS (${player.name})`,
+                    desc: `${event.riskyOption.name} - ${event.riskyOption.statDesc}`,
+                    descEN: `${event.riskyOption.name} - ${event.riskyOption.statDesc}`,
+                    status: 'success'
+                  });
+                }
+              } else {
+                const failCost = event.riskyOption.failStaminaCost || 35;
+                player.stamina = Math.max(0, (player.stamina !== undefined ? player.stamina : 100) - failCost);
+
+                title = event.riskyOption.name;
+                badgeText = typeof t === 'function' ? t('equip.result_cage_fail_title', '💥 ¡FALLO EN LA JAULA DE PRUEBAS!') : '💥 ¡FALLO EN LA JAULA DE PRUEBAS!';
+                badgeColor = '#ef4444';
+                icon = '💥';
+                desc = event.riskyOption.failMsg || `¡El prototipo falló en la prueba! ${player.name} pierde -${failCost} Stamina.`;
+                if (window.Game && typeof window.Game.logRunNode === 'function') {
+                  window.Game.logRunNode({
+                    type: 'store_test',
+                    icon: '💥',
+                    title: `Jaula de Pruebas: FALLO (${player.name})`,
+                    titleEN: `Batting Cage: FAILED (${player.name})`,
+                    desc: `${player.name} sufrió -${failCost} Stamina`,
+                    descEN: `${player.name} suffered -${failCost} Stamina`,
+                    status: 'danger'
+                  });
+                }
+              }
+
+              renderActiveRoster();
+              renderSynergiesAndItems();
+              updateHUD();
+
+              showRetroResultModal({
+                title,
+                badgeText,
+                badgeColor,
+                icon,
+                desc,
+                testerPlayer: !isSuccess ? player : null,
+                onClose: () => closeNodeCompleted()
+              });
+            };
+
+            showRiskRouletteModal({ chance, isSuccess, onDone: resolveRiskyChoice });
+          }
+        });
+      });
+
+      el.eventChoicesContainer.appendChild(riskyCard);
+
+      // ── CARD 3: REJECT / PASS OPTION ────────────────────────────────────
+      const rejectCard = document.createElement('div');
+      rejectCard.className = 'event-store-card event-store-card-reject';
+
+      rejectCard.innerHTML = `
+        <div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <span style="font-family:'Press Start 2P',monospace; font-size:8px; color:#94a3b8; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); padding:3px 8px; border-radius:12px;">
+              ${typeof t === 'function' ? t('equip.store_reject_card_title', '⚪ RECHAZAR OFERTA') : '⚪ RECHAZAR OFERTA'}
+            </span>
+            <span style="font-family:'Press Start 2P',monospace; font-size:11px; color:#10b981;">
+              $0
+            </span>
+          </div>
+
+          <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
+            <div style="font-size:36px; line-height:1; color:#94a3b8;">⚪</div>
+            <div>
+              <div style="font-weight:bold; font-size:14px; color:#cbd5e1; font-family:'Outfit', sans-serif;">
+                ${typeof t === 'function' ? t('equip.event_reject_btn', 'Rechazar Oferta') : 'Rechazar Oferta'}
+              </div>
+              <div style="font-size:10px; color:#64748b; margin-top:2px;">
+                ${typeof t === 'function' ? t('equip.store_reject_card_desc', 'Continuar tu camino sin gastar presupuesto.') : 'Continuar tu camino sin gastar presupuesto.'}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn btn-secondary" id="btn-reject-event-offer" style="font-family:'Press Start 2P',monospace; font-size:9.5px; padding:12px; width:100%; border:1px solid rgba(255,255,255,0.2);">
+          ${typeof t === 'function' ? t('equip.store_btn_reject', 'PASAR OFERTA') : 'PASAR OFERTA'}
+        </button>
+      `;
+
+      rejectCard.querySelector('#btn-reject-event-offer').addEventListener('click', () => {
+        if (window.Game && typeof window.Game.logRunNode === 'function') {
+          window.Game.logRunNode({
+            type: 'store_skip',
+            icon: '🚪',
+            title: `Salida de la Tienda`,
+            titleEN: `Left the Store`,
+            desc: `Continuaste la ruta sin compras adicionales`,
+            descEN: `Continued route without extra purchases`,
+            status: 'neutral'
+          });
+        }
+        closeNodeCompleted();
+      });
+
+      el.eventChoicesContainer.appendChild(rejectCard);
+
+      window.showScreen('screen-event');
+      return;
+    }
+
+    // Fallback for legacy events
+    if (event.choices) {
+      event.choices.forEach(choice => {
+        const btn = document.createElement('button');
+        btn.className = `event-choice-btn event-choice-risk-${choice.risk || 'safe'}`;
+
+        const costText = choice.cost > 0 ? `-$${choice.cost}` : (choice.cost < 0 ? `+$${Math.abs(choice.cost)}` : "GRATIS");
+        const riskBadge = choice.risk === 'high' ? '🔴 ALTO RIESGO' : (choice.risk === 'moderate' ? '🟡 RIESGO MODERADO' : '🟢 SEGURO');
+        const isRisky = choice.successChance !== undefined && choice.successChance < 1.0;
+        const chanceText = isRisky ? ` (${Math.round(choice.successChance * 100)}% ÉXITO)` : '';
+        const failPreviewHTML = (isRisky && choice.failPreview)
+          ? `<div style="font-size:10px;color:#ef4444;margin-top:3px;">❌ ${Math.round((1 - choice.successChance) * 100)}% FALLO → ${choice.failPreview}</div>`
+          : '';
+
+        btn.innerHTML = `
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;">
+            <div style="display:flex;align-items:center;gap:12px;">
+              <span style="font-size:26px;">${choice.icon || '👉'}</span>
+              <div>
+                <div style="font-weight:bold;font-size:14px;color:#fff;">${choice.text}</div>
+                <div style="font-size:11px;color:#94a3b8;margin-top:2px;">
+                  <span class="choice-risk-tag choice-risk-${choice.risk || 'safe'}">${riskBadge}</span>${chanceText}
+                </div>
+                ${failPreviewHTML}
+              </div>
+            </div>
+            <div style="font-family:'Press Start 2P',monospace;font-size:11px;color:${choice.cost < 0 ? '#10b981' : '#f59e0b'};">
+              ${costText}
+            </div>
+          </div>
+        `;
+
+        if (choice.cost > 0 && window.Game.budget < choice.cost) {
+          btn.disabled = true;
+          btn.style.opacity = '0.5';
+        }
+
+        btn.addEventListener('click', () => {
+          window.Game.budget -= choice.cost;
+          const chance = choice.successChance !== undefined ? choice.successChance : 1.0;
+          const isSuccess = Math.random() <= chance;
+
+          const resolveChoice = () => {
+            let title, badgeText, badgeColor, icon, desc;
+            if (isSuccess) {
+              choice.action(window.Game);
+              title = choice.text;
+              badgeText = choice.risk === 'high' ? (typeof window.t==='function'?window.t('ev.badge_risk_success'):'¡ÉXITO EN EL RIESGO!') : (typeof window.t==='function'?window.t('ev.badge_taken'):'¡DECISIÓN TOMADA!');
+              badgeColor = '#10b981';
+              icon = choice.icon || '✨';
+              desc = choice.successMsg || (typeof window.t==='function'?window.t('ev.generic_success'):'La decisión se ejecutó con éxito en tu plantilla.');
+            } else {
+              if (choice.failAction) choice.failAction(window.Game);
+              title = choice.text;
+              badgeText = '¡RIESGO FALLIDO!';
+              badgeColor = '#ef4444';
+              icon = '❌';
+              desc = choice.failMsg || (typeof window.t==='function'?window.t('ev.generic_fail'):'La opción arriesgada no salió como esperabas y provocó consecuencias negativas.');
+            }
+
+            if (choice.cost !== 0) {
+              window.Game.purchasedItems.push(`${event.title}: ${choice.text.substring(0, 20)}...`);
+            }
+
+            renderActiveRoster();
+            renderSynergiesAndItems();
+            updateHUD();
+
+            showRetroResultModal({
+              title,
+              badgeText,
+              badgeColor,
+              icon,
+              desc,
+              onClose: () => closeNodeCompleted()
+            });
+          };
+
+          if (chance < 1.0) {
+            showRiskRouletteModal({ chance, isSuccess, onDone: resolveChoice });
+          } else {
+            resolveChoice();
+          }
+        });
+
+        el.eventChoicesContainer.appendChild(btn);
+      });
+
+      window.showScreen('screen-event');
+    }
   }
 
-  // ── RISK ROULETTE: spins to the pre-rolled outcome, then reveals it ────
+  // ── RISK ROULETTE (ARCADE RETRO UPGRADE): spins to the pre-rolled outcome ────
   function showRiskRouletteModal({ chance, isSuccess, onDone }) {
     const overlay = document.createElement('div');
     overlay.className = 'roulette-overlay';
+
+    const titleText = typeof t === 'function' ? t('equip.roulette_title', '🎡 JAULA DE PRUEBAS: RULETA DE PROTOTIPO') : '🎡 JAULA DE PRUEBAS: RULETA DE PROTOTIPO';
+    const spinningText = typeof t === 'function' ? t('equip.roulette_spinning', '⏳ Probando en la jaula...') : '⏳ Probando en la jaula...';
+    const successText = typeof t === 'function' ? t('equip.roulette_success', '✅ ¡ÉXITO! ¡PROTOTIPO APROBADO!') : '✅ ¡ÉXITO! ¡PROTOTIPO APROBADO!';
+    const failText = typeof t === 'function' ? t('equip.roulette_fail', '❌ ¡FALLO! EL PROTOTIPO SE ROMPIÓ') : '❌ ¡FALLO! EL PROTOTIPO SE ROMPIÓ';
+    const centerSubText = typeof t === 'function' ? t('equip.roulette_center_success', 'ÉXITO') : 'ÉXITO';
 
     const greenDeg = Math.max(6, Math.min(354, chance * 360));
     const pad = 4;
@@ -5208,39 +5964,77 @@ function initGameModeSelector() {
       const lo = greenDeg + pad, hi = Math.max(lo + 1, 360 - pad);
       target = lo + Math.random() * (hi - lo);
     }
-    // The wheel spins clockwise (positive deg), so the segment that ends up under the
-    // fixed pointer at the top is the one at (360 - rotation) in the gradient's own
-    // coordinates, not at `rotation` itself — rotate by the complement so `target`
-    // actually lands under the pointer instead of its mirror image.
-    const totalRotation = 5 * 360 + (360 - target);
+    const totalRotation = 6 * 360 + (360 - target);
 
     overlay.innerHTML = `
       <div class="roulette-modal">
-        <div class="roulette-title">🎡 RULETA DE RIESGO</div>
+        <div class="roulette-title">${titleText}</div>
         <div class="roulette-wrap">
           <div class="roulette-pointer">▼</div>
-          <div class="roulette-wheel" id="roulette-wheel" style="background: conic-gradient(#10b981 0deg ${greenDeg}deg, #ef4444 ${greenDeg}deg 360deg);">
-            <div class="roulette-center">${Math.round(chance * 100)}%<br><span style="font-size:8px;">ÉXITO</span></div>
+          <div class="roulette-wheel-border"></div>
+          <div class="roulette-wheel" id="roulette-wheel" style="background: conic-gradient(#00ff66 0deg ${greenDeg}deg, #ff3366 ${greenDeg}deg 360deg);">
+            <div class="roulette-center">
+              <span style="font-size:14px; font-weight:bold; color:#facc15;">${Math.round(chance * 100)}%</span>
+              <span style="font-size:7px; color:#cbd5e1; margin-top:2px;">${centerSubText}</span>
+            </div>
           </div>
         </div>
-        <div class="roulette-status" id="roulette-status">Girando...</div>
+        <div class="roulette-status" id="roulette-status">${spinningText}</div>
       </div>
     `;
     document.body.appendChild(overlay);
 
     const wheel = overlay.querySelector('#roulette-wheel');
-    wheel.style.transition = 'transform 3.2s cubic-bezier(0.15,0.65,0.15,1)';
-    void wheel.offsetWidth; // force reflow so the transition registers before the rotation change
+    const modal = overlay.querySelector('.roulette-modal');
+    const pointer = overlay.querySelector('.roulette-pointer');
+    const status = overlay.querySelector('#roulette-status');
+
+    wheel.style.transition = 'transform 3.2s cubic-bezier(0.12, 0.72, 0.15, 1)';
+    void wheel.offsetWidth;
     wheel.style.transform = `rotate(${totalRotation}deg)`;
 
+    // Audio cue for rapid roulette ticks during spin with decelerating tempo
+    let tickCount = 0;
+    const maxTicks = 16;
+    const playTick = () => {
+      tickCount++;
+      if (window.AudioManager && typeof window.AudioManager.play === 'function') {
+        const pitchMult = 0.85 + (tickCount / maxTicks) * 0.4;
+        window.AudioManager.play('roulette_tick', pitchMult);
+      }
+      if (tickCount < maxTicks) {
+        const nextDelay = 70 + (tickCount * 14); // gradually decelerate
+        setTimeout(playTick, nextDelay);
+      }
+    };
+    playTick();
+
     setTimeout(() => {
-      const status = overlay.querySelector('#roulette-status');
-      status.textContent = isSuccess ? '✅ ¡ÉXITO!' : '❌ FALLASTE';
-      status.style.color = isSuccess ? '#10b981' : '#ef4444';
+      status.textContent = isSuccess ? successText : failText;
+      status.style.color = isSuccess ? '#00ff66' : '#ef4444';
+      status.style.textShadow = isSuccess ? '0 0 10px rgba(0,255,102,0.6)' : '0 0 10px rgba(239,68,68,0.6)';
+
+      if (isSuccess) {
+        pointer.style.color = '#00ff66';
+        wheel.style.borderColor = '#00ff66';
+        wheel.style.boxShadow = '0 0 45px rgba(0,255,102,0.6)';
+        if (window.AudioManager && typeof window.AudioManager.play === 'function') {
+          window.AudioManager.play('roulette_win');
+        }
+      } else {
+        pointer.style.color = '#ef4444';
+        wheel.style.borderColor = '#ef4444';
+        wheel.style.boxShadow = '0 0 45px rgba(239,68,68,0.6)';
+        modal.classList.add('retro-shake-anim');
+        if (window.AudioManager && typeof window.AudioManager.play === 'function') {
+          window.AudioManager.play('defense_error');
+        }
+      }
+
       setTimeout(() => {
         overlay.remove();
         onDone();
-      }, 900);
+      }, 1000);
     }, 3200);
   }
 
@@ -5486,6 +6280,9 @@ function initGameModeSelector() {
   function executeTrainingCardPurchase(offer, price) {
     if (window.Game.budget < price || offer.bought) return;
 
+    if (window.AudioManager && typeof window.AudioManager.play === 'function') {
+      window.AudioManager.play('money');
+    }
     window.Game.budget -= price;
     offer.bought = true;
     purchasesInCurrentVisit++;
@@ -5529,9 +6326,27 @@ function initGameModeSelector() {
       }
     }
 
+    if (window.AudioManager && typeof window.AudioManager.play === 'function') {
+      if (isFail) window.AudioManager.play('defense_error');
+      else if (isCrit) window.AudioManager.play('roulette_win');
+      else window.AudioManager.play('upgrade');
+    }
+
     renderActiveRoster();
     renderSynergiesAndItems();
     updateHUD();
+
+    if (window.Game && typeof window.Game.logRunNode === 'function') {
+      window.Game.logRunNode({
+        type: 'training',
+        icon: isFail ? '💥' : (isCrit ? '🎉' : '🏋️'),
+        title: isFail ? `Entrenamiento Fallido: ${player.name}` : (isCrit ? `Entrenamiento CRÍTICO: ${player.name}` : `Entrenamiento: ${player.name}`),
+        titleEN: isFail ? `Training Failed: ${player.name}` : (isCrit ? `CRITICAL Training: ${player.name}` : `Training: ${player.name}`),
+        desc: stats.map(s => `${s.label}: ${s.value}`).join(' · '),
+        descEN: stats.map(s => `${s.label}: ${s.value}`).join(' · '),
+        status: isFail ? 'danger' : 'success'
+      });
+    }
 
     let title = `${player.name} [${offer.slot}]`;
     let badgeText = isFail ? (typeof window.t==='function'?window.t('training.badge_fail'):'¡SOBRECARGA MUSCULAR!') : (isCrit ? (typeof window.t==='function'?window.t('training.badge_crit', { label: tier.label }):`¡CRÍTICO ${tier.label}! 🎉`) : (typeof window.t==='function'?window.t('training.badge_ok', { label: tier.label }):`¡ENTRENAMIENTO ${tier.label}!`));
@@ -6877,6 +7692,18 @@ function initGameModeSelector() {
             svgBall.setAttribute('cx', String(targetCoord.x + (targetCoord.x > 150 ? 25 : -25)));
             svgBall.setAttribute('cy', String(targetCoord.y - 15));
           }
+          if (window.Game) {
+            window.Game.defensiveErrors = (window.Game.defensiveErrors || 0) + 1;
+            if (window.Game.runStats) {
+              window.Game.runStats.errors = (window.Game.runStats.errors || 0) + 1;
+            }
+            const fielder = (window.Game.roster && targetPos) ? window.Game.roster[targetPos] : null;
+            if (fielder && fielder.name) {
+              window.Game.runBatterStats = window.Game.runBatterStats || {};
+              window.Game.runBatterStats[fielder.name] = window.Game.runBatterStats[fielder.name] || {};
+              window.Game.runBatterStats[fielder.name].e = (window.Game.runBatterStats[fielder.name].e || 0) + 1;
+            }
+          }
           if (window.AudioManager) window.AudioManager.play('defense_error');
           showOutcomePopup('DEF_LOSE', `⚠️ ${_t('sim.def_fail_banner_title', {}, '¡ERROR DEFENSIVO!')}\n-${totalLostDmg} ${_t('common.damage', {}, 'DAÑO')}`);
           const modalBox = modal.querySelector('.def-modal-box');
@@ -7634,6 +8461,32 @@ function initGameModeSelector() {
       if (window.Challenge162) window.Challenge162.onPlayoffMatchResolved(res);
       return;
     }
+
+    if (window.Game && typeof window.Game.logRunNode === 'function') {
+      const enemyName = (window.Game.currentEnemy && window.Game.currentEnemy.name) || 'Rival';
+      const isBoss = !!res.isBossStage;
+      if (res.won) {
+        window.Game.logRunNode({
+          type: isBoss ? 'boss' : 'match',
+          icon: isBoss ? '👑' : '⚾',
+          title: isBoss ? `Victoria Boss vs ${enemyName}` : `Victoria vs ${enemyName}`,
+          titleEN: isBoss ? `Boss Victory vs ${enemyName}` : `Victory vs ${enemyName}`,
+          desc: `Ganaste +$${res.earnings || 0} de presupuesto`,
+          descEN: `Earned +$${res.earnings || 0} budget`,
+          status: 'success'
+        });
+      } else {
+        window.Game.logRunNode({
+          type: 'defeat',
+          icon: '💀',
+          title: `Derrota vs ${enemyName}`,
+          titleEN: `Defeat vs ${enemyName}`,
+          desc: res.message || '',
+          descEN: res.message || '',
+          status: 'danger'
+        });
+      }
+    }
     const continueRouting = () => {
       if (!res.won) {
         triggerGameOver(false, res.message);
@@ -7771,6 +8624,9 @@ function initGameModeSelector() {
 
   // ── CHEST NODE: free trait, no fight required ─────────────────────────
   function openChestNode() {
+    if (window.AudioManager && typeof window.AudioManager.play === 'function') {
+      window.AudioManager.play('card_deal');
+    }
     const overlay = document.createElement('div');
     overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.92);backdrop-filter:blur(12px);z-index:800;display:flex;align-items:center;justify-content:center;';
 
@@ -7787,7 +8643,21 @@ function initGameModeSelector() {
         </div>`;
       document.body.appendChild(overlay);
       overlay.querySelector('#btn-chest-claim').addEventListener('click', () => {
+        if (window.AudioManager && typeof window.AudioManager.play === 'function') {
+          window.AudioManager.play('money');
+        }
         window.Game.budget = (window.Game.budget || 0) + 15;
+        if (window.Game && typeof window.Game.logRunNode === 'function') {
+          window.Game.logRunNode({
+            type: 'chest',
+            icon: '📦',
+            title: `Cofre de Consuelo`,
+            titleEN: `Consolation Chest`,
+            desc: `Recibiste +$15 de presupuesto`,
+            descEN: `Received +$15 budget`,
+            status: 'neutral'
+          });
+        }
         overlay.remove();
         updateHUD();
         closeNodeCompleted();
@@ -7812,7 +8682,21 @@ function initGameModeSelector() {
 
     document.body.appendChild(overlay);
     overlay.querySelector('#btn-chest-claim').addEventListener('click', () => {
+      if (window.AudioManager && typeof window.AudioManager.play === 'function') {
+        window.AudioManager.play('synergy_tier_up');
+      }
       window.Game.equipTrait(trait.id);
+      if (window.Game && typeof window.Game.logRunNode === 'function') {
+        window.Game.logRunNode({
+          type: 'chest',
+          icon: '📦',
+          title: `Cofre de Habilidades`,
+          titleEN: `Trait Chest`,
+          desc: `Obtuviste "${trait.name}"`,
+          descEN: `Acquired "${trait.name}"`,
+          status: 'success'
+        });
+      }
       overlay.remove();
       renderEquippedTraits();
       closeNodeCompleted();
@@ -7824,7 +8708,14 @@ function initGameModeSelector() {
     const gamble = window.Game.getRandomGamble();
     const overlay = document.createElement('div');
     overlay.className = 'gamble-overlay';
-    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(20,0,0,0.92);backdrop-filter:blur(12px);z-index:800;display:flex;align-items:center;justify-content:center;';
+    overlay.style.cssText = 'position:fixed;inset:0;background:radial-gradient(circle at center, rgba(35,6,10,0.96) 0%, rgba(10,2,4,0.99) 70%, #000 100%);backdrop-filter:blur(16px);z-index:850;display:flex;align-items:center;justify-content:center;animation:fadeIn 0.3s ease-out;';
+
+    // Play special event dramatic tension intro sound (same as defense event)
+    if (window.AudioManager && typeof window.AudioManager.play === 'function') {
+      window.AudioManager.play('defense_tension_intro');
+    }
+
+    const currentBudget = window.Game.budget || 0;
 
     const rosterOptions = gamble.requiresTargetPlayer
       ? Object.keys(window.Game.roster)
@@ -7833,40 +8724,154 @@ function initGameModeSelector() {
           .join('')
       : '';
 
-    overlay.innerHTML = `
-      <div style="max-width:560px;width:92%;text-align:center;padding:20px;">
-        <div style="font-family:'Press Start 2P',monospace;font-size:12px;color:#ef4444;text-shadow:0 0 15px rgba(239,68,68,0.6);margin-bottom:6px;">${t('gamble.header', '🎲 APUESTA DE ALTO RIESGO')}</div>
-        <div style="font-size:22px;margin:6px 0 10px;">${gamble.icon} ${gamble.title}</div>
-        <div style="font-size:12px;color:#cbd5e1;margin-bottom:18px;line-height:1.5;">${gamble.desc}</div>
+    // Calculation / Consequence highlight card for ALL 4 High-Stakes Gambles
+    let calcCardHTML = '';
+    if (gamble.id === 'gamble_all_in_budget') {
+      const tripleAmount = currentBudget * 3;
+      calcCardHTML = `
+        <div style="background:rgba(250,204,21,0.08);border:1.5px solid rgba(250,204,21,0.35);border-radius:10px;padding:12px;margin-bottom:16px;text-align:left;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;border-bottom:1px solid rgba(250,204,21,0.2);padding-bottom:6px;">
+            <span style="font-size:10px;color:#94a3b8;font-family:'Press Start 2P',monospace;">${typeof t === 'function' ? t('gamble.budget.stakes_label', 'BUDGET AT STAKE:') : 'BUDGET AT STAKE:'}</span>
+            <span style="font-size:14px;color:#facc15;font-weight:bold;font-family:'Press Start 2P',monospace;">$${currentBudget}</span>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:10.5px;">
+            <div style="background:rgba(16,185,129,0.12);border:1px solid #10b981;border-radius:6px;padding:8px;">
+              <div style="color:#10b981;font-weight:bold;font-family:'Press Start 2P',monospace;font-size:8px;margin-bottom:4px;">${typeof t === 'function' ? t('gamble.budget.win_label', '🟢 50% IF YOU WIN:') : '🟢 50% IF YOU WIN:'}</div>
+              <div style="color:#00ff66;font-weight:bold;font-size:13px;font-family:'Press Start 2P',monospace;">$${tripleAmount}</div>
+              <div style="font-size:9.5px;color:#cbd5e1;margin-top:2px;">${typeof t === 'function' ? t('gamble.budget.win_detail', '(You receive 3x!)') : '(You receive 3x!)'}</div>
+            </div>
+            <div style="background:rgba(239,68,68,0.12);border:1px solid #ef4444;border-radius:6px;padding:8px;">
+              <div style="color:#ef4444;font-weight:bold;font-family:'Press Start 2P',monospace;font-size:8px;margin-bottom:4px;">${typeof t === 'function' ? t('gamble.budget.lose_label', '🔴 50% IF YOU LOSE:') : '🔴 50% IF YOU LOSE:'}</div>
+              <div style="color:#ef4444;font-weight:bold;font-size:13px;font-family:'Press Start 2P',monospace;">$0</div>
+              <div style="font-size:9.5px;color:#cbd5e1;margin-top:2px;">${typeof t === 'function' ? t('gamble.budget.lose_detail', '(Lose everything)') : '(Lose everything)'}</div>
+            </div>
+          </div>
+        </div>
+      `;
+    } else if (gamble.id === 'gamble_blind_trade') {
+      let worstPos = 'DH', worstName = 'Starter', worstRarity = 'Common';
+      let worstOvr = Infinity;
+      Object.keys(window.Game.roster).forEach(pos => {
+        const p = window.Game.roster[pos];
+        if (p) {
+          const ovr = getPlayerOvr(p);
+          if (ovr < worstOvr) { worstOvr = ovr; worstPos = pos; worstName = p.name; worstRarity = p.rarity; }
+        }
+      });
 
-        <div style="display:flex;align-items:center;justify-content:center;gap:18px;margin:20px 0;">
-          <div class="gamble-outcome-card gamble-outcome-win">
-            <div style="font-size:20px;">✅</div>
-            <div style="font-size:9px;color:#10b981;font-weight:bold;margin-top:4px;">${t('gamble.success_pct', { pct: Math.round(gamble.chance * 100), defaultValue: `ÉXITO (${Math.round(gamble.chance * 100)}%)` })}</div>
+      calcCardHTML = `
+        <div style="background:rgba(56,189,248,0.08);border:1.5px solid rgba(56,189,248,0.35);border-radius:10px;padding:12px;margin-bottom:16px;text-align:left;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;border-bottom:1px solid rgba(56,189,248,0.2);padding-bottom:6px;">
+            <span style="font-size:9.5px;color:#94a3b8;font-family:'Press Start 2P',monospace;">${typeof t === 'function' ? t('gamble.trade.stakes_label', 'WEAKEST STARTER AT STAKE:') : 'WEAKEST STARTER AT STAKE:'}</span>
+            <span style="font-size:10px;color:#38bdf8;font-weight:bold;font-family:'Press Start 2P',monospace;">[${worstPos}] ${worstName} (${worstRarity})</span>
           </div>
-          <div class="gamble-coin-wrap">
-            <div class="gamble-coin" id="gamble-coin">✅</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:10.5px;">
+            <div style="background:rgba(16,185,129,0.12);border:1px solid #10b981;border-radius:6px;padding:8px;">
+              <div style="color:#10b981;font-weight:bold;font-family:'Press Start 2P',monospace;font-size:8px;margin-bottom:4px;">${typeof t === 'function' ? t('gamble.trade.win_label', '🟢 50% IF YOU WIN:') : '🟢 50% IF YOU WIN:'}</div>
+              <div style="color:#00ff66;font-weight:bold;font-size:11px;line-height:1.3;">${typeof t === 'function' ? t('gamble.trade.win_title', 'Guaranteed Higher Rarity') : 'Guaranteed Higher Rarity'}</div>
+              <div style="font-size:9.5px;color:#cbd5e1;margin-top:2px;">${typeof t === 'function' ? t('gamble.trade.win_detail', '(Epic or Legendary)') : '(Epic or Legendary)'}</div>
+            </div>
+            <div style="background:rgba(239,68,68,0.12);border:1px solid #ef4444;border-radius:6px;padding:8px;">
+              <div style="color:#ef4444;font-weight:bold;font-family:'Press Start 2P',monospace;font-size:8px;margin-bottom:4px;">${typeof t === 'function' ? t('gamble.trade.lose_label', '🔴 50% IF YOU LOSE:') : '🔴 50% IF YOU LOSE:'}</div>
+              <div style="color:#ef4444;font-weight:bold;font-size:11px;line-height:1.3;">${typeof t === 'function' ? t('gamble.trade.lose_title', 'Common + 🔒 2-Node Lock') : 'Common + 🔒 2-Node Lock'}</div>
+              <div style="font-size:9.5px;color:#cbd5e1;margin-top:2px;">${typeof t === 'function' ? t('gamble.trade.lose_detail', '(No draft for 2 nodes)') : '(No draft for 2 nodes)'}</div>
+            </div>
           </div>
-          <div class="gamble-outcome-card gamble-outcome-lose">
-            <div style="font-size:20px;">❌</div>
-            <div style="font-size:9px;color:#ef4444;font-weight:bold;margin-top:4px;">${t('gamble.fail_pct', { pct: 100 - Math.round(gamble.chance * 100), defaultValue: `FALLO (${100 - Math.round(gamble.chance * 100)}%)` })}</div>
+        </div>
+      `;
+    } else if (gamble.id === 'gamble_forbidden_synergy') {
+      calcCardHTML = `
+        <div style="background:rgba(192,132,252,0.08);border:1.5px solid rgba(192,132,252,0.35);border-radius:10px;padding:12px;margin-bottom:16px;text-align:left;">
+          <div style="margin-bottom:8px;border-bottom:1px solid rgba(192,132,252,0.2);padding-bottom:6px;">
+            <span style="font-size:9.5px;color:#c084fc;font-family:'Press Start 2P',monospace;">${typeof t === 'function' ? t('gamble.synergy.stakes_label', 'SELECTED ERA PLAYER:') : 'SELECTED ERA PLAYER:'}</span>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:10.5px;">
+            <div style="background:rgba(16,185,129,0.12);border:1px solid #10b981;border-radius:6px;padding:8px;">
+              <div style="color:#10b981;font-weight:bold;font-family:'Press Start 2P',monospace;font-size:8px;margin-bottom:4px;">${typeof t === 'function' ? t('gamble.synergy.win_label', '🟢 50% IF YOU WIN:') : '🟢 50% IF YOU WIN:'}</div>
+              <div style="color:#00ff66;font-weight:bold;font-size:11px;line-height:1.3;">${typeof t === 'function' ? t('gamble.synergy.win_title', '4x Power for Era Synergy!') : '4x Power for Era Synergy!'}</div>
+              <div style="font-size:9.5px;color:#cbd5e1;margin-top:2px;">${typeof t === 'function' ? t('gamble.synergy.win_detail', '(Counts as 4 players)') : '(Counts as 4 players)'}</div>
+            </div>
+            <div style="background:rgba(239,68,68,0.12);border:1px solid #ef4444;border-radius:6px;padding:8px;">
+              <div style="color:#ef4444;font-weight:bold;font-family:'Press Start 2P',monospace;font-size:8px;margin-bottom:4px;">${typeof t === 'function' ? t('gamble.synergy.lose_label', '🔴 50% IF YOU LOSE:') : '🔴 50% IF YOU LOSE:'}</div>
+              <div style="color:#ef4444;font-weight:bold;font-size:11px;line-height:1.3;">${typeof t === 'function' ? t('gamble.synergy.lose_title', '2 Teammates Lose Era Synergy') : '2 Teammates Lose Era Synergy'}</div>
+              <div style="font-size:9.5px;color:#cbd5e1;margin-top:2px;">${typeof t === 'function' ? t('gamble.synergy.lose_detail', '(Permanent penalty)') : '(Permanent penalty)'}</div>
+            </div>
+          </div>
+        </div>
+      `;
+    } else if (gamble.id === 'gamble_scout') {
+      calcCardHTML = `
+        <div style="background:rgba(245,158,11,0.08);border:1.5px solid rgba(245,158,11,0.35);border-radius:10px;padding:12px;margin-bottom:16px;text-align:left;">
+          <div style="margin-bottom:8px;border-bottom:1px solid rgba(245,158,11,0.2);padding-bottom:6px;">
+            <span style="font-size:9.5px;color:#f59e0b;font-family:'Press Start 2P',monospace;">${typeof t === 'function' ? t('gamble.scout.stakes_label', 'ELITE RECRUITMENT OFFER:') : 'ELITE RECRUITMENT OFFER:'}</span>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:10.5px;">
+            <div style="background:rgba(16,185,129,0.12);border:1px solid #10b981;border-radius:6px;padding:8px;">
+              <div style="color:#10b981;font-weight:bold;font-family:'Press Start 2P',monospace;font-size:8px;margin-bottom:4px;">${typeof t === 'function' ? t('gamble.scout.win_label', '🟢 50% IF YOU WIN:') : '🟢 50% IF YOU WIN:'}</div>
+              <div style="color:#00ff66;font-weight:bold;font-size:11px;line-height:1.3;">${typeof t === 'function' ? t('gamble.scout.win_title', 'Free LEGENDARY Player!') : 'Free LEGENDARY Player!'}</div>
+              <div style="font-size:9.5px;color:#cbd5e1;margin-top:2px;">${typeof t === 'function' ? t('gamble.scout.win_detail', '(Weakest position upgrade)') : '(Weakest position upgrade)'}</div>
+            </div>
+            <div style="background:rgba(239,68,68,0.12);border:1px solid #ef4444;border-radius:6px;padding:8px;">
+              <div style="color:#ef4444;font-weight:bold;font-family:'Press Start 2P',monospace;font-size:8px;margin-bottom:4px;">${typeof t === 'function' ? t('gamble.scout.lose_label', '🔴 50% IF YOU LOSE:') : '🔴 50% IF YOU LOSE:'}</div>
+              <div style="color:#ef4444;font-weight:bold;font-size:11px;line-height:1.3;">${typeof t === 'function' ? t('gamble.scout.lose_title', 'Best Player Injured (-20 Stats)') : 'Best Player Injured (-20 Stats)'}</div>
+              <div style="font-size:9.5px;color:#cbd5e1;margin-top:2px;">${typeof t === 'function' ? t('gamble.scout.lose_detail', '(Affects highest OVR player)') : '(Affects highest OVR player)'}</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    const gambleTitle = gamble.title;
+    const gambleDesc = gamble.desc;
+
+    overlay.innerHTML = `
+      <div class="gamble-tension-box" style="max-width:580px;width:92%;text-align:center;padding:24px;background:#0d111a;border:2.5px solid #ef4444;box-shadow:0 0 50px rgba(239,68,68,0.4), inset 0 0 25px rgba(0,0,0,0.9);border-radius:18px;">
+        <div style="display:inline-flex;align-items:center;gap:8px;padding:6px 16px;background:rgba(239,68,68,0.18);border:1.5px solid #ef4444;border-radius:20px;font-family:'Press Start 2P',monospace;font-size:9.5px;color:#ff6b6b;text-shadow:0 0 12px rgba(239,68,68,0.8);letter-spacing:1px;margin-bottom:12px;">
+          <i class="fa-solid fa-triangle-exclamation"></i> ${typeof t === 'function' ? t('gamble.header', 'HIGH-STAKES UNDERGROUND GAMBLE') : 'HIGH-STAKES UNDERGROUND GAMBLE'}
+        </div>
+        <div style="font-size:24px;margin:4px 0 10px;font-family:'Outfit',sans-serif;font-weight:bold;color:#fff;">
+          <span style="margin-right:8px;filter:drop-shadow(0 0 10px rgba(250,204,21,0.6));">${gamble.icon}</span>${gambleTitle}
+        </div>
+        <div style="font-size:12.5px;color:#cbd5e1;margin-bottom:16px;line-height:1.5;padding:0 10px;">${gambleDesc}</div>
+
+        ${calcCardHTML}
+
+        <div style="display:flex;align-items:center;justify-content:center;gap:18px;margin:16px 0;">
+          <div class="gamble-outcome-card gamble-outcome-win" style="flex:1;max-width:140px;background:rgba(16,185,129,0.12);border:1.5px solid #10b981;border-radius:10px;padding:10px 8px;box-shadow:0 0 15px rgba(16,185,129,0.2);">
+            <div style="font-size:24px;">✅</div>
+            <div style="font-size:8px;color:#10b981;font-weight:bold;font-family:'Press Start 2P',monospace;margin-top:6px;">
+              ${typeof t === 'function' ? t('gamble.success_chance', 'ÉXITO (50%)') : 'ÉXITO (50%)'}
+            </div>
+          </div>
+          <div class="gamble-coin-wrap" style="width:80px;height:80px;">
+            <div class="gamble-coin" id="gamble-coin" style="font-size:34px;box-shadow:0 0 25px rgba(250,204,21,0.5);border:3px solid #facc15;">🪙</div>
+          </div>
+          <div class="gamble-outcome-card gamble-outcome-lose" style="flex:1;max-width:140px;background:rgba(239,68,68,0.12);border:1.5px solid #ef4444;border-radius:10px;padding:10px 8px;box-shadow:0 0 15px rgba(239,68,68,0.2);">
+            <div style="font-size:24px;">❌</div>
+            <div style="font-size:8px;color:#ef4444;font-weight:bold;font-family:'Press Start 2P',monospace;margin-top:6px;">
+              ${typeof t === 'function' ? t('gamble.fail_chance', 'FALLO (50%)') : 'FALLO (50%)'}
+            </div>
           </div>
         </div>
 
         ${gamble.requiresTargetPlayer ? `
-          <div style="margin-bottom:16px;">
-            <label style="font-size:10px;color:#94a3b8;display:block;margin-bottom:6px;">${t('gamble.choose_target', 'Elige el jugador objetivo:')}</label>
-            <select id="gamble-target-select" style="width:100%;padding:8px;background:#0a0f18;color:#fff;border:1px solid rgba(239,68,68,0.4);border-radius:8px;font-size:11px;">
-              ${rosterOptions || `<option disabled>${t('gamble.no_valid_era_players', 'Sin jugadores con Era válida')}</option>`}
+          <div style="margin-bottom:16px;text-align:left;">
+            <label style="font-size:10px;color:#94a3b8;display:block;margin-bottom:6px;font-family:'Press Start 2P',monospace;">${typeof t === 'function' ? t('gamble.choose_target', 'Elige el jugador objetivo:') : 'Elige el jugador objetivo:'}</label>
+            <select id="gamble-target-select" style="width:100%;padding:10px;background:#0a0f18;color:#fff;border:1px solid rgba(239,68,68,0.4);border-radius:8px;font-size:11px;">
+              ${rosterOptions || `<option disabled>${typeof t === 'function' ? t('gamble.no_valid_era_players', 'Sin jugadores con Era válida') : 'Sin jugadores con Era válida'}</option>`}
             </select>
           </div>
         ` : ''}
 
-        <div id="gamble-result" style="min-height:24px;font-size:12px;color:#fde68a;margin-bottom:12px;"></div>
+        <div id="gamble-result" style="min-height:28px;font-size:12.5px;font-weight:bold;margin:12px 0;line-height:1.4;"></div>
 
-        <div style="display:flex;gap:12px;justify-content:center;">
-          <button class="btn" id="btn-gamble-bet" style="background:linear-gradient(135deg,#ef4444,#f59e0b);color:#000;font-weight:bold;">${t('gamble.bet_btn', '🪙 APOSTAR')}</button>
-          <button class="btn btn-secondary" id="btn-gamble-decline">${t('gamble.reject_btn', '🚪 Rechazar')}</button>
+        <div style="display:flex;gap:12px;justify-content:center;margin-top:8px;">
+          <button class="btn" id="btn-gamble-bet" style="background:linear-gradient(135deg,#ef4444,#f59e0b);color:#000;font-weight:bold;font-family:'Press Start 2P',monospace;font-size:9.5px;padding:12px 20px;border:none;box-shadow:0 4px 15px rgba(239,68,68,0.4);">
+            ${typeof t === 'function' ? t('gamble.bet_btn', '🪙 APOSTAR') : '🪙 APOSTAR'}
+          </button>
+          <button class="btn btn-secondary" id="btn-gamble-decline" style="font-family:'Press Start 2P',monospace;font-size:9px;padding:12px 18px;border:1px solid rgba(255,255,255,0.2);">
+            ${typeof t === 'function' ? t('gamble.reject_btn', '🚪 PASAR') : '🚪 PASAR'}
+          </button>
         </div>
       </div>`;
 
@@ -7878,6 +8883,17 @@ function initGameModeSelector() {
 
     declineBtn.addEventListener('click', () => {
       overlay.remove();
+      if (!betResolved && window.Game && typeof window.Game.logRunNode === 'function') {
+        window.Game.logRunNode({
+          type: 'gamble_skip',
+          icon: '🚪',
+          title: `Apuesta Declinada`,
+          titleEN: `Gamble Passed`,
+          desc: `Decidiste no arriesgarte en el casino clandestino`,
+          descEN: `Decided not to risk anything at the underground casino`,
+          status: 'neutral'
+        });
+      }
       if (betResolved) {
         renderActiveRoster();
         renderSynergiesAndItems();
@@ -7893,24 +8909,19 @@ function initGameModeSelector() {
       betBtn.disabled = true;
       declineBtn.disabled = true;
 
-      // Resolve the actual outcome FIRST, then animate the coin to match it exactly —
-      // never animate "blind" and reveal separately, or the visual can drift from the
-      // real result (this is the same bug class we just fixed on the risk roulette).
       const result = window.Game.resolveGamble(gamble.id, select ? select.value : null);
       betResolved = true;
 
-      // A real 3D rotateY flip (two faces + backface-visibility) turned out
-      // unreliable — mid-spin, the back (❌) face could render mirrored/
-      // distorted and read as a corrupted version of the ✅ face instead of
-      // cleanly hidden until it turned to face the viewer. Swapping the
-      // emoji directly on a 2D "squash" pulse sidesteps 3D compositing
-      // entirely, so there's no face to render wrong — it can only ever
-      // show a clean ✅ or ❌, alternating, then land on the real result.
       const coin = overlay.querySelector('#gamble-coin');
       coin.classList.add('gamble-coin-flipping');
 
-      const spinDurationMs = 1600;
-      const swapEveryMs = 110;
+      // Ticking audio and escalating dice roll sound while spinning
+      if (window.AudioManager && typeof window.AudioManager.play === 'function') {
+        window.AudioManager.play('defense_dice_roll');
+      }
+
+      const spinDurationMs = 1800;
+      const swapEveryMs = 100;
       const totalSwaps = Math.floor(spinDurationMs / swapEveryMs);
       let swapCount = 0;
       const swapInterval = setInterval(() => {
@@ -7918,6 +8929,9 @@ function initGameModeSelector() {
         const showingFail = swapCount % 2 === 0;
         coin.textContent = showingFail ? '❌' : '✅';
         coin.classList.toggle('gamble-coin-fail', showingFail);
+        if (window.AudioManager && typeof window.AudioManager.play === 'function') {
+          window.AudioManager.play('roulette_tick');
+        }
         if (swapCount >= totalSwaps) {
           clearInterval(swapInterval);
           coin.classList.remove('gamble-coin-flipping');
@@ -7929,12 +8943,40 @@ function initGameModeSelector() {
       setTimeout(() => {
         const resultEl = overlay.querySelector('#gamble-result');
         resultEl.style.color = result.success ? '#10b981' : '#ef4444';
+        resultEl.style.fontFamily = "'Outfit', sans-serif";
         resultEl.textContent = result.resultText;
 
+        if (window.Game && typeof window.Game.logRunNode === 'function') {
+          window.Game.logRunNode({
+            type: 'gamble',
+            icon: result.success ? '🪙' : '💀',
+            title: result.success ? `Apuesta Ganada: ${gamble.title}` : `Apuesta Perdida: ${gamble.title}`,
+            titleEN: result.success ? `Gamble Won: ${gamble.title}` : `Gamble Lost: ${gamble.title}`,
+            desc: result.resultText || '',
+            descEN: result.resultText || '',
+            status: result.success ? 'success' : 'danger'
+          });
+        }
+
+        if (window.AudioManager && typeof window.AudioManager.play === 'function') {
+          window.AudioManager.play(result.success ? 'roulette_win' : 'defense_error');
+        }
+
+        if (result.success) {
+          coin.style.boxShadow = "0 0 35px #10b981";
+        } else {
+          coin.style.boxShadow = "0 0 35px #ef4444";
+          overlay.querySelector('div').classList.add('retro-shake-anim');
+        }
+
         betBtn.style.display = 'none';
-        declineBtn.textContent = t('career.continue', 'Continuar');
+        declineBtn.textContent = typeof t === 'function' ? t('career.continue', 'Continuar') : 'Continuar';
+        declineBtn.className = 'btn';
+        declineBtn.style.background = '#10b981';
+        declineBtn.style.color = '#000';
+        declineBtn.style.fontWeight = 'bold';
         declineBtn.disabled = false;
-      }, spinDurationMs + 100);
+      }, spinDurationMs + 150);
     });
   }
 
@@ -8280,9 +9322,50 @@ function initGameModeSelector() {
     const rosterHistory = window.Game.runRosterHistory || {};
     const allBatterNames = new Set([...Object.keys(batterStats), ...Object.keys(rosterHistory)]);
 
+    // Render Team totals & Defensive errors header
+    const headerTotalsEl = document.getElementById('summary-team-totals-header');
+    if (headerTotalsEl) {
+      let totAB = 0, totH = 0, tot2B = 0, tot3B = 0, totHR = 0, totRBI = 0, totSB = 0, totBB = 0, totSO = 0;
+      Object.values(batterStats).forEach(s => {
+        totAB += (s.ab || 0);
+        totH += (s.h || 0);
+        tot2B += (s.doubles || 0);
+        tot3B += (s.triples || 0);
+        totHR += (s.hr || 0);
+        totRBI += (s.rbi || 0);
+        totSB += (s.sb || 0);
+        totBB += (s.bb || 0);
+        totSO += (s.so || 0);
+      });
+      const defErrors = (window.Game && window.Game.defensiveErrors) || 0;
+      const tPA = totAB + totBB;
+      const tAvg = totAB > 0 ? (totH / totAB).toFixed(3).replace(/^0/, '') : '.000';
+      const tOBP = tPA > 0 ? ((totH + totBB) / tPA).toFixed(3).replace(/^0/, '') : '.000';
+      const tSLG = totAB > 0 ? ((Math.max(0, totH - tot2B - tot3B - totHR) + 2*tot2B + 3*tot3B + 4*totHR) / totAB).toFixed(3).replace(/^0/, '') : '.000';
+      const tOPS = (totAB > 0 || tPA > 0) ? (parseFloat(tOBP) + parseFloat(tSLG)).toFixed(3) : '.000';
+
+      headerTotalsEl.innerHTML = `
+        <div style="background:linear-gradient(135deg,rgba(16,185,129,0.08) 0%,rgba(14,165,233,0.08) 100%);border:1px solid rgba(56,189,248,0.3);border-radius:12px;padding:12px 16px;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px;">
+          <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:var(--accent-color);">
+            ${typeof t === 'function' ? t('summary.team_defense_badge', '🛡️ DEFENSE & RUN TOTALS') : '🛡️ DEFENSE & RUN TOTALS'}
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;font-size:9.5px;font-family:'Press Start 2P',monospace;align-items:center;">
+            <span style="background:rgba(255,255,255,0.06);padding:5px 8px;border-radius:6px;color:#22d3ee;">H: ${totH}</span>
+            <span style="background:rgba(255,255,255,0.06);padding:5px 8px;border-radius:6px;color:#ef4444;">HR: ${totHR}</span>
+            <span style="background:rgba(255,255,255,0.06);padding:5px 8px;border-radius:6px;color:#10b981;">RBI: ${totRBI}</span>
+            <span style="background:rgba(255,255,255,0.06);padding:5px 8px;border-radius:6px;color:#ffd700;">AVG: ${tAvg}</span>
+            <span style="background:rgba(255,255,255,0.06);padding:5px 8px;border-radius:6px;color:#00ff66;">OPS: ${tOPS}</span>
+            <span style="background:rgba(239,68,68,0.18);border:1.5px solid #ef4444;padding:5px 10px;border-radius:6px;color:#f87171;box-shadow:0 0 10px rgba(239,68,68,0.3);">
+              ⚠️ ${typeof t === 'function' ? t('summary.errors_label', 'Errors (E)') : 'Errors (E)'}: <strong style="color:#fff;font-size:11px;">${defErrors}</strong>
+            </span>
+          </div>
+        </div>
+      `;
+    }
+
     tbodyB.innerHTML = '';
     if (!allBatterNames.size) {
-      tbodyB.innerHTML = '<tr><td colspan="15" style="padding:12px;color:#64748b;text-align:center;">Sin datos de bateo registrados.</td></tr>';
+      tbodyB.innerHTML = '<tr><td colspan="16" style="padding:12px;color:#64748b;text-align:center;">Sin datos de bateo registrados.</td></tr>';
     } else {
       [...allBatterNames].forEach(name => {
         const s = batterStats[name] || {};
@@ -8296,6 +9379,7 @@ function initGameModeSelector() {
         const sb  = s.sb || 0;
         const bb  = s.bb || 0;
         const so  = s.so || 0;
+        const e   = s.e  || 0;
 
         const b1 = Math.max(0, h - b2 - b3 - hr);
         const pa = ab + bb;
@@ -8326,6 +9410,7 @@ function initGameModeSelector() {
           <td style="padding:8px;color:#38bdf8;">${sb}</td>
           <td style="padding:8px;color:#a78bfa;">${bb}</td>
           <td style="padding:8px;color:#f87171;">${so}</td>
+          <td style="padding:8px;color:${e > 0 ? '#f87171' : '#64748b'};font-weight:${e > 0 ? 'bold' : 'normal'};">${e}</td>
           <td style="padding:8px;color:${avgVal >= 0.300 ? '#ffd700' : '#94a3b8'};font-weight:bold;">${avg}</td>
           <td style="padding:8px;color:${obpVal >= 0.380 ? '#38bdf8' : '#94a3b8'};font-weight:bold;">${obp}</td>
           <td style="padding:8px;color:${slgVal >= 0.500 ? '#f59e0b' : '#94a3b8'};font-weight:bold;">${slg}</td>

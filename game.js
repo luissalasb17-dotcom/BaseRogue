@@ -524,18 +524,18 @@
     {
       id: 'gamble_all_in_budget',
       icon: '💰',
-      get title() { return typeof window.t==='function'?window.t('gamble.budget.title'):'Todo o Nada'; },
-      get desc() { return typeof window.t==='function'?window.t('gamble.budget.desc'):'Apuestas TODO tu presupuesto actual a un tiro de dado. Si ganas, se duplica. Si pierdes, lo pierdes todo.'; },
+      get title() { return typeof window.t==='function'?window.t('gamble.budget.title'):'💰 Todo o Nada (Lotería Triple)'; },
+      get desc() { return typeof window.t==='function'?window.t('gamble.budget.desc'):'¡Apuestas TODO tu presupuesto actual a una tirada! Si ganas (50%), ¡TRIPLICAS tu dinero (x3)! Si pierdes (50%), te quedas en $0.'; },
       chance: 0.50,
       resolve(G) {
         const staked = G.budget || 0;
         const success = Math.random() <= this.chance;
-        G.budget = success ? staked * 2 : 0;
+        G.budget = success ? staked * 3 : 0;
         return {
           success,
           resultText: success
-            ? (typeof window.t==='function'?window.t('gamble.budget.result_win', { staked, newBudget: G.budget }):`¡Duplicaste tu apuesta! Presupuesto: $${staked} → $${G.budget}.`)
-            : (typeof window.t==='function'?window.t('gamble.budget.result_lose', { staked }):`Perdiste los $${staked} apostados. Presupuesto: $0.`)
+            ? (typeof window.t==='function'?window.t('gamble.budget.result_win', { staked, newBudget: G.budget }):`¡Triunfo total en la lotería! Triplicaste tus $${staked} y ahora tienes $${G.budget}.`)
+            : (typeof window.t==='function'?window.t('gamble.budget.result_lose', { staked }):`¡La casa gana! Perdiste tus $${staked} apostados. Presupuesto actual: $0.`)
         };
       }
     },
@@ -784,7 +784,9 @@
       this.activeItemBonuses = {
         teamCon: 0, teamPwr: 0, teamEye: 0, teamKAvd: 0, teamSpd: 0, teamDef: 0
       };
+      this.itemsInventory = []; // Team backpack storing unequipped items
       this.purchasedItems = [];
+      this.runNodeHistory = [];
       this.currentEnemy = null;
       this.encounteredTeams = new Set();
       this.encounteredPitchers = new Set();
@@ -926,6 +928,19 @@
       if (trait && !this.hasTrait(traitId)) {
         this.equippedTraits.push(trait);
       }
+    }
+
+    logRunNode(entry) {
+      if (!this.runNodeHistory) this.runNodeHistory = [];
+      if (typeof entry === 'string') {
+        entry = { title: entry, titleEN: entry, desc: '', descEN: '', icon: '⚾', type: 'generic', status: 'info' };
+      }
+      entry.nodeIndex = (this.currentNodeIndex !== undefined ? this.currentNodeIndex : 0);
+      entry.stage = ((this.currentStageIndex !== undefined ? this.currentStageIndex : 0) + 1);
+      entry.timestamp = Date.now();
+      this.runNodeHistory.push(entry);
+      if (!this.purchasedItems) this.purchasedItems = [];
+      this.purchasedItems.push((entry.icon ? `${entry.icon} ` : '') + (entry.title || '') + (entry.desc ? ` (${entry.desc})` : ''));
     }
 
     // ── RUN STATS: record a match's events into cumulative per-run totals ─────
@@ -1647,13 +1662,32 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
       // golden_glove: every batter gets +10 DEF
       if (this.hasTrait('golden_glove')) def += 10;
 
-      // Manager Decision/Item Bonuses
+      // Manager Decision/Item Bonuses (Legacy + Individual Equipment)
       con += (this.activeItemBonuses.teamCon || 0);
       pwr += (this.activeItemBonuses.teamPwr || 0);
       eye += (this.activeItemBonuses.teamEye || 0);
       kavd += (this.activeItemBonuses.teamKAvd || 0);
       spd += (this.activeItemBonuses.teamSpd || 0);
       def += (this.activeItemBonuses.teamDef || 0);
+
+      // Individual Equipped Item Stats
+      if (player.equipped_item && player.equipped_item.stats) {
+        const s = player.equipped_item.stats;
+        if (s.con) con += s.con;
+        if (s.pwr) pwr += s.pwr;
+        if (s.eye) eye += s.eye;
+        if (s.k_avd || s.kavd) kavd += (s.k_avd || s.kavd);
+        if (s.spd) spd += s.spd;
+        if (s.def) def += s.def;
+      }
+
+      // Permanent Consumable Buffs
+      if (player.perm_con) con += player.perm_con;
+      if (player.perm_pwr) pwr += player.perm_pwr;
+      if (player.perm_eye) eye += player.perm_eye;
+      if (player.perm_kavd || player.perm_k_avd) kavd += (player.perm_kavd || player.perm_k_avd);
+      if (player.perm_spd) spd += player.perm_spd;
+      if (player.perm_def) def += player.perm_def;
 
       // Synergy Bonuses
       const synergies = this.calculateActiveSynergies(contextRoster);
@@ -1922,12 +1956,24 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
       const nativePos = playerInstance.pos;
       const nativeLocked = this.positionLocks && (this.positionLocks[nativePos] || 0) > 0;
       if (!nativeLocked && this.roster[nativePos] && this.roster[nativePos].isReplacement) {
+        const oldPlayer = this.roster[nativePos];
+        if (oldPlayer && oldPlayer.equipped_item) {
+          if (!this.itemsInventory) this.itemsInventory = [];
+          this.itemsInventory.push(oldPlayer.equipped_item);
+          oldPlayer.equipped_item = null;
+        }
         this.roster[nativePos] = playerInstance;
         return { success: true, message: (typeof window.t==='function'?window.t('game.player_placed_native', { name: playerInstance.name, pos: nativePos }):`¡${playerInstance.name} colocado directamente en ${nativePos}!`) };
       }
 
       const dhLocked = this.positionLocks && (this.positionLocks.DH || 0) > 0;
       if (!dhLocked && nativePos !== 'DH' && this.roster.DH && this.roster.DH.isReplacement) {
+        const oldPlayer = this.roster.DH;
+        if (oldPlayer && oldPlayer.equipped_item) {
+          if (!this.itemsInventory) this.itemsInventory = [];
+          this.itemsInventory.push(oldPlayer.equipped_item);
+          oldPlayer.equipped_item = null;
+        }
         this.roster.DH = playerInstance;
         return { success: true, message: (typeof window.t==='function'?window.t('game.player_placed_dh', { name: playerInstance.name }):`¡${playerInstance.name} colocado como DH!`) };
       }
@@ -1940,6 +1986,14 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
       if (!this.roster[slot]) return false;
       if (this.positionLocks && (this.positionLocks[slot] || 0) > 0) return false;
 
+      // Auto-unequip old player's item to backpack
+      const oldPlayer = this.roster[slot];
+      if (oldPlayer && oldPlayer.equipped_item) {
+        if (!this.itemsInventory) this.itemsInventory = [];
+        this.itemsInventory.push(oldPlayer.equipped_item);
+        oldPlayer.equipped_item = null;
+      }
+
       const playerInstance = {
         ...newPlayerData,
         id: `player_${newPlayerData.name.replace(/\s+/g, '')}_${Date.now()}`,
@@ -1949,6 +2003,66 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
       if (window.BaseballDex) window.BaseballDex.unlock(playerInstance);
 
       this.roster[slot] = playerInstance;
+      return true;
+    }
+
+    // ── EQUIPMENT & ITEM INVENTORY MANAGEMENT ─────────────────────────────────
+    equipItem(itemIndex, slotKey) {
+      if (!this.itemsInventory) this.itemsInventory = [];
+      if (itemIndex < 0 || itemIndex >= this.itemsInventory.length) return false;
+      const player = this.roster[slotKey];
+      if (!player) return false;
+
+      const itemToEquip = this.itemsInventory.splice(itemIndex, 1)[0];
+      if (player.equipped_item) {
+        this.itemsInventory.push(player.equipped_item);
+      }
+      player.equipped_item = itemToEquip;
+      return true;
+    }
+
+    unequipItem(slotKey) {
+      if (!this.itemsInventory) this.itemsInventory = [];
+      const player = this.roster[slotKey];
+      if (!player || !player.equipped_item) return false;
+
+      this.itemsInventory.push(player.equipped_item);
+      player.equipped_item = null;
+      return true;
+    }
+
+    useConsumableItem(item, targetSlotKey) {
+      if (!item) return false;
+      const player = targetSlotKey ? this.roster[targetSlotKey] : null;
+
+      // 1. Stamina Heals
+      if (player) {
+        if (item.staminaHealPercent) {
+          player.stamina = 100;
+        } else if (item.staminaHeal) {
+          player.stamina = Math.min(100, (player.stamina !== undefined ? player.stamina : 100) + item.staminaHeal);
+        }
+        // Permanent stats
+        if (item.permStats) {
+          if (item.permStats.con) player.perm_con = (player.perm_con || 0) + item.permStats.con;
+          if (item.permStats.pwr) player.perm_pwr = (player.perm_pwr || 0) + item.permStats.pwr;
+          if (item.permStats.spd) player.perm_spd = (player.perm_spd || 0) + item.permStats.spd;
+          if (item.permStats.def) player.perm_def = (player.perm_def || 0) + item.permStats.def;
+          if (item.permStats.eye) player.perm_eye = (player.perm_eye || 0) + item.permStats.eye;
+          if (item.permStats.k_avd || item.permStats.kavd) player.perm_kavd = (player.perm_kavd || 0) + (item.permStats.k_avd || item.permStats.kavd);
+        }
+      }
+
+      // 2. Team-wide Stamina Heals
+      if (item.teamStaminaHeal) {
+        Object.keys(this.roster).forEach(slot => {
+          const p = this.roster[slot];
+          if (p) {
+            p.stamina = Math.min(100, (p.stamina !== undefined ? p.stamina : 100) + item.teamStaminaHeal);
+          }
+        });
+      }
+
       return true;
     }
 
@@ -2383,12 +2497,24 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
       Object.keys(this.roster).forEach(pos => {
         const player = this.roster[pos];
         if (player) {
-          const isStaminaImmune = staminaImmuneIds.has(player.id || player.name);
+          const isStaminaImmune = staminaImmuneIds.has(player.id || player.name) || (player.equipped_item && player.equipped_item.energy_immune);
+          let actualLoss = staminaLoss;
+          if (player.equipped_item && player.equipped_item.energy_half_loss) {
+            actualLoss = Math.round(actualLoss * 0.5);
+          }
+
           player.stamina = isStaminaImmune
             ? Math.max(0, player.stamina !== undefined ? player.stamina : 100)
-            : Math.max(0, (player.stamina !== undefined ? player.stamina : 100) - staminaLoss);
+            : Math.max(0, (player.stamina !== undefined ? player.stamina : 100) - actualLoss);
 
           if (player.stamina <= 0) {
+            // Auto-unequip retired player's item to backpack
+            if (player.equipped_item) {
+              if (!this.itemsInventory) this.itemsInventory = [];
+              this.itemsInventory.push(player.equipped_item);
+              player.equipped_item = null;
+            }
+
             // Player retired due to zero stamina -> replace with random Common player of same position!
             const targetPos = player.pos || pos;
             let commonMatches = pool.filter(p => p.rarity === 'Common' && (p.pos === targetPos || p.pos === pos));
@@ -2524,8 +2650,9 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
     }
 
     getRandomEvent() {
-      const idx = Math.floor(Math.random() * ManagerEventsList.length);
-      return ManagerEventsList[idx];
+      const list = (window.ItemsDatabase && window.ItemsDatabase.length > 0) ? window.ItemsDatabase : ManagerEventsList;
+      const idx = Math.floor(Math.random() * list.length);
+      return list[idx];
     }
 
     getRandomGamble() {

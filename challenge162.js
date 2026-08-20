@@ -1051,6 +1051,10 @@
       const won = attempt.userRuns > attempt.oppRuns;
       if (won) { S.wins++; S.streak = (S.streak || 0) + 1; } else { S.losses++; S.streak = 0; }
 
+      if (!this._autoSimRunning && window.AudioManager && typeof window.AudioManager.play === 'function') {
+        window.AudioManager.play(won ? 'hit' : 'out');
+      }
+
       // Pitching Decisions:
       // Starter gets W/L if pitched >= 5 innings (15 outs) or pitched the complete game.
       // Last reliever gets Save if they finished the game in a <=3 run lead and were not the starter.
@@ -2034,7 +2038,11 @@
               const p = eligiblePitchers.find(pi => pi.name === name && (!year || pi.year === year));
               if (p) this._draftPitchers.RP[this._activeSlot.key] = p;
             }
-            if (typeof window.playSound === 'function') window.playSound('card_flip');
+            if (window.AudioManager && typeof window.AudioManager.play === 'function') {
+              window.AudioManager.play('card_deal');
+            } else if (typeof window.playSound === 'function') {
+              window.playSound('card_flip');
+            }
             this._activeSlot = null;
             this._searchTerm = '';
             this.renderRosterBuilder();
@@ -2570,6 +2578,10 @@
       const S = this.state;
       const wonWS = S.playoffs && S.playoffs.won;
       const isPerfect = S.losses === 0;
+
+      if (wonWS && window.AudioManager && typeof window.AudioManager.play === 'function') {
+        window.AudioManager.play('win');
+      }
 
       const _t = (key, fallback, params) => (typeof window.t === 'function' ? window.t(key, params) : fallback);
 

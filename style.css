@@ -2117,85 +2117,111 @@ p {
 .gamble-outcome-win  { border-color: rgba(16,185,129,0.35); }
 .gamble-outcome-lose { border-color: rgba(239,68,68,0.35); }
 
-/* ── MANAGER EVENT RISK ROULETTE ─────────────────────────────────────── */
+/* ── MANAGER EVENT RISK ROULETTE (ARCADE RETRO UPGRADE) ──────────────── */
 .roulette-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(5,8,14,0.94);
-  backdrop-filter: blur(10px);
-  z-index: 850;
+  background: rgba(3, 7, 18, 0.95);
+  backdrop-filter: blur(12px);
+  z-index: 950;
   display: flex;
   align-items: center;
   justify-content: center;
+  animation: fadeIn 0.2s ease-out;
 }
 
 .roulette-modal {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
-  padding: 20px;
+  gap: 18px;
+  padding: 28px 24px;
+  background: radial-gradient(circle at center, #0f172a 0%, #020617 100%);
+  border: 2px solid rgba(250, 204, 21, 0.4);
+  border-radius: 20px;
+  box-shadow: 0 0 50px rgba(250, 204, 21, 0.25), inset 0 0 20px rgba(0, 0, 0, 0.8);
+  max-width: 420px;
+  width: 90%;
+  text-align: center;
 }
 
 .roulette-title {
   font-family: 'Press Start 2P', monospace;
-  font-size: 12px;
-  color: var(--primary-color, #00ff66);
-  text-shadow: 0 0 12px rgba(0,255,102,0.5);
+  font-size: 11px;
+  color: #facc15;
+  text-shadow: 0 0 12px rgba(250, 204, 21, 0.6);
+  letter-spacing: 0.5px;
+  line-height: 1.5;
 }
 
 .roulette-wrap {
   position: relative;
-  width: 220px;
-  height: 220px;
+  width: 240px;
+  height: 240px;
   display: flex;
   align-items: center;
   justify-content: center;
+  margin: 8px 0;
 }
 
 .roulette-pointer {
   position: absolute;
-  top: -14px;
+  top: -16px;
   left: 50%;
   transform: translateX(-50%);
-  font-size: 26px;
-  color: #fff;
-  text-shadow: 0 0 6px rgba(0,0,0,0.8);
-  z-index: 2;
+  font-size: 30px;
+  color: #facc15;
+  text-shadow: 0 0 12px rgba(250, 204, 21, 0.9), 0 0 4px #000;
+  z-index: 10;
+  filter: drop-shadow(0 4px 6px rgba(0,0,0,0.9));
+  animation: pointerPulse 1s ease-in-out infinite alternate;
+}
+
+@keyframes pointerPulse {
+  0% { transform: translateX(-50%) translateY(0); }
+  100% { transform: translateX(-50%) translateY(-3px); }
+}
+
+.roulette-wheel-border {
+  position: absolute;
+  inset: -8px;
+  border-radius: 50% !important;
+  border: 4px dashed rgba(250, 204, 21, 0.4);
+  box-shadow: 0 0 25px rgba(250, 204, 21, 0.2);
+  pointer-events: none;
 }
 
 .roulette-wheel {
   position: relative;
   box-sizing: border-box;
-  width: 220px;
-  height: 220px;
-  /* The global `* { border-radius: 0 !important }` blocky/NES reset would otherwise
-     square off this wheel — a roulette is deliberately the one exception. */
+  width: 240px;
+  height: 240px;
   border-radius: 50% !important;
-  border: 4px solid rgba(255,255,255,0.25);
-  box-shadow: 0 0 30px rgba(0,0,0,0.5);
+  border: 5px solid #1e293b;
+  box-shadow: 0 0 35px rgba(0, 0, 0, 0.8), inset 0 0 15px rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
   transform: rotate(0deg);
 }
 
-/* Thin radial ticks so it reads as a segmented roulette wheel, not a flat 2-tone pie */
+/* Thin radial ticks so it reads as an arcade roulette wheel */
 .roulette-wheel::before {
   content: '';
   position: absolute;
   inset: 0;
   border-radius: 50% !important;
-  background: repeating-conic-gradient(rgba(255,255,255,0.18) 0deg 1deg, transparent 1deg 30deg);
+  background: repeating-conic-gradient(rgba(255,255,255,0.22) 0deg 1.5deg, transparent 1.5deg 30deg);
   pointer-events: none;
 }
 
 .roulette-center {
-  width: 74px;
-  height: 74px;
+  width: 86px;
+  height: 86px;
   border-radius: 50% !important;
-  background: #0a0f18;
-  border: 2px solid rgba(255,255,255,0.3);
+  background: #020617;
+  border: 3px solid #facc15;
+  box-shadow: 0 0 20px rgba(250, 204, 21, 0.4), inset 0 0 10px rgba(0,0,0,0.9);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -2204,14 +2230,89 @@ p {
   font-size: 13px;
   color: #fff;
   text-align: center;
-  line-height: 1.6;
+  line-height: 1.5;
+  z-index: 5;
 }
 
 .roulette-status {
   font-family: 'Press Start 2P', monospace;
-  font-size: 13px;
+  font-size: 10px;
   color: #94a3b8;
-  min-height: 18px;
+  min-height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.4;
+}
+
+/* Shake Animation for Failures */
+@keyframes retroShake {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  15% { transform: translate(-6px, -4px) rotate(-1deg); }
+  30% { transform: translate(5px, 4px) rotate(1deg); }
+  45% { transform: translate(-5px, 3px) rotate(-1deg); }
+  60% { transform: translate(4px, -3px) rotate(1deg); }
+  75% { transform: translate(-3px, 2px) rotate(0deg); }
+}
+
+.retro-shake-anim {
+  animation: retroShake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+/* Event Store Choice Cards (Overhauled Layout) */
+.event-store-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+  margin-top: 18px;
+  width: 100%;
+}
+
+.event-store-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 18px;
+  border-radius: 14px;
+  background: rgba(10, 15, 26, 0.85);
+  border: 1.5px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+}
+
+.event-store-card:hover {
+  transform: translateY(-4px);
+}
+
+.event-store-card-safe {
+  border-color: rgba(16, 185, 129, 0.4);
+  background: linear-gradient(180deg, rgba(16, 185, 129, 0.06) 0%, rgba(10, 15, 26, 0.95) 100%);
+}
+
+.event-store-card-safe:hover {
+  border-color: #10b981;
+  box-shadow: 0 8px 30px rgba(16, 185, 129, 0.3);
+}
+
+.event-store-card-risky {
+  border-color: rgba(239, 68, 68, 0.5);
+  background: linear-gradient(180deg, rgba(239, 68, 68, 0.08) 0%, rgba(10, 15, 26, 0.95) 100%);
+}
+
+.event-store-card-risky:hover {
+  border-color: #ef4444;
+  box-shadow: 0 8px 30px rgba(239, 68, 68, 0.35);
+}
+
+.event-store-card-reject {
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(15, 23, 42, 0.6);
+}
+
+.event-store-card-reject:hover {
+  border-color: rgba(255, 255, 255, 0.3);
 }
 
 .scoreboard {

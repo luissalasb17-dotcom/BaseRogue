@@ -7,12 +7,14 @@
   },
   "sidebar": {
     "upgrades": "<i class=\"fa-solid fa-suitcase\"></i> MEJORAS",
-    "no_items": "NADA COMPRADO",
+    "no_items": "MOCHILA VACÍA",
     "eras_header": "ERAS DEL ROSTER",
     "franchises_header": "FRANQUICIAS DEL ROSTER",
     "no_teams": "Ningún equipo registrado.",
     "dynasty_desc": "Dinastía (4+): Jugadores de {{team}} obtienen +5 a todos sus stats en combate.",
-    "chemistry_desc": "Química (2+): Jugadores de {{team}} obtienen +2 a todos sus stats en combate."
+    "chemistry_desc": "Química (2+): Jugadores de {{team}} obtienen +2 a todos sus stats en combate.",
+    "items": "<i class=\"fa-solid fa-toolbox\"></i> ITEMS",
+    "items_drag_hint": "⚡ Arrastra a un jugador"
   },
   "eras": {
     "header": "⏳ ERAS DEL ROSTER",
@@ -139,9 +141,9 @@
     "intro_desc": "Elije a tus Jugadores en <strong style=\"color:#00ff66;\">{{rounds}} rondas de draft</strong> para armar tu alineación completa de 9 bateadores. Organiza su posición defensiva (Drag & Drop) y su orden al bate en tiempo real. Luego <strong style=\"color:#00ff66;\">lanza el dado</strong> en cada turno para determinar el resultado al bate. Derrota la rotación rival antes de que tus <strong style=\"color:#ef4444;\">{{hp}} HP</strong> lleguen a cero."
   },
   "draft": {
-    "title": "<i class=\"fa-solid fa-file-signature\"></i> Firma de Jugadores (Draft)",
+    "title": "Firma de Leyendas",
     "desc": "Selecciona una leyenda para unir a tu roster. Elige sabiamente para optimizar las posiciones y activar sinergias de Era o de Franquicia.",
-    "midrun_desc": "Selecciona una leyenda para contratar con tu presupuesto, o rechaza la firma para continuar la carrera.",
+    "midrun_desc": "Elige una leyenda para firmar con tu presupuesto, o rechaza la firma para continuar.",
     "midrun_title_short": "FIRMA LEYENDA",
     "round_header": "⚾ DRAFT INICIAL — RONDA {{round}} DE 9",
     "roster_header": "🧤 ALINEACIÓN",
@@ -150,10 +152,10 @@
     "auto_sort_title": "Ordena lógicamente: Velocidad al 1ro, Poder al 4to, Mejores bates al 2do y 3ro.",
     "select_btn": "✔ SELECCIONAR",
     "inspect_card": "CARTA",
-    "sign_btn": "✍️ Firmar (${{cost}})",
+    "sign_btn": "FIRMAR (${{cost}})",
     "auto_complete_btn": "🎲 ¡Sorpréndeme! (Auto-Completar)",
-    "decline_btn": "🚫 Rechazar Firma / Continuar",
-    "decline_desc": "¿No deseas contratar a ninguna leyenda o prefieres guardar tu dinero? Puedes rechazar la firma y avanzar en el mapa.",
+    "decline_btn": "DECLINE SIGN / CONTINUE",
+    "decline_desc": "¿No quieres firmar ninguna leyenda o prefieres guardar tu dinero? Puedes rechazar la firma y avanzar en el mapa.",
     "confirm_lineup_title": "⚾ ALINEACIÓN PARA INICIAR LA TEMPORADA",
     "confirm_defensive_header": "🧤 ALINEACIÓN DEFENSIVA (DRAG & DROP)",
     "confirm_batting_header": "⚔️ ORDEN AL BATE",
@@ -188,7 +190,13 @@
     "pack_tagline_rare": "Sobre Raro o Mejor",
     "pack_tagline_uncommon": "Sobre Poco Común o Mejor",
     "pack_tagline_common": "Sobre Común Obligatorio",
-    "pack_tagline_random": "Sobre de Cualquier Rareza"
+    "pack_tagline_random": "Sobre de Cualquier Rareza",
+    "legend_title": "Firma de Leyendas",
+    "sign_contract_btn": "✍️ FIRMAR (${{cost}})",
+    "cost_label": "Coste: ${{cost}}",
+    "replace_btn": "LIBERAR",
+    "locked_slot": "🔒 bloqueado ({{count}} nodos)",
+    "locked_title": "Posición bloqueada por una apuesta fallida"
   },
   "pre_fight": {
     "title": "<i class=\"fa-solid fa-shield-halved\"></i> Preparación de la Serie",
@@ -397,7 +405,10 @@
     "tab_batters": "Mi Alineación (Bateo)",
     "tab_pitchers": "Lanzadores Enfrentados",
     "player_col": "Bateador",
-    "pitcher_col": "Lanzador"
+    "pitcher_col": "Lanzador",
+    "defensive_errors": "Errores Defensivos",
+    "team_defense_badge": "🛡️ DEFENSA & TOTALES DE RUN",
+    "errors_label": "Errores (E)"
   },
   "victory": {
     "title": "¡CAMPEÓN ABSOLUTO DE BASEROGUE!",
@@ -726,7 +737,11 @@
   },
   "sign": {
     "chemistry_active": "Firma activa Química de <strong>{{team}}</strong> (+4 stats)",
-    "dynasty_active": "Firma activa Dinastía de <strong>{{team}}</strong> (+10 stats)"
+    "dynasty_active": "Firma activa Dinastía de <strong>{{team}}</strong> (+10 stats)",
+    "synergy_active": "¡Firma activa Sinergia <strong>{{era}} (T{{tier}})</strong>!",
+    "era_progress": "Era {{era}}: <strong>{{count}}/{{target}}</strong> (T{{tier}})",
+    "era_max": "Era {{era}}: {{count}} jugadores (T4 MAX)",
+    "franchise_progress": "Franquicia {{team}}: {{count}} ➡️ <strong>{{next}}/2</strong>"
   },
   "ui": {
     "empty": "VACÍO",
@@ -1041,43 +1056,74 @@
     "found_title": "¡HAS ENCONTRADO UN COFRE DE TESORO!"
   },
   "gamble": {
-    "header": "SALA DE APUESTAS & NEGOCIOS",
-    "choose_target": "Selecciona el jugador objetivo:",
-    "bet_btn": "🎲 APOSTAR",
-    "reject_btn": "PASAR DE LARGO",
+    "header": "🎲 APUESTA CLANDESTINA DE ALTO RIESGO",
+    "choose_target": "Elige el jugador objetivo:",
+    "bet_btn": "🪙 APOSTAR",
+    "reject_btn": "🚪 PASAR",
     "success_pct": "Probabilidad de Éxito",
     "fail_pct": "Probabilidad de Fallo",
     "no_player_found": "No hay jugadores elegibles",
-    "no_valid_era_players": "Sin jugadores de esta era",
+    "no_valid_era_players": "Sin jugadores con Era válida",
     "budget": {
-      "title": "Apuesta Financiera de Clubhouse",
-      "desc": "Invierte presupuesto en el mercado de patrocinios deportivos.",
-      "result_win": "¡Gran retorno de inversión! +$ presupuesto.",
-      "result_lose": "Mala inversión. Se perdió el dinero apostado."
+      "title": "Todo o Nada (Lotería Triple)",
+      "desc": "¡Apuestas TODO tu presupuesto actual a una tirada! Si ganas (50%), ¡TRIPLICAS tu dinero (x3)! Si pierdes (50%), te quedas en $0.",
+      "stakes_label": "PRESUPUESTO EN JUEGO:",
+      "win_label": "🟢 50% SI GANAS:",
+      "win_detail": "(¡Recibes el triple!)",
+      "lose_label": "🔴 50% SI PIERDES:",
+      "lose_detail": "(Pierdes todo)",
+      "result_win": "¡Triunfo total en la lotería! Triplicaste tus ${{staked}} y ahora tienes ${{newBudget}}.",
+      "result_lose": "¡La casa gana! Perdiste tus ${{staked}} apostados. Presupuesto actual: $0."
     },
     "scout": {
-      "title": "Sesión de Entrenamiento Especial",
-      "desc": "Entrenamiento intensivo para mejorar las estadísticas de un jugador.",
-      "no_injury_target": "Sin jugadores lesionados",
-      "no_target": "Sin objetivo válido",
-      "result_win": "¡Entrenamiento exitoso! Estadísticas aumentadas.",
-      "result_lose": "Sobrecarga física. El jugador sufre fatiga."
+      "title": "Cazatalentos Misterioso",
+      "desc": "Un cazatalentos ofrece una carta Legendary para tu posición más débil. Si ganas, la firmas gratis. Si pierdes, tu mejor jugador se lesiona: -20 en todas sus estadísticas.",
+      "stakes_label": "OFERTA DE FICHAJE DE ÉLITE:",
+      "win_label": "🟢 50% SI GANAS:",
+      "win_title": "¡Jugador LEGENDARIO Gratis!",
+      "win_detail": "(Refuerzo estelar en tu posición más débil)",
+      "lose_label": "🔴 50% SI PIERDES:",
+      "lose_title": "Lesión Grave: -20 a Todas las Stats",
+      "lose_detail": "(Afecta a tu jugador con mayor OVR)",
+      "result_win": "¡Fichaje legendario! {{newName}} se une al equipo en [{{pos}}] reemplazando a {{oldName}}.",
+      "result_lose": "¡Desastre! {{name}} se lesiona gravemente: -20 en todas sus stats por el resto de la run."
     },
     "synergy": {
-      "title": "Pacto de Alquimia de Eras",
-      "desc": "Intenta forzar la afinidad de un jugador con la sinergia de tu era principal.",
-      "no_valid_target": "Sin jugadores elegibles",
-      "result_win": "¡Afinidad lograda con éxito!",
-      "result_lose": "No hubo conexión de sinergia.",
-      "result_lose_none": "Sin cambios en la sinergia."
+      "title": "Pacto de Alquimia de Era",
+      "desc": "Elige un jugador de tu alineación: si ganas, cuenta x4 para la sinergia de su Era. Si pierdes, 2 compañeros al azar pierden la elegibilidad de Era para siempre.",
+      "stakes_label": "JUGADOR DE ERA SELECCIONADO:",
+      "win_label": "🟢 50% SI GANAS:",
+      "win_title": "¡Poder Cuádruple (x4) en su Era!",
+      "win_detail": "(Cuenta como 4 jugadores para el umbral)",
+      "lose_label": "🔴 50% SI PIERDES:",
+      "lose_title": "2 Jugadores Pierden su Sinergia",
+      "lose_detail": "(Penalización permanente por la run)",
+      "result_win": "¡Alquimia exitosa! {{name}} ahora cuenta x4 para la sinergia de {{era}}.",
+      "result_lose": "¡Falló el pacto! {{names}} pierden su elegibilidad de Era por el resto de la run."
     },
     "trade": {
-      "title": "Intercambio Sorpresa de Jugador",
-      "desc": "Negocia un traspaso a ciegas con la oficina central de la liga.",
-      "no_target": "Sin cartas para traspaso",
-      "result_win": "¡Fichaje estrella recibido a cambio!",
-      "result_lose": "El canje resultó en un jugador de rol menor."
-    }
+      "title": "Intercambio a Ciegas",
+      "desc": "Cambias a tu jugador titular más débil por una oferta a ciegas. Si ganas, el reemplazo es de rareza SUPERIOR garantizada. Si pierdes, el reemplazo es Common y la posición queda bloqueada 2 nodos.",
+      "stakes_label": "TITULAR MÁS DÉBIL EN JUEGO:",
+      "win_label": "🟢 50% SI GANAS:",
+      "win_title": "Rareza Superior Garantizada",
+      "win_detail": "(Reemplazo épico o legendario)",
+      "lose_label": "🔴 50% SI PIERDES:",
+      "lose_title": "Jugador Common + 🔒 Bloqueo 2 Nodos",
+      "lose_detail": "(Sin firmas en esa posición por 2 nodos)",
+      "result_win": "¡Gran negociación! {{oldName}} ➡️ {{newName}} ({{rarity}}) en [{{pos}}].",
+      "result_lose": "Mal negocio: {{newName}} (Common) reemplaza a {{oldName}} en [{{pos}}]. Posición bloqueada por 2 nodos."
+    },
+    "btn_view_log": "📜 VER REGISTRO DE RUN",
+    "log_modal_title": "📜 HISTORIAL DE LA RUN",
+    "log_empty": "Aún no hay eventos registrados en esta run.",
+    "budget_at_stake": "PRESUPUESTO EN JUEGO:",
+    "if_win_label": "🟢 50% SI GANAS:",
+    "triple_received": "(¡Recibes el triple!)",
+    "if_lose_label": "🔴 50% SI PIERDES:",
+    "lose_all": "(Pierdes todo)",
+    "success_chance": "PROBABILIDAD ÉXITO",
+    "fail_chance": "PROBABILIDAD FALLO"
   },
   "tutorial": {
     "got_it": "¡ENTENDIDO!",
@@ -1208,5 +1254,256 @@
   "scout_eye": "Ojo de Cazatalentos",
   "elite_negotiator": "Negociador de Élite",
   "endless_stamina": "Resistencia Inagotable",
-  "back_to_back": "Batazos Consecutivos"
+  "back_to_back": "Batazos Consecutivos",
+  "items": {
+    "bat_samurai": {
+      "title": "Madero Samurái de Precisión",
+      "desc": "Un maestro artesano japonés ofrece un madero de arce pulido al milímetro para máximo contacto.",
+      "safe_name": "Madero de Arce Tradicional",
+      "safe_text": "Comprar Madero Estándar (+20 CON)",
+      "risky_name": "Madero Samurái Maestro",
+      "risky_text": "Probar Madero Prototipo (+35 CON)",
+      "suc_msg": "¡Prueba magistral! El bateador domina el Madero Samurái Maestro (+35 CON).",
+      "fail_msg": "¡El madero se astilla en la prueba! El bateador sufre fatiga (-35 Stamina)."
+    },
+    "bat_power": {
+      "title": "El Garrote de Poder Puro",
+      "desc": "Un bate pesado de abedul de la vieja escuela diseñado para elevar la pelota a distancias monumentales.",
+      "safe_name": "Bate de Poder Pesado",
+      "safe_text": "Comprar Garrote Estándar (+20 PWR)",
+      "risky_name": "Garrote Titánico de Leyenda",
+      "risky_text": "Probar Garrote Masivo (+35 PWR)",
+      "suc_msg": "¡Poder descomunal! El bateador conquista el Garrote Titánico (+35 PWR).",
+      "fail_msg": "¡El peso excesivo provoca un tirón muscular! El bateador pierde -35 Stamina."
+    },
+    "bat_discipline": {
+      "title": "Bate de Disciplina y Ojo",
+      "desc": "Madero con marcas de zona y agarre antideslizante para evitar ponches y seleccionar lanzamientos.",
+      "safe_name": "Bate de Control de Zona",
+      "safe_text": "Comprar Bate de Control (+15 K-AVD, +15 EYE)",
+      "risky_name": "Bate Biométrico de Zona Perfecta",
+      "risky_text": "Probar Bate de Alta Precisión (+25 K-AVD, +25 EYE)",
+      "suc_msg": "¡Lectura de zona impecable! Bate Biométrico calibrado (+25 K-AVD, +25 EYE).",
+      "fail_msg": "¡La prueba se descalibra y agota la vista del bateador! (-35 Stamina)."
+    },
+    "bat_hybrid": {
+      "title": "Bate Compuesto Balanceado",
+      "desc": "Aleación de grafeno y madera híbrida que potencia equilibradamente tanto el contacto como la fuerza.",
+      "safe_name": "Bate de Compuesto Homologado",
+      "safe_text": "Comprar Bate Híbrido (+10 CON, +10 PWR)",
+      "risky_name": "Bate de Hyper-Carbono Equilibrado",
+      "risky_text": "Probar Prototipo Hyper-Carbono (+18 CON, +18 PWR)",
+      "suc_msg": "¡Equilibrio demoledor! Bate de Hyper-Carbono adquirido (+18 CON, +18 PWR).",
+      "fail_msg": "¡Fallo de resonancia en el impacto! El bateador sufre agotamiento (-35 Stamina)."
+    },
+    "spikes_speed": {
+      "title": "Spikes Ultraligeros de Velocista",
+      "desc": "Calzado de suela de carbono para máxima aceleración en las almohadillas y robos de base.",
+      "safe_name": "Spikes de Tracción Ligera",
+      "safe_text": "Comprar Spikes Ligeros (+25 SPD)",
+      "risky_name": "Spikes de Oro de Lou Brock",
+      "risky_text": "Probar Calzado de Oro (+45 SPD)",
+      "suc_msg": "¡Velocidad supersónica! Spikes de Oro equipados (+45 SPD).",
+      "fail_msg": "¡El sprint extremo agota las piernas del corredor! (-35 Stamina)."
+    },
+    "shoes_contact": {
+      "title": "Zapatillas de Tracción & Contacto",
+      "desc": "Calzado con soporte de balance en la caja de bateo para impulsar al leadoff hitter.",
+      "safe_name": "Calzas de Balance y Pista",
+      "safe_text": "Comprar Zapatillas (+15 SPD, +10 CON)",
+      "risky_name": "Zapatillas Turbo de Atletismo",
+      "risky_text": "Probar Zapatillas Turbo (+25 SPD, +20 CON)",
+      "suc_msg": "¡Arranque perfecto! Zapatillas Turbo equipadas (+25 SPD, +20 CON).",
+      "fail_msg": "¡El calzado rígido causa calambres en la prueba! (-35 Stamina)."
+    },
+    "shoes_defense": {
+      "title": "Calzas de Cuadro & Reacción",
+      "desc": "Diseñadas para defensores del cuadro y jardineros que necesitan cubrir amplio terreno.",
+      "safe_name": "Spikes de Terreno Mixto",
+      "safe_text": "Comprar Calzas (+15 SPD, +15 DEF)",
+      "risky_name": "Spikes Blindados de Reacción Rápida",
+      "risky_text": "Probar Spikes Blindados (+25 SPD, +25 DEF)",
+      "suc_msg": "¡Reflejos felinos! Spikes Blindados equipados (+25 SPD, +25 DEF).",
+      "fail_msg": "¡La sesión intensa de fildeo agota al jugador! (-35 Stamina)."
+    },
+    "shoes_endurance": {
+      "title": "Calzado de Resistencia Muscular",
+      "desc": "Plantillas de absorción de impacto y suelas ergonómicas que reducen la fatiga por partido.",
+      "safe_name": "Plantillas Ortopédicas Pro",
+      "safe_text": "Comprar Plantillas (+15 SPD, -50% Gasto Energía)",
+      "risky_name": "Vendaje Biomecánico Infinito",
+      "risky_text": "Probar Vendaje Biomecánico (+30 SPD, Inmune a Fatiga)",
+      "suc_msg": "¡Resistencia infinita! El jugador nunca perderá energía (+30 SPD).",
+      "fail_msg": "¡El vendaje mal colocado provoca un tirón muscular! (-35 Stamina)."
+    },
+    "glove_gold": {
+      "title": "Guante de Oro de Cuero Artesanal",
+      "desc": "Cuero curtido a mano con canasta profunda para atrapar cualquier batazo difícil.",
+      "safe_name": "Guantelete de Cuero de Calidad",
+      "safe_text": "Comprar Guante Artesanal (+25 DEF)",
+      "risky_name": "Guante de Oro Legendario de Rawlings",
+      "risky_text": "Probar Guante de Oro Legendario (+45 DEF)",
+      "suc_msg": "¡Muralla defensiva! Guante de Oro Legendario equipado (+45 DEF).",
+      "fail_msg": "¡El cuero se rompe en la prueba! El fildeador pierde -35 Stamina."
+    },
+    "glove_power": {
+      "title": "Muñequeras de Cuero & Fuerza",
+      "desc": "Protección reforzada en las muñecas para fildeadores de poder en las esquinas.",
+      "safe_name": "Muñequeras Clásicas de Algodón",
+      "safe_text": "Comprar Muñequeras (+15 DEF, +10 PWR)",
+      "risky_name": "Muñequeras Blindadas de Kevlar",
+      "risky_text": "Probar Muñequeras Blindadas (+25 DEF, +20 PWR)",
+      "suc_msg": "¡Fuerza y seguridad! Muñequeras de Kevlar equipadas (+25 DEF, +20 PWR).",
+      "fail_msg": "¡El vendaje apretado entumece las manos del jugador! (-35 Stamina)."
+    },
+    "glove_contact": {
+      "title": "Manopla de Contacto & Fildeo",
+      "desc": "Manopla flexible de malla de trapecio para infielders que combinan bateo de hit y manos suaves.",
+      "safe_name": "Manopla de Fildeo Ligera",
+      "safe_text": "Comprar Manopla (+15 DEF, +10 CON)",
+      "risky_name": "Manopla Trapezoide Japonesa",
+      "risky_text": "Probar Manopla Trapezoide (+25 DEF, +20 CON)",
+      "suc_msg": "¡Manos de seda! Manopla Trapezoide equipada (+25 DEF, +20 CON).",
+      "fail_msg": "¡El jugador se sobreexige en los ejercicios de reflejos! (-35 Stamina)."
+    },
+    "glove_energy": {
+      "title": "Peto / Protector de Energía",
+      "desc": "Protección ergonómica de pecho que absorbe el impacto de choques y conserva la energía del jugador.",
+      "safe_name": "Peto de Espuma Acolchada",
+      "safe_text": "Comprar Peto (+15 DEF, -50% Gasto Energía)",
+      "risky_name": "Armadura de Titanio de Receptor",
+      "risky_text": "Probar Armadura de Titanio (+25 DEF, Inmune a Fatiga)",
+      "suc_msg": "¡Blindaje total! El jugador nunca perderá energía (+25 DEF).",
+      "fail_msg": "¡Los impactos directos en la prueba agotan al jugador! (-35 Stamina)."
+    },
+    "acc_glasses": {
+      "title": "Lentes Polarizados de Alta Definición",
+      "desc": "Gafas de precisión antirreflejo para una visión nítida de los lanzamientos y la zona de strike.",
+      "safe_name": "Gafas Antirreflejo Pro",
+      "safe_text": "Comprar Gafas (+25 EYE)",
+      "risky_name": "Lentes Holográficos de Visión Térmica",
+      "risky_text": "Probar Lentes Holográficos (+45 EYE)",
+      "suc_msg": "¡Visión cibernética! Lentes Holográficos equipados (+45 EYE).",
+      "fail_msg": "¡La graduación incorrecta cansa la vista del bateador! (-35 Stamina)."
+    },
+    "acc_wristband": {
+      "title": "Muñequera Táctica de Scouteo",
+      "desc": "Tarjeta de tendencias de pitcheo en la muñeca para anticipar la secuencia del rival.",
+      "safe_name": "Tarjeta de Scouteo Tradicional",
+      "safe_text": "Comprar Muñequera (+15 EYE, +10 CON)",
+      "risky_name": "Pulsera Digital de Scouteo Avanzado",
+      "risky_text": "Probar Pulsera Digital (+25 EYE, +20 CON)",
+      "suc_msg": "¡Scouteo perfecto! Pulsera Digital equipada (+25 EYE, +20 CON).",
+      "fail_msg": "¡La sobrecarga de información confunde al bateador! (-35 Stamina)."
+    },
+    "acc_helmet": {
+      "title": "Casco Blindado con Extensión Facial",
+      "desc": "Casco aerodinámico con protector de mandíbula para pararse en el plato con total confianza.",
+      "safe_name": "Casco Reforzado Pro",
+      "safe_text": "Comprar Casco Reforzado (+25 K-AVD)",
+      "risky_name": "Casco Blindado de Titanio",
+      "risky_text": "Probar Casco de Titanio (+45 K-AVD)",
+      "suc_msg": "¡Confianza absoluta en el plato! Casco de Titanio (+45 K-AVD).",
+      "fail_msg": "¡El peso del casco fatiga el cuello del bateador! (-35 Stamina)."
+    },
+    "acc_gum": {
+      "title": "Chicle de la Suerte de Serie Mundial",
+      "desc": "Goma de mascar bendecida de los años 80 que eleva la moral y todos los atributos.",
+      "safe_name": "Chicle Energético Clásico",
+      "safe_text": "Comprar Chicle (+10 a Todos los Stats)",
+      "risky_name": "Chicle Dorado de Grand Slam",
+      "risky_text": "Probar Chicle Dorado (+18 a Todos los Stats)",
+      "suc_msg": "¡Aura de campeón! Chicle Dorado consumido (+18 a Todos los Stats).",
+      "fail_msg": "¡Indigestión estomacal! El jugador pierde -35 Stamina."
+    },
+    "energy_drink": {
+      "title": "Bebida Isotónica de Electrolitos",
+      "desc": "Fórmula rehidratante de absorción celular ultra-rápida para revitalizar músculos.",
+      "safe_name": "Bebida Isotónica Rehidratante",
+      "safe_text": "Comprar Bebida (+50 Energía)",
+      "risky_name": "Fórmula Energética Concentrada",
+      "risky_text": "Probar Fórmula (+100% Energía, +5 CON/SPD/DEF Perm.)",
+      "suc_msg": "¡Revitalización total! +100% Energía y +5 CON, +5 SPD, +5 DEF permanentes.",
+      "fail_msg": "¡Reacción alérgica a los electrolitos! El jugador pierde -35 Stamina."
+    },
+    "energy_icebath": {
+      "title": "Baño de Hielo & Crioterapia",
+      "desc": "Terapia de frío extremo para desinflamar tendones y recuperar la frescura de todo el equipo.",
+      "safe_name": "Terapia de Hielo Convencional",
+      "safe_text": "Comprar Baño (+40 Jugador, +20 Equipo)",
+      "risky_name": "Cámara Criogénica Avanzada",
+      "risky_text": "Probar Cámara Criogénica (+70 Energía a Todo el Equipo)",
+      "suc_msg": "¡Recuperación masiva! +70 de Energía restaurada a todo el equipo.",
+      "fail_msg": "¡Choque térmico en la cámara! El jugador de prueba pierde -35 Stamina."
+    },
+    "energy_massage": {
+      "title": "Sesión de Masaje & Fisioterapia",
+      "desc": "Técnicas de liberación miofascial y quiropráctica para relajar tensiones y afinar los sentidos.",
+      "safe_name": "Masaje Deportivo Relajante",
+      "safe_text": "Comprar Masaje (+70 Energía)",
+      "risky_name": "Tratamiento Quiropráctico Maestro",
+      "risky_text": "Probar Sesión Maestra (+100% Energía, +10 EYE/K-AVD Perm.)",
+      "suc_msg": "¡Claridad y relajación total! +100% Energía y +10 EYE, +10 K-AVD permanentes.",
+      "fail_msg": "¡Tirón muscular en la camilla! El jugador pierde -35 Stamina."
+    },
+    "energy_shake": {
+      "title": "Batido de Proteína Concentrado",
+      "desc": "Suplemento nutricional de alta densidad calórica y aminoácidos para aumentar masa y fuerza.",
+      "safe_name": "Batido Proteico de Vestuario",
+      "safe_text": "Comprar Batido (+40 Energía, +5 PWR Perm.)",
+      "risky_name": "Batido de Alta Potencia",
+      "risky_text": "Probar Batido Concentrado (+80 Energía, +10 PWR Perm.)",
+      "suc_msg": "¡Fuerza explosiva! +80 de Energía y +10 PWR permanente para siempre.",
+      "fail_msg": "¡Sobredosis de cafeína y fatiga! El jugador pierde -35 Stamina."
+    }
+  },
+  "equip": {
+    "slot_empty": "Ranura Vacía (Sin Ítem)",
+    "slot_title": "🎒 Equipamiento / Ítem",
+    "btn_equip": "Equipar Ítem",
+    "btn_unequip": "Desequipar a Mochila",
+    "backpack_title": "🎒 Mochila & Equipamiento del Club",
+    "backpack_empty": "Tu mochila está vacía. Consigue equipamiento en los talleres y eventos de la ruta.",
+    "test_cage_title": "⚾ JAULA DE PRUEBAS / TALLER",
+    "test_cage_desc": "Selecciona qué bateador entrará a probar este prototipo experimental:",
+    "test_cage_btn": "🔥 Entrar a la Jaula de Prueba (60% Éxito)",
+    "auto_unequipped_alert": "🎒 {{item}} desequipado y devuelto a tu mochila.",
+    "item_equipped_alert": "✅ {{item}} equipado en {{player}}.",
+    "item_unequipped_alert": "🎒 {{item}} guardado en la mochila.",
+    "select_item_to_equip": "Selecciona un ítem de tu mochila para equipar en {{player}}:",
+    "no_items_in_backpack": "No tienes ítems disponibles en la mochila.",
+    "event_workshop_title": "🛠️ TALLER DE EQUIPAMIENTO & SUMINISTROS",
+    "event_reject_btn": "Rechazar Oferta (Continuar sin gastar)",
+    "choice_safe_badge": "🟢 SEGURO (100%)",
+    "choice_risky_badge": "🔴 RIESGO (60% JAULA)",
+    "choice_reject_badge": "⚪ PASAR",
+    "consumable_tag": "🧪 CONSUMIBLE (1 SOLO USO)",
+    "equipable_tag": "🎒 EQUIPAMIENTO PERMANENTE",
+    "consumed_success": "¡{{item}} consumido por {{player}}!",
+    "equipped_success": "¡{{item}} equipado en {{player}}!",
+    "roulette_title": "🎡 JAULA DE PRUEBAS: RULETA DE PROTOTIPO",
+    "roulette_spinning": "⏳ Probando en la jaula...",
+    "roulette_success": "✅ ¡ÉXITO! ¡PROTOTIPO APROBADO!",
+    "roulette_fail": "❌ ¡FALLO! EL PROTOTIPO SE ROMPIÓ",
+    "roulette_center_success": "ÉXITO",
+    "roulette_center_fail": "FALLO",
+    "result_cage_success_title": "🏆 ¡PROTOTIPO LEGENDARIO DESBLOQUEADO!",
+    "result_cage_fail_title": "💥 ¡FALLO EN LA JAULA DE PRUEBAS!",
+    "result_safe_buy_title": "🎉 ¡EQUIPAMIENTO ADQUIRIDO!",
+    "store_safe_card_title": "🟢 COMPRA SEGURA (100%)",
+    "store_safe_card_desc": "Compra inmediata sin riesgos. Se guarda en tu mochila de ITEMS.",
+    "store_risky_card_title": "🔴 JAULA DE PRUEBAS (60% RIESGO)",
+    "store_risky_card_desc": "Descuento masivo por probar el prototipo. Si aprueba ganas la versión Legendaria; si falla, el bateador pierde -35 Stamina.",
+    "store_reject_card_title": "⚪ RECHAZAR OFERTA",
+    "store_reject_card_desc": "Continuar tu camino sin gastar presupuesto.",
+    "store_btn_buy_safe": "COMPRAR POR ${{cost}}",
+    "store_btn_test_risky": "PROBAR PROTOTIPO (${{cost}})",
+    "store_btn_reject": "PASAR OFERTA",
+    "store_category_bat": "🪵 BATE OFENSIVO",
+    "store_category_shoes": "👟 CALZADO & SPEED",
+    "store_category_glove": "🧤 GUANTE & DEFENSA",
+    "store_category_accessory": "👓 ACCESORIO TÁCTICO",
+    "store_category_consumable": "🧪 CONSUMIBLE DE ENERGÍA",
+    "stamina_penalty_badge": "⚡ PENALIZACIÓN DE STAMINA"
+  }
 }

@@ -759,6 +759,74 @@
       noise(0.60, 0.20, 0.10, 300, 'lowpass');
     },
 
+    // 21. ERROR & FAILURE SFX
+    error() {
+      this.defense_error();
+    },
+    fail() {
+      this.defense_error();
+    },
+    gamble_fail() {
+      this.defense_error();
+    },
+    item_fail() {
+      this.defense_error();
+    },
+
+    // 22. ITEM EQUIP — tactile buckle click + soft chime
+    item_equip() {
+      noise(0.04, 0.22, 0.0, 3500, 'bandpass');
+      tone(523.25, 0.06, 'sine', 0.16, 0.00);
+      tone(783.99, 0.08, 'sine', 0.18, 0.04);
+    },
+
+    // 23. ITEM USE (Consumable) — sparkle energy swish
+    item_use() {
+      noise(0.08, 0.16, 0.0, 4800, 'highpass');
+      tone(659.25, 0.08, 'sine', 0.14, 0.00);
+      tone(880.00, 0.10, 'sine', 0.16, 0.05);
+      tone(1318.51, 0.15, 'sine', 0.18, 0.10);
+    },
+
+    // 24. MONEY / COIN SPEND — crisp retro coin jingle
+    money() {
+      tone(987.77, 0.05, 'square', 0.11, 0.00, 0.002, 0.04); // B5
+      tone(1318.51, 0.10, 'square', 0.13, 0.04, 0.002, 0.08); // E6
+    },
+    coin_spend() {
+      this.money();
+    },
+
+    // 25. MAP NODE SELECT — gentle tactile woody step
+    map_node_select() {
+      tone(440, 0.035, 'triangle', 0.12, 0.00);
+      noise(0.025, 0.08, 0.00, 1800, 'bandpass');
+    },
+    map_step() {
+      this.map_node_select();
+    },
+
+    // 26. SYNERGY TIER UP — uplifting harmonic activation chime
+    synergy_tier_up() {
+      tone(523.25, 0.09, 'sine', 0.16, 0.00);
+      tone(659.25, 0.09, 'sine', 0.16, 0.00);
+      tone(783.99, 0.16, 'sine', 0.20, 0.07);
+      tone(1046.50, 0.22, 'sine', 0.22, 0.07);
+    },
+
+    // 27. PLAYER RELEASE / CARD WHOOSH — soft dismissal slide
+    player_release() {
+      noise(0.09, 0.18, 0.0, 2200, 'bandpass');
+      tone(329.63, 0.07, 'triangle', 0.11, 0.00);
+      tone(261.63, 0.10, 'triangle', 0.09, 0.04);
+    },
+
+    card_flip() {
+      this.card_deal();
+    },
+    upgrade() {
+      this.synergy_tier_up();
+    }
   };
 
   // ── Public API ────────────────────────────────────────────────────────────────
@@ -774,6 +842,10 @@
         const fn = sounds[key];
         if (fn) fn(arg);
       } catch (e) {}
+    },
+
+    playSound(key, arg) {
+      this.play(key, arg);
     },
 
     /**
@@ -975,5 +1047,6 @@
   }
 
   window.AudioManager = AudioManager;
+  window.Sound = AudioManager;
 
 })();
