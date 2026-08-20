@@ -1242,7 +1242,7 @@
       const isOOP = (!isNative && !isSecondary && pos !== 'DH');
 
       // Formula: 20% Base + (0.70 * DEF), min 20%, max 100%
-      const successThreshold = Math.max(20, Math.min(100, Math.round(20 + (effDef * 0.70))));
+      const successThreshold = Math.max(35, Math.min(100, Math.round(35 + (effDef * 0.65))));
       const successChance = successThreshold / 100;
 
       // Realistic baseball hit metrics for immersion
@@ -1294,8 +1294,8 @@
       let shieldDmg = 0;
 
       if (isSuccess) {
-        const baseHpReward = isClutchPlay ? 40 : 30;
-        const baseShieldReward = isClutchPlay ? 25 : 15;
+        const baseHpReward = isClutchPlay ? 50 : 30;
+        const baseShieldReward = isClutchPlay ? 30 : 15;
         hpHealed = Math.min(100 - this.teamHP, baseHpReward);
         this.teamHP = Math.min(100, this.teamHP + baseHpReward);
         shieldHealed = Math.min(this.teamShieldMax - this.teamShield, baseShieldReward);
@@ -1304,7 +1304,7 @@
         const playText = `🛡️ [${_t('sim.def_success_title', {}, '¡JUGADA DE GUANTE DE ORO!')}] ${eventData.player.name} (${eventData.pos}) ${_t('sim.def_success_desc', { roll, thresh: targetThreshold }, `completa una atrapada sensacional (Dado: ${roll}/${targetThreshold})`)}. ${_t('sim.def_success_reward', { hp: baseHpReward, shield: baseShieldReward }, `¡Recuperas +${baseHpReward} HP y +${baseShieldReward} de Escudo!`)}`;
         this.logEvent('DEFENSE_PLAY', playText, 'DEF_WIN', eventData.player.name, 0, 0, 0);
       } else {
-        const outDmg = isClutchPlay ? 25 : 18;
+        const outDmg = isClutchPlay ? 25 : 15;
         if (this.teamShield > 0) {
           shieldDmg = Math.min(this.teamShield, outDmg);
           this.teamShield -= shieldDmg;
