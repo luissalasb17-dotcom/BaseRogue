@@ -2409,14 +2409,13 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
         return this.currentEnemy;
       }
 
-      // Map 3 Boss (Stage 11): 1 Legendary, 1 Epic, 1 Rare
+      // Map 3 Boss (Stage 11): 1 Legendary, 2 Epic
       if (stage === 11) {
         const legPool  = fullPool.filter(p => p.rarity === 'Legendary');
         const epicPool = fullPool.filter(p => p.rarity === 'Epic');
-        const rarePool = fullPool.filter(p => p.rarity === 'Rare');
         const p1 = createPitcherObj(pickPitcher(legPool.length ? legPool : fullPool, 'SP'), 'SP');
         const p2 = createPitcherObj(pickPitcher(epicPool.length ? epicPool : fullPool, 'SP'), 'SP');
-        const p3 = createPitcherObj(pickPitcher(rarePool.length ? rarePool : fullPool, 'RP'), 'RP');
+        const p3 = createPitcherObj(pickPitcher(epicPool.length > 1 ? epicPool : fullPool, 'RP'), 'RP');
         const selected = [p1, p2, p3];
         this.currentEnemy = {
           id: `boss_map3_${Date.now()}`,
