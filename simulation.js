@@ -1032,10 +1032,6 @@
         let batterPlayText = `🎲 [${roll}] [${labelOutcome}] ¡${batter.name} ${hitDesc}! `;
         playText = batterPlayText;
 
-        if (this.pitcherDebuff && this.pitcherDebuff.turnsLeft > 0) {
-          this.pitcherDebuff.turnsLeft--;
-        }
-
         playText += _t('sim.runs_scored', { runs: runsThisTurn, pitcher: pitcher.name, dmg: pitcherDmg }, `Anotan ${runsThisTurn} carreras. ${pitcher.name} sufre ${pitcherDmg} HP de daño`) + '.';
         if (spdProc) playText += ` ${spdProc}`;
         if (errorProc) playText += ` ${errorProc}`;

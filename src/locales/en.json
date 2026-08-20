@@ -520,7 +520,7 @@
     "def_catch_zone": "CATCH ZONE",
     "def_error_zone": "ERROR",
     "def_safe_tactic_title": "🛡️ REGULAR PLAY",
-    "def_safe_tactic_desc": "Secure the catch (Standard Target • +30 HP)",
+    "def_safe_tactic_desc": "Secure the catch (Standard Target • +30 HP & +15 Shield)",
     "def_clutch_tactic_title": "⚡ HIGHLIGHT DIVE",
     "def_clutch_tactic_desc": "Diving play (-12% Target • +40 HP & +25 Shield)",
     "def_safe_name": "🛡️ Regular Play",

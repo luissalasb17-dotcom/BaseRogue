@@ -520,7 +520,7 @@
     "def_catch_zone": "ZONA DE ATRAPADA",
     "def_error_zone": "ERROR",
     "def_safe_tactic_title": "🛡️ JUGADA REGULAR",
-    "def_safe_tactic_desc": "Asegurar el guante (Meta estándar • +30 HP)",
+    "def_safe_tactic_desc": "Asegurar el guante (Meta estándar • +30 HP & +15 Escudo)",
     "def_clutch_tactic_title": "⚡ JUGADA DE LUJO",
     "def_clutch_tactic_desc": "Tirarse de cabeza (-12% Meta • +40 HP & +25 Escudo)",
     "def_safe_name": "🛡️ Jugada Regular",
