@@ -6252,12 +6252,12 @@ body.on-main-menu .main-container {
 .def-modal-box {
   background: linear-gradient(180deg, #091322 0%, #050b14 100%) !important;
   border: 2px solid #38bdf8;
-  border-radius: 12px;
+  border-radius: 14px;
   animation: def-tension-pulse 3.5s ease-in-out infinite;
   overflow: hidden;
   position: relative;
-  max-width: 440px !important;
-  padding: 10px 14px !important;
+  max-width: 480px !important;
+  padding: 14px 18px !important;
 }
 
 .def-scanline-bar {
@@ -6278,39 +6278,39 @@ body.on-main-menu .main-container {
   background: rgba(15, 23, 42, 0.85);
   border: 1px solid #fbbf24;
   box-shadow: 0 0 10px rgba(251, 191, 36, 0.3);
-  padding: 3px 8px;
+  padding: 4px 10px;
   border-radius: 14px;
   font-family: 'Press Start 2P', monospace;
-  font-size: 7px;
+  font-size: 7.5px;
   color: #fef08a;
   letter-spacing: 0.5px;
   animation: def-radar-sweep 2.5s ease-in-out infinite;
-  margin-bottom: 2px;
+  margin-bottom: 4px;
 }
 
 #def-modal-title {
-  font-size: 9.5px;
-  margin-bottom: 2px;
-  line-height: 1.25;
+  font-size: 10.5px;
+  margin-bottom: 3px;
+  line-height: 1.3;
 }
 
 #def-modal-scenario {
-  font-size: 7.5px;
-  margin-bottom: 5px;
-  line-height: 1.2;
+  font-size: 8px;
+  margin-bottom: 8px;
+  line-height: 1.25;
 }
 
 /* ── RETRO BASEBALL FIELD RADAR ─────────────────────────────────────────── */
 .def-field-radar-card {
   position: relative;
   width: 100%;
-  height: 105px !important;
+  height: 150px !important;
   background: radial-gradient(circle at 50% 85%, #0d281a 0%, #041009 100%);
   border: 2px solid #10b981;
-  border-radius: 8px;
+  border-radius: 10px;
   overflow: hidden;
-  margin-bottom: 5px !important;
-  box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.85), 0 0 15px rgba(16, 185, 129, 0.2);
+  margin-bottom: 8px !important;
+  box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.85), 0 0 18px rgba(16, 185, 129, 0.25);
 }
 
 @keyframes def-target-ring-pulse {
@@ -6329,7 +6329,7 @@ body.on-main-menu .main-container {
 
 .def-pos-node text {
   font-family: 'Press Start 2P', monospace;
-  font-size: 7px;
+  font-size: 7.5px;
   fill: #94a3b8;
   text-anchor: middle;
   dominant-baseline: central;
@@ -6337,7 +6337,7 @@ body.on-main-menu .main-container {
 
 .def-pos-target-node text {
   font-family: 'Press Start 2P', monospace;
-  font-size: 7.5px;
+  font-size: 8px;
   font-weight: bold;
   fill: #fef08a;
   text-anchor: middle;
@@ -6349,15 +6349,15 @@ body.on-main-menu .main-container {
 .def-tactics-selector {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 6px !important;
-  margin-bottom: 5px !important;
+  gap: 8px !important;
+  margin-bottom: 8px !important;
 }
 
 .def-tactic-card {
   background: rgba(15, 23, 42, 0.8);
   border: 1.5px solid rgba(255, 255, 255, 0.15);
   border-radius: 8px;
-  padding: 5px 4px !important;
+  padding: 8px 6px !important;
   cursor: pointer;
   text-align: center;
   transition: all 0.2s ease;
@@ -6371,68 +6371,68 @@ body.on-main-menu .main-container {
 
 .def-tactic-card.active {
   border-color: #fbbf24;
-  background: linear-gradient(135deg, rgba(251, 191, 36, 0.15) 0%, rgba(217, 119, 6, 0.25) 100%);
-  box-shadow: 0 0 12px rgba(251, 191, 36, 0.35);
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.18) 0%, rgba(217, 119, 6, 0.28) 100%);
+  box-shadow: 0 0 14px rgba(251, 191, 36, 0.4);
 }
 
 .def-tactic-title {
-  font-size: 7px !important;
+  font-size: 8px !important;
   color: #fff;
-  margin-bottom: 2px !important;
+  margin-bottom: 4px !important;
   letter-spacing: 0.5px;
 }
 
 .def-tactic-desc {
-  font-size: 5.5px !important;
-  color: #94a3b8;
-  line-height: 1.2 !important;
+  font-size: 7px !important;
+  color: #cbd5e1 !important;
+  line-height: 1.35 !important;
 }
 
 .def-fielder-card {
   background: linear-gradient(135deg, rgba(30, 41, 59, 0.85) 0%, rgba(15, 23, 42, 0.95) 100%);
   border: 1px solid rgba(251, 191, 36, 0.4);
-  box-shadow: 0 0 15px rgba(0, 0, 0, 0.6), inset 0 0 10px rgba(251, 191, 36, 0.08);
-  border-radius: 8px;
-  padding: 5px 8px !important;
+  box-shadow: 0 0 16px rgba(0, 0, 0, 0.6), inset 0 0 10px rgba(251, 191, 36, 0.08);
+  border-radius: 10px;
+  padding: 8px 12px !important;
   display: flex;
   align-items: center;
-  gap: 8px !important;
+  gap: 10px !important;
   text-align: left;
-  margin-bottom: 5px !important;
+  margin-bottom: 8px !important;
 }
 
 .def-fielder-avatar {
-  font-size: 18px !important;
-  width: 32px !important;
-  height: 32px !important;
+  font-size: 22px !important;
+  width: 38px !important;
+  height: 38px !important;
   background: linear-gradient(135deg, rgba(56, 189, 248, 0.2) 0%, rgba(251, 191, 36, 0.2) 100%);
   border: 1.5px solid #fbbf24;
-  border-radius: 6px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  box-shadow: 0 0 10px rgba(251, 191, 36, 0.35);
+  box-shadow: 0 0 12px rgba(251, 191, 36, 0.35);
 }
 
 /* Tension Probability Gauge */
 #def-modal-gauge-zone {
-  margin-bottom: 5px !important;
+  margin-bottom: 8px !important;
 }
 
 #def-modal-gauge-zone span {
-  font-size: 6px !important;
+  font-size: 6.5px !important;
 }
 
 .def-gauge-wrapper {
   background: #020617;
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 6px;
-  height: 11px !important;
+  height: 14px !important;
   position: relative;
   overflow: hidden;
   display: flex;
-  margin: 3px 0 2px 0 !important;
+  margin: 4px 0 2px 0 !important;
   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.8);
 }
 
@@ -6455,9 +6455,9 @@ body.on-main-menu .main-container {
   position: absolute;
   top: -2px;
   bottom: -2px;
-  width: 4px;
+  width: 3px;
   background: #ffffff;
-  box-shadow: 0 0 8px #fff, 0 0 14px #fbbf24;
+  box-shadow: 0 0 6px #fff, 0 0 10px #fbbf24;
   transform: translateX(-50%);
   z-index: 10;
   border-radius: 2px;

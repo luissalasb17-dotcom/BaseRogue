@@ -613,7 +613,7 @@
           `${pitcher.name} ${_t('sim.pitcher_dmg_txt', { dmg: pitcherDmg }, 'sufre ' + pitcherDmg + ' HP de daño')}.`;
 
         // Steal Proc Logic on BB if batter ends on 1B and 2B is empty
-        let stealChance = Math.min(1.0, Math.max(0.05, (15 + ((effBatter.spd || 50) * 0.70)) / 100));
+        let stealChance = Math.min(1.0, Math.max(0.10, (effBatter.spd || 50) / 100));
         let stealHeal = 0;
         let extraStealDmg = 0;
         let debuffTurns = 2;
@@ -1011,7 +1011,7 @@
         }
 
         if (eventType === '1B') {
-          let stealChance = Math.min(1.0, Math.max(0.05, (15 + ((effBatter.spd || 50) * 0.70)) / 100));
+          let stealChance = Math.min(1.0, Math.max(0.10, (effBatter.spd || 50) / 100));
           let stealHeal = 0;
           let extraStealDmg = 0;
           let debuffTurns = 2;
@@ -1078,7 +1078,7 @@
         }
         // Steal 3rd base on Double if 3B is open
         if (hitType === 'DOUBLE' && this.bases[1] === batter && !this.bases[2]) {
-          let steal3BChance = Math.min(0.70, Math.max(0.15, 0.08 + ((effBatter.spd || 0) * 0.0045)));
+          let steal3BChance = Math.min(0.70, Math.max(0.10, ((effBatter.spd || 50) / 2) / 100));
           let debuffTurns = 2;
           let debuffMult = 1.20;
           let steal3BProcMsg = '';
