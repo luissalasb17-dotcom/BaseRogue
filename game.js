@@ -1717,13 +1717,15 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
         }
       });
 
-      // Franchise Team Morale Synergy
+      // Franchise Team Morale Synergy (2: +4, 3: +6, 4+: +8 to all combat stats)
       if (player.team !== 'ROOK' && player.team !== 'None') {
         const teamCount = this.getActiveFranchiseCounts(contextRoster)[player.team] || 0;
         if (teamCount >= 4) {
-          con += 5; pwr += 5; eye += 5; kavd += 5; spd += 5; def += 5;
-        } else if (teamCount >= 2) {
-          con += 2; pwr += 2; eye += 2; kavd += 2; spd += 2; def += 2;
+          con += 8; pwr += 8; eye += 8; kavd += 8; spd += 8; def += 8;
+        } else if (teamCount === 3) {
+          con += 6; pwr += 6; eye += 6; kavd += 6; spd += 6; def += 6;
+        } else if (teamCount === 2) {
+          con += 4; pwr += 4; eye += 4; kavd += 4; spd += 4; def += 4;
         }
       }
 

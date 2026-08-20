@@ -4965,7 +4965,9 @@ function initGameModeSelector() {
       else if (count >= 2) currentTotalTiers += 1;
     });
     Object.keys(teamCounts).forEach(tm => {
-      if (teamCounts[tm] >= 2) currentTotalTiers += (teamCounts[tm] >= 4 ? 2 : 1);
+      if (teamCounts[tm] >= 4) currentTotalTiers += 3;
+      else if (teamCounts[tm] === 3) currentTotalTiers += 2;
+      else if (teamCounts[tm] === 2) currentTotalTiers += 1;
     });
 
     if (window.Game && window.Game._lastSynergyTiersCount !== undefined && currentTotalTiers > window.Game._lastSynergyTiersCount) {
@@ -5052,6 +5054,8 @@ function initGameModeSelector() {
       let itemClass = "synergy-list-item";
       if (count >= 4) {
         itemClass += " active-level-2";
+      } else if (count >= 3) {
+        itemClass += " active tier-2";
       } else if (count >= 2) {
         itemClass += " active";
       }
@@ -5066,8 +5070,12 @@ function initGameModeSelector() {
       }
 
       const desc = count >= 4 
-        ? t('sidebar.dynasty_desc', { team: team })
-        : t('sidebar.chemistry_desc', { team: team });
+        ? t('sidebar.dynasty_desc', { team: team, defaultValue: `Dinastía (4+): Jugadores de ${team} obtienen +8 a todos sus stats en combate.` })
+        : count === 3
+        ? t('sidebar.brotherhood_desc', { team: team, defaultValue: `Hermandad (3): Jugadores de ${team} obtienen +6 a todos sus stats en combate.` })
+        : count === 2
+        ? t('sidebar.chemistry_desc', { team: team, defaultValue: `Química (2): Jugadores de ${team} obtienen +4 a todos sus stats en combate.` })
+        : t('sidebar.franchise_base_desc', { team: team, defaultValue: `Recluta 2 o más jugadores de ${team} para activar bonos de franquicia (+4 / +6 / +8 stats).` });
 
       item.innerHTML = `
         <div class="synergy-item-header">
@@ -5315,10 +5323,13 @@ function initGameModeSelector() {
       const teamShort = player.team;
       if (currentTeamCount === 1) {
         predictionText += (typeof t === 'function' ? t('sign.chemistry_active', { team: teamShort, defaultValue: `Signing activates <strong>${teamShort}</strong> Chemistry (+4 stats)` }) : `Signing activates <strong>${teamShort}</strong> Chemistry (+4 stats)`);
+      } else if (currentTeamCount === 2) {
+        predictionText += (typeof t === 'function' ? t('sign.brotherhood_active', { team: teamShort, defaultValue: `Signing activates <strong>${teamShort}</strong> Brotherhood (+6 stats)` }) : `Signing activates <strong>${teamShort}</strong> Brotherhood (+6 stats)`);
       } else if (currentTeamCount === 3) {
-        predictionText += (typeof t === 'function' ? t('sign.dynasty_active', { team: teamShort, defaultValue: `Signing activates <strong>${teamShort}</strong> Dynasty (+10 stats)` }) : `Signing activates <strong>${teamShort}</strong> Dynasty (+10 stats)`);
+        predictionText += (typeof t === 'function' ? t('sign.dynasty_active', { team: teamShort, defaultValue: `Signing activates <strong>${teamShort}</strong> Dynasty (+8 stats)` }) : `Signing activates <strong>${teamShort}</strong> Dynasty (+8 stats)`);
       } else {
-        predictionText += (typeof t === 'function' ? t('sign.franchise_progress', { team: teamShort, count: currentTeamCount, next: currentTeamCount + 1, defaultValue: `Franchise ${teamShort}: ${currentTeamCount} ➡️ <strong>${currentTeamCount + 1}/2</strong>` }) : `Franchise ${teamShort}: ${currentTeamCount} ➡️ <strong>${currentTeamCount + 1}/2</strong>`);
+        const next = Math.min(4, currentTeamCount + 1);
+        predictionText += (typeof t === 'function' ? t('sign.franchise_progress', { team: teamShort, count: currentTeamCount, next: next, defaultValue: `Franchise ${teamShort}: ${currentTeamCount} ➡️ <strong>${next}/4</strong>` }) : `Franchise ${teamShort}: ${currentTeamCount} ➡️ <strong>${next}/4</strong>`);
       }
     }
 

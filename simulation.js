@@ -674,11 +674,11 @@
           }
         }
 
-        let baseSoDmg = 16;
+        let baseSoDmg = 18;
         if (this.strikeoutChain === 2) {
-          baseSoDmg = 22;
+          baseSoDmg = 24;
         } else if (this.strikeoutChain >= 3) {
-          baseSoDmg = 28;
+          baseSoDmg = 30;
         }
 
         let finalSoDmg = baseSoDmg;
@@ -744,7 +744,7 @@
         eventType = 'OUT';
         this.outs++;
         this.strikeoutChain = 0;
-        let outDmg = this.hasTrait('defensive_wall') ? 10 : 16;
+        let outDmg = this.hasTrait('defensive_wall') ? 11 : 18;
 
         if (bigHairTier === 4) {
           outDmg = Math.round(outDmg * 0.5);
@@ -1249,7 +1249,7 @@
         const playText = `🛡️ [${_t('sim.def_success_title', {}, '¡JUGADA DE GUANTE DE ORO!')}] ${eventData.player.name} (${eventData.pos}) ${_t('sim.def_success_desc', { roll, thresh: targetThreshold }, `completa una atrapada sensacional (Dado: ${roll}/${targetThreshold})`)}. ${_t('sim.def_success_reward', { hp: baseHpReward, shield: baseShieldReward }, `¡Recuperas +${baseHpReward} HP y +${baseShieldReward} de Escudo!`)}`;
         this.logEvent('DEFENSE_PLAY', playText, 'DEF_WIN', eventData.player.name, 0, 0, 0);
       } else {
-        const outDmg = isClutchPlay ? 22 : 15;
+        const outDmg = isClutchPlay ? 25 : 18;
         if (this.teamShield > 0) {
           shieldDmg = Math.min(this.teamShield, outDmg);
           this.teamShield -= shieldDmg;

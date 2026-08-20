@@ -23,10 +23,12 @@
             "eras_header": "ERAS DEL ROSTER",
             "franchises_header": "FRANQUICIAS DEL ROSTER",
             "no_teams": "Ningún equipo registrado.",
-            "dynasty_desc": "Dinastía (4+): Jugadores de {{team}} obtienen +5 a todos sus stats en combate.",
-            "chemistry_desc": "Química (2+): Jugadores de {{team}} obtienen +2 a todos sus stats en combate.",
+            "dynasty_desc": "Dinastía (4+): Jugadores de {{team}} obtienen +8 a todos sus stats en combate.",
+            "chemistry_desc": "Química (2): Jugadores de {{team}} obtienen +4 a todos sus stats en combate.",
             "items": "<i class=\"fa-solid fa-toolbox\"></i> ITEMS",
-            "items_drag_hint": "⚡ Arrastra a un jugador"
+            "items_drag_hint": "⚡ Arrastra a un jugador",
+            "brotherhood_desc": "Hermandad (3): Jugadores de {{team}} obtienen +6 a todos sus stats en combate.",
+            "franchise_base_desc": "Recluta 2 o más jugadores de {{team}} para activar bonos de franquicia (+4 / +6 / +8 stats)."
       },
       "eras": {
             "header": "⏳ ERAS DEL ROSTER",
@@ -751,11 +753,12 @@
       },
       "sign": {
             "chemistry_active": "Firma activa Química de <strong>{{team}}</strong> (+4 stats)",
-            "dynasty_active": "Firma activa Dinastía de <strong>{{team}}</strong> (+10 stats)",
+            "dynasty_active": "Firma activa Dinastía de <strong>{{team}}</strong> (+8 stats)",
             "synergy_active": "¡Firma activa Sinergia <strong>{{era}} (T{{tier}})</strong>!",
             "era_progress": "Era {{era}}: <strong>{{count}}/{{target}}</strong> (T{{tier}})",
             "era_max": "Era {{era}}: {{count}} jugadores (T4 MAX)",
-            "franchise_progress": "Franquicia {{team}}: {{count}} ➡️ <strong>{{next}}/2</strong>"
+            "franchise_progress": "Franquicia {{team}}: {{count}} ➡️ <strong>{{next}}/4</strong>",
+            "brotherhood_active": "Firma activa Hermandad de <strong>{{team}}</strong> (+6 stats)"
       },
       "ui": {
             "empty": "VACÍO",
@@ -1536,10 +1539,12 @@
             "eras_header": "ROSTER ERAS",
             "franchises_header": "ROSTER FRANCHISES",
             "no_teams": "No registered team.",
-            "dynasty_desc": "Dynasty (4+): {{team}} players gain +5 to all stats in combat.",
-            "chemistry_desc": "Chemistry (2+): {{team}} players gain +2 to all stats in combat.",
+            "dynasty_desc": "Dynasty (4+): {{team}} players gain +8 to all stats in combat.",
+            "chemistry_desc": "Chemistry (2): {{team}} players gain +4 to all stats in combat.",
             "items": "<i class=\"fa-solid fa-toolbox\"></i> ITEMS",
-            "items_drag_hint": "⚡ Drag to a player"
+            "items_drag_hint": "⚡ Drag to a player",
+            "brotherhood_desc": "Brotherhood (3): {{team}} players gain +6 to all stats in combat.",
+            "franchise_base_desc": "Recruit 2 or more {{team}} players to activate franchise bonuses (+4 / +6 / +8 stats)."
       },
       "eras": {
             "header": "⏳ ROSTER ERAS",
@@ -2264,11 +2269,12 @@
       },
       "sign": {
             "chemistry_active": "Signing activates <strong>{{team}}</strong> Chemistry (+4 stats)",
-            "dynasty_active": "Signing activates <strong>{{team}}</strong> Dynasty (+10 stats)",
+            "dynasty_active": "Signing activates <strong>{{team}}</strong> Dynasty (+8 stats)",
             "synergy_active": "Signing activates <strong>{{era}} (T{{tier}})</strong> Synergy!",
             "era_progress": "Era {{era}}: <strong>{{count}}/{{target}}</strong> (T{{tier}})",
             "era_max": "Era {{era}}: {{count}} players (T4 MAX)",
-            "franchise_progress": "Franchise {{team}}: {{count}} ➡️ <strong>{{next}}/2</strong>"
+            "franchise_progress": "Franchise {{team}}: {{count}} ➡️ <strong>{{next}}/4</strong>",
+            "brotherhood_active": "Signing activates <strong>{{team}}</strong> Brotherhood (+6 stats)"
       },
       "ui": {
             "empty": "EMPTY",
