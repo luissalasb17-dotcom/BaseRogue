@@ -1205,6 +1205,8 @@
           totalShieldRegen += 25;
           regenReasons.push('🛡️ Escudo de Hierro (+25)');
         }
+        const activeSyn = this.activeSynergies || (this._calculateActiveSynergies ? this._calculateActiveSynergies(this.awayTeam.lineup) : {});
+        const bigHairTier = activeSyn ? (activeSyn['Big Hair Era (1977-1993)'] || 0) : 0;
         if (bigHairTier >= 1) {
           const bhRegen = bigHairTier === 4 ? 20 : bigHairTier === 3 ? 15 : bigHairTier === 2 ? 10 : 5;
           totalShieldRegen += bhRegen;
