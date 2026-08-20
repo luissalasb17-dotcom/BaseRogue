@@ -2452,14 +2452,14 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
         return this.currentEnemy;
       }
 
-      // Regular stages (Map 1 to 4) exact OVR bands
-      let minOvr = 50, maxOvr = 64.9;
+      // Regular stages (Map 1 to 4) overlapping 20-point OVR bands
+      let minOvr = 50, maxOvr = 69.9;
       if (stage >= 4 && stage <= 7) {
-        minOvr = 65; maxOvr = 74.9;
+        minOvr = 60; maxOvr = 79.9;
       } else if (stage >= 8 && stage <= 11) {
-        minOvr = 75; maxOvr = 84.9;
+        minOvr = 70; maxOvr = 89.9;
       } else if (stage >= 12) {
-        minOvr = 85; maxOvr = 94.9;
+        minOvr = 80; maxOvr = 99.0;
       }
 
       let stagePool = fullPool.filter(p => {
