@@ -1076,6 +1076,43 @@
             spdProc = (spdProc ? spdProc + ' | ' : '') + spdMsg;
           }
         }
+        // Steal 3rd base on Double if 3B is open
+        if (hitType === 'DOUBLE' && this.bases[1] === batter && !this.bases[2]) {
+          let steal3BChance = Math.min(0.70, Math.max(0.15, 0.08 + ((effBatter.spd || 0) * 0.0045)));
+          let debuffTurns = 2;
+          let debuffMult = 1.20;
+          let steal3BProcMsg = '';
+
+          if (speedHustleTier >= 1) {
+            steal3BChance += (speedHustleTier * 0.05);
+            steal3BProcMsg = _t('sim.syn_speed_hustle', {}, 'Sinergia Speed & Hustle');
+          }
+          if (this.hasTrait('speed_demons') && (effBatter.spd || 0) > 60) {
+            steal3BChance = 0.75;
+            debuffTurns = Math.max(debuffTurns, 3);
+            steal3BProcMsg = (steal3BProcMsg ? steal3BProcMsg + ' + ' : '') + '⚡ Velocistas Agresivos';
+          }
+
+          if ((effBatter.spd || 0) >= 50 && Math.random() < steal3BChance) {
+            this.bases[2] = batter;
+            this.bases[1] = null;
+            didSteal = true;
+
+            if (this.pitcherDebuff && this.pitcherDebuff.turnsLeft > 0) {
+              this.pitcherDebuff.turnsLeft += debuffTurns;
+              if (debuffMult > this.pitcherDebuff.multiplier) this.pitcherDebuff.multiplier = debuffMult;
+            } else {
+              this.pitcherDebuff = { turnsLeft: debuffTurns, multiplier: debuffMult };
+            }
+
+            let spdMsg = `🏃⚡ ${_t('sim.steal_3b_label', {}, '¡ROBO DE TERCERA BASE!')} ${batter.name} ${_t('sim.steal_3b_desc', {}, 'sorprende a la batería rival y se estafa la 3ª almohadilla')}.`;
+            if (steal3BProcMsg) spdMsg += ` (${steal3BProcMsg})`;
+            const impLabel = this.pitcherDebuff.turnsLeft === 1 ? _t('sim.debuff_turn_s', {}, 'impacto restante') : _t('sim.debuff_turns_p', {}, 'impactos restantes');
+            spdMsg += ` ${_t('sim.debuff_note', {}, 'Debuff de +20% daño')} (${this.pitcherDebuff.turnsLeft} ${impLabel}).`;
+
+            spdProc = (spdProc ? spdProc + ' | ' : '') + spdMsg;
+          }
+        }
 
         const labelOutcome = spdUpgraded
           ? `${spdUpgraded.from} ➔ ${hitType} ⚡`

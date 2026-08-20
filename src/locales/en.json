@@ -567,7 +567,9 @@
     "def_walkoff_warning_desc": "If you miss this catch, the rival scores the walk-off winning run and you suffer instant defeat. If you catch it, you advance with healing!",
     "def_walkoff_result_title": "💀 WALK-OFF DEFEAT! GAME OVER",
     "def_walkoff_result_desc": "The error in the bottom of inning {{inning}} allowed the rival walk-off winning run.",
-    "def_walkoff_view_results": "💀 VIEW MATCH RESULTS"
+    "def_walkoff_view_results": "💀 VIEW MATCH RESULTS",
+    "steal_3b_label": "STOLEN THIRD BASE!",
+    "steal_3b_desc": "catches the defense off guard and swipes 3rd base"
   },
   "syn": {
     "deadball": {
@@ -1037,9 +1039,9 @@
     "hr": "🚀 <strong>HR (Home Run):</strong> <b style=\"color:#eab308;\">70 HP base</b>",
     "rbi_bonus": "🏆 <strong>RBI Bonus:</strong> Each RBI adds <strong style=\"color:#00ff66;\">+10 extra HP</strong> damage to pitcher.",
     "defense": "<strong style=\"color: #38bdf8;\">🛡️ DEFENSIVE DUEL (Bottom of the Inning):</strong><div style=\"font-size: 8.5px; color: #cbd5e1; margin-top: 2px;\">🛡️ Safe: <strong style=\"color:#4ade80;\">+30 HP & +15 Shield</strong> (Fail: -15 HP)<br>⚡ Clutch: <strong style=\"color:#4ade80;\">+50 HP & +30 Shield</strong> (Fail: -25 HP)<br>💀 In Extra Innings: Any error = Walk-Off Defeat!</div>",
-    "steal": "<strong style=\"color: #38bdf8;\">🏃 BASE STEALING (SPD ≥ 40):</strong><div style=\"font-size: 8.5px; color: #cbd5e1; margin-top: 2px;\">On 1B or Walk with 2B open: runner takes off. <strong>Higher Speed (SPD) gives higher success chance.</strong> Grants <strong style=\"color:#38bdf8;\">+20% damage</strong> to pitcher for 2 impacts.</div>",
+    "steal": "<strong style=\"color: #38bdf8;\">🏃 BASE STEALING:</strong><div style=\"font-size: 8.5px; color: #cbd5e1; margin-top: 2px;\">• <strong>Steal 2B (on 1B/BB, SPD ≥ 40):</strong> 43% to 85%+ success.<br>• <strong>Steal 3B (on 2B, SPD ≥ 50):</strong> 30% to 55%+ success (higher risk).<br><em>Stealing any base rattles the pitcher (+20% damage for 2 hits).</em></div>",
     "upgrade": "<strong style=\"color: #a855f7;\">⚡ HIT UPGRADES:</strong><div style=\"font-size: 8.5px; color: #cbd5e1; margin-top: 2px;\">With <strong>SPD ≥ 70</strong> (Grades B+ to S), runners have <strong>15% to 50% chance</strong> to stretch hits into extra bases (1B→2B→3B).</div>",
-    "shield_max": "🛡️ Shield: 50% of average DEF of your 8 starters (up to 100 with elite defense or Iron Shield).",
+    "shield_max": "🛡️ Shield: 50% of average DEF of your 8 starters.",
     "tooltip": "Damage System & Combat Rules"
   },
   "run_intro": {
