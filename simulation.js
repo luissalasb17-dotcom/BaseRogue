@@ -1361,13 +1361,6 @@
         this.logEvent('END',
           _t('match.log_defeat', {}, `💀 DERROTA. Tu equipo llegó a 0 HP. Los ponches acabaron con tu alineación.`),
           'END');
-      } else if (this.inning > 3) {
-        this.winner = 'pitcher';
-        this.battleOver = true;
-        const remaining = this.homeTeam.pitchers.length - this.enemyPitcherIndex;
-        this.logEvent('END',
-          _t('sim.match_timeout', { remaining }, `⏱ FIN DE PARTIDO (3 innings). Te faltaron ${remaining} lanzadores por derrotar.`),
-          'END');
       }
     }
 
