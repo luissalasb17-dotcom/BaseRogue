@@ -1242,7 +1242,7 @@
       const isOOP = (!isNative && !isSecondary && pos !== 'DH');
 
       // Formula: 20% Base + (0.70 * DEF), min 20%, max 100%
-      const successThreshold = Math.max(35, Math.min(100, Math.round(35 + (effDef * 0.65))));
+      const successThreshold = Math.min(100, Math.max(1, Math.round(effDef)));
       const successChance = successThreshold / 100;
 
       // Realistic baseball hit metrics for immersion
@@ -1316,6 +1316,30 @@
         } else {
           teamHpDmg = outDmg;
           this.teamHP = Math.max(0, this.teamHP - outDmg);
+        }
+
+        // In Inning 3 and Extra Innings (Inning >= 3), any defensive error is an immediate Walk-Off defeat!
+        if (eventData.inning >= 3) {
+          this.winner = 'pitcher';
+          this.battleOver = true;
+          const walkOffText = `💀 [${_t('sim.def_walkoff_title', {}, '¡WALK-OFF RIVAL!')}] ${eventData.player.name} ${_t('sim.def_walkoff_desc', { inning: eventData.inning }, `cometió un error defensivo en la baja de la entrada ${eventData.inning}. ¡El rival anota la carrera de oro y se lleva la victoria!`)}`;
+          this.logEvent('DEFENSE_PLAY', walkOffText, 'WALK_OFF_DEFEAT', eventData.player.name, 0, 0, 0);
+          this.pendingDefenseEvent = null;
+          return {
+            isSuccess: false,
+            isClutchPlay,
+            isWalkOff: true,
+            roll,
+            targetThreshold,
+            hpHealed: 0,
+            shieldHealed: 0,
+            teamHpDmg,
+            shieldDmg,
+            teamHP: this.teamHP,
+            teamShield: this.teamShield,
+            battleOver: true,
+            winner: 'pitcher'
+          };
         }
 
         const playText = `⚠️ [${_t('sim.def_fail_title', {}, '¡BATAZO RIVAL / ERROR!')}] ${eventData.player.name} (${eventData.pos}) ${_t('sim.def_fail_desc', { roll, thresh: targetThreshold }, `no logra fildear el batazo rival (Dado: ${roll}/${targetThreshold})`)}. ${_t('sim.def_fail_penalty', { dmg: outDmg }, `¡Sufres -${outDmg} de daño!`)}`;

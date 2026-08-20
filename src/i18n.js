@@ -574,7 +574,12 @@
             "extra_innings_announcement": "⚡ ¡EXTRA INNINGS - MUERTE SÚBITA! Daño de outs y ponches incrementado a 28/34/40. ¡Cualquier fallo defensivo en la baja es Walk-Off rival!",
             "syn_genesis_error": "💥 Genesis Chaos: ¡Error rival (E)! Se anula el out, te embasas en 1B y el pitcher sufre fatiga de 2 impactos (+20% daño).",
             "syn_genesis_heal": "💥 Genesis Chaos: ¡El descontrol rival recupera +10 HP al equipo!",
-            "def_walkoff_badge": "💀 BAJA DE LA ENTRADA {{inning}} • ¡PELIGRO DE WALK-OFF! 💀"
+            "def_walkoff_badge": "💀 BAJA DE LA ENTRADA {{inning}} • ¡PELIGRO DE WALK-OFF! 💀",
+            "def_walkoff_warning_title": "⚠️ ¡PELIGRO DE WALK-OFF • TODO O NADA! ⚠️",
+            "def_walkoff_warning_desc": "Si fallas esta atrapada, el rival anota la carrera de oro y pierdes el partido de inmediato. Si la atrapas, ¡avanzas a la siguiente entrada con curación!",
+            "def_walkoff_result_title": "💀 ¡WALK-OFF RIVAL! DERROTA INMEDIATA",
+            "def_walkoff_result_desc": "El error en la baja de la entrada {{inning}} permitió la carrera de oro rival.",
+            "def_walkoff_view_results": "💀 VER RESULTADOS DEL PARTIDO"
       },
       "syn": {
             "deadball": {
@@ -1553,8 +1558,6 @@
             "rule2_desc": "Los ponches directos a la vida aumentan a 28 / 34 / 40 HP en racha.",
             "rule3_title": "DEFENSA TODO O NADA:",
             "rule3_desc": "Cualquier fallo en la prueba defensiva de la baja es Walk-Off Rival (Derrota Inmediata).",
-            "rule4_title": "GHOST RUNNERS:",
-            "rule4_desc": "Si equipaste la pasiva, arrancas con un corredor gratis en 2ª base.",
             "btn": "🔥 ¡ENTRAR AL COMBATE! 🔥"
       }
 }
@@ -2124,7 +2127,12 @@
             "extra_innings_announcement": "⚡ EXTRA INNINGS - SUDDEN DEATH! Out and Strikeout damage increased to 28/34/40. Any defensive error in the bottom half is a Walk-Off!",
             "syn_genesis_error": "💥 Genesis Chaos: Fielding error (E)! Out cancelled, batter safe on 1B, pitcher fatigued (+20% dmg for 2 impacts).",
             "syn_genesis_heal": "💥 Genesis Chaos: Rival chaos restores +10 Team HP!",
-            "def_walkoff_badge": "💀 BOTTOM OF INNING {{inning}} • WALK-OFF DANGER! 💀"
+            "def_walkoff_badge": "💀 BOTTOM OF INNING {{inning}} • WALK-OFF DANGER! 💀",
+            "def_walkoff_warning_title": "⚠️ WALK-OFF DANGER • ALL OR NOTHING! ⚠️",
+            "def_walkoff_warning_desc": "If you miss this catch, the rival scores the walk-off winning run and you suffer instant defeat. If you catch it, you advance with healing!",
+            "def_walkoff_result_title": "💀 WALK-OFF DEFEAT! GAME OVER",
+            "def_walkoff_result_desc": "The error in the bottom of inning {{inning}} allowed the rival walk-off winning run.",
+            "def_walkoff_view_results": "💀 VIEW MATCH RESULTS"
       },
       "syn": {
             "deadball": {
@@ -3103,8 +3111,6 @@
             "rule2_desc": "Direct strikeout damage increases to 28 / 34 / 40 HP in streak.",
             "rule3_title": "ALL-OR-NOTHING DEFENSE:",
             "rule3_desc": "Any defensive error in the bottom half is an instant Walk-Off Defeat.",
-            "rule4_title": "GHOST RUNNERS:",
-            "rule4_desc": "If equipped with the trait, you start with a free runner on 2nd base.",
             "btn": "🔥 ENTER THE BATTLE! 🔥"
       }
 }

@@ -7395,6 +7395,9 @@ function initGameModeSelector() {
       if (onClose) onClose();
       return;
     }
+    if (window.I18n && typeof window.I18n.updateDOM === 'function') {
+      window.I18n.updateDOM();
+    }
     modal.classList.remove('hidden');
     if (window.AudioManager && typeof window.AudioManager.play === 'function') {
       window.AudioManager.play('danger_stinger');
@@ -7428,6 +7431,7 @@ function initGameModeSelector() {
     const badgeEl = document.getElementById('def-modal-inning-badge');
     const titleEl = document.getElementById('def-modal-title');
     const descEl = document.getElementById('def-modal-scenario');
+    const walkOffWarningEl = document.getElementById('def-modal-walkoff-warning');
     const fielderCardEl = document.getElementById('def-modal-fielder-card');
     const actionZone = document.getElementById('def-modal-action-zone');
     const resultZone = document.getElementById('def-modal-result-zone');
@@ -7466,6 +7470,14 @@ function initGameModeSelector() {
         badgeEl.innerHTML = _t('sim.def_badge', { inning: defEvent.inning }, `🛡️ BAJA DEL INNING ${defEvent.inning} • PRUEBA DEFENSIVA`);
         badgeEl.style.borderColor = '';
         badgeEl.style.background = '';
+      }
+    }
+
+    if (walkOffWarningEl) {
+      if (defEvent.inning >= 3) {
+        walkOffWarningEl.classList.remove('hidden');
+      } else {
+        walkOffWarningEl.classList.add('hidden');
       }
     }
     if (titleEl) {
@@ -7807,21 +7819,31 @@ function initGameModeSelector() {
         resultZone.classList.remove('hidden');
 
         const nextInningNum = (defEvent.inning || 1) + 1;
-        const continueBtnText = _t('sim.def_continue', { nextInning: nextInningNum }, `⚾ CONTINUAR AL INNING ${nextInningNum}`);
+        const isWalkOffFail = (!isSuccess && (result.isWalkOff || defEvent.inning >= 3));
+        const continueBtnText = isWalkOffFail
+          ? _t('sim.def_walkoff_view_results', {}, '💀 VER RESULTADOS DEL PARTIDO')
+          : _t('sim.def_continue', { nextInning: nextInningNum }, `⚾ CONTINUAR AL INNING ${nextInningNum}`);
         const tacticName = isClutch ? _t('sim.def_clutch_name', {}, '⚡ Jugada de Lujo') : _t('sim.def_safe_name', {}, '🛡️ Jugada Regular');
         const stratLabel = _t('sim.def_strategy_label', {}, 'Estrategia:');
         const rollLabel = _t('sim.def_roll_label', {}, 'Dado:');
         const targetLabel = _t('sim.def_target_label', {}, 'Meta:');
 
         const gainBanner = _t('sim.def_gain_success', { hp: result.hpHealed, shield: result.shieldHealed }, `🟢 ¡GANASTE +${result.hpHealed} HP Y +${result.shieldHealed} ESCUDO!`);
-        const lossBanner = _t('sim.def_loss_fail', { dmg: totalLostDmg, shieldDmg: result.shieldDmg, hpDmg: result.teamHpDmg }, `🔴 ¡PERDISTE -${totalLostDmg} DE DAÑO! (Escudo: -${result.shieldDmg} • HP: -${result.teamHpDmg})`);
+        const walkOffBanner = _t('sim.def_walkoff_result_desc', { inning: defEvent.inning }, `💀 Error en la baja de la entrada ${defEvent.inning}. ¡El rival anota la carrera de oro!`);
+        const lossBanner = isWalkOffFail ? walkOffBanner : _t('sim.def_loss_fail', { dmg: totalLostDmg, shieldDmg: result.shieldDmg, hpDmg: result.teamHpDmg }, `🔴 ¡PERDISTE -${totalLostDmg} DE DAÑO! (Escudo: -${result.shieldDmg} • HP: -${result.teamHpDmg})`);
         const maxShield = activeBattle ? activeBattle.teamShieldMax : 50;
-        const teamStatus = _t('sim.def_team_status', { hp: result.teamHP, shield: result.teamShield, shieldMax: maxShield }, `Equipo: HP ${result.teamHP}/100 • Escudo ${result.teamShield}/${maxShield}`);
+        const teamStatus = isWalkOffFail
+          ? `<span style="color:#ef4444;font-weight:bold;">¡DERROTA POR WALK-OFF!</span>`
+          : _t('sim.def_team_status', { hp: result.teamHP, shield: result.teamShield, shieldMax: maxShield }, `Equipo: HP ${result.teamHP}/100 • Escudo ${result.teamShield}/${maxShield}`);
+
+        const resultCardTitle = isSuccess
+          ? _t('sim.def_success_banner_title', {}, '🥇 ¡JUGADA DE GUANTE DE ORO!')
+          : (isWalkOffFail ? _t('sim.def_walkoff_result_title', {}, '💀 ¡WALK-OFF RIVAL! DERROTA INMEDIATA') : _t('sim.def_fail_banner_title', {}, '⚠️ ¡BATAZO DE HIT / ERROR DEFENSIVO!'));
 
         resultZone.innerHTML = `
           <div class="${isSuccess ? 'def-result-card-success' : 'def-result-card-error'}">
             <div style="font-family:'Press Start 2P',monospace;font-size:10.5px;margin-bottom:6px;letter-spacing:0.5px;color:${isSuccess ? '#fef08a' : '#fda4af'};">
-              ${isSuccess ? _t('sim.def_success_banner_title', {}, '🥇 ¡JUGADA DE GUANTE DE ORO!') : _t('sim.def_fail_banner_title', {}, '⚠️ ¡BATAZO DE HIT / ERROR DEFENSIVO!')}
+              ${resultCardTitle}
             </div>
             <div style="font-size:11px;margin-bottom:8px;color:${isSuccess ? '#ecfdf5' : '#fff1f2'};">
               ${stratLabel} <strong>${tacticName}</strong> • ${rollLabel} <strong style="font-size:14px;color:${isSuccess ? '#4ade80' : '#f87171'};">${finalRoll}</strong> (${targetLabel} 1–${result.targetThreshold})

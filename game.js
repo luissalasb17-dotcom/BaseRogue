@@ -1431,7 +1431,7 @@
       const avgDef = total / defSlots.length;
       // iron_shield: Shield absorbs 75% of avg DEF instead of 50%
       const shieldPct = this.hasTrait('iron_shield') ? 0.75 : 0.5;
-      return Math.round(Math.max(0, Math.min(50, avgDef * shieldPct)));
+      return Math.round(Math.max(0, Math.min(100, avgDef * shieldPct)));
     }
 
     calculateDraftShield() {
@@ -1445,7 +1445,7 @@
       });
       const avgDef = total / defSlots.length;
       const shieldPct = this.hasTrait('iron_shield') ? 0.75 : 0.5;
-      return Math.round(Math.max(0, Math.min(50, avgDef * shieldPct)));
+      return Math.round(Math.max(0, Math.min(100, avgDef * shieldPct)));
     }
 
     // ── ZONE CONFIG ──────────────────────────────────────────────────────────
