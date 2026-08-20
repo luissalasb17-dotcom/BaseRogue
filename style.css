@@ -498,33 +498,40 @@ p {
 
 .card-name {
   font-family: 'Press Start 2P', monospace;
-  font-size: 8px;
+  font-size: 7.5px;
   font-weight: normal;
   text-align: center;
   color: #fff;
   margin: 1px 0 1px 0;
-  padding-top: 1px !important;
-  padding-bottom: 2px;
+  padding: 1px 2px 2px 2px;
   line-height: 1.2 !important;
-  white-space: nowrap;
-  overflow: visible !important;
-  text-overflow: clip;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
   border-bottom: 2px dashed rgba(255,255,255,0.15);
 }
+
+.card-name.name-xs { font-size: 5px !important; letter-spacing: -0.4px !important; }
+.card-name.name-sm { font-size: 5.5px !important; letter-spacing: -0.2px !important; }
+.card-name.name-md { font-size: 6.5px !important; }
+.card-name.name-lg { font-size: 7.5px; }
 
 /* Combat arena cards specific line height & padding adjustment */
 .fight-card-slot .card-name,
 #screen-match .card-name {
   font-family: 'Press Start 2P', monospace;
-  font-size: 7.5px;
   font-weight: bold;
   text-align: center;
   margin: 1px 0;
-  padding: 1px 0;
+  padding: 1px 2px;
   line-height: 1.2 !important;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
 }
 
 .card-sec-pos {
@@ -4577,13 +4584,14 @@ body.workspace-active .main-container {
   }
 
   .player-card .card-name {
-    font-size: 7.5px !important;
     line-height: 1.2 !important;
     margin: 1px 0 !important;
-    padding: 1px 0 !important;
+    padding: 1px 2px !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
     white-space: nowrap !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
   }
 
   .player-card .card-traits-box {
@@ -5291,9 +5299,13 @@ body.on-main-menu .main-container {
   }
 
   .fight-card-slot .player-card .card-name {
-    font-size: 7.5px !important;
     padding: 0 2px !important;
     margin: 1px 0 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
   }
 
   .fight-card-slot .player-card .card-header {

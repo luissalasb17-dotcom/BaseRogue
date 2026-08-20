@@ -3352,11 +3352,11 @@ function initGameModeSelector() {
         </div>
         ${(() => {
           const len = cleanName.length;
-          let fontSizeStyle = '';
-          if (len >= 20) fontSizeStyle = 'style="font-size: 5.5px !important;"';
-          else if (len >= 16) fontSizeStyle = 'style="font-size: 6.5px !important;"';
-          else if (len >= 14) fontSizeStyle = 'style="font-size: 7px !important;"';
-          return `<div class="card-name" title="${cleanName}" ${fontSizeStyle}>${cleanName}</div>`;
+          let nameSizeClass = 'name-lg';
+          if (len >= 19) nameSizeClass = 'name-xs';
+          else if (len >= 15) nameSizeClass = 'name-sm';
+          else if (len >= 12) nameSizeClass = 'name-md';
+          return `<div class="card-name ${nameSizeClass}" title="${cleanName}">${cleanName}</div>`;
         })()}
         <div class="card-traits-box">
           <span class="card-trait-badge trait-era" title="${player.era}">${getShortEraName(player.era)}</span>
