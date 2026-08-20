@@ -7428,7 +7428,15 @@ function initGameModeSelector() {
     const targetPos = defEvent.pos || 'SS';
 
     if (badgeEl) {
-      badgeEl.innerHTML = _t('sim.def_badge', { inning: defEvent.inning }, `🛡️ BAJA DEL INNING ${defEvent.inning} • PRUEBA DEFENSIVA`);
+      if (defEvent.isExtraInning) {
+        badgeEl.innerHTML = `<span style="color:#ef4444;text-shadow:0 0 10px #ef4444;font-weight:bold;animation:pulse-fast 1s infinite;">💀 BAJA DEL EXTRA INNING ${defEvent.inning} • ¡PELIGRO DE WALK-OFF! 💀</span>`;
+        badgeEl.style.borderColor = '#ef4444';
+        badgeEl.style.background = 'rgba(239, 68, 68, 0.2)';
+      } else {
+        badgeEl.innerHTML = _t('sim.def_badge', { inning: defEvent.inning }, `🛡️ BAJA DEL INNING ${defEvent.inning} • PRUEBA DEFENSIVA`);
+        badgeEl.style.borderColor = '';
+        badgeEl.style.background = '';
+      }
     }
     if (titleEl) {
       titleEl.innerText = _t(`sim.def_title_${targetPos.toLowerCase()}`, {}, defEvent.scenarioTitle || '¡BATAZO DE PELIGRO RIVAL!');
@@ -7867,13 +7875,14 @@ function initGameModeSelector() {
   }
 
   // Combines inning progression + team HP into a discrete danger tier (0-3),
+  // Combines inning progression + team HP into a discrete danger tier (0-3),
   // used to drive the .match-arena ambient tension effect as the game nears its end.
   function computeDangerLevel(state) {
     if (!state) return 0;
     const inning = state.inning || 1;
     const hp = state.teamHP;
-    let tier = inning >= 3 ? 2 : inning >= 2 ? 1 : 0;
-    if (hp <= 25) tier = 3;
+    let tier = inning >= 4 ? 3 : inning >= 3 ? 2 : inning >= 2 ? 1 : 0;
+    if (hp <= 25 || inning >= 4) tier = 3;
     else if (hp <= 50) tier = Math.max(tier, 2);
     return tier;
   }
@@ -7888,7 +7897,22 @@ function initGameModeSelector() {
     // Classic scoreboard
     el.scoreAwayR.innerText  = state.runs;
     el.scoreHomeR.innerText  = state.outs;
-    el.scoreAwayH.innerText  = `${state.inning} / 3`;
+
+    const extraBanner = document.getElementById('extra-innings-hud-banner');
+    if (state.inning >= 4) {
+      el.scoreAwayH.innerHTML = `<span style="color:#ef4444;text-shadow:0 0 8px #ef4444;animation:pulse-fast 1s infinite;font-weight:bold;">🔥 EX ${state.inning}</span>`;
+      if (el.scoreInningText) {
+        el.scoreInningText.innerHTML = `<span style="color:#f59e0b;text-shadow:0 0 10px #f59e0b;font-weight:bold;animation:pulse-fast 1s infinite;">⚡ ¡MUERTE SÚBITA! ⚡</span>`;
+      }
+      if (extraBanner) extraBanner.classList.remove('hidden');
+    } else {
+      el.scoreAwayH.innerText  = `${state.inning} / 3`;
+      if (el.scoreInningText) {
+        el.scoreInningText.innerText = typeof window.t === 'function' ? window.t('match.arena', { defaultValue: 'ARENA COMBATE' }) : 'ARENA COMBATE';
+      }
+      if (extraBanner) extraBanner.classList.add('hidden');
+    }
+
     el.scoreHomeH.innerText  = state.activePitcher
       ? `${state.activePitcher.index} / ${state.activePitcher.total}`
       : '–';
