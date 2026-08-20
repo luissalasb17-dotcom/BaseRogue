@@ -840,7 +840,7 @@
     },
     "ghost": {
       "name": "🏃 Ghost Runners",
-      "desc": "You start the 3rd inning of each match with a runner on 2nd base automatically."
+      "desc": "You start the 3rd inning and every Extra Inning of each match with a runner on 2nd base automatically."
     },
     "legendary": {
       "name": "👑 Legendary Domination",

@@ -114,6 +114,7 @@ header {
   gap: 8px;
   font-size: 9px;
   font-family: 'Press Start 2P', monospace;
+  border-radius: 4px;
 }
 
 .hud-item i {
@@ -122,6 +123,30 @@ header {
 
 .hud-item.stage i {
   color: var(--primary-color);
+}
+
+.hud-item.budget {
+  background: linear-gradient(135deg, rgba(234, 179, 8, 0.22) 0%, rgba(20, 16, 4, 0.95) 100%) !important;
+  border: 2px solid #eab308 !important;
+  box-shadow: 0 0 12px rgba(234, 179, 8, 0.45), inset 0 0 6px rgba(234, 179, 8, 0.2) !important;
+  border-radius: 6px !important;
+  color: #fef08a !important;
+  font-size: 9.5px !important;
+  padding: 8px 14px !important;
+}
+
+.hud-item.budget i {
+  color: #facc15 !important;
+  font-size: 13px !important;
+  filter: drop-shadow(0 0 6px rgba(250, 204, 21, 0.8)) !important;
+}
+
+#hud-budget-val {
+  color: #fde047 !important;
+  font-size: 12.5px !important;
+  font-weight: bold !important;
+  text-shadow: 0 0 8px rgba(250, 204, 21, 0.8) !important;
+  margin-left: 3px !important;
 }
 
 /* Mobile-only toggle buttons — hidden on desktop where 3 columns are always visible */

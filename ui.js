@@ -3870,7 +3870,9 @@ function initGameModeSelector() {
     const zone = window.Game.getZoneForStage(window.Game.currentStageIndex);
     const zoneNames = ['Opening Day', 'All-Star Break', 'Pennant Chase', 'Playoffs'];
     el.hudStage.innerText = `${t('hud.stage')} ${window.Game.currentStageIndex + 1}/16 — ${zoneNames[zone] || ''}`;
-    el.hudBudget.innerText = `$${window.Game.budget}`;
+    if (el.hudBudget) el.hudBudget.innerText = `$${window.Game.budget}`;
+    const sideBud = document.getElementById('sidebar-budget-val');
+    if (sideBud) sideBud.innerText = `$${window.Game.budget}`;
   }
 
   // RENDER TEAM ROSTER

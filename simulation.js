@@ -276,8 +276,8 @@
       this.firstBatterOfInningPending = this.traitIds.has('early_pressure');
       // back_to_back: true for the plate appearance right after a HR
       this.backToBackPending = false;
-      // ghost_runners: only place the free runner once, at the start of inning 3
-      this.ghostRunnerPlaced = false;
+      // ghost_runners: place the free runner on 2nd base in inning 3 and all extra innings (4+)
+      this.ghostRunnerInnings = new Set();
 
       // ── Mid-Inning Defense state ──────────────────────────────────
       this.pendingDefenseEvent = null;
@@ -1165,12 +1165,13 @@
           this.teamShield = Math.min(this.teamShieldMax, this.teamShield + 5);
         }
 
-        // ghost_runners: start inning 3 with a free runner already on 2nd base
-        if (this.hasTrait('ghost_runners') && this.inning === 3 && !this.ghostRunnerPlaced) {
-          this.bases[1] = { name: 'Corredor Fantasma', spd: 50, con: 50, pwr: 50, eye: 50, def: 50, isGhostRunner: true };
-          this.ghostRunnerPlaced = true;
+        // ghost_runners: start inning 3 and every extra inning (4+) with a free runner on 2nd base
+        if (this.hasTrait('ghost_runners') && this.inning >= 3 && !this.ghostRunnerInnings.has(this.inning)) {
+          this.bases[1] = { name: (typeof window.t === 'function' ? window.t('sim.ghost_runner_name', 'Corredor Fantasma') : 'Corredor Fantasma'), spd: 50, con: 50, pwr: 50, eye: 50, def: 50, isGhostRunner: true };
+          this.ghostRunnerInnings.add(this.inning);
+          const inningLabel = this.inning === 3 ? 'la 3ª entrada' : `el Extra Inning ${this.inning}`;
           this.logEvent('GHOST_RUNNER',
-            '🏃 Corredores Fantasma: ¡un corredor aparece en 2ª base para arrancar la 3ª entrada!',
+            `🏃 Corredores Fantasma: ¡un corredor aparece en 2ª base para arrancar ${inningLabel}!`,
             'TRAIT');
         }
       }

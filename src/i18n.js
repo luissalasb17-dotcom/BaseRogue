@@ -852,7 +852,7 @@
             },
             "ghost": {
                   "name": "🏃 Corredores Fantasma",
-                  "desc": "Inicias la 3ª entrada de cada partido con un corredor en 2ª base automáticamente."
+                  "desc": "Inicias la 3ª entrada y todos los Extra Innings de cada partido con un corredor en 2ª base automáticamente."
             },
             "legendary": {
                   "name": "👑 Dominio Legendario",
@@ -2376,7 +2376,7 @@
             },
             "ghost": {
                   "name": "🏃 Ghost Runners",
-                  "desc": "You start the 3rd inning of each match with a runner on 2nd base automatically."
+                  "desc": "You start the 3rd inning and every Extra Inning of each match with a runner on 2nd base automatically."
             },
             "legendary": {
                   "name": "👑 Legendary Domination",

@@ -840,7 +840,7 @@
     },
     "ghost": {
       "name": "🏃 Corredores Fantasma",
-      "desc": "Inicias la 3ª entrada de cada partido con un corredor en 2ª base automáticamente."
+      "desc": "Inicias la 3ª entrada y todos los Extra Innings de cada partido con un corredor en 2ª base automáticamente."
     },
     "legendary": {
       "name": "👑 Dominio Legendario",

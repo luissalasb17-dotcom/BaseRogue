@@ -16,7 +16,7 @@
   <link rel="preload" as="image" href="assets/TEST3.webp">
   <link rel="preload" as="image" href="assets/TEST.webp">
   <link rel="preload" as="image" href="assets/logo.webp">
-  <link rel="stylesheet" href="style.css?v=213">
+  <link rel="stylesheet" href="style.css?v=214">
   <style>
     @keyframes bounce {
       0%, 100% { transform: translateY(0); }
@@ -458,6 +458,9 @@
         <div class="workspace-sidebar left-sidebar" id="roster-sidebar-panel">
           <div class="sidebar-header" style="display: flex; justify-content: space-between; align-items: center;">
             <span><i class="fa-solid fa-users"></i> <span data-i18n="hud.roster">ALINEACIÓN</span></span>
+            <div id="sidebar-budget-badge" title="Presupuesto del Club" style="display: flex; align-items: center; gap: 5px; background: rgba(234, 179, 8, 0.15); border: 1.5px solid #eab308; border-radius: 6px; padding: 3px 8px; font-family: 'Press Start 2P', monospace; font-size: 8.5px; color: #facc15; box-shadow: 0 0 8px rgba(234, 179, 8, 0.3);">
+              <i class="fa-solid fa-money-bill-wave" style="color: #facc15; font-size: 10px;"></i> <strong id="sidebar-budget-val">$100</strong>
+            </div>
             <button id="btn-close-roster-mobile" style="background: none; border: none; color: #9ca3af; font-size: 16px; cursor: pointer; display: none;"><i class="fa-solid fa-times"></i></button>
           </div>
           <div style="font-size: 7px; color: #9ca3af; margin-bottom: 8px; text-align: center; text-transform: uppercase;" data-i18n="draft.drag_to_reorder">
@@ -1181,21 +1184,21 @@
   </script>
   <!-- Load Game Scripts -->
   <script src="src/lib/i18next.min.js"></script>
-  <script src="src/i18n.js?v=79"></script>
+  <script src="src/i18n.js?v=80"></script>
   <script src="players.js?v=172"></script>
   <script src="pitchers_pool.js?v=173"></script>
   <script src="player_team_history.js?v=3"></script>
   <script src="opponents_database.js?v=22"></script>
   <script src="game_cards_pool.js?v=170"></script>
   <script src="items_database.js?v=1"></script>
-  <script src="simulation.js?v=201"></script>
-  <script src="game.js?v=219"></script>
+  <script src="simulation.js?v=202"></script>
+  <script src="game.js?v=220"></script>
   <script src="audio.js?v=16"></script>
   <script src="career_data.js?v=2"></script>
   <script src="career.js?v=30"></script>
   <script src="basedex.js?v=12"></script>
   <script src="challenge162.js?v=105"></script>
-  <script src="ui.js?v=324"></script>
+  <script src="ui.js?v=325"></script>
 
 </body>
 </html>
