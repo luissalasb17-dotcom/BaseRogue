@@ -7546,7 +7546,10 @@ function initGameModeSelector() {
         catchLabelEl.innerHTML = `🟢 ${catchZoneText} (1–<span id="def-gauge-thresh-val">${currentThresh}</span>)`;
       }
       if (errorLabelEl) {
-        errorLabelEl.innerHTML = `🔴 ${errorZoneText} (<span id="def-gauge-error-start">${Math.min(100, currentThresh + 1)}</span>–100)`;
+        const errorZoneLabel = defEvent.isExtraInning
+          ? `💀 ${_t('sim.def_walkoff_title', {}, '¡WALK-OFF RIVAL / DERROTA!')}`
+          : `🔴 ${errorZoneText}`;
+        errorLabelEl.innerHTML = `${errorZoneLabel} (<span id="def-gauge-error-start">${Math.min(100, currentThresh + 1)}</span>–100)`;
       }
 
       if (needleEl) {
@@ -7559,14 +7562,14 @@ function initGameModeSelector() {
         const safeTitle = tacticSafe.querySelector('.def-tactic-title');
         const safeDesc = tacticSafe.querySelector('.def-tactic-desc');
         if (safeTitle) safeTitle.innerText = _t('sim.def_safe_tactic_title', {}, '🛡️ JUGADA REGULAR');
-        if (safeDesc) safeDesc.innerText = _t('sim.def_safe_tactic_desc', {}, 'Asegurar el guante (Meta estándar • +30 HP)');
+        if (safeDesc) safeDesc.innerText = _t('sim.def_safe_tactic_desc', {}, 'Asegurar el guante (Meta estándar • +30 HP & +15 Escudo)');
       }
       if (tacticClutch) {
         tacticClutch.classList.toggle('active', isClutch);
         const clutchTitle = tacticClutch.querySelector('.def-tactic-title');
         const clutchDesc = tacticClutch.querySelector('.def-tactic-desc');
         if (clutchTitle) clutchTitle.innerText = _t('sim.def_clutch_tactic_title', {}, '⚡ JUGADA DE LUJO');
-        if (clutchDesc) clutchDesc.innerText = _t('sim.def_clutch_tactic_desc', {}, 'Tirarse de cabeza (-12% Meta • +40 HP & +25 Escudo)');
+        if (clutchDesc) clutchDesc.innerText = _t('sim.def_clutch_tactic_desc', {}, 'Tirarse de cabeza (-12% Meta • +50 HP & +30 Escudo)');
       }
 
       if (btnRoll) {

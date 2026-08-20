@@ -1795,31 +1795,33 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
         let desc = "";
 
         if (era === Eras.GENESIS) {
-          bonuses = {};
+          const boost = level === 4 ? 6 : level === 3 ? 4 : level === 2 ? 2 : 0;
+          if (boost > 0) bonuses = { con: boost };
         } else if (era === Eras.DEADBALL) {
-          const boost = level === 4 ? 12 : level === 3 ? 9 : level === 2 ? 6 : 3;
+          const boost = level === 4 ? 10 : level === 3 ? 7 : level === 2 ? 4 : 2;
           bonuses = { con: boost, k_avd: boost };
         } else if (era === Eras.GOLDEN) {
-          const boost = level === 4 ? 13 : level === 3 ? 9 : level === 2 ? 6 : 3;
+          const boost = level === 4 ? 10 : level === 3 ? 7 : level === 2 ? 4 : 2;
           bonuses = { pwr: boost };
         } else if (era === Eras.INTEGRATION) {
-          const boost = level === 4 ? 12 : level === 3 ? 9 : level === 2 ? 6 : 3;
+          const boost = level === 4 ? 10 : level === 3 ? 7 : level === 2 ? 4 : 2;
           bonuses = { con: boost, pwr: boost, eye: boost, k_avd: boost, spd: boost, def: boost };
         } else if (era === Eras.EXPANSION) {
-          const spdBoost = level === 4 ? 13 : level === 3 ? 9 : level === 2 ? 6 : 3;
-          const eyeBoost = level === 4 ? 9 : level === 3 ? 6 : level === 2 ? 3 : 0;
+          const spdBoost = level === 4 ? 10 : level === 3 ? 7 : level === 2 ? 4 : 2;
+          const eyeBoost = level === 4 ? 6 : level === 3 ? 4 : level === 2 ? 2 : 0;
           bonuses = { spd: spdBoost };
           if (eyeBoost > 0) bonuses.eye = eyeBoost;
         } else if (era === Eras.BIGHAIR) {
-          const boost = level === 4 ? 14 : level === 3 ? 10 : level === 2 ? 6 : 3;
+          const boost = level === 4 ? 10 : level === 3 ? 7 : level === 2 ? 4 : 2;
           bonuses = { def: boost, spd: boost };
         } else if (era === Eras.STEROID) {
-          const boost = level === 4 ? 15 : level === 3 ? 11 : level === 2 ? 7 : 4;
+          const boost = level === 4 ? 12 : level === 3 ? 8 : level === 2 ? 5 : 2;
           bonuses = { pwr: boost };
         } else if (era === Eras.EFFICIENCY) {
-          bonuses = {};
+          const boost = level === 4 ? 10 : level === 3 ? 7 : level === 2 ? 4 : 2;
+          bonuses = { eye: boost };
         } else if (era === Eras.MODERN) {
-          const boost = level === 4 ? 12 : level === 3 ? 9 : level === 2 ? 6 : 3;
+          const boost = level === 4 ? 10 : level === 3 ? 7 : level === 2 ? 4 : 2;
           bonuses = { eye: boost, pwr: boost };
         }
 
