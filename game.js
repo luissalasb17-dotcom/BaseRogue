@@ -664,9 +664,22 @@
     while (selected.length < count && poolCopy.length > 0) {
       let totalWeight = 0;
       const weights = poolCopy.map(p => {
-        const pos = p.pos || p.pos_display || p.primary_pos || '';
-        const isWeak = weakPositionsSet && weakPositionsSet.has(pos);
-        let w = isWeak ? 3.0 : 1.0;
+        const primaryPos = p.pos || p.pos_display || p.primary_pos || '';
+        const secPosRaw = p.sec_pos || p.secondary_pos || p.secondary_positions || '';
+        const secPositions = Array.isArray(secPosRaw)
+          ? secPosRaw
+          : String(secPosRaw).split(',').map(s => s.trim()).filter(Boolean);
+
+        const isPrimaryWeak = weakPositionsSet && weakPositionsSet.has(primaryPos);
+        const isSecondaryWeak = weakPositionsSet && secPositions.some(sp => weakPositionsSet.has(sp));
+
+        let w = 1.0;
+        if (isPrimaryWeak) {
+          w = 3.5;
+        } else if (isSecondaryWeak) {
+          w = 2.8;
+        }
+
         // scout_eye: increases the odds of Epic/Legendary showing up in draft offers
         if (rarityBoost && (p.rarity === 'Epic' || p.rarity === 'Legendary')) w *= 2.5;
         totalWeight += w;
@@ -1214,12 +1227,24 @@
       // Determine missing positions in roster
       const missingPos = Object.keys(this.draftRoster).filter(pos => !this.draftRoster[pos]);
 
-      // Assign weights: 6x probability if player fills a missing position (primary or secondary)
+      // Assign weights: probability boost if player fills a missing position (primary or secondary)
       const toWeighted = (p) => {
-        let isNeeded = false;
-        if (missingPos.includes(p.pos)) isNeeded = true;
-        if (p.sec_pos && p.sec_pos.split(', ').some(sp => missingPos.includes(sp))) isNeeded = true;
-        return { player: p, weight: isNeeded ? 6 : 1 };
+        const primaryPos = p.pos || p.pos_display || p.primary_pos || '';
+        const secPosRaw = p.sec_pos || p.secondary_pos || p.secondary_positions || '';
+        const secPositions = Array.isArray(secPosRaw)
+          ? secPosRaw
+          : String(secPosRaw).split(',').map(s => s.trim()).filter(Boolean);
+
+        let isPrimaryNeeded = missingPos.includes(primaryPos);
+        let isSecondaryNeeded = secPositions.some(sp => missingPos.includes(sp));
+
+        let weight = 1;
+        if (isPrimaryNeeded) {
+          weight = 6;
+        } else if (isSecondaryNeeded) {
+          weight = 4.5;
+        }
+        return { player: p, weight };
       };
 
       // Story Mode: ~95% of offered cards are restricted to players actually
