@@ -1883,12 +1883,12 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
         return { pos, ovr };
       });
 
-      // Sort ascending by OVR to find the weakest positions
+      // Sort ascending by OVR to find the 3 weakest positions
       posScores.sort((a, b) => a.ovr - b.ovr);
       const weakMap = {
-        [posScores[0].pos]: 2.2, // #1 weakest / lowest OVR (gentle +120% boost)
-        [posScores[1].pos]: 1.7, // #2 weakest (+70% boost)
-        [posScores[2].pos]: 1.3  // #3 weakest (+30% boost)
+        [posScores[0].pos]: 6.0, // #1 weakest position (6.0x weight)
+        [posScores[1].pos]: 6.0, // #2 weakest position (6.0x weight)
+        [posScores[2].pos]: 6.0  // #3 weakest position (6.0x weight)
       };
       weakMap.has = function(pos) { return this[pos] !== undefined; };
       weakMap.topPos = posScores[0].pos;
