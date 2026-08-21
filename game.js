@@ -670,16 +670,15 @@
           ? secPosRaw
           : String(secPosRaw).split(',').map(s => s.trim()).filter(Boolean);
 
-        // Smooth, organic weighting: gentle nudge without forcing or feeling rigged
+        // Weighted odds: 6.0x for primary position, 4.0x for secondary position
         let w = 1.0;
         if (weakPositionsMap) {
           if (weakPositionsMap[primaryPos] !== undefined) {
-            w = Number(weakPositionsMap[primaryPos]) || 1.8;
+            w = Number(weakPositionsMap[primaryPos]) || 6.0;
           } else {
             for (const sp of secPositions) {
               if (weakPositionsMap[sp] !== undefined) {
-                const secWeight = Math.max(1.2, (Number(weakPositionsMap[sp]) || 1.8) * 0.7);
-                w = Math.max(w, secWeight);
+                w = Math.max(w, 4.0);
               }
             }
           }
@@ -1260,7 +1259,7 @@
       // Determine missing positions in roster
       const missingPos = Object.keys(this.draftRoster).filter(pos => !this.draftRoster[pos]);
 
-      // Assign weights: 6x probability if player fills a missing position (primary or secondary)
+      // Assign weights: 6x probability for primary position, 4x for secondary position
       const toWeighted = (p) => {
         const primaryPos = p.pos || p.pos_display || p.primary_pos || '';
         const secPosRaw = p.sec_pos || p.secondary_pos || p.secondary_positions || '';
@@ -1268,8 +1267,13 @@
           ? secPosRaw
           : String(secPosRaw).split(',').map(s => s.trim()).filter(Boolean);
 
-        const isNeeded = missingPos.includes(primaryPos) || secPositions.some(sp => missingPos.includes(sp));
-        return { player: p, weight: isNeeded ? 6 : 1 };
+        let weight = 1;
+        if (missingPos.includes(primaryPos)) {
+          weight = 6;
+        } else if (secPositions.some(sp => missingPos.includes(sp))) {
+          weight = 4;
+        }
+        return { player: p, weight };
       };
 
       // Story Mode: ~95% of offered cards are restricted to players actually
