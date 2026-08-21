@@ -959,6 +959,25 @@
     recordMatchStats(simEvents, enemyPitchers) {
       if (!simEvents || !simEvents.length) return;
 
+      const getOrCreateBatterStat = (name) => {
+        if (!this.runBatterStats[name]) {
+          this.runBatterStats[name] = { g: 0, ab: 0, h: 0, bb: 0, so: 0, doubles: 0, triples: 0, hr: 0, rbi: 0, sb: 0, e: 0 };
+        }
+        const s = this.runBatterStats[name];
+        s.g = (typeof s.g === 'number' && !isNaN(s.g)) ? s.g : 0;
+        s.ab = (typeof s.ab === 'number' && !isNaN(s.ab)) ? s.ab : 0;
+        s.h = (typeof s.h === 'number' && !isNaN(s.h)) ? s.h : 0;
+        s.bb = (typeof s.bb === 'number' && !isNaN(s.bb)) ? s.bb : 0;
+        s.so = (typeof s.so === 'number' && !isNaN(s.so)) ? s.so : 0;
+        s.doubles = (typeof s.doubles === 'number' && !isNaN(s.doubles)) ? s.doubles : 0;
+        s.triples = (typeof s.triples === 'number' && !isNaN(s.triples)) ? s.triples : 0;
+        s.hr = (typeof s.hr === 'number' && !isNaN(s.hr)) ? s.hr : 0;
+        s.rbi = (typeof s.rbi === 'number' && !isNaN(s.rbi)) ? s.rbi : 0;
+        s.sb = (typeof s.sb === 'number' && !isNaN(s.sb)) ? s.sb : 0;
+        s.e = (typeof s.e === 'number' && !isNaN(s.e)) ? s.e : 0;
+        return s;
+      };
+
       // Track games played (g) for each batter appearing in this match
       const battersInMatch = new Set();
       for (const ev of simEvents) {
@@ -970,10 +989,8 @@
       }
 
       battersInMatch.forEach(name => {
-        if (!this.runBatterStats[name]) {
-          this.runBatterStats[name] = { g: 0, ab: 0, h: 0, bb: 0, so: 0, doubles: 0, triples: 0, hr: 0, rbi: 0, sb: 0 };
-        }
-        this.runBatterStats[name].g = (this.runBatterStats[name].g || 0) + 1;
+        const s = getOrCreateBatterStat(name);
+        s.g += 1;
       });
 
       // Accumulate batter stats from events
@@ -983,10 +1000,7 @@
         if (!rawName) continue;
         const name = rawName.replace(/\s*\(\d{4}\)$/, '').trim();
 
-        if (!this.runBatterStats[name]) {
-          this.runBatterStats[name] = { g: 0, ab: 0, h: 0, bb: 0, so: 0, doubles: 0, triples: 0, hr: 0, rbi: 0, sb: 0 };
-        }
-        const s = this.runBatterStats[name];
+        const s = getOrCreateBatterStat(name);
         const eventType = ev.eventType || ev.type;
 
         if (eventType === 'BB') { s.bb++; }
@@ -1001,7 +1015,7 @@
         }
 
         if (ev.didSteal || (ev.playText && ev.playText.includes('ROBO DE BASE'))) {
-          s.sb = (s.sb || 0) + 1;
+          s.sb += 1;
         }
 
         if (ev.runsThisTurn || ev.runsScored) {

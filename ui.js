@@ -7831,8 +7831,12 @@ function initGameModeSelector() {
             const fielder = (window.Game.roster && targetPos) ? window.Game.roster[targetPos] : null;
             if (fielder && fielder.name) {
               window.Game.runBatterStats = window.Game.runBatterStats || {};
-              window.Game.runBatterStats[fielder.name] = window.Game.runBatterStats[fielder.name] || {};
-              window.Game.runBatterStats[fielder.name].e = (window.Game.runBatterStats[fielder.name].e || 0) + 1;
+              const fName = fielder.name.replace(/\s*\(\d{4}\)$/, '').trim();
+              if (!window.Game.runBatterStats[fName]) {
+                window.Game.runBatterStats[fName] = { g: 0, ab: 0, h: 0, bb: 0, so: 0, doubles: 0, triples: 0, hr: 0, rbi: 0, sb: 0, e: 0 };
+              }
+              const s = window.Game.runBatterStats[fName];
+              s.e = (s.e || 0) + 1;
             }
           }
           if (window.AudioManager) window.AudioManager.play('defense_error');
