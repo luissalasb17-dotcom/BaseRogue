@@ -991,11 +991,14 @@
 
         if (eventType === 'BB') { s.bb++; }
         else if (eventType === 'SO') { s.ab++; s.so++; }
-        else if (eventType === 'OUT' || eventType === 'E') { s.ab++; }
         else if (eventType === '1B') { s.ab++; s.h++; }
         else if (eventType === '2B') { s.ab++; s.h++; s.doubles++; }
         else if (eventType === '3B') { s.ab++; s.h++; s.triples++; }
         else if (eventType === 'HR') { s.ab++; s.h++; s.hr++; }
+        else {
+          // Any other batting event (OUT, E / Reach on Error, FC, etc.) is an official At-Bat
+          s.ab++;
+        }
 
         if (ev.didSteal || (ev.playText && ev.playText.includes('ROBO DE BASE'))) {
           s.sb = (s.sb || 0) + 1;
