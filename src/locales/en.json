@@ -304,7 +304,9 @@
     "steal_title": "STOLEN BASE! 🏃⚡",
     "steal_dmg": "PITCHER DEBUFF: +20% DAMAGE TAKEN",
     "ko_title": "PITCHER K.O.! 💥",
-    "ko_dmg": "RIVAL PITCHER DEFEATED!"
+    "ko_dmg": "RIVAL PITCHER DEFEATED!",
+    "error_title": "OPPONENT ERROR (E)!",
+    "error_dmg": "SAFE ON 1B • PITCHER FATIGUE (+20% DAMAGE)"
   },
   "card_popup": {
     "swap_pos_title": "CHANGE DEFENSIVE POSITION:",
@@ -569,7 +571,9 @@
     "def_walkoff_result_desc": "The error in the bottom of inning {{inning}} allowed the rival walk-off winning run.",
     "def_walkoff_view_results": "💀 VIEW MATCH RESULTS",
     "steal_3b_label": "STOLEN THIRD BASE!",
-    "steal_3b_desc": "catches the defense off guard and swipes 3rd base"
+    "steal_3b_desc": "catches the defense off guard and swipes 3rd base",
+    "label_error": "OPPONENT ERROR (E)",
+    "error_reach_desc": "hits a grounder and the fielder commits an error"
   },
   "syn": {
     "deadball": {

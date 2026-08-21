@@ -427,7 +427,7 @@
     rollDice(roll) {
       if (this.battleOver) return [];
 
-      const _t = (key, params, fallback) => (typeof window.t === 'function' ? window.t(key, params) : (fallback || key));
+      const _t = (key, params = {}, fallback = '') => (typeof window.t === 'function' ? window.t(key, { defaultValue: fallback, ...params }) : (fallback || key));
       const startIndex = this.events.length;
 
       const batter  = this.awayTeam.lineup[this.awayLineupIndex];
@@ -1424,7 +1424,7 @@
     _checkEndConditions() {
       if (this.battleOver) return;
 
-      const _t = (key, params, fallback) => (typeof window.t === 'function' ? window.t(key, params) : (fallback || key));
+      const _t = (key, params = {}, fallback = '') => (typeof window.t === 'function' ? window.t(key, { defaultValue: fallback, ...params }) : (fallback || key));
       const allPitchersDown = this.enemyPitcherIndex >= this.homeTeam.pitchers.length;
       const teamDead = this.teamHP <= 0;
 
@@ -1462,7 +1462,7 @@
 
     // ── INTERNAL: deal damage to active pitcher ─────────────────────
     _damagePitcher(dmg) {
-      const _t = (key, params, fallback) => (typeof window.t === 'function' ? window.t(key, params) : (fallback || key));
+      const _t = (key, params = {}, fallback = '') => (typeof window.t === 'function' ? window.t(key, { defaultValue: fallback, ...params }) : (fallback || key));
       let remainingDmg = dmg;
       while (remainingDmg > 0 && this.activePitcher) {
         const p = this.activePitcher;

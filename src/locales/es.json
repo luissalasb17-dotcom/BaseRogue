@@ -304,7 +304,9 @@
     "steal_title": "¡ROBO DE BASE! 🏃⚡",
     "steal_dmg": "PITCHER DEBUFF: +20% DAÑO RECIBIDO",
     "ko_title": "¡K.O. AL LANZADOR! 💥",
-    "ko_dmg": "¡PITCHER RIVAL DERROTADO!"
+    "ko_dmg": "¡PITCHER RIVAL DERROTADO!",
+    "error_title": "¡ERROR RIVAL (E)!",
+    "error_dmg": "EMBASADO EN 1B • FATIGA AL LANZADOR (+20% DAÑO)"
   },
   "card_popup": {
     "swap_pos_title": "CAMBIAR POSICIÓN EN EL CAMPO:",
@@ -569,7 +571,9 @@
     "def_walkoff_result_desc": "El error en la baja de la entrada {{inning}} permitió la carrera de oro rival.",
     "def_walkoff_view_results": "💀 VER RESULTADOS DEL PARTIDO",
     "steal_3b_label": "¡ROBO DE TERCERA BASE!",
-    "steal_3b_desc": "sorprende a la defensa y se estafa la 3ª almohadilla"
+    "steal_3b_desc": "sorprende a la defensa y se estafa la 3ª almohadilla",
+    "label_error": "ERROR RIVAL (E)",
+    "error_reach_desc": "conecta rodado y el fildeador comete pifia"
   },
   "syn": {
     "deadball": {

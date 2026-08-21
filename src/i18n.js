@@ -316,7 +316,9 @@
             "steal_title": "¡ROBO DE BASE! 🏃⚡",
             "steal_dmg": "PITCHER DEBUFF: +20% DAÑO RECIBIDO",
             "ko_title": "¡K.O. AL LANZADOR! 💥",
-            "ko_dmg": "¡PITCHER RIVAL DERROTADO!"
+            "ko_dmg": "¡PITCHER RIVAL DERROTADO!",
+            "error_title": "¡ERROR RIVAL (E)!",
+            "error_dmg": "EMBASADO EN 1B • FATIGA AL LANZADOR (+20% DAÑO)"
       },
       "card_popup": {
             "swap_pos_title": "CAMBIAR POSICIÓN EN EL CAMPO:",
@@ -581,7 +583,9 @@
             "def_walkoff_result_desc": "El error en la baja de la entrada {{inning}} permitió la carrera de oro rival.",
             "def_walkoff_view_results": "💀 VER RESULTADOS DEL PARTIDO",
             "steal_3b_label": "¡ROBO DE TERCERA BASE!",
-            "steal_3b_desc": "sorprende a la defensa y se estafa la 3ª almohadilla"
+            "steal_3b_desc": "sorprende a la defensa y se estafa la 3ª almohadilla",
+            "label_error": "ERROR RIVAL (E)",
+            "error_reach_desc": "conecta rodado y el fildeador comete pifia"
       },
       "syn": {
             "deadball": {
@@ -1871,7 +1875,9 @@
             "steal_title": "STOLEN BASE! 🏃⚡",
             "steal_dmg": "PITCHER DEBUFF: +20% DAMAGE TAKEN",
             "ko_title": "PITCHER K.O.! 💥",
-            "ko_dmg": "RIVAL PITCHER DEFEATED!"
+            "ko_dmg": "RIVAL PITCHER DEFEATED!",
+            "error_title": "OPPONENT ERROR (E)!",
+            "error_dmg": "SAFE ON 1B • PITCHER FATIGUE (+20% DAMAGE)"
       },
       "card_popup": {
             "swap_pos_title": "CHANGE DEFENSIVE POSITION:",
@@ -2136,7 +2142,9 @@
             "def_walkoff_result_desc": "The error in the bottom of inning {{inning}} allowed the rival walk-off winning run.",
             "def_walkoff_view_results": "💀 VIEW MATCH RESULTS",
             "steal_3b_label": "STOLEN THIRD BASE!",
-            "steal_3b_desc": "catches the defense off guard and swipes 3rd base"
+            "steal_3b_desc": "catches the defense off guard and swipes 3rd base",
+            "label_error": "OPPONENT ERROR (E)",
+            "error_reach_desc": "hits a grounder and the fielder commits an error"
       },
       "syn": {
             "deadball": {

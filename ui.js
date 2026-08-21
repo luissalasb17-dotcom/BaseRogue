@@ -7009,6 +7009,14 @@ function initGameModeSelector() {
         borderColor = "#38bdf8";
         boxShadow = "0 0 35px rgba(56, 189, 248, 0.7)";
         break;
+      case 'E':
+        title = typeof t === 'function' ? t('popup.error_title', { defaultValue: '¡ERROR RIVAL (E)!' }) : '¡ERROR RIVAL (E)!';
+        color = "#fbbf24";
+        icon = "fa-triangle-exclamation";
+        dmgText = `💥 ${typeof t === 'function' ? t('popup.error_dmg', { defaultValue: 'EMBASADO EN 1B • FATIGA AL LANZADOR (+20% DAÑO)' }) : 'EMBASADO EN 1B • FATIGA AL LANZADOR (+20% DAÑO)'}`;
+        borderColor = "#f59e0b";
+        boxShadow = "0 0 40px rgba(245, 158, 11, 0.8), 0 0 20px rgba(245, 158, 11, 0.5)";
+        break;
     }
 
     if (ev && ev.spdUpgraded) {
@@ -7033,6 +7041,7 @@ function initGameModeSelector() {
         case 'SO':    window.AudioManager.play('so');  break;
         case 'OUT':   window.AudioManager.play('out'); break;
         case 'BB':    window.AudioManager.play('bb');  break;
+        case 'E':     window.AudioManager.play('draft_pick'); break;
         case 'STEAL': window.AudioManager.play('draft_pick'); break;
         default: break;
       }
@@ -7111,10 +7120,10 @@ function initGameModeSelector() {
     // Era synergy procs get their own highlighted strip instead of blending into the
     // plain detail text — the era name itself is never translated, so matching on it
     // works regardless of UI language. Text-based, doesn't touch simulation.js.
-    const SYNERGY_MARKER_RE = /\p{Extended_Pictographic}?\s*(Genesis Chaos|Small Ball|Liveball Sluggers|Five-Tool Legends|Bash Brothers|Moneyball Analytics|Three True Outcomes)[\s\S]*$/u;
+    const SYNERGY_MARKER_RE = /\p{Extended_Pictographic}?\s*(Genesis Chaos|Small Ball|Deadball|Liveball Sluggers|Golden Era|Five-Tool Legends|Integration|Speed & Hustle|Expansion|AstroTurf|AstroTurf Speedsters|Big Hair|Bash Brothers|Steroid Era|Moneyball Analytics|Efficiency Era|Three True Outcomes|Modern Era)[\s\S]*$/u;
     let synergyHighlightHTML = '';
     const synergyMatch = cleanDetails.match(SYNERGY_MARKER_RE);
-    if (synergyMatch && synergyMatch.index > 0) {
+    if (synergyMatch && synergyMatch.index >= 0) {
       const synergyText = cleanDetails.slice(synergyMatch.index).trim();
       cleanDetails = cleanDetails.slice(0, synergyMatch.index).trim();
       synergyHighlightHTML = `
