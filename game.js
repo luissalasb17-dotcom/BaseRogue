@@ -657,83 +657,41 @@
     }
   ];
 
-  function pickWeightedUnique(pool, count, weakPositionsMap, rarityBoost = false, rarityWeights = null, guaranteeWeak = true) {
+  function pickWeightedUnique(pool, count, weakPositionsMap, rarityBoost = false, rarityWeights = null) {
     const selected = [];
     const poolCopy = [...pool];
 
-    // Helper: evaluate item weight based on tiered position need and rarity
-    const getItemWeight = (p) => {
-      const primaryPos = p.pos || p.pos_display || p.primary_pos || '';
-      const secPosRaw = p.sec_pos || p.secondary_pos || p.secondary_positions || '';
-      const secPositions = Array.isArray(secPosRaw)
-        ? secPosRaw
-        : String(secPosRaw).split(',').map(s => s.trim()).filter(Boolean);
-
-      let w = 1.0;
-      if (weakPositionsMap) {
-        if (weakPositionsMap[primaryPos] !== undefined) {
-          w = Number(weakPositionsMap[primaryPos]) || 5.0;
-        } else {
-          for (const sp of secPositions) {
-            if (weakPositionsMap[sp] !== undefined) {
-              const secWeight = Math.max(2.5, (Number(weakPositionsMap[sp]) || 5.0) * 0.65);
-              w = Math.max(w, secWeight);
-            }
-          }
-        }
-      }
-
-      // Stage-based Rarity Multiplier
-      if (rarityWeights && rarityWeights[p.rarity]) {
-        w *= rarityWeights[p.rarity];
-      }
-
-      // scout_eye: increases the odds of Epic/Legendary showing up in draft offers
-      if (rarityBoost && (p.rarity === 'Epic' || p.rarity === 'Legendary')) w *= 2.5;
-      return w;
-    };
-
-    // Guarantee: ensure at least 1 offered card matches one of the weakest roster positions (if available in pool)
-    if (guaranteeWeak && weakPositionsMap && count > 0 && poolCopy.length > 0) {
-      const isWeakItem = p => {
+    while (selected.length < count && poolCopy.length > 0) {
+      let totalWeight = 0;
+      const weights = poolCopy.map(p => {
         const primaryPos = p.pos || p.pos_display || p.primary_pos || '';
         const secPosRaw = p.sec_pos || p.secondary_pos || p.secondary_positions || '';
         const secPositions = Array.isArray(secPosRaw)
           ? secPosRaw
           : String(secPosRaw).split(',').map(s => s.trim()).filter(Boolean);
-        return (weakPositionsMap[primaryPos] !== undefined) || secPositions.some(sp => weakPositionsMap[sp] !== undefined);
-      };
 
-      const weakPool = poolCopy.filter(isWeakItem);
-      if (weakPool.length > 0) {
-        let totalWeakWeight = 0;
-        const weakWeights = weakPool.map(p => {
-          const w = getItemWeight(p);
-          totalWeakWeight += w;
-          return w;
-        });
-
-        let randVal = Math.random() * totalWeakWeight;
-        let chosenWeakIdx = 0;
-        for (let i = 0; i < weakPool.length; i++) {
-          randVal -= weakWeights[i];
-          if (randVal <= 0) {
-            chosenWeakIdx = i;
-            break;
+        // Smooth, organic weighting: gentle nudge without forcing or feeling rigged
+        let w = 1.0;
+        if (weakPositionsMap) {
+          if (weakPositionsMap[primaryPos] !== undefined) {
+            w = Number(weakPositionsMap[primaryPos]) || 1.8;
+          } else {
+            for (const sp of secPositions) {
+              if (weakPositionsMap[sp] !== undefined) {
+                const secWeight = Math.max(1.2, (Number(weakPositionsMap[sp]) || 1.8) * 0.7);
+                w = Math.max(w, secWeight);
+              }
+            }
           }
         }
 
-        const guaranteedPick = weakPool[chosenWeakIdx];
-        selected.push(guaranteedPick);
-        const poolIdx = poolCopy.findIndex(x => x.name === guaranteedPick.name);
-        if (poolIdx !== -1) poolCopy.splice(poolIdx, 1);
-      }
-    }
+        // Stage-based Rarity Multiplier
+        if (rarityWeights && rarityWeights[p.rarity]) {
+          w *= rarityWeights[p.rarity];
+        }
 
-    while (selected.length < count && poolCopy.length > 0) {
-      let totalWeight = 0;
-      const weights = poolCopy.map(p => {
-        const w = getItemWeight(p);
+        // scout_eye: increases the odds of Epic/Legendary showing up in draft offers
+        if (rarityBoost && (p.rarity === 'Epic' || p.rarity === 'Legendary')) w *= 2.5;
         totalWeight += w;
         return w;
       });
@@ -1928,9 +1886,9 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
       // Sort ascending by OVR to find the weakest positions
       posScores.sort((a, b) => a.ovr - b.ovr);
       const weakMap = {
-        [posScores[0].pos]: 8.5, // #1 weakest / lowest OVR
-        [posScores[1].pos]: 6.0, // #2 weakest
-        [posScores[2].pos]: 4.0  // #3 weakest
+        [posScores[0].pos]: 2.2, // #1 weakest / lowest OVR (gentle +120% boost)
+        [posScores[1].pos]: 1.7, // #2 weakest (+70% boost)
+        [posScores[2].pos]: 1.3  // #3 weakest (+30% boost)
       };
       weakMap.has = function(pos) { return this[pos] !== undefined; };
       weakMap.topPos = posScores[0].pos;
