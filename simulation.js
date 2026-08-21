@@ -1163,6 +1163,7 @@
 
     // ── INTERNAL: advance state (outs → innings, KO → next pitcher) ──
     _advanceState() {
+      const _t = (key, params = {}, fallback = '') => (typeof window.t === 'function' ? window.t(key, { defaultValue: fallback, ...params }) : (fallback || key));
       // Pitcher KO check
       const pitcher = this.activePitcher;
       if (pitcher && pitcher.hp <= 0) {

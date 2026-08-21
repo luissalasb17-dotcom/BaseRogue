@@ -587,7 +587,10 @@
             "steal_3b_desc": "sorprende a la defensa y se estafa la 3ª almohadilla",
             "label_error": "ERROR RIVAL (E)",
             "error_reach_desc": "conecta rodado y el fildeador comete pifia",
-            "natural_error_msg": "⚠️ ¡Pifia defensiva rival (E)! Se anula el out, te embasas en 1B y el pitcher se desconcentra (+20% daño)."
+            "natural_error_msg": "⚠️ ¡Pifia defensiva rival (E)! Se anula el out, te embasas en 1B y el pitcher se desconcentra (+20% daño).",
+            "shield_regen_log": "Regeneración de Escudo: +{{gained}} Escudo reparado ({{reasons}})",
+            "ghost_runner_name": "Corredor Fantasma",
+            "syn_speed_hustle": "Sinergia Speed & Hustle"
       },
       "syn": {
             "deadball": {
@@ -2148,7 +2151,10 @@
             "steal_3b_desc": "catches the defense off guard and swipes 3rd base",
             "label_error": "OPPONENT ERROR (E)",
             "error_reach_desc": "hits a grounder and the fielder commits an error",
-            "natural_error_msg": "⚠️ Opponent fielding error (E)! Out cancelled, batter safe on 1B and pitcher fatigued (+20% dmg)."
+            "natural_error_msg": "⚠️ Opponent fielding error (E)! Out cancelled, batter safe on 1B and pitcher fatigued (+20% dmg).",
+            "shield_regen_log": "Shield Regeneration: +{{gained}} Shield repaired ({{reasons}})",
+            "ghost_runner_name": "Ghost Runner",
+            "syn_speed_hustle": "Speed & Hustle Synergy"
       },
       "syn": {
             "deadball": {
