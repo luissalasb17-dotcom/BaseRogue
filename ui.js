@@ -8015,8 +8015,31 @@ function initGameModeSelector() {
       }
 
       if (activeBattle.pendingDefenseEvent && !activeBattle.battleOver) {
+        const defEvent = activeBattle.pendingDefenseEvent;
         const defRoll = Math.floor(Math.random() * 100) + 1;
-        const defRes = activeBattle.resolveMidInningDefense(defRoll, activeBattle.pendingDefenseEvent);
+        const defRes = activeBattle.resolveMidInningDefense(defRoll, defEvent);
+
+        if (defRes && !defRes.isSuccess && window.Game) {
+          window.Game.defensiveErrors = (window.Game.defensiveErrors || 0) + 1;
+          if (window.Game.runStats) {
+            window.Game.runStats.errors = (window.Game.runStats.errors || 0) + 1;
+          }
+          const fielder = (defEvent && defEvent.player) ? defEvent.player : (defEvent && defEvent.pos && window.Game.roster ? window.Game.roster[defEvent.pos] : null);
+          if (fielder && fielder.name) {
+            window.Game.runBatterStats = window.Game.runBatterStats || {};
+            const fName = fielder.name.replace(/\s*\(\d{4}\)$/, '').trim();
+            if (!window.Game.runBatterStats[fName]) {
+              window.Game.runBatterStats[fName] = { g: 0, ab: 0, h: 0, bb: 0, so: 0, doubles: 0, triples: 0, hr: 0, rbi: 0, sb: 0, e: 0 };
+            }
+            window.Game.runBatterStats[fName].e = (window.Game.runBatterStats[fName].e || 0) + 1;
+          }
+        }
+
+        const lastEv = activeBattle.events && activeBattle.events.length ? activeBattle.events[activeBattle.events.length - 1] : null;
+        if (lastEv && lastEv.playType === 'DEFENSE_PLAY') {
+          appendLogLine(lastEv);
+        }
+
         if (activeBattle) {
           const fresh = activeBattle.getState();
           updateMatchHUD(fresh);
