@@ -2310,8 +2310,8 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
       const createPitcherObj = (p, roleOverride = null) => {
         const role = roleOverride || p.role || 'SP';
         const staVal = p.sta !== undefined ? p.sta : (p.sta_val !== undefined ? p.sta_val : 50);
-        // Unified stamina-driven HP scaling across all pitchers (STA 20-110 maps smoothly from 75 to 200 HP max)
-        const hp = Math.max(75, Math.min(200, Math.round(75 + (staVal - 20) * (125 / 90))));
+        // Unified stamina-driven HP scaling across all pitchers (STA 20-125 maps perfectly from 75 to 200 HP max)
+        const hp = Math.max(75, Math.min(200, Math.round(75 + (staVal - 20) * (125 / 105))));
         const yearVal = p.year || p.peak_year_display || p.peak_year || 1990;
         const nameVal = yearVal ? `${p.name} (${yearVal})` : p.name;
         return {
@@ -2500,7 +2500,7 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
       
       const enemyPitchers = enemy.pitchers.map(p => {
         const staVal = p.sta !== undefined ? p.sta : (p.sta_val !== undefined ? p.sta_val : 50);
-        const calculatedHp = (p.hp && p.maxHp) ? Math.min(200, p.maxHp) : Math.max(75, Math.min(200, Math.round(75 + (staVal - 20) * (125 / 90))));
+        const calculatedHp = (p.hp && p.maxHp) ? Math.min(200, p.maxHp) : Math.max(75, Math.min(200, Math.round(75 + (staVal - 20) * (125 / 105))));
         const finalHp = Math.min(200, p.hp || calculatedHp);
         const finalMaxHp = Math.min(200, p.maxHp || calculatedHp);
         return {

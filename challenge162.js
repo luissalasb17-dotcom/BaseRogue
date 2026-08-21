@@ -144,7 +144,7 @@
 
   function buildEnemyPitcherObj(p, role) {
     const staVal = p.sta !== undefined ? p.sta : 50;
-    const hp = Math.max(75, Math.min(200, Math.round(75 + (staVal - 20) * (125 / 90))));
+    const hp = Math.max(75, Math.min(200, Math.round(75 + (staVal - 20) * (125 / 105))));
     const yearVal = p.year || p.peak_year_display || p.peak_year || 1990;
     const cName = cleanName(p);
     return {
