@@ -173,13 +173,13 @@
     };
   }
 
-  // Frequencies in Hz
+  // Frequencies in Hz (Extended for lush Balatro Jazz voicings)
   const N = {
-    D2: 73.42, E2: 82.41, F2: 87.31, G2: 98.00, A2: 110.00, Bb2: 116.54, B2: 123.47,
-    C3: 130.81, D3: 146.83, E3: 164.81, F3: 174.61, G3: 196.00, A3: 220.00, Bb3: 233.08, B3: 246.94,
-    C4: 261.63, D4: 293.66, Eb4: 311.13, E4: 329.63, F4: 349.23, G4: 392.00, A4: 440.00, Bb4: 466.16, B4: 493.88,
-    C5: 523.25, D5: 587.33, Eb5: 622.25, E5: 659.25, F5: 698.46, G5: 783.99, A5: 880.00, Bb5: 932.33, B5: 987.77,
-    C6: 1046.50, D6: 1174.66, E6: 1318.51, F6: 1396.91, G6: 1567.98
+    C2: 65.41, Db2: 69.30, D2: 73.42, Eb2: 77.78, E2: 82.41, F2: 87.31, Gb2: 92.50, G2: 98.00, Ab2: 103.83, A2: 110.00, Bb2: 116.54, B2: 123.47,
+    C3: 130.81, Db3: 138.59, D3: 146.83, Eb3: 155.56, E3: 164.81, F3: 174.61, Gb3: 185.00, G3: 196.00, Ab3: 207.65, A3: 220.00, Bb3: 233.08, B3: 246.94,
+    C4: 261.63, Db4: 277.18, D4: 293.66, Eb4: 311.13, E4: 329.63, F4: 349.23, Gb4: 369.99, G4: 392.00, Ab4: 415.30, A4: 440.00, Bb4: 466.16, B4: 493.88,
+    C5: 523.25, Db5: 554.37, D5: 587.33, Eb5: 622.25, E5: 659.25, F5: 698.46, Gb5: 739.99, G5: 783.99, Ab5: 830.61, A5: 880.00, Bb5: 932.33, B5: 987.77,
+    C6: 1046.50, D6: 1174.66, E6: 1318.51, F6: 1396.91, G6: 1567.98, A6: 1760.00
   };
 
   function getTrackBus() {
@@ -223,70 +223,81 @@
   }
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // TRACK 1: PROCEDURAL INFINITE MENU ("Cozy Clubhouse Generative Lofi")
-  // Generates unique jazz-lofi chord progressions & algorithmic pentatonic melodies
+  // TRACK 1: PROCEDURAL BALATRO-STYLE CASINO LOUNGE ("Hypnotic Jazz Noir & Rhodes")
+  // Generates lush extended 9th/13th chords with tremolo Rhodes, walking sub-bass,
+  // ethereal vibraphone cascades, and a relaxed lo-fi swing groove.
   // ─────────────────────────────────────────────────────────────────────────────
-  const MENU_BPM = 88;
-  const MENU_BEAT = 60 / MENU_BPM; // ~0.681s
-  const MENU_SIXTEENTH = MENU_BEAT / 4; // ~0.170s
+  const MENU_BPM = 82;
+  const MENU_BEAT = 60 / MENU_BPM; // ~0.731s
+  const MENU_SIXTEENTH = MENU_BEAT / 4; // ~0.183s
 
-  const COZY_PROGRESSIONS = [
-    // Progression A: Cmaj7 -> Am7 -> Dm7 -> G7
+  const BALATRO_PROGRESSIONS = [
+    // Progression 1: Dm9 -> G13 -> Cmaj9 -> A7(b13) [Iconic Balatro Velvet Loop]
     [
-      { notes: [N.C4, N.E4, N.G4, N.B4], bass: N.C3, t: 0 },
-      { notes: [N.A3, N.C4, N.E4, N.G4], bass: N.A2, t: 16 },
-      { notes: [N.D4, N.F4, N.A4, N.C5], bass: N.D3, t: 32 },
-      { notes: [N.G3, N.B3, N.D4, N.F4], bass: N.G2, t: 48 }
+      { notes: [N.F3, N.A3, N.C4, N.E4], bass: N.D2, bassWalk: [N.D2, N.A2, N.C3], t: 0 },
+      { notes: [N.F3, N.B3, N.E4, N.A4], bass: N.G2, bassWalk: [N.G2, N.D3, N.F2], t: 16 },
+      { notes: [N.E3, N.G3, N.B3, N.D4], bass: N.C2, bassWalk: [N.C2, N.G2, N.B2], t: 32 },
+      { notes: [N.G3, N.C4, N.Db4, N.F4], bass: N.A2, bassWalk: [N.A2, N.E3, N.Eb2], t: 48 }
     ],
-    // Progression B: Fmaj7 -> Em7 -> Dm7 -> Cmaj7
+    // Progression 2: Fmaj9 -> Em9 -> Dm9 -> G7alt [Dreamy Casino Descent]
     [
-      { notes: [N.F3, N.A3, N.C4, N.E4], bass: N.F2, t: 0 },
-      { notes: [N.E3, N.G3, N.B3, N.D4], bass: N.E2, t: 16 },
-      { notes: [N.D4, N.F4, N.A4, N.C5], bass: N.D3, t: 32 },
-      { notes: [N.C4, N.E4, N.G4, N.B4], bass: N.C3, t: 48 }
+      { notes: [N.E3, N.A3, N.C4, N.G4], bass: N.F2, bassWalk: [N.F2, N.C3, N.E2], t: 0 },
+      { notes: [N.D3, N.G3, N.B3, N.F4], bass: N.E2, bassWalk: [N.E2, N.B2, N.Eb2], t: 16 },
+      { notes: [N.C3, N.F3, N.A3, N.E4], bass: N.D2, bassWalk: [N.D2, N.A2, N.Ab2], t: 32 },
+      { notes: [N.B3, N.Eb4, N.F4, N.Ab4], bass: N.G2, bassWalk: [N.G2, N.Db3, N.Gb2], t: 48 }
     ],
-    // Progression C: Cmaj7 -> Em7 -> Fmaj7 -> G7
+    // Progression 3: Bbmaj9 -> Am9 -> Gm9 -> C13(b9) [Smoky Late-Night Lounge]
     [
-      { notes: [N.C4, N.E4, N.G4, N.B4], bass: N.C3, t: 0 },
-      { notes: [N.E3, N.G3, N.B3, N.D4], bass: N.E2, t: 16 },
-      { notes: [N.F3, N.A3, N.C4, N.E4], bass: N.F2, t: 32 },
-      { notes: [N.G3, N.B3, N.D4, N.F4], bass: N.G2, t: 48 }
+      { notes: [N.D3, N.F3, N.A3, N.C4], bass: N.Bb2, bassWalk: [N.Bb2, N.F2, N.A2], t: 0 },
+      { notes: [N.C3, N.E3, N.G3, N.B3], bass: N.A2, bassWalk: [N.A2, N.E2, N.Ab2], t: 16 },
+      { notes: [N.Bb2, N.D3, N.F3, N.A3], bass: N.G2, bassWalk: [N.G2, N.D2, N.Gb2], t: 32 },
+      { notes: [N.Bb2, N.Db3, N.E3, N.A3], bass: N.C3, bassWalk: [N.C3, N.G2, N.B2], t: 48 }
     ],
-    // Progression D: Am7 -> D7 -> Dm7 -> G7 (Dugout Jazz)
+    // Progression 4: Ebmaj9 -> Dm9 -> Cm9 -> F13 [Smooth Deck Shuffling Melancholy]
     [
-      { notes: [N.A3, N.C4, N.E4, N.G4], bass: N.A2, t: 0 },
-      { notes: [N.D4, N.F4, N.A4, N.C5], bass: N.D3, t: 16 },
-      { notes: [N.F3, N.A3, N.C4, N.E4], bass: N.F2, t: 32 },
-      { notes: [N.G3, N.B3, N.D4, N.F4], bass: N.G2, t: 48 }
+      { notes: [N.G3, N.Bb3, N.D4, N.F4], bass: N.Eb2, bassWalk: [N.Eb2, N.Bb2, N.D2], t: 0 },
+      { notes: [N.F3, N.A3, N.C4, N.E4], bass: N.D2, bassWalk: [N.D2, N.A2, N.Db2], t: 16 },
+      { notes: [N.Eb3, N.G3, N.Bb3, N.D4], bass: N.C2, bassWalk: [N.C2, N.G2, N.B2], t: 32 },
+      { notes: [N.Eb3, N.A3, N.D4, N.G4], bass: N.F2, bassWalk: [N.F2, N.C3, N.E2], t: 48 }
     ]
   ];
 
-  const PENTATONIC_SCALE = [N.C4, N.D4, N.E4, N.G4, N.A4, N.C5, N.D5, N.E5, N.G5, N.A5, N.C6];
+  const BALATRO_CHIME_SCALE = [
+    N.C4, N.D4, N.E4, N.F4, N.G4, N.A4, N.B4,
+    N.C5, N.D5, N.E5, N.F5, N.G5, N.A5, N.B5,
+    N.C6, N.D6, N.E6
+  ];
+
   let nextMenuLoopTime = 0;
   let menuProgressionIndex = 0;
 
-  function generateProceduralMenuMelody() {
+  function generateBalatroMelody() {
     const melody = [];
-    let curScaleIdx = 4 + Math.floor(Math.random() * 3); // Start near C5
-    const stepSlots = [4, 8, 12, 20, 24, 28, 36, 40, 44, 46, 52, 56];
+    let curIdx = 7 + Math.floor(Math.random() * 4); // Start around C5-G5
+    // Syncopated, playful casino placements (with space to breathe)
+    const possibleSlots = [
+      4, 7, 10, 14,
+      20, 23, 26, 30,
+      36, 39, 42, 46,
+      52, 55, 58, 62
+    ];
 
-    stepSlots.forEach(t => {
-      // 25% chance of musical breath/rest
-      if (Math.random() < 0.25 && t !== 4 && t !== 20 && t !== 36 && t !== 52) return;
+    possibleSlots.forEach((t, i) => {
+      // Natural musical phrasing with 35% probability of rests
+      if (Math.random() < 0.35 && i % 4 !== 0) return;
 
-      // Voice-leading step
       const r = Math.random();
-      if (r < 0.60) {
-        curScaleIdx += (Math.random() < 0.5 ? 1 : -1);
+      if (r < 0.55) {
+        curIdx += (Math.random() < 0.52 ? 1 : -1);
       } else if (r < 0.85) {
-        curScaleIdx += (Math.random() < 0.5 ? 2 : -2);
+        curIdx += (Math.random() < 0.5 ? 2 : -2);
       } else {
-        curScaleIdx += (Math.random() < 0.5 ? 3 : -3);
+        curIdx += (Math.random() < 0.5 ? 3 : -3);
       }
-      curScaleIdx = Math.max(0, Math.min(PENTATONIC_SCALE.length - 1, curScaleIdx));
+      curIdx = Math.max(0, Math.min(BALATRO_CHIME_SCALE.length - 1, curIdx));
 
-      const dur = Math.random() < 0.6 ? 3 : 2; // 16th duration
-      melody.push({ f: PENTATONIC_SCALE[curScaleIdx], d: dur, t: t });
+      const dur = (Math.random() < 0.65) ? 3 : 2;
+      melody.push({ f: BALATRO_CHIME_SCALE[curIdx], d: dur, t: t });
     });
 
     return melody;
@@ -298,98 +309,213 @@
     const bus = getTrackBus();
     if (!bus) return;
 
-    const loopDur = 64 * MENU_SIXTEENTH; // ~10.88s
+    const loopDur = 64 * MENU_SIXTEENTH; // ~11.7s loop
     const now = Math.max(c.currentTime + 0.05, nextMenuLoopTime);
     nextMenuLoopTime = now + loopDur;
 
-    // 1. Procedural Progression Shift
-    const currentProg = COZY_PROGRESSIONS[menuProgressionIndex % COZY_PROGRESSIONS.length];
+    // Progression cycle
+    const currentProg = BALATRO_PROGRESSIONS[menuProgressionIndex % BALATRO_PROGRESSIONS.length];
     menuProgressionIndex++;
 
-    // Render Chords & Warm Sub-Bass
+    // ── 1. RHODES ELECTRIC PIANO (Dual Detuned Osc + Soft Tremolo) ────────────
     currentProg.forEach(chordObj => {
       const startTime = now + (chordObj.t * MENU_SIXTEENTH);
-      const dur = 14 * MENU_SIXTEENTH;
+      const chordDur = 15 * MENU_SIXTEENTH;
 
       chordObj.notes.forEach(freq => {
-        const osc = c.createOscillator();
-        const gain = c.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(freq, startTime);
+        // Dual oscillator for lush analog chorus body
+        const oscA = c.createOscillator();
+        const oscB = c.createOscillator();
+        const chordGain = c.createGain();
+        const filter = c.createBiquadFilter();
 
-        gain.gain.setValueAtTime(0, startTime);
-        gain.gain.linearRampToValueAtTime(0.040, startTime + 0.12);
-        gain.gain.exponentialRampToValueAtTime(0.001, startTime + dur);
+        // Gentle Rhodes warm filter
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(2200, startTime);
+        filter.frequency.exponentialRampToValueAtTime(1400, startTime + chordDur);
 
-        osc.connect(gain);
-        gain.connect(bus);
-        registerBGMNode(osc, gain);
-        osc.start(startTime);
-        osc.stop(startTime + dur + 0.05);
+        oscA.type = 'sine';
+        oscA.frequency.setValueAtTime(freq, startTime);
+        oscA.detune.setValueAtTime(3.5, startTime); // +3.5 cents
+
+        oscB.type = 'triangle';
+        oscB.frequency.setValueAtTime(freq, startTime);
+        oscB.detune.setValueAtTime(-3.5, startTime); // -3.5 cents
+
+        // Rhodes velocity envelope with soft swell & sustained bell decay
+        chordGain.gain.setValueAtTime(0, startTime);
+        chordGain.gain.linearRampToValueAtTime(0.038, startTime + 0.04);
+        chordGain.gain.exponentialRampToValueAtTime(0.016, startTime + 0.6);
+        chordGain.gain.exponentialRampToValueAtTime(0.0001, startTime + chordDur);
+
+        // LFO Tremolo effect (Classic 3.8 Hz Rhodes wobble)
+        const tremoloOsc = c.createOscillator();
+        const tremoloGain = c.createGain();
+        tremoloOsc.type = 'sine';
+        tremoloOsc.frequency.setValueAtTime(3.8, startTime);
+        tremoloGain.gain.setValueAtTime(0.010, startTime); // Subtle depth
+
+        tremoloOsc.connect(tremoloGain);
+        tremoloGain.connect(chordGain.gain);
+
+        oscA.connect(filter);
+        oscB.connect(filter);
+        filter.connect(chordGain);
+        chordGain.connect(bus);
+
+        registerBGMNode(oscA, oscB, chordGain, filter, tremoloOsc, tremoloGain);
+
+        oscA.start(startTime);
+        oscB.start(startTime);
+        tremoloOsc.start(startTime);
+
+        oscA.stop(startTime + chordDur + 0.05);
+        oscB.stop(startTime + chordDur + 0.05);
+        tremoloOsc.stop(startTime + chordDur + 0.05);
       });
 
-      const bassOsc = c.createOscillator();
-      const bassGain = c.createGain();
-      bassOsc.type = 'triangle';
-      bassOsc.frequency.setValueAtTime(chordObj.bass, startTime);
+      // ── 2. WALKING & DEEP LOUNGE SUB-BASS ────────────────────────────────────
+      const walkNotes = chordObj.bassWalk || [chordObj.bass];
+      const stepOffsets = [0, 8, 12]; // Beat 1, Beat 3, Beat 4 anticipation
 
-      bassGain.gain.setValueAtTime(0, startTime);
-      bassGain.gain.linearRampToValueAtTime(0.075, startTime + 0.08);
-      bassGain.gain.exponentialRampToValueAtTime(0.001, startTime + dur);
+      walkNotes.forEach((bFreq, idx) => {
+        const stepOffset = stepOffsets[idx] !== undefined ? stepOffsets[idx] : idx * 6;
+        const bassTime = startTime + (stepOffset * MENU_SIXTEENTH);
+        const bDur = (idx === 0 ? 7.5 : 3.5) * MENU_SIXTEENTH;
 
-      bassOsc.connect(bassGain);
-      bassGain.connect(bus);
-      registerBGMNode(bassOsc, bassGain);
-      bassOsc.start(startTime);
-      bassOsc.stop(startTime + dur + 0.05);
+        const bOsc = c.createOscillator();
+        const bSub = c.createOscillator();
+        const bGain = c.createGain();
+        const bFilter = c.createBiquadFilter();
+
+        bFilter.type = 'lowpass';
+        bFilter.frequency.setValueAtTime(260, bassTime);
+
+        bOsc.type = 'triangle';
+        bOsc.frequency.setValueAtTime(bFreq, bassTime);
+
+        bSub.type = 'sine';
+        bSub.frequency.setValueAtTime(bFreq * 0.5, bassTime); // Sub-octave warmth
+
+        const bVol = (idx === 0 ? 0.075 : 0.050);
+        bGain.gain.setValueAtTime(0, bassTime);
+        bGain.gain.linearRampToValueAtTime(bVol, bassTime + 0.03);
+        bGain.gain.exponentialRampToValueAtTime(0.001, bassTime + bDur);
+
+        bOsc.connect(bFilter);
+        bSub.connect(bFilter);
+        bFilter.connect(bGain);
+        bGain.connect(bus);
+
+        registerBGMNode(bOsc, bSub, bFilter, bGain);
+
+        bOsc.start(bassTime);
+        bSub.start(bassTime);
+        bOsc.stop(bassTime + bDur + 0.05);
+        bSub.stop(bassTime + bDur + 0.05);
+      });
     });
 
-    // 2. Procedural Melody Improvisation
-    const dynamicMelody = generateProceduralMenuMelody();
-    dynamicMelody.forEach(note => {
-      const startTime = now + (note.t * MENU_SIXTEENTH);
-      const dur = note.d * MENU_SIXTEENTH * 0.90;
+    // ── 3. ETHEREAL BALATRO VIBRAPHONE / CHIMES (Melodic Sprinkles) ──────────
+    const chimeMelody = generateBalatroMelody();
+    chimeMelody.forEach(note => {
+      const chimeTime = now + (note.t * MENU_SIXTEENTH);
+      const chimeDur = note.d * MENU_SIXTEENTH * 1.4;
 
       const osc = c.createOscillator();
       const gain = c.createGain();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(note.f, startTime);
-
-      gain.gain.setValueAtTime(0, startTime);
-      gain.gain.linearRampToValueAtTime(0.050, startTime + 0.04);
-      gain.gain.exponentialRampToValueAtTime(0.001, startTime + dur);
-
-      osc.connect(gain);
-      gain.connect(bus);
-      registerBGMNode(osc, gain);
-      osc.start(startTime);
-      osc.stop(startTime + dur + 0.05);
-    });
-
-    // 3. Relaxing lofi percussion (using shared noise buffer)
-    for (let s = 0; s < 64; s += 4) {
-      const startTime = now + (s * MENU_SIXTEENTH);
-      const isBackbeat = (s % 16 === 8);
-      const dur = isBackbeat ? 0.08 : 0.035;
-      const vol = isBackbeat ? 0.030 : 0.012;
-
-      const src = c.createBufferSource();
-      src.buffer = getNoiseBuffer(c);
-
       const filter = c.createBiquadFilter();
+
       filter.type = 'bandpass';
-      filter.frequency.setValueAtTime(isBackbeat ? 2200 : 4500, startTime);
+      filter.frequency.setValueAtTime(note.f, chimeTime);
+      filter.Q.setValueAtTime(1.8, chimeTime);
 
-      const gain = c.createGain();
-      gain.gain.setValueAtTime(vol, startTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, startTime + dur);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(note.f, chimeTime);
 
-      src.connect(filter);
+      // Crystalline bell envelope with gentle initial ping and ringing tail
+      gain.gain.setValueAtTime(0, chimeTime);
+      gain.gain.linearRampToValueAtTime(0.042, chimeTime + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.0005, chimeTime + chimeDur);
+
+      osc.connect(filter);
       filter.connect(gain);
       gain.connect(bus);
-      registerBGMNode(src, filter, gain);
-      src.start(startTime);
-      src.stop(startTime + dur + 0.02);
+
+      registerBGMNode(osc, filter, gain);
+      osc.start(chimeTime);
+      osc.stop(chimeTime + chimeDur + 0.05);
+    });
+
+    // ── 4. RELAXED BALATRO LO-FI CASINO GROOVE (Kick, Brush Snare, Swing Hats) ─
+    for (let s = 0; s < 64; s += 2) {
+      const stepTime = now + (s * MENU_SIXTEENTH);
+      const isKick = (s === 0 || s === 24 || s === 32 || s === 56);
+      const isSnare = (s === 16 || s === 48); // Beats 2 and 4
+      const isHat = (s % 4 === 0) || (s % 4 === 2 && Math.random() < 0.75);
+
+      // A. Soft Pitch-Drop Sub Kick
+      if (isKick) {
+        const kOsc = c.createOscillator();
+        const kGain = c.createGain();
+        kOsc.type = 'sine';
+        kOsc.frequency.setValueAtTime(70, stepTime);
+        kOsc.frequency.exponentialRampToValueAtTime(32, stepTime + 0.12);
+
+        kGain.gain.setValueAtTime(0.065, stepTime);
+        kGain.gain.exponentialRampToValueAtTime(0.001, stepTime + 0.14);
+
+        kOsc.connect(kGain);
+        kGain.connect(bus);
+        registerBGMNode(kOsc, kGain);
+        kOsc.start(stepTime);
+        kOsc.stop(stepTime + 0.15);
+      }
+
+      // B. Jazz Brushed Snare / Warm Snap
+      if (isSnare) {
+        const sSrc = c.createBufferSource();
+        sSrc.buffer = getNoiseBuffer(c);
+        const sFilter = c.createBiquadFilter();
+        const sGain = c.createGain();
+
+        sFilter.type = 'bandpass';
+        sFilter.frequency.setValueAtTime(1350, stepTime);
+        sFilter.Q.setValueAtTime(0.9, stepTime);
+
+        sGain.gain.setValueAtTime(0.038, stepTime);
+        sGain.gain.exponentialRampToValueAtTime(0.001, stepTime + 0.11);
+
+        sSrc.connect(sFilter);
+        sFilter.connect(sGain);
+        sGain.connect(bus);
+        registerBGMNode(sSrc, sFilter, sGain);
+        sSrc.start(stepTime);
+        sSrc.stop(stepTime + 0.12);
+      }
+
+      // C. Soft Swung Hi-Hat / Shaker
+      if (isHat && !isSnare) {
+        const swingOffset = (s % 4 === 2) ? (MENU_SIXTEENTH * 0.20) : 0; // Swing micro-timing
+        const hTime = stepTime + swingOffset;
+        const hSrc = c.createBufferSource();
+        hSrc.buffer = getNoiseBuffer(c);
+        const hFilter = c.createBiquadFilter();
+        const hGain = c.createGain();
+
+        hFilter.type = 'highpass';
+        hFilter.frequency.setValueAtTime(4800, hTime);
+
+        hGain.gain.setValueAtTime(0.012, hTime);
+        hGain.gain.exponentialRampToValueAtTime(0.0005, hTime + 0.035);
+
+        hSrc.connect(hFilter);
+        hFilter.connect(hGain);
+        hGain.connect(bus);
+        registerBGMNode(hSrc, hFilter, hGain);
+        hSrc.start(hTime);
+        hSrc.stop(hTime + 0.04);
+      }
     }
   }
 
