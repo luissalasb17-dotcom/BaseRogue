@@ -6599,6 +6599,7 @@ function initGameModeSelector() {
     const avgDef = window.Game.calculateLineupShield();
 
     // ── Create InteractiveBattle ──────────────────────────────────────────────
+    stopAutoSimulate();
     activeBattle = new window.InteractiveBattle(teamLineups.away, teamLineups.home, avgDef, window.Game.buildEra, window.Game.equippedTraits.map(t => t.id));
     isRolling = false;
 
@@ -7918,37 +7919,126 @@ function initGameModeSelector() {
     };
   }
 
+  let autoSimTimer = null;
+  let isAutoSimulating = false;
+
+  function stopAutoSimulate() {
+    if (autoSimTimer) {
+      clearTimeout(autoSimTimer);
+      autoSimTimer = null;
+    }
+    isAutoSimulating = false;
+    isRolling = false;
+
+    const btnRoll = document.getElementById('btn-roll-dice');
+    const btnSkip = document.getElementById('btn-match-skip-game');
+    if (btnRoll && activeBattle && !activeBattle.battleOver) btnRoll.disabled = false;
+    if (btnSkip) {
+      const isEs = (typeof t === 'function' && t('hud.stage') !== 'Stage:');
+      btnSkip.innerHTML = `<i class="fa-solid fa-forward-fast"></i> ${isEs ? '⏩ AUTO-PLAY RÁPIDO' : '⏩ FAST AUTO-PLAY'}`;
+      btnSkip.style.background = 'linear-gradient(135deg,#dc2626,#ef4444)';
+      btnSkip.style.boxShadow = '0 0 14px rgba(220,38,38,0.4)';
+    }
+  }
+
   function handleSimulateAll() {
     if (!activeBattle || activeBattle.battleOver) return;
+
+    if (isAutoSimulating) {
+      stopAutoSimulate();
+      return;
+    }
+
+    isAutoSimulating = true;
+    isRolling = true;
 
     const btnRoll = document.getElementById('btn-roll-dice');
     const btnSkip = document.getElementById('btn-match-skip-game');
     if (btnRoll) btnRoll.disabled = true;
-    if (btnSkip) btnSkip.disabled = true;
+    if (btnSkip) {
+      const isEs = (typeof t === 'function' && t('hud.stage') !== 'Stage:');
+      btnSkip.innerHTML = `<i class="fa-solid fa-pause"></i> ${isEs ? '⏸️ PAUSAR AUTO' : '⏸️ PAUSE AUTO'}`;
+      btnSkip.style.background = 'linear-gradient(135deg,#059669,#10b981)';
+      btnSkip.style.boxShadow = '0 0 16px rgba(16,185,129,0.6)';
+    }
 
-    let safety = 0;
-    while (!activeBattle.battleOver && safety++ < 500) {
-      const roll = Math.floor(Math.random() * 100) + 1;
-      const evs = activeBattle.rollDice(roll);
-      if (evs && Array.isArray(evs)) {
-        evs.forEach(ev => appendLogLine(ev));
-      } else if (evs) {
-        appendLogLine(evs);
+    const runTurboStep = () => {
+      if (!activeBattle || activeBattle.battleOver || !isAutoSimulating) {
+        stopAutoSimulate();
+        if (activeBattle && activeBattle.battleOver) {
+          handleBattleOver();
+        }
+        return;
       }
+
+      const finalRoll = Math.floor(Math.random() * 100) + 1;
+      const tensDigit  = Math.floor(finalRoll / 10) % 10;
+      const unitsDigit = finalRoll % 10;
+
+      const diceDisplay = document.getElementById('dice-result-display');
+      const faceUnits = document.getElementById('die-units-face-front');
+      const faceTens  = document.getElementById('die-tens-face-front');
+      const cubeUnits = document.getElementById('die-units-cube');
+      const cubeTens  = document.getElementById('die-tens-cube');
+
+      if (faceTens)  faceTens.innerText  = tensDigit;
+      if (faceUnits) faceUnits.innerText = unitsDigit;
+      if (diceDisplay) {
+        diceDisplay.innerText = finalRoll;
+        const b = (activeBattle && typeof activeBattle.currentBoundaries === 'function') ? activeBattle.currentBoundaries() : null;
+        if (b) {
+          let rollColor = '#fff';
+          if (finalRoll <= b.bbEnd) rollColor = '#3b82f6';
+          else if (finalRoll <= b.soEnd) rollColor = '#ef4444';
+          else if (finalRoll <= b.outEnd) rollColor = '#9ca3af';
+          else if (finalRoll <= b.singleEnd) rollColor = '#a7f3d0';
+          else if (finalRoll <= b.doubleEnd) rollColor = '#10b981';
+          else if (finalRoll <= b.tripleEnd) rollColor = '#06b6d4';
+          else rollColor = '#eab308';
+          diceDisplay.style.color = rollColor;
+        }
+      }
+
+      if (cubeUnits) { cubeUnits.classList.remove('tumbling-units', 'die-settled'); void cubeUnits.offsetWidth; cubeUnits.classList.add('die-settled'); }
+      if (cubeTens)  { cubeTens.classList.remove('tumbling-tens', 'die-settled'); void cubeTens.offsetWidth; cubeTens.classList.add('die-settled'); }
+
+      if (window.AudioManager) window.AudioManager.play('menu_click');
+
+      const events = activeBattle.rollDice(finalRoll) || [];
+      if (events && Array.isArray(events)) {
+        events.forEach(ev => {
+          appendLogLine(ev);
+          if (ev.playType === 'KO_PITCHER' || ev.eventType === 'KO') {
+            if (window.AudioManager) window.AudioManager.play('pitcher_ko');
+          }
+        });
+      }
+
       if (activeBattle.pendingDefenseEvent && !activeBattle.battleOver) {
         const defRoll = Math.floor(Math.random() * 100) + 1;
         const defRes = activeBattle.resolveMidInningDefense(defRoll, activeBattle.pendingDefenseEvent);
+        if (activeBattle) {
+          const fresh = activeBattle.getState();
+          updateMatchHUD(fresh);
+        }
       }
-    }
 
-    const finalState = activeBattle.getState();
-    updateMatchHUD(finalState);
-    updateFaceoffPanel(finalState);
-    renderZones();
+      const curState = activeBattle.getState();
+      updateMatchHUD(curState);
+      updateFaceoffPanel(curState);
+      renderZones();
 
-    if (activeBattle.battleOver) {
-      handleBattleOver();
-    }
+      if (activeBattle.battleOver) {
+        stopAutoSimulate();
+        setTimeout(() => {
+          handleBattleOver();
+        }, 500);
+      } else {
+        autoSimTimer = setTimeout(runTurboStep, 220);
+      }
+    };
+
+    runTurboStep();
   }
 
   // ── UPDATE MATCH HUD (HP bars, shield, chain, scoreboard) ───────────────────
@@ -8406,6 +8496,7 @@ function initGameModeSelector() {
 
   // ── HANDLE BATTLE OVER (Victory / Defeat debrief modal) ────────────────────
   function handleBattleOver() {
+    stopAutoSimulate();
     if (!activeBattle) return;
     const isWin = (activeBattle.winner === 'player');
     const state = activeBattle.getState();

@@ -258,7 +258,7 @@
             "triple": "Triple (3B)",
             "hr": "Jonrón (HR)",
             "roll_dice": "🎲 LANZAR DADO",
-            "simulate_all": "⚡ SIMULAR TODO",
+            "simulate_all": "⏩ AUTO-PLAY RÁPIDO",
             "history": "HISTORIAL DEL PARTIDO",
             "log_hr": "🎲 [{{roll}}] [JONRÓN] ¡{{batter}} CUADRANGULAR de {{runs}} carreras! Anotan {{runs}} carreras. {{pitcher}} sufre {{dmg}} HP de daño.",
             "log_3b": "🎲 [{{roll}}] [TRIPLE] ¡{{batter}} triple al rincón! Anotan {{runs}} carreras. {{pitcher}} sufre {{dmg}} HP de daño.",
@@ -296,7 +296,8 @@
             "banner_bullpen_sub": "UN NUEVO LANZADOR SUBE A LA LOMA",
             "extra_innings_hud_desc": "Outs: -30 HP • Ks: 30/36/42 HP • ¡Fallo en la baja = Walk-Off!",
             "sudden_death_title": "⚡ ¡MUERTE SÚBITA! ⚡",
-            "extra_innings_hud_title": "⚡ ¡EXTRA INNINGS • MUERTE SÚBITA! ⚡"
+            "extra_innings_hud_title": "⚡ ¡EXTRA INNINGS • MUERTE SÚBITA! ⚡",
+            "simulate_all_pause": "⏸️ PAUSAR AUTO"
       },
       "popup": {
             "bb_title": "BASE POR BOLAS",
@@ -1818,7 +1819,7 @@
             "triple": "Triple (3B)",
             "hr": "Home Run (HR)",
             "roll_dice": "🎲 ROLL DICE",
-            "simulate_all": "⚡ SIMULATE ALL",
+            "simulate_all": "⏩ FAST AUTO-PLAY",
             "history": "MATCH HISTORY",
             "log_hr": "🎲 [{{roll}}] [HOME RUN] {{batter}} {{runs}}-run HOME RUN! Scored {{runs}} runs. {{pitcher}} takes {{dmg}} HP damage.",
             "log_3b": "🎲 [{{roll}}] [TRIPLE] {{batter}} triple to the corner! Scored {{runs}} runs. {{pitcher}} takes {{dmg}} HP damage.",
@@ -1856,7 +1857,8 @@
             "banner_bullpen_sub": "A NEW RELIEVER STEPS ONTO THE MOUND",
             "extra_innings_hud_desc": "Outs: -30 HP • Ks: 30/36/42 HP • Bottom error = Walk-Off Defeat!",
             "sudden_death_title": "⚡ SUDDEN DEATH! ⚡",
-            "extra_innings_hud_title": "⚡ EXTRA INNINGS • SUDDEN DEATH! ⚡"
+            "extra_innings_hud_title": "⚡ EXTRA INNINGS • SUDDEN DEATH! ⚡",
+            "simulate_all_pause": "⏸️ PAUSE AUTO"
       },
       "popup": {
             "bb_title": "WALK (BB)",

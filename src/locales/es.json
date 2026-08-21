@@ -246,7 +246,7 @@
     "triple": "Triple (3B)",
     "hr": "Jonrón (HR)",
     "roll_dice": "🎲 LANZAR DADO",
-    "simulate_all": "⚡ SIMULAR TODO",
+    "simulate_all": "⏩ AUTO-PLAY RÁPIDO",
     "history": "HISTORIAL DEL PARTIDO",
     "log_hr": "🎲 [{{roll}}] [JONRÓN] ¡{{batter}} CUADRANGULAR de {{runs}} carreras! Anotan {{runs}} carreras. {{pitcher}} sufre {{dmg}} HP de daño.",
     "log_3b": "🎲 [{{roll}}] [TRIPLE] ¡{{batter}} triple al rincón! Anotan {{runs}} carreras. {{pitcher}} sufre {{dmg}} HP de daño.",
@@ -284,7 +284,8 @@
     "banner_bullpen_sub": "UN NUEVO LANZADOR SUBE A LA LOMA",
     "extra_innings_hud_desc": "Outs: -30 HP • Ks: 30/36/42 HP • ¡Fallo en la baja = Walk-Off!",
     "sudden_death_title": "⚡ ¡MUERTE SÚBITA! ⚡",
-    "extra_innings_hud_title": "⚡ ¡EXTRA INNINGS • MUERTE SÚBITA! ⚡"
+    "extra_innings_hud_title": "⚡ ¡EXTRA INNINGS • MUERTE SÚBITA! ⚡",
+    "simulate_all_pause": "⏸️ PAUSAR AUTO"
   },
   "popup": {
     "bb_title": "BASE POR BOLAS",
