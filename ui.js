@@ -6930,7 +6930,6 @@ function initGameModeSelector() {
     }
 
     if (eventType === 'INNING_END') {
-      // ev.inning records the inning that just ended (e.g. 1). The upcoming inning is ev.inning + 1 (e.g. 2)
       const nextIn = (ev && typeof ev.inning === 'number') ? (ev.inning + 1) : 2;
       if (nextIn > 3 || (activeBattle && activeBattle.battleOver)) return;
       triggerInningChangeJuice(nextIn);
@@ -6946,66 +6945,66 @@ function initGameModeSelector() {
 
     switch(eventType) {
       case 'BB':
-        title = t('popup.bb_title');
+        title = typeof t === 'function' ? t('popup.bb_title', { defaultValue: 'BASE POR BOLAS' }) : 'BASE POR BOLAS';
         color = "#3b82f6";
         icon = "fa-walking";
-        dmgText = `🚶 ${t('popup.bb_dmg')}`;
+        dmgText = `🚶 ${typeof t === 'function' ? t('popup.bb_dmg', { defaultValue: '¡PITCHER RECIBE DAÑO!' }) : '¡PITCHER RECIBE DAÑO!'}`;
         borderColor = "#3b82f6";
         boxShadow = "0 0 30px rgba(59, 130, 246, 0.5), 0 0 15px rgba(59, 130, 246, 0.3)";
         break;
       case 'SO':
-        title = t('popup.so_title');
+        title = typeof t === 'function' ? t('popup.so_title', { defaultValue: '¡PONCHE!' }) : '¡PONCHE!';
         color = "#ef4444";
         icon = "fa-circle-xmark";
-        dmgText = `💀 ${t('popup.so_dmg')}`;
+        dmgText = `💀 ${typeof t === 'function' ? t('popup.so_dmg', { defaultValue: 'DAÑO DIRECTO (IGNORA ESCUDO)' }) : 'DAÑO DIRECTO (IGNORA ESCUDO)'}`;
         borderColor = "#ef4444";
         boxShadow = "0 0 30px rgba(239, 68, 68, 0.5), 0 0 15px rgba(239, 68, 68, 0.3)";
         break;
       case 'OUT':
-        title = t('popup.out_title');
+        title = typeof t === 'function' ? t('popup.out_title', { defaultValue: 'OUT' }) : 'OUT';
         color = "#9ca3af";
         icon = "fa-thumbs-down";
-        dmgText = `🛡️ ${t('popup.out_dmg')}`;
+        dmgText = `🛡️ ${typeof t === 'function' ? t('popup.out_dmg', { defaultValue: 'DAÑO AL ESCUDO' }) : 'DAÑO AL ESCUDO'}`;
         borderColor = "#9ca3af";
         boxShadow = "0 0 30px rgba(156, 163, 175, 0.5), 0 0 15px rgba(156, 163, 175, 0.3)";
         break;
       case '1B':
-        title = t('popup.single_title');
+        title = typeof t === 'function' ? t('popup.single_title', { defaultValue: 'SENCILLO (1B)' }) : 'SENCILLO (1B)';
         color = "#a7f3d0";
         icon = "fa-baseball-bat-ball";
-        dmgText = `⚾ ${t('popup.single_dmg')}`;
+        dmgText = `⚾ ${typeof t === 'function' ? t('popup.single_dmg', { defaultValue: 'DAÑO AL PITCHER' }) : 'DAÑO AL PITCHER'}`;
         borderColor = "#10b981";
         boxShadow = "0 0 30px rgba(16, 185, 129, 0.5), 0 0 15px rgba(16, 185, 129, 0.3)";
         break;
       case '2B':
-        title = t('popup.double_title');
+        title = typeof t === 'function' ? t('popup.double_title', { defaultValue: 'DOBLE (2B) ⚡' }) : 'DOBLE (2B) ⚡';
         color = "#10b981";
         icon = "fa-bolt-lightning";
-        dmgText = `⚡ ${t('popup.double_dmg')}`;
+        dmgText = `⚡ ${typeof t === 'function' ? t('popup.double_dmg', { defaultValue: 'DAÑO DUPLICADO' }) : 'DAÑO DUPLICADO'}`;
         borderColor = "#10b981";
         boxShadow = "0 0 30px rgba(16, 185, 129, 0.6), 0 0 15px rgba(16, 185, 129, 0.4)";
         break;
       case '3B':
-        title = t('popup.triple_title');
+        title = typeof t === 'function' ? t('popup.triple_title', { defaultValue: 'TRIPLE (3B) 🔥' }) : 'TRIPLE (3B) 🔥';
         color = "#06b6d4";
         icon = "fa-fire";
-        dmgText = `🔥 ${t('popup.triple_dmg')}`;
+        dmgText = `🔥 ${typeof t === 'function' ? t('popup.triple_dmg', { defaultValue: 'DAÑO TRIPLICADO' }) : 'DAÑO TRIPLICADO'}`;
         borderColor = "#06b6d4";
         boxShadow = "0 0 30px rgba(6, 182, 212, 0.6), 0 0 15px rgba(6, 182, 212, 0.4)";
         break;
       case 'HR':
-        title = t('popup.hr_title');
+        title = typeof t === 'function' ? t('popup.hr_title', { defaultValue: '¡JONRÓN! 🚀💥' }) : '¡JONRÓN! 🚀💥';
         color = "#eab308";
         icon = "fa-rocket";
-        dmgText = `🚀 ${t('popup.hr_dmg')}`;
+        dmgText = `🚀 ${typeof t === 'function' ? t('popup.hr_dmg', { defaultValue: '¡DAÑO CRÍTICO MASIVO!' }) : '¡DAÑO CRÍTICO MASIVO!'}`;
         borderColor = "#eab308";
         boxShadow = "0 0 45px rgba(234, 179, 8, 0.7), 0 0 20px rgba(234, 179, 8, 0.5)";
         break;
       case 'STEAL':
-        title = t('popup.steal_title');
+        title = typeof t === 'function' ? t('popup.steal_title', { defaultValue: '¡ROBO DE BASE! 🏃⚡' }) : '¡ROBO DE BASE! 🏃⚡';
         color = "#38bdf8";
         icon = "fa-person-running";
-        dmgText = `⚡ ${t('popup.steal_dmg')}`;
+        dmgText = `⚡ ${typeof t === 'function' ? t('popup.steal_dmg', { defaultValue: 'PITCHER DEBUFF: +20% DAÑO RECIBIDO' }) : 'PITCHER DEBUFF: +20% DAÑO RECIBIDO'}`;
         borderColor = "#38bdf8";
         boxShadow = "0 0 35px rgba(56, 189, 248, 0.7)";
         break;
@@ -7066,10 +7065,10 @@ function initGameModeSelector() {
       left: 50%;
       transform: translate(-50%, -50%) scale(0.5);
       z-index: 100;
-      background: rgba(0, 0, 0, 0.95);
+      background: rgba(8, 12, 20, 0.96);
       border: 3px solid ${borderColor};
       border-radius: 16px;
-      padding: 20px 30px;
+      padding: 16px 24px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -7079,11 +7078,13 @@ function initGameModeSelector() {
       opacity: 0;
       transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
       text-align: center;
-      min-width: 240px;
+      min-width: 260px;
+      max-width: 320px;
     `;
 
     let cleanDetails = details ? details.replace(/🎲 \[\d+\] \[[^\]]+\] /, '').replace(/−/g, '-') : '';
     cleanDetails = cleanDetails.replace(/⚡\s*¡?CLUTCH PLAYER!?[^—\n]*[—\.]\s*(\(\+[^)]+\)\.?)?\s*/gi, '').replace(/^⚡\s*¡?CLUTCH PLAYER!?[^\.]*\.\s*/gi, '').trim();
+    cleanDetails = cleanDetails.replace(/Anotan 0 carreras\.\s*/gi, '').replace(/0 runs scored\.\s*/gi, '').trim();
 
     // SPD Hit Upgrade Highlight (1B -> 2B or 2B -> 3B)
     let spdUpgradeHTML = '';
@@ -7100,13 +7101,13 @@ function initGameModeSelector() {
       const isEs = (typeof window.t === 'function' ? window.t('hud.stage') : 'Stage:') !== 'Stage:';
       const badgeTitle = isEs ? '⚡ ¡BASE EXTRA POR VELOCIDAD!' : '⚡ EXTRA BASE BY SPEED!';
       const badgeDesc = isEs
-        ? `${batterName ? `¡<strong>${batterName}</strong> ` : ''}estiró el batazo con su velocidad (Grado ${grade}) (<strong>${fromType} ➔ ${toType}</strong>)`
-        : `${batterName ? `<strong>${batterName}</strong> ` : ''}stretched the hit with elite speed (Grade ${grade}) (<strong>${fromType} ➔ ${toType}</strong>)`;
+        ? `${batterName ? `¡<strong>${batterName}</strong> ` : ''}estiró el batazo (Grado ${grade}) (<strong>${fromType} ➔ ${toType}</strong>)`
+        : `${batterName ? `<strong>${batterName}</strong> ` : ''}stretched the hit (Grade ${grade}) (<strong>${fromType} ➔ ${toType}</strong>)`;
 
       spdUpgradeHTML = `
-      <div style="font-family:'Press Start 2P',monospace; font-size: 9px; color: #38bdf8; background: rgba(56, 189, 248, 0.16); border: 1.5px solid #38bdf8; padding: 7px 10px; border-radius: 8px; margin-bottom: 10px; max-width: 280px; line-height: 1.4; box-shadow: 0 0 14px rgba(56, 189, 248, 0.4); text-shadow: 0 0 6px #38bdf8;">
+      <div style="font-family:'Press Start 2P',monospace; font-size: 8px; color: #38bdf8; background: rgba(56, 189, 248, 0.16); border: 1.5px solid #38bdf8; padding: 6px 10px; border-radius: 8px; margin-bottom: 8px; width: 100%; line-height: 1.35; box-shadow: 0 0 12px rgba(56, 189, 248, 0.4); text-shadow: 0 0 6px #38bdf8;">
         ${badgeTitle}
-        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 11px; font-weight: normal; color: #e0f2fe; margin-top: 4px; line-height: 1.35;">
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 10.5px; font-weight: normal; color: #e0f2fe; margin-top: 3px; line-height: 1.3;">
           ${badgeDesc}
         </div>
       </div>`;
@@ -7117,48 +7118,64 @@ function initGameModeSelector() {
       if (window.AudioManager) window.AudioManager.play('draft_pick');
     }
 
-    // Era synergy procs get their own highlighted strip instead of blending into the
-    // plain detail text — the era name itself is never translated, so matching on it
-    // works regardless of UI language. Text-based, doesn't touch simulation.js.
-    const SYNERGY_MARKER_RE = /\p{Extended_Pictographic}?\s*(Genesis Chaos|Small Ball|Deadball|Liveball Sluggers|Golden Era|Five-Tool Legends|Integration|Speed & Hustle|Expansion|AstroTurf|AstroTurf Speedsters|Big Hair|Bash Brothers|Steroid Era|Moneyball Analytics|Efficiency Era|Three True Outcomes|Modern Era)[\s\S]*$/u;
-    let synergyHighlightHTML = '';
-    const synergyMatch = cleanDetails.match(SYNERGY_MARKER_RE);
-    if (synergyMatch && synergyMatch.index >= 0) {
-      const synergyText = cleanDetails.slice(synergyMatch.index).trim();
-      cleanDetails = cleanDetails.slice(0, synergyMatch.index).trim();
-      synergyHighlightHTML = `
-      <div style="font-size: 11px; color: var(--badge-build-era); background: rgba(255, 46, 196, 0.12); border: 1px solid var(--badge-build-era); padding: 5px 8px; margin-bottom: 10px; max-width: 280px; line-height: 1.35; text-shadow: 0 0 4px var(--badge-build-era-glow);">
-        <i class="fa-solid fa-star"></i> ${synergyText}
-      </div>`;
+    // ── Universal Synergy & Trait Extraction (Clean & Condensed) ──
+    const SYNERGY_PATTERNS = [
+      { key: 'GENESIS CHAOS', regex: /(?:💥|⚠️)?\s*(?:Genesis Chaos|The Genesis Era)[:\s]*([^\|\n]+)/i, color: '#ff2ec4', icon: 'fa-skull-crossbones' },
+      { key: 'SMALL BALL', regex: /(?:⏳)?\s*(?:Small Ball|Deadball)[:\s]*([^\|\n]+)/i, color: '#22d3ee', icon: 'fa-baseball' },
+      { key: 'LIVEBALL SLUGGERS', regex: /(?:🔥)?\s*(?:Liveball Sluggers|Liveball|Golden Era)[:\s]*([^\|\n]+)/i, color: '#f59e0b', icon: 'fa-fire' },
+      { key: 'FIVE-TOOL LEGENDS', regex: /(?:⭐)?\s*(?:Five-Tool Legends|Five-Tool|Integration)[:\s]*([^\|\n]+)/i, color: '#a855f7', icon: 'fa-star' },
+      { key: 'SPEED & HUSTLE', regex: /(?:🏃)?\s*(?:Speed & Hustle|Expansion|Sinergia Speed & Hustle)[:\s]*([^\|\n]+)/i, color: '#38bdf8', icon: 'fa-bolt' },
+      { key: 'ASTROTURF SPEEDSTERS', regex: /(?:🛼)?\s*(?:AstroTurf Speedsters|AstroTurf|Big Hair|Sinergia Big Hair)[:\s]*([^\|\n]+)/i, color: '#10b981', icon: 'fa-gauge-high' },
+      { key: 'BASH BROTHERS', regex: /(?:💪)?\s*(?:Bash Brothers|Steroid Era)[:\s]*([^\|\n]+)/i, color: '#ef4444', icon: 'fa-dumbbell' },
+      { key: 'MONEYBALL ANALYTICS', regex: /(?:📊)?\s*(?:Moneyball Analytics|Moneyball|Efficiency Era)[:\s]*([^\|\n]+)/i, color: '#14b8a6', icon: 'fa-chart-pie' },
+      { key: 'THREE TRUE OUTCOMES', regex: /(?:🚀)?\s*(?:Three True Outcomes|Modern Era)[:\s]*([^\|\n]+)/i, color: '#ec4899', icon: 'fa-rocket' },
+      { key: 'RESILIENCIA', regex: /(?:🛡️)?\s*(?:Resiliencia de Leyendas)[:\s]*([^\|\n]+)/i, color: '#3b82f6', icon: 'fa-shield-halved' },
+      { key: 'PRESIÓN TEMPRANA', regex: /(?:⚡)?\s*(?:Presión Temprana)[:\s]*([^\|\n]+)/i, color: '#eab308', icon: 'fa-stopwatch' },
+      { key: 'CADENA DE PODER', regex: /(?:🔥)?\s*(?:Cadena de Poder)[:\s]*([^\|\n]+)/i, color: '#f97316', icon: 'fa-link' },
+      { key: 'EMBOSCADA', regex: /(?:💥)?\s*(?:Emboscada al Relevista)[:\s]*([^\|\n]+)/i, color: '#ef4444', icon: 'fa-crosshairs' },
+      { key: 'GUANTE DE ORO', regex: /(?:🥊)?\s*(?:Guante de Oro)[:\s]*([^\|\n]+)/i, color: '#ffd700', icon: 'fa-mitten' },
+      { key: 'VELOCISTAS', regex: /(?:⚡)?\s*(?:Velocistas Agresivos)[:\s]*([^\|\n]+)/i, color: '#06b6d4', icon: 'fa-person-running' }
+    ];
 
-      // Layer a short chime on top of the base outcome sound already played above.
-      if (window.AudioManager) window.AudioManager.play('draft_pick');
-
-      // Genesis Chaos / Small Ball change base state beyond the normal play — flash
-      // whichever bases are occupied right after this play resolved, synced with the popup.
-      const eraName = synergyMatch[1];
-      if ((eraName === 'Genesis Chaos' || eraName === 'Small Ball') && ev && ev.bases) {
-        ['base-1', 'base-2', 'base-3'].forEach((id, idx) => {
-          if (ev.bases[idx] !== 'X') return;
-          const baseEl = document.getElementById(id);
-          if (baseEl) triggerBarShake(baseEl, 'base-synergy-flash');
-        });
+    let extractedBadges = [];
+    for (const syn of SYNERGY_PATTERNS) {
+      const match = cleanDetails.match(syn.regex);
+      if (match) {
+        let desc = match[1].replace(/^[!¡\s]+|[!¡\s]+$/g, '').trim();
+        // Remove the matched chunk from cleanDetails so text doesn't duplicate
+        cleanDetails = cleanDetails.replace(match[0], '').replace(/\|/g, '').trim();
+        extractedBadges.push({ title: syn.key, desc: desc, color: syn.color, icon: syn.icon });
       }
     }
 
+    // Clean remaining pipes or stray punctuation
+    cleanDetails = cleanDetails.replace(/\s*\|\s*/g, ' ').replace(/\s{2,}/g, ' ').trim();
+
+    let synergyHighlightHTML = '';
+    if (extractedBadges.length > 0) {
+      synergyHighlightHTML = extractedBadges.map(b => `
+        <div style="font-family:'Press Start 2P',monospace; font-size: 7.5px; color: ${b.color}; background: rgba(0,0,0,0.4); border: 1.5px solid ${b.color}; padding: 5px 8px; border-radius: 6px; margin-bottom: 6px; width: 100%; box-shadow: 0 0 10px ${b.color}40; text-shadow: 0 0 6px ${b.color};">
+          <i class="fa-solid ${b.icon}"></i> ${b.title}
+          <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 10px; font-weight: 500; color: #f8fafc; margin-top: 2px; line-height: 1.25; text-shadow:none;">
+            ${b.desc}
+          </div>
+        </div>
+      `).join('');
+
+      if (window.AudioManager) window.AudioManager.play('draft_pick');
+    }
+
     popup.innerHTML = `
-      <div style="font-size: 36px; color: ${color}; margin-bottom: 12px; filter: drop-shadow(0 0 8px ${color});">
+      <div style="font-size: 32px; color: ${color}; margin-bottom: 8px; filter: drop-shadow(0 0 8px ${color});">
         <i class="fa-solid ${icon}"></i>
       </div>
-      <div style="font-family:'Press Start 2P',monospace; font-size: 13px; font-weight: bold; color: ${color}; text-shadow: 0 0 10px ${color}; margin-bottom: 12px;">
+      <div style="font-family:'Press Start 2P',monospace; font-size: 12px; font-weight: bold; color: ${color}; text-shadow: 0 0 10px ${color}; margin-bottom: 8px;">
         ${title}
       </div>
       ${spdUpgradeHTML}
-      <div style="font-size: 12px; color: #e4e4e7; max-width: 280px; line-height: 1.4; margin-bottom: 10px;">
-        ${cleanDetails}
-      </div>
+      ${cleanDetails ? `<div style="font-size: 11.5px; color: #e2e8f0; line-height: 1.35; margin-bottom: 8px;">${cleanDetails}</div>` : ''}
       ${synergyHighlightHTML}
-      <div style="font-family:'Press Start 2P',monospace; font-size: 8px; color: #f59e0b; letter-spacing: 0.5px; border-top: 1px dashed rgba(255,255,255,0.15); width: 100%; padding-top: 10px; margin-top: 5px;">
+      <div style="font-family:'Press Start 2P',monospace; font-size: 7.5px; color: #f59e0b; letter-spacing: 0.5px; border-top: 1px dashed rgba(255,255,255,0.15); width: 100%; padding-top: 8px; margin-top: 4px;">
         ${dmgText}
       </div>
     `;
@@ -7181,7 +7198,7 @@ function initGameModeSelector() {
     }, displayTime);
   }
 
-  const UNITS_TUMBLE_MS = 550;
+    const UNITS_TUMBLE_MS = 550;
   const TENS_TUMBLE_MS  = 850;
 
   // ── HANDLE ROLL DICE CLICK ───────────────────────────────────────────────────
@@ -7396,7 +7413,9 @@ function initGameModeSelector() {
           }
         }
 
-        isRolling = false;
+        setTimeout(() => {
+          isRolling = false;
+        }, Math.max(50, cursor + 300));
     }, TENS_TUMBLE_MS);
   }
 
