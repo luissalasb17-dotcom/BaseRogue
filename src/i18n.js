@@ -33,10 +33,10 @@
       "eras": {
             "header": "⏳ ERAS DEL ROSTER",
             "franchises_header": "⚾ FRANQUICIAS DEL ROSTER",
-            "genesis_d1": "T1 (2+): 15% prob. de forzar Error en outs (anula out, fatiga 2 impactos al rival) · Hits +4 daño",
-            "genesis_d2": "T2 (4+): 25% prob. de forzar Error en outs · Hits +8 daño y +2 CON",
-            "genesis_d3": "T3 (6+): 40% prob. de forzar Error en outs · Hits +15 daño y +4 CON",
-            "genesis_d4": "T4 (8+): 60% prob. de forzar Error en outs · Hits +25 daño y el Error cura +10 HP",
+            "genesis_d1": "T1 (2+): +15% prob. de forzar Error en outs (anula out, fatiga 2 impactos al rival) • Hits +4 daño",
+            "genesis_d2": "T2 (4+): +25% prob. de forzar Error en outs • Hits +8 daño y +2 CON",
+            "genesis_d3": "T3 (6+): +40% prob. de forzar Error en outs • Hits +15 daño y +4 CON",
+            "genesis_d4": "T4 (8+): +60% prob. de forzar Error en outs • Hits +25 daño y el Error cura +10 HP",
             "deadball_d1": "T1 (2+): +2 CON/K-AVD al equipo; sencillos (1B) hacen +4 daño extra",
             "deadball_d2": "T2 (4+): +4 CON/K-AVD; sencillos hacen +8 daño extra",
             "deadball_d3": "T3 (6+): +7 CON/K-AVD; sencillos +15 daño; carreras anotadas hacen +10 daño extra",
@@ -585,7 +585,8 @@
             "steal_3b_label": "¡ROBO DE TERCERA BASE!",
             "steal_3b_desc": "sorprende a la defensa y se estafa la 3ª almohadilla",
             "label_error": "ERROR RIVAL (E)",
-            "error_reach_desc": "conecta rodado y el fildeador comete pifia"
+            "error_reach_desc": "conecta rodado y el fildeador comete pifia",
+            "natural_error_msg": "⚠️ ¡Pifia defensiva rival (E)! Se anula el out, te embasas en 1B y el pitcher se desconcentra (+20% daño)."
       },
       "syn": {
             "deadball": {
@@ -1592,10 +1593,10 @@
       "eras": {
             "header": "⏳ ROSTER ERAS",
             "franchises_header": "⚾ ROSTER FRANCHISES",
-            "genesis_d1": "T1 (2+): 15% chance to force Error on outs (cancels out, 2-turn pitcher fatigue) · Hits +4 dmg",
-            "genesis_d2": "T2 (4+): 25% chance to force Error on outs · Hits +8 dmg and +2 CON",
-            "genesis_d3": "T3 (6+): 40% chance to force Error on outs · Hits +15 dmg and +4 CON",
-            "genesis_d4": "T4 (8+): 60% chance to force Error on outs · Hits +25 dmg and Error heals +10 HP",
+            "genesis_d1": "T1 (2+): +15% chance to force Error on outs (cancels out, 2-turn pitcher fatigue) • Hits +4 dmg",
+            "genesis_d2": "T2 (4+): +25% chance to force Error on outs • Hits +8 dmg and +2 CON",
+            "genesis_d3": "T3 (6+): +40% chance to force Error on outs • Hits +15 dmg and +4 CON",
+            "genesis_d4": "T4 (8+): +60% chance to force Error on outs • Hits +25 dmg and Error heals +10 HP",
             "deadball_d1": "T1 (2+): +2 CON/K-AVD to team; singles (1B) deal +4 extra damage",
             "deadball_d2": "T2 (4+): +4 CON/K-AVD; singles deal +8 extra damage",
             "deadball_d3": "T3 (6+): +7 CON/K-AVD; singles +15 dmg; runs scored deal +10 extra damage",
@@ -2144,7 +2145,8 @@
             "steal_3b_label": "STOLEN THIRD BASE!",
             "steal_3b_desc": "catches the defense off guard and swipes 3rd base",
             "label_error": "OPPONENT ERROR (E)",
-            "error_reach_desc": "hits a grounder and the fielder commits an error"
+            "error_reach_desc": "hits a grounder and the fielder commits an error",
+            "natural_error_msg": "⚠️ Opponent fielding error (E)! Out cancelled, batter safe on 1B and pitcher fatigued (+20% dmg)."
       },
       "syn": {
             "deadball": {

@@ -760,41 +760,48 @@
         if (synergyProc) playText += ` ${synergyProc}`;
 
       } else if (roll <= bounds.outEnd) {
-        // ── GROUNDOUT / FLYOUT / GENESIS ERROR PROC ───────────────
-        let genesisErrorProc = false;
-        if (genesisTier >= 1) {
-          const errChance = genesisTier === 4 ? 0.60 : genesisTier === 3 ? 0.40 : genesisTier === 2 ? 0.25 : 0.15;
-          if (Math.random() < errChance) {
-            genesisErrorProc = true;
-          }
-        }
+        // ── GROUNDOUT / FLYOUT / DEFENSIVE ERROR PROC ─────────────
+        // Base 2% natural fielding error chance across all games
+        const baseErrorChance = 0.02;
+        let genesisBonus = 0;
+        if (genesisTier === 4) genesisBonus = 0.60;
+        else if (genesisTier === 3) genesisBonus = 0.40;
+        else if (genesisTier === 2) genesisBonus = 0.25;
+        else if (genesisTier === 1) genesisBonus = 0.15;
 
-        if (genesisErrorProc) {
+        const totalErrorChance = baseErrorChance + genesisBonus;
+        const isError = Math.random() < totalErrorChance;
+
+        if (isError) {
           eventType = 'E';
           this.strikeoutChain = 0;
           runsThisTurn = this._advanceSingle(batter);
-          const genExtraDmg = genesisTier === 4 ? 25 : genesisTier === 3 ? 15 : genesisTier === 2 ? 8 : 4;
+
+          const isGenesis = genesisTier >= 1;
+          const genExtraDmg = isGenesis ? (genesisTier === 4 ? 25 : genesisTier === 3 ? 15 : genesisTier === 2 ? 8 : 4) : 0;
           pitcherDmg = 15 + (runsThisTurn * 10) + genExtraDmg;
           pitcherDmg = this._applyDebuffToPitcherDmg(pitcherDmg);
 
-          // Apply 2-turn debuff (+20% damage)
-          const genDebuffTurns = 2;
-          const genDebuffMult = 1.20;
+          // Apply fatigue debuff (+20% damage): 2 turns for Genesis Chaos, 1 turn for natural error
+          const debuffTurns = isGenesis ? 2 : 1;
+          const debuffMult = 1.20;
           if (this.pitcherDebuff && this.pitcherDebuff.turnsLeft > 0) {
-            this.pitcherDebuff.turnsLeft = Math.max(this.pitcherDebuff.turnsLeft, genDebuffTurns);
-            if (genDebuffMult > this.pitcherDebuff.multiplier) this.pitcherDebuff.multiplier = genDebuffMult;
+            this.pitcherDebuff.turnsLeft = Math.max(this.pitcherDebuff.turnsLeft, debuffTurns);
+            if (debuffMult > this.pitcherDebuff.multiplier) this.pitcherDebuff.multiplier = debuffMult;
           } else {
-            this.pitcherDebuff = { turnsLeft: genDebuffTurns, multiplier: genDebuffMult };
+            this.pitcherDebuff = { turnsLeft: debuffTurns, multiplier: debuffMult };
           }
 
-          if (genesisTier === 4) {
+          if (isGenesis && genesisTier === 4) {
             this.teamHP = Math.min(100, this.teamHP + 10);
             synergyProc = _t('sim.syn_genesis_heal', {}, '💥 Genesis Chaos: ¡El descontrol rival recupera +10 HP al equipo!');
           }
 
-          const impLabel = this.pitcherDebuff.turnsLeft === 1 ? _t('sim.debuff_turn_s', {}, 'impacto restante') : _t('sim.debuff_turns_p', {}, 'impactos restantes');
-          let genMsg = _t('sim.syn_genesis_error', {}, '💥 Genesis Chaos: ¡Error rival (E)! Se anula el out, te embasas en 1B y el pitcher sufre fatiga de 2 impactos (+20% daño).');
-          errorProc = genMsg;
+          if (isGenesis) {
+            errorProc = _t('sim.syn_genesis_error', {}, '💥 Genesis Chaos: ¡Error rival (E)! Se anula el out, te embasas en 1B y el pitcher sufre fatiga de 2 impactos (+20% daño).');
+          } else {
+            errorProc = _t('sim.natural_error_msg', {}, '⚠️ ¡Pifia defensiva rival (E)! Se anula el out, te embasas en 1B y el pitcher se desconcentra (+20% daño).');
+          }
 
           playText = `🎲 [${roll}] [${_t('sim.label_error', {}, 'ERROR RIVAL (E)')}] ¡${batter.name} ${_t('sim.error_reach_desc', {}, 'conecta rodado y el fildeador comete pifia')}! ` +
             _t('sim.runs_scored', { runs: runsThisTurn, pitcher: pitcher.name, dmg: pitcherDmg }, `Anotan ${runsThisTurn} carreras. ${pitcher.name} sufre ${pitcherDmg} HP de daño`) + '.';
