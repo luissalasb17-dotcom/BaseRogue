@@ -807,8 +807,9 @@
       this.equippedTraits = [];  // Up to 3 traits (one per boss map)
 
       // ── Run Stats Tracking ────────────────────────────────────────────
-      // { playerName: { ab, h, bb, so, doubles, triples, hr, rbi, runs } }
+      // { playerName: { ab, h, bb, so, doubles, triples, hr, rbi, runs, e } }
       this.runBatterStats = {};
+      this.defensiveErrors = 0;
       // { pitcherName: { outs, k, bb, h, hr, er, ip } }
       this.runPitcherStats = {};
       // All players that were part of roster during the run

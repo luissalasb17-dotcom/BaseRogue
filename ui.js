@@ -9464,7 +9464,7 @@ function initGameModeSelector() {
     // Render Team totals & Defensive errors header
     const headerTotalsEl = document.getElementById('summary-team-totals-header');
     if (headerTotalsEl) {
-      let totAB = 0, totH = 0, tot2B = 0, tot3B = 0, totHR = 0, totRBI = 0, totSB = 0, totBB = 0, totSO = 0;
+      let totAB = 0, totH = 0, tot2B = 0, tot3B = 0, totHR = 0, totRBI = 0, totSB = 0, totBB = 0, totSO = 0, totE = 0;
       Object.values(batterStats).forEach(s => {
         totAB += (s.ab || 0);
         totH += (s.h || 0);
@@ -9475,8 +9475,9 @@ function initGameModeSelector() {
         totSB += (s.sb || 0);
         totBB += (s.bb || 0);
         totSO += (s.so || 0);
+        totE += (s.e || 0);
       });
-      const defErrors = (window.Game && window.Game.defensiveErrors) || 0;
+      const defErrors = totE;
       const tPA = totAB + totBB;
       const tAvg = totAB > 0 ? (totH / totAB).toFixed(3).replace(/^0/, '') : '.000';
       const tOBP = tPA > 0 ? ((totH + totBB) / tPA).toFixed(3).replace(/^0/, '') : '.000';
