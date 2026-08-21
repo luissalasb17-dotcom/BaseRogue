@@ -7614,14 +7614,14 @@ function initGameModeSelector() {
         const safeTitle = tacticSafe.querySelector('.def-tactic-title');
         const safeDesc = tacticSafe.querySelector('.def-tactic-desc');
         if (safeTitle) safeTitle.innerText = _t('sim.def_safe_tactic_title', {}, '🛡️ JUGADA REGULAR');
-        if (safeDesc) safeDesc.innerText = _t('sim.def_safe_tactic_desc', {}, 'Asegurar el guante (Meta estándar • +30 HP & +15 Escudo)');
+        if (safeDesc) safeDesc.innerText = _t('sim.def_safe_tactic_desc', {}, 'Asegurar el guante (Meta estándar • +40 Escudo)');
       }
       if (tacticClutch) {
         tacticClutch.classList.toggle('active', isClutch);
         const clutchTitle = tacticClutch.querySelector('.def-tactic-title');
         const clutchDesc = tacticClutch.querySelector('.def-tactic-desc');
         if (clutchTitle) clutchTitle.innerText = _t('sim.def_clutch_tactic_title', {}, '⚡ JUGADA DE LUJO');
-        if (clutchDesc) clutchDesc.innerText = _t('sim.def_clutch_tactic_desc', {}, 'Tirarse de cabeza (-12% Meta • +50 HP & +30 Escudo)');
+        if (clutchDesc) clutchDesc.innerText = _t('sim.def_clutch_tactic_desc', {}, 'Tirarse de cabeza (-12% Meta • +80 Escudo)');
       }
 
       if (btnRoll) {
@@ -7830,7 +7830,7 @@ function initGameModeSelector() {
         const rollLabel = _t('sim.def_roll_label', {}, 'Dado:');
         const targetLabel = _t('sim.def_target_label', {}, 'Meta:');
 
-        const gainBanner = _t('sim.def_gain_success', { hp: result.hpHealed, shield: result.shieldHealed }, `🟢 ¡GANASTE +${result.hpHealed} HP Y +${result.shieldHealed} ESCUDO!`);
+        const gainBanner = _t('sim.def_gain_success', { shield: result.shieldHealed }, `🟢 ¡REPARASTE +${result.shieldHealed} DE ESCUDO!`);
         const walkOffBanner = _t('sim.def_walkoff_result_desc', { inning: defEvent.inning }, `💀 Error en la baja de la entrada ${defEvent.inning}. ¡El rival anota la carrera de oro!`);
         const lossBanner = isWalkOffFail ? walkOffBanner : _t('sim.def_loss_fail', { dmg: totalLostDmg, shieldDmg: result.shieldDmg, hpDmg: result.teamHpDmg }, `🔴 ¡PERDISTE -${totalLostDmg} DE DAÑO! (Escudo: -${result.shieldDmg} • HP: -${result.teamHpDmg})`);
         const maxShield = activeBattle ? activeBattle.teamShieldMax : 50;

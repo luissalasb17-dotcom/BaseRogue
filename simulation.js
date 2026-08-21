@@ -1351,14 +1351,12 @@
       let shieldDmg = 0;
 
       if (isSuccess) {
-        const baseHpReward = isClutchPlay ? 50 : 30;
-        const baseShieldReward = isClutchPlay ? 30 : 15;
-        hpHealed = Math.min(100 - this.teamHP, baseHpReward);
-        this.teamHP = Math.min(100, this.teamHP + baseHpReward);
+        const baseShieldReward = isClutchPlay ? 80 : 40;
+        hpHealed = 0;
         shieldHealed = Math.min(this.teamShieldMax - this.teamShield, baseShieldReward);
         this.teamShield = Math.min(this.teamShieldMax, this.teamShield + baseShieldReward);
 
-        const playText = `🛡️ [${_t('sim.def_success_title', {}, '¡JUGADA DE GUANTE DE ORO!')}] ${eventData.player.name} (${eventData.pos}) ${_t('sim.def_success_desc', { roll, thresh: targetThreshold }, `completa una atrapada sensacional (Dado: ${roll}/${targetThreshold})`)}. ${_t('sim.def_success_reward', { hp: baseHpReward, shield: baseShieldReward }, `¡Recuperas +${baseHpReward} HP y +${baseShieldReward} de Escudo!`)}`;
+        const playText = `🛡️ [${_t('sim.def_success_title', {}, '¡JUGADA DE GUANTE DE ORO!')}] ${eventData.player.name} (${eventData.pos}) ${_t('sim.def_success_desc', { roll, thresh: targetThreshold }, `completa una atrapada sensacional (Dado: ${roll}/${targetThreshold})`)}. ${_t('sim.def_success_reward', { shield: baseShieldReward }, `¡Reparas +${baseShieldReward} de Escudo!`)}`;
         this.logEvent('DEFENSE_PLAY', playText, 'DEF_WIN', eventData.player.name, 0, 0, 0);
       } else {
         const outDmg = isClutchPlay ? 25 : 15;
@@ -1484,8 +1482,8 @@
           if (this.hasTrait('reliever_ambush')) this.freshPitcherBonusAvailable = true;
           const nextP = this.activePitcher;
           if (nextP && overflow > 0) {
-            // Only half the overflow carries over to the next pitcher
-            const carryOver = Math.floor(overflow / 2);
+            // Full 100% overflow carries over to the next pitcher
+            const carryOver = overflow;
             const residualDmg = Math.min(carryOver, nextP.hp - 1);
             if (residualDmg > 0) {
               nextP.hp = Math.max(1, nextP.hp - residualDmg);
