@@ -542,17 +542,19 @@ def paso_6_posicion_bateadores(fielding, fielding_of, appearances=None, pico_df=
                   .rename(columns={"pos_mapped": "primary_pos", "peak_G": "primary_g"})
     )
 
-    # 3. Determinar POSICIONES SECUNDARIAS usando % de DEDICACION (>= 10% en Carrera o Pico)
+    # 3. Determinar POSICIONES SECUNDARIAS (Baseball-Reference Standard: >= 10% Dedicacion O >= 100 Juegos en Carrera)
     sec_df = merged_pos.merge(primary[["playerID", "primary_pos"]], on="playerID", how="left")
     sec_df = sec_df[(sec_df["pos_mapped"] != sec_df["primary_pos"]) & (sec_df["pos_mapped"] != "OF") & (sec_df["pos_mapped"] != "DH")]
 
     PCT_THRESH = 0.10
     MIN_CAREER_G = 20
     MIN_PEAK_G = 15
+    VOLUME_THRESH = 100.0
 
     qual_mask = (
         ((sec_df["career_pct"] >= PCT_THRESH) & (sec_df["G"] >= MIN_CAREER_G)) |
-        ((sec_df["peak_pct"] >= PCT_THRESH) & (sec_df["peak_G"] >= MIN_PEAK_G))
+        ((sec_df["peak_pct"] >= PCT_THRESH) & (sec_df["peak_G"] >= MIN_PEAK_G)) |
+        (sec_df["G"] >= VOLUME_THRESH)
     )
     sec_pos_qual = sec_df[qual_mask]
 
