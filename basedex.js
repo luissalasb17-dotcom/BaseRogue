@@ -762,7 +762,6 @@
         `;
       }
 
-      const careerStats = getPlayerCareerData(p);
       const isHof = Boolean(p.hof || p.is_hof || (careerStats && careerStats.hof));
       
       let badgesHtml = '';
