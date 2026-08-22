@@ -886,7 +886,7 @@
     "franchise_nlb": "Negro Leagues",
     "load_more": "Load more",
     "counter": "{{unlocked}} / {{total}} discovered ({{pct}}%)",
-    "career_header": "CAREER / CAREER (MLB)",
+    "career_header": "CAREER STATISTICS (MLB)",
     "war_label": "WAR",
     "challenge162_filter": "🏆 Only 162-0 Challenge eligible",
     "challenge162_badge_tooltip": "Eligible for the 162-0 Challenge",
@@ -897,7 +897,18 @@
     "mvp_label": "MVP",
     "rel_label": "Reliever of the Year",
     "roy_label": "Rookie of the Year",
-    "ss_label": "Silver Slugger"
+    "ss_label": "Silver Slugger",
+    "hits_label": "HITS (H)",
+    "hr_label": "HOME RUNS (HR)",
+    "rbi_label": "RBIS (RBI)",
+    "avg_label": "AVERAGE (AVG)",
+    "ops_label": "OPS",
+    "wl_label": "RECORD (W-L)",
+    "era_label": "ERA",
+    "so_label": "STRIKEOUTS (K)",
+    "whip_label": "WHIP",
+    "ip_label": "INNINGS (IP)",
+    "sv_label": "SAVES (SV)"
   },
   "challenge162": {
     "title": "🏆 162-0 CHALLENGE",
