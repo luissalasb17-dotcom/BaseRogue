@@ -777,17 +777,28 @@ def paso_11_motor_defensivo(df, war_bat, awards):
     print("\n  PASO 11: Motor defensivo avanzado (Rfield + WAR_def + proxy)...")
     if not war_bat.empty:
         war = war_bat.copy()
+        # Normalizacion de temporadas cortas de Ligas Negras (1.6x en defensa y baserunning)
+        NL_LEAGUES = {'NNL', 'NN2', 'NAL', 'ECL', 'ANL', 'EWL', 'NSL', 'IND', 'EAS', 'NN1'}
+        is_nlb = war["lg_ID"].isin(NL_LEAGUES) if "lg_ID" in war.columns else war["team_ID"].isin(NLB_TEAMS)
+        
         # Clean WAR, runs_defense, WAR_def, runs_br
         for col in ["runs_defense","WAR_def","WAR","runs_br"]:
             if col in war.columns:
                 war[col] = pd.to_numeric(war[col].replace("NULL", np.nan), errors="coerce").fillna(0)
             else:
                 war[col] = 0.0
+
+        # Multiplicador 1.6x para Ligas Negras (runs_defense, WAR_def, runs_br)
+        war.loc[is_nlb, "runs_defense"] = war.loc[is_nlb, "runs_defense"] * 1.6
+        war.loc[is_nlb, "WAR_def"]      = war.loc[is_nlb, "WAR_def"] * 1.6
+        war.loc[is_nlb, "runs_br"]      = war.loc[is_nlb, "runs_br"] * 1.6
+
         war["runs_defense"] = war["runs_defense"].clip(-80, 80)
         
         # Defensive peak (7 best seasons by WAR_def with G >= 81 games threshold)
         if "G" in war.columns:
-            war["G"] = pd.to_numeric(war["G"], errors="coerce").fillna(0)
+            war["G"] = pd.to_numeric(war["G"], errors="coerce").fillna(0.0).astype(float)
+            war.loc[is_nlb, "G"] = war.loc[is_nlb, "G"] * 1.6
             def _filter_def_peak(group):
                 qual = group[group["G"] >= 81]
                 if len(qual) < PEAK_SEASONS:
