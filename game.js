@@ -717,6 +717,11 @@
     return selected;
   }
 
+  function calcPitcherHP(sta) {
+    const staVal = (sta !== undefined && sta !== null) ? Number(sta) : 50;
+    return Math.max(75, Math.min(200, Math.round(75 + (staVal - 20) * (125 / 105))));
+  }
+
   function sortPitchingStaff(pitchers) {
     if (!pitchers || !Array.isArray(pitchers) || pitchers.length === 0) return pitchers;
 
@@ -724,20 +729,29 @@
     const rps = [];
 
     pitchers.forEach(p => {
+      const staVal = p.sta !== undefined ? p.sta : (p.sta_val !== undefined ? p.sta_val : 50);
+      const unifiedHp = calcPitcherHP(staVal);
+      const normalizedP = {
+        ...p,
+        sta: staVal,
+        hp: unifiedHp,
+        maxHp: unifiedHp
+      };
+
       const roleUpper = (p.role || '').toUpperCase();
-      const isSP = roleUpper === 'SP' || (!p.role && ((p.sta || p.sta_val || 50) >= 50));
+      const isSP = roleUpper === 'SP' || (!p.role && (staVal >= 50));
       if (isSP) {
-        sps.push(p);
+        sps.push(normalizedP);
       } else {
-        rps.push(p);
+        rps.push(normalizedP);
       }
     });
 
     // Sort SPs by stamina descending
-    sps.sort((a, b) => (b.sta || b.sta_val || 50) - (a.sta || a.sta_val || 50));
+    sps.sort((a, b) => (b.sta || 50) - (a.sta || 50));
 
     // Sort RPs by stamina descending
-    rps.sort((a, b) => (b.sta || b.sta_val || 50) - (a.sta || a.sta_val || 50));
+    rps.sort((a, b) => (b.sta || 50) - (a.sta || 50));
 
     // SPs first (highest stamina SP at Slot 0), RPs last (highest stamina RP first among relievers)
     return [...sps, ...rps];
@@ -2546,13 +2560,12 @@ const bossLabels = { 3: _bt('map.boss_label.3'), 7: _bt('map.boss_label.7'), 11:
       
       const enemyPitchers = enemy.pitchers.map(p => {
         const staVal = p.sta !== undefined ? p.sta : (p.sta_val !== undefined ? p.sta_val : 50);
-        const calculatedHp = (p.hp && p.maxHp) ? Math.min(200, p.maxHp) : Math.max(75, Math.min(200, Math.round(75 + (staVal - 20) * (125 / 105))));
-        const finalHp = Math.min(200, p.hp || calculatedHp);
-        const finalMaxHp = Math.min(200, p.maxHp || calculatedHp);
+        const unifiedHp = calcPitcherHP(staVal);
         return {
           ...p,
-          hp: finalHp,
-          maxHp: finalMaxHp,
+          sta: staVal,
+          hp: unifiedHp,
+          maxHp: unifiedHp,
           upgrades: { con: 0, pwr: 0, eye: 0, k_avd: 0, spd: 0, def: 0, sta: 0 }
         };
       });
