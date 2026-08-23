@@ -222,7 +222,8 @@ function startSeasonRouletteAnimation(selectedYear, onComplete) {
       if (yearEl) yearEl.innerText = String(selectedYear);
       if (eraEl) eraEl.innerText = getEraNameForYear(selectedYear);
       if (boxEl) boxEl.classList.add('winning-glow');
-      if (msgEl) msgEl.innerHTML = `<span style="color: #ffd700; font-weight: bold; text-shadow: 0 0 10px rgba(255,215,0,0.8);">⚡ ¡TEMPORADA SELECCIONADA: ${selectedYear}! ⚡</span>`;
+      const winMsg = typeof window.t==='function'?window.t('ui.season_roulette_selected', { year: selectedYear, defaultValue: `¡TEMPORADA SELECCIONADA: ${selectedYear}!` }):`¡TEMPORADA SELECCIONADA: ${selectedYear}!`;
+      if (msgEl) msgEl.innerHTML = `<span style="color: #ffd700; font-weight: bold; text-shadow: 0 0 10px rgba(255,215,0,0.8);">⚡ ${winMsg} ⚡</span>`;
 
       // Play winning jackpot sound fanfare
       if (window.AudioManager) {
@@ -8712,10 +8713,10 @@ function initGameModeSelector() {
           💀 ${a.oldPlayerName} <span style="font-size:11px;color:#9ca3af;">[${a.oldPlayerPos}]</span>
         </div>
         <div style="font-size:11px;color:#e4e4e7;line-height:1.4;">
-          ¡Se ha quedado sin Stamina (0 HP) y ha debido retirarse de la carrera!
+          ${typeof window.t==='function'?window.t('ui.exhaustion_item_desc', { defaultValue: '¡Se ha quedado sin Stamina (0 HP) y ha debido retirarse de la carrera!' }):'¡Se ha quedado sin Stamina (0 HP) y ha debido retirarse de la carrera!'}
         </div>
         <div style="font-size:11px;color:#34d399;font-weight:bold;margin-top:6px;">
-          🔄 Reemplazado por: <span style="color:#fff;">${a.newPlayerName}</span> (${a.newPlayerRarity} • ${a.newPlayerPos} • OVR ${a.newPlayerOvr})
+          ${typeof window.t==='function'?window.t('ui.exhaustion_replaced_by', { defaultValue: '🔄 Reemplazado por:' }):'🔄 Reemplazado por:'} <span style="color:#fff;">${a.newPlayerName}</span> (${a.newPlayerRarity} • ${a.newPlayerPos} • OVR ${a.newPlayerOvr})
         </div>
       </div>
     `).join('');
@@ -8723,15 +8724,15 @@ function initGameModeSelector() {
     modal.innerHTML = `
       <div style="background:#0a0f1d;border:3px solid #ef4444;box-shadow:0 0 40px rgba(239,68,68,0.5);border-radius:16px;padding:24px 30px;max-width:500px;width:95%;text-align:center;">
         <div style="font-size:40px;color:#ef4444;margin-bottom:10px;">⚡</div>
-        <h2 style="font-family:'Press Start 2P',monospace;font-size:14px;color:#ef4444;margin-bottom:12px;">¡EXHAUSTIÓN EN EL ROSTER!</h2>
+        <h2 style="font-family:'Press Start 2P',monospace;font-size:14px;color:#ef4444;margin-bottom:12px;">${typeof window.t==='function'?window.t('ui.exhaustion_title', { defaultValue: '¡EXHAUSTIÓN EN EL ROSTER!' }):'¡EXHAUSTIÓN EN EL ROSTER!'}</h2>
         <p style="font-size:11px;color:#9ca3af;margin-bottom:16px;line-height:1.4;">
-          Uno o varios bateadores han agotado completamente su energía (0 Stamina) y no pueden continuar. Han sido sustituidos por agentes libres categoría Common de su misma posición.
+          ${typeof window.t==='function'?window.t('ui.exhaustion_desc', { defaultValue: 'Uno o varios bateadores han agotado completamente su energía (0 Stamina) y no pueden continuar. Han sido sustituidos por agentes libres categoría Common de su misma posición.' }):'Uno o varios bateadores han agotado completamente su energía (0 Stamina) y no pueden continuar. Han sido sustituidos por agentes libres categoría Common de su misma posición.'}
         </p>
         <div style="max-height:220px;overflow-y:auto;margin-bottom:20px;">
           ${itemsHTML}
         </div>
         <button id="btn-ack-exhaustion" class="btn" style="width:100%;padding:12px;font-family:'Press Start 2P',monospace;font-size:10px;background:#ef4444;color:#fff;border:none;border-radius:8px;cursor:pointer;">
-          ENTENDIDO <i class="fa-solid fa-check"></i>
+          ${typeof window.t==='function'?window.t('ui.exhaustion_btn', { defaultValue: 'ENTENDIDO' }):'ENTENDIDO'} <i class="fa-solid fa-check"></i>
         </button>
       </div>
     `;
@@ -8830,7 +8831,7 @@ function initGameModeSelector() {
     overlay.innerHTML = `
       <div style="max-width:850px;width:95%;padding:20px;">
         <div style="text-align:center;margin-bottom:24px;">
-          <div style="font-family:'Press Start 2P',monospace;font-size:13px;color:#ffd700;text-shadow:0 0 15px rgba(255,215,0,0.7);margin-bottom:8px;">🏆 ¡VICTORIA DE JEFE! +$${earnings}</div>
+          <div style="font-family:'Press Start 2P',monospace;font-size:13px;color:#ffd700;text-shadow:0 0 15px rgba(255,215,0,0.7);margin-bottom:8px;">🏆 ${typeof window.t==='function'?window.t('ui.boss_victory_header', { earnings: earnings, defaultValue: `¡VICTORIA DE JEFE! +$${earnings}` }):`¡VICTORIA DE JEFE! +$${earnings}`}</div>
           <div style="font-size:12px;color:#e2e8f0;">${typeof window.t==='function'?window.t('ui.trait_choose_desc'):'Elige una Trait Pasiva que acompañará a tu equipo hasta el final de la run:'}</div>
         </div>
         <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
@@ -9291,32 +9292,39 @@ function initGameModeSelector() {
 
       const bossName = z.boss ? (z.boss.name || 'All-Stars').replace('👑 ', '').replace('⚡ ', '') : 'All-Stars';
       const teamCount = z.teams ? z.teams.length : 0;
+      const zoneLabelText = (typeof window.t === 'function') ? window.t('ui.story_zone_label', { num: i + 1, label: (z.label || '').toUpperCase(), defaultValue: `ZONA ${i + 1}: ${(z.label || '').toUpperCase()}` }) : `ZONA ${i + 1}: ${(z.label || '').toUpperCase()}`;
+      const zoneSubText = (typeof window.t === 'function') ? window.t('ui.story_zone_sub', { count: teamCount, boss: bossName, defaultValue: `${teamCount} equipos • Boss: ${bossName}` }) : `${teamCount} equipos • Boss: ${bossName}`;
 
       return `
         <div class="story-zone-card" style="opacity:0;transform:translateY(8px);transition:opacity 0.4s ease-out,transform 0.4s ease-out;transition-delay:${0.15 + i * 0.2}s;display:flex;align-items:center;gap:10px;padding:8px 12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.15);border-radius:8px;margin-bottom:6px;">
           <span style="font-size:16px;">${icon}</span>
           <div style="text-align:left;flex:1;">
-            <div style="font-size:11px;font-weight:bold;color:#fef08a;">ZONA ${i + 1}: ${(z.label || '').toUpperCase()}</div>
-            <div style="font-size:9.5px;color:#94a3b8;">${teamCount} equipos • Boss: ${bossName}</div>
+            <div style="font-size:11px;font-weight:bold;color:#fef08a;">${zoneLabelText}</div>
+            <div style="font-size:9.5px;color:#94a3b8;">${zoneSubText}</div>
           </div>
         </div>
       `;
     }).join('');
 
+    const headerText = (typeof window.t === 'function') ? window.t('ui.story_mode_header', { year: year, defaultValue: `MODO HISTORIA: ${year}` }) : `MODO HISTORIA: ${year}`;
+    const introTitle = (typeof window.t === 'function') ? window.t('ui.story_intro_title', { defaultValue: '¡Comienza la Campaña Histórica!' }) : '¡Comienza la Campaña Histórica!';
+    const introDesc = (typeof window.t === 'function') ? window.t('ui.story_intro_desc', { defaultValue: 'Deberás conquistar las 4 zonas del mapa derrotando a los equipos y a los <strong>Jefes All-Stars</strong> de cada circuito:' }) : 'Deberás conquistar las 4 zonas del mapa derrotando a los equipos y a los <strong>Jefes All-Stars</strong> de cada circuito:';
+    const enterMapBtn = (typeof window.t === 'function') ? window.t('ui.story_enter_map_btn', { defaultValue: '¡ENTRAR AL MAPA! 🗺️' }) : '¡ENTRAR AL MAPA! 🗺️';
+
     overlay.innerHTML = `
       <div style="background:#090d16;border:2px solid #3b82f6;border-radius:16px;padding:24px;max-width:480px;width:92%;text-align:center;box-shadow:0 0 40px rgba(59,130,246,0.4);">
         <div style="font-family:'Press Start 2P',monospace;font-size:12px;color:#60a5fa;margin-bottom:8px;letter-spacing:1px;">
-          ⚾ MODO HISTORIA: ${year} ⚾
+          ⚾ ${headerText} ⚾
         </div>
         <div style="font-size:13px;color:#fff;font-weight:bold;margin-bottom:8px;">
-          ${typeof window.t==='function'?window.t('ui.story_intro_title', '¡Comienza la Campaña Histórica!'):'¡Comienza la Campaña Histórica!'}
+          ${introTitle}
         </div>
         <div style="font-size:11px;color:#94a3b8;margin-bottom:16px;line-height:1.4;">
-          Deberás conquistar las 4 zonas del mapa derrotando a los equipos y a los <strong>Jefes All-Stars</strong> de cada circuito:
+          ${introDesc}
         </div>
         ${zonesListHTML ? `<div style="margin-bottom:18px;">${zonesListHTML}</div>` : ''}
         <button id="btn-start-story-campaign" class="btn" style="background:linear-gradient(90deg,#3b82f6,#1d4ed8);color:#fff;font-weight:bold;font-size:11px;padding:12px 24px;width:100%;border:none;cursor:pointer;border-radius:8px;letter-spacing:0.5px;box-shadow:0 0 15px rgba(59,130,246,0.4);">
-          ¡ENTRAR AL MAPA! 🗺️
+          ${enterMapBtn}
         </button>
       </div>
     `;
@@ -9463,24 +9471,26 @@ function initGameModeSelector() {
     if (window.BaseballDex && window.Game && window.Game.roster) {
       window.BaseballDex.unlockRoster(window.Game.roster);
     }
-    el.gameoverTitle.innerText = won ? "¡CAMPEONATO CONSEGUIDO!" : "¡Temporada Terminada!";
+    el.gameoverTitle.innerText = won ? (typeof window.t==='function'?window.t('gameover.title_won', { defaultValue: "¡CAMPEONATO CONSEGUIDO!" }):"¡CAMPEONATO CONSEGUIDO!") : (typeof window.t==='function'?window.t('gameover.title_lost', { defaultValue: "¡Temporada Terminada!" }):"¡Temporada Terminada!");
     el.gameoverTitle.style.color = won ? "var(--primary-color)" : "var(--danger-color)";
     el.gameoverDesc.innerText = message;
 
     // Render game history logs
     el.gameoverHistoryLog.innerHTML = "";
     if (window.Game.history.length === 0) {
-      el.gameoverHistoryLog.innerHTML = `<div style="color:#64748b; font-size:13px;">No hay historial disponible.</div>`;
+      el.gameoverHistoryLog.innerHTML = `<div style="color:#64748b; font-size:13px;">${typeof window.t==='function'?window.t('gameover.no_history', { defaultValue: 'No hay historial disponible.' }):'No hay historial disponible.'}</div>`;
     } else {
       window.Game.history.forEach(h => {
         const row = document.createElement('div');
         row.className = `history-row ${h.won ? 'won' : 'lost'}`;
         const facedLabel = (h.pitchersFaced !== undefined && h.totalPitchers)
-          ? ` <span style="color:#64748b;font-size:11px;">(${h.pitchersFaced}/${h.totalPitchers} pitchers enfrentados)</span>`
+          ? ` <span style="color:#64748b;font-size:11px;">(${h.pitchersFaced}/${h.totalPitchers} ${typeof window.t==='function'?window.t('gameover.pitchers_faced', { defaultValue: 'pitchers enfrentados' }):'pitchers enfrentados'})</span>`
           : '';
+        const stageTxt = typeof window.t==='function'?window.t('gameover.stage_label', { num: h.stage + 1, defaultValue: `Etapa ${h.stage + 1}` }):`Etapa ${h.stage + 1}`;
+        const resultTxt = h.won ? (typeof window.t==='function'?window.t('gameover.won_label', { defaultValue: 'VICTORIA' }):'VICTORIA') : (typeof window.t==='function'?window.t('gameover.lost_label', { defaultValue: 'DERROTA' }):'DERROTA');
         row.innerHTML = `
-          <span>Etapa ${h.stage + 1}: vs ${h.enemyName}</span>
-          <strong>${h.won ? 'VICTORIA' : 'DERROTA'} (${h.ourScore}-${h.enemyScore})</strong>${facedLabel}
+          <span>${stageTxt}: vs ${h.enemyName}</span>
+          <strong>${resultTxt} (${h.ourScore}-${h.enemyScore})</strong>${facedLabel}
         `;
         el.gameoverHistoryLog.appendChild(row);
       });

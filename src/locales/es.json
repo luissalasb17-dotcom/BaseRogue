@@ -389,7 +389,14 @@
     "replay_title": "¿Listo para otra temporada?",
     "replay_desc": "Selecciona una nueva leyenda inicial y recluta diferentes plantillas para desbloquear otras sinergias históricas.",
     "restart_btn": "<i class=\"fa-solid fa-rotate-right\"></i> Jugar de Nuevo",
-    "summary_btn": "<i class=\"fa-solid fa-chart-column\"></i> Ver Resumen Completo"
+    "summary_btn": "<i class=\"fa-solid fa-chart-column\"></i> Ver Resumen Completo",
+    "title_won": "¡CAMPEONATO CONSEGUIDO!",
+    "title_lost": "¡Temporada Terminada!",
+    "stage_label": "Etapa {{num}}",
+    "won_label": "VICTORIA",
+    "lost_label": "DERROTA",
+    "pitchers_faced": "pitchers enfrentados",
+    "no_history": "No hay historial disponible."
   },
   "pos": {
     "native": "✅ Nativo",
@@ -790,7 +797,20 @@
     "super_boss_final_phase_html": "⚡ <strong>¡FASE FINAL!</strong> Derrota al cerrador estelar para ganar la run.",
     "zone_boss_title": "¡DESAFÍO DIVISIONAL!",
     "zone_boss_subtitle": "Los 3 mejores lanzadores de esta liga defienden su circuito:",
-    "zone_boss_btn": "¡A BATEAR CONTRA EL JEFE! ⚾"
+    "zone_boss_btn": "¡A BATEAR CONTRA EL JEFE! ⚾",
+    "story_mode_header": "MODO HISTORIA: {{year}}",
+    "story_intro_title": "¡Comienza la Campaña Histórica!",
+    "story_intro_desc": "Deberás conquistar las 4 zonas del mapa derrotando a los equipos y a los <strong>Jefes All-Stars</strong> de cada circuito:",
+    "story_zone_label": "ZONA {{num}}: {{label}}",
+    "story_zone_sub": "{{count}} equipos • Boss: {{boss}}",
+    "story_enter_map_btn": "¡ENTRAR AL MAPA! 🗺️",
+    "season_roulette_selected": "¡TEMPORADA SELECCIONADA: {{year}}!",
+    "exhaustion_title": "¡EXHAUSTIÓN EN EL ROSTER!",
+    "exhaustion_desc": "Uno o varios bateadores han agotado completamente su energía (0 Stamina) y no pueden continuar. Han sido sustituidos por agentes libres categoría Common de su misma posición.",
+    "exhaustion_item_desc": "¡Se ha quedado sin Stamina (0 HP) y ha debido retirarse de la carrera!",
+    "exhaustion_replaced_by": "🔄 Reemplazado por:",
+    "exhaustion_btn": "ENTENDIDO",
+    "boss_victory_header": "¡VICTORIA DE JEFE! +${{earnings}}"
   },
   "trait": {
     "eagle": {

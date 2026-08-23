@@ -401,7 +401,14 @@
             "replay_title": "¿Listo para otra temporada?",
             "replay_desc": "Selecciona una nueva leyenda inicial y recluta diferentes plantillas para desbloquear otras sinergias históricas.",
             "restart_btn": "<i class=\"fa-solid fa-rotate-right\"></i> Jugar de Nuevo",
-            "summary_btn": "<i class=\"fa-solid fa-chart-column\"></i> Ver Resumen Completo"
+            "summary_btn": "<i class=\"fa-solid fa-chart-column\"></i> Ver Resumen Completo",
+            "title_won": "¡CAMPEONATO CONSEGUIDO!",
+            "title_lost": "¡Temporada Terminada!",
+            "stage_label": "Etapa {{num}}",
+            "won_label": "VICTORIA",
+            "lost_label": "DERROTA",
+            "pitchers_faced": "pitchers enfrentados",
+            "no_history": "No hay historial disponible."
       },
       "pos": {
             "native": "✅ Nativo",
@@ -802,7 +809,20 @@
             "super_boss_final_phase_html": "⚡ <strong>¡FASE FINAL!</strong> Derrota al cerrador estelar para ganar la run.",
             "zone_boss_title": "¡DESAFÍO DIVISIONAL!",
             "zone_boss_subtitle": "Los 3 mejores lanzadores de esta liga defienden su circuito:",
-            "zone_boss_btn": "¡A BATEAR CONTRA EL JEFE! ⚾"
+            "zone_boss_btn": "¡A BATEAR CONTRA EL JEFE! ⚾",
+            "story_mode_header": "MODO HISTORIA: {{year}}",
+            "story_intro_title": "¡Comienza la Campaña Histórica!",
+            "story_intro_desc": "Deberás conquistar las 4 zonas del mapa derrotando a los equipos y a los <strong>Jefes All-Stars</strong> de cada circuito:",
+            "story_zone_label": "ZONA {{num}}: {{label}}",
+            "story_zone_sub": "{{count}} equipos • Boss: {{boss}}",
+            "story_enter_map_btn": "¡ENTRAR AL MAPA! 🗺️",
+            "season_roulette_selected": "¡TEMPORADA SELECCIONADA: {{year}}!",
+            "exhaustion_title": "¡EXHAUSTIÓN EN EL ROSTER!",
+            "exhaustion_desc": "Uno o varios bateadores han agotado completamente su energía (0 Stamina) y no pueden continuar. Han sido sustituidos por agentes libres categoría Common de su misma posición.",
+            "exhaustion_item_desc": "¡Se ha quedado sin Stamina (0 HP) y ha debido retirarse de la carrera!",
+            "exhaustion_replaced_by": "🔄 Reemplazado por:",
+            "exhaustion_btn": "ENTENDIDO",
+            "boss_victory_header": "¡VICTORIA DE JEFE! +${{earnings}}"
       },
       "trait": {
             "eagle": {
@@ -1980,7 +2000,14 @@
             "replay_title": "Ready for another season?",
             "replay_desc": "Select a new starter legend and recruit different rosters to unlock other historical synergies.",
             "restart_btn": "<i class=\"fa-solid fa-rotate-right\"></i> Play Again",
-            "summary_btn": "<i class=\"fa-solid fa-chart-column\"></i> View Full Summary"
+            "summary_btn": "<i class=\"fa-solid fa-chart-column\"></i> View Full Summary",
+            "title_won": "CHAMPIONSHIP WON!",
+            "title_lost": "Season Ended!",
+            "stage_label": "Stage {{num}}",
+            "won_label": "VICTORY",
+            "lost_label": "DEFEAT",
+            "pitchers_faced": "pitchers faced",
+            "no_history": "No history available."
       },
       "pos": {
             "native": "✅ Native",
@@ -2381,7 +2408,20 @@
             "super_boss_final_phase_html": "⚡ <strong>FINAL PHASE!</strong> Defeat the shutdown closer to win the run.",
             "zone_boss_title": "DIVISIONAL CHALLENGE!",
             "zone_boss_subtitle": "The top 3 pitchers of this division defend their circuit:",
-            "zone_boss_btn": "BAT AGAINST THE BOSS! ⚾"
+            "zone_boss_btn": "BAT AGAINST THE BOSS! ⚾",
+            "story_mode_header": "STORY MODE: {{year}}",
+            "story_intro_title": "Historical Campaign Begins!",
+            "story_intro_desc": "You must conquer the 4 zones of the map by defeating the teams and the <strong>All-Star Bosses</strong> of each circuit:",
+            "story_zone_label": "ZONE {{num}}: {{label}}",
+            "story_zone_sub": "{{count}} teams • Boss: {{boss}}",
+            "story_enter_map_btn": "ENTER THE MAP! 🗺️",
+            "season_roulette_selected": "SELECTED SEASON: {{year}}!",
+            "exhaustion_title": "ROSTER EXHAUSTION!",
+            "exhaustion_desc": "One or more batters have completely exhausted their energy (0 Stamina) and cannot continue. They have been replaced by Common free agents at their position.",
+            "exhaustion_item_desc": "Ran out of Stamina (0 HP) and had to retire from the run!",
+            "exhaustion_replaced_by": "🔄 Replaced by:",
+            "exhaustion_btn": "UNDERSTOOD",
+            "boss_victory_header": "BOSS VICTORY! +${{earnings}}"
       },
       "trait": {
             "eagle": {

@@ -389,7 +389,14 @@
     "replay_title": "Ready for another season?",
     "replay_desc": "Select a new starter legend and recruit different rosters to unlock other historical synergies.",
     "restart_btn": "<i class=\"fa-solid fa-rotate-right\"></i> Play Again",
-    "summary_btn": "<i class=\"fa-solid fa-chart-column\"></i> View Full Summary"
+    "summary_btn": "<i class=\"fa-solid fa-chart-column\"></i> View Full Summary",
+    "title_won": "CHAMPIONSHIP WON!",
+    "title_lost": "Season Ended!",
+    "stage_label": "Stage {{num}}",
+    "won_label": "VICTORY",
+    "lost_label": "DEFEAT",
+    "pitchers_faced": "pitchers faced",
+    "no_history": "No history available."
   },
   "pos": {
     "native": "✅ Native",
@@ -790,7 +797,20 @@
     "super_boss_final_phase_html": "⚡ <strong>FINAL PHASE!</strong> Defeat the shutdown closer to win the run.",
     "zone_boss_title": "DIVISIONAL CHALLENGE!",
     "zone_boss_subtitle": "The top 3 pitchers of this division defend their circuit:",
-    "zone_boss_btn": "BAT AGAINST THE BOSS! ⚾"
+    "zone_boss_btn": "BAT AGAINST THE BOSS! ⚾",
+    "story_mode_header": "STORY MODE: {{year}}",
+    "story_intro_title": "Historical Campaign Begins!",
+    "story_intro_desc": "You must conquer the 4 zones of the map by defeating the teams and the <strong>All-Star Bosses</strong> of each circuit:",
+    "story_zone_label": "ZONE {{num}}: {{label}}",
+    "story_zone_sub": "{{count}} teams • Boss: {{boss}}",
+    "story_enter_map_btn": "ENTER THE MAP! 🗺️",
+    "season_roulette_selected": "SELECTED SEASON: {{year}}!",
+    "exhaustion_title": "ROSTER EXHAUSTION!",
+    "exhaustion_desc": "One or more batters have completely exhausted their energy (0 Stamina) and cannot continue. They have been replaced by Common free agents at their position.",
+    "exhaustion_item_desc": "Ran out of Stamina (0 HP) and had to retire from the run!",
+    "exhaustion_replaced_by": "🔄 Replaced by:",
+    "exhaustion_btn": "UNDERSTOOD",
+    "boss_victory_header": "BOSS VICTORY! +${{earnings}}"
   },
   "trait": {
     "eagle": {
