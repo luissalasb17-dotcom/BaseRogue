@@ -590,7 +590,7 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
       if (screenDraft) {
         const titleEl = screenDraft.querySelector('h2');
         if (titleEl) {
-          titleEl.innerHTML = `<i class="fa-solid fa-file-signature"></i> FIRMA DE JUGADORES (DRAFT)`;
+          titleEl.innerHTML = (typeof t === 'function' ? t('headers.draft') : '<i class="fa-solid fa-file-signature"></i> FIRMA DE JUGADORES (DRAFT)');
         }
         const descEl = screenDraft.querySelector('p');
         if (descEl) {
@@ -644,7 +644,7 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
       }).join('');
 
       header.innerHTML = `
-        <div style="max-width: 780px; margin: 0 auto 12px; padding: 10px 16px; background: rgba(0, 255, 102, 0.05); border: 1px solid rgba(0, 255, 102, 0.3); border-radius: 8px; font-size: 11px; color: #a7f3d0; line-height: 1.5; text-align: center;">
+        <div style="max-width: 680px; margin: 0 auto 10px; padding: 6px 12px; background: rgba(0, 255, 102, 0.05); border: 1px solid rgba(0, 255, 102, 0.3); border-radius: 8px; font-size: 9px; color: #a7f3d0; line-height: 1.35; text-align: center;">
           ${t('menu.intro_desc', { rounds: 9, hp: 100 })}
         </div>
         <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:${RARITY_COLORS[info.rarities ? info.rarities[0] : 'Legendary']};margin-bottom:8px;letter-spacing:1px;">

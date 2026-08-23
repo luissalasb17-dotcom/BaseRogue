@@ -426,7 +426,7 @@
             "rest": "<i class=\"fa-solid fa-couch\"></i> Casa Club (Descanso)",
             "gameover": "¡Fin de la Carrera!",
             "synergies": "<i class=\"fa-solid fa-bolt\"></i> SINERGIAS",
-            "draft": "<i class=\"fa-solid fa-file-signature\"></i> FIRMA DE JUGADORES"
+            "draft": "<i class=\"fa-solid fa-file-signature\"></i> FIRMA DE JUGADORES (DRAFT)"
       },
       "summary": {
             "title": "<i class=\"fa-solid fa-baseball\"></i> ESTADÍSTICAS COMPLETAS DE LA RUN",
@@ -2025,7 +2025,7 @@
             "rest": "<i class=\"fa-solid fa-couch\"></i> Clubhouse (Rest)",
             "gameover": "Run Over!",
             "synergies": "<i class=\"fa-solid fa-bolt\"></i> SYNERGIES",
-            "draft": "<i class=\"fa-solid fa-file-signature\"></i> PLAYER SIGNINGS"
+            "draft": "<i class=\"fa-solid fa-file-signature\"></i> PLAYER SIGNINGS (DRAFT)"
       },
       "summary": {
             "title": "<i class=\"fa-solid fa-baseball\"></i> COMPLETE RUN STATS",
