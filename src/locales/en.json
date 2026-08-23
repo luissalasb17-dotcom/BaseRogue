@@ -220,7 +220,8 @@
     "record_dominant": "Dominant Team",
     "record_contender": "Contender Team",
     "record_underdog": "Underdog Team",
-    "win_pct_label": "Win Rate"
+    "win_pct_label": "Win Rate",
+    "boss_all_star_desc": "All-Star Rotation: The division's best arms"
   },
   "match": {
     "title": "<i class=\"fa-solid fa-trophy\"></i> BATTLE",
@@ -786,7 +787,10 @@
     "trait_pick_btn": "EQUIP TRAIT",
     "super_boss_fight_btn": "⚔️ FACE THE SUPER BOSS!",
     "super_boss_defeated_first_group": "PHASE 1 COMPLETE! Super Boss summons legendary bullpen arms.",
-    "super_boss_final_phase_html": "⚡ <strong>FINAL PHASE!</strong> Defeat the shutdown closer to win the run."
+    "super_boss_final_phase_html": "⚡ <strong>FINAL PHASE!</strong> Defeat the shutdown closer to win the run.",
+    "zone_boss_title": "DIVISIONAL CHALLENGE!",
+    "zone_boss_subtitle": "The top 3 pitchers of this division defend their circuit:",
+    "zone_boss_btn": "BAT AGAINST THE BOSS! ⚾"
   },
   "trait": {
     "eagle": {

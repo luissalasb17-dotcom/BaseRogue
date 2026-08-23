@@ -232,7 +232,8 @@
             "record_dominant": "Equipo Dominante",
             "record_contender": "Equipo Contendiente",
             "record_underdog": "Equipo Desafiante",
-            "win_pct_label": "Prob. Victoria"
+            "win_pct_label": "Prob. Victoria",
+            "boss_all_star_desc": "Rotación All-Star: Los mejores brazos del circuito"
       },
       "match": {
             "title": "<i class=\"fa-solid fa-trophy\"></i> Bateadores al Combate",
@@ -798,7 +799,10 @@
             "trait_pick_btn": "EQUIPAR RASGO",
             "super_boss_fight_btn": "⚔️ ¡ENFRENTAR AL SUPER BOSS!",
             "super_boss_defeated_first_group": "¡FASE 1 COMPLETADA! El Super Boss invoca a sus relevistas legendarios.",
-            "super_boss_final_phase_html": "⚡ <strong>¡FASE FINAL!</strong> Derrota al cerrador estelar para ganar la run."
+            "super_boss_final_phase_html": "⚡ <strong>¡FASE FINAL!</strong> Derrota al cerrador estelar para ganar la run.",
+            "zone_boss_title": "¡DESAFÍO DIVISIONAL!",
+            "zone_boss_subtitle": "Los 3 mejores lanzadores de esta liga defienden su circuito:",
+            "zone_boss_btn": "¡A BATEAR CONTRA EL JEFE! ⚾"
       },
       "trait": {
             "eagle": {
@@ -1807,7 +1811,8 @@
             "record_dominant": "Dominant Team",
             "record_contender": "Contender Team",
             "record_underdog": "Underdog Team",
-            "win_pct_label": "Win Rate"
+            "win_pct_label": "Win Rate",
+            "boss_all_star_desc": "All-Star Rotation: The division's best arms"
       },
       "match": {
             "title": "<i class=\"fa-solid fa-trophy\"></i> BATTLE",
@@ -2373,7 +2378,10 @@
             "trait_pick_btn": "EQUIP TRAIT",
             "super_boss_fight_btn": "⚔️ FACE THE SUPER BOSS!",
             "super_boss_defeated_first_group": "PHASE 1 COMPLETE! Super Boss summons legendary bullpen arms.",
-            "super_boss_final_phase_html": "⚡ <strong>FINAL PHASE!</strong> Defeat the shutdown closer to win the run."
+            "super_boss_final_phase_html": "⚡ <strong>FINAL PHASE!</strong> Defeat the shutdown closer to win the run.",
+            "zone_boss_title": "DIVISIONAL CHALLENGE!",
+            "zone_boss_subtitle": "The top 3 pitchers of this division defend their circuit:",
+            "zone_boss_btn": "BAT AGAINST THE BOSS! ⚾"
       },
       "trait": {
             "eagle": {

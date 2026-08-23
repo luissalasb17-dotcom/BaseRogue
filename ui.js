@@ -3185,7 +3185,10 @@ function initGameModeSelector() {
     }
 
     const eraClass = eraClassMap[resolvedEra] || "era-modern";
-    const teamFranchise = player.team || "ROOK";
+    let teamFranchise = player.team || "ROOK";
+    if (typeof teamFranchise === 'string' && (teamFranchise.startsWith('story_') || teamFranchise.startsWith('opp_') || teamFranchise.includes('_BOSS') || teamFranchise.includes('_boss') || teamFranchise.includes('_stage_'))) {
+      teamFranchise = "STARS";
+    }
     const isPitcher = player.pos === 'P' || player.pos === 'SP' || player.pos === 'RP' || player.role === 'P' || player.role === 'SP' || player.role === 'RP';
 
     const ovr = getPlayerOvr(player);
@@ -3360,7 +3363,7 @@ function initGameModeSelector() {
         })()}
         <div class="card-traits-box">
           <span class="card-trait-badge trait-era" title="${player.era}">${getShortEraName(player.era)}</span>
-          ${player.team && player.team !== 'ROOK' ? `<span class="card-trait-badge trait-team" title="${window.PlayersDB.FranchiseNames[player.team] || player.team}">${player.team}</span>` : ''}
+          ${teamFranchise && teamFranchise !== 'ROOK' ? `<span class="card-trait-badge trait-team" title="${(window.PlayersDB && window.PlayersDB.FranchiseNames && window.PlayersDB.FranchiseNames[teamFranchise]) || teamFranchise}">${teamFranchise}</span>` : ''}
         </div>
         ${player.sec_pos ? `<div class="card-sec-pos-line" title="${(typeof window.t==="function"?window.t("ui.sec_pos_tooltip")+": "+player.sec_pos:"Posición Secundaria: "+player.sec_pos)}">SEC: ${player.sec_pos}</div>` : ''}
         <div class="card-stats">
@@ -8407,7 +8410,14 @@ function initGameModeSelector() {
       if (pitcherChanged || opts.reliefEntrance || dealAnimation) {
         const enemyTeam = (window.Game && window.Game.getEnemyTeam) ? window.Game.getEnemyTeam() : null;
         const pitchYear   = pitcher.year || pitcher._year || (enemyTeam ? (enemyTeam.year || enemyTeam._year) : 1941);
-        const pitchTeam   = pitcher.team || pitcher._team || (enemyTeam ? (enemyTeam.teamID || enemyTeam._team || 'OAK') : 'OAK');
+        let pitchTeam   = pitcher.team || pitcher._team;
+        if (!pitchTeam || String(pitchTeam).startsWith('story_') || String(pitchTeam).startsWith('opp_') || String(pitchTeam).includes('_BOSS') || String(pitchTeam).includes('_boss') || String(pitchTeam).includes('_stage_')) {
+          if (enemyTeam && enemyTeam.teamID && !String(enemyTeam.teamID).startsWith('story_') && !String(enemyTeam.teamID).startsWith('opp_') && !String(enemyTeam.teamID).includes('_BOSS')) {
+            pitchTeam = enemyTeam.teamID;
+          } else {
+            pitchTeam = 'STARS';
+          }
+        }
         const pitchEra    = pitcher.era  || pitcher._era  || (enemyTeam ? (enemyTeam.era || enemyTeam._era) : 'Golden Era (1920-1941)');
         const pitchRarity = pitcher.rarity || pitcher._rarity || 'Common';
 
@@ -9346,12 +9356,16 @@ function initGameModeSelector() {
     const pitcherRowsHTML = pitchers.map((p, i) => {
       const rarityColor = RARITY_COLORS[p.rarity] || '#ffd700';
       const rarityBg = RARITY_BG[p.rarity] || 'rgba(255,215,0,0.1)';
+      const pH9  = p.h9  !== undefined ? p.h9  : (p.h9_val  !== undefined ? p.h9_val  : (p.grt !== undefined ? p.grt : 50));
+      const pK9  = p.k9  !== undefined ? p.k9  : (p.k9_val  !== undefined ? p.k9_val  : (p.stf !== undefined ? p.stf : 50));
+      const pBB9 = p.bb9 !== undefined ? p.bb9 : (p.bb9_val !== undefined ? p.bb9_val : (p.ctl !== undefined ? p.ctl : 50));
+      const pHR9 = p.hr9 !== undefined ? p.hr9 : (p.hr9_val !== undefined ? p.hr9_val : (p.mov !== undefined ? p.mov : 50));
       return `
         <div class="zone-boss-pitcher-row" style="opacity:0;transform:translateY(8px);transition:opacity 0.4s ease-out,transform 0.4s ease-out;transition-delay:${0.25 + i * 0.3}s;display:flex;align-items:center;gap:10px;padding:8px 12px;background:${rarityBg};border:1px solid ${rarityColor};border-radius:8px;margin-bottom:8px;">
           <span style="font-size:16px;">${divIcon}</span>
           <div style="text-align:left;">
             <div style="font-size:11.5px;color:#fff;font-weight:bold;">${p.cleanName || p.name}</div>
-            <div style="font-size:9.5px;color:#94a3b8;">${p.role || 'SP'} • STF ${p.stf || 50} • CTL ${p.ctl || 50} • H9 ${p.h9 || 50}</div>
+            <div style="font-size:9px;color:#94a3b8;margin-top:2px;">${p.role || 'SP'} • H/9 ${pH9} • K/9 ${pK9} • BB/9 ${pBB9} • HR/9 ${pHR9}</div>
           </div>
           <div style="margin-left:auto;text-align:right;">
             <span style="font-size:9px;font-weight:bold;color:${rarityColor};text-transform:uppercase;background:rgba(0,0,0,0.4);padding:2px 6px;border-radius:4px;">${p.rarity || 'Epic'}</span>
@@ -9361,20 +9375,24 @@ function initGameModeSelector() {
       `;
     }).join('');
 
+    const bossTitle = typeof window.t === 'function' ? window.t('ui.zone_boss_title', { defaultValue: '¡DESAFÍO DIVISIONAL!' }) : '¡DESAFÍO DIVISIONAL!';
+    const bossSubtitle = typeof window.t === 'function' ? window.t('ui.zone_boss_subtitle', { defaultValue: 'Los 3 mejores lanzadores de esta liga defienden su circuito:' }) : 'Los 3 mejores lanzadores de esta liga defienden su circuito:';
+    const bossBtn = typeof window.t === 'function' ? window.t('ui.zone_boss_btn', { defaultValue: '¡A BATEAR CONTRA EL JEFE! ⚾' }) : '¡A BATEAR CONTRA EL JEFE! ⚾';
+
     overlay.innerHTML = `
       <div style="background:#090d16;border:2px solid #ffd700;border-radius:16px;padding:24px;max-width:460px;width:90%;text-align:center;box-shadow:0 0 35px rgba(255,215,0,0.4);">
         <div style="font-family:'Press Start 2P',monospace;font-size:11px;color:#ffd700;margin-bottom:10px;text-shadow:0 0 8px #ffd700;">
-          ${divIcon} ¡DESAFÍO DIVISIONAL! ${divIcon}
+          ${divIcon} ${bossTitle} ${divIcon}
         </div>
         <div style="font-size:14px;color:#fff;font-weight:bold;margin-bottom:6px;">
           ${bossEnemy.name}
         </div>
         <div style="font-size:11px;color:#94a3b8;margin-bottom:16px;">
-          ${typeof window.t==='function'?window.t('ui.zone_boss_subtitle','Los 3 mejores lanzadores de esta liga defienden su circuito'):'Los 3 mejores lanzadores de esta liga defienden su circuito'}:
+          ${bossSubtitle}
         </div>
         ${pitcherRowsHTML ? `<div style="margin-bottom:16px;">${pitcherRowsHTML}</div>` : ''}
         <button id="btn-start-zone-boss" class="btn" style="background:linear-gradient(90deg,#ffd700,#f59e0b);color:#000;font-weight:bold;font-size:11px;padding:12px 24px;width:100%;border:none;cursor:pointer;border-radius:8px;letter-spacing:0.5px;">
-          ¡A BATEAR CONTRA EL JEFE! ⚾
+          ${bossBtn}
         </button>
       </div>
     `;
