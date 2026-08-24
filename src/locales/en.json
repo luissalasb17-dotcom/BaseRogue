@@ -74,6 +74,8 @@
     "node_cage": "BATTING CAGE",
     "node_clubhouse": "CLUBHOUSE",
     "node_decision": "DECISION",
+    "node_chest": "CHEST",
+    "node_gamble": "LUCK",
     "node_boss": "BOSS",
     "boss_label": {
       "3": "OPENING DAY",
@@ -1205,7 +1207,7 @@
     "prefight_basics_title": "⚔️ MATCH PREVIEW",
     "prefight_basics_text": "Inspect the rival pitching staff and their starter before shouting Play Ball.",
     "combat_dice_title": "🎲 LUCK ZONES & COMBAT",
-    "combat_dice_text": "Roll the dice for each at-bat. Defeat the enemy pitching rotation before your Team HP hits 0. If tied, enter Sudden Death Extra Innings!"
+    "combat_dice_text": "Roll the dice for each at-bat. Defeat the enemy pitching rotation before your Team HP hits 0. Tap the ℹ️ (Info) button in the top right anytime to inspect the full Damage and Rules guide!"
   },
   "career": {
     "ace_matchup_named": "Facing {{pitcher}} of the {{team}}, all eyes on you.",

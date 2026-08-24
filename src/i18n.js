@@ -86,6 +86,8 @@
             "node_cage": "JAULA BATEO",
             "node_clubhouse": "CASA CLUB",
             "node_decision": "DECISIÓN",
+            "node_chest": "COFRE",
+            "node_gamble": "SUERTE",
             "node_boss": "BOSS",
             "boss_label": {
                   "3": "JUEGO APERTURA",
@@ -1217,7 +1219,7 @@
             "prefight_basics_title": "⚔️ PREVIA DEL PARTIDO",
             "prefight_basics_text": "Revisa la rotación rival y el lanzador abridor antes de cantar la voz de Play Ball.",
             "combat_dice_title": "🎲 ZONAS DE SUERTE Y COMBATE",
-            "combat_dice_text": "Lanza los dados para cada turno. Derrota a toda la rotación enemiga antes de que tu HP llegue a 0. ¡Si el juego se extiende, se decide en Extra Innings a muerte súbita!"
+            "combat_dice_text": "Lanza los dados para cada turno y vence a la rotación rival antes de que tu HP llegue a 0. ¡Toca el botón ℹ️ (Info) arriba a la derecha para ver la guía completa de Daño y Reglas!"
       },
       "career": {
             "ace_matchup_named": "Te toca enfrentar a {{pitcher}} de los {{team}}, con todos los ojos encima.",
@@ -1686,6 +1688,8 @@
             "node_cage": "BATTING CAGE",
             "node_clubhouse": "CLUBHOUSE",
             "node_decision": "DECISION",
+            "node_chest": "CHEST",
+            "node_gamble": "LUCK",
             "node_boss": "BOSS",
             "boss_label": {
                   "3": "OPENING DAY",
@@ -2817,7 +2821,7 @@
             "prefight_basics_title": "⚔️ MATCH PREVIEW",
             "prefight_basics_text": "Inspect the rival pitching staff and their starter before shouting Play Ball.",
             "combat_dice_title": "🎲 LUCK ZONES & COMBAT",
-            "combat_dice_text": "Roll the dice for each at-bat. Defeat the enemy pitching rotation before your Team HP hits 0. If tied, enter Sudden Death Extra Innings!"
+            "combat_dice_text": "Roll the dice for each at-bat. Defeat the enemy pitching rotation before your Team HP hits 0. Tap the ℹ️ (Info) button in the top right anytime to inspect the full Damage and Rules guide!"
       },
       "career": {
             "ace_matchup_named": "Facing {{pitcher}} of the {{team}}, all eyes on you.",

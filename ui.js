@@ -4841,15 +4841,17 @@ function initGameModeSelector() {
 
           const rawLabel = node.label || vis.label;
           let translatedLabel = rawLabel;
-          if (rawLabel === 'SERIE CLÁSICA') translatedLabel = t('map.node_classic');
-          else if (rawLabel === 'FIRMA LEYENDA') translatedLabel = t('draft.midrun_title_short', 'FIRMA LEYENDA');
-          else if (rawLabel === 'DECISIÓN') translatedLabel = t('map.node_decision');
-          else if (rawLabel === 'JAULA BATEO') translatedLabel = t('map.node_cage');
-          else if (rawLabel === 'CASA CLUB') translatedLabel = t('map.node_clubhouse');
-          else if (rawLabel === 'JUEGO APERTURA') translatedLabel = t('map.node_opener');
+          if (rawLabel === 'SERIE CLÁSICA' || node.type === 'match') translatedLabel = t('map.node_classic', 'CLASSIC SERIES');
+          else if (rawLabel === 'FIRMA LEYENDA' || node.type === 'draft') translatedLabel = t('draft.midrun_title_short', 'LEGEND SIGN');
+          else if (rawLabel === 'DECISIÓN' || node.type === 'event') translatedLabel = t('map.node_decision', 'DECISION');
+          else if (rawLabel === 'JAULA BATEO' || node.type === 'train') translatedLabel = t('map.node_cage', 'BATTING CAGE');
+          else if (rawLabel === 'CASA CLUB' || node.type === 'rest') translatedLabel = t('map.node_clubhouse', 'CLUBHOUSE');
+          else if (rawLabel === 'COFRE' || node.type === 'chest') translatedLabel = t('map.node_chest', 'CHEST');
+          else if (rawLabel === 'LUCK' || node.type === 'gamble') translatedLabel = t('map.node_gamble', 'LUCK');
+          else if (rawLabel === 'JUEGO APERTURA') translatedLabel = t('map.node_opener', 'OPENER');
           else if (rawLabel === 'ALL-STAR GAME') translatedLabel = 'ALL-STAR GAME';
-          else if (rawLabel === 'CAMPEÓN LIGA') translatedLabel = t('map.node_pennant', 'CAMPEÓN LIGA');
-          else if (rawLabel === 'SERIE MUNDIAL') translatedLabel = t('map.node_world_series', 'SERIE MUNDIAL');
+          else if (rawLabel === 'CAMPEÓN LIGA') translatedLabel = t('map.node_pennant', 'LEAGUE CHAMPION');
+          else if (rawLabel === 'SERIE MUNDIAL') translatedLabel = t('map.node_world_series', 'WORLD SERIES');
           lbl.textContent = translatedLabel;
           group.appendChild(lbl);
 
@@ -7090,6 +7092,9 @@ function initGameModeSelector() {
     let cleanDetails = details ? details.replace(/🎲 \[\d+\] \[[^\]]+\] /, '').replace(/−/g, '-') : '';
     cleanDetails = cleanDetails.replace(/⚡\s*¡?CLUTCH PLAYER!?[^—\n]*[—\.]\s*(\(\+[^)]+\)\.?)?\s*/gi, '').replace(/^⚡\s*¡?CLUTCH PLAYER!?[^\.]*\.\s*/gi, '').trim();
     cleanDetails = cleanDetails.replace(/Anotan 0 carreras\.\s*/gi, '').replace(/0 runs scored\.\s*/gi, '').trim();
+    // Shorten long error description text so the popup remains compact and punchy
+    cleanDetails = cleanDetails.replace(/conecta rodado y el fildeador comete pifia/gi, 'se embasa por error').replace(/hits a grounder and the fielder commits an error/gi, 'reaches on fielding error');
+    cleanDetails = cleanDetails.replace(/⚠️\s*(?:¡Pifia defensiva rival \(E\)!|Opponent fielding error \(E\)!)[^\.\n]*\./gi, '').trim();
 
     // SPD Hit Upgrade Highlight (1B -> 2B or 2B -> 3B)
     let spdUpgradeHTML = '';

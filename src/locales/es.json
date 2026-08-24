@@ -74,6 +74,8 @@
     "node_cage": "JAULA BATEO",
     "node_clubhouse": "CASA CLUB",
     "node_decision": "DECISIÓN",
+    "node_chest": "COFRE",
+    "node_gamble": "SUERTE",
     "node_boss": "BOSS",
     "boss_label": {
       "3": "JUEGO APERTURA",
@@ -1205,7 +1207,7 @@
     "prefight_basics_title": "⚔️ PREVIA DEL PARTIDO",
     "prefight_basics_text": "Revisa la rotación rival y el lanzador abridor antes de cantar la voz de Play Ball.",
     "combat_dice_title": "🎲 ZONAS DE SUERTE Y COMBATE",
-    "combat_dice_text": "Lanza los dados para cada turno. Derrota a toda la rotación enemiga antes de que tu HP llegue a 0. ¡Si el juego se extiende, se decide en Extra Innings a muerte súbita!"
+    "combat_dice_text": "Lanza los dados para cada turno y vence a la rotación rival antes de que tu HP llegue a 0. ¡Toca el botón ℹ️ (Info) arriba a la derecha para ver la guía completa de Daño y Reglas!"
   },
   "career": {
     "ace_matchup_named": "Te toca enfrentar a {{pitcher}} de los {{team}}, con todos los ojos encima.",
