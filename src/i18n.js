@@ -3363,14 +3363,59 @@
 
   let currentLang = localStorage.getItem('baserogue_lang') || 'es';
 
+  function translateDOM() {
+    const btnLang = document.getElementById('btn-lang-toggle');
+    if (btnLang) {
+      btnLang.innerText = currentLang === 'es' ? '🌐 ES' : '🌐 EN';
+    }
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.getAttribute('data-i18n');
+      if (key) {
+        const translated = t(key);
+        if (translated && translated !== key) {
+          el.innerText = translated;
+        }
+      }
+    });
+    document.querySelectorAll('[data-i18n-html]').forEach(el => {
+      const key = el.getAttribute('data-i18n-html');
+      if (key) {
+        const translated = t(key);
+        if (translated && translated !== key) {
+          el.innerHTML = translated;
+        }
+      }
+    });
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+      const key = el.getAttribute('data-i18n-placeholder');
+      if (key) {
+        const translated = t(key);
+        if (translated && translated !== key) {
+          el.setAttribute('placeholder', translated);
+        }
+      }
+    });
+  }
+
   function setLanguage(lang) {
     if (!locales[lang]) return;
     currentLang = lang;
     localStorage.setItem('baserogue_lang', lang);
     document.documentElement.lang = lang;
+    translateDOM();
     if (window.UI && typeof window.UI.updateStaticTranslations === 'function') {
-      window.UI.updateStaticTranslations();
+      try { window.UI.updateStaticTranslations(); } catch (e) { console.warn(e); }
     }
+    if (window.UI && typeof window.UI.applyLanguage === 'function') {
+      try { window.UI.applyLanguage(lang); } catch (e) { console.warn(e); }
+    }
+  }
+
+  // Run on initial load
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', translateDOM);
+  } else {
+    setTimeout(translateDOM, 0);
   }
 
   function getLanguage() {

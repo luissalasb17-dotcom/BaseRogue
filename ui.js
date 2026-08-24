@@ -3557,6 +3557,13 @@ function initGameModeSelector() {
       if (guideCaptain && dict.ratings_captain) guideCaptain.innerHTML = dict.ratings_captain;
     }
 
+    if (!window.UI) window.UI = {};
+    window.UI.applyLanguage = applyLanguage;
+    window.UI.updateStaticTranslations = function() {
+      const cur = (window.i18n && window.i18n.getLanguage) ? window.i18n.getLanguage() : (localStorage.getItem('baserogue_lang') || 'es');
+      applyLanguage(cur);
+    };
+
     // Toggle Language (ES / EN)
     const btnLang = document.getElementById('btn-lang-toggle');
     if (btnLang) {
@@ -3567,9 +3574,8 @@ function initGameModeSelector() {
           window.i18n.setLanguage(next);
         } else if (window.I18n && typeof window.I18n.setLanguage === 'function') {
           window.I18n.setLanguage(next);
-        } else if (typeof i18next !== 'undefined' && typeof i18next.changeLanguage === 'function') {
-          try { i18next.changeLanguage(next); } catch (e) { console.warn(e); }
         }
+        applyLanguage(next);
       });
     }
 
