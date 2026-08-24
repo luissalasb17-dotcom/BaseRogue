@@ -1357,7 +1357,7 @@
       let shieldDmg = 0;
 
       if (isSuccess) {
-        const baseShieldReward = isClutchPlay ? 80 : 40;
+        const baseShieldReward = isClutchPlay ? 60 : 20;
         shieldHealed = Math.min(this.teamShieldMax - this.teamShield, baseShieldReward);
         this.teamShield = Math.min(this.teamShieldMax, this.teamShield + baseShieldReward);
 
