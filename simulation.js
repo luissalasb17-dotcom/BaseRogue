@@ -102,8 +102,8 @@
     let pOut = pInPlay - pTotalHit;
 
     // 4. HR share of Hits: Batter Power vs Pitcher HR/9 Prevention
-    // Calibrated linear scaling: base 10%, slope 0.40% per point of (PWR - HR/9), max 50%
-    let hrRatio = 0.10 + (effPwr - pHR9) * 0.0040;
+    // Calibrated linear scaling: base 12%, slope 0.40% per point of (PWR - HR/9), max 50%
+    let hrRatio = 0.12 + (effPwr - pHR9) * 0.0040;
     hrRatio = Math.max(0.02, Math.min(0.50, hrRatio));
 
     let pHR = pTotalHit * hrRatio;
