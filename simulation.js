@@ -1312,11 +1312,12 @@
       const isSecondary = secPosArr.includes(pos);
       const isOOP = (!isNative && !isSecondary && pos !== 'DH');
 
-      // Smoothed DEF curve: base 30% + (DEF × 0.6), clamped to 20–95%.
-      // This avoids punishing low-DEF players too harshly (DEF 40 was 40% raw,
-      // now 54%) while removing the near-automatic ceiling (DEF 99 was 99%, now 89%).
-      // DEF 50 → 60%, DEF 70 → 72%, DEF 80 → 78%, DEF 90 → 84%.
-      const successThreshold = Math.min(95, Math.max(20, Math.round(30 + effDef * 0.6)));
+      // Smoothed DEF curve: base 30% + (DEF × 0.6), clamped to 20–100%.
+      // Low-DEF players are not punished too harshly (DEF 40 → 54%, DEF 50 → 60%).
+      // The cap is 100% — if a player reaches DEF 110+ via Captain badge or synergies
+      // they earned the guaranteed success (DEF 117+ hits 100%).
+      // DEF 50 → 60%, DEF 70 → 72%, DEF 80 → 78%, DEF 90 → 84%, DEF 110 → 96%, DEF 117 → 100%.
+      const successThreshold = Math.min(100, Math.max(20, Math.round(30 + effDef * 0.6)));
       const successChance = successThreshold / 100;
 
       // Realistic baseball hit metrics for immersion
