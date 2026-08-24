@@ -56,7 +56,17 @@
     "tto_d2": "T2 (4+): +4 EYE/PWR; BB +12 daño; Ponche hace -50% daño al equipo",
     "tto_d3": "T3 (6+): +7 EYE/PWR; BB +20 daño; HR aplica debuff de 3 impactos (+25% daño)",
     "tto_d4": "T4 (8+): +10 EYE/PWR; BB +30 daño; Ponche hace 0 daño al equipo (anulado)",
-    "golden_d4": "T4 (8+): +10 PWR; hits +20 daño; 60% convertir 2B en 3B; +20% chance de HR y +20 Escudo"
+    "golden_d4": "T4 (8+): +10 PWR; hits +20 daño; 60% convertir 2B en 3B; +20% chance de HR y +20 Escudo",
+    "player_count_short": "{{count}} jug.",
+    "syn_name_genesis": "Genesis Chaos (1871-1900)",
+    "syn_name_deadball": "Small Ball (1901-1919)",
+    "syn_name_golden": "Liveball Sluggers (1920-1941)",
+    "syn_name_integration": "Five-Tool Legends (1942-1960)",
+    "syn_name_speed": "Speed & Hustle (1961-1976)",
+    "syn_name_astroturf": "AstroTurf Speedsters (1977-1993)",
+    "syn_name_steroid": "Bash Brothers (1994-2005)",
+    "syn_name_moneyball": "Moneyball Analytics (2006-2015)",
+    "syn_name_tto": "Three True Outcomes (2016-Pres)"
   },
   "map": {
     "title": "<i class=\"fa-solid fa-map\"></i> Mapa del Campeonato",
@@ -1155,20 +1165,20 @@
   },
   "combat_info": {
     "title": "⚙️ DATOS DE DAÑO & VALORES",
+    "tooltip": "Sistema de Daño y Reglas",
     "out": "<strong style=\"color: #9ca3af;\">✋ OUT (Flyout/Groundout):</strong> Resta <span style=\"color:#ef4444;font-weight:bold;\">-20 HP</span> al Escudo (al romperlo, resta a la vida). En Extra Innings: <span style=\"color:#ef4444;font-weight:bold;\">-30 HP</span>.",
     "so": "<strong style=\"color: #ef4444;\">💨 PONCHE (SO):</strong> Resta daño directo a la vida (ignora escudo).<div style=\"font-size: 8.5px; color: #a855f7; margin-top: 2px;\">🔥 Racha: 1º (-20 HP) • 2º (-26 HP) • 3º+ (-32 HP)<br>⚡ Extra Innings: 1º (-30) • 2º (-36) • 3º+ (-42 HP)</div>",
-    "pitcher_title": "<strong style=\"color: #10b981;\">⚾ DAÑO AL LANZADOR RIVAL:</strong>",
-    "bb": "<span>🚶 BB: <b style=\"color:#3b82f6;\">10 HP</b></span>",
-    "single": "<span>✅ 1B: <b style=\"color:#a7f3d0;\">15 HP</b></span>",
-    "double": "<span>⚡ 2B: <b style=\"color:#10b981;\">30 HP</b></span>",
-    "triple": "<span>🔥 3B: <b style=\"color:#06b6d4;\">45 HP</b></span>",
+    "pitcher_title": "⚾ DAÑO AL LANZADOR RIVAL:",
+    "bb": "🚶 BB: <b style=\"color:#3b82f6;\">10 HP</b>",
+    "single": "✅ 1B: <b style=\"color:#a7f3d0;\">15 HP</b>",
+    "double": "⚡ 2B: <b style=\"color:#10b981;\">30 HP</b>",
+    "triple": "🔥 3B: <b style=\"color:#06b6d4;\">45 HP</b>",
     "hr": "🚀 <strong>HR (Jonrón):</strong> <b style=\"color:#eab308;\">70 HP base</b>",
     "rbi_bonus": "🏆 <strong>Bonus RBI:</strong> Cada carrera impulsada añade <strong style=\"color:#00ff66;\">+10 HP extra</strong> de daño al pitcher.",
-    "defense": "<strong style=\"color: #38bdf8;\">🛡️ DUELO DEFENSIVO (Baja de Entrada):</strong><div style=\"font-size: 8.5px; color: #cbd5e1; margin-top: 2px;\">🛡️ Regular: <strong style=\"color:#4ade80;\">+40 Escudo</strong> (Fallo: -15 HP)<br>⚡ De Lujo: <strong style=\"color:#4ade80;\">+80 Escudo</strong> (Fallo: -25 HP)<br>💀 En Inning 3 y Extras: ¡Cualquier fallo = Walk-Off rival!</div>",
-    "steal": "<strong style=\"color: #38bdf8;\">🏃 ROBO DE BASES:</strong><div style=\"font-size: 8.5px; color: #cbd5e1; margin-top: 2px;\">• <strong>Robo de 2B (en 1B/BB, SPD ≥ 40):</strong> Éxito igual a la SPD del corredor (SPD %).<br>• <strong>Robo de 3B (en 2B, SPD ≥ 50):</strong> Éxito a la mitad de la SPD (SPD / 2 %).<br><em>Robar cualquier base desestabiliza al lanzador (+20% daño en 2 impactos).</em></div>",
+    "defense": "<strong style=\"color: #38bdf8;\">🛡️ DUELO DEFENSIVO (Baja de Entrada):</strong><div style=\"font-size: 8.5px; color: #cbd5e1; margin-top: 2px;\">🛡️ Regular: <strong style=\"color:#4ade80;\">+20 Escudo</strong> (Fallo: -10 HP)<br>⚡ De Lujo: <strong style=\"color:#4ade80;\">+60 Escudo</strong> (Fallo: -30 HP)<br>💀 En Inning 3 y Extras: ¡Cualquier fallo = Walk-Off rival!</div>",
+    "steal": "<strong style=\"color: #38bdf8;\">🏃 ROBO DE BASES:</strong><div style=\"font-size: 8.5px; color: #cbd5e1; margin-top: 2px;\">• <strong>Robo de 2B (en 1B/BB, SPD ≥ 40):</strong> Éxito según SPD del corredor.<br>• <strong>Robo de 3B (en 2B, SPD ≥ 50):</strong> Éxito según SPD/2 del corredor.<br><em>Robar cualquier base desestabiliza al lanzador (+20% daño en 2 impactos).</em></div>",
     "upgrade": "<strong style=\"color: #a855f7;\">⚡ UPGRADE DE BATAZOS:</strong><div style=\"font-size: 8.5px; color: #cbd5e1; margin-top: 2px;\">Con <strong>SPD ≥ 70</strong> (Grados B+ a S), tienes de <strong>15% a 50% chance</strong> de estirar hits a bases extra (1B→2B→3B).</div>",
-    "shield_max": "🛡️ Escudo: DEF promedio de tus 8 defensores (1 a 100).",
-    "tooltip": "Sistema de Daño y Reglas de Combate"
+    "shield_max": "🛡️ Escudo: DEF promedio de tus 8 defensores (1 a 100)."
   },
   "run_intro": {
     "title": "BIENVENIDO A BASEROGUE",

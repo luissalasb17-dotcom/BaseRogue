@@ -4921,39 +4921,39 @@ function initGameModeSelector() {
     
     const EraSynergyMeta = {
       "The Genesis Era (1871-1900)": {
-        name: "Genesis Chaos",
+        name: t('eras.syn_name_genesis', 'Genesis Chaos (1871-1900)'),
         get tiers() { return [t('eras.genesis_d1'), t('eras.genesis_d2'), t('eras.genesis_d3'), t('eras.genesis_d4')]; }
       },
       "Deadball (1901-1919)": {
-        name: "Small Ball",
+        name: t('eras.syn_name_deadball', 'Small Ball (1901-1919)'),
         get tiers() { return [t('eras.deadball_d1'), t('eras.deadball_d2'), t('eras.deadball_d3'), t('eras.deadball_d4')]; }
       },
       "Golden Era (1920-1941)": {
-        name: "Liveball Sluggers",
+        name: t('eras.syn_name_golden', 'Liveball Sluggers (1920-1941)'),
         get tiers() { return [t('eras.golden_d1'), t('eras.golden_d2'), t('eras.golden_d3'), t('eras.golden_d4')]; }
       },
       "Integration (1942-1960)": {
-        name: "Five-Tool Legends",
+        name: t('eras.syn_name_integration', 'Five-Tool Legends (1942-1960)'),
         get tiers() { return [t('eras.integration_d1'), t('eras.integration_d2'), t('eras.integration_d3'), t('eras.integration_d4')]; }
       },
       "Expansion (1961-1976)": {
-        name: "Speed & Hustle",
+        name: t('eras.syn_name_speed', 'Speed & Hustle (1961-1976)'),
         get tiers() { return [t('eras.speed_d1'), t('eras.speed_d2'), t('eras.speed_d3'), t('eras.speed_d4')]; }
       },
       "Big Hair Era (1977-1993)": {
-        name: "AstroTurf Speedsters",
+        name: t('eras.syn_name_astroturf', 'AstroTurf Speedsters (1977-1993)'),
         get tiers() { return [t('eras.astroturf_d1'), t('eras.astroturf_d2'), t('eras.astroturf_d3'), t('eras.astroturf_d4')]; }
       },
       "Steroid Era (1994-2005)": {
-        name: "Bash Brothers",
+        name: t('eras.syn_name_steroid', 'Bash Brothers (1994-2005)'),
         get tiers() { return [t('eras.steroid_d1'), t('eras.steroid_d2'), t('eras.steroid_d3'), t('eras.steroid_d4')]; }
       },
       "Efficiency Era (2006-2015)": {
-        name: "Moneyball Analytics",
+        name: t('eras.syn_name_moneyball', 'Moneyball Analytics (2006-2015)'),
         get tiers() { return [t('eras.moneyball_d1'), t('eras.moneyball_d2'), t('eras.moneyball_d3'), t('eras.moneyball_d4')]; }
       },
       "Modern Era (2016-Pres)": {
-        name: "Three True Outcomes",
+        name: t('eras.syn_name_tto', 'Three True Outcomes (2016-Pres)'),
         get tiers() { return [t('eras.tto_d1'), t('eras.tto_d2'), t('eras.tto_d3'), t('eras.tto_d4')]; }
       }
     };
@@ -5048,10 +5048,11 @@ function initGameModeSelector() {
         descHTML = `<div class="synergy-item-desc" style="font-size: 11px;">${meta.tiers[0]}</div>`;
       }
 
+      const countTag = t('eras.player_count_short', { count });
       item.innerHTML = `
         <div class="synergy-item-header">
           <span class="synergy-item-name">${meta.name}</span>
-          <span class="synergy-item-count">T${tier}/T4 (${count} jug.)</span>
+          <span class="synergy-item-count">T${tier}/T4 (${countTag})</span>
         </div>
         <div class="synergy-progress-dots">
           ${dotsHTML}
