@@ -662,7 +662,13 @@
     "def_ball_rf_2": "Base hit / Rocket throw to 3B",
     "def_title_rf_3": "LEAPING GRAB AGAINST THE PADDED WALL!",
     "def_desc_rf_3": "A high drive drifting back to the warning track. Your right fielder times his leap and crashes into the padding.",
-    "def_ball_rf_3": "High drive to the warning track"
+    "def_ball_rf_3": "High drive to the warning track",
+    "trait_clutch_legends": "❤️ Legend Resilience: +15 to all stats (low team HP).",
+    "trait_early_pressure": "📈 Early Pressure: +20 CON/EYE (first batter of the inning).",
+    "trait_back_to_back": "💥 Power Chain: +20 PWR/CON (turn after home run).",
+    "trait_reliever_ambush": "🔥 Reliever Ambush: +50% damage (first hit against this pitcher).",
+    "trait_speed_demons": "⚡ Aggressive Speedsters",
+    "trait_ghost_runners": "🏃 Ghost Runners: A runner appears on 2nd base to start {{inning}}!"
   },
   "syn": {
     "deadball": {

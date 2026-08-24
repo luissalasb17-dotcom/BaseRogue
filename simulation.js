@@ -517,20 +517,20 @@
         effBatter.k_avd = (effBatter.k_avd !== undefined ? effBatter.k_avd : (effBatter.con || 50)) + 15;
         effBatter.spd = (effBatter.spd || 50) + 15;
         effBatter.def = (effBatter.def || 50) + 15;
-        traitProc = (traitProc ? traitProc + ' | ' : '') + '❤️ Resiliencia de Leyendas: +15 a todas las stats (HP de equipo bajo).';
+        traitProc = (traitProc ? traitProc + ' | ' : '') + _t('sim.trait_clutch_legends', {}, '❤️ Resiliencia de Leyendas: +15 a todas las stats (HP de equipo bajo).');
       }
       const isFirstBatterOfInning = this.firstBatterOfInningPending;
       if (isFirstBatterOfInning) {
         effBatter.con = (effBatter.con || 50) + 20;
         effBatter.eye = (effBatter.eye || 50) + 20;
-        traitProc = (traitProc ? traitProc + ' | ' : '') + '📈 Presión Temprana: +20 CON/EYE (primer bateador de la entrada).';
+        traitProc = (traitProc ? traitProc + ' | ' : '') + _t('sim.trait_early_pressure', {}, '📈 Presión Temprana: +20 CON/EYE (primer bateador de la entrada).');
         this.firstBatterOfInningPending = false;
       }
       const isBackToBackTurn = this.backToBackPending;
       if (isBackToBackTurn) {
         effBatter.pwr = (effBatter.pwr || 50) + 20;
         effBatter.con = (effBatter.con || 50) + 20;
-        traitProc = (traitProc ? traitProc + ' | ' : '') + '💥 Cadena de Poder: +20 PWR/CON (turno post-jonrón).';
+        traitProc = (traitProc ? traitProc + ' | ' : '') + _t('sim.trait_back_to_back', {}, '💥 Cadena de Poder: +20 PWR/CON (turno post-jonrón).');
         this.backToBackPending = false;
       }
 
@@ -648,7 +648,7 @@
         if (this.hasTrait('speed_demons') && (effBatter.spd || 0) > 60) {
           stealChance = 1.0;
           debuffTurns = Math.max(debuffTurns, 3);
-          stealProcMsg = (stealProcMsg ? stealProcMsg + ' + ' : '') + '⚡ Velocistas Agresivos';
+          stealProcMsg = (stealProcMsg ? stealProcMsg + ' + ' : '') + _t('sim.trait_speed_demons', {}, '⚡ Velocistas Agresivos');
         }
 
         if ((effBatter.spd || 0) >= 40 && this.bases[0] === batter && !this.bases[1] && Math.random() < stealChance) {
@@ -996,7 +996,7 @@
 
         if (this.freshPitcherBonusAvailable) {
           pitcherDmg = Math.round(pitcherDmg * 1.5);
-          traitProc = (traitProc ? traitProc + ' | ' : '') + '🔥 Emboscada al Relevista: +50% daño (primer batazo contra este lanzador).';
+          traitProc = (traitProc ? traitProc + ' | ' : '') + _t('sim.trait_reliever_ambush', {}, '🔥 Emboscada al Relevista: +50% daño (primer batazo contra este lanzador).');
           this.freshPitcherBonusAvailable = false;
         }
 
@@ -1051,7 +1051,7 @@
           if (this.hasTrait('speed_demons') && (effBatter.spd || 0) > 60) {
             stealChance = 1.0;
             debuffTurns = Math.max(debuffTurns, 3);
-            stealProcMsg = (stealProcMsg ? stealProcMsg + ' + ' : '') + '⚡ Velocistas Agresivos';
+            stealProcMsg = (stealProcMsg ? stealProcMsg + ' + ' : '') + _t('sim.trait_speed_demons', {}, '⚡ Velocistas Agresivos');
           }
 
           if ((effBatter.spd || 0) >= 40 && !this.bases[1] && Math.random() < stealChance) {
@@ -1097,7 +1097,7 @@
           if (this.hasTrait('speed_demons') && (effBatter.spd || 0) > 60) {
             steal3BChance = 0.75;
             debuffTurns = Math.max(debuffTurns, 3);
-            steal3BProcMsg = (steal3BProcMsg ? steal3BProcMsg + ' + ' : '') + '⚡ Velocistas Agresivos';
+            steal3BProcMsg = (steal3BProcMsg ? steal3BProcMsg + ' + ' : '') + _t('sim.trait_speed_demons', {}, '⚡ Velocistas Agresivos');
           }
 
           if ((effBatter.spd || 0) >= 50 && Math.random() < steal3BChance) {
@@ -1232,11 +1232,11 @@
 
         // ghost_runners: start inning 3 and every extra inning (4+) with a free runner on 2nd base
         if (this.hasTrait('ghost_runners') && this.inning >= 3 && !this.ghostRunnerInnings.has(this.inning)) {
-          this.bases[1] = { name: (typeof window.t === 'function' ? window.t('sim.ghost_runner_name', 'Corredor Fantasma') : 'Corredor Fantasma'), spd: 50, con: 50, pwr: 50, eye: 50, def: 50, isGhostRunner: true };
+          this.bases[1] = { name: _t('sim.ghost_runner_name', {}, 'Corredor Fantasma'), spd: 50, con: 50, pwr: 50, eye: 50, def: 50, isGhostRunner: true };
           this.ghostRunnerInnings.add(this.inning);
-          const inningLabel = this.inning === 3 ? 'la 3ª entrada' : `el Extra Inning ${this.inning}`;
+          const inningLabel = this.inning === 3 ? (typeof window.t === 'function' ? window.t('sim.clutch_reason_inning', 'la 3ª entrada') : 'la 3ª entrada') : `Extra Inning ${this.inning}`;
           this.logEvent('GHOST_RUNNER',
-            `🏃 Corredores Fantasma: ¡un corredor aparece en 2ª base para arrancar ${inningLabel}!`,
+            _t('sim.trait_ghost_runners', { inning: inningLabel }, `🏃 Corredores Fantasma: ¡un corredor aparece en 2ª base para arrancar ${inningLabel}!`),
             'TRAIT');
         }
       }

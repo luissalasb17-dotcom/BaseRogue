@@ -662,7 +662,13 @@
     "def_ball_rf_2": "Sencillo al derecho / Tiro a 3B",
     "def_title_rf_3": "¡ATRAPADA EN SALTO CONTRA LA BARDA ACOLCHADA!",
     "def_desc_rf_3": "Batazo profundo empujado por el viento hacia la pista de seguridad. Atrapada de espaldas estrellándose en la pared.",
-    "def_ball_rf_3": "Elevado profundo a la pista de seguridad"
+    "def_ball_rf_3": "Elevado profundo a la pista de seguridad",
+    "trait_clutch_legends": "❤️ Resiliencia de Leyendas: +15 a todas las stats (HP de equipo bajo).",
+    "trait_early_pressure": "📈 Presión Temprana: +20 CON/EYE (primer bateador de la entrada).",
+    "trait_back_to_back": "💥 Cadena de Poder: +20 PWR/CON (turno post-jonrón).",
+    "trait_reliever_ambush": "🔥 Emboscada al Relevista: +50% daño (primer batazo contra este lanzador).",
+    "trait_speed_demons": "⚡ Velocistas Agresivos",
+    "trait_ghost_runners": "🏃 Corredores Fantasma: ¡un corredor aparece en 2ª base para arrancar {{inning}}!"
   },
   "syn": {
     "deadball": {
