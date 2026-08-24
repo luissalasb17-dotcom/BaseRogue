@@ -1378,8 +1378,8 @@
         const playText = `🛡️ [${_t('sim.def_success_title', {}, '¡JUGADA DE GUANTE DE ORO!')}] ${eventData.player.name} (${eventData.pos}) ${_t('sim.def_success_desc', { roll, thresh: targetThreshold }, `completa una atrapada sensacional (Dado: ${roll}/${targetThreshold})`)}. ${rewardText}`;
         this.logEvent('DEFENSE_PLAY', playText, 'DEF_WIN', eventData.player.name, 0, 0, 0);
       } else {
-        // Fix #4: Clutch play fail raised to 35 HP (was 25) to balance the bigger upside (+80 shield).
-        const outDmg = isClutchPlay ? 35 : 15;
+        // Defensive error damage: -10 HP regular, -30 HP clutch play fail
+        const outDmg = isClutchPlay ? 30 : 10;
         if (this.teamShield > 0) {
           shieldDmg = Math.min(this.teamShield, outDmg);
           this.teamShield -= shieldDmg;
