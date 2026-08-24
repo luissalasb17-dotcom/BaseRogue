@@ -2986,6 +2986,13 @@ function initGameModeSelector() {
           window.BaseballDex.open();
         });
       }
+      const btnDexMenu = document.getElementById('btn-basedex-menu');
+      if (btnDexMenu) {
+        btnDexMenu.addEventListener('click', (e) => {
+          e.stopPropagation();
+          window.BaseballDex.open();
+        });
+      }
     }
 
     // ── Audio: unlock context on first user interaction + mute toggle button ──
