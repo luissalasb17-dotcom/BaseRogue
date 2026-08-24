@@ -3025,10 +3025,10 @@ function initGameModeSelector() {
 
   function getPlayerOvr(p) {
     if (!p) return 60;
-    if (p.ovr !== undefined) return Math.round(p.ovr);
-    if (p.avg_attr_score !== undefined) return Math.round(p.avg_attr_score);
-    if (p._ovr !== undefined) return Math.round(p._ovr);
-    const isPitcher = p.pos === 'P' || p.pos === 'SP' || p.pos === 'RP' || p.role === 'P' || p.role === 'SP' || p.role === 'RP';
+    if (p.ovr !== undefined) return Math.floor(p.ovr);
+    if (p.avg_attr_score !== undefined) return Math.floor(p.avg_attr_score);
+    if (p._ovr !== undefined) return Math.floor(p._ovr);
+    const isPitcher = p.pos === 'P' || p.pos === 'SP' || p.role === 'P' || p.role === 'SP' || p.pos === 'RP' || p.role === 'RP';
     if (isPitcher) {
       const h9  = p.h9  !== undefined ? p.h9  : (p.h9_val  !== undefined ? p.h9_val  : (p.grt !== undefined ? p.grt : 50));
       const k9  = p.k9  !== undefined ? p.k9  : (p.k9_val  !== undefined ? p.k9_val  : (p.stf !== undefined ? p.stf : (p.str !== undefined ? p.str : 50)));
@@ -3036,11 +3036,11 @@ function initGameModeSelector() {
       const hr9 = p.hr9 !== undefined ? p.hr9 : (p.hr9_val !== undefined ? p.hr9_val : (p.mov !== undefined ? p.mov : 50));
       const sta = p.sta !== undefined ? p.sta : (p.sta_val !== undefined ? p.sta_val : 65);
       const raw = h9 * 0.20 + k9 * 0.20 + bb9 * 0.20 + hr9 * 0.20 + sta * 0.20;
-      if (raw <= 48.0) return Math.round(50.0 + ((raw - 15.0) / 33.0) * 9.9);
-      if (raw <= 56.0) return Math.round(60.0 + ((raw - 48.0) / 8.0) * 9.9);
-      if (raw <= 66.0) return Math.round(70.0 + ((raw - 56.0) / 10.0) * 9.9);
-      if (raw <= 78.0) return Math.round(80.0 + ((raw - 66.0) / 12.0) * 9.9);
-      return Math.round(90.0 + Math.min(9.9, ((raw - 78.0) / 18.0) * 9.9));
+      if (raw <= 48.0) return Math.floor(50.0 + ((raw - 15.0) / 33.0) * 9.9);
+      if (raw <= 56.0) return Math.floor(60.0 + ((raw - 48.0) / 8.0) * 9.9);
+      if (raw <= 66.0) return Math.floor(70.0 + ((raw - 56.0) / 10.0) * 9.9);
+      if (raw <= 78.0) return Math.floor(80.0 + ((raw - 66.0) / 12.0) * 9.9);
+      return Math.floor(90.0 + Math.min(9.9, ((raw - 78.0) / 18.0) * 9.9));
     }
     const con = p.con !== undefined ? p.con : (p.contact_val !== undefined ? p.contact_val : 50);
     const pwr = p.pwr !== undefined ? p.pwr : (p.power_val !== undefined ? p.power_val : 50);
@@ -3049,11 +3049,11 @@ function initGameModeSelector() {
     const spd = p.spd !== undefined ? p.spd : (p.speed_val !== undefined ? p.speed_val : 50);
     const def = p.def !== undefined ? p.def : (p.defense_val !== undefined ? p.defense_val : 50);
     const raw = con * 0.28 + pwr * 0.28 + eye * 0.12 + def * 0.12 + spd * 0.10 + kavd * 0.10;
-    if (raw <= 37.0) return Math.round(50.0 + ((raw - 10.0) / 27.0) * 9.9);
-    if (raw <= 48.0) return Math.round(60.0 + ((raw - 37.0) / 11.0) * 9.9);
-    if (raw <= 62.0) return Math.round(70.0 + ((raw - 48.0) / 14.0) * 9.9);
-    if (raw <= 76.0) return Math.round(80.0 + ((raw - 62.0) / 14.0) * 9.9);
-    return Math.round(90.0 + Math.min(9.9, ((raw - 76.0) / 18.0) * 9.9));
+    if (raw <= 37.0) return Math.floor(50.0 + ((raw - 10.0) / 27.0) * 9.9);
+    if (raw <= 48.0) return Math.floor(60.0 + ((raw - 37.0) / 11.0) * 9.9);
+    if (raw <= 62.0) return Math.floor(70.0 + ((raw - 48.0) / 14.0) * 9.9);
+    if (raw <= 76.0) return Math.floor(80.0 + ((raw - 62.0) / 14.0) * 9.9);
+    return Math.floor(90.0 + Math.min(9.9, ((raw - 76.0) / 18.0) * 9.9));
   }
 
   function getStatGrade(val) {
