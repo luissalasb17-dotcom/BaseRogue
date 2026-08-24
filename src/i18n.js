@@ -3411,9 +3411,11 @@
 
   window.i18n = {
     setLanguage,
+    changeLanguage: setLanguage,
     getLanguage,
     t,
     locales
   };
+  window.I18n = window.i18n;
   window.t = t;
 })();

@@ -3561,14 +3561,14 @@ function initGameModeSelector() {
     const btnLang = document.getElementById('btn-lang-toggle');
     if (btnLang) {
       btnLang.addEventListener('click', () => {
-        const cur = (window.I18n && window.I18n.getLanguage) ? window.I18n.getLanguage() : (localStorage.getItem('baserogue_lang') || 'es');
+        const cur = (window.i18n && window.i18n.getLanguage) ? window.i18n.getLanguage() : (localStorage.getItem('baserogue_lang') || 'es');
         const next = cur === 'es' ? 'en' : 'es';
-        if (window.I18n && typeof window.I18n.setLanguage === 'function') {
+        if (window.i18n && typeof window.i18n.setLanguage === 'function') {
+          window.i18n.setLanguage(next);
+        } else if (window.I18n && typeof window.I18n.setLanguage === 'function') {
           window.I18n.setLanguage(next);
-        } else if (window.i18n && typeof window.i18n.changeLanguage === 'function') {
-          window.i18n.changeLanguage(next);
-        } else if (typeof i18next !== 'undefined') {
-          i18next.changeLanguage(next);
+        } else if (typeof i18next !== 'undefined' && typeof i18next.changeLanguage === 'function') {
+          try { i18next.changeLanguage(next); } catch (e) { console.warn(e); }
         }
       });
     }
