@@ -475,7 +475,7 @@
               <div style="font-size:6px;color:#9ca3af;margin-top:3px">${subLabel} '${p.year}</div>
             </div>
             <div>
-              <div style="font-size:8px;font-weight:bold;color:${rColor};margin-top:4px">OVR ${p.ovr}</div>
+              <div style="font-size:8px;font-weight:bold;color:${rColor};margin-top:4px">OVR ${Math.round(p.ovr)}</div>
               <div style="font-size:5px;background:${rColor}22;color:${rColor};padding:1px 4px;border-radius:3px;margin-top:3px;display:inline-block">${p.rarity || 'Common'}</div>
             </div>
           `;
@@ -784,7 +784,7 @@
           </div>
           
           <div style="text-align:center;margin-bottom:16px">
-            <div style="font-family:'Press Start 2P',monospace;font-size:32px;color:${rColor};text-shadow:0 0 20px ${rColor}88">${p.ovr}</div>
+            <div style="font-family:'Press Start 2P',monospace;font-size:32px;color:${rColor};text-shadow:0 0 20px ${rColor}88">${Math.round(p.ovr)}</div>
             <div style="font-size:10px;color:#6b7280">OVR</div>
           </div>
           
