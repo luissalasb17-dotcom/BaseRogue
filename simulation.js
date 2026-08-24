@@ -1312,8 +1312,11 @@
       const isSecondary = secPosArr.includes(pos);
       const isOOP = (!isNative && !isSecondary && pos !== 'DH');
 
-      // Formula: 20% Base + (0.70 * DEF), min 20%, max 100%
-      const successThreshold = Math.min(100, Math.max(1, Math.round(effDef)));
+      // Smoothed DEF curve: base 30% + (DEF × 0.6), clamped to 20–95%.
+      // This avoids punishing low-DEF players too harshly (DEF 40 was 40% raw,
+      // now 54%) while removing the near-automatic ceiling (DEF 99 was 99%, now 89%).
+      // DEF 50 → 60%, DEF 70 → 72%, DEF 80 → 78%, DEF 90 → 84%.
+      const successThreshold = Math.min(95, Math.max(20, Math.round(30 + effDef * 0.6)));
       const successChance = successThreshold / 100;
 
       // Realistic baseball hit metrics for immersion
@@ -1354,14 +1357,28 @@
 
       if (isSuccess) {
         const baseShieldReward = isClutchPlay ? 80 : 40;
-        hpHealed = 0;
         shieldHealed = Math.min(this.teamShieldMax - this.teamShield, baseShieldReward);
         this.teamShield = Math.min(this.teamShieldMax, this.teamShield + baseShieldReward);
 
-        const playText = `🛡️ [${_t('sim.def_success_title', {}, '¡JUGADA DE GUANTE DE ORO!')}] ${eventData.player.name} (${eventData.pos}) ${_t('sim.def_success_desc', { roll, thresh: targetThreshold }, `completa una atrapada sensacional (Dado: ${roll}/${targetThreshold})`)}. ${_t('sim.def_success_reward', { shield: baseShieldReward }, `¡Reparas +${baseShieldReward} de Escudo!`)}`;
+        // Fix #1: If shield was already full or partially full, convert excess reward
+        // into HP healing at 50% efficiency — a successful play always has some value.
+        const excessReward = baseShieldReward - shieldHealed;
+        if (excessReward > 0 && this.teamHP < 100) {
+          const hpRecover = Math.round(Math.min(excessReward * 0.5, 100 - this.teamHP));
+          if (hpRecover > 0) {
+            this.teamHP = Math.min(100, this.teamHP + hpRecover);
+            hpHealed = hpRecover;
+          }
+        }
+
+        const shieldPart = shieldHealed > 0 ? `¡+${shieldHealed} Escudo reparado!` : '';
+        const hpPart = hpHealed > 0 ? ` ¡+${hpHealed} HP recuperado!` : '';
+        const rewardText = shieldPart + hpPart || `¡Escudo al máximo y +${Math.round(baseShieldReward * 0.5)} HP recuperado!`;
+        const playText = `🛡️ [${_t('sim.def_success_title', {}, '¡JUGADA DE GUANTE DE ORO!')}] ${eventData.player.name} (${eventData.pos}) ${_t('sim.def_success_desc', { roll, thresh: targetThreshold }, `completa una atrapada sensacional (Dado: ${roll}/${targetThreshold})`)}. ${rewardText}`;
         this.logEvent('DEFENSE_PLAY', playText, 'DEF_WIN', eventData.player.name, 0, 0, 0);
       } else {
-        const outDmg = isClutchPlay ? 25 : 15;
+        // Fix #4: Clutch play fail raised to 35 HP (was 25) to balance the bigger upside (+80 shield).
+        const outDmg = isClutchPlay ? 35 : 15;
         if (this.teamShield > 0) {
           shieldDmg = Math.min(this.teamShield, outDmg);
           this.teamShield -= shieldDmg;
