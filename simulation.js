@@ -101,9 +101,14 @@
 
     let pOut = pInPlay - pTotalHit;
 
-    // 4. HR share of Hits: Batter Power vs Pitcher HR/9 Prevention (Base 10% of hits, Slope 0.35%)
-    let hrRatio = 0.10 + (effPwr - pHR9) * 0.0035;
-    hrRatio = Math.max(0.02, Math.min(0.45, hrRatio));
+    // 4. HR share of Hits: Batter Power vs Pitcher HR/9 Prevention
+    // Enhanced power scaling: base 12%, slope 0.50% (was 0.35%).
+    // Plus an extra pure slugger bonus for PWR >= 80 to make elite sluggers feel truly dominant.
+    let hrRatio = 0.12 + (effPwr - pHR9) * 0.0050;
+    if (effPwr >= 80) {
+      hrRatio += (effPwr - 80) * 0.0030; // Extra exponential lift for 80-99+ PWR monsters
+    }
+    hrRatio = Math.max(0.02, Math.min(0.60, hrRatio));
 
     let pHR = pTotalHit * hrRatio;
     let pRegularHit = pTotalHit - pHR;
