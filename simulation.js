@@ -1247,50 +1247,56 @@
       const defPositions = ['C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF'];
       const pos = defPositions[Math.floor(Math.random() * defPositions.length)];
 
-      const scenarios = {
-        'C': {
-          title: _t('sim.def_title_c', {}, '¡INTENTO DE ROBO EN SEGUNDA BASE!'),
-          desc: _t('sim.def_desc_c', {}, 'El corredor rival despega a toda velocidad hacia 2B. Tu receptor se para y dispara un misil a la almohadilla.'),
-          icon: '🧤'
-        },
-        '1B': {
-          title: _t('sim.def_title_1b', {}, '¡LÍNEA RASANTE POR LA RAYA DE PRIMERA!'),
-          desc: _t('sim.def_desc_1b', {}, 'Batazo violento que busca internarse en el rincón derecho. Tu inicialista se tiende de cabeza para cortar.'),
-          icon: '⚡'
-        },
-        '2B': {
-          title: _t('sim.def_title_2b', {}, '¡ROLETASO CON OJOS POR EL MEDIO DEL CAMPO!'),
-          desc: _t('sim.def_desc_2b', {}, 'Batazo colocado detrás de la segunda almohadilla. Tu camarero corre, fildea en giro y dispara a primera.'),
-          icon: '🏃'
-        },
-        '3B': {
-          title: _t('sim.def_title_3b', {}, '¡LÍNEA CANDENTE EN LA ESQUINA CALIENTE!'),
-          desc: _t('sim.def_desc_3b', {}, 'Misil quemante pegado a la raya de cal de tercera. Reflejos puros para evitar el extrabase.'),
-          icon: '🔥'
-        },
-        'SS': {
-          title: _t('sim.def_title_ss', {}, '¡ROBANDO EL HIT EN EL HUECO DEL SS!'),
-          desc: _t('sim.def_desc_ss', {}, 'Fuerte roletazo entre tercera y el campocorto. Tu torpedero se desliza en el pasto y mete el guante.'),
-          icon: '💎'
-        },
-        'LF': {
-          title: _t('sim.def_title_lf', {}, '¡ELEVADO CORTO POR LA ZONA DE FAUL!'),
-          desc: _t('sim.def_desc_lf', {}, 'Batazo peligroso contra la baranda del jardín izquierdo. Tu jardinero corre arriesgando el físico.'),
-          icon: '⚾'
-        },
-        'CF': {
-          title: _t('sim.def_title_cf', {}, '¡BATAZO PROFUNDO AL PIE DE LA PARED!'),
-          desc: _t('sim.def_desc_cf', {}, 'Conexión enorme que amenaza con bañarlo. Tu jardinero central mide la pared y salta en lo más alto.'),
-          icon: '🚀'
-        },
-        'RF': {
-          title: _t('sim.def_title_rf', {}, '¡LÍNEA CORTADA CONTRA EL MURO DERECHO!'),
-          desc: _t('sim.def_desc_rf', {}, 'Fuerte conexión que dobla hacia el poste. Tu guardabosque derecho corta la trayectoria de aire.'),
-          icon: '🌟'
-        }
+      const scenarioDefs = {
+        'C': [
+          { titleKey: 'sim.def_title_c_1', descKey: 'sim.def_desc_c_1', ballKey: 'sim.def_ball_c_1', defTitle: '¡INTENTO DE ROBO EN SEGUNDA BASE!', defDesc: 'El corredor rival despega a toda velocidad hacia 2B. Tu receptor se para y dispara un misil a la almohadilla.', defBall: 'Lanzamiento en la esquina / Robo en 2B', icon: '🧤' },
+          { titleKey: 'sim.def_title_c_2', descKey: 'sim.def_desc_c_2', ballKey: 'sim.def_ball_c_2', defTitle: '¡DISPARO AL PLATO Y JUGADA EN HOME!', defDesc: 'Llega el disparo potente del jardín. Tu receptor bloquea el plato y espera el impacto para aplicar el toque out.', defBall: 'Disparo del jardín / Jugada en Home', icon: '🛡️' },
+          { titleKey: 'sim.def_title_c_3', descKey: 'sim.def_desc_c_3', ballKey: 'sim.def_ball_c_3', defTitle: '¡BLOQUEO DE WILD PITCH CON CORREDOR EN 3B!', defDesc: 'Lanzamiento enterrado en la tierra. El receptor se tira de rodillas y bloquea con el peto para evitar la carrera.', defBall: 'Pitcheo enterrado en la tierra', icon: '⚾' }
+        ],
+        '1B': [
+          { titleKey: 'sim.def_title_1b_1', descKey: 'sim.def_desc_1b_1', ballKey: 'sim.def_ball_1b_1', defTitle: '¡LÍNEA RASANTE POR LA RAYA DE PRIMERA!', defDesc: 'Batazo violento que busca internarse en el rincón derecho. Tu inicialista se tiende de cabeza para cortar.', defBall: 'Línea quemante por la raya de 1B', icon: '⚡' },
+          { titleKey: 'sim.def_title_1b_2', descKey: 'sim.def_desc_1b_2', ballKey: 'sim.def_ball_1b_2', defTitle: '¡ESTIRADA ACROBÁTICA EN PRIMERA BASE!', defDesc: 'Tiro desviado en el cuadro interior. Tu inicialista se estira al límite manteniendo el pie sobre la almohadilla.', defBall: 'Tiro desviado / Estirada en 1B', icon: '🤸' },
+          { titleKey: 'sim.def_title_1b_3', descKey: 'sim.def_desc_1b_3', ballKey: 'sim.def_ball_1b_3', defTitle: '¡TOQUE DE SORPRESA POR LA LÍNEA!', defDesc: 'Toque sorpresivo para embasarse. Tu inicialista carga con agresividad y asiste al lanzador que cubre.', defBall: 'Toque colocado por la raya de 1B', icon: '🏃' }
+        ],
+        '2B': [
+          { titleKey: 'sim.def_title_2b_1', descKey: 'sim.def_desc_2b_1', ballKey: 'sim.def_ball_2b_1', defTitle: '¡ROLETASO CON OJOS POR EL MEDIO DEL CAMPO!', defDesc: 'Batazo colocado detrás de la segunda almohadilla. Tu camarero corre, fildea en giro y dispara a primera.', defBall: 'Roletazo colocado detrás de 2B', icon: '🏃' },
+          { titleKey: 'sim.def_title_2b_2', descKey: 'sim.def_desc_2b_2', ballKey: 'sim.def_ball_2b_2', defTitle: '¡ROLETASO DIFÍCIL Y PIVOTEO DE DOBLE PLAY!', defDesc: 'Rodado picado entre 1B y 2B. Tu camarero fildea sobre la marcha y suelta un tiro relámpago a segunda.', defBall: 'Rodado rápido / Doble Play', icon: '⚡' },
+          { titleKey: 'sim.def_title_2b_3', descKey: 'sim.def_desc_2b_3', ballKey: 'sim.def_ball_2b_3', defTitle: '¡ELEVADO CORTO DE ESPALDAS AL CUADRO!', defDesc: 'Batazo flotado entre el cuadro y el jardín derecho. Tu camarero corre a fondo y captura la bola sobre el hombro.', defBall: 'Elevado corto / Texano al jardín derecho', icon: '⚾' }
+        ],
+        '3B': [
+          { titleKey: 'sim.def_title_3b_1', descKey: 'sim.def_desc_3b_1', ballKey: 'sim.def_ball_3b_1', defTitle: '¡LÍNEA CANDENTE EN LA ESQUINA CALIENTE!', defDesc: 'Misil quemante pegado a la raya de cal de tercera. Reflejos puros para evitar el extrabase.', defBall: 'Misil a la esquina caliente (105+ MPH)', icon: '🔥' },
+          { titleKey: 'sim.def_title_3b_2', descKey: 'sim.def_desc_3b_2', ballKey: 'sim.def_ball_3b_2', defTitle: '¡TOQUE SORPRESA Y TIRO EN PLENA CARRERA!', defDesc: 'El bateador toca con maestría por la raya. Tu antesalista carga a toda velocidad y tira a 1B a mano limpia.', defBall: 'Toque sorpresivo por tercera', icon: '⚡' },
+          { titleKey: 'sim.def_title_3b_3', descKey: 'sim.def_desc_3b_3', ballKey: 'sim.def_ball_3b_3', defTitle: '¡ELEVADO PELIGROSO CONTRA LA BARANDA DE FAUL!', defDesc: 'Batazo elevado pegado a los asientos del público. Tu antesalista corre midiendo la baranda y engarza la pelota.', defBall: 'Elevado alto en territorio de faul', icon: '⚾' }
+        ],
+        'SS': [
+          { titleKey: 'sim.def_title_ss_1', descKey: 'sim.def_desc_ss_1', ballKey: 'sim.def_ball_ss_1', defTitle: '¡ROBANDO EL HIT EN EL HUECO DEL SS!', defDesc: 'Fuerte roletazo entre tercera y el campocorto. Tu torpedero se desliza en el pasto y mete el guante.', defBall: 'Roletazo duro en el hueco de SS', icon: '💎' },
+          { titleKey: 'sim.def_title_ss_2', descKey: 'sim.def_desc_ss_2', ballKey: 'sim.def_ball_ss_2', defTitle: '¡ASISTENCIA ACROBÁTICA EN EL CÉSPED EXTERIOR!', defDesc: 'Batazo que busca picar en el jardín. Tu torpedero vuela de espaldas y captura la pelota en zambullida.', defBall: 'Elevado corto / Línea flotada', icon: '🏃' },
+          { titleKey: 'sim.def_title_ss_3', descKey: 'sim.def_desc_ss_3', ballKey: 'sim.def_ball_ss_3', defTitle: '¡FILDEO RELÁMPAGO Y DOBLE PLAY DEL 6 AL 3!', defDesc: 'Batazo fuerte de frente a la almohadilla. Fildea, pisa segunda y lanza un cañón a primera para dos outs.', defBall: 'Roletazo violento / Doble Play', icon: '⚡' }
+        ],
+        'LF': [
+          { titleKey: 'sim.def_title_lf_1', descKey: 'sim.def_desc_lf_1', ballKey: 'sim.def_ball_lf_1', defTitle: '¡ELEVADO CORTO POR LA ZONA DE FAUL!', defDesc: 'Batazo peligroso contra la baranda del jardín izquierdo. Tu jardinero corre arriesgando el físico.', defBall: 'Línea tendida al jardín izquierdo', icon: '⚾' },
+          { titleKey: 'sim.def_title_lf_2', descKey: 'sim.def_desc_lf_2', ballKey: 'sim.def_ball_lf_2', defTitle: '¡DISPARO DE CAÑÓN AL PLATO PARA CORTAR LA CARRERA!', defDesc: 'Elevado profundo de sacrificio. Tu guardabosque atrapa y suelta un tiro teledirigido a la mascota del receptor.', defBall: 'Elevado de sacrificio / Tiro a Home', icon: '🎯' },
+          { titleKey: 'sim.def_title_lf_3', descKey: 'sim.def_desc_lf_3', ballKey: 'sim.def_ball_lf_3', defTitle: '¡LÍNEA RASANTE CONTRA LA BARDA DEL JARDÍN IZQUIERDO!', defDesc: 'Conexión violenta que dobla hacia la esquina. Corte en velocidad para evitar el extrabase.', defBall: 'Línea violenta al rincón izquierdo', icon: '⚡' }
+        ],
+        'CF': [
+          { titleKey: 'sim.def_title_cf_1', descKey: 'sim.def_desc_cf_1', ballKey: 'sim.def_ball_cf_1', defTitle: '¡BATAZO PROFUNDO AL PIE DE LA PARED!', defDesc: 'Conexión enorme que amenaza con bañarlo. Tu jardinero central mide la pared y salta en lo más alto.', defBall: 'Batazo profundo al callejón', icon: '🚀' },
+          { titleKey: 'sim.def_title_cf_2', descKey: 'sim.def_desc_cf_2', ballKey: 'sim.def_ball_cf_2', defTitle: '¡LÍNEA HUNDIDA Y ZAMBULLIDA ESPECTACULAR (DIVING CATCH)!', defDesc: 'Línea violenta que cae rápidamente al frente. Tu jardinero central vuela de pecho y roba el hit limpiamente.', defBall: 'Línea hundida al frente de CF', icon: '💎' },
+          { titleKey: 'sim.def_title_cf_3', descKey: 'sim.def_desc_cf_3', ballKey: 'sim.def_ball_cf_3', defTitle: '¡ROBO DE CUADRANGULAR POR ENCIMA DE LA BARDA!', defDesc: 'El batazo viaja con distancia de jonrón. Tu jardinero escala la pared y saca la pelota del otro lado.', defBall: 'Batazo con distancia de jonrón', icon: '🌟' }
+        ],
+        'RF': [
+          { titleKey: 'sim.def_title_rf_1', descKey: 'sim.def_desc_rf_1', ballKey: 'sim.def_ball_rf_1', defTitle: '¡LÍNEA CORTADA CONTRA EL MURO DERECHO!', defDesc: 'Fuerte conexión que dobla hacia el poste. Tu guardabosque derecho corta la trayectoria de aire.', defBall: 'Línea con efecto al rincón derecho', icon: '🌟' },
+          { titleKey: 'sim.def_title_rf_2', descKey: 'sim.def_desc_rf_2', ballKey: 'sim.def_ball_rf_2', defTitle: '¡TIRO LÁSER A TERCERA BASE PARA ENFRIAR AL CORREDOR!', defDesc: 'Sencillo al jardín derecho con corredor doblando por 2B. Tu jardinero suelta un misil a la tercera almohadilla.', defBall: 'Sencillo al derecho / Tiro a 3B', icon: '🎯' },
+          { titleKey: 'sim.def_title_rf_3', descKey: 'sim.def_desc_rf_3', ballKey: 'sim.def_ball_rf_3', defTitle: '¡ATRAPADA EN SALTO CONTRA LA BARDA ACOLCHADA!', defDesc: 'Batazo profundo empujado por el viento hacia la pista de seguridad. Atrapada de espaldas estrellándose en la pared.', defBall: 'Elevado profundo a la pista de seguridad', icon: '🚀' }
+        ]
       };
 
-      const scenario = scenarios[pos] || scenarios['SS'];
+      const posScenarios = scenarioDefs[pos] || scenarioDefs['SS'];
+      const chosenScenario = posScenarios[Math.floor(Math.random() * posScenarios.length)];
+
+      const scenarioTitle = _t(chosenScenario.titleKey, {}, chosenScenario.defTitle);
+      const scenarioDesc = _t(chosenScenario.descKey, {}, chosenScenario.defDesc);
+      const ballType = _t(chosenScenario.ballKey, {}, chosenScenario.defBall);
+      const scenarioIcon = chosenScenario.icon;
 
       // Find player on lineup in this defensive position (by assigned slot first, fallback to pos)
       const player = (this.awayTeam && this.awayTeam.lineup)
@@ -1312,18 +1318,6 @@
 
       // Realistic baseball hit metrics for immersion
       const exitVelocity = Math.floor(Math.random() * 16) + 95; // 95 - 110 MPH
-      const ballTypeKey = `sim.def_ball_${pos.toLowerCase()}`;
-      const defaultBallTypes = {
-        'C': 'Lanzamiento descontrolado / Robo',
-        '1B': 'Línea quemante por la raya de 1B',
-        '2B': 'Roletazo colocado detrás de 2B',
-        '3B': 'Misil a la esquina caliente',
-        'SS': 'Roletazo duro en el hueco de SS',
-        'LF': 'Línea tendida al jardín izquierdo',
-        'CF': 'Batazo profundo al callejón',
-        'RF': 'Línea con efecto al rincón derecho'
-      };
-      const ballType = _t(ballTypeKey, {}, defaultBallTypes[pos] || 'Línea de peligro');
 
       return {
         inning: forInning,
@@ -1335,9 +1329,9 @@
         isOOP,
         exitVelocity,
         ballType,
-        scenarioTitle: scenario.title,
-        scenarioDesc: scenario.desc,
-        scenarioIcon: scenario.icon,
+        scenarioTitle,
+        scenarioDesc,
+        scenarioIcon,
         successChance,
         successThreshold,
         currentHP: this.teamHP,
