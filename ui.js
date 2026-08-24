@@ -4202,7 +4202,7 @@ function initGameModeSelector() {
           ${player.equipped_item ? `
             <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(0,255,102,0.08); border:1px solid #00ff66; border-radius:6px; padding:8px 10px;">
               <div style="display:flex; align-items:center; gap:8px;">
-                <span style="font-size:20px;">${player.equipped_item.icon || '🎒'}</span>
+                <span style="font-size:20px; font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji', sans-serif;">${player.equipped_item.icon || '🎒'}</span>
                 <div>
                   <div style="font-size:9.5px; font-weight:bold; color:#00ff66;">${player.equipped_item.name}</div>
                   <div style="font-size:8.5px; color:#cbd5e1; margin-top:2px;">${player.equipped_item.statDesc || ''}</div>
@@ -4326,7 +4326,7 @@ function initGameModeSelector() {
           ` : items.map((item, idx) => `
             <button class="backpack-item-pick-btn" data-index="${idx}" style="display:flex; align-items:center; justify-content:space-between; background:rgba(255,255,255,0.04); border:1px solid rgba(56,189,248,0.3); border-radius:8px; padding:10px 12px; cursor:pointer; text-align:left; transition:all 0.15s ease; width:100%;">
               <div style="display:flex; align-items:center; gap:10px;">
-                <span style="font-size:22px;">${item.icon || '🎒'}</span>
+                <span style="font-size:22px; font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji', sans-serif;">${item.icon || '🎒'}</span>
                 <div>
                   <div style="font-size:11px; font-weight:bold; color:#38bdf8; font-family:sans-serif;">${item.name}</div>
                   <div style="font-size:8.5px; color:#94a3b8; margin-top:2px;">${item.statDesc || ''}</div>
@@ -5138,7 +5138,7 @@ function initGameModeSelector() {
         slotTile.title = `${it.name}\n${typeName}\n${it.statDesc || ''}\n(Arrastra a un jugador o haz clic para usar)`;
 
         slotTile.innerHTML = `
-          <span style="font-size: 20px; line-height: 1; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8));">${it.icon || '🎒'}</span>
+          <span style="font-size: 20px; line-height: 1; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8)); font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji', sans-serif;">${it.icon || '🎒'}</span>
           <span style="position: absolute; top: 2px; right: 2px; font-size: 8px; line-height: 1;">${tagText}</span>
         `;
 

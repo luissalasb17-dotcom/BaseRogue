@@ -32,7 +32,7 @@
       get desc() { return _t('items.bat_samurai.desc', 'Un maestro artesano japonés ofrece un madero de arce pulido al milímetro para máximo contacto.'); },
       safeOption: {
         id: "bat_samurai_std",
-        icon: "🪵",
+        icon: "🏏",
         get name() { return _t('items.bat_samurai.safe_name', 'Madero de Arce Tradicional'); },
         get text() { return _t('items.bat_samurai.safe_text', 'Comprar Madero Estándar (+20 CON)'); },
         cost: 16,
@@ -55,13 +55,13 @@
     },
     {
       id: "item_bat_power",
-      icon: "🪓",
+      icon: "💥",
       category: "bat",
       get title() { return _t('items.bat_power.title', 'El Garrote de Poder Puro'); },
       get desc() { return _t('items.bat_power.desc', 'Un bate pesado de abedul de la vieja escuela diseñado para elevar la pelota a distancias monumentales.'); },
       safeOption: {
         id: "bat_power_std",
-        icon: "🪵",
+        icon: "🏏",
         get name() { return _t('items.bat_power.safe_name', 'Bate de Poder Pesado'); },
         get text() { return _t('items.bat_power.safe_text', 'Comprar Garrote Estándar (+20 PWR)'); },
         cost: 16,
@@ -233,7 +233,7 @@
     },
     {
       id: "item_shoes_endurance",
-      icon: "🩹",
+      icon: "💊",
       category: "shoes",
       get title() { return _t('items.shoes_endurance.title', 'Calzado de Resistencia Muscular'); },
       get desc() { return _t('items.shoes_endurance.desc', 'Plantillas de absorción de impacto y suelas ergonómicas que reducen la fatiga por partido.'); },
@@ -312,7 +312,7 @@
       },
       riskyOption: {
         id: "glove_power_legend",
-        icon: "🦾",
+        icon: "💪",
         get name() { return _t('items.glove_power.risky_name', 'Muñequeras Blindadas de Kevlar'); },
         get text() { return _t('items.glove_power.risky_text', 'Probar Muñequeras Blindadas (+25 DEF, +20 PWR)'); },
         cost: 6,
@@ -355,7 +355,7 @@
     },
     {
       id: "item_glove_energy",
-      icon: "🦺",
+      icon: "🛡️",
       category: "glove",
       get title() { return _t('items.glove_energy.title', 'Peto / Protector de Energía'); },
       get desc() { return _t('items.glove_energy.desc', 'Protección ergonómica de pecho que absorbe el impacto de choques y conserva la energía del jugador.'); },
@@ -454,7 +454,7 @@
       get desc() { return _t('items.acc_helmet.desc', 'Casco aerodinámico con protector de mandíbula para pararse en el plato con total confianza.'); },
       safeOption: {
         id: "acc_helmet_std",
-        icon: "🪖",
+        icon: "⛑️",
         get name() { return _t('items.acc_helmet.safe_name', 'Casco Reforzado Pro'); },
         get text() { return _t('items.acc_helmet.safe_text', 'Comprar Casco Reforzado (+25 K-AVD)'); },
         cost: 16,
@@ -542,7 +542,7 @@
     },
     {
       id: "item_energy_icebath",
-      icon: "🧊",
+      icon: "❄️",
       category: "consumable",
       get title() { return _t('items.energy_icebath.title', 'Baño de Hielo & Crioterapia'); },
       get desc() { return _t('items.energy_icebath.desc', 'Terapia de frío extremo para desinflamar tendones y recuperar la frescura de todo el equipo.'); },
@@ -580,7 +580,7 @@
       get desc() { return _t('items.energy_massage.desc', 'Técnicas de liberación miofascial y quiropráctica para relajar tensiones y afinar los sentidos.'); },
       safeOption: {
         id: "energy_massage_std",
-        icon: "🤲",
+        icon: "✨",
         isConsumable: true,
         get name() { return _t('items.energy_massage.safe_name', 'Masaje Deportivo Relajante'); },
         get text() { return _t('items.energy_massage.safe_text', 'Comprar Masaje (+70 Energía)'); },
