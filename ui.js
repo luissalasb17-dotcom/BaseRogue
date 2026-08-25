@@ -762,16 +762,18 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
       cardsRow.className = 'cards-row flex flex-col md:flex-row gap-3 justify-center items-center md:items-start w-full';
 
       // Tap-to-open vintage pack — themed per round's rarity floor:
-      // Round 1 -> epic (Gold / Epic foil)
-      // Round 2 -> rare (Sapphire Blue foil)
-      // Round 3 -> uncommon (Emerald Green foil)
-      // Rounds 4-8 -> common (Vintage plain wax pack - 5 Common rounds)
+      // Round 1 -> epic_plus (Gold / Diamond foil - Epic or Better)
+      // Round 2 -> epic (Purple foil - Guaranteed Epic)
+      // Round 3 -> rare (Sapphire Blue foil - Guaranteed Rare)
+      // Round 4 -> uncommon (Emerald Green foil - Guaranteed Uncommon)
+      // Rounds 5-8 -> common (Vintage plain wax pack - 4 Common rounds)
       // Round 9 -> random (Rainbow mystery pack - 1 Free round)
       let packTheme = 'random';
-      if (round === 1) packTheme = 'epic';
-      else if (round === 2) packTheme = 'rare';
-      else if (round === 3) packTheme = 'uncommon';
-      else if (round >= 4 && round <= 8) packTheme = 'common';
+      if (round === 1) packTheme = 'epic_plus';
+      else if (round === 2) packTheme = 'epic';
+      else if (round === 3) packTheme = 'rare';
+      else if (round === 4) packTheme = 'uncommon';
+      else if (round >= 5 && round <= 8) packTheme = 'common';
       else packTheme = 'random';
 
       const pack = document.createElement('div');
