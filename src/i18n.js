@@ -342,7 +342,19 @@
     "era_synergy_label": "Sinergia de Era:",
     "team_synergy_label": "Sinergia de Equipo:",
     "active_tier_badge": "ACTIVA",
-    "inactive_tier_badge": "INACTIVA"
+    "inactive_tier_badge": "INACTIVA",
+    "tier_active_tag": "T{{tier}} ACTIVA ({{count}} jug)",
+    "contributes_tag": "(+1) {{count}}/{{target}} jug",
+    "dynasty_tier": "Dinastía (+8)",
+    "brotherhood_tier": "Hermandad (+6)",
+    "chemistry_tier": "Química (+4)",
+    "inactive_tier": "Inactiva",
+    "h9_label": "H/9 (Granito)",
+    "k9_label": "K/9 (Stuff)",
+    "bb9_label": "BB/9 (Control)",
+    "hr9_label": "HR/9 (Movement)",
+    "sta_label": "STA (Stamina)",
+    "role_label": "ROL"
   },
   "train_plans": {
     "con_label": "Práctica de Contacto",
@@ -2065,7 +2077,19 @@
     "era_synergy_label": "Era Synergy:",
     "team_synergy_label": "Team Synergy:",
     "active_tier_badge": "ACTIVE",
-    "inactive_tier_badge": "INACTIVE"
+    "inactive_tier_badge": "INACTIVE",
+    "tier_active_tag": "T{{tier}} ACTIVE ({{count}} ply)",
+    "contributes_tag": "(+1) {{count}}/{{target}} ply",
+    "dynasty_tier": "Dynasty (+8)",
+    "brotherhood_tier": "Brotherhood (+6)",
+    "chemistry_tier": "Chemistry (+4)",
+    "inactive_tier": "Inactive",
+    "h9_label": "H/9 (Hits/9)",
+    "k9_label": "K/9 (Stuff)",
+    "bb9_label": "BB/9 (Control)",
+    "hr9_label": "HR/9 (Movement)",
+    "sta_label": "STA (Stamina)",
+    "role_label": "ROLE"
   },
   "train_plans": {
     "con_label": "Contact Practice",

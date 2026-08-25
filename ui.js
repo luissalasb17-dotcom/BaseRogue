@@ -4119,6 +4119,68 @@ function initGameModeSelector() {
     const rarityColors = { Common: '#94a3b8', Uncommon: '#10b981', Rare: '#38bdf8', Epic: '#c084fc', Legendary: '#ffd700' };
     const rarityColor = rarityColors[player.rarity] || '#94a3b8';
 
+    const isPitcher = (player.pos === 'P' || player.pos === 'SP' || player.pos === 'RP' || player.pos === 'CL' || player.role === 'SP' || player.role === 'RP' || player.role === 'CL');
+
+    if (isPitcher) {
+      // ── BASEBALL-DEX STYLE PITCHER MODAL ──────────────────────────────────────
+      const h9  = player.h9  !== undefined ? player.h9  : (player.grt !== undefined ? player.grt : 50);
+      const k9  = player.k9  !== undefined ? player.k9  : (player.stf !== undefined ? player.stf : (player.str !== undefined ? player.str : 50));
+      const bb9 = player.bb9 !== undefined ? player.bb9 : (player.ctl !== undefined ? player.ctl : 50);
+      const hr9 = player.hr9 !== undefined ? player.hr9 : (player.mov !== undefined ? player.mov : 50);
+      const sta = player.sta !== undefined ? player.sta : (player.sta_val !== undefined ? player.sta_val : 65);
+      const roleStr = player.role || player.pos || 'SP';
+
+      const renderDexStat = (lbl, val) => {
+        const grade = getClassGrade(val);
+        return `
+          <div style="background:#111827;border-radius:6px;padding:8px 10px;display:flex;justify-content:space-between;align-items:center;border:1px solid rgba(255,255,255,0.06);">
+            <span style="font-size:9px;color:#9ca3af;font-family:'Press Start 2P',monospace;">${lbl}</span>
+            <span style="font-size:11px;font-weight:bold;color:${grade.color};font-family:'Press Start 2P',monospace;">${val} <small style="font-size:8px;">${grade.text}</small></span>
+          </div>
+        `;
+      };
+
+      let teamFull = player.team !== 'ROOK' ? player.team : '—';
+      if (window.PlayersDB && window.PlayersDB.FranchiseNames && window.PlayersDB.FranchiseNames[player.team]) {
+        teamFull = window.PlayersDB.FranchiseNames[player.team];
+      }
+
+      overlay.querySelector('#popup-card-content').innerHTML = `
+        <div class="popup-card-header" style="border-bottom:none;padding-bottom:0;">
+          <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:${rarityColor};">${player.rarity || 'Common'} · ${(player.era||'').replace(/\(.*\)/,'').trim()}</div>
+          <button id="btn-close-popup" class="popup-close-btn">✕</button>
+        </div>
+        <div class="popup-player-name" style="font-size:13px;margin-top:4px;margin-bottom:2px;">${player.cleanName || player.name}</div>
+        <div style="font-size:11px;color:#9ca3af;margin-bottom:14px;">${teamFull} — ${player.year || player.peak_year || '—'} · ${roleStr}</div>
+
+        <div style="text-align:center;margin-bottom:16px;background:rgba(0,0,0,0.3);padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.08);">
+          <div style="font-family:'Press Start 2P',monospace;font-size:32px;color:${ovrGrade.color};text-shadow:0 0 15px ${ovrGrade.color}88;">${ovr}</div>
+          <div style="font-size:10px;color:#9ca3af;font-family:'Press Start 2P',monospace;margin-top:2px;">OVR</div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
+          ${renderDexStat(t('card_popup.h9_label', 'H/9 (Granito)'), h9)}
+          ${renderDexStat(t('card_popup.k9_label', 'K/9 (Stuff)'), k9)}
+          ${renderDexStat(t('card_popup.bb9_label', 'BB/9 (Control)'), bb9)}
+          ${renderDexStat(t('card_popup.hr9_label', 'HR/9 (Movement)'), hr9)}
+          ${renderDexStat(t('card_popup.sta_label', 'STA (Stamina)'), sta)}
+          <div style="background:#111827;border-radius:6px;padding:8px 10px;display:flex;justify-content:space-between;align-items:center;border:1px solid rgba(255,255,255,0.06);">
+            <span style="font-size:9px;color:#9ca3af;font-family:'Press Start 2P',monospace;">${t('card_popup.role_label', 'ROL')}</span>
+            <span style="font-size:11px;font-weight:bold;color:#38bdf8;font-family:'Press Start 2P',monospace;">${roleStr}</span>
+          </div>
+        </div>
+
+        <div class="popup-year" style="margin-top:12px;border-top:1px dashed rgba(255,255,255,0.15);padding-top:8px;">Peak: ${player.year || player.peak_year || '—'} &nbsp;|&nbsp; ${player.era || ''}</div>
+      `;
+
+      overlay.classList.remove('hidden');
+      const closeBtn = overlay.querySelector('#btn-close-popup');
+      if (closeBtn) closeBtn.onclick = () => overlay.classList.add('hidden');
+      overlay.onclick = (e) => { if (e.target === overlay) overlay.classList.add('hidden'); };
+      return;
+    }
+
+    // ── STANDARD BATTER MODAL ────────────────────────────────────────────────
     overlay.querySelector('#popup-card-content').innerHTML = `
       <div class="popup-card-header">
         <div class="popup-rarity-badge" style="color:${rarityColor};border-color:${rarityColor};">${player.rarity || 'Common'}</div>
@@ -4136,20 +4198,12 @@ function initGameModeSelector() {
         <span class="popup-ovr-grade" style="color:${ovrGrade.color};">${ovrGrade.text}</span>
       </div>
       <div class="popup-stats-section">
-        ${(player.pos === 'P' || player.pos === 'SP' || player.pos === 'RP' || player.role === 'SP' || player.role === 'RP') ? `
-          ${statBar('H/9',  player.h9  !== undefined ? 'h9'  : 'grt', '#00ff66')}
-          ${statBar('K/9',  player.k9  !== undefined ? 'k9'  : (player.stf !== undefined ? 'stf' : 'str'), '#38bdf8')}
-          ${statBar('BB/9', player.bb9 !== undefined ? 'bb9' : 'ctl', '#fbbf24')}
-          ${statBar('HR/9', player.hr9 !== undefined ? 'hr9' : 'mov', '#f97316')}
-          ${statBar('STA',  'sta', '#a78bfa')}
-        ` : `
-          ${statBar('CON', 'con', '#00ff66')}
-          ${statBar('PWR', 'pwr', '#f97316')}
-          ${statBar('EYE', 'eye', '#fbbf24')}
-          ${statBar('K/AVD', 'k_avd', '#ec4899')}
-          ${statBar('SPD', 'spd', '#38bdf8')}
-          ${statBar('DEF', 'def', '#a78bfa')}
-        `}
+        ${statBar('CON', 'con', '#00ff66')}
+        ${statBar('PWR', 'pwr', '#f97316')}
+        ${statBar('EYE', 'eye', '#fbbf24')}
+        ${statBar('K/AVD', 'k_avd', '#ec4899')}
+        ${statBar('SPD', 'spd', '#38bdf8')}
+        ${statBar('DEF', 'def', '#a78bfa')}
       </div>
       <div class="popup-stamina-row">
         <span style="font-size:10px;color:#9ca3af;font-family:'Press Start 2P',monospace;">STAMINA</span>
@@ -4159,8 +4213,7 @@ function initGameModeSelector() {
         <span style="color:${stamColor};font-size:10px;font-family:'Press Start 2P',monospace;">${stam}%</span>
       </div>
       ${(() => {
-        const isPitcher = player.pos === 'P' || player.pos === 'SP' || player.pos === 'RP' || player.role === 'SP' || player.role === 'RP';
-        if (isPitcher || isDraft) return '';
+        if (isDraft) return '';
         const s = (window.Game.runBatterStats || {})[player.name];
         if (!s || !((s.ab || 0) > 0 || (s.bb || 0) > 0)) return '';
         const ab = s.ab || 0, h = s.h || 0, bb = s.bb || 0, so = s.so || 0, hr = s.hr || 0, rbi = s.rbi || 0, sb = s.sb || 0, e = s.e || 0;
@@ -4222,12 +4275,20 @@ function initGameModeSelector() {
         }
         const teamFullName = (window.PlayersDB && window.PlayersDB.FranchiseNames && window.PlayersDB.FranchiseNames[player.team]) || player.team;
         const teamTier = teamCount >= 4 ? 3 : (teamCount === 3 ? 2 : (teamCount === 2 ? 1 : 0));
-        const teamTierName = teamTier === 3 ? 'Dinastía (+8)' : (teamTier === 2 ? 'Hermandad (+6)' : (teamTier === 1 ? 'Química (+4)' : 'Inactiva'));
+        const teamTierName = teamTier === 3 
+          ? t('card_popup.dynasty_tier', 'Dinastía (+8)') 
+          : (teamTier === 2 ? t('card_popup.brotherhood_tier', 'Hermandad (+6)') 
+          : (teamTier === 1 ? t('card_popup.chemistry_tier', 'Química (+4)') 
+          : t('card_popup.inactive_tier', 'Inactiva')));
+
+        const eraActiveTag = t('card_popup.tier_active_tag', { tier: eraTier, count: eraCount });
+        const eraContribTag = t('card_popup.contributes_tag', { count: eraCount, target: 2 });
+        const teamContribTag = t('card_popup.contributes_tag', { count: teamCount, target: 2 });
 
         return `
         <div class="popup-synergies-summary" style="margin-top:10px; padding:10px 12px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.12); border-radius:8px; text-align:left;">
           <div style="font-size:8px; color:#ffd700; font-family:'Press Start 2P',monospace; margin-bottom:8px; letter-spacing:0.5px;">
-            ${typeof window.t === 'function' ? window.t('card_popup.synergies_contributed', '⚡ SINERGIAS APORTADAS') : '⚡ SINERGIAS APORTADAS'}
+            ${t('card_popup.synergies_contributed', '⚡ SINERGIAS APORTADAS')}
           </div>
           
           ${player.era ? `
@@ -4237,7 +4298,7 @@ function initGameModeSelector() {
                 <strong style="color:#fef08a;">${eraName}</strong>
               </div>
               <span style="font-size:9px; font-family:'Press Start 2P',monospace; padding:3px 6px; border-radius:4px; ${eraTier > 0 ? 'background:rgba(34,197,94,0.2); color:#4ade80; border:1px solid #22c55e;' : 'background:rgba(255,255,255,0.06); color:#94a3b8; border:1px solid rgba(255,255,255,0.1);'}">
-                ${eraTier > 0 ? `T${eraTier} ACTIVA (${eraCount} jug)` : `(+1) ${eraCount}/2 jug`}
+                ${eraTier > 0 ? eraActiveTag : eraContribTag}
               </span>
             </div>
           ` : ''}
@@ -4249,7 +4310,7 @@ function initGameModeSelector() {
                 <strong style="color:#93c5fd;">${teamFullName} (${player.team})</strong>
               </div>
               <span style="font-size:9px; font-family:'Press Start 2P',monospace; padding:3px 6px; border-radius:4px; ${teamTier > 0 ? 'background:rgba(59,130,246,0.2); color:#60a5fa; border:1px solid #3b82f6;' : 'background:rgba(255,255,255,0.06); color:#94a3b8; border:1px solid rgba(255,255,255,0.1);'}">
-                ${teamTier > 0 ? `${teamTierName}` : `(+1) ${teamCount}/2 jug`}
+                ${teamTier > 0 ? teamTierName : teamContribTag}
               </span>
             </div>
           ` : ''}
