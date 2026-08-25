@@ -4159,11 +4159,11 @@ function initGameModeSelector() {
         </div>
 
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
-          ${renderDexStat(t('card_popup.h9_label', 'H/9 (Granito)'), h9)}
-          ${renderDexStat(t('card_popup.k9_label', 'K/9 (Stuff)'), k9)}
-          ${renderDexStat(t('card_popup.bb9_label', 'BB/9 (Control)'), bb9)}
-          ${renderDexStat(t('card_popup.hr9_label', 'HR/9 (Movement)'), hr9)}
-          ${renderDexStat(t('card_popup.sta_label', 'STA (Stamina)'), sta)}
+          ${renderDexStat(t('card_popup.h9_label', 'H/9'), h9)}
+          ${renderDexStat(t('card_popup.k9_label', 'K/9'), k9)}
+          ${renderDexStat(t('card_popup.bb9_label', 'BB/9'), bb9)}
+          ${renderDexStat(t('card_popup.hr9_label', 'HR/9'), hr9)}
+          ${renderDexStat(t('card_popup.sta_label', 'STA'), sta)}
           <div style="background:#111827;border-radius:6px;padding:8px 10px;display:flex;justify-content:space-between;align-items:center;border:1px solid rgba(255,255,255,0.06);">
             <span style="font-size:9px;color:#9ca3af;font-family:'Press Start 2P',monospace;">${t('card_popup.role_label', 'ROL')}</span>
             <span style="font-size:11px;font-weight:bold;color:#38bdf8;font-family:'Press Start 2P',monospace;">${roleStr}</span>

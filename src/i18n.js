@@ -349,11 +349,11 @@
     "brotherhood_tier": "Hermandad (+6)",
     "chemistry_tier": "Química (+4)",
     "inactive_tier": "Inactiva",
-    "h9_label": "H/9 (Granito)",
-    "k9_label": "K/9 (Stuff)",
-    "bb9_label": "BB/9 (Control)",
-    "hr9_label": "HR/9 (Movement)",
-    "sta_label": "STA (Stamina)",
+    "h9_label": "H/9",
+    "k9_label": "K/9",
+    "bb9_label": "BB/9",
+    "hr9_label": "HR/9",
+    "sta_label": "STA",
     "role_label": "ROL"
   },
   "train_plans": {
@@ -2084,11 +2084,11 @@
     "brotherhood_tier": "Brotherhood (+6)",
     "chemistry_tier": "Chemistry (+4)",
     "inactive_tier": "Inactive",
-    "h9_label": "H/9 (Hits/9)",
-    "k9_label": "K/9 (Stuff)",
-    "bb9_label": "BB/9 (Control)",
-    "hr9_label": "HR/9 (Movement)",
-    "sta_label": "STA (Stamina)",
+    "h9_label": "H/9",
+    "k9_label": "K/9",
+    "bb9_label": "BB/9",
+    "hr9_label": "HR/9",
+    "sta_label": "STA",
     "role_label": "ROLE"
   },
   "train_plans": {

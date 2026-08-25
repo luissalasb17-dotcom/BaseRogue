@@ -740,11 +740,11 @@
 
         statsHTML = `
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px">
-            ${renderStat('H/9 (Granito)', h9)}
-            ${renderStat('K/9 (Stuff)', k9)}
-            ${renderStat('BB/9 (Control)', bb9)}
-            ${renderStat('HR/9 (Movement)', hr9)}
-            ${renderStat('STA (Stamina)', sta)}
+            ${renderStat('H/9', h9)}
+            ${renderStat('K/9', k9)}
+            ${renderStat('BB/9', bb9)}
+            ${renderStat('HR/9', hr9)}
+            ${renderStat('STA', sta)}
             ${renderStat('ROL', p.role || p.pos || 'P')}
           </div>
         `;
