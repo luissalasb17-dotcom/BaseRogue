@@ -1355,6 +1355,12 @@
       if (gameWorkspace) gameWorkspace.classList.add('hidden');
       const hud = document.getElementById('game-hud');
       if (hud) hud.classList.add('hidden');
+      document.body.classList.remove('workspace-active');
+      document.body.classList.remove('on-main-menu');
+      document.body.style.overflow = '';
+      document.body.style.overflowY = '';
+      document.documentElement.style.overflow = '';
+      document.documentElement.style.overflowY = '';
     },
     showScreen(id) {
       if (id !== 'screen-challenge-season') this.stopAutoSim();
