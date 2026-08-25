@@ -542,20 +542,24 @@ def paso_6_posicion_bateadores(fielding, fielding_of, appearances=None, pico_df=
                   .rename(columns={"pos_mapped": "primary_pos", "peak_G": "primary_g"})
     )
 
-    # 3. Determinar POSICIONES SECUNDARIAS (Baseball-Reference Standard: >= 10% Dedicacion O >= 100 Juegos en Carrera)
+    # 3. Determinar POSICIONES SECUNDARIAS
+    # - Posiciones de campo: >= 10% Dedicacion (Carrera/Pico) O >= 100 Juegos en Carrera
+    # - Posicion DH: Umbral selectivo de >= 25% de dedicacion (Carrera/Pico) con al menos 50 juegos
     sec_df = merged_pos.merge(primary[["playerID", "primary_pos"]], on="playerID", how="left")
-    sec_df = sec_df[(sec_df["pos_mapped"] != sec_df["primary_pos"]) & (sec_df["pos_mapped"] != "OF") & (sec_df["pos_mapped"] != "DH")]
+    sec_df = sec_df[(sec_df["pos_mapped"] != sec_df["primary_pos"]) & (sec_df["pos_mapped"] != "OF")]
 
-    PCT_THRESH = 0.10
-    MIN_CAREER_G = 20
-    MIN_PEAK_G = 15
-    VOLUME_THRESH = 100.0
-
-    qual_mask = (
-        ((sec_df["career_pct"] >= PCT_THRESH) & (sec_df["G"] >= MIN_CAREER_G)) |
-        ((sec_df["peak_pct"] >= PCT_THRESH) & (sec_df["peak_G"] >= MIN_PEAK_G)) |
-        (sec_df["G"] >= VOLUME_THRESH)
+    is_dh_row = sec_df["pos_mapped"] == "DH"
+    field_mask = (~is_dh_row) & (
+        ((sec_df["career_pct"] >= 0.10) & (sec_df["G"] >= 20)) |
+        ((sec_df["peak_pct"] >= 0.10) & (sec_df["peak_G"] >= 15)) |
+        (sec_df["G"] >= 100.0)
     )
+    dh_mask = is_dh_row & (
+        ((sec_df["career_pct"] >= 0.25) & (sec_df["G"] >= 50)) |
+        ((sec_df["peak_pct"] >= 0.25) & (sec_df["peak_G"] >= 35))
+    )
+
+    qual_mask = field_mask | dh_mask
     sec_pos_qual = sec_df[qual_mask]
 
     sec_pos_str = sec_pos_qual.groupby("playerID")["pos_mapped"].apply(
@@ -580,7 +584,7 @@ def paso_6_posicion_bateadores(fielding, fielding_of, appearances=None, pico_df=
     result = primary.merge(career_field, on="playerID", how="left")
     result = result.merge(sec_pos_str, on="playerID", how="left")
     result["sec_pos"] = result["sec_pos"].fillna("")
-    print(f"  Posicion primaria calculada para {len(result):,} bateadores (y secundarias con dedicacion >= {PCT_THRESH:.0%})")
+    print(f"  Posicion primaria calculada para {len(result):,} bateadores (secundarias: Campo >= 10% / DH >= 25%)")
     return result
 
 
