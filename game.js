@@ -1628,11 +1628,14 @@
                 else if (roll < 0.70) type = 'event';
                 else                  type = 'chest';
               } else if (localIdx === 4) {
-                // Floor 5: pre-boss camp — rest, train, gamble
-                if (roll < 0.40)      type = 'rest';
-                else if (roll < 0.70) type = 'train';
-                else if (roll < 0.87) type = 'event';
-                else                  type = 'gamble';
+                // Floor 5: pre-boss camp — ALWAYS guarantee a Clubhouse (rest) node in the center (idx === 1), with train/event/gamble on outer nodes
+                if (idx === 1) {
+                  type = 'rest';
+                } else {
+                  if (roll < 0.40)      type = 'train';
+                  else if (roll < 0.75) type = 'event';
+                  else                  type = 'gamble';
+                }
               } else {
                 // Fallback: classic mix
                 if (roll < 0.30)      type = 'match';
@@ -2452,6 +2455,9 @@
         rosterPicks.add(pitcherKey(chosen));
         return chosen;
       };
+
+      // Helper for OVR calculation
+      const getOvr = (p) => (p.ovr !== undefined ? p.ovr : (p._ovr !== undefined ? p._ovr : (window.UI && window.UI.getPlayerOvr ? window.UI.getPlayerOvr(p) : 50)));
 
       const createPitcherObj = (p, roleOverride = null) => {
         const role = roleOverride || p.role || 'SP';
