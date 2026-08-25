@@ -670,15 +670,15 @@
           ? secPosRaw
           : String(secPosRaw).split(',').map(s => s.trim()).filter(Boolean);
 
-        // Weighted odds: 6.0x for primary position, 4.0x for secondary position
+        // Weighted odds: 4.0x for primary position, 2.0x for secondary position
         let w = 1.0;
         if (weakPositionsMap) {
           if (weakPositionsMap[primaryPos] !== undefined) {
-            w = Number(weakPositionsMap[primaryPos]) || 6.0;
+            w = Number(weakPositionsMap[primaryPos]) || 4.0;
           } else {
             for (const sp of secPositions) {
               if (weakPositionsMap[sp] !== undefined) {
-                w = Math.max(w, 4.0);
+                w = Math.max(w, 2.0);
               }
             }
           }
@@ -1276,7 +1276,7 @@
       // Determine missing positions in roster
       const missingPos = Object.keys(this.draftRoster).filter(pos => !this.draftRoster[pos]);
 
-      // Assign weights: 6x probability for primary position, 4x for secondary position
+      // Assign weights: 4x probability for primary position, 2x for secondary position
       const toWeighted = (p) => {
         const primaryPos = p.pos || p.pos_display || p.primary_pos || '';
         const secPosRaw = p.sec_pos || p.secondary_pos || p.secondary_positions || '';
@@ -1286,9 +1286,9 @@
 
         let weight = 1;
         if (missingPos.includes(primaryPos)) {
-          weight = 6;
-        } else if (secPositions.some(sp => missingPos.includes(sp))) {
           weight = 4;
+        } else if (secPositions.some(sp => missingPos.includes(sp))) {
+          weight = 2;
         }
         return { player: p, weight };
       };
@@ -1967,9 +1967,9 @@
       // Sort ascending by OVR to find the 3 weakest positions
       posScores.sort((a, b) => a.ovr - b.ovr);
       const weakMap = {
-        [posScores[0].pos]: 6.0, // #1 weakest position (6.0x weight)
-        [posScores[1].pos]: 6.0, // #2 weakest position (6.0x weight)
-        [posScores[2].pos]: 6.0  // #3 weakest position (6.0x weight)
+        [posScores[0].pos]: 4.0, // #1 weakest position (4.0x weight)
+        [posScores[1].pos]: 4.0, // #2 weakest position (4.0x weight)
+        [posScores[2].pos]: 4.0  // #3 weakest position (4.0x weight)
       };
       weakMap.has = function(pos) { return this[pos] !== undefined; };
       weakMap.topPos = posScores[0].pos;
