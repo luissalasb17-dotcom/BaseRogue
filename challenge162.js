@@ -2441,15 +2441,35 @@
 
       const _t = (key, fallback, params) => (typeof window.t === 'function' ? window.t(key, params) : fallback);
 
+      const getRoundTitle = (rIdx) => {
+        if (rIdx === 0) return _t('challenge162.round_1_title', 'SERIE DIVISIONAL');
+        if (rIdx === 1) return _t('challenge162.round_2_title', 'SERIE DE CAMPEONATO');
+        return _t('challenge162.round_3_title', '🏆 SERIE MUNDIAL [JEFE FINAL]');
+      };
+      const getRoundDesc = (rIdx) => {
+        if (rIdx === 0) return _t('challenge162.round_1_desc', 'Ronda 1: Enfrenta al 3er mejor equipo');
+        if (rIdx === 1) return _t('challenge162.round_2_desc', 'Ronda 2: Enfrenta al 2do mejor equipo');
+        return _t('challenge162.round_3_desc', 'Jefe Final: El #1 invicto de la liga');
+      };
+      const getRoundDiff = (rIdx) => {
+        if (rIdx === 0) return _t('challenge162.round_1_diff', 'Dificultad: Experto');
+        if (rIdx === 1) return _t('challenge162.round_2_diff', 'Dificultad: Leyenda');
+        return _t('challenge162.round_3_diff', 'Dificultad: Pesadilla');
+      };
+
       const oppFranchise = generatePlayoffEnemyTeam(round, S.leagueTeams);
       const oppSP = (oppFranchise.pitchers && oppFranchise.pitchers[0]) || { cleanName: 'As Rival', name: 'As Rival', ovr: 85, hp: 100 };
       const oppBatters = oppFranchise._batters || [];
       const topOppBatter = oppBatters.slice().sort((a, b) => (b.ovr || 0) - (a.ovr || 0))[0] || { name: 'Bateador Rival', ovr: 85 };
 
+      const oppSpOvrDisplay = Math.round(oppSP.ovr || 85);
+      const oppBatterOvrDisplay = Math.round(topOppBatter.ovr || 85);
+
       // Your Ace Pitcher (SP1) & Top Slugger
       const topSP = (S.roster.pitchers.SP && S.roster.pitchers.SP[0]) || null;
       const topSPStats = topSP ? S.pitcherStats[pitcherUnlockKey(topSP)] : null;
       const spEra = topSPStats && topSPStats.outs > 0 ? ((topSPStats.er * 27) / topSPStats.outs).toFixed(2) : '3.00';
+      const topSpOvrDisplay = topSP ? Math.round(topSP.ovr || 85) : 85;
       
       let topBatter = null, topHR = -1;
       SLOTS.forEach(slot => {
@@ -2466,93 +2486,102 @@
         if (idx < round) { badgeClass = 'c162-step-done'; badgeText = _t('challenge162.step_done', '✔ SUPERADA'); }
         else if (idx === round) { badgeClass = 'c162-step-active'; badgeText = _t('challenge162.step_active', '⚔ EN DISPUTA'); }
         const rTitle = _t('challenge162.bracket_round', `RONDA ${r.round}`, { round: r.round });
+        const roundCardLabel = getRoundTitle(idx);
         return `
           <div class="c162-step-card ${badgeClass}">
             <div style="font-size:9px;color:#9ca3af;font-family:'Press Start 2P',monospace;">${rTitle}</div>
-            <div style="font-size:12px;font-weight:bold;color:#f3f4f6;margin:4px 0;">${r.label}</div>
-            <div class="c162-step-badge">${badgeText}</div>
+            <div style="font-size:11.5px;font-weight:bold;color:#f3f4f6;margin:4px 0;line-height:1.3;">${roundCardLabel}</div>
+            <div><span class="c162-step-badge">${badgeText}</span></div>
           </div>
         `;
       }).join('');
 
+      const curRoundTitle = getRoundTitle(round);
+      const curRoundDesc = getRoundDesc(round);
+      const curRoundDiff = getRoundDiff(round);
+
       const playoffsTitle = _t('challenge162.playoffs_title', 'POSTEMPORADA DE BASEROGUE');
-      const playoffsSubtitle = _t('challenge162.playoffs_subtitle', `3 Rondas a Partido Único (Muerte Súbita) · ${cfg.desc}`, { desc: cfg.desc });
+      const playoffsSubtitle = _t('challenge162.playoffs_subtitle', `3 Rondas a Partido Único (Muerte Súbita) · ${curRoundDesc}`, { desc: curRoundDesc });
       const yourTeamLabel = _t('challenge162.your_team', `TU EQUIPO (${S.wins}-${S.losses})`, { wins: S.wins, losses: S.losses });
       const acePitcherLabel = _t('challenge162.ace_pitcher', 'As Abridor');
       const seasonEraLabel = _t('challenge162.season_era', 'ERA Temporada');
       const offLeaderLabel = _t('challenge162.offensive_leader', 'Líder Ofensivo');
-      const rosterRecLabel = _t('challenge162.roster_record', 'Récord de Roster');
+      const rosterRecLabel = _t('challenge162.roster_record', 'Profundidad de Roster');
       const draftedCardsLabel = _t('challenge162.drafted_cards', '17 Cartas Drafteadas');
       const bossDiffLabel = _t('challenge162.boss_difficulty', 'Dificultad Boss');
       const statBoostLabel = _t('challenge162.stat_boost', `+${cfg.statBoost} a todas las stats`, { boost: cfg.statBoost });
       const rivalHpLabel = _t('challenge162.rival_sp_hp', 'Vida SP Rival');
       const offDangerLabel = _t('challenge162.offensive_danger', 'Peligro Ofensivo');
-      const playMatchBtnText = _t('challenge162.play_playoff_btn', `🎲 ¡DISPUTAR ${cfg.label}! (PARTIDO A MUERTE)`, { label: cfg.label });
+      const playMatchBtnText = _t('challenge162.play_playoff_btn', `🎲 ¡DISPUTAR ${curRoundTitle}! (PARTIDO A MUERTE)`, { label: curRoundTitle });
       const viewStatsBtnText = _t('challenge162.view_stats_table', '📊 VER TABLA DE STATS');
 
       container.innerHTML = `
         <!-- Header -->
         <div style="text-align:center;margin-bottom:20px;">
-          <div style="font-size:32px;margin-bottom:4px;">🏆</div>
-          <div style="font-family:'Press Start 2P',monospace;font-size:16px;color:#ffd700;letter-spacing:1px;margin-bottom:6px;">
+          <div style="font-size:36px;margin-bottom:4px;filter:drop-shadow(0 0 14px #ffd700);animation:bounce 2.5s infinite;">🏆</div>
+          <div style="font-family:'Press Start 2P',monospace;font-size:16px;color:#ffd700;letter-spacing:1px;text-shadow:0 0 20px rgba(255,215,0,0.8);margin-bottom:6px;">
             ${playoffsTitle}
           </div>
-          <div style="font-size:12px;color:#cbd5e1;">
+          <div style="font-size:12px;color:#cbd5e1;font-weight:500;">
             ${playoffsSubtitle}
           </div>
         </div>
 
         <!-- Bracket Stepper -->
-        <div class="c162-bracket-stepper" style="display:grid;grid-template-columns:repeat(3, 1fr);gap:12px;margin-bottom:24px;">
+        <div class="c162-bracket-stepper">
           ${stepperHTML}
         </div>
 
         <!-- Tale of the Tape (Cara a Cara) -->
-        <div class="c162-tale-container" style="display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:center;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.12);border-radius:14px;padding:20px;margin-bottom:24px;">
+        <div class="c162-tale-container">
           
           <!-- Your Team Card -->
-          <div style="background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.3);border-radius:12px;padding:16px;text-align:center;">
-            <div style="font-family:'Press Start 2P',monospace;font-size:11px;color:#34d399;margin-bottom:10px;">
-              ⚾ ${yourTeamLabel}
+          <div class="c162-team-box player-side">
+            <div>
+              <div style="font-family:'Press Start 2P',monospace;font-size:11px;color:#34d399;margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:6px;">
+                <span>⚾</span> <span>${yourTeamLabel}</span>
+              </div>
+              <div style="font-size:13px;color:#f3f4f6;font-weight:bold;margin-bottom:12px;text-align:center;">
+                ${acePitcherLabel}: <span style="color:#ffd700;">${topSP ? topSP.name : 'SP'}</span> <span style="font-size:10px;color:#38bdf8;background:rgba(56,189,248,0.15);border:1px solid rgba(56,189,248,0.4);padding:2px 6px;border-radius:4px;font-family:'Press Start 2P',monospace;">OVR ${topSpOvrDisplay}</span>
+              </div>
             </div>
-            <div style="font-size:12px;color:#f3f4f6;font-weight:bold;margin-bottom:12px;">
-              ${acePitcherLabel}: <span style="color:#ffd700;">${topSP ? topSP.name : 'SP'}</span>
-            </div>
-            <div style="font-size:11px;color:#9ca3af;line-height:1.6;margin-bottom:10px;text-align:left;background:rgba(0,0,0,0.3);padding:10px;border-radius:8px;">
-              <div>🧢 <strong>${seasonEraLabel}:</strong> ${spEra}</div>
-              <div>🔥 <strong>${offLeaderLabel}:</strong> ${topBatter ? topBatter.name : 'Bateador'}</div>
-              <div>⭐ <strong>${rosterRecLabel}:</strong> ${draftedCardsLabel}</div>
+            <div style="font-size:11.5px;color:#9ca3af;line-height:1.8;background:rgba(0,0,0,0.4);padding:12px 14px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);">
+              <div>🧢 <strong>${seasonEraLabel}:</strong> <span style="color:#34d399;font-weight:bold;">${spEra}</span></div>
+              <div>🔥 <strong>${offLeaderLabel}:</strong> <span style="color:#ffd700;font-weight:bold;">${topBatter ? topBatter.name : 'Bateador'}</span> ${topHR > 0 ? `(${topHR} HR)` : ''}</div>
+              <div>⭐ <strong>${rosterRecLabel}:</strong> <span style="color:#e4e4e7;">${draftedCardsLabel}</span></div>
             </div>
           </div>
 
           <!-- VS Badge -->
-          <div style="text-align:center;padding:0 8px;">
-            <div style="font-family:'Press Start 2P',monospace;font-size:20px;color:#ffd700;text-shadow:0 0 16px rgba(255,215,0,0.6);margin-bottom:6px;">VS</div>
-            <div style="font-size:18px;">⚔️</div>
+          <div class="c162-vs-emblem">
+            <div class="c162-vs-badge">VS</div>
+            <div style="font-size:22px;">⚔️</div>
           </div>
 
           <!-- Enemy Team Card -->
-          <div style="background:${round === 2 ? 'rgba(239,68,68,0.08)' : 'rgba(56,189,248,0.06)'};border:1px solid ${round === 2 ? 'rgba(239,68,68,0.4)' : 'rgba(56,189,248,0.3)'};border-radius:12px;padding:16px;text-align:center;">
-            <div style="font-family:'Press Start 2P',monospace;font-size:11px;color:${round === 2 ? '#f87171' : '#38bdf8'};margin-bottom:10px;">
-              👑 ${oppFranchise.name}
+          <div class="c162-team-box ${round === 2 ? 'boss-side' : 'boss-side-regular'}">
+            <div>
+              <div style="font-family:'Press Start 2P',monospace;font-size:11px;color:${round === 2 ? '#f87171' : '#38bdf8'};margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:6px;">
+                <span>👑</span> <span>${curRoundTitle}: ${oppFranchise.name}</span>
+              </div>
+              <div style="font-size:13px;color:#f3f4f6;font-weight:bold;margin-bottom:12px;text-align:center;">
+                ${acePitcherLabel}: <span style="color:#ffd700;">${oppSP.cleanName || oppSP.name}</span> <span style="font-size:10px;color:${round === 2 ? '#f87171' : '#38bdf8'};background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);padding:2px 6px;border-radius:4px;font-family:'Press Start 2P',monospace;">OVR ${oppSpOvrDisplay}</span>
+              </div>
             </div>
-            <div style="font-size:12px;color:#f3f4f6;font-weight:bold;margin-bottom:12px;">
-              ${acePitcherLabel}: <span style="color:#ffd700;">${oppSP.cleanName || oppSP.name} (OVR ${oppSP.ovr})</span>
-            </div>
-            <div style="font-size:11px;color:#9ca3af;line-height:1.6;margin-bottom:10px;text-align:left;background:rgba(0,0,0,0.3);padding:10px;border-radius:8px;">
-              <div>⚡ <strong>${bossDiffLabel}:</strong> ${statBoostLabel}</div>
-              <div>🩸 <strong>${rivalHpLabel}:</strong> ${oppSP.hp} HP (${Math.round((cfg.hpMult - 1) * 100)}% extra)</div>
-              <div>💣 <strong>${offDangerLabel}:</strong> ${topOppBatter ? topOppBatter.name : 'Rival'} (OVR ${topOppBatter ? topOppBatter.ovr : 85})</div>
+            <div style="font-size:11.5px;color:#9ca3af;line-height:1.8;background:rgba(0,0,0,0.4);padding:12px 14px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);">
+              <div>⚡ <strong>${bossDiffLabel}:</strong> <span style="color:${round === 2 ? '#f87171' : '#fbbf24'};font-weight:bold;">${curRoundDiff} (${statBoostLabel})</span></div>
+              <div>🩸 <strong>${rivalHpLabel}:</strong> <span style="color:#f87171;font-weight:bold;">${oppSP.hp} HP</span> <span style="color:#94a3af;font-size:10px;">(+${Math.round((cfg.hpMult - 1) * 100)}% extra)</span></div>
+              <div>💣 <strong>${offDangerLabel}:</strong> <span style="color:#ffd700;font-weight:bold;">${topOppBatter ? topOppBatter.name : 'Rival'}</span> <span style="color:#e4e4e7;font-size:10.5px;">(OVR ${oppBatterOvrDisplay})</span></div>
             </div>
           </div>
         </div>
 
         <!-- Action Button -->
         <div style="display:flex;justify-content:center;gap:14px;flex-wrap:wrap;">
-          <button id="challenge162-play-playoff-match" class="btn" style="padding:14px 26px;font-size:12px;font-family:'Press Start 2P',monospace;background:linear-gradient(135deg,#ffd700,#f59e0b);color:#000;border:2px solid #fff;box-shadow:0 0 24px rgba(255,215,0,0.5);cursor:pointer;transition:transform 0.15s ease;">
+          <button id="challenge162-play-playoff-match" class="btn" style="padding:14px 28px;font-size:11px;font-family:'Press Start 2P',monospace;background:linear-gradient(135deg,#ffd700,#f59e0b);color:#000;border:2px solid #fff;box-shadow:0 0 24px rgba(255,215,0,0.6);cursor:pointer;transition:transform 0.15s ease;">
             ${playMatchBtnText}
           </button>
-          <button id="challenge162-playoff-back-season" class="btn btn-secondary" style="padding:14px 22px;font-size:11px;">
+          <button id="challenge162-playoff-back-season" class="btn btn-secondary" style="padding:14px 22px;font-size:11px;font-family:'Press Start 2P',monospace;">
             ${viewStatsBtnText}
           </button>
         </div>
