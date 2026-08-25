@@ -765,13 +765,13 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
       // Round 1 -> epic (Gold / Epic foil)
       // Round 2 -> rare (Sapphire Blue foil)
       // Round 3 -> uncommon (Emerald Green foil)
-      // Rounds 4-6 -> common (Vintage plain wax pack)
-      // Rounds 7-9 -> random (Rainbow mystery pack)
+      // Rounds 4-8 -> common (Vintage plain wax pack - 5 Common rounds)
+      // Round 9 -> random (Rainbow mystery pack - 1 Free round)
       let packTheme = 'random';
       if (round === 1) packTheme = 'epic';
       else if (round === 2) packTheme = 'rare';
       else if (round === 3) packTheme = 'uncommon';
-      else if (round >= 4 && round <= 6) packTheme = 'common';
+      else if (round >= 4 && round <= 8) packTheme = 'common';
       else packTheme = 'random';
 
       const pack = document.createElement('div');
