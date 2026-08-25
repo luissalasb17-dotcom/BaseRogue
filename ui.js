@@ -862,10 +862,16 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
 
       // Round descriptor below cards
       const pickHint = document.createElement('div');
-      pickHint.style.cssText = 'font-size:11px;color:#6b7280;text-align:center;max-width:400px;';
-      if (round <= 3) {
-        pickHint.textContent = t('draft.round_elite_hint');
-      } else if (round <= 6) {
+      pickHint.style.cssText = 'font-size:11px;color:#6b7280;text-align:center;max-width:400px;line-height:1.4;';
+      if (round === 1) {
+        pickHint.textContent = t('draft.round_1_hint', t('draft.round_elite_hint'));
+      } else if (round === 2) {
+        pickHint.textContent = t('draft.round_2_hint', t('draft.round_elite_hint'));
+      } else if (round === 3) {
+        pickHint.textContent = t('draft.round_3_hint', 'Ronda de Raro garantizado. Asegura un sólido bateador titular.');
+      } else if (round === 4) {
+        pickHint.textContent = t('draft.round_4_hint', 'Ronda de Poco Común garantizado. Completa el núcleo de tu alineación.');
+      } else if (round >= 5 && round <= 8) {
         pickHint.textContent = t('draft.round_common_hint');
       } else {
         pickHint.textContent = t('draft.round_free_hint');
