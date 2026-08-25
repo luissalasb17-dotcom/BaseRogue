@@ -129,6 +129,81 @@ SR_JR_EXPLICIT = {
     "acunaro01": "Ronald Acuña Jr.",
 }
 
+# 3) Traditional Batting Stats by playerID
+bat_df = pd.read_csv('lahman_1871-2025/Batting.csv')
+for col in ['G', 'AB', 'R', 'H', '2B', '3B', 'HR', 'RBI', 'SB', 'CS', 'BB', 'SO', 'IBB', 'HBP', 'SH', 'SF']:
+    if col in bat_df:
+        bat_df[col] = pd.to_numeric(bat_df[col], errors='coerce').fillna(0)
+
+bat_agg = bat_df.groupby('playerID').agg({
+    'G': 'sum', 'AB': 'sum', 'R': 'sum', 'H': 'sum',
+    '2B': 'sum', '3B': 'sum', 'HR': 'sum', 'RBI': 'sum',
+    'SB': 'sum', 'BB': 'sum', 'SO': 'sum', 'HBP': 'sum', 'SF': 'sum'
+}).reset_index()
+
+bat_stats = {}
+for _, r in bat_agg.iterrows():
+    pid = str(r['playerID']).strip()
+    ab = int(r['AB'])
+    h = int(r['H'])
+    hr = int(r['HR'])
+    rbi = int(r['RBI'])
+    g = int(r['G'])
+    sb = int(r['SB'])
+    bb = int(r['BB'])
+    hbp = int(r['HBP'])
+    sf = int(r['SF'])
+    d2 = int(r['2B'])
+    d3 = int(r['3B'])
+    
+    avg_str = f"{(h / ab):.3f}".lstrip('0') if ab > 0 else ".000"
+    if avg_str == '1.000': avg_str = "1.000"
+    elif not avg_str: avg_str = ".000"
+    
+    obp = (h + bb + hbp) / (ab + bb + hbp + sf) if (ab + bb + hbp + sf) > 0 else 0
+    tb = (h - d2 - d3 - hr) + 2*d2 + 3*d3 + 4*hr
+    slg = (tb / ab) if ab > 0 else 0
+    ops = obp + slg
+    ops_str = f"{ops:.3f}"
+    
+    bat_stats[pid] = {
+        'h': h, 'hr': hr, 'rbi': rbi, 'g': g, 'ab': ab, 'sb': sb,
+        'avg': avg_str, 'ops': ops_str
+    }
+
+# 4) Traditional Pitching Stats by playerID
+pitch_df = pd.read_csv('lahman_1871-2025/Pitching.csv')
+for col in ['W', 'L', 'G', 'GS', 'CG', 'SHO', 'SV', 'IPouts', 'H', 'ER', 'HR', 'BB', 'SO']:
+    if col in pitch_df:
+        pitch_df[col] = pd.to_numeric(pitch_df[col], errors='coerce').fillna(0)
+
+pitch_agg = pitch_df.groupby('playerID').agg({
+    'W': 'sum', 'L': 'sum', 'G': 'sum', 'GS': 'sum', 'SV': 'sum',
+    'IPouts': 'sum', 'H': 'sum', 'ER': 'sum', 'BB': 'sum', 'SO': 'sum'
+}).reset_index()
+
+pitch_stats = {}
+for _, r in pitch_agg.iterrows():
+    pid = str(r['playerID']).strip()
+    w = int(r['W'])
+    l = int(r['L'])
+    sv = int(r['SV'])
+    so = int(r['SO'])
+    ipouts = int(r['IPouts'])
+    ip_float = ipouts / 3.0
+    er = int(r['ER'])
+    bb = int(r['BB'])
+    h = int(r['H'])
+    
+    era_val = f"{(er * 9.0 / ip_float):.2f}" if ip_float > 0 else "0.00"
+    whip_val = f"{((bb + h) / ip_float):.2f}" if ip_float > 0 else "0.00"
+    ip_val = f"{ip_float:.1f}"
+    
+    pitch_stats[pid] = {
+        'w': w, 'l': l, 'sv': sv, 'so': so, 'ip': ip_val,
+        'era': era_val, 'whip': whip_val
+    }
+
 # Build comprehensive lookup dict indexed by playerID, name_year, and homonym-aware fallback names
 career_map = {}
 pid_stats_db = {}
@@ -155,6 +230,14 @@ for _, row in people_df.iterrows():
         'allstars': int(as_pid.get(pid, 0)),
         'hof': bool(pid in hof_pids)
     }
+
+    # Attach traditional batting stats if present
+    if pid in bat_stats:
+        stat_obj.update(bat_stats[pid])
+
+    # Attach traditional pitching stats if present
+    if pid in pitch_stats:
+        stat_obj.update(pitch_stats[pid])
 
     pid_stats_db[pid] = stat_obj
     career_map[pid] = stat_obj
