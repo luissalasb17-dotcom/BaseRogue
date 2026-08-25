@@ -362,6 +362,9 @@ def paso_4_pico_batting(batting, war_bat, people):
     peak_war_tot = pico_tot_df.groupby("playerID")["war_total"].sum().reset_index().rename(columns={"war_total": "peak_war"})
     peak = peak.merge(peak_war_tot, on="playerID", how="left")
 
+    career_war_tot = bat_yearly.groupby("playerID")["war_total"].sum().reset_index().rename(columns={"war_total": "career_war"})
+    peak = peak.merge(career_war_tot, on="playerID", how="left")
+
     peak["peak_pa"] = (peak["peak_ab"] + peak["peak_bb"] + peak["peak_hbp"] + peak["peak_sf"]).replace(0, np.nan)
     ab_p = peak["peak_ab"].replace(0, np.nan)
     pa_p = peak["peak_pa"]
@@ -657,10 +660,21 @@ def paso_8_filtro_ingesta(df, allstar, hof, pure_pitcher_ids, batting):
     print(f"  No-pitchers elegibles: {len(no_pitchers):,}")
 
     MIN_AB_ALLSTAR = 100
+    MIN_AB_QUALITY = 350
 
+    # Criterio Unificado de Ingesta para Bateadores:
+    # 1. Volumen de carrera: career_ab >= 1,500
+    # 2. Calidad / Estrellato Joven: (career_war >= 5.0 OR peak_war >= 5.0) AND career_ab >= 350
+    # 3. Reconocimiento Histórico: HoF incondicional OR (All-Star AND career_ab >= 100)
+    c_war = no_pitchers["career_war"].fillna(0) if "career_war" in no_pitchers.columns else pd.Series(0, index=no_pitchers.index)
+    p_war = no_pitchers["peak_war"].fillna(0) if "peak_war" in no_pitchers.columns else pd.Series(0, index=no_pitchers.index)
+    
     mask = (
         (no_pitchers["career_ab"] >= MIN_AB_CAREER) |
-        (no_pitchers["peak_war"].fillna(0) >= 7.5) |
+        (
+            ((c_war >= 5.0) | (p_war >= 5.0)) &
+            (no_pitchers["career_ab"] >= MIN_AB_QUALITY)
+        ) |
         (no_pitchers["playerID"].isin(hof_ids)) |
         (no_pitchers["playerID"].isin(allstar_ids) & (no_pitchers["career_ab"] >= MIN_AB_ALLSTAR))
     )
