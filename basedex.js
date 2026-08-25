@@ -293,8 +293,13 @@
 
       this.save();
       if (this.container) this.renderPanel();
+      if (window.Challenge162 && typeof window.Challenge162.unlockAllForTesting === 'function' && !this._syncing) {
+        this._syncing = true;
+        window.Challenge162.unlockAllForTesting();
+        this._syncing = false;
+      }
       console.log(`⚾ BaseballDex: ¡Todas las cartas han sido desbloqueadas!`);
-      return `¡Desbloqueadas todas las cartas!`;
+      return `¡Desbloqueadas todas las cartas (${pool.length} leyendas / ${pPool.length} oponentes)!`;
     },
 
     lockAll() {

@@ -833,6 +833,11 @@
       this.unlockedBatters = new Set(getBatterPool().map(batterUnlockKey));
       this.unlockedPitchers = new Set(getPitcherPool().filter(p => p.playerID || cleanName(p)).map(pitcherUnlockKey));
       this.saveUnlocks();
+      if (window.BaseballDex && typeof window.BaseballDex.unlockAll === 'function' && !this._syncing) {
+        this._syncing = true;
+        window.BaseballDex.unlockAll();
+        this._syncing = false;
+      }
       console.log(`⚾ Challenge162: ${this.unlockedBatters.size} bateadores y ${this.unlockedPitchers.size} pitchers desbloqueados para pruebas.`);
       return `${this.unlockedBatters.size} bateadores / ${this.unlockedPitchers.size} pitchers desbloqueados.`;
     },
