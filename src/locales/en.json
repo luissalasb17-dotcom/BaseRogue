@@ -264,7 +264,7 @@
     "shield_label": "SHIELD (DEF avg {{avg}})",
     "so_streak": "🔥 STRIKEOUT STREAK: {{count}} ({{mult}}x DIRECT dmg)",
     "so_streak_zero": "🔥 Strikeout Streak: 0",
-    "debuff_badge": "DAMAGE RECEIVED",
+    "debuff_badge": "DAMAGE TAKEN",
     "luck_zones": "Luck Zones",
     "bb": "Walk (BB)",
     "so": "Strikeout (SO)",
@@ -314,7 +314,9 @@
     "sudden_death_title": "⚡ SUDDEN DEATH! ⚡",
     "extra_innings_hud_title": "⚡ EXTRA INNINGS • SUDDEN DEATH! ⚡",
     "simulate_all_pause": "⏸️ PAUSE AUTO",
-    "interactive_header_prefix": "Interactive Combat vs"
+    "interactive_header_prefix": "Interactive Combat vs",
+    "impact_single": "hit",
+    "impact_plural": "hits"
   },
   "popup": {
     "bb_title": "WALK (BB)",

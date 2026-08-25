@@ -317,7 +317,9 @@
     "sudden_death_title": "⚡ ¡MUERTE SÚBITA! ⚡",
     "extra_innings_hud_title": "⚡ ¡EXTRA INNINGS • MUERTE SÚBITA! ⚡",
     "simulate_all_pause": "⏸️ PAUSAR AUTO",
-    "interactive_header_prefix": "Combate Interactivo vs"
+    "interactive_header_prefix": "Combate Interactivo vs",
+    "impact_single": "impacto",
+    "impact_plural": "impactos"
   },
   "popup": {
     "bb_title": "BASE POR BOLAS",
@@ -2043,7 +2045,7 @@
     "shield_label": "SHIELD (DEF avg {{avg}})",
     "so_streak": "🔥 STRIKEOUT STREAK: {{count}} ({{mult}}x DIRECT dmg)",
     "so_streak_zero": "🔥 Strikeout Streak: 0",
-    "debuff_badge": "DAMAGE RECEIVED",
+    "debuff_badge": "DAMAGE TAKEN",
     "luck_zones": "Luck Zones",
     "bb": "Walk (BB)",
     "so": "Strikeout (SO)",
@@ -2093,7 +2095,9 @@
     "sudden_death_title": "⚡ SUDDEN DEATH! ⚡",
     "extra_innings_hud_title": "⚡ EXTRA INNINGS • SUDDEN DEATH! ⚡",
     "simulate_all_pause": "⏸️ PAUSE AUTO",
-    "interactive_header_prefix": "Interactive Combat vs"
+    "interactive_header_prefix": "Interactive Combat vs",
+    "impact_single": "hit",
+    "impact_plural": "hits"
   },
   "popup": {
     "bb_title": "WALK (BB)",
@@ -3608,54 +3612,11 @@
     }
   }
 
-  function translateElement(el) {
-    if (!el || el.nodeType !== 1) return;
-    if (el.hasAttribute && el.hasAttribute('data-i18n')) {
-      const key = el.getAttribute('data-i18n');
-      if (key) {
-        const translated = t(key);
-        if (translated && translated !== key) el.innerText = translated;
-      }
-    }
-    if (el.hasAttribute && el.hasAttribute('data-i18n-html')) {
-      const key = el.getAttribute('data-i18n-html');
-      if (key) {
-        const translated = t(key);
-        if (translated && translated !== key) el.innerHTML = translated;
-      }
-    }
-    if (el.hasAttribute && el.hasAttribute('data-i18n-placeholder')) {
-      const key = el.getAttribute('data-i18n-placeholder');
-      if (key) {
-        const translated = t(key);
-        if (translated && translated !== key) el.setAttribute('placeholder', translated);
-      }
-    }
-  }
-
-  // Intercept and translate elements dynamically as they parse into the DOM
-  if (typeof MutationObserver !== 'undefined') {
-    const liveObserver = new MutationObserver(mutations => {
-      mutations.forEach(m => {
-        m.addedNodes.forEach(node => {
-          if (node.nodeType === 1) {
-            translateElement(node);
-            node.querySelectorAll('[data-i18n], [data-i18n-html], [data-i18n-placeholder]').forEach(translateElement);
-          }
-        });
-      });
-    });
-    liveObserver.observe(document.documentElement, { childList: true, subtree: true });
-  }
-
   // Run on initial load
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', translateDOM);
-    document.addEventListener('readystatechange', () => {
-      if (document.readyState === 'interactive' || document.readyState === 'complete') translateDOM();
-    });
   } else {
-    translateDOM();
+    setTimeout(translateDOM, 0);
   }
 
   function getLanguage() {

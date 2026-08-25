@@ -8424,8 +8424,11 @@ function initGameModeSelector() {
     if (debuffBadge) {
       if (state.pitcherDebuff && state.pitcherDebuff.turnsLeft > 0) {
         const mult = Math.round((state.pitcherDebuff.multiplier - 1) * 100);
-        const impLbl = state.pitcherDebuff.turnsLeft === 1 ? 'impacto' : 'impactos';
-        debuffBadge.innerText = `⚡ +${mult}% ${typeof window.t==='function'?window.t('match.debuff_badge'):'DAÑO RECIBIDO'} (${state.pitcherDebuff.turnsLeft} ${impLbl})`;
+        const singleLbl = typeof window.t === 'function' ? window.t('match.impact_single', { defaultValue: 'impacto' }) : 'impacto';
+        const pluralLbl = typeof window.t === 'function' ? window.t('match.impact_plural', { defaultValue: 'impactos' }) : 'impactos';
+        const impLbl = state.pitcherDebuff.turnsLeft === 1 ? singleLbl : pluralLbl;
+        const debuffText = typeof window.t === 'function' ? window.t('match.debuff_badge', { defaultValue: 'DAÑO RECIBIDO' }) : 'DAÑO RECIBIDO';
+        debuffBadge.innerText = `⚡ +${mult}% ${debuffText} (${state.pitcherDebuff.turnsLeft} ${impLbl})`;
         debuffBadge.classList.remove('hidden');
       } else {
         debuffBadge.classList.add('hidden');

@@ -314,7 +314,9 @@
     "sudden_death_title": "⚡ ¡MUERTE SÚBITA! ⚡",
     "extra_innings_hud_title": "⚡ ¡EXTRA INNINGS • MUERTE SÚBITA! ⚡",
     "simulate_all_pause": "⏸️ PAUSAR AUTO",
-    "interactive_header_prefix": "Combate Interactivo vs"
+    "interactive_header_prefix": "Combate Interactivo vs",
+    "impact_single": "impacto",
+    "impact_plural": "impactos"
   },
   "popup": {
     "bb_title": "BASE POR BOLAS",

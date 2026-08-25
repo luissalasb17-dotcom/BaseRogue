@@ -603,7 +603,8 @@
           synergyProc = _t('sim.syn_tto_bb', { extra }, `🚀 Three True Outcomes: ¡Boleto optimizado inflige +${extra} daño!`);
         }
 
-        // Apply debuff to pitcher
+        // Pitcher receives base walk damage (Walk applies the debuff for subsequent turns)
+        // Apply debuff to pitcher for the next at-bats
         if (this.pitcherDebuff && this.pitcherDebuff.turnsLeft > 0) {
           this.pitcherDebuff.turnsLeft = Math.max(this.pitcherDebuff.turnsLeft, bbDebuffTurns);
           if (bbDebuffMult > this.pitcherDebuff.multiplier) this.pitcherDebuff.multiplier = bbDebuffMult;
@@ -617,8 +618,6 @@
         } else {
           synergyProc = (synergyProc ? synergyProc + ' | ' : '') + _t('sim.bb_fatigue_desc', { pct: 20 }, `⚠️ ¡Lanzador en aprietos! Debuff de +20% daño en el siguiente turno.`);
         }
-
-        pitcherDmg = this._applyDebuffToPitcherDmg(pitcherDmg);
         
         let batterPlayText = `🎲 [${roll}] [${_t('sim.label_bb', {}, 'BASE POR BOLAS')}] ${batter.name} ${_t('sim.bb_desc', {}, 'trabaja el conteo y saca pasaporte')}.` +
           (runsThisTurn ? ` ${_t('sim.bb_run', {}, '¡Carrera de caballito!')} ` : ` ${_t('sim.bb_advance', {}, 'Avanza a primera.')} `) +
