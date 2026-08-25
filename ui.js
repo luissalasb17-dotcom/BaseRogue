@@ -145,8 +145,6 @@ window.showScreen = function(screenId) {
     target.classList.remove('hidden');
     if (screenId === 'screen-map') {
       target.scrollTop = 0;
-      const vp = target.querySelector('.map-viewport');
-      if (vp) vp.scrollTop = 0;
     }
   }
 
@@ -3809,7 +3807,7 @@ function initGameModeSelector() {
     el.btnPreFightStart.addEventListener('click', () => {
       const isStory = window.Game.selectedMode === 'story';
       const stage = window.Game.currentStageIndex;
-      const isZoneBoss = isStory && (stage % 4 === 3) && stage !== 15;
+      const isZoneBoss = isStory && (stage === 5 || stage === 11 || stage === 17);
       const enemy = window.Game.getEnemyTeam();
 
       if (isZoneBoss && enemy && enemy.isBoss) {
@@ -3826,11 +3824,11 @@ function initGameModeSelector() {
 
   // Open Node Screen logic
   function openNode(node) {
-    if (window.AudioManager && typeof window.AudioManager.play === 'function' && node.type !== 'gamble' && node.type !== 'match' && node.type !== 'boss') {
+    if (window.AudioManager && typeof window.AudioManager.play === 'function' && node.type !== 'gamble' && node.type !== 'match' && node.type !== 'boss' && node.type !== 'mid_boss' && node.type !== 'trade') {
       window.AudioManager.play('map_node_select');
     }
 
-    if (node.type === 'match' || node.type === 'boss') {
+    if (node.type === 'match' || node.type === 'boss' || node.type === 'mid_boss') {
       setupAndShowPreFightScreen();
     } else if (node.type === 'draft') {
       setupDraftPickScreen();
@@ -3844,6 +3842,8 @@ function initGameModeSelector() {
       openChestNode();
     } else if (node.type === 'gamble') {
       openGambleNode();
+    } else if (node.type === 'trade') {
+      openTradeNode();
     }
   }
 
@@ -3871,8 +3871,8 @@ function initGameModeSelector() {
     // Advance current stage
     window.Game.currentStageIndex++;
 
-    // Check if run won (exceeded stage 15)
-    if (window.Game.currentStageIndex > 15) {
+    // Check if run won (exceeded stage 23)
+    if (window.Game.currentStageIndex > 23) {
       triggerGameOver(true, (typeof window.t==='function'?window.t('game.champion_eternal'):'¡CAMPEÓN DE LA ETERNIDAD! Conquistaste la Serie Mundial y ganaste los Playoffs.'));
       return;
     }
@@ -3887,7 +3887,7 @@ function initGameModeSelector() {
   function updateHUD() {
     const zone = window.Game.getZoneForStage(window.Game.currentStageIndex);
     const zoneNames = ['Opening Day', 'All-Star Break', 'Pennant Chase', 'Playoffs'];
-    el.hudStage.innerText = `${t('hud.stage')} ${window.Game.currentStageIndex + 1}/16 — ${zoneNames[zone] || ''}`;
+    el.hudStage.innerText = `${t('hud.stage')} ${window.Game.currentStageIndex + 1}/24 — ${zoneNames[zone] || ''}`;
     if (el.hudBudget) el.hudBudget.innerText = `$${window.Game.budget}`;
     const sideBud = document.getElementById('sidebar-budget-val');
     if (sideBud) sideBud.innerText = `$${window.Game.budget}`;
@@ -4443,14 +4443,16 @@ function initGameModeSelector() {
 
   // ── NODE VISUAL CONFIG ───────────────────────────────────────────────────
   const NODE_VISUALS = {
-    match:  { iconClass: 'fa-solid fa-baseball-bat-ball', text: 'VS',   label: 'SERIE',    color: '#00ff66', bg: '#021a0e', border: '#00ff66' },
-    boss:   { iconClass: 'fa-solid fa-crown',             text: 'BOSS', label: 'JEFE',     color: '#ffd700', bg: '#1a0e00', border: '#ffd700' },
-    draft:  { iconClass: 'fa-solid fa-file-signature',    text: 'SIGN', label: 'FIRMA',    color: '#38bdf8', bg: '#021526', border: '#38bdf8' },
-    event:  { iconClass: 'fa-solid fa-clipboard-question',text: 'EVT',  label: 'EVENTO',   color: '#fb923c', bg: '#1a0e00', border: '#fb923c' },
-    train:  { iconClass: 'fa-solid fa-dumbbell',          text: 'GYM',  label: 'ENTRENO',  color: '#22d3ee', bg: '#011a1a', border: '#22d3ee' },
-    rest:   { iconClass: 'fa-solid fa-couch',             text: 'REST', label: 'DESCANSO', color: '#c084fc', bg: '#12001a', border: '#c084fc' },
-    chest:  { iconClass: 'fa-solid fa-gem',               text: 'LOOT', label: 'COFRE',    color: '#facc15', bg: '#1a1400', border: '#facc15' },
-    gamble: { iconClass: 'fa-solid fa-clover',            text: 'LUCK', label: 'LUCK',     color: '#10b981', bg: '#022c22', border: '#10b981' },
+    match:    { iconClass: 'fa-solid fa-baseball-bat-ball', text: 'VS',    label: 'SERIE',    color: '#00ff66', bg: '#021a0e', border: '#00ff66' },
+    mid_boss: { iconClass: 'fa-solid fa-bolt',              text: 'ELITE', label: 'MID-BOSS', color: '#f97316', bg: '#250f02', border: '#f97316' },
+    boss:     { iconClass: 'fa-solid fa-crown',             text: 'BOSS',  label: 'JEFE',     color: '#ffd700', bg: '#1a0e00', border: '#ffd700' },
+    draft:    { iconClass: 'fa-solid fa-file-signature',    text: 'SIGN',  label: 'FIRMA',    color: '#38bdf8', bg: '#021526', border: '#38bdf8' },
+    trade:    { iconClass: 'fa-solid fa-right-left',        text: 'TRADE', label: 'TRADE',    color: '#a855f7', bg: '#1c052e', border: '#a855f7' },
+    event:    { iconClass: 'fa-solid fa-clipboard-question',text: 'EVT',   label: 'EVENTO',   color: '#fb923c', bg: '#1a0e00', border: '#fb923c' },
+    train:    { iconClass: 'fa-solid fa-dumbbell',          text: 'GYM',   label: 'ENTRENO',  color: '#22d3ee', bg: '#011a1a', border: '#22d3ee' },
+    rest:     { iconClass: 'fa-solid fa-couch',             text: 'REST',  label: 'DESCANSO', color: '#c084fc', bg: '#12001a', border: '#c084fc' },
+    chest:    { iconClass: 'fa-solid fa-gem',               text: 'LOOT',  label: 'COFRE',    color: '#facc15', bg: '#1a1400', border: '#facc15' },
+    gamble:   { iconClass: 'fa-solid fa-clover',            text: 'LUCK',  label: 'LUCK',     color: '#10b981', bg: '#022c22', border: '#10b981' },
   };
 
   // RENDER VISUAL POKELIKE MAP - Math-based layout (no DOM measurement)
@@ -4463,10 +4465,10 @@ function initGameModeSelector() {
     
     // Render zones in ascending order from bottom to top (Playoffs at top, Opening Day at bottom)
     const ZONE_STAGE_RANGES = [
-      { range: [12, 15], zoneIdx: 3 },
-      { range: [8, 11],  zoneIdx: 2 },
-      { range: [4, 7],   zoneIdx: 1 },
-      { range: [0, 3],   zoneIdx: 0 }
+      { range: [18, 23], zoneIdx: 3 },
+      { range: [12, 17], zoneIdx: 2 },
+      { range: [6, 11],  zoneIdx: 1 },
+      { range: [0, 5],   zoneIdx: 0 }
     ];
 
     // Layout constants (SVG coordinate space). The SVG scales via viewBox to
@@ -4681,7 +4683,7 @@ function initGameModeSelector() {
       // ── DRAW NODES (on top of paths) ────────────────────────────────
       for (let s = zStart; s <= zEnd; s++) {
         const stageNodes = window.Game.map[s] || [];
-        const isBossStage = (s === 3 || s === 7 || s === 11 || s === 15);
+        const isBossStage = (s === 5 || s === 11 || s === 17 || s === 23);
 
         stageNodes.forEach((node, idx) => {
           const pos = nodePos[s]?.[idx];
@@ -4855,6 +4857,8 @@ function initGameModeSelector() {
           const rawLabel = node.label || vis.label;
           let translatedLabel = rawLabel;
           if (rawLabel === 'SERIE CLÁSICA' || node.type === 'match') translatedLabel = t('map.node_classic', 'CLASSIC SERIES');
+          else if (rawLabel === 'MID-BOSS' || node.type === 'mid_boss') translatedLabel = t('map.node_mid_boss', 'MID-BOSS');
+          else if (rawLabel === 'TRADE' || node.type === 'trade') translatedLabel = t('map.node_trade', 'TRADE DEADLINE');
           else if (rawLabel === 'FIRMA LEYENDA' || node.type === 'draft') translatedLabel = t('draft.midrun_title_short', 'LEGEND SIGN');
           else if (rawLabel === 'DECISIÓN' || node.type === 'event') translatedLabel = t('map.node_decision', 'DECISION');
           else if (rawLabel === 'JAULA BATEO' || node.type === 'train') translatedLabel = t('map.node_cage', 'BATTING CAGE');
@@ -4895,13 +4899,22 @@ function initGameModeSelector() {
       el.mapContainer.appendChild(zoneWrapper);
     });
 
-    // Reset map viewport scroll to top so headers and title are fully visible from start
+    // Auto-scroll map viewport to active zone & active node so the player stays exactly on their route
     setTimeout(() => {
       const mapViewport = document.querySelector('.map-viewport');
-      if (mapViewport) mapViewport.scrollTop = 0;
-      const screenMap = document.getElementById('screen-map');
-      if (screenMap) screenMap.scrollTop = 0;
-    }, 10);
+      const activeZone = document.querySelector('.zone-wrapper.zone-active');
+      if (mapViewport && activeZone) {
+        const activeNode = activeZone.querySelector('.map-node-group.node-is-active');
+        if (activeNode && typeof activeNode.getBoundingClientRect === 'function') {
+          const nodeRect = activeNode.getBoundingClientRect();
+          const vpRect = mapViewport.getBoundingClientRect();
+          const targetScroll = mapViewport.scrollTop + (nodeRect.top - vpRect.top) - (vpRect.height / 2);
+          mapViewport.scrollTo({ top: Math.max(0, targetScroll), behavior: 'smooth' });
+        } else {
+          activeZone.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }
+    }, 40);
 
     showTutorialTip(
       'map-basics', document.getElementById('map-nodes-container'),
@@ -8818,6 +8831,12 @@ function initGameModeSelector() {
         });
         return;
       }
+      if (res.rewardedItem) {
+        showMidBossItemRewardModal(res.rewardedItem, res.earnings, () => {
+          setupPostMatchDraftScreen(false, 0);
+        });
+        return;
+      }
       setupPostMatchDraftScreen(res.isBossStage, res.earnings);
     };
 
@@ -8826,6 +8845,51 @@ function initGameModeSelector() {
     } else {
       continueRouting();
     }
+  }
+
+  // ── MID-BOSS ITEM REWARD MODAL ──────────────────────────────────────────
+  function showMidBossItemRewardModal(item, earnings, onDone) {
+    if (window.AudioManager && typeof window.AudioManager.play === 'function') {
+      window.AudioManager.play('synergy_tier_up');
+    }
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;background:radial-gradient(circle at center, rgba(35,15,2,0.96) 0%, rgba(10,4,0,0.99) 70%, #000 100%);backdrop-filter:blur(12px);z-index:800;display:flex;align-items:center;justify-content:center;animation:fadeIn 0.3s ease-out;';
+
+    const titleText = typeof window.t === 'function' ? window.t('mid_boss.win_title', '⚡ ¡MID-BOSS DERROTADO! ⚡') : '⚡ ¡MID-BOSS DERROTADO! ⚡';
+    const descText = typeof window.t === 'function' ? window.t('mid_boss.win_desc', { budget: earnings, defaultValue: `¡Victoria de Élite! Obtienes +$${earnings} de presupuesto y un nuevo equipamiento en tu Mochila:` }) : `¡Victoria de Élite! Obtienes +$${earnings} de presupuesto y un nuevo equipamiento en tu Mochila:`;
+    const btnText = typeof window.t === 'function' ? window.t('mid_boss.continue_btn', 'CONTINUAR AL DRAFT ➡') : 'CONTINUAR AL DRAFT ➡';
+
+    overlay.innerHTML = `
+      <div style="max-width:440px;width:92%;background:#0f0701;border:2px solid #f97316;border-radius:18px;padding:24px;box-shadow:0 0 40px rgba(249,115,22,0.4);text-align:center;">
+        <div style="font-family:'Press Start 2P',monospace;font-size:12px;color:#fb923c;letter-spacing:1px;margin-bottom:8px;text-shadow:0 0 12px rgba(251,146,60,0.6);">
+          ${titleText}
+        </div>
+        <div style="font-size:11.5px;color:#cbd5e1;margin-bottom:18px;line-height:1.4;">
+          ${descText}
+        </div>
+
+        <div style="background:rgba(249,115,22,0.08);border:1.5px solid #f97316;border-radius:14px;padding:16px 14px;margin-bottom:20px;text-align:center;box-shadow:0 0 20px rgba(249,115,22,0.15);">
+          <div style="font-size:42px;margin-bottom:8px;">${item.icon || '🎒'}</div>
+          <div style="font-family:'Press Start 2P',monospace;font-size:9.5px;color:#fed7aa;margin-bottom:6px;line-height:1.4;">${item.name || 'Equipamiento'}</div>
+          <div style="font-size:11px;font-weight:bold;color:#4ade80;background:rgba(0,0,0,0.4);padding:4px 8px;border-radius:6px;display:inline-block;">
+            ${item.statDesc || item.text || 'Bonus de Stats'}
+          </div>
+        </div>
+
+        <button id="btn-midboss-reward-continue" class="btn" style="width:100%;background:linear-gradient(135deg,#ea580c,#c2410c);color:#fff;font-weight:bold;font-size:11px;padding:12px;border:1px solid #fdba74;box-shadow:0 0 16px rgba(234,88,12,0.4);cursor:pointer;">
+          ${btnText}
+        </button>
+      </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    overlay.querySelector('#btn-midboss-reward-continue').addEventListener('click', () => {
+      overlay.remove();
+      if (typeof renderActiveItemBonuses === 'function') renderActiveItemBonuses();
+      updateHUD();
+      if (onDone) onDone();
+    });
   }
 
   // ── TRAIT SELECTION MODAL (after Boss Maps 1-3) ───────────────────────
@@ -9011,6 +9075,134 @@ function initGameModeSelector() {
       }
       overlay.remove();
       renderEquippedTraits();
+      closeNodeCompleted();
+    });
+  }
+
+  // ── TRADE DEADLINE NODE: Swap a player for another compatibly-positioned player ──
+  function openTradeNode() {
+    if (window.AudioManager && typeof window.AudioManager.play === 'function') {
+      window.AudioManager.play('card_deal');
+    }
+    const tradeData = (window.Game && typeof window.Game.getTradeOffer === 'function') ? window.Game.getTradeOffer() : null;
+    const overlay = document.createElement('div');
+    overlay.className = 'trade-overlay';
+    overlay.style.cssText = 'position:fixed;inset:0;background:radial-gradient(circle at center, rgba(30,10,45,0.96) 0%, rgba(8,2,14,0.99) 70%, #000 100%);backdrop-filter:blur(16px);z-index:850;display:flex;align-items:center;justify-content:center;animation:fadeIn 0.3s ease-out;';
+
+    if (!tradeData || !tradeData.offeredPlayer || !tradeData.currentPlayer) {
+      overlay.innerHTML = `
+        <div style="max-width:400px;width:90%;text-align:center;padding:24px;background:#0d0614;border:2px solid #a855f7;border-radius:16px;">
+          <div style="font-size:44px;margin-bottom:12px;">🔄</div>
+          <div style="font-family:'Press Start 2P',monospace;font-size:11px;color:#c084fc;margin-bottom:12px;">${t('trade.no_offer_title', 'TRADE DEADLINE')}</div>
+          <div style="font-size:12px;color:#cbd5e1;margin-bottom:20px;">${t('trade.no_offer_desc', 'No hay ofertas viables en este momento. Los scouts no pudieron concretar un traspaso.')}</div>
+          <button class="btn" id="btn-trade-pass" style="background:#334155;color:#fff;font-weight:bold;width:100%;">${t('trade.continue_btn', 'Continuar')}</button>
+        </div>`;
+      document.body.appendChild(overlay);
+      overlay.querySelector('#btn-trade-pass').addEventListener('click', () => {
+        overlay.remove();
+        closeNodeCompleted();
+      });
+      return;
+    }
+
+    const { slot, currentPlayer: cur, offeredPlayer: off } = tradeData;
+    const curOvr = getPlayerOvr(cur);
+    const offOvr = getPlayerOvr(off);
+    const curRarityColor = RARITY_COLORS[cur.rarity] || '#cbd5e1';
+    const offRarityColor = RARITY_COLORS[off.rarity] || '#cbd5e1';
+
+    const curEraTrait = (window.PlayersDB && window.PlayersDB.EraTraits && cur.era) ? window.PlayersDB.EraTraits[cur.era] : null;
+    const offEraTrait = (window.PlayersDB && window.PlayersDB.EraTraits && off.era) ? window.PlayersDB.EraTraits[off.era] : null;
+
+    overlay.innerHTML = `
+      <div style="max-width:520px;width:94%;background:#0d0614;border:2px solid #a855f7;border-radius:18px;padding:22px;box-shadow:0 0 40px rgba(168,85,247,0.35);text-align:center;">
+        <div style="font-family:'Press Start 2P',monospace;font-size:11px;color:#c084fc;letter-spacing:1px;margin-bottom:6px;text-shadow:0 0 12px rgba(192,132,252,0.6);">
+          📰 ${t('trade.header', 'TRADE DEADLINE — 31 DE JULIO')} 📰
+        </div>
+        <div style="font-size:11.5px;color:#94a3b8;margin-bottom:18px;">
+          ${t('trade.desc', 'Un equipo rival te ofrece un intercambio directo por tu posición')} <strong style="color:#facc15;">[${slot}]</strong>:
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;margin-bottom:18px;">
+          <!-- CURRENT PLAYER (GIVE) -->
+          <div style="background:rgba(255,255,255,0.03);border:1.5px solid ${curRarityColor};border-radius:12px;padding:12px 8px;text-align:center;">
+            <div style="font-size:8.5px;font-weight:bold;color:#ef4444;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">${t('trade.give_label', 'ENTREGAS')}</div>
+            <div style="font-size:12px;font-weight:bold;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${cur.name}">${cur.name}</div>
+            <div style="font-size:9px;color:${curRarityColor};font-weight:bold;margin:3px 0;">${cur.rarity || 'Common'} • OVR ${curOvr}</div>
+            <div style="font-size:8.5px;color:#94a3b8;margin-bottom:6px;">${cur.era || ''}</div>
+            <div style="font-size:8px;color:#cbd5e1;display:grid;grid-template-columns:1fr 1fr;gap:2px;background:rgba(0,0,0,0.3);padding:4px;border-radius:6px;">
+              <div>CON: ${cur.con || 50}</div><div>PWR: ${cur.pwr || 50}</div>
+              <div>EYE: ${cur.eye || 50}</div><div>DEF: ${cur.def || 50}</div>
+            </div>
+            ${curEraTrait ? `<div style="font-size:7.5px;color:#a78bfa;margin-top:4px;">${curEraTrait.name || ''}</div>` : ''}
+          </div>
+
+          <div style="font-size:22px;color:#a855f7;font-weight:bold;">➔</div>
+
+          <!-- OFFERED PLAYER (GET) -->
+          <div style="background:rgba(168,85,247,0.08);border:1.5px solid ${offRarityColor};border-radius:12px;padding:12px 8px;text-align:center;box-shadow:0 0 16px rgba(168,85,247,0.2);">
+            <div style="font-size:8.5px;font-weight:bold;color:#22c55e;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">${t('trade.get_label', 'RECIBES')}</div>
+            <div style="font-size:12px;font-weight:bold;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${off.name}">${off.name}</div>
+            <div style="font-size:9px;color:${offRarityColor};font-weight:bold;margin:3px 0;">${off.rarity || 'Common'} • OVR ${offOvr}</div>
+            <div style="font-size:8.5px;color:#94a3b8;margin-bottom:6px;">${off.era || ''}</div>
+            <div style="font-size:8px;color:#cbd5e1;display:grid;grid-template-columns:1fr 1fr;gap:2px;background:rgba(0,0,0,0.3);padding:4px;border-radius:6px;">
+              <div>CON: ${off.con || 50}</div><div>PWR: ${off.pwr || 50}</div>
+              <div>EYE: ${off.eye || 50}</div><div>DEF: ${off.def || 50}</div>
+            </div>
+            ${offEraTrait ? `<div style="font-size:7.5px;color:#a78bfa;margin-top:4px;">${offEraTrait.name || ''}</div>` : ''}
+          </div>
+        </div>
+
+        <div style="display:flex;gap:10px;">
+          <button id="btn-trade-accept" class="btn" style="flex:1.3;background:linear-gradient(135deg,#9333ea,#7e22ce);color:#fff;font-weight:bold;font-size:10.5px;padding:11px 8px;border:1px solid #c084fc;box-shadow:0 0 14px rgba(147,51,234,0.4);">
+            ✨ ${t('trade.accept_btn', 'ACEPTAR TRASPASO')}
+          </button>
+          <button id="btn-trade-decline" class="btn" style="flex:1;background:rgba(255,255,255,0.06);border:1px solid #475569;color:#94a3b8;font-size:10.5px;padding:11px 8px;">
+            ${t('trade.decline_btn', 'RECHAZAR')}
+          </button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    overlay.querySelector('#btn-trade-accept').addEventListener('click', () => {
+      if (window.AudioManager && typeof window.AudioManager.play === 'function') {
+        window.AudioManager.play('synergy_tier_up');
+      }
+      window.Game.acceptTrade(slot, off);
+      if (window.Game && typeof window.Game.logRunNode === 'function') {
+        window.Game.logRunNode({
+          type: 'trade',
+          icon: '🔄',
+          title: `Trade Deadline: [${slot}] ${off.name}`,
+          titleEN: `Trade Deadline: [${slot}] ${off.name}`,
+          desc: `Entregaste a ${cur.name} (${cur.rarity}) a cambio de ${off.name} (${off.rarity})`,
+          descEN: `Traded ${cur.name} (${cur.rarity}) for ${off.name} (${off.rarity})`,
+          status: 'success'
+        });
+      }
+      overlay.remove();
+      renderActiveRoster();
+      closeNodeCompleted();
+    });
+
+    overlay.querySelector('#btn-trade-decline').addEventListener('click', () => {
+      if (window.AudioManager && typeof window.AudioManager.play === 'function') {
+        window.AudioManager.play('button_click');
+      }
+      if (window.Game && typeof window.Game.logRunNode === 'function') {
+        window.Game.logRunNode({
+          type: 'trade',
+          icon: '🔄',
+          title: `Trade Deadline Rechazado`,
+          titleEN: `Trade Deadline Declined`,
+          desc: `Mantuviste a ${cur.name} en el roster`,
+          descEN: `Kept ${cur.name} on the roster`,
+          status: 'neutral'
+        });
+      }
+      overlay.remove();
       closeNodeCompleted();
     });
   }

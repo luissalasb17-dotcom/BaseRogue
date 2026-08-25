@@ -86,12 +86,14 @@
     "node_decision": "DECISIÓN",
     "node_chest": "COFRE",
     "node_gamble": "SUERTE",
+    "node_mid_boss": "MID-BOSS",
+    "node_trade": "TRADE DEADLINE",
     "node_boss": "BOSS",
     "boss_label": {
-      "3": "JUEGO APERTURA",
-      "7": "ALL-STAR GAME",
-      "11": "CAMPEÓN LIGA",
-      "15": "SERIE MUNDIAL"
+      "5": "JUEGO APERTURA",
+      "11": "ALL-STAR GAME",
+      "17": "CAMPEÓN LIGA",
+      "23": "SERIE MUNDIAL"
     },
     "label_classic": "SERIE CLÁSICA",
     "label_decision": "DECISIÓN",
@@ -1685,5 +1687,21 @@
     "rule3_title": "DEFENSA TODO O NADA:",
     "rule3_desc": "Cualquier fallo en la prueba defensiva de la baja es Walk-Off Rival (Derrota Inmediata).",
     "btn": "🔥 ¡ENTRAR AL COMBATE! 🔥"
+  },
+  "trade": {
+    "header": "TRADE DEADLINE — 31 DE JULIO",
+    "desc": "Un equipo rival te ofrece un intercambio directo por tu posición",
+    "give_label": "ENTREGAS",
+    "get_label": "RECIBES",
+    "accept_btn": "ACEPTAR TRASPASO",
+    "decline_btn": "RECHAZAR",
+    "no_offer_title": "TRADE DEADLINE",
+    "no_offer_desc": "No hay ofertas viables en este momento. Los scouts no pudieron concretar un traspaso.",
+    "continue_btn": "Continuar"
+  },
+  "mid_boss": {
+    "win_title": "⚡ ¡MID-BOSS DERROTADO! ⚡",
+    "win_desc": "¡Victoria de Élite! Obtienes +${{budget}} de presupuesto y un nuevo equipamiento en tu Mochila:",
+    "continue_btn": "CONTINUAR AL DRAFT ➡"
   }
 }

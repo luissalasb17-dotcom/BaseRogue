@@ -86,12 +86,14 @@
     "node_decision": "DECISION",
     "node_chest": "CHEST",
     "node_gamble": "LUCK",
+    "node_mid_boss": "MID-BOSS",
+    "node_trade": "TRADE DEADLINE",
     "node_boss": "BOSS",
     "boss_label": {
-      "3": "OPENING DAY",
-      "7": "ALL-STAR GAME",
-      "11": "LEAGUE CHAMPION",
-      "15": "WORLD SERIES"
+      "5": "OPENING DAY",
+      "11": "ALL-STAR GAME",
+      "17": "LEAGUE CHAMPION",
+      "23": "WORLD SERIES"
     },
     "label_classic": "CLASSIC SERIES",
     "label_decision": "DECISION",
@@ -1685,5 +1687,21 @@
     "rule3_title": "ALL-OR-NOTHING DEFENSE:",
     "rule3_desc": "Any defensive error in the bottom half is an instant Walk-Off Defeat.",
     "btn": "🔥 ENTER THE BATTLE! 🔥"
+  },
+  "trade": {
+    "header": "TRADE DEADLINE — JULY 31ST",
+    "desc": "A rival club offers a straight-up player swap at your position",
+    "give_label": "YOU GIVE",
+    "get_label": "YOU RECEIVE",
+    "accept_btn": "ACCEPT TRADE",
+    "decline_btn": "DECLINE OFFER",
+    "no_offer_title": "TRADE DEADLINE",
+    "no_offer_desc": "No viable trade offers at this moment. The scouts could not complete a deal.",
+    "continue_btn": "Continue"
+  },
+  "mid_boss": {
+    "win_title": "⚡ MID-BOSS DEFEATED! ⚡",
+    "win_desc": "Victory over the elite rotation! You earned +${{budget}} and received an equipment item in your backpack:",
+    "continue_btn": "CONTINUE TO DRAFT ➡"
   }
 }

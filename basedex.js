@@ -388,10 +388,10 @@
         const pPos = (p.pos || p.role || '').toUpperCase();
         const secPosArr = (p.sec_pos || '').toUpperCase().split(',').map(s => s.trim()).filter(Boolean);
 
-        // Position pill / explicit position filter
+        // Position pill / explicit position filter (Strictly by Primary Position)
         if (activePosFilter) {
           const target = activePosFilter.toUpperCase();
-          const matchPos = pPos === target || secPosArr.includes(target);
+          const matchPos = (pPos === target);
           if (!matchPos) return false;
         }
 
