@@ -5895,18 +5895,26 @@ body.on-main-menu .main-container {
 }
 
 /* 162-0 Challenge — season stat tables */
+.c162-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+}
 .c162-table {
   width: 100%;
-  font-size: 13px;
+  font-size: 11.5px;
   border-collapse: collapse;
   color: #e4e4e7;
   font-family: 'JetBrains Mono', monospace;
 }
 .c162-th {
   text-align: right;
-  padding: 8px 12px;
+  padding: 6px 7px;
   color: #9ca3af;
-  font-size: 11px;
+  font-size: 10px;
   border-bottom: 2px solid rgba(255, 255, 255, 0.15);
   white-space: nowrap;
   font-family: 'Outfit', sans-serif;
@@ -5915,20 +5923,20 @@ body.on-main-menu .main-container {
 }
 .c162-th-name {
   text-align: left;
-  padding-left: 14px;
+  padding-left: 8px;
 }
 .c162-td {
   text-align: right;
-  padding: 6px 12px;
+  padding: 5px 7px;
   white-space: nowrap;
 }
 .c162-td:first-child {
   text-align: left;
-  padding-left: 14px;
+  padding-left: 8px;
   font-weight: 600;
   font-family: 'Outfit', sans-serif;
   color: #f3f4f6;
-  font-size: 13.5px;
+  font-size: 11.5px;
 }
 .c162-tr {
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
@@ -5960,24 +5968,24 @@ body.on-main-menu .main-container {
 /* 162-0 Challenge — Responsive 2-Column Dashboard Layout */
 .c162-season-grid {
   display: flex;
-  gap: 20px;
+  gap: 16px;
   align-items: flex-start;
   width: 100%;
 }
 .c162-main-panel {
-  flex: 1 1 70%;
+  flex: 1 1 auto;
   min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 18px;
 }
 .c162-sidebar-panel {
-  flex: 0 0 350px;
-  width: 350px;
+  flex: 0 0 280px;
+  width: 280px;
   background: rgba(0, 0, 0, 0.35);
   border: 1px solid rgba(255, 255, 255, 0.10);
   border-radius: 12px;
-  padding: 16px;
+  padding: 14px;
   display: flex;
   flex-direction: column;
   max-height: 780px;
