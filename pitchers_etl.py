@@ -750,6 +750,14 @@ def paso_10_normalizar_por_era(df):
 
     df["sta_val"] = df["ip_per_year_raw"].apply(map_ip_to_sta).round(1)
 
+    # Suavizado Bayesiano Suave (m=1) para muestras cortas de temporadas en el pico (n < 7)
+    n_peak = df["total_seasons_in_peak"].fillna(7).clip(lower=1, upper=7)
+    weight_seasons = np.minimum(1.0, (n_peak / (n_peak + 1.0)) * (8.0 / 7.0))
+    era_cols = ["h9_val", "k9_val", "bb9_val", "hr9_val", "sta_val"]
+    for col in era_cols:
+        era_mean = df.groupby("era_label")[col].transform("mean")
+        df[col] = (weight_seasons * df[col] + (1.0 - weight_seasons) * era_mean).round(1)
+
     # Aliases para compatibilidad con UI y simulador
     df["stf_val"] = df["k9_val"]
     df["str_val"] = df["k9_val"]
@@ -757,7 +765,7 @@ def paso_10_normalizar_por_era(df):
     df["mov_val"] = df["hr9_val"]
     df["grt_val"] = df["h9_val"]
 
-    print("  h9_val, k9_val, bb9_val, hr9_val, sta_val normalizados")
+    print("  h9_val, k9_val, bb9_val, hr9_val, sta_val normalizados y suavizados por temporadas (m=1)")
     return df
 
 
