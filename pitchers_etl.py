@@ -107,7 +107,7 @@ def normalize_series(s, low=5.0, high=105.0):
     return rating.clip(upper=125.0)
 
 
-def normalize_difficulty_adjusted(df, col_raw, col_out, invert=False):
+def normalize_difficulty_adjusted(df, col_raw, col_out, invert=False, era_col="era_label"):
     """
     Mismo ajuste OPS+ que bateadores:
       blended_factor = 1 + 0.75 * (global_mean / era_mean - 1)
@@ -119,8 +119,8 @@ def normalize_difficulty_adjusted(df, col_raw, col_out, invert=False):
     if invert:
         s = -s  # invertir para que menor sea mejor
     global_mean = s.mean()
-    # Unified Era Normalization for pitchers
-    era_means = df.groupby("era_label")[col_raw].transform("mean")
+    use_era = era_col if era_col in df.columns else "era_label"
+    era_means = df.groupby(use_era)[col_raw].transform("mean")
     if invert:
         era_means = -era_means
     diff_factor   = global_mean / era_means.replace(0, 1)
@@ -396,37 +396,6 @@ def paso_4_pico_pitching(pitching, war_pitch, people):
             g = g.sort_values("era_y", ascending=True, na_position="last")  # menor ERA = mejor
         return g.head(PEAK_SEASONS)
 
-    # ── Normalización Año por Año: Promedios de la liga por temporada ──
-    pit_for_lg = pit_yearly[pit_yearly["IPouts"] >= 30].copy()
-    pit_for_lg["IP_calc"] = pit_for_lg["IPouts"] / 3.0
-    lg_yr = pit_for_lg.groupby("yearID").agg(
-        lg_tot_ip =("IP_calc", "sum"),
-        lg_tot_h  =("H",       "sum"),
-        lg_tot_so =("SO",      "sum"),
-        lg_tot_bb =("BB",      "sum"),
-        lg_tot_hr =("HR_a",    "sum"),
-    ).reset_index()
-    lg_yr["lg_h9"]  = (lg_yr["lg_tot_h"]  / lg_yr["lg_tot_ip"].replace(0, np.nan)) * 9.0
-    lg_yr["lg_k9"]  = (lg_yr["lg_tot_so"] / lg_yr["lg_tot_ip"].replace(0, np.nan)) * 9.0
-    lg_yr["lg_bb9"] = (lg_yr["lg_tot_bb"] / lg_yr["lg_tot_ip"].replace(0, np.nan)) * 9.0
-    lg_yr["lg_hr9"] = (lg_yr["lg_tot_hr"] / lg_yr["lg_tot_ip"].replace(0, np.nan)).clip(lower=0.20) * 9.0
-
-    pit_yearly = pit_yearly.merge(lg_yr[["yearID", "lg_h9", "lg_k9", "lg_bb9", "lg_hr9"]], on="yearID", how="left")
-
-    # Suavizado bayesiano por temporada (m=40 IP hacia el promedio de ese año exacto)
-    m_ip_yr = 40.0
-    ip_s = (pit_yearly["IPouts"] / 3.0).replace(0, np.nan)
-    pit_yearly["h9_smooth"]  = (pit_yearly["H"]    + m_ip_yr * (pit_yearly["lg_h9"] / 9.0))  / (ip_s + m_ip_yr) * 9.0
-    pit_yearly["k9_smooth"]  = (pit_yearly["SO"]   + m_ip_yr * (pit_yearly["lg_k9"] / 9.0))  / (ip_s + m_ip_yr) * 9.0
-    pit_yearly["bb9_smooth"] = (pit_yearly["BB"]   + m_ip_yr * (pit_yearly["lg_bb9"] / 9.0)) / (ip_s + m_ip_yr) * 9.0
-    pit_yearly["hr9_smooth"] = (pit_yearly["HR_a"] + m_ip_yr * (pit_yearly["lg_hr9"] / 9.0)) / (ip_s + m_ip_yr) * 9.0
-
-    # Ratios de dominio relativo anual (1.0 = exactamente promedio de la liga en ese año)
-    pit_yearly["k9_rel"]  = pit_yearly["k9_smooth"] / pit_yearly["lg_k9"].replace(0, np.nan)
-    pit_yearly["bb9_rel"] = pit_yearly["lg_bb9"] / pit_yearly["bb9_smooth"].clip(lower=0.5)
-    pit_yearly["h9_rel"]  = pit_yearly["lg_h9"]  / pit_yearly["h9_smooth"].clip(lower=2.0)
-    pit_yearly["hr9_rel"] = (pit_yearly["lg_hr9"] / pit_yearly["hr9_smooth"].clip(lower=0.10)).clip(upper=2.5)
-
     pico_df = pit_yearly.groupby("playerID", group_keys=True).apply(seleccionar_pico)
     pico_df = pico_df.reset_index(level=0)
 
@@ -457,21 +426,6 @@ def paso_4_pico_pitching(pitching, war_pitch, people):
     sp_season_counts = pico_df.groupby("playerID")["is_sp_season"].sum().reset_index(name="sp_seasons_count")
     mean_dedication = pico_df.groupby("playerID")["sp_dedication"].mean().reset_index(name="mean_sp_dedication")
 
-    # Ratios relativos ponderados por IP en el pico de 7 temporadas
-    pico_df["ip_weight"] = pico_df["IP_y"].fillna(0)
-    def _calc_weighted_ratios(g):
-        w_ip = g["ip_weight"].sum()
-        if w_ip > 0:
-            return pd.Series({
-                "peak_k9_rel": (g["k9_rel"] * g["ip_weight"]).sum() / w_ip,
-                "peak_bb9_rel": (g["bb9_rel"] * g["ip_weight"]).sum() / w_ip,
-                "peak_h9_rel": (g["h9_rel"] * g["ip_weight"]).sum() / w_ip,
-                "peak_hr_rel": (g["hr9_rel"] * g["ip_weight"]).sum() / w_ip,
-            })
-        return pd.Series({"peak_k9_rel": 1.0, "peak_bb9_rel": 1.0, "peak_h9_rel": 1.0, "peak_hr_rel": 1.0})
-
-    peak_rel_ratios = pico_df.groupby("playerID").apply(_calc_weighted_ratios).reset_index()
-
     peak = pico_df.groupby("playerID").agg(
         peak_ip          =("IP_y",               "sum"),
         peak_gs          =("GS",                 "sum"),
@@ -488,7 +442,6 @@ def paso_4_pico_pitching(pitching, war_pitch, people):
         peak_era_plus    =("era_plus_y",         "mean"),   # promedio de ERA+ en peak
     ).reset_index()
 
-    peak = peak.merge(peak_rel_ratios, on="playerID", how="left")
     peak["is_nlb"] = peak["playerID"].map(nlb_counts > 0).fillna(False)
 
     peak = peak.merge(sp_season_counts, on="playerID", how="left")
@@ -768,23 +721,25 @@ def paso_9_fielding_pitchers(df, war_pitch, people):
     return df
 
 
-# ── PASO 10: Normalización Año por Año ─────────────────────────────────────────
+# ── PASO 10: Normalización por Era ───────────────────────────────────────────
 def paso_10_normalizar_por_era(df):
-    """
-    Normalización Año por Año Sabermétrica Pura:
-    Los ratios de dominio relativo a la liga de cada año (calculados temporada
-    a temporada) se normalizan a la escala de ratings de videojuego (1-125).
-    Reemplaza la antigua normalización por bloques de eras de 30 años.
-    """
-    print("\n  PASO 10: Normalizando por Año a Año (H/9, K/9, BB/9, HR/9, STA)...")
+    print("\n  PASO 10: Normalizando por Era MLB The Show Suite (H/9, K/9, BB/9, HR/9, STA)...")
     df = df.copy()
 
-    df["k9_val"]  = normalize_series(df["peak_k9_rel"]).clip(1, 125).round(1)
-    df["bb9_val"] = normalize_series(df["peak_bb9_rel"]).clip(1, 125).round(1)
-    df["h9_val"]  = normalize_series(df["peak_h9_rel"]).clip(1, 125).round(1)
-    df["hr9_val"] = normalize_series(df["peak_hr_rel"]).clip(1, 125).round(1)
+    # Sub-división estadística interna de The Genesis Era para respetar la distancia del montículo:
+    # 1871-1892 (45-50 pies): Pioneer Era (Keefe, Radbourn, Mathews, Whitney)
+    # 1893-1900 (60'6"): Modern Distance Genesis (Cy Young, Kid Nichols, Amos Rusie post-1893)
+    df["norm_era"] = df["era_label"]
+    is_genesis = df["era_label"].str.contains("Genesis", case=False, na=False)
+    df.loc[is_genesis & (df["peak_year"] <= 1892), "norm_era"] = "The Genesis Era (1871-1892, 45-50ft)"
+    df.loc[is_genesis & (df["peak_year"] >= 1893), "norm_era"] = "The Genesis Era (1893-1900, 60ft)"
 
-    # Stamina calibrada según IP anuales promedio reales
+    df = normalize_difficulty_adjusted(df, "h9_raw",  "h9_val",  invert=True,  era_col="norm_era")
+    df = normalize_difficulty_adjusted(df, "k9_raw",  "k9_val",  invert=False, era_col="norm_era")
+    df = normalize_difficulty_adjusted(df, "bb9_raw", "bb9_val", invert=True,  era_col="norm_era")
+    df = normalize_difficulty_adjusted(df, "hr9_raw", "hr9_val", invert=True,  era_col="norm_era")
+
+    # Stamina calibrada según IP anuales promedio reales (sin penalización invertida por era):
     def map_ip_to_sta(ip):
         if ip is None or pd.isna(ip): return 45.0
         val = float(ip)
@@ -810,7 +765,7 @@ def paso_10_normalizar_por_era(df):
     weight_seasons = np.minimum(1.0, (n_peak / (n_peak + 1.0)) * (8.0 / 7.0))
     era_cols = ["h9_val", "k9_val", "bb9_val", "hr9_val", "sta_val"]
     for col in era_cols:
-        era_mean = df.groupby("era_label")[col].transform("mean")
+        era_mean = df.groupby("norm_era")[col].transform("mean")
         df[col] = (weight_seasons * df[col] + (1.0 - weight_seasons) * era_mean).round(1)
 
     # Aliases para compatibilidad con UI y simulador
@@ -820,7 +775,7 @@ def paso_10_normalizar_por_era(df):
     df["mov_val"] = df["hr9_val"]
     df["grt_val"] = df["h9_val"]
 
-    print("  h9_val, k9_val, bb9_val, hr9_val, sta_val normalizados año por año con éxito")
+    print("  h9_val, k9_val, bb9_val, hr9_val, sta_val normalizados con sub-era Genesis y suavizados por temporadas (m=1)")
     return df
 
 
