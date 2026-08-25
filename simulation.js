@@ -567,9 +567,10 @@
         eventType = 'BB';
         this.strikeoutChain = 0;
 
+        // Advance Walk & Score Runs
         runsThisTurn = this._advanceWalk(batter);
         this.runs += runsThisTurn;
-        pitcherDmg = 10 + (runsThisTurn * 10);
+        pitcherDmg = 15 + (runsThisTurn * 10);
 
         // Deadball (1901-1919) T3/T4 run bonus on BB
         if (runsThisTurn > 0 && deadballTier >= 3) {
@@ -583,28 +584,38 @@
           batter.stamina = Math.min(100, (batter.stamina || 100) + 5);
         }
 
+        // Apply Natural 1-turn +20% fatigue debuff on Walk (Moneyball enhances this further)
+        let bbDebuffTurns = 1;
+        let bbDebuffMult = 1.20;
+
         // Efficiency Era (Moneyball) BB boost & Scaled On-Base Fatigue
         if (moneyballTier >= 1) {
           const extra = moneyballTier === 4 ? 20 : moneyballTier === 3 ? 14 : moneyballTier === 2 ? 8 : 4;
-          const mbTurns = moneyballTier === 4 ? 4 : moneyballTier === 3 ? 3 : moneyballTier === 2 ? 2 : 1;
-          const mbMult = moneyballTier === 4 ? 1.30 : moneyballTier === 3 ? 1.25 : moneyballTier === 2 ? 1.20 : 1.15;
+          bbDebuffTurns = moneyballTier === 4 ? 4 : moneyballTier === 3 ? 3 : moneyballTier === 2 ? 2 : 1;
+          bbDebuffMult = moneyballTier === 4 ? 1.30 : moneyballTier === 3 ? 1.25 : moneyballTier === 2 ? 1.20 : 1.15;
           pitcherDmg += extra;
           synergyProc = _t('sim.syn_moneyball_bb', { extra }, `📊 Moneyball: ¡Boleto paciente inflige +${extra} daño!`);
-
-          if (this.pitcherDebuff && this.pitcherDebuff.turnsLeft > 0) {
-            this.pitcherDebuff.turnsLeft = Math.max(this.pitcherDebuff.turnsLeft, mbTurns);
-            if (mbMult > this.pitcherDebuff.multiplier) this.pitcherDebuff.multiplier = mbMult;
-          } else {
-            this.pitcherDebuff = { turnsLeft: mbTurns, multiplier: mbMult };
-          }
-          const impLabel = mbTurns === 1 ? _t('sim.debuff_turn_s', {}, 'impacto restante') : _t('sim.debuff_turns_p', {}, 'impactos restantes');
-          synergyProc += ' | ' + _t('sim.syn_moneyball_fatigue', { turns: mbTurns }, `📊 Moneyball: ¡Fatiga al lanzador! Debuff de +${Math.round((mbMult - 1) * 100)}% daño (${mbTurns} ${impLabel}).`);
         }
         // Modern Era BB boost
         else if (modernTier >= 1) {
           const extra = modernTier === 4 ? 30 : modernTier === 3 ? 20 : modernTier === 2 ? 12 : 6;
           pitcherDmg += extra;
           synergyProc = _t('sim.syn_tto_bb', { extra }, `🚀 Three True Outcomes: ¡Boleto optimizado inflige +${extra} daño!`);
+        }
+
+        // Apply debuff to pitcher
+        if (this.pitcherDebuff && this.pitcherDebuff.turnsLeft > 0) {
+          this.pitcherDebuff.turnsLeft = Math.max(this.pitcherDebuff.turnsLeft, bbDebuffTurns);
+          if (bbDebuffMult > this.pitcherDebuff.multiplier) this.pitcherDebuff.multiplier = bbDebuffMult;
+        } else {
+          this.pitcherDebuff = { turnsLeft: bbDebuffTurns, multiplier: bbDebuffMult };
+        }
+
+        const impLabel = bbDebuffTurns === 1 ? _t('sim.debuff_turn_s', {}, 'impacto restante') : _t('sim.debuff_turns_p', {}, 'impactos restantes');
+        if (moneyballTier >= 1) {
+          synergyProc += ' | ' + _t('sim.syn_moneyball_fatigue', { turns: bbDebuffTurns }, `📊 Moneyball: ¡Fatiga al lanzador! Debuff de +${Math.round((bbDebuffMult - 1) * 100)}% daño (${bbDebuffTurns} ${impLabel}).`);
+        } else {
+          synergyProc = (synergyProc ? synergyProc + ' | ' : '') + _t('sim.bb_fatigue_desc', { pct: 20 }, `⚠️ ¡Lanzador en aprietos! Debuff de +20% daño en el siguiente turno.`);
         }
 
         pitcherDmg = this._applyDebuffToPitcherDmg(pitcherDmg);
@@ -908,7 +919,7 @@
           this.strikeoutChain = 0;
           runsThisTurn = this._advanceHomeRun(batter);
           const runnersOnBase = Math.max(0, runsThisTurn - 1);
-          let hrDmg = 70 + (runnersOnBase * 10);
+          let hrDmg = 75 + (runnersOnBase * 10);
           
           if (steroidTier >= 1) {
             const extraHr = steroidTier === 4 ? 40 : steroidTier === 3 ? 26 : steroidTier === 2 ? 16 : 8;
@@ -945,7 +956,7 @@
           eventType = '3B';
           this.strikeoutChain = 0;
           runsThisTurn = this._advanceTriple(batter, genesisExtraAdvance);
-          pitcherDmg = 45 + (runsThisTurn * 10);
+          pitcherDmg = 50 + (runsThisTurn * 10);
           hitDesc = spdUpgraded
             ? _t('sim.spd_stretch_3b', { grade: spdUpgraded.grade }, `conecta batazo y estira a TERCERA BASE con velocidad (Grado ${spdUpgraded.grade})`)
             : _t('sim.3b_desc', {}, 'triple al rincón');
@@ -954,7 +965,7 @@
           eventType = '2B';
           this.strikeoutChain = 0;
           runsThisTurn = this._advanceDouble(batter, genesisExtraAdvance);
-          pitcherDmg = 30 + (runsThisTurn * 10);
+          pitcherDmg = 35 + (runsThisTurn * 10);
           hitDesc = spdUpgraded
             ? _t('sim.spd_stretch_2b', { grade: spdUpgraded.grade }, `conecta batazo y estira a SEGUNDA BASE con velocidad (Grado ${spdUpgraded.grade})`)
             : _t('sim.2b_desc', {}, 'línea violenta por la raya');
@@ -963,7 +974,7 @@
           eventType = '1B';
           this.strikeoutChain = 0;
           runsThisTurn = this._advanceSingle(batter, genesisExtraAdvance);
-          pitcherDmg = 15 + (runsThisTurn * 10);
+          pitcherDmg = 20 + (runsThisTurn * 10);
           hitDesc = _t('sim.1b_desc', {}, 'imparable raso');
 
           // Deadball Era 1B damage bonus

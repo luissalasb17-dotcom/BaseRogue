@@ -108,7 +108,7 @@
     "title": "📊 GUÍA DE RATINGS",
     "con": "<strong style=\"color:#a7f3d0;\">CON — Contacto:</strong> Determina la probabilidad de conectar un batazo. Jugadores con alto CON tienen más chances de sencillos e hits en general.",
     "pwr": "<strong style=\"color:#f59e0b;\">PWR — Poder:</strong> Probabilidad de conectar extra-bases (dobles, triples, jonrones). También aumenta el daño al pitcher rival en hits largos.",
-    "eye": "<strong style=\"color:#3b82f6;\">EYE — Ojo/Vista:</strong> Probabilidad de obtener boletos (BB). Clave para avanzar corredores y desgastar al lanzador rival.",
+    "eye": "<strong style=\"color:#3b82f6;\">EYE — Ojo/Vista:</strong> Probabilidad de obtener boletos (BB). Inflige 15 HP de daño y fatiga al lanzador (+20% de daño en el siguiente turno).",
     "k_avd": "<strong style=\"color:#ec4899;\">K/AVD — Evasión de Ponches:</strong> Reduce la zona de ponches (SO) en la tirada del dado. Clave para evitar el daño directo a la salud del equipo que provocan los ponches.",
     "spd": "<strong style=\"color:#38bdf8;\">SPD — Velocidad:</strong> Activa intentos de robo de base en sencillos (debuff +20% daño al pitcher). También mejora la probabilidad de convertir hits en extra-bases.",
     "def": "<strong style=\"color:#a855f7;\">DEF — Defensa:</strong> Contribuye al <strong>Escudo</strong> del equipo. Cuanto mayor DEF promedio, más escudo tienes disponible para absorber OUTs antes de perder HP.",
@@ -223,7 +223,11 @@
     "round_1_hint": "Ronda de Épico o Superior. Asegura el líder o capitán de tu alineación.",
     "round_2_hint": "Ronda de Épico garantizado. Consigue tu bateador estelar de poder.",
     "round_3_hint": "Ronda de Raro garantizado. Asegura un sólido bateador titular.",
-    "round_4_hint": "Ronda de Poco Común garantizado. Completa el núcleo de tu alineación."
+    "round_4_hint": "Ronda de Poco Común garantizado. Completa el núcleo de tu alineación.",
+    "round_rare_label": "RARO GARANTIZADO",
+    "round_uncommon_label": "POCO COMÚN GARANTIZADO",
+    "round_rare_hint": "Ronda de Raro garantizado. Asegura un sólido bateador titular.",
+    "round_uncommon_hint": "Ronda de Poco Común garantizado. Completa el núcleo de tu alineación."
   },
   "pre_fight": {
     "title": "<i class=\"fa-solid fa-shield-halved\"></i> Preparación de la Serie",
@@ -317,19 +321,19 @@
   },
   "popup": {
     "bb_title": "BASE POR BOLAS",
-    "bb_dmg": "¡PITCHER RECIBE DAÑO!",
+    "bb_dmg": "15 HP • DEBUFF +20% DAÑO AL PITCHER",
     "so_title": "¡PONCHE!",
     "so_dmg": "DAÑO DIRECTO (IGNORA ESCUDO)",
     "out_title": "OUT",
     "out_dmg": "DAÑO AL ESCUDO",
     "single_title": "SENCILLO (1B)",
-    "single_dmg": "DAÑO AL PITCHER",
+    "single_dmg": "20 HP AL PITCHER (+10 POR CARRERA)",
     "double_title": "DOBLE (2B) ⚡",
-    "double_dmg": "DAÑO DUPLICADO",
+    "double_dmg": "35 HP AL PITCHER (+10 POR CARRERA)",
     "triple_title": "TRIPLE (3B) 🔥",
-    "triple_dmg": "DAÑO TRIPLICADO",
+    "triple_dmg": "50 HP AL PITCHER (+10 POR CARRERA)",
     "hr_title": "¡JONRÓN! 🚀💥",
-    "hr_dmg": "¡DAÑO CRÍTICO MASIVO!",
+    "hr_dmg": "75 HP ¡CRÍTICO! (+10 POR CARRERA)",
     "steal_title": "¡ROBO DE BASE! 🏃⚡",
     "steal_dmg": "PITCHER DEBUFF: +20% DAÑO RECIBIDO",
     "ko_title": "¡K.O. AL LANZADOR! 💥",
@@ -708,7 +712,8 @@
     "trait_back_to_back": "💥 Cadena de Poder: +20 PWR/CON (turno post-jonrón).",
     "trait_reliever_ambush": "🔥 Emboscada al Relevista: +50% daño (primer batazo contra este lanzador).",
     "trait_speed_demons": "⚡ Velocistas Agresivos",
-    "trait_ghost_runners": "🏃 Corredores Fantasma: ¡un corredor aparece en 2ª base para arrancar {{inning}}!"
+    "trait_ghost_runners": "🏃 Corredores Fantasma: ¡un corredor aparece en 2ª base para arrancar {{inning}}!",
+    "bb_fatigue_desc": "⚠️ ¡Lanzador en aprietos! Debuff de +{{pct}}% daño en el siguiente turno."
   },
   "syn": {
     "deadball": {
@@ -1879,7 +1884,7 @@
     "title": "📊 RATINGS GUIDE",
     "con": "<strong style=\"color:#a7f3d0;\">CON — Contact:</strong> Determines the probability of making contact. High CON players have higher chances of singles and hits overall.",
     "pwr": "<strong style=\"color:#f59e0b;\">PWR — Power:</strong> Probability of extra-base hits (doubles, triples, home runs). Also increases damage to opponent pitcher on deep hits.",
-    "eye": "<strong style=\"color:#3b82f6;\">EYE — Vision/Eye:</strong> Probability of getting walks (BB). Key for advancing runners and wearing down the rival pitcher.",
+    "eye": "<strong style=\"color:#3b82f6;\">EYE — Plate Discipline:</strong> Chance to draw Walks (BB). Deals 15 HP damage and fatigues the pitcher (+20% damage on next turn).",
     "k_avd": "<strong style=\"color:#ec4899;\">K/AVD — Strikeout Avoidance:</strong> Shrinks the strikeout (SO) zone on the dice roll. Essential for preventing direct HP damage caused by strikeouts.",
     "spd": "<strong style=\"color:#38bdf8;\">SPD — Speed:</strong> Triggers base stealing attempts on singles (+20% pitcher damage debuff). Also improves chance of converting hits to extra bases.",
     "def": "<strong style=\"color:#a855f7;\">DEF — Defense:</strong> Contributes to team <strong>Shield</strong>. Higher average DEF gives you more shield to absorb OUTs before losing HP.",
@@ -1994,7 +1999,11 @@
     "round_1_hint": "Epic or Better round. Secure your captain or lineup anchor.",
     "round_2_hint": "Guaranteed Epic round. Pick your star power hitter.",
     "round_3_hint": "Guaranteed Rare round. Secure a solid starting batter.",
-    "round_4_hint": "Guaranteed Uncommon round. Round out your batting core."
+    "round_4_hint": "Guaranteed Uncommon round. Round out your batting core.",
+    "round_rare_label": "GUARANTEED RARE",
+    "round_uncommon_label": "GUARANTEED UNCOMMON",
+    "round_rare_hint": "Guaranteed Rare round. Secure a solid starting batter.",
+    "round_uncommon_hint": "Guaranteed Uncommon round. Round out your batting core."
   },
   "pre_fight": {
     "title": "<i class=\"fa-solid fa-shield-halved\"></i> Series Preparation",
@@ -2088,19 +2097,19 @@
   },
   "popup": {
     "bb_title": "WALK (BB)",
-    "bb_dmg": "PITCHER TAKES DAMAGE!",
+    "bb_dmg": "15 HP • DEBUFF +20% DAMAGE TO PITCHER",
     "so_title": "STRIKEOUT!",
     "so_dmg": "DIRECT DAMAGE (IGNORES SHIELD)",
     "out_title": "OUT",
     "out_dmg": "SHIELD DAMAGE",
     "single_title": "SINGLE (1B)",
-    "single_dmg": "PITCHER DAMAGE",
+    "single_dmg": "20 HP TO PITCHER (+10 PER RUN)",
     "double_title": "DOUBLE (2B) ⚡",
-    "double_dmg": "DOUBLE DAMAGE",
+    "double_dmg": "35 HP TO PITCHER (+10 PER RUN)",
     "triple_title": "TRIPLE (3B) 🔥",
-    "triple_dmg": "TRIPLE DAMAGE",
+    "triple_dmg": "50 HP TO PITCHER (+10 PER RUN)",
     "hr_title": "HOME RUN! 🚀💥",
-    "hr_dmg": "MASSIVE CRITICAL DAMAGE!",
+    "hr_dmg": "75 HP CRITICAL! (+10 PER RUN)",
     "steal_title": "STOLEN BASE! 🏃⚡",
     "steal_dmg": "PITCHER DEBUFF: +20% DAMAGE TAKEN",
     "ko_title": "PITCHER K.O.! 💥",
@@ -2479,7 +2488,8 @@
     "trait_back_to_back": "💥 Power Chain: +20 PWR/CON (turn after home run).",
     "trait_reliever_ambush": "🔥 Reliever Ambush: +50% damage (first hit against this pitcher).",
     "trait_speed_demons": "⚡ Aggressive Speedsters",
-    "trait_ghost_runners": "🏃 Ghost Runners: A runner appears on 2nd base to start {{inning}}!"
+    "trait_ghost_runners": "🏃 Ghost Runners: A runner appears on 2nd base to start {{inning}}!",
+    "bb_fatigue_desc": "⚠️ Pitcher in trouble! +{{pct}}% damage debuff on next turn."
   },
   "syn": {
     "deadball": {
