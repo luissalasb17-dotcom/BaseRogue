@@ -822,6 +822,11 @@
       this.runActive = false;
       this.starterChosen = false;
 
+      // ── Traits Passives ───────────────────────────────────────────────
+      this.equippedTraits = [];  // Up to 3 traits (one per boss map)
+      this.activeTeamTraits = [];
+
+      // ── Items & Active Bonueses ───────────────────────────────────────
       this.activeItemBonuses = {
         teamCon: 0, teamPwr: 0, teamEye: 0, teamKAvd: 0, teamSpd: 0, teamDef: 0
       };
@@ -832,9 +837,6 @@
       this.encounteredTeams = new Set();
       this.encounteredPitchers = new Set();
       this.isSuperBossActive = false;
-
-      // ── Traits Passives ───────────────────────────────────────────────
-      this.equippedTraits = [];  // Up to 3 traits (one per boss map)
 
       // ── Run Stats Tracking ────────────────────────────────────────────
       // { playerName: { ab, h, bb, so, doubles, triples, hr, rbi, runs, e } }

@@ -240,7 +240,8 @@
     "record_contender": "Equipo Contendiente",
     "record_underdog": "Equipo Desafiante",
     "win_pct_label": "Prob. Victoria",
-    "boss_all_star_desc": "Rotación All-Star: Los mejores brazos del circuito"
+    "boss_all_star_desc": "Rotación All-Star: Los mejores brazos del circuito",
+    "pitcher_card_tooltip": "Haz clic para ver la carta de este lanzador"
   },
   "match": {
     "title": "<i class=\"fa-solid fa-trophy\"></i> Bateadores al Combate",
@@ -305,7 +306,8 @@
     "extra_innings_hud_desc": "Outs: -30 HP • Ks: 30/36/42 HP • ¡Fallo en la baja = Walk-Off!",
     "sudden_death_title": "⚡ ¡MUERTE SÚBITA! ⚡",
     "extra_innings_hud_title": "⚡ ¡EXTRA INNINGS • MUERTE SÚBITA! ⚡",
-    "simulate_all_pause": "⏸️ PAUSAR AUTO"
+    "simulate_all_pause": "⏸️ PAUSAR AUTO",
+    "interactive_header_prefix": "Combate Interactivo vs"
   },
   "popup": {
     "bb_title": "BASE POR BOLAS",
@@ -335,7 +337,12 @@
     "tag_current": " (Actual)",
     "tag_native": " (Nativa ⭐ 100% Def)",
     "tag_secondary": " (Secundaria 🛡️ 85% Def)",
-    "tag_out_pos": " (Fuera Pos ⚠️ 50% Def)"
+    "tag_out_pos": " (Fuera Pos ⚠️ 50% Def)",
+    "synergies_contributed": "⚡ SINERGIAS APORTADAS",
+    "era_synergy_label": "Sinergia de Era:",
+    "team_synergy_label": "Sinergia de Equipo:",
+    "active_tier_badge": "ACTIVA",
+    "inactive_tier_badge": "INACTIVA"
   },
   "train_plans": {
     "con_label": "Práctica de Contacto",
@@ -886,7 +893,7 @@
     "sec_pos_tooltip": "Posición Secundaria",
     "trait_choose_desc": "Elige una Trait Pasiva que acompañará a tu equipo hasta el final de la run:",
     "super_boss_desc": "¡Pero las 4 Máximas Leyendas del Béisbol saltan al campo para la Batalla Final!",
-    "hp_restored": "Tu equipo ha recuperado +30 HP y Escudo Máximo.",
+    "hp_restored": "Tu equipo se ha recuperado por completo (Vida al 100% y Escudo al Máximo).",
     "active_traits_header": "RASGOS ACTIVOS DEL EQUIPO",
     "trait_pick_btn": "EQUIPAR RASGO",
     "super_boss_fight_btn": "⚔️ ¡ENFRENTAR AL SUPER BOSS!",
@@ -1137,7 +1144,7 @@
     "your_team": "TU EQUIPO ({{wins}}-{{losses}})",
     "ace_pitcher": "As Abridor",
     "season_era": "ERA Temporada",
-    "offensive_leader": "Lider Ofensivo",
+    "offensive_leader": "Líder Ofensivo",
     "roster_record": "Profundidad de Roster",
     "drafted_cards": "17 Cartas Drafteadas",
     "boss_difficulty": "Dificultad Boss",
@@ -1145,7 +1152,7 @@
     "rival_sp_hp": "Vida SP Rival",
     "extra_hp": "{{pct}}% extra",
     "offensive_danger": "Peligro Ofensivo",
-    "play_playoff_btn": "🎲 DISPUTAR {{label}}! (PARTIDO A MUERTE)",
+    "play_playoff_btn": "🎲 ¡DISPUTAR {{label}}! (PARTIDO A MUERTE)",
     "view_stats_table": "📊 VER TABLA DE STATS",
     "perfect_champion_title": "👑 TEMPORADA PERFECTA 162-0 & CAMPEON MUNDIAL!",
     "perfect_champion_desc": "🏆 162-0 REGULAR + 3-0 PLAYOFFS (165-0 INVICTO) · INMORTALIDAD LOGRADA!",
@@ -1956,7 +1963,8 @@
     "record_contender": "Contender Team",
     "record_underdog": "Underdog Team",
     "win_pct_label": "Win Rate",
-    "boss_all_star_desc": "All-Star Rotation: The division's best arms"
+    "boss_all_star_desc": "All-Star Rotation: The division's best arms",
+    "pitcher_card_tooltip": "Click to inspect this pitcher card"
   },
   "match": {
     "title": "<i class=\"fa-solid fa-trophy\"></i> BATTLE",
@@ -2021,7 +2029,8 @@
     "extra_innings_hud_desc": "Outs: -30 HP • Ks: 30/36/42 HP • Bottom error = Walk-Off Defeat!",
     "sudden_death_title": "⚡ SUDDEN DEATH! ⚡",
     "extra_innings_hud_title": "⚡ EXTRA INNINGS • SUDDEN DEATH! ⚡",
-    "simulate_all_pause": "⏸️ PAUSE AUTO"
+    "simulate_all_pause": "⏸️ PAUSE AUTO",
+    "interactive_header_prefix": "Interactive Combat vs"
   },
   "popup": {
     "bb_title": "WALK (BB)",
@@ -2051,7 +2060,12 @@
     "tag_current": " (Current)",
     "tag_native": " (Native ⭐ 100% Def)",
     "tag_secondary": " (Secondary 🛡️ 85% Def)",
-    "tag_out_pos": " (Out of Pos ⚠️ 50% Def)"
+    "tag_out_pos": " (Out of Pos ⚠️ 50% Def)",
+    "synergies_contributed": "⚡ CONTRIBUTED SYNERGIES",
+    "era_synergy_label": "Era Synergy:",
+    "team_synergy_label": "Team Synergy:",
+    "active_tier_badge": "ACTIVE",
+    "inactive_tier_badge": "INACTIVE"
   },
   "train_plans": {
     "con_label": "Contact Practice",
@@ -2602,7 +2616,7 @@
     "sec_pos_tooltip": "Secondary Position",
     "trait_choose_desc": "Choose a Passive Trait that will accompany your team until the end of the run:",
     "super_boss_desc": "But the 4 Greatest Baseball Legends jump onto the field for the Final Battle!",
-    "hp_restored": "Your team has recovered +30 HP and Max Shield.",
+    "hp_restored": "Your team has fully recovered (Full HP & Max Shield).",
     "active_traits_header": "ACTIVE TEAM TRAITS",
     "trait_pick_btn": "EQUIP TRAIT",
     "super_boss_fight_btn": "⚔️ FACE THE SUPER BOSS!",

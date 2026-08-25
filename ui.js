@@ -4195,17 +4195,67 @@ function initGameModeSelector() {
           <span style="font-size:8px;color:var(--primary-color);font-family:'Press Start 2P',monospace;">⬆ UPGRADES:</span>
           ${Object.entries(player.upgrades).filter(([k,v])=>v>0).map(([k,v])=>`<span class="popup-upgrade-badge">+${v} ${k.toUpperCase()}</span>`).join('')}
         </div>` : ''}
-      <div class="popup-era-desc">${window.PlayersDB.EraTraits && window.PlayersDB.EraTraits[player.era] ? `<i>${window.PlayersDB.EraTraits[player.era].name}:</i> ${window.PlayersDB.EraTraits[player.era].desc}` : ''}</div>
-      ${(player.clutch || player.is_clutch) ? `
-        <div class="popup-badge-desc popup-badge-clutch" style="margin-top:6px; padding:6px 8px; background:rgba(255,51,0,0.12); border-left:3px solid var(--badge-clutch,#ff3300); border-radius:4px; font-size:8px; line-height:1.4;">
-          <span style="color:var(--badge-clutch,#ff3300); font-weight:bold; font-family:'Press Start 2P',monospace; display:block; margin-bottom:2px;">⚡ CLUTCH PLAYER</span>
-          <span style="color:#e2e8f0;">${window.t ? window.t('badge.clutch_tooltip', '+4% de probabilidad de hit y +4% de HR con corredores en posición de anotar durante la última entrada.') : '+4% de probabilidad de hit y +4% de HR con corredores en posición de anotar durante la última entrada.'}</span>
-        </div>` : ''}
-      ${(player.captain || player.is_captain) ? `
-        <div class="popup-badge-desc popup-badge-captain" style="margin-top:6px; padding:6px 8px; background:rgba(0,212,255,0.12); border-left:3px solid var(--badge-captain,#00d4ff); border-radius:4px; font-size:8px; line-height:1.4;">
-          <span style="color:var(--badge-captain,#00d4ff); font-weight:bold; font-family:'Press Start 2P',monospace; display:block; margin-bottom:2px;">👑 CAPTAIN</span>
-          <span style="color:#e2e8f0;">${window.t ? window.t('badge.captain_tooltip', '+5 a todos los ratings de sus compañeros de equipo mientras esté en el roster activo.') : '+5 a todos los ratings de sus compañeros de equipo mientras esté en el roster activo.'}</span>
-        </div>` : ''}
+      ${(() => {
+        if (!player.era && (!player.team || player.team === 'ROOK')) return '';
+        
+        // Calculate era synergy state
+        let eraCount = 0;
+        if (window.Game && window.Game.roster) {
+          Object.values(window.Game.roster).forEach(p => {
+            if (p && !p.isReplacement && p.era === player.era && !p.synergyBanned) {
+              const weight = p.synergyWeight || (p.isInterEra ? 2 : 1);
+              eraCount += weight;
+            }
+          });
+        }
+        const eraTier = (window.Game && typeof window.Game.getEraTier === 'function') ? window.Game.getEraTier(player.era, eraCount) : 0;
+        const eraName = window.PlayersDB.EraTraits && window.PlayersDB.EraTraits[player.era] ? window.PlayersDB.EraTraits[player.era].name : player.era;
+
+        // Calculate team franchise synergy state
+        let teamCount = 0;
+        if (player.team && player.team !== 'ROOK' && window.Game && window.Game.roster) {
+          Object.values(window.Game.roster).forEach(p => {
+            if (p && !p.isReplacement && p.team === player.team) {
+              teamCount += 1;
+            }
+          });
+        }
+        const teamFullName = (window.PlayersDB && window.PlayersDB.FranchiseNames && window.PlayersDB.FranchiseNames[player.team]) || player.team;
+        const teamTier = teamCount >= 4 ? 3 : (teamCount === 3 ? 2 : (teamCount === 2 ? 1 : 0));
+        const teamTierName = teamTier === 3 ? 'Dinastía (+8)' : (teamTier === 2 ? 'Hermandad (+6)' : (teamTier === 1 ? 'Química (+4)' : 'Inactiva'));
+
+        return `
+        <div class="popup-synergies-summary" style="margin-top:10px; padding:10px 12px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.12); border-radius:8px; text-align:left;">
+          <div style="font-size:8px; color:#ffd700; font-family:'Press Start 2P',monospace; margin-bottom:8px; letter-spacing:0.5px;">
+            ${typeof window.t === 'function' ? window.t('card_popup.synergies_contributed', '⚡ SINERGIAS APORTADAS') : '⚡ SINERGIAS APORTADAS'}
+          </div>
+          
+          ${player.era ? `
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; font-size:11px;">
+              <div style="display:flex; align-items:center; gap:6px;">
+                <span>⏳</span>
+                <strong style="color:#fef08a;">${eraName}</strong>
+              </div>
+              <span style="font-size:9px; font-family:'Press Start 2P',monospace; padding:3px 6px; border-radius:4px; ${eraTier > 0 ? 'background:rgba(34,197,94,0.2); color:#4ade80; border:1px solid #22c55e;' : 'background:rgba(255,255,255,0.06); color:#94a3b8; border:1px solid rgba(255,255,255,0.1);'}">
+                ${eraTier > 0 ? `T${eraTier} ACTIVA (${eraCount} jug)` : `(+1) ${eraCount}/2 jug`}
+              </span>
+            </div>
+          ` : ''}
+
+          ${player.team && player.team !== 'ROOK' ? `
+            <div style="display:flex; justify-content:space-between; align-items:center; font-size:11px;">
+              <div style="display:flex; align-items:center; gap:6px;">
+                <span>⚾</span>
+                <strong style="color:#93c5fd;">${teamFullName} (${player.team})</strong>
+              </div>
+              <span style="font-size:9px; font-family:'Press Start 2P',monospace; padding:3px 6px; border-radius:4px; ${teamTier > 0 ? 'background:rgba(59,130,246,0.2); color:#60a5fa; border:1px solid #3b82f6;' : 'background:rgba(255,255,255,0.06); color:#94a3b8; border:1px solid rgba(255,255,255,0.1);'}">
+                ${teamTier > 0 ? `${teamTierName}` : `(+1) ${teamCount}/2 jug`}
+              </span>
+            </div>
+          ` : ''}
+        </div>
+        `;
+      })()}
       <div class="popup-year">Peak: ${player.year || player.peak_year || player.peakYear || '—'} &nbsp;|&nbsp; ${player.era || ''}</div>
       ${!isDraft ? `
         <div class="popup-item-slot-container" style="margin-top:10px; padding:10px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.15); border-radius:8px;">
@@ -6554,29 +6604,59 @@ function initGameModeSelector() {
       el.preFightPlayerLineup.appendChild(row);
     });
 
-    // 2. Render enemy pitchers
+    // 2. Render enemy pitchers with OVR badges & interactive card inspect popup
     el.preFightEnemyRotation.innerHTML = "";
     enemy.pitchers.forEach((p, idx) => {
       const row = document.createElement('div');
       row.className = "pre-fight-row";
+      row.style.cursor = "pointer";
+      row.style.transition = "transform 0.15s ease, background 0.15s ease";
+      row.title = typeof window.t === 'function' ? window.t('pre_fight.pitcher_card_tooltip', 'Haz clic para ver la carta de este lanzador') : 'Haz clic para ver la carta de este lanzador';
 
       // Label type
-      let pType = "SP";
-      if (idx === 3) pType = "RP";
-      if (idx === 4) pType = "CL";
+      let pType = p.role || "SP";
+      if (!p.role) {
+        if (idx === 3) pType = "RP";
+        if (idx === 4) pType = "CL";
+      }
+
+      const pOvr = getPlayerOvr(p);
+      const pGrade = getClassGrade(pOvr);
 
       row.innerHTML = `
         <div style="display: flex; align-items: center; gap: 8px;">
           <span style="font-size: 10px; font-weight: bold; color: #ef4444; background: rgba(239,68,68,0.1); padding: 2px 4px; border-radius: 4px;">${pType}</span>
-          <span class="name" title="${p.name}">${p.name}</span>
+          <span class="name" title="${p.name}" style="color:#fff; text-decoration: underline dotted rgba(255,255,255,0.4);">${p.cleanName || p.name}</span>
+          <span style="font-size: 9px; font-weight: bold; color: ${pGrade.color}; background: rgba(0,0,0,0.4); border: 1px solid ${pGrade.color}; padding: 1px 5px; border-radius: 4px; font-family:'Press Start 2P',monospace;">${pOvr} ${pGrade.text}</span>
         </div>
         <div style="display: flex; align-items: center; gap: 8px;">
           <div class="hp-bar-container">
             <div class="hp-bar-fill" style="width: 100%; background: linear-gradient(90deg, #ef4444, #f87171);"></div>
           </div>
-          <span class="hp-text">${p.maxHp}/${p.maxHp} HP</span>
+          <span class="hp-text">${p.maxHp || p.hp || 100}/${p.maxHp || p.hp || 100} HP</span>
+          <span style="font-size:11px; color:#9ca3af;">🔍</span>
         </div>
       `;
+
+      row.addEventListener('mouseenter', () => {
+        row.style.background = "rgba(239,68,68,0.12)";
+        row.style.transform = "translateX(4px)";
+      });
+      row.addEventListener('mouseleave', () => {
+        row.style.background = "";
+        row.style.transform = "none";
+      });
+
+      row.addEventListener('click', () => {
+        const pitcherCardObj = {
+          ...p,
+          pos: p.pos || 'P',
+          role: p.role || pType,
+          rarity: p.rarity || (pOvr >= 90 ? 'Legendary' : (pOvr >= 80 ? 'Epic' : (pOvr >= 70 ? 'Rare' : 'Uncommon')))
+        };
+        showPlayerCardPopup(pitcherCardObj, 'pitcher_preview');
+      });
+
       el.preFightEnemyRotation.appendChild(row);
     });
 
@@ -6595,12 +6675,13 @@ function initGameModeSelector() {
     // el.rosterManagerPanel.classList.add('hidden');
 
     const enemy = window.Game.getEnemyTeam();
+    const interactivePrefix = typeof window.t === 'function' ? window.t('match.interactive_header_prefix', 'Combate Interactivo vs') : 'Combate Interactivo vs';
     if (enemy && enemy.isBoss) {
       el.matchHeaderTitle.innerHTML =
         `<i class="fa-solid fa-crown" style="color:#ffd700;"></i> 👑 <span style="color:#ffd700;font-weight:bold;">${enemy.name}</span> <span style="font-size:10px;background:rgba(255,215,0,0.2);color:#ffd700;border:1px solid #ffd700;padding:2px 6px;border-radius:4px;margin-left:6px;font-family:'Press Start 2P',monospace;">BOSS BATTLE</span>`;
     } else {
       el.matchHeaderTitle.innerHTML =
-        `<i class="fa-solid fa-dice"></i> 🎲 Combate Interactivo vs <span style="color:#ef4444;">${enemy.name}</span>`;
+        `<i class="fa-solid fa-dice"></i> 🎲 ${interactivePrefix} <span style="color:#ef4444;">${enemy.name}</span>`;
     }
     if (el.scoreEnemyName) el.scoreEnemyName.innerText = (typeof window.t==='function'?window.t('match.rival_rotation'):'ROTACIÓN RIVAL');
 
@@ -8886,6 +8967,7 @@ function initGameModeSelector() {
 
     overlay.querySelector('#btn-midboss-reward-continue').addEventListener('click', () => {
       overlay.remove();
+      if (typeof renderSynergiesAndItems === 'function') renderSynergiesAndItems();
       if (typeof renderActiveItemBonuses === 'function') renderActiveItemBonuses();
       updateHUD();
       if (onDone) onDone();

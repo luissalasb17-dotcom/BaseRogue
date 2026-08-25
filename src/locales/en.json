@@ -237,7 +237,8 @@
     "record_contender": "Contender Team",
     "record_underdog": "Underdog Team",
     "win_pct_label": "Win Rate",
-    "boss_all_star_desc": "All-Star Rotation: The division's best arms"
+    "boss_all_star_desc": "All-Star Rotation: The division's best arms",
+    "pitcher_card_tooltip": "Click to inspect this pitcher card"
   },
   "match": {
     "title": "<i class=\"fa-solid fa-trophy\"></i> BATTLE",
@@ -302,7 +303,8 @@
     "extra_innings_hud_desc": "Outs: -30 HP • Ks: 30/36/42 HP • Bottom error = Walk-Off Defeat!",
     "sudden_death_title": "⚡ SUDDEN DEATH! ⚡",
     "extra_innings_hud_title": "⚡ EXTRA INNINGS • SUDDEN DEATH! ⚡",
-    "simulate_all_pause": "⏸️ PAUSE AUTO"
+    "simulate_all_pause": "⏸️ PAUSE AUTO",
+    "interactive_header_prefix": "Interactive Combat vs"
   },
   "popup": {
     "bb_title": "WALK (BB)",
@@ -332,7 +334,12 @@
     "tag_current": " (Current)",
     "tag_native": " (Native ⭐ 100% Def)",
     "tag_secondary": " (Secondary 🛡️ 85% Def)",
-    "tag_out_pos": " (Out of Pos ⚠️ 50% Def)"
+    "tag_out_pos": " (Out of Pos ⚠️ 50% Def)",
+    "synergies_contributed": "⚡ CONTRIBUTED SYNERGIES",
+    "era_synergy_label": "Era Synergy:",
+    "team_synergy_label": "Team Synergy:",
+    "active_tier_badge": "ACTIVE",
+    "inactive_tier_badge": "INACTIVE"
   },
   "train_plans": {
     "con_label": "Contact Practice",
@@ -883,7 +890,7 @@
     "sec_pos_tooltip": "Secondary Position",
     "trait_choose_desc": "Choose a Passive Trait that will accompany your team until the end of the run:",
     "super_boss_desc": "But the 4 Greatest Baseball Legends jump onto the field for the Final Battle!",
-    "hp_restored": "Your team has recovered +30 HP and Max Shield.",
+    "hp_restored": "Your team has fully recovered (Full HP & Max Shield).",
     "active_traits_header": "ACTIVE TEAM TRAITS",
     "trait_pick_btn": "EQUIP TRAIT",
     "super_boss_fight_btn": "⚔️ FACE THE SUPER BOSS!",

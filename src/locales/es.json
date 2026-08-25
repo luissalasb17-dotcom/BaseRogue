@@ -237,7 +237,8 @@
     "record_contender": "Equipo Contendiente",
     "record_underdog": "Equipo Desafiante",
     "win_pct_label": "Prob. Victoria",
-    "boss_all_star_desc": "Rotación All-Star: Los mejores brazos del circuito"
+    "boss_all_star_desc": "Rotación All-Star: Los mejores brazos del circuito",
+    "pitcher_card_tooltip": "Haz clic para ver la carta de este lanzador"
   },
   "match": {
     "title": "<i class=\"fa-solid fa-trophy\"></i> Bateadores al Combate",
@@ -302,7 +303,8 @@
     "extra_innings_hud_desc": "Outs: -30 HP • Ks: 30/36/42 HP • ¡Fallo en la baja = Walk-Off!",
     "sudden_death_title": "⚡ ¡MUERTE SÚBITA! ⚡",
     "extra_innings_hud_title": "⚡ ¡EXTRA INNINGS • MUERTE SÚBITA! ⚡",
-    "simulate_all_pause": "⏸️ PAUSAR AUTO"
+    "simulate_all_pause": "⏸️ PAUSAR AUTO",
+    "interactive_header_prefix": "Combate Interactivo vs"
   },
   "popup": {
     "bb_title": "BASE POR BOLAS",
@@ -332,7 +334,12 @@
     "tag_current": " (Actual)",
     "tag_native": " (Nativa ⭐ 100% Def)",
     "tag_secondary": " (Secundaria 🛡️ 85% Def)",
-    "tag_out_pos": " (Fuera Pos ⚠️ 50% Def)"
+    "tag_out_pos": " (Fuera Pos ⚠️ 50% Def)",
+    "synergies_contributed": "⚡ SINERGIAS APORTADAS",
+    "era_synergy_label": "Sinergia de Era:",
+    "team_synergy_label": "Sinergia de Equipo:",
+    "active_tier_badge": "ACTIVA",
+    "inactive_tier_badge": "INACTIVA"
   },
   "train_plans": {
     "con_label": "Práctica de Contacto",
@@ -883,7 +890,7 @@
     "sec_pos_tooltip": "Posición Secundaria",
     "trait_choose_desc": "Elige una Trait Pasiva que acompañará a tu equipo hasta el final de la run:",
     "super_boss_desc": "¡Pero las 4 Máximas Leyendas del Béisbol saltan al campo para la Batalla Final!",
-    "hp_restored": "Tu equipo ha recuperado +30 HP y Escudo Máximo.",
+    "hp_restored": "Tu equipo se ha recuperado por completo (Vida al 100% y Escudo al Máximo).",
     "active_traits_header": "RASGOS ACTIVOS DEL EQUIPO",
     "trait_pick_btn": "EQUIPAR RASGO",
     "super_boss_fight_btn": "⚔️ ¡ENFRENTAR AL SUPER BOSS!",
