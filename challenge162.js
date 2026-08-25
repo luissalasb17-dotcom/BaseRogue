@@ -1019,20 +1019,9 @@
       const opp = getFranchiseDecadeTeam(sched.code, sched.decade);
       const userLineup = S.roster.battingOrder.map(slot => S.roster.lineup[slot]).filter(Boolean);
 
-      const userStrength = teamStrength(userLineup, userSP);
-      const oppStrength = teamStrength(opp.lineup, opp.pitcher);
-      const targetWinProb = winProbability(userStrength, oppStrength, S.streak || 0);
-      const targetWin = Math.random() < targetWinProb;
+      const attempt = this._simulateNaturalGame(userLineup, userSP, userRelievers, opp, gameIdx);
 
-      const MAX_ATTEMPTS = 2;
-      let attempt = null;
-      for (let i = 0; i < MAX_ATTEMPTS; i++) {
-        attempt = this._simulateNaturalGame(userLineup, userSP, userRelievers, opp, gameIdx);
-        if ((attempt.userRuns > attempt.oppRuns) === targetWin) break;
-      }
-
-      // Commit the accepted attempt's stats — and only this one attempt's, so
-      // rejected rerolls never leak extra at-bats into the season totals.
+      // Commit the game attempt's stats into the season totals:
       Object.entries(attempt.batterDeltas).forEach(([key, d]) => {
         const s = S.batterStats[key];
         if (!s) return;
