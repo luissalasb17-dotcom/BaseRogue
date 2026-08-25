@@ -1248,8 +1248,8 @@
       const r = this.draftRound;
       if (r === 1) return { label: 'EPIC O SUPERIOR', labelKey: 'draft.round_1_label', rarities: ['Legendary','Epic'], icon: '💎' };
       if (r === 2) return { label: 'RARE O SUPERIOR', labelKey: 'draft.round_2_label', rarities: ['Legendary','Epic','Rare'], icon: '🔵' };
-      if (r === 3) return { label: 'UNCOMMON O SUPERIOR', labelKey: 'draft.round_3_label', rarities: ['Legendary','Epic','Rare','Uncommon'], icon: '🟢' };
-      if (r >= 4 && r <= 6) return { label: 'COMMON OBLIGATORIO', labelKey: 'draft.round_4_label', rarities: ['Common'], icon: '⚪' };
+      if (r === 3) return { label: 'POCO COMÚN O SUPERIOR', labelKey: 'draft.round_3_label', rarities: ['Legendary','Epic','Rare','Uncommon'], icon: '🟢' };
+      if (r >= 4 && r <= 8) return { label: 'COMÚN OBLIGATORIO', labelKey: 'draft.round_4_label', rarities: ['Common'], icon: '⚪' };
       return { label: 'RONDA LIBRE — CUALQUIER RAREZA', labelKey: 'draft.round_free_label', rarities: null, icon: '🎲' };
     }
 
@@ -1987,15 +1987,31 @@
     }
 
     getMatchRewardRarityWeights(isBoss = false) {
-      if (isBoss) return null; // Boss matches drop Epic or Legendary exclusively
       const zone = (typeof this.getZoneForStage === 'function') 
         ? this.getZoneForStage(this.currentStageIndex || 0) 
         : 0;
+
+      if (isBoss) {
+        // Scaled boss rewards by map:
+        // Map 1 (Zone 0): Rare guaranteed (90% Rare, 10% Epic)
+        // Map 2 (Zone 1): Epic guaranteed (85% Epic, 15% Legendary)
+        // Map 3 (Zone 2): 100% Legendary guaranteed
+        // Map 4 (Zone 3): 100% Legendary guaranteed
+        const bossMap = {
+          0: { Rare: 9.0, Epic: 1.0 },
+          1: { Epic: 8.5, Legendary: 1.5 },
+          2: { Legendary: 10.0 },
+          3: { Legendary: 10.0 }
+        };
+        return bossMap[zone] || bossMap[0];
+      }
+
+      // Regular matches (strictly NO Commons):
       const map = {
-        0: { Uncommon: 1.50, Rare: 0.90, Epic: 0.45, Legendary: 0.25 }, // Zona 0: Opening Day
-        1: { Uncommon: 0.80, Rare: 1.10, Epic: 0.85, Legendary: 0.60 }, // Zona 1: All-Star Break
-        2: { Uncommon: 0.35, Rare: 1.00, Epic: 1.60, Legendary: 1.50 }, // Zona 2: Pennant Chase
-        3: { Uncommon: 0.12, Rare: 0.70, Epic: 2.50, Legendary: 2.70 }, // Zona 3: Playoffs
+        0: { Uncommon: 7.0, Rare: 2.5, Epic: 0.5, Legendary: 0.0 }, // Zona 0: Opening Day (70% Unc, 25% Rare, 5% Epic)
+        1: { Uncommon: 4.0, Rare: 4.5, Epic: 1.5, Legendary: 0.0 }, // Zona 1: All-Star Break (40% Unc, 45% Rare, 15% Epic)
+        2: { Uncommon: 1.5, Rare: 5.0, Epic: 3.0, Legendary: 0.5 }, // Zona 2: Pennant Chase (15% Unc, 50% Rare, 30% Epic, 5% Leg)
+        3: { Uncommon: 0.5, Rare: 3.5, Epic: 4.5, Legendary: 1.5 }, // Zona 3: Playoffs (5% Unc, 35% Rare, 45% Epic, 15% Leg)
       };
       return map[zone] || map[0];
     }
@@ -2005,7 +2021,7 @@
       const pool = window.PlayersDB.LAHMAN_POOL || window.PlayersDB.PLAYERS_POOL || [];
       const onRosterNames = new Set(Object.values(this.roster).filter(Boolean).map(x => x.name));
 
-      // Sign Legend event: Uncommon or higher (no Commons)
+      // Sign Legend event: Uncommon or higher (strictly no Commons)
       const allowedRarities = ['Legendary', 'Epic', 'Rare', 'Uncommon'];
       const filtered = pool.filter(p =>
         !onRosterNames.has(p.name) && allowedRarities.includes(p.rarity || 'Common')
@@ -2058,10 +2074,17 @@
 
       const onRosterNames = new Set(Object.values(this.roster).filter(Boolean).map(x => x.name));
 
-      // Normal match: Uncommon, Rare, Epic, Legendary | Boss: Epic or Legendary exclusively
-      const allowedRarities = isBoss
-        ? ['Legendary', 'Epic']
-        : ['Legendary', 'Epic', 'Rare', 'Uncommon'];
+      const zone = (typeof this.getZoneForStage === 'function') 
+        ? this.getZoneForStage(this.currentStageIndex || 0) 
+        : 0;
+
+      // Filter allowed rarities by match type and stage
+      let allowedRarities = ['Legendary', 'Epic', 'Rare', 'Uncommon'];
+      if (isBoss) {
+        if (zone === 0) allowedRarities = ['Epic', 'Rare'];
+        else if (zone === 1) allowedRarities = ['Legendary', 'Epic'];
+        else allowedRarities = ['Legendary'];
+      }
 
       const filtered = pool.filter(p => {
         if (onRosterNames.has(p.name)) return false;
@@ -2460,8 +2483,41 @@
         };
       };
 
-      // Helper for OVR calculation
-      const getOvr = (p) => (p.ovr !== undefined ? p.ovr : (p._ovr !== undefined ? p._ovr : (window.UI && window.UI.getPlayerOvr ? window.UI.getPlayerOvr(p) : 50)));
+      // Helper to construct a balanced 3-pitcher rotation: SP opens, flexible middle, RP closes
+      const assembleThreePitcherRotation = (primaryCandidates, supportCandidates, targetRole = 'SP') => {
+        let acePick = pickPitcher(primaryCandidates, targetRole);
+        let pAce = createPitcherObj(acePick, targetRole);
+
+        // Pick an opener SP and closer RP
+        let pOpen = null, pMid = null, pClose = null;
+
+        if (targetRole === 'RP') {
+          // Ace is closer (RP/CL)
+          pClose = pAce;
+          let spPool = supportCandidates.filter(p => (p.role || '').toUpperCase() === 'SP');
+          if (spPool.length === 0) spPool = supportCandidates;
+          pOpen = createPitcherObj(pickPitcher(spPool, 'SP'), 'SP');
+          pMid = createPitcherObj(pickPitcher(supportCandidates));
+        } else {
+          // Ace is starter (SP)
+          pOpen = pAce;
+          pMid = createPitcherObj(pickPitcher(supportCandidates));
+          let rpPool = supportCandidates.filter(p => (p.role || '').toUpperCase() === 'RP');
+          if (rpPool.length === 0) rpPool = supportCandidates;
+          pClose = createPitcherObj(pickPitcher(rpPool, 'RP'), 'RP');
+        }
+
+        // Return rotation in order: SP Opener -> Middle -> RP Closer
+        const rotation = [pOpen, pMid, pClose];
+
+        // Find the absolute highest OVR pitcher in the rotation to be the Boss representative
+        let highestPitcher = rotation[0];
+        rotation.forEach(p => {
+          if (getOvr(p) > getOvr(highestPitcher)) highestPitcher = p;
+        });
+
+        return { rotation, highestPitcher };
+      };
 
       // Check if Super Boss Fight is active (Stage 23 Part 2: 4 Legendary Pitchers 95+ OVR!)
       if (this.isSuperBossActive) {
@@ -2472,104 +2528,103 @@
         const p3 = createPitcherObj(pickPitcher(leg95Pool, 'RP'), 'RP');
         const p4 = createPitcherObj(pickPitcher(leg95Pool, 'RP'), 'RP');
         const selected = [p1, p2, p3, p4];
+        let highest = p1;
+        selected.forEach(p => { if (getOvr(p) > getOvr(highest)) highest = p; });
+
         this.currentEnemy = {
           id: `super_boss_${stage}_${Date.now()}`,
-          name: `⚡ SUPER BOSS: ${p1.cleanName}`,
+          name: `⚡ SUPER BOSS: ${highest.cleanName}`,
           tier: 'S',
           isBoss: true,
           isSuperBoss: true,
           pitchers: selected,
-          _ovr: 96,
-          era: p1.era,
+          _ovr: highest.ovr,
+          era: highest.era,
           rarity: 'Legendary'
         };
         return this.currentEnemy;
       }
 
-      // Map 1 Boss (Stage 5): 1 Rare, 2 Uncommon
+      // Map 1 Boss (Stage 5): 1 Rare (OVR 70-79), 2 Uncommon (OVR 60-69)
       if (stage === 5) {
         const rarePool   = fullPool.filter(p => p.rarity === 'Rare');
         const uncommPool = fullPool.filter(p => p.rarity === 'Uncommon');
-        const p1 = createPitcherObj(pickPitcher(rarePool.length ? rarePool : fullPool, 'SP'), 'SP');
-        const p2 = createPitcherObj(pickPitcher(uncommPool.length ? uncommPool : fullPool, 'SP'), 'SP');
-        const p3 = createPitcherObj(pickPitcher(uncommPool.length > 1 ? uncommPool : fullPool, 'RP'), 'RP');
-        const selected = [p1, p2, p3];
+        // Pick an ace (can be SP or RP) from Rare pool
+        const isRpAce = Math.random() < 0.35 && rarePool.some(p => (p.role || '').toUpperCase() === 'RP');
+        const { rotation, highestPitcher } = assembleThreePitcherRotation(rarePool.length ? rarePool : fullPool, uncommPool.length ? uncommPool : fullPool, isRpAce ? 'RP' : 'SP');
+        
         this.currentEnemy = {
           id: `boss_map1_${Date.now()}`,
-          name: `BOSS: ${p1.cleanName}`,
+          name: `👑 BOSS: ${highestPitcher.cleanName}`,
           tier: 'A',
           isBoss: true,
-          pitchers: selected,
-          _ovr: p1.ovr,
-          era: p1.era,
+          pitchers: rotation,
+          _ovr: highestPitcher.ovr,
+          era: highestPitcher.era,
           rarity: 'Rare'
         };
         return this.currentEnemy;
       }
 
-      // Map 2 Boss (Stage 11): 1 Epic, 2 Rare
+      // Map 2 Boss (Stage 11): 1 Epic (OVR 80-89), 2 Rare (OVR 70-79)
       if (stage === 11) {
         const epicPool   = fullPool.filter(p => p.rarity === 'Epic');
         const rarePool   = fullPool.filter(p => p.rarity === 'Rare');
-        const p1 = createPitcherObj(pickPitcher(epicPool.length ? epicPool : fullPool, 'SP'), 'SP');
-        const p2 = createPitcherObj(pickPitcher(rarePool.length ? rarePool : fullPool, 'SP'), 'SP');
-        const p3 = createPitcherObj(pickPitcher(rarePool.length > 1 ? rarePool : fullPool, 'RP'), 'RP');
-        const selected = [p1, p2, p3];
+        const isRpAce = Math.random() < 0.35 && epicPool.some(p => (p.role || '').toUpperCase() === 'RP');
+        const { rotation, highestPitcher } = assembleThreePitcherRotation(epicPool.length ? epicPool : fullPool, rarePool.length ? rarePool : fullPool, isRpAce ? 'RP' : 'SP');
+
         this.currentEnemy = {
           id: `boss_map2_${Date.now()}`,
-          name: `BOSS: ${p1.cleanName}`,
+          name: `👑 BOSS: ${highestPitcher.cleanName}`,
           tier: 'S',
           isBoss: true,
-          pitchers: selected,
-          _ovr: p1.ovr,
-          era: p1.era,
+          pitchers: rotation,
+          _ovr: highestPitcher.ovr,
+          era: highestPitcher.era,
           rarity: 'Epic'
         };
         return this.currentEnemy;
       }
 
-      // Map 3 Boss (Stage 17): 1 Legendary, 2 Epic
+      // Map 3 Boss (Stage 17): 1 Legendary (OVR 90-99), 2 Epic (OVR 80-89)
       if (stage === 17) {
         const legPool  = fullPool.filter(p => p.rarity === 'Legendary');
         const epicPool = fullPool.filter(p => p.rarity === 'Epic');
-        const p1 = createPitcherObj(pickPitcher(legPool.length ? legPool : fullPool, 'SP'), 'SP');
-        const p2 = createPitcherObj(pickPitcher(epicPool.length ? epicPool : fullPool, 'SP'), 'SP');
-        const p3 = createPitcherObj(pickPitcher(epicPool.length > 1 ? epicPool : fullPool, 'RP'), 'RP');
-        const selected = [p1, p2, p3];
+        const isRpAce = Math.random() < 0.35 && legPool.some(p => (p.role || '').toUpperCase() === 'RP');
+        const { rotation, highestPitcher } = assembleThreePitcherRotation(legPool.length ? legPool : fullPool, epicPool.length ? epicPool : fullPool, isRpAce ? 'RP' : 'SP');
+
         this.currentEnemy = {
           id: `boss_map3_${Date.now()}`,
-          name: `BOSS: ${p1.cleanName}`,
+          name: `👑 BOSS: ${highestPitcher.cleanName}`,
           tier: 'S',
           isBoss: true,
-          pitchers: selected,
-          _ovr: p1.ovr,
-          era: p1.era,
+          pitchers: rotation,
+          _ovr: highestPitcher.ovr,
+          era: highestPitcher.era,
           rarity: 'Legendary'
         };
         return this.currentEnemy;
       }
 
-      // Map 4 Boss Fight #1 (Stage 23): 3 Legendary Pitchers (2 SP, 1 RP)
+      // Map 4 Boss Fight #1 (Stage 23): 3 Legendary Pitchers (OVR 90+)
       if (stage === 23) {
         const legPool = fullPool.filter(p => p.rarity === 'Legendary');
-        const p1 = createPitcherObj(pickPitcher(legPool.length ? legPool : fullPool, 'SP'), 'SP');
-        const p2 = createPitcherObj(pickPitcher(legPool.length > 1 ? legPool : fullPool, 'SP'), 'SP');
-        const p3 = createPitcherObj(pickPitcher(legPool.length > 2 ? legPool : fullPool, 'RP'), 'RP');
-        const selected = [p1, p2, p3];
+        const { rotation, highestPitcher } = assembleThreePitcherRotation(legPool.length ? legPool : fullPool, legPool.length ? legPool : fullPool, 'SP');
+
         this.currentEnemy = {
           id: `boss_map4_part1_${Date.now()}`,
-          name: `BOSS FINAL: ${p1.cleanName}`,
+          name: `👑 BOSS FINAL: ${highestPitcher.cleanName}`,
           tier: 'S',
           isBoss: true,
-          pitchers: selected,
-          _ovr: p1.ovr,
-          era: p1.era,
+          pitchers: rotation,
+          _ovr: highestPitcher.ovr,
+          era: highestPitcher.era,
           rarity: 'Legendary'
         };
         return this.currentEnemy;
       }
 
-      // Mid-Boss nodes (floor 4 of each zone): homogeneous 3-pitcher squad of the target rarity
+      // Mid-Boss nodes (floor 4 of each zone): 3-pitcher squad (SP, middle, RP) of target rarity
       const currentNode = this.getCurrentNode ? this.getCurrentNode() : null;
       if (currentNode && currentNode.type === 'mid_boss') {
         let midPool, targetRarity;
@@ -2579,33 +2634,32 @@
         else                   { targetRarity = 'Legendary'; midPool = fullPool.filter(p => p.rarity === 'Legendary'); }
         if (midPool.length === 0) midPool = fullPool;
 
-        const pm1 = createPitcherObj(pickPitcher(midPool, 'SP'), 'SP');
-        const pm2 = createPitcherObj(pickPitcher(midPool, 'SP'), 'SP');
-        const pm3 = createPitcherObj(pickPitcher(midPool, 'RP'), 'RP');
+        const { rotation, highestPitcher } = assembleThreePitcherRotation(midPool, midPool, 'SP');
         this.currentEnemy = {
           id: `mid_boss_stage_${stage}_${Date.now()}`,
-          name: `⚡ MID-BOSS: ${pm1.cleanName}`,
+          name: `⚡ MID-BOSS: ${highestPitcher.cleanName}`,
           tier: 'A+',
           isMidBoss: true,
-          pitchers: [pm1, pm2, pm3],
-          _ovr: pm1.ovr,
-          era: pm1.era,
+          pitchers: rotation,
+          _ovr: highestPitcher.ovr,
+          era: highestPitcher.era,
           rarity: targetRarity
         };
         return this.currentEnemy;
       }
 
-      // Regular stages: 15-point OVR windows across the 4 zones
-      let minOvr = 50.0, maxOvr = 65.0;  // Zone 0: Opening Day (stages 0–5)
-      if (stage >= 6  && stage <= 11) { minOvr = 60.0; maxOvr = 75.0; }  // Zone 1: All-Star Break (stages 6–11)
-      else if (stage >= 12 && stage <= 17) { minOvr = 70.0; maxOvr = 85.0; }  // Zone 2: Pennant Chase (stages 12–17)
-      else if (stage >= 18) { minOvr = 80.0; maxOvr = 99.0; }            // Zone 3: Playoffs (stages 18–23)
+      // Regular stages: strictly 10-point OVR windows across the 4 zones
+      let minOvr = 50.0, maxOvr = 59.99; // Zone 0: Opening Day (stages 0–5) - Common
+      if (stage >= 6  && stage <= 11) { minOvr = 60.0; maxOvr = 69.99; } // Zone 1: All-Star Break (stages 6–11) - Uncommon
+      else if (stage >= 12 && stage <= 17) { minOvr = 70.0; maxOvr = 79.99; } // Zone 2: Pennant Chase (stages 12–17) - Rare
+      else if (stage >= 18) { minOvr = 80.0; maxOvr = 89.99; } // Zone 3: Playoffs (stages 18–23) - Epic
 
       let stagePool = fullPool.filter(p => {
         const o = getOvr(p);
         return o >= minOvr && o <= maxOvr;
       });
       if (stagePool.length === 0) stagePool = fullPool;
+
       const p1 = createPitcherObj(pickPitcher(stagePool, 'SP'), 'SP');
       const p2 = createPitcherObj(pickPitcher(stagePool));
       const p3 = createPitcherObj(pickPitcher(stagePool, 'RP'), 'RP');
