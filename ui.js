@@ -7305,8 +7305,10 @@ function initGameModeSelector() {
       if (window.AudioManager) window.AudioManager.play('draft_pick');
     }
 
-    // ── Universal Synergy & Trait Extraction (Clean & Condensed) ──
+    // ── Universal Synergy, Trait & Debuff Extraction (Clean & Condensed) ──
     const SYNERGY_PATTERNS = [
+      { key: 'FATIGA AL LANZADOR', regex: /(?:⚠️|📊)?\s*(?:¡?Lanzador en aprietos!?|¡?Pitcher in trouble!?|¡?Fatiga al lanzador!?|¡?Pitcher fatigued!?|Debuff de \+20% daño)[:\s]*([^\|\n]+)/i, color: '#38bdf8', icon: 'fa-gauge-high' },
+      { key: 'MONEYBALL FATIGA', regex: /(?:📊)?\s*(?:Moneyball:\s*¡?Fatiga al lanzador!?|Moneyball:\s*¡?Pitcher fatigued!?|Moneyball Analytics)[:\s]*([^\|\n]+)/i, color: '#14b8a6', icon: 'fa-chart-pie' },
       { key: 'GENESIS CHAOS', regex: /(?:💥|⚠️)?\s*(?:Genesis Chaos|The Genesis Era)[:\s]*([^\|\n]+)/i, color: '#ff2ec4', icon: 'fa-skull-crossbones' },
       { key: 'SMALL BALL', regex: /(?:⏳)?\s*(?:Small Ball|Deadball)[:\s]*([^\|\n]+)/i, color: '#22d3ee', icon: 'fa-baseball' },
       { key: 'LIVEBALL SLUGGERS', regex: /(?:🔥)?\s*(?:Liveball Sluggers|Liveball|Golden Era)[:\s]*([^\|\n]+)/i, color: '#f59e0b', icon: 'fa-fire' },
