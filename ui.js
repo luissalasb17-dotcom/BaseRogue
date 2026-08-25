@@ -764,16 +764,16 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
       // Tap-to-open vintage pack — themed per round's rarity floor:
       // Round 1 -> epic_plus (Gold / Diamond foil - Epic or Better)
       // Round 2 -> epic (Purple foil - Guaranteed Epic)
-      // Rounds 3-4 -> rare (Sapphire Blue foil - Guaranteed Rare)
-      // Rounds 5-6 -> uncommon (Emerald Green foil - Guaranteed Uncommon)
-      // Rounds 7-8 -> common (Vintage plain wax pack - 2 Common rounds)
+      // Round 3 -> rare (Sapphire Blue foil - Guaranteed Rare)
+      // Round 4 -> uncommon (Emerald Green foil - Guaranteed Uncommon)
+      // Rounds 5-8 -> common (Vintage plain wax pack - 4 Common rounds)
       // Round 9 -> random (Rainbow mystery pack - 1 Free round)
       let packTheme = 'random';
       if (round === 1) packTheme = 'epic_plus';
       else if (round === 2) packTheme = 'epic';
-      else if (round === 3 || round === 4) packTheme = 'rare';
-      else if (round === 5 || round === 6) packTheme = 'uncommon';
-      else if (round === 7 || round === 8) packTheme = 'common';
+      else if (round === 3) packTheme = 'rare';
+      else if (round === 4) packTheme = 'uncommon';
+      else if (round >= 5 && round <= 8) packTheme = 'common';
       else packTheme = 'random';
 
       const pack = document.createElement('div');
@@ -867,11 +867,11 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
         pickHint.textContent = t('draft.round_1_hint', t('draft.round_elite_hint'));
       } else if (round === 2) {
         pickHint.textContent = t('draft.round_2_hint', t('draft.round_elite_hint'));
-      } else if (round === 3 || round === 4) {
+      } else if (round === 3) {
         pickHint.textContent = t('draft.round_rare_hint', 'Ronda de Raro garantizado. Asegura un sólido bateador titular.');
-      } else if (round === 5 || round === 6) {
+      } else if (round === 4) {
         pickHint.textContent = t('draft.round_uncommon_hint', 'Ronda de Poco Común garantizado. Completa el núcleo de tu alineación.');
-      } else if (round === 7 || round === 8) {
+      } else if (round >= 5 && round <= 8) {
         pickHint.textContent = t('draft.round_common_hint');
       } else {
         pickHint.textContent = t('draft.round_free_hint');

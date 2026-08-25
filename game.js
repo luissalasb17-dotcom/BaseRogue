@@ -1248,9 +1248,9 @@
       const r = this.draftRound;
       if (r === 1) return { label: 'ÉPICO O SUPERIOR', labelKey: 'draft.round_1_label', rarities: ['Legendary','Epic'], icon: '💎' };
       if (r === 2) return { label: 'ÉPICO GARANTIZADO', labelKey: 'draft.round_2_label', rarities: ['Epic'], icon: '🟣' };
-      if (r === 3 || r === 4) return { label: 'RARO GARANTIZADO', labelKey: 'draft.round_rare_label', rarities: ['Rare'], icon: '🔵' };
-      if (r === 5 || r === 6) return { label: 'POCO COMÚN GARANTIZADO', labelKey: 'draft.round_uncommon_label', rarities: ['Uncommon'], icon: '🟢' };
-      if (r === 7 || r === 8) return { label: 'COMÚN OBLIGATORIO', labelKey: 'draft.round_common_label', rarities: ['Common'], icon: '⚪' };
+      if (r === 3) return { label: 'RARO GARANTIZADO', labelKey: 'draft.round_rare_label', rarities: ['Rare'], icon: '🔵' };
+      if (r === 4) return { label: 'POCO COMÚN GARANTIZADO', labelKey: 'draft.round_uncommon_label', rarities: ['Uncommon'], icon: '🟢' };
+      if (r >= 5 && r <= 8) return { label: 'COMÚN OBLIGATORIO', labelKey: 'draft.round_common_label', rarities: ['Common'], icon: '⚪' };
       return { label: 'RONDA LIBRE — CUALQUIER RAREZA', labelKey: 'draft.round_free_label', rarities: null, icon: '🎲' };
     }
 
