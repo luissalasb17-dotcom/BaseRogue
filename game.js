@@ -2862,10 +2862,12 @@
     }
 
     // ── TRADE DEADLINE ────────────────────────────────────────────────────────
-    // Generates a trade offer: picks a filled roster slot and finds a candidate
-    // player of compatible position from LAHMAN_POOL.
+    // Generates a blockbuster trade offer: picks a filled roster slot and finds a
+    // high-value candidate of compatible position with competitive/higher OVR & rarity.
     getTradeOffer() {
-      const pool = (window.PlayersDB && window.PlayersDB.LAHMAN_POOL) ? window.PlayersDB.LAHMAN_POOL : (window.PlayersDB && window.PlayersDB.PLAYERS_POOL ? window.PlayersDB.PLAYERS_POOL : []);
+      const pool = (window.PlayersDB && window.PlayersDB.LAHMAN_POOL) 
+        ? window.PlayersDB.LAHMAN_POOL 
+        : (window.PlayersDB && window.PlayersDB.PLAYERS_POOL ? window.PlayersDB.PLAYERS_POOL : []);
       if (!pool.length) return null;
 
       const filledSlots = Object.entries(this.roster)
@@ -2873,24 +2875,55 @@
         .map(([slot]) => slot);
       if (!filledSlots.length) return null;
 
+      // Pick a filled roster slot
       const offerSlot = filledSlots[Math.floor(Math.random() * filledSlots.length)];
       const currentPlayer = this.roster[offerSlot];
       if (!currentPlayer) return null;
 
+      const curOvr = (currentPlayer.ovr !== undefined ? currentPlayer.ovr : 75);
       const pos = currentPlayer.pos || offerSlot;
       const rarityOrder = ['Common', 'Uncommon', 'Rare', 'Epic', 'Legendary'];
-      const currentRarityIdx = rarityOrder.indexOf(currentPlayer.rarity || 'Common');
+      const curRarityIdx = rarityOrder.indexOf(currentPlayer.rarity || 'Common');
 
-      let candidates = pool.filter(p =>
-        (p.pos === pos || (p.sec_pos && p.sec_pos.split(',').map(s => s.trim()).includes(pos))) &&
-        p.name !== currentPlayer.name &&
-        rarityOrder.indexOf(p.rarity || 'Common') <= Math.min(rarityOrder.length - 1, currentRarityIdx + 1)
-      );
-      if (!candidates.length) candidates = pool.filter(p => p.pos === pos && p.name !== currentPlayer.name);
-      if (!candidates.length) candidates = pool.filter(p => p.name !== currentPlayer.name);
+      // Candidate pool:
+      // 1. Same position (primary or secondary)
+      // 2. Not the exact same player name
+      // 3. Competitive / Blockbuster quality: OVR between (curOvr - 2) and (curOvr + 8), rarity >= curRarity
+      let candidates = pool.filter(p => {
+        if (p.name === currentPlayer.name) return false;
+        const isSamePos = (p.pos === pos || (p.sec_pos && p.sec_pos.split(',').map(s => s.trim()).includes(pos)));
+        if (!isSamePos) return false;
+        
+        const pOvr = p.ovr !== undefined ? p.ovr : 75;
+        const pRarityIdx = rarityOrder.indexOf(p.rarity || 'Common');
+        
+        const isCompetitiveOvr = pOvr >= Math.max(72, curOvr - 2) && pOvr <= Math.min(99.9, curOvr + 8);
+        const isGoodRarity = pRarityIdx >= curRarityIdx;
+        
+        return isCompetitiveOvr && isGoodRarity;
+      });
+
+      // Fallback 1: same position with OVR >= curOvr - 3
+      if (!candidates.length) {
+        candidates = pool.filter(p => {
+          if (p.name === currentPlayer.name) return false;
+          const isSamePos = (p.pos === pos || (p.sec_pos && p.sec_pos.split(',').map(s => s.trim()).includes(pos)));
+          const pOvr = p.ovr !== undefined ? p.ovr : 75;
+          return isSamePos && pOvr >= (curOvr - 3);
+        });
+      }
+
+      // Fallback 2: any same position
+      if (!candidates.length) {
+        candidates = pool.filter(p => p.name !== currentPlayer.name && (p.pos === pos || (p.sec_pos && p.sec_pos.includes(pos))));
+      }
       if (!candidates.length) return null;
 
-      const offeredPlayer = candidates[Math.floor(Math.random() * candidates.length)];
+      // Sort by OVR descending and pick from top tier
+      candidates.sort((a, b) => (b.ovr || 0) - (a.ovr || 0));
+      const topSlice = candidates.slice(0, Math.max(1, Math.ceil(candidates.length * 0.35)));
+      const offeredPlayer = topSlice[Math.floor(Math.random() * topSlice.length)];
+
       return {
         slot: offerSlot,
         currentPlayer,
