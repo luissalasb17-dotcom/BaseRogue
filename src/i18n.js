@@ -3608,11 +3608,54 @@
     }
   }
 
+  function translateElement(el) {
+    if (!el || el.nodeType !== 1) return;
+    if (el.hasAttribute && el.hasAttribute('data-i18n')) {
+      const key = el.getAttribute('data-i18n');
+      if (key) {
+        const translated = t(key);
+        if (translated && translated !== key) el.innerText = translated;
+      }
+    }
+    if (el.hasAttribute && el.hasAttribute('data-i18n-html')) {
+      const key = el.getAttribute('data-i18n-html');
+      if (key) {
+        const translated = t(key);
+        if (translated && translated !== key) el.innerHTML = translated;
+      }
+    }
+    if (el.hasAttribute && el.hasAttribute('data-i18n-placeholder')) {
+      const key = el.getAttribute('data-i18n-placeholder');
+      if (key) {
+        const translated = t(key);
+        if (translated && translated !== key) el.setAttribute('placeholder', translated);
+      }
+    }
+  }
+
+  // Intercept and translate elements dynamically as they parse into the DOM
+  if (typeof MutationObserver !== 'undefined') {
+    const liveObserver = new MutationObserver(mutations => {
+      mutations.forEach(m => {
+        m.addedNodes.forEach(node => {
+          if (node.nodeType === 1) {
+            translateElement(node);
+            node.querySelectorAll('[data-i18n], [data-i18n-html], [data-i18n-placeholder]').forEach(translateElement);
+          }
+        });
+      });
+    });
+    liveObserver.observe(document.documentElement, { childList: true, subtree: true });
+  }
+
   // Run on initial load
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', translateDOM);
+    document.addEventListener('readystatechange', () => {
+      if (document.readyState === 'interactive' || document.readyState === 'complete') translateDOM();
+    });
   } else {
-    setTimeout(translateDOM, 0);
+    translateDOM();
   }
 
   function getLanguage() {
