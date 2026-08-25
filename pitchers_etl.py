@@ -569,8 +569,8 @@ def paso_5_filtro_ingesta(career, peak, allstar, hof, pure_pitcher_ids, pitching
     # Criterio de Ingesta del Usuario:
     # HoF: Incondicional (100% de miembros ingresan)
     # All-Star: career_ip >= 35.0 IP
-    # SP: GS >= 100 OR WAR >= 10.0
-    # RP: G >= 200 OR WAR >= 5.0
+    # SP: GS >= 100 OR WAR >= 7.5
+    # RP: G >= 200 OR WAR >= 4.5
     MIN_IP_ALLSTAR = 35.0
 
     def is_eligible(r):
@@ -580,9 +580,9 @@ def paso_5_filtro_ingesta(career, peak, allstar, hof, pure_pitcher_ids, pitching
             return True
         war_val = r.get("peak_war", 0) if pd.notna(r.get("peak_war")) else 0
         if r["role"] == "SP":
-            return (r["career_gs"] >= 100) or (war_val >= 10.0)
+            return (r["career_gs"] >= 100) or (war_val >= 7.5)
         else:
-            return (r["career_g"] >= 200) or (war_val >= 5.0)
+            return (r["career_g"] >= 200) or (war_val >= 4.5)
 
     mask = df.apply(is_eligible, axis=1)
     eligible = df[mask].copy()
