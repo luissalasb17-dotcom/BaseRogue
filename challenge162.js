@@ -239,6 +239,88 @@
     return sortedCandidates[0];
   }
 
+  // ── Authentic Sabermetric Batting Order Optimizer ───────────────────────
+  // Arranges 9 batters according to realistic MLB lineup construction:
+  // 1: Leadoff (High OBP + Speed/Stolen base threat)
+  // 2: Modern Sabermetric Ace (Best overall hitter / High OBP + High Contact)
+  // 3: Prime Slugger (High Contact + Power, e.g. Griffey, Ruth, Mays)
+  // 4: Cleanup Monster (Purest Power & Slugging, e.g. Aaron, Gehrig, Pujols)
+  // 5: Secondary Run Producer (Strong Power/SLG)
+  // 6: Middle-order Bat
+  // 7: Lower-mid Order Bat
+  // 8: Bottom-order Bat
+  // 9: Second Leadoff (Speed/OBP to loop back to the top of the order)
+  function optimizeLineupArray(battersArray) {
+    if (!Array.isArray(battersArray) || battersArray.length < 9) return battersArray;
+
+    const candidates = battersArray.map(p => {
+      const con = p.con !== undefined ? p.con : 50;
+      const eye = p.eye !== undefined ? p.eye : 50;
+      const pwr = p.pwr !== undefined ? p.pwr : 50;
+      const spd = p.spd !== undefined ? p.spd : 50;
+      const ovr = p.ovr !== undefined ? p.ovr : 50;
+
+      const obpScore = (con * 0.45) + (eye * 0.40) + (spd * 0.15);
+      const slgScore = (pwr * 0.70) + (con * 0.30);
+      const opsScore = (pwr * 0.50) + (con * 0.30) + (eye * 0.20);
+      const speedScore = (spd * 0.65) + (con * 0.20) + (eye * 0.15);
+      const allAroundSlugger = (con * 0.45) + (pwr * 0.45) + (eye * 0.10);
+      const leadoffScore = (obpScore * 0.55) + (speedScore * 0.45);
+
+      return { p, con, eye, pwr, spd, ovr, obpScore, slgScore, opsScore, speedScore, allAroundSlugger, leadoffScore };
+    });
+
+    let remaining = candidates.slice();
+    const order = [];
+
+    // 1. #4 Cleanup Hitter: Purest Power & Slugging Monster
+    remaining.sort((a, b) => (b.slgScore * 0.75 + b.pwr * 0.25) - (a.slgScore * 0.75 + a.pwr * 0.25));
+    const cleanUp = remaining.shift();
+
+    // 2. #3 Prime All-Around Hitter: High Contact + High Power (e.g. Griffey, Ruth, Mays)
+    remaining.sort((a, b) => b.allAroundSlugger - a.allAroundSlugger);
+    const thirdHitter = remaining.shift();
+
+    // 3. #2 Modern Sabermetric Ace: Best overall OPS remaining (e.g. Trout, Judge, Morgan, Bonds)
+    remaining.sort((a, b) => (b.opsScore * 0.70 + b.obpScore * 0.30) - (a.opsScore * 0.70 + a.obpScore * 0.30));
+    const secondHitter = remaining.shift();
+
+    // 4. #1 Leadoff: High OBP + Great Speed (e.g. Pete Rose, Rickey Henderson, Tim Raines)
+    remaining.sort((a, b) => b.leadoffScore - a.leadoffScore);
+    const leadoffHitter = remaining.shift();
+
+    // 5. #5 Secondary Slugger / Run Producer
+    remaining.sort((a, b) => (b.slgScore * 0.65 + b.opsScore * 0.35) - (a.slgScore * 0.65 + a.opsScore * 0.35));
+    const fifthHitter = remaining.shift();
+
+    // 6. #6 Middle Order Bat
+    remaining.sort((a, b) => b.opsScore - a.opsScore);
+    const sixthHitter = remaining.shift();
+
+    // 7. #7 Lower-Mid Order Bat
+    remaining.sort((a, b) => b.opsScore - a.opsScore);
+    const seventhHitter = remaining.shift();
+
+    // 8. #9 Second Leadoff / Speed connector (pick faster/higher OBP of last 2)
+    remaining.sort((a, b) => b.leadoffScore - a.leadoffScore);
+    const ninthHitter = remaining.shift();
+
+    // 9. #8 Bottom of order
+    const eighthHitter = remaining.shift();
+
+    order[0] = leadoffHitter.p;
+    order[1] = secondHitter.p;
+    order[2] = thirdHitter.p;
+    order[3] = cleanUp.p;
+    order[4] = fifthHitter.p;
+    order[5] = sixthHitter.p;
+    order[6] = seventhHitter.p;
+    order[7] = eighthHitter.p;
+    order[8] = ninthHitter.p;
+
+    return order;
+  }
+
   function buildFranchiseDecadeTeam(code, decade) {
     const franchiseNames = (window.PlayersDB && window.PlayersDB.FranchiseNames) || {};
     const batterHistory = (window.PlayerTeamHistory && window.PlayerTeamHistory.batters) || {};
@@ -250,7 +332,7 @@
     const eligibleBatters = radius => fullBatterPool.filter(p => isEligibleForTeamDecade(p, batterHistory, code, decade, radius));
     const eligiblePitchers = radius => fullPitcherPool.filter(p => isEligibleForTeamDecade(p, pitcherHistory, code, decade, radius));
 
-    const lineup = SLOTS.map(slot => {
+    const rawLineup = SLOTS.map(slot => {
       // 1. For DH: pick the best available batter from the franchise-decade who hasn't been placed in a field slot
       if (slot === 'DH') {
         for (const radius of WINDOW_RADII) {
@@ -316,6 +398,8 @@
       }
       return null;
     }).filter(Boolean);
+
+    const lineup = optimizeLineupArray(rawLineup);
 
     const pickPitcher = (role) => {
       for (const radius of WINDOW_RADII) {
@@ -426,7 +510,7 @@
       };
     };
 
-    const boostedBatters = franchiseTeam.lineup.map(b => ({
+    const boostedBatters = optimizeLineupArray(franchiseTeam.lineup).map(b => ({
       ...b,
       con: Math.min(125, (b.con || 50) + statBuff),
       pwr: Math.min(125, (b.pwr || 50) + statBuff),
@@ -883,13 +967,22 @@
     },
 
     // ── Roster building ────────────────────────────────────────────────────
+    _optimizeBattingOrder(lineup) {
+      const slots = SLOTS.filter(s => lineup && lineup[s]);
+      if (slots.length < 9) return slots;
+      const mapped = slots.map(slot => ({ ...lineup[slot], _slotKey: slot }));
+      const optimized = optimizeLineupArray(mapped);
+      return optimized.map(p => p._slotKey);
+    },
+
     startNewChallenge(lineup, pitchers, customModeConfig) {
       const leagueTeams = buildLeagueTeams();
       const cfg = customModeConfig || this.getModeConfig();
+      const battingOrder = this._optimizeBattingOrder(lineup);
       this.state = {
         v: 1,
         modeConfig: cfg,
-        roster: { lineup, battingOrder: BATTING_ORDER.slice(), pitchers },
+        roster: { lineup, battingOrder, pitchers },
         leagueTeams,
         schedule: buildSeasonSchedule(leagueTeams),
         gamesPlayed: 0, wins: 0, losses: 0, streak: 0,
