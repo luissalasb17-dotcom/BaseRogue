@@ -1550,6 +1550,54 @@ p {
   box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.6) !important;
 }
 
+/* Win Probability Bar in Scouting Report */
+.pre-fight-win-prob-wrap {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px dashed rgba(255, 255, 255, 0.15);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.win-prob-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Press Start 2P', monospace;
+}
+
+.win-prob-label {
+  font-size: 6.5px;
+  color: #9ca3af;
+  letter-spacing: 0.2px;
+}
+
+.win-prob-num {
+  font-size: 7.5px;
+  font-weight: bold;
+}
+
+.win-prob-track {
+  width: 100%;
+  height: 5px;
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 3px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+.win-prob-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.2);
+}
+
 /* ── Main Faceoff Arena ── */
 .pre-fight-showdown {
   display: flex;

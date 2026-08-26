@@ -260,6 +260,7 @@
     "record_contender": "Contender Team",
     "record_underdog": "Underdog Team",
     "win_pct_label": "Win Rate",
+    "win_prob_title": "WIN PROBABILITY",
     "boss_all_star_desc": "All-Star Rotation: The division's best arms",
     "pitcher_card_tooltip": "Click to inspect this pitcher card",
     "batter_card_tooltip": "Click to inspect this batter card",

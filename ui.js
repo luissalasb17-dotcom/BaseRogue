@@ -6728,6 +6728,42 @@ function initGameModeSelector() {
       ovrDisplay = ovrs.length ? Math.floor(ovrs.reduce((a, b) => a + b, 0) / ovrs.length) : (enemy._ovr || null);
     }
 
+    // Calculate Win Probability (Overall Lineup vs Enemy Rotation)
+    const order = window.Game.battingOrder || ['C','1B','2B','3B','SS','LF','CF','RF','DH'];
+    const myBatters = order.map(pos => window.Game.roster && window.Game.roster[pos]).filter(Boolean);
+    const myTeamAvgOvr = myBatters.length ? (myBatters.reduce((sum, b) => sum + (b.ovr || 50), 0) / myBatters.length) : 55;
+    
+    let synergyBonus = 0;
+    if (window.Game && window.Game._lastSynergyTiersCount) {
+      synergyBonus = window.Game._lastSynergyTiersCount * 1.5;
+    }
+    const enemyAvgOvr = ovrDisplay !== null ? ovrDisplay : (enemy.isBoss ? 65 : 55);
+    const diff = (myTeamAvgOvr + synergyBonus) - enemyAvgOvr;
+    let winPct = Math.round(50 + (diff * 2.2));
+    winPct = Math.max(8, Math.min(92, winPct));
+
+    let winColor = '#f59e0b';
+    let winGradient = 'linear-gradient(90deg, #d97706, #f59e0b)';
+    if (winPct >= 60) {
+      winColor = '#10b981';
+      winGradient = 'linear-gradient(90deg, #059669, #10b981)';
+    } else if (winPct < 45) {
+      winColor = '#ef4444';
+      winGradient = 'linear-gradient(90deg, #dc2626, #ef4444)';
+    }
+
+    const winProbHTML = `
+      <div class="pre-fight-win-prob-wrap">
+        <div class="win-prob-header-row">
+          <span class="win-prob-label">${t('pre_fight.win_prob_title', 'PROB. VICTORIA')}</span>
+          <span class="win-prob-num" style="color:${winColor};">${winPct}%</span>
+        </div>
+        <div class="win-prob-track">
+          <div class="win-prob-fill" style="width:${winPct}%; background:${winGradient};"></div>
+        </div>
+      </div>
+    `;
+
     const ovrHTML = ovrDisplay !== null
       ? `<div style="font-size:9px;color:#e4e4e7;margin-top:6px;padding-top:6px;border-top:1px dashed rgba(255,255,255,0.15);">${t('pre_fight.ovr_label')}: <strong>${ovrDisplay}</strong></div>`
       : '';
@@ -6740,10 +6776,11 @@ function initGameModeSelector() {
           ${eraName ? `<div style="font-size:11px;color:#9ca3af;margin-top:2px;">${t('pre_fight.era_label')}: ${eraName}</div>` : ''}
           ${recordHTML}
         </div>
-        <div style="background:${rBg};border:1px solid ${rColor};border-radius:8px;padding:8px 14px;text-align:center;">
+        <div style="background:${rBg};border:1px solid ${rColor};border-radius:8px;padding:8px 14px;text-align:center;min-width:140px;">
           <div style="font-size:9px;color:${rColor};font-weight:bold;letter-spacing:0.5px;">${rarity.toUpperCase()}</div>
           <div style="font-size:11px;color:#e4e4e7;margin-top:2px;">${threatLabel}</div>
           ${ovrHTML}
+          ${winProbHTML}
         </div>
       </div>
     `;
