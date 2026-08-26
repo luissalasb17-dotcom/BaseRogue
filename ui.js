@@ -553,6 +553,7 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
     const isClutch = !!(player.clutch || player.is_clutch);
     const isCaptain = !!(player.captain || player.is_captain);
     const isInterEra = !!player.isInterEra;
+    const isChallengeWinner = !!(window.Challenge162 && window.Challenge162.isUnlocked(player));
     const isInjured = !!(player.isInjured || (player.upgrades && player.upgrades.con <= -15));
     if (!isClutch && !isCaptain && !isInterEra && !isChallengeWinner && !isInjured) return '';
 
