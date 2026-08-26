@@ -3381,8 +3381,13 @@
 
       const td = (val, opts) => `<td class="c162-td${opts && opts.num ? ' c162-td-num' : ''}"${opts && opts.accent ? ' style="color:var(--challenge162-accent);font-weight:bold;"' : (opts && opts.style ? ` style="${opts.style}"` : '')}>${val}</td>`;
 
-      // ── Batters Rows (with OBP, SLG, OPS, WAR) ───────────────────────────
-      const batterRows = SLOTS.map((slot, i) => {
+      if (!S.roster.battingOrder || S.roster.battingOrder.length !== 9) {
+        S.roster.battingOrder = this._optimizeBattingOrder ? this._optimizeBattingOrder(S.roster.lineup) : SLOTS;
+      }
+      const battingOrder = S.roster.battingOrder;
+
+      // ── Batters Rows (in authentic 1-9 Batting Order sequence with OBP, SLG, OPS, WAR) ───
+      const batterRows = battingOrder.map((slot, i) => {
         const p = S.roster.lineup[slot];
         if (!p) return '';
         const k = batterUnlockKey(p);
@@ -3397,6 +3402,7 @@
         const war = calcBatterWAR(s, slot);
 
         return `<tr class="c162-tr${i % 2 ? ' c162-tr-alt' : ''}">
+          ${td(`<span style="font-family:'Press Start 2P',monospace;font-size:8px;color:#94a3b8;">${i + 1}</span>`, { style: 'text-align:center;' })}
           ${td(`<span class="c162-tag-pos">${slot}</span>`)}
           ${td(s.name)}
           ${td(s.ab, { num: true })}
@@ -3440,7 +3446,7 @@
         const ipDec = s.outs / 3;
         const era = ipDec > 0 ? ((s.er * 9) / ipDec).toFixed(2) : '0.00';
         const whip = ipDec > 0 ? ((s.bb + s.h) / ipDec).toFixed(2) : '0.00';
-        const roleBadge = `<span class="c162-tag-role" style="color:${roleColor};background:${roleBg};">${roleLabel}</span>`;
+        const roleBadge = `<span class="c162-tag-role" style="background:${roleBg};">${roleLabel}</span>`;
         const war = calcPitcherWAR(s, roleLabel);
 
         return `<tr class="c162-tr${i % 2 ? ' c162-tr-alt' : ''}">
@@ -3477,9 +3483,12 @@
       if (!seasonOver) {
         const sched = S.schedule[S.gamesPlayed];
         const opp = getFranchiseDecadeTeam(sched.code, sched.decade);
-        const oppBattersHTML = opp.lineup.slice(0, 9).map(p =>
-          `<div style="display:flex;justify-content:space-between;font-size:9.5px;padding:2px 6px;">
-            <span style="color:#9ca3af;font-weight:bold;min-width:24px;">${p.assignedSlot || p.pos}</span><span style="color:#e4e4e7;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:145px;">${p.name}</span><span style="color:var(--challenge162-accent);">${p.ovr}</span>
+        const oppBattersHTML = opp.lineup.slice(0, 9).map((p, idx) =>
+          `<div style="display:flex;justify-content:space-between;align-items:center;font-size:9.5px;padding:2px 6px;">
+            <span style="color:#64748b;font-family:'Press Start 2P',monospace;font-size:7px;width:14px;">${idx + 1}.</span>
+            <span style="color:#9ca3af;font-weight:bold;min-width:24px;">${p.assignedSlot || p.pos}</span>
+            <span style="color:#e4e4e7;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:130px;flex:1;padding:0 4px;">${p.name}</span>
+            <span style="color:var(--challenge162-accent);">${Math.round(p.ovr || 80)}</span>
           </div>`
         ).join('');
         
@@ -3578,18 +3587,29 @@
         <div class="c162-season-top-row" style="display:flex;justify-content:center;align-items:stretch;gap:14px;flex-wrap:wrap;margin-bottom:14px;max-width:960px;margin-left:auto;margin-right:auto;">
           
           <!-- Left: Record & Mode Summary Card -->
-          <div class="c162-record-summary-card" style="flex:0 1 270px;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:12px 18px;border-radius:12px;background:rgba(0,0,0,0.5);border:1px solid rgba(255,215,0,0.25);box-sizing:border-box;">
+          <div style="flex: 1 1 320px; max-width: 380px; margin: 0; background: radial-gradient(circle at 50% 0%, rgba(15,23,42,0.95) 0%, rgba(8,12,22,0.98) 100%); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; padding: 12px 16px; display: flex; flex-direction: column; justify-content: center; align-items: center; box-shadow: 0 4px 20px rgba(0,0,0,0.4); box-sizing: border-box;">
             <div style="margin-bottom:6px;">
-              <span class="c162-mode-badge" style="background:rgba(245,158,11,0.2);color:#ffd700;border:1px solid rgba(245,158,11,0.5);font-size:8.5px;padding:3px 8px;">
+              <span class="c162-mode-badge" style="background:rgba(245,158,11,0.2);color:#ffd700;border:1px solid rgba(245,158,11,0.5);font-size:9.5px;padding:4px 8px;">
                 ${(S.modeConfig && S.modeConfig.label) || '162-0 CHALLENGE'}
               </span>
             </div>
-            <div style="font-family:'Press Start 2P',monospace;font-size:24px;color:#ffd700;margin:2px 0;">
-              ${S.wins} - ${S.losses}
+            
+            <div style="display:flex;align-items:center;gap:16px;margin:2px 0;">
+              <div style="font-family:'Press Start 2P',monospace;font-size:22px;color:#34d399;text-shadow:0 0 12px rgba(52,211,153,0.5);">
+                ${S.wins}
+              </div>
+              <div style="font-family:'Press Start 2P',monospace;font-size:14px;color:#64748b;">
+                -
+              </div>
+              <div style="font-family:'Press Start 2P',monospace;font-size:22px;color:#f87171;text-shadow:0 0 12px rgba(248,113,113,0.5);">
+                ${S.losses}
+              </div>
             </div>
-            <div style="font-size:9.5px;color:#9ca3af;font-family:'Press Start 2P',monospace;margin-top:2px;">
+
+            <div style="font-size:10.5px;color:#94a3b8;margin-top:2px;">
               ${gamesCountText}
             </div>
+
             ${streakHTML}
           </div>
 
@@ -3618,6 +3638,7 @@
               <div class="c162-table-wrap">
                 <table class="c162-table">
                   <thead><tr>
+                    <th class="c162-th" style="width:28px;text-align:center;">#</th>
                     <th class="c162-th">POS</th>
                     <th class="c162-th">${_t('challenge162.table_player', 'PLAYER')}</th>
                     <th class="c162-th">AB</th>
