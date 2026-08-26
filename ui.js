@@ -5665,19 +5665,19 @@ function initGameModeSelector() {
 
       if (newEraTier > curEraTier) {
         linesHTML += `
-          <div style="background: rgba(255, 215, 0, 0.18); border: 1px solid #ffd700; border-radius: 4px; padding: 2px 4px; margin-bottom: 2px; box-shadow: 0 0 8px rgba(255,215,0,0.25);">
-            <div style="font-size: 5.5px; color: #ffd700; font-family: 'Press Start 2P', monospace; font-weight: bold; line-height: 1.2;">
-              ⚡ ${typeof t === 'function' ? t('synergy.activates_tier', { era: eraShort, tier: newEraTier }) : `¡ACTIVA T${newEraTier} (${eraShort})!`}
+          <div style="background: rgba(255, 215, 0, 0.22); border: 1px solid #ffd700; border-radius: 4px; padding: 3px 5px; margin-bottom: 3px; box-shadow: 0 0 8px rgba(255,215,0,0.3); text-align: center;">
+            <div style="font-size: 9.5px; color: #ffd700; font-weight: bold; font-family: 'Outfit', sans-serif; line-height: 1.2;">
+              ⚡ ${typeof t === 'function' ? t('synergy.activates_tier', { era: eraShort, tier: newEraTier }) : `¡ACTIVA TIER ${newEraTier} (${eraShort})!`}
             </div>
           </div>
         `;
       } else {
         const isExisting = curEraCount > 0;
-        const pillCol = isExisting ? '#10b981' : '#94a3b8';
+        const pillCol = isExisting ? '#34d399' : '#94a3b8';
         linesHTML += `
-          <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.08); border-radius: 3px; padding: 2px 4px; margin-bottom: 2px; font-family: 'Press Start 2P', monospace; font-size: 5.5px;">
-            <span style="color: #e2e8f0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:80px;">⏳ ${eraShort}</span>
-            <span style="color: ${pillCol}; font-weight: bold;">${newEraCount}/${nextTarget} (T${newEraTier})</span>
+          <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.45); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; padding: 3px 6px; margin-bottom: 3px; font-family: 'Outfit', sans-serif; font-size: 10px;">
+            <span style="color: #f1f5f9; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 90px;">⏳ ${eraShort}</span>
+            <span style="color: ${pillCol}; font-weight: 700; font-family: monospace;">${newEraCount}/${nextTarget} (T${newEraTier})</span>
           </div>
         `;
       }
@@ -5687,8 +5687,8 @@ function initGameModeSelector() {
     if (player.team && player.team !== 'ROOK') {
       if (newTeamCount === 2) {
         linesHTML += `
-          <div style="background: rgba(56, 189, 248, 0.18); border: 1px solid #38bdf8; border-radius: 4px; padding: 2px 4px; margin-bottom: 2px; box-shadow: 0 0 8px rgba(56,189,248,0.25);">
-            <div style="font-size: 5.5px; color: #38bdf8; font-family: 'Press Start 2P', monospace; font-weight: bold; line-height: 1.2;">
+          <div style="background: rgba(56, 189, 248, 0.22); border: 1px solid #38bdf8; border-radius: 4px; padding: 3px 5px; margin-bottom: 3px; box-shadow: 0 0 8px rgba(56,189,248,0.3); text-align: center;">
+            <div style="font-size: 9.5px; color: #38bdf8; font-weight: bold; font-family: 'Outfit', sans-serif; line-height: 1.2;">
               ⚾ ${typeof t === 'function' ? t('synergy.activates_chemistry', { team: player.team }) : `¡QUÍMICA ${player.team} (+4)!`}
             </div>
           </div>
@@ -5696,17 +5696,17 @@ function initGameModeSelector() {
       } else if (newTeamCount >= 3) {
         const pts = newTeamCount * 2;
         linesHTML += `
-          <div style="background: rgba(168, 85, 247, 0.18); border: 1px solid #a855f7; border-radius: 4px; padding: 2px 4px; margin-bottom: 2px; box-shadow: 0 0 8px rgba(168,85,247,0.25);">
-            <div style="font-size: 5.5px; color: #c084fc; font-family: 'Press Start 2P', monospace; font-weight: bold; line-height: 1.2;">
+          <div style="background: rgba(168, 85, 247, 0.22); border: 1px solid #a855f7; border-radius: 4px; padding: 3px 5px; margin-bottom: 3px; box-shadow: 0 0 8px rgba(168,85,247,0.3); text-align: center;">
+            <div style="font-size: 9.5px; color: #c084fc; font-weight: bold; font-family: 'Outfit', sans-serif; line-height: 1.2;">
               👑 ${typeof t === 'function' ? t('synergy.activates_dynasty', { team: player.team, pts }) : `¡DINASTÍA ${player.team} (+${pts})!`}
             </div>
           </div>
         `;
       } else {
         linesHTML += `
-          <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.08); border-radius: 3px; padding: 2px 4px; font-family: 'Press Start 2P', monospace; font-size: 5.5px;">
-            <span style="color: #94a3b8;">⚾ ${player.team}</span>
-            <span style="color: #64748b;">${newTeamCount}/2</span>
+          <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.45); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; padding: 3px 6px; font-family: 'Outfit', sans-serif; font-size: 10px;">
+            <span style="color: #94a3b8; font-weight: 500;">⚾ ${player.team}</span>
+            <span style="color: #64748b; font-weight: 700; font-family: monospace;">${newTeamCount}/2</span>
           </div>
         `;
       }
@@ -5715,15 +5715,15 @@ function initGameModeSelector() {
     // 3. INTER-ERA BONUS
     if (player.isInterEra) {
       linesHTML += `
-        <div style="margin-top: 2px; font-size: 5px; color: #fbbf24; font-family: 'Press Start 2P', monospace; text-align: center;">
+        <div style="margin-top: 3px; font-size: 8px; color: #fbbf24; font-family: 'Press Start 2P', monospace; text-align: center;">
           ⏳ ${typeof t === 'function' ? t('badge.interera_label', 'FUERA DE ÉPOCA (2x)') : 'FUERA DE ÉPOCA (2x)'}
         </div>
       `;
     }
 
     return `
-      <div class="synergy-impact-box" style="width: 100%; margin: 2px 0; padding: 4px 5px; background: rgba(10, 15, 30, 0.85); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 6px; text-align: left; box-sizing: border-box;">
-        <div style="font-size: 5.5px; color: #ffd700; font-family: 'Press Start 2P', monospace; margin-bottom: 2px; letter-spacing: 0.5px;">
+      <div class="synergy-impact-box" style="width: 100%; margin: 3px 0; padding: 5px 6px; background: rgba(10, 15, 30, 0.9); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 6px; text-align: left; box-sizing: border-box;">
+        <div style="font-size: 7.5px; color: #ffd700; font-family: 'Press Start 2P', monospace; margin-bottom: 4px; letter-spacing: 0.5px;">
           ⚡ ${typeof t === 'function' ? t('synergy.impact_header', 'IMPACTO EN EL EQUIPO') : 'IMPACTO EN EL EQUIPO'}
         </div>
         ${linesHTML}
