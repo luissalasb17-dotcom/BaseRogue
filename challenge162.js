@@ -986,6 +986,7 @@
         leagueTeams,
         schedule: buildSeasonSchedule(leagueTeams),
         gamesPlayed: 0, wins: 0, losses: 0, streak: 0,
+        safetyShields: 2, safetyUsed: 0,
         batterStats: {}, pitcherStats: {},
         gameLog: [],
         playoffs: { unlocked: false, round: 0, finished: false, won: false }
@@ -1125,9 +1126,30 @@
       const opp = getFranchiseDecadeTeam(sched.code, sched.decade);
       const userLineup = S.roster.battingOrder.map(slot => S.roster.lineup[slot]).filter(Boolean);
 
-      const attempt = this._simulateNaturalGame(userLineup, userSP, userRelievers, opp, gameIdx);
+      let attempt = this._simulateNaturalGame(userLineup, userSP, userRelievers, opp, gameIdx);
+      let won = attempt.userRuns > attempt.oppRuns;
 
-      // Commit the game attempt's stats into the season totals:
+      if (S.safetyShields === undefined) S.safetyShields = 2;
+
+      // ── Safety Net (Partidos de Seguridad / Re-sim on loss if shield available) ──
+      let usedSafety = false;
+      if (!won && S.safetyShields > 0) {
+        const retryAttempt = this._simulateNaturalGame(userLineup, userSP, userRelievers, opp, gameIdx);
+        S.safetyShields--;
+        S.safetyUsed = (S.safetyUsed || 0) + 1;
+        usedSafety = true;
+        if (retryAttempt.userRuns > retryAttempt.oppRuns) {
+          attempt = retryAttempt;
+          won = true;
+        } else {
+          if ((retryAttempt.userRuns - retryAttempt.oppRuns) > (attempt.userRuns - attempt.oppRuns)) {
+            attempt = retryAttempt;
+          }
+          won = false;
+        }
+      }
+
+      // Commit the chosen game attempt's stats into the season totals:
       Object.entries(attempt.batterDeltas).forEach(([key, d]) => {
         const s = S.batterStats[key];
         if (!s) return;
@@ -1141,7 +1163,6 @@
       });
 
       S.gamesPlayed++;
-      const won = attempt.userRuns > attempt.oppRuns;
       if (won) { S.wins++; S.streak = (S.streak || 0) + 1; } else { S.losses++; S.streak = 0; }
 
       if (!this._autoSimRunning && window.AudioManager && typeof window.AudioManager.play === 'function') {
@@ -1164,7 +1185,7 @@
         S.pitcherStats[lastKey].sv++;
       }
 
-      const logEntry = { opponent: opp.name, userRuns: attempt.userRuns, oppRuns: attempt.oppRuns, won, inning: attempt.inning };
+      const logEntry = { opponent: opp.name, userRuns: attempt.userRuns, oppRuns: attempt.oppRuns, won, inning: attempt.inning, usedSafety };
       S.gameLog.push(logEntry);
       if (S.gameLog.length > 30) S.gameLog.shift();
 
@@ -3474,7 +3495,7 @@
           <span class="c162-outcome-pill ${g.won ? 'c162-outcome-w' : 'c162-outcome-l'}">${g.won ? 'W' : 'L'}</span>
           <div style="flex:1;min-width:0;">
             <div style="font-weight:bold;color:#f3f4f6;display:flex;justify-content:space-between;font-size:10px;">
-              <span>${g.userRuns} - ${g.oppRuns}</span>
+              <span>${g.userRuns} - ${g.oppRuns} ${g.usedSafety ? `<span style="font-size:9px;color:#38bdf8;" title="Seguro de Partido Usado / Safety Net Used">🛡️</span>` : ''}</span>
               ${g.inning && g.inning > 9 ? `<span style="font-size:8.5px;color:#fbbf24;">(${g.inning} inn)</span>` : ''}
             </div>
             <div style="font-size:8.5px;color:#9ca3af;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:1px;">vs ${g.opponent}</div>
@@ -3569,6 +3590,9 @@
         </div>`;
       }
 
+      const safetyShields = S.safetyShields !== undefined ? S.safetyShields : 2;
+      const safetyLabel = _t('challenge162.safety_shields', 'SEGUROS');
+
       const completedPct = Math.round((S.gamesPlayed / SEASON_LENGTH) * 100);
       const titleText = _t('challenge162.season_title', '162-0 CHALLENGE');
       const regularSeasonText = _t('challenge162.season_regular', 'TEMPORADA REGULAR');
@@ -3609,8 +3633,11 @@
               </div>
             </div>
 
-            <div style="font-size:10.5px;color:#94a3b8;margin-top:2px;">
-              ${gamesCountText}
+            <div style="display:flex;align-items:center;gap:8px;margin-top:4px;flex-wrap:wrap;justify-content:center;">
+              <span style="font-size:9.5px;color:#94a3b8;">${gamesCountText}</span>
+              <span class="c162-mode-badge" style="background:rgba(56,189,248,0.15);color:#38bdf8;border:1px solid rgba(56,189,248,0.4);font-size:8px;padding:3px 6px;" title="Partidos de seguridad para re-simular derrota">
+                🛡️ ${safetyLabel}: <span style="color:${safetyShields > 0 ? '#34d399' : '#f87171'};font-weight:bold;">${safetyShields}/2</span>
+              </span>
             </div>
 
             ${streakHTML}
