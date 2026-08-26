@@ -1208,10 +1208,21 @@
           if (!pName) continue;
 
           if (!this.runPitcherStats[pName]) {
-            this.runPitcherStats[pName] = { outs: 0, k: 0, bb: 0, h: 0, hr: 0, er: 0 };
+            this.runPitcherStats[pName] = { outs: 0, k: 0, bb: 0, h: 0, hr: 0, er: 0, dmg: 0 };
           }
           const ps = this.runPitcherStats[pName];
+          ps.dmg = (typeof ps.dmg === 'number' && !isNaN(ps.dmg)) ? ps.dmg : 0;
           const eventType = ev.eventType || ev.type;
+
+          let dealtDmg = 0;
+          if (ev.teamHpDmg !== undefined && ev.teamHpDmg !== null && !isNaN(ev.teamHpDmg) && ev.teamHpDmg > 0) {
+            dealtDmg = ev.teamHpDmg;
+          } else if (eventType === 'SO') {
+            dealtDmg = 20;
+          } else if (eventType === 'OUT') {
+            dealtDmg = 10;
+          }
+          ps.dmg += dealtDmg;
 
           if (eventType === 'SO') { ps.outs++; ps.k++; }
           else if (eventType === 'OUT') { ps.outs++; }

@@ -548,22 +548,29 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
   const SLOTS_ORDER = ['C','1B','2B','3B','SS','LF','CF','RF','DH'];
 
   /** Master render for the 9-round draft. Called every time a pick is made. */
-  function getPlayerBadgeIconsHTML(player) {
+  function getPlayerBadgeIconsHTML(player, slot = null) {
     if (!player) return '';
     const isClutch = !!(player.clutch || player.is_clutch);
     const isCaptain = !!(player.captain || player.is_captain);
     const isInterEra = !!player.isInterEra;
     const isChallengeWinner = !!(window.Challenge162 && window.Challenge162.isUnlocked(player));
     const isInjured = !!(player.isInjured || (player.upgrades && player.upgrades.con <= -15));
-    if (!isClutch && !isCaptain && !isInterEra && !isChallengeWinner && !isInjured) return '';
+    const targetSlot = slot || player.assignedPos || player.pos;
+    const lockNodes = (window.Game && window.Game.positionLocks && targetSlot && window.Game.positionLocks[targetSlot]) ? window.Game.positionLocks[targetSlot] : 0;
+
+    if (!isClutch && !isCaptain && !isInterEra && !isChallengeWinner && !isInjured && lockNodes <= 0) return '';
 
     const clutchToolTip = window.t ? window.t('badge.clutch_tooltip', 'Clutch Player: +4% de probabilidad de hit y +4% de HR con corredores en posición de anotar durante la última entrada.') : 'Clutch Player: +4% de probabilidad de hit y +4% de HR con corredores en posición de anotar durante la última entrada.';
     const captainToolTip = window.t ? window.t('badge.captain_tooltip', 'Captain: +5 a todos los ratings de sus compañeros de equipo mientras esté en el roster activo.') : 'Captain: +5 a todos los ratings de sus compañeros de equipo mientras esté en el roster activo.';
     const interEraToolTip = window.t ? window.t('badge.interera_tooltip') : 'Fuera de Época: este jugador no estaba activo en la temporada seleccionada — cuenta el doble para su sinergia.';
     const challengeWinnerToolTip = window.t ? window.t('badge.challenge162_tooltip', 'Elegible para el 162-0 Challenge: formó parte de un roster que ganó una run completa (Quick Play o Modo Historia).') : 'Elegible para el 162-0 Challenge: formó parte de un roster que ganó una run completa (Quick Play o Modo Historia).';
     const injuryToolTip = window.t ? window.t('badge.injury_tooltip', 'Lesión: Penalización permanente a los ratings por el resto de la temporada.') : 'Lesión: Penalización permanente a los ratings por el resto de la temporada.';
+    const lockToolTip = window.t ? window.t('badge.lock_tooltip', { nodes: lockNodes }) : `Posición Bloqueada: quedan ${lockNodes} nodos para desbloquear`;
 
     let icons = '';
+    if (lockNodes > 0) {
+      icons += `<span class="list-badge-icon badge-locked" title="${lockToolTip}" style="color:#f59e0b; font-weight:bold; margin-left:3px; cursor:help; font-size:10px; display:inline-block; filter:drop-shadow(0 0 4px rgba(245,158,11,0.6));">🔒</span>`;
+    }
     if (isInjured) {
       icons += `<span class="list-badge-icon badge-injured" title="${injuryToolTip}" style="color:#ef4444; font-weight:bold; margin-left:3px; cursor:help; font-size:10px; display:inline-block;">🩹</span>`;
     }
@@ -3371,6 +3378,13 @@ function initGameModeSelector() {
       ribbonHTML += `<div class="card-ribbon ribbon-bottom-left ribbon-stagger-3" style="background:#ef4444;color:#fff;" title="${injuryToolTip}">LESIÓN</div>`;
     }
 
+    const targetSlot = (typeof options === 'object' && options && options.slot) || slotName || player.assignedPos || player.pos;
+    const lockNodes = (window.Game && window.Game.positionLocks && targetSlot && window.Game.positionLocks[targetSlot]) ? window.Game.positionLocks[targetSlot] : 0;
+    if (lockNodes > 0) {
+      const lockToolTip = window.t ? window.t('badge.lock_tooltip', { nodes: lockNodes }) : `Posición Bloqueada: quedan ${lockNodes} nodos para desbloquear`;
+      ribbonHTML += `<div class="card-ribbon ribbon-bottom-left ribbon-stagger-3" style="background:#f59e0b;color:#000;font-weight:bold;" title="${lockToolTip}">🔒 BLOQ (${lockNodes})</div>`;
+    }
+
     // Full-width top banner (not another diagonal corner ribbon) — those read
     // fine for a short word like "CLUTCH" but a longer phrase like "OUT OF
     // ERA" was illegible at ribbon size, so this gets its own clear strip.
@@ -4035,7 +4049,7 @@ function initGameModeSelector() {
       nameSpan.className = "player-name";
       
       if (effectivePlayer) {
-        const badgeIconsHTML = getPlayerBadgeIconsHTML(effectivePlayer);
+        const badgeIconsHTML = getPlayerBadgeIconsHTML(effectivePlayer, slot);
         const itemIconHTML = player && player.equipped_item ? `<span title="${player.equipped_item.name} (${player.equipped_item.statDesc || ''})" style="margin-left:4px; font-size:11px; filter:drop-shadow(0 0 3px #00ff66);">${player.equipped_item.icon || '🎒'}</span>` : '';
         if (effectivePlayer.captain && !badgeIconsHTML.includes('badge-captain')) {
           console.warn('[BaseRogue] captain badge missing for a captain=true player', { player: effectivePlayer.name, effectivePlayer });
@@ -4216,6 +4230,14 @@ function initGameModeSelector() {
     }
 
     // ── STANDARD BATTER MODAL ────────────────────────────────────────────────
+    const targetSlot = slot || player.assignedPos || player.pos;
+    const lockNodes = (window.Game && window.Game.positionLocks && targetSlot && window.Game.positionLocks[targetSlot]) ? window.Game.positionLocks[targetSlot] : 0;
+    const lockBannerHTML = lockNodes > 0 ? `
+      <div style="background: rgba(245,158,11,0.18); border: 1.5px solid #f59e0b; border-radius: 8px; padding: 6px 10px; margin: 8px 0; text-align: center; color: #fbbf24; font-family: 'Press Start 2P', monospace; font-size: 8px; box-shadow: 0 0 10px rgba(245,158,11,0.3);">
+        🔒 ${typeof window.t === 'function' ? window.t('gamble.card_locked_badge', { nodes: lockNodes }) : `BLOQUEADO (${lockNodes} NODOS RESTANTES)`}
+      </div>
+    ` : '';
+
     overlay.querySelector('#popup-card-content').innerHTML = `
       <div class="popup-card-header">
         <div class="popup-rarity-badge" style="color:${rarityColor};border-color:${rarityColor};">${player.rarity || 'Common'}</div>
@@ -4227,6 +4249,7 @@ function initGameModeSelector() {
         <span class="popup-era-chip">${(player.era||'').replace(/\(.*\)/,'').trim()}</span>
         <span class="popup-team-chip">${player.team !== 'ROOK' ? player.team : '—'}</span>
       </div>
+      ${lockBannerHTML}
       <div class="popup-ovr-banner" style="background:${ovrGrade.color}20;border-color:${ovrGrade.color};">
         <span class="popup-ovr-label">OVR</span>
         <span class="popup-ovr-val" style="color:${ovrGrade.color};">${ovr}</span>
@@ -5971,8 +5994,8 @@ function initGameModeSelector() {
         updateHUD();
 
         const resultDesc = isConsumable
-          ? `¡${event.safeOption.name} guardado en tu panel de ITEMS! Es de 1 SOLO USO: arrástralo sobre cualquier jugador para consumirlo.`
-          : `¡${event.safeOption.name} guardado en tu panel de ITEMS! Arrástralo a cualquier jugador de tu alineación para equiparlo.`;
+          ? (typeof t === 'function' ? t('equip.store_bought_consumable_desc', { name: event.safeOption.name }) : `¡${event.safeOption.name} guardado en tu panel de ITEMS! Es de 1 SOLO USO: arrástralo sobre cualquier jugador para consumirlo.`)
+          : (typeof t === 'function' ? t('equip.store_bought_equip_desc', { name: event.safeOption.name }) : `¡${event.safeOption.name} guardado en tu panel de ITEMS! Arrástralo a cualquier jugador de tu alineación para equiparlo.`);
 
         showRetroResultModal({
           title: event.safeOption.name,
@@ -6636,11 +6659,13 @@ function initGameModeSelector() {
       if (roll < tpl.riskChance) {
         isFail = true;
         player.stamina = Math.max(10, player.stamina - (tpl.failPenalty || 15));
-        stats.push({ label: 'Stamina del Jugador', value: `-${tpl.failPenalty || 15}`, isPositive: false });
+        const staLbl = typeof window.t === 'function' ? window.t('training.stat_stamina_label', 'Stamina del Jugador') : 'Stamina del Jugador';
+        stats.push({ label: staLbl, value: `-${tpl.failPenalty || 15}`, isPositive: false });
       } else {
         gainVal = Math.floor(Math.random() * (tpl.maxVal - tpl.minVal + 1)) + tpl.minVal;
         player.upgrades[tpl.stat] = (player.upgrades[tpl.stat] || 0) + gainVal;
-        stats.push({ label: tpl.stat.toUpperCase() + ' Aumentado', value: `+${gainVal}`, isPositive: true });
+        const boostLbl = typeof window.t === 'function' ? window.t('training.stat_boosted_label', { stat: tpl.stat.toUpperCase() }) : `${tpl.stat.toUpperCase()} Aumentado`;
+        stats.push({ label: boostLbl, value: `+${gainVal}`, isPositive: true });
       }
     } else {
       const roll = Math.random();
@@ -6654,10 +6679,12 @@ function initGameModeSelector() {
       if (tpl.stat === 'sta') {
         player.stamina = Math.min(100, player.stamina + gainVal);
         player.upgrades.sta = (player.upgrades.sta || 0) + 5;
-        stats.push({ label: 'Stamina Recuperada', value: `+${gainVal}`, isPositive: true });
+        const staLbl = typeof window.t === 'function' ? window.t('training.stat_stamina_label', 'Stamina del Jugador') : 'Stamina del Jugador';
+        stats.push({ label: staLbl, value: `+${gainVal}`, isPositive: true });
       } else {
         player.upgrades[tpl.stat] = (player.upgrades[tpl.stat] || 0) + gainVal;
-        stats.push({ label: tpl.stat.toUpperCase() + ' Aumentado', value: `+${gainVal}`, isPositive: true });
+        const boostLbl = typeof window.t === 'function' ? window.t('training.stat_boosted_label', { stat: tpl.stat.toUpperCase() }) : `${tpl.stat.toUpperCase()} Aumentado`;
+        stats.push({ label: boostLbl, value: `+${gainVal}`, isPositive: true });
       }
     }
 
@@ -6797,9 +6824,12 @@ function initGameModeSelector() {
     const avgPwr = myBatters.reduce((acc, b) => acc + (b.pwr || 50), 0) / bCount;
     const avgEye = myBatters.reduce((acc, b) => acc + (b.eye || 50), 0) / bCount;
     const avgKAvd = myBatters.reduce((acc, b) => acc + (b.k_avd || 50), 0) / bCount;
+    const avgSpd = myBatters.reduce((acc, b) => acc + (b.spd || 50), 0) / bCount;
+    const avgDef = myBatters.reduce((acc, b) => acc + (b.def || 50), 0) / bCount;
+    const avgAthletic = (avgSpd + avgDef) / 2;
 
     // 2. Average of opponent pitching staff (Starter 50% weight, Bullpen 50% weight)
-    const oppPitchers = (enemy.pitchers && enemy.pitchers.length > 0) ? enemy.pitchers : [{ h9: 50, hr9: 50, bb9: 50, k9: 50 }];
+    const oppPitchers = (enemy.pitchers && enemy.pitchers.length > 0) ? enemy.pitchers : [{ h9: 50, hr9: 50, bb9: 50, k9: 50, sta: 65 }];
     const sp = oppPitchers.find(p => p.role === 'SP') || oppPitchers[0];
     const rels = oppPitchers.filter(p => p !== sp);
 
@@ -6807,24 +6837,28 @@ function initGameModeSelector() {
     let oppHr9 = sp.hr9 || 50;
     let oppBb9 = sp.bb9 || 50;
     let oppK9 = sp.k9 || 50;
+    let oppSta = sp.sta !== undefined ? sp.sta : (sp.sta_val !== undefined ? sp.sta_val : 65);
 
     if (rels.length > 0) {
       const relH9 = rels.reduce((acc, p) => acc + (p.h9 || 50), 0) / rels.length;
       const relHr9 = rels.reduce((acc, p) => acc + (p.hr9 || 50), 0) / rels.length;
       const relBb9 = rels.reduce((acc, p) => acc + (p.bb9 || 50), 0) / rels.length;
       const relK9 = rels.reduce((acc, p) => acc + (p.k9 || 50), 0) / rels.length;
+      const relSta = rels.reduce((acc, p) => acc + (p.sta !== undefined ? p.sta : (p.sta_val !== undefined ? p.sta_val : 65)), 0) / rels.length;
 
       oppH9 = (oppH9 * 0.5) + (relH9 * 0.5);
       oppHr9 = (oppHr9 * 0.5) + (relHr9 * 0.5);
       oppBb9 = (oppBb9 * 0.5) + (relBb9 * 0.5);
       oppK9 = (oppK9 * 0.5) + (relK9 * 0.5);
+      oppSta = (oppSta * 0.5) + (relSta * 0.5);
     }
 
-    // 3. Direct Rating Matchup Deltas
+    // 3. Direct Rating Matchup Deltas (All 6 ratings compared!)
     const deltaCon = Math.round(avgCon - oppH9);
     const deltaPwr = Math.round(avgPwr - oppHr9);
     const deltaEye = Math.round(avgEye - oppBb9);
     const deltaK   = Math.round(avgKAvd - oppK9);
+    const deltaAth = Math.round(avgAthletic - oppSta);
 
     // Active Synergy Bonus
     let synergyStatBonus = 0;
@@ -6832,8 +6866,8 @@ function initGameModeSelector() {
       synergyStatBonus = window.Game._lastSynergyTiersCount * 1.5;
     }
 
-    // Weighted Rating Advantage
-    const netAdvantage = (deltaCon * 0.30) + (deltaPwr * 0.25) + (deltaK * 0.25) + (deltaEye * 0.20) + synergyStatBonus;
+    // Weighted Rating Advantage (including Speed & Defense vs Pitcher Stamina)
+    const netAdvantage = (deltaCon * 0.25) + (deltaPwr * 0.22) + (deltaK * 0.20) + (deltaEye * 0.18) + (deltaAth * 0.15) + synergyStatBonus;
     let winPct = Math.round(50 + (netAdvantage * 1.8));
     winPct = Math.max(5, Math.min(95, winPct));
 
@@ -6848,7 +6882,7 @@ function initGameModeSelector() {
     }
 
     const fmtSign = (n) => (n >= 0 ? `+${n}` : `${n}`);
-    const matchupBreakdownTooltip = `⚔️ ${t('pre_fight.breakdown_title', 'Desglose de Ratings')}: CON vs H/9: ${fmtSign(deltaCon)} | POW vs HR/9: ${fmtSign(deltaPwr)} | K/AVD vs K/9: ${fmtSign(deltaK)} | EYE vs BB/9: ${fmtSign(deltaEye)}`;
+    const matchupBreakdownTooltip = `⚔️ ${t('pre_fight.breakdown_title', 'Desglose de Ratings')}: CON vs H/9: ${fmtSign(deltaCon)} | POW vs HR/9: ${fmtSign(deltaPwr)} | K/AVD vs K/9: ${fmtSign(deltaK)} | EYE vs BB/9: ${fmtSign(deltaEye)} | SPD/DEF vs STA: ${fmtSign(deltaAth)}`;
 
     const winProbHTML = `
       <div class="pre-fight-win-prob-wrap" title="${matchupBreakdownTooltip}">
@@ -10879,10 +10913,11 @@ function initGameModeSelector() {
       const h   = ps.h || 0;
       const k   = ps.k || 0;
       const hr  = ps.hr || 0;
+      const dmg = ps.dmg || 0;
       const eraVal = outs > 0 ? ((er * 27) / outs) : 99.0;
       const whipVal = outs > 0 ? ((bb + h) / (outs / 3)) : 99.0;
 
-      return { name, outs, er, bb, h, k, hr, eraVal, whipVal };
+      return { name, outs, er, bb, h, k, hr, dmg, eraVal, whipVal };
     });
 
     let currentPitcherSortCol = 'outs';
@@ -10890,7 +10925,7 @@ function initGameModeSelector() {
 
     function renderPitchersTable() {
       if (!processedPitchers.length) {
-        tbodyP.innerHTML = '<tr><td colspan="9" style="padding:12px;color:#64748b;text-align:center;">Sin datos de lanzadores registrados.</td></tr>';
+        tbodyP.innerHTML = '<tr><td colspan="10" style="padding:12px;color:#64748b;text-align:center;">Sin datos de lanzadores registrados.</td></tr>';
         return;
       }
 
@@ -10914,7 +10949,7 @@ function initGameModeSelector() {
           th.style.color = '#facc15';
         } else {
           th.innerHTML = rawText;
-          th.style.color = '#38bdf8';
+          th.style.color = (col === 'dmg' ? '#ff3366' : '#38bdf8');
         }
       });
 
@@ -10935,6 +10970,7 @@ function initGameModeSelector() {
           <td style="padding:8px;color:#f87171;">${ps.er}</td>
           <td style="padding:8px;color:${parseFloat(era) > 4.5 ? '#ef4444' : '#10b981'};font-weight:bold;">${era}</td>
           <td style="padding:8px;color:${parseFloat(whip) > 1.3 ? '#ef4444' : '#10b981'};font-weight:bold;">${whip}</td>
+          <td style="padding:8px;color:#ff3366;font-weight:bold;font-family:'Press Start 2P',monospace;font-size:9.5px;">${ps.dmg}</td>
         `;
         tbodyP.appendChild(tr);
       });

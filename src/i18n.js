@@ -299,29 +299,37 @@
   },
   "training": {
     "con_label": "Contacto Estándar",
-    "con_desc": "Práctica intensiva de swing",
+    "con_desc": "Práctica intensiva de swing y precisión",
     "pwr_label": "Fuerza de Bateo",
-    "pwr_desc": "Repeticiones con bate pesado",
+    "pwr_desc": "Repeticiones con bate pesado y fuerza central",
     "eye_label": "Disciplina de Boletos",
     "eye_desc": "Paciencia en el plato y lectura de pitcheos",
     "kavd_label": "Evasión de Ponches",
     "kavd_desc": "Afinar la zona de strike y reducir ponches",
     "spd_label": "Velocidad en Bases",
-    "spd_desc": "Trabajo de aceleración en bases",
+    "spd_desc": "Trabajo de aceleración y corrida en bases",
     "def_label": "Técnica Defensiva",
-    "def_desc": "Ejercicios de fildeo y tiro",
+    "def_desc": "Ejercicios de fildeo y tiro rápido",
     "sta_label": "Masaje de Recuperación",
-    "sta_desc": "Masajes y descanso activo",
+    "sta_desc": "Fisioterapia, masajes y descanso activo",
     "pwr_ext_label": "Fuerza Extrema",
-    "pwr_ext_desc": "Levantamiento súper-pesado (30% riesgo tirón)",
+    "pwr_ext_desc": "Levantamiento súper-pesado (30% riesgo: -15 Stamina si falla)",
     "spd_turbo_label": "Turbo Velocidad",
-    "spd_turbo_desc": "Sprints con resistencia (25% riesgo sobrecarga)",
-    "risk_high": "ALTO RIESGO",
-    "risk_safe": "SEGURO",
+    "spd_turbo_desc": "Sprints con resistencia (25% riesgo: -10 Stamina si falla)",
     "cost_label": "Costo del Plan:",
     "buy_btn": "COMPRAR OFERTA",
     "bought_btn": "ADQUIRIDO",
-    "insufficient_funds": "FONDOS INSUFICIENTES"
+    "insufficient_funds": "FONDOS INSUFICIENTES",
+    "risk_high": "ALTO RIESGO",
+    "risk_safe": "SEGURO",
+    "stat_stamina_label": "Stamina del Jugador",
+    "stat_boosted_label": "{{stat}} Aumentado",
+    "badge_fail": "¡SOBRECARGA MUSCULAR!",
+    "badge_crit": "¡CRÍTICO {{label}}! 💥",
+    "badge_ok": "¡ENTRENAMIENTO {{label}}!",
+    "result_fail": "El entrenamiento fue demasiado intenso y provocó fatiga en {{name}}.",
+    "result_crit": "¡Extraordinario desempeño! {{name}} tuvo una sesión de nivel {{label}} e incrementó +{{val}} en su estadística.",
+    "result_ok": "{{name}} completó la rutina {{label}} con éxito."
   },
   "match": {
     "title": "<i class=\"fa-solid fa-trophy\"></i> Bateadores al Combate",
@@ -485,7 +493,7 @@
     "heal_title": "Descanso Completo",
     "heal_desc": "Recupera +40 de energía/estamina para todos los jugadores activos y del banquillo.",
     "heal_btn": "<i class=\"fa-solid fa-heart-pulse\"></i> Dormir y Recuperar",
-    "sponsor_title": "Firma de Patrocinador",
+    "sponsor_title": "Patrocinador Deportivo",
     "sponsor_desc": "Recibe una bonificación económica directa de +$25 para gastar en las tiendas.",
     "sponsor_btn": "<i class=\"fa-solid fa-circle-dollar-to-slot\"></i> Cobrar Patrocinio",
     "badge_restore": "¡RESTAURACIÓN!",
@@ -560,32 +568,6 @@
     "run_mvp_badge": "👑 MVP DE LA RUN",
     "share_team_btn": "📋 Copiar Resumen de Campeón",
     "share_copied_toast": "🏆 ¡Resumen de campeón copiado al portapapeles!"
-  },
-  "training": {
-    "con_label": "Contacto Estándar",
-    "con_desc": "Práctica intensiva de swing y precisión",
-    "pwr_label": "Fuerza de Bateo",
-    "pwr_desc": "Repeticiones con bate pesado y fuerza central",
-    "eye_label": "Disciplina de Boletos",
-    "eye_desc": "Paciencia en el plato y lectura de pitcheos",
-    "kavd_label": "Evasión de Ponches",
-    "kavd_desc": "Afinar la zona de strike y reducir ponches",
-    "spd_label": "Velocidad en Bases",
-    "spd_desc": "Trabajo de aceleración y corrida en bases",
-    "def_label": "Técnica Defensiva",
-    "def_desc": "Ejercicios de fildeo y tiro rápido",
-    "sta_label": "Masaje de Recuperación",
-    "sta_desc": "Fisioterapia, masajes y descanso activo",
-    "pwr_ext_label": "Fuerza Extrema",
-    "pwr_ext_desc": "Levantamiento súper-pesado (30% riesgo: -15 Stamina si falla)",
-    "spd_turbo_label": "Turbo Velocidad",
-    "spd_turbo_desc": "Sprints con resistencia (25% riesgo: -10 Stamina si falla)",
-    "cost_label": "Costo del Plan:",
-    "buy_btn": "COMPRAR OFERTA",
-    "bought_btn": "ADQUIRIDO",
-    "insufficient_funds": "FONDOS INSUFICIENTES",
-    "risk_high": "ALTO RIESGO",
-    "risk_safe": "SEGURO"
   },
   "sim": {
     "label_bb": "BASE POR BOLAS",
@@ -867,38 +849,6 @@
     "player_placed_native": "{{name}} asignado en su posición natural ({{pos}})",
     "mid_boss_win_msg": "¡Derrotaste a la rotación élite del Mid-Boss! Recibiste un ítem y presupuesto extra."
   },
-  "training": {
-    "con": {
-      "label": "🎯 Sesión de Contacto Estándar",
-      "desc": "Práctica intensiva de swing. +5 a +7 Contacto garantizado (15% prob. de ¡Crítico +12!)."
-    },
-    "pwr": {
-      "label": "💪 Entrenamiento de Poder",
-      "desc": "Repeticiones con bate pesado. +5 a +7 Fuerza garantizada (15% prob. de ¡Crítico +12!)."
-    },
-    "spd": {
-      "label": "⚡ Aceleración en Bases",
-      "desc": "Trabajo de aceleración en bases. +5 a +7 Velocidad (15% prob. de ¡Crítico +12!)."
-    },
-    "def": {
-      "label": "🛡️ Técnica Defensiva",
-      "desc": "Ejercicios de fildeo y tiro. +5 a +7 Defensa (15% prob. de ¡Crítico +12!)."
-    },
-    "sta": {
-      "label": "🔋 Recuperación Físico-Biológica",
-      "desc": "Masajes y descanso activo. +35 a +45 Stamina (20% prob. de ¡Recuperación 100%!)."
-    },
-    "risk": {
-      "label": "🔥 Entrenamiento Extremo de Poder",
-      "desc": "Levantamiento súper-pesado. +12 a +14 PWR si resulta. 30% riesgo de tirón muscular (-15 Stamina)."
-    },
-    "badge_fail": "¡SOBRECARGA MUSCULAR!",
-    "badge_crit": "¡CRÍTICO {{label}}! 💥",
-    "badge_ok": "¡ENTRENAMIENTO {{label}}!",
-    "result_fail": "El entrenamiento fue demasiado intenso y provocó fatiga en {{name}}.",
-    "result_crit": "¡Extraordinario desempeño! {{name}} tuvo una sesión de nivel {{label}} e incrementó +{{val}} en su estadística.",
-    "result_ok": "{{name}} completó la rutina {{label}} con éxito."
-  },
   "ev": {
     "cork": {
       "title": "Bate con Corcho",
@@ -1124,6 +1074,10 @@
     "back2back": {
       "name": "💥 Cadena de Poder",
       "desc": "Después de un HR, el siguiente bateador gana +20 de PWR y CON para ese turno."
+    },
+    "midas": {
+      "name": "🎰 Toque de Midas",
+      "desc": "Aumenta en +25% las probabilidades de éxito en eventos de Suerte (LUCK), Decisiones y Ruletas de Prototipos."
     }
   },
   "dex": {
@@ -1371,7 +1325,8 @@
     "challenge162_tooltip": "Elegible para el 162-0 Challenge: formó parte de un roster que ganó una run completa (Quick Play o Modo Historia).",
     "injury_tooltip": "Lesión: Penalización permanente de -20 en todos los ratings por el resto de la temporada.",
     "interera_label": "VIAJERO EN EL TIEMPO",
-    "interera_tooltip": "Viajero en el tiempo: este jugador no estuvo activo durante la temporada seleccionada — cuenta doble para desbloquear la sinergia de su propia era."
+    "interera_tooltip": "Viajero en el tiempo: este jugador no estuvo activo durante la temporada seleccionada — cuenta doble para desbloquear la sinergia de su propia era.",
+    "lock_tooltip": "Posición Bloqueada: quedan {{nodes}} nodos para desbloquear"
   },
   "combat_info": {
     "title": "⚙️ DATOS DE DAÑO & VALORES",
@@ -1538,7 +1493,9 @@
     "if_lose_label": "🔴 50% SI PIERDES:",
     "lose_all": "(Pierdes todo)",
     "success_chance": "PROBABILIDAD ÉXITO",
-    "fail_chance": "PROBABILIDAD FALLO"
+    "fail_chance": "PROBABILIDAD FALLO",
+    "card_locked_badge": "BLOQUEADO ({{nodes}} NODOS RESTANTES)",
+    "locked_tooltip": "Posición Bloqueada: quedan {{nodes}} nodos"
   },
   "tutorial": {
     "got_it": "¡ENTENDIDO!",
@@ -1923,7 +1880,7 @@
     "result_safe_buy_title": "🎉 ¡EQUIPAMIENTO ADQUIRIDO!",
     "store_safe_card_title": "🟢 COMPRA SEGURA (100%)",
     "store_safe_card_desc": "Compra inmediata sin riesgos. Se guarda en tu mochila de ITEMS.",
-    "store_risky_card_title": "🔴 JAULA DE PRUEBAS (60% RIESGO)",
+    "store_risky_card_title": "🔴 JAULA DE PRUEBAS ({{pct}}% ÉXITO)",
     "store_risky_card_desc": "Descuento masivo por probar el prototipo. Si aprueba ganas la versión Legendaria; si falla, el bateador pierde -35 Stamina.",
     "store_reject_card_title": "⚪ RECHAZAR OFERTA",
     "store_reject_card_desc": "Continuar tu camino sin gastar presupuesto.",
@@ -1935,7 +1892,9 @@
     "store_category_glove": "🧤 GUANTE & DEFENSA",
     "store_category_accessory": "👓 ACCESORIO TÁCTICO",
     "store_category_consumable": "🧪 CONSUMIBLE DE ENERGÍA",
-    "stamina_penalty_badge": "⚡ PENALIZACIÓN DE STAMINA"
+    "stamina_penalty_badge": "⚡ PENALIZACIÓN DE STAMINA",
+    "store_bought_consumable_desc": "¡{{name}} guardado en tu panel de ITEMS! Es de 1 SOLO USO: arrástralo sobre cualquier jugador para consumirlo.",
+    "store_bought_equip_desc": "¡{{name}} guardado en tu panel de ITEMS! Arrástralo a cualquier jugador de tu alineación para equiparlo."
   },
   "extra_modal": {
     "title": "⚡ ¡EXTRA INNINGS! ⚡",
@@ -1963,29 +1922,6 @@
     "win_title": "⚡ ¡MID-BOSS DERROTADO! ⚡",
     "win_desc": "¡Victoria de Élite! Obtienes +${{budget}} de presupuesto y un nuevo equipamiento en tu Mochila:",
     "continue_btn": "CONTINUAR AL DRAFT ➡"
-  },
-  "trait": {
-    "eagle": { "name": "🦅 Paciencia de Águila", "desc": "Zona de Boleto (BB) aumenta +3 puntos. Cada BB regenera +5 Stamina al bateador." },
-    "slugger": { "name": "💥 Impulso de Jonronero", "desc": "Cada HR inflige +30 HP de daño extra al pitcher rival." },
-    "surgical": { "name": "🎯 Contacto Quirúrgico", "desc": "Zona de Ponche (SO) reducida en -3 puntos para toda la alineación." },
-    "speed": { "name": "⚡ Velocistas Agresivos", "desc": "Jugadores con SPD > 60 roban la base automáticamente en sencillos y boletos. Debuff al pitcher dura 3 impactos." },
-    "extrabase": { "name": "💣 Impacto Acumulado", "desc": "Batazos de extra bases (2B, 3B, HR) infligen +10 HP de daño adicional al pitcher." },
-    "shield": { "name": "🛡️ Escudo de Hierro", "desc": "Repara automáticamente +25 de Escudo al inicio de cada entrada (hasta el límite de tu equipo)." },
-    "wall": { "name": "🧱 Muro Defensivo", "desc": "Outs normales reducen daño a -13 HP en lugar de -20 HP." },
-    "stamina": { "name": "🔋 Resistencia Inagotable", "desc": "Los bateadores solo pierden 6 de Stamina por partido (en lugar de 12)." },
-    "clutch": { "name": "❤️ Resiliencia de Leyendas", "desc": "Si Team HP cae por debajo de 35, activa estado Clutch: +15 a CON, PWR, EYE, SPD, DEF para toda la alineación." },
-    "glove": { "name": "🧤 Guantelete Dorado", "desc": "Todos los bateadores reciben +10 DEF, aumentando la capacidad del Escudo de equipo." },
-    "secondary": { "name": "🔄 Posición Secundaria Maestra", "desc": "Elimina la penalización (-15%) al colocar bateadores en su Posición Secundaria." },
-    "era_acc": { "name": "⏳ Sinergia de Era Acelerada", "desc": "Solo necesitas 2 jugadores de la misma Era para activar la Sinergia de Nivel 2 (normalmente 4)." },
-    "elite": { "name": "💼 Negociador de Élite", "desc": "Obtienes +$10 de presupuesto extra tras cada victoria." },
-    "scout": { "name": "🌟 Ojo de Cazatalentos", "desc": "Las ofertas de draft muestran 4 jugadores en lugar de 3 y aumenta probabilidad de Epic/Legendary." },
-    "veteran": { "name": "🔋 Segunda Vida", "desc": "Tu alineación completa recupera un +30% de Stamina al inicio de cada nuevo mapa." },
-    "reliever": { "name": "🔥 Emboscada al Relevista", "desc": "El primer batazo contra un nuevo pitcher rival inflige +50% de daño extra." },
-    "pressure": { "name": "📈 Presión Temprana", "desc": "El primer bateador de cada entrada gana +20 de CON y EYE para ese turno." },
-    "ghost": { "name": "🏃 Corredores Fantasma", "desc": "Inicias la 3ª entrada y todos los Extra Innings de cada partido con un corredor en 2ª base automáticamente." },
-    "legendary": { "name": "👑 Dominio Legendario", "desc": "Si tienes 2 o más jugadores Legendary en titular, todos reciben +10 a todas sus estadísticas." },
-    "back2back": { "name": "💥 Cadena de Poder", "desc": "Después de un HR, el siguiente bateador gana +20 de PWR y CON para ese turno." },
-    "midas": { "name": "🎰 Toque de Midas", "desc": "Aumenta en +25% las probabilidades de éxito en eventos de Suerte (LUCK), Decisiones y Ruletas de Prototipos." }
   }
 },
     en: {
@@ -2286,29 +2222,37 @@
   },
   "training": {
     "con_label": "Standard Contact",
-    "con_desc": "Intensive swing mechanics practice",
-    "pwr_label": "Power Hitting",
-    "pwr_desc": "Heavy-bat repetitions",
+    "con_desc": "Intensive swing repetition practice",
+    "pwr_label": "Batting Power",
+    "pwr_desc": "Heavy bat swings and core workouts",
     "eye_label": "Walk Discipline",
-    "eye_desc": "Plate discipline and pitch reading",
+    "eye_desc": "Plate patience and pitch trajectory reading",
     "kavd_label": "Strikeout Avoidance",
-    "kavd_desc": "Refine strike zone and cut strikeouts",
+    "kavd_desc": "Sharpen strike zone coverage and cut strikeouts",
     "spd_label": "Base Speed",
-    "spd_desc": "Basepath acceleration work",
+    "spd_desc": "Explosive base running acceleration",
     "def_label": "Defensive Technique",
-    "def_desc": "Fielding and throwing drills",
+    "def_desc": "Fielding and fast throwing drills",
     "sta_label": "Recovery Massage",
-    "sta_desc": "Massage and active rest",
+    "sta_desc": "Physiotherapy massage and active rest",
     "pwr_ext_label": "Extreme Power",
-    "pwr_ext_desc": "Super-heavy lifting (30% strain risk)",
+    "pwr_ext_desc": "Super-heavy deadlifts (30% risk: -15 Stamina on fail)",
     "spd_turbo_label": "Turbo Speed",
-    "spd_turbo_desc": "Resistance sprints (25% overload risk)",
-    "risk_high": "HIGH RISK",
-    "risk_safe": "SAFE",
+    "spd_turbo_desc": "Parachute resistance sprints (25% risk: -10 Stamina on fail)",
     "cost_label": "Plan Cost:",
     "buy_btn": "BUY OFFER",
     "bought_btn": "PURCHASED",
-    "insufficient_funds": "INSUFFICIENT FUNDS"
+    "insufficient_funds": "INSUFFICIENT FUNDS",
+    "risk_high": "HIGH RISK",
+    "risk_safe": "SAFE",
+    "stat_stamina_label": "Player Stamina",
+    "stat_boosted_label": "{{stat}} Increased",
+    "badge_fail": "MUSCLE OVERLOAD!",
+    "badge_crit": "CRITICAL {{label}}! 💥",
+    "badge_ok": "TRAINING {{label}}!",
+    "result_fail": "The training was too intense and caused fatigue in {{name}}.",
+    "result_crit": "Extraordinary performance! {{name}} had a {{label}}-level session and increased +{{val}} in their stat.",
+    "result_ok": "{{name}} completed the {{label}} routine successfully."
   },
   "match": {
     "title": "<i class=\"fa-solid fa-trophy\"></i> BATTLE",
@@ -2472,7 +2416,7 @@
     "heal_title": "Full Rest",
     "heal_desc": "Recover +40 energy/stamina for all active and bench players.",
     "heal_btn": "<i class=\"fa-solid fa-heart-pulse\"></i> Sleep and Recover",
-    "sponsor_title": "Sponsor Deal",
+    "sponsor_title": "Team Sponsor",
     "sponsor_desc": "Receive a direct +$25 cash bonus to spend in shops.",
     "sponsor_btn": "<i class=\"fa-solid fa-circle-dollar-to-slot\"></i> Collect Sponsorship",
     "badge_restore": "RESTORATION!",
@@ -2547,32 +2491,6 @@
     "run_mvp_badge": "👑 RUN MVP",
     "share_team_btn": "📋 Copy Championship Card",
     "share_copied_toast": "🏆 Championship card copied to clipboard!"
-  },
-  "training": {
-    "con_label": "Standard Contact",
-    "con_desc": "Intensive swing repetition practice",
-    "pwr_label": "Batting Power",
-    "pwr_desc": "Heavy bat swings and core workouts",
-    "eye_label": "Walk Discipline",
-    "eye_desc": "Plate patience and pitch trajectory reading",
-    "kavd_label": "Strikeout Avoidance",
-    "kavd_desc": "Sharpen strike zone coverage and cut strikeouts",
-    "spd_label": "Base Speed",
-    "spd_desc": "Explosive base running acceleration",
-    "def_label": "Defensive Technique",
-    "def_desc": "Fielding and fast throwing drills",
-    "sta_label": "Recovery Massage",
-    "sta_desc": "Physiotherapy massage and active rest",
-    "pwr_ext_label": "Extreme Power",
-    "pwr_ext_desc": "Super-heavy deadlifts (30% risk: -15 Stamina on fail)",
-    "spd_turbo_label": "Turbo Speed",
-    "spd_turbo_desc": "Parachute resistance sprints (25% risk: -10 Stamina on fail)",
-    "cost_label": "Plan Cost:",
-    "buy_btn": "BUY OFFER",
-    "bought_btn": "PURCHASED",
-    "insufficient_funds": "INSUFFICIENT FUNDS",
-    "risk_high": "HIGH RISK",
-    "risk_safe": "SAFE"
   },
   "sim": {
     "label_bb": "WALK",
@@ -2854,38 +2772,6 @@
     "player_placed_native": "{{name}} assigned to primary position ({{pos}})",
     "mid_boss_win_msg": "You defeated the Mid-Boss elite rotation! Received an equipment item and extra budget."
   },
-  "training": {
-    "con": {
-      "label": "🎯 Standard Contact Session",
-      "desc": "Intensive swing practice. +5 to +7 Contact guaranteed (15% chance of Critical +12!)."
-    },
-    "pwr": {
-      "label": "💪 Power Training",
-      "desc": "Heavy bat reps. +5 to +7 Power guaranteed (15% chance of Critical +12!)."
-    },
-    "spd": {
-      "label": "⚡ Speed Drills",
-      "desc": "Base acceleration work. +5 to +7 Speed (15% chance of Critical +12!)."
-    },
-    "def": {
-      "label": "🛡️ Defensive Technique",
-      "desc": "Fielding and throwing drills. +5 to +7 Defense (15% chance of Critical +12!)."
-    },
-    "sta": {
-      "label": "🔋 Physical-Biological Recovery",
-      "desc": "Massages and active rest. +35 to +45 Stamina (20% chance of Full Recovery!)."
-    },
-    "risk": {
-      "label": "🔥 Extreme Power Training",
-      "desc": "Super-heavy lifting. +12 to +14 PWR if successful. 30% risk of muscle strain (-15 Stamina)."
-    },
-    "badge_fail": "MUSCLE OVERLOAD!",
-    "badge_crit": "CRITICAL {{label}}! 💥",
-    "badge_ok": "TRAINING {{label}}!",
-    "result_fail": "The training was too intense and caused fatigue in {{name}}.",
-    "result_crit": "Extraordinary performance! {{name}} had a {{label}}-level session and increased +{{val}} in their stat.",
-    "result_ok": "{{name}} completed the {{label}} routine successfully."
-  },
   "ev": {
     "cork": {
       "title": "Corked Bat Offer",
@@ -3034,27 +2920,27 @@
   "trait": {
     "eagle": {
       "name": "🦅 Eagle Patience",
-      "desc": "Walk (BB) zone increases +3 points. Each BB regenerates +5 Stamina to the batter."
+      "desc": "Walk zone (BB) increases +3 points. Each BB restores +5 Stamina to batter."
     },
     "slugger": {
       "name": "💥 Slugger Momentum",
-      "desc": "Each HR deals +30 extra HP damage to the rival pitcher."
+      "desc": "Each HR deals +30 HP extra damage to rival pitcher."
     },
     "surgical": {
       "name": "🎯 Surgical Contact",
-      "desc": "Strikeout (SO) zone reduced by -3 points for the whole lineup."
+      "desc": "Strikeout zone (SO) reduced by -3 points for whole lineup."
     },
     "speed": {
-      "name": "⚡ Aggressive Speedsters",
-      "desc": "Players with SPD > 60 automatically steal the base on singles and walks. Pitcher debuff lasts 3 impacts."
+      "name": "⚡ Speed Demons",
+      "desc": "Hitters with SPD > 60 auto-steal on 1B/BB. Pitcher debuff lasts 3 hits."
     },
     "extrabase": {
-      "name": "💣 Accumulated Impact",
-      "desc": "Extra-base hits (2B, 3B, HR) deal +10 extra HP damage to the pitcher."
+      "name": "💣 Extra Base Impact",
+      "desc": "Extra-base hits (2B, 3B, HR) deal +10 HP additional damage to pitcher."
     },
     "shield": {
       "name": "🛡️ Iron Shield",
-      "desc": "Automatically repairs +25 Shield at the start of each inning (up to team max)."
+      "desc": "Auto-repairs +25 Shield at the start of each inning."
     },
     "wall": {
       "name": "🧱 Defensive Wall",
@@ -3065,52 +2951,56 @@
       "desc": "Batters only lose 6 Stamina per match (instead of 12)."
     },
     "clutch": {
-      "name": "❤️ Legends Resilience",
-      "desc": "If Team HP falls below 35, activates Clutch mode: +15 to all stats for the entire lineup."
+      "name": "❤️ Clutch Legends",
+      "desc": "If Team HP falls below 35, activate Clutch: +15 to CON, PWR, EYE, SPD, DEF for entire lineup."
     },
     "glove": {
-      "name": "🧤 Golden Gauntlet",
+      "name": "🧤 Gold Glove",
       "desc": "All batters receive +10 DEF, increasing team Shield capacity."
     },
     "secondary": {
-      "name": "🔄 Secondary Position Master",
-      "desc": "Eliminates the -15% penalty when placing batters in their Secondary Position."
+      "name": "🔄 Secondary Master",
+      "desc": "Removes the -15% penalty when placing batters in their Secondary Position."
     },
     "era_acc": {
-      "name": "⏳ Accelerated Era Synergy",
-      "desc": "You only need 2 players from the same Era to activate Level 2 Synergy (normally 4)."
+      "name": "⏳ Accelerated Era",
+      "desc": "Only 2 players of the same Era needed for Tier 2 Synergy (normally 4)."
     },
     "elite": {
       "name": "💼 Elite Negotiator",
-      "desc": "You get +$10 extra budget after each victory."
+      "desc": "Earn +$10 extra budget after every victory."
     },
     "scout": {
-      "name": "🌟 Scout Eye",
-      "desc": "Draft offers show 4 players instead of 3 and increases Epic/Legendary probability."
+      "name": "🌟 Scout's Eye",
+      "desc": "Draft offers show 4 players instead of 3 and increases Epic/Legendary odds."
     },
     "veteran": {
       "name": "🔋 Second Life",
-      "desc": "Your full lineup recovers +30% Stamina at the start of each new map."
+      "desc": "Entire lineup recovers +30% Stamina when entering a new map."
     },
     "reliever": {
       "name": "🔥 Reliever Ambush",
-      "desc": "The first hit against a new rival pitcher deals +50% extra damage."
+      "desc": "First hit against a new rival pitcher deals +50% extra damage."
     },
     "pressure": {
       "name": "📈 Early Pressure",
-      "desc": "The first batter of each inning gains +20 CON and EYE for that turn."
+      "desc": "First batter of each inning gains +20 CON and EYE for that turn."
     },
     "ghost": {
       "name": "🏃 Ghost Runners",
-      "desc": "You start the 3rd inning and every Extra Inning of each match with a runner on 2nd base automatically."
+      "desc": "Start the 3rd inning and all Extra Innings with a runner on 2nd base."
     },
     "legendary": {
       "name": "👑 Legendary Domination",
-      "desc": "If you have 2+ Legendary starters, all players receive +10 to all stats."
+      "desc": "If you have 2+ Legendary starters, all players get +10 to all stats."
     },
     "back2back": {
       "name": "💥 Power Chain",
       "desc": "After a HR, the next batter gains +20 PWR and CON for that turn."
+    },
+    "midas": {
+      "name": "🎰 Midas Touch",
+      "desc": "+25% success chance on all LUCK Gambles, Decision Events, and Prototype Roulettes."
     }
   },
   "dex": {
@@ -3358,7 +3248,8 @@
     "challenge162_tooltip": "Eligible for the 162-0 Challenge: was part of a roster that won a full run (Quick Play or Story Mode).",
     "injury_tooltip": "Injury: Permanent -20 rating penalty across all stats for the rest of the season.",
     "interera_label": "TIME TRAVELER",
-    "interera_tooltip": "Time Traveler: this player was not active during the selected season — counts double toward unlocking their own era's synergy."
+    "interera_tooltip": "Time Traveler: this player was not active during the selected season — counts double toward unlocking their own era's synergy.",
+    "lock_tooltip": "Locked Position: {{nodes}} nodes remaining to unlock"
   },
   "combat_info": {
     "title": "⚙️ DAMAGE DATA & VALUES",
@@ -3525,7 +3416,9 @@
     "if_lose_label": "🔴 50% IF YOU LOSE:",
     "lose_all": "(Lose everything)",
     "success_chance": "SUCCESS CHANCE",
-    "fail_chance": "FAILURE CHANCE"
+    "fail_chance": "FAILURE CHANCE",
+    "card_locked_badge": "LOCKED ({{nodes}} NODES REMAINING)",
+    "locked_tooltip": "Position Locked: {{nodes}} nodes remaining"
   },
   "tutorial": {
     "got_it": "GOT IT!",
@@ -3906,11 +3799,11 @@
     "roulette_center_success": "SUCCESS",
     "roulette_center_fail": "FAIL",
     "result_cage_success_title": "🏆 LEGENDARY PROTOTYPE UNLOCKED!",
-    "result_cage_fail_title": "💥 BATTING CAGE TEST FAILED!",
+    "result_cage_fail_title": "💥 TEST CAGE FAILURE!",
     "result_safe_buy_title": "🎉 EQUIPMENT PURCHASED!",
     "store_safe_card_title": "🟢 SAFE PURCHASE (100%)",
     "store_safe_card_desc": "Direct risk-free purchase. Stored in your ITEMS backpack.",
-    "store_risky_card_title": "🔴 BATTING CAGE (60% RISK)",
+    "store_risky_card_title": "🔴 TEST CAGE ({{pct}}% SUCCESS)",
     "store_risky_card_desc": "Massive discount to test the prototype. If it passes you get the Legendary version; if it fails, tester loses -35 Stamina.",
     "store_reject_card_title": "⚪ DECLINE OFFER",
     "store_reject_card_desc": "Continue your run without spending budget.",
@@ -3922,7 +3815,9 @@
     "store_category_glove": "🧤 GLOVE & DEFENSE",
     "store_category_accessory": "👓 TACTICAL ACCESSORY",
     "store_category_consumable": "🧪 ENERGY CONSUMABLE",
-    "stamina_penalty_badge": "⚡ STAMINA PENALTY"
+    "stamina_penalty_badge": "⚡ STAMINA PENALTY",
+    "store_bought_consumable_desc": "{{name}} saved to your ITEMS pouch! 1-TIME USE: drag onto any player to consume it.",
+    "store_bought_equip_desc": "{{name}} saved to your ITEMS pouch! Drag onto any player in your lineup to equip it."
   },
   "extra_modal": {
     "title": "⚡ EXTRA INNINGS! ⚡",
@@ -3950,150 +3845,80 @@
     "win_title": "⚡ MID-BOSS DEFEATED! ⚡",
     "win_desc": "Victory over the elite rotation! You earned +${{budget}} and received an equipment item in your backpack:",
     "continue_btn": "CONTINUE TO DRAFT ➡"
-  },
-  "trait": {
-    "eagle": { "name": "🦅 Eagle Patience", "desc": "Walk zone (BB) increases +3 points. Each BB restores +5 Stamina to batter." },
-    "slugger": { "name": "💥 Slugger Momentum", "desc": "Each HR deals +30 HP extra damage to rival pitcher." },
-    "surgical": { "name": "🎯 Surgical Contact", "desc": "Strikeout zone (SO) reduced by -3 points for whole lineup." },
-    "speed": { "name": "⚡ Speed Demons", "desc": "Hitters with SPD > 60 auto-steal on 1B/BB. Pitcher debuff lasts 3 hits." },
-    "extrabase": { "name": "💣 Extra Base Impact", "desc": "Extra-base hits (2B, 3B, HR) deal +10 HP additional damage to pitcher." },
-    "shield": { "name": "🛡️ Iron Shield", "desc": "Auto-repairs +25 Shield at the start of each inning." },
-    "wall": { "name": "🧱 Defensive Wall", "desc": "Regular outs reduce damage to -13 HP instead of -20 HP." },
-    "stamina": { "name": "🔋 Endless Stamina", "desc": "Batters only lose 6 Stamina per match (instead of 12)." },
-    "clutch": { "name": "❤️ Clutch Legends", "desc": "If Team HP falls below 35, activate Clutch: +15 to CON, PWR, EYE, SPD, DEF for entire lineup." },
-    "glove": { "name": "🧤 Gold Glove", "desc": "All batters receive +10 DEF, increasing team Shield capacity." },
-    "secondary": { "name": "🔄 Secondary Master", "desc": "Removes the -15% penalty when placing batters in their Secondary Position." },
-    "era_acc": { "name": "⏳ Accelerated Era", "desc": "Only 2 players of the same Era needed for Tier 2 Synergy (normally 4)." },
-    "elite": { "name": "💼 Elite Negotiator", "desc": "Earn +$10 extra budget after every victory." },
-    "scout": { "name": "🌟 Scout's Eye", "desc": "Draft offers show 4 players instead of 3 and increases Epic/Legendary odds." },
-    "veteran": { "name": "🔋 Second Life", "desc": "Entire lineup recovers +30% Stamina when entering a new map." },
-    "reliever": { "name": "🔥 Reliever Ambush", "desc": "First hit against a new rival pitcher deals +50% extra damage." },
-    "pressure": { "name": "📈 Early Pressure", "desc": "First batter of each inning gains +20 CON and EYE for that turn." },
-    "ghost": { "name": "🏃 Ghost Runners", "desc": "Start the 3rd inning and all Extra Innings with a runner on 2nd base." },
-    "legendary": { "name": "👑 Legendary Domination", "desc": "If you have 2+ Legendary starters, all players get +10 to all stats." },
-    "back2back": { "name": "💥 Power Chain", "desc": "After a HR, the next batter gains +20 PWR and CON for that turn." },
-    "midas": { "name": "🎰 Midas Touch", "desc": "+25% success chance on all LUCK Gambles, Decision Events, and Prototype Roulettes." }
   }
 }
   };
 
-  let currentLang = localStorage.getItem('baserogue_lang') || 'es';
+  let currentLang = "es";
+
+  try {
+    const saved = localStorage.getItem("baserogue_lang");
+    if (saved && locales[saved]) {
+      currentLang = saved;
+    } else {
+      const browserLang = (navigator.language || navigator.userLanguage || "").substring(0, 2).toLowerCase();
+      if (locales[browserLang]) {
+        currentLang = browserLang;
+      }
+    }
+  } catch (e) {
+    currentLang = "es";
+  }
 
   function translateDOM() {
-    const btnLang = document.getElementById('btn-lang-toggle');
-    if (btnLang) {
-      btnLang.innerText = currentLang === 'es' ? '🌐 ES' : '🌐 EN';
+    document.querySelectorAll("[data-i18n]").forEach(el => {
+      const key = el.getAttribute("data-i18n");
+      if (key) {
+        const text = t(key);
+        if (text) el.textContent = text;
+      }
+    });
+    document.querySelectorAll("[data-i18n-html]").forEach(el => {
+      const key = el.getAttribute("data-i18n-html");
+      if (key) {
+        const text = t(key);
+        if (text) el.innerHTML = text;
+      }
+    });
+    document.querySelectorAll("[data-i18n-placeholder]").forEach(el => {
+      const key = el.getAttribute("data-i18n-placeholder");
+      if (key) {
+        const text = t(key);
+        if (text) el.setAttribute("placeholder", text);
+      }
+    });
+    document.querySelectorAll("[data-i18n-title]").forEach(el => {
+      const key = el.getAttribute("data-i18n-title");
+      if (key) {
+        const text = t(key);
+        if (text) el.setAttribute("title", text);
+      }
+    });
+
+    const langToggleBtn = document.getElementById("lang-toggle-btn");
+    if (langToggleBtn) {
+      langToggleBtn.innerHTML = `<i class="fa-solid fa-globe"></i> ${currentLang.toUpperCase()}`;
     }
-    document.querySelectorAll('[data-i18n]').forEach(el => {
-      const key = el.getAttribute('data-i18n');
-      if (key) {
-        const translated = t(key);
-        if (translated && translated !== key) {
-          el.innerText = translated;
-        }
-      }
-    });
-    document.querySelectorAll('[data-i18n-html]').forEach(el => {
-      const key = el.getAttribute('data-i18n-html');
-      if (key) {
-        const translated = t(key);
-        if (translated && translated !== key) {
-          el.innerHTML = translated;
-        }
-      }
-    });
-    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
-      const key = el.getAttribute('data-i18n-placeholder');
-      if (key) {
-        const translated = t(key);
-        if (translated && translated !== key) {
-          el.setAttribute('placeholder', translated);
-        }
-      }
-    });
-    document.querySelectorAll('[data-i18n-title]').forEach(el => {
-      const key = el.getAttribute('data-i18n-title');
-      if (key) {
-        const translated = t(key);
-        if (translated && translated !== key) {
-          el.setAttribute('title', translated);
-        }
-      }
-    });
   }
 
   function setLanguage(lang) {
     if (!locales[lang]) return;
     currentLang = lang;
-    localStorage.setItem('baserogue_lang', lang);
-    document.documentElement.lang = lang;
+    try {
+      localStorage.setItem("baserogue_lang", lang);
+    } catch (e) {}
     translateDOM();
-    if (window.UI && typeof window.UI.updateStaticTranslations === 'function') {
-      try { window.UI.updateStaticTranslations(); } catch (e) { console.warn(e); }
-    }
-    if (window.UI && typeof window.UI.applyLanguage === 'function') {
-      try { window.UI.applyLanguage(lang); } catch (e) { console.warn(e); }
-    }
-    if (typeof window.renderSynergiesAndItems === 'function') {
-      try { window.renderSynergiesAndItems(); } catch (e) { console.warn(e); }
-    }
-    if (window.BaseballDex && window.BaseballDex.container) {
-      try { window.BaseballDex.renderPanel(); } catch (e) { console.warn(e); }
+    if (typeof window.renderActiveRoster === "function") window.renderActiveRoster();
+    if (typeof window.renderSynergiesAndItems === "function") window.renderSynergiesAndItems();
+    if (typeof window.updateHUD === "function") window.updateHUD();
+    if (typeof window.Challenge162 !== "undefined" && typeof window.Challenge162.render === "function") {
+      window.Challenge162.render();
     }
   }
 
-  function translateElement(el) {
-    if (!el || el.nodeType !== 1) return;
-    if (el.hasAttribute && el.hasAttribute('data-i18n')) {
-      const key = el.getAttribute('data-i18n');
-      if (key) {
-        const translated = t(key);
-        if (translated && translated !== key) el.innerText = translated;
-      }
-    }
-    if (el.hasAttribute && el.hasAttribute('data-i18n-html')) {
-      const key = el.getAttribute('data-i18n-html');
-      if (key) {
-        const translated = t(key);
-        if (translated && translated !== key) el.innerHTML = translated;
-      }
-    }
-    if (el.hasAttribute && el.hasAttribute('data-i18n-placeholder')) {
-      const key = el.getAttribute('data-i18n-placeholder');
-      if (key) {
-        const translated = t(key);
-        if (translated && translated !== key) el.setAttribute('placeholder', translated);
-      }
-    }
-    if (el.hasAttribute && el.hasAttribute('data-i18n-title')) {
-      const key = el.getAttribute('data-i18n-title');
-      if (key) {
-        const translated = t(key);
-        if (translated && translated !== key) el.setAttribute('title', translated);
-      }
-    }
-  }
-
-  // Intercept and translate elements dynamically as they parse into the DOM
-  if (typeof MutationObserver !== 'undefined') {
-    const liveObserver = new MutationObserver(mutations => {
-      mutations.forEach(m => {
-        m.addedNodes.forEach(node => {
-          if (node.nodeType === 1) {
-            translateElement(node);
-            node.querySelectorAll('[data-i18n], [data-i18n-html], [data-i18n-placeholder], [data-i18n-title]').forEach(translateElement);
-          }
-        });
-      });
-    });
-    liveObserver.observe(document.documentElement, { childList: true, subtree: true });
-  }
-
-  // Run on initial load
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', translateDOM);
-    document.addEventListener('readystatechange', () => {
-      if (document.readyState === 'interactive' || document.readyState === 'complete') translateDOM();
+  if (document.readyState === "loading") {
+    document.addEventListener("readystatechange", () => {
+      if (document.readyState === "interactive" || document.readyState === "complete") translateDOM();
     });
   } else {
     translateDOM();
@@ -4104,8 +3929,8 @@
   }
 
   function t(key, params = {}) {
-    const defaultVal = typeof params === 'string' ? params : (params && params.defaultValue !== undefined ? params.defaultValue : null);
-    const keys = key.split('.');
+    const defaultVal = typeof params === "string" ? params : (params && params.defaultValue !== undefined ? params.defaultValue : null);
+    const keys = key.split(".");
     let val = locales[currentLang];
     for (const k of keys) {
       if (val && val[k] !== undefined) {
@@ -4116,8 +3941,7 @@
       }
     }
     if (val === null || val === undefined) {
-      // Fallback to English
-      let fallbackVal = locales['en'];
+      let fallbackVal = locales["en"];
       for (const k of keys) {
         if (fallbackVal && fallbackVal[k] !== undefined) {
           fallbackVal = fallbackVal[k];
@@ -4128,7 +3952,7 @@
       }
       val = fallbackVal !== null ? fallbackVal : (defaultVal !== null ? defaultVal : key);
     }
-    if (typeof val === 'string' && typeof params === 'object' && params !== null) {
+    if (typeof val === "string" && typeof params === "object" && params !== null) {
       return val.replace(/\{\{\s*(\w+)\s*\}\}/g, (_, match) => {
         return params[match] !== undefined ? params[match] : `{{${match}}}`;
       });

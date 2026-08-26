@@ -296,29 +296,37 @@
   },
   "training": {
     "con_label": "Contacto Estándar",
-    "con_desc": "Práctica intensiva de swing",
+    "con_desc": "Práctica intensiva de swing y precisión",
     "pwr_label": "Fuerza de Bateo",
-    "pwr_desc": "Repeticiones con bate pesado",
+    "pwr_desc": "Repeticiones con bate pesado y fuerza central",
     "eye_label": "Disciplina de Boletos",
     "eye_desc": "Paciencia en el plato y lectura de pitcheos",
     "kavd_label": "Evasión de Ponches",
     "kavd_desc": "Afinar la zona de strike y reducir ponches",
     "spd_label": "Velocidad en Bases",
-    "spd_desc": "Trabajo de aceleración en bases",
+    "spd_desc": "Trabajo de aceleración y corrida en bases",
     "def_label": "Técnica Defensiva",
-    "def_desc": "Ejercicios de fildeo y tiro",
+    "def_desc": "Ejercicios de fildeo y tiro rápido",
     "sta_label": "Masaje de Recuperación",
-    "sta_desc": "Masajes y descanso activo",
+    "sta_desc": "Fisioterapia, masajes y descanso activo",
     "pwr_ext_label": "Fuerza Extrema",
-    "pwr_ext_desc": "Levantamiento súper-pesado (30% riesgo tirón)",
+    "pwr_ext_desc": "Levantamiento súper-pesado (30% riesgo: -15 Stamina si falla)",
     "spd_turbo_label": "Turbo Velocidad",
-    "spd_turbo_desc": "Sprints con resistencia (25% riesgo sobrecarga)",
-    "risk_high": "ALTO RIESGO",
-    "risk_safe": "SEGURO",
+    "spd_turbo_desc": "Sprints con resistencia (25% riesgo: -10 Stamina si falla)",
     "cost_label": "Costo del Plan:",
     "buy_btn": "COMPRAR OFERTA",
     "bought_btn": "ADQUIRIDO",
-    "insufficient_funds": "FONDOS INSUFICIENTES"
+    "insufficient_funds": "FONDOS INSUFICIENTES",
+    "risk_high": "ALTO RIESGO",
+    "risk_safe": "SEGURO",
+    "stat_stamina_label": "Stamina del Jugador",
+    "stat_boosted_label": "{{stat}} Aumentado",
+    "badge_fail": "¡SOBRECARGA MUSCULAR!",
+    "badge_crit": "¡CRÍTICO {{label}}! 💥",
+    "badge_ok": "¡ENTRENAMIENTO {{label}}!",
+    "result_fail": "El entrenamiento fue demasiado intenso y provocó fatiga en {{name}}.",
+    "result_crit": "¡Extraordinario desempeño! {{name}} tuvo una sesión de nivel {{label}} e incrementó +{{val}} en su estadística.",
+    "result_ok": "{{name}} completó la rutina {{label}} con éxito."
   },
   "match": {
     "title": "<i class=\"fa-solid fa-trophy\"></i> Bateadores al Combate",
@@ -482,7 +490,7 @@
     "heal_title": "Descanso Completo",
     "heal_desc": "Recupera +40 de energía/estamina para todos los jugadores activos y del banquillo.",
     "heal_btn": "<i class=\"fa-solid fa-heart-pulse\"></i> Dormir y Recuperar",
-    "sponsor_title": "Firma de Patrocinador",
+    "sponsor_title": "Patrocinador Deportivo",
     "sponsor_desc": "Recibe una bonificación económica directa de +$25 para gastar en las tiendas.",
     "sponsor_btn": "<i class=\"fa-solid fa-circle-dollar-to-slot\"></i> Cobrar Patrocinio",
     "badge_restore": "¡RESTAURACIÓN!",
@@ -490,7 +498,6 @@
       "desc": "Toda tu plantilla activa recupera +40 de Stamina para los próximos encuentros."
     },
     "badge_bonus": "¡BONIFICACIÓN!",
-    "sponsor_title": "Patrocinador Deportivo",
     "money": {
       "desc": "Tu club recibe una inyección económica de los patrocinadores locales."
     }
@@ -558,32 +565,6 @@
     "run_mvp_badge": "👑 MVP DE LA RUN",
     "share_team_btn": "📋 Copiar Resumen de Campeón",
     "share_copied_toast": "🏆 ¡Resumen de campeón copiado al portapapeles!"
-  },
-  "training": {
-    "con_label": "Contacto Estándar",
-    "con_desc": "Práctica intensiva de swing y precisión",
-    "pwr_label": "Fuerza de Bateo",
-    "pwr_desc": "Repeticiones con bate pesado y fuerza central",
-    "eye_label": "Disciplina de Boletos",
-    "eye_desc": "Paciencia en el plato y lectura de pitcheos",
-    "kavd_label": "Evasión de Ponches",
-    "kavd_desc": "Afinar la zona de strike y reducir ponches",
-    "spd_label": "Velocidad en Bases",
-    "spd_desc": "Trabajo de aceleración y corrida en bases",
-    "def_label": "Técnica Defensiva",
-    "def_desc": "Ejercicios de fildeo y tiro rápido",
-    "sta_label": "Masaje de Recuperación",
-    "sta_desc": "Fisioterapia, masajes y descanso activo",
-    "pwr_ext_label": "Fuerza Extrema",
-    "pwr_ext_desc": "Levantamiento súper-pesado (30% riesgo: -15 Stamina si falla)",
-    "spd_turbo_label": "Turbo Velocidad",
-    "spd_turbo_desc": "Sprints con resistencia (25% riesgo: -10 Stamina si falla)",
-    "cost_label": "Costo del Plan:",
-    "buy_btn": "COMPRAR OFERTA",
-    "bought_btn": "ADQUIRIDO",
-    "insufficient_funds": "FONDOS INSUFICIENTES",
-    "risk_high": "ALTO RIESGO",
-    "risk_safe": "SEGURO"
   },
   "sim": {
     "label_bb": "BASE POR BOLAS",
@@ -865,38 +846,6 @@
     "player_placed_native": "{{name}} asignado en su posición natural ({{pos}})",
     "mid_boss_win_msg": "¡Derrotaste a la rotación élite del Mid-Boss! Recibiste un ítem y presupuesto extra."
   },
-  "training": {
-    "con": {
-      "label": "🎯 Sesión de Contacto Estándar",
-      "desc": "Práctica intensiva de swing. +5 a +7 Contacto garantizado (15% prob. de ¡Crítico +12!)."
-    },
-    "pwr": {
-      "label": "💪 Entrenamiento de Poder",
-      "desc": "Repeticiones con bate pesado. +5 a +7 Fuerza garantizada (15% prob. de ¡Crítico +12!)."
-    },
-    "spd": {
-      "label": "⚡ Aceleración en Bases",
-      "desc": "Trabajo de aceleración en bases. +5 a +7 Velocidad (15% prob. de ¡Crítico +12!)."
-    },
-    "def": {
-      "label": "🛡️ Técnica Defensiva",
-      "desc": "Ejercicios de fildeo y tiro. +5 a +7 Defensa (15% prob. de ¡Crítico +12!)."
-    },
-    "sta": {
-      "label": "🔋 Recuperación Físico-Biológica",
-      "desc": "Masajes y descanso activo. +35 a +45 Stamina (20% prob. de ¡Recuperación 100%!)."
-    },
-    "risk": {
-      "label": "🔥 Entrenamiento Extremo de Poder",
-      "desc": "Levantamiento súper-pesado. +12 a +14 PWR si resulta. 30% riesgo de tirón muscular (-15 Stamina)."
-    },
-    "badge_fail": "¡SOBRECARGA MUSCULAR!",
-    "badge_crit": "¡CRÍTICO {{label}}! 💥",
-    "badge_ok": "¡ENTRENAMIENTO {{label}}!",
-    "result_fail": "El entrenamiento fue demasiado intenso y provocó fatiga en {{name}}.",
-    "result_crit": "¡Extraordinario desempeño! {{name}} tuvo una sesión de nivel {{label}} e incrementó +{{val}} en su estadística.",
-    "result_ok": "{{name}} completó la rutina {{label}} con éxito."
-  },
   "ev": {
     "cork": {
       "title": "Bate con Corcho",
@@ -1122,6 +1071,10 @@
     "back2back": {
       "name": "💥 Cadena de Poder",
       "desc": "Después de un HR, el siguiente bateador gana +20 de PWR y CON para ese turno."
+    },
+    "midas": {
+      "name": "🎰 Toque de Midas",
+      "desc": "Aumenta en +25% las probabilidades de éxito en eventos de Suerte (LUCK), Decisiones y Ruletas de Prototipos."
     }
   },
   "dex": {
@@ -1369,7 +1322,8 @@
     "challenge162_tooltip": "Elegible para el 162-0 Challenge: formó parte de un roster que ganó una run completa (Quick Play o Modo Historia).",
     "injury_tooltip": "Lesión: Penalización permanente de -20 en todos los ratings por el resto de la temporada.",
     "interera_label": "VIAJERO EN EL TIEMPO",
-    "interera_tooltip": "Viajero en el tiempo: este jugador no estuvo activo durante la temporada seleccionada — cuenta doble para desbloquear la sinergia de su propia era."
+    "interera_tooltip": "Viajero en el tiempo: este jugador no estuvo activo durante la temporada seleccionada — cuenta doble para desbloquear la sinergia de su propia era.",
+    "lock_tooltip": "Posición Bloqueada: quedan {{nodes}} nodos para desbloquear"
   },
   "combat_info": {
     "title": "⚙️ DATOS DE DAÑO & VALORES",
@@ -1536,7 +1490,9 @@
     "if_lose_label": "🔴 50% SI PIERDES:",
     "lose_all": "(Pierdes todo)",
     "success_chance": "PROBABILIDAD ÉXITO",
-    "fail_chance": "PROBABILIDAD FALLO"
+    "fail_chance": "PROBABILIDAD FALLO",
+    "card_locked_badge": "BLOQUEADO ({{nodes}} NODOS RESTANTES)",
+    "locked_tooltip": "Posición Bloqueada: quedan {{nodes}} nodos"
   },
   "tutorial": {
     "got_it": "¡ENTENDIDO!",
@@ -1921,7 +1877,7 @@
     "result_safe_buy_title": "🎉 ¡EQUIPAMIENTO ADQUIRIDO!",
     "store_safe_card_title": "🟢 COMPRA SEGURA (100%)",
     "store_safe_card_desc": "Compra inmediata sin riesgos. Se guarda en tu mochila de ITEMS.",
-    "store_risky_card_title": "🔴 JAULA DE PRUEBAS (60% RIESGO)",
+    "store_risky_card_title": "🔴 JAULA DE PRUEBAS ({{pct}}% ÉXITO)",
     "store_risky_card_desc": "Descuento masivo por probar el prototipo. Si aprueba ganas la versión Legendaria; si falla, el bateador pierde -35 Stamina.",
     "store_reject_card_title": "⚪ RECHAZAR OFERTA",
     "store_reject_card_desc": "Continuar tu camino sin gastar presupuesto.",
@@ -1933,7 +1889,9 @@
     "store_category_glove": "🧤 GUANTE & DEFENSA",
     "store_category_accessory": "👓 ACCESORIO TÁCTICO",
     "store_category_consumable": "🧪 CONSUMIBLE DE ENERGÍA",
-    "stamina_penalty_badge": "⚡ PENALIZACIÓN DE STAMINA"
+    "stamina_penalty_badge": "⚡ PENALIZACIÓN DE STAMINA",
+    "store_bought_consumable_desc": "¡{{name}} guardado en tu panel de ITEMS! Es de 1 SOLO USO: arrástralo sobre cualquier jugador para consumirlo.",
+    "store_bought_equip_desc": "¡{{name}} guardado en tu panel de ITEMS! Arrástralo a cualquier jugador de tu alineación para equiparlo."
   },
   "extra_modal": {
     "title": "⚡ ¡EXTRA INNINGS! ⚡",
@@ -1961,28 +1919,5 @@
     "win_title": "⚡ ¡MID-BOSS DERROTADO! ⚡",
     "win_desc": "¡Victoria de Élite! Obtienes +${{budget}} de presupuesto y un nuevo equipamiento en tu Mochila:",
     "continue_btn": "CONTINUAR AL DRAFT ➡"
-  },
-  "trait": {
-    "eagle": { "name": "🦅 Paciencia de Águila", "desc": "Zona de Boleto (BB) aumenta +3 puntos. Cada BB regenera +5 Stamina al bateador." },
-    "slugger": { "name": "💥 Impulso de Jonronero", "desc": "Cada HR inflige +30 HP de daño extra al pitcher rival." },
-    "surgical": { "name": "🎯 Contacto Quirúrgico", "desc": "Zona de Ponche (SO) reducida en -3 puntos para toda la alineación." },
-    "speed": { "name": "⚡ Velocistas Agresivos", "desc": "Jugadores con SPD > 60 roban la base automáticamente en sencillos y boletos. Debuff al pitcher dura 3 impactos." },
-    "extrabase": { "name": "💣 Impacto Acumulado", "desc": "Batazos de extra bases (2B, 3B, HR) infligen +10 HP de daño adicional al pitcher." },
-    "shield": { "name": "🛡️ Escudo de Hierro", "desc": "Repara automáticamente +25 de Escudo al inicio de cada entrada (hasta el límite de tu equipo)." },
-    "wall": { "name": "🧱 Muro Defensivo", "desc": "Outs normales reducen daño a -13 HP en lugar de -20 HP." },
-    "stamina": { "name": "🔋 Resistencia Inagotable", "desc": "Los bateadores solo pierden 6 de Stamina por partido (en lugar de 12)." },
-    "clutch": { "name": "❤️ Resiliencia de Leyendas", "desc": "Si Team HP cae por debajo de 35, activa estado Clutch: +15 a CON, PWR, EYE, SPD, DEF para toda la alineación." },
-    "glove": { "name": "🧤 Guantelete Dorado", "desc": "Todos los bateadores reciben +10 DEF, aumentando la capacidad del Escudo de equipo." },
-    "secondary": { "name": "🔄 Posición Secundaria Maestra", "desc": "Elimina la penalización (-15%) al colocar bateadores en su Posición Secundaria." },
-    "era_acc": { "name": "⏳ Sinergia de Era Acelerada", "desc": "Solo necesitas 2 jugadores de la misma Era para activar la Sinergia de Nivel 2 (normalmente 4)." },
-    "elite": { "name": "💼 Negociador de Élite", "desc": "Obtienes +$10 de presupuesto extra tras cada victoria." },
-    "scout": { "name": "🌟 Ojo de Cazatalentos", "desc": "Las ofertas de draft muestran 4 jugadores en lugar de 3 y aumenta probabilidad de Epic/Legendary." },
-    "veteran": { "name": "🔋 Segunda Vida", "desc": "Tu alineación completa recupera un +30% de Stamina al inicio de cada nuevo mapa." },
-    "reliever": { "name": "🔥 Emboscada al Relevista", "desc": "El primer batazo contra un nuevo pitcher rival inflige +50% de daño extra." },
-    "pressure": { "name": "📈 Presión Temprana", "desc": "El primer bateador de cada entrada gana +20 de CON y EYE para ese turno." },
-    "ghost": { "name": "🏃 Corredores Fantasma", "desc": "Inicias la 3ª entrada y todos los Extra Innings de cada partido con un corredor en 2ª base automáticamente." },
-    "legendary": { "name": "👑 Dominio Legendario", "desc": "Si tienes 2 o más jugadores Legendary en titular, todos reciben +10 a todas sus estadísticas." },
-    "back2back": { "name": "💥 Cadena de Poder", "desc": "Después de un HR, el siguiente bateador gana +20 de PWR y CON para ese turno." },
-    "midas": { "name": "🎰 Toque de Midas", "desc": "Aumenta en +25% las probabilidades de éxito en eventos de Suerte (LUCK), Decisiones y Ruletas de Prototipos." }
   }
 }
