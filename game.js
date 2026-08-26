@@ -1036,6 +1036,7 @@
         tr('ghost_runners',     '🏃', 'ghost', '🏃 Corredores Fantasma', 'Inicias la 3ª entrada y todos los Extra Innings de cada partido con un corredor en 2ª base automáticamente.'),
         tr('legendary_domination', '👑', 'legendary', '👑 Dominio Legendario', 'Si tienes 2 o más jugadores Legendary en titular, todos reciben +10 a todas sus estadísticas.'),
         tr('back_to_back',      '💥', 'back2back', '💥 Cadena de Poder', 'Después de un HR, el siguiente bateador gana +20 de PWR y CON para ese turno.'),
+        tr('midas_touch',       '🎰', 'midas', '🎰 Toque de Midas', 'Aumenta en +25% las probabilidades de éxito en eventos de Suerte (LUCK), Decisiones y Ruletas de Prototipos.')
       ];
     }
 

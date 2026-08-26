@@ -5840,11 +5840,17 @@ function initGameModeSelector() {
       riskyCard.className = 'event-store-card event-store-card-risky';
       const riskyAffordable = (window.Game.budget || 0) >= event.riskyOption.cost;
 
+      const hasMidas = window.Game && typeof window.Game.hasTrait === 'function' && window.Game.hasTrait('midas_touch');
+      const baseCageChance = event.riskyOption.successChance || 0.60;
+      const effectiveCageChance = Math.min(0.95, baseCageChance + (hasMidas ? 0.25 : 0));
+      const failPct = Math.round((1 - effectiveCageChance) * 100);
+      const successPct = Math.round(effectiveCageChance * 100);
+
       riskyCard.innerHTML = `
         <div>
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
             <span style="font-family:'Press Start 2P',monospace; font-size:8px; color:#ef4444; background:rgba(239,68,68,0.15); border:1px solid #ef4444; padding:3px 8px; border-radius:12px;">
-              ${typeof t === 'function' ? t('equip.store_risky_card_title', '🔴 JAULA DE PRUEBAS (60% RIESGO)') : '🔴 JAULA DE PRUEBAS (60% RIESGO)'}
+              ${typeof t === 'function' ? t('equip.store_risky_card_title', `🔴 JAULA DE PRUEBAS (${successPct}% ÉXITO)`) : `🔴 JAULA DE PRUEBAS (${successPct}% ÉXITO)`}${hasMidas ? ' ✨' : ''}
             </span>
             <span style="font-family:'Press Start 2P',monospace; font-size:12px; color:#f59e0b; font-weight:bold;">
               $${event.riskyOption.cost}
@@ -5864,13 +5870,13 @@ function initGameModeSelector() {
               🏆 ${event.riskyOption.statDesc}
             </div>
             <div style="font-size:10px; color:#ef4444; margin-top:6px; font-weight:bold; line-height:1.4;">
-              ❌ 40% FALLO: El bateador probado sufre -${event.riskyOption.failStaminaCost || 35} Stamina.
+              ❌ ${failPct}% FALLO: El bateador probado sufre -${event.riskyOption.failStaminaCost || 35} Stamina.
             </div>
           </div>
         </div>
 
         <button class="btn" id="btn-test-risky-item" style="background:#ef4444; color:#fff; font-weight:bold; font-family:'Press Start 2P',monospace; font-size:9.5px; padding:12px; width:100%; border:none; box-shadow:0 0 15px rgba(239,68,68,0.4);" ${!riskyAffordable ? 'disabled style="opacity:0.4; cursor:not-allowed;"' : ''}>
-          ${!riskyAffordable ? (typeof t === 'function' ? t('draft.insufficient_funds', { cost: event.riskyOption.cost }) : 'SIN FONDOS') : (typeof t === 'function' ? t('equip.store_btn_test_risky', { cost: event.riskyOption.cost }) : `PROBAR PROTOTIPO ($${event.riskyOption.cost})`)}
+          ${!riskyAffordable ? (typeof t === 'function' ? t('draft.insufficient_funds', { cost: event.riskyOption.cost }) : 'SIN FONDOS') : (typeof t === 'function' ? t('equip.store_btn_test_risky', { cost: event.riskyOption.cost }) : `PROBAR PROTOTIPO ($${event.riskyOption.cost})`)}${hasMidas ? ' ✨' : ''}
         </button>
       `;
 
@@ -5884,7 +5890,7 @@ function initGameModeSelector() {
               window.AudioManager.play('money');
             }
             window.Game.budget = Math.max(0, window.Game.budget - event.riskyOption.cost);
-            const chance = event.riskyOption.successChance || 0.60;
+            const chance = effectiveCageChance;
             const isSuccess = Math.random() <= chance;
 
             const resolveRiskyChoice = () => {
@@ -6019,6 +6025,7 @@ function initGameModeSelector() {
 
     // Fallback for legacy events
     if (event.choices) {
+      const hasMidas = window.Game && typeof window.Game.hasTrait === 'function' && window.Game.hasTrait('midas_touch');
       event.choices.forEach(choice => {
         const btn = document.createElement('button');
         btn.className = `event-choice-btn event-choice-risk-${choice.risk || 'safe'}`;
@@ -6026,9 +6033,10 @@ function initGameModeSelector() {
         const costText = choice.cost > 0 ? `-$${choice.cost}` : (choice.cost < 0 ? `+$${Math.abs(choice.cost)}` : "GRATIS");
         const riskBadge = choice.risk === 'high' ? '🔴 ALTO RIESGO' : (choice.risk === 'moderate' ? '🟡 RIESGO MODERADO' : '🟢 SEGURO');
         const isRisky = choice.successChance !== undefined && choice.successChance < 1.0;
-        const chanceText = isRisky ? ` (${Math.round(choice.successChance * 100)}% ÉXITO)` : '';
+        const effectiveChance = isRisky ? Math.min(0.95, choice.successChance + (hasMidas ? 0.25 : 0)) : 1.0;
+        const chanceText = isRisky ? ` (${Math.round(effectiveChance * 100)}% ÉXITO${hasMidas ? ' ✨' : ''})` : '';
         const failPreviewHTML = (isRisky && choice.failPreview)
-          ? `<div style="font-size:10px;color:#ef4444;margin-top:3px;">❌ ${Math.round((1 - choice.successChance) * 100)}% FALLO → ${choice.failPreview}</div>`
+          ? `<div style="font-size:10px;color:#ef4444;margin-top:3px;">❌ ${Math.round((1 - effectiveChance) * 100)}% FALLO → ${choice.failPreview}</div>`
           : '';
 
         btn.innerHTML = `
@@ -6056,8 +6064,7 @@ function initGameModeSelector() {
 
         btn.addEventListener('click', () => {
           window.Game.budget -= choice.cost;
-          const chance = choice.successChance !== undefined ? choice.successChance : 1.0;
-          const isSuccess = Math.random() <= chance;
+          const isSuccess = Math.random() <= effectiveChance;
 
           const resolveChoice = () => {
             let title, badgeText, badgeColor, icon, desc;
@@ -9629,6 +9636,10 @@ function initGameModeSelector() {
       }
     });
 
+    const hasMidas = window.Game && typeof window.Game.hasTrait === 'function' && window.Game.hasTrait('midas_touch');
+    const luckSuccessPct = hasMidas ? 75 : 50;
+    const luckFailPct = hasMidas ? 25 : 50;
+
     const gambleTitle = gamble.title;
     const gambleDesc = gamble.desc;
 
@@ -9693,7 +9704,7 @@ function initGameModeSelector() {
           <div class="gamble-outcome-card gamble-outcome-win" style="flex:1;max-width:140px;background:rgba(16,185,129,0.12);border:1.5px solid #10b981;border-radius:10px;padding:8px;box-shadow:0 0 15px rgba(16,185,129,0.2);">
             <div style="font-size:24px;">🍀</div>
             <div style="font-size:8px;color:#10b981;font-weight:bold;font-family:'Press Start 2P',monospace;margin-top:4px;">
-              ${typeof t === 'function' ? t('gamble.success_chance', 'ÉXITO (50%)') : 'ÉXITO (50%)'}
+              ${typeof t === 'function' ? t('gamble.success_chance', `ÉXITO (${luckSuccessPct}%)`) : `ÉXITO (${luckSuccessPct}%)`}${hasMidas ? ' ✨' : ''}
             </div>
           </div>
           <div class="gamble-coin-wrap" style="width:78px;height:78px;">
@@ -9702,7 +9713,7 @@ function initGameModeSelector() {
           <div class="gamble-outcome-card gamble-outcome-lose" style="flex:1;max-width:140px;background:rgba(239,68,68,0.12);border:1.5px solid #ef4444;border-radius:10px;padding:8px;box-shadow:0 0 15px rgba(239,68,68,0.2);">
             <div style="font-size:24px;">💀</div>
             <div style="font-size:8px;color:#ef4444;font-weight:bold;font-family:'Press Start 2P',monospace;margin-top:4px;">
-              ${typeof t === 'function' ? t('gamble.fail_chance', 'FALLO (50%)') : 'FALLO (50%)'}
+              ${typeof t === 'function' ? t('gamble.fail_chance', `FALLO (${luckFailPct}%)`) : `FALLO (${luckFailPct}%)`}
             </div>
           </div>
         </div>
