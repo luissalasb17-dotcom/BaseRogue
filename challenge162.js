@@ -387,8 +387,9 @@
   // actually generated (this.state.leagueTeams — the same 30 franchise-decade
   // teams the regular season schedule drew from).
   // Round 0 (Divisional): 3rd-strongest franchise (+25% HP, +6 Stats)
-  // Round 1 (Championship): 2nd-strongest franchise (+50% HP, +12 Stats)
-  // Round 2 (World Series): #1 ABSOLUTE STRONGEST FRANCHISE (+80% HP, +20 Stats, Ruthless Boss Ace & Closer)
+  // Round 0 (Divisional): 3rd-strongest franchise (Ace SP + Playoff Bullpen)
+  // Round 1 (Championship): 2nd-strongest franchise (Elite Cy Young Ace + Setup + Closer)
+  // Round 2 (World Series): #1 ABSOLUTE STRONGEST FRANCHISE (Legendary Ace SP + Lockdown Closer)
   function generatePlayoffEnemyTeam(round, leagueTeams) {
     const cfg = PLAYOFF_ROUNDS[round];
     const ranked = (leagueTeams || [])
@@ -403,27 +404,25 @@
     const chosen = ranked[pickIndex] || ranked[0];
     const franchiseTeam = chosen.team;
 
-    // Authentic playoff team stats without artificial inflation:
-    const hpMult = 1.0;
-    const statBuff = 0;
+    // Playoff intensity calibration: Sharper pitching & defense for competitive postseason duels
+    const statBuff = round === 2 ? 10 : (round === 1 ? 6 : 3);
 
-    const boostPitcher = (p, role) => {
+    const boostPitcher = (p, role, targetMinOvr) => {
       if (!p) return null;
       const baseObj = buildEnemyPitcherObj(p, role);
-      const boostedHp = Math.round(baseObj.maxHp * hpMult);
+      const effectiveOvr = Math.max(targetMinOvr || 80, Math.min(99, (baseObj.ovr || 75) + statBuff));
+      const statBonus = Math.max(0, effectiveOvr - (baseObj.ovr || 75));
       return {
         ...baseObj,
-        maxHp: boostedHp,
-        hp: boostedHp,
-        h9: Math.min(125, baseObj.h9 + statBuff),
-        k9: Math.min(125, baseObj.k9 + statBuff),
-        bb9: Math.min(125, baseObj.bb9 + statBuff),
-        hr9: Math.min(125, baseObj.hr9 + statBuff),
-        stf: Math.min(125, baseObj.stf + statBuff),
-        ctl: Math.min(125, baseObj.ctl + statBuff),
-        upgrades: {
-          con: statBuff, pwr: statBuff, eye: statBuff, spd: statBuff, def: statBuff, sta: statBuff
-        }
+        role,
+        pos: role,
+        ovr: effectiveOvr,
+        h9: Math.min(125, baseObj.h9 + statBonus),
+        k9: Math.min(125, baseObj.k9 + statBonus),
+        bb9: Math.min(125, baseObj.bb9 + statBonus),
+        hr9: Math.min(125, baseObj.hr9 + statBonus),
+        stf: Math.min(125, baseObj.stf + statBonus),
+        ctl: Math.min(125, baseObj.ctl + statBonus)
       };
     };
 
@@ -433,13 +432,17 @@
       pwr: Math.min(125, (b.pwr || 50) + statBuff),
       eye: Math.min(125, (b.eye || 50) + statBuff),
       def: Math.min(125, (b.def || 50) + statBuff),
-      upgrades: { con: statBuff, pwr: statBuff, eye: statBuff, spd: 0, def: statBuff, sta: 0 }
+      ovr: Math.min(99, (b.ovr || 80) + statBuff)
     }));
 
-    const p1 = boostPitcher(franchiseTeam.pitcher, 'SP');
-    const p3 = boostPitcher(franchiseTeam.reliever, 'RP');
-    const secondSP = _pickSecondFranchisePitcher(chosen.t.code, chosen.t.decade, pitcherUnlockKey(franchiseTeam.pitcher));
-    const p2 = secondSP ? boostPitcher(secondSP, 'SP') : p1;
+    const targetSpOvr = round === 2 ? 96 : (round === 1 ? 92 : 88);
+    const targetRpOvr = round === 2 ? 93 : (round === 1 ? 88 : 84);
+    const targetClOvr = round === 2 ? 97 : (round === 1 ? 93 : 89);
+
+    const sp = boostPitcher(franchiseTeam.pitcher, 'SP', targetSpOvr);
+    const setup = boostPitcher(franchiseTeam.reliever, 'RP', targetRpOvr);
+    const closerObj = _pickSecondFranchisePitcher(chosen.t.code, chosen.t.decade, pitcherUnlockKey(franchiseTeam.pitcher)) || franchiseTeam.reliever;
+    const closer = boostPitcher(closerObj, 'CL', targetClOvr);
 
     return {
       id: `challenge162_playoff_${cfg.key}_${Date.now()}`,
@@ -447,11 +450,16 @@
       tier: round === 2 ? 'BOSS_S' : 'S',
       isBoss: true,
       isWorldSeries: round === 2,
-      pitchers: [p1, p2, p3],
-      _ovr: Math.min(99, (p1.ovr || 75) + statBuff),
-      era: p1.era,
-      rarity: round === 2 ? 'Legendary' : 'Epic',
-      _batters: boostedBatters
+      team: franchiseTeam,
+      pitchers: [sp, setup, closer],
+      pitcher: sp,
+      reliever: setup,
+      closer: closer,
+      lineup: boostedBatters,
+      _batters: boostedBatters,
+      _ovr: sp.ovr,
+      era: sp.era,
+      rarity: round === 2 ? 'Legendary' : 'Epic'
     };
   }
 
@@ -1273,6 +1281,9 @@
       this.startPlayoffLiveGame();
     },
 
+    _activePlayoffTab: 'broadcast', // 'broadcast' | 'boxscore' | 'pbp'
+    _selectedPlayoffBoxScoreIndex: -1,
+
     startPlayoffLiveGame() {
       if (!this.state) return;
       const S = this.state;
@@ -1298,6 +1309,8 @@
         timer: null,
         finished: false
       };
+      this._activePlayoffTab = 'broadcast';
+      this._selectedPlayoffBoxScoreIndex = -1;
 
       this.showScreen('screen-challenge-playoffs');
       this.renderPlayoffLiveGame();
@@ -1313,15 +1326,23 @@
       const awayLinescore = [];
       const homeLinescore = [];
 
-      const userMaxInnings = this._getStarterMaxInnings(userSP);
-      const oppPitcher = (opp.pitchers && opp.pitchers[0]) || opp.pitcher || { name: 'As Rival', h9: 60, k9: 60, bb9: 50, hr9: 50 };
-      const oppReliever = (opp.pitchers && opp.pitchers[1]) || opp.reliever || { name: 'Relevista Rival', h9: 55, k9: 55, bb9: 50, hr9: 50 };
-      const oppMaxInnings = this._getStarterMaxInnings(oppPitcher);
+      const userMaxInnings = Math.min(6, this._getStarterMaxInnings(userSP));
+      const oppPitchers = opp.pitchers || [opp.pitcher, opp.reliever, opp.closer];
+      const oppSP = oppPitchers[0] || { name: 'As Rival', h9: 80, k9: 80, bb9: 75, hr9: 75, role: 'SP', ovr: 90 };
+      const oppRP = oppPitchers[1] || { name: 'Setup Rival', h9: 78, k9: 78, bb9: 70, hr9: 70, role: 'RP', ovr: 88 };
+      const oppCL = oppPitchers[2] || { name: 'Closer Rival', h9: 88, k9: 90, bb9: 80, hr9: 80, role: 'CL', ovr: 95 };
+      const oppMaxInnings = Math.min(6, this._getStarterMaxInnings(oppSP));
 
+      // Team defense values
       const fielders = userLineup.filter(p => (p.assignedSlot || p.pos) !== 'DH');
       const userTeamDef = fielders.length
         ? fielders.reduce((s, p) => s + (p.def !== undefined ? p.def : 50), 0) / fielders.length
-        : 50;
+        : 65;
+
+      const oppFielders = (opp.lineup || opp._batters || []).filter(p => (p.assignedSlot || p.pos) !== 'DH');
+      const oppTeamDef = oppFielders.length
+        ? oppFielders.reduce((s, p) => s + (p.def !== undefined ? p.def : 50), 0) / oppFielders.length
+        : 65;
 
       // Batting stats tracking for Box Score:
       const awayBattersMap = {};
@@ -1339,19 +1360,33 @@
 
       const getAwayPitcherObj = (p) => {
         const k = p.name || 'Pitcher';
-        if (!awayPitchersMap[k]) awayPitchersMap[k] = { name: k, role: p.role || 'SP', outs: 0, h: 0, r: 0, er: 0, bb: 0, so: 0, hr: 0, decision: '' };
+        if (!awayPitchersMap[k]) awayPitchersMap[k] = { name: k, role: p.role || 'SP', outs: 0, h: 0, r: 0, er: 0, bb: 0, so: 0, hr: 0, pitches: 0, decision: '', ovr: Math.round(p.ovr || 80) };
         return awayPitchersMap[k];
       };
       const getHomePitcherObj = (p) => {
         const k = p.cleanName || p.name || 'Pitcher';
-        if (!homePitchersMap[k]) homePitchersMap[k] = { name: k, role: p.role || 'SP', outs: 0, h: 0, r: 0, er: 0, bb: 0, so: 0, hr: 0, decision: '' };
+        if (!homePitchersMap[k]) homePitchersMap[k] = { name: k, role: p.role || 'SP', outs: 0, h: 0, r: 0, er: 0, bb: 0, so: 0, hr: 0, pitches: 0, decision: '', ovr: Math.round(p.ovr || 80) };
         return homePitchersMap[k];
+      };
+
+      // Playoff pitching selection logic:
+      const getOppPitcherForInning = (inn, uR, oR) => {
+        if (inn <= oppMaxInnings) return oppSP;
+        if (inn === 9 || inn >= 10 || (inn === 8 && oR >= uR && oR - uR <= 3)) return oppCL;
+        return oppRP;
+      };
+
+      const getUserPitcherForInning = (inn, uR, oR) => {
+        if (inn <= userMaxInnings) return userSP;
+        if (inn === 9 || inn >= 10 || (inn === 8 && uR >= oR && uR - oR <= 3)) return userRelievers[2] || userRelievers[1] || userSP;
+        if (inn === 7 || inn === 8) return userRelievers[1] || userRelievers[0] || userSP;
+        return userRelievers[0] || userSP;
       };
 
       while (inning <= 9 || (userRuns === oppRuns && inning <= inningLimit)) {
         // ── TOP of the Inning: Away (User) Bats vs Home (Opp) Pitcher ──
-        const oppPitcherToday = inning <= oppMaxInnings ? oppPitcher : oppReliever;
-        oppPitcherToday._fieldingDef = 50;
+        const oppPitcherToday = getOppPitcherForInning(inning, userRuns, oppRuns);
+        oppPitcherToday._fieldingDef = oppTeamDef;
         const hPitcherStat = getHomePitcherObj(oppPitcherToday);
 
         let topRuns = 0;
@@ -1369,6 +1404,12 @@
           const outcome = simPaOutcome(batter, oppPitcherToday, true);
           let runsThisPA = 0;
           let stolenBase = false;
+
+          // Simulated pitch count for event realism
+          const balls = outcome === 'BB' ? 4 : (Math.random() < 0.4 ? 2 : (Math.random() < 0.5 ? 1 : 0));
+          const strikes = outcome === 'SO' ? 3 : (outcome === 'BB' ? Math.floor(Math.random() * 3) : (Math.random() < 0.5 ? 2 : 1));
+          const pitchesInPA = balls + strikes + (outcome === 'SO' || outcome === 'BB' ? 0 : 1);
+          if (hPitcherStat) hPitcherStat.pitches += pitchesInPA;
 
           if (outcome === 'OUT') {
             topOuts++;
@@ -1434,6 +1475,12 @@
           topRuns += runsThisPA;
           userRuns += runsThisPA;
 
+          // Compute snapshot lines for duel card:
+          const batterLine = `${bStat.h}-${bStat.ab}${bStat.hr > 0 ? `, ${bStat.hr} HR` : ''}${bStat.rbi > 0 ? `, ${bStat.rbi} RBI` : ''}`;
+          const pOuts = hPitcherStat.outs;
+          const pIp = `${Math.floor(pOuts / 3)}.${pOuts % 3}`;
+          const pitcherLine = `${pIp} IP, ${hPitcherStat.h} H, ${hPitcherStat.er} ER, ${hPitcherStat.so} K`;
+
           events.push({
             stepIndex: events.length,
             inning,
@@ -1442,8 +1489,8 @@
             newOuts: topOuts,
             bases: basesBefore,
             newBases: bases.slice(),
-            batter: { name: batter.name, pos: batter.assignedSlot || batter.pos || 'DH', ovr: Math.round(batter.ovr || 80) },
-            pitcher: { name: oppPitcherToday.cleanName || oppPitcherToday.name, role: oppPitcherToday.role || 'SP', ovr: Math.round(oppPitcherToday.ovr || 80) },
+            batter: { name: batter.name, pos: batter.assignedSlot || batter.pos || 'DH', ovr: Math.round(batter.ovr || 80), line: batterLine },
+            pitcher: { name: oppPitcherToday.cleanName || oppPitcherToday.name, role: oppPitcherToday.role || 'SP', ovr: Math.round(oppPitcherToday.ovr || 80), line: pitcherLine, pitches: hPitcherStat.pitches },
             outcome,
             runsScored: runsThisPA,
             stolenBase,
@@ -1451,6 +1498,8 @@
             oppRuns,
             userHits,
             oppHits,
+            balls,
+            strikes,
             currentInningAwayRuns: topRuns
           });
         }
@@ -1463,8 +1512,7 @@
         }
 
         // ── BOTTOM of the Inning: Home (Opp) Bats vs Away (User) Pitcher ──
-        const assignedPitcher = this._pitcherForInning(inning, userSP, userRelievers, userMaxInnings, 0, userRuns, oppRuns);
-        const userPitcherToday = assignedPitcher || { name: "Support Pitcher", h9: 50, k9: 50, bb9: 50, hr9: 50, role: "RP", _isSupport: true };
+        const userPitcherToday = getUserPitcherForInning(inning, userRuns, oppRuns);
         userPitcherToday._fieldingDef = userTeamDef;
         const aPitcherStat = getAwayPitcherObj(userPitcherToday);
 
@@ -1484,6 +1532,11 @@
           const outcome = simPaOutcome(batter, userPitcherToday, false);
           let runsThisPA = 0;
           let stolenBase = false;
+
+          const balls = outcome === 'BB' ? 4 : (Math.random() < 0.4 ? 2 : (Math.random() < 0.5 ? 1 : 0));
+          const strikes = outcome === 'SO' ? 3 : (outcome === 'BB' ? Math.floor(Math.random() * 3) : (Math.random() < 0.5 ? 2 : 1));
+          const pitchesInPA = balls + strikes + (outcome === 'SO' || outcome === 'BB' ? 0 : 1);
+          if (aPitcherStat) aPitcherStat.pitches += pitchesInPA;
 
           if (outcome === 'OUT') {
             botOuts++;
@@ -1538,6 +1591,11 @@
           botRuns += runsThisPA;
           oppRuns += runsThisPA;
 
+          const batterLine = `${bStat.h}-${bStat.ab}${bStat.hr > 0 ? `, ${bStat.hr} HR` : ''}${bStat.rbi > 0 ? `, ${bStat.rbi} RBI` : ''}`;
+          const pOuts = aPitcherStat.outs;
+          const pIp = `${Math.floor(pOuts / 3)}.${pOuts % 3}`;
+          const pitcherLine = `${pIp} IP, ${aPitcherStat.h} H, ${aPitcherStat.er} ER, ${aPitcherStat.so} K`;
+
           events.push({
             stepIndex: events.length,
             inning,
@@ -1546,8 +1604,8 @@
             newOuts: botOuts,
             bases: basesBefore,
             newBases: bases.slice(),
-            batter: { name: batter.name, pos: batter.assignedSlot || batter.pos || 'DH', ovr: Math.round(batter.ovr || 80) },
-            pitcher: { name: userPitcherToday.name, role: userPitcherToday.role || 'SP', ovr: Math.round(userPitcherToday.ovr || 80) },
+            batter: { name: batter.name, pos: batter.assignedSlot || batter.pos || 'DH', ovr: Math.round(batter.ovr || 80), line: batterLine },
+            pitcher: { name: userPitcherToday.name, role: userPitcherToday.role || 'SP', ovr: Math.round(userPitcherToday.ovr || 80), line: pitcherLine, pitches: aPitcherStat.pitches },
             outcome,
             runsScored: runsThisPA,
             stolenBase,
@@ -1555,6 +1613,8 @@
             oppRuns,
             userHits,
             oppHits,
+            balls,
+            strikes,
             currentInningHomeRuns: botRuns
           });
 
@@ -1591,6 +1651,10 @@
         }
       }
 
+      const _t = (key, fallback) => (typeof window.t === 'function' ? window.t(key) : fallback);
+      const roundTitleKey = round === 0 ? 'challenge162.round_1_title' : (round === 1 ? 'challenge162.round_2_title' : 'challenge162.round_3_title');
+      const roundTitle = _t(roundTitleKey, `Ronda ${round + 1}`);
+
       return {
         events,
         awayTeam: {
@@ -1613,7 +1677,8 @@
         },
         won,
         finalInning: Math.max(9, awayLinescore.length),
-        round
+        round,
+        roundTitle
       };
     },
 
@@ -1627,6 +1692,7 @@
       const stepIdx = Math.min(sim.currentStep, totalSteps - 1);
       const curEvt = events[stepIdx] || events[0];
       const isFinished = sim.currentStep >= totalSteps;
+      const activeTab = this._activePlayoffTab || 'broadcast';
 
       const _t = (key, fallback, params) => (typeof window.t === 'function' ? window.t(key, params) : fallback);
 
@@ -1642,10 +1708,12 @@
       const outsLabel = _t('challenge162.playoff_outs', 'Outs');
       const atBatLabel = _t('challenge162.playoff_at_bat', 'Al bate');
       const pitchingLabel = _t('challenge162.playoff_pitching', 'Lanzando');
+      const todayLineLabel = _t('challenge162.playoff_today_line', 'Hoy');
+      const pitchesLabel = _t('challenge162.playoff_pitches', 'Lanzamientos');
       const innHalf = curEvt.half === 'TOP' ? _t('challenge162.playoff_inning_top', 'Alta') : _t('challenge162.playoff_inning_bot', 'Baja');
       const inningDisplay = `${innHalf} ${curEvt.inning}`;
 
-      // Build live linescore data up to current step:
+      // Build live linescore data:
       const totalInnings = Math.max(9, game.finalInning);
       let linescoreHeadHTML = `<th>${teamHeader}</th>`;
       for (let i = 1; i <= totalInnings; i++) {
@@ -1653,7 +1721,6 @@
       }
       linescoreHeadHTML += `<th class="stat-total">R</th><th class="stat-total">H</th><th class="stat-total">E</th>`;
 
-      // Calculate partial linescore up to stepIdx:
       const awayLiveLine = [];
       const homeLiveLine = [];
       for (let i = 1; i <= totalInnings; i++) {
@@ -1675,7 +1742,6 @@
       }
 
       if (isFinished) {
-        // Complete linescore when game finished
         for (let i = 0; i < totalInnings; i++) {
           awayLiveLine[i] = game.awayTeam.linescore[i] !== undefined ? game.awayTeam.linescore[i] : '-';
           homeLiveLine[i] = game.homeTeam.linescore[i] !== undefined ? game.homeTeam.linescore[i] : '-';
@@ -1698,33 +1764,61 @@
       awayRowHTML += `<td class="stat-total">${curUserRuns}</td><td class="stat-total">${curUserHits}</td><td class="stat-total">0</td>`;
       homeRowHTML += `<td class="stat-total">${curOppRuns}</td><td class="stat-total">${curOppHits}</td><td class="stat-total">0</td>`;
 
-      // Diamond bases state:
+      // Diamond bases with active runner names:
       const activeBases = isFinished ? [null, null, null] : (curEvt.newBases || [null, null, null]);
-      const b1Active = !!activeBases[0];
-      const b2Active = !!activeBases[1];
-      const b3Active = !!activeBases[2];
+      const b1 = activeBases[0];
+      const b2 = activeBases[1];
+      const b3 = activeBases[2];
+
+      const getRunnerShort = (r) => {
+        if (!r) return '';
+        const parts = (r.name || '').split(' ');
+        return parts.length > 1 ? `${parts[0][0]}. ${parts[parts.length - 1]}` : (r.name || '');
+      };
+
+      // Base situation banner description
+      let situationText = _t('challenge162.playoff_runners_bases_empty', 'Bases Limpias');
+      if (b1 && b2 && b3) situationText = _t('challenge162.playoff_runners_loaded', '¡Bases Llenas!');
+      else if (b1 && b2)  situationText = _t('challenge162.playoff_runners_1b_2b', 'Corredores en 1ra y 2da');
+      else if (b1 && b3)  situationText = _t('challenge162.playoff_runners_1b_3b', 'Corredores en las Esquinas');
+      else if (b2 && b3)  situationText = _t('challenge162.playoff_runners_2b_3b', 'Corredores en 2da y 3ra');
+      else if (b1)        situationText = _t('challenge162.playoff_runners_1b', 'Corredor en 1ra');
+      else if (b2)        situationText = _t('challenge162.playoff_runners_2b', 'Corredor en 2da');
+      else if (b3)        situationText = _t('challenge162.playoff_runners_3b', 'Corredor en 3ra');
+
       const outsCount = isFinished ? 3 : (curEvt.newOuts || 0);
+      const ballsCount = isFinished ? 0 : (curEvt.balls || 0);
+      const strikesCount = isFinished ? 0 : (curEvt.strikes || 0);
 
       // Play narrative text:
       let narrativeText = '';
       let textClass = 'c162-ticker-text';
+      let outcomePillHTML = '';
+
       if (curEvt.outcome === 'HR') {
         narrativeText = _t('challenge162.pa_hr', `¡${curEvt.batter.name} conecta un descomunal cuadrangular! (+${curEvt.runsScored} carreras)`, { batter: curEvt.batter.name, runs: curEvt.runsScored });
         textClass += ' highlight-hr';
+        outcomePillHTML = `<span class="c162-event-badge badge-hr">💥 JONRÓN</span>`;
       } else if (curEvt.outcome === '3B') {
         narrativeText = _t('challenge162.pa_3b', `¡${curEvt.batter.name} conecta triple profundo al callejón! (+${curEvt.runsScored} carreras)`, { batter: curEvt.batter.name, runs: curEvt.runsScored });
+        outcomePillHTML = `<span class="c162-event-badge badge-hit">⚡ TRIPLE</span>`;
       } else if (curEvt.outcome === '2B') {
         narrativeText = _t('challenge162.pa_2b', `¡${curEvt.batter.name} conecta doblete contra la pared! (+${curEvt.runsScored} carreras)`, { batter: curEvt.batter.name, runs: curEvt.runsScored });
+        outcomePillHTML = `<span class="c162-event-badge badge-hit">🔥 DOBLE</span>`;
       } else if (curEvt.outcome === '1B') {
         narrativeText = _t('challenge162.pa_1b', `¡${curEvt.batter.name} conecta imparable al jardín! (+${curEvt.runsScored} carreras)`, { batter: curEvt.batter.name, runs: curEvt.runsScored });
+        outcomePillHTML = `<span class="c162-event-badge badge-hit">⚾ SENCILLO</span>`;
       } else if (curEvt.outcome === 'BB') {
         narrativeText = _t('challenge162.pa_bb', `${curEvt.batter.name} negocia boleto con paciencia.`, { batter: curEvt.batter.name });
+        outcomePillHTML = `<span class="c162-event-badge badge-bb">🚶 BOLETO</span>`;
       } else if (curEvt.outcome === 'SO') {
         narrativeText = _t('challenge162.pa_so', `${curEvt.pitcher.name} poncha a ${curEvt.batter.name} tirándole.`, { pitcher: curEvt.pitcher.name, batter: curEvt.batter.name });
         textClass += ' highlight-out';
+        outcomePillHTML = `<span class="c162-event-badge badge-so">💨 PONCHE</span>`;
       } else {
         narrativeText = _t('challenge162.pa_out', `${curEvt.batter.name} falla con roletazo/elevado.`, { batter: curEvt.batter.name });
         textClass += ' highlight-out';
+        outcomePillHTML = `<span class="c162-event-badge badge-out">🛑 OUT</span>`;
       }
 
       if (curEvt.stolenBase) {
@@ -1735,8 +1829,10 @@
       const btnNextPaText = _t('challenge162.playoff_btn_next_pa', '▶ Siguiente Bateador');
       const btnNextInningText = _t('challenge162.playoff_btn_next_inning', '⏩ Siguiente Entrada');
       const btnSimEndText = _t('challenge162.playoff_btn_sim_end', '⚡ Simular al Final');
-      const btnAutoPlayText = sim.autoPlay ? '⏸ Pausar Auto' : _t('challenge162.playoff_btn_autoplay', '▶ Auto-Play');
-      const btnBoxScoreText = _t('challenge162.playoff_btn_boxscore', '📊 Box Score');
+      const btnAutoPlayText = sim.autoPlay ? '⏸ Pausar' : _t('challenge162.playoff_btn_autoplay', '▶ Auto-Play');
+      const tabBroadcastLabel = _t('challenge162.playoff_tab_broadcast', '🏟️ CAMPO EN VIVO');
+      const tabBoxScoreLabel = _t('challenge162.playoff_tab_boxscore', '📊 BOX SCORE OFICIAL');
+      const tabPbpLabel = _t('challenge162.playoff_tab_pbp', '📜 JUGADA A JUGADA');
 
       let actionButtonsHTML = '';
       if (!isFinished) {
@@ -1745,7 +1841,6 @@
           <button id="btn-playoff-next-inn" class="c162-sim-btn btn" style="background:#0369a1;color:#fff;">${btnNextInningText}</button>
           <button id="btn-playoff-autoplay" class="c162-sim-btn btn" style="background:${sim.autoPlay ? '#f59e0b' : '#334155'};color:#fff;">${btnAutoPlayText}</button>
           <button id="btn-playoff-sim-end" class="c162-sim-btn btn" style="background:linear-gradient(135deg,#eab308,#ca8a04);color:#000;font-weight:bold;">${btnSimEndText}</button>
-          <button id="btn-playoff-open-boxscore" class="c162-sim-btn btn btn-secondary">${btnBoxScoreText}</button>
         `;
       } else {
         const won = game.won;
@@ -1755,40 +1850,211 @@
           : _t('challenge162.playoff_btn_view_results', '📋 Ver Resumen de Temporada');
 
         actionButtonsHTML = `
-          <div style="width:100%;text-align:center;margin-bottom:12px;">
-            <div style="font-family:'Press Start 2P',monospace;font-size:14px;color:${won ? '#ffd700' : '#f87171'};margin-bottom:6px;text-shadow:0 0 16px ${won ? 'rgba(255,215,0,0.8)' : 'rgba(239,68,68,0.8)'};">
+          <div style="width:100%;text-align:center;margin-bottom:10px;">
+            <div style="font-family:'Press Start 2P',monospace;font-size:13px;color:${won ? '#ffd700' : '#f87171'};margin-bottom:4px;text-shadow:0 0 16px ${won ? 'rgba(255,215,0,0.8)' : 'rgba(239,68,68,0.8)'};">
               ${won ? '🏆' : '💀'} ${resultTitle} (${curUserRuns} - ${curOppRuns})
             </div>
           </div>
           <div style="display:flex;justify-content:center;gap:12px;width:100%;flex-wrap:wrap;">
-            <button id="btn-playoff-finish-game" class="btn" style="padding:14px 28px;font-size:11.5px;font-family:'Press Start 2P',monospace;background:linear-gradient(135deg,#ffd700,#f59e0b);color:#000;border:2px solid #fff;box-shadow:0 0 25px rgba(255,215,0,0.6);cursor:pointer;">
+            <button id="btn-playoff-finish-game" class="btn" style="padding:12px 24px;font-size:11px;font-family:'Press Start 2P',monospace;background:linear-gradient(135deg,#ffd700,#f59e0b);color:#000;border:2px solid #fff;box-shadow:0 0 25px rgba(255,215,0,0.6);cursor:pointer;">
               ${continueBtnText}
             </button>
-            <button id="btn-playoff-open-boxscore" class="btn btn-secondary" style="padding:14px 20px;font-size:11px;font-family:'Press Start 2P',monospace;">
-              ${btnBoxScoreText}
+          </div>
+        `;
+      }
+
+      // Build Tab Content:
+      let tabContentHTML = '';
+      if (activeTab === 'broadcast') {
+        tabContentHTML = `
+          <!-- Main Field & Matchup Split Grid -->
+          <div class="c162-broadcast-main-grid">
+            
+            <!-- Diamond Field Card -->
+            <div class="c162-stadium-field-card">
+              <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:#38bdf8;font-weight:bold;text-align:center;">
+                ${isFinished ? 'FINAL' : inningDisplay}
+              </div>
+
+              <!-- Diamond Graphic with Bases and Runner Tags -->
+              <div class="c162-diamond-canvas">
+                <div class="c162-base-pod base-home"></div>
+                <div class="c162-base-pod base-1b ${b1 ? 'occupied' : ''}">
+                  ${b1 ? `<span class="c162-runner-tag">${getRunnerShort(b1)}</span>` : ''}
+                </div>
+                <div class="c162-base-pod base-2b ${b2 ? 'occupied' : ''}">
+                  ${b2 ? `<span class="c162-runner-tag">${getRunnerShort(b2)}</span>` : ''}
+                </div>
+                <div class="c162-base-pod base-3b ${b3 ? 'occupied' : ''}">
+                  ${b3 ? `<span class="c162-runner-tag">${getRunnerShort(b3)}</span>` : ''}
+                </div>
+              </div>
+
+              <!-- BSO LED Panel -->
+              <div class="c162-bso-panel">
+                <div class="c162-bso-row">
+                  <span>BALL</span>
+                  <div class="c162-led-group">
+                    <div class="c162-led-dot ${ballsCount >= 1 ? 'ball-on' : ''}"></div>
+                    <div class="c162-led-dot ${ballsCount >= 2 ? 'ball-on' : ''}"></div>
+                    <div class="c162-led-dot ${ballsCount >= 3 ? 'ball-on' : ''}"></div>
+                    <div class="c162-led-dot ${ballsCount >= 4 ? 'ball-on' : ''}"></div>
+                  </div>
+                </div>
+                <div class="c162-bso-row">
+                  <span>STRIKE</span>
+                  <div class="c162-led-group">
+                    <div class="c162-led-dot ${strikesCount >= 1 ? 'strike-on' : ''}"></div>
+                    <div class="c162-led-dot ${strikesCount >= 2 ? 'strike-on' : ''}"></div>
+                  </div>
+                </div>
+                <div class="c162-bso-row">
+                  <span>OUT</span>
+                  <div class="c162-led-group">
+                    <div class="c162-led-dot ${outsCount >= 1 ? 'out-on' : ''}"></div>
+                    <div class="c162-led-dot ${outsCount >= 2 ? 'out-on' : ''}"></div>
+                  </div>
+                </div>
+                <div style="font-size:9.5px;color:#cbd5e1;text-align:center;border-top:1px solid rgba(255,255,255,0.08);padding-top:4px;margin-top:2px;">
+                  ${situationText}
+                </div>
+              </div>
+            </div>
+
+            <!-- Matchup Duel Section -->
+            <div style="display:flex;flex-direction:column;gap:10px;">
+              <div class="c162-duel-card-grid">
+                
+                <!-- Pitcher Duel Card -->
+                <div class="c162-duel-player-card pitcher-card">
+                  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+                    <div>
+                      <div style="font-size:8px;color:#38bdf8;font-family:'Press Start 2P',monospace;">${pitchingLabel} (${curEvt.pitcher.role})</div>
+                      <div style="font-size:13px;font-weight:bold;color:#f3f4f6;margin-top:3px;">${curEvt.pitcher.name}</div>
+                    </div>
+                    <span style="font-size:9.5px;color:#38bdf8;font-family:'Press Start 2P',monospace;background:rgba(56,189,248,0.15);padding:3px 6px;border-radius:4px;border:1px solid rgba(56,189,248,0.3);">OVR ${curEvt.pitcher.ovr}</span>
+                  </div>
+                  <div style="background:rgba(0,0,0,0.4);padding:8px 10px;border-radius:6px;font-size:11px;color:#94a3af;line-height:1.5;">
+                    <div>📊 <strong>${todayLineLabel}:</strong> <span style="color:#e4e4e7;">${curEvt.pitcher.line || '0.0 IP, 0 H, 0 ER, 0 K'}</span></div>
+                    <div>⚡ <strong>${pitchesLabel}:</strong> <span style="color:#ffd700;font-weight:bold;">${curEvt.pitcher.pitches || 0}</span></div>
+                  </div>
+                </div>
+
+                <!-- Batter Duel Card -->
+                <div class="c162-duel-player-card batter-card">
+                  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+                    <div>
+                      <div style="font-size:8px;color:#ffd700;font-family:'Press Start 2P',monospace;">${atBatLabel} (${curEvt.batter.pos})</div>
+                      <div style="font-size:13px;font-weight:bold;color:#f3f4f6;margin-top:3px;">${curEvt.batter.name}</div>
+                    </div>
+                    <span style="font-size:9.5px;color:#ffd700;font-family:'Press Start 2P',monospace;background:rgba(255,215,0,0.15);padding:3px 6px;border-radius:4px;border:1px solid rgba(255,215,0,0.3);">OVR ${curEvt.batter.ovr}</span>
+                  </div>
+                  <div style="background:rgba(0,0,0,0.4);padding:8px 10px;border-radius:6px;font-size:11px;color:#94a3af;line-height:1.5;">
+                    <div>⚾ <strong>${todayLineLabel}:</strong> <span style="color:#ffd700;font-weight:bold;">${curEvt.batter.line || '0-0'}</span></div>
+                    <div>🎯 <strong>Turno:</strong> <span style="color:#e4e4e7;">${curEvt.half === 'TOP' ? game.awayTeam.name : game.homeTeam.name}</span></div>
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- Live Narrative Play-By-Play Ticker -->
+              <div class="c162-ticker-box">
+                <div style="display:flex;align-items:center;gap:8px;justify-content:center;flex-wrap:wrap;">
+                  ${outcomePillHTML}
+                  <span class="${textClass}">
+                    ${isFinished ? `⚾ FINAL DEL PARTIDO: ${game.awayTeam.name} ${curUserRuns} - ${curOppRuns} ${game.homeTeam.name}` : narrativeText}
+                  </span>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+        `;
+      } else if (activeTab === 'boxscore') {
+        // Multi-game Box Score Tab View
+        const allBoxScores = (this.state.playoffs.boxScores || []).slice();
+        // Include current game if not already in array
+        if (!allBoxScores.some(b => b.round === game.round)) {
+          allBoxScores.push(game);
+        }
+        const activeBoxScoreIdx = this._selectedPlayoffBoxScoreIndex >= 0 && this._selectedPlayoffBoxScoreIndex < allBoxScores.length
+          ? this._selectedPlayoffBoxScoreIndex
+          : allBoxScores.length - 1;
+        const targetGame = allBoxScores[activeBoxScoreIdx] || game;
+
+        const selectorTabsHTML = allBoxScores.map((b, idx) => {
+          const rTitle = getRoundTitle(b.round);
+          const isAct = idx === activeBoxScoreIdx;
+          return `
+            <button class="c162-game-tab-btn ${isAct ? 'active' : ''}" data-boxidx="${idx}">
+              ${idx === 2 ? '🏆' : '⚾'} ${rTitle} (${b.awayTeam.runs}-${b.homeTeam.runs})
             </button>
+          `;
+        }).join('');
+
+        tabContentHTML = `
+          <div style="background:rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:14px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
+              <div style="font-family:'Press Start 2P',monospace;font-size:9.5px;color:#ffd700;">
+                📊 ${targetGame.roundTitle || 'Box Score'} · ${targetGame.awayTeam.name} (${targetGame.awayTeam.runs}) @ ${targetGame.homeTeam.name} (${targetGame.homeTeam.runs})
+              </div>
+              <div class="c162-game-selector-tabs" style="margin-bottom:0;">
+                ${selectorTabsHTML}
+              </div>
+            </div>
+            ${this._renderBoxScoreTablesHTML(targetGame)}
+          </div>
+        `;
+      } else if (activeTab === 'pbp') {
+        // Play-By-Play Log Tab
+        const pbpEntriesHTML = events.slice(0, sim.currentStep + 1).map((ev, i) => {
+          let badge = `<span class="c162-event-badge badge-out">OUT</span>`;
+          if (ev.outcome === 'HR') badge = `<span class="c162-event-badge badge-hr">HR</span>`;
+          else if (['1B', '2B', '3B'].includes(ev.outcome)) badge = `<span class="c162-event-badge badge-hit">${ev.outcome}</span>`;
+          else if (ev.outcome === 'BB') badge = `<span class="c162-event-badge badge-bb">BB</span>`;
+          else if (ev.outcome === 'SO') badge = `<span class="c162-event-badge badge-so">SO</span>`;
+
+          const halfLabel = ev.half === 'TOP' ? '▲' : '▼';
+          return `
+            <div class="c162-pbp-entry">
+              <span style="font-family:'Press Start 2P',monospace;font-size:8px;color:#38bdf8;width:55px;">${halfLabel} ${ev.inning}</span>
+              ${badge}
+              <span style="flex:1;color:#f3f4f6;">
+                <strong>${ev.batter.name}</strong> vs <strong>${ev.pitcher.name}</strong> · ${ev.outcome} ${ev.runsScored > 0 ? `(+${ev.runsScored} R)` : ''}
+              </span>
+              <span style="font-family:'Press Start 2P',monospace;font-size:8.5px;color:#ffd700;">
+                ${ev.userRuns} - ${ev.oppRuns}
+              </span>
+            </div>
+          `;
+        }).reverse().join('');
+
+        tabContentHTML = `
+          <div class="c162-pbp-container">
+            ${pbpEntriesHTML || '<div style="color:#9ca3af;text-align:center;padding:20px;">No hay jugadas registradas aún.</div>'}
           </div>
         `;
       }
 
       container.innerHTML = `
         <div class="c162-sim-stage">
-          <!-- Top Stadium Header -->
-          <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,0.12);padding-bottom:8px;">
+          <!-- Stadium Header -->
+          <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,0.12);padding-bottom:6px;">
             <div>
-              <div style="font-family:'Press Start 2P',monospace;font-size:13px;color:#ffd700;letter-spacing:1px;">
+              <div style="font-family:'Press Start 2P',monospace;font-size:12.5px;color:#ffd700;letter-spacing:1px;">
                 🏆 ${roundTitle}
               </div>
-              <div style="font-size:11px;color:#94a3af;margin-top:2px;">
+              <div style="font-size:10.5px;color:#94a3af;margin-top:2px;">
                 ${simTitle} · ${game.awayTeam.name} vs ${game.homeTeam.name}
               </div>
             </div>
-            <button id="btn-playoff-exit-back" class="btn btn-secondary" style="padding:5px 10px;font-size:9px;font-family:'Press Start 2P',monospace;">
+            <button id="btn-playoff-exit-back" class="btn btn-secondary" style="padding:4px 8px;font-size:8.5px;font-family:'Press Start 2P',monospace;">
               ← VOLVER
             </button>
           </div>
 
-          <!-- Linescore Table -->
+          <!-- Jumbotron Linescore -->
           <div class="c162-linescore-wrap">
             <table class="c162-linescore-table">
               <thead><tr>${linescoreHeadHTML}</tr></thead>
@@ -1799,68 +2065,41 @@
             </table>
           </div>
 
-          <!-- Diamond & Matchup Strip -->
-          <div class="c162-playoff-mid-strip">
-            <!-- Diamond & Outs Widget -->
-            <div class="c162-diamond-widget">
-              <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:#38bdf8;font-weight:bold;">
-                ${isFinished ? 'FINAL' : inningDisplay}
-              </div>
-              <div class="c162-diamond-field">
-                <div class="c162-base-dot base-home"></div>
-                <div class="c162-base-dot base-1b ${b1Active ? 'occupied' : ''}"></div>
-                <div class="c162-base-dot base-2b ${b2Active ? 'occupied' : ''}"></div>
-                <div class="c162-base-dot base-3b ${b3Active ? 'occupied' : ''}"></div>
-              </div>
-              <div class="c162-outs-counter">
-                <span>${outsLabel}:</span>
-                <div class="c162-out-dot ${outsCount >= 1 ? 'active' : ''}"></div>
-                <div class="c162-out-dot ${outsCount >= 2 ? 'active' : ''}"></div>
-                <div class="c162-out-dot ${outsCount >= 3 ? 'active' : ''}"></div>
-              </div>
-            </div>
-
-            <!-- Matchup Strip -->
-            <div class="c162-matchup-strip">
-              <div class="c162-player-slot-row">
-                <div style="display:flex;align-items:center;gap:8px;">
-                  <span style="font-size:16px;">🧢</span>
-                  <div>
-                    <div style="font-size:9px;color:#94a3af;font-family:'Press Start 2P',monospace;">${pitchingLabel} (${curEvt.pitcher.role})</div>
-                    <div style="font-size:12.5px;font-weight:bold;color:#f3f4f6;">${curEvt.pitcher.name}</div>
-                  </div>
-                </div>
-                <span style="font-size:10px;color:#ffd700;font-family:'Press Start 2P',monospace;background:rgba(255,215,0,0.15);padding:3px 6px;border-radius:4px;border:1px solid rgba(255,215,0,0.3);">OVR ${curEvt.pitcher.ovr}</span>
-              </div>
-
-              <div class="c162-player-slot-row">
-                <div style="display:flex;align-items:center;gap:8px;">
-                  <span style="font-size:16px;">⚾</span>
-                  <div>
-                    <div style="font-size:9px;color:#94a3af;font-family:'Press Start 2P',monospace;">${atBatLabel} (${curEvt.batter.pos})</div>
-                    <div style="font-size:12.5px;font-weight:bold;color:#f3f4f6;">${curEvt.batter.name}</div>
-                  </div>
-                </div>
-                <span style="font-size:10px;color:#38bdf8;font-family:'Press Start 2P',monospace;background:rgba(56,189,248,0.15);padding:3px 6px;border-radius:4px;border:1px solid rgba(56,189,248,0.3);">OVR ${curEvt.batter.ovr}</span>
-              </div>
-            </div>
+          <!-- Tab Bar -->
+          <div class="c162-broadcast-tab-bar">
+            <button id="tab-btn-broadcast" class="c162-broadcast-tab-btn ${activeTab === 'broadcast' ? 'active' : ''}">${tabBroadcastLabel}</button>
+            <button id="tab-btn-boxscore" class="c162-broadcast-tab-btn ${activeTab === 'boxscore' ? 'active' : ''}">${tabBoxScoreLabel}</button>
+            <button id="tab-btn-pbp" class="c162-broadcast-tab-btn ${activeTab === 'pbp' ? 'active' : ''}">${tabPbpLabel}</button>
           </div>
 
-          <!-- Play Narrative Ticker -->
-          <div class="c162-ticker-box">
-            <div class="${textClass}">
-              ${isFinished ? `⚾ FINAL DEL PARTIDO: ${game.awayTeam.name} ${curUserRuns} - ${curOppRuns} ${game.homeTeam.name}` : narrativeText}
-            </div>
-          </div>
+          <!-- Tab Main View -->
+          ${tabContentHTML}
 
-          <!-- Action Controls Bar -->
+          <!-- Simulation Controls Bar -->
           <div class="c162-sim-controls">
             ${actionButtonsHTML}
           </div>
         </div>
       `;
 
-      // Bind events:
+      // Event Listeners:
+      const tabBroadcast = document.getElementById('tab-btn-broadcast');
+      if (tabBroadcast) tabBroadcast.onclick = () => { this._activePlayoffTab = 'broadcast'; this.renderPlayoffLiveGame(); };
+
+      const tabBoxScore = document.getElementById('tab-btn-boxscore');
+      if (tabBoxScore) tabBoxScore.onclick = () => { this._activePlayoffTab = 'boxscore'; this.renderPlayoffLiveGame(); };
+
+      const tabPbp = document.getElementById('tab-btn-pbp');
+      if (tabPbp) tabPbp.onclick = () => { this._activePlayoffTab = 'pbp'; this.renderPlayoffLiveGame(); };
+
+      // Box Score multi-game tab clicks:
+      container.querySelectorAll('.c162-game-tab-btn').forEach(btn => {
+        btn.onclick = () => {
+          this._selectedPlayoffBoxScoreIndex = parseInt(btn.getAttribute('data-boxidx'), 10);
+          this.renderPlayoffLiveGame();
+        };
+      });
+
       const btnNextPa = document.getElementById('btn-playoff-next-pa');
       if (btnNextPa) {
         btnNextPa.onclick = () => {
@@ -1920,11 +2159,6 @@
         };
       }
 
-      const btnBoxScore = document.getElementById('btn-playoff-open-boxscore');
-      if (btnBoxScore) {
-        btnBoxScore.onclick = () => this.showPlayoffBoxScoreModal(game);
-      }
-
       const btnFinishGame = document.getElementById('btn-playoff-finish-game');
       if (btnFinishGame) {
         btnFinishGame.onclick = () => this.finishPlayoffGame(game.won, game);
@@ -1941,12 +2175,8 @@
       }
     },
 
-    showPlayoffBoxScoreModal(game) {
-      const existing = document.getElementById('c162-playoff-boxscore-modal');
-      if (existing) existing.remove();
-
-      const _t = (key, fallback, params) => (typeof window.t === 'function' ? window.t(key, params) : fallback);
-      const title = _t('challenge162.playoff_boxscore_title', 'BOX SCORE OFICIAL');
+    _renderBoxScoreTablesHTML(game) {
+      const _t = (key, fallback) => (typeof window.t === 'function' ? window.t(key) : fallback);
       const battingTitle = _t('challenge162.playoff_boxscore_batting', 'ESTADÍSTICAS DE BATEO');
       const pitchingTitle = _t('challenge162.playoff_boxscore_pitching', 'ESTADÍSTICAS DE PITCHEO');
 
@@ -1972,8 +2202,8 @@
         }).join('');
 
         return `
-          <div style="margin-bottom:14px;">
-            <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:#ffd700;margin-bottom:6px;">${teamName} — ${battingTitle}</div>
+          <div style="margin-bottom:12px;">
+            <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:#ffd700;margin-bottom:4px;">${teamName} — ${battingTitle}</div>
             <div class="c162-table-wrap">
               <table class="c162-table">
                 <thead>
@@ -2007,14 +2237,15 @@
               <td class="c162-td">${p.bb}</td>
               <td class="c162-td" style="font-weight:bold;color:#38bdf8;">${p.so}</td>
               <td class="c162-td">${p.hr}</td>
+              <td class="c162-td">${p.pitches || '-'}</td>
               <td class="c162-td" style="font-family:'JetBrains Mono',monospace;">${era}</td>
             </tr>
           `;
         }).join('');
 
         return `
-          <div style="margin-bottom:14px;">
-            <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:#38bdf8;margin-bottom:6px;">${teamName} — ${pitchingTitle}</div>
+          <div style="margin-bottom:12px;">
+            <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:#38bdf8;margin-bottom:4px;">${teamName} — ${pitchingTitle}</div>
             <div class="c162-table-wrap">
               <table class="c162-table">
                 <thead>
@@ -2022,7 +2253,7 @@
                     <th class="c162-th c162-th-name">LANZADOR</th>
                     <th class="c162-th">IP</th><th class="c162-th">H</th><th class="c162-th">R</th>
                     <th class="c162-th">ER</th><th class="c162-th">BB</th><th class="c162-th">SO</th>
-                    <th class="c162-th">HR</th><th class="c162-th">ERA</th>
+                    <th class="c162-th">HR</th><th class="c162-th">PIT</th><th class="c162-th">ERA</th>
                   </tr>
                 </thead>
                 <tbody>${rows}</tbody>
@@ -2032,31 +2263,81 @@
         `;
       };
 
+      return `
+        ${renderBattingTable(game.awayTeam.name, game.awayTeam.batting)}
+        ${renderPitchingTable(game.awayTeam.name, game.awayTeam.pitching)}
+        ${renderBattingTable(game.homeTeam.name, game.homeTeam.batting)}
+        ${renderPitchingTable(game.homeTeam.name, game.homeTeam.pitching)}
+      `;
+    },
+
+    showPlayoffBoxScoreModal(targetGameOrIndex) {
+      const existing = document.getElementById('c162-playoff-boxscore-modal');
+      if (existing) existing.remove();
+
+      const allBoxScores = (this.state && this.state.playoffs && this.state.playoffs.boxScores) || [];
+      if (!allBoxScores.length && typeof targetGameOrIndex === 'object') {
+        allBoxScores.push(targetGameOrIndex);
+      }
+
+      let selectedIndex = typeof targetGameOrIndex === 'number' ? targetGameOrIndex : (allBoxScores.length - 1);
+      if (selectedIndex < 0) selectedIndex = 0;
+
+      const _t = (key, fallback) => (typeof window.t === 'function' ? window.t(key) : fallback);
+      const title = _t('challenge162.playoff_boxscore_title', 'BOX SCORE OFICIAL');
+
       const modal = document.createElement('div');
       modal.id = 'c162-playoff-boxscore-modal';
       modal.className = 'c162-boxscore-modal';
-      modal.innerHTML = `
-        <div class="c162-boxscore-panel">
-          <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,0.12);padding-bottom:10px;margin-bottom:14px;">
-            <div style="font-family:'Press Start 2P',monospace;font-size:12px;color:#ffd700;">
-              📊 ${title} · ${game.awayTeam.name} (${game.awayTeam.runs}) @ ${game.homeTeam.name} (${game.homeTeam.runs})
-            </div>
-            <button id="btn-close-boxscore-modal" class="btn btn-secondary" style="padding:4px 10px;font-size:11px;font-weight:bold;cursor:pointer;">
-              ✕ CERRAR
-            </button>
-          </div>
-          <div style="overflow-y:auto;flex:1;padding-right:4px;">
-            ${renderBattingTable(game.awayTeam.name, game.awayTeam.batting)}
-            ${renderPitchingTable(game.awayTeam.name, game.awayTeam.pitching)}
-            ${renderBattingTable(game.homeTeam.name, game.homeTeam.batting)}
-            ${renderPitchingTable(game.homeTeam.name, game.homeTeam.pitching)}
-          </div>
-        </div>
-      `;
 
+      const renderModalContent = (idx) => {
+        const game = allBoxScores[idx] || (typeof targetGameOrIndex === 'object' ? targetGameOrIndex : allBoxScores[0]);
+        if (!game) return;
+
+        const selectorTabsHTML = allBoxScores.map((b, bIdx) => {
+          const rTitle = b.roundTitle || `Ronda ${b.round + 1}`;
+          const isAct = bIdx === idx;
+          return `
+            <button class="c162-game-tab-btn ${isAct ? 'active' : ''}" data-modalboxidx="${bIdx}">
+              ${bIdx === 2 ? '🏆' : '⚾'} ${rTitle} (${b.awayTeam.runs}-${b.homeTeam.runs})
+            </button>
+          `;
+        }).join('');
+
+        modal.innerHTML = `
+          <div class="c162-boxscore-panel">
+            <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,0.12);padding-bottom:8px;margin-bottom:10px;">
+              <div style="font-family:'Press Start 2P',monospace;font-size:11px;color:#ffd700;">
+                📊 ${title} · ${game.awayTeam.name} (${game.awayTeam.runs}) @ ${game.homeTeam.name} (${game.homeTeam.runs})
+              </div>
+              <button id="btn-close-boxscore-modal" class="btn btn-secondary" style="padding:4px 10px;font-size:11px;font-weight:bold;cursor:pointer;">
+                ✕ CERRAR
+              </button>
+            </div>
+            ${allBoxScores.length > 1 ? `
+              <div class="c162-game-selector-tabs">
+                ${selectorTabsHTML}
+              </div>
+            ` : ''}
+            <div style="overflow-y:auto;flex:1;padding-right:4px;">
+              ${this._renderBoxScoreTablesHTML(game)}
+            </div>
+          </div>
+        `;
+
+        const closeBtn = document.getElementById('btn-close-boxscore-modal');
+        if (closeBtn) closeBtn.onclick = () => modal.remove();
+
+        modal.querySelectorAll('.c162-game-tab-btn').forEach(btn => {
+          btn.onclick = () => {
+            const nextIdx = parseInt(btn.getAttribute('data-modalboxidx'), 10);
+            renderModalContent(nextIdx);
+          };
+        });
+      };
+
+      renderModalContent(selectedIndex);
       document.body.appendChild(modal);
-      const closeBtn = document.getElementById('btn-close-boxscore-modal');
-      if (closeBtn) closeBtn.onclick = () => modal.remove();
       modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
     },
 
@@ -3327,6 +3608,11 @@
           <button id="challenge162-play-playoff-match" class="btn" style="padding:14px 28px;font-size:11px;font-family:'Press Start 2P',monospace;background:linear-gradient(135deg,#ffd700,#f59e0b);color:#000;border:2px solid #fff;box-shadow:0 0 24px rgba(255,215,0,0.6);cursor:pointer;transition:transform 0.15s ease;">
             ${playMatchBtnText}
           </button>
+          ${(S.playoffs && S.playoffs.boxScores && S.playoffs.boxScores.length > 0) ? `
+            <button id="challenge162-playoff-view-boxscores-btn" class="btn btn-secondary" style="padding:14px 22px;font-size:11px;font-family:'Press Start 2P',monospace;color:#38bdf8;border-color:rgba(56,189,248,0.4);">
+              ${_t('challenge162.playoff_view_boxscores', '📜 Historial de Box Scores')}
+            </button>
+          ` : ''}
           <button id="challenge162-playoff-back-season" class="btn btn-secondary" style="padding:14px 22px;font-size:11px;font-family:'Press Start 2P',monospace;">
             ${viewStatsBtnText}
           </button>
@@ -3335,6 +3621,8 @@
 
       const btn = document.getElementById('challenge162-play-playoff-match');
       if (btn) btn.onclick = () => this.startPlayoffRound();
+      const btnViewBS = document.getElementById('challenge162-playoff-view-boxscores-btn');
+      if (btnViewBS) btnViewBS.onclick = () => this.showPlayoffBoxScoreModal(0);
       const backBtn = document.getElementById('challenge162-playoff-back-season');
       if (backBtn) backBtn.onclick = () => { this.showScreen('screen-challenge-season'); this.renderSeason(); };
     },
