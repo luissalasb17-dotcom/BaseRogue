@@ -10670,18 +10670,18 @@ function initGameModeSelector() {
       ` : '';
 
       const mvpBannerHTML = bestPlayer ? `
-        <div id="victory-mvp-card-btn" style="background: linear-gradient(135deg, rgba(255,215,0,0.2) 0%, rgba(245,158,11,0.28) 100%); border: 2px solid #ffd700; border-radius: 10px; padding: 8px 12px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; gap: 12px; box-shadow: 0 0 18px rgba(255,215,0,0.28); cursor: pointer; transition: transform 0.15s, box-shadow 0.15s;">
-          <div style="display:flex; align-items:center; gap:10px;">
-            <span style="font-size:24px; filter:drop-shadow(0 0 8px #ffd700);">👑</span>
+        <div id="victory-mvp-card-btn" style="background: linear-gradient(135deg, rgba(255,215,0,0.22) 0%, rgba(245,158,11,0.3) 100%); border: 2px solid #ffd700; border-radius: 10px; padding: 12px 18px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; gap: 16px; box-shadow: 0 0 20px rgba(255,215,0,0.3); cursor: pointer; transition: transform 0.15s, box-shadow 0.15s;">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <span style="font-size:28px; filter:drop-shadow(0 0 10px #ffd700);">👑</span>
             <div style="text-align:left;">
-              <div style="font-family:'Press Start 2P',monospace; font-size:8px; color:#ffd700; margin-bottom:3px;">
+              <div style="font-family:'Press Start 2P',monospace; font-size:9px; color:#ffd700; margin-bottom:4px;">
                 ${typeof t === 'function' ? t('victory.run_mvp_badge', '👑 MVP DE LA RUN') : '👑 MVP DE LA RUN'}
               </div>
-              <div style="font-size:13px; font-weight:bold; color:#fff; font-family:sans-serif; display:flex; align-items:center; gap:8px;">
+              <div style="font-size:15px; font-weight:bold; color:#fff; font-family:sans-serif; display:flex; align-items:center; gap:10px;">
                 <span>[${bestPlayer.slot}] ${bestPlayer.player.name}</span>
-                <span style="background:${bestPlayer.ovrGrade.color}; color:#000; font-family:'Press Start 2P',monospace; font-size:7.5px; padding:2px 5px; border-radius:3px; font-weight:bold;">${bestPlayer.ovrGrade.text} ${bestPlayer.ovr}</span>
+                <span style="background:${bestPlayer.ovrGrade.color}; color:#000; font-family:'Press Start 2P',monospace; font-size:8.5px; padding:2.5px 6px; border-radius:4px; font-weight:bold;">${bestPlayer.ovrGrade.text} ${bestPlayer.ovr}</span>
               </div>
-              <div style="font-size:7.5px; color:#94a3b8; font-family:'Press Start 2P',monospace; margin-top:3px; display:flex; gap:4px; align-items:center;">
+              <div style="font-size:8.5px; color:#94a3b8; font-family:'Press Start 2P',monospace; margin-top:4px; display:flex; gap:6px; align-items:center;">
                 <span>${bestPlayer.team}</span>
                 <span>·</span>
                 <span style="color:#fbbf24;">${bestPlayer.era}</span>
@@ -10690,7 +10690,7 @@ function initGameModeSelector() {
               </div>
             </div>
           </div>
-          <div style="font-family:'Press Start 2P',monospace; font-size:8px; text-align:right; display:flex; gap:10px; align-items:center;">
+          <div style="font-family:'Press Start 2P',monospace; font-size:9.5px; text-align:right; display:flex; gap:14px; align-items:center;">
             <span style="color:#00ff66; font-weight:bold;">OPS ${bestPlayer.ops}</span>
             <span style="color:#ef4444;">${bestPlayer.hr} HR · ${bestPlayer.rbi} RBI</span>
             <span style="color:#ff3366; font-weight:bold;">💥 ${bestPlayer.dmg} DMG</span>
@@ -10699,35 +10699,35 @@ function initGameModeSelector() {
       ` : '';
 
       showcaseContainer.innerHTML = `
-        <div style="font-family:'Press Start 2P',monospace; font-size:9.5px; color:#ffd700; margin-bottom:8px; letter-spacing:0.8px; text-shadow:0 0 12px rgba(255,215,0,0.5);">
+        <div style="font-family:'Press Start 2P',monospace; font-size:11px; color:#ffd700; margin-bottom:12px; letter-spacing:1px; text-shadow:0 0 14px rgba(255,215,0,0.6);">
           ${typeof t === 'function' ? t('victory.team_showcase_title', '👑 ROSTER DE CAMPEONES') : '👑 ROSTER DE CAMPEONES'}
         </div>
         ${mvpBannerHTML}
-        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; text-align:left;">
+        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:12px; text-align:left;">
           ${playersData.map((item, pIdx) => {
             const isMVP = bestPlayer && bestPlayer.player.name === item.player.name;
             const borderCol = isMVP ? '#ffd700' : `${item.rarityColor}99`;
-            const glow = isMVP ? '0 0 14px rgba(255,215,0,0.4)' : `0 0 10px ${item.rarityColor}25`;
-            const bgCol = isMVP ? 'linear-gradient(135deg, rgba(255,215,0,0.14) 0%, rgba(15,23,42,0.9) 100%)' : `linear-gradient(135deg, ${item.rarityBg} 0%, rgba(10,15,30,0.9) 100%)`;
-            const itemTag = item.player.equipped_item ? `<span style="color:#38bdf8; font-size:7px;" title="${item.player.equipped_item.name}">${item.player.equipped_item.icon || '🎒'}</span>` : '';
+            const glow = isMVP ? '0 0 16px rgba(255,215,0,0.45)' : `0 0 10px ${item.rarityColor}25`;
+            const bgCol = isMVP ? 'linear-gradient(135deg, rgba(255,215,0,0.16) 0%, rgba(15,23,42,0.92) 100%)' : `linear-gradient(135deg, ${item.rarityBg} 0%, rgba(10,15,30,0.92) 100%)`;
+            const itemTag = item.player.equipped_item ? `<span style="color:#38bdf8; font-size:8px;" title="${item.player.equipped_item.name}">${item.player.equipped_item.icon || '🎒'}</span>` : '';
             return `
-              <div class="victory-player-card-btn" data-idx="${pIdx}" style="background:${bgCol}; border:1.5px solid ${borderCol}; border-radius:8px; padding:6px 8px; box-shadow:${glow}; display:flex; flex-direction:column; justify-content:space-between; cursor:pointer; transition:transform 0.15s, box-shadow 0.15s;">
+              <div class="victory-player-card-btn" data-idx="${pIdx}" style="background:${bgCol}; border:2px solid ${borderCol}; border-radius:10px; padding:10px 12px; box-shadow:${glow}; display:flex; flex-direction:column; justify-content:space-between; cursor:pointer; transition:transform 0.15s, box-shadow 0.15s;">
                 <div>
-                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:3px;">
-                    <div style="display:flex; align-items:center; gap:5px; overflow:hidden;">
-                      <span style="font-size:8px; color:#38bdf8; font-family:'Press Start 2P',monospace;">[${item.slot}]</span>
-                      <span style="font-size:10.5px; font-weight:bold; color:#fff; font-family:sans-serif; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${item.player.name}">${item.player.name}</span>
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                    <div style="display:flex; align-items:center; gap:6px; overflow:hidden;">
+                      <span style="font-size:9.5px; color:#38bdf8; font-family:'Press Start 2P',monospace;">[${item.slot}]</span>
+                      <span style="font-size:12.5px; font-weight:bold; color:#fff; font-family:sans-serif; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${item.player.name}">${item.player.name}</span>
                       ${itemTag}
                     </div>
-                    <span style="background:${item.ovrGrade.color}; color:#000; font-family:'Press Start 2P',monospace; font-size:6.5px; padding:1.5px 4px; border-radius:2px; font-weight:bold; flex-shrink:0;">${item.ovrGrade.text} ${item.ovr}</span>
+                    <span style="background:${item.ovrGrade.color}; color:#000; font-family:'Press Start 2P',monospace; font-size:7.5px; padding:2px 5px; border-radius:3px; font-weight:bold; flex-shrink:0;">${item.ovrGrade.text} ${item.ovr}</span>
                   </div>
-                  <div style="font-size:6.5px; color:#94a3b8; margin-bottom:5px; font-family:'Press Start 2P',monospace; display:flex; gap:4px; align-items:center;">
+                  <div style="font-size:7.5px; color:#94a3b8; margin-bottom:8px; font-family:'Press Start 2P',monospace; display:flex; gap:5px; align-items:center;">
                     <span style="color:#fbbf24;">${item.era}</span>
                     <span>·</span>
                     <span style="color:#7dd3fc;">${item.team}</span>
                   </div>
                 </div>
-                <div style="background:rgba(0,0,0,0.6); border:1px solid rgba(255,255,255,0.08); border-radius:5px; padding:3px 6px; display:flex; justify-content:space-between; align-items:center; font-family:'Press Start 2P',monospace; font-size:7.5px;">
+                <div style="background:rgba(0,0,0,0.65); border:1px solid rgba(255,255,255,0.1); border-radius:6px; padding:5px 8px; display:flex; justify-content:space-between; align-items:center; font-family:'Press Start 2P',monospace; font-size:8.5px;">
                   <span style="color:#00ff66;" title="On-Base Plus Slugging">OPS ${item.ops}</span>
                   <span style="color:#ef4444;">${item.hr} HR</span>
                   <span style="color:#ff3366; font-weight:bold;">💥 ${item.dmg}</span>
