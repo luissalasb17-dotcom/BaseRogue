@@ -14,7 +14,7 @@
   ];
 
   const BATTER_POS_TABS = [
-    { key: 'all', label: 'TODOS' },
+    { key: 'all', get label() { return (typeof window.t === 'function' ? window.t('dex.pos_all', 'TODOS') : 'TODOS'); } },
     { key: 'C', label: 'C' },
     { key: '1B', label: '1B' },
     { key: '2B', label: '2B' },
@@ -27,7 +27,7 @@
   ];
 
   const PITCHER_POS_TABS = [
-    { key: 'all', label: 'TODOS' },
+    { key: 'all', get label() { return (typeof window.t === 'function' ? window.t('dex.pos_all', 'TODOS') : 'TODOS'); } },
     { key: 'SP', label: 'SP' },
     { key: 'RP', label: 'RP' }
   ];
@@ -357,7 +357,9 @@
       const pct = stats.total > 0 ? ((stats.unlocked / stats.total) * 100).toFixed(1) : 0;
       
       if (elText) {
-        const catLabel = this.activeCategory === 'opponents' ? 'Oponentes Enfrentados' : 'Cartas Descubiertas';
+        const catLabel = this.activeCategory === 'opponents'
+          ? (typeof window.t === 'function' ? window.t('dex.counter_opponents', 'Oponentes Enfrentados') : 'Oponentes Enfrentados')
+          : (typeof window.t === 'function' ? window.t('dex.counter_legends', 'Cartas Descubiertas') : 'Cartas Descubiertas');
         elText.innerText = `${stats.unlocked} / ${stats.total} (${catLabel})`;
       }
       if (elFill) {

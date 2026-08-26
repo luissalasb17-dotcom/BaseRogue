@@ -261,6 +261,7 @@
     "record_underdog": "Underdog Team",
     "win_pct_label": "Win Rate",
     "win_prob_title": "WIN PROBABILITY",
+    "breakdown_title": "Ratings Breakdown",
     "boss_all_star_desc": "All-Star Rotation: The division's best arms",
     "pitcher_card_tooltip": "Click to inspect this pitcher card",
     "batter_card_tooltip": "Click to inspect this batter card",
@@ -286,7 +287,12 @@
     "edge_k_minus": "💨 High K/9 Hazard",
     "edge_spd_plus": "⚡ Stolen Base",
     "edge_spd_minus": "🧱 High Stamina",
-    "edge_even": "⚖️ Even"
+    "edge_even": "⚖️ Even",
+    "nav_prev_batter": "Previous Batter",
+    "nav_next_batter": "Next Batter",
+    "nav_prev_pitcher": "Previous Pitcher",
+    "nav_next_pitcher": "Next Pitcher",
+    "stakes_pill": "3 INNINGS • DUEL"
   },
   "training": {
     "con_label": "Standard Contact",
@@ -484,6 +490,7 @@
       "desc": "Your entire active roster recovers +40 Stamina for upcoming matches."
     },
     "badge_bonus": "BONUS!",
+    "sponsor_title": "Team Sponsor",
     "money": {
       "desc": "Your club receives an economic injection from local sponsors."
     }

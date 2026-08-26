@@ -264,6 +264,7 @@
     "record_underdog": "Equipo Desafiante",
     "win_pct_label": "Prob. Victoria",
     "win_prob_title": "PROB. VICTORIA",
+    "breakdown_title": "Desglose de Ratings",
     "boss_all_star_desc": "Rotación All-Star: Los mejores brazos del circuito",
     "pitcher_card_tooltip": "Haz clic para ver la carta de este lanzador",
     "batter_card_tooltip": "Haz clic para ver la carta de este bateador",
@@ -289,7 +290,12 @@
     "edge_k_minus": "💨 Peligro K/9",
     "edge_spd_plus": "⚡ Robo Bases",
     "edge_spd_minus": "🧱 Resistencia",
-    "edge_even": "⚖️ Parejo"
+    "edge_even": "⚖️ Parejo",
+    "nav_prev_batter": "Bateador Anterior",
+    "nav_next_batter": "Siguiente Bateador",
+    "nav_prev_pitcher": "Lanzador Anterior",
+    "nav_next_pitcher": "Siguiente Lanzador",
+    "stakes_pill": "3 INNINGS • DUELO"
   },
   "training": {
     "con_label": "Contacto Estándar",
@@ -2206,6 +2212,7 @@
     "record_underdog": "Underdog Team",
     "win_pct_label": "Win Rate",
     "win_prob_title": "WIN PROBABILITY",
+    "breakdown_title": "Ratings Breakdown",
     "boss_all_star_desc": "All-Star Rotation: The division's best arms",
     "pitcher_card_tooltip": "Click to inspect this pitcher card",
     "batter_card_tooltip": "Click to inspect this batter card",
@@ -2231,7 +2238,12 @@
     "edge_k_minus": "💨 High K/9 Hazard",
     "edge_spd_plus": "⚡ Stolen Base",
     "edge_spd_minus": "🧱 High Stamina",
-    "edge_even": "⚖️ Even"
+    "edge_even": "⚖️ Even",
+    "nav_prev_batter": "Previous Batter",
+    "nav_next_batter": "Next Batter",
+    "nav_prev_pitcher": "Previous Pitcher",
+    "nav_next_pitcher": "Next Pitcher",
+    "stakes_pill": "3 INNINGS • DUEL"
   },
   "training": {
     "con_label": "Standard Contact",
@@ -3921,6 +3933,15 @@
         }
       }
     });
+    document.querySelectorAll('[data-i18n-title]').forEach(el => {
+      const key = el.getAttribute('data-i18n-title');
+      if (key) {
+        const translated = t(key);
+        if (translated && translated !== key) {
+          el.setAttribute('title', translated);
+        }
+      }
+    });
   }
 
   function setLanguage(lang) {
@@ -3937,6 +3958,9 @@
     }
     if (typeof window.renderSynergiesAndItems === 'function') {
       try { window.renderSynergiesAndItems(); } catch (e) { console.warn(e); }
+    }
+    if (window.BaseballDex && window.BaseballDex.container) {
+      try { window.BaseballDex.renderPanel(); } catch (e) { console.warn(e); }
     }
   }
 
@@ -3963,6 +3987,13 @@
         if (translated && translated !== key) el.setAttribute('placeholder', translated);
       }
     }
+    if (el.hasAttribute && el.hasAttribute('data-i18n-title')) {
+      const key = el.getAttribute('data-i18n-title');
+      if (key) {
+        const translated = t(key);
+        if (translated && translated !== key) el.setAttribute('title', translated);
+      }
+    }
   }
 
   // Intercept and translate elements dynamically as they parse into the DOM
@@ -3972,7 +4003,7 @@
         m.addedNodes.forEach(node => {
           if (node.nodeType === 1) {
             translateElement(node);
-            node.querySelectorAll('[data-i18n], [data-i18n-html], [data-i18n-placeholder]').forEach(translateElement);
+            node.querySelectorAll('[data-i18n], [data-i18n-html], [data-i18n-placeholder], [data-i18n-title]').forEach(translateElement);
           }
         });
       });

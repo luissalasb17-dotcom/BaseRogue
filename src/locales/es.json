@@ -261,6 +261,7 @@
     "record_underdog": "Equipo Desafiante",
     "win_pct_label": "Prob. Victoria",
     "win_prob_title": "PROB. VICTORIA",
+    "breakdown_title": "Desglose de Ratings",
     "boss_all_star_desc": "Rotación All-Star: Los mejores brazos del circuito",
     "pitcher_card_tooltip": "Haz clic para ver la carta de este lanzador",
     "batter_card_tooltip": "Haz clic para ver la carta de este bateador",
@@ -286,7 +287,12 @@
     "edge_k_minus": "💨 Peligro K/9",
     "edge_spd_plus": "⚡ Robo Bases",
     "edge_spd_minus": "🧱 Resistencia",
-    "edge_even": "⚖️ Parejo"
+    "edge_even": "⚖️ Parejo",
+    "nav_prev_batter": "Bateador Anterior",
+    "nav_next_batter": "Siguiente Bateador",
+    "nav_prev_pitcher": "Lanzador Anterior",
+    "nav_next_pitcher": "Siguiente Lanzador",
+    "stakes_pill": "3 INNINGS • DUELO"
   },
   "training": {
     "con_label": "Contacto Estándar",
@@ -484,6 +490,7 @@
       "desc": "Toda tu plantilla activa recupera +40 de Stamina para los próximos encuentros."
     },
     "badge_bonus": "¡BONIFICACIÓN!",
+    "sponsor_title": "Patrocinador Deportivo",
     "money": {
       "desc": "Tu club recibe una inyección económica de los patrocinadores locales."
     }

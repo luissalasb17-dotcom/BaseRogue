@@ -582,9 +582,9 @@
               <!-- Left: Your Batter Selector & Card -->
               <div class="showdown-side showdown-side-player">
                 <div class="showdown-nav-bar">
-                  <button class="btn btn-showdown-nav" id="btn-prev-batter" title="Bateador Anterior">◀</button>
+                  <button class="btn btn-showdown-nav" id="btn-prev-batter" title="Bateador Anterior" data-i18n-title="pre_fight.nav_prev_batter">◀</button>
                   <span id="showdown-batter-label" class="showdown-nav-label">#1 CF Kirby Puckett</span>
-                  <button class="btn btn-showdown-nav" id="btn-next-batter" title="Siguiente Bateador">▶</button>
+                  <button class="btn btn-showdown-nav" id="btn-next-batter" title="Siguiente Bateador" data-i18n-title="pre_fight.nav_next_batter">▶</button>
                 </div>
                 <div id="showdown-batter-card-wrap" class="showdown-card-slot">
                   <!-- Dynamic Batter Card -->
@@ -594,7 +594,7 @@
               <!-- Center: The VS Clash, Matchup Insights & Battle Button -->
               <div class="showdown-center">
                 <div class="showdown-vs-badge">VS</div>
-                <div class="showdown-stakes-pill">3 INNINGS • DUEL</div>
+                <div class="showdown-stakes-pill" data-i18n="pre_fight.stakes_pill">3 INNINGS • DUEL</div>
 
                 <!-- Dynamic Matchup Advantage Tactical Insights -->
                 <div id="showdown-matchup-insights" class="showdown-insights-panel">
@@ -612,9 +612,9 @@
               <!-- Right: Rival Pitcher Selector & Card -->
               <div class="showdown-side showdown-side-enemy">
                 <div class="showdown-nav-bar nav-enemy">
-                  <button class="btn btn-showdown-nav" id="btn-prev-pitcher" title="Lanzador Anterior">◀</button>
+                  <button class="btn btn-showdown-nav" id="btn-prev-pitcher" title="Lanzador Anterior" data-i18n-title="pre_fight.nav_prev_pitcher">◀</button>
                   <span id="showdown-pitcher-label" class="showdown-nav-label">SP Rollie Naylor</span>
-                  <button class="btn btn-showdown-nav" id="btn-next-pitcher" title="Siguiente Lanzador">▶</button>
+                  <button class="btn btn-showdown-nav" id="btn-next-pitcher" title="Siguiente Lanzador" data-i18n-title="pre_fight.nav_next_pitcher">▶</button>
                 </div>
                 <div id="showdown-pitcher-card-wrap" class="showdown-card-slot">
                   <!-- Dynamic Pitcher Card -->
@@ -786,8 +786,8 @@
                 <!-- Match controls -->
                 <div class="match-controls hidden" style="width: 100%;">
                   <!-- Old step/auto buttons hidden by default; dice panel injected dynamically -->
-                  <button class="btn hidden" id="btn-match-play-step"><i class="fa-solid fa-play"></i> Siguiente Turno</button>
-                  <button class="btn btn-secondary hidden" id="btn-match-auto-fast"><i class="fa-solid fa-forward"></i> Simulación Rápida</button>
+                  <button class="btn hidden" id="btn-match-play-step" data-i18n-html="match.roll_dice"><i class="fa-solid fa-play"></i> Siguiente Turno</button>
+                  <button class="btn btn-secondary hidden" id="btn-match-auto-fast" data-i18n-html="match.simulate_all"><i class="fa-solid fa-forward"></i> Simulación Rápida</button>
                 </div>
 
               </div>

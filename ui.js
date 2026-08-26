@@ -487,7 +487,7 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
         <div style="margin: 12px 0 16px 0; padding: 10px 14px; background: rgba(239,68,68,0.12); border: 1.5px solid rgba(239,68,68,0.4); border-radius: 10px; display: flex; align-items: center; justify-content: space-between;">
           <div style="text-align: left;">
             <div style="font-size: 8px; color: #ef4444; font-family: 'Press Start 2P', monospace;">${typeof t === 'function' ? t('equip.stamina_penalty_badge', '⚡ PENALIZACIÓN DE STAMINA') : '⚡ PENALIZACIÓN DE STAMINA'}</div>
-            <div style="font-size: 11px; font-weight: bold; color: #fff; margin-top: 2px;">${testerPlayer.name} (${testerPlayer.pos || 'Bateador'})</div>
+            <div style="font-size: 11px; font-weight: bold; color: #fff; margin-top: 2px;">${testerPlayer.name} (${testerPlayer.pos || (typeof t === 'function' ? t('common.batter', 'Bateador') : 'Bateador')})</div>
           </div>
           <div style="font-family: 'Press Start 2P', monospace; font-size: 13px; color: #ef4444; font-weight: bold;">
             -35 STA
@@ -3777,12 +3777,12 @@ function initGameModeSelector() {
       renderActiveRoster();
       updateHUD();
       showRetroResultModal({
-        title: 'Patrocinador Deportivo',
+        title: typeof window.t === 'function' ? window.t('rest.sponsor_title', 'Patrocinador Deportivo') : 'Patrocinador Deportivo',
         get badgeText() { return typeof window.t==='function'?window.t('rest.badge_bonus'):'¡BONIFICACIÓN!'; },
         badgeColor: '#f59e0b',
         icon: '💰',
         get desc() { return typeof window.t==='function'?window.t('rest.money.desc'):'Tu club recibe una inyección económica de los patrocinadores locales.'; },
-        stats: [{ label: 'Presupuesto del Club', value: '+$25', isPositive: true }],
+        stats: [{ label: typeof window.t==='function'?window.t('hud.budget', 'Presupuesto'):'Presupuesto', value: '+$25', isPositive: true }],
         onClose: () => closeNodeCompleted()
       });
     });
@@ -6728,19 +6728,55 @@ function initGameModeSelector() {
       ovrDisplay = ovrs.length ? Math.floor(ovrs.reduce((a, b) => a + b, 0) / ovrs.length) : (enemy._ovr || null);
     }
 
-    // Calculate Win Probability (Overall Lineup vs Enemy Rotation)
+    // Direct Attribute-by-Attribute Clash: 9 Active Batters vs Enemy Pitching Staff
     const order = window.Game.battingOrder || ['C','1B','2B','3B','SS','LF','CF','RF','DH'];
     const myBatters = order.map(pos => window.Game.roster && window.Game.roster[pos]).filter(Boolean);
-    const myTeamAvgOvr = myBatters.length ? (myBatters.reduce((sum, b) => sum + (b.ovr || 50), 0) / myBatters.length) : 55;
-    
-    let synergyBonus = 0;
-    if (window.Game && window.Game._lastSynergyTiersCount) {
-      synergyBonus = window.Game._lastSynergyTiersCount * 1.5;
+    const bCount = Math.max(1, myBatters.length);
+
+    // 1. Average of your 9 lineup batters
+    const avgCon = myBatters.reduce((acc, b) => acc + (b.con || 50), 0) / bCount;
+    const avgPwr = myBatters.reduce((acc, b) => acc + (b.pwr || 50), 0) / bCount;
+    const avgEye = myBatters.reduce((acc, b) => acc + (b.eye || 50), 0) / bCount;
+    const avgKAvd = myBatters.reduce((acc, b) => acc + (b.k_avd || 50), 0) / bCount;
+
+    // 2. Average of opponent pitching staff (Starter 50% weight, Bullpen 50% weight)
+    const oppPitchers = (enemy.pitchers && enemy.pitchers.length > 0) ? enemy.pitchers : [{ h9: 50, hr9: 50, bb9: 50, k9: 50 }];
+    const sp = oppPitchers.find(p => p.role === 'SP') || oppPitchers[0];
+    const rels = oppPitchers.filter(p => p !== sp);
+
+    let oppH9 = sp.h9 || 50;
+    let oppHr9 = sp.hr9 || 50;
+    let oppBb9 = sp.bb9 || 50;
+    let oppK9 = sp.k9 || 50;
+
+    if (rels.length > 0) {
+      const relH9 = rels.reduce((acc, p) => acc + (p.h9 || 50), 0) / rels.length;
+      const relHr9 = rels.reduce((acc, p) => acc + (p.hr9 || 50), 0) / rels.length;
+      const relBb9 = rels.reduce((acc, p) => acc + (p.bb9 || 50), 0) / rels.length;
+      const relK9 = rels.reduce((acc, p) => acc + (p.k9 || 50), 0) / rels.length;
+
+      oppH9 = (oppH9 * 0.5) + (relH9 * 0.5);
+      oppHr9 = (oppHr9 * 0.5) + (relHr9 * 0.5);
+      oppBb9 = (oppBb9 * 0.5) + (relBb9 * 0.5);
+      oppK9 = (oppK9 * 0.5) + (relK9 * 0.5);
     }
-    const enemyAvgOvr = ovrDisplay !== null ? ovrDisplay : (enemy.isBoss ? 65 : 55);
-    const diff = (myTeamAvgOvr + synergyBonus) - enemyAvgOvr;
-    let winPct = Math.round(50 + (diff * 2.2));
-    winPct = Math.max(8, Math.min(92, winPct));
+
+    // 3. Direct Rating Matchup Deltas
+    const deltaCon = Math.round(avgCon - oppH9);
+    const deltaPwr = Math.round(avgPwr - oppHr9);
+    const deltaEye = Math.round(avgEye - oppBb9);
+    const deltaK   = Math.round(avgKAvd - oppK9);
+
+    // Active Synergy Bonus
+    let synergyStatBonus = 0;
+    if (window.Game && window.Game._lastSynergyTiersCount) {
+      synergyStatBonus = window.Game._lastSynergyTiersCount * 1.5;
+    }
+
+    // Weighted Rating Advantage
+    const netAdvantage = (deltaCon * 0.30) + (deltaPwr * 0.25) + (deltaK * 0.25) + (deltaEye * 0.20) + synergyStatBonus;
+    let winPct = Math.round(50 + (netAdvantage * 1.8));
+    winPct = Math.max(5, Math.min(95, winPct));
 
     let winColor = '#f59e0b';
     let winGradient = 'linear-gradient(90deg, #d97706, #f59e0b)';
@@ -6752,8 +6788,11 @@ function initGameModeSelector() {
       winGradient = 'linear-gradient(90deg, #dc2626, #ef4444)';
     }
 
+    const fmtSign = (n) => (n >= 0 ? `+${n}` : `${n}`);
+    const matchupBreakdownTooltip = `⚔️ ${t('pre_fight.breakdown_title', 'Desglose de Ratings')}: CON vs H/9: ${fmtSign(deltaCon)} | POW vs HR/9: ${fmtSign(deltaPwr)} | K/AVD vs K/9: ${fmtSign(deltaK)} | EYE vs BB/9: ${fmtSign(deltaEye)}`;
+
     const winProbHTML = `
-      <div class="pre-fight-win-prob-wrap">
+      <div class="pre-fight-win-prob-wrap" title="${matchupBreakdownTooltip}">
         <div class="win-prob-header-row">
           <span class="win-prob-label">${t('pre_fight.win_prob_title', 'PROB. VICTORIA')}</span>
           <span class="win-prob-num" style="color:${winColor};">${winPct}%</span>
@@ -6765,7 +6804,7 @@ function initGameModeSelector() {
     `;
 
     const ovrHTML = ovrDisplay !== null
-      ? `<div style="font-size:9px;color:#e4e4e7;margin-top:6px;padding-top:6px;border-top:1px dashed rgba(255,255,255,0.15);">${t('pre_fight.ovr_label')}: <strong>${ovrDisplay}</strong></div>`
+      ? `<div style="font-size:9px;color:#e4e4e7;margin-top:6px;padding-top:6px;border-top:1px dashed rgba(255,255,255,0.15);">${t('pre_fight.ovr_label')} <strong>${ovrDisplay}</strong></div>`
       : '';
 
     el.preFightScouting.innerHTML = `
@@ -6773,7 +6812,7 @@ function initGameModeSelector() {
         <div>
           <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:${rColor};letter-spacing:0.5px;margin-bottom:6px;">${t('pre_fight.scouting_title')}</div>
           <div style="font-size:13px;font-weight:bold;color:#e4e4e7;">${teamName}</div>
-          ${eraName ? `<div style="font-size:11px;color:#9ca3af;margin-top:2px;">${t('pre_fight.era_label')}: ${eraName}</div>` : ''}
+          ${eraName ? `<div style="font-size:11px;color:#9ca3af;margin-top:2px;">${eraName}</div>` : ''}
           ${recordHTML}
         </div>
         <div style="background:${rBg};border:1px solid ${rColor};border-radius:8px;padding:8px 14px;text-align:center;min-width:140px;">
