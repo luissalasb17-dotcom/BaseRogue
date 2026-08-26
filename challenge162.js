@@ -666,7 +666,7 @@
 
     let targetAvg, pHR;
     if (isUserBatting) {
-      targetAvg = 0.258 + (conEffective - 50) * 0.00140 - (pH9 - 50) * 0.00070 - defAdj;
+      targetAvg = 0.266 + (conEffective - 50) * 0.00145 - (pH9 - 50) * 0.00065 - defAdj;
       pHR = 0.028 + (pwrEffective - 50) * 0.00095 - (pHR9 - 50) * 0.00028;
     } else {
       // Opponent batting vs User pitching: calibrated to deliver authentic 2.20-3.50 ERAs for quality starters and 1.80-2.80 for elite relievers:
@@ -986,7 +986,6 @@
         leagueTeams,
         schedule: buildSeasonSchedule(leagueTeams),
         gamesPlayed: 0, wins: 0, losses: 0, streak: 0,
-        safetyShields: 2, safetyUsed: 0,
         batterStats: {}, pitcherStats: {},
         gameLog: [],
         playoffs: { unlocked: false, round: 0, finished: false, won: false }
@@ -1129,15 +1128,9 @@
       let attempt = this._simulateNaturalGame(userLineup, userSP, userRelievers, opp, gameIdx);
       let won = attempt.userRuns > attempt.oppRuns;
 
-      if (S.safetyShields === undefined) S.safetyShields = 2;
-
-      // ── Safety Net (Partidos de Seguridad / Re-sim on loss if shield available) ──
-      let usedSafety = false;
-      if (!won && S.safetyShields > 0) {
+      // Internal natural game retry: if first attempt is a loss, re-sim once behind the scenes. If won, keep victory!
+      if (!won) {
         const retryAttempt = this._simulateNaturalGame(userLineup, userSP, userRelievers, opp, gameIdx);
-        S.safetyShields--;
-        S.safetyUsed = (S.safetyUsed || 0) + 1;
-        usedSafety = true;
         if (retryAttempt.userRuns > retryAttempt.oppRuns) {
           attempt = retryAttempt;
           won = true;
@@ -1185,7 +1178,7 @@
         S.pitcherStats[lastKey].sv++;
       }
 
-      const logEntry = { opponent: opp.name, userRuns: attempt.userRuns, oppRuns: attempt.oppRuns, won, inning: attempt.inning, usedSafety };
+      const logEntry = { opponent: opp.name, userRuns: attempt.userRuns, oppRuns: attempt.oppRuns, won, inning: attempt.inning };
       S.gameLog.push(logEntry);
       if (S.gameLog.length > 30) S.gameLog.shift();
 
@@ -1324,17 +1317,35 @@
         // spd 50-70 -> 5-12 SB (average runner)
         // spd 75-85 -> 20-35 SB (Pee Wee Reese, Betts, Altuve)
         // spd 90-110+ -> 50-75+ SB (Rickey Henderson, Vince Coleman, Lou Brock, Ohtani)
-        if (isUserBatting && (outcome === 'BB' || outcome === '1B') && bases[0] === batter && !bases[1]) {
+        // Stolen base roll (smooth authentic sabermetric speed curve):
+        // spd < 50 -> 0-2 SB (catchers, slow sluggers)
+        // spd 50-70 -> 6-15 SB (average runner)
+        // spd 70-85 -> 18-32 SB (A-Rod, Griffey, Bagwell, Altuve, Betts)
+        // spd 90-110+ -> 45-75+ SB (Rickey Henderson, Vince Coleman, Lou Brock, Ohtani)
+        if (isUserBatting && (outcome === 'BB' || outcome === '1B') && bases[0] === batter) {
           const runnerSpd = batter.spd !== undefined ? batter.spd : 50;
-          let stealChance = 0.004;
-          if (runnerSpd >= 50) {
-            const t = (runnerSpd - 50) / 50.0;
-            stealChance = 0.015 + Math.pow(Math.max(0, t), 2.2) * 0.38;
-          }
-          if (stealChance > 0 && Math.random() < stealChance) {
-            bases[1] = batter;
-            bases[0] = null;
-            if (bStat) bStat.sb++;
+          if (!bases[1]) {
+            let stealChance = 0.005;
+            if (runnerSpd >= 50) {
+              const t = (runnerSpd - 50) / 50.0;
+              stealChance = 0.035 + Math.pow(Math.max(0, t), 1.5) * 0.42;
+            }
+            if (stealChance > 0 && Math.random() < stealChance) {
+              bases[1] = batter;
+              bases[0] = null;
+              if (bStat) bStat.sb++;
+            }
+          } else if (!bases[2] && runnerSpd >= 65) {
+            const t = (runnerSpd - 65) / 35.0;
+            const steal3BChance = 0.015 + Math.pow(Math.max(0, t), 1.6) * 0.18;
+            if (Math.random() < steal3BChance) {
+              const leadRunner = bases[1];
+              bases[2] = leadRunner;
+              bases[1] = batter;
+              bases[0] = null;
+              const leadKey = (leadRunner && !leadRunner._isBench) ? batterUnlockKey(leadRunner) : null;
+              if (leadKey && batterDeltas[leadKey]) batterDeltas[leadKey].sb++;
+            }
           }
         }
       }
@@ -3495,7 +3506,7 @@
           <span class="c162-outcome-pill ${g.won ? 'c162-outcome-w' : 'c162-outcome-l'}">${g.won ? 'W' : 'L'}</span>
           <div style="flex:1;min-width:0;">
             <div style="font-weight:bold;color:#f3f4f6;display:flex;justify-content:space-between;font-size:10px;">
-              <span>${g.userRuns} - ${g.oppRuns} ${g.usedSafety ? `<span style="font-size:9px;color:#38bdf8;" title="Seguro de Partido Usado / Safety Net Used">🛡️</span>` : ''}</span>
+              <span>${g.userRuns} - ${g.oppRuns}</span>
               ${g.inning && g.inning > 9 ? `<span style="font-size:8.5px;color:#fbbf24;">(${g.inning} inn)</span>` : ''}
             </div>
             <div style="font-size:8.5px;color:#9ca3af;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:1px;">vs ${g.opponent}</div>
@@ -3590,9 +3601,6 @@
         </div>`;
       }
 
-      const safetyShields = S.safetyShields !== undefined ? S.safetyShields : 2;
-      const safetyLabel = _t('challenge162.safety_shields', 'SEGUROS');
-
       const completedPct = Math.round((S.gamesPlayed / SEASON_LENGTH) * 100);
       const titleText = _t('challenge162.season_title', '162-0 CHALLENGE');
       const regularSeasonText = _t('challenge162.season_regular', 'TEMPORADA REGULAR');
@@ -3633,11 +3641,8 @@
               </div>
             </div>
 
-            <div style="display:flex;align-items:center;gap:8px;margin-top:4px;flex-wrap:wrap;justify-content:center;">
-              <span style="font-size:9.5px;color:#94a3b8;">${gamesCountText}</span>
-              <span class="c162-mode-badge" style="background:rgba(56,189,248,0.15);color:#38bdf8;border:1px solid rgba(56,189,248,0.4);font-size:8px;padding:3px 6px;" title="Partidos de seguridad para re-simular derrota">
-                🛡️ ${safetyLabel}: <span style="color:${safetyShields > 0 ? '#34d399' : '#f87171'};font-weight:bold;">${safetyShields}/2</span>
-              </span>
+            <div style="font-size:10.5px;color:#94a3b8;margin-top:2px;">
+              ${gamesCountText}
             </div>
 
             ${streakHTML}
