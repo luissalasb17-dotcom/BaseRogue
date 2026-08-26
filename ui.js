@@ -553,15 +553,19 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
     const isClutch = !!(player.clutch || player.is_clutch);
     const isCaptain = !!(player.captain || player.is_captain);
     const isInterEra = !!player.isInterEra;
-    const isChallengeWinner = !!(window.Challenge162 && window.Challenge162.isUnlocked(player));
-    if (!isClutch && !isCaptain && !isInterEra && !isChallengeWinner) return '';
+    const isInjured = !!(player.isInjured || (player.upgrades && player.upgrades.con <= -15));
+    if (!isClutch && !isCaptain && !isInterEra && !isChallengeWinner && !isInjured) return '';
 
     const clutchToolTip = window.t ? window.t('badge.clutch_tooltip', 'Clutch Player: +4% de probabilidad de hit y +4% de HR con corredores en posición de anotar durante la última entrada.') : 'Clutch Player: +4% de probabilidad de hit y +4% de HR con corredores en posición de anotar durante la última entrada.';
     const captainToolTip = window.t ? window.t('badge.captain_tooltip', 'Captain: +5 a todos los ratings de sus compañeros de equipo mientras esté en el roster activo.') : 'Captain: +5 a todos los ratings de sus compañeros de equipo mientras esté en el roster activo.';
     const interEraToolTip = window.t ? window.t('badge.interera_tooltip') : 'Fuera de Época: este jugador no estaba activo en la temporada seleccionada — cuenta el doble para su sinergia.';
     const challengeWinnerToolTip = window.t ? window.t('badge.challenge162_tooltip', 'Elegible para el 162-0 Challenge: formó parte de un roster que ganó una run completa (Quick Play o Modo Historia).') : 'Elegible para el 162-0 Challenge: formó parte de un roster que ganó una run completa (Quick Play o Modo Historia).';
+    const injuryToolTip = window.t ? window.t('badge.injury_tooltip', 'Lesión: Penalización permanente a los ratings por el resto de la temporada.') : 'Lesión: Penalización permanente a los ratings por el resto de la temporada.';
 
     let icons = '';
+    if (isInjured) {
+      icons += `<span class="list-badge-icon badge-injured" title="${injuryToolTip}" style="color:#ef4444; font-weight:bold; margin-left:3px; cursor:help; font-size:10px; display:inline-block;">🩹</span>`;
+    }
     if (isClutch) {
       icons += `<span class="list-badge-icon badge-clutch" title="${clutchToolTip}" style="color:var(--badge-clutch,#ff3300); font-weight:bold; margin-left:3px; cursor:help; font-size:10px; display:inline-block;">⚡</span>`;
     }
@@ -3044,11 +3048,9 @@ function initGameModeSelector() {
 
   function getPlayerOvr(p) {
     if (!p) return 60;
-    if (p.ovr !== undefined) return Math.floor(p.ovr);
-    if (p.avg_attr_score !== undefined) return Math.floor(p.avg_attr_score);
-    if (p._ovr !== undefined) return Math.floor(p._ovr);
-    const isPitcher = p.pos === 'P' || p.pos === 'SP' || p.role === 'P' || p.role === 'SP' || p.pos === 'RP' || p.role === 'RP';
+    const isPitcher = p.pos === 'P' || p.pos === 'SP' || p.role === 'P' || p.role === 'SP' || p.pos === 'RP' || p.role === 'RP' || p.role === 'CL';
     if (isPitcher) {
+      if (p.ovr !== undefined && (!p.upgrades || Object.values(p.upgrades).every(v => !v))) return Math.floor(p.ovr);
       const h9  = p.h9  !== undefined ? p.h9  : (p.h9_val  !== undefined ? p.h9_val  : (p.grt !== undefined ? p.grt : 50));
       const k9  = p.k9  !== undefined ? p.k9  : (p.k9_val  !== undefined ? p.k9_val  : (p.stf !== undefined ? p.stf : (p.str !== undefined ? p.str : 50)));
       const bb9 = p.bb9 !== undefined ? p.bb9 : (p.bb9_val !== undefined ? p.bb9_val : (p.ctl !== undefined ? p.ctl : 50));
@@ -3061,12 +3063,16 @@ function initGameModeSelector() {
       if (raw <= 78.0) return Math.floor(80.0 + ((raw - 66.0) / 12.0) * 9.9);
       return Math.floor(90.0 + Math.min(9.9, ((raw - 78.0) / 18.0) * 9.9));
     }
-    const con = p.con !== undefined ? p.con : (p.contact_val !== undefined ? p.contact_val : 50);
-    const pwr = p.pwr !== undefined ? p.pwr : (p.power_val !== undefined ? p.power_val : 50);
-    const eye = p.eye !== undefined ? p.eye : (p.eye_val !== undefined ? p.eye_val : 50);
-    const kavd = p.k_avd !== undefined ? p.k_avd : (p.k_avoid !== undefined ? p.k_avoid : (p.k_avoid_val !== undefined ? p.k_avoid_val : 50));
-    const spd = p.spd !== undefined ? p.spd : (p.speed_val !== undefined ? p.speed_val : 50);
-    const def = p.def !== undefined ? p.def : (p.defense_val !== undefined ? p.defense_val : 50);
+    const up = p.upgrades || {};
+    const hasMods = (up.con || 0) !== 0 || (up.pwr || 0) !== 0 || (up.eye || 0) !== 0 || (up.k_avd || 0) !== 0 || (up.spd || 0) !== 0 || (up.def || 0) !== 0 || p.perm_con || p.perm_pwr || p.perm_eye || p.perm_spd || p.perm_def;
+    if (p.ovr !== undefined && !hasMods && p.kavd === undefined) return Math.floor(p.ovr);
+
+    const con = Math.max(1, (p.con !== undefined ? p.con : (p.contact_val !== undefined ? p.contact_val : 50)) + (up.con || 0) + (p.perm_con || 0));
+    const pwr = Math.max(1, (p.pwr !== undefined ? p.pwr : (p.power_val !== undefined ? p.power_val : 50)) + (up.pwr || 0) + (p.perm_pwr || 0));
+    const eye = Math.max(1, (p.eye !== undefined ? p.eye : (p.eye_val !== undefined ? p.eye_val : 50)) + (up.eye || 0) + (p.perm_eye || 0));
+    const kavd = Math.max(1, (p.kavd !== undefined ? p.kavd : (p.k_avd !== undefined ? p.k_avd : (p.k_avoid !== undefined ? p.k_avoid : (p.k_avoid_val !== undefined ? p.k_avoid_val : 50)))) + (up.k_avd || 0) + (p.perm_kavd || 0));
+    const spd = Math.max(1, (p.spd !== undefined ? p.spd : (p.speed_val !== undefined ? p.speed_val : 50)) + (up.spd || 0) + (p.perm_spd || 0));
+    const def = Math.max(1, (p.def !== undefined ? p.def : (p.defense_val !== undefined ? p.defense_val : 50)) + (up.def || 0) + (p.perm_def || 0));
     const raw = con * 0.28 + pwr * 0.28 + eye * 0.12 + def * 0.12 + spd * 0.10 + kavd * 0.10;
     if (raw <= 37.0) return Math.floor(50.0 + ((raw - 10.0) / 27.0) * 9.9);
     if (raw <= 48.0) return Math.floor(60.0 + ((raw - 37.0) / 11.0) * 9.9);
@@ -3273,12 +3279,13 @@ function initGameModeSelector() {
         </div>
       `;
     } else {
-      const conVal = player.con !== undefined ? player.con : (player.contact_val !== undefined ? player.contact_val : 40);
-      const pwrVal = player.pwr !== undefined ? player.pwr : (player.power_val !== undefined ? player.power_val : 35);
-      const eyeVal = player.eye !== undefined ? player.eye : (player.eye_val !== undefined ? player.eye_val : 40);
-      const kavdVal = player.k_avd !== undefined ? player.k_avd : (player.k_avoid !== undefined ? player.k_avoid : (player.k_avoid_val !== undefined ? player.k_avoid_val : 40));
-      const spdVal = player.spd !== undefined ? player.spd : (player.speed_val !== undefined ? player.speed_val : 45);
-      const defVal = player.def !== undefined ? player.def : (player.defense_val !== undefined ? player.defense_val : 40);
+      const up = player.upgrades || {};
+      const conVal = Math.max(1, (player.con !== undefined ? player.con : (player.contact_val !== undefined ? player.contact_val : 40)) + (up.con || 0) + (player.perm_con || 0));
+      const pwrVal = Math.max(1, (player.pwr !== undefined ? player.pwr : (player.power_val !== undefined ? player.power_val : 35)) + (up.pwr || 0) + (player.perm_pwr || 0));
+      const eyeVal = Math.max(1, (player.eye !== undefined ? player.eye : (player.eye_val !== undefined ? player.eye_val : 40)) + (up.eye || 0) + (player.perm_eye || 0));
+      const kavdVal = Math.max(1, (player.k_avd !== undefined ? player.k_avd : (player.k_avoid !== undefined ? player.k_avoid : (player.k_avoid_val !== undefined ? player.k_avoid_val : 40))) + (up.k_avd || 0) + (player.perm_kavd || 0));
+      const spdVal = Math.max(1, (player.spd !== undefined ? player.spd : (player.speed_val !== undefined ? player.speed_val : 45)) + (up.spd || 0) + (player.perm_spd || 0));
+      const defVal = Math.max(1, (player.def !== undefined ? player.def : (player.defense_val !== undefined ? player.defense_val : 40)) + (up.def || 0) + (player.perm_def || 0));
 
       const gCon = getStatGrade(conVal);
       const gPwr = getStatGrade(pwrVal);
@@ -3355,6 +3362,12 @@ function initGameModeSelector() {
       ribbonHTML = `
         <div class="card-ribbon ribbon-bottom-left ribbon-captain" title="${captainToolTip}">CAPTAIN</div>
       `;
+    }
+
+    const isInjured = !!(player.isInjured || (player.upgrades && player.upgrades.con <= -15));
+    if (isInjured) {
+      const injuryToolTip = window.t ? window.t('badge.injury_tooltip', 'Lesión: Penalización permanente a los ratings por el resto de la temporada.') : 'Lesión: Penalización permanente a los ratings por el resto de la temporada.';
+      ribbonHTML += `<div class="card-ribbon ribbon-bottom-left ribbon-stagger-3" style="background:#ef4444;color:#fff;" title="${injuryToolTip}">LESIÓN</div>`;
     }
 
     // Full-width top banner (not another diagonal corner ribbon) — those read
@@ -4501,8 +4514,8 @@ function initGameModeSelector() {
     });
   }
 
-  // ── BATTER SELECTOR MODAL: select a batter for test cage or consumable ──
-  function showBatterSelectorModal({ title, subtitle, onSelect, onCancel }) {
+  // ── BATTER SELECTOR MODAL: select a batter for equipment, consumable or test cage ──
+  function showBatterSelectorModal({ title, subtitle, item, isConsumable, onSelect, onCancel }) {
     const overlay = document.createElement('div');
     overlay.className = 'player-selector-modal-overlay';
     overlay.style.cssText = `
@@ -4515,31 +4528,67 @@ function initGameModeSelector() {
     const slots = ['C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'DH'];
     const playersList = slots.map(slot => ({ slot, player: window.Game.roster[slot] })).filter(item => item.player);
 
+    const themeColor = isConsumable ? '#f59e0b' : '#38bdf8';
+    const tagText = isConsumable
+      ? (typeof t === 'function' ? t('equip.tag_consumable', 'CONSUMIBLE') : 'CONSUMIBLE')
+      : (typeof t === 'function' ? t('equip.tag_equipment', 'EQUIPABLE') : 'EQUIPABLE');
+
+    const itemBannerHTML = item ? `
+      <div style="background: rgba(255,255,255,0.04); border: 1.5px solid ${themeColor}55; border-radius: 10px; padding: 12px 14px; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; gap: 12px; box-shadow: 0 0 15px ${themeColor}15;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <span style="font-size: 26px; line-height: 1; filter: drop-shadow(0 0 8px ${themeColor}88); font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji', sans-serif;">${item.icon || '🎒'}</span>
+          <div>
+            <div style="font-size: 12px; font-weight: bold; color: #fff; font-family: sans-serif; letter-spacing: 0.3px;">${item.name}</div>
+            <div style="font-size: 10px; color: ${themeColor}; font-weight: 600; font-family: sans-serif; margin-top: 3px; line-height: 1.3;">${item.statDesc || item.description || ''}</div>
+          </div>
+        </div>
+        <span style="font-size: 7.5px; background: ${themeColor}22; border: 1px solid ${themeColor}; color: ${themeColor}; padding: 3px 7px; border-radius: 5px; font-family: 'Press Start 2P', monospace; white-space: nowrap;">${tagText}</span>
+      </div>
+    ` : '';
+
+    const defaultSubtitle = isConsumable
+      ? (typeof t === 'function' ? t('equip.choose_batter_to_use', 'Selecciona sobre qué bateador aplicar este consumible:') : 'Selecciona sobre qué bateador aplicar:')
+      : (typeof t === 'function' ? t('equip.choose_batter_to_equip', 'Selecciona qué bateador equipará este ítem:') : 'Selecciona qué bateador equipará este ítem:');
+
+    const actionBtnText = isConsumable
+      ? (typeof t === 'function' ? t('equip.btn_use', 'USAR') : 'USAR')
+      : (typeof t === 'function' ? t('equip.btn_equip', 'EQUIPAR') : 'EQUIPAR');
+
     overlay.innerHTML = `
-      <div style="background:#090d16; border:2px solid #f59e0b; border-radius:14px; padding:20px; max-width:440px; width:100%; box-shadow:0 0 30px rgba(0,0,0,0.9), 0 0 15px rgba(245,158,11,0.3); font-family:'Press Start 2P',monospace;">
-        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px dashed rgba(255,255,255,0.2); padding-bottom:10px; margin-bottom:12px;">
-          <span style="font-size:10px; color:#f59e0b;">${title || t('equip.test_cage_title', '⚾ JAULA DE PRUEBAS')}</span>
-          <button id="btn-close-selector-modal" style="background:none; border:none; color:#9ca3af; font-size:16px; cursor:pointer;">&times;</button>
+      <div style="background:#090d16; border:2px solid ${themeColor}; border-radius:14px; padding:18px 20px; max-width:460px; width:100%; box-shadow:0 0 35px rgba(0,0,0,0.95), 0 0 20px ${themeColor}33; font-family:'Press Start 2P',monospace;">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px dashed rgba(255,255,255,0.15); padding-bottom:10px; margin-bottom:12px;">
+          <span style="font-size:10px; color:${themeColor}; letter-spacing:0.5px;">${title || (item ? `${item.icon || '🎒'} ${item.name}` : t('equip.test_cage_title', '⚾ JAULA DE PRUEBAS'))}</span>
+          <button id="btn-close-selector-modal" style="background:none; border:none; color:#9ca3af; font-size:18px; cursor:pointer; line-height:1; padding:0 4px;">&times;</button>
         </div>
-        <div style="font-size:9.5px; color:#cbd5e1; line-height:1.5; margin-bottom:14px; font-family:sans-serif;">
-          ${subtitle || t('equip.test_cage_desc', 'Selecciona qué bateador entrará a probar este prototipo:')}
+        
+        ${itemBannerHTML}
+
+        <div style="font-size:9px; color:#9ca3af; line-height:1.4; margin-bottom:10px; font-family:sans-serif;">
+          ${subtitle || defaultSubtitle}
         </div>
-        <div style="display:flex; flex-direction:column; gap:8px; max-height:280px; overflow-y:auto; padding-right:4px;" id="batter-selector-list">
+
+        <div style="display:flex; flex-direction:column; gap:6px; max-height:280px; overflow-y:auto; padding-right:4px;" id="batter-selector-list">
           ${playersList.map(({ slot, player }) => {
             const stam = player.stamina || 100;
             const stamColor = stam < 25 ? '#ef4444' : stam < 50 ? '#f59e0b' : '#00ff66';
-            const equippedBadge = player.equipped_item ? `<span style="font-size:7.5px; color:#00ff66; background:rgba(0,255,102,0.1); padding:2px 4px; border-radius:3px; margin-left:4px;">${player.equipped_item.icon || '🎒'} ${player.equipped_item.name}</span>` : '';
+            const ovrVal = Math.floor(player.ovr || 50);
+            const replacesText = player.equipped_item ? `<span style="font-size:8px; color:#fbbf24; background:rgba(245,158,11,0.12); border:1px solid rgba(245,158,11,0.3); padding:2px 6px; border-radius:4px; margin-top:3px; display:inline-block; font-family:sans-serif;">🔄 ${typeof t === 'function' ? t('equip.replaces_item', 'Reemplaza') : 'Reemplaza'}: ${player.equipped_item.icon || '🎒'} ${player.equipped_item.name}</span>` : '';
+            
             return `
-              <button class="selector-player-btn" data-slot="${slot}" style="display:flex; align-items:center; justify-content:space-between; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.15); border-radius:8px; padding:10px 12px; cursor:pointer; text-align:left; transition:all 0.15s ease; width:100%;">
-                <div style="display:flex; align-items:center; gap:8px;">
-                  <span style="font-size:8.5px; color:var(--primary-color); font-family:'Press Start 2P',monospace; min-width:24px;">${slot}</span>
+              <button class="selector-player-btn" data-slot="${slot}" style="display:flex; align-items:center; justify-content:space-between; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:8px 12px; cursor:pointer; text-align:left; transition:all 0.15s ease; width:100%;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                  <span style="font-size:9px; color:var(--primary-color); font-family:'Press Start 2P',monospace; min-width:26px; background:rgba(0,255,102,0.08); padding:3px 5px; border-radius:4px; text-align:center;">${slot}</span>
                   <div>
-                    <div style="font-size:11px; font-weight:bold; color:#fff; font-family:sans-serif;">${player.name}</div>
-                    <div style="font-size:8px; color:#94a3b8; margin-top:2px;">${equippedBadge}</div>
+                    <div style="font-size:11.5px; font-weight:bold; color:#fff; font-family:sans-serif;">${player.name}</div>
+                    <div style="display:flex; align-items:center; gap:8px; margin-top:2px;">
+                      <span style="font-size:8.5px; color:#9ca3af; font-family:'Press Start 2P',monospace;">OVR ${ovrVal}</span>
+                      <span style="font-size:8.5px; color:${stamColor}; font-family:'Press Start 2P',monospace;">⚡${stam}%</span>
+                    </div>
+                    ${replacesText}
                   </div>
                 </div>
                 <div style="text-align:right;">
-                  <div style="font-size:8px; color:${stamColor}; font-family:'Press Start 2P',monospace;">⚡ ${stam}%</div>
+                  <span style="font-size:8px; color:${themeColor}; background:${themeColor}18; border:1px solid ${themeColor}66; padding:5px 8px; border-radius:6px; font-family:'Press Start 2P',monospace; transition:all 0.15s ease;">${actionBtnText}</span>
                 </div>
               </button>
             `;
@@ -4556,6 +4605,14 @@ function initGameModeSelector() {
     };
 
     overlay.querySelectorAll('.selector-player-btn').forEach(btn => {
+      btn.onmouseenter = () => {
+        btn.style.background = 'rgba(255,255,255,0.08)';
+        btn.style.borderColor = themeColor;
+      };
+      btn.onmouseleave = () => {
+        btn.style.background = 'rgba(255,255,255,0.03)';
+        btn.style.borderColor = 'rgba(255,255,255,0.1)';
+      };
       btn.onclick = () => {
         const slot = btn.getAttribute('data-slot');
         const player = window.Game.roster[slot];
@@ -5396,10 +5453,9 @@ function initGameModeSelector() {
         // Click alternative (modal for mobile / tap)
         slotTile.addEventListener('click', () => {
           showBatterSelectorModal({
-            title: `${tagText} ${it.name}`,
-            subtitle: isConsumable
-              ? t('equip.select_item_to_equip', { player: it.name }) + ` (${typeName})`
-              : t('equip.select_item_to_equip', { player: it.name }),
+            item: it,
+            isConsumable: isConsumable,
+            title: `${it.icon || '🎒'} ${it.name}`,
             onSelect: (player, targetSlotKey) => {
               if (isConsumable) {
                 window.Game.useConsumableItem(it, targetSlotKey);

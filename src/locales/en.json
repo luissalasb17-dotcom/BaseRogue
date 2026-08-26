@@ -1335,6 +1335,7 @@
     "captain_tooltip": "Captain: +5 to all ratings for teammates while on active roster.",
     "clutch_tooltip": "Clutch Player: +2% single and double chance, +4% HR chance with runners in scoring position during final inning.",
     "challenge162_tooltip": "Eligible for the 162-0 Challenge: was part of a roster that won a full run (Quick Play or Story Mode).",
+    "injury_tooltip": "Injury: Permanent -20 rating penalty across all stats for the rest of the season.",
     "interera_label": "TIME TRAVELER",
     "interera_tooltip": "Time Traveler: this player was not active during the selected season — counts double toward unlocking their own era's synergy."
   },
@@ -1850,8 +1851,14 @@
   "equip": {
     "slot_empty": "Empty Slot (No Item)",
     "slot_title": "🎒 Equipment / Item",
-    "btn_equip": "Equip Item",
+    "btn_equip": "EQUIP",
+    "btn_use": "USE",
     "btn_unequip": "Unequip to Backpack",
+    "tag_equipment": "EQUIPMENT",
+    "tag_consumable": "CONSUMABLE",
+    "choose_batter_to_equip": "Select which batter will equip this item:",
+    "choose_batter_to_use": "Select which batter to apply this consumable:",
+    "replaces_item": "Replaces",
     "backpack_title": "🎒 Team Backpack & Equipment",
     "backpack_empty": "Your backpack is empty. Obtain gear in route workshops and events.",
     "test_cage_title": "⚾ BATTING CAGE / WORKSHOP",

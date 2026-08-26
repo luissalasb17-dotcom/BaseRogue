@@ -1335,6 +1335,7 @@
     "captain_tooltip": "Captain: +5 a todos los ratings de sus compañeros de equipo mientras esté en el roster activo.",
     "clutch_tooltip": "Clutch Player: +2% de probabilidad de sencillo y doble, +4% de HR con corredores en posición de anotar o durante la última entrada.",
     "challenge162_tooltip": "Elegible para el 162-0 Challenge: formó parte de un roster que ganó una run completa (Quick Play o Modo Historia).",
+    "injury_tooltip": "Lesión: Penalización permanente de -20 en todos los ratings por el resto de la temporada.",
     "interera_label": "VIAJERO EN EL TIEMPO",
     "interera_tooltip": "Viajero en el tiempo: este jugador no estuvo activo durante la temporada seleccionada — cuenta doble para desbloquear la sinergia de su propia era."
   },
@@ -1850,8 +1851,14 @@
   "equip": {
     "slot_empty": "Ranura Vacía (Sin Ítem)",
     "slot_title": "🎒 Equipamiento / Ítem",
-    "btn_equip": "Equipar Ítem",
+    "btn_equip": "EQUIPAR",
+    "btn_use": "USAR",
     "btn_unequip": "Desequipar a Mochila",
+    "tag_equipment": "EQUIPABLE",
+    "tag_consumable": "CONSUMIBLE",
+    "choose_batter_to_equip": "Selecciona qué bateador equipará este ítem:",
+    "choose_batter_to_use": "Selecciona sobre qué bateador aplicar este consumible:",
+    "replaces_item": "Reemplaza",
     "backpack_title": "🎒 Mochila & Equipamiento del Club",
     "backpack_empty": "Tu mochila está vacía. Consigue equipamiento en los talleres y eventos de la ruta.",
     "test_cage_title": "⚾ JAULA DE PRUEBAS / TALLER",

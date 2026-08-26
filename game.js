@@ -589,6 +589,7 @@
         const p = G.roster[bestPos];
         if (!p.upgrades) p.upgrades = { con: 0, pwr: 0, eye: 0, k_avd: 0, spd: 0, def: 0, sta: 0 };
         ['con', 'pwr', 'eye', 'k_avd', 'spd', 'def'].forEach(k => { p.upgrades[k] = (p.upgrades[k] || 0) - 20; });
+        p.isInjured = true;
         return { success, resultText: (typeof window.t==='function'?window.t('gamble.scout.result_lose', { name: p.name }):`${p.name} se lesiona: -20 en todas sus stats por el resto de la run.`) };
       }
     },
