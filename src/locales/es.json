@@ -1345,15 +1345,15 @@
       "result_lose_none": "No se aplicó ninguna penalización."
     },
     "trade": {
-      "title": "Intercambio a Ciegas",
-      "desc": "Cambias a tu jugador titular más débil por una oferta a ciegas. Si ganas, el reemplazo es de rareza SUPERIOR garantizada. Si pierdes, el reemplazo es Common y la posición queda bloqueada 2 nodos.",
-      "stakes_label": "TITULAR MÁS DÉBIL EN JUEGO:",
+      "title": "Traspaso de Alto Riesgo",
+      "desc": "¡Elige a CUALQUIER titular de tu alineación para ponerlo en el mercado de traspasos! Si ganas (50%), recibes un jugador ÉPICO o LEGENDARIO garantizado en esa posición. Si pierdes (50%), es reemplazado por un Common (50 OVR) y la posición queda bloqueada 2 nodos.",
+      "stakes_label": "JUGADOR EN EL MERCADO DE TRASPASO:",
       "win_label": "🟢 50% SI GANAS:",
-      "win_title": "Rareza Superior Garantizada",
-      "win_detail": "(Reemplazo épico o legendario)",
+      "win_title": "Épico o Legendario Garantizado",
+      "win_detail": "(Reemplazo estelar de alta rareza)",
       "lose_label": "🔴 50% SI PIERDES:",
-      "lose_title": "Jugador Common + 🔒 Bloqueo 2 Nodos",
-      "lose_detail": "(Sin firmas en esa posición por 2 nodos)",
+      "lose_title": "Common (50 OVR) + 🔒 Bloqueo",
+      "lose_detail": "(Posición bloqueada para draft por 2 nodos)",
       "result_win": "¡Gran negociación! {{oldName}} ➡️ {{newName}} ({{rarity}}) en [{{pos}}].",
       "result_lose": "Mal negocio: {{newName}} (Common) reemplaza a {{oldName}} en [{{pos}}]. Posición bloqueada por 2 nodos.",
       "no_target": "No hay jugadores elegibles para el traspaso."

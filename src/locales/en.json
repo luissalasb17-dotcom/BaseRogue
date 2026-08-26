@@ -1345,17 +1345,17 @@
       "result_lose_none": "No penalty was applied."
     },
     "trade": {
-      "title": "Blind Trade",
-      "desc": "Trade your weakest starting player for a blind offer. If you win, the replacement is guaranteed to be of a HIGHER rarity. If you lose, it's Common and the position gets locked for 2 nodes.",
-      "stakes_label": "WEAKEST STARTER AT STAKE:",
+      "title": "High-Stakes Player Trade",
+      "desc": "Select ANY starter from your roster to put on the trade block! If you win (50%), you receive a guaranteed EPIC or LEGENDARY player at that position. If you lose (50%), they are replaced by a Common (50 OVR) and the position is locked for 2 nodes.",
+      "stakes_label": "PLAYER ON TRADE BLOCK:",
       "win_label": "🟢 50% IF YOU WIN:",
-      "win_title": "Guaranteed Higher Rarity",
-      "win_detail": "(Epic or Legendary upgrade)",
+      "win_title": "Guaranteed Epic or Legendary",
+      "win_detail": "(Elite star replacement at that position)",
       "lose_label": "🔴 50% IF YOU LOSE:",
-      "lose_title": "Common Player + 🔒 2-Node Lock",
-      "lose_detail": "(No drafting at that position for 2 nodes)",
-      "result_win": "Great deal! {{oldName}} ➡️ {{newName}} ({{rarity}}) at [{{pos}}].",
-      "result_lose": "Bad deal: {{newName}} (Common) replaces {{oldName}} at [{{pos}}]. Position locked for 2 nodes.",
+      "lose_title": "Common (50 OVR) + 🔒 Locked",
+      "lose_detail": "(Position locked from draft for 2 nodes)",
+      "result_win": "Blockbuster trade! {{oldName}} ➡️ {{newName}} ({{rarity}}) at [{{pos}}].",
+      "result_lose": "Trade disaster: {{newName}} (Common) replaces {{oldName}} at [{{pos}}]. Position locked for 2 nodes.",
       "no_target": "No eligible players for the trade."
     },
     "soldier": {

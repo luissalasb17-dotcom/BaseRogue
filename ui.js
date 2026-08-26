@@ -9395,24 +9395,24 @@ function initGameModeSelector() {
         leftHTML = `
           <div style="background:rgba(239,68,68,0.12);border:2px solid #ef4444;border-radius:12px;padding:16px 14px;height:100%;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 0 20px rgba(239,68,68,0.2);">
             <div>
-              <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#ef4444;margin-bottom:8px;">${typeof t === 'function' ? t('gamble.budget.lose_label', '🔴 50% SI PIERDES') : '🔴 50% SI PIERDES'}</div>
+              <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#ef4444;margin-bottom:8px;">${typeof t === 'function' ? t('gamble.budget.lose_label', '🔴 50% IF YOU LOSE:') : '🔴 50% IF YOU LOSE:'}</div>
               <div style="font-size:32px;margin:10px 0;">💸</div>
               <div style="font-family:'Press Start 2P',monospace;font-size:18px;color:#ef4444;font-weight:bold;margin-bottom:6px;">$0</div>
             </div>
             <div style="font-size:11px;color:#fca5a5;line-height:1.4;background:rgba(0,0,0,0.4);padding:8px;border-radius:8px;">
-              ${typeof t === 'function' ? t('gamble.budget.lose_detail', '(Pierdes todo tu presupuesto apostado)') : 'Pierdes todo tu presupuesto apostado.'}
+              ${typeof t === 'function' ? t('gamble.budget.lose_detail', '(Lose everything)') : '(Lose everything)'}
             </div>
           </div>
         `;
         rightHTML = `
           <div style="background:rgba(16,185,129,0.12);border:2px solid #10b981;border-radius:12px;padding:16px 14px;height:100%;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 0 20px rgba(16,185,129,0.25);">
             <div>
-              <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#10b981;margin-bottom:8px;">${typeof t === 'function' ? t('gamble.budget.win_label', '🟢 50% SI GANAS') : '🟢 50% SI GANAS'}</div>
+              <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#10b981;margin-bottom:8px;">${typeof t === 'function' ? t('gamble.budget.win_label', '🟢 50% IF YOU WIN:') : '🟢 50% IF YOU WIN:'}</div>
               <div style="font-size:32px;margin:10px 0;">💰</div>
               <div style="font-family:'Press Start 2P',monospace;font-size:18px;color:#4ade80;font-weight:bold;margin-bottom:6px;">$${tripleAmount}</div>
             </div>
             <div style="font-size:11px;color:#86efac;line-height:1.4;background:rgba(0,0,0,0.4);padding:8px;border-radius:8px;">
-              ${typeof t === 'function' ? t('gamble.budget.win_detail', '¡Triplicas tu dinero (x3)!') : '¡Triplicas tu dinero (x3)!'}
+              ${typeof t === 'function' ? t('gamble.budget.win_detail', '(You receive 3x!)') : '(You receive 3x!)'}
             </div>
           </div>
         `;
@@ -9434,63 +9434,58 @@ function initGameModeSelector() {
         leftHTML = `
           <div style="background:rgba(239,68,68,0.12);border:2px solid #ef4444;border-radius:12px;padding:16px 14px;height:100%;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 0 20px rgba(239,68,68,0.2);">
             <div>
-              <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#ef4444;margin-bottom:8px;">${typeof t === 'function' ? t('gamble.scout.lose_label', '🔴 50% LESIÓN GRAVE') : '🔴 50% LESIÓN GRAVE'}</div>
+              <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#ef4444;margin-bottom:8px;">${typeof t === 'function' ? t('gamble.scout.lose_label', '🔴 50% IF YOU LOSE:') : '🔴 50% IF YOU LOSE:'}</div>
               <div style="font-size:30px;margin:6px 0;">🏥</div>
-              <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:#fca5a5;margin-bottom:4px;">[${bestPos}] ${bestName}</div>
-              <div style="font-size:10px;color:#ef4444;font-weight:bold;">OVR ${Math.floor(bestOvr)} · ${bestRarity}</div>
+              <div style="font-family:'Press Start 2P',monospace;font-size:9.5px;color:#fca5a5;margin-bottom:4px;">[${bestPos}] ${bestName}</div>
+              <div style="font-size:10.5px;color:#ef4444;font-weight:bold;">OVR ${Math.floor(bestOvr)} · ${bestRarity}</div>
             </div>
             <div style="font-size:11px;color:#fca5a5;line-height:1.4;background:rgba(0,0,0,0.4);padding:8px;border-radius:8px;">
-              ${typeof t === 'function' ? t('gamble.scout.lose_detail', 'Tu mejor bateador sufre -20 en todas sus stats.') : 'Tu mejor bateador sufre -20 en todas sus stats.'}
+              ${typeof t === 'function' ? t('gamble.scout.lose_detail', '(Afflicts your highest OVR player with -20 stats)') : '(Afflicts your highest OVR player with -20 stats)'}
             </div>
           </div>
         `;
         rightHTML = `
           <div style="background:rgba(250,204,21,0.12);border:2px solid #facc15;border-radius:12px;padding:16px 14px;height:100%;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 0 20px rgba(250,204,21,0.25);">
             <div>
-              <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#facc15;margin-bottom:8px;">${typeof t === 'function' ? t('gamble.scout.win_label', '🟢 50% FICHAJE ESTELAR') : '🟢 50% FICHAJE ESTELAR'}</div>
+              <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#facc15;margin-bottom:8px;">${typeof t === 'function' ? t('gamble.scout.win_label', '🟢 50% IF YOU WIN:') : '🟢 50% IF YOU WIN:'}</div>
               <div style="font-size:30px;margin:6px 0;">⭐</div>
-              <div style="font-family:'Press Start 2P',monospace;font-size:9.5px;color:#fef08a;margin-bottom:4px;">[${worstPos}] LEYENDA MLB</div>
+              <div style="font-family:'Press Start 2P',monospace;font-size:9.5px;color:#fef08a;margin-bottom:4px;">[${worstPos}] ${typeof t === 'function' ? t('gamble.scout.win_title', 'Free LEGENDARY Player!') : 'Free LEGENDARY Player!'}</div>
               <div style="font-size:10.5px;color:#facc15;font-weight:bold;">OVR 90–99 · Legendary</div>
             </div>
             <div style="font-size:11px;color:#fef08a;line-height:1.4;background:rgba(0,0,0,0.4);padding:8px;border-radius:8px;">
-              ${typeof t === 'function' ? t('gamble.scout.win_detail', 'Fichas un Bateador Legendario Gratis para tu posición más débil.') : 'Fichas un Bateador Legendario Gratis para tu posición más débil.'}
+              ${typeof t === 'function' ? t('gamble.scout.win_detail', '(Star upgrade for your weakest position)') : '(Star upgrade for your weakest position)'}
             </div>
           </div>
         `;
       } else if (gamble.id === 'gamble_blind_trade') {
-        let worstPos = 'DH', worstName = 'Starter', worstRarity = 'Common', worstOvr = 60;
-        let lowestOvr = Infinity;
-        Object.keys(window.Game.roster).forEach(pos => {
-          const p = window.Game.roster[pos];
-          if (p) {
-            const ovr = getPlayerOvr(p);
-            if (ovr < lowestOvr) { lowestOvr = ovr; worstPos = pos; worstName = p.name; worstRarity = p.rarity; worstOvr = ovr; }
-          }
-        });
+        const activePos = targetPos || defaultTargetPos;
+        const currentTarget = (activePos && window.Game.roster[activePos]) ? window.Game.roster[activePos] : { name: 'Starter', rarity: 'Common', pos: 'DH' };
+        const currentOvr = getPlayerOvr(currentTarget);
+        const posLabel = activePos || currentTarget.pos || 'DH';
 
         leftHTML = `
           <div style="background:rgba(239,68,68,0.12);border:2px solid #ef4444;border-radius:12px;padding:16px 14px;height:100%;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 0 20px rgba(239,68,68,0.2);">
             <div>
-              <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#ef4444;margin-bottom:8px;">${typeof t === 'function' ? t('gamble.trade.lose_label', '🔴 50% MAL NEGOCIO') : '🔴 50% MAL NEGOCIO'}</div>
+              <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#ef4444;margin-bottom:8px;">${typeof t === 'function' ? t('gamble.trade.lose_label', '🔴 50% IF YOU LOSE:') : '🔴 50% IF YOU LOSE:'}</div>
               <div style="font-size:30px;margin:6px 0;">🔒</div>
-              <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:#fca5a5;margin-bottom:4px;">[${worstPos}] ${worstName}</div>
-              <div style="font-size:10px;color:#ef4444;font-weight:bold;">Common (50 OVR) + Bloqueo</div>
+              <div style="font-family:'Press Start 2P',monospace;font-size:9.5px;color:#fca5a5;margin-bottom:4px;">[${posLabel}] ${currentTarget.name}</div>
+              <div style="font-size:10.5px;color:#ef4444;font-weight:bold;">${typeof t === 'function' ? t('gamble.trade.lose_title', 'Common (50 OVR) + 🔒 Locked') : 'Common (50 OVR) + 🔒 Locked'}</div>
             </div>
             <div style="font-size:11px;color:#fca5a5;line-height:1.4;background:rgba(0,0,0,0.4);padding:8px;border-radius:8px;">
-              ${typeof t === 'function' ? t('gamble.trade.lose_detail', 'Reemplazado por Common y 🔒 2 nodos bloqueado.') : 'Reemplazado por Common y 🔒 2 nodos bloqueado.'}
+              ${typeof t === 'function' ? t('gamble.trade.lose_detail', '(Position locked from draft for 2 nodes)') : '(Position locked from draft for 2 nodes)'}
             </div>
           </div>
         `;
         rightHTML = `
           <div style="background:rgba(56,189,248,0.12);border:2px solid #38bdf8;border-radius:12px;padding:16px 14px;height:100%;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 0 20px rgba(56,189,248,0.25);">
             <div>
-              <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#38bdf8;margin-bottom:8px;">${typeof t === 'function' ? t('gamble.trade.win_label', '🟢 50% UPGRADE DE ÉLITE') : '🟢 50% UPGRADE DE ÉLITE'}</div>
+              <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#38bdf8;margin-bottom:8px;">${typeof t === 'function' ? t('gamble.trade.win_label', '🟢 50% IF YOU WIN:') : '🟢 50% IF YOU WIN:'}</div>
               <div style="font-size:30px;margin:6px 0;">🔄</div>
-              <div style="font-family:'Press Start 2P',monospace;font-size:9.5px;color:#bae6fd;margin-bottom:4px;">[${worstPos}] REEMPLAZO TOP</div>
-              <div style="font-size:10.5px;color:#38bdf8;font-weight:bold;">Épico o Legendario Garantizado</div>
+              <div style="font-family:'Press Start 2P',monospace;font-size:9.5px;color:#bae6fd;margin-bottom:4px;">[${posLabel}] ${typeof t === 'function' ? t('gamble.trade.win_title', 'Guaranteed Epic or Legendary') : 'Guaranteed Epic or Legendary'}</div>
+              <div style="font-size:10.5px;color:#38bdf8;font-weight:bold;">OVR 80–99 · Epic / Legendary</div>
             </div>
             <div style="font-size:11px;color:#bae6fd;line-height:1.4;background:rgba(0,0,0,0.4);padding:8px;border-radius:8px;">
-              ${typeof t === 'function' ? t('gamble.trade.win_detail', 'Recibes un Titular Épico o Legendario garantizado.') : 'Recibes un Titular Épico o Legendario garantizado.'}
+              ${typeof t === 'function' ? t('gamble.trade.win_detail', '(Elite star replacement at that position)') : '(Elite star replacement at that position)'}
             </div>
           </div>
         `;
@@ -9499,26 +9494,26 @@ function initGameModeSelector() {
         leftHTML = `
           <div style="background:rgba(239,68,68,0.12);border:2px solid #ef4444;border-radius:12px;padding:16px 14px;height:100%;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 0 20px rgba(239,68,68,0.2);">
             <div>
-              <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#ef4444;margin-bottom:8px;">${typeof t === 'function' ? t('gamble.synergy.lose_label', '🔴 50% VETO DE ERA') : '🔴 50% VETO DE ERA'}</div>
+              <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#ef4444;margin-bottom:8px;">${typeof t === 'function' ? t('gamble.synergy.lose_label', '🔴 50% IF YOU LOSE:') : '🔴 50% IF YOU LOSE:'}</div>
               <div style="font-size:30px;margin:6px 0;">🚫</div>
-              <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:#fca5a5;margin-bottom:4px;">2 Compañeros al Azar</div>
-              <div style="font-size:10px;color:#ef4444;font-weight:bold;">Pierden su Sinergia</div>
+              <div style="font-family:'Press Start 2P',monospace;font-size:9.5px;color:#fca5a5;margin-bottom:4px;">${typeof t === 'function' ? t('gamble.synergy.lose_title', '2 Teammates Lose Era Synergy') : '2 Teammates Lose Era Synergy'}</div>
+              <div style="font-size:10.5px;color:#ef4444;font-weight:bold;">${typeof t === 'function' ? t('gamble.synergy.lose_detail', '(Permanent penalty for the run)') : '(Permanent penalty for the run)'}</div>
             </div>
             <div style="font-size:11px;color:#fca5a5;line-height:1.4;background:rgba(0,0,0,0.4);padding:8px;border-radius:8px;">
-              ${typeof t === 'function' ? t('gamble.synergy.lose_detail', '2 jugadores pierden su Era permanentemente.') : '2 jugadores pierden su Era permanentemente.'}
+              ${typeof t === 'function' ? t('gamble.synergy.lose_detail', '(Permanent penalty for the run)') : '(Permanent penalty for the run)'}
             </div>
           </div>
         `;
         rightHTML = `
           <div style="background:rgba(192,132,252,0.12);border:2px solid #c084fc;border-radius:12px;padding:16px 14px;height:100%;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 0 20px rgba(192,132,252,0.25);">
             <div>
-              <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#c084fc;margin-bottom:8px;">${typeof t === 'function' ? t('gamble.synergy.win_label', '🟢 50% PODER CUÁDRUPLE') : '🟢 50% PODER CUÁDRUPLE'}</div>
+              <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#c084fc;margin-bottom:8px;">${typeof t === 'function' ? t('gamble.synergy.win_label', '🟢 50% IF YOU WIN:') : '🟢 50% IF YOU WIN:'}</div>
               <div style="font-size:30px;margin:6px 0;">🧬</div>
-              <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:#e9d5ff;margin-bottom:4px;">${target.name}</div>
-              <div style="font-size:10.5px;color:#c084fc;font-weight:bold;">Cuenta x4 para ${target.era || 'Era'}</div>
+              <div style="font-family:'Press Start 2P',monospace;font-size:9.5px;color:#e9d5ff;margin-bottom:4px;">${target.name}</div>
+              <div style="font-size:10.5px;color:#c084fc;font-weight:bold;">${typeof t === 'function' ? t('gamble.synergy.win_title', '4x Power for their Era Synergy!') : '4x Power for their Era Synergy!'}</div>
             </div>
             <div style="font-size:11px;color:#e9d5ff;line-height:1.4;background:rgba(0,0,0,0.4);padding:8px;border-radius:8px;">
-              ${typeof t === 'function' ? t('gamble.synergy.win_detail', 'Cuenta como 4 jugadores juntos para la sinergia.') : 'Cuenta como 4 jugadores juntos para la sinergia.'}
+              ${typeof t === 'function' ? t('gamble.synergy.win_detail', '(Counts as 4 players toward synergy tiers)') : '(Counts as 4 players toward synergy tiers)'}
             </div>
           </div>
         `;
@@ -9527,26 +9522,26 @@ function initGameModeSelector() {
         leftHTML = `
           <div style="background:rgba(239,68,68,0.12);border:2px solid #ef4444;border-radius:12px;padding:16px 14px;height:100%;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 0 20px rgba(239,68,68,0.2);">
             <div>
-              <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#ef4444;margin-bottom:8px;">${typeof t === 'function' ? t('gamble.soldier.lose_label', '🔴 50% FATIGA CRÓNICA') : '🔴 50% FATIGA CRÓNICA'}</div>
+              <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#ef4444;margin-bottom:8px;">${typeof t === 'function' ? t('gamble.soldier.lose_label', '🔴 50% IF YOU LOSE:') : '🔴 50% IF YOU LOSE:'}</div>
               <div style="font-size:30px;margin:6px 0;">📉</div>
-              <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:#fca5a5;margin-bottom:4px;">${target.name}</div>
-              <div style="font-size:10px;color:#ef4444;font-weight:bold;">-15 en Todas sus Stats</div>
+              <div style="font-family:'Press Start 2P',monospace;font-size:9.5px;color:#fca5a5;margin-bottom:4px;">${target.name}</div>
+              <div style="font-size:10.5px;color:#ef4444;font-weight:bold;">${typeof t === 'function' ? t('gamble.soldier.lose_title', 'Chronic Fatigue: -15 All Stats') : 'Chronic Fatigue: -15 All Stats'}</div>
             </div>
             <div style="font-size:11px;color:#fca5a5;line-height:1.4;background:rgba(0,0,0,0.4);padding:8px;border-radius:8px;">
-              ${typeof t === 'function' ? t('gamble.soldier.lose_detail', 'Rechazo celular: -15 a todas las estadísticas.') : 'Rechazo celular: -15 a todas las estadísticas.'}
+              ${typeof t === 'function' ? t('gamble.soldier.lose_detail', '(Permanent stat impairment for the run)') : '(Permanent stat impairment for the run)'}
             </div>
           </div>
         `;
         rightHTML = `
           <div style="background:rgba(234,88,12,0.12);border:2px solid #f97316;border-radius:12px;padding:16px 14px;height:100%;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 0 20px rgba(249,115,22,0.25);">
             <div>
-              <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#fb923c;margin-bottom:8px;">${typeof t === 'function' ? t('gamble.soldier.win_label', '🟢 50% SÚPER-SLUGGER') : '🟢 50% SÚPER-SLUGGER'}</div>
+              <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#fb923c;margin-bottom:8px;">${typeof t === 'function' ? t('gamble.soldier.win_label', '🟢 50% IF YOU WIN:') : '🟢 50% IF YOU WIN:'}</div>
               <div style="font-size:30px;margin:6px 0;">⚡</div>
-              <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:#fed7aa;margin-bottom:4px;">${target.name}</div>
-              <div style="font-size:11px;color:#4ade80;font-weight:bold;">+35 CON & +35 PWR</div>
+              <div style="font-family:'Press Start 2P',monospace;font-size:9.5px;color:#fed7aa;margin-bottom:4px;">${target.name}</div>
+              <div style="font-size:11px;color:#4ade80;font-weight:bold;">${typeof t === 'function' ? t('gamble.soldier.win_title', '+35 CON & +35 PWR Permanent!') : '+35 CON & +35 PWR Permanent!'}</div>
             </div>
             <div style="font-size:11px;color:#fed7aa;line-height:1.4;background:rgba(0,0,0,0.4);padding:8px;border-radius:8px;">
-              ${typeof t === 'function' ? t('gamble.soldier.win_detail', '¡+35 Contacto y +35 Poder permanentes!') : '¡+35 Contacto y +35 Poder permanentes!'}
+              ${typeof t === 'function' ? t('gamble.soldier.win_detail', '(Unlocks devastating home run power)') : '(Unlocks devastating home run power)'}
             </div>
           </div>
         `;
@@ -9555,26 +9550,26 @@ function initGameModeSelector() {
         leftHTML = `
           <div style="background:rgba(239,68,68,0.12);border:2px solid #ef4444;border-radius:12px;padding:16px 14px;height:100%;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 0 20px rgba(239,68,68,0.2);">
             <div>
-              <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#ef4444;margin-bottom:8px;">${typeof t === 'function' ? t('gamble.market.lose_label', '🔴 50% EMBOSCADA') : '🔴 50% EMBOSCADA'}</div>
+              <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#ef4444;margin-bottom:8px;">${typeof t === 'function' ? t('gamble.market.lose_label', '🔴 50% IF YOU LOSE:') : '🔴 50% IF YOU LOSE:'}</div>
               <div style="font-size:30px;margin:6px 0;">💸</div>
-              <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:#ef4444;margin-bottom:4px;">-$20 Presupuesto</div>
-              <div style="font-size:10px;color:#fca5a5;font-weight:bold;">-30 Stamina al Equipo</div>
+              <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:#ef4444;margin-bottom:4px;">-$20 ${typeof t === 'function' ? t('gamble.budget_at_stake', 'BUDGET') : 'BUDGET'}</div>
+              <div style="font-size:10px;color:#fca5a5;font-weight:bold;">${typeof t === 'function' ? t('gamble.market.lose_title', '-$20 Budget & -30 Team Stamina') : '-$20 Budget & -30 Team Stamina'}</div>
             </div>
             <div style="font-size:11px;color:#fca5a5;line-height:1.4;background:rgba(0,0,0,0.4);padding:8px;border-radius:8px;">
-              ${typeof t === 'function' ? t('gamble.market.lose_detail', 'Pierdes dinero y todos tus jugadores quedan fatigados.') : 'Pierdes dinero y todos tus jugadores quedan fatigados.'}
+              ${typeof t === 'function' ? t('gamble.market.lose_detail', '(Every active starter gets fatigued)') : '(Every active starter gets fatigued)'}
             </div>
           </div>
         `;
         rightHTML = `
           <div style="background:rgba(168,85,247,0.12);border:2px solid #a855f7;border-radius:12px;padding:16px 14px;height:100%;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 0 20px rgba(168,85,247,0.25);">
             <div>
-              <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#c084fc;margin-bottom:8px;">${typeof t === 'function' ? t('gamble.market.win_label', '🟢 50% CONTRABANDO') : '🟢 50% CONTRABANDO'}</div>
+              <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#c084fc;margin-bottom:8px;">${typeof t === 'function' ? t('gamble.market.win_label', '🟢 50% IF YOU WIN:') : '🟢 50% IF YOU WIN:'}</div>
               <div style="font-size:30px;margin:6px 0;">🎒</div>
-              <div style="font-family:'Press Start 2P',monospace;font-size:9.5px;color:#e9d5ff;margin-bottom:4px;">2 ÍTEMS SUPREMOS</div>
-              <div style="font-size:10.5px;color:#a855f7;font-weight:bold;">+35 Stats Prototipos</div>
+              <div style="font-family:'Press Start 2P',monospace;font-size:9.5px;color:#e9d5ff;margin-bottom:4px;">${typeof t === 'function' ? t('gamble.market.win_title', '2 Supreme Items (+35 Stats)') : '2 Supreme Items (+35 Stats)'}</div>
+              <div style="font-size:10.5px;color:#a855f7;font-weight:bold;">${typeof t === 'function' ? t('gamble.market.win_detail', '(Master prototype items in backpack)') : '(Master prototype items in backpack)'}</div>
             </div>
             <div style="font-size:11px;color:#e9d5ff;line-height:1.4;background:rgba(0,0,0,0.4);padding:8px;border-radius:8px;">
-              ${typeof t === 'function' ? t('gamble.market.win_detail', 'Recibes 2 equipamientos legendarios (+35 stats) en tu mochila.') : 'Recibes 2 equipamientos legendarios (+35 stats) en tu mochila.'}
+              ${typeof t === 'function' ? t('gamble.market.win_detail', '(Master prototype items in backpack)') : '(Master prototype items in backpack)'}
             </div>
           </div>
         `;
@@ -9582,26 +9577,26 @@ function initGameModeSelector() {
         leftHTML = `
           <div style="background:rgba(239,68,68,0.12);border:2px solid #ef4444;border-radius:12px;padding:16px 14px;height:100%;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 0 20px rgba(239,68,68,0.2);">
             <div>
-              <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#ef4444;margin-bottom:8px;">${typeof t === 'function' ? t('gamble.defense.lose_label', '🔴 50% DESPISTE DEFENSIVO') : '🔴 50% DESPISTE DEFENSIVO'}</div>
+              <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#ef4444;margin-bottom:8px;">${typeof t === 'function' ? t('gamble.defense.lose_label', '🔴 50% IF YOU LOSE:') : '🔴 50% IF YOU LOSE:'}</div>
               <div style="font-size:30px;margin:6px 0;">⚠️</div>
-              <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:#fca5a5;margin-bottom:4px;">Jardineros (LF, CF, RF)</div>
-              <div style="font-size:10px;color:#ef4444;font-weight:bold;">-15 DEF Permanente</div>
+              <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:#fca5a5;margin-bottom:4px;">${typeof t === 'function' ? t('gamble.defense.lose_title', '-15 DEF to Outfielders (LF, CF, RF)') : '-15 DEF to Outfielders (LF, CF, RF)'}</div>
+              <div style="font-size:10px;color:#ef4444;font-weight:bold;">-15 DEF Permanent</div>
             </div>
             <div style="font-size:11px;color:#fca5a5;line-height:1.4;background:rgba(0,0,0,0.4);padding:8px;border-radius:8px;">
-              ${typeof t === 'function' ? t('gamble.defense.lose_detail', 'Tus 3 jardineros sufren desconcentración (-15 DEF).') : 'Tus 3 jardineros sufren desconcentración (-15 DEF).'}
+              ${typeof t === 'function' ? t('gamble.defense.lose_detail', '(Outfield defense impaired for the run)') : '(Outfield defense impaired for the run)'}
             </div>
           </div>
         `;
         rightHTML = `
           <div style="background:rgba(16,185,129,0.12);border:2px solid #10b981;border-radius:12px;padding:16px 14px;height:100%;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 0 20px rgba(16,185,129,0.25);">
             <div>
-              <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#10b981;margin-bottom:8px;">${typeof t === 'function' ? t('gamble.defense.win_label', '🟢 50% MURALLA DEFENSIVA') : '🟢 50% MURALLA DEFENSIVA'}</div>
+              <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#10b981;margin-bottom:8px;">${typeof t === 'function' ? t('gamble.defense.win_label', '🟢 50% IF YOU WIN:') : '🟢 50% IF YOU WIN:'}</div>
               <div style="font-size:30px;margin:6px 0;">🛡️</div>
-              <div style="font-family:'Press Start 2P',monospace;font-size:9.5px;color:#86efac;margin-bottom:4px;">LOS 9 TITULARES</div>
-              <div style="font-size:10.5px;color:#10b981;font-weight:bold;">+20 DEF a Todo el Roster</div>
+              <div style="font-family:'Press Start 2P',monospace;font-size:9.5px;color:#86efac;margin-bottom:4px;">${typeof t === 'function' ? t('gamble.defense.win_title', '+20 DEF to ALL 9 Starters!') : '+20 DEF to ALL 9 Starters!'}</div>
+              <div style="font-size:10.5px;color:#10b981;font-weight:bold;">${typeof t === 'function' ? t('gamble.defense.win_detail', '(Global team defense wall boost)') : '(Global team defense wall boost)'}</div>
             </div>
             <div style="font-size:11px;color:#86efac;line-height:1.4;background:rgba(0,0,0,0.4);padding:8px;border-radius:8px;">
-              ${typeof t === 'function' ? t('gamble.defense.win_detail', '+20 DEF a toda la alineación de por vida.') : '+20 DEF a toda la alineación de por vida.'}
+              ${typeof t === 'function' ? t('gamble.defense.win_detail', '(Global team defense wall boost)') : '(Global team defense wall boost)'}
             </div>
           </div>
         `;
