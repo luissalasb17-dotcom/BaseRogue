@@ -5664,16 +5664,18 @@ function initGameModeSelector() {
       if (newEraTier > curEraTier) {
         linesHTML += `
           <div style="background: rgba(255, 215, 0, 0.22); border: 1px solid #ffd700; border-radius: 4px; padding: 3px 5px; margin-bottom: 3px; box-shadow: 0 0 8px rgba(255,215,0,0.3); text-align: center;">
-            <div style="font-size: 9.5px; color: #ffd700; font-weight: bold; font-family: 'Outfit', sans-serif; line-height: 1.2;">
+            <div style="font-size: 9px; color: #ffd700; font-weight: bold; font-family: 'Outfit', sans-serif; line-height: 1.2;">
               ⚡ ${typeof t === 'function' ? t('synergy.activates_tier', { era: eraShort, tier: newEraTier }) : `¡ACTIVA TIER ${newEraTier} (${eraShort})!`}
             </div>
           </div>
         `;
-      } else if (curEraCount > 0) {
+      } else {
+        const isExisting = curEraCount > 0;
+        const pillCol = isExisting ? '#34d399' : '#94a3b8';
         linesHTML += `
-          <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.45); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; padding: 3px 6px; margin-bottom: 3px; font-family: 'Outfit', sans-serif; font-size: 10px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.45); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; padding: 3px 6px; margin-bottom: 3px; font-family: 'Outfit', sans-serif; font-size: 9.5px;">
             <span style="color: #f1f5f9; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 90px;">⏳ ${eraShort}</span>
-            <span style="color: #34d399; font-weight: 700; font-family: monospace;">${newEraCount}/${nextTarget} (T${newEraTier})</span>
+            <span style="color: ${pillCol}; font-weight: 700; font-family: monospace;">${newEraCount}/${nextTarget} (T${newEraTier})</span>
           </div>
         `;
       }
@@ -5684,7 +5686,7 @@ function initGameModeSelector() {
       if (newTeamCount === 2) {
         linesHTML += `
           <div style="background: rgba(56, 189, 248, 0.22); border: 1px solid #38bdf8; border-radius: 4px; padding: 3px 5px; margin-bottom: 3px; box-shadow: 0 0 8px rgba(56,189,248,0.3); text-align: center;">
-            <div style="font-size: 9.5px; color: #38bdf8; font-weight: bold; font-family: 'Outfit', sans-serif; line-height: 1.2;">
+            <div style="font-size: 9px; color: #38bdf8; font-weight: bold; font-family: 'Outfit', sans-serif; line-height: 1.2;">
               ⚾ ${typeof t === 'function' ? t('synergy.activates_chemistry', { team: player.team }) : `¡QUÍMICA ${player.team} (+4)!`}
             </div>
           </div>
@@ -5693,9 +5695,16 @@ function initGameModeSelector() {
         const pts = newTeamCount * 2;
         linesHTML += `
           <div style="background: rgba(168, 85, 247, 0.22); border: 1px solid #a855f7; border-radius: 4px; padding: 3px 5px; margin-bottom: 3px; box-shadow: 0 0 8px rgba(168,85,247,0.3); text-align: center;">
-            <div style="font-size: 9.5px; color: #c084fc; font-weight: bold; font-family: 'Outfit', sans-serif; line-height: 1.2;">
+            <div style="font-size: 9px; color: #c084fc; font-weight: bold; font-family: 'Outfit', sans-serif; line-height: 1.2;">
               👑 ${typeof t === 'function' ? t('synergy.activates_dynasty', { team: player.team, pts }) : `¡DINASTÍA ${player.team} (+${pts})!`}
             </div>
+          </div>
+        `;
+      } else {
+        linesHTML += `
+          <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.45); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; padding: 3px 6px; font-family: 'Outfit', sans-serif; font-size: 9.5px;">
+            <span style="color: #94a3b8; font-weight: 500;">⚾ ${player.team}</span>
+            <span style="color: #64748b; font-weight: 700; font-family: monospace;">${newTeamCount}/2</span>
           </div>
         `;
       }
@@ -5704,16 +5713,17 @@ function initGameModeSelector() {
     // 3. INTER-ERA BONUS
     if (player.isInterEra) {
       linesHTML += `
-        <div style="margin-top: 3px; font-size: 8px; color: #fbbf24; font-family: 'Press Start 2P', monospace; text-align: center;">
+        <div style="margin-top: 3px; font-size: 7.5px; color: #fbbf24; font-family: 'Press Start 2P', monospace; text-align: center;">
           ⏳ ${typeof t === 'function' ? t('badge.interera_label', 'FUERA DE ÉPOCA (2x)') : 'FUERA DE ÉPOCA (2x)'}
         </div>
       `;
     }
 
-    if (!linesHTML.trim()) return '';
-
     return `
-      <div class="synergy-impact-box" style="width: 100%; margin: 3px 0; padding: 4px 6px; background: rgba(10, 15, 30, 0.9); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 6px; text-align: left; box-sizing: border-box;">
+      <div class="synergy-impact-box" style="width: 100%; margin: 3px 0; padding: 4px 5px; background: rgba(10, 15, 30, 0.9); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 6px; text-align: left; box-sizing: border-box;">
+        <div style="font-size: 7.5px; color: #ffd700; font-family: 'Press Start 2P', monospace; margin-bottom: 3px; letter-spacing: 0.5px;">
+          ⚡ ${typeof t === 'function' ? t('synergy.impact_header', 'TEAM SYNERGY IMPACT') : 'TEAM SYNERGY IMPACT'}
+        </div>
         ${linesHTML}
       </div>
     `;
@@ -5737,7 +5747,7 @@ function initGameModeSelector() {
     let pool = el.draftOptionsRow || el.starterPool || document.getElementById('starter-selection-pool') || document.getElementById('draft-options-row');
     if (pool) {
       pool.innerHTML = "";
-      pool.className = 'midrun-draft-options flex flex-col md:flex-row justify-center items-center md:items-start gap-4 w-full max-w-[1100px] mx-auto py-3';
+      pool.className = 'midrun-draft-options flex flex-row flex-nowrap justify-center items-start gap-3 w-full max-w-[1100px] mx-auto py-3 overflow-x-auto';
       pool.style.cssText = '';
     }
     
@@ -5757,7 +5767,7 @@ function initGameModeSelector() {
       const cardHTML = createCardHTML(player);
       const predictionText = getDraftSynergyPrediction(player);
       const cardCol = document.createElement('div');
-      cardCol.className = "draft-card-option flex flex-col items-center gap-2 w-[175px] max-w-[175px] box-border";
+      cardCol.className = "draft-card-option flex flex-col items-center gap-1.5 w-[168px] max-w-[168px] shrink-0 box-border";
       
       const cost = getPlayerSignCost(player);
       const canAfford = (window.Game.budget || 0) >= cost;
@@ -5765,9 +5775,11 @@ function initGameModeSelector() {
       const btnSign = document.createElement('button');
       if (canAfford) {
         btnSign.className = "btn";
+        btnSign.style.width = "100%";
         btnSign.innerHTML = t('draft.sign_btn', { cost: cost });
       } else {
         btnSign.className = "btn btn-secondary";
+        btnSign.style.width = "100%";
         btnSign.style.opacity = "0.5";
         btnSign.style.cursor = "not-allowed";
         btnSign.innerHTML = t('draft.insufficient_funds', { cost: cost });
@@ -5816,13 +5828,13 @@ function initGameModeSelector() {
       const ovr    = getPlayerOvr(player);
 
       cardCol.innerHTML = `
-        <div>${cardHTML}</div>
+        <div style="pointer-events:none;">${cardHTML}</div>
+        <div class="draft-synergy-helper" style="width:100%;">${predictionText}</div>
         <div class="draft-card-caption" style="text-align:center;width:100%;margin-top:2px;">
           <div style="font-size:10px;color:${rColor};font-weight:bold;">${player.rarity}</div>
           <div style="font-size:9.5px;color:#9ca3af;text-align:center;margin-top:2px;font-family:'Press Start 2P',monospace;">${player.pos} • OVR ${ovr}</div>
         </div>
-        <div style="font-size:10px; color:#f59e0b; font-weight:bold; margin-top:4px; text-align:center; font-family:'Press Start 2P',monospace;">${typeof t === 'function' ? t('draft.cost_label', { cost: cost, defaultValue: `Cost: $${cost}` }) : `Cost: $${cost}`}</div>
-        <div class="draft-synergy-helper">${predictionText}</div>
+        <div style="font-size:9.5px; color:#f59e0b; font-weight:bold; margin-top:2px; text-align:center; font-family:'Press Start 2P',monospace;">${typeof t === 'function' ? t('draft.cost_label', { cost: cost, defaultValue: `Cost: $${cost}` }) : `Cost: $${cost}`}</div>
       `;
       cardCol.appendChild(btnSign);
       el.draftOptionsRow.appendChild(cardCol);
@@ -5830,7 +5842,7 @@ function initGameModeSelector() {
 
     // Add a "Rechazar Firma" button option
     const skipCol = document.createElement('div');
-    skipCol.className = "draft-card-option flex flex-col justify-center items-center border-2 border-dashed border-white/15 p-4 rounded-xl w-[175px] max-w-[175px] min-h-[310px] box-border";
+    skipCol.className = "draft-card-option flex flex-col justify-center items-center border-2 border-dashed border-white/15 p-4 rounded-xl w-[168px] max-w-[168px] min-h-[310px] shrink-0 box-border";
 
     const btnSkip = document.createElement('button');
     btnSkip.className = "btn btn-secondary";
@@ -5870,7 +5882,7 @@ function initGameModeSelector() {
     let pool = el.draftOptionsRow || el.starterPool || document.getElementById('starter-selection-pool') || document.getElementById('draft-options-row');
     if (pool) {
       pool.innerHTML = "";
-      pool.className = 'midrun-draft-options flex flex-col md:flex-row justify-center items-center md:items-start gap-4 w-full max-w-[1100px] mx-auto py-3';
+      pool.className = 'midrun-draft-options flex flex-row flex-nowrap justify-center items-start gap-3 w-full max-w-[1100px] mx-auto py-3 overflow-x-auto';
       pool.style.cssText = '';
     }
     
@@ -5890,10 +5902,11 @@ function initGameModeSelector() {
       const cardHTML = createCardHTML(player);
       const predictionText = getDraftSynergyPrediction(player);
       const cardCol = document.createElement('div');
-      cardCol.className = "draft-card-option flex flex-col items-center gap-2 w-[175px] max-w-[175px] box-border";
+      cardCol.className = "draft-card-option flex flex-col items-center gap-1.5 w-[168px] max-w-[168px] shrink-0 box-border";
       
       const btnSign = document.createElement('button');
       btnSign.className = "btn";
+      btnSign.style.width = "100%";
       btnSign.innerHTML = t('draft.sign_btn', { cost: 0 });
       btnSign.addEventListener('click', () => {
         currentDraftSelection = player;
@@ -5905,12 +5918,12 @@ function initGameModeSelector() {
       const ovr    = getPlayerOvr(player);
 
       cardCol.innerHTML = `
-        <div>${cardHTML}</div>
+        <div style="pointer-events:none;">${cardHTML}</div>
+        <div class="draft-synergy-helper" style="width:100%;">${predictionText}</div>
         <div class="draft-card-caption" style="text-align:center;width:100%;margin-top:2px;">
           <div style="font-size:10px;color:${rColor};font-weight:bold;">${player.rarity}</div>
           <div style="font-size:9.5px;color:#9ca3af;text-align:center;margin-top:2px;font-family:'Press Start 2P',monospace;">${player.pos} • OVR ${ovr}</div>
         </div>
-        <div class="draft-synergy-helper">${predictionText}</div>
       `;
       cardCol.appendChild(btnSign);
       el.draftOptionsRow.appendChild(cardCol);
@@ -5918,7 +5931,7 @@ function initGameModeSelector() {
 
     // Add a "Skip Draft" button to let the player skip post-match draft
     const skipCol = document.createElement('div');
-    skipCol.className = "draft-card-option flex flex-col justify-center items-center border-2 border-dashed border-white/15 p-4 rounded-xl w-[175px] max-w-[175px] min-h-[310px] box-border";
+    skipCol.className = "draft-card-option flex flex-col justify-center items-center border-2 border-dashed border-white/15 p-4 rounded-xl w-[168px] max-w-[168px] min-h-[310px] shrink-0 box-border";
 
     const btnSkip = document.createElement('button');
     btnSkip.className = "btn btn-secondary";
@@ -5929,10 +5942,10 @@ function initGameModeSelector() {
     });
 
     skipCol.innerHTML = `
-      <div style="font-size:48px;color:rgba(255,255,255,0.15);margin-bottom:20px;">
-        <i class="fa-solid fa-forward"></i>
+      <div style="font-size:44px;color:rgba(255,255,255,0.2);margin-bottom:16px;">
+        <i class="fa-solid fa-hand"></i>
       </div>
-      <p style="font-size:12px;color:#94a3b8;text-align:center;margin-bottom:20px;">
+      <p style="font-size:11px;color:#9ca3af;text-align:center;margin-bottom:16px;line-height:1.4;">
         ${t('draft.decline_desc')}
       </p>
     `;
@@ -10730,7 +10743,9 @@ function initGameModeSelector() {
       const mvpBtn = document.getElementById('victory-mvp-card-btn');
       if (mvpBtn && bestPlayer) {
         mvpBtn.onclick = () => {
-          if (typeof showPlayerCardPopup === 'function') {
+          if (window.BaseballDex && typeof window.BaseballDex.showDetail === 'function') {
+            window.BaseballDex.showDetail(bestPlayer.player);
+          } else if (typeof showPlayerCardPopup === 'function') {
             showPlayerCardPopup(bestPlayer.player, bestPlayer.slot);
           }
         };
@@ -10744,7 +10759,9 @@ function initGameModeSelector() {
         const item = playersData[pIdx];
         if (item) {
           btn.onclick = () => {
-            if (typeof showPlayerCardPopup === 'function') {
+            if (window.BaseballDex && typeof window.BaseballDex.showDetail === 'function') {
+              window.BaseballDex.showDetail(item.player);
+            } else if (typeof showPlayerCardPopup === 'function') {
               showPlayerCardPopup(item.player, item.slot);
             }
           };

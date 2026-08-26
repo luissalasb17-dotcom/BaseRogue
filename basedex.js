@@ -711,7 +711,10 @@
 
       const overlay = document.createElement('div');
       overlay.id = 'dex-detail-overlay';
-      overlay.style.cssText = 'position:absolute;inset:0;background:rgba(0,0,0,0.85);z-index:10;display:flex;align-items:center;justify-content:center;padding:20px';
+      overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px);';
+      overlay.onclick = (e) => {
+        if (e.target === overlay) overlay.remove();
+      };
 
       const renderStat = (lbl, val) => {
         if (typeof val !== 'number') {
@@ -844,8 +847,10 @@
         </div>
       `;
 
-      if (this.container) {
+      if (this.container && this.container.isConnected && this.container.querySelector('div')) {
         this.container.querySelector('div').appendChild(overlay);
+      } else {
+        document.body.appendChild(overlay);
       }
     }
   };
