@@ -836,21 +836,19 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
         const rBg    = RARITY_BG[player.rarity]    || RARITY_BG.Common;
         const ovr    = getPlayerOvr(player);
         const cardHTML = createCardHTML(player);
-        const impactBoxHTML = typeof getSynergyImpactBoxHTML === 'function' ? getSynergyImpactBoxHTML(player) : '';
 
         const wrapper = document.createElement('div');
-        wrapper.className = 'draft-card-wrapper w-[165px] max-w-[165px] min-w-[165px] cursor-pointer rounded-xl border-2 transition-transform duration-150 flex flex-col items-center gap-1 p-1.5 box-border shrink-0 snap-center';
+        wrapper.className = 'draft-card-wrapper w-[175px] max-w-[175px] min-w-[175px] cursor-pointer rounded-xl border-2 transition-transform duration-150 flex flex-col items-center gap-1 p-2 box-border shrink-0 snap-center';
         wrapper.style.borderColor = rColor;
         wrapper.style.background = rBg;
 
         wrapper.innerHTML = `
           <div style="pointer-events:none;">${cardHTML}</div>
-          ${impactBoxHTML}
-          <div class="draft-card-caption" style="text-align:center;width:100%;">
-            <div style="font-size:9.5px;color:${rColor};font-weight:bold;">${player.rarity}</div>
-            <div style="font-size:8.5px;color:#9ca3af;text-align:center;margin-top:1px;">${player.pos} • OVR ${ovr}</div>
+          <div class="draft-card-caption" style="text-align:center;width:100%;margin-top:2px;">
+            <div style="font-size:10px;color:${rColor};font-weight:bold;">${player.rarity}</div>
+            <div style="font-size:9.5px;color:#9ca3af;text-align:center;margin-top:2px;font-family:'Press Start 2P',monospace;">${player.pos} • OVR ${ovr}</div>
           </div>
-          <button class="btn" style="width:100%;padding:6px;font-size:9px;background:${rColor};color:#000;border:none;font-weight:bold;">${t('draft.select_btn')}</button>
+          <button class="btn" style="width:100%;padding:8px;font-size:10px;background:${rColor};color:#000;border:none;font-weight:bold;margin-top:3px;">${t('draft.select_btn')}</button>
         `;
 
         wrapper.addEventListener('mouseenter', () => {
@@ -10738,205 +10736,221 @@ function initGameModeSelector() {
         ${synergiesBadgesHTML}
       `;
 
-      // ── High-End Vertical Lineup Card Canvas Image Generator ──
+      // ── High-End Condensed BaseRogue Retro Pixel Lineup Canvas Generator ──
       function renderChampionshipCanvas(callback) {
         const canvas = document.createElement('canvas');
-        canvas.width = 720;
-        canvas.height = 1040; // Vertical Trading Card / Lineup Poster Ratio
+        canvas.width = 640;
+        canvas.height = 780; // Condensed Retro Arcade Trading Card Ratio
         const ctx = canvas.getContext('2d');
 
-        // Background Gradient
+        // Dark CRT Terminal Gradient
         const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
-        grad.addColorStop(0, '#060b14');
-        grad.addColorStop(0.5, '#0b1329');
-        grad.addColorStop(1, '#05070f');
+        grad.addColorStop(0, '#030806');
+        grad.addColorStop(0.5, '#07150e');
+        grad.addColorStop(1, '#020604');
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Radial Gold Glow
-        const radialAura = ctx.createRadialGradient(canvas.width / 2, 0, 10, canvas.width / 2, 0, 700);
-        radialAura.addColorStop(0, 'rgba(255, 215, 0, 0.25)');
-        radialAura.addColorStop(1, 'rgba(255, 215, 0, 0)');
+        // Radial Emerald/Gold Ambient Glow
+        const radialAura = ctx.createRadialGradient(canvas.width / 2, 0, 10, canvas.width / 2, 0, 550);
+        radialAura.addColorStop(0, 'rgba(0, 255, 102, 0.18)');
+        radialAura.addColorStop(0.5, 'rgba(255, 215, 0, 0.08)');
+        radialAura.addColorStop(1, 'rgba(0, 0, 0, 0)');
         ctx.fillStyle = radialAura;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Outer Borders
-        ctx.strokeStyle = '#ffd700';
-        ctx.lineWidth = 3;
-        ctx.strokeRect(14, 14, canvas.width - 28, canvas.height - 28);
+        // Neon Double Arcade Borders
+        ctx.strokeStyle = '#00ff66';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
         ctx.strokeStyle = 'rgba(255, 215, 0, 0.35)';
         ctx.lineWidth = 1;
-        ctx.strokeRect(20, 20, canvas.width - 40, canvas.height - 40);
+        ctx.strokeRect(14, 14, canvas.width - 28, canvas.height - 28);
 
-        // Header Title
+        // Corner Pixel Brackets
         ctx.fillStyle = '#ffd700';
-        ctx.font = 'bold 21px "Press Start 2P", monospace, sans-serif';
+        ctx.fillRect(10, 10, 12, 3);
+        ctx.fillRect(10, 10, 3, 12);
+        ctx.fillRect(canvas.width - 22, 10, 12, 3);
+        ctx.fillRect(canvas.width - 13, 10, 3, 12);
+        ctx.fillRect(10, canvas.height - 13, 12, 3);
+        ctx.fillRect(10, canvas.height - 22, 3, 12);
+        ctx.fillRect(canvas.width - 22, canvas.height - 13, 12, 3);
+        ctx.fillRect(canvas.width - 13, canvas.height - 22, 3, 12);
+
+        // Top Header
+        ctx.fillStyle = '#00ff66';
+        ctx.font = 'bold 17px "Press Start 2P", monospace, sans-serif';
         ctx.textAlign = 'center';
-        ctx.shadowColor = 'rgba(255, 215, 0, 0.8)';
-        ctx.shadowBlur = 12;
-        ctx.fillText('🏆 BASE ROGUE CHAMPION 🏆', canvas.width / 2, 54);
+        ctx.shadowColor = 'rgba(0, 255, 102, 0.8)';
+        ctx.shadowBlur = 10;
+        ctx.fillText('⚾ BASEROGUE ⚾', canvas.width / 2, 38);
         ctx.shadowBlur = 0;
 
-        ctx.fillStyle = '#94a3b8';
-        ctx.font = 'bold 10px monospace, sans-serif';
-        ctx.fillText('OFFICIAL CHAMPIONSHIP LINEUP CARD • SUPREME ROTATION CONQUERED', canvas.width / 2, 74);
+        ctx.fillStyle = '#ffd700';
+        ctx.font = 'bold 9.5px "Press Start 2P", monospace, sans-serif';
+        ctx.fillText('★ WORLD CHAMPIONSHIP LINEUP ★', canvas.width / 2, 58);
+
+        const rowX = 22;
+        const rowW = canvas.width - 44;
 
         // MVP Spotlight Box
-        let startLineupY = 96;
+        let startLineupY = 74;
         if (bestPlayer) {
-          const mvpX = 28;
-          const mvpY = 92;
-          const mvpW = canvas.width - 56;
-          const mvpH = 94;
+          const mvpY = 72;
+          const mvpH = 66;
 
-          ctx.fillStyle = 'rgba(245, 158, 11, 0.18)';
+          ctx.fillStyle = 'rgba(255, 215, 0, 0.08)';
           ctx.strokeStyle = '#ffd700';
-          ctx.lineWidth = 2;
+          ctx.lineWidth = 1.5;
           ctx.beginPath();
-          if (ctx.roundRect) ctx.roundRect(mvpX, mvpY, mvpW, mvpH, 10);
-          else ctx.rect(mvpX, mvpY, mvpW, mvpH);
+          if (ctx.roundRect) ctx.roundRect(rowX, mvpY, rowW, mvpH, 6);
+          else ctx.rect(rowX, mvpY, rowW, mvpH);
           ctx.fill();
           ctx.stroke();
 
-          // MVP Header
+          // MVP Title & Name
           ctx.textAlign = 'left';
           ctx.fillStyle = '#ffd700';
-          ctx.font = 'bold 10px "Press Start 2P", monospace, sans-serif';
-          ctx.fillText('👑 RUN MVP:', mvpX + 16, mvpY + 24);
-
-          // Name & Grade
-          ctx.fillStyle = '#ffffff';
-          ctx.font = 'bold 16px sans-serif';
-          ctx.fillText(`[${bestPlayer.slot}] ${bestPlayer.player.name}`, mvpX + 16, mvpY + 48);
+          ctx.font = 'bold 9px "Press Start 2P", monospace, sans-serif';
+          ctx.fillText(`👑 RUN MVP: [${bestPlayer.slot}] ${bestPlayer.player.name}`, rowX + 12, mvpY + 20);
 
           ctx.fillStyle = bestPlayer.ovrGrade ? bestPlayer.ovrGrade.color : '#ffd700';
-          ctx.font = 'bold 10.5px "Press Start 2P", monospace, sans-serif';
-          ctx.fillText(`${bestPlayer.ovrGrade.text} ${bestPlayer.ovr}`, mvpX + 310, mvpY + 48);
+          ctx.font = 'bold 9px "Press Start 2P", monospace, sans-serif';
+          ctx.fillText(`${bestPlayer.ovrGrade.text} ${bestPlayer.ovr}`, rowX + rowW - 68, mvpY + 20);
 
           // Subtitle
           ctx.fillStyle = '#94a3b8';
-          ctx.font = '9px "Press Start 2P", monospace, sans-serif';
-          ctx.fillText(`${bestPlayer.team} · ${bestPlayer.era || 'VINTAGE'} · ${bestPlayer.rarity.toUpperCase()}`, mvpX + 390, mvpY + 48);
+          ctx.font = '7.5px "Press Start 2P", monospace, sans-serif';
+          const mvpItemTag = bestPlayer.player.equipped_item ? ` • 🎒 ${bestPlayer.player.equipped_item.name}` : '';
+          ctx.fillText(`${bestPlayer.team} · ${bestPlayer.era || 'VINTAGE'} · ${bestPlayer.rarity.toUpperCase()}${mvpItemTag}`, rowX + 12, mvpY + 38);
 
-          // 4 Big Stat Pills
-          const statBoxY = mvpY + 58;
-          ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
-          ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
-          ctx.lineWidth = 1;
-          ctx.beginPath();
-          if (ctx.roundRect) ctx.roundRect(mvpX + 10, statBoxY, mvpW - 20, 26, 6);
-          else ctx.rect(mvpX + 10, statBoxY, mvpW - 20, 26);
-          ctx.fill();
-          ctx.stroke();
-
-          ctx.font = 'bold 10px "Press Start 2P", monospace, sans-serif';
+          // 4 Stats in row
+          ctx.font = 'bold 8.5px "Press Start 2P", monospace, sans-serif';
           ctx.fillStyle = '#00ff66';
-          ctx.fillText(`OPS ${bestPlayer.ops}`, mvpX + 26, statBoxY + 18);
+          ctx.fillText(`OPS ${bestPlayer.ops}`, rowX + 12, mvpY + 56);
 
           ctx.fillStyle = '#ff3366';
-          ctx.fillText(`💥 ${bestPlayer.dmg} DMG`, mvpX + 190, statBoxY + 18);
+          ctx.fillText(`💥 ${bestPlayer.dmg} DMG`, rowX + 160, mvpY + 56);
 
           ctx.fillStyle = '#ef4444';
-          ctx.fillText(`⚾ ${bestPlayer.hr} HR`, mvpX + 370, statBoxY + 18);
+          ctx.fillText(`⚾ ${bestPlayer.hr} HR`, rowX + 310, mvpY + 56);
 
           ctx.fillStyle = '#f59e0b';
-          ctx.fillText(`👟 ${bestPlayer.rbi} RBI`, mvpX + 530, statBoxY + 18);
+          ctx.fillText(`👟 ${bestPlayer.rbi} RBI`, rowX + 445, mvpY + 56);
 
-          startLineupY = 198;
+          startLineupY = 148;
         }
 
-        // 9 Vertical Lineup Rows
-        const rowH = 62;
-        const rowGap = 7;
-        const rowW = canvas.width - 56;
-        const rowX = 28;
+        // 9 Compact Batting Lineup Rows
+        const rowH = 44;
+        const rowGap = 5;
 
         playersData.forEach((item, i) => {
           const y = startLineupY + i * (rowH + rowGap);
           const rCol = item.rarityColor || '#94a3b8';
           const isMvpItem = bestPlayer && bestPlayer.player.name === item.player.name;
 
-          // Row Container
-          ctx.fillStyle = isMvpItem ? 'rgba(255, 215, 0, 0.12)' : 'rgba(15, 23, 42, 0.92)';
-          ctx.strokeStyle = isMvpItem ? '#ffd700' : rCol;
-          ctx.lineWidth = isMvpItem ? 2.5 : 1.5;
+          ctx.fillStyle = isMvpItem ? 'rgba(255, 215, 0, 0.12)' : 'rgba(8, 20, 14, 0.88)';
+          ctx.strokeStyle = isMvpItem ? '#ffd700' : 'rgba(255, 255, 255, 0.1)';
+          ctx.lineWidth = 1;
           ctx.beginPath();
-          if (ctx.roundRect) ctx.roundRect(rowX, y, rowW, rowH, 8);
+          if (ctx.roundRect) ctx.roundRect(rowX, y, rowW, rowH, 5);
           else ctx.rect(rowX, y, rowW, rowH);
           ctx.fill();
           ctx.stroke();
 
-          // Left Highlight Bar
+          // Left Rarity Color Accent Bar
           ctx.fillStyle = isMvpItem ? '#ffd700' : rCol;
-          ctx.fillRect(rowX, y + 4, 4, rowH - 8);
+          ctx.fillRect(rowX, y + 3, 3.5, rowH - 6);
 
-          // Left Header: Slot + Name + Grade
+          // Left: Order + Slot + Name
           ctx.textAlign = 'left';
           ctx.fillStyle = '#38bdf8';
-          ctx.font = 'bold 10.5px "Press Start 2P", monospace, sans-serif';
-          ctx.fillText(`#${item.index} [${item.slot}]`, rowX + 14, y + 26);
+          ctx.font = 'bold 9px "Press Start 2P", monospace, sans-serif';
+          ctx.fillText(`#${item.index} [${item.slot}]`, rowX + 12, y + 18);
 
           ctx.fillStyle = '#ffffff';
-          ctx.font = 'bold 15px sans-serif';
-          const shortName = item.player.name.length > 22 ? item.player.name.substring(0, 20) + '...' : item.player.name;
-          ctx.fillText(shortName, rowX + 105, y + 26);
+          ctx.font = 'bold 12px sans-serif';
+          const shortName = item.player.name.length > 18 ? item.player.name.substring(0, 16) + '...' : item.player.name;
+          ctx.fillText(shortName, rowX + 85, y + 18);
 
           ctx.fillStyle = item.ovrGrade ? item.ovrGrade.color : '#ffd700';
-          ctx.font = 'bold 9.5px "Press Start 2P", monospace, sans-serif';
-          ctx.fillText(`${item.ovrGrade ? item.ovrGrade.text : ''} ${item.ovr}`, rowX + 310, y + 26);
+          ctx.font = 'bold 8.5px "Press Start 2P", monospace, sans-serif';
+          ctx.fillText(`${item.ovrGrade ? item.ovrGrade.text : ''} ${item.ovr}`, rowX + 245, y + 18);
 
-          // Left Subtitle: Team + Era + Item
+          // Subtitle: Team + Era
           ctx.fillStyle = '#94a3b8';
-          ctx.font = '8.5px "Press Start 2P", monospace, sans-serif';
+          ctx.font = '7.5px "Press Start 2P", monospace, sans-serif';
           const itemSuffix = item.player.equipped_item ? ` • 🎒 ${item.player.equipped_item.name}` : '';
-          ctx.fillText(`${item.team} · ${item.era || 'VINTAGE'} · ${item.rarity.toUpperCase()}${itemSuffix}`, rowX + 14, y + 48);
+          ctx.fillText(`${item.team} · ${item.era || 'VINTAGE'}${itemSuffix}`, rowX + 12, y + 34);
 
-          // Right Stats Cluster (Big & Legible)
+          // Right Stats
           ctx.textAlign = 'right';
-          ctx.font = 'bold 11px "Press Start 2P", monospace, sans-serif';
+          ctx.font = 'bold 9px "Press Start 2P", monospace, sans-serif';
 
           ctx.fillStyle = '#00ff66';
-          ctx.fillText(`OPS ${item.ops}`, rowX + rowW - 200, y + 36);
+          ctx.fillText(`OPS ${item.ops}`, rowX + rowW - 170, y + 26);
 
           ctx.fillStyle = '#ef4444';
-          ctx.fillText(`${item.hr} HR`, rowX + rowW - 110, y + 36);
+          ctx.fillText(`${item.hr} HR`, rowX + rowW - 90, y + 26);
 
           ctx.fillStyle = '#ff3366';
-          ctx.fillText(`💥 ${item.dmg}`, rowX + rowW - 14, y + 36);
+          ctx.fillText(`💥 ${item.dmg}`, rowX + rowW - 12, y + 26);
         });
 
-        // Active Synergies Box (Bottom)
+        // Active Synergies Strip
         const synBoxY = startLineupY + (9 * (rowH + rowGap)) + 4;
-        const synBoxH = 50;
+        const synBoxH = 36;
 
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
-        ctx.strokeStyle = 'rgba(255, 215, 0, 0.35)';
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.55)';
+        ctx.strokeStyle = 'rgba(0, 255, 102, 0.25)';
         ctx.lineWidth = 1;
         ctx.beginPath();
-        if (ctx.roundRect) ctx.roundRect(rowX, synBoxY, rowW, synBoxH, 8);
+        if (ctx.roundRect) ctx.roundRect(rowX, synBoxY, rowW, synBoxH, 5);
         else ctx.rect(rowX, synBoxY, rowW, synBoxH);
         ctx.fill();
         ctx.stroke();
 
         ctx.textAlign = 'center';
-        ctx.fillStyle = '#ffd700';
-        ctx.font = 'bold 8.5px "Press Start 2P", monospace, sans-serif';
-        ctx.fillText('🏆 ACTIVE RUN SYNERGIES & CHEMISTRY', canvas.width / 2, synBoxY + 18);
-
         const synList = activeSynergies.map(s => `${s.era} T${s.level}`).concat(teamChemList.map(c => `${c.team} Chem`));
-        const synStr = synList.length > 0 ? `[ ${synList.join('  •  ')} ]` : '[ BALANCED LINEUP ]';
-        ctx.fillStyle = '#6ee7b7';
-        ctx.font = 'bold 9.5px "Press Start 2P", monospace, sans-serif';
-        ctx.fillText(synStr, canvas.width / 2, synBoxY + 38);
+        const synStr = synList.length > 0 ? `🏆 SINERGIAS: [ ${synList.join(' · ')} ]` : '🏆 LINEUP EQUILIBRADO';
+        ctx.fillStyle = '#ffd700';
+        ctx.font = 'bold 8px "Press Start 2P", monospace, sans-serif';
+        const shortSynStr = synStr.length > 56 ? synStr.substring(0, 53) + '...' : synStr;
+        ctx.fillText(shortSynStr, canvas.width / 2, synBoxY + 22);
 
-        // Footer Bar
+        // Big Redirection / Call-To-Action Banner
+        const ctaY = synBoxY + synBoxH + 8;
+        const ctaH = 82;
+
+        ctx.fillStyle = 'rgba(0, 255, 102, 0.08)';
+        ctx.strokeStyle = '#00ff66';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        if (ctx.roundRect) ctx.roundRect(rowX, ctaY, rowW, ctaH, 8);
+        else ctx.rect(rowX, ctaY, rowW, ctaH);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#ffd700';
+        ctx.font = 'bold 9px "Press Start 2P", monospace, sans-serif';
+        ctx.fillText('⚡ ¿PUEDES VENCER A ESTA ROTACIÓN? ⚡', canvas.width / 2, ctaY + 24);
+
+        ctx.fillStyle = '#00ff66';
+        ctx.font = 'bold 12px "Press Start 2P", monospace, sans-serif';
+        ctx.shadowColor = 'rgba(0, 255, 102, 0.8)';
+        ctx.shadowBlur = 8;
+        ctx.fillText('👉 JUEGA EN: WWW.BASEROGUE.COM 👈', canvas.width / 2, ctaY + 48);
+        ctx.shadowBlur = 0;
+
         const totDMG = playersData.reduce((acc, it) => acc + (it.dmg || 0), 0);
         const totHR = playersData.reduce((acc, it) => acc + (it.hr || 0), 0);
 
-        ctx.textAlign = 'center';
-        ctx.fillStyle = '#fbbf24';
-        ctx.font = 'bold 10px "Press Start 2P", monospace, sans-serif';
-        ctx.fillText(`TOTAL DAMAGE: ${totDMG} HP  •  TOTAL HR: ${totHR}  •  WWW.BASEROGUE.COM`, canvas.width / 2, canvas.height - 18);
+        ctx.fillStyle = '#fef08a';
+        ctx.font = 'bold 8px "Press Start 2P", monospace, sans-serif';
+        ctx.fillText(`DAÑO TOTAL: ${totDMG} HP  •  HOME RUNS TOTALES: ${totHR}`, canvas.width / 2, ctaY + 70);
 
         canvas.toBlob((blob) => {
           if (callback) callback(blob, canvas);
