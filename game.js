@@ -540,10 +540,58 @@
       }
     },
     {
+      id: 'gamble_scout',
+      icon: '🕵️',
+      get title() { return typeof window.t==='function'?window.t('gamble.scout.title'):'Cazatalentos Clandestino'; },
+      get desc() { return typeof window.t==='function'?window.t('gamble.scout.desc'):'Un cazatalentos ofrece una carta Legendary para tu posición más débil. Si ganas, la firmas gratis. Si pierdes, tu mejor jugador se lesiona: -20 en todas sus stats por el resto de la run.'; },
+      chance: 0.50,
+      resolve(G) {
+        const pool = (window.PlayersDB && window.PlayersDB.LAHMAN_POOL) ? window.PlayersDB.LAHMAN_POOL : [];
+        const success = Math.random() <= this.chance;
+
+        if (success) {
+          let worstPos = null, worstOvr = Infinity;
+          Object.keys(G.roster).forEach(pos => {
+            const p = G.roster[pos];
+            const ovr = p ? _gambleOvr(p) : -Infinity;
+            if (ovr < worstOvr) { worstOvr = ovr; worstPos = pos; }
+          });
+          if (!worstPos) return { success, resultText: (typeof window.t==='function'?window.t('gamble.scout.no_target'):'No hay roster titular disponible.') };
+          const pick = _pickGambleCandidate(pool, worstPos, ['Legendary']);
+          if (!pick) return { success, resultText: (typeof window.t==='function'?window.t('gamble.no_player_found', { pos: worstPos }):`No se encontró ningún jugador de ${worstPos} disponible.`) };
+          const newInstance = {
+            ...pick,
+            id: `player_${pick.name.replace(/\s+/g, '')}_${Date.now()}_scout`,
+            stamina: 100,
+            upgrades: { con: 0, pwr: 0, eye: 0, k_avd: 0, spd: 0, def: 0, sta: 0 }
+          };
+          const oldName = G.roster[worstPos] ? G.roster[worstPos].name : '(vacío)';
+          G.roster[worstPos] = newInstance;
+          if (window.BaseballDex && typeof window.BaseballDex.unlockPlayer === 'function') {
+            window.BaseballDex.unlockPlayer(newInstance);
+          }
+          return { success, resultText: (typeof window.t==='function'?window.t('gamble.scout.result_win', { newName: newInstance.name, oldName, pos: worstPos }):`¡Fichaje legendario! ${newInstance.name} reemplaza a ${oldName} en ${worstPos}.`) };
+        }
+
+        let bestPos = null, bestOvr = -Infinity;
+        Object.keys(G.roster).forEach(pos => {
+          const p = G.roster[pos];
+          if (!p) return;
+          const ovr = _gambleOvr(p);
+          if (ovr > bestOvr) { bestOvr = ovr; bestPos = pos; }
+        });
+        if (!bestPos) return { success, resultText: (typeof window.t==='function'?window.t('gamble.scout.no_injury_target'):'No había jugador titular para lesionar.') };
+        const p = G.roster[bestPos];
+        if (!p.upgrades) p.upgrades = { con: 0, pwr: 0, eye: 0, k_avd: 0, spd: 0, def: 0, sta: 0 };
+        ['con', 'pwr', 'eye', 'k_avd', 'spd', 'def'].forEach(k => { p.upgrades[k] = (p.upgrades[k] || 0) - 20; });
+        return { success, resultText: (typeof window.t==='function'?window.t('gamble.scout.result_lose', { name: p.name }):`${p.name} se lesiona: -20 en todas sus stats por el resto de la run.`) };
+      }
+    },
+    {
       id: 'gamble_blind_trade',
       icon: '🔄',
-      get title() { return typeof window.t==='function'?window.t('gamble.trade.title'):'Intercambio a Ciegas'; },
-      get desc() { return typeof window.t==='function'?window.t('gamble.trade.desc'):'Cambias a tu jugador titular más débil por una oferta a ciegas. Si ganas, el reemplazo es de rareza SUPERIOR garantizada. Si pierdes, el reemplazo es Common y esa posición queda bloqueada para draft por 2 nodos.'; },
+      get title() { return typeof window.t==='function'?window.t('gamble.trade.title'):'Traspaso a Ciegas'; },
+      get desc() { return typeof window.t==='function'?window.t('gamble.trade.desc'):'Cambias a tu jugador titular más débil por una oferta a ciegas. Si ganas, el reemplazo es de rareza SUPERIOR (Épica o Legendaria). Si pierdes, el reemplazo es Common (50 OVR) y esa posición queda bloqueada para draft por 2 nodos.'; },
       chance: 0.50,
       resolve(G) {
         const pool = (window.PlayersDB && window.PlayersDB.LAHMAN_POOL) ? window.PlayersDB.LAHMAN_POOL : [];
@@ -556,11 +604,10 @@
         if (!worstPos) return { success: false, resultText: (typeof window.t==='function'?window.t('gamble.trade.no_target'):'No hay roster titular para intercambiar.') };
 
         const current = G.roster[worstPos];
-        const currentRarityIdx = current ? _gambleRarityOrder.indexOf(current.rarity || 'Common') : -1;
         const success = Math.random() <= this.chance;
 
         const pick = success
-          ? _pickGambleCandidate(pool, worstPos, _gambleRarityOrder.slice(Math.max(currentRarityIdx + 1, 0)))
+          ? _pickGambleCandidate(pool, worstPos, ['Legendary', 'Epic'])
           : _pickGambleCandidate(pool, worstPos, ['Common']);
         if (!pick) return { success, resultText: (typeof window.t==='function'?window.t('gamble.no_player_found', { pos: worstPos }):`No se encontró ningún jugador de ${worstPos} disponible.`) };
 
@@ -575,12 +622,14 @@
         if (!success) {
           G.positionLocks = G.positionLocks || {};
           G.positionLocks[worstPos] = 2;
+        } else if (window.BaseballDex && typeof window.BaseballDex.unlockPlayer === 'function') {
+          window.BaseballDex.unlockPlayer(newInstance);
         }
 
         return {
           success,
           resultText: success
-            ? (typeof window.t==='function'?window.t('gamble.trade.result_win', { oldName: current ? current.name : '(vacío)', newName: newInstance.name, rarity: newInstance.rarity, pos: worstPos }):`¡Buena oferta! ${current ? current.name : '(vacío)'} → ${newInstance.name} (${newInstance.rarity}) en ${worstPos}.`)
+            ? (typeof window.t==='function'?window.t('gamble.trade.result_win', { oldName: current ? current.name : '(vacío)', newName: newInstance.name, rarity: newInstance.rarity, pos: worstPos }):`¡Gran negocio! ${current ? current.name : '(vacío)'} → ${newInstance.name} (${newInstance.rarity}) en ${worstPos}.`)
             : (typeof window.t==='function'?window.t('gamble.trade.result_lose', { newName: newInstance.name, oldName: current ? current.name : '(vacío)', pos: worstPos }):`Mal negocio: ${newInstance.name} (Common) reemplaza a ${current ? current.name : '(vacío)'} en ${worstPos}. Posición bloqueada 2 nodos.`)
         };
       }
@@ -612,47 +661,89 @@
       }
     },
     {
-      id: 'gamble_scout',
-      icon: '🕵️',
-      get title() { return typeof window.t==='function'?window.t('gamble.scout.title'):'Cazatalentos Misterioso'; },
-      get desc() { return typeof window.t==='function'?window.t('gamble.scout.desc'):'Un cazatalentos ofrece una carta Legendary para tu posición más débil. Si ganas, la firmas gratis. Si pierdes, tu mejor jugador se lesiona: -20 en todas sus stats por el resto de la run.'; },
+      id: 'gamble_super_soldier',
+      icon: '⚡',
+      requiresTargetPlayer: true,
+      get title() { return typeof window.t==='function'?window.t('gamble.soldier.title'):'Suero del Súper-Bateador'; },
+      get desc() { return typeof window.t==='function'?window.t('gamble.soldier.desc'):'Inyectas un suero experimental en tu bateador elegido. Si ganas, obtiene +35 Contacto y +35 Poder permanentes. Si pierdes, sufre fatiga crónica: -15 en todas sus estadísticas.'; },
+      chance: 0.50,
+      resolve(G, targetPos) {
+        const target = G.roster[targetPos];
+        if (!target) return { success: false, resultText: (typeof window.t==='function'?window.t('gamble.soldier.no_valid_target'):'Elige un jugador válido.') };
+        const success = Math.random() <= this.chance;
+        if (!target.upgrades) target.upgrades = { con: 0, pwr: 0, eye: 0, k_avd: 0, spd: 0, def: 0, sta: 0 };
+        if (success) {
+          target.upgrades.con = (target.upgrades.con || 0) + 35;
+          target.upgrades.pwr = (target.upgrades.pwr || 0) + 35;
+          return { success, resultText: (typeof window.t==='function'?window.t('gamble.soldier.result_win', { name: target.name }):`¡Éxito absoluto! ${target.name} desata un poder titánico: +35 CON y +35 PWR permanentes.`) };
+        }
+        ['con', 'pwr', 'eye', 'k_avd', 'spd', 'def'].forEach(k => { target.upgrades[k] = (target.upgrades[k] || 0) - 15; });
+        return { success, resultText: (typeof window.t==='function'?window.t('gamble.soldier.result_lose', { name: target.name }):`Rechazo celular: ${target.name} sufre fatiga crónica (-15 a todas sus estadísticas).`) };
+      }
+    },
+    {
+      id: 'gamble_black_market',
+      icon: '🎒',
+      get title() { return typeof window.t==='function'?window.t('gamble.market.title'):'Mercado Negro de Equipamiento'; },
+      get desc() { return typeof window.t==='function'?window.t('gamble.market.desc'):'Negocias con un contrabandista clandestino. Si ganas, obtienes 2 Ítems de Equipamiento Supremos (+35 stats). Si pierdes, te estafan: pierdes $20 de presupuesto y todo el equipo sufre -30 de Stamina.'; },
       chance: 0.50,
       resolve(G) {
-        const pool = (window.PlayersDB && window.PlayersDB.LAHMAN_POOL) ? window.PlayersDB.LAHMAN_POOL : [];
         const success = Math.random() <= this.chance;
-
         if (success) {
-          let worstPos = null, worstOvr = Infinity;
-          Object.keys(G.roster).forEach(pos => {
-            const p = G.roster[pos];
-            const ovr = p ? _gambleOvr(p) : -Infinity;
-            if (ovr < worstOvr) { worstOvr = ovr; worstPos = pos; }
-          });
-          if (!worstPos) return { success, resultText: (typeof window.t==='function'?window.t('gamble.scout.no_target'):'No hay roster titular disponible.') };
-          const pick = _pickGambleCandidate(pool, worstPos, ['Legendary']);
-          if (!pick) return { success, resultText: (typeof window.t==='function'?window.t('gamble.no_player_found', { pos: worstPos }):`No se encontró ningún jugador de ${worstPos} disponible.`) };
-          const newInstance = {
-            ...pick,
-            id: `player_${pick.name.replace(/\s+/g, '')}_${Date.now()}_scout`,
-            stamina: 100,
-            upgrades: { con: 0, pwr: 0, eye: 0, k_avd: 0, spd: 0, def: 0, sta: 0 }
-          };
-          const oldName = G.roster[worstPos] ? G.roster[worstPos].name : '(vacío)';
-          G.roster[worstPos] = newInstance;
-          return { success, resultText: (typeof window.t==='function'?window.t('gamble.scout.result_win', { newName: newInstance.name, oldName, pos: worstPos }):`¡Fichaje legendario! ${newInstance.name} reemplaza a ${oldName} en ${worstPos}.`) };
+          const itemsList = (window.ItemsDatabase && window.ItemsDatabase.length > 0) ? window.ItemsDatabase : [];
+          if (!G.itemsInventory) G.itemsInventory = [];
+          const granted = [];
+          if (itemsList.length > 0) {
+            const shuffled = [...itemsList].sort(() => Math.random() - 0.5);
+            const chosen = shuffled.slice(0, 2);
+            chosen.forEach(it => {
+              const itemObj = it.riskyOption ? { ...it.riskyOption } : { ...it.safeOption };
+              G.itemsInventory.push(itemObj);
+              granted.push(itemObj.name || itemObj.text || 'Ítem Supremo');
+            });
+          }
+          const itemNamesStr = granted.join(' y ');
+          return { success, resultText: (typeof window.t==='function'?window.t('gamble.market.result_win', { items: itemNamesStr }):`¡Contrabando legendario! Recibiste en tu mochila: ${itemNamesStr}.`) };
         }
-
-        let bestPos = null, bestOvr = -Infinity;
+        const lostBudget = Math.min(G.budget || 0, 20);
+        G.budget = Math.max(0, (G.budget || 0) - 20);
         Object.keys(G.roster).forEach(pos => {
           const p = G.roster[pos];
-          if (!p) return;
-          const ovr = _gambleOvr(p);
-          if (ovr > bestOvr) { bestOvr = ovr; bestPos = pos; }
+          if (p) p.stamina = Math.max(10, (p.stamina || 100) - 30);
         });
-        if (!bestPos) return { success, resultText: (typeof window.t==='function'?window.t('gamble.scout.no_injury_target'):'No había jugador titular para lesionar.') };
-        const p = G.roster[bestPos];
-        ['con', 'pwr', 'eye', 'k_avd', 'spd', 'def'].forEach(k => { p.upgrades[k] = (p.upgrades[k] || 0) - 20; });
-        return { success, resultText: (typeof window.t==='function'?window.t('gamble.scout.result_lose', { name: p.name }):`${p.name} se lesiona: -20 en todas sus stats por el resto de la run.`) };
+        return { success, resultText: (typeof window.t==='function'?window.t('gamble.market.result_lose', { budget: lostBudget }):`¡Emboscada en el callejón! Perdiste $${lostBudget} y todos tus jugadores sufren -30 de Stamina por el forcejeo.`) };
+      }
+    },
+    {
+      id: 'gamble_gold_glove',
+      icon: '🛡️',
+      get title() { return typeof window.t==='function'?window.t('gamble.defense.title'):'Guante de Oro Clandestino'; },
+      get desc() { return typeof window.t==='function'?window.t('gamble.defense.desc'):'Apuestas a transformar tu defensiva. Si ganas, TODA tu alineación (los 9 jugadores) recibe +20 DEF permanente. Si pierdes, tus 3 jardineros titulares (LF, CF, RF) sufren desconcentración: -15 DEF permanente.'; },
+      chance: 0.50,
+      resolve(G) {
+        const success = Math.random() <= this.chance;
+        if (success) {
+          Object.keys(G.roster).forEach(pos => {
+            const p = G.roster[pos];
+            if (p) {
+              if (!p.upgrades) p.upgrades = { con: 0, pwr: 0, eye: 0, k_avd: 0, spd: 0, def: 0, sta: 0 };
+              p.upgrades.def = (p.upgrades.def || 0) + 20;
+            }
+          });
+          return { success, resultText: (typeof window.t==='function'?window.t('gamble.defense.result_win'):'¡Muralla infranqueable! Toda tu alineación (los 9 titulares) recibe +20 DEF de por vida.') };
+        }
+        const ofPositions = ['LF', 'CF', 'RF'];
+        const affectedNames = [];
+        ofPositions.forEach(pos => {
+          const p = G.roster[pos];
+          if (p) {
+            if (!p.upgrades) p.upgrades = { con: 0, pwr: 0, eye: 0, k_avd: 0, spd: 0, def: 0, sta: 0 };
+            p.upgrades.def = (p.upgrades.def || 0) - 15;
+            affectedNames.push(`[${pos}] ${p.name}`);
+          }
+        });
+        const namesStr = affectedNames.length ? affectedNames.join(', ') : 'Jardineros';
+        return { success, resultText: (typeof window.t==='function'?window.t('gamble.defense.result_lose', { names: namesStr }):`Fallo defensivo: ${namesStr} sufren -15 DEF permanente.`) };
       }
     }
   ];
