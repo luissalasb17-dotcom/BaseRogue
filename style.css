@@ -3128,9 +3128,11 @@ p {
 .draft-cards,
 .draft-cards-carousel {
   display: flex;
-  gap: 20px;
-  flex-wrap: wrap;
+  gap: 10px;
+  flex-wrap: nowrap;
   justify-content: center;
+  align-items: flex-start;
+  max-width: 100%;
 }
 @media (max-width: 800px) {
   .flex-row { flex-direction: column; }
