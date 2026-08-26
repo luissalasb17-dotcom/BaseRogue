@@ -8368,3 +8368,66 @@ body.on-main-menu .main-container {
   box-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
 }
 
+/* ── VICTORY SCREEN RESPONSIVE (MOBILE OPTIMIZATIONS) ── */
+#screen-victory {
+  padding: 10px 8px !important;
+}
+
+@media (min-width: 640px) {
+  #screen-victory {
+    padding: 16px 20px !important;
+  }
+}
+
+.victory-roster-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  text-align: left;
+}
+
+@media (min-width: 580px) {
+  .victory-roster-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+}
+
+@media (min-width: 820px) {
+  .victory-roster-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+}
+
+.victory-mvp-banner {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+}
+
+@media (min-width: 640px) {
+  .victory-mvp-banner {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+}
+
+.victory-actions-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+@media (min-width: 640px) {
+  .victory-actions-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+}
+
+

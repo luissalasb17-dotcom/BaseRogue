@@ -701,10 +701,12 @@
       const eraShort = eraTab ? eraTab.label : p.era;
       
       let teamFull = p.team;
-      if (p.team === 'HIST') {
-        teamFull = typeof window.t === 'function' ? window.t('dex.franchise_hist') : 'Franquicia Histórica';
+      if (typeof window.getFranchiseDisplayName === 'function') {
+        teamFull = window.getFranchiseDisplayName(p.team);
+      } else if (p.team === 'HIST') {
+        teamFull = typeof window.t === 'function' ? window.t('dex.franchise_hist', 'Historical Franchise') : 'Historical Franchise';
       } else if (p.team === 'NLB') {
-        teamFull = typeof window.t === 'function' ? window.t('dex.franchise_nlb') : 'Ligas Negras';
+        teamFull = typeof window.t === 'function' ? window.t('dex.franchise_nlb', 'Negro Leagues') : 'Negro Leagues';
       } else if (window.PlayersDB && window.PlayersDB.FranchiseNames) {
         teamFull = window.PlayersDB.FranchiseNames[p.team] || p.team;
       }

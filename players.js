@@ -63,8 +63,8 @@
   };
 
   const FranchiseNames = {
-    NLB: "Ligas Negras",
-    HIST: "Franquicia Histórica",
+    get NLB() { return (typeof window.t === 'function' ? window.t('dex.franchise_nlb', 'Negro Leagues') : 'Negro Leagues'); },
+    get HIST() { return (typeof window.t === 'function' ? window.t('dex.franchise_hist', 'Historical Franchise') : 'Historical Franchise'); },
     NYY: "New York Yankees",
     NYM: "New York Mets",
     LAD: "Los Angeles Dodgers",

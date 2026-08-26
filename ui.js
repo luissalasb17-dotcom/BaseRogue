@@ -3178,6 +3178,21 @@ function initGameModeSelector() {
     return era.toUpperCase();
   }
 
+  function getFranchiseDisplayName(teamCode) {
+    if (!teamCode) return '';
+    if (teamCode === 'HIST') {
+      return (typeof t === 'function' ? t('dex.franchise_hist', 'Historical Franchise') : 'Historical Franchise');
+    }
+    if (teamCode === 'NLB') {
+      return (typeof t === 'function' ? t('dex.franchise_nlb', 'Negro Leagues') : 'Negro Leagues');
+    }
+    if (window.PlayersDB && window.PlayersDB.FranchiseNames && window.PlayersDB.FranchiseNames[teamCode]) {
+      return window.PlayersDB.FranchiseNames[teamCode];
+    }
+    return teamCode;
+  }
+  window.getFranchiseDisplayName = getFranchiseDisplayName;
+
   // Create HTML structure for player cards based on Era
   function createCardHTML(player, slotName = null) {
     if (!player) {
@@ -3420,7 +3435,7 @@ function initGameModeSelector() {
         })()}
         <div class="card-traits-box">
           <span class="card-trait-badge trait-era" title="${player.era}">${getShortEraName(player.era)}</span>
-          ${teamFranchise && teamFranchise !== 'ROOK' ? `<span class="card-trait-badge trait-team" title="${(window.PlayersDB && window.PlayersDB.FranchiseNames && window.PlayersDB.FranchiseNames[teamFranchise]) || teamFranchise}">${teamFranchise}</span>` : ''}
+          ${teamFranchise && teamFranchise !== 'ROOK' ? `<span class="card-trait-badge trait-team" title="${getFranchiseDisplayName(teamFranchise)}">${teamFranchise}</span>` : ''}
         </div>
         ${player.sec_pos ? `<div class="card-sec-pos-line" title="${(typeof window.t==="function"?window.t("ui.sec_pos_tooltip")+": "+player.sec_pos:"Posición Secundaria: "+player.sec_pos)}">SEC: ${player.sec_pos}</div>` : ''}
         <div class="card-stats">
@@ -4191,10 +4206,7 @@ function initGameModeSelector() {
         `;
       };
 
-      let teamFull = player.team !== 'ROOK' ? player.team : '—';
-      if (window.PlayersDB && window.PlayersDB.FranchiseNames && window.PlayersDB.FranchiseNames[player.team]) {
-        teamFull = window.PlayersDB.FranchiseNames[player.team];
-      }
+      let teamFull = player.team !== 'ROOK' ? getFranchiseDisplayName(player.team) : '—';
 
       overlay.querySelector('#popup-card-content').innerHTML = `
         <div class="popup-card-header" style="border-bottom:none;padding-bottom:0;">
@@ -4333,7 +4345,7 @@ function initGameModeSelector() {
             }
           });
         }
-        const teamFullName = (window.PlayersDB && window.PlayersDB.FranchiseNames && window.PlayersDB.FranchiseNames[player.team]) || player.team;
+        const teamFullName = getFranchiseDisplayName(player.team);
         const teamTier = teamCount >= 4 ? 3 : (teamCount === 3 ? 2 : (teamCount === 2 ? 1 : 0));
         const teamTierName = teamTier === 3 
           ? t('card_popup.dynasty_tier', 'Dinastía (+8)') 
@@ -5344,7 +5356,7 @@ function initGameModeSelector() {
     // Process Franchises
     Object.keys(teamCounts).forEach(team => {
       const count = teamCounts[team];
-      const teamName = (window.PlayersDB && window.PlayersDB.FranchiseNames && window.PlayersDB.FranchiseNames[team]) ? window.PlayersDB.FranchiseNames[team] : team;
+      const teamName = getFranchiseDisplayName(team);
       const fTier = count >= 4 ? 3 : count >= 3 ? 2 : count >= 2 ? 1 : 0;
       const fColor = "#38bdf8";
       const fTiers = [
@@ -6830,10 +6842,7 @@ function initGameModeSelector() {
 
     if (isStory) {
       eraName = getEraNameForYear(enemy.year);
-      let teamFull = enemy.teamID || enemy.name;
-      if (window.PlayersDB && window.PlayersDB.FranchiseNames && window.PlayersDB.FranchiseNames[enemy.teamID]) {
-        teamFull = window.PlayersDB.FranchiseNames[enemy.teamID];
-      }
+      let teamFull = getFranchiseDisplayName(enemy.teamID || enemy.name);
       teamName = enemy.isBoss ? enemy.name : `${teamFull} (${enemy.year})`;
 
       const currentZoneIdx = (typeof window.Game.getZoneForStage === 'function') ? window.Game.getZoneForStage(window.Game.currentStageIndex) : 0;
@@ -10670,14 +10679,14 @@ function initGameModeSelector() {
       ` : '';
 
       const mvpBannerHTML = bestPlayer ? `
-        <div id="victory-mvp-card-btn" style="background: linear-gradient(135deg, rgba(255,215,0,0.22) 0%, rgba(245,158,11,0.3) 100%); border: 2px solid #ffd700; border-radius: 10px; padding: 12px 18px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; gap: 16px; box-shadow: 0 0 20px rgba(255,215,0,0.3); cursor: pointer; transition: transform 0.15s, box-shadow 0.15s;">
+        <div id="victory-mvp-card-btn" class="victory-mvp-banner" style="background: linear-gradient(135deg, rgba(255,215,0,0.22) 0%, rgba(245,158,11,0.3) 100%); border: 2px solid #ffd700; border-radius: 10px; padding: 12px 18px; margin-bottom: 12px; box-shadow: 0 0 20px rgba(255,215,0,0.3); cursor: pointer; transition: transform 0.15s, box-shadow 0.15s;">
           <div style="display:flex; align-items:center; gap:12px;">
             <span style="font-size:28px; filter:drop-shadow(0 0 10px #ffd700);">👑</span>
             <div style="text-align:left;">
               <div style="font-family:'Press Start 2P',monospace; font-size:9px; color:#ffd700; margin-bottom:4px;">
                 ${typeof t === 'function' ? t('victory.run_mvp_badge', '👑 MVP DE LA RUN') : '👑 MVP DE LA RUN'}
               </div>
-              <div style="font-size:15px; font-weight:bold; color:#fff; font-family:sans-serif; display:flex; align-items:center; gap:10px;">
+              <div style="font-size:14px; font-weight:bold; color:#fff; font-family:sans-serif; display:flex; align-items:center; gap:10px;">
                 <span>[${bestPlayer.slot}] ${bestPlayer.player.name}</span>
                 <span style="background:${bestPlayer.ovrGrade.color}; color:#000; font-family:'Press Start 2P',monospace; font-size:8.5px; padding:2.5px 6px; border-radius:4px; font-weight:bold;">${bestPlayer.ovrGrade.text} ${bestPlayer.ovr}</span>
               </div>
@@ -10690,7 +10699,7 @@ function initGameModeSelector() {
               </div>
             </div>
           </div>
-          <div style="font-family:'Press Start 2P',monospace; font-size:9.5px; text-align:right; display:flex; gap:14px; align-items:center;">
+          <div style="font-family:'Press Start 2P',monospace; font-size:9.5px; text-align:right; display:flex; gap:12px; align-items:center; justify-content:space-between;">
             <span style="color:#00ff66; font-weight:bold;">OPS ${bestPlayer.ops}</span>
             <span style="color:#ef4444;">${bestPlayer.hr} HR · ${bestPlayer.rbi} RBI</span>
             <span style="color:#ff3366; font-weight:bold;">💥 ${bestPlayer.dmg} DMG</span>
@@ -10703,7 +10712,7 @@ function initGameModeSelector() {
           ${typeof t === 'function' ? t('victory.team_showcase_title', '👑 ROSTER DE CAMPEONES') : '👑 ROSTER DE CAMPEONES'}
         </div>
         ${mvpBannerHTML}
-        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:12px; text-align:left;">
+        <div class="victory-roster-grid">
           ${playersData.map((item, pIdx) => {
             const isMVP = bestPlayer && bestPlayer.player.name === item.player.name;
             const borderCol = isMVP ? '#ffd700' : `${item.rarityColor}99`;

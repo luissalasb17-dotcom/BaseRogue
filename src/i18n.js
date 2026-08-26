@@ -3901,40 +3901,61 @@
     currentLang = "es";
   }
 
+  function translateElement(el) {
+    if (!el || !el.getAttribute) return;
+    const key = el.getAttribute("data-i18n");
+    if (key) {
+      const text = t(key);
+      if (text) el.textContent = text;
+    }
+    const keyHtml = el.getAttribute("data-i18n-html");
+    if (keyHtml) {
+      const text = t(keyHtml);
+      if (text) el.innerHTML = text;
+    }
+    const keyPh = el.getAttribute("data-i18n-placeholder");
+    if (keyPh) {
+      const text = t(keyPh);
+      if (text) el.setAttribute("placeholder", text);
+    }
+    const keyTitle = el.getAttribute("data-i18n-title");
+    if (keyTitle) {
+      const text = t(keyTitle);
+      if (text) el.setAttribute("title", text);
+    }
+  }
+
   function translateDOM() {
-    document.querySelectorAll("[data-i18n]").forEach(el => {
-      const key = el.getAttribute("data-i18n");
-      if (key) {
-        const text = t(key);
-        if (text) el.textContent = text;
-      }
-    });
-    document.querySelectorAll("[data-i18n-html]").forEach(el => {
-      const key = el.getAttribute("data-i18n-html");
-      if (key) {
-        const text = t(key);
-        if (text) el.innerHTML = text;
-      }
-    });
-    document.querySelectorAll("[data-i18n-placeholder]").forEach(el => {
-      const key = el.getAttribute("data-i18n-placeholder");
-      if (key) {
-        const text = t(key);
-        if (text) el.setAttribute("placeholder", text);
-      }
-    });
-    document.querySelectorAll("[data-i18n-title]").forEach(el => {
-      const key = el.getAttribute("data-i18n-title");
-      if (key) {
-        const text = t(key);
-        if (text) el.setAttribute("title", text);
-      }
-    });
+    document.querySelectorAll("[data-i18n], [data-i18n-html], [data-i18n-placeholder], [data-i18n-title]").forEach(translateElement);
 
     const langToggleBtn = document.getElementById("lang-toggle-btn");
     if (langToggleBtn) {
       langToggleBtn.innerHTML = `<i class="fa-solid fa-globe"></i> ${currentLang.toUpperCase()}`;
     }
+  }
+
+  // Real-time MutationObserver to translate streaming DOM nodes before first paint (eliminates flash of wrong language)
+  if (typeof MutationObserver !== "undefined" && typeof document !== "undefined") {
+    try {
+      const observer = new MutationObserver(mutations => {
+        for (let m = 0; m < mutations.length; m++) {
+          const added = mutations[m].addedNodes;
+          for (let n = 0; n < added.length; n++) {
+            const node = added[n];
+            if (node.nodeType === 1) {
+              translateElement(node);
+              const children = node.querySelectorAll("[data-i18n], [data-i18n-html], [data-i18n-placeholder], [data-i18n-title]");
+              for (let i = 0; i < children.length; i++) {
+                translateElement(children[i]);
+              }
+            }
+          }
+        }
+      });
+      if (document.documentElement) {
+        observer.observe(document.documentElement, { childList: true, subtree: true });
+      }
+    } catch (e) {}
   }
 
   function setLanguage(lang) {
