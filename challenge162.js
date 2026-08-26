@@ -764,6 +764,15 @@
       const desc = document.getElementById('challenge162-card-desc') || card.querySelector('.mode-desc');
       const unlocked = this.isModeUnlocked();
 
+      const titleEl = card.querySelector('.mode-title');
+      if (titleEl && typeof window.t === 'function') {
+        titleEl.textContent = window.t('mode_select.challenge162_title', '162-0 CHALLENGE');
+      }
+      const subtitleEl = card.querySelector('.mode-subtitle');
+      if (subtitleEl && typeof window.t === 'function') {
+        subtitleEl.textContent = window.t('mode_select.challenge162_subtitle', 'TEMPORADA PERFECTA');
+      }
+
       if (unlocked) {
         card.classList.remove('is-locked');
         card.removeAttribute('title');

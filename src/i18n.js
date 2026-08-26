@@ -3928,7 +3928,7 @@
   function translateDOM() {
     document.querySelectorAll("[data-i18n], [data-i18n-html], [data-i18n-placeholder], [data-i18n-title]").forEach(translateElement);
 
-    const langToggleBtn = document.getElementById("lang-toggle-btn");
+    const langToggleBtn = document.getElementById("btn-lang-toggle") || document.getElementById("lang-toggle-btn");
     if (langToggleBtn) {
       langToggleBtn.innerHTML = `<i class="fa-solid fa-globe"></i> ${currentLang.toUpperCase()}`;
     }
@@ -3968,8 +3968,21 @@
     if (typeof window.renderActiveRoster === "function") window.renderActiveRoster();
     if (typeof window.renderSynergiesAndItems === "function") window.renderSynergiesAndItems();
     if (typeof window.updateHUD === "function") window.updateHUD();
-    if (typeof window.Challenge162 !== "undefined" && typeof window.Challenge162.render === "function") {
-      window.Challenge162.render();
+    if (window.Challenge162 && typeof window.Challenge162.updateModeSelectCard === "function") {
+      window.Challenge162.updateModeSelectCard();
+      const s162 = document.getElementById('screen-challenge-hub');
+      const sSeason = document.getElementById('screen-challenge-season');
+      const sPlayoffs = document.getElementById('screen-challenge-playoffs');
+      const sResults = document.getElementById('screen-challenge-results');
+      if ((s162 && !s162.classList.contains('hidden')) ||
+          (sSeason && !sSeason.classList.contains('hidden')) ||
+          (sPlayoffs && !sPlayoffs.classList.contains('hidden')) ||
+          (sResults && !sResults.classList.contains('hidden'))) {
+        window.Challenge162.render();
+      }
+    }
+    if (window.UI && typeof window.UI.updateStaticTranslations === "function") {
+      window.UI.updateStaticTranslations();
     }
   }
 

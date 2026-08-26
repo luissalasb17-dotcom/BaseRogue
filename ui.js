@@ -3619,6 +3619,9 @@ function initGameModeSelector() {
 
       const guideCaptain = document.querySelector('#ratings-info-dropdown [data-i18n-html="ratings_guide.captain"]');
       if (guideCaptain && dict.ratings_captain) guideCaptain.innerHTML = dict.ratings_captain;
+
+      const btnLangEl = document.getElementById('btn-lang-toggle');
+      if (btnLangEl) btnLangEl.innerHTML = `<i class="fa-solid fa-globe"></i> ${lang.toUpperCase()}`;
     }
 
     if (!window.UI) window.UI = {};
