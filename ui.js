@@ -836,19 +836,21 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
         const rBg    = RARITY_BG[player.rarity]    || RARITY_BG.Common;
         const ovr    = getPlayerOvr(player);
         const cardHTML = createCardHTML(player);
+        const impactBoxHTML = typeof getSynergyImpactBoxHTML === 'function' ? getSynergyImpactBoxHTML(player) : '';
 
         const wrapper = document.createElement('div');
-        wrapper.className = 'draft-card-wrapper w-[210px] md:w-[175px] max-w-[210px] md:max-w-[175px] cursor-pointer rounded-xl border-2 transition-transform duration-150 flex flex-col items-center gap-1.5 p-2 box-border shrink-0 snap-center';
+        wrapper.className = 'draft-card-wrapper w-[220px] md:w-[195px] max-w-[220px] md:max-w-[195px] cursor-pointer rounded-xl border-2 transition-transform duration-150 flex flex-col items-center gap-1.5 p-2 box-border shrink-0 snap-center';
         wrapper.style.borderColor = rColor;
         wrapper.style.background = rBg;
 
         wrapper.innerHTML = `
           <div style="pointer-events:none;">${cardHTML}</div>
+          ${impactBoxHTML}
           <div class="draft-card-caption" style="text-align:center;width:100%;">
             <div style="font-size:10px;color:${rColor};font-weight:bold;">${player.rarity}</div>
-            <div style="font-size:9.5px;color:#9ca3af;text-align:center;margin-top:2px;">${player.pos} • OVR ${ovr}</div>
+            <div style="font-size:9px;color:#9ca3af;text-align:center;margin-top:1px;">${player.pos} • OVR ${ovr}</div>
           </div>
-          <button class="btn" style="width:100%;padding:8px;font-size:10px;background:${rColor};color:#000;border:none;">${t('draft.select_btn')}</button>
+          <button class="btn" style="width:100%;padding:7px;font-size:9.5px;background:${rColor};color:#000;border:none;font-weight:bold;">${t('draft.select_btn')}</button>
         `;
 
         wrapper.addEventListener('mouseenter', () => {
@@ -5617,54 +5619,120 @@ function initGameModeSelector() {
     overlay.querySelector('#btn-ok-run-log-modal').addEventListener('click', closeLog);
   }
 
-  function getDraftSynergyPrediction(player) {
+  function getSynergyImpactBoxHTML(player) {
+    if (!player) return '';
+    const currentRoster = (window.Game && window.Game.draftRoster && Object.keys(window.Game.draftRoster).length > 0)
+      ? window.Game.draftRoster
+      : ((window.Game && window.Game.roster) || {});
+
     const eraCounts = {};
     const teamCounts = {};
-    Object.values(window.Game.roster).forEach(p => {
-      if (p && !p.isReplacement) {
-        if (p.era) eraCounts[p.era] = (eraCounts[p.era] || 0) + 1;
-        if (p.team && p.team !== 'ROOK') teamCounts[p.team] = (teamCounts[p.team] || 0) + 1;
+    Object.values(currentRoster).forEach(p => {
+      if (p && !p.isReplacement && !p.synergyBanned) {
+        if (p.era && p.era !== 'None') {
+          const w = p.synergyWeight || (p.isInterEra ? 2 : 1);
+          eraCounts[p.era] = (eraCounts[p.era] || 0) + w;
+        }
+        if (p.team && p.team !== 'ROOK') {
+          teamCounts[p.team] = (teamCounts[p.team] || 0) + 1;
+        }
       }
     });
 
-    const currentEraCount = eraCounts[player.era] || 0;
-    const newEraCount = currentEraCount + 1;
-    const currentTeamCount = teamCounts[player.team] || 0;
+    const weight = player.synergyWeight || (player.isInterEra ? 2 : 1);
+    const curEraCount = eraCounts[player.era] || 0;
+    const newEraCount = curEraCount + weight;
 
-    let predictionText = "";
+    const curEraTier = (window.Game && typeof window.Game.getEraTier === 'function')
+      ? window.Game.getEraTier(player.era, curEraCount)
+      : (curEraCount >= 8 ? 4 : curEraCount >= 6 ? 3 : curEraCount >= 4 ? 2 : curEraCount >= 2 ? 1 : 0);
 
-    // Era synergy impact
-    const eraShort = getShortEraName(player.era);
-    const currentTier = window.Game.getEraTier(player.era, currentEraCount);
-    const newTier = window.Game.getEraTier(player.era, newEraCount);
+    const newEraTier = (window.Game && typeof window.Game.getEraTier === 'function')
+      ? window.Game.getEraTier(player.era, newEraCount)
+      : (newEraCount >= 8 ? 4 : newEraCount >= 6 ? 3 : newEraCount >= 4 ? 2 : newEraCount >= 2 ? 1 : 0);
 
-    if (newTier > currentTier) {
-      predictionText += (typeof t === 'function' ? t('sign.synergy_active', { era: eraShort, tier: newTier, defaultValue: `Signing activates <strong>${eraShort} (T${newTier})</strong> Synergy!` }) : `Signing activates <strong>${eraShort} (T${newTier})</strong> Synergy!`) + '<br>';
-    } else {
-      const nextTarget = newTier === 0 ? 2 : newTier === 1 ? (window.Game.hasTrait('era_accelerated') ? 2 : 4) : newTier === 2 ? 6 : 8;
-      if (newTier < 4) {
-        predictionText += (typeof t === 'function' ? t('sign.era_progress', { era: eraShort, count: newEraCount, target: nextTarget, tier: newTier, defaultValue: `Era ${eraShort}: <strong>${newEraCount}/${nextTarget}</strong> (T${newTier})` }) : `Era ${eraShort}: <strong>${newEraCount}/${nextTarget}</strong> (T${newTier})`) + '<br>';
+    const curTeamCount = (player.team && player.team !== 'ROOK') ? (teamCounts[player.team] || 0) : 0;
+    const newTeamCount = curTeamCount + 1;
+
+    let linesHTML = '';
+
+    // 1. ERA SYNERGY
+    if (player.era && player.era !== 'None') {
+      const eraShort = (typeof getShortEraName === 'function') ? getShortEraName(player.era) : player.era;
+      const isAccelerated = window.Game && typeof window.Game.hasTrait === 'function' && window.Game.hasTrait('era_accelerated');
+      const t2Target = isAccelerated ? 2 : 4;
+      const nextTarget = newEraTier === 0 ? 2 : newEraTier === 1 ? t2Target : newEraTier === 2 ? 6 : 8;
+
+      if (newEraTier > curEraTier) {
+        linesHTML += `
+          <div style="background: rgba(255, 215, 0, 0.18); border: 1px solid #ffd700; border-radius: 5px; padding: 4px 6px; margin-bottom: 4px; box-shadow: 0 0 10px rgba(255,215,0,0.25);">
+            <div style="font-size: 7px; color: #ffd700; font-family: 'Press Start 2P', monospace; font-weight: bold; line-height: 1.3;">
+              ⚡ ${typeof t === 'function' ? t('synergy.activates_tier', { era: eraShort, tier: newEraTier }) : `¡ACTIVA TIER ${newEraTier} (${eraShort})!`}
+            </div>
+          </div>
+        `;
       } else {
-        predictionText += (typeof t === 'function' ? t('sign.era_max', { era: eraShort, count: newEraCount, defaultValue: `Era ${eraShort}: ${newEraCount} players (T4 MAX)` }) : `Era ${eraShort}: ${newEraCount} players (T4 MAX)`) + '<br>';
+        const isExisting = curEraCount > 0;
+        const pillCol = isExisting ? '#10b981' : '#94a3b8';
+        linesHTML += `
+          <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.08); border-radius: 4px; padding: 3px 6px; margin-bottom: 4px; font-family: 'Press Start 2P', monospace; font-size: 6.5px;">
+            <span style="color: #e2e8f0;">⏳ ${eraShort}</span>
+            <span style="color: ${pillCol}; font-weight: bold;">${newEraCount}/${nextTarget} (T${newEraTier})</span>
+          </div>
+        `;
       }
     }
 
-    // Team synergy impact
+    // 2. TEAM CHEMISTRY
     if (player.team && player.team !== 'ROOK') {
-      const teamShort = player.team;
-      if (currentTeamCount === 1) {
-        predictionText += (typeof t === 'function' ? t('sign.chemistry_active', { team: teamShort, defaultValue: `Signing activates <strong>${teamShort}</strong> Chemistry (+4 stats)` }) : `Signing activates <strong>${teamShort}</strong> Chemistry (+4 stats)`);
-      } else if (currentTeamCount === 2) {
-        predictionText += (typeof t === 'function' ? t('sign.brotherhood_active', { team: teamShort, defaultValue: `Signing activates <strong>${teamShort}</strong> Brotherhood (+6 stats)` }) : `Signing activates <strong>${teamShort}</strong> Brotherhood (+6 stats)`);
-      } else if (currentTeamCount === 3) {
-        predictionText += (typeof t === 'function' ? t('sign.dynasty_active', { team: teamShort, defaultValue: `Signing activates <strong>${teamShort}</strong> Dynasty (+8 stats)` }) : `Signing activates <strong>${teamShort}</strong> Dynasty (+8 stats)`);
+      if (newTeamCount === 2) {
+        linesHTML += `
+          <div style="background: rgba(56, 189, 248, 0.18); border: 1px solid #38bdf8; border-radius: 5px; padding: 4px 6px; margin-bottom: 4px; box-shadow: 0 0 10px rgba(56,189,248,0.25);">
+            <div style="font-size: 7px; color: #38bdf8; font-family: 'Press Start 2P', monospace; font-weight: bold; line-height: 1.3;">
+              ⚾ ${typeof t === 'function' ? t('synergy.activates_chemistry', { team: player.team }) : `¡ACTIVA QUÍMICA ${player.team} (+4)!`}
+            </div>
+          </div>
+        `;
+      } else if (newTeamCount >= 3) {
+        const pts = newTeamCount * 2;
+        linesHTML += `
+          <div style="background: rgba(168, 85, 247, 0.18); border: 1px solid #a855f7; border-radius: 5px; padding: 4px 6px; margin-bottom: 4px; box-shadow: 0 0 10px rgba(168,85,247,0.25);">
+            <div style="font-size: 7px; color: #c084fc; font-family: 'Press Start 2P', monospace; font-weight: bold; line-height: 1.3;">
+              👑 ${typeof t === 'function' ? t('synergy.activates_dynasty', { team: player.team, pts }) : `¡QUÍMICA DINASTÍA ${player.team} (+${pts})!`}
+            </div>
+          </div>
+        `;
       } else {
-        const next = Math.min(4, currentTeamCount + 1);
-        predictionText += (typeof t === 'function' ? t('sign.franchise_progress', { team: teamShort, count: currentTeamCount, next: next, defaultValue: `Franchise ${teamShort}: ${currentTeamCount} ➡️ <strong>${next}/4</strong>` }) : `Franchise ${teamShort}: ${currentTeamCount} ➡️ <strong>${next}/4</strong>`);
+        linesHTML += `
+          <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.08); border-radius: 4px; padding: 3px 6px; font-family: 'Press Start 2P', monospace; font-size: 6.5px;">
+            <span style="color: #94a3b8;">⚾ ${player.team}</span>
+            <span style="color: #64748b;">${newTeamCount}/2 (${typeof t === 'function' ? t('synergy.chem_req', 'Química') : 'Química'})</span>
+          </div>
+        `;
       }
     }
 
-    return predictionText;
+    // 3. INTER-ERA BONUS
+    if (player.isInterEra) {
+      linesHTML += `
+        <div style="margin-top: 3px; font-size: 6px; color: #fbbf24; font-family: 'Press Start 2P', monospace; text-align: center;">
+          ⏳ ${typeof t === 'function' ? t('badge.interera_label', 'FUERA DE ÉPOCA (2x)') : 'FUERA DE ÉPOCA (2x)'}
+        </div>
+      `;
+    }
+
+    return `
+      <div class="synergy-impact-box" style="width: 100%; margin: 4px 0; padding: 5px 6px; background: rgba(10, 15, 30, 0.85); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 6px; text-align: left; box-sizing: border-box;">
+        <div style="font-size: 6px; color: #ffd700; font-family: 'Press Start 2P', monospace; margin-bottom: 3px; letter-spacing: 0.5px;">
+          ⚡ ${typeof t === 'function' ? t('synergy.impact_header', 'IMPACTO EN EL EQUIPO') : 'IMPACTO EN EL EQUIPO'}
+        </div>
+        ${linesHTML}
+      </div>
+    `;
+  }
+
+  function getDraftSynergyPrediction(player) {
+    return getSynergyImpactBoxHTML(player);
   }
 
   function getPlayerSignCost(player) {
@@ -10565,24 +10633,89 @@ function initGameModeSelector() {
         return { slot, index: idx + 1, player: p, s, ab, h, hr, rbi, bb, dmg, avg, ops, ovr, ovrGrade, rarity, rarityColor, rarityBg, era, team };
       }).filter(Boolean);
 
+      const activeSynergies = (window.Game && typeof window.Game.calculateActiveSynergies === 'function')
+        ? window.Game.calculateActiveSynergies(window.Game.roster)
+        : [];
+      
+      const teamChemList = [];
+      const teamCounts = {};
+      Object.values(window.Game.roster).forEach(p => {
+        if (p && p.team && p.team !== 'ROOK') {
+          teamCounts[p.team] = (teamCounts[p.team] || 0) + 1;
+        }
+      });
+      Object.keys(teamCounts).forEach(team => {
+        if (teamCounts[team] >= 2) {
+          teamChemList.push({ team, count: teamCounts[team], boost: teamCounts[team] * 2 });
+        }
+      });
+
+      const synergiesBadgesHTML = (activeSynergies.length > 0 || teamChemList.length > 0) ? `
+        <div style="background: rgba(0,0,0,0.4); border: 1px solid rgba(255,215,0,0.25); border-radius: 6px; padding: 4px 8px; margin-top: 6px; display: flex; align-items: center; justify-content: center; gap: 6px; flex-wrap: wrap;">
+          <span style="font-size: 6.5px; color: #ffd700; font-family: 'Press Start 2P', monospace; font-weight: bold;">
+            ${typeof t === 'function' ? t('victory.active_synergies_title', '🏆 SINERGIAS ACTIVAS') : '🏆 SINERGIAS ACTIVAS'}:
+          </span>
+          ${activeSynergies.map(syn => `
+            <span style="background: rgba(16,185,129,0.18); border: 1px solid #10b981; color: #6ee7b7; font-family: 'Press Start 2P', monospace; font-size: 6px; padding: 1.5px 4px; border-radius: 3px;">
+              ${syn.era} T${syn.level}
+            </span>
+          `).join('')}
+          ${teamChemList.map(chem => `
+            <span style="background: rgba(56,189,248,0.18); border: 1px solid #38bdf8; color: #7dd3fc; font-family: 'Press Start 2P', monospace; font-size: 6px; padding: 1.5px 4px; border-radius: 3px;">
+              ${chem.team} Chem (${chem.count}/4)
+            </span>
+          `).join('')}
+        </div>
+      ` : '';
+
+      const mvpItemName = bestPlayer && bestPlayer.player.equipped_item ? `${bestPlayer.player.equipped_item.icon || '🎒'} ${bestPlayer.player.equipped_item.name}` : (typeof t === 'function' ? t('victory.no_item', 'NINGUNO') : 'NINGUNO');
+
       const mvpBannerHTML = bestPlayer ? `
-        <div style="background: linear-gradient(135deg, rgba(255,215,0,0.18) 0%, rgba(245,158,11,0.25) 100%); border: 1.5px solid #ffd700; border-radius: 8px; padding: 6px 10px; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between; gap: 8px; box-shadow: 0 0 15px rgba(255,215,0,0.25);">
-          <div style="display:flex; align-items:center; gap:8px;">
-            <span style="font-size:20px; filter:drop-shadow(0 0 6px #ffd700);">👑</span>
-            <div style="text-align:left;">
-              <div style="font-family:'Press Start 2P',monospace; font-size:7.5px; color:#ffd700; margin-bottom:2px;">
-                ${typeof t === 'function' ? t('victory.run_mvp_badge', '👑 MVP DE LA RUN') : '👑 MVP DE LA RUN'}
-              </div>
-              <div style="font-size:11.5px; font-weight:bold; color:#fff; font-family:sans-serif; display:flex; align-items:center; gap:6px;">
-                <span>[${bestPlayer.slot}] ${bestPlayer.player.name}</span>
-                <span style="background:${bestPlayer.ovrGrade.color}; color:#000; font-family:'Press Start 2P',monospace; font-size:7px; padding:1px 4px; border-radius:3px; font-weight:bold;">${bestPlayer.ovrGrade.text} ${bestPlayer.ovr}</span>
+        <div style="background: linear-gradient(135deg, rgba(255,215,0,0.18) 0%, rgba(245,158,11,0.25) 100%); border: 1.5px solid #ffd700; border-radius: 8px; padding: 6px 10px; margin-bottom: 6px; box-shadow: 0 0 15px rgba(255,215,0,0.25);">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span style="font-size:20px; filter:drop-shadow(0 0 6px #ffd700);">👑</span>
+              <div style="text-align:left;">
+                <div style="font-family:'Press Start 2P',monospace; font-size:7px; color:#ffd700; margin-bottom:2px;">
+                  ${typeof t === 'function' ? t('victory.run_mvp_badge', '👑 MVP DE LA RUN') : '👑 MVP DE LA RUN'}
+                </div>
+                <div style="font-size:11.5px; font-weight:bold; color:#fff; font-family:sans-serif; display:flex; align-items:center; gap:6px;">
+                  <span>[${bestPlayer.slot}] ${bestPlayer.player.name}</span>
+                  <span style="background:${bestPlayer.ovrGrade.color}; color:#000; font-family:'Press Start 2P',monospace; font-size:6.5px; padding:1px 3px; border-radius:2px; font-weight:bold;">${bestPlayer.ovrGrade.text} ${bestPlayer.ovr}</span>
+                </div>
               </div>
             </div>
+            <div style="display:flex; gap:4px; font-family:'Press Start 2P',monospace; font-size:6px;">
+              <span style="background:rgba(245,158,11,0.2); border:1px solid #f59e0b; color:#fbbf24; padding:2px 4px; border-radius:3px;">${bestPlayer.era}</span>
+              <span style="background:rgba(56,189,248,0.2); border:1px solid #38bdf8; color:#7dd3fc; padding:2px 4px; border-radius:3px;">${bestPlayer.team}</span>
+              <span style="background:${bestPlayer.rarityColor}33; border:1px solid ${bestPlayer.rarityColor}; color:#fff; padding:2px 4px; border-radius:3px;">${bestPlayer.rarity.toUpperCase()}</span>
+            </div>
           </div>
-          <div style="font-family:'Press Start 2P',monospace; font-size:7.5px; text-align:right; display:flex; gap:8px; align-items:center;">
-            <span style="color:#00ff66; font-weight:bold;">OPS ${bestPlayer.ops}</span>
-            <span style="color:#ef4444;">${bestPlayer.hr} HR · ${bestPlayer.rbi} RBI</span>
-            <span style="color:#ff3366; font-weight:bold;">💥 ${bestPlayer.dmg} DMG</span>
+          <div style="display:grid; grid-template-columns:repeat(6, 1fr); gap:4px; font-family:'Press Start 2P',monospace; font-size:6px; text-align:center;">
+            <div style="background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.08); border-radius:4px; padding:3px 2px;">
+              <div style="color:#94a3b8; font-size:5px; margin-bottom:2px;">${typeof t === 'function' ? t('victory.stat_ops', 'OPS') : 'OPS'}</div>
+              <div style="color:#22c55e; font-weight:bold; font-size:7.5px;">${bestPlayer.ops}</div>
+            </div>
+            <div style="background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.08); border-radius:4px; padding:3px 2px;">
+              <div style="color:#94a3b8; font-size:5px; margin-bottom:2px;">${typeof t === 'function' ? t('victory.stat_damage', 'DAÑO') : 'DAÑO'}</div>
+              <div style="color:#ff3366; font-weight:bold; font-size:7.5px;">${bestPlayer.dmg}</div>
+            </div>
+            <div style="background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.08); border-radius:4px; padding:3px 2px;">
+              <div style="color:#94a3b8; font-size:5px; margin-bottom:2px;">${typeof t === 'function' ? t('victory.stat_hr', 'HR') : 'HR'}</div>
+              <div style="color:#ef4444; font-weight:bold; font-size:7.5px;">${bestPlayer.hr}</div>
+            </div>
+            <div style="background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.08); border-radius:4px; padding:3px 2px;">
+              <div style="color:#94a3b8; font-size:5px; margin-bottom:2px;">${typeof t === 'function' ? t('victory.stat_rbi', 'RBI') : 'RBI'}</div>
+              <div style="color:#f59e0b; font-weight:bold; font-size:7.5px;">${bestPlayer.rbi}</div>
+            </div>
+            <div style="background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.08); border-radius:4px; padding:3px 2px;">
+              <div style="color:#94a3b8; font-size:5px; margin-bottom:2px;">${typeof t === 'function' ? t('victory.stat_avg', 'AVG') : 'AVG'}</div>
+              <div style="color:#ffd700; font-weight:bold; font-size:7.5px;">${bestPlayer.avg}</div>
+            </div>
+            <div style="background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.08); border-radius:4px; padding:3px 2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${mvpItemName}">
+              <div style="color:#94a3b8; font-size:5px; margin-bottom:2px;">${typeof t === 'function' ? t('victory.stat_item', 'ITEM') : 'ITEM'}</div>
+              <div style="color:#38bdf8; font-weight:bold; font-size:6px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${mvpItemName}</div>
+            </div>
           </div>
         </div>
       ` : '';
@@ -10598,24 +10731,26 @@ function initGameModeSelector() {
             const borderCol = isMVP ? '#ffd700' : `${item.rarityColor}88`;
             const glow = isMVP ? '0 0 12px rgba(255,215,0,0.35)' : `0 0 8px ${item.rarityColor}22`;
             const bgCol = isMVP ? 'linear-gradient(135deg, rgba(255,215,0,0.12) 0%, rgba(15,23,42,0.85) 100%)' : `linear-gradient(135deg, ${item.rarityBg} 0%, rgba(10,15,30,0.85) 100%)`;
+            const itemTag = item.player.equipped_item ? `<span style="color:#38bdf8; font-size:6px;" title="${item.player.equipped_item.name}">${item.player.equipped_item.icon || '🎒'}</span>` : '';
             return `
-              <div style="background:${bgCol}; border:1.5px solid ${borderCol}; border-radius:8px; padding:6px 8px; box-shadow:${glow}; display:flex; flex-direction:column; justify-content:space-between;">
+              <div style="background:${bgCol}; border:1.5px solid ${borderCol}; border-radius:8px; padding:5px 7px; box-shadow:${glow}; display:flex; flex-direction:column; justify-content:space-between;">
                 <div>
                   <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2px;">
                     <div style="display:flex; align-items:center; gap:4px; overflow:hidden;">
                       <span style="font-size:7.5px; color:#38bdf8; font-family:'Press Start 2P',monospace;">[${item.slot}]</span>
-                      <span style="font-size:10px; font-weight:bold; color:#fff; font-family:sans-serif; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${item.player.name}">${item.player.name}</span>
+                      <span style="font-size:9.5px; font-weight:bold; color:#fff; font-family:sans-serif; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${item.player.name}">${item.player.name}</span>
+                      ${itemTag}
                     </div>
-                    <span style="background:${item.ovrGrade.color}; color:#000; font-family:'Press Start 2P',monospace; font-size:6.5px; padding:1px 3px; border-radius:2px; font-weight:bold; flex-shrink:0;">${item.ovrGrade.text} ${item.ovr}</span>
+                    <span style="background:${item.ovrGrade.color}; color:#000; font-family:'Press Start 2P',monospace; font-size:6px; padding:1px 3px; border-radius:2px; font-weight:bold; flex-shrink:0;">${item.ovrGrade.text} ${item.ovr}</span>
                   </div>
-                  <div style="font-size:6.5px; color:#94a3b8; margin-bottom:4px; font-family:'Press Start 2P',monospace; display:flex; gap:4px; align-items:center;">
-                    <span>${item.team}</span>
+                  <div style="font-size:6px; color:#94a3b8; margin-bottom:4px; font-family:'Press Start 2P',monospace; display:flex; gap:3px; align-items:center;">
+                    <span style="color:#fbbf24;">${item.era}</span>
                     <span>·</span>
-                    <span style="color:${item.rarityColor}; font-weight:bold;">${item.rarity.toUpperCase()}</span>
+                    <span style="color:#7dd3fc;">${item.team}</span>
                   </div>
                 </div>
-                <div style="background:rgba(0,0,0,0.55); border:1px solid rgba(255,255,255,0.08); border-radius:4px; padding:3px 5px; display:flex; justify-content:space-between; align-items:center; font-family:'Press Start 2P',monospace; font-size:7px;">
-                  <span style="color:#00ff66;" title="On-Base Plus Slugging">OPS ${item.ops}</span>
+                <div style="background:rgba(0,0,0,0.55); border:1px solid rgba(255,255,255,0.08); border-radius:4px; padding:2.5px 4px; display:flex; justify-content:space-between; align-items:center; font-family:'Press Start 2P',monospace; font-size:6.5px;">
+                  <span style="color:#22c55e;" title="On-Base Plus Slugging">OPS ${item.ops}</span>
                   <span style="color:#ef4444;">${item.hr} HR</span>
                   <span style="color:#ff3366; font-weight:bold;">💥 ${item.dmg}</span>
                 </div>
@@ -10623,6 +10758,7 @@ function initGameModeSelector() {
             `;
           }).join('')}
         </div>
+        ${synergiesBadgesHTML}
       `;
 
       // ── High-End 16:9 Canvas Image Generator Function ──
@@ -10661,20 +10797,20 @@ function initGameModeSelector() {
         ctx.textAlign = 'center';
         ctx.shadowColor = 'rgba(255, 215, 0, 0.8)';
         ctx.shadowBlur = 12;
-        ctx.fillText('🏆 BASE ROGUE WORLD CHAMPIONSHIP 🏆', canvas.width / 2, 54);
+        ctx.fillText('🏆 BASE ROGUE WORLD CHAMPIONSHIP 🏆', canvas.width / 2, 52);
         ctx.shadowBlur = 0;
 
         ctx.fillStyle = '#94a3b8';
         ctx.font = 'bold 10px monospace, sans-serif';
-        ctx.fillText('SUPREME ROTATION CONQUERED • OFFICIAL CHAMPIONSHIP LINEUP', canvas.width / 2, 74);
+        ctx.fillText('SUPREME ROTATION CONQUERED • OFFICIAL CHAMPIONSHIP LINEUP', canvas.width / 2, 70);
 
         // MVP Box
-        let gridStartY = 88;
+        let gridStartY = 84;
         if (bestPlayer) {
           const mvpX = 30;
-          const mvpY = 84;
+          const mvpY = 80;
           const mvpW = canvas.width - 60;
-          const mvpH = 54;
+          const mvpH = 56;
 
           ctx.fillStyle = 'rgba(245, 158, 11, 0.16)';
           ctx.strokeStyle = '#ffd700';
@@ -10687,7 +10823,7 @@ function initGameModeSelector() {
 
           ctx.textAlign = 'left';
           ctx.fillStyle = '#ffd700';
-          ctx.font = 'bold 10px "Press Start 2P", monospace, sans-serif';
+          ctx.font = 'bold 9.5px "Press Start 2P", monospace, sans-serif';
           ctx.fillText('👑 RUN MVP:', mvpX + 16, mvpY + 22);
 
           ctx.fillStyle = '#ffffff';
@@ -10702,10 +10838,10 @@ function initGameModeSelector() {
           ctx.font = '8.5px "Press Start 2P", monospace, sans-serif';
           ctx.fillText(`${bestPlayer.team} · ${bestPlayer.era || 'VINTAGE'} · ${bestPlayer.rarity.toUpperCase()}`, mvpX + 390, mvpY + 44);
 
-          // MVP Stats right
+          // MVP 4 key stats
           ctx.textAlign = 'right';
-          ctx.font = 'bold 10px "Press Start 2P", monospace, sans-serif';
-          ctx.fillStyle = '#00ff66';
+          ctx.font = 'bold 9.5px "Press Start 2P", monospace, sans-serif';
+          ctx.fillStyle = '#22c55e';
           ctx.fillText(`OPS ${bestPlayer.ops}`, mvpW + mvpX - 250, mvpY + 34);
 
           ctx.fillStyle = '#ef4444';
@@ -10714,12 +10850,12 @@ function initGameModeSelector() {
           ctx.fillStyle = '#ff3366';
           ctx.fillText(`DMG ${bestPlayer.dmg}`, mvpW + mvpX - 16, mvpY + 34);
 
-          gridStartY = 146;
+          gridStartY = 144;
         }
 
         const cols = 3;
         const cardW = 368;
-        const cardH = 150;
+        const cardH = 148;
         const gapX = 18;
         const gapY = 12;
         const startX = 30;
@@ -10758,14 +10894,17 @@ function initGameModeSelector() {
           ctx.font = 'bold 10px "Press Start 2P", monospace, sans-serif';
           ctx.fillText(`${item.ovrGrade ? item.ovrGrade.text : ''} ${item.ovr}`, x + cardW - 14, y + 24);
 
-          // Subtitle: Team & Era
+          // Subtitle: Team & Era + Item if any
           ctx.textAlign = 'left';
           ctx.fillStyle = '#94a3b8';
           ctx.font = '8.5px "Press Start 2P", monospace, sans-serif';
-          ctx.fillText(`${item.team} · ${item.era || 'VINTAGE'} · ${item.rarity.toUpperCase()}`, x + 12, y + 50);
+          const itemSuffix = item.player.equipped_item ? ` • 🎒 ${item.player.equipped_item.name}` : '';
+          const subText = `${item.team} · ${item.era || 'VINTAGE'}${itemSuffix}`;
+          const shortSub = subText.length > 32 ? subText.substring(0, 30) + '...' : subText;
+          ctx.fillText(shortSub, x + 12, y + 50);
 
           // Stats 3-Box Inner Container
-          const boxY = y + 64;
+          const boxY = y + 62;
           const boxH = 72;
           ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
           ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
@@ -10810,7 +10949,9 @@ function initGameModeSelector() {
         ctx.textAlign = 'center';
         ctx.fillStyle = '#fbbf24';
         ctx.font = 'bold 9.5px "Press Start 2P", monospace, sans-serif';
-        ctx.fillText(`TOTAL LINEUP DAMAGE: ${totDMG} HP  •  TOTAL HOME RUNS: ${totHR}  •  BASEROGUE.COM`, canvas.width / 2, canvas.height - 20);
+        const synList = activeSynergies.map(s => `${s.era} T${s.level}`).concat(teamChemList.map(c => `${c.team} Chem`));
+        const synStr = synList.length > 0 ? `  •  SYNERGIES: [ ${synList.join(' · ')} ]` : '';
+        ctx.fillText(`TOTAL LINEUP DAMAGE: ${totDMG} HP  •  TOTAL HR: ${totHR}${synStr}  •  BASEROGUE.COM`, canvas.width / 2, canvas.height - 18);
 
         canvas.toBlob((blob) => {
           if (callback) callback(blob, canvas);

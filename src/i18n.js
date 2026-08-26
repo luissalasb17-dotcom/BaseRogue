@@ -570,7 +570,15 @@
     "share_copied_toast": "🏆 ¡Resumen de campeón copiado al portapapeles!",
     "download_image_btn": "<i class=\"fa-solid fa-download\"></i> Guardar Imagen (PNG)",
     "image_copied_toast": "🏆 ¡Imagen de Campeón copiada al portapapeles!",
-    "image_downloaded_toast": "📸 ¡Imagen de Campeón descargada con éxito!"
+    "image_downloaded_toast": "📸 ¡Imagen de Campeón descargada con éxito!",
+    "active_synergies_title": "🏆 SINERGIAS ACTIVAS DE LA RUN",
+    "stat_damage": "DAÑO TOTAL",
+    "stat_hr": "HOME RUNS",
+    "stat_rbi": "CARRERAS IMP.",
+    "stat_avg": "PROMEDIO BATEO",
+    "stat_ops": "OPS",
+    "stat_item": "EQUIPAMIENTO",
+    "no_item": "NINGUNO"
   },
   "sim": {
     "label_bb": "BASE POR BOLAS",
@@ -1925,6 +1933,13 @@
     "win_title": "⚡ ¡MID-BOSS DERROTADO! ⚡",
     "win_desc": "¡Victoria de Élite! Obtienes +${{budget}} de presupuesto y un nuevo equipamiento en tu Mochila:",
     "continue_btn": "CONTINUAR AL DRAFT ➡"
+  },
+  "synergy": {
+    "impact_header": "IMPACTO EN EL EQUIPO",
+    "activates_tier": "¡ACTIVA TIER {{tier}} ({{era}})!",
+    "activates_chemistry": "¡ACTIVA QUÍMICA {{team}} (+4)!",
+    "activates_dynasty": "¡QUÍMICA DINASTÍA {{team}} (+{{pts}})!",
+    "chem_req": "Química"
   }
 },
     en: {
@@ -2496,7 +2511,15 @@
     "share_copied_toast": "🏆 Championship card copied to clipboard!",
     "download_image_btn": "<i class=\"fa-solid fa-download\"></i> Download Image",
     "image_copied_toast": "🏆 Championship Image Card copied to clipboard!",
-    "image_downloaded_toast": "📸 Championship Image Card downloaded!"
+    "image_downloaded_toast": "📸 Championship Image Card downloaded!",
+    "active_synergies_title": "🏆 ACTIVE RUN SYNERGIES",
+    "stat_damage": "TOTAL DAMAGE",
+    "stat_hr": "HOME RUNS",
+    "stat_rbi": "RBIs",
+    "stat_avg": "BATTING AVG",
+    "stat_ops": "OPS",
+    "stat_item": "EQUIPMENT",
+    "no_item": "NONE"
   },
   "sim": {
     "label_bb": "WALK",
@@ -3851,6 +3874,13 @@
     "win_title": "⚡ MID-BOSS DEFEATED! ⚡",
     "win_desc": "Victory over the elite rotation! You earned +${{budget}} and received an equipment item in your backpack:",
     "continue_btn": "CONTINUE TO DRAFT ➡"
+  },
+  "synergy": {
+    "impact_header": "TEAM SYNERGY IMPACT",
+    "activates_tier": "ACTIVATES TIER {{tier}} ({{era}})!",
+    "activates_chemistry": "ACTIVATES {{team}} CHEMISTRY (+4)!",
+    "activates_dynasty": "DYNASTY {{team}} CHEMISTRY (+{{pts}})!",
+    "chem_req": "Chemistry"
   }
 }
   };
