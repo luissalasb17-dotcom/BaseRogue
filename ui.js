@@ -68,9 +68,16 @@ function updateMobileNavVisibility() {
   const modeScreen = document.getElementById('screen-mode-select');
   const menuScreen = document.getElementById('screen-menu');
   const matchScreen = document.getElementById('screen-match');
+  const draftScreen = document.getElementById('screen-draft');
+  const preFightScreen = document.getElementById('screen-pre-fight');
+  const isDraftActive = draftScreen && !draftScreen.classList.contains('hidden');
+  const isPreFightActive = preFightScreen && !preFightScreen.classList.contains('hidden');
+
   const isOuterScreen = (modeScreen && !modeScreen.classList.contains('hidden')) ||
                         (menuScreen && !menuScreen.classList.contains('hidden')) ||
-                        (matchScreen && !matchScreen.classList.contains('hidden'));
+                        (matchScreen && !matchScreen.classList.contains('hidden')) ||
+                        isDraftActive ||
+                        isPreFightActive;
 
   if (isOuterScreen) {
     navBar.classList.add('hidden');
@@ -756,10 +763,10 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
       // ───── CENTER: 3 Pick Cards ─────────────────────────────────────────
       const centerPanel = document.createElement('div');
       centerPanel.id = 'draft-col-cards';
-      centerPanel.className = 'draft-col md:col-span-6 flex flex-col items-center gap-4';
+      centerPanel.className = 'draft-col md:col-span-6 flex flex-col items-center gap-3 w-full';
 
       const cardsRow = document.createElement('div');
-      cardsRow.className = 'cards-row flex flex-col md:flex-row gap-3 justify-center items-center md:items-start w-full';
+      cardsRow.className = 'draft-cards-carousel';
 
       // Tap-to-open vintage pack — themed per round's rarity floor:
       // Round 1 -> epic_plus (Gold / Diamond foil - Epic or Better)
@@ -819,7 +826,7 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
         const cardHTML = createCardHTML(player);
 
         const wrapper = document.createElement('div');
-        wrapper.className = 'draft-card-wrapper w-[175px] max-w-[175px] cursor-pointer rounded-xl border-2 transition-transform duration-150 flex flex-col items-center gap-1.5 p-2 box-border';
+        wrapper.className = 'draft-card-wrapper w-[210px] md:w-[175px] max-w-[210px] md:max-w-[175px] cursor-pointer rounded-xl border-2 transition-transform duration-150 flex flex-col items-center gap-1.5 p-2 box-border shrink-0 snap-center';
         wrapper.style.borderColor = rColor;
         wrapper.style.background = rBg;
 
@@ -859,6 +866,12 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
       };
 
       centerPanel.appendChild(cardsRow);
+
+      const swipeBadge = document.createElement('div');
+      swipeBadge.className = 'draft-swipe-hint md:hidden';
+      swipeBadge.style.cssText = 'font-size:8px;font-family:\'Press Start 2P\',monospace;color:#38bdf8;background:rgba(56,189,248,0.12);border:1px solid rgba(56,189,248,0.3);border-radius:12px;padding:4px 10px;margin-bottom:6px;letter-spacing:0.5px;text-align:center;';
+      swipeBadge.innerHTML = typeof t === 'function' ? t('draft.swipe_hint', '👉 DESLIZA PARA VER LAS 3 CARTAS') : '👉 DESLIZA PARA VER LAS 3 CARTAS';
+      centerPanel.appendChild(swipeBadge);
 
       // Round descriptor below cards
       const pickHint = document.createElement('div');
@@ -3895,7 +3908,7 @@ function initGameModeSelector() {
   function updateHUD() {
     const zone = window.Game.getZoneForStage(window.Game.currentStageIndex);
     const zoneNames = ['Opening Day', 'All-Star Break', 'Pennant Chase', 'Playoffs'];
-    el.hudStage.innerText = `${t('hud.stage')} ${window.Game.currentStageIndex + 1}/24 — ${zoneNames[zone] || ''}`;
+    el.hudStage.innerText = `${window.Game.currentStageIndex + 1}/24 — ${zoneNames[zone] || ''}`;
     if (el.hudBudget) el.hudBudget.innerText = `$${window.Game.budget}`;
     const sideBud = document.getElementById('sidebar-budget-val');
     if (sideBud) sideBud.innerText = `$${window.Game.budget}`;
@@ -5044,47 +5057,68 @@ function initGameModeSelector() {
   // Legacy stub – no longer needed (paths drawn inline with renderMap)
   function drawZonePaths(currentZone) { /* no-op */ }
 
-  // RENDER SIDEBAR SYNERGIES & ITEMS
+  // RENDER SIDEBAR SYNERGIES & ITEMS (POKELIKE CLEAN TRAITS)
+  let showInactiveSynergies = false;
+
   function renderSynergiesAndItems() {
     renderActiveItemBonuses();
 
     // 1. Synergies (Right Sidebar)
+    if (!el.synergiesList) return;
     el.synergiesList.innerHTML = "";
     
     const EraSynergyMeta = {
       "The Genesis Era (1871-1900)": {
+        tag: "GENESIS",
+        color: "#8b5cf6",
         name: t('eras.syn_name_genesis', 'Genesis Chaos (1871-1900)'),
         get tiers() { return [t('eras.genesis_d1'), t('eras.genesis_d2'), t('eras.genesis_d3'), t('eras.genesis_d4')]; }
       },
       "Deadball (1901-1919)": {
+        tag: "DEADBALL",
+        color: "#06b6d4",
         name: t('eras.syn_name_deadball', 'Small Ball (1901-1919)'),
         get tiers() { return [t('eras.deadball_d1'), t('eras.deadball_d2'), t('eras.deadball_d3'), t('eras.deadball_d4')]; }
       },
       "Golden Era (1920-1941)": {
+        tag: "GOLDEN",
+        color: "#f59e0b",
         name: t('eras.syn_name_golden', 'Liveball Sluggers (1920-1941)'),
         get tiers() { return [t('eras.golden_d1'), t('eras.golden_d2'), t('eras.golden_d3'), t('eras.golden_d4')]; }
       },
       "Integration (1942-1960)": {
+        tag: "5-TOOL",
+        color: "#ec4899",
         name: t('eras.syn_name_integration', 'Five-Tool Legends (1942-1960)'),
         get tiers() { return [t('eras.integration_d1'), t('eras.integration_d2'), t('eras.integration_d3'), t('eras.integration_d4')]; }
       },
       "Expansion (1961-1976)": {
+        tag: "SPEED",
+        color: "#10b981",
         name: t('eras.syn_name_speed', 'Speed & Hustle (1961-1976)'),
         get tiers() { return [t('eras.speed_d1'), t('eras.speed_d2'), t('eras.speed_d3'), t('eras.speed_d4')]; }
       },
       "Big Hair Era (1977-1993)": {
+        tag: "ASTROTURF",
+        color: "#38bdf8",
         name: t('eras.syn_name_astroturf', 'AstroTurf Speedsters (1977-1993)'),
         get tiers() { return [t('eras.astroturf_d1'), t('eras.astroturf_d2'), t('eras.astroturf_d3'), t('eras.astroturf_d4')]; }
       },
       "Steroid Era (1994-2005)": {
+        tag: "STEROID",
+        color: "#ef4444",
         name: t('eras.syn_name_steroid', 'Bash Brothers (1994-2005)'),
         get tiers() { return [t('eras.steroid_d1'), t('eras.steroid_d2'), t('eras.steroid_d3'), t('eras.steroid_d4')]; }
       },
       "Efficiency Era (2006-2015)": {
+        tag: "ANALYTICS",
+        color: "#6366f1",
         name: t('eras.syn_name_moneyball', 'Moneyball Analytics (2006-2015)'),
         get tiers() { return [t('eras.moneyball_d1'), t('eras.moneyball_d2'), t('eras.moneyball_d3'), t('eras.moneyball_d4')]; }
       },
       "Modern Era (2016-Pres)": {
+        tag: "MODERN",
+        color: "#f97316",
         name: t('eras.syn_name_tto', 'Three True Outcomes (2016-Pres)'),
         get tiers() { return [t('eras.tto_d1'), t('eras.tto_d2'), t('eras.tto_d3'), t('eras.tto_d4')]; }
       }
@@ -5097,9 +5131,6 @@ function initGameModeSelector() {
     Object.values(window.Game.roster).forEach(player => {
       if (player && !player.isReplacement) {
         if (player.era && !player.synergyBanned) {
-          // Keep in sync with simulation.js's _calculateActiveSynergies — Story
-          // Mode inter-era wildcards count double toward their own era's synergy,
-          // and synergyWeight overrides that (e.g. a successful "Sinergia Prohibida" gamble sets it to 4).
           const weight = player.synergyWeight || (player.isInterEra ? 2 : 1);
           eraCounts[player.era] = (eraCounts[player.era] || 0) + weight;
         }
@@ -5109,13 +5140,13 @@ function initGameModeSelector() {
       }
     });
 
-    // Check if new synergy tier unlocked to play uplifting chime
+    // Audio chime on tier up
     let currentTotalTiers = 0;
     Object.keys(eraCounts).forEach(era => {
       const count = eraCounts[era] || 0;
-      if (count >= 7) currentTotalTiers += 4;
-      else if (count >= 5) currentTotalTiers += 3;
-      else if (count >= 3) currentTotalTiers += 2;
+      if (count >= 8) currentTotalTiers += 4;
+      else if (count >= 6) currentTotalTiers += 3;
+      else if (count >= 4) currentTotalTiers += 2;
       else if (count >= 2) currentTotalTiers += 1;
     });
     Object.keys(teamCounts).forEach(tm => {
@@ -5131,125 +5162,188 @@ function initGameModeSelector() {
     }
     if (window.Game) window.Game._lastSynergyTiersCount = currentTotalTiers;
 
-    // Default: until the player has ever manually set/removed a Build era,
-    // auto-preview whichever era currently has the most players in roster.
-    if (!window.Game.buildEraTouched) {
-      let leadingEra = null, leadingCount = 0;
-      Object.keys(eraCounts).forEach(era => {
-        if (eraCounts[era] > leadingCount) { leadingCount = eraCounts[era]; leadingEra = era; }
+    // Helper: Pokelike Card Generator
+    function createPokelikeSynergyCard(cfg) {
+      const item = document.createElement('div');
+      const isActive = cfg.tier >= 1;
+      item.className = `pokelike-syn-card ${isActive ? 'syn-active syn-tier-' + cfg.tier : 'syn-building'}`;
+      item.title = t('sidebar.tier_breakdown_tooltip', 'Haz clic para desplegar/ocultar la progresión completa');
+
+      let targetThreshold = 2;
+      if (cfg.isFranchise) {
+        targetThreshold = cfg.tier === 0 ? 2 : cfg.tier === 1 ? 3 : 4;
+      } else {
+        targetThreshold = cfg.tier === 0 ? 2 : cfg.tier === 1 ? 4 : cfg.tier === 2 ? 6 : 8;
+      }
+
+      const pct = Math.min(100, Math.round((cfg.count / targetThreshold) * 100));
+
+      const statusTag = isActive
+        ? `<span class="syn-count-num">${cfg.count}/${targetThreshold}</span> <span class="syn-tier-chip" style="background:${cfg.color}; color:#000;">T${cfg.tier}</span>`
+        : `<span class="syn-count-num">${cfg.count}/${targetThreshold}</span> <span class="syn-tier-chip syn-tier-pending">T1</span>`;
+
+      let descHTML = '';
+      if (isActive) {
+        descHTML = `<div class="syn-active-desc">${cfg.activeDesc}</div>`;
+      } else {
+        descHTML = `<div class="syn-pending-desc"><i class="fa-solid fa-lock"></i> ${t('sidebar.recruit_more', { needed: Math.max(1, targetThreshold - cfg.count) })} ${cfg.nextDesc}</div>`;
+      }
+
+      const fullTiersHTML = cfg.allTiers.map((text, idx) => {
+        const tNum = idx + 1;
+        let rowClass = 'syn-tier-row';
+        if (tNum === cfg.tier) rowClass += ' tier-current';
+        else if (tNum < cfg.tier) rowClass += ' tier-reached';
+        return `<div class="${rowClass}"><span class="syn-t-label" style="background:${tNum <= cfg.tier ? cfg.color : '#334155'}; color:${tNum <= cfg.tier ? '#000' : '#94a3b8'};">T${tNum}</span> <span class="syn-t-text">${text}</span></div>`;
+      }).join('');
+
+      item.innerHTML = `
+        <div class="syn-top-row">
+          <div class="syn-badge-wrap">
+            <span class="syn-tag-badge" style="background:${cfg.color}22; border-color:${cfg.color}; color:${cfg.color};">${cfg.tag}</span>
+            <span class="syn-title-text">${cfg.name}</span>
+          </div>
+          <div class="syn-count-status">${statusTag}</div>
+        </div>
+        <div class="syn-progress-track">
+          <div class="syn-progress-fill" style="width:${pct}%; background: linear-gradient(90deg, ${cfg.color}aa, ${cfg.color});"></div>
+        </div>
+        ${descHTML}
+        <div class="syn-full-tiers-drawer hidden">
+          ${fullTiersHTML}
+        </div>
+      `;
+
+      item.addEventListener('click', () => {
+        const drawer = item.querySelector('.syn-full-tiers-drawer');
+        if (drawer) drawer.classList.toggle('hidden');
       });
-      window.Game.autoAssignBuildEra(leadingEra);
+
+      return item;
     }
 
-    // A. Render Era Synergies (Render ALL 9 to guide the user)
-    const eraListTitle = document.createElement('div');
-    eraListTitle.style.cssText = "font-family: 'Press Start 2P', monospace; font-size: 7px; color: var(--accent-color); margin-top: 5px; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px;";
-    eraListTitle.innerText = t('eras.header');
-    el.synergiesList.appendChild(eraListTitle);
+    // Build Cards Arrays
+    const activeCards = [];
+    const buildingCards = [];
+    const inactiveCards = [];
 
+    // Process Eras
     Object.keys(EraSynergyMeta).forEach(eraName => {
       const meta = EraSynergyMeta[eraName];
       const count = eraCounts[eraName] || 0;
       const tier = window.Game.getEraTier(eraName, count);
 
-      let itemClass = "synergy-list-item";
+      const activeDesc = tier >= 1 ? meta.tiers[tier - 1] : '';
+      const nextDesc = meta.tiers[0];
+
+      const card = createPokelikeSynergyCard({
+        tag: meta.tag,
+        color: meta.color,
+        name: meta.name,
+        count: count,
+        tier: tier,
+        maxTier: 4,
+        activeDesc: activeDesc,
+        nextDesc: nextDesc,
+        allTiers: meta.tiers,
+        isFranchise: false
+      });
+
       if (tier >= 1) {
-        itemClass += ` active tier-${tier}`;
-      }
-
-      const item = document.createElement('div');
-      item.className = itemClass;
-
-      let dotsHTML = "";
-      for (let i = 1; i <= 4; i++) {
-        const filled = i <= tier ? 'filled' : '';
-        dotsHTML += `<span class="synergy-dot ${filled}"></span>`;
-      }
-
-      let descHTML;
-      if (tier >= 1) {
-        const rows = meta.tiers.map((text, idx) => {
-          const rowTier = idx + 1;
-          let rowClass = 'synergy-tier-row';
-          if (rowTier === tier) rowClass += ' tier-current';
-          else if (rowTier < tier) rowClass += ' tier-reached';
-          return `<div class="${rowClass}"><span class="tier-label">T${rowTier}</span>${text}</div>`;
-        }).join('');
-        descHTML = `<div class="synergy-tier-breakdown">${rows}</div>`;
+        activeCards.push({ card, tier, count });
+      } else if (count >= 1) {
+        buildingCards.push({ card, tier: 0, count });
       } else {
-        descHTML = `<div class="synergy-item-desc" style="font-size: 11px;">${meta.tiers[0]}</div>`;
+        inactiveCards.push({ card, tier: 0, count: 0 });
       }
-
-      const countTag = t('eras.player_count_short', { count });
-      item.innerHTML = `
-        <div class="synergy-item-header">
-          <span class="synergy-item-name">${meta.name}</span>
-          <span class="synergy-item-count">T${tier}/T4 (${countTag})</span>
-        </div>
-        <div class="synergy-progress-dots">
-          ${dotsHTML}
-        </div>
-        ${descHTML}
-      `;
-      el.synergiesList.appendChild(item);
     });
 
-    // B. Render Franchise Synergies (Only teams with count >= 1)
-    const teamListTitle = document.createElement('div');
-    teamListTitle.style.cssText = "font-family: 'Press Start 2P', monospace; font-size: 7px; color: var(--accent-color); margin-top: 15px; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px;";
-    teamListTitle.innerText = t('eras.franchises_header');
-    el.synergiesList.appendChild(teamListTitle);
-
-    let hasTeams = false;
+    // Process Franchises
     Object.keys(teamCounts).forEach(team => {
-      hasTeams = true;
       const count = teamCounts[team];
-      const teamName = window.PlayersDB.FranchiseNames[team] || team;
-      
-      let itemClass = "synergy-list-item";
-      if (count >= 4) {
-        itemClass += " active-level-2";
-      } else if (count >= 3) {
-        itemClass += " active tier-2";
-      } else if (count >= 2) {
-        itemClass += " active";
+      const teamName = (window.PlayersDB && window.PlayersDB.FranchiseNames && window.PlayersDB.FranchiseNames[team]) ? window.PlayersDB.FranchiseNames[team] : team;
+      const fTier = count >= 4 ? 3 : count >= 3 ? 2 : count >= 2 ? 1 : 0;
+      const fColor = "#38bdf8";
+      const fTiers = [
+        t('sidebar.chemistry_desc', { team: team, defaultValue: `Química (2): Jugadores de ${team} obtienen +4 a todos sus stats en combate.` }),
+        t('sidebar.brotherhood_desc', { team: team, defaultValue: `Hermandad (3): Jugadores de ${team} obtienen +6 a todos sus stats en combate.` }),
+        t('sidebar.dynasty_desc', { team: team, defaultValue: `Dinastía (4+): Jugadores de ${team} obtienen +8 a todos sus stats en combate.` })
+      ];
+      const activeDesc = fTier >= 1 ? fTiers[fTier - 1] : '';
+      const nextDesc = fTier === 0 ? fTiers[0] : fTiers[Math.min(2, fTier)];
+
+      const card = createPokelikeSynergyCard({
+        tag: team,
+        color: fColor,
+        name: teamName,
+        count: count,
+        tier: fTier,
+        maxTier: 3,
+        activeDesc: activeDesc,
+        nextDesc: nextDesc,
+        allTiers: fTiers,
+        isFranchise: true
+      });
+
+      if (fTier >= 1) {
+        activeCards.push({ card, tier: fTier, count });
+      } else if (count >= 1) {
+        buildingCards.push({ card, tier: 0, count });
       }
-
-      const item = document.createElement('div');
-      item.className = itemClass;
-
-      let dotsHTML = "";
-      for (let i = 1; i <= 4; i++) {
-        const filled = i <= count ? 'filled' : '';
-        dotsHTML += `<span class="synergy-dot ${filled}"></span>`;
-      }
-
-      const desc = count >= 4 
-        ? t('sidebar.dynasty_desc', { team: team, defaultValue: `Dinastía (4+): Jugadores de ${team} obtienen +8 a todos sus stats en combate.` })
-        : count === 3
-        ? t('sidebar.brotherhood_desc', { team: team, defaultValue: `Hermandad (3): Jugadores de ${team} obtienen +6 a todos sus stats en combate.` })
-        : count === 2
-        ? t('sidebar.chemistry_desc', { team: team, defaultValue: `Química (2): Jugadores de ${team} obtienen +4 a todos sus stats en combate.` })
-        : t('sidebar.franchise_base_desc', { team: team, defaultValue: `Recluta 2 o más jugadores de ${team} para activar bonos de franquicia (+4 / +6 / +8 stats).` });
-
-      item.innerHTML = `
-        <div class="synergy-item-header">
-          <span class="synergy-item-name">${teamName} (${team})</span>
-          <span class="synergy-item-count">${count}/4</span>
-        </div>
-        <div class="synergy-progress-dots">
-          ${dotsHTML}
-        </div>
-        <div class="synergy-item-desc" style="font-size: 11px;">${desc}</div>
-      `;
-      el.synergiesList.appendChild(item);
     });
 
-    if (!hasTeams) {
-      const noneEl = document.createElement('div');
-      noneEl.style.cssText = "color: #64748b; font-size: 10px; text-align: center; padding: 5px;";
-      noneEl.innerText = t('sidebar.no_teams', 'Ningún equipo registrado.');
-      el.synergiesList.appendChild(noneEl);
+    // Sort Active Cards (Highest Tier first, then highest count)
+    activeCards.sort((a, b) => b.tier - a.tier || b.count - a.count);
+
+    // Section 1: Active Synergies
+    if (activeCards.length > 0) {
+      const actTitle = document.createElement('div');
+      actTitle.className = "pokelike-section-title";
+      actTitle.innerHTML = `<i class="fa-solid fa-bolt" style="color:#00ff66;"></i> ${t('sidebar.active_synergies_title', '⚡ SINERGIAS ACTIVAS')}`;
+      el.synergiesList.appendChild(actTitle);
+      activeCards.forEach(c => el.synergiesList.appendChild(c.card));
+    }
+
+    // Section 2: Building Synergies (1 player)
+    if (buildingCards.length > 0) {
+      const bldTitle = document.createElement('div');
+      bldTitle.className = "pokelike-section-title";
+      bldTitle.style.marginTop = activeCards.length > 0 ? "10px" : "0px";
+      bldTitle.innerHTML = `<i class="fa-solid fa-hourglass-half" style="color:#f59e0b;"></i> ${t('sidebar.building_synergies_title', '⏳ EN PROGRESO (1 JUGADOR)')}`;
+      el.synergiesList.appendChild(bldTitle);
+      buildingCards.forEach(c => el.synergiesList.appendChild(c.card));
+    }
+
+    // Empty state
+    if (activeCards.length === 0 && buildingCards.length === 0) {
+      const emptyBox = document.createElement('div');
+      emptyBox.className = "pokelike-empty-synergies";
+      emptyBox.innerText = t('sidebar.no_active_synergies', '¡Aún no hay sinergias activas! Recluta jugadores de la misma era para activar bonos.');
+      el.synergiesList.appendChild(emptyBox);
+    }
+
+    // Section 3: Inactive Eras Collapsible Toggle
+    if (inactiveCards.length > 0) {
+      const toggleBtn = document.createElement('button');
+      toggleBtn.className = "btn-toggle-inactive-syn";
+      toggleBtn.innerHTML = showInactiveSynergies 
+        ? t('sidebar.hide_inactive_synergies', '🔼 Ocultar Eras Inactivas')
+        : t('sidebar.view_all_synergies', { count: inactiveCards.length, defaultValue: `👁️ Ver Eras Inactivas (${inactiveCards.length})` });
+
+      const inactiveContainer = document.createElement('div');
+      inactiveContainer.className = `inactive-syn-container ${showInactiveSynergies ? '' : 'hidden'}`;
+      inactiveCards.forEach(c => inactiveContainer.appendChild(c.card));
+
+      toggleBtn.onclick = () => {
+        showInactiveSynergies = !showInactiveSynergies;
+        toggleBtn.innerHTML = showInactiveSynergies 
+          ? t('sidebar.hide_inactive_synergies', '🔼 Ocultar Eras Inactivas')
+          : t('sidebar.view_all_synergies', { count: inactiveCards.length, defaultValue: `👁️ Ver Eras Inactivas (${inactiveCards.length})` });
+        inactiveContainer.classList.toggle('hidden', !showInactiveSynergies);
+      };
+
+      el.synergiesList.appendChild(toggleBtn);
+      el.synergiesList.appendChild(inactiveContainer);
     }
 
     // 2. PokeLike Items Grid & Backpack (Left Sidebar - 4 Slots)
@@ -6274,15 +6368,15 @@ function initGameModeSelector() {
     if (!activePlayers.length) return [];
 
     const statTemplates = [
-      { stat: 'con', label: 'Contacto Estándar', desc: 'Práctica intensiva de swing', basePrice: 3, icon: '🎯', risk: 'safe', minVal: 5, maxVal: 7, critChance: 0.15, critVal: 12 },
-      { stat: 'pwr', label: 'Fuerza de Bateo', desc: 'Repeticiones con bate pesado', basePrice: 3, icon: '💥', risk: 'safe', minVal: 5, maxVal: 7, critChance: 0.15, critVal: 12 },
-      { stat: 'eye', label: 'Disciplina de Boletos', desc: 'Paciencia en el plato y lectura de pitcheos', basePrice: 3, icon: '👓', risk: 'safe', minVal: 5, maxVal: 7, critChance: 0.15, critVal: 12 },
-      { stat: 'k_avd', label: 'Evasión de Ponches', desc: 'Afinar la zona de strike y reducir ponches', basePrice: 3, icon: '👁️', risk: 'safe', minVal: 5, maxVal: 7, critChance: 0.15, critVal: 12 },
-      { stat: 'spd', label: 'Velocidad en Bases', desc: 'Trabajo de aceleración en bases', basePrice: 3, icon: '⚡', risk: 'safe', minVal: 5, maxVal: 7, critChance: 0.15, critVal: 12 },
-      { stat: 'def', label: 'Técnica Defensiva', desc: 'Ejercicios de fildeo y tiro', basePrice: 2, icon: '🧤', risk: 'safe', minVal: 5, maxVal: 7, critChance: 0.15, critVal: 12 },
-      { stat: 'sta', label: 'Masaje de Recuperación', desc: 'Masajes y descanso activo', basePrice: 2, icon: '🔋', risk: 'safe', minVal: 35, maxVal: 45, critChance: 0.20, critVal: 100 },
-      { stat: 'pwr', label: 'Fuerza Extrema', desc: 'Levantamiento súper-pesado (30% riesgo tirón)', basePrice: 4, icon: '🔥', risk: 'high', minVal: 12, maxVal: 14, riskChance: 0.30, failPenalty: 15 },
-      { stat: 'spd', label: 'Turbo Velocidad', desc: 'Sprints con resistencia (25% riesgo sobrecarga)', basePrice: 3, icon: '🚀', risk: 'high', minVal: 12, maxVal: 14, riskChance: 0.25, failPenalty: 10 }
+      { stat: 'con', labelKey: 'training.con_label', descKey: 'training.con_desc', label: 'Contacto Estándar', desc: 'Práctica intensiva de swing', basePrice: 3, icon: '🎯', risk: 'safe', minVal: 5, maxVal: 7, critChance: 0.15, critVal: 12 },
+      { stat: 'pwr', labelKey: 'training.pwr_label', descKey: 'training.pwr_desc', label: 'Fuerza de Bateo', desc: 'Repeticiones con bate pesado', basePrice: 3, icon: '💥', risk: 'safe', minVal: 5, maxVal: 7, critChance: 0.15, critVal: 12 },
+      { stat: 'eye', labelKey: 'training.eye_label', descKey: 'training.eye_desc', label: 'Disciplina de Boletos', desc: 'Paciencia en el plato y lectura de pitcheos', basePrice: 3, icon: '👓', risk: 'safe', minVal: 5, maxVal: 7, critChance: 0.15, critVal: 12 },
+      { stat: 'k_avd', labelKey: 'training.kavd_label', descKey: 'training.kavd_desc', label: 'Evasión de Ponches', desc: 'Afinar la zona de strike y reducir ponches', basePrice: 3, icon: '👁️', risk: 'safe', minVal: 5, maxVal: 7, critChance: 0.15, critVal: 12 },
+      { stat: 'spd', labelKey: 'training.spd_label', descKey: 'training.spd_desc', label: 'Velocidad en Bases', desc: 'Trabajo de aceleración en bases', basePrice: 3, icon: '⚡', risk: 'safe', minVal: 5, maxVal: 7, critChance: 0.15, critVal: 12 },
+      { stat: 'def', labelKey: 'training.def_label', descKey: 'training.def_desc', label: 'Técnica Defensiva', desc: 'Ejercicios de fildeo y tiro', basePrice: 2, icon: '🧤', risk: 'safe', minVal: 5, maxVal: 7, critChance: 0.15, critVal: 12 },
+      { stat: 'sta', labelKey: 'training.sta_label', descKey: 'training.sta_desc', label: 'Masaje de Recuperación', desc: 'Masajes y descanso activo', basePrice: 2, icon: '🔋', risk: 'safe', minVal: 35, maxVal: 45, critChance: 0.20, critVal: 100 },
+      { stat: 'pwr', labelKey: 'training.pwr_ext_label', descKey: 'training.pwr_ext_desc', label: 'Fuerza Extrema', desc: 'Levantamiento súper-pesado (30% riesgo tirón)', basePrice: 4, icon: '🔥', risk: 'high', minVal: 12, maxVal: 14, riskChance: 0.30, failPenalty: 15 },
+      { stat: 'spd', labelKey: 'training.spd_turbo_label', descKey: 'training.spd_turbo_desc', label: 'Turbo Velocidad', desc: 'Sprints con resistencia (25% riesgo sobrecarga)', basePrice: 3, icon: '🚀', risk: 'high', minVal: 12, maxVal: 14, riskChance: 0.25, failPenalty: 10 }
     ];
 
     const offers = [];
@@ -6369,8 +6463,8 @@ function initGameModeSelector() {
       `;
 
       const riskTag = tpl.risk === 'high'
-        ? '<span class="choice-risk-tag choice-risk-high" style="font-size:7px;">🔴 ALTO RIESGO</span>'
-        : '<span class="choice-risk-tag choice-risk-safe" style="font-size:7px;">🟢 SEGURO</span>';
+        ? `<span class="choice-risk-tag choice-risk-high" style="font-size:7px;">🔴 ${(typeof t === 'function' ? t('training.risk_high', 'ALTO RIESGO') : 'ALTO RIESGO')}</span>`
+        : `<span class="choice-risk-tag choice-risk-safe" style="font-size:7px;">🟢 ${(typeof t === 'function' ? t('training.risk_safe', 'SEGURO') : 'SEGURO')}</span>`;
 
       const tierBadge = `
         <span style="
@@ -6389,6 +6483,15 @@ function initGameModeSelector() {
         ? `+${tpl.minVal} a +${tpl.maxVal} Stamina` 
         : `+${tpl.minVal} a +${tpl.maxVal} ${tpl.stat.toUpperCase()}`;
 
+      const tplLabel = (typeof t === 'function' && tpl.labelKey) ? t(tpl.labelKey) : tpl.label;
+      const tplDesc = (typeof t === 'function' && tpl.descKey) ? t(tpl.descKey) : tpl.desc;
+      const costLabel = typeof t === 'function' ? t('training.cost_label', 'Costo del Plan:') : 'Costo del Plan:';
+      const buyText = offer.bought 
+        ? `<i class="fa-solid fa-check"></i> ${(typeof t === 'function' ? t('training.bought_btn', 'ADQUIRIDO') : 'ADQUIRIDO')}`
+        : (canAfford 
+            ? `<i class="fa-solid fa-cart-shopping"></i> ${(typeof t === 'function' ? t('training.buy_btn', 'COMPRAR OFERTA') : 'COMPRAR OFERTA')}`
+            : (typeof t === 'function' ? t('training.insufficient_funds', 'FONDOS INSUFICIENTES') : 'FONDOS INSUFICIENTES'));
+
       card.innerHTML = `
         <div>
           <!-- Top Row: Tier badge & Slot Tag -->
@@ -6406,9 +6509,9 @@ function initGameModeSelector() {
           <!-- Body: Stat Upgrade Plan -->
           <div style="text-align:center;padding:8px 0;">
             <div style="font-size:36px;margin-bottom:6px;filter:drop-shadow(0 0 10px ${tier.color});">${tpl.icon}</div>
-            <div style="font-weight:bold;font-size:13px;color:#e2e8f0;margin-bottom:4px;">${tpl.label}</div>
+            <div style="font-weight:bold;font-size:13px;color:#e2e8f0;margin-bottom:4px;">${tplLabel}</div>
             <div style="font-weight:bold;font-size:12px;color:${tier.color};margin-bottom:6px;">${statDescText}</div>
-            <div style="font-size:10px;color:#94a3b8;line-height:1.4;margin-bottom:10px;">${tpl.desc}</div>
+            <div style="font-size:10px;color:#94a3b8;line-height:1.4;margin-bottom:10px;">${tplDesc}</div>
             <div>${riskTag}</div>
           </div>
         </div>
@@ -6416,7 +6519,7 @@ function initGameModeSelector() {
         <!-- Footer: Price & Purchase Button -->
         <div style="margin-top:16px;border-top:1px solid rgba(255,255,255,0.06);padding-top:12px;">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-            <span style="font-size:11px;color:#64748b;">Costo del Plan:</span>
+            <span style="font-size:11px;color:#64748b;">${costLabel}</span>
             <span style="font-family:'Press Start 2P',monospace;font-size:11px;color:${offer.tier === 'Gold' ? '#ffd700' : 'var(--accent-color)'};">$${currentPrice}</span>
           </div>
           <button class="btn btn-buy-training-card" ${offer.bought || !canAfford ? 'disabled' : ''} style="
@@ -6431,7 +6534,7 @@ function initGameModeSelector() {
             cursor:${offer.bought || !canAfford ? 'not-allowed' : 'pointer'};
             box-shadow:${!offer.bought && canAfford ? `0 0 15px ${tier.color}44` : 'none'};
           ">
-            ${offer.bought ? '<i class="fa-solid fa-check"></i> ADQUIRIDO' : (canAfford ? '<i class="fa-solid fa-cart-shopping"></i> COMPRAR OFERTA' : 'FONDOS INSUFICIENTES')}
+            ${buyText}
           </button>
         </div>
       `;
@@ -6646,96 +6749,249 @@ function initGameModeSelector() {
     `;
   }
 
-  // PRE-FIGHT SCREEN SETUP
-  function setupAndShowPreFightScreen() {
-    const enemy = window.Game.getEnemyTeam();
-    el.preFightSubtitle.innerHTML = t('pre_fight.subtitle', { team: `<strong style="color: #ef4444;">${enemy.name}</strong>` });
-    renderScoutingReport(enemy);
+  // PRE-FIGHT SCREEN SETUP (INTERACTIVE SHOWDOWN & STAT CLASH MATRIX)
+  let preFightBatterIdx = 0;
+  let preFightPitcherIdx = 0;
 
-    // 1. Render player's batters
-    el.preFightPlayerLineup.innerHTML = "";
-    const activeSlots = ['C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'DH'];
-    activeSlots.forEach(slot => {
-      const p = window.Game.roster[slot];
-      if (!p) return;
-      const eff = window.Game.getEffectiveStats(p, slot);
-      const startingHp = Math.max(45, p.stamina || 100);
+  function renderPreFightShowdown(enemy, targetChanged = 'all') {
+    const order = window.Game.battingOrder || ['C','1B','2B','3B','SS','LF','CF','RF','DH'];
+    const currentSlot = order[preFightBatterIdx] || 'C';
+    const batter = window.Game.roster[currentSlot];
+    const pitchers = enemy.pitchers || [];
+    const pitcher = pitchers[preFightPitcherIdx] || pitchers[0];
 
-      const row = document.createElement('div');
-      row.className = "pre-fight-row";
-      if (startingHp <= 0) row.classList.add('ko');
+    // 1. Update Batter (ONLY if target is batter or all)
+    if (targetChanged === 'batter' || targetChanged === 'all') {
+      const batterLabelEl = document.getElementById('showdown-batter-label');
+      if (batterLabelEl && batter) {
+        batterLabelEl.innerText = `#${preFightBatterIdx + 1} ${currentSlot} ${batter.cleanName || batter.name}`;
+      }
+      const batterWrap = document.getElementById('showdown-batter-card-wrap');
+      if (batterWrap && batter) {
+        batterWrap.innerHTML = createCardHTML(batter, currentSlot);
+        batterWrap.style.cursor = 'pointer';
+        batterWrap.title = typeof window.t === 'function' ? window.t('pre_fight.batter_card_tooltip', 'Haz clic para ver la carta de este bateador') : 'Haz clic para ver la carta';
+        batterWrap.onclick = () => showPlayerCardPopup(batter, currentSlot);
+        if (targetChanged === 'batter' && batterWrap.firstElementChild) {
+          batterWrap.firstElementChild.classList.add('card-swap-anim');
+        }
+      }
+    }
 
-      row.innerHTML = `
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <span style="font-size: 10px; font-weight: bold; color: var(--primary-color); background: rgba(16,185,129,0.1); padding: 2px 4px; border-radius: 4px;">${slot}</span>
-          <span class="name" title="${eff.name}">${eff.name}</span>
-        </div>
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <div class="hp-bar-container">
-            <div class="hp-bar-fill" style="width: ${startingHp}%; background: linear-gradient(90deg, #10b981, #34d399);"></div>
-          </div>
-          <span class="hp-text">${startingHp}/100 HP</span>
-        </div>
-      `;
-      el.preFightPlayerLineup.appendChild(row);
-    });
+    // 2. Update Pitcher (ONLY if target is pitcher or all)
+    if (targetChanged === 'pitcher' || targetChanged === 'all') {
+      let pType = pitcher.role || (preFightPitcherIdx === 0 ? 'SP' : (preFightPitcherIdx === pitchers.length - 1 && pitchers.length > 1 ? 'CL' : 'RP'));
+      const pitcherLabelEl = document.getElementById('showdown-pitcher-label');
+      if (pitcherLabelEl && pitcher) {
+        pitcherLabelEl.innerText = `${pType} ${pitcher.cleanName || pitcher.name}`;
+      }
+      const pitcherWrap = document.getElementById('showdown-pitcher-card-wrap');
+      if (pitcherWrap && pitcher) {
+        const pOvr = getPlayerOvr(pitcher);
+        const pCard = {
+          ...pitcher,
+          pos: pitcher.pos || 'P',
+          role: pType,
+          rarity: pitcher.rarity || (pOvr >= 90 ? 'Legendary' : (pOvr >= 80 ? 'Epic' : (pOvr >= 70 ? 'Rare' : 'Uncommon')))
+        };
+        pitcherWrap.innerHTML = createCardHTML(pCard, pType);
+        pitcherWrap.style.cursor = 'pointer';
+        pitcherWrap.title = typeof window.t === 'function' ? window.t('pre_fight.pitcher_card_tooltip', 'Haz clic para ver la carta de este lanzador') : 'Haz clic para ver la carta';
+        pitcherWrap.onclick = () => showPlayerCardPopup(pCard, 'pitcher_preview');
+        if (targetChanged === 'pitcher' && pitcherWrap.firstElementChild) {
+          pitcherWrap.firstElementChild.classList.add('card-swap-anim');
+        }
+      }
+    }
 
-    // 2. Render enemy pitchers with OVR badges & interactive card inspect popup
-    el.preFightEnemyRotation.innerHTML = "";
-    enemy.pitchers.forEach((p, idx) => {
-      const row = document.createElement('div');
-      row.className = "pre-fight-row";
-      row.style.cursor = "pointer";
-      row.style.transition = "transform 0.15s ease, background 0.15s ease";
-      row.title = typeof window.t === 'function' ? window.t('pre_fight.pitcher_card_tooltip', 'Haz clic para ver la carta de este lanzador') : 'Haz clic para ver la carta de este lanzador';
+    // 3. Option A Spotlight Hype (Clean Verdict & Key Tactical Highlights)
+    const insightsEl = document.getElementById('showdown-matchup-insights');
+    if (insightsEl && batter && pitcher) {
+      const bCon = batter.con || 50;
+      const bPwr = batter.pwr || 50;
+      const bEye = batter.eye || 50;
+      const bKAvd = batter.k_avd || 50;
 
-      // Label type
-      let pType = p.role || "SP";
-      if (!p.role) {
-        if (idx === 3) pType = "RP";
-        if (idx === 4) pType = "CL";
+      const pH9 = pitcher.h9 || 50;
+      const pHr9 = pitcher.hr9 || 50;
+      const pBb9 = pitcher.bb9 || 50;
+      const pK9 = pitcher.k9 || 50;
+
+      const diffCon = bCon - pH9;
+      const diffPwr = bPwr - pHr9;
+      const diffEye = bEye - pBb9;
+      const diffK   = bKAvd - pK9;
+
+      let keyBadges = [];
+
+      // Power / Home Run Threat
+      if (diffPwr >= 12) {
+        keyBadges.push({ label: `<i class="fa-solid fa-fire"></i> ${t('pre_fight.matchup_hr_threat', 'Amenaza Jonrón (+HR)')}`, cls: 'chip-fire' });
       }
 
-      const pOvr = getPlayerOvr(p);
-      const pGrade = getClassGrade(pOvr);
+      // Contact Advantage vs Low-Hit Command
+      if (diffCon >= 12) {
+        keyBadges.push({ label: `<i class="fa-solid fa-baseball-bat-ball"></i> ${t('pre_fight.matchup_con_edge', 'Ventaja Contacto (+Hits)')}`, cls: 'chip-good' });
+      } else if (diffCon <= -12) {
+        keyBadges.push({ label: `<i class="fa-solid fa-hand"></i> ${t('pre_fight.edge_hits_minus', 'Control de Hits (H/9)')}`, cls: 'chip-bad' });
+      }
 
-      row.innerHTML = `
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <span style="font-size: 10px; font-weight: bold; color: #ef4444; background: rgba(239,68,68,0.1); padding: 2px 4px; border-radius: 4px;">${pType}</span>
-          <span class="name" title="${p.name}" style="color:#fff; text-decoration: underline dotted rgba(255,255,255,0.4);">${p.cleanName || p.name}</span>
-          <span style="font-size: 9px; font-weight: bold; color: ${pGrade.color}; background: rgba(0,0,0,0.4); border: 1px solid ${pGrade.color}; padding: 1px 5px; border-radius: 4px; font-family:'Press Start 2P',monospace;">${pOvr} ${pGrade.text}</span>
-        </div>
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <div class="hp-bar-container">
-            <div class="hp-bar-fill" style="width: 100%; background: linear-gradient(90deg, #ef4444, #f87171);"></div>
+      // Strikeout Danger vs Discipline
+      if (diffK <= -12) {
+        keyBadges.push({ label: `<i class="fa-solid fa-wind"></i> ${t('pre_fight.matchup_k_threat', 'Peligro Ponche (K/9)')}`, cls: 'chip-bad' });
+      } else if (diffK >= 12) {
+        keyBadges.push({ label: `<i class="fa-solid fa-shield-halved"></i> ${t('pre_fight.matchup_k_resist', 'Resistencia Anti-K')}`, cls: 'chip-good' });
+      }
+
+      // Eye / Walk Discipline
+      if (diffEye >= 12) {
+        keyBadges.push({ label: `<i class="fa-solid fa-eye"></i> ${t('pre_fight.edge_bb_plus', 'Ojo Clínico (+BB)')}`, cls: 'chip-good' });
+      }
+
+      // Overall Edge Verdict
+      const netAdvantage = diffCon + diffK + (diffPwr * 0.8) + (diffEye * 0.6);
+      let overallText = t('pre_fight.matchup_even', '🟡 DUELO EQUILIBRADO');
+      let overallClass = 'edge-even';
+      if (netAdvantage >= 16) {
+        overallText = t('pre_fight.matchup_advantage_hitter', '🟢 VENTAJA BATEADOR');
+        overallClass = 'edge-hitter';
+      } else if (netAdvantage <= -16) {
+        overallText = t('pre_fight.matchup_advantage_pitcher', '🔴 VENTAJA LANZADOR');
+        overallClass = 'edge-pitcher';
+      }
+
+      let highlightsHtml = '';
+      if (keyBadges.length > 0) {
+        highlightsHtml = `
+          <div class="showdown-highlights-wrap">
+            ${keyBadges.slice(0, 2).map(b => `<div class="showdown-highlight-chip ${b.cls}">${b.label}</div>`).join('')}
           </div>
-          <span class="hp-text">${p.maxHp || p.hp || 100}/${p.maxHp || p.hp || 100} HP</span>
-          <span style="font-size:11px; color:#9ca3af;">🔍</span>
-        </div>
+        `;
+      }
+
+      insightsEl.innerHTML = `
+        <div class="matchup-overall-badge ${overallClass}">${overallText}</div>
+        ${highlightsHtml}
       `;
+    }
 
-      row.addEventListener('mouseenter', () => {
-        row.style.background = "rgba(239,68,68,0.12)";
-        row.style.transform = "translateX(4px)";
-      });
-      row.addEventListener('mouseleave', () => {
-        row.style.background = "";
-        row.style.transform = "none";
-      });
-
-      row.addEventListener('click', () => {
-        const pitcherCardObj = {
-          ...p,
-          pos: p.pos || 'P',
-          role: p.role || pType,
-          rarity: p.rarity || (pOvr >= 90 ? 'Legendary' : (pOvr >= 80 ? 'Epic' : (pOvr >= 70 ? 'Rare' : 'Uncommon')))
-        };
-        showPlayerCardPopup(pitcherCardObj, 'pitcher_preview');
-      });
-
-      el.preFightEnemyRotation.appendChild(row);
+    // 4. Highlight Selected Pitcher in Bullpen List
+    document.querySelectorAll('#pre-fight-enemy-rotation .pre-fight-row').forEach((row, idx) => {
+      if (idx === preFightPitcherIdx) {
+        row.classList.add('selected-pitcher-row');
+      } else {
+        row.classList.remove('selected-pitcher-row');
+      }
     });
+  }
 
+  function setupAndShowPreFightScreen() {
+    const enemy = window.Game.getEnemyTeam();
+    if (el.preFightSubtitle) {
+      el.preFightSubtitle.innerHTML = t('pre_fight.subtitle', { team: `<strong style="color: #ef4444;">${enemy.name}</strong>` });
+    }
+    renderScoutingReport(enemy);
+
+    // Reset indices to start of lineup and starting pitcher
+    preFightBatterIdx = 0;
+    preFightPitcherIdx = 0;
+
+    // Stage text in header
+    const stageEl = document.getElementById('pre-fight-stage-text');
+    if (stageEl) {
+      stageEl.innerText = `${window.Game.currentStageIndex + 1}/24`;
+    }
+
+    // Render Bullpen / Pitcher List
+    if (el.preFightEnemyRotation) {
+      el.preFightEnemyRotation.innerHTML = "";
+      const pitchers = enemy.pitchers || [];
+      pitchers.forEach((p, idx) => {
+        const row = document.createElement('div');
+        row.className = "pre-fight-row";
+        row.style.cursor = "pointer";
+        row.style.transition = "all 0.15s ease";
+        row.title = typeof window.t === 'function' ? window.t('pre_fight.pitcher_card_tooltip', 'Haz clic para seleccionar este lanzador') : 'Haz clic para seleccionar este lanzador';
+
+        let pType = p.role || (idx === 0 ? "SP" : (idx === pitchers.length - 1 && pitchers.length > 1 ? "CL" : "RP"));
+        const pOvr = getPlayerOvr(p);
+        const pGrade = getClassGrade(pOvr);
+
+        row.innerHTML = `
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 9px; font-weight: bold; color: #ef4444; background: rgba(239,68,68,0.15); padding: 2px 5px; border-radius: 4px; border: 1px solid rgba(239,68,68,0.3);">${pType}</span>
+            <span class="name pitcher-name-dex-link" title="${p.name}" style="color:#fff; text-decoration: underline dotted rgba(56,189,248,0.6); font-size: 8.5px; cursor: pointer;">${p.cleanName || p.name}</span>
+            <span style="font-size: 8px; font-weight: bold; color: ${pGrade.color}; background: rgba(0,0,0,0.4); border: 1px solid ${pGrade.color}; padding: 1px 4px; border-radius: 4px; font-family:'Press Start 2P',monospace;">${pOvr} ${pGrade.text}</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <div class="hp-bar-container">
+              <div class="hp-bar-fill" style="width: 100%; background: linear-gradient(90deg, #ef4444, #f87171);"></div>
+            </div>
+            <span class="hp-text">${p.maxHp || p.hp || 100}/${p.maxHp || p.hp || 100} HP</span>
+            <span class="pitcher-dex-btn" style="font-size:11px; color:#38bdf8; cursor: pointer; padding: 2px 4px;" title="Ver Baseball Dex">🔍</span>
+          </div>
+        `;
+
+        const openPitcherDex = (e) => {
+          if (e) e.stopPropagation();
+          const pitcherCardObj = {
+            ...p,
+            pos: p.pos || 'P',
+            role: p.role || pType,
+            rarity: p.rarity || (pOvr >= 90 ? 'Legendary' : (pOvr >= 80 ? 'Epic' : (pOvr >= 70 ? 'Rare' : 'Uncommon')))
+          };
+          showPlayerCardPopup(pitcherCardObj, 'pitcher_preview');
+        };
+
+        const nameEl = row.querySelector('.pitcher-name-dex-link');
+        if (nameEl) nameEl.addEventListener('click', openPitcherDex);
+
+        const dexBtn = row.querySelector('.pitcher-dex-btn');
+        if (dexBtn) dexBtn.addEventListener('click', openPitcherDex);
+
+        row.addEventListener('click', () => {
+          preFightPitcherIdx = idx;
+          renderPreFightShowdown(enemy, 'pitcher');
+        });
+
+        el.preFightEnemyRotation.appendChild(row);
+      });
+    }
+
+    // Attach Nav Button Listeners
+    const btnPrevBatter = document.getElementById('btn-prev-batter');
+    const btnNextBatter = document.getElementById('btn-next-batter');
+    const btnPrevPitcher = document.getElementById('btn-prev-pitcher');
+    const btnNextPitcher = document.getElementById('btn-next-pitcher');
+
+    if (btnPrevBatter) {
+      btnPrevBatter.onclick = () => {
+        preFightBatterIdx = (preFightBatterIdx - 1 + 9) % 9;
+        renderPreFightShowdown(enemy, 'batter');
+      };
+    }
+    if (btnNextBatter) {
+      btnNextBatter.onclick = () => {
+        preFightBatterIdx = (preFightBatterIdx + 1) % 9;
+        renderPreFightShowdown(enemy, 'batter');
+      };
+    }
+    if (btnPrevPitcher) {
+      btnPrevPitcher.onclick = () => {
+        const pLen = (enemy.pitchers || []).length || 1;
+        preFightPitcherIdx = (preFightPitcherIdx - 1 + pLen) % pLen;
+        renderPreFightShowdown(enemy, 'pitcher');
+      };
+    }
+    if (btnNextPitcher) {
+      btnNextPitcher.onclick = () => {
+        const pLen = (enemy.pitchers || []).length || 1;
+        preFightPitcherIdx = (preFightPitcherIdx + 1) % pLen;
+        renderPreFightShowdown(enemy, 'pitcher');
+      };
+    }
+
+    renderPreFightShowdown(enemy, 'all');
     window.showScreen('screen-pre-fight');
 
     showTutorialTip(
@@ -7313,24 +7569,25 @@ function initGameModeSelector() {
     }
 
     // ── Universal Synergy, Trait & Debuff Extraction (Clean & Condensed) ──
+    const isEs = (typeof window.t === 'function' ? window.t('hud.stage') : 'Stage:') !== 'Stage:';
     const SYNERGY_PATTERNS = [
-      { key: 'FATIGA AL LANZADOR', regex: /(?:⚠️|📊)?\s*(?:¡?Lanzador en aprietos!?|¡?Pitcher in trouble!?|¡?Fatiga al lanzador!?|¡?Pitcher fatigued!?|Debuff de \+20% daño)[:\s]*([^\|\n]+)/i, color: '#38bdf8', icon: 'fa-gauge-high' },
-      { key: 'MONEYBALL FATIGA', regex: /(?:📊)?\s*(?:Moneyball:\s*¡?Fatiga al lanzador!?|Moneyball:\s*¡?Pitcher fatigued!?|Moneyball Analytics)[:\s]*([^\|\n]+)/i, color: '#14b8a6', icon: 'fa-chart-pie' },
-      { key: 'GENESIS CHAOS', regex: /(?:💥|⚠️)?\s*(?:Genesis Chaos|The Genesis Era)[:\s]*([^\|\n]+)/i, color: '#ff2ec4', icon: 'fa-skull-crossbones' },
-      { key: 'SMALL BALL', regex: /(?:⏳)?\s*(?:Small Ball|Deadball)[:\s]*([^\|\n]+)/i, color: '#22d3ee', icon: 'fa-baseball' },
-      { key: 'LIVEBALL SLUGGERS', regex: /(?:🔥)?\s*(?:Liveball Sluggers|Liveball|Golden Era)[:\s]*([^\|\n]+)/i, color: '#f59e0b', icon: 'fa-fire' },
-      { key: 'FIVE-TOOL LEGENDS', regex: /(?:⭐)?\s*(?:Five-Tool Legends|Five-Tool|Integration)[:\s]*([^\|\n]+)/i, color: '#a855f7', icon: 'fa-star' },
-      { key: 'SPEED & HUSTLE', regex: /(?:🏃)?\s*(?:Speed & Hustle|Expansion|Sinergia Speed & Hustle)[:\s]*([^\|\n]+)/i, color: '#38bdf8', icon: 'fa-bolt' },
-      { key: 'ASTROTURF SPEEDSTERS', regex: /(?:🛼)?\s*(?:AstroTurf Speedsters|AstroTurf|Big Hair|Sinergia Big Hair)[:\s]*([^\|\n]+)/i, color: '#10b981', icon: 'fa-gauge-high' },
-      { key: 'BASH BROTHERS', regex: /(?:💪)?\s*(?:Bash Brothers|Steroid Era)[:\s]*([^\|\n]+)/i, color: '#ef4444', icon: 'fa-dumbbell' },
-      { key: 'MONEYBALL ANALYTICS', regex: /(?:📊)?\s*(?:Moneyball Analytics|Moneyball|Efficiency Era)[:\s]*([^\|\n]+)/i, color: '#14b8a6', icon: 'fa-chart-pie' },
-      { key: 'THREE TRUE OUTCOMES', regex: /(?:🚀)?\s*(?:Three True Outcomes|Modern Era)[:\s]*([^\|\n]+)/i, color: '#ec4899', icon: 'fa-rocket' },
-      { key: 'RESILIENCIA', regex: /(?:🛡️)?\s*(?:Resiliencia de Leyendas)[:\s]*([^\|\n]+)/i, color: '#3b82f6', icon: 'fa-shield-halved' },
-      { key: 'PRESIÓN TEMPRANA', regex: /(?:⚡)?\s*(?:Presión Temprana)[:\s]*([^\|\n]+)/i, color: '#eab308', icon: 'fa-stopwatch' },
-      { key: 'CADENA DE PODER', regex: /(?:🔥)?\s*(?:Cadena de Poder)[:\s]*([^\|\n]+)/i, color: '#f97316', icon: 'fa-link' },
-      { key: 'EMBOSCADA', regex: /(?:💥)?\s*(?:Emboscada al Relevista)[:\s]*([^\|\n]+)/i, color: '#ef4444', icon: 'fa-crosshairs' },
-      { key: 'GUANTE DE ORO', regex: /(?:🥊)?\s*(?:Guante de Oro)[:\s]*([^\|\n]+)/i, color: '#ffd700', icon: 'fa-mitten' },
-      { key: 'VELOCISTAS', regex: /(?:⚡)?\s*(?:Velocistas Agresivos)[:\s]*([^\|\n]+)/i, color: '#06b6d4', icon: 'fa-person-running' }
+      { key: isEs ? 'FATIGA AL LANZADOR' : 'PITCHER FATIGUED', regex: /(?:⚠️|📊)?\s*(?:¡?Lanzador en aprietos!?|¡?Pitcher in trouble!?|¡?Fatiga al lanzador!?|¡?Pitcher fatigued!?|Debuff de \+20% daño)[:\s]*([^\|\n]+)/i, color: '#38bdf8', icon: 'fa-gauge-high' },
+      { key: isEs ? 'MONEYBALL FATIGA' : 'MONEYBALL FATIGUE', regex: /(?:📊)?\s*(?:Moneyball:\s*¡?Fatiga al lanzador!?|Moneyball:\s*¡?Pitcher fatigued!?|Moneyball Analytics)[:\s]*([^\|\n]+)/i, color: '#14b8a6', icon: 'fa-chart-pie' },
+      { key: isEs ? 'GENESIS CHAOS' : 'GENESIS CHAOS', regex: /(?:💥|⚠️)?\s*(?:Genesis Chaos|The Genesis Era)[:\s]*([^\|\n]+)/i, color: '#ff2ec4', icon: 'fa-skull-crossbones' },
+      { key: isEs ? 'SMALL BALL' : 'SMALL BALL', regex: /(?:⏳)?\s*(?:Small Ball|Deadball)[:\s]*([^\|\n]+)/i, color: '#22d3ee', icon: 'fa-baseball' },
+      { key: isEs ? 'LIVEBALL SLUGGERS' : 'LIVEBALL SLUGGERS', regex: /(?:🔥)?\s*(?:Liveball Sluggers|Liveball|Golden Era)[:\s]*([^\|\n]+)/i, color: '#f59e0b', icon: 'fa-fire' },
+      { key: isEs ? 'FIVE-TOOL LEGENDS' : 'FIVE-TOOL LEGENDS', regex: /(?:⭐)?\s*(?:Five-Tool Legends|Five-Tool|Integration)[:\s]*([^\|\n]+)/i, color: '#a855f7', icon: 'fa-star' },
+      { key: isEs ? 'SPEED & HUSTLE' : 'SPEED & HUSTLE', regex: /(?:🏃)?\s*(?:Speed & Hustle|Expansion|Sinergia Speed & Hustle)[:\s]*([^\|\n]+)/i, color: '#38bdf8', icon: 'fa-bolt' },
+      { key: isEs ? 'ASTROTURF SPEEDSTERS' : 'ASTROTURF SPEEDSTERS', regex: /(?:🛼)?\s*(?:AstroTurf Speedsters|AstroTurf|Big Hair|Sinergia Big Hair)[:\s]*([^\|\n]+)/i, color: '#10b981', icon: 'fa-gauge-high' },
+      { key: isEs ? 'BASH BROTHERS' : 'BASH BROTHERS', regex: /(?:💪)?\s*(?:Bash Brothers|Steroid Era)[:\s]*([^\|\n]+)/i, color: '#ef4444', icon: 'fa-dumbbell' },
+      { key: isEs ? 'MONEYBALL ANALYTICS' : 'MONEYBALL ANALYTICS', regex: /(?:📊)?\s*(?:Moneyball Analytics|Moneyball|Efficiency Era)[:\s]*([^\|\n]+)/i, color: '#14b8a6', icon: 'fa-chart-pie' },
+      { key: isEs ? 'THREE TRUE OUTCOMES' : 'THREE TRUE OUTCOMES', regex: /(?:🚀)?\s*(?:Three True Outcomes|Modern Era)[:\s]*([^\|\n]+)/i, color: '#ec4899', icon: 'fa-rocket' },
+      { key: isEs ? 'RESILIENCIA' : 'LEGEND RESILIENCE', regex: /(?:🛡️)?\s*(?:Resiliencia de Leyendas|Legend Resilience)[:\s]*([^\|\n]+)/i, color: '#3b82f6', icon: 'fa-shield-halved' },
+      { key: isEs ? 'PRESIÓN TEMPRANA' : 'EARLY PRESSURE', regex: /(?:⚡)?\s*(?:Presión Temprana|Early Pressure)[:\s]*([^\|\n]+)/i, color: '#eab308', icon: 'fa-stopwatch' },
+      { key: isEs ? 'CADENA DE PODER' : 'POWER CHAIN', regex: /(?:🔥)?\s*(?:Cadena de Poder|Power Chain)[:\s]*([^\|\n]+)/i, color: '#f97316', icon: 'fa-link' },
+      { key: isEs ? 'EMBOSCADA' : 'RELIEVER AMBUSH', regex: /(?:💥)?\s*(?:Emboscada al Relevista|Reliever Ambush)[:\s]*([^\|\n]+)/i, color: '#ef4444', icon: 'fa-crosshairs' },
+      { key: isEs ? 'GUANTE DE ORO' : 'GOLD GLOVE', regex: /(?:🥊)?\s*(?:Guante de Oro|Gold Glove)[:\s]*([^\|\n]+)/i, color: '#ffd700', icon: 'fa-mitten' },
+      { key: isEs ? 'VELOCISTAS' : 'AGGRESSIVE SPEED', regex: /(?:⚡)?\s*(?:Velocistas Agresivos|Aggressive Speed)[:\s]*([^\|\n]+)/i, color: '#06b6d4', icon: 'fa-person-running' }
     ];
 
     let extractedBadges = [];

@@ -27,12 +27,16 @@
   --challenge162-accent: #ffd700;
   --challenge162-accent-glow: rgba(255, 215, 0, 0.35);
 
-  /* Career Mode's own identity color — distinct from the core green/yellow
-     theme (Story Mode also keeps its own accents), kept as a real variable
-     instead of hardcoded hex so it can be reused consistently. */
+  /* Career Mode accent colors */
   --career-accent: #ec4899;
   --career-accent-dim: #db2777;
   --career-accent-glow: rgba(236, 72, 153, 0.45);
+
+  /* Safe-area insets for notched mobile devices */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
 }
 
 * {
@@ -40,6 +44,11 @@
   margin: 0;
   padding: 0;
   border-radius: 0px !important; /* Force blocky NES style everywhere */
+}
+
+html {
+  min-height: 100vh;
+  min-height: 100dvh;
 }
 
 body {
@@ -56,9 +65,13 @@ body {
   background-attachment: fixed;
   color: #f3f4f6;
   min-height: 100vh;
+  min-height: 100dvh;
   overflow-x: hidden;
   display: flex;
   flex-direction: column;
+  overscroll-behavior: none;
+  touch-action: manipulation;
+  -webkit-text-size-adjust: 100%;
 }
 
 body.on-main-menu {
@@ -1467,37 +1480,443 @@ p {
 }
 
 
-/* PRE-FIGHT SETUP */
+/* ==========================================================================
+   SCREEN PRE-FIGHT: ARCADE SHOWDOWN (HIGH HYPE REDESIGN)
+   ========================================================================== */
+#screen-pre-fight {
+  max-width: 780px;
+  margin: 0 auto 20px auto;
+  background: radial-gradient(circle at center, rgba(16, 24, 40, 0.95), rgba(6, 9, 16, 0.98));
+  border: 2px solid var(--primary-color);
+  box-shadow: 0 0 35px rgba(0, 0, 0, 0.9), 0 0 20px rgba(0, 255, 102, 0.25);
+  border-radius: 16px;
+  padding: 22px 28px;
+  backdrop-filter: blur(12px);
+  position: relative;
+  overflow: hidden;
+}
+
+#screen-pre-fight::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #10b981, #ffd700, #ef4444);
+}
+
+.pre-fight-header {
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.pre-fight-stage-badge {
+  display: inline-block;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8.5px;
+  color: #ffd700;
+  background: rgba(255, 215, 0, 0.12);
+  border: 1px solid rgba(255, 215, 0, 0.4);
+  padding: 4px 12px;
+  border-radius: 20px;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+  text-shadow: 0 0 8px rgba(255, 215, 0, 0.5);
+}
+
+.pre-fight-header h2 {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 13px;
+  color: #ffffff;
+  letter-spacing: 1px;
+  margin: 4px 0 12px 0;
+  text-shadow: 0 0 12px rgba(255, 255, 255, 0.6);
+}
+
+#pre-fight-scouting {
+  margin-bottom: 0;
+}
+
+#pre-fight-scouting > div {
+  background: rgba(0, 0, 0, 0.55) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.15) !important;
+  border-radius: 12px !important;
+  padding: 12px 18px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 16px !important;
+  box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.6) !important;
+}
+
+/* ── Main Faceoff Arena ── */
+.pre-fight-showdown {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 18px;
+  margin: 18px 0;
+}
+
+.showdown-side {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 156px;
+  width: 156px;
+}
+
+/* ── Showdown Navigation Bar (Batter & Pitcher Selectors) ── */
+.showdown-nav-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  width: 100%;
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  border-radius: 8px;
+  padding: 3px 5px;
+  box-sizing: border-box;
+}
+
+.showdown-nav-bar.nav-enemy {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+.btn-showdown-nav {
+  background: rgba(0, 0, 0, 0.6) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  font-family: 'Press Start 2P', monospace !important;
+  font-size: 8px !important;
+  padding: 4px 6px !important;
+  border-radius: 4px !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+  line-height: 1 !important;
+}
+
+.btn-showdown-nav:hover {
+  background: var(--primary-color) !important;
+  color: #000000 !important;
+  border-color: var(--primary-color) !important;
+  transform: scale(1.1);
+}
+
+.showdown-nav-bar.nav-enemy .btn-showdown-nav:hover {
+  background: #ef4444 !important;
+  color: #ffffff !important;
+  border-color: #ef4444 !important;
+}
+
+.showdown-nav-label {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7px;
+  color: #ffffff;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+  flex: 1;
+  padding: 0 2px;
+}
+
+.showdown-card-slot {
+  width: 152px;
+  height: 236px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.showdown-card-slot .player-card {
+  width: 152px !important;
+  height: 236px !important;
+  max-width: 152px !important;
+  min-width: 152px !important;
+  aspect-ratio: 152 / 236 !important;
+  margin: 0 !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7), 0 0 16px rgba(0, 255, 102, 0.25) !important;
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.showdown-side-enemy .showdown-card-slot .player-card {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7), 0 0 16px rgba(239, 68, 68, 0.3) !important;
+}
+
+.showdown-card-slot .player-card:hover {
+  transform: translateY(-4px) scale(1.03) !important;
+}
+
+/* ── Center Clash Area ── */
+.showdown-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex: 0 0 190px;
+  width: 190px;
+  padding: 14px 12px;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1.5px dashed rgba(255, 255, 255, 0.15);
+  border-radius: 14px;
+}
+
+.showdown-vs-badge {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 26px;
+  font-weight: 900;
+  color: #ffd700;
+  text-shadow: 0 0 16px rgba(255, 215, 0, 0.8), 0 0 32px rgba(255, 140, 0, 0.6);
+  letter-spacing: 3px;
+  animation: pulseVS 1.8s ease-in-out infinite;
+}
+
+/* ── Matchup Insights Panel (Center Comparison) ── */
+.showdown-insights-panel {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  margin: 2px 0;
+}
+
+.matchup-overall-badge {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7.5px;
+  font-weight: bold;
+  padding: 4px 6px;
+  border-radius: 6px;
+  letter-spacing: 0.3px;
+  text-align: center;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.matchup-overall-badge.edge-hitter {
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.18);
+  border: 1px solid #10b981;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+}
+
+.matchup-overall-badge.edge-pitcher {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.18);
+  border: 1px solid #ef4444;
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
+}
+
+.matchup-overall-badge.edge-even {
+  color: #f59e0b;
+  background: rgba(245, 158, 11, 0.18);
+  border: 1px solid #f59e0b;
+}
+
+/* ── Spotlight Matchup Highlights (Option A) ── */
+.showdown-highlights-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  margin-top: 2px;
+}
+
+.showdown-highlight-chip {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 9.5px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  width: 100%;
+  box-sizing: border-box;
+  letter-spacing: 0.2px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+.showdown-highlight-chip.chip-fire {
+  color: #fed7aa;
+  background: rgba(249, 115, 22, 0.25);
+  border: 1px solid rgba(249, 115, 22, 0.5);
+  box-shadow: 0 0 10px rgba(249, 115, 22, 0.3);
+}
+
+.showdown-highlight-chip.chip-good {
+  color: #a7f3d0;
+  background: rgba(16, 185, 129, 0.22);
+  border: 1px solid rgba(16, 185, 129, 0.45);
+}
+
+.showdown-highlight-chip.chip-bad {
+  color: #fecaca;
+  background: rgba(239, 68, 68, 0.22);
+  border: 1px solid rgba(239, 68, 68, 0.45);
+}
+
+/* Smooth targeted card-swap animation */
+@keyframes cardSwapSlide {
+  0% { transform: scale(0.96); opacity: 0.7; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.card-swap-anim {
+  animation: cardSwapSlide 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.selected-pitcher-row {
+  border-color: #ef4444 !important;
+  background: rgba(239, 68, 68, 0.18) !important;
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.3) !important;
+}
+
+@keyframes pulseVS {
+  0%, 100% { transform: scale(1); filter: brightness(1); }
+  50% { transform: scale(1.08); filter: brightness(1.3); }
+}
+
+.showdown-stakes-pill {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7px;
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  padding: 3px 8px;
+  border-radius: 12px;
+  letter-spacing: 0.5px;
+}
+
+.btn-pre-fight-battle {
+  width: 100% !important;
+  padding: 14px 10px !important;
+  font-family: 'Press Start 2P', monospace !important;
+  font-size: 11px !important;
+  font-weight: bold !important;
+  background: linear-gradient(135deg, #00ff66, #10b981) !important;
+  color: #000000 !important;
+  border: none !important;
+  border-radius: 10px !important;
+  box-shadow: 0 0 20px rgba(0, 255, 102, 0.5) !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  cursor: pointer !important;
+  animation: battlePulse 2s ease-in-out infinite;
+}
+
+@keyframes battlePulse {
+  0%, 100% { box-shadow: 0 0 16px rgba(0, 255, 102, 0.4); }
+  50% { box-shadow: 0 0 28px rgba(0, 255, 102, 0.8); }
+}
+
+.btn-pre-fight-battle:hover {
+  transform: translateY(-2px) scale(1.03) !important;
+  box-shadow: 0 0 32px rgba(0, 255, 102, 0.9) !important;
+}
+
+.btn-pre-fight-back {
+  width: 100% !important;
+  padding: 9px 10px !important;
+  font-family: 'Press Start 2P', monospace !important;
+  font-size: 8px !important;
+  background: rgba(30, 41, 59, 0.8) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  color: #94a3b8 !important;
+  border-radius: 8px !important;
+  transition: all 0.2s ease !important;
+  cursor: pointer !important;
+}
+
+.btn-pre-fight-back:hover {
+  background: rgba(51, 65, 85, 0.9) !important;
+  color: #ffffff !important;
+}
+
+/* ── Bullpen Section ── */
+.pre-fight-bullpen-section {
+  margin-top: 14px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1.5px solid rgba(239, 68, 68, 0.25);
+  border-radius: 12px;
+  padding: 12px 16px;
+}
+
+.pre-fight-bullpen-title {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8.5px;
+  color: #ef4444;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pre-fight-bullpen-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
 .pre-fight-row {
-  background: #000;
-  border: 3px double var(--primary-color);
-  padding: 10px;
+  background: rgba(10, 15, 26, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 7px 12px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
+  transition: all 0.18s ease;
+  margin: 0;
 }
+
+.pre-fight-row:hover {
+  border-color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+  transform: translateX(3px);
+}
+
 .pre-fight-row.ko {
   opacity: 0.45;
   border-color: #ef4444;
 }
+
 .pre-fight-row .name {
-  font-size: 9px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8.5px;
   font-weight: bold;
+  color: #ffffff;
 }
+
 .pre-fight-row .hp-text {
-  font-size: 8px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7.5px;
   color: #a1a1aa;
 }
+
 .pre-fight-row .hp-bar-container {
   width: 70px;
-  height: 8px;
-  background: #111;
-  border: 1px solid #555;
+  height: 7px;
+  background: #18181b;
+  border: 1px solid #3f3f46;
+  border-radius: 4px;
   overflow: hidden;
 }
+
 .pre-fight-row .hp-bar-fill {
   height: 100%;
+  border-radius: 3px;
 }
 
 
@@ -2658,7 +3077,8 @@ p {
   margin-bottom: 24px;
 }
 
-.draft-cards {
+.draft-cards,
+.draft-cards-carousel {
   display: flex;
   gap: 20px;
   flex-wrap: wrap;
@@ -3317,189 +3737,234 @@ body.workspace-active .main-container {
 }
 
 /* Synergy list and progress items in Right Sidebar */
+/* ── POKELIKE CLEAN TRAITS & SYNERGIES ── */
 .synergy-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 4px;
 }
 
-.synergy-list-item {
-  background: rgba(0, 0, 0, 0.4);
-  border: 2px dashed rgba(255, 255, 255, 0.15);
-  padding: 8px;
+.pokelike-section-title {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7px;
+  color: var(--accent-color);
+  letter-spacing: 0.5px;
+  margin: 6px 0 4px 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  text-transform: uppercase;
+}
+
+.pokelike-syn-card {
+  background: rgba(15, 23, 42, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 6px 8px;
+  margin-bottom: 4px;
   transition: all 0.2s ease;
+  cursor: pointer;
+  box-sizing: border-box;
 }
 
-.synergy-list-item.active {
-  border: 2px solid var(--primary-color);
-  box-shadow: 0 0 8px var(--primary-glow);
-  background: rgba(0, 255, 102, 0.03);
+.pokelike-syn-card:hover {
+  background: rgba(30, 41, 59, 0.85);
+  border-color: rgba(255, 255, 255, 0.25);
+  transform: translateX(2px);
 }
 
-.synergy-list-item.active-level-2 {
-  border: 2px solid var(--accent-color);
-  box-shadow: 0 0 12px var(--accent-glow);
-  background: rgba(255, 204, 0, 0.03);
+.pokelike-syn-card.syn-active {
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(0, 255, 102, 0.4);
+  box-shadow: 0 0 10px rgba(0, 255, 102, 0.12);
 }
 
-.synergy-item-header {
+.pokelike-syn-card.syn-building {
+  opacity: 0.85;
+}
+
+.syn-top-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 6px;
+  gap: 6px;
+  margin-bottom: 4px;
 }
 
-.synergy-item-name {
+.syn-badge-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow: hidden;
+  flex: 1;
+}
+
+.syn-tag-badge {
   font-family: 'Press Start 2P', monospace;
-  font-size: 8px;
+  font-size: 6.5px;
   font-weight: bold;
-  color: #fff;
+  padding: 2px 4px;
+  border-radius: 4px;
+  border: 1px solid;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+  line-height: 1;
 }
 
-.synergy-item-count {
+.syn-title-text {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 9.5px;
+  font-weight: 700;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.syn-count-status {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.syn-count-num {
   font-family: 'Press Start 2P', monospace;
   font-size: 7px;
-  color: #9ca3af;
+  color: #94a3b8;
 }
 
-.synergy-progress-dots {
+.syn-tier-chip {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 6.5px;
+  font-weight: bold;
+  padding: 1px 4px;
+  border-radius: 3px;
+  line-height: 1.1;
+}
+
+.syn-tier-chip.syn-tier-pending {
+  background: rgba(255, 255, 255, 0.1);
+  color: #64748b;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.syn-progress-track {
+  width: 100%;
+  height: 4px;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 2px;
+  overflow: hidden;
+  margin: 3px 0 4px 0;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.syn-progress-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.syn-active-desc {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 9.5px;
+  line-height: 1.35;
+  color: #e2e8f0;
+  padding-left: 2px;
+}
+
+.syn-pending-desc {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 8.5px;
+  line-height: 1.3;
+  color: #64748b;
+  padding-left: 2px;
+}
+
+/* Collapsible Full Tier Breakdown Drawer */
+.syn-full-tiers-drawer {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px dashed rgba(255, 255, 255, 0.12);
   display: flex;
+  flex-direction: column;
   gap: 3px;
-  margin-bottom: 6px;
 }
 
-.synergy-dot {
-  width: 8px;
-  height: 8px;
-  background: rgba(255, 255, 255, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.25);
+.syn-tier-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 5px;
+  font-size: 8.5px;
+  line-height: 1.3;
+  color: #64748b;
+  padding: 2px 4px;
+  border-radius: 4px;
 }
 
-.synergy-dot.filled {
-  background: #ff2ec4;
-  border-color: #fff;
+.syn-tier-row.tier-current {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
+  font-weight: 600;
 }
 
-.synergy-item-desc {
-  font-family: 'VT323', monospace;
-  font-size: 13.5px;
-  line-height: 1.25;
-  color: #a1a1aa;
+.syn-tier-row.tier-reached {
+  color: #94a3b8;
 }
 
-/* ── Synergy Active States by Tier (Organic Progression) ── */
-/* Tier 1 (2+ players): Neon Purple / Magenta */
-.synergy-list-item.tier-1 {
-  border: 2px solid #ff2ec4;
-  box-shadow: 0 0 10px rgba(255, 46, 196, 0.4), inset 0 0 6px rgba(255, 46, 196, 0.08);
-  background: rgba(255, 46, 196, 0.04);
-}
-.synergy-list-item.tier-1 .synergy-item-name {
-  color: #ff2ec4;
-  text-shadow: 0 0 5px rgba(255, 46, 196, 0.6);
-}
-.synergy-list-item.tier-1 .synergy-item-count {
-  color: #ff8be3;
-}
-.synergy-list-item.tier-1 .synergy-dot.filled {
-  background: #ff2ec4;
-  border-color: #fff;
-  box-shadow: 0 0 5px #ff2ec4;
-}
-.synergy-list-item.tier-1 .synergy-tier-row.tier-current {
-  color: #fff;
-  border-left-color: #ff2ec4;
-  background: rgba(255, 46, 196, 0.08);
-}
-.synergy-list-item.tier-1 .synergy-tier-row.tier-current .tier-label {
-  color: #ff2ec4;
+.syn-t-label {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 6px;
+  padding: 1px 3px;
+  border-radius: 2px;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-top: 1px;
 }
 
-/* Tier 2 (4+ players): Cyan / Electric Blue */
-.synergy-list-item.tier-2 {
-  border: 2px solid #00f0ff;
-  box-shadow: 0 0 12px rgba(0, 240, 255, 0.45), inset 0 0 8px rgba(0, 240, 255, 0.1);
-  background: rgba(0, 240, 255, 0.05);
-}
-.synergy-list-item.tier-2 .synergy-item-name {
-  color: #00f0ff;
-  text-shadow: 0 0 6px rgba(0, 240, 255, 0.7);
-}
-.synergy-list-item.tier-2 .synergy-item-count {
-  color: #7df9ff;
-}
-.synergy-list-item.tier-2 .synergy-dot.filled {
-  background: #00f0ff;
-  border-color: #fff;
-  box-shadow: 0 0 6px #00f0ff;
-}
-.synergy-list-item.tier-2 .synergy-tier-row.tier-current {
-  color: #fff;
-  border-left-color: #00f0ff;
-  background: rgba(0, 240, 255, 0.08);
-}
-.synergy-list-item.tier-2 .synergy-tier-row.tier-current .tier-label {
-  color: #00f0ff;
+.syn-t-text {
+  flex: 1;
 }
 
-/* Tier 3 (6+ players): Neon Green / Emerald */
-.synergy-list-item.tier-3 {
-  border: 2px solid #00ff66;
-  box-shadow: 0 0 14px rgba(0, 255, 102, 0.5), inset 0 0 10px rgba(0, 255, 102, 0.12);
-  background: rgba(0, 255, 102, 0.06);
-}
-.synergy-list-item.tier-3 .synergy-item-name {
-  color: #00ff66;
-  text-shadow: 0 0 7px rgba(0, 255, 102, 0.8);
-}
-.synergy-list-item.tier-3 .synergy-item-count {
-  color: #86efac;
-}
-.synergy-list-item.tier-3 .synergy-dot.filled {
-  background: #00ff66;
-  border-color: #fff;
-  box-shadow: 0 0 7px #00ff66;
-}
-.synergy-list-item.tier-3 .synergy-tier-row.tier-current {
-  color: #fff;
-  border-left-color: #00ff66;
-  background: rgba(0, 255, 102, 0.1);
-}
-.synergy-list-item.tier-3 .synergy-tier-row.tier-current .tier-label {
-  color: #00ff66;
+/* Inactive Toggle Button & Container */
+.btn-toggle-inactive-syn {
+  width: 100% !important;
+  background: rgba(30, 41, 59, 0.6) !important;
+  border: 1px dashed rgba(255, 255, 255, 0.15) !important;
+  color: #94a3b8 !important;
+  font-family: 'Press Start 2P', monospace !important;
+  font-size: 6.5px !important;
+  padding: 6px 8px !important;
+  border-radius: 6px !important;
+  cursor: pointer !important;
+  margin-top: 8px !important;
+  transition: all 0.2s ease !important;
 }
 
-/* Tier 4 (8+ players): Legendary Gold / Mythic */
-.synergy-list-item.tier-4 {
-  border: 2px solid #ffd700;
-  box-shadow: 0 0 18px rgba(255, 215, 0, 0.65), inset 0 0 12px rgba(255, 215, 0, 0.16);
-  background: rgba(255, 215, 0, 0.08);
-  animation: pulse-legendary-glow 2.5s infinite alternate;
-}
-.synergy-list-item.tier-4 .synergy-item-name {
-  color: #ffd700;
-  text-shadow: 0 0 8px rgba(255, 215, 0, 0.9);
-}
-.synergy-list-item.tier-4 .synergy-item-count {
-  color: #fde047;
-}
-.synergy-list-item.tier-4 .synergy-dot.filled {
-  background: #ffd700;
-  border-color: #fff;
-  box-shadow: 0 0 8px #ffd700;
-}
-.synergy-list-item.tier-4 .synergy-tier-row.tier-current {
-  color: #fff;
-  border-left-color: #ffd700;
-  background: rgba(255, 215, 0, 0.12);
-}
-.synergy-list-item.tier-4 .synergy-tier-row.tier-current .tier-label {
-  color: #ffd700;
+.btn-toggle-inactive-syn:hover {
+  background: rgba(51, 65, 85, 0.8) !important;
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
 }
 
-@keyframes pulse-legendary-glow {
-  0% { box-shadow: 0 0 12px rgba(255, 215, 0, 0.5), inset 0 0 8px rgba(255, 215, 0, 0.12); }
-  100% { box-shadow: 0 0 22px rgba(255, 215, 0, 0.8), inset 0 0 16px rgba(255, 215, 0, 0.22); }
+.inactive-syn-container {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 6px;
+  transition: all 0.25s ease;
+}
+
+.pokelike-empty-synergies {
+  background: rgba(15, 23, 42, 0.5);
+  border: 1px dashed rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  padding: 10px;
+  font-size: 9px;
+  color: #64748b;
+  text-align: center;
+  line-height: 1.4;
+  margin-top: 4px;
 }
 
 /* 4-tier description breakdown */
@@ -4592,14 +5057,46 @@ body.workspace-active .main-container {
 
 /* ── MOBILE RESPONSIVE ──────────────────────────────────────────────────── */
 @media (max-width: 768px) {
-  /* Draft/Starter/Reward card wrappers: unified snug width (~175px) across all modes */
+  /* Outer Draft container is vertical column on mobile */
+  .draft-cards,
+  #starter-selection-pool {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Only the pick cards row is the horizontal snap-carousel */
+  .draft-cards-carousel,
+  .starter-selection,
+  .midrun-draft-options {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    scroll-snap-type: x mandatory !important;
+    -webkit-overflow-scrolling: touch !important;
+    gap: 14px !important;
+    padding: 10px 14px 18px 14px !important;
+    justify-content: flex-start !important;
+    align-items: stretch !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+    box-sizing: border-box !important;
+  }
+
   .draft-card-wrapper,
   .starter-card-wrapper,
   .draft-card-option {
-    width: 175px !important;
-    max-width: 175px !important;
+    scroll-snap-align: center !important;
+    flex: 0 0 156px !important;
+    width: 156px !important;
+    max-width: 156px !important;
     min-width: 156px !important;
-    margin: 0 auto !important;
+    margin: 0 !important;
     box-sizing: border-box !important;
     display: flex !important;
     flex-direction: column !important;
@@ -4628,14 +5125,15 @@ body.workspace-active .main-container {
     text-align: center !important;
   }
 
-  /* Unified standard player card across ALL screens on mobile (Draft, Battle, Rewards, Roster) */
+  /* Standalone player card on mobile */
   .player-card {
     width: 152px !important;
     height: 236px !important;
     max-width: 152px !important;
-    min-width: 152px !important;
-    padding: 7px 8px 6px 8px !important;
-    font-size: 8px !important;
+    min-width: 130px !important;
+    aspect-ratio: 152 / 236 !important;
+    padding: 6px 7px 5px 7px !important;
+    font-size: 7.5px !important;
     box-sizing: border-box !important;
     display: flex !important;
     flex-direction: column !important;
@@ -4650,20 +5148,25 @@ body.workspace-active .main-container {
   .player-card .card-position,
   .player-card .card-ovr,
   .player-card .card-year {
-    font-size: 6px !important;
+    font-size: 7px !important;
     padding: 2px 4px !important;
   }
 
   .player-card .card-name {
-    line-height: 1.2 !important;
+    font-size: 7.8px !important;
+    line-height: 1.25 !important;
     margin: 1px 0 !important;
-    padding: 1px 2px !important;
+    padding: 2px 3px !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
     white-space: nowrap !important;
     max-width: 100% !important;
     box-sizing: border-box !important;
   }
+  .player-card .card-name.name-xxs { font-size: 5.6px !important; letter-spacing: -0.25px !important; }
+  .player-card .card-name.name-xs  { font-size: 6.4px !important; letter-spacing: -0.1px !important; }
+  .player-card .card-name.name-sm  { font-size: 7.0px !important; }
+  .player-card .card-name.name-lg  { font-size: 7.8px !important; }
 
   .player-card .card-traits-box {
     display: flex !important;
@@ -4946,6 +5449,23 @@ body.on-main-menu .main-container {
     overflow: visible !important;
   }
 
+  /* Draft Screen full-width single column on mobile */
+  #draft-round-layout,
+  #final-lineup-layout {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    gap: 12px !important;
+  }
+
+  #draft-col-cards {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
   .workspace-center-panel {
     width: 100% !important;
     max-width: 100vw !important;
@@ -5218,16 +5738,186 @@ body.on-main-menu .main-container {
 
 /* --- MINIMALIST SINGLE-SCREEN MOBILE BATTLE (< 768px) --- */
 @media (max-width: 768px) {
-  /* Pre-fight screen: hide player batters lineup panel on mobile */
-  #screen-pre-fight .pre-fight-columns > div:first-child {
+  /* Pre-fight mobile showdown grid layout */
+  #screen-pre-fight {
+    padding: 10px 8px 14px 8px !important;
+    margin: 0 auto 10px auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    border-radius: 12px !important;
+  }
+
+  .pre-fight-stage-badge {
+    font-size: 7px !important;
+    padding: 3px 8px !important;
+  }
+
+  .pre-fight-header h2 {
+    font-size: 10px !important;
+    margin-bottom: 4px !important;
+  }
+
+  #pre-fight-scouting {
+    margin-bottom: 8px !important;
+  }
+
+  #pre-fight-scouting > div {
+    padding: 8px 10px !important;
+    gap: 6px !important;
+  }
+
+  .pre-fight-showdown {
+    display: grid !important;
+    grid-template-columns: 1fr auto 1fr !important;
+    align-items: center !important;
+    justify-items: center !important;
+    gap: 6px !important;
+    margin: 6px 0 !important;
+    width: 100% !important;
+  }
+
+  .showdown-side.showdown-side-player {
+    grid-column: 1 / 2 !important;
+    grid-row: 1 / 2 !important;
+    width: 100% !important;
+    max-width: 140px !important;
+  }
+
+  .showdown-side.showdown-side-enemy {
+    grid-column: 3 / 4 !important;
+    grid-row: 1 / 2 !important;
+    width: 100% !important;
+    max-width: 140px !important;
+  }
+
+  .showdown-nav-bar {
+    width: 100% !important;
+    padding: 2px 3px !important;
+    gap: 2px !important;
+    box-sizing: border-box !important;
+  }
+
+  .btn-showdown-nav {
+    font-size: 7px !important;
+    padding: 3px 5px !important;
+  }
+
+  .showdown-nav-label {
+    font-size: 6px !important;
+    padding: 0 1px !important;
+  }
+
+  .showdown-card-slot {
+    width: 100% !important;
+    max-width: 145px !important;
+    height: 226px !important;
+  }
+
+  .showdown-card-slot .player-card {
+    width: 140px !important;
+    height: 220px !important;
+    max-width: 140px !important;
+    aspect-ratio: 140 / 220 !important;
+    font-size: 7px !important;
+    padding: 5px 6px !important;
+    box-sizing: border-box !important;
+  }
+
+  .showdown-center {
+    grid-column: 1 / 4 !important;
+    grid-row: 2 / 3 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 4px 0 0 0 !important;
+    background: none !important;
+    border: none !important;
+    gap: 5px !important;
+    margin-top: 4px !important;
+  }
+
+  .showdown-vs-badge {
+    position: absolute !important;
+    top: 36% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    font-size: 16px !important;
+    margin: 0 !important;
+    z-index: 5 !important;
+  }
+
+  .showdown-insights-panel {
+    gap: 3px !important;
+    margin: 2px 0 4px 0 !important;
+    width: 100% !important;
+  }
+
+  .matchup-overall-badge {
+    font-size: 6.5px !important;
+    padding: 3px 5px !important;
+  }
+
+  .showdown-highlights-wrap {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    gap: 3px !important;
+    width: 100% !important;
+  }
+
+  .showdown-highlight-chip {
+    font-size: 8px !important;
+    padding: 2px 6px !important;
+    width: auto !important;
+  }
+
+  .showdown-stakes-pill {
     display: none !important;
   }
 
-  #screen-pre-fight:not(.hidden) .pre-fight-columns {
-    display: flex !important;
-    flex-direction: column-reverse !important;
-    gap: 12px !important;
-    align-items: center !important;
+  .btn-pre-fight-battle {
+    font-size: 11px !important;
+    padding: 12px 14px !important;
+    min-height: 42px !important;
+    width: 100% !important;
+    border-radius: 10px !important;
+  }
+
+  .btn-pre-fight-back {
+    font-size: 8px !important;
+    padding: 7px 10px !important;
+    min-height: 30px !important;
+    width: 100% !important;
+  }
+
+  .pre-fight-bullpen-section {
+    margin-top: 8px !important;
+    padding: 8px 10px !important;
+  }
+
+  .pre-fight-bullpen-title {
+    font-size: 7.5px !important;
+    margin-bottom: 6px !important;
+  }
+
+  #screen-pre-fight .pre-fight-row {
+    padding: 5px 8px !important;
+    margin-bottom: 3px !important;
+    font-size: 7.5px !important;
+  }
+
+  #screen-pre-fight .pre-fight-row .name {
+    font-size: 7.5px !important;
+  }
+
+  #screen-pre-fight .pre-fight-row .hp-text {
+    font-size: 6.5px !important;
+  }
+
+  #screen-pre-fight .pre-fight-row .hp-bar-container {
+    width: 40px !important;
+    height: 5px !important;
   }
 
   /* Mobile Match Simulator Viewport (Fits 100% inside 1 screen and scrollable inside green box if screen is small) */
@@ -5316,72 +6006,36 @@ body.on-main-menu .main-container {
     height: 36px !important;
   }
 
-  /* 1v1 Battle Arena Cards — proportional and matching standard card size */
+  /* 1v1 Battle Arena Cards — proportional, authentic retro ratio, zero distortion */
   .rpg-fight-deck {
     transform: none !important;
     width: 100% !important;
+    max-width: 100% !important;
     display: flex !important;
+    flex-direction: row !important;
     justify-content: center !important;
     align-items: center !important;
-    gap: 8px !important;
+    gap: 6px !important;
     margin: 4px 0 !important;
-    padding: 4px !important;
+    padding: 2px 0 !important;
     background: none !important;
     border: none !important;
+    box-sizing: border-box !important;
+    overflow: visible !important;
+    position: relative !important;
   }
 
   .fight-card-slot {
-    flex: 1 1 48% !important;
-    max-width: 155px !important;
-    height: auto !important;
+    flex: 0 0 152px !important;
+    width: 152px !important;
+    max-width: 152px !important;
+    min-width: 130px !important;
     display: flex !important;
     flex-direction: column !important;
     align-items: center !important;
     justify-content: center !important;
-    overflow: visible !important;
-    padding: 2px !important;
+    padding: 0 !important;
     box-sizing: border-box !important;
-  }
-
-  .fight-card-slot .card,
-  .fight-card-slot .player-card {
-    width: 152px !important;
-    height: 236px !important;
-    max-width: 100% !important;
-    aspect-ratio: 152 / 236 !important;
-    font-size: 7.5px !important;
-    padding: 7px 8px 6px 8px !important;
-    box-sizing: border-box !important;
-    display: flex !important;
-    flex-direction: column !important;
-    justify-content: space-between !important;
-    overflow: hidden !important;
-    margin: 0 auto !important;
-  }
-
-  .fight-card-slot .player-card .card-stats {
-    padding: 3px 4px !important;
-    margin: 1px 0 !important;
-  }
-
-  .fight-card-slot .player-card .stat-row {
-    margin: 1px 0 !important;
-    font-size: 7px !important;
-  }
-
-  .fight-card-slot .player-card .card-name {
-    padding: 0 2px !important;
-    margin: 1px 0 !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    white-space: nowrap !important;
-    max-width: 100% !important;
-    box-sizing: border-box !important;
-  }
-
-  .fight-card-slot .player-card .card-header {
-    font-size: 6px !important;
-    margin-bottom: 2px !important;
   }
 
   .vs-circle {
@@ -5595,21 +6249,22 @@ body.on-main-menu .main-container {
     margin: -11px !important;
   }
 
-  /* Action bar: sticks to the bottom of the mobile scroll viewport so ROLL DICE
-     is always one tap away, no matter how far the player has scrolled through
-     the luck zones / log above it. */
+  /* Action bar: sticks to the bottom of the mobile viewport so ROLL DICE
+     is always within thumb reach, with safe-area padding for mobile home bars. */
   #dice-action-bar {
     position: sticky !important;
-    bottom: 4px !important;
-    z-index: 30 !important;
+    bottom: 0 !important;
+    z-index: 50 !important;
     display: flex !important;
     flex-direction: column !important;
     width: 100% !important;
     margin-top: 8px !important;
-    padding-top: 8px !important;
-    background: rgba(9, 13, 22, 0.92) !important;
-    backdrop-filter: blur(6px) !important;
-    border-radius: 10px !important;
+    padding: 8px 10px calc(8px + var(--safe-bottom)) 10px !important;
+    background: rgba(9, 13, 22, 0.96) !important;
+    backdrop-filter: blur(8px) !important;
+    border-top: 1px solid rgba(16, 185, 129, 0.3) !important;
+    border-radius: 10px 10px 0 0 !important;
+    box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.6) !important;
   }
 
   #btn-roll-dice {
@@ -5895,6 +6550,100 @@ body.on-main-menu .main-container {
   cursor: not-allowed !important;
   pointer-events: none !important;
   box-shadow: none !important;
+}
+
+@media (max-width: 768px) {
+  #screen-mode-select {
+    padding: 14px 10px 20px 10px !important;
+    margin: 4px auto 16px auto !important;
+    border-radius: 12px !important;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.9) !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .main-logo-lockup {
+    margin: 0 auto 12px auto !important;
+  }
+
+  .menu-main-logo {
+    max-width: 200px !important;
+    width: 65% !important;
+    margin: 0 auto 4px auto !important;
+  }
+
+  .menu-tagline {
+    font-size: 6.5px !important;
+    letter-spacing: 0.8px !important;
+  }
+
+  /* 2-column Pokelike grid layout for modes on mobile with descriptions */
+  .mode-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 10px !important;
+    margin-top: 8px !important;
+    margin-bottom: 12px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .mode-card {
+    padding: 12px 10px 14px 10px !important;
+    border-radius: 12px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    text-align: center !important;
+    min-height: 185px !important;
+    box-sizing: border-box !important;
+  }
+
+  /* 162-0 Challenge spans both columns as a featured wide banner */
+  .mode-card.challenge162-card {
+    grid-column: span 2 !important;
+    min-height: auto !important;
+    padding: 12px 14px !important;
+  }
+
+  .mode-icon {
+    font-size: 24px !important;
+    margin-bottom: 4px !important;
+  }
+
+  .mode-title {
+    font-size: 9px !important;
+    margin-bottom: 3px !important;
+    line-height: 1.2 !important;
+  }
+
+  .mode-subtitle {
+    font-size: 6.5px !important;
+    margin-bottom: 6px !important;
+    line-height: 1.2 !important;
+    color: #f59e0b !important;
+  }
+
+  /* Concise legible descriptions on mobile */
+  .mode-desc {
+    display: block !important;
+    font-size: 8px !important;
+    line-height: 1.35 !important;
+    color: #9ca3af !important;
+    margin: 2px 0 10px 0 !important;
+    text-align: center !important;
+    flex: 1 !important;
+  }
+
+  .btn-mode {
+    font-size: 7.5px !important;
+    padding: 8px 6px !important;
+    min-height: 32px !important;
+    width: 100% !important;
+    margin-top: auto !important;
+  }
 }
 
 

@@ -2,28 +2,33 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>BaseRogue: Baseball Roguelike — Free Turn-Based Dice Battler</title>
-  <!-- SEO Tags -->
-  <meta name="description" content="Play BaseRogue, the free baseball roguelike and turn-based deckbuilder! Draft MLB legends, roll the dice in high-stakes at-bats, build era synergies, and conquer pitching rotations.">
-  <meta name="keywords" content="baserogue, baseball roguelike, baseball deckbuilder, mlb roguelike, baseball card game, dice battler, turn based baseball, free online baseball game, roguelike games">
-  <meta name="author" content="BaseRogue">
-  <meta name="robots" content="index, follow">
+  <!-- SEO & Multilingual Meta Tags -->
+  <meta name="description" content="Play BaseRogue, the ultimate free online baseball roguelike and turn-based deckbuilder! Draft historic MLB legends, build powerful era synergies, roll the dice in tense at-bats, and conquer rival rotations in your browser.">
+  <meta name="keywords" content="BaseRogue, baseball roguelike, baseball deckbuilder, MLB roguelike, turn-based baseball, baseball dice game, baseball card roguelike, retro sports roguelike, free browser games, pokelike, balatro baseball">
+  <meta name="author" content="BaseRogue Team">
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
   <link rel="canonical" href="https://www.baserogue.com/">
+  <link rel="alternate" hreflang="x-default" href="https://www.baserogue.com/">
+  <link rel="alternate" hreflang="en" href="https://www.baserogue.com/?lng=en">
+  <link rel="alternate" hreflang="es" href="https://www.baserogue.com/?lng=es">
 
   <!-- Open Graph / Facebook / Discord -->
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://www.baserogue.com/">
   <meta property="og:title" content="BaseRogue: Baseball Roguelike — Free Turn-Based Dice Battler">
-  <meta property="og:description" content="Draft MLB legends, build era synergies, and roll the dice in this addictive turn-based baseball roguelike. Play free in your browser!">
+  <meta property="og:description" content="Draft historic MLB legends, create unstoppable era synergies, and roll the dice in this addictive turn-based baseball roguelike. Play free in your browser!">
   <meta property="og:image" content="https://www.baserogue.com/assets/logo.webp">
   <meta property="og:site_name" content="BaseRogue">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:locale:alternate" content="es_ES">
 
   <!-- Twitter Cards -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:url" content="https://www.baserogue.com/">
   <meta name="twitter:title" content="BaseRogue: Baseball Roguelike — Free Turn-Based Dice Battler">
-  <meta name="twitter:description" content="Draft MLB legends, build era synergies, and roll the dice in this addictive turn-based baseball roguelike. Play free in your browser!">
+  <meta name="twitter:description" content="Draft historic MLB legends, create unstoppable era synergies, and roll the dice in this addictive turn-based baseball roguelike. Play free in your browser!">
   <meta name="twitter:image" content="https://www.baserogue.com/assets/logo.webp">
 
   <!-- Structured Data (Schema.org JSON-LD) -->
@@ -31,13 +36,15 @@
   {
     "@context": "https://schema.org",
     "@type": "VideoGame",
-    "name": "BaseRogue",
+    "name": "BaseRogue: Baseball Roguelike",
     "url": "https://www.baserogue.com",
-    "description": "BaseRogue is a free turn-based baseball roguelike dice battler and deckbuilder. Draft historic baseball legends, craft synergy builds, and defeat pitching rotations.",
-    "genre": ["Roguelike", "Sports Game", "Deckbuilder", "Strategy"],
+    "description": "BaseRogue is a free turn-based baseball roguelike dice battler and deckbuilder. Draft historic baseball legends, craft synergy builds, and defeat pitching rotations in your browser.",
+    "genre": ["Roguelike", "Sports Game", "Deckbuilder", "Strategy", "Turn-based Strategy"],
+    "gamePlatform": ["Web Browser", "Mobile Browser", "PC"],
+    "inLanguage": ["en", "es"],
     "playMode": "SinglePlayer",
     "applicationCategory": "Game",
-    "operatingSystem": "Web Browser"
+    "operatingSystem": "All"
   }
   </script>
   <!-- Fonts & Icons -->
@@ -155,7 +162,7 @@
              construction (see 14 in the design doc); a fail-safe inline
              display:none so it stays hidden even if the flag script below
              never runs, not just a JS-toggled class. -->
-        <div class="mode-card career-card" id="card-mode-career" style="display:none;">
+        <div class="mode-card career-card" id="card-mode-career" style="display:none !important;">
           <div class="mode-icon">🏆</div>
           <div class="mode-title" data-i18n="mode_select.career_title">MODO CARRERA</div>
           <div class="mode-subtitle" data-i18n="mode_select.career_subtitle">DE ROOKIE AL SALÓN DE LA FAMA</div>
@@ -183,28 +190,27 @@
       </div>
 
       <!-- Bottom Action Buttons: BaseballDex & Discord -->
-      <div style="margin-top: 28px; display: flex; justify-content: center; align-items: center; gap: 14px; flex-wrap: wrap;">
-        <button id="btn-basedex-menu" class="btn" style="display: inline-flex; align-items: center; gap: 10px; background: rgba(255, 215, 0, 0.12); border: 1.5px solid #ffd700; padding: 10px 22px; border-radius: 24px; color: #ffd700; font-family: 'Press Start 2P', monospace; font-size: 8.5px; box-shadow: 0 0 16px rgba(255, 215, 0, 0.3); transition: all 0.2s ease; cursor: pointer;">
-          <i class="fa-solid fa-book-open" style="color: #ffd700; font-size: 15px;"></i>
+      <div style="margin-top: 20px; display: flex; justify-content: center; align-items: center; gap: 10px; flex-wrap: wrap;">
+        <button id="btn-basedex-menu" class="btn" style="display: inline-flex; align-items: center; gap: 8px; background: rgba(255, 215, 0, 0.12); border: 1.5px solid #ffd700; padding: 8px 16px; border-radius: 20px; color: #ffd700; font-family: 'Press Start 2P', monospace; font-size: 8px; box-shadow: 0 0 14px rgba(255, 215, 0, 0.25); transition: all 0.2s ease; cursor: pointer;">
+          <i class="fa-solid fa-book-open" style="color: #ffd700; font-size: 13px;"></i>
           <span data-i18n="menu.baseball_dex">BASEBALL-DEX</span>
         </button>
 
-        <a href="https://discord.gg/Rn3TwU9Gpb" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 10px; background: rgba(88, 101, 242, 0.15); border: 1.5px solid #5865F2; padding: 10px 22px; border-radius: 24px; color: #ffffff; text-decoration: none; font-family: 'Press Start 2P', monospace; font-size: 8.5px; box-shadow: 0 0 16px rgba(88, 101, 242, 0.35); transition: all 0.2s ease;">
-          <i class="fa-brands fa-discord" style="color: #5865F2; font-size: 16px;"></i>
-          <span data-i18n="menu.discord_community">UNIRSE AL DISCORD OFICIAL</span>
+        <a href="https://discord.gg/Rn3TwU9Gpb" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 8px; background: rgba(88, 101, 242, 0.15); border: 1.5px solid #5865F2; padding: 8px 16px; border-radius: 20px; color: #ffffff; text-decoration: none; font-family: 'Press Start 2P', monospace; font-size: 8px; box-shadow: 0 0 14px rgba(88, 101, 242, 0.25); transition: all 0.2s ease;">
+          <i class="fa-brands fa-discord" style="color: #5865F2; font-size: 14px;"></i>
+          <span data-i18n="menu.discord_community">DISCORD</span>
         </a>
       </div>
       <script>
-        // Career mode visibility gate — ?career=1 enables it (persisted in
-        // localStorage so it doesn't need to be repeated every visit),
-        // ?career=0 disables it again. Everyone else never sees the card.
         (function () {
           var params = new URLSearchParams(window.location.search);
-          if (params.get('career') === '1') localStorage.setItem('baserogue_career_enabled', '1');
-          if (params.get('career') === '0') localStorage.removeItem('baserogue_career_enabled');
-          if (localStorage.getItem('baserogue_career_enabled') === '1') {
-            var card = document.getElementById('card-mode-career');
-            if (card) card.style.display = '';
+          var card = document.getElementById('card-mode-career');
+          if (card) {
+            if (params.get('career') === '1') {
+              card.style.setProperty('display', 'flex', 'important');
+            } else {
+              card.style.setProperty('display', 'none', 'important');
+            }
           }
         })();
       </script>
@@ -559,41 +565,74 @@
             </div>
           </div>
 
-          <!-- SCREEN 2.5: PRE-FIGHT (CHOOSE YOUR ORDER & LINEUP PREVIEW) -->
-          <div class="glass-panel hidden" id="screen-pre-fight" style="max-width: 900px; margin: 0 auto 24px auto;">
-            <h2 style="margin-bottom: 8px; text-align: center;" data-i18n-html="pre_fight.title"><i class="fa-solid fa-shield-halved"></i> Preparación de la Serie</h2>
-            <p style="color: #9ca3af; font-size: 14px; margin-bottom: 24px; text-align: center;" id="pre-fight-subtitle" data-i18n="pre_fight.subtitle">
-              Vas a enfrentarte a la rotación de lanzadores de un equipo. Asegúrate de que tus bateadores estén listos.
-            </p>
-
-            <div id="pre-fight-scouting" style="margin-bottom: 20px;">
-              <!-- Rendered via JS -->
-            </div>
-
-            <div class="pre-fight-columns">
-              <!-- Left Column: Player's Batters (Hidden on Mobile) -->
-              <div class="glass-panel flex-1 hidden md:block" style="background: rgba(0,0,0,0.35); margin-bottom: 0; padding: 16px;">
-                <h3 style="color: var(--primary-color); border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px; margin-bottom: 12px; font-size: 15px;" data-i18n-html="pre_fight.batters_title"><i class="fa-solid fa-users"></i> Tus Bateadores (HP)</h3>
-                <div id="pre-fight-player-lineup" style="display: flex; flex-direction: column; gap: 8px;">
-                  <!-- Rendered via JS -->
-                </div>
-              </div>
-              
-              <!-- Center area: VS / Fight button -->
-              <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 160px; gap: 15px;">
-                <div style="font-size: 36px; font-weight: 800; color: var(--accent-color); text-shadow: 0 0 10px var(--accent-glow);">VS</div>
-                <button class="btn" id="btn-pre-fight-start" style="padding: 14px 28px; font-size: 18px; width: 100%;" data-i18n-html="pre_fight.start_btn"><i class="fa-solid fa-fire-flame-curved"></i> ¡AL COMBATE!</button>
-                <button class="btn btn-secondary" id="btn-pre-fight-back-map" style="width: 100%; padding: 10px; font-size: 14px;" data-i18n-html="pre_fight.back_map_btn"><i class="fa-solid fa-arrow-left"></i> Volver al Mapa</button>
-              </div>
-              
-              <!-- Right Column: Enemy Pitchers -->
-              <div class="glass-panel flex-1" style="background: rgba(0,0,0,0.35); margin-bottom: 0; padding: 16px;">
-                <h3 style="color: #ef4444; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px; margin-bottom: 12px; font-size: 15px;" data-i18n-html="pre_fight.pitchers_title"><i class="fa-solid fa-skull-crossbones"></i> Rotación Oponente (HP)</h3>
-                <div id="pre-fight-enemy-rotation" style="display: flex; flex-direction: column; gap: 8px;">
-                  <!-- Rendered via JS -->
-                </div>
+          <!-- SCREEN 2.5: PRE-FIGHT (EPIC MATCHUP SHOWDOWN) -->
+          <div class="glass-panel hidden" id="screen-pre-fight">
+            
+            <!-- Top Showdown Header -->
+            <div class="pre-fight-header">
+              <div class="pre-fight-stage-badge"><span data-i18n="pre_fight.showdown_badge">⚔️ ENFRENTAMIENTO DE LA SERIE</span> • <span id="pre-fight-stage-text">STAGE 1</span></div>
+              <div id="pre-fight-scouting">
+                <!-- Rendered via JS -->
               </div>
             </div>
+
+            <!-- Main Faceoff Arena -->
+            <div class="pre-fight-showdown">
+              
+              <!-- Left: Your Batter Selector & Card -->
+              <div class="showdown-side showdown-side-player">
+                <div class="showdown-nav-bar">
+                  <button class="btn btn-showdown-nav" id="btn-prev-batter" title="Bateador Anterior">◀</button>
+                  <span id="showdown-batter-label" class="showdown-nav-label">#1 CF Kirby Puckett</span>
+                  <button class="btn btn-showdown-nav" id="btn-next-batter" title="Siguiente Bateador">▶</button>
+                </div>
+                <div id="showdown-batter-card-wrap" class="showdown-card-slot">
+                  <!-- Dynamic Batter Card -->
+                </div>
+              </div>
+
+              <!-- Center: The VS Clash, Matchup Insights & Battle Button -->
+              <div class="showdown-center">
+                <div class="showdown-vs-badge">VS</div>
+                <div class="showdown-stakes-pill">3 INNINGS • DUEL</div>
+
+                <!-- Dynamic Matchup Advantage Tactical Insights -->
+                <div id="showdown-matchup-insights" class="showdown-insights-panel">
+                  <!-- Rendered dynamically via JS -->
+                </div>
+
+                <button class="btn btn-pre-fight-battle" id="btn-pre-fight-start" data-i18n-html="pre_fight.start_btn">
+                  <i class="fa-solid fa-fire-flame-curved"></i> ¡AL COMBATE!
+                </button>
+                <button class="btn btn-secondary btn-pre-fight-back" id="btn-pre-fight-back-map" data-i18n-html="pre_fight.back_map_btn">
+                  <i class="fa-solid fa-arrow-left"></i> Volver al Mapa
+                </button>
+              </div>
+
+              <!-- Right: Rival Pitcher Selector & Card -->
+              <div class="showdown-side showdown-side-enemy">
+                <div class="showdown-nav-bar nav-enemy">
+                  <button class="btn btn-showdown-nav" id="btn-prev-pitcher" title="Lanzador Anterior">◀</button>
+                  <span id="showdown-pitcher-label" class="showdown-nav-label">SP Rollie Naylor</span>
+                  <button class="btn btn-showdown-nav" id="btn-next-pitcher" title="Siguiente Lanzador">▶</button>
+                </div>
+                <div id="showdown-pitcher-card-wrap" class="showdown-card-slot">
+                  <!-- Dynamic Pitcher Card -->
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Bullpen Relievers Section (Below Showdown) -->
+            <div class="pre-fight-bullpen-section">
+              <div class="pre-fight-bullpen-title">
+                <i class="fa-solid fa-users"></i> <span data-i18n="pre_fight.bullpen_label">BULLPEN Y RELEVISTAS RIVALES</span>
+              </div>
+              <div id="pre-fight-enemy-rotation" class="pre-fight-bullpen-list">
+                <!-- Relievers rows rendered via JS -->
+              </div>
+            </div>
+
           </div>
 
           <!-- SCREEN 3: MATCH SIMULATOR -->
@@ -963,15 +1002,15 @@
     <div class="grid grid-cols-3 gap-2 text-center max-w-md mx-auto">
       <button id="btn-mobile-tab-action" class="mobile-nav-btn flex flex-col items-center justify-center py-1.5 px-1 rounded-lg text-[10px] font-mono transition-all duration-150 bg-[#00ff66]/15 text-[#00ff66] border border-[#00ff66]/40">
         <span class="text-base mb-0.5">⚾</span>
-        <span>Juego/Draft</span>
+        <span data-i18n="hud.action">Juego/Draft</span>
       </button>
       <button id="btn-mobile-tab-roster" class="mobile-nav-btn flex flex-col items-center justify-center py-1.5 px-1 rounded-lg text-[10px] font-mono transition-all duration-150 text-gray-400 border border-transparent hover:text-white">
         <span class="text-base mb-0.5">📋</span>
-        <span>Roster</span>
+        <span data-i18n="hud.roster">Roster</span>
       </button>
       <button id="btn-mobile-tab-order" class="mobile-nav-btn flex flex-col items-center justify-center py-1.5 px-1 rounded-lg text-[10px] font-mono transition-all duration-150 text-gray-400 border border-transparent hover:text-white">
         <span class="text-base mb-0.5">⚡</span>
-        <span>Sinergias</span>
+        <span data-i18n="hud.synergies">Sinergias</span>
       </button>
     </div>
   </nav>
