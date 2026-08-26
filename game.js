@@ -590,52 +590,54 @@
     {
       id: 'gamble_blind_trade',
       icon: '🔄',
-      requiresTargetPlayer: true,
-      get title() { return typeof window.t==='function'?window.t('gamble.trade.title'):'Traspaso de Alto Riesgo'; },
-      get desc() { return typeof window.t==='function'?window.t('gamble.trade.desc'):'Elige a CUALQUIER titular de tu alineación para ponerlo en el mercado de traspasos. Si ganas (50%), recibes un jugador ÉPICO o LEGENDARIO garantizado en esa posición. Si pierdes (50%), es reemplazado por un Common (50 OVR) y la posición queda bloqueada 2 nodos.'; },
+      get title() { return typeof window.t==='function'?window.t('gamble.trade.title'):'Traspaso a Ciegas (Peor Titular)'; },
+      get desc() { return typeof window.t==='function'?window.t('gamble.trade.desc'):'Pones a tu peor titular en el mercado de traspasos. Si ganas (50%), recibes un reemplazo ÉPICO o LEGENDARIO garantizado en esa posición. Si pierdes (50%), la negociación colapsa: pierdes $15 de presupuesto y la posición queda bloqueada por 1 mapa completo (6 nodos).'; },
       chance: 0.50,
-      resolve(G, targetPos) {
+      resolve(G) {
         const pool = (window.PlayersDB && window.PlayersDB.LAHMAN_POOL) ? window.PlayersDB.LAHMAN_POOL : [];
-        let tradePos = targetPos;
-        if (!tradePos || !G.roster[tradePos]) {
-          let worstOvr = Infinity;
-          Object.keys(G.roster).forEach(pos => {
-            const p = G.roster[pos];
-            const ovr = p ? _gambleOvr(p) : -Infinity;
-            if (ovr < worstOvr) { worstOvr = ovr; tradePos = pos; }
-          });
-        }
-        if (!tradePos || !G.roster[tradePos]) return { success: false, resultText: (typeof window.t==='function'?window.t('gamble.trade.no_target'):'No hay titular para intercambiar.') };
+        let worstPos = null;
+        let worstOvr = Infinity;
+        Object.keys(G.roster).forEach(pos => {
+          const p = G.roster[pos];
+          const ovr = p ? _gambleOvr(p) : -Infinity;
+          if (ovr < worstOvr) { worstOvr = ovr; worstPos = pos; }
+        });
+        if (!worstPos || !G.roster[worstPos]) return { success: false, resultText: (typeof window.t==='function'?window.t('gamble.trade.no_target'):'No hay titular para intercambiar.') };
 
-        const current = G.roster[tradePos];
+        const current = G.roster[worstPos];
         const success = Math.random() <= this.chance;
 
-        const pick = success
-          ? _pickGambleCandidate(pool, tradePos, ['Legendary', 'Epic'])
-          : _pickGambleCandidate(pool, tradePos, ['Common']);
-        if (!pick) return { success, resultText: (typeof window.t==='function'?window.t('gamble.no_player_found', { pos: tradePos }):`No se encontró ningún jugador de ${tradePos} disponible.`) };
+        if (success) {
+          const pick = _pickGambleCandidate(pool, worstPos, ['Legendary', 'Epic']);
+          if (!pick) return { success, resultText: (typeof window.t==='function'?window.t('gamble.no_player_found', { pos: worstPos }):`No se encontró ningún jugador de ${worstPos} disponible.`) };
 
-        const newInstance = {
-          ...pick,
-          id: `player_${pick.name.replace(/\s+/g, '')}_${Date.now()}_trade`,
-          stamina: 100,
-          upgrades: { con: 0, pwr: 0, eye: 0, k_avd: 0, spd: 0, def: 0, sta: 0 }
-        };
-        G.roster[tradePos] = newInstance;
+          const newInstance = {
+            ...pick,
+            id: `player_${pick.name.replace(/\s+/g, '')}_${Date.now()}_trade`,
+            stamina: 100,
+            upgrades: { con: 0, pwr: 0, eye: 0, k_avd: 0, spd: 0, def: 0, sta: 0 }
+          };
+          G.roster[worstPos] = newInstance;
 
-        if (!success) {
+          if (window.BaseballDex && typeof window.BaseballDex.unlockPlayer === 'function') {
+            window.BaseballDex.unlockPlayer(newInstance);
+          }
+
+          return {
+            success: true,
+            resultText: (typeof window.t==='function'?window.t('gamble.trade.result_win', { oldName: current ? current.name : '(vacío)', newName: newInstance.name, rarity: newInstance.rarity, pos: worstPos }):`¡Gran negocio! ${current ? current.name : '(vacío)'} → ${newInstance.name} (${newInstance.rarity}) en ${worstPos}.`)
+          };
+        } else {
+          const lostBudget = Math.min(G.budget || 0, 15);
+          G.budget = Math.max(0, (G.budget || 0) - 15);
           G.positionLocks = G.positionLocks || {};
-          G.positionLocks[tradePos] = 2;
-        } else if (window.BaseballDex && typeof window.BaseballDex.unlockPlayer === 'function') {
-          window.BaseballDex.unlockPlayer(newInstance);
-        }
+          G.positionLocks[worstPos] = 6; // 1 full map (6 floors/nodes)
 
-        return {
-          success,
-          resultText: success
-            ? (typeof window.t==='function'?window.t('gamble.trade.result_win', { oldName: current ? current.name : '(vacío)', newName: newInstance.name, rarity: newInstance.rarity, pos: tradePos }):`¡Gran negocio! ${current ? current.name : '(vacío)'} → ${newInstance.name} (${newInstance.rarity}) en ${tradePos}.`)
-            : (typeof window.t==='function'?window.t('gamble.trade.result_lose', { newName: newInstance.name, oldName: current ? current.name : '(vacío)', pos: tradePos }):`Mal negocio: ${newInstance.name} (Common) reemplaza a ${current ? current.name : '(vacío)'} en ${tradePos}. Posición bloqueada 2 nodos.`)
-        };
+          return {
+            success: false,
+            resultText: (typeof window.t==='function'?window.t('gamble.trade.result_lose', { lostBudget, pos: worstPos }):`Negociación fallida: Perdiste $${lostBudget} y la posición [${worstPos}] queda bloqueada por 1 mapa completo (6 nodos).`)
+          };
+        }
       }
     },
     {

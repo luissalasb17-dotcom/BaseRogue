@@ -9458,21 +9458,26 @@ function initGameModeSelector() {
           </div>
         `;
       } else if (gamble.id === 'gamble_blind_trade') {
-        const activePos = targetPos || defaultTargetPos;
-        const currentTarget = (activePos && window.Game.roster[activePos]) ? window.Game.roster[activePos] : { name: 'Starter', rarity: 'Common', pos: 'DH' };
-        const currentOvr = getPlayerOvr(currentTarget);
-        const posLabel = activePos || currentTarget.pos || 'DH';
+        let worstPos = 'DH', worstName = 'Starter', worstRarity = 'Common', worstOvr = 60;
+        let lowestOvr = Infinity;
+        Object.keys(window.Game.roster).forEach(pos => {
+          const p = window.Game.roster[pos];
+          if (p) {
+            const ovr = getPlayerOvr(p);
+            if (ovr < lowestOvr) { lowestOvr = ovr; worstPos = pos; worstName = p.name; worstRarity = p.rarity || 'Common'; worstOvr = ovr; }
+          }
+        });
 
         leftHTML = `
           <div style="background:rgba(239,68,68,0.12);border:2px solid #ef4444;border-radius:12px;padding:16px 14px;height:100%;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 0 20px rgba(239,68,68,0.2);">
             <div>
               <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#ef4444;margin-bottom:8px;">${typeof t === 'function' ? t('gamble.trade.lose_label', '🔴 50% IF YOU LOSE:') : '🔴 50% IF YOU LOSE:'}</div>
               <div style="font-size:30px;margin:6px 0;">🔒</div>
-              <div style="font-family:'Press Start 2P',monospace;font-size:9.5px;color:#fca5a5;margin-bottom:4px;">[${posLabel}] ${currentTarget.name}</div>
-              <div style="font-size:10.5px;color:#ef4444;font-weight:bold;">${typeof t === 'function' ? t('gamble.trade.lose_title', 'Common (50 OVR) + 🔒 Locked') : 'Common (50 OVR) + 🔒 Locked'}</div>
+              <div style="font-family:'Press Start 2P',monospace;font-size:9.5px;color:#fca5a5;margin-bottom:4px;">${typeof t === 'function' ? t('gamble.trade.lose_title', '-$15 Budget & 🔒 1 Map Lock') : '-$15 Budget & 🔒 1 Map Lock'}</div>
+              <div style="font-size:10.5px;color:#ef4444;font-weight:bold;">[${worstPos}] ${worstName}</div>
             </div>
             <div style="font-size:11px;color:#fca5a5;line-height:1.4;background:rgba(0,0,0,0.4);padding:8px;border-radius:8px;">
-              ${typeof t === 'function' ? t('gamble.trade.lose_detail', '(Position locked from draft for 2 nodes)') : '(Position locked from draft for 2 nodes)'}
+              ${typeof t === 'function' ? t('gamble.trade.lose_detail', '(Position locked from draft for 6 nodes / 1 full map)') : '(Position locked from draft for 6 nodes / 1 full map)'}
             </div>
           </div>
         `;
@@ -9481,11 +9486,11 @@ function initGameModeSelector() {
             <div>
               <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#38bdf8;margin-bottom:8px;">${typeof t === 'function' ? t('gamble.trade.win_label', '🟢 50% IF YOU WIN:') : '🟢 50% IF YOU WIN:'}</div>
               <div style="font-size:30px;margin:6px 0;">🔄</div>
-              <div style="font-family:'Press Start 2P',monospace;font-size:9.5px;color:#bae6fd;margin-bottom:4px;">[${posLabel}] ${typeof t === 'function' ? t('gamble.trade.win_title', 'Guaranteed Epic or Legendary') : 'Guaranteed Epic or Legendary'}</div>
+              <div style="font-family:'Press Start 2P',monospace;font-size:9.5px;color:#bae6fd;margin-bottom:4px;">[${worstPos}] ${typeof t === 'function' ? t('gamble.trade.win_title', 'Guaranteed Epic or Legendary') : 'Guaranteed Epic or Legendary'}</div>
               <div style="font-size:10.5px;color:#38bdf8;font-weight:bold;">OVR 80–99 · Epic / Legendary</div>
             </div>
             <div style="font-size:11px;color:#bae6fd;line-height:1.4;background:rgba(0,0,0,0.4);padding:8px;border-radius:8px;">
-              ${typeof t === 'function' ? t('gamble.trade.win_detail', '(Elite star replacement at that position)') : '(Elite star replacement at that position)'}
+              ${typeof t === 'function' ? t('gamble.trade.win_detail', '(Turn your weakest link into an elite superstar)') : '(Turn your weakest link into an elite superstar)'}
             </div>
           </div>
         `;
@@ -9610,6 +9615,20 @@ function initGameModeSelector() {
       `;
     }
 
+    // Find weakest and best starters for top stake banners
+    let worstPos = 'DH', worstName = 'Starter', worstRarity = 'Common', worstOvr = 60;
+    let lowestOvr = Infinity;
+    let bestPos = 'CF', bestName = 'Starter', bestRarity = 'Epic', bestOvr = 85;
+    let highestOvr = -Infinity;
+    Object.keys(window.Game.roster).forEach(pos => {
+      const p = window.Game.roster[pos];
+      if (p) {
+        const ovr = getPlayerOvr(p);
+        if (ovr < lowestOvr) { lowestOvr = ovr; worstPos = pos; worstName = p.name; worstRarity = p.rarity || 'Common'; worstOvr = ovr; }
+        if (ovr > highestOvr) { highestOvr = ovr; bestPos = pos; bestName = p.name; bestRarity = p.rarity || 'Common'; bestOvr = ovr; }
+      }
+    });
+
     const gambleTitle = gamble.title;
     const gambleDesc = gamble.desc;
 
@@ -9622,6 +9641,40 @@ function initGameModeSelector() {
           <span style="margin-right:8px;filter:drop-shadow(0 0 10px rgba(250,204,21,0.6));">${gamble.icon}</span>${gambleTitle}
         </div>
         <div style="font-size:12px;color:#cbd5e1;margin-bottom:14px;line-height:1.45;padding:0 8px;">${gambleDesc}</div>
+
+        ${gamble.id === 'gamble_blind_trade' ? `
+          <div style="margin-bottom:14px;background:rgba(255,255,255,0.04);padding:10px 14px;border-radius:10px;border:1.5px solid rgba(56,189,248,0.3);display:flex;align-items:center;justify-content:space-between;box-shadow:0 0 15px rgba(56,189,248,0.1);">
+            <div style="text-align:left;">
+              <div style="font-size:8px;font-family:'Press Start 2P',monospace;color:#facc15;margin-bottom:3px;">
+                ${typeof t === 'function' ? t('gamble.trade.stakes_label', 'TITULAR MÁS DÉBIL EN JUEGO:') : 'TITULAR MÁS DÉBIL EN JUEGO:'}
+              </div>
+              <div style="font-size:12px;font-weight:bold;color:#fff;">
+                [${worstPos}] ${worstName}
+              </div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:11px;color:#38bdf8;font-weight:bold;">${worstRarity}</div>
+              <div style="font-size:9.5px;color:#94a3b8;font-family:'Press Start 2P',monospace;">OVR ${Math.floor(worstOvr)}</div>
+            </div>
+          </div>
+        ` : ''}
+
+        ${gamble.id === 'gamble_scout' ? `
+          <div style="margin-bottom:14px;background:rgba(255,255,255,0.04);padding:10px 14px;border-radius:10px;border:1.5px solid rgba(239,68,68,0.3);display:flex;align-items:center;justify-content:space-between;box-shadow:0 0 15px rgba(239,68,68,0.1);">
+            <div style="text-align:left;">
+              <div style="font-size:8px;font-family:'Press Start 2P',monospace;color:#facc15;margin-bottom:3px;">
+                ${typeof t === 'function' ? t('gamble.scout.stakes_label', 'MEJOR JUGADOR EN RIESGO DE LESIÓN:') : 'MEJOR JUGADOR EN RIESGO DE LESIÓN:'}
+              </div>
+              <div style="font-size:12px;font-weight:bold;color:#fff;">
+                [${bestPos}] ${bestName}
+              </div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:11px;color:#f87171;font-weight:bold;">${bestRarity}</div>
+              <div style="font-size:9.5px;color:#94a3b8;font-family:'Press Start 2P',monospace;">OVR ${Math.floor(bestOvr)}</div>
+            </div>
+          </div>
+        ` : ''}
 
         ${gamble.requiresTargetPlayer ? `
           <div style="margin-bottom:14px;text-align:left;background:rgba(0,0,0,0.3);padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.1);">
