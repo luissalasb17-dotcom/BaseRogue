@@ -9473,11 +9473,11 @@ function initGameModeSelector() {
             <div>
               <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#ef4444;margin-bottom:8px;">${typeof t === 'function' ? t('gamble.trade.lose_label', '🔴 50% IF YOU LOSE:') : '🔴 50% IF YOU LOSE:'}</div>
               <div style="font-size:30px;margin:6px 0;">🔒</div>
-              <div style="font-family:'Press Start 2P',monospace;font-size:9.5px;color:#fca5a5;margin-bottom:4px;">${typeof t === 'function' ? t('gamble.trade.lose_title', '-$15 Budget & 🔒 1 Map Lock') : '-$15 Budget & 🔒 1 Map Lock'}</div>
-              <div style="font-size:10.5px;color:#ef4444;font-weight:bold;">[${worstPos}] ${worstName}</div>
+              <div style="font-family:'Press Start 2P',monospace;font-size:9.5px;color:#fca5a5;margin-bottom:4px;">${typeof t === 'function' ? t('gamble.trade.lose_title', 'Common (50 OVR) + 🔒 1 Map Lock') : 'Common (50 OVR) + 🔒 1 Map Lock'}</div>
+              <div style="font-size:10.5px;color:#ef4444;font-weight:bold;">[${worstPos}] ${worstName} ➡️ Common</div>
             </div>
             <div style="font-size:11px;color:#fca5a5;line-height:1.4;background:rgba(0,0,0,0.4);padding:8px;border-radius:8px;">
-              ${typeof t === 'function' ? t('gamble.trade.lose_detail', '(Position locked from draft for 6 nodes / 1 full map)') : '(Position locked from draft for 6 nodes / 1 full map)'}
+              ${typeof t === 'function' ? t('gamble.trade.lose_detail', '(Replaced by Common and position locked for 6 nodes)') : '(Replaced by Common and position locked for 6 nodes)'}
             </div>
           </div>
         `;

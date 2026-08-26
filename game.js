@@ -591,7 +591,7 @@
       id: 'gamble_blind_trade',
       icon: '🔄',
       get title() { return typeof window.t==='function'?window.t('gamble.trade.title'):'Traspaso a Ciegas (Peor Titular)'; },
-      get desc() { return typeof window.t==='function'?window.t('gamble.trade.desc'):'Pones a tu peor titular en el mercado de traspasos. Si ganas (50%), recibes un reemplazo ÉPICO o LEGENDARIO garantizado en esa posición. Si pierdes (50%), la negociación colapsa: pierdes $15 de presupuesto y la posición queda bloqueada por 1 mapa completo (6 nodos).'; },
+      get desc() { return typeof window.t==='function'?window.t('gamble.trade.desc'):'Pones a tu peor titular en el mercado de traspasos. Si ganas (50%), recibes un reemplazo ÉPICO o LEGENDARIO garantizado en esa posición. Si pierdes (50%), es sustituido por un Common (50 OVR) y la posición queda bloqueada por 1 mapa completo (6 nodos).'; },
       chance: 0.50,
       resolve(G) {
         const pool = (window.PlayersDB && window.PlayersDB.LAHMAN_POOL) ? window.PlayersDB.LAHMAN_POOL : [];
@@ -628,14 +628,22 @@
             resultText: (typeof window.t==='function'?window.t('gamble.trade.result_win', { oldName: current ? current.name : '(vacío)', newName: newInstance.name, rarity: newInstance.rarity, pos: worstPos }):`¡Gran negocio! ${current ? current.name : '(vacío)'} → ${newInstance.name} (${newInstance.rarity}) en ${worstPos}.`)
           };
         } else {
-          const lostBudget = Math.min(G.budget || 0, 15);
-          G.budget = Math.max(0, (G.budget || 0) - 15);
+          const pick = _pickGambleCandidate(pool, worstPos, ['Common']);
+          if (pick) {
+            const newInstance = {
+              ...pick,
+              id: `player_${pick.name.replace(/\s+/g, '')}_${Date.now()}_trade_fail`,
+              stamina: 100,
+              upgrades: { con: 0, pwr: 0, eye: 0, k_avd: 0, spd: 0, def: 0, sta: 0 }
+            };
+            G.roster[worstPos] = newInstance;
+          }
           G.positionLocks = G.positionLocks || {};
           G.positionLocks[worstPos] = 6; // 1 full map (6 floors/nodes)
 
           return {
             success: false,
-            resultText: (typeof window.t==='function'?window.t('gamble.trade.result_lose', { lostBudget, pos: worstPos }):`Negociación fallida: Perdiste $${lostBudget} y la posición [${worstPos}] queda bloqueada por 1 mapa completo (6 nodos).`)
+            resultText: (typeof window.t==='function'?window.t('gamble.trade.result_lose', { oldName: current ? current.name : '(vacío)', newName: pick ? pick.name : 'Common', pos: worstPos }):`Negociación fallida: ${pick ? pick.name : 'Common'} (50 OVR) reemplaza a ${current ? current.name : '(vacío)'} en [${worstPos}] y la posición queda bloqueada por 1 mapa completo (6 nodos).`)
           };
         }
       }

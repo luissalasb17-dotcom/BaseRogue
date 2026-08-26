@@ -1365,16 +1365,16 @@
     },
     "trade": {
       "title": "Traspaso a Ciegas (Peor Titular)",
-      "desc": "¡Pones a tu peor titular en el mercado de traspasos! Si ganas (50%), recibes un reemplazo ÉPICO o LEGENDARIO garantizado en esa posición. Si pierdes (50%), la negociación colapsa: pierdes $15 de presupuesto y la posición queda bloqueada por 1 mapa completo (6 nodos).",
+      "desc": "Pones a tu peor titular en el mercado de traspasos. Si ganas (50%), recibes un reemplazo ÉPICO o LEGENDARIO garantizado en esa posición. Si pierdes (50%), es sustituido por un Common (50 OVR) y la posición queda bloqueada por 1 mapa completo (6 nodos).",
       "stakes_label": "TITULAR MÁS DÉBIL EN JUEGO:",
       "win_label": "🟢 50% SI GANAS:",
       "win_title": "Épico o Legendario Garantizado",
       "win_detail": "(Conviertes tu eslabón débil en una súper estrella)",
       "lose_label": "🔴 50% SI PIERDES:",
-      "lose_title": "-$15 Presupuesto & 🔒 Bloqueo de 1 Mapa",
-      "lose_detail": "(Posición bloqueada para draft durante 6 nodos / 1 mapa)",
+      "lose_title": "Jugador Common (50 OVR) + 🔒 Bloqueo",
+      "lose_detail": "(Sustituido por Common y posición bloqueada por 6 nodos)",
       "result_win": "¡Gran negociación! {{oldName}} ➡️ {{newName}} ({{rarity}}) en [{{pos}}].",
-      "result_lose": "Negociación fallida: Perdiste ${{lostBudget}} y la posición [{{pos}}] queda bloqueada por 1 mapa completo (6 nodos).",
+      "result_lose": "Negociación fallida: {{newName}} (Common) reemplaza a {{oldName}} en [{{pos}}] y la posición queda bloqueada por 1 mapa completo (6 nodos).",
       "no_target": "No hay jugadores elegibles para el traspaso."
     },
     "soldier": {
@@ -3211,16 +3211,16 @@
     },
     "trade": {
       "title": "Blind Trade (Weakest Starter)",
-      "desc": "Put your weakest starting player on the trade block! If you win (50%), you receive a guaranteed EPIC or LEGENDARY upgrade at that position. If you lose (50%), the deal collapses: lose $15 and the position is locked from draft for 1 full map (6 nodes).",
+      "desc": "Trade your weakest starting player for a blind offer. If you win (50%), you receive a guaranteed EPIC or LEGENDARY upgrade at that position. If you lose (50%), they are replaced by a Common (50 OVR) and the position is locked from draft for 1 full map (6 nodes).",
       "stakes_label": "WEAKEST STARTER ON THE LINE:",
       "win_label": "🟢 50% IF YOU WIN:",
       "win_title": "Guaranteed Epic or Legendary",
       "win_detail": "(Turn your weakest link into an elite superstar)",
       "lose_label": "🔴 50% IF YOU LOSE:",
-      "lose_title": "-$15 Budget & 🔒 1 Map Lock",
-      "lose_detail": "(Position locked from draft for 6 nodes / 1 full map)",
+      "lose_title": "Common (50 OVR) + 🔒 1 Map Lock",
+      "lose_detail": "(Replaced by Common and position locked for 6 nodes)",
       "result_win": "Blockbuster trade! {{oldName}} ➡️ {{newName}} ({{rarity}}) at [{{pos}}].",
-      "result_lose": "Trade disaster: Lost ${{lostBudget}} and [{{pos}}] is locked for 1 full map (6 nodes).",
+      "result_lose": "Trade disaster: {{newName}} (Common) replaces {{oldName}} at [{{pos}}]. Position locked for 1 full map (6 nodes).",
       "no_target": "No eligible players for the trade."
     },
     "soldier": {
