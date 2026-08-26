@@ -141,7 +141,12 @@
     "back_menu": "← MENU",
     "damage": "DAMAGE",
     "shield": "SHIELD",
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "continue": "CONTINUE",
+    "close": "CLOSE",
+    "accept": "ACCEPT",
+    "cancel": "CANCEL",
+    "back": "BACK"
   },
   "season_select": {
     "title": "📜 SELECT THE SEASON",
@@ -759,7 +764,8 @@
     "lineup_full": "Lineup occupied. Choose who to replace.",
     "division_defeated": "DIVISION DEFEATED!",
     "player_placed_dh": "{{name}} assigned as Designated Hitter (DH)",
-    "player_placed_native": "{{name}} assigned to primary position ({{pos}})"
+    "player_placed_native": "{{name}} assigned to primary position ({{pos}})",
+    "mid_boss_win_msg": "You defeated the Mid-Boss elite rotation! Received an equipment item and extra budget."
   },
   "training": {
     "con": {
@@ -1227,7 +1233,8 @@
     "ring_of_champions": "💍 RING OF 17 CHAMPIONS (FULL ROSTER)",
     "new_challenge_btn": "🔄 START NEW CHALLENGE",
     "table_pitcher": "PITCHER",
-    "table_role": "ROLE"
+    "table_role": "ROLE",
+    "your_team_name": "Your Team"
   },
   "badge": {
     "captain_tooltip": "Captain: +5 to all ratings for teammates while on active roster.",
@@ -1318,7 +1325,9 @@
       "lose_title": "Severe Injury: -20 to All Stats",
       "lose_detail": "(Afflicts your highest OVR player)",
       "result_win": "Legendary signing! {{newName}} joins the team at [{{pos}}] replacing {{oldName}}.",
-      "result_lose": "Disaster! {{name}} suffers a severe injury: -20 to all stats for the rest of the run."
+      "result_lose": "Disaster! {{name}} suffers a severe injury: -20 to all stats for the rest of the run.",
+      "no_injury_target": "No players available to injure.",
+      "no_target": "No available players."
     },
     "synergy": {
       "title": "Era Alchemy Pact",
@@ -1331,7 +1340,9 @@
       "lose_title": "2 Teammates Lose Era Synergy",
       "lose_detail": "(Permanent penalty for the run)",
       "result_win": "Alchemy success! {{name}} now counts 4x toward the {{era}} synergy.",
-      "result_lose": "Pact failed! {{names}} lost their Era synergy eligibility for the rest of the run."
+      "result_lose": "Pact failed! {{names}} lost their Era synergy eligibility for the rest of the run.",
+      "no_valid_target": "No players available to swap synergy.",
+      "result_lose_none": "No penalty was applied."
     },
     "trade": {
       "title": "Blind Trade",
@@ -1344,7 +1355,8 @@
       "lose_title": "Common Player + 🔒 2-Node Lock",
       "lose_detail": "(No drafting at that position for 2 nodes)",
       "result_win": "Great deal! {{oldName}} ➡️ {{newName}} ({{rarity}}) at [{{pos}}].",
-      "result_lose": "Bad deal: {{newName}} (Common) replaces {{oldName}} at [{{pos}}]. Position locked for 2 nodes."
+      "result_lose": "Bad deal: {{newName}} (Common) replaces {{oldName}} at [{{pos}}]. Position locked for 2 nodes.",
+      "no_target": "No eligible players for the trade."
     },
     "btn_view_log": "📜 VIEW RUN LOG",
     "log_modal_title": "📜 RUN PROGRESS LOG",

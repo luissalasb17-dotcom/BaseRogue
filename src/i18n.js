@@ -144,7 +144,12 @@
     "back_menu": "← MENÚ",
     "damage": "DAÑO",
     "shield": "ESCUDO",
-    "loading": "Cargando..."
+    "loading": "Cargando...",
+    "continue": "CONTINUAR",
+    "close": "CERRAR",
+    "accept": "ACEPTAR",
+    "cancel": "CANCELAR",
+    "back": "VOLVER"
   },
   "season_select": {
     "title": "📜 SELECCIONA LA TEMPORADA",
@@ -762,7 +767,8 @@
     "lineup_full": "Alineación ocupada. Elige a quién reemplazar.",
     "division_defeated": "¡DIVISIÓN SUPERADA!",
     "player_placed_dh": "{{name}} asignado como Bateador Designado (DH)",
-    "player_placed_native": "{{name}} asignado en su posición natural ({{pos}})"
+    "player_placed_native": "{{name}} asignado en su posición natural ({{pos}})",
+    "mid_boss_win_msg": "¡Derrotaste a la rotación élite del Mid-Boss! Recibiste un ítem y presupuesto extra."
   },
   "training": {
     "con": {
@@ -1230,7 +1236,8 @@
     "ring_of_champions": "💍 PLANTILLA DE 17 CAMPEONES (ROSTER COMPLETO)",
     "new_challenge_btn": "🔄 EMPEZAR NUEVO CHALLENGE",
     "table_pitcher": "LANZADOR",
-    "table_role": "ROL"
+    "table_role": "ROL",
+    "your_team_name": "Tu Equipo"
   },
   "badge": {
     "captain_tooltip": "Captain: +5 a todos los ratings de sus compañeros de equipo mientras esté en el roster activo.",
@@ -1321,7 +1328,9 @@
       "lose_title": "Lesión Grave: -20 a Todas las Stats",
       "lose_detail": "(Afecta a tu jugador con mayor OVR)",
       "result_win": "¡Fichaje legendario! {{newName}} se une al equipo en [{{pos}}] reemplazando a {{oldName}}.",
-      "result_lose": "¡Desastre! {{name}} se lesiona gravemente: -20 en todas sus stats por el resto de la run."
+      "result_lose": "¡Desastre! {{name}} se lesiona gravemente: -20 en todas sus stats por el resto de la run.",
+      "no_injury_target": "No hay jugadores disponibles para lesionar.",
+      "no_target": "No hay jugadores disponibles."
     },
     "synergy": {
       "title": "Pacto de Alquimia de Era",
@@ -1334,7 +1343,9 @@
       "lose_title": "2 Jugadores Pierden su Sinergia",
       "lose_detail": "(Penalización permanente por la run)",
       "result_win": "¡Alquimia exitosa! {{name}} ahora cuenta x4 para la sinergia de {{era}}.",
-      "result_lose": "¡Falló el pacto! {{names}} pierden su elegibilidad de Era por el resto de la run."
+      "result_lose": "¡Falló el pacto! {{names}} pierden su elegibilidad de Era por el resto de la run.",
+      "no_valid_target": "No hay jugadores disponibles para cambiar de sinergia.",
+      "result_lose_none": "No se aplicó ninguna penalización."
     },
     "trade": {
       "title": "Intercambio a Ciegas",
@@ -1347,7 +1358,8 @@
       "lose_title": "Jugador Common + 🔒 Bloqueo 2 Nodos",
       "lose_detail": "(Sin firmas en esa posición por 2 nodos)",
       "result_win": "¡Gran negociación! {{oldName}} ➡️ {{newName}} ({{rarity}}) en [{{pos}}].",
-      "result_lose": "Mal negocio: {{newName}} (Common) reemplaza a {{oldName}} en [{{pos}}]. Posición bloqueada por 2 nodos."
+      "result_lose": "Mal negocio: {{newName}} (Common) reemplaza a {{oldName}} en [{{pos}}]. Posición bloqueada por 2 nodos.",
+      "no_target": "No hay jugadores elegibles para el traspaso."
     },
     "btn_view_log": "📜 VER REGISTRO DE RUN",
     "log_modal_title": "📜 HISTORIAL DE LA RUN",
@@ -1922,7 +1934,12 @@
     "back_menu": "← MENU",
     "damage": "DAMAGE",
     "shield": "SHIELD",
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "continue": "CONTINUE",
+    "close": "CLOSE",
+    "accept": "ACCEPT",
+    "cancel": "CANCEL",
+    "back": "BACK"
   },
   "season_select": {
     "title": "📜 SELECT THE SEASON",
@@ -2540,7 +2557,8 @@
     "lineup_full": "Lineup occupied. Choose who to replace.",
     "division_defeated": "DIVISION DEFEATED!",
     "player_placed_dh": "{{name}} assigned as Designated Hitter (DH)",
-    "player_placed_native": "{{name}} assigned to primary position ({{pos}})"
+    "player_placed_native": "{{name}} assigned to primary position ({{pos}})",
+    "mid_boss_win_msg": "You defeated the Mid-Boss elite rotation! Received an equipment item and extra budget."
   },
   "training": {
     "con": {
@@ -3008,7 +3026,8 @@
     "ring_of_champions": "💍 RING OF 17 CHAMPIONS (FULL ROSTER)",
     "new_challenge_btn": "🔄 START NEW CHALLENGE",
     "table_pitcher": "PITCHER",
-    "table_role": "ROLE"
+    "table_role": "ROLE",
+    "your_team_name": "Your Team"
   },
   "badge": {
     "captain_tooltip": "Captain: +5 to all ratings for teammates while on active roster.",
@@ -3099,7 +3118,9 @@
       "lose_title": "Severe Injury: -20 to All Stats",
       "lose_detail": "(Afflicts your highest OVR player)",
       "result_win": "Legendary signing! {{newName}} joins the team at [{{pos}}] replacing {{oldName}}.",
-      "result_lose": "Disaster! {{name}} suffers a severe injury: -20 to all stats for the rest of the run."
+      "result_lose": "Disaster! {{name}} suffers a severe injury: -20 to all stats for the rest of the run.",
+      "no_injury_target": "No players available to injure.",
+      "no_target": "No available players."
     },
     "synergy": {
       "title": "Era Alchemy Pact",
@@ -3112,7 +3133,9 @@
       "lose_title": "2 Teammates Lose Era Synergy",
       "lose_detail": "(Permanent penalty for the run)",
       "result_win": "Alchemy success! {{name}} now counts 4x toward the {{era}} synergy.",
-      "result_lose": "Pact failed! {{names}} lost their Era synergy eligibility for the rest of the run."
+      "result_lose": "Pact failed! {{names}} lost their Era synergy eligibility for the rest of the run.",
+      "no_valid_target": "No players available to swap synergy.",
+      "result_lose_none": "No penalty was applied."
     },
     "trade": {
       "title": "Blind Trade",
@@ -3125,7 +3148,8 @@
       "lose_title": "Common Player + 🔒 2-Node Lock",
       "lose_detail": "(No drafting at that position for 2 nodes)",
       "result_win": "Great deal! {{oldName}} ➡️ {{newName}} ({{rarity}}) at [{{pos}}].",
-      "result_lose": "Bad deal: {{newName}} (Common) replaces {{oldName}} at [{{pos}}]. Position locked for 2 nodes."
+      "result_lose": "Bad deal: {{newName}} (Common) replaces {{oldName}} at [{{pos}}]. Position locked for 2 nodes.",
+      "no_target": "No eligible players for the trade."
     },
     "btn_view_log": "📜 VIEW RUN LOG",
     "log_modal_title": "📜 RUN PROGRESS LOG",
@@ -3612,11 +3636,54 @@
     }
   }
 
+  function translateElement(el) {
+    if (!el || el.nodeType !== 1) return;
+    if (el.hasAttribute && el.hasAttribute('data-i18n')) {
+      const key = el.getAttribute('data-i18n');
+      if (key) {
+        const translated = t(key);
+        if (translated && translated !== key) el.innerText = translated;
+      }
+    }
+    if (el.hasAttribute && el.hasAttribute('data-i18n-html')) {
+      const key = el.getAttribute('data-i18n-html');
+      if (key) {
+        const translated = t(key);
+        if (translated && translated !== key) el.innerHTML = translated;
+      }
+    }
+    if (el.hasAttribute && el.hasAttribute('data-i18n-placeholder')) {
+      const key = el.getAttribute('data-i18n-placeholder');
+      if (key) {
+        const translated = t(key);
+        if (translated && translated !== key) el.setAttribute('placeholder', translated);
+      }
+    }
+  }
+
+  // Intercept and translate elements dynamically as they parse into the DOM
+  if (typeof MutationObserver !== 'undefined') {
+    const liveObserver = new MutationObserver(mutations => {
+      mutations.forEach(m => {
+        m.addedNodes.forEach(node => {
+          if (node.nodeType === 1) {
+            translateElement(node);
+            node.querySelectorAll('[data-i18n], [data-i18n-html], [data-i18n-placeholder]').forEach(translateElement);
+          }
+        });
+      });
+    });
+    liveObserver.observe(document.documentElement, { childList: true, subtree: true });
+  }
+
   // Run on initial load
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', translateDOM);
+    document.addEventListener('readystatechange', () => {
+      if (document.readyState === 'interactive' || document.readyState === 'complete') translateDOM();
+    });
   } else {
-    setTimeout(translateDOM, 0);
+    translateDOM();
   }
 
   function getLanguage() {
@@ -3624,6 +3691,7 @@
   }
 
   function t(key, params = {}) {
+    const defaultVal = typeof params === 'string' ? params : (params && params.defaultValue !== undefined ? params.defaultValue : null);
     const keys = key.split('.');
     let val = locales[currentLang];
     for (const k of keys) {
@@ -3645,14 +3713,14 @@
           break;
         }
       }
-      val = fallbackVal !== null ? fallbackVal : (params.defaultValue || key);
+      val = fallbackVal !== null ? fallbackVal : (defaultVal !== null ? defaultVal : key);
     }
-    if (typeof val === 'string') {
+    if (typeof val === 'string' && typeof params === 'object' && params !== null) {
       return val.replace(/\{\{\s*(\w+)\s*\}\}/g, (_, match) => {
         return params[match] !== undefined ? params[match] : `{{${match}}}`;
       });
     }
-    return val || key;
+    return val || defaultVal || key;
   }
 
   window.i18n = {

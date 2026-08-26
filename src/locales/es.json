@@ -141,7 +141,12 @@
     "back_menu": "← MENÚ",
     "damage": "DAÑO",
     "shield": "ESCUDO",
-    "loading": "Cargando..."
+    "loading": "Cargando...",
+    "continue": "CONTINUAR",
+    "close": "CERRAR",
+    "accept": "ACEPTAR",
+    "cancel": "CANCELAR",
+    "back": "VOLVER"
   },
   "season_select": {
     "title": "📜 SELECCIONA LA TEMPORADA",
@@ -759,7 +764,8 @@
     "lineup_full": "Alineación ocupada. Elige a quién reemplazar.",
     "division_defeated": "¡DIVISIÓN SUPERADA!",
     "player_placed_dh": "{{name}} asignado como Bateador Designado (DH)",
-    "player_placed_native": "{{name}} asignado en su posición natural ({{pos}})"
+    "player_placed_native": "{{name}} asignado en su posición natural ({{pos}})",
+    "mid_boss_win_msg": "¡Derrotaste a la rotación élite del Mid-Boss! Recibiste un ítem y presupuesto extra."
   },
   "training": {
     "con": {
@@ -1227,7 +1233,8 @@
     "ring_of_champions": "💍 PLANTILLA DE 17 CAMPEONES (ROSTER COMPLETO)",
     "new_challenge_btn": "🔄 EMPEZAR NUEVO CHALLENGE",
     "table_pitcher": "LANZADOR",
-    "table_role": "ROL"
+    "table_role": "ROL",
+    "your_team_name": "Tu Equipo"
   },
   "badge": {
     "captain_tooltip": "Captain: +5 a todos los ratings de sus compañeros de equipo mientras esté en el roster activo.",
@@ -1318,7 +1325,9 @@
       "lose_title": "Lesión Grave: -20 a Todas las Stats",
       "lose_detail": "(Afecta a tu jugador con mayor OVR)",
       "result_win": "¡Fichaje legendario! {{newName}} se une al equipo en [{{pos}}] reemplazando a {{oldName}}.",
-      "result_lose": "¡Desastre! {{name}} se lesiona gravemente: -20 en todas sus stats por el resto de la run."
+      "result_lose": "¡Desastre! {{name}} se lesiona gravemente: -20 en todas sus stats por el resto de la run.",
+      "no_injury_target": "No hay jugadores disponibles para lesionar.",
+      "no_target": "No hay jugadores disponibles."
     },
     "synergy": {
       "title": "Pacto de Alquimia de Era",
@@ -1331,7 +1340,9 @@
       "lose_title": "2 Jugadores Pierden su Sinergia",
       "lose_detail": "(Penalización permanente por la run)",
       "result_win": "¡Alquimia exitosa! {{name}} ahora cuenta x4 para la sinergia de {{era}}.",
-      "result_lose": "¡Falló el pacto! {{names}} pierden su elegibilidad de Era por el resto de la run."
+      "result_lose": "¡Falló el pacto! {{names}} pierden su elegibilidad de Era por el resto de la run.",
+      "no_valid_target": "No hay jugadores disponibles para cambiar de sinergia.",
+      "result_lose_none": "No se aplicó ninguna penalización."
     },
     "trade": {
       "title": "Intercambio a Ciegas",
@@ -1344,7 +1355,8 @@
       "lose_title": "Jugador Common + 🔒 Bloqueo 2 Nodos",
       "lose_detail": "(Sin firmas en esa posición por 2 nodos)",
       "result_win": "¡Gran negociación! {{oldName}} ➡️ {{newName}} ({{rarity}}) en [{{pos}}].",
-      "result_lose": "Mal negocio: {{newName}} (Common) reemplaza a {{oldName}} en [{{pos}}]. Posición bloqueada por 2 nodos."
+      "result_lose": "Mal negocio: {{newName}} (Common) reemplaza a {{oldName}} en [{{pos}}]. Posición bloqueada por 2 nodos.",
+      "no_target": "No hay jugadores elegibles para el traspaso."
     },
     "btn_view_log": "📜 VER REGISTRO DE RUN",
     "log_modal_title": "📜 HISTORIAL DE LA RUN",
