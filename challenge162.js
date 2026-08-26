@@ -637,14 +637,14 @@
     if (con < 35) {
       conEffective = 42 + (con - 35) * 0.35;
     } else if (con > 90) {
-      conEffective = 90 + (con - 90) * 0.45;
+      conEffective = 90 + (con - 90) * 0.40;
     }
 
     let pwrEffective = pwr;
     if (pwr > 75 && pwr <= 90) {
-      pwrEffective = 75 + (pwr - 75) * 0.70;
+      pwrEffective = 75 + (pwr - 75) * 0.65;
     } else if (pwr > 90) {
-      pwrEffective = 75 + (15 * 0.70) + (pwr - 90) * 0.45;
+      pwrEffective = 75 + (15 * 0.65) + (pwr - 90) * 0.40;
     }
 
     // SO: Driven directly by dedicated K Avoidance attribute (k_avd / k_avoid) & Pitcher K/9:
@@ -653,9 +653,9 @@
     // Soft-tossers / sinkerballers (K/9 10-35 e.g. Bill Lee, Randy Jones) generate 65-105 K.
     const rawKAvd = batter.k_avd !== undefined ? batter.k_avd : (batter.k_avoid !== undefined ? batter.k_avoid : (batter.k_avoid_val !== undefined ? batter.k_avoid_val : conEffective));
     const kAvoid = rawKAvd < 35 ? (42 + (rawKAvd - 35) * 0.35) : (rawKAvd > 90 ? (90 + (rawKAvd - 90) * 0.50) : rawKAvd);
-    const kPitcherBoost = pK9 <= 65 ? (pK9 - 50) * 0.0022 : (15 * 0.0022 + (pK9 - 65) * 0.0034);
-    let pSO = 0.185 - (kAvoid - 50) * 0.00165 + kPitcherBoost;
-    pSO = Math.max(0.040, Math.min(0.42, pSO));
+    const kPitcherBoost = pK9 <= 65 ? (pK9 - 50) * 0.0020 : (15 * 0.0020 + (pK9 - 65) * 0.0032);
+    let pSO = 0.185 - (kAvoid - 50) * 0.00160 + kPitcherBoost;
+    pSO = Math.max(0.040, Math.min(0.38, pSO));
 
     const pInPlay = Math.max(0.20, 1 - pBB - pSO);
 
@@ -666,20 +666,20 @@
 
     let targetAvg, pHR;
     if (isUserBatting) {
-      targetAvg = 0.268 + (conEffective - 50) * 0.00165 - (pH9 - 50) * 0.00070 - defAdj;
-      pHR = 0.032 + (pwrEffective - 50) * 0.00125 - (pHR9 - 50) * 0.00030;
+      targetAvg = 0.258 + (conEffective - 50) * 0.00140 - (pH9 - 50) * 0.00070 - defAdj;
+      pHR = 0.028 + (pwrEffective - 50) * 0.00095 - (pHR9 - 50) * 0.00028;
     } else {
       // Opponent batting vs User pitching: calibrated to deliver authentic 2.20-3.50 ERAs for quality starters and 1.80-2.80 for elite relievers:
-      targetAvg = 0.252 + (conEffective - 50) * 0.00140 - (pH9 - 50) * 0.00075 - defAdj;
-      pHR = 0.032 + (pwrEffective - 50) * 0.00120 - (pHR9 - 50) * 0.00032;
+      targetAvg = 0.248 + (conEffective - 50) * 0.00130 - (pH9 - 50) * 0.00075 - defAdj;
+      pHR = 0.028 + (pwrEffective - 50) * 0.00090 - (pHR9 - 50) * 0.00030;
     }
 
-    targetAvg = Math.max(0.14, Math.min(0.42, targetAvg));
+    targetAvg = Math.max(0.14, Math.min(0.38, targetAvg));
     let pTotalHit = (1 - pBB) * targetAvg;
     pTotalHit = Math.min(pTotalHit, pInPlay - 0.01);
 
-    pHR = Math.max(0.001, Math.min(0.095, pHR));
-    pHR = Math.min(pHR, pTotalHit * 0.55);
+    pHR = Math.max(0.001, Math.min(0.085, pHR));
+    pHR = Math.min(pHR, pTotalHit * 0.50);
     const pRegularHit = pTotalHit - pHR;
 
     // 3B Triples Distribution:
@@ -1371,10 +1371,11 @@
     },
 
     getUserTeamName() {
-      if (!this.state) return 'Tu Equipo';
+      const _t = (key, fallback) => (typeof window.t === 'function' ? window.t(key) : fallback);
+      if (!this.state) return _t('challenge162.my_legends', 'Mis Leyendas');
       const S = this.state;
       if (S.teamName) return S.teamName;
-      if (S.modeConfig && S.modeConfig.key && S.modeConfig.key !== 'all_time' && S.modeConfig.label) {
+      if (S.modeConfig && S.modeConfig.key === 'mono_franchise' && S.modeConfig.label) {
         return S.modeConfig.label;
       }
       const franchiseNames = (window.PlayersDB && window.PlayersDB.FranchiseNames) || {};
@@ -1389,11 +1390,10 @@
         if (t) counts[t] = (counts[t] || 0) + 1;
       });
       const topCode = Object.keys(counts).sort((a, b) => counts[b] - counts[a])[0];
-      if (topCode && franchiseNames[topCode]) {
+      if (topCode && counts[topCode] >= 13 && franchiseNames[topCode]) {
         return franchiseNames[topCode];
       }
-      const _t = (key, fallback) => (typeof window.t === 'function' ? window.t(key) : fallback);
-      return _t('challenge162.my_franchise', 'Mi Franquicia');
+      return _t('challenge162.my_legends', 'Mis Leyendas');
     },
 
     startPlayoffRound() {
@@ -2418,6 +2418,8 @@
       const _t = (key, fallback) => (typeof window.t === 'function' ? window.t(key) : fallback);
       const battingTitle = _t('challenge162.playoff_boxscore_batting', 'ESTADÍSTICAS DE BATEO');
       const pitchingTitle = _t('challenge162.playoff_boxscore_pitching', 'ESTADÍSTICAS DE PITCHEO');
+      const batterColLabel = _t('challenge162.table_player', 'BATEADOR');
+      const pitcherColLabel = _t('challenge162.table_pitcher', 'LANZADOR');
 
       const renderBattingTable = (teamName, batters) => {
         const rows = (batters || []).map(b => {
@@ -2447,7 +2449,7 @@
               <table class="c162-table">
                 <thead>
                   <tr>
-                    <th class="c162-th c162-th-name">BATEADOR</th>
+                    <th class="c162-th c162-th-name">${batterColLabel}</th>
                     <th class="c162-th">AB</th><th class="c162-th">R</th><th class="c162-th">H</th>
                     <th class="c162-th">2B</th><th class="c162-th">3B</th><th class="c162-th">HR</th>
                     <th class="c162-th">RBI</th><th class="c162-th">BB</th><th class="c162-th">SO</th>
@@ -2489,7 +2491,7 @@
               <table class="c162-table">
                 <thead>
                   <tr>
-                    <th class="c162-th c162-th-name">LANZADOR</th>
+                    <th class="c162-th c162-th-name">${pitcherColLabel}</th>
                     <th class="c162-th">IP</th><th class="c162-th">H</th><th class="c162-th">R</th>
                     <th class="c162-th">ER</th><th class="c162-th">BB</th><th class="c162-th">SO</th>
                     <th class="c162-th">HR</th><th class="c162-th">PIT</th><th class="c162-th">ERA</th>
@@ -2524,6 +2526,7 @@
 
       const _t = (key, fallback) => (typeof window.t === 'function' ? window.t(key) : fallback);
       const title = _t('challenge162.playoff_boxscore_title', 'BOX SCORE OFICIAL');
+      const closeBtnText = _t('challenge162.modal_close', '✕ CERRAR');
 
       const modal = document.createElement('div');
       modal.id = 'c162-playoff-boxscore-modal';
@@ -2549,8 +2552,8 @@
               <div style="font-family:'Press Start 2P',monospace;font-size:11px;color:#ffd700;">
                 📊 ${title} · ${game.awayTeam.name} (${game.awayTeam.runs}) @ ${game.homeTeam.name} (${game.homeTeam.runs})
               </div>
-              <button id="btn-close-boxscore-modal" class="btn btn-secondary" style="padding:4px 10px;font-size:11px;font-weight:bold;cursor:pointer;">
-                ✕ CERRAR
+              <button id="btn-close-boxscore-modal" class="btn btn-secondary" style="padding:6px 12px;font-size:10px;font-family:'Press Start 2P',monospace;cursor:pointer;">
+                ${closeBtnText}
               </button>
             </div>
             ${allBoxScores.length > 1 ? `
@@ -2564,8 +2567,8 @@
           </div>
         `;
 
-        const closeBtn = document.getElementById('btn-close-boxscore-modal');
-        if (closeBtn) closeBtn.onclick = () => modal.remove();
+        const closeBtn = modal.querySelector('#btn-close-boxscore-modal');
+        if (closeBtn) closeBtn.onclick = (e) => { e.stopPropagation(); modal.remove(); };
 
         modal.querySelectorAll('.c162-game-tab-btn').forEach(btn => {
           btn.onclick = () => {
@@ -2575,8 +2578,8 @@
         });
       };
 
-      renderModalContent(selectedIndex);
       document.body.appendChild(modal);
+      renderModalContent(selectedIndex);
       modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
     },
 
