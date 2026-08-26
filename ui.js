@@ -10844,6 +10844,7 @@ function initGameModeSelector() {
           <td style="padding:8px;color:${s.slgVal >= 0.500 ? '#f59e0b' : '#94a3b8'};font-weight:bold;">${slg}</td>
           <td style="padding:8px;color:${s.opsVal >= 0.850 ? '#00ff66' : (s.opsVal >= 0.750 ? '#ffd700' : '#94a3b8')};font-weight:bold;">${ops}</td>
           <td style="padding:8px;color:#ff3366;font-weight:bold;font-family:'Press Start 2P',monospace;font-size:9.5px;">${s.dmg}</td>
+        `;
         tbodyB.appendChild(tr);
       });
     }
