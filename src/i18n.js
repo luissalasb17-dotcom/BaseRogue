@@ -1216,8 +1216,18 @@
     "pa_out": "{{batter}} falla con roletazo/elevado.",
     "pa_sb": "¡{{runner}} estafa la segunda base con éxito!",
     "playoff_tab_broadcast": "🏟️ CAMPO EN VIVO",
+    "playoff_tab_lineups": "📋 ALINEACIONES",
     "playoff_tab_boxscore": "📊 BOX SCORE OFICIAL",
     "playoff_tab_pbp": "📜 JUGADA A JUGADA",
+    "playoff_pregame_ready": "¡El partido está listo para comenzar! Primer turno:",
+    "playoff_back_hub": "← VOLVER",
+    "my_franchise": "Mi Franquicia",
+    "opposing_team": "EQUIPO RIVAL",
+    "pitching_staff": "Cuerpo de Pitcheo",
+    "starting_pitcher": "Abridor",
+    "setup_pitcher": "Preparador",
+    "closer_pitcher": "Cerrador",
+    "batting_lineup": "Alineación Titular",
     "playoff_select_game": "VER JUEGO:",
     "playoff_runners_bases_empty": "Bases Limpias",
     "playoff_runners_1b": "Corredor en 1ra",
@@ -1304,7 +1314,8 @@
     "secondary_master": "Maestro de Posición Secundaria",
     "scout_eye": "Ojo de Cazatalentos",
     "elite_negotiator": "Negociador de Élite",
-    "endless_stamina": "Resistencia Inagotable"
+    "endless_stamina": "Resistencia Inagotable",
+    "midas_touch": "Toque de Midas"
   },
   "chest": {
     "claim_btn": "RECLAMAR RECOMPENSA",
@@ -1845,6 +1856,29 @@
     "win_title": "⚡ ¡MID-BOSS DERROTADO! ⚡",
     "win_desc": "¡Victoria de Élite! Obtienes +${{budget}} de presupuesto y un nuevo equipamiento en tu Mochila:",
     "continue_btn": "CONTINUAR AL DRAFT ➡"
+  },
+  "trait": {
+    "eagle": { "name": "🦅 Paciencia de Águila", "desc": "Zona de Boleto (BB) aumenta +3 puntos. Cada BB regenera +5 Stamina al bateador." },
+    "slugger": { "name": "💥 Impulso de Jonronero", "desc": "Cada HR inflige +30 HP de daño extra al pitcher rival." },
+    "surgical": { "name": "🎯 Contacto Quirúrgico", "desc": "Zona de Ponche (SO) reducida en -3 puntos para toda la alineación." },
+    "speed": { "name": "⚡ Velocistas Agresivos", "desc": "Jugadores con SPD > 60 roban la base automáticamente en sencillos y boletos. Debuff al pitcher dura 3 impactos." },
+    "extrabase": { "name": "💣 Impacto Acumulado", "desc": "Batazos de extra bases (2B, 3B, HR) infligen +10 HP de daño adicional al pitcher." },
+    "shield": { "name": "🛡️ Escudo de Hierro", "desc": "Repara automáticamente +25 de Escudo al inicio de cada entrada (hasta el límite de tu equipo)." },
+    "wall": { "name": "🧱 Muro Defensivo", "desc": "Outs normales reducen daño a -13 HP en lugar de -20 HP." },
+    "stamina": { "name": "🔋 Resistencia Inagotable", "desc": "Los bateadores solo pierden 6 de Stamina por partido (en lugar de 12)." },
+    "clutch": { "name": "❤️ Resiliencia de Leyendas", "desc": "Si Team HP cae por debajo de 35, activa estado Clutch: +15 a CON, PWR, EYE, SPD, DEF para toda la alineación." },
+    "glove": { "name": "🧤 Guantelete Dorado", "desc": "Todos los bateadores reciben +10 DEF, aumentando la capacidad del Escudo de equipo." },
+    "secondary": { "name": "🔄 Posición Secundaria Maestra", "desc": "Elimina la penalización (-15%) al colocar bateadores en su Posición Secundaria." },
+    "era_acc": { "name": "⏳ Sinergia de Era Acelerada", "desc": "Solo necesitas 2 jugadores de la misma Era para activar la Sinergia de Nivel 2 (normalmente 4)." },
+    "elite": { "name": "💼 Negociador de Élite", "desc": "Obtienes +$10 de presupuesto extra tras cada victoria." },
+    "scout": { "name": "🌟 Ojo de Cazatalentos", "desc": "Las ofertas de draft muestran 4 jugadores en lugar de 3 y aumenta probabilidad de Epic/Legendary." },
+    "veteran": { "name": "🔋 Segunda Vida", "desc": "Tu alineación completa recupera un +30% de Stamina al inicio de cada nuevo mapa." },
+    "reliever": { "name": "🔥 Emboscada al Relevista", "desc": "El primer batazo contra un nuevo pitcher rival inflige +50% de daño extra." },
+    "pressure": { "name": "📈 Presión Temprana", "desc": "El primer bateador de cada entrada gana +20 de CON y EYE para ese turno." },
+    "ghost": { "name": "🏃 Corredores Fantasma", "desc": "Inicias la 3ª entrada y todos los Extra Innings de cada partido con un corredor en 2ª base automáticamente." },
+    "legendary": { "name": "👑 Dominio Legendario", "desc": "Si tienes 2 o más jugadores Legendary en titular, todos reciben +10 a todas sus estadísticas." },
+    "back2back": { "name": "💥 Cadena de Poder", "desc": "Después de un HR, el siguiente bateador gana +20 de PWR y CON para ese turno." },
+    "midas": { "name": "🎰 Toque de Midas", "desc": "Aumenta en +25% las probabilidades de éxito en eventos de Suerte (LUCK), Decisiones y Ruletas de Prototipos." }
   }
 },
     en: {
@@ -3062,8 +3096,18 @@
     "pa_out": "{{batter}} grounds out / flies out.",
     "pa_sb": "¡{{runner}} successfully steals second base!",
     "playoff_tab_broadcast": "🏟️ LIVE BROADCAST",
+    "playoff_tab_lineups": "📋 LINEUPS",
     "playoff_tab_boxscore": "📊 OFFICIAL BOX SCORE",
     "playoff_tab_pbp": "📜 PLAY-BY-PLAY",
+    "playoff_pregame_ready": "Game is ready to start! Leadoff batter:",
+    "playoff_back_hub": "← BACK",
+    "my_franchise": "My Franchise",
+    "opposing_team": "OPPOSING TEAM",
+    "pitching_staff": "Pitching Staff",
+    "starting_pitcher": "Starter",
+    "setup_pitcher": "Setup",
+    "closer_pitcher": "Closer",
+    "batting_lineup": "Starting Lineup",
     "playoff_select_game": "VIEW GAME:",
     "playoff_runners_bases_empty": "Bases Empty",
     "playoff_runners_1b": "Runner on 1st",
@@ -3150,7 +3194,8 @@
     "secondary_master": "Secondary Position Master",
     "scout_eye": "Scout's Eye",
     "elite_negotiator": "Elite Negotiator",
-    "endless_stamina": "Endless Stamina"
+    "endless_stamina": "Endless Stamina",
+    "midas_touch": "Midas Touch"
   },
   "chest": {
     "claim_btn": "CLAIM REWARD",
@@ -3691,6 +3736,29 @@
     "win_title": "⚡ MID-BOSS DEFEATED! ⚡",
     "win_desc": "Victory over the elite rotation! You earned +${{budget}} and received an equipment item in your backpack:",
     "continue_btn": "CONTINUE TO DRAFT ➡"
+  },
+  "trait": {
+    "eagle": { "name": "🦅 Eagle Patience", "desc": "Walk zone (BB) increases +3 points. Each BB restores +5 Stamina to batter." },
+    "slugger": { "name": "💥 Slugger Momentum", "desc": "Each HR deals +30 HP extra damage to rival pitcher." },
+    "surgical": { "name": "🎯 Surgical Contact", "desc": "Strikeout zone (SO) reduced by -3 points for whole lineup." },
+    "speed": { "name": "⚡ Speed Demons", "desc": "Hitters with SPD > 60 auto-steal on 1B/BB. Pitcher debuff lasts 3 hits." },
+    "extrabase": { "name": "💣 Extra Base Impact", "desc": "Extra-base hits (2B, 3B, HR) deal +10 HP additional damage to pitcher." },
+    "shield": { "name": "🛡️ Iron Shield", "desc": "Auto-repairs +25 Shield at the start of each inning." },
+    "wall": { "name": "🧱 Defensive Wall", "desc": "Regular outs reduce damage to -13 HP instead of -20 HP." },
+    "stamina": { "name": "🔋 Endless Stamina", "desc": "Batters only lose 6 Stamina per match (instead of 12)." },
+    "clutch": { "name": "❤️ Clutch Legends", "desc": "If Team HP falls below 35, activate Clutch: +15 to CON, PWR, EYE, SPD, DEF for entire lineup." },
+    "glove": { "name": "🧤 Gold Glove", "desc": "All batters receive +10 DEF, increasing team Shield capacity." },
+    "secondary": { "name": "🔄 Secondary Master", "desc": "Removes the -15% penalty when placing batters in their Secondary Position." },
+    "era_acc": { "name": "⏳ Accelerated Era", "desc": "Only 2 players of the same Era needed for Tier 2 Synergy (normally 4)." },
+    "elite": { "name": "💼 Elite Negotiator", "desc": "Earn +$10 extra budget after every victory." },
+    "scout": { "name": "🌟 Scout's Eye", "desc": "Draft offers show 4 players instead of 3 and increases Epic/Legendary odds." },
+    "veteran": { "name": "🔋 Second Life", "desc": "Entire lineup recovers +30% Stamina when entering a new map." },
+    "reliever": { "name": "🔥 Reliever Ambush", "desc": "First hit against a new rival pitcher deals +50% extra damage." },
+    "pressure": { "name": "📈 Early Pressure", "desc": "First batter of each inning gains +20 CON and EYE for that turn." },
+    "ghost": { "name": "🏃 Ghost Runners", "desc": "Start the 3rd inning and all Extra Innings with a runner on 2nd base." },
+    "legendary": { "name": "👑 Legendary Domination", "desc": "If you have 2+ Legendary starters, all players get +10 to all stats." },
+    "back2back": { "name": "💥 Power Chain", "desc": "After a HR, the next batter gains +20 PWR and CON for that turn." },
+    "midas": { "name": "🎰 Midas Touch", "desc": "+25% success chance on all LUCK Gambles, Decision Events, and Prototype Roulettes." }
   }
 }
   };

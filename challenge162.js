@@ -446,7 +446,7 @@
 
     return {
       id: `challenge162_playoff_${cfg.key}_${Date.now()}`,
-      name: `${cfg.label}: ${franchiseTeam.name}`,
+      name: franchiseTeam.name,
       tier: round === 2 ? 'BOSS_S' : 'S',
       isBoss: true,
       isWorldSeries: round === 2,
@@ -583,11 +583,11 @@
     let targetAvg, pHR;
     if (isUserBatting) {
       targetAvg = 0.268 + (conEffective - 50) * 0.00165 - (pH9 - 50) * 0.00070 - defAdj;
-      pHR = 0.028 + (pwrEffective - 50) * 0.00110 - (pHR9 - 50) * 0.00030;
+      pHR = 0.032 + (pwrEffective - 50) * 0.00125 - (pHR9 - 50) * 0.00030;
     } else {
       // Opponent batting vs User pitching: calibrated to deliver authentic 2.20-3.50 ERAs for quality starters and 1.80-2.80 for elite relievers:
       targetAvg = 0.252 + (conEffective - 50) * 0.00140 - (pH9 - 50) * 0.00075 - defAdj;
-      pHR = 0.030 + (pwrEffective - 50) * 0.00110 - (pHR9 - 50) * 0.00032;
+      pHR = 0.032 + (pwrEffective - 50) * 0.00120 - (pHR9 - 50) * 0.00032;
     }
 
     targetAvg = Math.max(0.14, Math.min(0.42, targetAvg));
@@ -1020,12 +1020,12 @@
       const userSP = spList[gameIdx % spList.length];
 
       // Respect user's explicit roster slot roles:
-      // RP[0] = Middle Reliever (RP)
+      // RP[0] = Designated Closer (CL)
       // RP[1] = Setup Reliever (SETUP)
-      // RP[2] = Designated Closer (CL)
-      const middle = rpList[0] || rpList[1] || rpList[2];
+      // RP[2] = Middle Reliever (RP)
+      const closer = rpList[0] || rpList[1] || rpList[2];
       const setup  = rpList[1] || rpList[0] || rpList[2];
-      const closer = rpList[2] || rpList[1] || rpList[0];
+      const middle = rpList[2] || rpList[1] || rpList[0];
       const userRelievers = [middle, setup, closer];
 
       const sched = S.schedule[gameIdx];
@@ -1206,16 +1206,16 @@
         }
 
         // Stolen base roll (smooth authentic sabermetric speed curve):
-        // spd < 45 -> 1-3 SB (catchers, slow sluggers)
-        // spd 60-70 -> 8-15 SB (average runner)
-        // spd 75-85 -> 22-38 SB (Pee Wee Reese, Betts, Altuve)
-        // spd 90-110+ -> 45-75+ SB (Rickey Henderson, Vince Coleman, Lou Brock, Ohtani)
+        // spd < 50 -> 1-3 SB (catchers, slow sluggers)
+        // spd 50-70 -> 5-12 SB (average runner)
+        // spd 75-85 -> 20-35 SB (Pee Wee Reese, Betts, Altuve)
+        // spd 90-110+ -> 50-75+ SB (Rickey Henderson, Vince Coleman, Lou Brock, Ohtani)
         if (isUserBatting && (outcome === 'BB' || outcome === '1B') && bases[0] === batter && !bases[1]) {
           const runnerSpd = batter.spd !== undefined ? batter.spd : 50;
-          let stealChance = 0.012;
-          if (runnerSpd >= 45) {
-            const t = (runnerSpd - 45) / 55.0;
-            stealChance = 0.025 + Math.pow(Math.max(0, t), 1.6) * 0.65;
+          let stealChance = 0.004;
+          if (runnerSpd >= 50) {
+            const t = (runnerSpd - 50) / 50.0;
+            stealChance = 0.015 + Math.pow(Math.max(0, t), 2.2) * 0.38;
           }
           if (stealChance > 0 && Math.random() < stealChance) {
             bases[1] = batter;
@@ -1277,11 +1277,37 @@
       return this.state && this.state.gamesPlayed >= SEASON_LENGTH && this.state.wins >= PLAYOFF_MIN_WINS && !this.state.playoffs.finished;
     },
 
+    getUserTeamName() {
+      if (!this.state) return 'Tu Equipo';
+      const S = this.state;
+      if (S.teamName) return S.teamName;
+      if (S.modeConfig && S.modeConfig.key && S.modeConfig.key !== 'all_time' && S.modeConfig.label) {
+        return S.modeConfig.label;
+      }
+      const franchiseNames = (window.PlayersDB && window.PlayersDB.FranchiseNames) || {};
+      const allCards = [
+        ...SLOTS.map(s => S.roster && S.roster.lineup && S.roster.lineup[s]).filter(Boolean),
+        ...((S.roster && S.roster.pitchers && S.roster.pitchers.SP) || []),
+        ...((S.roster && S.roster.pitchers && S.roster.pitchers.RP) || [])
+      ];
+      const counts = {};
+      allCards.forEach(c => {
+        const t = c.team || '';
+        if (t) counts[t] = (counts[t] || 0) + 1;
+      });
+      const topCode = Object.keys(counts).sort((a, b) => counts[b] - counts[a])[0];
+      if (topCode && franchiseNames[topCode]) {
+        return franchiseNames[topCode];
+      }
+      const _t = (key, fallback) => (typeof window.t === 'function' ? window.t(key) : fallback);
+      return _t('challenge162.my_franchise', 'Mi Franquicia');
+    },
+
     startPlayoffRound() {
       this.startPlayoffLiveGame();
     },
 
-    _activePlayoffTab: 'broadcast', // 'broadcast' | 'boxscore' | 'pbp'
+    _activePlayoffTab: 'broadcast', // 'broadcast' | 'lineups' | 'boxscore' | 'pbp'
     _selectedPlayoffBoxScoreIndex: -1,
 
     startPlayoffLiveGame() {
@@ -1296,9 +1322,9 @@
       const rpList = S.roster.pitchers.RP;
       // In playoffs: Ace SP1 starts round 1 & 3; SP2 starts round 2
       const userSP = spList[round % spList.length] || spList[0];
-      const middle = rpList[0] || rpList[1] || rpList[2];
+      const closer = rpList[0] || rpList[1] || rpList[2];
       const setup  = rpList[1] || rpList[0] || rpList[2];
-      const closer = rpList[2] || rpList[1] || rpList[0];
+      const middle = rpList[2] || rpList[1] || rpList[0];
       const userRelievers = [middle, setup, closer];
 
       const detailedGame = this._simulatePlayoffGameDetailed(userLineup, userSP, userRelievers, opp, round);
@@ -1463,7 +1489,11 @@
 
           if ((outcome === 'BB' || outcome === '1B') && bases[0] === batter && !bases[1]) {
             const runnerSpd = batter.spd !== undefined ? batter.spd : 50;
-            let stealChance = runnerSpd >= 45 ? 0.025 + Math.pow(Math.max(0, (runnerSpd - 45) / 55.0), 1.6) * 0.65 : 0.012;
+            let stealChance = 0.004;
+            if (runnerSpd >= 50) {
+              const t = (runnerSpd - 50) / 50.0;
+              stealChance = 0.015 + Math.pow(Math.max(0, t), 2.2) * 0.38;
+            }
             if (Math.random() < stealChance) {
               bases[1] = batter;
               bases[0] = null;
@@ -1588,6 +1618,21 @@
             if (aPitcherStat) { aPitcherStat.er += runsThisPA; aPitcherStat.r += runsThisPA; }
           }
 
+          if ((outcome === 'BB' || outcome === '1B') && bases[0] === batter && !bases[1]) {
+            const runnerSpd = batter.spd !== undefined ? batter.spd : 50;
+            let stealChance = 0.004;
+            if (runnerSpd >= 50) {
+              const t = (runnerSpd - 50) / 50.0;
+              stealChance = 0.015 + Math.pow(Math.max(0, t), 2.2) * 0.38;
+            }
+            if (Math.random() < stealChance) {
+              bases[1] = batter;
+              bases[0] = null;
+              stolenBase = true;
+              if (bStat) bStat.sb++;
+            }
+          }
+
           botRuns += runsThisPA;
           oppRuns += runsThisPA;
 
@@ -1658,7 +1703,7 @@
       return {
         events,
         awayTeam: {
-          name: typeof window.t === 'function' ? window.t('challenge162.your_team_name', 'Tu Equipo') : 'Tu Equipo',
+          name: this.getUserTeamName(),
           runs: userRuns,
           hits: userHits,
           errors: 0,
@@ -1675,6 +1720,10 @@
           batting: Object.values(homeBattersMap),
           pitching: homePitchersList
         },
+        userLineup: userLineup.map(b => ({ name: b.name, pos: b.assignedSlot || b.pos || 'DH', ovr: Math.round(b.ovr || 80) })),
+        oppLineup: (opp.lineup || opp._batters || []).slice(0, 9).map(b => ({ name: b.name, pos: b.assignedSlot || b.pos || 'DH', ovr: Math.round(b.ovr || 80) })),
+        userPitchers: [userSP, userRelievers[1], userRelievers[2]],
+        oppPitchers: oppPitchers,
         won,
         finalInning: Math.max(9, awayLinescore.length),
         round,
@@ -1689,8 +1738,7 @@
       const game = sim.game;
       const events = game.events;
       const totalSteps = events.length;
-      const stepIdx = Math.min(sim.currentStep, totalSteps - 1);
-      const curEvt = events[stepIdx] || events[0];
+      const isPreGame = sim.currentStep === 0;
       const isFinished = sim.currentStep >= totalSteps;
       const activeTab = this._activePlayoffTab || 'broadcast';
 
@@ -1710,8 +1758,40 @@
       const pitchingLabel = _t('challenge162.playoff_pitching', 'Lanzando');
       const todayLineLabel = _t('challenge162.playoff_today_line', 'Hoy');
       const pitchesLabel = _t('challenge162.playoff_pitches', 'Lanzamientos');
+      const backBtnText = _t('challenge162.playoff_back_hub', '← VOLVER');
+
+      // Resolve event for current state:
+      let curEvt;
+      if (isPreGame) {
+        const leadOff = game.awayTeam.batting[0] || { name: 'Bateador', pos: 'DH', ovr: 80 };
+        const oppAce = game.homeTeam.pitching[0] || { name: 'Lanzador', role: 'SP', ovr: 90 };
+        curEvt = {
+          inning: 1,
+          half: 'TOP',
+          outs: 0,
+          newOuts: 0,
+          bases: [null, null, null],
+          newBases: [null, null, null],
+          batter: { name: leadOff.name, pos: leadOff.pos || 'DH', ovr: leadOff.ovr || 80, line: '0-0' },
+          pitcher: { name: oppAce.name, role: oppAce.role || 'SP', ovr: oppAce.ovr || 90, line: '0.0 IP, 0 H, 0 ER, 0 K', pitches: 0 },
+          outcome: null,
+          runsScored: 0,
+          stolenBase: false,
+          userRuns: 0,
+          oppRuns: 0,
+          userHits: 0,
+          oppHits: 0,
+          balls: 0,
+          strikes: 0,
+          currentInningAwayRuns: 0
+        };
+      } else {
+        const stepIdx = Math.min(sim.currentStep - 1, totalSteps - 1);
+        curEvt = events[stepIdx] || events[0];
+      }
+
       const innHalf = curEvt.half === 'TOP' ? _t('challenge162.playoff_inning_top', 'Alta') : _t('challenge162.playoff_inning_bot', 'Baja');
-      const inningDisplay = `${innHalf} ${curEvt.inning}`;
+      const inningDisplay = isPreGame ? `${innHalf} 1` : `${innHalf} ${curEvt.inning}`;
 
       // Build live linescore data:
       const totalInnings = Math.max(9, game.finalInning);
@@ -1724,7 +1804,10 @@
       const awayLiveLine = [];
       const homeLiveLine = [];
       for (let i = 1; i <= totalInnings; i++) {
-        if (i < curEvt.inning) {
+        if (isPreGame) {
+          awayLiveLine.push(i === 1 ? '0' : '-');
+          homeLiveLine.push('-');
+        } else if (i < curEvt.inning) {
           awayLiveLine.push(game.awayTeam.linescore[i - 1] !== undefined ? game.awayTeam.linescore[i - 1] : 0);
           homeLiveLine.push(game.homeTeam.linescore[i - 1] !== undefined ? game.homeTeam.linescore[i - 1] : 0);
         } else if (i === curEvt.inning) {
@@ -1765,7 +1848,7 @@
       homeRowHTML += `<td class="stat-total">${curOppRuns}</td><td class="stat-total">${curOppHits}</td><td class="stat-total">0</td>`;
 
       // Diamond bases with active runner names:
-      const activeBases = isFinished ? [null, null, null] : (curEvt.newBases || [null, null, null]);
+      const activeBases = (isFinished || isPreGame) ? [null, null, null] : (curEvt.newBases || [null, null, null]);
       const b1 = activeBases[0];
       const b2 = activeBases[1];
       const b3 = activeBases[2];
@@ -1795,7 +1878,9 @@
       let textClass = 'c162-ticker-text';
       let outcomePillHTML = '';
 
-      if (curEvt.outcome === 'HR') {
+      if (isPreGame) {
+        narrativeText = `⚾ ${_t('challenge162.playoff_pregame_ready', '¡El partido está listo para comenzar! Primer turno:')} ${curEvt.batter.name} vs ${curEvt.pitcher.name}`;
+      } else if (curEvt.outcome === 'HR') {
         narrativeText = _t('challenge162.pa_hr', `¡${curEvt.batter.name} conecta un descomunal cuadrangular! (+${curEvt.runsScored} carreras)`, { batter: curEvt.batter.name, runs: curEvt.runsScored });
         textClass += ' highlight-hr';
         outcomePillHTML = `<span class="c162-event-badge badge-hr">💥 JONRÓN</span>`;
@@ -1821,7 +1906,7 @@
         outcomePillHTML = `<span class="c162-event-badge badge-out">🛑 OUT</span>`;
       }
 
-      if (curEvt.stolenBase) {
+      if (!isPreGame && curEvt.stolenBase) {
         narrativeText += ` 🏃 ` + _t('challenge162.pa_sb', `¡${curEvt.batter.name} estafa la segunda base con éxito!`, { runner: curEvt.batter.name });
       }
 
@@ -1831,6 +1916,7 @@
       const btnSimEndText = _t('challenge162.playoff_btn_sim_end', '⚡ Simular al Final');
       const btnAutoPlayText = sim.autoPlay ? '⏸ Pausar' : _t('challenge162.playoff_btn_autoplay', '▶ Auto-Play');
       const tabBroadcastLabel = _t('challenge162.playoff_tab_broadcast', '🏟️ CAMPO EN VIVO');
+      const tabLineupsLabel = _t('challenge162.playoff_tab_lineups', '📋 ALINEACIONES');
       const tabBoxScoreLabel = _t('challenge162.playoff_tab_boxscore', '📊 BOX SCORE OFICIAL');
       const tabPbpLabel = _t('challenge162.playoff_tab_pbp', '📜 JUGADA A JUGADA');
 
@@ -1971,10 +2057,56 @@
 
           </div>
         `;
+      } else if (activeTab === 'lineups') {
+        // Lineups Tab View
+        const renderLineupSide = (teamName, isHome, lineupList, pitcherList) => {
+          const rows = (lineupList || []).slice(0, 9).map((b, idx) => `
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:5px 8px;border-bottom:1px solid rgba(255,255,255,0.05);font-size:11px;">
+              <span style="font-family:'Press Start 2P',monospace;font-size:8px;color:#9ca3af;width:20px;">${idx + 1}.</span>
+              <span style="font-family:'Press Start 2P',monospace;font-size:8.5px;color:#38bdf8;width:32px;">${b.pos}</span>
+              <span style="flex:1;font-weight:bold;color:#f3f4f6;padding:0 6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${b.name}</span>
+              <span style="font-family:'Press Start 2P',monospace;font-size:8.5px;color:#ffd700;background:rgba(255,215,0,0.12);padding:2px 5px;border-radius:4px;">OVR ${b.ovr || 80}</span>
+            </div>
+          `).join('');
+
+          const pRows = (pitcherList || []).map(p => `
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:5px 8px;border-bottom:1px solid rgba(255,255,255,0.05);font-size:11px;">
+              <span style="font-family:'Press Start 2P',monospace;font-size:8.5px;color:#a78bfa;width:55px;">${p.role || 'P'}</span>
+              <span style="flex:1;font-weight:bold;color:#f3f4f6;padding:0 6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${p.name}</span>
+              <span style="font-family:'Press Start 2P',monospace;font-size:8.5px;color:#38bdf8;background:rgba(56,189,248,0.12);padding:2px 5px;border-radius:4px;">OVR ${p.ovr || 80}</span>
+            </div>
+          `).join('');
+
+          return `
+            <div style="background:rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.12);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:8px;">
+              <div style="font-family:'Press Start 2P',monospace;font-size:10.5px;color:${isHome ? '#ffd700' : '#38bdf8'};border-bottom:1px solid rgba(255,255,255,0.12);padding-bottom:6px;margin-bottom:4px;">
+                ${isHome ? '👑' : '⚾'} ${teamName}
+              </div>
+              <div style="font-size:9.5px;font-family:'Press Start 2P',monospace;color:#94a3af;margin-top:2px;">
+                ${_t('challenge162.batting_lineup', 'Alineación Titular')}
+              </div>
+              <div style="background:rgba(255,255,255,0.02);border-radius:6px;padding:2px 4px;">
+                ${rows}
+              </div>
+              <div style="font-size:9.5px;font-family:'Press Start 2P',monospace;color:#94a3af;margin-top:6px;">
+                ${_t('challenge162.pitching_staff', 'Cuerpo de Pitcheo')}
+              </div>
+              <div style="background:rgba(255,255,255,0.02);border-radius:6px;padding:2px 4px;">
+                ${pRows}
+              </div>
+            </div>
+          `;
+        };
+
+        tabContentHTML = `
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+            ${renderLineupSide(game.awayTeam.name, false, game.userLineup || game.awayTeam.batting, game.userPitchers || game.awayTeam.pitching)}
+            ${renderLineupSide(game.homeTeam.name, true, game.oppLineup || game.homeTeam.batting, game.oppPitchers || game.homeTeam.pitching)}
+          </div>
+        `;
       } else if (activeTab === 'boxscore') {
         // Multi-game Box Score Tab View
         const allBoxScores = (this.state.playoffs.boxScores || []).slice();
-        // Include current game if not already in array
         if (!allBoxScores.some(b => b.round === game.round)) {
           allBoxScores.push(game);
         }
@@ -2008,7 +2140,7 @@
         `;
       } else if (activeTab === 'pbp') {
         // Play-By-Play Log Tab
-        const pbpEntriesHTML = events.slice(0, sim.currentStep + 1).map((ev, i) => {
+        const pbpEntriesHTML = events.slice(0, sim.currentStep).map((ev, i) => {
           let badge = `<span class="c162-event-badge badge-out">OUT</span>`;
           if (ev.outcome === 'HR') badge = `<span class="c162-event-badge badge-hr">HR</span>`;
           else if (['1B', '2B', '3B'].includes(ev.outcome)) badge = `<span class="c162-event-badge badge-hit">${ev.outcome}</span>`;
@@ -2032,7 +2164,7 @@
 
         tabContentHTML = `
           <div class="c162-pbp-container">
-            ${pbpEntriesHTML || '<div style="color:#9ca3af;text-align:center;padding:20px;">No hay jugadas registradas aún.</div>'}
+            ${pbpEntriesHTML || `<div style="color:#9ca3af;text-align:center;padding:20px;">${isPreGame ? 'El partido está listo para comenzar.' : 'No hay jugadas registradas aún.'}</div>`}
           </div>
         `;
       }
@@ -2050,7 +2182,7 @@
               </div>
             </div>
             <button id="btn-playoff-exit-back" class="btn btn-secondary" style="padding:4px 8px;font-size:8.5px;font-family:'Press Start 2P',monospace;">
-              ← VOLVER
+              ${backBtnText}
             </button>
           </div>
 
@@ -2068,6 +2200,7 @@
           <!-- Tab Bar -->
           <div class="c162-broadcast-tab-bar">
             <button id="tab-btn-broadcast" class="c162-broadcast-tab-btn ${activeTab === 'broadcast' ? 'active' : ''}">${tabBroadcastLabel}</button>
+            <button id="tab-btn-lineups" class="c162-broadcast-tab-btn ${activeTab === 'lineups' ? 'active' : ''}">${tabLineupsLabel}</button>
             <button id="tab-btn-boxscore" class="c162-broadcast-tab-btn ${activeTab === 'boxscore' ? 'active' : ''}">${tabBoxScoreLabel}</button>
             <button id="tab-btn-pbp" class="c162-broadcast-tab-btn ${activeTab === 'pbp' ? 'active' : ''}">${tabPbpLabel}</button>
           </div>
@@ -2085,6 +2218,9 @@
       // Event Listeners:
       const tabBroadcast = document.getElementById('tab-btn-broadcast');
       if (tabBroadcast) tabBroadcast.onclick = () => { this._activePlayoffTab = 'broadcast'; this.renderPlayoffLiveGame(); };
+
+      const tabLineups = document.getElementById('tab-btn-lineups');
+      if (tabLineups) tabLineups.onclick = () => { this._activePlayoffTab = 'lineups'; this.renderPlayoffLiveGame(); };
 
       const tabBoxScore = document.getElementById('tab-btn-boxscore');
       if (tabBoxScore) tabBoxScore.onclick = () => { this._activePlayoffTab = 'boxscore'; this.renderPlayoffLiveGame(); };
@@ -2111,13 +2247,24 @@
       const btnNextInn = document.getElementById('btn-playoff-next-inn');
       if (btnNextInn) {
         btnNextInn.onclick = () => {
-          const curInn = curEvt.inning;
-          const curHalf = curEvt.half;
-          while (sim.currentStep < totalSteps) {
-            sim.currentStep++;
-            const nextEvt = events[sim.currentStep];
-            if (!nextEvt || nextEvt.inning !== curInn || nextEvt.half !== curHalf) {
-              break;
+          if (sim.currentStep === 0) {
+            // Advance past Top 1:
+            while (sim.currentStep < totalSteps) {
+              sim.currentStep++;
+              const nextEvt = events[sim.currentStep - 1];
+              if (!nextEvt || nextEvt.inning !== 1 || nextEvt.half !== 'TOP') {
+                break;
+              }
+            }
+          } else {
+            const curInn = curEvt.inning;
+            const curHalf = curEvt.half;
+            while (sim.currentStep < totalSteps) {
+              sim.currentStep++;
+              const nextEvt = events[sim.currentStep - 1];
+              if (!nextEvt || nextEvt.inning !== curInn || nextEvt.half !== curHalf) {
+                break;
+              }
             }
           }
           this.renderPlayoffLiveGame();
@@ -2174,7 +2321,6 @@
         };
       }
     },
-
     _renderBoxScoreTablesHTML(game) {
       const _t = (key, fallback) => (typeof window.t === 'function' ? window.t(key) : fallback);
       const battingTitle = _t('challenge162.playoff_boxscore_batting', 'ESTADÍSTICAS DE BATEO');
@@ -2831,7 +2977,7 @@
 
         const rpSlotsHTML = [0, 1, 2].map(i => {
           const assigned = this._draftPitchers.RP[i];
-          const label = i === 2 ? 'CL' : (i === 1 ? 'SETUP' : 'RP');
+          const label = i === 0 ? 'CL' : (i === 1 ? 'SETUP' : 'RP');
           const isActive = this._activeSlot && this._activeSlot.kind === 'RP' && this._activeSlot.key === i;
           return this._renderTradingCardHTML(assigned, label, isActive, 'RP', i);
         }).join('');
@@ -2858,7 +3004,7 @@
         if (this._activeSlot) {
           const isPitcherSlot = this._activeSlot.kind !== 'batter';
           const slotName = this._activeSlot.key;
-          const slotDisplay = this._activeSlot.kind === 'batter' ? slotName : (this._activeSlot.kind === 'SP' ? `SP${this._activeSlot.key + 1}` : (this._activeSlot.key === 2 ? 'CL' : `RP${this._activeSlot.key + 1}`));
+          const slotDisplay = this._activeSlot.kind === 'batter' ? slotName : (this._activeSlot.kind === 'SP' ? `SP${this._activeSlot.key + 1}` : (this._activeSlot.key === 0 ? 'CL' : (this._activeSlot.key === 1 ? 'SETUP' : 'RP')));
 
           let pool = isPitcherSlot
             ? eligiblePitchers.filter(p => (p.role || 'SP').toUpperCase() === this._activeSlot.kind)
@@ -3182,7 +3328,7 @@
       const allPitchers = [
         ...(S.roster.pitchers.SP || []).map((p, i) => ({ p, roleLabel: `SP${i + 1}`, roleColor: '#38bdf8', roleBg: 'rgba(56,189,248,0.15)' })),
         ...(S.roster.pitchers.RP || []).map((p, i) => {
-          const isCloser = i === 2;
+          const isCloser = i === 0;
           const isSetup = i === 1;
           const roleLabel = isCloser ? 'CL' : (isSetup ? 'SETUP' : 'RP');
           const roleColor = isCloser ? '#fbbf24' : (isSetup ? '#a78bfa' : '#34d399');
@@ -3478,34 +3624,22 @@
         if (rIdx === 1) return _t('challenge162.round_2_desc', 'Ronda 2: Enfrenta al 2do mejor equipo');
         return _t('challenge162.round_3_desc', 'Jefe Final: El #1 invicto de la liga');
       };
-      const getRoundDiff = (rIdx) => {
-        if (rIdx === 0) return _t('challenge162.round_1_diff', 'Dificultad: Experto');
-        if (rIdx === 1) return _t('challenge162.round_2_diff', 'Dificultad: Leyenda');
-        return _t('challenge162.round_3_diff', 'Dificultad: Pesadilla');
-      };
 
       const oppFranchise = generatePlayoffEnemyTeam(round, S.leagueTeams);
-      const oppSP = (oppFranchise.pitchers && oppFranchise.pitchers[0]) || { cleanName: 'As Rival', name: 'As Rival', ovr: 85, hp: 100 };
-      const oppBatters = oppFranchise._batters || [];
-      const topOppBatter = oppBatters.slice().sort((a, b) => (b.ovr || 0) - (a.ovr || 0))[0] || { name: 'Bateador Rival', ovr: 85 };
+      const oppSP = (oppFranchise.pitchers && oppFranchise.pitchers[0]) || { cleanName: 'As Rival', name: 'As Rival', ovr: 85 };
+      const oppReliever = oppFranchise.reliever || { name: 'Setup Rival', ovr: 85 };
+      const oppCloser = oppFranchise.closer || { name: 'Closer Rival', ovr: 88 };
+      const oppBatters = (oppFranchise._batters || oppFranchise.lineup || []).slice(0, 9);
 
-      const oppSpOvrDisplay = Math.round(oppSP.ovr || 85);
-      const oppBatterOvrDisplay = Math.round(topOppBatter.ovr || 85);
-
-      // Your Ace Pitcher (SP1) & Top Slugger
+      // User Staff & Lineup
       const topSP = (S.roster.pitchers.SP && S.roster.pitchers.SP[0]) || null;
       const topSPStats = topSP ? S.pitcherStats[pitcherUnlockKey(topSP)] : null;
       const spEra = topSPStats && topSPStats.outs > 0 ? ((topSPStats.er * 27) / topSPStats.outs).toFixed(2) : '3.00';
       const topSpOvrDisplay = topSP ? Math.round(topSP.ovr || 85) : 85;
-      
-      let topBatter = null, topHR = -1;
-      SLOTS.forEach(slot => {
-        const p = S.roster.lineup[slot];
-        if (p) {
-          const stats = S.batterStats[batterUnlockKey(p)];
-          if (stats && stats.hr > topHR) { topHR = stats.hr; topBatter = p; }
-        }
-      });
+
+      const userCloser = (S.roster.pitchers.RP && S.roster.pitchers.RP[0]) || { name: 'Cerrador', ovr: 80 };
+      const userSetup = (S.roster.pitchers.RP && S.roster.pitchers.RP[1]) || { name: 'Setup', ovr: 80 };
+      const userBatters = S.roster.battingOrder.map(slot => S.roster.lineup[slot]).filter(Boolean);
 
       // 3-step bracket stepper
       const stepperHTML = PLAYOFF_ROUNDS.map((r, idx) => {
@@ -3525,22 +3659,26 @@
 
       const curRoundTitle = getRoundTitle(round);
       const curRoundDesc = getRoundDesc(round);
-      const curRoundDiff = getRoundDiff(round);
 
       const playoffsTitle = _t('challenge162.playoffs_title', 'POSTEMPORADA DE BASEROGUE');
       const playoffsSubtitle = _t('challenge162.playoffs_subtitle', `3 Rondas a Partido Único (Muerte Súbita) · ${curRoundDesc}`, { desc: curRoundDesc });
-      const yourTeamLabel = _t('challenge162.your_team', `TU EQUIPO (${S.wins}-${S.losses})`, { wins: S.wins, losses: S.losses });
+      const yourTeamName = this.getUserTeamName();
+      const yourTeamLabel = `${yourTeamName} (${S.wins}-${S.losses})`;
       const acePitcherLabel = _t('challenge162.ace_pitcher', 'As Abridor');
-      const seasonEraLabel = _t('challenge162.season_era', 'ERA Temporada');
-      const offLeaderLabel = _t('challenge162.offensive_leader', 'Líder Ofensivo');
-      const rosterRecLabel = _t('challenge162.roster_record', 'Profundidad de Roster');
-      const draftedCardsLabel = _t('challenge162.drafted_cards', '17 Cartas Drafteadas');
-      const bossDiffLabel = _t('challenge162.boss_difficulty', 'Dificultad Boss');
-      const statBoostLabel = _t('challenge162.stat_boost', `+${cfg.statBoost} a todas las stats`, { boost: cfg.statBoost });
-      const rivalHpLabel = _t('challenge162.rival_sp_hp', 'Vida SP Rival');
-      const offDangerLabel = _t('challenge162.offensive_danger', 'Peligro Ofensivo');
+      const closerLabel = _t('challenge162.closer_pitcher', 'Cerrador');
+      const setupLabel = _t('challenge162.setup_pitcher', 'Preparador');
+      const battingLineupLabel = _t('challenge162.batting_lineup', 'Alineación Titular');
       const playMatchBtnText = _t('challenge162.play_playoff_btn', `🎲 ¡DISPUTAR ${curRoundTitle}! (PARTIDO A MUERTE)`, { label: curRoundTitle });
       const viewStatsBtnText = _t('challenge162.view_stats_table', '📊 VER TABLA DE STATS');
+
+      const renderLineupRows = (batters) => (batters || []).slice(0, 9).map((b, idx) => `
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:3px 6px;border-bottom:1px solid rgba(255,255,255,0.04);font-size:10.5px;">
+          <span style="font-family:'Press Start 2P',monospace;font-size:7.5px;color:#9ca3af;width:18px;">${idx + 1}.</span>
+          <span style="font-family:'Press Start 2P',monospace;font-size:7.5px;color:#38bdf8;width:28px;">${b.assignedSlot || b.pos || 'DH'}</span>
+          <span style="flex:1;color:#f3f4f6;font-weight:600;padding:0 4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${b.name}</span>
+          <span style="font-family:'Press Start 2P',monospace;font-size:7.5px;color:#ffd700;">${Math.round(b.ovr || 80)}</span>
+        </div>
+      `).join('');
 
       container.innerHTML = `
         <!-- Header -->
@@ -3568,14 +3706,18 @@
               <div style="font-family:'Press Start 2P',monospace;font-size:11px;color:#34d399;margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:6px;">
                 <span>⚾</span> <span>${yourTeamLabel}</span>
               </div>
-              <div style="font-size:13px;color:#f3f4f6;font-weight:bold;margin-bottom:12px;text-align:center;">
-                ${acePitcherLabel}: <span style="color:#ffd700;">${topSP ? topSP.name : 'SP'}</span> <span style="font-size:10px;color:#38bdf8;background:rgba(56,189,248,0.15);border:1px solid rgba(56,189,248,0.4);padding:2px 6px;border-radius:4px;font-family:'Press Start 2P',monospace;">OVR ${topSpOvrDisplay}</span>
+              <div style="font-size:12px;color:#f3f4f6;font-weight:bold;margin-bottom:8px;text-align:center;">
+                ${acePitcherLabel}: <span style="color:#ffd700;">${topSP ? topSP.name : 'SP'}</span> <span style="font-size:9px;color:#38bdf8;background:rgba(56,189,248,0.15);padding:2px 5px;border-radius:4px;font-family:'Press Start 2P',monospace;">OVR ${topSpOvrDisplay} · ERA ${spEra}</span>
+              </div>
+              <div style="font-size:10.5px;color:#9ca3af;text-align:center;margin-bottom:10px;">
+                ${closerLabel}: <span style="color:#fbbf24;font-weight:bold;">${userCloser.name}</span> · ${setupLabel}: <span style="color:#a78bfa;font-weight:bold;">${userSetup.name}</span>
               </div>
             </div>
-            <div style="font-size:11.5px;color:#9ca3af;line-height:1.8;background:rgba(0,0,0,0.4);padding:12px 14px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);">
-              <div>🧢 <strong>${seasonEraLabel}:</strong> <span style="color:#34d399;font-weight:bold;">${spEra}</span></div>
-              <div>🔥 <strong>${offLeaderLabel}:</strong> <span style="color:#ffd700;font-weight:bold;">${topBatter ? topBatter.name : 'Bateador'}</span> ${topHR > 0 ? `(${topHR} HR)` : ''}</div>
-              <div>⭐ <strong>${rosterRecLabel}:</strong> <span style="color:#e4e4e7;">${draftedCardsLabel}</span></div>
+            <div style="background:rgba(0,0,0,0.4);border-radius:8px;padding:8px;border:1px solid rgba(255,255,255,0.06);">
+              <div style="font-size:8.5px;font-family:'Press Start 2P',monospace;color:#34d399;margin-bottom:4px;text-align:center;">
+                ${battingLineupLabel}
+              </div>
+              ${renderLineupRows(userBatters)}
             </div>
           </div>
 
@@ -3589,16 +3731,20 @@
           <div class="c162-team-box ${round === 2 ? 'boss-side' : 'boss-side-regular'}">
             <div>
               <div style="font-family:'Press Start 2P',monospace;font-size:11px;color:${round === 2 ? '#f87171' : '#38bdf8'};margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:6px;">
-                <span>👑</span> <span>${curRoundTitle}: ${oppFranchise.name}</span>
+                <span>👑</span> <span>${oppFranchise.name}</span>
               </div>
-              <div style="font-size:13px;color:#f3f4f6;font-weight:bold;margin-bottom:12px;text-align:center;">
-                ${acePitcherLabel}: <span style="color:#ffd700;">${oppSP.cleanName || oppSP.name}</span> <span style="font-size:10px;color:${round === 2 ? '#f87171' : '#38bdf8'};background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);padding:2px 6px;border-radius:4px;font-family:'Press Start 2P',monospace;">OVR ${oppSpOvrDisplay}</span>
+              <div style="font-size:12px;color:#f3f4f6;font-weight:bold;margin-bottom:8px;text-align:center;">
+                ${acePitcherLabel}: <span style="color:#ffd700;">${oppSP.cleanName || oppSP.name}</span> <span style="font-size:9px;color:${round === 2 ? '#f87171' : '#38bdf8'};background:rgba(255,255,255,0.1);padding:2px 5px;border-radius:4px;font-family:'Press Start 2P',monospace;">OVR ${Math.round(oppSP.ovr || 85)}</span>
+              </div>
+              <div style="font-size:10.5px;color:#9ca3af;text-align:center;margin-bottom:10px;">
+                ${closerLabel}: <span style="color:#fbbf24;font-weight:bold;">${oppCloser.name}</span> · ${setupLabel}: <span style="color:#a78bfa;font-weight:bold;">${oppReliever.name}</span>
               </div>
             </div>
-            <div style="font-size:11.5px;color:#9ca3af;line-height:1.8;background:rgba(0,0,0,0.4);padding:12px 14px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);">
-              <div>⚡ <strong>${bossDiffLabel}:</strong> <span style="color:${round === 2 ? '#f87171' : '#fbbf24'};font-weight:bold;">${curRoundDiff} (${statBoostLabel})</span></div>
-              <div>🩸 <strong>${rivalHpLabel}:</strong> <span style="color:#f87171;font-weight:bold;">${oppSP.hp} HP</span> <span style="color:#94a3af;font-size:10px;">(+${Math.round((cfg.hpMult - 1) * 100)}% extra)</span></div>
-              <div>💣 <strong>${offDangerLabel}:</strong> <span style="color:#ffd700;font-weight:bold;">${topOppBatter ? topOppBatter.name : 'Rival'}</span> <span style="color:#e4e4e7;font-size:10.5px;">(OVR ${oppBatterOvrDisplay})</span></div>
+            <div style="background:rgba(0,0,0,0.4);border-radius:8px;padding:8px;border:1px solid rgba(255,255,255,0.06);">
+              <div style="font-size:8.5px;font-family:'Press Start 2P',monospace;color:${round === 2 ? '#f87171' : '#38bdf8'};margin-bottom:4px;text-align:center;">
+                ${battingLineupLabel}
+              </div>
+              ${renderLineupRows(oppBatters)}
             </div>
           </div>
         </div>

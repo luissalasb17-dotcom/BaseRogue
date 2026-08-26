@@ -517,6 +517,11 @@
     return candidates[Math.floor(Math.random() * candidates.length)];
   };
 
+  const _getGambleChance = (G, baseChance = 0.50) => {
+    const boost = (G && typeof G.hasTrait === 'function' && G.hasTrait('midas_touch')) ? 0.25 : 0;
+    return Math.min(0.95, baseChance + boost);
+  };
+
   // ── HIGH-STAKES GAMBLE NODES ("apuesta de alto riesgo") ──────────────────
   // Unlike ManagerEventsList (modest, always-safe-option stat tweaks), these are
   // single all-or-nothing bets: one dice roll, no safe middle choice besides declining.
@@ -529,7 +534,7 @@
       chance: 0.50,
       resolve(G) {
         const staked = G.budget || 0;
-        const success = Math.random() <= this.chance;
+        const success = Math.random() <= _getGambleChance(G, this.chance);
         G.budget = success ? staked * 3 : 0;
         return {
           success,
@@ -547,7 +552,7 @@
       chance: 0.50,
       resolve(G) {
         const pool = (window.PlayersDB && window.PlayersDB.LAHMAN_POOL) ? window.PlayersDB.LAHMAN_POOL : [];
-        const success = Math.random() <= this.chance;
+        const success = Math.random() <= _getGambleChance(G, this.chance);
 
         if (success) {
           let worstPos = null, worstOvr = Infinity;
@@ -605,7 +610,7 @@
         if (!worstPos || !G.roster[worstPos]) return { success: false, resultText: (typeof window.t==='function'?window.t('gamble.trade.no_target'):'No hay titular para intercambiar.') };
 
         const current = G.roster[worstPos];
-        const success = Math.random() <= this.chance;
+        const success = Math.random() <= _getGambleChance(G, this.chance);
 
         if (success) {
           const pick = _pickGambleCandidate(pool, worstPos, ['Legendary', 'Epic']);
@@ -658,7 +663,7 @@
       resolve(G, targetPos) {
         const target = G.roster[targetPos];
         if (!target || !target.era) return { success: false, resultText: (typeof window.t==='function'?window.t('gamble.synergy.no_valid_target'):'Elige un jugador con Era válida.') };
-        const success = Math.random() <= this.chance;
+        const success = Math.random() <= _getGambleChance(G, this.chance);
         if (success) {
           target.synergyWeight = 4;
           return { success, resultText: (typeof window.t==='function'?window.t('gamble.synergy.result_win', { name: target.name, era: target.era }):`${target.name} ahora cuenta x4 para la sinergia de ${target.era}.`) };
@@ -684,7 +689,7 @@
       resolve(G, targetPos) {
         const target = G.roster[targetPos];
         if (!target) return { success: false, resultText: (typeof window.t==='function'?window.t('gamble.soldier.no_valid_target'):'Elige un jugador válido.') };
-        const success = Math.random() <= this.chance;
+        const success = Math.random() <= _getGambleChance(G, this.chance);
         if (!target.upgrades) target.upgrades = { con: 0, pwr: 0, eye: 0, k_avd: 0, spd: 0, def: 0, sta: 0 };
         if (success) {
           target.upgrades.con = (target.upgrades.con || 0) + 35;
@@ -702,7 +707,7 @@
       get desc() { return typeof window.t==='function'?window.t('gamble.market.desc'):'Negocias con un contrabandista clandestino. Si ganas, obtienes 2 Ítems de Equipamiento Supremos (+35 stats). Si pierdes, te estafan: pierdes $20 de presupuesto y todo el equipo sufre -30 de Stamina.'; },
       chance: 0.50,
       resolve(G) {
-        const success = Math.random() <= this.chance;
+        const success = Math.random() <= _getGambleChance(G, this.chance);
         if (success) {
           const itemsList = (window.ItemsDatabase && window.ItemsDatabase.length > 0) ? window.ItemsDatabase : [];
           if (!G.itemsInventory) G.itemsInventory = [];
@@ -735,7 +740,7 @@
       get desc() { return typeof window.t==='function'?window.t('gamble.defense.desc'):'Apuestas a transformar tu defensiva. Si ganas, TODA tu alineación (los 9 jugadores) recibe +20 DEF permanente. Si pierdes, tus 3 jardineros titulares (LF, CF, RF) sufren desconcentración: -15 DEF permanente.'; },
       chance: 0.50,
       resolve(G) {
-        const success = Math.random() <= this.chance;
+        const success = Math.random() <= _getGambleChance(G, this.chance);
         if (success) {
           Object.keys(G.roster).forEach(pos => {
             const p = G.roster[pos];
