@@ -790,28 +790,27 @@
 
           const isGenesis = genesisTier >= 1;
           const genExtraDmg = isGenesis ? (genesisTier === 4 ? 25 : genesisTier === 3 ? 15 : genesisTier === 2 ? 8 : 4) : 0;
-          pitcherDmg = 15 + (runsThisTurn * 10) + genExtraDmg;
+          pitcherDmg = 20 + (runsThisTurn * 10) + genExtraDmg;
           pitcherDmg = this._applyDebuffToPitcherDmg(pitcherDmg);
 
-          // Apply fatigue debuff (+20% damage): 2 turns for Genesis Chaos, 1 turn for natural error
-          const debuffTurns = isGenesis ? 2 : 1;
-          const debuffMult = 1.20;
-          if (this.pitcherDebuff && this.pitcherDebuff.turnsLeft > 0) {
-            this.pitcherDebuff.turnsLeft = Math.max(this.pitcherDebuff.turnsLeft, debuffTurns);
-            if (debuffMult > this.pitcherDebuff.multiplier) this.pitcherDebuff.multiplier = debuffMult;
-          } else {
-            this.pitcherDebuff = { turnsLeft: debuffTurns, multiplier: debuffMult };
-          }
-
-          if (isGenesis && genesisTier === 4) {
-            this.teamHP = Math.min(100, this.teamHP + 10);
-            synergyProc = _t('sim.syn_genesis_heal', {}, '💥 Genesis Chaos: ¡El descontrol rival recupera +10 HP al equipo!');
-          }
-
+          // Apply fatigue debuff (+20% damage) ONLY if Genesis Chaos synergy is active
           if (isGenesis) {
+            const debuffTurns = 2;
+            const debuffMult = 1.20;
+            if (this.pitcherDebuff && this.pitcherDebuff.turnsLeft > 0) {
+              this.pitcherDebuff.turnsLeft = Math.max(this.pitcherDebuff.turnsLeft, debuffTurns);
+              if (debuffMult > this.pitcherDebuff.multiplier) this.pitcherDebuff.multiplier = debuffMult;
+            } else {
+              this.pitcherDebuff = { turnsLeft: debuffTurns, multiplier: debuffMult };
+            }
+
+            if (genesisTier === 4) {
+              this.teamHP = Math.min(100, this.teamHP + 10);
+              synergyProc = _t('sim.syn_genesis_heal', {}, '💥 Genesis Chaos: ¡El descontrol rival recupera +10 HP al equipo!');
+            }
             errorProc = _t('sim.syn_genesis_error', {}, '💥 Genesis Chaos: ¡Error rival (E)! Se anula el out, te embasas en 1B y el pitcher sufre fatiga de 2 impactos (+20% daño).');
           } else {
-            errorProc = _t('sim.natural_error_msg', {}, '⚠️ ¡Pifia defensiva rival (E)! Se anula el out, te embasas en 1B y el pitcher se desconcentra (+20% daño).');
+            errorProc = _t('sim.natural_error_msg', {}, '⚠️ ¡Pifia defensiva rival (E)! Se anula el out y te embasas en 1B.');
           }
 
           playText = `🎲 [${roll}] [${_t('sim.label_error', {}, 'ERROR RIVAL (E)')}] ¡${batter.name} ${_t('sim.error_reach_desc', {}, 'conecta rodado y el fildeador comete pifia')}! ` +
