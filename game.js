@@ -1105,7 +1105,7 @@
 
       const getOrCreateBatterStat = (name) => {
         if (!this.runBatterStats[name]) {
-          this.runBatterStats[name] = { g: 0, ab: 0, h: 0, bb: 0, so: 0, doubles: 0, triples: 0, hr: 0, rbi: 0, sb: 0, e: 0 };
+          this.runBatterStats[name] = { g: 0, ab: 0, h: 0, bb: 0, so: 0, doubles: 0, triples: 0, hr: 0, rbi: 0, sb: 0, e: 0, dmg: 0 };
         }
         const s = this.runBatterStats[name];
         s.g = (typeof s.g === 'number' && !isNaN(s.g)) ? s.g : 0;
@@ -1119,6 +1119,7 @@
         s.rbi = (typeof s.rbi === 'number' && !isNaN(s.rbi)) ? s.rbi : 0;
         s.sb = (typeof s.sb === 'number' && !isNaN(s.sb)) ? s.sb : 0;
         s.e = (typeof s.e === 'number' && !isNaN(s.e)) ? s.e : 0;
+        s.dmg = (typeof s.dmg === 'number' && !isNaN(s.dmg)) ? s.dmg : 0;
         return s;
       };
 
@@ -1147,15 +1148,22 @@
         const s = getOrCreateBatterStat(name);
         const eventType = ev.eventType || ev.type;
 
-        if (eventType === 'BB') { s.bb++; }
+        let hitDmg = 0;
+        if (eventType === 'BB') { hitDmg = 15; s.bb++; }
         else if (eventType === 'SO') { s.ab++; s.so++; }
-        else if (eventType === '1B') { s.ab++; s.h++; }
-        else if (eventType === '2B') { s.ab++; s.h++; s.doubles++; }
-        else if (eventType === '3B') { s.ab++; s.h++; s.triples++; }
-        else if (eventType === 'HR') { s.ab++; s.h++; s.hr++; }
+        else if (eventType === '1B') { hitDmg = 20; s.ab++; s.h++; }
+        else if (eventType === '2B') { hitDmg = 35; s.ab++; s.h++; s.doubles++; }
+        else if (eventType === '3B') { hitDmg = 50; s.ab++; s.h++; s.triples++; }
+        else if (eventType === 'HR') { hitDmg = 75 + ((ev.runsThisTurn || ev.runsScored || 1) * 10); s.ab++; s.h++; s.hr++; }
         else {
           // Any other batting event (OUT, E / Reach on Error, FC, etc.) is an official At-Bat
           s.ab++;
+        }
+
+        if (ev.pitcherDmg !== undefined && ev.pitcherDmg !== null && !isNaN(ev.pitcherDmg) && ev.pitcherDmg > 0) {
+          s.dmg += ev.pitcherDmg;
+        } else if (hitDmg > 0) {
+          s.dmg += hitDmg;
         }
 
         if (ev.didSteal || (ev.playText && ev.playText.includes('ROBO DE BASE'))) {

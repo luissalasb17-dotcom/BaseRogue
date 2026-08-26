@@ -6519,9 +6519,11 @@ function initGameModeSelector() {
         animation: cardPopIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) ${animDelay}s backwards;
       `;
 
+      const riskFailText = tpl.failPenalty ? `(-${tpl.failPenalty} STA)` : '';
+      const riskPercent = Math.round((tpl.riskChance || 0.3) * 100);
       const riskTag = tpl.risk === 'high'
-        ? `<span class="choice-risk-tag choice-risk-high" style="font-size:7px;">🔴 ${(typeof t === 'function' ? t('training.risk_high', 'ALTO RIESGO') : 'ALTO RIESGO')}</span>`
-        : `<span class="choice-risk-tag choice-risk-safe" style="font-size:7px;">🟢 ${(typeof t === 'function' ? t('training.risk_safe', 'SEGURO') : 'SEGURO')}</span>`;
+        ? `<span class="choice-risk-tag choice-risk-high" style="font-size:7px; padding:3px 6px; border-radius:4px; font-family:'Press Start 2P',monospace;">🔴 ${(typeof t === 'function' ? t('training.risk_high', 'ALTO RIESGO') : 'ALTO RIESGO')} (${riskPercent}% Fallo ${riskFailText})</span>`
+        : `<span class="choice-risk-tag choice-risk-safe" style="font-size:7px; padding:3px 6px; border-radius:4px; font-family:'Press Start 2P',monospace;">🟢 ${(typeof t === 'function' ? t('training.risk_safe', 'SEGURO') : 'SEGURO')} (100%)</span>`;
 
       const tierBadge = `
         <span style="
@@ -6537,8 +6539,8 @@ function initGameModeSelector() {
       `;
 
       const statDescText = tpl.stat === 'sta' 
-        ? `+${tpl.minVal} a +${tpl.maxVal} Stamina` 
-        : `+${tpl.minVal} a +${tpl.maxVal} ${tpl.stat.toUpperCase()}`;
+        ? `+${tpl.minVal} ${typeof t === 'function' ? t('common.to', 'a') : 'a'} +${tpl.maxVal} Stamina` 
+        : `+${tpl.minVal} ${typeof t === 'function' ? t('common.to', 'a') : 'a'} +${tpl.maxVal} ${tpl.stat.toUpperCase()}`;
 
       const tplLabel = (typeof t === 'function' && tpl.labelKey) ? t(tpl.labelKey) : tpl.label;
       const tplDesc = (typeof t === 'function' && tpl.descKey) ? t(tpl.descKey) : tpl.desc;
@@ -10482,6 +10484,115 @@ function initGameModeSelector() {
     window.showScreen('screen-victory');
     startFireworks();
 
+    // ── Render Championship Team Showcase ──
+    const showcaseContainer = document.getElementById('victory-team-showcase-container');
+    if (showcaseContainer && window.Game && window.Game.roster) {
+      const order = window.Game.battingOrder || ['C','1B','2B','3B','SS','LF','CF','RF','DH'];
+      const stats = window.Game.runBatterStats || {};
+      
+      let bestPlayer = null;
+      let maxScore = -1;
+
+      const playersData = order.map((slot, idx) => {
+        const p = window.Game.roster[slot];
+        if (!p) return null;
+        const s = stats[p.name] || {};
+        const dmg = s.dmg || 0;
+        const hr = s.hr || 0;
+        const rbi = s.rbi || 0;
+        const ovr = typeof getPlayerOvr === 'function' ? getPlayerOvr(p) : Math.floor(p.ovr || 50);
+        const score = dmg + (hr * 50) + (rbi * 20);
+        if (score > maxScore) {
+          maxScore = score;
+          bestPlayer = { player: p, slot, dmg, hr, rbi, ovr };
+        }
+        return { slot, index: idx + 1, player: p, s, dmg, hr, rbi, ovr };
+      }).filter(Boolean);
+
+      const mvpBannerHTML = bestPlayer ? `
+        <div style="background: linear-gradient(135deg, rgba(255,215,0,0.18) 0%, rgba(245,158,11,0.25) 100%); border: 1.5px solid #ffd700; border-radius: 10px; padding: 10px 14px; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; gap: 10px; box-shadow: 0 0 20px rgba(255,215,0,0.25);">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span style="font-size:24px;">👑</span>
+            <div style="text-align:left;">
+              <div style="font-family:'Press Start 2P',monospace; font-size:8.5px; color:#ffd700; margin-bottom:3px;">
+                ${typeof t === 'function' ? t('victory.run_mvp_badge', '👑 MVP DE LA RUN') : '👑 MVP DE LA RUN'}
+              </div>
+              <div style="font-size:12px; font-weight:bold; color:#fff; font-family:sans-serif;">
+                [${bestPlayer.slot}] ${bestPlayer.player.name} <span style="font-size:9px; color:#ffd700; font-family:'Press Start 2P',monospace;">OVR ${bestPlayer.ovr}</span>
+              </div>
+            </div>
+          </div>
+          <div style="font-family:'Press Start 2P',monospace; font-size:8.5px; color:#fff; text-align:right;">
+            <div style="color:#ef4444;">${bestPlayer.hr} HR · ${bestPlayer.rbi} RBI</div>
+            <div style="color:#ff3366; margin-top:2px;">💥 ${bestPlayer.dmg} DMG</div>
+          </div>
+        </div>
+      ` : '';
+
+      showcaseContainer.innerHTML = `
+        <div style="font-family:'Press Start 2P',monospace; font-size:9.5px; color:#ffd700; margin-bottom:12px; letter-spacing:0.5px; text-shadow:0 0 10px rgba(255,215,0,0.4);">
+          ${typeof t === 'function' ? t('victory.team_showcase_title', '👑 ROSTER DE CAMPEONES') : '👑 ROSTER DE CAMPEONES'}
+        </div>
+        ${mvpBannerHTML}
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(170px, 1fr)); gap:8px; text-align:left;">
+          ${playersData.map(item => {
+            const isMVP = bestPlayer && bestPlayer.player.name === item.player.name;
+            const borderCol = isMVP ? '#ffd700' : 'rgba(255,255,255,0.12)';
+            const bgCol = isMVP ? 'rgba(255,215,0,0.08)' : 'rgba(255,255,255,0.03)';
+            return `
+              <div style="background:${bgCol}; border:1px solid ${borderCol}; border-radius:8px; padding:8px 10px; display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                  <div style="display:flex; align-items:center; gap:6px;">
+                    <span style="font-size:8px; color:var(--primary-color); font-family:'Press Start 2P',monospace;">[${item.slot}]</span>
+                    <span style="font-size:10.5px; font-weight:bold; color:#fff; font-family:sans-serif;">${item.player.name}</span>
+                  </div>
+                  <div style="font-size:7.5px; color:#9ca3af; margin-top:2px; font-family:'Press Start 2P',monospace;">
+                    OVR ${item.ovr} · <span style="color:#ef4444;">${item.hr} HR</span>
+                  </div>
+                </div>
+                <div style="font-family:'Press Start 2P',monospace; font-size:8px; color:#ff3366; font-weight:bold; text-align:right;">
+                  ${item.dmg} <span style="font-size:6.5px;">DMG</span>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `;
+
+      // Setup Share Button
+      const shareBtn = document.getElementById('btn-share-championship-team');
+      if (shareBtn) {
+        shareBtn.onclick = () => {
+          let shareText = `⚾ BASEROGUE — WORLD CHAMPIONSHIP 🏆\n`;
+          if (bestPlayer) {
+            shareText += `👑 MVP: ${bestPlayer.player.name} (${bestPlayer.slot}) — ${bestPlayer.hr} HR, ${bestPlayer.rbi} RBI, ${bestPlayer.dmg} DMG\n\n`;
+          }
+          shareText += `🏆 CHAMPIONSHIP LINEUP:\n`;
+          playersData.forEach(item => {
+            shareText += `#${item.index} [${item.slot}] ${item.player.name} (OVR ${item.ovr}) — ${item.hr} HR | ${item.dmg} DMG\n`;
+          });
+          shareText += `\n🎮 Play BaseRogue: https://baserogue.com`;
+
+          navigator.clipboard.writeText(shareText).then(() => {
+            if (typeof window.showToast === 'function') {
+              window.showToast(typeof t === 'function' ? t('victory.share_copied_toast', '🏆 ¡Resumen de campeón copiado al portapapeles!') : '🏆 ¡Resumen de campeón copiado al portapapeles!');
+            }
+          }).catch(() => {
+            // Fallback copy
+            const textarea = document.createElement('textarea');
+            textarea.value = shareText;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            if (typeof window.showToast === 'function') {
+              window.showToast('🏆 ¡Copiado al portapapeles!');
+            }
+          });
+        };
+      }
+    }
+
     if (isQuickMode && wasChallengeLocked) {
       if (typeof window.showToast === 'function') {
         window.showToast('🏆 ¡MODO 162-0 CHALLENGE DESBLOQUEADO!');
@@ -10492,7 +10603,9 @@ function initGameModeSelector() {
     if (goto162Btn) {
       goto162Btn.onclick = () => {
         if (!window.Challenge162) return;
-        if (window.Challenge162.hasSave() && window.Challenge162.load() && window.Challenge162.state) {
+        if (typeof window.Challenge162.startRosterBuilderWithRun === 'function') {
+          window.Challenge162.startRosterBuilderWithRun(window.Game);
+        } else if (window.Challenge162.hasSave() && window.Challenge162.load() && window.Challenge162.state) {
           window.Challenge162.showScreen('screen-challenge-season');
           window.Challenge162.render();
         } else {
@@ -10601,7 +10714,7 @@ function initGameModeSelector() {
     // Render Team totals & Defensive errors header
     const headerTotalsEl = document.getElementById('summary-team-totals-header');
     if (headerTotalsEl) {
-      let totAB = 0, totH = 0, tot2B = 0, tot3B = 0, totHR = 0, totRBI = 0, totSB = 0, totBB = 0, totSO = 0, totE = 0;
+      let totAB = 0, totH = 0, tot2B = 0, tot3B = 0, totHR = 0, totRBI = 0, totSB = 0, totBB = 0, totSO = 0, totE = 0, totDMG = 0;
       Object.values(batterStats).forEach(s => {
         totAB += (s.ab || 0);
         totH += (s.h || 0);
@@ -10613,6 +10726,7 @@ function initGameModeSelector() {
         totBB += (s.bb || 0);
         totSO += (s.so || 0);
         totE += (s.e || 0);
+        totDMG += (s.dmg || 0);
       });
       const defErrors = totE;
       const tPA = totAB + totBB;
@@ -10632,6 +10746,7 @@ function initGameModeSelector() {
             <span style="background:rgba(255,255,255,0.06);padding:5px 8px;border-radius:6px;color:#10b981;">RBI: ${totRBI}</span>
             <span style="background:rgba(255,255,255,0.06);padding:5px 8px;border-radius:6px;color:#ffd700;">AVG: ${tAvg}</span>
             <span style="background:rgba(255,255,255,0.06);padding:5px 8px;border-radius:6px;color:#00ff66;">OPS: ${tOPS}</span>
+            <span style="background:rgba(255,51,102,0.15);border:1px solid #ff3366;padding:5px 8px;border-radius:6px;color:#ff6699;box-shadow:0 0 10px rgba(255,51,102,0.25);">💥 DMG: ${totDMG}</span>
             <span style="background:rgba(239,68,68,0.18);border:1.5px solid #ef4444;padding:5px 10px;border-radius:6px;color:#f87171;box-shadow:0 0 10px rgba(239,68,68,0.3);">
               ⚠️ ${typeof t === 'function' ? t('summary.errors_label', 'Errors (E)') : 'Errors (E)'}: <strong style="color:#fff;font-size:11px;">${defErrors}</strong>
             </span>
@@ -10654,6 +10769,7 @@ function initGameModeSelector() {
       const bb  = s.bb || 0;
       const so  = s.so || 0;
       const e   = s.e  || 0;
+      const dmg = s.dmg || 0;
 
       const b1 = Math.max(0, h - b2 - b3 - hr);
       const pa = ab + bb;
@@ -10664,7 +10780,7 @@ function initGameModeSelector() {
       const slgVal = ab > 0 ? (totalBases / ab) : 0;
       const opsVal = obpVal + slgVal;
 
-      return { name, g, ab, h, b2, b3, hr, rbi, sb, bb, so, e, avgVal, obpVal, slgVal, opsVal };
+      return { name, g, ab, h, b2, b3, hr, rbi, sb, bb, so, e, dmg, avgVal, obpVal, slgVal, opsVal };
     });
 
     let currentBatterSortCol = 'opsVal';
@@ -10672,7 +10788,7 @@ function initGameModeSelector() {
 
     function renderBattersTable() {
       if (!processedBatters.length) {
-        tbodyB.innerHTML = '<tr><td colspan="16" style="padding:12px;color:#64748b;text-align:center;">Sin datos de bateo registrados.</td></tr>';
+        tbodyB.innerHTML = '<tr><td colspan="17" style="padding:12px;color:#64748b;text-align:center;">Sin datos de bateo registrados.</td></tr>';
         return;
       }
 
@@ -10696,7 +10812,7 @@ function initGameModeSelector() {
           th.style.color = '#facc15';
         } else {
           th.innerHTML = rawText;
-          th.style.color = (col === 'e' ? '#f87171' : 'var(--accent-color)');
+          th.style.color = (col === 'e' ? '#f87171' : (col === 'dmg' ? '#ff3366' : 'var(--accent-color)'));
         }
       });
 
@@ -10727,7 +10843,7 @@ function initGameModeSelector() {
           <td style="padding:8px;color:${s.obpVal >= 0.380 ? '#38bdf8' : '#94a3b8'};font-weight:bold;">${obp}</td>
           <td style="padding:8px;color:${s.slgVal >= 0.500 ? '#f59e0b' : '#94a3b8'};font-weight:bold;">${slg}</td>
           <td style="padding:8px;color:${s.opsVal >= 0.850 ? '#00ff66' : (s.opsVal >= 0.750 ? '#ffd700' : '#94a3b8')};font-weight:bold;">${ops}</td>
-        `;
+          <td style="padding:8px;color:#ff3366;font-weight:bold;font-family:'Press Start 2P',monospace;font-size:9.5px;">${s.dmg}</td>
         tbodyB.appendChild(tr);
       });
     }

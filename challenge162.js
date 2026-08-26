@@ -3084,6 +3084,38 @@
       this.renderRosterBuilder();
     },
 
+    startRosterBuilderWithRun(runGame) {
+      if (!this.unlockedBatters || !this.unlockedPitchers) {
+        this.initUnlocks();
+      }
+      if (runGame) {
+        this.unlockFromRun(runGame);
+      }
+      this._draftLineup = {};
+      this._draftPitchers = { SP: [], RP: [] };
+      this._activeSlot = null;
+      this._searchTerm = '';
+      this._activeFilterPill = 'ALL';
+
+      // 1. Pre-fill lineup with the winning run's exact batters
+      if (runGame && runGame.roster) {
+        const eligibleBatters = this.getEligibleBatters() || [];
+        SLOTS.forEach(slot => {
+          const runPlayer = runGame.roster[slot];
+          if (runPlayer) {
+            const match = eligibleBatters.find(b => cleanName(b) === cleanName(runPlayer)) || runPlayer;
+            this._draftLineup[slot] = match;
+          }
+        });
+      }
+
+      // 2. Auto-fill remaining empty spots and pitchers
+      this.autoFillRoster();
+
+      this.showScreen('screen-challenge-roster');
+      this.renderRosterBuilder();
+    },
+
     autoFillRoster() {
       const eligibleBatters = (this.getEligibleBatters() || []).slice().sort((a, b) => (b.ovr || 50) - (a.ovr || 50));
       const eligiblePitchers = (this.getEligiblePitchers() || []).slice().sort((a, b) => (b.ovr || 50) - (a.ovr || 50));
