@@ -54,7 +54,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="src/lib/i18next.min.js"></script>
-  <script src="src/i18n.js?v=120"></script>
+  <script src="src/i18n.js?v=121"></script>
   
   <link rel="preload" as="image" href="assets/TEST3.webp">
   <link rel="preload" as="image" href="assets/TEST.webp">
@@ -956,16 +956,19 @@
               <div style="font-size: 64px; animation: bounce 1.5s infinite; margin-bottom: 10px;">🏆</div>
               <h2 id="victory-title" style="font-family: 'Press Start 2P', monospace; font-size: 20px; color: #ffd700; text-shadow: 0 0 20px rgba(255,215,0,0.8); margin-bottom: 16px;" data-i18n="victory.title">¡CAMPEÓN ABSOLUTO DE BASEROGUE!</h2>
               <!-- Championship Roster Showcase -->
-              <div id="victory-team-showcase-container" style="max-width: 620px; margin: 0 auto 24px auto; background: rgba(0,0,0,0.5); border: 1.5px solid rgba(255,215,0,0.4); border-radius: 14px; padding: 16px; box-shadow: 0 0 25px rgba(255,215,0,0.15);"></div>
+              <div id="victory-team-showcase-container" style="max-width: 680px; margin: 0 auto 20px auto; background: rgba(5,10,20,0.85); border: 2px solid rgba(255,215,0,0.4); border-radius: 16px; padding: 20px; box-shadow: 0 0 35px rgba(255,215,0,0.2), inset 0 0 20px rgba(0,0,0,0.8);"></div>
               
-              <div style="display: flex; gap: 12px; justify-content: center; max-width: 580px; margin: 0 auto 18px auto; flex-wrap: wrap;">
-                <button class="btn" id="btn-share-championship-team" style="background: linear-gradient(135deg, #f59e0b, #d97706); border: 1px solid #fbbf24; font-size: 10px; padding: 12px 18px; color: #000; font-weight: bold; flex: 1; min-width: 180px;" data-i18n-html="victory.share_team_btn">
-                  <i class="fa-solid fa-share-nodes"></i> Copiar Resumen de Campeón
+              <div style="display: flex; gap: 10px; justify-content: center; max-width: 680px; margin: 0 auto 18px auto; flex-wrap: wrap;">
+                <button class="btn" id="btn-download-championship-card" style="background: linear-gradient(135deg, #ffd700, #f59e0b); border: 1px solid #fde047; font-size: 9.5px; padding: 12px 16px; color: #000; font-weight: bold; flex: 1; min-width: 150px; box-shadow: 0 0 15px rgba(255,215,0,0.3);" data-i18n-html="victory.download_image_btn">
+                  <i class="fa-solid fa-download"></i> Guardar Imagen (PNG)
                 </button>
-                <button class="btn" id="btn-show-run-summary" style="background: linear-gradient(135deg, #0284c7, #0369a1); border: 1px solid #38bdf8; font-size: 10px; padding: 12px 18px; flex: 1; min-width: 180px;" data-i18n-html="victory.summary_btn">
+                <button class="btn" id="btn-share-championship-team" style="background: linear-gradient(135deg, #8b5cf6, #6d28d9); border: 1px solid #c084fc; font-size: 9.5px; padding: 12px 16px; color: #fff; font-weight: bold; flex: 1; min-width: 150px;" data-i18n-html="victory.share_team_btn">
+                  <i class="fa-solid fa-camera"></i> Copiar Imagen de Campeón
+                </button>
+                <button class="btn" id="btn-show-run-summary" style="background: linear-gradient(135deg, #0284c7, #0369a1); border: 1px solid #38bdf8; font-size: 9.5px; padding: 12px 16px; flex: 1; min-width: 150px;" data-i18n-html="victory.summary_btn">
                   <i class="fa-solid fa-chart-column"></i> Ver Resumen de la Run
                 </button>
-                <button class="btn" id="btn-victory-play-again" style="background: linear-gradient(135deg, #10b981, #059669); font-size: 10px; padding: 12px 18px; flex: 1; min-width: 180px;" data-i18n-html="victory.replay_btn">
+                <button class="btn" id="btn-victory-play-again" style="background: linear-gradient(135deg, #10b981, #059669); font-size: 9.5px; padding: 12px 16px; flex: 1; min-width: 150px;" data-i18n-html="victory.replay_btn">
                   <i class="fa-solid fa-rotate-right"></i> Jugar Nuevamente
                 </button>
               </div>
@@ -1330,7 +1333,7 @@
   <script src="career.js?v=30"></script>
   <script src="basedex.js?v=20"></script>
   <script src="challenge162.js?v=123"></script>
-  <script src="ui.js?v=364"></script>
+  <script src="ui.js?v=365"></script>
 
 </body>
 </html>

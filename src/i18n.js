@@ -566,8 +566,11 @@
     "challenge162_hint_btn": "<i class=\"fa-solid fa-trophy\"></i> Probar en el 162-0 Challenge",
     "team_showcase_title": "👑 ROSTER DE CAMPEONES",
     "run_mvp_badge": "👑 MVP DE LA RUN",
-    "share_team_btn": "📋 Copiar Resumen de Campeón",
-    "share_copied_toast": "🏆 ¡Resumen de campeón copiado al portapapeles!"
+    "share_team_btn": "<i class=\"fa-solid fa-camera\"></i> Copiar Imagen de Campeón",
+    "share_copied_toast": "🏆 ¡Resumen de campeón copiado al portapapeles!",
+    "download_image_btn": "<i class=\"fa-solid fa-download\"></i> Guardar Imagen (PNG)",
+    "image_copied_toast": "🏆 ¡Imagen de Campeón copiada al portapapeles!",
+    "image_downloaded_toast": "📸 ¡Imagen de Campeón descargada con éxito!"
   },
   "sim": {
     "label_bb": "BASE POR BOLAS",
@@ -2489,8 +2492,11 @@
     "challenge162_hint_btn": "<i class=\"fa-solid fa-trophy\"></i> Try the 162-0 Challenge",
     "team_showcase_title": "👑 CHAMPIONSHIP ROSTER",
     "run_mvp_badge": "👑 RUN MVP",
-    "share_team_btn": "📋 Copy Championship Card",
-    "share_copied_toast": "🏆 Championship card copied to clipboard!"
+    "share_team_btn": "<i class=\"fa-solid fa-camera\"></i> Copy Image Card",
+    "share_copied_toast": "🏆 Championship card copied to clipboard!",
+    "download_image_btn": "<i class=\"fa-solid fa-download\"></i> Download Image",
+    "image_copied_toast": "🏆 Championship Image Card copied to clipboard!",
+    "image_downloaded_toast": "📸 Championship Image Card downloaded!"
   },
   "sim": {
     "label_bb": "WALK",

@@ -563,8 +563,11 @@
     "challenge162_hint_btn": "<i class=\"fa-solid fa-trophy\"></i> Try the 162-0 Challenge",
     "team_showcase_title": "👑 CHAMPIONSHIP ROSTER",
     "run_mvp_badge": "👑 RUN MVP",
-    "share_team_btn": "📋 Copy Championship Card",
-    "share_copied_toast": "🏆 Championship card copied to clipboard!"
+    "share_team_btn": "<i class=\"fa-solid fa-camera\"></i> Copy Image Card",
+    "share_copied_toast": "🏆 Championship card copied to clipboard!",
+    "download_image_btn": "<i class=\"fa-solid fa-download\"></i> Download Image",
+    "image_copied_toast": "🏆 Championship Image Card copied to clipboard!",
+    "image_downloaded_toast": "📸 Championship Image Card downloaded!"
   },
   "sim": {
     "label_bb": "WALK",

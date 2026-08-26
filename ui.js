@@ -10533,61 +10533,94 @@ function initGameModeSelector() {
         const p = window.Game.roster[slot];
         if (!p) return null;
         const s = stats[p.name] || {};
-        const dmg = s.dmg || 0;
+        const ab = s.ab || 0;
+        const h = s.h || 0;
+        const b2 = s.doubles || 0;
+        const b3 = s.triples || 0;
         const hr = s.hr || 0;
         const rbi = s.rbi || 0;
+        const bb = s.bb || 0;
+        const dmg = s.dmg || 0;
+        const pa = ab + bb;
+        const totalBases = Math.max(0, h - b2 - b3 - hr) + (2 * b2) + (3 * b3) + (4 * hr);
+        const avg = ab > 0 ? (h / ab).toFixed(3).replace(/^0/, '') : '.000';
+        const obp = pa > 0 ? ((h + bb) / pa) : 0;
+        const slg = ab > 0 ? (totalBases / ab) : 0;
+        const opsVal = obp + slg;
+        const ops = (ab > 0 || pa > 0) ? opsVal.toFixed(3).replace(/^0/, '') : '.000';
+
         const ovr = typeof getPlayerOvr === 'function' ? getPlayerOvr(p) : Math.floor(p.ovr || 50);
-        const score = dmg + (hr * 50) + (rbi * 20);
+        const ovrGrade = typeof getClassGrade === 'function' ? getClassGrade(ovr) : { text: 'A', color: '#ffd700' };
+        const rarity = p.rarity || 'Common';
+        const rarityColor = (typeof RARITY_COLORS !== 'undefined' && RARITY_COLORS[rarity]) || '#94a3b8';
+        const rarityBg = (typeof RARITY_BG !== 'undefined' && RARITY_BG[rarity]) || 'rgba(100,116,139,0.12)';
+        const era = (p.era || '').replace(/\(.*\)/, '').trim();
+        const team = p.team !== 'ROOK' ? p.team : '—';
+
+        const score = dmg + (hr * 60) + (rbi * 25) + (opsVal * 100);
         if (score > maxScore) {
           maxScore = score;
-          bestPlayer = { player: p, slot, dmg, hr, rbi, ovr };
+          bestPlayer = { player: p, slot, dmg, hr, rbi, avg, ops, ovr, ovrGrade, rarity, rarityColor, rarityBg, era, team };
         }
-        return { slot, index: idx + 1, player: p, s, dmg, hr, rbi, ovr };
+        return { slot, index: idx + 1, player: p, s, ab, h, hr, rbi, bb, dmg, avg, ops, ovr, ovrGrade, rarity, rarityColor, rarityBg, era, team };
       }).filter(Boolean);
 
       const mvpBannerHTML = bestPlayer ? `
-        <div style="background: linear-gradient(135deg, rgba(255,215,0,0.18) 0%, rgba(245,158,11,0.25) 100%); border: 1.5px solid #ffd700; border-radius: 10px; padding: 10px 14px; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; gap: 10px; box-shadow: 0 0 20px rgba(255,215,0,0.25);">
-          <div style="display:flex; align-items:center; gap:10px;">
-            <span style="font-size:24px;">👑</span>
+        <div style="background: linear-gradient(135deg, rgba(255,215,0,0.2) 0%, rgba(245,158,11,0.28) 100%); border: 2px solid #ffd700; border-radius: 12px; padding: 12px 16px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; box-shadow: 0 0 25px rgba(255,215,0,0.3), inset 0 0 15px rgba(255,215,0,0.1);">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <span style="font-size:28px; filter:drop-shadow(0 0 8px #ffd700);">👑</span>
             <div style="text-align:left;">
-              <div style="font-family:'Press Start 2P',monospace; font-size:8.5px; color:#ffd700; margin-bottom:3px;">
+              <div style="font-family:'Press Start 2P',monospace; font-size:9px; color:#ffd700; margin-bottom:4px; letter-spacing:0.5px;">
                 ${typeof t === 'function' ? t('victory.run_mvp_badge', '👑 MVP DE LA RUN') : '👑 MVP DE LA RUN'}
               </div>
-              <div style="font-size:12px; font-weight:bold; color:#fff; font-family:sans-serif;">
-                [${bestPlayer.slot}] ${bestPlayer.player.name} <span style="font-size:9px; color:#ffd700; font-family:'Press Start 2P',monospace;">OVR ${bestPlayer.ovr}</span>
+              <div style="font-size:13px; font-weight:bold; color:#fff; font-family:sans-serif; display:flex; align-items:center; gap:8px;">
+                <span>[${bestPlayer.slot}] ${bestPlayer.player.name}</span>
+                <span style="background:${bestPlayer.ovrGrade.color}; color:#000; font-family:'Press Start 2P',monospace; font-size:7.5px; padding:2px 5px; border-radius:3px; font-weight:bold;">${bestPlayer.ovrGrade.text} ${bestPlayer.ovr}</span>
+              </div>
+              <div style="font-size:7.5px; color:#fef08a; font-family:'Press Start 2P',monospace; margin-top:3px;">
+                ${bestPlayer.team} · ${bestPlayer.era || 'VINTAGE'} · <span style="color:${bestPlayer.rarityColor};">${bestPlayer.rarity.toUpperCase()}</span>
               </div>
             </div>
           </div>
-          <div style="font-family:'Press Start 2P',monospace; font-size:8.5px; color:#fff; text-align:right;">
+          <div style="font-family:'Press Start 2P',monospace; font-size:8.5px; text-align:right; display:flex; flex-direction:column; gap:3px;">
+            <div style="color:#00ff66; font-weight:bold;">OPS ${bestPlayer.ops}</div>
             <div style="color:#ef4444;">${bestPlayer.hr} HR · ${bestPlayer.rbi} RBI</div>
-            <div style="color:#ff3366; margin-top:2px;">💥 ${bestPlayer.dmg} DMG</div>
+            <div style="color:#ff3366; font-weight:bold;">💥 ${bestPlayer.dmg} DMG</div>
           </div>
         </div>
       ` : '';
 
       showcaseContainer.innerHTML = `
-        <div style="font-family:'Press Start 2P',monospace; font-size:9.5px; color:#ffd700; margin-bottom:12px; letter-spacing:0.5px; text-shadow:0 0 10px rgba(255,215,0,0.4);">
+        <div style="font-family:'Press Start 2P',monospace; font-size:10px; color:#ffd700; margin-bottom:14px; letter-spacing:0.8px; text-shadow:0 0 12px rgba(255,215,0,0.5);">
           ${typeof t === 'function' ? t('victory.team_showcase_title', '👑 ROSTER DE CAMPEONES') : '👑 ROSTER DE CAMPEONES'}
         </div>
         ${mvpBannerHTML}
-        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(170px, 1fr)); gap:8px; text-align:left;">
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:10px; text-align:left;">
           ${playersData.map(item => {
             const isMVP = bestPlayer && bestPlayer.player.name === item.player.name;
-            const borderCol = isMVP ? '#ffd700' : 'rgba(255,255,255,0.12)';
-            const bgCol = isMVP ? 'rgba(255,215,0,0.08)' : 'rgba(255,255,255,0.03)';
+            const borderCol = isMVP ? '#ffd700' : `${item.rarityColor}88`;
+            const glow = isMVP ? '0 0 15px rgba(255,215,0,0.35)' : `0 0 10px ${item.rarityColor}22`;
+            const bgCol = isMVP ? 'linear-gradient(135deg, rgba(255,215,0,0.12) 0%, rgba(15,23,42,0.85) 100%)' : `linear-gradient(135deg, ${item.rarityBg} 0%, rgba(10,15,30,0.85) 100%)`;
             return `
-              <div style="background:${bgCol}; border:1px solid ${borderCol}; border-radius:8px; padding:8px 10px; display:flex; justify-content:space-between; align-items:center;">
+              <div style="background:${bgCol}; border:1.5px solid ${borderCol}; border-radius:10px; padding:10px; box-shadow:${glow}; display:flex; flex-direction:column; justify-content:space-between; transition:transform 0.15s ease;">
                 <div>
-                  <div style="display:flex; align-items:center; gap:6px;">
-                    <span style="font-size:8px; color:var(--primary-color); font-family:'Press Start 2P',monospace;">[${item.slot}]</span>
-                    <span style="font-size:10.5px; font-weight:bold; color:#fff; font-family:sans-serif;">${item.player.name}</span>
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                    <div style="display:flex; align-items:center; gap:5px;">
+                      <span style="font-size:8px; color:#38bdf8; font-family:'Press Start 2P',monospace;">[${item.slot}]</span>
+                      <span style="font-size:11px; font-weight:bold; color:#fff; font-family:sans-serif; max-width:110px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${item.player.name}">${item.player.name}</span>
+                    </div>
+                    <span style="background:${item.ovrGrade.color}; color:#000; font-family:'Press Start 2P',monospace; font-size:7px; padding:1.5px 4px; border-radius:3px; font-weight:bold;">${item.ovrGrade.text} ${item.ovr}</span>
                   </div>
-                  <div style="font-size:7.5px; color:#9ca3af; margin-top:2px; font-family:'Press Start 2P',monospace;">
-                    OVR ${item.ovr} · <span style="color:#ef4444;">${item.hr} HR</span>
+                  <div style="font-size:7px; color:#94a3b8; margin-bottom:8px; font-family:'Press Start 2P',monospace; display:flex; gap:4px; align-items:center;">
+                    <span>${item.team}</span>
+                    <span>·</span>
+                    <span style="color:${item.rarityColor}; font-weight:bold;">${item.rarity.toUpperCase()}</span>
                   </div>
                 </div>
-                <div style="font-family:'Press Start 2P',monospace; font-size:8px; color:#ff3366; font-weight:bold; text-align:right;">
-                  ${item.dmg} <span style="font-size:6.5px;">DMG</span>
+                <div style="background:rgba(0,0,0,0.55); border:1px solid rgba(255,255,255,0.08); border-radius:6px; padding:4px 6px; display:flex; justify-content:space-between; align-items:center; font-family:'Press Start 2P',monospace; font-size:7.5px;">
+                  <span style="color:#00ff66;" title="On-Base Plus Slugging">OPS ${item.ops}</span>
+                  <span style="color:#ef4444;">${item.hr} HR</span>
+                  <span style="color:#ff3366; font-weight:bold;">💥 ${item.dmg}</span>
                 </div>
               </div>
             `;
@@ -10595,36 +10628,237 @@ function initGameModeSelector() {
         </div>
       `;
 
-      // Setup Share Button
+      // ── Canvas Image Generator Function ──
+      function renderChampionshipCanvas(callback) {
+        const canvas = document.createElement('canvas');
+        canvas.width = 1200;
+        canvas.height = 760;
+        const ctx = canvas.getContext('2d');
+
+        // Background
+        const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+        grad.addColorStop(0, '#060b14');
+        grad.addColorStop(0.5, '#0b1329');
+        grad.addColorStop(1, '#05070f');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Radial Gold Glow
+        const radialAura = ctx.createRadialGradient(canvas.width / 2, 0, 10, canvas.width / 2, 0, 650);
+        radialAura.addColorStop(0, 'rgba(255, 215, 0, 0.25)');
+        radialAura.addColorStop(1, 'rgba(255, 215, 0, 0)');
+        ctx.fillStyle = radialAura;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Outer Borders
+        ctx.strokeStyle = '#ffd700';
+        ctx.lineWidth = 3;
+        ctx.strokeRect(16, 16, canvas.width - 32, canvas.height - 32);
+        ctx.strokeStyle = 'rgba(255, 215, 0, 0.4)';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(22, 22, canvas.width - 44, canvas.height - 44);
+
+        // Title
+        ctx.fillStyle = '#ffd700';
+        ctx.font = 'bold 24px "Press Start 2P", monospace, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.shadowColor = 'rgba(255, 215, 0, 0.8)';
+        ctx.shadowBlur = 15;
+        ctx.fillText('🏆 BASE ROGUE WORLD CHAMPIONSHIP 🏆', canvas.width / 2, 68);
+        ctx.shadowBlur = 0;
+
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = 'bold 11px monospace, sans-serif';
+        ctx.fillText('SUPREME ROTATION CONQUERED • OFFICIAL CHAMPIONSHIP LINEUP', canvas.width / 2, 92);
+
+        let gridStartY = 115;
+        if (bestPlayer) {
+          const mvpX = 40;
+          const mvpY = 110;
+          const mvpW = canvas.width - 80;
+          const mvpH = 70;
+
+          ctx.fillStyle = 'rgba(245, 158, 11, 0.16)';
+          ctx.strokeStyle = '#ffd700';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          if (ctx.roundRect) ctx.roundRect(mvpX, mvpY, mvpW, mvpH, 10);
+          else ctx.rect(mvpX, mvpY, mvpW, mvpH);
+          ctx.fill();
+          ctx.stroke();
+
+          ctx.textAlign = 'left';
+          ctx.fillStyle = '#ffd700';
+          ctx.font = 'bold 11px "Press Start 2P", monospace, sans-serif';
+          ctx.fillText('👑 RUN MVP:', mvpX + 20, mvpY + 28);
+
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 16px sans-serif';
+          ctx.fillText(`[${bestPlayer.slot}] ${bestPlayer.player.name}`, mvpX + 20, mvpY + 54);
+
+          ctx.fillStyle = bestPlayer.ovrGrade.color;
+          ctx.font = 'bold 11px "Press Start 2P", monospace, sans-serif';
+          ctx.fillText(`${bestPlayer.ovrGrade.text} ${bestPlayer.ovr}`, mvpX + 320, mvpY + 54);
+
+          ctx.textAlign = 'right';
+          ctx.font = 'bold 11px "Press Start 2P", monospace, sans-serif';
+          ctx.fillStyle = '#00ff66';
+          ctx.fillText(`OPS ${bestPlayer.ops}`, mvpW + mvpX - 290, mvpY + 44);
+
+          ctx.fillStyle = '#ef4444';
+          ctx.fillText(`${bestPlayer.hr} HR · ${bestPlayer.rbi} RBI`, mvpW + mvpX - 150, mvpY + 44);
+
+          ctx.fillStyle = '#ff3366';
+          ctx.fillText(`💥 ${bestPlayer.dmg} DMG`, mvpW + mvpX - 20, mvpY + 44);
+
+          gridStartY = 195;
+        }
+
+        const cols = 3;
+        const cardW = 354;
+        const cardH = 135;
+        const gapX = 29;
+        const gapY = 16;
+        const startX = 40;
+
+        playersData.forEach((item, i) => {
+          const row = Math.floor(i / cols);
+          const col = i % cols;
+          const x = startX + col * (cardW + gapX);
+          const y = gridStartY + row * (cardH + gapY);
+
+          const rCol = item.rarityColor || '#94a3b8';
+          const isMvpItem = bestPlayer && bestPlayer.player.name === item.player.name;
+
+          ctx.fillStyle = isMvpItem ? 'rgba(255, 215, 0, 0.12)' : 'rgba(15, 23, 42, 0.85)';
+          ctx.strokeStyle = isMvpItem ? '#ffd700' : rCol;
+          ctx.lineWidth = isMvpItem ? 2.5 : 1.5;
+          ctx.beginPath();
+          if (ctx.roundRect) ctx.roundRect(x, y, cardW, cardH, 8);
+          else ctx.rect(x, y, cardW, cardH);
+          ctx.fill();
+          ctx.stroke();
+
+          ctx.textAlign = 'left';
+          ctx.fillStyle = '#38bdf8';
+          ctx.font = 'bold 10px "Press Start 2P", monospace, sans-serif';
+          ctx.fillText(`[${item.slot}]`, x + 12, y + 26);
+
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 13px sans-serif';
+          const shortName = item.player.name.length > 18 ? item.player.name.substring(0, 16) + '...' : item.player.name;
+          ctx.fillText(shortName, x + 62, y + 26);
+
+          ctx.textAlign = 'right';
+          ctx.fillStyle = item.ovrGrade ? item.ovrGrade.color : '#ffd700';
+          ctx.font = 'bold 10px "Press Start 2P", monospace, sans-serif';
+          ctx.fillText(`${item.ovrGrade ? item.ovrGrade.text : ''} ${item.ovr}`, x + cardW - 14, y + 26);
+
+          ctx.textAlign = 'left';
+          ctx.fillStyle = '#94a3b8';
+          ctx.font = '9px "Press Start 2P", monospace, sans-serif';
+          ctx.fillText(`${item.team} · ${item.era || 'VINTAGE'} · ${item.rarity.toUpperCase()}`, x + 12, y + 54);
+
+          // Stats bar box
+          ctx.fillStyle = 'rgba(0, 0, 0, 0.55)';
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          if (ctx.roundRect) ctx.roundRect(x + 10, y + 72, cardW - 20, 48, 6);
+          else ctx.rect(x + 10, y + 72, cardW - 20, 48);
+          ctx.fill();
+          ctx.stroke();
+
+          ctx.font = 'bold 9.5px "Press Start 2P", monospace, sans-serif';
+          ctx.fillStyle = '#00ff66';
+          ctx.fillText(`OPS ${item.ops}`, x + 20, y + 102);
+
+          ctx.fillStyle = '#ef4444';
+          ctx.fillText(`${item.hr} HR`, x + 145, y + 102);
+
+          ctx.textAlign = 'right';
+          ctx.fillStyle = '#ff3366';
+          ctx.fillText(`💥 ${item.dmg} DMG`, x + cardW - 20, y + 102);
+        });
+
+        const totDMG = playersData.reduce((acc, it) => acc + (it.dmg || 0), 0);
+        const totHR = playersData.reduce((acc, it) => acc + (it.hr || 0), 0);
+
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#fbbf24';
+        ctx.font = 'bold 10.5px "Press Start 2P", monospace, sans-serif';
+        ctx.fillText(`TOTAL LINEUP DAMAGE: ${totDMG} HP  •  TOTAL HOME RUNS: ${totHR}  •  BASEROGUE.COM`, canvas.width / 2, canvas.height - 28);
+
+        canvas.toBlob((blob) => {
+          if (callback) callback(blob, canvas);
+        }, 'image/png');
+      }
+
+      // Download Championship PNG Image
+      const downloadBtn = document.getElementById('btn-download-championship-card');
+      if (downloadBtn) {
+        downloadBtn.onclick = () => {
+          renderChampionshipCanvas((blob, canvas) => {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `baserogue-championship-roster.png`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            if (typeof window.showToast === 'function') {
+              window.showToast(typeof t === 'function' ? t('victory.image_downloaded_toast', '📸 ¡Imagen de Campeón descargada con éxito!') : '📸 ¡Imagen de Campeón descargada con éxito!');
+            }
+          });
+        };
+      }
+
+      // Copy Image Card to Clipboard
       const shareBtn = document.getElementById('btn-share-championship-team');
       if (shareBtn) {
         shareBtn.onclick = () => {
-          let shareText = `⚾ BASEROGUE — WORLD CHAMPIONSHIP 🏆\n`;
-          if (bestPlayer) {
-            shareText += `👑 MVP: ${bestPlayer.player.name} (${bestPlayer.slot}) — ${bestPlayer.hr} HR, ${bestPlayer.rbi} RBI, ${bestPlayer.dmg} DMG\n\n`;
-          }
-          shareText += `🏆 CHAMPIONSHIP LINEUP:\n`;
-          playersData.forEach(item => {
-            shareText += `#${item.index} [${item.slot}] ${item.player.name} (OVR ${item.ovr}) — ${item.hr} HR | ${item.dmg} DMG\n`;
+          renderChampionshipCanvas((blob) => {
+            if (navigator.clipboard && navigator.clipboard.write && typeof ClipboardItem !== 'undefined') {
+              navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]).then(() => {
+                if (typeof window.showToast === 'function') {
+                  window.showToast(typeof t === 'function' ? t('victory.image_copied_toast', '🏆 ¡Imagen de Campeón copiada al portapapeles!') : '🏆 ¡Imagen de Campeón copiada al portapapeles!');
+                }
+              }).catch(() => {
+                fallbackTextCopy();
+              });
+            } else {
+              fallbackTextCopy();
+            }
           });
-          shareText += `\n🎮 Play BaseRogue: https://baserogue.com`;
 
-          navigator.clipboard.writeText(shareText).then(() => {
-            if (typeof window.showToast === 'function') {
-              window.showToast(typeof t === 'function' ? t('victory.share_copied_toast', '🏆 ¡Resumen de campeón copiado al portapapeles!') : '🏆 ¡Resumen de campeón copiado al portapapeles!');
+          function fallbackTextCopy() {
+            let shareText = `⚾ BASEROGUE — WORLD CHAMPIONSHIP 🏆\n`;
+            if (bestPlayer) {
+              shareText += `👑 MVP: ${bestPlayer.player.name} (${bestPlayer.slot}) — OPS ${bestPlayer.ops} | ${bestPlayer.hr} HR | ${bestPlayer.dmg} DMG\n\n`;
             }
-          }).catch(() => {
-            // Fallback copy
-            const textarea = document.createElement('textarea');
-            textarea.value = shareText;
-            document.body.appendChild(textarea);
-            textarea.select();
-            document.execCommand('copy');
-            document.body.removeChild(textarea);
-            if (typeof window.showToast === 'function') {
-              window.showToast('🏆 ¡Copiado al portapapeles!');
-            }
-          });
+            shareText += `🏆 CHAMPIONSHIP LINEUP:\n`;
+            playersData.forEach(item => {
+              shareText += `#${item.index} [${item.slot}] ${item.player.name} (${item.rarity.toUpperCase()}) — OPS ${item.ops} | ${item.hr} HR | ${item.dmg} DMG\n`;
+            });
+            shareText += `\n🎮 Play BaseRogue: https://baserogue.com`;
+
+            navigator.clipboard.writeText(shareText).then(() => {
+              if (typeof window.showToast === 'function') {
+                window.showToast(typeof t === 'function' ? t('victory.share_copied_toast', '🏆 ¡Resumen de campeón copiado al portapapeles!') : '🏆 ¡Resumen de campeón copiado al portapapeles!');
+              }
+            }).catch(() => {
+              const textarea = document.createElement('textarea');
+              textarea.value = shareText;
+              document.body.appendChild(textarea);
+              textarea.select();
+              document.execCommand('copy');
+              document.body.removeChild(textarea);
+              if (typeof window.showToast === 'function') {
+                window.showToast('🏆 ¡Copiado al portapapeles!');
+              }
+            });
+          }
         };
       }
     }
