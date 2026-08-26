@@ -10651,106 +10651,83 @@ function initGameModeSelector() {
       });
 
       const synergiesBadgesHTML = (activeSynergies.length > 0 || teamChemList.length > 0) ? `
-        <div style="background: rgba(0,0,0,0.4); border: 1px solid rgba(255,215,0,0.25); border-radius: 6px; padding: 4px 8px; margin-top: 6px; display: flex; align-items: center; justify-content: center; gap: 6px; flex-wrap: wrap;">
-          <span style="font-size: 6.5px; color: #ffd700; font-family: 'Press Start 2P', monospace; font-weight: bold;">
+        <div style="background: rgba(0,0,0,0.45); border: 1px solid rgba(255,215,0,0.3); border-radius: 8px; padding: 6px 10px; margin-top: 8px; display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap;">
+          <span style="font-size: 7.5px; color: #ffd700; font-family: 'Press Start 2P', monospace; font-weight: bold;">
             ${typeof t === 'function' ? t('victory.active_synergies_title', '🏆 SINERGIAS ACTIVAS') : '🏆 SINERGIAS ACTIVAS'}:
           </span>
           ${activeSynergies.map(syn => `
-            <span style="background: rgba(16,185,129,0.18); border: 1px solid #10b981; color: #6ee7b7; font-family: 'Press Start 2P', monospace; font-size: 6px; padding: 1.5px 4px; border-radius: 3px;">
+            <span style="background: rgba(16,185,129,0.22); border: 1px solid #10b981; color: #6ee7b7; font-family: 'Press Start 2P', monospace; font-size: 7px; padding: 2px 6px; border-radius: 4px;">
               ${syn.era} T${syn.level}
             </span>
           `).join('')}
           ${teamChemList.map(chem => `
-            <span style="background: rgba(56,189,248,0.18); border: 1px solid #38bdf8; color: #7dd3fc; font-family: 'Press Start 2P', monospace; font-size: 6px; padding: 1.5px 4px; border-radius: 3px;">
+            <span style="background: rgba(56,189,248,0.22); border: 1px solid #38bdf8; color: #7dd3fc; font-family: 'Press Start 2P', monospace; font-size: 7px; padding: 2px 6px; border-radius: 4px;">
               ${chem.team} Chem (${chem.count}/4)
             </span>
           `).join('')}
         </div>
       ` : '';
 
-      const mvpItemName = bestPlayer && bestPlayer.player.equipped_item ? `${bestPlayer.player.equipped_item.icon || '🎒'} ${bestPlayer.player.equipped_item.name}` : (typeof t === 'function' ? t('victory.no_item', 'NINGUNO') : 'NINGUNO');
-
       const mvpBannerHTML = bestPlayer ? `
-        <div style="background: linear-gradient(135deg, rgba(255,215,0,0.18) 0%, rgba(245,158,11,0.25) 100%); border: 1.5px solid #ffd700; border-radius: 8px; padding: 6px 10px; margin-bottom: 6px; box-shadow: 0 0 15px rgba(255,215,0,0.25);">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
-            <div style="display:flex; align-items:center; gap:8px;">
-              <span style="font-size:20px; filter:drop-shadow(0 0 6px #ffd700);">👑</span>
-              <div style="text-align:left;">
-                <div style="font-family:'Press Start 2P',monospace; font-size:7px; color:#ffd700; margin-bottom:2px;">
-                  ${typeof t === 'function' ? t('victory.run_mvp_badge', '👑 MVP DE LA RUN') : '👑 MVP DE LA RUN'}
-                </div>
-                <div style="font-size:11.5px; font-weight:bold; color:#fff; font-family:sans-serif; display:flex; align-items:center; gap:6px;">
-                  <span>[${bestPlayer.slot}] ${bestPlayer.player.name}</span>
-                  <span style="background:${bestPlayer.ovrGrade.color}; color:#000; font-family:'Press Start 2P',monospace; font-size:6.5px; padding:1px 3px; border-radius:2px; font-weight:bold;">${bestPlayer.ovrGrade.text} ${bestPlayer.ovr}</span>
-                </div>
+        <div style="background: linear-gradient(135deg, rgba(255,215,0,0.2) 0%, rgba(245,158,11,0.28) 100%); border: 2px solid #ffd700; border-radius: 10px; padding: 8px 12px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; gap: 12px; box-shadow: 0 0 18px rgba(255,215,0,0.28);">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span style="font-size:24px; filter:drop-shadow(0 0 8px #ffd700);">👑</span>
+            <div style="text-align:left;">
+              <div style="font-family:'Press Start 2P',monospace; font-size:8px; color:#ffd700; margin-bottom:3px;">
+                ${typeof t === 'function' ? t('victory.run_mvp_badge', '👑 MVP DE LA RUN') : '👑 MVP DE LA RUN'}
+              </div>
+              <div style="font-size:13px; font-weight:bold; color:#fff; font-family:sans-serif; display:flex; align-items:center; gap:8px;">
+                <span>[${bestPlayer.slot}] ${bestPlayer.player.name}</span>
+                <span style="background:${bestPlayer.ovrGrade.color}; color:#000; font-family:'Press Start 2P',monospace; font-size:7.5px; padding:2px 5px; border-radius:3px; font-weight:bold;">${bestPlayer.ovrGrade.text} ${bestPlayer.ovr}</span>
+              </div>
+              <div style="font-size:7.5px; color:#94a3b8; font-family:'Press Start 2P',monospace; margin-top:3px; display:flex; gap:4px; align-items:center;">
+                <span>${bestPlayer.team}</span>
+                <span>·</span>
+                <span style="color:#fbbf24;">${bestPlayer.era}</span>
+                <span>·</span>
+                <span style="color:${bestPlayer.rarityColor}; font-weight:bold;">${bestPlayer.rarity.toUpperCase()}</span>
               </div>
             </div>
-            <div style="display:flex; gap:4px; font-family:'Press Start 2P',monospace; font-size:6px;">
-              <span style="background:rgba(245,158,11,0.2); border:1px solid #f59e0b; color:#fbbf24; padding:2px 4px; border-radius:3px;">${bestPlayer.era}</span>
-              <span style="background:rgba(56,189,248,0.2); border:1px solid #38bdf8; color:#7dd3fc; padding:2px 4px; border-radius:3px;">${bestPlayer.team}</span>
-              <span style="background:${bestPlayer.rarityColor}33; border:1px solid ${bestPlayer.rarityColor}; color:#fff; padding:2px 4px; border-radius:3px;">${bestPlayer.rarity.toUpperCase()}</span>
-            </div>
           </div>
-          <div style="display:grid; grid-template-columns:repeat(6, 1fr); gap:4px; font-family:'Press Start 2P',monospace; font-size:6px; text-align:center;">
-            <div style="background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.08); border-radius:4px; padding:3px 2px;">
-              <div style="color:#94a3b8; font-size:5px; margin-bottom:2px;">${typeof t === 'function' ? t('victory.stat_ops', 'OPS') : 'OPS'}</div>
-              <div style="color:#22c55e; font-weight:bold; font-size:7.5px;">${bestPlayer.ops}</div>
-            </div>
-            <div style="background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.08); border-radius:4px; padding:3px 2px;">
-              <div style="color:#94a3b8; font-size:5px; margin-bottom:2px;">${typeof t === 'function' ? t('victory.stat_damage', 'DAÑO') : 'DAÑO'}</div>
-              <div style="color:#ff3366; font-weight:bold; font-size:7.5px;">${bestPlayer.dmg}</div>
-            </div>
-            <div style="background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.08); border-radius:4px; padding:3px 2px;">
-              <div style="color:#94a3b8; font-size:5px; margin-bottom:2px;">${typeof t === 'function' ? t('victory.stat_hr', 'HR') : 'HR'}</div>
-              <div style="color:#ef4444; font-weight:bold; font-size:7.5px;">${bestPlayer.hr}</div>
-            </div>
-            <div style="background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.08); border-radius:4px; padding:3px 2px;">
-              <div style="color:#94a3b8; font-size:5px; margin-bottom:2px;">${typeof t === 'function' ? t('victory.stat_rbi', 'RBI') : 'RBI'}</div>
-              <div style="color:#f59e0b; font-weight:bold; font-size:7.5px;">${bestPlayer.rbi}</div>
-            </div>
-            <div style="background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.08); border-radius:4px; padding:3px 2px;">
-              <div style="color:#94a3b8; font-size:5px; margin-bottom:2px;">${typeof t === 'function' ? t('victory.stat_avg', 'AVG') : 'AVG'}</div>
-              <div style="color:#ffd700; font-weight:bold; font-size:7.5px;">${bestPlayer.avg}</div>
-            </div>
-            <div style="background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.08); border-radius:4px; padding:3px 2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${mvpItemName}">
-              <div style="color:#94a3b8; font-size:5px; margin-bottom:2px;">${typeof t === 'function' ? t('victory.stat_item', 'ITEM') : 'ITEM'}</div>
-              <div style="color:#38bdf8; font-weight:bold; font-size:6px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${mvpItemName}</div>
-            </div>
+          <div style="font-family:'Press Start 2P',monospace; font-size:8px; text-align:right; display:flex; gap:10px; align-items:center;">
+            <span style="color:#00ff66; font-weight:bold;">OPS ${bestPlayer.ops}</span>
+            <span style="color:#ef4444;">${bestPlayer.hr} HR · ${bestPlayer.rbi} RBI</span>
+            <span style="color:#ff3366; font-weight:bold;">💥 ${bestPlayer.dmg} DMG</span>
           </div>
         </div>
       ` : '';
 
       showcaseContainer.innerHTML = `
-        <div style="font-family:'Press Start 2P',monospace; font-size:8.5px; color:#ffd700; margin-bottom:6px; letter-spacing:0.5px; text-shadow:0 0 10px rgba(255,215,0,0.5);">
+        <div style="font-family:'Press Start 2P',monospace; font-size:9.5px; color:#ffd700; margin-bottom:8px; letter-spacing:0.8px; text-shadow:0 0 12px rgba(255,215,0,0.5);">
           ${typeof t === 'function' ? t('victory.team_showcase_title', '👑 ROSTER DE CAMPEONES') : '👑 ROSTER DE CAMPEONES'}
         </div>
         ${mvpBannerHTML}
-        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:6px; text-align:left;">
+        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; text-align:left;">
           ${playersData.map(item => {
             const isMVP = bestPlayer && bestPlayer.player.name === item.player.name;
-            const borderCol = isMVP ? '#ffd700' : `${item.rarityColor}88`;
-            const glow = isMVP ? '0 0 12px rgba(255,215,0,0.35)' : `0 0 8px ${item.rarityColor}22`;
-            const bgCol = isMVP ? 'linear-gradient(135deg, rgba(255,215,0,0.12) 0%, rgba(15,23,42,0.85) 100%)' : `linear-gradient(135deg, ${item.rarityBg} 0%, rgba(10,15,30,0.85) 100%)`;
-            const itemTag = item.player.equipped_item ? `<span style="color:#38bdf8; font-size:6px;" title="${item.player.equipped_item.name}">${item.player.equipped_item.icon || '🎒'}</span>` : '';
+            const borderCol = isMVP ? '#ffd700' : `${item.rarityColor}99`;
+            const glow = isMVP ? '0 0 14px rgba(255,215,0,0.4)' : `0 0 10px ${item.rarityColor}25`;
+            const bgCol = isMVP ? 'linear-gradient(135deg, rgba(255,215,0,0.14) 0%, rgba(15,23,42,0.9) 100%)' : `linear-gradient(135deg, ${item.rarityBg} 0%, rgba(10,15,30,0.9) 100%)`;
+            const itemTag = item.player.equipped_item ? `<span style="color:#38bdf8; font-size:7px;" title="${item.player.equipped_item.name}">${item.player.equipped_item.icon || '🎒'}</span>` : '';
             return `
-              <div style="background:${bgCol}; border:1.5px solid ${borderCol}; border-radius:8px; padding:5px 7px; box-shadow:${glow}; display:flex; flex-direction:column; justify-content:space-between;">
+              <div style="background:${bgCol}; border:1.5px solid ${borderCol}; border-radius:8px; padding:6px 8px; box-shadow:${glow}; display:flex; flex-direction:column; justify-content:space-between;">
                 <div>
-                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2px;">
-                    <div style="display:flex; align-items:center; gap:4px; overflow:hidden;">
-                      <span style="font-size:7.5px; color:#38bdf8; font-family:'Press Start 2P',monospace;">[${item.slot}]</span>
-                      <span style="font-size:9.5px; font-weight:bold; color:#fff; font-family:sans-serif; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${item.player.name}">${item.player.name}</span>
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:3px;">
+                    <div style="display:flex; align-items:center; gap:5px; overflow:hidden;">
+                      <span style="font-size:8px; color:#38bdf8; font-family:'Press Start 2P',monospace;">[${item.slot}]</span>
+                      <span style="font-size:10.5px; font-weight:bold; color:#fff; font-family:sans-serif; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${item.player.name}">${item.player.name}</span>
                       ${itemTag}
                     </div>
-                    <span style="background:${item.ovrGrade.color}; color:#000; font-family:'Press Start 2P',monospace; font-size:6px; padding:1px 3px; border-radius:2px; font-weight:bold; flex-shrink:0;">${item.ovrGrade.text} ${item.ovr}</span>
+                    <span style="background:${item.ovrGrade.color}; color:#000; font-family:'Press Start 2P',monospace; font-size:6.5px; padding:1.5px 4px; border-radius:2px; font-weight:bold; flex-shrink:0;">${item.ovrGrade.text} ${item.ovr}</span>
                   </div>
-                  <div style="font-size:6px; color:#94a3b8; margin-bottom:4px; font-family:'Press Start 2P',monospace; display:flex; gap:3px; align-items:center;">
+                  <div style="font-size:6.5px; color:#94a3b8; margin-bottom:5px; font-family:'Press Start 2P',monospace; display:flex; gap:4px; align-items:center;">
                     <span style="color:#fbbf24;">${item.era}</span>
                     <span>·</span>
                     <span style="color:#7dd3fc;">${item.team}</span>
                   </div>
                 </div>
-                <div style="background:rgba(0,0,0,0.55); border:1px solid rgba(255,255,255,0.08); border-radius:4px; padding:2.5px 4px; display:flex; justify-content:space-between; align-items:center; font-family:'Press Start 2P',monospace; font-size:6.5px;">
-                  <span style="color:#22c55e;" title="On-Base Plus Slugging">OPS ${item.ops}</span>
+                <div style="background:rgba(0,0,0,0.6); border:1px solid rgba(255,255,255,0.08); border-radius:5px; padding:3px 6px; display:flex; justify-content:space-between; align-items:center; font-family:'Press Start 2P',monospace; font-size:7.5px;">
+                  <span style="color:#00ff66;" title="On-Base Plus Slugging">OPS ${item.ops}</span>
                   <span style="color:#ef4444;">${item.hr} HR</span>
                   <span style="color:#ff3366; font-weight:bold;">💥 ${item.dmg}</span>
                 </div>
@@ -10761,14 +10738,14 @@ function initGameModeSelector() {
         ${synergiesBadgesHTML}
       `;
 
-      // ── High-End 16:9 Canvas Image Generator Function ──
+      // ── High-End Vertical Lineup Card Canvas Image Generator ──
       function renderChampionshipCanvas(callback) {
         const canvas = document.createElement('canvas');
-        canvas.width = 1200;
-        canvas.height = 675; // Standard 16:9 Aspect Ratio
+        canvas.width = 720;
+        canvas.height = 1040; // Vertical Trading Card / Lineup Poster Ratio
         const ctx = canvas.getContext('2d');
 
-        // Background
+        // Background Gradient
         const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
         grad.addColorStop(0, '#060b14');
         grad.addColorStop(0.5, '#0b1329');
@@ -10777,8 +10754,8 @@ function initGameModeSelector() {
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
         // Radial Gold Glow
-        const radialAura = ctx.createRadialGradient(canvas.width / 2, 0, 10, canvas.width / 2, 0, 600);
-        radialAura.addColorStop(0, 'rgba(255, 215, 0, 0.22)');
+        const radialAura = ctx.createRadialGradient(canvas.width / 2, 0, 10, canvas.width / 2, 0, 700);
+        radialAura.addColorStop(0, 'rgba(255, 215, 0, 0.25)');
         radialAura.addColorStop(1, 'rgba(255, 215, 0, 0)');
         ctx.fillStyle = radialAura;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -10791,156 +10768,166 @@ function initGameModeSelector() {
         ctx.lineWidth = 1;
         ctx.strokeRect(20, 20, canvas.width - 40, canvas.height - 40);
 
-        // Title
+        // Header Title
         ctx.fillStyle = '#ffd700';
-        ctx.font = 'bold 22px "Press Start 2P", monospace, sans-serif';
+        ctx.font = 'bold 21px "Press Start 2P", monospace, sans-serif';
         ctx.textAlign = 'center';
         ctx.shadowColor = 'rgba(255, 215, 0, 0.8)';
         ctx.shadowBlur = 12;
-        ctx.fillText('🏆 BASE ROGUE WORLD CHAMPIONSHIP 🏆', canvas.width / 2, 52);
+        ctx.fillText('🏆 BASE ROGUE CHAMPION 🏆', canvas.width / 2, 54);
         ctx.shadowBlur = 0;
 
         ctx.fillStyle = '#94a3b8';
         ctx.font = 'bold 10px monospace, sans-serif';
-        ctx.fillText('SUPREME ROTATION CONQUERED • OFFICIAL CHAMPIONSHIP LINEUP', canvas.width / 2, 70);
+        ctx.fillText('OFFICIAL CHAMPIONSHIP LINEUP CARD • SUPREME ROTATION CONQUERED', canvas.width / 2, 74);
 
-        // MVP Box
-        let gridStartY = 84;
+        // MVP Spotlight Box
+        let startLineupY = 96;
         if (bestPlayer) {
-          const mvpX = 30;
-          const mvpY = 80;
-          const mvpW = canvas.width - 60;
-          const mvpH = 56;
+          const mvpX = 28;
+          const mvpY = 92;
+          const mvpW = canvas.width - 56;
+          const mvpH = 94;
 
-          ctx.fillStyle = 'rgba(245, 158, 11, 0.16)';
+          ctx.fillStyle = 'rgba(245, 158, 11, 0.18)';
           ctx.strokeStyle = '#ffd700';
-          ctx.lineWidth = 1.5;
+          ctx.lineWidth = 2;
           ctx.beginPath();
-          if (ctx.roundRect) ctx.roundRect(mvpX, mvpY, mvpW, mvpH, 8);
+          if (ctx.roundRect) ctx.roundRect(mvpX, mvpY, mvpW, mvpH, 10);
           else ctx.rect(mvpX, mvpY, mvpW, mvpH);
           ctx.fill();
           ctx.stroke();
 
+          // MVP Header
           ctx.textAlign = 'left';
           ctx.fillStyle = '#ffd700';
-          ctx.font = 'bold 9.5px "Press Start 2P", monospace, sans-serif';
-          ctx.fillText('👑 RUN MVP:', mvpX + 16, mvpY + 22);
+          ctx.font = 'bold 10px "Press Start 2P", monospace, sans-serif';
+          ctx.fillText('👑 RUN MVP:', mvpX + 16, mvpY + 24);
 
+          // Name & Grade
           ctx.fillStyle = '#ffffff';
-          ctx.font = 'bold 15px sans-serif';
-          ctx.fillText(`[${bestPlayer.slot}] ${bestPlayer.player.name}`, mvpX + 16, mvpY + 44);
+          ctx.font = 'bold 16px sans-serif';
+          ctx.fillText(`[${bestPlayer.slot}] ${bestPlayer.player.name}`, mvpX + 16, mvpY + 48);
 
           ctx.fillStyle = bestPlayer.ovrGrade ? bestPlayer.ovrGrade.color : '#ffd700';
-          ctx.font = 'bold 10px "Press Start 2P", monospace, sans-serif';
-          ctx.fillText(`${bestPlayer.ovrGrade.text} ${bestPlayer.ovr}`, mvpX + 310, mvpY + 44);
+          ctx.font = 'bold 10.5px "Press Start 2P", monospace, sans-serif';
+          ctx.fillText(`${bestPlayer.ovrGrade.text} ${bestPlayer.ovr}`, mvpX + 310, mvpY + 48);
 
+          // Subtitle
           ctx.fillStyle = '#94a3b8';
-          ctx.font = '8.5px "Press Start 2P", monospace, sans-serif';
-          ctx.fillText(`${bestPlayer.team} · ${bestPlayer.era || 'VINTAGE'} · ${bestPlayer.rarity.toUpperCase()}`, mvpX + 390, mvpY + 44);
+          ctx.font = '9px "Press Start 2P", monospace, sans-serif';
+          ctx.fillText(`${bestPlayer.team} · ${bestPlayer.era || 'VINTAGE'} · ${bestPlayer.rarity.toUpperCase()}`, mvpX + 390, mvpY + 48);
 
-          // MVP 4 key stats
-          ctx.textAlign = 'right';
-          ctx.font = 'bold 9.5px "Press Start 2P", monospace, sans-serif';
-          ctx.fillStyle = '#22c55e';
-          ctx.fillText(`OPS ${bestPlayer.ops}`, mvpW + mvpX - 250, mvpY + 34);
-
-          ctx.fillStyle = '#ef4444';
-          ctx.fillText(`${bestPlayer.hr} HR · ${bestPlayer.rbi} RBI`, mvpW + mvpX - 120, mvpY + 34);
-
-          ctx.fillStyle = '#ff3366';
-          ctx.fillText(`DMG ${bestPlayer.dmg}`, mvpW + mvpX - 16, mvpY + 34);
-
-          gridStartY = 144;
-        }
-
-        const cols = 3;
-        const cardW = 368;
-        const cardH = 148;
-        const gapX = 18;
-        const gapY = 12;
-        const startX = 30;
-
-        playersData.forEach((item, i) => {
-          const row = Math.floor(i / cols);
-          const col = i % cols;
-          const x = startX + col * (cardW + gapX);
-          const y = gridStartY + row * (cardH + gapY);
-
-          const rCol = item.rarityColor || '#94a3b8';
-          const isMvpItem = bestPlayer && bestPlayer.player.name === item.player.name;
-
-          ctx.fillStyle = isMvpItem ? 'rgba(255, 215, 0, 0.12)' : 'rgba(15, 23, 42, 0.9)';
-          ctx.strokeStyle = isMvpItem ? '#ffd700' : rCol;
-          ctx.lineWidth = isMvpItem ? 2.5 : 1.5;
-          ctx.beginPath();
-          if (ctx.roundRect) ctx.roundRect(x, y, cardW, cardH, 8);
-          else ctx.rect(x, y, cardW, cardH);
-          ctx.fill();
-          ctx.stroke();
-
-          // Header
-          ctx.textAlign = 'left';
-          ctx.fillStyle = '#38bdf8';
-          ctx.font = 'bold 10px "Press Start 2P", monospace, sans-serif';
-          ctx.fillText(`[${item.slot}]`, x + 12, y + 24);
-
-          ctx.fillStyle = '#ffffff';
-          ctx.font = 'bold 13px sans-serif';
-          const shortName = item.player.name.length > 20 ? item.player.name.substring(0, 18) + '...' : item.player.name;
-          ctx.fillText(shortName, x + 62, y + 24);
-
-          ctx.textAlign = 'right';
-          ctx.fillStyle = item.ovrGrade ? item.ovrGrade.color : '#ffd700';
-          ctx.font = 'bold 10px "Press Start 2P", monospace, sans-serif';
-          ctx.fillText(`${item.ovrGrade ? item.ovrGrade.text : ''} ${item.ovr}`, x + cardW - 14, y + 24);
-
-          // Subtitle: Team & Era + Item if any
-          ctx.textAlign = 'left';
-          ctx.fillStyle = '#94a3b8';
-          ctx.font = '8.5px "Press Start 2P", monospace, sans-serif';
-          const itemSuffix = item.player.equipped_item ? ` • 🎒 ${item.player.equipped_item.name}` : '';
-          const subText = `${item.team} · ${item.era || 'VINTAGE'}${itemSuffix}`;
-          const shortSub = subText.length > 32 ? subText.substring(0, 30) + '...' : subText;
-          ctx.fillText(shortSub, x + 12, y + 50);
-
-          // Stats 3-Box Inner Container
-          const boxY = y + 62;
-          const boxH = 72;
+          // 4 Big Stat Pills
+          const statBoxY = mvpY + 58;
           ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
           ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
           ctx.lineWidth = 1;
           ctx.beginPath();
-          if (ctx.roundRect) ctx.roundRect(x + 10, boxY, cardW - 20, boxH, 6);
-          else ctx.rect(x + 10, boxY, cardW - 20, boxH);
+          if (ctx.roundRect) ctx.roundRect(mvpX + 10, statBoxY, mvpW - 20, 26, 6);
+          else ctx.rect(mvpX + 10, statBoxY, mvpW - 20, 26);
           ctx.fill();
           ctx.stroke();
 
-          // 3 Column Stats Inside Box
-          // Col 1: OPS
-          ctx.textAlign = 'center';
-          ctx.fillStyle = '#94a3b8';
-          ctx.font = '7.5px "Press Start 2P", monospace, sans-serif';
-          ctx.fillText('OPS', x + 65, boxY + 24);
-          ctx.fillStyle = '#22c55e';
-          ctx.font = 'bold 12px "Press Start 2P", monospace, sans-serif';
-          ctx.fillText(item.ops, x + 65, boxY + 52);
+          ctx.font = 'bold 10px "Press Start 2P", monospace, sans-serif';
+          ctx.fillStyle = '#00ff66';
+          ctx.fillText(`OPS ${bestPlayer.ops}`, mvpX + 26, statBoxY + 18);
 
-          // Col 2: HR
-          ctx.fillStyle = '#94a3b8';
-          ctx.font = '7.5px "Press Start 2P", monospace, sans-serif';
-          ctx.fillText('HOME RUNS', x + (cardW / 2), boxY + 24);
-          ctx.fillStyle = '#ef4444';
-          ctx.font = 'bold 12px "Press Start 2P", monospace, sans-serif';
-          ctx.fillText(`${item.hr}`, x + (cardW / 2), boxY + 52);
-
-          // Col 3: DMG
-          ctx.fillStyle = '#94a3b8';
-          ctx.font = '7.5px "Press Start 2P", monospace, sans-serif';
-          ctx.fillText('DAMAGE', x + cardW - 65, boxY + 24);
           ctx.fillStyle = '#ff3366';
-          ctx.font = 'bold 12px "Press Start 2P", monospace, sans-serif';
-          ctx.fillText(`${item.dmg}`, x + cardW - 65, boxY + 52);
+          ctx.fillText(`💥 ${bestPlayer.dmg} DMG`, mvpX + 190, statBoxY + 18);
+
+          ctx.fillStyle = '#ef4444';
+          ctx.fillText(`⚾ ${bestPlayer.hr} HR`, mvpX + 370, statBoxY + 18);
+
+          ctx.fillStyle = '#f59e0b';
+          ctx.fillText(`👟 ${bestPlayer.rbi} RBI`, mvpX + 530, statBoxY + 18);
+
+          startLineupY = 198;
+        }
+
+        // 9 Vertical Lineup Rows
+        const rowH = 62;
+        const rowGap = 7;
+        const rowW = canvas.width - 56;
+        const rowX = 28;
+
+        playersData.forEach((item, i) => {
+          const y = startLineupY + i * (rowH + rowGap);
+          const rCol = item.rarityColor || '#94a3b8';
+          const isMvpItem = bestPlayer && bestPlayer.player.name === item.player.name;
+
+          // Row Container
+          ctx.fillStyle = isMvpItem ? 'rgba(255, 215, 0, 0.12)' : 'rgba(15, 23, 42, 0.92)';
+          ctx.strokeStyle = isMvpItem ? '#ffd700' : rCol;
+          ctx.lineWidth = isMvpItem ? 2.5 : 1.5;
+          ctx.beginPath();
+          if (ctx.roundRect) ctx.roundRect(rowX, y, rowW, rowH, 8);
+          else ctx.rect(rowX, y, rowW, rowH);
+          ctx.fill();
+          ctx.stroke();
+
+          // Left Highlight Bar
+          ctx.fillStyle = isMvpItem ? '#ffd700' : rCol;
+          ctx.fillRect(rowX, y + 4, 4, rowH - 8);
+
+          // Left Header: Slot + Name + Grade
+          ctx.textAlign = 'left';
+          ctx.fillStyle = '#38bdf8';
+          ctx.font = 'bold 10.5px "Press Start 2P", monospace, sans-serif';
+          ctx.fillText(`#${item.index} [${item.slot}]`, rowX + 14, y + 26);
+
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 15px sans-serif';
+          const shortName = item.player.name.length > 22 ? item.player.name.substring(0, 20) + '...' : item.player.name;
+          ctx.fillText(shortName, rowX + 105, y + 26);
+
+          ctx.fillStyle = item.ovrGrade ? item.ovrGrade.color : '#ffd700';
+          ctx.font = 'bold 9.5px "Press Start 2P", monospace, sans-serif';
+          ctx.fillText(`${item.ovrGrade ? item.ovrGrade.text : ''} ${item.ovr}`, rowX + 310, y + 26);
+
+          // Left Subtitle: Team + Era + Item
+          ctx.fillStyle = '#94a3b8';
+          ctx.font = '8.5px "Press Start 2P", monospace, sans-serif';
+          const itemSuffix = item.player.equipped_item ? ` • 🎒 ${item.player.equipped_item.name}` : '';
+          ctx.fillText(`${item.team} · ${item.era || 'VINTAGE'} · ${item.rarity.toUpperCase()}${itemSuffix}`, rowX + 14, y + 48);
+
+          // Right Stats Cluster (Big & Legible)
+          ctx.textAlign = 'right';
+          ctx.font = 'bold 11px "Press Start 2P", monospace, sans-serif';
+
+          ctx.fillStyle = '#00ff66';
+          ctx.fillText(`OPS ${item.ops}`, rowX + rowW - 200, y + 36);
+
+          ctx.fillStyle = '#ef4444';
+          ctx.fillText(`${item.hr} HR`, rowX + rowW - 110, y + 36);
+
+          ctx.fillStyle = '#ff3366';
+          ctx.fillText(`💥 ${item.dmg}`, rowX + rowW - 14, y + 36);
         });
+
+        // Active Synergies Box (Bottom)
+        const synBoxY = startLineupY + (9 * (rowH + rowGap)) + 4;
+        const synBoxH = 50;
+
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+        ctx.strokeStyle = 'rgba(255, 215, 0, 0.35)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        if (ctx.roundRect) ctx.roundRect(rowX, synBoxY, rowW, synBoxH, 8);
+        else ctx.rect(rowX, synBoxY, rowW, synBoxH);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#ffd700';
+        ctx.font = 'bold 8.5px "Press Start 2P", monospace, sans-serif';
+        ctx.fillText('🏆 ACTIVE RUN SYNERGIES & CHEMISTRY', canvas.width / 2, synBoxY + 18);
+
+        const synList = activeSynergies.map(s => `${s.era} T${s.level}`).concat(teamChemList.map(c => `${c.team} Chem`));
+        const synStr = synList.length > 0 ? `[ ${synList.join('  •  ')} ]` : '[ BALANCED LINEUP ]';
+        ctx.fillStyle = '#6ee7b7';
+        ctx.font = 'bold 9.5px "Press Start 2P", monospace, sans-serif';
+        ctx.fillText(synStr, canvas.width / 2, synBoxY + 38);
 
         // Footer Bar
         const totDMG = playersData.reduce((acc, it) => acc + (it.dmg || 0), 0);
@@ -10948,10 +10935,8 @@ function initGameModeSelector() {
 
         ctx.textAlign = 'center';
         ctx.fillStyle = '#fbbf24';
-        ctx.font = 'bold 9.5px "Press Start 2P", monospace, sans-serif';
-        const synList = activeSynergies.map(s => `${s.era} T${s.level}`).concat(teamChemList.map(c => `${c.team} Chem`));
-        const synStr = synList.length > 0 ? `  •  SYNERGIES: [ ${synList.join(' · ')} ]` : '';
-        ctx.fillText(`TOTAL LINEUP DAMAGE: ${totDMG} HP  •  TOTAL HR: ${totHR}${synStr}  •  BASEROGUE.COM`, canvas.width / 2, canvas.height - 18);
+        ctx.font = 'bold 10px "Press Start 2P", monospace, sans-serif';
+        ctx.fillText(`TOTAL DAMAGE: ${totDMG} HP  •  TOTAL HR: ${totHR}  •  WWW.BASEROGUE.COM`, canvas.width / 2, canvas.height - 18);
 
         canvas.toBlob((blob) => {
           if (callback) callback(blob, canvas);
