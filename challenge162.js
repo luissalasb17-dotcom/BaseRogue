@@ -1847,8 +1847,8 @@
         },
         userLineup: userLineup.map(b => ({ name: b.name, pos: b.assignedSlot || b.pos || 'DH', ovr: Math.round(b.ovr || 80) })),
         oppLineup: (opp.lineup || opp._batters || []).slice(0, 9).map(b => ({ name: b.name, pos: b.assignedSlot || b.pos || 'DH', ovr: Math.round(b.ovr || 80) })),
-        userPitchers: [userSP, userRelievers[1], userRelievers[2]],
-        oppPitchers: oppPitchers,
+        userPitchers: [userSP, userRelievers[1] || userRelievers[0] || userSP, userRelievers[2] || userRelievers[0] || userSP].filter(Boolean).map(p => ({ name: p.name, role: p.role || 'P', ovr: Math.round(p.ovr || 80) })),
+        oppPitchers: (oppPitchers || []).filter(Boolean).map(p => ({ name: p.cleanName || p.name, role: p.role || 'P', ovr: Math.round(p.ovr || 80) })),
         won,
         finalInning: Math.max(9, awayLinescore.length),
         round,
@@ -2083,8 +2083,11 @@
             
             <!-- Diamond Field Card -->
             <div class="c162-stadium-field-card">
-              <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:#38bdf8;font-weight:bold;text-align:center;">
-                ${isFinished ? 'FINAL' : inningDisplay}
+              <!-- Inning display badge placed clearly above the diamond without overlap -->
+              <div style="display:flex;justify-content:center;margin-bottom:12px;z-index:5;position:relative;">
+                <span style="font-family:'Press Start 2P',monospace;font-size:9.5px;color:#38bdf8;background:rgba(0,0,0,0.85);padding:5px 12px;border-radius:6px;border:1px solid rgba(56,189,248,0.4);box-shadow:0 2px 10px rgba(0,0,0,0.6);">
+                  ${isFinished ? 'FINAL' : inningDisplay}
+                </span>
               </div>
 
               <!-- Diamond Graphic with Bases and Runner Tags -->
@@ -2185,19 +2188,21 @@
       } else if (activeTab === 'lineups') {
         // Lineups Tab View
         const renderLineupSide = (teamName, isHome, lineupList, pitcherList) => {
-          const rows = (lineupList || []).slice(0, 9).map((b, idx) => `
+          const validBatters = (lineupList || []).filter(Boolean).slice(0, 9);
+          const rows = validBatters.map((b, idx) => `
             <div style="display:flex;align-items:center;justify-content:space-between;padding:5px 8px;border-bottom:1px solid rgba(255,255,255,0.05);font-size:11px;">
               <span style="font-family:'Press Start 2P',monospace;font-size:8px;color:#9ca3af;width:20px;">${idx + 1}.</span>
-              <span style="font-family:'Press Start 2P',monospace;font-size:8.5px;color:#38bdf8;width:32px;">${b.pos}</span>
-              <span style="flex:1;font-weight:bold;color:#f3f4f6;padding:0 6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${b.name}</span>
+              <span style="font-family:'Press Start 2P',monospace;font-size:8.5px;color:#38bdf8;width:32px;">${b.pos || 'DH'}</span>
+              <span style="flex:1;font-weight:bold;color:#f3f4f6;padding:0 6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${b.name || 'Player'}</span>
               <span style="font-family:'Press Start 2P',monospace;font-size:8.5px;color:#ffd700;background:rgba(255,215,0,0.12);padding:2px 5px;border-radius:4px;">OVR ${b.ovr || 80}</span>
             </div>
           `).join('');
 
-          const pRows = (pitcherList || []).map(p => `
+          const validPitchers = (pitcherList || []).filter(Boolean);
+          const pRows = validPitchers.map(p => `
             <div style="display:flex;align-items:center;justify-content:space-between;padding:5px 8px;border-bottom:1px solid rgba(255,255,255,0.05);font-size:11px;">
               <span style="font-family:'Press Start 2P',monospace;font-size:8.5px;color:#a78bfa;width:55px;">${p.role || 'P'}</span>
-              <span style="flex:1;font-weight:bold;color:#f3f4f6;padding:0 6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${p.name}</span>
+              <span style="flex:1;font-weight:bold;color:#f3f4f6;padding:0 6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${p.cleanName || p.name || 'Pitcher'}</span>
               <span style="font-family:'Press Start 2P',monospace;font-size:8.5px;color:#38bdf8;background:rgba(56,189,248,0.12);padding:2px 5px;border-radius:4px;">OVR ${p.ovr || 80}</span>
             </div>
           `).join('');
@@ -2230,15 +2235,20 @@
           </div>
         `;
       } else if (activeTab === 'boxscore') {
-        // Multi-game Box Score Tab View
+        // Multi-game Box Score Tab View with live in-progress snapshot (0 spoilers)
+        const currentLiveSnapshot = this._buildLiveBoxScoreSnapshot(game, sim.currentStep, sim.finished);
         const allBoxScores = (this.state.playoffs.boxScores || []).slice();
-        if (!allBoxScores.some(b => b.round === game.round)) {
-          allBoxScores.push(game);
+        const currIdx = allBoxScores.findIndex(b => b.round === game.round);
+        if (currIdx >= 0) {
+          allBoxScores[currIdx] = currentLiveSnapshot;
+        } else {
+          allBoxScores.push(currentLiveSnapshot);
         }
+
         const activeBoxScoreIdx = this._selectedPlayoffBoxScoreIndex >= 0 && this._selectedPlayoffBoxScoreIndex < allBoxScores.length
           ? this._selectedPlayoffBoxScoreIndex
           : allBoxScores.length - 1;
-        const targetGame = allBoxScores[activeBoxScoreIdx] || game;
+        const targetGame = allBoxScores[activeBoxScoreIdx] || currentLiveSnapshot;
 
         const selectorTabsHTML = allBoxScores.map((b, idx) => {
           const rTitle = getRoundTitle(b.round);
@@ -2445,6 +2455,109 @@
           this.renderPlayoffs();
         };
       }
+    },
+    _buildLiveBoxScoreSnapshot(game, currentStep, isFinished) {
+      if (isFinished || currentStep >= (game.events || []).length) {
+        return game; // Full official final box score
+      }
+      const eventsPlayed = (game.events || []).slice(0, currentStep);
+
+      const awayBattersMap = {};
+      (game.userLineup || (game.awayTeam && game.awayTeam.batting) || []).forEach(b => {
+        awayBattersMap[b.name] = { name: b.name, pos: b.pos || 'DH', ab: 0, r: 0, h: 0, doubles: 0, triples: 0, hr: 0, rbi: 0, bb: 0, so: 0, sb: 0 };
+      });
+      const homeBattersMap = {};
+      (game.oppLineup || (game.homeTeam && game.homeTeam.batting) || []).forEach(b => {
+        homeBattersMap[b.name] = { name: b.name, pos: b.pos || 'DH', ab: 0, r: 0, h: 0, doubles: 0, triples: 0, hr: 0, rbi: 0, bb: 0, so: 0, sb: 0 };
+      });
+
+      const awayPitchersMap = {};
+      const homePitchersMap = {};
+
+      let curAwayRuns = 0, curHomeRuns = 0;
+      const awayLinescore = [];
+      const homeLinescore = [];
+
+      eventsPlayed.forEach(ev => {
+        const isTop = ev.half === 'TOP';
+        const bMap = isTop ? awayBattersMap : homeBattersMap;
+        const pMap = isTop ? homePitchersMap : awayPitchersMap;
+
+        const bName = ev.batter ? ev.batter.name : null;
+        if (bName && !bMap[bName]) {
+          bMap[bName] = { name: bName, pos: ev.batter.pos || 'DH', ab: 0, r: 0, h: 0, doubles: 0, triples: 0, hr: 0, rbi: 0, bb: 0, so: 0, sb: 0 };
+        }
+        const bStat = bName ? bMap[bName] : null;
+
+        const pName = ev.pitcher ? (ev.pitcher.cleanName || ev.pitcher.name) : 'Pitcher';
+        if (!pMap[pName]) {
+          pMap[pName] = { name: pName, role: ev.pitcher ? (ev.pitcher.role || 'P') : 'P', outs: 0, h: 0, r: 0, er: 0, bb: 0, so: 0, hr: 0, pitches: 0, decision: '' };
+        }
+        const pStat = pMap[pName];
+        if (pStat) pStat.pitches = (pStat.pitches || 0) + (ev.strikes || 0) + (ev.balls || 0) + 1;
+
+        if (ev.outcome === 'BB') {
+          if (bStat) bStat.bb++;
+          if (pStat) pStat.bb++;
+        } else if (ev.outcome === 'SO' || ev.outcome === 'OUT') {
+          if (bStat) { bStat.ab++; if (ev.outcome === 'SO') bStat.so++; }
+          if (pStat) { pStat.outs++; if (ev.outcome === 'SO') pStat.so++; }
+        } else if (ev.outcome === 'HR') {
+          if (bStat) { bStat.ab++; bStat.h++; bStat.hr++; bStat.r++; }
+          if (pStat) { pStat.h++; pStat.hr++; }
+        } else {
+          if (bStat) {
+            bStat.ab++; bStat.h++;
+            if (ev.outcome === '2B') bStat.doubles++;
+            if (ev.outcome === '3B') bStat.triples++;
+          }
+          if (pStat) pStat.h++;
+        }
+
+        if (ev.runsScored) {
+          if (bStat) bStat.rbi += ev.runsScored;
+          if (pStat) { pStat.r += ev.runsScored; pStat.er += ev.runsScored; }
+          if (isTop) curAwayRuns += ev.runsScored;
+          else curHomeRuns += ev.runsScored;
+        }
+
+        if (ev.stolenBase && bStat) {
+          bStat.sb++;
+        }
+      });
+
+      const maxInn = eventsPlayed.length > 0 ? eventsPlayed[eventsPlayed.length - 1].inning : 1;
+      for (let inn = 1; inn <= maxInn; inn++) {
+        const topEvs = eventsPlayed.filter(e => e.inning === inn && e.half === 'TOP');
+        const botEvs = eventsPlayed.filter(e => e.inning === inn && e.half === 'BOT');
+        const aRuns = topEvs.reduce((sum, e) => sum + (e.runsScored || 0), 0);
+        const hRuns = botEvs.reduce((sum, e) => sum + (e.runsScored || 0), 0);
+        if (topEvs.length > 0) awayLinescore.push(aRuns);
+        if (botEvs.length > 0) homeLinescore.push(hRuns);
+      }
+
+      return {
+        round: game.round,
+        roundTitle: game.roundTitle,
+        awayTeam: {
+          name: game.awayTeam.name,
+          runs: curAwayRuns,
+          hits: eventsPlayed.filter(e => e.half === 'TOP' && ['1B','2B','3B','HR'].includes(e.outcome)).length,
+          errors: 0,
+          linescore: awayLinescore,
+          batting: Object.values(awayBattersMap),
+          pitching: Object.values(awayPitchersMap)
+        },
+        homeTeam: {
+          name: game.homeTeam.name,
+          runs: curHomeRuns,
+          hits: eventsPlayed.filter(e => e.half === 'BOT' && ['1B','2B','3B','HR'].includes(e.outcome)).length,
+          errors: 0,
+          linescore: homeLinescore,
+          batting: Object.values(homeBattersMap),
+          pitching: Object.values(homePitchersMap)
+        }
+      };
     },
     _renderBoxScoreTablesHTML(game) {
       const _t = (key, fallback) => (typeof window.t === 'function' ? window.t(key) : fallback);
