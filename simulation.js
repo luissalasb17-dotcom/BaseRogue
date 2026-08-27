@@ -398,17 +398,36 @@
         effBatter.pwr = (effBatter.pwr || 50) + pwrBoost;
       }
 
-      // Efficiency Era (2006-2015): +2/+4/+7/+10 EYE
+      // Efficiency Era (2006-2015): +4/+8/+14/+20 EYE
       if (moneyballTier >= 1) {
-        const eyeBoost = moneyballTier === 4 ? 10 : moneyballTier === 3 ? 7 : moneyballTier === 2 ? 4 : 2;
+        const eyeBoost = moneyballTier === 4 ? 20 : moneyballTier === 3 ? 14 : moneyballTier === 2 ? 8 : 4;
         effBatter.eye = (effBatter.eye || 50) + eyeBoost;
       }
 
-      // Modern Era (2016-Pres): +2/+4/+7/+10 EYE and PWR
+      // Modern Era (2016-Pres): +2/+3/+5/+6 PWR and +0/+2/+4/+6 EYE
       if (modernTier >= 1) {
-        const ttoBoost = modernTier === 4 ? 10 : modernTier === 3 ? 7 : modernTier === 2 ? 4 : 2;
-        effBatter.eye = (effBatter.eye || 50) + ttoBoost;
-        effBatter.pwr = (effBatter.pwr || 50) + ttoBoost;
+        const pwrBoost = modernTier === 4 ? 6 : modernTier === 3 ? 5 : modernTier === 2 ? 3 : 2;
+        const eyeBoost = modernTier === 4 ? 6 : modernTier === 3 ? 4 : modernTier === 2 ? 2 : 0;
+        effBatter.pwr = (effBatter.pwr || 50) + pwrBoost;
+        if (eyeBoost > 0) effBatter.eye = (effBatter.eye || 50) + eyeBoost;
+      }
+
+      // Integration T4 (1942-1960): Lowest stat elevated to match highest stat
+      if (integrationTier === 4) {
+        const stats = [
+          { key: 'con', val: effBatter.con || 50 },
+          { key: 'pwr', val: effBatter.pwr || 50 },
+          { key: 'eye', val: effBatter.eye || 50 },
+          { key: 'spd', val: effBatter.spd || 50 },
+          { key: 'def', val: effBatter.def || 50 }
+        ];
+        const maxVal = Math.max(...stats.map(s => s.val));
+        let minStat = stats[0];
+        for (let i = 1; i < stats.length; i++) {
+          if (stats[i].val < minStat.val) minStat = stats[i];
+        }
+        effBatter[minStat.key] = maxVal;
+        if (minStat.key === 'con') effBatter.k_avd = Math.max(effBatter.k_avd || 50, maxVal);
       }
 
       // Genesis Era (1871-1900): +2/+5/+8/+12 CON
@@ -490,17 +509,36 @@
         effBatter.pwr = (effBatter.pwr || 50) + pwrBoost;
       }
 
-      // Efficiency Era (2006-2015): +2/+4/+7/+10 EYE
+      // Efficiency Era (2006-2015): +4/+8/+14/+20 EYE
       if (moneyballTier >= 1) {
-        const eyeBoost = moneyballTier === 4 ? 10 : moneyballTier === 3 ? 7 : moneyballTier === 2 ? 4 : 2;
+        const eyeBoost = moneyballTier === 4 ? 20 : moneyballTier === 3 ? 14 : moneyballTier === 2 ? 8 : 4;
         effBatter.eye = (effBatter.eye || 50) + eyeBoost;
       }
 
-      // Modern Era (2016-Pres): +2/+4/+7/+10 EYE and PWR
+      // Modern Era (2016-Pres): +2/+3/+5/+6 PWR and +0/+2/+4/+6 EYE
       if (modernTier >= 1) {
-        const ttoBoost = modernTier === 4 ? 10 : modernTier === 3 ? 7 : modernTier === 2 ? 4 : 2;
-        effBatter.eye = (effBatter.eye || 50) + ttoBoost;
-        effBatter.pwr = (effBatter.pwr || 50) + ttoBoost;
+        const pwrBoost = modernTier === 4 ? 6 : modernTier === 3 ? 5 : modernTier === 2 ? 3 : 2;
+        const eyeBoost = modernTier === 4 ? 6 : modernTier === 3 ? 4 : modernTier === 2 ? 2 : 0;
+        effBatter.pwr = (effBatter.pwr || 50) + pwrBoost;
+        if (eyeBoost > 0) effBatter.eye = (effBatter.eye || 50) + eyeBoost;
+      }
+
+      // Integration T4 (1942-1960): Lowest stat elevated to match highest stat
+      if (integrationTier === 4) {
+        const stats = [
+          { key: 'con', val: effBatter.con || 50 },
+          { key: 'pwr', val: effBatter.pwr || 50 },
+          { key: 'eye', val: effBatter.eye || 50 },
+          { key: 'spd', val: effBatter.spd || 50 },
+          { key: 'def', val: effBatter.def || 50 }
+        ];
+        const maxVal = Math.max(...stats.map(s => s.val));
+        let minStat = stats[0];
+        for (let i = 1; i < stats.length; i++) {
+          if (stats[i].val < minStat.val) minStat = stats[i];
+        }
+        effBatter[minStat.key] = maxVal;
+        if (minStat.key === 'con') effBatter.k_avd = Math.max(effBatter.k_avd || 50, maxVal);
       }
 
       // Genesis Era (1871-1900): +2/+5/+8/+12 CON
@@ -590,19 +628,19 @@
         let bbDebuffTurns = 1;
         let bbDebuffMult = 1.20;
 
-        // Efficiency Era (Moneyball) BB boost & Scaled On-Base Fatigue
+        // Efficiency Era (Moneyball) BB boost & Scaled On-Base Fatigue (+5/+15/+25/+40)
         if (moneyballTier >= 1) {
-          const extra = moneyballTier === 4 ? 20 : moneyballTier === 3 ? 14 : moneyballTier === 2 ? 8 : 4;
+          const extra = moneyballTier === 4 ? 40 : moneyballTier === 3 ? 25 : moneyballTier === 2 ? 15 : 5;
           bbDebuffTurns = moneyballTier === 4 ? 4 : moneyballTier === 3 ? 3 : moneyballTier === 2 ? 2 : 1;
-          bbDebuffMult = moneyballTier === 4 ? 1.30 : moneyballTier === 3 ? 1.25 : moneyballTier === 2 ? 1.20 : 1.15;
+          bbDebuffMult = moneyballTier === 4 ? 1.30 : moneyballTier === 3 ? 1.25 : 1.20;
           pitcherDmg += extra;
           synergyProc = _t('sim.syn_moneyball_bb', { extra }, `📊 Moneyball: ¡Boleto paciente inflige +${extra} daño!`);
         }
-        // Modern Era BB boost
+        // Modern Era (Three True Outcomes) BB damage boost (+5/+10/+15/+25)
         else if (modernTier >= 1) {
-          const extra = modernTier === 4 ? 30 : modernTier === 3 ? 20 : modernTier === 2 ? 12 : 6;
+          const extra = modernTier === 4 ? 25 : modernTier === 3 ? 15 : modernTier === 2 ? 10 : 5;
           pitcherDmg += extra;
-          synergyProc = _t('sim.syn_tto_bb', { extra }, `🚀 Three True Outcomes: ¡Boleto optimizado inflige +${extra} daño!`);
+          synergyProc = _t('sim.syn_tto_bb', { extra }, `🚀 Three True Outcomes: ¡Boleto de poder inflige +${extra} daño!`);
         }
 
         // Pitcher receives base walk damage (Walk applies the debuff for subsequent turns)
@@ -711,12 +749,6 @@
         this.outs++;
         this.strikeoutChain++;
 
-        let modernSoReduction = false;
-        if (modernTier >= 2) {
-          modernSoReduction = true;
-          this.strikeoutChain = Math.max(0, this.strikeoutChain - 1);
-        }
-
         const isExtraInnings = this.inning >= 4;
         let baseSoDmg = isExtraInnings ? 30 : 20;
         if (this.strikeoutChain === 2) {
@@ -726,41 +758,16 @@
         }
 
         let finalSoDmg = baseSoDmg;
-        if (modernTier === 4) {
-          finalSoDmg = 0;
-          synergyProc = _t('sim.syn_tto_so_zero', {}, '🚀 Three True Outcomes: ¡Ponche anulado (0 daño al equipo)!');
-        } else if (modernSoReduction) {
-          finalSoDmg = Math.round(finalSoDmg * 0.5);
-          synergyProc = _t('sim.syn_tto_so', {}, '🚀 Three True Outcomes: Ponche causa -50% daño HP');
+        // Modern Era (Three True Outcomes) Strikeout Mitigation: T2 (-25%), T3/T4 (-50%)
+        if (modernTier >= 2) {
+          this.strikeoutChain = Math.max(0, this.strikeoutChain - 1);
+          const discountPct = modernTier >= 3 ? 50 : 25;
+          finalSoDmg = Math.round(finalSoDmg * (1 - (discountPct / 100)));
+          synergyProc = _t('sim.syn_tto_so', { pct: discountPct }, `🚀 Three True Outcomes: Ponche causa -${discountPct}% daño HP`);
         }
 
-        // Moneyball T3/T4: Strikeouts damage Shield instead of HP; T4 also applies -50% damage
-        const isMoneyballShieldSo = (moneyballTier >= 3);
-        if (moneyballTier === 4) {
-          finalSoDmg = Math.round(finalSoDmg * 0.5);
-        }
-
-        if (isMoneyballShieldSo) {
-          if (this.teamShield > 0) {
-            shieldDmg = Math.min(this.teamShield, finalSoDmg);
-            this.teamShield -= shieldDmg;
-            const overflow = finalSoDmg - shieldDmg;
-            if (overflow > 0) {
-              teamHpDmg = overflow;
-              this.teamHP = Math.max(0, this.teamHP - overflow);
-            }
-          } else {
-            teamHpDmg = finalSoDmg;
-            this.teamHP = Math.max(0, this.teamHP - finalSoDmg);
-          }
-          const soMsg = (moneyballTier === 4)
-            ? _t('sim.syn_moneyball_so_t4', {}, '📊 Moneyball: ¡Ponche mitigado (-50%) y absorbido por el Escudo!')
-            : _t('sim.syn_moneyball_so_t3', {}, '📊 Moneyball: ¡Ponche absorbido por el Escudo (no afecta la vida)!');
-          synergyProc = (synergyProc ? synergyProc + ' | ' : '') + soMsg;
-        } else {
-          teamHpDmg = finalSoDmg;
-          this.teamHP = Math.max(0, this.teamHP - teamHpDmg);
-        }
+        teamHpDmg = finalSoDmg;
+        this.teamHP = Math.max(0, this.teamHP - teamHpDmg);
 
         const chainLabel = this.strikeoutChain > 1 ? ` 🔥 ${_t('sim.streak_label', { count: this.strikeoutChain, dmg: baseSoDmg }, 'RACHA ×' + this.strikeoutChain + ' (-' + baseSoDmg + ' HP)!')}` : '';
         playText = `🎲 [${roll}] [${_t('sim.label_so', {}, 'PONCHE')}] ¡${pitcher.name} ${_t('sim.so_pitcher_verb', { batter: batter.name }, 'poncha a ' + batter.name)}!${chainLabel}` +
@@ -833,6 +840,40 @@
           if (errorProc) playText += ` ${errorProc}`;
           if (synergyProc) playText += ` ${synergyProc}`;
         } else {
+          // Moneyball T4: 50% chance for batters with EYE >= 80 to convert Out into BB
+          if (moneyballTier === 4 && (effBatter.eye || 50) >= 80 && Math.random() < 0.50) {
+            eventType = 'BB';
+            runsThisTurn = this._advanceWalk(batter);
+            let mbDmg = 10 + (runsThisTurn * 10) + 40; // 10 base + 40 Moneyball T4 bonus
+            mbDmg = this._applyDebuffToPitcherDmg(mbDmg);
+            if (this.pitcherDebuff && this.pitcherDebuff.turnsLeft > 0) {
+              this.pitcherDebuff.turnsLeft = Math.max(this.pitcherDebuff.turnsLeft, 4);
+              this.pitcherDebuff.multiplier = 1.30;
+            } else {
+              this.pitcherDebuff = { turnsLeft: 4, multiplier: 1.30 };
+            }
+            const mbProc = _t('sim.syn_moneyball_obp', { name: batter.name, eye: effBatter.eye }, `📊 Moneyball: ¡Ojo Clínico de ${batter.name} (EYE ${effBatter.eye} ≥ 80) rescata el turno y saca Boleto (BB)! (+40 daño, 4 turnos fatiga)`);
+            playText = `🎲 [${roll}] [${_t('sim.label_bb', {}, 'BASE POR BOLAS')}] ¡${batter.name} ${_t('sim.bb_desc', {}, 'trabaja el conteo y saca pasaporte')}! ` +
+              _t('sim.runs_scored', { runs: runsThisTurn, pitcher: pitcher.name, dmg: mbDmg }, `Anotan ${runsThisTurn} carreras. ${pitcher.name} sufre ${mbDmg} HP de daño.`) + ` ${mbProc}`;
+            this._finalizeTurnEvent(batter, pitcher, roll, playText, 'BB', runsThisTurn, mbDmg);
+            return this.events.slice(startIndex);
+          }
+
+          // Modern Era T4: 50% chance for batters with PWR >= 80 to convert Out into Home Run (HR)
+          if (modernTier === 4 && (effBatter.pwr || 50) >= 80 && Math.random() < 0.50) {
+            eventType = 'HR';
+            this.strikeoutChain = 0;
+            runsThisTurn = this._advanceHomeRun(batter);
+            const runnersOnBase = Math.max(0, runsThisTurn - 1);
+            let ttoDmg = 75 + (runnersOnBase * 10) + 25; // 75 base + 25 Modern Era T4 HR bonus
+            ttoDmg = this._applyDebuffToPitcherDmg(ttoDmg);
+            const ttoProc = _t('sim.syn_tto_statcast_hr', { name: batter.name, pwr: effBatter.pwr }, `🚀 Three True Outcomes: ¡Ángulo de Statcast de ${batter.name} (PWR ${effBatter.pwr} ≥ 80) transforma Out en Jonrón (HR)! (+25 daño)`);
+            playText = `🎲 [${roll}] [${_t('sim.label_hr', {}, 'HR')}] ¡${batter.name} ${_t('sim.hr_desc', { runs: runsThisTurn }, 'conecta CUADRANGULAR de ' + runsThisTurn + ' carreras')}! ` +
+              _t('sim.runs_scored', { runs: runsThisTurn, pitcher: pitcher.name, dmg: ttoDmg }, `Anotan ${runsThisTurn} carreras. ${pitcher.name} sufre ${ttoDmg} HP de daño.`) + ` ${ttoProc}`;
+            this._finalizeTurnEvent(batter, pitcher, roll, playText, 'HR', runsThisTurn, ttoDmg);
+            return this.events.slice(startIndex);
+          }
+
           eventType = 'OUT';
           this.outs++;
           this.strikeoutChain = 0;
@@ -866,15 +907,6 @@
             ` ${_t('sim.out_dmg_label', { shield: shieldDmg, hp: teamHpDmg }, 'Escudo -' + shieldDmg + ' HP | Team HP -' + teamHpDmg + ' HP')}.` +
             ` (${_t('sim.shield_status', { shield: this.teamShield, max: this.teamShieldMax, hp: this.teamHP }, 'Escudo: ' + this.teamShield + '/' + this.teamShieldMax + ' | HP: ' + this.teamHP + '/100')})`;
 
-          if (integrationTier >= 2) {
-            const healAmt = integrationTier === 4 ? 15 : integrationTier === 3 ? 10 : 5;
-            batter.stamina = Math.min(100, (batter.stamina || 100) + healAmt);
-            synergyProc = (synergyProc ? synergyProc + ' | ' : '') + _t('sim.syn_fivetool_out', { name: batter.name, amt: healAmt }, `🔋 Five-Tool: ¡${batter.name} recupera +${healAmt} Stamina!`);
-            if (integrationTier === 4) {
-              this.staminaImmuneBatterIds.add(batter.id || batter.name);
-              synergyProc += ' | ' + _t('sim.syn_fivetool_immune', { name: batter.name }, `🔋 Five-Tool: ¡${batter.name} es inmune al desgaste de Stamina de este partido!`);
-            }
-          }
           if (synergyProc) playText += ` ${synergyProc}`;
         }
 
@@ -928,8 +960,9 @@
           const runnersOnBase = Math.max(0, runsThisTurn - 1);
           let hrDmg = 75 + (runnersOnBase * 10);
           
+          // Steroid Era (Bash Brothers) HR damage boost (+10/+15/+20/+25) and muscle stamina heal
           if (steroidTier >= 1) {
-            const extraHr = steroidTier === 4 ? 40 : steroidTier === 3 ? 26 : steroidTier === 2 ? 16 : 8;
+            const extraHr = steroidTier === 4 ? 25 : steroidTier === 3 ? 20 : steroidTier === 2 ? 15 : 10;
             hrDmg += extraHr;
             synergyProc = _t('sim.syn_bash_hr', { extra: extraHr }, `💪 Bash Brothers: ¡Jonrón nuclear inflige +${extraHr} daño!`);
             if (steroidTier >= 2) {
@@ -939,17 +972,11 @@
             }
           }
 
-          // Three True Outcomes T3+: the HR itself also applies the pitcher debuff
-          if (modernTier >= 3) {
-            const ttoDebuffTurns = 3;
-            const ttoDebuffMult = 1.30;
-            if (this.pitcherDebuff && this.pitcherDebuff.turnsLeft > 0) {
-              this.pitcherDebuff.turnsLeft = Math.max(this.pitcherDebuff.turnsLeft, ttoDebuffTurns);
-              if (ttoDebuffMult > this.pitcherDebuff.multiplier) this.pitcherDebuff.multiplier = ttoDebuffMult;
-            } else {
-              this.pitcherDebuff = { turnsLeft: ttoDebuffTurns, multiplier: ttoDebuffMult };
-            }
-            synergyProc = (synergyProc ? synergyProc + ' | ' : '') + _t('sim.syn_tto_hr_debuff', { turns: ttoDebuffTurns }, `🚀 Three True Outcomes: ¡Jonrón debilita al lanzador por ${ttoDebuffTurns} impactos (+30% daño)!`);
+          // Modern Era (Three True Outcomes) HR damage boost (+5/+10/+15/+25)
+          if (modernTier >= 1) {
+            const extraTto = modernTier === 4 ? 25 : modernTier === 3 ? 15 : modernTier === 2 ? 10 : 5;
+            hrDmg += extraTto;
+            synergyProc = (synergyProc ? synergyProc + ' | ' : '') + _t('sim.syn_tto_hr', { extra: extraTto }, `🚀 Three True Outcomes: ¡Batazo de poder inflige +${extraTto} daño!`);
           }
           if (this.hasTrait('slugger_momentum')) hrDmg += 30;
           if (this.hasTrait('extra_base_impact')) hrDmg += 10;
@@ -1010,11 +1037,17 @@
           }
         }
 
-        // Integration Era (1942-1960) Universal Hit Damage
-        if (integrationTier >= 2) {
-          const extraHitDmg = integrationTier === 4 ? 20 : integrationTier === 3 ? 12 : 6;
+        // Integration Era (1942-1960) Universal Hit Damage (+4/+8/+14/+20) & Shield Repair (+5/+10/+15)
+        if (integrationTier >= 1) {
+          const extraHitDmg = integrationTier === 4 ? 20 : integrationTier === 3 ? 14 : integrationTier === 2 ? 8 : 4;
           pitcherDmg += extraHitDmg;
           synergyProc = (synergyProc ? synergyProc + ' | ' : '') + _t('sim.syn_fivetool_hit', { extra: extraHitDmg }, `🌟 Five-Tool: ¡Batazo integral inflige +${extraHitDmg} daño!`);
+
+          if (integrationTier >= 2) {
+            const shieldRepair = integrationTier === 4 ? 15 : integrationTier === 3 ? 10 : 5;
+            this.teamShield = Math.min(this.teamShieldMax, this.teamShield + shieldRepair);
+            synergyProc += ' | ' + _t('sim.syn_fivetool_shield', { amt: shieldRepair }, `🌟 Five-Tool: ¡Juego integral repara +${shieldRepair} Escudo!`);
+          }
         }
 
         if (this.freshPitcherBonusAvailable) {
@@ -1519,10 +1552,11 @@
           if (this.hasTrait('reliever_ambush')) this.freshPitcherBonusAvailable = true;
           const nextP = this.activePitcher;
           if (nextP && overflow > 0) {
-            // Scaled Residual Damage: Base 50% (overflow / 2), 75% with Bash Brothers T3, 100% with Bash Brothers T4 or Heavy Artillery trait
+            // Scaled Residual Damage: Base 50%, +50% with Bash Brothers T4 (total 100%), +50% with Heavy Artillery trait (up to 150%!)
             const steroidTier = (this.activeSynergies && this.activeSynergies['Steroid Era (1994-2005)']) || 0;
-            const hasHeavyArtillery = this.hasTrait('heavy_artillery');
-            const residualMult = (steroidTier >= 4 || hasHeavyArtillery) ? 1.0 : (steroidTier === 3 ? 0.75 : 0.50);
+            let residualMult = 0.50;
+            if (steroidTier === 4) residualMult += 0.50;
+            if (this.hasTrait('heavy_artillery')) residualMult += 0.50;
             
             const carryOver = Math.round(overflow * residualMult);
             const residualDmg = Math.min(carryOver, nextP.hp - 1);
