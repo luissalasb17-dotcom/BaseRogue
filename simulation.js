@@ -880,18 +880,23 @@
           hitType = 'HR';
         }
 
-        const spdGrade = getSpeedGrade(effBatter.spd || 50);
-        const upgradeProbMap = { 'S': 0.50, 'A+': 0.35, 'A': 0.25, 'B+': 0.15 };
-        if (upgradeProbMap[spdGrade]) {
-          const upgradeChance = upgradeProbMap[spdGrade];
-          if (Math.random() < upgradeChance) {
-            const upgrade = { '1B': '2B', '2B': '3B', '3B': '3B', 'HR': 'HR' };
-            const newType = upgrade[hitType];
-            if (newType !== hitType) {
-              spdProc = _t('sim.spd_upgrade', { grade: spdGrade, from: hitType, to: newType }, `⚡ SPD Proc (Grado ${spdGrade}): ¡${hitType} convertido en ${newType}!`);
-              spdUpgraded = { from: hitType, to: newType, grade: spdGrade };
-              hitType = newType;
-            }
+        const spdStat = effBatter.spd || 50;
+        const spdGrade = getSpeedGrade(spdStat);
+
+        // Continuous linear formula: 10% chance at 60 SPD (+1% per point) up to 50% cap at 100+ SPD
+        let upgradeChance = 0;
+        if (spdStat >= 60) {
+          upgradeChance = Math.min(0.50, 0.10 + (spdStat - 60) * 0.01);
+        }
+
+        if (upgradeChance > 0 && Math.random() < upgradeChance) {
+          const upgrade = { '1B': '2B', '2B': '3B', '3B': '3B', 'HR': 'HR' };
+          const newType = upgrade[hitType];
+          if (newType !== hitType) {
+            const chancePct = Math.round(upgradeChance * 100);
+            spdProc = _t('sim.spd_upgrade', { grade: spdGrade, from: hitType, to: newType, pct: chancePct, spd: spdStat }, `⚡ SPD Proc (Grado ${spdGrade} • ${chancePct}%): ¡${hitType} convertido en ${newType}!`);
+            spdUpgraded = { from: hitType, to: newType, grade: spdGrade, spd: spdStat, chancePct: chancePct };
+            hitType = newType;
           }
         }
 
@@ -956,7 +961,7 @@
           runsThisTurn = this._advanceTriple(batter, genesisExtraAdvance);
           pitcherDmg = 50 + (runsThisTurn * 10);
           hitDesc = spdUpgraded
-            ? _t('sim.spd_stretch_3b', { grade: spdUpgraded.grade }, `conecta batazo y estira a TERCERA BASE con velocidad (Grado ${spdUpgraded.grade})`)
+            ? _t('sim.spd_stretch_3b', { grade: spdUpgraded.grade, spd: spdUpgraded.spd, pct: spdUpgraded.chancePct }, `conecta batazo y estira a TERCERA BASE con velocidad (SPD ${spdUpgraded.spd} • ${spdUpgraded.chancePct}% prob)`)
             : _t('sim.3b_desc', {}, 'triple al rincón');
           if (this.hasTrait('extra_base_impact')) pitcherDmg += 10;
         } else if (hitType === '2B') {
@@ -965,7 +970,7 @@
           runsThisTurn = this._advanceDouble(batter, genesisExtraAdvance);
           pitcherDmg = 35 + (runsThisTurn * 10);
           hitDesc = spdUpgraded
-            ? _t('sim.spd_stretch_2b', { grade: spdUpgraded.grade }, `conecta batazo y estira a SEGUNDA BASE con velocidad (Grado ${spdUpgraded.grade})`)
+            ? _t('sim.spd_stretch_2b', { grade: spdUpgraded.grade, spd: spdUpgraded.spd, pct: spdUpgraded.chancePct }, `conecta batazo y estira a SEGUNDA BASE con velocidad (SPD ${spdUpgraded.spd} • ${spdUpgraded.chancePct}% prob)`)
             : _t('sim.2b_desc', {}, 'línea violenta por la raya');
           if (this.hasTrait('extra_base_impact')) pitcherDmg += 10;
         } else {

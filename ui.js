@@ -3527,7 +3527,7 @@ function initGameModeSelector() {
         ratings_pwr: '<strong style="color:#f59e0b;">PWR — Poder:</strong> Probabilidad de conectar extra-bases (dobles, triples, jonrones). También aumenta el daño al pitcher rival en hits largos.',
         ratings_eye: '<strong style="color:#3b82f6;">EYE — Ojo/Vista:</strong> Probabilidad de obtener boletos (BB). Clave para avanzar corredores y desgastar al lanzador rival.',
         ratings_kavd: '<strong style="color:#ec4899;">K/AVD — Evasión de Ponches:</strong> Reduce la zona de ponches (SO) en la tirada del dado. Clave para evitar el daño directo a la salud del equipo que provocan los ponches.',
-        ratings_spd: '<strong style="color:#38bdf8;">SPD — Velocidad:</strong> Activa intentos de robo de base en sencillos (debuff +20% daño al pitcher). También mejora la probabilidad de convertir hits en extra-bases.',
+        ratings_spd: '<strong style="color:#38bdf8;">SPD — Velocidad:</strong> Activa intentos de robo de base en sencillos (+20% daño al pitcher). Además, desde 60 SPD otorga de 10% a 50% de probabilidad (10% + 1% por punto) de estirar sencillos y dobles a bases extra (1B→2B→3B).',
         ratings_def: '<strong style="color:#a855f7;">DEF — Defensa:</strong> Contribuye al <strong>Escudo</strong> del equipo. Cuanto mayor DEF promedio, más escudo tienes disponible para absorber OUTs antes de perder HP.',
         ratings_clutch: '<strong style="color:#ef4444;">⚡ CLUTCH PLAYER:</strong> +2% de probabilidad de sencillo y doble, +4% de HR con corredores en posición de anotar o durante la última entrada.',
         ratings_captain: '<strong style="color:#eab308;">👑 CAPTAIN:</strong> +5 a todos los ratings de sus compañeros de equipo mientras esté en el roster activo.'
@@ -3562,7 +3562,7 @@ function initGameModeSelector() {
         ratings_pwr: '<strong style="color:#f59e0b;">PWR — Power:</strong> Chance to hit extra-base hits (doubles, triples, home runs) and deal heavy pitcher damage.',
         ratings_eye: '<strong style="color:#3b82f6;">EYE — Eye/Vision:</strong> Probability of drawing walks (BB). Key for advancing runners and wearing down the rival pitcher.',
         ratings_kavd: '<strong style="color:#ec4899;">K/AVD — Strikeout Avoidance:</strong> Shrinks the strikeout (SO) zone on the dice roll. Essential for preventing direct HP damage caused by strikeouts.',
-        ratings_spd: '<strong style="color:#38bdf8;">SPD — Speed:</strong> Enables base stealing attempts on singles (+20% pitcher damage debuff) and extra-base upgrades.',
+        ratings_spd: '<strong style="color:#38bdf8;">SPD — Speed:</strong> Enables base stealing attempts on singles (+20% pitcher damage debuff). Also grants 10% to 50% chance (10% + 1% per point above 60 SPD) to stretch singles and doubles into extra bases (1B→2B→3B).',
         ratings_def: '<strong style="color:#a855f7;">DEF — Defense:</strong> Contributes to Team Shield. Higher average DEF grants more shield to absorb OUTs before losing HP.',
         ratings_clutch: '<strong style="color:#ef4444;">⚡ CLUTCH PLAYER:</strong> +2% single and double chance, +4% HR chance with runners in scoring position or during the last inning.',
         ratings_captain: '<strong style="color:#eab308;">👑 CAPTAIN:</strong> +5 to all ratings for all teammates while on the active roster.'
@@ -7725,38 +7725,46 @@ function initGameModeSelector() {
 
     if (ev && ev.spdUpgraded) {
       const isEs = (typeof window.t === 'function' && window.t('hud.stage') !== 'Stage:');
+      const probStr = ev.spdUpgraded.chancePct ? ` (${ev.spdUpgraded.chancePct}% prob)` : '';
       title = isEs
         ? `⚡ ¡${ev.spdUpgraded.from} ➔ ${ev.spdUpgraded.to}! 🏃`
         : `⚡ ${ev.spdUpgraded.from} ➔ ${ev.spdUpgraded.to}! 🏃`;
       color = "#38bdf8";
       icon = "fa-person-running";
       borderColor = "#38bdf8";
-      boxShadow = "0 0 45px rgba(56, 189, 248, 0.8), 0 0 20px rgba(56, 189, 248, 0.5)";
-      dmgText = isEs ? `⚡ ¡EXTRABASE POR VELOCIDAD! (+30 HP)` : `⚡ EXTRA-BASE HIT BY SPEED! (+30 HP)`;
+      boxShadow = "0 0 45px rgba(56, 189, 248, 0.9), 0 0 20px rgba(56, 189, 248, 0.6)";
+      dmgText = isEs 
+        ? `⚡ ¡EXTRABASE POR VELOCIDAD! (SPD ${ev.spdUpgraded.spd || ''}${probStr})`
+        : `⚡ EXTRA-BASE HIT BY SPEED! (SPD ${ev.spdUpgraded.spd || ''}${probStr})`;
     }
 
     // ── Audio: play sound for this outcome ───────────────────────────────────
     if (window.AudioManager) {
-      switch (eventType) {
-        case 'HR':    window.AudioManager.play('hr');  break;
-        case '1B':
-        case '2B':
-        case '3B':    window.AudioManager.play('hit'); break;
-        case 'SO':    window.AudioManager.play('so');  break;
-        case 'OUT':   window.AudioManager.play('out'); break;
-        case 'BB':    window.AudioManager.play('bb');  break;
-        case 'E':     window.AudioManager.play('draft_pick'); break;
-        case 'STEAL': window.AudioManager.play('draft_pick'); break;
-        default: break;
+      if (ev && ev.spdUpgraded) {
+        window.AudioManager.play('speed_proc');
+      } else {
+        switch (eventType) {
+          case 'HR':    window.AudioManager.play('hr');  break;
+          case '1B':
+          case '2B':
+          case '3B':    window.AudioManager.play('hit'); break;
+          case 'SO':    window.AudioManager.play('so');  break;
+          case 'OUT':   window.AudioManager.play('out'); break;
+          case 'BB':    window.AudioManager.play('bb');  break;
+          case 'E':     window.AudioManager.play('draft_pick'); break;
+          case 'STEAL': window.AudioManager.play('draft_pick'); break;
+          default: break;
+        }
       }
     }
 
     if (!title) return; // Ignore non-play events like NEXT_PITCHER
 
-    // Visual diamond feedback on stolen base
-    if (eventType === 'STEAL') {
-      const base2El = document.getElementById('base-2');
-      if (base2El) triggerBarShake(base2El, 'base-synergy-flash');
+    // Visual diamond feedback on stolen base or speed extra-base
+    if (eventType === 'STEAL' || (ev && ev.spdUpgraded)) {
+      const targetBaseId = (ev && ev.spdUpgraded && ev.spdUpgraded.to === '3B') ? 'base-3' : 'base-2';
+      const targetBaseEl = document.getElementById(targetBaseId);
+      if (targetBaseEl) triggerBarShake(targetBaseEl, 'base-synergy-flash');
     }
 
     // Remove existing outcome popups to avoid stacking

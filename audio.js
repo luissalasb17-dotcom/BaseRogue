@@ -947,6 +947,18 @@
       tone(261.63, 0.10, 'triangle', 0.09, 0.04);
     },
 
+    // 28. SPEED STRETCH / PROC — energetic electric swoosh + futuristic rising chime
+    speed_proc() {
+      noise(0.12, 0.25, 0.0, 4200, 'highpass');
+      tone(440.00, 0.08, 'sine', 0.20, 0.00, 0.005, 0.06); // A4
+      tone(659.25, 0.09, 'sine', 0.22, 0.04, 0.005, 0.07); // E5
+      tone(880.00, 0.12, 'square', 0.16, 0.08, 0.002, 0.10); // A5
+      tone(1318.51, 0.18, 'sine', 0.25, 0.12, 0.002, 0.15); // E6 sparkle
+    },
+    speed_stretch() {
+      this.speed_proc();
+    },
+
     card_flip() {
       this.card_deal();
     },
