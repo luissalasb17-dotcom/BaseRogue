@@ -581,7 +581,7 @@
 
         // eagle_patience: each BB regenerates +5 Stamina to the batter
         if (this.hasTrait('eagle_patience')) {
-          batter.stamina = Math.min(100, (batter.stamina || 100) + 5);
+          batter.stamina = Math.min(100, (batter.stamina || 100) + 4);
         }
 
         // Apply Natural 1-turn +20% fatigue debuff on Walk (Moneyball enhances this further)
@@ -635,7 +635,7 @@
         if (expansionTier >= 1) {
           const extraChance = expansionTier === 4 ? 1.0 : expansionTier === 3 ? 0.40 : expansionTier === 2 ? 0.25 : 0.15;
           stealChance = expansionTier === 4 ? 1.0 : Math.min(1.0, stealChance + extraChance);
-          stealHeal = expansionTier === 4 ? 20 : expansionTier === 3 ? 15 : expansionTier === 2 ? 10 : 5;
+          stealHeal = expansionTier === 4 ? 14 : expansionTier === 3 ? 10 : expansionTier === 2 ? 7 : 4;
           extraStealDmg = expansionTier === 4 ? 25 : expansionTier === 3 ? 18 : expansionTier === 2 ? 10 : 4;
           stealProcMsg = _t('sim.syn_expansion', {}, 'Sinergia Expansion');
         }
@@ -1043,7 +1043,7 @@
           if (expansionTier >= 1) {
             const extraChance = expansionTier === 4 ? 1.0 : expansionTier === 3 ? 0.50 : expansionTier === 2 ? 0.35 : 0.20;
             stealChance = expansionTier === 4 ? 1.0 : Math.min(1.0, stealChance + extraChance);
-            stealHeal = expansionTier === 4 ? 45 : expansionTier === 3 ? 35 : expansionTier === 2 ? 25 : 15;
+            stealHeal = expansionTier === 4 ? 14 : expansionTier === 3 ? 10 : expansionTier === 2 ? 7 : 4;
             extraStealDmg = expansionTier === 4 ? 40 : expansionTier === 3 ? 30 : expansionTier === 2 ? 20 : 0;
             stealProcMsg = _t('sim.syn_expansion', {}, 'Sinergia Expansion');
           }

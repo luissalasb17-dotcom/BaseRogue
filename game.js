@@ -1899,10 +1899,11 @@
       let def = (player.def || 0) + ((player.upgrades && player.upgrades.def) || 0);
 
       // Stamina Penalty
-      const stamina = player.stamina || 100;
+      const stamina = player.stamina !== undefined ? player.stamina : 100;
       let staminaPenalty = 0;
-      if (stamina < 50) staminaPenalty = -6;
-      if (stamina < 25) staminaPenalty = -16;
+      if (stamina < 75) staminaPenalty = -10;
+      if (stamina < 50) staminaPenalty = -20;
+      if (stamina < 25) staminaPenalty = -40;
 
       con += staminaPenalty;
       pwr += staminaPenalty;

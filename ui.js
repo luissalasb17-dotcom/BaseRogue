@@ -3348,9 +3348,10 @@ function initGameModeSelector() {
       `;
     }
 
-    // Check stamina warnings
-    const stam = player.stamina || 100;
+    // Check stamina warnings (75-100 green, 50-74 warning/yellow, 25-49 low/orange, <25 critical/red)
+    const stam = player.stamina !== undefined ? player.stamina : 100;
     let stamClass = "";
+    if (stam < 75) stamClass = "warning";
     if (stam < 50) stamClass = "low";
     if (stam < 25) stamClass = "critical";
 
