@@ -3856,21 +3856,33 @@ function initGameModeSelector() {
     });
 
     // Restart game click - restarts run with same mode and season configuration
-    if (el.btnRestartGame) {
-      el.btnRestartGame.addEventListener('click', () => {
-        const mode = window.Game.selectedMode;
-        const seasonYear = window.Game.selectedSeasonYear;
+    const handleReplayGame = () => {
+      const canvas = document.getElementById('fireworks-canvas');
+      if (canvas && canvas._stopFireworks) canvas._stopFireworks();
 
+      const mode = window.Game ? window.Game.selectedMode : 'quick';
+      const seasonYear = window.Game ? window.Game.selectedSeasonYear : null;
+
+      if (window.Game && typeof window.Game.resetRun === 'function') {
         window.Game.resetRun();
+      }
 
-        if (mode === 'story' && seasonYear) {
-          window.Game.loadSeasonOpponents(seasonYear);
-        }
+      if (mode === 'story' && seasonYear && window.Game && typeof window.Game.loadSeasonOpponents === 'function') {
+        window.Game.loadSeasonOpponents(seasonYear);
+      }
 
-        el.hud.classList.add('hidden');
-        window.showScreen('screen-draft');
-        if (window.renderDraftRound) window.renderDraftRound(); else if (typeof renderDraftRound === 'function') renderDraftRound();
-      });
+      if (el.hud) el.hud.classList.add('hidden');
+      window.showScreen('screen-draft');
+      if (typeof renderDraftRound === 'function') renderDraftRound();
+      else if (window.renderDraftRound) window.renderDraftRound();
+    };
+
+    if (el.btnRestartGame) {
+      el.btnRestartGame.addEventListener('click', handleReplayGame);
+    }
+    const btnVictoryPlayAgain = document.getElementById('btn-victory-play-again');
+    if (btnVictoryPlayAgain) {
+      btnVictoryPlayAgain.addEventListener('click', handleReplayGame);
     }
 
     // Pre-Fight Screen triggers
@@ -11125,6 +11137,35 @@ function initGameModeSelector() {
         }
       };
     }
+
+    const btnPlayAgain = document.getElementById('btn-victory-play-again');
+    if (btnPlayAgain) {
+      btnPlayAgain.onclick = () => {
+        const canvas = document.getElementById('fireworks-canvas');
+        if (canvas && canvas._stopFireworks) canvas._stopFireworks();
+
+        const mode = window.Game ? window.Game.selectedMode : 'quick';
+        const seasonYear = window.Game ? window.Game.selectedSeasonYear : null;
+
+        if (window.Game && typeof window.Game.resetRun === 'function') {
+          window.Game.resetRun();
+        }
+
+        if (mode === 'story' && seasonYear && window.Game && typeof window.Game.loadSeasonOpponents === 'function') {
+          window.Game.loadSeasonOpponents(seasonYear);
+        }
+
+        if (el.hud) el.hud.classList.add('hidden');
+        window.showScreen('screen-draft');
+        if (typeof renderDraftRound === 'function') renderDraftRound();
+        else if (window.renderDraftRound) window.renderDraftRound();
+      };
+    }
+
+    const btnSummary = document.getElementById('btn-show-run-summary');
+    if (btnSummary) {
+      btnSummary.onclick = openRunSummaryModal;
+    }
   }
 
   function startFireworks() {
@@ -11495,18 +11536,32 @@ function initGameModeSelector() {
   // Wire up victory and gameover screen buttons (called after DOM ready)
   function initVictoryScreenButtons() {
     const btnSummary = document.getElementById('btn-show-run-summary');
-    if (btnSummary) btnSummary.addEventListener('click', openRunSummaryModal);
+    if (btnSummary) btnSummary.onclick = openRunSummaryModal;
 
     const btnGameOverSummary = document.getElementById('btn-gameover-run-summary');
-    if (btnGameOverSummary) btnGameOverSummary.addEventListener('click', openRunSummaryModal);
+    if (btnGameOverSummary) btnGameOverSummary.onclick = openRunSummaryModal;
 
     const btnPlayAgain = document.getElementById('btn-victory-play-again');
-    if (btnPlayAgain) btnPlayAgain.addEventListener('click', () => {
+    if (btnPlayAgain) btnPlayAgain.onclick = () => {
       const canvas = document.getElementById('fireworks-canvas');
       if (canvas && canvas._stopFireworks) canvas._stopFireworks();
-      window.Game.resetRun();
-      window.showScreen('screen-starter');
-    });
+
+      const mode = window.Game ? window.Game.selectedMode : 'quick';
+      const seasonYear = window.Game ? window.Game.selectedSeasonYear : null;
+
+      if (window.Game && typeof window.Game.resetRun === 'function') {
+        window.Game.resetRun();
+      }
+
+      if (mode === 'story' && seasonYear && window.Game && typeof window.Game.loadSeasonOpponents === 'function') {
+        window.Game.loadSeasonOpponents(seasonYear);
+      }
+
+      if (el.hud) el.hud.classList.add('hidden');
+      window.showScreen('screen-draft');
+      if (typeof renderDraftRound === 'function') renderDraftRound();
+      else if (window.renderDraftRound) window.renderDraftRound();
+    };
   }
 
   // Self execute
