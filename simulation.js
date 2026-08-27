@@ -80,7 +80,7 @@
     // 1. BB rate: Batter Eye vs Pitcher BB/9 Control (Base 10%, Slope 0.25%)
     let pBB = 0.10 + (effEye - pBB9) * 0.0025;
     // eagle_patience: +3 points to the BB zone
-    if (simCtx && simCtx.hasTrait && simCtx.hasTrait('eagle_patience')) pBB += 0.03;
+    if (simCtx && simCtx.hasTrait && simCtx.hasTrait('eagle_patience')) pBB += 0.05;
     pBB = Math.max(0.03, Math.min(0.35, pBB));
 
     // 2. SO rate: Pitcher K/9 Strikeout vs Batter K/AVD (Base 18%, Slope 0.25%)
@@ -579,9 +579,11 @@
           synergyProc = (synergyProc ? synergyProc + ' | ' : '') + _t('sim.syn_deadball_run', { bonus: runBonus, runs: runsThisTurn }, `⏳ Small Ball: ¡Manufactura de ${runsThisTurn} carrera(s) inflige +${runBonus} daño de impacto!`);
         }
 
-        // eagle_patience: each BB regenerates +5 Stamina to the batter
+        // eagle_patience: +15 HP damage on BB and regenerates +10 Stamina to the batter
         if (this.hasTrait('eagle_patience')) {
-          batter.stamina = Math.min(100, (batter.stamina || 100) + 5);
+          batter.stamina = Math.min(100, (batter.stamina || 100) + 10);
+          pitcherDmg += 15;
+          synergyProc = (synergyProc ? synergyProc + ' | ' : '') + _t('sim.trait_eagle_bb', { name: batter.name, dmg: 15, heal: 10 }, `🦅 Paciencia de Águila: ¡Boleto inflige +15 daño y ${batter.name} recupera +10 Stamina!`);
         }
 
         // Apply Natural 1-turn +20% fatigue debuff on Walk (Moneyball enhances this further)

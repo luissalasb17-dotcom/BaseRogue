@@ -1035,7 +1035,7 @@
         get desc() { return typeof window.t==='function'?window.t(`trait.${key}.desc`):fallbackDesc; }
       });
       return [
-        tr('eagle_patience',    '🦅', 'eagle', '🦅 Paciencia de Águila', 'Zona de Boleto (BB) aumenta +3 puntos. Cada BB regenera +5 Stamina al bateador.'),
+        tr('eagle_patience',    '🦅', 'eagle', '🦅 Paciencia de Águila', 'Zona de Boleto (BB) aumenta +5 puntos. Cada BB inflige +15 HP de daño extra y regenera +10 Stamina al bateador.'),
         tr('slugger_momentum',  '💥', 'slugger', '💥 Impulso de Jonronero', 'Cada HR inflige +30 HP de daño extra al pitcher rival.'),
         tr('surgical_contact',  '🎯', 'surgical', '🎯 Contacto Quirúrgico', 'Zona de Ponche (SO) reducida en -3 puntos para toda la alineación.'),
         tr('speed_demons',      '⚡', 'speed', '⚡ Velocistas Agresivos', 'Jugadores con SPD > 60 roban la base automáticamente en sencillos y boletos. Debuff al pitcher dura 3 impactos.'),

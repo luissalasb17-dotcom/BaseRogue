@@ -811,7 +811,8 @@
         "trait_reliever_ambush": "🔥 Emboscada al Relevista: +50% daño (primer batazo contra este lanzador).",
         "trait_speed_demons": "⚡ Velocistas Agresivos",
         "trait_ghost_runners": "🏃 Corredores Fantasma: ¡un corredor aparece en 2ª base para arrancar {{inning}}!",
-        "bb_fatigue_desc": "⚠️ ¡Lanzador en aprietos! Debuff de +{{pct}}% daño en el siguiente turno."
+        "bb_fatigue_desc": "⚠️ ¡Lanzador en aprietos! Debuff de +{{pct}}% daño en el siguiente turno.",
+        "trait_eagle_bb": "🦅 Paciencia de Águila: ¡Boleto inflige +{{dmg}} daño y {{name}} recupera +{{heal}} Stamina!"
     },
     "syn": {
         "deadball": {
@@ -1009,7 +1010,7 @@
     "trait": {
         "eagle": {
             "name": "🦅 Paciencia de Águila",
-            "desc": "Zona de Boleto (BB) aumenta +3 puntos. Cada BB regenera +5 Stamina al bateador."
+            "desc": "Zona de Boleto (BB) aumenta +5 puntos. Cada BB inflige +15 HP de daño extra al pitcher rival y regenera +10 Stamina al bateador."
         },
         "slugger": {
             "name": "💥 Impulso de Jonronero",
@@ -2759,7 +2760,8 @@
         "trait_reliever_ambush": "🔥 Reliever Ambush: +50% damage (first hit against this pitcher).",
         "trait_speed_demons": "⚡ Aggressive Speedsters",
         "trait_ghost_runners": "🏃 Ghost Runners: A runner appears on 2nd base to start {{inning}}!",
-        "bb_fatigue_desc": "⚠️ Pitcher under pressure! +{{pct}}% damage debuff on next turn."
+        "bb_fatigue_desc": "⚠️ Pitcher under pressure! +{{pct}}% damage debuff on next turn.",
+        "trait_eagle_bb": "🦅 Eagle Patience: Walk deals +{{dmg}} dmg and {{name}} recovers +{{heal}} Stamina!"
     },
     "syn": {
         "deadball": {
@@ -2957,7 +2959,7 @@
     "trait": {
         "eagle": {
             "name": "🦅 Eagle Patience",
-            "desc": "Walk zone (BB) increases +3 points. Each BB restores +5 Stamina to batter."
+            "desc": "Walk (BB) zone increases +5 points. Each BB deals +15 extra HP damage to rival pitcher and regenerates +10 Stamina to batter."
         },
         "slugger": {
             "name": "💥 Slugger Momentum",

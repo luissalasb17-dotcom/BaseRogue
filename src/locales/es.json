@@ -807,7 +807,8 @@
     "trait_reliever_ambush": "🔥 Emboscada al Relevista: +50% daño (primer batazo contra este lanzador).",
     "trait_speed_demons": "⚡ Velocistas Agresivos",
     "trait_ghost_runners": "🏃 Corredores Fantasma: ¡un corredor aparece en 2ª base para arrancar {{inning}}!",
-    "bb_fatigue_desc": "⚠️ ¡Lanzador en aprietos! Debuff de +{{pct}}% daño en el siguiente turno."
+    "bb_fatigue_desc": "⚠️ ¡Lanzador en aprietos! Debuff de +{{pct}}% daño en el siguiente turno.",
+    "trait_eagle_bb": "🦅 Paciencia de Águila: ¡Boleto inflige +{{dmg}} daño y {{name}} recupera +{{heal}} Stamina!"
   },
   "syn": {
     "deadball": {
@@ -1005,7 +1006,7 @@
   "trait": {
     "eagle": {
       "name": "🦅 Paciencia de Águila",
-      "desc": "Zona de Boleto (BB) aumenta +3 puntos. Cada BB regenera +5 Stamina al bateador."
+      "desc": "Zona de Boleto (BB) aumenta +5 puntos. Cada BB inflige +15 HP de daño extra al pitcher rival y regenera +10 Stamina al bateador."
     },
     "slugger": {
       "name": "💥 Impulso de Jonronero",
