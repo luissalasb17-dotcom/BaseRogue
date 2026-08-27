@@ -37,9 +37,9 @@
     "deadball_d2": "T2 (4+): +4 CON/K-AVD; singles deal +8 extra damage",
     "deadball_d3": "T3 (6+): +7 CON/K-AVD; singles +15 dmg; runs scored deal +10 extra damage",
     "deadball_d4": "T4 (8+): +10 CON/K-AVD; singles +22 dmg; runs scored deal +18 extra damage",
-    "golden_d1": "T1 (2+): +2 PWR to team; all hits deal +3 extra damage",
-    "golden_d2": "T2 (4+): +4 PWR; hits +7 dmg; 25% chance to stretch 2B into 3B",
-    "golden_d3": "T3 (6+): +7 PWR; hits +12 dmg; 40% stretch 2B into 3B; +10% HR chance",
+    "golden_d1": "T1 (2+): Team +2 PWR; all hits deal +4 extra damage",
+    "golden_d2": "T2 (4+): +5 PWR; hits +8 dmg; extra-base hits (2B/3B/HR) deal +10 additional damage",
+    "golden_d3": "T3 (6+): +8 PWR; hits +14 dmg; extra-base hits deal +18 additional damage",
     "integration_d1": "T1 (2+): Team gains +2 to all stats in combat",
     "integration_d2": "T2 (4+): Team +4 stats; hits deal +6 dmg; outs heal +5 Stamina to batter",
     "integration_d3": "T3 (6+): Team +7 stats; hits deal +12 dmg; outs heal +10 Stamina to batter",
@@ -64,7 +64,7 @@
     "tto_d2": "T2 (4+): +4 EYE/PWR; BB +12 dmg; Strikeout deals -50% damage to team",
     "tto_d3": "T3 (6+): +7 EYE/PWR; BB +20 dmg; HR applies 3-turn debuff (+25% damage)",
     "tto_d4": "T4 (8+): +10 EYE/PWR; BB +30 dmg; Strikeout deals 0 damage to team (nullified)",
-    "golden_d4": "T4 (8+): +10 PWR; hits +20 dmg; 60% stretch 2B into 3B; +20% HR chance and +20 Shield",
+    "golden_d4": "T4 (8+): +12 PWR; hits +20 dmg; extra-base hits deal +25 additional damage; batters with PWR ≥ 80 always hit extra-base hits",
     "player_count_short": "{{count}} ply.",
     "syn_name_genesis": "Genesis Chaos (1871-1900)",
     "syn_name_deadball": "Small Ball (1901-1919)",
@@ -808,7 +808,9 @@
     "trait_speed_demons": "⚡ Aggressive Speedsters",
     "trait_ghost_runners": "🏃 Ghost Runners: A runner appears on 2nd base to start {{inning}}!",
     "bb_fatigue_desc": "⚠️ Pitcher under pressure! +{{pct}}% damage debuff on next turn.",
-    "trait_eagle_bb": "🦅 Eagle Patience: Walk deals +{{dmg}} dmg and {{name}} recovers +{{heal}} Stamina!"
+    "trait_eagle_bb": "🦅 Eagle Patience: Walk deals +{{dmg}} dmg and {{name}} recovers +{{heal}} Stamina!",
+    "syn_liveball_extrabase": "🔥 Liveball Extra-Base: Power hit deals +{{extra}} additional damage!",
+    "syn_liveball_pwr80": "🔥 Liveball Sluggers: {{name}}'s massive power upgrades 1B to Double (2B)!"
   },
   "syn": {
     "deadball": {

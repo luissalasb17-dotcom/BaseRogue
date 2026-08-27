@@ -27,7 +27,7 @@
     },
     "Golden Era (1920-1941)": {
       name: "Liveball Sluggers",
-      desc: "T1 (2+): +8 PWR; hits +15 daño. T2 (4+): +15 PWR; hits +25 daño; 40% 2B→3B. T3 (6+): +20 PWR; hits +35 daño; 50% 2B→3B y 25% 3B→HR. T4 (8+): +30 PWR; hits +45 daño; 60% 2B→3B y 40% 3B→HR.",
+      desc: "T1 (2+): +2 PWR; hits +4 daño extra. T2 (4+): +5 PWR; hits +8 daño; extrabases (2B/3B/HR) infligen +10 daño adicional. T3 (6+): +8 PWR; hits +14 daño; extrabases infligen +18 daño adicional. T4 (8+): +12 PWR; hits +20 daño; extrabases infligen +25 daño adicional; bateadores con PWR ≥ 80 siempre conectan extrabases en sus hits.",
       applyStatBonus: (stats) => {}
     },
     "Integration (1942-1960)": {

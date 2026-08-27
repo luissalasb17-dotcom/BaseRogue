@@ -371,9 +371,9 @@
         effBatter.k_avd = (effBatter.k_avd !== undefined ? effBatter.k_avd : (effBatter.con || 50)) + conBoost;
       }
 
-      // Golden Era (1920-1941): +2/+4/+7/+10 PWR
+      // Golden Era (1920-1941): +2/+5/+8/+12 PWR
       if (goldenTier >= 1) {
-        const pwrBoost = goldenTier === 4 ? 10 : goldenTier === 3 ? 7 : goldenTier === 2 ? 4 : 2;
+        const pwrBoost = goldenTier === 4 ? 12 : goldenTier === 3 ? 8 : goldenTier === 2 ? 5 : 2;
         effBatter.pwr = (effBatter.pwr || 50) + pwrBoost;
       }
 
@@ -463,9 +463,9 @@
         effBatter.k_avd = (effBatter.k_avd !== undefined ? effBatter.k_avd : (effBatter.con || 50)) + conBoost;
       }
 
-      // Golden Era (1920-1941): +2/+4/+7/+10 PWR
+      // Golden Era (1920-1941): +2/+5/+8/+12 PWR
       if (goldenTier >= 1) {
-        const pwrBoost = goldenTier === 4 ? 10 : goldenTier === 3 ? 7 : goldenTier === 2 ? 4 : 2;
+        const pwrBoost = goldenTier === 4 ? 12 : goldenTier === 3 ? 8 : goldenTier === 2 ? 5 : 2;
         effBatter.pwr = (effBatter.pwr || 50) + pwrBoost;
       }
 
@@ -898,19 +898,10 @@
           }
         }
 
-        if (hitType === '2B' && goldenTier >= 2) {
-          const upgradeChance = goldenTier === 4 ? 0.60 : goldenTier === 3 ? 0.40 : 0.25;
-          if (Math.random() < upgradeChance) {
-            hitType = '3B';
-            synergyProc = _t('sim.syn_liveball_upgrade', {}, '🔥 Liveball Sluggers: ¡Doble convertido en Triple!');
-          }
-        }
-        if (hitType === '3B' && goldenTier >= 3) {
-          const hrChance = goldenTier === 4 ? 0.40 : 0.20;
-          if (Math.random() < hrChance) {
-            hitType = 'HR';
-            synergyProc = _t('sim.syn_liveball_upgrade_hr', {}, '🔥 Liveball Sluggers: ¡Triple convertido en Jonrón!');
-          }
+        // Golden Era T4: Batters with PWR >= 80 always connect extrabases on hits (1B -> 2B)
+        if (goldenTier === 4 && (effBatter.pwr || 50) >= 80 && hitType === '1B') {
+          hitType = '2B';
+          synergyProc = (synergyProc ? synergyProc + ' | ' : '') + _t('sim.syn_liveball_pwr80', { name: batter.name }, `🔥 Liveball Sluggers: ¡Poder descomunal de ${batter.name} convierte 1B en Doble (2B)!`);
         }
 
         let genesisExtraAdvance = false;
@@ -991,11 +982,17 @@
           synergyProc = (synergyProc ? synergyProc + ' | ' : '') + _t('sim.syn_deadball_run', { bonus: runBonus, runs: runsThisTurn }, `⏳ Small Ball: ¡Manufactura de ${runsThisTurn} carrera(s) inflige +${runBonus} daño de impacto!`);
         }
 
-        // Golden Era (1920-1941) flat damage on all hits
+        // Golden Era (1920-1941) damage: flat hit damage + extra extrabase (2B/3B/HR) damage
         if (goldenTier >= 1) {
-          const extraGolden = goldenTier === 4 ? 20 : goldenTier === 3 ? 12 : goldenTier === 2 ? 7 : 3;
+          const extraGolden = goldenTier === 4 ? 20 : goldenTier === 3 ? 14 : goldenTier === 2 ? 8 : 4;
           pitcherDmg += extraGolden;
           synergyProc = (synergyProc ? synergyProc + ' | ' : '') + _t('sim.syn_liveball_dmg', { extra: extraGolden }, `🔥 Liveball Sluggers: +${extraGolden} daño.`);
+
+          if (goldenTier >= 2 && (hitType === '2B' || hitType === '3B' || hitType === 'HR')) {
+            const extraExtrabase = goldenTier === 4 ? 25 : goldenTier === 3 ? 18 : 10;
+            pitcherDmg += extraExtrabase;
+            synergyProc += ' | ' + _t('sim.syn_liveball_extrabase', { extra: extraExtrabase }, `🔥 Liveball Extrabase: ¡Batazo de poder inflige +${extraExtrabase} daño adicional!`);
+          }
         }
 
         // Integration Era (1942-1960) Universal Hit Damage
