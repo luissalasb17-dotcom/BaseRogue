@@ -57,8 +57,8 @@
     "astroturf_d4": "T4 (8+): +10 DEF/SPD (+30 Escudo); robos +28 daño, debuff 5 impactos y outs hacen -50% daño",
     "steroid_d1": "T1 (2+): +2 PWR al equipo; Jonrones (HR) hacen +8 daño adicional",
     "steroid_d2": "T2 (4+): +5 PWR; HR hacen +16 daño adicional y curan +8 Stamina a todos",
-    "steroid_d3": "T3 (6+): +8 PWR; HR hacen +26 daño adicional y curan +14 Stamina a todos",
-    "steroid_d4": "T4 (8+): +12 PWR; HR hacen +40 daño adicional y curan +20 Stamina a todos",
+    "steroid_d3": "T3 (6+): +8 PWR; HR hacen +26 daño, curan +14 Stamina y daño remanente sube al 75%",
+    "steroid_d4": "T4 (8+): +12 PWR; HR hacen +40 daño, curan +20 Stamina y daño remanente al 100%",
     "moneyball_d1": "T1 (2+): +2 EYE; BB hacen +4 daño y fatigan al rival 1 impacto (+15% daño)",
     "moneyball_d2": "T2 (4+): +4 EYE; BB +8 daño y fatigan 2 impactos (+20% daño)",
     "moneyball_d3": "T3 (6+): +7 EYE; BB +14 daño y fatigan 3 impactos (+25%); ponches van al escudo",
@@ -1089,6 +1089,10 @@
     "midas": {
       "name": "🎰 Toque de Midas",
       "desc": "Aumenta en +25% las probabilidades de éxito en eventos de Suerte (LUCK), Decisiones y Ruletas de Prototipos."
+    },
+    "heavy_artillery": {
+      "name": "🔨 Poder de Demolición",
+      "desc": "El daño remanente al noquear a un lanzador se transfiere al 100% al nuevo relevista (en lugar del 50% base)."
     }
   },
   "dex": {
@@ -1345,11 +1349,11 @@
     "out": "<strong style=\"color: #9ca3af;\">✋ OUT (Flyout/Groundout):</strong> Resta <span style=\"color:#ef4444;font-weight:bold;\">-20 HP</span> al Escudo (al romperlo, resta a la vida). En Extra Innings: <span style=\"color:#ef4444;font-weight:bold;\">-30 HP</span>.",
     "so": "<strong style=\"color: #ef4444;\">💨 PONCHE (SO):</strong> Resta daño directo a la vida (ignora escudo).<div style=\"font-size: 8.5px; color: #a855f7; margin-top: 2px;\">🔥 Racha: 1º (-20 HP) • 2º (-26 HP) • 3º+ (-32 HP)<br>⚡ Extra Innings: 1º (-30) • 2º (-36) • 3º+ (-42 HP)</div>",
     "pitcher_title": "⚾ DAÑO AL LANZADOR RIVAL:",
-    "bb": "🚶 BB: <b style=\"color:#3b82f6;\">15 HP</b>",
-    "single": "✅ 1B: <b style=\"color:#a7f3d0;\">20 HP</b>",
-    "double": "⚡ 2B: <b style=\"color:#10b981;\">35 HP</b>",
-    "triple": "🔥 3B: <b style=\"color:#06b6d4;\">50 HP</b>",
-    "hr": "🚀 <strong>HR (Jonrón):</strong> <b style=\"color:#eab308;\">75 HP base</b>",
+    "bb": "🚶 BB: <b style=\"color:#3b82f6;\">10 HP</b>",
+    "single": "✅ 1B: <b style=\"color:#a7f3d0;\">15 HP</b>",
+    "double": "⚡ 2B: <b style=\"color:#10b981;\">30 HP</b>",
+    "triple": "🔥 3B: <b style=\"color:#06b6d4;\">45 HP</b>",
+    "hr": "🚀 <strong>HR (Jonrón):</strong> <b style=\"color:#eab308;\">70 HP base</b>",
     "rbi_bonus": "🏆 <strong>Bonus RBI:</strong> Cada carrera impulsada añade <strong style=\"color:#00ff66;\">+10 HP extra</strong> de daño al pitcher.",
     "defense": "<strong style=\"color: #38bdf8;\">🛡️ DUELO DEFENSIVO (Baja de Entrada):</strong><div style=\"font-size: 8.5px; color: #cbd5e1; margin-top: 2px;\">🛡️ Regular: <strong style=\"color:#4ade80;\">+20 Escudo</strong> (Fallo: -10 HP)<br>⚡ De Lujo: <strong style=\"color:#4ade80;\">+60 Escudo</strong> (Fallo: -30 HP)<br>💀 En Inning 3 y Extras: ¡Cualquier fallo = Walk-Off rival!</div>",
     "steal": "<strong style=\"color: #38bdf8;\">🏃 ROBO DE BASES:</strong><div style=\"font-size: 8.5px; color: #cbd5e1; margin-top: 2px;\">• <strong>Robo de 2B (en 1B/BB, SPD ≥ 40):</strong> Éxito según SPD del corredor.<br>• <strong>Robo de 3B (en 2B, SPD ≥ 50):</strong> Éxito según SPD/2 del corredor.<br><em>Robar cualquier base desestabiliza al lanzador (+20% daño en 2 impactos).</em></div>",
@@ -1382,7 +1386,8 @@
     "scout_eye": "Ojo de Cazatalentos",
     "elite_negotiator": "Negociador de Élite",
     "endless_stamina": "Resistencia Inagotable",
-    "midas_touch": "Toque de Midas"
+    "midas_touch": "Toque de Midas",
+    "heavy_artillery": "Poder de Demolición"
   },
   "chest": {
     "claim_btn": "RECLAMAR RECOMPENSA",
@@ -1940,7 +1945,8 @@
     "activates_chemistry": "¡ACTIVA QUÍMICA {{team}} (+4)!",
     "activates_dynasty": "¡QUÍMICA DINASTÍA {{team}} (+{{pts}})!",
     "chem_req": "Química"
-  }
+  },
+  "heavy_artillery": "Poder de Demolición"
 },
     en: {
   "hud": {
@@ -1998,8 +2004,8 @@
     "astroturf_d4": "T4 (8+): +10 DEF/SPD (+30 Shield); steals +28 dmg, 5-turn debuff and outs deal -50% dmg",
     "steroid_d1": "T1 (2+): +2 PWR to team; Home runs (HR) deal +8 extra damage",
     "steroid_d2": "T2 (4+): +5 PWR; HR deal +16 extra damage and heal +8 Stamina to all",
-    "steroid_d3": "T3 (6+): +8 PWR; HR deal +26 extra damage and heal +14 Stamina to all",
-    "steroid_d4": "T4 (8+): +12 PWR; HR deal +40 extra damage and heal +20 Stamina to all",
+    "steroid_d3": "T3 (6+): +8 PWR; HRs deal +26 damage, heal +14 Stamina, and overflow damage increases to 75%",
+    "steroid_d4": "T4 (8+): +12 PWR; HRs deal +40 damage, heal +20 Stamina, and overflow damage increases to 100%",
     "moneyball_d1": "T1 (2+): +2 EYE; Walks (BB) deal +4 dmg and fatigue pitcher 1 impact (+15% dmg)",
     "moneyball_d2": "T2 (4+): +4 EYE; BB +8 dmg and fatigue 2 impacts (+20% dmg)",
     "moneyball_d3": "T3 (6+): +7 EYE; BB +14 dmg and fatigue 3 impacts (+25%); strikeouts hit shield",
@@ -3030,6 +3036,10 @@
     "midas": {
       "name": "🎰 Midas Touch",
       "desc": "+25% success chance on all LUCK Gambles, Decision Events, and Prototype Roulettes."
+    },
+    "heavy_artillery": {
+      "name": "🔨 Heavy Artillery",
+      "desc": "Overflow damage upon KOing a pitcher transfers at 100% to the incoming reliever (instead of base 50%)."
     }
   },
   "dex": {
@@ -3286,11 +3296,11 @@
     "out": "<strong style=\"color: #9ca3af;\">✋ OUT (Flyout/Groundout):</strong> Deals <span style=\"color:#ef4444;font-weight:bold;\">-20 HP</span> to Shield (overflow hits Team HP). In Extra Innings: <span style=\"color:#ef4444;font-weight:bold;\">-30 HP</span>.",
     "so": "<strong style=\"color: #ef4444;\">💨 STRIKEOUT (SO):</strong> Direct Team HP damage (bypasses shield).<div style=\"font-size: 8.5px; color: #a855f7; margin-top: 2px;\">🔥 Streak: 1st (-20 HP) • 2nd (-26 HP) • 3rd+ (-32 HP)<br>⚡ Extra Innings: 1st (-30) • 2nd (-36) • 3rd+ (-42 HP)</div>",
     "pitcher_title": "⚾ RIVAL PITCHER DAMAGE:",
-    "bb": "🚶 BB: <b style=\"color:#3b82f6;\">15 HP</b>",
-    "single": "✅ 1B: <b style=\"color:#a7f3d0;\">20 HP</b>",
-    "double": "⚡ 2B: <b style=\"color:#10b981;\">35 HP</b>",
-    "triple": "🔥 3B: <b style=\"color:#06b6d4;\">50 HP</b>",
-    "hr": "🚀 <strong>HR (Home Run):</strong> <b style=\"color:#eab308;\">75 HP base</b>",
+    "bb": "🚶 BB: <b style=\"color:#3b82f6;\">10 HP</b>",
+    "single": "✅ 1B: <b style=\"color:#a7f3d0;\">15 HP</b>",
+    "double": "⚡ 2B: <b style=\"color:#10b981;\">30 HP</b>",
+    "triple": "🔥 3B: <b style=\"color:#06b6d4;\">45 HP</b>",
+    "hr": "🚀 <strong>HR (Home Run):</strong> <b style=\"color:#eab308;\">70 HP base</b>",
     "rbi_bonus": "🏆 <strong>RBI Bonus:</strong> Each RBI adds <strong style=\"color:#00ff66;\">+10 extra HP</strong> damage to the pitcher.",
     "defense": "<strong style=\"color: #38bdf8;\">🛡️ DEFENSIVE DUEL (Bottom of the Inning):</strong><div style=\"font-size: 8.5px; color: #cbd5e1; margin-top: 2px;\">🛡️ Regular: <strong style=\"color:#4ade80;\">+20 Shield</strong> (Fail: -10 HP)<br>⚡ Highlight Dive: <strong style=\"color:#4ade80;\">+60 Shield</strong> (Fail: -30 HP)<br>💀 In Inning 3 & Extras: Any failure = Walk-Off Defeat!</div>",
     "steal": "<strong style=\"color: #38bdf8;\">🏃 BASE STEALING:</strong><div style=\"font-size: 8.5px; color: #cbd5e1; margin-top: 2px;\">• <strong>Steal 2B (on 1B/BB, SPD ≥ 40):</strong> Success based on runner's SPD.<br>• <strong>Steal 3B (on 2B, SPD ≥ 50):</strong> Success based on runner's SPD/2.<br><em>Stealing any base rattles the pitcher (+20% damage for 2 hits).</em></div>",
@@ -3323,7 +3333,8 @@
     "scout_eye": "Scout's Eye",
     "elite_negotiator": "Elite Negotiator",
     "endless_stamina": "Endless Stamina",
-    "midas_touch": "Midas Touch"
+    "midas_touch": "Midas Touch",
+    "heavy_artillery": "Heavy Artillery"
   },
   "chest": {
     "claim_btn": "CLAIM REWARD",
@@ -3881,114 +3892,109 @@
     "activates_chemistry": "ACTIVATES {{team}} CHEMISTRY (+4)!",
     "activates_dynasty": "DYNASTY {{team}} CHEMISTRY (+{{pts}})!",
     "chem_req": "Chemistry"
-  }
+  },
+  "heavy_artillery": "Heavy Artillery"
 }
   };
 
-  let currentLang = "es";
-
-  try {
-    const saved = localStorage.getItem("baserogue_lang");
-    if (saved && locales[saved]) {
-      currentLang = saved;
-    } else {
-      const browserLang = (navigator.language || navigator.userLanguage || "").substring(0, 2).toLowerCase();
-      if (locales[browserLang]) {
-        currentLang = browserLang;
-      }
-    }
-  } catch (e) {
-    currentLang = "es";
-  }
-
-  function translateElement(el) {
-    if (!el || !el.getAttribute) return;
-    const key = el.getAttribute("data-i18n");
-    if (key) {
-      const text = t(key);
-      if (text) el.textContent = text;
-    }
-    const keyHtml = el.getAttribute("data-i18n-html");
-    if (keyHtml) {
-      const text = t(keyHtml);
-      if (text) el.innerHTML = text;
-    }
-    const keyPh = el.getAttribute("data-i18n-placeholder");
-    if (keyPh) {
-      const text = t(keyPh);
-      if (text) el.setAttribute("placeholder", text);
-    }
-    const keyTitle = el.getAttribute("data-i18n-title");
-    if (keyTitle) {
-      const text = t(keyTitle);
-      if (text) el.setAttribute("title", text);
-    }
-  }
+  let currentLang = localStorage.getItem('baserogue_lang') || 'es';
 
   function translateDOM() {
-    document.querySelectorAll("[data-i18n], [data-i18n-html], [data-i18n-placeholder], [data-i18n-title]").forEach(translateElement);
-
-    const langToggleBtn = document.getElementById("btn-lang-toggle") || document.getElementById("lang-toggle-btn");
-    if (langToggleBtn) {
-      langToggleBtn.innerHTML = `<i class="fa-solid fa-globe"></i> ${currentLang.toUpperCase()}`;
+    const btnLang = document.getElementById('btn-lang-toggle');
+    if (btnLang) {
+      btnLang.innerText = currentLang === 'es' ? '🌐 ES' : '🌐 EN';
     }
-  }
-
-  // Real-time MutationObserver to translate streaming DOM nodes before first paint (eliminates flash of wrong language)
-  if (typeof MutationObserver !== "undefined" && typeof document !== "undefined") {
-    try {
-      const observer = new MutationObserver(mutations => {
-        for (let m = 0; m < mutations.length; m++) {
-          const added = mutations[m].addedNodes;
-          for (let n = 0; n < added.length; n++) {
-            const node = added[n];
-            if (node.nodeType === 1) {
-              translateElement(node);
-              const children = node.querySelectorAll("[data-i18n], [data-i18n-html], [data-i18n-placeholder], [data-i18n-title]");
-              for (let i = 0; i < children.length; i++) {
-                translateElement(children[i]);
-              }
-            }
-          }
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.getAttribute('data-i18n');
+      if (key) {
+        const translated = t(key);
+        if (translated && translated !== key) {
+          el.innerText = translated;
         }
-      });
-      if (document.documentElement) {
-        observer.observe(document.documentElement, { childList: true, subtree: true });
       }
-    } catch (e) {}
+    });
+    document.querySelectorAll('[data-i18n-html]').forEach(el => {
+      const key = el.getAttribute('data-i18n-html');
+      if (key) {
+        const translated = t(key);
+        if (translated && translated !== key) {
+          el.innerHTML = translated;
+        }
+      }
+    });
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+      const key = el.getAttribute('data-i18n-placeholder');
+      if (key) {
+        const translated = t(key);
+        if (translated && translated !== key) {
+          el.setAttribute('placeholder', translated);
+        }
+      }
+    });
   }
 
   function setLanguage(lang) {
     if (!locales[lang]) return;
     currentLang = lang;
-    try {
-      localStorage.setItem("baserogue_lang", lang);
-    } catch (e) {}
+    localStorage.setItem('baserogue_lang', lang);
+    document.documentElement.lang = lang;
     translateDOM();
-    if (typeof window.renderActiveRoster === "function") window.renderActiveRoster();
-    if (typeof window.renderSynergiesAndItems === "function") window.renderSynergiesAndItems();
-    if (typeof window.updateHUD === "function") window.updateHUD();
-    if (window.Challenge162 && typeof window.Challenge162.updateModeSelectCard === "function") {
-      window.Challenge162.updateModeSelectCard();
-      const s162 = document.getElementById('screen-challenge-hub');
-      const sSeason = document.getElementById('screen-challenge-season');
-      const sPlayoffs = document.getElementById('screen-challenge-playoffs');
-      const sResults = document.getElementById('screen-challenge-results');
-      if ((s162 && !s162.classList.contains('hidden')) ||
-          (sSeason && !sSeason.classList.contains('hidden')) ||
-          (sPlayoffs && !sPlayoffs.classList.contains('hidden')) ||
-          (sResults && !sResults.classList.contains('hidden'))) {
-        window.Challenge162.render();
-      }
+    if (window.UI && typeof window.UI.updateStaticTranslations === 'function') {
+      try { window.UI.updateStaticTranslations(); } catch (e) { console.warn(e); }
     }
-    if (window.UI && typeof window.UI.updateStaticTranslations === "function") {
-      window.UI.updateStaticTranslations();
+    if (window.UI && typeof window.UI.applyLanguage === 'function') {
+      try { window.UI.applyLanguage(lang); } catch (e) { console.warn(e); }
+    }
+    if (typeof window.renderSynergiesAndItems === 'function') {
+      try { window.renderSynergiesAndItems(); } catch (e) { console.warn(e); }
     }
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("readystatechange", () => {
-      if (document.readyState === "interactive" || document.readyState === "complete") translateDOM();
+  function translateElement(el) {
+    if (!el || el.nodeType !== 1) return;
+    if (el.hasAttribute && el.hasAttribute('data-i18n')) {
+      const key = el.getAttribute('data-i18n');
+      if (key) {
+        const translated = t(key);
+        if (translated && translated !== key) el.innerText = translated;
+      }
+    }
+    if (el.hasAttribute && el.hasAttribute('data-i18n-html')) {
+      const key = el.getAttribute('data-i18n-html');
+      if (key) {
+        const translated = t(key);
+        if (translated && translated !== key) el.innerHTML = translated;
+      }
+    }
+    if (el.hasAttribute && el.hasAttribute('data-i18n-placeholder')) {
+      const key = el.getAttribute('data-i18n-placeholder');
+      if (key) {
+        const translated = t(key);
+        if (translated && translated !== key) el.setAttribute('placeholder', translated);
+      }
+    }
+  }
+
+  // Intercept and translate elements dynamically as they parse into the DOM
+  if (typeof MutationObserver !== 'undefined') {
+    const liveObserver = new MutationObserver(mutations => {
+      mutations.forEach(m => {
+        m.addedNodes.forEach(node => {
+          if (node.nodeType === 1) {
+            translateElement(node);
+            node.querySelectorAll('[data-i18n], [data-i18n-html], [data-i18n-placeholder]').forEach(translateElement);
+          }
+        });
+      });
+    });
+    liveObserver.observe(document.documentElement, { childList: true, subtree: true });
+  }
+
+  // Run on initial load
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', translateDOM);
+    document.addEventListener('readystatechange', () => {
+      if (document.readyState === 'interactive' || document.readyState === 'complete') translateDOM();
     });
   } else {
     translateDOM();
@@ -3999,8 +4005,8 @@
   }
 
   function t(key, params = {}) {
-    const defaultVal = typeof params === "string" ? params : (params && params.defaultValue !== undefined ? params.defaultValue : null);
-    const keys = key.split(".");
+    const defaultVal = typeof params === 'string' ? params : (params && params.defaultValue !== undefined ? params.defaultValue : null);
+    const keys = key.split('.');
     let val = locales[currentLang];
     for (const k of keys) {
       if (val && val[k] !== undefined) {
@@ -4011,7 +4017,8 @@
       }
     }
     if (val === null || val === undefined) {
-      let fallbackVal = locales["en"];
+      // Fallback to English
+      let fallbackVal = locales['en'];
       for (const k of keys) {
         if (fallbackVal && fallbackVal[k] !== undefined) {
           fallbackVal = fallbackVal[k];
@@ -4022,7 +4029,7 @@
       }
       val = fallbackVal !== null ? fallbackVal : (defaultVal !== null ? defaultVal : key);
     }
-    if (typeof val === "string" && typeof params === "object" && params !== null) {
+    if (typeof val === 'string' && typeof params === 'object' && params !== null) {
       return val.replace(/\{\{\s*(\w+)\s*\}\}/g, (_, match) => {
         return params[match] !== undefined ? params[match] : `{{${match}}}`;
       });

@@ -54,8 +54,8 @@
     "astroturf_d4": "T4 (8+): +10 DEF/SPD (+30 Escudo); robos +28 daño, debuff 5 impactos y outs hacen -50% daño",
     "steroid_d1": "T1 (2+): +2 PWR al equipo; Jonrones (HR) hacen +8 daño adicional",
     "steroid_d2": "T2 (4+): +5 PWR; HR hacen +16 daño adicional y curan +8 Stamina a todos",
-    "steroid_d3": "T3 (6+): +8 PWR; HR hacen +26 daño adicional y curan +14 Stamina a todos",
-    "steroid_d4": "T4 (8+): +12 PWR; HR hacen +40 daño adicional y curan +20 Stamina a todos",
+    "steroid_d3": "T3 (6+): +8 PWR; HR hacen +26 daño, curan +14 Stamina y daño remanente sube al 75%",
+    "steroid_d4": "T4 (8+): +12 PWR; HR hacen +40 daño, curan +20 Stamina y daño remanente al 100%",
     "moneyball_d1": "T1 (2+): +2 EYE; BB hacen +4 daño y fatigan al rival 1 impacto (+15% daño)",
     "moneyball_d2": "T2 (4+): +4 EYE; BB +8 daño y fatigan 2 impactos (+20% daño)",
     "moneyball_d3": "T3 (6+): +7 EYE; BB +14 daño y fatigan 3 impactos (+25%); ponches van al escudo",
@@ -1086,6 +1086,10 @@
     "midas": {
       "name": "🎰 Toque de Midas",
       "desc": "Aumenta en +25% las probabilidades de éxito en eventos de Suerte (LUCK), Decisiones y Ruletas de Prototipos."
+    },
+    "heavy_artillery": {
+      "name": "🔨 Poder de Demolición",
+      "desc": "El daño remanente al noquear a un lanzador se transfiere al 100% al nuevo relevista (en lugar del 50% base)."
     }
   },
   "dex": {
@@ -1342,11 +1346,11 @@
     "out": "<strong style=\"color: #9ca3af;\">✋ OUT (Flyout/Groundout):</strong> Resta <span style=\"color:#ef4444;font-weight:bold;\">-20 HP</span> al Escudo (al romperlo, resta a la vida). En Extra Innings: <span style=\"color:#ef4444;font-weight:bold;\">-30 HP</span>.",
     "so": "<strong style=\"color: #ef4444;\">💨 PONCHE (SO):</strong> Resta daño directo a la vida (ignora escudo).<div style=\"font-size: 8.5px; color: #a855f7; margin-top: 2px;\">🔥 Racha: 1º (-20 HP) • 2º (-26 HP) • 3º+ (-32 HP)<br>⚡ Extra Innings: 1º (-30) • 2º (-36) • 3º+ (-42 HP)</div>",
     "pitcher_title": "⚾ DAÑO AL LANZADOR RIVAL:",
-    "bb": "🚶 BB: <b style=\"color:#3b82f6;\">15 HP</b>",
-    "single": "✅ 1B: <b style=\"color:#a7f3d0;\">20 HP</b>",
-    "double": "⚡ 2B: <b style=\"color:#10b981;\">35 HP</b>",
-    "triple": "🔥 3B: <b style=\"color:#06b6d4;\">50 HP</b>",
-    "hr": "🚀 <strong>HR (Jonrón):</strong> <b style=\"color:#eab308;\">75 HP base</b>",
+    "bb": "🚶 BB: <b style=\"color:#3b82f6;\">10 HP</b>",
+    "single": "✅ 1B: <b style=\"color:#a7f3d0;\">15 HP</b>",
+    "double": "⚡ 2B: <b style=\"color:#10b981;\">30 HP</b>",
+    "triple": "🔥 3B: <b style=\"color:#06b6d4;\">45 HP</b>",
+    "hr": "🚀 <strong>HR (Jonrón):</strong> <b style=\"color:#eab308;\">70 HP base</b>",
     "rbi_bonus": "🏆 <strong>Bonus RBI:</strong> Cada carrera impulsada añade <strong style=\"color:#00ff66;\">+10 HP extra</strong> de daño al pitcher.",
     "defense": "<strong style=\"color: #38bdf8;\">🛡️ DUELO DEFENSIVO (Baja de Entrada):</strong><div style=\"font-size: 8.5px; color: #cbd5e1; margin-top: 2px;\">🛡️ Regular: <strong style=\"color:#4ade80;\">+20 Escudo</strong> (Fallo: -10 HP)<br>⚡ De Lujo: <strong style=\"color:#4ade80;\">+60 Escudo</strong> (Fallo: -30 HP)<br>💀 En Inning 3 y Extras: ¡Cualquier fallo = Walk-Off rival!</div>",
     "steal": "<strong style=\"color: #38bdf8;\">🏃 ROBO DE BASES:</strong><div style=\"font-size: 8.5px; color: #cbd5e1; margin-top: 2px;\">• <strong>Robo de 2B (en 1B/BB, SPD ≥ 40):</strong> Éxito según SPD del corredor.<br>• <strong>Robo de 3B (en 2B, SPD ≥ 50):</strong> Éxito según SPD/2 del corredor.<br><em>Robar cualquier base desestabiliza al lanzador (+20% daño en 2 impactos).</em></div>",
@@ -1379,7 +1383,8 @@
     "scout_eye": "Ojo de Cazatalentos",
     "elite_negotiator": "Negociador de Élite",
     "endless_stamina": "Resistencia Inagotable",
-    "midas_touch": "Toque de Midas"
+    "midas_touch": "Toque de Midas",
+    "heavy_artillery": "Poder de Demolición"
   },
   "chest": {
     "claim_btn": "RECLAMAR RECOMPENSA",
@@ -1937,5 +1942,6 @@
     "activates_chemistry": "¡ACTIVA QUÍMICA {{team}} (+4)!",
     "activates_dynasty": "¡QUÍMICA DINASTÍA {{team}} (+{{pts}})!",
     "chem_req": "Química"
-  }
+  },
+  "heavy_artillery": "Poder de Demolición"
 }

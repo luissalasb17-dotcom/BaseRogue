@@ -1512,8 +1512,12 @@
           if (this.hasTrait('reliever_ambush')) this.freshPitcherBonusAvailable = true;
           const nextP = this.activePitcher;
           if (nextP && overflow > 0) {
-            // Full 100% overflow carries over to the next pitcher
-            const carryOver = overflow;
+            // Scaled Residual Damage: Base 50% (overflow / 2), 75% with Bash Brothers T3, 100% with Bash Brothers T4 or Heavy Artillery trait
+            const steroidTier = (this.activeSynergies && this.activeSynergies['Steroid Era (1994-2005)']) || 0;
+            const hasHeavyArtillery = this.hasTrait('heavy_artillery');
+            const residualMult = (steroidTier >= 4 || hasHeavyArtillery) ? 1.0 : (steroidTier === 3 ? 0.75 : 0.50);
+            
+            const carryOver = Math.round(overflow * residualMult);
             const residualDmg = Math.min(carryOver, nextP.hp - 1);
             if (residualDmg > 0) {
               nextP.hp = Math.max(1, nextP.hp - residualDmg);
