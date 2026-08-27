@@ -158,7 +158,7 @@
   },
   "season_select": {
     "title": "📜 SELECT THE SEASON",
-    "desc": "Choose the year to compete against real teams from that era with their top 3 pitchers by WAR.",
+    "desc": "Choose the year to compete against real teams from that era with their full pitching staffs and authentic difficulty progression.",
     "year_label": "SEASON YEAR:",
     "random": "🎲 Random Season",
     "start_btn": "⚾ START HISTORICAL SEASON",

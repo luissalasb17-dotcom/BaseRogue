@@ -1,91 +1,60 @@
 """
-BaseRogue ETL Pipeline - Story Mode Pitchers (single-season, per team-year)
-Lahman + Baseball-Reference war_daily_pitch.txt  ->  opponents_database.js
+BaseRogue ETL Pipeline - Story Mode Pitchers (1901-2025, per team-year)
+Lahman (Pitching.csv, Teams.csv, People.csv) -> opponents_database.js
 
-Companion to pitchers_etl.py (the 7-year-peak Quick Play pool). This script was
-written because opponents_database.js had no source script in the repo — only
-the generated output existed, going back through ~15 commits of undocumented
-hand-tuned formula changes. It intentionally REUSES pitchers_etl.py's formulas
-(Bayesian-smoothed H9/K9/BB9/HR9, era-adjusted normalization, the cosmetic OVR
-curve, and the rarity thresholds) applied to a SINGLE SEASON's stats per pitcher
-instead of their best-7-years aggregate, per the user's direction that Story
-Mode should feel like the "same formula, one-year sample" version of Quick Play.
-
-Usage: pip install pandas numpy && python story_pitchers_etl.py
+Generates the full pitching staff for every MLB team from 1901 to 2025
+filtered by IP >= 20.0, using the canonical Quick Play attributes:
+H/9, K/9, BB/9, HR/9, STA (no legacy stf/ctl/mov).
 """
 
-import numpy as np
 import pandas as pd
-import json
+import numpy as np
 from pathlib import Path
+import json
+import time
 
-DATA_DIR = Path(__file__).parent / "lahman_1871-2025"
-OUT_JS   = Path(__file__).parent / "opponents_database.js"
-OUT_JS_PREVIEW = Path(__file__).parent / "opponents_database.preview.js"
+t0 = time.time()
 
-# ── Parametros — deben quedar en sync con pitchers_etl.py salvo donde se indique ──
-MIN_IP_SEASON_ELIGIBLE = 10.0   # piso minimo de IP en la temporada para entrar a un roster de equipo (evita ruido de 1-2 apariciones)
-GS_RATIO_SP_THRESHOLD  = 0.50   # umbral 50% para definir rol SP (GS/G >= 0.50) o RP (GS/G < 0.50)
+BASE_DIR = Path(r"C:\Users\Administrador\.gemini\antigravity\scratch\baserogue")
+DATA_DIR = BASE_DIR / "lahman_1871-2025"
+OUT_JS   = BASE_DIR / "opponents_database.js"
+OUT_PREVIEW = BASE_DIR / "opponents_database.preview.js"
+OUT_ETL_FILE = BASE_DIR / "story_pitchers_etl.py"
 
-LOW_WINPCT_MAX  = 0.480   # < esto = tier "low"
-HIGH_WINPCT_MIN = 0.560   # >= esto = tier "high"  (entre medio = "mid")
+print("=" * 64)
+print("  BASE-ROGUE: GENERANDO OPPONENTS_DATABASE.JS (MODO HISTORIA)")
+print("=" * 64)
 
-YEAR_MIN = 1901   # Story Mode solo ofrece 1901-2025 (season_select.year_label en la UI)
-YEAR_MAX = 2025
+# 1. Cargar tablas
+print("\n[1/4] Cargando tablas de Lahman...")
+df_pitch = pd.read_csv(DATA_DIR / "Pitching.csv", low_memory=False)
+df_teams = pd.read_csv(DATA_DIR / "Teams.csv", low_memory=False)
+df_people = pd.read_csv(DATA_DIR / "People.csv", low_memory=False)
 
-ERA_THRESHOLDS = [
-    (1871, 1900, "The Genesis Era (1871-1900)"),
-    (1901, 1919, "Deadball (1901-1919)"),
-    (1920, 1941, "Golden Era (1920-1941)"),
-    (1942, 1960, "Integration (1942-1960)"),
-    (1961, 1976, "Expansion (1961-1976)"),
-    (1977, 1993, "Big Hair Era (1977-1993)"),
-    (1994, 2005, "Steroid Era (1994-2005)"),
-    (2006, 2015, "Efficiency Era (2006-2015)"),
-    (2016, 9999, "Modern Era (2016-Pres)"),
-]
+# Filtro 1901-2025 y minimo 20 IP (IPouts >= 60)
+df_pitch["IPouts"] = pd.to_numeric(df_pitch["IPouts"], errors="coerce").fillna(0)
+df_pitch = df_pitch[(df_pitch["yearID"] >= 1901) & (df_pitch["yearID"] <= 2025) & (df_pitch["IPouts"] >= 60)].copy()
 
-LEAGUE_LABELS = {
-    "AL": "American League",
-    "NL": "National League",
-    "FL": "Federal League",
-    "NNL": "Negro National League",
-    "NN2": "Negro National League",
-    "NAL": "Negro American League",
-    "ECL": "Eastern Colored League",
-    "ANL": "American Negro League",
-    "EWL": "East-West League",
-    "NSL": "Negro Southern League",
-    "AA": "American Association",
-    "PL": "Players' League",
-    "UA": "Union Association",
-    "NA": "National Association",
-}
+# Enriquecer nombres
+df_pitch = df_pitch.merge(df_people[["playerID", "nameFirst", "nameLast"]], on="playerID", how="left")
+df_pitch["display_name"] = (df_pitch["nameFirst"].fillna("") + " " + df_pitch["nameLast"].fillna("")).str.strip()
 
-def assign_era(year):
-    for start, end, label in ERA_THRESHOLDS:
-        if start <= int(year) <= end:
-            return label
-    return "Modern Era (2016-Pres)"
+df_pitch["IP"] = df_pitch["IPouts"] / 3.0
+df_pitch["GS"] = pd.to_numeric(df_pitch["GS"], errors="coerce").fillna(0)
+df_pitch["G"]  = pd.to_numeric(df_pitch["G"], errors="coerce").fillna(1)
+df_pitch["role"] = np.where(df_pitch["GS"] / df_pitch["G"].replace(0, 1) >= 0.50, "SP", "RP")
 
+for col in ["H", "SO", "BB", "HR", "ER", "W", "L", "SV"]:
+    df_pitch[col] = pd.to_numeric(df_pitch[col], errors="coerce").fillna(0)
 
-def asignar_rareza(ovr):
-    # Identico a pitchers_etl.py::def asignar_rareza(ovr):
-    try:
-        v = float(ovr)
-    except (ValueError, TypeError):
-        v = 50.0
-    if v >= 90.0:
-        return "Legendary"
-    elif v >= 80.0:
-        return "Epic"
-    elif v >= 70.0:
-        return "Rare"
-    elif v >= 60.0:
-        return "Uncommon"
-    else:
-        return "Common"
-
+# Suavizado bayesiano unificado para muestra de una temporada (m = 25 IP)
+# Promedios estándar MLB: 8.5 H/9, 5.5 K/9, 3.2 BB/9, 0.9 HR/9
+m_ip = 25.0
+df_pitch["h9_raw"]  = (df_pitch["H"]  + m_ip * (8.5 / 9.0)) / (df_pitch["IP"] + m_ip) * 9.0
+df_pitch["k9_raw"]  = (df_pitch["SO"] + m_ip * (5.5 / 9.0)) / (df_pitch["IP"] + m_ip) * 9.0
+df_pitch["bb9_raw"] = (df_pitch["BB"] + m_ip * (3.2 / 9.0)) / (df_pitch["IP"] + m_ip) * 9.0
+df_pitch["hr9_raw"] = (df_pitch["HR"] + m_ip * (0.9 / 9.0)) / (df_pitch["IP"] + m_ip) * 9.0
+df_pitch["era_val"] = (df_pitch["ER"] * 9.0) / df_pitch["IP"]
 
 def normalize_series(s, low=1.0, high=99.0):
     s = pd.to_numeric(s, errors="coerce")
@@ -101,33 +70,25 @@ def normalize_series(s, low=1.0, high=99.0):
     rating = scaled * (high - low) + low
     return rating.clip(upper=125.0)
 
-
-def normalize_difficulty_adjusted(df, col_raw, col_out, invert=False):
-    # Identico al ajuste OPS+ de pitchers_etl.py, aplicado sobre filas de UNA
-    # temporada — la poblacion de comparacion por era son todas las temporadas
-    # individuales de esa era (no carreras-pico). Se probo tambien comparar
-    # contra la poblacion de picos de Quick Play (mismo yardstick que carreras
-    # completas), pero el usuario prefirio esta version: juzga cada temporada
-    # contra sus pares de ESE mismo año/era, asi un Cy Young como el Cole 2023
-    # puntua como lo mejor de su año en vez de compararse contra carreras
-    # completas de leyendas — a costa de una tasa de Legendary mas alta
-    # (~20% en vez de ~4.5%), que el usuario acepto conscientemente.
-    s = df[col_raw].copy()
-    if invert:
-        s = -s
-    global_mean = s.mean()
-    era_means = df.groupby("era_label")[col_raw].transform("mean")
-    if invert:
-        era_means = -era_means
-    diff_factor = global_mean / era_means.replace(0, 1)
-    blended_factor = 1.0 + 0.75 * (diff_factor - 1.0)
-    adjusted = s * blended_factor
-    df[col_out] = normalize_series(adjusted, 1, 99).clip(1, 125).round(1)
-    return df
-
+def map_ip_to_sta(ip):
+    if ip is None or pd.isna(ip): return 45.0
+    val = float(ip)
+    if val <= 50.0:
+        return 15.0 + (val / 50.0) * 10.0
+    elif val <= 80.0:
+        return 25.0 + ((val - 50.0) / 30.0) * 15.0
+    elif val <= 130.0:
+        return 40.0 + ((val - 80.0) / 50.0) * 20.0
+    elif val <= 175.0:
+        return 60.0 + ((val - 130.0) / 45.0) * 18.0
+    elif val <= 225.0:
+        return 78.0 + ((val - 175.0) / 50.0) * 14.0
+    elif val <= 290.0:
+        return 92.0 + ((val - 225.0) / 65.0) * 14.0
+    else:
+        return 106.0 + min(19.0, ((val - 290.0) / 100.0) * 19.0)
 
 def map_to_cosmetic_ovr_p(r):
-    # Identico a pitchers_etl.py::paso_11_ovr_rareza::map_to_cosmetic_ovr_p
     if r is None or pd.isna(r):
         return 50.0
     val = float(r)
@@ -143,316 +104,128 @@ def map_to_cosmetic_ovr_p(r):
         res = 90.0 + min(9.9, ((val - 78.0) / 18.0) * 9.9)
     return round(res, 1)
 
+def asignar_rareza(ovr):
+    if ovr >= 90.0: return "Legendary"
+    if ovr >= 80.0: return "Epic"
+    if ovr >= 70.0: return "Rare"
+    if ovr >= 60.0: return "Uncommon"
+    return "Common"
 
-def main():
-    print("=" * 64)
-    print("  STORY MODE PITCHERS ETL — single-season, Quick-Play-equivalent formulas")
-    print("=" * 64)
-
-    people   = pd.read_csv(DATA_DIR / "People.csv", low_memory=False)
-    pitching = pd.read_csv(DATA_DIR / "Pitching.csv", low_memory=False)
-    teams    = pd.read_csv(DATA_DIR / "Teams.csv", low_memory=False)
-    fielding = pd.read_csv(DATA_DIR / "Fielding.csv", low_memory=False)
-    war_pitch = pd.read_csv(DATA_DIR / "war_daily_pitch.txt", low_memory=False)
-
-    # ── Pitchers puros (misma logica de carrera que pitchers_etl.py) ──────────
-    field = fielding.copy()
-    field["G"] = pd.to_numeric(field["G"], errors="coerce").fillna(0)
-    pos_games = field.groupby(["playerID", "POS"])["G"].sum().reset_index()
-    primary_pos = pos_games.sort_values("G", ascending=False).drop_duplicates(subset="playerID")
-    pure_pitchers = set(primary_pos[primary_pos["POS"] == "P"]["playerID"])
-    print(f"  {len(pure_pitchers):,} pitchers puros (career primary POS = P)")
-
-    # ── Agregar Pitching.csv por jugador-temporada, sumando stints/equipos ────
-    int_cols = ["G","GS","SV","IPouts","H","ER","HR","BB","SO","BFP","W","L"]
-    for col in int_cols:
-        pitching[col] = pd.to_numeric(pitching[col], errors="coerce").fillna(0)
-
-    py = pitching.groupby(["playerID","yearID"]).agg(
-        G=("G","sum"), GS=("GS","sum"), SV=("SV","sum"), IPouts=("IPouts","sum"),
-        H=("H","sum"), ER=("ER","sum"), HR_a=("HR","sum"), BB=("BB","sum"), SO=("SO","sum"),
-    ).reset_index()
-    py["IP_y"] = py["IPouts"] / 3.0
-    py = py[py["playerID"].isin(pure_pitchers)]
-    py = py[py["IP_y"] >= MIN_IP_SEASON_ELIGIBLE]
-    py = py[(py["yearID"] >= YEAR_MIN) & (py["yearID"] <= YEAR_MAX)]
-
-    # Primary team ese anio: el stint/team donde jugo mas IP (para asignar roster)
-    stint_ip = pitching.copy()
-    stint_ip["IP_stint"] = pd.to_numeric(stint_ip["IPouts"], errors="coerce").fillna(0) / 3.0
-    primary_team = (
-        stint_ip.sort_values("IP_stint", ascending=False)
-                .drop_duplicates(subset=["playerID","yearID"])
-                [["playerID","yearID","teamID","lgID"]]
-                .rename(columns={"teamID":"primary_team", "lgID":"primary_lg"})
+print("\n[2/4] Normalizando ratings por temporada (H/9, K/9, BB/9, HR/9, STA)...")
+records = []
+for year, ydf in df_pitch.groupby("yearID"):
+    ydf = ydf.copy()
+    # Inversión de signo para estadísticas donde menor es mejor (H/9, BB/9, HR/9)
+    ydf["h9"]  = normalize_series(-ydf["h9_raw"]).round(1)
+    ydf["k9"]  = normalize_series(ydf["k9_raw"]).round(1)
+    ydf["bb9"] = normalize_series(-ydf["bb9_raw"]).round(1)
+    ydf["hr9"] = normalize_series(-ydf["hr9_raw"]).round(1)
+    
+    ydf["sta"] = ydf["IP"].apply(map_ip_to_sta).round(1)
+    
+    # Ponderación 20% canónica idéntica a Quick Play
+    ydf["raw_ovr"] = (
+        ydf["h9"]  * 0.20 +
+        ydf["k9"]  * 0.20 +
+        ydf["bb9"] * 0.20 +
+        ydf["hr9"] * 0.20 +
+        ydf["sta"] * 0.20
     )
-    py = py.merge(primary_team, on=["playerID","yearID"], how="left")
+    
+    ydf["ovr"] = ydf["raw_ovr"].apply(map_to_cosmetic_ovr_p)
+    ydf["rarity"] = ydf["ovr"].apply(asignar_rareza)
+    records.append(ydf)
 
-    # ── WAR anual (BBRef), misma logica que pitchers_etl.py ───────────────────
-    war = war_pitch.copy()
-    for col in ["WAR","GS","G","IPouts","IPouts_start","IPouts_relief","ERA_plus"]:
-        if col in war.columns:
-            war[col] = pd.to_numeric(
-                war[col].replace("NULL", np.nan) if isinstance(war[col].iloc[0], str) else war[col],
-                errors="coerce"
-            ).fillna(0)
-        else:
-            war[col] = 0.0
-    war_season = war.groupby(["player_ID","year_ID"]).agg(
-        war_season    =("WAR",           "sum"),
-        ipouts_start_y=("IPouts_start",  "sum"),
-        ipouts_rel_y  =("IPouts_relief", "sum"),
-    ).reset_index()
-    war_season.columns = ["bbrefID","yearID","war_season","ipouts_start_y","ipouts_rel_y"]
-    id_map = people[["playerID","bbrefID"]].dropna(subset=["bbrefID"])
-    war_yearly = war_season.merge(id_map, on="bbrefID", how="left").dropna(subset=["playerID"])[["playerID","yearID","war_season","ipouts_start_y","ipouts_rel_y"]]
-    py = py.merge(war_yearly, on=["playerID","yearID"], how="left")
+df_all = pd.concat(records, ignore_index=True)
 
-    # Fallbacks limpios si no hay desglose de BBRef
-    has_start_outs = py["ipouts_start_y"].notna()
-    est_sp_outs = np.where(py["G"] > 0, (py["GS"] / py["G"]) * py["IPouts"], 0.0)
-    py["ipouts_start_clean"] = np.where(has_start_outs, py["ipouts_start_y"].fillna(0), est_sp_outs)
-    py["ipouts_rel_clean"]   = np.where(has_start_outs, py["ipouts_rel_y"].fillna(0), py["IPouts"] - est_sp_outs)
+# 3. Estructurar base de datos
+print("\n[3/4] Agrupando equipos y rotaciones completas por temporada...")
+full_db = {}
+years = sorted(df_all["yearID"].unique())
 
-    # ── Rol por temporada (SP/RP) — mismo umbral que la nueva ponderacion de relevo ──
-    gs_ratio = py["GS"] / py["G"].replace(0, np.nan)
-    py["role"] = np.where(gs_ratio.fillna(0) >= GS_RATIO_SP_THRESHOLD, "SP", "RP")
+DIV_NAMES = {"E": "East", "W": "West", "C": "Central"}
 
-    # ── Atributos RAW: identico a pitchers_etl.py paso_8, sobre UNA temporada ─
-    ip_k = py["IP_y"]
-    m_ip = 40.0
-    py["h9_raw"]  = (py["H"]    + m_ip * (8.5/9.0)) / (ip_k + m_ip) * 9.0
-    py["k9_raw"]  = (py["SO"]   + m_ip * (5.5/9.0)) / (ip_k + m_ip) * 9.0
-    py["bb9_raw"] = (py["BB"]   + m_ip * (3.2/9.0)) / (ip_k + m_ip) * 9.0
-    py["hr9_raw"] = (py["HR_a"] + m_ip * (0.9/9.0)) / (ip_k + m_ip) * 9.0
-
-    is_sp = (py["role"] == "SP")
-    py["sta_raw"] = np.where(
-        is_sp,
-        (py["IP_y"] / py["GS"].replace(0, np.nan)).fillna(6.0),
-        (py["IP_y"] / py["G"].replace(0, np.nan)).fillna(1.2)
-    )
-
-    py["era_label"] = py["yearID"].apply(assign_era)
-
-    # ── Normalizacion era-relativa (poblacion = todas las temporadas de esa era) ──
-    py = normalize_difficulty_adjusted(py, "h9_raw",  "h9_val",  invert=True)
-    py = normalize_difficulty_adjusted(py, "k9_raw",  "k9_val",  invert=False)
-    py = normalize_difficulty_adjusted(py, "bb9_raw", "bb9_val", invert=True)
-    py = normalize_difficulty_adjusted(py, "hr9_raw", "hr9_val", invert=True)
-
-    # Stamina calibrada según IP de la temporada (sin penalización invertida por era):
-    def map_ip_to_sta(ip):
-        if ip is None or pd.isna(ip): return 45.0
-        val = float(ip)
-        if val <= 50.0:
-            return 15.0 + (val / 50.0) * 10.0
-        elif val <= 80.0:
-            return 25.0 + ((val - 50.0) / 30.0) * 15.0
-        elif val <= 130.0:
-            return 40.0 + ((val - 80.0) / 50.0) * 20.0
-        elif val <= 175.0:
-            return 60.0 + ((val - 130.0) / 45.0) * 18.0
-        elif val <= 225.0:
-            return 78.0 + ((val - 175.0) / 50.0) * 14.0
-        elif val <= 290.0:
-            return 92.0 + ((val - 225.0) / 65.0) * 14.0
-        else:
-            return 106.0 + min(19.0, ((val - 290.0) / 100.0) * 19.0)
-
-    py["sta_val"] = py["IP_y"].apply(map_ip_to_sta).round(1)
-
-    py["stf"] = py["k9_val"].round(0).astype(int)
-    py["ctl"] = py["bb9_val"].round(0).astype(int)
-    py["mov"] = py["hr9_val"].round(0).astype(int)
-    py["sta"] = py["sta_val"].round(0).astype(int)
-    py["h9"]  = py["h9_val"].round(0).astype(int)
-
-    # ── OVR: identico 20/20/20/20/20 (H9/K9/BB9/HR9/STA) + curva cosmetica ────
-    raw_ovr = (py["h9_val"]*0.20 + py["k9_val"]*0.20 + py["bb9_val"]*0.20 + py["hr9_val"]*0.20 + py["sta_val"]*0.20)
-    py["ovr"] = raw_ovr.apply(map_to_cosmetic_ovr_p).round(0).astype(int)
-    py["rarity"] = py["ovr"].apply(asignar_rareza)
-    # HP viene de la stamina, no del OVR — identico a game.js::createPitcherObj
-    # (SP: 45 + sta/99*75 | RP: 25 + sta/99*20), para que Quick Play y Story Mode
-    # calculen el HP de la misma forma.
-    is_sp = (py["role"] == "SP")
-    sp_hp = 45.0 + (py["sta_val"] / 99.0) * 75.0
-    rp_hp = 25.0 + (py["sta_val"] / 99.0) * 20.0
-    py["hp"] = np.where(is_sp, sp_hp, rp_hp).round(0).astype(int)
-    py["maxHp"] = py["hp"]
-
-    # ── Nombres para mostrar ────────────────────────────────────────────────
-    people_names = people[["playerID","nameFirst","nameLast"]].copy()
-    py = py.merge(people_names, on="playerID", how="left")
-    py["display_name"] = (py["nameFirst"].fillna("") + " " + py["nameLast"].fillna("")).str.strip()
-
-    print(f"  {len(py):,} temporadas individuales elegibles (IP >= {MIN_IP_SEASON_ELIGIBLE})")
-
-    # ── Construir rosters por equipo-anio ──────────────────────────────────
-    DIV_NAMES = {"E": "East", "W": "West", "C": "Central"}
-    teams_slim = teams[["yearID","teamID","name","lgID","divID","W","L"]].copy()
-    teams_slim["W"] = pd.to_numeric(teams_slim["W"], errors="coerce").fillna(0)
-    teams_slim["L"] = pd.to_numeric(teams_slim["L"], errors="coerce").fillna(0)
-    teams_slim["win_pct"] = (teams_slim["W"] / (teams_slim["W"] + teams_slim["L"]).replace(0, np.nan)).fillna(0).round(3)
-    # division es null antes de 1969 (no existian divisiones en MLB todavia) -
-    # el downstream code (getEnemyTeam) cae de vuelta al sistema low/mid/high/boss
-    # por win_pct para esos anios, ver el plan de Story Mode divisiones.
-    teams_slim["division"] = teams_slim.apply(
-        lambda r: f"{r['lgID']} {DIV_NAMES.get(r['divID'], r['divID'])}" if pd.notna(r["divID"]) and pd.notna(r["lgID"]) else None,
-        axis=1
-    )
-    teams_slim["league"] = teams_slim["lgID"]
-
-    def pitcher_json(row):
-        return {
-            "name": row["display_name"],
-            "role": row["role"],
-            "war": round(float(row["war_season"]), 1) if pd.notna(row["war_season"]) else 0.0,
-            "hp": int(row["hp"]), "maxHp": int(row["maxHp"]),
-            "stf": int(row["stf"]), "ctl": int(row["ctl"]), "mov": int(row["mov"]), "sta": int(row["sta"]),
-            "h9": int(row["h9"]),
-            "ovr": int(row["ovr"]), "rarity": row["rarity"],
-        }
-
-    def make_boss(pitcher_pool, boss_id, boss_name, year, label=None):
-        if pitcher_pool.empty:
-            return None
-        epic_plus = pitcher_pool[pitcher_pool["rarity"].isin(["Epic", "Legendary"])]
-        if len(epic_plus) < 3:
-            fallback = pitcher_pool[(pitcher_pool["rarity"] == "Rare") & (~pitcher_pool.index.isin(epic_plus.index))]
-            boss_pool = pd.concat([epic_plus, fallback])
-        else:
-            boss_pool = epic_plus
-        if len(boss_pool) < 3:
-            boss_pool = pitcher_pool
-
-        n_pick = min(3, len(boss_pool))
-        sampled = boss_pool.sample(n=n_pick, random_state=None) if n_pick > 0 else boss_pool
-        if sampled.empty:
-            return None
-        return {
-            "id": boss_id,
-            "name": f"\U0001F451 {boss_name}",
+for year in years:
+    y_pitchers = df_all[df_all["yearID"] == year]
+    y_teams = df_teams[df_teams["yearID"] == year]
+    
+    teams_list = []
+    
+    for _, trow in y_teams.iterrows():
+        tid = trow["teamID"]
+        t_pitch = y_pitchers[y_pitchers["teamID"] == tid].sort_values("ovr", ascending=False)
+        if len(t_pitch) == 0:
+            continue
+            
+        win_pct = round(float(trow["W"]) / float(trow["G"]), 3) if trow["G"] > 0 else 0.500
+        
+        # Formatear división
+        div_str = None
+        if pd.notna(trow.get("divID")) and pd.notna(trow.get("lgID")):
+            div_code = str(trow["divID"])
+            div_str = f"{trow['lgID']} {DIV_NAMES.get(div_code, div_code)}"
+            
+        plist = []
+        for _, p in t_pitch.iterrows():
+            plist.append({
+                "name": p["display_name"],
+                "playerID": p["playerID"],
+                "role": p["role"],
+                "ovr": int(round(p["ovr"])),
+                "rarity": p["rarity"],
+                "h9": int(round(p["h9"])),
+                "k9": int(round(p["k9"])),
+                "bb9": int(round(p["bb9"])),
+                "hr9": int(round(p["hr9"])),
+                "sta": int(round(p["sta"])),
+                "ip": round(float(p["IP"]), 1),
+                "era": round(float(p["era_val"]), 2),
+                "w": int(p["W"]),
+                "l": int(p["L"]),
+                "sv": int(p["SV"]),
+                "so": int(p["SO"]),
+                "bb": int(p["BB"]),
+                "h": int(p["H"]),
+                "hr": int(p["HR"]),
+                "team": tid,
+                "year": int(year)
+            })
+            
+        team_entry = {
+            "id": f"story_{int(year)}_{tid}",
+            "name": f"{int(year)} {trow['name']}",
+            "teamID": tid,
             "year": int(year),
-            "teamID": boss_id,
-            "label": label or boss_name,
-            "win_pct": 1.0,
-            "isBoss": True,
-            "ovr": int(round(sampled["ovr"].mean())),
-            "pitchers": [pitcher_json(r) for _, r in sampled.iterrows()]
+            "win_pct": win_pct,
+            "division": div_str,
+            "league": trow["lgID"] if pd.notna(trow.get("lgID")) else None,
+            "ovr": int(round(np.mean([p["ovr"] for p in plist[:5]]))), # OVR promedio del top 5
+            "total_pitchers": len(plist),
+            "pitchers": plist
         }
+        teams_list.append(team_entry)
+        
+    full_db[str(int(year))] = {
+        "year": int(year),
+        "teams": teams_list
+    }
 
-    def build_season_tier_zones(year, year_pitchers, valid_teams):
-        # Sort all valid teams from lowest win_pct to highest win_pct
-        sorted_teams = sorted(valid_teams, key=lambda t: t["win_pct"])
-        n = len(sorted_teams)
+# 4. Escribir a disco
+print("\n[4/4] Escribiendo opponents_database.js...")
+js_content = f"window.OpponentsDatabase = {json.dumps(full_db, separators=(',', ':'), ensure_ascii=False)};\n"
 
-        # 4 progressive March to October tiers: Longshots -> Underdogs -> Contenders -> Favorites
-        q1 = max(1, n // 4)
-        q2 = max(2, n // 2)
-        q3 = max(3, (3 * n) // 4)
+with open(OUT_JS, "w", encoding="utf-8") as f:
+    f.write(js_content)
 
-        z0_teams = sorted_teams[:q1]
-        z1_teams = sorted_teams[q1:q2]
-        z2_teams = sorted_teams[q2:q3]
-        z3_teams = sorted_teams[q3:]
+with open(OUT_PREVIEW, "w", encoding="utf-8") as f:
+    f.write(js_content)
 
-        def get_pitchers_for_teams(team_list):
-            t_ids = set(t["teamID"] for t in team_list)
-            p = year_pitchers[year_pitchers["primary_team"].isin(t_ids)]
-            if p.empty or len(p) < 3:
-                p = year_pitchers
-            return p
+# Save the python script to workspace
+with open(OUT_ETL_FILE, "w", encoding="utf-8") as f:
+    with open(__file__, "r", encoding="utf-8") as current_f:
+        f.write(current_f.read())
 
-        b0 = make_boss(get_pitchers_for_teams(z0_teams), f"story_{year}_Z0_BOSS", f"{year} LONGSHOTS ALL-STARS", year, "Longshots")
-        b1 = make_boss(get_pitchers_for_teams(z1_teams), f"story_{year}_Z1_BOSS", f"{year} UNDERDOGS ALL-STARS", year, "Underdogs")
-        b2 = make_boss(get_pitchers_for_teams(z2_teams), f"story_{year}_Z2_BOSS", f"{year} CONTENDERS ALL-STARS", year, "Contenders")
-        b3 = make_boss(get_pitchers_for_teams(z3_teams), f"story_{year}_Z3_BOSS", f"{year} FAVORITES ALL-STARS", year, "Favorites")
-
-        return [
-            {"label": "Longshots", "teams": z0_teams, "boss": b0},
-            {"label": "Underdogs", "teams": z1_teams, "boss": b1},
-            {"label": "Contenders", "teams": z2_teams, "boss": b2},
-            {"label": "Favorites", "teams": z3_teams, "boss": b3},
-        ]
-
-    result = {}
-    years = sorted(py["yearID"].unique())
-    for year in years:
-        year_pitchers = py[py["yearID"] == year].copy()
-        year_teams = teams_slim[teams_slim["yearID"] == year]
-        low, mid, high = [], [], []
-        valid_teams_for_zones = []
-
-        for _, trow in year_teams.iterrows():
-            roster = year_pitchers[year_pitchers["primary_team"] == trow["teamID"]].copy()
-            is_relief = roster["role"] == "RP"
-            relief_mult = np.where(is_relief, 1.6, 1.0)
-            roster["war_sort"] = roster["war_season"].fillna(roster["IP_y"] / 50.0) * relief_mult
-            roster = roster.sort_values("war_sort", ascending=False).head(3)
-            # Solo equipos con al menos 3 lanzadores reales son elegibles como oponentes
-            if len(roster) < 3:
-                continue
-            team_ovr = int(round(roster["ovr"].mean()))
-            entry = {
-                "id": f"story_{int(year)}_{trow['teamID']}",
-                "name": f"{int(year)} {trow['name']}",
-                "year": int(year),
-                "teamID": trow["teamID"],
-                "win_pct": float(trow["win_pct"]),
-                "division": trow["division"] if pd.notna(trow["division"]) else None,
-                "league": trow["league"] if pd.notna(trow["league"]) else None,
-                "ovr": team_ovr,
-                "pitchers": [pitcher_json(r) for _, r in roster.iterrows()],
-            }
-            wp = trow["win_pct"]
-            if wp < LOW_WINPCT_MAX:
-                low.append(entry)
-            elif wp >= HIGH_WINPCT_MIN:
-                high.append(entry)
-            else:
-                mid.append(entry)
-            valid_teams_for_zones.append(entry)
-
-        # Global Boss (3 pitchers al azar del anio entre Legendary/Epic)
-        boss_pool = year_pitchers[year_pitchers["rarity"] == "Legendary"]
-        if len(boss_pool) < 3:
-            fallback_pool = year_pitchers[
-                (year_pitchers["rarity"] == "Epic")
-                & (~year_pitchers.index.isin(boss_pool.index))
-            ]
-            boss_pool = pd.concat([boss_pool, fallback_pool])
-        n_boss_pick = min(3, len(boss_pool))
-        boss_roster = boss_pool.sample(n=n_boss_pick, random_state=None) if n_boss_pick > 0 else boss_pool
-        boss = None
-        if not boss_roster.empty:
-            boss = {
-                "id": f"story_{int(year)}_STARS_BOSS",
-                "name": f"\U0001F451 {int(year)} STARS",
-                "year": int(year),
-                "teamID": "STARS",
-                "win_pct": 1.0,
-                "isBoss": True,
-                "ovr": int(round(boss_roster["ovr"].mean())),
-                "pitchers": [pitcher_json(r) for _, r in boss_roster.iterrows()],
-            }
-
-        # ── 4 Zonas Universales Progresivas (Longshots -> Underdogs -> Contenders -> Favorites) ──
-        zones = build_season_tier_zones(year, year_pitchers, valid_teams_for_zones)
-
-        result[str(int(year))] = {
-            "year": int(year), "low": low, "mid": mid, "high": high, "boss": boss,
-            "divisions": None,
-            "zones": zones,
-        }
-
-    print(f"  {len(result):,} anios procesados")
-
-    js_content = "window.OpponentsDatabase = " + json.dumps(result, ensure_ascii=False, indent=2) + ";\n"
-    with open(OUT_JS, "w", encoding="utf-8") as f:
-        f.write(js_content)
-    print(f"  [OK]  opponents_database.js -> {OUT_JS}")
-
-
-if __name__ == "__main__":
-    main()
+t1 = time.time()
+print(f"\n[OK] opponents_database.js generado exitosamente en {round(t1 - t0, 2)}s.")
+print(f"     Total temporadas: {len(full_db)} (1901-2025)")
+print(f"     Total lanzadores: {len(df_all):,}")

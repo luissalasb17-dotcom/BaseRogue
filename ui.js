@@ -1751,7 +1751,11 @@ function initGameModeSelector() {
     const yearData = (window.OpponentsDatabase || {})[resolvedYear] || (window.OpponentsDatabase || {})[String(resolvedYear)];
     let allTeams = [];
     if (yearData) {
-      ['low', 'mid', 'high'].forEach(t => { if (Array.isArray(yearData[t])) allTeams.push(...yearData[t]); });
+      if (Array.isArray(yearData.teams)) {
+        allTeams.push(...yearData.teams);
+      } else {
+        ['low', 'mid', 'high'].forEach(t => { if (Array.isArray(yearData[t])) allTeams.push(...yearData[t]); });
+      }
     }
     if (window.CAREER_IS_ELIGIBLE_TEAM) allTeams = allTeams.filter(window.CAREER_IS_ELIGIBLE_TEAM);
     const team = allTeams.length ? allTeams[Math.floor(Math.random() * allTeams.length)] : null;

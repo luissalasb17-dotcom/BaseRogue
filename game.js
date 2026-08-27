@@ -2427,142 +2427,270 @@
     }
 
     getEnemyTeam() {
-      if (this.currentEnemy) return this.currentEnemy;
+      // Helper function to unlock in dex
+      const unlockEnemyPitchers = (enemy) => {
+        if (enemy && enemy.pitchers && window.BaseballDex) {
+          enemy.pitchers.forEach(p => window.BaseballDex.unlockOpponent(p));
+        }
+        return enemy;
+      };
 
-      // Mode 1: Story Mode - pick from customSeasonPool or OpponentsDatabase by Stage Tier
+      if (this.currentEnemy) return unlockEnemyPitchers(this.currentEnemy);
+
+      // Helper for OVR calculation
+      const getOvr = (p) => (p.ovr !== undefined ? p.ovr : (p._ovr !== undefined ? p._ovr : (window.UI && window.UI.getPlayerOvr ? window.UI.getPlayerOvr(p) : 50)));
+
+      const createPitcherObj = (p, roleOverride = null) => {
+        const role = roleOverride || p.role || 'SP';
+        const staVal = p.sta !== undefined ? p.sta : (p.sta_val !== undefined ? p.sta_val : 50);
+        const hp = Math.max(75, Math.min(200, Math.round(75 + (staVal - 20) * (125 / 105))));
+        const yearVal = p.year || p.peak_year_display || p.peak_year || this.selectedSeasonYear || 1990;
+        const nameVal = yearVal ? `${p.name} (${yearVal})` : p.name;
+        return {
+          name: nameVal,
+          cleanName: p.name,
+          role: role,
+          pos: role,
+          hp: hp,
+          maxHp: hp,
+          stf: p.k9 !== undefined ? p.k9 : (p.stf !== undefined ? p.stf : 50),
+          ctl: p.bb9 !== undefined ? p.bb9 : (p.ctl !== undefined ? p.ctl : 50),
+          mov: p.hr9 !== undefined ? p.hr9 : (p.mov !== undefined ? p.mov : 50),
+          sta: staVal,
+          ovr: getOvr(p),
+          rarity: p.rarity || 'Common',
+          era: p.era || '',
+          team: p.team || '',
+          year: yearVal,
+          h9:  p.h9  !== undefined ? p.h9  : 50,
+          k9:  p.k9  !== undefined ? p.k9  : 50,
+          bb9: p.bb9 !== undefined ? p.bb9 : 50,
+          hr9: p.hr9 !== undefined ? p.hr9 : 50
+        };
+      };
+
+      // ── MODE 1: STORY MODE (Dynamic Staff Scaling per Map) ───────────────
       if (this.selectedMode === 'story') {
-        const stage = this.currentStageIndex; // 0 to 15 (16 stages total)
+        const stage = this.currentStageIndex; // 0 to 23
         const seasonData = this.seasonPoolData || (window.OpponentsDatabase && this.selectedSeasonYear ? window.OpponentsDatabase[this.selectedSeasonYear] : null);
 
         if (seasonData) {
-          // Super Boss Part 2 (post-Stage-15): Story Mode never had an
-          // equivalent to Quick Play's 4-Legendary-pitcher rotation — it just
-          // re-served the same seasonData.boss object, so the "second fight"
-          // looked identical to the first. Build a fresh squad of 4 random
-          // Legendary pitchers pulled from every pitcher baked into this
-          // season's data (falls back to Epic if a thin year has <4 Legendaries).
-          if (stage === 23 && this.isSuperBossActive) {
-            const allPitchers = [];
-            const addFrom = (arr) => { (arr || []).forEach(e => { (e.pitchers || []).forEach(p => allPitchers.push(p)); }); };
-            addFrom(seasonData.low); addFrom(seasonData.mid); addFrom(seasonData.high);
-            if (seasonData.boss) addFrom([seasonData.boss]);
-            if (seasonData.zones) {
-              seasonData.zones.forEach(z => {
-                addFrom(z.teams);
-                if (z.boss) addFrom([z.boss]);
-              });
-            }
-            if (seasonData.divisions) {
-              Object.values(seasonData.divisions).forEach(d => {
-                addFrom(d.teams);
-                if (d.boss) addFrom([d.boss]);
-              });
-            }
-            const seen = new Set();
-            const dedup = allPitchers.filter(p => {
-              if (!p || seen.has(p.name)) return false;
-              seen.add(p.name);
-              return true;
-            });
-            let legPool = dedup.filter(p => p.rarity === 'Legendary');
-            if (legPool.length < 4) {
-              const legNames = new Set(legPool.map(p => p.name));
-              const epicPool = dedup.filter(p => p.rarity === 'Epic' && !legNames.has(p.name));
-              legPool = legPool.concat(epicPool);
-            }
-            const shuffled = [...legPool].sort(() => Math.random() - 0.5);
-            const selected = shuffled.slice(0, Math.min(4, shuffled.length));
-            if (selected.length > 0) {
-              const avgOvr = Math.round(selected.reduce((s, p) => s + (p.ovr || 50), 0) / selected.length);
-              this.currentEnemy = {
-                id: `story_super_boss_${this.selectedSeasonYear}_${Date.now()}`,
-                name: `⚡ SUPER BOSS: ${selected[0].name}`,
-                tier: 'S',
-                isBoss: true,
-                isSuperBoss: true,
-                year: this.selectedSeasonYear,
-                win_pct: 1.0,
-                ovr: avgOvr,
-                pitchers: sortPitchingStaff(selected),
-                rarity: 'Legendary'
-              };
-              return this.currentEnemy;
-            }
-          }
-
-          // Division-based maps (1969+ seasons only — see loadSeasonOpponents).
-          // Zone = one division; the zone's boss stage (local index 5) draws
-          // from that division's Epic+ pool instead of the global tier boss.
-          // Stage 23 (the absolute Final Boss) is untouched by divisions.
-          if (this.selectedDivisions && stage !== 23) {
-            const zoneIdx = this.getZoneForStage(stage);
-            const division = this.selectedDivisions[zoneIdx];
-            if (division) {
-              const localIdx = stage - this.getZoneStart(zoneIdx);
-              const isZoneBossStage = (localIdx === 5);
-
-              if (!this.encounteredTeams) this.encounteredTeams = new Set();
-              let chosen = null;
-              if (isZoneBossStage && division.boss) {
-                chosen = division.boss;
-              } else {
-                const teams = division.teams || [];
-                let candidates = teams.filter(e => e && !this.encounteredTeams.has(e.id || e.name));
-                if (candidates.length === 0) candidates = teams;
-                if (candidates.length > 0) {
-                  chosen = candidates[Math.floor(Math.random() * candidates.length)];
-                }
-              }
-              if (chosen) {
-                this.encounteredTeams.add(chosen.id || chosen.name);
-                chosen = { ...chosen, pitchers: sortPitchingStaff(chosen.pitchers) };
-                this.currentEnemy = chosen;
-                return this.currentEnemy;
-              }
-            }
-          }
-
-          let tierPool = [];
-          if (stage === 23) {
-            // Stage 24 (index 23): Final Boss → [YEAR] STARS
-            tierPool = seasonData.boss ? [seasonData.boss] : [];
-          } else if (stage <= 5) {
-            // Zone 0 (stages 0–5): Low tier
-            tierPool = seasonData.low || [];
-          } else if (stage <= 11) {
-            // Zone 1 (stages 6–11): Mid tier
-            tierPool = seasonData.mid || [];
-          } else if (stage <= 17) {
-            // Zone 2 (stages 12–17): High tier
-            tierPool = seasonData.high || [];
-          } else {
-            // Zone 3 (stages 18–22): High / contender teams
-            tierPool = (seasonData.high && seasonData.high.length > 0) ? seasonData.high : seasonData.mid;
-          }
+          const allTeams = seasonData.teams || [];
+          const allPitchers = [];
+          allTeams.forEach(t => (t.pitchers || []).forEach(p => allPitchers.push({ ...p, teamName: t.name, teamID: t.teamID })));
 
           if (!this.encounteredTeams) this.encounteredTeams = new Set();
-          let candidates = tierPool.filter(e => e && !this.encounteredTeams.has(e.id || e.name));
-          if (candidates.length === 0) candidates = tierPool;
-          if (candidates.length === 0) candidates = (this.customSeasonPool || []);
+          if (!this.encounteredPitchers) this.encounteredPitchers = new Set();
 
-          const chosen = candidates[Math.floor(Math.random() * candidates.length)];
-          if (chosen) {
-            this.encounteredTeams.add(chosen.id || chosen.name);
-            chosen.pitchers = sortPitchingStaff(chosen.pitchers);
-            this.currentEnemy = chosen;
-            return this.currentEnemy;
+          const pickPitcherFromList = (candidates, preferredRole = null) => {
+            const pitcherKey = (p) => (p.name || '') + '_' + (p.year || this.selectedSeasonYear);
+            let unvisited = candidates.filter(p => !this.encounteredPitchers.has(pitcherKey(p)));
+            if (unvisited.length === 0) unvisited = candidates;
+            if (preferredRole) {
+              const roleMatches = unvisited.filter(p => (p.role || '').toUpperCase() === preferredRole.toUpperCase());
+              if (roleMatches.length > 0) unvisited = roleMatches;
+            }
+            if (unvisited.length === 0) unvisited = candidates;
+            const chosen = unvisited[Math.floor(Math.random() * unvisited.length)];
+            this.encounteredPitchers.add(pitcherKey(chosen));
+            return chosen;
+          };
+
+          const assembleTeamRotation = (pStaff, targetMinOvr, targetMaxOvr) => {
+            let filtered = pStaff.filter(p => p.ovr >= targetMinOvr && p.ovr <= targetMaxOvr);
+            if (filtered.length < 3) {
+              filtered = [...pStaff].sort((a, b) => {
+                const midOvr = (targetMinOvr + targetMaxOvr) / 2;
+                return Math.abs(a.ovr - midOvr) - Math.abs(b.ovr - midOvr);
+              });
+            }
+            const p1 = createPitcherObj(pickPitcherFromList(filtered, 'SP'), 'SP');
+            const p2 = createPitcherObj(pickPitcherFromList(filtered));
+            const p3 = createPitcherObj(pickPitcherFromList(filtered, 'RP'), 'RP');
+            return [p1, p2, p3];
+          };
+
+          // ── CASE A: Super Boss (Stage 23 Part 2) ──────────────────────────
+          if (stage === 23 && this.isSuperBossActive) {
+            const legPool = [...allPitchers].sort((a, b) => b.ovr - a.ovr);
+            let sps = legPool.filter(p => p.role === 'SP');
+            let rps = legPool.filter(p => p.role === 'RP');
+            if (sps.length < 2) sps = legPool;
+            if (rps.length < 2) rps = legPool;
+
+            const selected = [
+              createPitcherObj(sps[0], 'SP'),
+              createPitcherObj(sps[1] || legPool[1], 'SP'),
+              createPitcherObj(rps[0] || legPool[2], 'RP'),
+              createPitcherObj(rps[1] || legPool[3], 'RP')
+            ];
+
+            const highest = selected.reduce((max, p) => (p.ovr > max.ovr ? p : max), selected[0]);
+            this.currentEnemy = {
+              id: `story_super_boss_${this.selectedSeasonYear}_${Date.now()}`,
+              name: `⚡ SUPER BOSS: ${highest.cleanName}`,
+              tier: 'S',
+              isBoss: true,
+              isSuperBoss: true,
+              year: this.selectedSeasonYear,
+              win_pct: 1.0,
+              ovr: highest.ovr,
+              pitchers: selected,
+              rarity: 'Legendary'
+            };
+            return unlockEnemyPitchers(this.currentEnemy);
           }
-        }
 
-        let pool = (this.customSeasonPool && this.customSeasonPool.length > 0) ? this.customSeasonPool : (window.OpponentsPool || []);
-        if (!this.encounteredTeams) this.encounteredTeams = new Set();
-        let candidates = pool.filter(e => !this.encounteredTeams.has(e.id || e.name));
-        if (candidates.length === 0) candidates = pool;
-        const chosen = candidates[Math.floor(Math.random() * candidates.length)];
-        this.encounteredTeams.add(chosen.id || chosen.name);
-        chosen.pitchers = sortPitchingStaff(chosen.pitchers);
-        this.currentEnemy = chosen;
-        return this.currentEnemy;
+          // ── CASE B: Final Boss Serie Mundial (Stage 23 Part 1) ────────────
+          if (stage === 23) {
+            const champTeam = [...allTeams].sort((a, b) => b.win_pct - a.win_pct)[0] || allTeams[0];
+            const pStaff = champTeam.pitchers || [];
+            const ace = createPitcherObj(pStaff[0] || allPitchers[0], 'SP');
+            const sup1 = createPitcherObj(pStaff[1] || pStaff[0] || allPitchers[1], 'SP');
+            const sup2 = createPitcherObj(pStaff[2] || pStaff[0] || allPitchers[2], 'RP');
+            const rotation = [ace, sup1, sup2];
+
+            this.currentEnemy = {
+              id: `story_final_boss_${this.selectedSeasonYear}_${Date.now()}`,
+              name: `👑 FINAL BOSS: ${champTeam.name}`,
+              tier: 'S',
+              isBoss: true,
+              year: this.selectedSeasonYear,
+              win_pct: champTeam.win_pct,
+              ovr: ace.ovr,
+              pitchers: rotation,
+              rarity: ace.rarity || 'Legendary'
+            };
+            return unlockEnemyPitchers(this.currentEnemy);
+          }
+
+          // ── CASE C: Zone Bosses (Stages 5, 11, 17) ────────────────────────
+          if (stage === 5 || stage === 11 || stage === 17) {
+            let targetTeamPool = [];
+            let targetAceMinOvr = 75, targetAceMaxOvr = 79.9, aceRarity = 'Rare';
+            let targetSupMinOvr = 60, targetSupMaxOvr = 69.9;
+
+            if (stage === 5) {
+              targetTeamPool = this.storySeasonTiers?.low || allTeams;
+              targetAceMinOvr = 75; targetAceMaxOvr = 79.9; aceRarity = 'Rare';
+              targetSupMinOvr = 60; targetSupMaxOvr = 69.9;
+            } else if (stage === 11) {
+              targetTeamPool = this.storySeasonTiers?.mid || allTeams;
+              targetAceMinOvr = 85; targetAceMaxOvr = 89.9; aceRarity = 'Epic';
+              targetSupMinOvr = 70; targetSupMaxOvr = 79.9;
+            } else if (stage === 17) {
+              targetTeamPool = this.storySeasonTiers?.high || allTeams;
+              targetAceMinOvr = 90; targetAceMaxOvr = 99.9; aceRarity = 'Legendary';
+              targetSupMinOvr = 80; targetSupMaxOvr = 89.9;
+            }
+
+            let candidateTeams = targetTeamPool.filter(t => !this.encounteredTeams.has(t.id || t.name));
+            if (candidateTeams.length === 0) candidateTeams = targetTeamPool;
+            const chosenTeam = candidateTeams[Math.floor(Math.random() * candidateTeams.length)] || allTeams[0];
+            this.encounteredTeams.add(chosenTeam.id || chosenTeam.name);
+
+            const staff = chosenTeam.pitchers || [];
+            let acePick = staff.find(p => p.ovr >= targetAceMinOvr && p.ovr <= targetAceMaxOvr) || staff[0] || allPitchers[0];
+            let supPool = staff.filter(p => p.playerID !== acePick.playerID && p.ovr >= targetSupMinOvr && p.ovr <= targetSupMaxOvr);
+            if (supPool.length < 2) supPool = staff.filter(p => p.playerID !== acePick.playerID);
+            if (supPool.length < 2) supPool = allPitchers.filter(p => p.ovr >= targetSupMinOvr && p.ovr <= targetSupMaxOvr);
+
+            const ace = createPitcherObj(acePick, 'SP');
+            const sup1 = createPitcherObj(pickPitcherFromList(supPool), 'SP');
+            const sup2 = createPitcherObj(pickPitcherFromList(supPool, 'RP'), 'RP');
+            const rotation = [ace, sup1, sup2];
+
+            this.currentEnemy = {
+              id: `story_boss_stage_${stage}_${Date.now()}`,
+              name: `👑 BOSS: ${ace.cleanName} (${chosenTeam.name})`,
+              tier: 'S',
+              isBoss: true,
+              year: this.selectedSeasonYear,
+              win_pct: chosenTeam.win_pct,
+              ovr: ace.ovr,
+              pitchers: rotation,
+              rarity: aceRarity
+            };
+            return unlockEnemyPitchers(this.currentEnemy);
+          }
+
+          // ── CASE D: Mid-Boss (Floor 4 / Stages 3, 9, 15, 21) ───────────────
+          const currentNode = this.getCurrentNode ? this.getCurrentNode() : null;
+          if (currentNode && currentNode.type === 'mid_boss') {
+            let targetRarity = 'Uncommon', minOvr = 60, maxOvr = 69.9;
+            let targetTeamPool = this.storySeasonTiers?.low || allTeams;
+
+            if (stage <= 5) {
+              targetRarity = 'Uncommon'; minOvr = 60; maxOvr = 69.9; targetTeamPool = this.storySeasonTiers?.low || allTeams;
+            } else if (stage <= 11) {
+              targetRarity = 'Rare'; minOvr = 70; maxOvr = 79.9; targetTeamPool = this.storySeasonTiers?.mid || allTeams;
+            } else if (stage <= 17) {
+              targetRarity = 'Epic'; minOvr = 80; maxOvr = 89.9; targetTeamPool = this.storySeasonTiers?.high || allTeams;
+            } else {
+              targetRarity = 'Legendary'; minOvr = 90; maxOvr = 99.9; targetTeamPool = this.storySeasonTiers?.high || allTeams;
+            }
+
+            let candidateTeams = targetTeamPool.filter(t => !this.encounteredTeams.has(t.id || t.name));
+            if (candidateTeams.length === 0) candidateTeams = targetTeamPool;
+            const chosenTeam = candidateTeams[Math.floor(Math.random() * candidateTeams.length)] || allTeams[0];
+            this.encounteredTeams.add(chosenTeam.id || chosenTeam.name);
+
+            const rotation = assembleTeamRotation(chosenTeam.pitchers || [], minOvr, maxOvr);
+            const highest = rotation.reduce((max, p) => (p.ovr > max.ovr ? p : max), rotation[0]);
+
+            this.currentEnemy = {
+              id: `story_midboss_stage_${stage}_${Date.now()}`,
+              name: `⚡ MID-BOSS: ${highest.cleanName} (${chosenTeam.name})`,
+              tier: 'A+',
+              isMidBoss: true,
+              year: this.selectedSeasonYear,
+              win_pct: chosenTeam.win_pct,
+              ovr: highest.ovr,
+              pitchers: rotation,
+              rarity: targetRarity
+            };
+            return unlockEnemyPitchers(this.currentEnemy);
+          }
+
+          // ── CASE E: Regular Stages (0-5, 6-11, 12-17, 18-22) ───────────────
+          let targetTeamPool = allTeams;
+          let minOvr = 50.0, maxOvr = 59.99;
+
+          if (stage <= 5) {
+            targetTeamPool = this.storySeasonTiers?.low || allTeams;
+            minOvr = 50.0; maxOvr = 59.99;
+          } else if (stage <= 11) {
+            targetTeamPool = this.storySeasonTiers?.mid || allTeams;
+            minOvr = 60.0; maxOvr = 69.99;
+          } else if (stage <= 17) {
+            targetTeamPool = this.storySeasonTiers?.high || allTeams;
+            minOvr = 70.0; maxOvr = 79.99;
+          } else {
+            targetTeamPool = this.storySeasonTiers?.high || allTeams;
+            minOvr = 80.0; maxOvr = 89.99;
+          }
+
+          let candidateTeams = targetTeamPool.filter(t => !this.encounteredTeams.has(t.id || t.name));
+          if (candidateTeams.length === 0) candidateTeams = targetTeamPool;
+          const chosenTeam = candidateTeams[Math.floor(Math.random() * candidateTeams.length)] || allTeams[0];
+          this.encounteredTeams.add(chosenTeam.id || chosenTeam.name);
+
+          const rotation = assembleTeamRotation(chosenTeam.pitchers || [], minOvr, maxOvr);
+          const p1 = rotation[0];
+
+          this.currentEnemy = {
+            id: `story_opp_stage_${stage}_${Date.now()}`,
+            name: `${chosenTeam.name}`,
+            tier: 'B',
+            isBoss: false,
+            year: this.selectedSeasonYear,
+            win_pct: chosenTeam.win_pct,
+            ovr: p1.ovr,
+            pitchers: rotation,
+            rarity: p1.rarity
+          };
+          return unlockEnemyPitchers(this.currentEnemy);
+        }
       }
 
       // Mode 2: Quick Play Mode - Fully Procedural Pitcher Generation (No presets)

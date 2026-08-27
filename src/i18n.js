@@ -162,7 +162,7 @@
     },
     "season_select": {
         "title": "📜 SELECCIONA LA TEMPORADA",
-        "desc": "Elige el año para competir contra todos los equipos reales de esa época con sus 3 mejores pitchers por WAR.",
+        "desc": "Elige el año para competir contra todos los equipos reales de esa época con su rotación completa de lanzadores y progresión histórica de dificultad.",
         "year_label": "AÑO DE LA TEMPORADA:",
         "random": "🎲 Season Aleatoria",
         "start_btn": "⚾ EMPEZAR TEMPORADA HISTÓRICA",
@@ -2119,7 +2119,7 @@
     },
     "season_select": {
         "title": "📜 SELECT THE SEASON",
-        "desc": "Choose the year to compete against real teams from that era with their top 3 pitchers by WAR.",
+        "desc": "Choose the year to compete against real teams from that era with their full pitching staffs and authentic difficulty progression.",
         "year_label": "SEASON YEAR:",
         "random": "🎲 Random Season",
         "start_btn": "⚾ START HISTORICAL SEASON",

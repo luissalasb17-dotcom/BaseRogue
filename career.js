@@ -749,7 +749,11 @@
       const yearData = db[this.currentYear] || db[String(this.currentYear)];
       if (!yearData) return null;
       const all = [];
-      ['low', 'mid', 'high'].forEach(tier => { if (Array.isArray(yearData[tier])) all.push(...yearData[tier]); });
+      if (Array.isArray(yearData.teams)) {
+        all.push(...yearData.teams);
+      } else {
+        ['low', 'mid', 'high'].forEach(tier => { if (Array.isArray(yearData[tier])) all.push(...yearData[tier]); });
+      }
       let candidates = all.filter(t => t.teamID !== excludeTeamID && isCareerEligibleTeam(t));
       if (!candidates.length) return null;
       if (this.nemesis && Math.random() < 0.7) {
@@ -802,8 +806,8 @@
       const db = window.OpponentsDatabase || {};
       const yearData = db[year] || db[String(year)];
       if (!yearData || !teamID) return null;
-      for (const tier of ['low', 'mid', 'high']) {
-        const list = yearData[tier];
+      const searchLists = Array.isArray(yearData.teams) ? [yearData.teams] : [yearData.low, yearData.mid, yearData.high];
+      for (const list of searchLists) {
         if (Array.isArray(list)) {
           const found = list.find(t => t.teamID === teamID && isCareerEligibleTeam(t));
           if (found) return found;
@@ -821,12 +825,22 @@
       const db = window.OpponentsDatabase || {};
       const yearData = db[year] || db[String(year)];
       const byTier = { low: [], mid: [], high: [] };
+      let allTeams = [];
       if (yearData) {
-        ['low', 'mid', 'high'].forEach(tier => {
-          if (Array.isArray(yearData[tier])) byTier[tier] = yearData[tier].filter(isCareerEligibleTeam);
-        });
+        if (Array.isArray(yearData.teams)) {
+          allTeams = yearData.teams.filter(isCareerEligibleTeam);
+          allTeams.forEach(t => {
+            if ((t.win_pct || 0) < 0.480) byTier.low.push(t);
+            else if ((t.win_pct || 0) >= 0.545) byTier.high.push(t);
+            else byTier.mid.push(t);
+          });
+        } else {
+          ['low', 'mid', 'high'].forEach(tier => {
+            if (Array.isArray(yearData[tier])) byTier[tier] = yearData[tier].filter(isCareerEligibleTeam);
+          });
+          allTeams = [...byTier.low, ...byTier.mid, ...byTier.high];
+        }
       }
-      const allTeams = [...byTier.low, ...byTier.mid, ...byTier.high];
       const current = this.team ? this._findTeamInYear(this.team.teamID, year) : null;
 
       // Reputation biases which tier of team is more likely to come
@@ -1532,9 +1546,10 @@
       if (!yearData) return [];
       const seen = new Set();
       const all = [];
-      ['low', 'mid', 'high'].forEach(tier => {
-        if (Array.isArray(yearData[tier])) {
-          yearData[tier].forEach(t => {
+      const lists = Array.isArray(yearData.teams) ? [yearData.teams] : [yearData.low, yearData.mid, yearData.high];
+      lists.forEach(tierList => {
+        if (Array.isArray(tierList)) {
+          tierList.forEach(t => {
             if (!t || !t.teamID || seen.has(t.teamID) || !isCareerEligibleTeam(t)) return;
             seen.add(t.teamID);
             all.push(t);
