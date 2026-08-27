@@ -7613,7 +7613,7 @@ function initGameModeSelector() {
 
 
   // ── OUTCOME POPUP BANNER ─────────────────────────────────────────────────────
-  function showOutcomePopup(eventType, details, ev) {
+  function showOutcomePopup(eventType, details, ev, durationOverride) {
     const parent = document.querySelector('.rpg-fight-deck');
     if (!parent) return;
 
@@ -7721,6 +7721,22 @@ function initGameModeSelector() {
         borderColor = "#f59e0b";
         boxShadow = "0 0 40px rgba(245, 158, 11, 0.8), 0 0 20px rgba(245, 158, 11, 0.5)";
         break;
+      case 'DEF_WIN':
+        title = typeof t === 'function' ? t('sim.def_success_banner_title', { defaultValue: '¡JUGADA DE GUANTE DE ORO!' }) : '¡JUGADA DE GUANTE DE ORO!';
+        color = "#ffd700";
+        icon = "fa-mitten";
+        dmgText = `🛡️ ${details || ''}`;
+        borderColor = "#ffd700";
+        boxShadow = "0 0 35px rgba(255, 215, 0, 0.7)";
+        break;
+      case 'DEF_LOSE':
+        title = typeof t === 'function' ? t('sim.def_fail_banner_title', { defaultValue: '¡ERROR DEFENSIVO!' }) : '¡ERROR DEFENSIVO!';
+        color = "#ef4444";
+        icon = "fa-triangle-exclamation";
+        dmgText = `⚠️ ${details || ''}`;
+        borderColor = "#ef4444";
+        boxShadow = "0 0 35px rgba(239, 68, 68, 0.7)";
+        break;
     }
 
     if (ev && ev.spdUpgraded) {
@@ -7787,7 +7803,8 @@ function initGameModeSelector() {
       align-items: center;
       justify-content: center;
       box-shadow: ${boxShadow};
-      pointer-events: none;
+      pointer-events: auto;
+      cursor: pointer;
       opacity: 0;
       transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
       text-align: center;
@@ -7910,13 +7927,30 @@ function initGameModeSelector() {
       popup.style.opacity = "1";
     }, 10);
 
-    const displayTime = (ev && ev.spdUpgraded) ? 1400 : 1000;
-    setTimeout(() => {
+    let isDismissed = false;
+    const dismissPopup = () => {
+      if (isDismissed) return;
+      isDismissed = true;
       popup.style.transform = "translate(-50%, -50%) scale(0.85)";
       popup.style.opacity = "0";
       setTimeout(() => {
         popup.remove();
-      }, 250);
+      }, 150);
+    };
+
+    popup.addEventListener('click', dismissPopup);
+
+    let displayTime = durationOverride;
+    if (!displayTime) {
+      if (ev && ev.spdUpgraded) displayTime = 1300;
+      else if (eventType === 'HR') displayTime = 1200;
+      else if (eventType === 'KO') displayTime = 1100;
+      else if (eventType === 'STEAL') displayTime = 850;
+      else displayTime = 900;
+    }
+
+    setTimeout(() => {
+      if (!isDismissed) dismissPopup();
     }, displayTime);
   }
 
@@ -7990,15 +8024,22 @@ function initGameModeSelector() {
         // 'cursor' tracks the ms offset at which the NEXT popup should start.
         const events = activeBattle.rollDice(finalRoll) || [];
         const hasKO = events.some(ev => ev.playType === 'KO_PITCHER' || ev.eventType === 'KO');
-        const POPUP_DURATION = 700; // ms a popup is visible
-        const POPUP_GAP      = 100; // ms gap between consecutive popups
+        
+        const getPopupDuration = (type, e) => {
+          if (e && e.spdUpgraded) return 1300;
+          if (type === 'HR') return 1200;
+          if (type === 'KO' || type === 'KO_PITCHER') return 1100;
+          if (type === 'STEAL') return 850;
+          return 900;
+        };
+
+        const POPUP_GAP = 140; // ms gap between consecutive popups
         let cursor = 0;
 
         // Phase 1: build popup schedule in correct visual order.
         // KO is always pushed last regardless of its position in events[].
-        const popupQueue = []; // { type, text, ev, at }
+        const popupQueue = []; // { type, text, ev, duration, at }
         let koEntry = null;
-        let koEvent = null;
 
         events.forEach(ev => {
           appendLogLine(ev); // Log immediately (no delay)
@@ -8006,8 +8047,8 @@ function initGameModeSelector() {
           const isKO = ev.playType === 'KO_PITCHER' || ev.eventType === 'KO';
 
           if (isKO) {
-            koEntry = { type: 'KO', text: rawText, ev };
-            koEvent = ev;
+            const koDur = getPopupDuration('KO', ev);
+            koEntry = { type: 'KO', text: rawText, ev, duration: koDur };
             return; // defer to end
           }
 
@@ -8029,13 +8070,14 @@ function initGameModeSelector() {
             }
           }
 
-          const thisPopupDuration = ev.spdUpgraded ? 1400 : POPUP_DURATION;
-          popupQueue.push({ type: ev.eventType, text: batterText, ev, at: cursor });
-          cursor += thisPopupDuration + POPUP_GAP;
+          const thisDur = getPopupDuration(ev.eventType, ev);
+          popupQueue.push({ type: ev.eventType, text: batterText, ev, duration: thisDur, at: cursor });
+          cursor += thisDur + POPUP_GAP;
 
           if (hasSteal) {
-            popupQueue.push({ type: 'STEAL', text: stealText, ev, at: cursor });
-            cursor += POPUP_DURATION + POPUP_GAP;
+            const stealDur = getPopupDuration('STEAL', ev);
+            popupQueue.push({ type: 'STEAL', text: stealText, ev, duration: stealDur, at: cursor });
+            cursor += stealDur + POPUP_GAP;
           }
         });
 
@@ -8053,12 +8095,12 @@ function initGameModeSelector() {
               if (pitcherHpWrap) triggerBarShake(pitcherHpWrap, 'hp-bar-hit');
             }
           }, koBarDelay);
-          cursor += POPUP_DURATION + POPUP_GAP;
+          cursor += koEntry.duration + POPUP_GAP;
         }
 
         // Phase 2: fire all popups in computed order
-        popupQueue.forEach(({ type, text, ev, at }) => {
-          setTimeout(() => showOutcomePopup(type, text, ev), at);
+        popupQueue.forEach(({ type, text, ev, duration, at }) => {
+          setTimeout(() => showOutcomePopup(type, text, ev, duration), at);
         });
 
 
