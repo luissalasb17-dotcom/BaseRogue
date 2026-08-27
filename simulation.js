@@ -581,7 +581,7 @@
 
         // eagle_patience: each BB regenerates +5 Stamina to the batter
         if (this.hasTrait('eagle_patience')) {
-          batter.stamina = Math.min(100, (batter.stamina || 100) + 4);
+          batter.stamina = Math.min(100, (batter.stamina || 100) + 5);
         }
 
         // Apply Natural 1-turn +20% fatigue debuff on Walk (Moneyball enhances this further)
@@ -635,7 +635,7 @@
         if (expansionTier >= 1) {
           const extraChance = expansionTier === 4 ? 1.0 : expansionTier === 3 ? 0.40 : expansionTier === 2 ? 0.25 : 0.15;
           stealChance = expansionTier === 4 ? 1.0 : Math.min(1.0, stealChance + extraChance);
-          stealHeal = expansionTier === 4 ? 14 : expansionTier === 3 ? 10 : expansionTier === 2 ? 7 : 4;
+          stealHeal = expansionTier === 4 ? 15 : expansionTier === 3 ? 10 : expansionTier === 2 ? 5 : 5;
           extraStealDmg = expansionTier === 4 ? 25 : expansionTier === 3 ? 18 : expansionTier === 2 ? 10 : 4;
           stealProcMsg = _t('sim.syn_expansion', {}, 'Sinergia Expansion');
         }
@@ -758,11 +758,9 @@
           ` (${_t('sim.shield_status', { shield: this.teamShield, max: this.teamShieldMax, hp: this.teamHP }, 'Escudo: ' + this.teamShield + '/' + this.teamShieldMax + ' | HP: ' + this.teamHP + '/100')})`;
 
         if (integrationTier >= 2) {
-          const healAmt = integrationTier === 4 ? 14 : integrationTier === 3 ? 10 : 6;
-          this.awayTeam.lineup.forEach(p => {
-            if (p) p.stamina = Math.min(100, (p.stamina || 100) + healAmt);
-          });
-          synergyProc = (synergyProc ? synergyProc + ' | ' : '') + _t('sim.syn_fivetool_out', { amt: healAmt }, `🔋 Five-Tool: ¡OUT recupera +${healAmt} de Stamina a todos!`);
+          const healAmt = integrationTier === 4 ? 15 : integrationTier === 3 ? 10 : 5;
+          batter.stamina = Math.min(100, (batter.stamina || 100) + healAmt);
+          synergyProc = (synergyProc ? synergyProc + ' | ' : '') + _t('sim.syn_fivetool_out', { name: batter.name, amt: healAmt }, `🔋 Five-Tool: ¡${batter.name} recupera +${healAmt} Stamina!`);
           if (integrationTier === 4) {
             this.staminaImmuneBatterIds.add(batter.id || batter.name);
             synergyProc += ' | ' + _t('sim.syn_fivetool_immune', { name: batter.name }, `🔋 Five-Tool: ¡${batter.name} es inmune al desgaste de Stamina de este partido!`);
@@ -852,11 +850,9 @@
             ` (${_t('sim.shield_status', { shield: this.teamShield, max: this.teamShieldMax, hp: this.teamHP }, 'Escudo: ' + this.teamShield + '/' + this.teamShieldMax + ' | HP: ' + this.teamHP + '/100')})`;
 
           if (integrationTier >= 2) {
-            const healAmt = integrationTier === 4 ? 14 : integrationTier === 3 ? 10 : 6;
-            this.awayTeam.lineup.forEach(p => {
-              if (p) p.stamina = Math.min(100, (p.stamina || 100) + healAmt);
-            });
-            synergyProc = (synergyProc ? synergyProc + ' | ' : '') + _t('sim.syn_fivetool_out', { amt: healAmt }, `🔋 Five-Tool: ¡OUT recupera +${healAmt} de Stamina a todos!`);
+            const healAmt = integrationTier === 4 ? 15 : integrationTier === 3 ? 10 : 5;
+            batter.stamina = Math.min(100, (batter.stamina || 100) + healAmt);
+            synergyProc = (synergyProc ? synergyProc + ' | ' : '') + _t('sim.syn_fivetool_out', { name: batter.name, amt: healAmt }, `🔋 Five-Tool: ¡${batter.name} recupera +${healAmt} Stamina!`);
             if (integrationTier === 4) {
               this.staminaImmuneBatterIds.add(batter.id || batter.name);
               synergyProc += ' | ' + _t('sim.syn_fivetool_immune', { name: batter.name }, `🔋 Five-Tool: ¡${batter.name} es inmune al desgaste de Stamina de este partido!`);
@@ -929,11 +925,9 @@
             hrDmg += extraHr;
             synergyProc = _t('sim.syn_bash_hr', { extra: extraHr }, `💪 Bash Brothers: ¡Jonrón nuclear inflige +${extraHr} daño!`);
             if (steroidTier >= 2) {
-              const hrHeal = steroidTier === 4 ? 20 : steroidTier === 3 ? 14 : 8;
-              this.awayTeam.lineup.forEach(p => {
-                if (p) p.stamina = Math.min(100, (p.stamina || 100) + hrHeal);
-              });
-              synergyProc += ' | ' + _t('sim.syn_bash_hr_heal', { amt: hrHeal }, `💪 Bash Brothers: ¡Jonrón recupera +${hrHeal} Stamina a todos!`);
+              const hrHeal = steroidTier === 4 ? 15 : steroidTier === 3 ? 10 : 5;
+              batter.stamina = Math.min(100, (batter.stamina || 100) + hrHeal);
+              synergyProc += ' | ' + _t('sim.syn_bash_hr_heal', { name: batter.name, amt: hrHeal }, `💪 Bash Brothers: ¡${batter.name} recupera +${hrHeal} Stamina!`);
             }
           }
 
@@ -1043,7 +1037,7 @@
           if (expansionTier >= 1) {
             const extraChance = expansionTier === 4 ? 1.0 : expansionTier === 3 ? 0.50 : expansionTier === 2 ? 0.35 : 0.20;
             stealChance = expansionTier === 4 ? 1.0 : Math.min(1.0, stealChance + extraChance);
-            stealHeal = expansionTier === 4 ? 14 : expansionTier === 3 ? 10 : expansionTier === 2 ? 7 : 4;
+            stealHeal = expansionTier === 4 ? 15 : expansionTier === 3 ? 10 : expansionTier === 2 ? 5 : 5;
             extraStealDmg = expansionTier === 4 ? 40 : expansionTier === 3 ? 30 : expansionTier === 2 ? 20 : 0;
             stealProcMsg = _t('sim.syn_expansion', {}, 'Sinergia Expansion');
           }

@@ -32,12 +32,12 @@
     },
     "Integration (1942-1960)": {
       name: "Five-Tool Legends",
-      desc: "T1 (2+): +3 todos los stats. T2 (4+): +6 stats; hits +10 daño; outs curan +8 Stamina al bateador. T3 (6+): +9 stats; hits +18 daño; outs curan +12 Stamina al bateador. T4 (8+): +12 stats; hits +26 daño; outs curan +16 al bateador; inmune a fatiga.",
+      desc: "T1 (2+): +3 todos los stats. T2 (4+): +6 stats; hits +10 daño; outs curan +5 Stamina al bateador. T3 (6+): +9 stats; hits +18 daño; outs curan +10 Stamina al bateador. T4 (8+): +12 stats; hits +26 daño; outs curan +15 al bateador; inmune a fatiga.",
       applyStatBonus: (stats) => {}
     },
     "Expansion (1961-1976)": {
       name: "Speed & Hustle",
-      desc: "T1 (2+): +10 SPD; +20% robo; robo cura +4 Stamina al corredor. T2 (4+): +15 SPD / +10 EYE; +35% robo; cura +7 y +20 daño. T3 (6+): +20 SPD / +20 EYE; +50% robo; cura +10 y +30 daño. T4 (8+): +25 SPD / +25 EYE; 100% robo; cura +14 y +40 daño.",
+      desc: "T1 (2+): +10 SPD; +20% robo; robo cura +5 Stamina al corredor. T2 (4+): +15 SPD / +10 EYE; +35% robo; cura +5 y +20 daño. T3 (6+): +20 SPD / +20 EYE; +50% robo; cura +10 y +30 daño. T4 (8+): +25 SPD / +25 EYE; 100% robo; cura +15 y +40 daño.",
       applyStatBonus: (stats) => {}
     },
     "Big Hair Era (1977-1993)": {
@@ -47,7 +47,7 @@
     },
     "Steroid Era (1994-2005)": {
       name: "Bash Brothers",
-      desc: "T1 (2+): +10 PWR; Jonrones (HR) +30 daño. T2 (4+): +20 PWR; HR +50 daño y curan +6 Stamina al bateador. T3 (6+): +30 PWR; HR +70 daño y curan +10 Stamina. T4 (8+): +40 PWR; HR +90 daño y curan +14 Stamina.",
+      desc: "T1 (2+): +10 PWR; Jonrones (HR) +30 daño. T2 (4+): +20 PWR; HR +50 daño y curan +5 Stamina al bateador. T3 (6+): +30 PWR; HR +70 daño y curan +10 Stamina. T4 (8+): +40 PWR; HR +90 daño y curan +15 Stamina.",
       applyStatBonus: (stats) => {}
     },
     "Efficiency Era (2006-2015)": {
