@@ -7798,9 +7798,12 @@ function initGameModeSelector() {
     let cleanDetails = details ? details.replace(/🎲 \[\d+\] \[[^\]]+\] /, '').replace(/−/g, '-') : '';
     cleanDetails = cleanDetails.replace(/⚡\s*¡?CLUTCH PLAYER!?[^—\n]*[—\.]\s*(\(\+[^)]+\)\.?)?\s*/gi, '').replace(/^⚡\s*¡?CLUTCH PLAYER!?[^\.]*\.\s*/gi, '').trim();
     cleanDetails = cleanDetails.replace(/Anotan 0 carreras\.\s*/gi, '').replace(/0 runs scored\.\s*/gi, '').trim();
-    // Shorten long error description text so the popup remains compact and punchy
-    cleanDetails = cleanDetails.replace(/conecta rodado y el fildeador comete pifia/gi, 'se embasa por error').replace(/hits a grounder and the fielder commits an error/gi, 'reaches on fielding error');
+    // Shorten long descriptions so popups stay punchy and compact
+    cleanDetails = cleanDetails.replace(/conecta rodado y el fildeador comete pifia/gi, 'se embasa por error').replace(/hits a grounder and the fielder commits an error/gi, 'reaches on error');
+    cleanDetails = cleanDetails.replace(/trabaja el conteo y saca pasaporte\./gi, 'saca pasaporte.');
+    cleanDetails = cleanDetails.replace(/works the count and draws a walk\./gi, 'draws a walk.');
     cleanDetails = cleanDetails.replace(/⚠️\s*(?:¡Pifia defensiva rival \(E\)!|Opponent fielding error \(E\)!)[^\.\n]*\./gi, '').trim();
+    cleanDetails = cleanDetails.replace(/⚠️\s*(?:¡Lanzador en aprietos!?|Pitcher under pressure!?)[^\.\n]*\./gi, '').trim();
 
     // SPD Hit Upgrade Highlight (1B -> 2B or 2B -> 3B)
     let spdUpgradeHTML = '';

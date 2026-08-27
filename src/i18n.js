@@ -402,7 +402,7 @@
     },
     "popup": {
         "bb_title": "BASE POR BOLAS",
-        "bb_dmg": "15 HP • DEBUFF +20% DAÑO AL PITCHER",
+        "bb_dmg": "15 HP • FATIGA AL PITCHER (+20% DAÑO)",
         "so_title": "¡PONCHE!",
         "so_dmg": "DAÑO DIRECTO (IGNORA ESCUDO)",
         "out_title": "OUT",
@@ -416,11 +416,11 @@
         "hr_title": "¡JONRÓN! 🚀💥",
         "hr_dmg": "75 HP ¡CRÍTICO! (+10 POR CARRERA)",
         "steal_title": "¡ROBO DE BASE! 🏃⚡",
-        "steal_dmg": "PITCHER DEBUFF: +20% DAÑO RECIBIDO",
+        "steal_dmg": "FATIGA AL PITCHER: +20% DAÑO (2 TURNOS)",
         "ko_title": "¡K.O. AL LANZADOR! 💥",
         "ko_dmg": "¡PITCHER RIVAL DERROTADO!",
         "error_title": "¡ERROR RIVAL (E)!",
-        "error_dmg": "EMBASADO EN 1B • 20 HP DAÑO AL PITCHER"
+        "error_dmg": "EMBASADO EN 1B • 20 HP DAÑO"
     },
     "card_popup": {
         "swap_pos_title": "CAMBIAR POSICIÓN EN EL CAMPO:",
@@ -1350,7 +1350,7 @@
         "out": "<strong style=\"color: #9ca3af;\">✋ OUT (Flyout/Groundout):</strong> Resta <span style=\"color:#ef4444;font-weight:bold;\">-20 HP</span> al Escudo (al romperlo, resta a la vida). En Extra Innings: <span style=\"color:#ef4444;font-weight:bold;\">-30 HP</span>.",
         "so": "<strong style=\"color: #ef4444;\">💨 PONCHE (SO):</strong> Resta daño directo a la vida (ignora escudo).<div style=\"font-size: 8.5px; color: #a855f7; margin-top: 2px;\">🔥 Racha: 1º (-20 HP) • 2º (-26 HP) • 3º+ (-32 HP)<br>⚡ Extra Innings: 1º (-30) • 2º (-36) • 3º+ (-42 HP)</div>",
         "pitcher_title": "⚾ DAÑO AL LANZADOR RIVAL:",
-        "bb": "🚶 BB: <b style=\"color:#3b82f6;\">15 HP</b>",
+        "bb": "🚶 BB: <b style=\"color:#3b82f6;\">15 HP</b> <span style=\"font-size:8px;color:#38bdf8;\">(+20% fatiga 1 turno)</span>",
         "single": "✅ 1B: <b style=\"color:#a7f3d0;\">20 HP</b>",
         "double": "⚡ 2B: <b style=\"color:#10b981;\">35 HP</b>",
         "triple": "🔥 3B: <b style=\"color:#06b6d4;\">50 HP</b>",
@@ -2350,7 +2350,7 @@
     },
     "popup": {
         "bb_title": "WALK (BB)",
-        "bb_dmg": "15 HP • DEBUFF +20% DAMAGE TO PITCHER",
+        "bb_dmg": "15 HP • PITCHER FATIGUED (+20% DAMAGE)",
         "so_title": "STRIKEOUT!",
         "so_dmg": "DIRECT DAMAGE (IGNORES SHIELD)",
         "out_title": "OUT",
@@ -2364,11 +2364,11 @@
         "hr_title": "HOME RUN! 🚀💥",
         "hr_dmg": "75 HP CRITICAL! (+10 PER RUN)",
         "steal_title": "STOLEN BASE! 🏃⚡",
-        "steal_dmg": "PITCHER DEBUFF: +20% DAMAGE TAKEN",
+        "steal_dmg": "PITCHER DEBUFF: +20% DAMAGE (2 TURNS)",
         "ko_title": "PITCHER K.O.! 💥",
         "ko_dmg": "RIVAL PITCHER DEFEATED!",
         "error_title": "OPPONENT ERROR (E)!",
-        "error_dmg": "REACHED ON ERROR (1B) • 20 HP DAMAGE TO PITCHER"
+        "error_dmg": "ON BASE 1B • 20 HP DAMAGE"
     },
     "card_popup": {
         "swap_pos_title": "CHANGE DEFENSIVE POSITION:",
@@ -2759,7 +2759,7 @@
         "trait_reliever_ambush": "🔥 Reliever Ambush: +50% damage (first hit against this pitcher).",
         "trait_speed_demons": "⚡ Aggressive Speedsters",
         "trait_ghost_runners": "🏃 Ghost Runners: A runner appears on 2nd base to start {{inning}}!",
-        "bb_fatigue_desc": "⚠️ Pitcher in trouble! +{{pct}}% damage debuff on next turn."
+        "bb_fatigue_desc": "⚠️ Pitcher under pressure! +{{pct}}% damage debuff on next turn."
     },
     "syn": {
         "deadball": {
@@ -3298,7 +3298,7 @@
         "out": "<strong style=\"color: #9ca3af;\">✋ OUT (Flyout/Groundout):</strong> Deals <span style=\"color:#ef4444;font-weight:bold;\">-20 HP</span> to Shield (overflow hits Team HP). In Extra Innings: <span style=\"color:#ef4444;font-weight:bold;\">-30 HP</span>.",
         "so": "<strong style=\"color: #ef4444;\">💨 STRIKEOUT (SO):</strong> Direct Team HP damage (bypasses shield).<div style=\"font-size: 8.5px; color: #a855f7; margin-top: 2px;\">🔥 Streak: 1st (-20 HP) • 2nd (-26 HP) • 3rd+ (-32 HP)<br>⚡ Extra Innings: 1st (-30) • 2nd (-36) • 3rd+ (-42 HP)</div>",
         "pitcher_title": "⚾ RIVAL PITCHER DAMAGE:",
-        "bb": "🚶 BB: <b style=\"color:#3b82f6;\">15 HP</b>",
+        "bb": "🚶 BB: <b style=\"color:#3b82f6;\">15 HP</b> <span style=\"font-size:8px;color:#38bdf8;\">(+20% fatigue 1 turn)</span>",
         "single": "✅ 1B: <b style=\"color:#a7f3d0;\">20 HP</b>",
         "double": "⚡ 2B: <b style=\"color:#10b981;\">35 HP</b>",
         "triple": "🔥 3B: <b style=\"color:#06b6d4;\">50 HP</b>",

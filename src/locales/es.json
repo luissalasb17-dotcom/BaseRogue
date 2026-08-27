@@ -398,7 +398,7 @@
   },
   "popup": {
     "bb_title": "BASE POR BOLAS",
-    "bb_dmg": "15 HP • DEBUFF +20% DAÑO AL PITCHER",
+    "bb_dmg": "15 HP • FATIGA AL PITCHER (+20% DAÑO)",
     "so_title": "¡PONCHE!",
     "so_dmg": "DAÑO DIRECTO (IGNORA ESCUDO)",
     "out_title": "OUT",
@@ -412,11 +412,11 @@
     "hr_title": "¡JONRÓN! 🚀💥",
     "hr_dmg": "75 HP ¡CRÍTICO! (+10 POR CARRERA)",
     "steal_title": "¡ROBO DE BASE! 🏃⚡",
-    "steal_dmg": "PITCHER DEBUFF: +20% DAÑO RECIBIDO",
+    "steal_dmg": "FATIGA AL PITCHER: +20% DAÑO (2 TURNOS)",
     "ko_title": "¡K.O. AL LANZADOR! 💥",
     "ko_dmg": "¡PITCHER RIVAL DERROTADO!",
     "error_title": "¡ERROR RIVAL (E)!",
-    "error_dmg": "EMBASADO EN 1B • 20 HP DAÑO AL PITCHER"
+    "error_dmg": "EMBASADO EN 1B • 20 HP DAÑO"
   },
   "card_popup": {
     "swap_pos_title": "CAMBIAR POSICIÓN EN EL CAMPO:",
@@ -1346,7 +1346,7 @@
     "out": "<strong style=\"color: #9ca3af;\">✋ OUT (Flyout/Groundout):</strong> Resta <span style=\"color:#ef4444;font-weight:bold;\">-20 HP</span> al Escudo (al romperlo, resta a la vida). En Extra Innings: <span style=\"color:#ef4444;font-weight:bold;\">-30 HP</span>.",
     "so": "<strong style=\"color: #ef4444;\">💨 PONCHE (SO):</strong> Resta daño directo a la vida (ignora escudo).<div style=\"font-size: 8.5px; color: #a855f7; margin-top: 2px;\">🔥 Racha: 1º (-20 HP) • 2º (-26 HP) • 3º+ (-32 HP)<br>⚡ Extra Innings: 1º (-30) • 2º (-36) • 3º+ (-42 HP)</div>",
     "pitcher_title": "⚾ DAÑO AL LANZADOR RIVAL:",
-    "bb": "🚶 BB: <b style=\"color:#3b82f6;\">15 HP</b>",
+    "bb": "🚶 BB: <b style=\"color:#3b82f6;\">15 HP</b> <span style=\"font-size:8px;color:#38bdf8;\">(+20% fatiga 1 turno)</span>",
     "single": "✅ 1B: <b style=\"color:#a7f3d0;\">20 HP</b>",
     "double": "⚡ 2B: <b style=\"color:#10b981;\">35 HP</b>",
     "triple": "🔥 3B: <b style=\"color:#06b6d4;\">50 HP</b>",
