@@ -2693,15 +2693,7 @@
         }
       }
 
-      // Mode 2: Quick Play Mode - Fully Procedural Pitcher Generation (No presets)
-      const unlockEnemyPitchers = (enemy) => {
-        if (enemy && enemy.pitchers && window.BaseballDex) {
-          enemy.pitchers.forEach(p => window.BaseballDex.unlockOpponent(p));
-        }
-        return enemy;
-      };
-
-      if (this.currentEnemy) return unlockEnemyPitchers(this.currentEnemy);
+      // ── MODE 2: QUICK PLAY MODE (Fully Procedural Pitcher Generation) ──
 
       const stage = this.currentStageIndex; // 0 to 15
       const fullPool = window.PITCHERS_POOL || [];
