@@ -1034,7 +1034,7 @@
     },
     "stamina": {
       "name": "🔋 Endless Stamina",
-      "desc": "Batters only lose 6 Stamina per match (instead of 12)."
+      "desc": "Batters only lose 10 Stamina per match (instead of 20)."
     },
     "clutch": {
       "name": "❤️ Clutch Legends",

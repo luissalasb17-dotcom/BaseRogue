@@ -1042,7 +1042,7 @@
         tr('extra_base_impact', '💣', 'extrabase', '💣 Impacto Acumulado', 'Batazos de extra bases (2B, 3B, HR) infligen +10 HP de daño adicional al pitcher.'),
         tr('iron_shield',       '🛡️', 'shield', '🛡️ Escudo de Hierro', 'Repara automáticamente +25 de Escudo al inicio de cada entrada (hasta el límite de tu equipo).'),
         tr('defensive_wall',    '🧱', 'wall', '🧱 Muro Defensivo', 'Outs normales reducen daño a -13 HP en lugar de -20 HP.'),
-        tr('endless_stamina',   '🔋', 'stamina', '🔋 Resistencia Inagotable', 'Los bateadores solo pierden 6 de Stamina por partido (en lugar de 12).'),
+        tr('endless_stamina',   '🔋', 'stamina', '🔋 Resistencia Inagotable', 'Los bateadores solo pierden 10 de Stamina por partido (en lugar de 20).'),
         tr('clutch_legends',    '❤️', 'clutch', '❤️ Resiliencia de Leyendas', 'Si Team HP cae por debajo de 35, activa estado Clutch: +15 a CON, PWR, EYE, SPD, DEF para toda la alineación.'),
         tr('golden_glove',      '🧤', 'glove', '🧤 Guantelete Dorado', 'Todos los bateadores reciben +10 DEF, aumentando la capacidad del Escudo de equipo.'),
         tr('secondary_master',  '🔄', 'secondary', '🔄 Posición Secundaria Maestra', 'Elimina la penalización (-15%) al colocar bateadores en su Posición Secundaria.'),
@@ -2703,13 +2703,15 @@
         return this.currentEnemy;
       }
 
-      // Map 1 Boss (Stage 5): 1 Rare (OVR 70-79), 2 Uncommon (OVR 60-69)
+      // Map 1 Boss (Stage 5): Ace 75-79 OVR (Rare Alta), 2 Support 60-69 OVR (Uncommon)
       if (stage === 5) {
-        const rarePool   = fullPool.filter(p => p.rarity === 'Rare');
-        const uncommPool = fullPool.filter(p => p.rarity === 'Uncommon');
-        // Pick an ace (can be SP or RP) from Rare pool
-        const isRpAce = Math.random() < 0.35 && rarePool.some(p => (p.role || '').toUpperCase() === 'RP');
-        const { rotation, highestPitcher } = assembleThreePitcherRotation(rarePool.length ? rarePool : fullPool, uncommPool.length ? uncommPool : fullPool, isRpAce ? 'RP' : 'SP');
+        let acePool = fullPool.filter(p => p.rarity === 'Rare' && getOvr(p) >= 75 && getOvr(p) <= 79.9);
+        if (acePool.length === 0) acePool = fullPool.filter(p => p.rarity === 'Rare');
+        let uncommPool = fullPool.filter(p => p.rarity === 'Uncommon' && getOvr(p) >= 60 && getOvr(p) <= 69.9);
+        if (uncommPool.length === 0) uncommPool = fullPool.filter(p => p.rarity === 'Uncommon');
+
+        const isRpAce = Math.random() < 0.35 && acePool.some(p => (p.role || '').toUpperCase() === 'RP');
+        const { rotation, highestPitcher } = assembleThreePitcherRotation(acePool, uncommPool, isRpAce ? 'RP' : 'SP');
         
         this.currentEnemy = {
           id: `boss_map1_${Date.now()}`,
@@ -2724,12 +2726,15 @@
         return this.currentEnemy;
       }
 
-      // Map 2 Boss (Stage 11): 1 Epic (OVR 80-89), 2 Rare (OVR 70-79)
+      // Map 2 Boss (Stage 11): Ace 85-89 OVR (Epic Alta), 2 Support 70-79 OVR (Rare)
       if (stage === 11) {
-        const epicPool   = fullPool.filter(p => p.rarity === 'Epic');
-        const rarePool   = fullPool.filter(p => p.rarity === 'Rare');
-        const isRpAce = Math.random() < 0.35 && epicPool.some(p => (p.role || '').toUpperCase() === 'RP');
-        const { rotation, highestPitcher } = assembleThreePitcherRotation(epicPool.length ? epicPool : fullPool, rarePool.length ? rarePool : fullPool, isRpAce ? 'RP' : 'SP');
+        let acePool = fullPool.filter(p => p.rarity === 'Epic' && getOvr(p) >= 85 && getOvr(p) <= 89.9);
+        if (acePool.length === 0) acePool = fullPool.filter(p => p.rarity === 'Epic');
+        let rarePool = fullPool.filter(p => p.rarity === 'Rare' && getOvr(p) >= 70 && getOvr(p) <= 79.9);
+        if (rarePool.length === 0) rarePool = fullPool.filter(p => p.rarity === 'Rare');
+
+        const isRpAce = Math.random() < 0.35 && acePool.some(p => (p.role || '').toUpperCase() === 'RP');
+        const { rotation, highestPitcher } = assembleThreePitcherRotation(acePool, rarePool, isRpAce ? 'RP' : 'SP');
 
         this.currentEnemy = {
           id: `boss_map2_${Date.now()}`,
@@ -2744,12 +2749,15 @@
         return this.currentEnemy;
       }
 
-      // Map 3 Boss (Stage 17): 1 Legendary (OVR 90-99), 2 Epic (OVR 80-89)
+      // Map 3 Boss (Stage 17): Ace 95-99 OVR (Legendary Alta), 2 Support 80-89 OVR (Epic)
       if (stage === 17) {
-        const legPool  = fullPool.filter(p => p.rarity === 'Legendary');
-        const epicPool = fullPool.filter(p => p.rarity === 'Epic');
-        const isRpAce = Math.random() < 0.35 && legPool.some(p => (p.role || '').toUpperCase() === 'RP');
-        const { rotation, highestPitcher } = assembleThreePitcherRotation(legPool.length ? legPool : fullPool, epicPool.length ? epicPool : fullPool, isRpAce ? 'RP' : 'SP');
+        let acePool = fullPool.filter(p => p.rarity === 'Legendary' && getOvr(p) >= 95 && getOvr(p) <= 99.9);
+        if (acePool.length === 0) acePool = fullPool.filter(p => p.rarity === 'Legendary');
+        let epicPool = fullPool.filter(p => p.rarity === 'Epic' && getOvr(p) >= 80 && getOvr(p) <= 89.9);
+        if (epicPool.length === 0) epicPool = fullPool.filter(p => p.rarity === 'Epic');
+
+        const isRpAce = Math.random() < 0.35 && acePool.some(p => (p.role || '').toUpperCase() === 'RP');
+        const { rotation, highestPitcher } = assembleThreePitcherRotation(acePool, epicPool, isRpAce ? 'RP' : 'SP');
 
         this.currentEnemy = {
           id: `boss_map3_${Date.now()}`,
@@ -2764,10 +2772,14 @@
         return this.currentEnemy;
       }
 
-      // Map 4 Boss Fight #1 (Stage 23): 3 Legendary Pitchers (OVR 90+)
+      // Map 4 Boss Fight #1 (Stage 23): Ace 95+ OVR (Legendary Élite), 2 Support 90-94 OVR (Legendary)
       if (stage === 23) {
-        const legPool = fullPool.filter(p => p.rarity === 'Legendary');
-        const { rotation, highestPitcher } = assembleThreePitcherRotation(legPool.length ? legPool : fullPool, legPool.length ? legPool : fullPool, 'SP');
+        let acePool = fullPool.filter(p => p.rarity === 'Legendary' && getOvr(p) >= 95.0);
+        if (acePool.length === 0) acePool = fullPool.filter(p => p.rarity === 'Legendary');
+        let supportPool = fullPool.filter(p => p.rarity === 'Legendary' && getOvr(p) >= 90.0 && getOvr(p) < 95.0);
+        if (supportPool.length < 2) supportPool = fullPool.filter(p => p.rarity === 'Legendary');
+
+        const { rotation, highestPitcher } = assembleThreePitcherRotation(acePool, supportPool, 'SP');
 
         this.currentEnemy = {
           id: `boss_map4_part1_${Date.now()}`,
@@ -2880,7 +2892,7 @@
 
     postMatchDebrief(simResult) {
       // Trait: Resistencia Inagotable — batters lose 7 instead of 15 stamina
-      const staminaLoss = this.hasTrait('endless_stamina') ? 7 : 15;
+      const staminaLoss = this.hasTrait('endless_stamina') ? 10 : 20;
       // Five-Tool Legends T4: batters who triggered the OUT heal this match are spared this loss entirely
       const staminaImmuneIds = simResult && simResult.staminaImmuneIds ? simResult.staminaImmuneIds : new Set();
       const retiredAlerts = [];

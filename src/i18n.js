@@ -1038,7 +1038,7 @@
         },
         "stamina": {
             "name": "🔋 Resistencia Inagotable",
-            "desc": "Los bateadores solo pierden 6 de Stamina por partido (en lugar de 12)."
+            "desc": "Los bateadores solo pierden 10 de Stamina por partido (en lugar de 20)."
         },
         "clutch": {
             "name": "❤️ Resiliencia de Leyendas",
@@ -2987,7 +2987,7 @@
         },
         "stamina": {
             "name": "🔋 Endless Stamina",
-            "desc": "Batters only lose 6 Stamina per match (instead of 12)."
+            "desc": "Batters only lose 10 Stamina per match (instead of 20)."
         },
         "clutch": {
             "name": "❤️ Clutch Legends",
