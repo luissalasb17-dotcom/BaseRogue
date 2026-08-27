@@ -2437,6 +2437,8 @@
 
       if (this.currentEnemy) return unlockEnemyPitchers(this.currentEnemy);
 
+      const stage = this.currentStageIndex !== undefined ? this.currentStageIndex : 0;
+
       // Helper for OVR calculation
       const getOvr = (p) => (p.ovr !== undefined ? p.ovr : (p._ovr !== undefined ? p._ovr : (window.UI && window.UI.getPlayerOvr ? window.UI.getPlayerOvr(p) : 50)));
 
@@ -2471,7 +2473,7 @@
 
       // ── MODE 1: STORY MODE (Dynamic Staff Scaling per Map) ───────────────
       if (this.selectedMode === 'story') {
-        const stage = this.currentStageIndex; // 0 to 23
+        // Story Mode stage 0 to 23
         const seasonData = this.seasonPoolData || (window.OpponentsDatabase && this.selectedSeasonYear ? window.OpponentsDatabase[this.selectedSeasonYear] : null);
 
         if (seasonData) {
@@ -2695,7 +2697,7 @@
 
       // ── MODE 2: QUICK PLAY MODE (Fully Procedural Pitcher Generation) ──
 
-      const stage = this.currentStageIndex; // 0 to 15
+      // Quick Play stage 0 to 23
       const fullPool = window.PITCHERS_POOL || [];
       if (!this.encounteredPitchers) this.encounteredPitchers = new Set();
 
@@ -2728,38 +2730,7 @@
         return chosen;
       };
 
-      // Helper for OVR calculation
-      const getOvr = (p) => (p.ovr !== undefined ? p.ovr : (p._ovr !== undefined ? p._ovr : (window.UI && window.UI.getPlayerOvr ? window.UI.getPlayerOvr(p) : 50)));
 
-      const createPitcherObj = (p, roleOverride = null) => {
-        const role = roleOverride || p.role || 'SP';
-        const staVal = p.sta !== undefined ? p.sta : (p.sta_val !== undefined ? p.sta_val : 50);
-        // Unified stamina-driven HP scaling across all pitchers (STA 20-125 maps perfectly from 75 to 200 HP max)
-        const hp = Math.max(75, Math.min(200, Math.round(75 + (staVal - 20) * (125 / 105))));
-        const yearVal = p.year || p.peak_year_display || p.peak_year || 1990;
-        const nameVal = yearVal ? `${p.name} (${yearVal})` : p.name;
-        return {
-          name: nameVal,
-          cleanName: p.name,
-          role: role,
-          pos: role,
-          hp: hp,
-          maxHp: hp,
-          stf: p.str !== undefined ? p.str : (p.stf !== undefined ? p.stf : 50),
-          ctl: p.ctl !== undefined ? p.ctl : 50,
-          mov: p.mov !== undefined ? p.mov : (p.hr9 !== undefined ? p.hr9 : 50),
-          sta: staVal,
-          ovr: p.ovr !== undefined ? p.ovr : (p._ovr !== undefined ? p._ovr : (window.UI && window.UI.getPlayerOvr ? window.UI.getPlayerOvr(p) : 50)),
-          rarity: p.rarity || 'Common',
-          era: p.era || '',
-          team: p.team || '',
-          year: yearVal,
-          h9:  p.h9  !== undefined ? p.h9  : (p.grt !== undefined ? p.grt : 50),
-          k9:  p.k9  !== undefined ? p.k9  : (p.stf !== undefined ? p.stf : 50),
-          bb9: p.bb9 !== undefined ? p.bb9 : (p.ctl !== undefined ? p.ctl : 50),
-          hr9: p.hr9 !== undefined ? p.hr9 : (p.mov !== undefined ? p.mov : 50)
-        };
-      };
 
       // Helper to construct a balanced 3-pitcher rotation: SP opens, flexible middle, RP closes
       const assembleThreePitcherRotation = (primaryCandidates, supportCandidates, targetRole = 'SP') => {
