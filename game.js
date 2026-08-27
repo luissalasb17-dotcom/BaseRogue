@@ -491,13 +491,22 @@
   // Shared composite rating used to find the "worst"/"best" roster player for gambles.
   const _gambleOvr = (p) => {
     if (!p) return -Infinity;
+    if (typeof window !== 'undefined' && typeof window.getPlayerOvr === 'function') {
+      return window.getPlayerOvr(p);
+    }
+    if (p.ovr !== undefined) return p.ovr;
     const con = (p.con || 0) + ((p.upgrades && p.upgrades.con) || 0);
     const pwr = (p.pwr || 0) + ((p.upgrades && p.upgrades.pwr) || 0);
     const eye = (p.eye || 0) + ((p.upgrades && p.upgrades.eye) || 0);
     const kavd = (p.k_avd !== undefined ? p.k_avd : (p.k_avoid !== undefined ? p.k_avoid : (p.k_avoid_val !== undefined ? p.k_avoid_val : con))) + ((p.upgrades && p.upgrades.k_avd) || 0);
     const spd = (p.spd || 0) + ((p.upgrades && p.upgrades.spd) || 0);
     const def = (p.def || 0) + ((p.upgrades && p.upgrades.def) || 0);
-    return con * 0.30 + pwr * 0.30 + eye * 0.10 + kavd * 0.10 + def * 0.10 + spd * 0.10;
+    const raw = con * 0.28 + pwr * 0.28 + eye * 0.12 + def * 0.12 + spd * 0.10 + kavd * 0.10;
+    if (raw <= 37.0) return Math.floor(50.0 + ((raw - 10.0) / 27.0) * 9.9);
+    if (raw <= 48.0) return Math.floor(60.0 + ((raw - 37.0) / 11.0) * 9.9);
+    if (raw <= 62.0) return Math.floor(70.0 + ((raw - 48.0) / 14.0) * 9.9);
+    if (raw <= 76.0) return Math.floor(80.0 + ((raw - 62.0) / 14.0) * 9.9);
+    return Math.floor(90.0 + Math.min(9.9, ((raw - 76.0) / 18.0) * 9.9));
   };
   const _gambleRarityOrder = ['Common', 'Uncommon', 'Rare', 'Epic', 'Legendary'];
 
@@ -550,17 +559,22 @@
       get title() { return typeof window.t==='function'?window.t('gamble.scout.title'):'Cazatalentos Clandestino'; },
       get desc() { return typeof window.t==='function'?window.t('gamble.scout.desc'):'Un cazatalentos ofrece una carta Legendary para tu posición más débil. Si ganas, la firmas gratis. Si pierdes, tu mejor jugador se lesiona: -20 en todas sus stats por el resto de la run.'; },
       chance: 0.50,
-      resolve(G) {
+      resolve(G, targetPos) {
         const pool = (window.PlayersDB && window.PlayersDB.LAHMAN_POOL) ? window.PlayersDB.LAHMAN_POOL : [];
         const success = Math.random() <= _getGambleChance(G, this.chance);
 
         if (success) {
-          let worstPos = null, worstOvr = Infinity;
-          Object.keys(G.roster).forEach(pos => {
-            const p = G.roster[pos];
-            const ovr = p ? _gambleOvr(p) : -Infinity;
-            if (ovr < worstOvr) { worstOvr = ovr; worstPos = pos; }
-          });
+          let worstPos = (targetPos && G.roster[targetPos]) ? targetPos : null;
+          if (!worstPos) {
+            let worstOvr = Infinity;
+            Object.keys(G.roster).forEach(pos => {
+              const p = G.roster[pos];
+              if (p) {
+                const ovr = _gambleOvr(p);
+                if (ovr < worstOvr) { worstOvr = ovr; worstPos = pos; }
+              }
+            });
+          }
           if (!worstPos) return { success, resultText: (typeof window.t==='function'?window.t('gamble.scout.no_target'):'No hay roster titular disponible.') };
           const pick = _pickGambleCandidate(pool, worstPos, ['Legendary']);
           if (!pick) return { success, resultText: (typeof window.t==='function'?window.t('gamble.no_player_found', { pos: worstPos }):`No se encontró ningún jugador de ${worstPos} disponible.`) };
@@ -599,15 +613,19 @@
       get title() { return typeof window.t==='function'?window.t('gamble.trade.title'):'Traspaso a Ciegas (Peor Titular)'; },
       get desc() { return typeof window.t==='function'?window.t('gamble.trade.desc'):'Pones a tu peor titular en el mercado de traspasos. Si ganas (50%), recibes un reemplazo ÉPICO o LEGENDARIO garantizado en esa posición. Si pierdes (50%), es sustituido por un Common (50 OVR) y la posición queda bloqueada por 1 mapa completo (6 nodos).'; },
       chance: 0.50,
-      resolve(G) {
+      resolve(G, targetPos) {
         const pool = (window.PlayersDB && window.PlayersDB.LAHMAN_POOL) ? window.PlayersDB.LAHMAN_POOL : [];
-        let worstPos = null;
-        let worstOvr = Infinity;
-        Object.keys(G.roster).forEach(pos => {
-          const p = G.roster[pos];
-          const ovr = p ? _gambleOvr(p) : -Infinity;
-          if (ovr < worstOvr) { worstOvr = ovr; worstPos = pos; }
-        });
+        let worstPos = (targetPos && G.roster[targetPos]) ? targetPos : null;
+        if (!worstPos) {
+          let worstOvr = Infinity;
+          Object.keys(G.roster).forEach(pos => {
+            const p = G.roster[pos];
+            if (p) {
+              const ovr = _gambleOvr(p);
+              if (ovr < worstOvr) { worstOvr = ovr; worstPos = pos; }
+            }
+          });
+        }
         if (!worstPos || !G.roster[worstPos]) return { success: false, resultText: (typeof window.t==='function'?window.t('gamble.trade.no_target'):'No hay titular para intercambiar.') };
 
         const current = G.roster[worstPos];

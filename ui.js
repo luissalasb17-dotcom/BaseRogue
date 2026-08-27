@@ -3090,6 +3090,7 @@ function initGameModeSelector() {
     if (raw <= 76.0) return Math.floor(80.0 + ((raw - 62.0) / 14.0) * 9.9);
     return Math.floor(90.0 + Math.min(9.9, ((raw - 76.0) / 18.0) * 9.9));
   }
+  window.getPlayerOvr = getPlayerOvr;
 
   function getStatGrade(val) {
     let letter = "F";
@@ -9955,6 +9956,20 @@ function initGameModeSelector() {
     const rosterPosList = Object.keys(window.Game.roster).filter(pos => window.Game.roster[pos]);
     let defaultTargetPos = rosterPosList.length ? rosterPosList[0] : null;
 
+    let bestPos = 'CF', bestName = 'Starter', bestRarity = 'Epic', bestOvr = 85;
+    let highestOvr = -Infinity;
+    let worstPos = 'DH', worstName = 'Starter', worstRarity = 'Common', worstOvr = 60;
+    let lowestOvr = Infinity;
+
+    Object.keys(window.Game.roster).forEach(pos => {
+      const p = window.Game.roster[pos];
+      if (p) {
+        const ovr = getPlayerOvr(p);
+        if (ovr > highestOvr) { highestOvr = ovr; bestPos = pos; bestName = p.name; bestRarity = p.rarity || 'Epic'; bestOvr = ovr; }
+        if (ovr < lowestOvr) { lowestOvr = ovr; worstPos = pos; worstName = p.name; worstRarity = p.rarity || 'Common'; worstOvr = ovr; }
+      }
+    });
+
     const rosterOptions = gamble.requiresTargetPlayer
       ? rosterPosList
           .map(pos => `<option value="${pos}">[${pos}] ${window.Game.roster[pos].name} (${window.Game.roster[pos].rarity || 'Card'} · ${window.Game.roster[pos].era || 'Era'})</option>`)
@@ -9992,20 +10007,6 @@ function initGameModeSelector() {
           </div>
         `;
       } else if (gamble.id === 'gamble_scout') {
-        let bestPos = 'CF', bestName = 'Starter', bestRarity = 'Epic', bestOvr = 85;
-        let highestOvr = -Infinity;
-        let worstPos = '1B';
-        let lowestOvr = Infinity;
-
-        Object.keys(window.Game.roster).forEach(pos => {
-          const p = window.Game.roster[pos];
-          if (p) {
-            const ovr = getPlayerOvr(p);
-            if (ovr > highestOvr) { highestOvr = ovr; bestPos = pos; bestName = p.name; bestRarity = p.rarity; bestOvr = ovr; }
-            if (ovr < lowestOvr) { lowestOvr = ovr; worstPos = pos; }
-          }
-        });
-
         leftHTML = `
           <div style="background:rgba(239,68,68,0.12);border:2px solid #ef4444;border-radius:12px;padding:16px 14px;height:100%;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 0 20px rgba(239,68,68,0.2);">
             <div>
@@ -10033,16 +10034,6 @@ function initGameModeSelector() {
           </div>
         `;
       } else if (gamble.id === 'gamble_blind_trade') {
-        let worstPos = 'DH', worstName = 'Starter', worstRarity = 'Common', worstOvr = 60;
-        let lowestOvr = Infinity;
-        Object.keys(window.Game.roster).forEach(pos => {
-          const p = window.Game.roster[pos];
-          if (p) {
-            const ovr = getPlayerOvr(p);
-            if (ovr < lowestOvr) { lowestOvr = ovr; worstPos = pos; worstName = p.name; worstRarity = p.rarity || 'Common'; worstOvr = ovr; }
-          }
-        });
-
         leftHTML = `
           <div style="background:rgba(239,68,68,0.12);border:2px solid #ef4444;border-radius:12px;padding:16px 14px;height:100%;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 0 20px rgba(239,68,68,0.2);">
             <div>
@@ -10343,7 +10334,11 @@ function initGameModeSelector() {
       betBtn.disabled = true;
       declineBtn.disabled = true;
 
-      const result = window.Game.resolveGamble(gamble.id, select ? select.value : null);
+      const targetPosToPass = gamble.requiresTargetPlayer
+        ? (select ? select.value : null)
+        : (gamble.id === 'gamble_blind_trade' ? worstPos : (gamble.id === 'gamble_scout' ? worstPos : null));
+
+      const result = window.Game.resolveGamble(gamble.id, targetPosToPass);
       betResolved = true;
 
       const coin = overlay.querySelector('#gamble-coin');
