@@ -6545,10 +6545,16 @@ function initGameModeSelector() {
       { stat: 'spd', labelKey: 'training.spd_turbo_label', descKey: 'training.spd_turbo_desc', label: 'Turbo Velocidad', desc: 'Sprints con resistencia (25% riesgo sobrecarga)', basePrice: 3, icon: '🚀', risk: 'high', minVal: 12, maxVal: 14, riskChance: 0.25, failPenalty: 10 }
     ];
 
+    // Shuffle active players to pick distinct players
+    const shuffledPlayers = [...activePlayers].sort(() => 0.5 - Math.random());
+    // Shuffle templates to pick distinct training drills
+    const shuffledTemplates = [...statTemplates].sort(() => 0.5 - Math.random());
+
+    const numOffers = Math.min(3, shuffledPlayers.length, shuffledTemplates.length);
     const offers = [];
-    for (let i = 0; i < 3; i++) {
-      const target = activePlayers[Math.floor(Math.random() * activePlayers.length)];
-      const tpl = statTemplates[Math.floor(Math.random() * statTemplates.length)];
+    for (let i = 0; i < numOffers; i++) {
+      const target = shuffledPlayers[i];
+      const tpl = shuffledTemplates[i];
       const tierKey = rollTrainingTier();
       const tierData = TRAINING_TIER_CONFIG.tiers[tierKey];
 
@@ -6566,7 +6572,7 @@ function initGameModeSelector() {
       }
 
       offers.push({
-        id: `offer_${i}_${Date.now()}`,
+        id: `offer_${i}_${Date.now()}_${Math.random()}`,
         player: target.player,
         slot: target.slot,
         tier: tierKey,
