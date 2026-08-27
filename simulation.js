@@ -244,8 +244,8 @@
       this.teamHP    = 100;           // Fixed; strikeouts bite here directly
       this.activeSynergies = this._calculateActiveSynergies(awayTeam.lineup);
       const bigHairTier = this.activeSynergies['Big Hair Era (1977-1993)'] || 0;
-      const bigHairDef = bigHairTier === 4 ? 30 : bigHairTier === 3 ? 20 : bigHairTier === 2 ? 12 : bigHairTier === 1 ? 5 : 0;
-      this.teamShield = Math.min(100, Math.round(teamShield || 0));  // 1:1 with average DEF (capped at 100)
+      const bigHairShield = bigHairTier === 4 ? 40 : bigHairTier === 3 ? 30 : bigHairTier === 2 ? 20 : bigHairTier === 1 ? 10 : 0;
+      this.teamShield = Math.min(100, Math.round((teamShield || 0) + bigHairShield));  // 1:1 with average DEF + AstroTurf Shield (capped at 100)
       this.teamShieldMax = this.teamShield;
 
       // ── Pitcher side ──────────────────────────────────────────────
@@ -377,17 +377,17 @@
         effBatter.pwr = (effBatter.pwr || 50) + pwrBoost;
       }
 
-      // Expansion (1961-1976): +2/+4/+7/+10 SPD and +0/+2/+4/+6 EYE
+      // Expansion (1961-1976): +2/+5/+8/+12 SPD and +0/+2/+4/+6 EYE
       if (expansionTier >= 1) {
-        const spdBoost = expansionTier === 4 ? 10 : expansionTier === 3 ? 7 : expansionTier === 2 ? 4 : 2;
+        const spdBoost = expansionTier === 4 ? 12 : expansionTier === 3 ? 8 : expansionTier === 2 ? 5 : 2;
         const eyeBoost = expansionTier === 4 ? 6 : expansionTier === 3 ? 4 : expansionTier === 2 ? 2 : 0;
         effBatter.spd = (effBatter.spd || 50) + spdBoost;
         if (eyeBoost > 0) effBatter.eye = (effBatter.eye || 50) + eyeBoost;
       }
 
-      // Big Hair Era (1977-1993): +2/+4/+7/+10 DEF and SPD
+      // Big Hair Era (1977-1993): +2/+5/+8/+12 DEF and SPD
       if (bigHairTier >= 1) {
-        const defSpdBoost = bigHairTier === 4 ? 10 : bigHairTier === 3 ? 7 : bigHairTier === 2 ? 4 : 2;
+        const defSpdBoost = bigHairTier === 4 ? 12 : bigHairTier === 3 ? 8 : bigHairTier === 2 ? 5 : 2;
         effBatter.def = (effBatter.def || 50) + defSpdBoost;
         effBatter.spd = (effBatter.spd || 50) + defSpdBoost;
       }
@@ -469,17 +469,17 @@
         effBatter.pwr = (effBatter.pwr || 50) + pwrBoost;
       }
 
-      // Expansion (1961-1976): +2/+4/+7/+10 SPD and +0/+2/+4/+6 EYE
+      // Expansion (1961-1976): +2/+5/+8/+12 SPD and +0/+2/+4/+6 EYE
       if (expansionTier >= 1) {
-        const spdBoost = expansionTier === 4 ? 10 : expansionTier === 3 ? 7 : expansionTier === 2 ? 4 : 2;
+        const spdBoost = expansionTier === 4 ? 12 : expansionTier === 3 ? 8 : expansionTier === 2 ? 5 : 2;
         const eyeBoost = expansionTier === 4 ? 6 : expansionTier === 3 ? 4 : expansionTier === 2 ? 2 : 0;
         effBatter.spd = (effBatter.spd || 50) + spdBoost;
         if (eyeBoost > 0) effBatter.eye = (effBatter.eye || 50) + eyeBoost;
       }
 
-      // Big Hair Era (1977-1993): +2/+4/+7/+10 DEF and SPD
+      // Big Hair Era (1977-1993): +2/+5/+8/+12 DEF and SPD
       if (bigHairTier >= 1) {
-        const defSpdBoost = bigHairTier === 4 ? 10 : bigHairTier === 3 ? 7 : bigHairTier === 2 ? 4 : 2;
+        const defSpdBoost = bigHairTier === 4 ? 12 : bigHairTier === 3 ? 8 : bigHairTier === 2 ? 5 : 2;
         effBatter.def = (effBatter.def || 50) + defSpdBoost;
         effBatter.spd = (effBatter.spd || 50) + defSpdBoost;
       }
@@ -633,28 +633,23 @@
         let debuffMult = 1.20;
         let stealProcMsg = "";
 
-        // Expansion Era steal boost
+        // Expansion Era (Speed & Hustle): Steals heal stamina and fatigue the rival pitcher
         if (expansionTier >= 1) {
-          const extraChance = expansionTier === 4 ? 1.0 : expansionTier === 3 ? 0.40 : expansionTier === 2 ? 0.25 : 0.15;
-          stealChance = expansionTier === 4 ? 1.0 : Math.min(1.0, stealChance + extraChance);
-          stealHeal = expansionTier === 4 ? 15 : expansionTier === 3 ? 10 : expansionTier === 2 ? 5 : 5;
-          extraStealDmg = expansionTier === 4 ? 25 : expansionTier === 3 ? 18 : expansionTier === 2 ? 10 : 4;
-          stealProcMsg = _t('sim.syn_expansion', {}, 'Sinergia Expansion');
+          const extraChance = expansionTier === 4 ? 0.50 : expansionTier === 3 ? 0.40 : expansionTier === 2 ? 0.25 : 0.15;
+          stealChance = Math.min(1.0, stealChance + extraChance);
+          stealHeal = expansionTier === 4 ? 15 : expansionTier === 3 ? 10 : 5;
+          debuffTurns = expansionTier === 4 ? 5 : expansionTier === 3 ? 4 : expansionTier === 2 ? 3 : 2;
+          debuffMult = expansionTier === 4 ? 1.25 : 1.20;
+          extraStealDmg = 0;
+          stealProcMsg = _t('sim.syn_expansion', {}, 'Speed & Hustle');
         }
+        // Big Hair Era (AstroTurf Speedsters): Direct steal damage without complex debuffs
         else if (bigHairTier >= 1) {
           stealChance = Math.min(1.0, stealChance + 0.20);
-          extraStealDmg = bigHairTier === 4 ? 28 : bigHairTier === 3 ? 20 : bigHairTier === 2 ? 12 : 5;
-          if (bigHairTier === 2) {
-            debuffTurns = 3;
-            debuffMult = 1.30;
-          } else if (bigHairTier === 3) {
-            debuffTurns = 4;
-            debuffMult = 1.30;
-          } else if (bigHairTier === 4) {
-            debuffTurns = 5;
-            debuffMult = 1.40;
-          }
-          stealProcMsg = _t('sim.syn_bighair', {}, 'Sinergia Big Hair');
+          extraStealDmg = bigHairTier === 4 ? 25 : bigHairTier === 3 ? 15 : bigHairTier === 2 ? 10 : 0;
+          debuffTurns = 2;
+          debuffMult = 1.20;
+          stealProcMsg = _t('sim.syn_bighair', {}, 'AstroTurf Speedsters');
         }
 
         // speed_demons: SPD > 60 batters steal automatically, debuff never shorter than 3 turns
@@ -1034,26 +1029,20 @@
           let stealProcMsg = "";
 
           if (expansionTier >= 1) {
-            const extraChance = expansionTier === 4 ? 1.0 : expansionTier === 3 ? 0.50 : expansionTier === 2 ? 0.35 : 0.20;
-            stealChance = expansionTier === 4 ? 1.0 : Math.min(1.0, stealChance + extraChance);
-            stealHeal = expansionTier === 4 ? 15 : expansionTier === 3 ? 10 : expansionTier === 2 ? 5 : 5;
-            extraStealDmg = expansionTier === 4 ? 40 : expansionTier === 3 ? 30 : expansionTier === 2 ? 20 : 0;
-            stealProcMsg = _t('sim.syn_expansion', {}, 'Sinergia Expansion');
+            const extraChance = expansionTier === 4 ? 0.50 : expansionTier === 3 ? 0.40 : expansionTier === 2 ? 0.25 : 0.15;
+            stealChance = Math.min(1.0, stealChance + extraChance);
+            stealHeal = expansionTier === 4 ? 15 : expansionTier === 3 ? 10 : 5;
+            debuffTurns = expansionTier === 4 ? 5 : expansionTier === 3 ? 4 : expansionTier === 2 ? 3 : 2;
+            debuffMult = expansionTier === 4 ? 1.25 : 1.20;
+            extraStealDmg = 0;
+            stealProcMsg = _t('sim.syn_expansion', {}, 'Speed & Hustle');
           }
           else if (bigHairTier >= 1) {
             stealChance = Math.min(1.0, stealChance + 0.20);
-            extraStealDmg = bigHairTier === 4 ? 60 : bigHairTier === 3 ? 45 : bigHairTier === 2 ? 35 : 20;
-            if (bigHairTier === 2) {
-              debuffTurns = 3;
-              debuffMult = 1.30;
-            } else if (bigHairTier === 3) {
-              debuffTurns = 4;
-              debuffMult = 1.30;
-            } else if (bigHairTier === 4) {
-              debuffTurns = 5;
-              debuffMult = 1.40;
-            }
-            stealProcMsg = _t('sim.syn_bighair', {}, 'Sinergia Big Hair');
+            extraStealDmg = bigHairTier === 4 ? 25 : bigHairTier === 3 ? 15 : bigHairTier === 2 ? 10 : 0;
+            debuffTurns = 2;
+            debuffMult = 1.20;
+            stealProcMsg = _t('sim.syn_bighair', {}, 'AstroTurf Speedsters');
           }
 
           if (this.hasTrait('speed_demons') && (effBatter.spd || 0) > 60) {

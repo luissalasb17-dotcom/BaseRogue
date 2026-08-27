@@ -2891,8 +2891,10 @@
     }
 
     postMatchDebrief(simResult) {
-      // Trait: Resistencia Inagotable — batters lose 7 instead of 15 stamina
-      const staminaLoss = this.hasTrait('endless_stamina') ? 10 : 20;
+      // Speed & Hustle T4: line-up recovers +10 stamina upon victory (loss reduced to 10)
+      const expansionCount = Object.values(this.roster).filter(p => p && p.era === 'Expansion (1961-1976)').length;
+      const hasSpeedHustleT4 = (simResult && simResult.winner === 'away') && (this.getEraTier && this.getEraTier('Expansion (1961-1976)', expansionCount) >= 4);
+      const staminaLoss = (this.hasTrait('endless_stamina') || hasSpeedHustleT4) ? 10 : 20;
       // Five-Tool Legends T4: batters who triggered the OUT heal this match are spared this loss entirely
       const staminaImmuneIds = simResult && simResult.staminaImmuneIds ? simResult.staminaImmuneIds : new Set();
       const retiredAlerts = [];

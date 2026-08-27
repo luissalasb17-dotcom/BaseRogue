@@ -37,12 +37,12 @@
     },
     "Expansion (1961-1976)": {
       name: "Speed & Hustle",
-      desc: "T1 (2+): +10 SPD; +20% robo; robo cura +5 Stamina al corredor. T2 (4+): +15 SPD / +10 EYE; +35% robo; cura +5 y +20 daño. T3 (6+): +20 SPD / +20 EYE; +50% robo; cura +10 y +30 daño. T4 (8+): +25 SPD / +25 EYE; 100% robo; cura +15 y +40 daño.",
+      desc: "T1 (2+): +2 SPD; robos curan +5 Stamina al corredor. T2 (4+): +5 SPD / +2 EYE; robos curan +5 Stamina y aplican +1 turno de fatiga al pitcher rival (+20% daño). T3 (6+): +8 SPD / +4 EYE; robos curan +10 Stamina y aplican +2 turnos de fatiga (+20% daño). T4 (8+): +12 SPD / +6 EYE; robos curan +15 Stamina y aplican +3 turnos de fatiga (+25% daño); y toda la alineación recupera +10 de Stamina extra tras cada victoria (desgaste baja a -10).",
       applyStatBonus: (stats) => {}
     },
     "Big Hair Era (1977-1993)": {
       name: "AstroTurf Speedsters",
-      desc: "T1 (2+): +10 DEF/SPD (+10 Escudo); robos +20 daño. T2 (4+): +20 DEF/SPD (+20 Escudo); robos +35 daño y debuff 3 impactos. T3 (6+): +30 DEF/SPD (+30 Escudo); robos +45 daño y debuff 4 impactos. T4 (8+): +40 DEF/SPD (+40 Escudo); robos +60 daño, debuff 5 impactos y outs -50% daño.",
+      desc: "T1 (2+): +2 DEF/SPD (+10 Escudo inicial). T2 (4+): +5 DEF/SPD (+20 Escudo); robos infligen +10 daño directo al pitcher. T3 (6+): +8 DEF/SPD (+30 Escudo); robos infligen +15 daño directo al pitcher. T4 (8+): +12 DEF/SPD (+40 Escudo); robos infligen +25 daño directo al pitcher; y outs normales hacen -50% de daño.",
       applyStatBonus: (stats) => {}
     },
     "Steroid Era (1994-2005)": {
