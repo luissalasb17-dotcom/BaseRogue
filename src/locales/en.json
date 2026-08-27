@@ -29,14 +29,14 @@
   "eras": {
     "header": "⏳ ROSTER ERAS",
     "franchises_header": "⚾ ROSTER FRANCHISES",
-    "genesis_d1": "T1 (2+): +15% chance to force Error on outs (cancels out, 2-turn pitcher fatigue) • Hits +4 dmg",
-    "genesis_d2": "T2 (4+): +25% chance to force Error on outs • Hits +8 dmg and +2 CON",
-    "genesis_d3": "T3 (6+): +40% chance to force Error on outs • Hits +15 dmg and +4 CON",
-    "genesis_d4": "T4 (8+): +60% chance to force Error on outs • Hits +25 dmg and Error heals +10 HP",
-    "deadball_d1": "T1 (2+): +2 CON/K-AVD to team; singles (1B) deal +4 extra damage",
-    "deadball_d2": "T2 (4+): +4 CON/K-AVD; singles deal +8 extra damage",
-    "deadball_d3": "T3 (6+): +7 CON/K-AVD; singles +15 dmg; runs scored deal +10 extra damage",
-    "deadball_d4": "T4 (8+): +10 CON/K-AVD; singles +22 dmg; runs scored deal +18 extra damage",
+    "genesis_d1": "T1 (2+): Team +2 CON; outs have +15% chance to become rival Error (E)",
+    "genesis_d2": "T2 (4+): +5 CON; +25% Error chance; errors deal +10 dmg and fatigue pitcher 2 turns (+20% dmg)",
+    "genesis_d3": "T3 (6+): +8 CON; +40% Error chance; errors deal +15 dmg and fatigue 2 turns",
+    "genesis_d4": "T4 (8+): +12 CON; +50% Error chance; errors deal +25 dmg and Cascade Blunder (all runners score and batter reaches 2B)",
+    "deadball_d1": "T1 (2+): Team +2 CON & K-AVD; singles (1B) deal +4 extra damage",
+    "deadball_d2": "T2 (4+): +3 CON/K-AVD; 1B +8 dmg; runs scored deal +10 extra damage",
+    "deadball_d3": "T3 (6+): +5 CON/K-AVD; 1B +14 dmg; runs scored deal +15 extra damage",
+    "deadball_d4": "T4 (8+): +8 CON/K-AVD; 1B +20 dmg; runs deal +25 dmg and batters with CON ≥ 80 convert Strikeouts to Singles (1B)",
     "golden_d1": "T1 (2+): Team +2 PWR; all hits deal +4 extra damage",
     "golden_d2": "T2 (4+): +5 PWR; hits +8 dmg; extra-base hits (2B/3B/HR) deal +10 additional damage",
     "golden_d3": "T3 (6+): +8 PWR; hits +14 dmg; extra-base hits deal +18 additional damage",
@@ -810,7 +810,9 @@
     "bb_fatigue_desc": "⚠️ Pitcher under pressure! +{{pct}}% damage debuff on next turn.",
     "trait_eagle_bb": "🦅 Eagle Patience: Walk deals +{{dmg}} dmg and {{name}} recovers +{{heal}} Stamina!",
     "syn_liveball_extrabase": "🔥 Liveball Extra-Base: Power hit deals +{{extra}} additional damage!",
-    "syn_liveball_pwr80": "🔥 Liveball Sluggers: {{name}}'s massive power upgrades 1B to Double (2B)!"
+    "syn_liveball_pwr80": "🔥 Liveball Sluggers: {{name}}'s massive power upgrades 1B to Double (2B)!",
+    "syn_genesis_cascade": "💥 Genesis Chaos: Cascade Blunder! All runners score and batter reaches 2B.",
+    "syn_deadball_cobb": "⏳ Small Ball: {{name}}'s master contact (CON {{con}} ≥ 80) converts Strikeout to Single (1B)! (+20 dmg)"
   },
   "syn": {
     "deadball": {

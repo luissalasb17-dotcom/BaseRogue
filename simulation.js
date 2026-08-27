@@ -364,9 +364,9 @@
         effBatter.def = (effBatter.def || 50) + boost;
       }
 
-      // Deadball (1901-1919): +2/+4/+7/+10 CON and K-AVD
+      // Deadball (1901-1919): +2/+3/+5/+8 CON and K-AVD
       if (deadballTier >= 1) {
-        const conBoost = deadballTier === 4 ? 10 : deadballTier === 3 ? 7 : deadballTier === 2 ? 4 : 2;
+        const conBoost = deadballTier === 4 ? 8 : deadballTier === 3 ? 5 : deadballTier === 2 ? 3 : 2;
         effBatter.con = (effBatter.con || 50) + conBoost;
         effBatter.k_avd = (effBatter.k_avd !== undefined ? effBatter.k_avd : (effBatter.con || 50)) + conBoost;
       }
@@ -411,9 +411,9 @@
         effBatter.pwr = (effBatter.pwr || 50) + ttoBoost;
       }
 
-      // Genesis Era (1871-1900): +0/+2/+4/+6 CON
-      if (genesisTier >= 2) {
-        const conBoost = genesisTier === 4 ? 6 : genesisTier === 3 ? 4 : 2;
+      // Genesis Era (1871-1900): +2/+5/+8/+12 CON
+      if (genesisTier >= 1) {
+        const conBoost = genesisTier === 4 ? 12 : genesisTier === 3 ? 8 : genesisTier === 2 ? 5 : 2;
         effBatter.con = (effBatter.con || 50) + conBoost;
       }
 
@@ -456,9 +456,9 @@
         effBatter.def = (effBatter.def || 50) + boost;
       }
 
-      // Deadball (1901-1919): +2/+4/+7/+10 CON and K-AVD
+      // Deadball (1901-1919): +2/+3/+5/+8 CON and K-AVD
       if (deadballTier >= 1) {
-        const conBoost = deadballTier === 4 ? 10 : deadballTier === 3 ? 7 : deadballTier === 2 ? 4 : 2;
+        const conBoost = deadballTier === 4 ? 8 : deadballTier === 3 ? 5 : deadballTier === 2 ? 3 : 2;
         effBatter.con = (effBatter.con || 50) + conBoost;
         effBatter.k_avd = (effBatter.k_avd !== undefined ? effBatter.k_avd : (effBatter.con || 50)) + conBoost;
       }
@@ -503,9 +503,9 @@
         effBatter.pwr = (effBatter.pwr || 50) + ttoBoost;
       }
 
-      // Genesis Era (1871-1900): +0/+2/+4/+6 CON
-      if (genesisTier >= 2) {
-        const conBoost = genesisTier === 4 ? 6 : genesisTier === 3 ? 4 : 2;
+      // Genesis Era (1871-1900): +2/+5/+8/+12 CON
+      if (genesisTier >= 1) {
+        const conBoost = genesisTier === 4 ? 12 : genesisTier === 3 ? 8 : genesisTier === 2 ? 5 : 2;
         effBatter.con = (effBatter.con || 50) + conBoost;
       }
 
@@ -572,9 +572,9 @@
         this.runs += runsThisTurn;
         pitcherDmg = 15 + (runsThisTurn * 10);
 
-        // Deadball (1901-1919) T3/T4 run bonus on BB
-        if (runsThisTurn > 0 && deadballTier >= 3) {
-          const runBonus = (deadballTier === 4 ? 20 : 12) * runsThisTurn;
+        // Deadball (1901-1919) T2/T3/T4 run bonus on BB
+        if (runsThisTurn > 0 && deadballTier >= 2) {
+          const runBonus = (deadballTier === 4 ? 25 : deadballTier === 3 ? 15 : 10) * runsThisTurn;
           pitcherDmg += runBonus;
           synergyProc = (synergyProc ? synergyProc + ' | ' : '') + _t('sim.syn_deadball_run', { bonus: runBonus, runs: runsThisTurn }, `⏳ Small Ball: ¡Manufactura de ${runsThisTurn} carrera(s) inflige +${runBonus} daño de impacto!`);
         }
@@ -691,6 +691,21 @@
         playText = batterPlayText + (spdProc ? ` ${spdProc}` : ``) + (synergyProc ? ` ${synergyProc}` : ``);
 
       } else if (roll <= bounds.soEnd) {
+        // Deadball T4 (Small Ball): Batters with CON >= 80 convert Strikeouts (SO) into Singles (1B)
+        if (deadballTier === 4 && (effBatter.con || 50) >= 80) {
+          eventType = '1B';
+          this.strikeoutChain = 0;
+          runsThisTurn = this._advanceSingle(batter);
+          pitcherDmg = 20 + (runsThisTurn * 10) + 20; // 20 base + 20 Deadball T4 single bonus
+          if (runsThisTurn > 0) pitcherDmg += (25 * runsThisTurn); // +25 per run scored at T4
+          pitcherDmg = this._applyDebuffToPitcherDmg(pitcherDmg);
+          const tyCobbProc = _t('sim.syn_deadball_cobb', { name: batter.name, con: effBatter.con }, `⏳ Small Ball: ¡Maestría de ${batter.name} (CON ${effBatter.con} ≥ 80) convierte Ponche en Sencillo (1B)! (+20 daño)`);
+          playText = `🎲 [${roll}] [${_t('sim.label_1b', {}, '1B')}] ¡${batter.name} ${_t('sim.1b_desc', {}, 'conecta imparable colocado')}! ` +
+            _t('sim.runs_scored', { runs: runsThisTurn, pitcher: pitcher.name, dmg: pitcherDmg }, `Anotan ${runsThisTurn} carreras. ${pitcher.name} sufre ${pitcherDmg} HP de daño.`) + ` ${tyCobbProc}`;
+          this._finalizeTurnEvent(batter, pitcher, roll, playText, '1B', runsThisTurn, pitcherDmg);
+          return this.events.slice(startIndex);
+        }
+
         // ── STRIKEOUT ─────────────────────────────────────────────
         eventType = 'SO';
         this.outs++;
@@ -781,14 +796,22 @@
         if (isError) {
           eventType = 'E';
           this.strikeoutChain = 0;
-          runsThisTurn = this._advanceSingle(batter);
+
+          let genesisAdvMsg = "";
+          if (genesisTier === 4) {
+            // Pifia en Cadena: all runners score and batter reaches 2B
+            runsThisTurn = this._advanceDouble(batter);
+            genesisAdvMsg = _t('sim.syn_genesis_cascade', {}, '💥 Genesis Chaos: ¡Pifia en Cadena! Todos los corredores anotan y el bateador llega a 2B.');
+          } else {
+            runsThisTurn = this._advanceSingle(batter);
+          }
 
           const isGenesis = genesisTier >= 1;
-          const genExtraDmg = isGenesis ? (genesisTier === 4 ? 25 : genesisTier === 3 ? 15 : genesisTier === 2 ? 8 : 4) : 0;
+          const genExtraDmg = isGenesis ? (genesisTier === 4 ? 25 : genesisTier === 3 ? 15 : genesisTier === 2 ? 10 : 0) : 0;
           pitcherDmg = 20 + (runsThisTurn * 10) + genExtraDmg;
           pitcherDmg = this._applyDebuffToPitcherDmg(pitcherDmg);
 
-          // Apply fatigue debuff (+20% damage) ONLY if Genesis Chaos synergy is active
+          // Apply fatigue debuff (+20% damage for 2 turns)
           if (isGenesis) {
             const debuffTurns = 2;
             const debuffMult = 1.20;
@@ -799,11 +822,8 @@
               this.pitcherDebuff = { turnsLeft: debuffTurns, multiplier: debuffMult };
             }
 
-            if (genesisTier === 4) {
-              this.teamHP = Math.min(100, this.teamHP + 10);
-              synergyProc = _t('sim.syn_genesis_heal', {}, '💥 Genesis Chaos: ¡El descontrol rival recupera +10 HP al equipo!');
-            }
-            errorProc = _t('sim.syn_genesis_error', {}, '💥 Genesis Chaos: ¡Error rival (E)! Se anula el out, te embasas en 1B y el pitcher sufre fatiga de 2 impactos (+20% daño).');
+            errorProc = _t('sim.syn_genesis_error', {}, '💥 Genesis Chaos: ¡Error rival (E)! Se anula el out, te embasas y el pitcher sufre fatiga de 2 impactos (+20% daño).');
+            if (genesisAdvMsg) errorProc += ' ' + genesisAdvMsg;
           } else {
             errorProc = _t('sim.natural_error_msg', {}, '⚠️ ¡Pifia defensiva rival (E)! Se anula el out y te embasas en 1B.');
           }
@@ -964,15 +984,15 @@
 
           // Deadball Era 1B damage bonus
           if (deadballTier >= 1) {
-            const extra1B = deadballTier === 4 ? 22 : deadballTier === 3 ? 15 : deadballTier === 2 ? 8 : 4;
+            const extra1B = deadballTier === 4 ? 20 : deadballTier === 3 ? 14 : deadballTier === 2 ? 8 : 4;
             pitcherDmg += extra1B;
             synergyProc = (synergyProc ? synergyProc + ' | ' : '') + _t('sim.syn_deadball_1b', { extra: extra1B }, `⏳ Small Ball: ¡Sencillo colocado inflige +${extra1B} daño!`);
           }
         }
 
-        // Deadball (1901-1919) T3/T4 run bonus on hits
-        if (runsThisTurn > 0 && deadballTier >= 3) {
-          const runBonus = (deadballTier === 4 ? 18 : 10) * runsThisTurn;
+        // Deadball (1901-1919) T2/T3/T4 run damage bonus on hits (+10/+15/+25)
+        if (runsThisTurn > 0 && deadballTier >= 2) {
+          const runBonus = (deadballTier === 4 ? 25 : deadballTier === 3 ? 15 : 10) * runsThisTurn;
           pitcherDmg += runBonus;
           synergyProc = (synergyProc ? synergyProc + ' | ' : '') + _t('sim.syn_deadball_run', { bonus: runBonus, runs: runsThisTurn }, `⏳ Small Ball: ¡Manufactura de ${runsThisTurn} carrera(s) inflige +${runBonus} daño de impacto!`);
         }

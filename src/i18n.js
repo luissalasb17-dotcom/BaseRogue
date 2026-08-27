@@ -33,14 +33,14 @@
     "eras": {
         "header": "⏳ ERAS DEL ROSTER",
         "franchises_header": "⚾ FRANQUICIAS DEL ROSTER",
-        "genesis_d1": "T1 (2+): +15% prob. de forzar Error en outs (anula out, fatiga 2 impactos al rival) • Hits +4 daño",
-        "genesis_d2": "T2 (4+): +25% prob. de forzar Error en outs • Hits +8 daño y +2 CON",
-        "genesis_d3": "T3 (6+): +40% prob. de forzar Error en outs • Hits +15 daño y +4 CON",
-        "genesis_d4": "T4 (8+): +60% prob. de forzar Error en outs • Hits +25 daño y el Error cura +10 HP",
-        "deadball_d1": "T1 (2+): +2 CON/K-AVD al equipo; sencillos (1B) hacen +4 daño extra",
-        "deadball_d2": "T2 (4+): +4 CON/K-AVD; sencillos hacen +8 daño extra",
-        "deadball_d3": "T3 (6+): +7 CON/K-AVD; sencillos +15 daño; carreras anotadas hacen +10 daño extra",
-        "deadball_d4": "T4 (8+): +10 CON/K-AVD; sencillos +22 daño; carreras anotadas hacen +18 daño extra",
+        "genesis_d1": "T1 (2+): +2 CON al equipo; outs tienen +15% prob. de convertirse en Error rival (E)",
+        "genesis_d2": "T2 (4+): +5 CON; +25% prob. Error; errores infligen +10 daño y fatigan al pitcher 2 turnos (+20% daño)",
+        "genesis_d3": "T3 (6+): +8 CON; +40% prob. Error; errores infligen +15 daño y fatigan 2 turnos",
+        "genesis_d4": "T4 (8+): +12 CON; +50% prob. Error; errores hacen +25 daño y Pifia en Cadena (todos los corredores anotan y bateador llega a 2B)",
+        "deadball_d1": "T1 (2+): +2 CON y K-AVD al equipo; sencillos (1B) hacen +4 daño extra",
+        "deadball_d2": "T2 (4+): +3 CON/K-AVD; 1B +8 daño; carreras anotadas hacen +10 daño extra",
+        "deadball_d3": "T3 (6+): +5 CON/K-AVD; 1B +14 daño; carreras anotadas hacen +15 daño extra",
+        "deadball_d4": "T4 (8+): +8 CON/K-AVD; 1B +20 daño; carreras hacen +25 daño y bateadores con CON ≥ 80 convierten Ponches en Sencillos (1B)",
         "golden_d1": "T1 (2+): +2 PWR al equipo; todos los hits hacen +4 daño extra",
         "golden_d2": "T2 (4+): +5 PWR; hits +8 daño; extrabases (2B/3B/HR) infligen +10 daño adicional",
         "golden_d3": "T3 (6+): +8 PWR; hits +14 daño; extrabases infligen +18 daño adicional",
@@ -814,7 +814,9 @@
         "bb_fatigue_desc": "⚠️ ¡Lanzador en aprietos! Debuff de +{{pct}}% daño en el siguiente turno.",
         "trait_eagle_bb": "🦅 Paciencia de Águila: ¡Boleto inflige +{{dmg}} daño y {{name}} recupera +{{heal}} Stamina!",
         "syn_liveball_extrabase": "🔥 Liveball Extrabase: ¡Batazo de poder inflige +{{extra}} daño adicional!",
-        "syn_liveball_pwr80": "🔥 Liveball Sluggers: ¡Poder descomunal de {{name}} convierte 1B en Doble (2B)!"
+        "syn_liveball_pwr80": "🔥 Liveball Sluggers: ¡Poder descomunal de {{name}} convierte 1B en Doble (2B)!",
+        "syn_genesis_cascade": "💥 Genesis Chaos: ¡Pifia en Cadena! Todos los corredores anotan y el bateador llega a 2B.",
+        "syn_deadball_cobb": "⏳ Small Ball: ¡Maestría de {{name}} (CON {{con}} ≥ 80) convierte Ponche en Sencillo (1B)! (+20 daño)"
     },
     "syn": {
         "deadball": {
@@ -1984,14 +1986,14 @@
     "eras": {
         "header": "⏳ ROSTER ERAS",
         "franchises_header": "⚾ ROSTER FRANCHISES",
-        "genesis_d1": "T1 (2+): +15% chance to force Error on outs (cancels out, 2-turn pitcher fatigue) • Hits +4 dmg",
-        "genesis_d2": "T2 (4+): +25% chance to force Error on outs • Hits +8 dmg and +2 CON",
-        "genesis_d3": "T3 (6+): +40% chance to force Error on outs • Hits +15 dmg and +4 CON",
-        "genesis_d4": "T4 (8+): +60% chance to force Error on outs • Hits +25 dmg and Error heals +10 HP",
-        "deadball_d1": "T1 (2+): +2 CON/K-AVD to team; singles (1B) deal +4 extra damage",
-        "deadball_d2": "T2 (4+): +4 CON/K-AVD; singles deal +8 extra damage",
-        "deadball_d3": "T3 (6+): +7 CON/K-AVD; singles +15 dmg; runs scored deal +10 extra damage",
-        "deadball_d4": "T4 (8+): +10 CON/K-AVD; singles +22 dmg; runs scored deal +18 extra damage",
+        "genesis_d1": "T1 (2+): Team +2 CON; outs have +15% chance to become rival Error (E)",
+        "genesis_d2": "T2 (4+): +5 CON; +25% Error chance; errors deal +10 dmg and fatigue pitcher 2 turns (+20% dmg)",
+        "genesis_d3": "T3 (6+): +8 CON; +40% Error chance; errors deal +15 dmg and fatigue 2 turns",
+        "genesis_d4": "T4 (8+): +12 CON; +50% Error chance; errors deal +25 dmg and Cascade Blunder (all runners score and batter reaches 2B)",
+        "deadball_d1": "T1 (2+): Team +2 CON & K-AVD; singles (1B) deal +4 extra damage",
+        "deadball_d2": "T2 (4+): +3 CON/K-AVD; 1B +8 dmg; runs scored deal +10 extra damage",
+        "deadball_d3": "T3 (6+): +5 CON/K-AVD; 1B +14 dmg; runs scored deal +15 extra damage",
+        "deadball_d4": "T4 (8+): +8 CON/K-AVD; 1B +20 dmg; runs deal +25 dmg and batters with CON ≥ 80 convert Strikeouts to Singles (1B)",
         "golden_d1": "T1 (2+): Team +2 PWR; all hits deal +4 extra damage",
         "golden_d2": "T2 (4+): +5 PWR; hits +8 dmg; extra-base hits (2B/3B/HR) deal +10 additional damage",
         "golden_d3": "T3 (6+): +8 PWR; hits +14 dmg; extra-base hits deal +18 additional damage",
@@ -2765,7 +2767,9 @@
         "bb_fatigue_desc": "⚠️ Pitcher under pressure! +{{pct}}% damage debuff on next turn.",
         "trait_eagle_bb": "🦅 Eagle Patience: Walk deals +{{dmg}} dmg and {{name}} recovers +{{heal}} Stamina!",
         "syn_liveball_extrabase": "🔥 Liveball Extra-Base: Power hit deals +{{extra}} additional damage!",
-        "syn_liveball_pwr80": "🔥 Liveball Sluggers: {{name}}'s massive power upgrades 1B to Double (2B)!"
+        "syn_liveball_pwr80": "🔥 Liveball Sluggers: {{name}}'s massive power upgrades 1B to Double (2B)!",
+        "syn_genesis_cascade": "💥 Genesis Chaos: Cascade Blunder! All runners score and batter reaches 2B.",
+        "syn_deadball_cobb": "⏳ Small Ball: {{name}}'s master contact (CON {{con}} ≥ 80) converts Strikeout to Single (1B)! (+20 dmg)"
     },
     "syn": {
         "deadball": {
