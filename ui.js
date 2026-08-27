@@ -1464,10 +1464,10 @@ function initGameModeSelector() {
       window.Challenge162.updateModeSelectCard();
     }
 
-    // Populate Season dropdown (1901-2025)
+    // Populate Season dropdown (2025 down to 1901 - newest to oldest)
     if (selectYear && selectYear.options.length <= 1) {
       selectYear.innerHTML = '<option value="random">🎲 Random Season</option>';
-      for (let y = 1901; y <= 2025; y++) {
+      for (let y = 2025; y >= 1901; y--) {
         const opt = document.createElement('option');
         opt.value = String(y);
         opt.textContent = String(y);
