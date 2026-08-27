@@ -10194,20 +10194,6 @@ function initGameModeSelector() {
       `;
     }
 
-    // Find weakest and best starters for top stake banners
-    let worstPos = 'DH', worstName = 'Starter', worstRarity = 'Common', worstOvr = 60;
-    let lowestOvr = Infinity;
-    let bestPos = 'CF', bestName = 'Starter', bestRarity = 'Epic', bestOvr = 85;
-    let highestOvr = -Infinity;
-    Object.keys(window.Game.roster).forEach(pos => {
-      const p = window.Game.roster[pos];
-      if (p) {
-        const ovr = getPlayerOvr(p);
-        if (ovr < lowestOvr) { lowestOvr = ovr; worstPos = pos; worstName = p.name; worstRarity = p.rarity || 'Common'; worstOvr = ovr; }
-        if (ovr > highestOvr) { highestOvr = ovr; bestPos = pos; bestName = p.name; bestRarity = p.rarity || 'Common'; bestOvr = ovr; }
-      }
-    });
-
     const hasMidas = window.Game && typeof window.Game.hasTrait === 'function' && window.Game.hasTrait('midas_touch');
     const luckSuccessPct = hasMidas ? 75 : 50;
     const luckFailPct = hasMidas ? 25 : 50;
