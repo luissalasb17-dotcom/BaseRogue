@@ -4200,7 +4200,8 @@ function initGameModeSelector() {
         </div>`;
     };
 
-    const eraClass = (player.era || '').toLowerCase().replace(/[^a-z]/g,'').substring(0,8);
+    const eraString = typeof player.era === 'string' ? player.era : (player.year ? getEraNameForYear(player.year) : (player._era || ''));
+    const eraClass = eraString.toLowerCase().replace(/[^a-z]/g,'').substring(0,8);
     const stam = player.stamina || 100;
     const stamColor = stam < 25 ? '#ef4444' : stam < 50 ? '#f59e0b' : '#00ff66';
     const rarityColors = { Common: '#94a3b8', Uncommon: '#10b981', Rare: '#38bdf8', Epic: '#c084fc', Legendary: '#ffd700' };
@@ -4231,7 +4232,7 @@ function initGameModeSelector() {
 
       overlay.querySelector('#popup-card-content').innerHTML = `
         <div class="popup-card-header" style="border-bottom:none;padding-bottom:0;">
-          <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:${rarityColor};">${player.rarity || 'Common'} · ${(player.era||'').replace(/\(.*\)/,'').trim()}</div>
+          <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:${rarityColor};">${player.rarity || 'Common'} · ${(eraString).replace(/\(.*\)/,'').trim()}</div>
           <button id="btn-close-popup" class="popup-close-btn">✕</button>
         </div>
         <div class="popup-player-name" style="font-size:13px;margin-top:4px;margin-bottom:2px;">${player.cleanName || player.name}</div>
@@ -4254,7 +4255,7 @@ function initGameModeSelector() {
           </div>
         </div>
 
-        <div class="popup-year" style="margin-top:12px;border-top:1px dashed rgba(255,255,255,0.15);padding-top:8px;">Peak: ${player.year || player.peak_year || '—'} &nbsp;|&nbsp; ${player.era || ''}</div>
+        <div class="popup-year" style="margin-top:12px;border-top:1px dashed rgba(255,255,255,0.15);padding-top:8px;">Peak: ${player.year || player.peak_year || '—'} &nbsp;|&nbsp; ${eraString}</div>
       `;
 
       overlay.classList.remove('hidden');
@@ -4281,7 +4282,7 @@ function initGameModeSelector() {
       <div class="popup-player-name">${player.name}</div>
       <div class="popup-meta-row">
         <span class="popup-pos-badge" title="Posición Natural / Natural Position">${player.sec_pos && String(player.sec_pos).trim() ? `${player.pos || slot} / ${player.sec_pos}` : (player.pos || slot)}</span>
-        <span class="popup-era-chip">${(player.era||'').replace(/\(.*\)/,'').trim()}</span>
+        <span class="popup-era-chip">${(eraString).replace(/\(.*\)/,'').trim()}</span>
         <span class="popup-team-chip">${player.team !== 'ROOK' ? player.team : '—'}</span>
       </div>
       ${lockBannerHTML}
@@ -4410,7 +4411,7 @@ function initGameModeSelector() {
         </div>
         `;
       })()}
-      <div class="popup-year">Peak: ${player.year || player.peak_year || player.peakYear || '—'} &nbsp;|&nbsp; ${player.era || ''}</div>
+      <div class="popup-year">Peak: ${player.year || player.peak_year || player.peakYear || '—'} &nbsp;|&nbsp; ${eraString}</div>
       ${!isDraft ? `
         <div class="popup-item-slot-container" style="margin-top:10px; padding:10px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.15); border-radius:8px;">
           <div style="font-size:8px; color:var(--accent-color); font-family:'Press Start 2P',monospace; margin-bottom:6px; display:flex; align-items:center; gap:6px;">
