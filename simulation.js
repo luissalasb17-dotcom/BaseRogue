@@ -771,9 +771,7 @@
 
         const chainLabel = this.strikeoutChain > 1 ? ` 🔥 ${_t('sim.streak_label', { count: this.strikeoutChain, dmg: baseSoDmg }, 'RACHA ×' + this.strikeoutChain + ' (-' + baseSoDmg + ' HP)!')}` : '';
         playText = `🎲 [${roll}] [${_t('sim.label_so', {}, 'PONCHE')}] ¡${pitcher.name} ${_t('sim.so_pitcher_verb', { batter: batter.name }, 'poncha a ' + batter.name)}!${chainLabel}` +
-          (isMoneyballShieldSo
-            ? ` ${_t('sim.out_dmg_label', { shield: shieldDmg, hp: teamHpDmg }, 'Escudo -' + shieldDmg + ' HP | Team HP -' + teamHpDmg + ' HP')}.`
-            : ` ${_t('sim.so_direct_dmg', { dmg: teamHpDmg }, 'Daño directo: -' + teamHpDmg + ' HP del equipo (¡ignora el escudo!)')}.`) +
+          ` ${_t('sim.so_direct_dmg', { dmg: teamHpDmg }, 'Daño directo: -' + teamHpDmg + ' HP del equipo (¡ignora el escudo!)')}.` +
           ` (${_t('sim.shield_status', { shield: this.teamShield, max: this.teamShieldMax, hp: this.teamHP }, 'Escudo: ' + this.teamShield + '/' + this.teamShieldMax + ' | HP: ' + this.teamHP + '/100')})`;
 
         if (integrationTier >= 2) {
