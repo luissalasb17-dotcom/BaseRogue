@@ -91,12 +91,36 @@
     return GRADE_COLORS[letter] || GRADE_COLORS.F;
   }
 
+  function normalizeSearchText(str) {
+    if (!str) return '';
+    return String(str)
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '') // remove diacritics / accents (ñ -> n, á -> a, etc.)
+      .toLowerCase()
+      .trim();
+  }
+
   function getPosText(p) {
     if (!p) return '';
     if (p.sec_pos && String(p.sec_pos).trim() !== '') {
       return `${p.pos} / ${p.sec_pos}`;
     }
     return p.pos || '';
+  }
+
+  function getBbrefUrl(p) {
+    if (!p) return 'https://www.baseball-reference.com';
+    const cleanName = p.name ? p.name.replace(/\s*\(.*?\)$/, '').trim() : '';
+    const db = window.CAREER_STATS_DB || {};
+    const keyWithYear = `${cleanName}_${p.year}`;
+    const entry = (p.playerID && db[p.playerID]) || db[keyWithYear] || db[cleanName] || db[p.name] || db[cleanName.toLowerCase()];
+    const pid = p.playerID || p.bbref_id || (entry && (entry.playerID || entry.bbref_id));
+
+    if (pid && typeof pid === 'string' && pid.length >= 3) {
+      const firstLetter = pid.charAt(0).toLowerCase();
+      return `https://www.baseball-reference.com/players/${firstLetter}/${pid}.shtml`;
+    }
+    return `https://www.baseball-reference.com/search/search.fcgi?search=${encodeURIComponent(cleanName)}`;
   }
 
   function getPlayerCareerData(p) {
@@ -553,7 +577,7 @@
         pool = window.PlayersDB ? window.PlayersDB.LAHMAN_POOL : [];
       }
 
-      const rawTerm = this.currentSearchTerm.toLowerCase().trim();
+      const rawTerm = normalizeSearchText(this.currentSearchTerm);
       let term = rawTerm;
       let explicitPos = null;
 
@@ -582,36 +606,36 @@
 
         if (term) {
           const synPos = POS_SYNONYMS[term];
-          const nameLower = (p.name || '').toLowerCase();
-          const teamLower = (p.team || '').toLowerCase();
-          const pPosLower = (p.pos || p.role || '').toLowerCase();
-          const secPosLower = (p.sec_pos || '').toLowerCase();
+          const nameNorm = normalizeSearchText(p.name || p.cleanName || '');
+          const teamNorm = normalizeSearchText(p.team || '');
+          const pPosNorm = normalizeSearchText(p.pos || p.role || '');
+          const secPosNorm = normalizeSearchText(p.sec_pos || '');
 
           // 1. If user typed a recognized position alias (e.g. "c", "catcher", "1b", "ss", "sp", "rp")
           if (synPos) {
             const isPosMatch = pPos === synPos || secPosArr.includes(synPos);
             // Also allow matching names starting with this term (e.g. "Cain" when typing "c")
-            const nameWords = nameLower.split(/\s+/);
+            const nameWords = nameNorm.split(/\s+/);
             const isNamePrefix = nameWords.some(w => w.startsWith(term));
-            const isTeamMatch = teamLower === term;
+            const isTeamMatch = teamNorm === term;
             if (!isPosMatch && !isNamePrefix && !isTeamMatch) return false;
             return true;
           }
 
           // 2. Short search term (1-2 characters): match exact pos, exact team, or start of words in name
           if (term.length <= 2) {
-            const isExactPos = pPosLower === term || secPosLower.split(',').map(s => s.trim()).includes(term);
-            const nameWords = nameLower.split(/\s+/);
+            const isExactPos = pPosNorm === term || secPosNorm.split(',').map(s => s.trim()).includes(term);
+            const nameWords = nameNorm.split(/\s+/);
             const isNamePrefix = nameWords.some(w => w.startsWith(term));
-            const isTeamMatch = teamLower === term || teamLower.startsWith(term);
+            const isTeamMatch = teamNorm === term || teamNorm.startsWith(term);
             if (!isExactPos && !isNamePrefix && !isTeamMatch) return false;
             return true;
           }
 
           // 3. Multi-character search term (3+ chars): substring match on name, team, position
-          const nMatch = nameLower.includes(term);
-          const tMatch = teamLower.includes(term);
-          const pMatch = pPosLower.includes(term) || secPosLower.includes(term);
+          const nMatch = nameNorm.includes(term);
+          const tMatch = teamNorm.includes(term);
+          const pMatch = pPosNorm.includes(term) || secPosNorm.includes(term);
           if (!nMatch && !tMatch && !pMatch) return false;
         }
         return true;
@@ -1082,14 +1106,17 @@
           </div>
         </div>
 
-        <!-- CONTROLES EXTERIORES INFERIORES: FLIP + NEXT PACK -->
-        <div style="margin-top: 14px; display: flex; justify-content: center; align-items: center; gap: 10px; z-index: 100;">
-          <button id="btn-modal-flip-bottom" style="padding: 7px 16px; background: linear-gradient(135deg, rgba(56,189,248,0.2), rgba(14,165,233,0.3)); border: 1.5px solid #38bdf8; color: #38bdf8; border-radius: 6px; font-family: 'Press Start 2P', monospace; font-size: 8px; cursor: pointer; transition: all 0.15s; box-shadow: 0 0 10px rgba(56,189,248,0.3); display: inline-flex; align-items: center; gap: 6px;">
+        <!-- CONTROLES EXTERIORES INFERIORES: FLIP + NEXT PACK + B-REF -->
+        <div style="margin-top: 14px; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px; z-index: 100;">
+          <button id="btn-modal-flip-bottom" style="padding: 6px 14px; background: linear-gradient(135deg, rgba(56,189,248,0.2), rgba(14,165,233,0.3)); border: 1.5px solid #38bdf8; color: #38bdf8; border-radius: 6px; font-family: 'Press Start 2P', monospace; font-size: 7.5px; cursor: pointer; transition: all 0.15s; box-shadow: 0 0 10px rgba(56,189,248,0.3); display: inline-flex; align-items: center; gap: 5px;">
             🔄 FLIP
           </button>
-          <button id="btn-modal-next-bottom" style="padding: 7px 16px; background: linear-gradient(135deg, rgba(245,158,11,0.2), rgba(234,88,12,0.3)); border: 1.5px solid #f59e0b; color: #fbbf24; border-radius: 6px; font-family: 'Press Start 2P', monospace; font-size: 8px; cursor: pointer; transition: all 0.15s; box-shadow: 0 0 10px rgba(245,158,11,0.3); display: inline-flex; align-items: center; gap: 6px;">
+          <button id="btn-modal-next-bottom" style="padding: 6px 14px; background: linear-gradient(135deg, rgba(245,158,11,0.2), rgba(234,88,12,0.3)); border: 1.5px solid #f59e0b; color: #fbbf24; border-radius: 6px; font-family: 'Press Start 2P', monospace; font-size: 7.5px; cursor: pointer; transition: all 0.15s; box-shadow: 0 0 10px rgba(245,158,11,0.3); display: inline-flex; align-items: center; gap: 5px;">
             📦 ${typeof window.t === 'function' ? window.t('dex.btn_next_pack', 'NEXT PACK') : 'NEXT PACK'}
           </button>
+          <a id="btn-modal-bbref-bottom" href="${getBbrefUrl(p)}" target="_blank" rel="noopener noreferrer" style="padding: 6px 14px; background: linear-gradient(135deg, rgba(16,185,129,0.2), rgba(5,150,105,0.3)); border: 1.5px solid #10b981; color: #34d399; border-radius: 6px; font-family: 'Press Start 2P', monospace; font-size: 7.5px; text-decoration: none; cursor: pointer; transition: all 0.15s; box-shadow: 0 0 10px rgba(16,185,129,0.3); display: inline-flex; align-items: center; gap: 5px;">
+            📊 ${typeof window.t === 'function' ? window.t('dex.btn_bbref', 'B-REF ↗') : 'B-REF ↗'}
+          </a>
         </div>
 
       </div>

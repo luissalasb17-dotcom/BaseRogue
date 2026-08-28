@@ -1158,11 +1158,12 @@
         "ip_label": "INNINGS (IP)",
         "sv_label": "SALVADOS (SV)",
         "btn_random_player": "📦 ABRIR SOBRE",
-        "btn_next_pack": "📦 ABRIR OTRO SOBRE",
+        "btn_next_pack": "NEXT PACK",
         "pack_title": "SOBRE RETRO COLECCIONABLE",
         "pack_tap": "✨ TOCA PARA ABRIR ✨",
         "btn_flip_card": "🔄 FLIP CARTA",
-        "card_unlocked_toast": "¡Nueva carta desbloqueada en tu Dex!"
+        "card_unlocked_toast": "¡Nueva carta desbloqueada en tu Dex!",
+        "btn_bbref": "B-REF ↗"
     },
     "challenge162": {
         "title": "🏆 162-0 CHALLENGE",
@@ -3134,11 +3135,12 @@
         "ip_label": "INNINGS (IP)",
         "sv_label": "SAVES (SV)",
         "btn_random_player": "📦 OPEN PACK",
-        "btn_next_pack": "📦 OPEN NEXT PACK",
+        "btn_next_pack": "NEXT PACK",
         "pack_title": "RETRO BOOSTER PACK",
         "pack_tap": "✨ TAP TO OPEN ✨",
         "btn_flip_card": "🔄 FLIP CARD",
-        "card_unlocked_toast": "New card unlocked in your Dex!"
+        "card_unlocked_toast": "New card unlocked in your Dex!",
+        "btn_bbref": "B-REF ↗"
     },
     "challenge162": {
         "title": "🏆 162-0 CHALLENGE",
