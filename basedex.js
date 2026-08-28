@@ -242,6 +242,142 @@
       if (changed) this.save();
     },
 
+    playPackSound(rarity) {
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
+        if (ctx.state === 'suspended') ctx.resume();
+
+        // 1. Foil tear noise
+        const bufferSize = ctx.sampleRate * 0.25;
+        const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+          data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (ctx.sampleRate * 0.08));
+        }
+        const noise = ctx.createBufferSource();
+        noise.buffer = buffer;
+        const filter = ctx.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.frequency.value = 3200;
+        const noiseGain = ctx.createGain();
+        noiseGain.gain.setValueAtTime(0.3, ctx.currentTime);
+        noiseGain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.25);
+        noise.connect(filter);
+        filter.connect(noiseGain);
+        noiseGain.connect(ctx.destination);
+        noise.start();
+
+        // 2. Chime fanfare based on rarity
+        const isLeg = rarity === 'Legendary';
+        const isEpic = rarity === 'Epic';
+        const chord = isLeg 
+          ? [523.25, 659.25, 783.99, 1046.50, 1318.51] // C Major fanfare
+          : (isEpic ? [440.0, 554.37, 659.25, 880.0] : [392.0, 493.88, 587.33, 783.99]);
+
+        chord.forEach((freq, idx) => {
+          const osc = ctx.createOscillator();
+          const g = ctx.createGain();
+          osc.type = isLeg ? 'triangle' : 'sine';
+          osc.frequency.value = freq;
+          const startTime = ctx.currentTime + 0.12 + (idx * 0.06);
+          g.gain.setValueAtTime(0, startTime);
+          g.gain.linearRampToValueAtTime(0.2, startTime + 0.03);
+          g.gain.exponentialRampToValueAtTime(0.001, startTime + 0.8);
+          osc.connect(g);
+          g.connect(ctx.destination);
+          osc.start(startTime);
+          osc.stop(startTime + 0.85);
+        });
+      } catch (e) {}
+    },
+
+    showRandomCard() {
+      // Remove any existing overlay
+      const existing = document.getElementById('dex-detail-overlay');
+      if (existing) existing.remove();
+      const existingPack = document.getElementById('dex-pack-overlay');
+      if (existingPack) existingPack.remove();
+
+      // Respect all currently active filters (Category, Era, Position/Role, Search text, 162-Challenge)
+      let pool = (this.filteredPlayers && this.filteredPlayers.length > 0) ? this.filteredPlayers : [];
+      if (pool.length === 0) {
+        if (this.activeCategory === 'opponents') {
+          pool = (window.PitchersDB && window.PitchersDB.PITCHERS_POOL) ? window.PitchersDB.PITCHERS_POOL : (window.PITCHERS_POOL || []);
+        } else {
+          pool = (window.PlayersDB && window.PlayersDB.LAHMAN_POOL) ? window.PlayersDB.LAHMAN_POOL : (window.PlayersDB && window.PlayersDB.PLAYERS_POOL ? window.PlayersDB.PLAYERS_POOL : (window.LAHMAN_POOL || []));
+        }
+      }
+      if (!pool || pool.length === 0) {
+        console.warn('BaseballDex: pool is empty for category', this.activeCategory);
+        return;
+      }
+
+      const randomPlayer = pool[Math.floor(Math.random() * pool.length)];
+      if (!randomPlayer) return;
+
+      // Render Interactive Pack Opening Overlay
+      const packOverlay = document.createElement('div');
+      packOverlay.id = 'dex-pack-overlay';
+      packOverlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:999999;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(8px);';
+
+      const isPitchers = this.activeCategory === 'opponents';
+      const eraFilter = this.currentFilterEra !== 'all' ? this.currentFilterEra.toUpperCase() : 'HISTORIC';
+      const packSubtitle = isPitchers ? 'ACE PITCHERS SERIES' : `${eraFilter} EDITION`;
+
+      packOverlay.innerHTML = `
+        <div class="dex-foil-pack-wrapper" id="dex-booster-pack-target">
+          <div class="dex-foil-pack" id="dex-foil-pack-inner">
+            <div class="dex-foil-crimp" id="dex-pack-crimp-top"></div>
+            
+            <div style="text-align:center;margin:20px 0;">
+              <div style="font-size:32px;filter:drop-shadow(0 0 10px #ffd700);margin-bottom:8px;">⚾</div>
+              <div style="font-family:'Press Start 2P',monospace;font-size:12px;color:#ffd700;letter-spacing:1px;text-shadow:0 0 10px rgba(255,215,0,0.8);line-height:1.4;">
+                ${typeof window.t === 'function' ? window.t('dex.pack_title', 'SOBRE RETRO COLECCIONABLE') : 'SOBRE RETRO COLECCIONABLE'}
+              </div>
+              <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#38bdf8;margin-top:10px;background:rgba(56,189,248,0.15);border:1px solid #38bdf8;padding:4px 8px;border-radius:4px;display:inline-block;">
+                ${packSubtitle}
+              </div>
+            </div>
+
+            <div style="text-align:center;margin-bottom:12px;">
+              <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:#00ff66;animation:packGlowPulse 1.2s infinite ease-in-out;letter-spacing:0.5px;">
+                ${typeof window.t === 'function' ? window.t('dex.pack_tap', '✨ TOCA PARA ABRIR ✨') : '✨ TOCA PARA ABRIR ✨'}
+              </div>
+            </div>
+
+            <div class="dex-foil-crimp"></div>
+          </div>
+        </div>
+      `;
+
+      let opened = false;
+      const doOpen = () => {
+        if (opened) return;
+        opened = true;
+
+        this.playPackSound(randomPlayer.rarity);
+
+        const crimpTop = packOverlay.querySelector('#dex-pack-crimp-top');
+        const packInner = packOverlay.querySelector('#dex-foil-pack-inner');
+        if (crimpTop) crimpTop.style.animation = 'packFoilRipTop 0.35s forwards ease-out';
+        if (packInner) packInner.style.boxShadow = '0 0 60px rgba(255,255,255,0.8)';
+
+        setTimeout(() => {
+          packOverlay.remove();
+          this.showDetail(randomPlayer, true);
+        }, 400);
+      };
+
+      packOverlay.querySelector('#dex-booster-pack-target').onclick = doOpen;
+      packOverlay.onclick = (e) => {
+        if (e.target === packOverlay) packOverlay.remove();
+      };
+
+      document.body.appendChild(packOverlay);
+    },
+
     unlockRoster(roster) {
       if (!roster) return;
       const players = Array.isArray(roster) ? roster : Object.values(roster);
@@ -548,10 +684,23 @@
       progressFill.style.cssText = 'height: 100%; background: linear-gradient(90deg, #10b981, #00ff66); width: 0%; transition: width 0.4s ease;';
       progressOuter.appendChild(progressFill);
 
+      const headerRight = document.createElement('div');
+      headerRight.style.cssText = 'display: flex; align-items: center; gap: 8px;';
+
+      const randomBtn = document.createElement('button');
+      randomBtn.innerHTML = typeof window.t === 'function' ? window.t('dex.btn_random_player', '🎲 CARTA RANDOM') : '🎲 CARTA RANDOM';
+      randomBtn.style.cssText = 'padding: 6px 12px; background: linear-gradient(135deg, rgba(245,158,11,0.2), rgba(234,88,12,0.25)); border: 1.5px solid #f59e0b; color: #fbbf24; border-radius: 6px; font-family:"Press Start 2P", monospace; font-size: 8px; cursor: pointer; transition: all 0.2s; box-shadow: 0 0 10px rgba(245,158,11,0.25); white-space: nowrap;';
+      randomBtn.onmouseenter = () => { randomBtn.style.transform = 'scale(1.05)'; randomBtn.style.boxShadow = '0 0 16px rgba(245,158,11,0.5)'; };
+      randomBtn.onmouseleave = () => { randomBtn.style.transform = 'scale(1)'; randomBtn.style.boxShadow = '0 0 10px rgba(245,158,11,0.25)'; };
+      randomBtn.onclick = () => this.showRandomCard();
+
       const closeBtn = document.createElement('button');
       closeBtn.innerText = '✕';
       closeBtn.style.cssText = 'background: none; border: none; color: #9ca3af; font-size: 20px; cursor: pointer; padding: 0 8px;';
       closeBtn.onclick = () => this.close();
+
+      headerRight.appendChild(randomBtn);
+      headerRight.appendChild(closeBtn);
 
       const headerLeft = document.createElement('div');
       headerLeft.style.display = 'flex';
@@ -562,7 +711,7 @@
       headerLeft.appendChild(progressOuter);
 
       header.appendChild(headerLeft);
-      header.appendChild(closeBtn);
+      header.appendChild(headerRight);
       panel.appendChild(header);
 
       // Top Category Bar: [ LEYENDAS / JUGADORES ] vs [ OPONENTES (PARTIDA RÁPIDA) ]
@@ -692,9 +841,11 @@
       this.applyFilters();
     },
 
-    showDetail(p) {
+    showDetail(p, isPackReveal = false) {
       const existing = document.getElementById('dex-detail-overlay');
       if (existing) existing.remove();
+      const existingPack = document.getElementById('dex-pack-overlay');
+      if (existingPack) existingPack.remove();
 
       const rColor = RARITY_COLORS[p.rarity] || RARITY_COLORS.Common;
       const eraTab = ERA_TABS.find(t => t.key === p.era);
@@ -785,9 +936,15 @@
         badgesHtml += `<span style="background:#ffd70022;color:#ffd700;border:1px solid #ffd700;padding:2px 8px;border-radius:4px;font-size:8px">${challenge162BadgeLabel}</span>`;
       }
 
+      const cardAnimStyle = isPackReveal ? 'animation: packCardBurst 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;' : '';
+      const glowColor = rColor;
+
       overlay.innerHTML = `
-        <div style="background:#0a0f1a;border:3px solid ${rColor};border-radius:12px;width:100%;max-width:440px;padding:24px;position:relative">
-          <button onclick="document.getElementById('dex-detail-overlay').remove()" style="position:absolute;top:12px;right:12px;background:none;border:none;color:#9ca3af;font-size:18px;cursor:pointer">✕</button>
+        <div style="background:#0a0f1a;border:3px solid ${rColor};border-radius:12px;width:100%;max-width:440px;padding:24px;position:relative;box-shadow: 0 0 35px ${glowColor}66; ${cardAnimStyle}">
+          <div style="position:absolute;top:12px;right:12px;display:flex;align-items:center;gap:6px;">
+            <button id="btn-modal-next-random" style="padding:5px 10px;background:linear-gradient(135deg,rgba(245,158,11,0.25),rgba(234,88,12,0.3));border:1.5px solid #f59e0b;color:#fbbf24;border-radius:6px;font-family:'Press Start 2P',monospace;font-size:7.5px;cursor:pointer;transition:all 0.15s;box-shadow:0 0 10px rgba(245,158,11,0.3);">${typeof window.t === 'function' ? window.t('dex.btn_next_pack', '📦 ABRIR OTRO') : '📦 ABRIR OTRO'}</button>
+            <button id="btn-modal-close-detail" style="background:none;border:none;color:#9ca3af;font-size:20px;cursor:pointer;padding:0 6px;">✕</button>
+          </div>
           
           <div style="margin-bottom:16px">
             <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:${rColor};margin-bottom:4px">${p.rarity || 'Common'} · ${eraShort}</div>
@@ -849,10 +1006,22 @@
         </div>
       `;
 
-      if (this.container && this.container.isConnected && this.container.querySelector('div')) {
-        this.container.querySelector('div').appendChild(overlay);
-      } else {
-        document.body.appendChild(overlay);
+      document.body.appendChild(overlay);
+
+      const nextBtn = overlay.querySelector('#btn-modal-next-random');
+      if (nextBtn) {
+        nextBtn.onclick = (e) => {
+          e.stopPropagation();
+          this.showRandomCard();
+        };
+      }
+
+      const closeDetailBtn = overlay.querySelector('#btn-modal-close-detail');
+      if (closeDetailBtn) {
+        closeDetailBtn.onclick = (e) => {
+          e.stopPropagation();
+          overlay.remove();
+        };
       }
     }
   };

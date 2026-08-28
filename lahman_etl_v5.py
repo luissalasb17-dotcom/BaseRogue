@@ -1026,7 +1026,7 @@ FRANCHISE_MAP = {
     'ATL': 'ATL', 'BSN': 'ATL', 'ML1': 'ATL', 'BS1': 'ATL', 'BS2': 'ATL',
     'OAK': 'OAK', 'PHA': 'OAK', 'KCA': 'OAK', 'KC1': 'OAK',
     'MIN': 'MIN', 'WS1': 'MIN',
-    'WSH': 'WSH', 'MON': 'WSH', 'WAS': 'WSH',
+    'WSH': 'WSH', 'MON': 'WSH', 'WAS': 'WSH', 'WSN': 'WSH',
     'TEX': 'TEX', 'WS2': 'TEX',
     'LAA': 'LAA', 'ANA': 'LAA', 'CAL': 'LAA',
     'MIA': 'MIA', 'FLA': 'MIA', 'FLO': 'MIA',
@@ -1111,48 +1111,62 @@ def map_to_cosmetic_ovr(r):
     return round(res, 1)
 
 
-def paso_15_equipo_y_exportar(df, batting, teams, franchises, pico_df=None):
+def paso_15_equipo_y_exportar(df, batting, teams, franchises, pico_df=None, war_bat=None, people=None):
     """
-    Asigna equipo canonico basandose en la mayor cantidad de temporadas dentro de sus 7 AÑOS PICO POR WAR,
+    Asigna equipo canonico usando la Formula Hibrida 80/20 de WAR:
+    Franchise_Score = 0.80 * WAR_Peak7 + 0.20 * WAR_Career
     construye el DataFrame final y exporta a game_cards.csv y game_cards_pool.js.
     """
-    print("\n  PASO 15: Equipo canonico (Pico 7 WAR), DataFrame final y exportacion...")
+    print("\n  PASO 15: Equipo canonico (Hibrido 80% WAR Pico 7 + 20% WAR Carrera) y exportacion...")
 
-    if pico_df is not None and not pico_df.empty and not batting.empty:
-        peak_seasons_teams = pico_df.merge(batting[["playerID", "yearID", "teamID"]].drop_duplicates(), on=["playerID", "yearID"], how="left")
-        team_seasons = peak_seasons_teams.groupby(["playerID", "teamID"])["yearID"].count().reset_index()
-        team_seasons.columns = ["playerID", "teamID", "team_count"]
+    team_to_franch = {}
+    if not teams.empty and "teamID" in teams.columns and "franchID" in teams.columns:
+        team_to_franch = teams.set_index("teamID")["franchID"].to_dict()
+
+    def get_franch(tid):
+        tid_str = str(tid).strip()
+        f = team_to_franch.get(tid_str, tid_str)
+        return FRANCHISE_MAP.get(f, FRANCHISE_MAP.get(tid_str, f))
+
+    if war_bat is not None and not war_bat.empty and people is not None and not people.empty:
+        war = war_bat.copy()
+        war["WAR"] = pd.to_numeric(war["WAR"].replace("NULL", 0), errors="coerce").fillna(0)
+        id_map = people[["playerID", "bbrefID"]].dropna(subset=["bbrefID"])
+        war_merged = war.merge(id_map, left_on="player_ID", right_on="bbrefID", how="inner")
+        war_merged["franch_clean"] = war_merged["team_ID"].apply(get_franch)
+        
+        # WAR en carrera por franquicia
+        career_franch_war = war_merged.groupby(["playerID", "franch_clean"])["WAR"].sum().reset_index(name="career_war_f")
+        
+        # WAR en pico 7 por franquicia
+        if pico_df is not None and not pico_df.empty:
+            peak_years = pico_df[["playerID", "yearID"]].drop_duplicates()
+            peak_war_df = war_merged.merge(peak_years, left_on=["playerID", "year_ID"], right_on=["playerID", "yearID"], how="inner")
+            peak_franch_war = peak_war_df.groupby(["playerID", "franch_clean"])["WAR"].sum().reset_index(name="peak_war_f")
+        else:
+            peak_franch_war = career_franch_war.rename(columns={"career_war_f": "peak_war_f"})
+            
+        merged_franch = career_franch_war.merge(peak_franch_war, on=["playerID", "franch_clean"], how="outer").fillna(0.0)
+        merged_franch["franch_score"] = 0.80 * merged_franch["peak_war_f"] + 0.20 * merged_franch["career_war_f"]
+        
         canonical = (
-            team_seasons.sort_values("team_count", ascending=False)
-                        .drop_duplicates(subset="playerID")
-                        .rename(columns={"teamID": "canonical_teamID"})
+            merged_franch.sort_values("franch_score", ascending=False)
+                         .drop_duplicates(subset="playerID")
+                         .rename(columns={"franch_clean": "canonical_teamID"})
         )
         df = df.merge(canonical[["playerID", "canonical_teamID"]], on="playerID", how="left")
-    elif not batting.empty:
-        team_seasons = batting.groupby(["playerID","teamID"])["yearID"].count().reset_index()
-        team_seasons.columns = ["playerID","teamID","team_count"]
+    elif pico_df is not None and not pico_df.empty and not batting.empty:
+        peak_seasons_teams = pico_df.merge(batting[["playerID", "yearID", "teamID"]].drop_duplicates(), on=["playerID", "yearID"], how="left")
+        peak_seasons_teams["franch_clean"] = peak_seasons_teams["teamID"].apply(get_franch)
+        team_seasons = peak_seasons_teams.groupby(["playerID", "franch_clean"])["yearID"].count().reset_index()
+        team_seasons.columns = ["playerID", "canonical_teamID", "team_count"]
         canonical = (
             team_seasons.sort_values("team_count", ascending=False)
                         .drop_duplicates(subset="playerID")
-                        .rename(columns={"teamID":"canonical_teamID"})
         )
-        df = df.merge(canonical[["playerID","canonical_teamID"]], on="playerID", how="left")
+        df = df.merge(canonical[["playerID", "canonical_teamID"]], on="playerID", how="left")
     else:
         df["canonical_teamID"] = "UNK"
-
-    if not teams.empty and "franchID" in teams.columns:
-        team_franch = teams[["teamID","franchID"]].drop_duplicates(subset=["teamID"])
-        df = df.merge(team_franch, left_on="canonical_teamID", right_on="teamID", how="left")
-        df.drop(columns=["teamID"], errors="ignore", inplace=True)
-        if not franchises.empty and "franchName" in franchises.columns:
-            df = df.merge(franchises[["franchID","franchName"]].drop_duplicates(subset=["franchID"]), on="franchID", how="left")
-            df.rename(columns={"franchName":"franchise_name"}, inplace=True)
-        else:
-            df["franchise_name"] = df.get("canonical_teamID","UNK")
-    else:
-        df["franchise_name"] = df.get("canonical_teamID","UNK")
-
-    df = df.drop_duplicates(subset=["playerID"]).copy()
 
     df["canonical_teamID"] = df.apply(map_to_canonical_team, axis=1)
     df["franchise_name"]   = df["canonical_teamID"]
@@ -1387,7 +1401,7 @@ def main():
     eligible         = paso_12_normalizar_por_era(eligible)
     eligible         = paso_13_bono_guante_de_oro(eligible)
     eligible         = paso_14_velocidad(eligible)
-    final            = paso_15_equipo_y_exportar(eligible, batting, teams, franchises, pico_tot_df)
+    final            = paso_15_equipo_y_exportar(eligible, batting, teams, franchises, pico_tot_df, war_bat, people)
 
     reporte_final(final)
     return final

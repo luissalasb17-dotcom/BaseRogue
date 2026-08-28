@@ -1156,7 +1156,11 @@
         "so_label": "PONCHES (K)",
         "whip_label": "WHIP",
         "ip_label": "INNINGS (IP)",
-        "sv_label": "SALVADOS (SV)"
+        "sv_label": "SALVADOS (SV)",
+        "btn_random_player": "📦 ABRIR SOBRE",
+        "btn_next_pack": "📦 ABRIR OTRO SOBRE",
+        "pack_title": "SOBRE RETRO COLECCIONABLE",
+        "pack_tap": "✨ TOCA PARA ABRIR ✨"
     },
     "challenge162": {
         "title": "🏆 162-0 CHALLENGE",
@@ -3126,7 +3130,11 @@
         "so_label": "STRIKEOUTS (K)",
         "whip_label": "WHIP",
         "ip_label": "INNINGS (IP)",
-        "sv_label": "SAVES (SV)"
+        "sv_label": "SAVES (SV)",
+        "btn_random_player": "📦 OPEN PACK",
+        "btn_next_pack": "📦 OPEN NEXT PACK",
+        "pack_title": "RETRO BOOSTER PACK",
+        "pack_tap": "✨ TAP TO OPEN ✨"
     },
     "challenge162": {
         "title": "🏆 162-0 CHALLENGE",

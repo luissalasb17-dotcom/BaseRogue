@@ -1152,7 +1152,11 @@
     "so_label": "STRIKEOUTS (K)",
     "whip_label": "WHIP",
     "ip_label": "INNINGS (IP)",
-    "sv_label": "SAVES (SV)"
+    "sv_label": "SAVES (SV)",
+    "btn_random_player": "📦 OPEN PACK",
+    "btn_next_pack": "📦 OPEN NEXT PACK",
+    "pack_title": "RETRO BOOSTER PACK",
+    "pack_tap": "✨ TAP TO OPEN ✨"
   },
   "challenge162": {
     "title": "🏆 162-0 CHALLENGE",

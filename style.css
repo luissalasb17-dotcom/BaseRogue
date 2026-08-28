@@ -8517,3 +8517,72 @@ body.on-main-menu .main-container {
     padding: 8px 10px !important;
   }
 }
+
+/* ── BASEBALL-DEX FOIL PACK OPENING ANIMATIONS ── */
+@keyframes packFoilShimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes packCardBurst {
+  0% { transform: scale(0.2) rotateY(180deg); opacity: 0; filter: brightness(3); }
+  60% { transform: scale(1.06) rotateY(10deg); opacity: 1; filter: brightness(1.4); }
+  100% { transform: scale(1) rotateY(0deg); opacity: 1; filter: brightness(1); }
+}
+
+@keyframes packGlowPulse {
+  0%, 100% { filter: drop-shadow(0 0 15px var(--glow-color, #00ff66)); }
+  50% { filter: drop-shadow(0 0 35px var(--glow-color, #ffd700)); }
+}
+
+@keyframes packFoilRipTop {
+  0% { transform: translateY(0) rotate(0); opacity: 1; }
+  100% { transform: translateY(-50px) rotate(-12deg) scale(0.9); opacity: 0; }
+}
+
+.dex-foil-pack-wrapper {
+  perspective: 1000px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease;
+}
+
+.dex-foil-pack-wrapper:hover {
+  transform: scale(1.04);
+}
+
+.dex-foil-pack {
+  width: 260px;
+  height: 370px;
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 40%, #1e1b4b 70%, #311042 100%);
+  border: 3px solid #ffd700;
+  border-radius: 14px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 0 35px rgba(255, 215, 0, 0.4), inset 0 0 20px rgba(255, 255, 255, 0.2);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 16px 14px;
+  box-sizing: border-box;
+}
+
+.dex-foil-pack::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(105deg, transparent 20%, rgba(255,255,255,0.35) 45%, rgba(255,255,255,0.6) 50%, rgba(255,255,255,0.35) 55%, transparent 80%);
+  background-size: 200% 100%;
+  animation: packFoilShimmer 2.5s infinite linear;
+  pointer-events: none;
+}
+
+.dex-foil-crimp {
+  width: 100%;
+  height: 12px;
+  background: repeating-linear-gradient(90deg, #ffd700, #ffd700 3px, #b45309 3px, #b45309 6px);
+  border-radius: 3px;
+}
