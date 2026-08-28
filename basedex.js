@@ -69,24 +69,25 @@
   function getGrade(val) {
     const v = Math.round(Number(val) || 0);
     let letter = 'F', modifier = '';
-    if (v >= 95) {
+    // 20-point Attribute Grade Scale
+    if (v >= 100) {
       letter = 'S';
     } else if (v >= 80) {
       letter = 'A';
-      if (v >= 87) modifier = '+';
-      else if (v < 83) modifier = '-';
-    } else if (v >= 70) {
-      letter = 'B';
-      if (v >= 77) modifier = '+';
-      else if (v < 73) modifier = '-';
+      if (v >= 95) modifier = '+';
+      else if (v < 85) modifier = '-';
     } else if (v >= 60) {
+      letter = 'B';
+      if (v >= 75) modifier = '+';
+      else if (v < 65) modifier = '-';
+    } else if (v >= 40) {
       letter = 'C';
-      if (v >= 67) modifier = '+';
-      else if (v < 63) modifier = '-';
-    } else if (v >= 50) {
+      if (v >= 55) modifier = '+';
+      else if (v < 45) modifier = '-';
+    } else if (v >= 20) {
       letter = 'D';
-      if (v >= 57) modifier = '+';
-      else if (v < 53) modifier = '-';
+      if (v >= 35) modifier = '+';
+      else if (v < 25) modifier = '-';
     } else {
       letter = 'F';
     }
