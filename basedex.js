@@ -116,23 +116,25 @@
     return p.pos || '';
   }
 
-  function getPlayerFlag(p) {
-    if (!p) return '🇺🇸';
+  function getPlayerFlagHTML(p) {
     const db = window.PLAYER_FLAGS_DB || {};
-    let pid = p.playerID || p.bbref_id || p.id;
-    if (pid && db[pid]) return db[pid];
+    let pid = p ? (p.playerID || p.bbref_id || p.id) : null;
+    let iso = pid && db[pid];
 
-    const rawName = p.cleanName || p.name || '';
-    const cleanName = rawName.replace(/\s*\(.*?\)$/, '').trim();
-    if (window.PlayersDB && Array.isArray(window.PlayersDB.LAHMAN_POOL)) {
-      const match = window.PlayersDB.LAHMAN_POOL.find(x => x && x.name === cleanName);
-      if (match && match.playerID && db[match.playerID]) return db[match.playerID];
+    if (!iso && p) {
+      const rawName = p.cleanName || p.name || '';
+      const cleanName = rawName.replace(/\s*\(.*?\)$/, '').trim();
+      if (window.PlayersDB && Array.isArray(window.PlayersDB.LAHMAN_POOL)) {
+        const match = window.PlayersDB.LAHMAN_POOL.find(x => x && x.name === cleanName);
+        if (match && match.playerID && db[match.playerID]) iso = db[match.playerID];
+      }
+      if (!iso && window.PitchersDB && Array.isArray(window.PitchersDB.PITCHERS_POOL)) {
+        const match = window.PitchersDB.PITCHERS_POOL.find(x => x && x.name === cleanName);
+        if (match && match.playerID && db[match.playerID]) iso = db[match.playerID];
+      }
     }
-    if (window.PitchersDB && Array.isArray(window.PitchersDB.PITCHERS_POOL)) {
-      const match = window.PitchersDB.PITCHERS_POOL.find(x => x && x.name === cleanName);
-      if (match && match.playerID && db[match.playerID]) return db[match.playerID];
-    }
-    return db[cleanName.toLowerCase()] || '🇺🇸';
+    const cleanIso = (iso || 'us').toLowerCase();
+    return `<img src="https://flagcdn.com/w20/${cleanIso}.png" srcset="https://flagcdn.com/w40/${cleanIso}.png 2x" style="width:17px;height:12px;border-radius:2px;object-fit:cover;box-shadow:0 0 5px rgba(0,0,0,0.8);border:1px solid rgba(255,255,255,0.25);display:inline-block;vertical-align:middle;" alt="${cleanIso.toUpperCase()}" loading="lazy">`;
   }
 
   function getBbrefUrl(p) {
@@ -1083,9 +1085,9 @@
                 
                 <div style="margin-bottom:16px;padding-right:30px;">
                   <div style="font-family:'Press Start 2P',monospace;font-size:9.5px;color:${rColor};margin-bottom:4px">${p.rarity || 'Common'} · ${eraShort}</div>
-                  <h2 style="font-family:'Press Start 2P',monospace;font-size:13px;color:#fff;margin:0 0 4px 0;line-height:1.4;display:flex;align-items:center;flex-wrap:wrap;gap:6px;">
+                  <h2 style="font-family:'Press Start 2P',monospace;font-size:13px;color:#fff;margin:0 0 4px 0;line-height:1.4;display:flex;align-items:center;flex-wrap:wrap;gap:8px;">
                     <span>${p.name}</span>
-                    <span style="font-size:15px;line-height:1;display:inline-block;vertical-align:middle;" title="Nacionalidad">${getPlayerFlag(p)}</span>
+                    ${getPlayerFlagHTML(p)}
                   </h2>
                   <div style="font-size:11px;color:#9ca3af">${teamFull} — ${p.year} · ${p.role || getPosText(p)}</div>
                 </div>
