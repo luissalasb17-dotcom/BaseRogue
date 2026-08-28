@@ -116,6 +116,25 @@
     return p.pos || '';
   }
 
+  function getPlayerFlag(p) {
+    if (!p) return '🇺🇸';
+    const db = window.PLAYER_FLAGS_DB || {};
+    let pid = p.playerID || p.bbref_id || p.id;
+    if (pid && db[pid]) return db[pid];
+
+    const rawName = p.cleanName || p.name || '';
+    const cleanName = rawName.replace(/\s*\(.*?\)$/, '').trim();
+    if (window.PlayersDB && Array.isArray(window.PlayersDB.LAHMAN_POOL)) {
+      const match = window.PlayersDB.LAHMAN_POOL.find(x => x && x.name === cleanName);
+      if (match && match.playerID && db[match.playerID]) return db[match.playerID];
+    }
+    if (window.PitchersDB && Array.isArray(window.PitchersDB.PITCHERS_POOL)) {
+      const match = window.PitchersDB.PITCHERS_POOL.find(x => x && x.name === cleanName);
+      if (match && match.playerID && db[match.playerID]) return db[match.playerID];
+    }
+    return db[cleanName.toLowerCase()] || '🇺🇸';
+  }
+
   function getBbrefUrl(p) {
     if (!p) return 'https://www.baseball-reference.com';
     const rawName = p.cleanName || p.name || '';
@@ -1064,7 +1083,10 @@
                 
                 <div style="margin-bottom:16px;padding-right:30px;">
                   <div style="font-family:'Press Start 2P',monospace;font-size:9.5px;color:${rColor};margin-bottom:4px">${p.rarity || 'Common'} · ${eraShort}</div>
-                  <h2 style="font-family:'Press Start 2P',monospace;font-size:13px;color:#fff;margin:0 0 4px 0;line-height:1.4">${p.name}</h2>
+                  <h2 style="font-family:'Press Start 2P',monospace;font-size:13px;color:#fff;margin:0 0 4px 0;line-height:1.4;display:flex;align-items:center;flex-wrap:wrap;gap:6px;">
+                    <span>${p.name}</span>
+                    <span style="font-size:15px;line-height:1;display:inline-block;vertical-align:middle;" title="Nacionalidad">${getPlayerFlag(p)}</span>
+                  </h2>
                   <div style="font-size:11px;color:#9ca3af">${teamFull} — ${p.year} · ${p.role || getPosText(p)}</div>
                 </div>
               
