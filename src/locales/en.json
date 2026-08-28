@@ -509,7 +509,11 @@
     "badge_bonus": "BONUS!",
     "money": {
       "desc": "Your club receives an economic injection from local sponsors."
-    }
+    },
+    "modal_heal_title": "Clubhouse Rest & Recovery",
+    "team_stamina_label": "Team Stamina",
+    "modal_sponsor_title": "Team Sponsorship",
+    "sponsor_cash_label": "Team Budget"
   },
   "event": {
     "title": "<i class=\"fa-solid fa-clipboard-question\"></i> Manager's Office",

@@ -509,7 +509,11 @@
     "badge_bonus": "¡BONIFICACIÓN!",
     "money": {
       "desc": "Tu club recibe una inyección económica de los patrocinadores locales."
-    }
+    },
+    "modal_heal_title": "Descanso en la Casa Club",
+    "team_stamina_label": "Stamina del Equipo",
+    "modal_sponsor_title": "Patrocinador Deportivo",
+    "sponsor_cash_label": "Presupuesto"
   },
   "event": {
     "title": "<i class=\"fa-solid fa-clipboard-question\"></i> Oficina del Mánager",

@@ -67,19 +67,11 @@ function updateMobileNavVisibility() {
 
   const modeScreen = document.getElementById('screen-mode-select');
   const menuScreen = document.getElementById('screen-menu');
-  const matchScreen = document.getElementById('screen-match');
-  const draftScreen = document.getElementById('screen-draft');
-  const preFightScreen = document.getElementById('screen-pre-fight');
-  const isDraftActive = draftScreen && !draftScreen.classList.contains('hidden');
-  const isPreFightActive = preFightScreen && !preFightScreen.classList.contains('hidden');
+  const isMainMenu = (modeScreen && !modeScreen.classList.contains('hidden')) ||
+                     (menuScreen && !menuScreen.classList.contains('hidden'));
 
-  const isOuterScreen = (modeScreen && !modeScreen.classList.contains('hidden')) ||
-                        (menuScreen && !menuScreen.classList.contains('hidden')) ||
-                        (matchScreen && !matchScreen.classList.contains('hidden')) ||
-                        isDraftActive ||
-                        isPreFightActive;
-
-  if (isOuterScreen) {
+  // Keep bottom navigation accessible during all in-game screens (Draft, Map, Match, Pre-Fight, Rewards, Clubhouse)
+  if (isMainMenu) {
     navBar.classList.add('hidden');
   } else {
     navBar.classList.remove('hidden');
@@ -3486,18 +3478,18 @@ function initGameModeSelector() {
     if (btnRoster) btnRoster.addEventListener('click', () => setMobileTab('roster'));
     if (btnOrder)  btnOrder.addEventListener('click',  () => setMobileTab('order'));
 
-    // Toggle roster panel (HUD button)
+    // Toggle roster panel (HUD button) -> opens 'roster' tab (left sidebar)
     if (el.toggleRosterBtn) {
       el.toggleRosterBtn.addEventListener('click', () => {
-        setMobileTab(currentMobileTab === 'order' ? 'action' : 'order');
+        setMobileTab(currentMobileTab === 'roster' ? 'action' : 'roster');
       });
     }
 
-    // Toggle synergies panel (HUD button)
+    // Toggle synergies panel (HUD button) -> opens 'order' tab (right sidebar / synergies)
     const btnSynergiesMobile = document.getElementById('btn-toggle-synergies-mobile');
     if (btnSynergiesMobile) {
       btnSynergiesMobile.addEventListener('click', () => {
-        setMobileTab(currentMobileTab === 'roster' ? 'action' : 'roster');
+        setMobileTab(currentMobileTab === 'order' ? 'action' : 'order');
       });
     }
 
@@ -3802,12 +3794,12 @@ function initGameModeSelector() {
       renderActiveRoster();
       renderSynergiesAndItems();
       showRetroResultModal({
-        title: 'Descanso en la Casa Club',
+        title: typeof window.t === 'function' ? window.t('rest.modal_heal_title', 'Descanso en la Casa Club') : 'Descanso en la Casa Club',
         get badgeText() { return typeof window.t==='function'?window.t('rest.badge_restore'):'¡RESTAURACIÓN!'; },
         badgeColor: '#10b981',
         icon: '🛋️',
         get desc() { return typeof window.t==='function'?window.t('rest.stamina.desc'):'Toda tu plantilla activa recupera +40 de Stamina para los próximos encuentros.'; },
-        stats: [{ label: 'Stamina del Equipo', value: '+40', isPositive: true }],
+        stats: [{ label: typeof window.t === 'function' ? window.t('rest.team_stamina_label', 'Stamina del Equipo') : 'Stamina del Equipo', value: '+40', isPositive: true }],
         onClose: () => closeNodeCompleted()
       });
     });
@@ -3831,12 +3823,12 @@ function initGameModeSelector() {
       renderActiveRoster();
       updateHUD();
       showRetroResultModal({
-        title: typeof window.t === 'function' ? window.t('rest.sponsor_title', 'Patrocinador Deportivo') : 'Patrocinador Deportivo',
+        title: typeof window.t === 'function' ? window.t('rest.modal_sponsor_title', 'Patrocinador Deportivo') : 'Patrocinador Deportivo',
         get badgeText() { return typeof window.t==='function'?window.t('rest.badge_bonus'):'¡BONIFICACIÓN!'; },
         badgeColor: '#f59e0b',
         icon: '💰',
         get desc() { return typeof window.t==='function'?window.t('rest.money.desc'):'Tu club recibe una inyección económica de los patrocinadores locales.'; },
-        stats: [{ label: typeof window.t==='function'?window.t('hud.budget', 'Presupuesto'):'Presupuesto', value: '+$25', isPositive: true }],
+        stats: [{ label: typeof window.t === 'function' ? window.t('rest.sponsor_cash_label', 'Presupuesto') : 'Presupuesto', value: '+$25', isPositive: true }],
         onClose: () => closeNodeCompleted()
       });
     });
@@ -7028,16 +7020,16 @@ function initGameModeSelector() {
       : '';
 
     el.preFightScouting.innerHTML = `
-      <div style="background:rgba(0,0,0,0.35);border:1px solid ${rColor};border-radius:10px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:16px;box-sizing:border-box;">
-        <div style="flex:1 1 auto;min-width:0;">
-          <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:${rColor};letter-spacing:0.5px;margin-bottom:4px;">${t('pre_fight.scouting_title')}</div>
-          <div style="font-size:13px;font-weight:bold;color:#e4e4e7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${teamName}</div>
-          ${eraName ? `<div style="font-size:11px;color:#9ca3af;margin-top:2px;">${eraName}</div>` : ''}
+      <div class="pre-fight-scouting-card" style="border:1px solid ${rColor};">
+        <div class="scouting-card-info">
+          <div class="scouting-card-header-tag" style="color:${rColor};">${t('pre_fight.scouting_title')}</div>
+          <div class="scouting-card-team-title">${teamName}</div>
+          ${eraName ? `<div class="scouting-card-era">${eraName}</div>` : ''}
           ${recordHTML}
         </div>
-        <div style="background:${rBg};border:1px solid ${rColor};border-radius:8px;padding:8px 14px;text-align:center;min-width:140px;flex:0 0 auto;">
-          <div style="font-family:'Press Start 2P',monospace;font-size:8.5px;color:${rColor};letter-spacing:0.5px;">${rarity.toUpperCase()}</div>
-          <div style="font-size:10.5px;color:#e4e4e7;margin-top:2px;">${threatLabel}</div>
+        <div class="scouting-card-threat-box" style="background:${rBg};border:1px solid ${rColor};">
+          <div class="scouting-threat-rarity" style="color:${rColor};">${rarity.toUpperCase()}</div>
+          <div class="scouting-threat-label">${threatLabel}</div>
           ${ovrHTML}
           ${winProbHTML}
         </div>

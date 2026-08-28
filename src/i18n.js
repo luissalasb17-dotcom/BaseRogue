@@ -513,7 +513,11 @@
         "badge_bonus": "¡BONIFICACIÓN!",
         "money": {
             "desc": "Tu club recibe una inyección económica de los patrocinadores locales."
-        }
+        },
+        "modal_heal_title": "Descanso en la Casa Club",
+        "team_stamina_label": "Stamina del Equipo",
+        "modal_sponsor_title": "Patrocinador Deportivo",
+        "sponsor_cash_label": "Presupuesto"
     },
     "event": {
         "title": "<i class=\"fa-solid fa-clipboard-question\"></i> Oficina del Mánager",
@@ -2479,7 +2483,11 @@
         "badge_bonus": "BONUS!",
         "money": {
             "desc": "Your club receives an economic injection from local sponsors."
-        }
+        },
+        "modal_heal_title": "Clubhouse Rest & Recovery",
+        "team_stamina_label": "Team Stamina",
+        "modal_sponsor_title": "Team Sponsorship",
+        "sponsor_cash_label": "Team Budget"
     },
     "event": {
         "title": "<i class=\"fa-solid fa-clipboard-question\"></i> Manager's Office",
