@@ -116,6 +116,63 @@
     return p.pos || '';
   }
 
+  const ISO_COUNTRY_NAMES = {
+    'us': 'Estados Unidos',
+    'do': 'República Dominicana',
+    've': 'Venezuela',
+    'pr': 'Puerto Rico',
+    'cu': 'Cuba',
+    'mx': 'México',
+    'jp': 'Japón',
+    'ca': 'Canadá',
+    'pa': 'Panamá',
+    'co': 'Colombia',
+    'cw': 'Curazao',
+    'ni': 'Nicaragua',
+    'kr': 'Corea del Sur',
+    'tw': 'Taiwán',
+    'bs': 'Bahamas',
+    'au': 'Australia',
+    'de': 'Alemania',
+    'it': 'Italia',
+    'gb-eng': 'Inglaterra',
+    'gb-sct': 'Escocia',
+    'gb-wls': 'Gales',
+    'gb-nir': 'Irlanda del Norte',
+    'ie': 'Irlanda',
+    'nl': 'Países Bajos',
+    'aw': 'Aruba',
+    'vi': 'Islas Vírgenes (EE.UU.)',
+    'jm': 'Jamaica',
+    'br': 'Brasil',
+    'hn': 'Honduras',
+    'es': 'España',
+    'fr': 'Francia',
+    'cz': 'República Checa',
+    'za': 'Sudáfrica',
+    'pl': 'Polonia',
+    'at': 'Austria',
+    'se': 'Suecia',
+    'no': 'Noruega',
+    'fi': 'Finlandia',
+    'dk': 'Dinamarca',
+    'be': 'Bélgica',
+    'ch': 'Suiza',
+    'ph': 'Filipinas',
+    'cn': 'China',
+    'pe': 'Perú',
+    'bz': 'Belice',
+    'gu': 'Guam',
+    'as': 'Samoa Americana',
+    'lt': 'Lituania',
+    'lv': 'Letonia',
+    'vn': 'Vietnam',
+    'pt': 'Portugal',
+    'gr': 'Grecia',
+    'ru': 'Rusia',
+    'af': 'Afganistán'
+  };
+
   function getPlayerFlagHTML(p) {
     const db = window.PLAYER_FLAGS_DB || {};
     let pid = p ? (p.playerID || p.bbref_id || p.id) : null;
@@ -138,7 +195,8 @@
       }
     }
     const cleanIso = (iso || 'us').toLowerCase();
-    return `<img src="https://flagcdn.com/w20/${cleanIso}.png" srcset="https://flagcdn.com/w40/${cleanIso}.png 2x" style="width:17px;height:12px;border-radius:2px;object-fit:cover;box-shadow:0 0 5px rgba(0,0,0,0.8);border:1px solid rgba(255,255,255,0.25);display:inline-block;vertical-align:middle;" alt="${cleanIso.toUpperCase()}" loading="lazy">`;
+    const countryName = ISO_COUNTRY_NAMES[cleanIso] || cleanIso.toUpperCase();
+    return `<img src="https://flagcdn.com/w20/${cleanIso}.png" srcset="https://flagcdn.com/w40/${cleanIso}.png 2x" style="width:17px;height:12px;border-radius:2px;object-fit:cover;box-shadow:0 0 5px rgba(0,0,0,0.8);border:1px solid rgba(255,255,255,0.25);display:inline-block;vertical-align:middle;cursor:pointer;" title="${countryName}" alt="${countryName}" loading="lazy">`;
   }
 
   function getBbrefUrl(p) {
