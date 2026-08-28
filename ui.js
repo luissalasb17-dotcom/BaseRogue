@@ -67,11 +67,15 @@ function updateMobileNavVisibility() {
 
   const modeScreen = document.getElementById('screen-mode-select');
   const menuScreen = document.getElementById('screen-menu');
+  const matchScreen = document.getElementById('screen-match');
+
   const isMainMenu = (modeScreen && !modeScreen.classList.contains('hidden')) ||
                      (menuScreen && !menuScreen.classList.contains('hidden'));
+  const isMatchFacing = matchScreen && !matchScreen.classList.contains('hidden');
 
-  // Keep bottom navigation accessible during all in-game screens (Draft, Map, Match, Pre-Fight, Rewards, Clubhouse)
-  if (isMainMenu) {
+  // Bottom navbar is hidden on Main Menu and during Match Faceoff (screen-match)
+  // Accessible everywhere else: Draft, Map, Pre-Fight, Sign Legend / Rewards, Clubhouse, Training, Events
+  if (isMainMenu || isMatchFacing) {
     navBar.classList.add('hidden');
   } else {
     navBar.classList.remove('hidden');

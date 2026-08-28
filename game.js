@@ -814,19 +814,22 @@
         }
 
         // Stage-based Rarity Multiplier
-        if (rarityWeights && rarityWeights[p.rarity]) {
-          w *= rarityWeights[p.rarity];
+        if (rarityWeights && rarityWeights[p.rarity] !== undefined) {
+          w *= Number(rarityWeights[p.rarity]);
         }
 
-        // scout_eye: increases the odds of Epic/Legendary showing up in draft offers
-        if (rarityBoost && (p.rarity === 'Epic' || p.rarity === 'Legendary')) w *= 2.5;
+        // scout_eye: increases the odds of Epic/Legendary showing up in draft offers (only if that rarity is active/weight > 0)
+        if (rarityBoost && (p.rarity === 'Epic' || p.rarity === 'Legendary') && w > 0) {
+          w *= 2.5;
+        }
         totalWeight += w;
         return w;
       });
 
       if (totalWeight <= 0) {
-        selected.push(poolCopy.splice(0, 1)[0]);
-        continue;
+        // If all candidates in poolCopy have 0 weight (e.g. all are 0-weight rarities like Legendary in Map 1),
+        // do NOT forcibly pick a 0-weight card. Return whatever has been selected so far.
+        break;
       }
 
       let randVal = Math.random() * totalWeight;
@@ -2239,6 +2242,11 @@
         if (zone === 0) allowedRarities = ['Epic', 'Rare'];
         else if (zone === 1) allowedRarities = ['Legendary', 'Epic'];
         else allowedRarities = ['Legendary'];
+      } else {
+        // Regular matches: Map 1 (zone 0) and Map 2 (zone 1) strictly forbid Legendary
+        if (zone === 0 || zone === 1) {
+          allowedRarities = ['Epic', 'Rare', 'Uncommon'];
+        }
       }
 
       const filtered = pool.filter(p => {
