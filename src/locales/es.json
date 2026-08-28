@@ -292,7 +292,16 @@
     "nav_next_batter": "Siguiente Bateador",
     "nav_prev_pitcher": "Lanzador Anterior",
     "nav_next_pitcher": "Siguiente Lanzador",
-    "stakes_pill": "3 INNINGS • DUELO"
+    "stakes_pill": "3 INNINGS • DUELO",
+    "super_boss_tier_desc": "Los 5 Mejores Brazos de toda la Temporada",
+    "final_boss_tier_desc": "Rotación Campeona de la Serie Mundial (5 Mejores Brazos)",
+    "zone_boss_tier_desc": "Rotación Estelar encabezada por As de Jerarquía",
+    "mid_boss_tier_desc": "Tercia de Alto Impacto & Profundidad",
+    "rot_tier_0": "📋 Brazos: Fondo de Rotación & Relevo Largo",
+    "rot_tier_1": "📋 Brazos: Rotación Media & Relevo Intermedio",
+    "rot_tier_2": "📋 Brazos: Rotación Principal & Setups",
+    "rot_tier_3": "📋 Brazos: Ases de Postemporada & Cerrador",
+    "campaign_label": "Campaña {{year}}"
   },
   "training": {
     "con_label": "Contacto Estándar",

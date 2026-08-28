@@ -292,7 +292,16 @@
     "nav_next_batter": "Next Batter",
     "nav_prev_pitcher": "Previous Pitcher",
     "nav_next_pitcher": "Next Pitcher",
-    "stakes_pill": "3 INNINGS • DUEL"
+    "stakes_pill": "3 INNINGS • DUEL",
+    "super_boss_tier_desc": "Top 5 Elite Pitching Titans of the Season",
+    "final_boss_tier_desc": "World Series Champion Rotation (Top 5 Pitchers)",
+    "zone_boss_tier_desc": "Star Rotation Led by Franchise Ace",
+    "mid_boss_tier_desc": "High-Impact & Deep Rotation Trio",
+    "rot_tier_0": "📋 Staff: Depth Starters & Long Relievers",
+    "rot_tier_1": "📋 Staff: Mid Rotation & Middle Relief",
+    "rot_tier_2": "📋 Staff: Frontline Starters & Setup Arms",
+    "rot_tier_3": "📋 Staff: Postseason Aces & Closer",
+    "campaign_label": "{{year}} Season Record"
   },
   "training": {
     "con_label": "Standard Contact",

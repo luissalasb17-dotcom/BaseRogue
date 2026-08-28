@@ -2473,7 +2473,6 @@
 
       // ── MODE 1: STORY MODE (Dynamic Staff Scaling per Map) ───────────────
       if (this.selectedMode === 'story') {
-        // Story Mode stage 0 to 23
         const seasonData = this.seasonPoolData || (window.OpponentsDatabase && this.selectedSeasonYear ? window.OpponentsDatabase[this.selectedSeasonYear] : null);
 
         if (seasonData) {
@@ -2498,36 +2497,63 @@
             return chosen;
           };
 
-          const assembleTeamRotation = (pStaff, targetMinOvr, targetMaxOvr) => {
-            let filtered = pStaff.filter(p => p.ovr >= targetMinOvr && p.ovr <= targetMaxOvr);
-            if (filtered.length < 3) {
-              filtered = [...pStaff].sort((a, b) => {
-                const midOvr = (targetMinOvr + targetMaxOvr) / 2;
-                return Math.abs(a.ovr - midOvr) - Math.abs(b.ovr - midOvr);
-              });
+          // Finds the best 3-pitcher combination from a team that fits the target average range
+          const findTeamTrioByAvg = (teamObj, targetMinAvg, targetMaxAvg) => {
+            const staff = teamObj.pitchers || [];
+            if (staff.length < 3) return staff.map(p => createPitcherObj(p));
+
+            let bestTrio = null;
+            let bestDiff = 999;
+            const targetMid = (targetMinAvg + targetMaxAvg) / 2.0;
+
+            // Iterate possible combinations
+            for (let i = 0; i < staff.length - 2; i++) {
+              for (let j = i + 1; j < staff.length - 1; j++) {
+                for (let k = j + 1; k < staff.length; k++) {
+                  const p1 = staff[i], p2 = staff[j], p3 = staff[k];
+                  const avg = (p1.ovr + p2.ovr + p3.ovr) / 3.0;
+                  if (avg >= targetMinAvg && avg <= targetMaxAvg) {
+                    const diff = Math.abs(avg - targetMid);
+                    if (diff < bestDiff) {
+                      bestDiff = diff;
+                      bestTrio = [p1, p2, p3];
+                    }
+                  }
+                }
+              }
             }
-            const p1 = createPitcherObj(pickPitcherFromList(filtered, 'SP'), 'SP');
-            const p2 = createPitcherObj(pickPitcherFromList(filtered));
-            const p3 = createPitcherObj(pickPitcherFromList(filtered, 'RP'), 'RP');
+
+            // If no trio hits the exact range, pick the 3 pitchers closest to the target range
+            if (!bestTrio) {
+              if (targetMinAvg <= 60) {
+                // Bottom 3
+                bestTrio = staff.slice(-3);
+              } else if (targetMinAvg >= 80) {
+                // Top 3
+                bestTrio = staff.slice(0, 3);
+              } else {
+                // Closest to mid
+                const sortedByDist = [...staff].sort((a, b) => Math.abs(a.ovr - targetMid) - Math.abs(b.ovr - targetMid));
+                bestTrio = sortedByDist.slice(0, 3);
+              }
+            }
+
+            // Order rotation: Starter (SP) first, middle, Closer (RP) last
+            const p1 = createPitcherObj(pickPitcherFromList(bestTrio, 'SP'), 'SP');
+            const rem = bestTrio.filter(p => (p.name || p.playerID) !== (p1.cleanName || p1.name));
+            const p3 = createPitcherObj(pickPitcherFromList(rem, 'RP'), 'RP');
+            const rem2 = rem.filter(p => (p.name || p.playerID) !== (p3.cleanName || p3.name));
+            const p2 = createPitcherObj(rem2[0] || rem[0] || staff[0]);
+
             return [p1, p2, p3];
           };
 
-          // ── CASE A: Super Boss (Stage 23 Part 2) ──────────────────────────
+          // ── CASE A: Super Boss (Stage 23 Part 2 - Top 5 Titans of the Season) ─
           if (stage === 23 && this.isSuperBossActive) {
-            const legPool = [...allPitchers].sort((a, b) => b.ovr - a.ovr);
-            let sps = legPool.filter(p => p.role === 'SP');
-            let rps = legPool.filter(p => p.role === 'RP');
-            if (sps.length < 2) sps = legPool;
-            if (rps.length < 2) rps = legPool;
+            const legTop5 = [...allPitchers].sort((a, b) => b.ovr - a.ovr).slice(0, 5);
+            const selected = legTop5.map(p => createPitcherObj(p));
+            const highest = selected[0] || selected.reduce((max, p) => (p.ovr > max.ovr ? p : max), selected[0]);
 
-            const selected = [
-              createPitcherObj(sps[0], 'SP'),
-              createPitcherObj(sps[1] || legPool[1], 'SP'),
-              createPitcherObj(rps[0] || legPool[2], 'RP'),
-              createPitcherObj(rps[1] || legPool[3], 'RP')
-            ];
-
-            const highest = selected.reduce((max, p) => (p.ovr > max.ovr ? p : max), selected[0]);
             this.currentEnemy = {
               id: `story_super_boss_${this.selectedSeasonYear}_${Date.now()}`,
               name: `⚡ SUPER BOSS: ${highest.cleanName}`,
@@ -2543,14 +2569,14 @@
             return unlockEnemyPitchers(this.currentEnemy);
           }
 
-          // ── CASE B: Final Boss Serie Mundial (Stage 23 Part 1) ────────────
+          // ── CASE B: Final Boss Serie Mundial (Stage 23 Part 1 - Top 5 of Champ) ──
           if (stage === 23) {
-            const champTeam = [...allTeams].sort((a, b) => b.win_pct - a.win_pct)[0] || allTeams[0];
+            const mlbTeams = allTeams.filter(t => (t.league && ['AL', 'NL', 'FL'].includes(t.league)) || (t.pitchers && t.pitchers.length >= 5));
+            const champTeam = (mlbTeams.length > 0 ? mlbTeams : allTeams).sort((a, b) => (b.win_pct || 0) - (a.win_pct || 0))[0] || allTeams[0];
             const pStaff = champTeam.pitchers || [];
-            const ace = createPitcherObj(pStaff[0] || allPitchers[0], 'SP');
-            const sup1 = createPitcherObj(pStaff[1] || pStaff[0] || allPitchers[1], 'SP');
-            const sup2 = createPitcherObj(pStaff[2] || pStaff[0] || allPitchers[2], 'RP');
-            const rotation = [ace, sup1, sup2];
+            const top5 = pStaff.slice(0, 5);
+            const rotation = top5.map((p, idx) => createPitcherObj(p, idx === 0 ? 'SP' : (idx === 4 ? 'RP' : p.role)));
+            const ace = rotation[0];
 
             this.currentEnemy = {
               id: `story_final_boss_${this.selectedSeasonYear}_${Date.now()}`,
@@ -2566,40 +2592,44 @@
             return unlockEnemyPitchers(this.currentEnemy);
           }
 
-          // ── CASE C: Zone Bosses (Stages 5, 11, 17) ────────────────────────
+          // ── CASE C: Zone Bosses (Stages 5, 11, 17 - Solid Team with Legitimate Ace) ─
           if (stage === 5 || stage === 11 || stage === 17) {
-            let targetTeamPool = [];
-            let targetAceMinOvr = 75, targetAceMaxOvr = 79.9, aceRarity = 'Rare';
-            let targetSupMinOvr = 60, targetSupMaxOvr = 69.9;
+            let targetAceMinOvr = 74, targetAceMaxOvr = 82, aceRarity = 'Rare';
+            let targetMinAvg = 65, targetMaxAvg = 72;
 
             if (stage === 5) {
-              targetTeamPool = this.storySeasonTiers?.low || allTeams;
-              targetAceMinOvr = 75; targetAceMaxOvr = 79.9; aceRarity = 'Rare';
-              targetSupMinOvr = 60; targetSupMaxOvr = 69.9;
+              targetAceMinOvr = 74; targetAceMaxOvr = 82; aceRarity = 'Rare'; targetMinAvg = 64; targetMaxAvg = 71;
             } else if (stage === 11) {
-              targetTeamPool = this.storySeasonTiers?.mid || allTeams;
-              targetAceMinOvr = 85; targetAceMaxOvr = 89.9; aceRarity = 'Epic';
-              targetSupMinOvr = 70; targetSupMaxOvr = 79.9;
+              targetAceMinOvr = 83; targetAceMaxOvr = 89.9; aceRarity = 'Epic'; targetMinAvg = 74; targetMaxAvg = 81;
             } else if (stage === 17) {
-              targetTeamPool = this.storySeasonTiers?.high || allTeams;
-              targetAceMinOvr = 90; targetAceMaxOvr = 99.9; aceRarity = 'Legendary';
-              targetSupMinOvr = 80; targetSupMaxOvr = 89.9;
+              targetAceMinOvr = 90; targetAceMaxOvr = 99.9; aceRarity = 'Legendary'; targetMinAvg = 82; targetMaxAvg = 92;
             }
 
-            let candidateTeams = targetTeamPool.filter(t => !this.encounteredTeams.has(t.id || t.name));
-            if (candidateTeams.length === 0) candidateTeams = targetTeamPool;
+            // Filter teams that have an Ace in that range and at least 3 pitchers
+            let qualifyingTeams = allTeams.filter(t => {
+              const staff = t.pitchers || [];
+              if (staff.length < 3) return false;
+              const topOvr = staff[0].ovr;
+              return topOvr >= targetAceMinOvr && topOvr <= targetAceMaxOvr;
+            });
+
+            if (qualifyingTeams.length === 0) {
+              qualifyingTeams = allTeams.filter(t => {
+                const staff = t.pitchers || [];
+                return staff.length >= 3 && staff[0].ovr >= targetAceMinOvr;
+              });
+            }
+            if (qualifyingTeams.length === 0) qualifyingTeams = allTeams;
+
+            let candidateTeams = qualifyingTeams.filter(t => !this.encounteredTeams.has(t.id || t.name));
+            if (candidateTeams.length === 0) candidateTeams = qualifyingTeams;
             const chosenTeam = candidateTeams[Math.floor(Math.random() * candidateTeams.length)] || allTeams[0];
             this.encounteredTeams.add(chosenTeam.id || chosenTeam.name);
 
             const staff = chosenTeam.pitchers || [];
-            let acePick = staff.find(p => p.ovr >= targetAceMinOvr && p.ovr <= targetAceMaxOvr) || staff[0] || allPitchers[0];
-            let supPool = staff.filter(p => p.playerID !== acePick.playerID && p.ovr >= targetSupMinOvr && p.ovr <= targetSupMaxOvr);
-            if (supPool.length < 2) supPool = staff.filter(p => p.playerID !== acePick.playerID);
-            if (supPool.length < 2) supPool = allPitchers.filter(p => p.ovr >= targetSupMinOvr && p.ovr <= targetSupMaxOvr);
-
-            const ace = createPitcherObj(acePick, 'SP');
-            const sup1 = createPitcherObj(pickPitcherFromList(supPool), 'SP');
-            const sup2 = createPitcherObj(pickPitcherFromList(supPool, 'RP'), 'RP');
+            const ace = createPitcherObj(staff[0], 'SP');
+            const sup1 = createPitcherObj(staff[1] || staff[0], 'SP');
+            const sup2 = createPitcherObj(staff[2] || staff[0], 'RP');
             const rotation = [ace, sup1, sup2];
 
             this.currentEnemy = {
@@ -2616,28 +2646,36 @@
             return unlockEnemyPitchers(this.currentEnemy);
           }
 
-          // ── CASE D: Mid-Boss (Floor 4 / Stages 3, 9, 15, 21) ───────────────
+          // ── CASE D: Mid-Boss (Floor 4 / Stages 3, 9, 15, 21 - Solid Devastating Trio) ──
           const currentNode = this.getCurrentNode ? this.getCurrentNode() : null;
           if (currentNode && currentNode.type === 'mid_boss') {
-            let targetRarity = 'Uncommon', minOvr = 60, maxOvr = 69.9;
-            let targetTeamPool = this.storySeasonTiers?.low || allTeams;
+            let targetRarity = 'Uncommon', minAvg = 62, maxAvg = 68;
 
             if (stage <= 5) {
-              targetRarity = 'Uncommon'; minOvr = 60; maxOvr = 69.9; targetTeamPool = this.storySeasonTiers?.low || allTeams;
+              targetRarity = 'Uncommon'; minAvg = 62; maxAvg = 68;
             } else if (stage <= 11) {
-              targetRarity = 'Rare'; minOvr = 70; maxOvr = 79.9; targetTeamPool = this.storySeasonTiers?.mid || allTeams;
+              targetRarity = 'Rare'; minAvg = 72; maxAvg = 78;
             } else if (stage <= 17) {
-              targetRarity = 'Epic'; minOvr = 80; maxOvr = 89.9; targetTeamPool = this.storySeasonTiers?.high || allTeams;
+              targetRarity = 'Epic'; minAvg = 80; maxAvg = 88;
             } else {
-              targetRarity = 'Legendary'; minOvr = 90; maxOvr = 99.9; targetTeamPool = this.storySeasonTiers?.high || allTeams;
+              targetRarity = 'Legendary'; minAvg = 86; maxAvg = 95;
             }
 
-            let candidateTeams = targetTeamPool.filter(t => !this.encounteredTeams.has(t.id || t.name));
-            if (candidateTeams.length === 0) candidateTeams = targetTeamPool;
+            // Find teams whose top 3 pitchers hit this average
+            let qualifyingTeams = allTeams.filter(t => {
+              const p = t.pitchers || [];
+              if (p.length < 3) return false;
+              const avg = (p[0].ovr + p[1].ovr + p[2].ovr) / 3.0;
+              return avg >= (minAvg - 3) && avg <= (maxAvg + 3);
+            });
+
+            if (qualifyingTeams.length === 0) qualifyingTeams = allTeams;
+            let candidateTeams = qualifyingTeams.filter(t => !this.encounteredTeams.has(t.id || t.name));
+            if (candidateTeams.length === 0) candidateTeams = qualifyingTeams;
             const chosenTeam = candidateTeams[Math.floor(Math.random() * candidateTeams.length)] || allTeams[0];
             this.encounteredTeams.add(chosenTeam.id || chosenTeam.name);
 
-            const rotation = assembleTeamRotation(chosenTeam.pitchers || [], minOvr, maxOvr);
+            const rotation = findTeamTrioByAvg(chosenTeam, minAvg, maxAvg);
             const highest = rotation.reduce((max, p) => (p.ovr > max.ovr ? p : max), rotation[0]);
 
             this.currentEnemy = {
@@ -2654,30 +2692,24 @@
             return unlockEnemyPitchers(this.currentEnemy);
           }
 
-          // ── CASE E: Regular Stages (0-5, 6-11, 12-17, 18-22) ───────────────
-          let targetTeamPool = allTeams;
-          let minOvr = 50.0, maxOvr = 59.99;
-
+          // ── CASE E: Regular Stages (Stages 0–5, 6–11, 12–17, 18–22 by Trio Average) ──
+          let targetMinAvg = 50.0, targetMaxAvg = 59.99;
           if (stage <= 5) {
-            targetTeamPool = this.storySeasonTiers?.low || allTeams;
-            minOvr = 50.0; maxOvr = 59.99;
+            targetMinAvg = 50.0; targetMaxAvg = 59.99;
           } else if (stage <= 11) {
-            targetTeamPool = this.storySeasonTiers?.mid || allTeams;
-            minOvr = 60.0; maxOvr = 69.99;
+            targetMinAvg = 60.0; targetMaxAvg = 69.99;
           } else if (stage <= 17) {
-            targetTeamPool = this.storySeasonTiers?.high || allTeams;
-            minOvr = 70.0; maxOvr = 79.99;
+            targetMinAvg = 70.0; targetMaxAvg = 79.99;
           } else {
-            targetTeamPool = this.storySeasonTiers?.high || allTeams;
-            minOvr = 80.0; maxOvr = 89.99;
+            targetMinAvg = 80.0; targetMaxAvg = 89.99;
           }
 
-          let candidateTeams = targetTeamPool.filter(t => !this.encounteredTeams.has(t.id || t.name));
-          if (candidateTeams.length === 0) candidateTeams = targetTeamPool;
+          let candidateTeams = allTeams.filter(t => !this.encounteredTeams.has(t.id || t.name));
+          if (candidateTeams.length === 0) candidateTeams = allTeams;
           const chosenTeam = candidateTeams[Math.floor(Math.random() * candidateTeams.length)] || allTeams[0];
           this.encounteredTeams.add(chosenTeam.id || chosenTeam.name);
 
-          const rotation = assembleTeamRotation(chosenTeam.pitchers || [], minOvr, maxOvr);
+          const rotation = findTeamTrioByAvg(chosenTeam, targetMinAvg, targetMaxAvg);
           const p1 = rotation[0];
 
           this.currentEnemy = {

@@ -6869,8 +6869,7 @@ function initGameModeSelector() {
 
     if (isStory) {
       eraName = getEraNameForYear(enemy.year);
-      let teamFull = getFranchiseDisplayName(enemy.teamID || enemy.name);
-      teamName = enemy.isBoss ? enemy.name : `${teamFull} (${enemy.year})`;
+      teamName = enemy.name || `${getFranchiseDisplayName(enemy.teamID || enemy.name)} (${enemy.year})`;
 
       const currentZoneIdx = (typeof window.Game.getZoneForStage === 'function') ? window.Game.getZoneForStage(window.Game.currentStageIndex) : 0;
       const zoneDivision = window.Game.selectedDivisions && window.Game.selectedDivisions[currentZoneIdx];
@@ -6890,24 +6889,40 @@ function initGameModeSelector() {
         </div>
       ` : '';
 
-      if (enemy.isBoss) {
-        recordHTML = `
-          ${divBadgeHTML}
-          <div style="font-size:11px;color:#fde047;font-weight:bold;margin-top:4px;">
-            👑 ${typeof window.t === 'function' ? window.t('pre_fight.boss_all_star_desc', 'Rotación All-Star: Los mejores brazos del circuito') : 'Rotación All-Star: Los mejores brazos del circuito'}
-          </div>
-        `;
+      let rotTierLabel = '';
+      if (enemy.isSuperBoss) {
+        rotTierLabel = `💎 ${t('pre_fight.super_boss_tier_desc', 'Los 5 Mejores Brazos de toda la Temporada')}`;
+      } else if (enemy.isBoss && window.Game.currentStageIndex === 23) {
+        rotTierLabel = `🏆 ${t('pre_fight.final_boss_tier_desc', 'Rotación Campeona de la Serie Mundial (5 Mejores Brazos)')}`;
+      } else if (enemy.isBoss) {
+        rotTierLabel = `👑 ${t('pre_fight.zone_boss_tier_desc', 'Rotación Estelar encabezada por As de Jerarquía')}`;
+      } else if (enemy.isMidBoss) {
+        rotTierLabel = `⚡ ${t('pre_fight.mid_boss_tier_desc', 'Tercia de Alto Impacto & Profundidad')}`;
       } else {
-        const wp = enemy.win_pct || 0;
-        const recordKey = wp >= 0.560 ? 'record_dominant' : (wp >= 0.480 ? 'record_contender' : 'record_underdog');
-        const pctText = (wp * 100).toFixed(1) + '%';
-        recordHTML = `
-          ${divBadgeHTML}
-          <div style="font-size:11px;color:#9ca3af;margin-top:4px;">
-            ${t('pre_fight.' + recordKey)} — <strong style="color:#e4e4e7;">${pctText}</strong> ${t('pre_fight.win_pct_label', 'Prob. Victoria')}
-          </div>
-        `;
+        const rotationTierMap = {
+          0: t('pre_fight.rot_tier_0', '📋 Brazos: Fondo de Rotación & Relevo Largo'),
+          1: t('pre_fight.rot_tier_1', '📋 Brazos: Rotación Media & Relevo Intermedio'),
+          2: t('pre_fight.rot_tier_2', '📋 Brazos: Rotación Principal & Setups'),
+          3: t('pre_fight.rot_tier_3', '📋 Brazos: Ases de Postemporada & Cerrador')
+        };
+        rotTierLabel = rotationTierMap[currentZoneIdx] || rotationTierMap[0];
       }
+
+      const wp = enemy.win_pct || 0;
+      const recordKey = wp >= 0.560 ? 'record_dominant' : (wp >= 0.480 ? 'record_contender' : 'record_underdog');
+      const pctText = (wp * 100).toFixed(1) + '%';
+      const recordDescText = t('pre_fight.' + recordKey);
+
+      recordHTML = `
+        ${divBadgeHTML}
+        <div style="font-size:10.5px;color:#38bdf8;font-weight:bold;margin-top:4px;">
+          ${rotTierLabel}
+        </div>
+        <div style="font-size:10.5px;color:#9ca3af;margin-top:2px;">
+          📊 ${t('pre_fight.campaign_label', { year: enemy.year })}: <strong style="color:#e4e4e7;">${pctText} W-L</strong> (${recordDescText})
+        </div>
+      `;
+
       ovrDisplay = enemy.ovr !== undefined && enemy.ovr !== null ? Math.floor(enemy.ovr) : null;
     } else {
       // Quick Play rosters are 2-3 pitchers assembled independently from the

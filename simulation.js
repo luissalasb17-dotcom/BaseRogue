@@ -1447,7 +1447,7 @@
         if (eventData.inning >= 3) {
           this.winner = 'pitcher';
           this.battleOver = true;
-          const walkOffText = `💀 [${_t('sim.def_walkoff_title', {}, '¡WALK-OFF RIVAL!')}] ${eventData.player.name} ${_t('sim.def_walkoff_desc', { inning: eventData.inning }, `cometió un error defensivo en la baja de la entrada ${eventData.inning}. ¡El rival anota la carrera de oro y se lleva la victoria!`)}`;
+          const walkOffText = `💀 [${_t('sim.def_walkoff_title', {}, '¡WALK-OFF RIVAL!')}] ${_t('sim.def_walkoff_desc', { player: eventData.player.name, pos: eventData.pos, roll, thresh: targetThreshold, inning: eventData.inning }, `${eventData.player.name} (${eventData.pos}) cometió un error defensivo en la baja de la entrada ${eventData.inning} (Tirada: ${roll}/${targetThreshold}). ¡El rival anota la carrera de oro y se lleva la victoria!`)}`;
           this.logEvent('DEFENSE_PLAY', walkOffText, 'WALK_OFF_DEFEAT', eventData.player.name, 0, 0, 0);
           this.pendingDefenseEvent = null;
           return {

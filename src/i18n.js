@@ -296,7 +296,16 @@
         "nav_next_batter": "Siguiente Bateador",
         "nav_prev_pitcher": "Lanzador Anterior",
         "nav_next_pitcher": "Siguiente Lanzador",
-        "stakes_pill": "3 INNINGS • DUELO"
+        "stakes_pill": "3 INNINGS • DUELO",
+        "super_boss_tier_desc": "Los 5 Mejores Brazos de toda la Temporada",
+        "final_boss_tier_desc": "Rotación Campeona de la Serie Mundial (5 Mejores Brazos)",
+        "zone_boss_tier_desc": "Rotación Estelar encabezada por As de Jerarquía",
+        "mid_boss_tier_desc": "Tercia de Alto Impacto & Profundidad",
+        "rot_tier_0": "📋 Brazos: Fondo de Rotación & Relevo Largo",
+        "rot_tier_1": "📋 Brazos: Rotación Media & Relevo Intermedio",
+        "rot_tier_2": "📋 Brazos: Rotación Principal & Setups",
+        "rot_tier_3": "📋 Brazos: Ases de Postemporada & Cerrador",
+        "campaign_label": "Campaña {{year}}"
     },
     "training": {
         "con_label": "Contacto Estándar",
@@ -2253,7 +2262,16 @@
         "nav_next_batter": "Next Batter",
         "nav_prev_pitcher": "Previous Pitcher",
         "nav_next_pitcher": "Next Pitcher",
-        "stakes_pill": "3 INNINGS • DUEL"
+        "stakes_pill": "3 INNINGS • DUEL",
+        "super_boss_tier_desc": "Top 5 Elite Pitching Titans of the Season",
+        "final_boss_tier_desc": "World Series Champion Rotation (Top 5 Pitchers)",
+        "zone_boss_tier_desc": "Star Rotation Led by Franchise Ace",
+        "mid_boss_tier_desc": "High-Impact & Deep Rotation Trio",
+        "rot_tier_0": "📋 Staff: Depth Starters & Long Relievers",
+        "rot_tier_1": "📋 Staff: Mid Rotation & Middle Relief",
+        "rot_tier_2": "📋 Staff: Frontline Starters & Setup Arms",
+        "rot_tier_3": "📋 Staff: Postseason Aces & Closer",
+        "campaign_label": "{{year}} Season Record"
     },
     "training": {
         "con_label": "Standard Contact",
