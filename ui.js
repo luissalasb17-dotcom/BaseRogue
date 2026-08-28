@@ -3093,69 +3093,64 @@ function initGameModeSelector() {
   window.getPlayerOvr = getPlayerOvr;
 
   function getStatGrade(val) {
+    const v = Math.round(Number(val) || 0);
     let letter = "F";
     let color = "#ef4444";
     let modifier = "";
 
-    if (val >= 100) {
-      letter = "S"; color = "#ffd700";
-      modifier = "";
-    } else if (val >= 80) {
-      letter = "A"; color = "#22d3ee";
-      if (val >= 95) modifier = "+";
-      else if (val < 85) modifier = "-";
-    } else if (val >= 60) {
+    if (v >= 95) {
+      letter = "S"; color = "#ffd700"; modifier = "";
+    } else if (v >= 80) {
+      letter = "A"; color = (v >= 90) ? "#ffd700" : "#22d3ee";
+      if (v >= 87) modifier = "+";
+      else if (v < 83) modifier = "-";
+    } else if (v >= 70) {
       letter = "B"; color = "#4ade80";
-      if (val >= 75) modifier = "+";
-      else if (val < 65) modifier = "-";
-    } else if (val >= 40) {
+      if (v >= 77) modifier = "+";
+      else if (v < 73) modifier = "-";
+    } else if (v >= 60) {
       letter = "C"; color = "#94a3b8";
-      if (val >= 55) modifier = "+";
-      else if (val < 45) modifier = "-";
-    } else if (val >= 20) {
+      if (v >= 67) modifier = "+";
+      else if (v < 63) modifier = "-";
+    } else if (v >= 50) {
       letter = "D"; color = "#f97316";
-      if (val >= 35) modifier = "+";
-      else if (val < 25) modifier = "-";
+      if (v >= 57) modifier = "+";
+      else if (v < 53) modifier = "-";
     } else {
-      letter = "F"; color = "#ef4444";
-      modifier = "";
+      letter = "F"; color = "#ef4444"; modifier = "";
     }
 
     return { text: letter + modifier, color: color };
   }
 
   function getClassGrade(val) {
+    const v = Math.round(Number(val) || 0);
     let letter = "F";
     let color = "#ef4444";
     let modifier = "";
 
-    if (val >= 95) {
-      letter = "S"; color = "#ffd700";
-      modifier = "";
-    } else if (val >= 88) {
-      letter = "A"; color = "#22d3ee";
-      modifier = "+";
-    } else if (val >= 80) {
-      letter = "A"; color = "#22d3ee";
-      modifier = "";
-    } else if (val >= 75) {
+    // 10-point OVR Grade Scale with proportional +/- intervals
+    // 70-72: B-, 73-76: B, 77-79: B+
+    if (v >= 95) {
+      letter = "S"; color = "#ffd700"; modifier = "";
+    } else if (v >= 80) {
+      letter = "A"; color = (v >= 90) ? "#ffd700" : "#22d3ee";
+      if (v >= 87) modifier = "+";
+      else if (v < 83) modifier = "-";
+    } else if (v >= 70) {
       letter = "B"; color = "#4ade80";
-      modifier = "+";
-    } else if (val >= 70) {
-      letter = "B"; color = "#4ade80";
-      modifier = "";
-    } else if (val >= 65) {
+      if (v >= 77) modifier = "+";
+      else if (v < 73) modifier = "-";
+    } else if (v >= 60) {
       letter = "C"; color = "#94a3b8";
-      modifier = "+";
-    } else if (val >= 60) {
-      letter = "C"; color = "#94a3b8";
-      modifier = "";
-    } else if (val >= 50) {
+      if (v >= 67) modifier = "+";
+      else if (v < 63) modifier = "-";
+    } else if (v >= 50) {
       letter = "D"; color = "#f97316";
-      modifier = "";
+      if (v >= 57) modifier = "+";
+      else if (v < 53) modifier = "-";
     } else {
-      letter = "F"; color = "#ef4444";
-      modifier = "";
+      letter = "F"; color = "#ef4444"; modifier = "";
     }
 
     return { text: letter + modifier, color: color };

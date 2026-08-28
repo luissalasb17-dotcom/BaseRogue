@@ -67,21 +67,28 @@
   // every mid-range value into one bare letter (was showing "C" for a wide
   // 40-59 span with no C+/C- distinction, unlike the rest of the game's cards).
   function getGrade(val) {
+    const v = Math.round(Number(val) || 0);
     let letter = 'F', modifier = '';
-    if (val >= 100) {
+    if (v >= 95) {
       letter = 'S';
-    } else if (val >= 80) {
+    } else if (v >= 80) {
       letter = 'A';
-      if (val >= 95) modifier = '+'; else if (val < 85) modifier = '-';
-    } else if (val >= 60) {
+      if (v >= 87) modifier = '+';
+      else if (v < 83) modifier = '-';
+    } else if (v >= 70) {
       letter = 'B';
-      if (val >= 75) modifier = '+'; else if (val < 65) modifier = '-';
-    } else if (val >= 40) {
+      if (v >= 77) modifier = '+';
+      else if (v < 73) modifier = '-';
+    } else if (v >= 60) {
       letter = 'C';
-      if (val >= 55) modifier = '+'; else if (val < 45) modifier = '-';
-    } else if (val >= 20) {
+      if (v >= 67) modifier = '+';
+      else if (v < 63) modifier = '-';
+    } else if (v >= 50) {
       letter = 'D';
-      if (val >= 35) modifier = '+'; else if (val < 25) modifier = '-';
+      if (v >= 57) modifier = '+';
+      else if (v < 53) modifier = '-';
+    } else {
+      letter = 'F';
     }
     return letter + modifier;
   }
