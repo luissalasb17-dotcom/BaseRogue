@@ -3,8 +3,7 @@ BaseRogue ETL Pipeline - Story Mode Pitchers (1901-2025, per team-year)
 Lahman (Pitching.csv, Teams.csv, People.csv) -> opponents_database.js
 
 Generates the full pitching staff for every MLB team from 1901 to 2025
-filtered by IP >= 20.0, using the canonical Quick Play attributes:
-H/9, K/9, BB/9, HR/9, STA (no legacy stf/ctl/mov).
+filtered by IP >= 20.0, with exact team W-L records and canonical 5 attributes.
 """
 
 import pandas as pd
@@ -22,7 +21,7 @@ OUT_PREVIEW = BASE_DIR / "opponents_database.preview.js"
 OUT_ETL_FILE = BASE_DIR / "story_pitchers_etl.py"
 
 print("=" * 64)
-print("  BASE-ROGUE: GENERANDO OPPONENTS_DATABASE.JS (MODO HISTORIA)")
+print("  BASE-ROGUE: GENERANDO OPPONENTS_DATABASE.JS (CON RECORD REAL W-L)")
 print("=" * 64)
 
 # 1. Cargar tablas
@@ -48,7 +47,6 @@ for col in ["H", "SO", "BB", "HR", "ER", "W", "L", "SV"]:
     df_pitch[col] = pd.to_numeric(df_pitch[col], errors="coerce").fillna(0)
 
 # Suavizado bayesiano unificado para muestra de una temporada (m = 25 IP)
-# Promedios estándar MLB: 8.5 H/9, 5.5 K/9, 3.2 BB/9, 0.9 HR/9
 m_ip = 25.0
 df_pitch["h9_raw"]  = (df_pitch["H"]  + m_ip * (8.5 / 9.0)) / (df_pitch["IP"] + m_ip) * 9.0
 df_pitch["k9_raw"]  = (df_pitch["SO"] + m_ip * (5.5 / 9.0)) / (df_pitch["IP"] + m_ip) * 9.0
@@ -115,15 +113,12 @@ print("\n[2/4] Normalizando ratings por temporada (H/9, K/9, BB/9, HR/9, STA)...
 records = []
 for year, ydf in df_pitch.groupby("yearID"):
     ydf = ydf.copy()
-    # Inversión de signo para estadísticas donde menor es mejor (H/9, BB/9, HR/9)
     ydf["h9"]  = normalize_series(-ydf["h9_raw"]).round(1)
     ydf["k9"]  = normalize_series(ydf["k9_raw"]).round(1)
     ydf["bb9"] = normalize_series(-ydf["bb9_raw"]).round(1)
     ydf["hr9"] = normalize_series(-ydf["hr9_raw"]).round(1)
-    
     ydf["sta"] = ydf["IP"].apply(map_ip_to_sta).round(1)
     
-    # Ponderación 20% canónica idéntica a Quick Play
     ydf["raw_ovr"] = (
         ydf["h9"]  * 0.20 +
         ydf["k9"]  * 0.20 +
@@ -159,7 +154,6 @@ for year in years:
             
         win_pct = round(float(trow["W"]) / float(trow["G"]), 3) if trow["G"] > 0 else 0.500
         
-        # Formatear división
         div_str = None
         if pd.notna(trow.get("divID")) and pd.notna(trow.get("lgID")):
             div_code = str(trow["divID"])
@@ -197,9 +191,12 @@ for year in years:
             "teamID": tid,
             "year": int(year),
             "win_pct": win_pct,
+            "w": int(trow["W"]) if pd.notna(trow.get("W")) else 0,
+            "l": int(trow["L"]) if pd.notna(trow.get("L")) else 0,
+            "g": int(trow["G"]) if pd.notna(trow.get("G")) else 0,
             "division": div_str,
             "league": trow["lgID"] if pd.notna(trow.get("lgID")) else None,
-            "ovr": int(round(np.mean([p["ovr"] for p in plist[:5]]))), # OVR promedio del top 5
+            "ovr": int(round(np.mean([p["ovr"] for p in plist[:5]]))),
             "total_pitchers": len(plist),
             "pitchers": plist
         }
@@ -220,12 +217,9 @@ with open(OUT_JS, "w", encoding="utf-8") as f:
 with open(OUT_PREVIEW, "w", encoding="utf-8") as f:
     f.write(js_content)
 
-# Save the python script to workspace
 with open(OUT_ETL_FILE, "w", encoding="utf-8") as f:
     with open(__file__, "r", encoding="utf-8") as current_f:
         f.write(current_f.read())
 
 t1 = time.time()
-print(f"\n[OK] opponents_database.js generado exitosamente en {round(t1 - t0, 2)}s.")
-print(f"     Total temporadas: {len(full_db)} (1901-2025)")
-print(f"     Total lanzadores: {len(df_all):,}")
+print(f"\n[OK] opponents_database.js regenerado con W-L en {round(t1 - t0, 2)}s.")

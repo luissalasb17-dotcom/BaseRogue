@@ -6912,6 +6912,10 @@ function initGameModeSelector() {
       const recordKey = wp >= 0.560 ? 'record_dominant' : (wp >= 0.480 ? 'record_contender' : 'record_underdog');
       const pctText = (wp * 100).toFixed(1) + '%';
       const recordDescText = t('pre_fight.' + recordKey);
+      
+      const realW = enemy.w !== undefined && enemy.w !== null ? enemy.w : (enemy.win_pct ? Math.round(enemy.win_pct * 162) : 81);
+      const realL = enemy.l !== undefined && enemy.l !== null ? enemy.l : (enemy.win_pct ? Math.round((1 - enemy.win_pct) * 162) : 81);
+      const recordWLText = (enemy.w !== undefined && enemy.w > 0) ? `${enemy.w}-${enemy.l} (${pctText} PCT)` : `${pctText} PCT`;
 
       recordHTML = `
         ${divBadgeHTML}
@@ -6919,7 +6923,7 @@ function initGameModeSelector() {
           ${rotTierLabel}
         </div>
         <div style="font-size:10.5px;color:#9ca3af;margin-top:2px;">
-          📊 ${t('pre_fight.campaign_label', { year: enemy.year })}: <strong style="color:#e4e4e7;">${pctText} W-L</strong> (${recordDescText})
+          📊 ${t('pre_fight.campaign_label', { year: enemy.year })}: <strong style="color:#e4e4e7;">${recordWLText}</strong> • ${recordDescText}
         </div>
       `;
 
@@ -7023,16 +7027,16 @@ function initGameModeSelector() {
       : '';
 
     el.preFightScouting.innerHTML = `
-      <div style="background:rgba(0,0,0,0.35);border:1px solid ${rColor};border-radius:10px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
-        <div>
-          <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:${rColor};letter-spacing:0.5px;margin-bottom:6px;">${t('pre_fight.scouting_title')}</div>
-          <div style="font-size:13px;font-weight:bold;color:#e4e4e7;">${teamName}</div>
+      <div style="background:rgba(0,0,0,0.35);border:1px solid ${rColor};border-radius:10px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:16px;box-sizing:border-box;">
+        <div style="flex:1 1 auto;min-width:0;">
+          <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:${rColor};letter-spacing:0.5px;margin-bottom:4px;">${t('pre_fight.scouting_title')}</div>
+          <div style="font-size:13px;font-weight:bold;color:#e4e4e7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${teamName}</div>
           ${eraName ? `<div style="font-size:11px;color:#9ca3af;margin-top:2px;">${eraName}</div>` : ''}
           ${recordHTML}
         </div>
-        <div style="background:${rBg};border:1px solid ${rColor};border-radius:8px;padding:8px 14px;text-align:center;min-width:140px;">
-          <div style="font-size:9px;color:${rColor};font-weight:bold;letter-spacing:0.5px;">${rarity.toUpperCase()}</div>
-          <div style="font-size:11px;color:#e4e4e7;margin-top:2px;">${threatLabel}</div>
+        <div style="background:${rBg};border:1px solid ${rColor};border-radius:8px;padding:8px 14px;text-align:center;min-width:140px;flex:0 0 auto;">
+          <div style="font-family:'Press Start 2P',monospace;font-size:8.5px;color:${rColor};letter-spacing:0.5px;">${rarity.toUpperCase()}</div>
+          <div style="font-size:10.5px;color:#e4e4e7;margin-top:2px;">${threatLabel}</div>
           ${ovrHTML}
           ${winProbHTML}
         </div>
