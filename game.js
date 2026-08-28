@@ -2135,11 +2135,12 @@
       const zone = (typeof this.getZoneForStage === 'function') 
         ? this.getZoneForStage(this.currentStageIndex || 0) 
         : 0;
+      // Option A: Smooth, balanced progression (significantly better than normal matches, but gated by zone)
       const map = {
-        0: { Uncommon: 1.00, Rare: 1.00, Epic: 0.90, Legendary: 0.70 }, // Zona 0: Opening Day
-        1: { Uncommon: 0.50, Rare: 1.10, Epic: 1.60, Legendary: 1.40 }, // Zona 1: All-Star Break
-        2: { Uncommon: 0.20, Rare: 0.80, Epic: 2.70, Legendary: 2.90 }, // Zona 2: Pennant Chase
-        3: { Uncommon: 0.05, Rare: 0.40, Epic: 4.00, Legendary: 5.00 }, // Zona 3: Playoffs
+        0: { Uncommon: 4.5, Rare: 4.5, Epic: 1.0, Legendary: 0.0 }, // Zona 0: Opening Day (45% Unc, 45% Rare, 10% Epic, 0% Leg)
+        1: { Uncommon: 1.5, Rare: 5.0, Epic: 3.0, Legendary: 0.5 }, // Zona 1: All-Star Break (15% Unc, 50% Rare, 30% Epic, 5% Leg)
+        2: { Uncommon: 0.5, Rare: 2.5, Epic: 4.5, Legendary: 2.5 }, // Zona 2: Pennant Chase (5% Unc, 25% Rare, 45% Epic, 25% Leg)
+        3: { Uncommon: 0.0, Rare: 1.0, Epic: 4.0, Legendary: 5.0 }, // Zona 3: Playoffs (0% Unc, 10% Rare, 40% Epic, 50% Leg)
       };
       return map[zone] || map[0];
     }
@@ -2179,8 +2180,16 @@
       const pool = window.PlayersDB.LAHMAN_POOL || window.PlayersDB.PLAYERS_POOL || [];
       const onRosterNames = new Set(Object.values(this.roster).filter(Boolean).map(x => x.name));
 
-      // Sign Legend event: Uncommon or higher (strictly no Commons)
-      const allowedRarities = ['Legendary', 'Epic', 'Rare', 'Uncommon'];
+      // Sign Legend event: Uncommon or higher (strictly no Commons, gated by zone)
+      const zone = (typeof this.getZoneForStage === 'function') 
+        ? this.getZoneForStage(this.currentStageIndex || 0) 
+        : 0;
+      let allowedRarities = ['Legendary', 'Epic', 'Rare', 'Uncommon'];
+      if (zone === 0) {
+        allowedRarities = ['Epic', 'Rare', 'Uncommon'];
+      } else if (zone === 3) {
+        allowedRarities = ['Legendary', 'Epic', 'Rare'];
+      }
       const filtered = pool.filter(p =>
         !onRosterNames.has(p.name) && allowedRarities.includes(p.rarity || 'Common')
       );
