@@ -242,6 +242,39 @@
       if (changed) this.save();
     },
 
+    playCardFlipSound() {
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
+        if (ctx.state === 'suspended') ctx.resume();
+
+        const bufferSize = ctx.sampleRate * 0.16;
+        const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+          data[i] = (Math.random() * 2 - 1) * Math.sin(Math.PI * i / bufferSize);
+        }
+        const noise = ctx.createBufferSource();
+        noise.buffer = buffer;
+        const filter = ctx.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.frequency.setValueAtTime(600, ctx.currentTime);
+        filter.frequency.exponentialRampToValueAtTime(2200, ctx.currentTime + 0.08);
+        filter.frequency.exponentialRampToValueAtTime(500, ctx.currentTime + 0.16);
+        filter.Q.value = 3.5;
+
+        const gain = ctx.createGain();
+        gain.gain.setValueAtTime(0.35, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.16);
+
+        noise.connect(filter);
+        filter.connect(gain);
+        gain.connect(ctx.destination);
+        noise.start();
+      } catch (e) {}
+    },
+
     playPackSound(rarity) {
       try {
         const AudioCtx = window.AudioContext || window.webkitAudioContext;
@@ -300,15 +333,15 @@
       const existingPack = document.getElementById('dex-pack-overlay');
       if (existingPack) existingPack.remove();
 
-      // Respect all currently active filters (Category, Era, Position/Role, Search text, 162-Challenge)
-      let pool = (this.filteredPlayers && this.filteredPlayers.length > 0) ? this.filteredPlayers : [];
-      if (pool.length === 0) {
-        if (this.activeCategory === 'opponents') {
-          pool = (window.PitchersDB && window.PitchersDB.PITCHERS_POOL) ? window.PitchersDB.PITCHERS_POOL : (window.PITCHERS_POOL || []);
-        } else {
-          pool = (window.PlayersDB && window.PlayersDB.LAHMAN_POOL) ? window.PlayersDB.LAHMAN_POOL : (window.PlayersDB && window.PlayersDB.PLAYERS_POOL ? window.PlayersDB.PLAYERS_POOL : (window.LAHMAN_POOL || []));
-        }
+      // Completely unfiltered global pool: every card in the catalog has equal probability regardless of era tabs, position pills or search text
+      let pool = [];
+      const isPitchers = this.activeCategory === 'opponents';
+      if (isPitchers) {
+        pool = (window.PitchersDB && window.PitchersDB.PITCHERS_POOL) ? window.PitchersDB.PITCHERS_POOL : (window.PITCHERS_POOL || []);
+      } else {
+        pool = (window.PlayersDB && window.PlayersDB.LAHMAN_POOL) ? window.PlayersDB.LAHMAN_POOL : (window.PlayersDB && window.PlayersDB.PLAYERS_POOL ? window.PlayersDB.PLAYERS_POOL : (window.LAHMAN_POOL || []));
       }
+
       if (!pool || pool.length === 0) {
         console.warn('BaseballDex: pool is empty for category', this.activeCategory);
         return;
@@ -322,9 +355,7 @@
       packOverlay.id = 'dex-pack-overlay';
       packOverlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:999999;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(8px);';
 
-      const isPitchers = this.activeCategory === 'opponents';
-      const eraFilter = this.currentFilterEra !== 'all' ? this.currentFilterEra.toUpperCase() : 'HISTORIC';
-      const packSubtitle = isPitchers ? 'ACE PITCHERS SERIES' : `${eraFilter} EDITION`;
+      const packSubtitle = isPitchers ? 'ALL-TIME PITCHERS PACK' : 'ALL-TIME LEGENDS PACK';
 
       packOverlay.innerHTML = `
         <div class="dex-foil-pack-wrapper" id="dex-booster-pack-target">
@@ -363,6 +394,17 @@
         const packInner = packOverlay.querySelector('#dex-foil-pack-inner');
         if (crimpTop) crimpTop.style.animation = 'packFoilRipTop 0.35s forwards ease-out';
         if (packInner) packInner.style.boxShadow = '0 0 60px rgba(255,255,255,0.8)';
+
+        // Automatically unlock this player in the Dex when opened from pack
+        if (this.activeCategory === 'opponents') {
+          this.unlockOpponent(randomPlayer);
+        } else {
+          this.unlock(randomPlayer);
+        }
+        this.updateCounters();
+        if (this.container) {
+          this.applyFilters();
+        }
 
         setTimeout(() => {
           packOverlay.remove();
@@ -939,90 +981,167 @@
       const cardAnimStyle = isPackReveal ? 'animation: packCardBurst 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;' : '';
       const glowColor = rColor;
 
+      // Generate Draft Card HTML
+      let draftCardHTML = '';
+      if (typeof window.createCardHTML === 'function') {
+        draftCardHTML = window.createCardHTML(p);
+      } else {
+        draftCardHTML = `<div style="padding:20px;color:#fff;">${p.name} - OVR ${p.ovr}</div>`;
+      }
+
       overlay.innerHTML = `
-        <div style="background:#0a0f1a;border:3px solid ${rColor};border-radius:12px;width:100%;max-width:440px;padding:24px;position:relative;box-shadow: 0 0 35px ${glowColor}66; ${cardAnimStyle}">
-          <div style="position:absolute;top:12px;right:12px;display:flex;align-items:center;gap:6px;">
-            <button id="btn-modal-next-random" style="padding:5px 10px;background:linear-gradient(135deg,rgba(245,158,11,0.25),rgba(234,88,12,0.3));border:1.5px solid #f59e0b;color:#fbbf24;border-radius:6px;font-family:'Press Start 2P',monospace;font-size:7.5px;cursor:pointer;transition:all 0.15s;box-shadow:0 0 10px rgba(245,158,11,0.3);">${typeof window.t === 'function' ? window.t('dex.btn_next_pack', '📦 ABRIR OTRO') : '📦 ABRIR OTRO'}</button>
-            <button id="btn-modal-close-detail" style="background:none;border:none;color:#9ca3af;font-size:20px;cursor:pointer;padding:0 6px;">✕</button>
-          </div>
-          
-          <div style="margin-bottom:16px">
-            <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:${rColor};margin-bottom:4px">${p.rarity || 'Common'} · ${eraShort}</div>
-            <h2 style="font-family:'Press Start 2P',monospace;font-size:13px;color:#fff;margin:0 0 4px 0;line-height:1.4">${p.name}</h2>
-            <div style="font-size:12px;color:#9ca3af">${teamFull} — ${p.year} · ${p.role || getPosText(p)}</div>
-          </div>
-          
-          <div style="text-align:center;margin-bottom:16px">
-            <div style="font-family:'Press Start 2P',monospace;font-size:32px;color:${rColor};text-shadow:0 0 20px ${rColor}88">${Math.floor(p.ovr)}</div>
-            <div style="font-size:10px;color:#6b7280">OVR</div>
-          </div>
-          
-          ${statsHTML}
-          
-          ${badgesHtml ? `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px">${badgesHtml}</div>` : ''}
-          
-          <div style="background:#111827;border-radius:8px;padding:12px">
-            <div style="font-family:'Press Start 2P',monospace;font-size:7.5px;color:#38bdf8;margin-bottom:10px;text-align:center">${(typeof window.t === 'function' ? window.t('dex.career_header') : 'ESTADÍSTICAS DE CARRERA (MLB)')}</div>
-            
-            <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:8px 10px;text-align:center">
-              ${isPitcher ? (isReliever ? `
-                <div><div style="font-size:13px;font-weight:bold;color:#38bdf8">${typeof careerStats.sv === 'number' ? careerStats.sv.toLocaleString() : (careerStats.sv || '-')}</div><div style="font-size:7px;color:#9ca3af;margin-top:2px">${(typeof window.t === 'function' ? window.t('dex.sv_label') : 'SALVADOS (SV)')}</div></div>
-                <div><div style="font-size:13px;font-weight:bold;color:#10b981">${careerStats.era || '-'}</div><div style="font-size:7px;color:#9ca3af;margin-top:2px">${(typeof window.t === 'function' ? window.t('dex.era_label') : 'ERA')}</div></div>
-                <div><div style="font-size:13px;font-weight:bold;color:#fb923c">${typeof careerStats.so === 'number' ? careerStats.so.toLocaleString() : (careerStats.so || '-')}</div><div style="font-size:7px;color:#9ca3af;margin-top:2px">${(typeof window.t === 'function' ? window.t('dex.so_label') : 'PONCHES (K)')}</div></div>
-                <div><div style="font-size:13px;font-weight:bold;color:#facc15">${careerStats.whip || '-'}</div><div style="font-size:7px;color:#9ca3af;margin-top:2px">${(typeof window.t === 'function' ? window.t('dex.whip_label') : 'WHIP')}</div></div>
-                <div><div style="font-size:13px;font-weight:bold;color:#2dd4bf">${careerStats.w !== '-' ? `${careerStats.w}-${careerStats.l}` : (careerStats.ip || '-')}</div><div style="font-size:7px;color:#9ca3af;margin-top:2px">${careerStats.w !== '-' ? (typeof window.t === 'function' ? window.t('dex.wl_label') : 'RÉCORD (W-L)') : (typeof window.t === 'function' ? window.t('dex.ip_label') : 'INNINGS (IP)')}</div></div>
-                <div><div style="font-size:13px;font-weight:bold;color:#4ade80">${careerStats.war || '-'}</div><div style="font-size:7px;color:#9ca3af;margin-top:2px">${(typeof window.t === 'function' ? window.t('dex.war_label') : 'WAR')}</div></div>
-              ` : `
-                <div><div style="font-size:13px;font-weight:bold;color:#38bdf8">${careerStats.w !== '-' ? `${careerStats.w}-${careerStats.l}` : '-'}</div><div style="font-size:7px;color:#9ca3af;margin-top:2px">${(typeof window.t === 'function' ? window.t('dex.wl_label') : 'RÉCORD (W-L)')}</div></div>
-                <div><div style="font-size:13px;font-weight:bold;color:#10b981">${careerStats.era || '-'}</div><div style="font-size:7px;color:#9ca3af;margin-top:2px">${(typeof window.t === 'function' ? window.t('dex.era_label') : 'ERA')}</div></div>
-                <div><div style="font-size:13px;font-weight:bold;color:#fb923c">${typeof careerStats.so === 'number' ? careerStats.so.toLocaleString() : (careerStats.so || '-')}</div><div style="font-size:7px;color:#9ca3af;margin-top:2px">${(typeof window.t === 'function' ? window.t('dex.so_label') : 'PONCHES (K)')}</div></div>
-                <div><div style="font-size:13px;font-weight:bold;color:#facc15">${careerStats.whip || '-'}</div><div style="font-size:7px;color:#9ca3af;margin-top:2px">${(typeof window.t === 'function' ? window.t('dex.whip_label') : 'WHIP')}</div></div>
-                <div><div style="font-size:13px;font-weight:bold;color:#2dd4bf">${careerStats.ip || '-'}</div><div style="font-size:7px;color:#9ca3af;margin-top:2px">${(typeof window.t === 'function' ? window.t('dex.ip_label') : 'INNINGS (IP)')}</div></div>
-                <div><div style="font-size:13px;font-weight:bold;color:#4ade80">${careerStats.war || '-'}</div><div style="font-size:7px;color:#9ca3af;margin-top:2px">${(typeof window.t === 'function' ? window.t('dex.war_label') : 'WAR')}</div></div>
-              `) : `
-                <div><div style="font-size:13px;font-weight:bold;color:#38bdf8">${typeof careerStats.h === 'number' ? careerStats.h.toLocaleString() : (careerStats.h || '-')}</div><div style="font-size:7px;color:#9ca3af;margin-top:2px">${(typeof window.t === 'function' ? window.t('dex.hits_label') : 'HITS (H)')}</div></div>
-                <div><div style="font-size:13px;font-weight:bold;color:#f87171">${typeof careerStats.hr === 'number' ? careerStats.hr.toLocaleString() : (careerStats.hr || '-')}</div><div style="font-size:7px;color:#9ca3af;margin-top:2px">${(typeof window.t === 'function' ? window.t('dex.hr_label') : 'JONRONES (HR)')}</div></div>
-                <div><div style="font-size:13px;font-weight:bold;color:#fbbf24">${typeof careerStats.rbi === 'number' ? careerStats.rbi.toLocaleString() : (careerStats.rbi || '-')}</div><div style="font-size:7px;color:#9ca3af;margin-top:2px">${(typeof window.t === 'function' ? window.t('dex.rbi_label') : 'IMPULSADAS (RBI)')}</div></div>
-                <div><div style="font-size:13px;font-weight:bold;color:#34d399">${careerStats.avg || '-'}</div><div style="font-size:7px;color:#9ca3af;margin-top:2px">${(typeof window.t === 'function' ? window.t('dex.avg_label') : 'PROMEDIO (AVG)')}</div></div>
-                <div><div style="font-size:13px;font-weight:bold;color:#facc15">${careerStats.ops || '-'}</div><div style="font-size:7px;color:#9ca3af;margin-top:2px">${(typeof window.t === 'function' ? window.t('dex.ops_label') : 'OPS')}</div></div>
-                <div><div style="font-size:13px;font-weight:bold;color:#4ade80">${careerStats.war || '-'}</div><div style="font-size:7px;color:#9ca3af;margin-top:2px">${(typeof window.t === 'function' ? window.t('dex.war_label') : 'WAR')}</div></div>
-              `}
+        <div style="display: flex; flex-direction: column; align-items: center; max-width: 440px; width: 100%;">
+          <div class="dex-flip-card-container" id="dex-card-flip-target" style="${cardAnimStyle}">
+            <div class="dex-flip-card-inner" id="dex-card-inner">
+              
+              <!-- LADO A: ESTADÍSTICAS & FICHA BASEBALL-DEX -->
+              <div class="dex-card-face dex-card-front" style="background:#0a0f1a;border:3px solid ${rColor};border-radius:12px;padding:24px;box-shadow: 0 0 35px ${glowColor}66;">
+                <div style="position:absolute;top:12px;right:14px;z-index:10;">
+                  <button id="btn-modal-close-detail" style="background:none;border:none;color:#9ca3af;font-size:20px;cursor:pointer;padding:0 4px;line-height:1;transition:color 0.15s;">✕</button>
+                </div>
+                
+                <div style="margin-bottom:16px;padding-right:30px;">
+                  <div style="font-family:'Press Start 2P',monospace;font-size:9.5px;color:${rColor};margin-bottom:4px">${p.rarity || 'Common'} · ${eraShort}</div>
+                  <h2 style="font-family:'Press Start 2P',monospace;font-size:13px;color:#fff;margin:0 0 4px 0;line-height:1.4">${p.name}</h2>
+                  <div style="font-size:11px;color:#9ca3af">${teamFull} — ${p.year} · ${p.role || getPosText(p)}</div>
+                </div>
+              
+              <div style="text-align:center;margin-bottom:16px">
+                <div style="font-family:'Press Start 2P',monospace;font-size:32px;color:${rColor};text-shadow:0 0 20px ${rColor}88">${Math.floor(p.ovr)}</div>
+                <div style="font-size:10px;color:#6b7280">OVR</div>
+              </div>
+              
+              ${statsHTML}
+              
+              ${badgesHtml ? `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px">${badgesHtml}</div>` : ''}
+              
+              <div style="background:#111827;border-radius:8px;padding:12px">
+                <div style="font-family:'Press Start 2P',monospace;font-size:7.5px;color:#38bdf8;margin-bottom:10px;text-align:center">${(typeof window.t === 'function' ? window.t('dex.career_header') : 'ESTADÍSTICAS DE CARRERA (MLB)')}</div>
+                
+                <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:8px 10px;text-align:center">
+                  ${isPitcher ? (isReliever ? `
+                    <div><div style="font-size:13px;font-weight:bold;color:#38bdf8">${typeof careerStats.sv === 'number' ? careerStats.sv.toLocaleString() : (careerStats.sv || '-')}</div><div style="font-size:7px;color:#9ca3af;margin-top:2px">${(typeof window.t === 'function' ? window.t('dex.sv_label') : 'SALVADOS (SV)')}</div></div>
+                    <div><div style="font-size:13px;font-weight:bold;color:#10b981">${careerStats.era || '-'}</div><div style="font-size:7px;color:#9ca3af;margin-top:2px">${(typeof window.t === 'function' ? window.t('dex.era_label') : 'ERA')}</div></div>
+                    <div><div style="font-size:13px;font-weight:bold;color:#fb923c">${typeof careerStats.so === 'number' ? careerStats.so.toLocaleString() : (careerStats.so || '-')}</div><div style="font-size:7px;color:#9ca3af;margin-top:2px">${(typeof window.t === 'function' ? window.t('dex.so_label') : 'PONCHES (K)')}</div></div>
+                    <div><div style="font-size:13px;font-weight:bold;color:#facc15">${careerStats.whip || '-'}</div><div style="font-size:7px;color:#9ca3af;margin-top:2px">${(typeof window.t === 'function' ? window.t('dex.whip_label') : 'WHIP')}</div></div>
+                    <div><div style="font-size:13px;font-weight:bold;color:#2dd4bf">${careerStats.w !== '-' ? `${careerStats.w}-${careerStats.l}` : (careerStats.ip || '-')}</div><div style="font-size:7px;color:#9ca3af;margin-top:2px">${careerStats.w !== '-' ? (typeof window.t === 'function' ? window.t('dex.wl_label') : 'RÉCORD (W-L)') : (typeof window.t === 'function' ? window.t('dex.ip_label') : 'INNINGS (IP)')}</div></div>
+                    <div><div style="font-size:13px;font-weight:bold;color:#4ade80">${careerStats.war || '-'}</div><div style="font-size:7px;color:#9ca3af;margin-top:2px">${(typeof window.t === 'function' ? window.t('dex.war_label') : 'WAR')}</div></div>
+                  ` : `
+                    <div><div style="font-size:13px;font-weight:bold;color:#38bdf8">${careerStats.w !== '-' ? `${careerStats.w}-${careerStats.l}` : '-'}</div><div style="font-size:7px;color:#9ca3af;margin-top:2px">${(typeof window.t === 'function' ? window.t('dex.wl_label') : 'RÉCORD (W-L)')}</div></div>
+                    <div><div style="font-size:13px;font-weight:bold;color:#10b981">${careerStats.era || '-'}</div><div style="font-size:7px;color:#9ca3af;margin-top:2px">${(typeof window.t === 'function' ? window.t('dex.era_label') : 'ERA')}</div></div>
+                    <div><div style="font-size:13px;font-weight:bold;color:#fb923c">${typeof careerStats.so === 'number' ? careerStats.so.toLocaleString() : (careerStats.so || '-')}</div><div style="font-size:7px;color:#9ca3af;margin-top:2px">${(typeof window.t === 'function' ? window.t('dex.so_label') : 'PONCHES (K)')}</div></div>
+                    <div><div style="font-size:13px;font-weight:bold;color:#facc15">${careerStats.whip || '-'}</div><div style="font-size:7px;color:#9ca3af;margin-top:2px">${(typeof window.t === 'function' ? window.t('dex.whip_label') : 'WHIP')}</div></div>
+                    <div><div style="font-size:13px;font-weight:bold;color:#2dd4bf">${careerStats.ip || '-'}</div><div style="font-size:7px;color:#9ca3af;margin-top:2px">${(typeof window.t === 'function' ? window.t('dex.ip_label') : 'INNINGS (IP)')}</div></div>
+                    <div><div style="font-size:13px;font-weight:bold;color:#4ade80">${careerStats.war || '-'}</div><div style="font-size:7px;color:#9ca3af;margin-top:2px">${(typeof window.t === 'function' ? window.t('dex.war_label') : 'WAR')}</div></div>
+                  `) : `
+                    <div><div style="font-size:13px;font-weight:bold;color:#38bdf8">${typeof careerStats.h === 'number' ? careerStats.h.toLocaleString() : (careerStats.h || '-')}</div><div style="font-size:7px;color:#9ca3af;margin-top:2px">${(typeof window.t === 'function' ? window.t('dex.hits_label') : 'HITS (H)')}</div></div>
+                    <div><div style="font-size:13px;font-weight:bold;color:#f87171">${typeof careerStats.hr === 'number' ? careerStats.hr.toLocaleString() : (careerStats.hr || '-')}</div><div style="font-size:7px;color:#9ca3af;margin-top:2px">${(typeof window.t === 'function' ? window.t('dex.hr_label') : 'JONRONES (HR)')}</div></div>
+                    <div><div style="font-size:13px;font-weight:bold;color:#fbbf24">${typeof careerStats.rbi === 'number' ? careerStats.rbi.toLocaleString() : (careerStats.rbi || '-')}</div><div style="font-size:7px;color:#9ca3af;margin-top:2px">${(typeof window.t === 'function' ? window.t('dex.rbi_label') : 'IMPULSADAS (RBI)')}</div></div>
+                    <div><div style="font-size:13px;font-weight:bold;color:#34d399">${careerStats.avg || '-'}</div><div style="font-size:7px;color:#9ca3af;margin-top:2px">${(typeof window.t === 'function' ? window.t('dex.avg_label') : 'PROMEDIO (AVG)')}</div></div>
+                    <div><div style="font-size:13px;font-weight:bold;color:#facc15">${careerStats.ops || '-'}</div><div style="font-size:7px;color:#9ca3af;margin-top:2px">${(typeof window.t === 'function' ? window.t('dex.ops_label') : 'OPS')}</div></div>
+                    <div><div style="font-size:13px;font-weight:bold;color:#4ade80">${careerStats.war || '-'}</div><div style="font-size:7px;color:#9ca3af;margin-top:2px">${(typeof window.t === 'function' ? window.t('dex.war_label') : 'WAR')}</div></div>
+                  `}
+                </div>
+
+                ${(() => {
+                  const pills = [];
+                  if (careerStats.allstars > 0) pills.push(`<span style="background:rgba(255,255,255,0.08);color:#fff;border:1px solid #4b5563;padding:2px 6px;border-radius:4px;font-size:8px">⭐ ${careerStats.allstars}x All-Star</span>`);
+                  if (careerStats.mvp > 0) pills.push(`<span style="background:rgba(234,179,8,0.12);color:#eab308;border:1px solid #eab308;padding:2px 6px;border-radius:4px;font-size:8px">🏆 ${careerStats.mvp}x MVP</span>`);
+                  if (careerStats.cy > 0) pills.push(`<span style="background:rgba(56,189,248,0.12);color:#38bdf8;border:1px solid #38bdf8;padding:2px 6px;border-radius:4px;font-size:8px">👑 ${careerStats.cy}x Cy Young</span>`);
+                  if (careerStats.gg > 0) pills.push(`<span style="background:rgba(255,215,0,0.12);color:#ffd700;border:1px solid #ffd700;padding:2px 6px;border-radius:4px;font-size:8px">🥊 ${careerStats.gg}x GG</span>`);
+                  if (careerStats.ss > 0) pills.push(`<span style="background:rgba(56,189,248,0.12);color:#38bdf8;border:1px solid #38bdf8;padding:2px 6px;border-radius:4px;font-size:8px">🥈 ${careerStats.ss}x SS</span>`);
+                  if (careerStats.roy > 0) pills.push(`<span style="background:rgba(167,243,208,0.12);color:#a7f3d0;border:1px solid #a7f3d0;padding:2px 6px;border-radius:4px;font-size:8px">🌱 ${careerStats.roy}x ROY</span>`);
+                  if (careerStats.rel > 0) pills.push(`<span style="background:rgba(245,158,11,0.12);color:#f59e0b;border:1px solid #f59e0b;padding:2px 6px;border-radius:4px;font-size:8px">🔥 ${careerStats.rel}x Relevista</span>`);
+                  return pills.length > 0
+                    ? `<div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:10px;padding-top:8px;border-top:1px dashed rgba(255,255,255,0.12)">${pills.join('')}</div>`
+                    : '';
+                })()}
+              </div>
             </div>
 
-            ${(() => {
-              const pills = [];
-              if (careerStats.allstars > 0) pills.push(`<span style="background:rgba(255,255,255,0.08);color:#fff;border:1px solid #4b5563;padding:2px 6px;border-radius:4px;font-size:8px">⭐ ${careerStats.allstars}x All-Star</span>`);
-              if (careerStats.mvp > 0) pills.push(`<span style="background:rgba(234,179,8,0.12);color:#eab308;border:1px solid #eab308;padding:2px 6px;border-radius:4px;font-size:8px">🏆 ${careerStats.mvp}x MVP</span>`);
-              if (careerStats.cy > 0) pills.push(`<span style="background:rgba(56,189,248,0.12);color:#38bdf8;border:1px solid #38bdf8;padding:2px 6px;border-radius:4px;font-size:8px">👑 ${careerStats.cy}x Cy Young</span>`);
-              if (careerStats.gg > 0) pills.push(`<span style="background:rgba(255,215,0,0.12);color:#ffd700;border:1px solid #ffd700;padding:2px 6px;border-radius:4px;font-size:8px">🥊 ${careerStats.gg}x GG</span>`);
-              if (careerStats.ss > 0) pills.push(`<span style="background:rgba(56,189,248,0.12);color:#38bdf8;border:1px solid #38bdf8;padding:2px 6px;border-radius:4px;font-size:8px">🥈 ${careerStats.ss}x SS</span>`);
-              if (careerStats.roy > 0) pills.push(`<span style="background:rgba(167,243,208,0.12);color:#a7f3d0;border:1px solid #a7f3d0;padding:2px 6px;border-radius:4px;font-size:8px">🌱 ${careerStats.roy}x ROY</span>`);
-              if (careerStats.rel > 0) pills.push(`<span style="background:rgba(245,158,11,0.12);color:#f59e0b;border:1px solid #f59e0b;padding:2px 6px;border-radius:4px;font-size:8px">🔥 ${careerStats.rel}x Relevista</span>`);
-              return pills.length > 0
-                ? `<div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:10px;padding-top:8px;border-top:1px dashed rgba(255,255,255,0.12)">${pills.join('')}</div>`
-                : '';
-            })()}
+            <!-- LADO B: DISEÑO DE CARTA COLECCIONABLE DE DRAFT -->
+            <div class="dex-card-face dex-card-back" style="border:3px solid ${rColor};box-shadow: 0 0 35px ${glowColor}66;">
+              <div style="position:absolute;top:12px;right:12px;display:flex;align-items:center;gap:8px;z-index:10;">
+                <button id="btn-modal-next-back" style="padding:6px 12px;background:linear-gradient(135deg,rgba(245,158,11,0.25),rgba(234,88,12,0.3));border:1.5px solid #f59e0b;color:#fbbf24;border-radius:6px;font-family:'Press Start 2P',monospace;font-size:8px;cursor:pointer;transition:all 0.15s;box-shadow:0 0 10px rgba(245,158,11,0.3);">${typeof window.t === 'function' ? window.t('dex.btn_next_pack', '📦 OTRO') : '📦 OTRO'}</button>
+                <button id="btn-modal-close-back" style="background:none;border:none;color:#9ca3af;font-size:22px;cursor:pointer;padding:0 4px;line-height:1;">✕</button>
+              </div>
+
+              <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:#ffd700;margin-bottom:14px;letter-spacing:1px;text-align:center;">
+                🎴 DRAFT TRADING CARD
+              </div>
+
+              <div style="transform:scale(1.2);margin:15px 0;">
+                ${draftCardHTML}
+              </div>
+
+              <div style="font-size:10px;color:#9ca3af;margin-top:16px;text-align:center;font-family:'Press Start 2P',monospace;line-height:1.4;">
+                ${p.name} · ${p.year}
+              </div>
+            </div>
+
           </div>
         </div>
+
+        <!-- CONTROLES EXTERIORES INFERIORES: FLIP + NEXT PACK -->
+        <div style="margin-top: 14px; display: flex; justify-content: center; align-items: center; gap: 10px; z-index: 100;">
+          <button id="btn-modal-flip-bottom" style="padding: 7px 16px; background: linear-gradient(135deg, rgba(56,189,248,0.2), rgba(14,165,233,0.3)); border: 1.5px solid #38bdf8; color: #38bdf8; border-radius: 6px; font-family: 'Press Start 2P', monospace; font-size: 8px; cursor: pointer; transition: all 0.15s; box-shadow: 0 0 10px rgba(56,189,248,0.3); display: inline-flex; align-items: center; gap: 6px;">
+            🔄 FLIP
+          </button>
+          <button id="btn-modal-next-bottom" style="padding: 7px 16px; background: linear-gradient(135deg, rgba(245,158,11,0.2), rgba(234,88,12,0.3)); border: 1.5px solid #f59e0b; color: #fbbf24; border-radius: 6px; font-family: 'Press Start 2P', monospace; font-size: 8px; cursor: pointer; transition: all 0.15s; box-shadow: 0 0 10px rgba(245,158,11,0.3); display: inline-flex; align-items: center; gap: 6px;">
+            📦 ${typeof window.t === 'function' ? window.t('dex.btn_next_pack', 'NEXT PACK') : 'NEXT PACK'}
+          </button>
+        </div>
+
+      </div>
       `;
 
       document.body.appendChild(overlay);
 
-      const nextBtn = overlay.querySelector('#btn-modal-next-random');
-      if (nextBtn) {
-        nextBtn.onclick = (e) => {
-          e.stopPropagation();
-          this.showRandomCard();
+      const cardInner = overlay.querySelector('#dex-card-inner');
+      const toggleFlip = (e) => {
+        if (e) e.stopPropagation();
+        if (cardInner) {
+          cardInner.classList.toggle('flipped');
+          this.playCardFlipSound();
+        }
+      };
+
+      const btnFlipBottom = overlay.querySelector('#btn-modal-flip-bottom');
+      if (btnFlipBottom) {
+        btnFlipBottom.onclick = toggleFlip;
+        btnFlipBottom.onmouseenter = () => {
+          btnFlipBottom.style.transform = 'scale(1.05)';
+          btnFlipBottom.style.boxShadow = '0 0 25px rgba(56,189,248,0.7)';
+        };
+        btnFlipBottom.onmouseleave = () => {
+          btnFlipBottom.style.transform = 'scale(1)';
+          btnFlipBottom.style.boxShadow = '0 0 15px rgba(56,189,248,0.4)';
         };
       }
 
-      const closeDetailBtn = overlay.querySelector('#btn-modal-close-detail');
-      if (closeDetailBtn) {
-        closeDetailBtn.onclick = (e) => {
+      const nextBtnBottom = overlay.querySelector('#btn-modal-next-bottom');
+      if (nextBtnBottom) {
+        nextBtnBottom.onclick = (e) => {
+          e.stopPropagation();
+          this.showRandomCard();
+        };
+        nextBtnBottom.onmouseenter = () => {
+          nextBtnBottom.style.transform = 'scale(1.04)';
+          nextBtnBottom.style.boxShadow = '0 0 18px rgba(245,158,11,0.6)';
+        };
+        nextBtnBottom.onmouseleave = () => {
+          nextBtnBottom.style.transform = 'scale(1)';
+          nextBtnBottom.style.boxShadow = '0 0 10px rgba(245,158,11,0.3)';
+        };
+      }
+
+      const closeBtns = overlay.querySelectorAll('#btn-modal-close-detail, #btn-modal-close-back');
+      closeBtns.forEach(b => {
+        b.onclick = (e) => {
           e.stopPropagation();
           overlay.remove();
         };
-      }
+      });
     }
   };
 })();

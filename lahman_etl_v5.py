@@ -1015,36 +1015,66 @@ def asignar_rareza(ovr):
 
 
 FRANCHISE_MAP = {
+    # New York Yankees
     'NYY': 'NYY', 'NYA': 'NYY',
+    # New York Mets
     'NYM': 'NYM', 'NYN': 'NYM',
+    # Los Angeles Dodgers (Brooklyn Superbas / Robins / Dodgers)
+    'LAD': 'LAD', 'LAN': 'LAD', 'BRO': 'LAD', 'BKN': 'LAD', 'BR3': 'LAD',
+    # San Francisco Giants (New York Giants)
+    'SFG': 'SFG', 'SFN': 'SFG', 'NYG': 'SFG', 'NY1': 'SFG',
+    # Boston Red Sox (Americans / Red Sox)
+    'BOS': 'BOS', 'BOS1': 'BOS', 'BOS2': 'BOS',
+    # Chicago Cubs (Orphans / Colts / White Stockings)
+    'CHC': 'CHC', 'CHN': 'CHC', 'CHI': 'CHC',
+    # Chicago White Sox
     'CHW': 'CHW', 'CHA': 'CHW',
-    'CHC': 'CHC', 'CHN': 'CHC',
-    'LAD': 'LAD', 'LAN': 'LAD', 'BRO': 'LAD',
-    'SFG': 'SFG', 'SFN': 'SFG', 'NY1': 'SFG',
+    # St. Louis Cardinals (Browns NL / Perfectos)
     'STL': 'STL', 'SLN': 'STL', 'SL4': 'STL',
-    'BAL': 'BAL', 'SLA': 'BAL', 'ML2': 'BAL',
-    'ATL': 'ATL', 'BSN': 'ATL', 'ML1': 'ATL', 'BS1': 'ATL', 'BS2': 'ATL',
-    'OAK': 'OAK', 'PHA': 'OAK', 'KCA': 'OAK', 'KC1': 'OAK',
+    # Baltimore Orioles (St. Louis Browns AL / Milwaukee Brewers 1901)
+    'BAL': 'BAL', 'SLA': 'BAL', 'SLB': 'BAL', 'MLA': 'BAL', 'ML2': 'BAL',
+    # Atlanta Braves (Boston Red Caps / Rustlers / Doves / Bees / Braves / Milwaukee Braves)
+    'ATL': 'ATL', 'BSN': 'ATL', 'MLN': 'ATL', 'ML1': 'ATL', 'BRA': 'ATL', 'BS1': 'ATL', 'BS2': 'ATL',
+    # Oakland Athletics (Philadelphia Athletics / Kansas City Athletics)
+    'OAK': 'OAK', 'PHA': 'OAK', 'KCA': 'OAK', 'KC1': 'OAK', 'ATH': 'OAK',
+    # Minnesota Twins (Washington Senators 1901-1960)
     'MIN': 'MIN', 'WS1': 'MIN',
-    'WSH': 'WSH', 'MON': 'WSH', 'WAS': 'WSH', 'WSN': 'WSH',
-    'TEX': 'TEX', 'WS2': 'TEX',
+    # Washington Nationals (Montreal Expos)
+    'WSH': 'WSH', 'WSN': 'WSH', 'MON': 'WSH', 'WAS': 'WSH',
+    # Texas Rangers (Washington Senators 1961-1971)
+    'TEX': 'TEX', 'WS2': 'TEX', 'WSA': 'TEX',
+    # Los Angeles Angels (California Angels / Anaheim Angels)
     'LAA': 'LAA', 'ANA': 'LAA', 'CAL': 'LAA',
+    # Miami Marlins (Florida Marlins)
     'MIA': 'MIA', 'FLA': 'MIA', 'FLO': 'MIA',
-    'MIL': 'MIL', 'ML4': 'MIL', 'SE1': 'MIL',
-    'TB':  'TB',  'TBD': 'TB',  'TBA': 'TB',
-    'SDP': 'SDP', 'SDN': 'SDP',
+    # Milwaukee Brewers (Seattle Pilots 1969)
+    'MIL': 'MIL', 'ML4': 'MIL', 'SE1': 'MIL', 'SEP': 'MIL',
+    # Tampa Bay Rays (Devil Rays)
+    'TB': 'TB', 'TBR': 'TB', 'TBD': 'TB', 'TBA': 'TB',
+    # San Diego Padres
+    'SDP': 'SDP', 'SDN': 'SDP', 'SD': 'SDP',
+    # Cincinnati Reds (Redlegs / Red Stockings)
     'CIN': 'CIN', 'CN1': 'CIN', 'CN2': 'CIN',
+    # Cleveland Guardians (Indians / Naps / Bronchos / Blues)
     'CLE': 'CLE', 'CL4': 'CLE',
-    'BOS': 'BOS', 'BOS1': 'BOS',
+    # Detroit Tigers
     'DET': 'DET',
-    'PIT': 'PIT', 'PIT1': 'PIT',
+    # Pittsburgh Pirates (Alleghenys)
+    'PIT': 'PIT', 'PIT1': 'PIT', 'PT1': 'PIT',
+    # Philadelphia Phillies (Quakers)
     'PHI': 'PHI', 'PH1': 'PHI', 'PH2': 'PHI',
+    # Houston Astros (Colt .45s)
     'HOU': 'HOU', 'HOU1': 'HOU',
+    # Toronto Blue Jays
     'TOR': 'TOR',
-    'KCR': 'KCR',
+    # Kansas City Royals
+    'KCR': 'KCR', 'KC': 'KCR',
+    # Seattle Mariners
     'SEA': 'SEA',
+    # Colorado Rockies
     'COL': 'COL',
-    'ARI': 'ARI',
+    # Arizona Diamondbacks
+    'ARI': 'ARI'
 }
 
 NLB_LEGENDS = {

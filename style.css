@@ -8586,3 +8586,50 @@ body.on-main-menu .main-container {
   background: repeating-linear-gradient(90deg, #ffd700, #ffd700 3px, #b45309 3px, #b45309 6px);
   border-radius: 3px;
 }
+
+/* ── BASEBALL-DEX 3D FLIP CARD STYLING ── */
+.dex-flip-card-container {
+  perspective: 1200px;
+  width: 100%;
+  max-width: 440px;
+  min-height: 480px;
+  position: relative;
+}
+
+.dex-flip-card-inner {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-style: preserve-3d;
+}
+
+.dex-flip-card-inner.flipped {
+  transform: rotateY(180deg);
+}
+
+.dex-card-face {
+  width: 100%;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: 12px;
+  box-sizing: border-box;
+}
+
+.dex-card-front {
+  position: relative;
+}
+
+.dex-card-back {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  transform: rotateY(180deg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+  background: #0a0f1a;
+  border-radius: 12px;
+  box-shadow: 0 0 35px rgba(0,0,0,0.8);
+}

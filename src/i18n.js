@@ -1160,7 +1160,9 @@
         "btn_random_player": "📦 ABRIR SOBRE",
         "btn_next_pack": "📦 ABRIR OTRO SOBRE",
         "pack_title": "SOBRE RETRO COLECCIONABLE",
-        "pack_tap": "✨ TOCA PARA ABRIR ✨"
+        "pack_tap": "✨ TOCA PARA ABRIR ✨",
+        "btn_flip_card": "🔄 FLIP CARTA",
+        "card_unlocked_toast": "¡Nueva carta desbloqueada en tu Dex!"
     },
     "challenge162": {
         "title": "🏆 162-0 CHALLENGE",
@@ -3134,7 +3136,9 @@
         "btn_random_player": "📦 OPEN PACK",
         "btn_next_pack": "📦 OPEN NEXT PACK",
         "pack_title": "RETRO BOOSTER PACK",
-        "pack_tap": "✨ TAP TO OPEN ✨"
+        "pack_tap": "✨ TAP TO OPEN ✨",
+        "btn_flip_card": "🔄 FLIP CARD",
+        "card_unlocked_toast": "New card unlocked in your Dex!"
     },
     "challenge162": {
         "title": "🏆 162-0 CHALLENGE",
