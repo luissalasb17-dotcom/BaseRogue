@@ -110,17 +110,47 @@
 
   function getBbrefUrl(p) {
     if (!p) return 'https://www.baseball-reference.com';
-    const cleanName = p.name ? p.name.replace(/\s*\(.*?\)$/, '').trim() : '';
-    const db = window.CAREER_STATS_DB || {};
-    const keyWithYear = `${cleanName}_${p.year}`;
-    const entry = (p.playerID && db[p.playerID]) || db[keyWithYear] || db[cleanName] || db[p.name] || db[cleanName.toLowerCase()];
-    const pid = p.playerID || p.bbref_id || (entry && (entry.playerID || entry.bbref_id));
+    const rawName = p.cleanName || p.name || '';
+    const cleanName = rawName.replace(/\s*\(.*?\)$/, '').trim();
+    const normName = normalizeSearchText(cleanName);
 
-    if (pid && typeof pid === 'string' && pid.length >= 3) {
-      const firstLetter = pid.charAt(0).toLowerCase();
-      return `https://www.baseball-reference.com/players/${firstLetter}/${pid}.shtml`;
+    // 1. Direct playerID on object
+    let pid = p.playerID || p.bbref_id || p.id;
+
+    // 2. Lookup in Lahman Batters Pool
+    if (!pid && window.PlayersDB && Array.isArray(window.PlayersDB.LAHMAN_POOL)) {
+      const match = window.PlayersDB.LAHMAN_POOL.find(x => 
+        x && (x.name === cleanName || normalizeSearchText(x.name) === normName)
+      );
+      if (match && match.playerID) pid = match.playerID;
     }
-    return `https://www.baseball-reference.com/search/search.fcgi?search=${encodeURIComponent(cleanName)}`;
+
+    // 3. Lookup in Pitchers Pool
+    if (!pid && window.PitchersDB && Array.isArray(window.PitchersDB.PITCHERS_POOL)) {
+      const match = window.PitchersDB.PITCHERS_POOL.find(x => 
+        x && (x.name === cleanName || normalizeSearchText(x.name) === normName)
+      );
+      if (match && match.playerID) pid = match.playerID;
+    }
+
+    // 4. Lookup in Career Stats DB
+    if (!pid) {
+      const db = window.CAREER_STATS_DB || {};
+      const keyWithYear = `${cleanName}_${p.year}`;
+      const entry = (p.playerID && db[p.playerID]) || db[keyWithYear] || db[cleanName] || db[p.name] || db[cleanName.toLowerCase()] || db[normName];
+      if (entry) pid = entry.playerID || entry.bbref_id;
+    }
+
+    // If valid playerID found, build canonical URL
+    if (pid && typeof pid === 'string' && pid.length >= 3) {
+      const cleanPid = pid.trim().toLowerCase();
+      const firstLetter = cleanPid.charAt(0);
+      return `https://www.baseball-reference.com/players/${firstLetter}/${cleanPid}.shtml`;
+    }
+
+    // Clean fallback search URL
+    const searchParam = cleanName.replace(/['`]/g, '');
+    return `https://www.baseball-reference.com/search/search.fcgi?search=${encodeURIComponent(searchParam)}`;
   }
 
   function getPlayerCareerData(p) {
