@@ -3131,34 +3131,34 @@ function initGameModeSelector() {
     let modifier = "";
 
     // 10-point Overall (OVR) Grade Scale:
-    // 100+: S
-    // 90-99: A (90-92 A-, 93-96 A, 97-99 A+)
-    // 80-89: B (80-82 B-, 83-86 B, 87-89 B+)
-    // 70-79: C (70-72 C-, 73-76 C, 77-79 C+)
-    // 60-69: D (60-62 D-, 63-66 D, 67-69 D+)
-    // 50-59: F (50-52 F-, 53-56 F, 57-59 F+)
-    if (v >= 100) {
-      letter = "S"; color = "#ffd700"; modifier = "";
-    } else if (v >= 90) {
-      letter = "A"; color = (v >= 97) ? "#ffd700" : "#22d3ee";
+    // 90+: S (90-92 S-, 93-96 S, 97+ S+)
+    // 80-89: A (80-82 A-, 83-86 A, 87-89 A+)
+    // 70-79: B (70-72 B-, 73-76 B, 77-79 B+)
+    // 60-69: C (60-62 C-, 63-66 C, 67-69 C+)
+    // 50-59: D (50-52 D-, 53-56 D, 57-59 D+)
+    // < 50: F
+    if (v >= 90) {
+      letter = "S"; color = "#ffd700";
       if (v >= 97) modifier = "+";
       else if (v < 93) modifier = "-";
     } else if (v >= 80) {
-      letter = "B"; color = "#4ade80";
+      letter = "A"; color = "#22d3ee";
       if (v >= 87) modifier = "+";
       else if (v < 83) modifier = "-";
     } else if (v >= 70) {
-      letter = "C"; color = "#94a3b8";
+      letter = "B"; color = "#4ade80";
       if (v >= 77) modifier = "+";
       else if (v < 73) modifier = "-";
     } else if (v >= 60) {
-      letter = "D"; color = "#f97316";
+      letter = "C"; color = "#94a3b8";
       if (v >= 67) modifier = "+";
       else if (v < 63) modifier = "-";
-    } else {
-      letter = "F"; color = "#ef4444";
+    } else if (v >= 50) {
+      letter = "D"; color = "#f97316";
       if (v >= 57) modifier = "+";
-      else if (v >= 50 && v < 53) modifier = "-";
+      else if (v < 53) modifier = "-";
+    } else {
+      letter = "F"; color = "#ef4444"; modifier = "";
     }
 
     return { text: letter + modifier, color: color };
