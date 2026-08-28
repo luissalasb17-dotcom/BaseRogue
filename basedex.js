@@ -119,17 +119,21 @@
   function getPlayerFlagHTML(p) {
     const db = window.PLAYER_FLAGS_DB || {};
     let pid = p ? (p.playerID || p.bbref_id || p.id) : null;
-    let iso = pid && db[pid];
+    let iso = pid && (db[pid] || db[String(pid).toLowerCase()]);
 
     if (!iso && p) {
       const rawName = p.cleanName || p.name || '';
       const cleanName = rawName.replace(/\s*\(.*?\)$/, '').trim();
-      if (window.PlayersDB && Array.isArray(window.PlayersDB.LAHMAN_POOL)) {
-        const match = window.PlayersDB.LAHMAN_POOL.find(x => x && x.name === cleanName);
+      const normKey = cleanName.toLowerCase().replace(/\b(jr\.?|sr\.?|ii|iii|iv)\b/gi, '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
+      
+      iso = db[cleanName] || db[cleanName.toLowerCase()] || db[normKey];
+
+      if (!iso && window.PlayersDB && Array.isArray(window.PlayersDB.LAHMAN_POOL)) {
+        const match = window.PlayersDB.LAHMAN_POOL.find(x => x && (x.name === cleanName || x.playerID === pid));
         if (match && match.playerID && db[match.playerID]) iso = db[match.playerID];
       }
       if (!iso && window.PitchersDB && Array.isArray(window.PitchersDB.PITCHERS_POOL)) {
-        const match = window.PitchersDB.PITCHERS_POOL.find(x => x && x.name === cleanName);
+        const match = window.PitchersDB.PITCHERS_POOL.find(x => x && (x.name === cleanName || x.playerID === pid));
         if (match && match.playerID && db[match.playerID]) iso = db[match.playerID];
       }
     }
