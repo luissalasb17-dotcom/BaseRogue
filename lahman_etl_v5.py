@@ -659,18 +659,37 @@ def paso_8_filtro_ingesta(df, allstar, hof, pure_pitcher_ids, batting):
     no_pitchers = df[~df["playerID"].isin(effective_pure_pitchers)].copy()
     print(f"  No-pitchers elegibles: {len(no_pitchers):,}")
 
+    MIN_AB_MLB     = 1000
+    MIN_AB_NLB     = 500
     MIN_AB_ALLSTAR = 100
     MIN_AB_QUALITY = 350
 
+    # Comprehensive list of all Negro League lgID codes in Seamheads / Lahman:
+    nl_leagues = {'NNL', 'NN2', 'NAL', 'ECL', 'ANL', 'EWL', 'NSL', 'IND', 'EAS', 'NN1'}
+    if not batting.empty and 'lgID' in batting.columns:
+        nl_ab_df = batting[batting['lgID'].isin(nl_leagues)].groupby('playerID')['AB'].sum().reset_index().rename(columns={'AB': 'nlb_ab'})
+        mlb_ab_df = batting[~batting['lgID'].isin(nl_leagues)].groupby('playerID')['AB'].sum().reset_index().rename(columns={'AB': 'mlb_ab'})
+        no_pitchers = no_pitchers.merge(nl_ab_df, on='playerID', how='left').merge(mlb_ab_df, on='playerID', how='left')
+        no_pitchers['nlb_ab'] = no_pitchers['nlb_ab'].fillna(0)
+        no_pitchers['mlb_ab'] = no_pitchers['mlb_ab'].fillna(0)
+        no_pitchers['league_group'] = np.where(no_pitchers['nlb_ab'] > no_pitchers['mlb_ab'], 'NLB', 'MLB')
+    else:
+        no_pitchers['league_group'] = 'MLB'
+        no_pitchers['nlb_ab'] = 0
+        no_pitchers['mlb_ab'] = no_pitchers['career_ab']
+
     # Criterio Unificado de Ingesta para Bateadores:
-    # 1. Volumen de carrera: career_ab >= 1,500
+    # 1. Volumen de carrera: MLB >= 1,000 AB | NLB >= 500 AB
     # 2. Calidad / Estrellato Joven: (career_war >= 5.0 OR peak_war >= 5.0) AND career_ab >= 350
     # 3. Reconocimiento Histórico: HoF incondicional OR (All-Star AND career_ab >= 100)
     c_war = no_pitchers["career_war"].fillna(0) if "career_war" in no_pitchers.columns else pd.Series(0, index=no_pitchers.index)
     p_war = no_pitchers["peak_war"].fillna(0) if "peak_war" in no_pitchers.columns else pd.Series(0, index=no_pitchers.index)
     
+    is_nlb_player = no_pitchers["league_group"] == "NLB"
+    vol_mask = np.where(is_nlb_player, no_pitchers["career_ab"] >= MIN_AB_NLB, no_pitchers["career_ab"] >= MIN_AB_MLB)
+
     mask = (
-        (no_pitchers["career_ab"] >= MIN_AB_CAREER) |
+        vol_mask |
         (
             ((c_war >= 5.0) | (p_war >= 5.0)) &
             (no_pitchers["career_ab"] >= MIN_AB_QUALITY)
@@ -681,6 +700,7 @@ def paso_8_filtro_ingesta(df, allstar, hof, pure_pitcher_ids, batting):
     eligible = no_pitchers[mask].copy()
     eligible["is_allstar"] = eligible["playerID"].isin(allstar_ids)
     eligible["is_hof"]     = eligible["playerID"].isin(hof_ids)
+    eligible.drop(columns=["nlb_ab", "mlb_ab"], errors="ignore", inplace=True)
 
     if not allstar.empty:
         as_count = allstar.groupby("playerID").size().reset_index(name="allstar_selections")

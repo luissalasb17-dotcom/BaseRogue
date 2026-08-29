@@ -569,26 +569,34 @@ def paso_5_filtro_ingesta(career, peak, allstar, hof, pure_pitcher_ids, pitching
         df["allstar_selections"] = 0
     df["allstar_selections"] = df["allstar_selections"].fillna(0).astype(int)
 
-    # Criterio Unificado de Ingesta para Pitchers:
-    # 1. Volumen de carrera: SP >= 100 GS | RP >= 200 G
+    # Criterio Unificado de Ingesta para Pitchers por Innings Pitched:
+    # 1. Volumen de carrera:
+    #    - SP: MLB >= 500.0 IP | NLB >= 250.0 IP
+    #    - RP: MLB >= 300.0 IP | NLB >= 150.0 IP
     # 2. Calidad / Estrellato Joven:
-    #    - SP: (career_war >= 5.0 OR peak_war >= 5.0) AND career_ip >= 150.0
-    #    - RP: (career_war >= 3.5 OR peak_war >= 3.5) AND career_ip >= 100.0
+    #    - SP: (career_war >= 5.0 OR peak_war >= 5.0) AND (MLB >= 150.0 IP | NLB >= 75.0 IP)
+    #    - RP: (career_war >= 3.5 OR peak_war >= 3.5) AND (MLB >= 100.0 IP | NLB >= 50.0 IP)
     # 3. Reconocimiento Histórico: HoF incondicional OR (All-Star AND career_ip >= 35.0)
     MIN_IP_ALLSTAR = 35.0
 
     def is_eligible(r):
         if r["is_hof"]:
             return True
-        if r["is_allstar"] and (r.get("career_ip", 0) >= MIN_IP_ALLSTAR):
+        cip = r.get("career_ip", 0) if pd.notna(r.get("career_ip")) else 0
+        if r["is_allstar"] and (cip >= MIN_IP_ALLSTAR):
             return True
         c_war = r.get("career_war", 0) if pd.notna(r.get("career_war")) else 0
         p_war = r.get("peak_war", 0) if pd.notna(r.get("peak_war")) else 0
-        cip = r.get("career_ip", 0) if pd.notna(r.get("career_ip")) else 0
+        is_nl = r.get("is_nlb", False)
+        
         if r["role"] == "SP":
-            return (r["career_gs"] >= 100) or (((c_war >= 5.0) or (p_war >= 5.0)) and (cip >= 150.0))
+            vol_threshold = 250.0 if is_nl else 500.0
+            qual_ip_thresh = 75.0 if is_nl else 150.0
+            return (cip >= vol_threshold) or (((c_war >= 5.0) or (p_war >= 5.0)) and (cip >= qual_ip_thresh))
         else:
-            return (r["career_g"] >= 200) or (((c_war >= 3.5) or (p_war >= 3.5)) and (cip >= 100.0))
+            vol_threshold = 150.0 if is_nl else 300.0
+            qual_ip_thresh = 50.0 if is_nl else 100.0
+            return (cip >= vol_threshold) or (((c_war >= 3.5) or (p_war >= 3.5)) and (cip >= qual_ip_thresh))
 
     mask = df.apply(is_eligible, axis=1)
     eligible = df[mask].copy()
