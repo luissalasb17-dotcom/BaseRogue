@@ -1059,7 +1059,7 @@
         tr('legendary_domination', '👑', 'legendary', '👑 Dominio Legendario', 'Si tienes 2 o más jugadores Legendary en titular, todos reciben +10 a todas sus estadísticas.'),
         tr('back_to_back',      '💥', 'back2back', '💥 Cadena de Poder', 'Después de un HR, el siguiente bateador gana +20 de PWR y CON para ese turno.'),
         tr('midas_touch',       '🎰', 'midas', '🎰 Toque de Midas', 'Aumenta en +25% las probabilidades de éxito en eventos de Suerte (LUCK), Decisiones y Ruletas de Prototipos.'),
-        tr('heavy_artillery',   '🔨', 'artillery', '🔨 Poder de Demolición', 'El daño remanente al noquear a un lanzador se transfiere al 100% al relevista (en lugar del 50% base).')
+        tr('heavy_artillery',   '🔨', 'heavy_artillery', '🔨 Poder de Demolición', 'El daño remanente al noquear a un lanzador se transfiere al 100% al relevista (en lugar del 50% base).')
       ];
     }
 
@@ -2062,34 +2062,36 @@
         let desc = "";
 
         if (era === Eras.GENESIS) {
-          const boost = level === 4 ? 6 : level === 3 ? 4 : level === 2 ? 2 : 0;
-          if (boost > 0) bonuses = { con: boost };
+          const boost = level === 4 ? 12 : level === 3 ? 8 : level === 2 ? 5 : 2;
+          bonuses = { con: boost };
         } else if (era === Eras.DEADBALL) {
-          const boost = level === 4 ? 10 : level === 3 ? 7 : level === 2 ? 4 : 2;
+          const boost = level === 4 ? 8 : level === 3 ? 5 : level === 2 ? 3 : 2;
           bonuses = { con: boost, k_avd: boost };
         } else if (era === Eras.GOLDEN) {
-          const boost = level === 4 ? 10 : level === 3 ? 7 : level === 2 ? 4 : 2;
+          const boost = level === 4 ? 12 : level === 3 ? 8 : level === 2 ? 5 : 2;
           bonuses = { pwr: boost };
         } else if (era === Eras.INTEGRATION) {
           const boost = level === 4 ? 10 : level === 3 ? 7 : level === 2 ? 4 : 2;
           bonuses = { con: boost, pwr: boost, eye: boost, k_avd: boost, spd: boost, def: boost };
         } else if (era === Eras.EXPANSION) {
-          const spdBoost = level === 4 ? 10 : level === 3 ? 7 : level === 2 ? 4 : 2;
+          const spdBoost = level === 4 ? 12 : level === 3 ? 8 : level === 2 ? 5 : 2;
           const eyeBoost = level === 4 ? 6 : level === 3 ? 4 : level === 2 ? 2 : 0;
           bonuses = { spd: spdBoost };
           if (eyeBoost > 0) bonuses.eye = eyeBoost;
         } else if (era === Eras.BIGHAIR) {
-          const boost = level === 4 ? 10 : level === 3 ? 7 : level === 2 ? 4 : 2;
+          const boost = level === 4 ? 12 : level === 3 ? 8 : level === 2 ? 5 : 2;
           bonuses = { def: boost, spd: boost };
         } else if (era === Eras.STEROID) {
           const boost = level === 4 ? 12 : level === 3 ? 8 : level === 2 ? 5 : 2;
           bonuses = { pwr: boost };
         } else if (era === Eras.EFFICIENCY) {
-          const boost = level === 4 ? 10 : level === 3 ? 7 : level === 2 ? 4 : 2;
+          const boost = level === 4 ? 20 : level === 3 ? 14 : level === 2 ? 8 : 4;
           bonuses = { eye: boost };
         } else if (era === Eras.MODERN) {
-          const boost = level === 4 ? 10 : level === 3 ? 7 : level === 2 ? 4 : 2;
-          bonuses = { eye: boost, pwr: boost };
+          const pwrBoost = level === 4 ? 6 : level === 3 ? 5 : level === 2 ? 3 : 2;
+          const eyeBoost = level === 4 ? 6 : level === 3 ? 4 : level === 2 ? 2 : 0;
+          bonuses = { pwr: pwrBoost };
+          if (eyeBoost > 0) bonuses.eye = eyeBoost;
         }
 
         synergies.push({
