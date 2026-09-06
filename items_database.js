@@ -245,7 +245,7 @@
         cost: 16,
         stats: { spd: 15 },
         energy_half_loss: true,
-        get statDesc() { return "+15 SPD • -50% Gasto Energía"; }
+        get statDesc() { return _t('items.shoes_endurance.safe_stat_desc', '+15 SPD • -50% Gasto Energía'); }
       },
       riskyOption: {
         id: "shoes_endurance_legend",
@@ -256,7 +256,7 @@
         successChance: 0.60,
         stats: { spd: 30 },
         energy_immune: true,
-        get statDesc() { return "+30 SPD • Inmune a Fatiga"; },
+        get statDesc() { return _t('items.shoes_endurance.risky_stat_desc', '+30 SPD • Inmune a Fatiga'); },
         failStaminaCost: 35,
         get successMsg() { return _t('items.shoes_endurance.suc_msg', '¡Resistencia infinita! El jugador nunca perderá energía (+30 SPD).'); },
         get failMsg() { return _t('items.shoes_endurance.fail_msg', '¡El vendaje mal colocado provoca un tirón muscular! (-35 Stamina).'); }
@@ -367,7 +367,7 @@
         cost: 16,
         stats: { def: 15 },
         energy_half_loss: true,
-        get statDesc() { return "+15 DEF • -50% Gasto Energía"; }
+        get statDesc() { return _t('items.glove_energy.safe_stat_desc', '+15 DEF • -50% Gasto Energía'); }
       },
       riskyOption: {
         id: "glove_energy_legend",
@@ -378,7 +378,7 @@
         successChance: 0.60,
         stats: { def: 25 },
         energy_immune: true,
-        get statDesc() { return "+25 DEF • Inmune a Fatiga"; },
+        get statDesc() { return _t('items.glove_energy.risky_stat_desc', '+25 DEF • Inmune a Fatiga'); },
         failStaminaCost: 35,
         get successMsg() { return _t('items.glove_energy.suc_msg', '¡Blindaje total! El jugador nunca perderá energía (+25 DEF).'); },
         get failMsg() { return _t('items.glove_energy.fail_msg', '¡Los impactos directos en la prueba agotan al jugador! (-35 Stamina).'); }
@@ -488,7 +488,7 @@
         get text() { return _t('items.acc_gum.safe_text', 'Comprar Chicle (+10 a Todos los Stats)'); },
         cost: 16,
         stats: { con: 10, pwr: 10, eye: 10, k_avd: 10, spd: 10, def: 10 },
-        get statDesc() { return "+10 a Todos los Stats"; }
+        get statDesc() { return _t('items.acc_gum.safe_stat_desc', '+10 a Todos los Stats'); }
       },
       riskyOption: {
         id: "acc_gum_legend",
@@ -498,7 +498,7 @@
         cost: 7,
         successChance: 0.60,
         stats: { con: 18, pwr: 18, eye: 18, k_avd: 18, spd: 18, def: 18 },
-        get statDesc() { return "+18 a Todos los Stats"; },
+        get statDesc() { return _t('items.acc_gum.risky_stat_desc', '+18 a Todos los Stats'); },
         failStaminaCost: 35,
         get successMsg() { return _t('items.acc_gum.suc_msg', '¡Aura de campeón! Chicle Dorado consumido (+18 a Todos los Stats).'); },
         get failMsg() { return _t('items.acc_gum.fail_msg', '¡Indigestión estomacal! El jugador pierde -35 Stamina.'); }
@@ -522,7 +522,7 @@
         get text() { return _t('items.energy_drink.safe_text', 'Comprar Bebida (+50 Energía)'); },
         cost: 10,
         staminaHeal: 50,
-        get statDesc() { return "+50 Energía"; }
+        get statDesc() { return _t('items.energy_drink.safe_stat_desc', '+50 Energía'); }
       },
       riskyOption: {
         id: "energy_drink_legend",
@@ -534,7 +534,7 @@
         successChance: 0.60,
         staminaHealPercent: 1.0,
         permStats: { con: 5, spd: 5, def: 5 },
-        get statDesc() { return "+100% Energía • +5 CON/SPD/DEF Perm."; },
+        get statDesc() { return _t('items.energy_drink.risky_stat_desc', '+100% Energía • +5 CON/SPD/DEF Perm.'); },
         failStaminaCost: 35,
         get successMsg() { return _t('items.energy_drink.suc_msg', '¡Revitalización total! +100% Energía y +5 CON, +5 SPD, +5 DEF permanentes.'); },
         get failMsg() { return _t('items.energy_drink.fail_msg', '¡Reacción alérgica a los electrolitos! El jugador pierde -35 Stamina.'); }
@@ -555,7 +555,7 @@
         cost: 14,
         staminaHeal: 40,
         teamStaminaHeal: 20,
-        get statDesc() { return "+40 Energía Jugador • +20 Equipo"; }
+        get statDesc() { return _t('items.energy_icebath.safe_stat_desc', '+40 Energía Jugador • +20 Equipo'); }
       },
       riskyOption: {
         id: "energy_icebath_legend",
@@ -566,7 +566,7 @@
         cost: 5,
         successChance: 0.60,
         teamStaminaHeal: 70,
-        get statDesc() { return "+70 Energía a Todo el Equipo"; },
+        get statDesc() { return _t('items.energy_icebath.risky_stat_desc', '+70 Energía a Todo el Equipo'); },
         failStaminaCost: 35,
         get successMsg() { return _t('items.energy_icebath.suc_msg', '¡Recuperación masiva! +70 de Energía restaurada a todo el equipo.'); },
         get failMsg() { return _t('items.energy_icebath.fail_msg', '¡Choque térmico en la cámara! El jugador de prueba pierde -35 Stamina.'); }
@@ -586,7 +586,7 @@
         get text() { return _t('items.energy_massage.safe_text', 'Comprar Masaje (+70 Energía)'); },
         cost: 12,
         staminaHeal: 70,
-        get statDesc() { return "+70 Energía"; }
+        get statDesc() { return _t('items.energy_massage.safe_stat_desc', '+70 Energía'); }
       },
       riskyOption: {
         id: "energy_massage_legend",
@@ -598,7 +598,7 @@
         successChance: 0.60,
         staminaHealPercent: 1.0,
         permStats: { eye: 10, k_avd: 10 },
-        get statDesc() { return "+100% Energía • +10 EYE/K-AVD Perm."; },
+        get statDesc() { return _t('items.energy_massage.risky_stat_desc', '+100% Energía • +10 EYE/K-AVD Perm.'); },
         failStaminaCost: 35,
         get successMsg() { return _t('items.energy_massage.suc_msg', '¡Claridad y relajación total! +100% Energía y +10 EYE, +10 K-AVD permanentes.'); },
         get failMsg() { return _t('items.energy_massage.fail_msg', '¡Tirón muscular en la camilla! El jugador pierde -35 Stamina.'); }
@@ -619,7 +619,7 @@
         cost: 12,
         staminaHeal: 40,
         permStats: { pwr: 5 },
-        get statDesc() { return "+40 Energía • +5 PWR Perm."; }
+        get statDesc() { return _t('items.energy_shake.safe_stat_desc', '+40 Energía • +5 PWR Perm.'); }
       },
       riskyOption: {
         id: "energy_shake_legend",
@@ -631,7 +631,7 @@
         successChance: 0.60,
         staminaHeal: 80,
         permStats: { pwr: 10 },
-        get statDesc() { return "+80 Energía • +10 PWR Perm."; },
+        get statDesc() { return _t('items.energy_shake.risky_stat_desc', '+80 Energía • +10 PWR Perm.'); },
         failStaminaCost: 35,
         get successMsg() { return _t('items.energy_shake.suc_msg', '¡Fuerza explosiva! +80 de Energía y +10 PWR permanente para siempre.'); },
         get failMsg() { return _t('items.energy_shake.fail_msg', '¡Sobredosis de cafeína y fatiga! El jugador pierde -35 Stamina.'); }

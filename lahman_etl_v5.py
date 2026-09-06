@@ -307,7 +307,7 @@ def paso_4_pico_batting(batting, war_bat, people):
         bat_yearly["war_total"] = np.nan
 
     NLB_WAR_BOOST = 2.0
-    nl_leagues = {'NNL', 'NN2', 'NAL', 'ECL', 'ANL', 'EWL', 'NSL', 'IND', 'EAS', 'NN1'}
+    nl_leagues = {'NNL', 'NN2', 'NAL', 'ECL', 'ANL', 'EWL', 'NSL', 'NN1'}
 
     def seleccionar_pico_off(group):
         g = group.copy()
@@ -664,22 +664,29 @@ def paso_8_filtro_ingesta(df, allstar, hof, pure_pitcher_ids, batting):
     MIN_AB_ALLSTAR = 100
     MIN_AB_QUALITY = 350
 
-    # Comprehensive list of all Negro League lgID codes in Seamheads / Lahman:
-    nl_leagues = {'NNL', 'NN2', 'NAL', 'ECL', 'ANL', 'EWL', 'NSL', 'IND', 'EAS', 'NN1'}
+    # List of all Negro League and Independent Pioneer leagues:
+    nl_official_leagues = {'NNL', 'NN2', 'NAL', 'ECL', 'ANL', 'EWL', 'NSL', 'NN1'}
+    nl_pioneer_leagues  = {'IND', 'EAS', 'WES', 'NAC', 'INT'}
+    nl_all_leagues      = nl_official_leagues | nl_pioneer_leagues
+
     if not batting.empty and 'lgID' in batting.columns:
-        nl_ab_df = batting[batting['lgID'].isin(nl_leagues)].groupby('playerID')['AB'].sum().reset_index().rename(columns={'AB': 'nlb_ab'})
-        mlb_ab_df = batting[~batting['lgID'].isin(nl_leagues)].groupby('playerID')['AB'].sum().reset_index().rename(columns={'AB': 'mlb_ab'})
-        no_pitchers = no_pitchers.merge(nl_ab_df, on='playerID', how='left').merge(mlb_ab_df, on='playerID', how='left')
+        nl_ab_df = batting[batting['lgID'].isin(nl_all_leagues)].groupby('playerID')['AB'].sum().reset_index().rename(columns={'AB': 'nlb_ab'})
+        unoff_ab_df = batting[batting['lgID'].isin(nl_pioneer_leagues)].groupby('playerID')['AB'].sum().reset_index().rename(columns={'AB': 'unoff_ab'})
+        mlb_ab_df = batting[~batting['lgID'].isin(nl_all_leagues)].groupby('playerID')['AB'].sum().reset_index().rename(columns={'AB': 'mlb_ab'})
+        
+        no_pitchers = no_pitchers.merge(nl_ab_df, on='playerID', how='left').merge(mlb_ab_df, on='playerID', how='left').merge(unoff_ab_df, on='playerID', how='left')
         no_pitchers['nlb_ab'] = no_pitchers['nlb_ab'].fillna(0)
         no_pitchers['mlb_ab'] = no_pitchers['mlb_ab'].fillna(0)
+        no_pitchers['unoff_ab'] = no_pitchers['unoff_ab'].fillna(0)
         no_pitchers['league_group'] = np.where(no_pitchers['nlb_ab'] > no_pitchers['mlb_ab'], 'NLB', 'MLB')
     else:
         no_pitchers['league_group'] = 'MLB'
         no_pitchers['nlb_ab'] = 0
+        no_pitchers['unoff_ab'] = 0
         no_pitchers['mlb_ab'] = no_pitchers['career_ab']
 
     # Criterio Unificado de Ingesta para Bateadores:
-    # 1. Volumen de carrera: MLB >= 1,000 AB | NLB >= 500 AB
+    # 1. Volumen de carrera: MLB >= 1,000 AB | NLB (oficial o pionero) >= 500 AB
     # 2. Calidad / Estrellato Joven: (career_war >= 5.0 OR peak_war >= 5.0) AND career_ab >= 350
     # 3. Reconocimiento Histórico: HoF incondicional OR (All-Star AND career_ab >= 100)
     c_war = no_pitchers["career_war"].fillna(0) if "career_war" in no_pitchers.columns else pd.Series(0, index=no_pitchers.index)
@@ -710,29 +717,120 @@ def paso_8_filtro_ingesta(df, allstar, hof, pure_pitcher_ids, batting):
 
     eligible["allstar_selections"] = eligible["allstar_selections"].fillna(0).astype(int)
 
-    # Comprehensive list of all Negro League lgID codes in Seamheads / Lahman:
-    nl_leagues = {'NNL', 'NN2', 'NAL', 'ECL', 'ANL', 'EWL', 'NSL', 'IND', 'EAS', 'NN1'}
-    if not batting.empty and 'lgID' in batting.columns:
-        nl_ab_df = batting[batting['lgID'].isin(nl_leagues)].groupby('playerID')['AB'].sum().reset_index().rename(columns={'AB': 'nlb_ab'})
-        mlb_ab_df = batting[~batting['lgID'].isin(nl_leagues)].groupby('playerID')['AB'].sum().reset_index().rename(columns={'AB': 'mlb_ab'})
-        eligible = eligible.merge(nl_ab_df, on='playerID', how='left').merge(mlb_ab_df, on='playerID', how='left')
-        eligible['nlb_ab'] = eligible['nlb_ab'].fillna(0)
-        eligible['mlb_ab'] = eligible['mlb_ab'].fillna(0)
-        eligible['league_group'] = np.where(eligible['nlb_ab'] > eligible['mlb_ab'], 'NLB', 'MLB')
-        eligible = eligible.drop(columns=['nlb_ab', 'mlb_ab'])
-    else:
-        eligible['league_group'] = 'MLB'
-
     print(f"  Card Pool elegible: {len(eligible):,} jugadores")
     return eligible
 
 
 # ===========================================================================
-# PASO 9 - ASIGNAR ERA TEMATICA
+# PASO 9 - ASIGNAR ERA TEMATICA (80% WAR Pico + 20% WAR Carrera por Era)
 # ===========================================================================
-def paso_9_asignar_era(df):
-    print("\n  PASO 9: Asignando Era Tematica por peak_year...")
+def paso_9_asignar_era(df, war_bat=None, people=None, batting=None):
+    """
+    Asigna la Era temática usando el mismo sistema 80/20 de WAR que se usa
+    para seleccionar el equipo canónico.
+    
+    era_score(era) = 0.80 * WAR_Peak7_en_esa_era + 0.20 * WAR_Career_en_esa_era
+    
+    Si no hay datos de WAR (NLB sin bbrefID, pioneros), cae al assign_era(peak_year).
+    """
+    print("\n  PASO 9: Asignando Era Tematica (80/20 WAR por Era)...")
+
+    # Fallback: era simple por peak_year
     df["era_label"] = df["peak_year"].apply(assign_era)
+
+    if war_bat is None or war_bat.empty or people is None or people.empty:
+        for era, cnt in df["era_label"].value_counts().sort_index().items():
+            print(f"    {era[:46]:<46}: {cnt:4,}")
+        return df
+
+    # Mapeo bbrefID -> playerID
+    id_map = people[["playerID", "bbrefID"]].dropna(subset=["bbrefID"])
+    war = war_bat.copy()
+    war["WAR"] = pd.to_numeric(war["WAR"].replace("NULL", 0), errors="coerce").fillna(0)
+    war_merged = war.merge(id_map, left_on="player_ID", right_on="bbrefID", how="inner")
+
+    # Asignar era a cada temporada de WAR
+    war_merged["era_label_w"] = war_merged["year_ID"].apply(assign_era)
+
+    # WAR por jugador x era (carrera completa)
+    career_era_war = war_merged.groupby(["playerID", "era_label_w"])["WAR"].sum().reset_index(name="career_war_e")
+
+    # WAR por jugador x era (solo temporadas de pico 7)
+    if "peak_year" in df.columns:
+        # Reconstruir peak_years del df actual
+        peak_rows = []
+        for _, row in df[["playerID", "peak_year"]].dropna().iterrows():
+            peak_rows.append({"playerID": row["playerID"], "year_ID": int(row["peak_year"])})
+        # Pico: usamos las temporadas que el ETL ya seleccionó (columna peak_year = año central del pico)
+        # Como aproximación conservadora usamos ±3 años del peak_year para capturar las 7 temporadas
+        peak_years_set = {}
+        for _, row in df[["playerID", "peak_year"]].dropna().iterrows():
+            pid = row["playerID"]
+            py = int(row["peak_year"])
+            peak_years_set.setdefault(pid, set()).update(range(py - 3, py + 4))
+
+        def in_peak(r):
+            pid = r["playerID"]
+            yr = r["year_ID"]
+            return yr in peak_years_set.get(pid, set())
+
+        peak_war_df = war_merged[war_merged.apply(in_peak, axis=1)]
+        peak_era_war = peak_war_df.groupby(["playerID", "era_label_w"])["WAR"].sum().reset_index(name="peak_war_e")
+    else:
+        peak_era_war = career_era_war.rename(columns={"career_war_e": "peak_war_e", "era_label_w": "era_label_w"})
+
+    merged_era = career_era_war.merge(peak_era_war, on=["playerID", "era_label_w"], how="outer").fillna(0.0)
+    merged_era["era_score"] = 0.80 * merged_era["peak_war_e"] + 0.20 * merged_era["career_war_e"]
+
+    best_era = (
+        merged_era.sort_values("era_score", ascending=False)
+                  .drop_duplicates(subset="playerID")
+                  .rename(columns={"era_label_w": "era_label_war"})
+    )
+
+    df = df.merge(best_era[["playerID", "era_label_war"]], on="playerID", how="left")
+    # Usar la era WAR cuando está disponible; fallback al simple para NLB / pioneros sin bbrefID
+    df["era_label"] = df["era_label_war"].fillna(df["era_label"])
+    df.drop(columns=["era_label_war"], inplace=True)
+
+    # Regla Pionera para Negro Leagues pre-1920:
+    # Seamheads / Baseball-Reference NO calculo WAR para ligas negras pre-1920 (WAR=0.0).
+    # Como los calendarios pre-1920 eran mas cortos (25-45 juegos vs 70-90 en los años 20),
+    # se evalua equivalencia de temporadas o turnos ponderados (1.8x):
+    # Asigna a Deadball (1901-1919) si debutó entre 1901 y 1919 y:
+    #   a) Disputó al menos el 50% de sus temporadas en Deadball (dead_seasons >= post_seasons y dead_seasons >= 5), o
+    #   b) Al menos el 45% de sus AB equivalentes ocurrieron en Deadball.
+    if batting is not None and not batting.empty:
+        nl_all_leagues = {'NNL', 'NN2', 'NAL', 'ECL', 'ANL', 'EWL', 'NSL', 'NN1', 'IND', 'EAS', 'WES', 'NAC', 'INT'}
+        nl_bat = batting[batting['lgID'].isin(nl_all_leagues)].copy()
+        if not nl_bat.empty:
+            pioneer_pids = set(nl_bat['playerID'].unique())
+            deadball_bat = nl_bat[(nl_bat['yearID'] >= 1901) & (nl_bat['yearID'] <= 1919)]
+            post_bat     = nl_bat[nl_bat['yearID'] >= 1920]
+
+            dead_ab = deadball_bat.groupby('playerID')['AB'].sum().to_dict()
+            post_ab = post_bat.groupby('playerID')['AB'].sum().to_dict()
+            dead_seasons = deadball_bat.groupby('playerID')['yearID'].nunique().to_dict()
+            post_seasons = post_bat.groupby('playerID')['yearID'].nunique().to_dict()
+
+            for idx, r in df.iterrows():
+                pid = r['playerID']
+                debut = r.get('debut_year', 1930)
+                if pid in pioneer_pids and debut >= 1901 and debut < 1920:
+                    d_ab = dead_ab.get(pid, 0)
+                    p_ab = post_ab.get(pid, 0)
+                    d_s  = dead_seasons.get(pid, 0)
+                    p_s  = post_seasons.get(pid, 0)
+
+                    equiv_dead_ab = d_ab * 1.8
+                    tot_equiv_ab = equiv_dead_ab + p_ab
+                    equiv_pct = (equiv_dead_ab / max(1, tot_equiv_ab))
+
+                    season_parity = (d_s >= p_s) and (d_s >= 5)
+
+                    if season_parity or (equiv_pct >= 0.45):
+                        df.at[idx, 'era_label'] = 'Deadball (1901-1919)'
+
     for era, cnt in df["era_label"].value_counts().sort_index().items():
         print(f"    {era[:46]:<46}: {cnt:4,}")
     return df
@@ -746,17 +844,17 @@ def paso_10_atributos_raw_bateo(df):
     Formulas sobre metricas hibridas (k_rate y bb_rate ya corregidos con PA):
 
     CON = 0.80 * BA_Suavizado + 0.20 * (1 - k_rate_Final)
-         Suavizado Bayesiano suave (m = 50 AB) para muestras pequeñas.
+         Suavizado Bayesiano fuerte (m = 900 AB / 2 temporadas) con descuento por oposición independiente.
 
     PWR = 0.50 * ISO_Final + 0.30 * XBH_rate_Final + 0.20 * HR_rate_Final
-         Poder real de bate en extra-bases.
+         Poder real de bate en extra-bases con suavizado (m = 1,000 PA).
 
     EYE = bb_rate_Final  (100% tasa de boletos - paciencia pura)
     """
-    print("\n  PASO 10: Atributos RAW de bateo (CON, PWR, EYE)...")
+    print("\n  PASO 10: Atributos RAW de bateo (CON, PWR, EYE) con Ancla m=2 y Descuento Pionero...")
     df = df.copy()
 
-    # Bayesian sample-size smoothing (m = 500 PA for NLB players to temper small-sample variance)
+    # Bayesian sample-size smoothing (m = 1000 PA / m = 900 AB = 2 full seasons anchor)
     ab = df["peak_ab"].fillna(df["career_ab"]).fillna(0)
     h  = df["peak_h"].fillna(df["career_h"]).fillna(0)
     pa = df["peak_pa"].fillna(df["career_pa"]).fillna(0)
@@ -767,17 +865,26 @@ def paso_10_atributos_raw_bateo(df):
     so = df["peak_so"].fillna(df["career_so"]).fillna(0)
 
     is_nlb = (df["league_group"] == "NLB") if "league_group" in df.columns else False
-    m_pa = 500
-    m_ab = 450
+    m_pa = 600
+    m_ab = 540
 
-    df["ba_smoothed"] = (h + m_ab * 0.265) / (ab + m_ab)
+    # Descuento de Competencia Independiente (Pioneer Nerf):
+    # Si el jugador jugó en circuitos independientes pre-1920 (IND, EAS, WES, NAC, INT),
+    # sus estadísticas ofensivas se descuentan proporcionalmente hasta un 22% por oposición semipro.
+    unoff_ab = df["unoff_ab"].fillna(0) if "unoff_ab" in df.columns else pd.Series(0, index=df.index)
+    career_ab_safe = df["career_ab"].replace(0, np.nan).fillna(1)
+    f_unoff = (unoff_ab / career_ab_safe).clip(0.0, 1.0)
+    comp_mult = 1.0 - (0.22 * f_unoff)
+
+    h_effective = h * comp_mult
+    df["ba_smoothed"] = (h_effective + m_ab * 0.265) / (ab + m_ab)
 
     # Unified Era Normalization for Contact (100% Era-Relative BA puro)
     era_ba_means = df.groupby("era_label")["ba_smoothed"].transform("mean")
     df["contact_raw"] = df["ba_smoothed"] / era_ba_means.replace(0, 0.260)
 
     # Suavizado Bayesiano de Boletos (EYE)
-    df["eye_raw"] = (bb + m_pa * 0.085) / (pa + m_pa)
+    df["eye_raw"] = (bb * comp_mult + m_pa * 0.085) / (pa + m_pa)
 
     # Suavizado Bayesiano de Ponches (K/AVD) para NLB con datos faltantes
     era_k_means = df.groupby("era_label")["k_rate"].transform(lambda s: s[s >= 0.020].mean() if len(s[s >= 0.020]) > 0 else 0.070)
@@ -786,20 +893,21 @@ def paso_10_atributos_raw_bateo(df):
     k_imputed = (so + m_pa * era_k_means) / (pa + m_pa)
     df["k_rate_clean"] = np.where(is_missing_so, k_imputed, df["k_rate"].fillna(era_k_means))
 
-    # Bayesian sample-size smoothing for power metrics (m = 500 PA)
-    hr_smoothed = (hr + m_pa * 0.025) / (pa + m_pa)
-    tb_total = h + b2 + 2*b3 + 3*hr
+    # Bayesian sample-size smoothing for power metrics (m = 1,000 PA) con descuento de oposición
+    hr_effective = hr * comp_mult
+    hr_smoothed = (hr_effective + m_pa * 0.025) / (pa + m_pa)
+    tb_total = h_effective + (b2 * comp_mult) + 2*(b3 * comp_mult) + 3*hr_effective
     slg = np.where(ab > 0, tb_total / ab, 0)
-    iso_raw = np.where(ab > 0, slg - (h / ab), 0)
+    iso_raw = np.where(ab > 0, slg - (h_effective / ab), 0)
     iso_smoothed = (iso_raw * pa + m_pa * 0.140) / (pa + m_pa)
-    xbh_smoothed = (b2 + b3 + hr + m_pa * 0.075) / (pa + m_pa)
+    xbh_smoothed = ((b2 + b3 + hr) * comp_mult + m_pa * 0.075) / (pa + m_pa)
 
     df["power_raw"] = (
         hr_smoothed  * 0.45 +
         iso_smoothed * 0.40 +
         xbh_smoothed * 0.15
     )
-    print("  contact_raw (100% BA), power_raw (m=500 PA smoothed), eye_raw, k_rate_clean calculados")
+    print("  contact_raw, power_raw, eye_raw con descuento de competencia pionera aplicados")
     return df
 
 
@@ -1171,7 +1279,9 @@ def paso_15_equipo_y_exportar(df, batting, teams, franchises, pico_df=None, war_
 
     team_to_franch = {}
     if not teams.empty and "teamID" in teams.columns and "franchID" in teams.columns:
-        team_to_franch = teams.set_index("teamID")["franchID"].to_dict()
+        # Sort so that early MLB franchises take precedence for shared codes (e.g. HAR 1876 Hartford > HAR 1931 Harlem Stars)
+        teams_dedup = teams.sort_values("yearID", ascending=True).drop_duplicates(subset="teamID", keep="first")
+        team_to_franch = teams_dedup.set_index("teamID")["franchID"].to_dict()
 
     def get_franch(tid):
         tid_str = str(tid).strip()
@@ -1217,6 +1327,23 @@ def paso_15_equipo_y_exportar(df, batting, teams, franchises, pico_df=None, war_
         df = df.merge(canonical[["playerID", "canonical_teamID"]], on="playerID", how="left")
     else:
         df["canonical_teamID"] = "UNK"
+
+    # For players not matched by WAR (no bbrefID, e.g. NLB players like Jim West),
+    # canonical_teamID is NaN. Fallback: most-played batting teamID.
+    null_team_mask = df["canonical_teamID"].isna() | (df["canonical_teamID"].astype(str) == "nan")
+    if null_team_mask.any() and not batting.empty:
+        missing_pids = df.loc[null_team_mask, "playerID"].tolist()
+        bat_counts = (
+            batting[batting["playerID"].isin(missing_pids)]
+            .groupby(["playerID", "teamID"])["AB"]
+            .sum()
+            .reset_index()
+            .sort_values("AB", ascending=False)
+            .drop_duplicates(subset="playerID")
+        )
+        bat_team_map = bat_counts.set_index("playerID")["teamID"].to_dict()
+        df.loc[null_team_mask, "canonical_teamID"] = df.loc[null_team_mask, "playerID"].map(bat_team_map).fillna("UNK")
+        print(f"    Fallback batting-team para {null_team_mask.sum()} jugadores sin bbrefID.")
 
     df["canonical_teamID"] = df.apply(map_to_canonical_team, axis=1)
     df["franchise_name"]   = df["canonical_teamID"]
@@ -1445,7 +1572,7 @@ def main():
     hybrid           = hybrid.merge(pos_data, on="playerID", how="left")
     hybrid           = paso_7_enriquecer_people(hybrid, people)
     eligible         = paso_8_filtro_ingesta(hybrid, allstar, hof, pure_pitcher_ids, batting)
-    eligible         = paso_9_asignar_era(eligible)
+    eligible         = paso_9_asignar_era(eligible, war_bat=war_bat, people=people, batting=batting)
     eligible         = paso_10_atributos_raw_bateo(eligible)
     eligible         = paso_11_motor_defensivo(eligible, war_bat, awards)
     eligible         = paso_12_normalizar_por_era(eligible)

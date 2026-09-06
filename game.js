@@ -948,7 +948,7 @@
     }
 
     resetRun() {
-      this.budget = 10;
+      this.budget = 25;
       this.currentStageIndex = 0;
       this.currentNodeIndex = 0;
       this.runActive = false;
@@ -1757,49 +1757,22 @@
               // Middle node of Trade Deadline stage → trade node
               type = 'trade';
             } else {
-              // Determine floor type by local index within zone
-              const zoneIdx   = this.getZoneForStage(s);
-              const zoneStart = this.getZoneStart(zoneIdx);
-              const localIdx  = s - zoneStart; // 0–5
-
+              // Dynamic map node distribution:
+              // - match (Serie Clásica): 30%
+              // - event (Decisión): 15%
+              // - train (Jaula de Bateo): 15%
+              // - rest (Casa Club / Clubhouse): 15%
+              // - chest (Cofre): 5%
+              // - gamble (Luck / Suerte): 5%
+              // - draft (Firma de Leyenda): 15% (restante)
               let roll = Math.random();
-              if (localIdx === 1) {
-                // Floor 2: varied openers — match, draft, luck/chest
-                if (roll < 0.40)      type = 'match';
-                else if (roll < 0.65) type = 'draft';
-                else if (roll < 0.82) type = 'gamble';
-                else                  type = 'chest';
-              } else if (localIdx === 2) {
-                // Floor 3: management & tactics
-                if (roll < 0.35)      type = 'match';
-                else if (roll < 0.55) type = 'event';
-                else if (roll < 0.75) type = 'train';
-                else if (roll < 0.88) type = 'draft';
-                else                  type = 'chest';
-              } else if (localIdx === 3) {
-                // Floor 4 (mid-boss floor): outer nodes — match / chest / event
-                if (roll < 0.45)      type = 'match';
-                else if (roll < 0.70) type = 'event';
-                else                  type = 'chest';
-              } else if (localIdx === 4) {
-                // Floor 5: pre-boss camp — ALWAYS guarantee a Clubhouse (rest) node in the center (idx === 1), with train/event/gamble on outer nodes
-                if (idx === 1) {
-                  type = 'rest';
-                } else {
-                  if (roll < 0.40)      type = 'train';
-                  else if (roll < 0.75) type = 'event';
-                  else                  type = 'gamble';
-                }
-              } else {
-                // Fallback: classic mix
-                if (roll < 0.30)      type = 'match';
-                else if (roll < 0.45) type = 'draft';
-                else if (roll < 0.60) type = 'event';
-                else if (roll < 0.75) type = 'train';
-                else if (roll < 0.90) type = 'rest';
-                else if (roll < 0.95) type = 'chest';
-                else                  type = 'gamble';
-              }
+              if (roll < 0.30)      type = 'match';
+              else if (roll < 0.45) type = 'event';
+              else if (roll < 0.60) type = 'train';
+              else if (roll < 0.75) type = 'rest';
+              else if (roll < 0.80) type = 'chest';
+              else if (roll < 0.85) type = 'gamble';
+              else                  type = 'draft';
             }
           }
 

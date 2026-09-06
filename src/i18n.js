@@ -67,7 +67,7 @@
         "tto_d1": "T1 (2+): +2 PWR al equipo; HR y Boletos (BB) hacen +5 daño extra",
         "tto_d2": "T2 (4+): +3 PWR y +2 EYE; HR y BB hacen +10 daño; Ponches hacen -25% daño al equipo",
         "tto_d3": "T3 (6+): +5 PWR y +4 EYE; HR y BB hacen +15 daño; Ponches hacen -50% daño al equipo",
-        "tto_d4": "T4 (8+): +6 PWR y +6 EYE; HR y BB hacen +25 daño; Ponches hacen -50% daño y bateadores con PWR ≥ 80 tienen 50% de convertir outs en Jonrón (HR)",
+        "tto_d4": "T4 (8+): +6 PWR y +6 EYE; HR y BB hacen +25 daño; Ponches hacen -50% daño y bateadores con PWR ≥ 80 tienen 50% de convertir Ponches (SO) en Jonrón (HR)",
         "golden_d4": "T4 (8+): +12 PWR; hits +20 daño; extrabases infligen +25 daño adicional; y bateadores con PWR ≥ 80 siempre conectan extrabase en sus hits",
         "player_count_short": "{{count}} jug.",
         "syn_name_genesis": "Genesis Chaos (1871-1900)",
@@ -832,7 +832,7 @@
         "syn_deadball_cobb": "⏳ Small Ball: ¡Maestría de {{name}} (CON {{con}} ≥ 80) convierte Ponche en Sencillo (1B)! (+20 daño)",
         "syn_fivetool_shield": "🌟 Five-Tool: ¡Juego integral repara +{{amt}} Escudo al equipo!",
         "syn_moneyball_obp": "📊 Moneyball: ¡Ojo Clínico de {{name}} (EYE {{eye}} ≥ 80) rescata el turno y saca Boleto (BB)! (+40 daño, 4 turnos fatiga)",
-        "syn_tto_statcast_hr": "🚀 Three True Outcomes: ¡Ángulo de Statcast de {{name}} (PWR {{pwr}} ≥ 80) transforma Out en Jonrón (HR)! (+25 daño)",
+        "syn_tto_statcast_hr": "🚀 Three True Outcomes: ¡Ángulo de Statcast de {{name}} (PWR {{pwr}} ≥ 80) transforma Ponche en Jonrón (HR)! (+25 daño)",
         "syn_tto_hr": "🚀 Three True Outcomes: ¡Batazo de poder inflige +{{extra}} daño!"
     },
     "syn": {
@@ -1114,6 +1114,10 @@
             "desc": "Aumenta en +25% las probabilidades de éxito en eventos de Suerte (LUCK), Decisiones y Ruletas de Prototipos."
         },
         "heavy_artillery": {
+            "name": "🔨 Poder de Demolición",
+            "desc": "El daño remanente al noquear a un lanzador se transfiere al 100% al nuevo relevista (en lugar del 50% base)."
+        },
+        "artillery": {
             "name": "🔨 Poder de Demolición",
             "desc": "El daño remanente al noquear a un lanzador se transfiere al 100% al nuevo relevista (en lugar del 50% base)."
         }
@@ -1763,7 +1767,9 @@
             "risky_name": "Vendaje Biomecánico Infinito",
             "risky_text": "Probar Vendaje Biomecánico (+30 SPD, Inmune a Fatiga)",
             "suc_msg": "¡Resistencia infinita! El jugador nunca perderá energía (+30 SPD).",
-            "fail_msg": "¡El vendaje mal colocado provoca un tirón muscular! (-35 Stamina)."
+            "fail_msg": "¡El vendaje mal colocado provoca un tirón muscular! (-35 Stamina).",
+            "safe_stat_desc": "+15 SPD • -50% Gasto Energía",
+            "risky_stat_desc": "+30 SPD • Inmune a Fatiga"
         },
         "glove_gold": {
             "title": "Guante de Oro de Cuero Artesanal",
@@ -1803,7 +1809,9 @@
             "risky_name": "Armadura de Titanio de Receptor",
             "risky_text": "Probar Armadura de Titanio (+25 DEF, Inmune a Fatiga)",
             "suc_msg": "¡Blindaje total! El jugador nunca perderá energía (+25 DEF).",
-            "fail_msg": "¡Los impactos directos en la prueba agotan al jugador! (-35 Stamina)."
+            "fail_msg": "¡Los impactos directos en la prueba agotan al jugador! (-35 Stamina).",
+            "safe_stat_desc": "+15 DEF • -50% Gasto Energía",
+            "risky_stat_desc": "+25 DEF • Inmune a Fatiga"
         },
         "acc_glasses": {
             "title": "Lentes Polarizados de Alta Definición",
@@ -1843,7 +1851,9 @@
             "risky_name": "Chicle Dorado de Grand Slam",
             "risky_text": "Probar Chicle Dorado (+18 a Todos los Stats)",
             "suc_msg": "¡Aura de campeón! Chicle Dorado consumido (+18 a Todos los Stats).",
-            "fail_msg": "¡Indigestión estomacal! El jugador pierde -35 Stamina."
+            "fail_msg": "¡Indigestión estomacal! El jugador pierde -35 Stamina.",
+            "safe_stat_desc": "+10 a Todos los Stats",
+            "risky_stat_desc": "+18 a Todos los Stats"
         },
         "energy_drink": {
             "title": "Bebida Isotónica de Electrolitos",
@@ -1853,7 +1863,9 @@
             "risky_name": "Fórmula Energética Concentrada",
             "risky_text": "Probar Fórmula (+100% Energía, +5 CON/SPD/DEF Perm.)",
             "suc_msg": "¡Revitalización total! +100% Energía y +5 CON, +5 SPD, +5 DEF permanentes.",
-            "fail_msg": "¡Reacción alérgica a los electrolitos! El jugador pierde -35 Stamina."
+            "fail_msg": "¡Reacción alérgica a los electrolitos! El jugador pierde -35 Stamina.",
+            "safe_stat_desc": "+50 Energía",
+            "risky_stat_desc": "+100% Energía • +5 CON/SPD/DEF Perm."
         },
         "energy_icebath": {
             "title": "Baño de Hielo & Crioterapia",
@@ -1863,7 +1875,9 @@
             "risky_name": "Cámara Criogénica Avanzada",
             "risky_text": "Probar Cámara Criogénica (+70 Energía a Todo el Equipo)",
             "suc_msg": "¡Recuperación masiva! +70 de Energía restaurada a todo el equipo.",
-            "fail_msg": "¡Choque térmico en la cámara! El jugador de prueba pierde -35 Stamina."
+            "fail_msg": "¡Choque térmico en la cámara! El jugador de prueba pierde -35 Stamina.",
+            "safe_stat_desc": "+40 Energía Jugador • +20 Equipo",
+            "risky_stat_desc": "+70 Energía a Todo el Equipo"
         },
         "energy_massage": {
             "title": "Sesión de Masaje & Fisioterapia",
@@ -1873,7 +1887,9 @@
             "risky_name": "Tratamiento Quiropráctico Maestro",
             "risky_text": "Probar Sesión Maestra (+100% Energía, +10 EYE/K-AVD Perm.)",
             "suc_msg": "¡Claridad y relajación total! +100% Energía y +10 EYE, +10 K-AVD permanentes.",
-            "fail_msg": "¡Tirón muscular en la camilla! El jugador pierde -35 Stamina."
+            "fail_msg": "¡Tirón muscular en la camilla! El jugador pierde -35 Stamina.",
+            "safe_stat_desc": "+70 Energía",
+            "risky_stat_desc": "+100% Energía • +10 EYE/K-AVD Perm."
         },
         "energy_shake": {
             "title": "Batido de Proteína Concentrado",
@@ -1883,7 +1899,9 @@
             "risky_name": "Batido de Alta Potencia",
             "risky_text": "Probar Batido Concentrado (+80 Energía, +10 PWR Perm.)",
             "suc_msg": "¡Fuerza explosiva! +80 de Energía y +10 PWR permanente para siempre.",
-            "fail_msg": "¡Sobredosis de cafeína y fatiga! El jugador pierde -35 Stamina."
+            "fail_msg": "¡Sobredosis de cafeína y fatiga! El jugador pierde -35 Stamina.",
+            "safe_stat_desc": "+40 Energía • +5 PWR Perm.",
+            "risky_stat_desc": "+80 Energía • +10 PWR Perm."
         }
     },
     "equip": {
@@ -2044,7 +2062,7 @@
         "tto_d1": "T1 (2+): Team +2 PWR; HR and Walks (BB) deal +5 extra damage",
         "tto_d2": "T2 (4+): +3 PWR & +2 EYE; HR and BB deal +10 dmg; Strikeouts deal -25% damage to team",
         "tto_d3": "T3 (6+): +5 PWR & +4 EYE; HR and BB deal +15 dmg; Strikeouts deal -50% damage to team",
-        "tto_d4": "T4 (8+): +6 PWR & +6 EYE; HR and BB deal +25 dmg; Strikeouts deal -50% dmg and batters with PWR ≥ 80 have 50% chance to convert outs into Home Runs (HR)",
+        "tto_d4": "T4 (8+): +6 PWR & +6 EYE; HR and BB deal +25 dmg; Strikeouts deal -50% dmg and batters with PWR ≥ 80 have 50% chance to convert Strikeouts (SO) into Home Runs (HR)",
         "golden_d4": "T4 (8+): +12 PWR; hits +20 dmg; extra-base hits deal +25 additional damage; batters with PWR ≥ 80 always hit extra-base hits",
         "player_count_short": "{{count}} ply.",
         "syn_name_genesis": "Genesis Chaos (1871-1900)",
@@ -3740,7 +3758,9 @@
             "risky_name": "Infinite Biomechanical Wrap",
             "risky_text": "Test Biomechanical Wrap (+30 SPD, Fatigue Immune)",
             "suc_msg": "Infinite stamina! The player will never lose energy (+30 SPD).",
-            "fail_msg": "Improper wrapping causes a hamstring pull! (-35 Stamina)."
+            "fail_msg": "Improper wrapping causes a hamstring pull! (-35 Stamina).",
+            "safe_stat_desc": "+15 SPD • -50% Energy Drain",
+            "risky_stat_desc": "+30 SPD • Fatigue Immune"
         },
         "glove_gold": {
             "title": "Handcrafted Gold Leather Glove",
@@ -3780,7 +3800,9 @@
             "risky_name": "Titanium Catcher Armor",
             "risky_text": "Test Titanium Armor (+25 DEF, Fatigue Immune)",
             "suc_msg": "Complete shielding! The player will never lose energy (+25 DEF).",
-            "fail_msg": "Direct impacts during testing exhaust the player! (-35 Stamina)."
+            "fail_msg": "Direct impacts during testing exhaust the player! (-35 Stamina).",
+            "safe_stat_desc": "+15 DEF • -50% Energy Drain",
+            "risky_stat_desc": "+25 DEF • Fatigue Immune"
         },
         "acc_glasses": {
             "title": "High-Definition Polarized Shades",
@@ -3820,7 +3842,9 @@
             "risky_name": "Golden Grand Slam Gum",
             "risky_text": "Test Golden Gum (+18 to All Stats)",
             "suc_msg": "Championship aura! Golden Gum chewed (+18 to All Stats).",
-            "fail_msg": "Stomach indigestion! The player loses -35 Stamina."
+            "fail_msg": "Stomach indigestion! The player loses -35 Stamina.",
+            "safe_stat_desc": "+10 to All Stats",
+            "risky_stat_desc": "+18 to All Stats"
         },
         "energy_drink": {
             "title": "Electrolyte Isotonic Drink",
@@ -3830,7 +3854,9 @@
             "risky_name": "Concentrated Energy Formula",
             "risky_text": "Test Formula (+100% Energy, +5 CON/SPD/DEF Perm.)",
             "suc_msg": "Full revitalization! +100% Energy and +5 CON, +5 SPD, +5 DEF permanent.",
-            "fail_msg": "Allergic reaction to electrolytes! The player loses -35 Stamina."
+            "fail_msg": "Allergic reaction to electrolytes! The player loses -35 Stamina.",
+            "safe_stat_desc": "+50 Energy",
+            "risky_stat_desc": "+100% Energy • +5 CON/SPD/DEF Perm."
         },
         "energy_icebath": {
             "title": "Ice Bath & Cryotherapy",
@@ -3840,7 +3866,9 @@
             "risky_name": "Advanced Cryo Chamber",
             "risky_text": "Test Cryo Chamber (+70 Energy to All Team)",
             "suc_msg": "Massive recovery! +70 Energy restored to the entire squad.",
-            "fail_msg": "Thermal shock in chamber! The test player loses -35 Stamina."
+            "fail_msg": "Thermal shock in chamber! The test player loses -35 Stamina.",
+            "safe_stat_desc": "+40 Player Energy • +20 Team",
+            "risky_stat_desc": "+70 Energy to All Team"
         },
         "energy_massage": {
             "title": "Massage & Physical Therapy",
@@ -3850,7 +3878,9 @@
             "risky_name": "Master Chiropractic Treatment",
             "risky_text": "Test Master Session (+100% Energy, +10 EYE/K-AVD Perm.)",
             "suc_msg": "Total clarity and relaxation! +100% Energy and +10 EYE, +10 K-AVD permanent.",
-            "fail_msg": "Muscle strain on the table! The player loses -35 Stamina."
+            "fail_msg": "Muscle strain on the table! The player loses -35 Stamina.",
+            "safe_stat_desc": "+70 Energy",
+            "risky_stat_desc": "+100% Energy • +10 EYE/K-AVD Perm."
         },
         "energy_shake": {
             "title": "Concentrated Protein Shake",
@@ -3860,7 +3890,9 @@
             "risky_name": "High-Potency Heavy Shake",
             "risky_text": "Test High-Potency Shake (+80 Energy, +10 PWR Perm.)",
             "suc_msg": "Explosive power! +80 Energy and +10 permanent PWR forever.",
-            "fail_msg": "Caffeine overdose and fatigue! The player loses -35 Stamina."
+            "fail_msg": "Caffeine overdose and fatigue! The player loses -35 Stamina.",
+            "safe_stat_desc": "+40 Energy • +5 PWR Perm.",
+            "risky_stat_desc": "+80 Energy • +10 PWR Perm."
         }
     },
     "equip": {

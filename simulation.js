@@ -745,6 +745,21 @@
         }
 
         // ── STRIKEOUT ─────────────────────────────────────────────
+        // Modern Era T4: 50% chance for batters with PWR >= 80 to convert Strikeout into Home Run (HR)
+        if (modernTier === 4 && (effBatter.pwr || 50) >= 80 && Math.random() < 0.50) {
+          eventType = 'HR';
+          this.strikeoutChain = 0;
+          runsThisTurn = this._advanceHomeRun(batter);
+          const runnersOnBase = Math.max(0, runsThisTurn - 1);
+          let ttoDmg = 75 + (runnersOnBase * 10) + 25; // 75 base + 25 Modern Era T4 HR bonus
+          ttoDmg = this._applyDebuffToPitcherDmg(ttoDmg);
+          const ttoProc = _t('sim.syn_tto_statcast_hr', { name: batter.name, pwr: effBatter.pwr }, `🚀 Three True Outcomes: ¡Ángulo de Statcast de ${batter.name} (PWR ${effBatter.pwr} ≥ 80) transforma Ponche en Jonrón (HR)! (+25 daño)`);
+          playText = `🎲 [${roll}] [${_t('sim.label_hr', {}, 'HR')}] ¡${batter.name} ${_t('sim.hr_desc', { runs: runsThisTurn }, 'conecta CUADRANGULAR de ' + runsThisTurn + ' carreras')}! ` +
+            _t('sim.runs_scored', { runs: runsThisTurn, pitcher: pitcher.name, dmg: ttoDmg }, `Anotan ${runsThisTurn} carreras. ${pitcher.name} sufre ${ttoDmg} HP de daño.`) + ` ${ttoProc}`;
+          this._finalizeTurnEvent(batter, pitcher, roll, playText, 'HR', runsThisTurn, ttoDmg);
+          return this.events.slice(startIndex);
+        }
+
         eventType = 'SO';
         this.outs++;
         this.strikeoutChain++;
@@ -854,21 +869,6 @@
             playText = `🎲 [${roll}] [${_t('sim.label_bb', {}, 'BASE POR BOLAS')}] ¡${batter.name} ${_t('sim.bb_desc', {}, 'trabaja el conteo y saca pasaporte')}! ` +
               _t('sim.runs_scored', { runs: runsThisTurn, pitcher: pitcher.name, dmg: mbDmg }, `Anotan ${runsThisTurn} carreras. ${pitcher.name} sufre ${mbDmg} HP de daño.`) + ` ${mbProc}`;
             this._finalizeTurnEvent(batter, pitcher, roll, playText, 'BB', runsThisTurn, mbDmg);
-            return this.events.slice(startIndex);
-          }
-
-          // Modern Era T4: 50% chance for batters with PWR >= 80 to convert Out into Home Run (HR)
-          if (modernTier === 4 && (effBatter.pwr || 50) >= 80 && Math.random() < 0.50) {
-            eventType = 'HR';
-            this.strikeoutChain = 0;
-            runsThisTurn = this._advanceHomeRun(batter);
-            const runnersOnBase = Math.max(0, runsThisTurn - 1);
-            let ttoDmg = 75 + (runnersOnBase * 10) + 25; // 75 base + 25 Modern Era T4 HR bonus
-            ttoDmg = this._applyDebuffToPitcherDmg(ttoDmg);
-            const ttoProc = _t('sim.syn_tto_statcast_hr', { name: batter.name, pwr: effBatter.pwr }, `🚀 Three True Outcomes: ¡Ángulo de Statcast de ${batter.name} (PWR ${effBatter.pwr} ≥ 80) transforma Out en Jonrón (HR)! (+25 daño)`);
-            playText = `🎲 [${roll}] [${_t('sim.label_hr', {}, 'HR')}] ¡${batter.name} ${_t('sim.hr_desc', { runs: runsThisTurn }, 'conecta CUADRANGULAR de ' + runsThisTurn + ' carreras')}! ` +
-              _t('sim.runs_scored', { runs: runsThisTurn, pitcher: pitcher.name, dmg: ttoDmg }, `Anotan ${runsThisTurn} carreras. ${pitcher.name} sufre ${ttoDmg} HP de daño.`) + ` ${ttoProc}`;
-            this._finalizeTurnEvent(batter, pitcher, roll, playText, 'HR', runsThisTurn, ttoDmg);
             return this.events.slice(startIndex);
           }
 

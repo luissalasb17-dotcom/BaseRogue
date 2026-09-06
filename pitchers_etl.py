@@ -3,20 +3,21 @@ BaseRogue Pitchers ETL  -  v1.0
 Lahman Pitching.csv + war_daily_pitch.txt  ->  pitchers_pool.js
 
 Filtro de Ingesta:
-  GS_career >= 100  OR  G_career >= 150  OR  All-Star  OR  HoF
+  SP: career_ip >= 500.0 (MLB) | >= 250.0 (NLB)
+  RP: career_ip >= 300.0 (MLB) | >= 150.0 (NLB)
+  All-Star  OR  HoF  OR  Calidad/Estrellato Joven
 
 Pico: 7 mejores temporadas por WAR (no consecutivas)
-Ajuste por Era: mismo metodo OPS+ que bateadores (blend 75%)
-Rating principal: ERA+ ajustado, K/9, BB/9, HR/9 → atributos del juego
+Ajuste por Era: normalización relativa por Era temática
 
-Ratings para el juego:
-  STR  (Strikeout power)  → K/9 ajustado por era
-  CTL  (Control)          → BB/9 inverso ajustado por era
-  STA  (Stamina)          → IP/GS (duracion por apertura)
-  GRT  (Groundball/Tough) → ERA+ (calidad de efectividad)
-  DEF  (Fielding pitcher)  → rfield / proxy Lahman
+Suite de Atributos Oficial (MLB The Show Suite):
+  H/9  (Hit Suppression)    → Hits permitidos por 9 IP (menor es mejor → invert=True)
+  K/9  (Strikeouts)         → Ponches por 9 IP (mayor es mejor)
+  BB/9 (Control)            → Boletos por 9 IP (menor es mejor → invert=True)
+  HR/9 (Home Run Prevention)→ Jonrones permitidos por 9 IP (menor es mejor → invert=True)
+  STA  (Stamina)            → Innings promedio de trabajo por temporada en el pico
 
-OVR formula: STR*30 + CTL*25 + STA*20 + GRT*20 + DEF*5
+OVR formula: 20% H/9 + 20% K/9 + 20% BB/9 + 20% HR/9 + 20% STA
 
 Uso:
   pip install pandas numpy
@@ -601,19 +602,24 @@ def paso_5_filtro_ingesta(career, peak, allstar, hof, pure_pitcher_ids, pitching
     mask = df.apply(is_eligible, axis=1)
     eligible = df[mask].copy()
 
-    # Comprehensive list of all Negro League lgID codes in Seamheads / Lahman:
-    nl_leagues = {'NNL', 'NN2', 'NAL', 'ECL', 'ANL', 'EWL', 'NSL', 'IND', 'EAS', 'NN1'}
+    # List of all Negro League and Independent Pioneer leagues:
+    nl_official_leagues = {'NNL', 'NN2', 'NAL', 'ECL', 'ANL', 'EWL', 'NSL', 'NN1'}
+    nl_pioneer_leagues  = {'IND', 'EAS', 'WES', 'NAC', 'INT'}
+    nl_all_leagues      = nl_official_leagues | nl_pioneer_leagues
+
     if not pitching.empty and 'lgID' in pitching.columns:
-        nl_ip_df = pitching[pitching['lgID'].isin(nl_leagues)].groupby('playerID')['IPouts'].sum().reset_index().rename(columns={'IPouts': 'nlb_ipouts'})
-        ml_ip_df = pitching[~pitching['lgID'].isin(nl_leagues)].groupby('playerID')['IPouts'].sum().reset_index().rename(columns={'IPouts': 'mlb_ipouts'})
+        nl_ip_df = pitching[pitching['lgID'].isin(nl_all_leagues)].groupby('playerID')['IPouts'].sum().reset_index().rename(columns={'IPouts': 'nlb_ipouts'})
+        unoff_ip_df = pitching[pitching['lgID'].isin(nl_pioneer_leagues)].groupby('playerID')['IPouts'].sum().reset_index().rename(columns={'IPouts': 'unoff_ipouts'})
+        ml_ip_df = pitching[~pitching['lgID'].isin(nl_all_leagues)].groupby('playerID')['IPouts'].sum().reset_index().rename(columns={'IPouts': 'mlb_ipouts'})
         
-        eligible = eligible.merge(nl_ip_df, on='playerID', how='left').merge(ml_ip_df, on='playerID', how='left')
+        eligible = eligible.merge(nl_ip_df, on='playerID', how='left').merge(ml_ip_df, on='playerID', how='left').merge(unoff_ip_df, on='playerID', how='left')
         eligible['nlb_ipouts'] = eligible['nlb_ipouts'].fillna(0)
         eligible['mlb_ipouts'] = eligible['mlb_ipouts'].fillna(0)
+        eligible['unoff_ipouts'] = eligible['unoff_ipouts'].fillna(0)
         eligible['league_group'] = np.where(eligible['nlb_ipouts'] > eligible['mlb_ipouts'], 'NLB', 'MLB')
-        eligible = eligible.drop(columns=['nlb_ipouts', 'mlb_ipouts'])
     else:
         eligible['league_group'] = 'MLB'
+        eligible['unoff_ipouts'] = 0
 
     print(f"  Elegibles: {len(eligible):,}  (SP: {(eligible['role']=='SP').sum():,} | RP: {(eligible['role']=='RP').sum():,})")
     return eligible
@@ -669,10 +675,95 @@ def paso_6_enriquecer_people(df, people):
     return result
 
 
-# ── PASO 7: Asignar Era temática ──────────────────────────────────────────────
-def paso_7_asignar_era(df):
-    print("\n  PASO 7: Asignando Era Tematica por peak_year...")
+# ── PASO 7: Asignar Era temática (80% WAR Pico + 20% WAR Carrera por Era) ────
+def paso_7_asignar_era(df, war_pit=None, people=None, pitching=None):
+    """
+    Asigna Era temática usando el mismo sistema 80/20 WAR que batters.
+    era_score(era) = 0.80 * WAR_Peak7_en_era + 0.20 * WAR_Career_en_era
+    Fallback a assign_era(peak_year) para pitchers NLB sin bbrefID.
+    """
+    print("\n  PASO 7: Asignando Era Tematica (80/20 WAR por Era)...")
     df["era_label"] = df["peak_year"].apply(assign_era)
+
+    if war_pit is None or war_pit.empty or people is None or people.empty:
+        for era, cnt in df["era_label"].value_counts().sort_index().items():
+            print(f"    {era[:46]:<46}: {cnt:4,}")
+        return df
+
+    id_map = people[["playerID", "bbrefID"]].dropna(subset=["bbrefID"])
+    war = war_pit.copy()
+    war["WAR"] = pd.to_numeric(war["WAR"].replace("NULL", 0), errors="coerce").fillna(0)
+    war_merged = war.merge(id_map, left_on="player_ID", right_on="bbrefID", how="inner")
+    war_merged["era_label_w"] = war_merged["year_ID"].apply(assign_era)
+
+    career_era_war = war_merged.groupby(["playerID", "era_label_w"])["WAR"].sum().reset_index(name="career_war_e")
+
+    if "peak_year" in df.columns:
+        peak_years_set = {}
+        for _, row in df[["playerID", "peak_year"]].dropna().iterrows():
+            pid = row["playerID"]
+            py = int(row["peak_year"])
+            peak_years_set.setdefault(pid, set()).update(range(py - 3, py + 4))
+
+        def in_peak(r):
+            return r["year_ID"] in peak_years_set.get(r["playerID"], set())
+
+        peak_war_df = war_merged[war_merged.apply(in_peak, axis=1)]
+        peak_era_war = peak_war_df.groupby(["playerID", "era_label_w"])["WAR"].sum().reset_index(name="peak_war_e")
+    else:
+        peak_era_war = career_era_war.rename(columns={"career_war_e": "peak_war_e"})
+
+    merged_era = career_era_war.merge(peak_era_war, on=["playerID", "era_label_w"], how="outer").fillna(0.0)
+    merged_era["era_score"] = 0.80 * merged_era["peak_war_e"] + 0.20 * merged_era["career_war_e"]
+
+    best_era = (
+        merged_era.sort_values("era_score", ascending=False)
+                  .drop_duplicates(subset="playerID")
+                  .rename(columns={"era_label_w": "era_label_war"})
+    )
+
+    df = df.merge(best_era[["playerID", "era_label_war"]], on="playerID", how="left")
+    df["era_label"] = df["era_label_war"].fillna(df["era_label"])
+    df.drop(columns=["era_label_war"], inplace=True)
+
+    # Regla Pionera para Negro Leagues pre-1920:
+    # Seamheads / Baseball-Reference NO calculo WAR para ligas negras pre-1920 (WAR=0.0).
+    # Como los calendarios pre-1920 eran mas cortos (10-30 juegos vs 70-80 en los años 20),
+    # se evalua equivalencia de temporadas o entradas ponderadas (1.8x):
+    # Asigna a Deadball (1901-1919) si debutó entre 1901 y 1919 y:
+    #   a) Disputó al menos el 50% de sus temporadas en Deadball (dead_seasons >= post_seasons y dead_seasons >= 5), o
+    #   b) Al menos el 45% de sus IP equivalentes ocurrieron en Deadball.
+    if pitching is not None and not pitching.empty:
+        nl_all_leagues = {'NNL', 'NN2', 'NAL', 'ECL', 'ANL', 'EWL', 'NSL', 'NN1', 'IND', 'EAS', 'WES', 'NAC', 'INT'}
+        nl_pit = pitching[pitching['lgID'].isin(nl_all_leagues)].copy()
+        if not nl_pit.empty:
+            pioneer_pids = set(nl_pit['playerID'].unique())
+            deadball_pit = nl_pit[(nl_pit['yearID'] >= 1901) & (nl_pit['yearID'] <= 1919)]
+            post_pit     = nl_pit[nl_pit['yearID'] >= 1920]
+
+            dead_ip = deadball_pit.groupby('playerID')['IPouts'].sum().to_dict()
+            post_ip = post_pit.groupby('playerID')['IPouts'].sum().to_dict()
+            dead_seasons = deadball_pit.groupby('playerID')['yearID'].nunique().to_dict()
+            post_seasons = post_pit.groupby('playerID')['yearID'].nunique().to_dict()
+
+            for idx, r in df.iterrows():
+                pid = r['playerID']
+                debut = r.get('debut_year', 1930)
+                if pid in pioneer_pids and debut >= 1901 and debut < 1920:
+                    d_ip = dead_ip.get(pid, 0)
+                    p_ip = post_ip.get(pid, 0)
+                    d_s  = dead_seasons.get(pid, 0)
+                    p_s  = post_seasons.get(pid, 0)
+
+                    equiv_dead_ip = d_ip * 1.8
+                    tot_equiv_ip = equiv_dead_ip + p_ip
+                    equiv_pct = (equiv_dead_ip / max(1, tot_equiv_ip))
+
+                    season_parity = (d_s >= p_s) and (d_s >= 5)
+
+                    if season_parity or (equiv_pct >= 0.45):
+                        df.at[idx, 'era_label'] = 'Deadball (1901-1919)'
+
     for era, cnt in df["era_label"].value_counts().sort_index().items():
         print(f"    {era[:46]:<46}: {cnt:4,}")
     return df
@@ -681,13 +772,13 @@ def paso_7_asignar_era(df):
 # ── PASO 8: Atributos RAW de pitching (MLB The Show Suite: H/9, K/9, BB/9, HR/9, STA) ──
 def paso_8_atributos_raw(df):
     """
-    H9_raw:  H/9  → Hits permitidos por 9 IP (menor es mejor → invert=True) con suavizado bayesiano (m=40 IP a 8.5 H/9)
-    K9_raw:  K/9  → Ponches por 9 IP (mayor es mejor → invert=False) con suavizado bayesiano (m=40 IP a 5.5 K/9)
-    BB9_raw: BB/9 → Paseos por 9 IP (menor es mejor → invert=True) con suavizado bayesiano (m=40 IP a 3.2 BB/9)
-    HR9_raw: HR/9 → Jonrones por 9 IP (menor es mejor → invert=True) con suavizado bayesiano (m=40 IP a 0.9 HR/9)
-    STA_raw: IP por salida (Innings promedio por aparicion en el pico)
+    H9_raw:  H/9  → Hits permitidos por 9 IP con suavizado bayesiano m=400 IP y ajuste por oposición semipro
+    K9_raw:  K/9  → Ponches por 9 IP con suavizado bayesiano m=400 IP
+    BB9_raw: BB/9 → Paseos por 9 IP con suavizado bayesiano m=400 IP
+    HR9_raw: HR/9 → Jonrones por 9 IP con suavizado bayesiano m=400 IP
+    STA_raw: IP por salida
     """
-    print("\n  PASO 8: Atributos RAW de pitching (MLB The Show Suite: H/9, K/9, BB/9, HR/9, STA)...")
+    print("\n  PASO 8: Atributos RAW de pitching con Ancla m=400 IP y Descuento Pionero...")
     df = df.copy()
 
     ip_k = df["peak_ip"].fillna(df["career_ip"]).fillna(0)
@@ -696,26 +787,39 @@ def paso_8_atributos_raw(df):
     bb_k = df["peak_bb"].fillna(0)
     hr_k = df["peak_hr_a"].fillna(0)
 
-    # Suavizado bayesiano: m = 200 IP unificado para todos (equivalente a 1 temporada de lanzador abridor)
-    m_ip = 200.0
+    # Descuento de Competencia Independiente para Pitchers:
+    unoff_ip = (df["unoff_ipouts"].fillna(0) / 3.0) if "unoff_ipouts" in df.columns else pd.Series(0, index=df.index)
+    career_ip_safe = df["career_ip"].replace(0, np.nan).fillna(1.0)
+    f_unoff = (unoff_ip / career_ip_safe).clip(0.0, 1.0)
 
-    df["h9_raw"]  = (h_k  + m_ip * (8.5 / 9.0)) / (ip_k + m_ip) * 9.0
-    df["k9_raw"]  = (so_k + m_ip * (5.5 / 9.0)) / (ip_k + m_ip) * 9.0
-    df["bb9_raw"] = (bb_k + m_ip * (3.2 / 9.0)) / (ip_k + m_ip) * 9.0
-    df["hr9_raw"] = (hr_k + m_ip * (0.9 / 9.0)) / (ip_k + m_ip) * 9.0
+    # Ajuste: se incrementan los hits (+18%) y se reducen los ponches (-20%) frente a bateadores locales
+    h_k_adj  = h_k * (1.0 + 0.18 * f_unoff)
+    so_k_adj = so_k * (1.0 - 0.20 * f_unoff)
 
-    # Aliases de compatibilidad
-    df["str_raw"] = df["k9_raw"]
-    df["ctl_raw"] = df["bb9_raw"]
-    df["hr_raw"]  = df["hr9_raw"]
+    # Suavizado bayesiano calibrado: m = 250.0 IP (equivalente a 1 temporada completa de as abridor)
+    m_ip = 250.0
 
-    # IP anual promedio en el pico con factor de calendario 2.0x para NLB
-    is_nlb = df["is_nlb"].fillna(False) if "is_nlb" in df.columns else False
-    nlb_calendar_mult = np.where(is_nlb, 2.0, 1.0)
+    # Prior de HR/9 contextual según Era para evitar castigar pitchers del Deadball/Genesis:
+    era_str = df["era_label"].fillna("")
+    is_dead_or_gen = era_str.str.contains("Genesis|Deadball", case=False, na=False)
+    is_gold = era_str.str.contains("Golden", case=False, na=False)
+    hr_prior = np.where(is_dead_or_gen, 0.20, np.where(is_gold, 0.45, 0.90))
+
+    df["h9_raw"]  = (h_k_adj  + m_ip * (8.5 / 9.0)) / (ip_k + m_ip) * 9.0
+    df["k9_raw"]  = (so_k_adj + m_ip * (5.5 / 9.0)) / (ip_k + m_ip) * 9.0
+    df["bb9_raw"] = (bb_k     + m_ip * (3.2 / 9.0)) / (ip_k + m_ip) * 9.0
+    df["hr9_raw"] = (hr_k     + m_ip * (hr_prior / 9.0)) / (ip_k + m_ip) * 9.0
+
+    # Factor de expansion de calendario para NLB:
+    # 2.0x para ligas NLB oficiales (1920-1948, temporadas de 70-80 juegos vs 154 MLB)
+    # 3.5x para circuitos pioneros independientes pre-1920 (IND, EAS, WES, etc. con 10-25 juegos documentados por año)
+    is_nlb = (df["league_group"] == "NLB") if "league_group" in df.columns else False
+    is_pioneer = (f_unoff >= 0.50) & is_nlb
+    nlb_calendar_mult = np.where(is_pioneer, 3.5, np.where(is_nlb, 2.0, 1.0))
     df["ip_per_year_raw"] = df["ip_per_year"].fillna(50.0) * nlb_calendar_mult
     df["sta_raw"] = df["ip_per_year_raw"]
 
-    print("  h9_raw, k9_raw, bb9_raw, hr9_raw, sta_raw calculados con suavizado Bayesiano (m=200)")
+    print("  h9_raw, k9_raw, bb9_raw, hr9_raw, sta_raw calculados con suavizado Bayesiano (m=250 IP)")
     return df
 
 
@@ -776,14 +880,7 @@ def paso_10_normalizar_por_era(df):
         era_mean = df.groupby("norm_era")[col].transform("mean")
         df[col] = (weight_seasons * df[col] + (1.0 - weight_seasons) * era_mean).round(1)
 
-    # Aliases para compatibilidad con UI y simulador
-    df["stf_val"] = df["k9_val"]
-    df["str_val"] = df["k9_val"]
-    df["ctl_val"] = df["bb9_val"]
-    df["mov_val"] = df["hr9_val"]
-    df["grt_val"] = df["h9_val"]
-
-    print("  h9_val, k9_val, bb9_val, hr9_val, sta_val normalizados con sub-era Genesis y suavizados por temporadas (m=1)")
+    print("  h9_val, k9_val, bb9_val, hr9_val, sta_val normalizados por Era (MLB The Show Suite)")
     return df
 
 
@@ -951,7 +1048,8 @@ def paso_12_exportar(df, pitching, teams, franchises, pico_df=None, war_pitch=No
 
     team_to_franch = {}
     if not teams.empty and "teamID" in teams.columns and "franchID" in teams.columns:
-        team_to_franch = teams.set_index("teamID")["franchID"].to_dict()
+        teams_dedup = teams.sort_values("yearID", ascending=True).drop_duplicates(subset="teamID", keep="first")
+        team_to_franch = teams_dedup.set_index("teamID")["franchID"].to_dict()
 
     def get_franch(tid):
         tid_str = str(tid).strip()
@@ -1024,9 +1122,7 @@ def paso_12_exportar(df, pitching, teams, franchises, pico_df=None, war_pitch=No
         "peak_war", "peak_h9", "peak_k9", "peak_bb9", "peak_hr9", "peak_era", "peak_era_plus",
         "peak_ip_per_gs",
         "h9_val", "k9_val", "bb9_val", "hr9_val", "sta_val",
-        "stf_val", "str_val", "ctl_val", "mov_val", "grt_val",
         "h9_grade", "k9_grade", "bb9_grade", "hr9_grade", "sta_grade",
-        "str_grade", "ctl_grade", "grt_grade",
         "ovr", "rarity",
         "is_allstar", "is_hof", "allstar_selections",
         "defense_source",
@@ -1054,7 +1150,7 @@ def paso_12_exportar(df, pitching, teams, franchises, pico_df=None, war_pitch=No
     # ── JS ───────────────────────────────────────────────────────────────────
     js_lines = [
         "// AUTO-GENERADO por pitchers_etl.py v1.0 - NO EDITAR MANUALMENTE",
-        f"// Total: {len(final):,} cartas de pitchers  |  Peak 7 temporadas por WAR  |  Ajuste por Era OPS+",
+        f"// Total: {len(final):,} cartas de pitchers  |  Peak 7 temporadas por WAR  |  MLB The Show Suite",
         "(function() {",
         "  const PITCHERS_POOL = [",
     ]
@@ -1071,13 +1167,9 @@ def paso_12_exportar(df, pitching, teams, franchises, pico_df=None, war_pitch=No
             f'h9: {int(r["h9_val"])}, k9: {int(r["k9_val"])}, '
             f'bb9: {int(r["bb9_val"])}, hr9: {int(r["hr9_val"])}, '
             f'sta: {int(r["sta_val"])}, '
-            f'stf: {int(r["k9_val"])}, ctl: {int(r["bb9_val"])}, '
-            f'mov: {int(r["hr9_val"])}, grt: {int(r["h9_val"])}, '
             f'h9_grade: "{r["h9_grade"]}", k9_grade: "{r["k9_grade"]}", '
             f'bb9_grade: "{r["bb9_grade"]}", hr9_grade: "{r["hr9_grade"]}", '
             f'sta_grade: "{r["sta_grade"]}", '
-            f'str_grade: "{r["k9_grade"]}", ctl_grade: "{r["bb9_grade"]}", '
-            f'grt_grade: "{r["h9_grade"]}", '
             f'ovr: {float(r["ovr"]):.1f}, '
             f'rarity: "{r["rarity"]}", '
             f'allstars: {int(r["allstar_selections"])}, '
@@ -1089,7 +1181,9 @@ def paso_12_exportar(df, pitching, teams, franchises, pico_df=None, war_pitch=No
             f'era_plus: {0.0 if pd.isna(r.get("peak_era_plus")) else float(r["peak_era_plus"]):.1f}, '
             f'war_peak: {float(r.get("peak_war", 0.0)):.1f}, '
             f'career_gs: {int(r.get("career_gs", 0))}, '
-            f'career_sv: {int(r.get("career_sv", 0))} '
+            f'career_sv: {int(r.get("career_sv", 0))}, '
+            f'playerID: "{str(r.get("playerID", "")).replace(chr(34), "")}", '
+            f'bbrefID: "{str(r.get("bbrefID", "nan") if pd.notna(r.get("bbrefID")) else "").replace(chr(34), "")}" '
             f'}},'
         )
     js_lines += [
@@ -1111,24 +1205,24 @@ def paso_12_exportar(df, pitching, teams, franchises, pico_df=None, war_pitch=No
 # ── REPORTE FINAL ────────────────────────────────────────────────────────────
 def reporte_final(df):
     print("\n" + "=" * 64)
-    print("  REPORTE FINAL - BaseRogue Pitchers Pool v1.0")
+    print("  REPORTE FINAL - BaseRogue Pitchers Pool v1.0 (MLB The Show Suite)")
     print("=" * 64)
     print(f"\n  Total de cartas: {len(df):,}")
     print(f"\n  Distribucion por Rareza:\n{df['rarity'].value_counts().to_string()}")
     print(f"\n  Distribucion por Era:\n{df['era'].value_counts().sort_index().to_string()}")
     print(f"\n  Distribucion por Rol:\n{df['role'].value_counts().to_string()}")
-    print("\n  Atributos promedio (escala 1-99):")
+    print("\n  Atributos promedio MLB The Show Suite (escala 1-99+):")
     for col, label in [
-        ("str_val","STR"), ("ctl_val","CTL"), ("grt_val","GRT"),
-        ("sta_val","STA"), ("def_val","DEF"), ("ovr","OVR"),
+        ("h9_val", "H/9"), ("k9_val", "K/9"), ("bb9_val", "BB/9"),
+        ("hr9_val", "HR/9"), ("sta_val", "STA"), ("ovr", "OVR"),
     ]:
         if col in df.columns:
-            print(f"    {label}: {df[col].mean():5.1f}  (min:{df[col].min():4.1f} max:{df[col].max():4.1f})")
+            print(f"    {label:<5}: {df[col].mean():5.1f}  (min:{df[col].min():4.1f} max:{df[col].max():4.1f})")
 
     print("\n  TOP 20 pitchers (por OVR):")
     top = df.nlargest(20, "ovr")[[
         "name", "role", "era", "peak_year_display", "rarity", "ovr",
-        "str_val", "ctl_val", "grt_val", "sta_val",
+        "h9_val", "k9_val", "bb9_val", "hr9_val", "sta_val",
         "peak_k9", "peak_bb9", "peak_era_plus", "peak_war", "allstar_selections", "is_hof"
     ]]
     pd.set_option("display.max_columns", 20)
@@ -1161,7 +1255,7 @@ def main():
     peak, pico_df = paso_4_pico_pitching(pitching, war_pitch, people)
     eligible      = paso_5_filtro_ingesta(career, peak, allstar, hof, pure_pitchers, pitching)
     eligible      = paso_6_enriquecer_people(eligible, people)
-    eligible      = paso_7_asignar_era(eligible)
+    eligible      = paso_7_asignar_era(eligible, war_pit=war_pitch, people=people, pitching=pitching)
     eligible      = paso_8_atributos_raw(eligible)
     eligible      = paso_9_fielding_pitchers(eligible, war_pitch, people)
     eligible      = paso_10_normalizar_por_era(eligible)

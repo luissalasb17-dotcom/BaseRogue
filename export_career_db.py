@@ -260,13 +260,13 @@ for _, row in people_df.iterrows():
                     career_map[full1] = stat_obj
                     career_map[norm(full1)] = stat_obj
 
-# Explicitly map all 3,452 game cards by playerID and name_year
+# Explicitly map all game cards and pitchers pool by playerID and name_year
 try:
     gc_df = pd.read_csv('game_cards.csv')
     for _, card in gc_df.iterrows():
         c_pid = str(card['playerID']).strip()
         c_name = str(card['name']).strip()
-        c_year = str(int(card['peak_year'])) if pd.notna(card['peak_year']) else ''
+        c_year = str(int(card['peak_year'])) if pd.notna(card.get('peak_year')) else ''
         if c_pid in pid_stats_db:
             c_obj = pid_stats_db[c_pid]
             career_map[c_pid] = c_obj
@@ -275,6 +275,21 @@ try:
                 career_map[norm(f"{c_name}_{c_year}")] = c_obj
 except Exception as e:
     print("Warning loading game_cards.csv for exact mapping:", e)
+
+try:
+    pitch_cards_df = pd.read_csv('pitchers_pool.csv')
+    for _, pcard in pitch_cards_df.iterrows():
+        p_pid = str(pcard['playerID']).strip()
+        p_name = str(pcard['name']).strip()
+        p_year = str(int(pcard['peak_year_display'])) if 'peak_year_display' in pcard and pd.notna(pcard['peak_year_display']) else (str(int(pcard['peak_year'])) if 'peak_year' in pcard and pd.notna(pcard['peak_year']) else '')
+        if p_pid in pid_stats_db:
+            p_obj = pid_stats_db[p_pid]
+            career_map[p_pid] = p_obj
+            if p_year:
+                career_map[f"{p_name}_{p_year}"] = p_obj
+                career_map[norm(f"{p_name}_{p_year}")] = p_obj
+except Exception as e:
+    print("Warning loading pitchers_pool.csv for exact mapping:", e)
 
 for k, v in MANUAL_OVERRIDE.items():
     career_map[k] = v
