@@ -731,6 +731,210 @@
     return Math.max(0.12, Math.min(0.92, p));
   }
 
+
+  // ── Pack Draft & Roster Match Helpers ─────────────────────────────────────
+  function getAllPositionsForPlayer(p) {
+    const positions = new Set();
+    const rawPosList = [
+      p.pos || p.pos_display || p.primary_pos || '',
+      p.sec_pos || p.secondary_pos || p.secondary_positions || ''
+    ];
+    rawPosList.forEach(raw => {
+      if (!raw) return;
+      const parts = String(raw).split(',').map(s => s.trim().toUpperCase()).filter(Boolean);
+      parts.forEach(part => {
+        if (part === 'OF') {
+          positions.add('LF');
+          positions.add('CF');
+          positions.add('RF');
+        } else if (part === 'IF') {
+          positions.add('1B');
+          positions.add('2B');
+          positions.add('3B');
+          positions.add('SS');
+        } else {
+          positions.add(part);
+        }
+      });
+    });
+    return positions;
+  }
+
+  function canPlayerFillSlot(p, slot) {
+    if (!p) return false;
+    if (slot === 'DH') return true;
+    const positions = getAllPositionsForPlayer(p);
+    return positions.has(slot.toUpperCase());
+  }
+
+  function calculateChallengeRosterSlots(pulledCards, finalize = false) {
+    const batters = pulledCards.filter(c => !c.role).sort((a, b) => (b.ovr || 50) - (a.ovr || 50));
+    const pitchers = pulledCards.filter(c => c.role).sort((a, b) => (b.ovr || 50) - (a.ovr || 50));
+
+    const lineup = { C: null, '1B': null, '2B': null, '3B': null, SS: null, LF: null, CF: null, RF: null, DH: null };
+    const overflowBatters = [];
+
+    const FIELD_ORDER = ['C', 'SS', 'CF', '2B', '3B', '1B', 'LF', 'RF'];
+    const matchSlot = { C: null, SS: null, CF: null, '2B': null, '3B': null, '1B': null, LF: null, RF: null };
+
+    function bpm(batterIdx, visited) {
+      const p = batters[batterIdx];
+      for (let i = 0; i < FIELD_ORDER.length; i++) {
+        const slot = FIELD_ORDER[i];
+        if (canPlayerFillSlot(p, slot) && !visited.has(slot)) {
+          visited.add(slot);
+          if (matchSlot[slot] === null || bpm(matchSlot[slot], visited)) {
+            matchSlot[slot] = batterIdx;
+            return true;
+          }
+        }
+      }
+      return false;
+    }
+
+    for (let i = 0; i < batters.length; i++) {
+      bpm(i, new Set());
+    }
+
+    const assignedIndices = new Set();
+    FIELD_ORDER.forEach(slot => {
+      const idx = matchSlot[slot];
+      if (idx !== null && idx !== undefined) {
+        lineup[slot] = batters[idx];
+        assignedIndices.add(idx);
+      }
+    });
+
+    for (let i = 0; i < batters.length; i++) {
+      if (!assignedIndices.has(i)) {
+        if (!lineup['DH']) {
+          lineup['DH'] = batters[i];
+          assignedIndices.add(i);
+        } else {
+          overflowBatters.push(batters[i]);
+        }
+      }
+    }
+
+    if (finalize || batters.length >= 9) {
+      const ALL_SLOTS = ['C', 'SS', 'CF', '2B', '3B', '1B', 'LF', 'RF', 'DH'];
+      ALL_SLOTS.forEach(slot => {
+        if (!lineup[slot] && overflowBatters.length > 0) {
+          lineup[slot] = overflowBatters.shift();
+        }
+      });
+    }
+
+    const sp = [null, null, null, null, null];
+    const rp = [null, null, null];
+    const usedPitchers = new Set();
+
+    const isSP = (p) => (p.role || 'SP').toUpperCase() === 'SP';
+    const spList = pitchers.filter(isSP);
+    const rpList = pitchers.filter(p => !isSP(p));
+
+    let spIdx = 0;
+    spList.forEach(p => {
+      if (spIdx < 5) {
+        sp[spIdx++] = p;
+        usedPitchers.add(pitcherUnlockKey(p));
+      }
+    });
+
+    let rpIdx = 0;
+    rpList.forEach(p => {
+      if (!usedPitchers.has(pitcherUnlockKey(p)) && rpIdx < 3) {
+        rp[rpIdx++] = p;
+        usedPitchers.add(pitcherUnlockKey(p));
+      }
+    });
+
+    spList.forEach(p => {
+      if (!usedPitchers.has(pitcherUnlockKey(p))) {
+        const emptyRp = rp.findIndex(s => s === null);
+        if (emptyRp !== -1) {
+          rp[emptyRp] = p;
+          usedPitchers.add(pitcherUnlockKey(p));
+        }
+      }
+    });
+
+    rpList.forEach(p => {
+      if (!usedPitchers.has(pitcherUnlockKey(p))) {
+        const emptySp = sp.findIndex(s => s === null);
+        if (emptySp !== -1) {
+          sp[emptySp] = p;
+          usedPitchers.add(pitcherUnlockKey(p));
+        }
+      }
+    });
+
+    return { lineup, sp, rp, batters, pitchers };
+  }
+
+  function pickWeightedChallengeDraftCard(pool, missingPos, usedKeys) {
+    const available = pool.filter(p => {
+      const k = p.role ? pitcherUnlockKey(p) : batterUnlockKey(p);
+      return !usedKeys.has(k);
+    });
+    if (!available.length) return pool[0];
+
+    const isMissing = (p) => {
+      if (!missingPos || missingPos.length === 0) return false;
+      const allPos = getAllPositionsForPlayer(p);
+      const role = (p.role || '').toUpperCase();
+      if (role && missingPos.includes(role)) return true;
+      for (let i = 0; i < missingPos.length; i++) {
+        if (allPos.has(missingPos[i])) return true;
+      }
+      return false;
+    };
+
+    if (missingPos && missingPos.length > 0) {
+      const matchingCards = available.filter(isMissing);
+      if (matchingCards.length > 0) {
+        const idx = Math.floor(Math.random() * matchingCards.length);
+        return matchingCards[idx];
+      }
+    }
+
+    const toWeighted = (p) => {
+      const allPos = getAllPositionsForPlayer(p);
+      const role = (p.role || '').toUpperCase();
+      let weight = 1;
+      let matched = false;
+
+      if (missingPos && missingPos.length > 0) {
+        if (role && missingPos.includes(role)) {
+          matched = true;
+        } else {
+          for (let i = 0; i < missingPos.length; i++) {
+            if (allPos.has(missingPos[i])) {
+              matched = true;
+              break;
+            }
+          }
+        }
+      }
+
+      if (matched) weight = 10;
+      return { player: p, weight };
+    };
+
+    const weightedList = available.map(toWeighted);
+    let totalWeight = weightedList.reduce((sum, item) => sum + item.weight, 0);
+    let random = Math.random() * totalWeight;
+    let selected = weightedList[weightedList.length - 1].player;
+    for (let i = 0; i < weightedList.length; i++) {
+      if (random < weightedList[i].weight) {
+        selected = weightedList[i].player;
+        break;
+      }
+      random -= weightedList[i].weight;
+    }
+    return selected;
+  }
+
   window.Challenge162 = {
     unlockedBatters: new Set(),
     unlockedPitchers: new Set(),
@@ -2770,7 +2974,7 @@
     _activeFilterPill: 'ALL',
 
     hideAllTopLevelScreens() {
-      ['screen-mode-select', 'screen-menu', 'screen-challenge-hub', 'screen-challenge-roster', 'screen-challenge-season', 'screen-challenge-playoffs', 'screen-challenge-results'].forEach(id => {
+      ['screen-mode-select', 'screen-menu', 'screen-challenge-hub', 'screen-challenge-pack', 'screen-challenge-roster', 'screen-challenge-season', 'screen-challenge-playoffs', 'screen-challenge-results'].forEach(id => {
         const s = document.getElementById(id);
         if (s) s.classList.add('hidden');
       });
@@ -2813,6 +3017,7 @@
     },
 
     // ── Challenge Hub (Mode & Themed Selector) ───────────────────────────
+    // ── Challenge Hub (Mode & Themed Selector) ───────────────────────────
     renderHub() {
       this.showScreen('screen-challenge-hub');
       const container = document.getElementById('challenge162-hub-container');
@@ -2834,8 +3039,6 @@
 
       const _t = (key, fallback, params) => (typeof window.t === 'function' ? window.t(key, params) : fallback);
 
-      const cardsText = _t('challenge162.cards_count', `${totalCards} CARDS`, { count: totalCards });
-
       // 1. Franchise cards count
       const franchiseListHTML = MLB_FRANCHISES.map(fran => {
         const bCount = getBatterPool().filter(p => this.isBatterUnlocked(p) && (p.team === fran.code || (batterHistory[p.playerID] && batterHistory[p.playerID][fran.code]))).length;
@@ -2843,10 +3046,10 @@
         const total = bCount + pCount;
         const isSelected = this._selectedFranchise === fran.code;
         const isReady = total >= 17;
-        const countStr = _t('challenge162.cards_count', `${total} CARTAS`, { count: total });
+        const countStr = `${total} CARDS`;
 
         return `
-          <div class="c162-sub-item ${isSelected ? 'selected' : ''} challenge162-fran-select" data-code="${fran.code}" style="border-left: 3px solid ${fran.color};">
+          <div class="c162-sub-item ${isSelected ? 'selected' : ''} challenge162-fran-select" data-code="${fran.code}" style="border-left: 3px solid ${fran.color}; cursor:pointer;">
             <div style="font-size: 18px; margin-bottom: 2px;">${fran.icon}</div>
             <div style="font-size: 10px; font-weight: bold; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 110px;">${fran.name}</div>
             <div style="font-size: 8px; color: ${isReady ? '#34d399' : '#f59e0b'}; font-family: 'Press Start 2P', monospace; margin-top: 4px;">
@@ -2863,10 +3066,10 @@
         const total = bCount + pCount;
         const isSelected = this._selectedEra === era.key;
         const isReady = total >= 17;
-        const countStr = _t('challenge162.cards_count', `${total} CARTAS`, { count: total });
+        const countStr = `${total} CARDS`;
 
         return `
-          <div class="c162-sub-item ${isSelected ? 'selected' : ''} challenge162-era-select" data-key="${encodeURIComponent(era.key)}" style="border-left: 3px solid ${era.color};">
+          <div class="c162-sub-item ${isSelected ? 'selected' : ''} challenge162-era-select" data-key="${encodeURIComponent(era.key)}" style="border-left: 3px solid ${era.color}; cursor:pointer;">
             <div style="font-size: 18px; margin-bottom: 2px;">${era.icon}</div>
             <div style="font-size: 10px; font-weight: bold; color: #fff;">${era.label}</div>
             <div style="font-size: 8px; color: #94a3b8; margin: 2px 0;">${era.years}</div>
@@ -2881,36 +3084,41 @@
       const selEraObj = BASEBALL_ERAS.find(e => e.key === this._selectedEra) || BASEBALL_ERAS[2];
 
       const hubTitle = _t('challenge162.hub_title', '162-0 CHALLENGE HUB');
-      const hubSubtitle = _t('challenge162.hub_subtitle', 'Elige tu formato de temporada regular y postemporada');
-      const bestStreakText = _t('challenge162.best_streak', 'MEJOR RACHA');
-      const wsText = _t('challenge162.world_series', 'SERIES MUNDIALES');
-      const seasonsPlayedText = _t('challenge162.seasons_played', 'TEMPORADAS');
-      const totalColText = _t('challenge162.total_collection', 'COLECCION TOTAL');
+      const hubSubtitle = _t('challenge162.hub_subtitle', 'Choose your regular season and postseason game mode format');
+      const bestStreakText = _t('challenge162.best_streak', 'BEST STREAK');
+      const wsText = _t('challenge162.world_series', 'WORLD SERIES');
+      const seasonsPlayedText = _t('challenge162.seasons_played', 'SEASONS PLAYED');
+      const totalColText = _t('challenge162.total_collection', 'TOTAL COLLECTION');
 
-      const winsValStr = _t('challenge162.wins_count', `${records.maxStreak || 0} VICTORIAS`, { count: records.maxStreak || 0 });
-      const wsValStr = _t('challenge162.titles_count', `${records.worldSeriesWins || 0} TITULOS`, { count: records.worldSeriesWins || 0 });
-      const seasonsValStr = _t('challenge162.seasons_count', `${records.completedSeasons || 0} JUGADAS`, { count: records.completedSeasons || 0 });
-      const cardsValStr = _t('challenge162.cards_count', `${totalCards} CARTAS`, { count: totalCards });
+      const winsValStr = `${records.maxStreak || 0} WINS`;
+      const wsValStr = `${records.worldSeriesWins || 0} TITLES`;
+      const seasonsValStr = `${records.completedSeasons || 0} PLAYED`;
+      const cardsValStr = `${totalCards} CARDS`;
 
-      const mainMenuText = _t('challenge162.main_menu', 'MENU PRINCIPAL');
+      const mainMenuText = _t('challenge162.main_menu', 'MAIN MENU');
 
-      const allStarBadge = _t('challenge162.free_draft_badge', 'COLECCION LIBRE');
+      const packsBadge = _t('challenge162.packs_badge', 'PACKS FORMAT');
+      const packsTitle = _t('challenge162.packs_title', 'HOBBY PACKS DRAFT');
+      const packsDesc = _t('challenge162.packs_desc', 'Open 17 retro card packs directly from the entire universe of MLB legends to draft your 9-man starting lineup, 5-man rotation, and 3-man bullpen.');
+      const playPacksBtn = _t('challenge162.play_packs', 'DRAFT WITH PACKS');
+
+      const allStarBadge = _t('challenge162.free_draft_badge', 'FREE COLLECTION');
       const allStarTitle = _t('challenge162.all_star_title', 'ALL-STAR DREAM TEAM');
-      const allStarDesc = _t('challenge162.all_star_desc', 'Construye tu alineacion y cuerpo de pitcheo sin restricciones utilizando cualquier carta desbloqueada en tu coleccion.');
-      const playAllStarBtn = _t('challenge162.play_all_star', 'JUGAR ALL-STAR');
+      const allStarDesc = _t('challenge162.all_star_desc', 'Build your ultimate lineup and pitching staff freely from all unlocked cards in your permanent collection.');
+      const playAllStarBtn = _t('challenge162.play_all_star', 'PLAY ALL-STAR');
 
-      const monoTeamBadge = _t('challenge162.mono_team_badge', 'FRANQUICIA UNICA');
-      const monoTeamTitle = _t('challenge162.mono_team_title', 'DESAFIO MONO-TEAM');
-      const monoTeamDesc = _t('challenge162.mono_team_desc', 'Compite exclusivamente con peloteros que vistieron la camiseta del club seleccionado.');
-      const playMonoTeamBtn = _t('challenge162.play_with_team', `JUGAR CON ${selFranObj.code}`, { code: selFranObj.code });
+      const monoTeamBadge = _t('challenge162.mono_team_badge', 'SINGLE FRANCHISE');
+      const monoTeamTitle = _t('challenge162.mono_team_title', 'MONO-TEAM CHALLENGE');
+      const monoTeamDesc = _t('challenge162.mono_team_desc', 'Compete exclusively with legends and stars who wore the uniform of your chosen MLB franchise.');
+      const playMonoTeamBtn = `PLAY WITH ${selFranObj.code}`;
 
-      const monoEraBadge = _t('challenge162.mono_era_badge', 'EPOCA HISTORICA');
-      const monoEraTitle = _t('challenge162.mono_era_title', 'DESAFIO MONO-ERA');
-      const monoEraDesc = _t('challenge162.mono_era_desc', 'Viaja en el tiempo y compite unicamente con las estrellas de una de las 9 eras del beisbol.');
-      const playMonoEraBtn = _t('challenge162.play_with_era', `JUGAR ${selEraObj.label.toUpperCase()}`, { era: selEraObj.label.toUpperCase() });
+      const monoEraBadge = _t('challenge162.mono_era_badge', 'HISTORIC ERA');
+      const monoEraTitle = _t('challenge162.mono_era_title', 'MONO-ERA CHALLENGE');
+      const monoEraDesc = _t('challenge162.mono_era_desc', 'Travel through time and compete only with stars from one of baseball's 9 historic golden eras.');
+      const playMonoEraBtn = `PLAY ${selEraObj.label.toUpperCase()}`;
 
-      const resumeText = _t('challenge162.resume', 'CONTINUAR');
-      const abandonText = _t('challenge162.abandon', 'ABANDONAR');
+      const resumeText = _t('challenge162.resume', 'CONTINUE');
+      const abandonText = _t('challenge162.abandon', 'ABANDON');
 
       container.innerHTML = `
         <div class="c162-hub-wrap">
@@ -2954,10 +3162,10 @@
             <div class="c162-active-run-banner">
               <div>
                 <div style="font-family: 'Press Start 2P', monospace; font-size: 10.5px; color: #10b981;">
-                  ▶ ${_t('challenge162.active_run', `TEMPORADA EN PROGRESO: ${(this.state.modeConfig && this.state.modeConfig.label) || '162-0 CHALLENGE'}`, { mode: (this.state.modeConfig && this.state.modeConfig.label) || '162-0 CHALLENGE' })}
+                  ▶ ${_t('challenge162.active_run', `SEASON IN PROGRESS: ${(this.state.modeConfig && this.state.modeConfig.label) || '162-0 CHALLENGE'}`, { mode: (this.state.modeConfig && this.state.modeConfig.label) || '162-0 CHALLENGE' })}
                 </div>
                 <div style="font-size: 12px; color: #e2e8f0; margin-top: 4px;">
-                  ${_t('challenge162.current_record', `Récord actual: ${this.state.wins} - ${this.state.losses} (${this.state.gamesPlayed}/162 juegos)`, { wins: this.state.wins, losses: this.state.losses, current: this.state.gamesPlayed, total: 162 })}
+                  ${_t('challenge162.current_record', `Current record: ${this.state.wins} - ${this.state.losses} (${this.state.gamesPlayed}/162 games)`, { wins: this.state.wins, losses: this.state.losses, current: this.state.gamesPlayed, total: 162 })}
                 </div>
               </div>
               <div style="display: flex; gap: 8px;">
@@ -2971,12 +3179,31 @@
             </div>
           ` : ''}
 
-          <!-- Modes Grid -->
+          <!-- Modes Grid (4 Formats) -->
           <div class="c162-modes-grid">
-            <!-- Card 1: All-Star Classic -->
+            <!-- Card 1: Hobby Packs Draft -->
+            <div class="c162-mode-card" style="border-color: rgba(255, 215, 0, 0.4); box-shadow: 0 4px 20px rgba(255, 215, 0, 0.15);">
+              <div>
+                <span class="c162-mode-badge" style="background: rgba(255, 215, 0, 0.2); color: #ffd700; border: 1px solid rgba(255, 215, 0, 0.5);">
+                  ${packsBadge}
+                </span>
+                <div class="c162-mode-title" style="color: #ffd700;">📦 ${packsTitle}</div>
+                <div class="c162-mode-desc">
+                  ${packsDesc}
+                </div>
+                <div style="margin-top: 10px; padding: 8px 10px; background: rgba(255, 215, 0, 0.08); border-radius: 6px; border: 1px dashed rgba(255, 215, 0, 0.3); font-size: 8.5px; color: #ffd700; font-family: 'Press Start 2P', monospace; line-height: 1.5;">
+                  ✨ 17 PACKS: 9 BATTERS + 5 SP + 3 RP
+                </div>
+              </div>
+              <button id="btn-start-packsdraft-mode" class="btn" style="width: 100%; margin-top: 14px; padding: 11px 14px; font-size: 10px; font-family: 'Press Start 2P', monospace; background: linear-gradient(135deg, #ffd700, #b45309); color: #000; border: none; border-radius: 8px; cursor: pointer; box-shadow: 0 0 16px rgba(255, 215, 0, 0.4); font-weight: bold;">
+                📦 ${playPacksBtn}
+              </button>
+            </div>
+
+            <!-- Card 2: All-Star Classic -->
             <div class="c162-mode-card">
               <div>
-                <span class="c162-mode-badge" style="background: rgba(245, 158, 11, 0.2); color: #ffd700; border: 1px solid rgba(245, 158, 11, 0.4);">
+                <span class="c162-mode-badge" style="background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4);">
                   ${allStarBadge}
                 </span>
                 <div class="c162-mode-title">👑 ${allStarTitle}</div>
@@ -2984,15 +3211,15 @@
                   ${allStarDesc}
                 </div>
               </div>
-              <button id="btn-start-allstar-mode" class="btn" style="width: 100%; padding: 10px 14px; font-size: 10.5px; font-family: 'Press Start 2P', monospace; background: linear-gradient(135deg, #ffd700, #f59e0b); color: #000; border: none; border-radius: 8px; cursor: pointer; box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);">
+              <button id="btn-start-allstar-mode" class="btn" style="width: 100%; margin-top: 14px; padding: 10px 14px; font-size: 10px; font-family: 'Press Start 2P', monospace; background: linear-gradient(135deg, #38bdf8, #0284c7); color: #000; border: none; border-radius: 8px; cursor: pointer; box-shadow: 0 0 15px rgba(56, 189, 248, 0.3);">
                 🚀 ${playAllStarBtn}
               </button>
             </div>
 
-            <!-- Card 2: Mono-Team -->
+            <!-- Card 3: Mono-Team -->
             <div class="c162-mode-card">
               <div>
-                <span class="c162-mode-badge" style="background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4);">
+                <span class="c162-mode-badge" style="background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4);">
                   ${monoTeamBadge}
                 </span>
                 <div class="c162-mode-title">⚔️ ${monoTeamTitle}</div>
@@ -3003,12 +3230,12 @@
                   ${franchiseListHTML}
                 </div>
               </div>
-              <button id="btn-start-monoteam-mode" class="btn" style="width: 100%; padding: 10px 14px; font-size: 10px; font-family: 'Press Start 2P', monospace; background: linear-gradient(135deg, #38bdf8, #0284c7); color: #000; border: none; border-radius: 8px; cursor: pointer;">
+              <button id="btn-start-monoteam-mode" class="btn" style="width: 100%; margin-top: 14px; padding: 10px 14px; font-size: 9.5px; font-family: 'Press Start 2P', monospace; background: linear-gradient(135deg, #10b981, #047857); color: #000; border: none; border-radius: 8px; cursor: pointer;">
                 ⚾ ${playMonoTeamBtn}
               </button>
             </div>
 
-            <!-- Card 3: Mono-Era -->
+            <!-- Card 4: Mono-Era -->
             <div class="c162-mode-card">
               <div>
                 <span class="c162-mode-badge" style="background: rgba(168, 85, 247, 0.2); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.4);">
@@ -3022,7 +3249,7 @@
                   ${eraListHTML}
                 </div>
               </div>
-              <button id="btn-start-monoera-mode" class="btn" style="width: 100%; padding: 10px 14px; font-size: 10px; font-family: 'Press Start 2P', monospace; background: linear-gradient(135deg, #c084fc, #9333ea); color: #fff; border: none; border-radius: 8px; cursor: pointer;">
+              <button id="btn-start-monoera-mode" class="btn" style="width: 100%; margin-top: 14px; padding: 10px 14px; font-size: 9.5px; font-family: 'Press Start 2P', monospace; background: linear-gradient(135deg, #c084fc, #9333ea); color: #fff; border: none; border-radius: 8px; cursor: pointer;">
                 ⏳ ${playMonoEraBtn}
               </button>
             </div>
@@ -3039,15 +3266,20 @@
 
       const btnAbandon = document.getElementById('btn-challenge162-abandon-season');
       if (btnAbandon) btnAbandon.onclick = () => {
-        if (confirm(_t('challenge162.abandon_confirm', '¿Seguro que deseas abandonar la temporada en progreso? Se perderá el avance actual.'))) {
+        if (confirm(_t('challenge162.abandon_confirm', 'Are you sure you want to abandon the current season? All progress will be lost.'))) {
           this.clear();
           this.renderHub();
         }
       };
 
+      const btnPacks = document.getElementById('btn-start-packsdraft-mode');
+      if (btnPacks) btnPacks.onclick = () => {
+        this.startPacksDraftMode();
+      };
+
       const btnAllStar = document.getElementById('btn-start-allstar-mode');
       if (btnAllStar) btnAllStar.onclick = () => {
-        this.setModeConfig({ type: 'all_star', label: '👑 ALL-STAR DREAM TEAM', desc: 'Colección Libre' });
+        this.setModeConfig({ type: 'all_star', label: '👑 ALL-STAR DREAM TEAM', desc: 'Free Collection' });
         this.startRosterBuilder();
       };
 
@@ -3078,6 +3310,435 @@
           this.renderHub();
         };
       });
+    },
+
+    // ── Hobby Packs Draft Mode Engine ─────────────────────────────────────
+    _packDraft: null,
+
+    startPacksDraftMode() {
+      this.setModeConfig({ type: 'packs', label: '📦 HOBBY PACKS DRAFT', desc: '17-Pack Universe Draft' });
+      this._packDraft = {
+        stage: 'batters',
+        currentPack: 0,
+        totalPacks: 9,
+        pulledBatters: [],
+        pulledPitchers: [],
+        usedKeys: new Set()
+      };
+      this.showScreen('screen-challenge-pack');
+      this.renderPacksDraft();
+    },
+
+    renderPacksDraftTransition() {
+      const container = document.getElementById('challenge162-pack-container');
+      if (!container) return;
+
+      container.innerHTML = `
+        <div style="max-width: 680px; margin: 30px auto; text-align:center; background:rgba(0,0,0,0.8); border:2px solid #ffd700; border-radius:14px; padding:28px; box-shadow:0 0 40px rgba(255,215,0,0.3);">
+          <div style="font-size:44px; margin-bottom:12px;">⚾</div>
+          <div style="font-family:'Press Start 2P',monospace; font-size:13px; color:#ffd700; margin-bottom:12px; line-height:1.4;">
+            BATTERS BOX COMPLETED!
+          </div>
+          <p style="font-size:12px; color:#e2e8f0; line-height:1.6; margin-bottom:20px;">
+            Your 9-man starting lineup is locked in. Now open the <strong>Pitchers Box (8 Packs)</strong> to draft your 5 starting pitchers (SP1-SP5) and 3 bullpen relievers (Closer, Setup, Middle Relief).
+          </p>
+          <div style="display:inline-block; background:rgba(255,215,0,0.1); border:1px solid #ffd700; border-radius:8px; padding:12px 20px; margin-bottom:24px;">
+            <div style="font-family:'Press Start 2P',monospace; font-size:9.5px; color:#ffd700; margin-bottom:4px;">
+              📦 BOX #2: PITCHERS HOBBY BOX
+            </div>
+            <div style="font-size:9.5px; color:#9ca3af;">
+              5 Starting Pitchers (SP) + 3 Bullpen Arms (RP / Closer)
+            </div>
+          </div>
+          <div>
+            <button id="btn-c162-start-pitchers-box" class="btn" style="padding:14px 28px; font-family:'Press Start 2P',monospace; font-size:11px; background:linear-gradient(135deg,#ffd700,#f59e0b); color:#000; border:none; border-radius:8px; cursor:pointer; box-shadow:0 0 20px rgba(255,215,0,0.5); font-weight:bold;">
+              📦 OPEN PITCHERS BOX (8 PACKS) ➔
+            </button>
+          </div>
+        </div>
+      `;
+
+      const btn = document.getElementById('btn-c162-start-pitchers-box');
+      if (btn) {
+        btn.onclick = () => {
+          this._packDraft.stage = 'pitchers';
+          this._packDraft.currentPack = 0;
+          this._packDraft.totalPacks = 8;
+          this.renderPacksDraft();
+        };
+      }
+    },
+
+    renderPacksDraft() {
+      const container = document.getElementById('challenge162-pack-container');
+      if (!container || !this._packDraft) return;
+
+      const draft = this._packDraft;
+      const isPitchersStage = draft.stage === 'pitchers';
+      const packNum = draft.currentPack + 1;
+      const total = draft.totalPacks;
+      const globalCardNum = isPitchersStage ? (9 + packNum) : packNum;
+
+      // 1. Pick a card from global universe pool
+      const bPool = getBatterPool();
+      const pPool = getPitcherPool();
+      const allPulled = [...draft.pulledBatters, ...draft.pulledPitchers];
+      const currentSlots = calculateChallengeRosterSlots(allPulled, false);
+
+      const missingPos = [];
+      if (isPitchersStage) {
+        const spEmpty = currentSlots.sp.filter(s => s === null).length;
+        const rpEmpty = currentSlots.rp.filter(s => s === null).length;
+        if (spEmpty > 0) missingPos.push('SP');
+        if (rpEmpty > 0) missingPos.push('RP', 'CL', 'CP');
+      } else {
+        SLOTS.forEach(slot => {
+          if (!currentSlots.lineup[slot]) missingPos.push(slot);
+        });
+      }
+
+      const activePool = isPitchersStage ? pPool : bPool;
+      let card = pickWeightedChallengeDraftCard(activePool, missingPos, draft.usedKeys);
+      if (!card) {
+        card = activePool.find(c => {
+          const k = c.role ? pitcherUnlockKey(c) : batterUnlockKey(c);
+          return !draft.usedKeys.has(k);
+        }) || activePool[0];
+      }
+
+      const cKey = card.role ? pitcherUnlockKey(card) : batterUnlockKey(card);
+      draft.usedKeys.add(cKey);
+
+      if (isPitchersStage) {
+        draft.pulledPitchers.push(card);
+      } else {
+        draft.pulledBatters.push(card);
+      }
+      draft.currentPack++;
+
+      // Play card sound
+      if (window.AudioManager && typeof window.AudioManager.play === 'function') {
+        window.AudioManager.play('card_deal');
+      } else if (typeof window.playSound === 'function') {
+        window.playSound('card_flip');
+      }
+
+      // Updated slots after pull
+      const updatedAllPulled = [...draft.pulledBatters, ...draft.pulledPitchers];
+      const updatedSlots = calculateChallengeRosterSlots(updatedAllPulled, false);
+
+      // Render mini formation tracker
+      const renderMiniSlot = (slotLabel, player) => {
+        if (!player) {
+          return `
+            <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.3); border:1px dashed rgba(255,255,255,0.15); border-radius:4px; padding:3px 6px; margin-bottom:3px; font-size:7.5px;">
+              <span style="font-family:'Press Start 2P',monospace; color:#64748b;">${slotLabel}</span>
+              <span style="color:#475569; font-style:italic;">[Empty]</span>
+            </div>
+          `;
+        }
+        const ovrCol = player.ovr >= 90 ? '#ffd700' : (player.ovr >= 80 ? '#38bdf8' : '#10b981');
+        const isCurrentCard = (player.role ? pitcherUnlockKey(player) : batterUnlockKey(player)) === cKey;
+        return `
+          <div style="display:flex; justify-content:space-between; align-items:center; background:${isCurrentCard ? 'rgba(255,215,0,0.18)' : 'rgba(255,255,255,0.04)'}; border:1px solid ${isCurrentCard ? '#ffd700' : 'rgba(255,255,255,0.1)'}; border-radius:4px; padding:3px 6px; margin-bottom:3px; font-size:7.5px; animation: fadeIn 0.3s ease;">
+            <div style="display:flex; align-items:center; gap:5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:145px;">
+              <span style="font-family:'Press Start 2P',monospace; font-size:6.5px; color:${isCurrentCard ? '#ffd700' : '#94a3b8'}; width:22px;">${slotLabel}</span>
+              <span style="color:#fff; font-weight:bold; overflow:hidden; text-overflow:ellipsis;">${cleanName(player)}</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:5px;">
+              <span style="font-family:'Press Start 2P',monospace; font-size:7px; color:${ovrCol};">${Math.round(player.ovr || 75)}</span>
+            </div>
+          </div>
+        `;
+      };
+
+      const lineupSlotsHTML = SLOTS.map(slot => renderMiniSlot(slot, updatedSlots.lineup[slot])).join('');
+      const spSlotsHTML = [0, 1, 2, 3, 4].map(idx => renderMiniSlot(`SP${idx + 1}`, updatedSlots.sp[idx])).join('');
+      const rpSlotsHTML = [
+        renderMiniSlot('CL', updatedSlots.rp[0]),
+        renderMiniSlot('SU', updatedSlots.rp[1]),
+        renderMiniSlot('MR', updatedSlots.rp[2])
+      ].join('');
+
+      const isLastPackInStage = draft.currentPack >= total;
+      const isDraftComplete = isPitchersStage && isLastPackInStage;
+
+      // Render 3D Card Face HTML
+      const isPitcherCard = Boolean(card.role);
+      const rColor = card.ovr >= 95 ? '#ffd700' : (card.ovr >= 88 ? '#a855f7' : (card.ovr >= 80 ? '#3b82f6' : (card.ovr >= 75 ? '#10b981' : '#6b7280')));
+      const eraShort = card.era || 'All-Time';
+      const cName = cleanName(card);
+
+      const tradingCardHTML = typeof window.createCardHTML === 'function'
+        ? window.createCardHTML(card)
+        : `<div style="padding:20px; color:#fff;">${card.name} - OVR ${card.ovr}</div>`;
+
+      let statsHTML = '';
+      if (isPitcherCard) {
+        const h9 = card.h9 !== undefined ? card.h9 : 50;
+        const k9 = card.k9 !== undefined ? card.k9 : 50;
+        const bb9 = card.bb9 !== undefined ? card.bb9 : 50;
+        const hr9 = card.hr9 !== undefined ? card.hr9 : 50;
+        const sta = card.sta !== undefined ? card.sta : 65;
+        const renderStat = (lbl, val) => `
+          <div style="background:#111827;border-radius:6px;padding:8px 10px;display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:9px;color:#9ca3af;font-family:'Press Start 2P',monospace;">${lbl}</span>
+            <span style="font-size:11px;font-weight:bold;color:#38bdf8">${val}</span>
+          </div>
+        `;
+        statsHTML = `
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
+            ${renderStat('H/9', h9)}
+            ${renderStat('K/9', k9)}
+            ${renderStat('BB/9', bb9)}
+            ${renderStat('HR/9', hr9)}
+            ${renderStat('STA', sta)}
+            <div style="background:#111827;border-radius:6px;padding:8px 10px;display:flex;justify-content:space-between;align-items:center">
+              <span style="font-size:9px;color:#9ca3af;font-family:'Press Start 2P',monospace;">ROLE</span>
+              <span style="font-size:11px;font-weight:bold;color:#ffd700">${card.role || 'SP'}</span>
+            </div>
+          </div>
+        `;
+      } else {
+        const renderStat = (lbl, val) => `
+          <div style="background:#111827;border-radius:6px;padding:8px 10px;display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:9px;color:#9ca3af;font-family:'Press Start 2P',monospace;">${lbl}</span>
+            <span style="font-size:11px;font-weight:bold;color:#38bdf8">${val}</span>
+          </div>
+        `;
+        statsHTML = `
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
+            ${renderStat('CON', card.con || 50)}
+            ${renderStat('PWR', card.pwr || 50)}
+            ${renderStat('EYE', card.eye || 50)}
+            ${renderStat('SPD', card.spd || 50)}
+            ${renderStat('DEF', card.def || 50)}
+            <div style="background:#111827;border-radius:6px;padding:8px 10px;display:flex;justify-content:space-between;align-items:center">
+              <span style="font-size:9px;color:#9ca3af;font-family:'Press Start 2P',monospace;">POS</span>
+              <span style="font-size:11px;font-weight:bold;color:#ffd700">${card.pos || 'DH'}</span>
+            </div>
+          </div>
+        `;
+      }
+
+      container.innerHTML = `
+        <div style="max-width: 1240px; margin: 0 auto;">
+          <!-- Top Header -->
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:10px;">
+            <div>
+              <span style="font-family:'Press Start 2P',monospace; font-size:12px; color:#ffd700;">
+                📦 HOBBY PACKS DRAFT: ${isPitchersStage ? 'PITCHERS BOX' : 'BATTERS BOX'}
+              </span>
+              <span style="font-size:10px; color:#94a3b8; margin-left:10px;">
+                (CARD ${globalCardNum} OF 17)
+              </span>
+            </div>
+            <div style="display:flex; align-items:center; gap:12px;">
+              <span style="font-family:'Press Start 2P',monospace; font-size:10px; color:#00ff66;">
+                ROSTER: ${updatedAllPulled.length}/17
+              </span>
+              <button id="btn-c162-pack-cancel" class="btn btn-secondary" style="padding:6px 12px; font-size:9px; font-family:'Press Start 2P',monospace;">
+                ← CANCEL
+              </button>
+            </div>
+          </div>
+
+          <!-- Progress Bar -->
+          <div style="width:100%; height:6px; background:rgba(255,255,255,0.08); border-radius:3px; overflow:hidden; margin-bottom:16px;">
+            <div style="width:${(globalCardNum / 17) * 100}%; height:100%; background:linear-gradient(90deg, #38bdf8, #ffd700, #00ff66); transition:width 0.3s ease;"></div>
+          </div>
+
+          <div style="display:grid; grid-template-columns: 460px 1fr; gap:18px; align-items:start;">
+            
+            <!-- Left Column: Revealed 3D Flip Card -->
+            <div style="background:rgba(0,0,0,0.5); border:1px solid rgba(255,215,0,0.3); border-radius:12px; padding:16px; text-align:center; min-height:500px; display:flex; flex-direction:column; justify-content:center; align-items:center;">
+              <div style="width:100%; max-width:440px; margin:0 auto; animation: packCardBurst 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;">
+                
+                <div class="dex-flip-card-container" id="c162-flip-container" style="perspective:1200px; width:100%; max-width:440px; min-height:480px; margin:0 auto; cursor:pointer;" title="Click to flip card">
+                  <div class="dex-flip-card-inner" id="c162-flip-inner">
+                    
+                    <!-- Side A: Stats & Overview -->
+                    <div class="dex-card-face dex-card-front" style="background:#0a0f1a; border:3px solid ${rColor}; border-radius:12px; padding:22px; box-shadow: 0 0 35px ${rColor}66; text-align:left;">
+                      <div style="margin-bottom:14px; padding-right:10px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                          <span style="font-family:'Press Start 2P',monospace; font-size:9.5px; color:${rColor};">${card.rarity || 'Common'} · ${eraShort}</span>
+                          <span style="font-family:'Press Start 2P',monospace; font-size:7.5px; color:#38bdf8; background:rgba(56,189,248,0.1); border:1px solid rgba(56,189,248,0.3); padding:2px 6px; border-radius:4px;">🔄 TAP TO FLIP</span>
+                        </div>
+                        <h2 style="font-family:'Press Start 2P',monospace; font-size:13px; color:#fff; margin:0 0 4px 0; line-height:1.4;">
+                          ${cName}
+                        </h2>
+                        <div style="font-size:11px; color:#9ca3af;">${card.team || 'MLB'} — ${card.year || ''} · <span style="color:#e2e8f0; font-weight:bold;">${card.role || card.pos || 'DH'}</span></div>
+                      </div>
+
+                      <div style="text-align:center; margin-bottom:16px;">
+                        <div style="font-family:'Press Start 2P',monospace; font-size:34px; color:${rColor}; text-shadow:0 0 20px ${rColor}88;">${Math.floor(card.ovr || 75)}</div>
+                        <div style="font-size:10px; color:#6b7280; font-family:'Press Start 2P',monospace;">OVERALL RATING</div>
+                      </div>
+
+                      ${statsHTML}
+
+                      <div style="background:rgba(255,255,255,0.04); border-radius:8px; padding:10px; text-align:center; border:1px dashed rgba(255,255,255,0.15);">
+                        <div style="font-size:11px; color:#38bdf8; font-family:'Press Start 2P',monospace;">
+                          DRAFTED TO 162-0 ROSTER
+                        </div>
+                        <div style="font-size:9px; color:#94a3b8; margin-top:3px;">
+                          Universal MLB Pool Selection
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Side B: Trading Card Art -->
+                    <div class="dex-card-face dex-card-back" style="border:3px solid ${rColor}; box-shadow: 0 0 35px ${rColor}66;">
+                      <div style="font-family:'Press Start 2P',monospace; font-size:9px; color:#ffd700; margin-bottom:14px; letter-spacing:1px; text-align:center;">
+                        🎴 DRAFT TRADING CARD
+                      </div>
+                      <div style="transform:scale(1.15); margin:15px 0;">
+                        ${tradingCardHTML}
+                      </div>
+                      <div style="font-size:10px; color:#9ca3af; margin-top:16px; text-align:center; font-family:'Press Start 2P',monospace; line-height:1.4;">
+                        ${card.name} · ${card.year || ''}
+                      </div>
+                      <div style="margin-top:12px; font-family:'Press Start 2P',monospace; font-size:7.5px; color:#38bdf8;">
+                        🔄 CLICK TO VIEW STATS & ATTRIBUTES
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+
+                <!-- Bottom Controls: Flip & Next Action -->
+                <div style="margin-top:14px; width:100%; display:flex; flex-direction:column; align-items:center; gap:10px;">
+                  <button id="btn-c162-flip-card" type="button" style="padding:7px 16px; background:linear-gradient(135deg, rgba(56,189,248,0.2), rgba(14,165,233,0.3)); border:1.5px solid #38bdf8; color:#38bdf8; border-radius:6px; font-family:'Press Start 2P',monospace; font-size:8px; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
+                    🔄 FLIP CARD
+                  </button>
+
+                  <button id="btn-c162-next-pack" class="btn" style="width:100%; padding:14px 20px; font-family:'Press Start 2P',monospace; font-size:10.5px; background:linear-gradient(135deg,#00ff66,#059669); color:#000; border:none; border-radius:8px; cursor:pointer; box-shadow:0 0 20px rgba(0,255,102,0.4); font-weight:bold;">
+                    ${isDraftComplete ? '🚀 FINALIZE ROSTER & START 162 SEASON ➔' : (isLastPackInStage ? '⚾ PROCEED TO PITCHERS BOX ➔' : `📦 OPEN NEXT PACK (${packNum + 1}/${total}) ➔`)}
+                  </button>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- Right Column: Live 17-Man Formation Board -->
+            <div style="background:rgba(0,0,0,0.5); border:1px solid rgba(56,189,248,0.25); border-radius:12px; padding:14px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:8px;">
+                <span style="font-family:'Press Start 2P',monospace; font-size:10px; color:#38bdf8;">
+                  📋 ROSTER FORMATION (${updatedAllPulled.length}/17)
+                </span>
+                <span style="font-size:9px; color:#94a3b8;">
+                  ${draft.pulledBatters.length} Batters · ${draft.pulledPitchers.length} Pitchers
+                </span>
+              </div>
+
+              <div style="display:grid; grid-template-columns: 1fr 1fr; gap:14px;">
+                <!-- Batting Lineup (9 Slots) -->
+                <div>
+                  <div style="font-family:'Press Start 2P',monospace; font-size:8px; color:#ffd700; margin-bottom:6px; display:flex; justify-content:space-between;">
+                    <span>⚡ STARTING LINEUP</span>
+                    <span>${draft.pulledBatters.length}/9</span>
+                  </div>
+                  ${lineupSlotsHTML}
+                </div>
+
+                <!-- Pitching Staff (5 SP + 3 RP) -->
+                <div>
+                  <div style="font-family:'Press Start 2P',monospace; font-size:8px; color:#38bdf8; margin-bottom:6px; display:flex; justify-content:space-between;">
+                    <span>🧢 ROTATION (5 SP)</span>
+                    <span>${Math.min(5, updatedSlots.sp.filter(Boolean).length)}/5</span>
+                  </div>
+                  ${spSlotsHTML}
+
+                  <div style="font-family:'Press Start 2P',monospace; font-size:8px; color:#f472b6; margin:12px 0 6px 0; display:flex; justify-content:space-between;">
+                    <span>🔥 BULLPEN (3 RP)</span>
+                    <span>${Math.min(3, updatedSlots.rp.filter(Boolean).length)}/3</span>
+                  </div>
+                  ${rpSlotsHTML}
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      `;
+
+      // Flip listeners
+      const btnFlip = container.querySelector('#btn-c162-flip-card');
+      const flipInner = container.querySelector('#c162-flip-inner');
+      const flipContainer = container.querySelector('#c162-flip-container');
+
+      const doFlip = (e) => {
+        if (e) e.stopPropagation();
+        if (flipInner) {
+          flipInner.classList.toggle('flipped');
+          if (window.AudioManager && typeof window.AudioManager.play === 'function') {
+            window.AudioManager.play('card_deal');
+          } else if (typeof window.playSound === 'function') {
+            window.playSound('card_flip');
+          }
+        }
+      };
+
+      if (btnFlip) btnFlip.onclick = doFlip;
+      if (flipContainer) flipContainer.onclick = doFlip;
+
+      // Cancel button
+      const btnCancel = container.querySelector('#btn-c162-pack-cancel');
+      if (btnCancel) {
+        btnCancel.onclick = () => {
+          if (confirm('Cancel pack draft and return to hub?')) {
+            this._packDraft = null;
+            this.renderHub();
+          }
+        };
+      }
+
+      // Next Pack button
+      const btnNext = container.querySelector('#btn-c162-next-pack');
+      if (btnNext) {
+        btnNext.onclick = (e) => {
+          e.stopPropagation();
+          if (isDraftComplete) {
+            this.finishPacksDraftAndStart();
+          } else if (isLastPackInStage) {
+            this.renderPacksDraftTransition();
+          } else {
+            this.renderPacksDraft();
+          }
+        };
+      }
+    },
+
+    finishPacksDraftAndStart() {
+      if (!this._packDraft) return;
+      const allPulled = [...this._packDraft.pulledBatters, ...this._packDraft.pulledPitchers];
+      const { lineup, sp, rp } = calculateChallengeRosterSlots(allPulled, true);
+
+      // Clean fallback if any position is unassigned
+      SLOTS.forEach(slot => {
+        if (!lineup[slot]) {
+          const b = this._packDraft.pulledBatters.find(cand => !Object.values(lineup).includes(cand));
+          if (b) lineup[slot] = b;
+          else lineup[slot] = this._packDraft.pulledBatters[0];
+        }
+      });
+
+      const finalSP = sp.filter(Boolean);
+      const finalRP = rp.filter(Boolean);
+      while (finalSP.length < 5) {
+        const p = this._packDraft.pulledPitchers.find(cand => !finalSP.includes(cand) && !finalRP.includes(cand));
+        if (p) finalSP.push(p);
+        else break;
+      }
+      while (finalRP.length < 3) {
+        const p = this._packDraft.pulledPitchers.find(cand => !finalSP.includes(cand) && !finalRP.includes(cand));
+        if (p) finalRP.push(p);
+        else break;
+      }
+
+      const pitchers = { SP: finalSP, RP: finalRP };
+      this._packDraft = null;
+      this.startNewChallenge(lineup, pitchers, { type: 'packs', label: '📦 HOBBY PACKS DRAFT', desc: '17-Pack Universe Draft' });
     },
 
     startRosterBuilder() {
