@@ -3114,7 +3114,7 @@
 
       const monoEraBadge = _t('challenge162.mono_era_badge', 'HISTORIC ERA');
       const monoEraTitle = _t('challenge162.mono_era_title', 'MONO-ERA CHALLENGE');
-      const monoEraDesc = _t('challenge162.mono_era_desc', 'Travel through time and compete only with stars from one of baseball's 9 historic golden eras.');
+      const monoEraDesc = _t('challenge162.mono_era_desc', "Travel through time and compete only with stars from one of baseball's 9 historic golden eras.");
       const playMonoEraBtn = `PLAY ${selEraObj.label.toUpperCase()}`;
 
       const resumeText = _t('challenge162.resume', 'CONTINUE');
