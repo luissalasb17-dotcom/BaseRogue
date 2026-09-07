@@ -6552,17 +6552,10 @@ body.on-main-menu .main-container {
 /* ── GAME MODE SELECTOR (POKELIKE STYLE) ────────────────────────────────── */
 .mode-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 24px;
   margin-top: 14px;
   margin-bottom: 6px;
-}
-
-@media (min-width: 1200px) {
-  .mode-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 16px;
-  }
 }
 
 .career-card {
@@ -6587,10 +6580,10 @@ body.on-main-menu .main-container {
 }
 
 .mode-card {
-  background: rgba(10, 15, 26, 0.65);
+  background: rgba(0, 0, 0, 0.45);
   border: 2px solid rgba(255, 255, 255, 0.12);
   border-radius: 14px;
-  padding: 22px 18px 20px 18px;
+  padding: 24px 18px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -6599,8 +6592,6 @@ body.on-main-menu .main-container {
   cursor: pointer;
   position: relative;
   overflow: hidden;
-  min-height: 290px;
-  box-sizing: border-box;
 }
 
 .mode-card:hover {
@@ -6766,8 +6757,11 @@ body.on-main-menu .main-container {
     box-sizing: border-box !important;
   }
 
+  /* 162-0 Challenge spans both columns as a featured wide banner */
   .mode-card.challenge162-card {
-    min-height: 185px !important;
+    grid-column: span 2 !important;
+    min-height: auto !important;
+    padding: 12px 14px !important;
   }
 
   .mode-icon {

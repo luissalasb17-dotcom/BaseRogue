@@ -784,9 +784,9 @@
         btn.disabled = false;
         btn.removeAttribute('data-locked');
         const btnText = hasActiveSave
-          ? (typeof window.t === 'function' ? (window.t('mode_select.challenge162_continue_btn') || 'CONTINUAR TEMPORADA') : 'CONTINUAR TEMPORADA')
-          : (typeof window.t === 'function' ? (window.t('mode_select.challenge162_btn') || 'ARMAR EQUIPO') : 'ARMAR EQUIPO');
-        btn.innerHTML = hasActiveSave ? `⚾ ${btnText}` : `🏆 ${btnText}`;
+          ? (typeof window.t === 'function' ? (window.t('mode_select.challenge162_continue_btn') || '⚾ CONTINUAR TEMPORADA') : '⚾ CONTINUAR TEMPORADA')
+          : (typeof window.t === 'function' ? (window.t('mode_select.challenge162_btn') || '🏆 ARMAR EQUIPO') : '🏆 ARMAR EQUIPO');
+        btn.innerHTML = btnText;
       } else {
         card.classList.add('is-locked');
         const lockedDesc = typeof window.t === 'function' 
