@@ -312,6 +312,12 @@
     filteredPlayers: [],
     renderLimit: 200,
     currentRendered: 0,
+    getPlayerCareerData,
+    getPlayerFlagHTML,
+    getGrade,
+    getGradeColor,
+    RARITY_COLORS,
+    ERA_TABS,
     container: null,
 
     init() {

@@ -54,12 +54,12 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="src/lib/i18next.min.js"></script>
-  <script src="src/i18n.js?v=1787892374"></script>
+  <script src="src/i18n.js?v=1787950002"></script>
   
   <link rel="preload" as="image" href="assets/TEST3.webp">
   <link rel="preload" as="image" href="assets/TEST.webp">
   <link rel="preload" as="image" href="assets/logo.webp">
-  <link rel="stylesheet" href="style.css?v=1787940969">
+  <link rel="stylesheet" href="style.css?v=1787950001">
   <style>
     @keyframes bounce {
       0%, 100% { transform: translateY(0); }
@@ -117,7 +117,7 @@
 
     
     <!-- SCREEN 0: GAME MODE SELECTOR (POKELIKE STYLE) -->
-    <div class="glass-panel" id="screen-mode-select" style="position: relative; max-width: 980px; width: 100%; margin: clamp(35px, 5vh, 70px) auto 40px auto; text-align: center; padding: 24px 28px 45px 28px;">
+    <div class="glass-panel" id="screen-mode-select" style="position: relative; max-width: 1100px; width: 100%; margin: clamp(25px, 4vh, 60px) auto 40px auto; text-align: center; padding: 24px 28px 40px 28px;">
       
       <!-- Integrated Brand Header Lockup (Pokelike Style) -->
       <div class="main-logo-lockup" style="display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 0 auto clamp(36px, 5vh, 56px) auto; text-align: center;">
@@ -135,47 +135,56 @@
         <!-- MODE 1: STORY MODE -->
         <div class="mode-card story-card" id="card-mode-story">
           <div class="mode-icon">📜</div>
-          <div class="mode-title" data-i18n="mode_select.story_title">MODO HISTORIA</div>
-          <div class="mode-subtitle" data-i18n="mode_select.story_subtitle">TEMPORADAS 1901 – 2025</div>
+          <div class="mode-title" data-i18n="mode_select.story_title">STORY MODE</div>
+          <div class="mode-subtitle" data-i18n="mode_select.story_subtitle">SEASONS 1901 – 2025</div>
           <div class="mode-desc" data-i18n="mode_select.story_desc">
-            Revive temporadas históricas de la MLB y derrota a los mejores equipos en tu camino a la Serie Mundial.
+            Relive historic MLB seasons and defeat real teams on your journey to the World Series.
           </div>
           <button class="btn btn-mode" id="btn-select-story-mode" data-i18n="mode_select.story_btn">
-            ⚾ SELECCIONAR TEMPORADA
+            ⚾ SELECT SEASON
           </button>
         </div>
 
         <!-- MODE 2: QUICK PLAY / CLASSIC -->
         <div class="mode-card quick-card" id="card-mode-quick">
           <div class="mode-icon">⚡</div>
-          <div class="mode-title" data-i18n="mode_select.quick_title">PARTIDA RÁPIDA</div>
-          <div class="mode-subtitle" data-i18n="mode_select.quick_subtitle">MODO CLÁSICO</div>
+          <div class="mode-title" data-i18n="mode_select.quick_title">QUICK PLAY</div>
+          <div class="mode-subtitle" data-i18n="mode_select.quick_subtitle">CLASSIC MODE</div>
           <div class="mode-desc" data-i18n="mode_select.quick_desc">
-            La experiencia clásica BaseRogue, enfrentate a oponentes legendarios de distintas eras
+            The classic BaseRogue experience, face legendary opponents from different eras.
           </div>
           <button class="btn btn-mode" id="btn-select-quick-mode" data-i18n="mode_select.quick_btn">
-            🚀 JUGAR MODO CLÁSICO
+            🚀 PLAY CLASSIC MODE
           </button>
         </div>
 
-        <!-- MODE 3: CAREER MODE (PLAYER) — hidden by default while still in
-             construction (see 14 in the design doc); a fail-safe inline
-             display:none so it stays hidden even if the flag script below
-             never runs, not just a JS-toggled class. -->
+        <!-- MODE 3: DYNASTY & HOBBY BOX (162 JUEGOS & GESTIÓN) -->
+        <div class="mode-card dynasty-card" id="card-mode-dynasty" style="display:none !important;">
+          <div class="mode-icon">📦</div>
+          <div class="mode-title" data-i18n="mode_select.dynasty_title">DYNASTY MODE</div>
+          <div class="mode-subtitle" data-i18n="mode_select.dynasty_subtitle">HOBBY BOX & CONTRACTS</div>
+          <div class="mode-desc" data-i18n="mode_select.dynasty_desc">
+            Open a 25-pack hobby box to draft your team. Manage multi-year contracts, trades, and chase the pennant across a 162-game season.
+          </div>
+          <button class="btn btn-mode" id="btn-dynasty-mode-open" data-i18n="mode_select.dynasty_btn">
+            📦 START DYNASTY
+          </button>
+        </div>
+
+        <!-- MODE 4: CAREER MODE (PLAYER) -->
         <div class="mode-card career-card" id="card-mode-career" style="display:none !important;">
           <div class="mode-icon">🏆</div>
           <div class="mode-title" data-i18n="mode_select.career_title">MODO CARRERA</div>
           <div class="mode-subtitle" data-i18n="mode_select.career_subtitle">DE ROOKIE AL SALÓN DE LA FAMA</div>
           <div class="mode-desc" data-i18n="mode_select.career_desc">
-            Elige un rookie y lleva su carrera temporada a temporada, año real por año real, hasta el retiro. ¿Alcanzará su potencial... o se quedará corto?
+            Elige un rookie y lleva su carrera temporada a temporada, año real por año real, hasta el retiro.
           </div>
           <button class="btn btn-mode" id="btn-select-career-mode" data-i18n="mode_select.career_btn">
             🏆 EMPEZAR CARRERA
           </button>
         </div>
 
-        <!-- MODE 4: 162-0 CHALLENGE — build a roster from unlocked winning-run
-             players and chase a perfect regular season. -->
+        <!-- MODE 5: 162-0 CHALLENGE (FEATURED WIDE BANNER) -->
         <div class="mode-card challenge162-card is-locked" id="card-mode-challenge162">
           <div class="mode-icon">🔒</div>
           <div class="mode-title" data-i18n="mode_select.challenge162_title">162-0 CHALLENGE</div>
@@ -204,12 +213,20 @@
       <script>
         (function () {
           var params = new URLSearchParams(window.location.search);
-          var card = document.getElementById('card-mode-career');
-          if (card) {
+          var careerCard = document.getElementById('card-mode-career');
+          if (careerCard) {
             if (params.get('career') === '1') {
-              card.style.setProperty('display', 'flex', 'important');
+              careerCard.style.setProperty('display', 'flex', 'important');
             } else {
-              card.style.setProperty('display', 'none', 'important');
+              careerCard.style.setProperty('display', 'none', 'important');
+            }
+          }
+          var dynastyCard = document.getElementById('card-mode-dynasty');
+          if (dynastyCard) {
+            if (params.get('dynasty') === '1') {
+              dynastyCard.style.setProperty('display', 'flex', 'important');
+            } else {
+              dynastyCard.style.setProperty('display', 'none', 'important');
             }
           }
         })();
@@ -417,6 +434,13 @@
     <!-- SCREEN: 162-0 CHALLENGE — PLAYOFFS -->
     <div class="glass-panel hidden" id="screen-challenge-playoffs" style="position: relative; max-width: 960px; width: 95%; margin: 20px auto; padding: 24px 20px;">
       <div id="challenge162-playoffs-container"></div>
+    </div>
+
+        <!-- SCREEN: DYNASTY & HOBBY BOX (162 JUEGOS) -->
+    <div class="glass-panel hidden" id="screen-dynasty-hub" style="position: relative; max-width: 1380px; width: 96%; margin: 15px auto; padding: 20px 16px; border: 2px solid #ffd700; box-shadow: 0 0 35px rgba(255, 215, 0, 0.25);">
+      <div id="dynasty-content-area">
+        <!-- Rendered via dynasty.js -->
+      </div>
     </div>
 
     <!-- SCREEN: 162-0 CHALLENGE — RESULTS & VICTORY -->
@@ -1350,6 +1374,7 @@
   <script src="player_flags_db.js?v=1787949068"></script>
   <script src="basedex.js?v=1787949068"></script>
   <script src="challenge162.js?v=124"></script>
+  <script src="dynasty.js?v=1787960004"></script>
   <script src="ui.js?v=1787947742"></script>
 
 </body>

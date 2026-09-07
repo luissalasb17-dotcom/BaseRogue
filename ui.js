@@ -7099,74 +7099,108 @@ function initGameModeSelector() {
       }
     }
 
-    // 3. Option A Spotlight Hype (Clean Verdict & Key Tactical Highlights)
+    // 3. Option A Matchup Clash Matrix (Head-to-Head Attributes)
     const insightsEl = document.getElementById('showdown-matchup-insights');
     if (insightsEl && batter && pitcher) {
-      const bCon = batter.con || 50;
-      const bPwr = batter.pwr || 50;
-      const bEye = batter.eye || 50;
-      const bKAvd = batter.k_avd || 50;
+      const eff = (window.Game && typeof window.Game.getEffectiveStats === 'function')
+        ? (window.Game.getEffectiveStats(batter, currentSlot) || batter)
+        : batter;
 
-      const pH9 = pitcher.h9 || 50;
-      const pHr9 = pitcher.hr9 || 50;
-      const pBb9 = pitcher.bb9 || 50;
-      const pK9 = pitcher.k9 || 50;
+      const bCon = eff.con || 50;
+      const bPwr = eff.pwr || 50;
+      const bEye = eff.eye || 50;
+      const bKAvd = eff.k_avd !== undefined ? eff.k_avd : (eff.k_avoid !== undefined ? eff.k_avoid : 50);
+
+      const pH9 = pitcher.h9 !== undefined ? pitcher.h9 : 50;
+      const pHr9 = pitcher.hr9 !== undefined ? pitcher.hr9 : 50;
+      const pBb9 = pitcher.bb9 !== undefined ? pitcher.bb9 : 50;
+      const pK9 = pitcher.k9 !== undefined ? pitcher.k9 : 50;
 
       const diffCon = bCon - pH9;
       const diffPwr = bPwr - pHr9;
       const diffEye = bEye - pBb9;
       const diffK   = bKAvd - pK9;
 
-      let keyBadges = [];
-
-      // Power / Home Run Threat
-      if (diffPwr >= 12) {
-        keyBadges.push({ label: `<i class="fa-solid fa-fire"></i> ${t('pre_fight.matchup_hr_threat', 'Amenaza Jonrón (+HR)')}`, cls: 'chip-fire' });
-      }
-
-      // Contact Advantage vs Low-Hit Command
-      if (diffCon >= 12) {
-        keyBadges.push({ label: `<i class="fa-solid fa-baseball-bat-ball"></i> ${t('pre_fight.matchup_con_edge', 'Ventaja Contacto (+Hits)')}`, cls: 'chip-good' });
-      } else if (diffCon <= -12) {
-        keyBadges.push({ label: `<i class="fa-solid fa-hand"></i> ${t('pre_fight.edge_hits_minus', 'Control de Hits (H/9)')}`, cls: 'chip-bad' });
-      }
-
-      // Strikeout Danger vs Discipline
-      if (diffK <= -12) {
-        keyBadges.push({ label: `<i class="fa-solid fa-wind"></i> ${t('pre_fight.matchup_k_threat', 'Peligro Ponche (K/9)')}`, cls: 'chip-bad' });
-      } else if (diffK >= 12) {
-        keyBadges.push({ label: `<i class="fa-solid fa-shield-halved"></i> ${t('pre_fight.matchup_k_resist', 'Resistencia Anti-K')}`, cls: 'chip-good' });
-      }
-
-      // Eye / Walk Discipline
-      if (diffEye >= 12) {
-        keyBadges.push({ label: `<i class="fa-solid fa-eye"></i> ${t('pre_fight.edge_bb_plus', 'Ojo Clínico (+BB)')}`, cls: 'chip-good' });
-      }
+      const formatDiff = (diff) => {
+        if (diff > 0) return `<span class="clash-diff-pill diff-positive">+${diff}</span>`;
+        if (diff < 0) return `<span class="clash-diff-pill diff-negative">${diff}</span>`;
+        return `<span class="clash-diff-pill diff-neutral">0</span>`;
+      };
 
       // Overall Edge Verdict
       const netAdvantage = diffCon + diffK + (diffPwr * 0.8) + (diffEye * 0.6);
       let overallText = t('pre_fight.matchup_even', '🟡 DUELO EQUILIBRADO');
       let overallClass = 'edge-even';
+      let tipText = t('pre_fight.tip_even', '⚖️ Duelo cerrado: La tirada de dados y el timing definirán el turno.');
+
       if (netAdvantage >= 16) {
         overallText = t('pre_fight.matchup_advantage_hitter', '🟢 VENTAJA BATEADOR');
         overallClass = 'edge-hitter';
+        tipText = t('pre_fight.tip_hitter', '💡 Luz verde: Tu bateador tiene ventaja táctica para castigar al lanzador.');
       } else if (netAdvantage <= -16) {
         overallText = t('pre_fight.matchup_advantage_pitcher', '🔴 VENTAJA LANZADOR');
         overallClass = 'edge-pitcher';
-      }
-
-      let highlightsHtml = '';
-      if (keyBadges.length > 0) {
-        highlightsHtml = `
-          <div class="showdown-highlights-wrap">
-            ${keyBadges.slice(0, 2).map(b => `<div class="showdown-highlight-chip ${b.cls}">${b.label}</div>`).join('')}
-          </div>
-        `;
+        tipText = t('pre_fight.tip_pitcher', '⚠️ Precaución: El lanzador domina la zona. Peligro de ponche o contacto débil.');
       }
 
       insightsEl.innerHTML = `
         <div class="matchup-overall-badge ${overallClass}">${overallText}</div>
-        ${highlightsHtml}
+        
+        <div class="matchup-clash-matrix">
+          <!-- Contact vs H/9 -->
+          <div class="clash-row" title="Contacto del bateador vs H/9 del lanzador">
+            <div class="clash-col-batter">
+              <span>CON</span>
+              <span class="clash-val-b">${bCon}</span>
+            </div>
+            ${formatDiff(diffCon)}
+            <div class="clash-col-pitcher">
+              <span class="clash-val-p">${pH9}</span>
+              <span>H/9</span>
+            </div>
+          </div>
+
+          <!-- Power vs HR/9 -->
+          <div class="clash-row" title="Poder del bateador vs HR/9 del lanzador">
+            <div class="clash-col-batter">
+              <span>PWR</span>
+              <span class="clash-val-b">${bPwr}</span>
+            </div>
+            ${formatDiff(diffPwr)}
+            <div class="clash-col-pitcher">
+              <span class="clash-val-p">${pHr9}</span>
+              <span>HR/9</span>
+            </div>
+          </div>
+
+          <!-- Eye vs BB/9 -->
+          <div class="clash-row" title="Visión/Disciplina vs BB/9 del lanzador">
+            <div class="clash-col-batter">
+              <span>EYE</span>
+              <span class="clash-val-b">${bEye}</span>
+            </div>
+            ${formatDiff(diffEye)}
+            <div class="clash-col-pitcher">
+              <span class="clash-val-p">${pBb9}</span>
+              <span>BB/9</span>
+            </div>
+          </div>
+
+          <!-- K-Avoid vs K/9 -->
+          <div class="clash-row" title="Evitar Ponche vs K/9 del lanzador">
+            <div class="clash-col-batter">
+              <span>K-AVD</span>
+              <span class="clash-val-b">${bKAvd}</span>
+            </div>
+            ${formatDiff(diffK)}
+            <div class="clash-col-pitcher">
+              <span class="clash-val-p">${pK9}</span>
+              <span>K/9</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="matchup-quick-tip">${tipText}</div>
       `;
     }
 
