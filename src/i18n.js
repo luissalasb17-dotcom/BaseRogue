@@ -1243,6 +1243,11 @@
         "resume": "CONTINUAR",
         "abandon": "ABANDONAR",
         "abandon_confirm": "Seguro que deseas abandonar la temporada en progreso? Se perdera el avance actual.",
+        "packs_badge": "FORMATO SOBRES",
+        "packs_title": "DRAFT DE SOBRES HOBBY",
+        "packs_desc": "Abre 25 sobres retro directamente del universo de leyendas MLB para draftear tu alineación de 9 titulares, 5 de banca, rotación de 5 abridores y 6 relevistas.",
+        "play_packs": "DRAFT CON SOBRES",
+        "bench_title": "BANCA DE SUPLENTES (BENCH - 5 CARTAS)",
         "free_draft_badge": "COLECCION LIBRE",
         "all_star_title": "ALL-STAR DREAM TEAM",
         "all_star_desc": "Construye tu alineacion y cuerpo de pitcheo sin restricciones utilizando cualquier carta desbloqueada en tu coleccion.",
@@ -3397,6 +3402,11 @@
         "resume": "CONTINUE",
         "abandon": "ABANDON",
         "abandon_confirm": "Are you sure you want to abandon the current season? All progress will be lost.",
+        "packs_badge": "PACKS FORMAT",
+        "packs_title": "HOBBY PACKS DRAFT",
+        "packs_desc": "Open 25 retro card packs directly from the entire universe of MLB legends to draft your 9-man starting lineup, 5 bench players, 5-man rotation, and 6-man bullpen.",
+        "play_packs": "DRAFT WITH PACKS",
+        "bench_title": "BENCH RESERVES (BENCH - 5 CARDS)",
         "free_draft_badge": "FREE DRAFT",
         "all_star_title": "ALL-STAR DREAM TEAM",
         "all_star_desc": "Build your ultimate dream lineup and pitching staff without restrictions using any card in your collection.",
@@ -4312,6 +4322,7 @@
     "resign_fail_title": "OFFER REJECTED ❌",
     "resign_fail_desc": "{{name}} tested the market and declined the extension offer. They prefer to explore free agency or test their value.",
     "resign_already_attempted": "An offer was already submitted to {{name}} this season."
+    }
   }
   };
 

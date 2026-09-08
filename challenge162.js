@@ -23,6 +23,48 @@
 
   const RECORDS_KEY = 'baserogue_162challenge_records_v1';
 
+  // Attribute Grade Color coding matching BaseballDex
+  const GRADE_COLORS = {
+    'S': '#ffd700',
+    'A': '#22d3ee',
+    'B': '#4ade80',
+    'C': '#94a3b8',
+    'D': '#f97316',
+    'F': '#ef4444'
+  };
+
+  function getGrade(val) {
+    const v = Math.round(Number(val) || 0);
+    let letter = 'F', modifier = '';
+    if (v >= 100) {
+      letter = 'S';
+    } else if (v >= 80) {
+      letter = 'A';
+      if (v >= 95) modifier = '+';
+      else if (v < 85) modifier = '-';
+    } else if (v >= 60) {
+      letter = 'B';
+      if (v >= 75) modifier = '+';
+      else if (v < 65) modifier = '-';
+    } else if (v >= 40) {
+      letter = 'C';
+      if (v >= 55) modifier = '+';
+      else if (v < 45) modifier = '-';
+    } else if (v >= 20) {
+      letter = 'D';
+      if (v >= 35) modifier = '+';
+      else if (v < 25) modifier = '-';
+    } else {
+      letter = 'F';
+    }
+    return letter + modifier;
+  }
+
+  function getGradeColor(val) {
+    const letter = getGrade(val).charAt(0);
+    return GRADE_COLORS[letter] || GRADE_COLORS.F;
+  }
+
   const MLB_FRANCHISES = [
     { code: 'NYY', name: 'New York Yankees', city: 'New York', color: '#132448', accent: '#c4ced4', icon: '🗽' },
     { code: 'BOS', name: 'Boston Red Sox', city: 'Boston', color: '#bd3039', accent: '#0c2340', icon: '🧦' },
@@ -825,8 +867,14 @@
       });
     }
 
+    const bench = [null, null, null, null, null];
+    let bIdx = 0;
+    while (overflowBatters.length > 0 && bIdx < 5) {
+      bench[bIdx++] = overflowBatters.shift();
+    }
+
     const sp = [null, null, null, null, null];
-    const rp = [null, null, null];
+    const rp = [null, null, null, null, null, null];
     const usedPitchers = new Set();
 
     const isSP = (p) => (p.role || 'SP').toUpperCase() === 'SP';
@@ -843,7 +891,7 @@
 
     let rpIdx = 0;
     rpList.forEach(p => {
-      if (!usedPitchers.has(pitcherUnlockKey(p)) && rpIdx < 3) {
+      if (!usedPitchers.has(pitcherUnlockKey(p)) && rpIdx < 6) {
         rp[rpIdx++] = p;
         usedPitchers.add(pitcherUnlockKey(p));
       }
@@ -869,7 +917,7 @@
       }
     });
 
-    return { lineup, sp, rp, batters, pitchers };
+    return { lineup, bench, sp, rp, batters, pitchers };
   }
 
   function pickWeightedChallengeDraftCard(pool, missingPos, usedKeys) {
@@ -1188,14 +1236,14 @@
       return optimized.map(p => p._slotKey);
     },
 
-    startNewChallenge(lineup, pitchers, customModeConfig) {
+    startNewChallenge(lineup, pitchers, customModeConfig, bench = []) {
       const leagueTeams = buildLeagueTeams();
       const cfg = customModeConfig || this.getModeConfig();
       const battingOrder = this._optimizeBattingOrder(lineup);
       this.state = {
         v: 1,
         modeConfig: cfg,
-        roster: { lineup, battingOrder, pitchers },
+        roster: { lineup, battingOrder, pitchers, bench: bench || [] },
         leagueTeams,
         schedule: buildSeasonSchedule(leagueTeams),
         gamesPlayed: 0, wins: 0, losses: 0, streak: 0,
@@ -1205,6 +1253,9 @@
       };
       SLOTS.forEach(slot => {
         const p = lineup[slot];
+        if (p) this.state.batterStats[batterUnlockKey(p)] = { name: p.name, g: 0, ab: 0, h: 0, doubles: 0, triples: 0, hr: 0, rbi: 0, bb: 0, so: 0, r: 0, sb: 0 };
+      });
+      (bench || []).forEach(p => {
         if (p) this.state.batterStats[batterUnlockKey(p)] = { name: p.name, g: 0, ab: 0, h: 0, doubles: 0, triples: 0, hr: 0, rbi: 0, bb: 0, so: 0, r: 0, sb: 0 };
       });
       [...pitchers.SP, ...pitchers.RP].forEach(p => {
@@ -1328,10 +1379,11 @@
       // Respect user's explicit roster slot roles:
       // RP[0] = Designated Closer (CL)
       // RP[1] = Setup Reliever (SETUP)
-      // RP[2] = Middle Reliever (RP)
+      // RP[2..5] = Middle Relievers (RP1..RP4)
       const closer = rpList[0] || rpList[1] || rpList[2];
       const setup  = rpList[1] || rpList[0] || rpList[2];
-      const middle = rpList[2] || rpList[1] || rpList[0];
+      const midRelievers = rpList.slice(2).filter(Boolean);
+      const middle = midRelievers.length > 0 ? midRelievers[gameIdx % midRelievers.length] : (rpList[2] || rpList[1] || rpList[0]);
       const userRelievers = [middle, setup, closer];
 
       const sched = S.schedule[gameIdx];
@@ -1440,6 +1492,11 @@
           userIdx++;
           // Routine rest or late-game blowout substitution by bench:
           if (slot === restedSlotIdx || isBlowout) {
+            const benchList = (this.state && this.state.roster && this.state.roster.bench) || [];
+            if (benchList.length > 0) {
+              const bSub = benchList[(gameIdx + slot) % benchList.length];
+              if (bSub) return bSub;
+            }
             return { name: "Bench", con: 50, pwr: 45, eye: 45, spd: 45, def: 50, _isBench: true };
           }
           return currentBatter;
@@ -3316,14 +3373,16 @@
     _packDraft: null,
 
     startPacksDraftMode() {
-      this.setModeConfig({ type: 'packs', label: '📦 HOBBY PACKS DRAFT', desc: '17-Pack Universe Draft' });
+      this.setModeConfig({ type: 'packs', label: '📦 HOBBY PACKS DRAFT', desc: '25-Pack Universe Draft' });
       this._packDraft = {
         stage: 'batters',
         currentPack: 0,
-        totalPacks: 9,
+        totalPacks: 14,
         pulledBatters: [],
         pulledPitchers: [],
-        usedKeys: new Set()
+        usedKeys: new Set(),
+        packOpened: false,
+        currentCard: null
       };
       this.showScreen('screen-challenge-pack');
       this.renderPacksDraft();
@@ -3334,25 +3393,25 @@
       if (!container) return;
 
       container.innerHTML = `
-        <div style="max-width: 680px; margin: 30px auto; text-align:center; background:rgba(0,0,0,0.8); border:2px solid #ffd700; border-radius:14px; padding:28px; box-shadow:0 0 40px rgba(255,215,0,0.3);">
+        <div style="max-width: 680px; margin: 30px auto; text-align:center; background:rgba(0,0,0,0.85); border:2px solid #ffd700; border-radius:14px; padding:28px; box-shadow:0 0 40px rgba(255,215,0,0.35);">
           <div style="font-size:44px; margin-bottom:12px;">⚾</div>
           <div style="font-family:'Press Start 2P',monospace; font-size:13px; color:#ffd700; margin-bottom:12px; line-height:1.4;">
-            BATTERS BOX COMPLETED!
+            ¡CAJA DE BATEADORES COMPLETADA!
           </div>
           <p style="font-size:12px; color:#e2e8f0; line-height:1.6; margin-bottom:20px;">
-            Your 9-man starting lineup is locked in. Now open the <strong>Pitchers Box (8 Packs)</strong> to draft your 5 starting pitchers (SP1-SP5) and 3 bullpen relievers (Closer, Setup, Middle Relief).
+            Tu alineación titular de <strong>9 bateadores</strong> y tus <strong>5 jugadores en la banca</strong> están listos. Ahora abre la <strong>Caja de Lanzadores (11 Sobres)</strong> para draftear tu rotación de 5 abridores (SP1-SP5) y tu bullpen de 6 relevistas (Closer, Setup y 4 Relevos Medios).
           </p>
           <div style="display:inline-block; background:rgba(255,215,0,0.1); border:1px solid #ffd700; border-radius:8px; padding:12px 20px; margin-bottom:24px;">
             <div style="font-family:'Press Start 2P',monospace; font-size:9.5px; color:#ffd700; margin-bottom:4px;">
-              📦 BOX #2: PITCHERS HOBBY BOX
+              📦 CAJA #2: LANZADORES HOBBY BOX (11 SOBRES)
             </div>
             <div style="font-size:9.5px; color:#9ca3af;">
-              5 Starting Pitchers (SP) + 3 Bullpen Arms (RP / Closer)
+              5 Abridores (SP) + 6 Brazos de Bullpen (CL, SU, RP1-RP4)
             </div>
           </div>
           <div>
             <button id="btn-c162-start-pitchers-box" class="btn" style="padding:14px 28px; font-family:'Press Start 2P',monospace; font-size:11px; background:linear-gradient(135deg,#ffd700,#f59e0b); color:#000; border:none; border-radius:8px; cursor:pointer; box-shadow:0 0 20px rgba(255,215,0,0.5); font-weight:bold;">
-              📦 OPEN PITCHERS BOX (8 PACKS) ➔
+              📦 ABRIR CAJA DE LANZADORES (11 SOBRES) ➔
             </button>
           </div>
         </div>
@@ -3363,7 +3422,9 @@
         btn.onclick = () => {
           this._packDraft.stage = 'pitchers';
           this._packDraft.currentPack = 0;
-          this._packDraft.totalPacks = 8;
+          this._packDraft.totalPacks = 11;
+          this._packDraft.packOpened = false;
+          this._packDraft.currentCard = null;
           this.renderPacksDraft();
         };
       }
@@ -3375,294 +3436,432 @@
 
       const draft = this._packDraft;
       const isPitchersStage = draft.stage === 'pitchers';
-      const packNum = draft.currentPack + 1;
-      const total = draft.totalPacks;
-      const globalCardNum = isPitchersStage ? (9 + packNum) : packNum;
+      const isCardRevealed = Boolean(draft.packOpened && draft.currentCard);
+      const packNum = isCardRevealed ? draft.currentPack : (draft.currentPack + 1);
+      const totalInStage = draft.totalPacks;
+      const globalCardNum = isPitchersStage ? (14 + packNum) : packNum;
+      const isLastPackInStage = isCardRevealed && (draft.currentPack >= totalInStage);
+      const isDraftComplete = isPitchersStage && isLastPackInStage;
 
-      // 1. Pick a card from global universe pool
-      const bPool = getBatterPool();
-      const pPool = getPitcherPool();
       const allPulled = [...draft.pulledBatters, ...draft.pulledPitchers];
-      const currentSlots = calculateChallengeRosterSlots(allPulled, false);
+      const updatedSlots = calculateChallengeRosterSlots(allPulled, false);
 
-      const missingPos = [];
-      if (isPitchersStage) {
-        const spEmpty = currentSlots.sp.filter(s => s === null).length;
-        const rpEmpty = currentSlots.rp.filter(s => s === null).length;
-        if (spEmpty > 0) missingPos.push('SP');
-        if (rpEmpty > 0) missingPos.push('RP', 'CL', 'CP');
+      const allSlotted = [
+        ...Object.values(updatedSlots.lineup),
+        ...(updatedSlots.bench || []),
+        ...(updatedSlots.sp || []),
+        ...(updatedSlots.rp || [])
+      ].filter(Boolean);
+      const avgOVR = allSlotted.length
+        ? (allSlotted.reduce((acc, p) => acc + (p.ovr || 50), 0) / allSlotted.length).toFixed(1)
+        : '—';
+
+      const currentCardKey = draft.currentCard
+        ? (draft.currentCard.role ? pitcherUnlockKey(draft.currentCard) : batterUnlockKey(draft.currentCard))
+        : null;
+
+      // ── Left Column Stage: Sealed Foil Pack OR Revealed 3D Card ─────────────
+      let leftColumnHTML = '';
+
+      if (!isCardRevealed) {
+        // STATE 1: Sealed Retro Foil Pack ready to open
+        leftColumnHTML = `
+          <div style="background:rgba(0,0,0,0.5); border:1px solid rgba(255,215,0,0.3); border-radius:12px; padding:20px; text-align:center; min-height:540px; display:flex; flex-direction:column; justify-content:center; align-items:center;">
+            <div class="dex-foil-pack-wrapper" id="c162-foil-pack-target" style="cursor:pointer; margin: 10px auto;" title="¡Toca para abrir sobre!">
+              <div class="dex-foil-pack" id="c162-foil-pack-inner" style="background:linear-gradient(135deg, #1e293b 0%, #0f172a 40%, #1e1b4b 70%, #311042 100%); border-color:#ffd700; box-shadow:0 0 35px rgba(255,215,0,0.4);">
+                <div class="dex-foil-crimp" id="c162-pack-crimp-top" style="background:repeating-linear-gradient(90deg, #ffd700, #ffd700 3px, #b45309 3px, #b45309 6px);"></div>
+
+                <div style="text-align:center; margin: 26px 0;">
+                  <div style="font-size:42px; filter:drop-shadow(0 0 14px #ffd700); margin-bottom:8px;">📦</div>
+                  <div style="font-family:'Press Start 2P',monospace; font-size:11px; color:#ffd700; text-shadow:0 0 12px rgba(255,215,0,0.8); line-height:1.4;">
+                    ${isPitchersStage ? 'PITCHERS BOX' : 'BATTERS BOX'}
+                  </div>
+                  <div style="font-family:'Press Start 2P',monospace; font-size:8px; color:#38bdf8; margin-top:8px; background:rgba(56,189,248,0.15); border:1px solid #38bdf8; padding:3px 8px; border-radius:4px; display:inline-block;">
+                    PACK #${globalCardNum} / 25
+                  </div>
+                  <div style="font-size:9.5px; color:#9ca3af; margin-top:10px; line-height:1.4;">
+                    ${isPitchersStage ? '5 Abridores (SP) + 6 Relevistas' : '9 Titulares + 5 de Banca'}
+                  </div>
+                </div>
+
+                <div style="text-align:center; margin-bottom:14px;">
+                  <div style="font-family:'Press Start 2P',monospace; font-size:8.5px; color:#00ff66; animation:packGlowPulse 1.2s infinite ease-in-out;">
+                    ✨ ${typeof window.t === 'function' ? window.t('challenge162.tap_to_open', 'TOCAR PARA ABRIR') : 'TOCAR PARA ABRIR'} ✨
+                  </div>
+                </div>
+
+                <div class="dex-foil-crimp" style="background:repeating-linear-gradient(90deg, #ffd700, #ffd700 3px, #b45309 3px, #b45309 6px);"></div>
+              </div>
+            </div>
+
+            <div style="margin-top:14px; font-size:10px; color:#94a3b8; font-family:'Press Start 2P',monospace; line-height:1.4;">
+              ⚡ Haz clic en el sobre para rasgar el foil y revelar tu carta
+            </div>
+          </div>
+        `;
       } else {
-        SLOTS.forEach(slot => {
-          if (!currentSlots.lineup[slot]) missingPos.push(slot);
-        });
-      }
+        // STATE 2: Card Revealed with 3D Flip Face & Basedex grade stats
+        const card = draft.currentCard;
+        const isPitcherCard = Boolean(card.role);
+        const rColor = card.ovr >= 95 ? '#ffd700' : (card.ovr >= 88 ? '#a855f7' : (card.ovr >= 80 ? '#3b82f6' : (card.ovr >= 75 ? '#10b981' : '#6b7280')));
+        const eraShort = card.era || 'All-Time';
+        const cName = cleanName(card);
 
-      const activePool = isPitchersStage ? pPool : bPool;
-      let card = pickWeightedChallengeDraftCard(activePool, missingPos, draft.usedKeys);
-      if (!card) {
-        card = activePool.find(c => {
-          const k = c.role ? pitcherUnlockKey(c) : batterUnlockKey(c);
-          return !draft.usedKeys.has(k);
-        }) || activePool[0];
-      }
+        const tradingCardHTML = typeof window.createCardHTML === 'function'
+          ? window.createCardHTML(card)
+          : `<div style="padding:20px; color:#fff;">${card.name} - OVR ${card.ovr}</div>`;
 
-      const cKey = card.role ? pitcherUnlockKey(card) : batterUnlockKey(card);
-      draft.usedKeys.add(cKey);
-
-      if (isPitchersStage) {
-        draft.pulledPitchers.push(card);
-      } else {
-        draft.pulledBatters.push(card);
-      }
-      draft.currentPack++;
-
-      // Play card sound
-      if (window.AudioManager && typeof window.AudioManager.play === 'function') {
-        window.AudioManager.play('card_deal');
-      } else if (typeof window.playSound === 'function') {
-        window.playSound('card_flip');
-      }
-
-      // Updated slots after pull
-      const updatedAllPulled = [...draft.pulledBatters, ...draft.pulledPitchers];
-      const updatedSlots = calculateChallengeRosterSlots(updatedAllPulled, false);
-
-      // Render mini formation tracker
-      const renderMiniSlot = (slotLabel, player) => {
-        if (!player) {
+        // Stat box renderer with Basedex grade letters and colors
+        const renderStat = (lbl, val) => {
+          if (typeof val !== 'number') {
+            return `
+              <div style="background:#111827;border-radius:6px;padding:7px 9px;display:flex;justify-content:space-between;align-items:center">
+                <span style="font-size:9px;color:#9ca3af;font-family:'Press Start 2P',monospace;">${lbl}</span>
+                <span style="font-size:11px;font-weight:bold;color:#38bdf8">${val}</span>
+              </div>
+            `;
+          }
           return `
-            <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.3); border:1px dashed rgba(255,255,255,0.15); border-radius:4px; padding:3px 6px; margin-bottom:3px; font-size:7.5px;">
-              <span style="font-family:'Press Start 2P',monospace; color:#64748b;">${slotLabel}</span>
-              <span style="color:#475569; font-style:italic;">[Empty]</span>
+            <div style="background:#111827;border-radius:6px;padding:7px 9px;display:flex;justify-content:space-between;align-items:center">
+              <span style="font-size:9px;color:#9ca3af;font-family:'Press Start 2P',monospace;">${lbl}</span>
+              <span style="font-size:11px;font-weight:bold;color:${getGradeColor(val)}">${val} <small style="font-size:8px;margin-left:2px;">${getGrade(val)}</small></span>
+            </div>
+          `;
+        };
+
+        let statsHTML = '';
+        if (isPitcherCard) {
+          const h9 = card.h9 !== undefined ? card.h9 : 50;
+          const k9 = card.k9 !== undefined ? card.k9 : 50;
+          const bb9 = card.bb9 !== undefined ? card.bb9 : 50;
+          const hr9 = card.hr9 !== undefined ? card.hr9 : 50;
+          const sta = card.sta !== undefined ? card.sta : 65;
+          statsHTML = `
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:14px">
+              ${renderStat('H/9', h9)}
+              ${renderStat('K/9', k9)}
+              ${renderStat('BB/9', bb9)}
+              ${renderStat('HR/9', hr9)}
+              ${renderStat('STA', sta)}
+              <div style="background:#111827;border-radius:6px;padding:7px 9px;display:flex;justify-content:space-between;align-items:center">
+                <span style="font-size:9px;color:#9ca3af;font-family:'Press Start 2P',monospace;">ROL</span>
+                <span style="font-size:11px;font-weight:bold;color:#ffd700">${card.role || 'SP'}</span>
+              </div>
+            </div>
+          `;
+        } else {
+          const kavd = card.k_avd !== undefined ? card.k_avd : (card.k_avoid !== undefined ? card.k_avoid : (card.k_avoid_val !== undefined ? card.k_avoid_val : (card.con || 40)));
+          statsHTML = `
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:14px">
+              ${renderStat('CON', card.con || 50)}
+              ${renderStat('PWR', card.pwr || 50)}
+              ${renderStat('EYE', card.eye || 50)}
+              ${renderStat('K/AVD', kavd)}
+              ${renderStat('SPD', card.spd || 50)}
+              ${renderStat('DEF', card.def || 50)}
             </div>
           `;
         }
-        const ovrCol = player.ovr >= 90 ? '#ffd700' : (player.ovr >= 80 ? '#38bdf8' : '#10b981');
-        const isCurrentCard = (player.role ? pitcherUnlockKey(player) : batterUnlockKey(player)) === cKey;
-        return `
-          <div style="display:flex; justify-content:space-between; align-items:center; background:${isCurrentCard ? 'rgba(255,215,0,0.18)' : 'rgba(255,255,255,0.04)'}; border:1px solid ${isCurrentCard ? '#ffd700' : 'rgba(255,255,255,0.1)'}; border-radius:4px; padding:3px 6px; margin-bottom:3px; font-size:7.5px; animation: fadeIn 0.3s ease;">
-            <div style="display:flex; align-items:center; gap:5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:145px;">
-              <span style="font-family:'Press Start 2P',monospace; font-size:6.5px; color:${isCurrentCard ? '#ffd700' : '#94a3b8'}; width:22px;">${slotLabel}</span>
-              <span style="color:#fff; font-weight:bold; overflow:hidden; text-overflow:ellipsis;">${cleanName(player)}</span>
+
+        leftColumnHTML = `
+          <div style="background:rgba(0,0,0,0.5); border:1px solid rgba(255,215,0,0.3); border-radius:12px; padding:16px; text-align:center; min-height:540px; display:flex; flex-direction:column; justify-content:center; align-items:center;">
+            <div style="width:100%; max-width:440px; margin:0 auto; animation: packCardBurst 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;">
+              
+              <div class="dex-flip-card-container" id="c162-flip-container" style="perspective:1200px; width:100%; max-width:440px; min-height:480px; margin:0 auto; cursor:pointer;" title="Clic para voltear carta">
+                <div class="dex-flip-card-inner" id="c162-flip-inner">
+                  
+                  <!-- Side A: Stats & Overview -->
+                  <div class="dex-card-face dex-card-front" style="background:#0a0f1a; border:3px solid ${rColor}; border-radius:12px; padding:20px; box-shadow: 0 0 35px ${rColor}66; text-align:left;">
+                    <div style="margin-bottom:12px; padding-right:10px;">
+                      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                        <span style="font-family:'Press Start 2P',monospace; font-size:9px; color:${rColor};">${card.rarity || 'Common'} · ${eraShort}</span>
+                        <span style="font-family:'Press Start 2P',monospace; font-size:7px; color:#38bdf8; background:rgba(56,189,248,0.1); border:1px solid rgba(56,189,248,0.3); padding:2px 5px; border-radius:4px;">🔄 FLIP</span>
+                      </div>
+                      <h2 style="font-family:'Press Start 2P',monospace; font-size:12.5px; color:#fff; margin:0 0 4px 0; line-height:1.4;">
+                        ${cName}
+                      </h2>
+                      <div style="font-size:10.5px; color:#9ca3af;">${card.team || 'MLB'} — ${card.year || ''} · <span style="color:#e2e8f0; font-weight:bold;">${card.role || card.pos || 'DH'}</span></div>
+                    </div>
+
+                    <div style="text-align:center; margin-bottom:14px;">
+                      <div style="font-family:'Press Start 2P',monospace; font-size:32px; color:${rColor}; text-shadow:0 0 20px ${rColor}88;">${Math.floor(card.ovr || 75)}</div>
+                      <div style="font-size:9.5px; color:#6b7280; font-family:'Press Start 2P',monospace;">OVERALL RATING</div>
+                    </div>
+
+                    ${statsHTML}
+
+                    <div style="background:rgba(255,255,255,0.04); border-radius:8px; padding:8px; text-align:center; border:1px dashed rgba(255,255,255,0.15);">
+                      <div style="font-size:10px; color:#00ff66; font-family:'Press Start 2P',monospace;">
+                        ✅ DRAFTEADO AL ROSTER 162-0
+                      </div>
+                      <div style="font-size:8.5px; color:#94a3b8; margin-top:2px;">
+                        Carta colocada en tu deck
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Side B: Trading Card Art -->
+                  <div class="dex-card-face dex-card-back" style="border:3px solid ${rColor}; box-shadow: 0 0 35px ${rColor}66;">
+                    <div style="font-family:'Press Start 2P',monospace; font-size:8.5px; color:#ffd700; margin-bottom:12px; letter-spacing:1px; text-align:center;">
+                      🎴 DRAFT TRADING CARD
+                    </div>
+                    <div style="transform:scale(1.15); margin:12px 0;">
+                      ${tradingCardHTML}
+                    </div>
+                    <div style="font-size:9.5px; color:#9ca3af; margin-top:14px; text-align:center; font-family:'Press Start 2P',monospace; line-height:1.4;">
+                      ${card.name} · ${card.year || ''}
+                    </div>
+                    <div style="margin-top:10px; font-family:'Press Start 2P',monospace; font-size:7px; color:#38bdf8;">
+                      🔄 CLIC PARA VER ATRIBUTOS
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
+              <!-- Bottom Controls -->
+              <div style="margin-top:12px; width:100%; display:flex; flex-direction:column; align-items:center; gap:8px;">
+                <button id="btn-c162-flip-card" type="button" style="padding:6px 14px; background:linear-gradient(135deg, rgba(56,189,248,0.2), rgba(14,165,233,0.3)); border:1.5px solid #38bdf8; color:#38bdf8; border-radius:6px; font-family:'Press Start 2P',monospace; font-size:7.5px; cursor:pointer; display:inline-flex; align-items:center; gap:5px;">
+                  🔄 VOLTEAR CARTA
+                </button>
+
+                <button id="btn-c162-next-pack" class="btn" style="width:100%; padding:13px 18px; font-family:'Press Start 2P',monospace; font-size:10px; background:linear-gradient(135deg,#00ff66,#059669); color:#000; border:none; border-radius:8px; cursor:pointer; box-shadow:0 0 20px rgba(0,255,102,0.4); font-weight:bold;">
+                  ${isDraftComplete ? '🚀 FINALIZAR ROSTER Y EMPEZAR 162-0 ➔' : (isLastPackInStage ? '⚾ ABRIR CAJA DE LANZADORES ➔' : `📦 ABRIR SIGUIENTE SOBRE (${globalCardNum + 1}/25) ➔`)}
+                </button>
+              </div>
+
             </div>
-            <div style="display:flex; align-items:center; gap:5px;">
-              <span style="font-family:'Press Start 2P',monospace; font-size:7px; color:${ovrCol};">${Math.round(player.ovr || 75)}</span>
+          </div>
+        `;
+      }
+
+      // ── Right Column: Visual Card Deck Formation Board ───────────────────────
+      const renderCompactSlot = (player, slotLabel, kind, key) => {
+        const isCurrentActive = Boolean(
+          player && currentCardKey && (player.role ? pitcherUnlockKey(player) : batterUnlockKey(player)) === currentCardKey
+        );
+        if (!player) {
+          return `
+            <div class="c162-slot-item ${isCurrentActive ? 'active' : ''}">
+              <div class="c162-slot-header-pill">${slotLabel}</div>
+              <div class="c162-empty-card-frame">
+                <span class="c162-empty-icon"><i class="fa-solid fa-plus"></i></span>
+                <span class="c162-empty-text">${slotLabel}</span>
+              </div>
+            </div>
+          `;
+        }
+        const cardHTML = typeof window.createCardHTML === 'function'
+          ? window.createCardHTML(player, slotLabel)
+          : `<div class="player-card"><div class="card-name">${player.name}</div></div>`;
+
+        return `
+          <div class="c162-slot-item ${isCurrentActive ? 'active' : ''}" title="${player.name}">
+            <div class="c162-slot-header-pill">${slotLabel}</div>
+            <div class="c162-card-container">
+              ${cardHTML}
             </div>
           </div>
         `;
       };
 
-      const lineupSlotsHTML = SLOTS.map(slot => renderMiniSlot(slot, updatedSlots.lineup[slot])).join('');
-      const spSlotsHTML = [0, 1, 2, 3, 4].map(idx => renderMiniSlot(`SP${idx + 1}`, updatedSlots.sp[idx])).join('');
+      const infieldSlots = ['C', '1B', '2B', '3B', 'SS'];
+      const outfieldSlots = ['LF', 'CF', 'RF', 'DH'];
+
+      const infieldSlotsHTML = infieldSlots.map(slot =>
+        renderCompactSlot(updatedSlots.lineup[slot], slot, 'batter', slot)
+      ).join('');
+
+      const outfieldSlotsHTML = outfieldSlots.map(slot =>
+        renderCompactSlot(updatedSlots.lineup[slot], slot, 'batter', slot)
+      ).join('');
+
+      const benchSlotsHTML = [0, 1, 2, 3, 4].map(idx =>
+        renderCompactSlot(updatedSlots.bench[idx], `BN${idx + 1}`, 'bench', idx)
+      ).join('');
+
+      const spSlotsHTML = [0, 1, 2, 3, 4].map(idx =>
+        renderCompactSlot(updatedSlots.sp[idx], `SP${idx + 1}`, 'SP', idx)
+      ).join('');
+
       const rpSlotsHTML = [
-        renderMiniSlot('CL', updatedSlots.rp[0]),
-        renderMiniSlot('SU', updatedSlots.rp[1]),
-        renderMiniSlot('MR', updatedSlots.rp[2])
+        renderCompactSlot(updatedSlots.rp[0], 'CL', 'RP', 0),
+        renderCompactSlot(updatedSlots.rp[1], 'SETUP', 'RP', 1),
+        renderCompactSlot(updatedSlots.rp[2], 'RP1', 'RP', 2),
+        renderCompactSlot(updatedSlots.rp[3], 'RP2', 'RP', 3),
+        renderCompactSlot(updatedSlots.rp[4], 'RP3', 'RP', 4),
+        renderCompactSlot(updatedSlots.rp[5], 'RP4', 'RP', 5)
       ].join('');
 
-      const isLastPackInStage = draft.currentPack >= total;
-      const isDraftComplete = isPitchersStage && isLastPackInStage;
+      const filledLineupCount = SLOTS.filter(s => updatedSlots.lineup[s]).length;
+      const filledBenchCount = (updatedSlots.bench || []).filter(Boolean).length;
+      const filledSPCount = (updatedSlots.sp || []).filter(Boolean).length;
+      const filledRPCount = (updatedSlots.rp || []).filter(Boolean).length;
 
-      // Render 3D Card Face HTML
-      const isPitcherCard = Boolean(card.role);
-      const rColor = card.ovr >= 95 ? '#ffd700' : (card.ovr >= 88 ? '#a855f7' : (card.ovr >= 80 ? '#3b82f6' : (card.ovr >= 75 ? '#10b981' : '#6b7280')));
-      const eraShort = card.era || 'All-Time';
-      const cName = cleanName(card);
-
-      const tradingCardHTML = typeof window.createCardHTML === 'function'
-        ? window.createCardHTML(card)
-        : `<div style="padding:20px; color:#fff;">${card.name} - OVR ${card.ovr}</div>`;
-
-      let statsHTML = '';
-      if (isPitcherCard) {
-        const h9 = card.h9 !== undefined ? card.h9 : 50;
-        const k9 = card.k9 !== undefined ? card.k9 : 50;
-        const bb9 = card.bb9 !== undefined ? card.bb9 : 50;
-        const hr9 = card.hr9 !== undefined ? card.hr9 : 50;
-        const sta = card.sta !== undefined ? card.sta : 65;
-        const renderStat = (lbl, val) => `
-          <div style="background:#111827;border-radius:6px;padding:8px 10px;display:flex;justify-content:space-between;align-items:center">
-            <span style="font-size:9px;color:#9ca3af;font-family:'Press Start 2P',monospace;">${lbl}</span>
-            <span style="font-size:11px;font-weight:bold;color:#38bdf8">${val}</span>
-          </div>
-        `;
-        statsHTML = `
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
-            ${renderStat('H/9', h9)}
-            ${renderStat('K/9', k9)}
-            ${renderStat('BB/9', bb9)}
-            ${renderStat('HR/9', hr9)}
-            ${renderStat('STA', sta)}
-            <div style="background:#111827;border-radius:6px;padding:8px 10px;display:flex;justify-content:space-between;align-items:center">
-              <span style="font-size:9px;color:#9ca3af;font-family:'Press Start 2P',monospace;">ROLE</span>
-              <span style="font-size:11px;font-weight:bold;color:#ffd700">${card.role || 'SP'}</span>
-            </div>
-          </div>
-        `;
-      } else {
-        const renderStat = (lbl, val) => `
-          <div style="background:#111827;border-radius:6px;padding:8px 10px;display:flex;justify-content:space-between;align-items:center">
-            <span style="font-size:9px;color:#9ca3af;font-family:'Press Start 2P',monospace;">${lbl}</span>
-            <span style="font-size:11px;font-weight:bold;color:#38bdf8">${val}</span>
-          </div>
-        `;
-        statsHTML = `
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
-            ${renderStat('CON', card.con || 50)}
-            ${renderStat('PWR', card.pwr || 50)}
-            ${renderStat('EYE', card.eye || 50)}
-            ${renderStat('SPD', card.spd || 50)}
-            ${renderStat('DEF', card.def || 50)}
-            <div style="background:#111827;border-radius:6px;padding:8px 10px;display:flex;justify-content:space-between;align-items:center">
-              <span style="font-size:9px;color:#9ca3af;font-family:'Press Start 2P',monospace;">POS</span>
-              <span style="font-size:11px;font-weight:bold;color:#ffd700">${card.pos || 'DH'}</span>
-            </div>
-          </div>
-        `;
-      }
+      const progressPercent = Math.min(100, Math.round((allPulled.length / 25) * 100));
 
       container.innerHTML = `
-        <div style="max-width: 1240px; margin: 0 auto;">
+        <div style="max-width: 1300px; margin: 0 auto;">
           <!-- Top Header -->
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:10px;">
             <div>
-              <span style="font-family:'Press Start 2P',monospace; font-size:12px; color:#ffd700;">
-                📦 HOBBY PACKS DRAFT: ${isPitchersStage ? 'PITCHERS BOX' : 'BATTERS BOX'}
+              <span style="font-family:'Press Start 2P',monospace; font-size:11.5px; color:#ffd700;">
+                📦 HOBBY PACKS DRAFT: ${isPitchersStage ? 'CAJA DE LANZADORES' : 'CAJA DE BATEADORES'}
               </span>
-              <span style="font-size:10px; color:#94a3b8; margin-left:10px;">
-                (CARD ${globalCardNum} OF 17)
+              <span style="font-size:9.5px; color:#94a3b8; margin-left:10px; font-family:'Press Start 2P',monospace;">
+                (SOBRE ${globalCardNum} DE 25)
               </span>
             </div>
             <div style="display:flex; align-items:center; gap:12px;">
               <span style="font-family:'Press Start 2P',monospace; font-size:10px; color:#00ff66;">
-                ROSTER: ${updatedAllPulled.length}/17
+                ROSTER: ${allPulled.length}/25
               </span>
-              <button id="btn-c162-pack-cancel" class="btn btn-secondary" style="padding:6px 12px; font-size:9px; font-family:'Press Start 2P',monospace;">
-                ← CANCEL
+              <button id="btn-c162-pack-cancel" class="btn btn-secondary" style="padding:6px 12px; font-size:8.5px; font-family:'Press Start 2P',monospace;">
+                ← CANCELAR
               </button>
             </div>
           </div>
 
           <!-- Progress Bar -->
           <div style="width:100%; height:6px; background:rgba(255,255,255,0.08); border-radius:3px; overflow:hidden; margin-bottom:16px;">
-            <div style="width:${(globalCardNum / 17) * 100}%; height:100%; background:linear-gradient(90deg, #38bdf8, #ffd700, #00ff66); transition:width 0.3s ease;"></div>
+            <div style="width:${progressPercent}%; height:100%; background:linear-gradient(90deg, #38bdf8, #ffd700, #00ff66); transition:width 0.3s ease;"></div>
           </div>
 
-          <div style="display:grid; grid-template-columns: 460px 1fr; gap:18px; align-items:start;">
+          <!-- Main Grid: Left Stage (Pack/Card) + Right Board (Card Deck) -->
+          <div style="display:grid; grid-template-columns: 430px 1fr; gap:18px; align-items:start;">
             
-            <!-- Left Column: Revealed 3D Flip Card -->
-            <div style="background:rgba(0,0,0,0.5); border:1px solid rgba(255,215,0,0.3); border-radius:12px; padding:16px; text-align:center; min-height:500px; display:flex; flex-direction:column; justify-content:center; align-items:center;">
-              <div style="width:100%; max-width:440px; margin:0 auto; animation: packCardBurst 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;">
-                
-                <div class="dex-flip-card-container" id="c162-flip-container" style="perspective:1200px; width:100%; max-width:440px; min-height:480px; margin:0 auto; cursor:pointer;" title="Click to flip card">
-                  <div class="dex-flip-card-inner" id="c162-flip-inner">
-                    
-                    <!-- Side A: Stats & Overview -->
-                    <div class="dex-card-face dex-card-front" style="background:#0a0f1a; border:3px solid ${rColor}; border-radius:12px; padding:22px; box-shadow: 0 0 35px ${rColor}66; text-align:left;">
-                      <div style="margin-bottom:14px; padding-right:10px;">
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-                          <span style="font-family:'Press Start 2P',monospace; font-size:9.5px; color:${rColor};">${card.rarity || 'Common'} · ${eraShort}</span>
-                          <span style="font-family:'Press Start 2P',monospace; font-size:7.5px; color:#38bdf8; background:rgba(56,189,248,0.1); border:1px solid rgba(56,189,248,0.3); padding:2px 6px; border-radius:4px;">🔄 TAP TO FLIP</span>
-                        </div>
-                        <h2 style="font-family:'Press Start 2P',monospace; font-size:13px; color:#fff; margin:0 0 4px 0; line-height:1.4;">
-                          ${cName}
-                        </h2>
-                        <div style="font-size:11px; color:#9ca3af;">${card.team || 'MLB'} — ${card.year || ''} · <span style="color:#e2e8f0; font-weight:bold;">${card.role || card.pos || 'DH'}</span></div>
-                      </div>
+            <!-- Left Column -->
+            ${leftColumnHTML}
 
-                      <div style="text-align:center; margin-bottom:16px;">
-                        <div style="font-family:'Press Start 2P',monospace; font-size:34px; color:${rColor}; text-shadow:0 0 20px ${rColor}88;">${Math.floor(card.ovr || 75)}</div>
-                        <div style="font-size:10px; color:#6b7280; font-family:'Press Start 2P',monospace;">OVERALL RATING</div>
-                      </div>
-
-                      ${statsHTML}
-
-                      <div style="background:rgba(255,255,255,0.04); border-radius:8px; padding:10px; text-align:center; border:1px dashed rgba(255,255,255,0.15);">
-                        <div style="font-size:11px; color:#38bdf8; font-family:'Press Start 2P',monospace;">
-                          DRAFTED TO 162-0 ROSTER
-                        </div>
-                        <div style="font-size:9px; color:#94a3b8; margin-top:3px;">
-                          Universal MLB Pool Selection
-                        </div>
-                      </div>
-                    </div>
-
-                    <!-- Side B: Trading Card Art -->
-                    <div class="dex-card-face dex-card-back" style="border:3px solid ${rColor}; box-shadow: 0 0 35px ${rColor}66;">
-                      <div style="font-family:'Press Start 2P',monospace; font-size:9px; color:#ffd700; margin-bottom:14px; letter-spacing:1px; text-align:center;">
-                        🎴 DRAFT TRADING CARD
-                      </div>
-                      <div style="transform:scale(1.15); margin:15px 0;">
-                        ${tradingCardHTML}
-                      </div>
-                      <div style="font-size:10px; color:#9ca3af; margin-top:16px; text-align:center; font-family:'Press Start 2P',monospace; line-height:1.4;">
-                        ${card.name} · ${card.year || ''}
-                      </div>
-                      <div style="margin-top:12px; font-family:'Press Start 2P',monospace; font-size:7.5px; color:#38bdf8;">
-                        🔄 CLICK TO VIEW STATS & ATTRIBUTES
-                      </div>
-                    </div>
-
-                  </div>
-                </div>
-
-                <!-- Bottom Controls: Flip & Next Action -->
-                <div style="margin-top:14px; width:100%; display:flex; flex-direction:column; align-items:center; gap:10px;">
-                  <button id="btn-c162-flip-card" type="button" style="padding:7px 16px; background:linear-gradient(135deg, rgba(56,189,248,0.2), rgba(14,165,233,0.3)); border:1.5px solid #38bdf8; color:#38bdf8; border-radius:6px; font-family:'Press Start 2P',monospace; font-size:8px; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
-                    🔄 FLIP CARD
-                  </button>
-
-                  <button id="btn-c162-next-pack" class="btn" style="width:100%; padding:14px 20px; font-family:'Press Start 2P',monospace; font-size:10.5px; background:linear-gradient(135deg,#00ff66,#059669); color:#000; border:none; border-radius:8px; cursor:pointer; box-shadow:0 0 20px rgba(0,255,102,0.4); font-weight:bold;">
-                    ${isDraftComplete ? '🚀 FINALIZE ROSTER & START 162 SEASON ➔' : (isLastPackInStage ? '⚾ PROCEED TO PITCHERS BOX ➔' : `📦 OPEN NEXT PACK (${packNum + 1}/${total}) ➔`)}
-                  </button>
-                </div>
-
-              </div>
-            </div>
-
-            <!-- Right Column: Live 17-Man Formation Board -->
-            <div style="background:rgba(0,0,0,0.5); border:1px solid rgba(56,189,248,0.25); border-radius:12px; padding:14px;">
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:8px;">
-                <span style="font-family:'Press Start 2P',monospace; font-size:10px; color:#38bdf8;">
-                  📋 ROSTER FORMATION (${updatedAllPulled.length}/17)
-                </span>
-                <span style="font-size:9px; color:#94a3b8;">
-                  ${draft.pulledBatters.length} Batters · ${draft.pulledPitchers.length} Pitchers
-                </span>
-              </div>
-
-              <div style="display:grid; grid-template-columns: 1fr 1fr; gap:14px;">
-                <!-- Batting Lineup (9 Slots) -->
+            <!-- Right Column: Visual Card Deck Formation Board -->
+            <div style="background:radial-gradient(circle at 50% 0%, rgba(15,23,42,0.95) 0%, rgba(8,12,22,0.98) 100%); border:1px solid rgba(56,189,248,0.25); border-radius:12px; padding:14px; max-height:82vh; overflow-y:auto;">
+              
+              <!-- Deck Header -->
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px solid rgba(255,255,255,0.12); padding-bottom:8px; flex-wrap:wrap; gap:8px;">
                 <div>
-                  <div style="font-family:'Press Start 2P',monospace; font-size:8px; color:#ffd700; margin-bottom:6px; display:flex; justify-content:space-between;">
-                    <span>⚡ STARTING LINEUP</span>
-                    <span>${draft.pulledBatters.length}/9</span>
+                  <span style="font-family:'Press Start 2P',monospace; font-size:10px; color:#38bdf8;">
+                    📋 DECK DE CARTAS DEL EQUIPO (${allPulled.length}/25)
+                  </span>
+                  <div style="font-size:9px; color:#94a3af; margin-top:2px;">
+                    ${draft.pulledBatters.length}/14 Bateadores · ${draft.pulledPitchers.length}/11 Lanzadores
                   </div>
-                  ${lineupSlotsHTML}
                 </div>
-
-                <!-- Pitching Staff (5 SP + 3 RP) -->
-                <div>
-                  <div style="font-family:'Press Start 2P',monospace; font-size:8px; color:#38bdf8; margin-bottom:6px; display:flex; justify-content:space-between;">
-                    <span>🧢 ROTATION (5 SP)</span>
-                    <span>${Math.min(5, updatedSlots.sp.filter(Boolean).length)}/5</span>
-                  </div>
-                  ${spSlotsHTML}
-
-                  <div style="font-family:'Press Start 2P',monospace; font-size:8px; color:#f472b6; margin:12px 0 6px 0; display:flex; justify-content:space-between;">
-                    <span>🔥 BULLPEN (3 RP)</span>
-                    <span>${Math.min(3, updatedSlots.rp.filter(Boolean).length)}/3</span>
-                  </div>
-                  ${rpSlotsHTML}
+                <div style="font-family:'Press Start 2P',monospace; font-size:9.5px; color:#ffd700;">
+                  ⭐ OVR: ${avgOVR}
                 </div>
               </div>
+
+              <!-- Deck Slot Grid -->
+              <div class="c162-deck-compact">
+                <!-- Section 1: Batting Lineup (9 Cards) -->
+                <div class="c162-roster-section" style="margin-bottom:12px;">
+                  <div class="c162-section-header" style="font-family:'Press Start 2P',monospace; font-size:8px; color:#ffd700; margin-bottom:6px; display:flex; justify-content:space-between;">
+                    <span>⚡ ALINEACION TITULAR (LINEUP - 9 CARTAS)</span>
+                    <span>${filledLineupCount}/9</span>
+                  </div>
+                  <div style="font-family:'Press Start 2P',monospace; font-size:7px; color:#94a3af; margin-bottom:4px; text-align:center;">— CUADRO / INFIELD —</div>
+                  <div class="c162-cards-row">${infieldSlotsHTML}</div>
+                  <div style="font-family:'Press Start 2P',monospace; font-size:7px; color:#94a3af; margin:6px 0 4px 0; text-align:center;">— JARDINES Y DESIGNADO / OUTFIELD & DH —</div>
+                  <div class="c162-cards-row">${outfieldSlotsHTML}</div>
+                </div>
+
+                <!-- Section 2: Bench (5 Cards) -->
+                <div class="c162-roster-section" style="margin-bottom:12px;">
+                  <div class="c162-section-header" style="font-family:'Press Start 2P',monospace; font-size:8px; color:#34d399; margin-bottom:6px; display:flex; justify-content:space-between;">
+                    <span>🛋️ BANCA DE SUPLENTES (BENCH - 5 CARTAS)</span>
+                    <span>${filledBenchCount}/5</span>
+                  </div>
+                  <div class="c162-cards-row">${benchSlotsHTML}</div>
+                </div>
+
+                <!-- Section 3: Starting Pitchers (5 Cards) -->
+                <div class="c162-roster-section" style="margin-bottom:12px;">
+                  <div class="c162-section-header" style="font-family:'Press Start 2P',monospace; font-size:8px; color:#38bdf8; margin-bottom:6px; display:flex; justify-content:space-between;">
+                    <span>🧢 ROTACION DE ABRIDORES (ROTATION - 5 CARTAS)</span>
+                    <span>${filledSPCount}/5</span>
+                  </div>
+                  <div class="c162-cards-row">${spSlotsHTML}</div>
+                </div>
+
+                <!-- Section 4: Bullpen (6 Cards) -->
+                <div class="c162-roster-section">
+                  <div class="c162-section-header" style="font-family:'Press Start 2P',monospace; font-size:8px; color:#f472b6; margin-bottom:6px; display:flex; justify-content:space-between;">
+                    <span>🔥 CUERPO DE RELEVISTAS (BULLPEN - 6 CARTAS)</span>
+                    <span>${filledRPCount}/6</span>
+                  </div>
+                  <div class="c162-cards-row">${rpSlotsHTML}</div>
+                </div>
+              </div>
+
             </div>
 
           </div>
         </div>
       `;
 
-      // Flip listeners
+      // ── Event Handlers ────────────────────────────────────────────────────────
+      // 1. Pack Opening Click Listener (Foil Rip)
+      const foilTarget = container.querySelector('#c162-foil-pack-target');
+      if (foilTarget) {
+        foilTarget.onclick = () => {
+          if (window.BaseballDex && typeof window.BaseballDex.playPackSound === 'function') {
+            window.BaseballDex.playPackSound('Rare');
+          } else if (window.AudioManager && typeof window.AudioManager.play === 'function') {
+            window.AudioManager.play('card_deal');
+          } else if (typeof window.playSound === 'function') {
+            window.playSound('card_flip');
+          }
+
+          const crimpTop = container.querySelector('#c162-pack-crimp-top');
+          const packInner = container.querySelector('#c162-foil-pack-inner');
+          if (crimpTop) crimpTop.style.animation = 'packFoilRipTop 0.35s forwards ease-out';
+          if (packInner) packInner.style.animation = 'packFoilRipBody 0.4s 0.1s forwards ease-in';
+
+          setTimeout(() => {
+            const bPool = getBatterPool();
+            const pPool = getPitcherPool();
+            const allPulledSoFar = [...draft.pulledBatters, ...draft.pulledPitchers];
+            const currentSlots = calculateChallengeRosterSlots(allPulledSoFar, false);
+
+            const missingPos = [];
+            if (isPitchersStage) {
+              const spEmpty = currentSlots.sp.filter(s => s === null).length;
+              const rpEmpty = currentSlots.rp.filter(s => s === null).length;
+              if (spEmpty > 0) missingPos.push('SP');
+              if (rpEmpty > 0) missingPos.push('RP', 'CL', 'CP');
+            } else {
+              SLOTS.forEach(slot => {
+                if (!currentSlots.lineup[slot]) missingPos.push(slot);
+              });
+            }
+
+            const activePool = isPitchersStage ? pPool : bPool;
+            let card = pickWeightedChallengeDraftCard(activePool, missingPos, draft.usedKeys);
+            if (!card) {
+              card = activePool.find(c => {
+                const k = c.role ? pitcherUnlockKey(c) : batterUnlockKey(c);
+                return !draft.usedKeys.has(k);
+              }) || activePool[0];
+            }
+
+            const cKey = card.role ? pitcherUnlockKey(card) : batterUnlockKey(card);
+            draft.usedKeys.add(cKey);
+
+            if (isPitchersStage) {
+              draft.pulledPitchers.push(card);
+            } else {
+              draft.pulledBatters.push(card);
+            }
+
+            draft.currentCard = card;
+            draft.currentPack++;
+            draft.packOpened = true;
+            this.renderPacksDraft();
+          }, 350);
+        };
+      }
+
+      // 2. Card 3D Flip Listeners
       const btnFlip = container.querySelector('#btn-c162-flip-card');
       const flipInner = container.querySelector('#c162-flip-inner');
       const flipContainer = container.querySelector('#c162-flip-container');
@@ -3682,18 +3881,18 @@
       if (btnFlip) btnFlip.onclick = doFlip;
       if (flipContainer) flipContainer.onclick = doFlip;
 
-      // Cancel button
+      // 3. Cancel Button
       const btnCancel = container.querySelector('#btn-c162-pack-cancel');
       if (btnCancel) {
         btnCancel.onclick = () => {
-          if (confirm('Cancel pack draft and return to hub?')) {
+          if (confirm('¿Deseas cancelar el draft de sobres y volver al menú?')) {
             this._packDraft = null;
             this.renderHub();
           }
         };
       }
 
-      // Next Pack button
+      // 4. Next Pack / Transition / Finish Button
       const btnNext = container.querySelector('#btn-c162-next-pack');
       if (btnNext) {
         btnNext.onclick = (e) => {
@@ -3703,6 +3902,8 @@
           } else if (isLastPackInStage) {
             this.renderPacksDraftTransition();
           } else {
+            draft.packOpened = false;
+            draft.currentCard = null;
             this.renderPacksDraft();
           }
         };
@@ -3712,7 +3913,7 @@
     finishPacksDraftAndStart() {
       if (!this._packDraft) return;
       const allPulled = [...this._packDraft.pulledBatters, ...this._packDraft.pulledPitchers];
-      const { lineup, sp, rp } = calculateChallengeRosterSlots(allPulled, true);
+      const { lineup, bench, sp, rp } = calculateChallengeRosterSlots(allPulled, true);
 
       // Clean fallback if any position is unassigned
       SLOTS.forEach(slot => {
@@ -3730,15 +3931,22 @@
         if (p) finalSP.push(p);
         else break;
       }
-      while (finalRP.length < 3) {
+      while (finalRP.length < 6) {
         const p = this._packDraft.pulledPitchers.find(cand => !finalSP.includes(cand) && !finalRP.includes(cand));
         if (p) finalRP.push(p);
         else break;
       }
 
+      const finalBench = bench ? bench.filter(Boolean) : [];
+      while (finalBench.length < 5) {
+        const b = this._packDraft.pulledBatters.find(cand => !Object.values(lineup).includes(cand) && !finalBench.includes(cand));
+        if (b) finalBench.push(b);
+        else break;
+      }
+
       const pitchers = { SP: finalSP, RP: finalRP };
       this._packDraft = null;
-      this.startNewChallenge(lineup, pitchers, { type: 'packs', label: '📦 HOBBY PACKS DRAFT', desc: '17-Pack Universe Draft' });
+      this.startNewChallenge(lineup, pitchers, { type: 'packs', label: '📦 HOBBY PACKS DRAFT', desc: '25-Pack Universe Draft' }, finalBench);
     },
 
     startRosterBuilder() {
@@ -4273,13 +4481,49 @@
         </tr>`;
       }).join('');
 
-      // ── Pitchers Rows (5 SP + 3 RP with IP, WHIP, ERA, WAR) ─────────────
+      // ── Bench Rows (5 Bench Reserves if present in roster) ─────────────
+      const benchRows = (S.roster.bench || []).map((p, i) => {
+        if (!p) return '';
+        const k = batterUnlockKey(p);
+        const s = S.batterStats[k] || { g: 0, ab: 0, h: 0, doubles: 0, triples: 0, hr: 0, rbi: 0, bb: 0, so: 0, r: 0, sb: 0 };
+        const singles = Math.max(0, s.h - (s.doubles || 0) - (s.triples || 0) - s.hr);
+        const tb = singles + (s.doubles || 0) * 2 + (s.triples || 0) * 3 + s.hr * 4;
+        const pa = s.ab + s.bb;
+        const avg = s.ab > 0 ? (s.h / s.ab).toFixed(3).replace(/^0/, '') : '.000';
+        const obp = pa > 0 ? ((s.h + s.bb) / pa).toFixed(3).replace(/^0/, '') : '.000';
+        const slg = s.ab > 0 ? (tb / s.ab).toFixed(3).replace(/^0/, '') : '.000';
+        const ops = (parseFloat(obp) + parseFloat(slg)).toFixed(3).replace(/^0/, '');
+        const war = calcBatterWAR(s, 'BN');
+
+        return `<tr class="c162-tr${(i + 9) % 2 ? ' c162-tr-alt' : ''}">
+          ${td(`<span style="font-family:'Press Start 2P',monospace;font-size:7.5px;color:#94a3b8;">BN</span>`, { style: 'text-align:center;' })}
+          ${td(`<span class="c162-tag-pos" style="background:rgba(52,211,153,0.15);color:#34d399;border:1px solid rgba(52,211,153,0.4);">BN${i + 1}</span>`)}
+          ${td(s.name)}
+          ${td(s.ab, { num: true })}
+          ${td(s.h, { num: true })}
+          ${td(s.doubles || 0, { num: true })}
+          ${td(s.triples || 0, { num: true })}
+          ${td(s.hr, { num: true, accent: true })}
+          ${td(s.rbi, { num: true })}
+          ${td(s.bb, { num: true })}
+          ${td(s.so, { num: true })}
+          ${td(s.sb || 0, { num: true })}
+          ${td(s.r || 0, { num: true })}
+          ${td(avg, { num: true })}
+          ${td(obp, { num: true })}
+          ${td(slg, { num: true })}
+          ${td(ops, { num: true })}
+          ${td(war, { num: true, accent: true })}
+        </tr>`;
+      }).join('');
+
+      // ── Pitchers Rows (5 SP + Bullpen with IP, WHIP, ERA, WAR) ─────────────
       const allPitchers = [
         ...(S.roster.pitchers.SP || []).map((p, i) => ({ p, roleLabel: `SP${i + 1}`, roleColor: '#38bdf8', roleBg: 'rgba(56,189,248,0.15)' })),
         ...(S.roster.pitchers.RP || []).map((p, i) => {
           const isCloser = i === 0;
           const isSetup = i === 1;
-          const roleLabel = isCloser ? 'CL' : (isSetup ? 'SETUP' : 'RP');
+          const roleLabel = isCloser ? 'CL' : (isSetup ? 'SETUP' : (S.roster.pitchers.RP.length > 3 ? `RP${i - 1}` : 'RP'));
           const roleColor = isCloser ? '#fbbf24' : (isSetup ? '#a78bfa' : '#34d399');
           const roleBg = isCloser ? 'rgba(251,191,36,0.15)' : (isSetup ? 'rgba(167,139,250,0.15)' : 'rgba(52,211,153,0.15)');
           return { p, roleLabel, roleColor, roleBg, isCloser };
@@ -4507,7 +4751,7 @@
                     <th class="c162-th">OPS</th>
                     <th class="c162-th" style="color:var(--challenge162-accent);">WAR</th>
                   </tr></thead>
-                  <tbody>${batterRows}</tbody>
+                  <tbody>${batterRows}${benchRows}</tbody>
                 </table>
               </div>
             </div>

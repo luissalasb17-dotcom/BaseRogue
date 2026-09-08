@@ -8647,6 +8647,90 @@ body.on-main-menu .main-container {
   100% { transform: translateY(-50px) rotate(-12deg) scale(0.9); opacity: 0; }
 }
 
+@keyframes packFoilRipBody {
+  0% { transform: translateY(0); opacity: 1; }
+  100% { transform: translateY(60px) scale(0.9); opacity: 0; }
+}
+
+/* Challenge 162 Compact Deck Board for Pack Drafting */
+.c162-deck-compact {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.c162-deck-compact .c162-cards-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  align-items: flex-start;
+  margin-bottom: 6px;
+}
+.c162-deck-compact .c162-slot-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.2s ease;
+}
+.c162-deck-compact .c162-slot-header-pill {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7.5px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: #0f172a;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #94a3af;
+  letter-spacing: 0.4px;
+}
+.c162-deck-compact .c162-slot-item.active .c162-slot-header-pill {
+  background: linear-gradient(135deg, #ffd700, #f59e0b);
+  color: #000;
+  border-color: #fff;
+  font-weight: bold;
+}
+.c162-deck-compact .c162-card-container {
+  position: relative;
+  width: 124px;
+  height: 190px;
+  border-radius: 4px;
+  transition: transform 0.2s ease, filter 0.2s ease, box-shadow 0.2s ease;
+}
+.c162-deck-compact .c162-card-container .player-card {
+  width: 124px !important;
+  height: 190px !important;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.6), 0 0 8px rgba(245, 158, 11, 0.2);
+}
+.c162-deck-compact .c162-card-container .player-card .card-art-container {
+  height: 104px !important;
+}
+.c162-deck-compact .c162-empty-card-frame {
+  width: 124px;
+  height: 190px;
+  border: 1.5px dashed rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.35);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  box-sizing: border-box;
+}
+.c162-deck-compact .c162-empty-icon {
+  font-size: 16px;
+  color: #64748b;
+}
+.c162-deck-compact .c162-empty-text {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 6.5px;
+  color: #64748b;
+  text-align: center;
+  padding: 0 4px;
+}
+
 .dex-foil-pack-wrapper {
   perspective: 1000px;
   cursor: pointer;

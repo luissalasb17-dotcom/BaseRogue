@@ -251,6 +251,8 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
 // Handles DOM interactions, rendering, simulation playback, and game loops
 
 (function() {
+  const t = (key, params) => (typeof window.t === 'function' ? window.t(key, params) : (typeof params === 'string' ? params : (params && params.defaultValue ? params.defaultValue : key)));
+
   // Elements Cache
   const el = {
     get hud() { return document.getElementById('game-hud'); },
