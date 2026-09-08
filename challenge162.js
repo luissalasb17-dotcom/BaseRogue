@@ -3867,17 +3867,17 @@
         return fallback;
       };
 
-      const stageBoxName = isPitchersStage ? _t('challenge162.box_pitchers', 'CAJA DE LANZADORES') : _t('challenge162.box_batters', 'CAJA DE BATEADORES');
+      const stageBoxName = isPitchersStage ? _t('challenge162.box_pitchers', 'PITCHERS BOX') : _t('challenge162.box_batters', 'BATTERS BOX');
 
       // ── Left Column Stage: Sealed Foil Pack OR Revealed 3D Card ──────────
       let leftColumnHTML = '';
 
       if (!isCardRevealed) {
-        const boxLabel = isPitchersStage ? _t('challenge162.box_pitchers', 'CAJA DE LANZADORES') : _t('challenge162.box_batters', 'CAJA DE BATEADORES');
-        const boxSubtitle = isPitchersStage ? _t('challenge162.pitchers_box_subtitle', '5 Abridores (SP) + 6 Relevistas') : _t('challenge162.batters_box_subtitle', '9 Titulares + 5 de Banca');
+        const boxLabel = isPitchersStage ? _t('challenge162.box_pitchers', 'PITCHERS BOX') : _t('challenge162.box_batters', 'BATTERS BOX');
+        const boxSubtitle = isPitchersStage ? _t('challenge162.pitchers_box_subtitle', '5 Starters (SP) + 6 Relievers') : _t('challenge162.batters_box_subtitle', '9 Starters + 5 Bench');
         leftColumnHTML = `
           <div style="background:rgba(0,0,0,0.5); border:1px solid rgba(255,215,0,0.3); border-radius:12px; padding:20px; text-align:center; min-height:540px; display:flex; flex-direction:column; justify-content:center; align-items:center;">
-            <div class="dex-foil-pack-wrapper" id="c162-foil-pack-target" style="cursor:pointer; margin: 10px auto;" title="${_t('challenge162.pack_tap_rip', '¡TOCA EL SOBRE PARA ABRIRLO!')}">
+            <div class="dex-foil-pack-wrapper" id="c162-foil-pack-target" style="cursor:pointer; margin: 10px auto;" title="${_t('challenge162.pack_tap_rip', 'TAP THE PACK TO RIP OPEN!')}">
               <div class="dex-foil-pack" id="c162-foil-pack-inner" style="background:linear-gradient(135deg, #1e293b 0%, #0f172a 40%, #1e1b4b 70%, #311042 100%); border-color:#ffd700; box-shadow:0 0 35px rgba(255,215,0,0.4);">
                 <div class="dex-foil-crimp" id="c162-pack-crimp-top" style="background:repeating-linear-gradient(90deg, #ffd700, #ffd700 3px, #b45309 3px, #b45309 6px);"></div>
 
@@ -3890,7 +3890,7 @@
                     ${boxSubtitle}
                   </div>
                   <div style="display:inline-block; margin-top:14px; padding:5px 12px; background:rgba(0,0,0,0.6); border:1px dashed #ffd700; border-radius:20px; font-family:'Press Start 2P',monospace; font-size:8px; color:#ffd700;">
-                    ${_t('challenge162.pack_num_indicator', `SOBRE ${packNum} / ${totalInStage}`, { current: packNum, total: totalInStage })}
+                    ${_t('challenge162.pack_num_indicator', `PACK ${packNum} / ${totalInStage}`, { current: packNum, total: totalInStage })}
                   </div>
                 </div>
 
@@ -3899,10 +3899,10 @@
             </div>
 
             <div style="font-family:'Press Start 2P',monospace; font-size:8.5px; color:#ffd700; margin-top:16px; animation:pulse 1.5s infinite;">
-              ${_t('challenge162.pack_rip_prompt', '✨ TOCA EL SOBRE PARA ABRIRLO ✨')}
+              ${_t('challenge162.pack_rip_prompt', '✨ TAP PACK TO RIP OPEN ✨')}
             </div>
             <div style="margin-top:10px; font-size:9.5px; color:#94a3b8; font-family:'Press Start 2P',monospace; line-height:1.4;">
-              ${_t('challenge162.pack_click_to_reveal', 'Haz clic en el sobre para rasgar el envoltorio y revelar tu carta')}
+              ${_t('challenge162.pack_click_to_reveal', 'Click on the pack foil to rip it open and reveal your card')}
             </div>
           </div>
         `;
@@ -3917,11 +3917,11 @@
 
         let teamFull = card.team || '';
         if (card.team === 'FA' || !card.team) {
-          teamFull = typeof window.t === 'function' ? window.t('dex.free_agent', 'Agente Libre') : 'Agente Libre';
+          teamFull = typeof window.t === 'function' ? window.t('dex.free_agent', 'Free Agent') : 'Free Agent';
         } else if (card.team === 'HIST') {
-          teamFull = typeof window.t === 'function' ? window.t('dex.franchise_hist', 'Franquicia Histórica') : 'Franquicia Histórica';
+          teamFull = typeof window.t === 'function' ? window.t('dex.franchise_hist', 'Historical Franchise') : 'Historical Franchise';
         } else if (card.team === 'NLB') {
-          teamFull = typeof window.t === 'function' ? window.t('dex.franchise_nlb', 'Ligas Negras') : 'Ligas Negras';
+          teamFull = typeof window.t === 'function' ? window.t('dex.franchise_nlb', 'Negro Leagues') : 'Negro Leagues';
         } else if (window.PlayersDB && window.PlayersDB.FranchiseNames) {
           teamFull = window.PlayersDB.FranchiseNames[card.team] || card.team;
         }
@@ -3957,7 +3957,7 @@
           const hr9 = card.hr9 !== undefined ? card.hr9 : (card.mov !== undefined ? card.mov : 50);
           const sta = card.sta !== undefined ? card.sta : 65;
           statsHTML = `
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:12px">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:16px">
               ${renderStat('H/9', h9)}
               ${renderStat('K/9', k9)}
               ${renderStat('BB/9', bb9)}
@@ -3969,7 +3969,7 @@
         } else {
           const kavd = card.k_avd !== undefined ? card.k_avd : (card.k_avoid !== undefined ? card.k_avoid : (card.k_avoid_val !== undefined ? card.k_avoid_val : (card.con || 40)));
           statsHTML = `
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:12px">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:16px">
               ${renderStat('CON', card.con || 40)}
               ${renderStat('PWR', card.pwr || 40)}
               ${renderStat('EYE', card.eye || 40)}
@@ -3982,49 +3982,50 @@
 
         const isHof = Boolean(card.hof || card.is_hof || (careerStats && careerStats.hof));
         let badgesHtml = '';
-        if (isHof) badgesHtml += '<span style="background:#ffd70022;color:#ffd700;border:1px solid #ffd700;padding:2px 7px;border-radius:4px;font-size:7.5px">🏆 HOF</span>';
-        if (card.clutch || card.is_clutch) badgesHtml += '<span style="background:#ef444422;color:#ef4444;border:1px solid #ef4444;padding:2px 7px;border-radius:4px;font-size:7.5px">⚡ CLUTCH</span>';
-        if (card.captain || card.is_captain) badgesHtml += '<span style="background:#3b82f622;color:#3b82f6;border:1px solid #3b82f6;padding:2px 7px;border-radius:4px;font-size:7.5px">👑 CAPTAIN</span>';
+        if (isHof) badgesHtml += '<span style="background:#ffd70022;color:#ffd700;border:1px solid #ffd700;padding:2px 8px;border-radius:4px;font-size:8px">🏆 HOF</span>';
+        if (card.clutch || card.is_clutch) badgesHtml += '<span style="background:#ef444422;color:#ef4444;border:1px solid #ef4444;padding:2px 8px;border-radius:4px;font-size:8px">⚡ CLUTCH</span>';
+        if (card.captain || card.is_captain) badgesHtml += '<span style="background:#3b82f622;color:#3b82f6;border:1px solid #3b82f6;padding:2px 8px;border-radius:4px;font-size:8px">👑 CAPTAIN</span>';
 
         let careerStatsBlockHTML = '';
         if (careerStats) {
           careerStatsBlockHTML = `
-            <div style="background:#111827;border-radius:8px;padding:10px;margin-bottom:12px;">
-              <div style="font-family:'Press Start 2P',monospace;font-size:7px;color:#38bdf8;margin-bottom:8px;text-align:center">${(typeof window.t === 'function' ? window.t('dex.career_header') : 'ESTADÍSTICAS DE CARRERA (MLB)')}</div>
-              <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:6px 8px;text-align:center">
+            <div style="background:#111827;border-radius:8px;padding:12px">
+              <div style="font-family:'Press Start 2P',monospace;font-size:7.5px;color:#38bdf8;margin-bottom:10px;text-align:center">${_t('dex.career_header', 'CAREER STATISTICS (MLB)')}</div>
+              <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:8px 10px;text-align:center">
                 ${isPitcher ? (isReliever ? `
-                  <div><div style="font-size:12px;font-weight:bold;color:#38bdf8">${typeof careerStats.sv === 'number' ? careerStats.sv.toLocaleString() : (careerStats.sv || '-')}</div><div style="font-size:6.5px;color:#9ca3af;margin-top:2px">${(typeof window.t === 'function' ? window.t('dex.sv_label') : 'SV')}</div></div>
-                  <div><div style="font-size:12px;font-weight:bold;color:#10b981">${careerStats.era || '-'}</div><div style="font-size:6.5px;color:#9ca3af;margin-top:2px">ERA</div></div>
-                  <div><div style="font-size:12px;font-weight:bold;color:#fb923c">${typeof careerStats.so === 'number' ? careerStats.so.toLocaleString() : (careerStats.so || '-')}</div><div style="font-size:6.5px;color:#9ca3af;margin-top:2px">SO</div></div>
-                  <div><div style="font-size:12px;font-weight:bold;color:#facc15">${careerStats.whip || '-'}</div><div style="font-size:6.5px;color:#9ca3af;margin-top:2px">WHIP</div></div>
-                  <div><div style="font-size:12px;font-weight:bold;color:#2dd4bf">${careerStats.w !== '-' ? `${careerStats.w}-${careerStats.l}` : (careerStats.ip || '-')}</div><div style="font-size:6.5px;color:#9ca3af;margin-top:2px">W-L</div></div>
-                  <div><div style="font-size:12px;font-weight:bold;color:#4ade80">${careerStats.war || '-'}</div><div style="font-size:6.5px;color:#9ca3af;margin-top:2px">WAR</div></div>
+                  <div><div style="font-size:13px;font-weight:bold;color:#38bdf8">${typeof careerStats.sv === 'number' ? careerStats.sv.toLocaleString() : (careerStats.sv || '-')}</div><div style="font-size:7px;color:#9ca3af;margin-top:2px">${_t('dex.sv_label', 'SAVES (SV)')}</div></div>
+                  <div><div style="font-size:13px;font-weight:bold;color:#10b981">${careerStats.era || '-'}</div><div style="font-size:7px;color:#9ca3af;margin-top:2px">${_t('dex.era_label', 'ERA')}</div></div>
+                  <div><div style="font-size:13px;font-weight:bold;color:#fb923c">${typeof careerStats.so === 'number' ? careerStats.so.toLocaleString() : (careerStats.so || '-')}</div><div style="font-size:7px;color:#9ca3af;margin-top:2px">${_t('dex.so_label', 'STRIKEOUTS (K)')}</div></div>
+                  <div><div style="font-size:13px;font-weight:bold;color:#facc15">${careerStats.whip || '-'}</div><div style="font-size:7px;color:#9ca3af;margin-top:2px">${_t('dex.whip_label', 'WHIP')}</div></div>
+                  <div><div style="font-size:13px;font-weight:bold;color:#2dd4bf">${careerStats.w !== '-' ? `${careerStats.w}-${careerStats.l}` : (careerStats.ip || '-')}</div><div style="font-size:7px;color:#9ca3af;margin-top:2px">${careerStats.w !== '-' ? _t('dex.wl_label', 'RECORD (W-L)') : _t('dex.ip_label', 'INNINGS (IP)')}</div></div>
+                  <div><div style="font-size:13px;font-weight:bold;color:#4ade80">${careerStats.war || '-'}</div><div style="font-size:7px;color:#9ca3af;margin-top:2px">${_t('dex.war_label', 'WAR')}</div></div>
                 ` : `
-                  <div><div style="font-size:12px;font-weight:bold;color:#38bdf8">${careerStats.w !== '-' ? `${careerStats.w}-${careerStats.l}` : '-'}</div><div style="font-size:6.5px;color:#9ca3af;margin-top:2px">W-L</div></div>
-                  <div><div style="font-size:12px;font-weight:bold;color:#10b981">${careerStats.era || '-'}</div><div style="font-size:6.5px;color:#9ca3af;margin-top:2px">ERA</div></div>
-                  <div><div style="font-size:12px;font-weight:bold;color:#fb923c">${typeof careerStats.so === 'number' ? careerStats.so.toLocaleString() : (careerStats.so || '-')}</div><div style="font-size:6.5px;color:#9ca3af;margin-top:2px">SO</div></div>
-                  <div><div style="font-size:12px;font-weight:bold;color:#facc15">${careerStats.whip || '-'}</div><div style="font-size:6.5px;color:#9ca3af;margin-top:2px">WHIP</div></div>
-                  <div><div style="font-size:12px;font-weight:bold;color:#2dd4bf">${careerStats.ip || '-'}</div><div style="font-size:6.5px;color:#9ca3af;margin-top:2px">IP</div></div>
-                  <div><div style="font-size:12px;font-weight:bold;color:#4ade80">${careerStats.war || '-'}</div><div style="font-size:6.5px;color:#9ca3af;margin-top:2px">WAR</div></div>
+                  <div><div style="font-size:13px;font-weight:bold;color:#38bdf8">${careerStats.w !== '-' ? `${careerStats.w}-${careerStats.l}` : '-'}</div><div style="font-size:7px;color:#9ca3af;margin-top:2px">${_t('dex.wl_label', 'RECORD (W-L)')}</div></div>
+                  <div><div style="font-size:13px;font-weight:bold;color:#10b981">${careerStats.era || '-'}</div><div style="font-size:7px;color:#9ca3af;margin-top:2px">${_t('dex.era_label', 'ERA')}</div></div>
+                  <div><div style="font-size:13px;font-weight:bold;color:#fb923c">${typeof careerStats.so === 'number' ? careerStats.so.toLocaleString() : (careerStats.so || '-')}</div><div style="font-size:7px;color:#9ca3af;margin-top:2px">${_t('dex.so_label', 'STRIKEOUTS (K)')}</div></div>
+                  <div><div style="font-size:13px;font-weight:bold;color:#facc15">${careerStats.whip || '-'}</div><div style="font-size:7px;color:#9ca3af;margin-top:2px">${_t('dex.whip_label', 'WHIP')}</div></div>
+                  <div><div style="font-size:13px;font-weight:bold;color:#2dd4bf">${careerStats.ip || '-'}</div><div style="font-size:7px;color:#9ca3af;margin-top:2px">${_t('dex.ip_label', 'INNINGS (IP)')}</div></div>
+                  <div><div style="font-size:13px;font-weight:bold;color:#4ade80">${careerStats.war || '-'}</div><div style="font-size:7px;color:#9ca3af;margin-top:2px">${_t('dex.war_label', 'WAR')}</div></div>
                 `) : `
-                  <div><div style="font-size:12px;font-weight:bold;color:#38bdf8">${typeof careerStats.h === 'number' ? careerStats.h.toLocaleString() : (careerStats.h || '-')}</div><div style="font-size:6.5px;color:#9ca3af;margin-top:2px">H</div></div>
-                  <div><div style="font-size:12px;font-weight:bold;color:#f87171">${typeof careerStats.hr === 'number' ? careerStats.hr.toLocaleString() : (careerStats.hr || '-')}</div><div style="font-size:6.5px;color:#9ca3af;margin-top:2px">HR</div></div>
-                  <div><div style="font-size:12px;font-weight:bold;color:#fbbf24">${typeof careerStats.rbi === 'number' ? careerStats.rbi.toLocaleString() : (careerStats.rbi || '-')}</div><div style="font-size:6.5px;color:#9ca3af;margin-top:2px">RBI</div></div>
-                  <div><div style="font-size:12px;font-weight:bold;color:#34d399">${careerStats.avg || '-'}</div><div style="font-size:6.5px;color:#9ca3af;margin-top:2px">AVG</div></div>
-                  <div><div style="font-size:12px;font-weight:bold;color:#facc15">${careerStats.ops || '-'}</div><div style="font-size:6.5px;color:#9ca3af;margin-top:2px">OPS</div></div>
-                  <div><div style="font-size:12px;font-weight:bold;color:#4ade80">${careerStats.war || '-'}</div><div style="font-size:6.5px;color:#9ca3af;margin-top:2px">WAR</div></div>
+                  <div><div style="font-size:13px;font-weight:bold;color:#38bdf8">${typeof careerStats.h === 'number' ? careerStats.h.toLocaleString() : (careerStats.h || '-')}</div><div style="font-size:7px;color:#9ca3af;margin-top:2px">${_t('dex.hits_label', 'HITS (H)')}</div></div>
+                  <div><div style="font-size:13px;font-weight:bold;color:#f87171">${typeof careerStats.hr === 'number' ? careerStats.hr.toLocaleString() : (careerStats.hr || '-')}</div><div style="font-size:7px;color:#9ca3af;margin-top:2px">${_t('dex.hr_label', 'HOME RUNS (HR)')}</div></div>
+                  <div><div style="font-size:13px;font-weight:bold;color:#fbbf24">${typeof careerStats.rbi === 'number' ? careerStats.rbi.toLocaleString() : (careerStats.rbi || '-')}</div><div style="font-size:7px;color:#9ca3af;margin-top:2px">${_t('dex.rbi_label', 'RBIS (RBI)')}</div></div>
+                  <div><div style="font-size:13px;font-weight:bold;color:#34d399">${careerStats.avg || '-'}</div><div style="font-size:7px;color:#9ca3af;margin-top:2px">${_t('dex.avg_label', 'AVERAGE (AVG)')}</div></div>
+                  <div><div style="font-size:13px;font-weight:bold;color:#facc15">${careerStats.ops || '-'}</div><div style="font-size:7px;color:#9ca3af;margin-top:2px">${_t('dex.ops_label', 'OPS')}</div></div>
+                  <div><div style="font-size:13px;font-weight:bold;color:#4ade80">${careerStats.war || '-'}</div><div style="font-size:7px;color:#9ca3af;margin-top:2px">${_t('dex.war_label', 'WAR')}</div></div>
                 `}
               </div>
               ${(() => {
                 const pills = [];
-                if (careerStats.allstars > 0) pills.push(`<span style="background:rgba(255,255,255,0.08);color:#fff;border:1px solid #4b5563;padding:2px 5px;border-radius:4px;font-size:7px">⭐ ${careerStats.allstars}x All-Star</span>`);
-                if (careerStats.mvp > 0) pills.push(`<span style="background:rgba(234,179,8,0.12);color:#eab308;border:1px solid #eab308;padding:2px 5px;border-radius:4px;font-size:7px">🏆 ${careerStats.mvp}x MVP</span>`);
-                if (careerStats.cy > 0) pills.push(`<span style="background:rgba(56,189,248,0.12);color:#38bdf8;border:1px solid #38bdf8;padding:2px 5px;border-radius:4px;font-size:7px">👑 ${careerStats.cy}x CY</span>`);
-                if (careerStats.gg > 0) pills.push(`<span style="background:rgba(255,215,0,0.12);color:#ffd700;border:1px solid #ffd700;padding:2px 5px;border-radius:4px;font-size:7px">🥊 ${careerStats.gg}x GG</span>`);
-                if (careerStats.ss > 0) pills.push(`<span style="background:rgba(56,189,248,0.12);color:#38bdf8;border:1px solid #38bdf8;padding:2px 5px;border-radius:4px;font-size:7px">🥈 ${careerStats.ss}x SS</span>`);
-                if (careerStats.roy > 0) pills.push(`<span style="background:rgba(167,243,208,0.12);color:#a7f3d0;border:1px solid #a7f3d0;padding:2px 5px;border-radius:4px;font-size:7px">🌱 ROY</span>`);
+                if (careerStats.allstars > 0) pills.push(`<span style="background:rgba(255,255,255,0.08);color:#fff;border:1px solid #4b5563;padding:2px 6px;border-radius:4px;font-size:8px">⭐ ${careerStats.allstars}x All-Star</span>`);
+                if (careerStats.mvp > 0) pills.push(`<span style="background:rgba(234,179,8,0.12);color:#eab308;border:1px solid #eab308;padding:2px 6px;border-radius:4px;font-size:8px">🏆 ${careerStats.mvp}x MVP</span>`);
+                if (careerStats.cy > 0) pills.push(`<span style="background:rgba(56,189,248,0.12);color:#38bdf8;border:1px solid #38bdf8;padding:2px 6px;border-radius:4px;font-size:8px">👑 ${careerStats.cy}x Cy Young</span>`);
+                if (careerStats.gg > 0) pills.push(`<span style="background:rgba(255,215,0,0.12);color:#ffd700;border:1px solid #ffd700;padding:2px 6px;border-radius:4px;font-size:8px">🥊 ${careerStats.gg}x GG</span>`);
+                if (careerStats.ss > 0) pills.push(`<span style="background:rgba(56,189,248,0.12);color:#38bdf8;border:1px solid #38bdf8;padding:2px 6px;border-radius:4px;font-size:8px">🥈 ${careerStats.ss}x SS</span>`);
+                if (careerStats.roy > 0) pills.push(`<span style="background:rgba(167,243,208,0.12);color:#a7f3d0;border:1px solid #a7f3d0;padding:2px 6px;border-radius:4px;font-size:8px">🌱 ${careerStats.roy}x ROY</span>`);
+                if (careerStats.rel > 0) pills.push(`<span style="background:rgba(245,158,11,0.12);color:#f59e0b;border:1px solid #f59e0b;padding:2px 6px;border-radius:4px;font-size:8px">🔥 ${careerStats.rel}x Reliever of the Year</span>`);
                 return pills.length > 0
-                  ? `<div style="display:flex;gap:5px;justify-content:center;flex-wrap:wrap;margin-top:8px;padding-top:6px;border-top:1px dashed rgba(255,255,255,0.12)">${pills.join('')}</div>`
+                  ? `<div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:10px;padding-top:8px;border-top:1px dashed rgba(255,255,255,0.12)">${pills.join('')}</div>`
                   : '';
               })()}
             </div>
@@ -4036,75 +4037,57 @@
           : `<div class="player-card"><div class="card-name">${card.name}</div></div>`;
 
         leftColumnHTML = `
-          <div style="background:rgba(0,0,0,0.5); border:1px solid rgba(255,215,0,0.3); border-radius:12px; padding:16px; text-align:center; min-height:540px; display:flex; flex-direction:column; justify-content:space-between; align-items:center;">
-            <div style="width:100%; display:flex; flex-direction:column; align-items:center;">
-              <div style="font-family:'Press Start 2P',monospace; font-size:9px; color:#ffd700; margin-bottom:8px;">
-                🎉 ${_t('challenge162.card_pulled', '¡CARTA OBTENIDA!')}
-              </div>
-
-              <div class="dex-flip-card-container" id="c162-flip-container" style="perspective:1200px; width:100%; max-width:440px; min-height:480px; margin: 0 auto; cursor:pointer;" title="${_t('challenge162.flip_tooltip', 'Clic para voltear carta')}">
-                <div class="dex-flip-card-inner" id="c162-flip-inner">
-                  
-                  <!-- LADO A: EXACTAMENTE COMO EL BASEBALL-DEX -->
-                  <div class="dex-card-face dex-card-front" style="background:#0a0f1a; border:3px solid ${rColor}; border-radius:12px; padding:20px; box-shadow: 0 0 35px ${rColor}66; text-align:left;">
-                    <div style="margin-bottom:12px; padding-right:10px;">
-                      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-                        <span style="font-family:'Press Start 2P',monospace; font-size:9.5px; color:${rColor};">${card.rarity || 'Common'} · ${eraShort}</span>
-                        <span style="font-family:'Press Start 2P',monospace; font-size:7px; color:#38bdf8; background:rgba(56,189,248,0.1); border:1px solid rgba(56,189,248,0.3); padding:2px 5px; border-radius:4px;">🔄 FLIP</span>
-                      </div>
-                      <h2 style="font-family:'Press Start 2P',monospace; font-size:13px; color:#fff; margin:0 0 4px 0; line-height:1.4; display:flex; align-items:center; flex-wrap:wrap; gap:6px;">
-                        <span>${cName}</span>
-                        ${(typeof getPlayerFlagHTML === 'function') ? getPlayerFlagHTML(card) : ''}
-                      </h2>
-                      <div style="font-size:10.5px; color:#9ca3af;">${teamFull} — ${card.year || ''} · <b style="color:#e2e8f0;">${card.role || card.pos || 'DH'}</b></div>
-                    </div>
-
-                    <div style="text-align:center; margin-bottom:14px;">
-                      <div style="font-family:'Press Start 2P',monospace; font-size:32px; color:${rColor}; text-shadow:0 0 20px ${rColor}88;">${cardOVR}</div>
-                      <div style="font-size:9.5px; color:#6b7280; font-family:'Press Start 2P',monospace;">OVR</div>
-                    </div>
-
-                    ${statsHTML}
-
-                    ${badgesHtml ? `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">${badgesHtml}</div>` : ''}
-
-                    ${careerStatsBlockHTML}
-
-                    <div style="background:rgba(255,255,255,0.04); border-radius:6px; padding:7px; text-align:center; border:1px dashed rgba(255,255,255,0.15);">
-                      <div style="font-size:9px; color:#00ff66; font-family:'Press Start 2P',monospace;">
-                        ✔ ${_t('challenge162.drafted_badge', 'DRAFTEADO AL ROSTER 162-0')}
-                      </div>
-                    </div>
+          <div style="display: flex; flex-direction: column; align-items: center; max-width: 440px; width: 100%; margin: 0 auto;">
+            <div class="dex-flip-card-container" id="c162-flip-container" style="perspective:1200px; width:100%; max-width:440px; min-height:480px; margin: 0 auto; cursor:pointer;" title="${_t('challenge162.click_to_flip', 'Click to flip card')}">
+              <div class="dex-flip-card-inner" id="c162-flip-inner">
+                
+                <!-- LADO A: ESTADÍSTICAS & FICHA BASEBALL-DEX EXACTA (CALCADA) -->
+                <div class="dex-card-face dex-card-front" style="background:#0a0f1a; border:3px solid ${rColor}; border-radius:12px; padding:24px; box-shadow: 0 0 35px ${rColor}66; text-align:left;">
+                  <div style="margin-bottom:16px; padding-right:10px;">
+                    <div style="font-family:'Press Start 2P',monospace; font-size:9.5px; color:${rColor}; margin-bottom:4px;">${card.rarity || 'Common'} · ${eraShort}</div>
+                    <h2 style="font-family:'Press Start 2P',monospace; font-size:13px; color:#fff; margin:0 0 4px 0; line-height:1.4; display:flex; align-items:center; flex-wrap:wrap; gap:8px;">
+                      <span>${cName}</span>
+                      ${(typeof getPlayerFlagHTML === 'function') ? getPlayerFlagHTML(card) : ''}
+                    </h2>
+                    <div style="font-size:11px; color:#9ca3af;">${teamFull} — ${card.year || ''} · ${card.role || card.pos || 'DH'}</div>
                   </div>
 
-                  <!-- LADO B: CARTA FÍSICA TRADING CARD -->
-                  <div class="dex-card-face dex-card-back" style="border:3px solid ${rColor}; box-shadow: 0 0 35px ${rColor}66; border-radius:12px; padding:20px; background:#0a0f1a; display:flex; flex-direction:column; justify-content:center; align-items:center;">
-                    <div style="font-family:'Press Start 2P',monospace; font-size:8.5px; color:#ffd700; margin-bottom:14px; letter-spacing:1px; text-align:center;">
-                      ${_t('challenge162.draft_trading_card', '🎴 DRAFT TRADING CARD')}
-                    </div>
-                    <div style="margin:10px 0; display:flex; justify-content:center; transform:scale(1.08);">
-                      ${tradingCardHTML}
-                    </div>
-                    <div style="font-size:9.5px; color:#9ca3af; margin-top:14px; text-align:center; font-family:'Press Start 2P',monospace; line-height:1.4;">
-                      ${card.name} · ${card.year || ''}
-                    </div>
-                    <div style="margin-top:10px; font-family:'Press Start 2P',monospace; font-size:7px; color:#38bdf8;">
-                      ${_t('challenge162.card_click_attributes', '🔄 CLIC PARA VER ATRIBUTOS')}
-                    </div>
+                  <div style="text-align:center; margin-bottom:16px;">
+                    <div style="font-family:'Press Start 2P',monospace; font-size:32px; color:${rColor}; text-shadow:0 0 20px ${rColor}88;">${cardOVR}</div>
+                    <div style="font-size:10px; color:#6b7280;">OVR</div>
                   </div>
 
+                  ${statsHTML}
+
+                  ${badgesHtml ? `<div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:16px;">${badgesHtml}</div>` : ''}
+
+                  ${careerStatsBlockHTML}
                 </div>
-              </div>
 
-              <!-- BOTONES FLIP Y SIGUIENTE SOBRE -->
-              <div style="margin-top:14px; width:100%; display:flex; flex-direction:column; gap:8px;">
-                <button id="btn-c162-flip-card" type="button" style="padding:7px 14px; background:linear-gradient(135deg, rgba(56,189,248,0.2), rgba(14,165,233,0.3)); border:1.5px solid #38bdf8; color:#38bdf8; border-radius:6px; font-family:'Press Start 2P',monospace; font-size:8px; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; gap:5px;">
-                  🔄 ${_t('challenge162.flip_card_btn', 'VOLTEAR CARTA')}
-                </button>
-                <button id="btn-c162-next-pack" class="btn" style="width:100%; padding:14px 18px; font-family:'Press Start 2P',monospace; font-size:10px; background:linear-gradient(135deg,#00ff66,#059669); color:#000; border:none; border-radius:8px; cursor:pointer; font-weight:bold; box-shadow:0 0 20px rgba(0,255,102,0.4);">
-                  ${isDraftComplete ? _t('challenge162.finalize_roster', '🚀 FINALIZAR ROSTER Y EMPEZAR 162-0 ➔') : (isLastPackInStage ? _t('challenge162.open_pitchers_box', '⚾ ABRIR CAJA DE LANZADORES ➔') : _t('challenge162.open_next_pack', `📦 ABRIR SIGUIENTE SOBRE (${globalCardNum + 1}/25) ➔`, { pack: globalCardNum + 1 }))}
-                </button>
+                <!-- LADO B: DISEÑO DE CARTA COLECCIONABLE DE DRAFT -->
+                <div class="dex-card-face dex-card-back" style="border:3px solid ${rColor}; box-shadow: 0 0 35px ${rColor}66;">
+                  <div style="font-family:'Press Start 2P',monospace; font-size:9px; color:#ffd700; margin-bottom:14px; letter-spacing:1px; text-align:center;">
+                    🎴 DRAFT TRADING CARD
+                  </div>
+                  <div style="transform:scale(1.2); margin:15px 0;">
+                    ${tradingCardHTML}
+                  </div>
+                  <div style="font-size:10px; color:#9ca3af; margin-top:8px; text-align:center; font-family:'Press Start 2P',monospace;">
+                    ${card.name} · ${card.year || ''}
+                  </div>
+                </div>
+
               </div>
+            </div>
+
+            <!-- ACTION BUTTONS BELOW MODAL (FLIP & NEXT PACK) -->
+            <div style="margin-top:14px; width:100%; display:flex; justify-content:center; gap:10px; flex-wrap:wrap;">
+              <button id="btn-c162-flip-card" class="btn btn-secondary" style="padding:8px 16px; font-size:9px; font-family:'Press Start 2P',monospace; border:1px solid #38bdf8; color:#38bdf8;">
+                🔄 ${_t('challenge162.flip_card_btn', 'FLIP CARD')}
+              </button>
+              <button id="btn-c162-next-pack" class="btn" style="padding:10px 18px; font-family:'Press Start 2P',monospace; font-size:9px; background:linear-gradient(135deg,#ffd700,#f59e0b); color:#000; border:none; border-radius:6px; cursor:pointer; font-weight:bold; box-shadow:0 0 15px rgba(255,215,0,0.4);">
+                ${isDraftComplete ? _t('challenge162.finalize_roster', '🚀 FINALIZE ROSTER & START 162-0 ➔') : (isLastPackInStage ? _t('challenge162.open_pitchers_box', '⚾ OPEN PITCHERS BOX ➔') : _t('challenge162.open_next_pack', `📦 OPEN NEXT PACK (${globalCardNum + 1}/25) ➔`, { pack: globalCardNum + 1 }))}
+              </button>
             </div>
           </div>
         `;
@@ -4134,7 +4117,7 @@
           : `<div class="player-card"><div class="card-name">${player.name}</div></div>`;
 
         return `
-          <div class="c162-slot-item ${isCurrentActive ? 'active' : ''}" title="${player.name} (Arrastrar para mover posición)"
+          <div class="c162-slot-item ${isCurrentActive ? 'active' : ''}" title="${player.name} (${_t('challenge162.drag_to_reorder', 'Drag to swap position')})"
                draggable="true"
                data-drag-kind="${kind}"
                data-drag-key="${key}"
@@ -4188,7 +4171,7 @@
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:10px;">
             <div>
               <span style="font-family:'Press Start 2P',monospace; font-size:11.5px; color:#ffd700;">
-                ${_t('challenge162.packs_draft_stage', `📦 HOBBY PACKS DRAFT: ${stageBoxName} (SOBRE ${globalCardNum} DE 25)`, { box: stageBoxName, pack: globalCardNum, total: 25 })}
+                ${_t('challenge162.packs_draft_stage', `📦 HOBBY PACKS DRAFT: {{box}} (PACK {{pack}} OF {{total}})`, { box: stageBoxName, pack: globalCardNum, total: 25 })}
               </span>
             </div>
             <div style="display:flex; align-items:center; gap:12px;">
@@ -4196,7 +4179,7 @@
                 ${_t('challenge162.roster_count', 'ROSTER')}: ${allPulled.length}/25
               </span>
               <button id="btn-c162-pack-cancel" class="btn btn-secondary" style="padding:6px 12px; font-size:8.5px; font-family:'Press Start 2P',monospace;">
-                ✕ ${_t('challenge162.cancel', 'CANCELAR')}
+                ✕ ${_t('challenge162.cancel', 'CANCEL')}
               </button>
             </div>
           </div>
@@ -4219,15 +4202,15 @@
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px solid rgba(255,255,255,0.12); padding-bottom:8px; flex-wrap:wrap; gap:8px;">
                 <div>
                   <span style="font-family:'Press Start 2P',monospace; font-size:10px; color:#38bdf8;">
-                    📋 ${_t('challenge162.deck_title', 'DECK DE CARTAS DEL EQUIPO')} (${allPulled.length}/25)
+                    📋 ${_t('challenge162.deck_title', 'TEAM CARD DECK')} (${allPulled.length}/25)
                   </span>
                   <div style="font-size:9px; color:#94a3af; margin-top:2px;">
-                    ${_t('challenge162.deck_counts', `${draft.pulledBatters.length}/14 Bateadores • ${draft.pulledPitchers.length}/11 Lanzadores`, { b: draft.pulledBatters.length, p: draft.pulledPitchers.length })}
-                    <span style="color:#34d399; margin-left:6px;">(Arrastra cartas para mover posiciones)</span>
+                    ${_t('challenge162.deck_counts', `{{b}}/14 Batters • {{p}}/11 Pitchers`, { b: draft.pulledBatters.length, p: draft.pulledPitchers.length })}
+                    <span style="color:#34d399; margin-left:6px;">(${_t('challenge162.drag_hint', 'Drag cards to swap positions')})</span>
                   </div>
                 </div>
                 <div style="font-family:'Press Start 2P',monospace; font-size:9.5px; color:#ffd700;">
-                  ⭐ ${_t('challenge162.team_ovr', 'OVR EQUIPO')}: ${avgOVR}
+                  ⭐ ${_t('challenge162.team_ovr', 'TEAM OVR')}: ${avgOVR}
                 </div>
               </div>
 
@@ -4236,19 +4219,19 @@
                 <!-- Section 1: Batting Lineup (9 Cards) -->
                 <div class="c162-roster-section" style="margin-bottom:12px;">
                   <div class="c162-section-header" style="font-family:'Press Start 2P',monospace; font-size:8px; color:#ffd700; margin-bottom:6px; display:flex; justify-content:space-between;">
-                    <span>⚡ ${_t('challenge162.lineup_title', 'ALINEACION TITULAR (LINEUP - 9 CARTAS)')}</span>
+                    <span>⚡ ${_t('challenge162.lineup_title', 'STARTING LINEUP (9 CARDS)')}</span>
                     <span>${filledLineupCount}/9</span>
                   </div>
-                  <div style="font-family:'Press Start 2P',monospace; font-size:7px; color:#94a3af; margin-bottom:4px; text-align:center;">— ${_t('challenge162.infield', 'CUADRO / INFIELD (5)')} —</div>
+                  <div style="font-family:'Press Start 2P',monospace; font-size:7px; color:#94a3af; margin-bottom:4px; text-align:center;">— ${_t('challenge162.infield', 'INFIELD (5)')} —</div>
                   <div class="c162-cards-row c162-row-nowrap">${infieldSlotsHTML}</div>
-                  <div style="font-family:'Press Start 2P',monospace; font-size:7px; color:#94a3af; margin:8px 0 4px 0; text-align:center;">— ${_t('challenge162.outfield_dh', 'JARDINES Y DESIGNADO / OUTFIELD & DH (4)')} —</div>
+                  <div style="font-family:'Press Start 2P',monospace; font-size:7px; color:#94a3af; margin:8px 0 4px 0; text-align:center;">— ${_t('challenge162.outfield_dh', 'OUTFIELD & DH (4)')} —</div>
                   <div class="c162-cards-row c162-row-nowrap">${outfieldSlotsHTML}</div>
                 </div>
 
                 <!-- Section 2: Bench (5 Cards) -->
                 <div class="c162-roster-section" style="margin-bottom:12px;">
                   <div class="c162-section-header" style="font-family:'Press Start 2P',monospace; font-size:8px; color:#34d399; margin-bottom:6px; display:flex; justify-content:space-between;">
-                    <span>🛋️ ${_t('challenge162.bench_title', 'RESERVAS DE BANCA (BENCH - 5 CARTAS)')}</span>
+                    <span>🛋️ ${_t('challenge162.bench_title', 'BENCH RESERVES (BENCH - 5 CARDS)')}</span>
                     <span>${filledBenchCount}/5</span>
                   </div>
                   <div class="c162-cards-row c162-row-nowrap">${benchSlotsHTML}</div>
@@ -4257,7 +4240,7 @@
                 <!-- Section 3: Starting Pitchers (5 Cards) -->
                 <div class="c162-roster-section" style="margin-bottom:12px;">
                   <div class="c162-section-header" style="font-family:'Press Start 2P',monospace; font-size:8px; color:#38bdf8; margin-bottom:6px; display:flex; justify-content:space-between;">
-                    <span>🧢 ${_t('challenge162.rotation_title_5', 'ROTACION DE ABRIDORES (ROTATION - 5 CARTAS)')}</span>
+                    <span>🧢 ${_t('challenge162.rotation_title_5', 'STARTING ROTATION (ROTATION - 5 CARDS)')}</span>
                     <span>${filledSPCount}/5</span>
                   </div>
                   <div class="c162-cards-row c162-row-nowrap">${spSlotsHTML}</div>
@@ -4266,7 +4249,7 @@
                 <!-- Section 4: Bullpen (6 Cards) -->
                 <div class="c162-roster-section">
                   <div class="c162-section-header" style="font-family:'Press Start 2P',monospace; font-size:8px; color:#f472b6; margin-bottom:6px; display:flex; justify-content:space-between;">
-                    <span>🔥 ${_t('challenge162.bullpen_title_6', 'CUERPO DE RELEVISTAS (BULLPEN - 6 CARTAS)')}</span>
+                    <span>🔥 ${_t('challenge162.bullpen_title_6', 'BULLPEN RELIEVERS (BULLPEN - 6 CARDS)')}</span>
                     <span>${filledRPCount}/6</span>
                   </div>
                   <div class="c162-cards-row c162-row-nowrap">${rpSlotsHTML}</div>
