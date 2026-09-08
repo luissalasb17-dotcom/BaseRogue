@@ -343,6 +343,8 @@
         "insufficient_funds": "FONDOS INSUFICIENTES",
         "risk_high": "ALTO RIESGO",
         "risk_safe": "SEGURO",
+        "risk_high_detail": "🔴 {{label}}: {{winPct}}% Éxito / {{failPct}}% Fallo (-{{penalty}} STA)",
+        "risk_safe_detail": "🟢 {{label}} (100% Éxito)",
         "stat_stamina_label": "Stamina del Jugador",
         "stat_boosted_label": "{{stat}} Aumentado",
         "badge_fail": "¡SOBRECARGA MUSCULAR!",
@@ -1554,14 +1556,18 @@
         "log_modal_title": "📜 HISTORIAL DE LA RUN",
         "log_empty": "Aún no hay eventos registrados en esta run.",
         "budget_at_stake": "PRESUPUESTO EN JUEGO:",
-        "if_win_label": "🟢 50% SI GANAS:",
+        "if_win_label": "🟢 {{pct}}% SI GANAS:",
         "triple_received": "(¡Recibes el triple!)",
-        "if_lose_label": "🔴 50% SI PIERDES:",
+        "if_lose_label": "🔴 {{pct}}% SI PIERDES:",
         "lose_all": "(Pierdes todo)",
-        "success_chance": "PROBABILIDAD ÉXITO",
-        "fail_chance": "PROBABILIDAD FALLO",
+        "success_chance": "ÉXITO ({{pct}}%)",
+        "fail_chance": "FALLO ({{pct}}%)",
         "card_locked_badge": "BLOQUEADO ({{nodes}} NODOS RESTANTES)",
-        "locked_tooltip": "Posición Bloqueada: quedan {{nodes}} nodos"
+        "locked_tooltip": "Posición Bloqueada: quedan {{nodes}} nodos",
+        "roulette_title": "🍀 RULETA DE ALTO RIESGO",
+        "roulette_spinning": "⏳ Decidiendo tu destino...",
+        "roulette_success": "✅ ¡LA SUERTE ESTÁ DE TU LADO! 🎉",
+        "roulette_fail": "❌ ¡DESENLACE DESAFORTUNADO! 💀"
     },
     "tutorial": {
         "got_it": "¡ENTENDIDO!",
@@ -2152,31 +2158,6 @@
     "resign_fail_title": "OFERTA RECHAZADA ❌",
     "resign_fail_desc": "{{name}} rechazó la oferta de renovación. Prefiere esperar a la agencia libre o probar su valor en el mercado.",
     "resign_already_attempted": "Ya le hiciste una oferta a {{name}} durante esta temporada."
-  },
-  "gamble": {
-    "header": "🍀 EVENTO DE SUERTE (LUCK)",
-    "roulette_title": "🍀 RULETA DE ALTO RIESGO",
-    "roulette_spinning": "⏳ Decidiendo tu destino...",
-    "roulette_success": "✅ ¡LA SUERTE ESTÁ DE TU LADO! 🎉",
-    "roulette_fail": "❌ ¡DESENLACE DESAFORTUNADO! 💀",
-    "trade": {
-      "stakes_label": "TITULAR MÁS DÉBIL EN JUEGO:"
-    },
-    "if_win_label": "🟢 {{pct}}% SI GANAS:",
-    "if_lose_label": "🔴 {{pct}}% SI PIERDES:",
-    "fail_chance": "FALLO ({{pct}}%)",
-    "bet_btn": "🍀 PROBAR SUERTE",
-    "reject_btn": "🚪 PASAR",
-    "soldier": {
-      "lose_title": "Fatiga Crónica: -15 All Stats",
-      "lose_detail": "(Penalización permanente de estadísticas)",
-      "win_title": "¡+35 CON y +35 PWR Permanentes!",
-      "win_detail": "(Desata un poder titánico de cuadrangulares)"
-    },
-    "budget": {
-      "lose_detail": "(Pierdes todo tu presupuesto)",
-      "win_detail": "(Triplica todo tu presupuesto inmediatamente)"
-    }
   }
   },
     en: {
@@ -2520,6 +2501,8 @@
         "insufficient_funds": "INSUFFICIENT FUNDS",
         "risk_high": "HIGH RISK",
         "risk_safe": "SAFE",
+        "risk_high_detail": "🔴 {{label}}: {{winPct}}% Success / {{failPct}}% Fail (-{{penalty}} STA)",
+        "risk_safe_detail": "🟢 {{label}} (100% Success)",
         "stat_stamina_label": "Player Stamina",
         "stat_boosted_label": "{{stat}} Increased",
         "badge_fail": "MUSCLE OVERLOAD!",
@@ -3727,14 +3710,18 @@
         "log_modal_title": "📜 RUN PROGRESS LOG",
         "log_empty": "No events recorded in this run yet.",
         "budget_at_stake": "BUDGET AT STAKE:",
-        "if_win_label": "🟢 50% IF YOU WIN:",
+        "if_win_label": "🟢 {{pct}}% IF YOU WIN:",
         "triple_received": "(You receive 3x!)",
-        "if_lose_label": "🔴 50% IF YOU LOSE:",
+        "if_lose_label": "🔴 {{pct}}% IF YOU LOSE:",
         "lose_all": "(Lose everything)",
-        "success_chance": "SUCCESS CHANCE",
-        "fail_chance": "FAILURE CHANCE",
+        "success_chance": "SUCCESS ({{pct}}%)",
+        "fail_chance": "FAIL ({{pct}}%)",
         "card_locked_badge": "LOCKED ({{nodes}} NODES REMAINING)",
-        "locked_tooltip": "Position Locked: {{nodes}} nodes remaining"
+        "locked_tooltip": "Position Locked: {{nodes}} nodes remaining",
+        "roulette_title": "🍀 HIGH-STAKES LUCK ROULETTE",
+        "roulette_spinning": "⏳ Deciding your fate...",
+        "roulette_success": "✅ LUCK IS ON YOUR SIDE! 🎉",
+        "roulette_fail": "❌ UNFORTUNATE OUTCOME! 💀"
     },
     "tutorial": {
         "got_it": "GOT IT!",
@@ -4325,32 +4312,6 @@
     "resign_fail_title": "OFFER REJECTED ❌",
     "resign_fail_desc": "{{name}} tested the market and declined the extension offer. They prefer to explore free agency or test their value.",
     "resign_already_attempted": "An offer was already submitted to {{name}} this season."
-  },
-  "gamble": {
-    "header": "🍀 LUCK EVENT (GAMBLE)",
-    "roulette_title": "🍀 HIGH-STAKES LUCK ROULETTE",
-    "roulette_spinning": "⏳ Deciding your fate...",
-    "roulette_success": "✅ LUCK IS ON YOUR SIDE! 🎉",
-    "roulette_fail": "❌ UNFORTUNATE OUTCOME! 💀",
-    "trade": {
-      "stakes_label": "WEAKEST STARTER AT STAKE:"
-    },
-    "if_win_label": "🟢 {{pct}}% IF YOU WIN:",
-    "if_lose_label": "🔴 {{pct}}% IF YOU LOSE:",
-    "fail_chance": "FAIL ({{pct}}%)",
-    "bet_btn": "🍀 TEST YOUR LUCK",
-    "reject_btn": "🚪 PASS",
-    "soldier": {
-      "lose_title": "Chronic Fatigue: -15 All Stats",
-      "lose_detail": "(Permanent stat penalty)",
-      "win_title": "Permanent +35 CON & +35 PWR!",
-      "win_detail": "(Unleashes titanic home run power)"
-    },
-    "budget": {
-      "lose_detail": "(You lose all your current budget)",
-      "win_detail": "(Triples your entire budget instantly)"
-    }
-  }
   }
   };
 

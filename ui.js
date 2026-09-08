@@ -5553,8 +5553,10 @@ function initGameModeSelector() {
 
     // Clean Run Log Button below 4-slot grid
     const btnRunLog = document.createElement('button');
+    btnRunLog.id = 'btn-view-run-log';
+    btnRunLog.setAttribute('data-i18n', 'gamble.btn_view_log');
     btnRunLog.style.cssText = "width:100%; margin-top:8px; padding:6px; font-family:'Press Start 2P',monospace; font-size:7px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:4px; color:#94a3b8; cursor:pointer; transition:all 0.15s ease; display:flex; align-items:center; justify-content:center; gap:6px;";
-    btnRunLog.innerHTML = `<span>📜</span> <span>${typeof t === 'function' ? t('gamble.btn_view_log', '📜 REGISTRO DE RUN') : '📜 REGISTRO DE RUN'}</span>`;
+    btnRunLog.innerHTML = `<span>📜</span> <span>${typeof t === 'function' ? t('gamble.btn_view_log', '📜 VIEW RUN LOG') : '📜 VIEW RUN LOG'}</span>`;
     btnRunLog.addEventListener('mouseenter', () => {
       btnRunLog.style.background = 'rgba(255,255,255,0.08)';
       btnRunLog.style.color = '#fff';
@@ -5581,9 +5583,12 @@ function initGameModeSelector() {
       ? window.Game.runNodeHistory
       : (window.Game && window.Game.purchasedItems && window.Game.purchasedItems.length > 0 ? window.Game.purchasedItems.map(p => ({ title: p, icon: '📜', status: 'info' })) : []);
 
-    const isEN = (typeof i18next !== 'undefined' && i18next.language === 'en');
-    const logTitle = typeof t === 'function' ? t('gamble.log_modal_title', '📜 HISTORIAL DE LA RUN') : '📜 HISTORIAL DE LA RUN';
-    const emptyText = typeof t === 'function' ? t('gamble.log_empty', 'Aún no hay eventos registrados en esta run.') : 'Aún no hay eventos registrados en esta run.';
+    const curLang = (typeof window.i18n !== 'undefined' && typeof window.i18n.getLanguage === 'function')
+      ? window.i18n.getLanguage()
+      : (localStorage.getItem('baserogue_lang') || 'en');
+    const isEN = curLang === 'en';
+    const logTitle = typeof t === 'function' ? t('gamble.log_modal_title', '📜 RUN PROGRESS LOG') : '📜 RUN PROGRESS LOG';
+    const emptyText = typeof t === 'function' ? t('gamble.log_empty', 'No events recorded in this run yet.') : 'No events recorded in this run yet.';
 
     let listHTML = '';
     if (history.length === 0) {
@@ -6665,8 +6670,8 @@ function initGameModeSelector() {
       const riskPercent = Math.round((tpl.riskChance || 0.3) * 100);
       const riskSuccessPercent = 100 - riskPercent;
       const riskTag = tpl.risk === 'high'
-        ? `<span class="choice-risk-tag choice-risk-high" style="font-size:7px; padding:4px 7px; border-radius:4px; font-family:'Press Start 2P',monospace; display:inline-block; line-height:1.4;">🔴 ${(typeof t === 'function' ? t('training.risk_high', 'ALTO RIESGO') : 'ALTO RIESGO')}: ${riskSuccessPercent}% Éxito / ${riskPercent}% Fallo (-${riskFailPenalty} STA)</span>`
-        : `<span class="choice-risk-tag choice-risk-safe" style="font-size:7px; padding:4px 7px; border-radius:4px; font-family:'Press Start 2P',monospace; display:inline-block;">🟢 ${(typeof t === 'function' ? t('training.risk_safe', 'SEGURO') : 'SEGURO')} (100% Éxito)</span>`;
+        ? `<span class="choice-risk-tag choice-risk-high" style="font-size:7px; padding:4px 7px; border-radius:4px; font-family:'Press Start 2P',monospace; display:inline-block; line-height:1.4;">${typeof t === 'function' ? t('training.risk_high_detail', { label: t('training.risk_high', 'ALTO RIESGO'), winPct: riskSuccessPercent, failPct: riskPercent, penalty: riskFailPenalty }) : `🔴 ALTO RIESGO: ${riskSuccessPercent}% Éxito / ${riskPercent}% Fallo (-${riskFailPenalty} STA)`}</span>`
+        : `<span class="choice-risk-tag choice-risk-safe" style="font-size:7px; padding:4px 7px; border-radius:4px; font-family:'Press Start 2P',monospace; display:inline-block;">${typeof t === 'function' ? t('training.risk_safe_detail', { label: t('training.risk_safe', 'SEGURO') }) : `🟢 SEGURO (100% Éxito)`}</span>`;
 
       const tierBadge = `
         <span style="
@@ -6818,6 +6823,24 @@ function initGameModeSelector() {
       renderActiveRoster();
       renderSynergiesAndItems();
       updateHUD();
+
+      // Highlight the trained player in the sidebar to give clear visual feedback
+      if (offer && offer.slot) {
+        setTimeout(() => {
+          const trainedRow = document.querySelector(`.roster-vertical-item[data-slot="${offer.slot}"]`);
+          if (trainedRow) {
+            trainedRow.style.transition = 'all 0.3s ease';
+            trainedRow.style.boxShadow = isFail ? '0 0 15px rgba(239,68,68,0.8)' : '0 0 15px rgba(16,185,129,0.8)';
+            trainedRow.style.borderColor = isFail ? '#ef4444' : '#10b981';
+            setTimeout(() => {
+              if (trainedRow) {
+                trainedRow.style.boxShadow = '';
+                trainedRow.style.borderColor = '';
+              }
+            }, 1800);
+          }
+        }, 50);
+      }
 
       if (window.Game && typeof window.Game.logRunNode === 'function') {
         window.Game.logRunNode({
@@ -10078,8 +10101,8 @@ function initGameModeSelector() {
       let leftHTML = '';
       let rightHTML = '';
 
-      const winLabelText = typeof t === 'function' ? t('gamble.if_win_label', `🟢 ${luckSuccessPct}% SI GANAS:`).replace(/50%/, `${luckSuccessPct}%`) : `🟢 ${luckSuccessPct}% SI GANAS:`;
-      const loseLabelText = typeof t === 'function' ? t('gamble.if_lose_label', `🔴 ${luckFailPct}% SI PIERDES:`).replace(/50%/, `${luckFailPct}%`) : `🔴 ${luckFailPct}% SI PIERDES:`;
+      const winLabelText = typeof t === 'function' ? t('gamble.if_win_label', { pct: luckSuccessPct, defaultValue: `🟢 ${luckSuccessPct}% SI GANAS:` }) : `🟢 ${luckSuccessPct}% SI GANAS:`;
+      const loseLabelText = typeof t === 'function' ? t('gamble.if_lose_label', { pct: luckFailPct, defaultValue: `🔴 ${luckFailPct}% SI PIERDES:` }) : `🔴 ${luckFailPct}% SI PIERDES:`;
 
       if (gamble.id === 'gamble_all_in_budget') {
         const tripleAmount = currentBudget * 3;
@@ -10350,7 +10373,7 @@ function initGameModeSelector() {
           <div class="gamble-outcome-card gamble-outcome-win" style="flex:1;max-width:140px;background:rgba(16,185,129,0.12);border:1.5px solid #10b981;border-radius:10px;padding:8px;box-shadow:0 0 15px rgba(16,185,129,0.2);">
             <div style="font-size:24px;">🍀</div>
             <div style="font-size:8px;color:#10b981;font-weight:bold;font-family:'Press Start 2P',monospace;margin-top:4px;">
-              ${typeof t === 'function' ? t('gamble.success_chance', `ÉXITO (${luckSuccessPct}%)`) : `ÉXITO (${luckSuccessPct}%)`}${hasMidas ? ' ✨' : ''}
+              ${typeof t === 'function' ? t('gamble.success_chance', { pct: luckSuccessPct, defaultValue: `ÉXITO (${luckSuccessPct}%)` }) : `ÉXITO (${luckSuccessPct}%)`}${hasMidas ? ' ✨' : ''}
             </div>
           </div>
           <div class="gamble-coin-wrap" style="width:78px;height:78px;">
@@ -10359,7 +10382,7 @@ function initGameModeSelector() {
           <div class="gamble-outcome-card gamble-outcome-lose" style="flex:1;max-width:140px;background:rgba(239,68,68,0.12);border:1.5px solid #ef4444;border-radius:10px;padding:8px;box-shadow:0 0 15px rgba(239,68,68,0.2);">
             <div style="font-size:24px;">💀</div>
             <div style="font-size:8px;color:#ef4444;font-weight:bold;font-family:'Press Start 2P',monospace;margin-top:4px;">
-              ${typeof t === 'function' ? t('gamble.fail_chance', `FALLO (${luckFailPct}%)`) : `FALLO (${luckFailPct}%)`}
+              ${typeof t === 'function' ? t('gamble.fail_chance', { pct: luckFailPct, defaultValue: `FALLO (${luckFailPct}%)` }) : `FALLO (${luckFailPct}%)`}
             </div>
           </div>
         </div>
