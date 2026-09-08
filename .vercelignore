@@ -1,0 +1,27 @@
+﻿# BaseRogue - Vercel Deployment Exclusions
+# Reduce cada despliegue de ~170MB a ~40MB, ahorrando 75%+ de almacenamiento en Vercel
+
+# Base de datos cruda de Lahman y WAR
+lahman_1871-2025/
+*.txt
+
+# Archivos de analisis y datasets intermedios CSV
+*.csv
+
+# Datasets JSON pesados de estudio/ETL (no cargados en runtime)
+story_pitchers_database_study.json
+story_pitchers_database_summary.json
+test_2010_teams.json
+
+# Scripts de Python (ETL, migracion y tests)
+*.py
+__pycache__/
+*.pyc
+
+# Archivos temporales y backups
+scratch/
+opponents_database.preview.js
+style_legacy_backup.css
+CLAUDE.md
+README.md
+.claude/
