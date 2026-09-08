@@ -431,9 +431,17 @@
     <div class="glass-panel hidden" id="screen-challenge-season" style="position: relative; max-width: 1320px; width: 95%; margin: 20px auto; padding: 26px 20px;">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;">
         <div style="font-family: 'Press Start 2P', monospace; font-size: 13px; color: var(--challenge162-accent);" data-i18n="challenge162.title">🏆 162-0 CHALLENGE — TEMPORADA</div>
-        <button id="btn-challenge162-season-back-menu" class="btn btn-secondary" style="padding:6px 12px; font-size:10px;" data-i18n="common.back_menu">← MENÚ</button>
+        <div style="display:flex; gap:8px;">
+          <button id="btn-challenge162-season-liga" class="btn btn-secondary" style="padding:6px 12px; font-size:10px; color:#ffd700;">📊 LIGA RIVAL</button>
+          <button id="btn-challenge162-season-back-menu" class="btn btn-secondary" style="padding:6px 12px; font-size:10px;" data-i18n="common.back_menu">← MENÚ</button>
+        </div>
       </div>
       <div id="challenge162-season-container"></div>
+    </div>
+
+    <!-- SCREEN: 162-0 CHALLENGE — LIGA RIVAL -->
+    <div class="glass-panel hidden" id="screen-challenge-liga" style="position: relative; max-width: 1320px; width: 95%; margin: 20px auto; padding: 26px 20px;">
+      <div id="challenge162-liga-container"></div>
     </div>
 
     <!-- SCREEN: 162-0 CHALLENGE — PLAYOFFS -->
@@ -1378,7 +1386,7 @@
   <script src="career.js?v=1787873061"></script>
   <script src="player_flags_db.js?v=1787949068"></script>
   <script src="basedex.js?v=1787949068"></script>
-  <script src="challenge162.js?v=131"></script>
+  <script src="challenge162.js?v=133"></script>
   <script src="dynasty.js?v=1787960004"></script>
   <script src="ui.js?v=1788893200"></script>
 
