@@ -3943,7 +3943,11 @@
           `;
         };
 
-        const careerStats = (typeof getPlayerCareerData === 'function') ? getPlayerCareerData(card) : null;
+        const careerStats = (typeof getPlayerCareerData === 'function')
+          ? getPlayerCareerData(card)
+          : ((window.BaseballDex && typeof window.BaseballDex.getPlayerCareerData === 'function')
+              ? window.BaseballDex.getPlayerCareerData(card)
+              : null);
         const isReliever = isPitcher && (
           card.role === 'RP' || card.role === 'CL' || card.pos === 'RP' || card.pos === 'CL' ||
           (careerStats && typeof careerStats.sv === 'number' && careerStats.sv >= 10)
@@ -4036,6 +4040,12 @@
           ? window.createCardHTML(card, isPitcher ? (card.role || 'P') : (card.pos || 'OF'))
           : `<div class="player-card"><div class="card-name">${card.name}</div></div>`;
 
+        const bbrefUrl = (typeof getBbrefUrl === 'function')
+          ? getBbrefUrl(card)
+          : ((window.BaseballDex && typeof window.BaseballDex.getBbrefUrl === 'function')
+              ? window.BaseballDex.getBbrefUrl(card)
+              : `https://www.baseball-reference.com/search/search.fcgi?search=${encodeURIComponent(card.cleanName || card.name || '')}`);
+
         leftColumnHTML = `
           <div style="display: flex; flex-direction: column; align-items: center; max-width: 440px; width: 100%; margin: 0 auto;">
             <div class="dex-flip-card-container" id="c162-flip-container" style="perspective:1200px; width:100%; max-width:440px; min-height:480px; margin: 0 auto; cursor:pointer;" title="${_t('challenge162.click_to_flip', 'Click to flip card')}">
@@ -4047,7 +4057,7 @@
                     <div style="font-family:'Press Start 2P',monospace; font-size:9.5px; color:${rColor}; margin-bottom:4px;">${card.rarity || 'Common'} · ${eraShort}</div>
                     <h2 style="font-family:'Press Start 2P',monospace; font-size:13px; color:#fff; margin:0 0 4px 0; line-height:1.4; display:flex; align-items:center; flex-wrap:wrap; gap:8px;">
                       <span>${cName}</span>
-                      ${(typeof getPlayerFlagHTML === 'function') ? getPlayerFlagHTML(card) : ''}
+                      ${(typeof getPlayerFlagHTML === 'function') ? getPlayerFlagHTML(card) : ((window.BaseballDex && typeof window.BaseballDex.getPlayerFlagHTML === 'function') ? window.BaseballDex.getPlayerFlagHTML(card) : '')}
                     </h2>
                     <div style="font-size:11px; color:#9ca3af;">${teamFull} — ${card.year || ''} · ${card.role || card.pos || 'DH'}</div>
                   </div>
@@ -4080,12 +4090,15 @@
               </div>
             </div>
 
-            <!-- ACTION BUTTONS BELOW MODAL (FLIP & NEXT PACK) -->
-            <div style="margin-top:14px; width:100%; display:flex; justify-content:center; gap:10px; flex-wrap:wrap;">
-              <button id="btn-c162-flip-card" class="btn btn-secondary" style="padding:8px 16px; font-size:9px; font-family:'Press Start 2P',monospace; border:1px solid #38bdf8; color:#38bdf8;">
-                🔄 ${_t('challenge162.flip_card_btn', 'FLIP CARD')}
+            <!-- ACTION BUTTONS BELOW MODAL (FLIP, B-REF & NEXT PACK) -->
+            <div style="margin-top:14px; width:100%; display:flex; justify-content:center; gap:8px; flex-wrap:wrap; align-items:center;">
+              <button id="btn-c162-flip-card" class="btn btn-secondary" style="padding:8px 14px; font-size:8.5px; font-family:'Press Start 2P',monospace; border:1px solid #38bdf8; color:#38bdf8;">
+                🔄 ${_t('challenge162.flip_card_btn', 'FLIP')}
               </button>
-              <button id="btn-c162-next-pack" class="btn" style="padding:10px 18px; font-family:'Press Start 2P',monospace; font-size:9px; background:linear-gradient(135deg,#ffd700,#f59e0b); color:#000; border:none; border-radius:6px; cursor:pointer; font-weight:bold; box-shadow:0 0 15px rgba(255,215,0,0.4);">
+              <a href="${bbrefUrl}" target="_blank" rel="noopener noreferrer" style="padding:8px 14px; background:linear-gradient(135deg, rgba(16,185,129,0.2), rgba(5,150,105,0.3)); border:1.5px solid #10b981; color:#34d399; border-radius:6px; font-family:'Press Start 2P',monospace; font-size:8px; text-decoration:none; cursor:pointer; display:inline-flex; align-items:center; gap:5px; box-shadow:0 0 10px rgba(16,185,129,0.3);">
+                📊 ${_t('dex.btn_bbref', 'B-REF ↗')}
+              </a>
+              <button id="btn-c162-next-pack" class="btn" style="padding:9px 16px; font-family:'Press Start 2P',monospace; font-size:8.5px; background:linear-gradient(135deg,#ffd700,#f59e0b); color:#000; border:none; border-radius:6px; cursor:pointer; font-weight:bold; box-shadow:0 0 15px rgba(255,215,0,0.4);">
                 ${isDraftComplete ? _t('challenge162.finalize_roster', '🚀 FINALIZE ROSTER & START 162-0 ➔') : (isLastPackInStage ? _t('challenge162.open_pitchers_box', '⚾ OPEN PITCHERS BOX ➔') : _t('challenge162.open_next_pack', `📦 OPEN NEXT PACK (${globalCardNum + 1}/25) ➔`, { pack: globalCardNum + 1 }))}
               </button>
             </div>

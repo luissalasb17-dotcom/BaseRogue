@@ -314,6 +314,7 @@
     currentRendered: 0,
     getPlayerCareerData,
     getPlayerFlagHTML,
+    getBbrefUrl,
     getGrade,
     getGradeColor,
     RARITY_COLORS,
@@ -1301,4 +1302,10 @@
       });
     }
   };
+
+  window.getPlayerCareerData = getPlayerCareerData;
+  window.getPlayerFlagHTML = getPlayerFlagHTML;
+  window.getBbrefUrl = getBbrefUrl;
+  window.getGrade = getGrade;
+  window.getGradeColor = getGradeColor;
 })();
