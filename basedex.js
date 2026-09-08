@@ -1306,6 +1306,7 @@
   window.getPlayerCareerData = getPlayerCareerData;
   window.getPlayerFlagHTML = getPlayerFlagHTML;
   window.getBbrefUrl = getBbrefUrl;
+  window.getPosText = getPosText;
   window.getGrade = getGrade;
   window.getGradeColor = getGradeColor;
 })();

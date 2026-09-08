@@ -4059,7 +4059,7 @@
                       <span>${cName}</span>
                       ${(typeof getPlayerFlagHTML === 'function') ? getPlayerFlagHTML(card) : ((window.BaseballDex && typeof window.BaseballDex.getPlayerFlagHTML === 'function') ? window.BaseballDex.getPlayerFlagHTML(card) : '')}
                     </h2>
-                    <div style="font-size:11px; color:#9ca3af;">${teamFull} — ${card.year || ''} · ${card.role || card.pos || 'DH'}</div>
+                    <div style="font-size:11px; color:#9ca3af;">${teamFull} — ${card.year || ''} · ${card.role || (typeof getPosText === 'function' ? getPosText(card) : ((window.BaseballDex && typeof window.BaseballDex.getPosText === 'function') ? window.BaseballDex.getPosText(card) : (card.sec_pos && String(card.sec_pos).trim() ? `${card.pos || 'DH'} / ${card.sec_pos}` : (card.pos || 'DH'))))}</div>
                   </div>
 
                   <div style="text-align:center; margin-bottom:16px;">
