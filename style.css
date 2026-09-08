@@ -83,7 +83,7 @@ body.on-main-menu {
 body.on-challenge-mode {
   background-image: 
     linear-gradient(180deg, rgba(3, 10, 6, 0.62) 0%, rgba(3, 10, 6, 0.82) 100%),
-    url('assets/OPening%20day.webp') !important;
+    url('assets/la_coliseum.webp') !important;
 }
 
 /* Header */
