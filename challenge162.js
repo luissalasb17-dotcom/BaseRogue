@@ -3158,6 +3158,11 @@
     showScreen(id) {
       if (id !== 'screen-challenge-season') this.stopAutoSim();
       this.hideAllTopLevelScreens();
+      if (['screen-challenge-hub', 'screen-challenge-pack', 'screen-challenge-roster', 'screen-challenge-season', 'screen-challenge-liga', 'screen-challenge-playoffs', 'screen-challenge-results'].includes(id)) {
+        document.body.classList.add('on-challenge-mode');
+      } else {
+        document.body.classList.remove('on-challenge-mode');
+      }
       const target = document.getElementById(id);
       if (target) target.classList.remove('hidden');
       if (window.updateMobileNavVisibility) window.updateMobileNavVisibility();

@@ -93,6 +93,7 @@ window.showScreen = function(screenId) {
   const rightSidebar = document.getElementById('synergies-sidebar-panel') || document.querySelector('.workspace-sidebar.right-sidebar');
 
   if (screenId === 'screen-mode-select') {
+    document.body.classList.remove('on-challenge-mode');
     document.body.classList.add('on-main-menu');
     if (screenMode) screenMode.classList.remove('hidden');
     if (screenMenu) screenMenu.classList.add('hidden');
@@ -108,6 +109,7 @@ window.showScreen = function(screenId) {
 
   // All in-game screens (draft, map, match, train, rest, event, pre-fight, gameover) live inside #game-workspace wrapper
   document.body.classList.remove('on-main-menu');
+  document.body.classList.remove('on-challenge-mode');
   if (screenMode) screenMode.classList.add('hidden');
   if (screenMenu) screenMenu.classList.add('hidden');
   if (gameWorkspace) gameWorkspace.classList.remove('hidden');
