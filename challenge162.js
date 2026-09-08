@@ -1561,13 +1561,15 @@
               const bSub = benchList[(gameIdx + slot) % benchList.length];
               if (bSub) return bSub;
             }
-            return { name: "Bench", con: 50, pwr: 45, eye: 45, spd: 45, def: 50, _isBench: true };
+            // No bench available: the starter plays anyway (short roster)
+            return currentBatter;
           }
           return currentBatter;
         }, oppPitcherToday, true, batterDeltas, pitcherDeltas);
 
         const assignedPitcher = this._pitcherForInning(inning, userSP, userRelievers, userMaxInnings, gameIdx, userRuns, oppRuns);
-        const userPitcherToday = assignedPitcher || { name: "Support Pitcher", h9: 50, k9: 50, bb9: 50, hr9: 50, role: "RP", _isSupport: true };
+        const midFallback = userRelievers[0] || userRelievers[1] || userRelievers[2] || userSP;
+        const userPitcherToday = assignedPitcher || midFallback;
         userPitcherToday._fieldingDef = userTeamDef; // User team defense backs up pitching
         oppRuns += this._playHalfInning(() => opp.lineup[oppIdx++ % opp.lineup.length], userPitcherToday, false, batterDeltas, pitcherDeltas);
 
@@ -1586,8 +1588,8 @@
       while (outs < 3) {
         const batter = nextBatterFn();
         const outcome = simPaOutcome(batter, pitcher, isUserBatting);
-        const bKey = (isUserBatting && !batter._isBench) ? batterUnlockKey(batter) : null;
-        const pKey = (!isUserBatting && !pitcher._isSupport) ? pitcherUnlockKey(pitcher) : null;
+        const bKey = isUserBatting ? batterUnlockKey(batter) : null;
+        const pKey = !isUserBatting ? pitcherUnlockKey(pitcher) : null;
         if (bKey && !batterDeltas[bKey]) batterDeltas[bKey] = this._emptyBatterDelta();
         if (pKey && !pitcherDeltas[pKey]) pitcherDeltas[pKey] = this._emptyPitcherDelta();
         const bStat = bKey ? batterDeltas[bKey] : null;
@@ -1608,7 +1610,7 @@
           const scorers = scorer ? [scorer] : [];
           runs += scorers.length;
           scorers.forEach(r => {
-            const rKey = (isUserBatting && r && !r._isBench) ? batterUnlockKey(r) : null;
+            const rKey = (isUserBatting && r) ? batterUnlockKey(r) : null;
             if (rKey && batterDeltas[rKey]) batterDeltas[rKey].r++;
           });
           if (scorers.length && bStat) bStat.rbi += scorers.length;
@@ -1620,7 +1622,7 @@
           const rbiCount = 1 + runnersOn.length;
           runs += rbiCount;
           runnersOn.forEach(r => {
-            const rKey = (isUserBatting && r && !r._isBench) ? batterUnlockKey(r) : null;
+            const rKey = (isUserBatting && r) ? batterUnlockKey(r) : null;
             if (rKey && batterDeltas[rKey]) batterDeltas[rKey].r++;
           });
           bases[0] = null; bases[1] = null; bases[2] = null;
@@ -1639,7 +1641,7 @@
           const scorers = advanceOnHit(bases, batter, basesToAdvance, outs);
           runs += scorers.length;
           scorers.forEach(r => {
-            const rKey = (isUserBatting && r && !r._isBench) ? batterUnlockKey(r) : null;
+            const rKey = (isUserBatting && r) ? batterUnlockKey(r) : null;
             if (rKey && batterDeltas[rKey]) batterDeltas[rKey].r++;
           });
           if (scorers.length && bStat) bStat.rbi += scorers.length;
@@ -1677,7 +1679,7 @@
               bases[2] = leadRunner;
               bases[1] = batter;
               bases[0] = null;
-              const leadKey = (leadRunner && !leadRunner._isBench) ? batterUnlockKey(leadRunner) : null;
+              const leadKey = (leadRunner) ? batterUnlockKey(leadRunner) : null;
               if (leadKey && batterDeltas[leadKey]) batterDeltas[leadKey].sb++;
             }
           }
@@ -3972,7 +3974,7 @@
           `;
         }
         const cardHTML = typeof window.createCardHTML === 'function'
-          ? window.createCardHTML(player, slotLabel)
+          ? window.createCardHTML(player, kind === 'bench' ? null : slotLabel)
           : `<div class="player-card"><div class="card-name">${player.name}</div></div>`;
 
         return `
@@ -4563,8 +4565,8 @@
         const infieldText = _t('challenge162.infield', 'CUADRO / INFIELD');
         const outfieldDhText = _t('challenge162.outfield_dh', 'JARDINES Y DESIGNADO / OUTFIELD & DH');
         const lineupTitleText = _t('challenge162.lineup_title', 'ALINEACION TITULAR (LINEUP - 9 CARTAS)');
-        const rotationTitleText = _t('challenge162.rotation_title', 'ROTACION DE ABRIDORES (ROTATION - 5 CARTAS)');
-        const bullpenTitleText = _t('challenge162.bullpen_title', 'CUERPO DE RELEVISTAS (BULLPEN - 3 CARTAS)');
+        const rotationTitleText = _t('challenge162.rotation_title_5', 'ROTACION DE ABRIDORES (ROTATION - 5 CARTAS)');
+        const bullpenTitleText = _t('challenge162.bullpen_title_6', 'CUERPO DE RELEVISTAS (BULLPEN - 6 CARTAS)');
 
         container.innerHTML = `
           <!-- High-End Tactical HUD Top Bar -->

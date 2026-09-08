@@ -3360,11 +3360,12 @@ function initGameModeSelector() {
     if (stam < 50) stamClass = "low";
     if (stam < 25) stamClass = "critical";
 
-    // Out of position warning (applies only to fielders in fielding slots, never pitchers in pitching slots or DH)
+    // Out of position warning (applies only to fielders in fielding slots, never pitchers in pitching slots, DH, or bench)
     let positionWarning = "";
     const sName = slotName != null ? String(slotName).trim() : '';
     const isPitcherSlot = !sName || sName === 'P' || sName.startsWith('SP') || sName.startsWith('RP') || sName === 'CL' || sName === 'SETUP';
-    if (!isPitcher && sName && sName !== 'DH' && !isPitcherSlot && player.pos !== sName) {
+    const isBenchSlot = sName === 'BN' || sName.startsWith('BN') || sName.toUpperCase().includes('BENCH');
+    if (!isPitcher && sName && sName !== 'DH' && !isPitcherSlot && !isBenchSlot && player.pos !== sName) {
       const secPosArray = player.sec_pos ? player.sec_pos.split(',').map(s => s.trim()) : [];
       if (secPosArray.includes(sName)) {
         positionWarning = `<div style="position: absolute; bottom: 35px; left: 0; right: 0; background: #06b6d4; color: #fff; font-size: 7.5px; text-align: center; font-weight: bold; padding: 2px 0; font-family: 'Press Start 2P', monospace; letter-spacing: 0.5px;">SEC POS (DEF -15%)</div>`;
