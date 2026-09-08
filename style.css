@@ -8447,6 +8447,240 @@ body.on-main-menu .main-container {
   box-shadow: 0 0 15px rgba(255, 215, 0, 0.6) !important;
 }
 
+/* ── Pokelike Sub-Challenge Selection View (Mono-Team & Mono-Era) ────────── */
+.c162-subview-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+.c162-subview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.c162-pokelike-overview {
+  background: radial-gradient(circle at 50% 0%, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.98) 100%);
+  border: 2px solid #ef4444;
+  border-radius: 12px;
+  padding: 16px 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  position: relative;
+  overflow: hidden;
+}
+
+.c162-pokelike-overview.era-theme {
+  border-color: #a855f7;
+}
+
+.c162-pokelike-overview-title {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 13px;
+  color: #f87171;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.c162-pokelike-overview.era-theme .c162-pokelike-overview-title {
+  color: #c084fc;
+}
+
+.c162-pokelike-overview-desc {
+  font-size: 12px;
+  color: #cbd5e1;
+  line-height: 1.6;
+  margin-bottom: 12px;
+}
+
+.c162-pokelike-progress-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  font-family: 'Press Start 2P', monospace;
+  font-size: 9px;
+}
+
+.c162-search-input {
+  width: 100%;
+  max-width: 450px;
+  padding: 10px 14px;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1.5px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  color: #fff;
+  font-size: 12px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.c162-search-input:focus {
+  border-color: #ffd700;
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+}
+
+.c162-pokelike-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 14px;
+}
+
+@media (max-width: 640px) {
+  .c162-pokelike-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+}
+
+.c162-pokelike-tile {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(8, 12, 22, 0.98) 100%);
+  border: 2px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  padding: 14px 16px;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.c162-pokelike-tile:hover {
+  transform: translateY(-2px);
+  border-color: #ffd700;
+  box-shadow: 0 6px 20px rgba(255, 215, 0, 0.25);
+}
+
+.c162-pokelike-tile.locked {
+  opacity: 0.6;
+}
+
+.c162-pokelike-tile.locked:hover {
+  border-color: rgba(239, 68, 68, 0.4);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);
+}
+
+.c162-pokelike-emblem {
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.c162-pokelike-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.c162-pokelike-name {
+  font-size: 13px;
+  font-weight: bold;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.3;
+}
+
+.c162-pokelike-sub {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-top: 2px;
+}
+
+.c162-pokelike-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  margin-top: 6px;
+}
+
+.c162-pokelike-tag {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7.5px;
+  padding: 3px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.c162-pokelike-tag.ready {
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid #10b981;
+  color: #34d399;
+}
+
+.c162-pokelike-tag.locked {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid #ef4444;
+  color: #f87171;
+}
+
+.c162-pokelike-tag.champion {
+  background: rgba(255, 215, 0, 0.15);
+  border: 1px solid #ffd700;
+  color: #ffd700;
+}
+
+.c162-pokelike-tag.info {
+  background: rgba(56, 189, 248, 0.15);
+  border: 1px solid #38bdf8;
+  color: #7dd3fc;
+}
+
+.c162-pokelike-btn {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 9px;
+  padding: 9px 14px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.c162-pokelike-btn.play {
+  background: linear-gradient(135deg, #ffd700, #f59e0b);
+  color: #000;
+  font-weight: bold;
+  box-shadow: 0 0 12px rgba(255, 215, 0, 0.35);
+}
+
+.c162-pokelike-btn.play:hover {
+  transform: scale(1.06);
+  box-shadow: 0 0 18px rgba(255, 215, 0, 0.6);
+}
+
+.c162-pokelike-lock-box {
+  font-size: 20px;
+  color: #64748b;
+  padding: 6px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
 /* Position Filter Pills for Roster Builder */
 .c162-filter-pills {
   display: flex;

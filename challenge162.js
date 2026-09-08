@@ -3029,6 +3029,7 @@
     _selectedFranchise: 'NYY',
     _selectedEra: 'Golden Era (1920-1941)',
     _activeFilterPill: 'ALL',
+    _previousHubView: 'hub',
 
     hideAllTopLevelScreens() {
       ['screen-mode-select', 'screen-menu', 'screen-challenge-hub', 'screen-challenge-pack', 'screen-challenge-roster', 'screen-challenge-season', 'screen-challenge-playoffs', 'screen-challenge-results'].forEach(id => {
@@ -3074,8 +3075,9 @@
     },
 
     // ── Challenge Hub (Mode & Themed Selector) ───────────────────────────
-    // ── Challenge Hub (Mode & Themed Selector) ───────────────────────────
+    // ── Challenge Hub (Pokelike Inspired Mode & Sub-Challenge Selector) ───
     renderHub() {
+      this._previousHubView = 'hub';
       this.showScreen('screen-challenge-hub');
       const container = document.getElementById('challenge162-hub-container');
       if (!container) return;
@@ -3094,107 +3096,81 @@
       const batterHistory = (window.PlayerTeamHistory && window.PlayerTeamHistory.batters) || {};
       const pitcherHistory = (window.PlayerTeamHistory && window.PlayerTeamHistory.pitchers) || {};
 
-      const _t = (key, fallback, params) => (typeof window.t === 'function' ? window.t(key, params) : fallback);
-
-      // 1. Franchise cards count
-      const franchiseListHTML = MLB_FRANCHISES.map(fran => {
+      let readyFranchises = 0;
+      let clearedFranchises = 0;
+      MLB_FRANCHISES.forEach(fran => {
         const bCount = getBatterPool().filter(p => this.isBatterUnlocked(p) && (p.team === fran.code || (batterHistory[p.playerID] && batterHistory[p.playerID][fran.code]))).length;
         const pCount = getPitcherPool().filter(p => this.isPitcherUnlocked(p) && (p.team === fran.code || (pitcherHistory[p.playerID] && pitcherHistory[p.playerID][fran.code]))).length;
-        const total = bCount + pCount;
-        const isSelected = this._selectedFranchise === fran.code;
-        const isReady = total >= 17;
-        const countStr = `${total} CARDS`;
+        if (bCount + pCount >= 17) readyFranchises++;
+        if (records.teamClears && records.teamClears[fran.code]) clearedFranchises++;
+      });
 
-        return `
-          <div class="c162-sub-item ${isSelected ? 'selected' : ''} challenge162-fran-select" data-code="${fran.code}" style="border-left: 3px solid ${fran.color}; cursor:pointer;">
-            <div style="font-size: 18px; margin-bottom: 2px;">${fran.icon}</div>
-            <div style="font-size: 10px; font-weight: bold; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 110px;">${fran.name}</div>
-            <div style="font-size: 8px; color: ${isReady ? '#34d399' : '#f59e0b'}; font-family: 'Press Start 2P', monospace; margin-top: 4px;">
-              ${countStr}
-            </div>
-          </div>
-        `;
-      }).join('');
-
-      // 2. Era cards count
-      const eraListHTML = BASEBALL_ERAS.map(era => {
+      let readyEras = 0;
+      let clearedEras = 0;
+      BASEBALL_ERAS.forEach(era => {
         const bCount = getBatterPool().filter(p => this.isBatterUnlocked(p) && p.era === era.key).length;
         const pCount = getPitcherPool().filter(p => this.isPitcherUnlocked(p) && p.era === era.key).length;
-        const total = bCount + pCount;
-        const isSelected = this._selectedEra === era.key;
-        const isReady = total >= 17;
-        const countStr = `${total} CARDS`;
+        if (bCount + pCount >= 17) readyEras++;
+        if (records.eraClears && records.eraClears[era.key]) clearedEras++;
+      });
 
-        return `
-          <div class="c162-sub-item ${isSelected ? 'selected' : ''} challenge162-era-select" data-key="${encodeURIComponent(era.key)}" style="border-left: 3px solid ${era.color}; cursor:pointer;">
-            <div style="font-size: 18px; margin-bottom: 2px;">${era.icon}</div>
-            <div style="font-size: 10px; font-weight: bold; color: #fff;">${era.label}</div>
-            <div style="font-size: 8px; color: #94a3b8; margin: 2px 0;">${era.years}</div>
-            <div style="font-size: 8px; color: ${isReady ? '#34d399' : '#f59e0b'}; font-family: 'Press Start 2P', monospace; margin-top: 2px;">
-              ${countStr}
-            </div>
-          </div>
-        `;
-      }).join('');
-
-      const selFranObj = MLB_FRANCHISES.find(f => f.code === this._selectedFranchise) || MLB_FRANCHISES[0];
-      const selEraObj = BASEBALL_ERAS.find(e => e.key === this._selectedEra) || BASEBALL_ERAS[2];
+      const _t = (key, fallback, params) => (typeof window.t === 'function' ? window.t(key, params) : fallback);
 
       const hubTitle = _t('challenge162.hub_title', '162-0 CHALLENGE HUB');
-      const hubSubtitle = _t('challenge162.hub_subtitle', 'Choose your regular season and postseason game mode format');
-      const bestStreakText = _t('challenge162.best_streak', 'BEST STREAK');
-      const wsText = _t('challenge162.world_series', 'WORLD SERIES');
-      const seasonsPlayedText = _t('challenge162.seasons_played', 'SEASONS PLAYED');
-      const totalColText = _t('challenge162.total_collection', 'TOTAL COLLECTION');
+      const hubSubtitle = _t('challenge162.hub_subtitle', 'Elige tu formato de temporada regular y postemporada');
+      const bestStreakText = _t('challenge162.best_streak', 'MEJOR RACHA');
+      const wsText = _t('challenge162.world_series', 'SERIES MUNDIALES');
+      const seasonsPlayedText = _t('challenge162.seasons_played', 'TEMPORADAS');
+      const totalColText = _t('challenge162.total_collection', 'COLECCIÓN TOTAL');
 
       const winsValStr = `${records.maxStreak || 0} WINS`;
       const wsValStr = `${records.worldSeriesWins || 0} TITLES`;
       const seasonsValStr = `${records.completedSeasons || 0} PLAYED`;
       const cardsValStr = `${totalCards} CARDS`;
 
-      const mainMenuText = _t('challenge162.main_menu', 'MAIN MENU');
+      const mainMenuText = _t('challenge162.main_menu', 'MENÚ PRINCIPAL');
 
-      const packsBadge = _t('challenge162.packs_badge', 'PACKS FORMAT');
-      const packsTitle = _t('challenge162.packs_title', 'HOBBY PACKS DRAFT');
-      const packsDesc = _t('challenge162.packs_desc', 'Open 17 retro card packs directly from the entire universe of MLB legends to draft your 9-man starting lineup, 5-man rotation, and 3-man bullpen.');
-      const playPacksBtn = _t('challenge162.play_packs', 'DRAFT WITH PACKS');
+      const packsBadge = _t('challenge162.packs_badge', 'FORMATO SOBRES');
+      const packsTitle = _t('challenge162.packs_title', 'DRAFT DE SOBRES HOBBY');
+      const packsDesc = _t('challenge162.packs_desc', 'Abre 25 sobres retro directamente del universo de leyendas MLB para draftear tu alineación de 9 titulares, 5 de banca, rotación de 5 abridores y 6 relevistas.');
+      const playPacksBtn = _t('challenge162.play_packs', 'DRAFT CON SOBRES');
 
-      const allStarBadge = _t('challenge162.free_draft_badge', 'FREE COLLECTION');
+      const allStarBadge = _t('challenge162.free_draft_badge', 'COLECCIÓN LIBRE');
       const allStarTitle = _t('challenge162.all_star_title', 'ALL-STAR DREAM TEAM');
-      const allStarDesc = _t('challenge162.all_star_desc', 'Build your ultimate lineup and pitching staff freely from all unlocked cards in your permanent collection.');
-      const playAllStarBtn = _t('challenge162.play_all_star', 'PLAY ALL-STAR');
+      const allStarDesc = _t('challenge162.all_star_desc', 'Construye tu alineación y cuerpo de pitcheo sin restricciones utilizando cualquier carta desbloqueada en tu colección.');
+      const playAllStarBtn = _t('challenge162.play_all_star', 'JUGAR ALL-STAR');
 
-      const monoTeamBadge = _t('challenge162.mono_team_badge', 'SINGLE FRANCHISE');
-      const monoTeamTitle = _t('challenge162.mono_team_title', 'MONO-TEAM CHALLENGE');
-      const monoTeamDesc = _t('challenge162.mono_team_desc', 'Compete exclusively with legends and stars who wore the uniform of your chosen MLB franchise.');
-      const playMonoTeamBtn = `PLAY WITH ${selFranObj.code}`;
+      const monoTeamBadge = _t('challenge162.mono_team_badge', 'FRANQUICIA ÚNICA');
+      const monoTeamTitle = _t('challenge162.mono_team_title', 'DESAFÍO MONO-TEAM');
+      const monoTeamDesc = _t('challenge162.mono_team_desc', 'Compite exclusivamente con peloteros que vistieron la camiseta de una única franquicia de Grandes Ligas.');
+      const selectFranchiseBtn = _t('challenge162.select_franchise_btn', 'ELEGIR EQUIPO ▶');
 
-      const monoEraBadge = _t('challenge162.mono_era_badge', 'HISTORIC ERA');
-      const monoEraTitle = _t('challenge162.mono_era_title', 'MONO-ERA CHALLENGE');
-      const monoEraDesc = _t('challenge162.mono_era_desc', "Travel through time and compete only with stars from one of baseball's 9 historic golden eras.");
-      const playMonoEraBtn = `PLAY ${selEraObj.label.toUpperCase()}`;
+      const monoEraBadge = _t('challenge162.mono_era_badge', 'ÉPOCA HISTÓRICA');
+      const monoEraTitle = _t('challenge162.mono_era_title', 'DESAFÍO MONO-ERA');
+      const monoEraDesc = _t('challenge162.mono_era_desc', 'Viaja en el tiempo y compite únicamente con las estrellas de una de las 9 eras doradas del béisbol.');
+      const selectEraBtn = _t('challenge162.select_era_btn', 'ELEGIR ERA ▶');
 
-      const resumeText = _t('challenge162.resume', 'CONTINUE');
-      const abandonText = _t('challenge162.abandon', 'ABANDON');
+      const resumeText = _t('challenge162.resume', 'CONTINUAR');
+      const abandonText = _t('challenge162.abandon', 'ABANDONAR');
 
       container.innerHTML = `
         <div class="c162-hub-wrap">
-          <!-- Header -->
+          <!-- Pokelike Header -->
           <div class="c162-hub-header">
             <div>
               <div style="font-family: 'Press Start 2P', monospace; font-size: 13px; color: var(--challenge162-accent); letter-spacing: 0.5px;">
-                🏆 ${hubTitle}
+                ⚔️ ${hubTitle}
               </div>
               <div style="font-size: 11px; color: #94a3b8; margin-top: 4px;">
                 ${hubSubtitle}
               </div>
             </div>
-            <button id="btn-challenge162-hub-back" class="btn btn-secondary" style="padding: 6px 12px; font-size: 10px; font-family: 'Press Start 2P', monospace;">
+            <button id="btn-challenge162-hub-back" class="btn btn-secondary" style="padding: 8px 14px; font-size: 10px; font-family: 'Press Start 2P', monospace;">
               ← ${mainMenuText}
             </button>
           </div>
 
-          <!-- Hall of Records Banner -->
+          <!-- Pokelike Hall of Records Banner -->
           <div class="c162-records-banner">
             <div class="c162-record-stat">
               <span class="c162-record-label">👑 ${bestStreakText}</span>
@@ -3211,6 +3187,14 @@
             <div class="c162-record-stat">
               <span class="c162-record-label">🎴 ${totalColText}</span>
               <span class="c162-record-val" style="color: #38bdf8;">${cardsValStr}</span>
+            </div>
+            <div class="c162-record-stat">
+              <span class="c162-record-label">⚔️ MONO-TEAM</span>
+              <span class="c162-record-val" style="color: #34d399; font-size: 13px;">${clearedFranchises} / ${MLB_FRANCHISES.length} WS</span>
+            </div>
+            <div class="c162-record-stat">
+              <span class="c162-record-label">⏳ MONO-ERA</span>
+              <span class="c162-record-val" style="color: #c084fc; font-size: 13px;">${clearedEras} / ${BASEBALL_ERAS.length} WS</span>
             </div>
           </div>
 
@@ -3236,7 +3220,7 @@
             </div>
           ` : ''}
 
-          <!-- Modes Grid (4 Formats) -->
+          <!-- Modes Grid (4 Pokelike Mode Cards) -->
           <div class="c162-modes-grid">
             <!-- Card 1: Hobby Packs Draft -->
             <div class="c162-mode-card" style="border-color: rgba(255, 215, 0, 0.4); box-shadow: 0 4px 20px rgba(255, 215, 0, 0.15);">
@@ -3248,8 +3232,8 @@
                 <div class="c162-mode-desc">
                   ${packsDesc}
                 </div>
-                <div style="margin-top: 10px; padding: 8px 10px; background: rgba(255, 215, 0, 0.08); border-radius: 6px; border: 1px dashed rgba(255, 215, 0, 0.3); font-size: 8.5px; color: #ffd700; font-family: 'Press Start 2P', monospace; line-height: 1.5;">
-                  ✨ 17 PACKS: 9 BATTERS + 5 SP + 3 RP
+                <div style="margin-top: 10px; padding: 8px 10px; background: rgba(255, 215, 0, 0.08); border-radius: 6px; border: 1px dashed rgba(255, 215, 0, 0.3); font-size: 8px; color: #ffd700; font-family: 'Press Start 2P', monospace; line-height: 1.5;">
+                  ✨ 25 SOBRES: 14 BATEADORES + 11 LANZADORES
                 </div>
               </div>
               <button id="btn-start-packsdraft-mode" class="btn" style="width: 100%; margin-top: 14px; padding: 11px 14px; font-size: 10px; font-family: 'Press Start 2P', monospace; background: linear-gradient(135deg, #ffd700, #b45309); color: #000; border: none; border-radius: 8px; cursor: pointer; box-shadow: 0 0 16px rgba(255, 215, 0, 0.4); font-weight: bold;">
@@ -3267,47 +3251,52 @@
                 <div class="c162-mode-desc">
                   ${allStarDesc}
                 </div>
+                <div style="margin-top: 10px; padding: 8px 10px; background: rgba(56, 189, 248, 0.08); border-radius: 6px; border: 1px dashed rgba(56, 189, 248, 0.3); font-size: 8px; color: #38bdf8; font-family: 'Press Start 2P', monospace; line-height: 1.5;">
+                  💎 COLECCIÓN TOTAL SIN RESTRICCIONES
+                </div>
               </div>
-              <button id="btn-start-allstar-mode" class="btn" style="width: 100%; margin-top: 14px; padding: 10px 14px; font-size: 10px; font-family: 'Press Start 2P', monospace; background: linear-gradient(135deg, #38bdf8, #0284c7); color: #000; border: none; border-radius: 8px; cursor: pointer; box-shadow: 0 0 15px rgba(56, 189, 248, 0.3);">
+              <button id="btn-start-allstar-mode" class="btn" style="width: 100%; margin-top: 14px; padding: 11px 14px; font-size: 10px; font-family: 'Press Start 2P', monospace; background: linear-gradient(135deg, #38bdf8, #0284c7); color: #000; border: none; border-radius: 8px; cursor: pointer; box-shadow: 0 0 15px rgba(56, 189, 248, 0.3); font-weight: bold;">
                 🚀 ${playAllStarBtn}
               </button>
             </div>
 
-            <!-- Card 3: Mono-Team -->
-            <div class="c162-mode-card">
+            <!-- Card 3: Mono-Team (Clean Pokelike Entry) -->
+            <div class="c162-mode-card" style="border-color: rgba(16, 185, 129, 0.4); box-shadow: 0 4px 20px rgba(16, 185, 129, 0.15);">
               <div>
                 <span class="c162-mode-badge" style="background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4);">
                   ${monoTeamBadge}
                 </span>
-                <div class="c162-mode-title">⚔️ ${monoTeamTitle}</div>
+                <div class="c162-mode-title" style="color: #34d399;">⚔️ ${monoTeamTitle}</div>
                 <div class="c162-mode-desc">
                   ${monoTeamDesc}
                 </div>
-                <div class="c162-sub-selector-grid">
-                  ${franchiseListHTML}
+                <div class="c162-pokelike-chips" style="margin-top: 10px;">
+                  <span class="c162-pokelike-tag ready">🟢 ${readyFranchises}/${MLB_FRANCHISES.length} EQUIPOS LISTOS</span>
+                  ${clearedFranchises > 0 ? `<span class="c162-pokelike-tag champion">🏆 ${clearedFranchises} WS</span>` : ''}
                 </div>
               </div>
-              <button id="btn-start-monoteam-mode" class="btn" style="width: 100%; margin-top: 14px; padding: 10px 14px; font-size: 9.5px; font-family: 'Press Start 2P', monospace; background: linear-gradient(135deg, #10b981, #047857); color: #000; border: none; border-radius: 8px; cursor: pointer;">
-                ⚾ ${playMonoTeamBtn}
+              <button id="btn-goto-monoteam-select" class="btn" style="width: 100%; margin-top: 14px; padding: 11px 14px; font-size: 10px; font-family: 'Press Start 2P', monospace; background: linear-gradient(135deg, #10b981, #047857); color: #000; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; box-shadow: 0 0 14px rgba(16, 185, 129, 0.35);">
+                ⚾ ${selectFranchiseBtn}
               </button>
             </div>
 
-            <!-- Card 4: Mono-Era -->
-            <div class="c162-mode-card">
+            <!-- Card 4: Mono-Era (Clean Pokelike Entry) -->
+            <div class="c162-mode-card" style="border-color: rgba(168, 85, 247, 0.4); box-shadow: 0 4px 20px rgba(168, 85, 247, 0.15);">
               <div>
                 <span class="c162-mode-badge" style="background: rgba(168, 85, 247, 0.2); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.4);">
                   ${monoEraBadge}
                 </span>
-                <div class="c162-mode-title">⏳ ${monoEraTitle}</div>
+                <div class="c162-mode-title" style="color: #c084fc;">⏳ ${monoEraTitle}</div>
                 <div class="c162-mode-desc">
                   ${monoEraDesc}
                 </div>
-                <div class="c162-sub-selector-grid">
-                  ${eraListHTML}
+                <div class="c162-pokelike-chips" style="margin-top: 10px;">
+                  <span class="c162-pokelike-tag ready">🟢 ${readyEras}/${BASEBALL_ERAS.length} ERAS LISTAS</span>
+                  ${clearedEras > 0 ? `<span class="c162-pokelike-tag champion">🏆 ${clearedEras} WS</span>` : ''}
                 </div>
               </div>
-              <button id="btn-start-monoera-mode" class="btn" style="width: 100%; margin-top: 14px; padding: 10px 14px; font-size: 9.5px; font-family: 'Press Start 2P', monospace; background: linear-gradient(135deg, #c084fc, #9333ea); color: #fff; border: none; border-radius: 8px; cursor: pointer;">
-                ⏳ ${playMonoEraBtn}
+              <button id="btn-goto-monoera-select" class="btn" style="width: 100%; margin-top: 14px; padding: 11px 14px; font-size: 10px; font-family: 'Press Start 2P', monospace; background: linear-gradient(135deg, #c084fc, #9333ea); color: #fff; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; box-shadow: 0 0 14px rgba(192, 132, 252, 0.35);">
+                ⏳ ${selectEraBtn}
               </button>
             </div>
           </div>
@@ -3340,31 +3329,295 @@
         this.startRosterBuilder();
       };
 
-      const btnMonoTeam = document.getElementById('btn-start-monoteam-mode');
-      if (btnMonoTeam) btnMonoTeam.onclick = () => {
-        const fran = MLB_FRANCHISES.find(f => f.code === this._selectedFranchise) || MLB_FRANCHISES[0];
-        this.setModeConfig({ type: 'mono_team', targetTeam: fran.code, label: `⚔️ MONO-TEAM: ${fran.name.toUpperCase()}`, teamName: fran.name });
-        this.startRosterBuilder();
+      const btnGotoMonoTeam = document.getElementById('btn-goto-monoteam-select');
+      if (btnGotoMonoTeam) btnGotoMonoTeam.onclick = () => {
+        this.renderFranchiseSelect();
       };
 
-      const btnMonoEra = document.getElementById('btn-start-monoera-mode');
-      if (btnMonoEra) btnMonoEra.onclick = () => {
-        const era = BASEBALL_ERAS.find(e => e.key === this._selectedEra) || BASEBALL_ERAS[2];
-        this.setModeConfig({ type: 'mono_era', targetEra: era.key, label: `⏳ MONO-ERA: ${era.label.toUpperCase()}`, eraName: era.label });
-        this.startRosterBuilder();
+      const btnGotoMonoEra = document.getElementById('btn-goto-monoera-select');
+      if (btnGotoMonoEra) btnGotoMonoEra.onclick = () => {
+        this.renderEraSelect();
       };
+    },
 
-      container.querySelectorAll('.challenge162-fran-select').forEach(el => {
-        el.onclick = () => {
-          this._selectedFranchise = el.getAttribute('data-code');
-          this.renderHub();
+    // ── Dedicated Franchise Selection Screen (Pokelike Style) ────────────
+    renderFranchiseSelect() {
+      this._previousHubView = 'franchise';
+      this.showScreen('screen-challenge-hub');
+      const container = document.getElementById('challenge162-hub-container');
+      if (!container) return;
+
+      if (!this.unlockedBatters || !this.unlockedPitchers) {
+        this.initUnlocks();
+      }
+
+      const records = this.getRecords();
+      const batterHistory = (window.PlayerTeamHistory && window.PlayerTeamHistory.batters) || {};
+      const pitcherHistory = (window.PlayerTeamHistory && window.PlayerTeamHistory.pitchers) || {};
+
+      const _t = (key, fallback, params) => (typeof window.t === 'function' ? window.t(key, params) : fallback);
+
+      let readyFranchises = 0;
+      let clearedFranchises = 0;
+      const franchiseData = MLB_FRANCHISES.map(fran => {
+        const bCount = getBatterPool().filter(p => this.isBatterUnlocked(p) && (p.team === fran.code || (batterHistory[p.playerID] && batterHistory[p.playerID][fran.code]))).length;
+        const pCount = getPitcherPool().filter(p => this.isPitcherUnlocked(p) && (p.team === fran.code || (pitcherHistory[p.playerID] && pitcherHistory[p.playerID][fran.code]))).length;
+        const total = bCount + pCount;
+        const isReady = total >= 17;
+        const clears = (records.teamClears && records.teamClears[fran.code]) || 0;
+        if (isReady) readyFranchises++;
+        if (clears > 0) clearedFranchises++;
+        return { fran, total, isReady, clears };
+      });
+
+      const backToHubText = _t('challenge162.back_to_hub', '← VOLVER AL HUB');
+      const title = _t('challenge162.franchise_select_title', 'DESAFÍO MONO-TEAM (FRANQUICIAS MLB)');
+      const desc = _t('challenge162.franchise_select_desc', 'Elige una franquicia de MLB. Tu roster completo de 17 peloteros se construirá exclusivamente con estrellas y leyendas que defendieron sus colores. Necesitas al menos 17 cartas desbloqueadas para jugar.');
+      const searchPlaceholder = _t('challenge162.search_franchise', '🔍 Buscar franquicia (ej. Yankees, Dodgers, Boston...)');
+
+      const tilesHTML = franchiseData.map(({ fran, total, isReady, clears }) => {
+        return `
+          <div class="c162-pokelike-tile ${isReady ? '' : 'locked'} c162-franchise-tile" data-code="${fran.code}" data-name="${fran.name.toLowerCase()}" data-city="${fran.city.toLowerCase()}" style="border-left: 4px solid ${fran.color}; cursor: ${isReady ? 'pointer' : 'default'};">
+            <div class="c162-pokelike-emblem" style="background: ${fran.color}; border: 1.5px solid ${fran.accent || '#ffd700'};">
+              ${fran.icon}
+            </div>
+            <div class="c162-pokelike-info">
+              <div class="c162-pokelike-name">${fran.name}</div>
+              <div class="c162-pokelike-sub">${fran.city} • <span style="font-family:'Press Start 2P',monospace; font-size:8.5px; color:${fran.accent || '#ffd700'};">${fran.code}</span></div>
+              <div class="c162-pokelike-chips">
+                <span class="c162-pokelike-tag ${isReady ? 'ready' : 'locked'}">${total} CARTAS</span>
+                ${clears > 0 ? `<span class="c162-pokelike-tag champion">🏆 ${clears} WS</span>` : ''}
+                ${!isReady ? `<span style="font-size:7.5px; color:#f87171; font-family:'Press Start 2P',monospace;">FALTAN ${17 - total}</span>` : ''}
+              </div>
+            </div>
+            <div>
+              ${isReady ? `
+                <button class="c162-pokelike-btn play btn-c162-launch-team" data-code="${fran.code}">
+                  JUGAR ▶
+                </button>
+              ` : `
+                <div class="c162-pokelike-lock-box" title="Requiere al menos 17 cartas para jugar">
+                  🔒
+                </div>
+              `}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      container.innerHTML = `
+        <div class="c162-subview-wrap">
+          <!-- Top Bar -->
+          <div class="c162-subview-header">
+            <button id="btn-c162-back-hub" class="btn btn-secondary" style="padding: 8px 14px; font-size: 10px; font-family: 'Press Start 2P', monospace;">
+              ${backToHubText}
+            </button>
+            <input type="text" id="c162-franchise-search" class="c162-search-input" placeholder="${searchPlaceholder}" />
+          </div>
+
+          <!-- Pokelike Overview Card -->
+          <div class="c162-pokelike-overview">
+            <div class="c162-pokelike-overview-title">
+              ⚔️ ${title}
+            </div>
+            <div class="c162-pokelike-overview-desc">
+              ${desc}
+            </div>
+            <div class="c162-pokelike-progress-row">
+              <span style="color: #ffd700;">🏆 ${clearedFranchises} / ${MLB_FRANCHISES.length} Franquicias Campeonas</span>
+              <span style="color: #34d399;">🟢 ${readyFranchises} / ${MLB_FRANCHISES.length} Equipos con Roster Listo (17+ cartas)</span>
+            </div>
+          </div>
+
+          <!-- Responsive Tiles Grid -->
+          <div class="c162-pokelike-grid" id="c162-franchise-grid">
+            ${tilesHTML}
+          </div>
+        </div>
+      `;
+
+      // Event listeners
+      const btnBackHub = document.getElementById('btn-c162-back-hub');
+      if (btnBackHub) btnBackHub.onclick = () => this.renderHub();
+
+      const searchInput = document.getElementById('c162-franchise-search');
+      if (searchInput) {
+        searchInput.oninput = () => {
+          const q = (searchInput.value || '').trim().toLowerCase();
+          container.querySelectorAll('.c162-franchise-tile').forEach(tile => {
+            const name = tile.getAttribute('data-name') || '';
+            const city = tile.getAttribute('data-city') || '';
+            const code = (tile.getAttribute('data-code') || '').toLowerCase();
+            const match = !q || name.includes(q) || city.includes(q) || code.includes(q);
+            tile.style.display = match ? 'flex' : 'none';
+          });
+        };
+      }
+
+      container.querySelectorAll('.btn-c162-launch-team').forEach(btn => {
+        btn.onclick = (e) => {
+          e.stopPropagation();
+          const code = btn.getAttribute('data-code');
+          const fran = MLB_FRANCHISES.find(f => f.code === code) || MLB_FRANCHISES[0];
+          this.setModeConfig({
+            type: 'mono_team',
+            targetTeam: fran.code,
+            label: `⚔️ MONO-TEAM: ${fran.name.toUpperCase()}`,
+            teamName: fran.name
+          });
+          this.startRosterBuilder();
         };
       });
 
-      container.querySelectorAll('.challenge162-era-select').forEach(el => {
-        el.onclick = () => {
-          this._selectedEra = decodeURIComponent(el.getAttribute('data-key'));
-          this.renderHub();
+      container.querySelectorAll('.c162-pokelike-tile').forEach(tile => {
+        tile.onclick = () => {
+          const code = tile.getAttribute('data-code');
+          const fran = MLB_FRANCHISES.find(f => f.code === code) || MLB_FRANCHISES[0];
+          const item = franchiseData.find(d => d.fran.code === code);
+          const total = item ? item.total : 0;
+          if (item && item.isReady) {
+            this.setModeConfig({
+              type: 'mono_team',
+              targetTeam: fran.code,
+              label: `⚔️ MONO-TEAM: ${fran.name.toUpperCase()}`,
+              teamName: fran.name
+            });
+            this.startRosterBuilder();
+          } else {
+            alert(_t('challenge162.need_cards_warning', `Se requieren al menos 17 cartas para este modo (tienes ${total}). ¡Gana partidas rápidas para desbloquear más!`, { count: total }));
+          }
+        };
+      });
+    },
+
+    // ── Dedicated Historic Era Selection Screen (Pokelike Style) ─────────
+    renderEraSelect() {
+      this._previousHubView = 'era';
+      this.showScreen('screen-challenge-hub');
+      const container = document.getElementById('challenge162-hub-container');
+      if (!container) return;
+
+      if (!this.unlockedBatters || !this.unlockedPitchers) {
+        this.initUnlocks();
+      }
+
+      const records = this.getRecords();
+      const _t = (key, fallback, params) => (typeof window.t === 'function' ? window.t(key, params) : fallback);
+
+      let readyEras = 0;
+      let clearedEras = 0;
+      const eraData = BASEBALL_ERAS.map(era => {
+        const bCount = getBatterPool().filter(p => this.isBatterUnlocked(p) && p.era === era.key).length;
+        const pCount = getPitcherPool().filter(p => this.isPitcherUnlocked(p) && p.era === era.key).length;
+        const total = bCount + pCount;
+        const isReady = total >= 17;
+        const clears = (records.eraClears && records.eraClears[era.key]) || 0;
+        if (isReady) readyEras++;
+        if (clears > 0) clearedEras++;
+        return { era, total, isReady, clears };
+      });
+
+      const backToHubText = _t('challenge162.back_to_hub', '← VOLVER AL HUB');
+      const title = _t('challenge162.era_select_title', 'DESAFÍO MONO-ERA (ERAS HISTÓRICAS)');
+      const desc = _t('challenge162.era_select_desc', 'Viaja en el tiempo y juega exclusivamente con figuras de una época histórica del béisbol. Tu roster se armará únicamente con cartas de esa era. Necesitas al menos 17 cartas desbloqueadas para jugar.');
+
+      const tilesHTML = eraData.map(({ era, total, isReady, clears }) => {
+        return `
+          <div class="c162-pokelike-tile ${isReady ? '' : 'locked'} c162-era-tile" data-key="${encodeURIComponent(era.key)}" style="border-left: 4px solid ${era.color}; cursor: ${isReady ? 'pointer' : 'default'};">
+            <div class="c162-pokelike-emblem" style="background: ${era.color}; border: 1.5px solid rgba(255,255,255,0.3);">
+              ${era.icon}
+            </div>
+            <div class="c162-pokelike-info">
+              <div class="c162-pokelike-name">${era.label}</div>
+              <div style="font-size:11px; color:#cbd5e1; margin-top:2px;">${era.desc}</div>
+              <div class="c162-pokelike-chips">
+                <span class="c162-pokelike-tag info">${era.years}</span>
+                <span class="c162-pokelike-tag ${isReady ? 'ready' : 'locked'}">${total} CARTAS</span>
+                ${clears > 0 ? `<span class="c162-pokelike-tag champion">🏆 ${clears} WS</span>` : ''}
+                ${!isReady ? `<span style="font-size:7.5px; color:#f87171; font-family:'Press Start 2P',monospace;">FALTAN ${17 - total}</span>` : ''}
+              </div>
+            </div>
+            <div>
+              ${isReady ? `
+                <button class="c162-pokelike-btn play btn-c162-launch-era" data-key="${encodeURIComponent(era.key)}">
+                  JUGAR ▶
+                </button>
+              ` : `
+                <div class="c162-pokelike-lock-box" title="Requiere al menos 17 cartas para jugar">
+                  🔒
+                </div>
+              `}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      container.innerHTML = `
+        <div class="c162-subview-wrap">
+          <!-- Top Bar -->
+          <div class="c162-subview-header">
+            <button id="btn-c162-back-hub" class="btn btn-secondary" style="padding: 8px 14px; font-size: 10px; font-family: 'Press Start 2P', monospace;">
+              ${backToHubText}
+            </button>
+          </div>
+
+          <!-- Pokelike Overview Card -->
+          <div class="c162-pokelike-overview era-theme">
+            <div class="c162-pokelike-overview-title">
+              ⏳ ${title}
+            </div>
+            <div class="c162-pokelike-overview-desc">
+              ${desc}
+            </div>
+            <div class="c162-pokelike-progress-row">
+              <span style="color: #ffd700;">🏆 ${clearedEras} / ${BASEBALL_ERAS.length} Eras Campeonas</span>
+              <span style="color: #34d399;">🟢 ${readyEras} / ${BASEBALL_ERAS.length} Eras con Roster Listo (17+ cartas)</span>
+            </div>
+          </div>
+
+          <!-- Responsive Tiles Grid -->
+          <div class="c162-pokelike-grid" id="c162-era-grid">
+            ${tilesHTML}
+          </div>
+        </div>
+      `;
+
+      // Event listeners
+      const btnBackHub = document.getElementById('btn-c162-back-hub');
+      if (btnBackHub) btnBackHub.onclick = () => this.renderHub();
+
+      container.querySelectorAll('.btn-c162-launch-era').forEach(btn => {
+        btn.onclick = (e) => {
+          e.stopPropagation();
+          const key = decodeURIComponent(btn.getAttribute('data-key'));
+          const era = BASEBALL_ERAS.find(e => e.key === key) || BASEBALL_ERAS[2];
+          this.setModeConfig({
+            type: 'mono_era',
+            targetEra: era.key,
+            label: `⏳ MONO-ERA: ${era.label.toUpperCase()}`,
+            eraName: era.label
+          });
+          this.startRosterBuilder();
+        };
+      });
+
+      container.querySelectorAll('.c162-pokelike-tile').forEach(tile => {
+        tile.onclick = () => {
+          const key = decodeURIComponent(tile.getAttribute('data-key'));
+          const era = BASEBALL_ERAS.find(e => e.key === key) || BASEBALL_ERAS[2];
+          const item = eraData.find(d => d.era.key === key);
+          const total = item ? item.total : 0;
+          if (item && item.isReady) {
+            this.setModeConfig({
+              type: 'mono_era',
+              targetEra: era.key,
+              label: `⏳ MONO-ERA: ${era.label.toUpperCase()}`,
+              eraName: era.label
+            });
+            this.startRosterBuilder();
+          } else {
+            alert(_t('challenge162.need_cards_warning', `Se requieren al menos 17 cartas para este modo (tienes ${total}). ¡Gana partidas rápidas para desbloquear más!`, { count: total }));
+          }
         };
       });
     },
@@ -5283,7 +5536,17 @@
       };
       const btnBack1 = document.getElementById('btn-challenge162-back-menu');
       const btnBack2 = document.getElementById('btn-challenge162-season-back-menu');
-      if (btnBack1) btnBack1.onclick = () => this.renderHub();
+      if (btnBack1) {
+        btnBack1.onclick = () => {
+          if (this._previousHubView === 'franchise') {
+            this.renderFranchiseSelect();
+          } else if (this._previousHubView === 'era') {
+            this.renderEraSelect();
+          } else {
+            this.renderHub();
+          }
+        };
+      }
       if (btnBack2) btnBack2.onclick = backToMenu;
     }
   };
