@@ -242,6 +242,7 @@
         "round_3_hint": "Ronda de Raro garantizado. Asegura un sólido bateador titular.",
         "round_4_hint": "Ronda de Poco Común garantizado. Completa el núcleo de tu alineación.",
         "round_rare_label": "RARO GARANTIZADO",
+        "round_uncommon_label": "POCO COMÚN GARANTIZADO",
         "round_rare_hint": "Ronda de Raro garantizado. Asegura un sólido bateador titular.",
         "round_uncommon_hint": "Ronda de Poco Común garantizado. Completa el núcleo de tu alineación.",
         "swipe_hint": "👉 DESLIZA PARA VER LAS 3 CARTAS"
@@ -349,7 +350,11 @@
         "badge_ok": "¡ENTRENAMIENTO {{label}}!",
         "result_fail": "El entrenamiento fue demasiado intenso y provocó fatiga en {{name}}.",
         "result_crit": "¡Extraordinario desempeño! {{name}} tuvo una sesión de nivel {{label}} e incrementó +{{val}} en su estadística.",
-        "result_ok": "{{name}} completó la rutina {{label}} con éxito."
+        "result_ok": "{{name}} completó la rutina {{label}} con éxito.",
+        "roulette_title": "🔥 SESIÓN DE ENTRENAMIENTO DE RIESGO",
+        "roulette_spinning": "⏳ Exigiendo al máximo nivel...",
+        "roulette_success": "✅ ¡ÉXITO! ¡RUTINA COMPLETADA!",
+        "roulette_fail": "❌ ¡SOBRECARGA! FATIGA MUSCULAR"
     },
     "match": {
         "title": "<i class=\"fa-solid fa-trophy\"></i> Bateadores al Combate",
@@ -1953,6 +1958,8 @@
         "result_cage_success_title": "🏆 ¡PROTOTIPO LEGENDARIO DESBLOQUEADO!",
         "result_cage_fail_title": "💥 ¡FALLO EN LA JAULA DE PRUEBAS!",
         "result_safe_buy_title": "🎉 ¡EQUIPAMIENTO ADQUIRIDO!",
+        "store_legendary_version": "✨ VERSIÓN LEGENDARIA",
+        "store_fail_penalty": "❌ {{pct}}% FALLO: El bateador probado sufre -{{cost}} Stamina.",
         "store_safe_card_title": "🟢 COMPRA SEGURA (100%)",
         "store_safe_card_desc": "Compra inmediata sin riesgos. Se guarda en tu mochila de ITEMS.",
         "store_risky_card_title": "🔴 JAULA DE PRUEBAS ({{pct}}% ÉXITO)",
@@ -2145,7 +2152,32 @@
     "resign_fail_title": "OFERTA RECHAZADA ❌",
     "resign_fail_desc": "{{name}} rechazó la oferta de renovación. Prefiere esperar a la agencia libre o probar su valor en el mercado.",
     "resign_already_attempted": "Ya le hiciste una oferta a {{name}} durante esta temporada."
-}
+  },
+  "gamble": {
+    "header": "🍀 EVENTO DE SUERTE (LUCK)",
+    "roulette_title": "🍀 RULETA DE ALTO RIESGO",
+    "roulette_spinning": "⏳ Decidiendo tu destino...",
+    "roulette_success": "✅ ¡LA SUERTE ESTÁ DE TU LADO! 🎉",
+    "roulette_fail": "❌ ¡DESENLACE DESAFORTUNADO! 💀",
+    "trade": {
+      "stakes_label": "TITULAR MÁS DÉBIL EN JUEGO:"
+    },
+    "if_win_label": "🟢 {{pct}}% SI GANAS:",
+    "if_lose_label": "🔴 {{pct}}% SI PIERDES:",
+    "fail_chance": "FALLO ({{pct}}%)",
+    "bet_btn": "🍀 PROBAR SUERTE",
+    "reject_btn": "🚪 PASAR",
+    "soldier": {
+      "lose_title": "Fatiga Crónica: -15 All Stats",
+      "lose_detail": "(Penalización permanente de estadísticas)",
+      "win_title": "¡+35 CON y +35 PWR Permanentes!",
+      "win_detail": "(Desata un poder titánico de cuadrangulares)"
+    },
+    "budget": {
+      "lose_detail": "(Pierdes todo tu presupuesto)",
+      "win_detail": "(Triplica todo tu presupuesto inmediatamente)"
+    }
+  }
   },
     en: {
     "hud": {
@@ -2387,6 +2419,7 @@
         "round_3_hint": "Guaranteed Rare round. Secure a solid starting batter.",
         "round_4_hint": "Guaranteed Uncommon round. Round out your batting core.",
         "round_rare_label": "GUARANTEED RARE",
+        "round_uncommon_label": "GUARANTEED UNCOMMON",
         "round_rare_hint": "Guaranteed Rare round. Secure a solid starting batter.",
         "round_uncommon_hint": "Guaranteed Uncommon round. Round out your batting core.",
         "swipe_hint": "👉 SWIPE TO VIEW ALL 3 CARDS"
@@ -2494,7 +2527,11 @@
         "badge_ok": "TRAINING {{label}}!",
         "result_fail": "The training was too intense and caused fatigue in {{name}}.",
         "result_crit": "Extraordinary performance! {{name}} had a {{label}}-level session and increased +{{val}} in their stat.",
-        "result_ok": "{{name}} completed the {{label}} routine successfully."
+        "result_ok": "{{name}} completed the {{label}} routine successfully.",
+        "roulette_title": "🔥 HIGH-INTENSITY TRAINING DRILL",
+        "roulette_spinning": "⏳ Pushing to maximum capacity...",
+        "roulette_success": "✅ SUCCESS! DRILL MASTERED!",
+        "roulette_fail": "❌ OVERLOAD! MUSCLE STRAIN"
     },
     "match": {
         "title": "<i class=\"fa-solid fa-trophy\"></i> BATTLE",
@@ -4094,6 +4131,8 @@
         "result_cage_success_title": "🏆 LEGENDARY PROTOTYPE UNLOCKED!",
         "result_cage_fail_title": "💥 TEST CAGE FAILURE!",
         "result_safe_buy_title": "🎉 EQUIPMENT PURCHASED!",
+        "store_legendary_version": "✨ LEGENDARY VERSION",
+        "store_fail_penalty": "❌ {{pct}}% FAILURE: Tested batter loses -{{cost}} Stamina.",
         "store_safe_card_title": "🟢 SAFE PURCHASE (100%)",
         "store_safe_card_desc": "Direct risk-free purchase. Stored in your ITEMS backpack.",
         "store_risky_card_title": "🔴 TEST CAGE ({{pct}}% SUCCESS)",
@@ -4286,7 +4325,32 @@
     "resign_fail_title": "OFFER REJECTED ❌",
     "resign_fail_desc": "{{name}} tested the market and declined the extension offer. They prefer to explore free agency or test their value.",
     "resign_already_attempted": "An offer was already submitted to {{name}} this season."
-}
+  },
+  "gamble": {
+    "header": "🍀 LUCK EVENT (GAMBLE)",
+    "roulette_title": "🍀 HIGH-STAKES LUCK ROULETTE",
+    "roulette_spinning": "⏳ Deciding your fate...",
+    "roulette_success": "✅ LUCK IS ON YOUR SIDE! 🎉",
+    "roulette_fail": "❌ UNFORTUNATE OUTCOME! 💀",
+    "trade": {
+      "stakes_label": "WEAKEST STARTER AT STAKE:"
+    },
+    "if_win_label": "🟢 {{pct}}% IF YOU WIN:",
+    "if_lose_label": "🔴 {{pct}}% IF YOU LOSE:",
+    "fail_chance": "FAIL ({{pct}}%)",
+    "bet_btn": "🍀 TEST YOUR LUCK",
+    "reject_btn": "🚪 PASS",
+    "soldier": {
+      "lose_title": "Chronic Fatigue: -15 All Stats",
+      "lose_detail": "(Permanent stat penalty)",
+      "win_title": "Permanent +35 CON & +35 PWR!",
+      "win_detail": "(Unleashes titanic home run power)"
+    },
+    "budget": {
+      "lose_detail": "(You lose all your current budget)",
+      "win_detail": "(Triples your entire budget instantly)"
+    }
+  }
   }
   };
 

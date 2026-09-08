@@ -6124,11 +6124,20 @@ function initGameModeSelector() {
       const failPct = Math.round((1 - effectiveCageChance) * 100);
       const successPct = Math.round(effectiveCageChance * 100);
 
+      const cageTitleText = typeof t === 'function' ? t('equip.store_risky_card_title', { pct: successPct }) : `🔴 JAULA DE PRUEBAS (${successPct}% ÉXITO)`;
+      const legendaryVersionText = typeof t === 'function' ? t('equip.store_legendary_version', '✨ VERSIÓN LEGENDARIA') : '✨ VERSIÓN LEGENDARIA';
+      const failPenaltyText = typeof t === 'function'
+        ? t('equip.store_fail_penalty', { pct: failPct, cost: event.riskyOption.failStaminaCost || 35 })
+        : `❌ ${failPct}% FALLO: El bateador probado sufre -${event.riskyOption.failStaminaCost || 35} Stamina.`;
+      const btnTestText = !riskyAffordable
+        ? (typeof t === 'function' ? t('draft.insufficient_funds', { cost: event.riskyOption.cost }) : 'SIN FONDOS')
+        : (typeof t === 'function' ? t('equip.store_btn_test_risky', { cost: event.riskyOption.cost }) : `PROBAR PROTOTIPO ($${event.riskyOption.cost})`);
+
       riskyCard.innerHTML = `
         <div>
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
             <span style="font-family:'Press Start 2P',monospace; font-size:8px; color:#ef4444; background:rgba(239,68,68,0.15); border:1px solid #ef4444; padding:3px 8px; border-radius:12px;">
-              ${typeof t === 'function' ? t('equip.store_risky_card_title', `🔴 JAULA DE PRUEBAS (${successPct}% ÉXITO)`) : `🔴 JAULA DE PRUEBAS (${successPct}% ÉXITO)`}${hasMidas ? ' ✨' : ''}
+              ${cageTitleText}${hasMidas ? ' ✨' : ''}
             </span>
             <span style="font-family:'Press Start 2P',monospace; font-size:12px; color:#f59e0b; font-weight:bold;">
               $${event.riskyOption.cost}
@@ -6139,7 +6148,7 @@ function initGameModeSelector() {
             <div style="font-size:36px; line-height:1; filter:drop-shadow(0 2px 8px rgba(0,0,0,0.6));">${event.riskyOption.icon || '🔥'}</div>
             <div>
               <div style="font-weight:bold; font-size:14px; color:#fff; font-family:'Outfit', sans-serif;">${event.riskyOption.name}</div>
-              <div style="font-size:10px; color:#f59e0b; font-weight:bold; margin-top:2px;">✨ VERSIÓN LEGENDARIA</div>
+              <div style="font-size:10px; color:#f59e0b; font-weight:bold; margin-top:2px;">${legendaryVersionText}</div>
             </div>
           </div>
 
@@ -6148,13 +6157,13 @@ function initGameModeSelector() {
               🏆 ${event.riskyOption.statDesc}
             </div>
             <div style="font-size:10px; color:#ef4444; margin-top:6px; font-weight:bold; line-height:1.4;">
-              ❌ ${failPct}% FALLO: El bateador probado sufre -${event.riskyOption.failStaminaCost || 35} Stamina.
+              ${failPenaltyText}
             </div>
           </div>
         </div>
 
         <button class="btn" id="btn-test-risky-item" style="background:#ef4444; color:#fff; font-weight:bold; font-family:'Press Start 2P',monospace; font-size:9.5px; padding:12px; width:100%; border:none; box-shadow:0 0 15px rgba(239,68,68,0.4);" ${!riskyAffordable ? 'disabled style="opacity:0.4; cursor:not-allowed;"' : ''}>
-          ${!riskyAffordable ? (typeof t === 'function' ? t('draft.insufficient_funds', { cost: event.riskyOption.cost }) : 'SIN FONDOS') : (typeof t === 'function' ? t('equip.store_btn_test_risky', { cost: event.riskyOption.cost }) : `PROBAR PROTOTIPO ($${event.riskyOption.cost})`)}${hasMidas ? ' ✨' : ''}
+          ${btnTestText}${hasMidas ? ' ✨' : ''}
         </button>
       `;
 
@@ -6395,15 +6404,15 @@ function initGameModeSelector() {
   }
 
   // ── RISK ROULETTE (ARCADE RETRO UPGRADE): spins to the pre-rolled outcome ────
-  function showRiskRouletteModal({ chance, isSuccess, onDone }) {
+  function showRiskRouletteModal({ chance, isSuccess, onDone, titleText: customTitle, spinningText: customSpinning, successText: customSuccess, failText: customFail, centerSubText: customCenterSub }) {
     const overlay = document.createElement('div');
     overlay.className = 'roulette-overlay';
 
-    const titleText = typeof t === 'function' ? t('equip.roulette_title', '🎡 JAULA DE PRUEBAS: RULETA DE PROTOTIPO') : '🎡 JAULA DE PRUEBAS: RULETA DE PROTOTIPO';
-    const spinningText = typeof t === 'function' ? t('equip.roulette_spinning', '⏳ Probando en la jaula...') : '⏳ Probando en la jaula...';
-    const successText = typeof t === 'function' ? t('equip.roulette_success', '✅ ¡ÉXITO! ¡PROTOTIPO APROBADO!') : '✅ ¡ÉXITO! ¡PROTOTIPO APROBADO!';
-    const failText = typeof t === 'function' ? t('equip.roulette_fail', '❌ ¡FALLO! EL PROTOTIPO SE ROMPIÓ') : '❌ ¡FALLO! EL PROTOTIPO SE ROMPIÓ';
-    const centerSubText = typeof t === 'function' ? t('equip.roulette_center_success', 'ÉXITO') : 'ÉXITO';
+    const titleText = customTitle || (typeof t === 'function' ? t('equip.roulette_title', '🎡 JAULA DE PRUEBAS: RULETA DE PROTOTIPO') : '🎡 JAULA DE PRUEBAS: RULETA DE PROTOTIPO');
+    const spinningText = customSpinning || (typeof t === 'function' ? t('equip.roulette_spinning', '⏳ Probando en la jaula...') : '⏳ Probando en la jaula...');
+    const successText = customSuccess || (typeof t === 'function' ? t('equip.roulette_success', '✅ ¡ÉXITO! ¡PROTOTIPO APROBADO!') : '✅ ¡ÉXITO! ¡PROTOTIPO APROBADO!');
+    const failText = customFail || (typeof t === 'function' ? t('equip.roulette_fail', '❌ ¡FALLO! EL PROTOTIPO SE ROMPIÓ') : '❌ ¡FALLO! EL PROTOTIPO SE ROMPIÓ');
+    const centerSubText = customCenterSub || (typeof t === 'function' ? t('equip.roulette_center_success', 'ÉXITO') : 'ÉXITO');
 
     const greenDeg = Math.max(6, Math.min(354, chance * 360));
     const pad = 4;
@@ -6652,11 +6661,12 @@ function initGameModeSelector() {
         animation: cardPopIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) ${animDelay}s backwards;
       `;
 
-      const riskFailText = tpl.failPenalty ? `(-${tpl.failPenalty} STA)` : '';
+      const riskFailPenalty = tpl.failPenalty || 15;
       const riskPercent = Math.round((tpl.riskChance || 0.3) * 100);
+      const riskSuccessPercent = 100 - riskPercent;
       const riskTag = tpl.risk === 'high'
-        ? `<span class="choice-risk-tag choice-risk-high" style="font-size:7px; padding:3px 6px; border-radius:4px; font-family:'Press Start 2P',monospace;">🔴 ${(typeof t === 'function' ? t('training.risk_high', 'ALTO RIESGO') : 'ALTO RIESGO')} (${riskPercent}% Fallo ${riskFailText})</span>`
-        : `<span class="choice-risk-tag choice-risk-safe" style="font-size:7px; padding:3px 6px; border-radius:4px; font-family:'Press Start 2P',monospace;">🟢 ${(typeof t === 'function' ? t('training.risk_safe', 'SEGURO') : 'SEGURO')} (100%)</span>`;
+        ? `<span class="choice-risk-tag choice-risk-high" style="font-size:7px; padding:4px 7px; border-radius:4px; font-family:'Press Start 2P',monospace; display:inline-block; line-height:1.4;">🔴 ${(typeof t === 'function' ? t('training.risk_high', 'ALTO RIESGO') : 'ALTO RIESGO')}: ${riskSuccessPercent}% Éxito / ${riskPercent}% Fallo (-${riskFailPenalty} STA)</span>`
+        : `<span class="choice-risk-tag choice-risk-safe" style="font-size:7px; padding:4px 7px; border-radius:4px; font-family:'Press Start 2P',monospace; display:inline-block;">🟢 ${(typeof t === 'function' ? t('training.risk_safe', 'SEGURO') : 'SEGURO')} (100% Éxito)</span>`;
 
       const tierBadge = `
         <span style="
@@ -6798,47 +6808,65 @@ function initGameModeSelector() {
       }
     }
 
-    if (window.AudioManager && typeof window.AudioManager.play === 'function') {
-      if (isFail) window.AudioManager.play('defense_error');
-      else if (isCrit) window.AudioManager.play('roulette_win');
-      else window.AudioManager.play('upgrade');
-    }
+    const finalizeTrainingUI = () => {
+      if (window.AudioManager && typeof window.AudioManager.play === 'function') {
+        if (isFail) window.AudioManager.play('defense_error');
+        else if (isCrit) window.AudioManager.play('roulette_win');
+        else window.AudioManager.play('upgrade');
+      }
 
-    renderActiveRoster();
-    renderSynergiesAndItems();
-    updateHUD();
+      renderActiveRoster();
+      renderSynergiesAndItems();
+      updateHUD();
 
-    if (window.Game && typeof window.Game.logRunNode === 'function') {
-      window.Game.logRunNode({
-        type: 'training',
-        icon: isFail ? '💥' : (isCrit ? '🎉' : '🏋️'),
-        title: isFail ? `Entrenamiento Fallido: ${player.name}` : (isCrit ? `Entrenamiento CRÍTICO: ${player.name}` : `Entrenamiento: ${player.name}`),
-        titleEN: isFail ? `Training Failed: ${player.name}` : (isCrit ? `CRITICAL Training: ${player.name}` : `Training: ${player.name}`),
-        desc: stats.map(s => `${s.label}: ${s.value}`).join(' · '),
-        descEN: stats.map(s => `${s.label}: ${s.value}`).join(' · '),
-        status: isFail ? 'danger' : 'success'
+      if (window.Game && typeof window.Game.logRunNode === 'function') {
+        window.Game.logRunNode({
+          type: 'training',
+          icon: isFail ? '💥' : (isCrit ? '🎉' : '🏋️'),
+          title: isFail ? `Entrenamiento Fallido: ${player.name}` : (isCrit ? `Entrenamiento CRÍTICO: ${player.name}` : `Entrenamiento: ${player.name}`),
+          titleEN: isFail ? `Training Failed: ${player.name}` : (isCrit ? `CRITICAL Training: ${player.name}` : `Training: ${player.name}`),
+          desc: stats.map(s => `${s.label}: ${s.value}`).join(' · '),
+          descEN: stats.map(s => `${s.label}: ${s.value}`).join(' · '),
+          status: isFail ? 'danger' : 'success'
+        });
+      }
+
+      let title = `${player.name} [${offer.slot}]`;
+      let badgeText = isFail ? (typeof window.t==='function'?window.t('training.badge_fail'):'¡SOBRECARGA MUSCULAR!') : (isCrit ? (typeof window.t==='function'?window.t('training.badge_crit', { label: tier.label }):`¡CRÍTICO ${tier.label}! 🎉`) : (typeof window.t==='function'?window.t('training.badge_ok', { label: tier.label }):`¡ENTRENAMIENTO ${tier.label}!`));
+      let badgeColor = isFail ? '#ef4444' : (isCrit ? '#f59e0b' : tier.color);
+      let icon = isFail ? '💥' : (isCrit ? '🎉' : tpl.icon);
+      let desc = isFail
+        ? (typeof window.t==='function'?window.t('training.result_fail', { name: player.name }):`El entrenamiento fue demasiado intenso y provocó fatiga en ${player.name}`)
+        : (isCrit
+            ? (typeof window.t==='function'?window.t('training.result_crit', { name: player.name, label: tier.label, val: gainVal }):`¡Extraordinario desempeño! ${player.name} tuvo una sesión de nivel ${tier.label} e incrementó +${gainVal} en su estadística.`)
+            : (typeof window.t==='function'?window.t('training.result_ok', { name: player.name, label: tier.label }):`${player.name} completó la rutina ${tier.label} con éxito.`));
+
+      showRetroResultModal({
+        title,
+        badgeText,
+        badgeColor,
+        icon,
+        desc,
+        stats,
+        onClose: () => renderTrainingCardsContainer()
       });
+    };
+
+    if (tpl.risk === 'high') {
+      const successChance = 1 - (tpl.riskChance || 0.3);
+      showRiskRouletteModal({
+        chance: successChance,
+        isSuccess: !isFail,
+        titleText: typeof t === 'function' ? t('training.roulette_title', '🔥 SESIÓN DE ENTRENAMIENTO DE RIESGO') : '🔥 SESIÓN DE ENTRENAMIENTO DE RIESGO',
+        spinningText: typeof t === 'function' ? t('training.roulette_spinning', '⏳ Exigiendo al máximo nivel...') : '⏳ Exigiendo al máximo nivel...',
+        successText: typeof t === 'function' ? t('training.roulette_success', '✅ ¡ÉXITO! ¡RUTINA COMPLETADA!') : '✅ ¡ÉXITO! ¡RUTINA COMPLETADA!',
+        failText: typeof t === 'function' ? t('training.roulette_fail', '❌ ¡SOBRECARGA! FATIGA MUSCULAR') : '❌ ¡SOBRECARGA! FATIGA MUSCULAR',
+        centerSubText: typeof t === 'function' ? t('equip.roulette_center_success', 'ÉXITO') : 'ÉXITO',
+        onDone: finalizeTrainingUI
+      });
+    } else {
+      finalizeTrainingUI();
     }
-
-    let title = `${player.name} [${offer.slot}]`;
-    let badgeText = isFail ? (typeof window.t==='function'?window.t('training.badge_fail'):'¡SOBRECARGA MUSCULAR!') : (isCrit ? (typeof window.t==='function'?window.t('training.badge_crit', { label: tier.label }):`¡CRÍTICO ${tier.label}! 🎉`) : (typeof window.t==='function'?window.t('training.badge_ok', { label: tier.label }):`¡ENTRENAMIENTO ${tier.label}!`));
-    let badgeColor = isFail ? '#ef4444' : (isCrit ? '#f59e0b' : tier.color);
-    let icon = isFail ? '💥' : (isCrit ? '🎉' : tpl.icon);
-    let desc = isFail
-      ? (typeof window.t==='function'?window.t('training.result_fail', { name: player.name }):`El entrenamiento fue demasiado intenso y provocó fatiga en ${player.name}`)
-      : (isCrit
-          ? (typeof window.t==='function'?window.t('training.result_crit', { name: player.name, label: tier.label, val: gainVal }):`¡Extraordinario desempeño! ${player.name} tuvo una sesión de nivel ${tier.label} e incrementó +${gainVal} en su estadística.`)
-          : (typeof window.t==='function'?window.t('training.result_ok', { name: player.name, label: tier.label }):`${player.name} completó la rutina ${tier.label} con éxito.`));
-
-    showRetroResultModal({
-      title,
-      badgeText,
-      badgeColor,
-      icon,
-      desc,
-      stats,
-      onClose: () => renderTrainingCardsContainer()
-    });
   }
 
   // TRAINING SCREEN SETUP
@@ -8326,7 +8354,7 @@ function initGameModeSelector() {
     const targetPos = defEvent.pos || 'SS';
 
     if (badgeEl) {
-      if (defEvent.inning >= 3) {
+      if (defEvent.inning >= 4) {
         const walkOffBadge = _t('sim.def_walkoff_badge', { inning: defEvent.inning }, `💀 BAJA DE LA ENTRADA ${defEvent.inning} • ¡PELIGRO DE WALK-OFF! 💀`);
         badgeEl.innerHTML = `<span style="color:#ef4444;text-shadow:0 0 10px #ef4444;font-weight:bold;animation:pulse-fast 1s infinite;">${walkOffBadge}</span>`;
         badgeEl.style.borderColor = '#ef4444';
@@ -8339,7 +8367,7 @@ function initGameModeSelector() {
     }
 
     if (walkOffWarningEl) {
-      if (defEvent.inning >= 3) {
+      if (defEvent.inning >= 4) {
         walkOffWarningEl.classList.remove('hidden');
       } else {
         walkOffWarningEl.classList.add('hidden');
@@ -8688,7 +8716,7 @@ function initGameModeSelector() {
         resultZone.classList.remove('hidden');
 
         const nextInningNum = (defEvent.inning || 1) + 1;
-        const isWalkOffFail = (!isSuccess && (result.isWalkOff || defEvent.inning >= 3));
+        const isWalkOffFail = (!isSuccess && (result.isWalkOff || defEvent.inning >= 4));
         const continueBtnText = isWalkOffFail
           ? _t('sim.def_walkoff_view_results', {}, '💀 VER RESULTADOS DEL PARTIDO')
           : _t('sim.def_continue', { nextInning: nextInningNum }, `⚾ CONTINUAR AL INNING ${nextInningNum}`);
@@ -10050,29 +10078,32 @@ function initGameModeSelector() {
       let leftHTML = '';
       let rightHTML = '';
 
+      const winLabelText = typeof t === 'function' ? t('gamble.if_win_label', `🟢 ${luckSuccessPct}% SI GANAS:`).replace(/50%/, `${luckSuccessPct}%`) : `🟢 ${luckSuccessPct}% SI GANAS:`;
+      const loseLabelText = typeof t === 'function' ? t('gamble.if_lose_label', `🔴 ${luckFailPct}% SI PIERDES:`).replace(/50%/, `${luckFailPct}%`) : `🔴 ${luckFailPct}% SI PIERDES:`;
+
       if (gamble.id === 'gamble_all_in_budget') {
         const tripleAmount = currentBudget * 3;
         leftHTML = `
           <div style="background:rgba(239,68,68,0.12);border:2px solid #ef4444;border-radius:12px;padding:16px 14px;height:100%;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 0 20px rgba(239,68,68,0.2);">
             <div>
-              <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#ef4444;margin-bottom:8px;">${typeof t === 'function' ? t('gamble.budget.lose_label', '🔴 50% IF YOU LOSE:') : '🔴 50% IF YOU LOSE:'}</div>
+              <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#ef4444;margin-bottom:8px;">${loseLabelText}</div>
               <div style="font-size:32px;margin:10px 0;">💸</div>
               <div style="font-family:'Press Start 2P',monospace;font-size:18px;color:#ef4444;font-weight:bold;margin-bottom:6px;">$0</div>
             </div>
             <div style="font-size:11px;color:#fca5a5;line-height:1.4;background:rgba(0,0,0,0.4);padding:8px;border-radius:8px;">
-              ${typeof t === 'function' ? t('gamble.budget.lose_detail', '(Lose everything)') : '(Lose everything)'}
+              ${typeof t === 'function' ? t('gamble.budget.lose_detail', '(Pierdes todo tu presupuesto)') : '(Pierdes todo tu presupuesto)'}
             </div>
           </div>
         `;
         rightHTML = `
           <div style="background:rgba(16,185,129,0.12);border:2px solid #10b981;border-radius:12px;padding:16px 14px;height:100%;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 0 20px rgba(16,185,129,0.25);">
             <div>
-              <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#10b981;margin-bottom:8px;">${typeof t === 'function' ? t('gamble.budget.win_label', '🟢 50% IF YOU WIN:') : '🟢 50% IF YOU WIN:'}</div>
+              <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#10b981;margin-bottom:8px;">${winLabelText}</div>
               <div style="font-size:32px;margin:10px 0;">💰</div>
               <div style="font-family:'Press Start 2P',monospace;font-size:18px;color:#4ade80;font-weight:bold;margin-bottom:6px;">$${tripleAmount}</div>
             </div>
             <div style="font-size:11px;color:#86efac;line-height:1.4;background:rgba(0,0,0,0.4);padding:8px;border-radius:8px;">
-              ${typeof t === 'function' ? t('gamble.budget.win_detail', '(You receive 3x!)') : '(You receive 3x!)'}
+              ${typeof t === 'function' ? t('gamble.budget.win_detail', '(¡Recibes 3x tu dinero!)') : '(¡Recibes 3x tu dinero!)'}
             </div>
           </div>
         `;
@@ -10080,26 +10111,26 @@ function initGameModeSelector() {
         leftHTML = `
           <div style="background:rgba(239,68,68,0.12);border:2px solid #ef4444;border-radius:12px;padding:16px 14px;height:100%;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 0 20px rgba(239,68,68,0.2);">
             <div>
-              <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#ef4444;margin-bottom:8px;">${typeof t === 'function' ? t('gamble.scout.lose_label', '🔴 50% IF YOU LOSE:') : '🔴 50% IF YOU LOSE:'}</div>
+              <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#ef4444;margin-bottom:8px;">${loseLabelText}</div>
               <div style="font-size:30px;margin:6px 0;">🏥</div>
               <div style="font-family:'Press Start 2P',monospace;font-size:9.5px;color:#fca5a5;margin-bottom:4px;">[${bestPos}] ${bestName}</div>
               <div style="font-size:10.5px;color:#ef4444;font-weight:bold;">OVR ${Math.floor(bestOvr)} · ${bestRarity}</div>
             </div>
             <div style="font-size:11px;color:#fca5a5;line-height:1.4;background:rgba(0,0,0,0.4);padding:8px;border-radius:8px;">
-              ${typeof t === 'function' ? t('gamble.scout.lose_detail', '(Afflicts your highest OVR player with -20 stats)') : '(Afflicts your highest OVR player with -20 stats)'}
+              ${typeof t === 'function' ? t('gamble.scout.lose_detail', '(Afecta a tu mejor jugador con -20 en todas sus stats)') : '(Afecta a tu mejor jugador con -20 en todas sus stats)'}
             </div>
           </div>
         `;
         rightHTML = `
           <div style="background:rgba(250,204,21,0.12);border:2px solid #facc15;border-radius:12px;padding:16px 14px;height:100%;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 0 20px rgba(250,204,21,0.25);">
             <div>
-              <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#facc15;margin-bottom:8px;">${typeof t === 'function' ? t('gamble.scout.win_label', '🟢 50% IF YOU WIN:') : '🟢 50% IF YOU WIN:'}</div>
+              <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#facc15;margin-bottom:8px;">${winLabelText}</div>
               <div style="font-size:30px;margin:6px 0;">⭐</div>
-              <div style="font-family:'Press Start 2P',monospace;font-size:9.5px;color:#fef08a;margin-bottom:4px;">[${worstPos}] ${typeof t === 'function' ? t('gamble.scout.win_title', 'Free LEGENDARY Player!') : 'Free LEGENDARY Player!'}</div>
+              <div style="font-family:'Press Start 2P',monospace;font-size:9.5px;color:#fef08a;margin-bottom:4px;">[${worstPos}] ${typeof t === 'function' ? t('gamble.scout.win_title', '¡Jugador LEGENDARIO Gratis!') : '¡Jugador LEGENDARIO Gratis!'}</div>
               <div style="font-size:10.5px;color:#facc15;font-weight:bold;">OVR 90–99 · Legendary</div>
             </div>
             <div style="font-size:11px;color:#fef08a;line-height:1.4;background:rgba(0,0,0,0.4);padding:8px;border-radius:8px;">
-              ${typeof t === 'function' ? t('gamble.scout.win_detail', '(Star upgrade for your weakest position)') : '(Star upgrade for your weakest position)'}
+              ${typeof t === 'function' ? t('gamble.scout.win_detail', '(Refuerzo de élite para tu posición más débil)') : '(Refuerzo de élite para tu posición más débil)'}
             </div>
           </div>
         `;
@@ -10107,26 +10138,26 @@ function initGameModeSelector() {
         leftHTML = `
           <div style="background:rgba(239,68,68,0.12);border:2px solid #ef4444;border-radius:12px;padding:16px 14px;height:100%;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 0 20px rgba(239,68,68,0.2);">
             <div>
-              <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#ef4444;margin-bottom:8px;">${typeof t === 'function' ? t('gamble.trade.lose_label', '🔴 50% IF YOU LOSE:') : '🔴 50% IF YOU LOSE:'}</div>
+              <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#ef4444;margin-bottom:8px;">${loseLabelText}</div>
               <div style="font-size:30px;margin:6px 0;">🔒</div>
-              <div style="font-family:'Press Start 2P',monospace;font-size:9.5px;color:#fca5a5;margin-bottom:4px;">${typeof t === 'function' ? t('gamble.trade.lose_title', 'Common (50 OVR) + 🔒 1 Map Lock') : 'Common (50 OVR) + 🔒 1 Map Lock'}</div>
+              <div style="font-family:'Press Start 2P',monospace;font-size:9.5px;color:#fca5a5;margin-bottom:4px;">${typeof t === 'function' ? t('gamble.trade.lose_title', 'Jugador Common (50 OVR) + 🔒 Bloqueo') : 'Jugador Common (50 OVR) + 🔒 Bloqueo'}</div>
               <div style="font-size:10.5px;color:#ef4444;font-weight:bold;">[${worstPos}] ${worstName} ➡️ Common</div>
             </div>
             <div style="font-size:11px;color:#fca5a5;line-height:1.4;background:rgba(0,0,0,0.4);padding:8px;border-radius:8px;">
-              ${typeof t === 'function' ? t('gamble.trade.lose_detail', '(Replaced by Common and position locked for 6 nodes)') : '(Replaced by Common and position locked for 6 nodes)'}
+              ${typeof t === 'function' ? t('gamble.trade.lose_detail', '(Sustituido por Common y posición bloqueada por 6 nodos)') : '(Sustituido por Common y posición bloqueada por 6 nodos)'}
             </div>
           </div>
         `;
         rightHTML = `
           <div style="background:rgba(56,189,248,0.12);border:2px solid #38bdf8;border-radius:12px;padding:16px 14px;height:100%;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 0 20px rgba(56,189,248,0.25);">
             <div>
-              <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#38bdf8;margin-bottom:8px;">${typeof t === 'function' ? t('gamble.trade.win_label', '🟢 50% IF YOU WIN:') : '🟢 50% IF YOU WIN:'}</div>
+              <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#38bdf8;margin-bottom:8px;">${winLabelText}</div>
               <div style="font-size:30px;margin:6px 0;">🔄</div>
-              <div style="font-family:'Press Start 2P',monospace;font-size:9.5px;color:#bae6fd;margin-bottom:4px;">[${worstPos}] ${typeof t === 'function' ? t('gamble.trade.win_title', 'Guaranteed Epic or Legendary') : 'Guaranteed Epic or Legendary'}</div>
+              <div style="font-family:'Press Start 2P',monospace;font-size:9.5px;color:#bae6fd;margin-bottom:4px;">[${worstPos}] ${typeof t === 'function' ? t('gamble.trade.win_title', 'Épico o Legendario Garantizado') : 'Épico o Legendario Garantizado'}</div>
               <div style="font-size:10.5px;color:#38bdf8;font-weight:bold;">OVR 80–99 · Epic / Legendary</div>
             </div>
             <div style="font-size:11px;color:#bae6fd;line-height:1.4;background:rgba(0,0,0,0.4);padding:8px;border-radius:8px;">
-              ${typeof t === 'function' ? t('gamble.trade.win_detail', '(Turn your weakest link into an elite superstar)') : '(Turn your weakest link into an elite superstar)'}
+              ${typeof t === 'function' ? t('gamble.trade.win_detail', '(Conviertes tu eslabón débil en una súper estrella)') : '(Conviertes tu eslabón débil en una súper estrella)'}
             </div>
           </div>
         `;
@@ -10135,26 +10166,26 @@ function initGameModeSelector() {
         leftHTML = `
           <div style="background:rgba(239,68,68,0.12);border:2px solid #ef4444;border-radius:12px;padding:16px 14px;height:100%;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 0 20px rgba(239,68,68,0.2);">
             <div>
-              <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#ef4444;margin-bottom:8px;">${typeof t === 'function' ? t('gamble.synergy.lose_label', '🔴 50% IF YOU LOSE:') : '🔴 50% IF YOU LOSE:'}</div>
+              <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#ef4444;margin-bottom:8px;">${loseLabelText}</div>
               <div style="font-size:30px;margin:6px 0;">🚫</div>
-              <div style="font-family:'Press Start 2P',monospace;font-size:9.5px;color:#fca5a5;margin-bottom:4px;">${typeof t === 'function' ? t('gamble.synergy.lose_title', '2 Teammates Lose Era Synergy') : '2 Teammates Lose Era Synergy'}</div>
-              <div style="font-size:10.5px;color:#ef4444;font-weight:bold;">${typeof t === 'function' ? t('gamble.synergy.lose_detail', '(Permanent penalty for the run)') : '(Permanent penalty for the run)'}</div>
+              <div style="font-family:'Press Start 2P',monospace;font-size:9.5px;color:#fca5a5;margin-bottom:4px;">${typeof t === 'function' ? t('gamble.synergy.lose_title', '2 Compañeros Pierden Sinergia') : '2 Compañeros Pierden Sinergia'}</div>
+              <div style="font-size:10.5px;color:#ef4444;font-weight:bold;">${typeof t === 'function' ? t('gamble.synergy.lose_detail', '(Penalización permanente por la run)') : '(Penalización permanente por la run)'}</div>
             </div>
             <div style="font-size:11px;color:#fca5a5;line-height:1.4;background:rgba(0,0,0,0.4);padding:8px;border-radius:8px;">
-              ${typeof t === 'function' ? t('gamble.synergy.lose_detail', '(Permanent penalty for the run)') : '(Permanent penalty for the run)'}
+              ${typeof t === 'function' ? t('gamble.synergy.lose_detail', '(Penalización permanente por la run)') : '(Penalización permanente por la run)'}
             </div>
           </div>
         `;
         rightHTML = `
           <div style="background:rgba(192,132,252,0.12);border:2px solid #c084fc;border-radius:12px;padding:16px 14px;height:100%;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 0 20px rgba(192,132,252,0.25);">
             <div>
-              <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#c084fc;margin-bottom:8px;">${typeof t === 'function' ? t('gamble.synergy.win_label', '🟢 50% IF YOU WIN:') : '🟢 50% IF YOU WIN:'}</div>
+              <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#c084fc;margin-bottom:8px;">${winLabelText}</div>
               <div style="font-size:30px;margin:6px 0;">🧬</div>
               <div style="font-family:'Press Start 2P',monospace;font-size:9.5px;color:#e9d5ff;margin-bottom:4px;">${target.name}</div>
-              <div style="font-size:10.5px;color:#c084fc;font-weight:bold;">${typeof t === 'function' ? t('gamble.synergy.win_title', '4x Power for their Era Synergy!') : '4x Power for their Era Synergy!'}</div>
+              <div style="font-size:10.5px;color:#c084fc;font-weight:bold;">${typeof t === 'function' ? t('gamble.synergy.win_title', '¡Poder Cuádruple (x4) en su Era!') : '¡Poder Cuádruple (x4) en su Era!'}</div>
             </div>
             <div style="font-size:11px;color:#e9d5ff;line-height:1.4;background:rgba(0,0,0,0.4);padding:8px;border-radius:8px;">
-              ${typeof t === 'function' ? t('gamble.synergy.win_detail', '(Counts as 4 players toward synergy tiers)') : '(Counts as 4 players toward synergy tiers)'}
+              ${typeof t === 'function' ? t('gamble.synergy.win_detail', '(Cuenta como 4 jugadores para el umbral de su Era)') : '(Cuenta como 4 jugadores para el umbral de su Era)'}
             </div>
           </div>
         `;
@@ -10163,26 +10194,26 @@ function initGameModeSelector() {
         leftHTML = `
           <div style="background:rgba(239,68,68,0.12);border:2px solid #ef4444;border-radius:12px;padding:16px 14px;height:100%;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 0 20px rgba(239,68,68,0.2);">
             <div>
-              <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#ef4444;margin-bottom:8px;">${typeof t === 'function' ? t('gamble.soldier.lose_label', '🔴 50% IF YOU LOSE:') : '🔴 50% IF YOU LOSE:'}</div>
+              <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#ef4444;margin-bottom:8px;">${loseLabelText}</div>
               <div style="font-size:30px;margin:6px 0;">📉</div>
               <div style="font-family:'Press Start 2P',monospace;font-size:9.5px;color:#fca5a5;margin-bottom:4px;">${target.name}</div>
-              <div style="font-size:10.5px;color:#ef4444;font-weight:bold;">${typeof t === 'function' ? t('gamble.soldier.lose_title', 'Chronic Fatigue: -15 All Stats') : 'Chronic Fatigue: -15 All Stats'}</div>
+              <div style="font-size:10.5px;color:#ef4444;font-weight:bold;">${typeof t === 'function' ? t('gamble.soldier.lose_title', 'Fatiga Crónica: -15 All Stats') : 'Fatiga Crónica: -15 All Stats'}</div>
             </div>
             <div style="font-size:11px;color:#fca5a5;line-height:1.4;background:rgba(0,0,0,0.4);padding:8px;border-radius:8px;">
-              ${typeof t === 'function' ? t('gamble.soldier.lose_detail', '(Permanent stat impairment for the run)') : '(Permanent stat impairment for the run)'}
+              ${typeof t === 'function' ? t('gamble.soldier.lose_detail', '(Penalización permanente de estadísticas)') : '(Penalización permanente de estadísticas)'}
             </div>
           </div>
         `;
         rightHTML = `
           <div style="background:rgba(234,88,12,0.12);border:2px solid #f97316;border-radius:12px;padding:16px 14px;height:100%;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 0 20px rgba(249,115,22,0.25);">
             <div>
-              <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#fb923c;margin-bottom:8px;">${typeof t === 'function' ? t('gamble.soldier.win_label', '🟢 50% IF YOU WIN:') : '🟢 50% IF YOU WIN:'}</div>
+              <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#fb923c;margin-bottom:8px;">${winLabelText}</div>
               <div style="font-size:30px;margin:6px 0;">⚡</div>
               <div style="font-family:'Press Start 2P',monospace;font-size:9.5px;color:#fed7aa;margin-bottom:4px;">${target.name}</div>
-              <div style="font-size:11px;color:#4ade80;font-weight:bold;">${typeof t === 'function' ? t('gamble.soldier.win_title', '+35 CON & +35 PWR Permanent!') : '+35 CON & +35 PWR Permanent!'}</div>
+              <div style="font-size:11px;color:#4ade80;font-weight:bold;">${typeof t === 'function' ? t('gamble.soldier.win_title', '¡+35 CON y +35 PWR Permanentes!') : '¡+35 CON y +35 PWR Permanentes!'}</div>
             </div>
             <div style="font-size:11px;color:#fed7aa;line-height:1.4;background:rgba(0,0,0,0.4);padding:8px;border-radius:8px;">
-              ${typeof t === 'function' ? t('gamble.soldier.win_detail', '(Unlocks devastating home run power)') : '(Unlocks devastating home run power)'}
+              ${typeof t === 'function' ? t('gamble.soldier.win_detail', '(Desata un poder titánico de cuadrangulares)') : '(Desata un poder titánico de cuadrangulares)'}
             </div>
           </div>
         `;
@@ -10191,26 +10222,26 @@ function initGameModeSelector() {
         leftHTML = `
           <div style="background:rgba(239,68,68,0.12);border:2px solid #ef4444;border-radius:12px;padding:16px 14px;height:100%;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 0 20px rgba(239,68,68,0.2);">
             <div>
-              <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#ef4444;margin-bottom:8px;">${typeof t === 'function' ? t('gamble.market.lose_label', '🔴 50% IF YOU LOSE:') : '🔴 50% IF YOU LOSE:'}</div>
+              <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#ef4444;margin-bottom:8px;">${loseLabelText}</div>
               <div style="font-size:30px;margin:6px 0;">💸</div>
-              <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:#ef4444;margin-bottom:4px;">-$20 ${typeof t === 'function' ? t('gamble.budget_at_stake', 'BUDGET') : 'BUDGET'}</div>
-              <div style="font-size:10px;color:#fca5a5;font-weight:bold;">${typeof t === 'function' ? t('gamble.market.lose_title', '-$20 Budget & -30 Team Stamina') : '-$20 Budget & -30 Team Stamina'}</div>
+              <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:#ef4444;margin-bottom:4px;">-$${lostBudget} ${typeof t === 'function' ? t('gamble.budget_at_stake', 'PRESUPUESTO') : 'PRESUPUESTO'}</div>
+              <div style="font-size:10px;color:#fca5a5;font-weight:bold;">${typeof t === 'function' ? t('gamble.market.lose_title', '-$20 Presupuesto y -30 Stamina') : '-$20 Presupuesto y -30 Stamina'}</div>
             </div>
             <div style="font-size:11px;color:#fca5a5;line-height:1.4;background:rgba(0,0,0,0.4);padding:8px;border-radius:8px;">
-              ${typeof t === 'function' ? t('gamble.market.lose_detail', '(Every active starter gets fatigued)') : '(Every active starter gets fatigued)'}
+              ${typeof t === 'function' ? t('gamble.market.lose_detail', '(Todos los 9 titulares sufren fatiga)') : '(Todos los 9 titulares sufren fatiga)'}
             </div>
           </div>
         `;
         rightHTML = `
           <div style="background:rgba(168,85,247,0.12);border:2px solid #a855f7;border-radius:12px;padding:16px 14px;height:100%;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 0 20px rgba(168,85,247,0.25);">
             <div>
-              <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#c084fc;margin-bottom:8px;">${typeof t === 'function' ? t('gamble.market.win_label', '🟢 50% IF YOU WIN:') : '🟢 50% IF YOU WIN:'}</div>
+              <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#c084fc;margin-bottom:8px;">${winLabelText}</div>
               <div style="font-size:30px;margin:6px 0;">🎒</div>
-              <div style="font-family:'Press Start 2P',monospace;font-size:9.5px;color:#e9d5ff;margin-bottom:4px;">${typeof t === 'function' ? t('gamble.market.win_title', '2 Supreme Items (+35 Stats)') : '2 Supreme Items (+35 Stats)'}</div>
-              <div style="font-size:10.5px;color:#a855f7;font-weight:bold;">${typeof t === 'function' ? t('gamble.market.win_detail', '(Master prototype items in backpack)') : '(Master prototype items in backpack)'}</div>
+              <div style="font-family:'Press Start 2P',monospace;font-size:9.5px;color:#e9d5ff;margin-bottom:4px;">${typeof t === 'function' ? t('gamble.market.win_title', '2 Ítems Supremos (+35 Stats)') : '2 Ítems Supremos (+35 Stats)'}</div>
+              <div style="font-size:10.5px;color:#a855f7;font-weight:bold;">${typeof t === 'function' ? t('gamble.market.win_detail', '(Equipamientos legendarios en tu mochila)') : '(Equipamientos legendarios en tu mochila)'}</div>
             </div>
             <div style="font-size:11px;color:#e9d5ff;line-height:1.4;background:rgba(0,0,0,0.4);padding:8px;border-radius:8px;">
-              ${typeof t === 'function' ? t('gamble.market.win_detail', '(Master prototype items in backpack)') : '(Master prototype items in backpack)'}
+              ${typeof t === 'function' ? t('gamble.market.win_detail', '(Equipamientos legendarios en tu mochila)') : '(Equipamientos legendarios en tu mochila)'}
             </div>
           </div>
         `;
@@ -10218,26 +10249,26 @@ function initGameModeSelector() {
         leftHTML = `
           <div style="background:rgba(239,68,68,0.12);border:2px solid #ef4444;border-radius:12px;padding:16px 14px;height:100%;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 0 20px rgba(239,68,68,0.2);">
             <div>
-              <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#ef4444;margin-bottom:8px;">${typeof t === 'function' ? t('gamble.defense.lose_label', '🔴 50% IF YOU LOSE:') : '🔴 50% IF YOU LOSE:'}</div>
+              <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#ef4444;margin-bottom:8px;">${loseLabelText}</div>
               <div style="font-size:30px;margin:6px 0;">⚠️</div>
-              <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:#fca5a5;margin-bottom:4px;">${typeof t === 'function' ? t('gamble.defense.lose_title', '-15 DEF to Outfielders (LF, CF, RF)') : '-15 DEF to Outfielders (LF, CF, RF)'}</div>
+              <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:#fca5a5;margin-bottom:4px;">${typeof t === 'function' ? t('gamble.defense.lose_title', '-15 DEF a Jardineros (LF, CF, RF)') : '-15 DEF a Jardineros (LF, CF, RF)'}</div>
               <div style="font-size:10px;color:#ef4444;font-weight:bold;">-15 DEF Permanent</div>
             </div>
             <div style="font-size:11px;color:#fca5a5;line-height:1.4;background:rgba(0,0,0,0.4);padding:8px;border-radius:8px;">
-              ${typeof t === 'function' ? t('gamble.defense.lose_detail', '(Outfield defense impaired for the run)') : '(Outfield defense impaired for the run)'}
+              ${typeof t === 'function' ? t('gamble.defense.lose_detail', '(Defensa en los jardines debilitada por la run)') : '(Defensa en los jardines debilitada por la run)'}
             </div>
           </div>
         `;
         rightHTML = `
           <div style="background:rgba(16,185,129,0.12);border:2px solid #10b981;border-radius:12px;padding:16px 14px;height:100%;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 0 20px rgba(16,185,129,0.25);">
             <div>
-              <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#10b981;margin-bottom:8px;">${typeof t === 'function' ? t('gamble.defense.win_label', '🟢 50% IF YOU WIN:') : '🟢 50% IF YOU WIN:'}</div>
+              <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#10b981;margin-bottom:8px;">${winLabelText}</div>
               <div style="font-size:30px;margin:6px 0;">🛡️</div>
-              <div style="font-family:'Press Start 2P',monospace;font-size:9.5px;color:#86efac;margin-bottom:4px;">${typeof t === 'function' ? t('gamble.defense.win_title', '+20 DEF to ALL 9 Starters!') : '+20 DEF to ALL 9 Starters!'}</div>
-              <div style="font-size:10.5px;color:#10b981;font-weight:bold;">${typeof t === 'function' ? t('gamble.defense.win_detail', '(Global team defense wall boost)') : '(Global team defense wall boost)'}</div>
+              <div style="font-family:'Press Start 2P',monospace;font-size:9.5px;color:#86efac;margin-bottom:4px;">${typeof t === 'function' ? t('gamble.defense.win_title', '¡+20 DEF a los 9 Titulares!') : '¡+20 DEF a los 9 Titulares!'}</div>
+              <div style="font-size:10.5px;color:#10b981;font-weight:bold;">${typeof t === 'function' ? t('gamble.defense.win_detail', '(Muralla defensiva para todo el equipo)') : '(Muralla defensiva para todo el equipo)'}</div>
             </div>
             <div style="font-size:11px;color:#86efac;line-height:1.4;background:rgba(0,0,0,0.4);padding:8px;border-radius:8px;">
-              ${typeof t === 'function' ? t('gamble.defense.win_detail', '(Global team defense wall boost)') : '(Global team defense wall boost)'}
+              ${typeof t === 'function' ? t('gamble.defense.win_detail', '(Muralla defensiva para todo el equipo)') : '(Muralla defensiva para todo el equipo)'}
             </div>
           </div>
         `;
@@ -10397,39 +10428,23 @@ function initGameModeSelector() {
       const result = window.Game.resolveGamble(gamble.id, targetPosToPass);
       betResolved = true;
 
-      const coin = overlay.querySelector('#gamble-coin');
-      coin.classList.add('gamble-coin-flipping');
-
-      // Ticking audio and escalating dice roll sound while spinning
-      if (window.AudioManager && typeof window.AudioManager.play === 'function') {
-        window.AudioManager.play('defense_dice_roll');
-      }
-
-      const spinDurationMs = 1800;
-      const swapEveryMs = 100;
-      const totalSwaps = Math.floor(spinDurationMs / swapEveryMs);
-      let swapCount = 0;
-      const swapInterval = setInterval(() => {
-        swapCount++;
-        const showingFail = swapCount % 2 === 0;
-        coin.textContent = showingFail ? '💀' : '🍀';
-        coin.classList.toggle('gamble-coin-fail', showingFail);
-        if (window.AudioManager && typeof window.AudioManager.play === 'function') {
-          window.AudioManager.play('roulette_tick');
-        }
-        if (swapCount >= totalSwaps) {
-          clearInterval(swapInterval);
-          coin.classList.remove('gamble-coin-flipping');
-          coin.textContent = result.success ? '🍀' : '💀';
-          coin.classList.toggle('gamble-coin-fail', !result.success);
-        }
-      }, swapEveryMs);
-
-      setTimeout(() => {
+      const finalizeGambleOutcome = () => {
         const resultEl = overlay.querySelector('#gamble-result');
         resultEl.style.color = result.success ? '#10b981' : '#ef4444';
         resultEl.style.fontFamily = "'Outfit', sans-serif";
         resultEl.textContent = result.resultText;
+
+        const coin = overlay.querySelector('#gamble-coin');
+        if (coin) {
+          coin.textContent = result.success ? '🍀' : '💀';
+          coin.classList.toggle('gamble-coin-fail', !result.success);
+          if (result.success) {
+            coin.style.boxShadow = "0 0 35px #10b981";
+          } else {
+            coin.style.boxShadow = "0 0 35px #ef4444";
+            overlay.querySelector('div').classList.add('retro-shake-anim');
+          }
+        }
 
         if (window.Game && typeof window.Game.logRunNode === 'function') {
           window.Game.logRunNode({
@@ -10447,13 +10462,6 @@ function initGameModeSelector() {
           window.AudioManager.play(result.success ? 'roulette_win' : 'defense_error');
         }
 
-        if (result.success) {
-          coin.style.boxShadow = "0 0 35px #10b981";
-        } else {
-          coin.style.boxShadow = "0 0 35px #ef4444";
-          overlay.querySelector('div').classList.add('retro-shake-anim');
-        }
-
         betBtn.style.display = 'none';
         declineBtn.textContent = typeof t === 'function' ? t('career.continue', 'Continuar') : 'Continuar';
         declineBtn.className = 'btn';
@@ -10461,7 +10469,18 @@ function initGameModeSelector() {
         declineBtn.style.color = '#000';
         declineBtn.style.fontWeight = 'bold';
         declineBtn.disabled = false;
-      }, spinDurationMs + 150);
+      };
+
+      showRiskRouletteModal({
+        chance: luckSuccessPct / 100,
+        isSuccess: result.success,
+        titleText: typeof t === 'function' ? t('gamble.roulette_title', '🍀 RULETA DE ALTO RIESGO') : '🍀 RULETA DE ALTO RIESGO',
+        spinningText: typeof t === 'function' ? t('gamble.roulette_spinning', '⏳ Decidiendo tu destino...') : '⏳ Decidiendo tu destino...',
+        successText: typeof t === 'function' ? t('gamble.roulette_success', '✅ ¡LA SUERTE ESTÁ DE TU LADO! 🎉') : '✅ ¡LA SUERTE ESTÁ DE TU LADO! 🎉',
+        failText: typeof t === 'function' ? t('gamble.roulette_fail', '❌ ¡DESENLACE DESAFORTUNADO! 💀') : '❌ ¡DESENLACE DESAFORTUNADO! 💀',
+        centerSubText: typeof t === 'function' ? t('equip.roulette_center_success', 'ÉXITO') : 'ÉXITO',
+        onDone: finalizeGambleOutcome
+      });
     });
   }
 

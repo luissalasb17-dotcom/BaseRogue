@@ -1279,7 +1279,8 @@
         }
 
         // ghost_runners: start inning 3 and every extra inning (4+) with a free runner on 2nd base
-        if (this.hasTrait('ghost_runners') && this.inning >= 3 && !this.ghostRunnerInnings.has(this.inning)) {
+        // (If a mid-inning defense event was scheduled, placement is deferred to resolveMidInningDefense)
+        if (!this.pendingDefenseEvent && this.hasTrait('ghost_runners') && this.inning >= 3 && !this.ghostRunnerInnings.has(this.inning)) {
           this.bases[1] = { name: _t('sim.ghost_runner_name', {}, 'Corredor Fantasma'), spd: 50, con: 50, pwr: 50, eye: 50, def: 50, isGhostRunner: true };
           this.ghostRunnerInnings.add(this.inning);
           const inningLabel = this.inning === 3 ? (typeof window.t === 'function' ? window.t('sim.clutch_reason_inning', 'la 3ª entrada') : 'la 3ª entrada') : `Extra Inning ${this.inning}`;
@@ -1441,8 +1442,8 @@
           this.teamHP = Math.max(0, this.teamHP - outDmg);
         }
 
-        // In Inning 3 and Extra Innings (Inning >= 3), any defensive error is an immediate Walk-Off defeat!
-        if (eventData.inning >= 3) {
+        // In Extra Innings (Inning >= 4), any defensive error is an immediate Walk-Off defeat!
+        if (eventData.inning >= 4) {
           this.winner = 'pitcher';
           this.battleOver = true;
           const walkOffText = `💀 [${_t('sim.def_walkoff_title', {}, '¡WALK-OFF RIVAL!')}] ${_t('sim.def_walkoff_desc', { player: eventData.player.name, pos: eventData.pos, roll, thresh: targetThreshold, inning: eventData.inning }, `${eventData.player.name} (${eventData.pos}) cometió un error defensivo en la baja de la entrada ${eventData.inning} (Tirada: ${roll}/${targetThreshold}). ¡El rival anota la carrera de oro y se lleva la victoria!`)}`;
@@ -1471,6 +1472,16 @@
 
       this.pendingDefenseEvent = null;
       this._checkEndConditions();
+
+      // If game didn't end and player has ghost_runners trait, place ghost runner on 2nd base for inning 3+
+      if (!this.battleOver && this.hasTrait('ghost_runners') && this.inning >= 3 && !this.ghostRunnerInnings.has(this.inning)) {
+        this.bases[1] = { name: _t('sim.ghost_runner_name', {}, 'Corredor Fantasma'), spd: 50, con: 50, pwr: 50, eye: 50, def: 50, isGhostRunner: true };
+        this.ghostRunnerInnings.add(this.inning);
+        const inningLabel = this.inning === 3 ? (typeof window.t === 'function' ? window.t('sim.clutch_reason_inning', 'la 3ª entrada') : 'la 3ª entrada') : `Extra Inning ${this.inning}`;
+        this.logEvent('GHOST_RUNNER',
+          _t('sim.trait_ghost_runners', { inning: inningLabel }, `🏃 Corredores Fantasma: ¡un corredor aparece en 2ª base para arrancar ${inningLabel}!`),
+          'TRAIT');
+      }
 
       return {
         isSuccess,

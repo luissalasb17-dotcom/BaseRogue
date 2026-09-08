@@ -788,10 +788,42 @@ def paso_9_asignar_era(df, war_bat=None, people=None, batting=None):
                   .rename(columns={"era_label_w": "era_label_war"})
     )
 
-    df = df.merge(best_era[["playerID", "era_label_war"]], on="playerID", how="left")
+    df = df.merge(best_era[["playerID", "era_label_war", "era_score"]], on="playerID", how="left")
     # Usar la era WAR cuando está disponible; fallback al simple para NLB / pioneros sin bbrefID
     df["era_label"] = df["era_label_war"].fillna(df["era_label"])
-    df.drop(columns=["era_label_war"], inplace=True)
+
+    # ── Proteccion contra la "Trampa de WAR Negativo / Tacita de Cafe" ────────
+    # Para jugadores de rol cuyo WAR en su era principal es negativo o muy bajo,
+    # una temporada marginal de +0.1 WAR en el ocaso de su carrera no debe
+    # expulsarlos de la era donde jugaron el grueso de su carrera y tuvieron su pico.
+    if batting is not None and not batting.empty:
+        bat_seasons = batting.copy()
+        bat_seasons["era_s"] = bat_seasons["yearID"].apply(assign_era)
+        p_era_seas = bat_seasons.groupby(["playerID", "era_s"])["yearID"].nunique().to_dict()
+        p_tot_seas = bat_seasons.groupby("playerID")["yearID"].nunique().to_dict()
+
+        for idx, r in df.iterrows():
+            pid = r["playerID"]
+            py_era = assign_era(r.get("peak_year", 2000))
+            best_e = r.get("era_label", py_era)
+            score = r.get("era_score", 0.0)
+
+            if best_e != py_era:
+                py_s   = p_era_seas.get((pid, py_era), 0)
+                best_s = p_era_seas.get((pid, best_e), 0)
+                tot_s  = p_tot_seas.get(pid, 1)
+
+                # Si el WAR es modesto (score <= 1.5), o si la era calculada tuvo <= 2 temporadas
+                # mientras que la era de su pico tuvo >= 3 temporadas, o >= 60% de sus temporadas:
+                is_anomaly = (
+                    (score <= 1.5) or
+                    (best_s <= 2 and py_s >= 3) or
+                    (py_s / max(1, tot_s) >= 0.60 and score < 3.0)
+                )
+                if is_anomaly and py_s > 0:
+                    df.at[idx, "era_label"] = py_era
+
+    df.drop(columns=["era_label_war", "era_score"], inplace=True, errors="ignore")
 
     # Regla Pionera para Negro Leagues pre-1920:
     # Seamheads / Baseball-Reference NO calculo WAR para ligas negras pre-1920 (WAR=0.0).
@@ -1233,12 +1265,22 @@ def map_to_canonical_team(row):
     t = str(row.get("canonical_teamID", row.get("team", "UNK"))).strip()
     franch = str(row.get("franchID", "")).strip()
     p_name = str(row.get("full_name", row.get("name", row.get("nameFull", row.get("display_name", ""))))).strip()
+    peak_y = int(row.get("peak_year", row.get("year", 2000)) or 2000)
 
     # 1. Active modern MLB franchise lineage
+    res_team = None
     if franch in FRANCHISE_MAP:
-        return FRANCHISE_MAP[franch]
-    if t in FRANCHISE_MAP:
-        return FRANCHISE_MAP[t]
+        res_team = FRANCHISE_MAP[franch]
+    elif t in FRANCHISE_MAP:
+        res_team = FRANCHISE_MAP[t]
+
+    if res_team:
+        # Prevent historical defunct teams from colliding with modern expansion franchise codes
+        if res_team in ('COL', 'MIA') and peak_y < 1993:
+            return "HIST"
+        if res_team in ('ARI', 'TB') and peak_y < 1998:
+            return "HIST"
+        return res_team
 
     # 2. Iconic Negro League legends
     if any(nlb_n.lower() in p_name.lower() for nlb_n in NLB_LEGENDS):
