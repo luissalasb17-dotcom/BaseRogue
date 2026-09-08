@@ -1054,6 +1054,7 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
   window.closeNodeCompleted = closeNodeCompleted;
   window.triggerTrueVictory = triggerTrueVictory;
   window.startFireworks = startFireworks;
+  window.renderMap = renderMap;
 
   // renderLineupAssignment is no longer needed (handled inline in draft rounds)
   // Keeping stub so any legacy references don't throw
