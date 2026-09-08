@@ -23,6 +23,14 @@
 
   const RECORDS_KEY = 'baserogue_162challenge_records_v1';
 
+  const RARITY_COLORS = {
+    Legendary: '#ffd700',
+    Epic: '#a855f7',
+    Rare: '#3b82f6',
+    Uncommon: '#10b981',
+    Common: '#6b7280'
+  };
+
   // Attribute Grade Color coding matching BaseballDex
   const GRADE_COLORS = {
     'S': '#ffd700',
@@ -3844,7 +3852,16 @@
         ? (allSlotted.reduce((acc, p) => acc + (p.ovr || 50), 0) / allSlotted.length).toFixed(1)
         : '—';
 
-      const _t = (key, fallback, params) => (typeof window.t === 'function' ? window.t(key, params) : fallback);
+      const _t = (key, fallback, params) => {
+        if (typeof window.t === 'function') {
+          const res = window.t(key, params);
+          if (res && res !== key) return res;
+        }
+        if (params && typeof fallback === 'string') {
+          return fallback.replace(/\{\{\s*(\w+)\s*\}\}/g, (_, m) => params[m] !== undefined ? params[m] : (params[m] || ''));
+        }
+        return fallback;
+      };
 
       let leftColumnHTML = '';
 
