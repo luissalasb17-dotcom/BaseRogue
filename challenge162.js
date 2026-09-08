@@ -3852,6 +3852,10 @@
         ? (allSlotted.reduce((acc, p) => acc + (p.ovr || 50), 0) / allSlotted.length).toFixed(1)
         : '—';
 
+      const currentCardKey = draft.currentCard
+        ? (draft.currentCard.role ? pitcherUnlockKey(draft.currentCard) : batterUnlockKey(draft.currentCard))
+        : null;
+
       const _t = (key, fallback, params) => {
         if (typeof window.t === 'function') {
           const res = window.t(key, params);
@@ -3863,14 +3867,17 @@
         return fallback;
       };
 
+      const stageBoxName = isPitchersStage ? _t('challenge162.box_pitchers', 'CAJA DE LANZADORES') : _t('challenge162.box_batters', 'CAJA DE BATEADORES');
+
+      // ── Left Column Stage: Sealed Foil Pack OR Revealed 3D Card ──────────
       let leftColumnHTML = '';
 
       if (!isCardRevealed) {
-        const boxLabel = isPitchersStage ? _t('challenge162.box_pitchers', 'PITCHERS BOX') : _t('challenge162.box_batters', 'BATTERS BOX');
-        const boxSubtitle = isPitchersStage ? _t('challenge162.pitchers_box_subtitle', '5 Starters (SP) + 6 Relievers') : _t('challenge162.batters_box_subtitle', '9 Starters + 5 Bench');
+        const boxLabel = isPitchersStage ? _t('challenge162.box_pitchers', 'CAJA DE LANZADORES') : _t('challenge162.box_batters', 'CAJA DE BATEADORES');
+        const boxSubtitle = isPitchersStage ? _t('challenge162.pitchers_box_subtitle', '5 Abridores (SP) + 6 Relevistas') : _t('challenge162.batters_box_subtitle', '9 Titulares + 5 de Banca');
         leftColumnHTML = `
           <div style="background:rgba(0,0,0,0.5); border:1px solid rgba(255,215,0,0.3); border-radius:12px; padding:20px; text-align:center; min-height:540px; display:flex; flex-direction:column; justify-content:center; align-items:center;">
-            <div class="dex-foil-pack-wrapper" id="c162-foil-pack-target" style="cursor:pointer; margin: 10px auto;">
+            <div class="dex-foil-pack-wrapper" id="c162-foil-pack-target" style="cursor:pointer; margin: 10px auto;" title="${_t('challenge162.pack_tap_rip', '¡TOCA EL SOBRE PARA ABRIRLO!')}">
               <div class="dex-foil-pack" id="c162-foil-pack-inner" style="background:linear-gradient(135deg, #1e293b 0%, #0f172a 40%, #1e1b4b 70%, #311042 100%); border-color:#ffd700; box-shadow:0 0 35px rgba(255,215,0,0.4);">
                 <div class="dex-foil-crimp" id="c162-pack-crimp-top" style="background:repeating-linear-gradient(90deg, #ffd700, #ffd700 3px, #b45309 3px, #b45309 6px);"></div>
 
@@ -3883,7 +3890,7 @@
                     ${boxSubtitle}
                   </div>
                   <div style="display:inline-block; margin-top:14px; padding:5px 12px; background:rgba(0,0,0,0.6); border:1px dashed #ffd700; border-radius:20px; font-family:'Press Start 2P',monospace; font-size:8px; color:#ffd700;">
-                    ${_t('challenge162.pack_num_indicator', `PACK ${packNum} / ${totalInStage}`, { current: packNum, total: totalInStage })}
+                    ${_t('challenge162.pack_num_indicator', `SOBRE ${packNum} / ${totalInStage}`, { current: packNum, total: totalInStage })}
                   </div>
                 </div>
 
@@ -3892,16 +3899,19 @@
             </div>
 
             <div style="font-family:'Press Start 2P',monospace; font-size:8.5px; color:#ffd700; margin-top:16px; animation:pulse 1.5s infinite;">
-              ${_t('challenge162.pack_rip_prompt', '✨ TAP PACK TO RIP OPEN ✨')}
+              ${_t('challenge162.pack_rip_prompt', '✨ TOCA EL SOBRE PARA ABRIRLO ✨')}
+            </div>
+            <div style="margin-top:10px; font-size:9.5px; color:#94a3b8; font-family:'Press Start 2P',monospace; line-height:1.4;">
+              ${_t('challenge162.pack_click_to_reveal', 'Haz clic en el sobre para rasgar el envoltorio y revelar tu carta')}
             </div>
           </div>
         `;
       } else {
         const card = draft.currentCard;
         const rarity = card.rarity || 'Common';
-        const rColor = RARITY_COLORS[rarity] || '#9ca3af';
+        const rColor = RARITY_COLORS[rarity] || (card.ovr >= 95 ? '#ffd700' : (card.ovr >= 88 ? '#a855f7' : (card.ovr >= 80 ? '#3b82f6' : (card.ovr >= 75 ? '#10b981' : '#6b7280'))));
         const isPitcher = Boolean(card.role);
-        const cardOVR = card.ovr || 50;
+        const cardOVR = Math.floor(card.ovr || 50);
 
         const attributesHTML = isPitcher ? `
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; font-size:9.5px; margin:10px 0;">
@@ -3932,48 +3942,58 @@
             
             <div style="width:100%; display:flex; flex-direction:column; align-items:center;">
               <div style="font-family:'Press Start 2P',monospace; font-size:9px; color:#ffd700; margin-bottom:8px;">
-                🎉 ${_t('challenge162.card_pulled', 'CARD PULLED!')}
+                🎉 ${_t('challenge162.card_pulled', '¡CARTA OBTENIDA!')}
               </div>
 
-              <div class="dex-card-flip-container" id="c162-flip-container" style="width:230px; height:335px; margin: 6px auto; cursor:pointer;" title="${_t('challenge162.flip_tooltip', 'Click card to flip face')}">
-                <div class="dex-card-flip-inner" id="c162-flip-inner">
+              <div class="dex-flip-card-container" id="c162-flip-container" style="perspective:1200px; width:100%; max-width:320px; min-height:360px; margin: 6px auto; cursor:pointer;" title="${_t('challenge162.flip_tooltip', 'Clic para voltear carta')}">
+                <div class="dex-flip-card-inner" id="c162-flip-inner">
                   
-                  <div class="dex-card-face dex-card-front" style="border:3px solid ${rColor}; box-shadow: 0 0 35px ${rColor}66;">
-                    <div class="dex-card-glare"></div>
+                  <div class="dex-card-face dex-card-front" style="border:3px solid ${rColor}; box-shadow: 0 0 35px ${rColor}66; border-radius:12px; padding:16px; background:#0a0f1a; text-align:left;">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; border-bottom:1px solid rgba(255,255,255,0.15); padding-bottom:6px;">
                       <span class="rarity-badge rarity-${rarity.toLowerCase()}" style="font-size:7.5px;">${rarity.toUpperCase()}</span>
                       <span style="font-family:'Press Start 2P',monospace; font-size:8px; color:#ffd700;">OVR ${cardOVR}</span>
                     </div>
-                    <div style="font-family:'Press Start 2P',monospace; font-size:9px; color:#fff; line-height:1.3; margin:8px 0;">
+                    <div style="font-family:'Press Start 2P',monospace; font-size:10px; color:#fff; line-height:1.3; margin:8px 0;">
                       ${card.name}
                     </div>
-                    <div style="font-size:9px; color:#cbd5e1; margin-bottom:8px;">
-                      ${card.team || ''} · ${card.year || ''} · ${isPitcher ? card.role : card.pos}
+                    <div style="font-size:9.5px; color:#cbd5e1; margin-bottom:8px;">
+                      ${card.team || ''} · ${card.year || ''} · <b style="color:#ffd700;">${isPitcher ? card.role : card.pos}</b>
                     </div>
                     ${attributesHTML}
-                    <div style="margin-top:auto; font-family:'Press Start 2P',monospace; font-size:7px; color:#38bdf8;">
-                      ${_t('challenge162.card_click_flip', '🔄 CLICK TO VIEW TRADING CARD')}
+                    <div style="background:rgba(255,255,255,0.04); border-radius:6px; padding:6px; text-align:center; border:1px dashed rgba(255,255,255,0.15); margin-top:8px;">
+                      <div style="font-size:9px; color:#00ff66; font-family:'Press Start 2P',monospace;">
+                        ✔ ${_t('challenge162.drafted_badge', 'DRAFTEADO AL ROSTER 162-0')}
+                      </div>
+                    </div>
+                    <div style="margin-top:10px; text-align:center; font-family:'Press Start 2P',monospace; font-size:7px; color:#38bdf8;">
+                      ${_t('challenge162.card_click_flip', '🔄 CLIC PARA VER CARTA')}
                     </div>
                   </div>
 
-                  <div class="dex-card-face dex-card-back" style="border:3px solid ${rColor}; box-shadow: 0 0 35px ${rColor}66;">
+                  <div class="dex-card-face dex-card-back" style="border:3px solid ${rColor}; box-shadow: 0 0 35px ${rColor}66; border-radius:12px; padding:16px; background:#0a0f1a;">
                     <div style="font-family:'Press Start 2P',monospace; font-size:8.5px; color:#ffd700; margin-bottom:12px; letter-spacing:1px; text-align:center;">
-                      ${_t('challenge162.draft_trading_card', '🎴 DRAFT TRADING CARD')}
+                      ${_t('challenge162.draft_trading_card', '🎴 CARTA DE DRAFT')}
                     </div>
                     <div style="margin:12px 0; display:flex; justify-content:center;">
                       ${tradingCardHTML}
                     </div>
-                    <div style="font-size:9.5px; color:#9ca3af; margin-top:14px; text-align:center; font-family:'Press Start 2P',monospace; line-height:1.4;">
+                    <div style="font-size:9.5px; color:#9ca3af; margin-top:10px; text-align:center; font-family:'Press Start 2P',monospace; line-height:1.4;">
                       ${card.name} · ${card.year || ''}
+                    </div>
+                    <div style="margin-top:8px; text-align:center; font-family:'Press Start 2P',monospace; font-size:7px; color:#38bdf8;">
+                      ${_t('challenge162.card_click_attributes', '🔄 CLIC PARA VER ATRIBUTOS')}
                     </div>
                   </div>
 
                 </div>
               </div>
 
-              <div style="margin-top:12px; width:100%;">
-                <button id="btn-c162-next-pack" class="btn" style="width:100%; padding:14px 18px; font-family:'Press Start 2P',monospace; font-size:10px; background:linear-gradient(135deg,#00ff66,#059669); color:#000; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">
-                  ${isDraftComplete ? _t('challenge162.finalize_roster', '🚀 FINALIZE ROSTER ➔') : (isLastPackInStage ? _t('challenge162.open_pitchers_box', '⚾ OPEN PITCHERS BOX ➔') : _t('challenge162.open_next_pack', '📦 OPEN NEXT PACK ➔'))}
+              <div style="margin-top:14px; width:100%; display:flex; flex-direction:column; gap:8px;">
+                <button id="btn-c162-flip-card" type="button" style="padding:6px 14px; background:linear-gradient(135deg, rgba(56,189,248,0.2), rgba(14,165,233,0.3)); border:1.5px solid #38bdf8; color:#38bdf8; border-radius:6px; font-family:'Press Start 2P',monospace; font-size:7.5px; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; gap:5px;">
+                  🔄 ${_t('challenge162.flip_card_btn', 'VOLTEAR CARTA')}
+                </button>
+                <button id="btn-c162-next-pack" class="btn" style="width:100%; padding:14px 18px; font-family:'Press Start 2P',monospace; font-size:10px; background:linear-gradient(135deg,#00ff66,#059669); color:#000; border:none; border-radius:8px; cursor:pointer; font-weight:bold; box-shadow:0 0 20px rgba(0,255,102,0.4);">
+                  ${isDraftComplete ? _t('challenge162.finalize_roster', '🚀 FINALIZAR ROSTER Y EMPEZAR 162-0 ➔') : (isLastPackInStage ? _t('challenge162.open_pitchers_box', '⚾ ABRIR CAJA DE LANZADORES ➔') : _t('challenge162.open_next_pack', `📦 ABRIR SIGUIENTE SOBRE (${globalCardNum + 1}/25) ➔`, { pack: globalCardNum + 1 }))}
                 </button>
               </div>
             </div>
@@ -3981,10 +4001,14 @@
         `;
       }
 
+      // ── Right Column: Visual Card Deck Formation Board ───────────────────
       const renderCompactSlot = (player, slotLabel, kind, key) => {
+        const isCurrentActive = Boolean(
+          player && currentCardKey && (player.role ? pitcherUnlockKey(player) : batterUnlockKey(player)) === currentCardKey
+        );
         if (!player) {
           return `
-            <div class="c162-slot-item"
+            <div class="c162-slot-item ${isCurrentActive ? 'active' : ''}"
                  data-drag-kind="${kind}"
                  data-drag-key="${key}"
                  style="cursor:pointer;">
@@ -4001,7 +4025,7 @@
           : `<div class="player-card"><div class="card-name">${player.name}</div></div>`;
 
         return `
-          <div class="c162-slot-item" title="${player.name} (Arrastrar para mover)"
+          <div class="c162-slot-item ${isCurrentActive ? 'active' : ''}" title="${player.name} (Arrastrar para mover posición)"
                draggable="true"
                data-drag-kind="${kind}"
                data-drag-key="${key}"
@@ -4014,10 +4038,25 @@
         `;
       };
 
-      const infieldSlotsHTML = ['C', '1B', '2B', '3B', 'SS'].map(slot => renderCompactSlot(updatedSlots.lineup[slot], slot, 'batter', slot)).join('');
-      const outfieldSlotsHTML = ['LF', 'CF', 'RF', 'DH'].map(slot => renderCompactSlot(updatedSlots.lineup[slot], slot, 'batter', slot)).join('');
-      const benchSlotsHTML = [0, 1, 2, 3, 4].map(idx => renderCompactSlot(updatedSlots.bench[idx], `BN${idx + 1}`, 'bench', idx)).join('');
-      const spSlotsHTML = [0, 1, 2, 3, 4].map(idx => renderCompactSlot(updatedSlots.sp[idx], `SP${idx + 1}`, 'SP', idx)).join('');
+      const infieldSlots = ['C', '1B', '2B', '3B', 'SS'];
+      const outfieldSlots = ['LF', 'CF', 'RF', 'DH'];
+
+      const infieldSlotsHTML = infieldSlots.map(slot =>
+        renderCompactSlot(updatedSlots.lineup[slot], slot, 'batter', slot)
+      ).join('');
+
+      const outfieldSlotsHTML = outfieldSlots.map(slot =>
+        renderCompactSlot(updatedSlots.lineup[slot], slot, 'batter', slot)
+      ).join('');
+
+      const benchSlotsHTML = [0, 1, 2, 3, 4].map(idx =>
+        renderCompactSlot(updatedSlots.bench[idx], `BN${idx + 1}`, 'bench', idx)
+      ).join('');
+
+      const spSlotsHTML = [0, 1, 2, 3, 4].map(idx =>
+        renderCompactSlot(updatedSlots.sp[idx], `SP${idx + 1}`, 'SP', idx)
+      ).join('');
+
       const rpSlotsHTML = [
         renderCompactSlot(updatedSlots.rp[0], 'CL', 'RP', 0),
         renderCompactSlot(updatedSlots.rp[1], 'SU', 'RP', 1),
@@ -4027,52 +4066,112 @@
         renderCompactSlot(updatedSlots.rp[5], 'RP4', 'RP', 5)
       ].join('');
 
+      const filledLineupCount = SLOTS.filter(s => updatedSlots.lineup[s]).length;
+      const filledBenchCount = (updatedSlots.bench || []).filter(Boolean).length;
+      const filledSPCount = (updatedSlots.sp || []).filter(Boolean).length;
+      const filledRPCount = (updatedSlots.rp || []).filter(Boolean).length;
+
+      const progressPercent = Math.min(100, Math.round((allPulled.length / 25) * 100));
+
       container.innerHTML = `
         <div style="max-width: 1300px; margin: 0 auto;">
+          <!-- Top Header -->
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:10px;">
             <div>
               <span style="font-family:'Press Start 2P',monospace; font-size:11.5px; color:#ffd700;">
-                ${_t('challenge162.packs_draft_stage', `📦 HOBBY PACKS DRAFT: ${isPitchersStage ? 'PITCHERS BOX' : 'BATTERS BOX'}`)}
+                ${_t('challenge162.packs_draft_stage', `📦 HOBBY PACKS DRAFT: ${stageBoxName} (SOBRE ${globalCardNum} DE 25)`, { box: stageBoxName, pack: globalCardNum, total: 25 })}
               </span>
             </div>
+            <div style="display:flex; align-items:center; gap:12px;">
+              <span style="font-family:'Press Start 2P',monospace; font-size:10px; color:#00ff66;">
+                ${_t('challenge162.roster_count', 'ROSTER')}: ${allPulled.length}/25
+              </span>
+              <button id="btn-c162-pack-cancel" class="btn btn-secondary" style="padding:6px 12px; font-size:8.5px; font-family:'Press Start 2P',monospace;">
+                ✕ ${_t('challenge162.cancel', 'CANCELAR')}
+              </button>
+            </div>
           </div>
+
+          <!-- Progress Bar -->
+          <div style="width:100%; height:6px; background:rgba(255,255,255,0.08); border-radius:3px; overflow:hidden; margin-bottom:16px;">
+            <div style="width:${progressPercent}%; height:100%; background:linear-gradient(90deg, #38bdf8, #ffd700, #00ff66); transition:width 0.3s ease;"></div>
+          </div>
+
+          <!-- Main Grid: Left Stage (Pack/Card) + Right Board (Card Deck) -->
           <div style="display:grid; grid-template-columns: 430px 1fr; gap:18px; align-items:start;">
+            
+            <!-- Left Column -->
             ${leftColumnHTML}
+
+            <!-- Right Column: Visual Card Deck Formation Board -->
             <div style="background:radial-gradient(circle at 50% 0%, rgba(15,23,42,0.95) 0%, rgba(8,12,22,0.98) 100%); border:1px solid rgba(56,189,248,0.25); border-radius:12px; padding:14px; max-height:82vh; overflow-y:auto;">
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px solid rgba(255,255,255,0.12); padding-bottom:8px;">
+              
+              <!-- Deck Header -->
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px solid rgba(255,255,255,0.12); padding-bottom:8px; flex-wrap:wrap; gap:8px;">
                 <div>
                   <span style="font-family:'Press Start 2P',monospace; font-size:10px; color:#38bdf8;">
-                    📋 ${_t('challenge162.deck_title', 'TEAM CARD DECK')}
+                    📋 ${_t('challenge162.deck_title', 'DECK DE CARTAS DEL EQUIPO')} (${allPulled.length}/25)
                   </span>
                   <div style="font-size:9px; color:#94a3af; margin-top:2px;">
-                    ${_t('challenge162.deck_counts', `${draft.pulledBatters.length}/14 Batters • ${draft.pulledPitchers.length}/11 Pitchers`)}
+                    ${_t('challenge162.deck_counts', `${draft.pulledBatters.length}/14 Bateadores • ${draft.pulledPitchers.length}/11 Lanzadores`, { b: draft.pulledBatters.length, p: draft.pulledPitchers.length })}
                     <span style="color:#34d399; margin-left:6px;">(Arrastra cartas para mover posiciones)</span>
                   </div>
                 </div>
                 <div style="font-family:'Press Start 2P',monospace; font-size:9.5px; color:#ffd700;">
-                  ⭐ ${_t('challenge162.team_ovr', 'TEAM OVR')}: ${avgOVR}
+                  ⭐ ${_t('challenge162.team_ovr', 'OVR EQUIPO')}: ${avgOVR}
                 </div>
               </div>
+
+              <!-- Deck Slot Grid -->
               <div class="c162-deck-compact">
+                <!-- Section 1: Batting Lineup (9 Cards) -->
                 <div class="c162-roster-section" style="margin-bottom:12px;">
+                  <div class="c162-section-header" style="font-family:'Press Start 2P',monospace; font-size:8px; color:#ffd700; margin-bottom:6px; display:flex; justify-content:space-between;">
+                    <span>⚡ ${_t('challenge162.lineup_title', 'ALINEACION TITULAR (LINEUP - 9 CARTAS)')}</span>
+                    <span>${filledLineupCount}/9</span>
+                  </div>
+                  <div style="font-family:'Press Start 2P',monospace; font-size:7px; color:#94a3af; margin-bottom:4px; text-align:center;">— ${_t('challenge162.infield', 'CUADRO / INFIELD')} —</div>
                   <div class="c162-cards-row">${infieldSlotsHTML}</div>
-                  <div class="c162-cards-row" style="margin-top:6px;">${outfieldSlotsHTML}</div>
+                  <div style="font-family:'Press Start 2P',monospace; font-size:7px; color:#94a3af; margin:6px 0 4px 0; text-align:center;">— ${_t('challenge162.outfield_dh', 'JARDINES Y DESIGNADO / OUTFIELD & DH')} —</div>
+                  <div class="c162-cards-row">${outfieldSlotsHTML}</div>
                 </div>
+
+                <!-- Section 2: Bench (5 Cards) -->
                 <div class="c162-roster-section" style="margin-bottom:12px;">
+                  <div class="c162-section-header" style="font-family:'Press Start 2P',monospace; font-size:8px; color:#34d399; margin-bottom:6px; display:flex; justify-content:space-between;">
+                    <span>🛋️ ${_t('challenge162.bench_title', 'RESERVAS DE BANCA (BENCH - 5 CARTAS)')}</span>
+                    <span>${filledBenchCount}/5</span>
+                  </div>
                   <div class="c162-cards-row">${benchSlotsHTML}</div>
                 </div>
+
+                <!-- Section 3: Starting Pitchers (5 Cards) -->
                 <div class="c162-roster-section" style="margin-bottom:12px;">
+                  <div class="c162-section-header" style="font-family:'Press Start 2P',monospace; font-size:8px; color:#38bdf8; margin-bottom:6px; display:flex; justify-content:space-between;">
+                    <span>🧢 ${_t('challenge162.rotation_title_5', 'ROTACION DE ABRIDORES (ROTATION - 5 CARTAS)')}</span>
+                    <span>${filledSPCount}/5</span>
+                  </div>
                   <div class="c162-cards-row">${spSlotsHTML}</div>
                 </div>
+
+                <!-- Section 4: Bullpen (6 Cards) -->
                 <div class="c162-roster-section">
+                  <div class="c162-section-header" style="font-family:'Press Start 2P',monospace; font-size:8px; color:#f472b6; margin-bottom:6px; display:flex; justify-content:space-between;">
+                    <span>🔥 ${_t('challenge162.bullpen_title_6', 'CUERPO DE RELEVISTAS (BULLPEN - 6 CARTAS)')}</span>
+                    <span>${filledRPCount}/6</span>
+                  </div>
                   <div class="c162-cards-row">${rpSlotsHTML}</div>
                 </div>
               </div>
+
             </div>
+
           </div>
         </div>
       `;
 
+      // ── Event Handlers ──
+      // Drag & Drop
       let _dragSource = null;
       container.querySelectorAll('.c162-slot-item[draggable="true"]').forEach(el => {
         el.addEventListener('dragstart', (e) => {
@@ -4117,23 +4216,53 @@
         });
       });
 
+      // 1. Pack Foil Rip
       const foilTarget = container.querySelector('#c162-foil-pack-target');
       if (foilTarget) {
         foilTarget.onclick = () => {
+          if (window.BaseballDex && typeof window.BaseballDex.playPackSound === 'function') {
+            window.BaseballDex.playPackSound('Rare');
+          } else if (window.AudioManager && typeof window.AudioManager.play === 'function') {
+            window.AudioManager.play('card_deal');
+          } else if (typeof window.playSound === 'function') {
+            window.playSound('card_flip');
+          }
+
           const bPool = getBatterPool();
           const pPool = getPitcherPool();
+          const allPulledSoFar = [...draft.pulledBatters, ...draft.pulledPitchers];
+          const currentSlots = calculateChallengeRosterSlots(allPulledSoFar, false);
+
+          const missingPos = [];
+          if (isPitchersStage) {
+            const spEmpty = currentSlots.sp.filter(s => s === null).length;
+            const rpEmpty = currentSlots.rp.filter(s => s === null).length;
+            if (spEmpty > 0) missingPos.push('SP');
+            if (rpEmpty > 0) missingPos.push('RP', 'CL', 'CP');
+          } else {
+            SLOTS.forEach(slot => {
+              if (!currentSlots.lineup[slot]) missingPos.push(slot);
+            });
+          }
+
           const activePool = isPitchersStage ? pPool : bPool;
-          let card = activePool.find(c => {
-             const k = c.role ? pitcherUnlockKey(c) : batterUnlockKey(c);
-             return !draft.usedKeys.has(k);
-          }) || activePool[0];
+          let card = pickWeightedChallengeDraftCard(activePool, missingPos, draft.usedKeys);
+          if (!card) {
+            card = activePool.find(c => {
+              const k = c.role ? pitcherUnlockKey(c) : batterUnlockKey(c);
+              return !draft.usedKeys.has(k);
+            }) || activePool[0];
+          }
+
           const cKey = card.role ? pitcherUnlockKey(card) : batterUnlockKey(card);
           draft.usedKeys.add(cKey);
           if (isPitchersStage) draft.pulledPitchers.push(card);
           else draft.pulledBatters.push(card);
+
           draft.currentCard = card;
           draft.currentPack++;
           draft.packOpened = true;
+
           const newAllPulled = [...draft.pulledBatters, ...draft.pulledPitchers];
           const newAuto = calculateChallengeRosterSlots(newAllPulled, false);
           draft.manualSlots = {
@@ -4146,6 +4275,37 @@
         };
       }
 
+      // 2. Card 3D Flip Handlers
+      const btnFlip = container.querySelector('#btn-c162-flip-card');
+      const flipContainer = container.querySelector('#c162-flip-container');
+      const flipInner = container.querySelector('#c162-flip-inner');
+
+      const doFlip = (e) => {
+        if (e) e.stopPropagation();
+        if (flipInner) {
+          flipInner.classList.toggle('flipped');
+          if (window.AudioManager && typeof window.AudioManager.play === 'function') {
+            window.AudioManager.play('card_deal');
+          } else if (typeof window.playSound === 'function') {
+            window.playSound('card_flip');
+          }
+        }
+      };
+      if (btnFlip) btnFlip.onclick = doFlip;
+      if (flipContainer) flipContainer.onclick = doFlip;
+
+      // 3. Cancel Button
+      const btnCancel = container.querySelector('#btn-c162-pack-cancel');
+      if (btnCancel) {
+        btnCancel.onclick = () => {
+          if (confirm(_t('challenge162.pack_cancel_confirm', '¿Deseas cancelar el draft de sobres y volver al menú?'))) {
+            this._packDraft = null;
+            this.renderHub();
+          }
+        };
+      }
+
+      // 4. Next Pack / Complete Button
       const btnNext = container.querySelector('#btn-c162-next-pack');
       if (btnNext) {
         btnNext.onclick = (e) => {
