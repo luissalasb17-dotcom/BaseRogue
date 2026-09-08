@@ -8927,22 +8927,22 @@ body.on-main-menu .main-container {
 }
 .c162-deck-compact .c162-card-container {
   position: relative;
-  width: 124px;
-  height: 190px;
+  width: 152px;
+  height: 236px;
   border-radius: 4px;
   transition: transform 0.2s ease, filter 0.2s ease, box-shadow 0.2s ease;
 }
 .c162-deck-compact .c162-card-container .player-card {
-  width: 124px !important;
-  height: 190px !important;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.6), 0 0 8px rgba(245, 158, 11, 0.2);
+  width: 152px !important;
+  height: 236px !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6), 0 0 10px rgba(245, 158, 11, 0.2);
 }
 .c162-deck-compact .c162-card-container .player-card .card-art-container {
-  height: 104px !important;
+  height: 140px !important;
 }
 .c162-deck-compact .c162-empty-card-frame {
-  width: 124px;
-  height: 190px;
+  width: 152px;
+  height: 236px;
   border: 1.5px dashed rgba(255, 255, 255, 0.2);
   border-radius: 6px;
   background: rgba(0, 0, 0, 0.35);
@@ -8950,16 +8950,16 @@ body.on-main-menu .main-container {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 8px;
   box-sizing: border-box;
 }
 .c162-deck-compact .c162-empty-icon {
-  font-size: 16px;
+  font-size: 18px;
   color: #64748b;
 }
 .c162-deck-compact .c162-empty-text {
   font-family: 'Press Start 2P', monospace;
-  font-size: 6.5px;
+  font-size: 7.5px;
   color: #64748b;
   text-align: center;
   padding: 0 4px;

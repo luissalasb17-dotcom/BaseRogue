@@ -100,16 +100,27 @@
   ];
 
   const BASEBALL_ERAS = [
-    { key: 'The Genesis Era (1871-1900)', label: 'The Genesis Era', years: '1871 - 1900', desc: 'Los pioneros del béisbol profesional en el siglo XIX.', icon: '📜', color: '#a16207' },
-    { key: 'Deadball (1901-1919)', label: 'Deadball Era', years: '1901 - 1919', desc: 'Dominio absoluto del pitcheo, toques y juego táctico.', icon: '⚾', color: '#64748b' },
-    { key: 'Golden Era (1920-1941)', label: 'Golden Era', years: '1920 - 1941', desc: 'La época de oro de Babe Ruth, Lou Gehrig y jonrones de leyenda.', icon: '👑', color: '#d97706' },
-    { key: 'Integration (1942-1960)', label: 'Integration Era', years: '1942 - 1960', desc: 'Jackie Robinson rompe la barrera racial; dinastías históricas.', icon: '🤝', color: '#2563eb' },
-    { key: 'Expansion (1961-1976)', label: 'Expansion Era', years: '1961 - 1976', desc: 'Nuevas franquicias y la era del montículo y los lanzadores.', icon: '🏟️', color: '#059669' },
-    { key: 'Big Hair Era (1977-1993)', label: 'Big Hair Era', years: '1977 - 1993', desc: 'Años 80, velocidad supersónica, turf artificial y cerradores míticos.', icon: '🎸', color: '#dc2626' },
-    { key: 'Steroid Era (1994-2005)', label: 'Steroid Era', years: '1994 - 2005', desc: 'La era de los jonrones titánicos y los récords ofensivos imposibles.', icon: '💉', color: '#7c3aed' },
-    { key: 'Efficiency Era (2006-2015)', label: 'Efficiency Era', years: '2006 - 2015', desc: 'La revolución analítica, Moneyball y relevistas de precisión.', icon: '💻', color: '#0891b2' },
-    { key: 'Modern Era (2016-Pres)', label: 'Modern Era', years: '2016 - Presente', desc: 'Velocidad élite, rotaciones modernas y superestrellas globales.', icon: '🚀', color: '#10b981' }
+    { key: 'The Genesis Era (1871-1900)', label: 'The Genesis Era', years: '1871 - 1900', years_es: '1871 - 1900', years_en: '1871 - 1900', desc_es: 'Los pioneros del béisbol profesional en el siglo XIX.', desc_en: 'The 19th-century pioneers of professional baseball.', icon: '📜', color: '#a16207' },
+    { key: 'Deadball (1901-1919)', label: 'Deadball Era', years: '1901 - 1919', years_es: '1901 - 1919', years_en: '1901 - 1919', desc_es: 'Dominio absoluto del pitcheo, toques y juego táctico.', desc_en: 'Complete pitching dominance, small ball, and tactical bunting.', icon: '⚾', color: '#64748b' },
+    { key: 'Golden Era (1920-1941)', label: 'Golden Era', years: '1920 - 1941', years_es: '1920 - 1941', years_en: '1920 - 1941', desc_es: 'La época de oro de Babe Ruth, Lou Gehrig y jonrones de leyenda.', desc_en: 'The golden age of Babe Ruth, Lou Gehrig, and legendary home runs.', icon: '👑', color: '#d97706' },
+    { key: 'Integration (1942-1960)', label: 'Integration Era', years: '1942 - 1960', years_es: '1942 - 1960', years_en: '1942 - 1960', desc_es: 'Jackie Robinson rompe la barrera racial; dinastías históricas.', desc_en: 'Jackie Robinson breaks the color barrier; historic dynasties.', icon: '🤝', color: '#2563eb' },
+    { key: 'Expansion (1961-1976)', label: 'Expansion Era', years: '1961 - 1976', years_es: '1961 - 1976', years_en: '1961 - 1976', desc_es: 'Nuevas franquicias y la era del montículo y los lanzadores.', desc_en: 'New franchises and the dominant era of the pitching mound.', icon: '🏟️', color: '#059669' },
+    { key: 'Big Hair Era (1977-1993)', label: 'Big Hair Era', years: '1977 - 1993', years_es: '1977 - 1993', years_en: '1977 - 1993', desc_es: 'Años 80, velocidad supersónica, turf artificial y cerradores míticos.', desc_en: '80s baseball, supersonic speed, artificial turf, and elite closers.', icon: '🎸', color: '#dc2626' },
+    { key: 'Steroid Era (1994-2005)', label: 'Steroid Era', years: '1994 - 2005', years_es: '1994 - 2005', years_en: '1994 - 2005', desc_es: 'La era de los jonrones titánicos y los récords ofensivos imposibles.', desc_en: 'Colossal home runs and historic offensive slugging records.', icon: '💉', color: '#7c3aed' },
+    { key: 'Efficiency Era (2006-2015)', label: 'Efficiency Era', years: '2006 - 2015', years_es: '2006 - 2015', years_en: '2006 - 2015', desc_es: 'La revolución analítica, Moneyball y relevistas de precisión.', desc_en: 'The analytics revolution, Moneyball, and bullpen specialization.', icon: '💻', color: '#0891b2' },
+    { key: 'Modern Era (2016-Pres)', label: 'Modern Era', years: '2016 - Present', years_es: '2016 - Presente', years_en: '2016 - Present', desc_es: 'Velocidad élite, rotaciones modernas y superestrellas globales.', desc_en: 'Elite velocity, modern rotations, and global superstars.', icon: '🚀', color: '#10b981' }
   ];
+
+  function getEraDescription(era) {
+    if (!era) return '';
+    const isEn = (window.i18next && window.i18next.language && window.i18next.language.startsWith('en')) || (document.documentElement && document.documentElement.lang === 'en');
+    return isEn ? (era.desc_en || era.desc_es || '') : (era.desc_es || era.desc_en || '');
+  }
+  function getEraYears(era) {
+    if (!era) return '';
+    const isEn = (window.i18next && window.i18next.language && window.i18next.language.startsWith('en')) || (document.documentElement && document.documentElement.lang === 'en');
+    return isEn ? (era.years_en || era.years) : (era.years_es || era.years);
+  }
 
 
   function getBatterPool() {
@@ -809,24 +820,35 @@
     return positions.has(slot.toUpperCase());
   }
 
+  function canPlayerFillPrimary(p, slot) {
+    if (!p) return false;
+    const raw = (p.pos || p.pos_display || p.primary_pos || '').toUpperCase().trim();
+    if (raw === slot) return true;
+    if (raw === 'OF' && (slot === 'LF' || slot === 'CF' || slot === 'RF')) return true;
+    if (raw === 'IF' && (slot === '1B' || slot === '2B' || slot === '3B' || slot === 'SS')) return true;
+    return false;
+  }
+
   function calculateChallengeRosterSlots(pulledCards, finalize = false) {
     const batters = pulledCards.filter(c => !c.role).sort((a, b) => (b.ovr || 50) - (a.ovr || 50));
     const pitchers = pulledCards.filter(c => c.role).sort((a, b) => (b.ovr || 50) - (a.ovr || 50));
 
     const lineup = { C: null, '1B': null, '2B': null, '3B': null, SS: null, LF: null, CF: null, RF: null, DH: null };
-    const overflowBatters = [];
-
+    const assignedIndices = new Set();
     const FIELD_ORDER = ['C', 'SS', 'CF', '2B', '3B', '1B', 'LF', 'RF'];
-    const matchSlot = { C: null, SS: null, CF: null, '2B': null, '3B': null, '1B': null, LF: null, RF: null };
 
-    function bpm(batterIdx, visited) {
+    // ── PASS 1: Maximum Bipartite Matching for PRIMARY POSITIONS ONLY ───────
+    const matchSlotPrimary = {};
+    FIELD_ORDER.forEach(s => { matchSlotPrimary[s] = null; });
+
+    function bpmPrimary(batterIdx, visited) {
       const p = batters[batterIdx];
       for (let i = 0; i < FIELD_ORDER.length; i++) {
         const slot = FIELD_ORDER[i];
-        if (canPlayerFillSlot(p, slot) && !visited.has(slot)) {
+        if (canPlayerFillPrimary(p, slot) && !visited.has(slot)) {
           visited.add(slot);
-          if (matchSlot[slot] === null || bpm(matchSlot[slot], visited)) {
-            matchSlot[slot] = batterIdx;
+          if (matchSlotPrimary[slot] === null || bpmPrimary(matchSlotPrimary[slot], visited)) {
+            matchSlotPrimary[slot] = batterIdx;
             return true;
           }
         }
@@ -835,26 +857,67 @@
     }
 
     for (let i = 0; i < batters.length; i++) {
-      bpm(i, new Set());
+      bpmPrimary(i, new Set());
     }
 
-    const assignedIndices = new Set();
     FIELD_ORDER.forEach(slot => {
-      const idx = matchSlot[slot];
+      const idx = matchSlotPrimary[slot];
       if (idx !== null && idx !== undefined) {
         lineup[slot] = batters[idx];
         assignedIndices.add(idx);
       }
     });
 
+    // ── PASS 2: Fill remaining empty defensive slots using SECONDARY POSITIONS ──
+    const emptyDefSlots = FIELD_ORDER.filter(s => !lineup[s]);
+    if (emptyDefSlots.length > 0) {
+      const matchSlotSecondary = {};
+      emptyDefSlots.forEach(s => { matchSlotSecondary[s] = null; });
+
+      function bpmSecondary(batterIdx, visited) {
+        const p = batters[batterIdx];
+        for (let i = 0; i < emptyDefSlots.length; i++) {
+          const slot = emptyDefSlots[i];
+          if (canPlayerFillSlot(p, slot) && !visited.has(slot)) {
+            visited.add(slot);
+            if (matchSlotSecondary[slot] === null || bpmSecondary(matchSlotSecondary[slot], visited)) {
+              matchSlotSecondary[slot] = batterIdx;
+              return true;
+            }
+          }
+        }
+        return false;
+      }
+
+      for (let i = 0; i < batters.length; i++) {
+        if (!assignedIndices.has(i)) {
+          bpmSecondary(i, new Set());
+        }
+      }
+
+      emptyDefSlots.forEach(slot => {
+        const idx = matchSlotSecondary[slot];
+        if (idx !== null && idx !== undefined && !assignedIndices.has(idx)) {
+          lineup[slot] = batters[idx];
+          assignedIndices.add(idx);
+        }
+      });
+    }
+
+    // ── PASS 3: Designated Hitter (DH) ───────────────────────────────────────
+    for (let i = 0; i < batters.length; i++) {
+      if (!assignedIndices.has(i) && !lineup['DH']) {
+        lineup['DH'] = batters[i];
+        assignedIndices.add(i);
+        break;
+      }
+    }
+
+    // ── PASS 4: Overflow for Finalizing (if any slot is still null) ──────────
+    const overflowBatters = [];
     for (let i = 0; i < batters.length; i++) {
       if (!assignedIndices.has(i)) {
-        if (!lineup['DH']) {
-          lineup['DH'] = batters[i];
-          assignedIndices.add(i);
-        } else {
-          overflowBatters.push(batters[i]);
-        }
+        overflowBatters.push(batters[i]);
       }
     }
 
@@ -867,6 +930,7 @@
       });
     }
 
+    // ── PASS 5: Bench Reserves (5 Cards) ─────────────────────────────────────
     const bench = [null, null, null, null, null];
     let bIdx = 0;
     while (overflowBatters.length > 0 && bIdx < 5) {
@@ -3233,7 +3297,7 @@
                   ${packsDesc}
                 </div>
                 <div style="margin-top: 10px; padding: 8px 10px; background: rgba(255, 215, 0, 0.08); border-radius: 6px; border: 1px dashed rgba(255, 215, 0, 0.3); font-size: 8px; color: #ffd700; font-family: 'Press Start 2P', monospace; line-height: 1.5;">
-                  ✨ 25 SOBRES: 14 BATEADORES + 11 LANZADORES
+                  ${_t('challenge162.hub_packs_chip', '✨ 25 PACKS: 14 BATTERS + 11 PITCHERS')}
                 </div>
               </div>
               <button id="btn-start-packsdraft-mode" class="btn" style="width: 100%; margin-top: 14px; padding: 11px 14px; font-size: 10px; font-family: 'Press Start 2P', monospace; background: linear-gradient(135deg, #ffd700, #b45309); color: #000; border: none; border-radius: 8px; cursor: pointer; box-shadow: 0 0 16px rgba(255, 215, 0, 0.4); font-weight: bold;">
@@ -3252,7 +3316,7 @@
                   ${allStarDesc}
                 </div>
                 <div style="margin-top: 10px; padding: 8px 10px; background: rgba(56, 189, 248, 0.08); border-radius: 6px; border: 1px dashed rgba(56, 189, 248, 0.3); font-size: 8px; color: #38bdf8; font-family: 'Press Start 2P', monospace; line-height: 1.5;">
-                  💎 COLECCIÓN TOTAL SIN RESTRICCIONES
+                  ${_t('challenge162.hub_allstar_chip', '💎 FULL UNLOCKED COLLECTION')}
                 </div>
               </div>
               <button id="btn-start-allstar-mode" class="btn" style="width: 100%; margin-top: 14px; padding: 11px 14px; font-size: 10px; font-family: 'Press Start 2P', monospace; background: linear-gradient(135deg, #38bdf8, #0284c7); color: #000; border: none; border-radius: 8px; cursor: pointer; box-shadow: 0 0 15px rgba(56, 189, 248, 0.3); font-weight: bold;">
@@ -3271,7 +3335,7 @@
                   ${monoTeamDesc}
                 </div>
                 <div class="c162-pokelike-chips" style="margin-top: 10px;">
-                  <span class="c162-pokelike-tag ready">🟢 ${readyFranchises}/${MLB_FRANCHISES.length} EQUIPOS LISTOS</span>
+                  <span class="c162-pokelike-tag ready">${_t('challenge162.franchises_ready_chip', `🟢 ${readyFranchises}/${MLB_FRANCHISES.length} TEAMS READY`, { ready: readyFranchises, total: MLB_FRANCHISES.length })}</span>
                   ${clearedFranchises > 0 ? `<span class="c162-pokelike-tag champion">🏆 ${clearedFranchises} WS</span>` : ''}
                 </div>
               </div>
@@ -3291,7 +3355,7 @@
                   ${monoEraDesc}
                 </div>
                 <div class="c162-pokelike-chips" style="margin-top: 10px;">
-                  <span class="c162-pokelike-tag ready">🟢 ${readyEras}/${BASEBALL_ERAS.length} ERAS LISTAS</span>
+                  <span class="c162-pokelike-tag ready">${_t('challenge162.eras_ready_chip', `🟢 ${readyEras}/${BASEBALL_ERAS.length} ERAS READY`, { ready: readyEras, total: BASEBALL_ERAS.length })}</span>
                   ${clearedEras > 0 ? `<span class="c162-pokelike-tag champion">🏆 ${clearedEras} WS</span>` : ''}
                 </div>
               </div>
@@ -3385,18 +3449,18 @@
               <div class="c162-pokelike-name">${fran.name}</div>
               <div class="c162-pokelike-sub">${fran.city} • <span style="font-family:'Press Start 2P',monospace; font-size:8.5px; color:${fran.accent || '#ffd700'};">${fran.code}</span></div>
               <div class="c162-pokelike-chips">
-                <span class="c162-pokelike-tag ${isReady ? 'ready' : 'locked'}">${total} CARTAS</span>
+                <span class="c162-pokelike-tag ${isReady ? 'ready' : 'locked'}">${total} ${_t('challenge162.cards_label', 'CARDS')}</span>
                 ${clears > 0 ? `<span class="c162-pokelike-tag champion">🏆 ${clears} WS</span>` : ''}
-                ${!isReady ? `<span style="font-size:7.5px; color:#f87171; font-family:'Press Start 2P',monospace;">FALTAN ${17 - total}</span>` : ''}
+                ${!isReady ? `<span style="font-size:7.5px; color:#f87171; font-family:'Press Start 2P',monospace;">${_t('challenge162.need_more_count', `NEED ${17 - total}`, { count: 17 - total })}</span>` : ''}
               </div>
             </div>
             <div>
               ${isReady ? `
                 <button class="c162-pokelike-btn play btn-c162-launch-team" data-code="${fran.code}">
-                  JUGAR ▶
+                  ${_t('challenge162.play_btn', 'PLAY ▶')}
                 </button>
               ` : `
-                <div class="c162-pokelike-lock-box" title="Requiere al menos 17 cartas para jugar">
+                <div class="c162-pokelike-lock-box" title="Requires at least 17 cards to play">
                   🔒
                 </div>
               `}
@@ -3424,8 +3488,8 @@
               ${desc}
             </div>
             <div class="c162-pokelike-progress-row">
-              <span style="color: #ffd700;">🏆 ${clearedFranchises} / ${MLB_FRANCHISES.length} Franquicias Campeonas</span>
-              <span style="color: #34d399;">🟢 ${readyFranchises} / ${MLB_FRANCHISES.length} Equipos con Roster Listo (17+ cartas)</span>
+              <span style="color: #ffd700;">${_t('challenge162.franchises_cleared_summary', `🏆 ${clearedFranchises} / ${MLB_FRANCHISES.length} Champion Franchises`, { cleared: clearedFranchises, total: MLB_FRANCHISES.length })}</span>
+              <span style="color: #34d399;">${_t('challenge162.franchises_ready_summary', `🟢 ${readyFranchises} / ${MLB_FRANCHISES.length} Teams with Ready Roster (17+ cards)`, { ready: readyFranchises, total: MLB_FRANCHISES.length })}</span>
             </div>
           </div>
 
@@ -3529,21 +3593,21 @@
             </div>
             <div class="c162-pokelike-info">
               <div class="c162-pokelike-name">${era.label}</div>
-              <div style="font-size:11px; color:#cbd5e1; margin-top:2px;">${era.desc}</div>
+              <div style="font-size:11px; color:#cbd5e1; margin-top:2px;">${getEraDescription(era)}</div>
               <div class="c162-pokelike-chips">
-                <span class="c162-pokelike-tag info">${era.years}</span>
-                <span class="c162-pokelike-tag ${isReady ? 'ready' : 'locked'}">${total} CARTAS</span>
+                <span class="c162-pokelike-tag info">${getEraYears(era)}</span>
+                <span class="c162-pokelike-tag ${isReady ? 'ready' : 'locked'}">${total} ${_t('challenge162.cards_label', 'CARDS')}</span>
                 ${clears > 0 ? `<span class="c162-pokelike-tag champion">🏆 ${clears} WS</span>` : ''}
-                ${!isReady ? `<span style="font-size:7.5px; color:#f87171; font-family:'Press Start 2P',monospace;">FALTAN ${17 - total}</span>` : ''}
+                ${!isReady ? `<span style="font-size:7.5px; color:#f87171; font-family:'Press Start 2P',monospace;">${_t('challenge162.need_more_count', `NEED ${17 - total}`, { count: 17 - total })}</span>` : ''}
               </div>
             </div>
             <div>
               ${isReady ? `
                 <button class="c162-pokelike-btn play btn-c162-launch-era" data-key="${encodeURIComponent(era.key)}">
-                  JUGAR ▶
+                  ${_t('challenge162.play_btn', 'PLAY ▶')}
                 </button>
               ` : `
-                <div class="c162-pokelike-lock-box" title="Requiere al menos 17 cartas para jugar">
+                <div class="c162-pokelike-lock-box" title="Requires at least 17 cards to play">
                   🔒
                 </div>
               `}
@@ -3570,8 +3634,8 @@
               ${desc}
             </div>
             <div class="c162-pokelike-progress-row">
-              <span style="color: #ffd700;">🏆 ${clearedEras} / ${BASEBALL_ERAS.length} Eras Campeonas</span>
-              <span style="color: #34d399;">🟢 ${readyEras} / ${BASEBALL_ERAS.length} Eras con Roster Listo (17+ cartas)</span>
+              <span style="color: #ffd700;">${_t('challenge162.eras_cleared_summary', `🏆 ${clearedEras} / ${BASEBALL_ERAS.length} Champion Eras`, { cleared: clearedEras, total: BASEBALL_ERAS.length })}</span>
+              <span style="color: #34d399;">${_t('challenge162.eras_ready_summary', `🟢 ${readyEras} / ${BASEBALL_ERAS.length} Eras with Ready Roster (17+ cards)`, { ready: readyEras, total: BASEBALL_ERAS.length })}</span>
             </div>
           </div>
 
@@ -3643,28 +3707,27 @@
 
     renderPacksDraftTransition() {
       const container = document.getElementById('challenge162-pack-container');
-      if (!container) return;
-
+      const _t = (key, fallback, params) => (typeof window.t === 'function' ? window.t(key, params) : fallback);
       container.innerHTML = `
         <div style="max-width: 680px; margin: 30px auto; text-align:center; background:rgba(0,0,0,0.85); border:2px solid #ffd700; border-radius:14px; padding:28px; box-shadow:0 0 40px rgba(255,215,0,0.35);">
           <div style="font-size:44px; margin-bottom:12px;">⚾</div>
           <div style="font-family:'Press Start 2P',monospace; font-size:13px; color:#ffd700; margin-bottom:12px; line-height:1.4;">
-            ¡CAJA DE BATEADORES COMPLETADA!
+            ${_t('challenge162.pack_transition_title', 'BATTERS BOX COMPLETED!')}
           </div>
           <p style="font-size:12px; color:#e2e8f0; line-height:1.6; margin-bottom:20px;">
-            Tu alineación titular de <strong>9 bateadores</strong> y tus <strong>5 jugadores en la banca</strong> están listos. Ahora abre la <strong>Caja de Lanzadores (11 Sobres)</strong> para draftear tu rotación de 5 abridores (SP1-SP5) y tu bullpen de 6 relevistas (Closer, Setup y 4 Relevos Medios).
+            ${_t('challenge162.pack_transition_desc', 'Your starting lineup of <strong>9 batters</strong> and <strong>5 bench players</strong> are set. Now open the <strong>Pitchers Box (11 Packs)</strong> to draft your 5-man starting rotation (SP1-SP5) and 6-man bullpen (Closer, Setup, and 4 Middle Relievers).')}
           </p>
           <div style="display:inline-block; background:rgba(255,215,0,0.1); border:1px solid #ffd700; border-radius:8px; padding:12px 20px; margin-bottom:24px;">
             <div style="font-family:'Press Start 2P',monospace; font-size:9.5px; color:#ffd700; margin-bottom:4px;">
-              📦 CAJA #2: LANZADORES HOBBY BOX (11 SOBRES)
+              ${_t('challenge162.pack_transition_box2', '📦 BOX #2: PITCHERS HOBBY BOX (11 PACKS)')}
             </div>
             <div style="font-size:9.5px; color:#9ca3af;">
-              5 Abridores (SP) + 6 Brazos de Bullpen (CL, SU, RP1-RP4)
+              ${_t('challenge162.pack_transition_box2_sub', '5 Starters (SP) + 6 Bullpen Arms (CL, SU, RP1-RP4)')}
             </div>
           </div>
           <div>
             <button id="btn-c162-start-pitchers-box" class="btn" style="padding:14px 28px; font-family:'Press Start 2P',monospace; font-size:11px; background:linear-gradient(135deg,#ffd700,#f59e0b); color:#000; border:none; border-radius:8px; cursor:pointer; box-shadow:0 0 20px rgba(255,215,0,0.5); font-weight:bold;">
-              📦 ABRIR CAJA DE LANZADORES (11 SOBRES) ➔
+              ${_t('challenge162.pack_transition_btn', '📦 OPEN PITCHERS BOX (11 PACKS) ➔')}
             </button>
           </div>
         </div>
@@ -3713,33 +3776,37 @@
         ? (draft.currentCard.role ? pitcherUnlockKey(draft.currentCard) : batterUnlockKey(draft.currentCard))
         : null;
 
+      const _t = (key, fallback, params) => (typeof window.t === 'function' ? window.t(key, params) : fallback);
+
       // ── Left Column Stage: Sealed Foil Pack OR Revealed 3D Card ─────────────
       let leftColumnHTML = '';
 
       if (!isCardRevealed) {
         // STATE 1: Sealed Retro Foil Pack ready to open
+        const boxLabel = isPitchersStage ? _t('challenge162.box_pitchers', 'PITCHERS BOX') : _t('challenge162.box_batters', 'BATTERS BOX');
+        const boxSubtitle = isPitchersStage ? _t('challenge162.pitchers_box_subtitle', '5 Starters (SP) + 6 Relievers') : _t('challenge162.batters_box_subtitle', '9 Starters + 5 Bench');
         leftColumnHTML = `
           <div style="background:rgba(0,0,0,0.5); border:1px solid rgba(255,215,0,0.3); border-radius:12px; padding:20px; text-align:center; min-height:540px; display:flex; flex-direction:column; justify-content:center; align-items:center;">
-            <div class="dex-foil-pack-wrapper" id="c162-foil-pack-target" style="cursor:pointer; margin: 10px auto;" title="¡Toca para abrir sobre!">
+            <div class="dex-foil-pack-wrapper" id="c162-foil-pack-target" style="cursor:pointer; margin: 10px auto;" title="${_t('challenge162.pack_tap_rip', 'Tap the pack to rip open!')}">
               <div class="dex-foil-pack" id="c162-foil-pack-inner" style="background:linear-gradient(135deg, #1e293b 0%, #0f172a 40%, #1e1b4b 70%, #311042 100%); border-color:#ffd700; box-shadow:0 0 35px rgba(255,215,0,0.4);">
                 <div class="dex-foil-crimp" id="c162-pack-crimp-top" style="background:repeating-linear-gradient(90deg, #ffd700, #ffd700 3px, #b45309 3px, #b45309 6px);"></div>
 
                 <div style="text-align:center; margin: 26px 0;">
                   <div style="font-size:42px; filter:drop-shadow(0 0 14px #ffd700); margin-bottom:8px;">📦</div>
                   <div style="font-family:'Press Start 2P',monospace; font-size:11px; color:#ffd700; text-shadow:0 0 12px rgba(255,215,0,0.8); line-height:1.4;">
-                    ${isPitchersStage ? 'PITCHERS BOX' : 'BATTERS BOX'}
+                    ${boxLabel}
                   </div>
                   <div style="font-family:'Press Start 2P',monospace; font-size:8px; color:#38bdf8; margin-top:8px; background:rgba(56,189,248,0.15); border:1px solid #38bdf8; padding:3px 8px; border-radius:4px; display:inline-block;">
                     PACK #${globalCardNum} / 25
                   </div>
                   <div style="font-size:9.5px; color:#9ca3af; margin-top:10px; line-height:1.4;">
-                    ${isPitchersStage ? '5 Abridores (SP) + 6 Relevistas' : '9 Titulares + 5 de Banca'}
+                    ${boxSubtitle}
                   </div>
                 </div>
 
                 <div style="text-align:center; margin-bottom:14px;">
                   <div style="font-family:'Press Start 2P',monospace; font-size:8.5px; color:#00ff66; animation:packGlowPulse 1.2s infinite ease-in-out;">
-                    ✨ ${typeof window.t === 'function' ? window.t('challenge162.tap_to_open', 'TOCAR PARA ABRIR') : 'TOCAR PARA ABRIR'} ✨
+                    ✨ ${_t('challenge162.tap_to_open', 'TAP TO OPEN')} ✨
                   </div>
                 </div>
 
@@ -3748,7 +3815,7 @@
             </div>
 
             <div style="margin-top:14px; font-size:10px; color:#94a3b8; font-family:'Press Start 2P',monospace; line-height:1.4;">
-              ⚡ Haz clic en el sobre para rasgar el foil y revelar tu carta
+              ⚡ ${_t('challenge162.pack_click_to_reveal', 'Click on the pack foil to rip it open and reveal your card')}
             </div>
           </div>
         `;
@@ -3797,7 +3864,7 @@
               ${renderStat('HR/9', hr9)}
               ${renderStat('STA', sta)}
               <div style="background:#111827;border-radius:6px;padding:7px 9px;display:flex;justify-content:space-between;align-items:center">
-                <span style="font-size:9px;color:#9ca3af;font-family:'Press Start 2P',monospace;">ROL</span>
+                <span style="font-size:9px;color:#9ca3af;font-family:'Press Start 2P',monospace;">${_t('challenge162.role_label', 'ROLE')}</span>
                 <span style="font-size:11px;font-weight:bold;color:#ffd700">${card.role || 'SP'}</span>
               </div>
             </div>
@@ -3820,7 +3887,7 @@
           <div style="background:rgba(0,0,0,0.5); border:1px solid rgba(255,215,0,0.3); border-radius:12px; padding:16px; text-align:center; min-height:540px; display:flex; flex-direction:column; justify-content:center; align-items:center;">
             <div style="width:100%; max-width:440px; margin:0 auto; animation: packCardBurst 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;">
               
-              <div class="dex-flip-card-container" id="c162-flip-container" style="perspective:1200px; width:100%; max-width:440px; min-height:480px; margin:0 auto; cursor:pointer;" title="Clic para voltear carta">
+              <div class="dex-flip-card-container" id="c162-flip-container" style="perspective:1200px; width:100%; max-width:440px; min-height:480px; margin:0 auto; cursor:pointer;" title="${_t('challenge162.click_to_flip', 'Click to flip card')}">
                 <div class="dex-flip-card-inner" id="c162-flip-inner">
                   
                   <!-- Side A: Stats & Overview -->
@@ -3838,17 +3905,17 @@
 
                     <div style="text-align:center; margin-bottom:14px;">
                       <div style="font-family:'Press Start 2P',monospace; font-size:32px; color:${rColor}; text-shadow:0 0 20px ${rColor}88;">${Math.floor(card.ovr || 75)}</div>
-                      <div style="font-size:9.5px; color:#6b7280; font-family:'Press Start 2P',monospace;">OVERALL RATING</div>
+                      <div style="font-size:9.5px; color:#6b7280; font-family:'Press Start 2P',monospace;">${_t('challenge162.overall_rating', 'OVERALL RATING')}</div>
                     </div>
 
                     ${statsHTML}
 
                     <div style="background:rgba(255,255,255,0.04); border-radius:8px; padding:8px; text-align:center; border:1px dashed rgba(255,255,255,0.15);">
                       <div style="font-size:10px; color:#00ff66; font-family:'Press Start 2P',monospace;">
-                        ✅ DRAFTEADO AL ROSTER 162-0
+                        ✅ ${_t('challenge162.drafted_badge', 'DRAFTED TO 162-0 ROSTER')}
                       </div>
                       <div style="font-size:8.5px; color:#94a3b8; margin-top:2px;">
-                        Carta colocada en tu deck
+                        ${_t('challenge162.placed_in_deck', 'Card placed in your deck')}
                       </div>
                     </div>
                   </div>
@@ -3856,16 +3923,16 @@
                   <!-- Side B: Trading Card Art -->
                   <div class="dex-card-face dex-card-back" style="border:3px solid ${rColor}; box-shadow: 0 0 35px ${rColor}66;">
                     <div style="font-family:'Press Start 2P',monospace; font-size:8.5px; color:#ffd700; margin-bottom:12px; letter-spacing:1px; text-align:center;">
-                      🎴 DRAFT TRADING CARD
+                      ${_t('challenge162.draft_trading_card', '🎴 DRAFT TRADING CARD')}
                     </div>
-                    <div style="transform:scale(1.15); margin:12px 0;">
+                    <div style="margin:12px 0; display:flex; justify-content:center;">
                       ${tradingCardHTML}
                     </div>
                     <div style="font-size:9.5px; color:#9ca3af; margin-top:14px; text-align:center; font-family:'Press Start 2P',monospace; line-height:1.4;">
                       ${card.name} · ${card.year || ''}
                     </div>
                     <div style="margin-top:10px; font-family:'Press Start 2P',monospace; font-size:7px; color:#38bdf8;">
-                      🔄 CLIC PARA VER ATRIBUTOS
+                      ${_t('challenge162.card_click_attributes', '🔄 CLICK TO VIEW ATTRIBUTES')}
                     </div>
                   </div>
 
@@ -3875,11 +3942,11 @@
               <!-- Bottom Controls -->
               <div style="margin-top:12px; width:100%; display:flex; flex-direction:column; align-items:center; gap:8px;">
                 <button id="btn-c162-flip-card" type="button" style="padding:6px 14px; background:linear-gradient(135deg, rgba(56,189,248,0.2), rgba(14,165,233,0.3)); border:1.5px solid #38bdf8; color:#38bdf8; border-radius:6px; font-family:'Press Start 2P',monospace; font-size:7.5px; cursor:pointer; display:inline-flex; align-items:center; gap:5px;">
-                  🔄 VOLTEAR CARTA
+                  🔄 ${_t('challenge162.flip_card_btn', 'FLIP CARD')}
                 </button>
 
                 <button id="btn-c162-next-pack" class="btn" style="width:100%; padding:13px 18px; font-family:'Press Start 2P',monospace; font-size:10px; background:linear-gradient(135deg,#00ff66,#059669); color:#000; border:none; border-radius:8px; cursor:pointer; box-shadow:0 0 20px rgba(0,255,102,0.4); font-weight:bold;">
-                  ${isDraftComplete ? '🚀 FINALIZAR ROSTER Y EMPEZAR 162-0 ➔' : (isLastPackInStage ? '⚾ ABRIR CAJA DE LANZADORES ➔' : `📦 ABRIR SIGUIENTE SOBRE (${globalCardNum + 1}/25) ➔`)}
+                  ${isDraftComplete ? _t('challenge162.finalize_roster', '🚀 FINALIZE ROSTER & START 162-0 ➔') : (isLastPackInStage ? _t('challenge162.open_pitchers_box', '⚾ OPEN PITCHERS BOX ➔') : _t('challenge162.open_next_pack', `📦 OPEN NEXT PACK (${globalCardNum + 1}/25) ➔`, { pack: globalCardNum + 1 }))}
                 </button>
               </div>
 
@@ -3953,24 +4020,23 @@
 
       const progressPercent = Math.min(100, Math.round((allPulled.length / 25) * 100));
 
+      const stageBoxName = isPitchersStage ? _t('challenge162.box_pitchers', 'PITCHERS BOX') : _t('challenge162.box_batters', 'BATTERS BOX');
+
       container.innerHTML = `
         <div style="max-width: 1300px; margin: 0 auto;">
           <!-- Top Header -->
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:10px;">
             <div>
               <span style="font-family:'Press Start 2P',monospace; font-size:11.5px; color:#ffd700;">
-                📦 HOBBY PACKS DRAFT: ${isPitchersStage ? 'CAJA DE LANZADORES' : 'CAJA DE BATEADORES'}
-              </span>
-              <span style="font-size:9.5px; color:#94a3b8; margin-left:10px; font-family:'Press Start 2P',monospace;">
-                (SOBRE ${globalCardNum} DE 25)
+                ${_t('challenge162.packs_draft_stage', `📦 HOBBY PACKS DRAFT: ${stageBoxName} (PACK ${globalCardNum} OF 25)`, { box: stageBoxName, pack: globalCardNum, total: 25 })}
               </span>
             </div>
             <div style="display:flex; align-items:center; gap:12px;">
               <span style="font-family:'Press Start 2P',monospace; font-size:10px; color:#00ff66;">
-                ROSTER: ${allPulled.length}/25
+                ${_t('challenge162.roster_count', 'ROSTER')}: ${allPulled.length}/25
               </span>
               <button id="btn-c162-pack-cancel" class="btn btn-secondary" style="padding:6px 12px; font-size:8.5px; font-family:'Press Start 2P',monospace;">
-                ← CANCELAR
+                ← ${_t('challenge162.cancel', 'CANCEL')}
               </button>
             </div>
           </div>
@@ -3993,14 +4059,14 @@
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px solid rgba(255,255,255,0.12); padding-bottom:8px; flex-wrap:wrap; gap:8px;">
                 <div>
                   <span style="font-family:'Press Start 2P',monospace; font-size:10px; color:#38bdf8;">
-                    📋 DECK DE CARTAS DEL EQUIPO (${allPulled.length}/25)
+                    📋 ${_t('challenge162.deck_title', 'TEAM CARD DECK')} (${allPulled.length}/25)
                   </span>
                   <div style="font-size:9px; color:#94a3af; margin-top:2px;">
-                    ${draft.pulledBatters.length}/14 Bateadores · ${draft.pulledPitchers.length}/11 Lanzadores
+                    ${_t('challenge162.deck_counts', `${draft.pulledBatters.length}/14 Batters • ${draft.pulledPitchers.length}/11 Pitchers`, { b: draft.pulledBatters.length, p: draft.pulledPitchers.length })}
                   </div>
                 </div>
                 <div style="font-family:'Press Start 2P',monospace; font-size:9.5px; color:#ffd700;">
-                  ⭐ OVR: ${avgOVR}
+                  ⭐ ${_t('challenge162.team_ovr', 'TEAM OVR')}: ${avgOVR}
                 </div>
               </div>
 
@@ -4009,19 +4075,19 @@
                 <!-- Section 1: Batting Lineup (9 Cards) -->
                 <div class="c162-roster-section" style="margin-bottom:12px;">
                   <div class="c162-section-header" style="font-family:'Press Start 2P',monospace; font-size:8px; color:#ffd700; margin-bottom:6px; display:flex; justify-content:space-between;">
-                    <span>⚡ ALINEACION TITULAR (LINEUP - 9 CARTAS)</span>
+                    <span>⚡ ${_t('challenge162.lineup_title', 'STARTING LINEUP (9 CARDS)')}</span>
                     <span>${filledLineupCount}/9</span>
                   </div>
-                  <div style="font-family:'Press Start 2P',monospace; font-size:7px; color:#94a3af; margin-bottom:4px; text-align:center;">— CUADRO / INFIELD —</div>
+                  <div style="font-family:'Press Start 2P',monospace; font-size:7px; color:#94a3af; margin-bottom:4px; text-align:center;">— ${_t('challenge162.infield', 'CUADRO / INFIELD')} —</div>
                   <div class="c162-cards-row">${infieldSlotsHTML}</div>
-                  <div style="font-family:'Press Start 2P',monospace; font-size:7px; color:#94a3af; margin:6px 0 4px 0; text-align:center;">— JARDINES Y DESIGNADO / OUTFIELD & DH —</div>
+                  <div style="font-family:'Press Start 2P',monospace; font-size:7px; color:#94a3af; margin:6px 0 4px 0; text-align:center;">— ${_t('challenge162.outfield_dh', 'JARDINES Y DESIGNADO / OUTFIELD & DH')} —</div>
                   <div class="c162-cards-row">${outfieldSlotsHTML}</div>
                 </div>
 
                 <!-- Section 2: Bench (5 Cards) -->
                 <div class="c162-roster-section" style="margin-bottom:12px;">
                   <div class="c162-section-header" style="font-family:'Press Start 2P',monospace; font-size:8px; color:#34d399; margin-bottom:6px; display:flex; justify-content:space-between;">
-                    <span>🛋️ BANCA DE SUPLENTES (BENCH - 5 CARTAS)</span>
+                    <span>🛋️ ${_t('challenge162.bench_title', 'BENCH RESERVES (BENCH - 5 CARDS)')}</span>
                     <span>${filledBenchCount}/5</span>
                   </div>
                   <div class="c162-cards-row">${benchSlotsHTML}</div>
@@ -4030,7 +4096,7 @@
                 <!-- Section 3: Starting Pitchers (5 Cards) -->
                 <div class="c162-roster-section" style="margin-bottom:12px;">
                   <div class="c162-section-header" style="font-family:'Press Start 2P',monospace; font-size:8px; color:#38bdf8; margin-bottom:6px; display:flex; justify-content:space-between;">
-                    <span>🧢 ROTACION DE ABRIDORES (ROTATION - 5 CARTAS)</span>
+                    <span>🧢 ${_t('challenge162.rotation_title_5', 'STARTING ROTATION (ROTATION - 5 CARDS)')}</span>
                     <span>${filledSPCount}/5</span>
                   </div>
                   <div class="c162-cards-row">${spSlotsHTML}</div>
@@ -4039,7 +4105,7 @@
                 <!-- Section 4: Bullpen (6 Cards) -->
                 <div class="c162-roster-section">
                   <div class="c162-section-header" style="font-family:'Press Start 2P',monospace; font-size:8px; color:#f472b6; margin-bottom:6px; display:flex; justify-content:space-between;">
-                    <span>🔥 CUERPO DE RELEVISTAS (BULLPEN - 6 CARTAS)</span>
+                    <span>🔥 ${_t('challenge162.bullpen_title_6', 'BULLPEN RELIEVERS (BULLPEN - 6 CARDS)')}</span>
                     <span>${filledRPCount}/6</span>
                   </div>
                   <div class="c162-cards-row">${rpSlotsHTML}</div>
@@ -4138,7 +4204,7 @@
       const btnCancel = container.querySelector('#btn-c162-pack-cancel');
       if (btnCancel) {
         btnCancel.onclick = () => {
-          if (confirm('¿Deseas cancelar el draft de sobres y volver al menú?')) {
+          if (confirm(_t('challenge162.pack_cancel_confirm', 'Do you want to cancel the packs draft and return to the menu?'))) {
             this._packDraft = null;
             this.renderHub();
           }
