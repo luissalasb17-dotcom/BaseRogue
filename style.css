@@ -9199,10 +9199,96 @@ body.on-main-menu .main-container {
     grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)) !important;
     gap: 6px !important;
   }
-
-  /* Up/Down buttons for mobile roster reordering */
-  .dynasty-order-btn {
-    display: inline-flex !important;
-  }
 }
 
+/* 162-0 Challenge: Pack Draft Board Compact Styling & Single Line Rows */
+.c162-cards-row.c162-row-nowrap {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  justify-content: center !important;
+  align-items: flex-start !important;
+  gap: 6px !important;
+  overflow-x: auto !important;
+  padding-bottom: 4px !important;
+  width: 100% !important;
+}
+
+.c162-deck-compact .c162-slot-item {
+  flex: 0 0 auto !important;
+  width: 110px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  transition: transform 0.15s ease, filter 0.15s ease;
+}
+
+.c162-deck-compact .c162-slot-item:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.1);
+}
+
+.c162-deck-compact .c162-slot-item.active {
+  filter: drop-shadow(0 0 8px #ffd700);
+}
+
+.c162-deck-compact .c162-slot-header-pill {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7.5px;
+  color: #ffd700;
+  background: rgba(0, 0, 0, 0.7);
+  border: 1px solid rgba(255, 215, 0, 0.4);
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-bottom: 4px;
+  text-align: center;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.c162-deck-compact .c162-card-container {
+  width: 108px !important;
+  height: 168px !important;
+  position: relative !important;
+  border-radius: 8px !important;
+  overflow: hidden !important;
+}
+
+.c162-deck-compact .c162-card-container .player-card,
+.c162-deck-compact .c162-card-container .baseball-card-retro {
+  width: 108px !important;
+  height: 168px !important;
+  min-width: 108px !important;
+  max-width: 108px !important;
+  font-size: 8px !important;
+  transform-origin: top left !important;
+}
+
+.c162-deck-compact .c162-empty-card-frame {
+  width: 108px !important;
+  height: 168px !important;
+  border: 1.5px dashed rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.02);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: #64748b;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.c162-deck-compact .c162-empty-card-frame:hover {
+  border-color: #ffd700;
+  background: rgba(255, 215, 0, 0.05);
+  color: #ffd700;
+}
+
+.c162-deck-compact .c162-empty-icon {
+  font-size: 14px;
+}
+
+.c162-deck-compact .c162-empty-text {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7.5px;
+}

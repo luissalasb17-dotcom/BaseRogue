@@ -3911,76 +3911,184 @@
         const rarity = card.rarity || 'Common';
         const rColor = RARITY_COLORS[rarity] || (card.ovr >= 95 ? '#ffd700' : (card.ovr >= 88 ? '#a855f7' : (card.ovr >= 80 ? '#3b82f6' : (card.ovr >= 75 ? '#10b981' : '#6b7280'))));
         const isPitcher = Boolean(card.role);
+        const eraShort = card.era || 'All-Time';
+        const cName = cleanName(card);
         const cardOVR = Math.floor(card.ovr || 50);
 
-        const attributesHTML = isPitcher ? `
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; font-size:9.5px; margin:10px 0;">
-            <div style="background:rgba(255,255,255,0.05); padding:4px 6px; border-radius:4px;"><span style="color:#94a3af;">H/9:</span> <b>${card.h9 || 50}</b></div>
-            <div style="background:rgba(255,255,255,0.05); padding:4px 6px; border-radius:4px;"><span style="color:#94a3af;">K/9:</span> <b>${card.k9 || 50}</b></div>
-            <div style="background:rgba(255,255,255,0.05); padding:4px 6px; border-radius:4px;"><span style="color:#94a3af;">BB/9:</span> <b>${card.bb9 || 50}</b></div>
-            <div style="background:rgba(255,255,255,0.05); padding:4px 6px; border-radius:4px;"><span style="color:#94a3af;">HR/9:</span> <b>${card.hr9 || 50}</b></div>
-            <div style="background:rgba(255,255,255,0.05); padding:4px 6px; border-radius:4px;"><span style="color:#94a3af;">STA:</span> <b>${card.sta || 50}</b></div>
-            <div style="background:rgba(255,255,255,0.05); padding:4px 6px; border-radius:4px;"><span style="color:#94a3af;">ROL:</span> <b>${card.role || 'SP'}</b></div>
-          </div>
-        ` : `
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; font-size:9.5px; margin:10px 0;">
-            <div style="background:rgba(255,255,255,0.05); padding:4px 6px; border-radius:4px;"><span style="color:#94a3af;">CON:</span> <b>${card.con || 50}</b></div>
-            <div style="background:rgba(255,255,255,0.05); padding:4px 6px; border-radius:4px;"><span style="color:#94a3af;">PWR:</span> <b>${card.pwr || 50}</b></div>
-            <div style="background:rgba(255,255,255,0.05); padding:4px 6px; border-radius:4px;"><span style="color:#94a3af;">EYE:</span> <b>${card.eye || 50}</b></div>
-            <div style="background:rgba(255,255,255,0.05); padding:4px 6px; border-radius:4px;"><span style="color:#94a3af;">SPD:</span> <b>${card.spd || 50}</b></div>
-            <div style="background:rgba(255,255,255,0.05); padding:4px 6px; border-radius:4px;"><span style="color:#94a3af;">DEF:</span> <b>${card.def || 50}</b></div>
-            <div style="background:rgba(255,255,255,0.05); padding:4px 6px; border-radius:4px;"><span style="color:#94a3af;">POS:</span> <b>${card.pos || 'OF'}</b></div>
-          </div>
-        `;
+        let teamFull = card.team || '';
+        if (card.team === 'FA' || !card.team) {
+          teamFull = typeof window.t === 'function' ? window.t('dex.free_agent', 'Agente Libre') : 'Agente Libre';
+        } else if (card.team === 'HIST') {
+          teamFull = typeof window.t === 'function' ? window.t('dex.franchise_hist', 'Franquicia Histórica') : 'Franquicia Histórica';
+        } else if (card.team === 'NLB') {
+          teamFull = typeof window.t === 'function' ? window.t('dex.franchise_nlb', 'Ligas Negras') : 'Ligas Negras';
+        } else if (window.PlayersDB && window.PlayersDB.FranchiseNames) {
+          teamFull = window.PlayersDB.FranchiseNames[card.team] || card.team;
+        }
+
+        const renderStat = (lbl, val) => {
+          if (typeof val !== 'number') {
+            return `
+              <div style="background:#111827;border-radius:6px;padding:7px 9px;display:flex;justify-content:space-between;align-items:center">
+                <span style="font-size:9px;color:#94a3af;font-family:'Press Start 2P',monospace;">${lbl}</span>
+                <span style="font-size:11px;font-weight:bold;color:#38bdf8">${val}</span>
+              </div>
+            `;
+          }
+          return `
+            <div style="background:#111827;border-radius:6px;padding:7px 9px;display:flex;justify-content:space-between;align-items:center">
+              <span style="font-size:9px;color:#94a3af;font-family:'Press Start 2P',monospace;">${lbl}</span>
+              <span style="font-size:11px;font-weight:bold;color:${getGradeColor(val)}">${val} <small style="font-size:8px;margin-left:2px;">${getGrade(val)}</small></span>
+            </div>
+          `;
+        };
+
+        const careerStats = (typeof getPlayerCareerData === 'function') ? getPlayerCareerData(card) : null;
+        const isReliever = isPitcher && (
+          card.role === 'RP' || card.role === 'CL' || card.pos === 'RP' || card.pos === 'CL' ||
+          (careerStats && typeof careerStats.sv === 'number' && careerStats.sv >= 10)
+        );
+
+        let statsHTML = '';
+        if (isPitcher) {
+          const h9 = card.h9 !== undefined ? card.h9 : (card.grt !== undefined ? card.grt : 50);
+          const k9 = card.k9 !== undefined ? card.k9 : (card.stf !== undefined ? card.stf : (card.str !== undefined ? card.str : 50));
+          const bb9 = card.bb9 !== undefined ? card.bb9 : (card.ctl !== undefined ? card.ctl : 50);
+          const hr9 = card.hr9 !== undefined ? card.hr9 : (card.mov !== undefined ? card.mov : 50);
+          const sta = card.sta !== undefined ? card.sta : 65;
+          statsHTML = `
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:12px">
+              ${renderStat('H/9', h9)}
+              ${renderStat('K/9', k9)}
+              ${renderStat('BB/9', bb9)}
+              ${renderStat('HR/9', hr9)}
+              ${renderStat('STA', sta)}
+              ${renderStat('ROL', card.role || card.pos || 'P')}
+            </div>
+          `;
+        } else {
+          const kavd = card.k_avd !== undefined ? card.k_avd : (card.k_avoid !== undefined ? card.k_avoid : (card.k_avoid_val !== undefined ? card.k_avoid_val : (card.con || 40)));
+          statsHTML = `
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:12px">
+              ${renderStat('CON', card.con || 40)}
+              ${renderStat('PWR', card.pwr || 40)}
+              ${renderStat('EYE', card.eye || 40)}
+              ${renderStat('K/AVD', kavd)}
+              ${renderStat('SPD', card.spd || 40)}
+              ${renderStat('DEF', card.def || 40)}
+            </div>
+          `;
+        }
+
+        const isHof = Boolean(card.hof || card.is_hof || (careerStats && careerStats.hof));
+        let badgesHtml = '';
+        if (isHof) badgesHtml += '<span style="background:#ffd70022;color:#ffd700;border:1px solid #ffd700;padding:2px 7px;border-radius:4px;font-size:7.5px">🏆 HOF</span>';
+        if (card.clutch || card.is_clutch) badgesHtml += '<span style="background:#ef444422;color:#ef4444;border:1px solid #ef4444;padding:2px 7px;border-radius:4px;font-size:7.5px">⚡ CLUTCH</span>';
+        if (card.captain || card.is_captain) badgesHtml += '<span style="background:#3b82f622;color:#3b82f6;border:1px solid #3b82f6;padding:2px 7px;border-radius:4px;font-size:7.5px">👑 CAPTAIN</span>';
+
+        let careerStatsBlockHTML = '';
+        if (careerStats) {
+          careerStatsBlockHTML = `
+            <div style="background:#111827;border-radius:8px;padding:10px;margin-bottom:12px;">
+              <div style="font-family:'Press Start 2P',monospace;font-size:7px;color:#38bdf8;margin-bottom:8px;text-align:center">${(typeof window.t === 'function' ? window.t('dex.career_header') : 'ESTADÍSTICAS DE CARRERA (MLB)')}</div>
+              <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:6px 8px;text-align:center">
+                ${isPitcher ? (isReliever ? `
+                  <div><div style="font-size:12px;font-weight:bold;color:#38bdf8">${typeof careerStats.sv === 'number' ? careerStats.sv.toLocaleString() : (careerStats.sv || '-')}</div><div style="font-size:6.5px;color:#9ca3af;margin-top:2px">${(typeof window.t === 'function' ? window.t('dex.sv_label') : 'SV')}</div></div>
+                  <div><div style="font-size:12px;font-weight:bold;color:#10b981">${careerStats.era || '-'}</div><div style="font-size:6.5px;color:#9ca3af;margin-top:2px">ERA</div></div>
+                  <div><div style="font-size:12px;font-weight:bold;color:#fb923c">${typeof careerStats.so === 'number' ? careerStats.so.toLocaleString() : (careerStats.so || '-')}</div><div style="font-size:6.5px;color:#9ca3af;margin-top:2px">SO</div></div>
+                  <div><div style="font-size:12px;font-weight:bold;color:#facc15">${careerStats.whip || '-'}</div><div style="font-size:6.5px;color:#9ca3af;margin-top:2px">WHIP</div></div>
+                  <div><div style="font-size:12px;font-weight:bold;color:#2dd4bf">${careerStats.w !== '-' ? `${careerStats.w}-${careerStats.l}` : (careerStats.ip || '-')}</div><div style="font-size:6.5px;color:#9ca3af;margin-top:2px">W-L</div></div>
+                  <div><div style="font-size:12px;font-weight:bold;color:#4ade80">${careerStats.war || '-'}</div><div style="font-size:6.5px;color:#9ca3af;margin-top:2px">WAR</div></div>
+                ` : `
+                  <div><div style="font-size:12px;font-weight:bold;color:#38bdf8">${careerStats.w !== '-' ? `${careerStats.w}-${careerStats.l}` : '-'}</div><div style="font-size:6.5px;color:#9ca3af;margin-top:2px">W-L</div></div>
+                  <div><div style="font-size:12px;font-weight:bold;color:#10b981">${careerStats.era || '-'}</div><div style="font-size:6.5px;color:#9ca3af;margin-top:2px">ERA</div></div>
+                  <div><div style="font-size:12px;font-weight:bold;color:#fb923c">${typeof careerStats.so === 'number' ? careerStats.so.toLocaleString() : (careerStats.so || '-')}</div><div style="font-size:6.5px;color:#9ca3af;margin-top:2px">SO</div></div>
+                  <div><div style="font-size:12px;font-weight:bold;color:#facc15">${careerStats.whip || '-'}</div><div style="font-size:6.5px;color:#9ca3af;margin-top:2px">WHIP</div></div>
+                  <div><div style="font-size:12px;font-weight:bold;color:#2dd4bf">${careerStats.ip || '-'}</div><div style="font-size:6.5px;color:#9ca3af;margin-top:2px">IP</div></div>
+                  <div><div style="font-size:12px;font-weight:bold;color:#4ade80">${careerStats.war || '-'}</div><div style="font-size:6.5px;color:#9ca3af;margin-top:2px">WAR</div></div>
+                `) : `
+                  <div><div style="font-size:12px;font-weight:bold;color:#38bdf8">${typeof careerStats.h === 'number' ? careerStats.h.toLocaleString() : (careerStats.h || '-')}</div><div style="font-size:6.5px;color:#9ca3af;margin-top:2px">H</div></div>
+                  <div><div style="font-size:12px;font-weight:bold;color:#f87171">${typeof careerStats.hr === 'number' ? careerStats.hr.toLocaleString() : (careerStats.hr || '-')}</div><div style="font-size:6.5px;color:#9ca3af;margin-top:2px">HR</div></div>
+                  <div><div style="font-size:12px;font-weight:bold;color:#fbbf24">${typeof careerStats.rbi === 'number' ? careerStats.rbi.toLocaleString() : (careerStats.rbi || '-')}</div><div style="font-size:6.5px;color:#9ca3af;margin-top:2px">RBI</div></div>
+                  <div><div style="font-size:12px;font-weight:bold;color:#34d399">${careerStats.avg || '-'}</div><div style="font-size:6.5px;color:#9ca3af;margin-top:2px">AVG</div></div>
+                  <div><div style="font-size:12px;font-weight:bold;color:#facc15">${careerStats.ops || '-'}</div><div style="font-size:6.5px;color:#9ca3af;margin-top:2px">OPS</div></div>
+                  <div><div style="font-size:12px;font-weight:bold;color:#4ade80">${careerStats.war || '-'}</div><div style="font-size:6.5px;color:#9ca3af;margin-top:2px">WAR</div></div>
+                `}
+              </div>
+              ${(() => {
+                const pills = [];
+                if (careerStats.allstars > 0) pills.push(`<span style="background:rgba(255,255,255,0.08);color:#fff;border:1px solid #4b5563;padding:2px 5px;border-radius:4px;font-size:7px">⭐ ${careerStats.allstars}x All-Star</span>`);
+                if (careerStats.mvp > 0) pills.push(`<span style="background:rgba(234,179,8,0.12);color:#eab308;border:1px solid #eab308;padding:2px 5px;border-radius:4px;font-size:7px">🏆 ${careerStats.mvp}x MVP</span>`);
+                if (careerStats.cy > 0) pills.push(`<span style="background:rgba(56,189,248,0.12);color:#38bdf8;border:1px solid #38bdf8;padding:2px 5px;border-radius:4px;font-size:7px">👑 ${careerStats.cy}x CY</span>`);
+                if (careerStats.gg > 0) pills.push(`<span style="background:rgba(255,215,0,0.12);color:#ffd700;border:1px solid #ffd700;padding:2px 5px;border-radius:4px;font-size:7px">🥊 ${careerStats.gg}x GG</span>`);
+                if (careerStats.ss > 0) pills.push(`<span style="background:rgba(56,189,248,0.12);color:#38bdf8;border:1px solid #38bdf8;padding:2px 5px;border-radius:4px;font-size:7px">🥈 ${careerStats.ss}x SS</span>`);
+                if (careerStats.roy > 0) pills.push(`<span style="background:rgba(167,243,208,0.12);color:#a7f3d0;border:1px solid #a7f3d0;padding:2px 5px;border-radius:4px;font-size:7px">🌱 ROY</span>`);
+                return pills.length > 0
+                  ? `<div style="display:flex;gap:5px;justify-content:center;flex-wrap:wrap;margin-top:8px;padding-top:6px;border-top:1px dashed rgba(255,255,255,0.12)">${pills.join('')}</div>`
+                  : '';
+              })()}
+            </div>
+          `;
+        }
 
         const tradingCardHTML = typeof window.createCardHTML === 'function'
           ? window.createCardHTML(card, isPitcher ? (card.role || 'P') : (card.pos || 'OF'))
           : `<div class="player-card"><div class="card-name">${card.name}</div></div>`;
 
         leftColumnHTML = `
-          <div style="background:rgba(0,0,0,0.5); border:1px solid rgba(255,215,0,0.3); border-radius:12px; padding:18px; text-align:center; min-height:540px; display:flex; flex-direction:column; justify-content:space-between; align-items:center;">
-            
+          <div style="background:rgba(0,0,0,0.5); border:1px solid rgba(255,215,0,0.3); border-radius:12px; padding:16px; text-align:center; min-height:540px; display:flex; flex-direction:column; justify-content:space-between; align-items:center;">
             <div style="width:100%; display:flex; flex-direction:column; align-items:center;">
               <div style="font-family:'Press Start 2P',monospace; font-size:9px; color:#ffd700; margin-bottom:8px;">
                 🎉 ${_t('challenge162.card_pulled', '¡CARTA OBTENIDA!')}
               </div>
 
-              <div class="dex-flip-card-container" id="c162-flip-container" style="perspective:1200px; width:100%; max-width:320px; min-height:360px; margin: 6px auto; cursor:pointer;" title="${_t('challenge162.flip_tooltip', 'Clic para voltear carta')}">
+              <div class="dex-flip-card-container" id="c162-flip-container" style="perspective:1200px; width:100%; max-width:440px; min-height:480px; margin: 0 auto; cursor:pointer;" title="${_t('challenge162.flip_tooltip', 'Clic para voltear carta')}">
                 <div class="dex-flip-card-inner" id="c162-flip-inner">
                   
-                  <div class="dex-card-face dex-card-front" style="border:3px solid ${rColor}; box-shadow: 0 0 35px ${rColor}66; border-radius:12px; padding:16px; background:#0a0f1a; text-align:left;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; border-bottom:1px solid rgba(255,255,255,0.15); padding-bottom:6px;">
-                      <span class="rarity-badge rarity-${rarity.toLowerCase()}" style="font-size:7.5px;">${rarity.toUpperCase()}</span>
-                      <span style="font-family:'Press Start 2P',monospace; font-size:8px; color:#ffd700;">OVR ${cardOVR}</span>
+                  <!-- LADO A: EXACTAMENTE COMO EL BASEBALL-DEX -->
+                  <div class="dex-card-face dex-card-front" style="background:#0a0f1a; border:3px solid ${rColor}; border-radius:12px; padding:20px; box-shadow: 0 0 35px ${rColor}66; text-align:left;">
+                    <div style="margin-bottom:12px; padding-right:10px;">
+                      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                        <span style="font-family:'Press Start 2P',monospace; font-size:9.5px; color:${rColor};">${card.rarity || 'Common'} · ${eraShort}</span>
+                        <span style="font-family:'Press Start 2P',monospace; font-size:7px; color:#38bdf8; background:rgba(56,189,248,0.1); border:1px solid rgba(56,189,248,0.3); padding:2px 5px; border-radius:4px;">🔄 FLIP</span>
+                      </div>
+                      <h2 style="font-family:'Press Start 2P',monospace; font-size:13px; color:#fff; margin:0 0 4px 0; line-height:1.4; display:flex; align-items:center; flex-wrap:wrap; gap:6px;">
+                        <span>${cName}</span>
+                        ${(typeof getPlayerFlagHTML === 'function') ? getPlayerFlagHTML(card) : ''}
+                      </h2>
+                      <div style="font-size:10.5px; color:#9ca3af;">${teamFull} — ${card.year || ''} · <b style="color:#e2e8f0;">${card.role || card.pos || 'DH'}</b></div>
                     </div>
-                    <div style="font-family:'Press Start 2P',monospace; font-size:10px; color:#fff; line-height:1.3; margin:8px 0;">
-                      ${card.name}
+
+                    <div style="text-align:center; margin-bottom:14px;">
+                      <div style="font-family:'Press Start 2P',monospace; font-size:32px; color:${rColor}; text-shadow:0 0 20px ${rColor}88;">${cardOVR}</div>
+                      <div style="font-size:9.5px; color:#6b7280; font-family:'Press Start 2P',monospace;">OVR</div>
                     </div>
-                    <div style="font-size:9.5px; color:#cbd5e1; margin-bottom:8px;">
-                      ${card.team || ''} · ${card.year || ''} · <b style="color:#ffd700;">${isPitcher ? card.role : card.pos}</b>
-                    </div>
-                    ${attributesHTML}
-                    <div style="background:rgba(255,255,255,0.04); border-radius:6px; padding:6px; text-align:center; border:1px dashed rgba(255,255,255,0.15); margin-top:8px;">
+
+                    ${statsHTML}
+
+                    ${badgesHtml ? `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">${badgesHtml}</div>` : ''}
+
+                    ${careerStatsBlockHTML}
+
+                    <div style="background:rgba(255,255,255,0.04); border-radius:6px; padding:7px; text-align:center; border:1px dashed rgba(255,255,255,0.15);">
                       <div style="font-size:9px; color:#00ff66; font-family:'Press Start 2P',monospace;">
                         ✔ ${_t('challenge162.drafted_badge', 'DRAFTEADO AL ROSTER 162-0')}
                       </div>
                     </div>
-                    <div style="margin-top:10px; text-align:center; font-family:'Press Start 2P',monospace; font-size:7px; color:#38bdf8;">
-                      ${_t('challenge162.card_click_flip', '🔄 CLIC PARA VER CARTA')}
-                    </div>
                   </div>
 
-                  <div class="dex-card-face dex-card-back" style="border:3px solid ${rColor}; box-shadow: 0 0 35px ${rColor}66; border-radius:12px; padding:16px; background:#0a0f1a;">
-                    <div style="font-family:'Press Start 2P',monospace; font-size:8.5px; color:#ffd700; margin-bottom:12px; letter-spacing:1px; text-align:center;">
-                      ${_t('challenge162.draft_trading_card', '🎴 CARTA DE DRAFT')}
+                  <!-- LADO B: CARTA FÍSICA TRADING CARD -->
+                  <div class="dex-card-face dex-card-back" style="border:3px solid ${rColor}; box-shadow: 0 0 35px ${rColor}66; border-radius:12px; padding:20px; background:#0a0f1a; display:flex; flex-direction:column; justify-content:center; align-items:center;">
+                    <div style="font-family:'Press Start 2P',monospace; font-size:8.5px; color:#ffd700; margin-bottom:14px; letter-spacing:1px; text-align:center;">
+                      ${_t('challenge162.draft_trading_card', '🎴 DRAFT TRADING CARD')}
                     </div>
-                    <div style="margin:12px 0; display:flex; justify-content:center;">
+                    <div style="margin:10px 0; display:flex; justify-content:center; transform:scale(1.08);">
                       ${tradingCardHTML}
                     </div>
-                    <div style="font-size:9.5px; color:#9ca3af; margin-top:10px; text-align:center; font-family:'Press Start 2P',monospace; line-height:1.4;">
+                    <div style="font-size:9.5px; color:#9ca3af; margin-top:14px; text-align:center; font-family:'Press Start 2P',monospace; line-height:1.4;">
                       ${card.name} · ${card.year || ''}
                     </div>
-                    <div style="margin-top:8px; text-align:center; font-family:'Press Start 2P',monospace; font-size:7px; color:#38bdf8;">
+                    <div style="margin-top:10px; font-family:'Press Start 2P',monospace; font-size:7px; color:#38bdf8;">
                       ${_t('challenge162.card_click_attributes', '🔄 CLIC PARA VER ATRIBUTOS')}
                     </div>
                   </div>
@@ -3988,8 +4096,9 @@
                 </div>
               </div>
 
+              <!-- BOTONES FLIP Y SIGUIENTE SOBRE -->
               <div style="margin-top:14px; width:100%; display:flex; flex-direction:column; gap:8px;">
-                <button id="btn-c162-flip-card" type="button" style="padding:6px 14px; background:linear-gradient(135deg, rgba(56,189,248,0.2), rgba(14,165,233,0.3)); border:1.5px solid #38bdf8; color:#38bdf8; border-radius:6px; font-family:'Press Start 2P',monospace; font-size:7.5px; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; gap:5px;">
+                <button id="btn-c162-flip-card" type="button" style="padding:7px 14px; background:linear-gradient(135deg, rgba(56,189,248,0.2), rgba(14,165,233,0.3)); border:1.5px solid #38bdf8; color:#38bdf8; border-radius:6px; font-family:'Press Start 2P',monospace; font-size:8px; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; gap:5px;">
                   🔄 ${_t('challenge162.flip_card_btn', 'VOLTEAR CARTA')}
                 </button>
                 <button id="btn-c162-next-pack" class="btn" style="width:100%; padding:14px 18px; font-family:'Press Start 2P',monospace; font-size:10px; background:linear-gradient(135deg,#00ff66,#059669); color:#000; border:none; border-radius:8px; cursor:pointer; font-weight:bold; box-shadow:0 0 20px rgba(0,255,102,0.4);">
@@ -4074,7 +4183,7 @@
       const progressPercent = Math.min(100, Math.round((allPulled.length / 25) * 100));
 
       container.innerHTML = `
-        <div style="max-width: 1300px; margin: 0 auto;">
+        <div style="max-width: 1400px; width: 98%; margin: 0 auto;">
           <!-- Top Header -->
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:10px;">
             <div>
@@ -4098,13 +4207,13 @@
           </div>
 
           <!-- Main Grid: Left Stage (Pack/Card) + Right Board (Card Deck) -->
-          <div style="display:grid; grid-template-columns: 430px 1fr; gap:18px; align-items:start;">
+          <div style="display:grid; grid-template-columns: 460px 1fr; gap:16px; align-items:start;">
             
             <!-- Left Column -->
             ${leftColumnHTML}
 
             <!-- Right Column: Visual Card Deck Formation Board -->
-            <div style="background:radial-gradient(circle at 50% 0%, rgba(15,23,42,0.95) 0%, rgba(8,12,22,0.98) 100%); border:1px solid rgba(56,189,248,0.25); border-radius:12px; padding:14px; max-height:82vh; overflow-y:auto;">
+            <div style="background:radial-gradient(circle at 50% 0%, rgba(15,23,42,0.95) 0%, rgba(8,12,22,0.98) 100%); border:1px solid rgba(56,189,248,0.25); border-radius:12px; padding:14px; max-height:84vh; overflow-y:auto; overflow-x:auto;">
               
               <!-- Deck Header -->
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px solid rgba(255,255,255,0.12); padding-bottom:8px; flex-wrap:wrap; gap:8px;">
@@ -4130,10 +4239,10 @@
                     <span>⚡ ${_t('challenge162.lineup_title', 'ALINEACION TITULAR (LINEUP - 9 CARTAS)')}</span>
                     <span>${filledLineupCount}/9</span>
                   </div>
-                  <div style="font-family:'Press Start 2P',monospace; font-size:7px; color:#94a3af; margin-bottom:4px; text-align:center;">— ${_t('challenge162.infield', 'CUADRO / INFIELD')} —</div>
-                  <div class="c162-cards-row">${infieldSlotsHTML}</div>
-                  <div style="font-family:'Press Start 2P',monospace; font-size:7px; color:#94a3af; margin:6px 0 4px 0; text-align:center;">— ${_t('challenge162.outfield_dh', 'JARDINES Y DESIGNADO / OUTFIELD & DH')} —</div>
-                  <div class="c162-cards-row">${outfieldSlotsHTML}</div>
+                  <div style="font-family:'Press Start 2P',monospace; font-size:7px; color:#94a3af; margin-bottom:4px; text-align:center;">— ${_t('challenge162.infield', 'CUADRO / INFIELD (5)')} —</div>
+                  <div class="c162-cards-row c162-row-nowrap">${infieldSlotsHTML}</div>
+                  <div style="font-family:'Press Start 2P',monospace; font-size:7px; color:#94a3af; margin:8px 0 4px 0; text-align:center;">— ${_t('challenge162.outfield_dh', 'JARDINES Y DESIGNADO / OUTFIELD & DH (4)')} —</div>
+                  <div class="c162-cards-row c162-row-nowrap">${outfieldSlotsHTML}</div>
                 </div>
 
                 <!-- Section 2: Bench (5 Cards) -->
@@ -4142,7 +4251,7 @@
                     <span>🛋️ ${_t('challenge162.bench_title', 'RESERVAS DE BANCA (BENCH - 5 CARTAS)')}</span>
                     <span>${filledBenchCount}/5</span>
                   </div>
-                  <div class="c162-cards-row">${benchSlotsHTML}</div>
+                  <div class="c162-cards-row c162-row-nowrap">${benchSlotsHTML}</div>
                 </div>
 
                 <!-- Section 3: Starting Pitchers (5 Cards) -->
@@ -4151,7 +4260,7 @@
                     <span>🧢 ${_t('challenge162.rotation_title_5', 'ROTACION DE ABRIDORES (ROTATION - 5 CARTAS)')}</span>
                     <span>${filledSPCount}/5</span>
                   </div>
-                  <div class="c162-cards-row">${spSlotsHTML}</div>
+                  <div class="c162-cards-row c162-row-nowrap">${spSlotsHTML}</div>
                 </div>
 
                 <!-- Section 4: Bullpen (6 Cards) -->
@@ -4160,7 +4269,7 @@
                     <span>🔥 ${_t('challenge162.bullpen_title_6', 'CUERPO DE RELEVISTAS (BULLPEN - 6 CARTAS)')}</span>
                     <span>${filledRPCount}/6</span>
                   </div>
-                  <div class="c162-cards-row">${rpSlotsHTML}</div>
+                  <div class="c162-cards-row c162-row-nowrap">${rpSlotsHTML}</div>
                 </div>
               </div>
 
