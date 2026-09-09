@@ -926,15 +926,21 @@
         const spdStat = effBatter.spd || 50;
         const spdGrade = getSpeedGrade(spdStat);
 
-        // Continuous linear formula: 10% chance at 60 SPD (+1% per point) up to 50% cap at 100+ SPD
+        // Continuous linear formula: Starts at 60 SPD (5% chance) and scales up to a 30% cap at 100+ SPD
         let upgradeChance = 0;
         if (spdStat >= 60) {
-          upgradeChance = Math.min(0.50, 0.10 + (spdStat - 60) * 0.01);
+          upgradeChance = Math.min(0.30, 0.05 + (spdStat - 60) * 0.00625);
         }
 
         if (upgradeChance > 0 && Math.random() < upgradeChance) {
-          const upgrade = { '1B': '2B', '2B': '3B', '3B': '3B', 'HR': 'HR' };
-          const newType = upgrade[hitType];
+          // 1B -> 2B available for all SPD >= 60; 2B -> 3B only for high speedsters (SPD >= 75) with scaled chance
+          let newType = hitType;
+          if (hitType === '1B') {
+            newType = '2B';
+          } else if (hitType === '2B' && spdStat >= 75 && Math.random() < 0.50) {
+            newType = '3B';
+          }
+
           if (newType !== hitType) {
             const chancePct = Math.round(upgradeChance * 100);
             spdProc = _t('sim.spd_upgrade', { grade: spdGrade, from: hitType, to: newType, pct: chancePct, spd: spdStat }, `⚡ SPD Proc (Grado ${spdGrade} • ${chancePct}%): ¡${hitType} convertido en ${newType}!`);

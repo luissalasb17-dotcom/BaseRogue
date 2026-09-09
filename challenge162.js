@@ -693,53 +693,63 @@
     let pBB = 0.092 + (eye - 50) * 0.00185 - (pBB9 - 50) * 0.0007;
     pBB = Math.max(0.050, Math.min(0.24, pBB));
 
-    // Soft compression for low floor (CON < 35) and high ceiling (CON > 90):
+    // Soft compression for low floor (CON < 35) and high ceiling (CON > 85):
     let conEffective = con;
     if (con < 35) {
-      conEffective = 42 + (con - 35) * 0.35;
-    } else if (con > 90) {
-      conEffective = 90 + (con - 90) * 0.40;
+      conEffective = 40 + (con - 35) * 0.40;
+    } else if (con > 85) {
+      conEffective = 85 + (con - 85) * 0.60;
     }
 
+    // Progressive power scaling: low-power slap hitters (PWR < 45) produce fewer HRs (2-8),
+    // mid-power bats (PWR 50-70) produce 15-28 HRs, and elite sluggers (PWR 85+) reach 35-50+ HRs.
     let pwrEffective = pwr;
-    if (pwr > 75 && pwr <= 90) {
-      pwrEffective = 75 + (pwr - 75) * 0.65;
+    if (pwr < 45) {
+      pwrEffective = 30 + (pwr - 20) * 0.50;
+    } else if (pwr > 75 && pwr <= 90) {
+      pwrEffective = 75 + (pwr - 75) * 0.70;
     } else if (pwr > 90) {
-      pwrEffective = 75 + (15 * 0.65) + (pwr - 90) * 0.40;
+      pwrEffective = 75 + (15 * 0.70) + (pwr - 90) * 0.50;
     }
 
     // SO: Driven directly by dedicated K Avoidance attribute (k_avd / k_avoid) & Pitcher K/9:
-    // Elite strikeout aces (K/9 85-110+ e.g. Sale, Pedro, Ryan, Score) generate authentic 250-295 K in 220-240 IP.
-    // Quality starters (K/9 50-65 e.g. Santana, Root) generate 140-175 K.
-    // Soft-tossers / sinkerballers (K/9 10-35 e.g. Bill Lee, Randy Jones) generate 65-105 K.
+    // Elite strikeout avoiders (K_AVD 80-110+ e.g. Gwynn, Boggs, Brett, Bregman) generate 45-80 K.
+    // Quality contact hitters (K_AVD 55-75) generate 85-120 K.
+    // Free-swinging sluggers (K_AVD 10-35 e.g. Gallo, Canseco, Deer) generate 150-185+ K.
     const rawKAvd = batter.k_avd !== undefined ? batter.k_avd : (batter.k_avoid !== undefined ? batter.k_avoid : (batter.k_avoid_val !== undefined ? batter.k_avoid_val : conEffective));
-    const kAvoid = rawKAvd < 35 ? (42 + (rawKAvd - 35) * 0.35) : (rawKAvd > 90 ? (90 + (rawKAvd - 90) * 0.50) : rawKAvd);
-    const kPitcherBoost = pK9 <= 65 ? (pK9 - 50) * 0.0020 : (15 * 0.0020 + (pK9 - 65) * 0.0032);
-    let pSO = 0.185 - (kAvoid - 50) * 0.00160 + kPitcherBoost;
-    pSO = Math.max(0.040, Math.min(0.38, pSO));
+    let kAvoid = rawKAvd;
+    if (rawKAvd < 35) {
+      kAvoid = 40 + (rawKAvd - 35) * 0.40;
+    } else if (rawKAvd > 80) {
+      kAvoid = 80 + (rawKAvd - 80) * 0.85;
+    }
+
+    const kPitcherBoost = pK9 <= 65 ? (pK9 - 50) * 0.0022 : (15 * 0.0022 + (pK9 - 65) * 0.0035);
+    let pSO = 0.218 - (kAvoid - 50) * 0.00230 + kPitcherBoost;
+    pSO = Math.max(0.040, Math.min(0.42, pSO));
 
     const pInPlay = Math.max(0.20, 1 - pBB - pSO);
 
     // Hits: Target Batting Average scaled across non-walk at-bats (1 - pBB)
-    // Ensures high-walk sluggers (130+ BB e.g. Ruth, Bonds, Williams) keep their authentic .370-.395 AVG:
+    // Ensures high-contact stars (CON 75-95+) reach authentic .295-.345 AVGs:
     const defEfficiency = (pitcher && pitcher._fieldingDef) !== undefined ? pitcher._fieldingDef : 50;
     const defAdj = (defEfficiency - 50) * 0.00028;
 
     let targetAvg, pHR;
     if (isUserBatting) {
-      targetAvg = 0.266 + (conEffective - 50) * 0.00145 - (pH9 - 50) * 0.00065 - defAdj;
-      pHR = 0.028 + (pwrEffective - 50) * 0.00095 - (pHR9 - 50) * 0.00028;
+      targetAvg = 0.266 + (conEffective - 50) * 0.00185 - (pH9 - 50) * 0.00065 - defAdj;
+      pHR = 0.034 + (pwrEffective - 50) * 0.00125 - (pHR9 - 50) * 0.00032;
     } else {
-      // Opponent batting vs User pitching: calibrated to deliver authentic 2.20-3.50 ERAs for quality starters and 1.80-2.80 for elite relievers:
-      targetAvg = 0.248 + (conEffective - 50) * 0.00130 - (pH9 - 50) * 0.00075 - defAdj;
-      pHR = 0.028 + (pwrEffective - 50) * 0.00090 - (pHR9 - 50) * 0.00030;
+      // Opponent batting vs User pitching: calibrated to deliver authentic modern 3.20-4.10 team ERAs and ~1.15-1.25 HR/G:
+      targetAvg = 0.248 + (conEffective - 50) * 0.00160 - (pH9 - 50) * 0.00075 - defAdj;
+      pHR = 0.034 + (pwrEffective - 50) * 0.00115 - (pHR9 - 50) * 0.00035;
     }
 
     targetAvg = Math.max(0.14, Math.min(0.38, targetAvg));
     let pTotalHit = (1 - pBB) * targetAvg;
     pTotalHit = Math.min(pTotalHit, pInPlay - 0.01);
 
-    pHR = Math.max(0.001, Math.min(0.085, pHR));
+    pHR = Math.max(0.002, Math.min(0.095, pHR));
     pHR = Math.min(pHR, pTotalHit * 0.50);
     const pRegularHit = pTotalHit - pHR;
 
@@ -992,12 +1002,26 @@
     return { lineup, bench, sp, rp, batters, pitchers };
   }
 
-  function pickWeightedChallengeDraftCard(pool, missingPos, usedKeys) {
-    const available = pool.filter(p => {
+  const RARITY_TIERS = { 'Common': 1, 'Uncommon': 2, 'Rare': 3, 'Epic': 4, 'Legendary': 5, 'Mythic': 6 };
+
+  function pickWeightedChallengeDraftCard(pool, missingPos, usedKeys, minRarity = null) {
+    let available = pool.filter(p => {
       const k = p.role ? pitcherUnlockKey(p) : batterUnlockKey(p);
       return !usedKeys.has(k);
     });
     if (!available.length) return pool[0];
+
+    // Filter by minimum rarity tier if specified
+    if (minRarity && RARITY_TIERS[minRarity]) {
+      const targetTier = RARITY_TIERS[minRarity];
+      const rarityMatches = available.filter(p => {
+        const rTier = RARITY_TIERS[p.rarity] || 1;
+        return rTier >= targetTier;
+      });
+      if (rarityMatches.length > 0) {
+        available = rarityMatches;
+      }
+    }
 
     const isMissing = (p) => {
       if (!missingPos || missingPos.length === 0) return false;
@@ -1338,101 +1362,89 @@
       this.render();
     },
 
-    // Stamina-driven starting pitcher depth:
-    // Converts pitcher's STA attribute (30-125+) into realistic inning capacity per start.
-    // Starters average 6.8-7.5 IP/start (~225-245 IP/season), leaving authentic ~280 IP for the bullpen.
+    // Stamina-driven starting pitcher base capacity:
+    // Converts pitcher's STA attribute into a baseline target of ~5.2 - 6.2 IP per start.
+    // In-game performance (knockout early or extending for CG / No-Hitter) dynamically shifts this.
     _getStarterMaxInnings(sp) {
       if (!sp) return 6;
       const sta = sp.sta !== undefined ? sp.sta : (sp.sta_val !== undefined ? sp.sta_val : (sp.stamina !== undefined ? sp.stamina : 70));
-      // Base innings: STA 20 -> 6.2, STA 70 -> 7.1, STA 90 -> 7.5, STA 105+ -> 7.8
-      const base = 6.2 + (Math.max(20, Math.min(125, sta)) - 20) * 0.016;
-      const roll = (Math.random() - 0.5) * 1.0;
-      let maxInn = Math.max(6, Math.min(9, Math.round(base + roll)));
-
-      // High stamina complete games for workhorse aces (STA >= 85)
-      if (sta >= 85 && Math.random() < 0.06) maxInn = 9;
-
-      return maxInn;
+      // Base innings target: STA 20 -> 5.1, STA 70 -> 5.8, STA 90 -> 6.1, STA 105+ -> 6.4
+      const base = 5.1 + (Math.max(20, Math.min(125, sta)) - 20) * 0.0125;
+      const roll = (Math.random() - 0.5) * 0.8;
+      return Math.max(5, Math.min(7, Math.round(base + roll)));
     },
 
-    // Bullpen delegation driven by role, situation, and Stamina (STA):
-    // relievers = [middleRelief, setupRelief, closerRelief]
-    _pitcherForInning(inning, sp, relievers, spMaxInnings, gameIdx, userRuns, oppRuns) {
+    // Bullpen delegation driven by role, situation, and inning:
+    // userRelievers = [rp1, rp2, rp3, rp4, setup, closer]
+    _pitcherForInning(inning, sp, relievers, spMaxInnings, gameIdx, userRuns, oppRuns, spRunsAllowed = 0, spHitsAllowed = 0) {
+      // 1. Dynamic Starter Retention:
+      // Dominating / CG / No-Hitter check: if SP reached standard target (e.g. 6-7 inn) but has allowed <= 1 run (or 0 hits),
+      // allow them to continue through the 8th and 9th to pursue a Complete Game / Shutout / No-Hitter (60% chance if 1 R, 100% if 0 R or 0 H).
+      if (inning > spMaxInnings && inning <= 9) {
+        const isNoHitter = (spHitsAllowed === 0);
+        const isShutout = (spRunsAllowed === 0);
+        const isDominating = (spRunsAllowed <= 1 && inning >= 8);
+        if (isNoHitter || isShutout || (isDominating && (gameIdx % 2 === 0))) {
+          return sp;
+        }
+      }
+
+      // If starter is within capacity and hasn't been knocked out, starter pitches:
       if (inning <= spMaxInnings) return sp;
 
-      const closer = relievers[2] || relievers[1] || relievers[0];
-      const setup  = relievers[1] || relievers[0];
-      const middle = relievers[0];
+      // 2. Unpack bullpen hierarchy
+      const closer = relievers.find(r => r && (r.role === 'CL' || r.pos === 'CL')) || relievers[relievers.length - 1];
+      const setup  = relievers.find(r => r && (r.role === 'SETUP' || r.pos === 'SETUP')) || relievers[Math.max(0, relievers.length - 2)];
+      const midRelievers = relievers.filter(r => r && r !== closer && r !== setup);
+      const getMiddleReliever = (offset = 0) => {
+        if (!midRelievers.length) return setup || closer || sp;
+        return midRelievers[(gameIdx + offset) % midRelievers.length];
+      };
 
       const runDiff = userRuns - oppRuns;
       const isSaveSituation = (runDiff >= 1 && runDiff <= 3);
-      const isExtremeBlowout = Math.abs(runDiff) >= 7;
 
-      // Extract reliever stamina attributes:
-      const staMR = middle && (middle.sta !== undefined ? middle.sta : (middle.sta_val !== undefined ? middle.sta_val : (middle.stamina !== undefined ? middle.stamina : 65)));
-      const staSU = setup && (setup.sta !== undefined ? setup.sta : (setup.sta_val !== undefined ? setup.sta_val : (setup.stamina !== undefined ? setup.stamina : 40)));
-      const staCL = closer && (closer.sta !== undefined ? closer.sta : (closer.sta_val !== undefined ? closer.sta_val : (closer.stamina !== undefined ? closer.stamina : 35)));
-
-      // In massive runaway blowouts in 9th (margin >= 8 runs), mop-up bench arm finishes to protect bullpen:
-      if (Math.abs(runDiff) >= 8 && inning >= 9) {
-        return null;
-      }
-      if (inning < 6) {
-        return (staMR >= 60) ? middle : null;
-      }
-
-      // ── 9th inning and Extra Innings (10+) ──────────────────────────────────
-      if (inning >= 9) {
+      // ── 9th inning (Closer strictly 1 IP in save situations) ───────────────
+      if (inning === 9) {
         if (isSaveSituation) {
-          // Closer pitches ~88% of save opportunities; Setup covers ~12% on rest days:
-          if (gameIdx % 8 !== 0 || staCL >= 45) {
+          // Closer pitches save opportunities (or Setup covers on occasional rest)
+          if (gameIdx % 6 !== 0) {
             return closer;
           }
           return setup;
         }
-
-        // Leads of 1 to 5 runs: Closer pitches to stay sharp (~65% of appearances):
-        if (runDiff >= 1 && runDiff <= 5) {
-          if (gameIdx % 3 !== 0) {
-            return closer;
-          }
-          return setup;
-        }
-
-        // Close game (tie, 1-run deficit) in 9th or Extras:
         if (runDiff === 0 || runDiff === -1) {
-          return closer;
+          // Tie game or 1-run deficit in 9th: Setup or Closer
+          return (gameIdx % 3 === 0) ? closer : setup;
         }
+        // Leads of 4+ runs or deficits of 2+ runs: Middle reliever finishes
+        return getMiddleReliever(0);
+      }
 
-        // Heavy blowout lead (6+ runs) or multi-run deficit:
-        // Middle / long reliever finishes the game to preserve Closer & Setup:
-        return middle;
+      // ── Extra Innings (10+) ────────────────────────────────────────────────
+      if (inning >= 10) {
+        // Extra innings bullpen rotation (RP1-RP4 take over to prevent burning the closer)
+        return getMiddleReliever((inning - 10) % midRelievers.length);
       }
 
       // ── 8th Inning (Setup Inning) ───────────────────────────────────────────
       if (inning === 8) {
-        if (!isExtremeBlowout && runDiff >= -2) {
-          // Setup reliever handles 8th inning in leads up to 6 runs and close games (~80% of time):
-          if (gameIdx % 5 !== 0 || staSU >= 45) {
-            return setup;
-          }
-          return middle;
+        if (runDiff >= -2 && runDiff <= 4) {
+          return setup;
         }
-        // Extreme blowouts (7+ runs) or deep deficits in 8th -> Middle relief
-        return middle;
+        return getMiddleReliever(1);
       }
 
-      // ── 6th and 7th Inning (Bridge / Middle Relief) ─────────────────────────
-      if (inning <= 7) {
-        // High stamina middle relievers (STA >= 55, e.g. McDaniel, Gossage, Wilhelm) handle multi-inning bridge work:
-        if (staMR >= 55) {
-          return middle;
-        }
-        // If middle reliever has low stamina, alternate with Setup:
-        return (gameIdx % 2 === 0) ? middle : setup;
+      // ── 6th and 7th Inning (Bridge / Middle Relief: RP1-RP4) ────────────────
+      if (inning === 7) {
+        return getMiddleReliever(0);
+      }
+      if (inning === 6) {
+        return getMiddleReliever(1);
       }
 
-      return (inning >= 10) ? closer : middle;
+      // Early relief (innings 1-5 if starter got pulled early):
+      return getMiddleReliever((inning - 1) % Math.max(1, midRelievers.length));
     },
 
     // The challenge's outcome (W/L) is decided independently of the box score —
@@ -1448,15 +1460,11 @@
       const rpList = S.roster.pitchers.RP;
       const userSP = spList[gameIdx % spList.length];
 
-      // Respect user's explicit roster slot roles:
-      // RP[0] = Designated Closer (CL)
-      // RP[1] = Setup Reliever (SETUP)
-      // RP[2..5] = Middle Relievers (RP1..RP4)
+      // Full bullpen roster passed down so each middle reliever (RP1..RP4), Setup and Closer get used:
       const closer = rpList[0] || rpList[1] || rpList[2];
       const setup  = rpList[1] || rpList[0] || rpList[2];
       const midRelievers = rpList.slice(2).filter(Boolean);
-      const middle = midRelievers.length > 0 ? midRelievers[gameIdx % midRelievers.length] : (rpList[2] || rpList[1] || rpList[0]);
-      const userRelievers = [middle, setup, closer];
+      const userRelievers = [...midRelievers, setup, closer];
 
       const sched = S.schedule[gameIdx];
       const opp = getFranchiseDecadeTeam(sched.code, sched.decade);
@@ -1507,7 +1515,7 @@
       // Pitching Decisions:
       // Starter gets W/L if pitched >= 5 innings (15 outs) or pitched the complete game.
       // Last reliever gets Save if they finished the game in a <=3 run lead and were not the starter.
-      const lastPitcher = this._pitcherForInning(attempt.inning, userSP, userRelievers, attempt.userMaxInnings, gameIdx, attempt.userRuns, attempt.oppRuns) || userSP;
+      const lastPitcher = attempt.lastUserPitcher || userSP;
       const lastKey = pitcherUnlockKey(lastPitcher);
       const spKey = pitcherUnlockKey(userSP);
       const spOuts = attempt.pitcherDeltas[spKey] ? attempt.pitcherDeltas[spKey].outs : 0;
@@ -1545,8 +1553,8 @@
       const pitcherDeltas = {};
       const oppBatterDeltas = {};
 
-      const userMaxInnings = this._getStarterMaxInnings(userSP);
-      const oppMaxInnings = this._getStarterMaxInnings(opp.pitcher);
+      let userMaxInnings = this._getStarterMaxInnings(userSP);
+      let oppMaxInnings = this._getStarterMaxInnings(opp.pitcher);
 
       // User fielding defense efficiency across active fielders (excluding DH)
       const fielders = userLineup.filter(p => (p.assignedSlot || p.pos) !== 'DH');
@@ -1556,6 +1564,7 @@
 
       // Each game, 1 batting slot takes a routine rest day (~1 in 9 games off, yielding ~144 games / 540-580 AB per starter):
       const restedSlotIdx = gameIdx % 9;
+      let lastUserPitcher = userSP;
 
       while (inning <= 9 || (userRuns === oppRuns && inning <= inningLimit)) {
         const oppPitcherToday = inning <= oppMaxInnings ? opp.pitcher : opp.reliever;
@@ -1563,6 +1572,14 @@
 
         const runDiff = userRuns - oppRuns;
         const isBlowout = Math.abs(runDiff) >= 5 && inning >= 8;
+
+        const userSPKey = pitcherUnlockKey(userSP);
+        const spStatsSoFar = pitcherDeltas[userSPKey] || { er: 0, h: 0 };
+
+        // Early pull / Knockout hook: if starter allows 5+ ER in first 4 innings, pull them early
+        if (inning <= 4 && spStatsSoFar.er >= 5 && userMaxInnings > inning) {
+          userMaxInnings = inning - 1;
+        }
 
         userRuns += this._playHalfInning(() => {
           const slot = userIdx % userLineup.length;
@@ -1581,15 +1598,31 @@
           return currentBatter;
         }, oppPitcherToday, true, batterDeltas, pitcherDeltas);
 
-        const assignedPitcher = this._pitcherForInning(inning, userSP, userRelievers, userMaxInnings, gameIdx, userRuns, oppRuns);
+        // Check opponent starter early knockout:
+        if (inning <= 4 && userRuns >= 5 && oppMaxInnings > inning) {
+          oppMaxInnings = inning - 1;
+        }
+
+        const assignedPitcher = this._pitcherForInning(
+          inning,
+          userSP,
+          userRelievers,
+          userMaxInnings,
+          gameIdx,
+          userRuns,
+          oppRuns,
+          spStatsSoFar.er,
+          spStatsSoFar.h
+        );
         const midFallback = userRelievers[0] || userRelievers[1] || userRelievers[2] || userSP;
         const userPitcherToday = assignedPitcher || midFallback;
+        lastUserPitcher = userPitcherToday;
         userPitcherToday._fieldingDef = userTeamDef; // User team defense backs up pitching
         oppRuns += this._playHalfInning(() => opp.lineup[oppIdx++ % opp.lineup.length], userPitcherToday, false, batterDeltas, pitcherDeltas, oppBatterDeltas);
 
         inning++;
       }
-      return { userRuns, oppRuns, inning: inning - 1, userMaxInnings, batterDeltas, pitcherDeltas, oppBatterDeltas };
+      return { userRuns, oppRuns, inning: inning - 1, userMaxInnings, lastUserPitcher, batterDeltas, pitcherDeltas, oppBatterDeltas };
     },
 
     _emptyBatterDelta() { return { ab: 0, h: 0, doubles: 0, triples: 0, hr: 0, rbi: 0, bb: 0, so: 0, r: 0, sb: 0 }; },
@@ -3822,6 +3855,29 @@
       }
     },
 
+    // Guaranteed Pack Rarity Schedule:
+    // Packs 1-2: Epic or better
+    // Packs 3-4: Rare or better
+    // Packs 5-6: Uncommon or better
+    // Packs 7-8: Common or better (Base guarantee)
+    // Packs 9+: Any Rarity
+    _getPackTierInfo(packIndexZeroBased) {
+      const _t = (key, fallback) => (typeof window.t === 'function' ? window.t(key, fallback) : fallback);
+      if (packIndexZeroBased === 0 || packIndexZeroBased === 1) {
+        return { minRarity: 'Epic', badge: _t('challenge162.pack_tier_epic', '✨ EPIC OR BETTER'), color: '#c084fc', border: '#a855f7', glow: 'rgba(168,85,247,0.6)' };
+      }
+      if (packIndexZeroBased === 2 || packIndexZeroBased === 3) {
+        return { minRarity: 'Rare', badge: _t('challenge162.pack_tier_rare', '💎 RARE OR BETTER'), color: '#60a5fa', border: '#3b82f6', glow: 'rgba(59,130,246,0.6)' };
+      }
+      if (packIndexZeroBased === 4 || packIndexZeroBased === 5) {
+        return { minRarity: 'Uncommon', badge: _t('challenge162.pack_tier_uncommon', '🟢 UNCOMMON OR BETTER'), color: '#34d399', border: '#10b981', glow: 'rgba(16,185,129,0.6)' };
+      }
+      if (packIndexZeroBased === 6 || packIndexZeroBased === 7) {
+        return { minRarity: 'Common', badge: _t('challenge162.pack_tier_common', '⚪ COMMON OR BETTER'), color: '#e2e8f0', border: '#94a3b8', glow: 'rgba(148,163,184,0.4)' };
+      }
+      return { minRarity: null, badge: _t('challenge162.pack_tier_any', '🎲 ANY RARITY'), color: '#ffd700', border: '#eab308', glow: 'rgba(234,179,8,0.5)' };
+    },
+
     renderPacksDraft() {
       const container = document.getElementById('challenge162-pack-container');
       if (!container || !this._packDraft) return;
@@ -3873,6 +3929,7 @@
       };
 
       const stageBoxName = isPitchersStage ? _t('challenge162.box_pitchers', 'PITCHERS BOX') : _t('challenge162.box_batters', 'BATTERS BOX');
+      const packTier = this._getPackTierInfo(draft.currentPack);
 
       // ── Left Column Stage: Sealed Foil Pack OR Revealed 3D Card ──────────
       let leftColumnHTML = '';
@@ -3883,27 +3940,33 @@
         leftColumnHTML = `
           <div style="background:rgba(0,0,0,0.5); border:1px solid rgba(255,215,0,0.3); border-radius:12px; padding:20px; text-align:center; min-height:540px; display:flex; flex-direction:column; justify-content:center; align-items:center;">
             <div class="dex-foil-pack-wrapper" id="c162-foil-pack-target" style="cursor:pointer; margin: 10px auto;" title="${_t('challenge162.pack_tap_rip', 'TAP THE PACK TO RIP OPEN!')}">
-              <div class="dex-foil-pack" id="c162-foil-pack-inner" style="background:linear-gradient(135deg, #1e293b 0%, #0f172a 40%, #1e1b4b 70%, #311042 100%); border-color:#ffd700; box-shadow:0 0 35px rgba(255,215,0,0.4);">
-                <div class="dex-foil-crimp" id="c162-pack-crimp-top" style="background:repeating-linear-gradient(90deg, #ffd700, #ffd700 3px, #b45309 3px, #b45309 6px);"></div>
+              <div class="dex-foil-pack" id="c162-foil-pack-inner" style="background:linear-gradient(135deg, #1e293b 0%, #0f172a 40%, #1e1b4b 70%, #311042 100%); border-color:${packTier.border}; box-shadow:0 0 35px ${packTier.glow};">
+                <div class="dex-foil-crimp" id="c162-pack-crimp-top" style="background:repeating-linear-gradient(90deg, ${packTier.border}, ${packTier.border} 3px, #b45309 3px, #b45309 6px);"></div>
 
-                <div style="text-align:center; margin: 26px 0;">
-                  <div style="font-size:42px; filter:drop-shadow(0 0 14px #ffd700); margin-bottom:8px;">📦</div>
+                <div style="text-align:center; margin: 24px 0;">
+                  <div style="font-size:42px; filter:drop-shadow(0 0 14px ${packTier.border}); margin-bottom:8px;">📦</div>
                   <div style="font-family:'Press Start 2P',monospace; font-size:11px; color:#ffd700; text-shadow:0 0 12px rgba(255,215,0,0.8); line-height:1.4;">
                     ${boxLabel}
                   </div>
                   <div style="font-size:9.5px; color:#cbd5e1; margin-top:6px;">
                     ${boxSubtitle}
                   </div>
-                  <div style="display:inline-block; margin-top:14px; padding:5px 12px; background:rgba(0,0,0,0.6); border:1px dashed #ffd700; border-radius:20px; font-family:'Press Start 2P',monospace; font-size:8px; color:#ffd700;">
+                  
+                  <!-- Guaranteed Rarity Badge -->
+                  <div style="margin-top:10px; display:inline-block; padding:4px 10px; background:rgba(0,0,0,0.7); border:1px solid ${packTier.border}; border-radius:14px; font-family:'Press Start 2P',monospace; font-size:7.5px; color:${packTier.color}; box-shadow:0 0 10px ${packTier.glow};">
+                    ${packTier.badge}
+                  </div>
+
+                  <div style="display:inline-block; margin-top:8px; padding:4px 10px; background:rgba(0,0,0,0.6); border:1px dashed #ffd700; border-radius:20px; font-family:'Press Start 2P',monospace; font-size:8px; color:#ffd700;">
                     ${_t('challenge162.pack_num_indicator', `PACK ${packNum} / ${totalInStage}`, { current: packNum, total: totalInStage })}
                   </div>
                 </div>
 
-                <div class="dex-foil-crimp" id="c162-pack-crimp-bottom" style="background:repeating-linear-gradient(90deg, #ffd700, #ffd700 3px, #b45309 3px, #b45309 6px);"></div>
+                <div class="dex-foil-crimp" id="c162-pack-crimp-bottom" style="background:repeating-linear-gradient(90deg, ${packTier.border}, ${packTier.border} 3px, #b45309 3px, #b45309 6px);"></div>
               </div>
             </div>
 
-            <div style="font-family:'Press Start 2P',monospace; font-size:8.5px; color:#ffd700; margin-top:16px; animation:pulse 1.5s infinite;">
+            <div style="font-family:'Press Start 2P',monospace; font-size:8.5px; color:${packTier.color}; margin-top:16px; animation:pulse 1.5s infinite;">
               ${_t('challenge162.pack_rip_prompt', '✨ TAP PACK TO RIP OPEN ✨')}
             </div>
             <div style="margin-top:10px; font-size:9.5px; color:#94a3b8; font-family:'Press Start 2P',monospace; line-height:1.4;">
@@ -4356,7 +4419,8 @@
           }
 
           const activePool = isPitchersStage ? pPool : bPool;
-          let card = pickWeightedChallengeDraftCard(activePool, missingPos, draft.usedKeys);
+          const currentTier = this._getPackTierInfo(draft.currentPack);
+          let card = pickWeightedChallengeDraftCard(activePool, missingPos, draft.usedKeys, currentTier.minRarity);
           if (!card) {
             card = activePool.find(c => {
               const k = c.role ? pitcherUnlockKey(c) : batterUnlockKey(c);

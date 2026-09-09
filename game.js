@@ -3027,9 +3027,23 @@
 
     postMatchDebrief(simResult) {
       // Speed & Hustle T4: line-up recovers +10 stamina upon victory (loss reduced to 10)
-      const expansionCount = Object.values(this.roster).filter(p => p && p.era === 'Expansion (1961-1976)').length;
-      const hasSpeedHustleT4 = (simResult && simResult.winner === 'away') && (this.getEraTier && this.getEraTier('Expansion (1961-1976)', expansionCount) >= 4);
+      const activeSyns = this.calculateActiveSynergies(this.roster);
+      const expansionSyn = activeSyns.find(s => s.era === 'Expansion (1961-1976)' || (window.PlayersDB && s.era === window.PlayersDB.Eras?.EXPANSION));
+      const hasSpeedHustleT4 = (simResult && simResult.winner === 'away') && (expansionSyn && expansionSyn.level >= 4);
       const staminaLoss = (this.hasTrait('endless_stamina') || hasSpeedHustleT4) ? 10 : 20;
+
+      // Sync stamina regenerations gained during combat from the simulated lineup
+      const lineupBySlot = {};
+      const lineupByIdOrName = {};
+      if (simResult && Array.isArray(simResult.awayLineup)) {
+        simResult.awayLineup.forEach(p => {
+          if (!p) return;
+          if (p.slot) lineupBySlot[p.slot] = p;
+          if (p.id) lineupByIdOrName[p.id] = p;
+          if (p.name) lineupByIdOrName[p.name] = p;
+        });
+      }
+
       // Five-Tool Legends T4: batters who triggered the OUT heal this match are spared this loss entirely
       const staminaImmuneIds = simResult && simResult.staminaImmuneIds ? simResult.staminaImmuneIds : new Set();
       const retiredAlerts = [];
@@ -3038,6 +3052,12 @@
       Object.keys(this.roster).forEach(pos => {
         const player = this.roster[pos];
         if (player) {
+          // Take in-game stamina if batter healed during combat
+          const matchBatter = lineupBySlot[pos] || lineupByIdOrName[player.id] || lineupByIdOrName[player.name];
+          let currentStamina = (matchBatter && matchBatter.stamina !== undefined)
+            ? matchBatter.stamina
+            : (player.stamina !== undefined ? player.stamina : 100);
+
           const isStaminaImmune = staminaImmuneIds.has(player.id || player.name) || (player.equipped_item && player.equipped_item.energy_immune);
           let actualLoss = staminaLoss;
           if (player.equipped_item && player.equipped_item.energy_half_loss) {
@@ -3045,8 +3065,8 @@
           }
 
           player.stamina = isStaminaImmune
-            ? Math.max(0, player.stamina !== undefined ? player.stamina : 100)
-            : Math.max(0, (player.stamina !== undefined ? player.stamina : 100) - actualLoss);
+            ? Math.max(0, currentStamina)
+            : Math.max(0, currentStamina - actualLoss);
 
           if (player.stamina <= 0) {
             // Auto-unequip retired player's item to backpack

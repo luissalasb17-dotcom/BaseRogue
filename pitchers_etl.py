@@ -425,7 +425,17 @@ def paso_4_pico_pitching(pitching, war_pitch, people):
     pico_df["sp_dedication"] = (pico_df["GS"] / pico_df["G"].replace(0, np.nan)).fillna(0.0)
     pico_df["is_sp_season"] = (pico_df["sp_dedication"] >= 0.50)
     sp_season_counts = pico_df.groupby("playerID")["is_sp_season"].sum().reset_index(name="sp_seasons_count")
-    mean_dedication = pico_df.groupby("playerID")["sp_dedication"].mean().reset_index(name="mean_sp_dedication")
+
+    # Dedicación en el Pico Ponderada por WAR (o war_ranking que incluye boost de relevo):
+    def _calc_weighted_peak_ded(g):
+        w = g["war_ranking"].fillna(1.0).clip(lower=0.1) if "war_ranking" in g.columns else pd.Series(1.0, index=g.index)
+        return (g["sp_dedication"] * w).sum() / max(0.001, w.sum())
+
+    peak_w_ded = pico_df.groupby("playerID").apply(_calc_weighted_peak_ded).reset_index(name="peak_sp_dedication")
+
+    # Dedicación en Carrera (promedio de toda la trayectoria):
+    pit_yearly["sp_ded_yearly"] = (pit_yearly["GS"] / pit_yearly["G"].replace(0, np.nan)).fillna(0.0)
+    career_ded = pit_yearly.groupby("playerID")["sp_ded_yearly"].mean().reset_index(name="career_sp_dedication")
 
     peak = pico_df.groupby("playerID").agg(
         peak_ip          =("IP_y",               "sum"),
@@ -448,8 +458,14 @@ def paso_4_pico_pitching(pitching, war_pitch, people):
     peak = peak.merge(sp_season_counts, on="playerID", how="left")
     peak["sp_seasons_count"] = peak["sp_seasons_count"].fillna(0).astype(int)
 
-    peak = peak.merge(mean_dedication, on="playerID", how="left")
-    peak["mean_sp_dedication"] = peak["mean_sp_dedication"].fillna(0.0)
+    peak = peak.merge(peak_w_ded, on="playerID", how="left")
+    peak["peak_sp_dedication"] = peak["peak_sp_dedication"].fillna(0.0)
+
+    peak = peak.merge(career_ded, on="playerID", how="left")
+    peak["career_sp_dedication"] = peak["career_sp_dedication"].fillna(0.0)
+
+    # Fórmula Híbrida 80/20 de Dedicación (80% Pico Ponderado por WAR + 20% Carrera Completa):
+    peak["mean_sp_dedication"] = 0.80 * peak["peak_sp_dedication"] + 0.20 * peak["career_sp_dedication"]
 
     total_season_counts = pico_df.groupby("playerID")["yearID"].count().reset_index(name="total_seasons_in_peak")
     peak = peak.merge(total_season_counts, on="playerID", how="left")
@@ -458,7 +474,7 @@ def paso_4_pico_pitching(pitching, war_pitch, people):
     career_war_df = pit_yearly.groupby("playerID")["war_season"].sum().reset_index(name="career_war")
     peak = peak.merge(career_war_df, on="playerID", how="left")
 
-    # Rol por % de Dedicación Promedio en el Pico (>= 50% => SP, sino RP)
+    # Rol por % de Dedicación Híbrida 80/20 (>= 50% => SP, sino RP)
     is_dual_sp = peak["playerID"].isin(["eckerde01_sp", "smoltjo01_sp"])
     is_dual_rp = peak["playerID"].isin(["eckerde01_rp", "smoltjo01_rp"])
     peak["role"] = np.where(
