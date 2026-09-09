@@ -3,6 +3,31 @@
 
   const locales = {
     es: {
+    "mode_select": {
+        "tagline": "BASEBALL ROGUELIKE",
+        "story_title": "MODO HISTORIA",
+        "story_subtitle": "TEMPORADAS 1901 – 2025",
+        "story_desc": "Revive temporadas históricas de la MLB y derrota a equipos reales en tu camino a la Serie Mundial.",
+        "story_btn": "⚾ ELEGIR TEMPORADA",
+        "quick_title": "PARTIDA RÁPIDA",
+        "quick_subtitle": "MODO CLÁSICO",
+        "quick_desc": "La experiencia clásica de BaseRogue: enfréntate a rivales legendarios de distintas eras.",
+        "quick_btn": "🚀 JUGAR MODO CLÁSICO",
+        "dynasty_title": "MODO DINASTÍA",
+        "dynasty_subtitle": "HOBBY BOX Y CONTRATOS",
+        "dynasty_desc": "Abre una caja de 25 paquetes, gestiona contratos multianuales y disputa una temporada de 162 juegos.",
+        "dynasty_btn": "📦 INICIAR DINASTÍA",
+        "career_title": "MODO CARRERA",
+        "career_subtitle": "DE ROOKIE AL SALÓN DE LA FAMA",
+        "career_desc": "Elige un rookie y lleva su carrera temporada a temporada hasta el retiro.",
+        "career_btn": "🏆 EMPEZAR CARRERA",
+        "challenge162_title": "162-0 CHALLENGE",
+        "challenge162_subtitle": "TEMPORADA PERFECTA",
+        "challenge162_locked_desc": "🔒 Modo Bloqueado. Gana tu primera run en Partida Rápida para desbloquear el desafío 162-0.",
+        "challenge162_locked_btn": "🔒 BLOQUEADO (GANA PARTIDA RÁPIDA)",
+        "challenge162_unlocked_desc": "162 juegos seguidos sin perder. Sobrevive a la temporada perfecta.",
+        "challenge162_unlocked_btn": "🔥 JUGAR 162-0 CHALLENGE"
+    },
     "hud": {
         "stage": "Etapa:",
         "budget": "Presupuesto:",
@@ -2223,6 +2248,31 @@
   }
   },
     en: {
+    "mode_select": {
+        "tagline": "BASEBALL ROGUELIKE",
+        "story_title": "STORY MODE",
+        "story_subtitle": "SEASONS 1901 – 2025",
+        "story_desc": "Relive historic MLB seasons and defeat real teams on your journey to the World Series.",
+        "story_btn": "⚾ SELECT SEASON",
+        "quick_title": "QUICK PLAY",
+        "quick_subtitle": "CLASSIC MODE",
+        "quick_desc": "The classic BaseRogue experience, face legendary opponents from different eras.",
+        "quick_btn": "🚀 PLAY CLASSIC MODE",
+        "dynasty_title": "DYNASTY MODE",
+        "dynasty_subtitle": "HOBBY BOX & CONTRACTS",
+        "dynasty_desc": "Open a 25-pack hobby box to draft your team. Manage multi-year contracts, trades, and chase the pennant across a 162-game season.",
+        "dynasty_btn": "📦 START DYNASTY",
+        "career_title": "CAREER MODE",
+        "career_subtitle": "FROM ROOKIE TO COOPERSTOWN",
+        "career_desc": "Pick a rookie and guide their career season by season until retirement.",
+        "career_btn": "🏆 START CAREER",
+        "challenge162_title": "162-0 CHALLENGE",
+        "challenge162_subtitle": "PERFECT SEASON",
+        "challenge162_locked_desc": "🔒 Mode Locked. Win your first Quick Play run to unlock the 162-0 Challenge.",
+        "challenge162_locked_btn": "🔒 LOCKED (WIN QUICK PLAY)",
+        "challenge162_unlocked_desc": "162 straight games without losing. Survive the perfect season.",
+        "challenge162_unlocked_btn": "🔥 PLAY 162-0 CHALLENGE"
+    },
     "hud": {
         "stage": "Stage:",
         "budget": "Budget:",
@@ -4493,6 +4543,9 @@
     }
     if (window.DynastyMode && typeof window.DynastyMode.onLanguageChange === 'function') {
       try { window.DynastyMode.onLanguageChange(); } catch (e) { console.warn(e); }
+    }
+    if (window.Challenge162 && typeof window.Challenge162.updateModeSelectCard === 'function') {
+      try { window.Challenge162.updateModeSelectCard(); } catch (e) { console.warn(e); }
     }
   }
 
