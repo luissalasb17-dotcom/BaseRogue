@@ -702,30 +702,30 @@
     }
 
     // Progressive power scaling: low-power slap hitters (PWR < 45) produce fewer HRs (2-8),
-    // mid-power bats (PWR 50-70) produce 15-28 HRs, and elite sluggers (PWR 85+) reach 35-50+ HRs.
+    // mid-power bats (PWR 50-70) produce 15-28 HRs, and elite sluggers (PWR 85+) reach authentic 36-48 HRs.
     let pwrEffective = pwr;
     if (pwr < 45) {
       pwrEffective = 30 + (pwr - 20) * 0.50;
     } else if (pwr > 75 && pwr <= 90) {
-      pwrEffective = 75 + (pwr - 75) * 0.70;
+      pwrEffective = 75 + (pwr - 75) * 0.55;
     } else if (pwr > 90) {
-      pwrEffective = 75 + (15 * 0.70) + (pwr - 90) * 0.50;
+      pwrEffective = 75 + (15 * 0.55) + (pwr - 90) * 0.35;
     }
 
     // SO: Driven directly by dedicated K Avoidance attribute (k_avd / k_avoid) & Pitcher K/9:
-    // Elite strikeout avoiders (K_AVD 80-110+ e.g. Gwynn, Boggs, Brett, Bregman) generate 45-80 K.
+    // Elite strikeout avoiders (K_AVD 80-110+ e.g. Gwynn, Boggs, Frisch, Daubert) generate 55-85 K.
     // Quality contact hitters (K_AVD 55-75) generate 85-120 K.
     // Free-swinging sluggers (K_AVD 10-35 e.g. Gallo, Canseco, Deer) generate 150-185+ K.
     const rawKAvd = batter.k_avd !== undefined ? batter.k_avd : (batter.k_avoid !== undefined ? batter.k_avoid : (batter.k_avoid_val !== undefined ? batter.k_avoid_val : conEffective));
     let kAvoid = rawKAvd;
     if (rawKAvd < 35) {
       kAvoid = 40 + (rawKAvd - 35) * 0.40;
-    } else if (rawKAvd > 80) {
-      kAvoid = 80 + (rawKAvd - 80) * 0.85;
+    } else if (rawKAvd > 75) {
+      kAvoid = 75 + (rawKAvd - 75) * 1.15;
     }
 
     const kPitcherBoost = pK9 <= 65 ? (pK9 - 50) * 0.0022 : (15 * 0.0022 + (pK9 - 65) * 0.0035);
-    let pSO = 0.218 - (kAvoid - 50) * 0.00230 + kPitcherBoost;
+    let pSO = 0.218 - (kAvoid - 50) * 0.00220 + kPitcherBoost;
     pSO = Math.max(0.040, Math.min(0.42, pSO));
 
     const pInPlay = Math.max(0.20, 1 - pBB - pSO);
@@ -738,19 +738,19 @@
     let targetAvg, pHR;
     if (isUserBatting) {
       targetAvg = 0.266 + (conEffective - 50) * 0.00185 - (pH9 - 50) * 0.00065 - defAdj;
-      pHR = 0.034 + (pwrEffective - 50) * 0.00125 - (pHR9 - 50) * 0.00032;
+      pHR = 0.034 + (pwrEffective - 50) * 0.00095 - (pHR9 - 50) * 0.00032;
     } else {
       // Opponent batting vs User pitching: calibrated to deliver authentic modern 3.20-4.10 team ERAs and ~1.15-1.25 HR/G:
       targetAvg = 0.248 + (conEffective - 50) * 0.00160 - (pH9 - 50) * 0.00075 - defAdj;
-      pHR = 0.034 + (pwrEffective - 50) * 0.00115 - (pHR9 - 50) * 0.00035;
+      pHR = 0.034 + (pwrEffective - 50) * 0.00090 - (pHR9 - 50) * 0.00035;
     }
 
     targetAvg = Math.max(0.14, Math.min(0.38, targetAvg));
     let pTotalHit = (1 - pBB) * targetAvg;
     pTotalHit = Math.min(pTotalHit, pInPlay - 0.01);
 
-    pHR = Math.max(0.002, Math.min(0.095, pHR));
-    pHR = Math.min(pHR, pTotalHit * 0.50);
+    pHR = Math.max(0.002, Math.min(0.080, pHR));
+    pHR = Math.min(pHR, pTotalHit * 0.40);
     const pRegularHit = pTotalHit - pHR;
 
     // 3B Triples Distribution:
@@ -1404,20 +1404,26 @@
       const runDiff = userRuns - oppRuns;
       const isSaveSituation = (runDiff >= 1 && runDiff <= 3);
 
-      // ── 9th inning (Closer strictly 1 IP in save situations) ───────────────
+      // ── 9th inning (Closer finishes in saves, ties, close leads / deficits) ─
       if (inning === 9) {
         if (isSaveSituation) {
-          // Closer pitches save opportunities (or Setup covers on occasional rest)
+          // Closer pitches ~85% of save opportunities; Setup covers rest days
           if (gameIdx % 6 !== 0) {
             return closer;
           }
           return setup;
         }
         if (runDiff === 0 || runDiff === -1) {
-          // Tie game or 1-run deficit in 9th: Setup or Closer
-          return (gameIdx % 3 === 0) ? closer : setup;
+          // Tie game or 1-run deficit in 9th: Closer pitches 50% to hold the line
+          return (gameIdx % 2 === 0) ? closer : setup;
         }
-        // Leads of 4+ runs or deficits of 2+ runs: Middle reliever finishes
+        if (runDiff >= 4) {
+          // Blowout lead (4+ runs): Closer gets work 25% of the time, setup 25%, middle 50%
+          if (gameIdx % 4 === 0) return closer;
+          if (gameIdx % 4 === 1) return setup;
+          return getMiddleReliever(0);
+        }
+        // Deficit of 2+ runs: Middle reliever finishes
         return getMiddleReliever(0);
       }
 
@@ -1429,18 +1435,20 @@
 
       // ── 8th Inning (Setup Inning) ───────────────────────────────────────────
       if (inning === 8) {
-        if (runDiff >= -2 && runDiff <= 4) {
-          return setup;
+        // Setup takes ~65% of close 8th innings; middle relievers absorb the other 35%
+        if (runDiff >= -1 && runDiff <= 4) {
+          if (gameIdx % 3 !== 0) return setup;
+          return getMiddleReliever(1);
         }
         return getMiddleReliever(1);
       }
 
       // ── 6th and 7th Inning (Bridge / Middle Relief: RP1-RP4) ────────────────
       if (inning === 7) {
-        return getMiddleReliever(0);
+        return getMiddleReliever(2);
       }
       if (inning === 6) {
-        return getMiddleReliever(1);
+        return getMiddleReliever(3);
       }
 
       // Early relief (innings 1-5 if starter got pulled early):
