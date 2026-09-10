@@ -744,11 +744,11 @@
       targetAvg = 0.278 + (conEffective - 50) * 0.00180 - (pH9 - 50) * 0.00065 - defAdj;
       pHR = 0.030 + (pwrEffective - 50) * 0.00095 - (pHR9 - 50) * 0.00030;
     } else {
-      // Opponent batting vs User pitching: calibrated to yield authentic modern 2.80-3.80 team ERAs:
-      // Baseline average .232 (authentic MLB league average suppression against starting caliber arms):
-      targetAvg = 0.232 + (conEffective - 50) * 0.00140 - (pH9 - 50) * 0.00085 - defAdj;
-      // Opponent power reduced so user pitching isn't bombarded with 5+ ER:
-      pHR = 0.023 + (pwrEffective - 50) * 0.00075 - (pHR9 - 50) * 0.00038;
+      // Opponent batting vs User pitching: exact golden middle calibration:
+      // Baseline average .244 yields authentic modern 3.25-3.95 team ERAs for good pitchers,
+      // sub-3.00 ERAs only for true legendary aces (Pedro, Johnson, Ryan), and 4.20-4.60 for back-end SPs:
+      targetAvg = 0.244 + (conEffective - 50) * 0.00150 - (pH9 - 50) * 0.00080 - defAdj;
+      pHR = 0.0265 + (pwrEffective - 50) * 0.00082 - (pHR9 - 50) * 0.00035;
     }
 
     targetAvg = Math.max(0.14, Math.min(0.38, targetAvg));
@@ -756,7 +756,7 @@
     pTotalHit = Math.min(pTotalHit, pInPlay - 0.01);
 
     pHR = Math.max(0.002, Math.min(0.082, pHR));
-    pHR = Math.min(pHR, pTotalHit * (isUserBatting ? 0.44 : 0.32));
+    pHR = Math.min(pHR, pTotalHit * (isUserBatting ? 0.44 : 0.36));
     const pRegularHit = pTotalHit - pHR;
 
     // 3B Triples Distribution:
