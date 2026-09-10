@@ -713,36 +713,40 @@
       pwrEffective = 70 + (15 * 0.45) + (pwr - 85) * 0.28;
     }
 
-    // SO: Driven directly by dedicated K Avoidance attribute (k_avd / k_avoid) & Pitcher K/9:
-    // Elite strikeout avoiders (K_AVD 80-110+ e.g. Gwynn, Boggs, Frisch, Daubert) generate 55-85 K.
-    // Quality contact hitters (K_AVD 55-75) generate 85-120 K.
-    // Free-swinging sluggers (K_AVD 10-35 e.g. Gallo, Canseco, Deer) generate 150-185+ K.
+    // SO: Driven directly by dedicated K Avoidance attribute (k_avd / k_avoid), EYE & Pitcher K/9:
+    // Elite strikeout avoiders / high eye hitters (Gwynn, Boggs, Stanky, Frisch) generate 45-80 K.
+    // Quality contact hitters (K_AVD 55-75) generate 80-115 K.
+    // Free-swinging sluggers (K_AVD 10-35 e.g. Clark, Gallo, Canseco) generate 150-185+ K.
     const rawKAvd = batter.k_avd !== undefined ? batter.k_avd : (batter.k_avoid !== undefined ? batter.k_avoid : (batter.k_avoid_val !== undefined ? batter.k_avoid_val : conEffective));
     let kAvoid = rawKAvd;
     if (rawKAvd < 35) {
-      kAvoid = 40 + (rawKAvd - 35) * 0.40;
-    } else if (rawKAvd > 75) {
-      kAvoid = 75 + (rawKAvd - 75) * 1.15;
+      kAvoid = 38 + (rawKAvd - 35) * 0.40;
+    } else if (rawKAvd > 70) {
+      kAvoid = 70 + (rawKAvd - 70) * 1.25;
     }
+    // High eye (patience) also helps avoid SO slightly:
+    const eyeKBonus = eye > 70 ? (eye - 70) * 0.0006 : 0;
 
-    const kPitcherBoost = pK9 <= 65 ? (pK9 - 50) * 0.0022 : (15 * 0.0022 + (pK9 - 65) * 0.0035);
-    let pSO = 0.218 - (kAvoid - 50) * 0.00220 + kPitcherBoost;
-    pSO = Math.max(0.040, Math.min(0.42, pSO));
+    const kPitcherBoost = pK9 <= 65 ? (pK9 - 50) * 0.0018 : (15 * 0.0018 + (pK9 - 65) * 0.0030);
+    // Lower base strikeout rate from 0.218 to 0.178 to avoid inflation on disciplined bats:
+    let pSO = 0.178 - (kAvoid - 50) * 0.00210 - eyeKBonus + kPitcherBoost;
+    pSO = Math.max(0.035, Math.min(0.38, pSO));
 
     const pInPlay = Math.max(0.20, 1 - pBB - pSO);
 
     // Hits: Target Batting Average scaled across non-walk at-bats (1 - pBB)
-    // Ensures high-contact stars (CON 75-95+) reach authentic .295-.345 AVGs:
+    // Ensures high-contact stars reach authentic .305-.345 AVGs, and mid-tier bats stay in .255-.285:
     const defEfficiency = (pitcher && pitcher._fieldingDef) !== undefined ? pitcher._fieldingDef : 50;
     const defAdj = (defEfficiency - 50) * 0.00028;
 
     let targetAvg, pHR;
     if (isUserBatting) {
-      targetAvg = 0.266 + (conEffective - 50) * 0.00185 - (pH9 - 50) * 0.00065 - defAdj;
+      // Base average increased from 0.266 to 0.278 (+12 points of average):
+      targetAvg = 0.278 + (conEffective - 50) * 0.00180 - (pH9 - 50) * 0.00065 - defAdj;
       pHR = 0.026 + (pwrEffective - 50) * 0.00085 - (pHR9 - 50) * 0.00030;
     } else {
-      // Opponent batting vs User pitching: calibrated to deliver authentic modern 3.20-4.10 team ERAs and ~1.15-1.25 HR/G:
-      targetAvg = 0.248 + (conEffective - 50) * 0.00160 - (pH9 - 50) * 0.00075 - defAdj;
+      // Opponent batting vs User pitching: calibrated for authentic modern 3.30-4.10 team ERAs:
+      targetAvg = 0.256 + (conEffective - 50) * 0.00155 - (pH9 - 50) * 0.00075 - defAdj;
       pHR = 0.026 + (pwrEffective - 50) * 0.00080 - (pHR9 - 50) * 0.00032;
     }
 
