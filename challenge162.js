@@ -2344,6 +2344,32 @@
         curEvt = events[stepIdx] || events[0];
       }
 
+      // ── Playoff Audio Effects Integration ──
+      if (this._lastAudioPlayoffStep !== sim.currentStep) {
+        this._lastAudioPlayoffStep = sim.currentStep;
+        if (window.AudioManager && typeof window.AudioManager.play === 'function') {
+          if (isFinished) {
+            if (game.won) {
+              window.AudioManager.play('win');
+            } else {
+              window.AudioManager.play('lose');
+            }
+          } else if (!isPreGame && curEvt && curEvt.outcome) {
+            if (curEvt.outcome === 'HR') {
+              window.AudioManager.play('hr');
+            } else if (curEvt.outcome === 'SO') {
+              window.AudioManager.play('so');
+            } else if (curEvt.outcome === 'BB') {
+              window.AudioManager.play('bb');
+            } else if (['1B', '2B', '3B'].includes(curEvt.outcome)) {
+              window.AudioManager.play('hit');
+            } else if (curEvt.outcome === 'OUT') {
+              window.AudioManager.play('out');
+            }
+          }
+        }
+      }
+
       const innHalf = curEvt.half === 'TOP' ? _t('challenge162.playoff_inning_top', 'Alta') : _t('challenge162.playoff_inning_bot', 'Baja');
       const inningDisplay = isPreGame ? `${innHalf} 1` : `${innHalf} ${curEvt.inning}`;
 
@@ -2413,15 +2439,33 @@
         return parts.length > 1 ? `${parts[0][0]}. ${parts[parts.length - 1]}` : (r.name || '');
       };
 
-      // Base situation banner description
+      // Base situation banner description & High-Leverage Tension Detection
       let situationText = _t('challenge162.playoff_runners_bases_empty', 'Bases Limpias');
-      if (b1 && b2 && b3) situationText = _t('challenge162.playoff_runners_loaded', '¡Bases Llenas!');
-      else if (b1 && b2)  situationText = _t('challenge162.playoff_runners_1b_2b', 'Corredores en 1ra y 2da');
-      else if (b1 && b3)  situationText = _t('challenge162.playoff_runners_1b_3b', 'Corredores en las Esquinas');
-      else if (b2 && b3)  situationText = _t('challenge162.playoff_runners_2b_3b', 'Corredores en 2da y 3ra');
-      else if (b1)        situationText = _t('challenge162.playoff_runners_1b', 'Corredor en 1ra');
-      else if (b2)        situationText = _t('challenge162.playoff_runners_2b', 'Corredor en 2da');
-      else if (b3)        situationText = _t('challenge162.playoff_runners_3b', 'Corredor en 3ra');
+      let isHighLeverage = false;
+
+      if (b1 && b2 && b3) {
+        situationText = _t('challenge162.playoff_runners_loaded', '🔥 ¡BASES LLENAS!');
+        isHighLeverage = true;
+      } else if (b2 && b3) {
+        situationText = _t('challenge162.playoff_runners_2b_3b', '⚡ Corredores en 2da y 3ra (Posición Anotadora)');
+        isHighLeverage = true;
+      } else if (b1 && b3) {
+        situationText = _t('challenge162.playoff_runners_1b_3b', '⚡ Corredores en las Esquinas');
+        isHighLeverage = true;
+      } else if (b1 && b2) {
+        situationText = _t('challenge162.playoff_runners_1b_2b', 'Corredores en 1ra y 2da');
+      } else if (b2) {
+        situationText = _t('challenge162.playoff_runners_2b', 'Corredor en 2da (Posición Anotadora)');
+      } else if (b3) {
+        situationText = _t('challenge162.playoff_runners_3b', '⚡ Corredor en 3ra (Amenaza de Carrera)');
+        isHighLeverage = true;
+      } else if (b1) {
+        situationText = _t('challenge162.playoff_runners_1b', 'Corredor en 1ra');
+      }
+
+      if (!isFinished && curEvt.inning >= 8 && Math.abs(curUserRuns - curOppRuns) <= 2) {
+        isHighLeverage = true;
+      }
 
       const outsCount = isFinished ? 3 : (curEvt.newOuts || 0);
       const ballsCount = isFinished ? 0 : (curEvt.balls || 0);
@@ -2558,7 +2602,7 @@
                     <div class="c162-led-dot ${outsCount >= 2 ? 'out-on' : ''}"></div>
                   </div>
                 </div>
-                <div style="font-size:9.5px;color:#cbd5e1;text-align:center;border-top:1px solid rgba(255,255,255,0.08);padding-top:4px;margin-top:2px;">
+                <div style="font-size:9.5px;color:${isHighLeverage ? '#ffd700' : '#cbd5e1'};text-align:center;border-top:1px solid rgba(255,255,255,0.08);padding-top:4px;margin-top:2px;font-weight:${isHighLeverage ? 'bold' : 'normal'};${isHighLeverage ? 'text-shadow: 0 0 10px rgba(255,215,0,0.8);' : ''}">
                   ${situationText}
                 </div>
               </div>
