@@ -701,15 +701,16 @@
       conEffective = 85 + (con - 85) * 0.60;
     }
 
-    // Progressive power scaling: low-power slap hitters (PWR < 45) produce fewer HRs (2-8),
-    // mid-power bats (PWR 50-70) produce 15-28 HRs, and elite sluggers (PWR 85+) reach authentic 36-48 HRs.
+    // Progressive power scaling: low-power slap hitters (PWR < 45) produce 2-8 HRs,
+    // mid-power bats (PWR 50-70) produce 14-25 HRs, and elite sluggers (PWR 85-95) reach authentic 36-44 HRs.
+    // Historic phenoms (PWR 100+ Ruth/Bonds) reach 48-52 HRs without clustering at 58+.
     let pwrEffective = pwr;
     if (pwr < 45) {
-      pwrEffective = 30 + (pwr - 20) * 0.50;
-    } else if (pwr > 75 && pwr <= 90) {
-      pwrEffective = 75 + (pwr - 75) * 0.55;
-    } else if (pwr > 90) {
-      pwrEffective = 75 + (15 * 0.55) + (pwr - 90) * 0.35;
+      pwrEffective = 30 + (pwr - 20) * 0.45;
+    } else if (pwr > 70 && pwr <= 85) {
+      pwrEffective = 70 + (pwr - 70) * 0.45;
+    } else if (pwr > 85) {
+      pwrEffective = 70 + (15 * 0.45) + (pwr - 85) * 0.28;
     }
 
     // SO: Driven directly by dedicated K Avoidance attribute (k_avd / k_avoid) & Pitcher K/9:
@@ -738,19 +739,19 @@
     let targetAvg, pHR;
     if (isUserBatting) {
       targetAvg = 0.266 + (conEffective - 50) * 0.00185 - (pH9 - 50) * 0.00065 - defAdj;
-      pHR = 0.034 + (pwrEffective - 50) * 0.00095 - (pHR9 - 50) * 0.00032;
+      pHR = 0.026 + (pwrEffective - 50) * 0.00085 - (pHR9 - 50) * 0.00030;
     } else {
       // Opponent batting vs User pitching: calibrated to deliver authentic modern 3.20-4.10 team ERAs and ~1.15-1.25 HR/G:
       targetAvg = 0.248 + (conEffective - 50) * 0.00160 - (pH9 - 50) * 0.00075 - defAdj;
-      pHR = 0.034 + (pwrEffective - 50) * 0.00090 - (pHR9 - 50) * 0.00035;
+      pHR = 0.026 + (pwrEffective - 50) * 0.00080 - (pHR9 - 50) * 0.00032;
     }
 
     targetAvg = Math.max(0.14, Math.min(0.38, targetAvg));
     let pTotalHit = (1 - pBB) * targetAvg;
     pTotalHit = Math.min(pTotalHit, pInPlay - 0.01);
 
-    pHR = Math.max(0.002, Math.min(0.080, pHR));
-    pHR = Math.min(pHR, pTotalHit * 0.40);
+    pHR = Math.max(0.002, Math.min(0.070, pHR));
+    pHR = Math.min(pHR, pTotalHit * 0.35);
     const pRegularHit = pTotalHit - pHR;
 
     // 3B Triples Distribution:
@@ -1363,15 +1364,15 @@
     },
 
     // Stamina-driven starting pitcher base capacity:
-    // Converts pitcher's STA attribute into a baseline target of ~5.2 - 6.2 IP per start.
+    // Converts pitcher's STA attribute into a baseline target of ~6.3 - 7.2 IP per start for quality aces.
     // In-game performance (knockout early or extending for CG / No-Hitter) dynamically shifts this.
     _getStarterMaxInnings(sp) {
       if (!sp) return 6;
       const sta = sp.sta !== undefined ? sp.sta : (sp.sta_val !== undefined ? sp.sta_val : (sp.stamina !== undefined ? sp.stamina : 70));
-      // Base innings target: STA 20 -> 5.1, STA 70 -> 5.8, STA 90 -> 6.1, STA 105+ -> 6.4
-      const base = 5.1 + (Math.max(20, Math.min(125, sta)) - 20) * 0.0125;
-      const roll = (Math.random() - 0.5) * 0.8;
-      return Math.max(5, Math.min(7, Math.round(base + roll)));
+      // Base innings target: STA 20 -> 5.5, STA 70 -> 6.5, STA 90 -> 7.0, STA 105+ -> 7.4
+      const base = 5.5 + (Math.max(20, Math.min(125, sta)) - 20) * 0.0185;
+      const roll = (Math.random() - 0.5) * 0.7;
+      return Math.max(5, Math.min(8, Math.round(base + roll)));
     },
 
     // Bullpen delegation driven by role, situation, and inning:
@@ -1379,12 +1380,12 @@
     _pitcherForInning(inning, sp, relievers, spMaxInnings, gameIdx, userRuns, oppRuns, spRunsAllowed = 0, spHitsAllowed = 0) {
       // 1. Dynamic Starter Retention:
       // Dominating / CG / No-Hitter check: if SP reached standard target (e.g. 6-7 inn) but has allowed <= 1 run (or 0 hits),
-      // allow them to continue through the 8th and 9th to pursue a Complete Game / Shutout / No-Hitter (60% chance if 1 R, 100% if 0 R or 0 H).
+      // allow them to continue through the 8th and 9th to pursue a Complete Game / Shutout / No-Hitter (75% chance if 1 R, 100% if 0 R or 0 H).
       if (inning > spMaxInnings && inning <= 9) {
         const isNoHitter = (spHitsAllowed === 0);
         const isShutout = (spRunsAllowed === 0);
         const isDominating = (spRunsAllowed <= 1 && inning >= 8);
-        if (isNoHitter || isShutout || (isDominating && (gameIdx % 2 === 0))) {
+        if (isNoHitter || isShutout || isDominating) {
           return sp;
         }
       }
@@ -1405,25 +1406,26 @@
       const isSaveSituation = (runDiff >= 1 && runDiff <= 3);
 
       // ── 9th inning (Closer finishes in saves, ties, close leads / deficits) ─
+      // Authentic MLB closer workload: ~60-72 IP across 162 games.
       if (inning === 9) {
         if (isSaveSituation) {
-          // Closer pitches ~85% of save opportunities; Setup covers rest days
-          if (gameIdx % 6 !== 0) {
+          // Closer pitches 95% of save opportunities; Setup covers rare rest days
+          if (gameIdx % 16 !== 0) {
             return closer;
           }
           return setup;
         }
         if (runDiff === 0 || runDiff === -1) {
-          // Tie game or 1-run deficit in 9th: Closer pitches 50% to hold the line
-          return (gameIdx % 2 === 0) ? closer : setup;
+          // Tie game or 1-run deficit in 9th: Closer pitches 75% to hold the line at home/away
+          return (gameIdx % 4 !== 0) ? closer : setup;
         }
-        if (runDiff >= 4) {
-          // Blowout lead (4+ runs): Closer gets work 25% of the time, setup 25%, middle 50%
-          if (gameIdx % 4 === 0) return closer;
-          if (gameIdx % 4 === 1) return setup;
+        if (runDiff >= 4 && runDiff <= 5) {
+          // Comfortable lead (4-5 runs): Closer pitches 40%, setup 30%, middle 30%
+          if (gameIdx % 5 < 2) return closer;
+          if (gameIdx % 5 === 2) return setup;
           return getMiddleReliever(0);
         }
-        // Deficit of 2+ runs: Middle reliever finishes
+        // Blowout lead (6+) or larger deficit: Middle reliever finishes
         return getMiddleReliever(0);
       }
 
