@@ -744,9 +744,11 @@
       targetAvg = 0.278 + (conEffective - 50) * 0.00180 - (pH9 - 50) * 0.00065 - defAdj;
       pHR = 0.030 + (pwrEffective - 50) * 0.00095 - (pHR9 - 50) * 0.00030;
     } else {
-      // Opponent batting vs User pitching: calibrated for authentic modern 3.30-4.10 team ERAs:
-      targetAvg = 0.256 + (conEffective - 50) * 0.00155 - (pH9 - 50) * 0.00075 - defAdj;
-      pHR = 0.030 + (pwrEffective - 50) * 0.00090 - (pHR9 - 50) * 0.00032;
+      // Opponent batting vs User pitching: calibrated to yield authentic modern 2.80-3.80 team ERAs:
+      // Baseline average .232 (authentic MLB league average suppression against starting caliber arms):
+      targetAvg = 0.232 + (conEffective - 50) * 0.00140 - (pH9 - 50) * 0.00085 - defAdj;
+      // Opponent power reduced so user pitching isn't bombarded with 5+ ER:
+      pHR = 0.023 + (pwrEffective - 50) * 0.00075 - (pHR9 - 50) * 0.00038;
     }
 
     targetAvg = Math.max(0.14, Math.min(0.38, targetAvg));
@@ -754,7 +756,7 @@
     pTotalHit = Math.min(pTotalHit, pInPlay - 0.01);
 
     pHR = Math.max(0.002, Math.min(0.082, pHR));
-    pHR = Math.min(pHR, pTotalHit * 0.44);
+    pHR = Math.min(pHR, pTotalHit * (isUserBatting ? 0.44 : 0.32));
     const pRegularHit = pTotalHit - pHR;
 
     // 3B Triples Distribution:
@@ -1589,9 +1591,12 @@
         const userSPKey = pitcherUnlockKey(userSP);
         const spStatsSoFar = pitcherDeltas[userSPKey] || { er: 0, h: 0 };
 
-        // Early pull / Knockout hook: if starter allows 5+ ER in first 4 innings, pull them early
-        if (inning <= 4 && spStatsSoFar.er >= 5 && userMaxInnings > inning) {
-          userMaxInnings = inning - 1;
+        // Early pull / Knockout hook:
+        // If starter allows 4+ ER in first 4 innings, or 5+ ER by 6th inning, hook them early to save ERA:
+        if ((inning <= 4 && spStatsSoFar.er >= 4) || (inning <= 6 && spStatsSoFar.er >= 5)) {
+          if (userMaxInnings >= inning) {
+            userMaxInnings = inning - 1;
+          }
         }
 
         userRuns += this._playHalfInning(() => {
