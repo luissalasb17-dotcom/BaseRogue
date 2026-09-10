@@ -702,15 +702,15 @@
     }
 
     // Progressive power scaling: low-power slap hitters (PWR < 45) produce 2-8 HRs,
-    // mid-power bats (PWR 50-70) produce 14-25 HRs, and elite sluggers (PWR 85-95) reach authentic 36-44 HRs.
-    // Historic phenoms (PWR 100+ Ruth/Bonds) reach 48-52 HRs without clustering at 58+.
+    // mid-power bats (PWR 50-70) produce 15-26 HRs, strong sluggers (PWR 80-90) reach 34-44 HRs,
+    // and elite monster sluggers (PWR 95+ e.g. Judge, Ruth, Bonds, Killebrew) reach authentic 48-56 HRs.
     let pwrEffective = pwr;
     if (pwr < 45) {
       pwrEffective = 30 + (pwr - 20) * 0.45;
     } else if (pwr > 70 && pwr <= 85) {
-      pwrEffective = 70 + (pwr - 70) * 0.45;
+      pwrEffective = 70 + (pwr - 70) * 0.55;
     } else if (pwr > 85) {
-      pwrEffective = 70 + (15 * 0.45) + (pwr - 85) * 0.28;
+      pwrEffective = 70 + (15 * 0.55) + (pwr - 85) * 0.42;
     }
 
     // SO: Driven directly by dedicated K Avoidance attribute (k_avd / k_avoid), EYE & Pitcher K/9:
@@ -741,21 +741,20 @@
 
     let targetAvg, pHR;
     if (isUserBatting) {
-      // Base average increased from 0.266 to 0.278 (+12 points of average):
       targetAvg = 0.278 + (conEffective - 50) * 0.00180 - (pH9 - 50) * 0.00065 - defAdj;
-      pHR = 0.026 + (pwrEffective - 50) * 0.00085 - (pHR9 - 50) * 0.00030;
+      pHR = 0.030 + (pwrEffective - 50) * 0.00095 - (pHR9 - 50) * 0.00030;
     } else {
       // Opponent batting vs User pitching: calibrated for authentic modern 3.30-4.10 team ERAs:
       targetAvg = 0.256 + (conEffective - 50) * 0.00155 - (pH9 - 50) * 0.00075 - defAdj;
-      pHR = 0.026 + (pwrEffective - 50) * 0.00080 - (pHR9 - 50) * 0.00032;
+      pHR = 0.030 + (pwrEffective - 50) * 0.00090 - (pHR9 - 50) * 0.00032;
     }
 
     targetAvg = Math.max(0.14, Math.min(0.38, targetAvg));
     let pTotalHit = (1 - pBB) * targetAvg;
     pTotalHit = Math.min(pTotalHit, pInPlay - 0.01);
 
-    pHR = Math.max(0.002, Math.min(0.070, pHR));
-    pHR = Math.min(pHR, pTotalHit * 0.35);
+    pHR = Math.max(0.002, Math.min(0.082, pHR));
+    pHR = Math.min(pHR, pTotalHit * 0.44);
     const pRegularHit = pTotalHit - pHR;
 
     // 3B Triples Distribution:
