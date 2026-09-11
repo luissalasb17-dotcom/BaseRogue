@@ -1138,14 +1138,14 @@
           }
         }
         // Steal 3rd base on Double if 3B is open
-        if (hitType === 'DOUBLE' && this.bases[1] === batter && !this.bases[2]) {
+        if (hitType === '2B' && this.bases[1] === batter && !this.bases[2]) {
           let steal3BChance = Math.min(0.70, Math.max(0.10, ((effBatter.spd || 50) / 2) / 100));
           let debuffTurns = 2;
           let debuffMult = 1.20;
           let steal3BProcMsg = '';
 
-          if (speedHustleTier >= 1) {
-            steal3BChance += (speedHustleTier * 0.05);
+          if (expansionTier >= 1) {
+            steal3BChance += (expansionTier * 0.05);
             steal3BProcMsg = _t('sim.syn_speed_hustle', {}, 'Sinergia Speed & Hustle');
           }
           if (this.hasTrait('speed_demons') && (effBatter.spd || 0) > 60) {

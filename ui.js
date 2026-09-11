@@ -3538,7 +3538,7 @@ function initGameModeSelector() {
         ratings_pwr: '<strong style="color:#f59e0b;">PWR — Poder:</strong> Probabilidad de conectar extra-bases (dobles, triples, jonrones). También aumenta el daño al pitcher rival en hits largos.',
         ratings_eye: '<strong style="color:#3b82f6;">EYE — Ojo/Vista:</strong> Probabilidad de obtener boletos (BB). Clave para avanzar corredores y desgastar al lanzador rival.',
         ratings_kavd: '<strong style="color:#ec4899;">K/AVD — Evasión de Ponches:</strong> Reduce la zona de ponches (SO) en la tirada del dado. Clave para evitar el daño directo a la salud del equipo que provocan los ponches.',
-        ratings_spd: '<strong style="color:#38bdf8;">SPD — Velocidad:</strong> Activa intentos de robo de base en sencillos (+20% daño al pitcher). Además, desde 60 SPD otorga de 10% a 50% de probabilidad (10% + 1% por punto) de estirar sencillos y dobles a bases extra (1B→2B→3B).',
+        ratings_spd: '<strong style="color:#38bdf8;">SPD — Velocidad:</strong> Activa intentos de robo de base en sencillos (+20% daño al pitcher). Además, desde 60 SPD otorga de 5% a 30% de probabilidad de estirar sencillos y dobles a bases extra (1B→2B→3B).',
         ratings_def: '<strong style="color:#a855f7;">DEF — Defensa:</strong> Contribuye al <strong>Escudo</strong> del equipo. Cuanto mayor DEF promedio, más escudo tienes disponible para absorber OUTs antes de perder HP.',
         ratings_clutch: '<strong style="color:#ef4444;">⚡ CLUTCH PLAYER:</strong> +2% de probabilidad de sencillo y doble, +4% de HR con corredores en posición de anotar o durante la última entrada.',
         ratings_captain: '<strong style="color:#eab308;">👑 CAPTAIN:</strong> +5 a todos los ratings de sus compañeros de equipo mientras esté en el roster activo.'
@@ -3573,7 +3573,7 @@ function initGameModeSelector() {
         ratings_pwr: '<strong style="color:#f59e0b;">PWR — Power:</strong> Chance to hit extra-base hits (doubles, triples, home runs) and deal heavy pitcher damage.',
         ratings_eye: '<strong style="color:#3b82f6;">EYE — Eye/Vision:</strong> Probability of drawing walks (BB). Key for advancing runners and wearing down the rival pitcher.',
         ratings_kavd: '<strong style="color:#ec4899;">K/AVD — Strikeout Avoidance:</strong> Shrinks the strikeout (SO) zone on the dice roll. Essential for preventing direct HP damage caused by strikeouts.',
-        ratings_spd: '<strong style="color:#38bdf8;">SPD — Speed:</strong> Enables base stealing attempts on singles (+20% pitcher damage debuff). Also grants 10% to 50% chance (10% + 1% per point above 60 SPD) to stretch singles and doubles into extra bases (1B→2B→3B).',
+        ratings_spd: '<strong style="color:#38bdf8;">SPD — Speed:</strong> Enables base stealing attempts on singles (+20% pitcher damage debuff). Also grants 5% to 30% chance (scaling above 60 SPD) to stretch singles and doubles into extra bases (1B→2B→3B).',
         ratings_def: '<strong style="color:#a855f7;">DEF — Defense:</strong> Contributes to Team Shield. Higher average DEF grants more shield to absorb OUTs before losing HP.',
         ratings_clutch: '<strong style="color:#ef4444;">⚡ CLUTCH PLAYER:</strong> +2% single and double chance, +4% HR chance with runners in scoring position or during the last inning.',
         ratings_captain: '<strong style="color:#eab308;">👑 CAPTAIN:</strong> +5 to all ratings for all teammates while on the active roster.'
@@ -8534,14 +8534,14 @@ function initGameModeSelector() {
         const safeTitle = tacticSafe.querySelector('.def-tactic-title');
         const safeDesc = tacticSafe.querySelector('.def-tactic-desc');
         if (safeTitle) safeTitle.innerText = _t('sim.def_safe_tactic_title', {}, '🛡️ JUGADA REGULAR');
-        if (safeDesc) safeDesc.innerText = _t('sim.def_safe_tactic_desc', {}, 'Asegurar el guante (Meta estándar • +40 Escudo)');
+        if (safeDesc) safeDesc.innerText = _t('sim.def_safe_tactic_desc', {}, 'Asegurar el guante (Meta estándar • +20 Escudo)');
       }
       if (tacticClutch) {
         tacticClutch.classList.toggle('active', isClutch);
         const clutchTitle = tacticClutch.querySelector('.def-tactic-title');
         const clutchDesc = tacticClutch.querySelector('.def-tactic-desc');
         if (clutchTitle) clutchTitle.innerText = _t('sim.def_clutch_tactic_title', {}, '⚡ JUGADA DE LUJO');
-        if (clutchDesc) clutchDesc.innerText = _t('sim.def_clutch_tactic_desc', {}, 'Tirarse de cabeza (-12% Meta • +80 Escudo)');
+        if (clutchDesc) clutchDesc.innerText = _t('sim.def_clutch_tactic_desc', {}, 'Tirarse de cabeza (-12% Meta • +60 Escudo)');
       }
 
       if (btnRoll) {

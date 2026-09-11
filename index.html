@@ -684,11 +684,11 @@
               </div>
               <div style="display: flex; flex-direction: column; gap: 6px;">
                 <div style="background: rgba(255,255,255,0.04); padding: 5px 7px; border-radius: 6px; border-left: 3px solid #9ca3af;" data-i18n-html="combat_info.out">
-                  <strong style="color: #9ca3af;">✋ OUT (Flyout/Groundout):</strong> Resta <span style="color:#ef4444;font-weight:bold;">-20 HP</span> al Escudo (al romperlo, resta a la vida). En Extra Innings: <span style="color:#ef4444;font-weight:bold;">-30 HP</span>.
+                  <strong style="color: #9ca3af;">✋ OUT (Fly/Ground):</strong> <span style="color:#ef4444;font-weight:bold;">-20 HP</span> al Escudo (el sobrante daña HP). Extras: <span style="color:#ef4444;font-weight:bold;">-30 HP</span>.
                 </div>
                 <div style="background: rgba(255,255,255,0.04); padding: 5px 7px; border-radius: 6px; border-left: 3px solid #ef4444;" data-i18n-html="combat_info.so">
-                  <strong style="color: #ef4444;">💨 PONCHE (SO):</strong> Resta daño directo a la vida (ignora escudo).
-                  <div style="font-size: 8.5px; color: #a855f7; margin-top: 2px;">🔥 Racha: 1º (-20 HP) • 2º (-26 HP) • 3º+ (-32 HP)<br>⚡ Extra Innings: 1º (-30) • 2º (-36) • 3º+ (-42 HP)</div>
+                  <strong style="color: #ef4444;">💨 PONCHE (SO):</strong> Daño directo a HP (ignora escudo).
+                  <div style="font-size: 8.5px; color: #a855f7; margin-top: 2px;">🔥 Racha: 1º (-20) • 2º (-26) • 3º+ (-32 HP)<br>⚡ Extras: 1º (-30) • 2º (-36) • 3º+ (-42 HP)</div>
                 </div>
                 <div style="background: rgba(255,255,255,0.04); padding: 5px 7px; border-radius: 6px; border-left: 3px solid #10b981;">
                   <strong style="color: #10b981;" data-i18n-html="combat_info.pitcher_title">⚾ DAÑO AL LANZADOR RIVAL:</strong>
@@ -698,35 +698,35 @@
                     <span data-i18n-html="combat_info.double">⚡ 2B: <b style="color:#10b981;">35 HP</b></span>
                     <span data-i18n-html="combat_info.triple">🔥 3B: <b style="color:#06b6d4;">50 HP</b></span>
                   </div>
-                  <div style="font-size: 9px; margin-top: 3px; color: #eab308;" data-i18n-html="combat_info.hr">🚀 <strong>HR (Jonrón):</strong> <b style="color:#eab308;">75 HP base</b></div>
+                  <div style="font-size: 9px; margin-top: 3px; color: #eab308;" data-i18n-html="combat_info.hr">🚀 <strong>HR:</strong> <b style="color:#eab308;">75 HP base</b></div>
                   <div style="font-size: 8.5px; color: #f59e0b; margin-top: 4px; border-top: 1px dashed rgba(255,255,255,0.15); padding-top: 3px;" data-i18n-html="combat_info.rbi_bonus">
                     🏆 <strong>Bonus RBI:</strong> Cada carrera impulsada añade <strong style="color:#00ff66;">+10 HP extra</strong> de daño al pitcher.
                   </div>
                 </div>
                 <div style="background: rgba(255,255,255,0.04); padding: 5px 7px; border-radius: 6px; border-left: 3px solid #f59e0b;" data-i18n-html="combat_info.residual">
-                  <strong style="color: #f59e0b;">⚡ DAÑO REMANENTE (50%):</strong>
+                  <strong style="color: #f59e0b;">⚡ REMANENTE (50%):</strong>
                   <div style="font-size: 8.5px; color: #cbd5e1; margin-top: 2px;">
-                    Al noquear a un pitcher, el daño sobrante se transfiere al <strong>50% (÷2)</strong> al relevista que entra al montículo.
+                    Al noquear al pitcher, el daño sobrante pasa al <strong>50% (÷2)</strong> al relevista entrante.
                   </div>
                 </div>
                 <div style="background: rgba(255,255,255,0.04); padding: 5px 7px; border-radius: 6px; border-left: 3px solid #38bdf8;" data-i18n-html="combat_info.defense">
                   <strong style="color: #38bdf8;">🛡️ DUELO DEFENSIVO (Baja de Entrada):</strong>
                   <div style="font-size: 8.5px; color: #cbd5e1; margin-top: 2px;">
-                    🛡️ Regular: <strong style="color:#4ade80;">+20 Escudo</strong> (Fallo: -10 HP)<br>⚡ De Lujo: <strong style="color:#4ade80;">+60 Escudo</strong> (Fallo: -30 HP)<br>💀 En Inning 3 y Extras: ¡Cualquier fallo = Walk-Off rival!
+                    🛡️ Regular: <strong style="color:#4ade80;">+20 Escudo</strong> (Fallo: -10 HP)<br>⚡ De Lujo (-12% Meta): <strong style="color:#4ade80;">+60 Escudo</strong> (Fallo: -30 HP)<br>💀 En Extras (Inning 4+): ¡Fallo = Walk-Off rival!
                   </div>
                 </div>
                 <div style="background: rgba(255,255,255,0.04); padding: 5px 7px; border-radius: 6px; border-left: 3px solid #0284c7;" data-i18n-html="combat_info.steal">
                   <strong style="color: #38bdf8;">🏃 ROBO DE BASES:</strong>
                   <div style="font-size: 8.5px; color: #cbd5e1; margin-top: 2px;">
-                    • <strong>Robo de 2B (en 1B/BB, SPD ≥ 40):</strong> 43% a 85%+ de éxito.<br>
-                    • <strong>Robo de 3B (en 2B, SPD ≥ 50):</strong> 30% a 55%+ de éxito (mayor riesgo).<br>
-                    <em>Robar cualquier base desestabiliza al lanzador (+20% daño en 2 impactos).</em>
+                    • <strong>2B (en 1B/BB, SPD ≥ 40):</strong> Éxito según SPD (40-100%).<br>
+                    • <strong>3B (en 2B, SPD ≥ 50):</strong> Éxito según SPD/2 (25-50%).<br>
+                    <em>Robar aplica debuff al lanzador (+20% daño en 2 impactos).</em>
                   </div>
                 </div>
                 <div style="background: rgba(255,255,255,0.04); padding: 5px 7px; border-radius: 6px; border-left: 3px solid #a855f7;" data-i18n-html="combat_info.upgrade">
                   <strong style="color: #a855f7;">⚡ UPGRADE DE BATAZOS (SPD):</strong>
                   <div style="font-size: 8.5px; color: #cbd5e1; margin-top: 2px;">
-                    Desde <strong>SPD ≥ 60</strong> (10% + 1% por punto hasta 50% max), estira sencillos y dobles a bases extra (1B→2B→3B).
+                    Desde <strong>SPD ≥ 60</strong> (5% a 30% máx): estira 1B→2B (y 2B→3B si SPD ≥ 75).
                   </div>
                 </div>
                 <div style="font-size: 8.5px; color: #9ca3af; text-align: center; border-top: 1px dashed rgba(255,255,255,0.15); padding-top: 4px; margin-top: 2px;" data-i18n-html="combat_info.shield_max">
@@ -1258,11 +1258,11 @@
       <div class="def-tactics-selector" id="def-tactics-selector">
         <div class="def-tactic-card active" id="def-tactic-safe">
           <div class="def-tactic-title" data-i18n="sim.def_safe_tactic_title">🛡️ JUGADA REGULAR</div>
-          <div class="def-tactic-desc" data-i18n="sim.def_safe_tactic_desc">Asegurar el guante (Meta estándar • +40 Escudo)</div>
+          <div class="def-tactic-desc" data-i18n="sim.def_safe_tactic_desc">Asegurar el guante (Meta estándar • +20 Escudo)</div>
         </div>
         <div class="def-tactic-card" id="def-tactic-clutch">
           <div class="def-tactic-title" data-i18n="sim.def_clutch_tactic_title">⚡ JUGADA DE LUJO</div>
-          <div class="def-tactic-desc" data-i18n="sim.def_clutch_tactic_desc">Tirarse de cabeza (-12% Meta • +80 Escudo)</div>
+          <div class="def-tactic-desc" data-i18n="sim.def_clutch_tactic_desc">Tirarse de cabeza (-12% Meta • +60 Escudo)</div>
         </div>
       </div>
 
