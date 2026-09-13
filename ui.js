@@ -7845,12 +7845,17 @@ function initGameModeSelector() {
         boxShadow = "0 0 45px rgba(234, 179, 8, 0.7), 0 0 20px rgba(234, 179, 8, 0.5)";
         break;
       case 'STEAL':
-        title = typeof t === 'function' ? t('popup.steal_title', { defaultValue: '¡ROBO DE BASE! 🏃⚡' }) : '¡ROBO DE BASE! 🏃⚡';
-        color = "#38bdf8";
-        icon = "fa-person-running";
-        dmgText = `⚡ ${typeof t === 'function' ? t('popup.steal_dmg', { defaultValue: 'PITCHER DEBUFF: +20% DAÑO RECIBIDO' }) : 'PITCHER DEBUFF: +20% DAÑO RECIBIDO'}`;
-        borderColor = "#38bdf8";
-        boxShadow = "0 0 35px rgba(56, 189, 248, 0.7)";
+        {
+          const is3BSteal = (details && (details.includes('3B') || /tercera|third/i.test(details))) || (ev && ev.playText && /tercera|third|3B/i.test(ev.playText));
+          title = typeof t === 'function' 
+            ? (is3BSteal ? t('sim.steal_3b_label', { defaultValue: '¡ROBO DE TERCERA BASE! 🏃⚡' }) : t('popup.steal_title', { defaultValue: '¡ROBO DE BASE! 🏃⚡' }))
+            : (is3BSteal ? '¡ROBO DE TERCERA BASE! 🏃⚡' : '¡ROBO DE BASE! 🏃⚡');
+          color = "#38bdf8";
+          icon = "fa-person-running";
+          dmgText = `⚡ ${typeof t === 'function' ? t('popup.steal_dmg', { defaultValue: 'PITCHER DEBUFF: +20% DAÑO RECIBIDO' }) : 'PITCHER DEBUFF: +20% DAÑO RECIBIDO'}`;
+          borderColor = "#38bdf8";
+          boxShadow = "0 0 35px rgba(56, 189, 248, 0.7)";
+        }
         break;
       case 'E':
         title = typeof t === 'function' ? t('popup.error_title', { defaultValue: '¡ERROR RIVAL (E)!' }) : '¡ERROR RIVAL (E)!';
@@ -7878,7 +7883,7 @@ function initGameModeSelector() {
         break;
     }
 
-    if (ev && ev.spdUpgraded) {
+    if (ev && ev.spdUpgraded && eventType !== 'STEAL') {
       const isEs = (typeof window.t === 'function' && window.t('hud.stage') !== 'Stage:');
       const probStr = ev.spdUpgraded.chancePct ? ` (${ev.spdUpgraded.chancePct}% prob)` : '';
       title = isEs
@@ -7895,7 +7900,7 @@ function initGameModeSelector() {
 
     // ── Audio: play sound for this outcome ───────────────────────────────────
     if (window.AudioManager) {
-      if (ev && ev.spdUpgraded) {
+      if (ev && ev.spdUpgraded && eventType !== 'STEAL') {
         window.AudioManager.play('speed_proc');
       } else {
         switch (eventType) {
@@ -7917,7 +7922,9 @@ function initGameModeSelector() {
 
     // Visual diamond feedback on stolen base or speed extra-base
     if (eventType === 'STEAL' || (ev && ev.spdUpgraded)) {
-      const targetBaseId = (ev && ev.spdUpgraded && ev.spdUpgraded.to === '3B') ? 'base-3' : 'base-2';
+      const is3B = (eventType === 'STEAL' && ((details && (details.includes('3B') || /tercera|third/i.test(details))) || (ev && ev.playText && /tercera|third|3B/i.test(ev.playText))))
+        || (ev && ev.spdUpgraded && ev.spdUpgraded.to === '3B');
+      const targetBaseId = is3B ? 'base-3' : 'base-2';
       const targetBaseEl = document.getElementById(targetBaseId);
       if (targetBaseEl) triggerBarShake(targetBaseEl, 'base-synergy-flash');
     }
@@ -8191,12 +8198,12 @@ function initGameModeSelector() {
             return; // defer to end
           }
 
-          const hasSteal = Boolean(ev.didSteal || (rawText && (rawText.includes('🏃') || /ROBO DE BASE|STOLEN BASE/i.test(rawText))));
+          const hasSteal = Boolean(ev.didSteal || (rawText && (rawText.includes('🏃') || /ROBO DE (?:TERCERA )?BASE|STOLEN (?:BASE|THIRD BASE)/i.test(rawText))));
           let batterText = rawText;
           let stealText = '';
 
           if (hasSteal) {
-            const stealIdx = rawText.search(/🏃\s*(?:¡?ROBO DE BASE!?|STOLEN BASE!?)/i);
+            const stealIdx = rawText.search(/🏃\s*(?:¡?ROBO DE (?:TERCERA )?BASE!?|STOLEN (?:BASE|THIRD BASE)!?)/i);
             if (stealIdx !== -1) {
               batterText = rawText.slice(0, stealIdx).trim();
               stealText = rawText.slice(stealIdx).trim();
@@ -8205,7 +8212,7 @@ function initGameModeSelector() {
               batterText = parts[0].trim();
               stealText = '🏃 ' + parts[1].trim();
             } else {
-              stealText = `🏃 ${typeof window.t === 'function' ? window.t('sim.steal_label', '¡ROBO DE BASE!') : '¡ROBO DE BASE!'} ${ev.activeBatter || ''} ${typeof window.t === 'function' ? window.t('sim.steal_desc', 'se roba la segunda base') : 'se roba la segunda base'}.`;
+              stealText = `🏃 ${typeof window.t === 'function' ? window.t('sim.steal_label', '¡ROBO DE BASE!') : '¡ROBO DE BASE!'} ${ev.activeBatter || ''} ${typeof window.t === 'function' ? window.t('sim.steal_desc', 'se roba la base') : 'se roba la base'}.`;
             }
           }
 
