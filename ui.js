@@ -8088,11 +8088,11 @@ function initGameModeSelector() {
 
     let displayTime = durationOverride;
     if (!displayTime) {
-      if (ev && ev.spdUpgraded) displayTime = 950;
-      else if (eventType === 'HR') displayTime = 900;
-      else if (eventType === 'KO') displayTime = 800;
-      else if (eventType === 'STEAL') displayTime = 700;
-      else displayTime = 750;
+      if (ev && ev.spdUpgraded) displayTime = 1300;
+      else if (eventType === 'HR') displayTime = 1200;
+      else if (eventType === 'KO') displayTime = 1100;
+      else if (eventType === 'STEAL') displayTime = 850;
+      else displayTime = 900;
     }
 
     setTimeout(() => {
@@ -8172,14 +8172,14 @@ function initGameModeSelector() {
         const hasKO = events.some(ev => ev.playType === 'KO_PITCHER' || ev.eventType === 'KO');
         
         const getPopupDuration = (type, e) => {
-          if (e && e.spdUpgraded) return 950;
-          if (type === 'HR') return 900;
-          if (type === 'KO' || type === 'KO_PITCHER') return 800;
-          if (type === 'STEAL') return 700;
-          return 750;
+          if (e && e.spdUpgraded) return 1300;
+          if (type === 'HR') return 1200;
+          if (type === 'KO' || type === 'KO_PITCHER') return 1100;
+          if (type === 'STEAL') return 850;
+          return 900;
         };
 
-        const POPUP_GAP = 90; // ms gap between consecutive popups
+        const POPUP_GAP = 140; // ms gap between consecutive popups
         let cursor = 0;
 
         // Phase 1: build popup schedule in correct visual order.
@@ -8282,7 +8282,7 @@ function initGameModeSelector() {
         renderZones();
 
         if (activeBattle && activeBattle.battleOver) {
-          const delay = Math.max(500, cursor + (hasKO ? 800 : 0)); // snappy wait for popups/KO to finish first
+          const delay = Math.max(300, cursor + (hasKO ? 800 : 0)); // executes cleanly right after play/KO popups finish
           setTimeout(() => {
             if (activeBattle && activeBattle.battleOver) {
               handleBattleOver();
