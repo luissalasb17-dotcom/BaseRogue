@@ -3949,22 +3949,25 @@ function initGameModeSelector() {
       });
     }
 
-    // veteran_rotation: +30% Stamina to the whole roster when entering a new zone/map
-    if (window.Game.hasTrait('veteran_rotation')) {
-      const prevZone = window.Game.getZoneForStage(window.Game.currentStageIndex);
-      const nextZone = window.Game.getZoneForStage(window.Game.currentStageIndex + 1);
-      if (nextZone !== prevZone) {
-        Object.values(window.Game.roster).forEach(p => {
-          if (p) p.stamina = Math.min(100, (p.stamina || 100) + 30);
-        });
-      }
+    // Zone transition check: restore 20 stamina to all players when changing maps / entering a new zone
+    const prevZone = window.Game.getZoneForStage(window.Game.currentStageIndex);
+    const nextZone = window.Game.getZoneForStage(window.Game.currentStageIndex + 1);
+    if (nextZone !== prevZone && nextZone <= 3) {
+      const baseStaminaBonus = 20;
+      // veteran_rotation: additional +30 Stamina (+50 total)
+      const veteranBonus = window.Game.hasTrait('veteran_rotation') ? 30 : 0;
+      const totalStaminaHeal = baseStaminaBonus + veteranBonus;
+
+      Object.values(window.Game.roster).forEach(p => {
+        if (p) p.stamina = Math.min(100, (p.stamina || 100) + totalStaminaHeal);
+      });
     }
 
     // Advance current stage
     window.Game.currentStageIndex++;
 
-    // Check if run won (exceeded stage 23)
-    if (window.Game.currentStageIndex > 23) {
+    // Check if run won (exceeded stage 27)
+    if (window.Game.currentStageIndex > 27) {
       triggerGameOver(true, (typeof window.t==='function'?window.t('game.champion_eternal'):'¡CAMPEÓN DE LA ETERNIDAD! Conquistaste la Serie Mundial y ganaste los Playoffs.'));
       return;
     }
@@ -4719,10 +4722,10 @@ function initGameModeSelector() {
     
     // Render zones in ascending order from bottom to top (Playoffs at top, Opening Day at bottom)
     const ZONE_STAGE_RANGES = [
-      { range: [18, 23], zoneIdx: 3 },
-      { range: [12, 17], zoneIdx: 2 },
-      { range: [6, 11],  zoneIdx: 1 },
-      { range: [0, 5],   zoneIdx: 0 }
+      { range: [21, 27], zoneIdx: 3 },
+      { range: [14, 20], zoneIdx: 2 },
+      { range: [7, 13],  zoneIdx: 1 },
+      { range: [0, 6],   zoneIdx: 0 }
     ];
 
     // Layout constants (SVG coordinate space). The SVG scales via viewBox to
@@ -4937,7 +4940,7 @@ function initGameModeSelector() {
       // ── DRAW NODES (on top of paths) ────────────────────────────────
       for (let s = zStart; s <= zEnd; s++) {
         const stageNodes = window.Game.map[s] || [];
-        const isBossStage = (s === 5 || s === 11 || s === 17 || s === 23);
+        const isBossStage = (s === 6 || s === 13 || s === 20 || s === 27);
 
         stageNodes.forEach((node, idx) => {
           const pos = nodePos[s]?.[idx];

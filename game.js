@@ -1751,11 +1751,11 @@
         const isTradeFloor   = (s === TRADE_DEADLINE_STAGE);
 
         // Node counts:
-        // Boss Floor (Floor 7): 1 node
-        // Opening Floor (Floor 1): 2 nodes (Matches)
-        // Preparation Floor (Floor 6): 2 or 3 nodes
-        // Other Floors: 3 nodes
-        let nodeCount = isBossStage ? 1 : (isFirstInZone ? 2 : 3);
+        // Boss Floor (Floor 7 / localIdx 6): 1 node
+        // Opening Floor (Floor 1 / localIdx 0): 2 nodes (Matches)
+        // Mid-Boss Floor (Floor 5 / localIdx 4): 5 nodes (4 Matches + 1 Mid-Boss in center)
+        // Other Floors (Floors 2, 3, 4, 6): 3 nodes
+        let nodeCount = isBossStage ? 1 : (isFirstInZone ? 2 : (localIdx === 4 ? 5 : 3));
 
         for (let idx = 0; idx < nodeCount; idx++) {
           let type = 'match';
@@ -1781,14 +1781,13 @@
               type = options[(idx + s) % options.length];
             }
           } else if (localIdx === 4) {
-            // Floor 5: Regular Match OR Mid-Boss Elite!
-            // Node 0: Regular Match, Node 1: Mid-Boss, Node 2: Regular Match (or High-Risk Gamble/Event)
-            if (idx === 1) {
+            // Floor 5: 5 paths across the map with the Mid-Boss in the center!
+            // Indices 0, 1, 3, 4 = Regular Series (Match)
+            // Index 2 = Mid-Boss
+            if (idx === 2) {
               type = 'mid_boss';
-            } else if (idx === 0) {
-              type = 'match';
             } else {
-              type = Math.random() < 0.5 ? 'match' : 'event';
+              type = 'match';
             }
           } else if (localIdx === 5) {
             // Floor 6 (Pre-Boss Preparation): Clubhouse (Rest), Shop/Chest, Batting Cage (Train)
@@ -1868,6 +1867,26 @@
           if (currentNodes[0]) currentNodes[0].connections = [0];
           if (currentNodes[1]) currentNodes[1].connections = [0, 1];
           if (currentNodes[2]) currentNodes[2].connections = [1];
+        } else if (N === 3 && M === 5) {
+          // Floor 4 (3 nodes) -> Floor 5 (5 nodes):
+          // Left path -> [0, 1, 2] (can choose Left matches or Center Mid-Boss)
+          // Center path -> [1, 2, 3] (can choose Inner matches or Center Mid-Boss)
+          // Right path -> [2, 3, 4] (can choose Right matches or Center Mid-Boss)
+          if (currentNodes[0]) currentNodes[0].connections = [0, 1, 2];
+          if (currentNodes[1]) currentNodes[1].connections = [1, 2, 3];
+          if (currentNodes[2]) currentNodes[2].connections = [2, 3, 4];
+        } else if (N === 5 && M === 3) {
+          // Floor 5 (5 nodes) -> Floor 6 (3 nodes prep):
+          // Far Left -> Left prep
+          // Mid Left -> Left & Center prep
+          // Center (Mid-Boss) -> Any prep [0, 1, 2]
+          // Mid Right -> Center & Right prep
+          // Far Right -> Right prep
+          if (currentNodes[0]) currentNodes[0].connections = [0];
+          if (currentNodes[1]) currentNodes[1].connections = [0, 1];
+          if (currentNodes[2]) currentNodes[2].connections = [0, 1, 2];
+          if (currentNodes[3]) currentNodes[3].connections = [1, 2];
+          if (currentNodes[4]) currentNodes[4].connections = [2];
         } else {
           currentNodes.forEach((node, i) => {
             const targets = [];
