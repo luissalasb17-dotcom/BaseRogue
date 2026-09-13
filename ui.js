@@ -3980,9 +3980,10 @@ function initGameModeSelector() {
 
   // UPDATE HEAD-UP DISPLAY
   function updateHUD() {
-    const zone = window.Game.getZoneForStage(window.Game.currentStageIndex);
-    const zoneNames = [t('map.zone_minor', 'Minor Leagues'), t('map.zone_major', 'Major League'), t('map.zone_pennant', 'Pennant Race'), t('map.zone_hof', 'Hall of Fame')];
-    el.hudStage.innerText = `${window.Game.currentStageIndex + 1}/28 — ${zoneNames[zone] || ''}`;
+    const zoneIdx = window.Game.getZoneForStage(window.Game.currentStageIndex);
+    const zoneConfig = window.Game.getZoneConfig(zoneIdx);
+    const zoneDisplayName = zoneConfig.nameKey ? t(zoneConfig.nameKey, zoneConfig.name) : zoneConfig.name;
+    el.hudStage.innerText = `${window.Game.currentStageIndex + 1}/28 — ${zoneDisplayName || ''}`;
     if (el.hudBudget) el.hudBudget.innerText = `$${window.Game.budget}`;
     const sideBud = document.getElementById('sidebar-budget-val');
     if (sideBud) sideBud.innerText = `$${window.Game.budget}`;
@@ -4785,13 +4786,14 @@ function initGameModeSelector() {
         ? `<div class="zone-division-banner">${divIcon} ${zoneDivision.label.toUpperCase()} — ${window.Game.selectedSeasonYear}</div>`
         : '';
 
+      const zoneHeaderName = zoneConfig.nameKey ? t(zoneConfig.nameKey, zoneConfig.name) : zoneConfig.name;
       const zoneHeader = document.createElement('div');
       zoneHeader.className = 'zone-header';
       zoneHeader.innerHTML = `
         <div class="zone-header-left">
           <span class="zone-icon">${zoneConfig.bossIcon}</span>
           <div>
-            <div class="zone-name">${zoneConfig.name}</div>
+            <div class="zone-name">${zoneHeaderName}</div>
             <div class="zone-subtitle">${subText}</div>
             ${divisionBannerHTML}
           </div>
