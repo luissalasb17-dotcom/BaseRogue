@@ -1753,9 +1753,8 @@
         // Node counts:
         // Boss Floor (Floor 7 / localIdx 6): 1 node
         // Opening Floor (Floor 1 / localIdx 0): 2 nodes (Matches)
-        // Mid-Boss Floor (Floor 5 / localIdx 4): 5 nodes (4 Matches + 1 Mid-Boss in center)
-        // Other Floors (Floors 2, 3, 4, 6): 3 nodes
-        let nodeCount = isBossStage ? 1 : (isFirstInZone ? 2 : (localIdx === 4 ? 5 : 3));
+        // Other Floors (Floors 2, 3, 4, 5, 6): 3 nodes
+        let nodeCount = isBossStage ? 1 : (isFirstInZone ? 2 : 3);
 
         for (let idx = 0; idx < nodeCount; idx++) {
           let type = 'match';
@@ -1787,10 +1786,11 @@
               else type = roll < 0.4 ? 'event' : (roll < 0.7 ? 'draft' : 'train');
             }
           } else if (localIdx === 4) {
-            // Floor 5: 5 paths across the map with the Mid-Boss in the center!
-            // Indices 0, 1, 3, 4 = Regular Series (Match)
-            // Index 2 = Mid-Boss
-            if (idx === 2) {
+            // Floor 5: 3 paths across the map with the Mid-Boss in the center!
+            // Node 0: Classic Series (Match)
+            // Node 1: Mid-Boss
+            // Node 2: Classic Series (Match)
+            if (idx === 1) {
               type = 'mid_boss';
             } else {
               type = 'match';
@@ -1876,26 +1876,6 @@
           if (currentNodes[0]) currentNodes[0].connections = [0];
           if (currentNodes[1]) currentNodes[1].connections = [0, 1];
           if (currentNodes[2]) currentNodes[2].connections = [1];
-        } else if (N === 3 && M === 5) {
-          // Floor 4 (3 nodes) -> Floor 5 (5 nodes):
-          // Left path -> [0, 1, 2] (can choose Left matches or Center Mid-Boss)
-          // Center path -> [1, 2, 3] (can choose Inner matches or Center Mid-Boss)
-          // Right path -> [2, 3, 4] (can choose Right matches or Center Mid-Boss)
-          if (currentNodes[0]) currentNodes[0].connections = [0, 1, 2];
-          if (currentNodes[1]) currentNodes[1].connections = [1, 2, 3];
-          if (currentNodes[2]) currentNodes[2].connections = [2, 3, 4];
-        } else if (N === 5 && M === 3) {
-          // Floor 5 (5 nodes) -> Floor 6 (3 nodes prep):
-          // Far Left -> Left prep
-          // Mid Left -> Left & Center prep
-          // Center (Mid-Boss) -> Any prep [0, 1, 2]
-          // Mid Right -> Center & Right prep
-          // Far Right -> Right prep
-          if (currentNodes[0]) currentNodes[0].connections = [0];
-          if (currentNodes[1]) currentNodes[1].connections = [0, 1];
-          if (currentNodes[2]) currentNodes[2].connections = [0, 1, 2];
-          if (currentNodes[3]) currentNodes[3].connections = [1, 2];
-          if (currentNodes[4]) currentNodes[4].connections = [2];
         } else {
           currentNodes.forEach((node, i) => {
             const targets = [];
