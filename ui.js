@@ -7658,9 +7658,9 @@ function initGameModeSelector() {
       <div class="arcade-banner-sub">${defeatedPitcherName ? `${defeatedPitcherName} — ` : ''}${t('match.banner_ko_sub', '¡LANZADOR DERROTADO!')}</div>
     `;
     deck.appendChild(koBanner);
-    setTimeout(() => koBanner.remove(), 1550);
+    setTimeout(() => koBanner.remove(), 1100);
 
-    // 5. If a relief pitcher is entering, showcase the KO stamp for 1.5s then trigger bullpen transition
+    // 5. If a relief pitcher is entering, showcase the KO stamp for 1.1s then trigger bullpen transition
     if (nextPitcher) {
       setTimeout(() => {
         // Animate defeated card and stamp exiting
@@ -7689,15 +7689,15 @@ function initGameModeSelector() {
           <div class="arcade-banner-sub">${t('match.banner_bullpen_sub', { name: nextName, ovr: nextOvr })}</div>
         `;
         deck.appendChild(bullpenBanner);
-        setTimeout(() => bullpenBanner.remove(), 1450);
+        setTimeout(() => bullpenBanner.remove(), 1100);
 
         // Slide in the NEW relief pitcher card smoothly
         setTimeout(() => {
           if (activeBattle && !activeBattle.battleOver) {
             updateFaceoffPanel(activeBattle.getState(), { reliefEntrance: true });
           }
-        }, 350);
-      }, 1500);
+        }, 250);
+      }, 1100);
     }
   }
 
@@ -7747,7 +7747,7 @@ function initGameModeSelector() {
       <div class="arcade-banner-sub">${subText}</div>
     `;
     deck.appendChild(inningBanner);
-    setTimeout(() => inningBanner.remove(), 1650);
+    setTimeout(() => inningBanner.remove(), 1200);
   }
 
 
@@ -8088,11 +8088,11 @@ function initGameModeSelector() {
 
     let displayTime = durationOverride;
     if (!displayTime) {
-      if (ev && ev.spdUpgraded) displayTime = 1300;
-      else if (eventType === 'HR') displayTime = 1200;
-      else if (eventType === 'KO') displayTime = 1100;
-      else if (eventType === 'STEAL') displayTime = 850;
-      else displayTime = 900;
+      if (ev && ev.spdUpgraded) displayTime = 950;
+      else if (eventType === 'HR') displayTime = 900;
+      else if (eventType === 'KO') displayTime = 800;
+      else if (eventType === 'STEAL') displayTime = 700;
+      else displayTime = 750;
     }
 
     setTimeout(() => {
@@ -8172,14 +8172,14 @@ function initGameModeSelector() {
         const hasKO = events.some(ev => ev.playType === 'KO_PITCHER' || ev.eventType === 'KO');
         
         const getPopupDuration = (type, e) => {
-          if (e && e.spdUpgraded) return 1300;
-          if (type === 'HR') return 1200;
-          if (type === 'KO' || type === 'KO_PITCHER') return 1100;
-          if (type === 'STEAL') return 850;
-          return 900;
+          if (e && e.spdUpgraded) return 950;
+          if (type === 'HR') return 900;
+          if (type === 'KO' || type === 'KO_PITCHER') return 800;
+          if (type === 'STEAL') return 700;
+          return 750;
         };
 
-        const POPUP_GAP = 140; // ms gap between consecutive popups
+        const POPUP_GAP = 90; // ms gap between consecutive popups
         let cursor = 0;
 
         // Phase 1: build popup schedule in correct visual order.
@@ -8268,7 +8268,7 @@ function initGameModeSelector() {
           updateMatchHUD(state, { skipPitcherHP: true });
 
           // Re-enable roll button and sync HUD after KO sequence and bullpen entrance finish
-          const switchDelay = cursor + 2500;
+          const switchDelay = cursor + 1750;
           setTimeout(() => {
             if (activeBattle && state.activePitcher && !activeBattle.battleOver) {
               updateMatchHUD(state);
@@ -8282,7 +8282,7 @@ function initGameModeSelector() {
         renderZones();
 
         if (activeBattle && activeBattle.battleOver) {
-          const delay = Math.max(900, cursor + (hasKO ? 1800 : 0)); // wait for all popups/KO juice to finish first
+          const delay = Math.max(500, cursor + (hasKO ? 800 : 0)); // snappy wait for popups/KO to finish first
           setTimeout(() => {
             if (activeBattle && activeBattle.battleOver) {
               handleBattleOver();
@@ -8290,7 +8290,7 @@ function initGameModeSelector() {
           }, delay);
         } else if (activeBattle && activeBattle.pendingDefenseEvent) {
           const defEvent = activeBattle.pendingDefenseEvent;
-          const delay = Math.max(100, cursor + (hasKO ? 1200 : 0));
+          const delay = Math.max(100, cursor + (hasKO ? 600 : 0));
           setTimeout(() => {
             if (!activeBattle) return;
             showMidInningDefenseModal(defEvent, () => {
