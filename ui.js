@@ -3978,8 +3978,8 @@ function initGameModeSelector() {
   // UPDATE HEAD-UP DISPLAY
   function updateHUD() {
     const zone = window.Game.getZoneForStage(window.Game.currentStageIndex);
-    const zoneNames = ['Opening Day', 'All-Star Break', 'Pennant Chase', 'Playoffs'];
-    el.hudStage.innerText = `${window.Game.currentStageIndex + 1}/24 — ${zoneNames[zone] || ''}`;
+    const zoneNames = [t('map.zone_minor', 'Minor Leagues'), t('map.zone_major', 'Major League'), t('map.zone_pennant', 'Pennant Race'), t('map.zone_hof', 'Hall of Fame')];
+    el.hudStage.innerText = `${window.Game.currentStageIndex + 1}/28 — ${zoneNames[zone] || ''}`;
     if (el.hudBudget) el.hudBudget.innerText = `$${window.Game.budget}`;
     const sideBud = document.getElementById('sidebar-budget-val');
     if (sideBud) sideBud.innerText = `$${window.Game.budget}`;
@@ -6949,7 +6949,7 @@ function initGameModeSelector() {
       let rotTierLabel = '';
       if (enemy.isSuperBoss) {
         rotTierLabel = `💎 ${t('pre_fight.super_boss_tier_desc', 'Los 5 Mejores Brazos de toda la Temporada')}`;
-      } else if (enemy.isBoss && window.Game.currentStageIndex === 23) {
+      } else if (enemy.isBoss && window.Game.currentStageIndex === 27) {
         rotTierLabel = `🏆 ${t('pre_fight.final_boss_tier_desc', 'Rotación Campeona de la Serie Mundial (5 Mejores Brazos)')}`;
       } else if (enemy.isBoss) {
         rotTierLabel = `👑 ${t('pre_fight.zone_boss_tier_desc', 'Rotación Estelar encabezada por As de Jerarquía')}`;
@@ -6963,6 +6963,12 @@ function initGameModeSelector() {
           3: t('pre_fight.rot_tier_3', '📋 Brazos: Ases de Postemporada & Cerrador')
         };
         rotTierLabel = rotationTierMap[currentZoneIdx] || rotationTierMap[0];
+      }
+
+      // Populate stage badge
+      const stageEl = document.getElementById('prefight-stage-badge');
+      if (stageEl) {
+        stageEl.innerText = `${window.Game.currentStageIndex + 1}/28`;
       }
 
       const wp = enemy.win_pct || 0;
@@ -7285,7 +7291,7 @@ function initGameModeSelector() {
     // Stage text in header
     const stageEl = document.getElementById('pre-fight-stage-text');
     if (stageEl) {
-      stageEl.innerText = `${window.Game.currentStageIndex + 1}/24`;
+      stageEl.innerText = `${window.Game.currentStageIndex + 1}/28`;
     }
 
     // Render Bullpen / Pitcher List

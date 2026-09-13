@@ -99,9 +99,13 @@
     "node_boss": "BOSS",
     "boss_label": {
       "5": "OPENING DAY",
+      "6": "OPENING DAY",
       "11": "ALL-STAR GAME",
+      "13": "ALL-STAR GAME",
       "17": "LEAGUE CHAMPION",
-      "23": "WORLD SERIES"
+      "20": "LEAGUE CHAMPION",
+      "23": "WORLD SERIES",
+      "27": "WORLD SERIES"
     },
     "label_classic": "CLASSIC SERIES",
     "label_decision": "DECISION",

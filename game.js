@@ -1655,24 +1655,29 @@
     }
 
     // ── ZONE CONFIG ──────────────────────────────────────────────────────────
-    // 4 zones × 6 stages = 24 total stages (indices 0 to 23)
-    // zone 0 = "Opening Day"   (stages 0–5,  boss at 5)
-    // zone 1 = "All-Star Break" (stages 6–11, boss at 11)
-    // zone 2 = "Pennant Chase"  (stages 12–17, boss at 17)
-    // zone 3 = "Playoffs"       (stages 18–23, boss at 23)
-    // Each zone has 5 branching floors + 1 Boss floor (local index 5).
-    // Floor 4 (local index 3) always contains a mid-boss node option.
-    // Zone 2, floor 3 (stage 14) contains the Trade Deadline node.
+    // 4 zones × 7 stages = 28 total stages (indices 0 to 27)
+    // zone 0 = "Opening Day"    (stages 0–6,   boss at 6)
+    // zone 1 = "All-Star Break" (stages 7–13,  boss at 13)
+    // zone 2 = "Pennant Chase"  (stages 14–20, boss at 20)
+    // zone 3 = "Playoffs"       (stages 21–27, boss at 27)
+    // Each zone has 7 floors:
+    // Floor 1 (local 0): Match (Zone Opening)
+    // Floor 2 (local 1): Event / Batting Cage / Draft
+    // Floor 3 (local 2): Match (Regular Series)
+    // Floor 4 (local 3): Event / Shop / Draft (Zone 2 = Trade Deadline)
+    // Floor 5 (local 4): Regular Match OR Mid-Boss Elite
+    // Floor 6 (local 5): Pre-Boss Preparation (Clubhouse / Shop / Batting Cage)
+    // Floor 7 (local 6): Zone Boss
     getZoneForStage(stage) {
-      if (stage <= 5)  return 0;  // Opening Day
-      if (stage <= 11) return 1;  // All-Star Break
-      if (stage <= 17) return 2;  // Pennant Chase
+      if (stage <= 6)  return 0;  // Opening Day
+      if (stage <= 13) return 1;  // All-Star Break
+      if (stage <= 20) return 2;  // Pennant Chase
       return 3;                   // Playoffs
     }
 
     // Start stage index for each zone (used for localIdx calculations)
     getZoneStart(zoneIdx) {
-      return [0, 6, 12, 18][zoneIdx] || 0;
+      return [0, 7, 14, 21][zoneIdx] || 0;
     }
 
     getZoneConfig(zoneIdx) {
@@ -1685,7 +1690,7 @@
           theme: "zone-minor",
           bossLabel: "Duelo de Ases",
           bossIcon: "🌱",
-          stages: [0, 1, 2, 3, 4, 5]
+          stages: [0, 1, 2, 3, 4, 5, 6]
         },
         {
           id: 1,
@@ -1695,7 +1700,7 @@
           theme: "zone-major",
           bossLabel: "All-Star Game",
           bossIcon: "⭐",
-          stages: [6, 7, 8, 9, 10, 11]
+          stages: [7, 8, 9, 10, 11, 12, 13]
         },
         {
           id: 2,
@@ -1705,7 +1710,7 @@
           theme: "zone-pennant",
           bossLabel: "Campeón de Liga",
           bossIcon: "🏆",
-          stages: [12, 13, 14, 15, 16, 17]
+          stages: [14, 15, 16, 17, 18, 19, 20]
         },
         {
           id: 3,
@@ -1715,72 +1720,88 @@
           theme: "zone-hof",
           bossLabel: "Serie Mundial",
           bossIcon: "👑",
-          stages: [18, 19, 20, 21, 22, 23]
+          stages: [21, 22, 23, 24, 25, 26, 27]
         }
       ];
       return zones[zoneIdx] || zones[0];
     }
 
     generateMap() {
-      const numStages = 24; // 4 zones × 6 stages
+      const numStages = 28; // 4 zones × 7 stages
       this.map = [];
 
-      // Boss stages (local index 5 of each zone)
-      const BOSS_STAGES   = new Set([5, 11, 17, 23]);
-      // First stage of each zone (2 opening nodes)
-      const FIRST_IN_ZONE = new Set([0, 6, 12, 18]);
-      // Floor 4 of each zone (local index 3) → one slot reserved for mid_boss
-      const MID_BOSS_STAGES = new Set([3, 9, 15, 21]);
-      // Trade Deadline: Zone 2, floor 3 (stage 14) → one slot reserved for trade
-      const TRADE_DEADLINE_STAGE = 14;
+      // Boss stages (Floor 7 / local index 6 of each zone: 6, 13, 20, 27)
+      const BOSS_STAGES   = new Set([6, 13, 20, 27]);
+      // First stage of each zone (Floor 1 / local index 0: 0, 7, 14, 21)
+      const FIRST_IN_ZONE = new Set([0, 7, 14, 21]);
+      // Floor 5 of each zone (local index 4: 4, 11, 18, 25) → Choice between Regular Match vs Mid-Boss
+      const MID_BOSS_STAGES = new Set([4, 11, 18, 25]);
+      // Floor 6 of each zone (local index 5: 5, 12, 19, 26) → Pre-Boss Preparation (Rest, Shop/Chest, Training)
+      const PRE_BOSS_STAGES = new Set([5, 12, 19, 26]);
+      // Trade Deadline: Zone 2, Floor 4 (stage 17) → trade node opportunity
+      const TRADE_DEADLINE_STAGE = 17;
 
       for (let s = 0; s < numStages; s++) {
         const stageNodes = [];
+        const localIdx      = s % 7;
         const isBossStage   = BOSS_STAGES.has(s);
         const isFirstInZone = FIRST_IN_ZONE.has(s);
         const isMidBossFloor = MID_BOSS_STAGES.has(s);
+        const isPreBossFloor = PRE_BOSS_STAGES.has(s);
         const isTradeFloor   = (s === TRADE_DEADLINE_STAGE);
 
+        // Node counts:
+        // Boss Floor (Floor 7): 1 node
+        // Opening Floor (Floor 1): 2 nodes (Matches)
+        // Preparation Floor (Floor 6): 2 or 3 nodes
+        // Other Floors: 3 nodes
         let nodeCount = isBossStage ? 1 : (isFirstInZone ? 2 : 3);
-        let isFixedMatch = isBossStage;
 
         for (let idx = 0; idx < nodeCount; idx++) {
           let type = 'match';
-          if (!isFixedMatch) {
-            if (s === 0) {
-              // Opening stage: always a match
-              type = 'match';
-            } else if (isMidBossFloor && idx === 1) {
-              // Middle node of floor 4 → reserved mid_boss opportunity
-              type = 'mid_boss';
-            } else if (isTradeFloor && idx === 1) {
-              // Middle node of Trade Deadline stage → trade node
+
+          if (isBossStage) {
+            type = 'boss';
+          } else if (localIdx === 0) {
+            // Floor 1 (Zone Opening): Guaranteed match
+            type = 'match';
+          } else if (localIdx === 1) {
+            // Floor 2 (Decisions & Growth): Event, Train (Batting Cage), Draft
+            const options = ['event', 'train', 'draft'];
+            type = options[idx % options.length];
+          } else if (localIdx === 2) {
+            // Floor 3 (Regular Series): Regular matches for all paths
+            type = 'match';
+          } else if (localIdx === 3) {
+            // Floor 4 (Mid-Prep & Trade): Event, Draft, Train, or Trade Deadline
+            if (isTradeFloor && idx === 1) {
               type = 'trade';
             } else {
-              // Dynamic map node distribution:
-              // - match (Serie Clásica): 30%
-              // - event (Decisión): 15%
-              // - train (Jaula de Bateo): 15%
-              // - rest (Casa Club / Clubhouse): 15%
-              // - chest (Cofre): 5%
-              // - gamble (Luck / Suerte): 5%
-              // - draft (Firma de Leyenda): 15% (restante)
-              let roll = Math.random();
-              if (roll < 0.30)      type = 'match';
-              else if (roll < 0.45) type = 'event';
-              else if (roll < 0.60) type = 'train';
-              else if (roll < 0.75) type = 'rest';
-              else if (roll < 0.80) type = 'chest';
-              else if (roll < 0.85) type = 'gamble';
-              else                  type = 'draft';
+              const options = ['event', 'draft', 'train', 'chest', 'gamble'];
+              type = options[(idx + s) % options.length];
             }
+          } else if (localIdx === 4) {
+            // Floor 5: Regular Match OR Mid-Boss Elite!
+            // Node 0: Regular Match, Node 1: Mid-Boss, Node 2: Regular Match (or High-Risk Gamble/Event)
+            if (idx === 1) {
+              type = 'mid_boss';
+            } else if (idx === 0) {
+              type = 'match';
+            } else {
+              type = Math.random() < 0.5 ? 'match' : 'event';
+            }
+          } else if (localIdx === 5) {
+            // Floor 6 (Pre-Boss Preparation): Clubhouse (Rest), Shop/Chest, Batting Cage (Train)
+            if (idx === 0) type = 'rest';
+            else if (idx === 1) type = 'train';
+            else type = 'chest';
           }
 
           let label = type.toUpperCase();
           if (isBossStage) {
             type = 'boss';
             const _bt = k => typeof window.t==='function'?window.t(k):k;
-            const bossLabels = { 5: _bt('map.boss_label.5'), 11: _bt('map.boss_label.11'), 17: _bt('map.boss_label.17'), 23: _bt('map.boss_label.23') };
+            const bossLabels = { 6: _bt('map.boss_label.6'), 13: _bt('map.boss_label.13'), 20: _bt('map.boss_label.20'), 27: _bt('map.boss_label.27') };
             label = bossLabels[s] || 'WORLD SERIES';
           } else if (type === 'mid_boss') {
             label = 'MID-BOSS';
@@ -1817,7 +1838,7 @@
       }
 
       // Generate branching paths connections (stop at zone boss stages — no exit)
-      const ZONE_BOSS_STAGES = new Set([5, 11, 17, 23]);
+      const ZONE_BOSS_STAGES = new Set([6, 13, 20, 27]);
       for (let s = 0; s < numStages - 1; s++) {
         // Don't generate connections OUT of boss stages (zone ends here)
         if (ZONE_BOSS_STAGES.has(s)) continue;
@@ -2542,8 +2563,8 @@
             return [p1, p2, p3];
           };
 
-          // ── CASE A: Super Boss (Stage 23 Part 2 - Top 5 Titans of the Season) ─
-          if (stage === 23 && this.isSuperBossActive) {
+          // ── CASE A: Super Boss (Stage 27 Part 2 - Top 5 Titans of the Season) ─
+          if (stage === 27 && this.isSuperBossActive) {
             const legTop5 = [...allPitchers].sort((a, b) => b.ovr - a.ovr).slice(0, 5);
             const selected = legTop5.map(p => createPitcherObj(p));
             const highest = selected[0] || selected.reduce((max, p) => (p.ovr > max.ovr ? p : max), selected[0]);
@@ -2563,8 +2584,8 @@
             return unlockEnemyPitchers(this.currentEnemy);
           }
 
-          // ── CASE B: Final Boss Serie Mundial (Stage 23 Part 1 - Top 5 of Champ) ──
-          if (stage === 23) {
+          // ── CASE B: Final Boss Serie Mundial (Stage 27 Part 1 - Top 5 of Champ) ──
+          if (stage === 27) {
             const mlbTeams = allTeams.filter(t => (t.league && ['AL', 'NL', 'FL'].includes(t.league)) || (t.pitchers && t.pitchers.length >= 5));
             const champTeam = (mlbTeams.length > 0 ? mlbTeams : allTeams).sort((a, b) => (b.win_pct || 0) - (a.win_pct || 0))[0] || allTeams[0];
             const pStaff = champTeam.pitchers || [];
@@ -2591,16 +2612,16 @@
             return unlockEnemyPitchers(this.currentEnemy);
           }
 
-          // ── CASE C: Zone Bosses (Stages 5, 11, 17 - Solid Team with Legitimate Ace) ─
-          if (stage === 5 || stage === 11 || stage === 17) {
+          // ── CASE C: Zone Bosses (Stages 6, 13, 20 - Solid Team with Legitimate Ace) ─
+          if (stage === 6 || stage === 13 || stage === 20) {
             let targetAceMinOvr = 74, targetAceMaxOvr = 82, aceRarity = 'Rare';
             let targetMinAvg = 65, targetMaxAvg = 72;
 
-            if (stage === 5) {
+            if (stage === 6) {
               targetAceMinOvr = 74; targetAceMaxOvr = 82; aceRarity = 'Rare'; targetMinAvg = 64; targetMaxAvg = 71;
-            } else if (stage === 11) {
+            } else if (stage === 13) {
               targetAceMinOvr = 83; targetAceMaxOvr = 89.9; aceRarity = 'Epic'; targetMinAvg = 74; targetMaxAvg = 81;
-            } else if (stage === 17) {
+            } else if (stage === 20) {
               targetAceMinOvr = 90; targetAceMaxOvr = 99.9; aceRarity = 'Legendary'; targetMinAvg = 82; targetMaxAvg = 92;
             }
 
@@ -2650,16 +2671,16 @@
             return unlockEnemyPitchers(this.currentEnemy);
           }
 
-          // ── CASE D: Mid-Boss (Floor 4 / Stages 3, 9, 15, 21 - Solid Devastating Trio) ──
+          // ── CASE D: Mid-Boss (Floor 5 / Stages 4, 11, 18, 25 - Solid Devastating Trio) ──
           const currentNode = this.getCurrentNode ? this.getCurrentNode() : null;
           if (currentNode && currentNode.type === 'mid_boss') {
             let targetRarity = 'Uncommon', minAvg = 62, maxAvg = 68;
 
-            if (stage <= 5) {
+            if (stage <= 6) {
               targetRarity = 'Uncommon'; minAvg = 62; maxAvg = 68;
-            } else if (stage <= 11) {
+            } else if (stage <= 13) {
               targetRarity = 'Rare'; minAvg = 72; maxAvg = 78;
-            } else if (stage <= 17) {
+            } else if (stage <= 20) {
               targetRarity = 'Epic'; minAvg = 80; maxAvg = 88;
             } else {
               targetRarity = 'Legendary'; minAvg = 86; maxAvg = 95;
@@ -2701,13 +2722,13 @@
             return unlockEnemyPitchers(this.currentEnemy);
           }
 
-          // ── CASE E: Regular Stages (Stages 0–5, 6–11, 12–17, 18–22 by Trio Average) ──
+          // ── CASE E: Regular Stages (Stages 0–6, 7–13, 14–20, 21–26 by Trio Average) ──
           let targetMinAvg = 50.0, targetMaxAvg = 59.99;
-          if (stage <= 5) {
+          if (stage <= 6) {
             targetMinAvg = 50.0; targetMaxAvg = 59.99;
-          } else if (stage <= 11) {
+          } else if (stage <= 13) {
             targetMinAvg = 60.0; targetMaxAvg = 69.99;
-          } else if (stage <= 17) {
+          } else if (stage <= 20) {
             targetMinAvg = 70.0; targetMaxAvg = 79.99;
           } else {
             targetMinAvg = 80.0; targetMaxAvg = 89.99;
@@ -2840,8 +2861,8 @@
         return this.currentEnemy;
       }
 
-      // Map 1 Boss (Stage 5): Ace 75-79 OVR (Rare Alta), 2 Support 60-69 OVR (Uncommon)
-      if (stage === 5) {
+      // Map 1 Boss (Stage 6): Ace 75-79 OVR (Rare Alta), 2 Support 60-69 OVR (Uncommon)
+      if (stage === 6) {
         let acePool = fullPool.filter(p => p.rarity === 'Rare' && getOvr(p) >= 75 && getOvr(p) <= 79.9);
         if (acePool.length === 0) acePool = fullPool.filter(p => p.rarity === 'Rare');
         let uncommPool = fullPool.filter(p => p.rarity === 'Uncommon' && getOvr(p) >= 60 && getOvr(p) <= 69.9);
@@ -2863,8 +2884,8 @@
         return this.currentEnemy;
       }
 
-      // Map 2 Boss (Stage 11): Ace 85-89 OVR (Epic Alta), 2 Support 70-79 OVR (Rare)
-      if (stage === 11) {
+      // Map 2 Boss (Stage 13): Ace 85-89 OVR (Epic Alta), 2 Support 70-79 OVR (Rare)
+      if (stage === 13) {
         let acePool = fullPool.filter(p => p.rarity === 'Epic' && getOvr(p) >= 85 && getOvr(p) <= 89.9);
         if (acePool.length === 0) acePool = fullPool.filter(p => p.rarity === 'Epic');
         let rarePool = fullPool.filter(p => p.rarity === 'Rare' && getOvr(p) >= 70 && getOvr(p) <= 79.9);
@@ -2886,8 +2907,8 @@
         return this.currentEnemy;
       }
 
-      // Map 3 Boss (Stage 17): Ace 95-99 OVR (Legendary Alta), 2 Support 80-89 OVR (Epic)
-      if (stage === 17) {
+      // Map 3 Boss (Stage 20): Ace 95-99 OVR (Legendary Alta), 2 Support 80-89 OVR (Epic)
+      if (stage === 20) {
         let acePool = fullPool.filter(p => p.rarity === 'Legendary' && getOvr(p) >= 95 && getOvr(p) <= 99.9);
         if (acePool.length === 0) acePool = fullPool.filter(p => p.rarity === 'Legendary');
         let epicPool = fullPool.filter(p => p.rarity === 'Epic' && getOvr(p) >= 80 && getOvr(p) <= 89.9);
@@ -2909,8 +2930,8 @@
         return this.currentEnemy;
       }
 
-      // Map 4 Boss Fight #1 (Stage 23): Ace 95+ OVR (Legendary Élite), 2 Support 90-94 OVR (Legendary)
-      if (stage === 23) {
+      // Map 4 Boss Fight #1 (Stage 27): Ace 95+ OVR (Legendary Élite), 2 Support 90-94 OVR (Legendary)
+      if (stage === 27) {
         let acePool = fullPool.filter(p => p.rarity === 'Legendary' && getOvr(p) >= 95.0);
         if (acePool.length === 0) acePool = fullPool.filter(p => p.rarity === 'Legendary');
         let supportPool = fullPool.filter(p => p.rarity === 'Legendary' && getOvr(p) >= 90.0 && getOvr(p) < 95.0);
@@ -2931,13 +2952,13 @@
         return this.currentEnemy;
       }
 
-      // Mid-Boss nodes (floor 4 of each zone): 3-pitcher squad (SP, middle, RP) of target rarity
+      // Mid-Boss nodes (Floor 5 of each zone): 3-pitcher squad (SP, middle, RP) of target rarity
       const currentNode = this.getCurrentNode ? this.getCurrentNode() : null;
       if (currentNode && currentNode.type === 'mid_boss') {
         let midPool, targetRarity;
-        if (stage <= 5)        { targetRarity = 'Uncommon';  midPool = fullPool.filter(p => p.rarity === 'Uncommon'); }
-        else if (stage <= 11)  { targetRarity = 'Rare';      midPool = fullPool.filter(p => p.rarity === 'Rare'); }
-        else if (stage <= 17)  { targetRarity = 'Epic';      midPool = fullPool.filter(p => p.rarity === 'Epic'); }
+        if (stage <= 6)        { targetRarity = 'Uncommon';  midPool = fullPool.filter(p => p.rarity === 'Uncommon'); }
+        else if (stage <= 13)  { targetRarity = 'Rare';      midPool = fullPool.filter(p => p.rarity === 'Rare'); }
+        else if (stage <= 20)  { targetRarity = 'Epic';      midPool = fullPool.filter(p => p.rarity === 'Epic'); }
         else                   { targetRarity = 'Legendary'; midPool = fullPool.filter(p => p.rarity === 'Legendary'); }
         if (midPool.length === 0) midPool = fullPool;
 
@@ -2956,10 +2977,10 @@
       }
 
       // Regular stages: strictly 10-point OVR windows across the 4 zones
-      let minOvr = 50.0, maxOvr = 59.99; // Zone 0: Opening Day (stages 0–5) - Common
-      if (stage >= 6  && stage <= 11) { minOvr = 60.0; maxOvr = 69.99; } // Zone 1: All-Star Break (stages 6–11) - Uncommon
-      else if (stage >= 12 && stage <= 17) { minOvr = 70.0; maxOvr = 79.99; } // Zone 2: Pennant Chase (stages 12–17) - Rare
-      else if (stage >= 18) { minOvr = 80.0; maxOvr = 89.99; } // Zone 3: Playoffs (stages 18–23) - Epic
+      let minOvr = 50.0, maxOvr = 59.99; // Zone 0: Opening Day (stages 0–6) - Common
+      if (stage >= 7  && stage <= 13) { minOvr = 60.0; maxOvr = 69.99; } // Zone 1: All-Star Break (stages 7–13) - Uncommon
+      else if (stage >= 14 && stage <= 20) { minOvr = 70.0; maxOvr = 79.99; } // Zone 2: Pennant Chase (stages 14–20) - Rare
+      else if (stage >= 21) { minOvr = 80.0; maxOvr = 89.99; } // Zone 3: Playoffs (stages 21–27) - Epic
 
       let stagePool = fullPool.filter(p => {
         const o = getOvr(p);
@@ -3137,11 +3158,11 @@
         won
       });
 
-      const isBossStage = (this.currentStageIndex === 5 || this.currentStageIndex === 11 || this.currentStageIndex === 17 || this.currentStageIndex === 23);
+      const isBossStage = (this.currentStageIndex === 6 || this.currentStageIndex === 13 || this.currentStageIndex === 20 || this.currentStageIndex === 27);
 
       if (won) {
-        // Stage 23 (Map 4 Boss Fight #1) victory → Trigger SUPER BOSS FIGHT Part 2!
-        if (this.currentStageIndex === 23 && !this.isSuperBossActive) {
+        // Stage 27 (Map 4 Boss Fight #1) victory → Trigger SUPER BOSS FIGHT Part 2!
+        if (this.currentStageIndex === 27 && !this.isSuperBossActive) {
           this.isSuperBossActive = true;
           this.currentEnemy = null;
           const superBossTeam = this.getEnemyTeam();
@@ -3169,7 +3190,7 @@
         }
 
         // Boss Maps 1-3: offer a Trait reward before continuing
-        const isTraitBossMap = (this.currentStageIndex === 5 || this.currentStageIndex === 11 || this.currentStageIndex === 17);
+        const isTraitBossMap = (this.currentStageIndex === 6 || this.currentStageIndex === 13 || this.currentStageIndex === 20);
         const isMidBossStage = (this.currentNodeIndex !== undefined && this.getCurrentNode && this.getCurrentNode() && this.getCurrentNode().type === 'mid_boss');
         const midBossBonus   = isMidBossStage ? 15 : 0;
         const earnings = isBossStage ? 20 : 5;

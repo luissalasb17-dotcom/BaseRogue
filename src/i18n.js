@@ -128,9 +128,13 @@
         "node_boss": "BOSS",
         "boss_label": {
             "5": "JUEGO APERTURA",
+            "6": "JUEGO APERTURA",
             "11": "ALL-STAR GAME",
+            "13": "ALL-STAR GAME",
             "17": "CAMPEÓN LIGA",
-            "23": "SERIE MUNDIAL"
+            "20": "CAMPEÓN LIGA",
+            "23": "SERIE MUNDIAL",
+            "27": "SERIE MUNDIAL"
         },
         "label_classic": "SERIE CLÁSICA",
         "label_decision": "DECISIÓN",
@@ -2373,9 +2377,13 @@
         "node_boss": "BOSS",
         "boss_label": {
             "5": "OPENING DAY",
+            "6": "OPENING DAY",
             "11": "ALL-STAR GAME",
+            "13": "ALL-STAR GAME",
             "17": "LEAGUE CHAMPION",
-            "23": "WORLD SERIES"
+            "20": "LEAGUE CHAMPION",
+            "23": "WORLD SERIES",
+            "27": "WORLD SERIES"
         },
         "label_classic": "CLASSIC SERIES",
         "label_decision": "DECISION",
