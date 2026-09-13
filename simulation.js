@@ -767,9 +767,9 @@
         const isExtraInnings = this.inning >= 4;
         let baseSoDmg = isExtraInnings ? 30 : 20;
         if (this.strikeoutChain === 2) {
-          baseSoDmg = isExtraInnings ? 36 : 26;
+          baseSoDmg = isExtraInnings ? 38 : 25;
         } else if (this.strikeoutChain >= 3) {
-          baseSoDmg = isExtraInnings ? 42 : 32;
+          baseSoDmg = isExtraInnings ? 45 : 30;
         }
 
         let finalSoDmg = baseSoDmg;
@@ -1247,7 +1247,7 @@
         // Announce Sudden Death Extra Innings when transitioning from Inning 3 -> 4
         if (endedInning === 3 && !this.battleOver && this.enemyPitcherIndex < this.homeTeam.pitchers.length) {
           this.logEvent('EXTRA_INNINGS',
-            _t('sim.extra_innings_announcement', {}, '⚡ ¡EXTRA INNINGS - MUERTE SÚBITA! Daño de outs y ponches incrementado a 28/34/40. ¡Cualquier fallo defensivo en la baja es Walk-Off rival!'),
+            _t('sim.extra_innings_announcement', {}, '⚡ ¡EXTRA INNINGS - MUERTE SÚBITA! Daño de outs y ponches incrementado a 30/38/45 HP. ¡Cualquier fallo defensivo en la baja es Walk-Off rival!'),
             'ALERT');
         }
 
@@ -1530,9 +1530,8 @@
 
     // ── INTERNAL: strikeout chain multiplier ─────────────────────────
     _strikeoutMultiplier() {
-      if (this.strikeoutChain >= 4) return 3.0;
-      if (this.strikeoutChain === 3) return 2.0;
-      if (this.strikeoutChain === 2) return 1.5;
+      if (this.strikeoutChain >= 3) return 1.5;
+      if (this.strikeoutChain === 2) return 1.25;
       return 1.0;
     }
 

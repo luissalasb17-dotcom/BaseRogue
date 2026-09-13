@@ -3130,7 +3130,7 @@ function initGameModeSelector() {
   }
 
   function getClassGrade(val) {
-    const v = Math.round(Number(val) || 0);
+    const v = Math.floor(Number(val) || 0);
     let letter = "F";
     let color = "#ef4444";
     let modifier = "";
@@ -9084,9 +9084,9 @@ function initGameModeSelector() {
     const chainEl = document.getElementById('so-chain-display');
     if (chainEl) {
       const chain = state.strikeoutChain || 0;
-      const flames = '🔥'.repeat(Math.min(chain, 4));
+      const multStr = chain >= 3 ? '1.5' : (chain === 2 ? '1.25' : '1.0');
       chainEl.innerText = chain > 0
-        ? t('match.so_streak', { count: chain, mult: ['1.0x','1.5x','2.0x','3.0x'][Math.min(chain - 1, 3)] })
+        ? t('match.so_streak', { count: chain, mult: multStr })
         : t('match.so_streak_zero', '🔥 Racha de Ponches: 0');
       chainEl.style.color = chain >= 3 ? '#ef4444' : chain >= 2 ? '#f59e0b' : '#64748b';
     }

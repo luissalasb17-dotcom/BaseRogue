@@ -2431,8 +2431,8 @@
 
       const stage = this.currentStageIndex !== undefined ? this.currentStageIndex : 0;
 
-      // Helper for OVR calculation
-      const getOvr = (p) => (p.ovr !== undefined ? p.ovr : (p._ovr !== undefined ? p._ovr : (window.UI && window.UI.getPlayerOvr ? window.UI.getPlayerOvr(p) : 50)));
+      // Helper for OVR calculation - always integer (floor) to avoid float rounding artifacts (e.g. 59.8 displaying as 60)
+      const getOvr = (p) => Math.floor(p.ovr !== undefined ? p.ovr : (p._ovr !== undefined ? p._ovr : (window.UI && window.UI.getPlayerOvr ? window.UI.getPlayerOvr(p) : 50)));
 
       const createPitcherObj = (p, roleOverride = null) => {
         const role = roleOverride || p.role || 'SP';
@@ -2440,6 +2440,8 @@
         const hp = Math.max(75, Math.min(200, Math.round(75 + (staVal - 20) * (125 / 105))));
         const yearVal = p.year || p.peak_year_display || p.peak_year || this.selectedSeasonYear || 1990;
         const nameVal = yearVal ? `${p.name} (${yearVal})` : p.name;
+        const pitcherOvr = getOvr(p);
+        const resolvedRarity = p.rarity || (pitcherOvr >= 90 ? 'Legendary' : (pitcherOvr >= 80 ? 'Epic' : (pitcherOvr >= 70 ? 'Rare' : (pitcherOvr >= 60 ? 'Uncommon' : 'Common'))));
         return {
           name: nameVal,
           cleanName: p.name,
@@ -2451,8 +2453,8 @@
           ctl: p.bb9 !== undefined ? p.bb9 : (p.ctl !== undefined ? p.ctl : 50),
           mov: p.hr9 !== undefined ? p.hr9 : (p.mov !== undefined ? p.mov : 50),
           sta: staVal,
-          ovr: getOvr(p),
-          rarity: p.rarity || 'Common',
+          ovr: pitcherOvr,
+          rarity: resolvedRarity,
           era: p.era || '',
           team: p.team || '',
           year: yearVal,
