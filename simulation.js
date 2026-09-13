@@ -926,27 +926,25 @@
         const spdStat = effBatter.spd || 50;
         const spdGrade = getSpeedGrade(spdStat);
 
-        // Continuous linear formula: Starts at 60 SPD (5% chance) and scales up to a 30% cap at 100+ SPD
+        // Single-check direct scaling without double filters or artificial caps at 100
         let upgradeChance = 0;
-        if (spdStat >= 60) {
-          upgradeChance = Math.min(0.30, 0.05 + (spdStat - 60) * 0.00625);
+        let targetType = hitType;
+
+        if (hitType === '1B' && spdStat >= 60) {
+          // 1B ➔ 2B: Starts at 60 SPD (5%) and scales smoothly up to 125 SPD (45%)
+          upgradeChance = Math.min(0.45, 0.05 + (spdStat - 60) * ((0.45 - 0.05) / (125 - 60)));
+          targetType = '2B';
+        } else if (hitType === '2B' && spdStat >= 75) {
+          // 2B ➔ 3B: Starts at 75 SPD (5%) and scales smoothly up to 125 SPD (35%)
+          upgradeChance = Math.min(0.35, 0.05 + (spdStat - 75) * ((0.35 - 0.05) / (125 - 75)));
+          targetType = '3B';
         }
 
         if (upgradeChance > 0 && Math.random() < upgradeChance) {
-          // 1B -> 2B available for all SPD >= 60; 2B -> 3B only for high speedsters (SPD >= 75) with scaled chance
-          let newType = hitType;
-          if (hitType === '1B') {
-            newType = '2B';
-          } else if (hitType === '2B' && spdStat >= 75 && Math.random() < 0.50) {
-            newType = '3B';
-          }
-
-          if (newType !== hitType) {
-            const chancePct = Math.round(upgradeChance * 100);
-            spdProc = _t('sim.spd_upgrade', { grade: spdGrade, from: hitType, to: newType, pct: chancePct, spd: spdStat }, `⚡ SPD Proc (Grado ${spdGrade} • ${chancePct}%): ¡${hitType} convertido en ${newType}!`);
-            spdUpgraded = { from: hitType, to: newType, grade: spdGrade, spd: spdStat, chancePct: chancePct };
-            hitType = newType;
-          }
+          const chancePct = Math.round(upgradeChance * 100);
+          spdProc = _t('sim.spd_upgrade', { grade: spdGrade, from: hitType, to: targetType, pct: chancePct, spd: spdStat }, `⚡ SPD Proc (Grado ${spdGrade} • ${chancePct}%): ¡${hitType} convertido en ${targetType}!`);
+          spdUpgraded = { from: hitType, to: targetType, grade: spdGrade, spd: spdStat, chancePct: chancePct };
+          hitType = targetType;
         }
 
         // Golden Era T4: Batters with PWR >= 80 always connect extrabases on hits (1B -> 2B)
