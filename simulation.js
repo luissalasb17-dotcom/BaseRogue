@@ -1242,13 +1242,6 @@
         this.bases = [null, null, null];
         this.pitcherDebuff = null; // Clear debuff when inning ends
 
-        // Announce Sudden Death Extra Innings when transitioning from Inning 3 -> 4
-        if (endedInning === 3 && !this.battleOver && this.enemyPitcherIndex < this.homeTeam.pitchers.length) {
-          this.logEvent('EXTRA_INNINGS',
-            _t('sim.extra_innings_announcement', {}, '⚡ ¡EXTRA INNINGS - MUERTE SÚBITA! Daño de outs y ponches incrementado a 30/38/45 HP. ¡Cualquier fallo defensivo en la baja es Walk-Off rival!'),
-            'ALERT');
-        }
-
         // Trigger Mid-Inning Defense for all innings before battle is over (including Extra Innings walk-off defenses)
         if (!this.battleOver && this.enemyPitcherIndex < this.homeTeam.pitchers.length) {
           this.pendingDefenseEvent = this.generateMidInningDefenseEvent(endedInning);
@@ -1476,6 +1469,14 @@
 
       this.pendingDefenseEvent = null;
       this._checkEndConditions();
+
+      // Announce Sudden Death Extra Innings when defense finishes and match actually moves into Inning >= 4
+      if (!this.battleOver && this.inning >= 4 && !this._extraInningsAnnounced && this.enemyPitcherIndex < this.homeTeam.pitchers.length) {
+        this._extraInningsAnnounced = true;
+        this.logEvent('EXTRA_INNINGS',
+          _t('sim.extra_innings_announcement', {}, '⚡ ¡EXTRA INNINGS - MUERTE SÚBITA! Daño de outs y ponches incrementado a 30/38/45 HP. ¡Cualquier fallo defensivo en la baja es Walk-Off rival!'),
+          'ALERT');
+      }
 
       // If game didn't end and player has ghost_runners trait, place ghost runner on 2nd base for inning 3+
       if (!this.battleOver && this.hasTrait('ghost_runners') && this.inning >= 3 && !this.ghostRunnerInnings.has(this.inning)) {

@@ -9007,7 +9007,10 @@ function initGameModeSelector() {
     el.scoreHomeR.innerText  = state.outs;
 
     const extraBanner = document.getElementById('extra-innings-hud-banner');
-    if (state.inning >= 4) {
+    const isMidDefensePending = Boolean(activeBattle && activeBattle.pendingDefenseEvent);
+    const effectiveInning = (state.inning >= 4 && isMidDefensePending) ? (state.inning - 1) : state.inning;
+
+    if (state.inning >= 4 && !isMidDefensePending) {
       el.scoreAwayH.innerHTML = `<span style="color:#ef4444;text-shadow:0 0 8px #ef4444;animation:pulse-fast 1s infinite;font-weight:bold;">🔥 EX ${state.inning}</span>`;
       const suddenDeathTitle = typeof window.t === 'function' ? window.t('match.sudden_death_title', { defaultValue: '⚡ ¡MUERTE SÚBITA! ⚡' }) : '⚡ ¡MUERTE SÚBITA! ⚡';
       if (el.scoreInningText) {
@@ -9021,7 +9024,7 @@ function initGameModeSelector() {
         if (extraDescEl && typeof window.t === 'function') extraDescEl.innerText = window.t('match.extra_innings_hud_desc');
       }
     } else {
-      el.scoreAwayH.innerText  = `${state.inning} / 3`;
+      el.scoreAwayH.innerText  = `${effectiveInning} / 3`;
       if (el.scoreInningText) {
         el.scoreInningText.innerText = typeof window.t === 'function' ? window.t('match.arena', { defaultValue: 'ARENA COMBATE' }) : 'ARENA COMBATE';
       }
