@@ -1766,19 +1766,25 @@
             // Floor 1 (Zone Opening): Guaranteed match
             type = 'match';
           } else if (localIdx === 1) {
-            // Floor 2 (Decisions & Growth): Event, Train (Batting Cage), Draft
-            const options = ['event', 'train', 'draft'];
-            type = options[idx % options.length];
+            // Floor 2 (Decisions & Growth): Dynamic mix of Event, Training, Draft, Chest, Gamble
+            const pool = ['event', 'train', 'draft', 'chest', 'gamble'];
+            // Weighted random selection per node ensuring variety
+            const roll = Math.random();
+            if (idx === 0) type = roll < 0.4 ? 'event' : (roll < 0.7 ? 'train' : 'draft');
+            else if (idx === 1) type = roll < 0.4 ? 'train' : (roll < 0.7 ? 'draft' : 'event');
+            else type = roll < 0.35 ? 'draft' : (roll < 0.65 ? 'chest' : (roll < 0.85 ? 'event' : 'gamble'));
           } else if (localIdx === 2) {
             // Floor 3 (Regular Series): Regular matches for all paths
             type = 'match';
           } else if (localIdx === 3) {
-            // Floor 4 (Mid-Prep & Trade): Event, Draft, Train, or Trade Deadline
+            // Floor 4 (Mid-Prep & Trade):
             if (isTradeFloor && idx === 1) {
               type = 'trade';
             } else {
-              const options = ['event', 'draft', 'train', 'chest', 'gamble'];
-              type = options[(idx + s) % options.length];
+              const roll = Math.random();
+              if (idx === 0) type = roll < 0.35 ? 'chest' : (roll < 0.7 ? 'event' : 'train');
+              else if (idx === 1) type = roll < 0.35 ? 'gamble' : (roll < 0.7 ? 'draft' : 'event');
+              else type = roll < 0.4 ? 'event' : (roll < 0.7 ? 'draft' : 'train');
             }
           } else if (localIdx === 4) {
             // Floor 5: 5 paths across the map with the Mid-Boss in the center!
@@ -1790,10 +1796,13 @@
               type = 'match';
             }
           } else if (localIdx === 5) {
-            // Floor 6 (Pre-Boss Preparation): Clubhouse (Rest), Shop/Chest, Batting Cage (Train)
-            if (idx === 0) type = 'rest';
-            else if (idx === 1) type = 'train';
-            else type = 'chest';
+            // Floor 6 (Pre-Boss Preparation): Random arrangement of Rest, Training, Chest, Draft
+            const options = ['rest', 'train', 'chest'];
+            // Shuffle or randomly assign with high rest probability
+            const roll = Math.random();
+            if (idx === 0) type = roll < 0.6 ? 'rest' : 'train';
+            else if (idx === 1) type = roll < 0.5 ? 'train' : 'chest';
+            else type = roll < 0.5 ? 'chest' : 'rest';
           }
 
           let label = type.toUpperCase();
