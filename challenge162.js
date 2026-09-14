@@ -1563,7 +1563,17 @@
       const opp = getFranchiseDecadeTeam(sched.code, sched.decade);
       const userLineup = S.roster.battingOrder.map(slot => S.roster.lineup[slot]).filter(Boolean);
 
-      const attempt = this._simulateNaturalGame(userLineup, userSP, userRelievers, opp, gameIdx);
+      // Invisible Double-Chance / Natural Re-roll:
+      // If the user's legendary squad drops the first attempt, run a 2nd invisible honest simulation.
+      // If the 2nd attempt is won, keep the 2nd attempt's outcome & stats.
+      // If the 2nd attempt is also lost, accept the defeat naturally.
+      let attempt = this._simulateNaturalGame(userLineup, userSP, userRelievers, opp, gameIdx);
+      if (attempt.userRuns <= attempt.oppRuns) {
+        const attempt2 = this._simulateNaturalGame(userLineup, userSP, userRelievers, opp, gameIdx);
+        if (attempt2.userRuns > attempt2.oppRuns) {
+          attempt = attempt2;
+        }
+      }
       const won = attempt.userRuns > attempt.oppRuns;
 
       // Commit the chosen game attempt's stats into the season totals:
