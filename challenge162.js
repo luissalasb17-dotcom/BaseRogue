@@ -1381,7 +1381,8 @@
     },
 
     // Bullpen delegation driven by role, situation, and inning:
-    // userRelievers = [rp1, rp2, rp3, rp4, setup, closer]
+    // In full mode (25 players): userRelievers = [rp1, rp2, rp3, rp4, setup, closer] (length >= 5)
+    // In challenge mode (17 players): userRelievers = [rp, setup, closer] (length <= 3)
     _pitcherForInning(inning, sp, relievers, spMaxInnings, gameIdx, userRuns, oppRuns, spRunsAllowed = 0, spHitsAllowed = 0) {
       // 1. Dynamic Starter Retention:
       // Dominating / CG / No-Hitter check: if SP reached standard target (e.g. 6-7 inn) but has allowed <= 1 run (or 0 hits),
@@ -1402,13 +1403,58 @@
       const closer = relievers.find(r => r && (r.role === 'CL' || r.pos === 'CL')) || relievers[relievers.length - 1];
       const setup  = relievers.find(r => r && (r.role === 'SETUP' || r.pos === 'SETUP')) || relievers[Math.max(0, relievers.length - 2)];
       const midRelievers = relievers.filter(r => r && r !== closer && r !== setup);
+
+      const runDiff = userRuns - oppRuns;
+      const isSaveSituation = (runDiff >= 1 && runDiff <= 3);
+
+      // ── SHORT BULLPEN MODE (ROSTERS OF 17: Only 3 Relievers [CL, SETUP, RP]) ──
+      // In this mode there is only 1 middle reliever instead of 4.
+      // We distribute the workload across CL, SETUP, and RP so no single arm throws 150+ IP,
+      // keeping all 3 relievers in a realistic MLB range of 45-65 IP.
+      if (relievers.length <= 3) {
+        const singleRP = midRelievers[0] || setup || closer;
+
+        // 9th Inning: Closer finishes saves, ties, and close games. Setup & RP cover blowouts.
+        if (inning === 9) {
+          if (isSaveSituation || runDiff === 0 || runDiff === -1) {
+            return closer;
+          }
+          if (runDiff >= 4 && runDiff <= 5) {
+            return (gameIdx % 2 === 0) ? closer : setup;
+          }
+          // Blowout (lead 6+ or deficit): alternate setup and RP
+          return (gameIdx % 2 === 0) ? setup : singleRP;
+        }
+
+        // 8th Inning: Setup primary (~65%), Closer or RP for rest
+        if (inning === 8) {
+          if (isSaveSituation || (runDiff >= -1 && runDiff <= 4)) {
+            return (gameIdx % 3 !== 0) ? setup : singleRP;
+          }
+          return singleRP;
+        }
+
+        // 7th Inning or Early Relief (Bridge): Alternate RP and Setup
+        if (inning === 7) {
+          return (gameIdx % 2 === 0) ? singleRP : setup;
+        }
+
+        // Extra Innings (10+): Rotate evenly through all 3 available bullpen arms
+        if (inning >= 10) {
+          const rotation = [singleRP, setup, closer];
+          return rotation[(inning - 10 + gameIdx) % 3];
+        }
+
+        // Early pull before 7th:
+        return singleRP;
+      }
+
+      // ── FULL BULLPEN MODE (ROSTERS OF 25: 6 Relievers [RP1..RP4, SETUP, CL]) ──
+      // Original unchanged logic for the standard 25-man roster.
       const getMiddleReliever = (offset = 0) => {
         if (!midRelievers.length) return setup || closer || sp;
         return midRelievers[(gameIdx + offset) % midRelievers.length];
       };
-
-      const runDiff = userRuns - oppRuns;
-      const isSaveSituation = (runDiff >= 1 && runDiff <= 3);
 
       // ── 9th inning (Closer finishes in saves, ties, close leads / deficits) ─
       // Authentic MLB closer workload: ~60-72 IP across 162 games.
@@ -1603,14 +1649,26 @@
           const slot = userIdx % userLineup.length;
           const currentBatter = userLineup[slot];
           userIdx++;
-          // Routine rest or late-game blowout substitution by bench:
+          // Routine rest or late-game blowout substitution:
           if (slot === restedSlotIdx || isBlowout) {
             const benchList = (this.state && this.state.roster && this.state.roster.bench) || [];
             if (benchList.length > 0) {
               const bSub = benchList[(gameIdx + slot) % benchList.length];
               if (bSub) return bSub;
+            } else {
+              // In short 17-player mode without a real bench, give the starter routine rest / blowout sub
+              // using a reserve role player to keep total AB in standard 560-630 MLB range
+              return {
+                name: 'Suplente',
+                pos: currentBatter.assignedSlot || currentBatter.pos || 'DH',
+                con: 50,
+                pwr: 45,
+                eye: 45,
+                spd: 50,
+                ovr: 68,
+                _isShortBenchSub: true
+              };
             }
-            // No bench available: the starter plays anyway (short roster)
             return currentBatter;
           }
           return currentBatter;
