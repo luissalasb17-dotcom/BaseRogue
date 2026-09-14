@@ -1369,14 +1369,14 @@
     },
 
     // Stamina-driven starting pitcher base capacity:
-    // Converts pitcher's STA attribute into a baseline target of ~6.3 - 7.2 IP per start for quality aces.
-    // In-game performance (knockout early or extending for CG / No-Hitter) dynamically shifts this.
+    // Converts pitcher's STA attribute into a baseline target of ~7.0 - 7.6 IP per start for dominant aces.
+    // In-game performance (knockout early or extending for CG / gem) dynamically shifts this.
     _getStarterMaxInnings(sp) {
-      if (!sp) return 6;
-      const sta = sp.sta !== undefined ? sp.sta : (sp.sta_val !== undefined ? sp.sta_val : (sp.stamina !== undefined ? sp.stamina : 70));
-      // Base innings target: STA 20 -> 5.5, STA 70 -> 6.5, STA 90 -> 7.0, STA 105+ -> 7.4
-      const base = 5.5 + (Math.max(20, Math.min(125, sta)) - 20) * 0.0185;
-      const roll = (Math.random() - 0.5) * 0.7;
+      if (!sp) return 7;
+      const sta = sp.sta !== undefined ? sp.sta : (sp.sta_val !== undefined ? sp.sta_val : (sp.stamina !== undefined ? sp.stamina : 75));
+      // Base innings target: STA 20 -> 5.8, STA 70 -> 7.0, STA 90 -> 7.4, STA 105+ -> 7.7
+      const base = 5.8 + (Math.max(20, Math.min(125, sta)) - 20) * 0.021;
+      const roll = (Math.random() - 0.5) * 0.6;
       return Math.max(5, Math.min(8, Math.round(base + roll)));
     },
 
@@ -1385,14 +1385,21 @@
     // In challenge mode (17 players): userRelievers = [rp, setup, closer] (length <= 3)
     _pitcherForInning(inning, sp, relievers, spMaxInnings, gameIdx, userRuns, oppRuns, spRunsAllowed = 0, spHitsAllowed = 0) {
       // 1. Dynamic Starter Retention:
-      // Allow SP to throw a Complete Game ONLY in special gem performances (Shutout or No-Hitter).
-      // If allowing 1+ runs or in high leads (blowouts), the starter is pulled after spMaxInnings (typically 6-7 inn)
-      // to let the bullpen pitch and keep innings realistic.
+      // Allow SP to throw complete games or stay out in 8th/9th inning during dominant starts:
+      // - No-hitters & shutouts: stay all 9 innings.
+      // - High quality starts (allowed <= 1 run or blowout lead >= 6): SP pitches the 8th in 60% of games,
+      //   ensuring SPs average ~7.4 IP per start (~240-255 IP over a 32-33 start season).
       if (inning > spMaxInnings && inning <= 9) {
         const isNoHitter = (spHitsAllowed === 0);
         const isShutout = (spRunsAllowed === 0);
-        if (isNoHitter || (isShutout && Math.abs(userRuns - oppRuns) <= 3)) {
+        const isDominating = (spRunsAllowed <= 1 && spHitsAllowed <= 5);
+        if (isNoHitter || isShutout) {
           return sp;
+        }
+        if (inning === 8 && (isDominating || (userRuns - oppRuns >= 5 && spRunsAllowed <= 2))) {
+          if ((gameIdx + inning) % 5 !== 0) {
+            return sp;
+          }
         }
       }
 
@@ -1401,58 +1408,68 @@
 
       // 2. Unpack bullpen hierarchy
       const isShortBullpen = (relievers.length <= 3);
-      const closer = relievers.find(r => r && (r.role === 'CL' || r.pos === 'CL')) || (isShortBullpen ? relievers[0] : relievers[relievers.length - 1]);
-      const setup  = relievers.find(r => r && (r.role === 'SETUP' || r.pos === 'SETUP')) || (isShortBullpen ? relievers[1] : relievers[Math.max(0, relievers.length - 2)]);
+      const closer = relievers.find(r => r && (r.role === 'CL' || r.pos === 'CL')) || (isShortBullpen ? (relievers[2] || relievers[0]) : relievers[relievers.length - 1]);
+      const setup  = relievers.find(r => r && (r.role === 'SETUP' || r.pos === 'SETUP')) || (isShortBullpen ? (relievers[1] || relievers[0]) : relievers[Math.max(0, relievers.length - 2)]);
       const midRelievers = relievers.filter(r => r && r !== closer && r !== setup);
 
       const runDiff = userRuns - oppRuns;
       const isSaveSituation = (runDiff >= 1 && runDiff <= 3);
 
-      // ── SHORT BULLPEN MODE (ROSTERS OF 17: Exactly 3 Relievers [CL, SETUP, RP]) ──
-      // In this mode, midRelievers has only 1 pitcher (RP).
-      // We distribute the workload evenly across CL, SETUP, and RP so all 3 throw ~45-65 IP.
+      // ── SHORT BULLPEN MODE (ROSTERS OF 17: Exactly 3 Relievers [RP, SETUP, CL]) ──
+      // In this mode, midRelievers has 1 pitcher (singleRP).
+      // Workload target: Closer (~55-65 IP, 30-45 SV), Setup (~55-65 IP), RP (~50-60 IP).
       if (isShortBullpen) {
-        const singleRP = midRelievers[0] || (relievers[2] || setup || closer);
+        const singleRP = midRelievers[0] || (relievers[0] !== closer && relievers[0] !== setup ? relievers[0] : (relievers[2] || setup || closer));
 
-        // 9th Inning: Closer gets saves (1-3 runs), ties, 1-run deficits, and 50% of 4-5 run leads.
-        // Setup and RP cover blowout 9ths.
+        // ── 9th Inning ──
         if (inning === 9) {
-          if (isSaveSituation || runDiff === 0 || runDiff === -1) {
-            return closer;
+          if (isSaveSituation) {
+            // Closer pitches 95% of save situations; setup covers rare rest days
+            return (gameIdx % 20 !== 0) ? closer : setup;
+          }
+          if (runDiff === 0 || runDiff === -1) {
+            // Tie game or 1-run deficit: Closer 80%, Setup 20%
+            return (gameIdx % 5 !== 0) ? closer : setup;
           }
           if (runDiff >= 4 && runDiff <= 5) {
-            return (gameIdx % 2 === 0) ? closer : setup;
+            // Moderate lead: Setup 45%, RP 35%, Closer 20%
+            const roll = gameIdx % 10;
+            if (roll < 2) return closer;
+            if (roll < 6) return setup;
+            return singleRP;
           }
-          // Blowouts (6+ runs) or large deficits: alternate setup and RP
-          return (gameIdx % 2 === 0) ? setup : singleRP;
+          // Blowouts (6+ runs) or larger deficits: Single RP (60%), Setup (40%)
+          return (gameIdx % 5 < 3) ? singleRP : setup;
         }
 
-        // 8th Inning: Setup is primary (55%), Closer (25%), RP (20%)
+        // ── 8th Inning ──
         if (inning === 8) {
           if (isSaveSituation || (runDiff >= -1 && runDiff <= 4)) {
-            if (gameIdx % 4 === 0) return closer;
-            if (gameIdx % 4 === 1) return singleRP;
+            // Close 8th inning: Setup takes 70%, RP takes 25%, Closer 5% (high leverage bridge)
+            const roll = gameIdx % 20;
+            if (roll === 0) return closer;
+            if (roll < 6) return singleRP;
             return setup;
           }
-          return (gameIdx % 2 === 0) ? setup : singleRP;
+          // Blowouts / wide deficits in 8th: Single RP takes 65%, Setup takes 35%
+          return (gameIdx % 3 === 0) ? setup : singleRP;
         }
 
-        // 7th Inning: Bridge between RP (50%), Setup (30%), Closer (20% in close games)
+        // ── 7th Inning ──
         if (inning === 7) {
-          if (runDiff >= 0 && runDiff <= 3 && gameIdx % 5 === 0) {
-            return setup;
-          }
-          return (gameIdx % 2 === 0) ? singleRP : setup;
+          // Middle reliever (singleRP) handles 70% of 7th innings, Setup handles 30%
+          return (gameIdx % 10 < 3) ? setup : singleRP;
         }
 
-        // Extra Innings (10+): Rotate evenly through all 3 available bullpen arms
+        // ── Extra Innings (10+) ──
         if (inning >= 10) {
           const rotation = [singleRP, setup, closer];
           return rotation[(inning - 10 + gameIdx) % 3];
         }
 
-        // Early pull before 7th (innings 1-6): Alternate RP and Setup
-        return (gameIdx % 2 === 0) ? singleRP : setup;
+        // ── Early pull before 7th (innings 1-6) ──
+        // Long relief absorbed primarily by Single RP (75%), Setup (25%)
+        return (gameIdx % 4 === 0) ? setup : singleRP;
       }
 
       // ── FULL BULLPEN MODE (ROSTERS OF 25: 6 Relievers [RP1..RP4, SETUP, CL]) ──
@@ -1530,15 +1547,15 @@
       // Full bullpen roster passed down so each middle reliever (RP1..RP4), Setup and Closer get used:
       let userRelievers;
       if (rpList.length <= 3) {
-        // Short mode (17 players): exactly [RP, SETUP, CL]
-        const cl = rpList[0];
-        const su = rpList[1] || rpList[0];
-        const rp = rpList[2] || rpList[1] || rpList[0];
+        // Short mode (17 players): exactly [RP, SETUP, CL] by actual role
+        const cl = rpList.find(p => p && (p.role === 'CL' || p.pos === 'CL')) || rpList[0];
+        const su = rpList.find(p => p && (p.role === 'SETUP' || p.pos === 'SETUP')) || rpList[1] || rpList[0];
+        const rp = rpList.find(p => p && p !== cl && p !== su) || rpList[2] || rpList[1] || rpList[0];
         userRelievers = [rp, su, cl];
       } else {
-        const closer = rpList[0] || rpList[1] || rpList[2];
-        const setup  = rpList[1] || rpList[0] || rpList[2];
-        const midRelievers = rpList.slice(2).filter(Boolean);
+        const closer = rpList.find(p => p && (p.role === 'CL' || p.pos === 'CL')) || rpList[0];
+        const setup  = rpList.find(p => p && (p.role === 'SETUP' || p.pos === 'SETUP')) || rpList[1] || rpList[0];
+        const midRelievers = rpList.filter(p => p && p !== closer && p !== setup);
         userRelievers = [...midRelievers, setup, closer];
       }
 
