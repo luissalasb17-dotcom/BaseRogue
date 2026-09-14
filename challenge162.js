@@ -1848,19 +1848,21 @@
           if (pStat) pStat.er += scorers.length;
         }
 
-        // Stolen base roll (smooth authentic sabermetric speed curve):
-        // spd < 50 -> 0-2 SB (catchers, slow sluggers)
-        // spd 50-70 -> 4-12 SB (average runner)
-        // spd 70-85 -> 15-28 SB (A-Rod, Griffey, Bagwell, Altuve, Betts)
-        // spd 90-110 -> 35-55 SB (Lou Brock, Tim Raines, Ohtani)
-        // spd 120-125 -> 65-80 SB (Rickey Henderson, Vince Coleman, Davey Lopes)
+        // Stolen base roll (smooth organic sabermetric curve across 0-125 SPD):
+        // spd ~15-25 (Ted Simmons, Luzinski) -> 1-3 SB
+        // spd ~30-40 (Ripken, Fred McGriff) -> 4-6 SB
+        // spd ~45-55 (Eddie Murray, Kirby Puckett) -> 7-12 SB
+        // spd ~55-65 (Mike Schmidt, George Brett) -> 13-18 SB
+        // spd ~70-85 (Robin Yount, Willie Randolph) -> 20-32 SB
+        // spd ~90-105 (Paul Molitor, Lenny Dykstra) -> 38-55 SB
+        // spd ~120-125 (Rickey Henderson, Davey Lopes, Vince Coleman) -> 65-80 SB
         if (isUserBatting && (outcome === 'BB' || outcome === '1B') && bases[0] === batter) {
-          const runnerSpd = batter.spd !== undefined ? batter.spd : 50;
+          const runnerSpd = batter.spd !== undefined ? Math.max(0, batter.spd) : 50;
           if (!bases[1]) {
-            const t = Math.max(0, (runnerSpd - 40) / 85.0);
-            const attemptChance = 0.008 + Math.pow(t, 2.2) * 0.32;
+            const rate = Math.min(1.0, runnerSpd / 125.0);
+            const attemptChance = 0.003 + Math.pow(rate, 2.0) * 0.42;
             if (Math.random() < attemptChance) {
-              const successRate = 0.62 + Math.min(0.26, Math.max(0, (runnerSpd - 30) / 95.0) * 0.25);
+              const successRate = 0.55 + rate * 0.32;
               if (Math.random() < successRate) {
                 bases[1] = batter;
                 bases[0] = null;
@@ -1869,18 +1871,16 @@
                 // Caught stealing (CS)
                 bases[0] = null;
                 outs++;
-                if (bStat) {
-                  if (bStat.cs !== undefined) bStat.cs++;
-                }
+                if (bStat && bStat.cs !== undefined) bStat.cs++;
               }
             }
-          } else if (!bases[2] && runnerSpd >= 75) {
-            const t3 = Math.max(0, (runnerSpd - 75) / 50.0);
-            const steal3BChance = 0.005 + Math.pow(t3, 2.0) * 0.06;
+          } else if (!bases[2] && runnerSpd >= 65) {
+            const leadRunner = bases[1];
+            const leadSpd = (leadRunner && leadRunner.spd !== undefined) ? leadRunner.spd : runnerSpd;
+            const rate3 = Math.min(1.0, leadSpd / 125.0);
+            const steal3BChance = 0.002 + Math.pow(rate3, 2.5) * 0.10;
             if (Math.random() < steal3BChance) {
-              const leadRunner = bases[1];
-              const leadSpd = (leadRunner && leadRunner.spd !== undefined) ? leadRunner.spd : runnerSpd;
-              const successRate3 = 0.65 + Math.min(0.25, Math.max(0, (leadSpd - 40) / 85.0) * 0.22);
+              const successRate3 = 0.60 + rate3 * 0.28;
               if (Math.random() < successRate3) {
                 bases[2] = leadRunner;
                 bases[1] = batter;
@@ -2159,11 +2159,11 @@
           }
 
           if ((outcome === 'BB' || outcome === '1B') && bases[0] === batter && !bases[1]) {
-            const runnerSpd = batter.spd !== undefined ? batter.spd : 50;
-            const t = Math.max(0, (runnerSpd - 40) / 85.0);
-            const attemptChance = 0.008 + Math.pow(t, 2.2) * 0.32;
+            const runnerSpd = batter.spd !== undefined ? Math.max(0, batter.spd) : 50;
+            const rate = Math.min(1.0, runnerSpd / 125.0);
+            const attemptChance = 0.003 + Math.pow(rate, 2.0) * 0.42;
             if (Math.random() < attemptChance) {
-              const successRate = 0.62 + Math.min(0.26, Math.max(0, (runnerSpd - 30) / 95.0) * 0.25);
+              const successRate = 0.55 + rate * 0.32;
               if (Math.random() < successRate) {
                 bases[1] = batter;
                 bases[0] = null;
@@ -2295,11 +2295,11 @@
           }
 
           if ((outcome === 'BB' || outcome === '1B') && bases[0] === batter && !bases[1]) {
-            const runnerSpd = batter.spd !== undefined ? batter.spd : 50;
-            const t = Math.max(0, (runnerSpd - 40) / 85.0);
-            const attemptChance = 0.008 + Math.pow(t, 2.2) * 0.32;
+            const runnerSpd = batter.spd !== undefined ? Math.max(0, batter.spd) : 50;
+            const rate = Math.min(1.0, runnerSpd / 125.0);
+            const attemptChance = 0.003 + Math.pow(rate, 2.0) * 0.42;
             if (Math.random() < attemptChance) {
-              const successRate = 0.62 + Math.min(0.26, Math.max(0, (runnerSpd - 30) / 95.0) * 0.25);
+              const successRate = 0.55 + rate * 0.32;
               if (Math.random() < successRate) {
                 bases[1] = batter;
                 bases[0] = null;
