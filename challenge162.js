@@ -1849,38 +1849,48 @@
         }
 
         // Stolen base roll (smooth authentic sabermetric speed curve):
-        // spd < 50 -> 1-3 SB (catchers, slow sluggers)
-        // spd 50-70 -> 5-12 SB (average runner)
-        // spd 75-85 -> 20-35 SB (Pee Wee Reese, Betts, Altuve)
-        // spd 90-110+ -> 50-75+ SB (Rickey Henderson, Vince Coleman, Lou Brock, Ohtani)
-        // Stolen base roll (smooth authentic sabermetric speed curve):
         // spd < 50 -> 0-2 SB (catchers, slow sluggers)
-        // spd 50-70 -> 6-15 SB (average runner)
-        // spd 70-85 -> 18-32 SB (A-Rod, Griffey, Bagwell, Altuve, Betts)
-        // spd 90-110+ -> 45-75+ SB (Rickey Henderson, Vince Coleman, Lou Brock, Ohtani)
+        // spd 50-70 -> 4-12 SB (average runner)
+        // spd 70-85 -> 15-28 SB (A-Rod, Griffey, Bagwell, Altuve, Betts)
+        // spd 90-110 -> 35-55 SB (Lou Brock, Tim Raines, Ohtani)
+        // spd 120-125 -> 65-80 SB (Rickey Henderson, Vince Coleman, Davey Lopes)
         if (isUserBatting && (outcome === 'BB' || outcome === '1B') && bases[0] === batter) {
           const runnerSpd = batter.spd !== undefined ? batter.spd : 50;
           if (!bases[1]) {
-            let stealChance = 0.005;
-            if (runnerSpd >= 50) {
-              const t = (runnerSpd - 50) / 50.0;
-              stealChance = 0.035 + Math.pow(Math.max(0, t), 1.5) * 0.42;
+            const t = Math.max(0, (runnerSpd - 40) / 85.0);
+            const attemptChance = 0.008 + Math.pow(t, 2.2) * 0.32;
+            if (Math.random() < attemptChance) {
+              const successRate = 0.62 + Math.min(0.26, Math.max(0, (runnerSpd - 30) / 95.0) * 0.25);
+              if (Math.random() < successRate) {
+                bases[1] = batter;
+                bases[0] = null;
+                if (bStat) bStat.sb++;
+              } else {
+                // Caught stealing (CS)
+                bases[0] = null;
+                outs++;
+                if (bStat) {
+                  if (bStat.cs !== undefined) bStat.cs++;
+                }
+              }
             }
-            if (stealChance > 0 && Math.random() < stealChance) {
-              bases[1] = batter;
-              bases[0] = null;
-              if (bStat) bStat.sb++;
-            }
-          } else if (!bases[2] && runnerSpd >= 65) {
-            const t = (runnerSpd - 65) / 35.0;
-            const steal3BChance = 0.015 + Math.pow(Math.max(0, t), 1.6) * 0.18;
+          } else if (!bases[2] && runnerSpd >= 75) {
+            const t3 = Math.max(0, (runnerSpd - 75) / 50.0);
+            const steal3BChance = 0.005 + Math.pow(t3, 2.0) * 0.06;
             if (Math.random() < steal3BChance) {
               const leadRunner = bases[1];
-              bases[2] = leadRunner;
-              bases[1] = batter;
-              bases[0] = null;
-              const leadKey = (leadRunner) ? batterUnlockKey(leadRunner) : null;
-              if (leadKey && batterDeltas[leadKey]) batterDeltas[leadKey].sb++;
+              const leadSpd = (leadRunner && leadRunner.spd !== undefined) ? leadRunner.spd : runnerSpd;
+              const successRate3 = 0.65 + Math.min(0.25, Math.max(0, (leadSpd - 40) / 85.0) * 0.22);
+              if (Math.random() < successRate3) {
+                bases[2] = leadRunner;
+                bases[1] = batter;
+                bases[0] = null;
+                const leadKey = (leadRunner) ? batterUnlockKey(leadRunner) : null;
+                if (leadKey && batterDeltas[leadKey]) batterDeltas[leadKey].sb++;
+              } else {
+                bases[1] = null;
+                outs++;
+              }
             }
           }
         }
@@ -2150,16 +2160,21 @@
 
           if ((outcome === 'BB' || outcome === '1B') && bases[0] === batter && !bases[1]) {
             const runnerSpd = batter.spd !== undefined ? batter.spd : 50;
-            let stealChance = 0.004;
-            if (runnerSpd >= 50) {
-              const t = (runnerSpd - 50) / 50.0;
-              stealChance = 0.015 + Math.pow(Math.max(0, t), 2.2) * 0.38;
-            }
-            if (Math.random() < stealChance) {
-              bases[1] = batter;
-              bases[0] = null;
-              stolenBase = true;
-              if (bStat) bStat.sb++;
+            const t = Math.max(0, (runnerSpd - 40) / 85.0);
+            const attemptChance = 0.008 + Math.pow(t, 2.2) * 0.32;
+            if (Math.random() < attemptChance) {
+              const successRate = 0.62 + Math.min(0.26, Math.max(0, (runnerSpd - 30) / 95.0) * 0.25);
+              if (Math.random() < successRate) {
+                bases[1] = batter;
+                bases[0] = null;
+                stolenBase = true;
+                if (bStat) bStat.sb++;
+              } else {
+                bases[0] = null;
+                topOuts++;
+                if (hPitcherStat) hPitcherStat.outs++;
+                if (bStat && bStat.cs !== undefined) bStat.cs++;
+              }
             }
           }
 
@@ -2281,16 +2296,21 @@
 
           if ((outcome === 'BB' || outcome === '1B') && bases[0] === batter && !bases[1]) {
             const runnerSpd = batter.spd !== undefined ? batter.spd : 50;
-            let stealChance = 0.004;
-            if (runnerSpd >= 50) {
-              const t = (runnerSpd - 50) / 50.0;
-              stealChance = 0.015 + Math.pow(Math.max(0, t), 2.2) * 0.38;
-            }
-            if (Math.random() < stealChance) {
-              bases[1] = batter;
-              bases[0] = null;
-              stolenBase = true;
-              if (bStat) bStat.sb++;
+            const t = Math.max(0, (runnerSpd - 40) / 85.0);
+            const attemptChance = 0.008 + Math.pow(t, 2.2) * 0.32;
+            if (Math.random() < attemptChance) {
+              const successRate = 0.62 + Math.min(0.26, Math.max(0, (runnerSpd - 30) / 95.0) * 0.25);
+              if (Math.random() < successRate) {
+                bases[1] = batter;
+                bases[0] = null;
+                stolenBase = true;
+                if (bStat) bStat.sb++;
+              } else {
+                bases[0] = null;
+                botOuts++;
+                if (aPitcherStat) aPitcherStat.outs++;
+                if (bStat && bStat.cs !== undefined) bStat.cs++;
+              }
             }
           }
 

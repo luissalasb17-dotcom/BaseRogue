@@ -944,16 +944,16 @@ def paso_11_ovr_rareza(df):
         if r is None or pd.isna(r):
             return 50.0
         val = float(r)
-        if val <= 48.0:
-            res = 50.0 + ((val - 15.0) / 33.0) * 9.9
-        elif val <= 56.0:
-            res = 60.0 + ((val - 48.0) / 8.0) * 9.9
-        elif val <= 66.0:
-            res = 70.0 + ((val - 56.0) / 10.0) * 9.9
-        elif val <= 78.0:
-            res = 80.0 + ((val - 66.0) / 12.0) * 9.9
+        if val <= 47.3:
+            res = 50.0 + ((val - 15.0) / 32.3) * 9.9
+        elif val <= 57.2:
+            res = 60.0 + ((val - 47.3) / 9.9) * 9.9
+        elif val <= 67.0:
+            res = 70.0 + ((val - 57.2) / 9.8) * 9.9
+        elif val <= 82.0:
+            res = 80.0 + ((val - 67.0) / 15.0) * 9.9
         else:
-            res = 90.0 + min(9.9, ((val - 78.0) / 18.0) * 9.9)
+            res = 90.0 + min(9.9, ((val - 82.0) / 25.0) * 9.9)
         return round(res, 1)
 
     df["ovr"]    = df["raw_ovr"].apply(map_to_cosmetic_ovr_p)

@@ -1298,16 +1298,16 @@ def map_to_cosmetic_ovr(r):
     if r is None or pd.isna(r):
         return 50.0
     val = float(r)
-    if val <= 37.0:
-        res = 50.0 + ((val - 10.0) / 27.0) * 9.9
-    elif val <= 48.0:
-        res = 60.0 + ((val - 37.0) / 11.0) * 9.9
-    elif val <= 62.0:
-        res = 70.0 + ((val - 48.0) / 14.0) * 9.9
-    elif val <= 76.0:
-        res = 80.0 + ((val - 62.0) / 14.0) * 9.9
+    if val <= 38.0:
+        res = 50.0 + ((val - 10.0) / 28.0) * 9.9
+    elif val <= 47.0:
+        res = 60.0 + ((val - 38.0) / 9.0) * 9.9
+    elif val <= 57.2:
+        res = 70.0 + ((val - 47.0) / 10.2) * 9.9
+    elif val <= 77.4:
+        res = 80.0 + ((val - 57.2) / 20.2) * 9.9
     else:
-        res = 90.0 + min(9.9, ((val - 76.0) / 18.0) * 9.9)
+        res = 90.0 + min(9.9, ((val - 77.4) / 25.0) * 9.9)
     return round(res, 1)
 
 
