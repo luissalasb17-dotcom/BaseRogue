@@ -3675,8 +3675,8 @@
       let readyFranchises = 0;
       let clearedFranchises = 0;
       const franchiseData = MLB_FRANCHISES.map(fran => {
-        const bCount = getBatterPool().filter(p => this.isBatterUnlocked(p) && (p.team === fran.code || (batterHistory[p.playerID] && batterHistory[p.playerID][fran.code]))).length;
-        const pCount = getPitcherPool().filter(p => this.isPitcherUnlocked(p) && (p.team === fran.code || (pitcherHistory[p.playerID] && pitcherHistory[p.playerID][fran.code]))).length;
+        const bCount = getBatterPool().filter(p => (this.isBatterUnlocked(p) || this.isDexUnlocked(p)) && (p.team === fran.code || (batterHistory[p.playerID] && batterHistory[p.playerID][fran.code]))).length;
+        const pCount = getPitcherPool().filter(p => (this.isPitcherUnlocked(p) || this.isDexUnlocked(p)) && (p.team === fran.code || (pitcherHistory[p.playerID] && pitcherHistory[p.playerID][fran.code]))).length;
         const total = bCount + pCount;
         const isReady = total >= 17;
         const clears = (records.teamClears && records.teamClears[fran.code]) || 0;
@@ -3822,8 +3822,8 @@
       let readyEras = 0;
       let clearedEras = 0;
       const eraData = BASEBALL_ERAS.map(era => {
-        const bCount = getBatterPool().filter(p => this.isBatterUnlocked(p) && p.era === era.key).length;
-        const pCount = getPitcherPool().filter(p => this.isPitcherUnlocked(p) && p.era === era.key).length;
+        const bCount = getBatterPool().filter(p => (this.isBatterUnlocked(p) || this.isDexUnlocked(p)) && p.era === era.key).length;
+        const pCount = getPitcherPool().filter(p => (this.isPitcherUnlocked(p) || this.isDexUnlocked(p)) && p.era === era.key).length;
         const total = bCount + pCount;
         const isReady = total >= 17;
         const clears = (records.eraClears && records.eraClears[era.key]) || 0;
