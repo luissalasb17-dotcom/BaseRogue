@@ -1446,7 +1446,7 @@
     "cy_young_award": "🧢 CY YOUNG AWARD",
     "hr_king_award": "💣 HOME RUN KING",
     "reliever_award": "🔥 RELIEVER OF THE YEAR",
-    "ring_of_champions": "💍 RING OF 17 CHAMPIONS (FULL ROSTER)",
+    "ring_of_champions": "💍 RING OF {{count}} CHAMPIONS (FULL ROSTER)",
     "new_challenge_btn": "🔄 START NEW CHALLENGE",
     "table_pitcher": "PITCHER",
     "table_role": "ROLE",

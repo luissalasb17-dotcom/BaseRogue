@@ -5925,7 +5925,16 @@
         if (p) pitcherCards.push({ player: p, label: `SP${i + 1}` });
       });
       (S.roster.pitchers.RP || []).forEach((p, i) => {
-        if (p) pitcherCards.push({ player: p, label: i === 2 ? 'CL' : `RP${i + 1}` });
+        if (p) {
+          const isHobbyOr25 = (S.roster.pitchers.RP || []).length > 3;
+          let label = `RP${i + 1}`;
+          if (isHobbyOr25) {
+            label = i === 0 ? 'CL' : (i === 1 ? 'SU' : `RP${i - 1}`);
+          } else {
+            label = i === 2 ? 'CL' : (i === 1 ? 'SU' : 'RP1');
+          }
+          pitcherCards.push({ player: p, label });
+        }
       });
 
       const renderCardWrap = ({ player, label }) => {
@@ -6011,7 +6020,8 @@
       const cyAwardLabel = _t('challenge162.cy_young_award', '🧢 PREMIO CY YOUNG');
       const hrAwardLabel = _t('challenge162.hr_king_award', '💣 REY DEL CUADRANGULAR');
       const rpAwardLabel = _t('challenge162.reliever_award', '🔥 RELEVISTA DEL ANO');
-      const ringLabel = _t('challenge162.ring_of_champions', '💍 PLANTILLA DE 17 CAMPEONES (ROSTER COMPLETO)');
+      const totalRosterCards = lineupCards.length + pitcherCards.length;
+      const ringLabel = _t('challenge162.ring_of_champions', `💍 PLANTILLA DE ${totalRosterCards} CAMPEONES (ROSTER COMPLETO)`, { count: totalRosterCards });
       const newChalBtnText = _t('challenge162.new_challenge_btn', '🔄 EMPEZAR NUEVO CHALLENGE');
       const viewStatsBtnText = _t('challenge162.view_stats_table', '📊 VER ESTADISTICAS');
       const backMenuBtnText = _t('challenge162.main_menu', 'MENU PRINCIPAL');

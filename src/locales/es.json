@@ -1450,7 +1450,7 @@
     "cy_young_award": "🧢 PREMIO CY YOUNG",
     "hr_king_award": "💣 REY DEL CUADRANGULAR",
     "reliever_award": "🔥 RELEVISTA DEL ANO",
-    "ring_of_champions": "💍 PLANTILLA DE 17 CAMPEONES (ROSTER COMPLETO)",
+    "ring_of_champions": "💍 PLANTILLA DE {{count}} CAMPEONES (ROSTER COMPLETO)",
     "new_challenge_btn": "🔄 EMPEZAR NUEVO CHALLENGE",
     "table_pitcher": "LANZADOR",
     "table_role": "ROL",

@@ -7722,16 +7722,19 @@ body.on-main-menu .main-container {
   display: flex;
   justify-content: center;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 8px;
+  flex-wrap: nowrap !important;
+  gap: 6px;
   width: 100%;
+  max-width: 100%;
   padding: 4px 0;
+  overflow-x: auto;
+  box-sizing: border-box;
 }
 .c162-result-card-wrap {
   flex: 0 0 auto;
-  transform: scale(0.72);
+  transform: scale(0.64);
   transform-origin: center center;
-  margin: -24px -14px;
+  margin: -28px -18px;
   transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), z-index 0.2s ease, filter 0.2s ease;
 }
 .c162-result-card-wrap:hover {
