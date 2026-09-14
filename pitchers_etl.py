@@ -3,8 +3,8 @@ BaseRogue Pitchers ETL  -  v1.0
 Lahman Pitching.csv + war_daily_pitch.txt  ->  pitchers_pool.js
 
 Filtro de Ingesta:
-  SP: career_ip >= 500.0 (MLB) | >= 250.0 (NLB)
-  RP: career_ip >= 300.0 (MLB) | >= 150.0 (NLB)
+  SP: career_ip >= 400.0 (MLB) | >= 200.0 (NLB)
+  RP: career_ip >= 250.0 (MLB) | >= 125.0 (NLB)
   All-Star  OR  HoF  OR  Calidad/Estrellato Joven
 
 Pico: 7 mejores temporadas por WAR (no consecutivas)
@@ -588,8 +588,8 @@ def paso_5_filtro_ingesta(career, peak, allstar, hof, pure_pitcher_ids, pitching
 
     # Criterio Unificado de Ingesta para Pitchers por Innings Pitched:
     # 1. Volumen de carrera:
-    #    - SP: MLB >= 500.0 IP | NLB >= 250.0 IP
-    #    - RP: MLB >= 300.0 IP | NLB >= 150.0 IP
+    #    - SP: MLB >= 400.0 IP | NLB >= 200.0 IP
+    #    - RP: MLB >= 250.0 IP | NLB >= 125.0 IP
     # 2. Calidad / Estrellato Joven:
     #    - SP: (career_war >= 5.0 OR peak_war >= 5.0) AND (MLB >= 150.0 IP | NLB >= 75.0 IP)
     #    - RP: (career_war >= 3.5 OR peak_war >= 3.5) AND (MLB >= 100.0 IP | NLB >= 50.0 IP)
@@ -607,11 +607,11 @@ def paso_5_filtro_ingesta(career, peak, allstar, hof, pure_pitcher_ids, pitching
         is_nl = r.get("is_nlb", False)
         
         if r["role"] == "SP":
-            vol_threshold = 250.0 if is_nl else 500.0
+            vol_threshold = 200.0 if is_nl else 400.0
             qual_ip_thresh = 75.0 if is_nl else 150.0
             return (cip >= vol_threshold) or (((c_war >= 5.0) or (p_war >= 5.0)) and (cip >= qual_ip_thresh))
         else:
-            vol_threshold = 150.0 if is_nl else 300.0
+            vol_threshold = 125.0 if is_nl else 250.0
             qual_ip_thresh = 50.0 if is_nl else 100.0
             return (cip >= vol_threshold) or (((c_war >= 3.5) or (p_war >= 3.5)) and (cip >= qual_ip_thresh))
 
