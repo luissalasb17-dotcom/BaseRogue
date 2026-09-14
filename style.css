@@ -7276,10 +7276,10 @@ body.on-main-menu .main-container {
   transition: all 0.25s ease;
 }
 
-.c162-base-pod.base-home { bottom: -10px; left: -10px; border-radius: 2px; } /* BOTTOM corner (Home Plate) */
-.c162-base-pod.base-1b   { bottom: -10px; right: -10px; border-radius: 2px; } /* RIGHT corner (First Base 1B) */
-.c162-base-pod.base-2b   { top: -10px; right: -10px; border-radius: 2px; }    /* TOP corner (Second Base 2B) */
-.c162-base-pod.base-3b   { top: -10px; left: -10px; border-radius: 2px; }     /* LEFT corner (Third Base 3B) */
+.c162-base-pod.base-home { bottom: -10px; right: -10px; border-radius: 2px; } /* BOTTOM corner in rotate(45deg) is (bottom, right) */
+.c162-base-pod.base-1b   { top: -10px; right: -10px; border-radius: 2px; }    /* RIGHT corner in rotate(45deg) is (top, right) */
+.c162-base-pod.base-2b   { top: -10px; left: -10px; border-radius: 2px; }     /* TOP corner in rotate(45deg) is (top, left) */
+.c162-base-pod.base-3b   { bottom: -10px; left: -10px; border-radius: 2px; }  /* LEFT corner in rotate(45deg) is (bottom, left) */
 
 .c162-base-pod.occupied {
   background: #ffd700 !important;
