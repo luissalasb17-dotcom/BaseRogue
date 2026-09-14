@@ -9215,12 +9215,13 @@ body.on-main-menu .main-container {
 .c162-cards-row.c162-row-nowrap {
   display: flex !important;
   flex-wrap: nowrap !important;
-  justify-content: center !important;
+  justify-content: flex-start !important;
   align-items: flex-start !important;
   gap: 6px !important;
   overflow-x: auto !important;
-  padding-bottom: 4px !important;
+  padding: 0 4px 6px 4px !important;
   width: 100% !important;
+  box-sizing: border-box !important;
 }
 
 .c162-deck-compact .c162-slot-item {

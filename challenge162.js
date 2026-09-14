@@ -1244,8 +1244,33 @@
       }
       if (added) this.saveUnlocks();
     },
-    isBatterUnlocked(p) { return !!(p && p.playerID && this.unlockedBatters.has(batterUnlockKey(p))); },
-    isPitcherUnlocked(p) { return !!(p && this.unlockedPitchers.has(pitcherUnlockKey(p))); },
+    isDexUnlocked(player) {
+      if (!player) return false;
+      if (!window.BaseballDex) return false;
+      if (typeof window.BaseballDex._getPlayerKeys === 'function') {
+        const keys = window.BaseballDex._getPlayerKeys(player);
+        if (keys.some(k => window.BaseballDex.unlocked && window.BaseballDex.unlocked.has(k))) return true;
+      }
+      if (typeof window.BaseballDex._getOpponentKeys === 'function') {
+        const oppKeys = window.BaseballDex._getOpponentKeys(player);
+        if (oppKeys.some(k => window.BaseballDex.unlockedOpponents && window.BaseballDex.unlockedOpponents.has(k))) return true;
+      }
+      return false;
+    },
+    isBatterUnlocked(p) {
+      if (!p) return false;
+      if (p.playerID && this.unlockedBatters.has(batterUnlockKey(p))) return true;
+      const mode = this.getModeConfig ? this.getModeConfig() : {};
+      if ((mode.type === 'mono_team' || mode.type === 'mono_era') && this.isDexUnlocked(p)) return true;
+      return false;
+    },
+    isPitcherUnlocked(p) {
+      if (!p) return false;
+      if (this.unlockedPitchers.has(pitcherUnlockKey(p))) return true;
+      const mode = this.getModeConfig ? this.getModeConfig() : {};
+      if ((mode.type === 'mono_team' || mode.type === 'mono_era') && this.isDexUnlocked(p)) return true;
+      return false;
+    },
     isUnlocked(player) {
       if (!player) return false;
       const looksLikePitcher = player.h9 !== undefined || player.role === 'SP' || player.role === 'RP';
@@ -1253,7 +1278,8 @@
     },
     getEligibleBatters() {
       const mode = this.getModeConfig();
-      let pool = getBatterPool().filter(p => this.isBatterUnlocked(p));
+      const isMono = (mode.type === 'mono_team' || mode.type === 'mono_era');
+      let pool = getBatterPool().filter(p => isMono ? (this.isBatterUnlocked(p) || this.isDexUnlocked(p)) : this.isBatterUnlocked(p));
       if (mode.type === 'mono_team' && mode.targetTeam) {
         const history = (window.PlayerTeamHistory && window.PlayerTeamHistory.batters) || {};
         pool = pool.filter(p => {
@@ -1268,7 +1294,8 @@
     },
     getEligiblePitchers() {
       const mode = this.getModeConfig();
-      let pool = getPitcherPool().filter(p => this.isPitcherUnlocked(p));
+      const isMono = (mode.type === 'mono_team' || mode.type === 'mono_era');
+      let pool = getPitcherPool().filter(p => isMono ? (this.isPitcherUnlocked(p) || this.isDexUnlocked(p)) : this.isPitcherUnlocked(p));
       if (mode.type === 'mono_team' && mode.targetTeam) {
         const history = (window.PlayerTeamHistory && window.PlayerTeamHistory.pitchers) || {};
         pool = pool.filter(p => {
@@ -5591,16 +5618,16 @@
 
       container.innerHTML = `
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;">
-          <div style="font-family: 'Press Start 2P', monospace; font-size: 13px; color: var(--challenge162-accent);">📊 ESTADÍSTICAS DE LIGA RIVAL</div>
-          <button id="btn-challenge162-liga-back" class="btn btn-secondary" style="padding:6px 12px; font-size:10px;">← TEMPORADA</button>
+          <div style="font-family: 'Press Start 2P', monospace; font-size: 13px; color: var(--challenge162-accent);">📊 OPPONENT LEAGUE STATS</div>
+          <button id="btn-challenge162-liga-back" class="btn btn-secondary" style="padding:6px 12px; font-size:10px;">← SEASON</button>
         </div>
         <div style="display:flex; gap:14px; margin-bottom:20px; flex-wrap:wrap;">
           <div style="background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.12); border-radius:10px; padding:12px 18px; text-align:center;">
-            <div style="font-family:'Press Start 2P',monospace; font-size:8px; color:#94a3af; margin-bottom:6px;">JUEGOS</div>
+            <div style="font-family:'Press Start 2P',monospace; font-size:8px; color:#94a3af; margin-bottom:6px;">GAMES</div>
             <div style="font-family:'Press Start 2P',monospace; font-size:16px; color:#ffd700;">${gamesPlayed}</div>
           </div>
           <div style="background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.12); border-radius:10px; padding:12px 18px; text-align:center;">
-            <div style="font-family:'Press Start 2P',monospace; font-size:8px; color:#94a3af; margin-bottom:6px;">AVG RIVAL COLECTIVO</div>
+            <div style="font-family:'Press Start 2P',monospace; font-size:8px; color:#94a3af; margin-bottom:6px;">OPPONENT TEAM AVG</div>
             <div style="font-family:'Press Start 2P',monospace; font-size:16px; color:${numAvg < 0.220 ? '#38bdf8' : numAvg > 0.275 ? '#ef4444' : '#00ff66'};">${leagueAvg}</div>
           </div>
           <div style="background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.12); border-radius:10px; padding:12px 18px; text-align:center;">
@@ -5617,8 +5644,8 @@
             <table class="c162-table" style="width:100%;">
               <thead>
                 <tr>
-                  <th class="c162-th">BATEADOR RIVAL</th>
-                  <th class="c162-th">EQUIPO</th>
+                  <th class="c162-th">OPPONENT BATTER</th>
+                  <th class="c162-th">TEAM</th>
                   <th class="c162-th">AB</th>
                   <th class="c162-th">H</th>
                   <th class="c162-th">2B</th>
@@ -5635,7 +5662,7 @@
               <tbody>${rows}</tbody>
             </table>
           </div>
-        ` : `<div style="text-align:center; color:#94a3af; padding:40px; font-family:'Press Start 2P',monospace; font-size:10px;">Simula partidos para ver las estadísticas acumuladas de los bateadores rivales</div>`}
+        ` : `<div style="text-align:center; color:#94a3af; padding:40px; font-family:'Press Start 2P',monospace; font-size:10px;">Simulate games to view accumulated opponent stats.</div>`}
       `;
 
       const backBtn = document.getElementById('btn-challenge162-liga-back');
@@ -5657,20 +5684,20 @@
       const _t = (key, fallback, params) => (typeof window.t === 'function' ? window.t(key, params) : fallback);
 
       const getRoundTitle = (rIdx) => {
-        if (rIdx === 0) return _t('challenge162.round_1_title', 'SERIE DIVISIONAL');
-        if (rIdx === 1) return _t('challenge162.round_2_title', 'SERIE DE CAMPEONATO');
-        return _t('challenge162.round_3_title', '🏆 SERIE MUNDIAL [JEFE FINAL]');
+        if (rIdx === 0) return _t('challenge162.round_1_title', 'DIVISION SERIES');
+        if (rIdx === 1) return _t('challenge162.round_2_title', 'CHAMPIONSHIP SERIES');
+        return _t('challenge162.round_3_title', '🏆 WORLD SERIES [FINAL BOSS]');
       };
       const getRoundDesc = (rIdx) => {
-        if (rIdx === 0) return _t('challenge162.round_1_desc', 'Ronda 1: Enfrenta al 3er mejor equipo');
-        if (rIdx === 1) return _t('challenge162.round_2_desc', 'Ronda 2: Enfrenta al 2do mejor equipo');
-        return _t('challenge162.round_3_desc', 'Jefe Final: El #1 invicto de la liga');
+        if (rIdx === 0) return _t('challenge162.round_1_desc', 'Round 1: Face the 3rd best team');
+        if (rIdx === 1) return _t('challenge162.round_2_desc', 'Round 2: Face the 2nd best team');
+        return _t('challenge162.round_3_desc', 'Final Boss: The #1 undefeated league rival');
       };
 
       const oppFranchise = generatePlayoffEnemyTeam(round, S.leagueTeams);
-      const oppSP = (oppFranchise.pitchers && oppFranchise.pitchers[0]) || { cleanName: 'As Rival', name: 'As Rival', ovr: 85 };
-      const oppReliever = oppFranchise.reliever || { name: 'Setup Rival', ovr: 85 };
-      const oppCloser = oppFranchise.closer || { name: 'Closer Rival', ovr: 88 };
+      const oppSP = (oppFranchise.pitchers && oppFranchise.pitchers[0]) || { cleanName: 'Rival Ace', name: 'Rival Ace', ovr: 85 };
+      const oppReliever = oppFranchise.reliever || { name: 'Rival Setup', ovr: 85 };
+      const oppCloser = oppFranchise.closer || { name: 'Rival Closer', ovr: 88 };
       const oppBatters = (oppFranchise._batters || oppFranchise.lineup || []).slice(0, 9);
 
       // User Staff & Lineup
@@ -5679,16 +5706,16 @@
       const spEra = topSPStats && topSPStats.outs > 0 ? ((topSPStats.er * 27) / topSPStats.outs).toFixed(2) : '3.00';
       const topSpOvrDisplay = topSP ? Math.round(topSP.ovr || 85) : 85;
 
-      const userCloser = (S.roster.pitchers.RP && S.roster.pitchers.RP[0]) || { name: 'Cerrador', ovr: 80 };
+      const userCloser = (S.roster.pitchers.RP && S.roster.pitchers.RP[0]) || { name: 'Closer', ovr: 80 };
       const userSetup = (S.roster.pitchers.RP && S.roster.pitchers.RP[1]) || { name: 'Setup', ovr: 80 };
       const userBatters = S.roster.battingOrder.map(slot => S.roster.lineup[slot]).filter(Boolean);
 
       // 3-step bracket stepper
       const stepperHTML = PLAYOFF_ROUNDS.map((r, idx) => {
-        let badgeClass = 'c162-step-locked', badgeText = _t('challenge162.step_locked', '🔒 BLOQUEADA');
-        if (idx < round) { badgeClass = 'c162-step-done'; badgeText = _t('challenge162.step_done', '✔ SUPERADA'); }
-        else if (idx === round) { badgeClass = 'c162-step-active'; badgeText = _t('challenge162.step_active', '⚔ EN DISPUTA'); }
-        const rTitle = _t('challenge162.bracket_round', `RONDA ${r.round}`, { round: r.round });
+        let badgeClass = 'c162-step-locked', badgeText = _t('challenge162.step_locked', '🔒 LOCKED');
+        if (idx < round) { badgeClass = 'c162-step-done'; badgeText = _t('challenge162.step_done', '✔ CLEARED'); }
+        else if (idx === round) { badgeClass = 'c162-step-active'; badgeText = _t('challenge162.step_active', '⚔ ACTIVE'); }
+        const rTitle = _t('challenge162.bracket_round', `ROUND ${r.round}`, { round: r.round });
         const roundCardLabel = getRoundTitle(idx);
         return `
           <div class="c162-step-card ${badgeClass}">
@@ -5702,16 +5729,16 @@
       const curRoundTitle = getRoundTitle(round);
       const curRoundDesc = getRoundDesc(round);
 
-      const playoffsTitle = _t('challenge162.playoffs_title', 'POSTEMPORADA DE BASEROGUE');
-      const playoffsSubtitle = _t('challenge162.playoffs_subtitle', `3 Rondas a Partido Único (Muerte Súbita) · ${curRoundDesc}`, { desc: curRoundDesc });
+      const playoffsTitle = _t('challenge162.playoffs_title', 'BASEROGUE POSTSEASON');
+      const playoffsSubtitle = _t('challenge162.playoffs_subtitle', `3 Single-Elimination Rounds (Sudden Death) · ${curRoundDesc}`, { desc: curRoundDesc });
       const yourTeamName = this.getUserTeamName();
       const yourTeamLabel = `${yourTeamName} (${S.wins}-${S.losses})`;
-      const acePitcherLabel = _t('challenge162.ace_pitcher', 'As Abridor');
-      const closerLabel = _t('challenge162.closer_pitcher', 'Cerrador');
-      const setupLabel = _t('challenge162.setup_pitcher', 'Preparador');
-      const battingLineupLabel = _t('challenge162.batting_lineup', 'Alineación Titular');
-      const playMatchBtnText = _t('challenge162.play_playoff_btn', `🎲 ¡DISPUTAR ${curRoundTitle}! (PARTIDO A MUERTE)`, { label: curRoundTitle });
-      const viewStatsBtnText = _t('challenge162.view_stats_table', '📊 VER TABLA DE STATS');
+      const acePitcherLabel = _t('challenge162.ace_pitcher', 'Ace Pitcher');
+      const closerLabel = _t('challenge162.closer_pitcher', 'Closer');
+      const setupLabel = _t('challenge162.setup_pitcher', 'Setup');
+      const battingLineupLabel = _t('challenge162.batting_lineup', 'Starting Lineup');
+      const playMatchBtnText = _t('challenge162.play_playoff_btn', `🎲 PLAY ${curRoundTitle}! (DO OR DIE MATCH)`, { label: curRoundTitle });
+      const viewStatsBtnText = _t('challenge162.view_stats_table', '📊 VIEW STATS TABLE');
 
       const renderLineupRows = (batters) => (batters || []).slice(0, 9).map((b, idx) => `
         <div style="display:flex;justify-content:space-between;align-items:center;padding:3px 6px;border-bottom:1px solid rgba(255,255,255,0.04);font-size:10.5px;">
@@ -5798,7 +5825,7 @@
           </button>
           ${(S.playoffs && S.playoffs.boxScores && S.playoffs.boxScores.length > 0) ? `
             <button id="challenge162-playoff-view-boxscores-btn" class="btn btn-secondary" style="padding:14px 22px;font-size:11px;font-family:'Press Start 2P',monospace;color:#38bdf8;border-color:rgba(56,189,248,0.4);">
-              ${_t('challenge162.playoff_view_boxscores', '📜 Historial de Box Scores')}
+              ${_t('challenge162.playoff_view_boxscores', '📜 Box Scores Log')}
             </button>
           ` : ''}
           <button id="challenge162-playoff-back-season" class="btn btn-secondary" style="padding:14px 22px;font-size:11px;font-family:'Press Start 2P',monospace;">

@@ -1343,6 +1343,7 @@
     "start_season": "EMPEZAR TEMPORADA 162-0",
     "auto_sim_run": "PAUSAR AUTO SIM",
     "auto_sim_start": "AUTO SIM (1 A 1)",
+    "btn_league_stats": "📊 LIGA RIVAL",
     "main_menu": "MENU PRINCIPAL",
     "playoffs_title": "POSTEMPORADA DE BASEROGUE",
     "playoffs_subtitle": "3 Rondas a Partido Único (Muerte Súbita) · {{desc}}",
