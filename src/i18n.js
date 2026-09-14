@@ -197,6 +197,8 @@
         "back": "VOLVER"
     },
     "season_select": {
+        "conquest_title": "🏆 TEMPORADAS CONQUISTADAS: {{count}} / 125 ({{pct}}%)",
+        "conquered": "Conquistada",
         "title": "📜 SELECCIONA LA TEMPORADA",
         "desc": "Elige el año para competir contra todos los equipos reales de esa época con su rotación completa de lanzadores y progresión histórica de dificultad.",
         "year_label": "AÑO DE LA TEMPORADA:",
@@ -2451,6 +2453,8 @@
         "back": "BACK"
     },
     "season_select": {
+        "conquest_title": "🏆 SEASONS CONQUERED: {{count}} / 125 ({{pct}}%)",
+        "conquered": "Conquered",
         "title": "📜 SELECT THE SEASON",
         "desc": "Choose the year to compete against real teams from that era with their full pitching staffs and authentic difficulty progression.",
         "year_label": "SEASON YEAR:",

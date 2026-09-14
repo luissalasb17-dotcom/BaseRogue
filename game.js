@@ -519,10 +519,35 @@
   // Picks a random player who can actually play `pos`. Tries `preferredRarities`
   // first; if none of those exist at that position, widens to any rarity —
   // but NEVER drops the position requirement (a Catcher slot must get a Catcher).
-  const _pickGambleCandidate = (pool, pos, preferredRarities) => {
-    let candidates = pool.filter(p => _playsPosition(p, pos) && preferredRarities.includes(p.rarity));
-    if (!candidates.length) candidates = pool.filter(p => _playsPosition(p, pos));
-    if (!candidates.length) return null;
+  // In Story Mode: 95% chance to draw an active player from that season; 5% wildcard flagged isInterEra (2x synergy weight).
+  const _pickGambleCandidate = (pool, pos, preferredRarities, G = null) => {
+    let eligible = pool.filter(p => _playsPosition(p, pos));
+    if (!eligible.length) return null;
+
+    let candidates = eligible.filter(p => preferredRarities.includes(p.rarity));
+    if (!candidates.length) candidates = eligible;
+
+    const gameObj = G || (typeof window !== 'undefined' ? window.Game : null);
+    const isStoryYearAware = gameObj && gameObj.selectedMode === 'story' && gameObj.selectedSeasonYear;
+
+    if (isStoryYearAware) {
+      const year = parseInt(gameObj.selectedSeasonYear, 10);
+      const isActive = p => p.debut_year !== undefined && p.last_year !== undefined && p.debut_year <= year && p.last_year >= year;
+      const activeCandidates = candidates.filter(isActive);
+      const useActive = activeCandidates.length > 0 && Math.random() < 0.95;
+
+      let picked = null;
+      if (useActive) {
+        picked = activeCandidates[Math.floor(Math.random() * activeCandidates.length)];
+      } else {
+        picked = candidates[Math.floor(Math.random() * candidates.length)];
+        if (picked && !isActive(picked)) {
+          picked = { ...picked, isInterEra: true, synergyWeight: 2 };
+        }
+      }
+      return picked;
+    }
+
     return candidates[Math.floor(Math.random() * candidates.length)];
   };
 
@@ -576,7 +601,7 @@
             });
           }
           if (!worstPos) return { success, resultText: (typeof window.t==='function'?window.t('gamble.scout.no_target'):'No hay roster titular disponible.') };
-          const pick = _pickGambleCandidate(pool, worstPos, ['Legendary']);
+          const pick = _pickGambleCandidate(pool, worstPos, ['Legendary'], G);
           if (!pick) return { success, resultText: (typeof window.t==='function'?window.t('gamble.no_player_found', { pos: worstPos }):`No se encontró ningún jugador de ${worstPos} disponible.`) };
           const newInstance = {
             ...pick,
@@ -632,7 +657,7 @@
         const success = Math.random() <= _getGambleChance(G, this.chance);
 
         if (success) {
-          const pick = _pickGambleCandidate(pool, worstPos, ['Legendary', 'Epic']);
+          const pick = _pickGambleCandidate(pool, worstPos, ['Legendary', 'Epic'], G);
           if (!pick) return { success, resultText: (typeof window.t==='function'?window.t('gamble.no_player_found', { pos: worstPos }):`No se encontró ningún jugador de ${worstPos} disponible.`) };
 
           const newInstance = {
@@ -652,7 +677,7 @@
             resultText: (typeof window.t==='function'?window.t('gamble.trade.result_win', { oldName: current ? current.name : '(vacío)', newName: newInstance.name, rarity: newInstance.rarity, pos: worstPos }):`¡Gran negocio! ${current ? current.name : '(vacío)'} → ${newInstance.name} (${newInstance.rarity}) en ${worstPos}.`)
           };
         } else {
-          const pick = _pickGambleCandidate(pool, worstPos, ['Common']);
+          const pick = _pickGambleCandidate(pool, worstPos, ['Common'], G);
           if (pick) {
             const newInstance = {
               ...pick,

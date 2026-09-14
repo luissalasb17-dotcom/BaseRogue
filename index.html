@@ -476,6 +476,16 @@
         </p>
 
         <div id="modal-season-controls">
+        <!-- SEASON CONQUEST PROGRESS TRACKER -->
+        <div id="season-conquest-tracker" style="margin-bottom: 20px; padding: 12px 14px; background: rgba(16, 185, 129, 0.08); border: 1.5px solid rgba(16, 185, 129, 0.4); border-radius: 8px; text-align: center;">
+          <div id="season-conquest-counter-text" style="font-family: 'Press Start 2P', monospace; font-size: 9px; color: #ffd700; margin-bottom: 8px; letter-spacing: 0.5px;">
+            🏆 TEMPORADAS CONQUISTADAS: 0 / 125 (0%)
+          </div>
+          <div style="width: 100%; height: 8px; background: rgba(0,0,0,0.6); border-radius: 4px; overflow: hidden; border: 1px solid rgba(16, 185, 129, 0.3);">
+            <div id="season-conquest-progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #10b981, #ffd700); transition: width 0.4s ease;"></div>
+          </div>
+        </div>
+
         <div style="margin-bottom: 25px;">
           <label style="display: block; font-family: 'Press Start 2P', monospace; font-size: 9px; color: #f59e0b; margin-bottom: 8px;" data-i18n="season_select.year_label">AÑO DE LA TEMPORADA:</label>
           <select id="select-season-year" style="width: 100%; padding: 12px; font-family: 'Press Start 2P', monospace; font-size: 11px; background: #000; color: #10b981; border: 2px solid #10b981; border-radius: 8px; cursor: pointer; outline: none;">

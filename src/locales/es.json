@@ -169,6 +169,8 @@
     "back": "VOLVER"
   },
   "season_select": {
+    "conquest_title": "🏆 TEMPORADAS CONQUISTADAS: {{count}} / 125 ({{pct}}%)",
+    "conquered": "Conquistada",
     "title": "📜 SELECCIONA LA TEMPORADA",
     "desc": "Elige el año para competir contra todos los equipos reales de esa época con su rotación completa de lanzadores y progresión histórica de dificultad.",
     "year_label": "AÑO DE LA TEMPORADA:",

@@ -1446,6 +1446,76 @@ function showTutorialTip(id, anchorEl, titleKey, textKey, placement = 'bottom', 
   });
 }
 
+// ── Story Mode Season Conquest Persistence & UI ──
+function getConqueredSeasons() {
+  try {
+    const raw = localStorage.getItem('baserogue_conquered_seasons');
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed.map(Number) : [];
+  } catch (e) {
+    return [];
+  }
+}
+window.getConqueredSeasons = getConqueredSeasons;
+
+function saveConqueredSeason(year) {
+  if (!year) return;
+  const numYear = parseInt(year, 10);
+  if (isNaN(numYear)) return;
+  try {
+    const list = getConqueredSeasons();
+    if (!list.includes(numYear)) {
+      list.push(numYear);
+      list.sort((a, b) => b - a);
+      localStorage.setItem('baserogue_conquered_seasons', JSON.stringify(list));
+    }
+  } catch (e) {
+    console.warn('Failed to save conquered season:', e);
+  }
+}
+window.saveConqueredSeason = saveConqueredSeason;
+
+function renderSeasonConquestUI() {
+  const selectYear = document.getElementById('select-season-year');
+  const counterText = document.getElementById('season-conquest-counter-text');
+  const progressBar = document.getElementById('season-conquest-progress-bar');
+  const conquered = getConqueredSeasons();
+  const totalSeasons = 125; // 1901 to 2025 inclusive
+  const conqueredCount = conquered.length;
+  const pct = Math.round((conqueredCount / totalSeasons) * 100);
+
+  const _t = (k, d, p) => (typeof window.t === 'function' ? window.t(k, p || { defaultValue: d }) : d);
+
+  if (counterText) {
+    const titleTemplate = _t('season_select.conquest_title', `🏆 TEMPORADAS CONQUISTADAS: ${conqueredCount} / ${totalSeasons} (${pct}%)`, { count: conqueredCount, pct: pct });
+    counterText.textContent = titleTemplate;
+  }
+  if (progressBar) {
+    progressBar.style.width = `${Math.min(100, pct)}%`;
+  }
+
+  if (selectYear) {
+    const currentVal = selectYear.value || 'random';
+    const randomLabel = _t('season_select.random', '🎲 Random Season');
+    const conqueredLabel = _t('season_select.conquered', 'Conquistada');
+    
+    selectYear.innerHTML = `<option value="random">${randomLabel}</option>`;
+    for (let y = 2025; y >= 1901; y--) {
+      const opt = document.createElement('option');
+      opt.value = String(y);
+      const isConquered = conquered.includes(y);
+      opt.textContent = isConquered ? `🏆 ${y} — ${conqueredLabel}` : String(y);
+      if (isConquered) {
+        opt.style.color = '#ffd700';
+      }
+      selectYear.appendChild(opt);
+    }
+    selectYear.value = currentVal;
+  }
+}
+window.renderSeasonConquestUI = renderSeasonConquestUI;
+
 function initGameModeSelector() {
     const screenMode = document.getElementById('screen-mode-select');
     const screenMenu = document.getElementById('screen-menu');
@@ -1465,20 +1535,13 @@ function initGameModeSelector() {
       window.Challenge162.updateModeSelectCard();
     }
 
-    // Populate Season dropdown (2025 down to 1901 - newest to oldest)
-    if (selectYear && selectYear.options.length <= 1) {
-      selectYear.innerHTML = '<option value="random">🎲 Random Season</option>';
-      for (let y = 2025; y >= 1901; y--) {
-        const opt = document.createElement('option');
-        opt.value = String(y);
-        opt.textContent = String(y);
-        selectYear.appendChild(opt);
-      }
-    }
+    // Populate Season dropdown and progress tracker
+    renderSeasonConquestUI();
 
     // Story mode card click
     if (btnStory) {
       btnStory.onclick = () => {
+        renderSeasonConquestUI();
         if (modalSeason) modalSeason.classList.remove('hidden');
       };
     }
@@ -10777,6 +10840,12 @@ function initGameModeSelector() {
     if (window.Challenge162 && window.Game) {
       window.Challenge162.unlockFromRun(window.Game);
     }
+
+    // Save Conquered Season in Story Mode
+    if (window.Game && window.Game.selectedMode === 'story' && window.Game.selectedSeasonYear) {
+      saveConqueredSeason(window.Game.selectedSeasonYear);
+    }
+
     window.showScreen('screen-victory');
     startFireworks();
 
