@@ -302,9 +302,11 @@
   window.BaseballDex = {
     STORAGE_KEY: 'baserogue_dex_v1',
     OPPONENTS_STORAGE_KEY: 'baserogue_dex_opponents_v1',
+    SHORTLIST_STORAGE_KEY: 'baserogue_dex_shortlist_v1',
     unlocked: new Set(),
     unlockedOpponents: new Set(),
-    activeCategory: 'legends', // 'legends' or 'opponents'
+    shortlist: new Set(),
+    activeCategory: 'legends', // 'legends', 'opponents', or 'shortlist'
     currentFilterEra: 'all',
     currentFilterPos: 'all',
     currentSearchTerm: '',
@@ -340,12 +342,57 @@
           this.unlockedOpponents = new Set();
         }
       }
+      const storedShortlist = localStorage.getItem(this.SHORTLIST_STORAGE_KEY);
+      if (storedShortlist) {
+        try {
+          const arrShortlist = JSON.parse(storedShortlist);
+          this.shortlist = new Set(arrShortlist);
+        } catch (e) {
+          this.shortlist = new Set();
+        }
+      }
     },
 
     save() {
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify(Array.from(this.unlocked)));
       localStorage.setItem(this.OPPONENTS_STORAGE_KEY, JSON.stringify(Array.from(this.unlockedOpponents)));
+      localStorage.setItem(this.SHORTLIST_STORAGE_KEY, JSON.stringify(Array.from(this.shortlist)));
       this.updateCounters();
+    },
+
+    getShortlistKey(player) {
+      if (!player) return null;
+      const isPitcher = (player.role === 'SP' || player.role === 'RP' || player.pos === 'P' || player.pos === 'SP' || player.pos === 'RP' || player.pos === 'CL' || player.h9 !== undefined || player.stf !== undefined);
+      const keys = isPitcher ? this._getOpponentKeys(player) : this._getPlayerKeys(player);
+      return keys[0] || `${player.name || ''}_${player.year || ''}`;
+    },
+
+    isShortlisted(player) {
+      if (!player) return false;
+      const isPitcher = (player.role === 'SP' || player.role === 'RP' || player.pos === 'P' || player.pos === 'SP' || player.pos === 'RP' || player.pos === 'CL' || player.h9 !== undefined || player.stf !== undefined);
+      const keys = isPitcher ? this._getOpponentKeys(player) : this._getPlayerKeys(player);
+      return keys.some(k => this.shortlist.has(k));
+    },
+
+    toggleShortlist(player) {
+      if (!player) return false;
+      const key = this.getShortlistKey(player);
+      if (!key) return false;
+      let added = false;
+      if (this.isShortlisted(player)) {
+        const isPitcher = (player.role === 'SP' || player.role === 'RP' || player.pos === 'P' || player.pos === 'SP' || player.pos === 'RP' || player.pos === 'CL' || player.h9 !== undefined || player.stf !== undefined);
+        const keys = isPitcher ? this._getOpponentKeys(player) : this._getPlayerKeys(player);
+        keys.forEach(k => this.shortlist.delete(k));
+        added = false;
+      } else {
+        this.shortlist.add(key);
+        added = true;
+      }
+      this.save();
+      if (this.container) {
+        this.applyFilters();
+      }
+      return added;
     },
 
     _getPlayerKeys(player) {
@@ -653,6 +700,19 @@
 
     getStats() {
       let pool = [];
+      if (this.activeCategory === 'shortlist') {
+        const lahmanPool = window.PlayersDB ? (window.PlayersDB.LAHMAN_POOL || []) : [];
+        const pitchersPool = (window.PitchersDB && window.PitchersDB.PITCHERS_POOL) ? window.PitchersDB.PITCHERS_POOL : (window.PITCHERS_POOL || []);
+        const totalShortlisted = this.shortlist.size;
+        let unlockedCount = 0;
+        const allCandidates = [...lahmanPool, ...pitchersPool];
+        allCandidates.forEach(p => {
+          if (this.isShortlisted(p) && this.isUnlocked(p)) {
+            unlockedCount++;
+          }
+        });
+        return { total: totalShortlisted, unlocked: unlockedCount };
+      }
       if (this.activeCategory === 'opponents') {
         pool = (window.PitchersDB && window.PitchersDB.PITCHERS_POOL) ? window.PitchersDB.PITCHERS_POOL : [];
         let validCount = 0;
@@ -687,9 +747,12 @@
       const pct = stats.total > 0 ? ((stats.unlocked / stats.total) * 100).toFixed(1) : 0;
       
       if (elText) {
-        const catLabel = this.activeCategory === 'opponents'
-          ? (typeof window.t === 'function' ? window.t('dex.counter_opponents', 'Oponentes Enfrentados') : 'Oponentes Enfrentados')
-          : (typeof window.t === 'function' ? window.t('dex.counter_legends', 'Cartas Descubiertas') : 'Cartas Descubiertas');
+        let catLabel = (typeof window.t === 'function' ? window.t('dex.counter_legends', 'Cartas Descubiertas') : 'Cartas Descubiertas');
+        if (this.activeCategory === 'opponents') {
+          catLabel = (typeof window.t === 'function' ? window.t('dex.counter_opponents', 'Oponentes Enfrentados') : 'Oponentes Enfrentados');
+        } else if (this.activeCategory === 'shortlist') {
+          catLabel = (typeof window.t === 'function' ? window.t('dex.counter_shortlist', 'Cartas en Shortlist') : 'Cartas en Shortlist');
+        }
         elText.innerText = `${stats.unlocked} / ${stats.total} (${catLabel})`;
       }
       if (elFill) {
@@ -699,7 +762,19 @@
 
     applyFilters() {
       let pool = [];
-      if (this.activeCategory === 'opponents') {
+      if (this.activeCategory === 'shortlist') {
+        const lahmanPool = window.PlayersDB ? (window.PlayersDB.LAHMAN_POOL || []) : [];
+        const pitchersPool = (window.PitchersDB && window.PitchersDB.PITCHERS_POOL) ? window.PitchersDB.PITCHERS_POOL : (window.PITCHERS_POOL || []);
+        const combined = [...lahmanPool, ...pitchersPool];
+        const seenKeys = new Set();
+        pool = combined.filter(p => {
+          if (!this.isShortlisted(p)) return false;
+          const k = this.getShortlistKey(p);
+          if (k && seenKeys.has(k)) return false;
+          if (k) seenKeys.add(k);
+          return true;
+        });
+      } else if (this.activeCategory === 'opponents') {
         pool = (window.PitchersDB && window.PitchersDB.PITCHERS_POOL) ? window.PitchersDB.PITCHERS_POOL : [];
       } else {
         pool = window.PlayersDB ? window.PlayersDB.LAHMAN_POOL : [];
@@ -769,7 +844,7 @@
         return true;
       });
 
-      // Sort: unlocked first, then by OVR desc
+      // Sort: shortlisted / unlocked first, then by OVR desc
       this.filteredPlayers.sort((a, b) => {
         const uA = this.isUnlocked(a) ? 1 : 0;
         const uB = this.isUnlocked(b) ? 1 : 0;
@@ -789,10 +864,21 @@
       const grid = document.getElementById('dex-grid');
       if (!grid) return;
 
+      if (this.activeCategory === 'shortlist' && this.filteredPlayers.length === 0) {
+        grid.innerHTML = `
+          <div style="grid-column: 1 / -1; text-align: center; padding: 40px 20px; color: #9ca3af; font-family: 'Press Start 2P', monospace; font-size: 9px; line-height: 1.8;">
+            <div style="font-size: 30px; margin-bottom: 15px; filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.4));">⭐</div>
+            <div>${typeof window.t === 'function' ? window.t('dex.shortlist_empty') : 'Your shortlist is empty. Click on any card and select ⭐ ADD TO SHORTLIST to bookmark your favorite players!'}</div>
+          </div>
+        `;
+        return;
+      }
+
       const toRender = this.filteredPlayers.slice(this.currentRendered, this.currentRendered + this.renderLimit);
       
       toRender.forEach(p => {
         const isUnl = this.isUnlocked(p);
+        const isFav = this.isShortlisted(p);
         const el = document.createElement('div');
         if (isUnl) {
           const rColor = RARITY_COLORS[p.rarity] || RARITY_COLORS.Common;
@@ -805,6 +891,7 @@
 
           const challenge162Tooltip = (typeof window.t === 'function' ? window.t('dex.challenge162_badge_tooltip') : 'Elegible para el 162-0 Challenge');
           el.innerHTML = `
+            ${isFav ? `<span title="Shortlisted" style="position:absolute;top:4px;left:4px;font-size:11px;filter:drop-shadow(0 0 4px rgba(255,215,0,0.9));">⭐</span>` : ''}
             ${isChallengeEligible ? `<span title="${challenge162Tooltip}" style="position:absolute;top:4px;right:4px;font-size:11px;filter:drop-shadow(0 0 3px rgba(255,215,0,0.8));">🏆</span>` : ''}
             <div>
               <div style="font-size:7px;color:#00ff66;font-family:'Press Start 2P',monospace;margin-bottom:4px">${posLabel}</div>
@@ -821,8 +908,9 @@
           el.onmouseleave = () => el.style.transform = 'scale(1)';
         } else {
           el.className = 'dex-card locked';
-          el.style.cssText = 'background: #111827; border: 2px solid #1f2937; border-radius: 8px; padding: 10px 6px; text-align: center; cursor: default';
+          el.style.cssText = `position: relative; background: #111827; border: 2px solid #1f2937; border-radius: 8px; padding: 10px 6px; text-align: center; cursor: default`;
           el.innerHTML = `
+            ${isFav ? `<span title="Shortlisted" style="position:absolute;top:4px;left:4px;font-size:11px;filter:drop-shadow(0 0 4px rgba(255,215,0,0.9));">⭐</span>` : ''}
             <div style="width:50px;height:50px;background:#1f2937;border-radius:50%;margin:0 auto 6px;display:flex;align-items:center;justify-content:center">
               <i class="fa-solid fa-user" style="color:#374151;font-size:20px"></i>
             </div>
@@ -908,19 +996,24 @@
       header.appendChild(headerRight);
       panel.appendChild(header);
 
-      // Top Category Bar: [ LEYENDAS / JUGADORES ] vs [ OPONENTES (PARTIDA RÁPIDA) ]
+      // Top Category Bar: [ LEYENDAS / BATEADORES ] vs [ OPONENTES (PARTIDA RÁPIDA) ] vs [ ⭐ SHORTLIST ]
       const categoryBar = document.createElement('div');
-      categoryBar.style.cssText = 'display: flex; gap: 8px; justify-content: center; padding: 10px 16px; background: rgba(0,0,0,0.3); border-bottom: 1px solid rgba(255,255,255,0.1);';
+      categoryBar.style.cssText = 'display: flex; gap: 8px; justify-content: center; padding: 10px 16px; background: rgba(0,0,0,0.3); border-bottom: 1px solid rgba(255,255,255,0.1); flex-wrap: wrap;';
       
       const btnLeg = document.createElement('button');
       btnLeg.innerText = typeof window.t === 'function' ? window.t('dex.tab_legends') : '⚾ LEYENDAS / BATEADORES';
       const isLegActive = this.activeCategory === 'legends';
-      btnLeg.style.cssText = `padding: 6px 14px; border-radius: 6px; font-family:"Press Start 2P", monospace; font-size: 9px; font-weight: bold; cursor: pointer; transition: all 0.2s; border: 1px solid #10b981; ${isLegActive ? 'background: #10b981; color: #000;' : 'background: rgba(16,185,129,0.1); color: #10b981;'}`;
+      btnLeg.style.cssText = `padding: 6px 14px; border-radius: 6px; font-family:"Press Start 2P", monospace; font-size: 8.5px; font-weight: bold; cursor: pointer; transition: all 0.2s; border: 1px solid #10b981; ${isLegActive ? 'background: #10b981; color: #000;' : 'background: rgba(16,185,129,0.1); color: #10b981;'}`;
 
       const btnOpp = document.createElement('button');
       btnOpp.innerText = typeof window.t === 'function' ? window.t('dex.tab_opponents') : '🥊 OPONENTES (PARTIDA RÁPIDA)';
       const isOppActive = this.activeCategory === 'opponents';
-      btnOpp.style.cssText = `padding: 6px 14px; border-radius: 6px; font-family:"Press Start 2P", monospace; font-size: 9px; font-weight: bold; cursor: pointer; transition: all 0.2s; border: 1px solid #38bdf8; ${isOppActive ? 'background: #38bdf8; color: #000;' : 'background: rgba(56,189,248,0.1); color: #38bdf8;'}`;
+      btnOpp.style.cssText = `padding: 6px 14px; border-radius: 6px; font-family:"Press Start 2P", monospace; font-size: 8.5px; font-weight: bold; cursor: pointer; transition: all 0.2s; border: 1px solid #38bdf8; ${isOppActive ? 'background: #38bdf8; color: #000;' : 'background: rgba(56,189,248,0.1); color: #38bdf8;'}`;
+
+      const btnShortlist = document.createElement('button');
+      btnShortlist.innerText = typeof window.t === 'function' ? window.t('dex.tab_shortlist') : '⭐ SHORTLIST / FAVORITES';
+      const isShortlistActive = this.activeCategory === 'shortlist';
+      btnShortlist.style.cssText = `padding: 6px 14px; border-radius: 6px; font-family:"Press Start 2P", monospace; font-size: 8.5px; font-weight: bold; cursor: pointer; transition: all 0.2s; border: 1px solid #ffd700; ${isShortlistActive ? 'background: #ffd700; color: #000;' : 'background: rgba(255,215,0,0.12); color: #ffd700;'}`;
 
       btnLeg.onclick = () => {
         this.activeCategory = 'legends';
@@ -932,9 +1025,15 @@
         this.currentFilterPos = 'all';
         this.renderPanel();
       };
+      btnShortlist.onclick = () => {
+        this.activeCategory = 'shortlist';
+        this.currentFilterPos = 'all';
+        this.renderPanel();
+      };
 
       categoryBar.appendChild(btnLeg);
       categoryBar.appendChild(btnOpp);
+      categoryBar.appendChild(btnShortlist);
       panel.appendChild(categoryBar);
 
       // Search bar
@@ -943,7 +1042,12 @@
       const searchInput = document.createElement('input');
       searchInput.type = 'text';
       searchInput.value = this.currentSearchTerm;
-      searchInput.placeholder = this.activeCategory === 'opponents' ? (typeof window.t === 'function' ? window.t('dex.search_placeholder_pitchers') : 'Buscar lanzador por nombre, equipo, era o rol (SP/RP)...') : (typeof window.t === 'function' ? window.t('dex.search_placeholder') : 'Buscar por nombre, equipo o posición (C, 1B, SS...)...');
+      const placeholderText = this.activeCategory === 'shortlist'
+        ? (typeof window.t === 'function' ? window.t('dex.search_placeholder_shortlist') : 'Search shortlist by name, team, era or role...')
+        : (this.activeCategory === 'opponents'
+          ? (typeof window.t === 'function' ? window.t('dex.search_placeholder_pitchers') : 'Buscar lanzador por nombre, equipo, era o rol (SP/RP)...')
+          : (typeof window.t === 'function' ? window.t('dex.search_placeholder') : 'Buscar por nombre, equipo o posición (C, 1B, SS...)...'));
+      searchInput.placeholder = placeholderText;
       searchInput.style.cssText = 'width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 8px 12px; border-radius: 6px; font-size: 12px; outline: none;';
       searchInput.oninput = (e) => {
         this.currentSearchTerm = e.target.value;
@@ -1237,8 +1341,11 @@
           </div>
         </div>
 
-        <!-- CONTROLES EXTERIORES INFERIORES: FLIP + NEXT PACK + B-REF -->
+        <!-- CONTROLES EXTERIORES INFERIORES: SHORTLIST + FLIP + NEXT PACK + B-REF -->
         <div style="margin-top: 14px; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px; z-index: 100;">
+          <button id="btn-modal-shortlist-bottom" style="padding: 6px 14px; background: ${this.isShortlisted(p) ? 'linear-gradient(135deg, rgba(255,215,0,0.35), rgba(245,158,11,0.45))' : 'linear-gradient(135deg, rgba(255,215,0,0.15), rgba(245,158,11,0.2))'}; border: 1.5px solid #ffd700; color: #ffd700; border-radius: 6px; font-family: 'Press Start 2P', monospace; font-size: 7.5px; cursor: pointer; transition: all 0.15s; box-shadow: 0 0 10px rgba(255,215,0,0.3); display: inline-flex; align-items: center; gap: 5px;">
+            ${this.isShortlisted(p) ? (typeof window.t === 'function' ? window.t('dex.btn_shortlist_remove', '★ SHORTLISTED') : '★ SHORTLISTED') : (typeof window.t === 'function' ? window.t('dex.btn_shortlist_add', '⭐ SHORTLIST') : '⭐ SHORTLIST')}
+          </button>
           <button id="btn-modal-flip-bottom" style="padding: 6px 14px; background: linear-gradient(135deg, rgba(56,189,248,0.2), rgba(14,165,233,0.3)); border: 1.5px solid #38bdf8; color: #38bdf8; border-radius: 6px; font-family: 'Press Start 2P', monospace; font-size: 7.5px; cursor: pointer; transition: all 0.15s; box-shadow: 0 0 10px rgba(56,189,248,0.3); display: inline-flex; align-items: center; gap: 5px;">
             🔄 FLIP
           </button>
@@ -1263,6 +1370,33 @@
           this.playCardFlipSound();
         }
       };
+
+      const btnShortlistBottom = overlay.querySelector('#btn-modal-shortlist-bottom');
+      if (btnShortlistBottom) {
+        btnShortlistBottom.onclick = (e) => {
+          if (e) e.stopPropagation();
+          const isAdded = this.toggleShortlist(p);
+          btnShortlistBottom.style.background = isAdded ? 'linear-gradient(135deg, rgba(255,215,0,0.35), rgba(245,158,11,0.45))' : 'linear-gradient(135deg, rgba(255,215,0,0.15), rgba(245,158,11,0.2))';
+          btnShortlistBottom.innerHTML = isAdded
+            ? (typeof window.t === 'function' ? window.t('dex.btn_shortlist_remove', '★ SHORTLISTED') : '★ SHORTLISTED')
+            : (typeof window.t === 'function' ? window.t('dex.btn_shortlist_add', '⭐ SHORTLIST') : '⭐ SHORTLIST');
+          
+          if (typeof window.showToastNotification === 'function') {
+            const toastMsg = isAdded
+              ? (typeof window.t === 'function' ? window.t('dex.shortlist_added_msg', 'Player added to Shortlist') : 'Player added to Shortlist')
+              : (typeof window.t === 'function' ? window.t('dex.shortlist_removed_msg', 'Player removed from Shortlist') : 'Player removed from Shortlist');
+            window.showToastNotification(toastMsg);
+          }
+        };
+        btnShortlistBottom.onmouseenter = () => {
+          btnShortlistBottom.style.transform = 'scale(1.05)';
+          btnShortlistBottom.style.boxShadow = '0 0 20px rgba(255,215,0,0.6)';
+        };
+        btnShortlistBottom.onmouseleave = () => {
+          btnShortlistBottom.style.transform = 'scale(1)';
+          btnShortlistBottom.style.boxShadow = '0 0 10px rgba(255,215,0,0.3)';
+        };
+      }
 
       const btnFlipBottom = overlay.querySelector('#btn-modal-flip-bottom');
       if (btnFlipBottom) {
