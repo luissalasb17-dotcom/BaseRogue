@@ -1039,17 +1039,11 @@
           }
         }
 
-        // Integration Era (1942-1960) Universal Hit Damage (+4/+8/+14/+20) & Shield Repair (+5/+10/+15)
+        // Integration Era (1942-1960) Universal Hit Damage (+4/+8/+14/+20)
         if (integrationTier >= 1) {
           const extraHitDmg = integrationTier === 4 ? 20 : integrationTier === 3 ? 14 : integrationTier === 2 ? 8 : 4;
           pitcherDmg += extraHitDmg;
           synergyProc = (synergyProc ? synergyProc + ' | ' : '') + _t('sim.syn_fivetool_hit', { extra: extraHitDmg }, `🌟 Five-Tool: ¡Batazo integral inflige +${extraHitDmg} daño!`);
-
-          if (integrationTier >= 2) {
-            const shieldRepair = integrationTier === 4 ? 15 : integrationTier === 3 ? 10 : 5;
-            this.teamShield = Math.min(this.teamShieldMax, this.teamShield + shieldRepair);
-            synergyProc += ' | ' + _t('sim.syn_fivetool_shield', { amt: shieldRepair }, `🌟 Five-Tool: ¡Juego integral repara +${shieldRepair} Escudo!`);
-          }
         }
 
         if (this.freshPitcherBonusAvailable) {
@@ -1250,7 +1244,7 @@
         // early_pressure: the first batter of the new inning gets a boost
         if (this.hasTrait('early_pressure')) this.firstBatterOfInningPending = true;
 
-        // Inning shield regeneration: iron_shield trait (+25) and Big Hair synergy
+        // Inning shield regeneration: iron_shield trait (+25), Big Hair synergy, and Integration synergy
         let totalShieldRegen = 0;
         let regenReasons = [];
 
@@ -1264,6 +1258,13 @@
           const bhRegen = bigHairTier === 4 ? 20 : bigHairTier === 3 ? 15 : bigHairTier === 2 ? 10 : 5;
           totalShieldRegen += bhRegen;
           regenReasons.push(`🛼 AstroTurf (+${bhRegen})`);
+        }
+
+        const integrationTier = activeSyn ? (activeSyn['Integration (1942-1960)'] || 0) : 0;
+        if (integrationTier >= 2) {
+          const integRegen = integrationTier === 4 ? 25 : integrationTier === 3 ? 15 : 10;
+          totalShieldRegen += integRegen;
+          regenReasons.push(`🌟 Five-Tool (+${integRegen})`);
         }
 
         if (totalShieldRegen > 0 && this.teamShield < this.teamShieldMax) {
