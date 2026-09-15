@@ -3346,7 +3346,7 @@ function initGameModeSelector() {
       const bb9Val = player.bb9 !== undefined ? player.bb9 : (player.bb9_val !== undefined ? player.bb9_val : (player.ctl !== undefined ? player.ctl : 50));
       const hr9Val = player.hr9 !== undefined ? player.hr9 : (player.hr9_val !== undefined ? player.hr9_val : (player.mov !== undefined ? player.mov : 50));
       const staVal = player.sta !== undefined ? player.sta : (player.sta_val !== undefined ? player.sta_val : 65);
-      const cltVal = player.clt !== undefined ? player.clt : (player.clt_val !== undefined ? player.clt_val : (player.clu !== undefined ? player.clu : (player.clu_val !== undefined ? player.clu_val : 50)));
+      const cltVal = (typeof player.clt === 'number' || (typeof player.clt === 'string' && !isNaN(player.clt))) ? Number(player.clt) : ((typeof player.clt_val === 'number' || (typeof player.clt_val === 'string' && !isNaN(player.clt_val))) ? Number(player.clt_val) : ((typeof player.clu === 'number' || (typeof player.clu === 'string' && !isNaN(player.clu))) ? Number(player.clu) : ((typeof player.clu_val === 'number' || (typeof player.clu_val === 'string' && !isNaN(player.clu_val))) ? Number(player.clu_val) : 50)));
 
       const gH9  = getStatGrade(h9Val);
       const gK9  = getStatGrade(k9Val);
@@ -4310,6 +4310,7 @@ function initGameModeSelector() {
       const bb9 = player.bb9 !== undefined ? player.bb9 : (player.ctl !== undefined ? player.ctl : 50);
       const hr9 = player.hr9 !== undefined ? player.hr9 : (player.mov !== undefined ? player.mov : 50);
       const sta = player.sta !== undefined ? player.sta : (player.sta_val !== undefined ? player.sta_val : 65);
+      const clt = (typeof player.clt === 'number' || (typeof player.clt === 'string' && !isNaN(player.clt))) ? Number(player.clt) : ((typeof player.clt_val === 'number' || (typeof player.clt_val === 'string' && !isNaN(player.clt_val))) ? Number(player.clt_val) : ((typeof player.clu === 'number' || (typeof player.clu === 'string' && !isNaN(player.clu))) ? Number(player.clu) : ((typeof player.clu_val === 'number' || (typeof player.clu_val === 'string' && !isNaN(player.clu_val))) ? Number(player.clu_val) : 50)));
       const roleStr = player.role || player.pos || 'SP';
 
       const renderDexStat = (lbl, val) => {
@@ -4343,10 +4344,7 @@ function initGameModeSelector() {
           ${renderDexStat(t('card_popup.bb9_label', 'BB/9'), bb9)}
           ${renderDexStat(t('card_popup.hr9_label', 'HR/9'), hr9)}
           ${renderDexStat(t('card_popup.sta_label', 'STA'), sta)}
-          <div style="background:#111827;border-radius:6px;padding:8px 10px;display:flex;justify-content:space-between;align-items:center;border:1px solid rgba(255,255,255,0.06);">
-            <span style="font-size:9px;color:#9ca3af;font-family:'Press Start 2P',monospace;">${t('card_popup.role_label', 'ROL')}</span>
-            <span style="font-size:11px;font-weight:bold;color:#38bdf8;font-family:'Press Start 2P',monospace;">${roleStr}</span>
-          </div>
+          ${renderDexStat(t('card_popup.clt_label', 'CLT'), clt)}
         </div>
 
         <div class="popup-year" style="margin-top:12px;border-top:1px dashed rgba(255,255,255,0.15);padding-top:8px;">Peak: ${player.year || player.peak_year || '—'} &nbsp;|&nbsp; ${eraString}</div>
@@ -9436,6 +9434,7 @@ function initGameModeSelector() {
         const pitchBB9 = pitcher.bb9 !== undefined ? pitcher.bb9 : (pitcher.ctl !== undefined ? pitcher.ctl : (pitcher.bb9_val !== undefined ? pitcher.bb9_val : 50));
         const pitchHR9 = pitcher.hr9 !== undefined ? pitcher.hr9 : (pitcher.mov !== undefined ? pitcher.mov : (pitcher.hr9_val !== undefined ? pitcher.hr9_val : 50));
         const pitchSta = pitcher.sta !== undefined ? pitcher.sta : (pitcher.sta_val !== undefined ? pitcher.sta_val : (pitcher.maxHp ? Math.max(15, Math.min(125, Math.round((pitcher.maxHp - 15) / 0.85))) : 65));
+        const pitchClt = (typeof pitcher.clt === 'number' || (typeof pitcher.clt === 'string' && !isNaN(pitcher.clt))) ? Number(pitcher.clt) : ((typeof pitcher.clt_val === 'number' || (typeof pitcher.clt_val === 'string' && !isNaN(pitcher.clt_val))) ? Number(pitcher.clt_val) : ((typeof pitcher.clu === 'number' || (typeof pitcher.clu === 'string' && !isNaN(pitcher.clu))) ? Number(pitcher.clu) : ((typeof pitcher.clu_val === 'number' || (typeof pitcher.clu_val === 'string' && !isNaN(pitcher.clu_val))) ? Number(pitcher.clu_val) : 50)));
 
         const tempPitcher = {
           name: pitcher.name, pos: pitcher.role || 'SP', role: pitcher.role || 'SP',
@@ -9449,7 +9448,11 @@ function initGameModeSelector() {
           h9:  pitchH9,
           k9:  pitchK9,
           bb9: pitchBB9,
-          hr9: pitchHR9
+          hr9: pitchHR9,
+          clt: pitchClt,
+          clu: pitchClt,
+          clt_val: pitchClt,
+          clu_val: pitchClt
         };
         tempPitcher.ovr = pitcher.ovr !== undefined ? pitcher.ovr : (pitcher._ovr !== undefined ? pitcher._ovr : getPlayerOvr(tempPitcher));
         

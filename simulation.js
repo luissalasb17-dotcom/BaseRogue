@@ -65,15 +65,15 @@
     if (!isSituational) return { active: false, label: '', cssClass: '', icon: '', mod: 0 };
     const roundedMod = Math.round(clutchMod);
     if (roundedMod >= 15) {
-      return { active: true, label: `VERY BOOSTED (+${roundedMod})`, level: 'very_boosted', cssClass: 'clutch-very-boosted', icon: '🔥', mod: roundedMod };
+      return { active: true, label: `VERY BOOSTED (+${roundedMod} RATINGS)`, level: 'very_boosted', cssClass: 'clutch-very-boosted', icon: '🔥', mod: roundedMod };
     } else if (roundedMod >= 4) {
-      return { active: true, label: `BOOSTED (+${roundedMod})`, level: 'boosted', cssClass: 'clutch-boosted', icon: '⚡', mod: roundedMod };
+      return { active: true, label: `BOOSTED (+${roundedMod} RATINGS)`, level: 'boosted', cssClass: 'clutch-boosted', icon: '⚡', mod: roundedMod };
     } else if (roundedMod <= -10) {
-      return { active: true, label: `VERY LOWERED (${roundedMod})`, level: 'very_lowered', cssClass: 'clutch-very-lowered', icon: '💀', mod: roundedMod };
+      return { active: true, label: `VERY LOWERED (${roundedMod} RATINGS)`, level: 'very_lowered', cssClass: 'clutch-very-lowered', icon: '💀', mod: roundedMod };
     } else if (roundedMod <= -3) {
-      return { active: true, label: `LOWERED (${roundedMod})`, level: 'lowered', cssClass: 'clutch-lowered', icon: '⚠️', mod: roundedMod };
+      return { active: true, label: `LOWERED (${roundedMod} RATINGS)`, level: 'lowered', cssClass: 'clutch-lowered', icon: '⚠️', mod: roundedMod };
     } else {
-      return { active: true, label: `STEADY (0)`, level: 'steady', cssClass: 'clutch-steady', icon: '⚖️', mod: 0 };
+      return { active: true, label: `STEADY (0 RATINGS)`, level: 'steady', cssClass: 'clutch-steady', icon: '⚖️', mod: 0 };
     }
   }
 
@@ -104,7 +104,7 @@
     let rawK9  = pitcher.k9  !== undefined ? pitcher.k9  : (pitcher.stf !== undefined ? pitcher.stf : 50);
     let rawBB9 = pitcher.bb9 !== undefined ? pitcher.bb9 : (pitcher.ctl !== undefined ? pitcher.ctl : 50);
     let rawHR9 = pitcher.hr9 !== undefined ? pitcher.hr9 : (pitcher.mov !== undefined ? pitcher.mov : 50);
-    const pClutch = pitcher.clt !== undefined ? pitcher.clt : (pitcher.clu !== undefined ? pitcher.clu : (pitcher.clutch !== undefined ? pitcher.clutch : 50));
+    const pClutch = (typeof pitcher.clt === 'number' || (typeof pitcher.clt === 'string' && !isNaN(pitcher.clt))) ? Number(pitcher.clt) : ((typeof pitcher.clt_val === 'number' || (typeof pitcher.clt_val === 'string' && !isNaN(pitcher.clt_val))) ? Number(pitcher.clt_val) : ((typeof pitcher.clu === 'number' || (typeof pitcher.clu === 'string' && !isNaN(pitcher.clu))) ? Number(pitcher.clu) : ((typeof pitcher.clu_val === 'number' || (typeof pitcher.clu_val === 'string' && !isNaN(pitcher.clu_val))) ? Number(pitcher.clu_val) : 50)));
 
     // Dynamic Pitcher Clutch Situation:
     // Triggers when RISP (runner on 2B or 3B) OR Extra Innings (Inning >= 4)
@@ -1841,8 +1841,8 @@
           k9:     this.activePitcher.k9,
           bb9:    this.activePitcher.bb9,
           hr9:    this.activePitcher.hr9,
-          clt:    this.activePitcher.clt !== undefined ? this.activePitcher.clt : (this.activePitcher.clu !== undefined ? this.activePitcher.clu : (this.activePitcher.clutch !== undefined ? this.activePitcher.clutch : 50)),
-          clu:    this.activePitcher.clu !== undefined ? this.activePitcher.clu : (this.activePitcher.clt !== undefined ? this.activePitcher.clt : (this.activePitcher.clutch !== undefined ? this.activePitcher.clutch : 50))
+          clt:    (typeof this.activePitcher.clt === 'number' || (typeof this.activePitcher.clt === 'string' && !isNaN(this.activePitcher.clt))) ? Number(this.activePitcher.clt) : ((typeof this.activePitcher.clt_val === 'number' || (typeof this.activePitcher.clt_val === 'string' && !isNaN(this.activePitcher.clt_val))) ? Number(this.activePitcher.clt_val) : ((typeof this.activePitcher.clu === 'number' || (typeof this.activePitcher.clu === 'string' && !isNaN(this.activePitcher.clu))) ? Number(this.activePitcher.clu) : 50)),
+          clu:    (typeof this.activePitcher.clu === 'number' || (typeof this.activePitcher.clu === 'string' && !isNaN(this.activePitcher.clu))) ? Number(this.activePitcher.clu) : ((typeof this.activePitcher.clu_val === 'number' || (typeof this.activePitcher.clu_val === 'string' && !isNaN(this.activePitcher.clu_val))) ? Number(this.activePitcher.clu_val) : ((typeof this.activePitcher.clt === 'number' || (typeof this.activePitcher.clt === 'string' && !isNaN(this.activePitcher.clt))) ? Number(this.activePitcher.clt) : 50))
         } : null,
         currentBatter:   this.awayTeam.lineup[this.awayLineupIndex] || null,
         lineupIndex:     this.awayLineupIndex,

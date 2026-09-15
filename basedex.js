@@ -1225,6 +1225,7 @@
         const bb9 = p.bb9 !== undefined ? p.bb9 : (p.ctl !== undefined ? p.ctl : 50);
         const hr9 = p.hr9 !== undefined ? p.hr9 : (p.mov !== undefined ? p.mov : 50);
         const sta = p.sta !== undefined ? p.sta : 65;
+        const clt = p.clt !== undefined ? p.clt : (p.clt_val !== undefined ? p.clt_val : (p.clu !== undefined ? p.clu : (p.clu_val !== undefined ? p.clu_val : 50)));
 
         statsHTML = `
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px">
@@ -1233,7 +1234,7 @@
             ${renderStat('BB/9', bb9)}
             ${renderStat('HR/9', hr9)}
             ${renderStat('STA', sta)}
-            ${renderStat('ROL', p.role || p.pos || 'P')}
+            ${renderStat('CLT', clt)}
           </div>
         `;
       } else {
