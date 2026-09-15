@@ -1259,17 +1259,11 @@
     },
     isBatterUnlocked(p) {
       if (!p) return false;
-      if (p.playerID && this.unlockedBatters.has(batterUnlockKey(p))) return true;
-      const mode = this.getModeConfig ? this.getModeConfig() : {};
-      if ((mode.type === 'mono_team' || mode.type === 'mono_era') && this.isDexUnlocked(p)) return true;
-      return false;
+      return !!(p.playerID && this.unlockedBatters && this.unlockedBatters.has(batterUnlockKey(p)));
     },
     isPitcherUnlocked(p) {
       if (!p) return false;
-      if (this.unlockedPitchers.has(pitcherUnlockKey(p))) return true;
-      const mode = this.getModeConfig ? this.getModeConfig() : {};
-      if ((mode.type === 'mono_team' || mode.type === 'mono_era') && this.isDexUnlocked(p)) return true;
-      return false;
+      return !!(this.unlockedPitchers && this.unlockedPitchers.has(pitcherUnlockKey(p)));
     },
     isUnlocked(player) {
       if (!player) return false;
@@ -3434,8 +3428,8 @@
       let readyFranchises = 0;
       let clearedFranchises = 0;
       MLB_FRANCHISES.forEach(fran => {
-        const bCount = getBatterPool().filter(p => this.isBatterUnlocked(p) && (p.team === fran.code || (batterHistory[p.playerID] && batterHistory[p.playerID][fran.code]))).length;
-        const pCount = getPitcherPool().filter(p => this.isPitcherUnlocked(p) && (p.team === fran.code || (pitcherHistory[p.playerID] && pitcherHistory[p.playerID][fran.code]))).length;
+        const bCount = getBatterPool().filter(p => (this.isBatterUnlocked(p) || this.isDexUnlocked(p)) && (p.team === fran.code || (batterHistory[p.playerID] && batterHistory[p.playerID][fran.code]))).length;
+        const pCount = getPitcherPool().filter(p => (this.isPitcherUnlocked(p) || this.isDexUnlocked(p)) && (p.team === fran.code || (pitcherHistory[p.playerID] && pitcherHistory[p.playerID][fran.code]))).length;
         if (bCount + pCount >= 17) readyFranchises++;
         if (records.teamClears && records.teamClears[fran.code]) clearedFranchises++;
       });
@@ -3443,8 +3437,8 @@
       let readyEras = 0;
       let clearedEras = 0;
       BASEBALL_ERAS.forEach(era => {
-        const bCount = getBatterPool().filter(p => this.isBatterUnlocked(p) && p.era === era.key).length;
-        const pCount = getPitcherPool().filter(p => this.isPitcherUnlocked(p) && p.era === era.key).length;
+        const bCount = getBatterPool().filter(p => (this.isBatterUnlocked(p) || this.isDexUnlocked(p)) && p.era === era.key).length;
+        const pCount = getPitcherPool().filter(p => (this.isPitcherUnlocked(p) || this.isDexUnlocked(p)) && p.era === era.key).length;
         if (bCount + pCount >= 17) readyEras++;
         if (records.eraClears && records.eraClears[era.key]) clearedEras++;
       });
