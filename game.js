@@ -2047,6 +2047,20 @@
         }
       }
 
+      // Integration Era T4 Synergy: "each batter's lowest stat equals their highest stat"
+      const Eras = window.PlayersDB ? window.PlayersDB.Eras : null;
+      const isIntegrationT4 = synergies.some(syn => syn.category === 'era' && (syn.era === (Eras && Eras.INTEGRATION) || syn.era === "Integration (1942-1960)" || (syn.era && syn.era.includes('Integration'))) && syn.level >= 4);
+      if (isIntegrationT4) {
+        const highestStat = Math.max(con, pwr, eye, kavd, spd, def);
+        const lowestStat = Math.min(con, pwr, eye, kavd, spd, def);
+        if (con === lowestStat) con = highestStat;
+        if (pwr === lowestStat) pwr = highestStat;
+        if (eye === lowestStat) eye = highestStat;
+        if (kavd === lowestStat) kavd = highestStat;
+        if (spd === lowestStat) spd = highestStat;
+        if (def === lowestStat) def = highestStat;
+      }
+
       return {
         ...player,
         con: Math.max(1, Math.min(125, con)),
