@@ -1066,7 +1066,7 @@
         tr('eagle_patience',    '🦅', 'eagle', '🦅 Paciencia de Águila', 'Zona de Boleto (BB) aumenta +5 puntos. Cada BB inflige +15 HP de daño extra y regenera +10 Stamina al bateador.'),
         tr('slugger_momentum',  '💥', 'slugger', '💥 Impulso de Jonronero', 'Cada HR inflige +30 HP de daño extra al pitcher rival.'),
         tr('surgical_contact',  '🎯', 'surgical', '🎯 Contacto Quirúrgico', 'Zona de Ponche (SO) reducida en -3 puntos para toda la alineación.'),
-        tr('speed_demons',      '⚡', 'speed', '⚡ Velocistas Agresivos', 'Jugadores con SPD > 60 roban la base automáticamente en sencillos y boletos. Debuff al pitcher dura 3 impactos.'),
+        tr('speed_demons',      '⚡', 'speed', '⚡ Velocistas Agresivos', 'Jugadores con SPD > 60 roban la base automáticamente en sencillos y boletos. Debuff al pitcher dura 3 turnos.'),
         tr('extra_base_impact', '💣', 'extrabase', '💣 Impacto Acumulado', 'Batazos de extra bases (2B, 3B, HR) infligen +10 HP de daño adicional al pitcher.'),
         tr('iron_shield',       '🛡️', 'shield', '🛡️ Escudo de Hierro', 'Repara automáticamente +25 de Escudo al inicio de cada entrada (hasta el límite de tu equipo).'),
         tr('defensive_wall',    '🧱', 'wall', '🧱 Muro Defensivo', 'Outs normales reducen daño a -13 HP en lugar de -20 HP.'),
@@ -1800,18 +1800,18 @@
             // Floors 2, 4, 6 (localIdx 1, 3, 5): Even floors are Non-Match / Prep stages
             // Purely probabilistic selection among all non-match node types
             const roll = Math.random();
-            if (roll < 0.22) {
-              type = 'event';      // Decisión / Evento
-            } else if (roll < 0.42) {
-              type = 'train';      // Jaula de Bateo / Training
-            } else if (roll < 0.62) {
-              type = 'draft';      // Firma Leyenda / Draft
+            if (roll < 0.20) {
+              type = 'event';      // Decisión / Evento (20%)
+            } else if (roll < 0.40) {
+              type = 'train';      // Jaula de Bateo / Training (20%)
+            } else if (roll < 0.60) {
+              type = 'draft';      // Firma Leyenda / Draft (20%)
             } else if (roll < 0.80) {
-              type = 'chest';      // Cofre / Items
-            } else if (roll < 0.92) {
-              type = 'rest';       // Casa Club / Rest
+              type = 'rest';       // Casa Club / Rest (20%)
+            } else if (roll < 0.90) {
+              type = 'chest';      // Cofre / Items (10%)
             } else {
-              type = 'gamble';     // Luck / Apuesta
+              type = 'gamble';     // Luck / Apuesta (10%)
             }
           }
 
