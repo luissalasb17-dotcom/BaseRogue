@@ -1148,7 +1148,7 @@
             steal3BProcMsg = (steal3BProcMsg ? steal3BProcMsg + ' + ' : '') + _t('sim.trait_speed_demons', {}, '⚡ Velocistas Agresivos');
           }
 
-          if ((effBatter.spd || 0) >= 50 && Math.random() < steal3BChance) {
+          if ((effBatter.spd || 0) >= 60 && Math.random() < steal3BChance) {
             this.bases[2] = batter;
             this.bases[1] = null;
             didSteal = true;
