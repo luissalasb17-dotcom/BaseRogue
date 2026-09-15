@@ -2565,53 +2565,89 @@
             return chosen;
           };
 
-          // Finds the best 3-pitcher combination from a team that fits the target average range
+          // Finds the best 3-pitcher combination from a team conforming strictly to canonical baseball roles:
+          // Inning 1 (p1): Obligatorily a Starter (SP)
+          // Inning 2 (p2): Flexible (SP or RP)
+          // Inning 3 (p3): Obligatorily a Reliever / Closer (RP)
           const findTeamTrioByAvg = (teamObj, targetMinAvg, targetMaxAvg) => {
             const staff = teamObj.pitchers || [];
             if (staff.length < 3) return staff.map(p => createPitcherObj(p));
+
+            const spList = staff.filter(p => (p.role || '').toUpperCase() === 'SP');
+            const rpList = staff.filter(p => (p.role || '').toUpperCase() === 'RP');
+
+            const effectiveSpPool = spList.length > 0 ? spList : staff;
+            const effectiveRpPool = rpList.length > 0 ? rpList : staff;
 
             let bestTrio = null;
             let bestDiff = 999;
             const targetMid = (targetMinAvg + targetMaxAvg) / 2.0;
 
-            // Iterate possible combinations
-            for (let i = 0; i < staff.length - 2; i++) {
-              for (let j = i + 1; j < staff.length - 1; j++) {
-                for (let k = j + 1; k < staff.length; k++) {
-                  const p1 = staff[i], p2 = staff[j], p3 = staff[k];
-                  const avg = (p1.ovr + p2.ovr + p3.ovr) / 3.0;
+            // Step 1: Iterate role-compliant trios [1 SP, 1 Flexible, 1 RP] within target average range
+            for (let i = 0; i < effectiveSpPool.length; i++) {
+              const sp = effectiveSpPool[i];
+              for (let j = 0; j < effectiveRpPool.length; j++) {
+                const rp = effectiveRpPool[j];
+                if ((rp.playerID || rp.name) === (sp.playerID || sp.name)) continue;
+
+                for (let k = 0; k < staff.length; k++) {
+                  const mid = staff[k];
+                  if ((mid.playerID || mid.name) === (sp.playerID || sp.name) ||
+                      (mid.playerID || mid.name) === (rp.playerID || rp.name)) {
+                    continue;
+                  }
+
+                  const avg = (sp.ovr + mid.ovr + rp.ovr) / 3.0;
                   if (avg >= targetMinAvg && avg <= targetMaxAvg) {
                     const diff = Math.abs(avg - targetMid);
                     if (diff < bestDiff) {
                       bestDiff = diff;
-                      bestTrio = [p1, p2, p3];
+                      bestTrio = [sp, mid, rp];
                     }
                   }
                 }
               }
             }
 
-            // If no trio hits the exact range, pick the 3 pitchers closest to the target range
+            // Step 2: If no trio hits the exact range, find the role-compliant trio closest to targetMid
             if (!bestTrio) {
-              if (targetMinAvg <= 60) {
-                // Bottom 3
-                bestTrio = staff.slice(-3);
-              } else if (targetMinAvg >= 80) {
-                // Top 3
-                bestTrio = staff.slice(0, 3);
-              } else {
-                // Closest to mid
-                const sortedByDist = [...staff].sort((a, b) => Math.abs(a.ovr - targetMid) - Math.abs(b.ovr - targetMid));
-                bestTrio = sortedByDist.slice(0, 3);
+              for (let i = 0; i < effectiveSpPool.length; i++) {
+                const sp = effectiveSpPool[i];
+                for (let j = 0; j < effectiveRpPool.length; j++) {
+                  const rp = effectiveRpPool[j];
+                  if ((rp.playerID || rp.name) === (sp.playerID || sp.name)) continue;
+
+                  for (let k = 0; k < staff.length; k++) {
+                    const mid = staff[k];
+                    if ((mid.playerID || mid.name) === (sp.playerID || sp.name) ||
+                        (mid.playerID || mid.name) === (rp.playerID || rp.name)) {
+                      continue;
+                    }
+
+                    const avg = (sp.ovr + mid.ovr + rp.ovr) / 3.0;
+                    const diff = Math.abs(avg - targetMid);
+                    if (diff < bestDiff) {
+                      bestDiff = diff;
+                      bestTrio = [sp, mid, rp];
+                    }
+                  }
+                }
               }
             }
 
-            // Order rotation: Starter (SP) first, middle, Closer (RP) last
-            const p1 = createPitcherObj(pickPitcherFromList(bestTrio, 'SP'), 'SP');
-            const rem = bestTrio.filter(p => (p.name || p.playerID) !== (p1.cleanName || p1.name));
-            const p3 = createPitcherObj(pickPitcherFromList(rem, 'RP'), 'RP');
-            const rem2 = rem.filter(p => (p.name || p.playerID) !== (p3.cleanName || p3.name));
-            const p2 = createPitcherObj(rem2[0] || rem[0] || staff[0]);
+            // Ultimate safety fallback
+            if (!bestTrio) {
+              const pOpen = effectiveSpPool[0] || staff[0];
+              const rem = staff.filter(p => (p.playerID || p.name) !== (pOpen.playerID || pOpen.name));
+              const pClose = (rpList.length > 0 ? rpList[0] : null) || rem[rem.length - 1] || staff[0];
+              const rem2 = rem.filter(p => (p.playerID || p.name) !== (pClose.playerID || pClose.name));
+              const pMid = rem2[0] || rem[0] || staff[0];
+              bestTrio = [pOpen, pMid, pClose];
+            }
+
+            const p1 = createPitcherObj(bestTrio[0], 'SP');
+            const p2 = createPitcherObj(bestTrio[1], bestTrio[1].role || 'RP');
+            const p3 = createPitcherObj(bestTrio[2], 'RP');
 
             return [p1, p2, p3];
           };

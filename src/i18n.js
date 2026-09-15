@@ -1553,7 +1553,7 @@
         "residual": "<strong style=\"color:#f59e0b;\">⚡ REMANENTE (50%):</strong><div style=\"font-size:8.5px;color:#cbd5e1;margin-top:2px;\">Al noquear al pitcher, el daño sobrante pasa al <strong>50% (÷2)</strong> al relevista entrante.</div>",
         "defense": "<strong style=\"color: #38bdf8;\">🛡️ DUELO DEFENSIVO (Baja de Entrada):</strong><div style=\"font-size: 8.5px; color: #cbd5e1; margin-top: 2px;\">🛡️ Regular: <strong style=\"color:#4ade80;\">+20 Escudo</strong> (Fallo: -10 HP)<br>⚡ De Lujo (-12% Meta): <strong style=\"color:#4ade80;\">+60 Escudo</strong> (Fallo: -30 HP)<br>💀 En Extras (Inning 4+): ¡Fallo = Walk-Off rival!</div>",
         "steal": "<strong style=\"color: #38bdf8;\">🏃 ROBO DE BASES:</strong><div style=\"font-size: 8.5px; color: #cbd5e1; margin-top: 2px;\">• <strong>2B (en 1B/BB, SPD ≥ 40):</strong> Éxito según SPD (40-100%).<br>• <strong>3B (en 2B, SPD ≥ 60):</strong> Éxito según SPD/2 (30-50%).<br><em>Robar aplica debuff al lanzador (+20% daño en 2 turnos).</em></div>",
-        "upgrade": "<strong style=\"color: #a855f7;\">⚡ UPGRADE DE BATAZOS (SPD):</strong><div style=\"font-size: 8.5px; color: #cbd5e1; margin-top: 2px;\">Desde <strong>SPD ≥ 60</strong> (5% a 30% máx): estira 1B→2B (y 2B→3B si SPD ≥ 75).</div>",
+        "upgrade": "<strong style=\"color: #a855f7;\">⚡ UPGRADE DE BATAZOS (SPD):</strong><div style=\"font-size: 8.5px; color: #cbd5e1; margin-top: 2px;\">• <strong>1B ➔ 2B (SPD ≥ 60):</strong> 5% a 45% máx.<br>• <strong>2B ➔ 3B (SPD ≥ 75):</strong> 5% a 35% máx.</div>",
         "shield_max": "🛡️ Escudo: DEF promedio de tus 8 defensores (1 a 100)."
     },
     "run_intro": {
@@ -3850,8 +3850,8 @@
         "rbi_bonus": "🏆 <strong>RBI Bonus:</strong> Each RBI adds <strong style=\"color:#00ff66;\">+10 extra HP</strong> damage to the pitcher.",
         "residual": "<strong style=\"color:#f59e0b;\">⚡ OVERFLOW (50%):</strong><div style=\"font-size:8.5px;color:#cbd5e1;margin-top:2px;\">On KO, remaining damage carries over at <strong>50% (÷2)</strong> to the next reliever.</div>",
         "defense": "<strong style=\"color: #38bdf8;\">🛡️ DEFENSIVE DUEL (Bottom of Inning):</strong><div style=\"font-size: 8.5px; color: #cbd5e1; margin-top: 2px;\">🛡️ Regular: <strong style=\"color:#4ade80;\">+20 Shield</strong> (Fail: -10 HP)<br>⚡ Highlight Dive (-12% Target): <strong style=\"color:#4ade80;\">+60 Shield</strong> (Fail: -30 HP)<br>💀 In Extras (Inning 4+): Any failure = Walk-Off Defeat!</div>",
-        "steal": "<strong style=\"color: #38bdf8;\">🏃 BASE STEALING:</strong><div style=\"font-size: 8.5px; color: #cbd5e1; margin-top: 2px;\">• <strong>2B (on 1B/BB, SPD ≥ 40):</strong> Success based on SPD (40-100%).<br>• <strong>3B (on 2B, SPD ≥ 60):</strong> Success based on SPD/2 (30-50%).<br><em>Stealing debuffs pitcher (+20% damage for 2 hits).</em></div>",
-        "upgrade": "<strong style=\"color: #a855f7;\">⚡ HIT UPGRADES (SPD):</strong><div style=\"font-size: 8.5px; color: #cbd5e1; margin-top: 2px;\">At <strong>SPD ≥ 60</strong> (5% to 30% max): stretches 1B→2B (and 2B→3B if SPD ≥ 75).</div>",
+        "steal": "<strong style=\"color: #38bdf8;\">🏃 BASE STEALING:</strong><div style=\"font-size: 8.5px; color: #cbd5e1; margin-top: 2px;\">• <strong>2B (on 1B/BB, SPD ≥ 40):</strong> Success based on SPD (40-100%).<br>• <strong>3B (on 2B, SPD ≥ 60):</strong> Success based on SPD/2 (30-50%).<br><em>Stealing debuffs pitcher (+20% damage for 2 turns).</em></div>",
+        "upgrade": "<strong style=\"color: #a855f7;\">⚡ HIT UPGRADES (SPD):</strong><div style=\"font-size: 8.5px; color: #cbd5e1; margin-top: 2px;\">• <strong>1B ➔ 2B (SPD ≥ 60):</strong> 5% to 45% max.<br>• <strong>2B ➔ 3B (SPD ≥ 75):</strong> 5% to 35% max.</div>",
         "shield_max": "🛡️ Shield: Average DEF of your 8 fielders (1 to 100)."
     },
     "run_intro": {
