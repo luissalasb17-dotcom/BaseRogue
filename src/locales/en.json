@@ -475,9 +475,8 @@
     "sudden_death_title": "⚡ SUDDEN DEATH! ⚡",
     "extra_innings_hud_title": "⚡ EXTRA INNINGS • SUDDEN DEATH! ⚡",
     "simulate_all_pause": "⏸️ PAUSE AUTO",
-    "interactive_header_prefix": "Interactive Combat vs",
-    "impact_single": "hit",
-    "impact_plural": "hits"
+    "impact_single": "turn",
+    "impact_plural": "turns"
   },
   "popup": {
     "bb_title": "WALK (BB)",
@@ -678,8 +677,8 @@
     "pitcher_dmg_txt": "takes {{dmg}} HP damage",
     "steal_label": "STOLEN BASE!",
     "steal_desc": "steals second base",
-    "debuff_turn_s": "impact remaining",
-    "debuff_turns_p": "impacts remaining",
+    "debuff_turn_s": "turn remaining",
+    "debuff_turns_p": "turns remaining",
     "debuff_note": "Debuff of +20% damage",
     "extra_dmg_pitcher": "extra damage to pitcher",
     "clutch_desc": "bats in a decisive moment",
@@ -706,11 +705,11 @@
     "inning_end": "--- END OF INNING {{inning}} ({{runs}} runs scored) ---",
     "match_timeout": "⏱ MATCH OVER (3 innings). {{remaining}} pitchers remaining.",
     "syn_moneyball_bb": "📊 Moneyball: Walk deals +{{extra}} damage!",
-    "syn_moneyball_fatigue": "📊 Moneyball: Pitcher fatigued! +20% damage debuff ({{turns}} impacts remaining).",
+    "syn_moneyball_fatigue": "📊 Moneyball: Pitcher fatigued! +20% damage debuff ({{turns}} turns remaining).",
     "syn_moneyball_so_t3": "📊 Moneyball: Strikeout absorbed by Shield (bypasses direct HP damage)!",
     "syn_moneyball_so_t4": "📊 Moneyball: Strikeout mitigated (-50%) and absorbed by Shield!",
     "syn_tto_bb": "🚀 Three True Outcomes: Power walk deals +{{extra}} damage!",
-    "syn_tto_hr_debuff": "🚀 Three True Outcomes: Home Run weakens the pitcher for {{turns}} hits (+30% dmg)!",
+    "syn_tto_hr_debuff": "🚀 Three True Outcomes: Home Run weakens the pitcher for {{turns}} turns (+30% dmg)!",
     "syn_tto_so": "🚀 Three True Outcomes: Strikeout -50% HP damage",
     "syn_tto_so_zero": "🚀 Three True Outcomes: Strikeout nullified (0 team damage)!",
     "syn_fivetool_hit": "🌟 Five-Tool: Complete hit deals +{{extra}} damage!",
@@ -800,7 +799,7 @@
     "def_clutch_save_title": "EXTRA INNINGS HEROIC SAVE!",
     "def_clutch_save_desc": "{{player}} ({{pos}}) makes a heroic dive and prevents the walk-off (Roll: {{roll}}/{{thresh}})! You recover +{{hp}} HP and +{{shield}} Shield!",
     "extra_innings_announcement": "⚡ EXTRA INNINGS - SUDDEN DEATH! Out and Strikeout damage increased to 30/38/45 HP. Any defensive error in the bottom half is a Walk-Off!",
-    "syn_genesis_error": "💥 Genesis Chaos: Fielding error (E)! Out cancelled, batter safe on 1B, pitcher fatigued (+20% dmg for 2 impacts).",
+    "syn_genesis_error": "💥 Genesis Chaos: Fielding error (E)! Out cancelled, batter safe on 1B, pitcher fatigued (+20% dmg for 2 turns).",
     "syn_genesis_heal": "💥 Genesis Chaos: Rival chaos restores +10 Team HP!",
     "def_walkoff_badge": "💀 BOTTOM OF INNING {{inning}} • WALK-OFF DANGER! 💀",
     "def_walkoff_warning_title": "⚠️ WALK-OFF DANGER • ALL OR NOTHING! ⚠️",
@@ -932,7 +931,7 @@
     },
     "efficiency": {
       "lv1": "Moneyball: Walks (BB) deal +15 extra damage.",
-      "lv2": "Moneyball: BB deal +25 damage; getting on base inflicts 1-impact fatigue (+20% damage)."
+      "lv2": "Moneyball: BB deal +25 damage; getting on base inflicts 1-turn fatigue (+20% damage)."
     },
     "modern": {
       "lv1": "Three True Outcomes: BB deal 15 damage, Strikeouts -50% team damage.",

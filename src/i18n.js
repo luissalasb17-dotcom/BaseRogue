@@ -504,8 +504,8 @@
         "extra_innings_hud_title": "⚡ ¡EXTRA INNINGS • MUERTE SÚBITA! ⚡",
         "simulate_all_pause": "⏸️ PAUSAR AUTO",
         "interactive_header_prefix": "Combate Interactivo vs",
-        "impact_single": "impacto",
-        "impact_plural": "impactos"
+        "impact_single": "turno",
+        "impact_plural": "turnos"
     },
     "popup": {
         "bb_title": "BASE POR BOLAS",
@@ -706,8 +706,8 @@
         "pitcher_dmg_txt": "sufre {{dmg}} HP de daño",
         "steal_label": "¡ROBO DE BASE!",
         "steal_desc": "se roba la segunda base",
-        "debuff_turn_s": "impacto restante",
-        "debuff_turns_p": "impactos restantes",
+        "debuff_turn_s": "turno restante",
+        "debuff_turns_p": "turnos restantes",
         "debuff_note": "Debuff de +20% daño",
         "extra_dmg_pitcher": "daño extra al lanzador",
         "clutch_desc": "batea en momento decisivo",
@@ -734,11 +734,11 @@
         "inning_end": "--- FIN DE LA ENTRADA {{inning}} ({{runs}} carreras anotadas) ---",
         "match_timeout": "⏱ FIN DE PARTIDO (3 innings). Te faltaron {{remaining}} lanzadores por derrotar.",
         "syn_moneyball_bb": "📊 Moneyball: ¡Boleto paciente inflige +{{extra}} daño!",
-        "syn_moneyball_fatigue": "📊 Moneyball: ¡Fatiga al lanzador! Debuff de +20% daño ({{turns}} impactos restantes).",
+        "syn_moneyball_fatigue": "📊 Moneyball: ¡Fatiga al lanzador! Debuff de +20% daño ({{turns}} turnos restantes).",
         "syn_moneyball_so_t3": "📊 Moneyball: ¡Ponche absorbido por el Escudo (ignora daño directo a vida)!",
         "syn_moneyball_so_t4": "📊 Moneyball: ¡Ponche mitigado (-50%) y absorbido por el Escudo!",
         "syn_tto_bb": "🚀 Three True Outcomes: ¡Boleto de poder inflige +{{extra}} daño!",
-        "syn_tto_hr_debuff": "🚀 Three True Outcomes: ¡Jonrón debilita al lanzador por {{turns}} impactos (+30% daño)!",
+        "syn_tto_hr_debuff": "🚀 Three True Outcomes: ¡Jonrón debilita al lanzador por {{turns}} turnos (+30% daño)!",
         "syn_tto_so": "🚀 Three True Outcomes: Ponche causa -50% daño HP",
         "syn_tto_so_zero": "🚀 Three True Outcomes: ¡Ponche anulado (0 daño al equipo)!",
         "syn_fivetool_hit": "🌟 Five-Tool: ¡Batazo integral inflige +{{extra}} daño!",
@@ -828,7 +828,7 @@
         "def_clutch_save_title": "¡ATRAPADA SALVADORA EN EXTRA INNINGS!",
         "def_clutch_save_desc": "{{player}} ({{pos}}) se tira de forma heroica y evita el walk-off (Dado: {{roll}}/{{thresh}})! ¡Recuperas +{{hp}} HP y +{{shield}} de Escudo!",
         "extra_innings_announcement": "⚡ ¡EXTRA INNINGS - MUERTE SÚBITA! Daño de outs y ponches incrementado a 30/38/45 HP. ¡Cualquier fallo defensivo en la baja es Walk-Off rival!",
-        "syn_genesis_error": "💥 Genesis Chaos: ¡Error rival (E)! Se anula el out, te embasas en 1B y el pitcher sufre fatiga de 2 impactos (+20% daño).",
+        "syn_genesis_error": "💥 Genesis Chaos: ¡Error rival (E)! Se anula el out, te embasas en 1B y el pitcher sufre fatiga de 2 turnos (+20% daño).",
         "syn_genesis_heal": "💥 Genesis Chaos: ¡El descontrol rival recupera +10 HP al equipo!",
         "def_walkoff_badge": "💀 BAJA DE LA ENTRADA {{inning}} • ¡PELIGRO DE WALK-OFF! 💀",
         "def_walkoff_warning_title": "⚠️ ¡PELIGRO DE WALK-OFF • TODO O NADA! ⚠️",
@@ -960,7 +960,7 @@
         },
         "efficiency": {
             "lv1": "Moneyball: Bases por bolas (BB) hacen +15 daño extra.",
-            "lv2": "Moneyball: BB hacen +25 daño; al embasarte fatigas al rival 1 impacto (+20% daño)."
+            "lv2": "Moneyball: BB hacen +25 daño; al embasarte fatigas al rival 1 turno (+20% daño)."
         },
         "modern": {
             "lv1": "Three True Outcomes: BB hacen 15 daño, Ponche -50% daño al equipo.",
@@ -1141,7 +1141,7 @@
         },
         "speed": {
             "name": "⚡ Velocistas Agresivos",
-            "desc": "Jugadores con SPD > 60 roban la base automáticamente en sencillos y boletos. Debuff al pitcher dura 3 impactos."
+            "desc": "Jugadores con SPD > 60 roban la base automáticamente en sencillos y boletos. Debuff al pitcher dura 3 turnos."
         },
         "extrabase": {
             "name": "💣 Impacto Acumulado",
@@ -1552,7 +1552,7 @@
         "rbi_bonus": "🏆 <strong>Bonus RBI:</strong> Cada carrera impulsada añade <strong style=\"color:#00ff66;\">+10 HP extra</strong> al pitcher.",
         "residual": "<strong style=\"color:#f59e0b;\">⚡ REMANENTE (50%):</strong><div style=\"font-size:8.5px;color:#cbd5e1;margin-top:2px;\">Al noquear al pitcher, el daño sobrante pasa al <strong>50% (÷2)</strong> al relevista entrante.</div>",
         "defense": "<strong style=\"color: #38bdf8;\">🛡️ DUELO DEFENSIVO (Baja de Entrada):</strong><div style=\"font-size: 8.5px; color: #cbd5e1; margin-top: 2px;\">🛡️ Regular: <strong style=\"color:#4ade80;\">+20 Escudo</strong> (Fallo: -10 HP)<br>⚡ De Lujo (-12% Meta): <strong style=\"color:#4ade80;\">+60 Escudo</strong> (Fallo: -30 HP)<br>💀 En Extras (Inning 4+): ¡Fallo = Walk-Off rival!</div>",
-        "steal": "<strong style=\"color: #38bdf8;\">🏃 ROBO DE BASES:</strong><div style=\"font-size: 8.5px; color: #cbd5e1; margin-top: 2px;\">• <strong>2B (en 1B/BB, SPD ≥ 40):</strong> Éxito según SPD (40-100%).<br>• <strong>3B (en 2B, SPD ≥ 50):</strong> Éxito según SPD/2 (25-50%).<br><em>Robar aplica debuff al lanzador (+20% daño en 2 impactos).</em></div>",
+        "steal": "<strong style=\"color: #38bdf8;\">🏃 ROBO DE BASES:</strong><div style=\"font-size: 8.5px; color: #cbd5e1; margin-top: 2px;\">• <strong>2B (en 1B/BB, SPD ≥ 40):</strong> Éxito según SPD (40-100%).<br>• <strong>3B (en 2B, SPD ≥ 50):</strong> Éxito según SPD/2 (25-50%).<br><em>Robar aplica debuff al lanzador (+20% daño en 2 turnos).</em></div>",
         "upgrade": "<strong style=\"color: #a855f7;\">⚡ UPGRADE DE BATAZOS (SPD):</strong><div style=\"font-size: 8.5px; color: #cbd5e1; margin-top: 2px;\">Desde <strong>SPD ≥ 60</strong> (5% a 30% máx): estira 1B→2B (y 2B→3B si SPD ≥ 75).</div>",
         "shield_max": "🛡️ Escudo: DEF promedio de tus 8 defensores (1 a 100)."
     },
@@ -2806,8 +2806,8 @@
         "extra_innings_hud_title": "⚡ EXTRA INNINGS • SUDDEN DEATH! ⚡",
         "simulate_all_pause": "⏸️ PAUSE AUTO",
         "interactive_header_prefix": "Interactive Combat vs",
-        "impact_single": "hit",
-        "impact_plural": "hits"
+        "impact_single": "turn",
+        "impact_plural": "turns"
     },
     "popup": {
         "bb_title": "WALK (BB)",
@@ -3008,8 +3008,8 @@
         "pitcher_dmg_txt": "takes {{dmg}} HP damage",
         "steal_label": "STOLEN BASE!",
         "steal_desc": "steals second base",
-        "debuff_turn_s": "impact remaining",
-        "debuff_turns_p": "impacts remaining",
+        "debuff_turn_s": "turn remaining",
+        "debuff_turns_p": "turns remaining",
         "debuff_note": "Debuff of +20% damage",
         "extra_dmg_pitcher": "extra damage to pitcher",
         "clutch_desc": "bats in a decisive moment",
@@ -3036,11 +3036,11 @@
         "inning_end": "--- END OF INNING {{inning}} ({{runs}} runs scored) ---",
         "match_timeout": "⏱ MATCH OVER (3 innings). {{remaining}} pitchers remaining.",
         "syn_moneyball_bb": "📊 Moneyball: Walk deals +{{extra}} damage!",
-        "syn_moneyball_fatigue": "📊 Moneyball: Pitcher fatigued! +20% damage debuff ({{turns}} impacts remaining).",
+        "syn_moneyball_fatigue": "📊 Moneyball: Pitcher fatigued! +20% damage debuff ({{turns}} turns remaining).",
         "syn_moneyball_so_t3": "📊 Moneyball: Strikeout absorbed by Shield (bypasses direct HP damage)!",
         "syn_moneyball_so_t4": "📊 Moneyball: Strikeout mitigated (-50%) and absorbed by Shield!",
         "syn_tto_bb": "🚀 Three True Outcomes: Power walk deals +{{extra}} damage!",
-        "syn_tto_hr_debuff": "🚀 Three True Outcomes: Home Run weakens the pitcher for {{turns}} hits (+30% dmg)!",
+        "syn_tto_hr_debuff": "🚀 Three True Outcomes: Home Run weakens the pitcher for {{turns}} turns (+30% dmg)!",
         "syn_tto_so": "🚀 Three True Outcomes: Strikeout -50% HP damage",
         "syn_tto_so_zero": "🚀 Three True Outcomes: Strikeout nullified (0 team damage)!",
         "syn_fivetool_hit": "🌟 Five-Tool: Complete hit deals +{{extra}} damage!",
@@ -3130,7 +3130,7 @@
         "def_clutch_save_title": "EXTRA INNINGS HEROIC SAVE!",
         "def_clutch_save_desc": "{{player}} ({{pos}}) makes a heroic dive and prevents the walk-off (Roll: {{roll}}/{{thresh}})! You recover +{{hp}} HP and +{{shield}} Shield!",
         "extra_innings_announcement": "⚡ EXTRA INNINGS - SUDDEN DEATH! Out and Strikeout damage increased to 30/38/45 HP. Any defensive error in the bottom half is a Walk-Off!",
-        "syn_genesis_error": "💥 Genesis Chaos: Fielding error (E)! Out cancelled, batter safe on 1B, pitcher fatigued (+20% dmg for 2 impacts).",
+        "syn_genesis_error": "💥 Genesis Chaos: Fielding error (E)! Out cancelled, batter safe on 1B, pitcher fatigued (+20% dmg for 2 turns).",
         "syn_genesis_heal": "💥 Genesis Chaos: Rival chaos restores +10 Team HP!",
         "def_walkoff_badge": "💀 BOTTOM OF INNING {{inning}} • WALK-OFF DANGER! 💀",
         "def_walkoff_warning_title": "⚠️ WALK-OFF DANGER • ALL OR NOTHING! ⚠️",
@@ -3262,7 +3262,7 @@
         },
         "efficiency": {
             "lv1": "Moneyball: Walks (BB) deal +15 extra damage.",
-            "lv2": "Moneyball: BB deal +25 damage; getting on base inflicts 1-impact fatigue (+20% damage)."
+            "lv2": "Moneyball: BB deal +25 damage; getting on base inflicts 1-turn fatigue (+20% damage)."
         },
         "modern": {
             "lv1": "Three True Outcomes: BB deal 15 damage, Strikeouts -50% team damage.",

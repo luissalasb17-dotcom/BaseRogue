@@ -643,16 +643,18 @@
           synergyProc = _t('sim.syn_tto_bb', { extra }, `🚀 Three True Outcomes: ¡Boleto de poder inflige +${extra} daño!`);
         }
 
-        // Pitcher receives base walk damage (Walk applies the debuff for subsequent turns)
-        // Apply debuff to pitcher for the next at-bats
+        // Pitcher receives walk damage (boosted by active debuff)
+        pitcherDmg = this._applyDebuffToPitcherDmg(pitcherDmg);
+
+        // Apply debuff to pitcher for the next turns (additive stacking)
         if (this.pitcherDebuff && this.pitcherDebuff.turnsLeft > 0) {
-          this.pitcherDebuff.turnsLeft = Math.max(this.pitcherDebuff.turnsLeft, bbDebuffTurns);
+          this.pitcherDebuff.turnsLeft += bbDebuffTurns;
           if (bbDebuffMult > this.pitcherDebuff.multiplier) this.pitcherDebuff.multiplier = bbDebuffMult;
         } else {
           this.pitcherDebuff = { turnsLeft: bbDebuffTurns, multiplier: bbDebuffMult };
         }
 
-        const impLabel = bbDebuffTurns === 1 ? _t('sim.debuff_turn_s', {}, 'impacto restante') : _t('sim.debuff_turns_p', {}, 'impactos restantes');
+        const impLabel = bbDebuffTurns === 1 ? _t('sim.debuff_turn_s', {}, 'turno restante') : _t('sim.debuff_turns_p', {}, 'turnos restantes');
         if (moneyballTier >= 1) {
           synergyProc += ' | ' + _t('sim.syn_moneyball_fatigue', { turns: bbDebuffTurns }, `📊 Moneyball: ¡Fatiga al lanzador! Debuff de +${Math.round((bbDebuffMult - 1) * 100)}% daño (${bbDebuffTurns} ${impLabel}).`);
         } else {
@@ -711,7 +713,7 @@
           
           let spdMsg = `🏃 ${_t('sim.steal_label', {}, '¡ROBO DE BASE!')} ${batter.name} ${_t('sim.steal_desc', {}, 'se roba la segunda base')}.`;
           if (stealProcMsg) spdMsg += ` (${stealProcMsg})`;
-          const impLabel = this.pitcherDebuff.turnsLeft === 1 ? _t('sim.debuff_turn_s', {}, 'impacto restante') : _t('sim.debuff_turns_p', {}, 'impactos restantes');
+          const impLabel = this.pitcherDebuff.turnsLeft === 1 ? _t('sim.debuff_turn_s', {}, 'turno restante') : _t('sim.debuff_turns_p', {}, 'turnos restantes');
           spdMsg += ` ${_t('sim.debuff_note', {}, 'Debuff de +20% daño')} (${this.pitcherDebuff.turnsLeft} ${impLabel}).`;
           
           if (stealHeal > 0) {
@@ -836,13 +838,13 @@
             const debuffTurns = 2;
             const debuffMult = 1.20;
             if (this.pitcherDebuff && this.pitcherDebuff.turnsLeft > 0) {
-              this.pitcherDebuff.turnsLeft = Math.max(this.pitcherDebuff.turnsLeft, debuffTurns);
+              this.pitcherDebuff.turnsLeft += debuffTurns;
               if (debuffMult > this.pitcherDebuff.multiplier) this.pitcherDebuff.multiplier = debuffMult;
             } else {
               this.pitcherDebuff = { turnsLeft: debuffTurns, multiplier: debuffMult };
             }
 
-            errorProc = _t('sim.syn_genesis_error', {}, '💥 Genesis Chaos: ¡Error rival (E)! Se anula el out, te embasas y el pitcher sufre fatiga de 2 impactos (+20% daño).');
+            errorProc = _t('sim.syn_genesis_error', {}, '💥 Genesis Chaos: ¡Error rival (E)! Se anula el out, te embasas y el pitcher sufre fatiga de 2 turnos (+20% daño).');
             if (genesisAdvMsg) errorProc += ' ' + genesisAdvMsg;
           } else {
             errorProc = _t('sim.natural_error_msg', {}, '⚠️ ¡Pifia defensiva rival (E)! Se anula el out y te embasas en 1B.');
@@ -860,8 +862,8 @@
             let mbDmg = 10 + (runsThisTurn * 10) + 40; // 10 base + 40 Moneyball T4 bonus
             mbDmg = this._applyDebuffToPitcherDmg(mbDmg);
             if (this.pitcherDebuff && this.pitcherDebuff.turnsLeft > 0) {
-              this.pitcherDebuff.turnsLeft = Math.max(this.pitcherDebuff.turnsLeft, 4);
-              this.pitcherDebuff.multiplier = 1.30;
+              this.pitcherDebuff.turnsLeft += 4;
+              if (1.30 > this.pitcherDebuff.multiplier) this.pitcherDebuff.multiplier = 1.30;
             } else {
               this.pitcherDebuff = { turnsLeft: 4, multiplier: 1.30 };
             }
@@ -1060,12 +1062,12 @@
           const mbTurns = moneyballTier >= 3 ? 2 : 1;
           const mbMult = 1.20;
           if (this.pitcherDebuff && this.pitcherDebuff.turnsLeft > 0) {
-            this.pitcherDebuff.turnsLeft = Math.max(this.pitcherDebuff.turnsLeft, mbTurns);
+            this.pitcherDebuff.turnsLeft += mbTurns;
             if (mbMult > this.pitcherDebuff.multiplier) this.pitcherDebuff.multiplier = mbMult;
           } else {
             this.pitcherDebuff = { turnsLeft: mbTurns, multiplier: mbMult };
           }
-          const impLabel = mbTurns === 1 ? _t('sim.debuff_turn_s', {}, 'impacto restante') : _t('sim.debuff_turns_p', {}, 'impactos restantes');
+          const impLabel = mbTurns === 1 ? _t('sim.debuff_turn_s', {}, 'turno restante') : _t('sim.debuff_turns_p', {}, 'turnos restantes');
           synergyProc = (synergyProc ? synergyProc + ' | ' : '') + _t('sim.syn_moneyball_fatigue', { turns: mbTurns }, `📊 Moneyball: ¡Fatiga al lanzador! Debuff de +20% daño (${mbTurns} ${impLabel}).`);
         }
 
@@ -1114,7 +1116,7 @@
             
             let spdMsg = `🏃 ${_t('sim.steal_label', {}, '¡ROBO DE BASE!')} ${batter.name} ${_t('sim.steal_desc', {}, 'se roba la segunda base')}.`;
             if (stealProcMsg) spdMsg += ` (${stealProcMsg})`;
-            const impLabel = this.pitcherDebuff.turnsLeft === 1 ? _t('sim.debuff_turn_s', {}, 'impacto restante') : _t('sim.debuff_turns_p', {}, 'impactos restantes');
+            const impLabel = this.pitcherDebuff.turnsLeft === 1 ? _t('sim.debuff_turn_s', {}, 'turno restante') : _t('sim.debuff_turns_p', {}, 'turnos restantes');
             spdMsg += ` ${_t('sim.debuff_note', {}, 'Debuff de +20% daño')} (${this.pitcherDebuff.turnsLeft} ${impLabel}).`;
             
             if (stealHeal > 0) {
@@ -1160,7 +1162,7 @@
 
             let spdMsg = `🏃⚡ ${_t('sim.steal_3b_label', {}, '¡ROBO DE TERCERA BASE!')} ${batter.name} ${_t('sim.steal_3b_desc', {}, 'sorprende a la batería rival y se estafa la 3ª almohadilla')}.`;
             if (steal3BProcMsg) spdMsg += ` (${steal3BProcMsg})`;
-            const impLabel = this.pitcherDebuff.turnsLeft === 1 ? _t('sim.debuff_turn_s', {}, 'impacto restante') : _t('sim.debuff_turns_p', {}, 'impactos restantes');
+            const impLabel = this.pitcherDebuff.turnsLeft === 1 ? _t('sim.debuff_turn_s', {}, 'turno restante') : _t('sim.debuff_turns_p', {}, 'turnos restantes');
             spdMsg += ` ${_t('sim.debuff_note', {}, 'Debuff de +20% daño')} (${this.pitcherDebuff.turnsLeft} ${impLabel}).`;
 
             spdProc = (spdProc ? spdProc + ' | ' : '') + spdMsg;
@@ -1195,6 +1197,14 @@
       // Now apply pitcher damage (which logs KO_PITCHER and RESIDUAL_DMG if pitcher is KO'd)
       if (pitcherDmg > 0) {
         this._damagePitcher(pitcherDmg);
+      }
+
+      // Decrement pitcher debuff turns (turn-based fatigue)
+      if (this.pitcherDebuff && this.pitcherDebuff.turnsLeft > 0) {
+        this.pitcherDebuff.turnsLeft--;
+        if (this.pitcherDebuff.turnsLeft <= 0) {
+          this.pitcherDebuff = null;
+        }
       }
 
       // Advance internal state immediately (outs -> innings, KO -> next pitcher)
@@ -1538,10 +1548,7 @@
     // ── INTERNAL: apply pitcher debuff to pitcher damage received ────
     _applyDebuffToPitcherDmg(baseDmg) {
       if (!this.pitcherDebuff || this.pitcherDebuff.turnsLeft <= 0) return baseDmg;
-      const boosted = Math.round(baseDmg * this.pitcherDebuff.multiplier);
-      this.pitcherDebuff.turnsLeft--;
-      if (this.pitcherDebuff.turnsLeft <= 0) this.pitcherDebuff = null;
-      return boosted;
+      return Math.round(baseDmg * this.pitcherDebuff.multiplier);
     }
 
     // ── INTERNAL: deal damage to active pitcher ─────────────────────

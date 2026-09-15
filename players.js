@@ -52,12 +52,12 @@
     },
     "Efficiency Era (2006-2015)": {
       name: "Moneyball Analytics",
-      desc: "T1 (2+): Boletos (BB) +15 daño. T2 (4+): BB +25 daño; al embasarte fatigas al rival 1 impacto (+20% daño). T3 (6+): BB +35 daño; fatiga 2 impactos; ponches van al Escudo. T4 (8+): BB +45 daño; fatiga 2 impactos; ponches van al Escudo con -50% daño.",
+      desc: "T1 (2+): Boletos (BB) +15 daño. T2 (4+): BB +25 daño; al embasarte fatigas al rival 1 turno (+20% daño). T3 (6+): BB +35 daño; fatiga 2 turnos; ponches van al Escudo. T4 (8+): BB +45 daño; fatiga 2 turnos; ponches van al Escudo con -50% daño.",
       applyStatBonus: (stats) => {}
     },
     "Modern Era (2016-Pres)": {
       name: "Three True Outcomes",
-      desc: "T1 (2+): +10 EYE/PWR; BB +20 daño; Ponche -50% daño al equipo. T2 (4+): +20 EYE/PWR; BB +35 daño; Ponche no incrementa racha. T3 (6+): +30 EYE/PWR; BB +50 daño; HR aplica debuff 3 impactos. T4 (8+): +40 EYE/PWR; BB +65 daño; Ponche hace 0 daño (anulado).",
+      desc: "T1 (2+): +10 EYE/PWR; BB +20 daño; Ponche -50% daño al equipo. T2 (4+): +20 EYE/PWR; BB +35 daño; Ponche no incrementa racha. T3 (6+): +30 EYE/PWR; BB +50 daño; HR aplica debuff 3 turnos. T4 (8+): +40 EYE/PWR; BB +65 daño; Ponche hace 0 daño (anulado).",
       applyStatBonus: (stats) => {}
     }
   };
