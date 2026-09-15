@@ -5731,8 +5731,9 @@ function initGameModeSelector() {
 
   function getSynergyImpactBoxHTML(player) {
     if (!player) return '';
-    const currentRoster = (window.Game && window.Game.draftRoster && Object.keys(window.Game.draftRoster).length > 0)
-      ? window.Game.draftRoster
+    const isInitialDraft = window.Game && !window.Game.runActive && window.Game.draftRound !== undefined && window.Game.draftRound <= 9;
+    const currentRoster = isInitialDraft
+      ? (window.Game.draftRoster || {})
       : ((window.Game && window.Game.roster) || {});
 
     const eraCounts = {};

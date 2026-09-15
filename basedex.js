@@ -719,15 +719,23 @@
       if (this.activeCategory === 'shortlist') {
         const lahmanPool = window.PlayersDB ? (window.PlayersDB.LAHMAN_POOL || []) : [];
         const pitchersPool = (window.PitchersDB && window.PitchersDB.PITCHERS_POOL) ? window.PitchersDB.PITCHERS_POOL : (window.PITCHERS_POOL || []);
-        const totalShortlisted = this.shortlist.size;
+        const combined = [...lahmanPool, ...pitchersPool];
+        const seenKeys = new Set();
+        let validShortlistCount = 0;
         let unlockedCount = 0;
-        const allCandidates = [...lahmanPool, ...pitchersPool];
-        allCandidates.forEach(p => {
-          if (this.isShortlisted(p) && this.isUnlocked(p)) {
-            unlockedCount++;
+        combined.forEach(p => {
+          if (this.isShortlisted(p)) {
+            const k = this.getShortlistKey(p);
+            if (k && !seenKeys.has(k)) {
+              seenKeys.add(k);
+              validShortlistCount++;
+              if (this.isUnlocked(p)) {
+                unlockedCount++;
+              }
+            }
           }
         });
-        return { total: totalShortlisted, unlocked: unlockedCount };
+        return { total: validShortlistCount, unlocked: unlockedCount };
       }
       if (this.activeCategory === 'opponents') {
         pool = (window.PitchersDB && window.PitchersDB.PITCHERS_POOL) ? window.PitchersDB.PITCHERS_POOL : [];
@@ -768,6 +776,9 @@
           catLabel = (typeof window.t === 'function' ? window.t('dex.counter_opponents', 'Oponentes Enfrentados') : 'Oponentes Enfrentados');
         } else if (this.activeCategory === 'shortlist') {
           catLabel = (typeof window.t === 'function' ? window.t('dex.counter_shortlist', 'Cartas en Shortlist') : 'Cartas en Shortlist');
+          elText.innerText = `${stats.total} (${catLabel})`;
+          if (elFill) elFill.style.width = '100%';
+          return;
         }
         elText.innerText = `${stats.unlocked} / ${stats.total} (${catLabel})`;
       }

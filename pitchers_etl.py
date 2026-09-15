@@ -665,7 +665,19 @@ SR_JR_MAP = {
     "stottme01": "Mel Stottlemyre Sr.",
     "stottme02": "Mel Stottlemyre Jr.",
     "acunaro01": "Ronald Acuña Jr.",
+    "chishja01": "Jazz Chisholm Jr.",
+    "roberlu01": "Luis Robert Jr.",
+    "gurrilo01": "Lourdes Gurriel Jr.",
+    "harrimi03": "Michael Harris II",
+    "sanchca01": "Yolmer Sánchez",
 }
+
+def clean_initials_spacing(name):
+    import re
+    # Fix spaced initials like 'B. J. Upton' -> 'B.J. Upton', 'A. J. Burnett' -> 'A.J. Burnett'
+    name = re.sub(r'\b([A-Z]\.)\s+([A-Z]\.)', r'\1\2', str(name))
+    name = re.sub(r'\b([A-Z]\.[A-Z]\.)\s+([A-Z]\.)', r'\1\2', name)
+    return name
 
 def paso_6_enriquecer_people(df, people):
     print("\n  PASO 6: Enriqueciendo con People.csv...")
@@ -683,6 +695,7 @@ def paso_6_enriquecer_people(df, people):
     slim = pd.concat([slim, pd.DataFrame(dual_people)], ignore_index=True)
 
     slim["full_name"] = (slim["nameFirst"].fillna("") + " " + slim["nameLast"].fillna("")).str.strip()
+    slim["full_name"] = slim["full_name"].apply(clean_initials_spacing)
     for pid, explicit_name in SR_JR_MAP.items():
         slim.loc[slim["playerID"] == pid, "full_name"] = explicit_name
 

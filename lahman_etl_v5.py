@@ -617,7 +617,19 @@ SR_JR_MAP = {
     "stottme01": "Mel Stottlemyre Sr.",
     "stottme02": "Mel Stottlemyre Jr.",
     "acunaro01": "Ronald Acuña Jr.",
+    "chishja01": "Jazz Chisholm Jr.",
+    "roberlu01": "Luis Robert Jr.",
+    "gurrilo01": "Lourdes Gurriel Jr.",
+    "harrimi03": "Michael Harris II",
+    "sanchca01": "Yolmer Sánchez",
 }
+
+def clean_initials_spacing(name):
+    import re
+    # Fix spaced initials like 'B. J. Upton' -> 'B.J. Upton', 'J. D. Martinez' -> 'J.D. Martinez'
+    name = re.sub(r'\b([A-Z]\.)\s+([A-Z]\.)', r'\1\2', str(name))
+    name = re.sub(r'\b([A-Z]\.[A-Z]\.)\s+([A-Z]\.)', r'\1\2', name)
+    return name
 
 def paso_7_enriquecer_people(df, people):
     print("\n  PASO 7: Enriqueciendo con People.csv (nombre, bbrefID, bats)...")
@@ -627,6 +639,7 @@ def paso_7_enriquecer_people(df, people):
     # Explicit bbrefID overrides for missing Lahman Negro League IDs
     slim.loc[slim["playerID"] == "pearsle01", "bbrefID"] = "pearsle02"
     slim["full_name"] = (slim["nameFirst"].fillna("") + " " + slim["nameLast"].fillna("")).str.strip()
+    slim["full_name"] = slim["full_name"].apply(clean_initials_spacing)
     for pid, explicit_name in SR_JR_MAP.items():
         slim.loc[slim["playerID"] == pid, "full_name"] = explicit_name
 
@@ -659,10 +672,10 @@ def paso_8_filtro_ingesta(df, allstar, hof, pure_pitcher_ids, batting):
     no_pitchers = df[~df["playerID"].isin(effective_pure_pitchers)].copy()
     print(f"  No-pitchers elegibles: {len(no_pitchers):,}")
 
-    MIN_AB_MLB     = 1000
-    MIN_AB_NLB     = 500
-    MIN_AB_ALLSTAR = 100
-    MIN_AB_QUALITY = 350
+    MIN_PA_MLB     = 1000
+    MIN_PA_NLB     = 500
+    MIN_PA_ALLSTAR = 100
+    MIN_PA_QUALITY = 350
 
     # List of all Negro League and Independent Pioneer leagues:
     nl_official_leagues = {'NNL', 'NN2', 'NAL', 'ECL', 'ANL', 'EWL', 'NSL', 'NN1'}
@@ -670,44 +683,52 @@ def paso_8_filtro_ingesta(df, allstar, hof, pure_pitcher_ids, batting):
     nl_all_leagues      = nl_official_leagues | nl_pioneer_leagues
 
     if not batting.empty and 'lgID' in batting.columns:
-        nl_ab_df = batting[batting['lgID'].isin(nl_all_leagues)].groupby('playerID')['AB'].sum().reset_index().rename(columns={'AB': 'nlb_ab'})
-        unoff_ab_df = batting[batting['lgID'].isin(nl_pioneer_leagues)].groupby('playerID')['AB'].sum().reset_index().rename(columns={'AB': 'unoff_ab'})
-        mlb_ab_df = batting[~batting['lgID'].isin(nl_all_leagues)].groupby('playerID')['AB'].sum().reset_index().rename(columns={'AB': 'mlb_ab'})
+        bat_pa = batting.copy()
+        for col in ['AB', 'BB', 'HBP', 'SF']:
+            if col in bat_pa.columns:
+                bat_pa[col] = pd.to_numeric(bat_pa[col], errors='coerce').fillna(0)
+            else:
+                bat_pa[col] = 0
+        bat_pa['PA'] = bat_pa['AB'] + bat_pa['BB'] + bat_pa['HBP'] + bat_pa['SF']
+
+        nl_pa_df = bat_pa[bat_pa['lgID'].isin(nl_all_leagues)].groupby('playerID')['PA'].sum().reset_index().rename(columns={'PA': 'nlb_pa'})
+        unoff_pa_df = bat_pa[bat_pa['lgID'].isin(nl_pioneer_leagues)].groupby('playerID')['PA'].sum().reset_index().rename(columns={'PA': 'unoff_pa'})
+        mlb_pa_df = bat_pa[~bat_pa['lgID'].isin(nl_all_leagues)].groupby('playerID')['PA'].sum().reset_index().rename(columns={'PA': 'mlb_pa'})
         
-        no_pitchers = no_pitchers.merge(nl_ab_df, on='playerID', how='left').merge(mlb_ab_df, on='playerID', how='left').merge(unoff_ab_df, on='playerID', how='left')
-        no_pitchers['nlb_ab'] = no_pitchers['nlb_ab'].fillna(0)
-        no_pitchers['mlb_ab'] = no_pitchers['mlb_ab'].fillna(0)
-        no_pitchers['unoff_ab'] = no_pitchers['unoff_ab'].fillna(0)
-        no_pitchers['league_group'] = np.where(no_pitchers['nlb_ab'] > no_pitchers['mlb_ab'], 'NLB', 'MLB')
+        no_pitchers = no_pitchers.merge(nl_pa_df, on='playerID', how='left').merge(mlb_pa_df, on='playerID', how='left').merge(unoff_pa_df, on='playerID', how='left')
+        no_pitchers['nlb_pa'] = no_pitchers['nlb_pa'].fillna(0)
+        no_pitchers['mlb_pa'] = no_pitchers['mlb_pa'].fillna(0)
+        no_pitchers['unoff_pa'] = no_pitchers['unoff_pa'].fillna(0)
+        no_pitchers['league_group'] = np.where(no_pitchers['nlb_pa'] > no_pitchers['mlb_pa'], 'NLB', 'MLB')
     else:
         no_pitchers['league_group'] = 'MLB'
-        no_pitchers['nlb_ab'] = 0
-        no_pitchers['unoff_ab'] = 0
-        no_pitchers['mlb_ab'] = no_pitchers['career_ab']
+        no_pitchers['nlb_pa'] = 0
+        no_pitchers['unoff_pa'] = 0
+        no_pitchers['mlb_pa'] = no_pitchers['career_pa']
 
     # Criterio Unificado de Ingesta para Bateadores:
-    # 1. Volumen de carrera: MLB >= 1,000 AB | NLB (oficial o pionero) >= 500 AB
-    # 2. Calidad / Estrellato Joven: (career_war >= 5.0 OR peak_war >= 5.0) AND career_ab >= 350
-    # 3. Reconocimiento Histórico: HoF incondicional OR (All-Star AND career_ab >= 100)
+    # 1. Volumen de carrera: MLB >= 1,000 PA | NLB (oficial o pionero) >= 500 PA
+    # 2. Calidad / Estrellato Joven: (career_war >= 5.0 OR peak_war >= 5.0) AND career_pa >= 350
+    # 3. Reconocimiento Histórico: HoF incondicional OR (All-Star AND career_pa >= 100)
     c_war = no_pitchers["career_war"].fillna(0) if "career_war" in no_pitchers.columns else pd.Series(0, index=no_pitchers.index)
     p_war = no_pitchers["peak_war"].fillna(0) if "peak_war" in no_pitchers.columns else pd.Series(0, index=no_pitchers.index)
     
     is_nlb_player = no_pitchers["league_group"] == "NLB"
-    vol_mask = np.where(is_nlb_player, no_pitchers["career_ab"] >= MIN_AB_NLB, no_pitchers["career_ab"] >= MIN_AB_MLB)
+    vol_mask = np.where(is_nlb_player, no_pitchers["career_pa"] >= MIN_PA_NLB, no_pitchers["career_pa"] >= MIN_PA_MLB)
 
     mask = (
         vol_mask |
         (
             ((c_war >= 5.0) | (p_war >= 5.0)) &
-            (no_pitchers["career_ab"] >= MIN_AB_QUALITY)
+            (no_pitchers["career_pa"] >= MIN_PA_QUALITY)
         ) |
         (no_pitchers["playerID"].isin(hof_ids)) |
-        (no_pitchers["playerID"].isin(allstar_ids) & (no_pitchers["career_ab"] >= MIN_AB_ALLSTAR))
+        (no_pitchers["playerID"].isin(allstar_ids) & (no_pitchers["career_pa"] >= MIN_PA_ALLSTAR))
     )
     eligible = no_pitchers[mask].copy()
     eligible["is_allstar"] = eligible["playerID"].isin(allstar_ids)
     eligible["is_hof"]     = eligible["playerID"].isin(hof_ids)
-    eligible.drop(columns=["nlb_ab", "mlb_ab"], errors="ignore", inplace=True)
+    eligible.drop(columns=["nlb_pa", "mlb_pa", "unoff_pa"], errors="ignore", inplace=True)
 
     if not allstar.empty:
         as_count = allstar.groupby("playerID").size().reset_index(name="allstar_selections")
@@ -1442,7 +1463,7 @@ def paso_15_equipo_y_exportar(df, batting, teams, franchises, pico_df=None, war_
     keep_cols = [
         "playerID","bbrefID","full_name","pos_display","sec_pos","era_label",
         "peak_year","peak_year_display","debut_year","last_year","canonical_teamID","franchise_name",
-        "career_ab","career_h","career_hr","career_sb","career_bb","career_so",
+        "career_pa","career_ab","career_h","career_hr","career_sb","career_bb","career_so",
         "seasons","bats",
         "ba","obp","iso","k_rate","bb_rate",
         "contact_val","power_val","eye_val","k_avoid_val","speed_val","defense_val",
