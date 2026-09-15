@@ -876,7 +876,7 @@
 
   function calcPitcherHP(sta) {
     const staVal = (sta !== undefined && sta !== null) ? Number(sta) : 50;
-    return Math.max(75, Math.min(200, Math.round(75 + (staVal - 20) * (125 / 105))));
+    return Math.max(75, Math.min(200, Math.round(75 + (staVal - 1) * (125 / 124))));
   }
 
   function sortPitchingStaff(pitchers) {
@@ -2507,7 +2507,7 @@
       const createPitcherObj = (p, roleOverride = null) => {
         const role = roleOverride || p.role || 'SP';
         const staVal = p.sta !== undefined ? p.sta : (p.sta_val !== undefined ? p.sta_val : 50);
-        const hp = Math.max(75, Math.min(200, Math.round(75 + (staVal - 20) * (125 / 105))));
+        const hp = calcPitcherHP(staVal);
         const yearVal = p.year || p.peak_year_display || p.peak_year || this.selectedSeasonYear || 1990;
         const nameVal = yearVal ? `${p.name} (${yearVal})` : p.name;
         const pitcherOvr = getOvr(p);
@@ -2531,7 +2531,9 @@
           h9:  p.h9  !== undefined ? p.h9  : 50,
           k9:  p.k9  !== undefined ? p.k9  : 50,
           bb9: p.bb9 !== undefined ? p.bb9 : 50,
-          hr9: p.hr9 !== undefined ? p.hr9 : 50
+          hr9: p.hr9 !== undefined ? p.hr9 : 50,
+          clt: p.clt !== undefined ? p.clt : (p.clu !== undefined ? p.clu : (p.clutch !== undefined ? p.clutch : 50)),
+          clu: p.clu !== undefined ? p.clu : (p.clt !== undefined ? p.clt : (p.clutch !== undefined ? p.clutch : 50))
         };
       };
 

@@ -46,6 +46,37 @@
 
   const HIGH_SPEED_GRADES = new Set(['S', 'A+', 'A', 'B+']);
 
+  /**
+   * Calculates pitcher clutch attribute modifier:
+   * 1 -> -15, 50 -> 0, 100 -> +15, 125 -> +20
+   */
+  function calcPitcherClutchModifier(clutchVal) {
+    const clt = Math.max(1, Math.min(125, Number(clutchVal) !== undefined && !isNaN(clutchVal) ? Number(clutchVal) : 50));
+    if (clt <= 50) {
+      return -15.0 * ((50.0 - clt) / 49.0);
+    } else if (clt <= 100) {
+      return 15.0 * ((clt - 50.0) / 50.0);
+    } else {
+      return 15.0 + 5.0 * ((clt - 100.0) / 25.0);
+    }
+  }
+
+  function getPitcherClutchStatus(clutchMod, isSituational) {
+    if (!isSituational) return { active: false, label: '', cssClass: '', icon: '', mod: 0 };
+    const roundedMod = Math.round(clutchMod);
+    if (roundedMod >= 15) {
+      return { active: true, label: `VERY BOOSTED (+${roundedMod})`, level: 'very_boosted', cssClass: 'clutch-very-boosted', icon: '🔥', mod: roundedMod };
+    } else if (roundedMod >= 4) {
+      return { active: true, label: `BOOSTED (+${roundedMod})`, level: 'boosted', cssClass: 'clutch-boosted', icon: '⚡', mod: roundedMod };
+    } else if (roundedMod <= -10) {
+      return { active: true, label: `VERY LOWERED (${roundedMod})`, level: 'very_lowered', cssClass: 'clutch-very-lowered', icon: '💀', mod: roundedMod };
+    } else if (roundedMod <= -3) {
+      return { active: true, label: `LOWERED (${roundedMod})`, level: 'lowered', cssClass: 'clutch-lowered', icon: '⚠️', mod: roundedMod };
+    } else {
+      return { active: true, label: `STEADY (0)`, level: 'steady', cssClass: 'clutch-steady', icon: '⚖️', mod: 0 };
+    }
+  }
+
   // ── PROBABILITY BOUNDARIES ──────────────────────────────────────────────────
   /**
    * Calculates the dice boundary zones for a batter vs. pitcher.
@@ -59,7 +90,7 @@
    *
    * @param {object} batter  - Effective batter stats {con, pwr, eye, spd}
    * @param {object} pitcher - Pitcher stats {stf, vel, ctl}
-   * @returns {{ bbEnd, soEnd, outEnd, singleEnd, doubleEnd, tripleEnd, pBB, pSO, pOut, pHit }}
+   * @returns {{ bbEnd, soEnd, outEnd, singleEnd, doubleEnd, tripleEnd, pBB, pSO, pOut, pHit, isClutchActive, pitcherClutchStatus }}
    */
   function calcBoundaries(batter, pitcher, simCtx) {
     const effCon = batter.con || 50;
@@ -68,11 +99,26 @@
     const effPwr = batter.pwr || 50;
     const effSpd = batter.spd || 50;
     
-    // Pitcher attributes (MLB The Show suite: h9, k9, bb9, hr9, sta)
-    const pH9  = pitcher.h9  !== undefined ? pitcher.h9  : (pitcher.grt !== undefined ? pitcher.grt : 50);
-    const pK9  = pitcher.k9  !== undefined ? pitcher.k9  : (pitcher.stf !== undefined ? pitcher.stf : 50);
-    const pBB9 = pitcher.bb9 !== undefined ? pitcher.bb9 : (pitcher.ctl !== undefined ? pitcher.ctl : 50);
-    const pHR9 = pitcher.hr9 !== undefined ? pitcher.hr9 : (pitcher.mov !== undefined ? pitcher.mov : 50);
+    // Pitcher attributes (MLB The Show suite: h9, k9, bb9, hr9, sta, clt/clu)
+    let rawH9  = pitcher.h9  !== undefined ? pitcher.h9  : (pitcher.grt !== undefined ? pitcher.grt : 50);
+    let rawK9  = pitcher.k9  !== undefined ? pitcher.k9  : (pitcher.stf !== undefined ? pitcher.stf : 50);
+    let rawBB9 = pitcher.bb9 !== undefined ? pitcher.bb9 : (pitcher.ctl !== undefined ? pitcher.ctl : 50);
+    let rawHR9 = pitcher.hr9 !== undefined ? pitcher.hr9 : (pitcher.mov !== undefined ? pitcher.mov : 50);
+    const pClutch = pitcher.clt !== undefined ? pitcher.clt : (pitcher.clu !== undefined ? pitcher.clu : (pitcher.clutch !== undefined ? pitcher.clutch : 50));
+
+    // Dynamic Pitcher Clutch Situation:
+    // Triggers when RISP (runner on 2B or 3B) OR Extra Innings (Inning >= 4)
+    const isRISP = !!(simCtx && simCtx.bases && (simCtx.bases[1] || simCtx.bases[2]));
+    const isLateGamePressure = !!(simCtx && simCtx.inning >= 4);
+    const isPitcherClutchSituation = isRISP || isLateGamePressure;
+
+    const pitcherClutchMod = isPitcherClutchSituation ? calcPitcherClutchModifier(pClutch) : 0;
+    const pitcherClutchStatus = getPitcherClutchStatus(pitcherClutchMod, isPitcherClutchSituation);
+
+    const pH9  = Math.max(1, Math.min(135, rawH9  + pitcherClutchMod));
+    const pK9  = Math.max(1, Math.min(135, rawK9  + pitcherClutchMod));
+    const pBB9 = Math.max(1, Math.min(135, rawBB9 + pitcherClutchMod));
+    const pHR9 = Math.max(1, Math.min(135, rawHR9 + pitcherClutchMod));
 
     // Stage A — discipline outcomes: BB vs SO vs "ball in play". These two are
     // independent of contact quality, so they're resolved first and never get
@@ -194,7 +240,7 @@
     const singleWidth = Math.max(1, Math.round(pSingle * 100));
     const outEnd = Math.max(soEnd + 1, singleEnd - singleWidth);
 
-    return { bbEnd, soEnd, outEnd, singleEnd, doubleEnd, tripleEnd, pBB, pSO, pOut, pHit, isClutchActive, clutchActualBoosts };
+    return { bbEnd, soEnd, outEnd, singleEnd, doubleEnd, tripleEnd, pBB, pSO, pOut, pHit, isClutchActive, clutchActualBoosts, pitcherClutchStatus, pitcherClutchMod, isPitcherClutchSituation };
   }
 
   /**
@@ -1750,12 +1796,19 @@
         doubleEnd: b.doubleEnd,
         tripleEnd: b.tripleEnd,
         isClutchActive: b.isClutchActive,
-        clutchActualBoosts: b.clutchActualBoosts
+        clutchActualBoosts: b.clutchActualBoosts,
+        pitcherClutchStatus: b.pitcherClutchStatus,
+        pitcherClutchMod: b.pitcherClutchMod,
+        isPitcherClutchSituation: b.isPitcherClutchSituation
       };
     }
 
     /** Snapshot of the full battle state for the UI. */
     getState() {
+      const curBounds = (!this.battleOver && this.awayTeam && this.awayTeam.lineup && this.activePitcher)
+        ? calcBoundaries(this.awayTeam.lineup[this.awayLineupIndex], this.activePitcher, this)
+        : null;
+
       return {
         teamHP:          this.teamHP,
         teamShield:      this.teamShield,
@@ -1765,6 +1818,8 @@
         outs:            this.outs,
         runs:            this.runs,
         bases:           this.bases.map(b => b ? 'X' : ' '),
+        pitcherClutchStatus: curBounds ? curBounds.pitcherClutchStatus : null,
+        pitcherClutchMod: curBounds ? curBounds.pitcherClutchMod : 0,
         activePitcher:   this.activePitcher ? {
           name:   this.activePitcher.name,
           hp:     this.activePitcher.hp,
@@ -1785,7 +1840,9 @@
           h9:     this.activePitcher.h9,
           k9:     this.activePitcher.k9,
           bb9:    this.activePitcher.bb9,
-          hr9:    this.activePitcher.hr9
+          hr9:    this.activePitcher.hr9,
+          clt:    this.activePitcher.clt !== undefined ? this.activePitcher.clt : (this.activePitcher.clu !== undefined ? this.activePitcher.clu : (this.activePitcher.clutch !== undefined ? this.activePitcher.clutch : 50)),
+          clu:    this.activePitcher.clu !== undefined ? this.activePitcher.clu : (this.activePitcher.clt !== undefined ? this.activePitcher.clt : (this.activePitcher.clutch !== undefined ? this.activePitcher.clutch : 50))
         } : null,
         currentBatter:   this.awayTeam.lineup[this.awayLineupIndex] || null,
         lineupIndex:     this.awayLineupIndex,

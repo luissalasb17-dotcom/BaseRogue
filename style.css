@@ -9306,3 +9306,53 @@ body.on-main-menu .main-container {
   font-family: 'Press Start 2P', monospace;
   font-size: 7.5px;
 }
+
+/* ── PITCHER CLUTCH SYSTEM HUD STYLING ── */
+.pitcher-clutch-pill {
+  display: inline-block;
+  padding: 3px 6px;
+  border-radius: 4px;
+  font-size: 7.5px;
+  font-family: 'Press Start 2P', monospace;
+  line-height: 1.3;
+  letter-spacing: 0.3px;
+  text-shadow: 0 0 6px rgba(0, 0, 0, 0.8);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+}
+
+.pitcher-clutch-pill.clutch-very-boosted {
+  color: #ffd700;
+  background: rgba(255, 215, 0, 0.18);
+  border: 1.5px solid #ffd700;
+  box-shadow: 0 0 14px rgba(255, 215, 0, 0.6);
+  animation: pulse-fast 1s infinite alternate;
+}
+
+.pitcher-clutch-pill.clutch-boosted {
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.15);
+  border: 1.5px solid #38bdf8;
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
+}
+
+.pitcher-clutch-pill.clutch-steady {
+  color: #94a3b8;
+  background: rgba(148, 163, 184, 0.12);
+  border: 1px solid #64748b;
+}
+
+.pitcher-clutch-pill.clutch-lowered {
+  color: #fb923c;
+  background: rgba(251, 146, 60, 0.15);
+  border: 1.5px solid #fb923c;
+  box-shadow: 0 0 10px rgba(251, 146, 60, 0.4);
+}
+
+.pitcher-clutch-pill.clutch-very-lowered {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.2);
+  border: 1.5px solid #ef4444;
+  box-shadow: 0 0 14px rgba(239, 68, 68, 0.6);
+  animation: pulse-fast 0.8s infinite alternate;
+}
+

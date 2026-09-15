@@ -3346,12 +3346,14 @@ function initGameModeSelector() {
       const bb9Val = player.bb9 !== undefined ? player.bb9 : (player.bb9_val !== undefined ? player.bb9_val : (player.ctl !== undefined ? player.ctl : 50));
       const hr9Val = player.hr9 !== undefined ? player.hr9 : (player.hr9_val !== undefined ? player.hr9_val : (player.mov !== undefined ? player.mov : 50));
       const staVal = player.sta !== undefined ? player.sta : (player.sta_val !== undefined ? player.sta_val : 65);
+      const cltVal = player.clt !== undefined ? player.clt : (player.clt_val !== undefined ? player.clt_val : (player.clu !== undefined ? player.clu : (player.clu_val !== undefined ? player.clu_val : 50)));
 
       const gH9  = getStatGrade(h9Val);
       const gK9  = getStatGrade(k9Val);
       const gBB9 = getStatGrade(bb9Val);
       const gHR9 = getStatGrade(hr9Val);
       const gSta = getStatGrade(staVal);
+      const gCLT = getStatGrade(cltVal);
 
       statLines = `
         <div class="stat-row" style="display: flex; align-items: center; justify-content: space-between; font-size: 7px; margin: 1px 0;">
@@ -3373,6 +3375,10 @@ function initGameModeSelector() {
         <div class="stat-row" style="display: flex; align-items: center; justify-content: space-between; font-size: 7px; margin: 1px 0;">
           <span class="stat-label">STA:</span>
           <span class="stat-badge" style="background: ${gSta.color}; color: ${gSta.text === 'F' ? '#fff' : '#000'}; font-family: 'Press Start 2P', monospace; font-size: 6px; padding: 1px 4px; border-radius: 3px; font-weight: bold; box-shadow: 0 1px 2px rgba(0,0,0,0.3);">${gSta.text}</span>
+        </div>
+        <div class="stat-row" style="display: flex; align-items: center; justify-content: space-between; font-size: 7px; margin: 1px 0;">
+          <span class="stat-label">CLT:</span>
+          <span class="stat-badge" style="background: ${gCLT.color}; color: ${gCLT.text === 'F' ? '#fff' : '#000'}; font-family: 'Press Start 2P', monospace; font-size: 6px; padding: 1px 4px; border-radius: 3px; font-weight: bold; box-shadow: 0 1px 2px rgba(0,0,0,0.3);">${gCLT.text}</span>
         </div>
       `;
     } else {
@@ -9236,6 +9242,18 @@ function initGameModeSelector() {
         debuffBadge.classList.remove('hidden');
       } else {
         debuffBadge.classList.add('hidden');
+      }
+    }
+
+    // Pitcher Clutch Dynamic Status Badge
+    const pitcherClutchBadge = document.getElementById('match-pitcher-clutch-badge');
+    if (pitcherClutchBadge) {
+      const pStatus = state.pitcherClutchStatus;
+      if (pStatus && pStatus.active && state.activePitcher) {
+        pitcherClutchBadge.innerHTML = `<span class="pitcher-clutch-pill ${pStatus.cssClass}">${pStatus.icon} PITCHER CLUTCH: ${pStatus.label}</span>`;
+        pitcherClutchBadge.classList.remove('hidden');
+      } else {
+        pitcherClutchBadge.classList.add('hidden');
       }
     }
   }
