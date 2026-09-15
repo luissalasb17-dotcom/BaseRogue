@@ -1769,6 +1769,7 @@
       const PRE_BOSS_STAGES = new Set([5, 12, 19, 26]);
       // Trade Deadline: Zone 2, Floor 4 (stage 17) → trade node opportunity
       const TRADE_DEADLINE_STAGE = 17;
+      let stagePreBossPool = null;
 
       for (let s = 0; s < numStages; s++) {
         const stageNodes = [];
@@ -1825,13 +1826,18 @@
               type = 'match';
             }
           } else if (localIdx === 5) {
-            // Floor 6 (Pre-Boss Preparation): Random arrangement of Rest, Training, Chest, Draft
-            const options = ['rest', 'train', 'chest'];
-            // Shuffle or randomly assign with high rest probability
-            const roll = Math.random();
-            if (idx === 0) type = roll < 0.6 ? 'rest' : 'train';
-            else if (idx === 1) type = roll < 0.5 ? 'train' : 'chest';
-            else type = roll < 0.5 ? 'chest' : 'rest';
+            // Floor 6 (Pre-Boss Preparation): Varied preparation choices before the Zone Boss
+            // Guaranteed 1 Rest (Clubhouse), plus 2 distinct options from training, chest, draft, gamble or event
+            if (!stagePreBossPool || stagePreBossPool.stage !== s) {
+              const otherOptions = ['train', 'chest', 'draft', 'event', 'gamble'];
+              const shuffledOthers = otherOptions.sort(() => Math.random() - 0.5);
+              const floorChoices = ['rest', shuffledOthers[0], shuffledOthers[1]];
+              stagePreBossPool = {
+                stage: s,
+                choices: floorChoices.sort(() => Math.random() - 0.5)
+              };
+            }
+            type = stagePreBossPool.choices[idx] || 'rest';
           }
 
           let label = type.toUpperCase();
@@ -2684,15 +2690,15 @@
 
           // ── CASE C: Zone Bosses (Stages 6, 13, 20 - Solid Team with Legitimate Ace) ─
           if (stage === 6 || stage === 13 || stage === 20) {
-            let targetAceMinOvr = 74, targetAceMaxOvr = 82, aceRarity = 'Rare';
-            let targetMinAvg = 65, targetMaxAvg = 72;
+            let targetAceMinOvr = 76, targetAceMaxOvr = 83, aceRarity = 'Rare';
+            let targetMinAvg = 72, targetMaxAvg = 78;
 
             if (stage === 6) {
-              targetAceMinOvr = 74; targetAceMaxOvr = 82; aceRarity = 'Rare'; targetMinAvg = 64; targetMaxAvg = 71;
+              targetAceMinOvr = 76; targetAceMaxOvr = 83; aceRarity = 'Rare'; targetMinAvg = 72; targetMaxAvg = 78;
             } else if (stage === 13) {
-              targetAceMinOvr = 83; targetAceMaxOvr = 89.9; aceRarity = 'Epic'; targetMinAvg = 74; targetMaxAvg = 81;
+              targetAceMinOvr = 84; targetAceMaxOvr = 90; aceRarity = 'Epic'; targetMinAvg = 80; targetMaxAvg = 86;
             } else if (stage === 20) {
-              targetAceMinOvr = 90; targetAceMaxOvr = 99.9; aceRarity = 'Legendary'; targetMinAvg = 82; targetMaxAvg = 92;
+              targetAceMinOvr = 91; targetAceMaxOvr = 98; aceRarity = 'Legendary'; targetMinAvg = 88; targetMaxAvg = 94;
             }
 
             // Filter teams that have an Ace in that range and at least 3 pitchers
@@ -2743,16 +2749,16 @@
 
           // ── CASE D: Mid-Boss (Floor 5 / Stages 4, 11, 18, 25 - Solid Devastating Trio) ──
           if (currentNode && currentNode.type === 'mid_boss') {
-            let targetRarity = 'Uncommon', minAvg = 62, maxAvg = 68;
+            let targetRarity = 'Rare', minAvg = 68, maxAvg = 74;
 
             if (stage <= 6) {
-              targetRarity = 'Uncommon'; minAvg = 62; maxAvg = 68;
+              targetRarity = 'Rare'; minAvg = 68; maxAvg = 74;
             } else if (stage <= 13) {
-              targetRarity = 'Rare'; minAvg = 72; maxAvg = 78;
+              targetRarity = 'Rare'; minAvg = 76; maxAvg = 82;
             } else if (stage <= 20) {
-              targetRarity = 'Epic'; minAvg = 80; maxAvg = 88;
+              targetRarity = 'Epic'; minAvg = 83; maxAvg = 89;
             } else {
-              targetRarity = 'Legendary'; minAvg = 86; maxAvg = 95;
+              targetRarity = 'Legendary'; minAvg = 89; maxAvg = 95;
             }
 
             // Find teams whose top 3 pitchers hit this average
@@ -2760,8 +2766,14 @@
               const p = t.pitchers || [];
               if (p.length < 3) return false;
               const avg = (p[0].ovr + p[1].ovr + p[2].ovr) / 3.0;
-              return avg >= (minAvg - 3) && avg <= (maxAvg + 3);
+              return avg >= (minAvg - 4) && avg <= (maxAvg + 4);
             });
+
+            // For Mid-Boss, prefer competitive teams (win_pct >= 0.450) if available
+            if (qualifyingTeams.length > 1) {
+              const contenders = qualifyingTeams.filter(t => (t.win_pct || 0.5) >= 0.450);
+              if (contenders.length > 0) qualifyingTeams = contenders;
+            }
 
             if (qualifyingTeams.length === 0) qualifyingTeams = allTeams;
             let candidateTeams = qualifyingTeams.filter(t => !this.encounteredTeams.has(t.id || t.name) && !siblingAssignedTeamNames.has(t.name));
@@ -2787,25 +2799,35 @@
               league: chosenTeam.league,
               ovr: highest.ovr,
               pitchers: rotation,
-              rarity: targetRarity
+              rarity: highest.rarity || targetRarity
             });
           }
 
           // ── CASE E: Regular Stages (Stages 0–6, 7–13, 14–20, 21–26 by Trio Average) ──
-          let targetMinAvg = 50.0, targetMaxAvg = 59.99;
+          let targetMinAvg = 52.0, targetMaxAvg = 60.0;
           if (stage <= 6) {
-            targetMinAvg = 50.0; targetMaxAvg = 59.99;
+            targetMinAvg = 52.0; targetMaxAvg = 60.0;
           } else if (stage <= 13) {
-            targetMinAvg = 60.0; targetMaxAvg = 69.99;
+            targetMinAvg = 61.0; targetMaxAvg = 68.0;
           } else if (stage <= 20) {
-            targetMinAvg = 70.0; targetMaxAvg = 79.99;
+            targetMinAvg = 69.0; targetMaxAvg = 76.0;
           } else {
-            targetMinAvg = 80.0; targetMaxAvg = 89.99;
+            targetMinAvg = 77.0; targetMaxAvg = 84.0;
           }
 
           let candidateTeams = allTeams.filter(t => !this.encounteredTeams.has(t.id || t.name) && !siblingAssignedTeamNames.has(t.name));
           if (candidateTeams.length === 0) candidateTeams = allTeams.filter(t => !siblingAssignedTeamNames.has(t.name));
           if (candidateTeams.length === 0) candidateTeams = allTeams;
+
+          // In early stages, prefer lower-tier / developing teams for regular encounters
+          if (stage <= 6) {
+            const lowerTier = candidateTeams.filter(t => (t.win_pct || 0.5) <= 0.530);
+            if (lowerTier.length > 0) candidateTeams = lowerTier;
+          } else if (stage <= 13) {
+            const midTier = candidateTeams.filter(t => (t.win_pct || 0.5) <= 0.600);
+            if (midTier.length > 0) candidateTeams = midTier;
+          }
+
           const chosenTeam = candidateTeams[Math.floor(Math.random() * candidateTeams.length)] || allTeams[0];
           this.encounteredTeams.add(chosenTeam.id || chosenTeam.name);
 
