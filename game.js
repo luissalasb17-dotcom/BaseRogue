@@ -1765,19 +1765,14 @@
       const FIRST_IN_ZONE = new Set([0, 7, 14, 21]);
       // Floor 5 of each zone (local index 4: 4, 11, 18, 25) → Choice between Regular Match vs Mid-Boss
       const MID_BOSS_STAGES = new Set([4, 11, 18, 25]);
-      // Floor 6 of each zone (local index 5: 5, 12, 19, 26) → Pre-Boss Preparation (Rest, Shop/Chest, Training)
-      const PRE_BOSS_STAGES = new Set([5, 12, 19, 26]);
       // Trade Deadline: Zone 2, Floor 4 (stage 17) → trade node opportunity
       const TRADE_DEADLINE_STAGE = 17;
-      let stagePreBossPool = null;
 
       for (let s = 0; s < numStages; s++) {
         const stageNodes = [];
         const localIdx      = s % 7;
         const isBossStage   = BOSS_STAGES.has(s);
         const isFirstInZone = FIRST_IN_ZONE.has(s);
-        const isMidBossFloor = MID_BOSS_STAGES.has(s);
-        const isPreBossFloor = PRE_BOSS_STAGES.has(s);
         const isTradeFloor   = (s === TRADE_DEADLINE_STAGE);
 
         // Node counts:
@@ -1790,54 +1785,34 @@
           let type = 'match';
 
           if (isBossStage) {
+            // Floor 7 (Boss Floor): Single Boss node
             type = 'boss';
-          } else if (localIdx === 0) {
-            // Floor 1 (Zone Opening): Guaranteed match
+          } else if (localIdx === 4 && idx === 1) {
+            // Floor 5: Mid-Boss in the center path
+            type = 'mid_boss';
+          } else if (isTradeFloor && idx === 1) {
+            // Zone 2, Floor 4: Trade Deadline in the center path
+            type = 'trade';
+          } else if (localIdx % 2 === 0) {
+            // Floors 1, 3, 5 (localIdx 0, 2, 4): Odd floors are Match stages
             type = 'match';
-          } else if (localIdx === 1) {
-            // Floor 2 (Decisions & Growth): Dynamic mix of Event, Training, Draft, Chest, Gamble
-            const pool = ['event', 'train', 'draft', 'chest', 'gamble'];
-            // Weighted random selection per node ensuring variety
+          } else {
+            // Floors 2, 4, 6 (localIdx 1, 3, 5): Even floors are Non-Match / Prep stages
+            // Purely probabilistic selection among all non-match node types
             const roll = Math.random();
-            if (idx === 0) type = roll < 0.4 ? 'event' : (roll < 0.7 ? 'train' : 'draft');
-            else if (idx === 1) type = roll < 0.4 ? 'train' : (roll < 0.7 ? 'draft' : 'event');
-            else type = roll < 0.35 ? 'draft' : (roll < 0.65 ? 'chest' : (roll < 0.85 ? 'event' : 'gamble'));
-          } else if (localIdx === 2) {
-            // Floor 3 (Regular Series): Regular matches for all paths
-            type = 'match';
-          } else if (localIdx === 3) {
-            // Floor 4 (Mid-Prep & Trade):
-            if (isTradeFloor && idx === 1) {
-              type = 'trade';
+            if (roll < 0.22) {
+              type = 'event';      // Decisión / Evento
+            } else if (roll < 0.42) {
+              type = 'train';      // Jaula de Bateo / Training
+            } else if (roll < 0.62) {
+              type = 'draft';      // Firma Leyenda / Draft
+            } else if (roll < 0.80) {
+              type = 'chest';      // Cofre / Items
+            } else if (roll < 0.92) {
+              type = 'rest';       // Casa Club / Rest
             } else {
-              const roll = Math.random();
-              if (idx === 0) type = roll < 0.35 ? 'chest' : (roll < 0.7 ? 'event' : 'train');
-              else if (idx === 1) type = roll < 0.35 ? 'gamble' : (roll < 0.7 ? 'draft' : 'event');
-              else type = roll < 0.4 ? 'event' : (roll < 0.7 ? 'draft' : 'train');
+              type = 'gamble';     // Luck / Apuesta
             }
-          } else if (localIdx === 4) {
-            // Floor 5: 3 paths across the map with the Mid-Boss in the center!
-            // Node 0: Classic Series (Match)
-            // Node 1: Mid-Boss
-            // Node 2: Classic Series (Match)
-            if (idx === 1) {
-              type = 'mid_boss';
-            } else {
-              type = 'match';
-            }
-          } else if (localIdx === 5) {
-            // Floor 6 (Pre-Boss Preparation): Varied preparation choices before the Zone Boss
-            // Guaranteed 1 Rest (Clubhouse), plus 2 distinct options from training, chest, draft, gamble or event
-            if (!stagePreBossPool || stagePreBossPool.stage !== s) {
-              const otherOptions = ['train', 'chest', 'draft', 'event', 'gamble'];
-              const shuffledOthers = otherOptions.sort(() => Math.random() - 0.5);
-              const floorChoices = ['rest', shuffledOthers[0], shuffledOthers[1]];
-              stagePreBossPool = {
-                stage: s,
-                choices: floorChoices.sort(() => Math.random() - 0.5)
-              };
-            }
-            type = stagePreBossPool.choices[idx] || 'rest';
           }
 
           let label = type.toUpperCase();
