@@ -690,7 +690,8 @@
 
     isUnlocked(player) {
       if (!player) return false;
-      if (this.activeCategory === 'opponents') {
+      const isPitcher = (player.role === 'SP' || player.role === 'RP' || player.pos === 'P' || player.pos === 'SP' || player.pos === 'RP' || player.pos === 'CL' || player.h9 !== undefined || player.stf !== undefined);
+      if (this.activeCategory === 'opponents' || (this.activeCategory === 'shortlist' && isPitcher)) {
         const keys = this._getOpponentKeys(player);
         return keys.some(k => this.unlockedOpponents.has(k));
       }
