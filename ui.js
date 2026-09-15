@@ -3801,9 +3801,11 @@ function initGameModeSelector() {
       window.Game.currentStageIndex = stage;
       window.Game.currentNodeIndex = index;
 
-      // Make visited
       const nodeObj = window.Game.map[stage][index];
-      nodeObj.visited = true;
+      // Non-match nodes are visited on entry; combat nodes are visited when the user commits to fight
+      if (nodeObj.type !== 'match' && nodeObj.type !== 'boss' && nodeObj.type !== 'mid_boss') {
+        nodeObj.visited = true;
+      }
 
       openNode(nodeObj);
     });
@@ -3962,8 +3964,15 @@ function initGameModeSelector() {
     el.btnPreFightStart.addEventListener('click', () => {
       const isStory = window.Game.selectedMode === 'story';
       const stage = window.Game.currentStageIndex;
-      const isZoneBoss = isStory && (stage === 5 || stage === 11 || stage === 17);
+      const isZoneBoss = isStory && (stage === 6 || stage === 13 || stage === 20 || stage === 27);
       const enemy = window.Game.getEnemyTeam();
+
+      const currentNode = (window.Game && window.Game.map && window.Game.map[window.Game.currentStageIndex])
+        ? window.Game.map[window.Game.currentStageIndex][window.Game.currentNodeIndex]
+        : null;
+      if (currentNode) {
+        currentNode.visited = true;
+      }
 
       if (isZoneBoss && enemy && enemy.isBoss) {
         showZoneBossIntroModal(enemy, () => setupAndStartMatchSimulation());
@@ -3973,6 +3982,13 @@ function initGameModeSelector() {
     });
 
     el.btnPreFightBackMap.addEventListener('click', () => {
+      const currentNode = (window.Game && window.Game.map && window.Game.map[window.Game.currentStageIndex])
+        ? window.Game.map[window.Game.currentStageIndex][window.Game.currentNodeIndex]
+        : null;
+      if (currentNode) {
+        currentNode.visited = false;
+      }
+      if (typeof renderMap === 'function') renderMap();
       window.showScreen('screen-map');
     });
   }

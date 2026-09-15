@@ -2485,9 +2485,26 @@
         return enemy;
       };
 
-      if (this.currentEnemy) return unlockEnemyPitchers(this.currentEnemy);
+      const currentNode = (this.map && this.map[this.currentStageIndex] && this.map[this.currentStageIndex][this.currentNodeIndex])
+        ? this.map[this.currentStageIndex][this.currentNodeIndex]
+        : (this.getCurrentNode ? this.getCurrentNode() : null);
+
+      if (currentNode && currentNode.enemy) {
+        this.currentEnemy = currentNode.enemy;
+        return unlockEnemyPitchers(this.currentEnemy);
+      }
+      if (!currentNode && this.currentEnemy) return unlockEnemyPitchers(this.currentEnemy);
+
+      const finishEnemy = (enemyObj) => {
+        this.currentEnemy = enemyObj;
+        if (currentNode) {
+          currentNode.enemy = enemyObj;
+        }
+        return unlockEnemyPitchers(enemyObj);
+      };
 
       const stage = this.currentStageIndex !== undefined ? this.currentStageIndex : 0;
+      const stageSiblingNodes = (this.map && this.map[stage]) ? this.map[stage] : [];
 
       // Helper for OVR calculation - always integer (floor) to avoid float rounding artifacts (e.g. 59.8 displaying as 60)
       const getOvr = (p) => Math.floor(p.ovr !== undefined ? p.ovr : (p._ovr !== undefined ? p._ovr : (window.UI && window.UI.getPlayerOvr ? window.UI.getPlayerOvr(p) : 50)));
@@ -2534,6 +2551,10 @@
 
           if (!this.encounteredTeams) this.encounteredTeams = new Set();
           if (!this.encounteredPitchers) this.encounteredPitchers = new Set();
+
+          const siblingAssignedTeamNames = new Set(
+            stageSiblingNodes.filter(n => n && n.enemy && n !== currentNode).map(n => n.enemy.name || n.enemy.teamName)
+          );
 
           const pickPitcherFromList = (candidates, preferredRole = null) => {
             const pitcherKey = (p) => (p.name || '') + '_' + (p.year || this.selectedSeasonYear);
@@ -2606,7 +2627,7 @@
             const selected = legTop5.map(p => createPitcherObj(p));
             const highest = selected[0] || selected.reduce((max, p) => (p.ovr > max.ovr ? p : max), selected[0]);
 
-            this.currentEnemy = {
+            return finishEnemy({
               id: `story_super_boss_${this.selectedSeasonYear}_${Date.now()}`,
               name: `⚡ SUPER BOSS: ${highest.cleanName}`,
               tier: 'S',
@@ -2617,8 +2638,7 @@
               ovr: highest.ovr,
               pitchers: selected,
               rarity: 'Legendary'
-            };
-            return unlockEnemyPitchers(this.currentEnemy);
+            });
           }
 
           // ── CASE B: Final Boss Serie Mundial (Stage 27 Part 1 - Top 5 of Champ) ──
@@ -2630,7 +2650,7 @@
             const rotation = top5.map((p, idx) => createPitcherObj(p, idx === 0 ? 'SP' : (idx === 4 ? 'RP' : p.role)));
             const ace = rotation[0];
 
-            this.currentEnemy = {
+            return finishEnemy({
               id: `story_final_boss_${this.selectedSeasonYear}_${Date.now()}`,
               name: `👑 FINAL BOSS: ${champTeam.name}`,
               tier: 'S',
@@ -2645,8 +2665,7 @@
               ovr: ace.ovr,
               pitchers: rotation,
               rarity: ace.rarity || 'Legendary'
-            };
-            return unlockEnemyPitchers(this.currentEnemy);
+            });
           }
 
           // ── CASE C: Zone Bosses (Stages 6, 13, 20 - Solid Team with Legitimate Ace) ─
@@ -2678,7 +2697,8 @@
             }
             if (qualifyingTeams.length === 0) qualifyingTeams = allTeams;
 
-            let candidateTeams = qualifyingTeams.filter(t => !this.encounteredTeams.has(t.id || t.name));
+            let candidateTeams = qualifyingTeams.filter(t => !this.encounteredTeams.has(t.id || t.name) && !siblingAssignedTeamNames.has(t.name));
+            if (candidateTeams.length === 0) candidateTeams = qualifyingTeams.filter(t => !siblingAssignedTeamNames.has(t.name));
             if (candidateTeams.length === 0) candidateTeams = qualifyingTeams;
             const chosenTeam = candidateTeams[Math.floor(Math.random() * candidateTeams.length)] || allTeams[0];
             this.encounteredTeams.add(chosenTeam.id || chosenTeam.name);
@@ -2689,7 +2709,7 @@
             const sup2 = createPitcherObj(staff[2] || staff[0], 'RP');
             const rotation = [ace, sup1, sup2];
 
-            this.currentEnemy = {
+            return finishEnemy({
               id: `story_boss_stage_${stage}_${Date.now()}`,
               name: `👑 BOSS: ${ace.cleanName} (${chosenTeam.name})`,
               tier: 'S',
@@ -2704,12 +2724,10 @@
               ovr: ace.ovr,
               pitchers: rotation,
               rarity: aceRarity
-            };
-            return unlockEnemyPitchers(this.currentEnemy);
+            });
           }
 
           // ── CASE D: Mid-Boss (Floor 5 / Stages 4, 11, 18, 25 - Solid Devastating Trio) ──
-          const currentNode = this.getCurrentNode ? this.getCurrentNode() : null;
           if (currentNode && currentNode.type === 'mid_boss') {
             let targetRarity = 'Uncommon', minAvg = 62, maxAvg = 68;
 
@@ -2732,7 +2750,8 @@
             });
 
             if (qualifyingTeams.length === 0) qualifyingTeams = allTeams;
-            let candidateTeams = qualifyingTeams.filter(t => !this.encounteredTeams.has(t.id || t.name));
+            let candidateTeams = qualifyingTeams.filter(t => !this.encounteredTeams.has(t.id || t.name) && !siblingAssignedTeamNames.has(t.name));
+            if (candidateTeams.length === 0) candidateTeams = qualifyingTeams.filter(t => !siblingAssignedTeamNames.has(t.name));
             if (candidateTeams.length === 0) candidateTeams = qualifyingTeams;
             const chosenTeam = candidateTeams[Math.floor(Math.random() * candidateTeams.length)] || allTeams[0];
             this.encounteredTeams.add(chosenTeam.id || chosenTeam.name);
@@ -2740,7 +2759,7 @@
             const rotation = findTeamTrioByAvg(chosenTeam, minAvg, maxAvg);
             const highest = rotation.reduce((max, p) => (p.ovr > max.ovr ? p : max), rotation[0]);
 
-            this.currentEnemy = {
+            return finishEnemy({
               id: `story_midboss_stage_${stage}_${Date.now()}`,
               name: `⚡ MID-BOSS: ${highest.cleanName} (${chosenTeam.name})`,
               tier: 'A+',
@@ -2755,8 +2774,7 @@
               ovr: highest.ovr,
               pitchers: rotation,
               rarity: targetRarity
-            };
-            return unlockEnemyPitchers(this.currentEnemy);
+            });
           }
 
           // ── CASE E: Regular Stages (Stages 0–6, 7–13, 14–20, 21–26 by Trio Average) ──
@@ -2771,7 +2789,8 @@
             targetMinAvg = 80.0; targetMaxAvg = 89.99;
           }
 
-          let candidateTeams = allTeams.filter(t => !this.encounteredTeams.has(t.id || t.name));
+          let candidateTeams = allTeams.filter(t => !this.encounteredTeams.has(t.id || t.name) && !siblingAssignedTeamNames.has(t.name));
+          if (candidateTeams.length === 0) candidateTeams = allTeams.filter(t => !siblingAssignedTeamNames.has(t.name));
           if (candidateTeams.length === 0) candidateTeams = allTeams;
           const chosenTeam = candidateTeams[Math.floor(Math.random() * candidateTeams.length)] || allTeams[0];
           this.encounteredTeams.add(chosenTeam.id || chosenTeam.name);
@@ -2779,7 +2798,7 @@
           const rotation = findTeamTrioByAvg(chosenTeam, targetMinAvg, targetMaxAvg);
           const p1 = rotation[0];
 
-          this.currentEnemy = {
+          return finishEnemy({
             id: `story_opp_stage_${stage}_${Date.now()}`,
             name: `${chosenTeam.name}`,
             tier: 'B',
@@ -2794,8 +2813,7 @@
             ovr: p1.ovr,
             pitchers: rotation,
             rarity: p1.rarity
-          };
-          return unlockEnemyPitchers(this.currentEnemy);
+          });
         }
       }
 
@@ -2804,6 +2822,11 @@
       // Quick Play stage 0 to 23
       const fullPool = window.PITCHERS_POOL || [];
       if (!this.encounteredPitchers) this.encounteredPitchers = new Set();
+
+      // Sibling nodes pitcher exclusion
+      const siblingAssignedPitchers = new Set(
+        stageSiblingNodes.filter(n => n && n.enemy && n.enemy.pitchers && n !== currentNode).flatMap(n => n.enemy.pitchers.map(p => (p.cleanName || p.name)))
+      );
 
       // Guards against picking the same real pitcher twice for one 3-pitcher
       // roster — reset per getEnemyTeam() call (fresh closure each time).
@@ -2820,12 +2843,8 @@
         }
         if (unvisited.length === 0) unvisited = fullPool;
 
-        // When the encountered-pool fallback above has to reuse already-seen
-        // pitchers (small pools, e.g. Legendary-only for boss stages, exhausted
-        // over a long run), it could return the same pitcher already picked
-        // earlier in THIS roster — collapsing 2 of the 3 into one BaseballDex
-        // entry. Filter those out as a final backstop.
-        let candidatePool = unvisited.filter(p => !rosterPicks.has(pitcherKey(p)));
+        let candidatePool = unvisited.filter(p => !rosterPicks.has(pitcherKey(p)) && !siblingAssignedPitchers.has(p.name));
+        if (candidatePool.length === 0) candidatePool = unvisited.filter(p => !rosterPicks.has(pitcherKey(p)));
         if (candidatePool.length === 0) candidatePool = unvisited;
 
         const chosen = candidatePool[Math.floor(Math.random() * candidatePool.length)];
@@ -2833,8 +2852,6 @@
         rosterPicks.add(pitcherKey(chosen));
         return chosen;
       };
-
-
 
       // Helper to construct a balanced 3-pitcher rotation: SP opens, flexible middle, RP closes
       const assembleThreePitcherRotation = (primaryCandidates, supportCandidates, targetRole = 'SP') => {
@@ -2884,7 +2901,7 @@
         let highest = p1;
         selected.forEach(p => { if (getOvr(p) > getOvr(highest)) highest = p; });
 
-        this.currentEnemy = {
+        return finishEnemy({
           id: `super_boss_${stage}_${Date.now()}`,
           name: `⚡ SUPER BOSS: ${highest.cleanName}`,
           tier: 'S',
@@ -2894,8 +2911,7 @@
           _ovr: highest.ovr,
           era: highest.era,
           rarity: 'Legendary'
-        };
-        return this.currentEnemy;
+        });
       }
 
       // Map 1 Boss (Stage 6): Ace 75-79 OVR (Rare Alta), 2 Support 60-69 OVR (Uncommon)
@@ -2908,7 +2924,7 @@
         const isRpAce = Math.random() < 0.35 && acePool.some(p => (p.role || '').toUpperCase() === 'RP');
         const { rotation, highestPitcher } = assembleThreePitcherRotation(acePool, uncommPool, isRpAce ? 'RP' : 'SP');
         
-        this.currentEnemy = {
+        return finishEnemy({
           id: `boss_map1_${Date.now()}`,
           name: `👑 BOSS: ${highestPitcher.cleanName}`,
           tier: 'A',
@@ -2917,8 +2933,7 @@
           _ovr: highestPitcher.ovr,
           era: highestPitcher.era,
           rarity: 'Rare'
-        };
-        return this.currentEnemy;
+        });
       }
 
       // Map 2 Boss (Stage 13): Ace 85-89 OVR (Epic Alta), 2 Support 70-79 OVR (Rare)
@@ -2931,7 +2946,7 @@
         const isRpAce = Math.random() < 0.35 && acePool.some(p => (p.role || '').toUpperCase() === 'RP');
         const { rotation, highestPitcher } = assembleThreePitcherRotation(acePool, rarePool, isRpAce ? 'RP' : 'SP');
 
-        this.currentEnemy = {
+        return finishEnemy({
           id: `boss_map2_${Date.now()}`,
           name: `👑 BOSS: ${highestPitcher.cleanName}`,
           tier: 'S',
@@ -2940,8 +2955,7 @@
           _ovr: highestPitcher.ovr,
           era: highestPitcher.era,
           rarity: 'Epic'
-        };
-        return this.currentEnemy;
+        });
       }
 
       // Map 3 Boss (Stage 20): Ace 95-99 OVR (Legendary Alta), 2 Support 80-89 OVR (Epic)
@@ -2954,7 +2968,7 @@
         const isRpAce = Math.random() < 0.35 && acePool.some(p => (p.role || '').toUpperCase() === 'RP');
         const { rotation, highestPitcher } = assembleThreePitcherRotation(acePool, epicPool, isRpAce ? 'RP' : 'SP');
 
-        this.currentEnemy = {
+        return finishEnemy({
           id: `boss_map3_${Date.now()}`,
           name: `👑 BOSS: ${highestPitcher.cleanName}`,
           tier: 'S',
@@ -2963,8 +2977,7 @@
           _ovr: highestPitcher.ovr,
           era: highestPitcher.era,
           rarity: 'Legendary'
-        };
-        return this.currentEnemy;
+        });
       }
 
       // Map 4 Boss Fight #1 (Stage 27): Ace 95+ OVR (Legendary Élite), 2 Support 90-94 OVR (Legendary)
@@ -2976,7 +2989,7 @@
 
         const { rotation, highestPitcher } = assembleThreePitcherRotation(acePool, supportPool, 'SP');
 
-        this.currentEnemy = {
+        return finishEnemy({
           id: `boss_map4_part1_${Date.now()}`,
           name: `👑 BOSS FINAL: ${highestPitcher.cleanName}`,
           tier: 'S',
@@ -2985,12 +2998,10 @@
           _ovr: highestPitcher.ovr,
           era: highestPitcher.era,
           rarity: 'Legendary'
-        };
-        return this.currentEnemy;
+        });
       }
 
       // Mid-Boss nodes (Floor 5 of each zone): 3-pitcher squad (SP, middle, RP) of target rarity
-      const currentNode = this.getCurrentNode ? this.getCurrentNode() : null;
       if (currentNode && currentNode.type === 'mid_boss') {
         let midPool, targetRarity;
         if (stage <= 6)        { targetRarity = 'Uncommon';  midPool = fullPool.filter(p => p.rarity === 'Uncommon'); }
@@ -3000,7 +3011,7 @@
         if (midPool.length === 0) midPool = fullPool;
 
         const { rotation, highestPitcher } = assembleThreePitcherRotation(midPool, midPool, 'SP');
-        this.currentEnemy = {
+        return finishEnemy({
           id: `mid_boss_stage_${stage}_${Date.now()}`,
           name: `⚡ MID-BOSS: ${highestPitcher.cleanName}`,
           tier: 'A+',
@@ -3009,8 +3020,7 @@
           _ovr: highestPitcher.ovr,
           era: highestPitcher.era,
           rarity: targetRarity
-        };
-        return this.currentEnemy;
+        });
       }
 
       // Regular stages: strictly 10-point OVR windows across the 4 zones
@@ -3030,7 +3040,7 @@
       const p3 = createPitcherObj(pickPitcher(stagePool, 'RP'), 'RP');
       const selected = [p1, p2, p3];
 
-      this.currentEnemy = {
+      return finishEnemy({
         id: `opp_team_stage_${stage}_${Date.now()}`,
         name: `${p1.cleanName} & Rotación`,
         tier: 'B',
@@ -3039,9 +3049,7 @@
         _ovr: p1.ovr,
         era: p1.era,
         rarity: p1.rarity
-      };
-
-      return unlockEnemyPitchers(this.currentEnemy);
+      });
     }
 
     getSimLineups() {
