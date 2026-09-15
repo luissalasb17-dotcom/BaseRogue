@@ -32,6 +32,21 @@
     { key: 'RP', label: 'RP' }
   ];
 
+  const SHORTLIST_POS_TABS = [
+    { key: 'all', get label() { return (typeof window.t === 'function' ? window.t('dex.pos_all', 'TODOS') : 'TODOS'); } },
+    { key: 'C', label: 'C' },
+    { key: '1B', label: '1B' },
+    { key: '2B', label: '2B' },
+    { key: '3B', label: '3B' },
+    { key: 'SS', label: 'SS' },
+    { key: 'LF', label: 'LF' },
+    { key: 'CF', label: 'CF' },
+    { key: 'RF', label: 'RF' },
+    { key: 'DH', label: 'DH' },
+    { key: 'SP', label: 'SP' },
+    { key: 'RP', label: 'RP' }
+  ];
+
   const POS_SYNONYMS = {
     'c': 'C', 'catcher': 'C', 'receptor': 'C', 'cat': 'C',
     '1b': '1B', 'first base': '1B', 'primera base': '1B', 'primera': '1B',
@@ -1076,8 +1091,8 @@
       posLabel.style.cssText = 'font-family:"Press Start 2P", monospace; font-size: 8px; color: #9ca3af; margin-right: 4px;';
       posTabsContainer.appendChild(posLabel);
 
-      const posTabs = this.activeCategory === 'opponents' ? PITCHER_POS_TABS : BATTER_POS_TABS;
-      const accentColor = this.activeCategory === 'opponents' ? '#38bdf8' : '#10b981';
+      const posTabs = this.activeCategory === 'opponents' ? PITCHER_POS_TABS : (this.activeCategory === 'shortlist' ? SHORTLIST_POS_TABS : BATTER_POS_TABS);
+      const accentColor = this.activeCategory === 'opponents' ? '#38bdf8' : (this.activeCategory === 'shortlist' ? '#ffd700' : '#10b981');
 
       posTabs.forEach(tab => {
         const btn = document.createElement('button');
