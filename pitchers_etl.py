@@ -93,7 +93,7 @@ def to_grade(val):
     return "F"
 
 
-def normalize_series(s, low=5.0, high=105.0):
+def normalize_series(s, low=1.0, high=105.0):
     s = pd.to_numeric(s, errors="coerce")
     valid = s.dropna()
     if valid.empty or valid.nunique() == 1:
@@ -271,7 +271,7 @@ def paso_4_pico_pitching(pitching, war_pitch, people):
     """
     print(f"\n  PASO 4: Seleccionando pico de {PEAK_SEASONS} mejores temporadas por WAR...")
     pit = pitching.copy()
-    int_cols = ["G", "GS", "SV", "IPouts", "H", "ER", "HR", "BB", "SO", "BFP", "W", "L"]
+    int_cols = ["G", "GS", "SV", "IPouts", "H", "ER", "R", "HR", "BB", "SO", "HBP", "BFP", "W", "L"]
     for col in int_cols:
         if col in pit.columns:
             pit[col] = pd.to_numeric(pit[col], errors="coerce").fillna(0)
@@ -286,9 +286,11 @@ def paso_4_pico_pitching(pitching, war_pitch, people):
         IPouts=("IPouts", "sum"),
         H     =("H",      "sum"),
         ER    =("ER",     "sum"),
+        R     =("R",      "sum"),
         HR_a  =("HR",     "sum"),
         BB    =("BB",     "sum"),
         SO    =("SO",     "sum"),
+        HBP   =("HBP",    "sum"),
         BFP   =("BFP",    "sum"),
         W     =("W",      "sum"),
         L     =("L",      "sum"),
@@ -311,26 +313,27 @@ def paso_4_pico_pitching(pitching, war_pitch, people):
     war_yearly = pd.DataFrame()
     if not war_pitch.empty and not people.empty:
         war = war_pitch.copy()
-        for col in ["WAR", "GS", "G", "IPouts", "IPouts_start", "IPouts_relief", "ERA_plus"]:
+        for col in ["WAR", "GS", "G", "IPouts", "IPouts_start", "IPouts_relief", "ERA_plus", "GR_leverage_index_avg"]:
             if col in war.columns:
                 war[col] = pd.to_numeric(
                     war[col].replace("NULL", np.nan) if isinstance(war[col].iloc[0], str) else war[col],
                     errors="coerce"
-                ).fillna(0)
+                ).fillna(1.0 if col == "GR_leverage_index_avg" else 0.0)
             else:
-                war[col] = 0.0
+                war[col] = 1.0 if col == "GR_leverage_index_avg" else 0.0
         war_season = war.groupby(["player_ID", "year_ID"]).agg(
-            war_season    =("WAR",           "sum"),
-            era_plus_y    =("ERA_plus",      "mean"),  # media ponderada de stints
-            ipouts_start_y=("IPouts_start",  "sum"),
-            ipouts_rel_y  =("IPouts_relief", "sum"),
+            war_season    =("WAR",                   "sum"),
+            era_plus_y    =("ERA_plus",              "mean"),  # media ponderada de stints
+            ipouts_start_y=("IPouts_start",          "sum"),
+            ipouts_rel_y  =("IPouts_relief",         "sum"),
+            leverage_y    =("GR_leverage_index_avg", "mean"),
         ).reset_index()
-        war_season.columns = ["bbrefID", "yearID", "war_season", "era_plus_y", "ipouts_start_y", "ipouts_rel_y"]
+        war_season.columns = ["bbrefID", "yearID", "war_season", "era_plus_y", "ipouts_start_y", "ipouts_rel_y", "leverage_y"]
 
         id_map = people[["playerID", "bbrefID"]].dropna(subset=["bbrefID"])
         war_yearly = (
             war_season.merge(id_map, on="bbrefID", how="left")
-                      .dropna(subset=["playerID"])[["playerID", "yearID", "war_season", "era_plus_y", "ipouts_start_y", "ipouts_rel_y"]]
+                      .dropna(subset=["playerID"])[["playerID", "yearID", "war_season", "era_plus_y", "ipouts_start_y", "ipouts_rel_y", "leverage_y"]]
         )
         print(f"  WAR anual para {war_yearly['playerID'].nunique():,} pitchers (BBRef)")
     else:
@@ -446,11 +449,14 @@ def paso_4_pico_pitching(pitching, war_pitch, people):
         peak_bb          =("BB",                 "sum"),
         peak_hr_a        =("HR_a",               "sum"),
         peak_er          =("ER",                 "sum"),
+        peak_r           =("R",                  "sum"),
+        peak_hbp         =("HBP",                "sum"),
         peak_h           =("H",                  "sum"),
         peak_w           =("W",                  "sum"),
         peak_l           =("L",                  "sum"),
         peak_war         =("war_season",         "sum"),
         peak_era_plus    =("era_plus_y",         "mean"),   # promedio de ERA+ en peak
+        peak_li          =("leverage_y",         "mean"),   # promedio de Leverage Index en peak
     ).reset_index()
 
     peak["is_nlb"] = peak["playerID"].map(nlb_counts > 0).fillna(False)
@@ -875,7 +881,20 @@ def paso_8_atributos_raw(df):
     df["ip_per_year_raw"] = df["ip_per_year"].fillna(50.0) * nlb_calendar_mult
     df["sta_raw"] = df["ip_per_year_raw"]
 
-    print("  h9_raw, k9_raw, bb9_raw, hr9_raw, sta_raw calculados con suavizado Bayesiano (m=250 IP)")
+    # Atributo Clutch RAW: LOB% (Strand Rate) con Ancla m=150 corredores + Modulador Leverage Index
+    er_k  = df["peak_er"].fillna(0)
+    hbp_k = df["peak_hbp"].fillna(0)
+    li_k  = df["peak_li"].fillna(1.0)
+
+    denom_lob = h_k + bb_k + hbp_k - 1.4 * hr_k
+    num_lob   = h_k + bb_k + hbp_k - er_k
+    m_lob     = 150.0
+    lob_smooth = ((num_lob + m_lob * 0.720) / (denom_lob + m_lob)).clip(0.55, 0.90)
+    li_mod    = (li_k - 1.0).clip(-0.5, 1.5) * 6.0
+    df["clt_raw"] = lob_smooth * 100.0 + li_mod
+    df["clu_raw"] = df["clt_raw"]
+
+    print("  h9_raw, k9_raw, bb9_raw, hr9_raw, sta_raw, clt_raw calculados con suavizado Bayesiano")
     return df
 
 
@@ -891,7 +910,7 @@ def paso_9_fielding_pitchers(df, war_pitch, people):
 
 # ── PASO 10: Normalización por Era ───────────────────────────────────────────
 def paso_10_normalizar_por_era(df):
-    print("\n  PASO 10: Normalizando por Era MLB The Show Suite (H/9, K/9, BB/9, HR/9, STA)...")
+    print("\n  PASO 10: Normalizando por Era MLB The Show Suite (H/9, K/9, BB/9, HR/9, STA, CLT)...")
     df = df.copy()
 
     # Sub-división estadística interna de The Genesis Era para respetar la distancia del montículo:
@@ -906,43 +925,46 @@ def paso_10_normalizar_por_era(df):
     df = normalize_difficulty_adjusted(df, "k9_raw",  "k9_val",  invert=False, era_col="norm_era")
     df = normalize_difficulty_adjusted(df, "bb9_raw", "bb9_val", invert=True,  era_col="norm_era")
     df = normalize_difficulty_adjusted(df, "hr9_raw", "hr9_val", invert=True,  era_col="norm_era")
+    df = normalize_difficulty_adjusted(df, "clt_raw", "clt_val", invert=False, era_col="norm_era")
+    df["clu_val"] = df["clt_val"]
 
-    # Stamina calibrada según IP anuales promedio reales (sin penalización invertida por era):
+    # Stamina calibrada según IP anuales promedio reales (escala 1.0 a 125.0):
     def map_ip_to_sta(ip):
         if ip is None or pd.isna(ip): return 45.0
         val = float(ip)
         if val <= 50.0:
-            return 15.0 + (val / 50.0) * 10.0
+            return max(1.0, 1.0 + ((val - 23.0) / 27.0) * 24.0)
         elif val <= 80.0:
-            return 25.0 + ((val - 50.0) / 30.0) * 15.0
+            return 25.0 + ((val - 50.0) / 30.0) * 20.0
         elif val <= 130.0:
-            return 40.0 + ((val - 80.0) / 50.0) * 20.0
+            return 45.0 + ((val - 80.0) / 50.0) * 20.0
         elif val <= 175.0:
-            return 60.0 + ((val - 130.0) / 45.0) * 18.0
+            return 65.0 + ((val - 130.0) / 45.0) * 15.0
         elif val <= 225.0:
-            return 78.0 + ((val - 175.0) / 50.0) * 14.0
+            return 80.0 + ((val - 175.0) / 50.0) * 15.0
         elif val <= 290.0:
-            return 92.0 + ((val - 225.0) / 65.0) * 14.0
+            return 95.0 + ((val - 225.0) / 65.0) * 15.0
         else:
-            return 106.0 + min(19.0, ((val - 290.0) / 100.0) * 19.0)
+            return 110.0 + min(15.0, ((val - 290.0) / 100.0) * 15.0)
 
-    df["sta_val"] = df["ip_per_year_raw"].apply(map_ip_to_sta).round(1)
+    df["sta_val"] = df["ip_per_year_raw"].apply(map_ip_to_sta).round(1).clip(1.0, 125.0)
 
     # Suavizado Bayesiano Suave (m=1) para muestras cortas de temporadas en el pico (n < 7)
     n_peak = df["total_seasons_in_peak"].fillna(7).clip(lower=1, upper=7)
     weight_seasons = np.minimum(1.0, (n_peak / (n_peak + 1.0)) * (8.0 / 7.0))
-    era_cols = ["h9_val", "k9_val", "bb9_val", "hr9_val", "sta_val"]
+    era_cols = ["h9_val", "k9_val", "bb9_val", "hr9_val", "sta_val", "clt_val"]
     for col in era_cols:
         era_mean = df.groupby("norm_era")[col].transform("mean")
         df[col] = (weight_seasons * df[col] + (1.0 - weight_seasons) * era_mean).round(1)
+    df["clu_val"] = df["clt_val"]
 
-    print("  h9_val, k9_val, bb9_val, hr9_val, sta_val normalizados por Era (MLB The Show Suite)")
+    print("  h9_val, k9_val, bb9_val, hr9_val, sta_val, clt_val normalizados por Era (MLB The Show Suite)")
     return df
 
 
-# ── PASO 11: OVR y Rareza (20% H/9, 20% K/9, 20% BB/9, 20% HR/9, 20% STA) ──
+# ── PASO 11: OVR y Rareza (20% H/9, 20% K/9, 20% BB/9, 20% HR/9, 10% STA, 10% CLT) ──
 def paso_11_ovr_rareza(df):
-    print("\n  PASO 11: OVR y Rareza (20% H/9, 20% K/9, 20% BB/9, 20% HR/9, 20% STA)...")
+    print("\n  PASO 11: OVR y Rareza (20% H/9, 20% K/9, 20% BB/9, 20% HR/9, 10% STA, 10% CLT)...")
     df = df.copy()
 
     df["raw_ovr"] = (
@@ -950,34 +972,41 @@ def paso_11_ovr_rareza(df):
         df["k9_val"]  * 0.20 +
         df["bb9_val"] * 0.20 +
         df["hr9_val"] * 0.20 +
-        df["sta_val"] * 0.20
+        df["sta_val"] * 0.10 +
+        df["clt_val"] * 0.10
     )
+
+    p35  = float(df["raw_ovr"].quantile(0.35))
+    p65  = float(df["raw_ovr"].quantile(0.65))
+    p85  = float(df["raw_ovr"].quantile(0.85))
+    p975 = float(df["raw_ovr"].quantile(0.975))
 
     def map_to_cosmetic_ovr_p(r):
         if r is None or pd.isna(r):
             return 50.0
         val = float(r)
-        if val <= 47.3:
-            res = 50.0 + ((val - 15.0) / 32.3) * 9.9
-        elif val <= 57.2:
-            res = 60.0 + ((val - 47.3) / 9.9) * 9.9
-        elif val <= 67.0:
-            res = 70.0 + ((val - 57.2) / 9.8) * 9.9
-        elif val <= 82.0:
-            res = 80.0 + ((val - 67.0) / 15.0) * 9.9
+        if val <= p35:
+            res = 50.0 + ((val - 15.0) / max(0.1, (p35 - 15.0))) * 9.9
+        elif val <= p65:
+            res = 60.0 + ((val - p35) / max(0.1, (p65 - p35))) * 9.9
+        elif val <= p85:
+            res = 70.0 + ((val - p65) / max(0.1, (p85 - p65))) * 9.9
+        elif val <= p975:
+            res = 80.0 + ((val - p85) / max(0.1, (p975 - p85))) * 9.9
         else:
-            res = 90.0 + min(9.9, ((val - 82.0) / 25.0) * 9.9)
+            res = 90.0 + min(9.9, ((val - p975) / 25.0) * 9.9)
         return round(res, 1)
 
-    df["ovr"]    = df["raw_ovr"].apply(map_to_cosmetic_ovr_p)
+    df["ovr"]    = df["raw_ovr"].apply(map_to_cosmetic_ovr_p).clip(50.0, 99.9).round(1)
     df["rarity"] = df["ovr"].apply(asignar_rareza)
 
     for col, gcol in [
         ("h9_val", "h9_grade"), ("k9_val", "k9_grade"),
         ("bb9_val", "bb9_grade"), ("hr9_val", "hr9_grade"),
-        ("sta_val", "sta_grade"),
+        ("sta_val", "sta_grade"), ("clt_val", "clt_grade"),
     ]:
         df[gcol] = df[col].apply(to_grade)
+    df["clu_grade"] = df["clt_grade"]
 
     print(f"  OVR calculado. Media: {df['ovr'].mean():.1f}")
     print(f"  Distribucion por rareza:\n{df['rarity'].value_counts().to_string()}")
@@ -1054,27 +1083,33 @@ NLB_LEGENDS = {
     'Willie Wells', 'Leon Day', 'Ray Brown', 'Smokey Joe Williams', 'Bill Byrd',
     'Nip Winters', 'Hilton Smith', 'Cristóbal Torriente', 'Martin Dihigo', 'Jud Wilson',
     'Biz Mackey', 'Louis Santop', 'Andy Cooper', 'Bill Foster', 'José Méndez',
-    'Willie Foster', 'George Scales', 'Dick Lundy', 'Alejandro Oms'
+    'Willie Foster', 'George Scales', 'Dick Lundy', 'Alejandro Oms', 'Frank Grant',
+    'Pete Hill', 'Ben Taylor', 'Bruce Petway', 'Pelayo Chacón', 'Bartolo Portuondo',
+    'Rube Foster', 'Andrew Foster'
 }
 
 # Strictly Negro League teams (excluding 19th c. MLB franchises like LOU, SBS, CLS, WNL, etc.)
 NLB_TEAMS = {
-    'BEG', 'KCM', 'MRS', 'HG', 'CBE', 'CAG', 'PC', 'BE', 'IN9', 'BIR',
-    'HOM', 'NW2', 'NY5', 'NY6', 'AS2', 'MEM', 'BBB', 'BBS',
-    'BCA', 'BG1', 'BG2', 'BGS', 'CBR', 'CC1', 'CC2', 'CCC', 'CCG', 'CCG2',
-    'CGI', 'CIG', 'CLG', 'COS', 'CSG', 'CSG2', 'CSG3', 'CSW',
-    'CTG', 'CTS', 'CUP', 'CXG', 'FLP', 'GOR', 'HBG', 'HIL',
-    'JRC', 'KCG', 'KRG', 'LEL', 'LRG', 'LVB', 'MB', 'MGS', 'MOH',
-    'MRM', 'NBY', 'ND', 'NE', 'NLG', 'NLS', 'NS', 'NWB', 'NYC',
-    'OKM', 'PBG', 'PBK', 'PG', 'PS', 'PTG', 'QG',
-    'SC1', 'SEN', 'SLS', 'SPG', 'WAP', 'WBS',
-    'WP'
+    'AB', 'AB2', 'AB3', 'ABC', 'AC', 'AC1', 'AC2', 'ACB', 'ACG', 'BBB', 'BBS', 'BCA', 'BE', 'BEG',
+    'BG1', 'BG2', 'BGS', 'BR2', 'BRG', 'CAG', 'CBB', 'CBE', 'CBG', 'CBN', 'CBR', 'CC', 'CC1',
+    'CC2', 'CCB', 'CCC', 'CCG', 'CCG2', 'CCU', 'CEG', 'CEL', 'CGI', 'CHT', 'CIC', 'CIG', 'CL2',
+    'CLG', 'CLS', 'COB', 'COG', 'COS', 'COT', 'CRS', 'CS', 'CSE', 'CSG', 'CSG2', 'CSG3', 'CSH',
+    'CSW', 'CT', 'CTG', 'CTS', 'CU', 'CUP', 'CXG', 'DM', 'DS', 'DTS', 'DW', 'DYM', 'FLP', 'GOR',
+    'HBG', 'HG', 'HIL', 'HOM', 'HSS', 'HAR', 'IA', 'IAB', 'IC', 'ID', 'JRC', 'KCG', 'KCM', 'KRG', 'LEL',
+    'LOW', 'LRG', 'LVB', 'MB', 'MEM', 'MGS', 'MOH', 'MRM', 'MRS', 'NBY', 'ND', 'NE', 'NEG', 'NLG',
+    'NLS', 'NS', 'NW2', 'NWB', 'NY5', 'NY6', 'NYB', 'NYC', 'OKM', 'PBG', 'PBK', 'PC', 'PFG', 'PG',
+    'PK', 'PS', 'PTG', 'QG', 'SC1', 'SEN', 'SL2', 'SL3', 'SLG', 'SLS', 'SNH', 'SNS', 'SOX', 'SPG',
+    'TC', 'TC2', 'TIC', 'TT', 'WAP', 'WBS', 'WEG', 'WMP', 'WP', 'NLB'
 }
 
 def map_to_canonical_team(row):
     t = str(row.get("canonical_teamID", row.get("team", "UNK"))).strip()
+    if t.lower() in ("nan", "none", "null"):
+        t = "UNK"
+    if t == "NLB":
+        return "NLB"
     franch = str(row.get("franchID", "")).strip()
-    p_name = str(row.get("name", row.get("full_name", ""))).strip()
+    p_name = str(row.get("full_name", row.get("name", row.get("nameFull", row.get("display_name", ""))))).strip()
     peak_y = int(row.get("peak_year", row.get("year", 2000)) or 2000)
 
     # 1. Active modern MLB franchise lineage
@@ -1119,7 +1154,11 @@ def paso_12_exportar(df, pitching, teams, franchises, pico_df=None, war_pitch=No
 
     def get_franch(tid):
         tid_str = str(tid).strip()
+        if tid_str in NLB_TEAMS:
+            return "NLB"
         f = team_to_franch.get(tid_str, tid_str)
+        if f in NLB_TEAMS:
+            return "NLB"
         return FRANCHISE_MAP.get(f, FRANCHISE_MAP.get(tid_str, f))
 
     if war_pitch is not None and not war_pitch.empty and people is not None and not people.empty:
@@ -1176,6 +1215,18 @@ def paso_12_exportar(df, pitching, teams, franchises, pico_df=None, war_pitch=No
     else:
         df["canonical_teamID"] = "UNK"
 
+    # Fallback para jugadores sin registros en war_daily_pitch (p.ej. leyendas de Negro Leagues)
+    missing_mask = df["canonical_teamID"].isna() | df["canonical_teamID"].isin(["", "nan", "UNK", "None"])
+    if missing_mask.any() and pico_df is not None and not pico_df.empty and not pitching.empty:
+        pico_clean = pico_df.copy()
+        pico_clean["orig_playerID"] = pico_clean["playerID"].str.replace("_sp", "").str.replace("_rp", "")
+        pico_teams = pico_clean.merge(pitching[["playerID", "yearID", "teamID"]].drop_duplicates(), left_on=["orig_playerID", "yearID"], right_on=["playerID", "yearID"], how="left")
+        pico_teams["franch_clean"] = pico_teams["teamID"].apply(get_franch)
+        team_counts = pico_teams.groupby(["playerID_x", "franch_clean"])["yearID"].count().reset_index()
+        team_counts = team_counts.sort_values("yearID", ascending=False).drop_duplicates(subset="playerID_x")
+        fallback_map = team_counts.set_index("playerID_x")["franch_clean"].to_dict()
+        df.loc[missing_mask, "canonical_teamID"] = df.loc[missing_mask, "playerID"].map(fallback_map).fillna("UNK")
+
     df["canonical_teamID"] = df.apply(map_to_canonical_team, axis=1)
     df["franchise_name"]   = df["canonical_teamID"]
 
@@ -1187,8 +1238,8 @@ def paso_12_exportar(df, pitching, teams, franchises, pico_df=None, war_pitch=No
         "career_so", "career_bb", "career_hr",
         "peak_war", "peak_h9", "peak_k9", "peak_bb9", "peak_hr9", "peak_era", "peak_era_plus",
         "peak_ip_per_gs",
-        "h9_val", "k9_val", "bb9_val", "hr9_val", "sta_val",
-        "h9_grade", "k9_grade", "bb9_grade", "hr9_grade", "sta_grade",
+        "h9_val", "k9_val", "bb9_val", "hr9_val", "sta_val", "clt_val", "clu_val",
+        "h9_grade", "k9_grade", "bb9_grade", "hr9_grade", "sta_grade", "clt_grade", "clu_grade",
         "ovr", "rarity",
         "is_allstar", "is_hof", "allstar_selections",
         "defense_source",
@@ -1232,10 +1283,10 @@ def paso_12_exportar(df, pitching, teams, franchises, pico_df=None, war_pitch=No
             f'team: "{team_js}", year: {int(r["peak_year_display"])}, '
             f'h9: {int(r["h9_val"])}, k9: {int(r["k9_val"])}, '
             f'bb9: {int(r["bb9_val"])}, hr9: {int(r["hr9_val"])}, '
-            f'sta: {int(r["sta_val"])}, '
+            f'sta: {int(r["sta_val"])}, clt: {int(r["clt_val"])}, clu: {int(r["clt_val"])}, '
             f'h9_grade: "{r["h9_grade"]}", k9_grade: "{r["k9_grade"]}", '
             f'bb9_grade: "{r["bb9_grade"]}", hr9_grade: "{r["hr9_grade"]}", '
-            f'sta_grade: "{r["sta_grade"]}", '
+            f'sta_grade: "{r["sta_grade"]}", clt_grade: "{r["clt_grade"]}", clu_grade: "{r["clt_grade"]}", '
             f'ovr: {float(r["ovr"]):.1f}, '
             f'rarity: "{r["rarity"]}", '
             f'allstars: {int(r["allstar_selections"])}, '
@@ -1277,10 +1328,10 @@ def reporte_final(df):
     print(f"\n  Distribucion por Rareza:\n{df['rarity'].value_counts().to_string()}")
     print(f"\n  Distribucion por Era:\n{df['era'].value_counts().sort_index().to_string()}")
     print(f"\n  Distribucion por Rol:\n{df['role'].value_counts().to_string()}")
-    print("\n  Atributos promedio MLB The Show Suite (escala 1-99+):")
+    print("\n  Atributos promedio MLB The Show Suite (escala 1-125):")
     for col, label in [
         ("h9_val", "H/9"), ("k9_val", "K/9"), ("bb9_val", "BB/9"),
-        ("hr9_val", "HR/9"), ("sta_val", "STA"), ("ovr", "OVR"),
+        ("hr9_val", "HR/9"), ("sta_val", "STA"), ("clt_val", "CLT"), ("ovr", "OVR"),
     ]:
         if col in df.columns:
             print(f"    {label:<5}: {df[col].mean():5.1f}  (min:{df[col].min():4.1f} max:{df[col].max():4.1f})")
@@ -1288,7 +1339,7 @@ def reporte_final(df):
     print("\n  TOP 20 pitchers (por OVR):")
     top = df.nlargest(20, "ovr")[[
         "name", "role", "era", "peak_year_display", "rarity", "ovr",
-        "h9_val", "k9_val", "bb9_val", "hr9_val", "sta_val",
+        "h9_val", "k9_val", "bb9_val", "hr9_val", "sta_val", "clt_val",
         "peak_k9", "peak_bb9", "peak_era_plus", "peak_war", "allstar_selections", "is_hof"
     ]]
     pd.set_option("display.max_columns", 20)

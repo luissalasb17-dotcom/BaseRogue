@@ -1265,25 +1265,30 @@ NLB_LEGENDS = {
     'Nip Winters', 'Hilton Smith', 'Cristóbal Torriente', 'Martin Dihigo', 'Jud Wilson',
     'Biz Mackey', 'Louis Santop', 'Andy Cooper', 'Bill Foster', 'José Méndez',
     'Willie Foster', 'George Scales', 'Dick Lundy', 'Alejandro Oms', 'Frank Grant',
-    'Pete Hill', 'Ben Taylor', 'Bruce Petway', 'Pelayo Chacón', 'Bartolo Portuondo'
+    'Pete Hill', 'Ben Taylor', 'Bruce Petway', 'Pelayo Chacón', 'Bartolo Portuondo',
+    'Rube Foster', 'Andrew Foster'
 }
 
 # Strictly Negro League teams (excluding 19th c. MLB franchises like LOU, SBS, CLS, WNL, etc.)
 NLB_TEAMS = {
-    'AB2', 'AB3', 'ABC', 'ACB', 'ACG', 'BBB', 'BBS', 'BCA', 'BE', 'BEG', 'BG2', 'BR2', 'BRG',
-    'CAG', 'CBB', 'CBE', 'CBN', 'CBR', 'CC', 'CC2', 'CCB', 'CCU', 'CEG', 'CEL', 'CHT', 'CIC',
-    'CL2', 'CLS', 'COB', 'COG', 'COT', 'CRS', 'CS', 'CSE', 'CSW', 'CT', 'CTG', 'CTS', 'CUP',
-    'DM', 'DS', 'DTS', 'DW', 'DYM', 'HBG', 'HG', 'HIL', 'HSS', 'IA', 'IAB', 'IC', 'ID',
-    'JRC', 'KCM', 'LOW', 'LRG', 'LVB', 'MB', 'MGS', 'MRM', 'MRS', 'NBY', 'ND', 'NE', 'NEG',
-    'NLG', 'NS', 'NWB', 'NYC', 'PBG', 'PBK', 'PC', 'PK', 'PS', 'PTG', 'SEN', 'SL2', 'SL3',
-    'SLG', 'SLS', 'SNH', 'SNS', 'SOX', 'TC', 'TC2', 'TIC', 'TT', 'WAP', 'WEG', 'WMP', 'WP',
-    'HOM', 'NW2', 'NY5', 'NY6', 'AS2', 'MEM', 'BG1', 'BGS', 'CC1', 'CCC', 'CCG', 'CCG2',
-    'CGI', 'CIG', 'CLG', 'COS', 'CSG', 'CSG2', 'CSG3', 'FLP', 'GOR', 'KCG', 'KRG', 'LEL',
-    'MOH', 'NWB', 'PG', 'QG', 'SC1', 'SPG', 'WBS'
+    'AB', 'AB2', 'AB3', 'ABC', 'AC', 'AC1', 'AC2', 'ACB', 'ACG', 'BBB', 'BBS', 'BCA', 'BE', 'BEG',
+    'BG1', 'BG2', 'BGS', 'BR2', 'BRG', 'CAG', 'CBB', 'CBE', 'CBG', 'CBN', 'CBR', 'CC', 'CC1',
+    'CC2', 'CCB', 'CCC', 'CCG', 'CCG2', 'CCU', 'CEG', 'CEL', 'CGI', 'CHT', 'CIC', 'CIG', 'CL2',
+    'CLG', 'CLS', 'COB', 'COG', 'COS', 'COT', 'CRS', 'CS', 'CSE', 'CSG', 'CSG2', 'CSG3', 'CSH',
+    'CSW', 'CT', 'CTG', 'CTS', 'CU', 'CUP', 'CXG', 'DM', 'DS', 'DTS', 'DW', 'DYM', 'FLP', 'GOR',
+    'HBG', 'HG', 'HIL', 'HOM', 'HSS', 'HAR', 'IA', 'IAB', 'IC', 'ID', 'JRC', 'KCG', 'KCM', 'KRG', 'LEL',
+    'LOW', 'LRG', 'LVB', 'MB', 'MEM', 'MGS', 'MOH', 'MRM', 'MRS', 'NBY', 'ND', 'NE', 'NEG', 'NLG',
+    'NLS', 'NS', 'NW2', 'NWB', 'NY5', 'NY6', 'NYB', 'NYC', 'OKM', 'PBG', 'PBK', 'PC', 'PFG', 'PG',
+    'PK', 'PS', 'PTG', 'QG', 'SC1', 'SEN', 'SL2', 'SL3', 'SLG', 'SLS', 'SNH', 'SNS', 'SOX', 'SPG',
+    'TC', 'TC2', 'TIC', 'TT', 'WAP', 'WBS', 'WEG', 'WMP', 'WP', 'NLB'
 }
 
 def map_to_canonical_team(row):
     t = str(row.get("canonical_teamID", row.get("team", "UNK"))).strip()
+    if t.lower() in ("nan", "none", "null"):
+        t = "UNK"
+    if t == "NLB":
+        return "NLB"
     franch = str(row.get("franchID", "")).strip()
     p_name = str(row.get("full_name", row.get("name", row.get("nameFull", row.get("display_name", ""))))).strip()
     peak_y = int(row.get("peak_year", row.get("year", 2000)) or 2000)
@@ -1348,7 +1353,11 @@ def paso_15_equipo_y_exportar(df, batting, teams, franchises, pico_df=None, war_
 
     def get_franch(tid):
         tid_str = str(tid).strip()
+        if tid_str in NLB_TEAMS:
+            return "NLB"
         f = team_to_franch.get(tid_str, tid_str)
+        if f in NLB_TEAMS:
+            return "NLB"
         return FRANCHISE_MAP.get(f, FRANCHISE_MAP.get(tid_str, f))
 
     if war_bat is not None and not war_bat.empty and people is not None and not people.empty:
