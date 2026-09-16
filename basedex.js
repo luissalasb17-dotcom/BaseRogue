@@ -2018,6 +2018,138 @@
         }
       };
 
+      const showTestOutcomePopup = (eventType, details, durationOverride) => {
+        const fightDeck = overlay.querySelector('.rpg-fight-deck');
+        if (!fightDeck) return;
+
+        overlay.querySelectorAll('.outcome-popup-overlay').forEach(el => el.remove());
+
+        let title = "", color = "#fff", icon = "fa-star", dmgText = "", borderColor = "#fff", boxShadow = "none";
+        const _t = (k, def) => (typeof window.t === 'function' ? window.t(k, { defaultValue: def }) : def);
+
+        switch (eventType) {
+          case 'BB':
+            title = _t('popup.bb_title', 'BASE POR BOLAS');
+            color = "#3b82f6";
+            icon = "fa-walking";
+            dmgText = `🚶 ${_t('popup.bb_dmg', '¡PITCHER RECIBE DAÑO! (-15 HP)')}`;
+            borderColor = "#3b82f6";
+            boxShadow = "0 0 35px rgba(59, 130, 246, 0.7), 0 0 15px rgba(59, 130, 246, 0.4)";
+            break;
+          case 'SO':
+            title = _t('popup.so_title', '¡PONCHE!');
+            color = "#ef4444";
+            icon = "fa-circle-xmark";
+            dmgText = `💀 ${_t('popup.so_dmg', 'STRIKEOUT (K)')}`;
+            borderColor = "#ef4444";
+            boxShadow = "0 0 35px rgba(239, 68, 68, 0.7), 0 0 15px rgba(239, 68, 68, 0.4)";
+            break;
+          case 'OUT':
+            title = _t('popup.out_title', 'OUT');
+            color = "#9ca3af";
+            icon = "fa-thumbs-down";
+            dmgText = `🛡️ ${_t('popup.out_dmg', 'BATAZO CAPTURADO POR LA DEFENSA')}`;
+            borderColor = "#9ca3af";
+            boxShadow = "0 0 35px rgba(156, 163, 175, 0.7), 0 0 15px rgba(156, 163, 175, 0.4)";
+            break;
+          case '1B':
+            title = _t('popup.single_title', 'SENCILLO (1B)');
+            color = "#a7f3d0";
+            icon = "fa-baseball-bat-ball";
+            dmgText = `⚾ ${_t('popup.single_dmg', 'DAÑO AL PITCHER (-20 HP)')}`;
+            borderColor = "#10b981";
+            boxShadow = "0 0 35px rgba(16, 185, 129, 0.7), 0 0 15px rgba(16, 185, 129, 0.4)";
+            break;
+          case '2B':
+            title = _t('popup.double_title', 'DOBLE (2B) ⚡');
+            color = "#10b981";
+            icon = "fa-bolt-lightning";
+            dmgText = `⚡ ${_t('popup.double_dmg', 'DAÑO DUPLICADO (-35 HP)')}`;
+            borderColor = "#10b981";
+            boxShadow = "0 0 40px rgba(16, 185, 129, 0.8), 0 0 20px rgba(16, 185, 129, 0.5)";
+            break;
+          case '3B':
+            title = _t('popup.triple_title', 'TRIPLE (3B) 🔥');
+            color = "#06b6d4";
+            icon = "fa-fire";
+            dmgText = `🔥 ${_t('popup.triple_dmg', 'DAÑO TRIPLICADO (-50 HP)')}`;
+            borderColor = "#06b6d4";
+            boxShadow = "0 0 40px rgba(6, 182, 212, 0.8), 0 0 20px rgba(6, 182, 212, 0.5)";
+            break;
+          case 'HR':
+            title = _t('popup.hr_title', '¡JONRÓN! 🚀💥');
+            color = "#eab308";
+            icon = "fa-rocket";
+            dmgText = `🚀 ${_t('popup.hr_dmg', '¡DAÑO CRÍTICO MASIVO! (-75 HP)')}`;
+            borderColor = "#eab308";
+            boxShadow = "0 0 50px rgba(234, 179, 8, 0.9), 0 0 25px rgba(234, 179, 8, 0.6)";
+            break;
+        }
+
+        const popup = document.createElement('div');
+        popup.className = "outcome-popup-overlay";
+        popup.style.cssText = `
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%) scale(0.5);
+          z-index: 250;
+          background: rgba(8, 12, 20, 0.96);
+          border: 3px solid ${borderColor};
+          border-radius: 16px;
+          padding: 16px 24px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          box-shadow: ${boxShadow};
+          pointer-events: auto;
+          cursor: pointer;
+          opacity: 0;
+          transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+          text-align: center;
+          min-width: 260px;
+          max-width: 320px;
+        `;
+
+        popup.innerHTML = `
+          <div style="font-size: 32px; color: ${color}; margin-bottom: 8px; filter: drop-shadow(0 0 8px ${color});">
+            <i class="fa-solid ${icon}"></i>
+          </div>
+          <div style="font-family:'Press Start 2P',monospace; font-size: 12px; font-weight: bold; color: ${color}; text-shadow: 0 0 10px ${color}; margin-bottom: 8px;">
+            ${title}
+          </div>
+          ${details ? `<div style="font-size: 11px; color: #e2e8f0; line-height: 1.35; margin-bottom: 8px;">${details}</div>` : ''}
+          <div style="font-family:'Press Start 2P',monospace; font-size: 7.5px; color: #f59e0b; letter-spacing: 0.5px; border-top: 1px dashed rgba(255,255,255,0.15); width: 100%; padding-top: 8px; margin-top: 4px;">
+            ${dmgText}
+          </div>
+        `;
+
+        fightDeck.style.position = "relative";
+        fightDeck.appendChild(popup);
+
+        setTimeout(() => {
+          popup.style.transform = "translate(-50%, -50%) scale(1)";
+          popup.style.opacity = "1";
+        }, 15);
+
+        let isDismissed = false;
+        const dismissPopup = () => {
+          if (isDismissed) return;
+          isDismissed = true;
+          popup.style.transform = "translate(-50%, -50%) scale(0.85)";
+          popup.style.opacity = "0";
+          setTimeout(() => {
+            popup.remove();
+          }, 150);
+        };
+
+        popup.addEventListener('click', dismissPopup);
+
+        const duration = durationOverride || (eventType === 'HR' ? 1400 : 1100);
+        setTimeout(dismissPopup, duration);
+      };
+
       const resolveRollForState = (bounds, pitcher) => {
         const roll = Math.floor(Math.random() * 100) + 1;
         let rType = 'OUT', rText = 'Out (Groundout/Flyout)', rColor = '#9ca3af', dmg = 0;
@@ -2091,7 +2223,13 @@
           color: rColor
         });
 
-        if (window.AudioEngine) {
+        if (window.AudioManager) {
+          if (rType === 'HR') window.AudioManager.play('hr');
+          else if (['1B', '2B', '3B'].includes(rType)) window.AudioManager.play('hit');
+          else if (rType === 'SO') window.AudioManager.play('so');
+          else if (rType === 'BB') window.AudioManager.play('bb');
+          else window.AudioManager.play('out');
+        } else if (window.AudioEngine) {
           if (rType === 'HR') window.AudioEngine.play('homerun');
           else if (['1B', '2B', '3B'].includes(rType)) window.AudioEngine.play('hit');
           else if (rType === 'SO') window.AudioEngine.play('strikeout');
@@ -2116,6 +2254,10 @@
         testState.isResolved = true;
         testState.isRolling = false;
         render();
+
+        if (testState.lastOutcome) {
+          showTestOutcomePopup(testState.lastOutcome.type, testState.lastOutcome.text);
+        }
       };
 
       render();
