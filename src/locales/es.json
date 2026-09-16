@@ -1189,6 +1189,10 @@
     "artillery": {
       "name": "Poder de Demolición",
       "desc": "El daño remanente al noquear a un lanzador se transfiere al 100% al nuevo relevista (en lugar del 50% base)."
+    },
+    "ice_veins": {
+      "name": "Hielo en las Venas",
+      "desc": "Anula el bono de atributos por Clutch del lanzador rival durante situaciones de alta presión (corredores en posición de anotar o Inning 4+)."
     }
   },
   "dex": {
@@ -1557,7 +1561,8 @@
     "elite_negotiator": "Negociador de Élite",
     "endless_stamina": "Resistencia Inagotable",
     "midas_touch": "Toque de Midas",
-    "heavy_artillery": "Poder de Demolición"
+    "heavy_artillery": "Poder de Demolición",
+    "ice_in_the_veins": "Hielo en las Venas"
   },
   "chest": {
     "claim_btn": "RECLAMAR RECOMPENSA",
@@ -2137,6 +2142,7 @@
     "chem_req": "Química"
   },
   "heavy_artillery": "Poder de Demolición",
+  "ice_in_the_veins": "Hielo en las Venas",
   "dynasty": {
     "title": "MODO DINASTÍA & HOBBY BOX",
     "select_franchise": "ELIGE TU FRANQUICIA",

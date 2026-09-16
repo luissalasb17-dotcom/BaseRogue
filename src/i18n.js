@@ -1218,6 +1218,10 @@
         "artillery": {
             "name": "🔨 Poder de Demolición",
             "desc": "El daño remanente al noquear a un lanzador se transfiere al 100% al nuevo relevista (en lugar del 50% base)."
+        },
+        "ice_veins": {
+            "name": "❄️ Hielo en las Venas",
+            "desc": "Anula el bono de atributos por Clutch del lanzador rival durante situaciones de alta presión (corredores en posición de anotar o Inning 4+)."
         }
     },
     "dex": {
@@ -1583,7 +1587,8 @@
         "elite_negotiator": "Negociador de Élite",
         "endless_stamina": "Resistencia Inagotable",
         "midas_touch": "Toque de Midas",
-        "heavy_artillery": "Poder de Demolición"
+        "heavy_artillery": "Poder de Demolición",
+        "ice_in_the_veins": "Hielo en las Venas"
     },
     "chest": {
         "claim_btn": "RECLAMAR RECOMPENSA",
@@ -2163,6 +2168,7 @@
         "chem_req": "Química"
     },
     "heavy_artillery": "Poder de Demolición",
+    "ice_in_the_veins": "Hielo en las Venas",
     "dynasty": {
     "title": "MODO DINASTÍA & HOBBY BOX",
     "select_franchise": "ELIGE TU FRANQUICIA",
@@ -3516,6 +3522,10 @@
         "heavy_artillery": {
             "name": "🔨 Heavy Artillery",
             "desc": "Overflow damage upon KOing a pitcher transfers at 100% to the incoming reliever (instead of base 50%)."
+        },
+        "ice_veins": {
+            "name": "❄️ Ice in the Veins",
+            "desc": "Nullifies the rival pitcher's Clutch rating bonus during high-pressure situations (RISP / Inning 4+)."
         }
     },
     "dex": {
@@ -3881,7 +3891,8 @@
         "elite_negotiator": "Elite Negotiator",
         "endless_stamina": "Endless Stamina",
         "midas_touch": "Midas Touch",
-        "heavy_artillery": "Heavy Artillery"
+        "heavy_artillery": "Heavy Artillery",
+        "ice_in_the_veins": "Ice in the Veins"
     },
     "chest": {
         "claim_btn": "CLAIM REWARD",
@@ -4461,6 +4472,7 @@
         "chem_req": "Chemistry"
     },
     "heavy_artillery": "Heavy Artillery",
+    "ice_in_the_veins": "Ice in the Veins",
     "dynasty": {
     "title": "DYNASTY MODE & HOBBY BOX",
     "select_franchise": "SELECT YOUR FRANCHISE",

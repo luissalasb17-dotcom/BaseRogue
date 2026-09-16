@@ -1185,6 +1185,10 @@
     "heavy_artillery": {
       "name": "Heavy Artillery",
       "desc": "Overflow damage upon KOing a pitcher transfers at 100% to the incoming reliever (instead of base 50%)."
+    },
+    "ice_veins": {
+      "name": "Ice in the Veins",
+      "desc": "Nullifies the rival pitcher's Clutch rating bonus during high-pressure situations (RISP / Inning 4+)."
     }
   },
   "dex": {
@@ -1553,7 +1557,8 @@
     "elite_negotiator": "Elite Negotiator",
     "endless_stamina": "Endless Stamina",
     "midas_touch": "Midas Touch",
-    "heavy_artillery": "Heavy Artillery"
+    "heavy_artillery": "Heavy Artillery",
+    "ice_in_the_veins": "Ice in the Veins"
   },
   "chest": {
     "claim_btn": "CLAIM REWARD",
@@ -2133,6 +2138,7 @@
     "chem_req": "Chemistry"
   },
   "heavy_artillery": "Heavy Artillery",
+  "ice_in_the_veins": "Ice in the Veins",
   "dynasty": {
     "title": "DYNASTY MODE & HOBBY BOX",
     "select_franchise": "SELECT YOUR FRANCHISE",

@@ -61,8 +61,11 @@
     }
   }
 
-  function getPitcherClutchStatus(clutchMod, isSituational) {
+  function getPitcherClutchStatus(clutchMod, isSituational, isNeutralized = false) {
     if (!isSituational) return { active: false, label: '', cssClass: '', icon: '', mod: 0 };
+    if (isNeutralized) {
+      return { active: true, label: `NEUTRALIZED (0 RATINGS)`, level: 'neutralized', cssClass: 'clutch-neutralized', icon: '❄️', mod: 0 };
+    }
     const roundedMod = Math.round(clutchMod);
     if (roundedMod >= 15) {
       return { active: true, label: `VERY BOOSTED (+${roundedMod} RATINGS)`, level: 'very_boosted', cssClass: 'clutch-very-boosted', icon: '🔥', mod: roundedMod };
@@ -112,8 +115,11 @@
     const isLateGamePressure = !!(simCtx && simCtx.inning >= 4);
     const isPitcherClutchSituation = isRISP || isLateGamePressure;
 
-    const pitcherClutchMod = isPitcherClutchSituation ? calcPitcherClutchModifier(pClutch) : 0;
-    const pitcherClutchStatus = getPitcherClutchStatus(pitcherClutchMod, isPitcherClutchSituation);
+    const rawPitcherClutchMod = isPitcherClutchSituation ? calcPitcherClutchModifier(pClutch) : 0;
+    const hasIceInTheVeins = !!(simCtx && simCtx.hasTrait && simCtx.hasTrait('ice_in_the_veins'));
+    const isNeutralizedByIce = hasIceInTheVeins && rawPitcherClutchMod > 0;
+    const pitcherClutchMod = isNeutralizedByIce ? 0 : rawPitcherClutchMod;
+    const pitcherClutchStatus = getPitcherClutchStatus(pitcherClutchMod, isPitcherClutchSituation, isNeutralizedByIce);
 
     const pH9  = Math.max(1, Math.min(135, rawH9  + pitcherClutchMod));
     const pK9  = Math.max(1, Math.min(135, rawK9  + pitcherClutchMod));

@@ -9341,6 +9341,13 @@ body.on-main-menu .main-container {
   border: 1px solid #64748b;
 }
 
+.pitcher-clutch-pill.clutch-neutralized {
+  color: #67e8f9;
+  background: rgba(6, 182, 212, 0.2);
+  border: 1.5px solid #06b6d4;
+  box-shadow: 0 0 12px rgba(6, 182, 212, 0.6);
+}
+
 .pitcher-clutch-pill.clutch-lowered {
   color: #fb923c;
   background: rgba(251, 146, 60, 0.15);

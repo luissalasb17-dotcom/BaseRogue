@@ -1084,7 +1084,8 @@
         tr('legendary_domination', '👑', 'legendary', '👑 Dominio Legendario', 'Si tienes 2 o más jugadores Legendary en titular, todos reciben +10 a todas sus estadísticas.'),
         tr('back_to_back',      '💥', 'back2back', '💥 Cadena de Poder', 'Después de un HR, el siguiente bateador gana +20 de PWR y CON para ese turno.'),
         tr('midas_touch',       '🎰', 'midas', '🎰 Toque de Midas', 'Aumenta en +25% las probabilidades de éxito en eventos de Suerte (LUCK), Decisiones y Ruletas de Prototipos.'),
-        tr('heavy_artillery',   '🔨', 'heavy_artillery', '🔨 Poder de Demolición', 'El daño remanente al noquear a un lanzador se transfiere al 100% al relevista (en lugar del 50% base).')
+        tr('heavy_artillery',   '🔨', 'heavy_artillery', '🔨 Poder de Demolición', 'El daño remanente al noquear a un lanzador se transfiere al 100% al relevista (en lugar del 50% base).'),
+        tr('ice_in_the_veins',  '❄️', 'ice_veins', '❄️ Ice in the Veins', 'Nullifies the rival pitcher\'s Clutch rating bonus during high-pressure situations (RISP / Inning 4+).')
       ];
     }
 
