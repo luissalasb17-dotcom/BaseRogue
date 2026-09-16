@@ -1495,7 +1495,9 @@
       overlay.className = 'dex-test-arena-overlay';
       document.body.appendChild(overlay);
 
-      // Pitcher Pool Selection: 3 Pitchers (1 SP, 1 SP/RP, 1 RP)
+      const _t = (k, fallback, params) => (typeof window.t === 'function' ? window.t(k, params) : fallback);
+
+      // ── PITCHER POOL SELECTION: 3 Pitchers (1 SP, 1 SP/RP, 1 RP) ───────────
       const allPitchers = (window.PitchersDB && window.PitchersDB.PITCHERS_POOL) ? window.PitchersDB.PITCHERS_POOL : (window.PITCHERS_POOL || []);
       const starters = allPitchers.filter(p => p.role === 'SP' || p.pos === 'SP' || (p.sta !== undefined && p.sta >= 65));
       const relievers = allPitchers.filter(p => p.role === 'RP' || p.role === 'CP' || p.pos === 'RP' || (p.sta !== undefined && p.sta < 65));
@@ -1528,15 +1530,17 @@
         teamShield: initialShield,
         teamShieldMax: initialShield,
         inning: 1,
+        maxInnings: 3,
         outs: 0,
         runs: 0,
         bases: [null, null, null], // 1B, 2B, 3B
         strikeoutChain: 0,
         pitcherDebuff: null, // { turnsLeft, multiplier }
         pitchersKO: 0,
+        streak: 0,
         isRolling: false,
         battleOver: false,
-        winner: null, // 'player' | 'pitcher'
+        winner: null, // 'player' | 'pitcher' | 'draw'
         history: [],
         seenExtraInnings: false,
         stats: {
@@ -1552,244 +1556,68 @@
           bb: 0,
           so: 0,
           out: 0,
-          sb: 0
+          sb: 0,
+          totalDamageDealt: 0
         }
       };
 
-      // ── SCREEN 1: PRE-FIGHT SHOWDOWN (QUICK PLAY MATCHUP PREVIEW) ───────────
-      let previewPitcherIdx = 0;
+      // ── BASE ADVANCEMENT HELPERS ───────────────────────────────────────────
+      const forceWalk = (bases, runner) => {
+        let runsScored = 0;
+        if (!bases[0]) { bases[0] = runner; return runsScored; }
+        if (!bases[1]) { bases[1] = bases[0]; bases[0] = runner; return runsScored; }
+        if (!bases[2]) { bases[2] = bases[1]; bases[1] = bases[0]; bases[0] = runner; return runsScored; }
+        runsScored++;
+        bases[2] = bases[1];
+        bases[1] = bases[0];
+        bases[0] = runner;
+        return runsScored;
+      };
 
-      const renderPreFight = () => {
-        const previewPitcher = pitchers[previewPitcherIdx];
-        const bCon = batter.con || 50;
-        const bPwr = batter.pwr || 50;
-        const bEye = batter.eye || 50;
-        const bKAvd = batter.k_avd !== undefined ? batter.k_avd : (batter.k_avoid !== undefined ? batter.k_avoid : 50);
-        const bSpd = batter.spd || 50;
+      const advanceOnHit = (bases, runner, hitTypeVal, currentOuts) => {
+        let runsScored = 0;
+        const r1 = bases[0], r2 = bases[1], r3 = bases[2];
 
-        const pH9 = previewPitcher.h9 !== undefined ? previewPitcher.h9 : 50;
-        const pHr9 = previewPitcher.hr9 !== undefined ? previewPitcher.hr9 : 50;
-        const pBb9 = previewPitcher.bb9 !== undefined ? previewPitcher.bb9 : 50;
-        const pK9 = previewPitcher.k9 !== undefined ? previewPitcher.k9 : 50;
-        const pSta = previewPitcher.sta !== undefined ? previewPitcher.sta : 65;
-
-        const diffCon = bCon - pH9;
-        const diffPwr = bPwr - pHr9;
-        const diffEye = bEye - pBb9;
-        const diffK   = bKAvd - pK9;
-        const diffSpd = bSpd - pSta;
-
-        const formatDiff = (d) => {
-          if (d > 0) return `<span class="clash-diff-pill diff-positive">+${d}</span>`;
-          if (d < 0) return `<span class="clash-diff-pill diff-negative">${d}</span>`;
-          return `<span class="clash-diff-pill diff-neutral">0</span>`;
-        };
-
-        const netAdvantage = (diffCon * 0.28) + (diffPwr * 0.25) + (diffK * 0.22) + (diffEye * 0.15) + (diffSpd * 0.10);
-        let winPct = Math.round(50 + (netAdvantage * 1.8));
-        winPct = Math.max(8, Math.min(92, winPct));
-
-        let winColor = '#f59e0b';
-        let winGradient = 'linear-gradient(90deg, #d97706, #f59e0b)';
-        let edgeText = '⚖️ EVEN MATCHUP';
-        let edgeClass = 'edge-even';
-        let tipText = 'Balanced duel: Dice rolls and situational timing will decide each at-bat.';
-
-        if (winPct >= 58) {
-          winColor = '#10b981';
-          winGradient = 'linear-gradient(90deg, #059669, #10b981)';
-          edgeText = '🟢 ADVANTAGE: HITTER';
-          edgeClass = 'edge-hitter';
-          tipText = 'Green light: Your batter has statistical leverage to punish rival pitching.';
-        } else if (winPct <= 42) {
-          winColor = '#ef4444';
-          winGradient = 'linear-gradient(90deg, #dc2626, #ef4444)';
-          edgeText = '🔴 ADVANTAGE: PITCHER';
-          edgeClass = 'edge-pitcher';
-          tipText = 'High tension: Pitcher commands the strike zone. High strikeout and weak contact risk.';
-        }
-
-        const batterCardHTML = (typeof window.createCardHTML === 'function')
-          ? window.createCardHTML(batter, nativePos)
-          : `<div class="player-card"><div class="card-name">${batter.name}</div></div>`;
-
-        const pitcherCardHTML = (typeof window.createCardHTML === 'function')
-          ? window.createCardHTML(previewPitcher, previewPitcher.role || 'SP')
-          : `<div class="player-card"><div class="card-name">${previewPitcher.name}</div></div>`;
-
-        // Pitcher bullpen rows
-        const bullpenRows = pitchers.map((p, idx) => {
-          const isSelected = (idx === previewPitcherIdx);
-          const pOvr = Math.round(((p.ctl || 50) + (p.stf || 50) + (p.mov || 50) + (p.sta || 65)) / 4);
-          const grade = getGrade(pOvr);
-          const gradeCol = getGradeColor(grade);
-          return `
-            <div class="pre-fight-row ${isSelected ? 'selected-pitcher-row' : ''}" data-p-idx="${idx}" style="cursor:pointer;">
-              <div style="display:flex; align-items:center; gap:8px;">
-                <span style="font-size:9px; font-weight:bold; color:#ef4444; background:rgba(239,68,68,0.15); padding:2px 5px; border-radius:4px; border:1px solid rgba(239,68,68,0.3);">${p.role || (idx === 0 ? 'SP' : 'RP')}</span>
-                <span class="name" style="color:#fff; font-size:9px;">${p.name}</span>
-                <span style="font-size:8px; font-weight:bold; color:${gradeCol}; background:rgba(0,0,0,0.4); border:1px solid ${gradeCol}; padding:1px 4px; border-radius:4px; font-family:'Press Start 2P',monospace;">${pOvr} ${grade}</span>
-              </div>
-              <div style="display:flex; align-items:center; gap:8px;">
-                <div class="hp-bar-container">
-                  <div class="hp-bar-fill" style="width:100%; background:linear-gradient(90deg, #ef4444, #f87171);"></div>
-                </div>
-                <span class="hp-text">100/100 HP</span>
-              </div>
-            </div>
-          `;
-        }).join('');
-
-        overlay.innerHTML = `
-          <div class="dex-test-prefight-box" id="screen-pre-fight">
-            <!-- Header Bar -->
-            <div class="pre-fight-header">
-              <div class="pre-fight-stage-badge">⚔️ SERIES SHOWDOWN • BATTING PRACTICE</div>
-              <h2 style="margin:4px 0 10px 0; font-size:13px; color:#fff; letter-spacing:1px; font-family:'Press Start 2P',monospace;">
-                ${batter.name} <span style="color:#ffd700;">VS</span> 3 RIVAL PITCHERS
-              </h2>
-              <div id="pre-fight-scouting">
-                <div style="background:rgba(0,0,0,0.55); border:1.5px solid rgba(255,255,255,0.15); border-radius:12px; padding:12px 18px; display:flex; align-items:center; justify-content:space-between; gap:16px;">
-                  <div style="text-align:left;">
-                    <div style="font-family:'Press Start 2P',monospace; font-size:7.5px; color:#38bdf8; margin-bottom:4px;">SCOUTING REPORT: ROTATION</div>
-                    <div style="font-size:12px; font-weight:bold; color:#fff;">3-Pitcher Rotation (SP + RP)</div>
-                    <div style="font-size:10px; color:#94a3b8; margin-top:2px;">Target: Defeat all 3 pitchers before Team HP hits 0</div>
-                  </div>
-                  <div style="width:160px;">
-                    <div style="display:flex; justify-content:space-between; font-family:'Press Start 2P',monospace; font-size:7px; margin-bottom:4px;">
-                      <span style="color:#9ca3af;">WIN PROB:</span>
-                      <span style="color:${winColor}; font-weight:bold;">${winPct}%</span>
-                    </div>
-                    <div class="win-prob-track">
-                      <div class="win-prob-fill" style="width:${winPct}%; background:${winGradient};"></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Main Faceoff Arena -->
-            <div class="pre-fight-showdown">
-              <!-- Left: Batter Card -->
-              <div class="showdown-side showdown-side-player">
-                <div class="showdown-nav-bar">
-                  <span class="showdown-nav-label">#1 ${nativePos} ${batter.name}</span>
-                </div>
-                <div class="showdown-card-slot" id="showdown-batter-card-wrap">
-                  ${batterCardHTML}
-                </div>
-              </div>
-
-              <!-- Center: The VS Clash & Battle Buttons -->
-              <div class="showdown-center">
-                <div class="showdown-vs-badge">VS</div>
-                <div class="showdown-stakes-pill">3 INNINGS • DUEL</div>
-
-                <!-- Matchup Insights Panel -->
-                <div class="showdown-insights-panel">
-                  <div class="matchup-overall-badge ${edgeClass}">${edgeText}</div>
-                  <div class="matchup-clash-matrix">
-                    <div class="clash-row">
-                      <div class="clash-col-batter"><span>CON</span><span class="clash-val-b">${bCon}</span></div>
-                      ${formatDiff(diffCon)}
-                      <div class="clash-col-pitcher"><span class="clash-val-p">${pH9}</span><span>H/9</span></div>
-                    </div>
-                    <div class="clash-row">
-                      <div class="clash-col-batter"><span>PWR</span><span class="clash-val-b">${bPwr}</span></div>
-                      ${formatDiff(diffPwr)}
-                      <div class="clash-col-pitcher"><span class="clash-val-p">${pHr9}</span><span>HR/9</span></div>
-                    </div>
-                    <div class="clash-row">
-                      <div class="clash-col-batter"><span>EYE</span><span class="clash-val-b">${bEye}</span></div>
-                      ${formatDiff(diffEye)}
-                      <div class="clash-col-pitcher"><span class="clash-val-p">${pBb9}</span><span>BB/9</span></div>
-                    </div>
-                    <div class="clash-row">
-                      <div class="clash-col-batter"><span>K/AVD</span><span class="clash-val-b">${bKAvd}</span></div>
-                      ${formatDiff(diffK)}
-                      <div class="clash-col-pitcher"><span class="clash-val-p">${pK9}</span><span>K/9</span></div>
-                    </div>
-                    <div class="clash-row">
-                      <div class="clash-col-batter"><span>SPD</span><span class="clash-val-b">${bSpd}</span></div>
-                      ${formatDiff(diffSpd)}
-                      <div class="clash-col-pitcher"><span class="clash-val-p">${pSta}</span><span>STA</span></div>
-                    </div>
-                  </div>
-                  <div class="matchup-quick-tip">${tipText}</div>
-                </div>
-
-                <button class="btn btn-pre-fight-battle" id="btn-test-start-combat">
-                  <i class="fa-solid fa-fire-flame-curved"></i> TO COMBAT!
-                </button>
-                <button class="btn btn-secondary btn-pre-fight-back" id="btn-test-close-prefight">
-                  <i class="fa-solid fa-arrow-left"></i> Return to Dex
-                </button>
-              </div>
-
-              <!-- Right: Pitcher Card -->
-              <div class="showdown-side showdown-side-enemy">
-                <div class="showdown-nav-bar nav-enemy">
-                  <button class="btn btn-showdown-nav" id="btn-test-prev-p">◀</button>
-                  <span class="showdown-nav-label" id="showdown-pitcher-label">${previewPitcher.role || 'SP'} ${previewPitcher.name}</span>
-                  <button class="btn btn-showdown-nav" id="btn-test-next-p">▶</button>
-                </div>
-                <div class="showdown-card-slot" id="showdown-pitcher-card-wrap">
-                  ${pitcherCardHTML}
-                </div>
-              </div>
-            </div>
-
-            <!-- Bullpen Relievers Section -->
-            <div class="pre-fight-bullpen-section">
-              <div class="pre-fight-bullpen-title">
-                <i class="fa-solid fa-users"></i> RIVAL ROTATION & BULLPEN
-              </div>
-              <div class="pre-fight-bullpen-list">
-                ${bullpenRows}
-              </div>
-            </div>
-          </div>
-        `;
-
-        // Bind events
-        const btnCombat = overlay.querySelector('#btn-test-start-combat');
-        if (btnCombat) {
-          btnCombat.onclick = () => {
-            if (window.AudioManager) window.AudioManager.play('play_ball');
-            renderArena();
-          };
-        }
-
-        const btnClose = overlay.querySelector('#btn-test-close-prefight');
-        if (btnClose) {
-          btnClose.onclick = () => overlay.remove();
-        }
-
-        const btnPrevP = overlay.querySelector('#btn-test-prev-p');
-        if (btnPrevP) {
-          btnPrevP.onclick = () => {
-            previewPitcherIdx = (previewPitcherIdx - 1 + pitchers.length) % pitchers.length;
-            renderPreFight();
-          };
-        }
-
-        const btnNextP = overlay.querySelector('#btn-test-next-p');
-        if (btnNextP) {
-          btnNextP.onclick = () => {
-            previewPitcherIdx = (previewPitcherIdx + 1) % pitchers.length;
-            renderPreFight();
-          };
-        }
-
-        overlay.querySelectorAll('.pre-fight-row').forEach(row => {
-          row.onclick = () => {
-            const idx = parseInt(row.dataset.pIdx);
-            if (!isNaN(idx)) {
-              previewPitcherIdx = idx;
-              renderPreFight();
+        if (hitTypeVal === 3) { // 3B
+          if (r3) runsScored++;
+          if (r2) runsScored++;
+          if (r1) runsScored++;
+          bases[0] = null; bases[1] = null; bases[2] = runner;
+        } else if (hitTypeVal === 2) { // 2B
+          if (r3) runsScored++;
+          if (r2) runsScored++;
+          if (r1) {
+            const r1Spd = r1.spd || 50;
+            if (currentOuts === 2 || r1Spd >= 70) {
+              runsScored++;
+              bases[0] = null;
+            } else {
+              bases[2] = r1;
+              bases[0] = null;
             }
-          };
-        });
+          }
+          bases[1] = runner;
+          if (!bases[2] && r1 && (currentOuts === 2 || (r1.spd || 50) >= 70)) bases[2] = null;
+        } else { // 1B
+          if (r3) runsScored++;
+          if (r2) {
+            const r2Spd = r2.spd || 50;
+            if (currentOuts === 2 || r2Spd >= 65) {
+              runsScored++;
+              bases[1] = null;
+            } else {
+              bases[2] = r2;
+              bases[1] = null;
+            }
+          } else {
+            bases[2] = null;
+          }
+          if (r1) {
+            bases[1] = r1;
+          }
+          bases[0] = runner;
+        }
+        return runsScored;
       };
 
       // ── OUTCOME POPUP (QUICK PLAY REPLICA) ──────────────────────────────────
@@ -1827,7 +1655,7 @@
             title = "OUT (FLY / GROUND)!";
             color = "#9ca3af";
             icon = "fa-hand";
-            dmgText = "✋ SHIELD ABSORBS DAMAGE (-20 HP)";
+            dmgText = "✋ SHIELD ABSORBS DAMAGE (-18 HP)";
             borderColor = "#6b7280";
             boxShadow = "0 0 25px rgba(107, 114, 128, 0.4)";
             break;
@@ -1835,7 +1663,7 @@
             title = "SINGLE (1B)!";
             color = "#a7f3d0";
             icon = "fa-baseball-bat-ball";
-            dmgText = "✅ PITCHER TAKES -20 HP";
+            dmgText = "✅ PITCHER TAKES DAMAGE";
             borderColor = "#10b981";
             boxShadow = "0 0 30px rgba(16, 185, 129, 0.5)";
             break;
@@ -1843,7 +1671,7 @@
             title = "DOUBLE (2B)!";
             color = "#10b981";
             icon = "fa-bolt";
-            dmgText = "⚡ PITCHER TAKES -35 HP";
+            dmgText = "⚡ PITCHER TAKES HEAVY DAMAGE";
             borderColor = "#10b981";
             boxShadow = "0 0 35px rgba(16, 185, 129, 0.6)";
             break;
@@ -1851,7 +1679,7 @@
             title = "TRIPLE (3B)!";
             color = "#06b6d4";
             icon = "fa-fire";
-            dmgText = "🔥 PITCHER TAKES -50 HP";
+            dmgText = "🔥 PITCHER TAKES CRITICAL DAMAGE";
             borderColor = "#06b6d4";
             boxShadow = "0 0 40px rgba(6, 182, 212, 0.7)";
             break;
@@ -1968,7 +1796,7 @@
         if (window.AudioManager) window.AudioManager.play('pitcher_ko');
 
         // KO Stamp on Pitcher Card
-        const pSlot = overlay.querySelector('#arena-pitcher-card-slot');
+        const pSlot = overlay.querySelector('#dex-pitcher-card-slot');
         if (pSlot) {
           pSlot.querySelectorAll('.ko-stamp-badge').forEach(s => s.remove());
           const stamp = document.createElement('div');
@@ -1991,7 +1819,7 @@
 
       // ── DEFENSIVE CHALLENGE MODAL (END OF INNING EVENT) ─────────────────────
       const showDefensiveChallenge = (endedInning, onComplete) => {
-        const isExtra = (endedInning >= 4);
+        const isExtra = (endedInning >= 3);
         const effDef = batter.def !== undefined ? batter.def : (batter.defense_val || 50);
         const baseThreshold = Math.min(100, Math.max(20, Math.round(30 + effDef * 0.6)));
 
@@ -2435,13 +2263,707 @@
         }
       };
 
+      // ── SCREEN 2: BATTLE ARENA (QUICK PLAY REPLICA) ─────────────────────────
+      const renderArena = () => {
+        const batterCardHTML = (typeof window.createCardHTML === 'function')
+          ? window.createCardHTML(batter, nativePos)
+          : `<div class="player-card"><div class="card-name">${batter.name}</div></div>`;
+
+        overlay.innerHTML = `
+          <div class="dex-test-arena-box">
+            <!-- Header Bar -->
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; border-bottom:1px solid rgba(0,255,102,0.3); padding-bottom:10px;">
+              <div style="display:flex; align-items:center; gap:10px; font-family:'Press Start 2P',monospace; font-size:10.5px; color:#00ff66;">
+                <span>⚾ TACTICAL BATTLE</span>
+                <span style="color:#ffd700;">VS</span>
+                <span id="dex-hdr-pitcher-name" style="color:#fff;">RIVAL ROTATION (3 PITCHERS)</span>
+              </div>
+              <div style="display:flex; align-items:center; gap:12px;">
+                <div id="dex-hdr-atbat-badge" style="background:#000; border:1.5px solid #ffd700; color:#ffd700; font-family:'Press Start 2P',monospace; font-size:8.5px; padding:4px 8px; border-radius:4px; box-shadow:0 0 10px rgba(255,215,0,0.3);">
+                  INN 1 • OUT 0
+                </div>
+                <button id="btn-test-modal-close" style="background:none; border:none; color:#9ca3af; font-size:22px; cursor:pointer; line-height:1;">✕</button>
+              </div>
+            </div>
+
+            <!-- 2-Column Match Arena -->
+            <div class="match-arena">
+              
+              <!-- Left Column: 1v1 Battle Arena -->
+              <div style="display:flex; flex-direction:column; gap:12px; justify-content:center; align-items:center;">
+                
+                <!-- LED Scoreboard & Diamond -->
+                <div class="scoreboard" style="width:100%; text-align:center; font-family:'Press Start 2P',monospace; font-size:10px; padding:10px 14px; line-height:1.6; background:rgba(0,0,0,0.6); border:1px solid rgba(255,255,255,0.1); border-radius:10px;">
+                  <div class="scoreboard-text-panel" style="width:100%;">
+                    <div style="display:flex; justify-content:space-between; font-size:8.5px; margin-bottom:6px; color:#ffd700;">
+                      <div><span>INNING:</span> <span id="dex-scoreboard-inning" style="color:#fff;">1 / 3</span></div>
+                      <div><span>RUNS (R):</span> <span id="dex-scoreboard-runs" style="color:#00ff66;">0</span></div>
+                    </div>
+                    <div style="display:flex; justify-content:space-around; font-size:8px; margin-bottom:6px;">
+                      <div><span>HITS:</span> <span id="dex-scoreboard-hits" style="color:#00ff66; font-weight:bold;">0</span></div>
+                      <div><span>OUTS:</span> <span id="dex-scoreboard-outs" style="color:#ef4444; font-weight:bold;">○ ○ ○</span></div>
+                      <div><span>STOLEN (SB):</span> <span id="dex-scoreboard-sb" style="color:#06b6d4; font-weight:bold;">0</span></div>
+                    </div>
+                    <div style="display:flex; justify-content:space-around; font-size:8px; border-top:1px dashed rgba(255,255,255,0.1); padding-top:6px;">
+                      <div><span>RIVAL K.O.s:</span> <span id="dex-scoreboard-ko" style="color:#ca8a04;">0 / 3</span></div>
+                      <div><span>HIT STREAK:</span> <span id="dex-scoreboard-streak" style="color:#f59e0b;">0</span></div>
+                    </div>
+                  </div>
+
+                  <!-- Diamond Visual Board -->
+                  <div style="border-top:1px dashed rgba(255,255,255,0.1); padding-top:6px; margin-top:6px; display:flex; justify-content:center; align-items:center;">
+                    <svg viewBox="0 0 100 100" style="width:48px; height:48px;">
+                      <path d="M 50 15 L 85 50 L 50 85 L 15 50 Z" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="2" stroke-dasharray="2,2" />
+                      <rect id="dex-base-2" x="44" y="9" width="12" height="12" rx="1" transform="rotate(45 50 15)" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.3)" stroke-width="1.5" style="transition:all 0.3s;" />
+                      <rect id="dex-base-3" x="9" y="44" width="12" height="12" rx="1" transform="rotate(45 15 50)" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.3)" stroke-width="1.5" style="transition:all 0.3s;" />
+                      <rect id="dex-base-1" x="79" y="44" width="12" height="12" rx="1" transform="rotate(45 85 50)" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.3)" stroke-width="1.5" style="transition:all 0.3s;" />
+                      <polygon id="dex-base-home" points="50,79 55,84 55,89 45,89 45,84" fill="rgba(255,255,255,0.25)" stroke="rgba(255,255,255,0.4)" stroke-width="1" />
+                    </svg>
+                  </div>
+                </div>
+
+                <!-- 1v1 Fight Cards View -->
+                <div class="rpg-fight-deck" style="display:flex; align-items:center; gap:16px; margin:8px 0; justify-content:center; width:100%; position:relative;">
+                  <div class="fight-card-slot">
+                    ${batterCardHTML}
+                  </div>
+
+                  <div class="vs-circle" style="font-family:'Press Start 2P',monospace; font-size:18px; color:var(--accent-color,#ffd700); text-shadow:0 0 10px rgba(255,215,0,0.8);">VS</div>
+
+                  <div class="fight-card-slot" id="dex-pitcher-card-slot"></div>
+                </div>
+
+                <!-- Active Battle HP bars & Vitals Panel -->
+                <div class="faceoff-panel" style="width:100%; display:flex; flex-direction:column; gap:8px; padding:10px 14px; background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.1); border-radius:10px;">
+                  <div style="display:flex; justify-content:space-between; width:100%; gap:14px;">
+                    <div style="flex:1;">
+                      <div class="faceoff-name" style="font-size:11px; font-weight:bold; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:#00ff66;">
+                        ${batter.name} <span style="font-size:8px; color:#94a3b8;">(${nativePos})</span>
+                      </div>
+                      
+                      <!-- Team HP Bar -->
+                      <div style="display:flex; justify-content:space-between; font-size:7.5px; font-family:'Press Start 2P',monospace; margin-top:4px;">
+                        <span style="color:#00ff66;">❤️ TEAM HP</span>
+                        <span id="dex-team-hp-text" style="color:#00ff66;">100/100</span>
+                      </div>
+                      <div class="hp-bar-container" style="height:9px; background:rgba(0,0,0,0.6); border-radius:5px; margin-top:2px; overflow:hidden; border:1px solid rgba(255,255,255,0.15);">
+                        <div class="hp-bar-fill" id="dex-team-hp-fill" style="width:100%; height:100%; background:linear-gradient(90deg, #10b981, #00ff66); transition:width 0.3s ease;"></div>
+                      </div>
+
+                      <!-- Team Shield Bar -->
+                      <div style="display:flex; justify-content:space-between; font-size:7.5px; font-family:'Press Start 2P',monospace; margin-top:4px;">
+                        <span style="color:#38bdf8;">🛡️ SHIELD (DEF)</span>
+                        <span id="dex-team-shield-text" style="color:#38bdf8;">${testState.teamShield}/${testState.teamShieldMax}</span>
+                      </div>
+                      <div class="hp-bar-container" style="height:7px; background:rgba(0,0,0,0.6); border-radius:4px; margin-top:2px; overflow:hidden; border:1px solid rgba(56,189,248,0.25);">
+                        <div class="hp-bar-fill" id="dex-team-shield-fill" style="width:100%; height:100%; background:linear-gradient(90deg, #0284c7, #38bdf8); transition:width 0.3s ease;"></div>
+                      </div>
+                    </div>
+
+                    <div style="flex:1;">
+                      <div class="faceoff-name" id="dex-pitcher-name-disp" style="font-size:11px; font-weight:bold; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:#ef4444; text-align:right;">
+                        --
+                      </div>
+                      
+                      <!-- Pitcher HP Bar -->
+                      <div style="display:flex; justify-content:space-between; font-size:7.5px; font-family:'Press Start 2P',monospace; margin-top:4px;">
+                        <span id="dex-pitcher-hp-text" style="color:#ef4444;">100/100 HP</span>
+                        <span style="color:#ef4444;">💀 PITCHER HP</span>
+                      </div>
+                      <div class="hp-bar-container" style="height:9px; background:rgba(0,0,0,0.6); border-radius:5px; margin-top:2px; overflow:hidden; border:1px solid rgba(239,68,68,0.25);">
+                        <div class="hp-bar-fill" id="dex-pitcher-hp-fill" style="width:100%; height:100%; background:linear-gradient(90deg, #dc2626, #ef4444); transition:width 0.3s ease;"></div>
+                      </div>
+
+                      <!-- Pitcher Clutch Status badge -->
+                      <div id="dex-pitcher-clutch-wrap" style="text-align:right; margin-top:4px; font-size:7.5px; font-family:'Press Start 2P',monospace; min-height:12px;"></div>
+                    </div>
+                  </div>
+
+                  <!-- Bullpen Rotation Status Row -->
+                  <div style="display:flex; align-items:center; justify-content:space-between; border-top:1px dashed rgba(255,255,255,0.1); padding-top:6px; margin-top:2px;">
+                    <div style="font-size:7.5px; font-family:'Press Start 2P',monospace; color:#9ca3af;">
+                      <i class="fa-solid fa-users"></i> ROTATION QUEUE:
+                    </div>
+                    <div id="dex-rotation-queue" style="display:flex; gap:6px;"></div>
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- Right Column: Dice & Controls & Match History -->
+              <div style="display:flex; flex-direction:column; gap:12px; justify-content:space-between;">
+                
+                <!-- Dice Roll Panel & Combat Controls -->
+                <div class="dice-box" style="width:100%; display:flex; flex-direction:column; align-items:center; gap:10px; padding:12px; background:rgba(0,0,0,0.6); border:1px solid rgba(255,255,255,0.1); border-radius:10px;">
+                  
+                  <!-- Live Batting Stats Chips -->
+                  <div style="display:flex; justify-content:space-between; width:100%; align-items:center; font-family:'Press Start 2P',monospace; font-size:7.5px; border-bottom:1px dashed rgba(255,255,255,0.1); padding-bottom:6px;">
+                    <span id="dex-vitals-avg-badge" style="color:#ffd700; background:rgba(255,215,0,0.1); border:1px solid #ffd700; padding:2px 5px; border-radius:4px;">AVG .000</span>
+                    <div style="display:flex; gap:6px; color:#cbd5e1;">
+                      <span>H: <strong id="dex-vitals-h" style="color:#00ff66;">0</strong></span>
+                      <span>HR: <strong id="dex-vitals-hr" style="color:#f87171;">0</strong></span>
+                      <span>BB: <strong id="dex-vitals-bb" style="color:#38bdf8;">0</strong></span>
+                      <span>SO: <strong id="dex-vitals-so" style="color:#ef4444;">0</strong></span>
+                      <span>SB: <strong id="dex-vitals-sb" style="color:#06b6d4;">0</strong></span>
+                    </div>
+                  </div>
+
+                  <!-- 3D d100 Dice -->
+                  <div id="dice-d100-panel" style="display:flex; flex-direction:column; align-items:center; gap:6px; margin:4px 0;">
+                    <div id="dice-d100-container" style="display:flex; gap:12px;">
+                      <!-- Tens Die -->
+                      <div class="d100-die" id="dex-die-tens">
+                        <div class="d100-die-cube" id="dex-die-tens-cube">
+                          <div class="d100-die-face face-front" id="dex-die-tens-face-front">0</div>
+                          <div class="d100-die-face face-back">0</div>
+                          <div class="d100-die-face face-right">0</div>
+                          <div class="d100-die-face face-left">0</div>
+                          <div class="d100-die-face face-top">0</div>
+                          <div class="d100-die-face face-bottom">0</div>
+                        </div>
+                      </div>
+                      <!-- Units Die -->
+                      <div class="d100-die" id="dex-die-units">
+                        <div class="d100-die-cube" id="dex-die-units-cube">
+                          <div class="d100-die-face face-front" id="dex-die-units-face-front">0</div>
+                          <div class="d100-die-face face-back">0</div>
+                          <div class="d100-die-face face-right">0</div>
+                          <div class="d100-die-face face-left">0</div>
+                          <div class="d100-die-face face-top">0</div>
+                          <div class="d100-die-face face-bottom">0</div>
+                        </div>
+                      </div>
+                    </div>
+                    <div id="dex-dice-result-display" style="font-family:'Press Start 2P',monospace; font-size:13px; color:#9ca3af; letter-spacing:1px; min-height:18px;">
+                      –
+                    </div>
+                  </div>
+
+                  <!-- Lucky Zones Panel -->
+                  <div id="zones-panel-wrap" style="width:100%;">
+                    <details id="zones-panel" open style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:6px 10px;">
+                      <summary id="zones-panel-header" style="font-family:'Press Start 2P',monospace; font-size:8px; color:#cbd5e1; cursor:pointer; margin-bottom:6px;">🎯 ${_t('match.luck_zones', 'Luck Zones')}</summary>
+                      <div id="dex-zones-lines"></div>
+                    </details>
+                  </div>
+
+                  <!-- Action Buttons -->
+                  <div id="dice-action-bar" style="width:100%; display:flex; flex-direction:column; gap:8px; margin-top:4px;">
+                    <button id="btn-dex-roll-dice" style="
+                      font-family:'Press Start 2P',monospace;
+                      font-size:11px; padding:12px 20px;
+                      background:linear-gradient(135deg,#7c3aed,#4f46e5);
+                      color:#fff; border:none; border-radius:10px;
+                      cursor:pointer; letter-spacing:1px;
+                      box-shadow:0 0 18px rgba(124,58,237,0.5);
+                      transition:transform .1s,box-shadow .1s;
+                      width:100%;
+                    "><i class="fa-solid fa-dice"></i> ${_t('match.roll_dice', 'ROLL DICE')}</button>
+                    
+                    <button id="btn-dex-fast-auto" class="btn" style="
+                      font-family:'Press Start 2P',monospace;
+                      font-size:9.5px; padding:10px 16px;
+                      background:linear-gradient(135deg,#dc2626,#ef4444);
+                      color:#fff; border:none; border-radius:10px;
+                      cursor:pointer; width:100%;
+                      box-shadow:0 0 14px rgba(220,38,38,0.4);
+                    "><i class="fa-solid fa-forward-step"></i> ${_t('match.simulate_all', 'FAST AUTO-SIMULATE')}</button>
+                  </div>
+
+                </div>
+
+                <!-- Match History Log -->
+                <div class="match-log" style="height:140px; max-height:140px; display:flex; flex-direction:column; flex:none; background:rgba(0,0,0,0.6); border:1px solid rgba(255,255,255,0.1); border-radius:10px; padding:8px 10px; overflow-y:auto;">
+                  <div class="match-log-header" style="font-family:'Press Start 2P',monospace; font-size:7.5px; color:#9ca3af; margin-bottom:6px; border-bottom:1px dashed rgba(255,255,255,0.1); padding-bottom:4px;">
+                    COMBAT LOG
+                  </div>
+                  <div id="dex-match-log-lines" style="display:flex; flex-direction:column; gap:4px;">
+                    <div class="log-line" style="font-size:8.5px; color:#64748b; font-style:italic;">Ready for the first pitch...</div>
+                  </div>
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+        `;
+
+        // Close event
+        const closeBtn = overlay.querySelector('#btn-test-modal-close');
+        if (closeBtn) closeBtn.onclick = () => overlay.remove();
+
+        // Roll Dice handler
+        const rollBtn = overlay.querySelector('#btn-dex-roll-dice');
+        if (rollBtn) {
+          rollBtn.onclick = () => handleDiceRoll();
+        }
+
+        // Fast Auto-play handler
+        const autoBtn = overlay.querySelector('#btn-dex-fast-auto');
+        if (autoBtn) {
+          autoBtn.onclick = () => {
+            while (!testState.battleOver && testState.activePitcherIndex < testState.pitchers.length) {
+              const curP = testState.pitchers[testState.activePitcherIndex];
+              const cBounds = (typeof window.calcBoundaries === 'function')
+                ? window.calcBoundaries(batter, curP, { inning: testState.inning, bases: testState.bases, hasTrait: () => false })
+                : { bbEnd: 11, soEnd: 26, outEnd: 41, singleEnd: 76, doubleEnd: 86, tripleEnd: 87 };
+              
+              resolveTurn(cBounds, curP);
+            }
+            renderSummary();
+          };
+        }
+
+        // Initialize first pitcher
+        updatePitcherCardDOM();
+      };
+
+      // ── UPDATE PITCHER AND HUD DOM ──────────────────────────────────────────
+      const updatePitcherCardDOM = () => {
+        if (testState.battleOver) {
+          renderSummary();
+          return;
+        }
+
+        const curPitcher = testState.pitchers[testState.activePitcherIndex];
+        if (!curPitcher) {
+          renderSummary();
+          return;
+        }
+
+        const simCtx = {
+          inning: testState.inning,
+          bases: testState.bases,
+          hasTrait: () => false
+        };
+        const bounds = (typeof window.calcBoundaries === 'function')
+          ? window.calcBoundaries(batter, curPitcher, simCtx)
+          : { bbEnd: 11, soEnd: 26, outEnd: 41, singleEnd: 76, doubleEnd: 86, tripleEnd: 87, pitcherClutchStatus: { active: false } };
+
+        const pClutchStatus = bounds.pitcherClutchStatus || { active: false };
+
+        // Header updates
+        const hdrPitcherName = overlay.querySelector('#dex-hdr-pitcher-name');
+        if (hdrPitcherName) hdrPitcherName.innerText = `${curPitcher.name.toUpperCase()} & ROTATION`;
+
+        const hdrBadge = overlay.querySelector('#dex-hdr-atbat-badge');
+        if (hdrBadge) {
+          hdrBadge.innerText = `INN ${testState.inning} • OUT ${testState.outs}`;
+          hdrBadge.style.borderColor = testState.inning >= 4 ? '#ef4444' : '#ffd700';
+          hdrBadge.style.color = testState.inning >= 4 ? '#ef4444' : '#ffd700';
+        }
+
+        // Pitcher Card DOM
+        const pitcherSlot = overlay.querySelector('#dex-pitcher-card-slot');
+        if (pitcherSlot) {
+          pitcherSlot.innerHTML = (typeof window.createCardHTML === 'function')
+            ? window.createCardHTML(curPitcher, curPitcher.role || 'SP')
+            : `<div class="player-card"><div class="card-name">${curPitcher.name}</div></div>`;
+        }
+
+        // Pitcher Faceoff Name & HP
+        const pNameDisp = overlay.querySelector('#dex-pitcher-name-disp');
+        if (pNameDisp) pNameDisp.innerText = `${curPitcher.name} (${curPitcher.role || 'SP'})`;
+
+        const pHPFill = overlay.querySelector('#dex-pitcher-hp-fill');
+        if (pHPFill) pHPFill.style.width = `${Math.max(0, curPitcher.hp)}%`;
+
+        const pHPText = overlay.querySelector('#dex-pitcher-hp-text');
+        if (pHPText) pHPText.innerText = `${Math.max(0, curPitcher.hp)}/100 HP`;
+
+        const clutchWrap = overlay.querySelector('#dex-pitcher-clutch-wrap');
+        if (clutchWrap) {
+          if (pClutchStatus.active) {
+            clutchWrap.innerHTML = `<span style="color:#ef4444; background:rgba(239,68,68,0.15); border:1px solid #ef4444; padding:2px 4px; border-radius:3px;">🔥 RISP CLUTCH (${pClutchStatus.val >= 0 ? '+' : ''}${pClutchStatus.val})</span>`;
+          } else if (testState.pitcherDebuff && testState.pitcherDebuff.turnsLeft > 0) {
+            clutchWrap.innerHTML = `<span style="color:#06b6d4; background:rgba(6,182,212,0.15); border:1px solid #06b6d4; padding:2px 4px; border-radius:3px;">⚡ STOLEN BASE DEBUFF (+20% DMG)</span>`;
+          } else {
+            clutchWrap.innerHTML = `<span style="color:#64748b;">STANDARD FOCUS</span>`;
+          }
+        }
+
+        // Rotation Queue Badges with accurate OVR
+        const rotQueue = overlay.querySelector('#dex-rotation-queue');
+        if (rotQueue) {
+          rotQueue.innerHTML = testState.pitchers.map((p, idx) => {
+            const isCurrent = (idx === testState.activePitcherIndex);
+            const isDefeated = p.hp <= 0;
+            const bg = isCurrent ? '#ffd700' : (isDefeated ? '#374151' : 'rgba(255,255,255,0.08)');
+            const textCol = isCurrent ? '#000' : (isDefeated ? '#9ca3af' : '#fff');
+            const borderCol = isCurrent ? '#ffd700' : (isDefeated ? '#4b5563' : 'rgba(255,255,255,0.2)');
+            const statusLabel = isDefeated ? 'KO' : (isCurrent ? `${p.hp} HP` : 'READY');
+            const pOvr = typeof window.getPlayerOvr === 'function' ? window.getPlayerOvr(p) : (p.ovr || 70);
+            return `
+              <div style="background:${bg}; color:${textCol}; border:1px solid ${borderCol}; font-family:'Press Start 2P',monospace; font-size:7px; padding:2px 5px; border-radius:4px; display:flex; align-items:center; gap:4px;">
+                <span>${p.role || (idx === 0 ? 'SP' : 'RP')}</span>
+                <span>${pOvr}</span>
+                <span style="font-size:6px; opacity:0.85;">(${statusLabel})</span>
+              </div>
+            `;
+          }).join('');
+        }
+
+        // Team HP & Shield
+        const tHPFill = overlay.querySelector('#dex-team-hp-fill');
+        if (tHPFill) tHPFill.style.width = `${Math.max(0, testState.teamHP)}%`;
+        const tHPText = overlay.querySelector('#dex-team-hp-text');
+        if (tHPText) tHPText.innerText = `${Math.max(0, testState.teamHP)}/100`;
+
+        const tShieldFill = overlay.querySelector('#dex-team-shield-fill');
+        if (tShieldFill) tShieldFill.style.width = testState.teamShieldMax > 0 ? `${(testState.teamShield / testState.teamShieldMax) * 100}%` : '0%';
+        const tShieldText = overlay.querySelector('#dex-team-shield-text');
+        if (tShieldText) tShieldText.innerText = `${testState.teamShield}/${testState.teamShieldMax}`;
+
+        // Scoreboard updates
+        const innDisp = overlay.querySelector('#dex-scoreboard-inning');
+        if (innDisp) innDisp.innerText = `${testState.inning} / 3${testState.inning >= 4 ? ' (EXTRA)' : ''}`;
+
+        const runsDisp = overlay.querySelector('#dex-scoreboard-runs');
+        if (runsDisp) runsDisp.innerText = `${testState.runs}`;
+
+        const hitsDisp = overlay.querySelector('#dex-scoreboard-hits');
+        if (hitsDisp) hitsDisp.innerText = `${testState.stats.h}`;
+
+        const outsDisp = overlay.querySelector('#dex-scoreboard-outs');
+        if (outsDisp) {
+          const outDots = testState.outs === 0 ? '○ ○ ○' : (testState.outs === 1 ? '● ○ ○' : (testState.outs === 2 ? '● ● ○' : '● ● ●'));
+          outsDisp.innerText = outDots;
+        }
+
+        const sbDisp = overlay.querySelector('#dex-scoreboard-sb');
+        if (sbDisp) sbDisp.innerText = `${testState.stats.sb}`;
+
+        const koDisp = overlay.querySelector('#dex-scoreboard-ko');
+        if (koDisp) koDisp.innerText = `${testState.pitchersKO} / 3`;
+
+        const streakDisp = overlay.querySelector('#dex-scoreboard-streak');
+        if (streakDisp) streakDisp.innerText = `${testState.streak}`;
+
+        // Vitals updates
+        const avgDisp = overlay.querySelector('#dex-vitals-avg-badge');
+        if (avgDisp) avgDisp.innerText = `AVG ${testState.stats.ab > 0 ? (testState.stats.h / testState.stats.ab).toFixed(3).replace(/^0/, '') : '.000'}`;
+
+        const vH = overlay.querySelector('#dex-vitals-h');
+        if (vH) vH.innerText = `${testState.stats.h}`;
+        const vHR = overlay.querySelector('#dex-vitals-hr');
+        if (vHR) vHR.innerText = `${testState.stats.hr}`;
+        const vBB = overlay.querySelector('#dex-vitals-bb');
+        if (vBB) vBB.innerText = `${testState.stats.bb}`;
+        const vSO = overlay.querySelector('#dex-vitals-so');
+        if (vSO) vSO.innerText = `${testState.stats.so}`;
+        const vSB = overlay.querySelector('#dex-vitals-sb');
+        if (vSB) vSB.innerText = `${testState.stats.sb}`;
+
+        // Luck Zones updates
+        const zonesLines = overlay.querySelector('#dex-zones-lines');
+        if (zonesLines) {
+          zonesLines.innerHTML = `
+            <div class="outcome-probabilities-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:6px; font-size:8px;">
+              <div style="display:flex; flex-direction:column; gap:3px;">
+                <div class="outcome-row" style="display:flex; justify-content:space-between;">
+                  <span style="color:#3b82f6;">⚾ ${_t('match.bb', 'Walk (BB)')}</span>
+                  <span style="color:#3b82f6; font-weight:bold;">1–${bounds.bbEnd}</span>
+                </div>
+                <div class="outcome-row" style="display:flex; justify-content:space-between;">
+                  <span style="color:#ef4444;">💨 ${_t('match.so', 'Strikeout (SO)')}</span>
+                  <span style="color:#ef4444; font-weight:bold;">${bounds.bbEnd + 1}–${bounds.soEnd}</span>
+                </div>
+                <div class="outcome-row" style="display:flex; justify-content:space-between;">
+                  <span style="color:#9ca3af;">🤚 ${_t('match.out', 'Out (Fly/GO)')}</span>
+                  <span style="color:#9ca3af; font-weight:bold;">${bounds.soEnd + 1}–${bounds.outEnd}</span>
+                </div>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:3px;">
+                <div class="outcome-row" style="display:flex; justify-content:space-between;">
+                  <span style="color:#a7f3d0;">✅ ${_t('match.single', 'Single (1B)')}</span>
+                  <span style="color:#a7f3d0; font-weight:bold;">${bounds.outEnd + 1}–${bounds.singleEnd}</span>
+                </div>
+                <div class="outcome-row" style="display:flex; justify-content:space-between;">
+                  <span style="color:#10b981;">⚡ ${_t('match.double', 'Double (2B)')}</span>
+                  <span style="color:#10b981; font-weight:bold;">${bounds.singleEnd + 1}–${bounds.doubleEnd}</span>
+                </div>
+                <div class="outcome-row" style="display:flex; justify-content:space-between;">
+                  <span style="color:#06b6d4;">🔥 ${_t('match.triple', 'Triple (3B)')}</span>
+                  <span style="color:#06b6d4; font-weight:bold;">${bounds.doubleEnd + 1}–${bounds.tripleEnd}</span>
+                </div>
+                <div class="outcome-row" style="display:flex; justify-content:space-between;">
+                  <span style="color:#eab308; font-weight:bold;">🚀 ${_t('match.hr', 'Home Run (HR)')}</span>
+                  <span style="color:#eab308; font-weight:bold;">${bounds.tripleEnd + 1}–100</span>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+
+        // Diamond base glows
+        const b1 = overlay.querySelector('#dex-base-1');
+        const b2 = overlay.querySelector('#dex-base-2');
+        const b3 = overlay.querySelector('#dex-base-3');
+        const bHome = overlay.querySelector('#dex-base-home');
+
+        if (b1) {
+          b1.setAttribute('fill', testState.bases[0] ? '#00ff66' : 'rgba(255,255,255,0.1)');
+          b1.setAttribute('stroke', testState.bases[0] ? '#00ff66' : 'rgba(255,255,255,0.3)');
+        }
+        if (b2) {
+          b2.setAttribute('fill', testState.bases[1] ? '#00ff66' : 'rgba(255,255,255,0.1)');
+          b2.setAttribute('stroke', testState.bases[1] ? '#00ff66' : 'rgba(255,255,255,0.3)');
+        }
+        if (b3) {
+          b3.setAttribute('fill', testState.bases[2] ? '#00ff66' : 'rgba(255,255,255,0.1)');
+          b3.setAttribute('stroke', testState.bases[2] ? '#00ff66' : 'rgba(255,255,255,0.3)');
+        }
+        if (bHome) {
+          bHome.setAttribute('fill', 'rgba(255,255,255,0.25)');
+        }
+      };
+
+      // ── SCREEN 1: PRE-FIGHT SHOWDOWN (QUICK PLAY MATCHUP PREVIEW) ───────────
+      let previewPitcherIdx = 0;
+
+      const renderPreFight = () => {
+        const previewPitcher = pitchers[previewPitcherIdx];
+        const bCon = batter.con || 50;
+        const bPwr = batter.pwr || 50;
+        const bEye = batter.eye || 50;
+        const bKAvd = batter.k_avd !== undefined ? batter.k_avd : (batter.k_avoid !== undefined ? batter.k_avoid : 50);
+        const bSpd = batter.spd || 50;
+
+        const pH9 = previewPitcher.h9 !== undefined ? previewPitcher.h9 : 50;
+        const pHr9 = previewPitcher.hr9 !== undefined ? previewPitcher.hr9 : 50;
+        const pBb9 = previewPitcher.bb9 !== undefined ? previewPitcher.bb9 : 50;
+        const pK9 = previewPitcher.k9 !== undefined ? previewPitcher.k9 : 50;
+        const pSta = previewPitcher.sta !== undefined ? previewPitcher.sta : 65;
+
+        const diffCon = bCon - pH9;
+        const diffPwr = bPwr - pHr9;
+        const diffEye = bEye - pBb9;
+        const diffK   = bKAvd - pK9;
+        const diffSpd = bSpd - pSta;
+
+        const formatDiff = (d) => {
+          if (d > 0) return `<span class="clash-diff-pill diff-positive">+${d}</span>`;
+          if (d < 0) return `<span class="clash-diff-pill diff-negative">${d}</span>`;
+          return `<span class="clash-diff-pill diff-neutral">0</span>`;
+        };
+
+        const netAdvantage = (diffCon * 0.28) + (diffPwr * 0.25) + (diffK * 0.22) + (diffEye * 0.15) + (diffSpd * 0.10);
+        let winPct = Math.round(50 + (netAdvantage * 1.8));
+        winPct = Math.max(8, Math.min(92, winPct));
+
+        let winColor = '#f59e0b';
+        let winGradient = 'linear-gradient(90deg, #d97706, #f59e0b)';
+        let edgeText = '⚖️ EVEN MATCHUP';
+        let edgeClass = 'edge-even';
+        let tipText = 'Balanced duel: Dice rolls and situational timing will decide each at-bat.';
+
+        if (winPct >= 58) {
+          winColor = '#10b981';
+          winGradient = 'linear-gradient(90deg, #059669, #10b981)';
+          edgeText = '🟢 ADVANTAGE: HITTER';
+          edgeClass = 'edge-hitter';
+          tipText = 'Green light: Your batter has statistical leverage to punish rival pitching.';
+        } else if (winPct <= 42) {
+          winColor = '#ef4444';
+          winGradient = 'linear-gradient(90deg, #dc2626, #ef4444)';
+          edgeText = '🔴 ADVANTAGE: PITCHER';
+          edgeClass = 'edge-pitcher';
+          tipText = 'High tension: Pitcher commands the strike zone. High strikeout and weak contact risk.';
+        }
+
+        const batterCardHTML = (typeof window.createCardHTML === 'function')
+          ? window.createCardHTML(batter, nativePos)
+          : `<div class="player-card"><div class="card-name">${batter.name}</div></div>`;
+
+        const pitcherCardHTML = (typeof window.createCardHTML === 'function')
+          ? window.createCardHTML(previewPitcher, previewPitcher.role || 'SP')
+          : `<div class="player-card"><div class="card-name">${previewPitcher.name}</div></div>`;
+
+        // Pitcher bullpen rows with accurate OVR
+        const bullpenRows = pitchers.map((p, idx) => {
+          const isSelected = (idx === previewPitcherIdx);
+          const pOvr = typeof window.getPlayerOvr === 'function' ? window.getPlayerOvr(p) : (p.ovr || 70);
+          const grade = getGrade(pOvr);
+          const gradeCol = getGradeColor(grade);
+          return `
+            <div class="pre-fight-row ${isSelected ? 'selected-pitcher-row' : ''}" data-p-idx="${idx}" style="cursor:pointer;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span style="font-size:9px; font-weight:bold; color:#ef4444; background:rgba(239,68,68,0.15); padding:2px 5px; border-radius:4px; border:1px solid rgba(239,68,68,0.3);">${p.role || (idx === 0 ? 'SP' : 'RP')}</span>
+                <span class="name" style="color:#fff; font-size:9px;">${p.name}</span>
+                <span style="font-size:8px; font-weight:bold; color:${gradeCol}; background:rgba(0,0,0,0.4); border:1px solid ${gradeCol}; padding:1px 4px; border-radius:4px; font-family:'Press Start 2P',monospace;">${pOvr} ${grade}</span>
+              </div>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <div class="hp-bar-container">
+                  <div class="hp-bar-fill" style="width:100%; background:linear-gradient(90deg, #ef4444, #f87171);"></div>
+                </div>
+                <span class="hp-text">100/100 HP</span>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        overlay.innerHTML = `
+          <div class="dex-test-prefight-box" id="screen-pre-fight">
+            <!-- Header Bar -->
+            <div class="pre-fight-header">
+              <div class="pre-fight-stage-badge">⚔️ SERIES SHOWDOWN • BATTING PRACTICE</div>
+              <h2 style="margin:4px 0 10px 0; font-size:13px; color:#fff; letter-spacing:1px; font-family:'Press Start 2P',monospace;">
+                ${batter.name} <span style="color:#ffd700;">VS</span> 3 RIVAL PITCHERS
+              </h2>
+              <p style="font-size:11px; color:#94a3b8; margin:0 0 12px 0;">
+                Pre-battle match analysis. Examine pitching matchups and tactical edges before taking the plate.
+              </p>
+            </div>
+
+            <!-- 3-Column Showdown Grid -->
+            <div class="pre-fight-grid">
+              
+              <!-- Left: Batter Card -->
+              <div class="showdown-side showdown-side-player">
+                <div class="showdown-nav-bar nav-player">
+                  <span class="showdown-nav-label">${batter.name} (${nativePos})</span>
+                </div>
+                <div class="showdown-card-slot">
+                  ${batterCardHTML}
+                </div>
+              </div>
+
+              <!-- Center: Clash Analysis -->
+              <div class="showdown-center-clash">
+                
+                <!-- Win Probability Gauge -->
+                <div class="clash-winprob-section">
+                  <div class="clash-winprob-header">
+                    <span class="winprob-label">WIN PROBABILITY</span>
+                    <span class="winprob-value" style="color:${winColor};">${winPct}%</span>
+                  </div>
+                  <div class="clash-winprob-bar-track">
+                    <div class="clash-winprob-bar-fill" style="width:${winPct}%; background:${winGradient};"></div>
+                  </div>
+                  <div class="clash-edge-badge ${edgeClass}">${edgeText}</div>
+                </div>
+
+                <!-- Head-to-Head Stat Comparison -->
+                <div class="clash-stats-table">
+                  <div class="clash-stat-row">
+                    <div class="stat-left"><span class="stat-num">${bCon}</span> <span class="stat-name">CON</span></div>
+                    <div class="stat-diff">${formatDiff(diffCon)}</div>
+                    <div class="stat-right"><span class="stat-name">H/9</span> <span class="stat-num">${pH9}</span></div>
+                  </div>
+                  <div class="clash-stat-row">
+                    <div class="stat-left"><span class="stat-num">${bPwr}</span> <span class="stat-name">PWR</span></div>
+                    <div class="stat-diff">${formatDiff(diffPwr)}</div>
+                    <div class="stat-right"><span class="stat-name">HR/9</span> <span class="stat-num">${pHr9}</span></div>
+                  </div>
+                  <div class="clash-stat-row">
+                    <div class="stat-left"><span class="stat-num">${bEye}</span> <span class="stat-name">EYE</span></div>
+                    <div class="stat-diff">${formatDiff(diffEye)}</div>
+                    <div class="stat-right"><span class="stat-name">BB/9</span> <span class="stat-num">${pBb9}</span></div>
+                  </div>
+                  <div class="clash-stat-row">
+                    <div class="stat-left"><span class="stat-num">${bKAvd}</span> <span class="stat-name">K-AVD</span></div>
+                    <div class="stat-diff">${formatDiff(diffK)}</div>
+                    <div class="stat-right"><span class="stat-name">K/9</span> <span class="stat-num">${pK9}</span></div>
+                  </div>
+                  <div class="clash-stat-row">
+                    <div class="stat-left"><span class="stat-num">${bSpd}</span> <span class="stat-name">SPD</span></div>
+                    <div class="stat-diff">${formatDiff(diffSpd)}</div>
+                    <div class="stat-right"><span class="stat-name">STA</span> <span class="stat-num">${pSta}</span></div>
+                  </div>
+                </div>
+
+                <!-- Tactical Scouting Tip -->
+                <div class="clash-tip-box">
+                  <div class="clash-tip-title">📋 SCOUTING REPORT</div>
+                  <div class="clash-tip-text">${tipText}</div>
+                </div>
+
+                <!-- Action Button -->
+                <div style="display:flex; flex-direction:column; gap:8px; width:100%; margin-top:10px;">
+                  <button class="btn btn-primary" id="btn-test-start-combat" style="padding:14px; font-family:'Press Start 2P',monospace; font-size:11px; background:linear-gradient(135deg, #10b981 0%, #059669 100%); color:#000; font-weight:bold; box-shadow:0 0 20px rgba(16,185,129,0.5); border:none; border-radius:8px; cursor:pointer;">
+                    ⚔️ TO COMBAT! ➔
+                  </button>
+                  <button class="btn btn-secondary" id="btn-test-close-prefight" style="padding:8px; font-family:'Press Start 2P',monospace; font-size:8.5px;">
+                    ✕ CANCEL
+                  </button>
+                </div>
+
+              </div>
+
+              <!-- Right: Pitcher Preview Card -->
+              <div class="showdown-side showdown-side-enemy">
+                <div class="showdown-nav-bar nav-enemy">
+                  <button class="btn btn-showdown-nav" id="btn-test-prev-p">◀</button>
+                  <span class="showdown-nav-label" id="showdown-pitcher-label">${previewPitcher.role || 'SP'} ${previewPitcher.name}</span>
+                  <button class="btn btn-showdown-nav" id="btn-test-next-p">▶</button>
+                </div>
+                <div class="showdown-card-slot" id="showdown-pitcher-card-wrap">
+                  ${pitcherCardHTML}
+                </div>
+              </div>
+            </div>
+
+            <!-- Bullpen Relievers Section -->
+            <div class="pre-fight-bullpen-section">
+              <div class="pre-fight-bullpen-title">
+                <i class="fa-solid fa-users"></i> RIVAL ROTATION & BULLPEN
+              </div>
+              <div class="pre-fight-bullpen-list">
+                ${bullpenRows}
+              </div>
+            </div>
+          </div>
+        `;
+
+        // Bind events
+        const btnCombat = overlay.querySelector('#btn-test-start-combat');
+        if (btnCombat) {
+          btnCombat.onclick = () => {
+            if (window.AudioManager) window.AudioManager.play('play_ball');
+            renderArena();
+          };
+        }
+
+        const btnClose = overlay.querySelector('#btn-test-close-prefight');
+        if (btnClose) {
+          btnClose.onclick = () => overlay.remove();
+        }
+
+        const btnPrevP = overlay.querySelector('#btn-test-prev-p');
+        if (btnPrevP) {
+          btnPrevP.onclick = () => {
+            previewPitcherIdx = (previewPitcherIdx - 1 + pitchers.length) % pitchers.length;
+            renderPreFight();
+          };
+        }
+
+        const btnNextP = overlay.querySelector('#btn-test-next-p');
+        if (btnNextP) {
+          btnNextP.onclick = () => {
+            previewPitcherIdx = (previewPitcherIdx + 1) % pitchers.length;
+            renderPreFight();
+          };
+        }
+
+        overlay.querySelectorAll('.pre-fight-row').forEach(row => {
+          row.onclick = () => {
+            const idx = parseInt(row.dataset.pIdx);
+            if (!isNaN(idx)) {
+              previewPitcherIdx = idx;
+              renderPreFight();
+            }
+          };
+        });
+      };
+
       // Start by displaying the Pre-Fight Matchup Preview!
       renderPreFight();
     }
 
   };
 
-  window.getPlayerCareerData = getPlayerCareerData;
+    window.getPlayerCareerData = getPlayerCareerData;
   window.getPlayerFlagHTML = getPlayerFlagHTML;
   window.getBbrefUrl = getBbrefUrl;
   window.getPosText = getPosText;
