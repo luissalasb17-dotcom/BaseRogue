@@ -1554,8 +1554,9 @@
         isRolling: false,
         stats: {
           pa: 0, ab: 0, h: 0, singles: 0, doubles: 0, triples: 0, hr: 0,
-          bb: 0, so: 0, rbi: 0, sb: 0, outs: 0
-        }
+          bb: 0, so: 0, rbi: 0, sb: 0, outs: 0, e: 0, dmg: 0
+        },
+        pitcherStats: {}
       };
 
       // ── HELPER: GRADE & COLORS ─────────────────────────────────────────────
@@ -2231,6 +2232,7 @@
                 `;
               } else {
                 const penalty = isClutch ? 30 : 10;
+                testState.stats.e = (testState.stats.e || 0) + 1;
                 if (testState.teamShield > 0) {
                   const sDmg = Math.min(testState.teamShield, penalty);
                   testState.teamShield -= sDmg;
@@ -2324,74 +2326,178 @@
         }
       };
 
-      // ── BATTLE SUMMARY SCREEN (VICTORY / DEFEAT) ────────────────────────────
+      // ── BATTLE SUMMARY SCREEN (EXACT QUICK PLAY STATS MODAL) ───────────────
       const renderSummary = () => {
         const isVictory = (testState.pitchersKO >= 3);
         const s = testState.stats;
-        const avg = s.ab > 0 ? (s.h / s.ab).toFixed(3).replace(/^0/, '') : '.000';
-        const tb = s.singles + (s.doubles * 2) + (s.triples * 3) + (s.hr * 4);
-        const slg = s.ab > 0 ? (tb / s.ab).toFixed(3).replace(/^0/, '') : '.000';
-        const obp = s.pa > 0 ? ((s.h + s.bb) / s.pa).toFixed(3).replace(/^0/, '') : '.000';
-        const ops = (parseFloat(obp) + parseFloat(slg)).toFixed(3).replace(/^0/, '');
+        const bName = batter.name || 'Batter';
 
         const summaryModal = document.createElement('div');
-        summaryModal.style.cssText = 'position:fixed; inset:0; z-index:1000020; background:rgba(0,0,0,0.92); backdrop-filter:blur(8px); display:flex; align-items:center; justify-content:center; padding:16px;';
+        summaryModal.id = 'modal-run-summary';
+        summaryModal.className = 'modal-overlay';
+        summaryModal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.92);backdrop-filter:blur(10px);z-index:1000020;display:flex;align-items:center;justify-content:center;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px;';
+
+        const totAB = s.ab || 0;
+        const totH = s.h || 0;
+        const tot2B = s.doubles || 0;
+        const tot3B = s.triples || 0;
+        const totHR = s.hr || 0;
+        const totRBI = s.rbi || 0;
+        const totSB = s.sb || 0;
+        const totBB = s.bb || 0;
+        const totSO = s.so || 0;
+        const totE = s.e || 0;
+        const totDMG = s.dmg || 0;
+        const defErrors = totE;
+
+        const b1 = Math.max(0, totH - tot2B - tot3B - totHR);
+        const tPA = totAB + totBB;
+        const totalBases = b1 + (2 * tot2B) + (3 * tot3B) + (4 * totHR);
+
+        const avgVal = totAB > 0 ? (totH / totAB) : 0;
+        const obpVal = tPA > 0 ? ((totH + totBB) / tPA) : 0;
+        const slgVal = totAB > 0 ? (totalBases / totAB) : 0;
+        const opsVal = obpVal + slgVal;
+
+        const tAvg = totAB > 0 ? avgVal.toFixed(3).replace(/^0/, '') : '.000';
+        const tOBP = tPA > 0 ? obpVal.toFixed(3).replace(/^0/, '') : '.000';
+        const tSLG = totAB > 0 ? slgVal.toFixed(3).replace(/^0/, '') : '.000';
+        const tOPS = (totAB > 0 || tPA > 0) ? opsVal.toFixed(3) : '.000';
+
+        const processedBatters = [{
+          name: bName,
+          g: 1,
+          ab: totAB,
+          h: totH,
+          b2: tot2B,
+          b3: tot3B,
+          hr: totHR,
+          rbi: totRBI,
+          sb: totSB,
+          bb: totBB,
+          so: totSO,
+          e: totE,
+          dmg: totDMG,
+          avgVal,
+          obpVal,
+          slgVal,
+          opsVal
+        }];
+
+        const processedPitchers = testState.pitchers.map(p => {
+          const pName = p.name || 'Pitcher';
+          const ps = testState.pitcherStats[pName] || { outs: 0, k: 0, bb: 0, h: 0, hr: 0, er: 0, dmg: 0 };
+          const outs = ps.outs || 0;
+          const er = ps.er || 0;
+          const bb = ps.bb || 0;
+          const h = ps.h || 0;
+          const k = ps.k || 0;
+          const hr = ps.hr || 0;
+          const dmg = ps.dmg || 0;
+          const eraVal = outs > 0 ? ((er * 27) / outs) : 99.0;
+          const whipVal = outs > 0 ? ((bb + h) / (outs / 3)) : 99.0;
+          return { name: pName, outs, er, bb, h, k, hr, dmg, eraVal, whipVal };
+        });
 
         summaryModal.innerHTML = `
-          <div style="background:#0a0f18; border:2px solid ${isVictory ? '#ffd700' : '#ef4444'}; border-radius:14px; padding:24px; max-width:560px; width:100%; text-align:center; box-shadow:0 0 45px rgba(${isVictory ? '255,215,0,0.4' : '239,68,68,0.4'});">
-            <div style="font-size:36px; margin-bottom:8px;">${isVictory ? '🏆' : '💀'}</div>
-            <div style="font-family:'Press Start 2P',monospace; font-size:15px; color:${isVictory ? '#ffd700' : '#ef4444'}; margin-bottom:6px; letter-spacing:1px;">
-              ${isVictory ? 'ABSOLUTE VICTORY!' : 'MATCH DEFEAT!'}
-            </div>
-            <div style="font-size:11px; color:#cbd5e1; margin-bottom:18px;">
-              ${isVictory ? 'All 3 rival pitchers eliminated!' : 'Team HP reached 0. Strikeouts took their toll.'}
+          <div class="modal-run-summary-box" style="background:#090d16;border:2px solid ${isVictory ? '#ffd700' : 'var(--accent-color)'};border-radius:16px;padding:24px;width:95%;max-width:1040px;max-height:90vh;overflow-y:auto;box-shadow:0 0 50px rgba(0,0,0,0.9);position:relative;margin:auto;-webkit-overflow-scrolling:touch;">
+            <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px dashed rgba(255,255,255,0.2);padding-bottom:12px;margin-bottom:16px;">
+              <div style="display:flex;align-items:center;gap:10px;">
+                <span style="font-size:20px;">${isVictory ? '🏆' : '💀'}</span>
+                <h3 style="font-family:'Press Start 2P',monospace;font-size:12px;color:${isVictory ? '#ffd700' : 'var(--accent-color)'};margin:0;">
+                  <i class="fa-solid fa-baseball"></i> ${isVictory ? 'VICTORY — MATCH STATS' : 'MATCH STATS & SUMMARY'}
+                </h3>
+              </div>
+              <button id="btn-close-run-summary-x" style="background:none;border:none;color:#9ca3af;font-size:24px;cursor:pointer;">&times;</button>
             </div>
 
-            <!-- Stats Grid -->
-            <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:8px; margin-bottom:18px; text-align:center;">
-              <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:8px 4px;">
-                <div style="font-family:'Press Start 2P',monospace; font-size:13px; color:#ffd700;">${s.h}</div>
-                <div style="font-size:8px; color:#9ca3af; font-family:'Press Start 2P',monospace; margin-top:2px;">HITS</div>
-              </div>
-              <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:8px 4px;">
-                <div style="font-family:'Press Start 2P',monospace; font-size:13px; color:#ef4444;">${s.hr}</div>
-                <div style="font-size:8px; color:#9ca3af; font-family:'Press Start 2P',monospace; margin-top:2px;">HR</div>
-              </div>
-              <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:8px 4px;">
-                <div style="font-family:'Press Start 2P',monospace; font-size:13px; color:#38bdf8;">${s.rbi}</div>
-                <div style="font-size:8px; color:#9ca3af; font-family:'Press Start 2P',monospace; margin-top:2px;">RBI</div>
-              </div>
-              <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:8px 4px;">
-                <div style="font-family:'Press Start 2P',monospace; font-size:13px; color:#06b6d4;">${s.sb}</div>
-                <div style="font-size:8px; color:#9ca3af; font-family:'Press Start 2P',monospace; margin-top:2px;">SB</div>
-              </div>
-              <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:8px 4px;">
-                <div style="font-family:'Press Start 2P',monospace; font-size:13px; color:#34d399;">${s.bb}</div>
-                <div style="font-size:8px; color:#9ca3af; font-family:'Press Start 2P',monospace; margin-top:2px;">BB</div>
-              </div>
-              <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:8px 4px;">
-                <div style="font-family:'Press Start 2P',monospace; font-size:13px; color:#f43f5e;">${s.so}</div>
-                <div style="font-size:8px; color:#9ca3af; font-family:'Press Start 2P',monospace; margin-top:2px;">SO</div>
-              </div>
-              <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:8px 4px;">
-                <div style="font-family:'Press Start 2P',monospace; font-size:13px; color:#10b981;">${avg}</div>
-                <div style="font-size:8px; color:#9ca3af; font-family:'Press Start 2P',monospace; margin-top:2px;">AVG</div>
-              </div>
-              <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:8px 4px;">
-                <div style="font-family:'Press Start 2P',monospace; font-size:13px; color:#a855f7;">${ops}</div>
-                <div style="font-size:8px; color:#9ca3af; font-family:'Press Start 2P',monospace; margin-top:2px;">OPS</div>
+            <!-- Team Defense & Run Totals Header -->
+            <div id="summary-team-totals-header" style="margin-bottom:16px;">
+              <div style="background:linear-gradient(135deg,rgba(16,185,129,0.08) 0%,rgba(14,165,233,0.08) 100%);border:1px solid rgba(56,189,248,0.3);border-radius:12px;padding:12px 16px;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px;">
+                <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:var(--accent-color);">
+                  🛡️ DEFENSE & RUN TOTALS
+                </div>
+                <div style="display:flex;flex-wrap:wrap;gap:8px;font-size:9.5px;font-family:'Press Start 2P',monospace;align-items:center;">
+                  <span style="background:rgba(255,255,255,0.06);padding:5px 8px;border-radius:6px;color:#22d3ee;">H: ${totH}</span>
+                  <span style="background:rgba(255,255,255,0.06);padding:5px 8px;border-radius:6px;color:#ef4444;">HR: ${totHR}</span>
+                  <span style="background:rgba(255,255,255,0.06);padding:5px 8px;border-radius:6px;color:#10b981;">RBI: ${totRBI}</span>
+                  <span style="background:rgba(255,255,255,0.06);padding:5px 8px;border-radius:6px;color:#ffd700;">AVG: ${tAvg}</span>
+                  <span style="background:rgba(255,255,255,0.06);padding:5px 8px;border-radius:6px;color:#00ff66;">OPS: ${tOPS}</span>
+                  <span style="background:rgba(255,51,102,0.15);border:1px solid #ff3366;padding:5px 8px;border-radius:6px;color:#ff6699;box-shadow:0 0 10px rgba(255,51,102,0.25);">💥 DMG: ${totDMG}</span>
+                  <span style="background:rgba(239,68,68,0.18);border:1.5px solid #ef4444;padding:5px 10px;border-radius:6px;color:#f87171;box-shadow:0 0 10px rgba(239,68,68,0.3);">
+                    ⚠️ Errors (E): <strong style="color:#fff;font-size:11px;">${defErrors}</strong>
+                  </span>
+                </div>
               </div>
             </div>
 
-            <div style="font-size:10px; color:#94a3b8; margin-bottom:18px; font-family:'Press Start 2P',monospace;">
-              Pitchers Defeated: <strong style="color:#ffd700;">${testState.pitchersKO} / 3</strong> • Final Inning: <strong style="color:#38bdf8;">${testState.inning}</strong>
+            <!-- Tab Buttons -->
+            <div style="display:flex;gap:10px;margin-bottom:16px;">
+              <button id="tab-summary-batters" class="btn" style="padding:8px 16px;font-size:11px;background:var(--primary-color);color:#000;border:none;font-weight:bold;font-family:'Press Start 2P',monospace;">Mi Bateador (Bateo)</button>
+              <button id="tab-summary-pitchers" class="btn" style="padding:8px 16px;font-size:11px;background:rgba(255,255,255,0.1);color:#fff;border:none;font-weight:bold;font-family:'Press Start 2P',monospace;">Lanzadores Enfrentados</button>
             </div>
 
-            <div style="display:flex; gap:10px;">
-              <button id="btn-summary-restart" class="btn" style="flex:1; padding:12px; font-family:'Press Start 2P',monospace; font-size:9.5px; background:linear-gradient(135deg, #10b981, #059669); color:#000; font-weight:bold; border:none; border-radius:8px; cursor:pointer;">
+            <!-- Batters Content Table -->
+            <div id="summary-content-batters">
+              <div class="run-summary-table-scroll" style="overflow-x:auto;overflow-y:auto;-webkit-overflow-scrolling:touch;touch-action:pan-x pan-y;max-height:55vh;">
+                <table style="width:100%;border-collapse:collapse;font-size:11px;text-align:left;">
+                  <thead>
+                    <tr id="summary-thead-batters-row" style="border-bottom:2px solid rgba(255,255,255,0.2);color:var(--accent-color);user-select:none;">
+                      <th style="padding:8px;cursor:pointer;" data-sort="name">Jugador</th>
+                      <th style="padding:8px;cursor:pointer;" data-sort="g">G</th>
+                      <th style="padding:8px;cursor:pointer;" data-sort="ab">AB</th>
+                      <th style="padding:8px;cursor:pointer;" data-sort="h">H</th>
+                      <th style="padding:8px;cursor:pointer;" data-sort="b2">2B</th>
+                      <th style="padding:8px;cursor:pointer;" data-sort="b3">3B</th>
+                      <th style="padding:8px;cursor:pointer;" data-sort="hr">HR</th>
+                      <th style="padding:8px;cursor:pointer;" data-sort="rbi">RBI</th>
+                      <th style="padding:8px;cursor:pointer;" data-sort="sb">SB</th>
+                      <th style="padding:8px;cursor:pointer;" data-sort="bb">BB</th>
+                      <th style="padding:8px;cursor:pointer;" data-sort="so">SO</th>
+                      <th style="padding:8px;cursor:pointer;color:#f87171;" data-sort="e">E</th>
+                      <th style="padding:8px;cursor:pointer;" data-sort="avgVal">AVG</th>
+                      <th style="padding:8px;cursor:pointer;" data-sort="obpVal">OBP</th>
+                      <th style="padding:8px;cursor:pointer;" data-sort="slgVal">SLG</th>
+                      <th style="padding:8px;cursor:pointer;" data-sort="opsVal">OPS</th>
+                      <th style="padding:8px;cursor:pointer;color:#ff3366;" data-sort="dmg">DMG</th>
+                    </tr>
+                  </thead>
+                  <tbody id="summary-tbody-batters">
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Pitchers Content Table -->
+            <div id="summary-content-pitchers" class="hidden">
+              <div class="run-summary-table-scroll" style="overflow-x:auto;overflow-y:auto;-webkit-overflow-scrolling:touch;touch-action:pan-x pan-y;max-height:55vh;">
+                <table style="width:100%;border-collapse:collapse;font-size:11px;text-align:left;">
+                  <thead>
+                    <tr id="summary-thead-pitchers-row" style="border-bottom:2px solid rgba(255,255,255,0.2);color:#38bdf8;user-select:none;">
+                      <th style="padding:8px;cursor:pointer;" data-sort="name">Lanzador</th>
+                      <th style="padding:8px;cursor:pointer;" data-sort="outs">IP</th>
+                      <th style="padding:8px;cursor:pointer;" data-sort="k">K</th>
+                      <th style="padding:8px;cursor:pointer;" data-sort="bb">BB</th>
+                      <th style="padding:8px;cursor:pointer;" data-sort="h">H</th>
+                      <th style="padding:8px;cursor:pointer;" data-sort="hr">HR</th>
+                      <th style="padding:8px;cursor:pointer;" data-sort="er">ER</th>
+                      <th style="padding:8px;cursor:pointer;" data-sort="eraVal">ERA</th>
+                      <th style="padding:8px;cursor:pointer;" data-sort="whipVal">WHIP</th>
+                      <th style="padding:8px;cursor:pointer;color:#ff3366;" data-sort="dmg">DMG</th>
+                    </tr>
+                  </thead>
+                  <tbody id="summary-tbody-pitchers">
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Bottom Action Buttons -->
+            <div style="display:flex;gap:12px;margin-top:20px;border-top:1px dashed rgba(255,255,255,0.15);padding-top:16px;">
+              <button id="btn-summary-restart" class="btn" style="flex:1;padding:12px;font-family:'Press Start 2P',monospace;font-size:9.5px;background:linear-gradient(135deg,#10b981,#059669);color:#000;font-weight:bold;border:none;border-radius:8px;cursor:pointer;">
                 ⚾ PLAY AGAIN
               </button>
-              <button id="btn-summary-close" class="btn btn-secondary" style="flex:1; padding:12px; font-family:'Press Start 2P',monospace; font-size:9.5px;">
+              <button id="btn-summary-close" class="btn btn-secondary" style="flex:1;padding:12px;font-family:'Press Start 2P',monospace;font-size:9.5px;cursor:pointer;">
                 ✕ RETURN TO DEX
               </button>
             </div>
@@ -2399,6 +2505,162 @@
         `;
 
         document.body.appendChild(summaryModal);
+
+        // Populate Batter Table
+        const tbodyB = summaryModal.querySelector('#summary-tbody-batters');
+        let currentBatterSortCol = 'opsVal';
+        let currentBatterSortAsc = false;
+
+        const renderBattersTable = () => {
+          if (!tbodyB) return;
+          processedBatters.sort((a, b) => {
+            let valA = a[currentBatterSortCol];
+            let valB = b[currentBatterSortCol];
+            if (typeof valA === 'string') {
+              return currentBatterSortAsc ? valA.localeCompare(valB) : valB.localeCompare(valA);
+            }
+            return currentBatterSortAsc ? (valA - valB) : (valB - valA);
+          });
+
+          const ths = summaryModal.querySelectorAll('#summary-thead-batters-row th');
+          ths.forEach(th => {
+            const col = th.dataset.sort;
+            const rawText = th.getAttribute('data-original-label') || th.innerText.replace(/[ ▲▼]/g, '');
+            if (!th.getAttribute('data-original-label')) th.setAttribute('data-original-label', rawText);
+            if (col === currentBatterSortCol) {
+              th.innerHTML = `${rawText} <span style="font-size:9px;color:#facc15;">${currentBatterSortAsc ? '▲' : '▼'}</span>`;
+              th.style.color = '#facc15';
+            } else {
+              th.innerHTML = rawText;
+              th.style.color = (col === 'e' ? '#f87171' : (col === 'dmg' ? '#ff3366' : 'var(--accent-color)'));
+            }
+          });
+
+          tbodyB.innerHTML = '';
+          processedBatters.forEach(s => {
+            const avg = s.ab > 0 ? s.avgVal.toFixed(3) : '.000';
+            const obp = (s.ab + s.bb) > 0 ? s.obpVal.toFixed(3) : '.000';
+            const slg = s.ab > 0 ? s.slgVal.toFixed(3) : '.000';
+            const ops = (s.ab > 0 || (s.ab + s.bb) > 0) ? s.opsVal.toFixed(3) : '.000';
+            const rowColor = (s.hr >= 2) ? 'rgba(255,215,0,0.05)' : 'transparent';
+            const tr = document.createElement('tr');
+            tr.style.cssText = `border-bottom:1px solid rgba(255,255,255,0.06);background:${rowColor};`;
+            tr.innerHTML = `
+              <td style="padding:8px;color:#e2e8f0;font-weight:bold;">${s.name}</td>
+              <td style="padding:8px;color:#94a3b8;">${s.g}</td>
+              <td style="padding:8px;color:#94a3b8;">${s.ab}</td>
+              <td style="padding:8px;color:#22d3ee;">${s.h}</td>
+              <td style="padding:8px;color:#f59e0b;">${s.b2}</td>
+              <td style="padding:8px;color:#f59e0b;">${s.b3}</td>
+              <td style="padding:8px;color:#ef4444;">${s.hr}</td>
+              <td style="padding:8px;color:#10b981;">${s.rbi}</td>
+              <td style="padding:8px;color:#38bdf8;">${s.sb}</td>
+              <td style="padding:8px;color:#a78bfa;">${s.bb}</td>
+              <td style="padding:8px;color:#f87171;">${s.so}</td>
+              <td style="padding:8px;color:${s.e > 0 ? '#f87171' : '#64748b'};font-weight:${s.e > 0 ? 'bold' : 'normal'};">${s.e}</td>
+              <td style="padding:8px;color:${s.avgVal >= 0.300 ? '#ffd700' : '#94a3b8'};font-weight:bold;">${avg}</td>
+              <td style="padding:8px;color:${s.obpVal >= 0.380 ? '#38bdf8' : '#94a3b8'};font-weight:bold;">${obp}</td>
+              <td style="padding:8px;color:${s.slgVal >= 0.500 ? '#f59e0b' : '#94a3b8'};font-weight:bold;">${slg}</td>
+              <td style="padding:8px;color:${s.opsVal >= 0.850 ? '#00ff66' : (s.opsVal >= 0.750 ? '#ffd700' : '#94a3b8')};font-weight:bold;">${ops}</td>
+              <td style="padding:8px;color:#ff3366;font-weight:bold;font-family:'Press Start 2P',monospace;font-size:9.5px;">${s.dmg}</td>
+            `;
+            tbodyB.appendChild(tr);
+          });
+        };
+
+        const batterThs = summaryModal.querySelectorAll('#summary-thead-batters-row th');
+        batterThs.forEach(th => {
+          th.onclick = () => {
+            const col = th.dataset.sort;
+            if (!col) return;
+            if (currentBatterSortCol === col) currentBatterSortAsc = !currentBatterSortAsc;
+            else { currentBatterSortCol = col; currentBatterSortAsc = (col === 'name'); }
+            renderBattersTable();
+          };
+        });
+        renderBattersTable();
+
+        // Populate Pitcher Table
+        const tbodyP = summaryModal.querySelector('#summary-tbody-pitchers');
+        let currentPitcherSortCol = 'outs';
+        let currentPitcherSortAsc = false;
+
+        const renderPitchersTable = () => {
+          if (!tbodyP) return;
+          processedPitchers.sort((a, b) => {
+            let valA = a[currentPitcherSortCol];
+            let valB = b[currentPitcherSortCol];
+            if (typeof valA === 'string') {
+              return currentPitcherSortAsc ? valA.localeCompare(valB) : valB.localeCompare(valA);
+            }
+            return currentPitcherSortAsc ? (valA - valB) : (valB - valA);
+          });
+
+          const ths = summaryModal.querySelectorAll('#summary-thead-pitchers-row th');
+          ths.forEach(th => {
+            const col = th.dataset.sort;
+            const rawText = th.getAttribute('data-original-label') || th.innerText.replace(/[ ▲▼]/g, '');
+            if (!th.getAttribute('data-original-label')) th.setAttribute('data-original-label', rawText);
+            if (col === currentPitcherSortCol) {
+              th.innerHTML = `${rawText} <span style="font-size:9px;color:#facc15;">${currentPitcherSortAsc ? '▲' : '▼'}</span>`;
+              th.style.color = '#facc15';
+            } else {
+              th.innerHTML = rawText;
+              th.style.color = (col === 'dmg' ? '#ff3366' : '#38bdf8');
+            }
+          });
+
+          tbodyP.innerHTML = '';
+          processedPitchers.forEach(ps => {
+            const ip = `${Math.floor(ps.outs / 3)}.${ps.outs % 3}`;
+            const era = ps.outs > 0 ? ps.eraVal.toFixed(2) : '--.--';
+            const whip = ps.outs > 0 ? ps.whipVal.toFixed(2) : '--.--';
+            const tr = document.createElement('tr');
+            tr.style.cssText = 'border-bottom:1px solid rgba(255,255,255,0.06);';
+            tr.innerHTML = `
+              <td style="padding:8px;color:#e2e8f0;font-weight:bold;">${ps.name}</td>
+              <td style="padding:8px;color:#22d3ee;">${ip}</td>
+              <td style="padding:8px;color:#a78bfa;">${ps.k}</td>
+              <td style="padding:8px;color:#fbbf24;">${ps.bb}</td>
+              <td style="padding:8px;color:#94a3b8;">${ps.h}</td>
+              <td style="padding:8px;color:#ef4444;">${ps.hr}</td>
+              <td style="padding:8px;color:#f87171;">${ps.er}</td>
+              <td style="padding:8px;color:${parseFloat(era) > 4.5 ? '#ef4444' : '#10b981'};font-weight:bold;">${era}</td>
+              <td style="padding:8px;color:${parseFloat(whip) > 1.3 ? '#ef4444' : '#10b981'};font-weight:bold;">${whip}</td>
+              <td style="padding:8px;color:#ff3366;font-weight:bold;font-family:'Press Start 2P',monospace;font-size:9.5px;">${ps.dmg}</td>
+            `;
+            tbodyP.appendChild(tr);
+          });
+        };
+
+        const pitcherThs = summaryModal.querySelectorAll('#summary-thead-pitchers-row th');
+        pitcherThs.forEach(th => {
+          th.onclick = () => {
+            const col = th.dataset.sort;
+            if (!col) return;
+            if (currentPitcherSortCol === col) currentPitcherSortAsc = !currentPitcherSortAsc;
+            else { currentPitcherSortCol = col; currentPitcherSortAsc = (col === 'name' || col === 'eraVal' || col === 'whipVal'); }
+            renderPitchersTable();
+          };
+        });
+        renderPitchersTable();
+
+        // Tabs switching
+        const tabB = summaryModal.querySelector('#tab-summary-batters');
+        const tabP = summaryModal.querySelector('#tab-summary-pitchers');
+        const contB = summaryModal.querySelector('#summary-content-batters');
+        const contP = summaryModal.querySelector('#summary-content-pitchers');
+
+        if (tabB) tabB.onclick = () => {
+          contB.classList.remove('hidden'); contP.classList.add('hidden');
+          tabB.style.background = 'var(--primary-color)'; tabB.style.color = '#000';
+          tabP.style.background = 'rgba(255,255,255,0.1)'; tabP.style.color = '#fff';
+        };
+        if (tabP) tabP.onclick = () => {
+          contP.classList.remove('hidden'); contB.classList.add('hidden');
+          tabP.style.background = '#38bdf8'; tabP.style.color = '#000';
+          tabB.style.background = 'rgba(255,255,255,0.1)'; tabB.style.color = '#fff';
+        };
 
         const btnRestart = summaryModal.querySelector('#btn-summary-restart');
         if (btnRestart) {
@@ -2412,6 +2674,14 @@
         const btnClose = summaryModal.querySelector('#btn-summary-close');
         if (btnClose) {
           btnClose.onclick = () => {
+            summaryModal.remove();
+            overlay.remove();
+          };
+        }
+
+        const btnCloseX = summaryModal.querySelector('#btn-close-run-summary-x');
+        if (btnCloseX) {
+          btnCloseX.onclick = () => {
             summaryModal.remove();
             overlay.remove();
           };
@@ -2724,6 +2994,26 @@
         if (testState.pitcherDebuff && pitcherDmg > 0) {
           pitcherDmg = Math.round(pitcherDmg * 1.2);
         }
+
+        if (pitcherDmg > 0) {
+          testState.stats.dmg = (testState.stats.dmg || 0) + pitcherDmg;
+        }
+
+        // Track per-pitcher stats
+        const pName = curPitcher.name || 'Pitcher';
+        if (!testState.pitcherStats[pName]) {
+          testState.pitcherStats[pName] = { name: pName, outs: 0, k: 0, bb: 0, h: 0, hr: 0, er: 0, dmg: 0 };
+        }
+        const ps = testState.pitcherStats[pName];
+        if (rType === 'SO') { ps.k++; ps.outs++; }
+        else if (rType === 'OUT') { ps.outs++; }
+        else if (rType === 'BB') { ps.bb++; }
+        else if (['1B','2B','3B','HR'].includes(rType)) {
+          ps.h++;
+          if (rType === 'HR') ps.hr++;
+        }
+        if (runsThisTurn > 0) ps.er += runsThisTurn;
+        if (teamHpDmg > 0) ps.dmg += teamHpDmg;
 
         let isPitcherKO = false;
         if (pitcherDmg > 0) {
