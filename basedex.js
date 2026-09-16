@@ -2742,34 +2742,25 @@
         const diffK   = bKAvd - pK9;
         const diffSpd = bSpd - pSta;
 
-        const formatDiff = (d) => {
-          if (d > 0) return `<span class="clash-diff-pill diff-positive">+${d}</span>`;
-          if (d < 0) return `<span class="clash-diff-pill diff-negative">${d}</span>`;
+        const formatDiff = (diff) => {
+          if (diff > 0) return `<span class="clash-diff-pill diff-positive">+${diff}</span>`;
+          if (diff < 0) return `<span class="clash-diff-pill diff-negative">${diff}</span>`;
           return `<span class="clash-diff-pill diff-neutral">0</span>`;
         };
 
-        const netAdvantage = (diffCon * 0.28) + (diffPwr * 0.25) + (diffK * 0.22) + (diffEye * 0.15) + (diffSpd * 0.10);
-        let winPct = Math.round(50 + (netAdvantage * 1.8));
-        winPct = Math.max(8, Math.min(92, winPct));
+        const netAdvantage = diffCon + diffK + (diffPwr * 0.8) + (diffEye * 0.6);
+        let overallText = '🟡 BALANCED DUEL';
+        let overallClass = 'edge-even';
+        let tipText = '⚖️ Close duel: Dice rolls and situational timing will decide the at-bat.';
 
-        let winColor = '#f59e0b';
-        let winGradient = 'linear-gradient(90deg, #d97706, #f59e0b)';
-        let edgeText = '⚖️ EVEN MATCHUP';
-        let edgeClass = 'edge-even';
-        let tipText = 'Balanced duel: Dice rolls and situational timing will decide each at-bat.';
-
-        if (winPct >= 58) {
-          winColor = '#10b981';
-          winGradient = 'linear-gradient(90deg, #059669, #10b981)';
-          edgeText = '🟢 ADVANTAGE: HITTER';
-          edgeClass = 'edge-hitter';
-          tipText = 'Green light: Your batter has statistical leverage to punish rival pitching.';
-        } else if (winPct <= 42) {
-          winColor = '#ef4444';
-          winGradient = 'linear-gradient(90deg, #dc2626, #ef4444)';
-          edgeText = '🔴 ADVANTAGE: PITCHER';
-          edgeClass = 'edge-pitcher';
-          tipText = 'High tension: Pitcher commands the strike zone. High strikeout and weak contact risk.';
+        if (netAdvantage >= 16) {
+          overallText = '🟢 ADVANTAGE: HITTER';
+          overallClass = 'edge-hitter';
+          tipText = '💡 Green light: Your batter has tactical leverage to punish rival pitching.';
+        } else if (netAdvantage <= -16) {
+          overallText = '🔴 ADVANTAGE: PITCHER';
+          overallClass = 'edge-pitcher';
+          tipText = '⚠️ Danger: Pitcher commands the strike zone. High strikeout and weak contact risk.';
         }
 
         const batterCardHTML = (typeof window.createCardHTML === 'function')
@@ -2804,94 +2795,117 @@
         }).join('');
 
         overlay.innerHTML = `
-          <div class="dex-test-prefight-box" id="screen-pre-fight">
-            <!-- Header Bar -->
+          <div class="glass-panel" id="screen-pre-fight" style="position: relative; max-width: 960px; width: 95%; margin: 20px auto; padding: 22px 20px; box-shadow: 0 0 45px rgba(0,0,0,0.9), 0 0 20px rgba(0,255,102,0.25);">
+            
+            <!-- Top Showdown Header -->
             <div class="pre-fight-header">
               <div class="pre-fight-stage-badge">⚔️ SERIES SHOWDOWN • BATTING PRACTICE</div>
-              <h2 style="margin:4px 0 10px 0; font-size:13px; color:#fff; letter-spacing:1px; font-family:'Press Start 2P',monospace;">
+              <div style="font-family:'Press Start 2P',monospace; font-size:12px; color:#fff; margin:8px 0 12px 0; text-align:center; letter-spacing:0.5px;">
                 ${batter.name} <span style="color:#ffd700;">VS</span> 3 RIVAL PITCHERS
-              </h2>
-              <p style="font-size:11px; color:#94a3b8; margin:0 0 12px 0;">
-                Pre-battle match analysis. Examine pitching matchups and tactical edges before taking the plate.
-              </p>
+              </div>
             </div>
 
-            <!-- 3-Column Showdown Grid -->
-            <div class="pre-fight-grid">
+            <!-- Main Faceoff Arena -->
+            <div class="pre-fight-showdown">
               
-              <!-- Left: Batter Card -->
+              <!-- Left: Your Batter Selector & Card -->
               <div class="showdown-side showdown-side-player">
-                <div class="showdown-nav-bar nav-player">
-                  <span class="showdown-nav-label">${batter.name} (${nativePos})</span>
+                <div class="showdown-nav-bar">
+                  <span class="showdown-nav-label">${nativePos} ${batter.name}</span>
                 </div>
                 <div class="showdown-card-slot">
                   ${batterCardHTML}
                 </div>
               </div>
 
-              <!-- Center: Clash Analysis -->
-              <div class="showdown-center-clash">
-                
-                <!-- Win Probability Gauge -->
-                <div class="clash-winprob-section">
-                  <div class="clash-winprob-header">
-                    <span class="winprob-label">WIN PROBABILITY</span>
-                    <span class="winprob-value" style="color:${winColor};">${winPct}%</span>
+              <!-- Center: The VS Clash, Matchup Insights & Battle Button -->
+              <div class="showdown-center">
+                <div class="showdown-vs-badge">VS</div>
+                <div class="showdown-stakes-pill">3 INNINGS • DUEL</div>
+
+                <!-- Dynamic Matchup Advantage Tactical Insights -->
+                <div class="showdown-insights-panel">
+                  <div class="matchup-overall-badge ${overallClass}">${overallText}</div>
+                  
+                  <div class="matchup-clash-matrix">
+                    <!-- Contact vs H/9 -->
+                    <div class="clash-row" title="Batter Contact vs Pitcher H/9">
+                      <div class="clash-col-batter">
+                        <span>CON</span>
+                        <span class="clash-val-b">${bCon}</span>
+                      </div>
+                      ${formatDiff(diffCon)}
+                      <div class="clash-col-pitcher">
+                        <span class="clash-val-p">${pH9}</span>
+                        <span>H/9</span>
+                      </div>
+                    </div>
+
+                    <!-- Power vs HR/9 -->
+                    <div class="clash-row" title="Batter Power vs Pitcher HR/9">
+                      <div class="clash-col-batter">
+                        <span>PWR</span>
+                        <span class="clash-val-b">${bPwr}</span>
+                      </div>
+                      ${formatDiff(diffPwr)}
+                      <div class="clash-col-pitcher">
+                        <span class="clash-val-p">${pHr9}</span>
+                        <span>HR/9</span>
+                      </div>
+                    </div>
+
+                    <!-- Eye vs BB/9 -->
+                    <div class="clash-row" title="Batter Eye vs Pitcher BB/9">
+                      <div class="clash-col-batter">
+                        <span>EYE</span>
+                        <span class="clash-val-b">${bEye}</span>
+                      </div>
+                      ${formatDiff(diffEye)}
+                      <div class="clash-col-pitcher">
+                        <span class="clash-val-p">${pBb9}</span>
+                        <span>BB/9</span>
+                      </div>
+                    </div>
+
+                    <!-- K-Avoid vs K/9 -->
+                    <div class="clash-row" title="Batter K-Avoid vs Pitcher K/9">
+                      <div class="clash-col-batter">
+                        <span>K-AVD</span>
+                        <span class="clash-val-b">${bKAvd}</span>
+                      </div>
+                      ${formatDiff(diffK)}
+                      <div class="clash-col-pitcher">
+                        <span class="clash-val-p">${pK9}</span>
+                        <span>K/9</span>
+                      </div>
+                    </div>
+
+                    <!-- Speed vs STA -->
+                    <div class="clash-row" title="Batter Speed vs Pitcher Stamina">
+                      <div class="clash-col-batter">
+                        <span>SPD</span>
+                        <span class="clash-val-b">${bSpd}</span>
+                      </div>
+                      ${formatDiff(diffSpd)}
+                      <div class="clash-col-pitcher">
+                        <span class="clash-val-p">${pSta}</span>
+                        <span>STA</span>
+                      </div>
+                    </div>
                   </div>
-                  <div class="clash-winprob-bar-track">
-                    <div class="clash-winprob-bar-fill" style="width:${winPct}%; background:${winGradient};"></div>
-                  </div>
-                  <div class="clash-edge-badge ${edgeClass}">${edgeText}</div>
+
+                  <div class="matchup-quick-tip">${tipText}</div>
                 </div>
 
-                <!-- Head-to-Head Stat Comparison -->
-                <div class="clash-stats-table">
-                  <div class="clash-stat-row">
-                    <div class="stat-left"><span class="stat-num">${bCon}</span> <span class="stat-name">CON</span></div>
-                    <div class="stat-diff">${formatDiff(diffCon)}</div>
-                    <div class="stat-right"><span class="stat-name">H/9</span> <span class="stat-num">${pH9}</span></div>
-                  </div>
-                  <div class="clash-stat-row">
-                    <div class="stat-left"><span class="stat-num">${bPwr}</span> <span class="stat-name">PWR</span></div>
-                    <div class="stat-diff">${formatDiff(diffPwr)}</div>
-                    <div class="stat-right"><span class="stat-name">HR/9</span> <span class="stat-num">${pHr9}</span></div>
-                  </div>
-                  <div class="clash-stat-row">
-                    <div class="stat-left"><span class="stat-num">${bEye}</span> <span class="stat-name">EYE</span></div>
-                    <div class="stat-diff">${formatDiff(diffEye)}</div>
-                    <div class="stat-right"><span class="stat-name">BB/9</span> <span class="stat-num">${pBb9}</span></div>
-                  </div>
-                  <div class="clash-stat-row">
-                    <div class="stat-left"><span class="stat-num">${bKAvd}</span> <span class="stat-name">K-AVD</span></div>
-                    <div class="stat-diff">${formatDiff(diffK)}</div>
-                    <div class="stat-right"><span class="stat-name">K/9</span> <span class="stat-num">${pK9}</span></div>
-                  </div>
-                  <div class="clash-stat-row">
-                    <div class="stat-left"><span class="stat-num">${bSpd}</span> <span class="stat-name">SPD</span></div>
-                    <div class="stat-diff">${formatDiff(diffSpd)}</div>
-                    <div class="stat-right"><span class="stat-name">STA</span> <span class="stat-num">${pSta}</span></div>
-                  </div>
-                </div>
-
-                <!-- Tactical Scouting Tip -->
-                <div class="clash-tip-box">
-                  <div class="clash-tip-title">📋 SCOUTING REPORT</div>
-                  <div class="clash-tip-text">${tipText}</div>
-                </div>
-
-                <!-- Action Button -->
-                <div style="display:flex; flex-direction:column; gap:8px; width:100%; margin-top:10px;">
-                  <button class="btn btn-primary" id="btn-test-start-combat" style="padding:14px; font-family:'Press Start 2P',monospace; font-size:11px; background:linear-gradient(135deg, #10b981 0%, #059669 100%); color:#000; font-weight:bold; box-shadow:0 0 20px rgba(16,185,129,0.5); border:none; border-radius:8px; cursor:pointer;">
-                    ⚔️ TO COMBAT! ➔
-                  </button>
-                  <button class="btn btn-secondary" id="btn-test-close-prefight" style="padding:8px; font-family:'Press Start 2P',monospace; font-size:8.5px;">
-                    ✕ CANCEL
-                  </button>
-                </div>
-
+                <button class="btn btn-pre-fight-battle" id="btn-test-start-combat">
+                  <i class="fa-solid fa-fire-flame-curved"></i> TO COMBAT!
+                </button>
+                <button class="btn btn-secondary btn-pre-fight-back" id="btn-test-close-prefight">
+                  ✕ Return to Dex
+                </button>
               </div>
 
-              <!-- Right: Pitcher Preview Card -->
+              <!-- Right: Rival Pitcher Selector & Card -->
               <div class="showdown-side showdown-side-enemy">
                 <div class="showdown-nav-bar nav-enemy">
                   <button class="btn btn-showdown-nav" id="btn-test-prev-p">◀</button>
@@ -2902,9 +2916,10 @@
                   ${pitcherCardHTML}
                 </div>
               </div>
+
             </div>
 
-            <!-- Bullpen Relievers Section -->
+            <!-- Bullpen Relievers Section (Below Showdown) -->
             <div class="pre-fight-bullpen-section">
               <div class="pre-fight-bullpen-title">
                 <i class="fa-solid fa-users"></i> RIVAL ROTATION & BULLPEN
@@ -2913,6 +2928,7 @@
                 ${bullpenRows}
               </div>
             </div>
+
           </div>
         `;
 
