@@ -1507,12 +1507,10 @@
         pitchers: testPitchers,
         currentIndex: 0,
         isRolling: false,
-        isResolved: false,
         lastRoll: null,
         lastOutcome: null,
         streak: 0,
         pitchersKO: 0,
-        currentPitcherHP: 100,
         history: [],
         stats: {
           pa: 0,
@@ -1533,491 +1531,116 @@
       overlay.className = 'dex-test-arena-overlay';
       document.body.appendChild(overlay);
 
-      const render = () => {
-        const _t = (k, fallback, params) => (typeof window.t === 'function' ? window.t(k, params) : fallback);
+      const _t = (k, fallback, params) => (typeof window.t === 'function' ? window.t(k, params) : fallback);
 
-        // If finished all 10 at-bats, render the summary report
-        if (testState.currentIndex >= 10) {
-          const S = testState.stats;
-          const avg = S.ab > 0 ? (S.h / S.ab).toFixed(3).replace(/^0/, '') : '.000';
-          const obp = S.pa > 0 ? ((S.h + S.bb) / S.pa).toFixed(3).replace(/^0/, '') : '.000';
-          const totalBases = S.singles * 1 + S.doubles * 2 + S.triples * 3 + S.hr * 4;
-          const slg = S.ab > 0 ? (totalBases / S.ab).toFixed(3).replace(/^0/, '') : '.000';
-          const opsNum = (parseFloat(obp) + parseFloat(slg));
-          const opsStr = opsNum.toFixed(3);
+      // Render Final Summary Report
+      const renderSummary = () => {
+        const S = testState.stats;
+        const avg = S.ab > 0 ? (S.h / S.ab).toFixed(3).replace(/^0/, '') : '.000';
+        const obp = S.pa > 0 ? ((S.h + S.bb) / S.pa).toFixed(3).replace(/^0/, '') : '.000';
+        const totalBases = S.singles * 1 + S.doubles * 2 + S.triples * 3 + S.hr * 4;
+        const slg = S.ab > 0 ? (totalBases / S.ab).toFixed(3).replace(/^0/, '') : '.000';
+        const opsNum = (parseFloat(obp) + parseFloat(slg));
+        const opsStr = opsNum.toFixed(3);
 
-          let gradeText = 'F', gradeColor = '#ef4444', gradeLabel = '💀 ICE COLD';
-          if (opsNum >= 1.200) {
-            gradeText = 'S'; gradeColor = '#ffd700'; gradeLabel = '⭐ HALL OF FAME HITTER';
-          } else if (opsNum >= 0.900) {
-            gradeText = 'A'; gradeColor = '#38bdf8'; gradeLabel = '🔥 ALL-STAR PERFORMANCE';
-          } else if (opsNum >= 0.750) {
-            gradeText = 'B'; gradeColor = '#4ade80'; gradeLabel = '⚾ SOLID BATTING PROFILE';
-          } else if (opsNum >= 0.600) {
-            gradeText = 'C'; gradeColor = '#94a3b8'; gradeLabel = '📋 AVERAGE PRODUCTION';
-          } else if (opsNum >= 0.400) {
-            gradeText = 'D'; gradeColor = '#fb923c'; gradeLabel = '⚠️ COLD STREAK';
-          }
-
-          overlay.innerHTML = `
-            <div class="dex-test-arena-box" style="text-align:center; max-width:820px;">
-              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;border-bottom:1px solid rgba(255,215,0,0.25);padding-bottom:10px;">
-                <div style="font-family:'Press Start 2P',monospace;font-size:11px;color:#ffd700;display:flex;align-items:center;gap:8px;">
-                  <i class="fa-solid fa-trophy"></i> ${_t('dex.test_summary_title', 'BATTING PRACTICE REPORT')}
-                </div>
-                <button id="btn-test-modal-close" style="background:none;border:none;color:#9ca3af;font-size:22px;cursor:pointer;">✕</button>
-              </div>
-
-              <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:16px;margin-bottom:16px;">
-                <div style="font-family:'Press Start 2P',monospace;font-size:13px;color:#fff;margin-bottom:4px;">
-                  ${batter.name} (${batter.year || '—'})
-                </div>
-                <div style="font-size:10px;color:#94a3b8;margin-bottom:12px;">
-                  ${batter.team || '—'} · OVR ${Math.floor(batter.ovr || 50)} · ${batter.pos || 'OF'}
-                </div>
-
-                <div style="display:inline-flex;align-items:center;gap:14px;background:rgba(0,0,0,0.6);border:2px solid ${gradeColor};border-radius:12px;padding:12px 24px;margin-bottom:14px;box-shadow:0 0 25px ${gradeColor}44;">
-                  <div style="font-family:'Press Start 2P',monospace;font-size:36px;color:${gradeColor};">${gradeText}</div>
-                  <div style="text-align:left;">
-                    <div style="font-family:'Press Start 2P',monospace;font-size:9.5px;color:${gradeColor};">${gradeLabel}</div>
-                    <div style="font-size:10.5px;color:#cbd5e1;margin-top:3px;">OPS: <strong style="color:#fff;font-size:12px;">${opsStr}</strong> · AVG: <strong style="color:#ffd700;">${avg}</strong></div>
-                  </div>
-                </div>
-
-                <!-- 8-Stat Grid -->
-                <div class="dex-test-summary-stat-grid">
-                  <div class="dex-test-summary-stat-card"><div class="dex-test-summary-stat-lbl">PA</div><div class="dex-test-summary-stat-val" style="color:#38bdf8;">${S.pa}</div></div>
-                  <div class="dex-test-summary-stat-card"><div class="dex-test-summary-stat-lbl">AB</div><div class="dex-test-summary-stat-val" style="color:#cbd5e1;">${S.ab}</div></div>
-                  <div class="dex-test-summary-stat-card"><div class="dex-test-summary-stat-lbl">HITS</div><div class="dex-test-summary-stat-val" style="color:#4ade80;">${S.h}</div></div>
-                  <div class="dex-test-summary-stat-card"><div class="dex-test-summary-stat-lbl">HR</div><div class="dex-test-summary-stat-val" style="color:#f87171;">${S.hr}</div></div>
-                  <div class="dex-test-summary-stat-card"><div class="dex-test-summary-stat-lbl">BB</div><div class="dex-test-summary-stat-val" style="color:#2dd4bf;">${S.bb}</div></div>
-                  <div class="dex-test-summary-stat-card"><div class="dex-test-summary-stat-lbl">SO (K)</div><div class="dex-test-summary-stat-val" style="color:#ef4444;">${S.so}</div></div>
-                  <div class="dex-test-summary-stat-card"><div class="dex-test-summary-stat-lbl">AVG</div><div class="dex-test-summary-stat-val" style="color:#ffd700;">${avg}</div></div>
-                  <div class="dex-test-summary-stat-card"><div class="dex-test-summary-stat-lbl">OPS</div><div class="dex-test-summary-stat-val" style="color:${gradeColor};">${opsStr}</div></div>
-                </div>
-
-                <!-- Hits breakdown pills -->
-                <div style="display:flex;justify-content:center;gap:10px;flex-wrap:wrap;font-size:9.5px;color:#cbd5e1;background:rgba(0,0,0,0.4);padding:8px 12px;border-radius:8px;">
-                  <span>1B: <strong style="color:#38bdf8;">${S.singles}</strong></span> ·
-                  <span>2B: <strong style="color:#4ade80;">${S.doubles}</strong></span> ·
-                  <span>3B: <strong style="color:#fbbf24;">${S.triples}</strong></span> ·
-                  <span>HR: <strong style="color:#f87171;">${S.hr}</strong></span> ·
-                  <span>BB: <strong style="color:#2dd4bf;">${S.bb}</strong></span> ·
-                  <span>SO: <strong style="color:#ef4444;">${S.so}</strong></span> ·
-                  <span>OUT: <strong style="color:#94a3b8;">${S.out - S.so}</strong></span>
-                </div>
-              </div>
-
-              <!-- Match history list -->
-              <div style="text-align:left;max-height:160px;overflow-y:auto;background:rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:10px;margin-bottom:16px;">
-                <div style="font-family:'Press Start 2P',monospace;font-size:7.5px;color:#94a3b8;margin-bottom:8px;">DUEL LOG (10 AT-BATS)</div>
-                ${testState.history.map(h => `
-                  <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.05);font-size:9px;">
-                    <span style="color:#cbd5e1;">#${h.atBatNum} vs <strong style="color:#fff;">${h.pitcher.name}</strong> (${h.pitcher.team || ''})</span>
-                    <span><span style="color:#64748b;margin-right:6px;">[Roll: ${h.roll}]</span> <span style="font-family:'Press Start 2P',monospace;font-size:8px;font-weight:bold;color:${h.color};">${h.resultType}</span></span>
-                  </div>
-                `).join('')}
-              </div>
-
-              <div style="display:flex;justify-content:center;gap:12px;">
-                <button id="btn-test-again" class="btn" style="padding:12px 22px;background:linear-gradient(135deg,#38bdf8,#0284c7);border:none;border-radius:8px;color:#fff;font-family:'Press Start 2P',monospace;font-size:9px;cursor:pointer;box-shadow:0 0 16px rgba(56,189,248,0.4);">${_t('dex.test_again_btn', '🔄 TEST AGAIN')}</button>
-                <button id="btn-test-finish" class="btn btn-secondary" style="padding:12px 22px;border-radius:8px;font-family:'Press Start 2P',monospace;font-size:9px;cursor:pointer;">${_t('dex.test_finish_btn', '✕ CLOSE')}</button>
-              </div>
-            </div>
-          `;
-
-          overlay.querySelector('#btn-test-modal-close').onclick = () => overlay.remove();
-          overlay.querySelector('#btn-test-finish').onclick = () => overlay.remove();
-          overlay.querySelector('#btn-test-again').onclick = () => {
-            const newShuffled = [...availablePitchers].sort(() => Math.random() - 0.5);
-            testState.pitchers = newShuffled.slice(0, 10);
-            testState.currentIndex = 0;
-            testState.isRolling = false;
-            testState.isResolved = false;
-            testState.lastRoll = null;
-            testState.lastOutcome = null;
-            testState.streak = 0;
-            testState.pitchersKO = 0;
-            testState.currentPitcherHP = 100;
-            testState.history = [];
-            testState.stats = { pa: 0, ab: 0, h: 0, singles: 0, doubles: 0, triples: 0, hr: 0, bb: 0, so: 0, out: 0 };
-            render();
-          };
-          return;
+        let gradeText = 'F', gradeColor = '#ef4444', gradeLabel = '💀 ICE COLD';
+        if (opsNum >= 1.200) {
+          gradeText = 'S'; gradeColor = '#ffd700'; gradeLabel = '⭐ HALL OF FAME HITTER';
+        } else if (opsNum >= 0.900) {
+          gradeText = 'A'; gradeColor = '#38bdf8'; gradeLabel = '🔥 ALL-STAR PERFORMANCE';
+        } else if (opsNum >= 0.750) {
+          gradeText = 'B'; gradeColor = '#4ade80'; gradeLabel = '⚾ SOLID BATTING PROFILE';
+        } else if (opsNum >= 0.600) {
+          gradeText = 'C'; gradeColor = '#94a3b8'; gradeLabel = '📋 AVERAGE PRODUCTION';
+        } else if (opsNum >= 0.400) {
+          gradeText = 'D'; gradeColor = '#fb923c'; gradeLabel = '⚠️ COLD STREAK';
         }
 
-        // Active At-bat
-        const curPitcher = testState.pitchers[testState.currentIndex];
-        const isClutchSituation = (testState.currentIndex % 3 === 2);
-        const simCtx = {
-          inning: Math.floor(testState.currentIndex / 3) + 1,
-          bases: isClutchSituation ? [null, {}, null] : [null, null, null],
-          hasTrait: () => false
-        };
-        const bounds = (typeof window.calcBoundaries === 'function')
-          ? window.calcBoundaries(batter, curPitcher, simCtx)
-          : { bbEnd: 11, soEnd: 26, outEnd: 41, singleEnd: 76, doubleEnd: 86, tripleEnd: 87, pitcherClutchStatus: { active: false } };
-
-        const pClutchStatus = bounds.pitcherClutchStatus || { active: false };
-
-        // Generate authentic cards HTML
-        const batterCardHTML = (typeof window.createCardHTML === 'function')
-          ? window.createCardHTML(batter, false, 'batter')
-          : `<div class="player-card"><div class="card-name">${batter.name}</div></div>`;
-
-        const pitcherCardHTML = (typeof window.createCardHTML === 'function')
-          ? window.createCardHTML(curPitcher, false, 'pitcher')
-          : `<div class="player-card"><div class="card-name">${curPitcher.name}</div></div>`;
-
-        const tensDigit = testState.lastRoll !== null ? Math.floor(testState.lastRoll / 10) % 10 : 0;
-        const unitsDigit = testState.lastRoll !== null ? testState.lastRoll % 10 : 0;
-        const rollDisplayColor = testState.lastOutcome ? testState.lastOutcome.color : '#9ca3af';
-
-        // Base runners state based on last outcome
-        const is1BActive = testState.lastOutcome && (testState.lastOutcome.type === '1B' || testState.lastOutcome.type === 'BB');
-        const is2BActive = testState.lastOutcome && testState.lastOutcome.type === '2B';
-        const is3BActive = testState.lastOutcome && testState.lastOutcome.type === '3B';
-        const isHRActive = testState.lastOutcome && testState.lastOutcome.type === 'HR';
-
         overlay.innerHTML = `
-          <div class="dex-test-arena-box">
-            <!-- Header Bar -->
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; border-bottom:1px solid rgba(0,255,102,0.3); padding-bottom:10px;">
-              <div style="display:flex; align-items:center; gap:10px; font-family:'Press Start 2P',monospace; font-size:10.5px; color:#00ff66;">
-                <span>⚾ ${_t('dex.test_modal_title', 'INTERACTIVE COMBAT')}</span>
-                <span style="color:#ffd700;">VS</span>
-                <span style="color:#fff;">${curPitcher.name.toUpperCase()} & ROTACIÓN</span>
+          <div class="dex-test-arena-box" style="text-align:center; max-width:820px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;border-bottom:1px solid rgba(255,215,0,0.25);padding-bottom:10px;">
+              <div style="font-family:'Press Start 2P',monospace;font-size:11px;color:#ffd700;display:flex;align-items:center;gap:8px;">
+                <i class="fa-solid fa-trophy"></i> ${_t('dex.test_summary_title', 'BATTING PRACTICE REPORT')}
               </div>
-              <div style="display:flex; align-items:center; gap:12px;">
-                <div style="background:#000; border:1.5px solid #ffd700; color:#ffd700; font-family:'Press Start 2P',monospace; font-size:9px; padding:4px 8px; border-radius:4px; box-shadow:0 0 10px rgba(255,215,0,0.3);">
-                  ${testState.currentIndex + 1}
+              <button id="btn-test-modal-close" style="background:none;border:none;color:#9ca3af;font-size:22px;cursor:pointer;">✕</button>
+            </div>
+
+            <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:16px;margin-bottom:16px;">
+              <div style="font-family:'Press Start 2P',monospace;font-size:13px;color:#fff;margin-bottom:4px;">
+                ${batter.name} (${batter.year || '—'})
+              </div>
+              <div style="font-size:10px;color:#94a3b8;margin-bottom:12px;">
+                ${batter.team || '—'} · OVR ${Math.floor(batter.ovr || 50)} · ${batter.pos || 'OF'}
+              </div>
+
+              <div style="display:inline-flex;align-items:center;gap:14px;background:rgba(0,0,0,0.6);border:2px solid ${gradeColor};border-radius:12px;padding:12px 24px;margin-bottom:14px;box-shadow:0 0 25px ${gradeColor}44;">
+                <div style="font-family:'Press Start 2P',monospace;font-size:36px;color:${gradeColor};">${gradeText}</div>
+                <div style="text-align:left;">
+                  <div style="font-family:'Press Start 2P',monospace;font-size:9.5px;color:${gradeColor};">${gradeLabel}</div>
+                  <div style="font-size:10.5px;color:#cbd5e1;margin-top:3px;">OPS: <strong style="color:#fff;font-size:12px;">${opsStr}</strong> · AVG: <strong style="color:#ffd700;">${avg}</strong></div>
                 </div>
-                <button id="btn-test-modal-close" style="background:none; border:none; color:#9ca3af; font-size:22px; cursor:pointer; line-height:1;">✕</button>
+              </div>
+
+              <!-- 8-Stat Grid -->
+              <div class="dex-test-summary-stat-grid">
+                <div class="dex-test-summary-stat-card"><div class="dex-test-summary-stat-lbl">PA</div><div class="dex-test-summary-stat-val" style="color:#38bdf8;">${S.pa}</div></div>
+                <div class="dex-test-summary-stat-card"><div class="dex-test-summary-stat-lbl">AB</div><div class="dex-test-summary-stat-val" style="color:#cbd5e1;">${S.ab}</div></div>
+                <div class="dex-test-summary-stat-card"><div class="dex-test-summary-stat-lbl">HITS</div><div class="dex-test-summary-stat-val" style="color:#4ade80;">${S.h}</div></div>
+                <div class="dex-test-summary-stat-card"><div class="dex-test-summary-stat-lbl">HR</div><div class="dex-test-summary-stat-val" style="color:#f87171;">${S.hr}</div></div>
+                <div class="dex-test-summary-stat-card"><div class="dex-test-summary-stat-lbl">BB</div><div class="dex-test-summary-stat-val" style="color:#2dd4bf;">${S.bb}</div></div>
+                <div class="dex-test-summary-stat-card"><div class="dex-test-summary-stat-lbl">SO (K)</div><div class="dex-test-summary-stat-val" style="color:#ef4444;">${S.so}</div></div>
+                <div class="dex-test-summary-stat-card"><div class="dex-test-summary-stat-lbl">AVG</div><div class="dex-test-summary-stat-val" style="color:#ffd700;">${avg}</div></div>
+                <div class="dex-test-summary-stat-card"><div class="dex-test-summary-stat-lbl">OPS</div><div class="dex-test-summary-stat-val" style="color:${gradeColor};">${opsStr}</div></div>
+              </div>
+
+              <!-- Hits breakdown pills -->
+              <div style="display:flex;justify-content:center;gap:10px;flex-wrap:wrap;font-size:9.5px;color:#cbd5e1;background:rgba(0,0,0,0.4);padding:8px 12px;border-radius:8px;">
+                <span>1B: <strong style="color:#38bdf8;">${S.singles}</strong></span> ·
+                <span>2B: <strong style="color:#4ade80;">${S.doubles}</strong></span> ·
+                <span>3B: <strong style="color:#fbbf24;">${S.triples}</strong></span> ·
+                <span>HR: <strong style="color:#f87171;">${S.hr}</strong></span> ·
+                <span>BB: <strong style="color:#2dd4bf;">${S.bb}</strong></span> ·
+                <span>SO: <strong style="color:#ef4444;">${S.so}</strong></span> ·
+                <span>OUT: <strong style="color:#94a3b8;">${S.out - S.so}</strong></span>
               </div>
             </div>
 
-            <!-- 2-Column Match Arena -->
-            <div class="match-arena">
-              
-              <!-- Left Column: 1v1 Battle Arena -->
-              <div style="display:flex; flex-direction:column; gap:12px; justify-content:center; align-items:center;">
-                
-                <!-- LED Scoreboard -->
-                <div class="scoreboard" style="width:100%; text-align:center; font-family:'Press Start 2P',monospace; font-size:10px; padding:10px 14px; line-height:1.6; background:rgba(0,0,0,0.6); border:1px solid rgba(255,255,255,0.1); border-radius:10px;">
-                  <div class="scoreboard-text-panel" style="width:100%;">
-                    <div id="scoreboard-inning-text" style="color:var(--accent-color,#ffd700); margin-bottom:8px; font-size:9px;">
-                      ${_t('dex.test_modal_title', 'COMBAT ARENA')}
-                    </div>
-                    <div style="display:flex; justify-content:space-around; font-size:8px; margin-bottom:6px;">
-                      <div><span>${_t('match.runs', 'HITS')}:</span> <span id="score-away-r" style="color:#00ff66; font-weight:bold;">${testState.stats.h}</span></div>
-                      <div><span>${_t('match.outs', 'OUTS')}:</span> <span id="score-home-r" style="color:#ef4444; font-weight:bold;">${testState.stats.out}</span></div>
-                    </div>
-                    <div style="display:flex; justify-content:space-around; font-size:8px; border-top:1px dashed rgba(255,255,255,0.1); padding-top:6px;">
-                      <div><span>${_t('match.inning', 'INNING')}:</span> <span id="score-away-h" style="color:#ffd700;">${testState.currentIndex + 1} / 10</span></div>
-                      <div><span>${_t('match.rival_ko', 'OPPONENT K.O.')}:</span> <span id="score-home-h" style="color:#ca8a04;">${testState.pitchersKO} / 10</span></div>
-                    </div>
-                  </div>
-
-                  <!-- Diamond Visual Board -->
-                  <div style="border-top:1px dashed rgba(255,255,255,0.1); padding-top:6px; margin-top:6px; display:flex; justify-content:center; align-items:center;">
-                    <svg viewBox="0 0 100 100" style="width:46px; height:46px;">
-                      <path d="M 50 15 L 85 50 L 50 85 L 15 50 Z" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="2" stroke-dasharray="2,2" />
-                      
-                      <!-- Second Base (Top) -->
-                      <rect id="dex-base-2" x="44" y="9" width="12" height="12" rx="1" transform="rotate(45 50 15)" fill="${(is2BActive || isHRActive) ? '#00ff66' : 'rgba(255,255,255,0.1)'}" stroke="${(is2BActive || isHRActive) ? '#00ff66' : 'rgba(255,255,255,0.3)'}" stroke-width="1.5" style="transition:all 0.3s;" />
-                      
-                      <!-- Third Base (Left) -->
-                      <rect id="dex-base-3" x="9" y="44" width="12" height="12" rx="1" transform="rotate(45 15 50)" fill="${(is3BActive || isHRActive) ? '#00ff66' : 'rgba(255,255,255,0.1)'}" stroke="${(is3BActive || isHRActive) ? '#00ff66' : 'rgba(255,255,255,0.3)'}" stroke-width="1.5" style="transition:all 0.3s;" />
-                      
-                      <!-- First Base (Right) -->
-                      <rect id="dex-base-1" x="79" y="44" width="12" height="12" rx="1" transform="rotate(45 85 50)" fill="${(is1BActive || isHRActive) ? '#00ff66' : 'rgba(255,255,255,0.1)'}" stroke="${(is1BActive || isHRActive) ? '#00ff66' : 'rgba(255,255,255,0.3)'}" stroke-width="1.5" style="transition:all 0.3s;" />
-                      
-                      <!-- Home Plate -->
-                      <polygon points="50,79 55,84 55,89 45,89 45,84" fill="${isHRActive ? '#ffd700' : 'rgba(255,255,255,0.25)'}" stroke="rgba(255,255,255,0.4)" stroke-width="1" />
-                    </svg>
-                  </div>
+            <!-- Match history list -->
+            <div style="text-align:left;max-height:160px;overflow-y:auto;background:rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:10px;margin-bottom:16px;">
+              <div style="font-family:'Press Start 2P',monospace;font-size:7.5px;color:#94a3b8;margin-bottom:8px;">DUEL LOG (10 AT-BATS)</div>
+              ${testState.history.map(h => `
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.05);font-size:9px;">
+                  <span style="color:#cbd5e1;">#${h.atBatNum} vs <strong style="color:#fff;">${h.pitcher.name}</strong> (${h.pitcher.team || ''})</span>
+                  <span><span style="color:#64748b;margin-right:6px;">[Roll: ${h.roll}]</span> <span style="font-family:'Press Start 2P',monospace;font-size:8px;font-weight:bold;color:${h.color};">${h.resultType}</span></span>
                 </div>
-
-                <!-- 1v1 Fight Cards View -->
-                <div class="rpg-fight-deck" style="display:flex; align-items:center; gap:16px; margin:8px 0; justify-content:center; width:100%;">
-                  <!-- Active Batter Card Slot -->
-                  <div class="fight-card-slot">
-                    ${batterCardHTML}
-                  </div>
-
-                  <!-- VS Circle -->
-                  <div class="vs-circle" style="font-family:'Press Start 2P',monospace; font-size:18px; color:var(--accent-color,#ffd700); text-shadow:0 0 10px rgba(255,215,0,0.8);">VS</div>
-
-                  <!-- Pitcher Card Slot -->
-                  <div class="fight-card-slot">
-                    ${pitcherCardHTML}
-                  </div>
-                </div>
-
-                <!-- Active Battle HP bars and controls -->
-                <div class="faceoff-panel" style="width:100%; display:flex; flex-direction:column; gap:8px; padding:10px 14px; background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.1); border-radius:10px;">
-                  <div style="display:flex; justify-content:space-between; width:100%; gap:12px;">
-                    <!-- Batter Info -->
-                    <div style="flex:1;">
-                      <div class="faceoff-name" style="font-size:12px; font-weight:bold; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:#fff;">${batter.name}</div>
-                      <div style="font-family:'Press Start 2P',monospace; font-size:7.5px; color:#00ff66; margin-top:6px; line-height:1.6;">
-                        CON: ${batter.con || 50} | PWR: ${batter.pwr || 50} | EYE: ${batter.eye || 50}<br>
-                        K/AVD: ${batter.k_avd || batter.k_avoid || 50} | SPD: ${batter.spd || 50} | DEF: ${batter.def || 50}<br>
-                        <span style="color:#94a3b8;">POS NATIVA: ${batter.pos || 'OF'}</span>
-                      </div>
-                    </div>
-
-                    <!-- Pitcher Info -->
-                    <div style="flex:1; text-align:right;">
-                      <div class="faceoff-name" style="font-size:12px; font-weight:bold; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:#fff;">${curPitcher.name}</div>
-                      <div class="hp-bar-container" style="height:11px; background:rgba(0,0,0,0.6); border-radius:6px; margin-top:6px; position:relative; overflow:hidden; border:1px solid rgba(255,255,255,0.15);">
-                        <div class="hp-bar-fill" style="width:${testState.currentPitcherHP}%; height:100%; background:linear-gradient(90deg, #ef4444, #f87171); transition:width 0.3s ease;"></div>
-                      </div>
-                      <div style="font-size:9px; text-align:left; margin-top:3px; font-weight:bold; font-family:'Press Start 2P',monospace; color:#ef4444;">${testState.currentPitcherHP}/100 HP</div>
-                      
-                      ${pClutchStatus.active ? `
-                        <div style="margin-top:3px; font-size:7.5px; font-family:'Press Start 2P',monospace; color:#38bdf8; background:rgba(56,189,248,0.15); border:1px solid #38bdf8; border-radius:4px; padding:2px 4px; display:inline-block;">
-                          ⚡ ${pClutchStatus.label || 'PITCHER CLUTCH'}
-                        </div>
-                      ` : ''}
-                    </div>
-                  </div>
-
-                  <!-- 10 Pitcher Rotation Queue Badges -->
-                  <div style="border-top:1px solid rgba(255,255,255,0.08); padding-top:8px; width:100%; text-align:center;">
-                    <div style="display:flex; justify-content:center; gap:6px; font-size:8px; font-family:'Press Start 2P',monospace; flex-wrap:wrap;">
-                      <span style="background:rgba(239,68,68,0.25); color:#ef4444; border:1px solid #ef4444; padding:2px 5px; border-radius:4px; font-size:7px;">${curPitcher.role || 'SP'}</span>
-                      ${testState.pitchers.map((p, idx) => {
-                        const isCurrent = (idx === testState.currentIndex);
-                        const isPast = (idx < testState.currentIndex);
-                        const bg = isCurrent ? '#ffd700' : (isPast ? 'rgba(0,255,102,0.2)' : 'rgba(255,255,255,0.06)');
-                        const textCol = isCurrent ? '#000' : (isPast ? '#00ff66' : '#94a3b8');
-                        const borderCol = isCurrent ? '#ffd700' : (isPast ? '#00ff66' : 'rgba(255,255,255,0.12)');
-                        return `<span style="background:${bg}; color:${textCol}; border:1px solid ${borderCol}; padding:2px 5px; border-radius:3px; font-size:7px;" title="${p.name}">${idx + 1}</span>`;
-                      }).join('')}
-                    </div>
-                  </div>
-                </div>
-
-              </div>
-
-              <!-- Right Column: Dice Panel & Narrative Match Log -->
-              <div style="display:flex; flex-direction:column; gap:12px;">
-                
-                <!-- Dice Battle Panel -->
-                <div id="dice-battle-panel" style="display:flex; flex-direction:column; align-items:center; gap:10px; padding:14px; background:rgba(0,0,0,0.55); border:1px solid rgba(255,255,255,0.1); border-radius:12px;">
-                  
-                  <!-- Vitals Progress -->
-                  <div id="team-vitals" style="width:100%; display:flex; flex-direction:column; gap:5px;">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                      <span style="font-size:10px; color:#9ca3af; font-family:'Press Start 2P',monospace;">🎯 PROGRESS</span>
-                      <span style="font-size:10px; font-weight:bold; color:#10b981; font-family:'Press Start 2P',monospace;">${testState.currentIndex + (testState.isResolved ? 1 : 0)} / 10</span>
-                    </div>
-                    <div style="height:7px; background:rgba(255,255,255,0.08); border-radius:4px; overflow:hidden;">
-                      <div style="height:100%; width:${((testState.currentIndex + (testState.isResolved ? 1 : 0)) / 10) * 100}%; background:linear-gradient(90deg,#10b981,#34d399); transition:width .3s;"></div>
-                    </div>
-                    <div style="display:flex; justify-content:space-between; font-size:9px; color:#9ca3af; margin-top:2px;">
-                      <span>AVG: <strong style="color:#ffd700;">${testState.stats.ab > 0 ? (testState.stats.h / testState.stats.ab).toFixed(3).replace(/^0/, '') : '.000'}</strong></span>
-                      <span style="color:#f59e0b;">🔥 STREAK: ${testState.streak}</span>
-                    </div>
-                  </div>
-
-                  <!-- 3D d100 Dice -->
-                  <div id="dice-d100-panel" style="display:flex; flex-direction:column; align-items:center; gap:6px; margin:4px 0;">
-                    <div id="dice-d100-container" style="display:flex; gap:12px;">
-                      <!-- Tens Die -->
-                      <div class="d100-die" id="dex-die-tens">
-                        <div class="d100-die-cube" id="dex-die-tens-cube">
-                          <div class="d100-die-face face-front" id="dex-die-tens-face-front">${tensDigit}</div>
-                          <div class="d100-die-face face-back">0</div>
-                          <div class="d100-die-face face-right">0</div>
-                          <div class="d100-die-face face-left">0</div>
-                          <div class="d100-die-face face-top">0</div>
-                          <div class="d100-die-face face-bottom">0</div>
-                        </div>
-                      </div>
-                      <!-- Units Die -->
-                      <div class="d100-die" id="dex-die-units">
-                        <div class="d100-die-cube" id="dex-die-units-cube">
-                          <div class="d100-die-face face-front" id="dex-die-units-face-front">${unitsDigit}</div>
-                          <div class="d100-die-face face-back">0</div>
-                          <div class="d100-die-face face-right">0</div>
-                          <div class="d100-die-face face-left">0</div>
-                          <div class="d100-die-face face-top">0</div>
-                          <div class="d100-die-face face-bottom">0</div>
-                        </div>
-                      </div>
-                    </div>
-                    <div id="dex-dice-result-display" style="font-family:'Press Start 2P',monospace; font-size:13px; color:${rollDisplayColor}; letter-spacing:1px; min-height:18px;">
-                      ${testState.lastRoll !== null ? testState.lastRoll : '–'}
-                    </div>
-                  </div>
-
-                  <!-- Lucky Zones Panel -->
-                  <div id="zones-panel-wrap" style="width:100%;">
-                    <details id="zones-panel" open style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:6px 10px;">
-                      <summary id="zones-panel-header" style="font-family:'Press Start 2P',monospace; font-size:8px; color:#cbd5e1; cursor:pointer; margin-bottom:6px;">🎯 ${_t('match.luck_zones', 'Luck Zones')}</summary>
-                      <div id="zones-lines">
-                        <div class="outcome-probabilities-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:6px; font-size:8px;">
-                          <div style="display:flex; flex-direction:column; gap:3px;">
-                            <div class="outcome-row" style="display:flex; justify-content:space-between;">
-                              <span style="color:#3b82f6;">⚾ ${_t('match.bb', 'Walk (BB)')}</span>
-                              <span style="color:#3b82f6; font-weight:bold;">1–${bounds.bbEnd}</span>
-                            </div>
-                            <div class="outcome-row" style="display:flex; justify-content:space-between;">
-                              <span style="color:#ef4444;">💨 ${_t('match.so', 'Strikeout (SO)')}</span>
-                              <span style="color:#ef4444; font-weight:bold;">${bounds.bbEnd + 1}–${bounds.soEnd}</span>
-                            </div>
-                            <div class="outcome-row" style="display:flex; justify-content:space-between;">
-                              <span style="color:#9ca3af;">🤚 ${_t('match.out', 'Out (Fly/GO)')}</span>
-                              <span style="color:#9ca3af; font-weight:bold;">${bounds.soEnd + 1}–${bounds.outEnd}</span>
-                            </div>
-                          </div>
-                          <div style="display:flex; flex-direction:column; gap:3px;">
-                            <div class="outcome-row" style="display:flex; justify-content:space-between;">
-                              <span style="color:#a7f3d0;">✅ ${_t('match.single', 'Single (1B)')}</span>
-                              <span style="color:#a7f3d0; font-weight:bold;">${bounds.outEnd + 1}–${bounds.singleEnd}</span>
-                            </div>
-                            <div class="outcome-row" style="display:flex; justify-content:space-between;">
-                              <span style="color:#10b981;">⚡ ${_t('match.double', 'Double (2B)')}</span>
-                              <span style="color:#10b981; font-weight:bold;">${bounds.singleEnd + 1}–${bounds.doubleEnd}</span>
-                            </div>
-                            <div class="outcome-row" style="display:flex; justify-content:space-between;">
-                              <span style="color:#06b6d4;">🔥 ${_t('match.triple', 'Triple (3B)')}</span>
-                              <span style="color:#06b6d4; font-weight:bold;">${bounds.doubleEnd + 1}–${bounds.tripleEnd}</span>
-                            </div>
-                            <div class="outcome-row" style="display:flex; justify-content:space-between;">
-                              <span style="color:#eab308; font-weight:bold;">🚀 ${_t('match.hr', 'Home Run (HR)')}</span>
-                              <span style="color:#eab308; font-weight:bold;">${bounds.tripleEnd + 1}–100</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </details>
-                  </div>
-
-                  <!-- Action Buttons -->
-                  <div id="dice-action-bar" style="width:100%; display:flex; flex-direction:column; gap:8px; margin-top:4px;">
-                    ${!testState.isResolved ? `
-                      <button id="btn-dex-roll-dice" style="
-                        font-family:'Press Start 2P',monospace;
-                        font-size:11px; padding:12px 20px;
-                        background:linear-gradient(135deg,#7c3aed,#4f46e5);
-                        color:#fff; border:none; border-radius:10px;
-                        cursor:pointer; letter-spacing:1px;
-                        box-shadow:0 0 18px rgba(124,58,237,0.5);
-                        transition:transform .1s,box-shadow .1s;
-                        width:100%;
-                      "><i class="fa-solid fa-dice"></i> ${_t('match.roll_dice', 'ROLL DICE')}</button>
-                      
-                      <button id="btn-dex-fast-auto" class="btn" style="
-                        font-family:'Press Start 2P',monospace;
-                        font-size:9.5px; padding:10px 16px;
-                        background:linear-gradient(135deg,#dc2626,#ef4444);
-                        color:#fff; border:none; border-radius:10px;
-                        cursor:pointer; width:100%;
-                        box-shadow:0 0 14px rgba(220,38,38,0.4);
-                      "><i class="fa-solid fa-forward-step"></i> ${_t('match.simulate_all', 'FAST AUTO-PLAY')}</button>
-                    ` : `
-                      <button id="btn-dex-next-pitcher" style="
-                        font-family:'Press Start 2P',monospace;
-                        font-size:11px; padding:12px 20px;
-                        background:linear-gradient(135deg,#00ff66,#10b981);
-                        color:#000; font-weight:bold; border:none; border-radius:10px;
-                        cursor:pointer; letter-spacing:0.5px;
-                        box-shadow:0 0 18px rgba(0,255,102,0.5);
-                        width:100%;
-                      ">${testState.currentIndex === 9 ? '📊 VIEW FINAL REPORT ➔' : _t('dex.test_next_btn', 'NEXT PITCHER ➔')}</button>
-                    `}
-                  </div>
-
-                </div>
-
-                <!-- Match History Log -->
-                <div class="match-log" style="height:140px; max-height:140px; display:flex; flex-direction:column; flex:none; background:rgba(0,0,0,0.6); border:1px solid rgba(255,255,255,0.1); border-radius:10px; padding:8px 10px; overflow-y:auto;">
-                  <div class="match-log-header" style="font-family:'Press Start 2P',monospace; font-size:7.5px; color:#9ca3af; margin-bottom:6px; border-bottom:1px dashed rgba(255,255,255,0.1); padding-bottom:4px;">
-                    MATCH HISTORY =
-                  </div>
-                  <div id="dex-match-log-lines" style="display:flex; flex-direction:column; gap:4px;">
-                    ${testState.history.length === 0 ? `
-                      <div class="log-line" style="font-size:8.5px; color:#64748b; font-style:italic;">Ready for pitch #1 vs ${curPitcher.name}...</div>
-                    ` : testState.history.map(h => `
-                      <div class="log-line ${['HR','3B','2B','1B'].includes(h.resultType) ? 'run-scored bold' : ''}" style="font-size:8.5px; color:${h.color};">
-                        [#${h.atBatNum} vs ${h.pitcher.name}] <strong>${h.resultType}</strong>: ${h.resultText} (Roll: ${h.roll})
-                      </div>
-                    `).join('')}
-                  </div>
-                </div>
-
-              </div>
-
+              `).join('')}
             </div>
 
+            <div style="display:flex;justify-content:center;gap:12px;">
+              <button id="btn-test-again" class="btn" style="padding:12px 22px;background:linear-gradient(135deg,#38bdf8,#0284c7);border:none;border-radius:8px;color:#fff;font-family:'Press Start 2P',monospace;font-size:9px;cursor:pointer;box-shadow:0 0 16px rgba(56,189,248,0.4);">${_t('dex.test_again_btn', '🔄 TEST AGAIN')}</button>
+              <button id="btn-test-finish" class="btn btn-secondary" style="padding:12px 22px;border-radius:8px;font-family:'Press Start 2P',monospace;font-size:9px;cursor:pointer;">${_t('dex.test_finish_btn', '✕ CLOSE')}</button>
+            </div>
           </div>
         `;
 
-        // Event Listeners
-        const closeBtn = overlay.querySelector('#btn-test-modal-close');
-        if (closeBtn) closeBtn.onclick = () => overlay.remove();
-
-        const rollBtn = overlay.querySelector('#btn-dex-roll-dice');
-        if (rollBtn) {
-          rollBtn.onclick = () => {
-            if (testState.isRolling) return;
-            testState.isRolling = true;
-            if (window.AudioEngine) window.AudioEngine.play('dice_roll');
-
-            const cubeUnits = overlay.querySelector('#dex-die-units-cube');
-            const cubeTens  = overlay.querySelector('#dex-die-tens-cube');
-            const resultEl  = overlay.querySelector('#dex-dice-result-display');
-
-            if (cubeUnits) { cubeUnits.classList.remove('tumbling-units', 'die-settled'); void cubeUnits.offsetWidth; cubeUnits.classList.add('tumbling-units'); }
-            if (cubeTens)  { cubeTens.classList.remove('tumbling-tens', 'die-settled');   void cubeTens.offsetWidth;  cubeTens.classList.add('tumbling-tens'); }
-            if (resultEl)  { resultEl.innerText = '–'; resultEl.style.color = '#9ca3af'; }
-
-            // Random faces spin
-            let tickCount = 0;
-            const spinInterval = setInterval(() => {
-              tickCount++;
-              overlay.querySelectorAll('.d100-die-face:not(.face-front)').forEach(f => {
-                f.innerText = Math.floor(Math.random() * 10);
-              });
-              if (tickCount >= 8) {
-                clearInterval(spinInterval);
-                executeAtBatRoll();
-              }
-            }, 55);
-          };
-        }
-
-        const autoBtn = overlay.querySelector('#btn-dex-fast-auto');
-        if (autoBtn) {
-          autoBtn.onclick = () => {
-            while (testState.currentIndex < 10) {
-              const p = testState.pitchers[testState.currentIndex];
-              const cBounds = (typeof window.calcBoundaries === 'function')
-                ? window.calcBoundaries(batter, p, { inning: 1, bases: [null, null, null], hasTrait: () => false })
-                : { bbEnd: 11, soEnd: 26, outEnd: 41, singleEnd: 76, doubleEnd: 86, tripleEnd: 87 };
-              resolveRollForState(cBounds, p);
-              testState.currentIndex++;
-            }
-            render();
-          };
-        }
-
-        const nextBtn = overlay.querySelector('#btn-dex-next-pitcher');
-        if (nextBtn) {
-          nextBtn.onclick = () => {
-            testState.currentIndex++;
-            testState.isResolved = false;
-            testState.lastRoll = null;
-            testState.lastOutcome = null;
-            testState.currentPitcherHP = 100;
-            render();
-          };
-        }
+        overlay.querySelector('#btn-test-modal-close').onclick = () => overlay.remove();
+        overlay.querySelector('#btn-test-finish').onclick = () => overlay.remove();
+        overlay.querySelector('#btn-test-again').onclick = () => {
+          const newShuffled = [...availablePitchers].sort(() => Math.random() - 0.5);
+          testState.pitchers = newShuffled.slice(0, 10);
+          testState.currentIndex = 0;
+          testState.isRolling = false;
+          testState.lastRoll = null;
+          testState.lastOutcome = null;
+          testState.streak = 0;
+          testState.pitchersKO = 0;
+          testState.history = [];
+          testState.stats = { pa: 0, ab: 0, h: 0, singles: 0, doubles: 0, triples: 0, hr: 0, bb: 0, so: 0, out: 0 };
+          renderArena();
+        };
       };
 
+      // Show Arcade Outcome Popup
       const showTestOutcomePopup = (eventType, details, durationOverride) => {
         const fightDeck = overlay.querySelector('.rpg-fight-deck');
         if (!fightDeck) return;
@@ -2146,11 +1769,415 @@
 
         popup.addEventListener('click', dismissPopup);
 
-        const duration = durationOverride || (eventType === 'HR' ? 1400 : 1100);
+        const duration = durationOverride || (eventType === 'HR' ? 1200 : 1000);
         setTimeout(dismissPopup, duration);
       };
 
-      const resolveRollForState = (bounds, pitcher) => {
+      // Mount the initial match arena
+      const renderArena = () => {
+        const batterCardHTML = (typeof window.createCardHTML === 'function')
+          ? window.createCardHTML(batter, false, 'batter')
+          : `<div class="player-card"><div class="card-name">${batter.name}</div></div>`;
+
+        overlay.innerHTML = `
+          <div class="dex-test-arena-box">
+            <!-- Header Bar -->
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; border-bottom:1px solid rgba(0,255,102,0.3); padding-bottom:10px;">
+              <div style="display:flex; align-items:center; gap:10px; font-family:'Press Start 2P',monospace; font-size:10.5px; color:#00ff66;">
+                <span>⚾ ${_t('dex.test_modal_title', 'INTERACTIVE COMBAT')}</span>
+                <span style="color:#ffd700;">VS</span>
+                <span id="dex-hdr-pitcher-name" style="color:#fff;">ROTACIÓN RIVAL</span>
+              </div>
+              <div style="display:flex; align-items:center; gap:12px;">
+                <div id="dex-hdr-atbat-badge" style="background:#000; border:1.5px solid #ffd700; color:#ffd700; font-family:'Press Start 2P',monospace; font-size:9px; padding:4px 8px; border-radius:4px; box-shadow:0 0 10px rgba(255,215,0,0.3);">
+                  1
+                </div>
+                <button id="btn-test-modal-close" style="background:none; border:none; color:#9ca3af; font-size:22px; cursor:pointer; line-height:1;">✕</button>
+              </div>
+            </div>
+
+            <!-- 2-Column Match Arena -->
+            <div class="match-arena">
+              
+              <!-- Left Column: 1v1 Battle Arena -->
+              <div style="display:flex; flex-direction:column; gap:12px; justify-content:center; align-items:center;">
+                
+                <!-- LED Scoreboard -->
+                <div class="scoreboard" style="width:100%; text-align:center; font-family:'Press Start 2P',monospace; font-size:10px; padding:10px 14px; line-height:1.6; background:rgba(0,0,0,0.6); border:1px solid rgba(255,255,255,0.1); border-radius:10px;">
+                  <div class="scoreboard-text-panel" style="width:100%;">
+                    <div id="scoreboard-inning-text" style="color:var(--accent-color,#ffd700); margin-bottom:8px; font-size:9px;">
+                      ${_t('dex.test_modal_title', 'COMBAT ARENA')}
+                    </div>
+                    <div style="display:flex; justify-content:space-around; font-size:8px; margin-bottom:6px;">
+                      <div><span>${_t('match.runs', 'HITS')}:</span> <span id="dex-scoreboard-hits" style="color:#00ff66; font-weight:bold;">0</span></div>
+                      <div><span>${_t('match.outs', 'OUTS')}:</span> <span id="dex-scoreboard-outs" style="color:#ef4444; font-weight:bold;">0</span></div>
+                    </div>
+                    <div style="display:flex; justify-content:space-around; font-size:8px; border-top:1px dashed rgba(255,255,255,0.1); padding-top:6px;">
+                      <div><span>${_t('match.inning', 'INNING')}:</span> <span id="dex-scoreboard-turn" style="color:#ffd700;">1 / 10</span></div>
+                      <div><span>${_t('match.rival_ko', 'OPPONENT K.O.')}:</span> <span id="dex-scoreboard-ko" style="color:#ca8a04;">0 / 10</span></div>
+                    </div>
+                  </div>
+
+                  <!-- Diamond Visual Board -->
+                  <div style="border-top:1px dashed rgba(255,255,255,0.1); padding-top:6px; margin-top:6px; display:flex; justify-content:center; align-items:center;">
+                    <svg viewBox="0 0 100 100" style="width:46px; height:46px;">
+                      <path d="M 50 15 L 85 50 L 50 85 L 15 50 Z" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="2" stroke-dasharray="2,2" />
+                      
+                      <!-- Second Base (Top) -->
+                      <rect id="dex-base-2" x="44" y="9" width="12" height="12" rx="1" transform="rotate(45 50 15)" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.3)" stroke-width="1.5" style="transition:all 0.3s;" />
+                      
+                      <!-- Third Base (Left) -->
+                      <rect id="dex-base-3" x="9" y="44" width="12" height="12" rx="1" transform="rotate(45 15 50)" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.3)" stroke-width="1.5" style="transition:all 0.3s;" />
+                      
+                      <!-- First Base (Right) -->
+                      <rect id="dex-base-1" x="79" y="44" width="12" height="12" rx="1" transform="rotate(45 85 50)" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.3)" stroke-width="1.5" style="transition:all 0.3s;" />
+                      
+                      <!-- Home Plate -->
+                      <polygon id="dex-base-home" points="50,79 55,84 55,89 45,89 45,84" fill="rgba(255,255,255,0.25)" stroke="rgba(255,255,255,0.4)" stroke-width="1" />
+                    </svg>
+                  </div>
+                </div>
+
+                <!-- 1v1 Fight Cards View -->
+                <div class="rpg-fight-deck" style="display:flex; align-items:center; gap:16px; margin:8px 0; justify-content:center; width:100%; position:relative;">
+                  <!-- Active Batter Card Slot -->
+                  <div class="fight-card-slot">
+                    ${batterCardHTML}
+                  </div>
+
+                  <!-- VS Circle -->
+                  <div class="vs-circle" style="font-family:'Press Start 2P',monospace; font-size:18px; color:var(--accent-color,#ffd700); text-shadow:0 0 10px rgba(255,215,0,0.8);">VS</div>
+
+                  <!-- Pitcher Card Slot (dynamically updated) -->
+                  <div class="fight-card-slot" id="dex-pitcher-card-slot">
+                    <!-- Updated via updatePitcherCardDOM -->
+                  </div>
+                </div>
+
+                <!-- Active Battle HP bars and controls -->
+                <div class="faceoff-panel" style="width:100%; display:flex; flex-direction:column; gap:8px; padding:10px 14px; background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.1); border-radius:10px;">
+                  <div style="display:flex; justify-content:space-between; width:100%; gap:12px;">
+                    <!-- Batter Info -->
+                    <div style="flex:1;">
+                      <div class="faceoff-name" style="font-size:12px; font-weight:bold; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:#fff;">${batter.name}</div>
+                      <div style="font-family:'Press Start 2P',monospace; font-size:7.5px; color:#00ff66; margin-top:6px; line-height:1.6;">
+                        CON: ${batter.con || 50} | PWR: ${batter.pwr || 50} | EYE: ${batter.eye || 50}<br>
+                        K/AVD: ${batter.k_avd || batter.k_avoid || 50} | SPD: ${batter.spd || 50} | DEF: ${batter.def || 50}<br>
+                        <span style="color:#94a3b8;">POS NATIVA: ${batter.pos || 'OF'}</span>
+                      </div>
+                    </div>
+
+                    <!-- Pitcher Info -->
+                    <div style="flex:1; text-align:right;">
+                      <div class="faceoff-name" id="dex-pitcher-name-display" style="font-size:12px; font-weight:bold; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:#fff;">-</div>
+                      <div class="hp-bar-container" style="height:11px; background:rgba(0,0,0,0.6); border-radius:6px; margin-top:6px; position:relative; overflow:hidden; border:1px solid rgba(255,255,255,0.15);">
+                        <div class="hp-bar-fill" id="dex-pitcher-hp-fill" style="width:100%; height:100%; background:linear-gradient(90deg, #ef4444, #f87171); transition:width 0.3s ease;"></div>
+                      </div>
+                      <div id="dex-pitcher-hp-text" style="font-size:9px; text-align:left; margin-top:3px; font-weight:bold; font-family:'Press Start 2P',monospace; color:#ef4444;">100/100 HP</div>
+                      
+                      <div id="dex-pitcher-clutch-badge-wrap"></div>
+                    </div>
+                  </div>
+
+                  <!-- 10 Pitcher Rotation Queue Badges -->
+                  <div style="border-top:1px solid rgba(255,255,255,0.08); padding-top:8px; width:100%; text-align:center;">
+                    <div id="dex-rotation-queue" style="display:flex; justify-content:center; gap:6px; font-size:8px; font-family:'Press Start 2P',monospace; flex-wrap:wrap;">
+                      <!-- Updated via JS -->
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- Right Column: Dice Panel & Narrative Match Log -->
+              <div style="display:flex; flex-direction:column; gap:12px;">
+                
+                <!-- Dice Battle Panel -->
+                <div id="dice-battle-panel" style="display:flex; flex-direction:column; align-items:center; gap:10px; padding:14px; background:rgba(0,0,0,0.55); border:1px solid rgba(255,255,255,0.1); border-radius:12px;">
+                  
+                  <!-- Vitals Progress -->
+                  <div id="team-vitals" style="width:100%; display:flex; flex-direction:column; gap:5px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                      <span style="font-size:10px; color:#9ca3af; font-family:'Press Start 2P',monospace;">🎯 PROGRESS</span>
+                      <span id="dex-vitals-progress-text" style="font-size:10px; font-weight:bold; color:#10b981; font-family:'Press Start 2P',monospace;">1 / 10</span>
+                    </div>
+                    <div style="height:7px; background:rgba(255,255,255,0.08); border-radius:4px; overflow:hidden;">
+                      <div id="dex-vitals-progress-bar" style="height:100%; width:0%; background:linear-gradient(90deg,#10b981,#34d399); transition:width .3s;"></div>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; font-size:9px; color:#9ca3af; margin-top:2px;">
+                      <span>AVG: <strong id="dex-vitals-avg" style="color:#ffd700;">.000</strong></span>
+                      <span style="color:#f59e0b;">🔥 STREAK: <strong id="dex-vitals-streak" style="color:#f59e0b;">0</strong></span>
+                    </div>
+                  </div>
+
+                  <!-- 3D d100 Dice -->
+                  <div id="dice-d100-panel" style="display:flex; flex-direction:column; align-items:center; gap:6px; margin:4px 0;">
+                    <div id="dice-d100-container" style="display:flex; gap:12px;">
+                      <!-- Tens Die -->
+                      <div class="d100-die" id="dex-die-tens">
+                        <div class="d100-die-cube" id="dex-die-tens-cube">
+                          <div class="d100-die-face face-front" id="dex-die-tens-face-front">0</div>
+                          <div class="d100-die-face face-back">0</div>
+                          <div class="d100-die-face face-right">0</div>
+                          <div class="d100-die-face face-left">0</div>
+                          <div class="d100-die-face face-top">0</div>
+                          <div class="d100-die-face face-bottom">0</div>
+                        </div>
+                      </div>
+                      <!-- Units Die -->
+                      <div class="d100-die" id="dex-die-units">
+                        <div class="d100-die-cube" id="dex-die-units-cube">
+                          <div class="d100-die-face face-front" id="dex-die-units-face-front">0</div>
+                          <div class="d100-die-face face-back">0</div>
+                          <div class="d100-die-face face-right">0</div>
+                          <div class="d100-die-face face-left">0</div>
+                          <div class="d100-die-face face-top">0</div>
+                          <div class="d100-die-face face-bottom">0</div>
+                        </div>
+                      </div>
+                    </div>
+                    <div id="dex-dice-result-display" style="font-family:'Press Start 2P',monospace; font-size:13px; color:#9ca3af; letter-spacing:1px; min-height:18px;">
+                      –
+                    </div>
+                  </div>
+
+                  <!-- Lucky Zones Panel -->
+                  <div id="zones-panel-wrap" style="width:100%;">
+                    <details id="zones-panel" open style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:6px 10px;">
+                      <summary id="zones-panel-header" style="font-family:'Press Start 2P',monospace; font-size:8px; color:#cbd5e1; cursor:pointer; margin-bottom:6px;">🎯 ${_t('match.luck_zones', 'Luck Zones')}</summary>
+                      <div id="dex-zones-lines">
+                        <!-- Rendered dynamically via updatePitcherCardDOM -->
+                      </div>
+                    </details>
+                  </div>
+
+                  <!-- Action Buttons -->
+                  <div id="dice-action-bar" style="width:100%; display:flex; flex-direction:column; gap:8px; margin-top:4px;">
+                    <button id="btn-dex-roll-dice" style="
+                      font-family:'Press Start 2P',monospace;
+                      font-size:11px; padding:12px 20px;
+                      background:linear-gradient(135deg,#7c3aed,#4f46e5);
+                      color:#fff; border:none; border-radius:10px;
+                      cursor:pointer; letter-spacing:1px;
+                      box-shadow:0 0 18px rgba(124,58,237,0.5);
+                      transition:transform .1s,box-shadow .1s;
+                      width:100%;
+                    "><i class="fa-solid fa-dice"></i> ${_t('match.roll_dice', 'ROLL DICE')}</button>
+                    
+                    <button id="btn-dex-fast-auto" class="btn" style="
+                      font-family:'Press Start 2P',monospace;
+                      font-size:9.5px; padding:10px 16px;
+                      background:linear-gradient(135deg,#dc2626,#ef4444);
+                      color:#fff; border:none; border-radius:10px;
+                      cursor:pointer; width:100%;
+                      box-shadow:0 0 14px rgba(220,38,38,0.4);
+                    "><i class="fa-solid fa-forward-step"></i> ${_t('match.simulate_all', 'FAST AUTO-PLAY')}</button>
+                  </div>
+
+                </div>
+
+                <!-- Match History Log -->
+                <div class="match-log" style="height:140px; max-height:140px; display:flex; flex-direction:column; flex:none; background:rgba(0,0,0,0.6); border:1px solid rgba(255,255,255,0.1); border-radius:10px; padding:8px 10px; overflow-y:auto;">
+                  <div class="match-log-header" style="font-family:'Press Start 2P',monospace; font-size:7.5px; color:#9ca3af; margin-bottom:6px; border-bottom:1px dashed rgba(255,255,255,0.1); padding-bottom:4px;">
+                    MATCH HISTORY =
+                  </div>
+                  <div id="dex-match-log-lines" style="display:flex; flex-direction:column; gap:4px;">
+                    <div class="log-line" style="font-size:8.5px; color:#64748b; font-style:italic;">Ready for pitch #1...</div>
+                  </div>
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+        `;
+
+        // Close event
+        const closeBtn = overlay.querySelector('#btn-test-modal-close');
+        if (closeBtn) closeBtn.onclick = () => overlay.remove();
+
+        // Roll Dice handler
+        const rollBtn = overlay.querySelector('#btn-dex-roll-dice');
+        if (rollBtn) {
+          rollBtn.onclick = () => handleDiceRoll();
+        }
+
+        // Fast Auto-play handler
+        const autoBtn = overlay.querySelector('#btn-dex-fast-auto');
+        if (autoBtn) {
+          autoBtn.onclick = () => {
+            while (testState.currentIndex < 10) {
+              const p = testState.pitchers[testState.currentIndex];
+              const cBounds = (typeof window.calcBoundaries === 'function')
+                ? window.calcBoundaries(batter, p, { inning: 1, bases: [null, null, null], hasTrait: () => false })
+                : { bbEnd: 11, soEnd: 26, outEnd: 41, singleEnd: 76, doubleEnd: 86, tripleEnd: 87 };
+              resolveRoll(cBounds, p);
+              testState.currentIndex++;
+            }
+            renderSummary();
+          };
+        }
+
+        // Initialize first pitcher
+        updatePitcherCardDOM();
+      };
+
+      // Update Pitcher and HUD for the active at-bat
+      const updatePitcherCardDOM = () => {
+        if (testState.currentIndex >= 10) {
+          renderSummary();
+          return;
+        }
+
+        const curPitcher = testState.pitchers[testState.currentIndex];
+        const isClutchSituation = (testState.currentIndex % 3 === 2);
+        const simCtx = {
+          inning: Math.floor(testState.currentIndex / 3) + 1,
+          bases: isClutchSituation ? [null, {}, null] : [null, null, null],
+          hasTrait: () => false
+        };
+        const bounds = (typeof window.calcBoundaries === 'function')
+          ? window.calcBoundaries(batter, curPitcher, simCtx)
+          : { bbEnd: 11, soEnd: 26, outEnd: 41, singleEnd: 76, doubleEnd: 86, tripleEnd: 87, pitcherClutchStatus: { active: false } };
+
+        const pClutchStatus = bounds.pitcherClutchStatus || { active: false };
+
+        // Header updates
+        const hdrPitcherName = overlay.querySelector('#dex-hdr-pitcher-name');
+        if (hdrPitcherName) hdrPitcherName.innerText = `${curPitcher.name.toUpperCase()} & ROTACIÓN`;
+
+        const hdrBadge = overlay.querySelector('#dex-hdr-atbat-badge');
+        if (hdrBadge) hdrBadge.innerText = `${testState.currentIndex + 1}`;
+
+        // Pitcher Card Slot with deal-in animation
+        const pitcherSlot = overlay.querySelector('#dex-pitcher-card-slot');
+        if (pitcherSlot) {
+          pitcherSlot.innerHTML = (typeof window.createCardHTML === 'function')
+            ? window.createCardHTML(curPitcher, false, 'pitcher')
+            : `<div class="player-card"><div class="card-name">${curPitcher.name}</div></div>`;
+          
+          pitcherSlot.classList.remove('card-deal-in');
+          void pitcherSlot.offsetWidth;
+          pitcherSlot.classList.add('card-deal-in');
+        }
+
+        // Faceoff Pitcher Info
+        const pNameDisp = overlay.querySelector('#dex-pitcher-name-display');
+        if (pNameDisp) pNameDisp.innerText = curPitcher.name;
+
+        const pHPFill = overlay.querySelector('#dex-pitcher-hp-fill');
+        if (pHPFill) pHPFill.style.width = '100%';
+
+        const pHPText = overlay.querySelector('#dex-pitcher-hp-text');
+        if (pHPText) pHPText.innerText = '100/100 HP';
+
+        const clutchWrap = overlay.querySelector('#dex-pitcher-clutch-badge-wrap');
+        if (clutchWrap) {
+          clutchWrap.innerHTML = pClutchStatus.active ? `
+            <div style="margin-top:3px; font-size:7.5px; font-family:'Press Start 2P',monospace; color:#38bdf8; background:rgba(56,189,248,0.15); border:1px solid #38bdf8; border-radius:4px; padding:2px 4px; display:inline-block;">
+              ⚡ ${pClutchStatus.label || 'PITCHER CLUTCH'}
+            </div>
+          ` : '';
+        }
+
+        // Rotation Queue Badges
+        const rotQueue = overlay.querySelector('#dex-rotation-queue');
+        if (rotQueue) {
+          rotQueue.innerHTML = `
+            <span style="background:rgba(239,68,68,0.25); color:#ef4444; border:1px solid #ef4444; padding:2px 5px; border-radius:4px; font-size:7px;">${curPitcher.role || 'SP'}</span>
+            ${testState.pitchers.map((p, idx) => {
+              const isCurrent = (idx === testState.currentIndex);
+              const isPast = (idx < testState.currentIndex);
+              const bg = isCurrent ? '#ffd700' : (isPast ? 'rgba(0,255,102,0.2)' : 'rgba(255,255,255,0.06)');
+              const textCol = isCurrent ? '#000' : (isPast ? '#00ff66' : '#94a3b8');
+              const borderCol = isCurrent ? '#ffd700' : (isPast ? '#00ff66' : 'rgba(255,255,255,0.12)');
+              return `<span style="background:${bg}; color:${textCol}; border:1px solid ${borderCol}; padding:2px 5px; border-radius:3px; font-size:7px;" title="${p.name}">${idx + 1}</span>`;
+            }).join('')}
+          `;
+        }
+
+        // Scoreboard updates
+        const turnDisp = overlay.querySelector('#dex-scoreboard-turn');
+        if (turnDisp) turnDisp.innerText = `${testState.currentIndex + 1} / 10`;
+
+        const hitsDisp = overlay.querySelector('#dex-scoreboard-hits');
+        if (hitsDisp) hitsDisp.innerText = `${testState.stats.h}`;
+
+        const outsDisp = overlay.querySelector('#dex-scoreboard-outs');
+        if (outsDisp) outsDisp.innerText = `${testState.stats.out}`;
+
+        const koDisp = overlay.querySelector('#dex-scoreboard-ko');
+        if (koDisp) koDisp.innerText = `${testState.pitchersKO} / 10`;
+
+        // Vitals updates
+        const progText = overlay.querySelector('#dex-vitals-progress-text');
+        if (progText) progText.innerText = `${testState.currentIndex + 1} / 10`;
+
+        const progBar = overlay.querySelector('#dex-vitals-progress-bar');
+        if (progBar) progBar.style.width = `${((testState.currentIndex) / 10) * 100}%`;
+
+        const avgDisp = overlay.querySelector('#dex-vitals-avg');
+        if (avgDisp) avgDisp.innerText = testState.stats.ab > 0 ? (testState.stats.h / testState.stats.ab).toFixed(3).replace(/^0/, '') : '.000';
+
+        const streakDisp = overlay.querySelector('#dex-vitals-streak');
+        if (streakDisp) streakDisp.innerText = `${testState.streak}`;
+
+        // Luck Zones updates
+        const zonesLines = overlay.querySelector('#dex-zones-lines');
+        if (zonesLines) {
+          zonesLines.innerHTML = `
+            <div class="outcome-probabilities-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:6px; font-size:8px;">
+              <div style="display:flex; flex-direction:column; gap:3px;">
+                <div class="outcome-row" style="display:flex; justify-content:space-between;">
+                  <span style="color:#3b82f6;">⚾ ${_t('match.bb', 'Walk (BB)')}</span>
+                  <span style="color:#3b82f6; font-weight:bold;">1–${bounds.bbEnd}</span>
+                </div>
+                <div class="outcome-row" style="display:flex; justify-content:space-between;">
+                  <span style="color:#ef4444;">💨 ${_t('match.so', 'Strikeout (SO)')}</span>
+                  <span style="color:#ef4444; font-weight:bold;">${bounds.bbEnd + 1}–${bounds.soEnd}</span>
+                </div>
+                <div class="outcome-row" style="display:flex; justify-content:space-between;">
+                  <span style="color:#9ca3af;">🤚 ${_t('match.out', 'Out (Fly/GO)')}</span>
+                  <span style="color:#9ca3af; font-weight:bold;">${bounds.soEnd + 1}–${bounds.outEnd}</span>
+                </div>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:3px;">
+                <div class="outcome-row" style="display:flex; justify-content:space-between;">
+                  <span style="color:#a7f3d0;">✅ ${_t('match.single', 'Single (1B)')}</span>
+                  <span style="color:#a7f3d0; font-weight:bold;">${bounds.outEnd + 1}–${bounds.singleEnd}</span>
+                </div>
+                <div class="outcome-row" style="display:flex; justify-content:space-between;">
+                  <span style="color:#10b981;">⚡ ${_t('match.double', 'Double (2B)')}</span>
+                  <span style="color:#10b981; font-weight:bold;">${bounds.singleEnd + 1}–${bounds.doubleEnd}</span>
+                </div>
+                <div class="outcome-row" style="display:flex; justify-content:space-between;">
+                  <span style="color:#06b6d4;">🔥 ${_t('match.triple', 'Triple (3B)')}</span>
+                  <span style="color:#06b6d4; font-weight:bold;">${bounds.doubleEnd + 1}–${bounds.tripleEnd}</span>
+                </div>
+                <div class="outcome-row" style="display:flex; justify-content:space-between;">
+                  <span style="color:#eab308; font-weight:bold;">🚀 ${_t('match.hr', 'Home Run (HR)')}</span>
+                  <span style="color:#eab308; font-weight:bold;">${bounds.tripleEnd + 1}–100</span>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+
+        // Reset diamond base glows
+        ['dex-base-1', 'dex-base-2', 'dex-base-3'].forEach(id => {
+          const el = overlay.querySelector('#' + id);
+          if (el) {
+            el.setAttribute('fill', 'rgba(255,255,255,0.1)');
+            el.setAttribute('stroke', 'rgba(255,255,255,0.3)');
+          }
+        });
+        const homeEl = overlay.querySelector('#dex-base-home');
+        if (homeEl) homeEl.setAttribute('fill', 'rgba(255,255,255,0.25)');
+      };
+
+      // Resolve outcome computation
+      const resolveRoll = (bounds, pitcher) => {
         const roll = Math.floor(Math.random() * 100) + 1;
         let rType = 'OUT', rText = 'Out (Groundout/Flyout)', rColor = '#9ca3af', dmg = 0;
         const S = testState.stats;
@@ -2207,13 +2234,13 @@
           testState.streak++;
         }
 
-        testState.currentPitcherHP = Math.max(0, 100 - dmg);
-        if (testState.currentPitcherHP === 0 || dmg >= 50) {
+        const remainingHP = Math.max(0, 100 - dmg);
+        if (remainingHP === 0 || dmg >= 50) {
           testState.pitchersKO++;
         }
 
         testState.lastRoll = roll;
-        testState.lastOutcome = { type: rType, text: rText, color: rColor };
+        testState.lastOutcome = { type: rType, text: rText, color: rColor, dmg, remainingHP };
         testState.history.push({
           atBatNum: testState.currentIndex + 1,
           pitcher,
@@ -2223,22 +2250,19 @@
           color: rColor
         });
 
-        if (window.AudioManager) {
-          if (rType === 'HR') window.AudioManager.play('hr');
-          else if (['1B', '2B', '3B'].includes(rType)) window.AudioManager.play('hit');
-          else if (rType === 'SO') window.AudioManager.play('so');
-          else if (rType === 'BB') window.AudioManager.play('bb');
-          else window.AudioManager.play('out');
-        } else if (window.AudioEngine) {
-          if (rType === 'HR') window.AudioEngine.play('homerun');
-          else if (['1B', '2B', '3B'].includes(rType)) window.AudioEngine.play('hit');
-          else if (rType === 'SO') window.AudioEngine.play('strikeout');
-          else if (rType === 'BB') window.AudioEngine.play('walk');
-          else window.AudioEngine.play('out');
-        }
+        return { roll, rType, rText, rColor, dmg, remainingHP };
       };
 
-      const executeAtBatRoll = () => {
+      // Handle Dice Roll with Authentic Timing & Auto-Pitcher Transition
+      const handleDiceRoll = () => {
+        if (testState.isRolling || testState.currentIndex >= 10) return;
+        testState.isRolling = true;
+
+        const rollBtn = overlay.querySelector('#btn-dex-roll-dice');
+        const autoBtn = overlay.querySelector('#btn-dex-fast-auto');
+        if (rollBtn) rollBtn.disabled = true;
+        if (autoBtn) autoBtn.disabled = true;
+
         const curPitcher = testState.pitchers[testState.currentIndex];
         const isClutchSituation = (testState.currentIndex % 3 === 2);
         const simCtx = {
@@ -2250,17 +2274,161 @@
           ? window.calcBoundaries(batter, curPitcher, simCtx)
           : { bbEnd: 11, soEnd: 26, outEnd: 41, singleEnd: 76, doubleEnd: 86, tripleEnd: 87 };
 
-        resolveRollForState(bounds, curPitcher);
-        testState.isResolved = true;
-        testState.isRolling = false;
-        render();
+        const outcome = resolveRoll(bounds, curPitcher);
 
-        if (testState.lastOutcome) {
-          showTestOutcomePopup(testState.lastOutcome.type, testState.lastOutcome.text);
+        const tensDigit = Math.floor(outcome.roll / 10) % 10;
+        const unitsDigit = outcome.roll % 10;
+
+        const cubeUnits = overlay.querySelector('#dex-die-units-cube');
+        const cubeTens  = overlay.querySelector('#dex-die-tens-cube');
+        const faceUnits = overlay.querySelector('#dex-die-units-face-front');
+        const faceTens  = overlay.querySelector('#dex-die-tens-face-front');
+        const resultEl  = overlay.querySelector('#dex-dice-result-display');
+
+        // Mid-spin faces
+        overlay.querySelectorAll('.d100-die-face:not(.face-front)').forEach(f => {
+          f.innerText = Math.floor(Math.random() * 10);
+        });
+
+        if (faceTens)  faceTens.innerText  = tensDigit;
+        if (faceUnits) faceUnits.innerText = unitsDigit;
+
+        if (cubeUnits) {
+          cubeUnits.classList.remove('tumbling-units', 'die-settled');
+          void cubeUnits.offsetWidth;
+          cubeUnits.classList.add('tumbling-units');
         }
+        if (cubeTens) {
+          cubeTens.classList.remove('tumbling-tens', 'die-settled');
+          void cubeTens.offsetWidth;
+          cubeTens.classList.add('tumbling-tens');
+        }
+
+        if (resultEl) {
+          resultEl.innerText = '–';
+          resultEl.style.color = '#9ca3af';
+        }
+
+        if (window.AudioManager) window.AudioManager.play('menu_click');
+
+        // Units die settles at 550ms
+        setTimeout(() => {
+          if (cubeUnits) cubeUnits.classList.add('die-settled');
+          if (window.AudioManager) window.AudioManager.play('menu_click');
+        }, 550);
+
+        // Tens die settles at 850ms, outcome reveals & popup triggers
+        setTimeout(() => {
+          if (cubeTens) cubeTens.classList.add('die-settled');
+          if (window.AudioManager) window.AudioManager.play('menu_click');
+
+          if (resultEl) {
+            resultEl.innerText = outcome.roll;
+            resultEl.style.color = outcome.rColor;
+          }
+
+          // Animate Pitcher HP Drop
+          const pHPFill = overlay.querySelector('#dex-pitcher-hp-fill');
+          if (pHPFill) pHPFill.style.width = `${outcome.remainingHP}%`;
+
+          const pHPText = overlay.querySelector('#dex-pitcher-hp-text');
+          if (pHPText) pHPText.innerText = `${outcome.remainingHP}/100 HP`;
+
+          // Light up base paths on diamond
+          const is1B = (outcome.rType === '1B' || outcome.rType === 'BB');
+          const is2B = outcome.rType === '2B';
+          const is3B = outcome.rType === '3B';
+          const isHR = outcome.rType === 'HR';
+
+          const b1 = overlay.querySelector('#dex-base-1');
+          const b2 = overlay.querySelector('#dex-base-2');
+          const b3 = overlay.querySelector('#dex-base-3');
+          const bHome = overlay.querySelector('#dex-base-home');
+
+          if (b1) {
+            b1.setAttribute('fill', (is1B || isHR) ? '#00ff66' : 'rgba(255,255,255,0.1)');
+            b1.setAttribute('stroke', (is1B || isHR) ? '#00ff66' : 'rgba(255,255,255,0.3)');
+          }
+          if (b2) {
+            b2.setAttribute('fill', (is2B || isHR) ? '#00ff66' : 'rgba(255,255,255,0.1)');
+            b2.setAttribute('stroke', (is2B || isHR) ? '#00ff66' : 'rgba(255,255,255,0.3)');
+          }
+          if (b3) {
+            b3.setAttribute('fill', (is3B || isHR) ? '#00ff66' : 'rgba(255,255,255,0.1)');
+            b3.setAttribute('stroke', (is3B || isHR) ? '#00ff66' : 'rgba(255,255,255,0.3)');
+          }
+          if (bHome) {
+            bHome.setAttribute('fill', isHR ? '#ffd700' : 'rgba(255,255,255,0.25)');
+          }
+
+          // Append to Match History log
+          const logLines = overlay.querySelector('#dex-match-log-lines');
+          if (logLines) {
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-line ${['HR','3B','2B','1B'].includes(outcome.rType) ? 'run-scored bold' : ''}`;
+            logEntry.style.fontSize = '8.5px';
+            logEntry.style.color = outcome.rColor;
+            logEntry.innerHTML = `[#${testState.currentIndex + 1} vs ${curPitcher.name}] <strong>${outcome.rType}</strong>: ${outcome.rText} (Roll: ${outcome.roll})`;
+            logLines.appendChild(logEntry);
+            logLines.parentElement.scrollTop = logLines.parentElement.scrollHeight;
+          }
+
+          // Scoreboard live counters
+          const hitsDisp = overlay.querySelector('#dex-scoreboard-hits');
+          if (hitsDisp) hitsDisp.innerText = `${testState.stats.h}`;
+
+          const outsDisp = overlay.querySelector('#dex-scoreboard-outs');
+          if (outsDisp) outsDisp.innerText = `${testState.stats.out}`;
+
+          const koDisp = overlay.querySelector('#dex-scoreboard-ko');
+          if (koDisp) koDisp.innerText = `${testState.pitchersKO} / 10`;
+
+          const avgDisp = overlay.querySelector('#dex-vitals-avg');
+          if (avgDisp) avgDisp.innerText = testState.stats.ab > 0 ? (testState.stats.h / testState.stats.ab).toFixed(3).replace(/^0/, '') : '.000';
+
+          const streakDisp = overlay.querySelector('#dex-vitals-streak');
+          if (streakDisp) streakDisp.innerText = `${testState.streak}`;
+
+          const progBar = overlay.querySelector('#dex-vitals-progress-bar');
+          if (progBar) progBar.style.width = `${((testState.currentIndex + 1) / 10) * 100}%`;
+
+          // Sound effects
+          if (window.AudioManager) {
+            if (outcome.rType === 'HR') window.AudioManager.play('hr');
+            else if (['1B', '2B', '3B'].includes(outcome.rType)) window.AudioManager.play('hit');
+            else if (outcome.rType === 'SO') window.AudioManager.play('so');
+            else if (outcome.rType === 'BB') window.AudioManager.play('bb');
+            else window.AudioManager.play('out');
+          } else if (window.AudioEngine) {
+            if (outcome.rType === 'HR') window.AudioEngine.play('homerun');
+            else if (['1B', '2B', '3B'].includes(outcome.rType)) window.AudioEngine.play('hit');
+            else if (outcome.rType === 'SO') window.AudioEngine.play('strikeout');
+            else if (outcome.rType === 'BB') window.AudioEngine.play('walk');
+            else window.AudioEngine.play('out');
+          }
+
+          // Popup displays AFTER dice have stopped
+          const popupDuration = outcome.rType === 'HR' ? 1200 : 1000;
+          showTestOutcomePopup(outcome.rType, outcome.rText, popupDuration);
+
+          // Once popup concludes, automatically advance to next pitcher or summary report
+          setTimeout(() => {
+            if (testState.currentIndex < 9) {
+              testState.currentIndex++;
+              updatePitcherCardDOM();
+              testState.isRolling = false;
+              if (rollBtn) rollBtn.disabled = false;
+              if (autoBtn) autoBtn.disabled = false;
+            } else {
+              testState.currentIndex = 10;
+              renderSummary();
+            }
+          }, popupDuration + 150);
+
+        }, 850);
       };
 
-      render();
+      renderArena();
     }
   };
 
