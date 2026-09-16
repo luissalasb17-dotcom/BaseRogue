@@ -1369,7 +1369,7 @@
           </div>
         </div>
 
-        <!-- CONTROLES EXTERIORES INFERIORES: SHORTLIST + FLIP + NEXT PACK + B-REF -->
+        <!-- CONTROLES EXTERIORES INFERIORES: SHORTLIST + FLIP + TEST BATTER + NEXT PACK + B-REF -->
         <div style="margin-top: 14px; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px; z-index: 100;">
           <button id="btn-modal-shortlist-bottom" style="padding: 6px 14px; background: ${this.isShortlisted(p) ? 'linear-gradient(135deg, rgba(255,215,0,0.35), rgba(245,158,11,0.45))' : 'linear-gradient(135deg, rgba(255,215,0,0.15), rgba(245,158,11,0.2))'}; border: 1.5px solid #ffd700; color: #ffd700; border-radius: 6px; font-family: 'Press Start 2P', monospace; font-size: 7.5px; cursor: pointer; transition: all 0.15s; box-shadow: 0 0 10px rgba(255,215,0,0.3); display: inline-flex; align-items: center; gap: 5px;">
             ${this.isShortlisted(p) ? (typeof window.t === 'function' ? window.t('dex.btn_shortlist_remove', '★ SHORTLISTED') : '★ SHORTLISTED') : (typeof window.t === 'function' ? window.t('dex.btn_shortlist_add', '⭐ SHORTLIST') : '⭐ SHORTLIST')}
@@ -1377,6 +1377,11 @@
           <button id="btn-modal-flip-bottom" style="padding: 6px 14px; background: linear-gradient(135deg, rgba(56,189,248,0.2), rgba(14,165,233,0.3)); border: 1.5px solid #38bdf8; color: #38bdf8; border-radius: 6px; font-family: 'Press Start 2P', monospace; font-size: 7.5px; cursor: pointer; transition: all 0.15s; box-shadow: 0 0 10px rgba(56,189,248,0.3); display: inline-flex; align-items: center; gap: 5px;">
             🔄 FLIP
           </button>
+          ${!isPitcher ? `
+            <button id="btn-modal-test-batter-bottom" style="padding: 6px 14px; background: linear-gradient(135deg, rgba(239,68,68,0.25), rgba(220,38,38,0.4)); border: 1.5px solid #ef4444; color: #fca5a5; border-radius: 6px; font-family: 'Press Start 2P', monospace; font-size: 7.5px; cursor: pointer; transition: all 0.15s; box-shadow: 0 0 10px rgba(239,68,68,0.3); display: inline-flex; align-items: center; gap: 5px;">
+              ${typeof window.t === 'function' ? window.t('dex.btn_test_batter', '🎯 TEST BATTER') : '🎯 TEST BATTER'}
+            </button>
+          ` : ''}
           <button id="btn-modal-next-bottom" style="padding: 6px 14px; background: linear-gradient(135deg, rgba(245,158,11,0.2), rgba(234,88,12,0.3)); border: 1.5px solid #f59e0b; color: #fbbf24; border-radius: 6px; font-family: 'Press Start 2P', monospace; font-size: 7.5px; cursor: pointer; transition: all 0.15s; box-shadow: 0 0 10px rgba(245,158,11,0.3); display: inline-flex; align-items: center; gap: 5px;">
             📦 ${typeof window.t === 'function' ? window.t('dex.btn_next_pack', 'NEXT PACK') : 'NEXT PACK'}
           </button>
@@ -1439,6 +1444,22 @@
         };
       }
 
+      const btnTestBatterBottom = overlay.querySelector('#btn-modal-test-batter-bottom');
+      if (btnTestBatterBottom) {
+        btnTestBatterBottom.onclick = (e) => {
+          e.stopPropagation();
+          this.openBatterTestModal(p);
+        };
+        btnTestBatterBottom.onmouseenter = () => {
+          btnTestBatterBottom.style.transform = 'scale(1.05)';
+          btnTestBatterBottom.style.boxShadow = '0 0 20px rgba(239,68,68,0.6)';
+        };
+        btnTestBatterBottom.onmouseleave = () => {
+          btnTestBatterBottom.style.transform = 'scale(1)';
+          btnTestBatterBottom.style.boxShadow = '0 0 10px rgba(239,68,68,0.3)';
+        };
+      }
+
       const nextBtnBottom = overlay.querySelector('#btn-modal-next-bottom');
       if (nextBtnBottom) {
         nextBtnBottom.onclick = (e) => {
@@ -1462,6 +1483,422 @@
           overlay.remove();
         };
       });
+    },
+
+    openBatterTestModal(batter) {
+      if (!batter) return;
+      const existing = document.getElementById('dex-batter-test-overlay');
+      if (existing) existing.remove();
+
+      let availablePitchers = (window.PITCHERS_POOL && window.PITCHERS_POOL.length > 0)
+        ? window.PITCHERS_POOL
+        : ((window.PlayersDB && window.PlayersDB.Pitchers) ? window.PlayersDB.Pitchers : []);
+      if (!availablePitchers.length) {
+        alert('Pitchers pool not available.');
+        return;
+      }
+
+      // Draw 10 Random Pitchers
+      const shuffled = [...availablePitchers].sort(() => Math.random() - 0.5);
+      const testPitchers = shuffled.slice(0, 10);
+
+      const testState = {
+        batter,
+        pitchers: testPitchers,
+        currentIndex: 0,
+        isRolling: false,
+        isResolved: false,
+        lastRoll: null,
+        lastOutcome: null,
+        history: [],
+        stats: {
+          pa: 0,
+          ab: 0,
+          h: 0,
+          singles: 0,
+          doubles: 0,
+          triples: 0,
+          hr: 0,
+          bb: 0,
+          so: 0,
+          out: 0
+        }
+      };
+
+      const overlay = document.createElement('div');
+      overlay.id = 'dex-batter-test-overlay';
+      overlay.className = 'dex-test-arena-overlay';
+      document.body.appendChild(overlay);
+
+      const render = () => {
+        const _t = (k, fallback, params) => (typeof window.t === 'function' ? window.t(k, params) : fallback);
+        
+        // If finished all 10 at-bats, render the summary report
+        if (testState.currentIndex >= 10) {
+          const S = testState.stats;
+          const avg = S.ab > 0 ? (S.h / S.ab).toFixed(3).replace(/^0/, '') : '.000';
+          const obp = S.pa > 0 ? ((S.h + S.bb) / S.pa).toFixed(3).replace(/^0/, '') : '.000';
+          const totalBases = S.singles * 1 + S.doubles * 2 + S.triples * 3 + S.hr * 4;
+          const slg = S.ab > 0 ? (totalBases / S.ab).toFixed(3).replace(/^0/, '') : '.000';
+          const opsNum = (parseFloat(obp) + parseFloat(slg));
+          const opsStr = opsNum.toFixed(3);
+
+          let gradeText = 'F', gradeColor = '#ef4444', gradeLabel = '💀 ICE COLD';
+          if (opsNum >= 1.200) {
+            gradeText = 'S'; gradeColor = '#ffd700'; gradeLabel = '⭐ HALL OF FAME HITTER';
+          } else if (opsNum >= 0.900) {
+            gradeText = 'A'; gradeColor = '#38bdf8'; gradeLabel = '🔥 ALL-STAR PERFORMANCE';
+          } else if (opsNum >= 0.750) {
+            gradeText = 'B'; gradeColor = '#4ade80'; gradeLabel = '⚾ SOLID BATTING PROFILE';
+          } else if (opsNum >= 0.600) {
+            gradeText = 'C'; gradeColor = '#94a3b8'; gradeLabel = '📋 AVERAGE PRODUCTION';
+          } else if (opsNum >= 0.400) {
+            gradeText = 'D'; gradeColor = '#fb923c'; gradeLabel = '⚠️ COLD STREAK';
+          }
+
+          overlay.innerHTML = `
+            <div class="dex-test-arena-box" style="text-align:center;">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+                <div style="font-family:'Press Start 2P',monospace;font-size:11px;color:#ffd700;">
+                  ${_t('dex.test_summary_title', '🏆 BATTING PRACTICE REPORT')}
+                </div>
+                <button id="btn-test-modal-close" style="background:none;border:none;color:#9ca3af;font-size:20px;cursor:pointer;">✕</button>
+              </div>
+
+              <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:16px;margin-bottom:16px;">
+                <div style="font-family:'Press Start 2P',monospace;font-size:12px;color:#fff;margin-bottom:4px;">
+                  ${batter.name} (${batter.year || '—'})
+                </div>
+                <div style="font-size:10px;color:#94a3b8;margin-bottom:12px;">
+                  ${batter.team || '—'} · OVR ${Math.floor(batter.ovr || 50)} · ${batter.pos || 'OF'}
+                </div>
+
+                <div style="display:inline-flex;align-items:center;gap:12px;background:rgba(0,0,0,0.5);border:2px solid ${gradeColor};border-radius:10px;padding:10px 20px;margin-bottom:14px;box-shadow:0 0 20px ${gradeColor}44;">
+                  <div style="font-family:'Press Start 2P',monospace;font-size:32px;color:${gradeColor};">${gradeText}</div>
+                  <div style="text-align:left;">
+                    <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:${gradeColor};">${gradeLabel}</div>
+                    <div style="font-size:10px;color:#cbd5e1;margin-top:2px;">OPS: <strong style="color:#fff;">${opsStr}</strong></div>
+                  </div>
+                </div>
+
+                <!-- 8-Stat Grid -->
+                <div class="dex-test-summary-stat-grid">
+                  <div class="dex-test-summary-stat-card"><div class="dex-test-summary-stat-lbl">PA</div><div class="dex-test-summary-stat-val" style="color:#38bdf8;">${S.pa}</div></div>
+                  <div class="dex-test-summary-stat-card"><div class="dex-test-summary-stat-lbl">AB</div><div class="dex-test-summary-stat-val" style="color:#cbd5e1;">${S.ab}</div></div>
+                  <div class="dex-test-summary-stat-card"><div class="dex-test-summary-stat-lbl">HITS</div><div class="dex-test-summary-stat-val" style="color:#4ade80;">${S.h}</div></div>
+                  <div class="dex-test-summary-stat-card"><div class="dex-test-summary-stat-lbl">HR</div><div class="dex-test-summary-stat-val" style="color:#f87171;">${S.hr}</div></div>
+                  <div class="dex-test-summary-stat-card"><div class="dex-test-summary-stat-lbl">BB</div><div class="dex-test-summary-stat-val" style="color:#2dd4bf;">${S.bb}</div></div>
+                  <div class="dex-test-summary-stat-card"><div class="dex-test-summary-stat-lbl">SO (K)</div><div class="dex-test-summary-stat-val" style="color:#ef4444;">${S.so}</div></div>
+                  <div class="dex-test-summary-stat-card"><div class="dex-test-summary-stat-lbl">AVG</div><div class="dex-test-summary-stat-val" style="color:#ffd700;">${avg}</div></div>
+                  <div class="dex-test-summary-stat-card"><div class="dex-test-summary-stat-lbl">OPS</div><div class="dex-test-summary-stat-val" style="color:${gradeColor};">${opsStr}</div></div>
+                </div>
+
+                <!-- Hits breakdown pills -->
+                <div style="display:flex;justify-content:center;gap:8px;flex-wrap:wrap;font-size:9px;color:#cbd5e1;background:rgba(0,0,0,0.3);padding:8px;border-radius:6px;">
+                  <span>1B: <strong style="color:#38bdf8;">${S.singles}</strong></span> ·
+                  <span>2B: <strong style="color:#4ade80;">${S.doubles}</strong></span> ·
+                  <span>3B: <strong style="color:#fbbf24;">${S.triples}</strong></span> ·
+                  <span>HR: <strong style="color:#f87171;">${S.hr}</strong></span> ·
+                  <span>BB: <strong style="color:#2dd4bf;">${S.bb}</strong></span> ·
+                  <span>SO: <strong style="color:#ef4444;">${S.so}</strong></span> ·
+                  <span>OUT: <strong style="color:#94a3b8;">${S.out - S.so}</strong></span>
+                </div>
+              </div>
+
+              <!-- Match history list -->
+              <div style="text-align:left;max-height:160px;overflow-y:auto;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:10px;margin-bottom:16px;">
+                <div style="font-family:'Press Start 2P',monospace;font-size:7.5px;color:#94a3b8;margin-bottom:8px;">DUEL HISTORY (10 AT-BATS)</div>
+                ${testState.history.map(h => `
+                  <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.05);font-size:9px;">
+                    <span style="color:#94a3b8;">#${h.atBatNum} vs <strong style="color:#fff;">${h.pitcher.name}</strong> (${h.pitcher.team || ''})</span>
+                    <span><span style="color:#64748b;margin-right:6px;">[Roll: ${h.roll}]</span> <span style="font-family:'Press Start 2P',monospace;font-size:8px;font-weight:bold;color:${h.color};">${h.resultType}</span></span>
+                  </div>
+                `).join('')}
+              </div>
+
+              <div style="display:flex;justify-content:center;gap:12px;">
+                <button id="btn-test-again" style="padding:10px 18px;background:linear-gradient(135deg,#38bdf8,#0284c7);border:none;border-radius:6px;color:#fff;font-family:'Press Start 2P',monospace;font-size:8px;cursor:pointer;box-shadow:0 0 15px rgba(56,189,248,0.4);">${_t('dex.test_again_btn', '🔄 TEST AGAIN')}</button>
+                <button id="btn-test-finish" style="padding:10px 18px;background:linear-gradient(135deg,#64748b,#475569);border:none;border-radius:6px;color:#fff;font-family:'Press Start 2P',monospace;font-size:8px;cursor:pointer;">${_t('dex.test_finish_btn', '✕ CLOSE')}</button>
+              </div>
+            </div>
+          `;
+
+          overlay.querySelector('#btn-test-modal-close').onclick = () => overlay.remove();
+          overlay.querySelector('#btn-test-finish').onclick = () => overlay.remove();
+          overlay.querySelector('#btn-test-again').onclick = () => {
+            const newShuffled = [...availablePitchers].sort(() => Math.random() - 0.5);
+            testState.pitchers = newShuffled.slice(0, 10);
+            testState.currentIndex = 0;
+            testState.isRolling = false;
+            testState.isResolved = false;
+            testState.lastRoll = null;
+            testState.lastOutcome = null;
+            testState.history = [];
+            testState.stats = { pa: 0, ab: 0, h: 0, singles: 0, doubles: 0, triples: 0, hr: 0, bb: 0, so: 0, out: 0 };
+            render();
+          };
+          return;
+        }
+
+        // Active at-bat rendering
+        const curPitcher = testState.pitchers[testState.currentIndex];
+        const isClutchSituation = (testState.currentIndex % 3 === 2); // Situational tension on at-bats 3, 6, 9
+        const simCtx = {
+          inning: Math.floor(testState.currentIndex / 3) + 1,
+          bases: isClutchSituation ? [null, {}, null] : [null, null, null],
+          hasTrait: () => false
+        };
+        const bounds = (typeof window.calcBoundaries === 'function')
+          ? window.calcBoundaries(batter, curPitcher, simCtx)
+          : { bbEnd: 10, soEnd: 28, outEnd: 60, singleEnd: 85, doubleEnd: 95, tripleEnd: 97, pitcherClutchStatus: { active: false, label: '' } };
+
+        const pClutchStatus = bounds.pitcherClutchStatus || { active: false };
+
+        overlay.innerHTML = `
+          <div class="dex-test-arena-box">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;border-bottom:1px solid rgba(255,215,0,0.25);padding-bottom:8px;">
+              <div>
+                <span style="font-family:'Press Start 2P',monospace;font-size:10px;color:#ffd700;">${_t('dex.test_modal_title', '🎯 BATTING PRACTICE')}</span>
+                <span style="font-family:'Press Start 2P',monospace;font-size:9px;color:#38bdf8;margin-left:10px;">${_t('dex.test_ab_counter', `AT-BAT ${testState.currentIndex + 1} / 10`, { curr: testState.currentIndex + 1, total: 10 })}</span>
+              </div>
+              <button id="btn-test-modal-close" style="background:none;border:none;color:#9ca3af;font-size:20px;cursor:pointer;padding:0 4px;line-height:1;">✕</button>
+            </div>
+
+            <!-- Matchup Faceoff Grid -->
+            <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:center;margin-bottom:14px;">
+              
+              <!-- Batter Mini Panel -->
+              <div class="dex-test-card-panel" style="border-color:#38bdf8;">
+                <div style="font-family:'Press Start 2P',monospace;font-size:7px;color:#38bdf8;margin-bottom:4px;">BATTER</div>
+                <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:#fff;text-align:center;margin-bottom:2px;">${batter.name}</div>
+                <div style="font-size:8px;color:#94a3b8;margin-bottom:6px;">${batter.team || '—'} · ${batter.year || '—'} · OVR ${Math.floor(batter.ovr || 50)}</div>
+                <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:4px;width:100%;font-size:7.5px;text-align:center;">
+                  <div style="background:#0a0f18;padding:3px;border-radius:4px;"><span style="color:#94a3b8;">CON:</span> <strong style="color:#ffd700;">${batter.con || 50}</strong></div>
+                  <div style="background:#0a0f18;padding:3px;border-radius:4px;"><span style="color:#94a3b8;">PWR:</span> <strong style="color:#f87171;">${batter.pwr || 50}</strong></div>
+                  <div style="background:#0a0f18;padding:3px;border-radius:4px;"><span style="color:#94a3b8;">EYE:</span> <strong style="color:#38bdf8;">${batter.eye || 50}</strong></div>
+                  <div style="background:#0a0f18;padding:3px;border-radius:4px;"><span style="color:#94a3b8;">K/AVD:</span> <strong style="color:#4ade80;">${batter.k_avd || batter.k_avoid || batter.con || 50}</strong></div>
+                  <div style="background:#0a0f18;padding:3px;border-radius:4px;"><span style="color:#94a3b8;">SPD:</span> <strong style="color:#2dd4bf;">${batter.spd || 50}</strong></div>
+                  <div style="background:#0a0f18;padding:3px;border-radius:4px;"><span style="color:#94a3b8;">DEF:</span> <strong style="color:#c084fc;">${batter.def || 50}</strong></div>
+                </div>
+              </div>
+
+              <!-- VS Emblem -->
+              <div style="font-family:'Press Start 2P',monospace;font-size:12px;color:#ffd700;text-shadow:0 0 10px rgba(255,215,0,0.6);text-align:center;">
+                VS
+              </div>
+
+              <!-- Pitcher Mini Panel -->
+              <div class="dex-test-card-panel" style="border-color:#ef4444;">
+                <div style="font-family:'Press Start 2P',monospace;font-size:7px;color:#ef4444;margin-bottom:4px;">PITCHER (${testState.currentIndex + 1}/10)</div>
+                <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:#fff;text-align:center;margin-bottom:2px;">${curPitcher.name}</div>
+                <div style="font-size:8px;color:#94a3b8;margin-bottom:6px;">${curPitcher.team || '—'} · ${curPitcher.year || '—'} · ${curPitcher.role || 'SP'} · OVR ${Math.floor(curPitcher.ovr || 50)}</div>
+                <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:4px;width:100%;font-size:7.5px;text-align:center;">
+                  <div style="background:#0a0f18;padding:3px;border-radius:4px;"><span style="color:#94a3b8;">H/9:</span> <strong style="color:#ffd700;">${curPitcher.h9 || curPitcher.grt || 50}</strong></div>
+                  <div style="background:#0a0f18;padding:3px;border-radius:4px;"><span style="color:#94a3b8;">K/9:</span> <strong style="color:#f87171;">${curPitcher.k9 || curPitcher.stf || 50}</strong></div>
+                  <div style="background:#0a0f18;padding:3px;border-radius:4px;"><span style="color:#94a3b8;">BB/9:</span> <strong style="color:#38bdf8;">${curPitcher.bb9 || curPitcher.ctl || 50}</strong></div>
+                  <div style="background:#0a0f18;padding:3px;border-radius:4px;"><span style="color:#94a3b8;">HR/9:</span> <strong style="color:#4ade80;">${curPitcher.hr9 || curPitcher.mov || 50}</strong></div>
+                  <div style="background:#0a0f18;padding:3px;border-radius:4px;"><span style="color:#94a3b8;">STA:</span> <strong style="color:#2dd4bf;">${curPitcher.sta || 65}</strong></div>
+                  <div style="background:#0a0f18;padding:3px;border-radius:4px;"><span style="color:#94a3b8;">CLT:</span> <strong style="color:#c084fc;">${curPitcher.clt !== undefined ? curPitcher.clt : 50}</strong></div>
+                </div>
+                ${pClutchStatus.active ? `
+                  <div style="margin-top:6px;"><span class="pitcher-clutch-pill ${pClutchStatus.cssClass}">${pClutchStatus.icon} ${pClutchStatus.label}</span></div>
+                ` : ''}
+              </div>
+
+            </div>
+
+            <!-- Dice Zone Probability Breakdown -->
+            <div style="background:rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px;margin-bottom:14px;">
+              <div style="display:flex;justify-content:space-between;font-family:'Press Start 2P',monospace;font-size:7px;color:#94a3b8;margin-bottom:6px;">
+                <span>DICE ZONES (1-100)</span>
+                <span>HIT CHANCE: <strong style="color:#00ff66;">${(100 - bounds.outEnd)}%</strong></span>
+              </div>
+              <div style="display:flex;gap:4px;flex-wrap:wrap;font-size:8px;">
+                <span style="background:rgba(45,212,191,0.15);color:#2dd4bf;border:1px solid #2dd4bf;padding:2px 6px;border-radius:4px;">BB: 1-${bounds.bbEnd} (${bounds.bbEnd}%)</span>
+                <span style="background:rgba(239,68,68,0.15);color:#ef4444;border:1px solid #ef4444;padding:2px 6px;border-radius:4px;">SO: ${bounds.bbEnd+1}-${bounds.soEnd} (${bounds.soEnd - bounds.bbEnd}%)</span>
+                <span style="background:rgba(251,146,60,0.15);color:#fb923c;border:1px solid #fb923c;padding:2px 6px;border-radius:4px;">OUT: ${bounds.soEnd+1}-${bounds.outEnd} (${bounds.outEnd - bounds.soEnd}%)</span>
+                <span style="background:rgba(56,189,248,0.15);color:#38bdf8;border:1px solid #38bdf8;padding:2px 6px;border-radius:4px;">1B: ${bounds.outEnd+1}-${bounds.singleEnd}</span>
+                <span style="background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid #4ade80;padding:2px 6px;border-radius:4px;">2B: ${bounds.singleEnd+1}-${bounds.doubleEnd}</span>
+                <span style="background:rgba(250,204,21,0.15);color:#facc15;border:1px solid #facc15;padding:2px 6px;border-radius:4px;">3B: ${bounds.doubleEnd+1}-${bounds.tripleEnd}</span>
+                <span style="background:rgba(244,63,94,0.15);color:#f43f5e;border:1px solid #f43f5e;padding:2px 6px;border-radius:4px;">HR: ${bounds.tripleEnd+1}-100</span>
+              </div>
+            </div>
+
+            <!-- Roll & Outcome Area -->
+            <div style="background:rgba(0,0,0,0.6);border:1.5px solid ${testState.lastOutcome ? testState.lastOutcome.color : '#ffd700'};border-radius:10px;padding:14px;text-align:center;margin-bottom:14px;">
+              <div id="dex-test-dice-display" style="font-family:'Press Start 2P',monospace;font-size:24px;color:#ffd700;margin-bottom:8px;height:30px;">
+                ${testState.lastRoll !== null ? `🎲 ROLL: ${testState.lastRoll}` : '🎲 READY'}
+              </div>
+              <div id="dex-test-outcome-display" style="font-family:'Press Start 2P',monospace;font-size:12px;color:${testState.lastOutcome ? testState.lastOutcome.color : '#94a3b8'};min-height:18px;">
+                ${testState.lastOutcome ? testState.lastOutcome.text : 'Click Roll Dice to simulate this at-bat'}
+              </div>
+
+              <!-- Action Buttons -->
+              <div style="margin-top:14px;display:flex;justify-content:center;gap:10px;">
+                ${!testState.isResolved ? `
+                  <button id="btn-test-roll" class="btn" style="background:linear-gradient(135deg,#ffd700,#f59e0b);color:#000;font-weight:bold;font-size:9px;padding:10px 18px;">
+                    ${_t('dex.test_roll_btn', '🎲 ROLL DICE')}
+                  </button>
+                  <button id="btn-test-auto" class="btn btn-secondary" style="font-size:9px;padding:10px 16px;">
+                    ${_t('dex.test_auto_btn', '⚡ FAST SIM (10)')}
+                  </button>
+                ` : `
+                  <button id="btn-test-next" class="btn" style="background:linear-gradient(135deg,#00ff66,#10b981);color:#000;font-weight:bold;font-size:9px;padding:10px 20px;">
+                    ${testState.currentIndex === 9 ? '📊 VIEW FINAL REPORT ➔' : _t('dex.test_next_btn', 'NEXT PITCHER ➔')}
+                  </button>
+                `}
+              </div>
+            </div>
+
+            <!-- Mini Duel History -->
+            ${testState.history.length > 0 ? `
+              <div style="text-align:left;max-height:100px;overflow-y:auto;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.06);border-radius:6px;padding:8px;">
+                <div style="font-family:'Press Start 2P',monospace;font-size:7px;color:#94a3b8;margin-bottom:4px;">PREVIOUS AT-BATS (${testState.history.length}/10):</div>
+                ${testState.history.map(h => `
+                  <div style="font-size:8.5px;color:#cbd5e1;padding:2px 0;">
+                    <span style="color:#94a3b8;">#${h.atBatNum} vs ${h.pitcher.name}:</span>
+                    <span style="color:${h.color};font-weight:bold;margin-left:4px;">${h.resultType}</span>
+                    <span style="color:#64748b;margin-left:4px;">(Roll: ${h.roll})</span>
+                  </div>
+                `).join('')}
+              </div>
+            ` : ''}
+
+          </div>
+        `;
+
+        // Event Listeners
+        const closeBtn = overlay.querySelector('#btn-test-modal-close');
+        if (closeBtn) closeBtn.onclick = () => overlay.remove();
+
+        const rollBtn = overlay.querySelector('#btn-test-roll');
+        if (rollBtn) {
+          rollBtn.onclick = () => {
+            if (testState.isRolling) return;
+            testState.isRolling = true;
+            if (window.AudioEngine) window.AudioEngine.play('dice_roll');
+
+            const diceEl = overlay.querySelector('#dex-test-dice-display');
+            let tickCount = 0;
+            const interval = setInterval(() => {
+              tickCount++;
+              if (diceEl) diceEl.innerText = `🎲 ${Math.floor(Math.random() * 100) + 1}`;
+              if (tickCount >= 6) {
+                clearInterval(interval);
+                testState.isRolling = false;
+                executeAtBatRoll();
+              }
+            }, 50);
+          };
+        }
+
+        const autoBtn = overlay.querySelector('#btn-test-auto');
+        if (autoBtn) {
+          autoBtn.onclick = () => {
+            while (testState.currentIndex < 10) {
+              const p = testState.pitchers[testState.currentIndex];
+              const cBounds = (typeof window.calcBoundaries === 'function')
+                ? window.calcBoundaries(batter, p, { inning: 1, bases: [null, null, null], hasTrait: () => false })
+                : { bbEnd: 10, soEnd: 28, outEnd: 60, singleEnd: 85, doubleEnd: 95, tripleEnd: 97 };
+              resolveRollForState(cBounds, p);
+              testState.currentIndex++;
+            }
+            render();
+          };
+        }
+
+        const nextBtn = overlay.querySelector('#btn-test-next');
+        if (nextBtn) {
+          nextBtn.onclick = () => {
+            testState.currentIndex++;
+            testState.isResolved = false;
+            testState.lastRoll = null;
+            testState.lastOutcome = null;
+            render();
+          };
+        }
+      };
+
+      const resolveRollForState = (bounds, pitcher) => {
+        const roll = Math.floor(Math.random() * 100) + 1;
+        let rType = 'OUT', rText = 'Flyout / Groundout', rColor = '#94a3b8';
+        const S = testState.stats;
+        S.pa++;
+
+        if (roll <= bounds.bbEnd) {
+          rType = 'BB';
+          rText = 'Base on Balls (Walk) 🎯';
+          rColor = '#2dd4bf';
+          S.bb++;
+        } else if (roll <= bounds.soEnd) {
+          rType = 'SO';
+          rText = 'Strikeout (Ponche) 💀';
+          rColor = '#ef4444';
+          S.ab++; S.so++; S.out++;
+        } else if (roll <= bounds.outEnd) {
+          rType = 'OUT';
+          rText = 'Out (Groundout/Flyout) 🛡️';
+          rColor = '#fb923c';
+          S.ab++; S.out++;
+        } else if (roll <= bounds.singleEnd) {
+          rType = '1B';
+          rText = 'Single (Sencillo)! ⚡';
+          rColor = '#38bdf8';
+          S.ab++; S.h++; S.singles++;
+        } else if (roll <= bounds.doubleEnd) {
+          rType = '2B';
+          rText = 'Double (Doblete)! 💥';
+          rColor = '#4ade80';
+          S.ab++; S.h++; S.doubles++;
+        } else if (roll <= bounds.tripleEnd) {
+          rType = '3B';
+          rText = 'Triple (Triplete)! 🚀';
+          rColor = '#facc15';
+          S.ab++; S.h++; S.triples++;
+        } else {
+          rType = 'HR';
+          rText = 'HOME RUN! 💣🔥';
+          rColor = '#f43f5e';
+          S.ab++; S.h++; S.hr++;
+        }
+
+        testState.lastRoll = roll;
+        testState.lastOutcome = { type: rType, text: `${rType} — ${rText}`, color: rColor };
+        testState.history.push({
+          atBatNum: testState.currentIndex + 1,
+          pitcher,
+          roll,
+          resultType: rType,
+          resultText: rText,
+          color: rColor
+        });
+
+        if (window.AudioEngine) {
+          if (rType === 'HR') window.AudioEngine.play('homerun');
+          else if (rType === '1B' || rType === '2B' || rType === '3B') window.AudioEngine.play('hit');
+          else if (rType === 'BB') window.AudioEngine.play('walk');
+          else window.AudioEngine.play('out');
+        }
+      };
+
+      const executeAtBatRoll = () => {
+        const curPitcher = testState.pitchers[testState.currentIndex];
+        const isClutchSituation = (testState.currentIndex % 3 === 2);
+        const simCtx = {
+          inning: Math.floor(testState.currentIndex / 3) + 1,
+          bases: isClutchSituation ? [null, {}, null] : [null, null, null],
+          hasTrait: () => false
+        };
+        const bounds = (typeof window.calcBoundaries === 'function')
+          ? window.calcBoundaries(batter, curPitcher, simCtx)
+          : { bbEnd: 10, soEnd: 28, outEnd: 60, singleEnd: 85, doubleEnd: 95, tripleEnd: 97 };
+
+        resolveRollForState(bounds, curPitcher);
+        testState.isResolved = true;
+        render();
+      };
+
+      render();
     }
   };
 

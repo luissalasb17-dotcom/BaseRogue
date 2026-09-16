@@ -1269,7 +1269,17 @@
         "pack_tap": "✨ TOCA PARA ABRIR ✨",
         "btn_flip_card": "🔄 FLIP CARTA",
         "card_unlocked_toast": "¡Nueva carta desbloqueada en tu Dex!",
-        "btn_bbref": "B-REF ↗"
+        "btn_bbref": "B-REF ↗",
+        "btn_test_batter": "🎯 PROBAR BATEADOR",
+        "test_modal_title": "🎯 PRÁCTICA DE BATEO (10 TURNOS)",
+        "test_modal_subtitle": "Prueba a este bateador en un duelo de 10 turnos contra pitchers históricos aleatorios",
+        "test_ab_counter": "TURNO {{curr}} / {{total}}",
+        "test_roll_btn": "🎲 TIRAR DADO",
+        "test_auto_btn": "⚡ SIM RÁPIDA",
+        "test_next_btn": "SIGUIENTE PITCHER ➔",
+        "test_summary_title": "🏆 REPORTE DE PRÁCTICA",
+        "test_again_btn": "🔄 PROBAR DE NUEVO",
+        "test_finish_btn": "✕ CERRAR"
     },
     "challenge162": {
         "title": "🏆 162-0 CHALLENGE",
@@ -3573,7 +3583,17 @@
         "pack_tap": "✨ TAP TO OPEN ✨",
         "btn_flip_card": "🔄 FLIP CARD",
         "card_unlocked_toast": "New card unlocked in your Dex!",
-        "btn_bbref": "B-REF ↗"
+        "btn_bbref": "B-REF ↗",
+        "btn_test_batter": "🎯 TEST BATTER",
+        "test_modal_title": "🎯 BATTING PRACTICE (10 AT-BATS)",
+        "test_modal_subtitle": "Test this batter in a 10-turn batting duel against random historical pitchers",
+        "test_ab_counter": "AT-BAT {{curr}} / {{total}}",
+        "test_roll_btn": "🎲 ROLL DICE",
+        "test_auto_btn": "⚡ FAST SIM",
+        "test_next_btn": "NEXT PITCHER ➔",
+        "test_summary_title": "🏆 BATTING PRACTICE REPORT",
+        "test_again_btn": "🔄 TEST AGAIN",
+        "test_finish_btn": "✕ CLOSE"
     },
     "challenge162": {
         "title": "🏆 162-0 CHALLENGE",
