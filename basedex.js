@@ -1906,7 +1906,7 @@
         const defModal = document.createElement('div');
         defModal.className = 'modal-overlay def-modal-backdrop';
         defModal.id = 'modal-mid-inning-defense';
-        defModal.style.cssText = 'position:fixed;inset:0;z-index:9000;display:flex;align-items:center;justify-content:center;padding:16px;overflow-y:auto;-webkit-overflow-scrolling:touch;';
+        defModal.style.cssText = 'position:fixed;inset:0;z-index:1000005;display:flex;align-items:center;justify-content:center;padding:16px;overflow-y:auto;-webkit-overflow-scrolling:touch;background:rgba(0,0,0,0.85);backdrop-filter:blur(8px);';
 
         const grade = getGrade(effDef);
         const gradeCol = getGradeColor(grade);
