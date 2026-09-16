@@ -3638,14 +3638,14 @@ function initGameModeSelector() {
         rbi_bonus_title: "🏆 RBI Bonus Damage:",
         steal_title: "🏃 BASE STEALING (SPD ≥ 40 — Grade C+):",
         hit_upgrade_title: "⚡ HIT UPGRADES:",
-        ratings_con: '<strong style="color:#a7f3d0;">CON — Contact:</strong> Determines hitting probability. High CON batters have higher chances of singles and base hits.',
-        ratings_pwr: '<strong style="color:#f59e0b;">PWR — Power:</strong> Chance to hit extra-base hits (doubles, triples, home runs) and deal heavy pitcher damage.',
-        ratings_eye: '<strong style="color:#3b82f6;">EYE — Eye/Vision:</strong> Probability of drawing walks (BB). Key for advancing runners and wearing down the rival pitcher.',
-        ratings_kavd: '<strong style="color:#ec4899;">K/AVD — Strikeout Avoidance:</strong> Shrinks the strikeout (SO) zone on the dice roll. Essential for preventing direct HP damage caused by strikeouts.',
-        ratings_spd: '<strong style="color:#38bdf8;">SPD — Speed:</strong> Enables base stealing attempts on singles (+20% pitcher damage debuff). Also grants 5% to 30% chance (scaling above 60 SPD) to stretch singles and doubles into extra bases (1B→2B→3B).',
-        ratings_def: '<strong style="color:#a855f7;">DEF — Defense:</strong> Contributes to Team Shield. Higher average DEF grants more shield to absorb OUTs before losing HP.',
-        ratings_clutch: '<strong style="color:#ef4444;">⚡ CLUTCH PLAYER:</strong> +2% single and double chance, +4% HR chance with runners in scoring position or during the last inning.',
-        ratings_captain: '<strong style="color:#eab308;">👑 CAPTAIN:</strong> +5 to all ratings for all teammates while on the active roster.'
+        ratings_con: '<strong style="color:#a7f3d0;">CON — Contact:</strong> Determines contact quality and base hit rate. High CON batters have higher chances of hitting singles and avoiding outs.',
+        ratings_pwr: '<strong style="color:#f59e0b;">PWR — Power:</strong> Probability of extra-base hits (doubles, triples, home runs). Also inflicts heavy HP damage on rival pitchers.',
+        ratings_eye: '<strong style="color:#3b82f6;">EYE — Plate Discipline:</strong> Probability of drawing Walks (BB). Deals 15 HP damage and inflicts a +20% damage debuff on the pitcher.',
+        ratings_kavd: '<strong style="color:#ec4899;">K/AVD — Strikeout Avoidance:</strong> Shrinks the Strikeout (SO) zone on dice rolls. Essential for preventing direct team HP damage.',
+        ratings_spd: '<strong style="color:#38bdf8;">SPD — Speed:</strong> Triggers base stealing on 1B and 2B (+20% pitcher damage debuff). Also grants 10% to 50% chance (above 60 SPD) to stretch hits into extra bases (1B➔2B➔3B).',
+        ratings_def: '<strong style="color:#a855f7;">DEF — Defense:</strong> Contributes to Team <strong>Shield</strong>. Higher average DEF grants more shield to absorb OUTs before losing team HP.',
+        ratings_clutch: '<strong style="color:#ef4444;">⚡ CLUTCH PLAYER:</strong> +2% single/double chance, +4% HR chance with runners in scoring position (2B/3B) or during the final inning (Inning 3+ / Extras).',
+        ratings_captain: '<strong style="color:#eab308;">👑 CAPTAIN:</strong> +5 to all attributes (CON, PWR, EYE, K/AVD, SPD, DEF) for all teammates while on the active roster.'
       }
     };
 
@@ -3719,7 +3719,11 @@ function initGameModeSelector() {
         const next = cur === 'es' ? 'en' : 'es';
         if (window.i18n && typeof window.i18n.setLanguage === 'function') {
           window.i18n.setLanguage(next);
-        } else if (window.I18n && typeof window.I18n.setLanguage === 'function') {
+        } else {
+          localStorage.setItem('baserogue_lang', next);
+          applyLanguage(next);
+        }
+        if (window.I18n && typeof window.I18n.setLanguage === 'function') {
           window.I18n.setLanguage(next);
         }
         applyLanguage(next);
@@ -3793,6 +3797,14 @@ function initGameModeSelector() {
           dropdownRatings.classList.add('hidden');
         }
       }
+    });
+
+    // Prevent scroll on info dropdowns from chaining/scrolling background window/body
+    [dropdownRatings, dropdownInfo].forEach(dd => {
+      if (!dd) return;
+      dd.addEventListener('wheel', (e) => {
+        e.stopPropagation();
+      }, { passive: true });
     });
 
     // Map node clicks

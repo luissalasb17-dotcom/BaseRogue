@@ -54,13 +54,13 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="src/lib/i18next.min.js"></script>
-  <script src="src/i18n.js?v=1789536000"></script>
+  <script src="src/i18n.js?v=1789544000"></script>
   
   <link rel="preload" as="image" href="assets/TEST3.webp">
   <link rel="preload" as="image" href="assets/TEST.webp">
   <link rel="preload" as="image" href="assets/la_coliseum.webp">
   <link rel="preload" as="image" href="assets/logo.webp">
-  <link rel="stylesheet" href="style.css?v=1789537200">
+  <link rel="stylesheet" href="style.css?v=1789544000">
   <style>
     @keyframes bounce {
       0%, 100% { transform: translateY(0); }
@@ -687,7 +687,7 @@
           <div class="glass-panel hidden" id="screen-match" style="position: relative;">
             <button id="btn-combat-info" title="Sistema de Daño y Reglas" data-i18n-title="combat_info.tooltip" style="position: absolute; top: 14px; right: 14px; width: 28px; height: 28px; border-radius: 50%; background: #000; border: 2px solid var(--accent-color); color: var(--accent-color); font-family: 'Press Start 2P', monospace; font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 10px rgba(250, 204, 21, 0.3); transition: all 0.2s ease; z-index: 210;">i</button>
             
-            <div id="combat-info-dropdown" class="hidden" style="position: absolute; top: 50px; right: 14px; width: 340px; background: rgba(9, 13, 22, 0.98); border: 2px solid var(--accent-color); border-radius: 12px; padding: 12px; box-shadow: 0 0 30px rgba(0,0,0,0.9), 0 0 15px rgba(250, 204, 21, 0.25); z-index: 250; backdrop-filter: blur(8px); font-size: 10px; line-height: 1.4; color: #e4e4e7;">
+            <div id="combat-info-dropdown" class="hidden" style="position: absolute; top: 50px; right: 14px; width: 340px; max-height: 80vh; overflow-y: auto; overscroll-behavior: contain; background: rgba(9, 13, 22, 0.98); border: 2px solid var(--accent-color); border-radius: 12px; padding: 12px; box-shadow: 0 0 30px rgba(0,0,0,0.9), 0 0 15px rgba(250, 204, 21, 0.25); z-index: 250; backdrop-filter: blur(8px); font-size: 10px; line-height: 1.4; color: #e4e4e7;">
               <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed rgba(255,255,255,0.2); padding-bottom: 6px; margin-bottom: 8px;">
                 <span style="font-family: 'Press Start 2P', monospace; font-size: 8.5px; color: var(--accent-color); letter-spacing: 0.5px;" data-i18n-html="combat_info.title">⚙️ DATOS DE DAÑO & VALORES</span>
                 <button id="btn-close-combat-info" style="background: none; border: none; color: #9ca3af; font-size: 14px; cursor: pointer; padding: 0 4px;">&times;</button>
@@ -894,7 +894,7 @@
             <button id="ratings-info-btn" title="¿Para qué sirve cada rating y badge?" data-i18n-title="ratings_guide.tooltip" style="position: absolute; top: 14px; right: 14px; width: 28px; height: 28px; border-radius: 50%; background: #000; border: 2px solid var(--accent-color); color: var(--accent-color); font-family: 'Press Start 2P', monospace; font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 10px rgba(250, 204, 21, 0.3); transition: all 0.2s ease; z-index: 210;">i</button>
 
             <!-- Ratings Info Dropdown -->
-            <div id="ratings-info-dropdown" class="hidden" style="position: absolute; top: 50px; right: 14px; width: 340px; background: rgba(9, 13, 22, 0.98); border: 2px solid var(--accent-color); border-radius: 12px; padding: 12px; box-shadow: 0 0 30px rgba(0,0,0,0.9), 0 0 15px rgba(250, 204, 21, 0.25); z-index: 250; backdrop-filter: blur(8px); font-size: 10px; line-height: 1.4; color: #e4e4e7;">
+            <div id="ratings-info-dropdown" class="hidden" style="position: absolute; top: 50px; right: 14px; width: 340px; max-height: 80vh; overflow-y: auto; overscroll-behavior: contain; background: rgba(9, 13, 22, 0.98); border: 2px solid var(--accent-color); border-radius: 12px; padding: 12px; box-shadow: 0 0 30px rgba(0,0,0,0.9), 0 0 15px rgba(250, 204, 21, 0.25); z-index: 250; backdrop-filter: blur(8px); font-size: 10px; line-height: 1.4; color: #e4e4e7;">
               <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed rgba(255,255,255,0.2); padding-bottom: 8px; margin-bottom: 10px;">
                 <span style="font-family: 'Press Start 2P', monospace; font-size: 9px; color: #3b82f6;" data-i18n="ratings_guide.title">📊 GUÍA DE RATINGS</span>
                 <button id="btn-close-ratings-info" style="background:none;border:none;color:#9ca3af;font-size:14px;cursor:pointer;padding:0 4px;">&times;</button>
@@ -1403,7 +1403,7 @@
   <script src="basedex.js?v=1789542000"></script>
   <script src="challenge162.js?v=1789484800"></script>
   <script src="dynasty.js?v=1787960004"></script>
-  <script src="ui.js?v=1789535000"></script>
+  <script src="ui.js?v=1789544000"></script>
 </body>
 </html>
 

@@ -2465,15 +2465,15 @@
         "win_pct": "Win Chance: {{pct}}%"
     },
     "ratings_guide": {
-        "title": "📊 RATINGS GUIDE",
-        "con": "<strong style=\"color:#a7f3d0;\">CON — Contact:</strong> Determines the probability of making contact. High CON players have higher chances of singles and hits overall.",
-        "pwr": "<strong style=\"color:#f59e0b;\">PWR — Power:</strong> Probability of extra-base hits (doubles, triples, home runs). Also increases damage to opponent pitcher on deep hits.",
-        "eye": "<strong style=\"color:#3b82f6;\">EYE — Plate Discipline:</strong> Chance to draw Walks (BB). Deals 15 HP damage and fatigues the pitcher (+20% damage on next turn).",
-        "k_avd": "<strong style=\"color:#ec4899;\">K/AVD — Strikeout Avoidance:</strong> Shrinks the strikeout (SO) zone on the dice roll. Essential for preventing direct HP damage caused by strikeouts.",
-        "spd": "<strong style=\"color:#38bdf8;\">SPD — Speed:</strong> Triggers base stealing attempts on singles (+20% pitcher damage debuff). Also grants 10% to 50% chance (10% + 1% per point above 60 SPD) to stretch singles and doubles into extra bases (1B→2B→3B).",
-        "def": "<strong style=\"color:#a855f7;\">DEF — Defense:</strong> Contributes to team <strong>Shield</strong>. Higher average DEF gives you more shield to absorb OUTs before losing HP.",
-        "captain": "<strong style=\"color:#eab308;\">👑 CAPTAIN:</strong> +5 to all ratings for all teammates while on the active roster.",
-        "clutch": "<strong style=\"color:#ef4444;\">⚡ CLUTCH PLAYER:</strong> +2% single and double chance, +4% HR chance with runners in scoring position or during the last inning.",
+        "title": "📊 RATINGS & ATTRIBUTE GUIDE",
+        "con": "<strong style=\"color:#a7f3d0;\">CON — Contact:</strong> Determines contact quality and base hit rate. High CON batters have higher chances of hitting singles and avoiding outs.",
+        "pwr": "<strong style=\"color:#f59e0b;\">PWR — Power:</strong> Probability of extra-base hits (doubles, triples, home runs). Also inflicts heavy HP damage on rival pitchers.",
+        "eye": "<strong style=\"color:#3b82f6;\">EYE — Plate Discipline:</strong> Probability of drawing Walks (BB). Deals 15 HP damage and inflicts a +20% damage debuff on the pitcher.",
+        "k_avd": "<strong style=\"color:#ec4899;\">K/AVD — Strikeout Avoidance:</strong> Shrinks the Strikeout (SO) zone on dice rolls. Essential for preventing direct team HP damage.",
+        "spd": "<strong style=\"color:#38bdf8;\">SPD — Speed:</strong> Triggers base stealing on 1B and 2B (+20% pitcher damage debuff). Also grants 10% to 50% chance (above 60 SPD) to stretch hits into extra bases (1B➔2B➔3B).",
+        "def": "<strong style=\"color:#a855f7;\">DEF — Defense:</strong> Contributes to Team <strong>Shield</strong>. Higher average DEF grants more shield to absorb OUTs before losing team HP.",
+        "captain": "<strong style=\"color:#eab308;\">👑 CAPTAIN:</strong> +5 to all attributes (CON, PWR, EYE, K/AVD, SPD, DEF) for all teammates while on the active roster.",
+        "clutch": "<strong style=\"color:#ef4444;\">⚡ CLUTCH PLAYER:</strong> +2% single/double chance, +4% HR chance with runners in scoring position (2B/3B) or during the final inning (Inning 3+ / Extras).",
         "tooltip": "Player Ratings & Attribute Guide"
     },
     "mode_select": {
