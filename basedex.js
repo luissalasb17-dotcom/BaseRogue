@@ -1490,27 +1490,56 @@
       const existing = document.getElementById('dex-batter-test-overlay');
       if (existing) existing.remove();
 
-      let availablePitchers = (window.PITCHERS_POOL && window.PITCHERS_POOL.length > 0)
-        ? window.PITCHERS_POOL
-        : ((window.PlayersDB && window.PlayersDB.Pitchers) ? window.PlayersDB.Pitchers : []);
-      if (!availablePitchers.length) {
-        alert('Pitchers pool not available.');
-        return;
-      }
+      const overlay = document.createElement('div');
+      overlay.id = 'dex-batter-test-overlay';
+      overlay.className = 'dex-test-arena-overlay';
+      document.body.appendChild(overlay);
 
-      // Draw 10 Random Pitchers from the pool
-      const shuffled = [...availablePitchers].sort(() => Math.random() - 0.5);
-      const testPitchers = shuffled.slice(0, 10);
+      const _t = (k, fallback, params) => (typeof window.t === 'function' ? window.t(k, params) : fallback);
+
+      // Pitcher Pool Selection: 3 Pitchers (1 SP, 1 SP/RP, 1 RP)
+      const allPitchers = (window.PitchersDB && window.PitchersDB.PITCHERS_POOL) ? window.PitchersDB.PITCHERS_POOL : (window.PITCHERS_POOL || []);
+      const starters = allPitchers.filter(p => p.role === 'SP' || p.pos === 'SP' || (p.sta !== undefined && p.sta >= 65));
+      const relievers = allPitchers.filter(p => p.role === 'RP' || p.role === 'CP' || p.pos === 'RP' || (p.sta !== undefined && p.sta < 65));
+
+      const p1Pool = starters.length ? starters : allPitchers;
+      const p1Raw = p1Pool[Math.floor(Math.random() * p1Pool.length)];
+      const p1 = { ...p1Raw, hp: 100, maxHp: 100, role: 'SP', isKO: false };
+
+      const p2IsStarter = Math.random() < 0.5;
+      const p2Pool = (p2IsStarter ? starters : relievers).length ? (p2IsStarter ? starters : relievers) : allPitchers;
+      const p2Raw = p2Pool[Math.floor(Math.random() * p2Pool.length)];
+      const p2 = { ...p2Raw, hp: 100, maxHp: 100, role: p2IsStarter ? 'SP' : 'RP', isKO: false };
+
+      const p3Pool = relievers.length ? relievers : allPitchers;
+      const p3Raw = p3Pool[Math.floor(Math.random() * p3Pool.length)];
+      const p3 = { ...p3Raw, hp: 100, maxHp: 100, role: 'RP', isKO: false };
+
+      const pitchers = [p1, p2, p3];
+
+      const defStat = batter.def !== undefined ? batter.def : (batter.defense_val !== undefined ? batter.defense_val : 50);
+      const initialShield = Math.min(100, Math.max(20, Math.round(defStat)));
 
       const testState = {
         batter,
-        pitchers: testPitchers,
-        currentIndex: 0,
-        isRolling: false,
-        lastRoll: null,
-        lastOutcome: null,
-        streak: 0,
+        pitchers,
+        activePitcherIndex: 0,
+        teamHP: 100,
+        teamHPMax: 100,
+        teamShield: initialShield,
+        teamShieldMax: initialShield,
+        inning: 1,
+        maxInnings: 3,
+        outs: 0,
+        runs: 0,
+        bases: [null, null, null], // 1B, 2B, 3B
+        strikeoutChain: 0,
+        pitcherDebuff: null, // { turnsLeft, multiplier }
         pitchersKO: 0,
+        streak: 0,
+        isRolling: false,
+        battleOver: false,
+        winner: null, // 'player' | 'pitchers' | 'draw'
         history: [],
         stats: {
           pa: 0,
@@ -1520,6 +1549,8 @@
           doubles: 0,
           triples: 0,
           hr: 0,
+          rbi: 0,
+          r: 0,
           bb: 0,
           so: 0,
           out: 0,
@@ -2047,7 +2078,7 @@
                   <!-- Lucky Zones Panel -->
                   <div id="zones-panel-wrap" style="width:100%;">
                     <details id="zones-panel" open style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:6px 10px;">
-                      <summary id="zones-panel-header" style="font-family:'Press Start 2P',monospace; font-size:8px; color:#cbd5e1; cursor:pointer; margin-bottom:6px;">🎯 ${_t('match.luck_zones', 'Zonas de Suerte')}</summary>
+                      <summary id="zones-panel-header" style="font-family:'Press Start 2P',monospace; font-size:8px; color:#cbd5e1; cursor:pointer; margin-bottom:6px;">🎯 ${_t('match.luck_zones', 'Luck Zones')}</summary>
                       <div id="dex-zones-lines">
                         <!-- Rendered dynamically via updatePitcherCardDOM -->
                       </div>
@@ -2262,33 +2293,33 @@
             <div class="outcome-probabilities-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:6px; font-size:8px;">
               <div style="display:flex; flex-direction:column; gap:3px;">
                 <div class="outcome-row" style="display:flex; justify-content:space-between;">
-                  <span style="color:#3b82f6;">⚾ ${_t('match.bb', 'Base por Bolas (BB)')}</span>
+                  <span style="color:#3b82f6;">⚾ ${_t('match.bb', 'Walk (BB)')}</span>
                   <span style="color:#3b82f6; font-weight:bold;">1–${bounds.bbEnd}</span>
                 </div>
                 <div class="outcome-row" style="display:flex; justify-content:space-between;">
-                  <span style="color:#ef4444;">💨 ${_t('match.so', 'Ponche (SO)')}</span>
+                  <span style="color:#ef4444;">💨 ${_t('match.so', 'Strikeout (SO)')}</span>
                   <span style="color:#ef4444; font-weight:bold;">${bounds.bbEnd + 1}–${bounds.soEnd}</span>
                 </div>
                 <div class="outcome-row" style="display:flex; justify-content:space-between;">
-                  <span style="color:#9ca3af;">🤚 ${_t('match.out', 'Out (F/GO)')}</span>
+                  <span style="color:#9ca3af;">🤚 ${_t('match.out', 'Out (Fly/GO)')}</span>
                   <span style="color:#9ca3af; font-weight:bold;">${bounds.soEnd + 1}–${bounds.outEnd}</span>
                 </div>
               </div>
               <div style="display:flex; flex-direction:column; gap:3px;">
                 <div class="outcome-row" style="display:flex; justify-content:space-between;">
-                  <span style="color:#a7f3d0;">✅ ${_t('match.single', 'Sencillo (1B)')}</span>
+                  <span style="color:#a7f3d0;">✅ ${_t('match.single', 'Single (1B)')}</span>
                   <span style="color:#a7f3d0; font-weight:bold;">${bounds.outEnd + 1}–${bounds.singleEnd}</span>
                 </div>
                 <div class="outcome-row" style="display:flex; justify-content:space-between;">
-                  <span style="color:#10b981;">⚡ ${_t('match.double', 'Doblete (2B)')}</span>
+                  <span style="color:#10b981;">⚡ ${_t('match.double', 'Double (2B)')}</span>
                   <span style="color:#10b981; font-weight:bold;">${bounds.singleEnd + 1}–${bounds.doubleEnd}</span>
                 </div>
                 <div class="outcome-row" style="display:flex; justify-content:space-between;">
-                  <span style="color:#06b6d4;">🔥 ${_t('match.triple', 'Triplete (3B)')}</span>
+                  <span style="color:#06b6d4;">🔥 ${_t('match.triple', 'Triple (3B)')}</span>
                   <span style="color:#06b6d4; font-weight:bold;">${bounds.doubleEnd + 1}–${bounds.tripleEnd}</span>
                 </div>
                 <div class="outcome-row" style="display:flex; justify-content:space-between;">
-                  <span style="color:#eab308; font-weight:bold;">🚀 ${_t('match.hr', 'Jonrón (HR)')}</span>
+                  <span style="color:#eab308; font-weight:bold;">🚀 ${_t('match.hr', 'Home Run (HR)')}</span>
                   <span style="color:#eab308; font-weight:bold;">${bounds.tripleEnd + 1}–100</span>
                 </div>
               </div>
@@ -2578,6 +2609,7 @@
         const faceTens  = overlay.querySelector('#dex-die-tens-face-front');
         const resultEl  = overlay.querySelector('#dex-dice-result-display');
 
+        // Mid-spin faces
         overlay.querySelectorAll('.d100-die-face:not(.face-front)').forEach(f => {
           f.innerText = Math.floor(Math.random() * 10);
         });
@@ -2603,11 +2635,13 @@
 
         if (window.AudioManager) window.AudioManager.play('menu_click');
 
+        // Units die settles at 550ms
         setTimeout(() => {
           if (cubeUnits) cubeUnits.classList.add('die-settled');
           if (window.AudioManager) window.AudioManager.play('menu_click');
         }, 550);
 
+        // Tens die settles at 850ms, outcome reveals & popup triggers
         setTimeout(() => {
           if (cubeTens) cubeTens.classList.add('die-settled');
           if (window.AudioManager) window.AudioManager.play('menu_click');
