@@ -1528,116 +1528,137 @@
       const p3 = { ...p3Raw, sta: p3Sta, hp: p3Hp, maxHp: p3Hp, role: 'RP', isKO: false };
 
       const pitchers = [p1, p2, p3];
-      const nativePos = batter.primary_pos || batter.pos || 'DH';
-      const defPos = nativePos === 'DH' ? 'CF' : nativePos;
-      const defStat = batter.def !== undefined ? batter.def : (batter.defense_val !== undefined ? batter.defense_val : 50);
-      const initialShield = Math.min(100, Math.max(20, Math.round(defStat)));
 
+      // ── BATTER DEFENSE STAT ────────────────────────────────────────────────
+      const nativePos = batter.pos || batter.primary_position || 'CF';
+      const defPos = (nativePos === 'DH' || nativePos === 'P') ? 'CF' : nativePos;
+      const defStat = batter.def !== undefined ? batter.def : (batter.defense_val || 50);
+
+      // ── MATCH STATE ────────────────────────────────────────────────────────
       const testState = {
-        batter,
-        pitchers,
-        activePitcherIndex: 0,
-        teamHP: 100,
-        teamHPMax: 100,
-        teamShield: initialShield,
-        teamShieldMax: initialShield,
         inning: 1,
-        maxInnings: 3,
         outs: 0,
         runs: 0,
-        bases: [null, null, null], // 1B, 2B, 3B
-        strikeoutChain: 0,
-        pitcherDebuff: null, // { turnsLeft, multiplier }
-        pitchersKO: 0,
+        bases: [null, null, null],
         streak: 0,
-        isRolling: false,
+        soStreak: 0,
+        teamHP: 100,
+        teamShieldMax: defStat,
+        teamShield: defStat,
+        activePitcherIndex: 0,
+        pitchers: pitchers,
+        pitchersKO: 0,
+        pitcherDebuff: null,
         battleOver: false,
-        winner: null, // 'player' | 'pitcher' | 'draw'
-        history: [],
         seenExtraInnings: false,
+        isRolling: false,
         stats: {
-          pa: 0,
-          ab: 0,
-          h: 0,
-          singles: 0,
-          doubles: 0,
-          triples: 0,
-          hr: 0,
-          rbi: 0,
-          r: 0,
-          bb: 0,
-          so: 0,
-          out: 0,
-          sb: 0,
-          totalDamageDealt: 0
+          pa: 0, ab: 0, h: 0, singles: 0, doubles: 0, triples: 0, hr: 0,
+          bb: 0, so: 0, rbi: 0, sb: 0, outs: 0
         }
       };
 
-      // ── BASE ADVANCEMENT HELPERS ───────────────────────────────────────────
-      const forceWalk = (bases, runner) => {
+      // ── HELPER: GRADE & COLORS ─────────────────────────────────────────────
+      const getGrade = (val) => {
+        if (val >= 90) return 'S';
+        if (val >= 80) return 'A';
+        if (val >= 70) return 'B';
+        if (val >= 60) return 'C';
+        if (val >= 50) return 'D';
+        return 'F';
+      };
+
+      const getGradeColor = (g) => {
+        switch(g) {
+          case 'S': return '#ffd700';
+          case 'A': return '#00ff66';
+          case 'B': return '#00d4ff';
+          case 'C': return '#ffff00';
+          case 'D': return '#ff9900';
+          default:  return '#ff3333';
+        }
+      };
+
+      // ── HELPER: RUNNERS ADVANCEMENT ─────────────────────────────────────────
+      const forceWalk = (batterObj) => {
         let runsScored = 0;
-        if (!bases[0]) { bases[0] = runner; return runsScored; }
-        if (!bases[1]) { bases[1] = bases[0]; bases[0] = runner; return runsScored; }
-        if (!bases[2]) { bases[2] = bases[1]; bases[1] = bases[0]; bases[0] = runner; return runsScored; }
-        runsScored++;
-        bases[2] = bases[1];
-        bases[1] = bases[0];
-        bases[0] = runner;
+        if (testState.bases[0]) {
+          if (testState.bases[1]) {
+            if (testState.bases[2]) {
+              runsScored++;
+            }
+            testState.bases[2] = testState.bases[1];
+          }
+          testState.bases[1] = testState.bases[0];
+        }
+        testState.bases[0] = batterObj;
         return runsScored;
       };
 
-      const advanceOnHit = (bases, runner, hitTypeVal, currentOuts) => {
+      const advanceOnHit = (hitType, batterObj) => {
         let runsScored = 0;
-        const r1 = bases[0], r2 = bases[1], r3 = bases[2];
-
-        if (hitTypeVal === 3) { // 3B
-          if (r3) runsScored++;
-          if (r2) runsScored++;
-          if (r1) runsScored++;
-          bases[0] = null; bases[1] = null; bases[2] = runner;
-        } else if (hitTypeVal === 2) { // 2B
-          if (r3) runsScored++;
-          if (r2) runsScored++;
-          if (r1) {
-            const r1Spd = r1.spd || 50;
-            if (currentOuts === 2 || r1Spd >= 70) {
-              runsScored++;
-              bases[0] = null;
+        if (hitType === '1B') {
+          if (testState.bases[2]) { runsScored++; testState.bases[2] = null; }
+          if (testState.bases[1]) {
+            if ((testState.bases[1].spd || 50) >= 70) { runsScored++; testState.bases[1] = null; }
+            else { testState.bases[2] = testState.bases[1]; testState.bases[1] = null; }
+          }
+          if (testState.bases[0]) {
+            if ((testState.bases[0].spd || 50) >= 80 && !testState.bases[2]) {
+              testState.bases[2] = testState.bases[0];
             } else {
-              bases[2] = r1;
-              bases[0] = null;
+              testState.bases[1] = testState.bases[0];
             }
+            testState.bases[0] = null;
           }
-          bases[1] = runner;
-          if (!bases[2] && r1 && (currentOuts === 2 || (r1.spd || 50) >= 70)) bases[2] = null;
-        } else { // 1B
-          if (r3) runsScored++;
-          if (r2) {
-            const r2Spd = r2.spd || 50;
-            if (currentOuts === 2 || r2Spd >= 65) {
-              runsScored++;
-              bases[1] = null;
-            } else {
-              bases[2] = r2;
-              bases[1] = null;
-            }
-          } else {
-            bases[2] = null;
+          testState.bases[0] = batterObj;
+        } else if (hitType === '2B') {
+          if (testState.bases[2]) { runsScored++; testState.bases[2] = null; }
+          if (testState.bases[1]) { runsScored++; testState.bases[1] = null; }
+          if (testState.bases[0]) {
+            if ((testState.bases[0].spd || 50) >= 65) { runsScored++; }
+            else { testState.bases[2] = testState.bases[0]; }
+            testState.bases[0] = null;
           }
-          if (r1) {
-            bases[1] = r1;
+          testState.bases[1] = batterObj;
+        } else if (hitType === '3B') {
+          for (let i = 0; i < 3; i++) {
+            if (testState.bases[i]) { runsScored++; testState.bases[i] = null; }
           }
-          bases[0] = runner;
+          testState.bases[2] = batterObj;
+        } else if (hitType === 'HR') {
+          runsScored = 1;
+          for (let i = 0; i < 3; i++) {
+            if (testState.bases[i]) { runsScored++; testState.bases[i] = null; }
+          }
         }
         return runsScored;
       };
 
-      // ── OUTCOME POPUP (QUICK PLAY REPLICA) ──────────────────────────────────
-      const showOutcomePopup = (eventType, details, durationOverride, didSteal, spdUpgraded) => {
-        const fightDeck = overlay.querySelector('.rpg-fight-deck');
+      // ── HELPER: DEAL CARD IN (QUICK PLAY ANIMATION) ──────────────────────────
+      const dealCardIn = (container, { fromX = 0, delay = 0 } = {}) => {
+        if (!container) return;
+        const card = container.firstElementChild;
+        if (!card) return;
+        container.classList.add('card-deal-perspective');
+        card.style.setProperty('--deal-from-x', `${fromX}px`);
+        card.style.setProperty('--deal-from-y', '0px');
+        card.classList.remove('card-deal-in');
+        void card.offsetWidth;
+        card.style.animationDelay = `${delay}ms`;
+        card.classList.add('card-deal-in');
+        if (window.AudioManager) {
+          setTimeout(() => window.AudioManager.play('card_deal'), delay);
+        }
+      };
+
+      // ── HELPER: OUTCOME POPUP BANNER (EXACT QUICK PLAY TIMINGS & STYLING) ───
+      const showOutcomePopup = (eventType, details, durationOverride, didSteal = false, spdUpgraded = null) => {
+        const fightDeck = overlay.querySelector('.rpg-fight-deck') || overlay.querySelector('.match-arena') || overlay;
         if (!fightDeck) return;
 
-        overlay.querySelectorAll('.outcome-popup-overlay').forEach(el => el.remove());
+        // Remove any old outcome popup
+        fightDeck.querySelectorAll('.outcome-popup-overlay').forEach(p => p.remove());
 
         let title = "";
         let color = "#fff";
@@ -1648,10 +1669,10 @@
 
         switch(eventType) {
           case 'BB':
-            title = "WALK (BB)";
+            title = "BASE ON BALLS (BB)";
             color = "#3b82f6";
-            icon = "fa-person-walking";
-            dmgText = "🚶 PITCHER TAKES DAMAGE!";
+            icon = "fa-walking";
+            dmgText = "🚶 PITCHER TAKES DAMAGE (15 HP)";
             borderColor = "#3b82f6";
             boxShadow = "0 0 30px rgba(59, 130, 246, 0.5), 0 0 15px rgba(59, 130, 246, 0.3)";
             break;
@@ -1659,57 +1680,57 @@
             title = "STRIKEOUT (SO)!";
             color = "#ef4444";
             icon = "fa-circle-xmark";
-            dmgText = "💀 DIRECT HP DAMAGE (IGNORES SHIELD)";
+            dmgText = "💀 DIRECT DAMAGE (IGNORES SHIELD)";
             borderColor = "#ef4444";
-            boxShadow = "0 0 35px rgba(239, 68, 68, 0.6), 0 0 15px rgba(239, 68, 68, 0.4)";
+            boxShadow = "0 0 30px rgba(239, 68, 68, 0.5), 0 0 15px rgba(239, 68, 68, 0.3)";
             break;
           case 'OUT':
-            title = "OUT (FLY / GROUND)!";
+            title = "OUT (FLY / GROUND)";
             color = "#9ca3af";
-            icon = "fa-hand";
-            dmgText = "✋ SHIELD ABSORBS DAMAGE (-18 HP)";
-            borderColor = "#6b7280";
-            boxShadow = "0 0 25px rgba(107, 114, 128, 0.4)";
+            icon = "fa-thumbs-down";
+            dmgText = "🛡️ SHIELD ABSORBS DAMAGE";
+            borderColor = "#9ca3af";
+            boxShadow = "0 0 30px rgba(156, 163, 175, 0.5), 0 0 15px rgba(156, 163, 175, 0.3)";
             break;
           case '1B':
             title = "SINGLE (1B)!";
             color = "#a7f3d0";
             icon = "fa-baseball-bat-ball";
-            dmgText = "✅ PITCHER TAKES DAMAGE";
+            dmgText = "⚾ PITCHER TAKES DAMAGE (20 HP)";
             borderColor = "#10b981";
-            boxShadow = "0 0 30px rgba(16, 185, 129, 0.5)";
+            boxShadow = "0 0 30px rgba(16, 185, 129, 0.5), 0 0 15px rgba(16, 185, 129, 0.3)";
             break;
           case '2B':
-            title = "DOUBLE (2B)!";
+            title = "DOUBLE (2B) ⚡";
             color = "#10b981";
-            icon = "fa-bolt";
-            dmgText = "⚡ PITCHER TAKES HEAVY DAMAGE";
+            icon = "fa-bolt-lightning";
+            dmgText = "⚡ DOUBLE DAMAGE (35 HP)";
             borderColor = "#10b981";
-            boxShadow = "0 0 35px rgba(16, 185, 129, 0.6)";
+            boxShadow = "0 0 30px rgba(16, 185, 129, 0.6), 0 0 15px rgba(16, 185, 129, 0.4)";
             break;
           case '3B':
-            title = "TRIPLE (3B)!";
+            title = "TRIPLE (3B) 🔥";
             color = "#06b6d4";
             icon = "fa-fire";
-            dmgText = "🔥 PITCHER TAKES CRITICAL DAMAGE";
+            dmgText = "🔥 TRIPLE DAMAGE (50 HP)";
             borderColor = "#06b6d4";
-            boxShadow = "0 0 40px rgba(6, 182, 212, 0.7)";
+            boxShadow = "0 0 30px rgba(6, 182, 212, 0.6), 0 0 15px rgba(6, 182, 212, 0.4)";
             break;
           case 'HR':
-            title = "🚀 HOME RUN! 🚀";
-            color = "#ffd700";
-            icon = "fa-trophy";
-            dmgText = "💥 MASSIVE HIT! PITCHER -75 HP BASE";
-            borderColor = "#ffd700";
-            boxShadow = "0 0 50px rgba(255, 215, 0, 0.8), 0 0 20px rgba(255, 215, 0, 0.5)";
+            title = "HOME RUN! 🚀💥";
+            color = "#eab308";
+            icon = "fa-rocket";
+            dmgText = "🚀 CRITICAL HIT! PITCHER -75 HP BASE";
+            borderColor = "#eab308";
+            boxShadow = "0 0 45px rgba(234, 179, 8, 0.7), 0 0 20px rgba(234, 179, 8, 0.5)";
             break;
-          case 'KO':
-            title = "💥 PITCHER K.O.! 🥊";
-            color = "#ffd700";
-            icon = "fa-skull-crossbones";
-            dmgText = "RIVAL PITCHER HAS BEEN ELIMINATED!";
-            borderColor = "#ef4444";
-            boxShadow = "0 0 50px rgba(239, 68, 68, 0.8)";
+          case 'STEAL':
+            title = "STOLEN BASE! 🏃⚡";
+            color = "#38bdf8";
+            icon = "fa-person-running";
+            dmgText = "⚡ PITCHER DEBUFF: +20% DAMAGE TAKEN";
+            borderColor = "#38bdf8";
+            boxShadow = "0 0 35px rgba(56, 189, 248, 0.7)";
             break;
           default:
             title = eventType;
@@ -1743,26 +1764,31 @@
           max-width: 320px;
         `;
 
+        let spdUpgradeHTML = '';
+        if (spdUpgraded) {
+          spdUpgradeHTML = `
+            <div style="font-family:'Press Start 2P',monospace; font-size:8px; color:#38bdf8; background:rgba(56,189,248,0.16); border:1.5px solid #38bdf8; padding:6px 10px; border-radius:8px; margin-bottom:8px; width:100%; line-height:1.35; box-shadow:0 0 12px rgba(56,189,248,0.4); text-shadow:0 0 6px #38bdf8;">
+              ⚡ EXTRA BASE BY SPEED!
+              <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; font-size:10.5px; font-weight:normal; color:#e0f2fe; margin-top:3px; line-height:1.3;">
+                <strong>${batter.name}</strong> stretched the hit (${spdUpgraded.from} ➔ ${spdUpgraded.to})!
+              </div>
+            </div>`;
+        }
+
         popup.innerHTML = `
-          <div style="font-size: 26px; color: ${color}; filter: drop-shadow(0 0 10px ${color}); margin-bottom: 6px;">
+          <div style="font-size: 32px; color: ${color}; margin-bottom: 8px; filter: drop-shadow(0 0 8px ${color});">
             <i class="fa-solid ${icon}"></i>
           </div>
-          <div style="font-family: 'Press Start 2P', monospace; font-size: 13px; color: ${color}; letter-spacing: 1px; text-shadow: 0 0 10px ${color}; margin-bottom: 6px;">
+          <div style="font-family: 'Press Start 2P', monospace; font-size: 12px; font-weight: bold; color: ${color}; text-shadow: 0 0 10px ${color}; margin-bottom: 8px;">
             ${title}
           </div>
-          <div style="font-size: 11px; color: #cbd5e1; max-width: 260px; line-height: 1.35; margin-bottom: 4px;">
-            ${details || dmgText}
+          ${spdUpgradeHTML}
+          <div style="font-size: 11.5px; color: #e2e8f0; line-height: 1.35; margin-bottom: 8px;">
+            ${details || ''}
           </div>
-          ${spdUpgraded ? `
-            <div style="font-family:'Press Start 2P',monospace; font-size:8px; color:#38bdf8; background:rgba(56,189,248,0.18); border:1.5px solid #38bdf8; padding:5px 8px; border-radius:6px; margin-top:6px; line-height:1.3; box-shadow:0 0 10px rgba(56,189,248,0.4);">
-              ⚡ EXTRA BASE BY SPEED! (SPD ${batter.spd || 50})
-            </div>
-          ` : ''}
-          ${didSteal ? `
-            <div style="font-family:'Press Start 2P',monospace; font-size:8px; color:#06b6d4; background:rgba(6,182,212,0.2); border:1.5px solid #06b6d4; padding:5px 8px; border-radius:6px; margin-top:6px; line-height:1.3; box-shadow:0 0 10px rgba(6,182,212,0.4);">
-              🏃 STOLEN BASE! (+20% Pitcher Damage Debuff)
-            </div>
-          ` : ''}
+          <div style="font-family: 'Press Start 2P', monospace; font-size: 7.5px; color: #f59e0b; letter-spacing: 0.5px; border-top: 1px dashed rgba(255,255,255,0.15); width: 100%; padding-top: 8px; margin-top: 4px;">
+            ${dmgText}
+          </div>
         `;
 
         fightDeck.style.position = "relative";
@@ -1771,7 +1797,7 @@
         setTimeout(() => {
           popup.style.transform = "translate(-50%, -50%) scale(1)";
           popup.style.opacity = "1";
-        }, 15);
+        }, 10);
 
         let isDismissed = false;
         const dismissPopup = () => {
@@ -1783,31 +1809,33 @@
         };
 
         popup.addEventListener('click', dismissPopup);
-        const duration = durationOverride || (eventType === 'HR' ? 1200 : 1000);
-        setTimeout(dismissPopup, duration);
+        const displayTime = durationOverride || (spdUpgraded ? 1300 : (eventType === 'HR' ? 1200 : (eventType === 'STEAL' ? 850 : 900)));
+        setTimeout(dismissPopup, displayTime);
       };
 
-      // ── PITCHER KO ARCADE JUICE ─────────────────────────────────────────────
-      const triggerPitcherKOJuice = (defeatedPitcherName, nextPitcher) => {
+      // ── PITCHER KO ARCADE JUICE & BULLPEN SEQUENCE (EXACT QUICK PLAY) ───────
+      const triggerPitcherKOJuice = (defeatedPitcherName, nextPitcher, onReliefEntered) => {
         const arena = overlay.querySelector('.dex-test-arena-box') || overlay.querySelector('#screen-match') || overlay;
         const fightDeck = overlay.querySelector('.rpg-fight-deck') || arena;
 
-        // Screen flash
+        // Clear existing banners
+        overlay.querySelectorAll('.arcade-transition-banner, .outcome-popup-overlay, .match-screen-flash').forEach(el => el.remove());
+
+        // 1. Screen flash & Heavy screen shake
         const flash = document.createElement('div');
         flash.className = 'match-screen-flash';
         arena.appendChild(flash);
         setTimeout(() => flash.remove(), 450);
 
-        // Screen shake
         arena.classList.remove('screen-shake-heavy');
         void arena.offsetWidth;
         arena.classList.add('screen-shake-heavy');
         setTimeout(() => arena.classList.remove('screen-shake-heavy'), 600);
 
-        // Sound
+        // 2. Heavy KO sound
         if (window.AudioManager) window.AudioManager.play('pitcher_ko');
 
-        // KO Stamp on Pitcher Card
+        // 3. Stamp "K.O.!" badge on Pitcher Card
         const pSlot = overlay.querySelector('#arena-pitcher-card-slot');
         if (pSlot) {
           pSlot.querySelectorAll('.ko-stamp-badge').forEach(s => s.remove());
@@ -1816,24 +1844,69 @@
           stamp.innerHTML = `<i class="fa-solid fa-skull-crossbones"></i> K.O.!`;
           pSlot.style.position = 'relative';
           pSlot.appendChild(stamp);
+
+          const card = pSlot.querySelector('.player-card');
+          if (card) {
+            card.classList.remove('pitcher-card-defeated');
+            void card.offsetWidth;
+            card.classList.add('pitcher-card-defeated');
+          }
         }
 
-        // Arcade Transition Banner
+        // 4. Arcade Cinematic Banner: PITCHER K.O.! (1100ms)
         const koBanner = document.createElement('div');
         koBanner.className = 'arcade-transition-banner banner-ko';
         koBanner.innerHTML = `
           <div class="arcade-banner-main">🥊💥 PITCHER K.O.!</div>
-          <div class="arcade-banner-sub">${defeatedPitcherName} — DEFEATED!</div>
+          <div class="arcade-banner-sub">${defeatedPitcherName ? `${defeatedPitcherName} — ` : ''}PITCHER DEFEATED!</div>
         `;
         fightDeck.appendChild(koBanner);
         setTimeout(() => koBanner.remove(), 1100);
+
+        // 5. If relief pitcher exists, transition after 1100ms
+        if (nextPitcher) {
+          setTimeout(() => {
+            // Animate old card and stamp exiting
+            if (pSlot) {
+              const card = pSlot.querySelector('.player-card');
+              if (card) {
+                card.classList.remove('pitcher-card-defeated');
+                card.classList.add('pitcher-card-exit');
+              }
+              const stamp = pSlot.querySelector('.ko-stamp-badge');
+              if (stamp) stamp.classList.add('pitcher-card-exit');
+            }
+
+            // Bullpen siren & sound
+            if (window.AudioManager) window.AudioManager.play('bullpen_enter');
+
+            overlay.querySelectorAll('.arcade-transition-banner').forEach(el => el.remove());
+
+            const nextName = nextPitcher.name || 'Relief Pitcher';
+            const nextOvr = typeof window.getPlayerOvr === 'function' ? window.getPlayerOvr(nextPitcher) : (nextPitcher.ovr || 70);
+
+            const bullpenBanner = document.createElement('div');
+            bullpenBanner.className = 'arcade-transition-banner banner-bullpen';
+            bullpenBanner.innerHTML = `
+              <div class="arcade-banner-main">🚨 BULLPEN ALERT! 🚨</div>
+              <div class="arcade-banner-sub">Relief Pitcher: ${nextName} (OVR ${nextOvr})</div>
+            `;
+            fightDeck.appendChild(bullpenBanner);
+            setTimeout(() => bullpenBanner.remove(), 1100);
+
+            // Reliever entrance callback at 250ms
+            setTimeout(() => {
+              if (onReliefEntered) onReliefEntered();
+            }, 250);
+
+          }, 1100);
+        }
       };
 
       // ── DEFENSIVE CHALLENGE MODAL (END OF INNING EVENT) ─────────────────────
       const showDefensiveChallenge = (endedInning, onComplete) => {
         const isExtra = (endedInning >= 3);
         const effDef = batter.def !== undefined ? batter.def : (batter.defense_val || 50);
-        const baseThreshold = Math.min(100, Math.max(20, Math.round(30 + effDef * 0.6)));
 
         const defModal = document.createElement('div');
         defModal.className = 'modal-overlay def-modal-backdrop';
@@ -1915,152 +1988,69 @@
                 <div style="font-size:9px; color:#9ca3af;">Safe glove (+20 Shield)</div>
               </div>
               <div class="def-tactic-card" id="btn-tactic-clutch" style="cursor:pointer; border:1px solid rgba(255,255,255,0.15); border-radius:8px; padding:8px; background:rgba(0,0,0,0.3); text-align:left;">
-                <div style="font-family:'Press Start 2P',monospace; font-size:8px; color:#cbd5e1; margin-bottom:3px;">⚡ HIGHLIGHT PLAY</div>
-                <div style="font-size:9px; color:#9ca3af;">Diving attempt (-12% Target • +60 Shield)</div>
+                <div style="font-family:'Press Start 2P',monospace; font-size:8px; color:#ffd700; margin-bottom:3px;">⚡ DIVE PLAY</div>
+                <div style="font-size:9px; color:#9ca3af;">High reward (+60 Shield)</div>
               </div>
             </div>
 
-            <!-- Tension Gauge -->
-            <div style="margin-bottom:12px;">
-              <div style="display:flex; justify-content:space-between; font-family:'Press Start 2P',monospace; font-size:7.5px; margin-bottom:4px;">
-                <span style="color:#34d399;" id="def-catch-label">🟢 CATCH ZONE (1–<span id="def-thresh-val">${baseThreshold}</span>)</span>
-                <span style="color:#f43f5e;" id="def-error-label">🔴 ERROR (<span id="def-err-start">${baseThreshold + 1}</span>–100)</span>
-              </div>
-              <div class="def-gauge-wrapper" style="position:relative; height:12px; background:rgba(0,0,0,0.6); border-radius:6px; overflow:hidden; border:1px solid rgba(255,255,255,0.15);">
-                <div id="def-catch-bar" style="height:100%; width:${baseThreshold}%; background:linear-gradient(90deg, #10b981, #34d399); transition:width .2s;"></div>
-                <div id="def-needle" style="position:absolute; top:0; bottom:0; width:3px; background:#fff; display:none; transition:left .3s;"></div>
-              </div>
-            </div>
-
-            <!-- 3D Defense Dice -->
-            <div id="def-dice-d100-panel" style="display:flex; flex-direction:column; align-items:center; gap:4px; margin-bottom:12px;">
-              <div style="display:flex; gap:10px;">
-                <div class="d100-die" id="def-die-tens">
-                  <div class="d100-die-cube" id="def-die-tens-cube">
-                    <div class="d100-die-face face-front" id="def-die-tens-front">0</div>
-                    <div class="d100-die-face face-back">5</div>
-                    <div class="d100-die-face face-right">2</div>
-                    <div class="d100-die-face face-left">7</div>
-                    <div class="d100-die-face face-top">4</div>
-                    <div class="d100-die-face face-bottom">9</div>
-                  </div>
-                </div>
-                <div class="d100-die" id="def-die-units">
-                  <div class="d100-die-cube" id="def-die-units-cube">
-                    <div class="d100-die-face face-front" id="def-die-units-front">0</div>
-                    <div class="d100-die-face face-back">5</div>
-                    <div class="d100-die-face face-right">2</div>
-                    <div class="d100-die-face face-left">0</div>
-                    <div class="d100-die-face face-top">0</div>
-                    <div class="d100-die-face face-bottom">0</div>
-                  </div>
-                </div>
-              </div>
-              <div id="def-dice-readout" style="font-family:'Press Start 2P',monospace; font-size:15px; color:#fff; margin-top:4px;">–</div>
-            </div>
-
-            <!-- Roll Button -->
+            <!-- Action Zone -->
             <div id="def-action-zone">
-              <button class="def-roll-btn btn" id="btn-def-roll" style="width:100%; padding:12px; font-family:'Press Start 2P',monospace; font-size:9.5px; background:linear-gradient(135deg, #10b981, #059669); color:#000; font-weight:bold; border:none; border-radius:8px; cursor:pointer;">
-                🧤 EXECUTE DEFENSIVE PLAY!
+              <button id="btn-def-roll" class="btn" style="width:100%; padding:12px; font-family:'Press Start 2P',monospace; font-size:10px; background:linear-gradient(135deg, #3b82f6, #1d4ed8); color:#fff; border:none; border-radius:8px; cursor:pointer; box-shadow:0 0 15px rgba(59,130,246,0.5);">
+                🎲 ROLL DEFENSIVE DICE
               </button>
             </div>
 
-            <!-- Result Zone -->
-            <div id="def-result-zone" class="hidden" style="margin-top:12px;"></div>
+            <div id="def-result-zone" style="margin-top:10px; display:none;"></div>
           </div>
         `;
 
         document.body.appendChild(defModal);
-
         if (window.AudioManager) window.AudioManager.play('defense_tension_intro');
 
         let isClutch = false;
-        const updateThreshold = () => {
-          const currentThresh = isClutch ? Math.max(10, baseThreshold - 12) : baseThreshold;
-          const bar = defModal.querySelector('#def-catch-bar');
-          if (bar) bar.style.width = `${currentThresh}%`;
-          const threshVal = defModal.querySelector('#def-thresh-val');
-          if (threshVal) threshVal.innerText = currentThresh;
-          const errStart = defModal.querySelector('#def-err-start');
-          if (errStart) errStart.innerText = currentThresh + 1;
-        };
-
         const btnSafe = defModal.querySelector('#btn-tactic-safe');
         const btnClutch = defModal.querySelector('#btn-tactic-clutch');
 
         if (btnSafe && btnClutch) {
           btnSafe.onclick = () => {
             isClutch = false;
+            btnSafe.style.border = '1px solid #10b981';
             btnSafe.style.background = 'rgba(16,185,129,0.12)';
-            btnSafe.style.borderColor = '#10b981';
-            btnSafe.querySelector('div').style.color = '#10b981';
-
+            btnClutch.style.border = '1px solid rgba(255,255,255,0.15)';
             btnClutch.style.background = 'rgba(0,0,0,0.3)';
-            btnClutch.style.borderColor = 'rgba(255,255,255,0.15)';
-            btnClutch.querySelector('div').style.color = '#cbd5e1';
-            updateThreshold();
           };
-
           btnClutch.onclick = () => {
             isClutch = true;
-            btnClutch.style.background = 'rgba(245,158,11,0.18)';
-            btnClutch.style.borderColor = '#f59e0b';
-            btnClutch.querySelector('div').style.color = '#f59e0b';
-
+            btnClutch.style.border = '1px solid #ffd700';
+            btnClutch.style.background = 'rgba(255,215,0,0.15)';
+            btnSafe.style.border = '1px solid rgba(255,255,255,0.15)';
             btnSafe.style.background = 'rgba(0,0,0,0.3)';
-            btnSafe.style.borderColor = 'rgba(255,255,255,0.15)';
-            btnSafe.querySelector('div').style.color = '#cbd5e1';
-            updateThreshold();
           };
         }
 
         const btnRoll = defModal.querySelector('#btn-def-roll');
+        const actionZone = defModal.querySelector('#def-action-zone');
+        const resultZone = defModal.querySelector('#def-result-zone');
+
         if (btnRoll) {
           btnRoll.onclick = () => {
             btnRoll.disabled = true;
-            btnRoll.innerText = '⚾ FIELDING IN PLAY...';
-
-            const cubeUnits = defModal.querySelector('#def-die-units-cube');
-            const cubeTens  = defModal.querySelector('#def-die-tens-cube');
-            const faceUnits = defModal.querySelector('#def-die-units-front');
-            const faceTens  = defModal.querySelector('#def-die-tens-front');
-            const readout   = defModal.querySelector('#def-dice-readout');
+            if (window.AudioManager) window.AudioManager.play('menu_click');
 
             const roll = Math.floor(Math.random() * 100) + 1;
-            const tensVal = roll === 100 ? 0 : Math.floor(roll / 10);
-            const unitsVal = roll === 100 ? 0 : (roll % 10);
+            const baseThresh = Math.min(100, Math.max(20, Math.round(30 + effDef * 0.6)));
+            const currentThresh = isClutch ? Math.max(15, baseThresh - 12) : baseThresh;
+            const isSuccess = roll <= currentThresh;
 
-            if (cubeUnits) { cubeUnits.classList.remove('tumbling-units', 'die-settled'); void cubeUnits.offsetWidth; cubeUnits.classList.add('tumbling-units'); }
-            if (cubeTens)  { cubeTens.classList.remove('tumbling-tens', 'die-settled');   void cubeTens.offsetWidth;  cubeTens.classList.add('tumbling-tens'); }
-
-            if (window.AudioManager) window.AudioManager.play('defense_dice_roll');
-
-            setTimeout(() => {
-              if (faceUnits) faceUnits.innerText = unitsVal;
-              if (cubeUnits) cubeUnits.classList.add('die-settled');
-              if (window.AudioManager) window.AudioManager.play('menu_click');
-            }, 550);
+            actionZone.innerHTML = `
+              <div style="font-family:'Press Start 2P',monospace; font-size:16px; color:#ffd700; margin:10px 0;">
+                ROLL: ${roll} / ${currentThresh}
+              </div>
+            `;
 
             setTimeout(() => {
-              if (faceTens) faceTens.innerText = tensVal;
-              if (cubeTens) cubeTens.classList.add('die-settled');
-              if (readout) readout.innerText = `${roll}`;
-
-              const currentThresh = isClutch ? Math.max(10, baseThreshold - 12) : baseThreshold;
-              const isSuccess = (roll <= currentThresh);
-
-              const needle = defModal.querySelector('#def-needle');
-              if (needle) {
-                needle.style.display = 'block';
-                needle.style.left = `${roll}%`;
-                needle.style.background = isSuccess ? '#4ade80' : '#f43f5e';
-              }
-
-              const resultZone = defModal.querySelector('#def-result-zone');
-              const actionZone = defModal.querySelector('#def-action-zone');
-              if (actionZone) actionZone.classList.add('hidden');
-              if (resultZone) resultZone.classList.remove('hidden');
+              actionZone.style.display = 'none';
+              resultZone.style.display = 'block';
 
               if (isSuccess) {
                 const shieldGained = isClutch ? 60 : 20;
@@ -2101,7 +2091,6 @@
                 if (isExtra) {
                   testState.teamHP = 0;
                   testState.battleOver = true;
-                  testState.winner = 'pitcher';
 
                   resultZone.innerHTML = `
                     <div style="background:rgba(239,68,68,0.2); border:1.5px solid #ef4444; border-radius:8px; padding:10px; color:#fca5a5; font-size:11px; margin-bottom:10px;">
@@ -2323,19 +2312,38 @@
         if (pNameDisp) pNameDisp.innerText = `${curPitcher.name} (${curPitcher.role || 'SP'})`;
 
         const pHPFill = overlay.querySelector('#dex-pitcher-hp-fill');
-        if (pHPFill) pHPFill.style.width = `${Math.max(0, (curPitcher.hp / curPitcher.maxHp) * 100)}%`;
+        if (pHPFill) {
+          pHPFill.style.width = `${Math.max(0, (curPitcher.hp / curPitcher.maxHp) * 100)}%`;
+          pHPFill.style.background = (curPitcher.hp / curPitcher.maxHp) <= 0.25
+            ? 'linear-gradient(90deg,#ff3333,#ff6666)'
+            : (curPitcher.hp / curPitcher.maxHp) <= 0.5
+            ? 'linear-gradient(90deg,#ffcc00,#ffeb60)'
+            : 'linear-gradient(90deg,#00ff66,#66ffa6)';
+        }
 
         const pHPText = overlay.querySelector('#dex-pitcher-hp-text');
         if (pHPText) pHPText.innerText = `${Math.max(0, curPitcher.hp)}/${curPitcher.maxHp} HP`;
 
-        const clutchWrap = overlay.querySelector('#dex-pitcher-clutch-wrap');
-        if (clutchWrap) {
-          if (pClutchStatus.active) {
-            clutchWrap.innerHTML = `<span style="color:#ef4444; background:rgba(239,68,68,0.15); border:1px solid #ef4444; padding:2px 4px; border-radius:3px;">🔥 RISP CLUTCH (${pClutchStatus.val >= 0 ? '+' : ''}${pClutchStatus.val})</span>`;
-          } else if (testState.pitcherDebuff && testState.pitcherDebuff.turnsLeft > 0) {
-            clutchWrap.innerHTML = `<span style="color:#06b6d4; background:rgba(6,182,212,0.15); border:1px solid #06b6d4; padding:2px 4px; border-radius:3px;">⚡ STOLEN BASE DEBUFF (+20% DMG)</span>`;
+        // Pitcher Clutch Badge (using official CSS classes)
+        const clutchBadge = overlay.querySelector('#dex-pitcher-clutch-badge');
+        if (clutchBadge) {
+          if (pClutchStatus && pClutchStatus.active) {
+            clutchBadge.innerHTML = `<span class="pitcher-clutch-pill ${pClutchStatus.cssClass || ''}">${pClutchStatus.icon || '🔥'} PITCHER CLUTCH: ${pClutchStatus.label}</span>`;
+            clutchBadge.style.display = 'block';
           } else {
-            clutchWrap.innerHTML = `<span style="color:#64748b;">STANDARD FOCUS</span>`;
+            clutchBadge.innerHTML = '';
+            clutchBadge.style.display = 'none';
+          }
+        }
+
+        // Pitcher Debuff Badge
+        const debuffBadge = overlay.querySelector('#dex-pitcher-debuff-badge');
+        if (debuffBadge) {
+          if (testState.pitcherDebuff && testState.pitcherDebuff.turnsLeft > 0) {
+            debuffBadge.style.display = 'block';
+            debuffBadge.innerText = `⚡ DEBUFF: +20% DMG (${testState.pitcherDebuff.turnsLeft}t)`;
+          } else {
+            debuffBadge.style.display = 'none';
           }
         }
 
@@ -2415,302 +2423,218 @@
         const zonesLines = overlay.querySelector('#dex-zones-lines');
         if (zonesLines) {
           zonesLines.innerHTML = `
-            <div class="outcome-probabilities-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:6px; font-size:8px;">
-              <div style="display:flex; flex-direction:column; gap:3px;">
-                <div class="outcome-row" style="display:flex; justify-content:space-between;">
-                  <span style="color:#3b82f6;">⚾ ${_t('match.bb', 'Walk (BB)')}</span>
-                  <span style="color:#3b82f6; font-weight:bold;">1–${bounds.bbEnd}</span>
-                </div>
-                <div class="outcome-row" style="display:flex; justify-content:space-between;">
-                  <span style="color:#ef4444;">💨 ${_t('match.so', 'Strikeout (SO)')}</span>
-                  <span style="color:#ef4444; font-weight:bold;">${bounds.bbEnd + 1}–${bounds.soEnd}</span>
-                </div>
-                <div class="outcome-row" style="display:flex; justify-content:space-between;">
-                  <span style="color:#9ca3af;">🤚 ${_t('match.out', 'Out (Fly/GO)')}</span>
-                  <span style="color:#9ca3af; font-weight:bold;">${bounds.soEnd + 1}–${bounds.outEnd}</span>
-                </div>
-              </div>
-              <div style="display:flex; flex-direction:column; gap:3px;">
-                <div class="outcome-row" style="display:flex; justify-content:space-between;">
-                  <span style="color:#a7f3d0;">✅ ${_t('match.single', 'Single (1B)')}</span>
-                  <span style="color:#a7f3d0; font-weight:bold;">${bounds.outEnd + 1}–${bounds.singleEnd}</span>
-                </div>
-                <div class="outcome-row" style="display:flex; justify-content:space-between;">
-                  <span style="color:#10b981;">⚡ ${_t('match.double', 'Double (2B)')}</span>
-                  <span style="color:#10b981; font-weight:bold;">${bounds.singleEnd + 1}–${bounds.doubleEnd}</span>
-                </div>
-                <div class="outcome-row" style="display:flex; justify-content:space-between;">
-                  <span style="color:#06b6d4;">🔥 ${_t('match.triple', 'Triple (3B)')}</span>
-                  <span style="color:#06b6d4; font-weight:bold;">${bounds.doubleEnd + 1}–${bounds.tripleEnd}</span>
-                </div>
-                <div class="outcome-row" style="display:flex; justify-content:space-between;">
-                  <span style="color:#eab308; font-weight:bold;">🚀 ${_t('match.hr', 'Home Run (HR)')}</span>
-                  <span style="color:#eab308; font-weight:bold;">${bounds.tripleEnd + 1}–100</span>
-                </div>
-              </div>
+            <div style="display:flex; justify-content:space-between; color:#3b82f6; font-size:7px; font-family:'Press Start 2P',monospace;">
+              <span>🚶 Walk (BB)</span><span>1–${bounds.bbEnd}</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; color:#ef4444; font-size:7px; font-family:'Press Start 2P',monospace;">
+              <span>💨 Strikeout (SO)</span><span>${bounds.bbEnd + 1}–${bounds.soEnd}</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; color:#9ca3af; font-size:7px; font-family:'Press Start 2P',monospace;">
+              <span>✋ Out (Fly/GD)</span><span>${bounds.soEnd + 1}–${bounds.outEnd}</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; color:#a7f3d0; font-size:7px; font-family:'Press Start 2P',monospace;">
+              <span>⚾ Single (1B)</span><span>${bounds.outEnd + 1}–${bounds.singleEnd}</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; color:#10b981; font-size:7px; font-family:'Press Start 2P',monospace;">
+              <span>⚡ Double (2B)</span><span>${bounds.singleEnd + 1}–${bounds.doubleEnd}</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; color:#06b6d4; font-size:7px; font-family:'Press Start 2P',monospace;">
+              <span>🔥 Triple (3B)</span><span>${bounds.doubleEnd + 1}–${bounds.tripleEnd}</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; color:#eab308; font-size:7px; font-family:'Press Start 2P',monospace;">
+              <span>🚀 Home Run (HR)</span><span>${bounds.tripleEnd + 1}–100</span>
             </div>
           `;
         }
-
-        // Diamond base glows
-        const b1 = overlay.querySelector('#dex-base-1');
-        const b2 = overlay.querySelector('#dex-base-2');
-        const b3 = overlay.querySelector('#dex-base-3');
-        const bHome = overlay.querySelector('#dex-base-home');
-
-        if (b1) {
-          b1.setAttribute('fill', testState.bases[0] ? '#00ff66' : 'rgba(255,255,255,0.1)');
-          b1.setAttribute('stroke', testState.bases[0] ? '#00ff66' : 'rgba(255,255,255,0.3)');
-        }
-        if (b2) {
-          b2.setAttribute('fill', testState.bases[1] ? '#00ff66' : 'rgba(255,255,255,0.1)');
-          b2.setAttribute('stroke', testState.bases[1] ? '#00ff66' : 'rgba(255,255,255,0.3)');
-        }
-        if (b3) {
-          b3.setAttribute('fill', testState.bases[2] ? '#00ff66' : 'rgba(255,255,255,0.1)');
-          b3.setAttribute('stroke', testState.bases[2] ? '#00ff66' : 'rgba(255,255,255,0.3)');
-        }
-        if (bHome) {
-          bHome.setAttribute('fill', 'rgba(255,255,255,0.25)');
-        }
       };
 
-      // ── RESOLVE TURN LOGIC ──────────────────────────────────────────────────
+      // ── RESOLVE TURN LOGIC ─────────────────────────────────────────────────
       const resolveTurn = (bounds, curPitcher) => {
-        const roll = Math.floor(Math.random() * 100) + 1;
-        let rType = 'OUT', rText = 'Out (Groundout / Flyout)', rColor = '#9ca3af';
-        let pitcherDmg = 0;
-        let teamHpDmg = 0;
-        let shieldDmg = 0;
-        let runsThisTurn = 0;
-        let didSteal = false;
-        let spdUpgraded = false;
-        let isPitcherKO = false;
+        const isExtra = testState.inning >= 4;
+        testState.stats.pa++;
 
-        const isExtra = (testState.inning >= 4);
-        const S = testState.stats;
-        S.pa++;
-
-        const effCon = batter.con || 50;
-        const effPwr = batter.pwr || 50;
-        const effEye = batter.eye || 50;
-        const effSpd = batter.spd || 50;
-
-        if (roll <= bounds.bbEnd) {
-          // ── BASE ON BALLS (BB) ──
-          rType = 'BB';
-          rText = 'Patient Walk (BB) 🚶';
-          rColor = '#3b82f6';
-          testState.strikeoutChain = 0;
-
-          runsThisTurn = forceWalk(testState.bases, batter);
-          pitcherDmg = Math.round(15 + (effEye / 10) + (runsThisTurn * 10));
-
-          // Base Steal on BB
-          if (effSpd >= 40 && testState.bases[0] === batter && !testState.bases[1]) {
-            const stealChance = Math.min(0.85, Math.max(0.15, (effSpd / 115)));
-            if (Math.random() < stealChance) {
-              testState.bases[1] = batter;
-              testState.bases[0] = null;
-              didSteal = true;
-              S.sb++;
-            }
-          }
-
-          S.bb++;
-          testState.streak = 0;
-
-        } else if (roll <= bounds.soEnd) {
-          // ── STRIKEOUT (SO) ──
-          rType = 'SO';
-          rText = 'Swinging Strikeout (SO) 💨💀';
-          rColor = '#ef4444';
-          testState.strikeoutChain++;
-
-          // Direct Team HP Damage (bypasses shield)
-          const baseSoDmg = isExtra ? 30 : 20;
-          const streakBonus = isExtra ? Math.min(15, (testState.strikeoutChain - 1) * 8) : Math.min(10, (testState.strikeoutChain - 1) * 5);
-          teamHpDmg = baseSoDmg + streakBonus;
-          testState.teamHP = Math.max(0, testState.teamHP - teamHpDmg);
-
-          testState.outs++;
-          S.ab++; S.so++; S.out++;
-          testState.streak = 0;
-
-        } else if (roll <= bounds.outEnd) {
-          // ── OUT (Groundout / Flyout) ──
-          rType = 'OUT';
-          rText = 'Routine Out (Fly / Groundout) 🤚';
-          rColor = '#9ca3af';
-          testState.strikeoutChain = 0;
-
-          const outDmg = isExtra ? 30 : 18;
-          if (testState.teamShield >= outDmg) {
-            testState.teamShield -= outDmg;
-            shieldDmg = outDmg;
-          } else {
-            shieldDmg = testState.teamShield;
-            const remainder = outDmg - testState.teamShield;
-            testState.teamShield = 0;
-            teamHpDmg = remainder;
-            testState.teamHP = Math.max(0, testState.teamHP - remainder);
-          }
-
-          testState.outs++;
-          S.ab++; S.out++;
-          testState.streak = 0;
-
-        } else {
-          // ── HITS (1B, 2B, 3B, HR) ──
-          testState.strikeoutChain = 0;
-          testState.streak++;
-
-          if (roll <= bounds.singleEnd) {
-            // ── SINGLE (1B) ──
-            rType = '1B';
-            rText = 'Line Drive Single (1B)! ✅';
-            rColor = '#a7f3d0';
-
-            // Speed extra base check (1B -> 2B)
-            let actualHitVal = 1;
-            if (effSpd >= 78 && Math.random() < ((effSpd - 75) * 0.015)) {
-              actualHitVal = 2;
-              spdUpgraded = true;
-              rText = 'Sharp Single stretched into Double! ⚡';
-            }
-
-            runsThisTurn = advanceOnHit(testState.bases, batter, actualHitVal, testState.outs);
-            pitcherDmg = Math.round((actualHitVal === 2 ? 30 : 20) * (1 + (effCon / 100)) + (runsThisTurn * 10));
-
-            // Steal check
-            if (actualHitVal === 1 && effSpd >= 40 && testState.bases[0] === batter && !testState.bases[1]) {
-              const stealChance = Math.min(0.90, Math.max(0.15, (effSpd / 110)));
-              if (Math.random() < stealChance) {
-                testState.bases[1] = batter;
-                testState.bases[0] = null;
-                didSteal = true;
-                S.sb++;
-              }
-            }
-
-            S.ab++; S.h++;
-            if (actualHitVal === 2) S.doubles++; else S.singles++;
-
-          } else if (roll <= bounds.doubleEnd) {
-            // ── DOUBLE (2B) ──
-            rType = '2B';
-            rText = 'Crushed Gap Double (2B)! ⚡';
-            rColor = '#10b981';
-            runsThisTurn = advanceOnHit(testState.bases, batter, 2, testState.outs);
-            pitcherDmg = Math.round(35 * (1 + (effPwr / 100)) + (runsThisTurn * 10));
-
-            // Steal 3B
-            if (effSpd >= 60 && testState.bases[1] === batter && !testState.bases[2]) {
-              const steal3BChance = Math.min(0.65, Math.max(0.10, ((effSpd / 2) / 100)));
-              if (Math.random() < steal3BChance) {
-                testState.bases[2] = batter;
-                testState.bases[1] = null;
-                didSteal = true;
-                S.sb++;
-              }
-            }
-
-            S.ab++; S.h++; S.doubles++;
-
-          } else if (roll <= bounds.tripleEnd) {
-            // ── TRIPLE (3B) ──
-            rType = '3B';
-            rText = 'Corner Rocket Triple (3B)! 🔥';
-            rColor = '#06b6d4';
-            runsThisTurn = advanceOnHit(testState.bases, batter, 3, testState.outs);
-            pitcherDmg = Math.round(50 + (effPwr / 5) + (effSpd / 5) + (runsThisTurn * 10));
-            S.ab++; S.h++; S.triples++;
-
-          } else {
-            // ── HOME RUN (HR) ──
-            rType = 'HR';
-            rText = 'MONUMENTAL HOME RUN! 🚀💣';
-            rColor = '#ffd700';
-            const runnersOnBase = testState.bases.filter(Boolean).length;
-            runsThisTurn = 1 + runnersOnBase;
-            testState.bases = [null, null, null];
-            pitcherDmg = Math.round(75 * (1 + (effPwr * 1.5) / 100) + (runnersOnBase * 12));
-            S.ab++; S.h++; S.hr++;
-          }
-        }
-
-        // Apply Runs & RBI
-        if (runsThisTurn > 0) {
-          testState.runs += runsThisTurn;
-          S.rbi += runsThisTurn;
-          S.r += (rType === 'HR' ? 1 : 0);
-        }
-
-        // Apply Pitcher Damage & Debuff
-        if (pitcherDmg > 0) {
-          if (testState.pitcherDebuff && testState.pitcherDebuff.turnsLeft > 0) {
-            pitcherDmg = Math.round(pitcherDmg * testState.pitcherDebuff.multiplier);
-          }
-          curPitcher.hp = Math.max(0, curPitcher.hp - pitcherDmg);
-          S.totalDamageDealt += pitcherDmg;
-        }
-
-        // Decrement pitcher debuff
-        if (testState.pitcherDebuff && testState.pitcherDebuff.turnsLeft > 0) {
+        if (testState.pitcherDebuff) {
           testState.pitcherDebuff.turnsLeft--;
           if (testState.pitcherDebuff.turnsLeft <= 0) testState.pitcherDebuff = null;
         }
 
-        // Steal applies +20% debuff to pitcher
-        if (didSteal) {
-          testState.pitcherDebuff = { turnsLeft: 2, multiplier: 1.20 };
+        const roll = Math.floor(Math.random() * 100) + 1;
+        let rType = 'OUT';
+        let rColor = '#9ca3af';
+        let rText = 'Batter grounds out.';
+        let pitcherDmg = 0;
+        let teamHpDmg = 0;
+        let runsThisTurn = 0;
+        let didSteal = false;
+        let spdUpgraded = null;
+
+        if (roll <= bounds.bbEnd) {
+          rType = 'BB';
+          rColor = '#3b82f6';
+          rText = `${batter.name} shows great patience and draws a Walk!`;
+          testState.stats.bb++;
+          testState.streak = 0;
+          testState.soStreak = 0;
+          runsThisTurn = forceWalk(batter);
+          pitcherDmg = 15;
+
+          const bSpd = batter.spd || 50;
+          if (bSpd >= 50 && Math.random() < 0.35) {
+            didSteal = true;
+            testState.stats.sb++;
+            if (!testState.bases[1]) {
+              testState.bases[1] = testState.bases[0];
+              testState.bases[0] = null;
+            }
+            testState.pitcherDebuff = { turnsLeft: 2 };
+          }
+        } else if (roll <= bounds.soEnd) {
+          rType = 'SO';
+          rColor = '#ef4444';
+          testState.stats.ab++;
+          testState.stats.so++;
+          testState.outs++;
+          testState.streak = 0;
+          testState.soStreak++;
+
+          const soDmgTable = isExtra ? [30, 38, 45] : [20, 25, 30];
+          const directDmg = soDmgTable[Math.min(testState.soStreak - 1, 2)];
+          teamHpDmg = directDmg;
+          testState.teamHP = Math.max(0, testState.teamHP - directDmg);
+
+          rText = `Whiff and a miss! Strikeout #${testState.soStreak} (-${directDmg} HP directly to Team!)`;
+        } else if (roll <= bounds.outEnd) {
+          rType = 'OUT';
+          rColor = '#9ca3af';
+          testState.stats.ab++;
+          testState.outs++;
+          testState.streak = 0;
+          testState.soStreak = 0;
+
+          const outPenalty = isExtra ? 30 : 20;
+          if (testState.teamShield > 0) {
+            const sDmg = Math.min(testState.teamShield, outPenalty);
+            testState.teamShield -= sDmg;
+            const overflow = outPenalty - sDmg;
+            if (overflow > 0) {
+              testState.teamHP = Math.max(0, testState.teamHP - overflow);
+              teamHpDmg = overflow;
+            }
+          } else {
+            testState.teamHP = Math.max(0, testState.teamHP - outPenalty);
+            teamHpDmg = outPenalty;
+          }
+
+          rText = `Solid contact caught on the fly (-${outPenalty} Team Shield damage).`;
+        } else {
+          // HIT!
+          testState.stats.ab++;
+          testState.stats.h++;
+          testState.streak++;
+          testState.soStreak = 0;
+
+          if (roll <= bounds.singleEnd) {
+            rType = '1B';
+            rColor = '#a7f3d0';
+            testState.stats.singles++;
+            pitcherDmg = 20;
+            rText = `${batter.name} ropes a clean Single into the outfield!`;
+
+            const bSpd = batter.spd || 50;
+            if (bSpd >= 60 && Math.random() < 0.28) {
+              rType = '2B';
+              spdUpgraded = { from: '1B', to: '2B', spd: bSpd };
+              pitcherDmg = 35;
+              testState.stats.doubles++;
+              testState.stats.singles--;
+              runsThisTurn = advanceOnHit('2B', batter);
+              rText = `⚡ SPEED UPGRADE: ${batter.name} hustles and stretches into a Double!`;
+            } else {
+              runsThisTurn = advanceOnHit('1B', batter);
+              if (bSpd >= 50 && Math.random() < 0.35) {
+                didSteal = true;
+                testState.stats.sb++;
+                if (!testState.bases[1]) {
+                  testState.bases[1] = testState.bases[0];
+                  testState.bases[0] = null;
+                }
+                testState.pitcherDebuff = { turnsLeft: 2 };
+              }
+            }
+          } else if (roll <= bounds.doubleEnd) {
+            rType = '2B';
+            rColor = '#10b981';
+            testState.stats.doubles++;
+            pitcherDmg = 35;
+            rText = `Deep gap smash! ${batter.name} slides in with a Double!`;
+
+            const bSpd = batter.spd || 50;
+            if (bSpd >= 75 && Math.random() < 0.22) {
+              rType = '3B';
+              spdUpgraded = { from: '2B', to: '3B', spd: bSpd };
+              pitcherDmg = 50;
+              testState.stats.triples++;
+              testState.stats.doubles--;
+              runsThisTurn = advanceOnHit('3B', batter);
+              rText = `🔥 WHEELS! ${batter.name} legs out a thrilling Triple!`;
+            } else {
+              runsThisTurn = advanceOnHit('2B', batter);
+            }
+          } else if (roll <= bounds.tripleEnd) {
+            rType = '3B';
+            rColor = '#06b6d4';
+            testState.stats.triples++;
+            pitcherDmg = 50;
+            runsThisTurn = advanceOnHit('3B', batter);
+            rText = `Rocket off the wall! Standing Triple for ${batter.name}!`;
+          } else {
+            rType = 'HR';
+            rColor = '#ffd700';
+            testState.stats.hr++;
+            pitcherDmg = 75;
+            runsThisTurn = advanceOnHit('HR', batter);
+            rText = `NO DOUBT ABOUT IT! A towering Home Run by ${batter.name}!`;
+          }
+
+          if (runsThisTurn > 0) {
+            testState.runs += runsThisTurn;
+            testState.stats.rbi += runsThisTurn;
+            pitcherDmg += (runsThisTurn * 10);
+            rText += ` (${runsThisTurn} run${runsThisTurn > 1 ? 's' : ''} scored!)`;
+          }
         }
 
-        // Check Pitcher KO
-        if (curPitcher.hp <= 0) {
-          curPitcher.isKO = true;
-          isPitcherKO = true;
-          testState.pitchersKO++;
+        if (testState.pitcherDebuff && pitcherDmg > 0) {
+          pitcherDmg = Math.round(pitcherDmg * 1.2);
         }
 
-        // Inning Advance (3 Outs)
+        // Apply Pitcher Damage
+        let isPitcherKO = false;
+        if (pitcherDmg > 0) {
+          curPitcher.hp -= pitcherDmg;
+          if (curPitcher.hp <= 0) {
+            curPitcher.hp = 0;
+            curPitcher.isKO = true;
+            isPitcherKO = true;
+            testState.pitchersKO++;
+          }
+        }
+
+        // Check 3 outs -> end of half-inning
         let didAdvanceInning = false;
         if (testState.outs >= 3) {
           didAdvanceInning = true;
         }
 
-        // Check Battle End
-        if (testState.teamHP <= 0) {
-          testState.battleOver = true;
-          testState.winner = 'pitcher';
-        } else if (testState.pitchersKO >= testState.pitchers.length) {
-          testState.battleOver = true;
-          testState.winner = 'player';
-        }
-
-        testState.history.push({
-          atBatNum: testState.stats.pa,
-          inning: testState.inning,
-          pitcher: curPitcher,
-          roll,
-          resultType: rType,
-          resultText: rText,
-          color: rColor,
-          didSteal,
-          spdUpgraded,
-          pitcherDmg,
-          teamHpDmg,
-          shieldDmg,
-          runsThisTurn,
-          isPitcherKO
-        });
-
-        return { roll, rType, rText, rColor, pitcherDmg, teamHpDmg, shieldDmg, runsThisTurn, didSteal, spdUpgraded, isPitcherKO, didAdvanceInning };
+        return {
+          roll, rType, rColor, rText, pitcherDmg, teamHpDmg, runsThisTurn,
+          didSteal, spdUpgraded, isPitcherKO, didAdvanceInning
+        };
       };
 
-      // ── HANDLE INTERACTIVE 3D DICE ROLL ─────────────────────────────────────
+      // ── HANDLE DICE ROLL (SEQUENTIAL POPUP QUEUE & NO OVERLAPS) ─────────────
       const handleDiceRoll = () => {
-        if (testState.isRolling || testState.battleOver) return;
+        if (testState.battleOver || testState.isRolling) return;
         testState.isRolling = true;
 
         const rollBtn = overlay.querySelector('#btn-dex-roll-dice');
@@ -2739,7 +2663,7 @@
         const faceTens  = overlay.querySelector('#dex-die-tens-face-front');
         const resultEl  = overlay.querySelector('#dex-dice-result-display');
 
-        // Mid-spin faces
+        // Mid-spin random faces
         overlay.querySelectorAll('.d100-die-face:not(.face-front)').forEach(f => {
           f.innerText = Math.floor(Math.random() * 10);
         });
@@ -2771,7 +2695,7 @@
           if (window.AudioManager) window.AudioManager.play('menu_click');
         }, 550);
 
-        // Tens die settles at 850ms, outcome reveals & popup triggers
+        // Tens die settles at 850ms, outcome reveals & popups queue
         setTimeout(() => {
           if (cubeTens) cubeTens.classList.add('die-settled');
           if (window.AudioManager) window.AudioManager.play('menu_click');
@@ -2783,7 +2707,14 @@
 
           // Animate Pitcher HP Bar
           const pHPFill = overlay.querySelector('#dex-pitcher-hp-fill');
-          if (pHPFill) pHPFill.style.width = `${Math.max(0, (curPitcher.hp / curPitcher.maxHp) * 100)}%`;
+          if (pHPFill) {
+            pHPFill.style.width = `${Math.max(0, (curPitcher.hp / curPitcher.maxHp) * 100)}%`;
+            pHPFill.style.background = (curPitcher.hp / curPitcher.maxHp) <= 0.25
+              ? 'linear-gradient(90deg,#ff3333,#ff6666)'
+              : (curPitcher.hp / curPitcher.maxHp) <= 0.5
+              ? 'linear-gradient(90deg,#ffcc00,#ffeb60)'
+              : 'linear-gradient(90deg,#00ff66,#66ffa6)';
+          }
 
           const pHPText = overlay.querySelector('#dex-pitcher-hp-text');
           if (pHPText) pHPText.innerText = `${Math.max(0, curPitcher.hp)}/${curPitcher.maxHp} HP`;
@@ -2823,21 +2754,37 @@
             bHome.setAttribute('fill', outcome.rType === 'HR' ? '#ffd700' : 'rgba(255,255,255,0.25)');
           }
 
-          // Match Narrative Log entry
-          const logLines = overlay.querySelector('#dex-match-log-lines');
-          if (logLines) {
-            const logEntry = document.createElement('div');
-            logEntry.className = `log-line ${['HR','3B','2B','1B'].includes(outcome.rType) ? 'run-scored bold' : ''}`;
-            logEntry.style.fontSize = '8.5px';
-            logEntry.style.color = outcome.rColor;
+          // ── VT323 RETRO COMBAT LOG (100% READABLE & MATCHES QUICK PLAY) ─────
+          const logContainer = overlay.querySelector('#dex-match-log-lines');
+          if (logContainer) {
+            const line = document.createElement('div');
+            const isHit = ['HR','3B','2B','1B'].includes(outcome.rType);
+            line.className = 'match-log-line' + (isHit ? ' run-scored bold' : '');
+            line.style.cssText = "font-family:'VT323',monospace; font-size:18px; line-height:1.25; margin-bottom:4px; border-bottom:1px dashed rgba(0,255,102,0.15); padding-bottom:3px;";
+
+            if (['HR','3B','2B','1B'].includes(outcome.rType)) {
+              line.style.color = '#ffd700';
+              line.style.textShadow = '0 0 4px rgba(255,215,0,0.5)';
+            } else if (outcome.rType === 'SO') {
+              line.style.color = '#ef4444';
+              line.style.textShadow = '0 0 4px rgba(239,68,68,0.5)';
+            } else if (outcome.rType === 'BB') {
+              line.style.color = '#38bdf8';
+            } else if (outcome.rType === 'OUT') {
+              line.style.color = '#9ca3af';
+            } else {
+              line.style.color = '#00ff66';
+            }
+
             let logMsg = `[Inn ${testState.inning} vs ${curPitcher.name}] <strong>${outcome.rType}</strong>: ${outcome.rText} (Roll: ${outcome.roll})`;
             if (outcome.pitcherDmg > 0) logMsg += ` • Pitcher -${outcome.pitcherDmg} HP`;
             if (outcome.teamHpDmg > 0) logMsg += ` • Team -${outcome.teamHpDmg} HP`;
             if (outcome.didSteal) logMsg += ` • 🏃 <strong>STOLEN BASE!</strong>`;
             if (outcome.isPitcherKO) logMsg += ` • 💥 <strong>PITCHER K.O.!</strong>`;
-            logEntry.innerHTML = logMsg;
-            logLines.appendChild(logEntry);
-            logLines.parentElement.scrollTop = logLines.parentElement.scrollHeight;
+
+            line.innerHTML = logMsg;
+            logContainer.appendChild(line);
+            logContainer.scrollTop = logContainer.scrollHeight;
           }
 
           // Live Scoreboard
@@ -2885,30 +2832,63 @@
             else window.AudioManager.play('out');
           }
 
-          // KO juice if pitcher eliminated
-          if (outcome.isPitcherKO) {
-            const nextP = testState.pitchers[testState.activePitcherIndex + 1];
-            triggerPitcherKOJuice(curPitcher.name, nextP);
+          // ── STRICT POPUP & KO QUEUE (ZERO OVERLAPS, EXACT QUICK PLAY TIMINGS) ─
+          const POPUP_GAP = 140;
+          let cursor = 0;
+
+          // 1. Play outcome popup
+          const playDur = outcome.spdUpgraded ? 1300 : (outcome.rType === 'HR' ? 1200 : (outcome.rType === 'STEAL' ? 850 : 900));
+          setTimeout(() => {
+            showOutcomePopup(outcome.rType, outcome.rText, playDur, false, outcome.spdUpgraded);
+          }, cursor);
+          cursor += playDur + POPUP_GAP;
+
+          // 2. Steal popup if stolen base occurred
+          if (outcome.didSteal) {
+            const stealDur = 850;
+            setTimeout(() => {
+              showOutcomePopup('STEAL', 'Stolen Base! Pitcher debuffed (+20% damage taken).', stealDur);
+            }, cursor);
+            cursor += stealDur + POPUP_GAP;
           }
 
-          // Popup displays AFTER dice have stopped
-          const popupDuration = outcome.rType === 'HR' ? 1200 : 1000;
-          showOutcomePopup(outcome.isPitcherKO ? 'KO' : outcome.rType, outcome.rText, popupDuration, outcome.didSteal, outcome.spdUpgraded);
+          // 3. Pitcher KO juice if pitcher was eliminated
+          if (outcome.isPitcherKO) {
+            const nextP = (testState.activePitcherIndex < testState.pitchers.length - 1)
+              ? testState.pitchers[testState.activePitcherIndex + 1]
+              : null;
 
-          // Once popup concludes, advance
+            setTimeout(() => {
+              // HP bar immediately to 0
+              if (pHPFill) {
+                pHPFill.style.width = '0%';
+                pHPFill.style.background = 'linear-gradient(90deg,#ff3333,#ff6666)';
+              }
+              if (pHPText) pHPText.innerText = '0 HP (K.O.)';
+
+              triggerPitcherKOJuice(curPitcher.name, nextP, () => {
+                testState.activePitcherIndex++;
+                updatePitcherCardDOM();
+                const pSlot = overlay.querySelector('#arena-pitcher-card-slot');
+                if (pSlot) dealCardIn(pSlot, { fromX: 70, delay: 0 });
+              });
+            }, cursor);
+
+            // KO banner (1100ms) + Bullpen banner if next pitcher (1100ms) + buffer
+            const koTotalDur = nextP ? (1100 + 1100 + 350) : 1200;
+            cursor += koTotalDur + POPUP_GAP;
+          }
+
+          // ── ON ALL POPUPS FINISHED ─────────────────────────────────────────
           setTimeout(() => {
-            if (outcome.isPitcherKO && testState.activePitcherIndex < testState.pitchers.length - 1) {
-              testState.activePitcherIndex++;
-            }
-
-            // Check if battle over
-            if (testState.battleOver || testState.teamHP <= 0 || testState.pitchersKO >= 3) {
+            // Check match ending
+            if (testState.teamHP <= 0 || testState.pitchersKO >= 3) {
               testState.battleOver = true;
               renderSummary();
               return;
             }
 
-            // Check if 3 outs reached -> trigger Defensive Challenge
+            // Check inning completion (3 outs) -> Defensive Challenge
             if (outcome.didAdvanceInning) {
               const endedInning = testState.inning;
               showDefensiveChallenge(endedInning, () => {
@@ -2917,14 +2897,12 @@
                   return;
                 }
 
-                // Advance to next inning
                 testState.inning++;
                 testState.outs = 0;
                 testState.bases = [null, null, null];
                 testState.pitcherDebuff = null;
                 testState.teamShield = Math.min(testState.teamShieldMax, testState.teamShield + 15);
 
-                // If entering Extra Innings (>= 4) for the first time, show Sudden Death modal
                 if (testState.inning >= 4 && !testState.seenExtraInnings) {
                   testState.seenExtraInnings = true;
                   showExtraInningsModal(() => {
@@ -2946,7 +2924,7 @@
               if (rollBtn) rollBtn.disabled = false;
               if (autoBtn) autoBtn.disabled = false;
             }
-          }, popupDuration + 150);
+          }, cursor);
 
         }, 850);
       };
@@ -2966,52 +2944,50 @@
                 <i class="fa-solid fa-trophy"></i> <span>BATTING PRACTICE • TACTICAL COMBAT</span>
               </div>
               <div style="display:flex; align-items:center; gap:12px;">
-                <div id="dex-hdr-atbat-badge" style="background:#000; border:1.5px solid #ffd700; color:#ffd700; font-family:'Press Start 2P',monospace; font-size:8.5px; padding:4px 8px; border-radius:4px; box-shadow:0 0 10px rgba(255,215,0,0.3);">
+                <span id="dex-hdr-atbat-badge" style="font-family:'Press Start 2P',monospace; font-size:8.5px; color:#ffd700; border:1px solid #ffd700; padding:4px 8px; border-radius:4px; background:rgba(0,0,0,0.6);">
                   INN 1 • OUT 0
-                </div>
-                <button id="btn-test-modal-close" style="background:none; border:none; color:#9ca3af; font-size:22px; cursor:pointer; line-height:1;">✕</button>
+                </span>
+                <button id="btn-test-modal-close" style="background:none; border:none; color:#9ca3af; font-size:20px; cursor:pointer; padding:0 4px; line-height:1;">&times;</button>
               </div>
             </div>
 
-            <!-- 2-Column Match Arena -->
-            <div class="match-arena">
+            <!-- Match Arena Grid (1.2fr left, 1fr right) -->
+            <div class="match-arena" style="display:grid; grid-template-columns:1.2fr 1fr; gap:20px; align-items:start;">
               
-              <!-- Left Column: 1v1 Battle Arena -->
-              <div style="display:flex; flex-direction:column; gap:14px; justify-content:center; align-items:center; flex:1.2;">
+              <!-- Left Column: Scoreboard, Cards Faceoff, HP & Rotation Queue -->
+              <div style="display:flex; flex-direction:column; gap:14px;">
                 
-                <!-- LED Scoreboard & Diamond -->
-                <div class="scoreboard" style="width:100%; text-align:center; font-family:'Press Start 2P',monospace; font-size:10px; padding:12px 14px; line-height:1.6;">
-                  <div class="scoreboard-text-panel" style="width:100%;">
-                    <div style="display:flex; justify-content:space-between; font-size:8.5px; margin-bottom:6px; color:#ffd700;">
-                      <div><span>INNING:</span> <span id="dex-scoreboard-inning" style="color:#fff;">1 / 3</span></div>
-                      <div><span>RUNS (R):</span> <span id="dex-scoreboard-runs" style="color:#00ff66;">0</span></div>
-                    </div>
-                    <div style="display:flex; justify-content:space-around; font-size:8px; margin-bottom:6px;">
-                      <div><span>HITS:</span> <span id="dex-scoreboard-hits" style="color:#00ff66; font-weight:bold;">0</span></div>
-                      <div><span>OUTS:</span> <span id="dex-scoreboard-outs" style="color:#ef4444; font-weight:bold;">○ ○ ○</span></div>
-                      <div><span>STOLEN (SB):</span> <span id="dex-scoreboard-sb" style="color:#06b6d4; font-weight:bold;">0</span></div>
-                    </div>
-                    <div style="display:flex; justify-content:space-around; font-size:8px; border-top:1px dashed rgba(255,255,255,0.1); padding-top:6px;">
-                      <div><span>RIVAL K.O.s:</span> <span id="dex-scoreboard-ko" style="color:#ca8a04;">0 / 3</span></div>
-                      <div><span>HIT STREAK:</span> <span id="dex-scoreboard-streak" style="color:#f59e0b;">0</span></div>
-                    </div>
+                <!-- LED Scoreboard -->
+                <div class="scoreboard" style="width:100%; text-align:center; font-family:'Press Start 2P',monospace; font-size:9px; padding:12px 14px; line-height:1.6;">
+                  <div style="display:flex; justify-content:space-between; margin-bottom:8px; border-bottom:1px dashed rgba(255,255,255,0.15); padding-bottom:6px;">
+                    <div>INNING: <span id="dex-scoreboard-inning" style="color:#ffd700;">1 / 3</span></div>
+                    <div>RUNS (R): <span id="dex-scoreboard-runs" style="color:#00ff66;">0</span></div>
+                  </div>
+                  <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                    <div>HITS: <span id="dex-scoreboard-hits" style="color:#ffd700;">0</span></div>
+                    <div>OUTS: <span id="dex-scoreboard-outs" style="color:#ef4444;">○ ○ ○</span></div>
+                    <div>STOLEN (SB): <span id="dex-scoreboard-sb" style="color:#38bdf8;">0</span></div>
+                  </div>
+                  <div style="display:flex; justify-content:space-between; border-top:1px dashed rgba(255,255,255,0.1); padding-top:6px;">
+                    <div>RIVAL K.O.: <span id="dex-scoreboard-ko" style="color:#f59e0b;">0 / 3</span></div>
+                    <div>HIT STREAK: <span id="dex-scoreboard-streak" style="color:#a855f7;">0</span></div>
                   </div>
 
-                  <!-- Diamond Visual Board -->
+                  <!-- Diamond SVG Bases -->
                   <div style="border-top:1px dashed rgba(255,255,255,0.1); padding-top:8px; margin-top:8px; display:flex; justify-content:center; align-items:center;">
-                    <svg viewBox="0 0 100 100" style="width:50px; height:50px;">
-                      <path d="M 50 15 L 85 50 L 50 85 L 15 50 Z" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="2" stroke-dasharray="2,2" />
-                      <rect id="dex-base-2" x="44" y="9" width="12" height="12" rx="1" transform="rotate(45 50 15)" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.25)" stroke-width="1.5" style="transition:all 0.3s;" />
-                      <rect id="dex-base-3" x="9" y="44" width="12" height="12" rx="1" transform="rotate(45 15 50)" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.25)" stroke-width="1.5" style="transition:all 0.3s;" />
-                      <rect id="dex-base-1" x="79" y="44" width="12" height="12" rx="1" transform="rotate(45 85 50)" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.25)" stroke-width="1.5" style="transition:all 0.3s;" />
-                      <polygon id="dex-base-home" points="50,79 55,84 55,89 45,89 45,84" fill="rgba(255,255,255,0.25)" stroke="rgba(255,255,255,0.4)" stroke-width="1" />
+                    <svg viewBox="0 0 100 100" style="width:52px; height:52px;">
+                      <path d="M 50 15 L 85 50 L 50 85 L 15 50 Z" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="2" stroke-dasharray="2,2" />
+                      <rect id="dex-base-2" x="44" y="9" width="12" height="12" rx="1" transform="rotate(45 50 15)" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.3)" stroke-width="1.5" />
+                      <rect id="dex-base-3" x="9" y="44" width="12" height="12" rx="1" transform="rotate(45 15 50)" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.3)" stroke-width="1.5" />
+                      <rect id="dex-base-1" x="79" y="44" width="12" height="12" rx="1" transform="rotate(45 85 50)" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.3)" stroke-width="1.5" />
+                      <polygon id="dex-base-home" points="50,79 55,84 55,89 45,89 45,84" fill="rgba(255,255,255,0.25)" stroke="rgba(255,255,255,0.35)" stroke-width="1" />
                     </svg>
                   </div>
                 </div>
 
-                <!-- 1v1 Fight Cards View -->
-                <div class="rpg-fight-deck" style="display:flex; align-items:center; gap:20px; margin:10px 0; justify-content:center; width:100%; position:relative;">
-                  <div class="fight-card-slot">
+                <!-- 1v1 Cards Faceoff Deck -->
+                <div class="rpg-fight-deck" style="display:flex; align-items:center; gap:20px; justify-content:center; width:100%;">
+                  <div class="fight-card-slot" id="arena-batter-card-slot">
                     ${batterCardHTML}
                   </div>
 
@@ -3039,7 +3015,7 @@
                       </div>
                     </div>
 
-                    <div style="flex:1;">
+                    <div style="flex:1; text-align:right;">
                       <div class="faceoff-name" id="dex-pitcher-name-disp" style="font-size:12px; font-weight:bold; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:#ef4444; text-align:right;">
                         --
                       </div>
@@ -3048,10 +3024,11 @@
                       <div class="hp-bar-container" style="height:12px; background:rgba(0,0,0,0.5); border-radius:6px; margin-top:6px; overflow:hidden; border:1px solid rgba(239,68,68,0.25);">
                         <div class="hp-bar-fill" id="dex-pitcher-hp-fill" style="width:100%; height:100%; background:linear-gradient(90deg, #dc2626, #ef4444); transition:width 0.3s ease;"></div>
                       </div>
-                      <div style="display:flex; justify-content:space-between; font-size:7.5px; font-family:'Press Start 2P',monospace; margin-top:3px;">
+                      <div style="display:flex; justify-content:space-between; align-items:center; font-size:7.5px; font-family:'Press Start 2P',monospace; margin-top:3px;">
                         <span id="dex-pitcher-hp-text" style="color:#ef4444;">150/150 HP</span>
-                        <div id="dex-pitcher-clutch-wrap"></div>
+                        <div id="dex-pitcher-debuff-badge" style="display:none; color:#38bdf8; background:rgba(56,189,248,0.15); border:1px solid #38bdf8; border-radius:3px; padding:2px 4px;">⚡ DEBUFF</div>
                       </div>
+                      <div id="dex-pitcher-clutch-badge" style="display:none; margin-top:4px; text-align:right;"></div>
                     </div>
                   </div>
 
@@ -3117,32 +3094,31 @@
                         </div>
                       </div>
                     </div>
-                    <div id="dex-dice-result-display" style="font-family:'Press Start 2P',monospace; font-size:13px; color:#9ca3af; letter-spacing:1px; min-height:18px;">
+                    <div id="dex-dice-result-display" style="font-family:'Press Start 2P',monospace; font-size:16px; color:#fff; letter-spacing:1px; margin-top:2px;">
                       –
                     </div>
                   </div>
 
-                  <!-- Lucky Zones Panel -->
-                  <div id="zones-panel-wrap" style="width:100%;">
-                    <details id="zones-panel" open>
-                      <summary id="zones-panel-header" style="font-family:'Press Start 2P',monospace; font-size:8px; color:#cbd5e1; cursor:pointer; margin-bottom:6px;">🎯 ${_t('match.luck_zones', 'Luck Zones')}</summary>
-                      <div id="dex-zones-lines"></div>
+                  <!-- Luck Zones Collapsible Panel -->
+                  <div style="width:100%;">
+                    <details id="dex-zones-panel" open style="background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:8px;">
+                      <summary style="font-family:'Press Start 2P',monospace; font-size:7.5px; color:#f59e0b; cursor:pointer;">🎯 Luck Zones</summary>
+                      <div id="dex-zones-lines" style="display:flex; flex-direction:column; gap:4px; margin-top:8px;"></div>
                     </details>
                   </div>
 
                   <!-- Action Buttons -->
-                  <div id="dice-action-bar" style="width:100%; display:flex; flex-direction:column; gap:8px;">
+                  <div style="width:100%; display:flex; flex-direction:column; gap:8px; margin-top:4px;">
                     <button id="btn-dex-roll-dice" style="
                       font-family:'Press Start 2P',monospace;
-                      font-size:12px; padding:14px 24px;
+                      font-size:12px; padding:14px 20px;
                       background:linear-gradient(135deg,#7c3aed,#4f46e5);
                       color:#fff; border:none; border-radius:10px;
                       cursor:pointer; letter-spacing:1px;
-                      box-shadow:0 0 18px rgba(124,58,237,0.5);
-                      transition:transform .1s,box-shadow .1s;
+                      box-shadow:0 0 20px rgba(124,58,237,0.5);
                       width:100%;
                     "><i class="fa-solid fa-dice"></i> ROLL DICE</button>
-                    
+
                     <button id="btn-dex-fast-auto" class="btn" style="
                       font-family:'Press Start 2P',monospace;
                       font-size:10px; padding:12px 18px;
@@ -3155,14 +3131,14 @@
 
                 </div>
 
-                <!-- Match History Log -->
-                <div class="match-log" style="height:170px; max-height:170px; display:flex; flex-direction:column; flex:none;">
+                <!-- Match History Log (VT323 Retro Arcade Styling) -->
+                <div class="match-log" style="height:200px; max-height:200px; display:flex; flex-direction:column; flex:none;">
                   <div class="match-log-header">
                     <span>COMBAT LOG</span>
                     <i class="fa-solid fa-list-check" style="opacity:0.6;"></i>
                   </div>
-                  <div class="match-log-content" id="dex-match-log-lines" style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:4px; padding:8px 10px;">
-                    <div class="log-line" style="font-size:8.5px; color:#64748b; font-style:italic;">Ready for the first pitch...</div>
+                  <div class="match-log-content" id="dex-match-log-lines" style="flex:1; overflow-y:auto; max-height:200px;">
+                    <div class="match-log-line" style="color:#64748b; font-style:italic;">Ready for the first pitch...</div>
                   </div>
                 </div>
 
@@ -3187,14 +3163,31 @@
         const autoBtn = overlay.querySelector('#btn-dex-fast-auto');
         if (autoBtn) {
           autoBtn.onclick = () => {
-            while (!testState.battleOver && testState.activePitcherIndex < testState.pitchers.length) {
+            if (testState.isRolling) return;
+            testState.isRolling = true;
+            if (rollBtn) rollBtn.disabled = true;
+            autoBtn.disabled = true;
+
+            while (!testState.battleOver && testState.pitchersKO < 3 && testState.teamHP > 0) {
               const curP = testState.pitchers[testState.activePitcherIndex];
+              if (!curP) break;
               const cBounds = (typeof window.calcBoundaries === 'function')
                 ? window.calcBoundaries(batter, curP, { inning: testState.inning, bases: testState.bases, hasTrait: () => false })
                 : { bbEnd: 11, soEnd: 26, outEnd: 41, singleEnd: 76, doubleEnd: 86, tripleEnd: 87 };
               
-              resolveTurn(cBounds, curP);
+              const res = resolveTurn(cBounds, curP);
+              if (res.isPitcherKO && testState.activePitcherIndex < testState.pitchers.length - 1) {
+                testState.activePitcherIndex++;
+              }
+              if (res.didAdvanceInning) {
+                testState.inning++;
+                testState.outs = 0;
+                testState.bases = [null, null, null];
+                testState.pitcherDebuff = null;
+                testState.teamShield = Math.min(testState.teamShieldMax, testState.teamShield + 15);
+              }
             }
+            updatePitcherCardDOM();
             renderSummary();
           };
         }
@@ -3215,37 +3208,10 @@
         const bSpd = batter.spd || 50;
 
         const pH9 = previewPitcher.h9 !== undefined ? previewPitcher.h9 : 50;
-        const pHr9 = previewPitcher.hr9 !== undefined ? previewPitcher.hr9 : 50;
-        const pBb9 = previewPitcher.bb9 !== undefined ? previewPitcher.bb9 : 50;
         const pK9 = previewPitcher.k9 !== undefined ? previewPitcher.k9 : 50;
-        const pSta = previewPitcher.sta !== undefined ? previewPitcher.sta : 65;
-
-        const diffCon = bCon - pH9;
-        const diffPwr = bPwr - pHr9;
-        const diffEye = bEye - pBb9;
-        const diffK   = bKAvd - pK9;
-        const diffSpd = bSpd - pSta;
-
-        const formatDiff = (diff) => {
-          if (diff > 0) return `<span class="clash-diff-pill diff-positive">+${diff}</span>`;
-          if (diff < 0) return `<span class="clash-diff-pill diff-negative">${diff}</span>`;
-          return `<span class="clash-diff-pill diff-neutral">0</span>`;
-        };
-
-        const netAdvantage = diffCon + diffK + (diffPwr * 0.8) + (diffEye * 0.6);
-        let overallText = '🟡 BALANCED DUEL';
-        let overallClass = 'edge-even';
-        let tipText = '⚖️ Close duel: Dice rolls and situational timing will decide the at-bat.';
-
-        if (netAdvantage >= 16) {
-          overallText = '🟢 ADVANTAGE: HITTER';
-          overallClass = 'edge-hitter';
-          tipText = '💡 Green light: Your batter has tactical leverage to punish rival pitching.';
-        } else if (netAdvantage <= -16) {
-          overallText = '🔴 ADVANTAGE: PITCHER';
-          overallClass = 'edge-pitcher';
-          tipText = '⚠️ Danger: Pitcher commands the strike zone. High strikeout and weak contact risk.';
-        }
+        const pBB9 = previewPitcher.bb9 !== undefined ? previewPitcher.bb9 : 50;
+        const pHR9 = previewPitcher.hr9 !== undefined ? previewPitcher.hr9 : 50;
+        const pSta = previewPitcher.sta !== undefined ? previewPitcher.sta : 50;
 
         const batterCardHTML = (typeof window.createCardHTML === 'function')
           ? window.createCardHTML(batter, nativePos)
@@ -3255,169 +3221,153 @@
           ? window.createCardHTML(previewPitcher, previewPitcher.role || 'SP')
           : `<div class="player-card"><div class="card-name">${previewPitcher.name}</div></div>`;
 
-        // Pitcher bullpen rows with accurate OVR and stamina-based max HP
-        const bullpenRows = pitchers.map((p, idx) => {
-          const isSelected = (idx === previewPitcherIdx);
-          const pOvr = typeof window.getPlayerOvr === 'function' ? window.getPlayerOvr(p) : (p.ovr || 70);
-          const grade = getGrade(pOvr);
-          const gradeCol = getGradeColor(grade);
-          return `
-            <div class="pre-fight-row ${isSelected ? 'selected-pitcher-row' : ''}" data-p-idx="${idx}" style="cursor:pointer;">
-              <div style="display:flex; align-items:center; gap:8px;">
-                <span style="font-size:9px; font-weight:bold; color:#ef4444; background:rgba(239,68,68,0.15); padding:2px 5px; border-radius:4px; border:1px solid rgba(239,68,68,0.3);">${p.role || (idx === 0 ? 'SP' : 'RP')}</span>
-                <span class="name" style="color:#fff; font-size:9px;">${p.name}</span>
-                <span style="font-size:8px; font-weight:bold; color:${gradeCol}; background:rgba(0,0,0,0.4); border:1px solid ${gradeCol}; padding:1px 4px; border-radius:4px; font-family:'Press Start 2P',monospace;">${pOvr} ${grade}</span>
-              </div>
-              <div style="display:flex; align-items:center; gap:8px;">
-                <div class="hp-bar-container" style="width:70px; height:8px;">
-                  <div class="hp-bar-fill" style="width:100%; background:linear-gradient(90deg, #ef4444, #f87171);"></div>
-                </div>
-                <span class="hp-text" style="font-size:8px; font-family:'Press Start 2P',monospace; color:#ef4444;">${p.hp}/${p.maxHp} HP</span>
-              </div>
-            </div>
-          `;
-        }).join('');
+        const pOvr = typeof window.getPlayerOvr === 'function' ? window.getPlayerOvr(previewPitcher) : (previewPitcher.ovr || 70);
+        const bOvr = typeof window.getPlayerOvr === 'function' ? window.getPlayerOvr(batter) : (batter.ovr || 75);
 
         overlay.innerHTML = `
-          <div class="glass-panel" id="screen-pre-fight" style="position: relative; max-width: 960px; width: 95%; margin: 20px auto; padding: 22px 20px; box-shadow: 0 0 45px rgba(0,0,0,0.9), 0 0 20px rgba(0,255,102,0.25);">
+          <div class="glass-panel" id="screen-pre-fight" style="position: relative; max-width: 980px; width: 95%; margin: 25px auto; padding: 22px 24px; box-shadow: 0 0 45px rgba(0,0,0,0.9), 0 0 20px rgba(0,255,102,0.2);">
             
-            <!-- Top Showdown Header -->
-            <div class="pre-fight-header">
-              <div class="pre-fight-stage-badge">⚔️ SERIES SHOWDOWN • BATTING PRACTICE</div>
-              <div style="font-family:'Press Start 2P',monospace; font-size:12px; color:#fff; margin:8px 0 12px 0; text-align:center; letter-spacing:0.5px;">
-                ${batter.name} <span style="color:#ffd700;">VS</span> 3 RIVAL PITCHERS
+            <button id="btn-dex-prefight-close" style="position: absolute; top: 14px; right: 16px; background: none; border: none; color: #9ca3af; font-size: 22px; cursor: pointer; line-height: 1; z-index: 10;">&times;</button>
+
+            <!-- Pre-fight Header -->
+            <div class="pre-fight-header" style="text-align: center; margin-bottom: 20px;">
+              <h2 style="font-family: 'Press Start 2P', monospace; font-size: 13px; color: var(--accent-color, #ffd700); margin-bottom: 8px; text-shadow: 0 0 10px rgba(255,215,0,0.4);">
+                ⚔️ BATTER PRACTICE • PRE-FIGHT SHOWDOWN
+              </h2>
+              <div style="font-size: 11px; color: #94a3b8; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+                Analyze the starting pitcher and rival rotation before stepping into the batter's box.
               </div>
             </div>
 
-            <!-- Main Faceoff Arena -->
-            <div class="pre-fight-showdown">
+            <!-- 3-Column Showdown Arena (Batter / Clash Matrix / Pitcher) -->
+            <div class="pre-fight-showdown" style="display: flex; justify-content: space-between; align-items: center; gap: 20px; margin-bottom: 24px;">
               
-              <!-- Left: Your Batter Selector & Card -->
-              <div class="showdown-side showdown-side-player">
-                <div class="showdown-nav-bar">
-                  <span class="showdown-nav-label">${nativePos} ${batter.name}</span>
+              <!-- Left: Batter Column -->
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 10px; flex: 1;">
+                <div style="font-family: 'Press Start 2P', monospace; font-size: 8.5px; color: #00ff66; background: rgba(0,255,102,0.1); border: 1px solid #00ff66; padding: 4px 8px; border-radius: 4px;">
+                  YOU (BATTER • OVR ${bOvr})
                 </div>
-                <div class="showdown-card-slot">
+                <div class="fight-card-slot" style="transform: scale(0.95);">
                   ${batterCardHTML}
                 </div>
+                <div style="font-size: 9px; color: #cbd5e1; font-family: 'Press Start 2P', monospace; text-align: center;">
+                  PRIMARY POS: <span style="color: #ffd700;">${nativePos}</span>
+                </div>
               </div>
 
-              <!-- Center: The VS Clash, Matchup Insights & Battle Button -->
-              <div class="showdown-center">
-                <div class="showdown-vs-badge">VS</div>
-                <div class="showdown-stakes-pill">3 INNINGS • DUEL</div>
+              <!-- Center: Clash Matrix & VS -->
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 12px; flex: 1.1;">
+                <div class="vs-circle" style="font-family: 'Press Start 2P', monospace; font-size: 20px; color: var(--accent-color, #ffd700); text-shadow: 0 0 14px rgba(255,215,0,0.8);">
+                  VS
+                </div>
 
-                <!-- Dynamic Matchup Advantage Tactical Insights -->
-                <div class="showdown-insights-panel">
-                  <div class="matchup-overall-badge ${overallClass}">${overallText}</div>
+                <!-- Matchup Clash Matrix -->
+                <div class="matchup-clash-matrix" style="width: 100%; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 12px; font-family: 'Press Start 2P', monospace; font-size: 7.5px;">
+                  <div style="text-align: center; color: #ffd700; margin-bottom: 10px; border-bottom: 1px dashed rgba(255,255,255,0.2); padding-bottom: 5px;">
+                    MATCHUP COMPARISON
+                  </div>
                   
-                  <div class="matchup-clash-matrix">
-                    <!-- Contact vs H/9 -->
-                    <div class="clash-row" title="Batter Contact vs Pitcher H/9">
-                      <div class="clash-col-batter">
-                        <span>CON</span>
-                        <span class="clash-val-b">${bCon}</span>
-                      </div>
-                      ${formatDiff(diffCon)}
-                      <div class="clash-col-pitcher">
-                        <span class="clash-val-p">${pH9}</span>
-                        <span>H/9</span>
-                      </div>
-                    </div>
-
-                    <!-- Power vs HR/9 -->
-                    <div class="clash-row" title="Batter Power vs Pitcher HR/9">
-                      <div class="clash-col-batter">
-                        <span>PWR</span>
-                        <span class="clash-val-b">${bPwr}</span>
-                      </div>
-                      ${formatDiff(diffPwr)}
-                      <div class="clash-col-pitcher">
-                        <span class="clash-val-p">${pHr9}</span>
-                        <span>HR/9</span>
-                      </div>
-                    </div>
-
-                    <!-- Eye vs BB/9 -->
-                    <div class="clash-row" title="Batter Eye vs Pitcher BB/9">
-                      <div class="clash-col-batter">
-                        <span>EYE</span>
-                        <span class="clash-val-b">${bEye}</span>
-                      </div>
-                      ${formatDiff(diffEye)}
-                      <div class="clash-col-pitcher">
-                        <span class="clash-val-p">${pBb9}</span>
-                        <span>BB/9</span>
-                      </div>
-                    </div>
-
-                    <!-- K-Avoid vs K/9 -->
-                    <div class="clash-row" title="Batter K-Avoid vs Pitcher K/9">
-                      <div class="clash-col-batter">
-                        <span>K-AVD</span>
-                        <span class="clash-val-b">${bKAvd}</span>
-                      </div>
-                      ${formatDiff(diffK)}
-                      <div class="clash-col-pitcher">
-                        <span class="clash-val-p">${pK9}</span>
-                        <span>K/9</span>
-                      </div>
-                    </div>
-
-                    <!-- Speed vs STA -->
-                    <div class="clash-row" title="Batter Speed vs Pitcher Stamina">
-                      <div class="clash-col-batter">
-                        <span>SPD</span>
-                        <span class="clash-val-b">${bSpd}</span>
-                      </div>
-                      ${formatDiff(diffSpd)}
-                      <div class="clash-col-pitcher">
-                        <span class="clash-val-p">${pSta}</span>
-                        <span>STA</span>
-                      </div>
-                    </div>
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                    <span style="color: #00ff66;">CON ${bCon}</span>
+                    <span style="color: #94a3b8; font-size: 6.5px;">vs</span>
+                    <span style="color: #ef4444;">H/9 ${pH9}</span>
                   </div>
 
-                  <div class="matchup-quick-tip">${tipText}</div>
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                    <span style="color: #00ff66;">PWR ${bPwr}</span>
+                    <span style="color: #94a3b8; font-size: 6.5px;">vs</span>
+                    <span style="color: #ef4444;">HR/9 ${pHR9}</span>
+                  </div>
+
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                    <span style="color: #00ff66;">EYE ${bEye}</span>
+                    <span style="color: #94a3b8; font-size: 6.5px;">vs</span>
+                    <span style="color: #ef4444;">BB/9 ${pBB9}</span>
+                  </div>
+
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                    <span style="color: #00ff66;">K/AVD ${bKAvd}</span>
+                    <span style="color: #94a3b8; font-size: 6.5px;">vs</span>
+                    <span style="color: #ef4444;">K/9 ${pK9}</span>
+                  </div>
+
+                  <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="color: #00ff66;">SPD ${bSpd}</span>
+                    <span style="color: #94a3b8; font-size: 6.5px;">vs</span>
+                    <span style="color: #ef4444;">STA ${pSta}</span>
+                  </div>
                 </div>
 
-                <button class="btn btn-pre-fight-battle" id="btn-test-start-combat">
-                  <i class="fa-solid fa-fire-flame-curved"></i> TO COMBAT!
-                </button>
-                <button class="btn btn-secondary btn-pre-fight-back" id="btn-test-close-prefight">
-                  ✕ Return to Dex
+                <!-- Action Button: To Combat -->
+                <button id="btn-prefight-combat" class="btn" style="
+                  width: 100%; padding: 14px;
+                  font-family: 'Press Start 2P', monospace; font-size: 11px;
+                  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+                  color: #000; font-weight: bold; border: none; border-radius: 8px;
+                  cursor: pointer; letter-spacing: 1px;
+                  box-shadow: 0 0 20px rgba(16,185,129,0.5);
+                  transition: transform 0.1s, box-shadow 0.1s;
+                ">
+                  <i class="fa-solid fa-play"></i> TO COMBAT!
                 </button>
               </div>
 
-              <!-- Right: Rival Pitcher Selector & Card -->
-              <div class="showdown-side showdown-side-enemy">
-                <div class="showdown-nav-bar nav-enemy">
-                  <button class="btn btn-showdown-nav" id="btn-test-prev-p">◀</button>
-                  <span class="showdown-nav-label" id="showdown-pitcher-label">${previewPitcher.role || 'SP'} ${previewPitcher.name}</span>
-                  <button class="btn btn-showdown-nav" id="btn-test-next-p">▶</button>
+              <!-- Right: Pitcher Column -->
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 10px; flex: 1;">
+                <div style="font-family: 'Press Start 2P', monospace; font-size: 8.5px; color: #ef4444; background: rgba(239,68,68,0.1); border: 1px solid #ef4444; padding: 4px 8px; border-radius: 4px;">
+                  RIVAL #${previewPitcherIdx + 1} (${previewPitcher.role || 'SP'} • OVR ${pOvr})
                 </div>
-                <div class="showdown-card-slot" id="showdown-pitcher-card-wrap">
+                <div class="fight-card-slot" style="transform: scale(0.95);">
                   ${pitcherCardHTML}
+                </div>
+                <div style="font-size: 9px; color: #ef4444; font-family: 'Press Start 2P', monospace; text-align: center;">
+                  HP: <span style="color: #ffd700;">${previewPitcher.hp}</span> (STA: ${pSta})
                 </div>
               </div>
 
             </div>
 
-            <!-- Bullpen Relievers Section (Below Showdown) -->
-            <div class="pre-fight-bullpen-section">
-              <div class="pre-fight-bullpen-title">
-                <i class="fa-solid fa-users"></i> RIVAL ROTATION & BULLPEN
+            <!-- Bullpen Rotation Selector -->
+            <div class="pre-fight-bullpen-section" style="background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 12px 16px;">
+              <div style="font-family: 'Press Start 2P', monospace; font-size: 8.5px; color: #9ca3af; margin-bottom: 8px; display: flex; justify-content: space-between;">
+                <span><i class="fa-solid fa-users"></i> RIVAL BULLPEN ROTATION (3 PITCHERS):</span>
+                <span style="color: #ffd700; font-size: 7.5px;">SELECT PITCHER TO PREVIEW</span>
               </div>
-              <div class="pre-fight-bullpen-list">
-                ${bullpenRows}
+              
+              <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+                ${pitchers.map((p, idx) => {
+                  const isSelected = (idx === previewPitcherIdx);
+                  const pOvrVal = typeof window.getPlayerOvr === 'function' ? window.getPlayerOvr(p) : (p.ovr || 70);
+                  return `
+                    <div class="prefight-bullpen-card" data-pidx="${idx}" style="
+                      cursor: pointer;
+                      background: ${isSelected ? 'rgba(255,215,0,0.15)' : 'rgba(255,255,255,0.04)'};
+                      border: 1px solid ${isSelected ? '#ffd700' : 'rgba(255,255,255,0.12)'};
+                      border-radius: 8px; padding: 8px 10px;
+                      display: flex; justify-content: space-between; align-items: center;
+                      transition: all 0.2s ease;
+                    ">
+                      <div style="font-family: 'Press Start 2P', monospace; font-size: 8px; color: #fff;">
+                        <div style="color: ${isSelected ? '#ffd700' : '#e2e8f0'}; margin-bottom: 2px;">${p.name}</div>
+                        <div style="font-size: 6.5px; color: #94a3b8;">${p.role || (idx === 0 ? 'SP' : 'RP')} • OVR ${pOvrVal} • HP ${p.hp}</div>
+                      </div>
+                      <div style="font-size: 14px; color: ${isSelected ? '#ffd700' : '#64748b'};">
+                        ${isSelected ? '👁️' : '➔'}
+                      </div>
+                    </div>
+                  `;
+                }).join('')}
               </div>
             </div>
 
           </div>
         `;
 
-        // Bind events
-        const btnCombat = overlay.querySelector('#btn-test-start-combat');
+        // Pre-fight event handlers
+        const btnClose = overlay.querySelector('#btn-dex-prefight-close');
+        if (btnClose) btnClose.onclick = () => overlay.remove();
+
+        const btnCombat = overlay.querySelector('#btn-prefight-combat');
         if (btnCombat) {
           btnCombat.onclick = () => {
             if (window.AudioManager) window.AudioManager.play('play_ball');
@@ -3425,45 +3375,18 @@
           };
         }
 
-        const btnClose = overlay.querySelector('#btn-test-close-prefight');
-        if (btnClose) {
-          btnClose.onclick = () => overlay.remove();
-        }
-
-        const btnPrevP = overlay.querySelector('#btn-test-prev-p');
-        if (btnPrevP) {
-          btnPrevP.onclick = () => {
-            previewPitcherIdx = (previewPitcherIdx - 1 + pitchers.length) % pitchers.length;
+        overlay.querySelectorAll('.prefight-bullpen-card').forEach(el => {
+          el.onclick = () => {
+            previewPitcherIdx = parseInt(el.dataset.pidx, 10);
             renderPreFight();
-          };
-        }
-
-        const btnNextP = overlay.querySelector('#btn-test-next-p');
-        if (btnNextP) {
-          btnNextP.onclick = () => {
-            previewPitcherIdx = (previewPitcherIdx + 1) % pitchers.length;
-            renderPreFight();
-          };
-        }
-
-        overlay.querySelectorAll('.pre-fight-row').forEach(row => {
-          row.onclick = () => {
-            const idx = parseInt(row.dataset.pIdx);
-            if (!isNaN(idx)) {
-              previewPitcherIdx = idx;
-              renderPreFight();
-            }
           };
         });
       };
 
-      // Start by displaying the Pre-Fight Matchup Preview!
+      // Start by displaying the Pre-Fight Showdown
       renderPreFight();
     }
-
-  };
-
-    window.getPlayerCareerData = getPlayerCareerData;
+  window.getPlayerCareerData = getPlayerCareerData;
   window.getPlayerFlagHTML = getPlayerFlagHTML;
   window.getBbrefUrl = getBbrefUrl;
   window.getPosText = getPosText;
