@@ -3386,6 +3386,7 @@
       // Start by displaying the Pre-Fight Showdown
       renderPreFight();
     }
+  };
   window.getPlayerCareerData = getPlayerCareerData;
   window.getPlayerFlagHTML = getPlayerFlagHTML;
   window.getBbrefUrl = getBbrefUrl;
