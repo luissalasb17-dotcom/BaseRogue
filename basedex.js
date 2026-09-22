@@ -1561,23 +1561,73 @@
 
       // ── HELPER: GRADE & COLORS ─────────────────────────────────────────────
       const getGrade = (val) => {
-        if (val >= 90) return 'S';
-        if (val >= 80) return 'A';
-        if (val >= 70) return 'B';
-        if (val >= 60) return 'C';
-        if (val >= 50) return 'D';
-        return 'F';
+        const v = Math.round(Number(val) || 0);
+        let letter = 'F', modifier = '';
+        if (v >= 100) {
+          letter = 'S';
+        } else if (v >= 80) {
+          letter = 'A';
+          if (v >= 95) modifier = '+';
+          else if (v < 85) modifier = '-';
+        } else if (v >= 60) {
+          letter = 'B';
+          if (v >= 75) modifier = '+';
+          else if (v < 65) modifier = '-';
+        } else if (v >= 40) {
+          letter = 'C';
+          if (v >= 55) modifier = '+';
+          else if (v < 45) modifier = '-';
+        } else if (v >= 20) {
+          letter = 'D';
+          if (v >= 35) modifier = '+';
+          else if (v < 25) modifier = '-';
+        } else {
+          letter = 'F';
+        }
+        return letter + modifier;
       };
 
       const getGradeColor = (g) => {
-        switch(g) {
+        const letter = (typeof g === 'string' ? g : getGrade(g)).charAt(0);
+        switch(letter) {
           case 'S': return '#ffd700';
-          case 'A': return '#00ff66';
-          case 'B': return '#00d4ff';
-          case 'C': return '#ffff00';
-          case 'D': return '#ff9900';
-          default:  return '#ff3333';
+          case 'A': return '#22d3ee';
+          case 'B': return '#4ade80';
+          case 'C': return '#94a3b8';
+          case 'D': return '#f97316';
+          default:  return '#ef4444';
         }
+      };
+
+      const getClassGrade = (val) => {
+        const v = Math.floor(Number(val) || 0);
+        let letter = "F";
+        let color = "#ef4444";
+        let modifier = "";
+        if (v >= 90) {
+          letter = "S"; color = "#ffd700";
+          if (v >= 97) modifier = "+";
+          else if (v < 93) modifier = "-";
+        } else if (v >= 80) {
+          letter = "A"; color = "#22d3ee";
+          if (v >= 87) modifier = "+";
+          else if (v < 83) modifier = "-";
+        } else if (v >= 70) {
+          letter = "B"; color = "#4ade80";
+          if (v >= 77) modifier = "+";
+          else if (v < 73) modifier = "-";
+        } else if (v >= 60) {
+          letter = "C"; color = "#94a3b8";
+          if (v >= 67) modifier = "+";
+          else if (v < 63) modifier = "-";
+        } else if (v >= 50) {
+          letter = "D"; color = "#f97316";
+          if (v >= 57) modifier = "+";
+          else if (v < 53) modifier = "-";
+        } else {
+          letter = "F"; color = "#ef4444";
+        }
+        return { text: letter + modifier, color: color };
       };
 
       // ── HELPER: RUNNERS ADVANCEMENT ─────────────────────────────────────────
@@ -2433,8 +2483,8 @@
 
             <!-- Tab Buttons -->
             <div style="display:flex;gap:10px;margin-bottom:16px;">
-              <button id="tab-summary-batters" class="btn" style="padding:8px 16px;font-size:11px;background:var(--primary-color);color:#000;border:none;font-weight:bold;font-family:'Press Start 2P',monospace;">Mi Bateador (Bateo)</button>
-              <button id="tab-summary-pitchers" class="btn" style="padding:8px 16px;font-size:11px;background:rgba(255,255,255,0.1);color:#fff;border:none;font-weight:bold;font-family:'Press Start 2P',monospace;">Lanzadores Enfrentados</button>
+              <button id="tab-summary-batters" class="btn" style="padding:8px 16px;font-size:11px;background:var(--primary-color);color:#000;border:none;font-weight:bold;font-family:'Press Start 2P',monospace;">My Batter (Batting)</button>
+              <button id="tab-summary-pitchers" class="btn" style="padding:8px 16px;font-size:11px;background:rgba(255,255,255,0.1);color:#fff;border:none;font-weight:bold;font-family:'Press Start 2P',monospace;">Opposing Pitchers</button>
             </div>
 
             <!-- Batters Content Table -->
@@ -2443,7 +2493,7 @@
                 <table style="width:100%;border-collapse:collapse;font-size:11px;text-align:left;">
                   <thead>
                     <tr id="summary-thead-batters-row" style="border-bottom:2px solid rgba(255,255,255,0.2);color:var(--accent-color);user-select:none;">
-                      <th style="padding:8px;cursor:pointer;" data-sort="name">Jugador</th>
+                      <th style="padding:8px;cursor:pointer;" data-sort="name">Player</th>
                       <th style="padding:8px;cursor:pointer;" data-sort="g">G</th>
                       <th style="padding:8px;cursor:pointer;" data-sort="ab">AB</th>
                       <th style="padding:8px;cursor:pointer;" data-sort="h">H</th>
@@ -2474,7 +2524,7 @@
                 <table style="width:100%;border-collapse:collapse;font-size:11px;text-align:left;">
                   <thead>
                     <tr id="summary-thead-pitchers-row" style="border-bottom:2px solid rgba(255,255,255,0.2);color:#38bdf8;user-select:none;">
-                      <th style="padding:8px;cursor:pointer;" data-sort="name">Lanzador</th>
+                      <th style="padding:8px;cursor:pointer;" data-sort="name">Pitcher</th>
                       <th style="padding:8px;cursor:pointer;" data-sort="outs">IP</th>
                       <th style="padding:8px;cursor:pointer;" data-sort="k">K</th>
                       <th style="padding:8px;cursor:pointer;" data-sort="bb">BB</th>
@@ -3322,7 +3372,7 @@
                 <!-- LED Stats Board (Simple 8-bit indicators) -->
                 <div class="scoreboard" style="width: 100%; text-align: center; font-family: 'Press Start 2P', monospace; font-size: 10px; padding: 12px; line-height: 1.6;">
                   <div class="scoreboard-text-panel" style="flex: 1; width: 100%;">
-                    <div id="scoreboard-inning-text" style="color: var(--accent-color); margin-bottom: 12px;">ARENA COMBATE</div>
+                    <div id="scoreboard-inning-text" style="color: var(--accent-color); margin-bottom: 12px;">COMBAT ARENA</div>
                     <div style="display: flex; justify-content: space-around; font-size: 8px; margin-bottom: 8px;">
                       <div><span>RUNS:</span> <span id="score-away-r" style="color: var(--primary-color);">0</span></div>
                       <div><span>OUTS:</span> <span id="score-home-r" style="color: #ef4444;">0</span></div>
@@ -3371,7 +3421,7 @@
                       </div>
                       <div style="font-size: 11px; text-align: left; margin-top: 4px; font-weight: bold; font-family: 'Press Start 2P', monospace; scale: 0.8; transform-origin: left;" id="match-pitcher-hp-text">150/150 HP</div>
                       <div id="match-pitcher-debuff-badge" class="hidden" style="margin-top: 4px; font-size: 8px; font-family: 'Press Start 2P', monospace; color: #38bdf8; background: rgba(56, 189, 248, 0.15); border: 1px solid #38bdf8; border-radius: 4px; padding: 3px 6px; text-align: right; box-shadow: 0 0 8px rgba(56, 189, 248, 0.3);">
-                        ⚡ DEBUFF: +20% DAÑO (2t)
+                        ⚡ DEBUFF: +20% DMG (2t)
                       </div>
                       <div id="match-pitcher-clutch-badge" class="hidden" style="margin-top: 4px; font-size: 8px; font-family: 'Press Start 2P', monospace; border-radius: 4px; padding: 3px 6px; text-align: right; transition: all 0.2s ease;">
                       </div>
@@ -3438,7 +3488,7 @@
                   <!-- Lucky zones panel -->
                   <div id="zones-panel-wrap" style="width:100%;">
                     <details id="zones-panel" open>
-                      <summary id="zones-panel-header">🎯 Zonas de la Suerte</summary>
+                      <summary id="zones-panel-header">🎯 Lucky Zones</summary>
                       <div id="zones-lines"></div>
                     </details>
                   </div>
@@ -3477,7 +3527,7 @@
                 <!-- Match Log -->
                 <div class="match-log" style="height: 200px; max-height: 200px; display: flex; flex-direction: column; flex: none;">
                   <div class="match-log-header">
-                    <span>HISTORIAL DEL PARTIDO</span>
+                    <span>MATCH LOG</span>
                     <i class="fa-solid fa-list-check" style="opacity:0.6;"></i>
                   </div>
                   <div class="match-log-content" id="match-play-log-lines" style="flex: 1; overflow-y: auto; max-height: 200px;">
@@ -3561,18 +3611,18 @@
         };
 
         const netAdvantage = diffCon + diffK + (diffPwr * 0.8) + (diffEye * 0.6);
-        let overallText = '🟡 DUELO EQUILIBRADO';
+        let overallText = '🟡 BALANCED MATCHUP';
         let overallClass = 'edge-even';
-        let tipText = '⚖️ Duelo cerrado: La tirada de dados y el timing definirán el turno.';
+        let tipText = '⚖️ Close Duel: Dice roll and tactical timing will decide the at-bat.';
 
         if (netAdvantage >= 16) {
-          overallText = '🟢 VENTAJA BATEADOR';
+          overallText = '🟢 BATTER ADVANTAGE';
           overallClass = 'edge-hitter';
-          tipText = '💡 Luz verde: Tu bateador tiene ventaja táctica para castigar al lanzador.';
+          tipText = '💡 Green Light: Your batter has tactical advantage to punish the pitcher.';
         } else if (netAdvantage <= -16) {
-          overallText = '🔴 VENTAJA LANZADOR';
+          overallText = '🔴 PITCHER ADVANTAGE';
           overallClass = 'edge-pitcher';
-          tipText = '⚠️ Precaución: El lanzador domina la zona. Peligro de ponche o contacto débil.';
+          tipText = '⚠️ Caution: Pitcher commands the zone. Risk of strikeouts or weak contact.';
         }
 
         const batterCardHTML = (typeof window.createCardHTML === 'function')
@@ -3586,7 +3636,7 @@
         const bullpenRows = pitchers.map((p, idx) => {
           const isSelected = (idx === previewPitcherIdx);
           const pOvr = typeof window.getPlayerOvr === 'function' ? window.getPlayerOvr(p) : (p.ovr || 70);
-          const pGrade = (typeof window.getClassGrade === 'function') ? window.getClassGrade(pOvr) : { text: 'B', color: '#00d4ff' };
+          const pGrade = (typeof window.getClassGrade === 'function') ? window.getClassGrade(pOvr) : getClassGrade(pOvr);
           const pRole = p.role || (idx === 0 ? 'SP' : 'RP');
 
           return `
@@ -3644,7 +3694,7 @@
                   
                   <div class="matchup-clash-matrix">
                     <!-- Contact vs H/9 -->
-                    <div class="clash-row" title="Contacto del bateador vs H/9 del lanzador">
+                    <div class="clash-row" title="Batter Contact vs Pitcher H/9">
                       <div class="clash-col-batter">
                         <span>CON</span>
                         <span class="clash-val-b">${bCon}</span>
@@ -3657,7 +3707,7 @@
                     </div>
 
                     <!-- Power vs HR/9 -->
-                    <div class="clash-row" title="Poder del bateador vs HR/9 del lanzador">
+                    <div class="clash-row" title="Batter Power vs Pitcher HR/9">
                       <div class="clash-col-batter">
                         <span>PWR</span>
                         <span class="clash-val-b">${bPwr}</span>
@@ -3670,7 +3720,7 @@
                     </div>
 
                     <!-- Eye vs BB/9 -->
-                    <div class="clash-row" title="Visión/Disciplina vs BB/9 del lanzador">
+                    <div class="clash-row" title="Batter Eye/Plate Discipline vs Pitcher BB/9">
                       <div class="clash-col-batter">
                         <span>EYE</span>
                         <span class="clash-val-b">${bEye}</span>
@@ -3683,7 +3733,7 @@
                     </div>
 
                     <!-- K-Avoid vs K/9 -->
-                    <div class="clash-row" title="Evitar Ponche vs K/9 del lanzador">
+                    <div class="clash-row" title="Batter K-Avoid vs Pitcher K/9">
                       <div class="clash-col-batter">
                         <span>K-AVD</span>
                         <span class="clash-val-b">${bKAvd}</span>
@@ -3710,9 +3760,9 @@
               <!-- Right: Rival Pitcher Selector & Card -->
               <div class="showdown-side showdown-side-enemy">
                 <div class="showdown-nav-bar nav-enemy">
-                  <button class="btn btn-showdown-nav" id="btn-prev-pitcher" title="Lanzador Anterior">◀</button>
+                  <button class="btn btn-showdown-nav" id="btn-prev-pitcher" title="Previous Pitcher">◀</button>
                   <span id="showdown-pitcher-label" class="showdown-nav-label">${previewPitcher.role || 'SP'} ${previewPitcher.name}</span>
-                  <button class="btn btn-showdown-nav" id="btn-next-pitcher" title="Siguiente Lanzador">▶</button>
+                  <button class="btn btn-showdown-nav" id="btn-next-pitcher" title="Next Pitcher">▶</button>
                 </div>
                 <div id="showdown-pitcher-card-wrap" class="showdown-card-slot">
                   ${pitcherCardHTML}
