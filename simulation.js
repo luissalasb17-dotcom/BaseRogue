@@ -73,8 +73,12 @@
       return { active: true, label: `BOOSTED (+${roundedMod} RATINGS)`, level: 'boosted', cssClass: 'clutch-boosted', icon: '⚡', mod: roundedMod };
     } else if (roundedMod <= -10) {
       return { active: true, label: `VERY LOWERED (${roundedMod} RATINGS)`, level: 'very_lowered', cssClass: 'clutch-very-lowered', icon: '💀', mod: roundedMod };
-    } else if (roundedMod <= -3) {
+    } else if (roundedMod <= -4) {
       return { active: true, label: `LOWERED (${roundedMod} RATINGS)`, level: 'lowered', cssClass: 'clutch-lowered', icon: '⚠️', mod: roundedMod };
+    } else if (roundedMod > 0) {
+      return { active: true, label: `STEADY (+${roundedMod} RATINGS)`, level: 'steady', cssClass: 'clutch-steady', icon: '⚖️', mod: roundedMod };
+    } else if (roundedMod < 0) {
+      return { active: true, label: `STEADY (${roundedMod} RATINGS)`, level: 'steady', cssClass: 'clutch-steady', icon: '⚖️', mod: roundedMod };
     } else {
       return { active: true, label: `STEADY (0 RATINGS)`, level: 'steady', cssClass: 'clutch-steady', icon: '⚖️', mod: 0 };
     }
