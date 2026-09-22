@@ -2901,6 +2901,7 @@
         let rText = 'Batter grounds out.';
         let pitcherDmg = 0;
         let teamHpDmg = 0;
+        let pitcherDamageDealt = 0;
         let runsThisTurn = 0;
         let didSteal = false;
         let spdUpgraded = null;
@@ -2937,6 +2938,7 @@
           const soDmgTable = isExtra ? [30, 38, 45] : [20, 25, 30];
           const directDmg = soDmgTable[Math.min(testState.soStreak - 1, 2)];
           teamHpDmg = directDmg;
+          pitcherDamageDealt = directDmg;
           testState.teamHP = Math.max(0, testState.teamHP - directDmg);
 
           rText = `Whiff and a miss! Strikeout #${testState.soStreak} (-${directDmg} HP directly to Team!)`;
@@ -2949,6 +2951,7 @@
           testState.soStreak = 0;
 
           const outPenalty = isExtra ? 30 : 20;
+          pitcherDamageDealt = outPenalty;
           if (testState.teamShield > 0) {
             const sDmg = Math.min(testState.teamShield, outPenalty);
             testState.teamShield -= sDmg;
@@ -3063,7 +3066,7 @@
           if (rType === 'HR') ps.hr++;
         }
         if (runsThisTurn > 0) ps.er += runsThisTurn;
-        if (teamHpDmg > 0) ps.dmg += teamHpDmg;
+        if (pitcherDamageDealt > 0) ps.dmg += pitcherDamageDealt;
 
         let isPitcherKO = false;
         if (pitcherDmg > 0) {

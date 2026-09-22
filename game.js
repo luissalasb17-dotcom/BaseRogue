@@ -1263,12 +1263,14 @@
           const eventType = ev.eventType || ev.type;
 
           let dealtDmg = 0;
-          if (ev.teamHpDmg !== undefined && ev.teamHpDmg !== null && !isNaN(ev.teamHpDmg) && ev.teamHpDmg > 0) {
-            dealtDmg = ev.teamHpDmg;
+          if (ev.totalTeamDmg !== undefined && ev.totalTeamDmg !== null && !isNaN(ev.totalTeamDmg) && ev.totalTeamDmg > 0) {
+            dealtDmg = ev.totalTeamDmg;
+          } else if (ev.teamHpDmg !== undefined || ev.shieldDmg !== undefined) {
+            dealtDmg = (Number(ev.teamHpDmg) || 0) + (Number(ev.shieldDmg) || 0);
           } else if (eventType === 'SO') {
             dealtDmg = 20;
           } else if (eventType === 'OUT') {
-            dealtDmg = 10;
+            dealtDmg = 18;
           }
           ps.dmg += dealtDmg;
 
