@@ -3129,6 +3129,7 @@ function initGameModeSelector() {
     const isPitcher = p.pos === 'P' || p.pos === 'SP' || p.role === 'P' || p.role === 'SP' || p.pos === 'RP' || p.role === 'RP' || p.role === 'CL';
     if (isPitcher) {
       if (p.ovr !== undefined && (!p.upgrades || Object.values(p.upgrades).every(v => !v))) return Math.floor(p.ovr);
+      if (p._ovr !== undefined && (!p.upgrades || Object.values(p.upgrades).every(v => !v))) return Math.floor(p._ovr);
       const h9  = p.h9  !== undefined ? p.h9  : (p.h9_val  !== undefined ? p.h9_val  : (p.grt !== undefined ? p.grt : 50));
       const k9  = p.k9  !== undefined ? p.k9  : (p.k9_val  !== undefined ? p.k9_val  : (p.stf !== undefined ? p.stf : (p.str !== undefined ? p.str : 50)));
       const bb9 = p.bb9 !== undefined ? p.bb9 : (p.bb9_val !== undefined ? p.bb9_val : (p.ctl !== undefined ? p.ctl : 50));
@@ -9439,7 +9440,9 @@ function initGameModeSelector() {
           }
         }
         const pitchEra    = pitcher.era  || pitcher._era  || (enemyTeam ? (enemyTeam.era || enemyTeam._era) : 'Golden Era (1920-1941)');
-        const pitchRarity = pitcher.rarity || pitcher._rarity || 'Common';
+        const enemyPitcherObj = (enemyTeam && enemyTeam.pitchers) ? enemyTeam.pitchers.find(p => p.name === pitcher.name || (p.cleanName && (p.cleanName === pitcher.name || pitcher.name.includes(p.cleanName)))) : null;
+        const resolvedPitcherOvr = pitcher.ovr !== undefined ? pitcher.ovr : (pitcher._ovr !== undefined ? pitcher._ovr : (enemyPitcherObj && enemyPitcherObj.ovr !== undefined ? enemyPitcherObj.ovr : (enemyPitcherObj && enemyPitcherObj._ovr !== undefined ? enemyPitcherObj._ovr : null)));
+        const pitchRarity = pitcher.rarity || pitcher._rarity || (enemyPitcherObj && enemyPitcherObj.rarity) || (resolvedPitcherOvr ? (resolvedPitcherOvr >= 90 ? 'Legendary' : (resolvedPitcherOvr >= 80 ? 'Epic' : (resolvedPitcherOvr >= 70 ? 'Rare' : (resolvedPitcherOvr >= 60 ? 'Uncommon' : 'Common')))) : 'Common');
 
         const pitchH9  = pitcher.h9  !== undefined ? pitcher.h9  : (pitcher.grt !== undefined ? pitcher.grt : (pitcher.h9_val !== undefined ? pitcher.h9_val : 50));
         const pitchK9  = pitcher.k9  !== undefined ? pitcher.k9  : (pitcher.stf !== undefined ? pitcher.stf : (pitcher.str !== undefined ? pitcher.str : (pitcher.k9_val !== undefined ? pitcher.k9_val : 50)));
@@ -9466,7 +9469,8 @@ function initGameModeSelector() {
           clt_val: pitchClt,
           clu_val: pitchClt
         };
-        tempPitcher.ovr = pitcher.ovr !== undefined ? pitcher.ovr : (pitcher._ovr !== undefined ? pitcher._ovr : getPlayerOvr(tempPitcher));
+        tempPitcher.ovr = resolvedPitcherOvr !== null ? resolvedPitcherOvr : getPlayerOvr(tempPitcher);
+        tempPitcher._ovr = tempPitcher.ovr;
         
         el.arenaPitcherCardSlot.innerHTML = createCardHTML(tempPitcher, tempPitcher.pos);
         el.arenaPitcherCardSlot.dataset.renderedPitcher = pitcher.name;

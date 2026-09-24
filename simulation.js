@@ -1769,7 +1769,11 @@
           h9:     pitcher.h9,
           k9:     pitcher.k9,
           bb9:    pitcher.bb9,
-          hr9:    pitcher.hr9
+          hr9:    pitcher.hr9,
+          ovr:    pitcher.ovr !== undefined ? pitcher.ovr : pitcher._ovr,
+          _ovr:   pitcher._ovr !== undefined ? pitcher._ovr : pitcher.ovr,
+          clt:    (typeof pitcher.clt === 'number' || (typeof pitcher.clt === 'string' && !isNaN(pitcher.clt))) ? Number(pitcher.clt) : ((typeof pitcher.clt_val === 'number' || (typeof pitcher.clt_val === 'string' && !isNaN(pitcher.clt_val))) ? Number(pitcher.clt_val) : ((typeof pitcher.clu === 'number' || (typeof pitcher.clu === 'string' && !isNaN(pitcher.clu))) ? Number(pitcher.clu) : 50)),
+          clu:    (typeof pitcher.clu === 'number' || (typeof pitcher.clu === 'string' && !isNaN(pitcher.clu))) ? Number(pitcher.clu) : ((typeof pitcher.clu_val === 'number' || (typeof pitcher.clu_val === 'string' && !isNaN(pitcher.clu_val))) ? Number(pitcher.clu_val) : ((typeof pitcher.clt === 'number' || (typeof pitcher.clt === 'string' && !isNaN(pitcher.clt))) ? Number(pitcher.clt) : 50))
         } : null,
         inning:          this.inning,
         outs:            this.outs,
@@ -1853,6 +1857,8 @@
           k9:     this.activePitcher.k9,
           bb9:    this.activePitcher.bb9,
           hr9:    this.activePitcher.hr9,
+          ovr:    this.activePitcher.ovr !== undefined ? this.activePitcher.ovr : this.activePitcher._ovr,
+          _ovr:   this.activePitcher._ovr !== undefined ? this.activePitcher._ovr : this.activePitcher.ovr,
           clt:    (typeof this.activePitcher.clt === 'number' || (typeof this.activePitcher.clt === 'string' && !isNaN(this.activePitcher.clt))) ? Number(this.activePitcher.clt) : ((typeof this.activePitcher.clt_val === 'number' || (typeof this.activePitcher.clt_val === 'string' && !isNaN(this.activePitcher.clt_val))) ? Number(this.activePitcher.clt_val) : ((typeof this.activePitcher.clu === 'number' || (typeof this.activePitcher.clu === 'string' && !isNaN(this.activePitcher.clu))) ? Number(this.activePitcher.clu) : 50)),
           clu:    (typeof this.activePitcher.clu === 'number' || (typeof this.activePitcher.clu === 'string' && !isNaN(this.activePitcher.clu))) ? Number(this.activePitcher.clu) : ((typeof this.activePitcher.clu_val === 'number' || (typeof this.activePitcher.clu_val === 'string' && !isNaN(this.activePitcher.clu_val))) ? Number(this.activePitcher.clu_val) : ((typeof this.activePitcher.clt === 'number' || (typeof this.activePitcher.clt === 'string' && !isNaN(this.activePitcher.clt))) ? Number(this.activePitcher.clt) : 50))
         } : null,
