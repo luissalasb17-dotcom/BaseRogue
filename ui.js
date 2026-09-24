@@ -7592,7 +7592,7 @@ function initGameModeSelector() {
       <!-- d100 dice: two d10 cubes (tens + units) + a combined-total readout to resolve the 00/00=100 edge case unambiguously -->
       <div id="dice-d100-panel">
         <div id="dice-modal-card">
-          <div id="dice-modal-header" class="mobile-only-modal-el">🎲 ${t('match.rolling_dice', 'LANZANDO DADOS...')} 🎲</div>
+          <div id="dice-modal-header" class="mobile-only-modal-el">🎲 ROLLING DICE... 🎲</div>
           <div id="dice-d100-container" style="display:flex;gap:10px;">
             ${['tens','units'].map(kind => `
               <div class="d100-die" id="die-${kind}">
@@ -8216,7 +8216,7 @@ function initGameModeSelector() {
 
     if (isMobileRoll && dicePanel) {
       if (modalHeader) {
-        modalHeader.innerHTML = typeof t === 'function' ? t('match.rolling_dice', '🎲 LANZANDO DADOS... 🎲') : '🎲 LANZANDO DADOS... 🎲';
+        modalHeader.innerHTML = '🎲 ROLLING DICE... 🎲';
       }
       if (modalBadge) {
         modalBadge.innerHTML = '';
@@ -8276,25 +8276,25 @@ function initGameModeSelector() {
           if (b) {
             if (finalRoll <= b.bbEnd) {
               rollColor = '#3b82f6';
-              outcomeName = typeof t === 'function' ? t('combat_zones.bb', '🚶 BASE POR BOLAS') : '🚶 BASE POR BOLAS';
+              outcomeName = '🚶 WALK (BB)';
             } else if (finalRoll <= b.soEnd) {
               rollColor = '#ef4444';
-              outcomeName = typeof t === 'function' ? t('combat_zones.so', '💨 PONCHE (SO)') : '💨 PONCHE (SO)';
+              outcomeName = '💨 STRIKEOUT (SO)';
             } else if (finalRoll <= b.outEnd) {
               rollColor = '#9ca3af';
-              outcomeName = typeof t === 'function' ? t('combat_zones.out', '✋ OUT') : '✋ OUT';
+              outcomeName = '✋ OUT';
             } else if (finalRoll <= b.singleEnd) {
               rollColor = '#a7f3d0';
-              outcomeName = typeof t === 'function' ? t('combat_zones.single', '🟢 HIT (1B)') : '🟢 HIT (1B)';
+              outcomeName = '🟢 SINGLE (1B)';
             } else if (finalRoll <= b.doubleEnd) {
               rollColor = '#10b981';
-              outcomeName = typeof t === 'function' ? t('combat_zones.double', '⚡ DOBLE (2B)') : '⚡ DOBLE (2B)';
+              outcomeName = '⚡ DOUBLE (2B)';
             } else if (finalRoll <= b.tripleEnd) {
               rollColor = '#06b6d4';
-              outcomeName = typeof t === 'function' ? t('combat_zones.triple', '🔥 TRIPLETE (3B)') : '🔥 TRIPLETE (3B)';
+              outcomeName = '🔥 TRIPLE (3B)';
             } else {
               rollColor = '#eab308';
-              outcomeName = typeof t === 'function' ? t('combat_zones.hr', '🚀 JONRÓN (HR)') : '🚀 JONRÓN (HR)';
+              outcomeName = '🚀 HOME RUN (HR)';
             }
           }
           diceDisplay.style.color = rollColor;
