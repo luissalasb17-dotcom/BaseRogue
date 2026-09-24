@@ -7590,26 +7590,30 @@ function initGameModeSelector() {
         <div style="font-size:11px;color:#f59e0b;text-align:center;" id="so-chain-display">${t('match.so_streak_zero', '🔥 Racha de Ponches: 0')}</div>
       </div>
       <!-- d100 dice: two d10 cubes (tens + units) + a combined-total readout to resolve the 00/00=100 edge case unambiguously -->
-      <div id="dice-d100-panel" style="display:flex;flex-direction:column;align-items:center;gap:6px;">
-        <div id="dice-d100-container" style="display:flex;gap:10px;">
-          ${['tens','units'].map(kind => `
-            <div class="d100-die" id="die-${kind}">
-              <div class="d100-die-cube" id="die-${kind}-cube">
-                <div class="d100-die-face face-front" id="die-${kind}-face-front">0</div>
-                <div class="d100-die-face face-back">0</div>
-                <div class="d100-die-face face-right">0</div>
-                <div class="d100-die-face face-left">0</div>
-                <div class="d100-die-face face-top">0</div>
-                <div class="d100-die-face face-bottom">0</div>
+      <div id="dice-d100-panel">
+        <div id="dice-modal-card">
+          <div id="dice-modal-header" class="mobile-only-modal-el">🎲 ${t('match.rolling_dice', 'LANZANDO DADOS...')} 🎲</div>
+          <div id="dice-d100-container" style="display:flex;gap:10px;">
+            ${['tens','units'].map(kind => `
+              <div class="d100-die" id="die-${kind}">
+                <div class="d100-die-cube" id="die-${kind}-cube">
+                  <div class="d100-die-face face-front" id="die-${kind}-face-front">0</div>
+                  <div class="d100-die-face face-back">0</div>
+                  <div class="d100-die-face face-right">0</div>
+                  <div class="d100-die-face face-left">0</div>
+                  <div class="d100-die-face face-top">0</div>
+                  <div class="d100-die-face face-bottom">0</div>
+                </div>
               </div>
-            </div>
-          `).join('')}
+            `).join('')}
+          </div>
+          <div id="dice-result-display" style="
+            font-family:'Press Start 2P',monospace;
+            font-size:14px;color:#fff;
+            letter-spacing:1px;
+          ">–</div>
+          <div id="dice-modal-badge" class="mobile-only-modal-el"></div>
         </div>
-        <div id="dice-result-display" style="
-          font-family:'Press Start 2P',monospace;
-          font-size:14px;color:#fff;
-          letter-spacing:1px;
-        ">–</div>
       </div>
       <!-- Lucky zones panel. Clutch banner lives outside the <details> so it's
            always visible even while the probability breakdown is collapsed
@@ -8205,6 +8209,23 @@ function initGameModeSelector() {
     if (!activeBattle || activeBattle.battleOver || isRolling) return;
     isRolling = true;
 
+    const isMobileRoll = (window.innerWidth <= 768);
+    const dicePanel = document.getElementById('dice-d100-panel');
+    const modalBadge = document.getElementById('dice-modal-badge');
+    const modalHeader = document.getElementById('dice-modal-header');
+
+    if (isMobileRoll && dicePanel) {
+      if (modalHeader) {
+        modalHeader.innerHTML = typeof t === 'function' ? t('match.rolling_dice', '🎲 LANZANDO DADOS... 🎲') : '🎲 LANZANDO DADOS... 🎲';
+      }
+      if (modalBadge) {
+        modalBadge.innerHTML = '';
+        modalBadge.style.display = 'none';
+      }
+      dicePanel.classList.remove('mobile-modal-closing');
+      dicePanel.classList.add('mobile-modal-active');
+    }
+
     const btn = document.getElementById('btn-roll-dice');
     if (btn) btn.disabled = true;
 
@@ -8251,17 +8272,51 @@ function initGameModeSelector() {
           diceDisplay.innerText = finalRoll;
           const b = activeBattle.currentBoundaries();
           let rollColor = '#ef4444';
+          let outcomeName = 'OUT';
           if (b) {
-            if (finalRoll <= b.bbEnd) rollColor = '#3b82f6';
-            else if (finalRoll <= b.soEnd) rollColor = '#ef4444';
-            else if (finalRoll <= b.outEnd) rollColor = '#9ca3af';
-            else if (finalRoll <= b.singleEnd) rollColor = '#a7f3d0';
-            else if (finalRoll <= b.doubleEnd) rollColor = '#10b981';
-            else if (finalRoll <= b.tripleEnd) rollColor = '#06b6d4';
-            else rollColor = '#eab308';
+            if (finalRoll <= b.bbEnd) {
+              rollColor = '#3b82f6';
+              outcomeName = typeof t === 'function' ? t('combat_zones.bb', '🚶 BASE POR BOLAS') : '🚶 BASE POR BOLAS';
+            } else if (finalRoll <= b.soEnd) {
+              rollColor = '#ef4444';
+              outcomeName = typeof t === 'function' ? t('combat_zones.so', '💨 PONCHE (SO)') : '💨 PONCHE (SO)';
+            } else if (finalRoll <= b.outEnd) {
+              rollColor = '#9ca3af';
+              outcomeName = typeof t === 'function' ? t('combat_zones.out', '✋ OUT') : '✋ OUT';
+            } else if (finalRoll <= b.singleEnd) {
+              rollColor = '#a7f3d0';
+              outcomeName = typeof t === 'function' ? t('combat_zones.single', '🟢 HIT (1B)') : '🟢 HIT (1B)';
+            } else if (finalRoll <= b.doubleEnd) {
+              rollColor = '#10b981';
+              outcomeName = typeof t === 'function' ? t('combat_zones.double', '⚡ DOBLE (2B)') : '⚡ DOBLE (2B)';
+            } else if (finalRoll <= b.tripleEnd) {
+              rollColor = '#06b6d4';
+              outcomeName = typeof t === 'function' ? t('combat_zones.triple', '🔥 TRIPLETE (3B)') : '🔥 TRIPLETE (3B)';
+            } else {
+              rollColor = '#eab308';
+              outcomeName = typeof t === 'function' ? t('combat_zones.hr', '🚀 JONRÓN (HR)') : '🚀 JONRÓN (HR)';
+            }
           }
           diceDisplay.style.color = rollColor;
+
+          if (isMobileRoll && modalBadge) {
+            modalBadge.innerHTML = outcomeName;
+            modalBadge.style.color = rollColor;
+            modalBadge.style.borderColor = rollColor;
+            modalBadge.style.display = 'inline-block';
+          }
         }
+
+        const MOBILE_REVEAL_HOLD_MS = isMobileRoll ? 550 : 0;
+        if (isMobileRoll && dicePanel) {
+          setTimeout(() => {
+            dicePanel.classList.add('mobile-modal-closing');
+            setTimeout(() => {
+              dicePanel.classList.remove('mobile-modal-active', 'mobile-modal-closing');
+            }, 200);
+          }, MOBILE_REVEAL_HOLD_MS);
+        }
+
         // ── Build an ordered popup queue ───────────────────────────────────────
         // Popups fire in strict sequence: play outcome → steal → (next play) → KO last.
         // 'cursor' tracks the ms offset at which the NEXT popup should start.
@@ -8277,7 +8332,7 @@ function initGameModeSelector() {
         };
 
         const POPUP_GAP = 140; // ms gap between consecutive popups
-        let cursor = 0;
+        let cursor = isMobileRoll ? (MOBILE_REVEAL_HOLD_MS + 200) : 0;
 
         // Phase 1: build popup schedule in correct visual order.
         // KO is always pushed last regardless of its position in events[].
@@ -8422,6 +8477,9 @@ function initGameModeSelector() {
 
         setTimeout(() => {
           isRolling = false;
+          if (dicePanel) {
+            dicePanel.classList.remove('mobile-modal-active', 'mobile-modal-closing');
+          }
         }, Math.max(50, cursor + 300));
     }, TENS_TUMBLE_MS);
   }
@@ -8935,6 +8993,11 @@ function initGameModeSelector() {
     }
     isAutoSimulating = false;
     isRolling = false;
+
+    const dicePanel = document.getElementById('dice-d100-panel');
+    if (dicePanel) {
+      dicePanel.classList.remove('mobile-modal-active', 'mobile-modal-closing');
+    }
 
     const btnRoll = document.getElementById('btn-roll-dice');
     const btnSkip = document.getElementById('btn-match-skip-game');

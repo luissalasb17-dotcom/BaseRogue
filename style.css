@@ -4505,6 +4505,39 @@ body.workspace-active .main-container {
   animation: die-settle-pulse 0.3s ease-out;
 }
 
+/* Mobile dice modal card layout for desktop (transparent flex wrapper) */
+#dice-modal-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+}
+
+.mobile-only-modal-el {
+  display: none;
+}
+
+@keyframes mobileModalFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes mobileModalFadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; pointer-events: none; }
+}
+
+@keyframes mobileModalCardPop {
+  0% { transform: scale(0.72); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes mobileBadgePop {
+  0% { transform: scale(0.5); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
 /* ── CARD DEAL-IN: reusable "dealt from a deck" reveal, used for the combat
    faceoff cards, the draft round's choice cards, and any other freshly-
    revealed player card. --deal-from-x/--deal-from-y set the origin offset
@@ -6414,17 +6447,97 @@ body.on-main-menu .main-container {
     margin: 0 auto !important;
   }
 
-  /* d100 cubes: scale the whole 3D die uniformly (rather than resizing width/
-     height directly, which would desync from the faces' fixed translateZ and
-     break the cube geometry) so the idle "0 / 0" state doesn't dominate the
-     screen before the player has even rolled. */
-  #dice-d100-container {
-    gap: 4px !important;
+  /* On mobile: Hide dice panel in normal flow so it does not appear down below requiring scrolling */
+  #dice-d100-panel:not(.mobile-modal-active) {
+    display: none !important;
   }
 
-  .d100-die {
-    transform: scale(0.6) !important;
-    margin: -11px !important;
+  /* Mobile Dice Rolling Modal Window in the center of the viewport */
+  #dice-d100-panel.mobile-modal-active {
+    display: flex !important;
+    position: fixed !important;
+    inset: 0 !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    z-index: 99999 !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: rgba(3, 7, 18, 0.82) !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+    margin: 0 !important;
+    padding: 16px !important;
+    box-sizing: border-box !important;
+    animation: mobileModalFadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  #dice-d100-panel.mobile-modal-active.mobile-modal-closing {
+    animation: mobileModalFadeOut 0.2s ease-in forwards !important;
+  }
+
+  #dice-d100-panel.mobile-modal-active #dice-modal-card {
+    background: radial-gradient(circle at 50% 25%, #151d32 0%, #080c14 100%) !important;
+    border: 2px solid var(--accent-color, #facc15) !important;
+    border-radius: 16px !important;
+    box-shadow: 0 0 35px rgba(250, 204, 21, 0.45), 0 0 70px rgba(0, 0, 0, 0.95), inset 0 0 15px rgba(250, 204, 21, 0.1) !important;
+    padding: 24px 20px 20px 20px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 12px !important;
+    max-width: 320px !important;
+    width: 90% !important;
+    box-sizing: border-box !important;
+    animation: mobileModalCardPop 0.28s cubic-bezier(0.175, 0.885, 0.32, 1.25) forwards;
+  }
+
+  #dice-d100-panel.mobile-modal-active #dice-modal-header {
+    display: block !important;
+    font-family: 'Press Start 2P', monospace !important;
+    font-size: 9.5px !important;
+    color: #facc15 !important;
+    text-shadow: 0 0 10px rgba(250, 204, 21, 0.7) !important;
+    letter-spacing: 1px !important;
+    text-align: center !important;
+    margin-bottom: 2px !important;
+    animation: pulse-fast 1s infinite;
+  }
+
+  #dice-d100-panel.mobile-modal-active #dice-d100-container {
+    display: flex !important;
+    gap: 16px !important;
+    margin: 8px 0 !important;
+  }
+
+  #dice-d100-panel.mobile-modal-active .d100-die {
+    transform: scale(1.15) !important;
+    margin: 12px 6px !important;
+  }
+
+  #dice-d100-panel.mobile-modal-active #dice-result-display {
+    width: auto !important;
+    height: auto !important;
+    font-family: 'Press Start 2P', monospace !important;
+    font-size: 26px !important;
+    color: #fff !important;
+    letter-spacing: 2px !important;
+    min-height: 32px !important;
+    text-shadow: 0 0 16px rgba(255, 255, 255, 0.6) !important;
+  }
+
+  #dice-d100-panel.mobile-modal-active #dice-modal-badge {
+    font-family: 'Press Start 2P', monospace !important;
+    font-size: 8.5px !important;
+    padding: 5px 12px !important;
+    border-radius: 6px !important;
+    background: rgba(0, 0, 0, 0.6) !important;
+    border: 1px solid currentColor !important;
+    letter-spacing: 0.5px !important;
+    text-align: center !important;
+    box-shadow: 0 0 12px currentColor !important;
+    animation: mobileBadgePop 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.25) forwards;
   }
 
   /* Action bar: sticks to the bottom of the mobile viewport so ROLL DICE
