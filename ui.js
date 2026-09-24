@@ -9334,18 +9334,19 @@ function initGameModeSelector() {
     const hudPitcherStatsBox = document.getElementById('match-pitcher-stats-box');
     if (hudPitcherStatsBox && state.activePitcher) {
       const p = state.activePitcher;
-      let clutchMod = (typeof state.pitcherClutchMod === 'number') ? state.pitcherClutchMod : 0;
-      if (!clutchMod && window.InteractiveBattle && activeBattle && typeof activeBattle.currentBoundaries === 'function') {
+      let rawMod = (typeof state.pitcherClutchMod === 'number') ? state.pitcherClutchMod : 0;
+      if (!rawMod && window.InteractiveBattle && activeBattle && typeof activeBattle.currentBoundaries === 'function') {
         const curB = activeBattle.currentBoundaries();
-        if (curB && typeof curB.pitcherClutchMod === 'number') clutchMod = curB.pitcherClutchMod;
+        if (curB && typeof curB.pitcherClutchMod === 'number') rawMod = curB.pitcherClutchMod;
       }
+      const clutchMod = Math.round(rawMod);
 
-      const rawH9  = p.h9  !== undefined ? p.h9  : (p.grt !== undefined ? p.grt : (p.h9_val !== undefined ? p.h9_val : 50));
-      const rawK9  = p.k9  !== undefined ? p.k9  : (p.stf !== undefined ? p.stf : (p.str !== undefined ? p.str : (p.k9_val !== undefined ? p.k9_val : 50)));
-      const rawBB9 = p.bb9 !== undefined ? p.bb9 : (p.ctl !== undefined ? p.ctl : (p.bb9_val !== undefined ? p.bb9_val : 50));
-      const rawHR9 = p.hr9 !== undefined ? p.hr9 : (p.mov !== undefined ? p.mov : (p.hr9_val !== undefined ? p.hr9_val : 50));
-      const pSta   = p.sta !== undefined ? p.sta : (p.sta_val !== undefined ? p.sta_val : (p.maxHp ? Math.max(15, Math.min(125, Math.round((p.maxHp - 15) / 0.85))) : 65));
-      const pClt   = (typeof p.clt === 'number' || (typeof p.clt === 'string' && !isNaN(p.clt))) ? Number(p.clt) : ((typeof p.clt_val === 'number' || (typeof p.clt_val === 'string' && !isNaN(p.clt_val))) ? Number(p.clt_val) : ((typeof p.clu === 'number' || (typeof p.clu === 'string' && !isNaN(p.clu))) ? Number(p.clu) : ((typeof p.clu_val === 'number' || (typeof p.clu_val === 'string' && !isNaN(p.clu_val))) ? Number(p.clu_val) : 50)));
+      const rawH9  = Math.round(p.h9  !== undefined ? p.h9  : (p.grt !== undefined ? p.grt : (p.h9_val !== undefined ? p.h9_val : 50)));
+      const rawK9  = Math.round(p.k9  !== undefined ? p.k9  : (p.stf !== undefined ? p.stf : (p.str !== undefined ? p.str : (p.k9_val !== undefined ? p.k9_val : 50))));
+      const rawBB9 = Math.round(p.bb9 !== undefined ? p.bb9 : (p.ctl !== undefined ? p.ctl : (p.bb9_val !== undefined ? p.bb9_val : 50)));
+      const rawHR9 = Math.round(p.hr9 !== undefined ? p.hr9 : (p.mov !== undefined ? p.mov : (p.hr9_val !== undefined ? p.hr9_val : 50)));
+      const pSta   = Math.round(p.sta !== undefined ? p.sta : (p.sta_val !== undefined ? p.sta_val : (p.maxHp ? Math.max(15, Math.min(125, Math.round((p.maxHp - 15) / 0.85))) : 65)));
+      const pClt   = Math.round((typeof p.clt === 'number' || (typeof p.clt === 'string' && !isNaN(p.clt))) ? Number(p.clt) : ((typeof p.clt_val === 'number' || (typeof p.clt_val === 'string' && !isNaN(p.clt_val))) ? Number(p.clt_val) : ((typeof p.clu === 'number' || (typeof p.clu === 'string' && !isNaN(p.clu))) ? Number(p.clu) : ((typeof p.clu_val === 'number' || (typeof p.clu_val === 'string' && !isNaN(p.clu_val))) ? Number(p.clu_val) : 50))));
 
       const effH9  = Math.max(1, Math.min(135, rawH9  + clutchMod));
       const effK9  = Math.max(1, Math.min(135, rawK9  + clutchMod));
@@ -9358,8 +9359,7 @@ function initGameModeSelector() {
         return `${label}: ${eff}`;
       };
 
-      const pRole = p.role || 'SP';
-      hudPitcherStatsBox.innerHTML = `${fmtStat('H/9', effH9, clutchMod)} | ${fmtStat('K/9', effK9, clutchMod)} | ${fmtStat('BB/9', effBB9, clutchMod)}<br>${fmtStat('HR/9', effHR9, clutchMod)} | STA: ${pSta} | CLT: ${pClt}<br>ROL: ${pRole}`;
+      hudPitcherStatsBox.innerHTML = `${fmtStat('H/9', effH9, clutchMod)} | ${fmtStat('K/9', effK9, clutchMod)} | ${fmtStat('BB/9', effBB9, clutchMod)}<br>${fmtStat('HR/9', effHR9, clutchMod)} | STA: ${pSta} | CLT: ${pClt}`;
     }
   }
 
@@ -9583,20 +9583,21 @@ function initGameModeSelector() {
       // Dynamic Pitcher Ratings Box (Affected by Pitcher Clutch modifier)
       const pitcherStatsBox = document.getElementById('match-pitcher-stats-box');
       if (pitcherStatsBox) {
-        let clutchMod = 0;
+        let rawMod = 0;
         if (stateOrEvent && typeof stateOrEvent.pitcherClutchMod === 'number') {
-          clutchMod = stateOrEvent.pitcherClutchMod;
+          rawMod = stateOrEvent.pitcherClutchMod;
         } else if (window.InteractiveBattle && activeBattle && typeof activeBattle.currentBoundaries === 'function') {
           const curB = activeBattle.currentBoundaries();
-          if (curB && typeof curB.pitcherClutchMod === 'number') clutchMod = curB.pitcherClutchMod;
+          if (curB && typeof curB.pitcherClutchMod === 'number') rawMod = curB.pitcherClutchMod;
         }
+        const clutchMod = Math.round(rawMod);
 
-        const rawH9  = pitcher.h9  !== undefined ? pitcher.h9  : (pitcher.grt !== undefined ? pitcher.grt : (pitcher.h9_val !== undefined ? pitcher.h9_val : 50));
-        const rawK9  = pitcher.k9  !== undefined ? pitcher.k9  : (pitcher.stf !== undefined ? pitcher.stf : (pitcher.str !== undefined ? pitcher.str : (pitcher.k9_val !== undefined ? pitcher.k9_val : 50)));
-        const rawBB9 = pitcher.bb9 !== undefined ? pitcher.bb9 : (pitcher.ctl !== undefined ? pitcher.ctl : (pitcher.bb9_val !== undefined ? pitcher.bb9_val : 50));
-        const rawHR9 = pitcher.hr9 !== undefined ? pitcher.hr9 : (pitcher.mov !== undefined ? pitcher.mov : (pitcher.hr9_val !== undefined ? pitcher.hr9_val : 50));
-        const pSta   = pitcher.sta !== undefined ? pitcher.sta : (pitcher.sta_val !== undefined ? pitcher.sta_val : (pitcher.maxHp ? Math.max(15, Math.min(125, Math.round((pitcher.maxHp - 15) / 0.85))) : 65));
-        const pClt   = (typeof pitcher.clt === 'number' || (typeof pitcher.clt === 'string' && !isNaN(pitcher.clt))) ? Number(pitcher.clt) : ((typeof pitcher.clt_val === 'number' || (typeof pitcher.clt_val === 'string' && !isNaN(pitcher.clt_val))) ? Number(pitcher.clt_val) : ((typeof pitcher.clu === 'number' || (typeof pitcher.clu === 'string' && !isNaN(pitcher.clu))) ? Number(pitcher.clu) : ((typeof pitcher.clu_val === 'number' || (typeof pitcher.clu_val === 'string' && !isNaN(pitcher.clu_val))) ? Number(pitcher.clu_val) : 50)));
+        const rawH9  = Math.round(pitcher.h9  !== undefined ? pitcher.h9  : (pitcher.grt !== undefined ? pitcher.grt : (pitcher.h9_val !== undefined ? pitcher.h9_val : 50)));
+        const rawK9  = Math.round(pitcher.k9  !== undefined ? pitcher.k9  : (pitcher.stf !== undefined ? pitcher.stf : (pitcher.str !== undefined ? pitcher.str : (pitcher.k9_val !== undefined ? pitcher.k9_val : 50))));
+        const rawBB9 = Math.round(pitcher.bb9 !== undefined ? pitcher.bb9 : (pitcher.ctl !== undefined ? pitcher.ctl : (pitcher.bb9_val !== undefined ? pitcher.bb9_val : 50)));
+        const rawHR9 = Math.round(pitcher.hr9 !== undefined ? pitcher.hr9 : (pitcher.mov !== undefined ? pitcher.mov : (pitcher.hr9_val !== undefined ? pitcher.hr9_val : 50)));
+        const pSta   = Math.round(pitcher.sta !== undefined ? pitcher.sta : (pitcher.sta_val !== undefined ? pitcher.sta_val : (pitcher.maxHp ? Math.max(15, Math.min(125, Math.round((pitcher.maxHp - 15) / 0.85))) : 65)));
+        const pClt   = Math.round((typeof pitcher.clt === 'number' || (typeof pitcher.clt === 'string' && !isNaN(pitcher.clt))) ? Number(pitcher.clt) : ((typeof pitcher.clt_val === 'number' || (typeof pitcher.clt_val === 'string' && !isNaN(pitcher.clt_val))) ? Number(pitcher.clt_val) : ((typeof pitcher.clu === 'number' || (typeof pitcher.clu === 'string' && !isNaN(pitcher.clu))) ? Number(pitcher.clu) : ((typeof pitcher.clu_val === 'number' || (typeof pitcher.clu_val === 'string' && !isNaN(pitcher.clu_val))) ? Number(pitcher.clu_val) : 50))));
 
         const effH9  = Math.max(1, Math.min(135, rawH9  + clutchMod));
         const effK9  = Math.max(1, Math.min(135, rawK9  + clutchMod));
@@ -9609,8 +9610,7 @@ function initGameModeSelector() {
           return `${label}: ${eff}`;
         };
 
-        const pRole = pitcher.role || 'SP';
-        pitcherStatsBox.innerHTML = `${fmtStat('H/9', effH9, clutchMod)} | ${fmtStat('K/9', effK9, clutchMod)} | ${fmtStat('BB/9', effBB9, clutchMod)}<br>${fmtStat('HR/9', effHR9, clutchMod)} | STA: ${pSta} | CLT: ${pClt}<br>ROL: ${pRole}`;
+        pitcherStatsBox.innerHTML = `${fmtStat('H/9', effH9, clutchMod)} | ${fmtStat('K/9', effK9, clutchMod)} | ${fmtStat('BB/9', effBB9, clutchMod)}<br>${fmtStat('HR/9', effHR9, clutchMod)} | STA: ${pSta} | CLT: ${pClt}`;
       }
 
       // Rotation badges

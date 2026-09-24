@@ -122,7 +122,7 @@
     const rawPitcherClutchMod = isPitcherClutchSituation ? calcPitcherClutchModifier(pClutch) : 0;
     const hasIceInTheVeins = !!(simCtx && simCtx.hasTrait && simCtx.hasTrait('ice_in_the_veins'));
     const isNeutralizedByIce = hasIceInTheVeins && rawPitcherClutchMod > 0;
-    const pitcherClutchMod = isNeutralizedByIce ? 0 : rawPitcherClutchMod;
+    const pitcherClutchMod = isNeutralizedByIce ? 0 : Math.round(rawPitcherClutchMod);
     const pitcherClutchStatus = getPitcherClutchStatus(pitcherClutchMod, isPitcherClutchSituation, isNeutralizedByIce);
 
     const pH9  = Math.max(1, Math.min(135, rawH9  + pitcherClutchMod));
