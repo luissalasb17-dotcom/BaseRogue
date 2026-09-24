@@ -3292,7 +3292,8 @@ p {
     font-size: 11px !important;
   }
 
-  #match-batter-stats-box {
+  #match-batter-stats-box,
+  #match-pitcher-stats-box {
     font-size: 7px !important;
     line-height: 1.4 !important;
     margin-top: 6px !important;
@@ -6285,7 +6286,8 @@ body.on-main-menu .main-container {
 
   /* Redundant with the ratings already printed on the batter's card above it —
      hidden on mobile to cut clutter (kept on desktop where there's room). */
-  #match-batter-stats-box {
+  #match-batter-stats-box,
+  #match-pitcher-stats-box {
     display: none !important;
   }
 
