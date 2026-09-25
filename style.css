@@ -3251,108 +3251,82 @@ p {
   .match-arena { grid-template-columns: 1fr; }
 }
 
-/* --- LAPTOP / SMALL DESKTOP AUTO-SCALING (769px - 1380px) ---
-   Scales down battle arena elements proportionally so nothing overflows
-   on smaller laptop screens while preserving the 2-column PC layout.
+/* --- LAPTOP / SMALL MONITOR AUTO-SCALING (PRESERVE EXACT PC PROPORTIONS) ---
+   On laptops (1366x768, 1440x900, or 1080p at 125%/150% Windows OS display scaling),
+   viewport height is typically 650px - 850px.
+   Using CSS zoom (or transform fallback) scales every element (cards, text, margins,
+   sidebars, showdown, dice arena) with 100% pixel fidelity to the desktop monitor.
 */
-@media (min-width: 769px) and (max-width: 1380px) {
+@media (min-width: 769px) and (max-height: 880px), (min-width: 769px) and (max-width: 1400px) {
+  /* Scale the main app containers proportionally so everything fits comfortably within viewport */
+  body:not(.on-main-menu) .main-container {
+    zoom: 0.85;
+    padding: 10px 16px !important;
+  }
+
+  /* Pre-fight showdown: compact margins so showdown + bullpen fit without scrolling */
+  #screen-pre-fight {
+    padding: 14px 20px !important;
+    margin: 0 auto 10px auto !important;
+  }
+
+  .pre-fight-header {
+    margin-bottom: 10px !important;
+  }
+
+  .pre-fight-showdown {
+    margin: 10px 0 !important;
+    gap: 14px !important;
+  }
+
+  .pre-fight-bullpen-section {
+    margin-top: 10px !important;
+    padding: 10px 14px !important;
+  }
+
+  /* Match Arena: ensure comfortable fits on laptop screens */
   .match-arena {
     gap: 14px !important;
   }
 
-  /* Scale cards proportionally based on viewport width */
-  .rpg-fight-deck {
-    padding: 10px !important;
-    transform: scale(0.9) !important;
-    transform-origin: center top !important;
-    margin-bottom: -24px !important;
+  .match-log {
+    height: 150px !important;
+    max-height: 150px !important;
+  }
+}
+
+/* Extra compact laptop scaling for smaller screens (e.g. 1366x768 or 1080p @ 150% = 720p height) */
+@media (min-width: 769px) and (max-height: 740px) {
+  body:not(.on-main-menu) .main-container {
+    zoom: 0.76;
+    padding: 6px 12px !important;
   }
 
-  .fight-card-slot {
-    min-width: 130px !important;
-    min-height: 210px !important;
-    height: 210px !important;
+  header {
+    padding: 6px 18px !important;
+    min-height: 46px !important;
   }
 
-  .scoreboard {
-    font-size: 8px !important;
-    padding: 8px !important;
+  #screen-pre-fight {
+    padding: 10px 16px !important;
+    margin: 0 auto 6px auto !important;
   }
 
-  #scoreboard-inning-text {
-    font-size: 8px !important;
-    margin-bottom: 6px !important;
+  .pre-fight-showdown {
+    margin: 6px 0 !important;
   }
 
-  .faceoff-panel {
-    padding: 8px 10px !important;
-  }
-
-  .faceoff-name {
-    font-size: 11px !important;
-  }
-
-  #match-batter-stats-box,
-  #match-pitcher-stats-box {
-    font-size: 7px !important;
-    line-height: 1.4 !important;
+  .pre-fight-bullpen-section {
     margin-top: 6px !important;
-  }
-
-  #match-pitcher-hp-text {
-    font-size: 9px !important;
-  }
-
-  #dice-battle-panel {
-    padding: 8px 10px !important;
-    gap: 6px !important;
-  }
-
-  #team-vitals span {
-    font-size: 9px !important;
-  }
-
-  #so-chain-display {
-    font-size: 9px !important;
-  }
-
-  #dice-result-display {
-    width: 60px !important;
-    height: 60px !important;
-    font-size: 28px !important;
-  }
-
-  #btn-roll-dice {
-    font-size: 11px !important;
-    padding: 10px 20px !important;
-  }
-
-  #btn-match-skip-game {
-    font-size: 9px !important;
-    padding: 8px 16px !important;
+    padding: 8px 12px !important;
   }
 
   .match-log {
-    height: 140px !important;
-    max-height: 140px !important;
-  }
-
-  .match-log-content {
-    font-size: 16px !important;
-  }
-
-  .outcome-probabilities-grid {
-    font-size: 9px !important;
-  }
-
-  #zones-panel-header {
-    font-size: 9px !important;
-  }
-
-  #zones-panel #zones-lines > div {
-    font-size: 9px !important;
+    height: 120px !important;
+    max-height: 120px !important;
   }
 }
+
 
 /* Batting Order Controls */
 .order-btn-container {
