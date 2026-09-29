@@ -523,22 +523,44 @@
     return schedule;
   }
 
-  // Extra SP for a playoff opponent's pitching staff, on top of the single SP
-  // getFranchiseDecadeTeam already picked — same franchise-decade eligibility
-  // window as the rest of that team's roster, just excluding whoever's already
-  // the ace so the two aren't the same guy.
-  function _pickSecondFranchisePitcher(code, decade, excludeKey) {
+  // Extra real franchise pitcher for playoff opponent's 3-man pitching staff (SP, RP, CL).
+  // Searches RP first if role === 'RP' or 'CL', then falls back to SP within franchise-decade radius,
+  // and finally to the global pool if necessary, guaranteeing a real historical player.
+  function _pickSecondFranchisePitcher(code, decade, excludeKeys = [], preferredRole = 'RP') {
     const pitcherHistory = (window.PlayerTeamHistory && window.PlayerTeamHistory.pitchers) || {};
     const fullPitcherPool = getPitcherPool();
+    const excludeSet = new Set(Array.isArray(excludeKeys) ? excludeKeys : [excludeKeys]);
+
+    // 1. Try franchise-decade radius matching preferred role
     for (const radius of WINDOW_RADII) {
       const bucket = fullPitcherPool.filter(p =>
-        (p.role || 'SP').toUpperCase() === 'SP' &&
-        pitcherUnlockKey(p) !== excludeKey &&
+        !excludeSet.has(pitcherUnlockKey(p)) &&
+        ((p.role || 'SP').toUpperCase() === preferredRole.toUpperCase()) &&
         isEligibleForTeamDecade(p, pitcherHistory, code, decade, radius)
       ).sort((a, b) => (b.ovr || 0) - (a.ovr || 0));
       if (bucket.length) return weightedTopPick(bucket);
     }
-    return null;
+
+    // 2. Try franchise-decade radius with any role (e.g. elite SP converted to playoff ace reliever/closer)
+    for (const radius of WINDOW_RADII) {
+      const bucket = fullPitcherPool.filter(p =>
+        !excludeSet.has(pitcherUnlockKey(p)) &&
+        isEligibleForTeamDecade(p, pitcherHistory, code, decade, radius)
+      ).sort((a, b) => (b.ovr || 0) - (a.ovr || 0));
+      if (bucket.length) return weightedTopPick(bucket);
+    }
+
+    // 3. Fallback: global pool matching preferred role
+    const globalRoleBucket = fullPitcherPool.filter(p =>
+      !excludeSet.has(pitcherUnlockKey(p)) &&
+      ((p.role || 'SP').toUpperCase() === preferredRole.toUpperCase())
+    ).sort((a, b) => (b.ovr || 0) - (a.ovr || 0));
+    if (globalRoleBucket.length) return weightedTopPick(globalRoleBucket);
+
+    // 4. Fallback: global pool any role
+    const globalAnyBucket = fullPitcherPool.filter(p => !excludeSet.has(pitcherUnlockKey(p)))
+      .sort((a, b) => (b.ovr || 0) - (a.ovr || 0));
+    return globalAnyBucket.length ? weightedTopPick(globalAnyBucket) : null;
   }
 
   // Playoff opponents are the strongest real rivals THIS challenge's season
@@ -599,7 +621,8 @@
 
     const sp = boostPitcher(franchiseTeam.pitcher, 'SP', targetSpOvr);
     const setup = boostPitcher(franchiseTeam.reliever, 'RP', targetRpOvr);
-    const closerObj = _pickSecondFranchisePitcher(chosen.t.code, chosen.t.decade, pitcherUnlockKey(franchiseTeam.pitcher)) || franchiseTeam.reliever;
+    const excludeKeys = [pitcherUnlockKey(franchiseTeam.pitcher), pitcherUnlockKey(franchiseTeam.reliever)].filter(Boolean);
+    const closerObj = _pickSecondFranchisePitcher(chosen.t.code, chosen.t.decade, excludeKeys, 'RP') || franchiseTeam.reliever;
     const closer = boostPitcher(closerObj, 'CL', targetClOvr);
 
     return {
@@ -2002,7 +2025,9 @@
       const userSP = spList[round % spList.length] || spList[0];
       const closer = rpList[0] || rpList[1] || rpList[2];
       const setup  = rpList[1] || rpList[0] || rpList[2];
+      const middle = rpList[2] || rpList[1] || rpList[0];
       const userRelievers = [setup, closer].filter(Boolean);
+      if (userRelievers.length < 2 && middle) userRelievers.push(middle);
 
       const detailedGame = this._simulatePlayoffGameDetailed(userLineup, userSP, userRelievers, opp, round);
       this._activePlayoffSim = {
@@ -2030,13 +2055,14 @@
       const homeLinescore = [];
 
       const userMaxInnings = Math.min(6, this._getStarterMaxInnings(userSP));
-      const rawOppPitchers = (opp.pitchers && opp.pitchers.length)
-        ? opp.pitchers
-        : [opp.pitcher, opp.reliever].filter(Boolean);
-      const oppSP = rawOppPitchers[0] || opp.pitcher;
-      const oppRP = rawOppPitchers[1] || opp.reliever || oppSP;
-      const oppPitchers = [oppSP, oppRP].filter(Boolean);
+      const oppSP = (opp.pitchers && opp.pitchers[0]) || opp.pitcher;
+      const oppRP = (opp.pitchers && opp.pitchers[1]) || opp.reliever || oppSP;
+      const oppCL = (opp.pitchers && opp.pitchers[2]) || opp.closer || oppRP;
+      const oppPitchers = [oppSP, oppRP, oppCL].filter(Boolean);
       const oppMaxInnings = Math.min(6, this._getStarterMaxInnings(oppSP));
+
+      const userRP = userRelievers[0] || userSP;
+      const userCL = userRelievers[1] || userRP || userSP;
 
       // Team defense values
       const fielders = userLineup.filter(p => (p.assignedSlot || p.pos) !== 'DH');
@@ -2074,15 +2100,17 @@
         return homePitchersMap[k];
       };
 
-      // Playoff pitching selection logic (2 pitchers per team: SP + RP/Closer):
-      const getOppPitcherForInning = (inn) => {
+      // Playoff pitching selection logic (3 pitchers per team: SP, Setup RP, Closer CL):
+      const getOppPitcherForInning = (inn, uR, oR) => {
         if (inn <= oppMaxInnings) return oppSP;
+        if (inn === 9 || inn >= 10 || (inn === 8 && oR >= uR && oR - uR <= 3)) return oppCL;
         return oppRP;
       };
 
-      const getUserPitcherForInning = (inn) => {
+      const getUserPitcherForInning = (inn, uR, oR) => {
         if (inn <= userMaxInnings) return userSP;
-        return userRelievers[1] || userRelievers[0] || userSP;
+        if (inn === 9 || inn >= 10 || (inn === 8 && uR >= oR && uR - oR <= 3)) return userCL;
+        return userRP;
       };
 
       while (inning <= 9 || (userRuns === oppRuns && inning <= inningLimit)) {
@@ -2408,7 +2436,7 @@
         },
         userLineup: userLineup.map(b => ({ name: b.name, pos: b.assignedSlot || b.pos || 'DH', ovr: Math.round(b.ovr || 80) })),
         oppLineup: (opp.lineup || opp._batters || []).slice(0, 9).map(b => ({ name: b.name, pos: b.assignedSlot || b.pos || 'DH', ovr: Math.round(b.ovr || 80) })),
-        userPitchers: [userSP, userRelievers[0] || userSP].filter(Boolean).map(p => ({ name: p.name, role: p.role || 'P', ovr: Math.round(p.ovr || 80) })),
+        userPitchers: [userSP, userRP, userCL].filter(Boolean).map(p => ({ name: p.name, role: p.role || 'P', ovr: Math.round(p.ovr || 80) })),
         oppPitchers: (oppPitchers || []).filter(Boolean).map(p => ({ name: p.cleanName || p.name, role: p.role || 'P', ovr: Math.round(p.ovr || 80) })),
         won,
         finalInning: Math.max(9, awayLinescore.length),
