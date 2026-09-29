@@ -1993,7 +1993,7 @@
       const S = this.state;
       const round = S.playoffs.round;
       const oppFranchise = generatePlayoffEnemyTeam(round, S.leagueTeams);
-      const opp = oppFranchise.team || oppFranchise;
+      const opp = oppFranchise;
 
       const userLineup = S.roster.battingOrder.map(slot => S.roster.lineup[slot]).filter(Boolean);
       const spList = S.roster.pitchers.SP;
@@ -2002,8 +2002,7 @@
       const userSP = spList[round % spList.length] || spList[0];
       const closer = rpList[0] || rpList[1] || rpList[2];
       const setup  = rpList[1] || rpList[0] || rpList[2];
-      const middle = rpList[2] || rpList[1] || rpList[0];
-      const userRelievers = [middle, setup, closer];
+      const userRelievers = [setup, closer].filter(Boolean);
 
       const detailedGame = this._simulatePlayoffGameDetailed(userLineup, userSP, userRelievers, opp, round);
       this._activePlayoffSim = {
@@ -2031,10 +2030,12 @@
       const homeLinescore = [];
 
       const userMaxInnings = Math.min(6, this._getStarterMaxInnings(userSP));
-      const oppPitchers = opp.pitchers || [opp.pitcher, opp.reliever, opp.closer];
-      const oppSP = oppPitchers[0] || { name: 'As Rival', h9: 80, k9: 80, bb9: 75, hr9: 75, role: 'SP', ovr: 90 };
-      const oppRP = oppPitchers[1] || { name: 'Setup Rival', h9: 78, k9: 78, bb9: 70, hr9: 70, role: 'RP', ovr: 88 };
-      const oppCL = oppPitchers[2] || { name: 'Closer Rival', h9: 88, k9: 90, bb9: 80, hr9: 80, role: 'CL', ovr: 95 };
+      const rawOppPitchers = (opp.pitchers && opp.pitchers.length)
+        ? opp.pitchers
+        : [opp.pitcher, opp.reliever].filter(Boolean);
+      const oppSP = rawOppPitchers[0] || opp.pitcher;
+      const oppRP = rawOppPitchers[1] || opp.reliever || oppSP;
+      const oppPitchers = [oppSP, oppRP].filter(Boolean);
       const oppMaxInnings = Math.min(6, this._getStarterMaxInnings(oppSP));
 
       // Team defense values
@@ -2073,18 +2074,15 @@
         return homePitchersMap[k];
       };
 
-      // Playoff pitching selection logic:
-      const getOppPitcherForInning = (inn, uR, oR) => {
+      // Playoff pitching selection logic (2 pitchers per team: SP + RP/Closer):
+      const getOppPitcherForInning = (inn) => {
         if (inn <= oppMaxInnings) return oppSP;
-        if (inn === 9 || inn >= 10 || (inn === 8 && oR >= uR && oR - uR <= 3)) return oppCL;
         return oppRP;
       };
 
-      const getUserPitcherForInning = (inn, uR, oR) => {
+      const getUserPitcherForInning = (inn) => {
         if (inn <= userMaxInnings) return userSP;
-        if (inn === 9 || inn >= 10 || (inn === 8 && uR >= oR && uR - oR <= 3)) return userRelievers[2] || userRelievers[1] || userSP;
-        if (inn === 7 || inn === 8) return userRelievers[1] || userRelievers[0] || userSP;
-        return userRelievers[0] || userSP;
+        return userRelievers[1] || userRelievers[0] || userSP;
       };
 
       while (inning <= 9 || (userRuns === oppRuns && inning <= inningLimit)) {
@@ -2410,7 +2408,7 @@
         },
         userLineup: userLineup.map(b => ({ name: b.name, pos: b.assignedSlot || b.pos || 'DH', ovr: Math.round(b.ovr || 80) })),
         oppLineup: (opp.lineup || opp._batters || []).slice(0, 9).map(b => ({ name: b.name, pos: b.assignedSlot || b.pos || 'DH', ovr: Math.round(b.ovr || 80) })),
-        userPitchers: [userSP, userRelievers[1] || userRelievers[0] || userSP, userRelievers[2] || userRelievers[0] || userSP].filter(Boolean).map(p => ({ name: p.name, role: p.role || 'P', ovr: Math.round(p.ovr || 80) })),
+        userPitchers: [userSP, userRelievers[0] || userSP].filter(Boolean).map(p => ({ name: p.name, role: p.role || 'P', ovr: Math.round(p.ovr || 80) })),
         oppPitchers: (oppPitchers || []).filter(Boolean).map(p => ({ name: p.cleanName || p.name, role: p.role || 'P', ovr: Math.round(p.ovr || 80) })),
         won,
         finalInning: Math.max(9, awayLinescore.length),
@@ -2446,6 +2444,8 @@
       const pitchingLabel = _t('challenge162.playoff_pitching', 'Lanzando');
       const todayLineLabel = _t('challenge162.playoff_today_line', 'Hoy');
       const pitchesLabel = _t('challenge162.playoff_pitches', 'Lanzamientos');
+      const turnTeamLabel = _t('challenge162.playoff_turn_team', 'Turno');
+      const finalScoreLabel = _t('challenge162.playoff_final_score', 'FINAL DEL PARTIDO');
       const backBtnText = _t('challenge162.playoff_back_hub', '← VOLVER');
 
       // Resolve event for current state:
@@ -2615,27 +2615,27 @@
       } else if (curEvt.outcome === 'HR') {
         narrativeText = _t('challenge162.pa_hr', `¡${curEvt.batter.name} conecta un descomunal cuadrangular! (+${curEvt.runsScored} carreras)`, { batter: curEvt.batter.name, runs: curEvt.runsScored });
         textClass += ' highlight-hr';
-        outcomePillHTML = `<span class="c162-event-badge badge-hr">💥 JONRÓN</span>`;
+        outcomePillHTML = `<span class="c162-event-badge badge-hr">${_t('challenge162.badge_hr', '💥 JONRÓN')}</span>`;
       } else if (curEvt.outcome === '3B') {
         narrativeText = _t('challenge162.pa_3b', `¡${curEvt.batter.name} conecta triple profundo al callejón! (+${curEvt.runsScored} carreras)`, { batter: curEvt.batter.name, runs: curEvt.runsScored });
-        outcomePillHTML = `<span class="c162-event-badge badge-hit">⚡ TRIPLE</span>`;
+        outcomePillHTML = `<span class="c162-event-badge badge-hit">${_t('challenge162.badge_3b', '⚡ TRIPLE')}</span>`;
       } else if (curEvt.outcome === '2B') {
         narrativeText = _t('challenge162.pa_2b', `¡${curEvt.batter.name} conecta doblete contra la pared! (+${curEvt.runsScored} carreras)`, { batter: curEvt.batter.name, runs: curEvt.runsScored });
-        outcomePillHTML = `<span class="c162-event-badge badge-hit">🔥 DOBLE</span>`;
+        outcomePillHTML = `<span class="c162-event-badge badge-hit">${_t('challenge162.badge_2b', '🔥 DOBLE')}</span>`;
       } else if (curEvt.outcome === '1B') {
         narrativeText = _t('challenge162.pa_1b', `¡${curEvt.batter.name} conecta imparable al jardín! (+${curEvt.runsScored} carreras)`, { batter: curEvt.batter.name, runs: curEvt.runsScored });
-        outcomePillHTML = `<span class="c162-event-badge badge-hit">⚾ SENCILLO</span>`;
+        outcomePillHTML = `<span class="c162-event-badge badge-hit">${_t('challenge162.badge_1b', '⚾ SENCILLO')}</span>`;
       } else if (curEvt.outcome === 'BB') {
         narrativeText = _t('challenge162.pa_bb', `${curEvt.batter.name} negocia boleto con paciencia.`, { batter: curEvt.batter.name });
-        outcomePillHTML = `<span class="c162-event-badge badge-bb">🚶 BOLETO</span>`;
+        outcomePillHTML = `<span class="c162-event-badge badge-bb">${_t('challenge162.badge_bb', '🚶 BOLETO')}</span>`;
       } else if (curEvt.outcome === 'SO') {
         narrativeText = _t('challenge162.pa_so', `${curEvt.pitcher.name} poncha a ${curEvt.batter.name} tirándole.`, { pitcher: curEvt.pitcher.name, batter: curEvt.batter.name });
         textClass += ' highlight-out';
-        outcomePillHTML = `<span class="c162-event-badge badge-so">💨 PONCHE</span>`;
+        outcomePillHTML = `<span class="c162-event-badge badge-so">${_t('challenge162.badge_so', '💨 PONCHE')}</span>`;
       } else {
         narrativeText = _t('challenge162.pa_out', `${curEvt.batter.name} falla con roletazo/elevado.`, { batter: curEvt.batter.name });
         textClass += ' highlight-out';
-        outcomePillHTML = `<span class="c162-event-badge badge-out">🛑 OUT</span>`;
+        outcomePillHTML = `<span class="c162-event-badge badge-out">${_t('challenge162.badge_out', '🛑 OUT')}</span>`;
       }
 
       if (!isPreGame && curEvt.stolenBase) {
@@ -2772,7 +2772,7 @@
                   </div>
                   <div style="background:rgba(0,0,0,0.4);padding:8px 10px;border-radius:6px;font-size:11px;color:#94a3af;line-height:1.5;">
                     <div>⚾ <strong>${todayLineLabel}:</strong> <span style="color:#ffd700;font-weight:bold;">${curEvt.batter.line || '0-0'}</span></div>
-                    <div>🎯 <strong>Turno:</strong> <span style="color:#e4e4e7;">${curEvt.half === 'TOP' ? game.awayTeam.name : game.homeTeam.name}</span></div>
+                    <div>🎯 <strong>${turnTeamLabel}:</strong> <span style="color:#e4e4e7;">${curEvt.half === 'TOP' ? game.awayTeam.name : game.homeTeam.name}</span></div>
                   </div>
                 </div>
 
@@ -2783,7 +2783,7 @@
                 <div style="display:flex;align-items:center;gap:8px;justify-content:center;flex-wrap:wrap;">
                   ${outcomePillHTML}
                   <span class="${textClass}">
-                    ${isFinished ? `⚾ FINAL DEL PARTIDO: ${game.awayTeam.name} ${curUserRuns} - ${curOppRuns} ${game.homeTeam.name}` : narrativeText}
+                    ${isFinished ? `⚾ ${finalScoreLabel}: ${game.awayTeam.name} ${curUserRuns} - ${curOppRuns} ${game.homeTeam.name}` : narrativeText}
                   </span>
                 </div>
               </div>
@@ -2906,7 +2906,7 @@
 
         tabContentHTML = `
           <div class="c162-pbp-container">
-            ${pbpEntriesHTML || `<div style="color:#9ca3af;text-align:center;padding:20px;">${isPreGame ? 'El partido está listo para comenzar.' : 'No hay jugadas registradas aún.'}</div>`}
+            ${pbpEntriesHTML || `<div style="color:#9ca3af;text-align:center;padding:20px;">${isPreGame ? _t('challenge162.playoff_pbp_pregame', 'El partido está listo para comenzar.') : _t('challenge162.playoff_pbp_empty', 'No hay jugadas registradas aún.')}</div>`}
           </div>
         `;
       }
