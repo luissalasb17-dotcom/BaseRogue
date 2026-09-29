@@ -1090,27 +1090,36 @@ NLB_LEGENDS = {
 
 # Strictly Negro League teams (excluding 19th c. MLB franchises like LOU, SBS, CLS, WNL, etc.)
 NLB_TEAMS = {
-    'AB', 'AB2', 'AB3', 'ABC', 'AC', 'AC1', 'AC2', 'ACB', 'ACG', 'BBB', 'BBS', 'BCA', 'BE', 'BEG',
-    'BG1', 'BG2', 'BGS', 'BR2', 'BRG', 'CAG', 'CBB', 'CBE', 'CBG', 'CBN', 'CBR', 'CC', 'CC1',
+    'AB', 'AB2', 'AB3', 'ABC', 'AC', 'AC1', 'AC2', 'ACB', 'ACG', 'AG', 'BBB', 'BBS', 'BCA', 'BE', 'BEG',
+    'BG1', 'BG2', 'BGS', 'BRG', 'CAG', 'CBB', 'CBE', 'CBG', 'CBN', 'CBR', 'CC', 'CC1',
     'CC2', 'CCB', 'CCC', 'CCG', 'CCG2', 'CCU', 'CEG', 'CEL', 'CGI', 'CHT', 'CIC', 'CIG', 'CL2',
     'CLG', 'CLS', 'COB', 'COG', 'COS', 'COT', 'CRS', 'CS', 'CSE', 'CSG', 'CSG2', 'CSG3', 'CSH',
     'CSW', 'CT', 'CTG', 'CTS', 'CU', 'CUP', 'CXG', 'DM', 'DS', 'DTS', 'DW', 'DYM', 'FLP', 'GOR',
-    'HBG', 'HG', 'HIL', 'HOM', 'HSS', 'HAR', 'IA', 'IAB', 'IC', 'ID', 'JRC', 'KCG', 'KCM', 'KRG', 'LEL',
+    'HBG', 'HG', 'HIL', 'HOM', 'HSS', 'IA', 'IAB', 'IC', 'ID', 'JRC', 'KCG', 'KCM', 'KRG', 'LEL',
     'LOW', 'LRG', 'LVB', 'MB', 'MEM', 'MGS', 'MOH', 'MRM', 'MRS', 'NBY', 'ND', 'NE', 'NEG', 'NLG',
     'NLS', 'NS', 'NW2', 'NWB', 'NY5', 'NY6', 'NYB', 'NYC', 'OKM', 'PBG', 'PBK', 'PC', 'PFG', 'PG',
-    'PK', 'PS', 'PTG', 'QG', 'SC1', 'SEN', 'SL2', 'SL3', 'SLG', 'SLS', 'SNH', 'SNS', 'SOX', 'SPG',
+    'PK', 'PS', 'PTG', 'QG', 'SC1', 'SEN', 'SL2', 'SLG', 'SLS', 'SNH', 'SNS', 'SOX', 'SPG',
     'TC', 'TC2', 'TIC', 'TT', 'WAP', 'WBS', 'WEG', 'WMP', 'WP', 'NLB'
 }
+
+NL_LEAGUES = {'NNL', 'NN2', 'NAL', 'ECL', 'ANL', 'EWL', 'NSL'}
 
 def map_to_canonical_team(row):
     t = str(row.get("canonical_teamID", row.get("team", "UNK"))).strip()
     if t.lower() in ("nan", "none", "null"):
         t = "UNK"
-    if t == "NLB":
-        return "NLB"
-    franch = str(row.get("franchID", "")).strip()
     p_name = str(row.get("full_name", row.get("name", row.get("nameFull", row.get("display_name", ""))))).strip()
     peak_y = int(row.get("peak_year", row.get("year", 2000)) or 2000)
+
+    # Pre-1901 Genesis players who are not explicit Negro League legends cannot be NLB (e.g. Hartford, Brooklyn, St. Louis 19th c. white teams)
+    if peak_y < 1901 and not any(nlb_n.lower() in p_name.lower() for nlb_n in NLB_LEGENDS):
+        if t == "NLB":
+            t = "HIST"
+
+    if t == "NLB":
+        return "NLB"
+
+    franch = str(row.get("franchID", "")).strip()
 
     # 1. Active modern MLB franchise lineage
     res_team = None
@@ -1120,11 +1129,6 @@ def map_to_canonical_team(row):
         res_team = FRANCHISE_MAP[t]
 
     if res_team:
-        # Prevent historical defunct teams from colliding with modern expansion franchise codes
-        if res_team in ('COL', 'MIA') and peak_y < 1993:
-            return "HIST"
-        if res_team in ('ARI', 'TB') and peak_y < 1998:
-            return "HIST"
         return res_team
 
     # 2. Iconic Negro League legends
@@ -1152,8 +1156,11 @@ def paso_12_exportar(df, pitching, teams, franchises, pico_df=None, war_pitch=No
         teams_dedup = teams.sort_values("yearID", ascending=True).drop_duplicates(subset="teamID", keep="first")
         team_to_franch = teams_dedup.set_index("teamID")["franchID"].to_dict()
 
-    def get_franch(tid):
+    def get_franch(tid, lg_id=""):
         tid_str = str(tid).strip()
+        lg_str = str(lg_id).strip()
+        if lg_str in NL_LEAGUES:
+            return "NLB"
         if tid_str in NLB_TEAMS:
             return "NLB"
         f = team_to_franch.get(tid_str, tid_str)
@@ -1166,7 +1173,7 @@ def paso_12_exportar(df, pitching, teams, franchises, pico_df=None, war_pitch=No
         war["WAR"] = pd.to_numeric(war["WAR"].replace("NULL", 0), errors="coerce").fillna(0)
         id_map = people[["playerID", "bbrefID"]].dropna(subset=["bbrefID"])
         war_merged = war.merge(id_map, left_on="player_ID", right_on="bbrefID", how="inner")
-        war_merged["franch_clean"] = war_merged["team_ID"].apply(get_franch)
+        war_merged["franch_clean"] = war_merged.apply(lambda r: get_franch(r["team_ID"], r.get("lg_ID", "")), axis=1)
         
         # WAR en carrera por franquicia
         career_franch_war = war_merged.groupby(["playerID", "franch_clean"])["WAR"].sum().reset_index(name="career_war_f")
@@ -1203,8 +1210,8 @@ def paso_12_exportar(df, pitching, teams, franchises, pico_df=None, war_pitch=No
         )
         df = df.merge(canonical[["playerID", "canonical_teamID"]], on="playerID", how="left")
     elif pico_df is not None and not pico_df.empty and not pitching.empty:
-        peak_seasons_teams = pico_df.merge(pitching[["playerID", "yearID", "teamID"]].drop_duplicates(), on=["playerID", "yearID"], how="left")
-        peak_seasons_teams["franch_clean"] = peak_seasons_teams["teamID"].apply(get_franch)
+        peak_seasons_teams = pico_df.merge(pitching[["playerID", "yearID", "teamID", "lgID"]].drop_duplicates(), on=["playerID", "yearID"], how="left")
+        peak_seasons_teams["franch_clean"] = peak_seasons_teams.apply(lambda r: get_franch(r["teamID"], r.get("lgID", "")), axis=1)
         team_seasons = peak_seasons_teams.groupby(["playerID", "franch_clean"])["yearID"].count().reset_index()
         team_seasons.columns = ["playerID", "canonical_teamID", "team_count"]
         canonical = (
@@ -1220,8 +1227,8 @@ def paso_12_exportar(df, pitching, teams, franchises, pico_df=None, war_pitch=No
     if missing_mask.any() and pico_df is not None and not pico_df.empty and not pitching.empty:
         pico_clean = pico_df.copy()
         pico_clean["orig_playerID"] = pico_clean["playerID"].str.replace("_sp", "").str.replace("_rp", "")
-        pico_teams = pico_clean.merge(pitching[["playerID", "yearID", "teamID"]].drop_duplicates(), left_on=["orig_playerID", "yearID"], right_on=["playerID", "yearID"], how="left")
-        pico_teams["franch_clean"] = pico_teams["teamID"].apply(get_franch)
+        pico_teams = pico_clean.merge(pitching[["playerID", "yearID", "teamID", "lgID"]].drop_duplicates(), left_on=["orig_playerID", "yearID"], right_on=["playerID", "yearID"], how="left")
+        pico_teams["franch_clean"] = pico_teams.apply(lambda r: get_franch(r["teamID"], r.get("lgID", "")), axis=1)
         team_counts = pico_teams.groupby(["playerID_x", "franch_clean"])["yearID"].count().reset_index()
         team_counts = team_counts.sort_values("yearID", ascending=False).drop_duplicates(subset="playerID_x")
         fallback_map = team_counts.set_index("playerID_x")["franch_clean"].to_dict()

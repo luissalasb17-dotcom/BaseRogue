@@ -939,13 +939,6 @@ def paso_10_atributos_raw_bateo(df):
     # Suavizado Bayesiano de Boletos (EYE)
     df["eye_raw"] = (bb * comp_mult + m_pa * 0.085) / (pa + m_pa)
 
-    # Suavizado Bayesiano de Ponches (K/AVD) para NLB con datos faltantes
-    era_k_means = df.groupby("era_label")["k_rate"].transform(lambda s: s[s >= 0.020].mean() if len(s[s >= 0.020]) > 0 else 0.070)
-    era_k_means = era_k_means.fillna(0.070)
-    is_missing_so = (is_nlb & (df["k_rate"] < 0.020)) | (df["k_rate"].isna())
-    k_imputed = (so + m_pa * era_k_means) / (pa + m_pa)
-    df["k_rate_clean"] = np.where(is_missing_so, k_imputed, df["k_rate"].fillna(era_k_means))
-
     # Bayesian sample-size smoothing for power metrics (m = 1,000 PA) con descuento de oposición
     hr_effective = hr * comp_mult
     hr_smoothed = (hr_effective + m_pa * 0.025) / (pa + m_pa)
@@ -953,6 +946,7 @@ def paso_10_atributos_raw_bateo(df):
     slg = np.where(ab > 0, tb_total / ab, 0)
     iso_raw = np.where(ab > 0, slg - (h_effective / ab), 0)
     iso_smoothed = (iso_raw * pa + m_pa * 0.140) / (pa + m_pa)
+    df["iso_smoothed"] = iso_smoothed
     xbh_smoothed = ((b2 + b3 + hr) * comp_mult + m_pa * 0.075) / (pa + m_pa)
 
     df["power_raw"] = (
@@ -960,7 +954,34 @@ def paso_10_atributos_raw_bateo(df):
         iso_smoothed * 0.40 +
         xbh_smoothed * 0.15
     )
-    print("  contact_raw, power_raw, eye_raw con descuento de competencia pionera aplicados")
+
+    # ── Imputación Sabermétrica de Ponches (K/AVD) para NLB y datos faltantes ──
+    # En Ligas Negras históricas, >95% de los boxscores de periódicos no registraban ponches (SO=0).
+    # Para evitar inflar artificialmente a bateadores de swing grande (ej. Gibson, Suttles),
+    # estimamos K% con la regresión histórica por Era basada en BA e ISO de bateadores MLB:
+    # K% estimado = K_era - 0.40*(BA - BA_era) + 0.35*(ISO - ISO_era)
+    valid_k = (~is_nlb) & (df["k_rate"] >= 0.025)
+    era_k_dict = df[valid_k].groupby("era_label")["k_rate"].mean().to_dict()
+    era_ba_dict = df[valid_k].groupby("era_label")["ba_smoothed"].mean().to_dict()
+    era_iso_dict = df[valid_k].groupby("era_label")["iso_smoothed"].mean().to_dict()
+
+    def _impute_k(row):
+        k = row.get("k_rate", np.nan)
+        nl = row.get("is_nlb", False)
+        if (nl and (pd.isna(k) or k < 0.020)) or (pd.isna(k) or k < 0.015):
+            e = row["era_label"]
+            km = era_k_dict.get(e, 0.080)
+            bam = era_ba_dict.get(e, 0.265)
+            isom = era_iso_dict.get(e, 0.125)
+            ba_val = row.get("ba_smoothed", bam)
+            iso_val = row.get("iso_smoothed", isom)
+            k_est = km - 0.40 * (ba_val - bam) + 0.35 * (iso_val - isom)
+            return max(0.015, min(0.250, k_est))
+        return k
+
+    df["k_rate_clean"] = df.apply(_impute_k, axis=1)
+
+    print("  contact_raw, power_raw, eye_raw con descuento de competencia pionera y K% sabermetrico aplicados")
     return df
 
 
@@ -1271,27 +1292,36 @@ NLB_LEGENDS = {
 
 # Strictly Negro League teams (excluding 19th c. MLB franchises like LOU, SBS, CLS, WNL, etc.)
 NLB_TEAMS = {
-    'AB', 'AB2', 'AB3', 'ABC', 'AC', 'AC1', 'AC2', 'ACB', 'ACG', 'BBB', 'BBS', 'BCA', 'BE', 'BEG',
-    'BG1', 'BG2', 'BGS', 'BR2', 'BRG', 'CAG', 'CBB', 'CBE', 'CBG', 'CBN', 'CBR', 'CC', 'CC1',
+    'AB', 'AB2', 'AB3', 'ABC', 'AC', 'AC1', 'AC2', 'ACB', 'ACG', 'AG', 'BBB', 'BBS', 'BCA', 'BE', 'BEG',
+    'BG1', 'BG2', 'BGS', 'BRG', 'CAG', 'CBB', 'CBE', 'CBG', 'CBN', 'CBR', 'CC', 'CC1',
     'CC2', 'CCB', 'CCC', 'CCG', 'CCG2', 'CCU', 'CEG', 'CEL', 'CGI', 'CHT', 'CIC', 'CIG', 'CL2',
     'CLG', 'CLS', 'COB', 'COG', 'COS', 'COT', 'CRS', 'CS', 'CSE', 'CSG', 'CSG2', 'CSG3', 'CSH',
     'CSW', 'CT', 'CTG', 'CTS', 'CU', 'CUP', 'CXG', 'DM', 'DS', 'DTS', 'DW', 'DYM', 'FLP', 'GOR',
-    'HBG', 'HG', 'HIL', 'HOM', 'HSS', 'HAR', 'IA', 'IAB', 'IC', 'ID', 'JRC', 'KCG', 'KCM', 'KRG', 'LEL',
+    'HBG', 'HG', 'HIL', 'HOM', 'HSS', 'IA', 'IAB', 'IC', 'ID', 'JRC', 'KCG', 'KCM', 'KRG', 'LEL',
     'LOW', 'LRG', 'LVB', 'MB', 'MEM', 'MGS', 'MOH', 'MRM', 'MRS', 'NBY', 'ND', 'NE', 'NEG', 'NLG',
     'NLS', 'NS', 'NW2', 'NWB', 'NY5', 'NY6', 'NYB', 'NYC', 'OKM', 'PBG', 'PBK', 'PC', 'PFG', 'PG',
-    'PK', 'PS', 'PTG', 'QG', 'SC1', 'SEN', 'SL2', 'SL3', 'SLG', 'SLS', 'SNH', 'SNS', 'SOX', 'SPG',
+    'PK', 'PS', 'PTG', 'QG', 'SC1', 'SEN', 'SL2', 'SLG', 'SLS', 'SNH', 'SNS', 'SOX', 'SPG',
     'TC', 'TC2', 'TIC', 'TT', 'WAP', 'WBS', 'WEG', 'WMP', 'WP', 'NLB'
 }
+
+NL_LEAGUES = {'NNL', 'NN2', 'NAL', 'ECL', 'ANL', 'EWL', 'NSL'}
 
 def map_to_canonical_team(row):
     t = str(row.get("canonical_teamID", row.get("team", "UNK"))).strip()
     if t.lower() in ("nan", "none", "null"):
         t = "UNK"
-    if t == "NLB":
-        return "NLB"
-    franch = str(row.get("franchID", "")).strip()
     p_name = str(row.get("full_name", row.get("name", row.get("nameFull", row.get("display_name", ""))))).strip()
     peak_y = int(row.get("peak_year", row.get("year", 2000)) or 2000)
+
+    # Pre-1901 Genesis players who are not explicit Negro League legends cannot be NLB (e.g. Hartford, Brooklyn, St. Louis 19th c. white teams)
+    if peak_y < 1901 and not any(nlb_n.lower() in p_name.lower() for nlb_n in NLB_LEGENDS):
+        if t == "NLB":
+            t = "HIST"
+
+    if t == "NLB":
+        return "NLB"
+
+    franch = str(row.get("franchID", "")).strip()
 
     # 1. Active modern MLB franchise lineage
     res_team = None
@@ -1301,11 +1331,6 @@ def map_to_canonical_team(row):
         res_team = FRANCHISE_MAP[t]
 
     if res_team:
-        # Prevent historical defunct teams from colliding with modern expansion franchise codes
-        if res_team in ('COL', 'MIA') and peak_y < 1993:
-            return "HIST"
-        if res_team in ('ARI', 'TB') and peak_y < 1998:
-            return "HIST"
         return res_team
 
     # 2. Iconic Negro League legends
@@ -1351,8 +1376,11 @@ def paso_15_equipo_y_exportar(df, batting, teams, franchises, pico_df=None, war_
         teams_dedup = teams.sort_values("yearID", ascending=True).drop_duplicates(subset="teamID", keep="first")
         team_to_franch = teams_dedup.set_index("teamID")["franchID"].to_dict()
 
-    def get_franch(tid):
+    def get_franch(tid, lg_id=""):
         tid_str = str(tid).strip()
+        lg_str = str(lg_id).strip()
+        if lg_str in NL_LEAGUES:
+            return "NLB"
         if tid_str in NLB_TEAMS:
             return "NLB"
         f = team_to_franch.get(tid_str, tid_str)
@@ -1365,7 +1393,7 @@ def paso_15_equipo_y_exportar(df, batting, teams, franchises, pico_df=None, war_
         war["WAR"] = pd.to_numeric(war["WAR"].replace("NULL", 0), errors="coerce").fillna(0)
         id_map = people[["playerID", "bbrefID"]].dropna(subset=["bbrefID"])
         war_merged = war.merge(id_map, left_on="player_ID", right_on="bbrefID", how="inner")
-        war_merged["franch_clean"] = war_merged["team_ID"].apply(get_franch)
+        war_merged["franch_clean"] = war_merged.apply(lambda r: get_franch(r["team_ID"], r.get("lg_ID", "")), axis=1)
         
         # WAR en carrera por franquicia
         career_franch_war = war_merged.groupby(["playerID", "franch_clean"])["WAR"].sum().reset_index(name="career_war_f")
@@ -1388,8 +1416,8 @@ def paso_15_equipo_y_exportar(df, batting, teams, franchises, pico_df=None, war_
         )
         df = df.merge(canonical[["playerID", "canonical_teamID"]], on="playerID", how="left")
     elif pico_df is not None and not pico_df.empty and not batting.empty:
-        peak_seasons_teams = pico_df.merge(batting[["playerID", "yearID", "teamID"]].drop_duplicates(), on=["playerID", "yearID"], how="left")
-        peak_seasons_teams["franch_clean"] = peak_seasons_teams["teamID"].apply(get_franch)
+        peak_seasons_teams = pico_df.merge(batting[["playerID", "yearID", "teamID", "lgID"]].drop_duplicates(), on=["playerID", "yearID"], how="left")
+        peak_seasons_teams["franch_clean"] = peak_seasons_teams.apply(lambda r: get_franch(r["teamID"], r.get("lgID", "")), axis=1)
         team_seasons = peak_seasons_teams.groupby(["playerID", "franch_clean"])["yearID"].count().reset_index()
         team_seasons.columns = ["playerID", "canonical_teamID", "team_count"]
         canonical = (
@@ -1405,15 +1433,16 @@ def paso_15_equipo_y_exportar(df, batting, teams, franchises, pico_df=None, war_
     null_team_mask = df["canonical_teamID"].isna() | (df["canonical_teamID"].astype(str) == "nan")
     if null_team_mask.any() and not batting.empty:
         missing_pids = df.loc[null_team_mask, "playerID"].tolist()
+        bat_sub = batting[batting["playerID"].isin(missing_pids)].copy()
+        bat_sub["franch_clean"] = bat_sub.apply(lambda r: get_franch(r["teamID"], r.get("lgID", "")), axis=1)
         bat_counts = (
-            batting[batting["playerID"].isin(missing_pids)]
-            .groupby(["playerID", "teamID"])["AB"]
+            bat_sub.groupby(["playerID", "franch_clean"])["AB"]
             .sum()
             .reset_index()
             .sort_values("AB", ascending=False)
             .drop_duplicates(subset="playerID")
         )
-        bat_team_map = bat_counts.set_index("playerID")["teamID"].to_dict()
+        bat_team_map = bat_counts.set_index("playerID")["franch_clean"].to_dict()
         df.loc[null_team_mask, "canonical_teamID"] = df.loc[null_team_mask, "playerID"].map(bat_team_map).fillna("UNK")
         print(f"    Fallback batting-team para {null_team_mask.sum()} jugadores sin bbrefID.")
 
