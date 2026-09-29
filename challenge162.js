@@ -151,6 +151,19 @@
   }
 
   // ── Sabermetric WAR Calculations (Shared across Season & Results) ────────
+  function calcBatterDWAR(s, pos = 'DH', defVal = 50) {
+    if (!s) return '0.0';
+    const ab = s.ab || 0;
+    const bb = s.bb || 0;
+    const pa = ab + bb;
+    if (pa <= 0) return '0.0';
+    const posAdjTable = { C: 9.0, SS: 7.0, '2B': 3.0, '3B': 2.0, CF: 2.5, LF: -7.0, RF: -7.0, '1B': -12.0, DH: -15.0 };
+    const posAdj = (posAdjTable[(pos || 'DH').toUpperCase()] || 0.0) * (pa / 600.0);
+    const defRuns = (defVal - 50) * 0.16 * (pa / 600.0);
+    const dwar = (posAdj + defRuns) / 10.0;
+    return dwar >= 0 ? `+${dwar.toFixed(1)}` : dwar.toFixed(1);
+  }
+
   function calcBatterWAR(s, pos = 'DH', defVal = 50) {
     if (!s) return '0.0';
     const ab = s.ab || 0;
@@ -5216,7 +5229,7 @@
       }
       const battingOrder = S.roster.battingOrder;
 
-      // ── Batters Rows (in authentic 1-9 Batting Order sequence with OBP, SLG, OPS, WAR) ───
+      // ── Batters Rows (in authentic 1-9 Batting Order sequence with OBP, SLG, OPS, dWAR, WAR) ───
       const batterRows = battingOrder.map((slot, i) => {
         const p = S.roster.lineup[slot];
         if (!p) return '';
@@ -5229,7 +5242,10 @@
         const obp = pa > 0 ? ((s.h + s.bb) / pa).toFixed(3).replace(/^0/, '') : '.000';
         const slg = s.ab > 0 ? (tb / s.ab).toFixed(3).replace(/^0/, '') : '.000';
         const ops = (parseFloat(obp) + parseFloat(slg)).toFixed(3).replace(/^0/, '');
-        const war = calcBatterWAR(s, slot);
+        const defVal = p.def !== undefined ? p.def : (p.defense_val !== undefined ? p.defense_val : 50);
+        const dwar = calcBatterDWAR(s, slot, defVal);
+        const war = calcBatterWAR(s, slot, defVal);
+        const dwarColor = parseFloat(dwar) > 0 ? '#34d399' : (parseFloat(dwar) < 0 ? '#f87171' : '#94a3b8');
 
         return `<tr class="c162-tr${i % 2 ? ' c162-tr-alt' : ''}">
           ${td(`<span style="font-family:'Press Start 2P',monospace;font-size:8px;color:#94a3b8;">${i + 1}</span>`, { style: 'text-align:center;' })}
@@ -5249,6 +5265,7 @@
           ${td(obp, { num: true })}
           ${td(slg, { num: true })}
           ${td(ops, { num: true })}
+          ${td(`<span style="color:${dwarColor};font-size:9.5px;">${dwar}</span>`, { num: true })}
           ${td(war, { num: true, accent: true })}
         </tr>`;
       }).join('');
@@ -5265,7 +5282,10 @@
         const obp = pa > 0 ? ((s.h + s.bb) / pa).toFixed(3).replace(/^0/, '') : '.000';
         const slg = s.ab > 0 ? (tb / s.ab).toFixed(3).replace(/^0/, '') : '.000';
         const ops = (parseFloat(obp) + parseFloat(slg)).toFixed(3).replace(/^0/, '');
-        const war = calcBatterWAR(s, 'BN');
+        const defVal = p.def !== undefined ? p.def : (p.defense_val !== undefined ? p.defense_val : 50);
+        const dwar = calcBatterDWAR(s, p.pos || 'BN', defVal);
+        const war = calcBatterWAR(s, p.pos || 'BN', defVal);
+        const dwarColor = parseFloat(dwar) > 0 ? '#34d399' : (parseFloat(dwar) < 0 ? '#f87171' : '#94a3b8');
 
         return `<tr class="c162-tr${(i + 9) % 2 ? ' c162-tr-alt' : ''}">
           ${td(`<span style="font-family:'Press Start 2P',monospace;font-size:7.5px;color:#94a3b8;">BN</span>`, { style: 'text-align:center;' })}
@@ -5285,6 +5305,7 @@
           ${td(obp, { num: true })}
           ${td(slg, { num: true })}
           ${td(ops, { num: true })}
+          ${td(`<span style="color:${dwarColor};font-size:9.5px;">${dwar}</span>`, { num: true })}
           ${td(war, { num: true, accent: true })}
         </tr>`;
       }).join('');
@@ -5521,6 +5542,7 @@
                     <th class="c162-th">OBP</th>
                     <th class="c162-th">SLG</th>
                     <th class="c162-th">OPS</th>
+                    <th class="c162-th" style="color:#34d399;" title="Defensive WAR">dWAR</th>
                     <th class="c162-th" style="color:var(--challenge162-accent);">WAR</th>
                   </tr></thead>
                   <tbody>${batterRows}${benchRows}</tbody>
@@ -5875,7 +5897,7 @@
       SLOTS.forEach(slot => {
         const p = S.roster.lineup[slot];
         if (p) {
-          batterSlotMap[batterUnlockKey(p)] = { pos: slot, def: p.def || 50 };
+          batterSlotMap[batterUnlockKey(p)] = { pos: slot, def: p.def !== undefined ? p.def : (p.defense_val !== undefined ? p.defense_val : 50) };
         }
       });
 

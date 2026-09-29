@@ -184,14 +184,14 @@ def run_story_pitchers_etl():
     df = normalize_diff_adj(df, "clt_raw", "clt_val")
     df["clt_int"] = df["clt_val"].astype(int)
 
-    # 5. Calcular OVR con ponderación 20/20/20/20/10/10
-    print("\n[4/5] Calculando OVR oficial 20/20/20/20/10/10...")
+    # 5. Calcular OVR con ponderación 20/20/20/15/15/10 (20h/9, 20k/9, 20sta, 15bb/9, 15hr/9, 10clt)
+    print("\n[4/5] Calculando OVR oficial 20/20/20/15/15/10...")
     df["raw_ovr"] = (
         df["h9"] * 0.20 +
         df["k9"] * 0.20 +
-        df["bb9"] * 0.20 +
-        df["hr9"] * 0.20 +
-        df["sta"] * 0.10 +
+        df["sta"] * 0.20 +
+        df["bb9"] * 0.15 +
+        df["hr9"] * 0.15 +
         df["clt_val"] * 0.10
     )
 

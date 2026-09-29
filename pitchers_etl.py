@@ -962,17 +962,17 @@ def paso_10_normalizar_por_era(df):
     return df
 
 
-# ── PASO 11: OVR y Rareza (20% H/9, 20% K/9, 20% BB/9, 20% HR/9, 10% STA, 10% CLT) ──
+# ── PASO 11: OVR y Rareza (20% H/9, 20% K/9, 20% STA, 15% BB/9, 15% HR/9, 10% CLT) ──
 def paso_11_ovr_rareza(df):
-    print("\n  PASO 11: OVR y Rareza (20% H/9, 20% K/9, 20% BB/9, 20% HR/9, 10% STA, 10% CLT)...")
+    print("\n  PASO 11: OVR y Rareza (20% H/9, 20% K/9, 20% STA, 15% BB/9, 15% HR/9, 10% CLT)...")
     df = df.copy()
 
     df["raw_ovr"] = (
         df["h9_val"]  * 0.20 +
         df["k9_val"]  * 0.20 +
-        df["bb9_val"] * 0.20 +
-        df["hr9_val"] * 0.20 +
-        df["sta_val"] * 0.10 +
+        df["sta_val"] * 0.20 +
+        df["bb9_val"] * 0.15 +
+        df["hr9_val"] * 0.15 +
         df["clt_val"] * 0.10
     )
 
