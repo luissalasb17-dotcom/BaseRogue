@@ -1504,30 +1504,56 @@
       };
 
       // ── PITCHER POOL SELECTION: 3 Pitchers (1 SP, 1 SP/RP, 1 RP) ───────────
+      // The opposition level filters the pool by card rarity; the three slots can be
+      // re-rolled or individually swapped for any pitcher unlocked in the Dex.
+      const dex = this;
       const allPitchers = (window.PitchersDB && window.PitchersDB.PITCHERS_POOL) ? window.PitchersDB.PITCHERS_POOL : (window.PITCHERS_POOL || []);
-      const starters = allPitchers.filter(p => p.role === 'SP' || p.pos === 'SP' || (p.sta !== undefined && p.sta >= 65));
-      const relievers = allPitchers.filter(p => p.role === 'RP' || p.role === 'CP' || p.pos === 'RP' || (p.sta !== undefined && p.sta < 65));
+      const TEST_DIFFICULTIES = [
+        { id: 'rookie',  label: 'ROOKIE BALL',  desc: 'Common arms',      rarities: ['Common'],            color: 'var(--rarity-common)' },
+        { id: 'pro',     label: 'BIG LEAGUE',   desc: 'Uncommon & Rare',  rarities: ['Uncommon', 'Rare'],  color: 'var(--rarity-rare)' },
+        { id: 'allstar', label: 'ALL-STAR',     desc: 'Epic staff',       rarities: ['Epic'],              color: 'var(--rarity-epic)' },
+        { id: 'legends', label: 'HALL OF FAME', desc: 'Legendary aces',   rarities: ['Legendary'],         color: 'var(--rarity-legendary)' },
+        { id: 'random',  label: 'RANDOM',       desc: 'Anyone can show up', rarities: null,                color: '#e5e7eb' }
+      ];
+      const DIFF_STORAGE_KEY = 'baserogue_test_batter_difficulty';
+      let testDifficulty = 'pro';
+      try {
+        const savedDiff = localStorage.getItem(DIFF_STORAGE_KEY);
+        if (TEST_DIFFICULTIES.some(d => d.id === savedDiff)) testDifficulty = savedDiff;
+      } catch (e) {}
 
-      const p1Pool = starters.length ? starters : allPitchers;
-      const p1Raw = p1Pool[Math.floor(Math.random() * p1Pool.length)];
-      const p1Sta = p1Raw.sta !== undefined ? p1Raw.sta : 75;
-      const p1Hp = calcPitcherHP(p1Sta);
-      const p1 = { ...p1Raw, sta: p1Sta, hp: p1Hp, maxHp: p1Hp, role: 'SP', isKO: false };
+      const isStarter = (p) => p.role === 'SP' || p.pos === 'SP' || (p.sta !== undefined && p.sta >= 65);
+      const pickRandom = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
-      const p2IsStarter = Math.random() < 0.5;
-      const p2Pool = (p2IsStarter ? starters : relievers).length ? (p2IsStarter ? starters : relievers) : allPitchers;
-      const p2Raw = p2Pool[Math.floor(Math.random() * p2Pool.length)];
-      const p2Sta = p2Raw.sta !== undefined ? p2Raw.sta : 60;
-      const p2Hp = calcPitcherHP(p2Sta);
-      const p2 = { ...p2Raw, sta: p2Sta, hp: p2Hp, maxHp: p2Hp, role: p2IsStarter ? 'SP' : 'RP', isKO: false };
+      const buildTestPitcher = (raw, role, fallbackSta) => {
+        const sta = raw.sta !== undefined ? raw.sta : fallbackSta;
+        const hp = calcPitcherHP(sta);
+        return { ...raw, sta, hp, maxHp: hp, role, isKO: false };
+      };
 
-      const p3Pool = relievers.length ? relievers : allPitchers;
-      const p3Raw = p3Pool[Math.floor(Math.random() * p3Pool.length)];
-      const p3Sta = p3Raw.sta !== undefined ? p3Raw.sta : 45;
-      const p3Hp = calcPitcherHP(p3Sta);
-      const p3 = { ...p3Raw, sta: p3Sta, hp: p3Hp, maxHp: p3Hp, role: 'RP', isKO: false };
+      const pitchers = [];
+      const rollTestPitchers = () => {
+        const diff = TEST_DIFFICULTIES.find(d => d.id === testDifficulty) || TEST_DIFFICULTIES[1];
+        const tierPool = diff.rarities ? allPitchers.filter(p => diff.rarities.includes(p.rarity)) : allPitchers;
+        const pool = tierPool.length ? tierPool : allPitchers;
+        const starters = pool.filter(isStarter);
+        const relievers = pool.filter(p => !isStarter(p));
+        const fromOrAll = (arr) => (arr.length ? arr : pool);
+        const p2IsStarter = Math.random() < 0.5;
+        pitchers.length = 0;
+        pitchers.push(
+          buildTestPitcher(pickRandom(fromOrAll(starters)), 'SP', 75),
+          buildTestPitcher(pickRandom(fromOrAll(p2IsStarter ? starters : relievers)), p2IsStarter ? 'SP' : 'RP', 60),
+          buildTestPitcher(pickRandom(fromOrAll(relievers)), 'RP', 45)
+        );
+      };
+      rollTestPitchers();
 
-      const pitchers = [p1, p2, p3];
+      const getUnlockedPitchers = () => allPitchers
+        .filter(p => {
+          try { return dex._getOpponentKeys(p).some(k => dex.unlockedOpponents.has(k)); } catch (e) { return false; }
+        })
+        .sort((x, y) => (y.ovr || 0) - (x.ovr || 0));
 
       // ── BATTER DEFENSE STAT ────────────────────────────────────────────────
       const nativePos = batter.pos || batter.primary_position || 'CF';
@@ -1790,6 +1816,7 @@
 
         const popup = document.createElement('div');
         popup.className = "outcome-popup-overlay";
+        popup.dataset.outcome = eventType; // hook for style_juice.css / juice.js
         popup.style.cssText = `
           position: absolute;
           top: 50%;
@@ -2860,26 +2887,26 @@
         const zonesLines = overlay.querySelector('#zones-lines');
         if (zonesLines) {
           zonesLines.innerHTML = `
-            <div style="display:flex; justify-content:space-between; color:#3b82f6; font-size:7px; font-family:'Press Start 2P',monospace; padding:2px 0;">
-              <span>🚶 Walk (BB)</span><span>1–${bounds.bbEnd}</span>
+            <div class="outcome-row" style="display:flex; justify-content:space-between; font-size:7px; font-family:'Press Start 2P',monospace; padding:2px 0;">
+              <span class="outcome-row-left" style="color:#3b82f6;">🚶 Walk (BB)</span><span class="outcome-row-right" style="color:#3b82f6;">1–${bounds.bbEnd}</span>
             </div>
-            <div style="display:flex; justify-content:space-between; color:#ef4444; font-size:7px; font-family:'Press Start 2P',monospace; padding:2px 0;">
-              <span>💨 Strikeout (SO)</span><span>${bounds.bbEnd + 1}–${bounds.soEnd}</span>
+            <div class="outcome-row" style="display:flex; justify-content:space-between; font-size:7px; font-family:'Press Start 2P',monospace; padding:2px 0;">
+              <span class="outcome-row-left" style="color:#ef4444;">💨 Strikeout (SO)</span><span class="outcome-row-right" style="color:#ef4444;">${bounds.bbEnd + 1}–${bounds.soEnd}</span>
             </div>
-            <div style="display:flex; justify-content:space-between; color:#9ca3af; font-size:7px; font-family:'Press Start 2P',monospace; padding:2px 0;">
-              <span>✋ Out (Fly/GD)</span><span>${bounds.soEnd + 1}–${bounds.outEnd}</span>
+            <div class="outcome-row" style="display:flex; justify-content:space-between; font-size:7px; font-family:'Press Start 2P',monospace; padding:2px 0;">
+              <span class="outcome-row-left" style="color:#9ca3af;">✋ Out (Fly/GD)</span><span class="outcome-row-right" style="color:#9ca3af;">${bounds.soEnd + 1}–${bounds.outEnd}</span>
             </div>
-            <div style="display:flex; justify-content:space-between; color:#a7f3d0; font-size:7px; font-family:'Press Start 2P',monospace; padding:2px 0;">
-              <span>⚾ Single (1B)</span><span>${bounds.outEnd + 1}–${bounds.singleEnd}</span>
+            <div class="outcome-row" style="display:flex; justify-content:space-between; font-size:7px; font-family:'Press Start 2P',monospace; padding:2px 0;">
+              <span class="outcome-row-left" style="color:#a7f3d0;">⚾ Single (1B)</span><span class="outcome-row-right" style="color:#a7f3d0;">${bounds.outEnd + 1}–${bounds.singleEnd}</span>
             </div>
-            <div style="display:flex; justify-content:space-between; color:#10b981; font-size:7px; font-family:'Press Start 2P',monospace; padding:2px 0;">
-              <span>⚡ Double (2B)</span><span>${bounds.singleEnd + 1}–${bounds.doubleEnd}</span>
+            <div class="outcome-row" style="display:flex; justify-content:space-between; font-size:7px; font-family:'Press Start 2P',monospace; padding:2px 0;">
+              <span class="outcome-row-left" style="color:#10b981;">⚡ Double (2B)</span><span class="outcome-row-right" style="color:#10b981;">${bounds.singleEnd + 1}–${bounds.doubleEnd}</span>
             </div>
-            <div style="display:flex; justify-content:space-between; color:#06b6d4; font-size:7px; font-family:'Press Start 2P',monospace; padding:2px 0;">
-              <span>🔥 Triple (3B)</span><span>${bounds.doubleEnd + 1}–${bounds.tripleEnd}</span>
+            <div class="outcome-row" style="display:flex; justify-content:space-between; font-size:7px; font-family:'Press Start 2P',monospace; padding:2px 0;">
+              <span class="outcome-row-left" style="color:#06b6d4;">🔥 Triple (3B)</span><span class="outcome-row-right" style="color:#06b6d4;">${bounds.doubleEnd + 1}–${bounds.tripleEnd}</span>
             </div>
-            <div style="display:flex; justify-content:space-between; color:#eab308; font-size:7px; font-family:'Press Start 2P',monospace; padding:2px 0;">
-              <span>🚀 Home Run (HR)</span><span>${bounds.tripleEnd + 1}–100</span>
+            <div class="outcome-row" style="display:flex; justify-content:space-between; font-size:7px; font-family:'Press Start 2P',monospace; padding:2px 0;">
+              <span class="outcome-row-left" style="color:#eab308;">🚀 Home Run (HR)</span><span class="outcome-row-right" style="color:#eab308;">${bounds.tripleEnd + 1}–100</span>
             </div>
           `;
         }
@@ -3363,7 +3390,7 @@
           : `<div class="player-card"><div class="card-name">${batter.name}</div></div>`;
 
         overlay.innerHTML = `
-          <div class="glass-panel" id="screen-match" style="position: relative; max-width: 1060px; width: 95%; margin: 20px auto; padding: 20px 22px;">
+          <div class="glass-panel" id="screen-match" style="position: relative; max-width: 1360px; width: 96%; margin: 20px auto; padding: 20px 22px;">
             <button id="btn-combat-close" style="position: absolute; top: 14px; right: 14px; width: 28px; height: 28px; border-radius: 50%; background: #000; border: 2px solid var(--accent-color); color: var(--accent-color); font-family: 'Press Start 2P', monospace; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 210;">&times;</button>
             
             <h2 id="match-header-title" style="margin-bottom: 16px;"><i class="fa-solid fa-trophy"></i> BATTING PRACTICE • TACTICAL COMBAT</h2>
@@ -3654,10 +3681,17 @@
                   <div class="hp-bar-fill" style="width: 100%; background: linear-gradient(90deg, #ef4444, #f87171);"></div>
                 </div>
                 <span class="hp-text">${p.hp}/${p.maxHp} HP</span>
+                <button class="tb-swap-btn" data-swap="${idx}" title="Replace this pitcher with one you have unlocked">⇄ SWAP</button>
               </div>
             </div>
           `;
         }).join('');
+
+        const difficultyChips = TEST_DIFFICULTIES.map(d => `
+          <button class="tb-diff-chip ${d.id === testDifficulty ? 'active' : ''}" data-diff="${d.id}" style="--tb-diff: ${d.color};" title="${d.desc}">
+            <span class="tb-diff-name">${d.label}</span>
+            <span class="tb-diff-desc">${d.desc}</span>
+          </button>`).join('');
 
         overlay.innerHTML = `
           <div class="glass-panel" id="screen-pre-fight" style="position: relative; max-width: 980px; width: 95%; margin: 25px auto; padding: 22px 24px;">
@@ -3774,6 +3808,13 @@
 
             </div>
 
+            <!-- Opposition level + reroll -->
+            <div class="tb-controls">
+              <div class="tb-controls-label">OPPOSITION LEVEL</div>
+              <div class="tb-diff-bar">${difficultyChips}</div>
+              <button class="btn btn-secondary tb-reroll-btn" id="btn-tb-reroll">🎲 REROLL PITCHERS</button>
+            </div>
+
             <!-- Bullpen Relievers Section (Below Showdown) -->
             <div class="pre-fight-bullpen-section">
               <div class="pre-fight-bullpen-title">
@@ -3827,6 +3868,99 @@
             }
           };
         });
+
+        overlay.querySelectorAll('.tb-diff-chip').forEach(chip => {
+          chip.onclick = () => {
+            testDifficulty = chip.dataset.diff;
+            try { localStorage.setItem(DIFF_STORAGE_KEY, testDifficulty); } catch (e) {}
+            rollTestPitchers();
+            previewPitcherIdx = 0;
+            if (window.AudioManager) window.AudioManager.play('card_deal');
+            renderPreFight();
+          };
+        });
+
+        const btnReroll = overlay.querySelector('#btn-tb-reroll');
+        if (btnReroll) {
+          btnReroll.onclick = () => {
+            rollTestPitchers();
+            previewPitcherIdx = 0;
+            if (window.AudioManager) window.AudioManager.play('card_deal');
+            renderPreFight();
+          };
+        }
+
+        overlay.querySelectorAll('.tb-swap-btn').forEach(btn => {
+          btn.onclick = (e) => {
+            e.stopPropagation();
+            openPitcherPicker(parseInt(btn.dataset.swap, 10));
+          };
+        });
+      };
+
+      // ── PITCHER PICKER: swap one rival slot for any pitcher unlocked in the Dex ──
+      const openPitcherPicker = (slotIdx) => {
+        if (isNaN(slotIdx) || !pitchers[slotIdx]) return;
+        const unlocked = getUnlockedPitchers();
+        const picker = document.createElement('div');
+        picker.className = 'tb-picker-backdrop';
+        picker.innerHTML = `
+          <div class="tb-picker glass-panel">
+            <div class="tb-picker-head">
+              <div>
+                <div class="tb-picker-title">CHOOSE A PITCHER</div>
+                <div class="tb-picker-sub">Replacing slot ${slotIdx + 1}: ${pitchers[slotIdx].name} · ${unlocked.length} unlocked</div>
+              </div>
+              <button class="tb-picker-close" title="Close">&times;</button>
+            </div>
+            <input class="tb-picker-search" type="text" placeholder="Search by name or team..." autocomplete="off">
+            <div class="tb-picker-list"></div>
+          </div>`;
+        overlay.appendChild(picker);
+
+        const listEl = picker.querySelector('.tb-picker-list');
+        const searchEl = picker.querySelector('.tb-picker-search');
+        const MAX_ROWS = 80;
+
+        const renderList = () => {
+          const q = searchEl.value.trim().toLowerCase();
+          const matches = q
+            ? unlocked.filter(p => (p.name || '').toLowerCase().includes(q) || (p.team || '').toLowerCase().includes(q))
+            : unlocked;
+          if (!unlocked.length) {
+            listEl.innerHTML = `<div class="tb-picker-empty">No pitchers unlocked yet.<br>Face rival pitchers in a run to add them to your Dex.</div>`;
+            return;
+          }
+          if (!matches.length) {
+            listEl.innerHTML = `<div class="tb-picker-empty">No unlocked pitcher matches "${q.replace(/[<>&"]/g, '')}".</div>`;
+            return;
+          }
+          listEl.innerHTML = matches.slice(0, MAX_ROWS).map((p, i) => `
+            <button class="tb-picker-row" data-i="${i}" style="--tb-rarity: var(--rarity-${String(p.rarity || 'common').toLowerCase()});">
+              <span class="tb-picker-role">${p.role || 'SP'}</span>
+              <span class="tb-picker-name">${p.name}</span>
+              <span class="tb-picker-meta">${p.team || ''} ${p.year || ''}</span>
+              <span class="tb-picker-rarity">${p.rarity || ''}</span>
+              <span class="tb-picker-ovr">${Math.round(p.ovr || 0)}</span>
+            </button>`).join('')
+            + (matches.length > MAX_ROWS ? `<div class="tb-picker-empty">Showing the top ${MAX_ROWS} of ${matches.length}. Search to narrow it down.</div>` : '');
+          listEl.querySelectorAll('.tb-picker-row').forEach(row => {
+            row.onclick = () => {
+              const raw = matches[parseInt(row.dataset.i, 10)];
+              if (!raw) return;
+              pitchers[slotIdx] = buildTestPitcher(raw, isStarter(raw) ? 'SP' : 'RP', 60);
+              previewPitcherIdx = slotIdx;
+              if (window.AudioManager) window.AudioManager.play('card_deal');
+              renderPreFight();
+            };
+          });
+        };
+
+        searchEl.oninput = renderList;
+        picker.querySelector('.tb-picker-close').onclick = () => picker.remove();
+        picker.onclick = (e) => { if (e.target === picker) picker.remove(); };
+        renderList();
+        searchEl.focus();
       };
 
       // Start by displaying the Pre-Fight Showdown

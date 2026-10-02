@@ -94,6 +94,11 @@
     window.showScreen = wrapped;
   }
 
+  // The Dex "Test Batter" overlay is a clone of the combat screen (same element ids),
+  // so every combat lookup goes through the active root: the overlay while it is open.
+  const matchRoot = () => document.getElementById('dex-batter-test-overlay') || document;
+  const $m = (id) => matchRoot().querySelector('#' + id);
+
   // ── Combat: outcome banner impact ────────────────────────────────────────
   const OUTCOME_FX = {
     HR: { shake: 'jx-shake-l', flash: 'rgba(250, 204, 21, 0.9)', particles: 46, spread: 320, colors: ['#facc15', '#fff', '#fb923c', '#fde047'], hit: true },
@@ -112,9 +117,9 @@
   function onOutcomePopup(popup) {
     const fx = OUTCOME_FX[popup.dataset.outcome];
     if (!fx || reducedMotion) return;
-    const arena = document.querySelector('.match-arena');
-    const batterSlot = $('arena-batter-card-slot');
-    const pitcherSlot = $('arena-pitcher-card-slot');
+    const arena = matchRoot().querySelector('.match-arena');
+    const batterSlot = $m('arena-batter-card-slot');
+    const pitcherSlot = $m('arena-pitcher-card-slot');
     if (fx.shake) replay(arena, fx.shake);
     if (fx.flash) flash(fx.flash);
     if (fx.particles) {
@@ -191,7 +196,7 @@
 
   // ── Combat: out lamps on the scoreboard ──
   function outLamps() {
-    const outs = $('score-home-r');
+    const outs = $m('score-home-r');
     if (!outs || outs.__jxLamps) return;
     outs.__jxLamps = true;
     const lamps = document.createElement('div');
@@ -208,7 +213,7 @@
 
   // ── Combat: d100 strip built from the Luck Zones rows ──
   function readZones() {
-    return [...document.querySelectorAll('#zones-lines .outcome-row')].map(row => {
+    return [...matchRoot().querySelectorAll('#zones-lines .outcome-row')].map(row => {
       const left = row.querySelector('.outcome-row-left');
       const m = /(\d+)\s*[–-]\s*(\d+)/.exec(row.querySelector('.outcome-row-right')?.textContent || '');
       if (!left || !m) return null;
@@ -224,10 +229,10 @@
 
   function buildZoneStrip() {
     if (zoneFreeze) return;
-    const wrap = $('zones-panel-wrap');
+    const wrap = $m('zones-panel-wrap');
     if (!wrap) return;
     const zones = readZones();
-    let strip = $('jx-zone-strip');
+    let strip = $m('jx-zone-strip');
     if (!zones.length) { if (strip) strip.remove(); return; }
     if (!strip) {
       strip = document.createElement('div');
@@ -253,26 +258,26 @@
     clearTimeout(zoneHoldTimer);
     if (!zoneFreeze) return;
     zoneFreeze = false;
-    const strip = $('jx-zone-strip');
+    const strip = $m('jx-zone-strip');
     if (strip) {
       strip.classList.remove('rolled');
       strip.querySelector('.jx-zone-marker').classList.remove('on');
       strip.querySelector('.jx-zone-caption').textContent = '';
     }
     buildZoneStrip();
-    if (!reducedMotion) replay($('jx-zone-strip'), 'jx-strip-swap');
+    if (!reducedMotion) replay($m('jx-zone-strip'), 'jx-strip-swap');
   }
 
   function freezeZoneStrip() {
     releaseZoneStrip(); // a fast second roll: catch up to the current batter first
-    if (!$('jx-zone-strip')) return;
+    if (!$m('jx-zone-strip')) return;
     zoneFreeze = true;
     // Never stay frozen if no result shows up (roll rejected, match ended, etc.)
     zoneHoldTimer = setTimeout(releaseZoneStrip, 4000);
   }
 
   function markRoll(value) {
-    const strip = $('jx-zone-strip');
+    const strip = $m('jx-zone-strip');
     if (!strip || !zoneFreeze || !(value >= 1 && value <= 100)) return;
     const marker = strip.querySelector('.jx-zone-marker');
     const caption = strip.querySelector('.jx-zone-caption');
@@ -298,24 +303,24 @@
   // Bind everything that lives inside the match screen. Safe to call repeatedly:
   // ui.js re-injects the dice panel per match, so each helper guards itself.
   function bindMatch() {
-    const pitcherSlot = () => $('arena-pitcher-card-slot');
-    watchFraction($('match-pitcher-hp-text'), pitcherSlot, '');
-    watchFraction($('team-hp-text'), () => $('team-hp-text'), '');
-    watchFraction($('team-shield-text'), () => $('team-shield-text'), 'shield');
+    const pitcherSlot = () => $m('arena-pitcher-card-slot');
+    watchFraction($m('match-pitcher-hp-text'), pitcherSlot, '');
+    watchFraction($m('team-hp-text'), () => $m('team-hp-text'), '');
+    watchFraction($m('team-shield-text'), () => $m('team-shield-text'), 'shield');
     ['score-away-h', 'score-home-h'].forEach(id => watchDigit($(id)));
-    ghostBar($('team-hp-bar'));
-    ghostBar($('team-shield-bar'));
-    ghostBar($('match-pitcher-hp-fill'));
+    ghostBar($m('team-hp-bar'));
+    ghostBar($m('team-shield-bar'));
+    ghostBar($m('match-pitcher-hp-fill'));
     outLamps();
 
-    const zoneLines = $('zones-lines');
+    const zoneLines = $m('zones-lines');
     if (zoneLines && !zoneLines.__jxWatched) {
       zoneLines.__jxWatched = true;
       observe(zoneLines, { childList: true, subtree: true }, buildZoneStrip);
     }
     buildZoneStrip();
 
-    const result = $('dice-result-display');
+    const result = $m('dice-result-display');
     if (result && !result.__jxWatched) {
       result.__jxWatched = true;
       observe(result, { childList: true, characterData: true, subtree: true }, () => {
@@ -391,6 +396,41 @@
     });
   }
 
+  // ── Dex "Test Batter": give its cloned combat screen the same treatment ──
+  function initTestBatter() {
+    let overlayObserver = null;
+    const watchPopups = (overlay) => {
+      const deck = overlay.querySelector('.rpg-fight-deck');
+      if (!deck || deck.__jxWatched) return;
+      deck.__jxWatched = true;
+      observe(deck, { childList: true }, (mutations) => {
+        mutations.forEach(m => m.addedNodes.forEach(node => {
+          if (node.nodeType === 1 && node.classList.contains('outcome-popup-overlay')) onOutcomePopup(node);
+        }));
+      });
+    };
+    const attach = (overlay) => {
+      if (overlayObserver) overlayObserver.disconnect();
+      const onRender = () => {
+        if (!overlay.querySelector('#screen-match')) return;
+        lastScreenAt = Date.now();
+        zoneFreeze = false;
+        bindMatch();
+        watchPopups(overlay);
+      };
+      // The overlay swaps its whole content between pre-fight, arena and summary.
+      overlayObserver = observe(overlay, { childList: true }, onRender);
+      onRender();
+    };
+    observe(document.body, { childList: true }, (mutations) => {
+      mutations.forEach(m => m.addedNodes.forEach(node => {
+        if (node.nodeType === 1 && node.id === 'dex-batter-test-overlay') attach(node);
+      }));
+    });
+    const existing = document.getElementById('dex-batter-test-overlay');
+    if (existing) attach(existing);
+  }
+
   // ── Cards: feed the cursor position to the foil / glare layers in CSS ──
   function onCardPointer(e) {
     const card = e.target.closest && e.target.closest('.player-card');
@@ -430,6 +470,7 @@
     initAmbient();
     initChallengeSeason();
     initChallengeResults();
+    initTestBatter();
   }
 
   function destroy() {
