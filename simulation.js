@@ -492,6 +492,26 @@
         effBatter.con = (effBatter.con || 50) + conBoost;
       }
 
+      // 2. Per-turn Trait boosts — same ones rollDice() applies, but only PEEKED here
+      // (the pending flags are consumed by rollDice), so the zones shown to the player
+      // are exactly the ones the next roll will be resolved against.
+      if (this.hasTrait('clutch_legends') && this.teamHP < 35) {
+        effBatter.con = (effBatter.con || 50) + 15;
+        effBatter.pwr = (effBatter.pwr || 50) + 15;
+        effBatter.eye = (effBatter.eye || 50) + 15;
+        effBatter.k_avd = (effBatter.k_avd !== undefined ? effBatter.k_avd : (effBatter.con || 50)) + 15;
+        effBatter.spd = (effBatter.spd || 50) + 15;
+        effBatter.def = (effBatter.def || 50) + 15;
+      }
+      if (this.firstBatterOfInningPending) {
+        effBatter.con = (effBatter.con || 50) + 20;
+        effBatter.eye = (effBatter.eye || 50) + 20;
+      }
+      if (this.backToBackPending) {
+        effBatter.pwr = (effBatter.pwr || 50) + 20;
+        effBatter.con = (effBatter.con || 50) + 20;
+      }
+
       return calcBoundaries(effBatter, pitcher, this);
     }
 
@@ -1802,7 +1822,10 @@
       const batter  = this.awayTeam.lineup[this.awayLineupIndex];
       const pitcher = this.activePitcher;
       if (!batter || !pitcher) return null;
-      const b = calcBoundaries(batter, pitcher, this);
+      // Must go through getBoundaries() so era synergies and traits are included —
+      // calling calcBoundaries() on the raw batter made the displayed zones drift
+      // from the ones rollDice() actually uses.
+      const b = this.getBoundaries();
       return {
         batter, pitcher,
         bbEnd:  b.bbEnd,
@@ -1822,7 +1845,7 @@
     /** Snapshot of the full battle state for the UI. */
     getState() {
       const curBounds = (!this.battleOver && this.awayTeam && this.awayTeam.lineup && this.activePitcher)
-        ? calcBoundaries(this.awayTeam.lineup[this.awayLineupIndex], this.activePitcher, this)
+        ? this.getBoundaries()
         : null;
 
       return {
