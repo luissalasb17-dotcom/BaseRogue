@@ -1,0 +1,1432 @@
+/* BaseRogue — visual polish layer ("juice")
+   Loaded AFTER style.css. Purely presentational: overrides and additions only,
+   so removing this <link> (and juice.js) restores the previous look.
+   Sections: 1) base  2) combat broadcast  3) vintage cards  4) menu / map / end screens
+   Hidden modes (Dynasty, Career) are intentionally not styled here. */
+
+/* ═══════════════════════════ 1) BASE ═══════════════════════════ */
+
+:root {
+  --jx-ink: #010604;
+  --jx-panel-top: rgba(6, 24, 16, 0.95);
+  --jx-panel-bot: rgba(1, 8, 5, 0.97);
+  --jx-line: #10b981;
+  --jx-line-dim: rgba(16, 185, 129, 0.35);
+  --jx-gold: #ffcc00;
+  --jx-cream: #f3e9d2;
+  --jx-stitch: #e63946;
+  --jx-text: #d7e2dc;
+  --jx-text-dim: #9fb3a9;
+  --jx-ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --jx-ease-back: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+::selection {
+  background: var(--jx-gold);
+  color: #000;
+}
+
+/* CRT glass: scanlines + vignette over everything, never intercepts input */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 2147483000;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, 0.42) 100%),
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.07) 0 1px, transparent 1px 3px);
+}
+
+/* Let more of the pixel-art stadium through */
+body {
+  background-image:
+    linear-gradient(180deg, rgba(3, 10, 6, 0.5) 0%, rgba(3, 10, 6, 0.78) 100%),
+    url('assets/TEST.webp');
+}
+
+/* ── Header ── */
+header {
+  background: linear-gradient(180deg, #06170e 0%, #000 100%);
+  border-bottom: 2px solid var(--primary-color);
+  box-shadow: 0 2px 0 #000, 0 4px 0 var(--jx-line-dim), 0 10px 24px rgba(0, 0, 0, 0.7);
+}
+
+.hud-item {
+  background: linear-gradient(180deg, rgba(10, 30, 20, 0.9), rgba(0, 0, 0, 0.9));
+  border: 2px solid rgba(255, 255, 255, 0.55);
+  box-shadow: 0 0 0 2px #000, inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+/* ── Panels: bevel + depth instead of a flat double border ── */
+.glass-panel,
+.workspace-sidebar {
+  border: 2px solid var(--jx-line);
+  box-shadow:
+    0 0 0 2px #000,
+    0 0 0 3px var(--jx-line-dim),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 -18px 30px rgba(0, 0, 0, 0.35),
+    inset 0 0 46px rgba(0, 255, 102, 0.045),
+    0 16px 34px rgba(0, 0, 0, 0.65);
+}
+
+.glass-panel {
+  background: linear-gradient(180deg, var(--jx-panel-top) 0%, var(--jx-panel-bot) 100%);
+}
+
+.workspace-sidebar {
+  background: linear-gradient(180deg, rgba(6, 24, 16, 0.93) 0%, rgba(1, 8, 5, 0.96) 100%);
+}
+
+.sidebar-header {
+  background: linear-gradient(180deg, rgba(0, 255, 102, 0.16), rgba(0, 255, 102, 0.03));
+  border: 0;
+  border-bottom: 2px solid var(--primary-color);
+  box-shadow: 0 2px 0 #000;
+  margin: -10px -10px 10px -10px;
+  padding: 10px 8px 8px 8px;
+  text-shadow: 0 0 8px var(--primary-glow), 2px 2px 0 #000;
+  letter-spacing: 1px;
+}
+
+h2 {
+  text-shadow: 2px 2px 0 #000, 0 0 12px var(--primary-glow);
+  letter-spacing: 0.5px;
+}
+
+p {
+  color: var(--jx-text);
+}
+
+/* ── Buttons: arcade cabinet keys ── */
+.btn {
+  box-shadow: 0 0 0 2px #000, 0 4px 0 rgba(0, 0, 0, 0.6);
+  transition: transform 0.09s ease, box-shadow 0.09s ease, filter 0.15s ease, background 0.15s ease;
+  text-shadow: none;
+}
+
+.btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  filter: brightness(1.12);
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(2px);
+  filter: brightness(0.92);
+}
+
+.btn:disabled {
+  filter: grayscale(0.7) brightness(0.7);
+  cursor: not-allowed;
+}
+
+.btn:focus-visible,
+button:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--jx-gold);
+  outline-offset: 2px;
+}
+
+/* ── Scrollbars ── */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--jx-line) #000;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #000;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--jx-line);
+  border: 2px solid #000;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-color);
+}
+
+/* ── Screen transitions (class toggled by juice.js) ── */
+@keyframes jx-screen-in {
+  0% { opacity: 0; filter: brightness(2.2) saturate(0.3); }
+  45% { opacity: 1; filter: brightness(1.25) saturate(0.8); }
+  100% { opacity: 1; filter: none; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .jx-screen-in {
+    animation: jx-screen-in 0.34s var(--jx-ease-out);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body::after {
+    background: radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, 0.42) 100%);
+  }
+}
+
+/* ═══════════════════ 2) COMBAT — BROADCAST ═══════════════════ */
+
+/* ── Stadium scoreboard ── */
+.scoreboard {
+  background:
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.025) 0 2px, transparent 2px 4px),
+    linear-gradient(180deg, #0b1a12 0%, #020504 100%);
+  border: 3px solid #1f3d2e;
+  box-shadow:
+    0 0 0 2px #000,
+    inset 0 2px 0 rgba(255, 255, 255, 0.08),
+    inset 0 -10px 20px rgba(0, 0, 0, 0.6),
+    0 10px 22px rgba(0, 0, 0, 0.6);
+  position: relative;
+}
+
+#scoreboard-inning-text {
+  background: linear-gradient(180deg, #1a1300, #000);
+  border: 2px solid #5c4a00;
+  color: var(--jx-gold) !important;
+  text-shadow: 0 0 8px var(--accent-glow);
+  letter-spacing: 3px;
+  padding: 6px 8px;
+  margin: 0 !important;
+}
+
+#score-away-r,
+#score-home-r,
+#score-away-h,
+#score-home-h {
+  font-family: 'VT323', monospace;
+  font-size: 26px;
+  line-height: 0.9;
+  letter-spacing: 1px;
+  text-shadow: 0 0 10px currentColor, 0 0 2px currentColor;
+  display: inline-block;
+}
+
+#score-home-h {
+  color: #ffb020 !important;
+}
+
+.jx-pop {
+  animation: jx-digit-pop 0.45s var(--jx-ease-back);
+}
+
+@keyframes jx-digit-pop {
+  0% { transform: scale(1.9); filter: brightness(2.2); }
+  100% { transform: scale(1); filter: none; }
+}
+
+@media (min-width: 769px) {
+  .scoreboard {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 112px;
+    column-gap: 10px;
+    align-items: center;
+    padding: 10px !important;
+  }
+
+  /* Outs / inning / K.O. in a single row (runs are hidden: they have no gameplay effect) */
+  .scoreboard-text-panel {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .scoreboard-text-panel > [id] {
+    grid-column: 1 / -1;
+  }
+
+  .scoreboard-text-panel > div:not([id]) {
+    display: contents !important;
+  }
+
+  .scoreboard-text-panel > div:not([id]) > div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    background: #000;
+    border: 2px solid #16281f;
+    box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    padding: 5px 4px 3px 4px;
+    color: var(--jx-text-dim);
+    font-size: 7px;
+    letter-spacing: 1px;
+  }
+
+  #bases-display-row {
+    border-top: 0 !important;
+    background: radial-gradient(ellipse at 50% 60%, rgba(22, 101, 52, 0.6) 0%, rgba(6, 30, 18, 0.5) 55%, transparent 75%);
+    padding: 0 !important;
+    margin-top: 0 !important;
+    height: 100%;
+  }
+
+  #bases-display-row svg {
+    width: 92px !important;
+    height: 92px !important;
+    overflow: visible;
+  }
+}
+
+.scoreboard-text-panel div:has(> #score-away-r) {
+  display: none !important;
+}
+
+/* Out lamps appended next to the outs digit by juice.js */
+.jx-outs {
+  display: flex;
+  gap: 5px;
+  justify-content: center;
+}
+
+.jx-outs i {
+  width: 9px;
+  height: 9px;
+  background: #2a0a0a;
+  border: 1px solid #000;
+  box-shadow: inset 0 0 3px #000;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+
+.jx-outs i.on {
+  background: #ff3b3b;
+  box-shadow: 0 0 8px #ff3b3b, inset 0 0 2px #fff;
+}
+
+#bases-display-row path {
+  stroke: rgba(255, 255, 255, 0.4);
+}
+
+/* ── The field: card showdown ── */
+.rpg-fight-deck {
+  background:
+    radial-gradient(ellipse at 25% 100%, rgba(0, 255, 102, 0.16), transparent 55%),
+    radial-gradient(ellipse at 75% 100%, rgba(255, 60, 60, 0.16), transparent 55%),
+    linear-gradient(180deg, rgba(4, 18, 12, 0.75) 0%, rgba(0, 0, 0, 0.8) 100%);
+  border: 2px solid rgba(16, 185, 129, 0.3);
+  box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.7), 0 0 0 2px #000;
+  position: relative;
+}
+
+.fight-card-slot {
+  border: 2px dashed rgba(255, 255, 255, 0.14);
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.vs-circle {
+  color: var(--jx-gold);
+  text-shadow: 3px 3px 0 #000, 0 0 16px var(--accent-glow), 0 0 30px rgba(255, 60, 60, 0.5);
+}
+
+.faceoff-panel {
+  background: linear-gradient(180deg, #06140d 0%, #000 100%);
+  border: 2px solid var(--jx-line);
+  box-shadow: 0 0 0 2px #000, inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.rotation-badge.active {
+  animation: jx-glow-breathe 1.6s ease-in-out infinite;
+}
+
+@keyframes jx-glow-breathe {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.35); }
+}
+
+/* ── Bars: chunky, with a trailing "ghost" of the damage just taken ── */
+.jx-bar {
+  position: relative;
+  height: 12px !important;
+  background: #000 !important;
+  border: 2px solid #1c2a23 !important;
+  box-shadow: inset 0 0 6px #000;
+  overflow: hidden;
+}
+
+.jx-bar > :not(.jx-ghost) {
+  position: relative;
+  z-index: 1;
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.35), inset 0 -2px 0 rgba(0, 0, 0, 0.3);
+}
+
+.jx-ghost {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  background: #fff7c2;
+  opacity: 0.9;
+  transition: width 0.7s ease-in 0.35s;
+  z-index: 0;
+}
+
+/* ── Floating damage / heal numbers ── */
+.jx-float {
+  position: fixed;
+  z-index: 9500;
+  pointer-events: none;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 20px;
+  color: #ff5252;
+  text-shadow: 3px 3px 0 #000, -1px -1px 0 #000, 0 0 14px currentColor;
+  transform: translate(-50%, -50%);
+  animation: jx-float-up 1.15s var(--jx-ease-out) forwards;
+  white-space: nowrap;
+}
+
+.jx-float.heal { color: #4ade80; }
+.jx-float.shield { color: #60a5fa; font-size: 15px; }
+.jx-float.big { font-size: 30px; color: var(--jx-gold); }
+
+@keyframes jx-float-up {
+  0% { opacity: 0; transform: translate(-50%, -20%) scale(0.4); }
+  18% { opacity: 1; transform: translate(-50%, -70%) scale(1.25); }
+  32% { transform: translate(-50%, -85%) scale(1); }
+  75% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -190%) scale(0.95); }
+}
+
+/* ── d100 luck strip (built by juice.js from the Luck Zones list) ── */
+#jx-zone-strip {
+  width: 100%;
+  position: relative;
+  padding: 12px 0 2px 0;
+}
+
+.jx-zone-track {
+  display: flex;
+  height: 14px;
+  border: 2px solid #000;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.18);
+  background: #000;
+}
+
+.jx-zone-seg {
+  height: 100%;
+  min-width: 1px;
+  box-shadow: inset -1px 0 0 rgba(0, 0, 0, 0.55), inset 0 3px 0 rgba(255, 255, 255, 0.25), inset 0 -4px 0 rgba(0, 0, 0, 0.25);
+}
+
+.jx-zone-seg.hit {
+  animation: jx-seg-hit 0.9s ease-out;
+}
+
+@keyframes jx-seg-hit {
+  0%, 40% { filter: brightness(2.4) saturate(1.4); }
+  20% { filter: brightness(1); }
+  100% { filter: none; }
+}
+
+.jx-zone-marker {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 10px solid #fff;
+  filter: drop-shadow(0 0 4px #fff) drop-shadow(0 2px 0 #000);
+  transform: translateX(-6px);
+  transition: left 0.55s var(--jx-ease-back), opacity 0.2s;
+  opacity: 0;
+}
+
+.jx-zone-marker.on {
+  opacity: 1;
+}
+
+.jx-zone-seg.miss {
+  filter: brightness(0.38) saturate(0.6);
+}
+
+.jx-zone-caption {
+  min-height: 16px;
+  margin-top: 6px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  line-height: 1.6;
+  text-align: center;
+  text-shadow: 2px 2px 0 #000, 0 0 8px currentColor;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#jx-zone-strip.rolled .jx-zone-caption {
+  animation: jx-digit-pop 0.35s var(--jx-ease-back);
+}
+
+@keyframes jx-strip-swap {
+  0% { opacity: 0.25; transform: translateX(8px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+
+.jx-strip-swap {
+  animation: jx-strip-swap 0.3s var(--jx-ease-out);
+}
+
+.outcome-row {
+  transition: background 0.2s, transform 0.2s;
+}
+
+.outcome-row.jx-row-hit {
+  background: rgba(255, 255, 255, 0.14);
+  transform: translateX(3px);
+}
+
+/* ── Roll button: the one thing you press all game ── */
+#btn-roll-dice {
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 0 0 2px #000, 0 5px 0 #2a1a6e, 0 0 22px rgba(124, 92, 255, 0.45) !important;
+  transition: transform 0.08s ease, box-shadow 0.08s ease, filter 0.15s ease !important;
+  text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.5);
+}
+
+#btn-roll-dice:hover:not(:disabled) {
+  transform: translateY(-2px);
+  filter: brightness(1.15);
+}
+
+#btn-roll-dice:active:not(:disabled) {
+  transform: translateY(4px);
+  box-shadow: 0 0 0 2px #000, 0 1px 0 #2a1a6e !important;
+}
+
+#btn-roll-dice::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -60%;
+  width: 40%;
+  height: 100%;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.45), transparent);
+  transform: skewX(-20deg);
+  animation: jx-shine-sweep 2.8s ease-in-out infinite;
+  pointer-events: none;
+}
+
+#btn-roll-dice:disabled::after {
+  display: none;
+}
+
+@keyframes jx-shine-sweep {
+  0%, 55% { left: -60%; }
+  100% { left: 130%; }
+}
+
+#dice-result-display {
+  text-shadow: 3px 3px 0 #000, 0 0 14px currentColor;
+}
+
+/* ── Play-by-play ticker ── */
+.match-log {
+  border: 2px solid var(--jx-line);
+  box-shadow: 0 0 0 2px #000, inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.match-log-header {
+  background: linear-gradient(180deg, rgba(0, 255, 102, 0.16), rgba(0, 0, 0, 0.9));
+  border-bottom: 2px solid var(--primary-color);
+  letter-spacing: 1px;
+}
+
+.match-log-content {
+  padding: 10px !important;
+  background: linear-gradient(180deg, #010a06, #000) !important;
+}
+
+.log-line {
+  border-bottom: 0;
+  border-left: 3px solid rgba(0, 255, 102, 0.45);
+  background: rgba(0, 255, 102, 0.05);
+  padding: 5px 8px;
+  margin-bottom: 6px;
+  line-height: 1.15;
+}
+
+.log-line.run-scored {
+  border-left-color: #ffe600;
+  background: rgba(255, 230, 0, 0.07);
+}
+
+.log-line.header-line {
+  border-left-color: var(--jx-gold);
+  background: rgba(255, 204, 0, 0.1);
+}
+
+/* ── Outcome banner: TV lower-third instead of a rounded popup ── */
+.outcome-popup-overlay {
+  --oc: #ffffff;
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--oc) 22%, transparent) 0%, transparent 60%),
+    linear-gradient(180deg, #0c1220 0%, #020409 100%) !important;
+  border: 0 !important;
+  border-left: 10px solid var(--oc) !important;
+  box-shadow:
+    0 0 0 2px #000,
+    0 0 0 4px color-mix(in srgb, var(--oc) 70%, transparent),
+    0 0 40px color-mix(in srgb, var(--oc) 55%, transparent),
+    0 18px 30px rgba(0, 0, 0, 0.8) !important;
+  overflow: hidden;
+}
+
+.outcome-popup-overlay::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(115deg, transparent 0 14px, rgba(255, 255, 255, 0.035) 14px 28px);
+  pointer-events: none;
+}
+
+.outcome-popup-overlay::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -70%;
+  width: 45%;
+  height: 100%;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.28), transparent);
+  transform: skewX(-20deg);
+  animation: jx-banner-sweep 0.75s ease-out 0.12s forwards;
+  pointer-events: none;
+}
+
+@keyframes jx-banner-sweep {
+  to { left: 140%; }
+}
+
+.outcome-popup-overlay > * {
+  position: relative;
+  z-index: 1;
+}
+
+.outcome-popup-overlay[data-outcome="BB"] { --oc: #3b82f6; }
+.outcome-popup-overlay[data-outcome="SO"] { --oc: #ef4444; }
+.outcome-popup-overlay[data-outcome="OUT"] { --oc: #9ca3af; }
+.outcome-popup-overlay[data-outcome="1B"] { --oc: #34d399; }
+.outcome-popup-overlay[data-outcome="2B"] { --oc: #10b981; }
+.outcome-popup-overlay[data-outcome="3B"] { --oc: #06b6d4; }
+.outcome-popup-overlay[data-outcome="HR"] { --oc: #facc15; }
+.outcome-popup-overlay[data-outcome="STEAL"] { --oc: #38bdf8; }
+.outcome-popup-overlay[data-outcome="E"] { --oc: #f59e0b; }
+.outcome-popup-overlay[data-outcome="DEF_WIN"] { --oc: #ffd700; }
+.outcome-popup-overlay[data-outcome="DEF_LOSE"] { --oc: #ef4444; }
+
+/* ── Impact FX spawned by juice.js ── */
+.jx-particle {
+  position: fixed;
+  z-index: 9400;
+  width: 8px;
+  height: 8px;
+  pointer-events: none;
+  animation: jx-particle 0.95s cubic-bezier(0.1, 0.7, 0.3, 1) forwards;
+}
+
+@keyframes jx-particle {
+  0% { transform: translate(0, 0) rotate(0deg) scale(1); opacity: 1; }
+  70% { opacity: 1; }
+  100% { transform: translate(var(--dx), var(--dy)) rotate(var(--rot)) scale(0.2); opacity: 0; }
+}
+
+.jx-flash {
+  position: fixed;
+  inset: 0;
+  z-index: 9300;
+  pointer-events: none;
+  animation: jx-flash 0.5s ease-out forwards;
+}
+
+@keyframes jx-flash {
+  0% { opacity: 0.55; }
+  100% { opacity: 0; }
+}
+
+@keyframes jx-shake-s {
+  0%, 100% { transform: translate(0, 0); }
+  20% { transform: translate(-4px, 2px); }
+  40% { transform: translate(4px, -2px); }
+  60% { transform: translate(-3px, -1px); }
+  80% { transform: translate(2px, 1px); }
+}
+
+@keyframes jx-shake-l {
+  0%, 100% { transform: translate(0, 0) rotate(0); }
+  10% { transform: translate(-9px, 4px) rotate(-0.6deg); }
+  25% { transform: translate(8px, -5px) rotate(0.6deg); }
+  40% { transform: translate(-7px, -3px) rotate(-0.4deg); }
+  55% { transform: translate(6px, 4px) rotate(0.3deg); }
+  70% { transform: translate(-4px, 2px); }
+  85% { transform: translate(2px, -1px); }
+}
+
+.jx-shake-s { animation: jx-shake-s 0.3s linear; }
+.jx-shake-l { animation: jx-shake-l 0.55s linear; }
+
+@keyframes jx-card-recoil {
+  0% { transform: translateX(0); filter: none; }
+  20% { transform: translateX(var(--recoil, 10px)) rotate(2deg); filter: brightness(2.2) saturate(0.2); }
+  100% { transform: translateX(0); filter: none; }
+}
+
+.jx-recoil { animation: jx-card-recoil 0.42s var(--jx-ease-out); }
+
+@keyframes jx-card-lunge {
+  0% { transform: translateX(0) scale(1); }
+  35% { transform: translateX(var(--lunge, 16px)) scale(1.06); }
+  100% { transform: translateX(0) scale(1); }
+}
+
+.jx-lunge { animation: jx-card-lunge 0.4s var(--jx-ease-out); }
+
+@media (prefers-reduced-motion: reduce) {
+  .jx-particle, .jx-flash { display: none; }
+  .jx-shake-s, .jx-shake-l, .jx-recoil, .jx-lunge, .jx-pop { animation: none; }
+  #btn-roll-dice::after, .outcome-popup-overlay::after { display: none; }
+}
+
+/* ═══════════════════ 3) CARDS — VINTAGE STOCK ═══════════════════ */
+/* The per-era palettes already live in style.css. This layer adds what makes
+   them read as physical cards: printed-stock grain, edge wear, and real foil. */
+
+.player-card {
+  --mx: 50%;
+  --my: 50%;
+}
+
+/* Cardboard grain + worn edges + a faint diagonal gloss, on every card */
+.player-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 5;
+  background:
+    radial-gradient(ellipse at var(--mx) var(--my), rgba(255, 255, 255, 0.16) 0%, transparent 55%),
+    radial-gradient(ellipse at center, transparent 58%, rgba(40, 24, 8, 0.38) 100%),
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.045) 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.03) 0 1px, transparent 1px 4px);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14), inset 0 0 10px rgba(0, 0, 0, 0.35);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Holographic foil: Legendary is full rainbow, Epic a cooler violet sheet.
+     It drifts on its own and follows the cursor (--mx/--my set by juice.js). */
+  .player-card.rarity-Legendary::before,
+  .player-card.rarity-Epic::before {
+    opacity: 0.55;
+    mix-blend-mode: color-dodge;
+    background-size: 260% 260%;
+    background-position: 0% 0%;
+    transition: opacity 0.2s ease-out;
+    animation: jx-foil-drift 7s ease-in-out infinite alternate;
+  }
+
+  .player-card.rarity-Legendary::before {
+    background-image: linear-gradient(
+      115deg,
+      transparent 18%,
+      rgba(255, 60, 140, 0.5) 30%,
+      rgba(255, 214, 0, 0.55) 40%,
+      rgba(60, 255, 170, 0.5) 50%,
+      rgba(60, 170, 255, 0.55) 60%,
+      rgba(200, 90, 255, 0.5) 70%,
+      transparent 82%
+    );
+  }
+
+  .player-card.rarity-Epic::before {
+    background-image: linear-gradient(
+      115deg,
+      transparent 25%,
+      rgba(204, 0, 255, 0.45) 40%,
+      rgba(120, 220, 255, 0.5) 50%,
+      rgba(204, 0, 255, 0.45) 60%,
+      transparent 75%
+    );
+    opacity: 0.4;
+  }
+
+  .player-card.rarity-Legendary.card-tilt-active::before,
+  .player-card.rarity-Epic.card-tilt-active::before {
+    animation: none;
+    opacity: 0.9;
+    background-position: var(--mx) var(--my);
+    transition: opacity 0.2s ease-out, background-position 0.08s linear;
+  }
+
+  /* Rare: a single silver glint across the card when you pick it up */
+  .player-card.rarity-Rare::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 6;
+    background: linear-gradient(115deg, transparent 40%, rgba(200, 240, 255, 0.6) 50%, transparent 60%);
+    background-size: 250% 250%;
+    background-position: 130% 130%;
+    opacity: 0;
+    mix-blend-mode: screen;
+    transition: background-position 0.6s ease-out, opacity 0.15s;
+  }
+
+  .player-card.rarity-Rare.card-tilt-active::before {
+    background-position: -30% -30%;
+    opacity: 1;
+  }
+
+  .player-card.card-tilt-active {
+    filter: drop-shadow(0 18px 20px rgba(0, 0, 0, 0.6));
+  }
+}
+
+@keyframes jx-foil-drift {
+  0% { background-position: 0% 0%; }
+  100% { background-position: 100% 100%; }
+}
+
+/* ── Draft: the picks sit on a card table ── */
+@media (min-width: 769px) {
+  .draft-cards-carousel {
+    background:
+      repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.018) 0 2px, transparent 2px 5px),
+      radial-gradient(ellipse at center, #17633a 0%, #0a3a21 60%, #052414 100%);
+    border: 4px solid #4a2f17;
+    outline: 2px solid #000;
+    box-shadow:
+      inset 0 0 0 2px #7a5230,
+      inset 0 0 34px rgba(0, 0, 0, 0.75),
+      0 14px 26px rgba(0, 0, 0, 0.6);
+    padding: 16px 18px;
+  }
+
+  .draft-card-wrapper {
+    transition: transform 0.18s var(--jx-ease-back), filter 0.18s ease, box-shadow 0.18s ease !important;
+    box-shadow: 0 6px 0 rgba(0, 0, 0, 0.45), 0 10px 18px rgba(0, 0, 0, 0.5);
+    background-color: rgba(0, 0, 0, 0.55) !important;
+  }
+
+  .draft-card-wrapper:hover {
+    transform: translateY(-12px) scale(1.05);
+    box-shadow: 0 18px 0 rgba(0, 0, 0, 0.25), 0 24px 30px rgba(0, 0, 0, 0.6);
+    z-index: 4;
+  }
+
+  .draft-cards-carousel:hover .draft-card-wrapper:not(:hover) {
+    filter: brightness(0.62) saturate(0.75);
+  }
+}
+
+.draft-col {
+  background: linear-gradient(180deg, rgba(6, 24, 16, 0.85), rgba(0, 0, 0, 0.9)) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 0 0 2px #000;
+}
+
+#draft-col-cards {
+  background: none !important;
+  box-shadow: none;
+}
+
+/* ═══════════════ 4) MENU / MAP / END SCREENS ═══════════════ */
+
+/* ── Main menu ── */
+@media (prefers-reduced-motion: no-preference) {
+  .menu-main-logo {
+    animation: jx-logo-float 4.5s ease-in-out infinite;
+  }
+
+  .mode-grid > .mode-card {
+    animation: jx-rise-in 0.55s var(--jx-ease-out) both;
+  }
+
+  .mode-grid > .mode-card:nth-child(1) { animation-delay: 0.08s; }
+  .mode-grid > .mode-card:nth-child(2) { animation-delay: 0.18s; }
+  .mode-grid > .mode-card:nth-child(n+3) { animation-delay: 0.28s; }
+
+  .mode-card:not(.is-locked) .mode-icon {
+    animation: jx-icon-bob 2.6s ease-in-out infinite;
+  }
+
+  .quick-card .mode-icon { animation-delay: 0.4s; }
+}
+
+@keyframes jx-logo-float {
+  0%, 100% { transform: translateY(0); filter: drop-shadow(0 4px 18px rgba(0, 255, 102, 0.55)); }
+  50% { transform: translateY(-7px); filter: drop-shadow(0 12px 30px rgba(0, 255, 102, 0.9)); }
+}
+
+@keyframes jx-rise-in {
+  0% { opacity: 0; transform: translateY(26px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes jx-icon-bob {
+  0%, 100% { transform: translateY(0) rotate(0); }
+  50% { transform: translateY(-6px) rotate(-4deg); }
+}
+
+#screen-mode-select {
+  border: 2px solid var(--jx-line);
+}
+
+.mode-card {
+  background: linear-gradient(180deg, rgba(10, 22, 18, 0.9) 0%, rgba(0, 0, 0, 0.92) 100%);
+  border-width: 2px;
+  border-top-width: 5px;
+  box-shadow: 0 0 0 2px #000, 0 8px 0 rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  transition: transform 0.2s var(--jx-ease-back), box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.mode-card:not(.is-locked):hover {
+  transform: translateY(-10px);
+}
+
+.story-card { border-color: #10b981; }
+.quick-card { border-color: #3b82f6; }
+
+.story-card:hover { box-shadow: 0 0 0 2px #000, 0 16px 0 rgba(0, 0, 0, 0.35), 0 0 34px rgba(16, 185, 129, 0.55); }
+.quick-card:hover { box-shadow: 0 0 0 2px #000, 0 16px 0 rgba(0, 0, 0, 0.35), 0 0 34px rgba(59, 130, 246, 0.6); }
+.challenge162-card:not(.is-locked):hover { box-shadow: 0 0 0 2px #000, 0 16px 0 rgba(0, 0, 0, 0.35), 0 0 34px rgba(245, 158, 11, 0.6); }
+
+.mode-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -80%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.14), transparent);
+  transform: skewX(-20deg);
+  pointer-events: none;
+  transition: left 0s;
+}
+
+.mode-card:not(.is-locked):hover::after {
+  left: 140%;
+  transition: left 0.6s ease-out;
+}
+
+.mode-icon {
+  font-size: 42px;
+  filter: drop-shadow(0 4px 0 rgba(0, 0, 0, 0.6));
+}
+
+.mode-title {
+  font-size: 14px;
+  text-shadow: 2px 2px 0 #000;
+  letter-spacing: 1px;
+}
+
+.mode-desc {
+  color: var(--jx-text);
+}
+
+.btn-mode {
+  padding: 13px 16px;
+  box-shadow: 0 0 0 2px #000, 0 4px 0 rgba(0, 0, 0, 0.6);
+}
+
+/* Ambient motes drifting through the stadium lights (menu only; spawned by juice.js) */
+#jx-ambient {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  display: none;
+  overflow: hidden;
+}
+
+body.on-main-menu #jx-ambient {
+  display: block;
+}
+
+#jx-ambient i {
+  position: absolute;
+  bottom: -10px;
+  width: 4px;
+  height: 4px;
+  background: #d9ffe8;
+  box-shadow: 0 0 8px #7dffb0;
+  opacity: 0;
+  animation: jx-mote linear infinite;
+}
+
+@keyframes jx-mote {
+  0% { transform: translate(0, 0); opacity: 0; }
+  12% { opacity: 0.85; }
+  80% { opacity: 0.5; }
+  100% { transform: translate(var(--drift), -105vh); opacity: 0; }
+}
+
+body.on-main-menu .main-container {
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Championship map ── */
+#screen-map {
+  border: 2px solid var(--jx-line);
+}
+
+.map-node-group.node-is-active {
+  filter: drop-shadow(0 0 10px rgba(0, 255, 102, 0.75));
+  transition: filter 0.2s ease;
+}
+
+.map-node-group.node-is-active:hover {
+  filter: drop-shadow(0 0 18px rgba(0, 255, 102, 1)) brightness(1.25);
+}
+
+.map-node-group.node-is-visited {
+  filter: drop-shadow(0 0 5px rgba(255, 204, 0, 0.55));
+}
+
+.map-node-group.node-is-future {
+  transition: opacity 0.2s ease;
+}
+
+/* ── Scouting / pre-fight ── */
+#btn-pre-fight-start {
+  position: relative;
+  overflow: hidden;
+}
+
+#btn-pre-fight-start::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -60%;
+  width: 40%;
+  height: 100%;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+  transform: skewX(-20deg);
+  animation: jx-shine-sweep 2.4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* ── Synergy rail: readable at a glance ── */
+.syn-active-desc,
+.syn-t-text {
+  color: var(--jx-text) !important;
+  line-height: 1.4 !important;
+}
+
+.pokelike-syn-card {
+  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+}
+
+.pokelike-syn-card:hover {
+  transform: translateX(-3px);
+  filter: brightness(1.2);
+}
+
+.pokelike-syn-card.syn-active {
+  box-shadow: inset 3px 0 0 var(--primary-color), 0 0 12px rgba(0, 255, 102, 0.12);
+}
+
+.syn-progress-fill {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45);
+  transition: width 0.5s var(--jx-ease-out);
+}
+
+/* ── Game over / victory ── */
+#gameover-title {
+  color: var(--danger-color);
+  text-shadow: 3px 3px 0 #000, 0 0 22px rgba(255, 51, 51, 0.7);
+  letter-spacing: 2px;
+}
+
+#victory-title {
+  letter-spacing: 1px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  #screen-gameover:not(.hidden) #gameover-title {
+    animation: jx-title-slam 0.6s var(--jx-ease-back) both, jx-glitch 3.2s steps(1) 0.8s infinite;
+  }
+
+  #screen-victory:not(.hidden) #victory-title {
+    animation: jx-title-slam 0.7s var(--jx-ease-back) both, jx-gold-shimmer 2.2s ease-in-out 0.7s infinite;
+  }
+}
+
+@keyframes jx-title-slam {
+  0% { opacity: 0; transform: scale(2.6); filter: blur(4px); }
+  100% { opacity: 1; transform: scale(1); filter: none; }
+}
+
+@keyframes jx-glitch {
+  0%, 100% { transform: translate(0, 0); text-shadow: 3px 3px 0 #000, 0 0 22px rgba(255, 51, 51, 0.7); }
+  4% { transform: translate(-3px, 1px); text-shadow: 3px 0 0 #00e5ff, -3px 0 0 #ff2e63; }
+  8% { transform: translate(2px, -1px); text-shadow: -3px 0 0 #00e5ff, 3px 0 0 #ff2e63; }
+  12% { transform: translate(0, 0); text-shadow: 3px 3px 0 #000, 0 0 22px rgba(255, 51, 51, 0.7); }
+}
+
+@keyframes jx-gold-shimmer {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.5) drop-shadow(0 0 12px rgba(255, 215, 0, 0.9)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #jx-ambient { display: none !important; }
+}
+
+/* ═══════════════ 5) 162-0 CHALLENGE ═══════════════ */
+/* Gold is this mode's identity colour (--challenge162-accent); panels reuse the
+   base bevel, and the season screen gets the same broadcast scoreboard language
+   as combat. */
+
+/* ── Hub ── */
+.c162-records-banner {
+  background: linear-gradient(180deg, #14100a 0%, #000 100%);
+  border: 2px solid #5c4a00;
+  box-shadow: 0 0 0 2px #000, inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.c162-record-val {
+  font-family: 'VT323', monospace;
+  font-size: 26px;
+  line-height: 1;
+  letter-spacing: 1px;
+  text-shadow: 0 0 10px currentColor;
+}
+
+.c162-mode-card {
+  border-top-width: 5px;
+  box-shadow: 0 0 0 2px #000, 0 8px 0 rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  transition: transform 0.2s var(--jx-ease-back), box-shadow 0.2s ease, filter 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.c162-mode-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 0 0 2px #000, 0 16px 0 rgba(0, 0, 0, 0.35), 0 0 30px var(--challenge162-accent-glow);
+  filter: brightness(1.1);
+}
+
+.c162-mode-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -80%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.14), transparent);
+  transform: skewX(-20deg);
+  pointer-events: none;
+}
+
+.c162-mode-card:hover::after {
+  left: 140%;
+  transition: left 0.6s ease-out;
+}
+
+.c162-mode-desc {
+  color: var(--jx-text);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .c162-modes-grid > .c162-mode-card {
+    animation: jx-rise-in 0.5s var(--jx-ease-out) both;
+  }
+
+  .c162-modes-grid > .c162-mode-card:nth-child(2) { animation-delay: 0.07s; }
+  .c162-modes-grid > .c162-mode-card:nth-child(3) { animation-delay: 0.14s; }
+  .c162-modes-grid > .c162-mode-card:nth-child(4) { animation-delay: 0.21s; }
+}
+
+/* ── Roster builder / pack deck ── */
+.c162-roster-section {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 0 0 2px #000;
+}
+
+.c162-slot-header-pill {
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.6);
+}
+
+.c162-slot-item {
+  transition: transform 0.16s var(--jx-ease-back);
+}
+
+.c162-slot-item:hover {
+  transform: translateY(-5px);
+  z-index: 3;
+}
+
+/* ── Season: record scoreboard ── */
+.c162-record-card {
+  background:
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.025) 0 2px, transparent 2px 4px),
+    linear-gradient(180deg, #14100a 0%, #020202 100%) !important;
+  border: 3px solid #5c4a00 !important;
+  box-shadow: 0 0 0 2px #000, inset 0 2px 0 rgba(255, 255, 255, 0.08), inset 0 -10px 20px rgba(0, 0, 0, 0.6), 0 10px 22px rgba(0, 0, 0, 0.6) !important;
+}
+
+.c162-rec-w,
+.c162-rec-l {
+  font-family: 'VT323', monospace !important;
+  font-size: 64px !important;
+  line-height: 0.85;
+  min-width: 92px;
+  text-align: center;
+  background: #000;
+  border: 2px solid #2a2208;
+  box-shadow: inset 0 0 14px rgba(0, 0, 0, 0.95), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  padding: 6px 10px 2px 10px;
+  text-shadow: 0 0 14px currentColor, 0 0 2px currentColor !important;
+}
+
+.c162-streak-badge {
+  animation: jx-glow-breathe 1.4s ease-in-out infinite;
+}
+
+.c162-season-top-row > div:nth-child(2) {
+  background: linear-gradient(180deg, rgba(12, 14, 8, 0.92), rgba(0, 0, 0, 0.94)) !important;
+  border: 2px solid rgba(255, 215, 0, 0.35) !important;
+  box-shadow: 0 0 0 2px #000, inset 0 1px 0 rgba(255, 255, 255, 0.07);
+}
+
+/* 162-game track */
+.c162-season-progress {
+  height: 16px !important;
+  background: #000 !important;
+  border: 2px solid #2a2208;
+  box-shadow: 0 0 0 2px #000, inset 0 0 6px #000;
+  position: relative;
+}
+
+.c162-season-progress > div {
+  box-shadow: inset 0 3px 0 rgba(255, 255, 255, 0.4), inset 0 -3px 0 rgba(0, 0, 0, 0.3), 0 0 12px var(--challenge162-accent-glow);
+  transition: width 0.5s var(--jx-ease-out) !important;
+}
+
+/* month-ish notches every sixth of the season */
+.c162-season-progress::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(90deg, transparent 0 calc(16.666% - 2px), rgba(0, 0, 0, 0.75) calc(16.666% - 2px) 16.666%);
+  pointer-events: none;
+}
+
+/* ── Season: sim controls ── */
+#challenge162-play-1 {
+  position: relative;
+  overflow: hidden;
+}
+
+#challenge162-play-1::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -60%;
+  width: 40%;
+  height: 100%;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+  transform: skewX(-20deg);
+  animation: jx-shine-sweep 2.8s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* ── Season: tables + feed ── */
+.c162-table-wrap {
+  border: 2px solid rgba(255, 215, 0, 0.22);
+  box-shadow: 0 0 0 2px #000;
+}
+
+.c162-th {
+  background: linear-gradient(180deg, #1a1608, #0a0903);
+  border-bottom: 2px solid rgba(255, 215, 0, 0.4);
+}
+
+.c162-tr {
+  transition: background 0.12s ease;
+}
+
+.c162-tr:hover {
+  background: rgba(255, 215, 0, 0.12);
+  box-shadow: inset 3px 0 0 var(--challenge162-accent);
+}
+
+.c162-sidebar-panel {
+  box-shadow: 0 0 0 2px #000, inset 0 1px 0 rgba(255, 255, 255, 0.07);
+}
+
+.c162-game-badge {
+  border-left: 3px solid rgba(255, 255, 255, 0.15);
+  transition: transform 0.12s ease, background 0.12s ease;
+}
+
+.c162-game-badge:has(.c162-outcome-w) { border-left-color: #34d399; }
+.c162-game-badge:has(.c162-outcome-l) { border-left-color: #f87171; background: rgba(248, 113, 113, 0.08); }
+
+.c162-game-badge:hover {
+  transform: translateX(3px);
+}
+
+.c162-outcome-pill {
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.6), 0 0 8px currentColor;
+}
+
+.jx-feed-new {
+  animation: jx-feed-in 0.4s var(--jx-ease-out) both;
+}
+
+@keyframes jx-feed-in {
+  0% { opacity: 0; transform: translateX(26px); filter: brightness(2.5); }
+  100% { opacity: 1; transform: translateX(0); filter: none; }
+}
+
+.jx-float.win { color: #34d399; }
+
+@media (prefers-reduced-motion: reduce) {
+  .jx-feed-new, .c162-streak-badge { animation: none; }
+  #challenge162-play-1::after { display: none; }
+}
+
+/* ── Postseason: matchup + live broadcast ── */
+.c162-step-card {
+  box-shadow: 0 0 0 2px #000, inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  transition: transform 0.2s var(--jx-ease-back), filter 0.2s ease;
+}
+
+.c162-team-box {
+  box-shadow: 0 0 0 2px #000, inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 10px 20px rgba(0, 0, 0, 0.5);
+}
+
+.c162-linescore-wrap {
+  background:
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.025) 0 2px, transparent 2px 4px),
+    linear-gradient(180deg, #14100a 0%, #020202 100%);
+  border: 3px solid #5c4a00;
+  box-shadow: 0 0 0 2px #000, inset 0 2px 0 rgba(255, 255, 255, 0.08), 0 10px 22px rgba(0, 0, 0, 0.6);
+}
+
+.c162-stadium-field-card,
+.c162-ticker-box {
+  box-shadow: 0 0 0 2px #000, inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.c162-broadcast-tab-btn {
+  transition: transform 0.1s ease, filter 0.15s ease;
+}
+
+.c162-broadcast-tab-btn:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.25);
+}
+
+#challenge162-play-playoff-match {
+  position: relative;
+  overflow: hidden;
+}
+
+#challenge162-play-playoff-match::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -60%;
+  width: 40%;
+  height: 100%;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+  transform: skewX(-20deg);
+  animation: jx-shine-sweep 2.4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .c162-step-card.c162-step-active {
+    animation: jx-glow-breathe 1.6s ease-in-out infinite;
+  }
+
+  .c162-tale-container .c162-team-box.player-side {
+    animation: jx-slide-from-left 0.5s var(--jx-ease-out) both;
+  }
+
+  .c162-tale-container .c162-team-box:not(.player-side) {
+    animation: jx-slide-from-right 0.5s var(--jx-ease-out) both;
+  }
+
+  .c162-vs-badge {
+    animation: jx-title-slam 0.5s var(--jx-ease-back) 0.3s both;
+  }
+
+  /* The live stage re-renders on every plate appearance, so this replays per play */
+  .c162-ticker-box {
+    animation: jx-feed-in 0.35s var(--jx-ease-out) both;
+  }
+}
+
+@keyframes jx-slide-from-left {
+  0% { opacity: 0; transform: translateX(-60px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes jx-slide-from-right {
+  0% { opacity: 0; transform: translateX(60px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #challenge162-play-playoff-match::after { display: none; }
+}
+
+/* ── Season results: the roster is dealt out one card at a time ── */
+@media (prefers-reduced-motion: no-preference) {
+  .c162-champions-row > .c162-result-card-wrap {
+    animation: jx-card-drop 0.5s var(--jx-ease-back) both;
+  }
+
+  .c162-champions-row > .c162-result-card-wrap:nth-child(1) { animation-delay: 0.05s; }
+  .c162-champions-row > .c162-result-card-wrap:nth-child(2) { animation-delay: 0.11s; }
+  .c162-champions-row > .c162-result-card-wrap:nth-child(3) { animation-delay: 0.17s; }
+  .c162-champions-row > .c162-result-card-wrap:nth-child(4) { animation-delay: 0.23s; }
+  .c162-champions-row > .c162-result-card-wrap:nth-child(5) { animation-delay: 0.29s; }
+  .c162-champions-row > .c162-result-card-wrap:nth-child(6) { animation-delay: 0.35s; }
+  .c162-champions-row > .c162-result-card-wrap:nth-child(7) { animation-delay: 0.41s; }
+  .c162-champions-row > .c162-result-card-wrap:nth-child(8) { animation-delay: 0.47s; }
+  .c162-champions-row > .c162-result-card-wrap:nth-child(n+9) { animation-delay: 0.53s; }
+  .c162-champions-row + .c162-champions-row > .c162-result-card-wrap { animation-duration: 0.6s; }
+}
+
+@keyframes jx-card-drop {
+  0% { opacity: 0; transform: translateY(-40px) rotate(-6deg) scale(0.85); }
+  100% { opacity: 1; transform: translateY(0) rotate(0) scale(1); }
+}
+
+.c162-result-card-wrap {
+  transition: transform 0.16s var(--jx-ease-back);
+}
+
+.c162-result-card-wrap:hover {
+  transform: translateY(-8px) scale(1.06);
+  z-index: 4;
+}
+
+/* ── Layout nudges ── */
+@media (min-width: 769px) {
+  /* The shorter scoreboard left the left combat column floating mid-height; pin it to the top */
+  .match-arena > div:first-child {
+    justify-content: flex-start !important;
+    /* matches #dice-battle-panel's 10px top margin (+2px for the scoreboard's outer ring) */
+    padding-top: 12px;
+  }
+
+  #screen-mode-select {
+    margin-top: clamp(64px, 10vh, 130px) !important;
+  }
+}
+
+/* The season screen header already says "162-0 CHALLENGE"; drop the repeated title inside */
+#challenge162-season-container > div:first-child {
+  display: none;
+}

@@ -5502,7 +5502,7 @@
         <div class="c162-season-top-row" style="display:flex;justify-content:center;align-items:stretch;gap:14px;flex-wrap:wrap;margin-bottom:14px;max-width:960px;margin-left:auto;margin-right:auto;">
           
           <!-- Left: Record & Mode Summary Card -->
-          <div style="flex: 1 1 320px; max-width: 380px; margin: 0; background: radial-gradient(circle at 50% 0%, rgba(15,23,42,0.95) 0%, rgba(8,12,22,0.98) 100%); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; padding: 12px 16px; display: flex; flex-direction: column; justify-content: center; align-items: center; box-shadow: 0 4px 20px rgba(0,0,0,0.4); box-sizing: border-box;">
+          <div class="c162-record-card" style="flex: 1 1 320px; max-width: 380px; margin: 0; background: radial-gradient(circle at 50% 0%, rgba(15,23,42,0.95) 0%, rgba(8,12,22,0.98) 100%); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; padding: 12px 16px; display: flex; flex-direction: column; justify-content: center; align-items: center; box-shadow: 0 4px 20px rgba(0,0,0,0.4); box-sizing: border-box;">
             <div style="margin-bottom:6px;">
               <span class="c162-mode-badge" style="background:rgba(245,158,11,0.2);color:#ffd700;border:1px solid rgba(245,158,11,0.5);font-size:9.5px;padding:4px 8px;">
                 ${(S.modeConfig && S.modeConfig.label) || '162-0 CHALLENGE'}
@@ -5510,13 +5510,13 @@
             </div>
             
             <div style="display:flex;align-items:center;gap:16px;margin:2px 0;">
-              <div style="font-family:'Press Start 2P',monospace;font-size:22px;color:#34d399;text-shadow:0 0 12px rgba(52,211,153,0.5);">
+              <div class="c162-rec-w" style="font-family:'Press Start 2P',monospace;font-size:22px;color:#34d399;text-shadow:0 0 12px rgba(52,211,153,0.5);">
                 ${S.wins}
               </div>
               <div style="font-family:'Press Start 2P',monospace;font-size:14px;color:#64748b;">
                 -
               </div>
-              <div style="font-family:'Press Start 2P',monospace;font-size:22px;color:#f87171;text-shadow:0 0 12px rgba(248,113,113,0.5);">
+              <div class="c162-rec-l" style="font-family:'Press Start 2P',monospace;font-size:22px;color:#f87171;text-shadow:0 0 12px rgba(248,113,113,0.5);">
                 ${S.losses}
               </div>
             </div>
@@ -5534,7 +5534,7 @@
         </div>
 
         <!-- Progress bar -->
-        <div style="max-width:680px;margin:0 auto 16px auto;background:rgba(255,255,255,0.08);border-radius:6px;height:8px;overflow:hidden;">
+        <div class="c162-season-progress" style="max-width:680px;margin:0 auto 16px auto;background:rgba(255,255,255,0.08);border-radius:6px;height:8px;overflow:hidden;">
           <div style="background:linear-gradient(90deg,var(--challenge162-accent),#34d399);height:100%;width:${completedPct}%;transition:width 0.3s ease;"></div>
         </div>
 
@@ -5913,6 +5913,7 @@
       const S = this.state;
       const wonWS = S.playoffs && S.playoffs.won;
       const isPerfect = S.losses === 0;
+      container.dataset.champion = wonWS ? '1' : '0'; // hook for juice.js confetti
 
       if (wonWS && window.AudioManager && typeof window.AudioManager.play === 'function') {
         window.AudioManager.play('win');

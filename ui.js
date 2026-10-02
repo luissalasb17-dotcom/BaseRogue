@@ -8035,6 +8035,7 @@ function initGameModeSelector() {
 
     const popup = document.createElement('div');
     popup.className = "outcome-popup-overlay";
+    popup.dataset.outcome = eventType; // hook for style_juice.css / juice.js
     popup.style.cssText = `
       position: absolute;
       top: 50%;
