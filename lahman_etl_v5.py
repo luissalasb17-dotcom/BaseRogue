@@ -892,22 +892,52 @@ def paso_9_asignar_era(df, war_bat=None, people=None, batting=None):
 # ===========================================================================
 # PASO 10 - CALCULAR ATRIBUTOS RAW DE BATEO (CON, PWR, EYE)
 # ===========================================================================
+def _prior_por_era_y_tiempo_de_juego(rate, weight, era, share, fallback):
+    """
+    Prior bayesiano individual: la tasa esperada de un jugador dada su Era y su
+    tiempo de juego (share = PA por temporada del pico / PA de un titular de su era).
+
+    Dentro de cada era se ajusta una recta ponderada  tasa ~ a + b * share  (pesos = AB o PA,
+    para que las muestras chicas no dominen el ajuste). Un suplente se regresa asi hacia lo
+    que batean los suplentes de su era, y un titular hacia lo que batean los titulares,
+    en vez de regresar a todos hacia una unica media global.
+    """
+    prior = pd.Series(fallback, index=rate.index, dtype=float)
+    for _, idx in era.groupby(era).groups.items():
+        r = rate.loc[idx].astype(float)
+        w = weight.loc[idx].astype(float)
+        x = share.loc[idx].astype(float)
+        ok = r.notna() & x.notna() & (w > 0)
+        if ok.sum() == 0:
+            continue
+        wm = np.average(r[ok], weights=w[ok])
+        if ok.sum() < 30:
+            prior.loc[idx] = wm          # era con muy pocos jugadores: solo media de la era
+            continue
+        xm = np.average(x[ok], weights=w[ok])
+        var_x = np.average((x[ok] - xm) ** 2, weights=w[ok])
+        slope = np.average((x[ok] - xm) * (r[ok] - wm), weights=w[ok]) / var_x if var_x > 0 else 0.0
+        prior.loc[idx] = wm + slope * (x.fillna(xm) - xm)
+    return prior
+
+
 def paso_10_atributos_raw_bateo(df):
     """
     Formulas sobre metricas hibridas (k_rate y bb_rate ya corregidos con PA):
 
     CON = 0.80 * BA_Suavizado + 0.20 * (1 - k_rate_Final)
-         Suavizado Bayesiano fuerte (m = 900 AB / 2 temporadas) con descuento por oposición independiente.
+         Suavizado Bayesiano (m = 540 AB / 1 temporada) hacia un prior individual por Era y
+         tiempo de juego, con descuento por oposición independiente.
 
     PWR = 0.50 * ISO_Final + 0.30 * XBH_rate_Final + 0.20 * HR_rate_Final
-         Poder real de bate en extra-bases con suavizado (m = 1,000 PA).
+         Poder real de bate en extra-bases con suavizado (m = 600 PA, misma ancla de 1 temporada).
 
     EYE = bb_rate_Final  (100% tasa de boletos - paciencia pura)
     """
-    print("\n  PASO 10: Atributos RAW de bateo (CON, PWR, EYE) con Ancla m=2 y Descuento Pionero...")
+    print("\n  PASO 10: Atributos RAW de bateo (CON, PWR, EYE) con ancla de 1 temporada, prior por Era y tiempo de juego, y Descuento Pionero...")
     df = df.copy()
 
-    # Bayesian sample-size smoothing (m = 1000 PA / m = 900 AB = 2 full seasons anchor)
+    # Bayesian sample-size smoothing (m = 540 AB = 600 PA = 1 full season anchor)
     ab = df["peak_ab"].fillna(df["career_ab"]).fillna(0)
     h  = df["peak_h"].fillna(df["career_h"]).fillna(0)
     pa = df["peak_pa"].fillna(df["career_pa"]).fillna(0)
@@ -918,6 +948,8 @@ def paso_10_atributos_raw_bateo(df):
     so = df["peak_so"].fillna(df["career_so"]).fillna(0)
 
     is_nlb = (df["league_group"] == "NLB") if "league_group" in df.columns else False
+    # Ancla unica: 1 temporada de titular (600 PA / 540 AB), igual para todas las tasas y
+    # todas las ligas. Lo que cambia por jugador es el prior hacia el que se regresa, no el ancla.
     m_pa = 600
     m_ab = 540
 
@@ -930,24 +962,46 @@ def paso_10_atributos_raw_bateo(df):
     comp_mult = 1.0 - (0.22 * f_unoff)
 
     h_effective = h * comp_mult
-    df["ba_smoothed"] = (h_effective + m_ab * 0.265) / (ab + m_ab)
+
+    # ── Tiempo de juego relativo (share) ──────────────────────────────────────
+    # PA por temporada del pico, relativo a lo que acumula un titular (percentil 90) de la
+    # misma Era y grupo de liga. Agrupar por liga evita tratar como "suplente" a una estrella
+    # de Ligas Negras o de la era Genesis, cuyos calendarios eran mucho mas cortos.
+    n_seasons = df["total_seasons_in_peak"].fillna(0).clip(lower=1) if "total_seasons_in_peak" in df.columns else pd.Series(PEAK_SEASONS, index=df.index)
+    pa_per_season = pa / n_seasons
+    lg = df["league_group"].fillna("MLB") if "league_group" in df.columns else pd.Series("MLB", index=df.index)
+    full_time_pa = pa_per_season.groupby([df["era_label"], lg]).transform(lambda v: v.quantile(0.90))
+    share = (pa_per_season / full_time_pa.replace(0, np.nan)).clip(0.0, 1.0).fillna(0.0)
+    df["playing_time_share"] = share.round(3)
+
+    ab_nz = ab.replace(0, np.nan)
+    pa_nz = pa.replace(0, np.nan)
+    era = df["era_label"]
+    prior_ba  = _prior_por_era_y_tiempo_de_juego(h_effective / ab_nz, ab, era, share, 0.265)
+    prior_bb  = _prior_por_era_y_tiempo_de_juego(bb * comp_mult / pa_nz, pa, era, share, 0.085)
+    prior_hr  = _prior_por_era_y_tiempo_de_juego(hr * comp_mult / pa_nz, pa, era, share, 0.025)
+    prior_xbh = _prior_por_era_y_tiempo_de_juego((b2 + b3 + hr) * comp_mult / pa_nz, pa, era, share, 0.075)
+    df["prior_ba"] = prior_ba.round(4)
+
+    df["ba_smoothed"] = (h_effective + m_ab * prior_ba) / (ab + m_ab)
 
     # Unified Era Normalization for Contact (100% Era-Relative BA puro)
     era_ba_means = df.groupby("era_label")["ba_smoothed"].transform("mean")
     df["contact_raw"] = df["ba_smoothed"] / era_ba_means.replace(0, 0.260)
 
     # Suavizado Bayesiano de Boletos (EYE)
-    df["eye_raw"] = (bb * comp_mult + m_pa * 0.085) / (pa + m_pa)
+    df["eye_raw"] = (bb * comp_mult + m_pa * prior_bb) / (pa + m_pa)
 
-    # Bayesian sample-size smoothing for power metrics (m = 1,000 PA) con descuento de oposición
+    # Bayesian sample-size smoothing for power metrics (same 1-season anchor) con descuento de oposición
     hr_effective = hr * comp_mult
-    hr_smoothed = (hr_effective + m_pa * 0.025) / (pa + m_pa)
+    hr_smoothed = (hr_effective + m_pa * prior_hr) / (pa + m_pa)
     tb_total = h_effective + (b2 * comp_mult) + 2*(b3 * comp_mult) + 3*hr_effective
     slg = np.where(ab > 0, tb_total / ab, 0)
     iso_raw = np.where(ab > 0, slg - (h_effective / ab), 0)
-    iso_smoothed = (iso_raw * pa + m_pa * 0.140) / (pa + m_pa)
+    prior_iso = _prior_por_era_y_tiempo_de_juego(pd.Series(iso_raw, index=df.index).where(ab > 0), pa, era, share, 0.140)
+    iso_smoothed = (iso_raw * pa + m_pa * prior_iso) / (pa + m_pa)
     df["iso_smoothed"] = iso_smoothed
-    xbh_smoothed = ((b2 + b3 + hr) * comp_mult + m_pa * 0.075) / (pa + m_pa)
+    xbh_smoothed = ((b2 + b3 + hr) * comp_mult + m_pa * prior_xbh) / (pa + m_pa)
 
     df["power_raw"] = (
         hr_smoothed  * 0.45 +
@@ -981,6 +1035,11 @@ def paso_10_atributos_raw_bateo(df):
 
     df["k_rate_clean"] = df.apply(_impute_k, axis=1)
 
+    print("  Prior de BA por Era (suplente, share <= 0.4 / titular, share >= 0.9):")
+    for e_, g_ in df.groupby("era_label"):
+        lo_ = g_.loc[g_["playing_time_share"] <= 0.4, "prior_ba"].mean()
+        hi_ = g_.loc[g_["playing_time_share"] >= 0.9, "prior_ba"].mean()
+        print(f"    {e_:30s} {lo_:.3f} / {hi_:.3f}")
     print("  contact_raw, power_raw, eye_raw con descuento de competencia pionera y K% sabermetrico aplicados")
     return df
 
@@ -1345,23 +1404,6 @@ def map_to_canonical_team(row):
     return "HIST"
 
 
-def map_to_cosmetic_ovr(r):
-    if r is None or pd.isna(r):
-        return 50.0
-    val = float(r)
-    if val <= 38.0:
-        res = 50.0 + ((val - 10.0) / 28.0) * 9.9
-    elif val <= 47.0:
-        res = 60.0 + ((val - 38.0) / 9.0) * 9.9
-    elif val <= 57.2:
-        res = 70.0 + ((val - 47.0) / 10.2) * 9.9
-    elif val <= 77.4:
-        res = 80.0 + ((val - 57.2) / 20.2) * 9.9
-    else:
-        res = 90.0 + min(9.9, ((val - 77.4) / 25.0) * 9.9)
-    return round(res, 1)
-
-
 def paso_15_equipo_y_exportar(df, batting, teams, franchises, pico_df=None, war_bat=None, people=None):
     """
     Asigna equipo canonico usando la Formula Hibrida 80/20 de WAR:
@@ -1485,9 +1527,46 @@ def paso_15_equipo_y_exportar(df, batting, teams, franchises, pico_df=None, war_
         print(f"  Badges: Clutch={df['is_clutch'].sum()} | Captain={df['is_captain'].sum()}")
 
     # ── OVR con boost de Badges (+2 por badge) & Rareza ─────────────────────
-    base_ovr = df["raw_ovr"].apply(map_to_cosmetic_ovr)
+    # Cortes de rareza por percentil del pool (mismo esquema que pitchers_etl.py):
+    # 35% Common, 30% Uncommon, 20% Rare, 12.5% Epic, 2.5% Legendary. Al ser percentiles y no
+    # numeros fijos, la distribucion no se desplaza cuando cambia el calculo de atributos.
+    # El cupo es estricto e incluye a quien llega por insignia: los cortes se ajustan sobre la
+    # nota final (ya con el +2 por badge), no sobre la nota base.
+    RARITY_FLOORS = [(60.0, 0.65), (70.0, 0.35), (80.0, 0.15), (90.0, 0.025)]  # (OVR minimo, % del pool en ese nivel o superior)
+    raw = df["raw_ovr"].astype(float).fillna(10.0)
     badge_boost = (df["is_clutch"].astype(int) * 2.0) + (df["is_captain"].astype(int) * 2.0)
-    df["avg_attr_score"] = (base_ovr + badge_boost).clip(50.0, 99.9).round(1)
+
+    def cosmetic_scores(cuts):
+        c1, c2, c3, c4 = cuts
+        res = np.where(raw <= c1, 50.0 + ((raw - 10.0) / max(0.1, c1 - 10.0)) * 9.9,
+              np.where(raw <= c2, 60.0 + ((raw - c1) / max(0.1, c2 - c1)) * 9.9,
+              np.where(raw <= c3, 70.0 + ((raw - c2) / max(0.1, c3 - c2)) * 9.9,
+              np.where(raw <= c4, 80.0 + ((raw - c3) / max(0.1, c4 - c3)) * 9.9,
+                       90.0 + np.minimum(9.9, ((raw - c4) / 25.0) * 9.9)))))
+        return (np.round(res, 1) + badge_boost).clip(50.0, 99.9).round(1)
+
+    cuts = [float(raw.quantile(1.0 - share)) for _, share in RARITY_FLOORS]
+    print(f"  Cortes raw_ovr por percentil (sin badges): {[round(c, 1) for c in cuts]}"
+          f"  (cortes fijos anteriores: 38.0 / 47.0 / 57.2 / 77.4)")
+    # Subir un corte reduce cuantos alcanzan ese nivel: biseccion por corte, de arriba hacia abajo,
+    # repetida porque cada corte desplaza levemente el tramo inferior.
+    for _ in range(3):
+        for k in range(3, -1, -1):
+            floor, share = RARITY_FLOORS[k]
+            target = int(round(share * len(df)))
+            lo = cuts[k - 1] + 0.1 if k > 0 else 10.1
+            hi = cuts[k + 1] - 0.1 if k < 3 else float(raw.max())
+            for _ in range(40):
+                mid = (lo + hi) / 2.0
+                trial = cuts[:k] + [mid] + cuts[k + 1:]
+                if (cosmetic_scores(trial) >= floor).sum() > target:
+                    lo = mid
+                else:
+                    hi = mid
+            cuts[k] = hi
+    print(f"  Cortes raw_ovr ajustados al cupo con badges: {[round(c, 1) for c in cuts]}")
+
+    df["avg_attr_score"] = cosmetic_scores(cuts)
     df["rarity"]         = df["avg_attr_score"].apply(asignar_rareza)
     df["pos_display"]    = df["primary_pos"].map(POS_DISPLAY_MAP).fillna("RF")
 

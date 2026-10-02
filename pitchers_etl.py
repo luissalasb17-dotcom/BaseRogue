@@ -832,15 +832,54 @@ def paso_7_asignar_era(df, war_pit=None, people=None, pitching=None):
 
 
 # ── PASO 8: Atributos RAW de pitching (MLB The Show Suite: H/9, K/9, BB/9, HR/9, STA) ──
+def _prior_por_grupo_y_tiempo_de_juego(rate, weight, group, share, fallback_group):
+    """
+    Prior bayesiano individual: la tasa esperada de un pitcher dado su grupo (Era + rol) y su
+    tiempo de juego (share = IP por temporada del pico / IP de un pitcher de tiempo completo
+    de su misma Era, rol y liga).
+
+    Dentro de cada grupo se ajusta una recta ponderada  tasa ~ a + b * share  (pesos = IP,
+    para que las muestras chicas no dominen el ajuste). Un relevista de pocas entradas se
+    regresa asi hacia lo que rinden pitchers como el, y no hacia una unica media global.
+    Grupos con menos de 30 pitchers usan la media ponderada del grupo de respaldo (la Era).
+    """
+    prior = pd.Series(np.nan, index=rate.index, dtype=float)
+
+    def _wmean(idx):
+        r = rate.loc[idx].astype(float)
+        w = weight.loc[idx].astype(float)
+        ok = r.notna() & (w > 0)
+        return np.average(r[ok], weights=w[ok]) if ok.sum() else np.nan
+
+    fallback_means = {k: _wmean(idx) for k, idx in fallback_group.groupby(fallback_group).groups.items()}
+    global_mean = _wmean(rate.index)
+
+    for _, idx in group.groupby(group).groups.items():
+        r = rate.loc[idx].astype(float)
+        w = weight.loc[idx].astype(float)
+        x = share.loc[idx].astype(float)
+        ok = r.notna() & x.notna() & (w > 0)
+        if ok.sum() < 30:
+            fb = fallback_group.loc[idx].map(fallback_means)
+            prior.loc[idx] = fb.fillna(global_mean)
+            continue
+        wm = np.average(r[ok], weights=w[ok])
+        xm = np.average(x[ok], weights=w[ok])
+        var_x = np.average((x[ok] - xm) ** 2, weights=w[ok])
+        slope = np.average((x[ok] - xm) * (r[ok] - wm), weights=w[ok]) / var_x if var_x > 0 else 0.0
+        prior.loc[idx] = wm + slope * (x.fillna(xm) - xm)
+    return prior.fillna(global_mean)
+
+
 def paso_8_atributos_raw(df):
     """
-    H9_raw:  H/9  → Hits permitidos por 9 IP con suavizado bayesiano m=400 IP y ajuste por oposición semipro
-    K9_raw:  K/9  → Ponches por 9 IP con suavizado bayesiano m=400 IP
-    BB9_raw: BB/9 → Paseos por 9 IP con suavizado bayesiano m=400 IP
-    HR9_raw: HR/9 → Jonrones por 9 IP con suavizado bayesiano m=400 IP
+    H9_raw, K9_raw, BB9_raw, HR9_raw: tasas por 9 IP con suavizado bayesiano de ancla unica
+    m = 250 IP (1 temporada de as abridor, fija para todas las tasas y ligas), regresadas hacia
+    un prior individual por Era, rol (SP/RP) y tiempo de juego. H y K llevan ademas el ajuste
+    por oposición semipro.
     STA_raw: IP por salida
     """
-    print("\n  PASO 8: Atributos RAW de pitching con Ancla m=400 IP y Descuento Pionero...")
+    print("\n  PASO 8: Atributos RAW de pitching con Ancla m=250 IP, prior por Era/rol/tiempo de juego y Descuento Pionero...")
     df = df.copy()
 
     ip_k = df["peak_ip"].fillna(df["career_ip"]).fillna(0)
@@ -861,16 +900,41 @@ def paso_8_atributos_raw(df):
     # Suavizado bayesiano calibrado: m = 250.0 IP (equivalente a 1 temporada completa de as abridor)
     m_ip = 250.0
 
-    # Prior de HR/9 contextual según Era para evitar castigar pitchers del Deadball/Genesis:
-    era_str = df["era_label"].fillna("")
-    is_dead_or_gen = era_str.str.contains("Genesis|Deadball", case=False, na=False)
-    is_gold = era_str.str.contains("Golden", case=False, na=False)
-    hr_prior = np.where(is_dead_or_gen, 0.20, np.where(is_gold, 0.45, 0.90))
+    # ── Prior individual por Era + rol + tiempo de juego ─────────────────────────
+    # La Era usa la misma sub-division de Genesis que la normalizacion (distancia del monticulo).
+    era_key = df["era_label"].fillna("").copy()
+    is_genesis = era_key.str.contains("Genesis", case=False, na=False)
+    if "peak_year" in df.columns:
+        era_key.loc[is_genesis & (df["peak_year"] <= 1892)] = "Genesis (45-50ft)"
+        era_key.loc[is_genesis & (df["peak_year"] >= 1893)] = "Genesis (60ft)"
+    role = df["role"].fillna("SP") if "role" in df.columns else pd.Series("SP", index=df.index)
+    lg = df["league_group"].fillna("MLB") if "league_group" in df.columns else pd.Series("MLB", index=df.index)
+    group_key = era_key + " | " + role
 
-    df["h9_raw"]  = (h_k_adj  + m_ip * (8.5 / 9.0)) / (ip_k + m_ip) * 9.0
-    df["k9_raw"]  = (so_k_adj + m_ip * (5.5 / 9.0)) / (ip_k + m_ip) * 9.0
-    df["bb9_raw"] = (bb_k     + m_ip * (3.2 / 9.0)) / (ip_k + m_ip) * 9.0
-    df["hr9_raw"] = (hr_k     + m_ip * (hr_prior / 9.0)) / (ip_k + m_ip) * 9.0
+    # share: IP por temporada del pico relativo a un pitcher de tiempo completo (percentil 90)
+    # de su misma Era, rol y liga. Agrupar por liga y rol evita tratar como "suplente" a un
+    # cerrador o a un as de Ligas Negras, que lanzan menos entradas por diseño o calendario.
+    n_seasons = df["total_seasons_in_peak"].fillna(1).clip(lower=1) if "total_seasons_in_peak" in df.columns else pd.Series(PEAK_SEASONS, index=df.index)
+    ip_per_season = ip_k / n_seasons
+    full_time_ip = ip_per_season.groupby([era_key, role, lg]).transform(lambda v: v.quantile(0.90))
+    share = (ip_per_season / full_time_ip.replace(0, np.nan)).clip(0.0, 1.0).fillna(0.0)
+    df["playing_time_share"] = share.round(3)
+
+    ip_nz = ip_k.replace(0, np.nan)
+    prior_h  = _prior_por_grupo_y_tiempo_de_juego(h_k_adj  / ip_nz, ip_k, group_key, share, era_key)
+    prior_so = _prior_por_grupo_y_tiempo_de_juego(so_k_adj / ip_nz, ip_k, group_key, share, era_key)
+    prior_bb = _prior_por_grupo_y_tiempo_de_juego(bb_k     / ip_nz, ip_k, group_key, share, era_key)
+    prior_hr = _prior_por_grupo_y_tiempo_de_juego(hr_k     / ip_nz, ip_k, group_key, share, era_key)
+    df["prior_k9"] = (prior_so * 9.0).round(2)
+
+    df["h9_raw"]  = (h_k_adj  + m_ip * prior_h)  / (ip_k + m_ip) * 9.0
+    df["k9_raw"]  = (so_k_adj + m_ip * prior_so) / (ip_k + m_ip) * 9.0
+    df["bb9_raw"] = (bb_k     + m_ip * prior_bb) / (ip_k + m_ip) * 9.0
+    df["hr9_raw"] = (hr_k     + m_ip * prior_hr) / (ip_k + m_ip) * 9.0
+
+    print("  Prior de K/9 por Era y rol (media del grupo):")
+    for g_, v_ in df.groupby(group_key)["prior_k9"].mean().items():
+        print(f"    {g_:42s} {v_:5.2f}")
 
     # Factor de expansion de calendario para NLB:
     # 2.0x para ligas NLB oficiales (1920-1948, temporadas de 70-80 juegos vs 154 MLB)
@@ -889,7 +953,14 @@ def paso_8_atributos_raw(df):
     denom_lob = h_k + bb_k + hbp_k - 1.4 * hr_k
     num_lob   = h_k + bb_k + hbp_k - er_k
     m_lob     = 150.0
-    lob_smooth = ((num_lob + m_lob * 0.720) / (denom_lob + m_lob)).clip(0.55, 0.90)
+    # Mismo esquema que las tasas: prior individual por Era, rol y tiempo de juego en vez de 0.720 global.
+    denom_pos = denom_lob.where(denom_lob > 0)
+    prior_lob = _prior_por_grupo_y_tiempo_de_juego(num_lob / denom_pos, denom_lob.clip(lower=0), group_key, share, era_key)
+    df["prior_lob"] = prior_lob.round(4)
+    print("  Prior de LOB% por Era y rol (media del grupo):")
+    for g_, v_ in df.groupby(group_key)["prior_lob"].mean().items():
+        print(f"    {g_:42s} {v_:.3f}")
+    lob_smooth = ((num_lob + m_lob * prior_lob) / (denom_lob + m_lob)).clip(0.55, 0.90)
     li_mod    = (li_k - 1.0).clip(-0.5, 1.5) * 6.0
     df["clt_raw"] = lob_smooth * 100.0 + li_mod
     df["clu_raw"] = df["clt_raw"]
