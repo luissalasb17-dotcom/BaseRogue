@@ -1167,6 +1167,19 @@ def paso_12_normalizar_por_era(df):
         era_groups.append(_calc_kavoid_norm(grp.copy()))
     df = pd.concat(era_groups, ignore_index=True)
 
+    # Todo rating debe tener cartas en el maximo (125). La tasa de ponches no puede bajar de 0,
+    # asi que por encima del percentil 98 de cada era casi no queda recorrido y los mejores se
+    # apretaban entre 99 y 111 (ninguno en 125, el tope era Luis Arraez con 118). Se estira solo
+    # ese tramo, hasta que el KAVD_TOP_N-esimo mejor llegue a 125 (los demas ratings tienen
+    # unas 20 cartas en el tope). Por debajo de 99 no se toca nada.
+    KAVD_TOP_ANCHOR, KAVD_TOP_N = 99.0, 20
+    kavd = df["k_avoid_val"].astype(float)
+    top_ref = float(kavd.nlargest(KAVD_TOP_N).iloc[-1])
+    if KAVD_TOP_ANCHOR < top_ref < 125.0:
+        hi = kavd > KAVD_TOP_ANCHOR
+        kavd[hi] = KAVD_TOP_ANCHOR + (kavd[hi] - KAVD_TOP_ANCHOR) * (125.0 - KAVD_TOP_ANCHOR) / (top_ref - KAVD_TOP_ANCHOR)
+        df["k_avoid_val"] = kavd.clip(1.0, 125.0).round(1)
+
     print("  contact_val (100% BA), power_val, eye_val, k_avoid_val normalizados con ajuste OPS+")
     return df
 

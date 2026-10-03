@@ -108,25 +108,37 @@ def normalize_series(s, low=1.0, high=105.0):
     return rating.clip(upper=125.0)
 
 
-def normalize_difficulty_adjusted(df, col_raw, col_out, invert=False, era_col="era_label"):
+def era_adjusted(df, col_raw, era_col="era_label", role_col=None, blend=0.75):
     """
-    Mismo ajuste OPS+ que bateadores:
-      blended_factor = 1 + 0.75 * (global_mean / era_mean - 1)
-      adjusted = raw * blended_factor
-      out = normalize_series(adjusted, 1, 99)
+    Lleva la tasa de cada pitcher hacia una referencia comun, quitando `blend` de la diferencia
+    entre la media de su grupo y esa referencia:
+      factor = 1 + blend * (referencia / media_del_grupo - 1)
+    Sin role_col el grupo es la Era y la referencia la media global (todos contra todos).
+    Con role_col el grupo es Era + rol y la referencia la media historica de ese rol: abridores
+    contra abridores y relevistas contra relevistas, sin borrar la diferencia natural entre roles.
+    """
+    raw = df[col_raw]
+    use_era = era_col if era_col in df.columns else "era_label"
+    if role_col and role_col in df.columns:
+        role = df[role_col].fillna("SP")
+        group = df[use_era].astype(str) + " | " + role
+        reference = raw.groupby(role).transform("mean")
+    else:
+        group = df[use_era]
+        reference = raw.mean()
+    group_means = raw.groupby(group).transform("mean").replace(0, np.nan)
+    return raw * (1.0 + blend * (reference / group_means - 1.0)).fillna(1.0)
+
+
+def normalize_difficulty_adjusted(df, col_raw, col_out, invert=False, era_col="era_label", role_col=None):
+    """
+    Mismo ajuste OPS+ que bateadores (75% de la diferencia de era), ver era_adjusted:
+      out = normalize_series(adjusted, 1, 105) recortado a 1-125
     Si invert=True el mejor es el MENOR valor (e.g. BB/9, HR/9).
     """
-    s = df[col_raw].copy()
+    adjusted = era_adjusted(df, col_raw, era_col=era_col, role_col=role_col, blend=0.75)
     if invert:
-        s = -s  # invertir para que menor sea mejor
-    global_mean = s.mean()
-    use_era = era_col if era_col in df.columns else "era_label"
-    era_means = df.groupby(use_era)[col_raw].transform("mean")
-    if invert:
-        era_means = -era_means
-    diff_factor   = global_mean / era_means.replace(0, 1)
-    blended_factor = 1.0 + 0.75 * (diff_factor - 1.0)
-    adjusted = s * blended_factor
+        adjusted = -adjusted  # invertir para que menor sea mejor
     df[col_out] = (
         normalize_series(adjusted)
         .clip(1, 125)
@@ -988,11 +1000,16 @@ def paso_10_normalizar_por_era(df):
     df.loc[is_genesis & (df["peak_year"] <= 1892), "norm_era"] = "The Genesis Era (1871-1892, 45-50ft)"
     df.loc[is_genesis & (df["peak_year"] >= 1893), "norm_era"] = "The Genesis Era (1893-1900, 60ft)"
 
-    df = normalize_difficulty_adjusted(df, "h9_raw",  "h9_val",  invert=True,  era_col="norm_era")
-    df = normalize_difficulty_adjusted(df, "k9_raw",  "k9_val",  invert=False, era_col="norm_era")
-    df = normalize_difficulty_adjusted(df, "bb9_raw", "bb9_val", invert=True,  era_col="norm_era")
-    df = normalize_difficulty_adjusted(df, "hr9_raw", "hr9_val", invert=True,  era_col="norm_era")
-    df = normalize_difficulty_adjusted(df, "clt_raw", "clt_val", invert=False, era_col="norm_era")
+    # Tasas: cada pitcher contra los de su Era y su rol (abridores con abridores, relevistas con
+    # relevistas). Comparar contra toda la Era hundia a los abridores modernos, porque mas de la
+    # mitad de las cartas modernas son relevistas (menos hits y mas ponches por entrada) y eso
+    # subia la vara; Genesis y Deadball quedaban con el triple del cupo de Legendary.
+    role_col = "role" if "role" in df.columns else None
+    df = normalize_difficulty_adjusted(df, "h9_raw",  "h9_val",  invert=True,  era_col="norm_era", role_col=role_col)
+    df = normalize_difficulty_adjusted(df, "k9_raw",  "k9_val",  invert=False, era_col="norm_era", role_col=role_col)
+    df = normalize_difficulty_adjusted(df, "bb9_raw", "bb9_val", invert=True,  era_col="norm_era", role_col=role_col)
+    df = normalize_difficulty_adjusted(df, "hr9_raw", "hr9_val", invert=True,  era_col="norm_era", role_col=role_col)
+    df = normalize_difficulty_adjusted(df, "clt_raw", "clt_val", invert=False, era_col="norm_era", role_col=role_col)
     df["clu_val"] = df["clt_val"]
 
     # Stamina calibrada según IP anuales promedio reales (escala 1.0 a 125.0):
@@ -1014,15 +1031,40 @@ def paso_10_normalizar_por_era(df):
         else:
             return 110.0 + min(15.0, ((val - 290.0) / 100.0) * 15.0)
 
-    df["sta_val"] = df["ip_per_year_raw"].apply(map_ip_to_sta).round(1).clip(1.0, 125.0)
+    # Stamina: entradas por año ajustadas por Era al 50% (no al 75% de las tasas), contra toda la
+    # Era sin separar por rol. Es un solo valor: el que muestra la carta y el que usa el juego.
+    # Al 75% un abridor moderno (Cole) quedaba por encima de Walter Johnson; al 50% el que lanzo
+    # 400 entradas sigue claramente arriba del que lanzo 220, pero ya no por una escala fija que
+    # dejaba a Genesis y Deadball con el triple del cupo de Legendary.
+    STA_ERA_BLEND = 0.50
+    sta_ip = era_adjusted(df, "ip_per_year_raw", era_col="norm_era", role_col=None, blend=STA_ERA_BLEND)
+    df["sta_val"] = sta_ip.apply(map_ip_to_sta).round(1).clip(1.0, 125.0)
 
     # Suavizado Bayesiano Suave (m=1) para muestras cortas de temporadas en el pico (n < 7)
     n_peak = df["total_seasons_in_peak"].fillna(7).clip(lower=1, upper=7)
     weight_seasons = np.minimum(1.0, (n_peak / (n_peak + 1.0)) * (8.0 / 7.0))
-    era_cols = ["h9_val", "k9_val", "bb9_val", "hr9_val", "sta_val", "clt_val"]
-    for col in era_cols:
-        era_mean = df.groupby("norm_era")[col].transform("mean")
-        df[col] = (weight_seasons * df[col] + (1.0 - weight_seasons) * era_mean).round(1)
+    rate_group = (df["norm_era"].astype(str) + " | " + df[role_col].fillna("SP")) if role_col else df["norm_era"]
+    for col in ["h9_val", "k9_val", "bb9_val", "hr9_val", "clt_val"]:
+        group_mean = df.groupby(rate_group)[col].transform("mean")
+        df[col] = (weight_seasons * df[col] + (1.0 - weight_seasons) * group_mean).round(1)
+    era_mean = df.groupby("norm_era")["sta_val"].transform("mean")
+    df["sta_val"] = (weight_seasons * df["sta_val"] + (1.0 - weight_seasons) * era_mean).round(1)
+
+    # Todo rating debe tener cartas en el maximo (125) y en el minimo (1). El ajuste por Era baja
+    # a los caballos de Genesis y deja el tope vacio, asi que se estiran solo los extremos: por
+    # arriba de STA_TOP_ANCHOR hasta que la STA_TOP_N-esima mejor llegue a 125, y por debajo de
+    # STA_LOW_ANCHOR hasta que la peor llegue a 1. El medio no se toca.
+    STA_TOP_ANCHOR, STA_TOP_N, STA_LOW_ANCHOR = 100.0, 10, 25.0
+    sta = df["sta_val"].astype(float)
+    top_ref = float(sta.nlargest(STA_TOP_N).iloc[-1])
+    if STA_TOP_ANCHOR < top_ref < 125.0:
+        hi = sta > STA_TOP_ANCHOR
+        sta[hi] = STA_TOP_ANCHOR + (sta[hi] - STA_TOP_ANCHOR) * (125.0 - STA_TOP_ANCHOR) / (top_ref - STA_TOP_ANCHOR)
+    low_ref = float(sta.min())
+    if 1.0 < low_ref < STA_LOW_ANCHOR:
+        lo = sta < STA_LOW_ANCHOR
+        sta[lo] = 1.0 + (sta[lo] - low_ref) * (STA_LOW_ANCHOR - 1.0) / (STA_LOW_ANCHOR - low_ref)
+    df["sta_val"] = sta.clip(1.0, 125.0).round(1)
     df["clu_val"] = df["clt_val"]
 
     print("  h9_val, k9_val, bb9_val, hr9_val, sta_val, clt_val normalizados por Era (MLB The Show Suite)")
