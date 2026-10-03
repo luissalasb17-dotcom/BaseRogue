@@ -875,11 +875,10 @@ def paso_8_atributos_raw(df):
     """
     H9_raw, K9_raw, BB9_raw, HR9_raw: tasas por 9 IP con suavizado bayesiano de ancla unica
     m = 250 IP (1 temporada de as abridor, fija para todas las tasas y ligas), regresadas hacia
-    un prior individual por Era, rol (SP/RP) y tiempo de juego. H y K llevan ademas el ajuste
-    por oposición semipro.
+    un prior individual por Era, rol (SP/RP) y tiempo de juego.
     STA_raw: IP por salida
     """
-    print("\n  PASO 8: Atributos RAW de pitching con Ancla m=250 IP, prior por Era/rol/tiempo de juego y Descuento Pionero...")
+    print("\n  PASO 8: Atributos RAW de pitching con Ancla m=250 IP y prior por Era/rol/tiempo de juego...")
     df = df.copy()
 
     ip_k = df["peak_ip"].fillna(df["career_ip"]).fillna(0)
@@ -888,14 +887,11 @@ def paso_8_atributos_raw(df):
     bb_k = df["peak_bb"].fillna(0)
     hr_k = df["peak_hr_a"].fillna(0)
 
-    # Descuento de Competencia Independiente para Pitchers:
+    # Fraccion de IP en circuitos pioneros independientes: solo se usa para el calendario de Stamina.
     unoff_ip = (df["unoff_ipouts"].fillna(0) / 3.0) if "unoff_ipouts" in df.columns else pd.Series(0, index=df.index)
     career_ip_safe = df["career_ip"].replace(0, np.nan).fillna(1.0)
     f_unoff = (unoff_ip / career_ip_safe).clip(0.0, 1.0)
 
-    # Ajuste: se incrementan los hits (+18%) y se reducen los ponches (-20%) frente a bateadores locales
-    h_k_adj  = h_k * (1.0 + 0.18 * f_unoff)
-    so_k_adj = so_k * (1.0 - 0.20 * f_unoff)
 
     # Suavizado bayesiano calibrado: m = 250.0 IP (equivalente a 1 temporada completa de as abridor)
     m_ip = 250.0
@@ -921,14 +917,14 @@ def paso_8_atributos_raw(df):
     df["playing_time_share"] = share.round(3)
 
     ip_nz = ip_k.replace(0, np.nan)
-    prior_h  = _prior_por_grupo_y_tiempo_de_juego(h_k_adj  / ip_nz, ip_k, group_key, share, era_key)
-    prior_so = _prior_por_grupo_y_tiempo_de_juego(so_k_adj / ip_nz, ip_k, group_key, share, era_key)
+    prior_h  = _prior_por_grupo_y_tiempo_de_juego(h_k  / ip_nz, ip_k, group_key, share, era_key)
+    prior_so = _prior_por_grupo_y_tiempo_de_juego(so_k / ip_nz, ip_k, group_key, share, era_key)
     prior_bb = _prior_por_grupo_y_tiempo_de_juego(bb_k     / ip_nz, ip_k, group_key, share, era_key)
     prior_hr = _prior_por_grupo_y_tiempo_de_juego(hr_k     / ip_nz, ip_k, group_key, share, era_key)
     df["prior_k9"] = (prior_so * 9.0).round(2)
 
-    df["h9_raw"]  = (h_k_adj  + m_ip * prior_h)  / (ip_k + m_ip) * 9.0
-    df["k9_raw"]  = (so_k_adj + m_ip * prior_so) / (ip_k + m_ip) * 9.0
+    df["h9_raw"]  = (h_k  + m_ip * prior_h)  / (ip_k + m_ip) * 9.0
+    df["k9_raw"]  = (so_k + m_ip * prior_so) / (ip_k + m_ip) * 9.0
     df["bb9_raw"] = (bb_k     + m_ip * prior_bb) / (ip_k + m_ip) * 9.0
     df["hr9_raw"] = (hr_k     + m_ip * prior_hr) / (ip_k + m_ip) * 9.0
 

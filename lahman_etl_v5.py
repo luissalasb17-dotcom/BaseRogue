@@ -692,18 +692,15 @@ def paso_8_filtro_ingesta(df, allstar, hof, pure_pitcher_ids, batting):
         bat_pa['PA'] = bat_pa['AB'] + bat_pa['BB'] + bat_pa['HBP'] + bat_pa['SF']
 
         nl_pa_df = bat_pa[bat_pa['lgID'].isin(nl_all_leagues)].groupby('playerID')['PA'].sum().reset_index().rename(columns={'PA': 'nlb_pa'})
-        unoff_pa_df = bat_pa[bat_pa['lgID'].isin(nl_pioneer_leagues)].groupby('playerID')['PA'].sum().reset_index().rename(columns={'PA': 'unoff_pa'})
         mlb_pa_df = bat_pa[~bat_pa['lgID'].isin(nl_all_leagues)].groupby('playerID')['PA'].sum().reset_index().rename(columns={'PA': 'mlb_pa'})
         
-        no_pitchers = no_pitchers.merge(nl_pa_df, on='playerID', how='left').merge(mlb_pa_df, on='playerID', how='left').merge(unoff_pa_df, on='playerID', how='left')
+        no_pitchers = no_pitchers.merge(nl_pa_df, on='playerID', how='left').merge(mlb_pa_df, on='playerID', how='left')
         no_pitchers['nlb_pa'] = no_pitchers['nlb_pa'].fillna(0)
         no_pitchers['mlb_pa'] = no_pitchers['mlb_pa'].fillna(0)
-        no_pitchers['unoff_pa'] = no_pitchers['unoff_pa'].fillna(0)
         no_pitchers['league_group'] = np.where(no_pitchers['nlb_pa'] > no_pitchers['mlb_pa'], 'NLB', 'MLB')
     else:
         no_pitchers['league_group'] = 'MLB'
         no_pitchers['nlb_pa'] = 0
-        no_pitchers['unoff_pa'] = 0
         no_pitchers['mlb_pa'] = no_pitchers['career_pa']
 
     # Criterio Unificado de Ingesta para Bateadores:
@@ -728,7 +725,7 @@ def paso_8_filtro_ingesta(df, allstar, hof, pure_pitcher_ids, batting):
     eligible = no_pitchers[mask].copy()
     eligible["is_allstar"] = eligible["playerID"].isin(allstar_ids)
     eligible["is_hof"]     = eligible["playerID"].isin(hof_ids)
-    eligible.drop(columns=["nlb_pa", "mlb_pa", "unoff_pa"], errors="ignore", inplace=True)
+    eligible.drop(columns=["nlb_pa", "mlb_pa"], errors="ignore", inplace=True)
 
     if not allstar.empty:
         as_count = allstar.groupby("playerID").size().reset_index(name="allstar_selections")
@@ -927,14 +924,14 @@ def paso_10_atributos_raw_bateo(df):
 
     CON = 0.80 * BA_Suavizado + 0.20 * (1 - k_rate_Final)
          Suavizado Bayesiano (m = 540 AB / 1 temporada) hacia un prior individual por Era y
-         tiempo de juego, con descuento por oposición independiente.
+         tiempo de juego.
 
     PWR = 0.50 * ISO_Final + 0.30 * XBH_rate_Final + 0.20 * HR_rate_Final
          Poder real de bate en extra-bases con suavizado (m = 600 PA, misma ancla de 1 temporada).
 
     EYE = bb_rate_Final  (100% tasa de boletos - paciencia pura)
     """
-    print("\n  PASO 10: Atributos RAW de bateo (CON, PWR, EYE) con ancla de 1 temporada, prior por Era y tiempo de juego, y Descuento Pionero...")
+    print("\n  PASO 10: Atributos RAW de bateo (CON, PWR, EYE) con ancla de 1 temporada y prior por Era y tiempo de juego...")
     df = df.copy()
 
     # Bayesian sample-size smoothing (m = 540 AB = 600 PA = 1 full season anchor)
@@ -953,15 +950,7 @@ def paso_10_atributos_raw_bateo(df):
     m_pa = 600
     m_ab = 540
 
-    # Descuento de Competencia Independiente (Pioneer Nerf):
-    # Si el jugador jugó en circuitos independientes pre-1920 (IND, EAS, WES, NAC, INT),
-    # sus estadísticas ofensivas se descuentan proporcionalmente hasta un 22% por oposición semipro.
-    unoff_ab = df["unoff_ab"].fillna(0) if "unoff_ab" in df.columns else pd.Series(0, index=df.index)
-    career_ab_safe = df["career_ab"].replace(0, np.nan).fillna(1)
-    f_unoff = (unoff_ab / career_ab_safe).clip(0.0, 1.0)
-    comp_mult = 1.0 - (0.22 * f_unoff)
-
-    h_effective = h * comp_mult
+    h_effective = h
 
     # ── Tiempo de juego relativo (share) ──────────────────────────────────────
     # PA por temporada del pico, relativo a lo que acumula un titular (percentil 90) de la
@@ -978,9 +967,9 @@ def paso_10_atributos_raw_bateo(df):
     pa_nz = pa.replace(0, np.nan)
     era = df["era_label"]
     prior_ba  = _prior_por_era_y_tiempo_de_juego(h_effective / ab_nz, ab, era, share, 0.265)
-    prior_bb  = _prior_por_era_y_tiempo_de_juego(bb * comp_mult / pa_nz, pa, era, share, 0.085)
-    prior_hr  = _prior_por_era_y_tiempo_de_juego(hr * comp_mult / pa_nz, pa, era, share, 0.025)
-    prior_xbh = _prior_por_era_y_tiempo_de_juego((b2 + b3 + hr) * comp_mult / pa_nz, pa, era, share, 0.075)
+    prior_bb  = _prior_por_era_y_tiempo_de_juego(bb / pa_nz, pa, era, share, 0.085)
+    prior_hr  = _prior_por_era_y_tiempo_de_juego(hr / pa_nz, pa, era, share, 0.025)
+    prior_xbh = _prior_por_era_y_tiempo_de_juego((b2 + b3 + hr) / pa_nz, pa, era, share, 0.075)
     df["prior_ba"] = prior_ba.round(4)
 
     df["ba_smoothed"] = (h_effective + m_ab * prior_ba) / (ab + m_ab)
@@ -990,18 +979,18 @@ def paso_10_atributos_raw_bateo(df):
     df["contact_raw"] = df["ba_smoothed"] / era_ba_means.replace(0, 0.260)
 
     # Suavizado Bayesiano de Boletos (EYE)
-    df["eye_raw"] = (bb * comp_mult + m_pa * prior_bb) / (pa + m_pa)
+    df["eye_raw"] = (bb + m_pa * prior_bb) / (pa + m_pa)
 
-    # Bayesian sample-size smoothing for power metrics (same 1-season anchor) con descuento de oposición
-    hr_effective = hr * comp_mult
+    # Bayesian sample-size smoothing for power metrics (same 1-season anchor)
+    hr_effective = hr
     hr_smoothed = (hr_effective + m_pa * prior_hr) / (pa + m_pa)
-    tb_total = h_effective + (b2 * comp_mult) + 2*(b3 * comp_mult) + 3*hr_effective
+    tb_total = h_effective + (b2) + 2*(b3) + 3*hr_effective
     slg = np.where(ab > 0, tb_total / ab, 0)
     iso_raw = np.where(ab > 0, slg - (h_effective / ab), 0)
     prior_iso = _prior_por_era_y_tiempo_de_juego(pd.Series(iso_raw, index=df.index).where(ab > 0), pa, era, share, 0.140)
     iso_smoothed = (iso_raw * pa + m_pa * prior_iso) / (pa + m_pa)
     df["iso_smoothed"] = iso_smoothed
-    xbh_smoothed = ((b2 + b3 + hr) * comp_mult + m_pa * prior_xbh) / (pa + m_pa)
+    xbh_smoothed = ((b2 + b3 + hr) + m_pa * prior_xbh) / (pa + m_pa)
 
     df["power_raw"] = (
         hr_smoothed  * 0.45 +
@@ -1040,7 +1029,7 @@ def paso_10_atributos_raw_bateo(df):
         lo_ = g_.loc[g_["playing_time_share"] <= 0.4, "prior_ba"].mean()
         hi_ = g_.loc[g_["playing_time_share"] >= 0.9, "prior_ba"].mean()
         print(f"    {e_:30s} {lo_:.3f} / {hi_:.3f}")
-    print("  contact_raw, power_raw, eye_raw con descuento de competencia pionera y K% sabermetrico aplicados")
+    print("  contact_raw, power_raw, eye_raw con K% sabermetrico aplicado")
     return df
 
 
