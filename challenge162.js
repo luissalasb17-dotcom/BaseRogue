@@ -395,13 +395,20 @@
     return order;
   }
 
-  function buildFranchiseDecadeTeam(code, decade) {
+  // A real person's identity across both pools (a two-way player is one person).
+  function personId(p) {
+    return (p && (p.playerID || cleanName(p))) || '';
+  }
+
+  // `taken` (optional): people already on another roster of the same league. Picks skip
+  // them and are added to it, so no player shows up on two teams.
+  function buildFranchiseDecadeTeam(code, decade, taken) {
     const franchiseNames = (window.PlayersDB && window.PlayersDB.FranchiseNames) || {};
     const batterHistory = (window.PlayerTeamHistory && window.PlayerTeamHistory.batters) || {};
     const pitcherHistory = (window.PlayerTeamHistory && window.PlayerTeamHistory.pitchers) || {};
     const fullBatterPool = getBatterPool();
     const fullPitcherPool = getPitcherPool();
-    const usedIDs = new Set();
+    const usedIDs = taken || new Set();
 
     const eligibleBatters = radius => fullBatterPool.filter(p => isEligibleForTeamDecade(p, batterHistory, code, decade, radius));
     const eligiblePitchers = radius => fullPitcherPool.filter(p => isEligibleForTeamDecade(p, pitcherHistory, code, decade, radius));
@@ -476,15 +483,18 @@
     const lineup = optimizeLineupArray(rawLineup);
 
     const pickPitcher = (role) => {
+      const free = p => !usedIDs.has(personId(p)) && (p.role || 'SP').toUpperCase() === role;
+      let pick;
       for (const radius of WINDOW_RADII) {
-        const bucket = eligiblePitchers(radius)
-          .filter(p => (p.role || 'SP').toUpperCase() === role)
-          .sort((a, b) => (b.ovr || 0) - (a.ovr || 0));
-        if (bucket.length) return weightedTopPick(bucket);
+        const bucket = eligiblePitchers(radius).filter(free).sort((a, b) => (b.ovr || 0) - (a.ovr || 0));
+        if (bucket.length) { pick = weightedTopPick(bucket); break; }
       }
-      const globalBucket = fullPitcherPool.filter(p => (p.role || 'SP').toUpperCase() === role)
-        .sort((a, b) => (b.ovr || 0) - (a.ovr || 0));
-      return globalBucket.length ? weightedTopPick(globalBucket) : undefined;
+      if (!pick) {
+        const globalBucket = fullPitcherPool.filter(free).sort((a, b) => (b.ovr || 0) - (a.ovr || 0));
+        pick = globalBucket.length ? weightedTopPick(globalBucket) : undefined;
+      }
+      if (pick) usedIDs.add(personId(pick));
+      return pick;
     };
     const sp = pickPitcher('SP');
     const rp = pickPitcher('RP');
@@ -498,8 +508,167 @@
     };
   }
 
+  // Full pitching staff for a franchise-decade: 5 starters + 6 relievers (closer, setup,
+  // 4 middle, same as the user's packs bullpen), all real pitchers who played for that franchise near that decade. The
+  // existing ace (team.pitcher) and reliever (team.reliever) stay as SP1 and the setup man.
+  // `taken` works as in buildFranchiseDecadeTeam (league-wide uniqueness).
+  function buildFranchiseStaff(code, decade, team, taken) {
+    const history = (window.PlayerTeamHistory && window.PlayerTeamHistory.pitchers) || {};
+    const pool = getPitcherPool();
+    const used = new Set();
+    const keyOf = p => pitcherUnlockKey(p);
+    const isFree = p => !used.has(keyOf(p)) && !(taken && taken.has(personId(p)));
+    const claim = p => { used.add(keyOf(p)); if (taken) taken.add(personId(p)); };
+    const take = (role, count) => {
+      const out = [];
+      for (const radius of WINDOW_RADII) {
+        if (out.length >= count) break;
+        const bucket = pool
+          .filter(p => (p.role || 'SP').toUpperCase() === role && isFree(p) && isEligibleForTeamDecade(p, history, code, decade, radius))
+          .sort((a, b) => (b.ovr || 0) - (a.ovr || 0));
+        while (out.length < count && bucket.length) {
+          const pick = weightedTopPick(bucket);
+          bucket.splice(bucket.indexOf(pick), 1);
+          claim(pick);
+          out.push(pick);
+        }
+      }
+      return out;
+    };
+    // Seed with the pitchers the team already shows, so the ace you scout is still SP1.
+    const aceRaw = pool.find(p => keyOf(p) === keyOf(team.pitcher));
+    const relRaw = pool.find(p => keyOf(p) === keyOf(team.reliever));
+    if (aceRaw) used.add(keyOf(aceRaw));
+    if (relRaw) used.add(keyOf(relRaw));
+    const starters = [...(aceRaw ? [aceRaw] : []), ...take('SP', aceRaw ? 4 : 5)];
+    const relievers = [...(relRaw ? [relRaw] : []), ...take('RP', relRaw ? 5 : 6)];
+    while (starters.length < 5 && relievers.length > 6) starters.push(relievers.pop());
+    const rotation = starters.slice(0, 5).map(p => buildEnemyPitcherObj(p, 'SP'));
+    const pen = relievers.slice(0, 6).map(p => buildEnemyPitcherObj(p, 'RP'))
+      .sort((a, b) => (b.ovr || 0) - (a.ovr || 0));
+    if (pen[0]) pen[0].role = 'CL';
+    if (pen[1]) pen[1].role = 'SETUP';
+    return { rotation: rotation.length ? rotation : [team.pitcher], bullpen: pen.length ? pen : [team.reliever] };
+  }
+
+  const _staffCache = new Map();
+  function getFranchiseStaff(code, decade) {
+    const cacheKey = `${code}_${decade}`;
+    const reg = _leagueRosterRegistry.get(cacheKey);
+    if (reg) return reg.staff;
+    if (_staffCache.has(cacheKey)) return _staffCache.get(cacheKey);
+    const staff = buildFranchiseStaff(code, decade, getFranchiseDecadeTeam(code, decade), null);
+    _staffCache.set(cacheKey, staff);
+    return staff;
+  }
+
+  // Five bench bats for a franchise-decade, so every club carries 25 (9 + 5 bench + 5 SP + 6 RP):
+  // a backup catcher first, then a middle infielder and an outfielder when the franchise has
+  // them, then the best bats left. Same eligibility windows as the starting lineup.
+  const BENCH_SIZE = 5;
+  const ROSTER_RP = 6;
+  function buildFranchiseBench(code, decade, team, taken) {
+    const history = (window.PlayerTeamHistory && window.PlayerTeamHistory.batters) || {};
+    const pool = getBatterPool();
+    const used = taken || new Set(team.lineup.map(p => p.playerID));
+    const bench = [];
+    const pick = (fits) => {
+      for (const radius of WINDOW_RADII) {
+        const bucket = pool
+          .filter(p => !used.has(personId(p)) && fits(p) && isEligibleForTeamDecade(p, history, code, decade, radius))
+          .sort((a, b) => (b.ovr || 0) - (a.ovr || 0));
+        if (bucket.length) {
+          const p = weightedTopPick(bucket);
+          used.add(personId(p));
+          bench.push(p);
+          return true;
+        }
+      }
+      return false;
+    };
+    pick(p => canPlayerFillSlot(p, 'C'));
+    pick(p => canPlayerFillSlot(p, 'SS') || canPlayerFillSlot(p, '2B'));
+    pick(p => canPlayerFillSlot(p, 'CF') || canPlayerFillSlot(p, 'LF') || canPlayerFillSlot(p, 'RF'));
+    while (bench.length < BENCH_SIZE && pick(() => true)) { /* best remaining bats */ }
+    return bench;
+  }
+
+  const _benchCache = new Map();
+  function getFranchiseBench(code, decade) {
+    const cacheKey = `${code}_${decade}`;
+    const reg = _leagueRosterRegistry.get(cacheKey);
+    if (reg) return reg.bench;
+    if (_benchCache.has(cacheKey)) return _benchCache.get(cacheKey);
+    const bench = buildFranchiseBench(code, decade, getFranchiseDecadeTeam(code, decade), null);
+    _benchCache.set(cacheKey, bench);
+    return bench;
+  }
+
+  // ── League rosters: built once per league, unique across it, saved with the season ──
+  // Every rival's 25 is rolled when the league is created, skipping anyone already on
+  // another roster (the user's cards first), and stored as card keys in league.rosters so
+  // the same players come back after a reload. _leagueRosterRegistry holds the hydrated
+  // rosters of the active league; the getters above read from it first.
+  const _leagueRosterRegistry = new Map();
+  let _poolIndex = null;
+  function poolIndex() {
+    if (!_poolIndex) {
+      _poolIndex = { bat: new Map(), pit: new Map() };
+      getBatterPool().forEach(p => _poolIndex.bat.set(batterUnlockKey(p), p));
+      getPitcherPool().forEach(p => _poolIndex.pit.set(pitcherUnlockKey(p), p));
+    }
+    return _poolIndex;
+  }
+
+  function buildLeagueRosters(teams, userCards) {
+    const taken = new Set((userCards || []).filter(Boolean).map(personId));
+    const out = {};
+    // Shuffled so no franchise always gets first claim on a shared star.
+    seededShuffle(Object.keys(teams).filter(id => !teams[id].isUser), Math.random).forEach(id => {
+      const t = teams[id];
+      const team = buildFranchiseDecadeTeam(t.code, t.decade, taken);
+      const staff = buildFranchiseStaff(t.code, t.decade, team, taken);
+      const bench = buildFranchiseBench(t.code, t.decade, team, taken);
+      out[id] = {
+        lineup: team.lineup.map(p => [batterUnlockKey(p), p.assignedSlot]),
+        bench: bench.map(batterUnlockKey),
+        rotation: staff.rotation.map(pitcherUnlockKey),
+        bullpen: staff.bullpen.map(p => [pitcherUnlockKey(p), p.role])
+      };
+    });
+    return out;
+  }
+
+  // Loads league.rosters into the registry (missing cards are skipped).
+  function registerLeagueRosters(league) {
+    _leagueRosterRegistry.clear();
+    if (!league || !league.rosters) return;
+    const idx = poolIndex();
+    const franchiseNames = (window.PlayersDB && window.PlayersDB.FranchiseNames) || {};
+    Object.entries(league.rosters).forEach(([id, r]) => {
+      const t = league.teams[id];
+      if (!t) return;
+      const lineup = r.lineup.map(([k, slot]) => idx.bat.get(k) && ({ ...idx.bat.get(k), assignedSlot: slot })).filter(Boolean);
+      const rotation = r.rotation.map(k => idx.pit.get(k)).filter(Boolean).map(p => buildEnemyPitcherObj(p, 'SP'));
+      const bullpen = r.bullpen.map(([k, role]) => idx.pit.get(k) && { ...buildEnemyPitcherObj(idx.pit.get(k), 'RP'), role }).filter(Boolean);
+      if (lineup.length < 9 || !rotation.length || !bullpen.length) return;
+      const setup = bullpen.find(p => p.role === 'SETUP') || bullpen[0];
+      const team = {
+        code: t.code, decade: t.decade,
+        name: `${t.decade}s ${franchiseNames[t.code] || t.code}`,
+        lineup, pitcher: rotation[0], reliever: { ...setup, role: 'RP', pos: 'RP' }
+      };
+      _leagueRosterRegistry.set(`${t.code}_${t.decade}`, {
+        team, staff: { rotation, bullpen },
+        bench: r.bench.map(k => idx.bat.get(k)).filter(Boolean)
+      });
+    });
+  }
+
   function getFranchiseDecadeTeam(code, decade) {
     const key = `${code}_${decade}`;
+    const reg = _leagueRosterRegistry.get(key);
+    if (reg) return reg.team;
     if (_teamDecadeCache.has(key)) return _teamDecadeCache.get(key);
     const team = buildFranchiseDecadeTeam(code, decade);
     _teamDecadeCache.set(key, team);
@@ -570,18 +739,24 @@
   // Round 0 (Divisional): 3rd-strongest franchise (Ace SP + Playoff Bullpen)
   // Round 1 (Championship): 2nd-strongest franchise (Elite Cy Young Ace + Setup + Closer)
   // Round 2 (World Series): #1 ABSOLUTE STRONGEST FRANCHISE (Legendary Ace SP + Lockdown Closer)
-  function generatePlayoffEnemyTeam(round, leagueTeams) {
+  // With the real league, `opponentRef` is whoever the bracket paired the user with;
+  // without one (legacy state), the opponent falls back to the strength ranking.
+  function generatePlayoffEnemyTeam(round, leagueTeams, opponentRef) {
     const cfg = PLAYOFF_ROUNDS[round];
-    const ranked = (leagueTeams || [])
-      .map(t => {
-        const team = getFranchiseDecadeTeam(t.code, t.decade);
-        return { t, team, strength: teamStrength(team.lineup, team.pitcher) };
-      })
-      .sort((a, b) => b.strength - a.strength);
-
-    // Round 0 -> 3rd best, round 1 -> 2nd best, round 2 (World Series) -> absolute #1 team in the league.
-    const pickIndex = Math.min(ranked.length - 1, Math.max(0, (PLAYOFF_ROUNDS.length - 1) - round));
-    const chosen = ranked[pickIndex] || ranked[0];
+    let chosen;
+    if (opponentRef && opponentRef.code) {
+      chosen = { t: opponentRef, team: getFranchiseDecadeTeam(opponentRef.code, opponentRef.decade) };
+    } else {
+      const ranked = (leagueTeams || [])
+        .map(t => {
+          const team = getFranchiseDecadeTeam(t.code, t.decade);
+          return { t, team, strength: teamStrength(team.lineup, team.pitcher) };
+        })
+        .sort((a, b) => b.strength - a.strength);
+      // Round 0 -> 3rd best, round 1 -> 2nd best, round 2 (World Series) -> absolute #1 team in the league.
+      const pickIndex = Math.min(ranked.length - 1, Math.max(0, (PLAYOFF_ROUNDS.length - 1) - round));
+      chosen = ranked[pickIndex] || ranked[0];
+    }
     const franchiseTeam = chosen.team;
 
     // Playoff intensity calibration: Sharper pitching & defense for competitive postseason duels
@@ -622,7 +797,10 @@
     const sp = boostPitcher(franchiseTeam.pitcher, 'SP', targetSpOvr);
     const setup = boostPitcher(franchiseTeam.reliever, 'RP', targetRpOvr);
     const excludeKeys = [pitcherUnlockKey(franchiseTeam.pitcher), pitcherUnlockKey(franchiseTeam.reliever)].filter(Boolean);
-    const closerObj = _pickSecondFranchisePitcher(chosen.t.code, chosen.t.decade, excludeKeys, 'RP') || franchiseTeam.reliever;
+    // In a real league the closer comes from the team's own bullpen (no borrowed players).
+    const reg = _leagueRosterRegistry.get(`${chosen.t.code}_${chosen.t.decade}`);
+    const regCloser = reg && reg.staff.bullpen.find(p => p.role === 'CL');
+    const closerObj = regCloser || _pickSecondFranchisePitcher(chosen.t.code, chosen.t.decade, excludeKeys, 'RP') || franchiseTeam.reliever;
     const closer = boostPitcher(closerObj, 'CL', targetClOvr);
 
     return {
@@ -714,6 +892,9 @@
   }
 
   // ── PA outcome model, tuned toward realistic MLB rates ────────────────────
+  // Base hit and HR rates for a 50-rated batter vs a 50-rated pitcher.
+  const PA_BASE_AVG = 0.253;
+  const PA_BASE_HR = 0.028;
   function simPaOutcome(batter, pitcher, isUserBatting = true) {
     const con = batter.con !== undefined ? batter.con : 50;
     const eye = batter.eye !== undefined ? batter.eye : 50;
@@ -775,24 +956,18 @@
     const defEfficiency = (pitcher && pitcher._fieldingDef) !== undefined ? pitcher._fieldingDef : 50;
     const defAdj = (defEfficiency - 50) * 0.00028;
 
-    let targetAvg, pHR;
-    if (isUserBatting) {
-      targetAvg = 0.278 + (conEffective - 50) * 0.00180 - (pH9 - 50) * 0.00065 - defAdj;
-      pHR = 0.030 + (pwrEffective - 50) * 0.00095 - (pHR9 - 50) * 0.00030;
-    } else {
-      // Opponent batting vs User pitching: exact golden middle calibration:
-      // Baseline average .244 yields authentic modern 3.25-3.95 team ERAs for good pitchers,
-      // sub-3.00 ERAs only for true legendary aces (Pedro, Johnson, Ryan), and 4.20-4.60 for back-end SPs:
-      targetAvg = 0.244 + (conEffective - 50) * 0.00150 - (pH9 - 50) * 0.00080 - defAdj;
-      pHR = 0.0265 + (pwrEffective - 50) * 0.00082 - (pHR9 - 50) * 0.00035;
-    }
+    // One formula for every batter in the league, the user's and the AI's alike
+    // (it used to give the user's hitters a .278 base vs .244 for everyone else).
+    // isUserBatting is kept in the signature for old callers but no longer matters.
+    let targetAvg = PA_BASE_AVG + (conEffective - 50) * 0.00165 - (pH9 - 50) * 0.00072 - defAdj;
+    let pHR = PA_BASE_HR + (pwrEffective - 50) * 0.00088 - (pHR9 - 50) * 0.00032;
 
     targetAvg = Math.max(0.14, Math.min(0.38, targetAvg));
     let pTotalHit = (1 - pBB) * targetAvg;
     pTotalHit = Math.min(pTotalHit, pInPlay - 0.01);
 
     pHR = Math.max(0.002, Math.min(0.082, pHR));
-    pHR = Math.min(pHR, pTotalHit * (isUserBatting ? 0.44 : 0.36));
+    pHR = Math.min(pHR, pTotalHit * 0.40);
     const pRegularHit = pTotalHit - pHR;
 
     // 3B Triples Distribution:
@@ -1121,6 +1296,327 @@
     return selected;
   }
 
+  // ══════════════════════════════════════════════════════════════════════════
+  // REAL LEAGUE — 32 teams in two leagues (AL / NL, no divisions).
+  // 15 real franchises per league (today's alignment) + the Negro Leagues All-Stars
+  // in one league and the user's team in the other.
+  // Every team plays 162 games: one 16-game slate per day. The user's game is fully
+  // simulated by simulateGame(); the other 15 are resolved with winProbability().
+  // The top 4 of each league make a 3-round single-game bracket:
+  //   R1: 1v4 & 2v3 in each league · R2: league final · R3: World Series.
+  // ══════════════════════════════════════════════════════════════════════════
+  const AL_CODES = ['NYY', 'BOS', 'TOR', 'BAL', 'TB', 'CLE', 'DET', 'CHW', 'MIN', 'KCR', 'HOU', 'TEX', 'LAA', 'SEA', 'OAK'];
+  const NL_CODES = ['NYM', 'PHI', 'ATL', 'WSH', 'MIA', 'CHC', 'STL', 'MIL', 'CIN', 'PIT', 'LAD', 'SFG', 'SDP', 'ARI', 'COL'];
+  const USER_TEAM_ID = 'USER';
+  const NLB_TEAM_ID = 'NLB';
+  const INTERLEAGUE_EVERY = 5;   // every 5th day is an interleague slate
+  const PLAYOFF_SEEDS = 4;
+  const POWER_RANK_EVERY = 7;    // power rankings refresh weekly
+  const MAX_HEADLINES = 40;
+
+  function mulberry32(seed) {
+    let a = seed >>> 0;
+    return function () {
+      a = (a + 0x6D2B79F5) >>> 0;
+      let t = a;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  function seededShuffle(arr, rnd) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(rnd() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  // Leagues follow today's MLB alignment regardless of the rolled decade
+  // (e.g. the Astros are always AL), so both leagues have 15 franchises.
+  function realLeagueOf(code) {
+    return AL_CODES.includes(code) ? 'AL' : 'NL';
+  }
+
+  function otherLeague(lg) { return lg === 'AL' ? 'NL' : 'AL'; }
+
+  // The Negro Leagues All-Stars always take the spot in the league the user didn't pick: 16 and 16.
+  function placeNegroLeagues(league) {
+    league.teams[NLB_TEAM_ID].league = otherLeague(league.teams[USER_TEAM_ID].league);
+  }
+
+  function newTeamRecord(base) {
+    return { ...base, w: 0, l: 0, streak: 0, last10: [] };
+  }
+
+  // decadeByCode lets a migrated save keep the franchise-decades it already faced.
+  // userCards: the user's 25, kept off every rival roster (no player on two teams).
+  function createLeague(userLeague, userStrength, userName, decadeByCode, userCards) {
+    const teams = {};
+    [...AL_CODES, ...NL_CODES, NLB_TEAM_ID].forEach(code => {
+      const decade = (decadeByCode && decadeByCode[code]) || pickWeightedDecade(code);
+      teams[code] = newTeamRecord({ id: code, code, decade, league: code === NLB_TEAM_ID ? null : realLeagueOf(code) });
+    });
+    const rosters = buildLeagueRosters(teams, userCards);
+    registerLeagueRosters({ teams, rosters });
+    Object.values(teams).forEach(t => {
+      const team = getFranchiseDecadeTeam(t.code, t.decade);
+      t.name = team.name;
+      t.strength = Math.round(teamStrength(team.lineup, team.pitcher) * 10) / 10;
+    });
+    teams[USER_TEAM_ID] = newTeamRecord({
+      id: USER_TEAM_ID, code: USER_TEAM_ID, decade: null, league: userLeague,
+      name: userName, strength: Math.round(userStrength * 10) / 10, isUser: true
+    });
+    placeNegroLeagues({ teams });
+    return {
+      v: 1,
+      seed: Math.floor(Math.random() * 2147483647),
+      userLeague,
+      teams,
+      rosters,
+      day: 0,
+      powerRanks: [],   // weekly snapshots: { day, order: [ids] }
+      headlines: [],    // { day, text, kind }
+      leaders: { AL: null, NL: null },
+      clinched: false,
+      eliminated: false
+    };
+  }
+
+  function leagueTeamIds(league, lg) {
+    return Object.keys(league.teams).filter(id => league.teams[id].league === lg).sort();
+  }
+
+  // Deterministic per seed + day, so the slate never has to be stored.
+  function leagueDaySlate(league, day) {
+    const rnd = mulberry32((league.seed + day * 7919) >>> 0);
+    const al = seededShuffle(leagueTeamIds(league, 'AL'), rnd);
+    const nl = seededShuffle(leagueTeamIds(league, 'NL'), rnd);
+    const pairs = [];
+    const pairWithin = arr => { for (let i = 0; i + 1 < arr.length; i += 2) pairs.push([arr[i], arr[i + 1]]); };
+    // Leagues can be uneven (historical alignments). 32 teams is even, so both leagues are
+    // odd or both even; any leftovers are paired across leagues so everyone plays every day.
+    if (day % INTERLEAGUE_EVERY === INTERLEAGUE_EVERY - 1) {
+      const n = Math.min(al.length, nl.length);
+      for (let i = 0; i < n; i++) pairs.push([al[i], nl[i]]);
+      pairWithin(al.slice(n));
+      pairWithin(nl.slice(n));
+    } else {
+      if (al.length % 2 === 1 && nl.length % 2 === 1) pairs.push([al.pop(), nl.pop()]);
+      pairWithin(al);
+      pairWithin(nl);
+    }
+    return pairs;
+  }
+
+  function userOpponentId(league, day) {
+    const pair = leagueDaySlate(league, day).find(p => p.includes(USER_TEAM_ID));
+    return pair ? (pair[0] === USER_TEAM_ID ? pair[1] : pair[0]) : null;
+  }
+
+  function scheduleFromLeague(league) {
+    const schedule = [];
+    for (let d = 0; d < SEASON_LENGTH; d++) {
+      const t = league.teams[userOpponentId(league, d)];
+      schedule.push({ code: t.code, decade: t.decade, id: t.id });
+    }
+    return schedule;
+  }
+
+  function applyTeamResult(team, won) {
+    if (won) { team.w++; team.streak = team.streak > 0 ? team.streak + 1 : 1; }
+    else { team.l++; team.streak = team.streak < 0 ? team.streak - 1 : -1; }
+    team.last10.push(won ? 1 : 0);
+    if (team.last10.length > 10) team.last10.shift();
+  }
+
+  // Momentum: ±1 to every rating per 3 straight wins (or losses), capped at ±3.
+  // Applies to every team in the regular season, the user included.
+  const MOMENTUM_STEP = 3;
+  const MOMENTUM_CAP = 3;
+  // Pitcher fatigue (see _freshBatters / _fatiguePenalty)
+  const FATIGUE_PER_BATTER = 2;
+  const FATIGUE_MAX = 16;
+  // Batter wear: every start adds wear by position, minus a little natural recovery
+  // (net ≈ C 2.2, SS/2B/CF 0.8, 3B 0.7, LF/RF 0.6, 1B 0.45, DH 0.3). Each 10 points
+  // costs −1 to CON/PWR/EYE/SPD/K-AVD, up to −3; a day off resets it. Managers rest a
+  // starter as soon as he would play at −1, if the roster can cover his position — a bench
+  // player straight in, or a starter sliding over to a secondary position so the bench
+  // player takes his (≈ C 135 G, middle IF/CF 150, 3B 152, LF/RF 153, 1B 155, DH 157);
+  // with no cover at all he sits at −2 instead, covered out of position. Iron Men (up to
+  // 3, picked before the season) follow the same rules but wear at a quarter of the speed, so they
+  // need far fewer days off.
+  const WEAR_BY_POS = { C: 2.5, SS: 1.1, '2B': 1.1, CF: 1.1, '3B': 1.0, LF: 0.9, RF: 0.9, '1B': 0.75, DH: 0.6 };
+  const MAX_IRON_MAN = 3;
+  const IRON_MAN_WEAR = 1 / 4;
+  const WEAR_RECOVERY = 0.3;
+  const WEAR_PER_POINT = 10;
+  const WEAR_MAX_PENALTY = 3;
+  const WEAR_CAP = 40;
+  const MAX_RESTS_PER_GAME = 2;
+  const OUT_OF_POSITION_DEF = 25;
+  // Field positions whose starter can't get a rest day with proper cover: no bench player
+  // plays it, and no double switch works (another starter who can play it, whose own spot
+  // a bench player can fill).
+  function rosterCoverGaps(lineupMap, bench) {
+    const fits = (p, s) => p && canPlayerFillSlot(p, s);
+    return SLOTS.filter(s => s !== 'DH' && lineupMap[s]).filter(s =>
+      !bench.some(b => fits(b, s)) &&
+      !SLOTS.some(s2 => s2 !== s && fits(lineupMap[s2], s) && bench.some(b => fits(b, s2))));
+  }
+
+  function wearPenalty(f) {
+    return Math.min(WEAR_MAX_PENALTY, Math.floor((f || 0) / WEAR_PER_POINT));
+  }
+
+  function withWearBatter(p, pen) {
+    if (!p || !pen) return p;
+    const sub = v => (v === undefined ? v : v - pen);
+    return { ...p, con: sub(p.con), pwr: sub(p.pwr), eye: sub(p.eye), spd: sub(p.spd), k_avd: sub(p.k_avd), _wear: pen };
+  }
+
+  function momentumFor(streak) {
+    const s = streak || 0;
+    return Math.sign(s) * Math.min(MOMENTUM_CAP, Math.floor(Math.abs(s) / MOMENTUM_STEP));
+  }
+
+  function withMomentumBatter(p, m) {
+    if (!p || !m) return p;
+    const add = v => (v === undefined ? v : v + m);
+    return { ...p, con: add(p.con), pwr: add(p.pwr), eye: add(p.eye), spd: add(p.spd), k_avd: add(p.k_avd) };
+  }
+
+  function withMomentumPitcher(p, m) {
+    if (!p || !m) return p;
+    const add = v => (v === undefined ? v : v + m);
+    return { ...p, h9: add(p.h9), k9: add(p.k9), bb9: add(p.bb9), hr9: add(p.hr9) };
+  }
+
+  function aiBeats(a, b, rnd, useMomentum = true) {
+    const sa = a.strength + (useMomentum ? momentumFor(a.streak) : 0);
+    const sb = b.strength + (useMomentum ? momentumFor(b.streak) : 0);
+    return (rnd || Math.random)() < winProbability(sa, sb, 0);
+  }
+
+  function leagueStandings(league, lg) {
+    const rows = leagueTeamIds(league, lg).map(id => league.teams[id]);
+    rows.sort((x, y) => (y.w - y.l) - (x.w - x.l) || y.w - x.w || y.strength - x.strength);
+    const lead = rows[0];
+    return rows.map((t, i) => ({
+      ...t,
+      rank: i + 1,
+      gb: i === 0 ? 0 : ((lead.w - t.w) + (t.l - lead.l)) / 2,
+      pct: (t.w + t.l) > 0 ? t.w / (t.w + t.l) : 0
+    }));
+  }
+
+  // Blend of results so far and roster strength; strength alone before opening day.
+  function powerScores(league) {
+    const ids = Object.keys(league.teams);
+    const strengths = ids.map(id => league.teams[id].strength);
+    const sMin = Math.min(...strengths), sMax = Math.max(...strengths);
+    const played = league.day;
+    const resultWeight = Math.min(0.75, played / 60);
+    const scores = {};
+    ids.forEach(id => {
+      const t = league.teams[id];
+      const sNorm = sMax > sMin ? (t.strength - sMin) / (sMax - sMin) : 0.5;
+      const pct = (t.w + t.l) > 0 ? t.w / (t.w + t.l) : 0.5;
+      const recent = t.last10.length ? t.last10.reduce((s, v) => s + v, 0) / t.last10.length : 0.5;
+      scores[id] = (1 - resultWeight) * sNorm + resultWeight * (0.8 * pct + 0.2 * recent);
+    });
+    return scores;
+  }
+
+  function powerOrder(league) {
+    const scores = powerScores(league);
+    return Object.keys(scores).sort((a, b) => scores[b] - scores[a]);
+  }
+
+  // A team is mathematically in once fewer than PLAYOFF_SEEDS rivals can still reach its win total.
+  function clinchStatus(league, teamId) {
+    const team = league.teams[teamId];
+    const remaining = id => SEASON_LENGTH - (league.teams[id].w + league.teams[id].l);
+    const rivals = leagueTeamIds(league, team.league).filter(id => id !== teamId);
+    const canCatch = rivals.filter(id => league.teams[id].w + remaining(id) >= team.w).length;
+    const myMax = team.w + remaining(teamId);
+    const ahead = rivals.filter(id => league.teams[id].w > myMax).length;
+    return { clinched: canCatch < PLAYOFF_SEEDS, eliminated: ahead >= PLAYOFF_SEEDS };
+  }
+
+  // ── League-wide leaders & awards (global: all 32 teams together) ────────
+  function batterPA(b) { return (b.ab || 0) + (b.bb || 0); }
+  function batterAVG(b) { return b.ab ? b.h / b.ab : 0; }
+  function batterOPS(b) {
+    const pa = batterPA(b);
+    if (!pa || !b.ab) return 0;
+    const singles = b.h - b.doubles - b.triples - b.hr;
+    const tb = singles + 2 * b.doubles + 3 * b.triples + 4 * b.hr;
+    return (b.h + b.bb) / pa + tb / b.ab;
+  }
+  function pitcherERA(p) { return p.outs ? (p.er * 27) / p.outs : 99; }
+
+  function rankBy(list, score, n) {
+    return list.map(x => ({ x, v: score(x) }))
+      .filter(o => Number.isFinite(o.v))
+      .sort((a, b) => b.v - a.v)
+      .slice(0, n);
+  }
+
+  // Qualifying thresholds scale with games played so races are meaningful all season.
+  function leagueQualifiers(league) {
+    const day = Math.max(1, league.day);
+    const stats = league.stats || { bat: {}, pit: {} };
+    const bat = Object.values(stats.bat);
+    const pit = Object.values(stats.pit);
+    return {
+      day, bat, pit,
+      batQual: bat.filter(b => batterPA(b) >= 3.1 * day),
+      batRegular: bat.filter(b => batterPA(b) >= 2.0 * day),
+      spQual: pit.filter(p => p.gs > 0 && p.outs / 3 >= 0.8 * day),
+      rpQual: pit.filter(p => !p.gs && p.g >= 0.2 * day)
+    };
+  }
+
+  function computeAwards(league) {
+    const q = leagueQualifiers(league);
+    const war = b => parseFloat(calcBatterWAR(b, b.pos, b.def));
+    const dwar = b => parseFloat(calcBatterDWAR(b, b.pos, b.def));
+    const awards = {
+      mvp: rankBy(q.batRegular, war, 5),
+      cyYoung: rankBy(q.spQual, p => parseFloat(calcPitcherWAR(p, 'SP')), 5),
+      reliever: rankBy(q.rpQual, p => parseFloat(calcPitcherWAR(p, 'RP')), 5),
+      platinum: rankBy(q.batRegular.filter(b => b.pos !== 'DH'), dwar, 5),
+      hrKing: rankBy(q.bat, b => b.hr, 5),
+      battingTitle: rankBy(q.batQual, batterAVG, 5),
+      silverSlugger: {},
+      goldGlove: {}
+    };
+    SLOTS.forEach(pos => {
+      const atPos = q.batRegular.filter(b => b.pos === pos);
+      awards.silverSlugger[pos] = rankBy(atPos, batterOPS, 3);
+      // Gold Glove by dWAR within the position (user's call): glove quality times playing time.
+      if (pos !== 'DH') awards.goldGlove[pos] = rankBy(atPos, dwar, 3);
+    });
+    return awards;
+  }
+
+  function playoffBracketFromStandings(league) {
+    const seeds = {
+      AL: leagueStandings(league, 'AL').slice(0, PLAYOFF_SEEDS).map(t => t.id),
+      NL: leagueStandings(league, 'NL').slice(0, PLAYOFF_SEEDS).map(t => t.id)
+    };
+    const r1 = [];
+    ['AL', 'NL'].forEach(lg => {
+      r1.push({ league: lg, a: seeds[lg][0], b: seeds[lg][3], winner: null });
+      r1.push({ league: lg, a: seeds[lg][1], b: seeds[lg][2], winner: null });
+    });
+    return { seeds, rounds: [r1, [], []] };
+  }
+
   window.Challenge162 = {
     unlockedBatters: new Set(),
     unlockedPitchers: new Set(),
@@ -1377,6 +1873,15 @@
         if (this.state && this.state.modeConfig) {
           this.setModeConfig(this.state.modeConfig);
         }
+        if (this.state && !this.state.league) this._migrateToRealLeague();
+        if (this.state && this.state.league) {
+          // Leagues from before unique rosters get theirs built now (rivals re-rolled once).
+          if (!this.state.league.rosters) {
+            this.state.league.rosters = buildLeagueRosters(this.state.league.teams, this._userCards(this.state.roster));
+            this.save();
+          }
+          registerLeagueRosters(this.state.league);
+        }
         return true;
       } catch (e) { return false; }
     },
@@ -1384,6 +1889,240 @@
     clear() {
       this.state = null;
       localStorage.removeItem(SAVE_KEY);
+    },
+
+    // ── Real league ─────────────────────────────────────────────────────────
+    // Every card on a user roster ({ lineup, bench, pitchers }), for league uniqueness.
+    _userCards(r) {
+      if (!r) return [];
+      return [...SLOTS.map(s => r.lineup && r.lineup[s]), ...(r.bench || []),
+        ...((r.pitchers && r.pitchers.SP) || []), ...((r.pitchers && r.pitchers.RP) || [])].filter(Boolean);
+    },
+
+    _userLineupArray(S) {
+      return S.roster.battingOrder.map(slot => S.roster.lineup[slot]).filter(Boolean);
+    },
+
+    _userStrength(S) {
+      const sp = (S.roster.pitchers && S.roster.pitchers.SP && S.roster.pitchers.SP[0]) || null;
+      return teamStrength(this._userLineupArray(S), sp);
+    },
+
+    // Default league for the user: whichever one most of the roster's franchises belong to.
+    _suggestUserLeague(S) {
+      const cards = [
+        ...SLOTS.map(s => S.roster.lineup[s]).filter(Boolean),
+        ...((S.roster.pitchers && S.roster.pitchers.SP) || []),
+        ...((S.roster.pitchers && S.roster.pitchers.RP) || [])
+      ];
+      let al = 0, nl = 0;
+      cards.forEach(c => { if (AL_CODES.includes(c.team)) al++; else if (NL_CODES.includes(c.team)) nl++; });
+      return nl > al ? 'NL' : 'AL';
+    },
+
+    _createLeagueForState(S, userLeague, decadeByCode) {
+      S.league = createLeague(userLeague || this._suggestUserLeague(S), this._userStrength(S), this.getUserTeamName(), decadeByCode, this._userCards(S.roster));
+      S.schedule = scheduleFromLeague(S.league);
+      S.leagueTeams = Object.values(S.league.teams).filter(t => !t.isUser).map(t => ({ code: t.code, decade: t.decade }));
+      S.league.powerRanks.push({ day: 0, order: powerOrder(S.league) });
+    },
+
+    // Saves from before the real league: build the league, keep the franchise-decades the
+    // user already faced, and replay the days already played for everyone else. The user's
+    // past opponents get a result drawn from the user's own win rate on each of those days.
+    _migrateToRealLeague() {
+      const S = this.state;
+      if (!S || !S.roster) return;
+      const decadeByCode = {};
+      (S.leagueTeams || []).forEach(t => { if (t && t.code) decadeByCode[t.code] = t.decade; });
+      const played = S.gamesPlayed || 0;
+      this._createLeagueForState(S, null, decadeByCode);
+      const user = S.league.teams[USER_TEAM_ID];
+      const userWinRate = played > 0 ? S.wins / played : 0.5;
+      for (let d = 0; d < played; d++) {
+        this._advanceLeagueDay(Math.random() < userWinRate, { silent: true });
+      }
+      user.w = S.wins; user.l = S.losses; user.streak = S.streak || 0;
+      if (played >= SEASON_LENGTH && !S.playoffs.bracket) {
+        // Grandfather a run that already qualified under the old 100-win rule.
+        this._finishRegularSeason({ grandfather: !!(S.playoffs.unlocked || S.playoffs.round > 0) });
+      }
+      this.save();
+    },
+
+    _pushHeadline(text, kind) {
+      const L = this.state.league;
+      L.headlines.unshift({ day: L.day, text, kind: kind || 'info' });
+      if (L.headlines.length > MAX_HEADLINES) L.headlines.length = MAX_HEADLINES;
+    },
+
+    // Resolves one league day around the user's game result.
+    _advanceLeagueDay(userWon, opts = {}) {
+      const S = this.state;
+      const L = S.league;
+      if (!L || L.day >= SEASON_LENGTH) return;
+      const day = L.day;
+
+      leagueDaySlate(L, day).forEach(([a, b]) => {
+        const A = L.teams[a], B = L.teams[b];
+        let aWon;
+        if (a === USER_TEAM_ID) aWon = userWon;
+        else if (b === USER_TEAM_ID) aWon = !userWon;
+        else {
+          // Every other league game is played out too, so league stats and awards are complete.
+          const result = this._simLeagueGame(this._aiSide(A, true), this._aiSide(B, true), day);
+          this._commitLeagueGame(result, day);
+          aWon = result.winnerId === a;
+        }
+        applyTeamResult(A, aWon);
+        applyTeamResult(B, !aWon);
+      });
+      L.day = day + 1;
+
+      ['AL', 'NL'].forEach(lg => { L.leaders[lg] = leagueStandings(L, lg)[0].id; });
+      if ((L.day % POWER_RANK_EVERY) === 0 || L.day === SEASON_LENGTH) {
+        L.powerRanks.push({ day: L.day, order: powerOrder(L) });
+        if (L.powerRanks.length > 30) L.powerRanks.splice(1, 1); // keep the preseason snapshot
+      }
+      if (opts.silent) return;
+
+      // ── Headlines ──
+      const user = L.teams[USER_TEAM_ID];
+      Object.values(L.teams).forEach(t => {
+        if (t.isUser) return;
+        if ([8, 12, 16, 20].includes(t.streak)) this._pushHeadline(`🔥 The ${t.name} have won ${t.streak} straight.`, 'streak');
+        if ([10, 15, 20].includes(-t.streak)) this._pushHeadline(`🧊 The ${t.name} have dropped ${-t.streak} in a row.`, 'slump');
+      });
+      // Leader headlines only fire for a real lead (>= 1 game) and only when the leader
+      // differs from the last one announced, so two teams trading 1st don't spam the feed.
+      if (!L.announcedLeaders) L.announcedLeaders = { AL: null, NL: null };
+      ['AL', 'NL'].forEach(lg => {
+        const table = leagueStandings(L, lg);
+        const leader = table[0];
+        const lead = table[1] ? table[1].gb : 0;
+        if (L.day >= 10 && lead >= 1 && leader.id !== L.announcedLeaders[lg]) {
+          if (L.announcedLeaders[lg]) {
+            this._pushHeadline(`👑 ${leader.name} take over 1st place in the ${lg}.`, leader.isUser ? 'user' : 'race');
+          }
+          L.announcedLeaders[lg] = leader.id;
+        }
+      });
+      if (userWon && [10, 20, 30, 40, 50, 75, 100, 125, 150].includes(user.streak)) {
+        this._pushHeadline(`⚾ ${user.name} extend their win streak to ${user.streak}.`, 'user');
+      }
+      if (!userWon && user.l === 1) this._pushHeadline(`💔 The perfect season is over: ${user.name} suffer their first loss on day ${L.day}.`, 'user');
+      const cs = clinchStatus(L, USER_TEAM_ID);
+      if (cs.clinched && !L.clinched) {
+        L.clinched = true;
+        this._pushHeadline(`🎟️ ${user.name} clinch a ${user.league} playoff spot!`, 'user');
+      }
+      if (cs.eliminated && !L.eliminated) {
+        L.eliminated = true;
+        this._pushHeadline(`❌ ${user.name} are mathematically eliminated from the ${user.league} playoff race.`, 'user');
+      }
+    },
+
+    // Seeds the bracket and decides whether the user is in.
+    _finishRegularSeason(opts = {}) {
+      const S = this.state;
+      const L = S.league;
+      if (!L || S.playoffs.bracket) return;
+      const bracket = playoffBracketFromStandings(L);
+      const lg = L.teams[USER_TEAM_ID].league;
+      if (opts.grandfather && !bracket.seeds[lg].includes(USER_TEAM_ID)) {
+        // Old save that already qualified: the user takes the 4th seed.
+        const dropped = bracket.seeds[lg][PLAYOFF_SEEDS - 1];
+        bracket.seeds[lg][PLAYOFF_SEEDS - 1] = USER_TEAM_ID;
+        bracket.rounds[0].forEach(m => { if (m.a === dropped) m.a = USER_TEAM_ID; if (m.b === dropped) m.b = USER_TEAM_ID; });
+      }
+      S.playoffs.bracket = bracket;
+      if (L.stats) {
+        // Freeze the season awards and announce the big ones.
+        const aw = computeAwards(L);
+        const winner = list => list && list[0] && list[0].x;
+        S.awards = {
+          mvp: winner(aw.mvp), cyYoung: winner(aw.cyYoung), reliever: winner(aw.reliever),
+          platinum: winner(aw.platinum), hrKing: winner(aw.hrKing), battingTitle: winner(aw.battingTitle),
+          silverSlugger: Object.fromEntries(Object.entries(aw.silverSlugger).map(([p, l]) => [p, winner(l)])),
+          goldGlove: Object.fromEntries(Object.entries(aw.goldGlove).map(([p, l]) => [p, winner(l)]))
+        };
+        const teamName = id => (L.teams[id] ? L.teams[id].name : id);
+        [['mvp', '🏅 MVP'], ['cyYoung', '🧢 Cy Young'], ['reliever', '🔥 Reliever of the Year'], ['platinum', '💎 Platinum Glove']].forEach(([k, label]) => {
+          const w = S.awards[k];
+          if (w) this._pushHeadline(`${label}: ${w.name} (${teamName(w.team)}).`, w.team === USER_TEAM_ID ? 'user' : 'race');
+        });
+      }
+      // An old save may already be past round 1: replay the rounds it had won.
+      for (let r = 0; r < (S.playoffs.round || 0); r++) this._resolvePlayoffRound(r, true);
+      const qualified = bracket.seeds[lg].includes(USER_TEAM_ID);
+      S.playoffs.unlocked = qualified;
+      S.playoffs.userSeed = qualified ? bracket.seeds[lg].indexOf(USER_TEAM_ID) + 1 : null;
+      this._pushHeadline(qualified
+        ? `🏟️ ${L.teams[USER_TEAM_ID].name} enter the postseason as the ${lg} #${S.playoffs.userSeed} seed.`
+        : `📉 ${L.teams[USER_TEAM_ID].name} miss the postseason.`, 'user');
+      if (!qualified) {
+        S.playoffs.missed = true;
+        this._simulateRestOfPlayoffs();
+        S.playoffs.finished = true;
+        S.playoffs.won = false;
+        this.recordSeasonFinished(S, false);
+      }
+    },
+
+    _playoffMatchup(round) {
+      const S = this.state;
+      const b = S.playoffs && S.playoffs.bracket;
+      if (!b || !b.rounds[round]) return null;
+      return b.rounds[round].find(m => m.a === USER_TEAM_ID || m.b === USER_TEAM_ID) || null;
+    },
+
+    _playoffOpponentRef(round) {
+      const m = this._playoffMatchup(round);
+      if (!m) return null;
+      const t = this.state.league.teams[m.a === USER_TEAM_ID ? m.b : m.a];
+      return t ? { code: t.code, decade: t.decade, id: t.id, name: t.name } : null;
+    },
+
+    // Resolves every AI-vs-AI game of a round and builds the next round's matchups.
+    _resolvePlayoffRound(round, userWon) {
+      const S = this.state;
+      const L = S.league;
+      const b = S.playoffs.bracket;
+      if (!b || !b.rounds[round]) return;
+      b.rounds[round].forEach(m => {
+        if (m.winner) return;
+        if (m.a === USER_TEAM_ID) m.winner = userWon ? m.a : m.b;
+        else if (m.b === USER_TEAM_ID) m.winner = userWon ? m.b : m.a;
+        else {
+          const res = this._simLeagueGame(this._aiSide(L.teams[m.a], false), this._aiSide(L.teams[m.b], false), SEASON_LENGTH + round * 2);
+          m.winner = res.winnerId;
+          m.score = `${res.runs[0]}-${res.runs[1]}`;
+        }
+      });
+      if (round === 0) {
+        b.rounds[1] = ['AL', 'NL'].map(lg => {
+          const w = b.rounds[0].filter(m => m.league === lg).map(m => m.winner);
+          return { league: lg, a: w[0], b: w[1], winner: null };
+        });
+      } else if (round === 1) {
+        const al = b.rounds[1].find(m => m.league === 'AL').winner;
+        const nl = b.rounds[1].find(m => m.league === 'NL').winner;
+        b.rounds[2] = [{ league: 'WS', a: al, b: nl, winner: null }];
+      } else if (round === 2) {
+        b.champion = b.rounds[2][0].winner;
+        this._pushHeadline(`🏆 The ${L.teams[b.champion].name} win the World Series!`, b.champion === USER_TEAM_ID ? 'user' : 'race');
+      }
+    },
+
+    // After the user is out (or never got in), play the rest of the bracket for the record.
+    _simulateRestOfPlayoffs() {
+      const b = this.state.playoffs.bracket;
+      if (!b) return;
+      for (let r = 0; r < 3; r++) {
+        if (!b.rounds[r] || !b.rounds[r].length) break;
+        if (b.rounds[r].every(m => m.winner)) continue;
+        this._resolvePlayoffRound(r, false);
+      }
     },
 
     // ── Roster building ────────────────────────────────────────────────────
@@ -1395,16 +2134,17 @@
       return optimized.map(p => p._slotKey);
     },
 
-    startNewChallenge(lineup, pitchers, customModeConfig, bench = []) {
-      const leagueTeams = buildLeagueTeams();
+    // opts: { league, teamName, battingOrder } from the League Preview, or a 'AL'/'NL' string.
+    startNewChallenge(lineup, pitchers, customModeConfig, bench = [], opts = null) {
       const cfg = customModeConfig || this.getModeConfig();
-      const battingOrder = this._optimizeBattingOrder(lineup);
+      const o = (opts && typeof opts === 'object') ? opts : {};
+      const battingOrder = (o.battingOrder && o.battingOrder.length === 9) ? o.battingOrder.slice() : this._optimizeBattingOrder(lineup);
       this.state = {
         v: 1,
         modeConfig: cfg,
         roster: { lineup, battingOrder, pitchers, bench: bench || [] },
-        leagueTeams,
-        schedule: buildSeasonSchedule(leagueTeams),
+        leagueTeams: [],
+        schedule: [],
         gamesPlayed: 0, wins: 0, losses: 0, streak: 0,
         batterStats: {}, pitcherStats: {}, oppBatterStats: {},
         gameLog: [],
@@ -1420,6 +2160,21 @@
       [...pitchers.SP, ...pitchers.RP].forEach(p => {
         this.state.pitcherStats[pitcherUnlockKey(p)] = { name: p.name, role: p.role, outs: 0, h: 0, er: 0, bb: 0, so: 0, w: 0, l: 0, sv: 0 };
       });
+      if (o.teamName) this.state.teamName = o.teamName;
+      // Iron Men are picked in the League Preview (max 3) and locked for the season.
+      if (o.ironMan) this.state.ironMan = Object.fromEntries(Object.keys(o.ironMan).slice(0, MAX_IRON_MAN).map(k => [k, true]));
+      if (o.league) {
+        const S = this.state;
+        S.league = o.league;
+        registerLeagueRosters(S.league);
+        S.league.teams[USER_TEAM_ID].name = this.getUserTeamName();
+        S.league.teams[USER_TEAM_ID].strength = Math.round(this._userStrength(S) * 10) / 10;
+        S.schedule = scheduleFromLeague(S.league);
+        S.leagueTeams = Object.values(S.league.teams).filter(t => !t.isUser).map(t => ({ code: t.code, decade: t.decade }));
+        if (!S.league.powerRanks.length) S.league.powerRanks.push({ day: 0, order: powerOrder(S.league) });
+      } else {
+        this._createLeagueForState(this.state, typeof opts === 'string' ? opts : null);
+      }
       this.save();
       this.showScreen('screen-challenge-season');
       this.render();
@@ -1583,8 +2338,58 @@
     // rating-only math; this just picks WHICH honestly-simulated attempt at
     // the game gets kept, biased toward the target outcome instead of always
     // taking the first roll.
+    // User game in the real league: same engine as every other league game.
+    _simulateLeagueUserGame() {
+      const S = this.state;
+      const L = S.league;
+      const day = L.day;
+      const sched = S.schedule[S.gamesPlayed];
+      const oppRec = L.teams[sched.id] || Object.values(L.teams).find(t => t.code === sched.code);
+      const userSide = this._userSide(S, true);
+      const oppSide = this._aiSide(oppRec, true);
+      const userHome = day % 2 === 1;
+      const result = userHome ? this._simLeagueGame(oppSide, userSide, day) : this._simLeagueGame(userSide, oppSide, day);
+      const ui = userHome ? 1 : 0;
+      const userRuns = result.runs[ui];
+      const oppRuns = result.runs[1 - ui];
+      const won = userRuns > oppRuns;
+      this._commitLeagueGame(result, day);
+
+      // The user's own season tables keep their original card keys.
+      Object.values(result.bat).forEach(d => {
+        if (d.team === USER_TEAM_ID) {
+          const s = S.batterStats[d.key];
+          if (s) ['g', 'ab', 'h', 'doubles', 'triples', 'hr', 'rbi', 'bb', 'so', 'r', 'sb'].forEach(f => { s[f] = (s[f] || 0) + (d[f] || 0); });
+        } else {
+          if (!S.oppBatterStats) S.oppBatterStats = {};
+          const s = S.oppBatterStats[d.name] || (S.oppBatterStats[d.name] = { name: d.name, team: oppRec.code, ab: 0, h: 0, doubles: 0, triples: 0, hr: 0, rbi: 0, bb: 0, so: 0, r: 0 });
+          ['ab', 'h', 'doubles', 'triples', 'hr', 'rbi', 'bb', 'so', 'r'].forEach(f => { s[f] += d[f] || 0; });
+        }
+      });
+      Object.values(result.pit).forEach(d => {
+        if (d.team !== USER_TEAM_ID) return;
+        const s = S.pitcherStats[d.key];
+        if (s) ['outs', 'h', 'er', 'bb', 'so', 'w', 'l', 'sv'].forEach(f => { s[f] += d[f] || 0; });
+      });
+
+      S.gamesPlayed++;
+      if (won) { S.wins++; S.streak = (S.streak || 0) + 1; } else { S.losses++; S.streak = 0; }
+      if (!this._autoSimRunning && window.AudioManager && typeof window.AudioManager.play === 'function') {
+        window.AudioManager.play(won ? 'hit' : 'out');
+      }
+      const logEntry = { opponent: oppRec.name, userRuns, oppRuns, won, inning: Math.min(result.innings, 20) };
+      S.gameLog.push(logEntry);
+      if (S.gameLog.length > 30) S.gameLog.shift();
+
+      this._advanceLeagueDay(won);
+      if (S.gamesPlayed >= SEASON_LENGTH) this._finishRegularSeason();
+      this.save();
+      return logEntry;
+    },
+
     simulateGame() {
       const S = this.state;
+      if (S.league) return this._simulateLeagueUserGame();
       const gameIdx = S.gamesPlayed;
       const spList = S.roster.pitchers.SP;
       const rpList = S.roster.pitchers.RP;
@@ -1606,11 +2411,29 @@
       }
 
       const sched = S.schedule[gameIdx];
-      const opp = getFranchiseDecadeTeam(sched.code, sched.decade);
-      const userLineup = S.roster.battingOrder.map(slot => S.roster.lineup[slot]).filter(Boolean);
+      let opp = getFranchiseDecadeTeam(sched.code, sched.decade);
+      let userLineup = S.roster.battingOrder.map(slot => S.roster.lineup[slot]).filter(Boolean);
+
+      // Momentum (real league only): both sides play with their streak's ±1..±3 ratings.
+      // Copies keep name/year, so stat keys still match the real cards.
+      let userSPToday = userSP;
+      if (S.league) {
+        const um = momentumFor(S.league.teams[USER_TEAM_ID].streak);
+        const oppTeam = sched.id && S.league.teams[sched.id];
+        const om = oppTeam ? momentumFor(oppTeam.streak) : 0;
+        if (um) {
+          userLineup = userLineup.map(p => withMomentumBatter(p, um));
+          userSPToday = withMomentumPitcher(userSP, um);
+          userRelievers = userRelievers.map(p => withMomentumPitcher(p, um));
+        }
+        if (om) {
+          opp = { ...opp, lineup: opp.lineup.map(p => withMomentumBatter(p, om)),
+            pitcher: withMomentumPitcher(opp.pitcher, om), reliever: withMomentumPitcher(opp.reliever, om) };
+        }
+      }
 
       // Pure 100% honest single-attempt simulation directly determined by player ratings:
-      const attempt = this._simulateNaturalGame(userLineup, userSP, userRelievers, opp, gameIdx);
+      const attempt = this._simulateNaturalGame(userLineup, userSPToday, userRelievers, opp, gameIdx);
       const won = attempt.userRuns > attempt.oppRuns;
 
       // Commit the chosen game attempt's stats into the season totals:
@@ -1672,8 +2495,10 @@
       S.gameLog.push(logEntry);
       if (S.gameLog.length > 30) S.gameLog.shift();
 
+      if (S.league) this._advanceLeagueDay(won);
       if (S.gamesPlayed >= SEASON_LENGTH) {
-        S.playoffs.unlocked = (S.wins >= PLAYOFF_MIN_WINS);
+        if (S.league) this._finishRegularSeason();
+        else S.playoffs.unlocked = (S.wins >= PLAYOFF_MIN_WINS);
       }
 
       this.save();
@@ -1778,6 +2603,335 @@
         inning++;
       }
       return { userRuns, oppRuns, inning: inning - 1, userMaxInnings, lastUserPitcher, batterDeltas, pitcherDeltas, oppBatterDeltas };
+    },
+
+    // ── League game engine ────────────────────────────────────────────────
+    // Plays any game of the real league (user or AI on either side) plate appearance by
+    // plate appearance, with pitcher fatigue, bullpen roles and reliever rest days.
+
+    // Fatigue: a pitcher is "fresh" for a number of batters set by his STA. Past that, every
+    // extra batter costs 2 points on each pitching rating, up to −16.
+    _freshBatters(p, isStarter) {
+      const sta = p.sta !== undefined ? p.sta : (p.sta_val !== undefined ? p.sta_val : 50);
+      return isStarter ? 12 + sta * 0.15 : 4 + sta * 0.05;
+    },
+
+    _fatiguePenalty(ps) {
+      return Math.min(FATIGUE_MAX, FATIGUE_PER_BATTER * Math.max(0, ps.bf - ps.fresh));
+    },
+
+    // A side: { id, isUser, lineup, bench, sp, bullpen, def, gameIdx }
+    _aiSide(teamRec, useMomentum) {
+      const team = getFranchiseDecadeTeam(teamRec.code, teamRec.decade);
+      const staff = getFranchiseStaff(teamRec.code, teamRec.decade);
+      const m = useMomentum ? momentumFor(teamRec.streak) : 0;
+      const gp = teamRec.w + teamRec.l;
+      const fielders = team.lineup.filter(p => (p.assignedSlot || p.pos) !== 'DH');
+      return {
+        id: teamRec.id, isUser: false,
+        lineup: team.lineup.map(p => withMomentumBatter(p, m)),
+        bench: getFranchiseBench(teamRec.code, teamRec.decade).map(p => withMomentumBatter(p, m)),
+        sp: withMomentumPitcher(staff.rotation[gp % staff.rotation.length], m),
+        bullpen: staff.bullpen.map(p => withMomentumPitcher(p, m)),
+        def: fielders.length ? fielders.reduce((s, p) => s + (p.def !== undefined ? p.def : 50), 0) / fielders.length : 50,
+        gameIdx: gp
+      };
+    },
+
+    _userSide(S, useMomentum) {
+      const m = (useMomentum && S.league) ? momentumFor(S.league.teams[USER_TEAM_ID].streak) : 0;
+      // assignedSlot carries the lineup position into league stats (Silver Slugger / Gold Glove).
+      const lineup = S.roster.battingOrder.map(slot => S.roster.lineup[slot] && ({ ...S.roster.lineup[slot], assignedSlot: slot })).filter(Boolean);
+      const spList = S.roster.pitchers.SP;
+      const rp = (S.roster.pitchers.RP || []).filter(Boolean);
+      const closer = rp.find(p => p.role === 'CL') || rp[0];
+      const setup = rp.find(p => p.role === 'SETUP') || rp[1];
+      const bullpen = rp.map(p => ({ ...withMomentumPitcher(p, m) || p, role: p === closer ? 'CL' : p === setup ? 'SETUP' : 'RP' }));
+      const fielders = lineup.filter(p => (p.assignedSlot || p.pos) !== 'DH');
+      return {
+        id: USER_TEAM_ID, isUser: true,
+        lineup: lineup.map(p => withMomentumBatter(p, m)),
+        bench: (S.roster.bench || []).filter(Boolean).map(p => withMomentumBatter(p, m)),
+        ironMan: S.ironMan || {},
+        sp: withMomentumPitcher(spList[S.gamesPlayed % spList.length], m),
+        bullpen,
+        def: fielders.length ? fielders.reduce((s, p) => s + (p.def !== undefined ? p.def : (p.defense_val || 50)), 0) / fielders.length : 50,
+        gameIdx: S.gamesPlayed
+      };
+    },
+
+    // Reliever picked for a new inning, by role and situation; skips arms that already
+    // pitched this game or are resting (pitched on each of the previous two days).
+    _pickReliever(side, gs, inning, lead, day) {
+      const pen = (this.state.league && this.state.league.pen) || {};
+      const available = side.bullpen.filter(p => {
+        const k = this._leagueKey(side.id, pitcherUnlockKey(p));
+        if (gs.usedPitchers.has(k)) return false;
+        const u = pen[k];
+        return !(u && u.last === day - 1 && u.run >= 2);
+      });
+      if (!available.length) return null;
+      const byRole = role => available.find(p => p.role === role);
+      // Middle relievers: the one who has rested the longest goes first.
+      const lastDay = p => { const u = pen[this._leagueKey(side.id, pitcherUnlockKey(p))]; return u ? u.last : -999; };
+      const middle = available.filter(p => p.role !== 'CL' && p.role !== 'SETUP').sort((a, b) => lastDay(a) - lastDay(b));
+      const lateClose = lead >= 0 && lead <= 3;
+      if (inning >= 9 && (lateClose || inning > 9)) return byRole('CL') || byRole('SETUP') || middle[0] || available[0];
+      if (inning === 8 && lead >= -1 && lead <= 4) return byRole('SETUP') || middle[0] || byRole('CL');
+      return middle[0] || byRole('SETUP') || byRole('CL') || available[0];
+    },
+
+    _leagueKey(teamId, playerKey) { return `${teamId}:${playerKey}`; },
+
+    // Today's lineup: tired regulars (who would play at −1) get the day off when the roster
+    // can cover the position, up to two a game; everyone else plays with their wear
+    // penalty (Iron Men included: they just get there more slowly). Cover, in order of preference:
+    //   1. a fresh bench player who plays the position;
+    //   2. a double switch: another starter slides to the position (primary or secondary)
+    //      and a fresh bench player takes his spot on the field;
+    //   3. at −2, any fresh bench player out of position, with a poor glove that day.
+    // The sub always bats in the rested regular's spot in the order.
+    _restLineup(side) {
+      const W = (this.state.league && this.state.league.wear) || {};
+      const keyOf = p => this._leagueKey(side.id, batterUnlockKey(p));
+      const benchLeft = side.bench.slice();
+      const out = side.lineup.slice();
+      const rested = [];
+      side.lineup
+        .map((p, i) => ({ p, i, f: W[keyOf(p)] || 0 }))
+        .filter(x => wearPenalty(x.f) >= 1)
+        .sort((a, b) => b.f - a.f)
+        .forEach(x => {
+          if (rested.length >= MAX_RESTS_PER_GAME) return;
+          const slot = x.p.assignedSlot || x.p.pos || 'DH';
+          const fresh = benchLeft.filter(b => wearPenalty(W[keyOf(b)]) === 0).sort((a, b) => (b.ovr || 0) - (a.ovr || 0));
+          const direct = fresh.find(b => canPlayerFillSlot(b, slot));
+          if (direct) {
+            benchLeft.splice(benchLeft.indexOf(direct), 1);
+            out[x.i] = { ...direct, assignedSlot: slot };
+            rested.push(batterUnlockKey(x.p));
+            return;
+          }
+          // Double switch: starter j moves to the rested player's position, bench player covers j's.
+          let best = null;
+          out.forEach((starter, j) => {
+            if (j === x.i || !starter) return;
+            const jSlot = starter.assignedSlot || starter.pos || 'DH';
+            if (!canPlayerFillSlot(starter, slot)) return;
+            const b = fresh.find(c => canPlayerFillSlot(c, jSlot));
+            if (b && (!best || (b.ovr || 0) > (best.b.ovr || 0))) best = { j, jSlot, b };
+          });
+          if (best) {
+            benchLeft.splice(benchLeft.indexOf(best.b), 1);
+            out[best.j] = { ...out[best.j], assignedSlot: slot };
+            out[x.i] = { ...best.b, assignedSlot: best.jSlot };
+            rested.push(batterUnlockKey(x.p));
+            return;
+          }
+          // No cover at all: at −2 the manager plays someone out of position rather than
+          // run the regular into the ground.
+          if (wearPenalty(x.f) >= 2 && fresh.length) {
+            benchLeft.splice(benchLeft.indexOf(fresh[0]), 1);
+            out[x.i] = { ...fresh[0], assignedSlot: slot, def: OUT_OF_POSITION_DEF };
+            rested.push(batterUnlockKey(x.p));
+          }
+        });
+      const lineup = out.map(p => withWearBatter(p, wearPenalty(W[keyOf(p)])));
+      return {
+        lineup, benchLeft, rested,
+        roster: [...side.lineup, ...side.bench].map(keyOf),
+        iron: Object.keys(side.ironMan || {}).map(k => this._leagueKey(side.id, k)),
+        starts: lineup.map(p => ({ k: keyOf(p), pos: p.assignedSlot || p.pos || 'DH' }))
+      };
+    },
+
+    _simLeagueGame(away, home, day) {
+      const sides = [away, home];
+      const daily = sides.map(side => this._restLineup(side));
+      sides.forEach((side, i) => {
+        side.lineup = daily[i].lineup;
+        side.benchLeft = daily[i].benchLeft;
+        // Team defense with today's fielders (subs, out-of-position gloves)
+        const fielders = side.lineup.filter(p => (p.assignedSlot || p.pos) !== 'DH');
+        if (fielders.length) side.def = fielders.reduce((s, p) => s + (p.def !== undefined ? p.def : (p.defense_val || 50)), 0) / fielders.length;
+      });
+      const runs = [0, 0];
+      const bat = {};   // leagueKey -> batting line
+      const pit = {};   // leagueKey -> pitching line
+      const gs = { usedPitchers: new Set() };
+      const state = sides.map(side => ({ idx: 0, pitcher: null, ps: null, starterPs: null }));
+
+      const startPitcher = (si, p, isStarter) => {
+        const side = sides[si];
+        const k = this._leagueKey(side.id, pitcherUnlockKey(p));
+        gs.usedPitchers.add(k);
+        if (!pit[k]) pit[k] = { key: pitcherUnlockKey(p), name: p.cleanName || p.name, team: side.id, role: p.role || (isStarter ? 'SP' : 'RP'), g: 1, gs: isStarter ? 1 : 0, outs: 0, h: 0, er: 0, bb: 0, so: 0, hr: 0, w: 0, l: 0, sv: 0 };
+        const ps = { k, p, isStarter, bf: 0, fresh: this._freshBatters(p, isStarter), er: 0, h: 0 };
+        state[si].pitcher = p;
+        state[si].ps = ps;
+        if (isStarter) state[si].starterPs = ps;
+        return ps;
+      };
+      startPitcher(0, away.sp, true);
+      startPitcher(1, home.sp, true);
+
+      const batterLine = (side, b) => {
+        const k = this._leagueKey(side.id, batterUnlockKey(b));
+        if (!bat[k]) bat[k] = { key: batterUnlockKey(b), name: b.name, team: side.id, pos: b.assignedSlot || b.pos || 'DH', def: b.def !== undefined ? b.def : (b.defense_val || 50), g: 1, ab: 0, h: 0, doubles: 0, triples: 0, hr: 0, rbi: 0, bb: 0, so: 0, r: 0, sb: 0 };
+        return bat[k];
+      };
+
+      // Late blowouts: unused bench players who can cover the position finish the game.
+      const blowoutSubs = sides.map(() => ({}));
+      const nextBatter = (si, blowout) => {
+        const side = sides[si];
+        const slot = state[si].idx % side.lineup.length;
+        state[si].idx++;
+        const starter = side.lineup[slot];
+        if (!blowout) return starter;
+        if (!(slot in blowoutSubs[si])) {
+          const pos = starter.assignedSlot || starter.pos || 'DH';
+          const sub = side.benchLeft.find(b => canPlayerFillSlot(b, pos));
+          if (sub) side.benchLeft.splice(side.benchLeft.indexOf(sub), 1);
+          blowoutSubs[si][slot] = sub ? { ...sub, assignedSlot: pos } : null;
+        }
+        return blowoutSubs[si][slot] || starter;
+      };
+
+      // Manager decision at the start of each defensive half-inning.
+      const managePitcher = (si, inning) => {
+        const side = sides[si];
+        const ps = state[si].ps;
+        const lead = runs[si] - runs[1 - si];
+        let pull = false;
+        if (ps.isStarter) {
+          const knockedOut = (inning <= 5 && ps.er >= 4) || (inning <= 7 && ps.er >= 5);
+          const gem = ps.er === 0 && inning <= 9;
+          const tired = this._fatiguePenalty(ps);
+          pull = knockedOut || (gem ? tired >= 10 : tired >= 6) || inning > 9;
+        } else {
+          pull = true; // relievers work one inning at a time
+        }
+        if (!pull) return;
+        const next = this._pickReliever(side, gs, inning, lead, day);
+        if (next) startPitcher(si, next, false);
+      };
+
+      const playHalf = (bi, inning) => {
+        const pi = 1 - bi;
+        const batSide = sides[bi];
+        const pitSide = sides[pi];
+        const blowout = Math.abs(runs[0] - runs[1]) >= 6 && inning >= 7;
+        let outs = 0, scored = 0;
+        const bases = [null, null, null];
+        while (outs < 3) {
+          const ps = state[pi].ps;
+          const pen = this._fatiguePenalty(ps);
+          const p = ps.p;
+          const eff = pen ? { ...p, h9: p.h9 - pen, k9: p.k9 - pen, bb9: p.bb9 - pen, hr9: p.hr9 - pen } : { ...p };
+          eff._fieldingDef = pitSide.def;
+          const batter = nextBatter(bi, blowout);
+          const bl = batterLine(batSide, batter);
+          const pl = pit[ps.k];
+          ps.bf++;
+          const outcome = simPaOutcome(batter, eff, batSide.isUser);
+          const credit = (scorers) => {
+            scorers.forEach(r => { if (r) { const rl = batterLine(batSide, r); rl.r++; } });
+            bl.rbi += scorers.length; pl.er += scorers.length; ps.er += scorers.length; scored += scorers.length;
+          };
+          if (outcome === 'OUT') { outs++; bl.ab++; pl.outs++; }
+          else if (outcome === 'SO') { outs++; bl.ab++; bl.so++; pl.outs++; pl.so++; }
+          else if (outcome === 'BB') {
+            bl.bb++; pl.bb++;
+            const scorer = forceWalk(bases, batter);
+            credit(scorer ? [scorer] : []);
+          } else if (outcome === 'HR') {
+            bl.ab++; bl.h++; bl.hr++; pl.h++; pl.hr++; ps.h++;
+            const scorers = [...bases.filter(Boolean), batter];
+            bases[0] = bases[1] = bases[2] = null;
+            credit(scorers);
+          } else {
+            const adv = outcome === '1B' ? 1 : outcome === '2B' ? 2 : 3;
+            bl.ab++; bl.h++; pl.h++; ps.h++;
+            if (outcome === '2B') bl.doubles++;
+            if (outcome === '3B') bl.triples++;
+            credit(advanceOnHit(bases, batter, adv, outs));
+          }
+          // Stolen bases (same curve the user's games always used)
+          if ((outcome === 'BB' || outcome === '1B') && bases[0] === batter && !bases[1]) {
+            const rate = Math.min(1.0, Math.max(0, batter.spd !== undefined ? batter.spd : 50) / 125.0);
+            if (Math.random() < 0.003 + Math.pow(rate, 2.0) * 0.42) {
+              if (Math.random() < 0.55 + rate * 0.32) { bases[1] = batter; bases[0] = null; bl.sb++; }
+              else { bases[0] = null; outs++; }
+            }
+          }
+          // Walk-off: the home team stops batting once it leads in the 9th or later
+          if (bi === 1 && inning >= 9 && runs[1] + scored > runs[0]) break;
+        }
+        runs[bi] += scored;
+      };
+
+      let inning = 1;
+      while (inning <= 9 || (runs[0] === runs[1] && inning <= 20)) {
+        managePitcher(1, inning);
+        playHalf(0, inning);
+        if (inning >= 9 && runs[1] > runs[0]) break; // home leads after the top of the 9th+
+        managePitcher(0, inning);
+        playHalf(1, inning);
+        inning++;
+      }
+      if (runs[0] === runs[1]) runs[Math.random() < 0.5 ? 0 : 1]++; // 20-inning safety valve
+
+      // Decisions: W to the winning starter if he got 15 outs, else his busiest reliever;
+      // L to the losing pitcher who allowed the most runs; SV to the winning team's last
+      // pitcher when he finished a game won by 1-3 runs and didn't get the win.
+      const wi = runs[0] > runs[1] ? 0 : 1, li = 1 - wi;
+      const teamPitchers = si => Object.values(pit).filter(x => x.team === sides[si].id);
+      const wStarter = pit[state[wi].starterPs.k];
+      const wPitcher = wStarter.outs >= 15 ? wStarter
+        : teamPitchers(wi).filter(x => x !== wStarter).sort((a, b) => b.outs - a.outs)[0] || wStarter;
+      wPitcher.w++;
+      teamPitchers(li).sort((a, b) => b.er - a.er || b.outs - a.outs)[0].l++;
+      const last = pit[state[wi].ps.k];
+      if (last !== wPitcher && last !== wStarter && (runs[wi] - runs[li]) <= 3) last.sv++;
+
+      return {
+        runs, innings: inning, bat, pit, winnerId: sides[wi].id,
+        wear: daily.map((d, i) => ({ team: sides[i].id, roster: d.roster, starts: d.starts, rested: d.rested, iron: d.iron }))
+      };
+    },
+
+    // Folds one game's lines into the season's league-wide stats and the bullpen usage log.
+    _commitLeagueGame(result, day) {
+      const L = this.state.league;
+      if (!L.stats) L.stats = { bat: {}, pit: {} };
+      Object.entries(result.bat).forEach(([k, d]) => {
+        const s = L.stats.bat[k] || (L.stats.bat[k] = { key: d.key, name: d.name, team: d.team, pos: d.pos, def: d.def, g: 0, ab: 0, h: 0, doubles: 0, triples: 0, hr: 0, rbi: 0, bb: 0, so: 0, r: 0, sb: 0 });
+        ['g', 'ab', 'h', 'doubles', 'triples', 'hr', 'rbi', 'bb', 'so', 'r', 'sb'].forEach(f => { s[f] += d[f] || 0; });
+      });
+      if (!L.pen) L.pen = {};
+      Object.entries(result.pit).forEach(([k, d]) => {
+        const s = L.stats.pit[k] || (L.stats.pit[k] = { key: d.key, name: d.name, team: d.team, role: d.role, g: 0, gs: 0, outs: 0, h: 0, er: 0, bb: 0, so: 0, hr: 0, w: 0, l: 0, sv: 0 });
+        ['g', 'gs', 'outs', 'h', 'er', 'bb', 'so', 'hr', 'w', 'l', 'sv'].forEach(f => { s[f] += d[f] || 0; });
+        if (!d.gs) {
+          const u = L.pen[k];
+          L.pen[k] = { last: day, run: (u && u.last === day - 1) ? u.run + 1 : 1 };
+        }
+      });
+      // Batter wear: starters add their position's wear, everyone who sat resets.
+      if (!L.wear) L.wear = {};
+      (result.wear || []).forEach(w => {
+        const started = new Map(w.starts.map(s => [s.k, s.pos]));
+        const iron = new Set(w.iron || []);
+        w.roster.forEach(k => {
+          if (started.has(k)) {
+            const add = Math.max(0, (WEAR_BY_POS[started.get(k)] || 0.5) - WEAR_RECOVERY) * (iron.has(k) ? IRON_MAN_WEAR : 1);
+            L.wear[k] = Math.min(WEAR_CAP, Math.round(((L.wear[k] || 0) + add) * 100) / 100);
+          } else if (L.wear[k]) {
+            delete L.wear[k];
+          }
+        });
+      });
     },
 
     _emptyBatterDelta() { return { ab: 0, h: 0, doubles: 0, triples: 0, hr: 0, rbi: 0, bb: 0, so: 0, r: 0, sb: 0 }; },
@@ -1975,7 +3129,9 @@
 
     // ── Playoffs (Authentic Baseball Simulator & Live Viewer) ─────────────
     canStartPlayoffs() {
-      return this.state && this.state.gamesPlayed >= SEASON_LENGTH && this.state.wins >= PLAYOFF_MIN_WINS && !this.state.playoffs.finished;
+      const S = this.state;
+      if (!S || S.gamesPlayed < SEASON_LENGTH || S.playoffs.finished) return false;
+      return S.league ? !!S.playoffs.unlocked : S.wins >= PLAYOFF_MIN_WINS;
     },
 
     getUserTeamName() {
@@ -2015,7 +3171,18 @@
       if (!this.state) return;
       const S = this.state;
       const round = S.playoffs.round;
-      const oppFranchise = generatePlayoffEnemyTeam(round, S.leagueTeams);
+      // The round's game is rolled once and saved: leaving with BACK (or reloading) resumes
+      // the same game where you left it instead of simulating a new one.
+      const pending = S.playoffs.pendingGame;
+      if (pending && pending.round === round && pending.game) {
+        this._activePlayoffSim = { game: pending.game, currentStep: pending.step || 0, autoPlay: false, timer: null, finished: false };
+        this._activePlayoffTab = 'broadcast';
+        this._selectedPlayoffBoxScoreIndex = -1;
+        this.showScreen('screen-challenge-playoffs');
+        this.renderPlayoffLiveGame();
+        return;
+      }
+      const oppFranchise = generatePlayoffEnemyTeam(round, S.leagueTeams, this._playoffOpponentRef(round));
       const opp = oppFranchise;
 
       const userLineup = S.roster.battingOrder.map(slot => S.roster.lineup[slot]).filter(Boolean);
@@ -2037,6 +3204,8 @@
         timer: null,
         finished: false
       };
+      S.playoffs.pendingGame = { round, game: detailedGame, step: 0 };
+      this.save();
       this._activePlayoffTab = 'broadcast';
       this._selectedPlayoffBoxScoreIndex = -1;
 
@@ -2054,12 +3223,10 @@
       const awayLinescore = [];
       const homeLinescore = [];
 
-      const userMaxInnings = Math.min(6, this._getStarterMaxInnings(userSP));
       const oppSP = (opp.pitchers && opp.pitchers[0]) || opp.pitcher;
       const oppRP = (opp.pitchers && opp.pitchers[1]) || opp.reliever || oppSP;
       const oppCL = (opp.pitchers && opp.pitchers[2]) || opp.closer || oppRP;
       const oppPitchers = [oppSP, oppRP, oppCL].filter(Boolean);
-      const oppMaxInnings = Math.min(6, this._getStarterMaxInnings(oppSP));
 
       const userRP = userRelievers[0] || userSP;
       const userCL = userRelievers[1] || userRP || userSP;
@@ -2100,18 +3267,34 @@
         return homePitchersMap[k];
       };
 
-      // Playoff pitching selection logic (3 pitchers per team: SP, Setup RP, Closer CL):
-      const getOppPitcherForInning = (inn, uR, oR) => {
-        if (inn <= oppMaxInnings) return oppSP;
-        if (inn === 9 || inn >= 10 || (inn === 8 && oR >= uR && oR - uR <= 3)) return oppCL;
-        return oppRP;
+      // Playoff pitching: same rules as the regular season. The starter goes until fatigue
+      // sets in (or he's knocked out; a shutout buys him extra rope), then the bullpen:
+      // setup man in close 8ths, closer in the 9th of close games and in extras.
+      const battersFaced = st => st ? st.outs + st.h + st.bb : 0;
+      const tiredPenalty = (p, st, isStarter) =>
+        Math.min(FATIGUE_MAX, FATIGUE_PER_BATTER * Math.max(0, battersFaced(st) - this._freshBatters(p, isStarter)));
+      const withFatigue = (p, st, isStarter) => {
+        const pen = tiredPenalty(p, st, isStarter);
+        if (!pen) return p;
+        return { ...p, h9: p.h9 - pen, k9: p.k9 - pen, bb9: p.bb9 - pen, hr9: p.hr9 - pen };
       };
-
-      const getUserPitcherForInning = (inn, uR, oR) => {
-        if (inn <= userMaxInnings) return userSP;
-        if (inn === 9 || inn >= 10 || (inn === 8 && uR >= oR && uR - oR <= 3)) return userCL;
-        return userRP;
+      const starterOut = { opp: false, user: false };
+      const choosePitcher = (side, sp, rp, cl, inn, lead, stat) => {
+        if (!starterOut[side]) {
+          const knockedOut = (inn <= 5 && stat.er >= 4) || (inn <= 7 && stat.er >= 5);
+          const pen = tiredPenalty(sp, stat, true);
+          const gem = stat.er === 0 && inn <= 9;
+          if (!(knockedOut || (gem ? pen >= 10 : pen >= 6) || inn > 9)) return sp;
+          starterOut[side] = true;
+        }
+        if (inn > 9 || (inn === 9 && lead >= 0 && lead <= 3)) return cl;
+        if (inn === 8 && lead >= -1 && lead <= 4) return rp;
+        return inn >= 9 ? cl : rp;
       };
+      const getOppPitcherForInning = (inn, uR, oR) =>
+        choosePitcher('opp', oppSP, oppRP, oppCL, inn, oR - uR, getHomePitcherObj(oppSP));
+      const getUserPitcherForInning = (inn, uR, oR) =>
+        choosePitcher('user', userSP, userRP, userCL, inn, uR - oR, getAwayPitcherObj(userSP));
 
       while (inning <= 9 || (userRuns === oppRuns && inning <= inningLimit)) {
         // ── TOP of the Inning: Away (User) Bats vs Home (Opp) Pitcher ──
@@ -2131,7 +3314,7 @@
           const outsBefore = topOuts;
           const basesBefore = bases.slice();
 
-          const outcome = simPaOutcome(batter, oppPitcherToday, true);
+          const outcome = simPaOutcome(batter, { ...withFatigue(oppPitcherToday, hPitcherStat, oppPitcherToday === oppSP), _fieldingDef: oppTeamDef }, true);
           let runsThisPA = 0;
           let stolenBase = false;
 
@@ -2268,7 +3451,7 @@
           const outsBefore = botOuts;
           const basesBefore = bases.slice();
 
-          const outcome = simPaOutcome(batter, userPitcherToday, false);
+          const outcome = simPaOutcome(batter, { ...withFatigue(userPitcherToday, aPitcherStat, userPitcherToday === userSP), _fieldingDef: userTeamDef }, false);
           let runsThisPA = 0;
           let stolenBase = false;
 
@@ -3086,6 +4269,8 @@
         btnExitBack.onclick = () => {
           if (sim.timer) clearInterval(sim.timer);
           sim.autoPlay = false;
+          const pg = this.state && this.state.playoffs.pendingGame;
+          if (pg && pg.game === game) { pg.step = sim.currentStep; this.save(); }
           this.showScreen('screen-challenge-playoffs');
           this.renderPlayoffs();
         };
@@ -3368,10 +4553,13 @@
       const S = this.state;
       if (!S.playoffs.boxScores) S.playoffs.boxScores = [];
       S.playoffs.boxScores.push(detailedGame);
+      delete S.playoffs.pendingGame;
 
+      if (S.playoffs.bracket) this._resolvePlayoffRound(S.playoffs.round, won);
       if (!won) {
         S.playoffs.finished = true;
         S.playoffs.won = false;
+        if (S.playoffs.bracket) this._simulateRestOfPlayoffs();
         this.recordSeasonFinished(S, false);
       } else if (S.playoffs.round >= PLAYOFF_ROUNDS.length - 1) {
         S.playoffs.finished = true;
@@ -4483,6 +5671,10 @@
               <span style="font-family:'Press Start 2P',monospace; font-size:10px; color:#00ff66;">
                 ${_t('challenge162.roster_count', 'ROSTER')}: ${allPulled.length}/25
               </span>
+              ${!isDraftComplete ? `
+                <button id="btn-c162-pack-open5" class="btn btn-secondary c162-pack-fast-btn" title="Open the next 5 packs of this box at once">📦 OPEN 5</button>
+                <button id="btn-c162-pack-auto" class="btn c162-pack-fast-btn c162-pack-auto-btn" title="Open every remaining pack and jump to Meet the Team">⚡ AUTO DRAFT</button>
+              ` : ''}
               <button id="btn-c162-pack-cancel" class="btn btn-secondary" style="padding:6px 12px; font-size:8.5px; font-family:'Press Start 2P',monospace;">
                 ✕ ${_t('challenge162.cancel', 'CANCEL')}
               </button>
@@ -4495,7 +5687,7 @@
           </div>
 
           <!-- Main Grid: Left Stage (Pack/Card) + Right Board (Card Deck) -->
-          <div style="display:grid; grid-template-columns: 460px 1fr; gap:16px; align-items:start;">
+          <div class="c162-pack-layout" style="display:grid; grid-template-columns: 460px 1fr; gap:16px; align-items:start;">
             
             <!-- Left Column -->
             ${leftColumnHTML}
@@ -4624,54 +5816,16 @@
           } else if (typeof window.playSound === 'function') {
             window.playSound('card_flip');
           }
-
-          const bPool = getBatterPool();
-          const pPool = getPitcherPool();
-          const allPulledSoFar = [...draft.pulledBatters, ...draft.pulledPitchers];
-          const currentSlots = calculateChallengeRosterSlots(allPulledSoFar, false);
-
-          const missingPos = [];
-          if (isPitchersStage) {
-            const spEmpty = currentSlots.sp.filter(s => s === null).length;
-            const rpEmpty = currentSlots.rp.filter(s => s === null).length;
-            if (spEmpty > 0) missingPos.push('SP');
-            if (rpEmpty > 0) missingPos.push('RP', 'CL', 'CP');
-          } else {
-            SLOTS.forEach(slot => {
-              if (!currentSlots.lineup[slot]) missingPos.push(slot);
-            });
-          }
-
-          const activePool = isPitchersStage ? pPool : bPool;
-          const currentTier = this._getPackTierInfo(draft.currentPack);
-          let card = pickWeightedChallengeDraftCard(activePool, missingPos, draft.usedKeys, currentTier.minRarity);
-          if (!card) {
-            card = activePool.find(c => {
-              const k = c.role ? pitcherUnlockKey(c) : batterUnlockKey(c);
-              return !draft.usedKeys.has(k);
-            }) || activePool[0];
-          }
-
-          const cKey = card.role ? pitcherUnlockKey(card) : batterUnlockKey(card);
-          draft.usedKeys.add(cKey);
-          if (isPitchersStage) draft.pulledPitchers.push(card);
-          else draft.pulledBatters.push(card);
-
-          draft.currentCard = card;
-          draft.currentPack++;
-          draft.packOpened = true;
-
-          const newAllPulled = [...draft.pulledBatters, ...draft.pulledPitchers];
-          const newAuto = calculateChallengeRosterSlots(newAllPulled, false);
-          draft.manualSlots = {
-            lineup: Object.assign({}, newAuto.lineup),
-            bench: (newAuto.bench || []).slice(),
-            sp: (newAuto.sp || []).slice(),
-            rp: (newAuto.rp || []).slice()
-          };
+          this._pullNextPackCard();
           this.renderPacksDraft();
         };
       }
+
+      // 1b. Fast options: open 5 (within the current box) or auto-draft everything left
+      const btnOpen5 = container.querySelector('#btn-c162-pack-open5');
+      if (btnOpen5) btnOpen5.onclick = () => this._autoPullPacks(5);
+      const btnAuto = container.querySelector('#btn-c162-pack-auto');
+      if (btnAuto) btnAuto.onclick = () => this._autoPullPacks(Infinity);
 
       // 2. Card 3D Flip Handlers
       const btnFlip = container.querySelector('#btn-c162-flip-card');
@@ -4759,7 +5913,417 @@
 
       const pitchers = { SP: finalSP, RP: finalRP };
       this._packDraft = null;
-      this.startNewChallenge(lineup, pitchers, { type: 'packs', label: '📦 HOBBY PACKS DRAFT', desc: '25-Pack Universe Draft' }, finalBench);
+      this.showMeetTheTeam({
+        lineup, pitchers, bench: finalBench,
+        cfg: { type: 'packs', label: '📦 HOBBY PACKS DRAFT', desc: '25-Pack Universe Draft' }
+      });
+    },
+
+    // Pulls the next card of the current box, exactly as tapping the foil does.
+    _pullNextPackCard() {
+      const draft = this._packDraft;
+      if (!draft || draft.currentPack >= draft.totalPacks) return null;
+      const isPitchersStage = draft.stage === 'pitchers';
+      const allPulledSoFar = [...draft.pulledBatters, ...draft.pulledPitchers];
+      const currentSlots = calculateChallengeRosterSlots(allPulledSoFar, false);
+
+      const missingPos = [];
+      if (isPitchersStage) {
+        if (currentSlots.sp.filter(s => s === null).length > 0) missingPos.push('SP');
+        if (currentSlots.rp.filter(s => s === null).length > 0) missingPos.push('RP', 'CL', 'CP');
+      } else {
+        SLOTS.forEach(slot => { if (!currentSlots.lineup[slot]) missingPos.push(slot); });
+      }
+
+      const activePool = isPitchersStage ? getPitcherPool() : getBatterPool();
+      const currentTier = this._getPackTierInfo(draft.currentPack);
+      let card = pickWeightedChallengeDraftCard(activePool, missingPos, draft.usedKeys, currentTier.minRarity);
+      if (!card) {
+        card = activePool.find(c => !draft.usedKeys.has(c.role ? pitcherUnlockKey(c) : batterUnlockKey(c))) || activePool[0];
+      }
+
+      draft.usedKeys.add(card.role ? pitcherUnlockKey(card) : batterUnlockKey(card));
+      if (isPitchersStage) draft.pulledPitchers.push(card);
+      else draft.pulledBatters.push(card);
+
+      draft.currentCard = card;
+      draft.currentPack++;
+      draft.packOpened = true;
+
+      const newAuto = calculateChallengeRosterSlots([...draft.pulledBatters, ...draft.pulledPitchers], false);
+      draft.manualSlots = {
+        lineup: Object.assign({}, newAuto.lineup),
+        bench: (newAuto.bench || []).slice(),
+        sp: (newAuto.sp || []).slice(),
+        rp: (newAuto.rp || []).slice()
+      };
+      return card;
+    },
+
+    // count = 5 opens up to 5 packs without leaving the current box;
+    // count = Infinity drafts everything left (both boxes) and goes to the montage.
+    _autoPullPacks(count) {
+      const draft = this._packDraft;
+      if (!draft) return;
+      const pulled = [];
+      const crossBoxes = count === Infinity;
+      while (pulled.length < count) {
+        if (draft.currentPack >= draft.totalPacks) {
+          if (crossBoxes && draft.stage === 'batters') {
+            draft.stage = 'pitchers';
+            draft.currentPack = 0;
+            draft.totalPacks = 11;
+            continue;
+          }
+          break;
+        }
+        const card = this._pullNextPackCard();
+        if (!card) break;
+        pulled.push(card);
+      }
+      if (!pulled.length) return;
+      if (window.AudioManager && typeof window.AudioManager.play === 'function') window.AudioManager.play('card_deal');
+      const done = draft.stage === 'pitchers' && draft.currentPack >= draft.totalPacks;
+      this._renderPackMontage(pulled, done);
+    },
+
+    _renderPackMontage(cards, draftDone) {
+      const container = document.getElementById('challenge162-pack-container');
+      if (!container) return;
+      const best = cards.slice().sort((a, b) => (b.ovr || 0) - (a.ovr || 0))[0];
+      container.innerHTML = `
+        <div class="c162-montage">
+          <div class="c162-montage-title">${cards.length > 5 ? '⚡ AUTO DRAFT COMPLETE' : `📦 ${cards.length} PACKS OPENED`}</div>
+          <div class="c162-montage-sub">Best pull: <strong>${best.name}</strong> · OVR ${Math.round(best.ovr || 0)} · ${best.rarity || ''}</div>
+          <div class="c162-montage-grid">
+            ${cards.map((c, i) => `<div class="c162-montage-card" style="--i:${i};">${window.createCardHTML ? window.createCardHTML(c, c.role || c.pos) : c.name}</div>`).join('')}
+          </div>
+          <div class="c162-montage-actions">
+            <button id="btn-c162-montage-continue" class="btn c162-cta">${draftDone ? '🤝 MEET THE TEAM ▶' : '▶ BACK TO THE PACKS'}</button>
+          </div>
+        </div>`;
+      container.querySelector('#btn-c162-montage-continue').onclick = () => {
+        if (draftDone) this.finishPacksDraftAndStart();
+        else this.renderPacksDraft();
+      };
+    },
+
+    // ── Meet the Team → League Preview → season ─────────────────────────────
+    _pendingSeason: null,
+
+    _suggestTeamName(cards) {
+      const franchiseNames = (window.PlayersDB && window.PlayersDB.FranchiseNames) || {};
+      const counts = {};
+      cards.forEach(c => { if (c && c.team) counts[c.team] = (counts[c.team] || 0) + 1; });
+      const top = Object.keys(counts).sort((a, b) => counts[b] - counts[a])[0];
+      if (top && counts[top] >= 13 && franchiseNames[top]) return franchiseNames[top];
+      return 'My Legends';
+    },
+
+    _pendingCards(p) {
+      return [
+        ...SLOTS.map(s => p.lineup[s]).filter(Boolean),
+        ...(p.pitchers.SP || []), ...(p.pitchers.RP || [])
+      ];
+    },
+
+    _pendingStrength(p) {
+      const lineup = p.battingOrder.map(s => p.lineup[s]).filter(Boolean);
+      return teamStrength(lineup, (p.pitchers.SP || [])[0] || null);
+    },
+
+    showMeetTheTeam(pending) {
+      pending.battingOrder = pending.battingOrder || this._optimizeBattingOrder(pending.lineup);
+      pending.teamName = pending.teamName || this._suggestTeamName(this._pendingCards(pending));
+      this._pendingSeason = pending;
+      this._meetAnimated = false;
+      this.showScreen('screen-challenge-pack');
+      this.renderMeetTheTeam();
+    },
+
+    renderMeetTheTeam() {
+      const p = this._pendingSeason;
+      const container = document.getElementById('challenge162-pack-container');
+      if (!p || !container) return;
+      const order = p.battingOrder;
+      const batters = order.map(s => ({ ...p.lineup[s], _slot: s })).filter(b => b.name);
+      const SP = p.pitchers.SP || [];
+      const RP = p.pitchers.RP || [];
+      const avg = (arr, f) => arr.length ? arr.reduce((s, x) => s + (Number(f(x)) || 0), 0) / arr.length : 0;
+      const fielders = batters.filter(b => b._slot !== 'DH');
+      const grades = [
+        ['CONTACT', avg(batters, b => b.con)],
+        ['POWER', avg(batters, b => b.pwr)],
+        ['EYE', avg(batters, b => b.eye)],
+        ['SPEED', avg(batters, b => b.spd)],
+        ['DEFENSE', avg(fielders, b => b.def)],
+        ['ROTATION', avg(SP, x => x.ovr)],
+        ['BULLPEN', avg(RP, x => x.ovr)]
+      ];
+      const teamOvr = avg([...batters, ...SP, ...RP], x => x.ovr);
+      const ATTRS = [['con', 'CONTACT'], ['pwr', 'POWER'], ['eye', 'EYE'], ['spd', 'SPEED'], ['def', 'GLOVE']];
+      const bestTool = b => ATTRS.map(([k, l]) => [l, Number(b[k]) || 0]).sort((x, y) => y[1] - x[1])[0];
+      const xFactor = batters.slice().sort((a, b) => (b.ovr || 0) - (a.ovr || 0))[0];
+      // Same convention simulateGame() uses: an explicit CL/SETUP role, else RP[0] closes and RP[1] sets up.
+      const closer = RP.find(r => r.role === 'CL') || RP[0];
+      const setup = RP.find(r => r.role === 'SETUP') || RP[1];
+      const penRole = x => (x === closer ? 'CL' : x === setup ? 'SU' : 'RP');
+      // On re-renders (reordering) the cards are marked as already dealt so ui.js doesn't flip them again.
+      const anim = this._meetAnimated ? 'no-anim card-deal-in' : '';
+
+      const cardsHTML = batters.map((b, i) => {
+        const [tool, val] = bestTool(b);
+        return `<div class="c162-meet-card ${anim}" style="--i:${i};">
+          <div class="c162-meet-order">#${i + 1} · ${b._slot}</div>
+          ${window.createCardHTML ? window.createCardHTML(b, b._slot) : b.name}
+          <div class="c162-meet-tag" style="color:${getGradeColor(val)};">${tool} ${getGrade(val)}</div>
+        </div>`;
+      }).join('');
+
+      const orderRows = batters.map((b, i) => `
+        <div class="c162-meet-row r6">
+          <span class="c162-meet-num">${i + 1}</span>
+          <span class="c162-meet-pos">${b._slot}</span>
+          <span class="c162-meet-name">${b.name}</span>
+          <span class="c162-meet-ovr">${Math.round(b.ovr || 0)}</span>
+          <button class="c162-mv" data-list="order" data-i="${i}" data-d="-1" ${i === 0 ? 'disabled' : ''}>▲</button>
+          <button class="c162-mv" data-list="order" data-i="${i}" data-d="1" ${i === batters.length - 1 ? 'disabled' : ''}>▼</button>
+        </div>`).join('');
+      const rotRows = SP.map((x, i) => `
+        <div class="c162-meet-row r5">
+          <span class="c162-meet-num">SP${i + 1}</span>
+          <span class="c162-meet-name">${x.name}</span>
+          <span class="c162-meet-ovr">${Math.round(x.ovr || 0)}</span>
+          <button class="c162-mv" data-list="rot" data-i="${i}" data-d="-1" ${i === 0 ? 'disabled' : ''}>▲</button>
+          <button class="c162-mv" data-list="rot" data-i="${i}" data-d="1" ${i === SP.length - 1 ? 'disabled' : ''}>▼</button>
+        </div>`).join('');
+      // Bench: who covers rest days, and which positions have no one behind the starter.
+      const bench = (p.bench || []).filter(Boolean);
+      const uncovered = rosterCoverGaps(p.lineup, bench);
+      const benchRows = bench.map(b => {
+        const cover = SLOTS.filter(s => s !== 'DH' && canPlayerFillSlot(b, s));
+        return `<div class="c162-meet-row r3">
+          <span class="c162-meet-num">BN</span>
+          <span class="c162-meet-name">${b.name} <small class="c162-meet-cover">${cover.join(' ') || 'DH'}</small></span>
+          <span class="c162-meet-ovr">${Math.round(b.ovr || 0)}</span>
+        </div>`;
+      }).join('');
+      const coverNote = !bench.length ? ''
+        : uncovered.length
+          ? `<div class="c162-meet-warn">⚠ No backup at ${uncovered.join(', ')}: ${uncovered.length > 1 ? 'those starters' : 'that starter'} will sit less often (at −2) and a bench player fills in out of position, with a poor glove.</div>`
+          : `<div class="c162-meet-ok">✓ Every position has a backup for rest days.</div>`;
+      const penRows = RP.map(x => `
+        <div class="c162-meet-row r3">
+          <span class="c162-meet-num">${penRole(x)}</span>
+          <span class="c162-meet-name">${x.name}</span>
+          <span class="c162-meet-ovr">${Math.round(x.ovr || 0)}</span>
+        </div>`).join('');
+
+      container.innerHTML = `
+        <div class="c162-meet">
+          <div class="c162-meet-hero ${this._meetAnimated ? 'no-anim' : ''}">
+            <div class="c162-meet-kicker">MEET YOUR TEAM</div>
+            <input id="c162-team-name" class="c162-team-name-input" maxlength="28" value="${String(p.teamName).replace(/"/g, '&quot;')}" aria-label="Team name">
+            <div class="c162-meet-ovr-big"><span>TEAM OVR</span><b>${teamOvr.toFixed(1)}</b></div>
+            <div class="c162-meet-grades">
+              ${grades.map(([l, v]) => `<div class="c162-grade-chip"><span>${l}</span><b style="color:${getGradeColor(v)};">${getGrade(v)}</b></div>`).join('')}
+            </div>
+            <div class="c162-meet-spotlight">
+              <div><span>X-FACTOR</span><b>${xFactor ? xFactor.name : '—'}</b></div>
+              <div><span>ACE</span><b>${SP[0] ? SP[0].name : '—'}</b></div>
+              <div><span>CLOSER</span><b>${closer ? closer.name : '—'}</b></div>
+            </div>
+          </div>
+
+          <div class="c162-meet-section">THE STARTING NINE</div>
+          <div class="c162-meet-cards">${cardsHTML}</div>
+
+          <div class="c162-meet-columns">
+            <div class="c162-meet-panel">
+              <div class="c162-meet-panel-title"><span>⚾ BATTING ORDER</span><button id="btn-c162-optimize" class="c162-link-btn">⚙ OPTIMIZE</button></div>
+              ${orderRows}
+              ${bench.length ? `<div class="c162-meet-panel-title" style="margin-top:10px;"><span>🛋️ BENCH</span><span class="c162-meet-hint">covers rest days</span></div>
+              ${benchRows}${coverNote}` : ''}
+            </div>
+            <div class="c162-meet-panel">
+              <div class="c162-meet-panel-title"><span>🧢 ROTATION</span><span class="c162-meet-hint">SP1 opens day 1</span></div>
+              ${rotRows}
+              <div class="c162-meet-panel-title" style="margin-top:10px;"><span>🔥 BULLPEN</span></div>
+              ${penRows}
+            </div>
+          </div>
+
+          <div class="c162-meet-actions">
+            <button id="btn-c162-meet-next" class="btn c162-cta">🏟️ LEAGUE PREVIEW ▶</button>
+          </div>
+        </div>`;
+      this._meetAnimated = true;
+
+      const nameInput = container.querySelector('#c162-team-name');
+      nameInput.oninput = () => { p.teamName = nameInput.value.trim() || this._suggestTeamName(this._pendingCards(p)); };
+      container.querySelectorAll('.c162-mv').forEach(btn => {
+        btn.onclick = () => {
+          const i = parseInt(btn.dataset.i, 10), d = parseInt(btn.dataset.d, 10);
+          const list = btn.dataset.list === 'order' ? p.battingOrder : p.pitchers.SP;
+          const j = i + d;
+          if (j < 0 || j >= list.length) return;
+          [list[i], list[j]] = [list[j], list[i]];
+          this.renderMeetTheTeam();
+        };
+      });
+      container.querySelector('#btn-c162-optimize').onclick = () => {
+        p.battingOrder = this._optimizeBattingOrder(p.lineup);
+        this.renderMeetTheTeam();
+      };
+      container.querySelector('#btn-c162-meet-next').onclick = () => this.showLeaguePreview(p);
+    },
+
+    // Expected wins over the actual 162-day slate, from the same win model the league uses.
+    _projectLeague(L) {
+      const exp = {};
+      Object.keys(L.teams).forEach(id => { exp[id] = 0; });
+      for (let d = 0; d < SEASON_LENGTH; d++) {
+        leagueDaySlate(L, d).forEach(([a, b]) => {
+          const pa = winProbability(L.teams[a].strength, L.teams[b].strength, 0);
+          exp[a] += pa;
+          exp[b] += 1 - pa;
+        });
+      }
+      return exp;
+    },
+
+    showLeaguePreview(pending) {
+      pending.battingOrder = pending.battingOrder || this._optimizeBattingOrder(pending.lineup);
+      pending.teamName = pending.teamName || this._suggestTeamName(this._pendingCards(pending));
+      const strength = this._pendingStrength(pending);
+      if (!pending.league) {
+        const draftLike = { roster: { lineup: pending.lineup, pitchers: pending.pitchers } };
+        pending.league = createLeague(this._suggestUserLeague(draftLike), strength, pending.teamName, null, this._userCards(pending));
+      }
+      registerLeagueRosters(pending.league);
+      pending.league.teams[USER_TEAM_ID].strength = Math.round(strength * 10) / 10;
+      pending.league.teams[USER_TEAM_ID].name = pending.teamName;
+      this._pendingSeason = pending;
+      this.showScreen('screen-challenge-pack');
+      this.renderLeaguePreview();
+    },
+
+    _setPendingLeague(lg) {
+      const L = this._pendingSeason.league;
+      L.userLeague = lg;
+      L.teams[USER_TEAM_ID].league = lg;
+      placeNegroLeagues(L);
+    },
+
+    renderLeaguePreview() {
+      const p = this._pendingSeason;
+      const container = document.getElementById('challenge162-pack-container');
+      if (!p || !container) return;
+      const L = p.league;
+      const userLg = L.teams[USER_TEAM_ID].league;
+      const exp = this._projectLeague(L);
+      const proj = id => Math.round(exp[id]);
+      const order = Object.keys(L.teams).sort((a, b) => exp[b] - exp[a]);
+      const mine = order.filter(id => L.teams[id].league === userLg);
+      const myRank = mine.indexOf(USER_TEAM_ID) + 1;
+      const threats = mine.filter(id => id !== USER_TEAM_ID).slice(0, 3);
+      const leagueCard = lg => {
+        const top = order.filter(id => L.teams[id].league === lg && id !== USER_TEAM_ID).slice(0, 3);
+        // The user and the Negro Leagues All-Stars always sit in opposite leagues.
+        const chosen = userLg === lg;
+        const franchises = Object.values(L.teams).filter(t => !t.isUser && t.id !== NLB_TEAM_ID && t.league === lg).length;
+        const nlbHere = L.teams[NLB_TEAM_ID].league === lg;
+        return `<button class="c162-lg-pick ${chosen ? 'active' : ''} lg-${lg}" data-lg="${lg}">
+          <span class="c162-lg-pick-name">${lg === 'AL' ? 'AMERICAN LEAGUE' : 'NATIONAL LEAGUE'}${chosen ? ' <span class="c162-lg-pick-badge">✓ YOUR LEAGUE</span>' : ''}</span>
+          <span class="c162-lg-pick-sub">${chosen
+            ? `You play here against ${franchises} franchises${nlbHere ? ' and the Negro Leagues All-Stars' : ''}.`
+            : `${franchises} franchises${nlbHere ? ' + the Negro Leagues All-Stars' : ''}. Tap to join instead; the All-Stars would move to the ${otherLeague(lg)}.`}</span>
+          <span class="c162-lg-pick-top">Favorites: ${top.map(id => L.teams[id].name).join(' · ')}</span>
+        </button>`;
+      };
+      const rows = order.map((id, i) => {
+        const t = L.teams[id];
+        const w = proj(id);
+        return `<div class="c162-pr-row no-move ${t.isUser ? 'is-user' : ''}">
+          <span class="c162-pr-rank">${i + 1}</span>
+          <span class="c162-pr-lg lg-${t.league}">${t.league}</span>
+          <span class="c162-pr-name">${t.name}</span>
+          <span class="c162-pr-rec">${w}-${SEASON_LENGTH - w}</span>
+          <span class="c162-pr-str">STR ${t.strength}</span>
+        </div>`;
+      }).join('');
+
+      container.innerHTML = `
+        <div class="c162-preview">
+          <div class="c162-preview-head">
+            <div>
+              <div class="c162-meet-kicker">LEAGUE PREVIEW · ${SEASON_LENGTH}-GAME SEASON</div>
+              <div class="c162-preview-title">${p.teamName}</div>
+            </div>
+            <div class="c162-preview-proj">
+              <div><span>PROJECTED</span><b>${proj(USER_TEAM_ID)}-${SEASON_LENGTH - proj(USER_TEAM_ID)}</b></div>
+              <div><span>${userLg} RANK</span><b>#${myRank}</b></div>
+              <div><span>GOAL</span><b>162-0</b></div>
+            </div>
+          </div>
+
+          <div class="c162-meet-section">CHOOSE YOUR LEAGUE</div>
+          <div class="c162-lg-picks">${leagueCard('AL')}${leagueCard('NL')}</div>
+          <div class="c162-pr-note">Top ${PLAYOFF_SEEDS} of each league make the playoffs: 1 plays 4, 2 plays 3, league final, then the World Series. Most of your games are against your own league.</div>
+
+          <div class="c162-meet-section">IRON MEN · PICK UP TO ${MAX_IRON_MAN}</div>
+          <div class="c162-pr-note">An Iron Man wears down at a quarter of everyone else's speed, so he needs fewer days off and plays more games. He still tires (up to −3 to his bat) and still gets rest days when he needs them. Worth the most at catcher, shortstop and center field, where wear builds fastest. Locked once the season starts.</div>
+          <div class="c162-iron-picks">${p.battingOrder.map(slot => {
+            const b = p.lineup[slot];
+            if (!b) return '';
+            const k = batterUnlockKey(b);
+            const on = !!(p.ironMan && p.ironMan[k]);
+            const full = !on && Object.keys(p.ironMan || {}).length >= MAX_IRON_MAN;
+            const wear = WEAR_BY_POS[slot] - WEAR_RECOVERY;
+            const cost = wear < 0.5 ? 'low wear · small gain' : wear < 1 ? 'mid wear · good gain' : 'high wear · big gain';
+            return `<button class="c162-iron-pick ${on ? 'on' : ''}" data-iron="${k}" ${full ? 'disabled' : ''}>
+              <span class="c162-iron-pos">${slot}</span><b>${b.name}</b><small>${cost}</small>
+            </button>`;
+          }).join('')}</div>
+
+          <div class="c162-meet-section">TEAMS TO WATCH IN THE ${userLg}</div>
+          <div class="c162-threats">
+            ${threats.map(id => `<div class="c162-threat"><b>${L.teams[id].name}</b><span>Proj. ${proj(id)}-${SEASON_LENGTH - proj(id)} · STR ${L.teams[id].strength}</span></div>`).join('')}
+          </div>
+
+          <div class="c162-meet-section">PRESEASON POWER RANKINGS</div>
+          <div class="c162-pr-note">Projected records from roster strength. Your actual games are played out pitch by pitch.</div>
+          <div class="c162-pr-list">${rows}</div>
+
+          <div class="c162-meet-actions">
+            ${p.cfg && p.cfg.type === 'packs' ? '<button id="btn-c162-preview-back" class="btn btn-secondary">◀ TEAM</button>' : ''}
+            <button id="btn-c162-preview-start" class="btn c162-cta">⚾ PLAY BALL! START THE SEASON</button>
+          </div>
+        </div>`;
+
+      container.querySelectorAll('.c162-lg-pick').forEach(btn => {
+        btn.onclick = () => { this._setPendingLeague(btn.dataset.lg); this.renderLeaguePreview(); };
+      });
+      container.querySelectorAll('.c162-iron-pick').forEach(btn => {
+        btn.onclick = () => {
+          if (!p.ironMan) p.ironMan = {};
+          const k = btn.dataset.iron;
+          if (p.ironMan[k]) delete p.ironMan[k];
+          else if (Object.keys(p.ironMan).length < MAX_IRON_MAN) p.ironMan[k] = true;
+          const y = window.scrollY;
+          this.renderLeaguePreview();
+          window.scrollTo(0, y);
+        };
+      });
+      const back = container.querySelector('#btn-c162-preview-back');
+      if (back) back.onclick = () => this.renderMeetTheTeam();
+      container.querySelector('#btn-c162-preview-start').onclick = () => {
+        this._pendingSeason = null;
+        if (window.AudioManager && typeof window.AudioManager.play === 'function') window.AudioManager.play('play_ball');
+        this.startNewChallenge(p.lineup, p.pitchers, p.cfg || this.getModeConfig(), p.bench || [], {
+          league: L, teamName: p.teamName, battingOrder: p.battingOrder, ironMan: p.ironMan || {}
+        });
+      };
     },
 
     startRosterBuilder() {
@@ -4767,6 +6331,7 @@
         this.initUnlocks();
       }
       this._draftLineup = {};
+      this._draftBench = [];
       this._draftPitchers = { SP: [], RP: [] };
       this._activeSlot = null;
       this._searchTerm = '';
@@ -4783,6 +6348,7 @@
         this.unlockFromRun(runGame);
       }
       this._draftLineup = {};
+      this._draftBench = [];
       this._draftPitchers = { SP: [], RP: [] };
       this._activeSlot = null;
       this._searchTerm = '';
@@ -4843,9 +6409,25 @@
         }
       }
 
-      // 3. Fill RPs (3)
+      // 3. Fill the bench (5): a backup catcher first, then a middle infielder and an
+      // outfielder, then the best bats left — the bench is who covers rest days.
+      if (!Array.isArray(this._draftBench)) this._draftBench = [];
+      this._draftBench.filter(Boolean).forEach(p => usedB.add(batterUnlockKey(p)));
+      const benchNeeds = [p => canPlayerFillSlot(p, 'C'), p => canPlayerFillSlot(p, 'SS') || canPlayerFillSlot(p, '2B'),
+        p => ['LF', 'CF', 'RF'].some(s => canPlayerFillSlot(p, s))];
+      const benchHas = fits => this._draftBench.some(p => p && fits(p));
+      const fillBench = fits => {
+        const i = [0, 1, 2, 3, 4].find(n => !this._draftBench[n]);
+        if (i === undefined) return;
+        const match = eligibleBatters.find(p => !usedB.has(batterUnlockKey(p)) && fits(p));
+        if (match) { this._draftBench[i] = match; usedB.add(batterUnlockKey(match)); }
+      };
+      benchNeeds.forEach(fits => { if (!benchHas(fits)) fillBench(fits); });
+      for (let n = 0; n < 5; n++) fillBench(() => true);
+
+      // 4. Fill RPs (6: CL, SETUP, 4 middle)
       const rps = eligiblePitchers.filter(p => (p.role || 'SP').toUpperCase() === 'RP');
-      for (let i = 0; i < 3; i++) {
+      for (let i = 0; i < ROSTER_RP; i++) {
         if (!this._draftPitchers.RP[i]) {
           const match = rps.find(p => !usedP.has(pitcherUnlockKey(p))) || sps.find(p => !usedP.has(pitcherUnlockKey(p)));
           if (match) {
@@ -4866,6 +6448,7 @@
 
     clearDraftRoster() {
       this._draftLineup = {};
+      this._draftBench = [];
       this._draftPitchers = { SP: [], RP: [] };
       this._activeSlot = null;
       this._searchTerm = '';
@@ -4911,8 +6494,10 @@
         if (!this._draftPitchers) this._draftPitchers = { SP: [], RP: [] };
         if (!Array.isArray(this._draftPitchers.SP)) this._draftPitchers.SP = [];
         if (!Array.isArray(this._draftPitchers.RP)) this._draftPitchers.RP = [];
+        if (!Array.isArray(this._draftBench)) this._draftBench = [];
 
         const _t = (key, fallback, params) => (typeof window.t === 'function' ? window.t(key, params) : fallback);
+        const rpLabel = i => (i === 0 ? 'CL' : (i === 1 ? 'SETUP' : `RP${i - 1}`));
 
         const mode = this.getModeConfig();
         const eligibleBatters = this.getEligibleBatters() || [];
@@ -4939,39 +6524,59 @@
           return this._renderTradingCardHTML(assigned, `SP${i + 1}`, isActive, 'SP', i);
         }).join('');
 
-        const rpSlotsHTML = [0, 1, 2].map(i => {
+        const rpSlotsHTML = Array.from({ length: ROSTER_RP }, (_, i) => i).map(i => {
           const assigned = this._draftPitchers.RP[i];
-          const label = i === 0 ? 'CL' : (i === 1 ? 'SETUP' : 'RP');
           const isActive = this._activeSlot && this._activeSlot.kind === 'RP' && this._activeSlot.key === i;
-          return this._renderTradingCardHTML(assigned, label, isActive, 'RP', i);
+          return this._renderTradingCardHTML(assigned, rpLabel(i), isActive, 'RP', i);
         }).join('');
 
+        const benchSlotsHTML = Array.from({ length: BENCH_SIZE }, (_, i) => i).map(i => {
+          const assigned = this._draftBench[i];
+          const isActive = this._activeSlot && this._activeSlot.kind === 'bench' && this._activeSlot.key === i;
+          return this._renderTradingCardHTML(assigned, `BN${i + 1}`, isActive, 'bench', i);
+        }).join('');
+
+        const usedBatterKeys = new Set([...SLOTS.map(s => this._draftLineup[s]), ...this._draftBench].filter(Boolean).map(batterUnlockKey));
+        const usedPitcherKeys = new Set([...this._draftPitchers.SP, ...this._draftPitchers.RP].filter(Boolean).map(pitcherUnlockKey));
+
+        // 25-man roster: 9 + 5 bench + 5 SP + 6 RP. Bench or bullpen slots the unlocked
+        // collection can't fill anymore are waived, so a small collection can still start.
         const filledBatters = SLOTS.filter(s => this._draftLineup[s]).length;
+        const filledBench = this._draftBench.filter(Boolean).length;
         const filledSPs = this._draftPitchers.SP.filter(Boolean).length;
         const filledRPs = this._draftPitchers.RP.filter(Boolean).length;
-        const filledCount = filledBatters + filledSPs + filledRPs;
-        const complete = filledCount === 17;
+        const spareBatters = eligibleBatters.filter(p => !usedBatterKeys.has(batterUnlockKey(p))).length;
+        const sparePitchers = eligiblePitchers.filter(p => !usedPitcherKeys.has(pitcherUnlockKey(p))).length;
+        const needBench = Math.min(BENCH_SIZE, filledBench + spareBatters);
+        const needRPs = Math.max(3, Math.min(ROSTER_RP, filledRPs + sparePitchers));
+        const filledCount = filledBatters + filledBench + filledSPs + filledRPs;
+        const rosterTarget = 9 + needBench + 5 + needRPs;
+        const complete = filledBatters === 9 && filledSPs === 5 && filledBench >= needBench && filledRPs >= needRPs;
 
         // Calculate average OVR
         const allSlotted = [
           ...SLOTS.map(s => this._draftLineup[s]).filter(Boolean),
+          ...this._draftBench.filter(Boolean),
           ...this._draftPitchers.SP.filter(Boolean),
           ...this._draftPitchers.RP.filter(Boolean)
         ];
         const avgOVR = allSlotted.length ? (allSlotted.reduce((acc, p) => acc + (p.ovr || 50), 0) / allSlotted.length).toFixed(1) : '—';
 
-        const usedBatterKeys = new Set(SLOTS.map(s => this._draftLineup[s]).filter(Boolean).map(batterUnlockKey));
-        const usedPitcherKeys = new Set([...this._draftPitchers.SP, ...this._draftPitchers.RP].filter(Boolean).map(pitcherUnlockKey));
-
         // Modal Overlay for Card Selection
         let modalOverlayHTML = '';
         if (this._activeSlot) {
-          const isPitcherSlot = this._activeSlot.kind !== 'batter';
-          const slotName = this._activeSlot.key;
-          const slotDisplay = this._activeSlot.kind === 'batter' ? slotName : (this._activeSlot.kind === 'SP' ? `SP${this._activeSlot.key + 1}` : (this._activeSlot.key === 0 ? 'CL' : (this._activeSlot.key === 1 ? 'SETUP' : 'RP')));
+          const isPitcherSlot = this._activeSlot.kind === 'SP' || this._activeSlot.kind === 'RP';
+          const slotName = this._activeSlot.kind === 'bench' ? 'DH' : this._activeSlot.key;
+          const slotDisplay = this._activeSlot.kind === 'batter' ? slotName
+            : this._activeSlot.kind === 'bench' ? `BN${this._activeSlot.key + 1}`
+            : (this._activeSlot.kind === 'SP' ? `SP${this._activeSlot.key + 1}` : rpLabel(this._activeSlot.key));
 
+          // Bullpen slots list relievers first, then starters (any starter can pitch in relief).
+          const isRelieverCard = p => (p.role || 'SP').toUpperCase() === 'RP';
           let pool = isPitcherSlot
-            ? eligiblePitchers.filter(p => (p.role || 'SP').toUpperCase() === this._activeSlot.kind)
+            ? (this._activeSlot.kind === 'SP'
+              ? eligiblePitchers.filter(p => !isRelieverCard(p))
+              : eligiblePitchers.slice())
             : (slotName === 'DH' ? eligibleBatters : eligibleBatters.filter(p => {
                 if (p.pos === slotName) return true;
                 const secPos = (p.sec_pos || '').split(',').map(s => s.trim());
@@ -4983,8 +6588,9 @@
             ? pool.filter(p => !usedPitcherKeys.has(pitcherUnlockKey(p)))
             : pool.filter(p => !usedBatterKeys.has(batterUnlockKey(p)));
 
-          // Sort by OVR descending
-          pool.sort((a, b) => (b.ovr || 50) - (a.ovr || 50));
+          // Sort by OVR descending (relievers ahead of starters for bullpen slots)
+          const rpFirst = this._activeSlot.kind === 'RP';
+          pool.sort((a, b) => (rpFirst ? (isRelieverCard(b) - isRelieverCard(a)) : 0) || (b.ovr || 50) - (a.ovr || 50));
 
           const term = (this._searchTerm || '').toLowerCase();
           const filtered = pool.filter(p => !term || (p.name && p.name.toLowerCase().includes(term)) || (p.team && p.team.toLowerCase().includes(term)));
@@ -5071,7 +6677,7 @@
                 ⭐ ${teamOvrText}: <span style="color:#ffd700;">${avgOVR}</span>
               </div>
               <div style="font-size:10px;font-family:'Press Start 2P',monospace;color:#94a3b8;">
-                ${rosterCountText}: <span style="color:${complete ? '#34d399' : '#f59e0b'};">${filledCount}/17</span>
+                ${rosterCountText}: <span style="color:${complete ? '#34d399' : '#f59e0b'};">${filledCount}/${rosterTarget}</span>
               </div>
             </div>
 
@@ -5108,6 +6714,20 @@
             </div>
           </div>
 
+          <!-- Section 1b: Bench (5 Cards) — they cover rest days -->
+          <div class="c162-roster-section">
+            <div class="c162-section-header">
+              <span>🛋️</span> <span>${_t('challenge162.bench_title', 'BENCH RESERVES (BENCH - 5 CARDS)')}</span>
+            </div>
+            <div class="c162-bench-hint">Bench players start when a regular needs a day off — carry a backup C and IF/OF cover.</div>
+            ${(() => {
+              const bn = this._draftBench.filter(Boolean);
+              const gaps = rosterCoverGaps(this._draftLineup, bn);
+              return bn.length && gaps.length ? `<div class="c162-meet-warn" style="text-align:center;">⚠ No backup at ${gaps.join(', ')} yet: ${gaps.length > 1 ? 'those starters' : 'that starter'} would rest less and be covered out of position.</div>` : '';
+            })()}
+            <div class="c162-cards-row">${benchSlotsHTML}</div>
+          </div>
+
           <!-- Section 2: Starting Rotation (5 Cards) -->
           <div class="c162-roster-section">
             <div class="c162-section-header">
@@ -5116,7 +6736,7 @@
             <div class="c162-cards-row">${spSlotsHTML}</div>
           </div>
 
-          <!-- Section 3: Bullpen (3 Cards) -->
+          <!-- Section 3: Bullpen (6 Cards) -->
           <div class="c162-roster-section">
             <div class="c162-section-header">
               <span>🔥</span> <span>${bullpenTitleText}</span>
@@ -5131,7 +6751,7 @@
           <div style="text-align:center;margin-top:14px;margin-bottom:8px;">
             <button id="challenge162-start-season-btn" class="btn" ${complete ? '' : 'disabled'}
               style="padding:10px 26px;font-size:11.5px;font-family:'Press Start 2P',monospace;background:${complete ? 'linear-gradient(135deg,var(--challenge162-accent),#f59e0b)' : '#334155'};color:${complete ? '#000' : '#94a3af'};border:none;border-radius:10px;cursor:${complete ? 'pointer' : 'not-allowed'};box-shadow:${complete ? '0 0 28px rgba(255,215,0,0.45)' : 'none'};transition:all 0.2s ease;">
-              ${startSeasonText} (${filledCount}/17)
+              ${startSeasonText} (${filledCount}/${rosterTarget})
             </button>
           </div>
         `;
@@ -5161,6 +6781,9 @@
             if (kind === 'batter') {
               const p = eligibleBatters.find(b => b.name === name && (!year || b.year === year));
               if (p) this._draftLineup[this._activeSlot.key] = p;
+            } else if (kind === 'bench') {
+              const p = eligibleBatters.find(b => b.name === name && (!year || b.year === year));
+              if (p) this._draftBench[this._activeSlot.key] = p;
             } else if (kind === 'SP') {
               const p = eligiblePitchers.find(pi => pi.name === name && (!year || pi.year === year));
               if (p) this._draftPitchers.SP[this._activeSlot.key] = p;
@@ -5222,19 +6845,33 @@
         const startBtn = document.getElementById('challenge162-start-season-btn');
         if (startBtn && complete) {
           startBtn.onclick = () => {
-            this.startNewChallenge(this._draftLineup, this._draftPitchers, this.getModeConfig());
+            this.showLeaguePreview({ lineup: this._draftLineup, pitchers: { SP: this._draftPitchers.SP.filter(Boolean), RP: this._draftPitchers.RP.filter(Boolean) }, bench: this._draftBench.filter(Boolean), cfg: this.getModeConfig() });
           };
         }
 
         const startTopBtn = document.getElementById('btn-challenge162-start-top');
         if (startTopBtn && complete) {
           startTopBtn.onclick = () => {
-            this.startNewChallenge(this._draftLineup, this._draftPitchers, this.getModeConfig());
+            this.showLeaguePreview({ lineup: this._draftLineup, pitchers: { SP: this._draftPitchers.SP.filter(Boolean), RP: this._draftPitchers.RP.filter(Boolean) }, bench: this._draftBench.filter(Boolean), cfg: this.getModeConfig() });
           };
         }
       } catch (err) {
         console.error("Error in renderRosterBuilder:", err);
       }
+    },
+
+    // Wear meter for one of the user's batters: the bar fills toward the next −1; past it the
+    // cell shows the penalty he is playing with. Iron Men (picked in the preview) get a badge.
+    _wearCellHTML(p, isRegular) {
+      const S = this.state;
+      const k = batterUnlockKey(p);
+      const f = (S.league && S.league.wear && S.league.wear[this._leagueKey(USER_TEAM_ID, k)]) || 0;
+      const pen = wearPenalty(f);
+      const fill = pen >= WEAR_MAX_PENALTY ? 100 : Math.round(((f % WEAR_PER_POINT) / WEAR_PER_POINT) * 100);
+      const iron = !!(S.ironMan && S.ironMan[k]);
+      const label = pen ? `−${pen}` : '';
+      const btn = isRegular && iron ? '<span class="c162-iron on" title="Iron Man: wears down at a quarter of the speed">IM</span>' : '';
+      return `<span class="c162-wear pen-${pen}"><span class="c162-wear-bar"><i style="width:${fill}%"></i></span><b>${label}</b>${btn}</span>`;
     },
 
     _statLine(s) {
@@ -5279,6 +6916,8 @@
           ${td(`<span style="font-family:'Press Start 2P',monospace;font-size:8px;color:#94a3b8;">${i + 1}</span>`, { style: 'text-align:center;' })}
           ${td(`<span class="c162-tag-pos">${slot}</span>`)}
           ${td(s.name)}
+          ${td(s.g || 0, { num: true })}
+          ${td(this._wearCellHTML(p, true))}
           ${td(s.ab, { num: true })}
           ${td(s.h, { num: true })}
           ${td(s.doubles || 0, { num: true })}
@@ -5319,6 +6958,8 @@
           ${td(`<span style="font-family:'Press Start 2P',monospace;font-size:7.5px;color:#94a3b8;">BN</span>`, { style: 'text-align:center;' })}
           ${td(`<span class="c162-tag-pos" style="background:rgba(52,211,153,0.15);color:#34d399;border:1px solid rgba(52,211,153,0.4);">BN${i + 1}</span>`)}
           ${td(s.name)}
+          ${td(s.g || 0, { num: true })}
+          ${td(this._wearCellHTML(p, false))}
           ${td(s.ab, { num: true })}
           ${td(s.h, { num: true })}
           ${td(s.doubles || 0, { num: true })}
@@ -5398,6 +7039,10 @@
       if (!seasonOver) {
         const sched = S.schedule[S.gamesPlayed];
         const opp = getFranchiseDecadeTeam(sched.code, sched.decade);
+        // With the real league, show the rival's starter whose turn it is in their rotation.
+        const oppRec = S.league && (S.league.teams[sched.id] || Object.values(S.league.teams).find(t => t.code === sched.code));
+        const oppRotation = oppRec ? getFranchiseStaff(oppRec.code, oppRec.decade).rotation : null;
+        const oppStarter = oppRotation ? oppRotation[(oppRec.w + oppRec.l) % oppRotation.length] : opp.pitcher;
         const oppBattersHTML = opp.lineup.slice(0, 9).map((p, idx) =>
           `<div style="display:flex;justify-content:space-between;align-items:center;font-size:9.5px;padding:2px 6px;">
             <span style="color:#64748b;font-family:'Press Start 2P',monospace;font-size:7px;width:14px;">${idx + 1}.</span>
@@ -5418,8 +7063,8 @@
               <div style="flex:1;background:rgba(255,255,255,0.03);border-radius:6px;padding:4px 2px;">${oppBattersHTML}</div>
               <div style="flex:0 0 135px;background:rgba(255,255,255,0.03);border-radius:6px;padding:8px;text-align:center;display:flex;flex-direction:column;justify-content:center;">
                 <div style="font-size:8px;color:#94a3b8;font-family:'Press Start 2P',monospace;">${rivalSPLabel}</div>
-                <div style="font-size:10.5px;color:#e4e4e7;margin-top:4px;font-weight:bold;">${opp.pitcher.cleanName}</div>
-                <div style="font-size:8.5px;color:var(--challenge162-accent);margin-top:2px;font-family:'Press Start 2P',monospace;">OVR ${opp.pitcher.ovr}</div>
+                <div style="font-size:10.5px;color:#e4e4e7;margin-top:4px;font-weight:bold;">${oppStarter.cleanName || oppStarter.name}</div>
+                <div style="font-size:8.5px;color:var(--challenge162-accent);margin-top:2px;font-family:'Press Start 2P',monospace;">OVR ${Math.round(oppStarter.ovr || 0)}</div>
               </div>
             </div>
           </div>
@@ -5444,6 +7089,24 @@
           <button id="challenge162-play-10" class="btn btn-secondary" style="padding:10px 16px;font-size:10px;font-family:'Press Start 2P',monospace;margin:4px;">${sim10Text}</button>
           <button id="challenge162-play-until" class="btn btn-secondary" style="padding:10px 16px;font-size:10px;font-family:'Press Start 2P',monospace;margin:4px;">${simUntilText}</button>
         `;
+      } else if (S.league) {
+        this.stopAutoSim();
+        const lg = S.league.teams[USER_TEAM_ID].league;
+        const myRank = leagueStandings(S.league, lg).findIndex(t => t.id === USER_TEAM_ID) + 1;
+        const viewResultsText = 'VIEW FINAL RESULTS';
+        if (S.playoffs.missed) {
+          actionHTML = `<div style="color:#f87171;font-size:12px;margin-bottom:6px;font-family:'Press Start 2P',monospace;line-height:1.6;">Season over ${S.wins}-${S.losses} · finished #${myRank} in the ${lg}. Only the top ${PLAYOFF_SEEDS} make the postseason.</div>
+            <button id="challenge162-view-results" class="btn btn-secondary" style="padding:10px 16px;font-size:10px;font-family:'Press Start 2P',monospace;">${viewResultsText}</button>`;
+        } else if (!S.playoffs.finished) {
+          const title = S.wins === SEASON_LENGTH
+            ? `🏆 PERFECT SEASON (162-0)! ${lg} #1 seed.`
+            : `🎉 Playoff bound! ${S.wins}-${S.losses} · ${lg} #${S.playoffs.userSeed} seed.`;
+          actionHTML = `<div style="color:var(--challenge162-accent);font-size:13px;margin-bottom:10px;font-family:'Press Start 2P',monospace;">${title}</div>
+            <button id="challenge162-goto-playoffs" class="btn" style="padding:12px 20px;font-size:11px;font-family:'Press Start 2P',monospace;">▶ GO TO PLAYOFFS</button>`;
+        } else {
+          actionHTML = `<div style="color:#ffd700;font-size:12px;margin-bottom:6px;">🏆 Regular season (${S.wins}-${S.losses}) & postseason complete.</div>
+            <button id="challenge162-view-results" class="btn btn-secondary" style="padding:10px 16px;font-size:10px;font-family:'Press Start 2P',monospace;">${viewResultsText}</button>`;
+        }
       } else if (S.wins >= PLAYOFF_MIN_WINS) {
         this.stopAutoSim();
         if (!S.playoffs.finished) {
@@ -5526,6 +7189,7 @@
             </div>
 
             ${streakHTML}
+            ${this._momentumBadgeHTML()}
           </div>
 
           <!-- Right: Next Game Rival Box (if season in progress) -->
@@ -5556,6 +7220,8 @@
                     <th class="c162-th" style="width:28px;text-align:center;">#</th>
                     <th class="c162-th">POS</th>
                     <th class="c162-th">${_t('challenge162.table_player', 'PLAYER')}</th>
+                    <th class="c162-th">G</th>
+                    <th class="c162-th" title="Wear: fills with every start (catchers fastest). A full bar costs −1 to batting ratings; a day off resets it. IM = Iron Man, wears at a quarter of the speed (picked in the League Preview).">WEAR</th>
                     <th class="c162-th">AB</th>
                     <th class="c162-th">H</th>
                     <th class="c162-th">2B</th>
@@ -5606,8 +7272,9 @@
             </div>
           </div>
 
-          <!-- Right Sidebar Panel: Recent Games Feed -->
+          <!-- Right Sidebar Panel: League race + headlines + Recent Games Feed -->
           <div class="c162-sidebar-panel">
+            ${this._leagueSidebarHTML()}
             <div style="font-size:9.5px;color:#38bdf8;margin-bottom:10px;font-family:'Press Start 2P',monospace;display:flex;align-items:center;justify-content:space-between;">
               <span>📜 ${recentGamesTitle}</span>
               <span style="font-size:8px;color:#9ca3af;font-family:'Outfit',sans-serif;">(${S.gameLog.length})</span>
@@ -5626,13 +7293,312 @@
       const btnPlayoffs = document.getElementById('challenge162-goto-playoffs');
       const btnResults = document.getElementById('challenge162-view-results');
       const btnLiga = document.getElementById('btn-challenge162-season-liga');
-      if (btnAuto) btnAuto.onclick = () => this.toggleAutoSim();
+      // Auto sim re-renders this screen every game, so the button is replaced between
+      // mousedown and mouseup and a plain click never lands: toggle on press instead
+      // (onclick stays for keyboard activation, which reports detail 0).
+      if (btnAuto) {
+        btnAuto.onpointerdown = (e) => { if (e.button === 0) { e.preventDefault(); this.toggleAutoSim(); } };
+        btnAuto.onclick = (e) => { if (e.detail === 0) this.toggleAutoSim(); };
+      }
       if (btn1) btn1.onclick = () => { this.stopAutoSim(); this.simulateGame(); this.renderSeason(); };
       if (btn10) btn10.onclick = () => { this.stopAutoSim(); this.simulateBatch(10); this.renderSeason(); };
       if (btnUntil) btnUntil.onclick = () => { this.stopAutoSim(); this.simulateUntilLossOrEnd(); this.renderSeason(); };
       if (btnPlayoffs) btnPlayoffs.onclick = () => { this.stopAutoSim(); this.showScreen('screen-challenge-playoffs'); this.renderPlayoffs(); };
       if (btnResults) btnResults.onclick = () => { this.stopAutoSim(); this.state.playoffs.finished = true; this.save(); this.showScreen('screen-challenge-results'); this.renderResults(); };
       if (btnLiga) btnLiga.onclick = () => { this.stopAutoSim(); this.renderLiga(); };
+      container.querySelectorAll('[data-c162-liga-tab]').forEach(el => {
+        el.onclick = () => { this.stopAutoSim(); this._ligaTab = el.dataset.c162LigaTab; this.renderLiga(); };
+      });
+    },
+
+    // ── League views (standings, power rankings, playoff picture) ─────────
+    _ligaTab: 'standings',
+    _ligaLeague: null,
+
+    _teamLabel(t) {
+      return t.isUser ? `<strong>${t.name}</strong>` : t.name;
+    },
+
+    _momentumBadgeHTML() {
+      const L = this.state && this.state.league;
+      if (!L || this.state.gamesPlayed >= SEASON_LENGTH) return '';
+      const streak = L.teams[USER_TEAM_ID].streak || 0;
+      const m = momentumFor(streak);
+      const next = MOMENTUM_STEP - (Math.abs(streak) % MOMENTUM_STEP);
+      const hint = Math.abs(m) >= MOMENTUM_CAP ? 'max' : `${next} more ${streak >= 0 ? 'W' : 'L'} for ${streak >= 0 ? '+' : '−'}${Math.abs(m) + 1}`;
+      const cls = m > 0 ? 'up' : m < 0 ? 'down' : '';
+      const label = m > 0 ? `🔥 MOMENTUM +${m}` : m < 0 ? `🧊 MOMENTUM −${-m}` : 'MOMENTUM 0';
+      return `<div class="c162-momentum ${cls}" title="Every 3 straight wins (or losses) adds +1 (or −1) to all ratings, up to ±${MOMENTUM_CAP}. Applies to every team.">
+        ${label}<span>${m === 0 && streak === 0 ? 'win 3 straight for +1' : hint}</span>
+      </div>`;
+    },
+
+    _streakText(t) {
+      if (!t.streak) return '—';
+      return t.streak > 0 ? `W${t.streak}` : `L${-t.streak}`;
+    },
+
+    _leagueSidebarHTML() {
+      const S = this.state;
+      const L = S && S.league;
+      if (!L) return '';
+      const lg = L.teams[USER_TEAM_ID].league;
+      const table = leagueStandings(L, lg);
+      const userRow = table.find(t => t.id === USER_TEAM_ID);
+      const shown = table.slice(0, 6);
+      if (userRow.rank > 6) shown.push(userRow);
+      const rows = shown.map(t => `
+        <div class="c162-mini-row ${t.isUser ? 'is-user' : ''} ${t.rank === PLAYOFF_SEEDS ? 'cutline' : ''}">
+          <span class="c162-mini-rank">${t.rank}</span>
+          <span class="c162-mini-name">${t.name}</span>
+          <span class="c162-mini-rec">${t.w}-${t.l}</span>
+          <span class="c162-mini-gb">${t.gb === 0 ? '—' : t.gb}</span>
+        </div>`).join('');
+      const heads = (L.headlines || []).slice(0, 5).map(h => `
+        <div class="c162-headline kind-${h.kind}"><span class="c162-headline-day">D${h.day}</span> ${h.text}</div>`).join('');
+      return `
+        <div class="c162-mini-standings">
+          <div class="c162-mini-title">
+            <span>🏟️ ${lg} RACE</span>
+            <button class="c162-link-btn" data-c162-liga-tab="standings">FULL TABLE ▸</button>
+          </div>
+          <div class="c162-mini-head"><span>#</span><span>TEAM</span><span>W-L</span><span>GB</span></div>
+          ${rows}
+          <div class="c162-mini-note">Top ${PLAYOFF_SEEDS} of each league make the playoffs</div>
+        </div>
+        ${heads ? `<div class="c162-headlines">
+          <div class="c162-mini-title"><span>📰 AROUND THE LEAGUE</span></div>
+          ${heads}
+        </div>` : ''}`;
+    },
+
+    _standingsTableHTML(lg) {
+      const L = this.state.league;
+      const rows = leagueStandings(L, lg).map(t => {
+        const l10 = t.last10.length ? `${t.last10.filter(Boolean).length}-${t.last10.length - t.last10.filter(Boolean).length}` : '—';
+        const pct = (t.w + t.l) ? t.pct.toFixed(3).replace(/^0/, '') : '.000';
+        return `<tr class="c162-tr ${t.isUser ? 'c162-row-user' : ''} ${t.rank === PLAYOFF_SEEDS ? 'c162-row-cutline' : ''}">
+          <td class="c162-td c162-td-num">${t.rank}</td>
+          <td class="c162-td">${this._teamLabel(t)}</td>
+          <td class="c162-td c162-td-num">${t.w}</td>
+          <td class="c162-td c162-td-num">${t.l}</td>
+          <td class="c162-td c162-td-num">${pct}</td>
+          <td class="c162-td c162-td-num">${t.gb === 0 ? '—' : t.gb}</td>
+          <td class="c162-td c162-td-num">${l10}</td>
+          <td class="c162-td c162-td-num ${t.streak > 0 ? 'c162-pos' : t.streak < 0 ? 'c162-neg' : ''}">${this._streakText(t)}</td>
+          <td class="c162-td c162-td-num">${t.strength}</td>
+        </tr>`;
+      }).join('');
+      return `
+        <div class="c162-table-wrap">
+          <table class="c162-table c162-standings" style="width:100%;">
+            <thead><tr>
+              <th class="c162-th">#</th><th class="c162-th">${lg} TEAM</th><th class="c162-th">W</th><th class="c162-th">L</th>
+              <th class="c162-th">PCT</th><th class="c162-th">GB</th><th class="c162-th">L10</th><th class="c162-th">STRK</th><th class="c162-th">STR</th>
+            </tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>`;
+    },
+
+    _powerRankingsHTML() {
+      const L = this.state.league;
+      const snaps = L.powerRanks || [];
+      const latest = snaps.length ? snaps[snaps.length - 1].order : powerOrder(L);
+      const prev = snaps.length > 1 ? snaps[snaps.length - 2].order : null;
+      const rows = latest.map((id, i) => {
+        const t = L.teams[id];
+        const before = prev ? prev.indexOf(id) : -1;
+        const move = before < 0 ? 0 : before - i;
+        const moveHTML = move > 0 ? `<span class="c162-move up">▲${move}</span>` : move < 0 ? `<span class="c162-move down">▼${-move}</span>` : `<span class="c162-move">—</span>`;
+        return `<div class="c162-pr-row ${t.isUser ? 'is-user' : ''}">
+          <span class="c162-pr-rank">${i + 1}</span>
+          ${moveHTML}
+          <span class="c162-pr-lg lg-${t.league}">${t.league}</span>
+          <span class="c162-pr-name">${t.name}</span>
+          <span class="c162-pr-rec">${t.w}-${t.l}</span>
+          <span class="c162-pr-str">STR ${t.strength}</span>
+        </div>`;
+      }).join('');
+      const asOf = snaps.length ? snaps[snaps.length - 1].day : 0;
+      return `<div class="c162-pr-note">${asOf === 0 ? 'Preseason rankings, by roster strength.' : `Week of day ${asOf}: results weigh more as the season goes on.`}</div>
+        <div class="c162-pr-list">${rows}</div>`;
+    },
+
+    _playoffPictureHTML() {
+      const S = this.state;
+      const L = S.league;
+      const b = S.playoffs && S.playoffs.bracket;
+      const nameOf = id => (id ? L.teams[id].name : 'TBD');
+      const matchHTML = m => {
+        const cls = id => `${m.winner === id ? 'won' : ''} ${m.winner && m.winner !== id ? 'lost' : ''} ${id === USER_TEAM_ID ? 'is-user' : ''}`;
+        return `<div class="c162-bk-match">
+          <div class="c162-bk-team ${cls(m.a)}">${nameOf(m.a)}</div>
+          <div class="c162-bk-team ${cls(m.b)}">${nameOf(m.b)}</div>
+        </div>`;
+      };
+      if (b) {
+        const col = (title, matches) => `<div class="c162-bk-col"><div class="c162-bk-title">${title}</div>${(matches || []).length ? matches.map(matchHTML).join('') : '<div class="c162-bk-empty">TBD</div>'}</div>`;
+        return `<div class="c162-bracket">
+          ${col('AL ROUND 1', b.rounds[0].filter(m => m.league === 'AL'))}
+          ${col('AL FINAL', b.rounds[1].filter(m => m.league === 'AL'))}
+          ${col('WORLD SERIES', b.rounds[2])}
+          ${col('NL FINAL', b.rounds[1].filter(m => m.league === 'NL'))}
+          ${col('NL ROUND 1', b.rounds[0].filter(m => m.league === 'NL'))}
+        </div>
+        ${b.champion ? `<div class="c162-bk-champ">🏆 ${nameOf(b.champion)} — World Series champions</div>` : ''}`;
+      }
+      const picture = lg => leagueStandings(L, lg).slice(0, PLAYOFF_SEEDS + 2).map(t => `
+        <div class="c162-mini-row ${t.isUser ? 'is-user' : ''} ${t.rank === PLAYOFF_SEEDS ? 'cutline' : ''} ${t.rank > PLAYOFF_SEEDS ? 'hunt' : ''}">
+          <span class="c162-mini-rank">${t.rank <= PLAYOFF_SEEDS ? '#' + t.rank : '·'}</span>
+          <span class="c162-mini-name">${t.name}</span>
+          <span class="c162-mini-rec">${t.w}-${t.l}</span>
+          <span class="c162-mini-gb">${t.gb === 0 ? '—' : t.gb}</span>
+        </div>`).join('');
+      return `<div class="c162-pr-note">If the season ended today: seeds 1-4 qualify, 1 plays 4 and 2 plays 3.</div>
+        <div class="c162-picture">
+          <div class="c162-mini-standings"><div class="c162-mini-title"><span>AL</span></div>${picture('AL')}</div>
+          <div class="c162-mini-standings"><div class="c162-mini-title"><span>NL</span></div>${picture('NL')}</div>
+        </div>`;
+    },
+
+    // ── Leaders & award races (global) ──────────────────────────────────────
+    _teamChip(id) {
+      const L = this.state.league;
+      if (id === USER_TEAM_ID) return '<span class="c162-team-chip is-user">YOU</span>';
+      const t = L.teams[id];
+      return `<span class="c162-team-chip lg-${t ? t.league : ''}" title="${t ? t.name : id}">${t ? t.code : id}</span>`;
+    },
+
+    _leaderRows(list, fmt) {
+      if (!list.length) return '<div class="c162-bk-empty">Not enough games yet</div>';
+      return list.map((o, i) => `
+        <div class="c162-ldr-row ${o.x.team === USER_TEAM_ID ? 'is-user' : ''}">
+          <span class="c162-ldr-rank">${i + 1}</span>
+          <span class="c162-ldr-name">${o.x.name}</span>
+          ${this._teamChip(o.x.team)}
+          <span class="c162-ldr-val">${fmt(o.v, o.x)}</span>
+        </div>`).join('');
+    },
+
+    _leaderBox(title, list, fmt) {
+      return `<div class="c162-ldr-box"><div class="c162-ldr-title">${title}</div>${this._leaderRows(list, fmt)}</div>`;
+    },
+
+    _leadersHTML() {
+      const L = this.state.league;
+      if (!L.stats) return '<div class="c162-pr-note">League stats start with the next game.</div>';
+      const q = leagueQualifiers(L);
+      const avg3 = v => v.toFixed(3).replace(/^0/, '');
+      const ip = p => (p.outs / 3).toFixed(1);
+      return `
+        <div class="c162-pr-note">All 32 teams · day ${L.day}. Rate stats need ${Math.ceil(3.1 * q.day)} PA or ${Math.ceil(0.8 * q.day)} IP to qualify.</div>
+        <div class="c162-meet-section">BATTING</div>
+        <div class="c162-ldr-grid">
+          ${this._leaderBox('AVG', rankBy(q.batQual, batterAVG, 5), avg3)}
+          ${this._leaderBox('HOME RUNS', rankBy(q.bat, b => b.hr, 5), v => v)}
+          ${this._leaderBox('RBI', rankBy(q.bat, b => b.rbi, 5), v => v)}
+          ${this._leaderBox('OPS', rankBy(q.batQual, batterOPS, 5), avg3)}
+          ${this._leaderBox('STOLEN BASES', rankBy(q.bat, b => b.sb, 5), v => v)}
+          ${this._leaderBox('HITS', rankBy(q.bat, b => b.h, 5), v => v)}
+        </div>
+        <div class="c162-meet-section">PITCHING</div>
+        <div class="c162-ldr-grid">
+          ${this._leaderBox('WINS', rankBy(q.pit, p => p.w, 5), v => v)}
+          ${this._leaderBox('ERA', rankBy(q.spQual, p => -pitcherERA(p), 5), v => (-v).toFixed(2))}
+          ${this._leaderBox('STRIKEOUTS', rankBy(q.pit, p => p.so, 5), v => v)}
+          ${this._leaderBox('SAVES', rankBy(q.pit, p => p.sv, 5), v => v)}
+          ${this._leaderBox('INNINGS', rankBy(q.pit, p => p.outs, 5), (v, x) => ip(x))}
+          ${this._leaderBox('WHIP', rankBy(q.spQual, p => -((p.h + p.bb) * 3 / Math.max(1, p.outs)), 5), v => (-v).toFixed(2))}
+        </div>`;
+    },
+
+    _awardsHTML() {
+      const S = this.state;
+      const L = S.league;
+      if (!L.stats) return '<div class="c162-pr-note">Award races start with the next game.</div>';
+      const final = S.gamesPlayed >= SEASON_LENGTH && S.awards;
+      const aw = computeAwards(L);
+      const warFmt = v => `${v.toFixed(1)} WAR`;
+      const race = (title, list, fmt) => `<div class="c162-ldr-box c162-award-box"><div class="c162-ldr-title">${title}${final ? ' · FINAL' : ''}</div>${this._leaderRows(list, fmt)}</div>`;
+      const posTable = (title, byPos, fmt) => `
+        <div class="c162-ldr-box c162-pos-box">
+          <div class="c162-ldr-title">${title}</div>
+          ${Object.entries(byPos).map(([pos, list]) => {
+            const lead = list[0];
+            return `<div class="c162-ldr-row ${lead && lead.x.team === USER_TEAM_ID ? 'is-user' : ''}">
+              <span class="c162-ldr-rank">${pos}</span>
+              <span class="c162-ldr-name">${lead ? lead.x.name : '—'}</span>
+              ${lead ? this._teamChip(lead.x.team) : '<span></span>'}
+              <span class="c162-ldr-val">${lead ? fmt(lead.v) : ''}</span>
+            </div>`;
+          }).join('')}
+        </div>`;
+      const avg3 = v => v.toFixed(3).replace(/^0/, '');
+      return `
+        <div class="c162-pr-note">${final ? 'Final results of the regular season.' : 'Live races across all 32 teams. Winners are decided when the regular season ends.'}</div>
+        <div class="c162-ldr-grid">
+          ${race('🏅 MVP', aw.mvp, warFmt)}
+          ${race('🧢 CY YOUNG', aw.cyYoung, warFmt)}
+          ${race('🔥 RELIEVER OF THE YEAR', aw.reliever, warFmt)}
+          ${race('💎 PLATINUM GLOVE', aw.platinum, v => `${v >= 0 ? '+' : ''}${v.toFixed(1)} dWAR`)}
+          ${race('💣 HOME RUN KING', aw.hrKing, v => `${v} HR`)}
+          ${race('🎯 BATTING TITLE', aw.battingTitle, avg3)}
+        </div>
+        <div class="c162-meet-section">BY POSITION</div>
+        <div class="c162-ldr-grid c162-ldr-grid-2">
+          ${posTable('🥈 SILVER SLUGGER · BEST OPS', aw.silverSlugger, v => `${avg3(v)} OPS`)}
+          ${posTable('🧤 GOLD GLOVE · BEST dWAR', aw.goldGlove, v => `${v >= 0 ? '+' : ''}${v.toFixed(1)} dWAR`)}
+        </div>`;
+    },
+
+    _resultsAwardsHTML() {
+      const S = this.state;
+      const L = S.league;
+      if (!L || !S.awards) return '';
+      const nameOf = x => x ? `${x.name} <small>${x.team === USER_TEAM_ID ? '(YOU)' : '(' + (L.teams[x.team] ? L.teams[x.team].name : x.team) + ')'}</small>` : '—';
+      const all = [S.awards.mvp, S.awards.cyYoung, S.awards.reliever, S.awards.platinum, S.awards.hrKing, S.awards.battingTitle,
+        ...Object.values(S.awards.silverSlugger || {}), ...Object.values(S.awards.goldGlove || {})];
+      const mine = all.filter(x => x && x.team === USER_TEAM_ID).length;
+      const cell = (label, x) => `<div class="c162-res-award ${x && x.team === USER_TEAM_ID ? 'is-user' : ''}"><span>${label}</span><b>${nameOf(x)}</b></div>`;
+      return `
+        <details class="c162-results-bracket" open>
+          <summary>🏅 SEASON AWARDS · YOUR PLAYERS WON ${mine}</summary>
+          <div class="c162-res-awards">
+            ${cell('MVP', S.awards.mvp)}${cell('CY YOUNG', S.awards.cyYoung)}${cell('RELIEVER OF THE YEAR', S.awards.reliever)}
+            ${cell('PLATINUM GLOVE', S.awards.platinum)}${cell('HOME RUN KING', S.awards.hrKing)}${cell('BATTING TITLE', S.awards.battingTitle)}
+          </div>
+          <div class="c162-res-awards c162-res-awards-pos">
+            ${Object.entries(S.awards.silverSlugger || {}).map(([p, x]) => cell(`SILVER SLUGGER ${p}`, x)).join('')}
+            ${Object.entries(S.awards.goldGlove || {}).map(([p, x]) => cell(`GOLD GLOVE ${p}`, x)).join('')}
+          </div>
+        </details>`;
+    },
+
+    // Season wrap-up for the results screen: final standing, how the postseason went, the bracket.
+    _resultsLeagueHTML() {
+      const S = this.state;
+      const L = S && S.league;
+      if (!L) return '';
+      const lg = L.teams[USER_TEAM_ID].league;
+      const rank = leagueStandings(L, lg).findIndex(t => t.id === USER_TEAM_ID) + 1;
+      const b = S.playoffs.bracket;
+      let story;
+      if (S.playoffs.missed) story = `Finished #${rank} in the ${lg} · missed the postseason`;
+      else if (S.playoffs.won) story = `${lg} #${S.playoffs.userSeed} seed · World Series champions`;
+      else {
+        const roundNames = ['in the first round', 'in the league final', 'in the World Series'];
+        story = `${lg} #${S.playoffs.userSeed} seed · eliminated ${roundNames[S.playoffs.round] || ''}`;
+      }
+      return `
+        <div class="c162-results-league">
+          <div class="c162-results-story">${story}</div>
+          ${b ? `<details class="c162-results-bracket" ${b.champion && b.champion !== USER_TEAM_ID ? 'open' : ''}>
+            <summary>🏆 POSTSEASON BRACKET</summary>
+            ${this._playoffPictureHTML()}
+          </details>` : ''}
+          ${this._resultsAwardsHTML()}
+        </div>`;
     },
 
     renderLiga() {
@@ -5640,6 +7606,55 @@
       this.showScreen('screen-challenge-liga');
       const container = document.getElementById('challenge162-liga-container');
       if (!container) return;
+      const S = this.state;
+      if (!S.league) { this._renderLigaStats(container); return; }
+      const L = S.league;
+      const tab = this._ligaTab || 'standings';
+      const userLg = L.teams[USER_TEAM_ID].league;
+      const lgView = this._ligaLeague || userLg;
+      const tabs = [['standings', '🏟️ STANDINGS'], ['power', '📈 POWER RANKINGS'], ['playoffs', '🏆 PLAYOFF PICTURE'], ['leaders', '📊 LEADERS'], ['awards', '🏅 AWARD RACES']];
+      container.innerHTML = `
+        <div class="c162-liga-header">
+          <div class="c162-liga-title">⚾ THE LEAGUE · DAY ${L.day} / ${SEASON_LENGTH}</div>
+          <button id="btn-challenge162-liga-back" class="btn btn-secondary" style="padding:6px 12px; font-size:10px;">← SEASON</button>
+        </div>
+        <div class="c162-tabs">
+          ${tabs.map(([k, label]) => `<button class="c162-tab ${tab === k ? 'active' : ''}" data-tab="${k}">${label}</button>`).join('')}
+        </div>
+        <div id="c162-liga-body"></div>`;
+      const body = container.querySelector('#c162-liga-body');
+      if (tab === 'standings') {
+        body.innerHTML = `
+          <div class="c162-tabs c162-subtabs">
+            ${['AL', 'NL'].map(lg => `<button class="c162-tab ${lgView === lg ? 'active' : ''}" data-lg="${lg}">${lg === 'AL' ? 'AMERICAN LEAGUE' : 'NATIONAL LEAGUE'}${lg === userLg ? ' ★' : ''}</button>`).join('')}
+          </div>
+          ${this._standingsTableHTML(lgView)}
+          <div class="c162-pr-note">The line under #${PLAYOFF_SEEDS} marks the playoff cut. STR = roster strength.</div>`;
+      } else if (tab === 'power') {
+        body.innerHTML = this._powerRankingsHTML();
+      } else if (tab === 'playoffs') {
+        body.innerHTML = this._playoffPictureHTML();
+      } else if (tab === 'leaders') {
+        body.innerHTML = this._leadersHTML();
+      } else if (tab === 'awards') {
+        body.innerHTML = this._awardsHTML();
+      } else {
+        this._renderLigaStats(body, true);
+      }
+      container.querySelectorAll('.c162-tab[data-tab]').forEach(btn => {
+        btn.onclick = () => { this._ligaTab = btn.dataset.tab; this.renderLiga(); };
+      });
+      container.querySelectorAll('.c162-tab[data-lg]').forEach(btn => {
+        btn.onclick = () => { this._ligaLeague = btn.dataset.lg; this.renderLiga(); };
+      });
+      const backBtn = document.getElementById('btn-challenge162-liga-back');
+      if (backBtn) backBtn.onclick = () => {
+        this.showScreen('screen-challenge-season');
+        this.renderSeason();
+      };
+    },
+
+    _renderLigaStats(container, embedded = false) {
       const S = this.state;
       const _t = (key, fallback, params) => (typeof window.t === 'function' ? window.t(key, params) : fallback);
 
@@ -5681,10 +7696,10 @@
       const numAvg = parseFloat(totalAB > 0 ? (totalH / totalAB) : 0);
 
       container.innerHTML = `
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;">
+        ${embedded ? '' : `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;">
           <div style="font-family: 'Press Start 2P', monospace; font-size: 13px; color: var(--challenge162-accent);">📊 OPPONENT LEAGUE STATS</div>
           <button id="btn-challenge162-liga-back" class="btn btn-secondary" style="padding:6px 12px; font-size:10px;">← SEASON</button>
-        </div>
+        </div>`}
         <div style="display:flex; gap:14px; margin-bottom:20px; flex-wrap:wrap;">
           <div style="background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.12); border-radius:10px; padding:12px 18px; text-align:center;">
             <div style="font-family:'Press Start 2P',monospace; font-size:8px; color:#94a3af; margin-bottom:6px;">GAMES</div>
@@ -5758,7 +7773,7 @@
         return _t('challenge162.round_3_desc', 'Final Boss: The #1 undefeated league rival');
       };
 
-      const oppFranchise = generatePlayoffEnemyTeam(round, S.leagueTeams);
+      const oppFranchise = generatePlayoffEnemyTeam(round, S.leagueTeams, this._playoffOpponentRef(round));
       const oppSP = (oppFranchise.pitchers && oppFranchise.pitchers[0]) || { cleanName: 'Rival Ace', name: 'Rival Ace', ovr: 85 };
       const oppReliever = oppFranchise.reliever || { name: 'Rival Setup', ovr: 85 };
       const oppCloser = oppFranchise.closer || { name: 'Rival Closer', ovr: 88 };
@@ -6080,11 +8095,16 @@
       const postSeasonLabel = _t('challenge162.postseason_label', 'POSTEMPORADA');
       const dynastyLabel = _t('challenge162.dynasty_status', 'ESTATUS DINASTIA');
       const dynastyStatusVal = wonWS ? (isPerfect ? _t('challenge162.status_undefeated', '👑 INVICTO SUPREMO') : _t('challenge162.status_champion', '👑 CAMPEON MUNDIAL')) : (S.playoffs.unlocked ? _t('challenge162.status_finalist', '🥈 FINALISTA') : _t('challenge162.status_contender', '⚾ CONTENDIENTE'));
+      const exitLabels = ['🏟️ FIRST ROUND EXIT', '🥉 LEAGUE FINALIST', '🥈 WORLD SERIES FINALIST'];
+      const leagueStatus = !S.league || wonWS ? null : (S.playoffs.missed ? '⚾ MISSED PLAYOFFS' : exitLabels[S.playoffs.round] || null);
 
-      const mvpAwardLabel = _t('challenge162.mvp_award', '🏆 MVP DE LA DINASTIA');
-      const cyAwardLabel = _t('challenge162.cy_young_award', '🧢 PREMIO CY YOUNG');
-      const hrAwardLabel = _t('challenge162.hr_king_award', '💣 REY DEL CUADRANGULAR');
-      const rpAwardLabel = _t('challenge162.reliever_award', '🔥 RELEVISTA DEL ANO');
+      // With the real league these four are your team's internal honors; the league-wide
+      // awards (MVP, Cy Young, ...) are listed separately above, so the labels must not clash.
+      const teamHonors = !!S.league;
+      const mvpAwardLabel = teamHonors ? '🏆 TEAM MVP' : _t('challenge162.mvp_award', '🏆 MVP DE LA DINASTIA');
+      const cyAwardLabel = teamHonors ? '🧢 TEAM ACE' : _t('challenge162.cy_young_award', '🧢 PREMIO CY YOUNG');
+      const hrAwardLabel = teamHonors ? '💣 TEAM HR LEADER' : _t('challenge162.hr_king_award', '💣 REY DEL CUADRANGULAR');
+      const rpAwardLabel = teamHonors ? '🔥 TEAM BULLPEN ACE' : _t('challenge162.reliever_award', '🔥 RELEVISTA DEL ANO');
       const totalRosterCards = lineupCards.length + pitcherCards.length;
       const ringLabel = _t('challenge162.ring_of_champions', `💍 PLANTILLA DE ${totalRosterCards} CAMPEONES (ROSTER COMPLETO)`, { count: totalRosterCards });
       const newChalBtnText = _t('challenge162.new_challenge_btn', '🔄 EMPEZAR NUEVO CHALLENGE');
@@ -6099,6 +8119,8 @@
             ${(S.modeConfig && S.modeConfig.label) || '162-0 CHALLENGE'}
           </span>
         </div>
+
+        ${this._resultsLeagueHTML()}
 
         <!-- Top Record Bar -->
         <div style="display:flex;justify-content:space-around;align-items:center;background:rgba(0,0,0,0.45);border:1px solid rgba(255,215,0,0.25);border-radius:8px;padding:6px 12px;margin-bottom:8px;flex-wrap:wrap;gap:6px;text-align:center;">
@@ -6115,7 +8137,7 @@
           <div>
             <div style="font-size:7.5px;color:#9ca3af;font-family:'Press Start 2P',monospace;">${dynastyLabel}</div>
             <div style="font-size:10px;font-family:'Press Start 2P',monospace;color:${wonWS ? '#ffd700' : '#38bdf8'};margin-top:2px;">
-              ${dynastyStatusVal}
+              ${leagueStatus || dynastyStatusVal}
             </div>
           </div>
         </div>

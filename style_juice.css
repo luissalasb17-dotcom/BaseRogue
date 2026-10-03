@@ -1693,3 +1693,1322 @@ body.on-main-menu .main-container {
     display: none;
   }
 }
+
+/* ═══════════════ 7) 162-0 — REAL LEAGUE (standings, power rankings, bracket) ═══════════════ */
+
+.c162-liga-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.c162-liga-title {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 13px;
+  color: var(--challenge162-accent);
+  text-shadow: 2px 2px 0 #000, 0 0 10px var(--challenge162-accent-glow);
+}
+
+.c162-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.c162-subtabs {
+  margin-bottom: 10px;
+}
+
+.c162-tab {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  padding: 9px 12px;
+  background: #000;
+  color: var(--jx-text-dim);
+  border: 2px solid rgba(255, 215, 0, 0.25);
+  border-bottom-width: 4px;
+  cursor: pointer;
+  transition: transform 0.1s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.c162-tab:hover {
+  color: #fff;
+  transform: translateY(-2px);
+}
+
+.c162-tab.active {
+  color: #000;
+  background: var(--challenge162-accent);
+  border-color: var(--challenge162-accent);
+  box-shadow: 0 0 14px var(--challenge162-accent-glow);
+}
+
+/* Standings table */
+.c162-standings th:nth-child(2),
+.c162-standings td:nth-child(2) {
+  text-align: left !important;
+  font-family: 'Outfit', 'Segoe UI', sans-serif;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.c162-standings .c162-td {
+  padding-top: 7px;
+  padding-bottom: 7px;
+}
+
+.c162-row-user {
+  background: rgba(52, 211, 153, 0.14) !important;
+  box-shadow: inset 4px 0 0 #34d399;
+}
+
+.c162-row-cutline .c162-td {
+  border-bottom: 2px dashed var(--challenge162-accent) !important;
+}
+
+.c162-pos { color: #34d399 !important; }
+.c162-neg { color: #f87171 !important; }
+
+/* Season sidebar: mini standings + headlines */
+.c162-mini-standings,
+.c162-headlines {
+  background: rgba(0, 0, 0, 0.45);
+  border: 2px solid rgba(255, 215, 0, 0.18);
+  padding: 8px;
+  margin-bottom: 12px;
+}
+
+.c162-mini-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  color: var(--challenge162-accent);
+  margin-bottom: 6px;
+}
+
+.c162-link-btn {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7px;
+  color: #7dd3fc;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  padding: 0;
+}
+
+.c162-link-btn:hover { color: #fff; }
+
+.c162-mini-head,
+.c162-mini-row {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr) 54px 30px;
+  gap: 6px;
+  align-items: center;
+  padding: 3px 4px;
+}
+
+.c162-mini-head {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 6.5px;
+  color: #64748b;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.c162-mini-row {
+  font-family: 'Outfit', 'Segoe UI', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--jx-text);
+}
+
+.c162-mini-row.is-user {
+  background: rgba(52, 211, 153, 0.16);
+  box-shadow: inset 3px 0 0 #34d399;
+  color: #fff;
+  font-weight: bold;
+}
+
+.c162-mini-row.cutline {
+  border-bottom: 2px dashed rgba(255, 215, 0, 0.6);
+}
+
+.c162-mini-row.hunt {
+  opacity: 0.7;
+}
+
+.c162-mini-rank,
+.c162-mini-rec,
+.c162-mini-gb {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7.5px;
+}
+
+.c162-mini-rank { color: #94a3b8; }
+.c162-mini-rec { text-align: right; color: var(--challenge162-accent); }
+.c162-mini-gb { text-align: right; color: #94a3b8; }
+
+.c162-mini-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.c162-mini-note {
+  font-family: 'VT323', monospace;
+  font-size: 14px;
+  color: #64748b;
+  margin-top: 5px;
+}
+
+.c162-headline {
+  font-family: 'Outfit', 'Segoe UI', sans-serif;
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--jx-text);
+  padding: 5px 6px;
+  border-left: 3px solid rgba(255, 255, 255, 0.15);
+  margin-bottom: 4px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.c162-headline.kind-user { border-left-color: #34d399; color: #d1fae5; }
+.c162-headline.kind-streak { border-left-color: #fb923c; }
+.c162-headline.kind-slump { border-left-color: #60a5fa; }
+.c162-headline.kind-race { border-left-color: var(--challenge162-accent); }
+
+.c162-headline-day {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 6.5px;
+  color: #64748b;
+  margin-right: 4px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .c162-headlines .c162-headline:first-of-type {
+    animation: jx-feed-in 0.4s var(--jx-ease-out) both;
+  }
+}
+
+/* Power rankings */
+.c162-pr-note {
+  font-family: 'VT323', monospace;
+  font-size: 16px;
+  color: var(--jx-text-dim);
+  margin: 8px 0 10px 0;
+}
+
+.c162-pr-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+  gap: 6px;
+}
+
+.c162-pr-row {
+  display: grid;
+  grid-template-columns: 30px 38px 30px minmax(0, 1fr) 64px 64px;
+  gap: 8px;
+  align-items: center;
+  padding: 7px 10px;
+  background: rgba(0, 0, 0, 0.45);
+  border: 2px solid rgba(255, 255, 255, 0.06);
+  font-family: 'Outfit', 'Segoe UI', sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--jx-text);
+}
+
+.c162-pr-row.no-move {
+  grid-template-columns: 30px 30px minmax(0, 1fr) 64px 64px;
+}
+
+.c162-pr-row.is-user {
+  border-color: #34d399;
+  background: rgba(52, 211, 153, 0.12);
+  color: #fff;
+  font-weight: bold;
+}
+
+.c162-pr-rank {
+  font-family: 'VT323', monospace;
+  font-size: 24px;
+  line-height: 1;
+  color: var(--challenge162-accent);
+  text-shadow: 0 0 8px var(--challenge162-accent-glow);
+}
+
+.c162-move {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7px;
+  color: #64748b;
+}
+
+.c162-move.up { color: #34d399; }
+.c162-move.down { color: #f87171; }
+
+.c162-pr-lg {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7px;
+  padding: 3px 4px;
+  text-align: center;
+  border: 1px solid currentColor;
+}
+
+.c162-pr-lg.lg-AL { color: #f87171; }
+.c162-pr-lg.lg-NL { color: #60a5fa; }
+
+.c162-pr-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.c162-pr-rec,
+.c162-pr-str {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7.5px;
+  text-align: right;
+}
+
+.c162-pr-str { color: #94a3b8; }
+
+/* Playoff picture + bracket */
+.c162-picture {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.c162-bracket {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+  align-items: center;
+}
+
+.c162-bk-col {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.c162-bk-title {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7.5px;
+  color: var(--challenge162-accent);
+  text-align: center;
+}
+
+.c162-bk-match {
+  border: 2px solid rgba(255, 215, 0, 0.3);
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.c162-bk-team {
+  font-family: 'Outfit', 'Segoe UI', sans-serif;
+  font-weight: 600;
+  font-size: 12px;
+  padding: 6px 8px;
+  color: var(--jx-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.c162-bk-team + .c162-bk-team {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.c162-bk-team.won { color: #fff; font-weight: bold; background: rgba(255, 215, 0, 0.12); }
+.c162-bk-team.lost { color: #64748b; text-decoration: line-through; }
+.c162-bk-team.is-user { box-shadow: inset 3px 0 0 #34d399; }
+
+.c162-bk-empty {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  color: #475569;
+  text-align: center;
+  padding: 14px 0;
+  border: 2px dashed rgba(255, 255, 255, 0.08);
+}
+
+.c162-bk-champ {
+  margin-top: 16px;
+  text-align: center;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 11px;
+  color: var(--challenge162-accent);
+  text-shadow: 0 0 12px var(--challenge162-accent-glow);
+}
+
+@media (max-width: 900px) {
+  .c162-bracket,
+  .c162-picture {
+    grid-template-columns: 1fr;
+  }
+
+  .c162-pr-list {
+    grid-template-columns: 1fr;
+  }
+
+  .c162-pr-row {
+    grid-template-columns: 26px 34px 28px minmax(0, 1fr) 54px;
+  }
+
+  .c162-pr-str { display: none; }
+}
+
+/* ═══════════════ 8) 162-0 — PACKS FAST MODE, MEET THE TEAM, LEAGUE PREVIEW ═══════════════ */
+
+.c162-cta {
+  font-family: 'Press Start 2P', monospace !important;
+  font-size: 11px !important;
+  padding: 15px 26px !important;
+  background: linear-gradient(135deg, #ffd700, #f59e0b) !important;
+  color: #000 !important;
+  border: 2px solid #fff !important;
+  box-shadow: 0 0 0 2px #000, 0 5px 0 #7a5200, 0 0 26px rgba(255, 215, 0, 0.55) !important;
+  position: relative;
+  overflow: hidden;
+}
+
+.c162-cta::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -60%;
+  width: 40%;
+  height: 100%;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+  transform: skewX(-20deg);
+  animation: jx-shine-sweep 2.6s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.c162-pack-fast-btn {
+  font-family: 'Press Start 2P', monospace !important;
+  font-size: 8.5px !important;
+  padding: 8px 12px !important;
+}
+
+.c162-pack-auto-btn {
+  background: linear-gradient(135deg, #a855f7, #6d28d9) !important;
+  color: #fff !important;
+  border: 2px solid #d8b4fe !important;
+  box-shadow: 0 0 0 2px #000, 0 4px 0 #3b0764, 0 0 16px rgba(168, 85, 247, 0.5) !important;
+}
+
+/* ── Montage ── */
+.c162-montage {
+  max-width: 1300px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.c162-montage-title,
+.c162-preview-title {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 18px;
+  color: var(--challenge162-accent);
+  text-shadow: 3px 3px 0 #000, 0 0 18px var(--challenge162-accent-glow);
+  margin: 6px 0 10px 0;
+}
+
+.c162-montage-sub {
+  font-family: 'Outfit', 'Segoe UI', sans-serif;
+  font-size: 14px;
+  color: var(--jx-text);
+  margin-bottom: 18px;
+}
+
+.c162-montage-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+.c162-montage-card {
+  animation: jx-card-drop 0.45s var(--jx-ease-back) both;
+  animation-delay: calc(var(--i) * 60ms);
+}
+
+.c162-montage-actions,
+.c162-meet-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 22px 0 6px 0;
+}
+
+/* ── Meet the Team ── */
+.c162-meet,
+.c162-preview {
+  max-width: 1360px;
+  margin: 0 auto;
+}
+
+.c162-meet-hero {
+  text-align: center;
+  padding: 22px 16px 18px 16px;
+  margin-bottom: 18px;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(255, 215, 0, 0.18), transparent 65%),
+    linear-gradient(180deg, #14100a 0%, #020202 100%);
+  border: 3px solid #5c4a00;
+  box-shadow: 0 0 0 2px #000, inset 0 2px 0 rgba(255, 255, 255, 0.08), 0 14px 30px rgba(0, 0, 0, 0.6);
+}
+
+.c162-meet-kicker {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 9px;
+  letter-spacing: 3px;
+  color: #94a3b8;
+  margin-bottom: 10px;
+}
+
+.c162-team-name-input {
+  width: min(640px, 100%);
+  background: transparent;
+  border: 0;
+  border-bottom: 3px dashed rgba(255, 215, 0, 0.35);
+  text-align: center;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 24px;
+  color: var(--challenge162-accent);
+  text-shadow: 3px 3px 0 #000, 0 0 18px var(--challenge162-accent-glow);
+  padding: 6px 4px 10px 4px;
+  outline: none;
+}
+
+.c162-team-name-input:focus {
+  border-bottom-color: var(--challenge162-accent);
+}
+
+.c162-meet-ovr-big {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 12px;
+  margin: 14px 0 12px 0;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 9px;
+  color: #94a3b8;
+}
+
+.c162-meet-ovr-big b {
+  font-family: 'VT323', monospace;
+  font-size: 54px;
+  line-height: 0.8;
+  color: #fff;
+  text-shadow: 0 0 16px rgba(255, 255, 255, 0.5);
+}
+
+.c162-meet-grades {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.c162-grade-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 82px;
+  padding: 7px 8px 5px 8px;
+  background: #000;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.9);
+}
+
+.c162-grade-chip span {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 6.5px;
+  color: #94a3b8;
+}
+
+.c162-grade-chip b {
+  font-family: 'VT323', monospace;
+  font-size: 30px;
+  line-height: 0.9;
+  text-shadow: 0 0 10px currentColor;
+}
+
+.c162-meet-spotlight {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.c162-meet-spotlight > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 7px 14px;
+  border: 2px solid rgba(255, 215, 0, 0.35);
+  background: rgba(255, 215, 0, 0.06);
+}
+
+.c162-meet-spotlight span {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7px;
+  color: var(--challenge162-accent);
+}
+
+.c162-meet-spotlight b {
+  font-family: 'Outfit', 'Segoe UI', sans-serif;
+  font-size: 14px;
+  color: #fff;
+}
+
+.c162-meet-section {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  color: var(--challenge162-accent);
+  letter-spacing: 2px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 18px 0 12px 0;
+}
+
+.c162-meet-section::after {
+  content: '';
+  flex: 1;
+  height: 2px;
+  background: linear-gradient(90deg, rgba(255, 215, 0, 0.5), transparent);
+}
+
+.c162-meet-cards {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+}
+
+.c162-meet-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.c162-meet-order {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  color: #000;
+  background: var(--challenge162-accent);
+  padding: 4px 8px;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.6);
+}
+
+.c162-meet-card.no-anim,
+.c162-meet-card.no-anim .player-card {
+  animation: none !important;
+}
+
+.c162-meet-tag {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7.5px;
+  text-shadow: 0 0 8px currentColor;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .c162-meet-hero:not(.no-anim) {
+    animation: jx-title-slam 0.6s var(--jx-ease-back) both;
+  }
+
+  .c162-meet-card:not(.no-anim) {
+    animation: jx-card-drop 0.55s var(--jx-ease-back) both;
+    animation-delay: calc(0.35s + var(--i) * 160ms);
+  }
+}
+
+.c162-meet-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.c162-meet-panel {
+  background: linear-gradient(180deg, rgba(8, 14, 10, 0.92), rgba(0, 0, 0, 0.92));
+  border: 2px solid rgba(255, 215, 0, 0.25);
+  box-shadow: 0 0 0 2px #000, inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  padding: 10px 12px;
+}
+
+.c162-meet-panel-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8.5px;
+  color: var(--challenge162-accent);
+  margin-bottom: 8px;
+}
+
+.c162-meet-hint {
+  font-size: 7px;
+  color: #64748b;
+}
+
+.c162-meet-row {
+  display: grid;
+  grid-template-columns: 34px 30px minmax(0, 1fr) 30px 24px 24px;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.c162-meet-row.r5 { grid-template-columns: 40px minmax(0, 1fr) 30px 24px 24px; }
+.c162-meet-row.r3 { grid-template-columns: 50px minmax(0, 1fr) 30px; }
+
+.c162-meet-num,
+.c162-meet-pos,
+.c162-meet-ovr {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7.5px;
+}
+
+.c162-meet-num { color: #94a3b8; }
+.c162-meet-pos { color: #38bdf8; }
+.c162-meet-ovr { color: var(--challenge162-accent); text-align: right; }
+
+.c162-meet-name {
+  font-family: 'Outfit', 'Segoe UI', sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  color: #f3f4f6;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.c162-mv {
+  width: 24px;
+  height: 22px;
+  background: #0b1220;
+  color: #7dd3fc;
+  border: 1px solid rgba(56, 189, 248, 0.45);
+  font-size: 9px;
+  cursor: pointer;
+}
+
+.c162-mv:hover:not(:disabled) {
+  background: #38bdf8;
+  color: #000;
+}
+
+.c162-mv:disabled {
+  opacity: 0.2;
+  cursor: default;
+}
+
+/* ── League Preview ── */
+.c162-preview-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+  padding: 16px 18px;
+  background:
+    radial-gradient(ellipse at 0% 50%, rgba(255, 215, 0, 0.14), transparent 60%),
+    linear-gradient(180deg, #14100a 0%, #020202 100%);
+  border: 3px solid #5c4a00;
+  box-shadow: 0 0 0 2px #000, 0 12px 26px rgba(0, 0, 0, 0.6);
+}
+
+.c162-preview-head .c162-preview-title {
+  margin: 0;
+  text-align: left;
+}
+
+.c162-preview-proj {
+  display: flex;
+  gap: 10px;
+}
+
+.c162-preview-proj > div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 96px;
+  padding: 8px 10px 6px 10px;
+  background: #000;
+  border: 2px solid #2a2208;
+}
+
+.c162-preview-proj span {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 6.5px;
+  color: #94a3b8;
+}
+
+.c162-preview-proj b {
+  font-family: 'VT323', monospace;
+  font-size: 34px;
+  line-height: 0.9;
+  color: var(--challenge162-accent);
+  text-shadow: 0 0 12px var(--challenge162-accent-glow);
+}
+
+.c162-lg-picks {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.c162-lg-pick {
+  --lg: #f87171;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  text-align: left;
+  padding: 14px 16px;
+  background: linear-gradient(180deg, rgba(20, 20, 24, 0.95), rgba(0, 0, 0, 0.95));
+  border: 2px solid color-mix(in srgb, var(--lg) 35%, transparent);
+  border-left-width: 8px;
+  color: var(--jx-text);
+  cursor: pointer;
+  transition: transform 0.15s var(--jx-ease-back), box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.c162-lg-pick.lg-NL { --lg: #60a5fa; }
+
+.c162-lg-pick:hover {
+  transform: translateY(-3px);
+}
+
+.c162-lg-pick.active {
+  border-color: var(--lg);
+  box-shadow: 0 0 0 2px #000, 0 0 24px color-mix(in srgb, var(--lg) 45%, transparent);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--lg) 16%, #000), #000);
+}
+
+.c162-lg-pick-name {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 11px;
+  color: var(--lg);
+}
+
+.c162-lg-pick-badge {
+  font-size: 7px;
+  color: #000;
+  background: var(--lg);
+  padding: 3px 6px;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+.c162-lg-pick-sub {
+  font-family: 'VT323', monospace;
+  font-size: 17px;
+  color: var(--jx-text-dim);
+}
+
+.c162-lg-pick-top {
+  font-family: 'Outfit', 'Segoe UI', sans-serif;
+  font-size: 12px;
+  color: var(--jx-text);
+}
+
+.c162-threats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.c162-threat {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 10px 12px;
+  background: rgba(239, 68, 68, 0.07);
+  border: 2px solid rgba(239, 68, 68, 0.35);
+}
+
+.c162-threat b {
+  font-family: 'Outfit', 'Segoe UI', sans-serif;
+  font-size: 14px;
+  color: #fff;
+}
+
+.c162-threat span {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7px;
+  color: #fca5a5;
+}
+
+@media (max-width: 900px) {
+  .c162-meet-columns,
+  .c162-lg-picks,
+  .c162-threats {
+    grid-template-columns: 1fr;
+  }
+
+  .c162-team-name-input {
+    font-size: 15px;
+  }
+}
+
+/* ═══════════════ 9) 162-0 — PACK SCREEN + RESULTS POLISH ═══════════════ */
+
+/* The sealed pack floats, breathes and tilts toward you */
+@media (prefers-reduced-motion: no-preference) {
+  #screen-challenge-pack .dex-foil-pack-wrapper {
+    animation: jx-pack-float 3.2s ease-in-out infinite;
+  }
+
+  #screen-challenge-pack .dex-foil-pack {
+    animation: jx-pack-glow 2.4s ease-in-out infinite;
+  }
+}
+
+@keyframes jx-pack-float {
+  0%, 100% { transform: translateY(0) rotate(-1deg); }
+  50% { transform: translateY(-10px) rotate(1deg); }
+}
+
+@keyframes jx-pack-glow {
+  0%, 100% { box-shadow: 0 0 0 2px #000, 0 0 24px rgba(168, 85, 247, 0.35), inset 0 0 20px rgba(255, 255, 255, 0.15); }
+  50% { box-shadow: 0 0 0 2px #000, 0 0 46px rgba(168, 85, 247, 0.7), inset 0 0 26px rgba(255, 255, 255, 0.25); }
+}
+
+#screen-challenge-pack .dex-foil-pack-wrapper:hover {
+  animation-play-state: paused;
+  transform: translateY(-12px) scale(1.05) rotate(0deg);
+}
+
+/* Deck sections */
+.c162-roster-section {
+  background: linear-gradient(180deg, rgba(8, 14, 24, 0.92), rgba(0, 0, 0, 0.92)) !important;
+  border: 2px solid rgba(255, 215, 0, 0.18) !important;
+}
+
+.c162-section-header {
+  letter-spacing: 1px;
+  text-shadow: 2px 2px 0 #000;
+}
+
+.c162-slot-header-pill {
+  background: linear-gradient(180deg, #2a2208, #000) !important;
+  border: 2px solid rgba(255, 215, 0, 0.55) !important;
+  color: var(--challenge162-accent) !important;
+}
+
+/* Empty slots read as card outlines waiting to be filled */
+.c162-empty-card-frame {
+  background:
+    repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.025) 0 6px, transparent 6px 12px),
+    rgba(0, 0, 0, 0.35) !important;
+  border: 2px dashed rgba(255, 215, 0, 0.22) !important;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.c162-slot-item:hover .c162-empty-card-frame {
+  border-color: rgba(255, 215, 0, 0.6) !important;
+}
+
+.c162-empty-icon {
+  color: rgba(255, 215, 0, 0.35) !important;
+}
+
+/* Results: league story + bracket */
+.c162-results-league {
+  max-width: 1100px;
+  margin: 0 auto 12px auto;
+}
+
+.c162-results-story {
+  text-align: center;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  color: var(--jx-text);
+  margin-bottom: 10px;
+}
+
+.c162-results-bracket {
+  background: rgba(0, 0, 0, 0.45);
+  border: 2px solid rgba(255, 215, 0, 0.25);
+  padding: 8px 12px 12px 12px;
+}
+
+.c162-results-bracket > summary {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 9px;
+  color: var(--challenge162-accent);
+  cursor: pointer;
+  padding: 4px 0 8px 0;
+}
+
+/* ── 162-0 on phones: keep wide content inside its own scroller instead of widening the page ── */
+@media (max-width: 768px) {
+  .c162-meet-hero,
+  .c162-preview-head {
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
+  }
+
+  .c162-team-name-input {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .c162-meet-ovr-big {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .c162-season-grid,
+  .c162-main-panel {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .c162-table-wrap,
+  .c162-roster-section {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  /* Pack column + deck stack vertically instead of a fixed 460px side column */
+  .c162-pack-layout {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .c162-pack-layout > * {
+    min-width: 0;
+  }
+}
+
+/* Momentum badge on the season record card */
+.c162-momentum {
+  margin-top: 8px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 9px;
+  color: #94a3b8;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.c162-momentum span {
+  font-family: 'VT323', monospace;
+  font-size: 15px;
+  color: #64748b;
+}
+
+.c162-momentum.up { color: #fb923c; text-shadow: 0 0 10px rgba(251, 146, 60, 0.6); }
+.c162-momentum.down { color: #60a5fa; text-shadow: 0 0 10px rgba(96, 165, 250, 0.6); }
+
+/* ═══════════════ 10) 162-0 — LEADERS & AWARD RACES ═══════════════ */
+
+.c162-ldr-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 10px;
+}
+
+.c162-ldr-grid-2 {
+  grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+}
+
+.c162-ldr-box {
+  background: linear-gradient(180deg, rgba(8, 14, 10, 0.92), rgba(0, 0, 0, 0.92));
+  border: 2px solid rgba(255, 215, 0, 0.22);
+  box-shadow: 0 0 0 2px #000, inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  padding: 8px 10px;
+}
+
+.c162-award-box {
+  border-color: rgba(255, 215, 0, 0.45);
+}
+
+.c162-ldr-title {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8.5px;
+  color: var(--challenge162-accent);
+  margin-bottom: 6px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(255, 215, 0, 0.18);
+}
+
+.c162-ldr-row {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) auto 86px;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 4px;
+  font-family: 'Outfit', 'Segoe UI', sans-serif;
+  font-weight: 600;
+  font-size: 12.5px;
+  color: var(--jx-text);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.c162-ldr-row:first-of-type .c162-ldr-name {
+  color: #fff;
+}
+
+.c162-ldr-row.is-user {
+  background: rgba(52, 211, 153, 0.14);
+  box-shadow: inset 3px 0 0 #34d399;
+}
+
+.c162-ldr-rank {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7.5px;
+  color: #94a3b8;
+}
+
+.c162-ldr-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.c162-ldr-val {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7.5px;
+  color: var(--challenge162-accent);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.c162-team-chip {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 6.5px;
+  padding: 3px 4px;
+  border: 1px solid currentColor;
+  color: #94a3b8;
+}
+
+.c162-team-chip.lg-AL { color: #f87171; }
+.c162-team-chip.lg-NL { color: #60a5fa; }
+.c162-team-chip.is-user { color: #34d399; }
+
+/* Results: season awards */
+.c162-res-awards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.c162-res-award {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px 8px;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 215, 0, 0.18);
+}
+
+.c162-res-award span {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 6.5px;
+  color: var(--challenge162-accent);
+}
+
+.c162-res-award b {
+  font-family: 'Outfit', 'Segoe UI', sans-serif;
+  font-size: 12.5px;
+  color: #f3f4f6;
+}
+
+.c162-res-award b small {
+  font-weight: 500;
+  color: #94a3b8;
+}
+
+.c162-res-award.is-user {
+  border-color: #34d399;
+  background: rgba(52, 211, 153, 0.12);
+}
+
+@media (max-width: 768px) {
+  .c162-ldr-grid,
+  .c162-ldr-grid-2 {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* ═══════════════ 11) 162-0 — BATTER WEAR + IRON MAN ═══════════════ */
+
+.c162-wear {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+
+.c162-wear-bar {
+  position: relative;
+  width: 34px;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 0 1px #000;
+  overflow: hidden;
+}
+
+.c162-wear-bar i {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: linear-gradient(90deg, #34d399, #facc15);
+  transition: width 0.3s ease;
+}
+
+.c162-wear b {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7px;
+  min-width: 14px;
+  color: #f87171;
+}
+
+.c162-wear.pen-1 .c162-wear-bar i,
+.c162-wear.pen-2 .c162-wear-bar i {
+  background: linear-gradient(90deg, #fb923c, #f87171);
+}
+
+.c162-wear.pen-3 .c162-wear-bar i {
+  background: #ef4444;
+}
+
+.c162-iron {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 6.5px;
+  padding: 3px 4px;
+  background: #000;
+  color: #475569;
+  border: 1px solid #334155;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.c162-iron:hover {
+  color: #e2e8f0;
+  border-color: #94a3b8;
+}
+
+.c162-iron.on {
+  color: #000;
+  background: var(--challenge162-accent);
+  border-color: var(--challenge162-accent);
+  box-shadow: 0 0 8px var(--challenge162-accent-glow);
+}
+
+.c162-bench-hint {
+  font-family: 'Outfit', 'Segoe UI', sans-serif;
+  font-size: 12px;
+  color: #94a3b8;
+  text-align: center;
+  margin: -4px 0 10px 0;
+}
+
+.c162-meet-cover {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 6px;
+  color: #64748b;
+  margin-left: 4px;
+}
+
+.c162-meet-warn,
+.c162-meet-ok {
+  font-family: 'Outfit', 'Segoe UI', sans-serif;
+  font-size: 12px;
+  line-height: 1.35;
+  margin-top: 8px;
+  padding: 6px 8px;
+  border-left: 3px solid #fb923c;
+  background: rgba(251, 146, 60, 0.08);
+  color: #fed7aa;
+}
+
+.c162-meet-ok {
+  border-left-color: #34d399;
+  background: rgba(52, 211, 153, 0.08);
+  color: #d1fae5;
+}
+
+/* Iron Man picker (League Preview) */
+.c162-iron-picks {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.c162-iron-pick {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  column-gap: 8px;
+  align-items: center;
+  text-align: left;
+  padding: 7px 10px;
+  background: rgba(0, 0, 0, 0.5);
+  border: 2px solid rgba(255, 255, 255, 0.08);
+  color: var(--jx-text);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease, transform 0.1s ease;
+}
+
+.c162-iron-pick:hover:not(:disabled) {
+  border-color: rgba(255, 215, 0, 0.5);
+  transform: translateY(-1px);
+}
+
+.c162-iron-pick:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.c162-iron-pick .c162-iron-pos {
+  grid-row: 1 / 3;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  color: #94a3b8;
+}
+
+.c162-iron-pick b {
+  font-family: 'Outfit', 'Segoe UI', sans-serif;
+  font-size: 12.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.c162-iron-pick small {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 6px;
+  color: #64748b;
+}
+
+.c162-iron-pick.on {
+  border-color: var(--challenge162-accent);
+  background: rgba(255, 215, 0, 0.12);
+  box-shadow: 0 0 12px var(--challenge162-accent-glow);
+}
+
+.c162-iron-pick.on .c162-iron-pos {
+  color: var(--challenge162-accent);
+}
+
+span.c162-iron {
+  cursor: default;
+}
