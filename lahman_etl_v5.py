@@ -1152,20 +1152,18 @@ def paso_12_normalizar_por_era(df):
     ]:
         df = normalize_difficulty_adjusted(df, raw, out)
 
-    # K/AVD (Avoid K) - Evasión de ponches normalizada relativo a cada era (invertido: menor K% = mayor K/AVD)
-    def _calc_kavoid_norm(group):
-        k = group["k_rate_clean"]
-        q_low = k.quantile(0.02)
-        q_high = k.quantile(0.98)
-        denom = (q_high - q_low) if (q_high - q_low) > 0 else 0.10
-        norm = (q_high - k) / denom
-        group["k_avoid_val"] = (1.0 + norm * 98.0).clip(1.0, 125.0).round(1)
-        return group
-
-    era_groups = []
-    for _, grp in df.groupby("era_label", group_keys=False):
-        era_groups.append(_calc_kavoid_norm(grp.copy()))
-    df = pd.concat(era_groups, ignore_index=True)
+    # K/AVD (Avoid K) - Evasion de ponches (invertido: menor K% = mayor K/AVD), ajustada por era
+    # al 90%. Antes se media 100% dentro de cada era, y Joe Sewell (1.5% de ponches), Tony Gwynn
+    # (4.2%) y Luis Arraez (5.7%) valian lo mismo. No va al 75% de los demas ratings porque la
+    # tasa de ponches es lo que mas cambio en la historia (4.7% en Golden contra 22.3% en Modern)
+    # y al 75% los bateadores modernos quedaban amontonados abajo.
+    KAVD_ERA_BLEND = 0.90
+    # Mismo orden de filas que dejaba el calculo anterior (agrupado por era, indice reiniciado).
+    df = pd.concat([grp for _, grp in df.groupby("era_label", group_keys=False)], ignore_index=True)
+    k_clean = df["k_rate_clean"].astype(float)
+    k_era_mean = k_clean.groupby(df["era_label"]).transform("mean").replace(0, np.nan)
+    k_adjusted = k_clean * (1.0 + KAVD_ERA_BLEND * (k_clean.mean() / k_era_mean - 1.0)).fillna(1.0)
+    df["k_avoid_val"] = normalize_series(-k_adjusted).clip(1.0, 125.0).round(1)
 
     # Todo rating debe tener cartas en el maximo (125). La tasa de ponches no puede bajar de 0,
     # asi que por encima del percentil 98 de cada era casi no queda recorrido y los mejores se

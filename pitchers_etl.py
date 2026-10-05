@@ -130,13 +130,13 @@ def era_adjusted(df, col_raw, era_col="era_label", role_col=None, blend=0.75):
     return raw * (1.0 + blend * (reference / group_means - 1.0)).fillna(1.0)
 
 
-def normalize_difficulty_adjusted(df, col_raw, col_out, invert=False, era_col="era_label", role_col=None):
+def normalize_difficulty_adjusted(df, col_raw, col_out, invert=False, era_col="era_label", role_col=None, blend=0.75):
     """
-    Mismo ajuste OPS+ que bateadores (75% de la diferencia de era), ver era_adjusted:
+    Mismo ajuste OPS+ que bateadores (por defecto 75% de la diferencia de era), ver era_adjusted:
       out = normalize_series(adjusted, 1, 105) recortado a 1-125
     Si invert=True el mejor es el MENOR valor (e.g. BB/9, HR/9).
     """
-    adjusted = era_adjusted(df, col_raw, era_col=era_col, role_col=role_col, blend=0.75)
+    adjusted = era_adjusted(df, col_raw, era_col=era_col, role_col=role_col, blend=blend)
     if invert:
         adjusted = -adjusted  # invertir para que menor sea mejor
     df[col_out] = (
@@ -1008,7 +1008,11 @@ def paso_10_normalizar_por_era(df):
     df = normalize_difficulty_adjusted(df, "h9_raw",  "h9_val",  invert=True,  era_col="norm_era", role_col=role_col)
     df = normalize_difficulty_adjusted(df, "k9_raw",  "k9_val",  invert=False, era_col="norm_era", role_col=role_col)
     df = normalize_difficulty_adjusted(df, "bb9_raw", "bb9_val", invert=True,  era_col="norm_era", role_col=role_col)
-    df = normalize_difficulty_adjusted(df, "hr9_raw", "hr9_val", invert=True,  era_col="norm_era", role_col=role_col)
+    # HR/9 va al 90% y no al 75%: en Genesis y Deadball casi no se bateaban jonrones, asi que
+    # permitir pocos no era merito del pitcher. Al 75% les quedaba el 25% de esa ventaja de era
+    # (rating medio de HR/9 entre abridores: 74-76 en Genesis/Deadball contra 42 en Modern).
+    HR9_ERA_BLEND = 0.90
+    df = normalize_difficulty_adjusted(df, "hr9_raw", "hr9_val", invert=True,  era_col="norm_era", role_col=role_col, blend=HR9_ERA_BLEND)
     df = normalize_difficulty_adjusted(df, "clt_raw", "clt_val", invert=False, era_col="norm_era", role_col=role_col)
     df["clu_val"] = df["clt_val"]
 
@@ -1071,17 +1075,22 @@ def paso_10_normalizar_por_era(df):
     return df
 
 
-# ── PASO 11: OVR y Rareza (20% H/9, 20% K/9, 20% STA, 15% BB/9, 15% HR/9, 10% CLT) ──
+# ── PASO 11: OVR y Rareza (28% H/9, 28% STA, 12% K/9, 12% BB/9, 10% HR/9, 10% CLT) ──
+# Dos ratings fuertes y cuatro chicos, como en bateadores (28% CON, 28% PWR). H/9 y Stamina son
+# los dos que mas acompañan al rendimiento real, y la Stamina es lo que separa a un as de un
+# cerrador. Con los pesos planos de antes (20/20/20/15/15/10) el K/9 valia tanto como el H/9:
+# entraban a Legendary pitchers de mucho ponche y poco resultado (Toad Ramsey, ERA+ 123) y
+# relevistas de muestra chica (Booker McDaniel, 385 IP), y quedaban fuera Palmer y Spahn.
 def paso_11_ovr_rareza(df):
-    print("\n  PASO 11: OVR y Rareza (20% H/9, 20% K/9, 20% STA, 15% BB/9, 15% HR/9, 10% CLT)...")
+    print("\n  PASO 11: OVR y Rareza (28% H/9, 28% STA, 12% K/9, 12% BB/9, 10% HR/9, 10% CLT)...")
     df = df.copy()
 
     df["raw_ovr"] = (
-        df["h9_val"]  * 0.20 +
-        df["k9_val"]  * 0.20 +
-        df["sta_val"] * 0.20 +
-        df["bb9_val"] * 0.15 +
-        df["hr9_val"] * 0.15 +
+        df["h9_val"]  * 0.28 +
+        df["sta_val"] * 0.28 +
+        df["k9_val"]  * 0.12 +
+        df["bb9_val"] * 0.12 +
+        df["hr9_val"] * 0.10 +
         df["clt_val"] * 0.10
     )
 
