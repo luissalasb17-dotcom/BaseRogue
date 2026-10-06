@@ -150,8 +150,9 @@
     // Stage B — within "in play": Hit vs Out are one complementary pair (an
     // at-bat that isn't a walk or strikeout is either a hit or an out), instead
     // of Out being whatever's left over after every other category is summed.
-    // 3. Total HIT rate (1B, 2B, 3B, HR): Batter Contact vs Pitcher H/9 Hit Suppression (Base 42%, Slope 0.25%)
-    let pTotalHit = 0.42 + (effCon - pH9) * 0.0025;
+    // 3. Total HIT rate (1B, 2B, 3B, HR): Batter Contact vs Pitcher H/9 Hit Suppression (Base 40%, Slope 0.25%)
+    // Even matchup (equal ratings on both sides) = exactly 50/50: BB 10% + HIT 40% on base, SO 18% + OUT 32% out.
+    let pTotalHit = 0.40 + (effCon - pH9) * 0.0025;
     pTotalHit = Math.max(0.14, Math.min(0.60, pTotalHit));
     pTotalHit = Math.min(pTotalHit, pInPlay - 0.05); // always leave >=5% Out room within what's in play
 

@@ -93,7 +93,7 @@ def to_grade(val):
     return "F"
 
 
-def normalize_series(s, low=1.0, high=105.0):
+def normalize_series(s, low=1.0, high=99.0):
     s = pd.to_numeric(s, errors="coerce")
     valid = s.dropna()
     if valid.empty or valid.nunique() == 1:
@@ -108,43 +108,138 @@ def normalize_series(s, low=1.0, high=105.0):
     return rating.clip(upper=125.0)
 
 
-def era_adjusted(df, col_raw, era_col="era_label", role_col=None, blend=0.75):
-    """
-    Lleva la tasa de cada pitcher hacia una referencia comun, quitando `blend` de la diferencia
-    entre la media de su grupo y esa referencia:
-      factor = 1 + blend * (referencia / media_del_grupo - 1)
-    Sin role_col el grupo es la Era y la referencia la media global (todos contra todos).
-    Con role_col el grupo es Era + rol y la referencia la media historica de ese rol: abridores
-    contra abridores y relevistas contra relevistas, sin borrar la diferencia natural entre roles.
-    """
-    raw = df[col_raw]
-    use_era = era_col if era_col in df.columns else "era_label"
-    if role_col and role_col in df.columns:
-        role = df[role_col].fillna("SP")
-        group = df[use_era].astype(str) + " | " + role
-        reference = raw.groupby(role).transform("mean")
-    else:
-        group = df[use_era]
-        reference = raw.mean()
-    group_means = raw.groupby(group).transform("mean").replace(0, np.nan)
-    return raw * (1.0 + blend * (reference / group_means - 1.0)).fillna(1.0)
+# Ligas Negras oficiales (1920-1948) y circuitos independientes / pioneros.
+NLB_ALL_LEAGUES = {'NNL', 'NN2', 'NAL', 'ECL', 'ANL', 'EWL', 'NSL', 'NN1', 'EAL', 'IND', 'EAS', 'WES', 'NAC', 'INT'}
 
 
-def normalize_difficulty_adjusted(df, col_raw, col_out, invert=False, era_col="era_label", role_col=None, blend=0.75):
+def suavizar_por_anio(tab, radius=2):
+    """tab indexada por año con columnas de sumas -> mismas sumas con ventana triangular de +-radius años."""
+    years = np.arange(int(tab.index.min()), int(tab.index.max()) + 1)
+    g = tab.reindex(years).fillna(0.0)
+    acc = g * 0.0
+    for k in range(-radius, radius + 1):
+        acc = acc + g.shift(k).fillna(0.0) * (1.0 - abs(k) / (radius + 1.0))
+    return acc
+
+
+def ajustar_por_ambiente(raw, ambiente, blend=0.75):
     """
-    Mismo ajuste OPS+ que bateadores (por defecto 75% de la diferencia de era), ver era_adjusted:
-      out = normalize_series(adjusted, 1, 105) recortado a 1-125
-    Si invert=True el mejor es el MENOR valor (e.g. BB/9, HR/9).
+    Lleva la tasa de cada pitcher hacia una referencia comun quitando `blend` de la diferencia
+    entre el ambiente de SUS temporadas y el ambiente medio de todas las cartas:
+      factor = 1 + blend * (ambiente_medio / ambiente_del_pitcher - 1)
     """
-    adjusted = era_adjusted(df, col_raw, era_col=era_col, role_col=role_col, blend=blend)
+    amb = ambiente.replace(0, np.nan)
+    return raw * (1.0 + blend * (amb.mean() / amb - 1.0)).fillna(1.0)
+
+
+def estimar_por_contemporaneos(adjusted, raw, year, last_year=1888, ref_first_year=1893, radius=4):
+    """
+    Para tasas cuyo ambiente estaba casi en cero (bases por bolas hasta 1888, cuando hacian falta
+    de 5 a 9 bolas): dividir contra ese ambiente exagera todo. En esas cartas el valor ajustado
+    se estima por la posicion del jugador entre sus contemporaneos (desvios estandar entre las
+    cartas con pico a +-radius años), trasladada a la escala de las cartas de ref_first_year en adelante.
+    """
+    yy = pd.to_numeric(year, errors="coerce").values.astype(float)
+    rv = raw.values.astype(float)
+    ref = yy >= ref_first_year
+    ref_mean, ref_sd = float(adjusted[ref].mean()), float(adjusted[ref].std())
+    est = adjusted.values.astype(float).copy()
+    for uy in np.unique(yy[yy <= last_year]):
+        w = np.clip(1.0 - np.abs(yy - uy) / (radius + 1.0), 0, None)
+        m = (w * rv).sum() / w.sum()
+        sd = np.sqrt((w * (rv - m) ** 2).sum() / w.sum())
+        if sd > 0:
+            sel = yy == uy
+            est[sel] = ref_mean + (rv[sel] - m) / sd * ref_sd
+    return pd.Series(est, index=adjusted.index)
+
+
+def normalizar_por_ambiente(df, col_raw, col_out, col_amb, invert=False, blend=0.75, estimar_hasta=None):
+    adjusted = ajustar_por_ambiente(df[col_raw], df[col_amb], blend)
+    if estimar_hasta is not None:
+        adjusted = estimar_por_contemporaneos(adjusted, df[col_raw], df["peak_year"], last_year=estimar_hasta)
     if invert:
         adjusted = -adjusted  # invertir para que menor sea mejor
-    df[col_out] = (
-        normalize_series(adjusted)
-        .clip(1, 125)
-        .round(1)
-    )
+    df[col_out] = normalize_series(adjusted).clip(1, 125).round(1)
     return df
+
+
+# ── Longevidad y extremos: pasos comunes a bateadores y pitchers ─────────────────────────────
+LONGEVITY_SEASONS = 12      # segundo pico, mas largo
+LONGEVITY_WEIGHT  = 0.25    # peso del pico de 12 en el rating final
+EXTREME_TOP_ANCHOR, EXTREME_LOW_ANCHOR, EXTREME_BOTTOM_SHARE = 99.0, 25.0, 0.02
+
+
+def mezclar_longevidad(v7, v12, share):
+    """
+    rating = 75% pico de 7 temporadas + 25% pico de 12 temporadas (decision del usuario).
+    Por cada temporada que falta para llegar a 12 (share = temporadas con carga real / 12), esa
+    parte cuenta como una temporada floja: el percentil 25 del rating. Premia las carreras largas
+    y constantes y castiga las cortas sin cambiar de donde salen los ratings.
+    """
+    floja = float(v7.quantile(0.25))
+    v12 = v12.fillna(v7)
+    return (1.0 - LONGEVITY_WEIGHT) * v7 + LONGEVITY_WEIGHT * (share * v12 + (1.0 - share) * floja)
+
+
+def ajustar_extremos(v, n_top):
+    """
+    Ultimo paso de TODOS los ratings, igual para todos: el n_top-esimo mejor vale 125 (se estira
+    el tramo por encima de 99) y el 2% mas bajo vale 1 (se estira el tramo por debajo de 25).
+    El resto del rating no se toca.
+    """
+    v = v.astype(float).copy()
+    top_ref = float(v.nlargest(n_top).iloc[-1])
+    if EXTREME_TOP_ANCHOR < top_ref < 125.0:
+        hi = v > EXTREME_TOP_ANCHOR
+        v[hi] = EXTREME_TOP_ANCHOR + (v[hi] - EXTREME_TOP_ANCHOR) * (125.0 - EXTREME_TOP_ANCHOR) / (top_ref - EXTREME_TOP_ANCHOR)
+    n_bottom = max(1, int(round(EXTREME_BOTTOM_SHARE * len(v))))
+    low_ref = float(v.nsmallest(n_bottom).iloc[-1])
+    if 1.0 < low_ref < EXTREME_LOW_ANCHOR:
+        lo = v < EXTREME_LOW_ANCHOR
+        v[lo] = 1.0 + (v[lo] - low_ref) * (EXTREME_LOW_ANCHOR - 1.0) / (EXTREME_LOW_ANCHOR - low_ref)
+    return v.clip(1.0, 125.0).round(1)
+
+
+PIT_TOP_N = 16              # cartas en 125 en cada rating (misma proporcion que las 20 de bateadores)
+PIT_RATINGS = ["h9_val", "k9_val", "bb9_val", "hr9_val", "sta_val", "clt_val"]
+MIN_IP_SEASON_SP, MIN_IP_SEASON_RP, NLB_SEASON_FACTOR = 60.0, 25.0, 2.2     # temporada con carga real
+
+
+def paso_10b_longevidad(df7, df12, pico12):
+    print(f"\n  PASO 10b: Longevidad ({int((1 - LONGEVITY_WEIGHT) * 100)}% pico de 7 + {int(LONGEVITY_WEIGHT * 100)}% pico de {LONGEVITY_SEASONS})...")
+    df = df7.copy()
+    s = pico12[pico12["playerID"].isin(set(df["playerID"]))]
+    minimo = np.where(s["is_sp_season"].astype(bool), MIN_IP_SEASON_SP, MIN_IP_SEASON_RP) / np.where(s["is_nlb_y"].astype(bool), NLB_SEASON_FACTOR, 1.0)
+    ok = (s["IPouts"] / 3.0) >= minimo
+    n = ok.groupby(s["playerID"]).sum()
+    share = (df["playerID"].map(n).fillna(0) / float(LONGEVITY_SEASONS)).clip(0.0, 1.0)
+    df["longevity_seasons"] = (share * LONGEVITY_SEASONS).round(0).astype(int)
+    v12 = df12.drop_duplicates("playerID").set_index("playerID")
+    for col in PIT_RATINGS:
+        df[col] = mezclar_longevidad(df[col].astype(float), df["playerID"].map(v12[col]), share).round(1)
+    return df
+
+
+def paso_10c_extremos(df):
+    print("\n  PASO 10c: Extremos parejos (el 16o mejor de cada rating = 125, el 2% mas bajo = 1)...")
+    df = df.copy()
+    for col in PIT_RATINGS:
+        df[col] = ajustar_extremos(df[col], PIT_TOP_N)
+    df["clu_val"] = df["clt_val"]
+    return df
+
+
+def media_deslizante(values, year, radius=8):
+    """Media de `values` entre las cartas con pico a +-radius años (peso triangular)."""
+    y = year.values.astype(float)
+    v = values.values.astype(float)
+    out = np.empty(len(v))
+    ok = ~np.isnan(v)
+    for uy in np.unique(y):
+        w = np.clip(1.0 - np.abs(y - uy) / (radius + 1.0), 0, None)
+        out[y == uy] = (w[ok] * v[ok]).sum() / max(w[ok].sum(), 1e-9)
+    return pd.Series(out, index=values.index)
 
 
 def asignar_rareza(ovr):
@@ -217,8 +312,8 @@ def paso_2_identificar_pitchers_puros(fielding):
                  .drop_duplicates(subset="playerID")
     )
     pure_pitchers = set(primary_pos[primary_pos["POS"] == "P"]["playerID"])
-    # Incluir variantes duales canónicas y leyendas históricas de dos vías (Ruth, Rogan, Ward, Caruthers, Wood)
-    for dual_id in ["eckerde01_sp", "eckerde01_rp", "smoltjo01_sp", "smoltjo01_rp", "ruthba01", "roganbu99", "wardjo01", "carutbo01", "woodjo02"]:
+    # Incluir variantes duales canónicas y jugadores de dos vías (Ruth, Rogan, Ward, Caruthers, Wood, Ohtani, Dihigo)
+    for dual_id in ["eckerde01_sp", "eckerde01_rp", "smoltjo01_sp", "smoltjo01_rp", "ruthba01", "roganbu99", "wardjo01", "carutbo01", "woodjo02", "ohtansh01", "dihigma99"]:
         pure_pitchers.add(dual_id)
     print(f"  {len(pure_pitchers):,} pitchers puros identificados")
     return pure_pitchers
@@ -276,6 +371,67 @@ def paso_3_carrera_pitching(pitching):
 
 
 # ── PASO 4: Pico de 7 mejores temporadas por WAR ────────────────────────────
+def _rellenar_hr_faltantes(pit_yearly):
+    """
+    Jonrones permitidos faltantes en Ligas Negras. Muchas temporadas no tienen el dato (vacio) o
+    figuran con 0 jonrones en 100+ entradas (de 1925 a 1929 le pasa al 20% de las temporadas de
+    Ligas Negras de 100+ IP, contra 0.4% en MLB): contarlas como cero regalaba HR/9 y Clutch.
+    Se estiman con la tasa del propio pitcher en sus temporadas con dato, regresada con 150 IP
+    hacia la tasa de las Ligas Negras de ese quinquenio.
+    """
+    py = pit_yearly.copy()
+    ip = py["IP_y"]
+    nlb = py["is_nlb_y"].astype(bool)
+    missing = nlb & (py["hr_missing"].astype(bool) | ((py["HR_a"] == 0) & (ip >= 100) & (py["yearID"] >= 1920)))
+    ok = nlb & ~missing & (ip > 0)
+    py["hr_estimated"] = missing
+    if not missing.any() or not ok.any():
+        return py
+    lg_rate = py.loc[ok, "HR_a"].sum() / ip[ok].sum()
+    blk = py["yearID"] // 5 * 5
+    lg_blk = py.loc[ok, "HR_a"].groupby(blk[ok]).sum() / ip[ok].groupby(blk[ok]).sum()
+    base = blk.map(lg_blk).fillna(lg_rate)
+    own_hr = py["playerID"].map(py.loc[ok].groupby("playerID")["HR_a"].sum()).fillna(0.0)
+    own_ip = py["playerID"].map(ip[ok].groupby(py.loc[ok, "playerID"]).sum()).fillna(0.0)
+    rate = (own_hr + 150.0 * base) / (own_ip + 150.0)
+    py["HR_a"] = py["HR_a"].astype(float)
+    py.loc[missing, "HR_a"] = (rate * ip)[missing]
+    print(f"  Jonrones permitidos estimados en {int(missing.sum()):,} temporadas de Ligas Negras sin el dato")
+    return py
+
+
+def _estimar_war_sin_dato(pit_yearly):
+    """
+    Ninguna temporada de Ligas Negras anterior a 1920 (ni las de circuitos independientes) tiene
+    WAR calculado. Como el pico se elige por WAR, esas temporadas quedaban al final de la fila y
+    solo entraban como relleno, las mas antiguas primero y no las mejores. Aqui se les estima un
+    WAR SOLO para ese ranking (war_rank_base), con la relacion entre WAR por entrada y efectividad
+    contra la liga que sale de las temporadas de Ligas Negras que si tienen WAR. El WAR real
+    guardado (war_season) no cambia.
+    """
+    py = pit_yearly.copy()
+    py["war_rank_base"] = py["war_season"]
+    nlb = py["is_nlb_y"].astype(bool)
+    ip = py["IP_y"]
+    if not nlb.any():
+        return py
+    lg = suavizar_por_anio(py.loc[nlb].groupby("yearID")[["ER", "IPouts"]].sum())
+    lg_era = (lg["ER"] / (lg["IPouts"] / 3.0).replace(0, np.nan) * 9.0)
+    diff = py["yearID"].map(lg_era) - py["era_y"]
+    fit = nlb & py["war_season"].notna() & (ip >= 20) & diff.notna()
+    need = nlb & py["war_season"].isna() & (ip > 0) & diff.notna()
+    if fit.sum() < 50 or not need.any():
+        return py
+    x, w = diff[fit].values, ip[fit].values
+    y = (py.loc[fit, "war_season"] / ip[fit]).values
+    xm, ym = np.average(x, weights=w), np.average(y, weights=w)
+    slope = np.average((x - xm) * (y - ym), weights=w) / np.average((x - xm) ** 2, weights=w)
+    est = (ym + slope * (diff - xm)) * ip
+    py.loc[need, "war_rank_base"] = est[need]
+    print(f"  WAR estimado (solo para elegir el pico) en {int(need.sum()):,} temporadas sin WAR  |  WAR/IP = {ym:.5f} + {slope:.5f} * (ERA liga - ERA)")
+    return py
+
+
 def paso_4_pico_pitching(pitching, war_pitch, people):
     """
     Selecciona las PEAK_SEASONS mejores temporadas por WAR de war_daily_pitch.txt.
@@ -283,6 +439,9 @@ def paso_4_pico_pitching(pitching, war_pitch, people):
     """
     print(f"\n  PASO 4: Seleccionando pico de {PEAK_SEASONS} mejores temporadas por WAR...")
     pit = pitching.copy()
+    # Antes de rellenar con 0: que temporadas no tienen el dato de jonrones permitidos, y cuales son de Ligas Negras.
+    pit["_hr_missing"] = pd.to_numeric(pit["HR"], errors="coerce").isna() if "HR" in pit.columns else False
+    pit["_nlb_row"] = pit["lgID"].isin(NLB_ALL_LEAGUES) if "lgID" in pit.columns else False
     int_cols = ["G", "GS", "SV", "IPouts", "H", "ER", "R", "HR", "BB", "SO", "HBP", "BFP", "W", "L"]
     for col in int_cols:
         if col in pit.columns:
@@ -306,9 +465,12 @@ def paso_4_pico_pitching(pitching, war_pitch, people):
         BFP   =("BFP",    "sum"),
         W     =("W",      "sum"),
         L     =("L",      "sum"),
+        hr_missing=("_hr_missing", "max"),
+        is_nlb_y  =("_nlb_row",    "max"),
     ).reset_index()
 
     pit_yearly["IP_y"]  = pit_yearly["IPouts"] / 3.0
+    pit_yearly = _rellenar_hr_faltantes(pit_yearly)
     ip_y = pit_yearly["IP_y"].replace(0, np.nan)
 
     # Tasas por 9 innings
@@ -392,6 +554,8 @@ def paso_4_pico_pitching(pitching, war_pitch, people):
     pit_yearly["ipouts_start_clean"] = np.where(has_start_outs, pit_yearly["ipouts_start_y"].fillna(0), est_sp_outs)
     pit_yearly["ipouts_rel_clean"]   = np.where(has_start_outs, pit_yearly["ipouts_rel_y"].fillna(0), pit_yearly["IPouts"] - est_sp_outs)
 
+    pit_yearly = _estimar_war_sin_dato(pit_yearly)
+
     NLB_WAR_BOOST = 2.0
     nl_leagues = {'NN1', 'NN2', 'EAL', 'NSL', 'NAL', 'ANL', 'EWL', 'NNL', 'ECL', 'IND'}
 
@@ -400,13 +564,13 @@ def paso_4_pico_pitching(pitching, war_pitch, people):
     # Temporadas de NLB (Ligas Negras) reciben un boost 2.0x SOLO para este ranking por volumen de calendario.
     def seleccionar_pico(group):
         g = group.copy()
-        if g["war_season"].notna().any():
+        if g["war_rank_base"].notna().any():
             gs_ratio = g["GS"] / g["G"].replace(0, np.nan)
             is_relief_season = gs_ratio.fillna(0) < RELIEF_GS_RATIO_THRESHOLD
             relief_mult = np.where(is_relief_season, RELIEF_WAR_BOOST, 1.0)
             is_nlb_season = (g["lgID"].isin(nl_leagues) if "lgID" in g.columns else False) | (g["teamID"].isin(NLB_TEAMS) if "teamID" in g.columns else False)
             nlb_mult = np.where(is_nlb_season, NLB_WAR_BOOST, 1.0)
-            g["war_ranking"] = g["war_season"] * relief_mult * nlb_mult
+            g["war_ranking"] = g["war_rank_base"] * relief_mult * nlb_mult
             g = g.sort_values("war_ranking", ascending=False, na_position="last")
         else:
             g = g.sort_values("era_y", ascending=True, na_position="last")  # menor ERA = mejor
@@ -899,12 +1063,6 @@ def paso_8_atributos_raw(df):
     bb_k = df["peak_bb"].fillna(0)
     hr_k = df["peak_hr_a"].fillna(0)
 
-    # Fraccion de IP en circuitos pioneros independientes: solo se usa para el calendario de Stamina.
-    unoff_ip = (df["unoff_ipouts"].fillna(0) / 3.0) if "unoff_ipouts" in df.columns else pd.Series(0, index=df.index)
-    career_ip_safe = df["career_ip"].replace(0, np.nan).fillna(1.0)
-    f_unoff = (unoff_ip / career_ip_safe).clip(0.0, 1.0)
-
-
     # Suavizado bayesiano calibrado: m = 250.0 IP (equivalente a 1 temporada completa de as abridor)
     m_ip = 250.0
 
@@ -944,13 +1102,8 @@ def paso_8_atributos_raw(df):
     for g_, v_ in df.groupby(group_key)["prior_k9"].mean().items():
         print(f"    {g_:42s} {v_:5.2f}")
 
-    # Factor de expansion de calendario para NLB:
-    # 2.0x para ligas NLB oficiales (1920-1948, temporadas de 70-80 juegos vs 154 MLB)
-    # 3.5x para circuitos pioneros independientes pre-1920 (IND, EAS, WES, etc. con 10-25 juegos documentados por año)
-    is_nlb = (df["league_group"] == "NLB") if "league_group" in df.columns else False
-    is_pioneer = (f_unoff >= 0.50) & is_nlb
-    nlb_calendar_mult = np.where(is_pioneer, 3.5, np.where(is_nlb, 2.0, 1.0))
-    df["ip_per_year_raw"] = df["ip_per_year"].fillna(50.0) * nlb_calendar_mult
+    # Entradas por año, con las temporadas de Ligas Negras llevadas a calendario completo (paso 7b).
+    df["ip_per_year_raw"] = df["ip_per_year_eq"].fillna(df["ip_per_year"]).fillna(50.0)
     df["sta_raw"] = df["ip_per_year_raw"]
 
     # Atributo Clutch RAW: LOB% (Strand Rate) con Ancla m=150 corredores + Modulador Leverage Index
@@ -977,6 +1130,65 @@ def paso_8_atributos_raw(df):
     return df
 
 
+# ── PASO 7b: Ambiente de las temporadas de cada pitcher ─────────────────────────
+def paso_7b_ambiente_por_temporada(df, pico_df):
+    """
+    En vez de comparar a cada pitcher contra la media de su Era (grupos fijos, con saltos al
+    cruzar un borde: el mismo pitcher valia 14 puntos menos por tener el pico un año despues),
+    se lo compara contra el ambiente de las temporadas exactas de su pico.
+
+    Ambiente de un año = tasas agregadas de todas las temporadas de pico del pool en ese año
+    (ventana de +-2 años), ponderadas por entradas. Es UN solo ambiente para abridores y
+    relevistas: al ponderar por entradas los relevistas casi no lo mueven, que era el problema
+    de comparar contra la media de cartas de una Era (mas de la mitad de las cartas modernas son
+    relevistas). El ambiente del pitcher es la media de esos años ponderada por sus entradas.
+    b_ip es la carga de trabajo: entradas medias por temporada de pico de ese año.
+    """
+    print("\n  PASO 7b: Ambiente por temporada (H, K, BB, HR, LOB e IP de los años del pico)...")
+    df = df.copy()
+    s = pico_df[pico_df["playerID"].isin(set(df["playerID"]))].copy()
+    s["ip"] = s["IPouts"] / 3.0
+    for c in ("H", "SO", "BB", "HR_a", "ER", "HBP"):
+        s[c] = s[c].fillna(0.0)
+    s["lob_num"] = s["H"] + s["BB"] + s["HBP"] - s["ER"]
+    s["lob_den"] = s["H"] + s["BB"] + s["HBP"] - 1.4 * s["HR_a"]
+    s["n"] = 1.0
+    t = suavizar_por_anio(s.groupby("yearID")[["ip", "H", "SO", "BB", "HR_a", "lob_num", "lob_den", "n"]].sum())
+    ip_t = t["ip"].replace(0, np.nan)
+    env = pd.DataFrame({
+        "b_h": t["H"] / ip_t, "b_k": t["SO"] / ip_t, "b_bb": t["BB"] / ip_t, "b_hr": t["HR_a"] / ip_t,
+        "b_lob": t["lob_num"] / t["lob_den"].replace(0, np.nan), "b_ip": t["ip"] / t["n"].replace(0, np.nan),
+    })
+    s = s.join(env, on="yearID")
+    rate_cols = ["b_h", "b_k", "b_bb", "b_hr", "b_lob"]
+    w = s["ip"].clip(lower=0.01)
+    b = s[rate_cols].mul(w, axis=0).groupby(s["playerID"]).sum().div(w.groupby(s["playerID"]).sum(), axis=0)
+    b["b_ip"] = s["b_ip"].groupby(s["playerID"]).mean()
+
+    # Calendario de Ligas Negras (para Stamina). Sus temporadas documentadas eran mucho mas cortas
+    # que las de MLB. En vez de un multiplicador fijo (x2, o x3.5 para pioneros) se estima año
+    # por año: carga media de un abridor de MLB / carga media de un abridor de Ligas Negras en
+    # ese año (3.9 en 1905, 2.0 en 1916-1920, 1.7 en 1928, 2.5 en los años 40). Las entradas de
+    # cada temporada de Ligas Negras se llevan asi a su equivalente de calendario completo.
+    MIN_NLB_SEASONS_PER_YEAR = 8
+    nlb_s = s["is_nlb_y"].astype(bool) if "is_nlb_y" in s.columns else pd.Series(False, index=s.index)
+    sp = s[s["is_sp_season"].astype(bool) & (s["ip"] >= 30)]
+    sp_nlb = nlb_s.reindex(sp.index)
+    cal = suavizar_por_anio(pd.DataFrame({
+        "ip_m": sp[~sp_nlb].groupby("yearID")["ip"].sum(), "n_m": sp[~sp_nlb].groupby("yearID").size(),
+        "ip_n": sp[sp_nlb].groupby("yearID")["ip"].sum(),  "n_n": sp[sp_nlb].groupby("yearID").size(),
+    }).fillna(0.0))
+    factor = ((cal["ip_m"] / cal["n_m"].replace(0, np.nan)) / (cal["ip_n"] / cal["n_n"].replace(0, np.nan)))
+    factor = factor.where(cal["n_n"] >= MIN_NLB_SEASONS_PER_YEAR).interpolate(limit_direction="both")
+    s["ip_eq"] = s["ip"] * np.where(nlb_s, s["yearID"].map(factor).fillna(1.0), 1.0)
+    b["ip_per_year_eq"] = s["ip_eq"].groupby(s["playerID"]).mean()
+    df = df.merge(b, left_on="playerID", right_index=True, how="left")
+    for c in rate_cols + ["b_ip"]:
+        df[c] = df[c].fillna(df[c].mean())
+    df["ip_per_year_eq"] = df["ip_per_year_eq"].fillna(df["ip_per_year"])
+    return df
+
+
 # ── PASO 9: Desactivacion de Fielding de Pitchers (DEF eliminada) ──────────────
 def paso_9_fielding_pitchers(df, war_pitch, people):
     print("\n  PASO 9: Fielding de pitchers (DEF eliminada del sistema)...")
@@ -989,31 +1201,20 @@ def paso_9_fielding_pitchers(df, war_pitch, people):
 
 # ── PASO 10: Normalización por Era ───────────────────────────────────────────
 def paso_10_normalizar_por_era(df):
-    print("\n  PASO 10: Normalizando por Era MLB The Show Suite (H/9, K/9, BB/9, HR/9, STA, CLT)...")
+    print("\n  PASO 10: Normalizando contra el ambiente de cada temporada (H/9, K/9, BB/9, HR/9, STA, CLT)...")
     df = df.copy()
 
-    # Sub-división estadística interna de The Genesis Era para respetar la distancia del montículo:
-    # 1871-1892 (45-50 pies): Pioneer Era (Keefe, Radbourn, Mathews, Whitney)
-    # 1893-1900 (60'6"): Modern Distance Genesis (Cy Young, Kid Nichols, Amos Rusie post-1893)
-    df["norm_era"] = df["era_label"]
-    is_genesis = df["era_label"].str.contains("Genesis", case=False, na=False)
-    df.loc[is_genesis & (df["peak_year"] <= 1892), "norm_era"] = "The Genesis Era (1871-1892, 45-50ft)"
-    df.loc[is_genesis & (df["peak_year"] >= 1893), "norm_era"] = "The Genesis Era (1893-1900, 60ft)"
-
-    # Tasas: cada pitcher contra los de su Era y su rol (abridores con abridores, relevistas con
-    # relevistas). Comparar contra toda la Era hundia a los abridores modernos, porque mas de la
-    # mitad de las cartas modernas son relevistas (menos hits y mas ponches por entrada) y eso
-    # subia la vara; Genesis y Deadball quedaban con el triple del cupo de Legendary.
-    role_col = "role" if "role" in df.columns else None
-    df = normalize_difficulty_adjusted(df, "h9_raw",  "h9_val",  invert=True,  era_col="norm_era", role_col=role_col)
-    df = normalize_difficulty_adjusted(df, "k9_raw",  "k9_val",  invert=False, era_col="norm_era", role_col=role_col)
-    df = normalize_difficulty_adjusted(df, "bb9_raw", "bb9_val", invert=True,  era_col="norm_era", role_col=role_col)
-    # HR/9 va al 90% y no al 75%: en Genesis y Deadball casi no se bateaban jonrones, asi que
-    # permitir pocos no era merito del pitcher. Al 75% les quedaba el 25% de esa ventaja de era
-    # (rating medio de HR/9 entre abridores: 74-76 en Genesis/Deadball contra 42 en Modern).
+    # Tasas: cada pitcher contra el ambiente de los años de su pico (paso 7b), con el 75% de
+    # siempre. HR/9 va al 90%: casi no se bateaban jonrones en Genesis y Deadball, asi que
+    # permitir pocos no era merito del pitcher y al 75% les quedaba el 25% de esa ventaja.
     HR9_ERA_BLEND = 0.90
-    df = normalize_difficulty_adjusted(df, "hr9_raw", "hr9_val", invert=True,  era_col="norm_era", role_col=role_col, blend=HR9_ERA_BLEND)
-    df = normalize_difficulty_adjusted(df, "clt_raw", "clt_val", invert=False, era_col="norm_era", role_col=role_col)
+    df = normalizar_por_ambiente(df, "h9_raw",  "h9_val",  "b_h",   invert=True)
+    df = normalizar_por_ambiente(df, "k9_raw",  "k9_val",  "b_k",   invert=False)
+    # BB/9 hasta 1888 (5 a 9 bolas para un boleto) se estima por posicion entre contemporaneos,
+    # igual que el Ojo de los bateadores (decision del usuario; baja a los ases de 1880).
+    df = normalizar_por_ambiente(df, "bb9_raw", "bb9_val", "b_bb",  invert=True, estimar_hasta=1888)
+    df = normalizar_por_ambiente(df, "hr9_raw", "hr9_val", "b_hr",  invert=True, blend=HR9_ERA_BLEND)
+    df = normalizar_por_ambiente(df, "clt_raw", "clt_val", "b_lob", invert=False)
     df["clu_val"] = df["clt_val"]
 
     # Stamina calibrada según IP anuales promedio reales (escala 1.0 a 125.0):
@@ -1035,40 +1236,23 @@ def paso_10_normalizar_por_era(df):
         else:
             return 110.0 + min(15.0, ((val - 290.0) / 100.0) * 15.0)
 
-    # Stamina: entradas por año ajustadas por Era al 50% (no al 75% de las tasas), contra toda la
-    # Era sin separar por rol. Es un solo valor: el que muestra la carta y el que usa el juego.
-    # Al 75% un abridor moderno (Cole) quedaba por encima de Walter Johnson; al 50% el que lanzo
-    # 400 entradas sigue claramente arriba del que lanzo 220, pero ya no por una escala fija que
-    # dejaba a Genesis y Deadball con el triple del cupo de Legendary.
+    # Stamina: entradas por año ajustadas al 50% (no al 75% de las tasas) contra la carga de
+    # trabajo de los años de su pico. Es un solo valor: el que muestra la carta y el que usa el
+    # juego. Al 75% un abridor moderno (Cole) quedaba por encima de Walter Johnson; al 50% el que
+    # lanzo 400 entradas sigue claramente arriba del que lanzo 220, pero ya no por una escala fija
+    # que dejaba a Genesis y Deadball con el triple del cupo de Legendary.
     STA_ERA_BLEND = 0.50
-    sta_ip = era_adjusted(df, "ip_per_year_raw", era_col="norm_era", role_col=None, blend=STA_ERA_BLEND)
+    sta_ip = ajustar_por_ambiente(df["ip_per_year_raw"], df["b_ip"], STA_ERA_BLEND)
     df["sta_val"] = sta_ip.apply(map_ip_to_sta).round(1).clip(1.0, 125.0)
 
     # Suavizado Bayesiano Suave (m=1) para muestras cortas de temporadas en el pico (n < 7)
     n_peak = df["total_seasons_in_peak"].fillna(7).clip(lower=1, upper=7)
     weight_seasons = np.minimum(1.0, (n_peak / (n_peak + 1.0)) * (8.0 / 7.0))
-    rate_group = (df["norm_era"].astype(str) + " | " + df[role_col].fillna("SP")) if role_col else df["norm_era"]
-    for col in ["h9_val", "k9_val", "bb9_val", "hr9_val", "clt_val"]:
-        group_mean = df.groupby(rate_group)[col].transform("mean")
+    # Se regresa hacia la media de las cartas con pico cercano (+-8 años), no hacia la de una Era fija.
+    for col in ["h9_val", "k9_val", "bb9_val", "hr9_val", "clt_val", "sta_val"]:
+        group_mean = media_deslizante(df[col], df["peak_year"])
         df[col] = (weight_seasons * df[col] + (1.0 - weight_seasons) * group_mean).round(1)
-    era_mean = df.groupby("norm_era")["sta_val"].transform("mean")
-    df["sta_val"] = (weight_seasons * df["sta_val"] + (1.0 - weight_seasons) * era_mean).round(1)
 
-    # Todo rating debe tener cartas en el maximo (125) y en el minimo (1). El ajuste por Era baja
-    # a los caballos de Genesis y deja el tope vacio, asi que se estiran solo los extremos: por
-    # arriba de STA_TOP_ANCHOR hasta que la STA_TOP_N-esima mejor llegue a 125, y por debajo de
-    # STA_LOW_ANCHOR hasta que la peor llegue a 1. El medio no se toca.
-    STA_TOP_ANCHOR, STA_TOP_N, STA_LOW_ANCHOR = 100.0, 10, 25.0
-    sta = df["sta_val"].astype(float)
-    top_ref = float(sta.nlargest(STA_TOP_N).iloc[-1])
-    if STA_TOP_ANCHOR < top_ref < 125.0:
-        hi = sta > STA_TOP_ANCHOR
-        sta[hi] = STA_TOP_ANCHOR + (sta[hi] - STA_TOP_ANCHOR) * (125.0 - STA_TOP_ANCHOR) / (top_ref - STA_TOP_ANCHOR)
-    low_ref = float(sta.min())
-    if 1.0 < low_ref < STA_LOW_ANCHOR:
-        lo = sta < STA_LOW_ANCHOR
-        sta[lo] = 1.0 + (sta[lo] - low_ref) * (STA_LOW_ANCHOR - 1.0) / (STA_LOW_ANCHOR - low_ref)
-    df["sta_val"] = sta.clip(1.0, 125.0).round(1)
     df["clu_val"] = df["clt_val"]
 
     print("  h9_val, k9_val, bb9_val, hr9_val, sta_val, clt_val normalizados por Era (MLB The Show Suite)")
@@ -1494,13 +1678,26 @@ def main():
 
     pure_pitchers = paso_2_identificar_pitchers_puros(fielding)
     career        = paso_3_carrera_pitching(pitching)
-    peak, pico_df = paso_4_pico_pitching(pitching, war_pitch, people)
-    eligible      = paso_5_filtro_ingesta(career, peak, allstar, hof, pure_pitchers, pitching)
-    eligible      = paso_6_enriquecer_people(eligible, people)
-    eligible      = paso_7_asignar_era(eligible, war_pit=war_pitch, people=people, pitching=pitching)
-    eligible      = paso_8_atributos_raw(eligible)
-    eligible      = paso_9_fielding_pitchers(eligible, war_pitch, people)
-    eligible      = paso_10_normalizar_por_era(eligible)
+
+    def calcular_ratings(n_peak):
+        """Pasos 4 a 10 con un pico de n_peak temporadas."""
+        global PEAK_SEASONS
+        PEAK_SEASONS = n_peak
+        peak, pico = paso_4_pico_pitching(pitching, war_pitch, people)
+        el = paso_5_filtro_ingesta(career, peak, allstar, hof, pure_pitchers, pitching)
+        el = paso_6_enriquecer_people(el, people)
+        el = paso_7_asignar_era(el, war_pit=war_pitch, people=people, pitching=pitching)
+        el = paso_7b_ambiente_por_temporada(el, pico)
+        el = paso_8_atributos_raw(el)
+        el = paso_9_fielding_pitchers(el, war_pitch, people)
+        el = paso_10_normalizar_por_era(el)
+        PEAK_SEASONS = 7
+        return el, pico
+
+    eligible12, pico_12 = calcular_ratings(LONGEVITY_SEASONS)
+    eligible, pico_df   = calcular_ratings(7)
+    eligible      = paso_10b_longevidad(eligible, eligible12, pico_12)
+    eligible      = paso_10c_extremos(eligible)
     eligible      = paso_11_ovr_rareza(eligible)
     final         = paso_12_exportar(eligible, pitching, teams, franchises, pico_df, war_pitch, people)
 

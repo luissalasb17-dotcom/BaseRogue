@@ -42,7 +42,7 @@ def assign_era(year):
             return label
     return "Modern Era (2016-Pres)"
 
-def normalize_series(s, low=1.0, high=105.0):
+def normalize_series(s, low=1.0, high=99.0):   # misma escala que bateadores y que pitchers_etl.py
     valid = s.dropna()
     p02 = valid.quantile(0.02)
     p98 = valid.quantile(0.98)
@@ -184,14 +184,14 @@ def run_story_pitchers_etl():
     df = normalize_diff_adj(df, "clt_raw", "clt_val")
     df["clt_int"] = df["clt_val"].astype(int)
 
-    # 5. Calcular OVR con ponderación 20/20/20/15/15/10 (20h/9, 20k/9, 20sta, 15bb/9, 15hr/9, 10clt)
-    print("\n[4/5] Calculando OVR oficial 20/20/20/15/15/10...")
+    # 5. Calcular OVR con los mismos pesos que las cartas (pitchers_etl.py): 28 H/9, 28 STA, 12 K/9, 12 BB/9, 10 HR/9, 10 CLT
+    print("\n[4/5] Calculando OVR oficial 28/28/12/12/10/10...")
     df["raw_ovr"] = (
-        df["h9"] * 0.20 +
-        df["k9"] * 0.20 +
-        df["sta"] * 0.20 +
-        df["bb9"] * 0.15 +
-        df["hr9"] * 0.15 +
+        df["h9"] * 0.28 +
+        df["sta"] * 0.28 +
+        df["k9"] * 0.12 +
+        df["bb9"] * 0.12 +
+        df["hr9"] * 0.10 +
         df["clt_val"] * 0.10
     )
 

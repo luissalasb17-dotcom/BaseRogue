@@ -61,6 +61,42 @@ POS_DISPLAY_MAP = {
 LEGEND_POS_OVERRIDES = {}
 
 
+# Sub-eras de Genesis SOLO para el calculo de ratings (priors y normalizacion). La etiqueta de
+# era de la carta, que usa el juego para las sinergias, no cambia. Genesis junta tres epocas
+# muy distintas: hasta 1881 hacian falta hasta 9 bolas para una base por bolas y casi no habia
+# jonrones (ojo de 2 a 6 y poder de 17 sobre 125 al compararlos contra todo Genesis); en 1893
+# el monticulo paso a la distancia actual y la ofensiva se disparo (los bateadores de
+# 1895-1899 tenian contacto medio de 62 contra 32 de los de 1880-1884, y concentraban 8 de 14
+# Legendary). Los pitchers ya dividian Genesis en 1892/1893 por lo mismo.
+GENESIS_CALC_SUB_ERAS = [
+    (None, 1881, "The Genesis Era (1871-1881)"),
+    (1882, 1892, "The Genesis Era (1882-1892)"),
+    (1893, None, "The Genesis Era (1893-1900)"),
+]
+
+
+def usar_sub_eras_de_calculo(df):
+    """Guarda la era de la carta en era_label_card y pone en era_label la sub-era de calculo."""
+    df = df.copy()
+    df["era_label_card"] = df["era_label"]
+    genesis = df["era_label"].astype(str).str.contains("Genesis", case=False, na=False)
+    year = pd.to_numeric(df["peak_year"], errors="coerce")
+    for start, end, label in GENESIS_CALC_SUB_ERAS:
+        mask = genesis & year.notna()
+        if start is not None:
+            mask &= year >= start
+        if end is not None:
+            mask &= year <= end
+        df.loc[mask, "era_label"] = label
+    return df
+
+
+def restaurar_era_de_carta(df):
+    df = df.copy()
+    df["era_label"] = df["era_label_card"]
+    return df.drop(columns=["era_label_card"])
+
+
 def assign_era(year):
     for start, end, label in ERA_THRESHOLDS:
         if start <= int(year) <= end:
@@ -94,19 +130,34 @@ def normalize_series(s, low=1.0, high=99.0):
     return rating.clip(upper=125.0)
 
 
-def normalize_difficulty_adjusted(df, col_raw, col_out):
-    global_mean = df[col_raw].mean()
-    # Unified Era Normalization: Compare all players in era (MLB + NLB) against the same era benchmark
-    era_means = df.groupby("era_label")[col_raw].transform("mean")
-    diff_factor = global_mean / era_means.replace(0, 1)
-    blended_factor = 1.0 + 0.75 * (diff_factor - 1.0)
-    adjusted = df[col_raw] * blended_factor
-    df[col_out] = (
-        normalize_series(adjusted)
-        .clip(1, 125)
-        .round(1)
-    )
-    return df
+# Ligas Negras oficiales (1920-1948) y circuitos independientes / pioneros.
+NLB_ALL_LEAGUES = {'NNL', 'NN2', 'NAL', 'ECL', 'ANL', 'EWL', 'NSL', 'NN1', 'EAL', 'IND', 'EAS', 'WES', 'NAC', 'INT'}
+
+
+def suavizar_por_anio(tab, radius=2):
+    """tab indexada por año con columnas de sumas -> mismas sumas con ventana triangular de +-radius años."""
+    years = np.arange(int(tab.index.min()), int(tab.index.max()) + 1)
+    g = tab.reindex(years).fillna(0.0)
+    acc = g * 0.0
+    for k in range(-radius, radius + 1):
+        acc = acc + g.shift(k).fillna(0.0) * (1.0 - abs(k) / (radius + 1.0))
+    return acc
+
+
+def ajustar_por_ambiente(raw, ambiente, blend=0.75):
+    """
+    Ajuste por dificultad (estilo OPS+) contra el ambiente de las temporadas del propio jugador:
+      factor = 1 + blend * (ambiente_medio_de_todas_las_cartas / ambiente_del_jugador - 1)
+    """
+    amb = ambiente.replace(0, np.nan)
+    return raw * (1.0 + blend * (amb.mean() / amb - 1.0)).fillna(1.0)
+
+
+def cuantil_ponderado(v, w, q):
+    o = np.argsort(v)
+    v, w = v[o], w[o]
+    c = np.cumsum(w) - 0.5 * w
+    return float(np.interp(q * w.sum(), c, v))
 
 
 def normalize_globally(df, col_raw, col_out):
@@ -249,6 +300,66 @@ def paso_3_carrera_batting(batting):
 # ===========================================================================
 # PASO 4 - SELECCION DEL PICO DE 5 MEJORES TEMPORADAS
 # ===========================================================================
+def _estimar_atrapados_robando(bat):
+    """
+    Los atrapados robando no se anotaron hasta 1914, la Liga Nacional no los anoto de 1926 a 1950
+    y en Ligas Negras casi no existen. Con CS = 0 la eficiencia de robo salia 100%: un corredor
+    de la Nacional de los años 40 figuraba perfecto y uno de la Americana con 65%.
+    Donde una liga-año no tiene el dato (CS < 15% de las bases robadas) se estiman los atrapados
+    con la eficiencia tipica de las ligas que si lo anotaban en esos años (CS_adj).
+    """
+    bat = bat.copy()
+    lg = bat["lgID"].fillna("?") if "lgID" in bat.columns else pd.Series("?", index=bat.index)
+    sb_t = bat.groupby([lg, bat["yearID"]])["SB"].transform("sum")
+    cs_t = bat.groupby([lg, bat["yearID"]])["CS"].transform("sum")
+    recorded = (sb_t > 0) & (cs_t >= 0.15 * sb_t)
+    t = suavizar_por_anio(bat.loc[recorded].groupby("yearID")[["SB", "CS"]].sum())
+    att = (t["SB"] + t["CS"])
+    eff = (t["SB"] / att.replace(0, np.nan)).where(att >= 500)
+    all_years = np.arange(int(bat["yearID"].min()), int(bat["yearID"].max()) + 1)
+    eff = eff.reindex(all_years).interpolate(limit_direction="both")
+    e = bat["yearID"].map(eff).fillna(0.65).clip(0.40, 0.90)
+    bat["CS_adj"] = np.where(recorded, bat["CS"], bat["SB"] * (1.0 - e) / e)
+    return bat
+
+
+def _estimar_war_sin_dato(bat_yearly):
+    """
+    Ninguna temporada de Ligas Negras anterior a 1920 (ni las de circuitos independientes) tiene
+    WAR calculado. Como el pico se elige por WAR, esas temporadas quedaban al final de la fila y
+    solo entraban como relleno, las mas antiguas primero y no las mejores: de Pete Hill entraban
+    1904 y 1905 (79 turnos) y quedaban fuera 1910 (.511) y 1912 (.399).
+    Aqui se les estima un WAR SOLO para ese ranking (war_off_rank_base / war_tot_rank_base) con la
+    relacion entre WAR por turno y OPS contra la liga que sale de las temporadas de Ligas Negras
+    que si tienen WAR (correlacion 0.96). El WAR real guardado no cambia.
+    """
+    by = bat_yearly.copy()
+    by["war_off_rank_base"] = by["war_off"]
+    by["war_tot_rank_base"] = by["war_total"]
+    nlb = by["is_nlb_y"].astype(bool)
+    if not nlb.any():
+        return by
+    by["_tb"] = by["H"] + by["B2"] + 2 * by["B3"] + 3 * by["HR"]
+    by["_ob"] = by["H"] + by["BB"] + by["HBP"]
+    by["_pa"] = by["PA_y"].fillna(0)
+    lg = suavizar_por_anio(by.loc[nlb].groupby("yearID")[["AB", "_tb", "_ob", "_pa"]].sum())
+    lg_ops = lg["_ob"] / lg["_pa"].replace(0, np.nan) + lg["_tb"] / lg["AB"].replace(0, np.nan)
+    diff = (by["OBP_y"] + by["SLG_y"]) - by["yearID"].map(lg_ops)
+    pa = by["_pa"]
+    need = nlb & by["war_off"].isna() & (pa > 0) & diff.notna()
+    for real, base in (("war_off", "war_off_rank_base"), ("war_total", "war_tot_rank_base")):
+        fit = nlb & by[real].notna() & (pa >= 30) & diff.notna()
+        if fit.sum() < 50 or not need.any():
+            continue
+        x, w = diff[fit].values, pa[fit].values
+        y = (by.loc[fit, real] / pa[fit]).values
+        xm, ym = np.average(x, weights=w), np.average(y, weights=w)
+        slope = np.average((x - xm) * (y - ym), weights=w) / np.average((x - xm) ** 2, weights=w)
+        by.loc[need, base] = ((ym + slope * (diff - xm)) * pa)[need]
+    print(f"  WAR estimado (solo para elegir el pico) en {int(need.sum()):,} temporadas de Ligas Negras sin WAR")
+    return by.drop(columns=["_tb", "_ob", "_pa"])
+
+
 def paso_4_pico_batting(batting, war_bat, people):
     """
     Ranking de temporadas (prioridad):
@@ -262,6 +373,8 @@ def paso_4_pico_batting(batting, war_bat, people):
     for col in ["AB","H","2B","3B","HR","BB","SO","SB","CS","HBP","SF","G"]:
         if col in bat.columns:
             bat[col] = pd.to_numeric(bat[col], errors="coerce").fillna(0)
+    bat["_nlb_row"] = bat["lgID"].isin(NLB_ALL_LEAGUES) if "lgID" in bat.columns else False
+    bat = _estimar_atrapados_robando(bat)
 
     bat_yearly = bat.groupby(["playerID","yearID"]).agg(
         AB  =("AB",  "sum"), H   =("H",   "sum"),
@@ -270,9 +383,15 @@ def paso_4_pico_batting(batting, war_bat, people):
         SO  =("SO",  "sum"), SB  =("SB",  "sum"),
         CS  =("CS",  "sum"), HBP =("HBP", "sum"),
         SF  =("SF",  "sum"),
+        CS_adj  =("CS_adj",   "sum"),
+        is_nlb_y=("_nlb_row", "max"),
     ).reset_index()
 
     bat_yearly["PA_y"] = (bat_yearly["AB"] + bat_yearly["BB"] + bat_yearly["HBP"] + bat_yearly["SF"]).replace(0, np.nan)
+    # Turnos de las temporadas que SI tienen ponches registrados. Una temporada con 0 ponches es una
+    # temporada sin el dato (Ligas Negras, y varias ligas de MLB en la decada de 1880), no un
+    # bateador que nunca se poncho: contarla diluia la tasa de quien tenia el dato solo en parte.
+    bat_yearly["PA_so"] = np.where(bat_yearly["SO"] > 0, bat_yearly["PA_y"].fillna(0), 0.0)
     ab_y = bat_yearly["AB"].replace(0, np.nan)
     pa_y = bat_yearly["PA_y"]
     bat_yearly["OBP_y"] = (bat_yearly["H"] + bat_yearly["BB"] + bat_yearly["HBP"]) / pa_y
@@ -306,14 +425,16 @@ def paso_4_pico_batting(batting, war_bat, people):
         bat_yearly["war_off"] = np.nan
         bat_yearly["war_total"] = np.nan
 
+    bat_yearly = _estimar_war_sin_dato(bat_yearly)
+
     NLB_WAR_BOOST = 2.0
     nl_leagues = {'NNL', 'NN2', 'NAL', 'ECL', 'ANL', 'EWL', 'NSL', 'NN1'}
 
     def seleccionar_pico_off(group):
         g = group.copy()
-        if g["war_off"].notna().any():
+        if g["war_off_rank_base"].notna().any():
             is_nlb = (g["lgID"].isin(nl_leagues) if "lgID" in g.columns else False) | (g["teamID"].isin(NLB_TEAMS) if "teamID" in g.columns else False)
-            g["war_off_rank"] = g["war_off"] * np.where(is_nlb, NLB_WAR_BOOST, 1.0)
+            g["war_off_rank"] = g["war_off_rank_base"] * np.where(is_nlb, NLB_WAR_BOOST, 1.0)
             g = g.sort_values("war_off_rank", ascending=False, na_position="last")
         else:
             g = g.sort_values("OPS_y", ascending=False, na_position="last")
@@ -321,9 +442,9 @@ def paso_4_pico_batting(batting, war_bat, people):
 
     def seleccionar_pico_tot(group):
         g = group.copy()
-        if g["war_total"].notna().any():
+        if g["war_tot_rank_base"].notna().any():
             is_nlb = (g["lgID"].isin(nl_leagues) if "lgID" in g.columns else False) | (g["teamID"].isin(NLB_TEAMS) if "teamID" in g.columns else False)
-            g["war_tot_rank"] = g["war_total"] * np.where(is_nlb, NLB_WAR_BOOST, 1.0)
+            g["war_tot_rank"] = g["war_tot_rank_base"] * np.where(is_nlb, NLB_WAR_BOOST, 1.0)
             g = g.sort_values("war_tot_rank", ascending=False, na_position="last")
         else:
             g = g.sort_values("OPS_y", ascending=False, na_position="last")
@@ -338,7 +459,7 @@ def paso_4_pico_batting(batting, war_bat, people):
 
     # El peak_year_display es el año de su mejor rendimiento individual por WAR Total (primera fila del ranking bWAR)
     peak_display = (
-        pico_tot_df.sort_values(["playerID", "war_total"], ascending=[True, False])
+        pico_tot_df.sort_values(["playerID", "war_tot_rank_base"], ascending=[True, False])
                    .groupby("playerID")
                    .first()
                    .reset_index()[["playerID", "yearID"]]
@@ -354,6 +475,7 @@ def paso_4_pico_batting(batting, war_bat, people):
         peak_so  =("SO",  "sum"), peak_sb  =("SB",  "sum"),
         peak_cs  =("CS",  "sum"), peak_hbp =("HBP", "sum"),
         peak_sf  =("SF",  "sum"),
+        peak_cs_adj=("CS_adj", "sum"), peak_pa_so=("PA_so", "sum"),
     ).reset_index()
 
     peak = peak.merge(peak_median, on="playerID", how="left")
@@ -373,13 +495,21 @@ def paso_4_pico_batting(batting, war_bat, people):
     peak["peak_obp"]      = (peak["peak_h"] + peak["peak_bb"] + peak["peak_hbp"]) / pa_p
     peak["peak_slg"]      = (peak["peak_h"] + peak["peak_2b"] + 2*peak["peak_3b"] + 3*peak["peak_hr"]) / ab_p
     peak["peak_iso"]      = (peak["peak_2b"] + 2*peak["peak_3b"] + 3*peak["peak_hr"]) / ab_p
-    peak["peak_k_rate"]   = peak["peak_so"] / pa_p
+    # Tasa de ponches solo sobre las temporadas con el dato; con menos de MIN_PA_SO turnos con
+    # dato se deja en 0 y el paso 10 la estima.
+    MIN_PA_SO = 150
+    pa_so = peak["peak_pa_so"].where(peak["peak_pa_so"] >= MIN_PA_SO)
+    peak["peak_k_rate"]   = (peak["peak_so"] / pa_so).fillna(0.0)
     peak["peak_bb_rate"]  = peak["peak_bb"] / pa_p
     peak["peak_xbh_rate"] = (peak["peak_2b"] + peak["peak_3b"] + peak["peak_hr"]) / ab_p
     peak["peak_hr_rate"]  = peak["peak_hr"] / ab_p
 
-    sb_cs_p = (peak["peak_sb"] + peak["peak_cs"]).replace(0, np.nan)
-    peak["peak_sb_eff"]       = (peak["peak_sb"] / sb_cs_p).fillna(0.65)
+    # Eficiencia de robo con el mismo suavizado por muestra chica que las tasas de bateo: ancla de
+    # SB_EFF_ANCHOR intentos hacia la eficiencia tipica (antes un 2 de 2 valia 100%).
+    SB_EFF_ANCHOR = 40
+    sb_att = peak["peak_sb"] + peak["peak_cs_adj"]
+    sb_eff_tipica = float(peak["peak_sb"].sum() / max(1.0, sb_att.sum()))
+    peak["peak_sb_eff"]       = (peak["peak_sb"] + SB_EFF_ANCHOR * sb_eff_tipica) / (sb_att + SB_EFF_ANCHOR)
     peak["peak_sb_vol_log"]   = np.log1p(peak["peak_sb"])
     peak["peak_extra_base_f"] = (peak["peak_sb"] + peak["peak_3b"]) / ab_p
     print(f"  Pico calculado para {len(peak):,} jugadores")
@@ -887,6 +1017,44 @@ def paso_9_asignar_era(df, war_bat=None, people=None, batting=None):
 
 
 # ===========================================================================
+# PASO 9b - AMBIENTE DE LAS TEMPORADAS DE CADA BATEADOR
+# ===========================================================================
+def paso_9b_ambiente_por_temporada(df, pico_off_df):
+    """
+    En vez de comparar a cada bateador contra la media de su Era (grupos fijos, con saltos al
+    cruzar un borde), se lo compara contra el ambiente de las temporadas exactas de su pico.
+
+    Ambiente de un año = tasas agregadas de todas las temporadas de pico del pool en ese año
+    (ventana de +-2 años). El ambiente del bateador (b_ba, b_bb, b_pwr, b_k, b_iso) es la media
+    de esos años ponderada por sus turnos. Los ponches salen solo de temporadas de MLB con el dato
+    (en Ligas Negras casi no se anotaban); los años sin dato suficiente se interpolan.
+    """
+    print("\n  PASO 9b: Ambiente por temporada (BA, BB, poder y ponches de los años del pico)...")
+    df = df.copy()
+    s = pico_off_df[pico_off_df["playerID"].isin(set(df["playerID"]))].copy()
+    s["PA"] = s["PA_y"].fillna(0.0)
+    s["XBH"] = s["B2"] + s["B3"] + s["HR"]
+    s["TBX"] = s["B2"] + 2 * s["B3"] + 3 * s["HR"]
+    lg = df.drop_duplicates("playerID").set_index("playerID")["league_group"] if "league_group" in df.columns else pd.Series(dtype=object)
+    has_so = (s["playerID"].map(lg).fillna("MLB") != "NLB") & (s["SO"] > 0)
+    s["SO_k"] = np.where(has_so, s["SO"], 0.0)
+    s["PA_k"] = np.where(has_so, s["PA"], 0.0)
+    t = suavizar_por_anio(s.groupby("yearID")[["AB", "PA", "H", "BB", "HR", "XBH", "TBX", "SO_k", "PA_k"]].sum())
+    ab_t, pa_t = t["AB"].replace(0, np.nan), t["PA"].replace(0, np.nan)
+    env = pd.DataFrame({"b_ba": t["H"] / ab_t, "b_bb": t["BB"] / pa_t, "b_iso": t["TBX"] / ab_t})
+    env["b_pwr"] = (t["HR"] / pa_t) * 0.45 + env["b_iso"] * 0.40 + (t["XBH"] / pa_t) * 0.15      # mismos pesos que power_raw
+    env["b_k"] = (t["SO_k"] / t["PA_k"].replace(0, np.nan)).where(t["PA_k"] >= 4000).interpolate(limit_direction="both")
+    s = s.join(env, on="yearID")
+    cols = list(env.columns)
+    w = s["PA"].clip(lower=0.01)
+    b = s[cols].mul(w, axis=0).groupby(s["playerID"]).sum().div(w.groupby(s["playerID"]).sum(), axis=0)
+    df = df.merge(b, left_on="playerID", right_index=True, how="left")
+    for c in cols:
+        df[c] = df[c].fillna(df[c].mean())
+    return df
+
+
+# ===========================================================================
 # PASO 10 - CALCULAR ATRIBUTOS RAW DE BATEO (CON, PWR, EYE)
 # ===========================================================================
 def _prior_por_era_y_tiempo_de_juego(rate, weight, era, share, fallback):
@@ -974,9 +1142,10 @@ def paso_10_atributos_raw_bateo(df):
 
     df["ba_smoothed"] = (h_effective + m_ab * prior_ba) / (ab + m_ab)
 
-    # Unified Era Normalization for Contact (100% Era-Relative BA puro)
-    era_ba_means = df.groupby("era_label")["ba_smoothed"].transform("mean")
-    df["contact_raw"] = df["ba_smoothed"] / era_ba_means.replace(0, 0.260)
+    # Contacto ajustado al 75% contra el ambiente de sus temporadas, igual que poder y ojo
+    # (decision del usuario; antes iba al 100% contra la media de BA de su era).
+    CONTACT_ERA_BLEND = 0.75
+    df["contact_raw"] = ajustar_por_ambiente(df["ba_smoothed"], df["b_ba"], CONTACT_ERA_BLEND)
 
     # Suavizado Bayesiano de Boletos (EYE)
     df["eye_raw"] = (bb + m_pa * prior_bb) / (pa + m_pa)
@@ -998,31 +1167,37 @@ def paso_10_atributos_raw_bateo(df):
         xbh_smoothed * 0.15
     )
 
-    # ── Imputación Sabermétrica de Ponches (K/AVD) para NLB y datos faltantes ──
-    # En Ligas Negras históricas, >95% de los boxscores de periódicos no registraban ponches (SO=0).
-    # Para evitar inflar artificialmente a bateadores de swing grande (ej. Gibson, Suttles),
-    # estimamos K% con la regresión histórica por Era basada en BA e ISO de bateadores MLB:
-    # K% estimado = K_era - 0.40*(BA - BA_era) + 0.35*(ISO - ISO_era)
-    valid_k = (~is_nlb) & (df["k_rate"] >= 0.025)
-    era_k_dict = df[valid_k].groupby("era_label")["k_rate"].mean().to_dict()
-    era_ba_dict = df[valid_k].groupby("era_label")["ba_smoothed"].mean().to_dict()
-    era_iso_dict = df[valid_k].groupby("era_label")["iso_smoothed"].mean().to_dict()
+    # Frecuencia de robos + triples (componente de Velocidad) con el mismo suavizado de 1 temporada.
+    xbf_num = df["peak_sb"].fillna(0) + b3
+    prior_xbf = _prior_por_era_y_tiempo_de_juego(xbf_num / ab_nz, ab, era, share, 0.050)
+    df["extra_base_freq"] = (xbf_num + m_ab * prior_xbf) / (ab + m_ab)
 
-    def _impute_k(row):
-        k = row.get("k_rate", np.nan)
-        nl = row.get("is_nlb", False)
-        if (nl and (pd.isna(k) or k < 0.020)) or (pd.isna(k) or k < 0.015):
-            e = row["era_label"]
-            km = era_k_dict.get(e, 0.080)
-            bam = era_ba_dict.get(e, 0.265)
-            isom = era_iso_dict.get(e, 0.125)
-            ba_val = row.get("ba_smoothed", bam)
-            iso_val = row.get("iso_smoothed", isom)
-            k_est = km - 0.40 * (ba_val - bam) + 0.35 * (iso_val - isom)
-            return max(0.015, min(0.250, k_est))
-        return k
-
-    df["k_rate_clean"] = df.apply(_impute_k, axis=1)
+    # ── Estimacion de ponches (K/AVD) para Ligas Negras y datos faltantes ──
+    # En Ligas Negras mas del 95% de los boxscores no registraban ponches. Para no inflar a los
+    # bateadores de swing grande (Gibson, Suttles) se estima K% a partir del ambiente de sus
+    # temporadas y de cuanto se aparta el bateador en BA e ISO:
+    #   K% estimado = K_ambiente - 0.40*(BA - BA_ambiente) + 0.35*(ISO - ISO_ambiente)
+    # El ambiente sale de tasas agregadas y las cartas son tasas suavizadas de jugadores
+    # seleccionados, asi que se lleva a la escala de las cartas con el cociente medio (esc_*).
+    k_obs = df["k_rate"].astype(float)
+    nlb_mask = pd.Series(is_nlb, index=df.index) if not isinstance(is_nlb, pd.Series) else is_nlb
+    sin_dato = k_obs.isna() | (k_obs < 0.015) | (nlb_mask & (k_obs < 0.020))
+    # Suavizado por muestra chica de los ponches (era el unico rating de tasa sin el): misma ancla
+    # de 1 temporada y mismo prior por Era y tiempo de juego, sobre los turnos con el dato.
+    so_k  = df["peak_so"].fillna(0)
+    pa_so = df["peak_pa_so"].fillna(0)
+    con_dato = ~sin_dato & (pa_so > 0)
+    prior_k = _prior_por_era_y_tiempo_de_juego((so_k / pa_so.replace(0, np.nan)).where(con_dato & ~nlb_mask), pa_so, era, share, 0.100)
+    k = k_obs.where(~con_dato, (so_k + m_pa * prior_k) / (pa_so + m_pa))
+    valid_k = (~nlb_mask) & (k >= 0.025)
+    esc_k   = float((k[valid_k] / df.loc[valid_k, "b_k"]).mean())
+    esc_ba  = float((df.loc[valid_k, "ba_smoothed"] / df.loc[valid_k, "b_ba"]).mean())
+    esc_iso = float((df.loc[valid_k, "iso_smoothed"] / df.loc[valid_k, "b_iso"]).mean())
+    k_est = (df["b_k"] * esc_k
+             - 0.40 * (df["ba_smoothed"] - df["b_ba"] * esc_ba)
+             + 0.35 * (df["iso_smoothed"] - df["b_iso"] * esc_iso)).clip(0.015, 0.250)
+    df["k_rate_clean"] = k.where(~sin_dato, k_est)
+    df["k_estimated"] = sin_dato
 
     print("  Prior de BA por Era (suplente, share <= 0.4 / titular, share >= 0.9):")
     for e_, g_ in df.groupby("era_label"):
@@ -1139,46 +1314,46 @@ def paso_11_motor_defensivo(df, war_bat, awards):
 # ===========================================================================
 def paso_12_normalizar_por_era(df):
     """
-    Normaliza bateo usando ajuste por dificultad de Era (estilo OPS+).
-    La Defensa se mantiene limpia (sin doble ajuste por era, centrada en 50.0 = 0.0).
+    Normaliza bateo con ajuste por dificultad (estilo OPS+) contra el ambiente de las temporadas
+    de cada bateador (paso 9b). La Defensa se mantiene limpia (sin ajuste, centrada en 50.0 = 0.0).
     """
-    print("\n  PASO 12: Normalizando por Era (OPS+ Dificultad) bateo (escala 1-99)...")
-    
+    print("\n  PASO 12: Normalizando contra el ambiente de cada temporada (escala 1-99)...")
+    df = df.reset_index(drop=True)
+
     df = normalize_globally(df, "contact_raw", "contact_val")
 
-    for raw, out in [
-        ("power_raw", "power_val"),
-        ("eye_raw",   "eye_val"),
-    ]:
-        df = normalize_difficulty_adjusted(df, raw, out)
+    df["power_val"] = normalize_series(ajustar_por_ambiente(df["power_raw"], df["b_pwr"], 0.75)).clip(1, 125).round(1)
 
-    # K/AVD (Avoid K) - Evasion de ponches (invertido: menor K% = mayor K/AVD), ajustada por era
-    # al 90%. Antes se media 100% dentro de cada era, y Joe Sewell (1.5% de ponches), Tony Gwynn
-    # (4.2%) y Luis Arraez (5.7%) valian lo mismo. No va al 75% de los demas ratings porque la
-    # tasa de ponches es lo que mas cambio en la historia (4.7% en Golden contra 22.3% en Modern)
-    # y al 75% los bateadores modernos quedaban amontonados abajo.
+    # Ojo. Hasta 1888 hacian falta de 5 a 9 bolas para una base por bolas (2% de los turnos en
+    # 1874 contra 8.5% historico) y dividir contra un ambiente casi en cero exagera todo: un
+    # bateador con 4% de boletos quedaba con ojo de 99. Para esas cartas se estima el ojo por su
+    # posicion entre sus contemporaneos (desvios estandar entre las cartas con pico a +-4 años),
+    # trasladada a la escala de las cartas de 1893 en adelante.
+    EYE_EST_LAST_YEAR, EYE_REF_FIRST_YEAR, EYE_EST_RADIUS = 1888, 1893, 4
+    eye_adj = ajustar_por_ambiente(df["eye_raw"], df["b_bb"], 0.75)
+    yy = pd.to_numeric(df["peak_year"], errors="coerce").values.astype(float)
+    raw_eye = df["eye_raw"].values.astype(float)
+    ref = yy >= EYE_REF_FIRST_YEAR
+    ref_mean, ref_sd = float(eye_adj[ref].mean()), float(eye_adj[ref].std())
+    est = eye_adj.values.copy()
+    for uy in np.unique(yy[yy <= EYE_EST_LAST_YEAR]):
+        w = np.clip(1.0 - np.abs(yy - uy) / (EYE_EST_RADIUS + 1.0), 0, None)
+        m = (w * raw_eye).sum() / w.sum()
+        sd = np.sqrt((w * (raw_eye - m) ** 2).sum() / w.sum())
+        if sd > 0:
+            sel = yy == uy
+            est[sel] = ref_mean + (raw_eye[sel] - m) / sd * ref_sd
+    df["eye_val"] = normalize_series(pd.Series(est, index=df.index)).clip(1, 125).round(1)
+
+    # K/AVD (Avoid K) - Evasion de ponches (invertido: menor K% = mayor K/AVD), ajustada al 90%.
+    # No va al 75% de los demas ratings porque la tasa de ponches es lo que mas cambio en la
+    # historia (4.7% en Golden contra 22.3% en Modern) y al 75% los bateadores modernos quedaban
+    # amontonados abajo.
     KAVD_ERA_BLEND = 0.90
-    # Mismo orden de filas que dejaba el calculo anterior (agrupado por era, indice reiniciado).
-    df = pd.concat([grp for _, grp in df.groupby("era_label", group_keys=False)], ignore_index=True)
-    k_clean = df["k_rate_clean"].astype(float)
-    k_era_mean = k_clean.groupby(df["era_label"]).transform("mean").replace(0, np.nan)
-    k_adjusted = k_clean * (1.0 + KAVD_ERA_BLEND * (k_clean.mean() / k_era_mean - 1.0)).fillna(1.0)
+    k_adjusted = ajustar_por_ambiente(df["k_rate_clean"].astype(float), df["b_k"], KAVD_ERA_BLEND)
     df["k_avoid_val"] = normalize_series(-k_adjusted).clip(1.0, 125.0).round(1)
 
-    # Todo rating debe tener cartas en el maximo (125). La tasa de ponches no puede bajar de 0,
-    # asi que por encima del percentil 98 de cada era casi no queda recorrido y los mejores se
-    # apretaban entre 99 y 111 (ninguno en 125, el tope era Luis Arraez con 118). Se estira solo
-    # ese tramo, hasta que el KAVD_TOP_N-esimo mejor llegue a 125 (los demas ratings tienen
-    # unas 20 cartas en el tope). Por debajo de 99 no se toca nada.
-    KAVD_TOP_ANCHOR, KAVD_TOP_N = 99.0, 20
-    kavd = df["k_avoid_val"].astype(float)
-    top_ref = float(kavd.nlargest(KAVD_TOP_N).iloc[-1])
-    if KAVD_TOP_ANCHOR < top_ref < 125.0:
-        hi = kavd > KAVD_TOP_ANCHOR
-        kavd[hi] = KAVD_TOP_ANCHOR + (kavd[hi] - KAVD_TOP_ANCHOR) * (125.0 - KAVD_TOP_ANCHOR) / (top_ref - KAVD_TOP_ANCHOR)
-        df["k_avoid_val"] = kavd.clip(1.0, 125.0).round(1)
-
-    print("  contact_val (100% BA), power_val, eye_val, k_avoid_val normalizados con ajuste OPS+")
+    print("  contact_val, power_val, eye_val, k_avoid_val normalizados contra el ambiente de cada temporada")
     return df
 
 
@@ -1219,39 +1394,134 @@ def paso_14_velocidad(df):
     print("\n  PASO 14: SPD hibrido (normalizado con ajuste OPS+ y techo 2.0)...")
     df = df.copy()
 
-    # Calculamos el raw temporal para cada era
-    def _calc_raw_speed(group):
-        qual = group[group["career_ab"] >= 300]
-        if qual.empty: qual = group
-        sb_max = qual["sb_score"].quantile(0.98)
-        xb_max = qual["extra_base_freq"].quantile(0.98)
-        sb_c  = (group["sb_score"] / sb_max).clip(upper=2.0).fillna(0) if sb_max > 0 else pd.Series(0.0, index=group.index)
-        xb_c  = (group["extra_base_freq"].fillna(0) / xb_max).clip(upper=2.0) if xb_max > 0 else pd.Series(0.0, index=group.index)
-        
-        # Combinacion de SPD: mayor peso a SB y Triples/SB (xb_c) para reflejar velocidad pura
-        group["speed_raw_temp"] = sb_c * 0.45 + xb_c * 0.30 + group["runs_br_norm"] * 0.25
-        return group
+    # La formula de velocidad no se puede medir año por año (mezcla eficiencia y volumen de robo),
+    # asi que el grupo de comparacion es una ventana deslizante: las cartas con pico a
+    # +-SPEED_RADIUS años (peso triangular), en vez de la Era fija.
+    SPEED_RADIUS = 8
+    df = df.reset_index(drop=True)
+    y = pd.to_numeric(df["peak_year"], errors="coerce").values.astype(float)
+    sb = df["sb_score"].fillna(0).values.astype(float)
+    xb = df["extra_base_freq"].fillna(0).values.astype(float)
+    br = df["runs_br_norm"].fillna(0).values.astype(float)
+    qual = df["career_ab"].fillna(0).values >= 300
+    temp = np.zeros(len(df))
+    weights = {}
+    for uy in np.unique(y):
+        w = np.clip(1.0 - np.abs(y - uy) / (SPEED_RADIUS + 1.0), 0, None)
+        weights[uy] = w
+        sb_max = cuantil_ponderado(sb[qual], w[qual], 0.98)
+        xb_max = cuantil_ponderado(xb[qual], w[qual], 0.98)
+        m = y == uy
+        sb_c = np.clip(sb[m] / sb_max, None, 2.0) if sb_max > 0 else 0.0
+        xb_c = np.clip(xb[m] / xb_max, None, 2.0) if xb_max > 0 else 0.0
+        # Mayor peso a SB y Triples/SB para reflejar velocidad pura
+        temp[m] = sb_c * 0.45 + xb_c * 0.30 + br[m] * 0.25
+    df["speed_raw_temp"] = temp
 
-    df["era_temp_col"] = df["era_label"]
-    df = df.groupby("era_label", group_keys=False).apply(_calc_raw_speed)
-    df["era_label"] = df["era_temp_col"]
-    if "era_label" not in df.columns:
-        df = df.reset_index()
+    # Ajuste por dificultad - 75% contra la media de la ventana
+    roll = np.zeros(len(df))
+    for uy, w in weights.items():
+        roll[y == uy] = (w * temp).sum() / w.sum()
+    df["speed_raw_adj"] = temp * (1.0 + 0.75 * (temp.mean() / np.where(roll > 0, roll, np.nan) - 1.0))
+    df["speed_raw_adj"] = df["speed_raw_adj"].fillna(df["speed_raw_temp"])
 
-    # Ajuste por dificultad de era (Metodo A) - 75% Blended
-    global_spd_mean = df["speed_raw_temp"].mean()
-    era_spd_means = df.groupby("era_label")["speed_raw_temp"].transform("mean")
-    
-    diff_factor = global_spd_mean / era_spd_means.replace(0, 1)
-    blended_factor = 1.0 + 0.75 * (diff_factor - 1.0)
-    df["speed_raw_adj"] = df["speed_raw_temp"] * blended_factor
-    
     df["speed_val"] = (
         normalize_series(df["speed_raw_adj"], 1, 99)
         .clip(1, 125)
         .round(1)
     )
     print("  speed_val calculado con ajuste OPS+")
+    return df
+
+
+# ── Longevidad y extremos: pasos comunes a bateadores y pitchers ─────────────────────────────
+LONGEVITY_SEASONS = 12      # segundo pico, mas largo
+LONGEVITY_WEIGHT  = 0.25    # peso del pico de 12 en el rating final
+EXTREME_TOP_ANCHOR, EXTREME_LOW_ANCHOR, EXTREME_BOTTOM_SHARE = 99.0, 25.0, 0.02
+
+
+def mezclar_longevidad(v7, v12, share):
+    """
+    rating = 75% pico de 7 temporadas + 25% pico de 12 temporadas (decision del usuario).
+    Por cada temporada que falta para llegar a 12 (share = temporadas con carga real / 12), esa
+    parte cuenta como una temporada floja: el percentil 25 del rating. Premia las carreras largas
+    y constantes y castiga las cortas sin cambiar de donde salen los ratings.
+    """
+    floja = float(v7.quantile(0.25))
+    v12 = v12.fillna(v7)
+    return (1.0 - LONGEVITY_WEIGHT) * v7 + LONGEVITY_WEIGHT * (share * v12 + (1.0 - share) * floja)
+
+
+def ajustar_extremos(v, n_top):
+    """
+    Ultimo paso de TODOS los ratings, igual para todos: el n_top-esimo mejor vale 125 (se estira
+    el tramo por encima de 99) y el 2% mas bajo vale 1 (se estira el tramo por debajo de 25).
+    El resto del rating no se toca.
+    """
+    v = v.astype(float).copy()
+    top_ref = float(v.nlargest(n_top).iloc[-1])
+    if EXTREME_TOP_ANCHOR < top_ref < 125.0:
+        hi = v > EXTREME_TOP_ANCHOR
+        v[hi] = EXTREME_TOP_ANCHOR + (v[hi] - EXTREME_TOP_ANCHOR) * (125.0 - EXTREME_TOP_ANCHOR) / (top_ref - EXTREME_TOP_ANCHOR)
+    n_bottom = max(1, int(round(EXTREME_BOTTOM_SHARE * len(v))))
+    low_ref = float(v.nsmallest(n_bottom).iloc[-1])
+    if 1.0 < low_ref < EXTREME_LOW_ANCHOR:
+        lo = v < EXTREME_LOW_ANCHOR
+        v[lo] = 1.0 + (v[lo] - low_ref) * (EXTREME_LOW_ANCHOR - 1.0) / (EXTREME_LOW_ANCHOR - low_ref)
+    return v.clip(1.0, 125.0).round(1)
+
+
+BAT_TOP_N = 20              # cartas en 125 en cada rating
+BAT_RATINGS = ["contact_val", "power_val", "eye_val", "defense_val", "speed_val", "k_avoid_val"]
+MIN_PA_SEASON, MIN_PA_SEASON_NLB = 200, 80     # temporada con carga real (Ligas Negras: calendario corto)
+
+
+def paso_14c_longevidad(df7, df12, pico12):
+    print(f"\n  PASO 14c: Longevidad ({int((1 - LONGEVITY_WEIGHT) * 100)}% pico de 7 + {int(LONGEVITY_WEIGHT * 100)}% pico de {LONGEVITY_SEASONS})...")
+    df = df7.copy()
+    s = pico12[pico12["playerID"].isin(set(df["playerID"]))]
+    ok = s["PA_y"].fillna(0) >= np.where(s["is_nlb_y"].astype(bool), MIN_PA_SEASON_NLB, MIN_PA_SEASON)
+    n = ok.groupby(s["playerID"]).sum()
+    share = (df["playerID"].map(n).fillna(0) / float(LONGEVITY_SEASONS)).clip(0.0, 1.0)
+    df["longevity_seasons"] = (share * LONGEVITY_SEASONS).round(0).astype(int)
+    v12 = df12.drop_duplicates("playerID").set_index("playerID")
+    for col in BAT_RATINGS:
+        df[col] = mezclar_longevidad(df[col].astype(float), df["playerID"].map(v12[col]), share).round(1)
+    return df
+
+
+def paso_14d_extremos(df):
+    print("\n  PASO 14d: Extremos parejos (el 20o mejor de cada rating = 125, el 2% mas bajo = 1)...")
+    df = df.copy()
+    for col in BAT_RATINGS:
+        df[col] = ajustar_extremos(df[col], BAT_TOP_N)
+    return df
+
+
+def media_deslizante(values, year, radius=8):
+    """Media de `values` entre las cartas con pico a +-radius años (peso triangular)."""
+    y = pd.to_numeric(year, errors="coerce").values.astype(float)
+    v = values.values.astype(float)
+    out = np.empty(len(v))
+    ok = ~np.isnan(v)
+    for uy in np.unique(y):
+        w = np.clip(1.0 - np.abs(y - uy) / (radius + 1.0), 0, None)
+        out[y == uy] = (w[ok] * v[ok]).sum() / max(w[ok].sum(), 1e-9)
+    return pd.Series(out, index=values.index)
+
+
+def paso_14b_pocas_temporadas(df):
+    """
+    Misma regla que los pitchers: con menos de 7 temporadas en el pico, los ratings se acercan a
+    la media de las cartas con pico cercano (+-8 años). Peso propio: 7 temporadas 100%, 5 95%,
+    3 86%, 1 57%. La Defensa no entra: es un total acumulado y ya premia el volumen.
+    """
+    print("\n  PASO 14b: Regresion por pocas temporadas en el pico...")
+    df = df.copy()
+    n_peak = df["total_seasons_in_peak"].fillna(7).clip(lower=1, upper=7)
+    w = np.minimum(1.0, (n_peak / (n_peak + 1.0)) * (8.0 / 7.0))
+    for col in ["contact_val", "power_val", "eye_val", "k_avoid_val", "speed_val"]:
+        df[col] = (w * df[col] + (1.0 - w) * media_deslizante(df[col], df["peak_year"])).round(1)
     return df
 
 
@@ -1745,19 +2015,34 @@ def main():
 
     pure_pitcher_ids = paso_2_filtrar_pitchers(fielding)
     career           = paso_3_carrera_batting(batting)
-    peak, pico_off_df, pico_tot_df = paso_4_pico_batting(batting, war_bat, people)
-    hybrid           = paso_5_hibrido(career, peak)
-    appearances      = dfs.get("appearances")
-    pos_data         = paso_6_posicion_bateadores(fielding, fielding_of, appearances, pico_off_df)
-    hybrid           = hybrid.merge(pos_data, on="playerID", how="left")
-    hybrid           = paso_7_enriquecer_people(hybrid, people)
-    eligible         = paso_8_filtro_ingesta(hybrid, allstar, hof, pure_pitcher_ids, batting)
-    eligible         = paso_9_asignar_era(eligible, war_bat=war_bat, people=people, batting=batting)
-    eligible         = paso_10_atributos_raw_bateo(eligible)
-    eligible         = paso_11_motor_defensivo(eligible, war_bat, awards)
-    eligible         = paso_12_normalizar_por_era(eligible)
-    eligible         = paso_13_bono_guante_de_oro(eligible)
-    eligible         = paso_14_velocidad(eligible)
+
+    def calcular_ratings(n_peak):
+        """Pasos 4 a 14b con un pico de n_peak temporadas."""
+        global PEAK_SEASONS
+        PEAK_SEASONS = n_peak
+        peak, pico_off, pico_tot = paso_4_pico_batting(batting, war_bat, people)
+        hybrid = paso_5_hibrido(career, peak)
+        pos_data = paso_6_posicion_bateadores(fielding, fielding_of, dfs.get("appearances"), pico_off)
+        hybrid = hybrid.merge(pos_data, on="playerID", how="left")
+        hybrid = paso_7_enriquecer_people(hybrid, people)
+        el = paso_8_filtro_ingesta(hybrid, allstar, hof, pure_pitcher_ids, batting)
+        el = paso_9_asignar_era(el, war_bat=war_bat, people=people, batting=batting)
+        el = usar_sub_eras_de_calculo(el)
+        el = paso_9b_ambiente_por_temporada(el, pico_off)
+        el = paso_10_atributos_raw_bateo(el)
+        el = paso_11_motor_defensivo(el, war_bat, awards)
+        el = paso_12_normalizar_por_era(el)
+        el = paso_13_bono_guante_de_oro(el)
+        el = paso_14_velocidad(el)
+        el = paso_14b_pocas_temporadas(el)
+        PEAK_SEASONS = 7
+        return el, pico_off, pico_tot
+
+    eligible12, pico_off_12, _ = calcular_ratings(LONGEVITY_SEASONS)
+    eligible, pico_off_df, pico_tot_df = calcular_ratings(7)
+    eligible         = paso_14c_longevidad(eligible, eligible12, pico_off_12)
+    eligible         = paso_14d_extremos(eligible)
+    eligible         = restaurar_era_de_carta(eligible)
     final            = paso_15_equipo_y_exportar(eligible, batting, teams, franchises, pico_tot_df, war_bat, people)
 
     reporte_final(final)
