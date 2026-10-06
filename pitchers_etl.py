@@ -1166,6 +1166,22 @@ def paso_7b_ambiente_por_temporada(df, pico_df):
     b = s[rate_cols].mul(w, axis=0).groupby(s["playerID"]).sum().div(w.groupby(s["playerID"]).sum(), axis=0)
     b["b_ip"] = s["b_ip"].groupby(s["playerID"]).mean()
 
+    # Ponches de Ligas Negras contra su propia liga. En los mismos años sus pitchers ponchaban un
+    # 40% mas que los de MLB (4.2-5.0 K/9 contra 2.9-3.7) pero permitian los mismos hits, boletos
+    # y jonrones: el ponche alto era de la liga, no merito de cada pitcher. Contra el ambiente
+    # mezclado (dominado por MLB) todos salian como ponchadores de elite (K/9 medio de 58 contra
+    # 33 de MLB, y el doble de su cupo de Legendary). Solo cambia el K/9 de las cartas de Ligas
+    # Negras; las de MLB siguen contra el ambiente comun.
+    MIN_NLB_K_SEASONS = 15
+    card_lg = df.drop_duplicates("playerID").set_index("playerID")["league_group"].fillna("MLB") if "league_group" in df.columns else pd.Series(dtype=object)
+    s_nlb = s[s["playerID"].map(card_lg) == "NLB"]
+    if len(s_nlb):
+        tk = suavizar_por_anio(s_nlb.groupby("yearID")[["ip", "SO", "n"]].sum(), 3)
+        k_nlb = (tk["SO"] / tk["ip"].replace(0, np.nan)).where(tk["n"] >= MIN_NLB_K_SEASONS).interpolate(limit_direction="both")
+        wk = s_nlb["ip"].clip(lower=0.01)
+        b_k_nlb = (s_nlb["yearID"].map(k_nlb) * wk).groupby(s_nlb["playerID"]).sum() / wk.groupby(s_nlb["playerID"]).sum()
+        b.loc[b_k_nlb.dropna().index, "b_k"] = b_k_nlb.dropna()
+
     # Calendario de Ligas Negras (para Stamina). Sus temporadas documentadas eran mucho mas cortas
     # que las de MLB. En vez de un multiplicador fijo (x2, o x3.5 para pioneros) se estima año
     # por año: carga media de un abridor de MLB / carga media de un abridor de Ligas Negras en
@@ -1205,12 +1221,15 @@ def paso_10_normalizar_por_era(df):
     print("\n  PASO 10: Normalizando contra el ambiente de cada temporada (H/9, K/9, BB/9, HR/9, STA, CLT)...")
     df = df.copy()
 
-    # Tasas: cada pitcher contra el ambiente de los años de su pico (paso 7b), con el 75% de
-    # siempre. HR/9 va al 90%: casi no se bateaban jonrones en Genesis y Deadball, asi que
-    # permitir pocos no era merito del pitcher y al 75% les quedaba el 25% de esa ventaja.
+    # Tasas: cada pitcher contra el ambiente de los años de su pico (paso 7b). Regla unica para
+    # bateadores y pitchers: todo al 75%, y al 90% las estadisticas que cambiaron mas de dos veces
+    # y media a lo largo de la historia (ponches: 2.7x aqui y 3.4x en bateadores; jonrones: 6.7x),
+    # porque al 75% les quedaba un residuo de era mucho mayor que al resto (K/9 medio de 29 en
+    # Genesis contra 60 en Modern). La Stamina va al 50% a proposito (ver mas abajo).
     HR9_ERA_BLEND = 0.90
+    K9_ERA_BLEND = 0.90
     df = normalizar_por_ambiente(df, "h9_raw",  "h9_val",  "b_h",   invert=True)
-    df = normalizar_por_ambiente(df, "k9_raw",  "k9_val",  "b_k",   invert=False)
+    df = normalizar_por_ambiente(df, "k9_raw",  "k9_val",  "b_k",   invert=False, blend=K9_ERA_BLEND)
     # BB/9 hasta 1888 (5 a 9 bolas para un boleto) se estima por posicion entre contemporaneos,
     # igual que el Ojo de los bateadores (decision del usuario; baja a los ases de 1880).
     df = normalizar_por_ambiente(df, "bb9_raw", "bb9_val", "b_bb",  invert=True, estimar_hasta=1888)
