@@ -103,7 +103,6 @@ def normalize_series(s, low=1.0, high=99.0):
     if p98 == p02:
         return pd.Series(50.0, index=s.index)
     scaled = (s - p02) / (p98 - p02)
-    scaled = scaled.clip(lower=0)
     rating = scaled * (high - low) + low
     return rating.clip(upper=125.0)
 
@@ -160,14 +159,15 @@ def normalizar_por_ambiente(df, col_raw, col_out, col_amb, invert=False, blend=0
         adjusted = estimar_por_contemporaneos(adjusted, df[col_raw], df["peak_year"], last_year=estimar_hasta)
     if invert:
         adjusted = -adjusted  # invertir para que menor sea mejor
-    df[col_out] = normalize_series(adjusted).clip(1, 125).round(1)
+    df[col_out] = normalize_series(adjusted).clip(RATING_FLOOR, 125).round(1)
     return df
 
 
 # ── Longevidad y extremos: pasos comunes a bateadores y pitchers ─────────────────────────────
 LONGEVITY_SEASONS = 12      # segundo pico, mas largo
 LONGEVITY_WEIGHT  = 0.25    # peso del pico de 12 en el rating final
-EXTREME_TOP_ANCHOR, EXTREME_LOW_ANCHOR, EXTREME_BOTTOM_SHARE = 99.0, 25.0, 0.02
+EXTREME_TOP_ANCHOR, EXTREME_LOW_ANCHOR = 99.0, 25.0
+RATING_FLOOR = -100.0      # los ratings no se recortan por abajo hasta ajustar_extremos
 
 
 def mezclar_longevidad(v7, v12, share):
@@ -184,18 +184,19 @@ def mezclar_longevidad(v7, v12, share):
 
 def ajustar_extremos(v, n_top):
     """
-    Ultimo paso de TODOS los ratings, igual para todos: el n_top-esimo mejor vale 125 (se estira
-    el tramo por encima de 99) y el 2% mas bajo vale 1 (se estira el tramo por debajo de 25).
-    El resto del rating no se toca.
+    Ultimo paso de TODOS los ratings, igual para todos y simetrico: el n_top-esimo mejor vale 125
+    (se acomoda el tramo por encima de 99) y el n_top-esimo peor vale 1 (se acomoda el tramo por
+    debajo de 25). Para eso los ratings llegan aqui SIN recortar por abajo (RATING_FLOOR): antes
+    todo lo que quedaba bajo el percentil 2 se aplastaba en 1 y se perdia la diferencia entre
+    un jugador malo y uno pesimo. El tramo entre 25 y 99 no se toca.
     """
     v = v.astype(float).copy()
     top_ref = float(v.nlargest(n_top).iloc[-1])
     if EXTREME_TOP_ANCHOR < top_ref < 125.0:
         hi = v > EXTREME_TOP_ANCHOR
         v[hi] = EXTREME_TOP_ANCHOR + (v[hi] - EXTREME_TOP_ANCHOR) * (125.0 - EXTREME_TOP_ANCHOR) / (top_ref - EXTREME_TOP_ANCHOR)
-    n_bottom = max(1, int(round(EXTREME_BOTTOM_SHARE * len(v))))
-    low_ref = float(v.nsmallest(n_bottom).iloc[-1])
-    if 1.0 < low_ref < EXTREME_LOW_ANCHOR:
+    low_ref = float(v.nsmallest(n_top).iloc[-1])
+    if low_ref < EXTREME_LOW_ANCHOR and low_ref != 1.0:
         lo = v < EXTREME_LOW_ANCHOR
         v[lo] = 1.0 + (v[lo] - low_ref) * (EXTREME_LOW_ANCHOR - 1.0) / (EXTREME_LOW_ANCHOR - low_ref)
     return v.clip(1.0, 125.0).round(1)
@@ -222,7 +223,7 @@ def paso_10b_longevidad(df7, df12, pico12):
 
 
 def paso_10c_extremos(df):
-    print("\n  PASO 10c: Extremos parejos (el 16o mejor de cada rating = 125, el 2% mas bajo = 1)...")
+    print("\n  PASO 10c: Extremos parejos (el 16o mejor de cada rating = 125, el 16o peor = 1)...")
     df = df.copy()
     for col in PIT_RATINGS:
         df[col] = ajustar_extremos(df[col], PIT_TOP_N)
@@ -1222,7 +1223,7 @@ def paso_10_normalizar_por_era(df):
         if ip is None or pd.isna(ip): return 45.0
         val = float(ip)
         if val <= 50.0:
-            return max(1.0, 1.0 + ((val - 23.0) / 27.0) * 24.0)
+            return 1.0 + ((val - 23.0) / 27.0) * 24.0
         elif val <= 80.0:
             return 25.0 + ((val - 50.0) / 30.0) * 20.0
         elif val <= 130.0:
@@ -1243,7 +1244,7 @@ def paso_10_normalizar_por_era(df):
     # que dejaba a Genesis y Deadball con el triple del cupo de Legendary.
     STA_ERA_BLEND = 0.50
     sta_ip = ajustar_por_ambiente(df["ip_per_year_raw"], df["b_ip"], STA_ERA_BLEND)
-    df["sta_val"] = sta_ip.apply(map_ip_to_sta).round(1).clip(1.0, 125.0)
+    df["sta_val"] = sta_ip.apply(map_ip_to_sta).round(1).clip(RATING_FLOOR, 125.0)
 
     # Suavizado Bayesiano Suave (m=1) para muestras cortas de temporadas en el pico (n < 7)
     n_peak = df["total_seasons_in_peak"].fillna(7).clip(lower=1, upper=7)
