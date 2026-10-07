@@ -10,6 +10,8 @@ import numpy as np
 import pandas as pd
 from pathlib import Path
 
+# Valor tipico de cada componente del poder (HR por PA, ISO, extrabases por PA)
+PWR_SCALE_HR, PWR_SCALE_ISO, PWR_SCALE_XBH = 0.022, 0.135, 0.075
 DATA_DIR = Path(__file__).parent / "lahman_1871-2025"
 OUT_CSV  = Path(__file__).parent / "game_cards.csv"
 OUT_JS   = Path(__file__).parent / "game_cards_pool.js"
@@ -1041,7 +1043,7 @@ def paso_9b_ambiente_por_temporada(df, pico_off_df):
     t = suavizar_por_anio(s.groupby("yearID")[["AB", "PA", "H", "BB", "HR", "XBH", "TBX", "SO_k", "PA_k"]].sum())
     ab_t, pa_t = t["AB"].replace(0, np.nan), t["PA"].replace(0, np.nan)
     env = pd.DataFrame({"b_ba": t["H"] / ab_t, "b_bb": t["BB"] / pa_t, "b_iso": t["TBX"] / ab_t})
-    env["b_pwr"] = (t["HR"] / pa_t) * 0.45 + env["b_iso"] * 0.40 + (t["XBH"] / pa_t) * 0.15      # mismos pesos que power_raw
+    env["b_pwr"] = (t["HR"] / pa_t) / PWR_SCALE_HR * 0.45 + env["b_iso"] / PWR_SCALE_ISO * 0.40 + (t["XBH"] / pa_t) / PWR_SCALE_XBH * 0.15      # mismos pesos que power_raw
     env["b_k"] = (t["SO_k"] / t["PA_k"].replace(0, np.nan)).where(t["PA_k"] >= 4000).interpolate(limit_direction="both")
     s = s.join(env, on="yearID")
     cols = list(env.columns)
@@ -1244,10 +1246,13 @@ def paso_10_atributos_raw_bateo(df):
     df["iso_smoothed"] = iso_smoothed
     xbh_smoothed = ((b2 + b3 + hr) + m_pa * prior_xbh) / (pa + m_pa)
 
+    # Cada componente va dividido por su valor tipico para que los pesos valgan lo que dicen
+    # (decision del usuario). Sumados tal cual, el ISO (.135) tapaba a los jonrones (.022) y el
+    # reparto real era ~15 / 70 / 15 en vez de 45 / 40 / 15.
     df["power_raw"] = (
-        hr_smoothed  * 0.45 +
-        iso_smoothed * 0.40 +
-        xbh_smoothed * 0.15
+        hr_smoothed  / PWR_SCALE_HR  * 0.45 +
+        iso_smoothed / PWR_SCALE_ISO * 0.40 +
+        xbh_smoothed / PWR_SCALE_XBH * 0.15
     )
 
     # Frecuencia de robos + triples (componente de Velocidad) con el mismo suavizado de 1 temporada.
