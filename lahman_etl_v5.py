@@ -126,7 +126,7 @@ def normalize_series(s, low=1.0, high=99.0):
     
     scaled = (s - p02) / (p98 - p02)
     rating = scaled * (high - low) + low
-    return rating.clip(upper=125.0)
+    return rating
 
 
 # Ligas Negras oficiales (1920-1948) y circuitos independientes / pioneros.
@@ -162,7 +162,7 @@ def cuantil_ponderado(v, w, q):
 def normalize_globally(df, col_raw, col_out):
     df[col_out] = (
         normalize_series(df[col_raw])
-        .clip(RATING_FLOOR, 125)
+        .clip(RATING_FLOOR, RATING_CEIL)
         .round(1)
     )
     return df
@@ -1056,6 +1056,83 @@ def paso_9b_ambiente_por_temporada(df, pico_off_df):
 # ===========================================================================
 # PASO 10 - CALCULAR ATRIBUTOS RAW DE BATEO (CON, PWR, EYE)
 # ===========================================================================
+# ── Ajuste por muestra chica sin eras fijas (comun a bateadores y pitchers) ─────────────────────
+# Decision del usuario: nunca eras fijas. Lo "esperado" para un bateador sale de las cartas con
+# pico a +-PRIOR_RADIUS años. El ancla sigue siendo una temporada de titular (600 PA / 540 AB),
+# igual para MLB y Ligas Negras. En False vuelve al prior por Era fija.
+PRIOR_POR_VENTANA = True
+PRIOR_RADIUS = 8
+
+
+def tiempo_completo_por_ventana(per_season, year, group, radius=None, q=0.90, min_n=15):
+    """
+    Carga de una temporada de tiempo completo (percentil q) entre las cartas del mismo grupo
+    (rol y/o liga) con pico a +-radius años, con peso triangular. Si el grupo tiene menos de
+    min_n cartas en esa ventana se usa el valor de todas las cartas de la ventana.
+    """
+    radius = PRIOR_RADIUS if radius is None else radius
+    y = pd.to_numeric(year, errors="coerce").values.astype(float)
+    v = per_season.values.astype(float)
+    g = group.astype(str).values
+    out = np.full(len(v), np.nan)
+
+    def wq(vals, w):
+        o = np.argsort(vals); vals, w = vals[o], w[o]
+        c = np.cumsum(w) - 0.5 * w
+        return float(np.interp(q * w.sum(), c, vals))
+
+    ok = np.isfinite(v) & (v > 0)
+    # respaldo cuando el grupo tiene pocas cartas en la ventana: el valor del grupo en toda la historia
+    de_siempre = {key: wq(v[ok & (g == key)], np.ones((ok & (g == key)).sum())) for key in np.unique(g) if (ok & (g == key)).sum() >= min_n}
+    for uy in np.unique(y[np.isfinite(y)]):
+        w = np.clip(1.0 - np.abs(y - uy) / (radius + 1.0), 0, None)
+        inwin = ok & (w > 0)
+        everybody = wq(v[inwin], w[inwin]) if inwin.sum() else np.nan
+        for key in np.unique(g[y == uy]):
+            m = inwin & (g == key)
+            out[(y == uy) & (g == key)] = wq(v[m], w[m]) if m.sum() >= min_n else de_siempre.get(key, everybody)
+    return pd.Series(out, index=per_season.index)
+
+
+def prior_por_ventana(rate, weight, year, share, fallback, group=None, radius=None, min_n=30):
+    """
+    Tasa esperada de un jugador dado su tiempo de juego, estimada entre las cartas con pico a
+    +-radius años (peso triangular x turnos/entradas): recta ponderada  tasa ~ a + b * share.
+    Con `group` (p. ej. el rol) la recta se ajusta dentro de cada grupo; si el grupo tiene menos
+    de min_n cartas en la ventana se usa la recta de todas las cartas de la ventana.
+    """
+    radius = PRIOR_RADIUS if radius is None else radius
+    y = pd.to_numeric(year, errors="coerce").values.astype(float)
+    r = rate.values.astype(float); w0 = weight.values.astype(float); x = share.values.astype(float)
+    g = np.full(len(r), "all") if group is None else group.astype(str).values
+    ok = np.isfinite(r) & np.isfinite(x) & (w0 > 0)
+    out = np.full(len(r), float(fallback))
+
+    def recta(mask, tw):
+        tw = tw[mask]
+        if tw.sum() <= 0:
+            return None
+        rm = np.average(r[mask], weights=tw); xm = np.average(x[mask], weights=tw)
+        var_x = np.average((x[mask] - xm) ** 2, weights=tw)
+        slope = np.average((x[mask] - xm) * (r[mask] - rm), weights=tw) / var_x if var_x > 0 else 0.0
+        return rm, xm, slope
+
+    for uy in np.unique(y[np.isfinite(y)]):
+        tri = np.clip(1.0 - np.abs(y - uy) / (radius + 1.0), 0, None)
+        tw = tri * np.where(ok, w0, 0.0)
+        inwin = ok & (tri > 0)
+        base = recta(inwin, tw) if inwin.sum() else None
+        for key in np.unique(g[y == uy]):
+            m = inwin & (g == key)
+            fit = recta(m, tw) if m.sum() >= min_n else base
+            if fit is None:
+                continue
+            rm, xm, slope = fit
+            sel = (y == uy) & (g == key)
+            out[sel] = rm + slope * (np.where(np.isfinite(x[sel]), x[sel], xm) - xm)
+    return pd.Series(out, index=rate.index)
+
+
 def _prior_por_era_y_tiempo_de_juego(rate, weight, era, share, fallback):
     """
     Prior bayesiano individual: la tasa esperada de un jugador dada su Era y su
@@ -1126,17 +1203,24 @@ def paso_10_atributos_raw_bateo(df):
     n_seasons = df["total_seasons_in_peak"].fillna(0).clip(lower=1) if "total_seasons_in_peak" in df.columns else pd.Series(PEAK_SEASONS, index=df.index)
     pa_per_season = pa / n_seasons
     lg = df["league_group"].fillna("MLB") if "league_group" in df.columns else pd.Series("MLB", index=df.index)
-    full_time_pa = pa_per_season.groupby([df["era_label"], lg]).transform(lambda v: v.quantile(0.90))
+    if PRIOR_POR_VENTANA:
+        full_time_pa = tiempo_completo_por_ventana(pa_per_season, df["peak_year"], lg)
+    else:
+        full_time_pa = pa_per_season.groupby([df["era_label"], lg]).transform(lambda v: v.quantile(0.90))
     share = (pa_per_season / full_time_pa.replace(0, np.nan)).clip(0.0, 1.0).fillna(0.0)
     df["playing_time_share"] = share.round(3)
 
     ab_nz = ab.replace(0, np.nan)
     pa_nz = pa.replace(0, np.nan)
     era = df["era_label"]
-    prior_ba  = _prior_por_era_y_tiempo_de_juego(h_effective / ab_nz, ab, era, share, 0.265)
-    prior_bb  = _prior_por_era_y_tiempo_de_juego(bb / pa_nz, pa, era, share, 0.085)
-    prior_hr  = _prior_por_era_y_tiempo_de_juego(hr / pa_nz, pa, era, share, 0.025)
-    prior_xbh = _prior_por_era_y_tiempo_de_juego((b2 + b3 + hr) / pa_nz, pa, era, share, 0.075)
+    if PRIOR_POR_VENTANA:
+        _prior = lambda rate, weight, era_, share_, fallback: prior_por_ventana(rate, weight, df["peak_year"], share_, fallback)   # la Era ya no se usa
+    else:
+        _prior = _prior_por_era_y_tiempo_de_juego
+    prior_ba  = _prior(h_effective / ab_nz, ab, era, share, 0.265)
+    prior_bb  = _prior(bb / pa_nz, pa, era, share, 0.085)
+    prior_hr  = _prior(hr / pa_nz, pa, era, share, 0.025)
+    prior_xbh = _prior((b2 + b3 + hr) / pa_nz, pa, era, share, 0.075)
     df["prior_ba"] = prior_ba.round(4)
 
     df["ba_smoothed"] = (h_effective + m_ab * prior_ba) / (ab + m_ab)
@@ -1155,7 +1239,7 @@ def paso_10_atributos_raw_bateo(df):
     tb_total = h_effective + (b2) + 2*(b3) + 3*hr_effective
     slg = np.where(ab > 0, tb_total / ab, 0)
     iso_raw = np.where(ab > 0, slg - (h_effective / ab), 0)
-    prior_iso = _prior_por_era_y_tiempo_de_juego(pd.Series(iso_raw, index=df.index).where(ab > 0), pa, era, share, 0.140)
+    prior_iso = _prior(pd.Series(iso_raw, index=df.index).where(ab > 0), pa, era, share, 0.140)
     iso_smoothed = (iso_raw * pa + m_pa * prior_iso) / (pa + m_pa)
     df["iso_smoothed"] = iso_smoothed
     xbh_smoothed = ((b2 + b3 + hr) + m_pa * prior_xbh) / (pa + m_pa)
@@ -1168,7 +1252,7 @@ def paso_10_atributos_raw_bateo(df):
 
     # Frecuencia de robos + triples (componente de Velocidad) con el mismo suavizado de 1 temporada.
     xbf_num = df["peak_sb"].fillna(0) + b3
-    prior_xbf = _prior_por_era_y_tiempo_de_juego(xbf_num / ab_nz, ab, era, share, 0.050)
+    prior_xbf = _prior(xbf_num / ab_nz, ab, era, share, 0.050)
     df["extra_base_freq"] = (xbf_num + m_ab * prior_xbf) / (ab + m_ab)
 
     # ── Estimacion de ponches (K/AVD) para Ligas Negras y datos faltantes ──
@@ -1186,7 +1270,7 @@ def paso_10_atributos_raw_bateo(df):
     so_k  = df["peak_so"].fillna(0)
     pa_so = df["peak_pa_so"].fillna(0)
     con_dato = ~sin_dato & (pa_so > 0)
-    prior_k = _prior_por_era_y_tiempo_de_juego((so_k / pa_so.replace(0, np.nan)).where(con_dato & ~nlb_mask), pa_so, era, share, 0.100)
+    prior_k = _prior((so_k / pa_so.replace(0, np.nan)).where(con_dato & ~nlb_mask), pa_so, era, share, 0.100)
     k = k_obs.where(~con_dato, (so_k + m_pa * prior_k) / (pa_so + m_pa))
     valid_k = (~nlb_mask) & (k >= 0.025)
     esc_k   = float((k[valid_k] / df.loc[valid_k, "b_k"]).mean())
@@ -1293,7 +1377,7 @@ def paso_11_motor_defensivo(df, war_bat, awards):
     # Stretched Defense Scale: min_raw (Grieve = -68.0) maps to 1.0 DEF base floor, p98 maps to 99.0 base
     min_def_raw = df["defense_base_raw"].min()
     p98_def_raw = df["defense_base_raw"].quantile(0.98)
-    df["defense_val_base"] = (1.0 + ((df["defense_base_raw"] - min_def_raw) / (p98_def_raw - min_def_raw)) * 98.0).clip(1.0, 120.0).round(1)
+    df["defense_val_base"] = (1.0 + ((df["defense_base_raw"] - min_def_raw) / (p98_def_raw - min_def_raw)) * 98.0).clip(1.0, RATING_CEIL).round(1)
     df["defense_source"]   = np.where(has_war, "bbref_war", "lahman_proxy")
 
     if not awards.empty and "awardID" in awards.columns:
@@ -1321,7 +1405,7 @@ def paso_12_normalizar_por_era(df):
 
     df = normalize_globally(df, "contact_raw", "contact_val")
 
-    df["power_val"] = normalize_series(ajustar_por_ambiente(df["power_raw"], df["b_pwr"], 0.75)).clip(RATING_FLOOR, 125).round(1)
+    df["power_val"] = normalize_series(ajustar_por_ambiente(df["power_raw"], df["b_pwr"], 0.75)).clip(RATING_FLOOR, RATING_CEIL).round(1)
 
     # Ojo. Hasta 1888 hacian falta de 5 a 9 bolas para una base por bolas (2% de los turnos en
     # 1874 contra 8.5% historico) y dividir contra un ambiente casi en cero exagera todo: un
@@ -1342,15 +1426,16 @@ def paso_12_normalizar_por_era(df):
         if sd > 0:
             sel = yy == uy
             est[sel] = ref_mean + (raw_eye[sel] - m) / sd * ref_sd
-    df["eye_val"] = normalize_series(pd.Series(est, index=df.index)).clip(RATING_FLOOR, 125).round(1)
+    df["eye_val"] = normalize_series(pd.Series(est, index=df.index)).clip(RATING_FLOOR, RATING_CEIL).round(1)
 
-    # K/AVD (Avoid K) - Evasion de ponches (invertido: menor K% = mayor K/AVD), ajustada al 90%.
-    # No va al 75% de los demas ratings porque la tasa de ponches es lo que mas cambio en la
-    # historia (4.7% en Golden contra 22.3% en Modern) y al 75% los bateadores modernos quedaban
-    # amontonados abajo.
-    KAVD_ERA_BLEND = 0.90
+    # K/AVD (Avoid K) - Evasion de ponches (invertido: menor K% = mayor K/AVD), ajustada al 75%
+    # como todos los ratings (decision del usuario: la epoca tambien moldea el estilo; el que se
+    # poncha mucho hoy lo hace buscando jonrones). Estuvo al 90% para que las eras quedaran mas
+    # parejas en este rating (diferencia entre la era mas alta y la mas baja: 12 puntos al 90%,
+    # 24 al 75%).
+    KAVD_ERA_BLEND = 0.75
     k_adjusted = ajustar_por_ambiente(df["k_rate_clean"].astype(float), df["b_k"], KAVD_ERA_BLEND)
-    df["k_avoid_val"] = normalize_series(-k_adjusted).clip(RATING_FLOOR, 125.0).round(1)
+    df["k_avoid_val"] = normalize_series(-k_adjusted).clip(RATING_FLOOR, RATING_CEIL).round(1)
 
     print("  contact_val, power_val, eye_val, k_avoid_val normalizados contra el ambiente de cada temporada")
     return df
@@ -1368,7 +1453,7 @@ def paso_13_bono_guante_de_oro(df):
     df = df.copy()
     gg_bonus = (df["gold_gloves"] * GG_BONUS_PER_AWARD).clip(0, GG_BONUS_MAX)
     df["gg_bonus"]    = gg_bonus
-    df["defense_val"] = (df["defense_val_base"] + gg_bonus).clip(1, 125).round(1)
+    df["defense_val"] = (df["defense_val_base"] + gg_bonus).clip(1, RATING_CEIL).round(1)
     top_gg = df[df["gold_gloves"] > 0].nlargest(5, "gold_gloves")[
         ["full_name","gold_gloves","defense_val_base","gg_bonus","defense_val"]
     ]
@@ -1426,7 +1511,7 @@ def paso_14_velocidad(df):
 
     df["speed_val"] = (
         normalize_series(df["speed_raw_adj"], 1, 99)
-        .clip(RATING_FLOOR, 125)
+        .clip(RATING_FLOOR, RATING_CEIL)
         .round(1)
     )
     print("  speed_val calculado con ajuste OPS+")
@@ -1436,8 +1521,8 @@ def paso_14_velocidad(df):
 # ── Longevidad y extremos: pasos comunes a bateadores y pitchers ─────────────────────────────
 LONGEVITY_SEASONS = 12      # segundo pico, mas largo
 LONGEVITY_WEIGHT  = 0.25    # peso del pico de 12 en el rating final
-EXTREME_TOP_ANCHOR, EXTREME_LOW_ANCHOR = 99.0, 25.0
-RATING_FLOOR = -100.0      # los ratings no se recortan por abajo hasta ajustar_extremos
+EXTREME_TOP_ANCHOR, EXTREME_LOW_ANCHOR = 75.0, 25.0
+RATING_FLOOR, RATING_CEIL = -100.0, 999.0      # los ratings no se recortan (ni arriba ni abajo) hasta ajustar_extremos
 
 
 def mezclar_longevidad(v7, v12, share):
@@ -1452,27 +1537,26 @@ def mezclar_longevidad(v7, v12, share):
     return (1.0 - LONGEVITY_WEIGHT) * v7 + LONGEVITY_WEIGHT * (share * v12 + (1.0 - share) * floja)
 
 
-def ajustar_extremos(v, n_top):
+def ajustar_extremos(v):
     """
-    Ultimo paso de TODOS los ratings, igual para todos y simetrico: el n_top-esimo mejor vale 125
-    (se acomoda el tramo por encima de 99) y el n_top-esimo peor vale 1 (se acomoda el tramo por
-    debajo de 25). Para eso los ratings llegan aqui SIN recortar por abajo (RATING_FLOOR): antes
-    todo lo que quedaba bajo el percentil 2 se aplastaba en 1 y se perdia la diferencia entre
-    un jugador malo y uno pesimo. El tramo entre 25 y 99 no se toca.
+    Ultimo paso de TODOS los ratings, igual para todos y sin estirados artificiales (decision del
+    usuario): el centro de la escala (25 a 75) no se toca; por encima de 75 el MEJOR de la
+    historia en ese rating vale 125 y los demas quedan debajo en proporcion a su distancia real;
+    por debajo de 25 el PEOR vale 1 y el resto en proporcion. Asi el 99 es el tope real del
+    juego (muy pocas cartas lo pasan) y el tramo hasta 125 es el remanente de los fuera de serie.
+    Antes se forzaba que el 20o mejor valiera 125: Babe Ruth (poder real 208) valia lo mismo que
+    el 20o (126). Los ratings llegan aqui SIN recortar (RATING_FLOOR / RATING_CEIL).
     """
     v = v.astype(float).copy()
-    top_ref = float(v.nlargest(n_top).iloc[-1])
-    if EXTREME_TOP_ANCHOR < top_ref < 125.0:
-        hi = v > EXTREME_TOP_ANCHOR
-        v[hi] = EXTREME_TOP_ANCHOR + (v[hi] - EXTREME_TOP_ANCHOR) * (125.0 - EXTREME_TOP_ANCHOR) / (top_ref - EXTREME_TOP_ANCHOR)
-    low_ref = float(v.nsmallest(n_top).iloc[-1])
-    if low_ref < EXTREME_LOW_ANCHOR and low_ref != 1.0:
-        lo = v < EXTREME_LOW_ANCHOR
-        v[lo] = 1.0 + (v[lo] - low_ref) * (EXTREME_LOW_ANCHOR - 1.0) / (EXTREME_LOW_ANCHOR - low_ref)
+    hi, lo = float(v.max()), float(v.min())
+    if hi > EXTREME_TOP_ANCHOR:
+        top = v > EXTREME_TOP_ANCHOR
+        v[top] = EXTREME_TOP_ANCHOR + (v[top] - EXTREME_TOP_ANCHOR) * (125.0 - EXTREME_TOP_ANCHOR) / (hi - EXTREME_TOP_ANCHOR)
+    if lo < EXTREME_LOW_ANCHOR:
+        low = v < EXTREME_LOW_ANCHOR
+        v[low] = 1.0 + (v[low] - lo) * (EXTREME_LOW_ANCHOR - 1.0) / (EXTREME_LOW_ANCHOR - lo)
     return v.clip(1.0, 125.0).round(1)
 
-
-BAT_TOP_N = 20              # cartas en 125 en cada rating
 BAT_RATINGS = ["contact_val", "power_val", "eye_val", "defense_val", "speed_val", "k_avoid_val"]
 MIN_PA_SEASON, MIN_PA_SEASON_NLB = 200, 80     # temporada con carga real (Ligas Negras: calendario corto)
 
@@ -1492,10 +1576,10 @@ def paso_14c_longevidad(df7, df12, pico12):
 
 
 def paso_14d_extremos(df):
-    print("\n  PASO 14d: Extremos parejos (el 20o mejor de cada rating = 125, el 20o peor = 1)...")
+    print("\n  PASO 14d: Extremos (centro 25-75 intacto; el mejor de cada rating = 125, el peor = 1)...")
     df = df.copy()
     for col in BAT_RATINGS:
-        df[col] = ajustar_extremos(df[col], BAT_TOP_N)
+        df[col] = ajustar_extremos(df[col])
     return df
 
 
