@@ -3139,11 +3139,11 @@ function initGameModeSelector() {
       // Same recipe as pitchers_etl.py (paso_11): 24% H/9, 32% STA, 12% K/9, 12% BB/9, 10% HR/9, 10% CLT.
       // The cut points are the pool percentiles (35 / 65 / 85 / 97.5) of the last ETL run; update them if the ETL changes.
       const raw = h9 * 0.24 + sta * 0.32 + k9 * 0.12 + bb9 * 0.12 + hr9 * 0.10 + clt * 0.10;
-      if (raw <= 44.1) return Math.floor(50.0 + ((raw - 15.0) / 29.1) * 9.9);
-      if (raw <= 54.2) return Math.floor(60.0 + ((raw - 44.1) / 10.1) * 9.9);
-      if (raw <= 64.4) return Math.floor(70.0 + ((raw - 54.2) / 10.2) * 9.9);
-      if (raw <= 79.3) return Math.floor(80.0 + ((raw - 64.4) / 14.9) * 9.9);
-      return Math.floor(90.0 + Math.min(9.9, ((raw - 79.3) / 25.0) * 9.9));
+      if (raw <= 43.8) return Math.floor(50.0 + ((raw - 15.0) / 28.8) * 9.9);
+      if (raw <= 54.2) return Math.floor(60.0 + ((raw - 43.8) / 10.4) * 9.9);
+      if (raw <= 64.6) return Math.floor(70.0 + ((raw - 54.2) / 10.4) * 9.9);
+      if (raw <= 79.5) return Math.floor(80.0 + ((raw - 64.6) / 14.9) * 9.9);
+      return Math.floor(90.0 + Math.min(9.9, ((raw - 79.5) / 25.0) * 9.9));
     }
     const up = p.upgrades || {};
     const hasMods = (up.con || 0) !== 0 || (up.pwr || 0) !== 0 || (up.eye || 0) !== 0 || (up.k_avd || 0) !== 0 || (up.spd || 0) !== 0 || (up.def || 0) !== 0 || p.perm_con || p.perm_pwr || p.perm_eye || p.perm_spd || p.perm_def;
@@ -3158,11 +3158,11 @@ function initGameModeSelector() {
     const raw = con * 0.26 + pwr * 0.26 + eye * 0.12 + def * 0.16 + spd * 0.10 + kavd * 0.10;
     // Cut points = pool percentiles of the last lahman_etl_v5.py run (see paso_15); update them if the ETL changes.
     let base;
-    if (raw <= 36.1) base = 50.0 + ((raw - 10.0) / 26.1) * 9.9;
-    else if (raw <= 44.9) base = 60.0 + ((raw - 36.1) / 8.8) * 9.9;
-    else if (raw <= 55.6) base = 70.0 + ((raw - 44.9) / 10.7) * 9.9;
-    else if (raw <= 71.2) base = 80.0 + ((raw - 55.6) / 15.6) * 9.9;
-    else base = 90.0 + Math.min(9.9, ((raw - 71.2) / 25.0) * 9.9);
+    if (raw <= 35.7) base = 50.0 + ((raw - 10.0) / 25.7) * 9.9;
+    else if (raw <= 44.9) base = 60.0 + ((raw - 35.7) / 9.2) * 9.9;
+    else if (raw <= 55.8) base = 70.0 + ((raw - 44.9) / 10.9) * 9.9;
+    else if (raw <= 73.8) base = 80.0 + ((raw - 55.8) / 18.0) * 9.9;
+    else base = 90.0 + Math.min(9.9, ((raw - 73.8) / 25.0) * 9.9);
     // Clutch / Captain badges add +2 OVR each, as in the ETL (paso_15).
     const badge = ((p.clutch || p.is_clutch) ? 2 : 0) + ((p.captain || p.is_captain) ? 2 : 0);
     return Math.floor(Math.max(50, Math.min(99.9, base + badge)));

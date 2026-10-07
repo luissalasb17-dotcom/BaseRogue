@@ -396,11 +396,11 @@
     const con = p.con || 50, pwr = p.pwr || 50, eye = p.eye || 50, spd = p.spd || 50, def = p.def || 50, kavd = p.k_avd || 50;
     const raw = con * 0.26 + pwr * 0.26 + eye * 0.12 + def * 0.16 + spd * 0.10 + kavd * 0.10;
     // Cut points = pool percentiles of the last lahman_etl_v5.py run (see paso_15); update them if the ETL changes.
-    if (raw <= 36.1) return Math.floor(50.0 + ((raw - 10.0) / 26.1) * 9.9);
-    if (raw <= 44.9) return Math.floor(60.0 + ((raw - 36.1) / 8.8) * 9.9);
-    if (raw <= 55.6) return Math.floor(70.0 + ((raw - 44.9) / 10.7) * 9.9);
-    if (raw <= 71.2) return Math.floor(80.0 + ((raw - 55.6) / 15.6) * 9.9);
-    return Math.floor(90.0 + Math.min(9.9, ((raw - 71.2) / 25.0) * 9.9));
+    if (raw <= 35.7) return Math.floor(50.0 + ((raw - 10.0) / 25.7) * 9.9);
+    if (raw <= 44.9) return Math.floor(60.0 + ((raw - 35.7) / 9.2) * 9.9);
+    if (raw <= 55.8) return Math.floor(70.0 + ((raw - 44.9) / 10.9) * 9.9);
+    if (raw <= 73.8) return Math.floor(80.0 + ((raw - 55.8) / 18.0) * 9.9);
+    return Math.floor(90.0 + Math.min(9.9, ((raw - 73.8) / 25.0) * 9.9));
   }
 
   // ── OVR-targeted growth ────────────────────────────────────────────────

@@ -1542,24 +1542,47 @@ def mezclar_longevidad(v7, v12, share):
     return (1.0 - LONGEVITY_WEIGHT) * v7 + LONGEVITY_WEIGHT * (share * v12 + (1.0 - share) * floja)
 
 
+def _curva_A(T, span):
+    """A tal que A * ln(1 + T / A) = span (biseccion)."""
+    lo, hi = 1e-3, 1e6
+    for _ in range(200):
+        mid = (lo * hi) ** 0.5
+        if mid * np.log(1.0 + T / mid) < span:
+            lo = mid
+        else:
+            hi = mid
+    return hi
+
+
 def ajustar_extremos(v):
     """
-    Ultimo paso de TODOS los ratings, igual para todos y sin estirados artificiales (decision del
-    usuario): el centro de la escala (25 a 75) no se toca; por encima de 75 el MEJOR de la
-    historia en ese rating vale 125 y los demas quedan debajo en proporcion a su distancia real;
-    por debajo de 25 el PEOR vale 1 y el resto en proporcion. Asi el 99 es el tope real del
-    juego (muy pocas cartas lo pasan) y el tramo hasta 125 es el remanente de los fuera de serie.
-    Antes se forzaba que el 20o mejor valiera 125: Babe Ruth (poder real 208) valia lo mismo que
-    el 20o (126). Los ratings llegan aqui SIN recortar (RATING_FLOOR / RATING_CEIL).
+    Ultimo paso de TODOS los ratings, igual para todos (decision del usuario): el centro de la
+    escala (25 a 75) no se toca; el MEJOR de la historia en cada rating vale 125 y el PEOR vale 1.
+    Las puntas van con una curva (logaritmica) y no en linea recta: justo al salir del centro un
+    punto vale lo mismo que en el centro y se va apretando hacia el extremo. Con la linea recta un
+    solo fuera de serie aplastaba a todos los de arriba (poder: Ruth 125 y Bonds 98, solo 7 cartas
+    con 99 o mas contra 78 en K-AVD); con la curva la compresion la paga sobre todo el extremo.
+    Si el extremo no esta lejos (no llega a 125 o a 1 por si solo) la punta se estira en linea
+    recta, como antes. Los ratings llegan aqui SIN recortar (RATING_FLOOR / RATING_CEIL).
     """
     v = v.astype(float).copy()
     hi, lo = float(v.max()), float(v.min())
     if hi > EXTREME_TOP_ANCHOR:
         top = v > EXTREME_TOP_ANCHOR
-        v[top] = EXTREME_TOP_ANCHOR + (v[top] - EXTREME_TOP_ANCHOR) * (125.0 - EXTREME_TOP_ANCHOR) / (hi - EXTREME_TOP_ANCHOR)
+        T, span = hi - EXTREME_TOP_ANCHOR, 125.0 - EXTREME_TOP_ANCHOR
+        if T > span * 1.02:
+            A = _curva_A(T, span)
+            v[top] = EXTREME_TOP_ANCHOR + A * np.log1p((v[top] - EXTREME_TOP_ANCHOR) / A)
+        else:
+            v[top] = EXTREME_TOP_ANCHOR + (v[top] - EXTREME_TOP_ANCHOR) * span / T
     if lo < EXTREME_LOW_ANCHOR:
         low = v < EXTREME_LOW_ANCHOR
-        v[low] = 1.0 + (v[low] - lo) * (EXTREME_LOW_ANCHOR - 1.0) / (EXTREME_LOW_ANCHOR - lo)
+        T, span = EXTREME_LOW_ANCHOR - lo, EXTREME_LOW_ANCHOR - 1.0
+        if T > span * 1.02:
+            A = _curva_A(T, span)
+            v[low] = EXTREME_LOW_ANCHOR - A * np.log1p((EXTREME_LOW_ANCHOR - v[low]) / A)
+        else:
+            v[low] = 1.0 + (v[low] - lo) * span / T
     return v.clip(1.0, 125.0).round(1)
 
 BAT_RATINGS = ["contact_val", "power_val", "eye_val", "defense_val", "speed_val", "k_avoid_val"]
