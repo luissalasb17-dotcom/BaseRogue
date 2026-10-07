@@ -2072,7 +2072,7 @@
         if (m.a === USER_TEAM_ID) m.winner = userWon ? m.a : m.b;
         else if (m.b === USER_TEAM_ID) m.winner = userWon ? m.b : m.a;
         else {
-          const res = this._simLeagueGame(this._aiSide(L.teams[m.a], false), this._aiSide(L.teams[m.b], false), SEASON_LENGTH + round * 2);
+          const res = this._simLeagueGame({ ...this._aiSide(L.teams[m.a], false), noRest: true }, { ...this._aiSide(L.teams[m.b], false), noRest: true }, SEASON_LENGTH + round * 2, { homeFieldIdx: 0 });
           m.winner = res.winnerId;
           m.score = `${res.runs[0]}-${res.runs[1]}`;
         }
@@ -2670,7 +2670,7 @@
     //   3. at −2, any fresh bench player out of position, with a poor glove that day.
     // The sub always bats in the rested regular's spot in the order.
     _restLineup(side) {
-      const W = (this.state.league && this.state.league.wear) || {};
+      const W = side.noRest ? {} : ((this.state.league && this.state.league.wear) || {});
       const keyOf = p => this._leagueKey(side.id, batterUnlockKey(p));
       const benchLeft = side.bench.slice();
       const out = side.lineup.slice();
@@ -2723,7 +2723,12 @@
       };
     },
 
-    _simLeagueGame(away, home, day) {
+    // opts.trace = { events: [], line: [[], []] } records every play for the playoff broadcast;
+    // opts.homeFieldIdx says which side gets the home edge (default: the side batting last).
+    _simLeagueGame(away, home, day, opts = {}) {
+      const trace = opts.trace || null;
+      const homeFieldIdx = opts.homeFieldIdx !== undefined ? opts.homeFieldIdx : 1;
+      const hits = [0, 0];
       const sides = [away, home];
       const daily = sides.map(side => this._restLineup(side));
       sides.forEach((side, i) => {
@@ -2808,10 +2813,25 @@
         const batSide = sides[bi];
         const pitSide = sides[pi];
         const blowout = Math.abs(runs[0] - runs[1]) >= 6 && inning >= 7;
-        const edge = pi === 1 ? HOME_EDGE : -HOME_EDGE;
+        const edge = pi === homeFieldIdx ? HOME_EDGE : -HOME_EDGE;
         let outs = 0, scored = 0;
         const bases = [null, null, null];
         const unearned = new Set(); // runners who reached on an error
+        const slim = () => bases.map(b => (b ? { name: b.name } : null));
+        const emit = (who, wl, ps0, pl0, o) => {
+          const ip = `${Math.floor(pl0.outs / 3)}.${pl0.outs % 3}`;
+          trace.events.push({
+            stepIndex: trace.events.length, inning, half: bi === 0 ? 'TOP' : 'BOT',
+            batter: { name: who.name, pos: who.assignedSlot || who.pos || 'DH', ovr: Math.round(who.ovr || 80), line: `${wl.h}-${wl.ab}${wl.hr > 0 ? `, ${wl.hr} HR` : ''}${wl.rbi > 0 ? `, ${wl.rbi} RBI` : ''}` },
+            pitcher: { name: ps0.p.cleanName || ps0.p.name, role: ps0.isStarter ? 'SP' : (ps0.p.role || 'RP'), ovr: Math.round(ps0.p.ovr || 80), line: `${ip} IP, ${pl0.h} H, ${pl0.er} ER, ${pl0.so} K`, pitches: pl0.pitches || 0 },
+            stolenBase: false, balls: 0, strikes: 0, runsScored: 0,
+            ...o,
+            newBases: slim(),
+            userRuns: runs[0] + (bi === 0 ? scored : 0), oppRuns: runs[1] + (bi === 1 ? scored : 0),
+            userHits: hits[0], oppHits: hits[1],
+            [bi === 0 ? 'currentInningAwayRuns' : 'currentInningHomeRuns']: scored
+          });
+        };
         while (outs < 3) {
           const ps = state[pi].ps;
           const pl = pit[ps.k];
@@ -2825,9 +2845,16 @@
             const tryP = (STEAL_TRY_BASE + Math.pow(rate, STEAL_TRY_POW) * STEAL_TRY_SCALE) * (from === 1 ? STEAL_THIRD : 1);
             if (Math.random() < tryP) {
               const rl = batterLine(batSide, runner);
+              const before = trace ? slim() : null;
               bases[from] = null;
-              if (Math.random() < 0.58 + rate * 0.27 - (from === 1 ? 0.03 : 0)) { bases[from + 1] = runner; inc(rl, 'sb'); }
-              else { outs++; pl.outs++; inc(rl, 'cs'); if (outs >= 3) break; }
+              const safe = Math.random() < 0.58 + rate * 0.27 - (from === 1 ? 0.03 : 0);
+              if (safe) { bases[from + 1] = runner; inc(rl, 'sb'); }
+              else { outs++; pl.outs++; inc(rl, 'cs'); }
+              if (trace) {
+                emit(runner, rl, ps, pl, { outcome: safe ? 'SB' : 'CS', base: from + 2, outs: outs - (safe ? 0 : 1), newOuts: outs, bases: before,
+                  d: { ab: 0, outs: safe ? 0 : 1, rbi: 0, er: 0, scored: [], sb: safe ? runner.name : null, cs: safe ? null : runner.name } });
+              }
+              if (outs >= 3) break;
             }
           }
 
@@ -2839,9 +2866,12 @@
           const bl = batterLine(batSide, batter);
           ps.bf++;
           const outcome = simPaOutcome(batter, eff, batSide.isUser);
+          const t0 = trace ? { outs, bases: slim(), scored, ab: bl.ab, rbi: bl.rbi, er: pl.er, names: [] } : null;
+          let detail = null, errBy = null;
           const credit = (scorers, rbi = true, allUnearned = false) => {
             scorers = scorers.filter(Boolean);
             if (!scorers.length) return;
+            if (t0) scorers.forEach(r => t0.names.push(r.name));
             const before = runs[bi] + scored - runs[pi];
             scorers.forEach(r => { batterLine(batSide, r).r++; });
             const earned = allUnearned ? 0 : scorers.filter(r => !unearned.has(r)).length;
@@ -2863,13 +2893,14 @@
               let pick = Math.random() * fielders.reduce((t, f) => t + ERROR_WEIGHT[f.assignedSlot || f.pos], 0);
               const culprit = fielders.find(f => (pick -= ERROR_WEIGHT[f.assignedSlot || f.pos]) < 0);
               if (culprit) inc(batterLine(pitSide, culprit), 'e');
+              detail = 'E'; errBy = culprit ? culprit.name : null;
               unearned.add(batter);
               const scorer = bases[2];
               bases[2] = bases[1]; bases[1] = bases[0]; bases[0] = batter;
               credit([scorer], false, true);
             } else if (outs < 2 && bases[0] && Math.random() < GIDP_RATE * (1.2 - 0.5 * bspd)) {
               // Double play: batter and the man on first are out; the others move up.
-              outs += 2; pl.outs += 2; bl.ab++; inc(bl, 'gidp');
+              outs += 2; pl.outs += 2; bl.ab++; inc(bl, 'gidp'); detail = 'DP';
               const scorer = outs < 3 ? bases[2] : null;
               if (outs < 3) { bases[2] = bases[1]; bases[1] = null; }
               bases[0] = null;
@@ -2880,7 +2911,7 @@
                 // Sacrifice fly (no at-bat) or a run-scoring grounder, half and half.
                 const scorer = bases[2];
                 bases[2] = null;
-                if (Math.random() < 0.5) inc(bl, 'sf'); else bl.ab++;
+                if (Math.random() < 0.5) { inc(bl, 'sf'); detail = 'SF'; } else bl.ab++;
                 credit([scorer]);
               } else {
                 bl.ab++;
@@ -2904,10 +2935,20 @@
             if (outcome === '3B') bl.triples++;
             credit(advanceOnHit(bases, batter, adv, outs));
           }
+          if (trace) {
+            const balls = outcome === 'BB' ? 4 : (Math.random() < 0.4 ? 2 : (Math.random() < 0.5 ? 1 : 0));
+            const strikes = outcome === 'SO' ? 3 : (outcome === 'BB' ? Math.floor(Math.random() * 3) : (Math.random() < 0.5 ? 2 : 1));
+            inc(pl, 'pitches', balls + strikes + (outcome === 'SO' || outcome === 'BB' ? 0 : 1));
+            if (['1B', '2B', '3B', 'HR'].includes(outcome)) hits[bi]++;
+            emit(batter, bl, ps, pl, { outcome, detail, errBy, outs: t0.outs, newOuts: Math.min(3, outs), bases: t0.bases, balls, strikes,
+              runsScored: scored - t0.scored,
+              d: { ab: bl.ab - t0.ab, outs: outs - t0.outs, rbi: bl.rbi - t0.rbi, er: pl.er - t0.er, scored: t0.names, sb: null, cs: null } });
+          }
           // Walk-off: the home team stops batting once it leads in the 9th or later
           if (bi === 1 && inning >= 9 && runs[1] + scored > runs[0]) break;
         }
         runs[bi] += scored;
+        if (trace) trace.line[bi].push(scored);
       };
 
       let inning = 1, played = 0;
@@ -2935,9 +2976,10 @@
       if (wPitcher === wStarter && wStarter.outs < 15) {
         wPitcher = teamPitchers(wi).filter(x => x !== wStarter).sort((a, b) => b.outs - a.outs)[0] || wStarter;
       }
-      wPitcher.w++;
-      (valid ? pit[record.l] : pit[state[li].ps.k]).l++;
-      if (last !== wPitcher && (runs[wi] - runs[li]) <= 3) last.sv++;
+      wPitcher.w++; wPitcher.decision = 'W';
+      const lPitcher = valid ? pit[record.l] : pit[state[li].ps.k];
+      lPitcher.l++; lPitcher.decision = 'L';
+      if (last !== wPitcher && (runs[wi] - runs[li]) <= 3) { last.sv++; last.decision = 'SV'; }
       [0, 1].forEach(si => {
         const staff = teamPitchers(si);
         if (staff.length === 1) { inc(staff[0], 'cg'); if (runs[1 - si] === 0) inc(staff[0], 'sho'); }
@@ -3265,418 +3307,72 @@
       this.renderPlayoffLiveGame();
     },
 
+    // The user's playoff game: same engine as the regular season (real W/L rule, steals, errors,
+    // double plays, fatigue, full bullpen), recorded play by play for the broadcast. The user
+    // always bats first on screen; the better seed still gets the home-field edge. No wear or
+    // days off in October.
     _simulatePlayoffGameDetailed(userLineup, userSP, userRelievers, opp, round) {
-      let userRuns = 0, oppRuns = 0;
-      let userIdx = 0, oppIdx = 0;
-      let userHits = 0, oppHits = 0;
-      const inningLimit = 20;
-      let inning = 1;
-      const events = [];
-      const awayLinescore = [];
-      const homeLinescore = [];
-
+      const S = this.state;
+      const userSide = { ...this._userSide(S, false), sp: userSP, noRest: true };
+      const ref = this._playoffOpponentRef(round);
+      const oppLineup = (opp.lineup || opp._batters || []).slice(0, 9);
       const oppSP = (opp.pitchers && opp.pitchers[0]) || opp.pitcher;
-      const oppRP = (opp.pitchers && opp.pitchers[1]) || opp.reliever || oppSP;
-      const oppCL = (opp.pitchers && opp.pitchers[2]) || opp.closer || oppRP;
-      const oppPitchers = [oppSP, oppRP, oppCL].filter(Boolean);
-
-      const userRP = userRelievers[0] || userSP;
-      const userCL = userRelievers[1] || userRP || userSP;
-
-      // Team defense values
-      const fielders = userLineup.filter(p => (p.assignedSlot || p.pos) !== 'DH');
-      const userTeamDef = fielders.length
-        ? fielders.reduce((s, p) => s + (p.def !== undefined ? p.def : 50), 0) / fielders.length
-        : 65;
-
-      const oppFielders = (opp.lineup || opp._batters || []).filter(p => (p.assignedSlot || p.pos) !== 'DH');
-      const oppTeamDef = oppFielders.length
-        ? oppFielders.reduce((s, p) => s + (p.def !== undefined ? p.def : 50), 0) / oppFielders.length
-        : 65;
-
-      // Batting stats tracking for Box Score:
-      const awayBattersMap = {};
-      userLineup.forEach(p => {
-        awayBattersMap[p.name] = { name: p.name, pos: p.assignedSlot || p.pos || 'DH', ab: 0, r: 0, h: 0, doubles: 0, triples: 0, hr: 0, rbi: 0, bb: 0, so: 0, sb: 0, ovr: Math.round(p.ovr || 80) };
-      });
-      const homeBattersMap = {};
-      (opp.lineup || opp._batters || []).forEach(p => {
-        homeBattersMap[p.name] = { name: p.name, pos: p.assignedSlot || p.pos || 'DH', ab: 0, r: 0, h: 0, doubles: 0, triples: 0, hr: 0, rbi: 0, bb: 0, so: 0, sb: 0, ovr: Math.round(p.ovr || 80) };
-      });
-
-      // Pitching stats tracking for Box Score:
-      const awayPitchersMap = {};
-      const homePitchersMap = {};
-
-      const getAwayPitcherObj = (p) => {
-        const k = p.name || 'Pitcher';
-        if (!awayPitchersMap[k]) awayPitchersMap[k] = { name: k, role: p.role || 'SP', outs: 0, h: 0, r: 0, er: 0, bb: 0, so: 0, hr: 0, pitches: 0, decision: '', ovr: Math.round(p.ovr || 80) };
-        return awayPitchersMap[k];
-      };
-      const getHomePitcherObj = (p) => {
-        const k = p.cleanName || p.name || 'Pitcher';
-        if (!homePitchersMap[k]) homePitchersMap[k] = { name: k, role: p.role || 'SP', outs: 0, h: 0, r: 0, er: 0, bb: 0, so: 0, hr: 0, pitches: 0, decision: '', ovr: Math.round(p.ovr || 80) };
-        return homePitchersMap[k];
-      };
-
-      // Playoff pitching: same rules as the regular season. The starter goes until fatigue
-      // sets in (or he's knocked out; a shutout buys him extra rope), then the bullpen:
-      // setup man in close 8ths, closer in the 9th of close games and in extras.
-      const battersFaced = st => st ? st.outs + st.h + st.bb : 0;
-      const tiredPenalty = (p, st, isStarter) =>
-        Math.min(FATIGUE_MAX, FATIGUE_PER_BATTER * Math.max(0, battersFaced(st) - this._freshBatters(p, isStarter)));
-      const withFatigue = (p, st, isStarter) => {
-        const pen = tiredPenalty(p, st, isStarter);
-        if (!pen) return p;
-        return { ...p, h9: p.h9 - pen, k9: p.k9 - pen, bb9: p.bb9 - pen, hr9: p.hr9 - pen };
-      };
-      const starterOut = { opp: false, user: false };
-      const choosePitcher = (side, sp, rp, cl, inn, lead, stat) => {
-        if (!starterOut[side]) {
-          const knockedOut = (inn <= 5 && stat.er >= 4) || (inn <= 7 && stat.er >= 5);
-          const pen = tiredPenalty(sp, stat, true);
-          const gem = stat.er === 0 && inn <= 9;
-          if (!(knockedOut || (gem ? pen >= 10 : pen >= 6) || inn > 9)) return sp;
-          starterOut[side] = true;
-        }
-        if (inn > 9 || (inn === 9 && lead >= 0 && lead <= 3)) return cl;
-        if (inn === 8 && lead >= -1 && lead <= 4) return rp;
-        return inn >= 9 ? cl : rp;
-      };
-      const getOppPitcherForInning = (inn, uR, oR) =>
-        choosePitcher('opp', oppSP, oppRP, oppCL, inn, oR - uR, getHomePitcherObj(oppSP));
-      const getUserPitcherForInning = (inn, uR, oR) =>
-        choosePitcher('user', userSP, userRP, userCL, inn, uR - oR, getAwayPitcherObj(userSP));
-
-      while (inning <= 9 || (userRuns === oppRuns && inning <= inningLimit)) {
-        // ── TOP of the Inning: Away (User) Bats vs Home (Opp) Pitcher ──
-        const oppPitcherToday = getOppPitcherForInning(inning, userRuns, oppRuns);
-        oppPitcherToday._fieldingDef = oppTeamDef;
-        const hPitcherStat = getHomePitcherObj(oppPitcherToday);
-
-        let topRuns = 0;
-        let topOuts = 0;
-        let bases = [null, null, null];
-
-        while (topOuts < 3) {
-          const slot = userIdx % userLineup.length;
-          const batter = userLineup[slot];
-          userIdx++;
-          const bStat = awayBattersMap[batter.name];
-          const outsBefore = topOuts;
-          const basesBefore = bases.slice();
-
-          const outcome = simPaOutcome(batter, { ...withFatigue(oppPitcherToday, hPitcherStat, oppPitcherToday === oppSP), _fieldingDef: oppTeamDef }, true);
-          let runsThisPA = 0;
-          let stolenBase = false;
-
-          // Simulated pitch count for event realism
-          const balls = outcome === 'BB' ? 4 : (Math.random() < 0.4 ? 2 : (Math.random() < 0.5 ? 1 : 0));
-          const strikes = outcome === 'SO' ? 3 : (outcome === 'BB' ? Math.floor(Math.random() * 3) : (Math.random() < 0.5 ? 2 : 1));
-          const pitchesInPA = balls + strikes + (outcome === 'SO' || outcome === 'BB' ? 0 : 1);
-          if (hPitcherStat) hPitcherStat.pitches += pitchesInPA;
-
-          if (outcome === 'OUT') {
-            topOuts++;
-            if (bStat) bStat.ab++;
-            if (hPitcherStat) hPitcherStat.outs++;
-          } else if (outcome === 'SO') {
-            topOuts++;
-            if (bStat) { bStat.ab++; bStat.so++; }
-            if (hPitcherStat) { hPitcherStat.outs++; hPitcherStat.so++; }
-          } else if (outcome === 'BB') {
-            if (bStat) bStat.bb++;
-            if (hPitcherStat) hPitcherStat.bb++;
-            const scorer = forceWalk(bases, batter);
-            const scorers = scorer ? [scorer] : [];
-            runsThisPA = scorers.length;
-            scorers.forEach(r => {
-              if (r && awayBattersMap[r.name]) awayBattersMap[r.name].r++;
-            });
-            if (runsThisPA && bStat) bStat.rbi += runsThisPA;
-            if (hPitcherStat) { hPitcherStat.er += runsThisPA; hPitcherStat.r += runsThisPA; }
-          } else if (outcome === 'HR') {
-            userHits++;
-            if (bStat) { bStat.ab++; bStat.h++; bStat.hr++; bStat.r++; }
-            if (hPitcherStat) { hPitcherStat.h++; hPitcherStat.hr++; }
-            const runnersOn = bases.filter(Boolean);
-            runsThisPA = 1 + runnersOn.length;
-            runnersOn.forEach(r => {
-              if (r && awayBattersMap[r.name]) awayBattersMap[r.name].r++;
-            });
-            bases = [null, null, null];
-            if (bStat) bStat.rbi += runsThisPA;
-            if (hPitcherStat) { hPitcherStat.er += runsThisPA; hPitcherStat.r += runsThisPA; }
-          } else {
-            // 1B, 2B, 3B
-            userHits++;
-            const basesToAdvance = outcome === '1B' ? 1 : (outcome === '2B' ? 2 : 3);
-            if (bStat) {
-              bStat.ab++; bStat.h++;
-              if (outcome === '2B') bStat.doubles++;
-              if (outcome === '3B') bStat.triples++;
-            }
-            if (hPitcherStat) hPitcherStat.h++;
-            const scorers = advanceOnHit(bases, batter, basesToAdvance, topOuts);
-            runsThisPA = scorers.length;
-            scorers.forEach(r => {
-              if (r && awayBattersMap[r.name]) awayBattersMap[r.name].r++;
-            });
-            if (runsThisPA && bStat) bStat.rbi += runsThisPA;
-            if (hPitcherStat) { hPitcherStat.er += runsThisPA; hPitcherStat.r += runsThisPA; }
-          }
-
-          if ((outcome === 'BB' || outcome === '1B') && bases[0] === batter && !bases[1]) {
-            const runnerSpd = batter.spd !== undefined ? Math.max(0, batter.spd) : 50;
-            const rate = Math.min(1.0, runnerSpd / 125.0);
-            const attemptChance = 0.003 + Math.pow(rate, 2.0) * 0.42;
-            if (Math.random() < attemptChance) {
-              const successRate = 0.55 + rate * 0.32;
-              if (Math.random() < successRate) {
-                bases[1] = batter;
-                bases[0] = null;
-                stolenBase = true;
-                if (bStat) bStat.sb++;
-              } else {
-                bases[0] = null;
-                topOuts++;
-                if (hPitcherStat) hPitcherStat.outs++;
-                if (bStat && bStat.cs !== undefined) bStat.cs++;
-              }
-            }
-          }
-
-          topRuns += runsThisPA;
-          userRuns += runsThisPA;
-
-          // Compute snapshot lines for duel card:
-          const batterLine = `${bStat.h}-${bStat.ab}${bStat.hr > 0 ? `, ${bStat.hr} HR` : ''}${bStat.rbi > 0 ? `, ${bStat.rbi} RBI` : ''}`;
-          const pOuts = hPitcherStat.outs;
-          const pIp = `${Math.floor(pOuts / 3)}.${pOuts % 3}`;
-          const pitcherLine = `${pIp} IP, ${hPitcherStat.h} H, ${hPitcherStat.er} ER, ${hPitcherStat.so} K`;
-
-          events.push({
-            stepIndex: events.length,
-            inning,
-            half: 'TOP',
-            outs: outsBefore,
-            newOuts: topOuts,
-            bases: basesBefore,
-            newBases: bases.slice(),
-            batter: { name: batter.name, pos: batter.assignedSlot || batter.pos || 'DH', ovr: Math.round(batter.ovr || 80), line: batterLine },
-            pitcher: { name: oppPitcherToday.cleanName || oppPitcherToday.name, role: oppPitcherToday.role || 'SP', ovr: Math.round(oppPitcherToday.ovr || 80), line: pitcherLine, pitches: hPitcherStat.pitches },
-            outcome,
-            runsScored: runsThisPA,
-            stolenBase,
-            userRuns,
-            oppRuns,
-            userHits,
-            oppHits,
-            balls,
-            strikes,
-            currentInningAwayRuns: topRuns
-          });
-        }
-        awayLinescore.push(topRuns);
-
-        // Check if home team is ahead in bottom 9th:
-        if (inning >= 9 && oppRuns > userRuns) {
-          homeLinescore.push('X');
-          break;
-        }
-
-        // ── BOTTOM of the Inning: Home (Opp) Bats vs Away (User) Pitcher ──
-        const userPitcherToday = getUserPitcherForInning(inning, userRuns, oppRuns);
-        userPitcherToday._fieldingDef = userTeamDef;
-        const aPitcherStat = getAwayPitcherObj(userPitcherToday);
-
-        let botRuns = 0;
-        let botOuts = 0;
-        bases = [null, null, null];
-        const oppLineup = opp.lineup || opp._batters || [];
-
-        while (botOuts < 3) {
-          const slot = oppIdx % oppLineup.length;
-          const batter = oppLineup[slot] || { name: "Bateador Rival", ovr: 80 };
-          oppIdx++;
-          const bStat = homeBattersMap[batter.name];
-          const outsBefore = botOuts;
-          const basesBefore = bases.slice();
-
-          const outcome = simPaOutcome(batter, { ...withFatigue(userPitcherToday, aPitcherStat, userPitcherToday === userSP), _fieldingDef: userTeamDef }, false);
-          let runsThisPA = 0;
-          let stolenBase = false;
-
-          const balls = outcome === 'BB' ? 4 : (Math.random() < 0.4 ? 2 : (Math.random() < 0.5 ? 1 : 0));
-          const strikes = outcome === 'SO' ? 3 : (outcome === 'BB' ? Math.floor(Math.random() * 3) : (Math.random() < 0.5 ? 2 : 1));
-          const pitchesInPA = balls + strikes + (outcome === 'SO' || outcome === 'BB' ? 0 : 1);
-          if (aPitcherStat) aPitcherStat.pitches += pitchesInPA;
-
-          if (outcome === 'OUT') {
-            botOuts++;
-            if (bStat) bStat.ab++;
-            if (aPitcherStat) aPitcherStat.outs++;
-          } else if (outcome === 'SO') {
-            botOuts++;
-            if (bStat) { bStat.ab++; bStat.so++; }
-            if (aPitcherStat) { aPitcherStat.outs++; aPitcherStat.so++; }
-          } else if (outcome === 'BB') {
-            if (bStat) bStat.bb++;
-            if (aPitcherStat) aPitcherStat.bb++;
-            const scorer = forceWalk(bases, batter);
-            const scorers = scorer ? [scorer] : [];
-            runsThisPA = scorers.length;
-            scorers.forEach(r => {
-              if (r && homeBattersMap[r.name]) homeBattersMap[r.name].r++;
-            });
-            if (runsThisPA && bStat) bStat.rbi += runsThisPA;
-            if (aPitcherStat) { aPitcherStat.er += runsThisPA; aPitcherStat.r += runsThisPA; }
-          } else if (outcome === 'HR') {
-            oppHits++;
-            if (bStat) { bStat.ab++; bStat.h++; bStat.hr++; bStat.r++; }
-            if (aPitcherStat) { aPitcherStat.h++; aPitcherStat.hr++; }
-            const runnersOn = bases.filter(Boolean);
-            runsThisPA = 1 + runnersOn.length;
-            runnersOn.forEach(r => {
-              if (r && homeBattersMap[r.name]) homeBattersMap[r.name].r++;
-            });
-            bases = [null, null, null];
-            if (bStat) bStat.rbi += runsThisPA;
-            if (aPitcherStat) { aPitcherStat.er += runsThisPA; aPitcherStat.r += runsThisPA; }
-          } else {
-            // 1B, 2B, 3B
-            oppHits++;
-            const basesToAdvance = outcome === '1B' ? 1 : (outcome === '2B' ? 2 : 3);
-            if (bStat) {
-              bStat.ab++; bStat.h++;
-              if (outcome === '2B') bStat.doubles++;
-              if (outcome === '3B') bStat.triples++;
-            }
-            if (aPitcherStat) aPitcherStat.h++;
-            const scorers = advanceOnHit(bases, batter, basesToAdvance, botOuts);
-            runsThisPA = scorers.length;
-            scorers.forEach(r => {
-              if (r && homeBattersMap[r.name]) homeBattersMap[r.name].r++;
-            });
-            if (runsThisPA && bStat) bStat.rbi += runsThisPA;
-            if (aPitcherStat) { aPitcherStat.er += runsThisPA; aPitcherStat.r += runsThisPA; }
-          }
-
-          if ((outcome === 'BB' || outcome === '1B') && bases[0] === batter && !bases[1]) {
-            const runnerSpd = batter.spd !== undefined ? Math.max(0, batter.spd) : 50;
-            const rate = Math.min(1.0, runnerSpd / 125.0);
-            const attemptChance = 0.003 + Math.pow(rate, 2.0) * 0.42;
-            if (Math.random() < attemptChance) {
-              const successRate = 0.55 + rate * 0.32;
-              if (Math.random() < successRate) {
-                bases[1] = batter;
-                bases[0] = null;
-                stolenBase = true;
-                if (bStat) bStat.sb++;
-              } else {
-                bases[0] = null;
-                botOuts++;
-                if (aPitcherStat) aPitcherStat.outs++;
-                if (bStat && bStat.cs !== undefined) bStat.cs++;
-              }
-            }
-          }
-
-          botRuns += runsThisPA;
-          oppRuns += runsThisPA;
-
-          const batterLine = `${bStat.h}-${bStat.ab}${bStat.hr > 0 ? `, ${bStat.hr} HR` : ''}${bStat.rbi > 0 ? `, ${bStat.rbi} RBI` : ''}`;
-          const pOuts = aPitcherStat.outs;
-          const pIp = `${Math.floor(pOuts / 3)}.${pOuts % 3}`;
-          const pitcherLine = `${pIp} IP, ${aPitcherStat.h} H, ${aPitcherStat.er} ER, ${aPitcherStat.so} K`;
-
-          events.push({
-            stepIndex: events.length,
-            inning,
-            half: 'BOT',
-            outs: outsBefore,
-            newOuts: botOuts,
-            bases: basesBefore,
-            newBases: bases.slice(),
-            batter: { name: batter.name, pos: batter.assignedSlot || batter.pos || 'DH', ovr: Math.round(batter.ovr || 80), line: batterLine },
-            pitcher: { name: userPitcherToday.name, role: userPitcherToday.role || 'SP', ovr: Math.round(userPitcherToday.ovr || 80), line: pitcherLine, pitches: aPitcherStat.pitches },
-            outcome,
-            runsScored: runsThisPA,
-            stolenBase,
-            userRuns,
-            oppRuns,
-            userHits,
-            oppHits,
-            balls,
-            strikes,
-            currentInningHomeRuns: botRuns
-          });
-
-          // Walk-off win check in bottom of 9th or extras:
-          if (inning >= 9 && oppRuns > userRuns) {
-            break;
-          }
-        }
-        homeLinescore.push(botRuns);
-
-        if (inning >= 9 && userRuns !== oppRuns) {
-          break;
-        }
-
-        inning++;
+      const oppRP = (opp.pitchers && opp.pitchers[1]) || opp.reliever || null;
+      const oppCL = (opp.pitchers && opp.pitchers[2]) || opp.closer || null;
+      const oppPen = [];
+      if (oppRP) oppPen.push({ ...oppRP, role: 'SETUP' });
+      if (oppCL && oppCL !== oppRP) oppPen.push({ ...oppCL, role: 'CL' });
+      if (ref && ref.code) {
+        const taken = new Set([oppSP, ...oppPen].filter(Boolean).map(p => p.cleanName || p.name));
+        getFranchiseStaff(ref.code, ref.decade).bullpen.forEach(p => {
+          if (!taken.has(p.cleanName || p.name)) oppPen.push({ ...p, role: 'RP' });
+        });
       }
+      const oppFielders = oppLineup.filter(p => (p.assignedSlot || p.pos) !== 'DH');
+      const oppSide = {
+        id: (ref && ref.id) || 'PLAYOFF_OPP', isUser: false, noRest: true,
+        lineup: oppLineup, bench: [], sp: oppSP, bullpen: oppPen, gameIdx: 0,
+        def: oppFielders.length ? oppFielders.reduce((t, p) => t + (p.def !== undefined ? p.def : 50), 0) / oppFielders.length : 50
+      };
+      const m = this._playoffMatchup(round);
+      // Home field: the better seed in the league rounds, the better record in the World Series.
+      const T = S.league && S.league.teams;
+      const oppRec = T && ref && T[ref.id];
+      const userHosts = (round === 2 && T && oppRec) ? T[USER_TEAM_ID].w >= oppRec.w : !!(m && m.a === USER_TEAM_ID);
+      const trace = { events: [], line: [[], []] };
+      const res = this._simLeagueGame(userSide, oppSide, SEASON_LENGTH + 1 + round * 2, { trace, homeFieldIdx: userHosts ? 0 : 1 });
 
-      // Format decisions:
-      const won = userRuns > oppRuns;
-      const awayPitchersList = Object.values(awayPitchersMap);
-      const homePitchersList = Object.values(homePitchersMap);
-
-      if (won) {
-        if (awayPitchersList[0]) awayPitchersList[0].decision = 'W';
-        if (homePitchersList[0]) homePitchersList[0].decision = 'L';
-        if (awayPitchersList.length > 1 && (userRuns - oppRuns) <= 3) {
-          awayPitchersList[awayPitchersList.length - 1].decision = 'SV';
-        }
-      } else {
-        if (homePitchersList[0]) homePitchersList[0].decision = 'W';
-        if (awayPitchersList[0]) awayPitchersList[0].decision = 'L';
-        if (homePitchersList.length > 1 && (oppRuns - userRuns) <= 3) {
-          homePitchersList[homePitchersList.length - 1].decision = 'SV';
-        }
-      }
-
+      const boxSide = (side) => {
+        const everyone = [...side.lineup, ...(side.bench || [])];
+        const order = name => { const k = everyone.findIndex(p => p.name === name); return k < 0 ? 99 : k; };
+        const ovrOfName = name => { const p = everyone.find(x => x.name === name); return Math.round((p && p.ovr) || 80); };
+        const staff = [side.sp, ...side.bullpen].filter(Boolean);
+        const batting = Object.values(res.bat).filter(x => x.team === side.id).sort((a, b) => order(a.name) - order(b.name))
+          .map(x => ({ name: x.name, pos: x.pos, ab: x.ab, r: x.r, h: x.h, doubles: x.doubles, triples: x.triples, hr: x.hr, rbi: x.rbi, bb: x.bb, so: x.so, sb: x.sb || 0, cs: x.cs || 0, ovr: ovrOfName(x.name) }));
+        const pitching = Object.values(res.pit).filter(x => x.team === side.id).map(x => {
+          const p = staff.find(q => (q.cleanName || q.name) === x.name);
+          return { name: x.name, role: x.gs ? 'SP' : (x.role || 'RP'), outs: x.outs, h: x.h, r: x.r || 0, er: x.er, bb: x.bb, so: x.so, hr: x.hr, pitches: x.pitches || 0, decision: x.decision || '', ovr: Math.round((p && p.ovr) || 80) };
+        });
+        const errors = Object.values(res.bat).filter(x => x.team === side.id).reduce((t, x) => t + (x.e || 0), 0);
+        return { batting, pitching, errors };
+      };
+      const ub = boxSide(userSide), ob = boxSide(oppSide);
       const _t = (key, fallback) => (typeof window.t === 'function' ? window.t(key) : fallback);
       const roundTitleKey = round === 0 ? 'challenge162.round_1_title' : (round === 1 ? 'challenge162.round_2_title' : 'challenge162.round_3_title');
-      const roundTitle = _t(roundTitleKey, `Ronda ${round + 1}`);
-
+      const slimP = p => ({ name: p.cleanName || p.name, role: p.role || 'P', ovr: Math.round(p.ovr || 80) });
       return {
-        events,
-        awayTeam: {
-          name: this.getUserTeamName(),
-          runs: userRuns,
-          hits: userHits,
-          errors: 0,
-          linescore: awayLinescore,
-          batting: Object.values(awayBattersMap),
-          pitching: awayPitchersList
-        },
-        homeTeam: {
-          name: opp.name,
-          runs: oppRuns,
-          hits: oppHits,
-          errors: 0,
-          linescore: homeLinescore,
-          batting: Object.values(homeBattersMap),
-          pitching: homePitchersList
-        },
-        userLineup: userLineup.map(b => ({ name: b.name, pos: b.assignedSlot || b.pos || 'DH', ovr: Math.round(b.ovr || 80) })),
-        oppLineup: (opp.lineup || opp._batters || []).slice(0, 9).map(b => ({ name: b.name, pos: b.assignedSlot || b.pos || 'DH', ovr: Math.round(b.ovr || 80) })),
-        userPitchers: [userSP, userRP, userCL].filter(Boolean).map(p => ({ name: p.name, role: p.role || 'P', ovr: Math.round(p.ovr || 80) })),
-        oppPitchers: (oppPitchers || []).filter(Boolean).map(p => ({ name: p.cleanName || p.name, role: p.role || 'P', ovr: Math.round(p.ovr || 80) })),
-        won,
-        finalInning: Math.max(9, awayLinescore.length),
+        events: trace.events,
+        awayTeam: { name: this.getUserTeamName(), runs: res.runs[0], hits: ub.batting.reduce((t, b) => t + b.h, 0), errors: ub.errors, linescore: trace.line[0], batting: ub.batting, pitching: ub.pitching },
+        homeTeam: { name: opp.name, runs: res.runs[1], hits: ob.batting.reduce((t, b) => t + b.h, 0), errors: ob.errors, linescore: trace.line[1], batting: ob.batting, pitching: ob.pitching },
+        userLineup: userSide.lineup.map(b => ({ name: b.name, pos: b.assignedSlot || b.pos || 'DH', ovr: Math.round(b.ovr || 80) })),
+        oppLineup: oppLineup.map(b => ({ name: b.name, pos: b.assignedSlot || b.pos || 'DH', ovr: Math.round(b.ovr || 80) })),
+        userPitchers: [userSide.sp, ...userSide.bullpen].filter(Boolean).map(slimP),
+        oppPitchers: [oppSP, ...oppPen].filter(Boolean).map(slimP),
+        won: res.winnerId === USER_TEAM_ID,
+        homeField: userHosts ? 'away' : 'home',
+        finalInning: Math.max(9, trace.line[0].length),
         round,
-        roundTitle
+        roundTitle: _t(roundTitleKey, `Ronda ${round + 1}`)
       };
     },
 
@@ -3875,6 +3571,23 @@
 
       if (isPreGame) {
         narrativeText = `⚾ ${_t('challenge162.playoff_pregame_ready', '¡El partido está listo para comenzar! Primer turno:')} ${curEvt.batter.name} vs ${curEvt.pitcher.name}`;
+      } else if (curEvt.outcome === 'SB' || curEvt.outcome === 'CS') {
+        const baseName = curEvt.base === 3 ? '3B' : '2B';
+        narrativeText = curEvt.outcome === 'SB' ? `🏃 ${curEvt.batter.name} steals ${baseName}!` : `🚫 ${curEvt.batter.name} is caught stealing ${baseName}.`;
+        textClass += curEvt.outcome === 'SB' ? ' highlight-hit' : ' highlight-out';
+        outcomePillHTML = `<span class="c162-event-badge ${curEvt.outcome === 'SB' ? 'badge-hit' : 'badge-out'}">${curEvt.outcome}</span>`;
+      } else if (curEvt.detail === 'E') {
+        narrativeText = `${curEvt.batter.name} reaches on an error${curEvt.errBy ? ` by ${curEvt.errBy}` : ''}.${curEvt.runsScored ? ` (+${curEvt.runsScored} R)` : ''}`;
+        textClass += ' highlight-hit';
+        outcomePillHTML = `<span class="c162-event-badge badge-bb">ERROR</span>`;
+      } else if (curEvt.detail === 'DP') {
+        narrativeText = `${curEvt.batter.name} grounds into a double play.${curEvt.runsScored ? ` (+${curEvt.runsScored} R)` : ''}`;
+        textClass += ' highlight-out';
+        outcomePillHTML = `<span class="c162-event-badge badge-out">DOUBLE PLAY</span>`;
+      } else if (curEvt.outcome === 'OUT' && curEvt.runsScored > 0) {
+        narrativeText = `${curEvt.batter.name} ${curEvt.detail === 'SF' ? 'hits a sacrifice fly' : 'drives in a run with a groundout'}. (+${curEvt.runsScored} R)`;
+        textClass += ' highlight-out';
+        outcomePillHTML = `<span class="c162-event-badge badge-out">${curEvt.detail === 'SF' ? 'SAC FLY' : 'RBI OUT'}</span>`;
       } else if (curEvt.outcome === 'HR') {
         narrativeText = _t('challenge162.pa_hr', `¡${curEvt.batter.name} conecta un descomunal cuadrangular! (+${curEvt.runsScored} carreras)`, { batter: curEvt.batter.name, runs: curEvt.runsScored });
         textClass += ' highlight-hr';
@@ -4151,6 +3864,11 @@
           else if (['1B', '2B', '3B'].includes(ev.outcome)) badge = `<span class="c162-event-badge badge-hit">${ev.outcome}</span>`;
           else if (ev.outcome === 'BB') badge = `<span class="c162-event-badge badge-bb">BB</span>`;
           else if (ev.outcome === 'SO') badge = `<span class="c162-event-badge badge-so">SO</span>`;
+          else if (ev.outcome === 'SB') badge = `<span class="c162-event-badge badge-hit">SB</span>`;
+          else if (ev.outcome === 'CS') badge = `<span class="c162-event-badge badge-out">CS</span>`;
+          else if (ev.detail === 'E') badge = `<span class="c162-event-badge badge-bb">E</span>`;
+          else if (ev.detail === 'DP') badge = `<span class="c162-event-badge badge-out">DP</span>`;
+          else if (ev.detail === 'SF') badge = `<span class="c162-event-badge badge-out">SF</span>`;
 
           const halfLabel = ev.half === 'TOP' ? '▲' : '▼';
           return `
@@ -4158,7 +3876,7 @@
               <span style="font-family:'Press Start 2P',monospace;font-size:8px;color:#38bdf8;width:55px;">${halfLabel} ${ev.inning}</span>
               ${badge}
               <span style="flex:1;color:#f3f4f6;">
-                <strong>${ev.batter.name}</strong> vs <strong>${ev.pitcher.name}</strong> · ${ev.outcome} ${ev.runsScored > 0 ? `(+${ev.runsScored} R)` : ''}
+                <strong>${ev.batter.name}</strong> vs <strong>${ev.pitcher.name}</strong> · ${ev.detail || ev.outcome} ${ev.runsScored > 0 ? `(+${ev.runsScored} R)` : ''}
               </span>
               <span style="font-family:'Press Start 2P',monospace;font-size:8.5px;color:#ffd700;">
                 ${ev.userRuns} - ${ev.oppRuns}
@@ -4366,6 +4084,28 @@
           pMap[pName] = { name: pName, role: ev.pitcher ? (ev.pitcher.role || 'P') : 'P', outs: 0, h: 0, r: 0, er: 0, bb: 0, so: 0, hr: 0, pitches: 0, decision: '' };
         }
         const pStat = pMap[pName];
+        if (ev.d) {
+          // New games: the engine says exactly what the play was worth.
+          const d = ev.d;
+          const line = n => bMap[n] || (bMap[n] = { name: n, pos: '', ab: 0, r: 0, h: 0, doubles: 0, triples: 0, hr: 0, rbi: 0, bb: 0, so: 0, sb: 0 });
+          if (ev.pitcher) pStat.pitches = ev.pitcher.pitches || pStat.pitches;
+          if (ev.outcome !== 'SB' && ev.outcome !== 'CS' && bStat) {
+            bStat.ab += d.ab; bStat.rbi += d.rbi;
+            if (ev.outcome === 'BB') { bStat.bb++; pStat.bb++; }
+            if (ev.outcome === 'SO') { bStat.so++; pStat.so++; }
+            if (['1B', '2B', '3B', 'HR'].includes(ev.outcome)) {
+              bStat.h++; pStat.h++;
+              if (ev.outcome === '2B') bStat.doubles++;
+              if (ev.outcome === '3B') bStat.triples++;
+              if (ev.outcome === 'HR') { bStat.hr++; pStat.hr++; }
+            }
+          }
+          pStat.outs += d.outs; pStat.er += d.er; pStat.r += ev.runsScored || 0;
+          (d.scored || []).forEach(n => { line(n).r++; });
+          if (d.sb) line(d.sb).sb++;
+          if (isTop) curAwayRuns += ev.runsScored || 0; else curHomeRuns += ev.runsScored || 0;
+          return;
+        }
         if (pStat) pStat.pitches = (pStat.pitches || 0) + (ev.strikes || 0) + (ev.balls || 0) + 1;
 
         if (ev.outcome === 'BB') {
@@ -4415,7 +4155,7 @@
           name: game.awayTeam.name,
           runs: curAwayRuns,
           hits: eventsPlayed.filter(e => e.half === 'TOP' && ['1B','2B','3B','HR'].includes(e.outcome)).length,
-          errors: 0,
+          errors: eventsPlayed.filter(e => e.half === 'BOT' && e.detail === 'E').length,
           linescore: awayLinescore,
           batting: Object.values(awayBattersMap),
           pitching: Object.values(awayPitchersMap)
@@ -4424,7 +4164,7 @@
           name: game.homeTeam.name,
           runs: curHomeRuns,
           hits: eventsPlayed.filter(e => e.half === 'BOT' && ['1B','2B','3B','HR'].includes(e.outcome)).length,
-          errors: 0,
+          errors: eventsPlayed.filter(e => e.half === 'TOP' && e.detail === 'E').length,
           linescore: homeLinescore,
           batting: Object.values(homeBattersMap),
           pitching: Object.values(homePitchersMap)
