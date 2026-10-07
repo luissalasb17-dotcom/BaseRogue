@@ -1107,10 +1107,9 @@ def paso_8_atributos_raw(df):
     df["ip_per_year_raw"] = df["ip_per_year_eq"].fillna(df["ip_per_year"]).fillna(50.0)
     df["sta_raw"] = df["ip_per_year_raw"]
 
-    # Atributo Clutch RAW: LOB% (Strand Rate) con Ancla m=150 corredores + Modulador Leverage Index
+    # Atributo Clutch RAW: LOB% (Strand Rate) con Ancla m=150 corredores
     er_k  = df["peak_er"].fillna(0)
     hbp_k = df["peak_hbp"].fillna(0)
-    li_k  = df["peak_li"].fillna(1.0)
 
     denom_lob = h_k + bb_k + hbp_k - 1.4 * hr_k
     num_lob   = h_k + bb_k + hbp_k - er_k
@@ -1123,8 +1122,11 @@ def paso_8_atributos_raw(df):
     for g_, v_ in df.groupby(group_key)["prior_lob"].mean().items():
         print(f"    {g_:42s} {v_:.3f}")
     lob_smooth = ((num_lob + m_lob * prior_lob) / (denom_lob + m_lob)).clip(0.55, 0.90)
-    li_mod    = (li_k - 1.0).clip(-0.5, 1.5) * 6.0
-    df["clt_raw"] = lob_smooth * 100.0 + li_mod
+    # Sin bono de Leverage Index (decision del usuario). El dato solo existe para apariciones de
+    # relevo: lo recibian los abridores antiguos que a veces relevaban (Whitey Ford 2.74, Clutch
+    # 125) y los abridores modernos, que nunca relevan, quedaban en neutro (Cole 61). Dejarlo solo
+    # para relevistas subia los relevistas Legendary de 14 a 18.
+    df["clt_raw"] = lob_smooth * 100.0
     df["clu_raw"] = df["clt_raw"]
 
     print("  h9_raw, k9_raw, bb9_raw, hr9_raw, sta_raw, clt_raw calculados con suavizado Bayesiano")

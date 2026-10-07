@@ -177,8 +177,9 @@ def run_story_pitchers_etl():
     num_lob = (h + bb + hbp - er).clip(lower=0.0)
     m_lob = 25.0
     lob_smooth = ((num_lob + m_lob * 0.720) / (denom_lob + m_lob)).clip(0.50, 0.95)
-    li_mod = (df["li"] - 1.0).clip(-0.5, 1.5) * 5.0
-    df["clt_raw"] = lob_smooth * 100.0 + li_mod
+    # Sin bono de Leverage Index, igual que pitchers_etl.py: el dato solo existe para apariciones
+    # de relevo y premiaba a abridores antiguos que a veces relevaban.
+    df["clt_raw"] = lob_smooth * 100.0
 
     # Normalización difficulty adjusted per era
     df = normalize_diff_adj(df, "clt_raw", "clt_val")
