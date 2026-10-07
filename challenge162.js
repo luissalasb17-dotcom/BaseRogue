@@ -893,93 +893,71 @@
 
   // ── PA outcome model, tuned toward realistic MLB rates ────────────────────
   // Base hit and HR rates for a 50-rated batter vs a 50-rated pitcher.
-  const PA_BASE_AVG = 0.253;
-  const PA_BASE_HR = 0.028;
+  // League game engine (regular season), tuned to an all-eras environment rather than today's MLB.
+  const HOME_EDGE = 3;          // rating points: the home staff pitches with +N, the visitors' with -N
+  const STEAL_TRY_BASE = 0.0; // steal attempts per plate appearance with the next base open
+  const STEAL_TRY_SCALE = 0.43;
+  const STEAL_TRY_POW = 1.25;
+  const STEAL_THIRD = 0.22;     // share of those attempts when the runner is on second
+  const ERROR_RATE = 0.034;     // batted-ball outs that turn into an error, for an average defense
+  const GIDP_RATE = 0.19;       // batted-ball outs with a man on first and under 2 outs
+  const RUN_ON_OUT = 0.42;      // man on third, under 2 outs: scores on a batted-ball out
+  const ADVANCE_ON_OUT = 0.30;  // man on second, third open, under 2 outs: moves up on the out
+  const ERROR_WEIGHT = { SS: 22, '3B': 20, '2B': 16, '1B': 10, C: 8, LF: 7, CF: 7, RF: 7 };
+  // Rating -> stat tables: the real peak numbers of the cards at each rating (all eras together),
+  // so a player produces the line his rating stands for instead of a flattened one.
+  const RT_X = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 115, 125];
+  const BAT_AVG = [.208, .239, .255, .267, .278, .288, .298, .312, .333, .357, .371, .385];
+  const BAT_HR = [.0032, .0078, .0133, .0200, .0266, .0309, .0355, .0426, .0540, .0600, .0680, .0760];
+  const BAT_K = [.270, .226, .187, .164, .132, .108, .085, .070, .053, .042, .033, .028];
+  const BAT_BB = [.042, .058, .073, .086, .098, .109, .120, .134, .162, .182, .227, .250];
+  const BAT_2B = [.133, .163, .184, .200, .214, .221, .226, .230, .236, .240, .240, .240]; // share of non-HR hits, by power
+  const BAT_3B = [.016, .024, .036, .043, .045, .046, .046, .047, .048, .049, .050, .050]; // share of non-HR hits, by speed
+  const PIT_H9 = [11.8, 10.0, 9.27, 8.8, 8.35, 7.9, 7.55, 7.15, 6.6, 6.25, 5.6, 5.2];
+  const PIT_K9 = [2.3, 3.45, 4.65, 5.6, 6.7, 7.65, 8.5, 9.1, 9.9, 10.4, 12.5, 13.5];
+  const PIT_BB9 = [5.9, 4.6, 4.05, 3.6, 3.23, 2.83, 2.55, 2.29, 2.05, 1.83, 1.45, 1.25];
+  const PIT_HR9 = [1.38, 1.15, .98, .82, .70, .57, .47, .36, .29, .22, .19, .17];
+  // League level: everybody here is at his peak, so the tables are scaled to an all-eras league.
+  const PA_SCALE_AVG = 0.92, PA_SCALE_HR = 1.0, PA_SCALE_K = 1.18, PA_SCALE_BB = 1.04;
+  function rateAt(ys, v) {
+    if (!(v > RT_X[0])) return ys[0];
+    for (let n = 1; n < RT_X.length; n++) {
+      if (v <= RT_X[n]) return ys[n - 1] + (ys[n] - ys[n - 1]) * (v - RT_X[n - 1]) / (RT_X[n] - RT_X[n - 1]);
+    }
+    return ys[ys.length - 1];
+  }
+  const baaOf = h9 => h9 / (27 + h9);
   function simPaOutcome(batter, pitcher, isUserBatting = true) {
-    const con = batter.con !== undefined ? batter.con : 50;
-    const eye = batter.eye !== undefined ? batter.eye : 50;
-    const pwr = batter.pwr !== undefined ? batter.pwr : 50;
-    const spd = batter.spd !== undefined ? batter.spd : 50;
-    const pH9 = pitcher.h9 !== undefined ? pitcher.h9 : 50;
-    const pK9 = pitcher.k9 !== undefined ? pitcher.k9 : 50;
-    const pBB9 = pitcher.bb9 !== undefined ? pitcher.bb9 : 50;
-    const pHR9 = pitcher.hr9 !== undefined ? pitcher.hr9 : 50;
+    const num = (v, d) => (v !== undefined ? v : d);
+    const con = num(batter.con, 50), eye = num(batter.eye, 50), pwr = num(batter.pwr, 50), spd = num(batter.spd, 50);
+    const kAvd = num(batter.k_avd, num(batter.k_avoid, num(batter.k_avoid_val, con)));
+    const pH9 = num(pitcher.h9, 50), pK9 = num(pitcher.k9, 50), pBB9 = num(pitcher.bb9, 50), pHR9 = num(pitcher.hr9, 50);
 
-    // BB: ~9.2% baseline with authentic discipline scaling for patience masters (Ott, Hack, Murray, Williams)
-    // Minimum 5.0% floor ensures even aggressive free-swingers draw 28-38 walks across a full season:
-    let pBB = 0.092 + (eye - 50) * 0.00185 - (pBB9 - 50) * 0.0007;
-    pBB = Math.max(0.050, Math.min(0.24, pBB));
-
-    // Soft compression for low floor (CON < 35) and high ceiling (CON > 85):
-    let conEffective = con;
-    if (con < 35) {
-      conEffective = 40 + (con - 35) * 0.40;
-    } else if (con > 85) {
-      conEffective = 85 + (con - 85) * 0.60;
-    }
-
-    // Progressive power scaling: low-power slap hitters (PWR < 45) produce 2-8 HRs,
-    // mid-power bats (PWR 50-70) produce 15-26 HRs, strong sluggers (PWR 80-90) reach 34-44 HRs,
-    // and elite monster sluggers (PWR 95+ e.g. Judge, Ruth, Bonds, Killebrew) reach authentic 48-56 HRs.
-    let pwrEffective = pwr;
-    if (pwr < 45) {
-      pwrEffective = 30 + (pwr - 20) * 0.45;
-    } else if (pwr > 70 && pwr <= 85) {
-      pwrEffective = 70 + (pwr - 70) * 0.55;
-    } else if (pwr > 85) {
-      pwrEffective = 70 + (15 * 0.55) + (pwr - 85) * 0.42;
-    }
-
-    // SO: Driven directly by dedicated K Avoidance attribute (k_avd / k_avoid), EYE & Pitcher K/9:
-    // Elite strikeout avoiders / high eye hitters (Gwynn, Boggs, Stanky, Frisch) generate 45-80 K.
-    // Quality contact hitters (K_AVD 55-75) generate 80-115 K.
-    // Free-swinging sluggers (K_AVD 10-35 e.g. Clark, Gallo, Canseco) generate 150-185+ K.
-    const rawKAvd = batter.k_avd !== undefined ? batter.k_avd : (batter.k_avoid !== undefined ? batter.k_avoid : (batter.k_avoid_val !== undefined ? batter.k_avoid_val : conEffective));
-    let kAvoid = rawKAvd;
-    if (rawKAvd < 35) {
-      kAvoid = 38 + (rawKAvd - 35) * 0.40;
-    } else if (rawKAvd > 70) {
-      kAvoid = 70 + (rawKAvd - 70) * 1.25;
-    }
-    // High eye (patience) also helps avoid SO slightly:
-    const eyeKBonus = eye > 70 ? (eye - 70) * 0.0006 : 0;
-
-    const kPitcherBoost = pK9 <= 65 ? (pK9 - 50) * 0.0018 : (15 * 0.0018 + (pK9 - 65) * 0.0030);
-    // Lower base strikeout rate from 0.218 to 0.178 to avoid inflation on disciplined bats:
-    let pSO = 0.178 - (kAvoid - 50) * 0.00210 - eyeKBonus + kPitcherBoost;
-    pSO = Math.max(0.035, Math.min(0.38, pSO));
-
+    // Each rate is the batter's own rate times how the pitcher compares with an average one.
+    // One formula for every batter in the league; isUserBatting is kept only for old callers.
+    let pBB = rateAt(BAT_BB, eye) * (rateAt(PIT_BB9, pBB9) / PIT_BB9[4]) * PA_SCALE_BB;
+    pBB = Math.max(0.02, Math.min(0.30, pBB));
+    let pSO = rateAt(BAT_K, kAvd) * Math.pow(rateAt(PIT_K9, pK9) / PIT_K9[4], 1.1) * PA_SCALE_K;
+    pSO = Math.max(0.015, Math.min(0.45, pSO));
     const pInPlay = Math.max(0.20, 1 - pBB - pSO);
 
-    // Hits: Target Batting Average scaled across non-walk at-bats (1 - pBB)
-    // Ensures high-contact stars reach authentic .305-.345 AVGs, and mid-tier bats stay in .255-.285:
     const defEfficiency = (pitcher && pitcher._fieldingDef) !== undefined ? pitcher._fieldingDef : 50;
     const defAdj = (defEfficiency - 50) * 0.00028;
-
-    // One formula for every batter in the league, the user's and the AI's alike
-    // (it used to give the user's hitters a .278 base vs .244 for everyone else).
-    // isUserBatting is kept in the signature for old callers but no longer matters.
-    let targetAvg = PA_BASE_AVG + (conEffective - 50) * 0.00165 - (pH9 - 50) * 0.00072 - defAdj;
-    let pHR = PA_BASE_HR + (pwrEffective - 50) * 0.00088 - (pHR9 - 50) * 0.00032;
-
-    targetAvg = Math.max(0.14, Math.min(0.38, targetAvg));
+    let targetAvg = rateAt(BAT_AVG, con) * (baaOf(rateAt(PIT_H9, pH9)) / baaOf(PIT_H9[4])) * PA_SCALE_AVG - defAdj;
+    targetAvg = Math.max(0.12, Math.min(0.42, targetAvg));
     let pTotalHit = (1 - pBB) * targetAvg;
     pTotalHit = Math.min(pTotalHit, pInPlay - 0.01);
 
-    pHR = Math.max(0.002, Math.min(0.082, pHR));
-    pHR = Math.min(pHR, pTotalHit * 0.40);
+    let pHR = rateAt(BAT_HR, pwr) * (rateAt(PIT_HR9, pHR9) / PIT_HR9[4]) * PA_SCALE_HR;
+    pHR = Math.max(0.0005, Math.min(0.11, pHR));
+    pHR = Math.min(pHR, pTotalHit * 0.50);
     const pRegularHit = pTotalHit - pHR;
 
-    // 3B Triples Distribution:
-    // Slow sluggers (SPD < 40) -> 1-2 triples; average runners (SPD 50-70) -> 4-7 triples;
-    // Elite burners (SPD 75-115+ e.g. Cobb, Henderson, Crawford, Carroll) -> 10-20 triples!
-    const tripleWeight = 0.008 + Math.max(0, (spd - 30) * 0.00075);
-    const doubleWeight = Math.min(0.30, 0.17 + pwr * 0.0005);
-    const singleWeight = Math.max(0.35, 1 - doubleWeight - tripleWeight);
-    const hitTotal = singleWeight + doubleWeight + tripleWeight;
-    const p1B = pRegularHit * (singleWeight / hitTotal);
-    const p2B = pRegularHit * (doubleWeight / hitTotal);
-    const p3B = pRegularHit * (tripleWeight / hitTotal);
+    const share3B = rateAt(BAT_3B, spd);
+    const share2B = rateAt(BAT_2B, pwr);
+    const p2B = pRegularHit * share2B;
+    const p3B = pRegularHit * share3B;
+    const p1B = pRegularHit - p2B - p3B;
 
     const roll = Math.random();
     let acc = 0;
@@ -2359,7 +2337,7 @@
       Object.values(result.bat).forEach(d => {
         if (d.team === USER_TEAM_ID) {
           const s = S.batterStats[d.key];
-          if (s) ['g', 'ab', 'h', 'doubles', 'triples', 'hr', 'rbi', 'bb', 'so', 'r', 'sb'].forEach(f => { s[f] = (s[f] || 0) + (d[f] || 0); });
+          if (s) ['g', 'ab', 'h', 'doubles', 'triples', 'hr', 'rbi', 'bb', 'so', 'r', 'sb', 'cs', 'gidp', 'sf', 'e'].forEach(f => { s[f] = (s[f] || 0) + (d[f] || 0); });
         } else {
           if (!S.oppBatterStats) S.oppBatterStats = {};
           const s = S.oppBatterStats[d.name] || (S.oppBatterStats[d.name] = { name: d.name, team: oppRec.code, ab: 0, h: 0, doubles: 0, triples: 0, hr: 0, rbi: 0, bb: 0, so: 0, r: 0 });
@@ -2369,7 +2347,7 @@
       Object.values(result.pit).forEach(d => {
         if (d.team !== USER_TEAM_ID) return;
         const s = S.pitcherStats[d.key];
-        if (s) ['outs', 'h', 'er', 'bb', 'so', 'w', 'l', 'sv'].forEach(f => { s[f] += d[f] || 0; });
+        if (s) ['outs', 'h', 'er', 'bb', 'so', 'w', 'l', 'sv', 'g', 'gs', 'r', 'cg', 'sho', 'hld', 'bs'].forEach(f => { s[f] = (s[f] || 0) + (d[f] || 0); });
       });
 
       S.gamesPlayed++;
@@ -2756,9 +2734,13 @@
         if (fielders.length) side.def = fielders.reduce((s, p) => s + (p.def !== undefined ? p.def : (p.defense_val || 50)), 0) / fielders.length;
       });
       const runs = [0, 0];
+      // Pitchers of record: set when a team takes the lead, cleared when the game is tied again.
+      let record = null; // { team, w: pitching line key, l: pitching line key }
       const bat = {};   // leagueKey -> batting line
       const pit = {};   // leagueKey -> pitching line
       const gs = { usedPitchers: new Set() };
+      const relief = [[], []]; // relief appearances per side, for holds and blown saves
+      const inc = (o, f, n = 1) => { o[f] = (o[f] || 0) + n; };
       const state = sides.map(side => ({ idx: 0, pitcher: null, ps: null, starterPs: null }));
 
       const startPitcher = (si, p, isStarter) => {
@@ -2814,7 +2796,11 @@
         }
         if (!pull) return;
         const next = this._pickReliever(side, gs, inning, lead, day);
-        if (next) startPitcher(si, next, false);
+        if (next) {
+          const rp = startPitcher(si, next, false);
+          rp.saveSit = inning >= 6 && lead >= 1 && lead <= 3;
+          relief[si].push(rp);
+        }
       };
 
       const playHalf = (bi, inning) => {
@@ -2822,29 +2808,90 @@
         const batSide = sides[bi];
         const pitSide = sides[pi];
         const blowout = Math.abs(runs[0] - runs[1]) >= 6 && inning >= 7;
+        const edge = pi === 1 ? HOME_EDGE : -HOME_EDGE;
         let outs = 0, scored = 0;
         const bases = [null, null, null];
+        const unearned = new Set(); // runners who reached on an error
         while (outs < 3) {
           const ps = state[pi].ps;
-          const pen = this._fatiguePenalty(ps);
+          const pl = pit[ps.k];
+
+          // Stolen bases: any runner with the next base open may go, before any pitch to the batter.
+          const margin = runs[bi] + scored - runs[pi];
+          const from = (bases[0] && !bases[1]) ? 0 : ((bases[1] && !bases[2]) ? 1 : -1);
+          if (from >= 0 && Math.abs(margin) < 5) {
+            const runner = bases[from];
+            const rate = Math.min(1.0, Math.max(0, runner.spd !== undefined ? runner.spd : 50) / 125.0);
+            const tryP = (STEAL_TRY_BASE + Math.pow(rate, STEAL_TRY_POW) * STEAL_TRY_SCALE) * (from === 1 ? STEAL_THIRD : 1);
+            if (Math.random() < tryP) {
+              const rl = batterLine(batSide, runner);
+              bases[from] = null;
+              if (Math.random() < 0.58 + rate * 0.27 - (from === 1 ? 0.03 : 0)) { bases[from + 1] = runner; inc(rl, 'sb'); }
+              else { outs++; pl.outs++; inc(rl, 'cs'); if (outs >= 3) break; }
+            }
+          }
+
+          const pen = this._fatiguePenalty(ps) - edge;
           const p = ps.p;
           const eff = pen ? { ...p, h9: p.h9 - pen, k9: p.k9 - pen, bb9: p.bb9 - pen, hr9: p.hr9 - pen } : { ...p };
           eff._fieldingDef = pitSide.def;
           const batter = nextBatter(bi, blowout);
           const bl = batterLine(batSide, batter);
-          const pl = pit[ps.k];
           ps.bf++;
           const outcome = simPaOutcome(batter, eff, batSide.isUser);
-          const credit = (scorers) => {
-            scorers.forEach(r => { if (r) { const rl = batterLine(batSide, r); rl.r++; } });
-            bl.rbi += scorers.length; pl.er += scorers.length; ps.er += scorers.length; scored += scorers.length;
+          const credit = (scorers, rbi = true, allUnearned = false) => {
+            scorers = scorers.filter(Boolean);
+            if (!scorers.length) return;
+            const before = runs[bi] + scored - runs[pi];
+            scorers.forEach(r => { batterLine(batSide, r).r++; });
+            const earned = allUnearned ? 0 : scorers.filter(r => !unearned.has(r)).length;
+            if (rbi) bl.rbi += scorers.length;
+            pl.er += earned; ps.er += earned; inc(pl, 'r', scorers.length); scored += scorers.length;
+            const after = before + scorers.length;
+            if (after === 0) record = null;
+            else if (before <= 0 && after > 0) record = { team: bi, w: state[bi].ps.k, l: ps.k };
+            if (ps.saveSit && !ps.blown && after >= 0) { ps.blown = true; inc(pl, 'bs'); }
           };
-          if (outcome === 'OUT') { outs++; bl.ab++; pl.outs++; }
+          if (outcome === 'OUT') {
+            const defv = pitSide.def !== undefined ? pitSide.def : 50;
+            const pErr = Math.max(0.012, Math.min(0.08, ERROR_RATE - (defv - 50) * 0.0007));
+            const bspd = Math.min(1.0, Math.max(0, batter.spd !== undefined ? batter.spd : 50) / 125.0);
+            if (Math.random() < pErr) {
+              // Reached on an error: everybody moves up one base, nothing here is earned.
+              bl.ab++;
+              const fielders = pitSide.lineup.filter(f => ERROR_WEIGHT[f.assignedSlot || f.pos]);
+              let pick = Math.random() * fielders.reduce((t, f) => t + ERROR_WEIGHT[f.assignedSlot || f.pos], 0);
+              const culprit = fielders.find(f => (pick -= ERROR_WEIGHT[f.assignedSlot || f.pos]) < 0);
+              if (culprit) inc(batterLine(pitSide, culprit), 'e');
+              unearned.add(batter);
+              const scorer = bases[2];
+              bases[2] = bases[1]; bases[1] = bases[0]; bases[0] = batter;
+              credit([scorer], false, true);
+            } else if (outs < 2 && bases[0] && Math.random() < GIDP_RATE * (1.2 - 0.5 * bspd)) {
+              // Double play: batter and the man on first are out; the others move up.
+              outs += 2; pl.outs += 2; bl.ab++; inc(bl, 'gidp');
+              const scorer = outs < 3 ? bases[2] : null;
+              if (outs < 3) { bases[2] = bases[1]; bases[1] = null; }
+              bases[0] = null;
+              credit([scorer], false);
+            } else {
+              outs++; pl.outs++;
+              if (outs < 3 && bases[2] && Math.random() < RUN_ON_OUT) {
+                // Sacrifice fly (no at-bat) or a run-scoring grounder, half and half.
+                const scorer = bases[2];
+                bases[2] = null;
+                if (Math.random() < 0.5) inc(bl, 'sf'); else bl.ab++;
+                credit([scorer]);
+              } else {
+                bl.ab++;
+                if (outs < 3 && bases[1] && !bases[2] && Math.random() < ADVANCE_ON_OUT) { bases[2] = bases[1]; bases[1] = null; }
+              }
+            }
+          }
           else if (outcome === 'SO') { outs++; bl.ab++; bl.so++; pl.outs++; pl.so++; }
           else if (outcome === 'BB') {
             bl.bb++; pl.bb++;
-            const scorer = forceWalk(bases, batter);
-            credit(scorer ? [scorer] : []);
+            credit([forceWalk(bases, batter)]);
           } else if (outcome === 'HR') {
             bl.ab++; bl.h++; bl.hr++; pl.h++; pl.hr++; ps.h++;
             const scorers = [...bases.filter(Boolean), batter];
@@ -2857,22 +2904,15 @@
             if (outcome === '3B') bl.triples++;
             credit(advanceOnHit(bases, batter, adv, outs));
           }
-          // Stolen bases (same curve the user's games always used)
-          if ((outcome === 'BB' || outcome === '1B') && bases[0] === batter && !bases[1]) {
-            const rate = Math.min(1.0, Math.max(0, batter.spd !== undefined ? batter.spd : 50) / 125.0);
-            if (Math.random() < 0.003 + Math.pow(rate, 2.0) * 0.42) {
-              if (Math.random() < 0.55 + rate * 0.32) { bases[1] = batter; bases[0] = null; bl.sb++; }
-              else { bases[0] = null; outs++; }
-            }
-          }
           // Walk-off: the home team stops batting once it leads in the 9th or later
           if (bi === 1 && inning >= 9 && runs[1] + scored > runs[0]) break;
         }
         runs[bi] += scored;
       };
 
-      let inning = 1;
+      let inning = 1, played = 0;
       while (inning <= 9 || (runs[0] === runs[1] && inning <= 20)) {
+        played = inning;
         managePitcher(1, inning);
         playHalf(0, inning);
         if (inning >= 9 && runs[1] > runs[0]) break; // home leads after the top of the 9th+
@@ -2882,21 +2922,33 @@
       }
       if (runs[0] === runs[1]) runs[Math.random() < 0.5 ? 0 : 1]++; // 20-inning safety valve
 
-      // Decisions: W to the winning starter if he got 15 outs, else his busiest reliever;
-      // L to the losing pitcher who allowed the most runs; SV to the winning team's last
+      // Decisions by the real rule: W to the pitcher of record when his team took the lead for
+      // good, L to the pitcher who gave up that run. A starter needs 15 outs for the W; short of
+      // that it goes to the winning team's busiest reliever. SV to the winning team's last
       // pitcher when he finished a game won by 1-3 runs and didn't get the win.
       const wi = runs[0] > runs[1] ? 0 : 1, li = 1 - wi;
       const teamPitchers = si => Object.values(pit).filter(x => x.team === sides[si].id);
       const wStarter = pit[state[wi].starterPs.k];
-      const wPitcher = wStarter.outs >= 15 ? wStarter
-        : teamPitchers(wi).filter(x => x !== wStarter).sort((a, b) => b.outs - a.outs)[0] || wStarter;
-      wPitcher.w++;
-      teamPitchers(li).sort((a, b) => b.er - a.er || b.outs - a.outs)[0].l++;
       const last = pit[state[wi].ps.k];
-      if (last !== wPitcher && last !== wStarter && (runs[wi] - runs[li]) <= 3) last.sv++;
+      const valid = record && record.team === wi; // false only after the 20-inning safety valve
+      let wPitcher = valid ? pit[record.w] : last;
+      if (wPitcher === wStarter && wStarter.outs < 15) {
+        wPitcher = teamPitchers(wi).filter(x => x !== wStarter).sort((a, b) => b.outs - a.outs)[0] || wStarter;
+      }
+      wPitcher.w++;
+      (valid ? pit[record.l] : pit[state[li].ps.k]).l++;
+      if (last !== wPitcher && (runs[wi] - runs[li]) <= 3) last.sv++;
+      [0, 1].forEach(si => {
+        const staff = teamPitchers(si);
+        if (staff.length === 1) { inc(staff[0], 'cg'); if (runs[1 - si] === 0) inc(staff[0], 'sho'); }
+        relief[si].forEach(rp => {
+          const line = pit[rp.k];
+          if (rp.saveSit && !rp.blown && line.outs >= 1 && rp !== state[si].ps && line !== wPitcher) inc(line, 'hld');
+        });
+      });
 
       return {
-        runs, innings: inning, bat, pit, winnerId: sides[wi].id,
+        runs, innings: played, bat, pit, winnerId: sides[wi].id,
         wear: daily.map((d, i) => ({ team: sides[i].id, roster: d.roster, starts: d.starts, rested: d.rested, iron: d.iron }))
       };
     },
@@ -2907,12 +2959,12 @@
       if (!L.stats) L.stats = { bat: {}, pit: {} };
       Object.entries(result.bat).forEach(([k, d]) => {
         const s = L.stats.bat[k] || (L.stats.bat[k] = { key: d.key, name: d.name, team: d.team, pos: d.pos, def: d.def, g: 0, ab: 0, h: 0, doubles: 0, triples: 0, hr: 0, rbi: 0, bb: 0, so: 0, r: 0, sb: 0 });
-        ['g', 'ab', 'h', 'doubles', 'triples', 'hr', 'rbi', 'bb', 'so', 'r', 'sb'].forEach(f => { s[f] += d[f] || 0; });
+        ['g', 'ab', 'h', 'doubles', 'triples', 'hr', 'rbi', 'bb', 'so', 'r', 'sb', 'cs', 'gidp', 'sf', 'e'].forEach(f => { s[f] = (s[f] || 0) + (d[f] || 0); });
       });
       if (!L.pen) L.pen = {};
       Object.entries(result.pit).forEach(([k, d]) => {
         const s = L.stats.pit[k] || (L.stats.pit[k] = { key: d.key, name: d.name, team: d.team, role: d.role, g: 0, gs: 0, outs: 0, h: 0, er: 0, bb: 0, so: 0, hr: 0, w: 0, l: 0, sv: 0 });
-        ['g', 'gs', 'outs', 'h', 'er', 'bb', 'so', 'hr', 'w', 'l', 'sv'].forEach(f => { s[f] += d[f] || 0; });
+        ['g', 'gs', 'outs', 'h', 'er', 'bb', 'so', 'hr', 'w', 'l', 'sv', 'r', 'cg', 'sho', 'hld', 'bs'].forEach(f => { s[f] = (s[f] || 0) + (d[f] || 0); });
         if (!d.gs) {
           const u = L.pen[k];
           L.pen[k] = { last: day, run: (u && u.last === day - 1) ? u.run + 1 : 1 };
@@ -6927,6 +6979,7 @@
           ${td(s.bb, { num: true })}
           ${td(s.so, { num: true })}
           ${td(s.sb || 0, { num: true })}
+          ${td(s.cs || 0, { num: true })}
           ${td(s.r || 0, { num: true })}
           ${td(avg, { num: true })}
           ${td(obp, { num: true })}
@@ -6969,6 +7022,7 @@
           ${td(s.bb, { num: true })}
           ${td(s.so, { num: true })}
           ${td(s.sb || 0, { num: true })}
+          ${td(s.cs || 0, { num: true })}
           ${td(s.r || 0, { num: true })}
           ${td(avg, { num: true })}
           ${td(obp, { num: true })}
@@ -7016,6 +7070,9 @@
           ${td(s.w, { num: true })}
           ${td(s.l, { num: true })}
           ${td(s.sv, { num: true, style: isCloser ? 'color:#fbbf24;font-weight:bold;' : '' })}
+          ${td(s.hld || 0, { num: true })}
+          ${td(s.bs || 0, { num: true })}
+          ${td(s.cg || 0, { num: true })}
           ${td(whip, { num: true })}
           ${td(era, { num: true })}
           ${td(war, { num: true, accent: true })}
@@ -7231,6 +7288,7 @@
                     <th class="c162-th">BB</th>
                     <th class="c162-th">SO</th>
                     <th class="c162-th">SB</th>
+                    <th class="c162-th" title="Caught stealing">CS</th>
                     <th class="c162-th">R</th>
                     <th class="c162-th">AVG</th>
                     <th class="c162-th">OBP</th>
@@ -7262,6 +7320,9 @@
                     <th class="c162-th">W</th>
                     <th class="c162-th">L</th>
                     <th class="c162-th">SV</th>
+                    <th class="c162-th" title="Holds">HLD</th>
+                    <th class="c162-th" title="Blown saves">BS</th>
+                    <th class="c162-th" title="Complete games">CG</th>
                     <th class="c162-th">WHIP</th>
                     <th class="c162-th">ERA</th>
                     <th class="c162-th" style="color:var(--challenge162-accent);">WAR</th>
