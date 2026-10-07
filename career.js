@@ -394,12 +394,13 @@
     if (!p) return 60;
     if (typeof p.ovr === 'number') return Math.floor(p.ovr);
     const con = p.con || 50, pwr = p.pwr || 50, eye = p.eye || 50, spd = p.spd || 50, def = p.def || 50, kavd = p.k_avd || 50;
-    const raw = con * 0.28 + pwr * 0.28 + eye * 0.12 + def * 0.12 + spd * 0.10 + kavd * 0.10;
-    if (raw <= 37.0) return Math.floor(50.0 + ((raw - 10.0) / 27.0) * 9.9);
-    if (raw <= 48.0) return Math.floor(60.0 + ((raw - 37.0) / 11.0) * 9.9);
-    if (raw <= 62.0) return Math.floor(70.0 + ((raw - 48.0) / 14.0) * 9.9);
-    if (raw <= 76.0) return Math.floor(80.0 + ((raw - 62.0) / 14.0) * 9.9);
-    return Math.floor(90.0 + Math.min(9.9, ((raw - 76.0) / 18.0) * 9.9));
+    const raw = con * 0.26 + pwr * 0.26 + eye * 0.12 + def * 0.16 + spd * 0.10 + kavd * 0.10;
+    // Cut points = pool percentiles of the last lahman_etl_v5.py run (see paso_15); update them if the ETL changes.
+    if (raw <= 35.9) return Math.floor(50.0 + ((raw - 10.0) / 25.9) * 9.9);
+    if (raw <= 45.3) return Math.floor(60.0 + ((raw - 35.9) / 9.4) * 9.9);
+    if (raw <= 56.8) return Math.floor(70.0 + ((raw - 45.3) / 11.5) * 9.9);
+    if (raw <= 77.2) return Math.floor(80.0 + ((raw - 56.8) / 20.4) * 9.9);
+    return Math.floor(90.0 + Math.min(9.9, ((raw - 77.2) / 25.0) * 9.9));
   }
 
   // ── OVR-targeted growth ────────────────────────────────────────────────

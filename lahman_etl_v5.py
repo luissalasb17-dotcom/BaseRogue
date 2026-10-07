@@ -1762,12 +1762,15 @@ def paso_15_equipo_y_exportar(df, batting, teams, franchises, pico_df=None, war_
     df["canonical_teamID"] = df.apply(map_to_canonical_team, axis=1)
     df["franchise_name"]   = df["canonical_teamID"]
 
-    # 5. Promedio de Atributos Globales (OVR): 28% CON, 28% PWR, 12% EYE, 12% DEF, 10% SPD, 10% K/AVD
+    # 5. Promedio de Atributos Globales (OVR): 26% CON, 26% PWR, 12% EYE, 16% DEF, 10% SPD, 10% K/AVD
+    # (decision del usuario tras comparar contra el WAR: la Defensa es lo que mas explica el WAR
+    # -29%- y pesaba 12%; habia 24 primeras bases Legendary contra 6 campocortos. Con 16% entran
+    # Ozzie Smith, Brooks Robinson, Trammell e Ivan Rodriguez.)
     df["raw_ovr"] = (
-        df["contact_val"] * 0.28 +
-        df["power_val"]   * 0.28 +
+        df["contact_val"] * 0.26 +
+        df["power_val"]   * 0.26 +
         df["eye_val"]     * 0.12 +
-        df["defense_val"] * 0.12 +
+        df["defense_val"] * 0.16 +
         df["speed_val"]   * 0.10 +
         df["k_avoid_val"] * 0.10
     )

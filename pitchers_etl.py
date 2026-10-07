@@ -1281,19 +1281,22 @@ def paso_10_normalizar_por_era(df):
     return df
 
 
-# ── PASO 11: OVR y Rareza (28% H/9, 28% STA, 12% K/9, 12% BB/9, 10% HR/9, 10% CLT) ──
+# ── PASO 11: OVR y Rareza (24% H/9, 32% STA, 12% K/9, 12% BB/9, 10% HR/9, 10% CLT) ──
+# (Antes 28 / 28. Decision del usuario tras comparar contra el WAR: el H/9 es el rating que
+# menos explica el WAR -6%- y la Stamina el que mas -44%-; con 28/28 habia 13 relevistas
+# Legendary, 10 de ellos fuera del top 300 por WAR.)
 # Dos ratings fuertes y cuatro chicos, como en bateadores (28% CON, 28% PWR). H/9 y Stamina son
 # los dos que mas acompañan al rendimiento real, y la Stamina es lo que separa a un as de un
 # cerrador. Con los pesos planos de antes (20/20/20/15/15/10) el K/9 valia tanto como el H/9:
 # entraban a Legendary pitchers de mucho ponche y poco resultado (Toad Ramsey, ERA+ 123) y
 # relevistas de muestra chica (Booker McDaniel, 385 IP), y quedaban fuera Palmer y Spahn.
 def paso_11_ovr_rareza(df):
-    print("\n  PASO 11: OVR y Rareza (28% H/9, 28% STA, 12% K/9, 12% BB/9, 10% HR/9, 10% CLT)...")
+    print("\n  PASO 11: OVR y Rareza (24% H/9, 32% STA, 12% K/9, 12% BB/9, 10% HR/9, 10% CLT)...")
     df = df.copy()
 
     df["raw_ovr"] = (
-        df["h9_val"]  * 0.28 +
-        df["sta_val"] * 0.28 +
+        df["h9_val"]  * 0.24 +
+        df["sta_val"] * 0.32 +
         df["k9_val"]  * 0.12 +
         df["bb9_val"] * 0.12 +
         df["hr9_val"] * 0.10 +

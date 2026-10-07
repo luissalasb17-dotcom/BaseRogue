@@ -3135,12 +3135,15 @@ function initGameModeSelector() {
       const bb9 = p.bb9 !== undefined ? p.bb9 : (p.bb9_val !== undefined ? p.bb9_val : (p.ctl !== undefined ? p.ctl : 50));
       const hr9 = p.hr9 !== undefined ? p.hr9 : (p.hr9_val !== undefined ? p.hr9_val : (p.mov !== undefined ? p.mov : 50));
       const sta = p.sta !== undefined ? p.sta : (p.sta_val !== undefined ? p.sta_val : 65);
-      const raw = h9 * 0.20 + k9 * 0.20 + bb9 * 0.20 + hr9 * 0.20 + sta * 0.20;
-      if (raw <= 48.0) return Math.floor(50.0 + ((raw - 15.0) / 33.0) * 9.9);
-      if (raw <= 56.0) return Math.floor(60.0 + ((raw - 48.0) / 8.0) * 9.9);
-      if (raw <= 66.0) return Math.floor(70.0 + ((raw - 56.0) / 10.0) * 9.9);
-      if (raw <= 78.0) return Math.floor(80.0 + ((raw - 66.0) / 12.0) * 9.9);
-      return Math.floor(90.0 + Math.min(9.9, ((raw - 78.0) / 18.0) * 9.9));
+      const clt = p.clt !== undefined ? Number(p.clt) : (p.clt_val !== undefined ? Number(p.clt_val) : (p.clu !== undefined ? Number(p.clu) : 50));
+      // Same recipe as pitchers_etl.py (paso_11): 24% H/9, 32% STA, 12% K/9, 12% BB/9, 10% HR/9, 10% CLT.
+      // The cut points are the pool percentiles (35 / 65 / 85 / 97.5) of the last ETL run; update them if the ETL changes.
+      const raw = h9 * 0.24 + sta * 0.32 + k9 * 0.12 + bb9 * 0.12 + hr9 * 0.10 + clt * 0.10;
+      if (raw <= 44.3) return Math.floor(50.0 + ((raw - 15.0) / 29.3) * 9.9);
+      if (raw <= 54.2) return Math.floor(60.0 + ((raw - 44.3) / 9.9) * 9.9);
+      if (raw <= 64.6) return Math.floor(70.0 + ((raw - 54.2) / 10.4) * 9.9);
+      if (raw <= 81.6) return Math.floor(80.0 + ((raw - 64.6) / 17.0) * 9.9);
+      return Math.floor(90.0 + Math.min(9.9, ((raw - 81.6) / 25.0) * 9.9));
     }
     const up = p.upgrades || {};
     const hasMods = (up.con || 0) !== 0 || (up.pwr || 0) !== 0 || (up.eye || 0) !== 0 || (up.k_avd || 0) !== 0 || (up.spd || 0) !== 0 || (up.def || 0) !== 0 || p.perm_con || p.perm_pwr || p.perm_eye || p.perm_spd || p.perm_def;
@@ -3152,12 +3155,13 @@ function initGameModeSelector() {
     const kavd = Math.max(1, (p.kavd !== undefined ? p.kavd : (p.k_avd !== undefined ? p.k_avd : (p.k_avoid !== undefined ? p.k_avoid : (p.k_avoid_val !== undefined ? p.k_avoid_val : 50)))) + (up.k_avd || 0) + (p.perm_kavd || 0));
     const spd = Math.max(1, (p.spd !== undefined ? p.spd : (p.speed_val !== undefined ? p.speed_val : 50)) + (up.spd || 0) + (p.perm_spd || 0));
     const def = Math.max(1, (p.def !== undefined ? p.def : (p.defense_val !== undefined ? p.defense_val : 50)) + (up.def || 0) + (p.perm_def || 0));
-    const raw = con * 0.28 + pwr * 0.28 + eye * 0.12 + def * 0.12 + spd * 0.10 + kavd * 0.10;
-    if (raw <= 37.0) return Math.floor(50.0 + ((raw - 10.0) / 27.0) * 9.9);
-    if (raw <= 48.0) return Math.floor(60.0 + ((raw - 37.0) / 11.0) * 9.9);
-    if (raw <= 62.0) return Math.floor(70.0 + ((raw - 48.0) / 14.0) * 9.9);
-    if (raw <= 76.0) return Math.floor(80.0 + ((raw - 62.0) / 14.0) * 9.9);
-    return Math.floor(90.0 + Math.min(9.9, ((raw - 76.0) / 18.0) * 9.9));
+    const raw = con * 0.26 + pwr * 0.26 + eye * 0.12 + def * 0.16 + spd * 0.10 + kavd * 0.10;
+    // Cut points = pool percentiles of the last lahman_etl_v5.py run (see paso_15); update them if the ETL changes.
+    if (raw <= 35.9) return Math.floor(50.0 + ((raw - 10.0) / 25.9) * 9.9);
+    if (raw <= 45.3) return Math.floor(60.0 + ((raw - 35.9) / 9.4) * 9.9);
+    if (raw <= 56.8) return Math.floor(70.0 + ((raw - 45.3) / 11.5) * 9.9);
+    if (raw <= 77.2) return Math.floor(80.0 + ((raw - 56.8) / 20.4) * 9.9);
+    return Math.floor(90.0 + Math.min(9.9, ((raw - 77.2) / 25.0) * 9.9));
   }
   window.getPlayerOvr = getPlayerOvr;
 

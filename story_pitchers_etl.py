@@ -185,11 +185,11 @@ def run_story_pitchers_etl():
     df = normalize_diff_adj(df, "clt_raw", "clt_val")
     df["clt_int"] = df["clt_val"].astype(int)
 
-    # 5. Calcular OVR con los mismos pesos que las cartas (pitchers_etl.py): 28 H/9, 28 STA, 12 K/9, 12 BB/9, 10 HR/9, 10 CLT
-    print("\n[4/5] Calculando OVR oficial 28/28/12/12/10/10...")
+    # 5. Calcular OVR con los mismos pesos que las cartas (pitchers_etl.py): 24 H/9, 32 STA, 12 K/9, 12 BB/9, 10 HR/9, 10 CLT
+    print("\n[4/5] Calculando OVR oficial 24/32/12/12/10/10...")
     df["raw_ovr"] = (
-        df["h9"] * 0.28 +
-        df["sta"] * 0.28 +
+        df["h9"] * 0.24 +
+        df["sta"] * 0.32 +
         df["k9"] * 0.12 +
         df["bb9"] * 0.12 +
         df["hr9"] * 0.10 +
