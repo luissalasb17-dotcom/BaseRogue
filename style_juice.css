@@ -3112,3 +3112,19 @@ span.c162-iron {
 .c162-lastgame-notes .dec .mine { color: #fde68a; }
 .c162-lastgame-notes .star b { color: #f1f5f9; }
 @media (max-width: 768px) { .c162-lastgame-body { grid-template-columns: 1fr; } .c162-alerts { flex-direction: column; align-items: stretch; } }
+
+/* League Preview: power rankings split by league (AL left, NL right) */
+.c162-pr-leagues { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 16px; align-items: start; }
+.c162-pr-col { display: grid; gap: 6px; min-width: 0; }
+.c162-pr-col-title { font-family: 'Press Start 2P', monospace; font-size: 8.5px; letter-spacing: 1px; padding: 6px 8px; border-bottom: 2px solid currentColor; }
+.c162-pr-col-title.lg-AL { color: #f87171; }
+.c162-pr-col-title.lg-NL { color: #60a5fa; }
+.c162-pr-leagues .c162-pr-row.cutline { margin-bottom: 8px; box-shadow: 0 9px 0 -7px rgba(251, 191, 36, .7); }
+.c162-pr-leagues .c162-pr-str { font-family: 'Press Start 2P', monospace; font-size: 6px; color: #fbbf24; text-align: right; }
+@media (max-width: 900px) { .c162-pr-leagues { grid-template-columns: 1fr; } }
+
+/* Results screen roster: same board, with the season line instead of year and team */
+.c162-rb.stats .c162-rb-row { cursor: default; }
+.c162-rb.stats .c162-rb-row:hover { transform: none; }
+.c162-rb.stats .c162-rb-meta { display: block; color: #cbd5e1; font-size: 11px; }
+@media (max-width: 560px) { .c162-rb.stats .c162-rb-row { grid-template-columns: 34px minmax(0, 1fr) 30px; height: auto; padding: 4px 8px 4px 0; } .c162-rb.stats .c162-rb-meta { grid-column: 2; grid-row: 2; white-space: normal; } }

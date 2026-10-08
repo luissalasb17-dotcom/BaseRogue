@@ -302,7 +302,23 @@
   // link, same as an actual roster would have. Doesn't touch the PA-outcome
   // formula at all, so individual stat lines stay exactly as calibrated.
   const OPPONENT_PICK_WEIGHTS = [0.18, 0.16, 0.15, 0.14, 0.13, 0.12, 0.12];
+  // The Negro Leagues All-Stars draw from every Negro League team of a decade, not from one
+  // franchise, so taking the best available at every spot built a super team (106 projected
+  // wins on average, first in the whole league half the time). For them each pick comes from
+  // a little deeper in the list: about 88 projected wins, a contender and no longer a lock.
+  const NLB_PICK_RANGE = [0.05, 0.35];
+  let _deepPick = false;
+  function withTeamDepth(code, fn) {
+    const prev = _deepPick;
+    _deepPick = code === 'NLB';
+    try { return fn(); } finally { _deepPick = prev; }
+  }
   function weightedTopPick(sortedCandidates) {
+    if (_deepPick && sortedCandidates.length >= 6) {
+      const lo = Math.floor(sortedCandidates.length * NLB_PICK_RANGE[0]);
+      const hi = Math.max(lo + 1, Math.floor(sortedCandidates.length * NLB_PICK_RANGE[1]));
+      return sortedCandidates[lo + Math.floor(Math.random() * (hi - lo))];
+    }
     const n = Math.min(sortedCandidates.length, OPPONENT_PICK_WEIGHTS.length);
     const total = OPPONENT_PICK_WEIGHTS.slice(0, n).reduce((a, b) => a + b, 0);
     let roll = Math.random() * total;
@@ -557,7 +573,7 @@
     const reg = _leagueRosterRegistry.get(cacheKey);
     if (reg) return reg.staff;
     if (_staffCache.has(cacheKey)) return _staffCache.get(cacheKey);
-    const staff = buildFranchiseStaff(code, decade, getFranchiseDecadeTeam(code, decade), null);
+    const staff = withTeamDepth(code, () => buildFranchiseStaff(code, decade, getFranchiseDecadeTeam(code, decade), null));
     _staffCache.set(cacheKey, staff);
     return staff;
   }
@@ -599,7 +615,7 @@
     const reg = _leagueRosterRegistry.get(cacheKey);
     if (reg) return reg.bench;
     if (_benchCache.has(cacheKey)) return _benchCache.get(cacheKey);
-    const bench = buildFranchiseBench(code, decade, getFranchiseDecadeTeam(code, decade), null);
+    const bench = withTeamDepth(code, () => buildFranchiseBench(code, decade, getFranchiseDecadeTeam(code, decade), null));
     _benchCache.set(cacheKey, bench);
     return bench;
   }
@@ -626,9 +642,9 @@
     // Shuffled so no franchise always gets first claim on a shared star.
     seededShuffle(Object.keys(teams).filter(id => !teams[id].isUser), Math.random).forEach(id => {
       const t = teams[id];
-      const team = buildFranchiseDecadeTeam(t.code, t.decade, taken);
-      const staff = buildFranchiseStaff(t.code, t.decade, team, taken);
-      const bench = buildFranchiseBench(t.code, t.decade, team, taken);
+      const team = withTeamDepth(t.code, () => buildFranchiseDecadeTeam(t.code, t.decade, taken));
+      const staff = withTeamDepth(t.code, () => buildFranchiseStaff(t.code, t.decade, team, taken));
+      const bench = withTeamDepth(t.code, () => buildFranchiseBench(t.code, t.decade, team, taken));
       out[id] = {
         lineup: team.lineup.map(p => [batterUnlockKey(p), p.assignedSlot]),
         bench: bench.map(batterUnlockKey),
@@ -670,7 +686,7 @@
     const reg = _leagueRosterRegistry.get(key);
     if (reg) return reg.team;
     if (_teamDecadeCache.has(key)) return _teamDecadeCache.get(key);
-    const team = buildFranchiseDecadeTeam(code, decade);
+    const team = withTeamDepth(code, () => buildFranchiseDecadeTeam(code, decade));
     _teamDecadeCache.set(key, team);
     return team;
   }
@@ -1047,101 +1063,47 @@
     const pitchers = pulledCards.filter(c => c.role).sort((a, b) => (b.ovr || 50) - (a.ovr || 50));
 
     const lineup = { C: null, '1B': null, '2B': null, '3B': null, SS: null, LF: null, CF: null, RF: null, DH: null };
-    const assignedIndices = new Set();
-    const FIELD_ORDER = ['C', 'SS', 'CF', '2B', '3B', '1B', 'LF', 'RF'];
-
-    // ── PASS 1: Maximum Bipartite Matching for PRIMARY POSITIONS ONLY ───────
-    const matchSlotPrimary = {};
-    FIELD_ORDER.forEach(s => { matchSlotPrimary[s] = null; });
-
-    function bpmPrimary(batterIdx, visited) {
-      const p = batters[batterIdx];
-      for (let i = 0; i < FIELD_ORDER.length; i++) {
-        const slot = FIELD_ORDER[i];
-        if (canPlayerFillPrimary(p, slot) && !visited.has(slot)) {
-          visited.add(slot);
-          if (matchSlotPrimary[slot] === null || bpmPrimary(matchSlotPrimary[slot], visited)) {
-            matchSlotPrimary[slot] = batterIdx;
-            return true;
-          }
+    // Best nine, not just a legal nine: every way of filling the 8 fielding spots and the DH is
+    // scored and the highest total wins (exact search over the batters pulled so far).
+    //  - a player counts for his OVR, plus or minus his glove where gloves matter most;
+    //  - at a secondary position his glove plays at 85% and he gives up a little;
+    //  - the DH brings only his bat, so a great glove is wasted there;
+    //  - out of position only when nobody on the roster can play the spot.
+    // It used to stop at the first legal assignment by primary position, so a 64 could start in
+    // right field while an 81 who also plays there sat on the bench.
+    const allowOutOfPosition = finalize || batters.length >= 9;
+    const GLOVE_WEIGHT = { C: 0.10, SS: 0.10, CF: 0.10, '2B': 0.08, '3B': 0.06, LF: 0.04, RF: 0.04, '1B': 0.03 };
+    const ALL_SLOTS = ['C', 'SS', 'CF', '2B', '3B', '1B', 'LF', 'RF', 'DH'];
+    const pool = batters.slice(0, 16); // already sorted by OVR; a draft never has more than 14
+    const gloveOf = p => (p.def !== undefined ? p.def : (p.defense_val !== undefined ? p.defense_val : 50));
+    const slotValue = (p, slot) => {
+      const ovr = p.ovr || 50, def = gloveOf(p);
+      if (slot === 'DH') return ovr - 0.12 * (def - 50);
+      if (canPlayerFillPrimary(p, slot)) return ovr + GLOVE_WEIGHT[slot] * (def - 50);
+      if (canPlayerFillSlot(p, slot)) return ovr + GLOVE_WEIGHT[slot] * (def * 0.85 - 50) - 1.5;
+      return allowOutOfPosition ? ovr - 45 : -Infinity;
+    };
+    const val = pool.map(p => ALL_SLOTS.map(slot => slotValue(p, slot)));
+    let layer = new Map([[0, { v: 0, pick: [] }]]);
+    ALL_SLOTS.forEach((slot, si) => {
+      const next = new Map();
+      const offer = (mask, v, pick) => { const cur = next.get(mask); if (!cur || v > cur.v) next.set(mask, { v, pick }); };
+      layer.forEach((st, mask) => {
+        offer(mask, st.v, st.pick.concat(-1)); // leave the spot empty
+        for (let k = 0; k < pool.length; k++) {
+          if (mask & (1 << k)) continue;
+          const v = val[k][si];
+          if (v === -Infinity) continue;
+          offer(mask | (1 << k), st.v + 1000 + v, st.pick.concat(k)); // +1000: filling a spot always beats leaving it empty
         }
-      }
-      return false;
-    }
-
-    for (let i = 0; i < batters.length; i++) {
-      bpmPrimary(i, new Set());
-    }
-
-    FIELD_ORDER.forEach(slot => {
-      const idx = matchSlotPrimary[slot];
-      if (idx !== null && idx !== undefined) {
-        lineup[slot] = batters[idx];
-        assignedIndices.add(idx);
-      }
+      });
+      layer = next;
     });
-
-    // ── PASS 2: Fill remaining empty defensive slots using SECONDARY POSITIONS ──
-    const emptyDefSlots = FIELD_ORDER.filter(s => !lineup[s]);
-    if (emptyDefSlots.length > 0) {
-      const matchSlotSecondary = {};
-      emptyDefSlots.forEach(s => { matchSlotSecondary[s] = null; });
-
-      function bpmSecondary(batterIdx, visited) {
-        const p = batters[batterIdx];
-        for (let i = 0; i < emptyDefSlots.length; i++) {
-          const slot = emptyDefSlots[i];
-          if (canPlayerFillSlot(p, slot) && !visited.has(slot)) {
-            visited.add(slot);
-            if (matchSlotSecondary[slot] === null || bpmSecondary(matchSlotSecondary[slot], visited)) {
-              matchSlotSecondary[slot] = batterIdx;
-              return true;
-            }
-          }
-        }
-        return false;
-      }
-
-      for (let i = 0; i < batters.length; i++) {
-        if (!assignedIndices.has(i)) {
-          bpmSecondary(i, new Set());
-        }
-      }
-
-      emptyDefSlots.forEach(slot => {
-        const idx = matchSlotSecondary[slot];
-        if (idx !== null && idx !== undefined && !assignedIndices.has(idx)) {
-          lineup[slot] = batters[idx];
-          assignedIndices.add(idx);
-        }
-      });
-    }
-
-    // ── PASS 3: Designated Hitter (DH) ───────────────────────────────────────
-    for (let i = 0; i < batters.length; i++) {
-      if (!assignedIndices.has(i) && !lineup['DH']) {
-        lineup['DH'] = batters[i];
-        assignedIndices.add(i);
-        break;
-      }
-    }
-
-    // ── PASS 4: Overflow for Finalizing (if any slot is still null) ──────────
-    const overflowBatters = [];
-    for (let i = 0; i < batters.length; i++) {
-      if (!assignedIndices.has(i)) {
-        overflowBatters.push(batters[i]);
-      }
-    }
-
-    if (finalize || batters.length >= 9) {
-      const ALL_SLOTS = ['C', 'SS', 'CF', '2B', '3B', '1B', 'LF', 'RF', 'DH'];
-      ALL_SLOTS.forEach(slot => {
-        if (!lineup[slot] && overflowBatters.length > 0) {
-          lineup[slot] = overflowBatters.shift();
-        }
-      });
-    }
+    let best = null;
+    layer.forEach(st => { if (!best || st.v > best.v) best = st; });
+    const taken = new Set();
+    (best ? best.pick : []).forEach((k, si) => { if (k >= 0) { lineup[ALL_SLOTS[si]] = pool[k]; taken.add(pool[k]); } });
+    const overflowBatters = batters.filter(p => !taken.has(p));
 
     // ── PASS 5: Bench Reserves (5 Cards) ─────────────────────────────────────
     const bench = [null, null, null, null, null];
@@ -2468,6 +2430,56 @@
       });
     },
 
+    // Final roster on the results screen: every player with his season line, no scrolling.
+    // (It used to be two rows of overlapping trading cards titled "ring of champions" even
+    // when the team missed the playoffs, and it left the bench out.)
+    _resultsRosterHTML(wonWS) {
+      const S = this.state;
+      if (!S || !S.roster) return '';
+      const avg3 = v => v.toFixed(3).replace(/^0/, '');
+      const row = (label, p, text) => {
+        if (!p) return '';
+        const rar = String(p.rarity || 'Common').toLowerCase();
+        return `<div class="c162-rb-row r-${rar}" title="${p.name} · ${p.rarity || ''}">
+          <span class="c162-rb-pos">${label}</span>
+          <span class="c162-rb-name">${p.name}</span>
+          <span class="c162-rb-meta">${text}</span>
+          <span class="c162-rb-ovr">${Math.floor(p.ovr || 50)}</span>
+        </div>`;
+      };
+      const batLine = p => {
+        const b = (S.batterStats || {})[batterUnlockKey(p)];
+        if (!b || !b.ab) return 'did not play';
+        return `${avg3(b.h / b.ab)} · ${b.hr} HR · ${b.rbi} RBI${b.sb >= 10 ? ` · ${b.sb} SB` : ''}`;
+      };
+      const pitLine = p => {
+        const x = (S.pitcherStats || {})[pitcherUnlockKey(p)];
+        if (!x || !x.outs) return 'did not pitch';
+        const era = (x.er * 27 / x.outs).toFixed(2);
+        return x.sv >= 5 ? `${x.sv} SV · ${era} ERA` : `${x.w}-${x.l} · ${era} ERA · ${x.so} K`;
+      };
+      const lineup = S.roster.battingOrder.map(slot => row(slot, S.roster.lineup[slot], S.roster.lineup[slot] ? batLine(S.roster.lineup[slot]) : '')).join('');
+      const bench = (S.roster.bench || []).filter(Boolean).map((p, i) => row(`BN${i + 1}`, p, batLine(p))).join('');
+      const sp = (S.roster.pitchers.SP || []).filter(Boolean).map((p, i) => row(`SP${i + 1}`, p, pitLine(p))).join('');
+      const rpLabels = ['CL', 'SU', 'RP1', 'RP2', 'RP3', 'RP4'];
+      const rp = (S.roster.pitchers.RP || []).filter(Boolean).map((p, i) => row(rpLabels[i] || `RP${i - 1}`, p, pitLine(p))).join('');
+      const count = S.roster.battingOrder.filter(sl => S.roster.lineup[sl]).length + (S.roster.bench || []).filter(Boolean).length
+        + (S.roster.pitchers.SP || []).filter(Boolean).length + (S.roster.pitchers.RP || []).filter(Boolean).length;
+      return `<div class="c162-rb stats" style="margin-bottom:14px;">
+        <div class="c162-rb-head"><div><b>${wonWS ? '💍 WORLD CHAMPIONS' : '📋 YOUR ROSTER'} · ${count} PLAYERS</b><small>Season line of every player</small></div></div>
+        <div class="c162-rb-cols" style="margin-top:10px;">
+          <div class="c162-rb-col">
+            <div class="c162-rb-title t-lineup"><span>⚡ LINEUP</span></div>${lineup}
+            ${bench ? `<div class="c162-rb-title t-bench"><span>🛋️ BENCH</span></div>${bench}` : ''}
+          </div>
+          <div class="c162-rb-col">
+            <div class="c162-rb-title t-rot"><span>🧢 ROTATION</span></div>${sp}
+            <div class="c162-rb-title t-pen"><span>🔥 BULLPEN</span></div>${rp}
+          </div>
+        </div>
+      </div>`;
+    },
+
     dismissAlerts() {
       if (this.state) this.state.pendingAlerts = [];
       this.save();
@@ -2966,8 +2978,8 @@
           const ip = `${Math.floor(pl0.outs / 3)}.${pl0.outs % 3}`;
           trace.events.push({
             stepIndex: trace.events.length, inning, half: bi === 0 ? 'TOP' : 'BOT',
-            batter: { name: who.name, pos: who.assignedSlot || who.pos || 'DH', ovr: Math.round(who.ovr || 80), line: `${wl.h}-${wl.ab}${wl.hr > 0 ? `, ${wl.hr} HR` : ''}${wl.rbi > 0 ? `, ${wl.rbi} RBI` : ''}` },
-            pitcher: { name: ps0.p.cleanName || ps0.p.name, role: ps0.isStarter ? 'SP' : (ps0.p.role || 'RP'), ovr: Math.round(ps0.p.ovr || 80), line: `${ip} IP, ${pl0.h} H, ${pl0.er} ER, ${pl0.so} K`, pitches: pl0.pitches || 0 },
+            batter: { name: who.name, pos: who.assignedSlot || who.pos || 'DH', ovr: Math.floor(who.ovr || 80), line: `${wl.h}-${wl.ab}${wl.hr > 0 ? `, ${wl.hr} HR` : ''}${wl.rbi > 0 ? `, ${wl.rbi} RBI` : ''}` },
+            pitcher: { name: ps0.p.cleanName || ps0.p.name, role: ps0.isStarter ? 'SP' : (ps0.p.role || 'RP'), ovr: Math.floor(ps0.p.ovr || 80), line: `${ip} IP, ${pl0.h} H, ${pl0.er} ER, ${pl0.so} K`, pitches: pl0.pitches || 0 },
             stolenBase: false, balls: 0, strikes: 0, runsScored: 0,
             ...o,
             newBases: slim(),
@@ -3492,13 +3504,13 @@
       const boxSide = (side) => {
         const everyone = [...side.lineup, ...(side.bench || [])];
         const order = name => { const k = everyone.findIndex(p => p.name === name); return k < 0 ? 99 : k; };
-        const ovrOfName = name => { const p = everyone.find(x => x.name === name); return Math.round((p && p.ovr) || 80); };
+        const ovrOfName = name => { const p = everyone.find(x => x.name === name); return Math.floor((p && p.ovr) || 80); };
         const staff = [side.sp, ...side.bullpen].filter(Boolean);
         const batting = Object.values(res.bat).filter(x => x.team === side.id).sort((a, b) => order(a.name) - order(b.name))
           .map(x => ({ name: x.name, pos: x.pos, ab: x.ab, r: x.r, h: x.h, doubles: x.doubles, triples: x.triples, hr: x.hr, rbi: x.rbi, bb: x.bb, so: x.so, sb: x.sb || 0, cs: x.cs || 0, ovr: ovrOfName(x.name) }));
         const pitching = Object.values(res.pit).filter(x => x.team === side.id).map(x => {
           const p = staff.find(q => (q.cleanName || q.name) === x.name);
-          return { name: x.name, role: x.gs ? 'SP' : (x.role || 'RP'), outs: x.outs, h: x.h, r: x.r || 0, er: x.er, bb: x.bb, so: x.so, hr: x.hr, pitches: x.pitches || 0, decision: x.decision || '', ovr: Math.round((p && p.ovr) || 80) };
+          return { name: x.name, role: x.gs ? 'SP' : (x.role || 'RP'), outs: x.outs, h: x.h, r: x.r || 0, er: x.er, bb: x.bb, so: x.so, hr: x.hr, pitches: x.pitches || 0, decision: x.decision || '', ovr: Math.floor((p && p.ovr) || 80) };
         });
         const errors = Object.values(res.bat).filter(x => x.team === side.id).reduce((t, x) => t + (x.e || 0), 0);
         return { batting, pitching, errors };
@@ -3506,13 +3518,13 @@
       const ub = boxSide(userSide), ob = boxSide(oppSide);
       const _t = (key, fallback) => (typeof window.t === 'function' ? window.t(key) : fallback);
       const roundTitleKey = round === 0 ? 'challenge162.round_1_title' : (round === 1 ? 'challenge162.round_2_title' : 'challenge162.round_3_title');
-      const slimP = p => ({ name: p.cleanName || p.name, role: p.role || 'P', ovr: Math.round(p.ovr || 80) });
+      const slimP = p => ({ name: p.cleanName || p.name, role: p.role || 'P', ovr: Math.floor(p.ovr || 80) });
       return {
         events: trace.events,
         awayTeam: { name: this.getUserTeamName(), runs: res.runs[0], hits: ub.batting.reduce((t, b) => t + b.h, 0), errors: ub.errors, linescore: trace.line[0], batting: ub.batting, pitching: ub.pitching },
         homeTeam: { name: opp.name, runs: res.runs[1], hits: ob.batting.reduce((t, b) => t + b.h, 0), errors: ob.errors, linescore: trace.line[1], batting: ob.batting, pitching: ob.pitching },
-        userLineup: userSide.lineup.map(b => ({ name: b.name, pos: b.assignedSlot || b.pos || 'DH', ovr: Math.round(b.ovr || 80) })),
-        oppLineup: oppLineup.map(b => ({ name: b.name, pos: b.assignedSlot || b.pos || 'DH', ovr: Math.round(b.ovr || 80) })),
+        userLineup: userSide.lineup.map(b => ({ name: b.name, pos: b.assignedSlot || b.pos || 'DH', ovr: Math.floor(b.ovr || 80) })),
+        oppLineup: oppLineup.map(b => ({ name: b.name, pos: b.assignedSlot || b.pos || 'DH', ovr: Math.floor(b.ovr || 80) })),
         userPitchers: [userSide.sp, ...userSide.bullpen].filter(Boolean).map(slimP),
         oppPitchers: [oppSP, ...oppPen].filter(Boolean).map(slimP),
         won: res.winnerId === USER_TEAM_ID,
@@ -5574,7 +5586,7 @@
             <span class="c162-rb-pos">${slotLabel}</span>
             <span class="c162-rb-name">${player.name}${outOfPos ? ' <i title="Playing out of position">⚠</i>' : ''}</span>
             <span class="c162-rb-meta">${meta}</span>
-            <span class="c162-rb-ovr">${Math.round(player.ovr || 50)}</span>
+            <span class="c162-rb-ovr">${Math.floor(player.ovr || 50)}</span>
           </div>
         `;
       };
@@ -5916,7 +5928,7 @@
       container.innerHTML = `
         <div class="c162-montage">
           <div class="c162-montage-title">${cards.length > 5 ? '⚡ AUTO DRAFT COMPLETE' : `📦 ${cards.length} PACKS OPENED`}</div>
-          <div class="c162-montage-sub">Best pull: <strong>${best.name}</strong> · OVR ${Math.round(best.ovr || 0)} · ${best.rarity || ''}</div>
+          <div class="c162-montage-sub">Best pull: <strong>${best.name}</strong> · OVR ${Math.floor(best.ovr || 0)} · ${best.rarity || ''}</div>
           <div class="c162-montage-grid">
             ${cards.map((c, i) => `<div class="c162-montage-card" style="--i:${i};">${window.createCardHTML ? window.createCardHTML(c, c.role || c.pos) : c.name}</div>`).join('')}
           </div>
@@ -6007,7 +6019,7 @@
           <span class="c162-meet-num">${i + 1}</span>
           <span class="c162-meet-pos">${b._slot}</span>
           <span class="c162-meet-name">${b.name}</span>
-          <span class="c162-meet-ovr">${Math.round(b.ovr || 0)}</span>
+          <span class="c162-meet-ovr">${Math.floor(b.ovr || 0)}</span>
           <button class="c162-mv" data-list="order" data-i="${i}" data-d="-1" ${i === 0 ? 'disabled' : ''}>▲</button>
           <button class="c162-mv" data-list="order" data-i="${i}" data-d="1" ${i === batters.length - 1 ? 'disabled' : ''}>▼</button>
         </div>`).join('');
@@ -6015,7 +6027,7 @@
         <div class="c162-meet-row r5">
           <span class="c162-meet-num">SP${i + 1}</span>
           <span class="c162-meet-name">${x.name}</span>
-          <span class="c162-meet-ovr">${Math.round(x.ovr || 0)}</span>
+          <span class="c162-meet-ovr">${Math.floor(x.ovr || 0)}</span>
           <button class="c162-mv" data-list="rot" data-i="${i}" data-d="-1" ${i === 0 ? 'disabled' : ''}>▲</button>
           <button class="c162-mv" data-list="rot" data-i="${i}" data-d="1" ${i === SP.length - 1 ? 'disabled' : ''}>▼</button>
         </div>`).join('');
@@ -6027,7 +6039,7 @@
         return `<div class="c162-meet-row r3">
           <span class="c162-meet-num">BN</span>
           <span class="c162-meet-name">${b.name} <small class="c162-meet-cover">${cover.join(' ') || 'DH'}</small></span>
-          <span class="c162-meet-ovr">${Math.round(b.ovr || 0)}</span>
+          <span class="c162-meet-ovr">${Math.floor(b.ovr || 0)}</span>
         </div>`;
       }).join('');
       const coverNote = !bench.length ? ''
@@ -6038,7 +6050,7 @@
         <div class="c162-meet-row r3">
           <span class="c162-meet-num">${penRole(x)}</span>
           <span class="c162-meet-name">${x.name}</span>
-          <span class="c162-meet-ovr">${Math.round(x.ovr || 0)}</span>
+          <span class="c162-meet-ovr">${Math.floor(x.ovr || 0)}</span>
         </div>`).join('');
 
       container.innerHTML = `
@@ -6196,17 +6208,26 @@
           <span class="c162-lg-pick-top">Favorites: ${top.map(id => L.teams[id].name).join(' · ')}</span>
         </button>`;
       };
-      const rows = order.map((id, i) => {
-        const t = L.teams[id];
-        const w = proj(id);
-        return `<div class="c162-pr-row no-move ${t.isUser ? 'is-user' : ''}">
-          <span class="c162-pr-rank">${i + 1}</span>
-          <span class="c162-pr-lg lg-${t.league}">${t.league}</span>
-          <span class="c162-pr-name">${t.name}</span>
-          <span class="c162-pr-rec">${w}-${SEASON_LENGTH - w}</span>
-          <span class="c162-pr-str">STR ${t.strength}</span>
+      // One column per league (AL left, NL right), each ranked on its own: that is the race
+      // that decides the playoffs.
+      const prColumn = lg => {
+        const ids = order.filter(id => L.teams[id].league === lg);
+        return `<div class="c162-pr-col">
+          <div class="c162-pr-col-title lg-${lg}">${lg === 'AL' ? 'AMERICAN LEAGUE' : 'NATIONAL LEAGUE'}${lg === userLg ? ' · YOUR LEAGUE' : ''}</div>
+          ${ids.map((id, i) => {
+            const t = L.teams[id];
+            const w = proj(id);
+            return `<div class="c162-pr-row no-move ${t.isUser ? 'is-user' : ''} ${i === PLAYOFF_SEEDS - 1 ? 'cutline' : ''}">
+              <span class="c162-pr-rank">${i + 1}</span>
+              <span class="c162-pr-lg lg-${t.league}">${t.league}</span>
+              <span class="c162-pr-name">${t.name}</span>
+              <span class="c162-pr-rec">${w}-${SEASON_LENGTH - w}</span>
+              <span class="c162-pr-str">${i < PLAYOFF_SEEDS ? 'PLAYOFFS' : ''}</span>
+            </div>`;
+          }).join('')}
         </div>`;
-      }).join('');
+      };
+      const rows = prColumn('AL') + prColumn('NL');
 
       container.innerHTML = `
         <div class="c162-preview">
@@ -6244,12 +6265,12 @@
 
           <div class="c162-meet-section">TEAMS TO WATCH IN THE ${userLg}</div>
           <div class="c162-threats">
-            ${threats.map(id => `<div class="c162-threat"><b>${L.teams[id].name}</b><span>Proj. ${proj(id)}-${SEASON_LENGTH - proj(id)} · STR ${L.teams[id].strength}</span></div>`).join('')}
+            ${threats.map(id => `<div class="c162-threat"><b>${L.teams[id].name}</b><span>Proj. ${proj(id)}-${SEASON_LENGTH - proj(id)}</span></div>`).join('')}
           </div>
 
           <div class="c162-meet-section">PRESEASON POWER RANKINGS</div>
-          <div class="c162-pr-note">Projected records from each roster's lineup, rotation and bullpen. A season still swings about 8 wins either way: every game is played out pitch by pitch.</div>
-          <div class="c162-pr-list">${rows}</div>
+          <div class="c162-pr-note">Projected records from each roster's lineup, rotation and bullpen. The top ${PLAYOFF_SEEDS} of each league make the playoffs. A season still swings about 8 wins either way: every game is played out pitch by pitch.</div>
+          <div class="c162-pr-leagues">${rows}</div>
 
           <div class="c162-meet-actions">
             ${p.cfg && p.cfg.type === 'packs' ? '<button id="btn-c162-preview-back" class="btn btn-secondary">◀ TEAM</button>' : ''}
@@ -7009,7 +7030,7 @@
             <span style="color:#64748b;font-family:'Press Start 2P',monospace;font-size:7px;width:14px;">${idx + 1}.</span>
             <span style="color:#9ca3af;font-weight:bold;min-width:24px;">${p.assignedSlot || p.pos}</span>
             <span style="color:#e4e4e7;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:130px;flex:1;padding:0 4px;">${p.name}</span>
-            <span style="color:var(--challenge162-accent);">${Math.round(p.ovr || 80)}</span>
+            <span style="color:var(--challenge162-accent);">${Math.floor(p.ovr || 80)}</span>
           </div>`
         ).join('');
         
@@ -7025,7 +7046,7 @@
               <div style="flex:0 0 135px;background:rgba(255,255,255,0.03);border-radius:6px;padding:8px;text-align:center;display:flex;flex-direction:column;justify-content:center;">
                 <div style="font-size:8px;color:#94a3b8;font-family:'Press Start 2P',monospace;">${rivalSPLabel}</div>
                 <div style="font-size:10.5px;color:#e4e4e7;margin-top:4px;font-weight:bold;">${oppStarter.cleanName || oppStarter.name}</div>
-                <div style="font-size:8.5px;color:var(--challenge162-accent);margin-top:2px;font-family:'Press Start 2P',monospace;">OVR ${Math.round(oppStarter.ovr || 0)}</div>
+                <div style="font-size:8.5px;color:var(--challenge162-accent);margin-top:2px;font-family:'Press Start 2P',monospace;">OVR ${Math.floor(oppStarter.ovr || 0)}</div>
               </div>
             </div>
           </div>
@@ -7751,7 +7772,7 @@
       const topSP = (S.roster.pitchers.SP && S.roster.pitchers.SP[0]) || null;
       const topSPStats = topSP ? S.pitcherStats[pitcherUnlockKey(topSP)] : null;
       const spEra = topSPStats && topSPStats.outs > 0 ? ((topSPStats.er * 27) / topSPStats.outs).toFixed(2) : '3.00';
-      const topSpOvrDisplay = topSP ? Math.round(topSP.ovr || 85) : 85;
+      const topSpOvrDisplay = topSP ? Math.floor(topSP.ovr || 85) : 85;
 
       const userCloser = (S.roster.pitchers.RP && S.roster.pitchers.RP[0]) || { name: 'Closer', ovr: 80 };
       const userSetup = (S.roster.pitchers.RP && S.roster.pitchers.RP[1]) || { name: 'Setup', ovr: 80 };
@@ -7792,7 +7813,7 @@
           <span style="font-family:'Press Start 2P',monospace;font-size:7.5px;color:#9ca3af;width:18px;">${idx + 1}.</span>
           <span style="font-family:'Press Start 2P',monospace;font-size:7.5px;color:#38bdf8;width:28px;">${b.assignedSlot || b.pos || 'DH'}</span>
           <span style="flex:1;color:#f3f4f6;font-weight:600;padding:0 4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${b.name}</span>
-          <span style="font-family:'Press Start 2P',monospace;font-size:7.5px;color:#ffd700;">${Math.round(b.ovr || 80)}</span>
+          <span style="font-family:'Press Start 2P',monospace;font-size:7.5px;color:#ffd700;">${Math.floor(b.ovr || 80)}</span>
         </div>
       `).join('');
 
@@ -7850,7 +7871,7 @@
                 <span>👑</span> <span>${oppFranchise.name}</span>
               </div>
               <div style="font-size:12px;color:#f3f4f6;font-weight:bold;margin-bottom:8px;text-align:center;">
-                ${acePitcherLabel}: <span style="color:#ffd700;">${oppSP.cleanName || oppSP.name}</span> <span style="font-size:9px;color:${round === 2 ? '#f87171' : '#38bdf8'};background:rgba(255,255,255,0.1);padding:2px 5px;border-radius:4px;font-family:'Press Start 2P',monospace;">OVR ${Math.round(oppSP.ovr || 85)}</span>
+                ${acePitcherLabel}: <span style="color:#ffd700;">${oppSP.cleanName || oppSP.name}</span> <span style="font-size:9px;color:${round === 2 ? '#f87171' : '#38bdf8'};background:rgba(255,255,255,0.1);padding:2px 5px;border-radius:4px;font-family:'Press Start 2P',monospace;">OVR ${Math.floor(oppSP.ovr || 85)}</span>
               </div>
               <div style="font-size:10.5px;color:#9ca3af;text-align:center;margin-bottom:10px;">
                 ${closerLabel}: <span style="color:#fbbf24;font-weight:bold;">${oppCloser.name}</span> · ${setupLabel}: <span style="color:#a78bfa;font-weight:bold;">${oppReliever.name}</span>
@@ -8142,20 +8163,7 @@
           </div>
         </div>
 
-        <!-- Ring of Champions (All 17 Trading Cards in 2 neat rows) -->
-        <div style="background:rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:12px 10px 18px 10px;margin-bottom:14px;">
-          <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:var(--challenge162-accent);margin-bottom:16px;text-align:center;letter-spacing:0.5px;">
-            ${ringLabel}
-          </div>
-          <div class="c162-all-champions-grid">
-            <div class="c162-champions-row">
-              ${lineupCardsHTML}
-            </div>
-            <div class="c162-champions-row" style="margin-top:14px;">
-              ${pitcherCardsHTML}
-            </div>
-          </div>
-        </div>
+        ${this._resultsRosterHTML(wonWS)}
 
         <!-- Action CTAs -->
         <div style="display:flex;justify-content:center;gap:10px;flex-wrap:wrap;">
