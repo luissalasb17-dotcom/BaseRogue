@@ -3128,3 +3128,5 @@ span.c162-iron {
 .c162-rb.stats .c162-rb-row:hover { transform: none; }
 .c162-rb.stats .c162-rb-meta { display: block; color: #cbd5e1; font-size: 11px; }
 @media (max-width: 560px) { .c162-rb.stats .c162-rb-row { grid-template-columns: 34px minmax(0, 1fr) 30px; height: auto; padding: 4px 8px 4px 0; } .c162-rb.stats .c162-rb-meta { grid-column: 2; grid-row: 2; white-space: normal; } }
+
+.c162-rb .c162-rb-row[draggable="true"] { cursor: pointer; }

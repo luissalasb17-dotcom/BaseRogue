@@ -912,7 +912,7 @@
   // League game engine (regular season), tuned to an all-eras environment rather than today's MLB.
   const HOME_EDGE = 3;          // rating points: the home staff pitches with +N, the visitors' with -N
   const STEAL_TRY_BASE = 0.0; // steal attempts per plate appearance with the next base open
-  const STEAL_TRY_SCALE = 0.43;
+  const STEAL_TRY_SCALE = 0.37;
   const STEAL_TRY_POW = 1.25;
   const STEAL_THIRD = 0.22;     // share of those attempts when the runner is on second
   const ERROR_RATE = 0.034;     // batted-ball outs that turn into an error, for an average defense
@@ -5300,8 +5300,9 @@
         ? (allSlotted.reduce((acc, p) => acc + (p.ovr || 50), 0) / allSlotted.length).toFixed(1)
         : '—';
 
-      const currentCardKey = draft.currentCard
-        ? (draft.currentCard.role ? pitcherUnlockKey(draft.currentCard) : batterUnlockKey(draft.currentCard))
+      const shownCard = draft.viewCard || draft.currentCard;
+      const currentCardKey = shownCard
+        ? (shownCard.role ? pitcherUnlockKey(shownCard) : batterUnlockKey(shownCard))
         : null;
 
       const _t = (key, fallback, params) => {
@@ -5321,7 +5322,9 @@
       // ── Left Column Stage: Sealed Foil Pack OR Revealed 3D Card ──────────
       let leftColumnHTML = '';
 
-      if (!isCardRevealed) {
+      // draft.viewCard: a roster row was clicked, so the panel shows that player's card instead
+      // of the pack (same card view as a fresh pull, flip included).
+      if (!isCardRevealed && !draft.viewCard) {
         const boxLabel = isPitchersStage ? _t('challenge162.box_pitchers', 'PITCHERS BOX') : _t('challenge162.box_batters', 'BATTERS BOX');
         const boxSubtitle = isPitchersStage ? _t('challenge162.pitchers_box_subtitle', '5 Starters (SP) + 6 Relievers') : _t('challenge162.batters_box_subtitle', '9 Starters + 5 Bench');
         leftColumnHTML = `
@@ -5362,7 +5365,7 @@
           </div>
         `;
       } else {
-        const card = draft.currentCard;
+        const card = draft.viewCard || draft.currentCard;
         const rarity = card.rarity || 'Common';
         const rColor = RARITY_COLORS[rarity] || (card.ovr >= 95 ? '#ffd700' : (card.ovr >= 88 ? '#a855f7' : (card.ovr >= 80 ? '#3b82f6' : (card.ovr >= 75 ? '#10b981' : '#6b7280'))));
         const isPitcher = Boolean(card.role);
@@ -5555,7 +5558,7 @@
                 📊 ${_t('dex.btn_bbref', 'B-REF ↗')}
               </a>
               <button id="btn-c162-next-pack" class="btn" style="padding:9px 16px; font-family:'Press Start 2P',monospace; font-size:8.5px; background:linear-gradient(135deg,#ffd700,#f59e0b); color:#000; border:none; border-radius:6px; cursor:pointer; font-weight:bold; box-shadow:0 0 15px rgba(255,215,0,0.4);">
-                ${isDraftComplete ? _t('challenge162.finalize_roster', '🚀 FINALIZE ROSTER & START 162-0 ➔') : (isLastPackInStage ? _t('challenge162.open_pitchers_box', '⚾ OPEN PITCHERS BOX ➔') : _t('challenge162.open_next_pack', `📦 OPEN NEXT PACK (${globalCardNum + 1}/25) ➔`, { pack: globalCardNum + 1 }))}
+                ${draft.viewCard ? '◀ BACK TO THE DRAFT' : isDraftComplete ? _t('challenge162.finalize_roster', '🚀 FINALIZE ROSTER & START 162-0 ➔') : (isLastPackInStage ? _t('challenge162.open_pitchers_box', '⚾ OPEN PITCHERS BOX ➔') : _t('challenge162.open_next_pack', `📦 OPEN NEXT PACK (${globalCardNum + 1}/25) ➔`, { pack: globalCardNum + 1 }))}
               </button>
             </div>
           </div>
@@ -5665,7 +5668,7 @@
               <div class="c162-rb-head">
                 <div>
                   <b>📋 ${_t('challenge162.deck_title', 'TEAM CARD DECK')} · ${allPulled.length}/25</b>
-                  <small>${_t('challenge162.drag_hint', 'Drag cards to swap positions')}</small>
+                  <small>Click a player to see his card · drag to swap positions</small>
                 </div>
                 <div class="c162-rb-ovrbox"><small>${_t('challenge162.team_ovr', 'TEAM OVR')}</small><b>${avgOVR}</b></div>
               </div>
@@ -5735,6 +5738,17 @@
           this._setDraftSlotPlayer(ms, _dragSource.kind, _dragSource.key, dstPlayer || null);
           this._setDraftSlotPlayer(ms, targetKind, targetKey, srcPlayer || null);
           _dragSource = null;
+          draft.userEdited = true; // from here on new cards fill empty spots; nothing is re-sorted
+          this.renderPacksDraft();
+        });
+      });
+
+      // Click a player on the board to see his card (click him again to go back).
+      container.querySelectorAll('.c162-rb-row[draggable="true"]').forEach(el => {
+        el.addEventListener('click', () => {
+          const p = this._getDraftSlotPlayer(draft.manualSlots, el.dataset.dragKind, el.dataset.dragKey);
+          if (!p) return;
+          draft.viewCard = (draft.viewCard === p) ? null : p;
           this.renderPacksDraft();
         });
       });
@@ -5796,6 +5810,7 @@
       if (btnNext) {
         btnNext.onclick = (e) => {
           e.stopPropagation();
+          if (draft.viewCard) { draft.viewCard = null; this.renderPacksDraft(); return; }
           if (isDraftComplete) this.finishPacksDraftAndStart();
           else if (isLastPackInStage) this.renderPacksDraftTransition();
           else {
@@ -5884,6 +5899,29 @@
       draft.currentPack++;
       draft.packOpened = true;
 
+      draft.viewCard = null;
+      const ms = draft.manualSlots;
+      if (draft.userEdited && ms) {
+        // The player has arranged the roster by hand: keep it exactly as it is and drop the
+        // new card into an empty spot (its own position if it is free).
+        const firstEmpty = arr => arr.findIndex(x => !x);
+        if (card.role) {
+          const starter = (card.role || 'SP').toUpperCase() === 'SP';
+          const order = starter ? [ms.sp, ms.rp] : [ms.rp, ms.sp];
+          const target = order.find(arr => firstEmpty(arr) !== -1);
+          if (target) target[firstEmpty(target)] = card;
+        } else {
+          const open = SLOTS.filter(sl => !ms.lineup[sl]);
+          const spot = open.find(sl => sl !== 'DH' && canPlayerFillPrimary(card, sl))
+            || open.find(sl => sl !== 'DH' && canPlayerFillSlot(card, sl))
+            || (open.includes('DH') ? 'DH' : null);
+          const b = firstEmpty(ms.bench);
+          if (spot) ms.lineup[spot] = card;
+          else if (b !== -1) ms.bench[b] = card;
+          else if (open.length) ms.lineup[open[0]] = card;
+        }
+        return card;
+      }
       const newAuto = calculateChallengeRosterSlots([...draft.pulledBatters, ...draft.pulledPitchers], false);
       draft.manualSlots = {
         lineup: Object.assign({}, newAuto.lineup),
