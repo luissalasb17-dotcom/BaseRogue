@@ -99,7 +99,23 @@
    * @param {object} pitcher - Pitcher stats {stf, vel, ctl}
    * @returns {{ bbEnd, soEnd, outEnd, singleEnd, doubleEnd, tripleEnd, pBB, pSO, pOut, pHit, isClutchActive, pitcherClutchStatus }}
    */
+  // Batting approach (prototype, NOT wired to any button yet: every battle runs on 'normal').
+  // It only moves room between the dice zones; ratings and the die still decide. soMult / bbMult
+  // scale the strikeout and walk rates (so the effect depends on the batter), hit is added to the
+  // hit rate, hrMult scales the share of hits that leave the park, xbh scales the doubles.
+  // Measured over 6,000 headless series per setting: with these numbers no approach is better
+  // when used all the time (win rate within ~1 point of normal), and choosing the best one
+  // every at-bat only adds about 1 point. Stronger numbers reach +2.5 at most.
+  const BATTING_APPROACHES = {
+    normal:  { so: 0, bb: 0, hit: 0,     hrMult: 1.0, hrAdd: 0, xbh: 1.0 },
+    contact: { so: 0, bb: 0, hit: 0.01,  hrMult: 0.5, hrAdd: 0, xbh: 0.8,  soMult: 0.65 },
+    power:   { so: 0, bb: 0, hit: -0.01, hrMult: 1.6, hrAdd: 0, xbh: 1.25, soMult: 1.3 },
+    patient: { so: 0, bb: 0, hit: -0.04, hrMult: 1.0, hrAdd: 0, xbh: 1.0,  soMult: 1.1, bbMult: 1.4 }
+  };
+  window.BATTING_APPROACHES = BATTING_APPROACHES;
+
   function calcBoundaries(batter, pitcher, simCtx) {
+    const approach = BATTING_APPROACHES[(simCtx && simCtx.approach) || 'normal'] || BATTING_APPROACHES.normal;
     const effCon = batter.con || 50;
     const effEye = batter.eye || 50;
     const effKAvd = batter.k_avd !== undefined ? batter.k_avd : (batter.k_avoid !== undefined ? batter.k_avoid : (batter.k_avoid_val !== undefined ? batter.k_avoid_val : effCon));
@@ -137,12 +153,14 @@
     let pBB = 0.10 + (effEye - pBB9) * 0.0025;
     // eagle_patience: +3 points to the BB zone
     if (simCtx && simCtx.hasTrait && simCtx.hasTrait('eagle_patience')) pBB += 0.05;
+    pBB = pBB * (approach.bbMult || 1) + approach.bb;
     pBB = Math.max(0.03, Math.min(0.35, pBB));
 
     // 2. SO rate: Pitcher K/9 Strikeout vs Batter K/AVD (Base 18%, Slope 0.25%)
     let pSO = 0.18 + (pK9 - effKAvd) * 0.0025;
     // surgical_contact: -3 points to the SO zone
     if (simCtx && simCtx.hasTrait && simCtx.hasTrait('surgical_contact')) pSO -= 0.03;
+    pSO = pSO * (approach.soMult || 1) + approach.so;
     pSO = Math.max(0.04, Math.min(0.35, pSO));
 
     const pInPlay = Math.max(0.10, 1.0 - pBB - pSO); // floor guards extreme BB+SO stacking
@@ -152,7 +170,7 @@
     // of Out being whatever's left over after every other category is summed.
     // 3. Total HIT rate (1B, 2B, 3B, HR): Batter Contact vs Pitcher H/9 Hit Suppression (Base 40%, Slope 0.25%)
     // Even matchup (equal ratings on both sides) = exactly 50/50: BB 10% + HIT 40% on base, SO 18% + OUT 32% out.
-    let pTotalHit = 0.40 + (effCon - pH9) * 0.0025;
+    let pTotalHit = 0.40 + (effCon - pH9) * 0.0025 + approach.hit;
     pTotalHit = Math.max(0.14, Math.min(0.60, pTotalHit));
     pTotalHit = Math.min(pTotalHit, pInPlay - 0.05); // always leave >=5% Out room within what's in play
 
@@ -160,7 +178,7 @@
 
     // 4. HR share of Hits: Batter Power vs Pitcher HR/9 Prevention
     // Calibrated linear scaling: base 12%, slope 0.40% per point of (PWR - HR/9), max 50%
-    let hrRatio = 0.12 + (effPwr - pHR9) * 0.0040;
+    let hrRatio = (0.12 + (effPwr - pHR9) * 0.0040) * approach.hrMult + approach.hrAdd;
     hrRatio = Math.max(0.02, Math.min(0.50, hrRatio));
 
     let pHR = pTotalHit * hrRatio;
@@ -211,7 +229,7 @@
 
     // Subdivide Regular Hits into 1B, 2B, 3B
     let extraBasePower = Math.max(0, (effPwr - pHR9) * 0.003); 
-    let doubleWeight = 0.15 + (effSpd * 0.001) + (extraBasePower * 0.5);
+    let doubleWeight = (0.15 + (effSpd * 0.001) + (extraBasePower * 0.5)) * approach.xbh;
     
     // Gated Triple Weight Curve by Speed (SPD):
     // - SPD < 40 (Slow sluggers e.g. David Ortiz, Frank Thomas): ~0.1% triple weight (almost 0)
@@ -297,6 +315,7 @@
       this.buildEra = buildEra || null;
       this.traitIds = new Set(traitIds || []);
 
+      this.approach = 'normal'; // batting approach for the next roll: normal | contact | power | patient
       // ── Team (player side) vitals ─────────────────────────────────
       this.teamHP    = 100;           // Fixed; strikeouts bite here directly
       this.activeSynergies = this._calculateActiveSynergies(awayTeam.lineup);
@@ -354,6 +373,11 @@
         `${awayTeam.name} (HP: ${this.teamHP} | Escudo: ${this.teamShield}) vs ` +
         `${homeTeam.name} (${totalPitchers} lanzadores)`,
         'START');
+    }
+
+    setApproach(name) {
+      this.approach = BATTING_APPROACHES[name] ? name : 'normal';
+      return this.approach;
     }
 
     hasTrait(id) {

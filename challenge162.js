@@ -934,7 +934,7 @@
   const PIT_BB9 = [5.4, 4.5, 4.05, 3.6, 3.23, 2.83, 2.55, 2.29, 2.05, 1.83, 1.45, 1.25];
   const PIT_HR9 = [1.32, 1.12, .98, .82, .70, .57, .47, .36, .29, .22, .19, .17];
   // League level: everybody here is at his peak, so the tables are scaled to an all-eras league.
-  const PA_SCALE_AVG = 0.92, PA_SCALE_HR = 1.0, PA_SCALE_K = 1.18, PA_SCALE_BB = 1.04;
+  const PA_SCALE_AVG = 0.92, PA_SCALE_HR = 1.0, PA_SCALE_K = 1.27, PA_SCALE_BB = 1.04;
   function rateAt(ys, v) {
     if (!(v > RT_X[0])) return ys[0];
     for (let n = 1; n < RT_X.length; n++) {
@@ -1378,6 +1378,8 @@
   // Games a regular plays in a season, normal vs as an Iron Man (measured over full seasons).
   const IRON_GAMES = { C: [135, 154], SS: [151, 159], '2B': [151, 159], CF: [151, 159], '3B': [152, 160], LF: [154, 160], RF: [154, 160], '1B': [156, 161], DH: [158, 161] };
   const LEGENDARY_PACK_CHANCE = 0.04;
+  const PACK_OPTIONS = 3; // cards shown in each pack; the player keeps one
+  const PACK_OPTION_OVR_SPREAD = 2; // how far the two alternatives may be from the pack's roll
   const MOMENTUM_STEP = 3;
   const MOMENTUM_CAP = 10;
   // Pitcher fatigue (see _freshBatters / _fatiguePenalty)
@@ -5324,7 +5326,40 @@
 
       // draft.viewCard: a roster row was clicked, so the panel shows that player's card instead
       // of the pack (same card view as a fresh pull, flip included).
-      if (!isCardRevealed && !draft.viewCard) {
+      if (!isCardRevealed && !draft.viewCard && draft.options && draft.options.length) {
+        const needs = draft.optionNeeds || [];
+        const gradeOf = v => (typeof getGrade === 'function' ? getGrade(v) : '');
+        const tile = (c, i) => {
+          const rar = String(c.rarity || 'Common');
+          const pit = !!c.role;
+          const stats = pit
+            ? [['H/9', c.h9], ['K/9', c.k9], ['BB/9', c.bb9], ['HR/9', c.hr9], ['STA', c.sta], ['CLT', c.clt !== undefined ? c.clt : c.clu]]
+            : [['CON', c.con], ['PWR', c.pwr], ['EYE', c.eye], ['K/AVD', c.k_avd], ['SPD', c.spd], ['DEF', c.def]];
+          const pos = pit ? (c.role || 'SP') : `${c.pos}${c.sec_pos ? ' / ' + c.sec_pos : ''}`;
+          // Only worth pointing out when it sets one card apart from the others.
+          const fills = this._packOptionFills(c, needs) && !draft.options.every(o => this._packOptionFills(o, needs));
+          return `<div class="c162-opt r-${rar.toLowerCase()}">
+            <div class="c162-opt-head">
+              <span class="c162-opt-ovr">${Math.floor(c.ovr || 50)}</span>
+              <div class="c162-opt-id">
+                <b>${c.name}</b>
+                <small>${rar} · ${pos} · ${c.year || ''} ${c.team || ''}</small>
+              </div>
+              ${fills ? '<span class="c162-opt-need">FILLS A HOLE</span>' : ''}
+            </div>
+            <div class="c162-opt-stats">${stats.map(([l, v]) => `<span><i>${l}</i><b>${v !== undefined ? Math.round(v) : '—'}</b><em>${v !== undefined ? gradeOf(v) : ''}</em></span>`).join('')}</div>
+            <div class="c162-opt-actions">
+              <button class="btn btn-secondary" data-pack-view="${i}">🔍 CARD</button>
+              <button class="btn c162-opt-pick" data-pack-pick="${i}">✔ PICK</button>
+            </div>
+          </div>`;
+        };
+        leftColumnHTML = `
+          <div class="c162-opts">
+            <div class="c162-opts-title"><b>${packTier.badge}</b><span>PACK ${draft.currentPack + 1} / ${totalInStage} · PICK ONE OF ${draft.options.length}</span></div>
+            ${draft.options.map(tile).join('')}
+          </div>`;
+      } else if (!isCardRevealed && !draft.viewCard) {
         const boxLabel = isPitchersStage ? _t('challenge162.box_pitchers', 'PITCHERS BOX') : _t('challenge162.box_batters', 'BATTERS BOX');
         const boxSubtitle = isPitchersStage ? _t('challenge162.pitchers_box_subtitle', '5 Starters (SP) + 6 Relievers') : _t('challenge162.batters_box_subtitle', '9 Starters + 5 Bench');
         leftColumnHTML = `
@@ -5360,7 +5395,7 @@
               ${_t('challenge162.pack_rip_prompt', '✨ TAP PACK TO RIP OPEN ✨')}
             </div>
             <div style="margin-top:10px; font-size:9.5px; color:#94a3b8; font-family:'Press Start 2P',monospace; line-height:1.4;">
-              ${_t('challenge162.pack_click_to_reveal', 'Click on the pack foil to rip it open and reveal your card')}
+              ${_t('challenge162.pack_click_to_reveal', 'Click the pack to rip it open: three cards come out and you keep one')}
             </div>
           </div>
         `;
@@ -5764,10 +5799,29 @@
           } else if (typeof window.playSound === 'function') {
             window.playSound('card_flip');
           }
-          this._pullNextPackCard();
+          this._openPackOptions();
           this.renderPacksDraft();
         };
       }
+
+      // 1a. Pick one of the pack's cards (or look at one first)
+      container.querySelectorAll('[data-pack-pick]').forEach(btn => {
+        btn.onclick = (e) => {
+          e.stopPropagation();
+          const card = (draft.options || [])[parseInt(btn.dataset.packPick, 10)];
+          if (!card) return;
+          if (window.AudioManager && typeof window.AudioManager.play === 'function') window.AudioManager.play('draft_pick');
+          this._pullNextPackCard(card);
+          this.renderPacksDraft();
+        };
+      });
+      container.querySelectorAll('[data-pack-view]').forEach(btn => {
+        btn.onclick = (e) => {
+          e.stopPropagation();
+          const card = (draft.options || [])[parseInt(btn.dataset.packView, 10)];
+          if (card) { draft.viewCard = card; this.renderPacksDraft(); }
+        };
+      });
 
       // 1b. Fast options: open 5 (within the current box) or auto-draft everything left
       const btnOpen5 = container.querySelector('#btn-c162-pack-open5');
@@ -5869,27 +5923,92 @@
     },
 
     // Pulls the next card of the current box, exactly as tapping the foil does.
-    _pullNextPackCard() {
+    // Every pack holds PACK_OPTIONS cards of the pack's tier and the player keeps one
+    // (decision of the user: a choice in every pack instead of one fixed card).
+    _rollPackOptions() {
       const draft = this._packDraft;
-      if (!draft || draft.currentPack >= draft.totalPacks) return null;
       const isPitchersStage = draft.stage === 'pitchers';
-      const allPulledSoFar = [...draft.pulledBatters, ...draft.pulledPitchers];
-      const currentSlots = calculateChallengeRosterSlots(allPulledSoFar, false);
-
+      const currentSlots = draft.manualSlots || calculateChallengeRosterSlots([...draft.pulledBatters, ...draft.pulledPitchers], false);
       const missingPos = [];
       if (isPitchersStage) {
-        if (currentSlots.sp.filter(s => s === null).length > 0) missingPos.push('SP');
-        if (currentSlots.rp.filter(s => s === null).length > 0) missingPos.push('RP', 'CL', 'CP');
+        if (currentSlots.sp.filter(x => !x).length > 0) missingPos.push('SP');
+        if (currentSlots.rp.filter(x => !x).length > 0) missingPos.push('RP', 'CL', 'CP');
       } else {
         SLOTS.forEach(slot => { if (!currentSlots.lineup[slot]) missingPos.push(slot); });
       }
-
       const activePool = isPitchersStage ? getPitcherPool() : getBatterPool();
       const currentTier = this._getPackTierInfo(draft.currentPack);
-      let card = pickWeightedChallengeDraftCard(activePool, missingPos, draft.usedKeys, currentTier.minRarity);
-      if (!card) {
-        card = activePool.find(c => !draft.usedKeys.has(c.role ? pitcherUnlockKey(c) : batterUnlockKey(c))) || activePool[0];
+      const keyOf = c => (c.role ? pitcherUnlockKey(c) : batterUnlockKey(c));
+      const seen = new Set(draft.usedKeys);
+      // The first card is the pack's roll, exactly as before. The other two are of the same
+      // rarity and within PACK_OPTION_OVR_SPREAD points of it, so the choice is about fit and
+      // style (position, contact or power, starter or reliever) and not about who is plainly
+      // better. With three free rolls and "keep the best", pack teams went from ~75 to ~80 OVR
+      // and from 82-109 wins to 103-136.
+      let first = pickWeightedChallengeDraftCard(activePool, missingPos, seen, currentTier.minRarity);
+      if (!first || seen.has(keyOf(first))) first = activePool.find(c => !seen.has(keyOf(c)));
+      const options = [];
+      if (first) {
+        options.push(first);
+        seen.add(keyOf(first));
+        const near = spread => activePool.filter(c => !seen.has(keyOf(c)) && c.rarity === first.rarity && Math.abs((c.ovr || 0) - (first.ovr || 0)) <= spread);
+        while (options.length < PACK_OPTIONS) {
+          let cands = near(PACK_OPTION_OVR_SPREAD);
+          if (!cands.length) cands = near(99);
+          if (!cands.length) break;
+          // Prefer a different position from the cards already on offer, then one the roster needs.
+          const shown = new Set(options.map(o => (o.role ? o.role : o.pos)));
+          const fresh = cands.filter(c => !shown.has(c.role ? c.role : c.pos));
+          const pickFrom = fresh.length ? fresh : cands;
+          const needed = pickFrom.filter(c => this._packOptionFills(c, missingPos));
+          const list = (needed.length && Math.random() < 0.5) ? needed : pickFrom;
+          const card = list[Math.floor(Math.random() * list.length)];
+          seen.add(keyOf(card));
+          options.push(card);
+        }
       }
+      return { options, missingPos };
+    },
+
+    _packOptionFills(card, missingPos) {
+      if (!missingPos || !missingPos.length) return false;
+      if (card.role) return missingPos.includes((card.role || 'SP').toUpperCase());
+      const all = getAllPositionsForPlayer(card);
+      return missingPos.some(p => p !== 'DH' && all.has(p));
+    },
+
+    // What OPEN 5 / AUTO DRAFT keep: the best card, with a nudge for one that fills a hole.
+    _bestPackOption(options, missingPos) {
+      const score = c => (c.ovr || 50) + (this._packOptionFills(c, missingPos) ? 5 : 0);
+      return options.slice().sort((a, b) => score(b) - score(a))[0];
+    },
+
+    // Tapping the foil shows the three options; nothing joins the roster until one is picked.
+    _openPackOptions() {
+      const draft = this._packDraft;
+      if (!draft || draft.currentPack >= draft.totalPacks) return;
+      const o = this._rollPackOptions();
+      draft.options = o.options;
+      draft.optionNeeds = o.missingPos;
+      draft.packOpened = false;
+      draft.currentCard = null;
+      draft.viewCard = null;
+    },
+
+    // Adds one card of the current pack to the roster: the one the player chose, or (OPEN 5 /
+    // AUTO DRAFT) the best of the pack's options.
+    _pullNextPackCard(chosen) {
+      const draft = this._packDraft;
+      if (!draft || draft.currentPack >= draft.totalPacks) return null;
+      const isPitchersStage = draft.stage === 'pitchers';
+      let card = chosen || null;
+      if (!card) {
+        const o = (draft.options && draft.options.length) ? { options: draft.options, missingPos: draft.optionNeeds || [] } : this._rollPackOptions();
+        card = this._bestPackOption(o.options, o.missingPos);
+      }
+      draft.options = null;
+      draft.optionNeeds = null;
+      if (!card) return null;
 
       draft.usedKeys.add(card.role ? pitcherUnlockKey(card) : batterUnlockKey(card));
       if (isPitchersStage) draft.pulledPitchers.push(card);

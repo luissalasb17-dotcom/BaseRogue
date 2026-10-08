@@ -1349,6 +1349,55 @@
       return true;
     }
 
+    // Best nine for the drafted players: every way of placing them is scored and the best one
+    // wins (OVR, plus or minus the glove where it matters most; a secondary position costs a
+    // little; the DH only brings his bat; out of position only when nobody can play the spot).
+    // Used by "Surprise me": it used to drop each pick in the first free slot, which could
+    // leave an outfielder catching.
+    optimizeDraftPositions() {
+      const SLOTS = ['C', 'SS', 'CF', '2B', '3B', '1B', 'LF', 'RF', 'DH'];
+      const GLOVE = { C: 0.10, SS: 0.10, CF: 0.10, '2B': 0.08, '3B': 0.06, LF: 0.04, RF: 0.04, '1B': 0.03 };
+      const pool = (this.draftedPlayers || []).slice(0, 12);
+      if (pool.length < 2) return;
+      const plays = (p, slot) => {
+        const all = `${p.pos || ''},${p.sec_pos || ''}`.toUpperCase().split(',').map(x => x.trim());
+        return all.includes(slot) || (all.includes('OF') && ['LF', 'CF', 'RF'].includes(slot));
+      };
+      const value = (p, slot) => {
+        const ovr = p.ovr || 50, def = p.def !== undefined ? p.def : 50;
+        if (slot === 'DH') return ovr - 0.12 * (def - 50);
+        if ((p.pos || '').toUpperCase() === slot) return ovr + GLOVE[slot] * (def - 50);
+        if (plays(p, slot)) return ovr + GLOVE[slot] * (def * 0.85 - 50) - 1.5;
+        return ovr - 45;
+      };
+      let layer = new Map([[0, { v: 0, pick: [] }]]);
+      SLOTS.forEach(slot => {
+        const next = new Map();
+        const offer = (mask, v, pick) => { const cur = next.get(mask); if (!cur || v > cur.v) next.set(mask, { v, pick }); };
+        layer.forEach((st, mask) => {
+          offer(mask, st.v, st.pick.concat(-1));
+          for (let k = 0; k < pool.length; k++) {
+            if (mask & (1 << k)) continue;
+            offer(mask | (1 << k), st.v + 1000 + value(pool[k], slot), st.pick.concat(k));
+          }
+        });
+        layer = next;
+      });
+      let best = null;
+      layer.forEach(st => { if (!best || st.v > best.v) best = st; });
+      if (!best) return;
+      const roster = {};
+      SLOTS.forEach((slot, i) => { roster[slot] = best.pick[i] >= 0 ? pool[best.pick[i]] : null; });
+      this.draftRoster = roster;
+    }
+
+    // Called once when the ninth pick is in: the batting order starts sorted (it used to keep
+    // the default CF-LF-RF-1B... order until the player pressed AUTO ORDER).
+    finishDraftLineup(optimizePositions) {
+      if (optimizePositions) this.optimizeDraftPositions();
+      this.draftBattingOrder = this.autoSortBattingOrder(this.draftRoster, this.draftBattingOrder);
+    }
+
     // ── DRAFT: return info about the current round's rarity constraints ───
     autoSortBattingOrder(rosterDict, orderArray) {
       const players = orderArray.map(slot => ({ slot, p: rosterDict[slot] }));
@@ -2685,7 +2734,12 @@
           // ── CASE B: Final Boss Serie Mundial (Stage 27 Part 1 - Top 5 of Champ) ──
           if (stage === 27) {
             const mlbTeams = allTeams.filter(t => (t.league && ['AL', 'NL', 'FL'].includes(t.league)) || (t.pitchers && t.pitchers.length >= 5));
-            const champTeam = (mlbTeams.length > 0 ? mlbTeams : allTeams).sort((a, b) => (b.win_pct || 0) - (a.win_pct || 0))[0] || allTeams[0];
+            // The real World Series champion of that season when there was one (season_context.js);
+            // otherwise, as before, the team with the best record (1901-02, 1904, 1994).
+            const byRecord = (mlbTeams.length > 0 ? mlbTeams : allTeams).sort((a, b) => (b.win_pct || 0) - (a.win_pct || 0));
+            const ctx = window.SeasonContext && byRecord[0] && window.SeasonContext[byRecord[0].year];
+            const realChamp = ctx && ctx.champion && byRecord.find(t => t.name === `${t.year} ${ctx.champion.name}`);
+            const champTeam = realChamp || byRecord[0] || allTeams[0];
             const pStaff = champTeam.pitchers || [];
             const top5 = pStaff.slice(0, 5);
             const rotation = top5.map((p, idx) => createPitcherObj(p, idx === 0 ? 'SP' : (idx === 4 ? 'RP' : p.role)));
@@ -3099,7 +3153,7 @@
 
       return finishEnemy({
         id: `opp_team_stage_${stage}_${Date.now()}`,
-        name: `${p1.cleanName} & Rotación`,
+        name: `${p1.cleanName} & ${(window.i18n && window.i18n.getLanguage() === 'es') ? 'Rotación' : 'Rotation'}`,
         tier: 'B',
         isBoss: false,
         pitchers: selected,

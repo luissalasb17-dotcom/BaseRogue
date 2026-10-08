@@ -3130,3 +3130,44 @@ span.c162-iron {
 @media (max-width: 560px) { .c162-rb.stats .c162-rb-row { grid-template-columns: 34px minmax(0, 1fr) 30px; height: auto; padding: 4px 8px 4px 0; } .c162-rb.stats .c162-rb-meta { grid-column: 2; grid-row: 2; white-space: normal; } }
 
 .c162-rb .c162-rb-row[draggable="true"] { cursor: pointer; }
+
+/* ── Story Mode: context card for the selected season ── */
+.season-context-card { margin-top: 12px; padding: 12px 14px; text-align: left; border: 1px solid rgba(16, 185, 129, .45); border-radius: 8px; background: rgba(0, 0, 0, .55); font-family: 'Outfit', 'Segoe UI', sans-serif; color: #e2e8f0; }
+.season-context-card .scc-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px dashed rgba(255, 255, 255, .15); }
+.season-context-card .scc-head b { font-family: 'Press Start 2P', monospace; font-size: 15px; color: #ffd700; }
+.season-context-card .scc-head span { font-size: 11px; color: #94a3b8; text-align: right; }
+.season-context-card .scc-done { font-size: 11px; color: #fbbf24; margin-bottom: 6px; }
+.season-context-card .scc-row { display: grid; grid-template-columns: 118px minmax(0, 1fr); gap: 8px; align-items: baseline; margin-bottom: 4px; font-size: 12.5px; }
+.season-context-card .scc-row b { font-family: 'Press Start 2P', monospace; font-size: 7px; color: #10b981; }
+.season-context-card .scc-row span span { color: #94a3b8; }
+.season-context-card .scc-leaders-title { font-family: 'Press Start 2P', monospace; font-size: 7px; color: #f59e0b; margin: 9px 0 5px; }
+.season-context-card .scc-leaders { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 3px 12px; font-size: 12px; }
+.season-context-card .scc-leaders i { font-style: normal; color: #fde68a; font-weight: 700; }
+.season-context-card .scc-how { margin: 9px 0 0; font-size: 11px; color: #94a3b8; line-height: 1.45; }
+@media (max-width: 520px) { .season-context-card .scc-leaders { grid-template-columns: 1fr; } .season-context-card .scc-row { grid-template-columns: 1fr; gap: 1px; } }
+
+/* ── Pack draft: pick one of three ── */
+.c162-opts { display: grid; gap: 9px; padding: 12px; background: rgba(0, 0, 0, .5); border: 1px solid rgba(255, 215, 0, .3); border-radius: 12px; --rb-legendary: #fbbf24; --rb-epic: #c084fc; --rb-rare: #60a5fa; --rb-uncommon: #34d399; --rb-common: #94a3b8; }
+.c162-opts-title { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.c162-opts-title b { font-family: 'Press Start 2P', monospace; font-size: 9px; color: #ffd700; }
+.c162-opts-title span { font-family: 'Press Start 2P', monospace; font-size: 7px; color: #94a3b8; }
+.c162-opt { padding: 10px 12px; border-radius: 8px; background: rgba(15, 23, 42, .92); border: 1px solid rgba(255, 255, 255, .1); border-left: 4px solid currentColor; text-align: left; animation: c162RbIn .35s ease both; }
+.c162-opt:nth-child(3) { animation-delay: .08s; } .c162-opt:nth-child(4) { animation-delay: .16s; }
+.c162-opt.r-legendary { color: var(--rb-legendary); box-shadow: 0 0 16px rgba(251, 191, 36, .25); }
+.c162-opt.r-epic { color: var(--rb-epic); } .c162-opt.r-rare { color: var(--rb-rare); }
+.c162-opt.r-uncommon { color: var(--rb-uncommon); } .c162-opt.r-common { color: var(--rb-common); }
+.c162-opt-head { display: flex; align-items: center; gap: 10px; }
+.c162-opt-ovr { font-family: 'Press Start 2P', monospace; font-size: 18px; min-width: 44px; text-align: center; }
+.c162-opt-id { flex: 1; min-width: 0; }
+.c162-opt-id b { display: block; font-family: 'Outfit', 'Segoe UI', sans-serif; font-size: 15px; color: #f8fafc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.c162-opt-id small { font-size: 10.5px; color: #94a3b8; }
+.c162-opt-need { font-family: 'Press Start 2P', monospace; font-size: 6.5px; color: #052e16; background: #34d399; padding: 4px 6px; border-radius: 3px; white-space: nowrap; }
+.c162-opt-stats { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; margin: 8px 0; }
+.c162-opt-stats span { background: rgba(0, 0, 0, .4); border-radius: 4px; padding: 4px 2px; text-align: center; }
+.c162-opt-stats i { display: block; font-style: normal; font-family: 'Press Start 2P', monospace; font-size: 6px; color: #64748b; margin-bottom: 3px; }
+.c162-opt-stats b { font-size: 13px; color: #f1f5f9; }
+.c162-opt-stats em { font-style: normal; font-size: 9px; color: #94a3b8; margin-left: 2px; }
+.c162-opt-actions { display: flex; gap: 8px; }
+.c162-opt-actions .btn { font-family: 'Press Start 2P', monospace; font-size: 8px; padding: 8px 10px; }
+.c162-opt-actions .c162-opt-pick { flex: 1; background: linear-gradient(135deg, #ffd700, #f59e0b); color: #000; border: 0; cursor: pointer; }
+@media (max-width: 560px) { .c162-opt-stats { grid-template-columns: repeat(3, 1fr); } }

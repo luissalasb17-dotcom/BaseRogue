@@ -863,6 +863,7 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
           if (window.AudioManager) window.AudioManager.play('draft_pick');
           if (window.BaseballDex) window.BaseballDex.unlock(player);
           G.draftPickPlayer(player);
+          if (G.draftRound > 9) G.finishDraftLineup(false); // keeps the positions you chose; sorts the batting order
           if (window.renderDraftRound) window.renderDraftRound(); else if (typeof renderDraftRound === 'function') renderDraftRound();
         });
         cardsRow.appendChild(wrapper);
@@ -910,14 +911,17 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
         while (G.draftRound <= 9) {
           const picks = G.getDraftRoundPicks();
           // Sort by OVR descending
-          picks.sort((a,b) => {
-             const ovrA = Math.round((a.con||40)*.35+(a.pwr||35)*.3+(a.spd||45)*.10+(a.def||40)*.15+(a.eye||40)*.1);
-             const ovrB = Math.round((b.con||40)*.35+(b.pwr||35)*.3+(b.spd||45)*.10+(b.def||40)*.15+(b.eye||40)*.1);
-             return ovrB - ovrA;
-          });
+          // Best card on offer, with a nudge for one that fills a position still empty
+          // (so the auto draft does not end with nobody able to play third base).
+          const fills = p => {
+            const all = `${p.pos || ''},${p.sec_pos || ''}`.split(',').map(x => x.trim()).filter(Boolean);
+            return all.some(s => s !== 'DH' && s in G.draftRoster && !G.draftRoster[s]) ? 6 : 0;
+          };
+          picks.sort((a, b) => ((b.ovr || 0) + fills(b)) - ((a.ovr || 0) + fills(a)));
           if (window.BaseballDex) window.BaseballDex.unlock(picks[0]);
           G.draftPickPlayer(picks[0]);
         }
+        G.finishDraftLineup(true); // best nine at their best positions, batting order sorted
         renderFinalLineupConfirmation();
       };
       centerPanel.appendChild(autoDraftBtn);
@@ -1001,7 +1005,7 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
       const autoSortBtn = document.createElement('button');
       autoSortBtn.className = 'btn btn-secondary';
       autoSortBtn.style.cssText = 'width:100%;font-size:7px;padding:6px;margin-top:10px;background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.2);';
-      autoSortBtn.innerHTML = '⚙️ AUTO ORDEN';
+      autoSortBtn.innerHTML = t('draft.auto_sort');
       autoSortBtn.title = (typeof window.t==='function'?window.t('ui.autosort_tooltip'):'Ordena lógicamente: Velocidad al 1ro, Poder al 4to, Mejores bates al 2do y 3ro.');
       autoSortBtn.onclick = () => {
         G.draftBattingOrder = G.autoSortBattingOrder(G.draftRoster, G.draftBattingOrder);
@@ -1512,9 +1516,62 @@ function renderSeasonConquestUI() {
       selectYear.appendChild(opt);
     }
     selectYear.value = currentVal;
+    selectYear.onchange = renderSeasonContextCard;
   }
+  renderSeasonContextCard();
 }
 window.renderSeasonConquestUI = renderSeasonConquestUI;
+
+// Context for the year picked in Story Mode: who won it, who had the best record, who led
+// the league (season_context.js, built by season_context_etl.py), and how the campaign
+// uses that season's teams.
+function renderSeasonContextCard() {
+  const selectYear = document.getElementById('select-season-year');
+  if (!selectYear) return;
+  let card = document.getElementById('season-context-card');
+  if (!card) {
+    card = document.createElement('div');
+    card.id = 'season-context-card';
+    card.className = 'season-context-card';
+    selectYear.insertAdjacentElement('afterend', card);
+  }
+  const es = window.i18n && window.i18n.getLanguage() === 'es';
+  const L = es
+    ? { random: 'Una temporada al azar entre 1901 y 2025.', champ: 'CAMPEÓN', over: 'venció a', noWS: 'SIN SERIE MUNDIAL', best: 'MEJOR RÉCORD', teams: 'equipos', leaders: 'LÍDERES', done: '🏆 Ya conquistaste esta temporada',
+        how: 'Empiezas contra los brazos de fondo de cada equipo y vas subiendo hasta sus ases. El último rival es el campeón de ese año con sus cinco mejores brazos.' }
+    : { random: 'A random season between 1901 and 2025.', champ: 'CHAMPION', over: 'beat the', noWS: 'NO WORLD SERIES', best: 'BEST RECORD', teams: 'teams', leaders: 'LEADERS', done: '🏆 You already conquered this season',
+        how: "You start against each team's back-end arms and work your way up to their aces. The last rival is that year's champion with its five best arms." };
+  const year = parseInt(selectYear.value, 10);
+  const d = window.SeasonContext && window.SeasonContext[year];
+  if (!year || !d) {
+    card.innerHTML = `<p class="scc-how">${L.random}</p><p class="scc-how">${L.how}</p>`;
+    return;
+  }
+  const rec = t => `${t.name} <span>(${t.w}-${t.l})</span>`;
+  const era = (typeof getEraNameForYear === 'function') ? getEraNameForYear(year) : '';
+  const avg = v => v.toFixed(3).replace(/^0/, '');
+  const conquered = (typeof getConqueredSeasons === 'function') && getConqueredSeasons().includes(year);
+  const top = d.champion
+    ? `<div class="scc-row"><b>🏆 ${L.champ}</b><span>${rec(d.champion)}${d.runnerUp ? ` · ${L.over} ${d.runnerUp.name}` : ''}</span></div>`
+    : `<div class="scc-row"><b>⚠️ ${L.noWS}</b><span>${(d.pennants || []).map(rec).join(' · ') || '—'}</span></div>`;
+  const best = (!d.champion || d.best.name !== d.champion.name) ? `<div class="scc-row"><b>📈 ${L.best}</b><span>${rec(d.best)}</span></div>` : '';
+  const leaders = [
+    d.hr && `💣 ${d.hr.name} <i>${d.hr.n} HR</i>`,
+    d.avg && `🏏 ${d.avg.name} <i>${avg(d.avg.v)}</i>`,
+    d.sb && `💨 ${d.sb.name} <i>${d.sb.n} SB</i>`,
+    d.wins && `🏅 ${d.wins.name} <i>${d.wins.n} W</i>`,
+    d.so && `🌪️ ${d.so.name} <i>${d.so.n} K</i>`,
+    d.era && `🎯 ${d.era.name} <i>${d.era.v.toFixed(2)} ERA</i>`
+  ].filter(Boolean).map(x => `<li>${x}</li>`).join('');
+  card.innerHTML = `
+    <div class="scc-head"><b>${year}</b><span>${era ? era + ' · ' : ''}${d.teams} ${L.teams}</span></div>
+    ${conquered ? `<div class="scc-done">${L.done}</div>` : ''}
+    ${top}${best}
+    <div class="scc-leaders-title">${L.leaders}</div>
+    <ul class="scc-leaders">${leaders}</ul>
+    <p class="scc-how">${L.how}</p>`;
+}
+window.renderSeasonContextCard = renderSeasonContextCard;
 
 function initGameModeSelector() {
     const screenMode = document.getElementById('screen-mode-select');
@@ -9508,7 +9565,7 @@ function initGameModeSelector() {
       const statsBox = document.getElementById('match-batter-stats-box');
       if (statsBox) {
         const kavd = eff.k_avd !== undefined ? eff.k_avd : (eff.k_avoid !== undefined ? eff.k_avoid : (eff.k_avoid_val !== undefined ? eff.k_avoid_val : eff.con));
-        statsBox.innerHTML = `CON: ${eff.con} | PWR: ${eff.pwr} | EYE: ${eff.eye}<br>K/AVD: ${kavd} | SPD: ${eff.spd} | DEF: ${eff.def}<br>POS NATIVA: ${eff.pos}`;
+        statsBox.innerHTML = `CON: ${eff.con} | PWR: ${eff.pwr} | EYE: ${eff.eye}<br>K/AVD: ${kavd} | SPD: ${eff.spd} | DEF: ${eff.def}<br>${(typeof window.t === 'function' ? window.t('match.native_pos') : 'NATIVE POS:')} ${eff.pos}`;
       }
 
       const batterChanged = (el.arenaBatterCardSlot.dataset.renderedBatter !== bName);
