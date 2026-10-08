@@ -1413,8 +1413,11 @@
 
   // Momentum: ±1 to every rating per 3 straight wins (or losses), capped at ±3.
   // Applies to every team in the regular season, the user included.
+  // Games a regular plays in a season, normal vs as an Iron Man (measured over full seasons).
+  const IRON_GAMES = { C: [135, 154], SS: [151, 159], '2B': [151, 159], CF: [151, 159], '3B': [152, 160], LF: [154, 160], RF: [154, 160], '1B': [156, 161], DH: [158, 161] };
+  const LEGENDARY_PACK_CHANCE = 0.04;
   const MOMENTUM_STEP = 3;
-  const MOMENTUM_CAP = 3;
+  const MOMENTUM_CAP = 10;
   // Pitcher fatigue (see _freshBatters / _fatiguePenalty)
   const FATIGUE_PER_BATTER = 2;
   const FATIGUE_MAX = 16;
@@ -2321,6 +2324,7 @@
       const S = this.state;
       const L = S.league;
       const day = L.day;
+      S.pendingAlerts = []; // a new game means the player has seen whatever stopped the sim
       const sched = S.schedule[S.gamesPlayed];
       const oppRec = L.teams[sched.id] || Object.values(L.teams).find(t => t.code === sched.code);
       const userSide = this._userSide(S, true);
@@ -2359,10 +2363,149 @@
       S.gameLog.push(logEntry);
       if (S.gameLog.length > 30) S.gameLog.shift();
 
+      S.lastGame = this._buildLastGame(result, ui, oppRec, userHome);
       this._advanceLeagueDay(won);
+      this._checkMilestones(S.lastGame);
       if (S.gamesPlayed >= SEASON_LENGTH) this._finishRegularSeason();
       this.save();
       return logEntry;
+    },
+
+    // What the season screen shows about the game just played.
+    _buildLastGame(result, ui, oppRec, userHome) {
+      const mine = x => x.team === USER_TEAM_ID;
+      const bats = Object.values(result.bat), pits = Object.values(result.pit);
+      const tot = (arr, f) => arr.reduce((t, x) => t + (x[f] || 0), 0);
+      const dec = k => { const p = pits.find(x => x.decision === k); return p ? { name: p.name, user: mine(p) } : null; };
+      const ipOf = p => `${Math.floor(p.outs / 3)}.${p.outs % 3}`;
+      const batScore = b => b.h + b.hr * 2 + b.rbi + (b.r || 0) * 0.5 + (b.sb || 0) * 0.5;
+      const pitScore = p => p.outs / 3 + p.so * 0.5 - p.er * 2 - 6;
+      const bestBat = bats.filter(mine).sort((a, b) => batScore(b) - batScore(a))[0];
+      const bestPit = pits.filter(mine).sort((a, b) => pitScore(b) - pitScore(a))[0];
+      let star = null;
+      if (bestPit && (!bestBat || pitScore(bestPit) > batScore(bestBat))) {
+        star = { name: bestPit.name, text: `${ipOf(bestPit)} IP, ${bestPit.h} H, ${bestPit.er} ER, ${bestPit.so} K` };
+      } else if (bestBat) {
+        star = { name: bestBat.name, text: `${bestBat.h}-${bestBat.ab}${bestBat.hr ? `, ${bestBat.hr} HR` : ''}${bestBat.rbi ? `, ${bestBat.rbi} RBI` : ''}${bestBat.sb ? `, ${bestBat.sb} SB` : ''}` };
+      }
+      return {
+        game: this.state.gamesPlayed, opp: oppRec.name, home: userHome, won: result.runs[ui] > result.runs[1 - ui],
+        runs: [result.runs[ui], result.runs[1 - ui]],
+        hits: [tot(bats.filter(mine), 'h'), tot(bats.filter(x => !mine(x)), 'h')],
+        errors: [tot(bats.filter(mine), 'e'), tot(bats.filter(x => !mine(x)), 'e')],
+        line: [result.line[ui], result.line[1 - ui]], innings: result.innings,
+        w: dec('W'), l: dec('L'), sv: dec('SV'), star,
+        staff: pits.filter(mine).map(p => p.name)
+      };
+    },
+
+    // Moments worth stopping for. Each one pauses "simulate 10" / "until next loss" / auto sim
+    // and shows as a banner on the season screen until the next game is played.
+    _checkMilestones(game) {
+      const S = this.state, L = S.league;
+      if (!S.alertsSeen) S.alertsSeen = {};
+      const g = S.gamesPlayed;
+      const fire = (key, icon, title, text) => {
+        if (S.alertsSeen[key]) return;
+        S.alertsSeen[key] = 1;
+        S.pendingAlerts.push({ icon, title, text });
+        this._pushHeadline(`${icon} ${text}`, 'user');
+      };
+      const user = L.teams[USER_TEAM_ID];
+      const name = user.name;
+
+      // Streaks and the perfect season
+      if ([10, 20, 30, 50].includes(user.streak)) fire(`ws${user.streak}@${g}`, '🔥', `${user.streak} STRAIGHT WINS`, `${name} have won ${user.streak} in a row. Momentum is at +${momentumFor(user.streak)}.`);
+      if ([8, 12].includes(-user.streak)) fire(`ls${-user.streak}@${g}`, '🧊', `${-user.streak} STRAIGHT LOSSES`, `${name} have dropped ${-user.streak} in a row. Momentum is at −${-momentumFor(user.streak)}.`);
+      if (S.losses === 0 && [25, 50, 81, 100, 125, 150, 161].includes(g)) fire(`perfect${g}`, '👑', `STILL PERFECT: ${g}-0`, `${name} are ${g}-0. ${SEASON_LENGTH - g} to go for the perfect season.`);
+      if (game.hits[1] === 0 && game.innings >= 9) fire(`nohit@${g}`, '🚫', 'NO-HITTER!', `${game.staff.join(' and ')} no-hit the ${game.opp}.`);
+
+      // Individual milestones
+      const marks = (key, who, val, list, icon, label) => {
+        list.forEach(n => { if (val >= n) fire(`${key}:${label}${n}`, icon, `${n} ${label}`, `${who} reaches ${n} ${label.toLowerCase()} with ${SEASON_LENGTH - g} games left.`); });
+      };
+      Object.entries(S.batterStats || {}).forEach(([k, b]) => {
+        marks(k, b.name, b.hr || 0, [50, 60, 70], '💣', 'HOME RUNS');
+        marks(k, b.name, b.h || 0, [220, 250], '🏏', 'HITS');
+        marks(k, b.name, b.sb || 0, [75, 100], '💨', 'STOLEN BASES');
+        marks(k, b.name, b.rbi || 0, [160], '🎯', 'RBI');
+        if ([100, 120, 140, 155].includes(g) && b.ab >= g * 3 && b.h / b.ab >= 0.390) {
+          fire(`${k}:400@${g}`, '🔭', '.400 WATCH', `${b.name} is hitting ${(b.h / b.ab).toFixed(3).replace(/^0/, '')} after ${g} games.`);
+        }
+        if ([100, 130].includes(g) && (b.hr || 0) / g * SEASON_LENGTH >= 60) {
+          fire(`${k}:pace@${g}`, '📈', 'CHASING 60', `${b.name} has ${b.hr} home runs after ${g} games: on pace for ${Math.round(b.hr / g * SEASON_LENGTH)}.`);
+        }
+      });
+      Object.entries(S.pitcherStats || {}).forEach(([k, p]) => {
+        marks(k, p.name, p.w || 0, [25, 30], '🏅', 'WINS');
+        marks(k, p.name, p.so || 0, [300, 350], '🌪️', 'STRIKEOUTS');
+        marks(k, p.name, p.sv || 0, [50], '🔒', 'SAVES');
+      });
+
+      // The playoff race, once it matters
+      const table = leagueStandings(L, user.league);
+      const rank = table.findIndex(t => t.id === USER_TEAM_ID) + 1;
+      const inNow = rank <= PLAYOFF_SEEDS;
+      // At most one of these every 15 games: a team sitting on the cut line flips back and forth.
+      if (g >= 100 && S.inPlayoffSpot !== undefined && S.inPlayoffSpot !== inNow && g - (S.lastCutAlert || 0) >= 15) {
+        S.lastCutAlert = g;
+        fire(`cut@${g}`, inNow ? '📈' : '📉', inNow ? 'INTO A PLAYOFF SPOT' : 'OUT OF A PLAYOFF SPOT',
+          inNow ? `${name} climb to #${rank} in the ${user.league} with ${SEASON_LENGTH - g} to play.` : `${name} fall to #${rank} in the ${user.league} with ${SEASON_LENGTH - g} to play.`);
+      }
+      S.inPlayoffSpot = inNow;
+      if (g === SEASON_LENGTH - 15) {
+        const edge = table[PLAYOFF_SEEDS - 1], chaser = table[PLAYOFF_SEEDS];
+        const gap = inNow ? user.w - (chaser ? chaser.w : 0) : (edge ? edge.w : 0) - user.w;
+        if (gap <= 3) fire('stretch', '⏳', 'FINAL STRETCH', inNow
+          ? `15 games left and ${name} hold a playoff spot by just ${gap} ${gap === 1 ? 'game' : 'games'}.`
+          : `15 games left and ${name} are ${gap} ${gap === 1 ? 'game' : 'games'} out of a playoff spot.`);
+      }
+      (L.headlines || []).filter(h => h.day === L.day && h.kind === 'user' && /clinch|mathematically eliminated|first loss/.test(h.text)).forEach(h => {
+        if (S.alertsSeen[h.text]) return;
+        S.alertsSeen[h.text] = 1;
+        const kind = /clinch/.test(h.text) ? ['🎟️', 'PLAYOFFS CLINCHED'] : /eliminated/.test(h.text) ? ['❌', 'ELIMINATED'] : ['💔', 'FIRST LOSS'];
+        S.pendingAlerts.push({ icon: kind[0], title: kind[1], text: h.text.replace(/^\S+\s/, '') });
+      });
+    },
+
+    dismissAlerts() {
+      if (this.state) this.state.pendingAlerts = [];
+      this.save();
+      this.renderSeason();
+    },
+
+    _alertsHTML() {
+      const a = (this.state && this.state.pendingAlerts) || [];
+      if (!a.length) return '';
+      return `<div class="c162-alerts">
+        <div class="c162-alerts-list">${a.map(x => `<div class="c162-alert"><span class="c162-alert-icon">${x.icon}</span><div><b>${x.title}</b><p>${x.text}</p></div></div>`).join('')}</div>
+        <button class="btn c162-alerts-ok" onclick="window.Challenge162.dismissAlerts()">▶ CONTINUE</button>
+      </div>`;
+    },
+
+    _lastGameHTML() {
+      const G = this.state && this.state.lastGame;
+      if (!G || !G.line) return '';
+      const n = Math.max(9, G.line[0].length, G.line[1].length);
+      const cells = arr => Array.from({ length: n }, (_, i) => `<td>${arr[i] !== undefined ? arr[i] : (i < 9 ? 'x' : '')}</td>`).join('');
+      const head = Array.from({ length: n }, (_, i) => `<th>${i + 1}</th>`).join('');
+      const me = `<tr class="me"><th>${this.getUserTeamName()}</th>${cells(G.line[0])}<td class="rhe r">${G.runs[0]}</td><td class="rhe">${G.hits[0]}</td><td class="rhe">${G.errors[0]}</td></tr>`;
+      const them = `<tr><th>${G.opp}</th>${cells(G.line[1])}<td class="rhe r">${G.runs[1]}</td><td class="rhe">${G.hits[1]}</td><td class="rhe">${G.errors[1]}</td></tr>`;
+      const tag = (k, d) => (d ? `<span class="${d.user ? 'mine' : ''}"><i>${k}</i> ${d.name}</span>` : '');
+      return `<div class="c162-lastgame ${G.won ? 'won' : 'lost'}">
+        <div class="c162-lastgame-head">
+          <b>${G.won ? 'WIN' : 'LOSS'} ${G.runs[0]}-${G.runs[1]}</b>
+          <span>LAST GAME · #${G.game} ${G.home ? 'vs' : '@'} ${G.opp}${G.innings > 9 ? ` · ${G.innings} innings` : ''}</span>
+        </div>
+        <div class="c162-lastgame-body">
+          <div class="c162-table-wrap"><table class="c162-linescore"><thead><tr><th></th>${head}<th class="rhe">R</th><th class="rhe">H</th><th class="rhe">E</th></tr></thead>
+            <tbody>${G.home ? them + me : me + them}</tbody></table></div>
+          <div class="c162-lastgame-notes">
+            <div class="dec">${tag('W', G.w)}${tag('L', G.l)}${tag('SV', G.sv)}</div>
+            ${G.star ? `<div class="star">⭐ <b>${G.star.name}</b> ${G.star.text}</div>` : ''}
+          </div>
+        </div>
+      </div>`;
     },
 
     simulateGame() {
@@ -2729,6 +2872,7 @@
       const trace = opts.trace || null;
       const homeFieldIdx = opts.homeFieldIdx !== undefined ? opts.homeFieldIdx : 1;
       const hits = [0, 0];
+      const line = [[], []]; // runs per inning, for the last-game recap
       const sides = [away, home];
       const daily = sides.map(side => this._restLineup(side));
       sides.forEach((side, i) => {
@@ -2948,6 +3092,7 @@
           if (bi === 1 && inning >= 9 && runs[1] + scored > runs[0]) break;
         }
         runs[bi] += scored;
+        line[bi].push(scored);
         if (trace) trace.line[bi].push(scored);
       };
 
@@ -2990,7 +3135,7 @@
       });
 
       return {
-        runs, innings: played, bat, pit, winnerId: sides[wi].id,
+        runs, innings: played, line, bat, pit, winnerId: sides[wi].id,
         wear: daily.map((d, i) => ({ team: sides[i].id, roster: d.roster, starts: d.starts, rested: d.rested, iron: d.iron }))
       };
     },
@@ -3180,6 +3325,7 @@
       const results = [];
       for (let i = 0; i < n && this.state.gamesPlayed < SEASON_LENGTH; i++) {
         results.push(this.simulateGame());
+        if ((this.state.pendingAlerts || []).length) break; // a milestone stops the run
       }
       return results;
     },
@@ -3188,7 +3334,7 @@
       while (this.state.gamesPlayed < SEASON_LENGTH) {
         const r = this.simulateGame();
         results.push(r);
-        if (!r.won) break;
+        if (!r.won || (this.state.pendingAlerts || []).length) break;
       }
       return results;
     },
@@ -3210,6 +3356,7 @@
           return;
         }
         this.simulateGame();
+        if ((this.state.pendingAlerts || []).length) this.stopAutoSim();
         this.renderSeason();
       }, 120);
       this.renderSeason();
@@ -4986,10 +5133,24 @@
         usedKeys: new Set(),
         packOpened: false,
         currentCard: null,
-        manualSlots: null
+        manualSlots: null,
+        schedule: { batters: this._rollPackSchedule(14), pitchers: this._rollPackSchedule(11) }
       };
       this.showScreen('screen-challenge-pack');
       this.renderPacksDraft();
+    },
+
+    // Each box keeps its guarantees (2 Epic+, 2 Rare+, 2 Uncommon+, the rest any rarity) but in
+    // a random order, so a purple pack can show up at any moment. On top of that every pack has
+    // a small chance of being a Legendary pack.
+    _rollPackSchedule(n) {
+      const tiers = ['Epic', 'Epic', 'Rare', 'Rare', 'Uncommon', 'Uncommon'];
+      while (tiers.length < n) tiers.push(null);
+      for (let i = tiers.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [tiers[i], tiers[j]] = [tiers[j], tiers[i]];
+      }
+      return tiers.map(t => (Math.random() < LEGENDARY_PACK_CHANCE ? 'Legendary' : t));
     },
 
     _getDraftSlotPlayer(slots, kind, key) {
@@ -5067,6 +5228,16 @@
     // Packs 9+: Any Rarity
     _getPackTierInfo(packIndexZeroBased) {
       const _t = (key, fallback) => (typeof window.t === 'function' ? window.t(key, fallback) : fallback);
+      const d = this._packDraft;
+      const plan = d && d.schedule && d.schedule[d.stage];
+      if (plan) {
+        const tier = plan[packIndexZeroBased];
+        if (tier === 'Legendary') return { minRarity: 'Legendary', legendary: true, badge: '👑 LEGENDARY PACK', color: '#fde68a', border: '#fbbf24', glow: 'rgba(251,191,36,0.85)' };
+        if (tier === 'Epic') return { minRarity: 'Epic', badge: _t('challenge162.pack_tier_epic', '✨ EPIC OR BETTER'), color: '#c084fc', border: '#a855f7', glow: 'rgba(168,85,247,0.6)' };
+        if (tier === 'Rare') return { minRarity: 'Rare', badge: _t('challenge162.pack_tier_rare', '💎 RARE OR BETTER'), color: '#60a5fa', border: '#3b82f6', glow: 'rgba(59,130,246,0.6)' };
+        if (tier === 'Uncommon') return { minRarity: 'Uncommon', badge: _t('challenge162.pack_tier_uncommon', '🟢 UNCOMMON OR BETTER'), color: '#34d399', border: '#10b981', glow: 'rgba(16,185,129,0.6)' };
+        return { minRarity: null, badge: _t('challenge162.pack_tier_any', '🎲 ANY RARITY'), color: '#ffd700', border: '#eab308', glow: 'rgba(234,179,8,0.5)' };
+      }
       if (packIndexZeroBased === 0 || packIndexZeroBased === 1) {
         return { minRarity: 'Epic', badge: _t('challenge162.pack_tier_epic', '✨ EPIC OR BETTER'), color: '#c084fc', border: '#a855f7', glow: 'rgba(168,85,247,0.6)' };
       }
@@ -5143,7 +5314,7 @@
         const boxSubtitle = isPitchersStage ? _t('challenge162.pitchers_box_subtitle', '5 Starters (SP) + 6 Relievers') : _t('challenge162.batters_box_subtitle', '9 Starters + 5 Bench');
         leftColumnHTML = `
           <div style="background:rgba(0,0,0,0.5); border:1px solid rgba(255,215,0,0.3); border-radius:12px; padding:20px; text-align:center; min-height:540px; display:flex; flex-direction:column; justify-content:center; align-items:center;">
-            <div class="dex-foil-pack-wrapper" id="c162-foil-pack-target" style="cursor:pointer; margin: 10px auto;" title="${_t('challenge162.pack_tap_rip', 'TAP THE PACK TO RIP OPEN!')}">
+            <div class="dex-foil-pack-wrapper ${packTier.legendary ? 'c162-pack-legendary' : ''}" id="c162-foil-pack-target" style="cursor:pointer; margin: 10px auto;" title="${_t('challenge162.pack_tap_rip', 'TAP THE PACK TO RIP OPEN!')}">
               <div class="dex-foil-pack" id="c162-foil-pack-inner" style="background:linear-gradient(135deg, #1e293b 0%, #0f172a 40%, #1e1b4b 70%, #311042 100%); border-color:${packTier.border}; box-shadow:0 0 35px ${packTier.glow};">
                 <div class="dex-foil-crimp" id="c162-pack-crimp-top" style="background:repeating-linear-gradient(90deg, ${packTier.border}, ${packTier.border} 3px, #b45309 3px, #b45309 6px);"></div>
 
@@ -5232,6 +5403,7 @@
           const bb9 = card.bb9 !== undefined ? card.bb9 : (card.ctl !== undefined ? card.ctl : 50);
           const hr9 = card.hr9 !== undefined ? card.hr9 : (card.mov !== undefined ? card.mov : 50);
           const sta = card.sta !== undefined ? card.sta : 65;
+          const clt = card.clt !== undefined ? card.clt : (card.clu !== undefined ? card.clu : 50);
           statsHTML = `
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:16px">
               ${renderStat('H/9', h9)}
@@ -5239,7 +5411,7 @@
               ${renderStat('BB/9', bb9)}
               ${renderStat('HR/9', hr9)}
               ${renderStat('STA', sta)}
-              ${renderStat('ROL', card.role || card.pos || 'P')}
+              ${renderStat('CLT', clt)}
             </div>
           `;
         } else {
@@ -5385,32 +5557,24 @@
         );
         if (!player) {
           return `
-            <div class="c162-slot-item ${isCurrentActive ? 'active' : ''}"
-                 data-drag-kind="${kind}"
-                 data-drag-key="${key}"
-                 style="cursor:pointer;">
-              <div class="c162-slot-header-pill">${slotLabel}</div>
-              <div class="c162-empty-card-frame">
-                <span class="c162-empty-icon"><i class="fa-solid fa-plus"></i></span>
-                <span class="c162-empty-text">${slotLabel}</span>
-              </div>
+            <div class="c162-slot-item c162-rb-row empty" data-drag-kind="${kind}" data-drag-key="${key}">
+              <span class="c162-rb-pos">${slotLabel}</span>
+              <span class="c162-rb-name">—</span>
             </div>
           `;
         }
-        const cardHTML = typeof window.createCardHTML === 'function'
-          ? window.createCardHTML(player, kind === 'bench' ? null : slotLabel)
-          : `<div class="player-card"><div class="card-name">${player.name}</div></div>`;
-
+        const rar = String(player.rarity || 'Common').toLowerCase();
+        const isBatSlot = kind === 'batter';
+        const outOfPos = isBatSlot && slotLabel !== 'DH' && typeof canPlayerFillSlot === 'function' && !canPlayerFillSlot(player, slotLabel);
+        const meta = [player.year, player.team].filter(Boolean).join(' · ');
         return `
-          <div class="c162-slot-item ${isCurrentActive ? 'active' : ''}" title="${player.name} (${_t('challenge162.drag_to_reorder', 'Drag to swap position')})"
-               draggable="true"
-               data-drag-kind="${kind}"
-               data-drag-key="${key}"
-               style="cursor:grab;">
-            <div class="c162-slot-header-pill">${slotLabel}</div>
-            <div class="c162-card-container">
-              ${cardHTML}
-            </div>
+          <div class="c162-slot-item c162-rb-row r-${rar} ${isCurrentActive ? 'active' : ''}"
+               title="${player.name} · ${player.rarity || ''} (${_t('challenge162.drag_to_reorder', 'Drag to swap position')})"
+               draggable="true" data-drag-kind="${kind}" data-drag-key="${key}">
+            <span class="c162-rb-pos">${slotLabel}</span>
+            <span class="c162-rb-name">${player.name}${outOfPos ? ' <i title="Playing out of position">⚠</i>' : ''}</span>
+            <span class="c162-rb-meta">${meta}</span>
+            <span class="c162-rb-ovr">${Math.round(player.ovr || 50)}</span>
           </div>
         `;
       };
@@ -5484,67 +5648,33 @@
             <!-- Left Column -->
             ${leftColumnHTML}
 
-            <!-- Right Column: Visual Card Deck Formation Board -->
-            <div style="background:radial-gradient(circle at 50% 0%, rgba(15,23,42,0.95) 0%, rgba(8,12,22,0.98) 100%); border:1px solid rgba(56,189,248,0.25); border-radius:12px; padding:14px; max-height:84vh; overflow-y:auto; overflow-x:auto;">
-              
-              <!-- Deck Header -->
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px solid rgba(255,255,255,0.12); padding-bottom:8px; flex-wrap:wrap; gap:8px;">
+            <!-- Right Column: roster board, every spot visible at once -->
+            <div class="c162-rb">
+              <div class="c162-rb-head">
                 <div>
-                  <span style="font-family:'Press Start 2P',monospace; font-size:10px; color:#38bdf8;">
-                    📋 ${_t('challenge162.deck_title', 'TEAM CARD DECK')} (${allPulled.length}/25)
-                  </span>
-                  <div style="font-size:9px; color:#94a3af; margin-top:2px;">
-                    ${_t('challenge162.deck_counts', `{{b}}/14 Batters • {{p}}/11 Pitchers`, { b: draft.pulledBatters.length, p: draft.pulledPitchers.length })}
-                    <span style="color:#34d399; margin-left:6px;">(${_t('challenge162.drag_hint', 'Drag cards to swap positions')})</span>
-                  </div>
+                  <b>📋 ${_t('challenge162.deck_title', 'TEAM CARD DECK')} · ${allPulled.length}/25</b>
+                  <small>${_t('challenge162.drag_hint', 'Drag cards to swap positions')}</small>
                 </div>
-                <div style="font-family:'Press Start 2P',monospace; font-size:9.5px; color:#ffd700;">
-                  ⭐ ${_t('challenge162.team_ovr', 'TEAM OVR')}: ${avgOVR}
+                <div class="c162-rb-ovrbox"><small>${_t('challenge162.team_ovr', 'TEAM OVR')}</small><b>${avgOVR}</b></div>
+              </div>
+              <div class="c162-rb-rarity">${['Legendary', 'Epic', 'Rare', 'Uncommon', 'Common'].map(r => {
+                const n = allSlotted.filter(p => (p.rarity || 'Common') === r).length;
+                return `<span class="r-${r.toLowerCase()} ${n ? '' : 'zero'}"><b>${n}</b> ${r}</span>`;
+              }).join('')}</div>
+              <div class="c162-rb-cols">
+                <div class="c162-rb-col">
+                  <div class="c162-rb-title t-lineup"><span>⚡ LINEUP</span><span>${filledLineupCount}/9</span></div>
+                  ${infieldSlotsHTML}${outfieldSlotsHTML}
+                  <div class="c162-rb-title t-bench"><span>🛋️ BENCH</span><span>${filledBenchCount}/5</span></div>
+                  ${benchSlotsHTML}
+                </div>
+                <div class="c162-rb-col">
+                  <div class="c162-rb-title t-rot"><span>🧢 ROTATION</span><span>${filledSPCount}/5</span></div>
+                  ${spSlotsHTML}
+                  <div class="c162-rb-title t-pen"><span>🔥 BULLPEN</span><span>${filledRPCount}/6</span></div>
+                  ${rpSlotsHTML}
                 </div>
               </div>
-
-              <!-- Deck Slot Grid -->
-              <div class="c162-deck-compact">
-                <!-- Section 1: Batting Lineup (9 Cards) -->
-                <div class="c162-roster-section" style="margin-bottom:12px;">
-                  <div class="c162-section-header" style="font-family:'Press Start 2P',monospace; font-size:8px; color:#ffd700; margin-bottom:6px; display:flex; justify-content:space-between;">
-                    <span>⚡ ${_t('challenge162.lineup_title', 'STARTING LINEUP (9 CARDS)')}</span>
-                    <span>${filledLineupCount}/9</span>
-                  </div>
-                  <div style="font-family:'Press Start 2P',monospace; font-size:7px; color:#94a3af; margin-bottom:4px; text-align:center;">— ${_t('challenge162.infield', 'INFIELD (5)')} —</div>
-                  <div class="c162-cards-row c162-row-nowrap">${infieldSlotsHTML}</div>
-                  <div style="font-family:'Press Start 2P',monospace; font-size:7px; color:#94a3af; margin:8px 0 4px 0; text-align:center;">— ${_t('challenge162.outfield_dh', 'OUTFIELD & DH (4)')} —</div>
-                  <div class="c162-cards-row c162-row-nowrap">${outfieldSlotsHTML}</div>
-                </div>
-
-                <!-- Section 2: Bench (5 Cards) -->
-                <div class="c162-roster-section" style="margin-bottom:12px;">
-                  <div class="c162-section-header" style="font-family:'Press Start 2P',monospace; font-size:8px; color:#34d399; margin-bottom:6px; display:flex; justify-content:space-between;">
-                    <span>🛋️ ${_t('challenge162.bench_title', 'BENCH RESERVES (BENCH - 5 CARDS)')}</span>
-                    <span>${filledBenchCount}/5</span>
-                  </div>
-                  <div class="c162-cards-row c162-row-nowrap">${benchSlotsHTML}</div>
-                </div>
-
-                <!-- Section 3: Starting Pitchers (5 Cards) -->
-                <div class="c162-roster-section" style="margin-bottom:12px;">
-                  <div class="c162-section-header" style="font-family:'Press Start 2P',monospace; font-size:8px; color:#38bdf8; margin-bottom:6px; display:flex; justify-content:space-between;">
-                    <span>🧢 ${_t('challenge162.rotation_title_5', 'STARTING ROTATION (ROTATION - 5 CARDS)')}</span>
-                    <span>${filledSPCount}/5</span>
-                  </div>
-                  <div class="c162-cards-row c162-row-nowrap">${spSlotsHTML}</div>
-                </div>
-
-                <!-- Section 4: Bullpen (6 Cards) -->
-                <div class="c162-roster-section">
-                  <div class="c162-section-header" style="font-family:'Press Start 2P',monospace; font-size:8px; color:#f472b6; margin-bottom:6px; display:flex; justify-content:space-between;">
-                    <span>🔥 ${_t('challenge162.bullpen_title_6', 'BULLPEN RELIEVERS (BULLPEN - 6 CARDS)')}</span>
-                    <span>${filledRPCount}/6</span>
-                  </div>
-                  <div class="c162-cards-row c162-row-nowrap">${rpSlotsHTML}</div>
-                </div>
-              </div>
-
             </div>
 
           </div>
@@ -5971,21 +6101,54 @@
     },
 
     // Expected wins over the actual 162-day slate, from the same win model the league uses.
+    // Projected wins from the rosters, fitted on full simulated seasons (224 team-seasons):
+    // each OVR point of the lineup is worth ~2.1 wins, of the rotation ~1.1, of the bullpen ~0.3.
+    // The old version used one strength number (lineup + ace) and a win-probability curve that
+    // had nothing to do with the game engine: it missed by 7 wins on average and by up to 29.
     _projectLeague(L) {
+      const avg = (a) => (a.length ? a.reduce((t, p) => t + ((p && p.ovr) || 50), 0) / a.length : 50);
+      const pend = this._pendingSeason;
+      const feat = {};
+      Object.values(L.teams).forEach(t => {
+        let lineup, rot, pen;
+        if (t.id === USER_TEAM_ID) {
+          const src = pend && pend.lineup ? pend : (this.state && this.state.roster);
+          if (!src) return;
+          lineup = Object.values(src.lineup || {}).filter(Boolean);
+          rot = ((src.pitchers || {}).SP || []).filter(Boolean);
+          pen = ((src.pitchers || {}).RP || []).filter(Boolean);
+        } else {
+          const staff = getFranchiseStaff(t.code, t.decade);
+          lineup = getFranchiseDecadeTeam(t.code, t.decade).lineup;
+          rot = staff.rotation; pen = staff.bullpen;
+        }
+        feat[t.id] = [avg(lineup), avg(rot), avg(pen)];
+      });
+      const ids = Object.keys(feat);
+      const mean = k => ids.reduce((t, id) => t + feat[id][k], 0) / Math.max(1, ids.length);
+      const m = [mean(0), mean(1), mean(2)];
       const exp = {};
-      Object.keys(L.teams).forEach(id => { exp[id] = 0; });
-      for (let d = 0; d < SEASON_LENGTH; d++) {
-        leagueDaySlate(L, d).forEach(([a, b]) => {
-          const pa = winProbability(L.teams[a].strength, L.teams[b].strength, 0);
-          exp[a] += pa;
-          exp[b] += 1 - pa;
-        });
-      }
+      Object.keys(L.teams).forEach(id => {
+        const f = feat[id] || m;
+        const w = SEASON_LENGTH / 2 + 2.15 * (f[0] - m[0]) + 1.09 * (f[1] - m[1]) + 0.29 * (f[2] - m[2]);
+        exp[id] = Math.max(40, Math.min(125, w));
+      });
       return exp;
     },
 
     showLeaguePreview(pending) {
       pending.battingOrder = pending.battingOrder || this._optimizeBattingOrder(pending.lineup);
+      // Iron Men come preselected (the positions that gain the most games, best player first)
+      // so the choice is visible; the user can change them before the season starts.
+      if (!pending.ironMan) {
+        pending.ironMan = {};
+        pending.battingOrder
+          .filter(slot => pending.lineup[slot])
+          .map(slot => ({ slot, b: pending.lineup[slot], gain: (IRON_GAMES[slot] || IRON_GAMES.DH)[1] - (IRON_GAMES[slot] || IRON_GAMES.DH)[0] }))
+          .sort((x, y) => y.gain - x.gain || (y.b.ovr || 0) - (x.b.ovr || 0))
+          .slice(0, MAX_IRON_MAN)
+          .forEach(x => { pending.ironMan[batterUnlockKey(x.b)] = true; });
+      }
       pending.teamName = pending.teamName || this._suggestTeamName(this._pendingCards(pending));
       const strength = this._pendingStrength(pending);
       if (!pending.league) {
@@ -6063,18 +6226,19 @@
           <div class="c162-lg-picks">${leagueCard('AL')}${leagueCard('NL')}</div>
           <div class="c162-pr-note">Top ${PLAYOFF_SEEDS} of each league make the playoffs: 1 plays 4, 2 plays 3, league final, then the World Series. Most of your games are against your own league.</div>
 
-          <div class="c162-meet-section">IRON MEN · PICK UP TO ${MAX_IRON_MAN}</div>
-          <div class="c162-pr-note">An Iron Man wears down at a quarter of everyone else's speed, so he needs fewer days off and plays more games. He still tires (up to −3 to his bat) and still gets rest days when he needs them. Worth the most at catcher, shortstop and center field, where wear builds fastest. Locked once the season starts.</div>
+          <div class="c162-meet-section">🛡 IRON MEN · ${Object.keys(p.ironMan || {}).length} / ${MAX_IRON_MAN} CHOSEN</div>
+          <div class="c162-pr-note">Tap a player to make him an Iron Man (up to ${MAX_IRON_MAN}). Everyone gets tired from playing every day and has to sit; an Iron Man tires 4 times slower, so he plays almost every game. It pays off most at catcher, shortstop, second base and center field. We picked the best ${MAX_IRON_MAN} for you; change them if you like. Locked once the season starts.</div>
           <div class="c162-iron-picks">${p.battingOrder.map(slot => {
             const b = p.lineup[slot];
             if (!b) return '';
             const k = batterUnlockKey(b);
             const on = !!(p.ironMan && p.ironMan[k]);
             const full = !on && Object.keys(p.ironMan || {}).length >= MAX_IRON_MAN;
-            const wear = WEAR_BY_POS[slot] - WEAR_RECOVERY;
-            const cost = wear < 0.5 ? 'low wear · small gain' : wear < 1 ? 'mid wear · good gain' : 'high wear · big gain';
+            const g = IRON_GAMES[slot] || IRON_GAMES.DH;
             return `<button class="c162-iron-pick ${on ? 'on' : ''}" data-iron="${k}" ${full ? 'disabled' : ''}>
-              <span class="c162-iron-pos">${slot}</span><b>${b.name}</b><small>${cost}</small>
+              <span class="c162-iron-pos">${slot}</span><b>${b.name}</b>
+              <small>${on ? `plays ~${g[1]} games` : `~${g[0]} games → ~${g[1]} as Iron Man`}</small>
+              <em class="c162-iron-state">${on ? '🛡 IRON MAN ✓' : (full ? 'unpick one first' : '＋ TAP TO PICK')}</em>
             </button>`;
           }).join('')}</div>
 
@@ -6084,7 +6248,7 @@
           </div>
 
           <div class="c162-meet-section">PRESEASON POWER RANKINGS</div>
-          <div class="c162-pr-note">Projected records from roster strength. Your actual games are played out pitch by pitch.</div>
+          <div class="c162-pr-note">Projected records from each roster's lineup, rotation and bullpen. A season still swings about 8 wins either way: every game is played out pitch by pitch.</div>
           <div class="c162-pr-list">${rows}</div>
 
           <div class="c162-meet-actions">
@@ -6958,6 +7122,7 @@
           ${regularSeasonText} &middot; ${gamesCountText}
         </div>
 
+        ${this._alertsHTML()}
         <!-- Top Horizontal Row: [RECORD & MODE BADGE] + [NEXT GAME RIVAL BOX] SIDE-BY-SIDE -->
         <div class="c162-season-top-row" style="display:flex;justify-content:center;align-items:stretch;gap:14px;flex-wrap:wrap;margin-bottom:14px;max-width:960px;margin-left:auto;margin-right:auto;">
           
@@ -7003,6 +7168,7 @@
           ${actionHTML}
         </div>
 
+        ${this._lastGameHTML()}
         <!-- Two column layout: Left (Tables) + Right (Game Log Feed) -->
         <div class="c162-season-grid">
           <div class="c162-main-panel">
@@ -7126,11 +7292,12 @@
       const streak = L.teams[USER_TEAM_ID].streak || 0;
       const m = momentumFor(streak);
       const next = MOMENTUM_STEP - (Math.abs(streak) % MOMENTUM_STEP);
-      const hint = Math.abs(m) >= MOMENTUM_CAP ? 'max' : `${next} more ${streak >= 0 ? 'W' : 'L'} for ${streak >= 0 ? '+' : '−'}${Math.abs(m) + 1}`;
+      const more = next === 1 ? (streak >= 0 ? 'next W' : 'next L') : `${next} more ${streak >= 0 ? 'W' : 'L'}`;
+      const hint = Math.abs(m) >= MOMENTUM_CAP ? 'max' : `${more}: ${streak >= 0 ? '+' : '−'}${Math.abs(m) + 1} · a ${streak >= 0 ? 'loss' : 'win'} resets it`;
       const cls = m > 0 ? 'up' : m < 0 ? 'down' : '';
       const label = m > 0 ? `🔥 MOMENTUM +${m}` : m < 0 ? `🧊 MOMENTUM −${-m}` : 'MOMENTUM 0';
-      return `<div class="c162-momentum ${cls}" title="Every 3 straight wins (or losses) adds +1 (or −1) to all ratings, up to ±${MOMENTUM_CAP}. Applies to every team.">
-        ${label}<span>${m === 0 && streak === 0 ? 'win 3 straight for +1' : hint}</span>
+      return `<div class="c162-momentum ${cls}" title="Every ${MOMENTUM_STEP} straight wins add +1 to all your ratings and every ${MOMENTUM_STEP} straight losses take 1 away, up to ±${MOMENTUM_CAP}. The streak ending resets it. Applies to every team in the league.">
+        ${label}<span>${m === 0 && streak === 0 ? 'every ' + MOMENTUM_STEP + ' straight wins: +1 to all ratings (max +' + MOMENTUM_CAP + ')' : hint}</span>
       </div>`;
     },
 
@@ -7864,12 +8031,17 @@
           `;
         }
       } else if (S.playoffs && S.playoffs.finished) {
-        const roundName = PLAYOFF_ROUNDS[S.playoffs.round] ? PLAYOFF_ROUNDS[S.playoffs.round].label : 'Playoffs';
-        const poEndTitle = _t('challenge162.playoff_end_title', 'FIN DE LA POSTEMPORADA');
-        const poEndDesc = _t('challenge162.playoff_end_desc', `Gran campaña finalizada en: ${roundName}`, { round: roundName });
+        const missedPO = !!S.playoffs.missed;
+        const roundKey = `challenge162.round_${(S.playoffs.round || 0) + 1}_title`;
+        const roundName = _t(roundKey, PLAYOFF_ROUNDS[S.playoffs.round] ? PLAYOFF_ROUNDS[S.playoffs.round].label : 'Playoffs');
+        // Missing the playoffs is not a postseason exit: say so instead of naming a round never played.
+        const poEndTitle = missedPO ? 'SEASON OVER' : _t('challenge162.playoff_end_title', 'FIN DE LA POSTEMPORADA');
+        const poEndDesc = missedPO
+          ? `${S.wins}-${S.losses} · no postseason this year. Only the top 4 of each league get in.`
+          : _t('challenge162.playoff_end_desc', `Gran campaña finalizada en: ${roundName}`, { round: roundName });
         headerHTML = `
           <div style="text-align:center;margin-bottom:8px;">
-            <div style="font-size:24px;margin-bottom:2px;">🥈</div>
+            <div style="font-size:24px;margin-bottom:2px;">${missedPO ? '📉' : '🥈'}</div>
             <div style="font-family:'Press Start 2P',monospace;font-size:12px;color:#f87171;letter-spacing:1px;margin-bottom:3px;">
               ${poEndTitle}
             </div>
