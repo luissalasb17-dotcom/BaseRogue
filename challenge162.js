@@ -6408,8 +6408,9 @@
     },
 
     // Expected wins over the actual 162-day slate, from the same win model the league uses.
-    // Projected wins from the rosters, fitted on full simulated seasons (224 team-seasons):
-    // each OVR point of the lineup is worth ~2.1 wins, of the rotation ~1.1, of the bullpen ~0.3.
+    // Projected wins from the rosters, fitted on full simulated seasons (448 team-seasons with
+    // the 1947-2025 calibration): each OVR point of the lineup is worth ~2.1 wins, of the
+    // rotation ~0.5 and of the bullpen ~0.4. Refit whenever the engine changes.
     // The old version used one strength number (lineup + ace) and a win-probability curve that
     // had nothing to do with the game engine: it missed by 7 wins on average and by up to 29.
     _projectLeague(L) {
@@ -6437,7 +6438,7 @@
       const exp = {};
       Object.keys(L.teams).forEach(id => {
         const f = feat[id] || m;
-        const w = SEASON_LENGTH / 2 + 2.15 * (f[0] - m[0]) + 1.09 * (f[1] - m[1]) + 0.29 * (f[2] - m[2]);
+        const w = SEASON_LENGTH / 2 + 2.10 * (f[0] - m[0]) + 0.54 * (f[1] - m[1]) + 0.38 * (f[2] - m[2]);
         exp[id] = Math.max(40, Math.min(125, w));
       });
       return exp;
