@@ -222,7 +222,7 @@
     const yearVal = p.year || p.peak_year_display || p.peak_year || 1990;
     const cName = cleanName(p);
     return {
-      name: cName, cleanName: cName, role, pos: role,
+      name: cName, cleanName: cName, role, pos: role, playerID: p.playerID,
       hp, maxHp: hp, ovr: p.ovr || 50, rarity: p.rarity || 'Common', era: p.era || '', team: p.team || '', year: yearVal,
       h9: p.h9 !== undefined ? p.h9 : 50, k9: p.k9 !== undefined ? p.k9 : 50,
       bb9: p.bb9 !== undefined ? p.bb9 : 50, hr9: p.hr9 !== undefined ? p.hr9 : 50,
@@ -934,7 +934,7 @@
   const PIT_BB9 = [5.4, 4.5, 4.05, 3.6, 3.23, 2.83, 2.55, 2.29, 2.05, 1.83, 1.45, 1.25];
   const PIT_HR9 = [1.32, 1.12, .98, .82, .70, .57, .47, .36, .29, .22, .19, .17];
   // League level: everybody here is at his peak, so the tables are scaled to an all-eras league.
-  const PA_SCALE_AVG = 0.92, PA_SCALE_HR = 1.0, PA_SCALE_K = 1.27, PA_SCALE_BB = 1.04;
+  const PA_SCALE_AVG = 0.96, PA_SCALE_HR = 1.0, PA_SCALE_K = 1.27, PA_SCALE_BB = 1.04;
   function rateAt(ys, v) {
     if (!(v > RT_X[0])) return ys[0];
     for (let n = 1; n < RT_X.length; n++) {
@@ -943,6 +943,34 @@
     return ys[ys.length - 1];
   }
   const baaOf = h9 => h9 / (27 + h9);
+  // Hidden tendencies (challenge_tendencies.js, built from the real record): how each player
+  // used his tools. bat: [homers, steals, strikeouts], pit: strikeouts, each as a multiplier of what the
+  // engine gives that rating. Without them Ty Cobb hit 31 homers (his power was doubles and
+  // triples) and Mathewson struck out 8.6 per nine. Only this mode reads them.
+  // How much of each tendency is used: 0 = ratings only (neutral environment: "what would he
+  // do today"), 1 = his real numbers. Decision of the user: homers and strikeouts stay neutral
+  // (it is fun to see old players in a modern setting); steals follow the real player, because
+  // running is a habit of the player more than of his era.
+  const TENDENCY_STRENGTH = { hr: 0, sb: 1, k: 0 };
+  const NO_BAT_TENDENCY = [1, 1, 1];
+  const _strength = (mult, s) => (s <= 0 || !mult ? 1 : (s >= 1 ? mult : Math.pow(mult, s)));
+  const _batCache = new Map();
+  function batTendency(p) {
+    const t = window.ChallengeTendencies;
+    const raw = t && p && p.playerID && t.bat[p.playerID];
+    if (!raw) return NO_BAT_TENDENCY;
+    let out = _batCache.get(p.playerID);
+    if (!out) {
+      out = [_strength(raw[0], TENDENCY_STRENGTH.hr), _strength(raw[1], TENDENCY_STRENGTH.sb), _strength(raw[2], TENDENCY_STRENGTH.k)];
+      _batCache.set(p.playerID, out);
+    }
+    return out;
+  }
+  function pitTendency(p) {
+    const t = window.ChallengeTendencies;
+    return _strength(t && p && p.playerID && t.pit[p.playerID], TENDENCY_STRENGTH.k);
+  }
+
   function simPaOutcome(batter, pitcher, isUserBatting = true) {
     const num = (v, d) => (v !== undefined ? v : d);
     const con = num(batter.con, 50), eye = num(batter.eye, 50), pwr = num(batter.pwr, 50), spd = num(batter.spd, 50);
@@ -953,7 +981,7 @@
     // One formula for every batter in the league; isUserBatting is kept only for old callers.
     let pBB = rateAt(BAT_BB, eye) * (rateAt(PIT_BB9, pBB9) / PIT_BB9[4]) * PA_SCALE_BB;
     pBB = Math.max(0.02, Math.min(0.30, pBB));
-    let pSO = rateAt(BAT_K, kAvd) * Math.pow(rateAt(PIT_K9, pK9) / PIT_K9[4], 1.1) * PA_SCALE_K;
+    let pSO = rateAt(BAT_K, kAvd) * Math.pow(rateAt(PIT_K9, pK9) / PIT_K9[4], 1.1) * PA_SCALE_K * pitTendency(pitcher) * (batTendency(batter)[2] || 1);
     pSO = Math.max(0.015, Math.min(0.45, pSO));
     const pInPlay = Math.max(0.20, 1 - pBB - pSO);
 
@@ -964,15 +992,23 @@
     let pTotalHit = (1 - pBB) * targetAvg;
     pTotalHit = Math.min(pTotalHit, pInPlay - 0.01);
 
-    let pHR = rateAt(BAT_HR, pwr) * (rateAt(PIT_HR9, pHR9) / PIT_HR9[4]) * PA_SCALE_HR;
-    pHR = Math.max(0.0005, Math.min(0.11, pHR));
-    pHR = Math.min(pHR, pTotalHit * 0.50);
+    const clampHR = v => Math.min(Math.max(0.0005, Math.min(0.11, v)), pTotalHit * 0.50);
+    const baseHR = clampHR(rateAt(BAT_HR, pwr) * (rateAt(PIT_HR9, pHR9) / PIT_HR9[4]) * PA_SCALE_HR);
+    const pHR = clampHR(baseHR * batTendency(batter)[0]);
     const pRegularHit = pTotalHit - pHR;
 
     const share3B = rateAt(BAT_3B, spd);
     const share2B = rateAt(BAT_2B, pwr);
-    const p2B = pRegularHit * share2B;
-    const p3B = pRegularHit * share3B;
+    // Part of the power a hitter did not put over the fence stays as extra bases: a quarter of
+    // the homers his tendency takes away come back as doubles and triples (more triples for the
+    // fast ones), the rest as singles. Moving all of them gave Ty Cobb 68 doubles.
+    const moved = baseHR - pHR;
+    let p2B = (pTotalHit - baseHR) * share2B + moved * 0.15;
+    let p3B = (pTotalHit - baseHR) * share3B + moved * 0.10 * Math.min(1.5, Math.max(0.3, spd / 75));
+    p2B = Math.max(pRegularHit * 0.06, p2B);
+    p3B = Math.max(pRegularHit * 0.004, p3B);
+    const over = (p2B + p3B) - pRegularHit * 0.62; // always leave room for singles
+    if (over > 0) { const k = (pRegularHit * 0.62) / (p2B + p3B); p2B *= k; p3B *= k; }
     const p1B = pRegularHit - p2B - p3B;
 
     const roll = Math.random();
@@ -3000,7 +3036,7 @@
           if (from >= 0 && Math.abs(margin) < 5) {
             const runner = bases[from];
             const rate = Math.min(1.0, Math.max(0, runner.spd !== undefined ? runner.spd : 50) / 125.0);
-            const tryP = (STEAL_TRY_BASE + Math.pow(rate, STEAL_TRY_POW) * STEAL_TRY_SCALE) * (from === 1 ? STEAL_THIRD : 1);
+            const tryP = (STEAL_TRY_BASE + Math.pow(rate, STEAL_TRY_POW) * STEAL_TRY_SCALE) * (from === 1 ? STEAL_THIRD : 1) * batTendency(runner)[1];
             if (Math.random() < tryP) {
               const rl = batterLine(batSide, runner);
               const before = trace ? slim() : null;
@@ -5338,26 +5374,23 @@
           const pos = pit ? (c.role || 'SP') : `${c.pos}${c.sec_pos ? ' / ' + c.sec_pos : ''}`;
           // Only worth pointing out when it sets one card apart from the others.
           const fills = this._packOptionFills(c, needs) && !draft.options.every(o => this._packOptionFills(o, needs));
-          return `<div class="c162-opt r-${rar.toLowerCase()}">
-            <div class="c162-opt-head">
-              <span class="c162-opt-ovr">${Math.floor(c.ovr || 50)}</span>
-              <div class="c162-opt-id">
-                <b>${c.name}</b>
-                <small>${rar} · ${pos} · ${c.year || ''} ${c.team || ''}</small>
-              </div>
-              ${fills ? '<span class="c162-opt-need">FILLS A HOLE</span>' : ''}
-            </div>
-            <div class="c162-opt-stats">${stats.map(([l, v]) => `<span><i>${l}</i><b>${v !== undefined ? Math.round(v) : '—'}</b><em>${v !== undefined ? gradeOf(v) : ''}</em></span>`).join('')}</div>
-            <div class="c162-opt-actions">
-              <button class="btn btn-secondary" data-pack-view="${i}">🔍 CARD</button>
-              <button class="btn c162-opt-pick" data-pack-pick="${i}">✔ PICK</button>
-            </div>
+          const cardHTML = typeof window.createCardHTML === 'function'
+            ? window.createCardHTML(c)
+            : `<div class="player-card"><div class="card-name">${c.name}</div></div>`;
+          return `<div class="c162-optcard r-${rar.toLowerCase()}" style="animation-delay:${i * 110}ms">
+            <div class="c162-optcard-card" data-pack-view="${i}" title="See the full card">${cardHTML}</div>
+            <div class="c162-optcard-cap"><b>${Math.floor(c.ovr || 50)}</b><span>${pit ? (c.role || 'SP') : c.pos} · ${rar}</span></div>
+            <div class="c162-optcard-stats">${stats.map(([l, v]) => `<span><i>${l}</i><b>${v !== undefined ? Math.round(v) : '—'}</b></span>`).join('')}</div>
+            <div class="c162-optcard-need">${fills ? 'FILLS A HOLE' : ''}</div>
+            <button class="btn c162-opt-pick" data-pack-pick="${i}">✔ PICK</button>
           </div>`;
         };
         leftColumnHTML = `
           <div class="c162-opts">
-            <div class="c162-opts-title"><b>${packTier.badge}</b><span>PACK ${draft.currentPack + 1} / ${totalInStage} · PICK ONE OF ${draft.options.length}</span></div>
-            ${draft.options.map(tile).join('')}
+            <div class="c162-opts-title"><b>${packTier.badge}</b><span>PACK ${draft.currentPack + 1} / ${totalInStage}</span></div>
+            <div class="c162-opts-prompt">✨ PICK ONE OF ${draft.options.length} ✨</div>
+            <div class="c162-opts-row">${draft.options.map(tile).join('')}</div>
+            <div class="c162-opts-hint">Click a card to see it in full before you decide</div>
           </div>`;
       } else if (!isCardRevealed && !draft.viewCard) {
         const boxLabel = isPitchersStage ? _t('challenge162.box_pitchers', 'PITCHERS BOX') : _t('challenge162.box_batters', 'BATTERS BOX');
@@ -5693,7 +5726,7 @@
           </div>
 
           <!-- Main Grid: Left Stage (Pack/Card) + Right Board (Card Deck) -->
-          <div class="c162-pack-layout" style="display:grid; grid-template-columns: 460px 1fr; gap:16px; align-items:start;">
+          <div class="c162-pack-layout" style="display:grid; grid-template-columns: ${(!isCardRevealed && !draft.viewCard && draft.options && draft.options.length) ? '540px' : '460px'} 1fr; gap:16px; align-items:start;">
             
             <!-- Left Column -->
             ${leftColumnHTML}
