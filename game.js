@@ -1560,6 +1560,38 @@
       };
 
       const picks = [];
+      // Rounds 5-8 are all Commons: three random ones looked alike and the choice meant
+      // nothing. Each slot now gives a different reason to pick: a position you still need,
+      // a player of the era you have the most of, and a specialist with one standout tool.
+      if (this.draftRound >= 5 && this.draftRound <= 8) {
+        const base = (activeWeighted && activeWeighted.length >= 12 ? activeWeighted : fullWeighted).map(x => x.player);
+        const rnd = list => (list.length ? list[Math.floor(Math.random() * list.length)] : null);
+        const secOf = p => String(p.sec_pos || '').split(',').map(x => x.trim()).filter(Boolean);
+        const free = list => list.filter(p => !picks.some(x => x.name === p.name));
+        const take = (p, tag) => {
+          if (!p) return;
+          picks.push({ ...p, draftTag: tag });
+          removeFromList(fullWeighted, p.name);
+          if (activeWeighted) removeFromList(activeWeighted, p.name);
+        };
+        // 1. A hole: primary position still empty (secondary if nobody has it as primary).
+        let need = free(base.filter(p => missingPos.includes(p.pos)));
+        if (!need.length) need = free(base.filter(p => secOf(p).some(sp => missingPos.includes(sp))));
+        const needPick = rnd(need);
+        if (needPick) take(needPick, { type: 'need', pos: missingPos.includes(needPick.pos) ? needPick.pos : secOf(needPick).find(sp => missingPos.includes(sp)) });
+        // 2. Synergy: the era with the most drafted players (the Build Era wins a tie).
+        const eraCount = {};
+        this.draftedPlayers.forEach(p => { if (p.era && p.era !== 'None') eraCount[p.era] = (eraCount[p.era] || 0) + 1; });
+        const topEra = Object.keys(eraCount).sort((x, y) => (eraCount[y] - eraCount[x]) || ((y === this.buildEra) - (x === this.buildEra)))[0];
+        if (topEra) take(rnd(free(base.filter(p => p.era === topEra))), { type: 'era', era: topEra, count: eraCount[topEra] });
+        // 3. Specialist: one of the best Commons at a single tool (top 8% of what is on offer).
+        // The tool is drawn first so it is not always K-AVD, where Commons are deepest.
+        const TOOLS = ['con', 'pwr', 'eye', 'spd', 'def', 'k_avd'];
+        const tool = TOOLS[Math.floor(Math.random() * TOOLS.length)];
+        const ranked = free(base).sort((x, y) => (Number(y[tool]) || 0) - (Number(x[tool]) || 0));
+        const spec = rnd(ranked.slice(0, Math.max(3, Math.round(ranked.length * 0.08))));
+        if (spec) take(spec, { type: 'tool', stat: tool, val: Number(spec[tool]) || 0 });
+      }
       while (picks.length < 3 && (fullWeighted.length > 0 || (activeWeighted && activeWeighted.length > 0))) {
         const useActive = isStoryYearAware && activeWeighted.length > 0 && Math.random() < 0.95;
         let chosen = useActive ? pickWeighted(activeWeighted) : pickWeighted(fullWeighted);

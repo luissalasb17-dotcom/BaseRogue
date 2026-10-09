@@ -3173,3 +3173,51 @@ span.c162-iron {
 .c162-optcard .c162-opt-pick { width: 100%; font-family: 'Press Start 2P', monospace; font-size: 8.5px; padding: 9px 6px; background: linear-gradient(135deg, #ffd700, #f59e0b); color: #000; border: 0; cursor: pointer; }
 @keyframes c162OptDeal { from { transform: translateY(-40px) rotate(-6deg) scale(.7); opacity: 0; } to { transform: none; opacity: 1; } }
 @media (max-width: 768px) { .c162-opts { min-height: 0; } .c162-opts-row { justify-content: flex-start; overflow-x: auto; padding-bottom: 6px; } }
+
+/* Draft rounds 5-8: the reason each Common is on offer */
+.draft-reason {
+  width: 100%;
+  text-align: center;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7px;
+  letter-spacing: .5px;
+  padding: 5px 4px;
+  border-radius: 6px;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #0b1220;
+  background: #94a3b8;
+}
+.draft-reason-need { background: #34d399; }
+.draft-reason-era  { background: #f472b6; }
+.draft-reason-tool { background: #fbbf24; }
+
+/* Defeat screen: why the run ended */
+#gameover-why {
+  max-width: 760px;
+  margin: -14px auto 22px;
+  padding: 14px 18px;
+  border: 1px solid rgba(239, 68, 68, .45);
+  border-radius: 12px;
+  background: rgba(127, 29, 29, .18);
+}
+.go-why-title {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  color: #fca5a5;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+.go-why-list { margin: 0 0 12px 18px; padding: 0; color: #e5e7eb; font-size: 13px; line-height: 1.5; }
+.go-why-stats { display: flex; flex-wrap: wrap; gap: 8px; }
+.go-why-stat {
+  flex: 1 1 110px;
+  background: rgba(0, 0, 0, .35);
+  border-radius: 8px;
+  padding: 8px 6px;
+  text-align: center;
+}
+.go-why-stat b { display: block; font-size: 15px; color: #fff; white-space: nowrap; }
+.go-why-stat span { font-size: 10px; color: #9ca3af; text-transform: uppercase; letter-spacing: .5px; }

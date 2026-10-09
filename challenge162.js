@@ -205,10 +205,10 @@
     const k = s.so || 0;
     const sv = s.sv || 0;
 
-    // Replacement level = 1.25 x the league ERA (~4.35 since the batting average went up).
+    // Replacement level = 1.25 x the league ERA (~4.0 after the 1947-2025 calibration).
     // It used to be 4.80 with a floor at 0: an average starter was worth ~0.5 and anyone a bit
     // worse showed 0.0 no matter how bad.
-    const repRuns = ip * (5.45 / 9.0);
+    const repRuns = ip * (5.00 / 9.0);
     const actualRA = er * 1.05;
     const kBbAdj = (k * 0.020) - (bb * 0.010);
     const isSP = (role || 'SP').toUpperCase() === 'SP';
@@ -914,10 +914,11 @@
   // League game engine (regular season), tuned to an all-eras environment rather than today's MLB.
   const HOME_EDGE = 3;          // rating points: the home staff pitches with +N, the visitors' with -N
   const STEAL_TRY_BASE = 0.0; // steal attempts per plate appearance with the next base open
-  const STEAL_TRY_SCALE = 0.37;
+  const STEAL_TRY_SCALE = 0.27;
   const STEAL_TRY_POW = 1.25;
   const STEAL_THIRD = 0.22;     // share of those attempts when the runner is on second
-  const ERROR_RATE = 0.034;     // batted-ball outs that turn into an error, for an average defense
+  const GREAT_STEALER = 1.2;    // hidden steal tendency from which a runner counts as a great base stealer
+  const ERROR_RATE = 0.038;     // batted-ball outs that turn into an error, for an average defense
   const GIDP_RATE = 0.19;       // batted-ball outs with a man on first and under 2 outs
   const RUN_ON_OUT = 0.42;      // man on third, under 2 outs: scores on a batted-ball out
   const ADVANCE_ON_OUT = 0.30;  // man on second, third open, under 2 outs: moves up on the out
@@ -936,7 +937,16 @@
   const PIT_BB9 = [5.4, 4.5, 4.05, 3.6, 3.23, 2.83, 2.55, 2.29, 2.05, 1.83, 1.45, 1.25];
   const PIT_HR9 = [1.32, 1.12, .98, .82, .70, .57, .47, .36, .29, .22, .19, .17];
   // League level: everybody here is at his peak, so the tables are scaled to an all-eras league.
-  const PA_SCALE_AVG = 0.96, PA_SCALE_HR = 1.0, PA_SCALE_K = 1.27, PA_SCALE_BB = 1.04;
+  // Reference chosen by the user: AL/NL 1947-2025 all together (.257 / .325 / .399, 4.42 runs,
+  // 0.93 HR, 1.58 doubles, 0.21 triples and 0.74 errors per team-game, K 16.4%, ERA 4.02).
+  const PA_SCALE_HR = 0.92, PA_SCALE_K = 1.38, PA_SCALE_BB = 1.04;
+  const AVG_PIVOT = 0.265, AVG_SPREAD = 1.08, AVG_SHIFT = 0.010;
+  const PA_SCALE_2B = 1.0, PA_SCALE_3B = 0.68; // share of the non-HR hits that go for two and three bases
+  const K_BAT_SPREAD = 0.7, K_PIT_LOW_SPREAD = 0.75, H_PIT_HIGH_SPREAD = 0.3; // 1 = full spread of the tables
+  // The pitchers who allow fewer hits than the average one get that edge a little bigger, the
+  // same idea as AVG_SPREAD for the hitters: the aces reach their own level (their ERA was
+  // 0.17 above their neutral one) and the league stays where it is.
+  const H_PIT_LOW_SPREAD = 1.1;
   function rateAt(ys, v) {
     if (!(v > RT_X[0])) return ys[0];
     for (let n = 1; n < RT_X.length; n++) {
@@ -953,9 +963,16 @@
   // do today"), 1 = his real numbers. Decision of the user: homers and strikeouts stay neutral
   // (it is fun to see old players in a modern setting); steals follow the real player, because
   // running is a habit of the player more than of his era.
-  const TENDENCY_STRENGTH = { hr: 0, sb: 1, k: 0 };
+  // hrUp: the homers a hitter really hit ABOVE what his Power stands for (all of them). The rating
+  // mixes homers, ISO and extra bases and its top is compressed, so the modern sluggers topped
+  // out near 42 (McGwire 42 against 55 in a neutral setting, Sosa 40 / 47). Hitters below
+  // their rating (dead-ball era) are not touched: the environment stays neutral for them.
+  // sbUp: tried at 1.5 to lift the great base stealers (their chances to run are limited:
+  // Rickey Henderson 67 against 91). It did not help them (65) and took steals from everybody
+  // else once the league level was put back, so it stays at 1.
+  const TENDENCY_STRENGTH = { hr: 0, hrUp: 1, sb: 1, sbUp: 1, k: 0 };
   const NO_BAT_TENDENCY = [1, 1, 1];
-  const _strength = (mult, s) => (s <= 0 || !mult ? 1 : (s >= 1 ? mult : Math.pow(mult, s)));
+  const _strength = (mult, s) => (s <= 0 || !mult ? 1 : (s === 1 ? mult : Math.pow(mult, s)));
   const _batCache = new Map();
   function batTendency(p) {
     const t = window.ChallengeTendencies;
@@ -963,7 +980,7 @@
     if (!raw) return NO_BAT_TENDENCY;
     let out = _batCache.get(p.playerID);
     if (!out) {
-      out = [_strength(raw[0], TENDENCY_STRENGTH.hr), _strength(raw[1], TENDENCY_STRENGTH.sb), _strength(raw[2], TENDENCY_STRENGTH.k)];
+      out = [_strength(raw[0], raw[0] > 1 ? TENDENCY_STRENGTH.hrUp : TENDENCY_STRENGTH.hr), _strength(raw[1], raw[1] > 1 ? TENDENCY_STRENGTH.sbUp : TENDENCY_STRENGTH.sb), _strength(raw[2], TENDENCY_STRENGTH.k)];
       _batCache.set(p.playerID, out);
     }
     return out;
@@ -983,13 +1000,31 @@
     // One formula for every batter in the league; isUserBatting is kept only for old callers.
     let pBB = rateAt(BAT_BB, eye) * (rateAt(PIT_BB9, pBB9) / PIT_BB9[4]) * PA_SCALE_BB;
     pBB = Math.max(0.02, Math.min(0.30, pBB));
-    let pSO = rateAt(BAT_K, kAvd) * Math.pow(rateAt(PIT_K9, pK9) / PIT_K9[4], 1.1) * PA_SCALE_K * pitTendency(pitcher) * (batTendency(batter)[2] || 1);
+    // The extremes were too far apart (144 seasons of stars against their neutral peaks):
+    // sluggers struck out ~25% too much and contact hitters too little, strikeout pitchers a
+    // bit too much and control pitchers too little. A batter who strikes out more than the
+    // average one is pulled toward it (pulling the contact hitters too gave Gwynn 43 against
+    // 28), and a pitcher below the average K/9 is pulled up; above it he keeps his own.
+    const kBatRatio = rateAt(BAT_K, kAvd) / BAT_K[4];
+    const kBat = BAT_K[4] * (kBatRatio > 1 ? Math.pow(kBatRatio, K_BAT_SPREAD) : kBatRatio);
+    const kPitRatio = rateAt(PIT_K9, pK9) / PIT_K9[4];
+    const kPit = kPitRatio >= 1 ? kPitRatio : Math.pow(kPitRatio, K_PIT_LOW_SPREAD);
+    let pSO = kBat * kPit * PA_SCALE_K * pitTendency(pitcher) * (batTendency(batter)[2] || 1);
     pSO = Math.max(0.015, Math.min(0.45, pSO));
     const pInPlay = Math.max(0.20, 1 - pBB - pSO);
 
     const defEfficiency = (pitcher && pitcher._fieldingDef) !== undefined ? pitcher._fieldingDef : 50;
     const defAdj = (defEfficiency - 50) * 0.00028;
-    let targetAvg = rateAt(BAT_AVG, con) * (baaOf(rateAt(PIT_H9, pH9)) / baaOf(PIT_H9[4])) * PA_SCALE_AVG - defAdj;
+    // Same for hits: a pitcher who allows more than the average one was punished too much
+    // (about 1.1 extra hits per nine against 0.3 for the aces), so only that side is softened.
+    let hPit = baaOf(rateAt(PIT_H9, pH9)) / baaOf(PIT_H9[4]);
+    hPit = hPit > 1 ? 1 + (hPit - 1) * H_PIT_HIGH_SPREAD : 1 - (1 - hPit) * H_PIT_LOW_SPREAD;
+    // League level as a fixed shift, not as a percentage: a percentage took the most from the
+    // best hitters (Cobb .365 against .393 in a neutral setting). AVG_SPREAD opens the gap
+    // between good and bad hitters a little, so the stars reach their own level and the cost
+    // falls on the weak bats instead of on the league.
+    const avgBat = AVG_PIVOT + (rateAt(BAT_AVG, con) - AVG_PIVOT) * AVG_SPREAD - AVG_SHIFT;
+    let targetAvg = avgBat * hPit - defAdj;
     targetAvg = Math.max(0.12, Math.min(0.42, targetAvg));
     let pTotalHit = (1 - pBB) * targetAvg;
     pTotalHit = Math.min(pTotalHit, pInPlay - 0.01);
@@ -999,8 +1034,8 @@
     const pHR = clampHR(baseHR * batTendency(batter)[0]);
     const pRegularHit = pTotalHit - pHR;
 
-    const share3B = rateAt(BAT_3B, spd);
-    const share2B = rateAt(BAT_2B, pwr);
+    const share3B = rateAt(BAT_3B, spd) * PA_SCALE_3B;
+    const share2B = rateAt(BAT_2B, pwr) * PA_SCALE_2B;
     // Part of the power a hitter did not put over the fence stays as extra bases: a quarter of
     // the homers his tendency takes away come back as doubles and triples (more triples for the
     // fast ones), the rest as singles. Moving all of them gave Ty Cobb 68 doubles.
@@ -3013,6 +3048,11 @@
         let outs = 0, scored = 0;
         const bases = [null, null, null];
         const unearned = new Set(); // runners who reached on an error
+        // Real scoring rule: rebuild the inning without the errors. Once the outs made plus the
+        // outs the errors gave away reach three, the inning should be over and every run after
+        // that is unearned. Before this only the runner who reached on the error counted, and
+        // 96% of the runs were earned (about 92% in real baseball).
+        let errOuts = 0;
         const slim = () => bases.map(b => (b ? { name: b.name } : null));
         const emit = (who, wl, ps0, pl0, o) => {
           const ip = `${Math.floor(pl0.outs / 3)}.${pl0.outs % 3}`;
@@ -3033,26 +3073,36 @@
           const pl = pit[ps.k];
 
           // Stolen bases: any runner with the next base open may go, before any pitch to the batter.
+          // The great base stealers (real tendency well above their Speed) get what they had in
+          // real life and the others do not: they keep running with a bigger lead, they go for
+          // third much more often, and they may steal second and third in the same at-bat.
+          // With one try per at-bat and nobody running five runs up, Rickey Henderson stole 67
+          // against 91 and Ty Cobb 54 against 73.
           const margin = runs[bi] + scored - runs[pi];
-          const from = (bases[0] && !bases[1]) ? 0 : ((bases[1] && !bases[2]) ? 1 : -1);
-          if (from >= 0 && Math.abs(margin) < 5) {
+          for (let tries = 0; tries < 2 && outs < 3; tries++) {
+            const from = (bases[0] && !bases[1]) ? 0 : ((bases[1] && !bases[2]) ? 1 : -1);
+            if (from < 0) break;
             const runner = bases[from];
+            const sbT = batTendency(runner)[1];
+            const great = sbT >= GREAT_STEALER;
+            if ((tries > 0 && !great) || Math.abs(margin) >= (great ? 8 : 5)) break;
             const rate = Math.min(1.0, Math.max(0, runner.spd !== undefined ? runner.spd : 50) / 125.0);
-            const tryP = (STEAL_TRY_BASE + Math.pow(rate, STEAL_TRY_POW) * STEAL_TRY_SCALE) * (from === 1 ? STEAL_THIRD : 1) * batTendency(runner)[1];
-            if (Math.random() < tryP) {
-              const rl = batterLine(batSide, runner);
-              const before = trace ? slim() : null;
-              bases[from] = null;
-              const safe = Math.random() < 0.58 + rate * 0.27 - (from === 1 ? 0.03 : 0);
-              if (safe) { bases[from + 1] = runner; inc(rl, 'sb'); }
-              else { outs++; pl.outs++; inc(rl, 'cs'); }
-              if (trace) {
-                emit(runner, rl, ps, pl, { outcome: safe ? 'SB' : 'CS', base: from + 2, outs: outs - (safe ? 0 : 1), newOuts: outs, bases: before,
-                  d: { ab: 0, outs: safe ? 0 : 1, rbi: 0, er: 0, scored: [], sb: safe ? runner.name : null, cs: safe ? null : runner.name } });
-              }
-              if (outs >= 3) break;
+            const third = from === 1 ? Math.min(0.45, STEAL_THIRD * (great ? sbT : 1)) : 1;
+            const tryP = (STEAL_TRY_BASE + Math.pow(rate, STEAL_TRY_POW) * STEAL_TRY_SCALE) * third * sbT;
+            if (!(Math.random() < tryP)) break;
+            const rl = batterLine(batSide, runner);
+            const before = trace ? slim() : null;
+            bases[from] = null;
+            const safe = Math.random() < 0.58 + rate * 0.27 - (from === 1 ? 0.03 : 0);
+            if (safe) { bases[from + 1] = runner; inc(rl, 'sb'); }
+            else { outs++; pl.outs++; inc(rl, 'cs'); }
+            if (trace) {
+              emit(runner, rl, ps, pl, { outcome: safe ? 'SB' : 'CS', base: from + 2, outs: outs - (safe ? 0 : 1), newOuts: outs, bases: before,
+                d: { ab: 0, outs: safe ? 0 : 1, rbi: 0, er: 0, scored: [], sb: safe ? runner.name : null, cs: safe ? null : runner.name } });
             }
+            if (!safe) break;
           }
+          if (outs >= 3) break;
 
           const pen = this._fatiguePenalty(ps) - edge;
           const p = ps.p;
@@ -3070,7 +3120,7 @@
             if (t0) scorers.forEach(r => t0.names.push(r.name));
             const before = runs[bi] + scored - runs[pi];
             scorers.forEach(r => { batterLine(batSide, r).r++; });
-            const earned = allUnearned ? 0 : scorers.filter(r => !unearned.has(r)).length;
+            const earned = (allUnearned || outs + errOuts >= 3) ? 0 : scorers.filter(r => !unearned.has(r)).length;
             if (rbi) bl.rbi += scorers.length;
             pl.er += earned; ps.er += earned; inc(pl, 'r', scorers.length); scored += scorers.length;
             const after = before + scorers.length;
@@ -3091,6 +3141,7 @@
               if (culprit) inc(batterLine(pitSide, culprit), 'e');
               detail = 'E'; errBy = culprit ? culprit.name : null;
               unearned.add(batter);
+              errOuts++;
               const scorer = bases[2];
               bases[2] = bases[1]; bases[1] = bases[0]; bases[0] = batter;
               credit([scorer], false, true);

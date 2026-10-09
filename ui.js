@@ -363,6 +363,7 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
 
   // ── State local UI ──────────────────────────────────────────────────────────
   let activeBattle       = null;   // InteractiveBattle instance (interactive dice mode)
+  let lastBattleRecap    = null;   // the battle that just ended, for the defeat screen
   let currentDraftSelection = null; // Stored player data if modal swap needed
   let diceAnimInterval   = null;   // Dice roll animation interval handle
   let isRolling          = false;  // Guard: prevents double-clicks during animation
@@ -842,7 +843,17 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
         wrapper.style.borderColor = rColor;
         wrapper.style.background = rBg;
 
+        // Rounds 5-8: why this card is on offer (fills a hole / feeds your era / one standout tool).
+        const tag = player.draftTag;
+        const TOOL_NAMES = { con: 'CONTACT', pwr: 'POWER', eye: 'EYE', spd: 'SPEED', def: 'GLOVE', k_avd: 'K-AVD' };
+        const tagHTML = !tag ? '' : `<div class="draft-reason draft-reason-${tag.type}">${
+          tag.type === 'need' ? t('draft.reason_need', { pos: tag.pos, defaultValue: `FILLS ${tag.pos}` })
+          : tag.type === 'era' ? t('draft.reason_era', { count: tag.count + 1, defaultValue: `YOUR ERA ×${tag.count + 1}` })
+          : t('draft.reason_tool', { stat: TOOL_NAMES[tag.stat] || tag.stat, val: Math.round(tag.val), defaultValue: `${TOOL_NAMES[tag.stat] || tag.stat} ${Math.round(tag.val)}` })
+        }</div>`;
+
         wrapper.innerHTML = `
+          ${tagHTML}
           <div style="pointer-events:none;">${cardHTML}</div>
           <div class="draft-card-caption" style="text-align:center;width:100%;margin-top:2px;">
             <div style="font-size:10px;color:${rColor};font-weight:bold;">${player.rarity}</div>
@@ -9849,6 +9860,7 @@ function initGameModeSelector() {
         matchEvents: activeBattle.events || [],
         staminaImmuneIds: activeBattle.staminaImmuneBatterIds || new Set()
       };
+      lastBattleRecap = activeBattle; // kept for the defeat screen (renderDefeatBreakdown)
       activeBattle = null;
       const res = window.Game.postMatchDebrief(fakeResult);
       handlePostMatchResult(res);
@@ -11037,6 +11049,70 @@ function initGameModeSelector() {
     document.getElementById('btn-start-super-boss').addEventListener('click', () => { overlay.remove(); if (onProceed) onProceed(); });
   }
 
+  // Why the run ended: where the 100 HP went in the last battle, how the bats did, and the
+  // main reason in one line. The defeat screen used to show only the list of results.
+  function renderDefeatBreakdown(won) {
+    let box = document.getElementById('gameover-why');
+    if (!box) {
+      box = document.createElement('div');
+      box.id = 'gameover-why';
+      el.gameoverDesc.insertAdjacentElement('afterend', box);
+    }
+    const bt = activeBattle || lastBattleRecap;
+    if (won || !bt || !bt.events || !bt.events.length) { box.innerHTML = ''; box.style.display = 'none'; return; }
+    const tr = (key, opts, en) => (typeof window.t === 'function' ? window.t('gameover.' + key, { ...(opts || {}), defaultValue: en }) : en);
+    const plays = bt.events.filter(e => e.playType === 'PLAY');
+    const count = type => plays.filter(e => e.eventType === type).length;
+    const sum = (list, f) => list.reduce((s, e) => s + (Number(e[f]) || 0), 0);
+    const so = count('SO'), bb = count('BB'), hr = count('HR');
+    const hits = count('1B') + count('2B') + count('3B') + hr;
+    const hpK = Math.round(sum(plays.filter(e => e.eventType === 'SO'), 'teamHpDmg'));
+    const hpOut = Math.round(sum(plays.filter(e => e.eventType !== 'SO'), 'teamHpDmg'));
+    const hpDef = Math.round(sum(bt.events.filter(e => e.playType === 'DEFENSE_PLAY'), 'teamHpDmg'));
+    const shieldUsed = Math.round(sum(bt.events, 'shieldDmg'));
+    const pitchers = (bt.homeTeam && bt.homeTeam.pitchers) || [];
+    const beaten = Math.min(bt.enemyPitcherIndex || 0, pitchers.length);
+    const last = pitchers[Math.min(beaten, pitchers.length - 1)];
+    const lineup = (bt.awayTeam && bt.awayTeam.lineup) || [];
+    const avg = (list, f) => (list.length ? Math.round(list.reduce((s, p) => s + (Number(f(p)) || 0), 0) / list.length) : 0);
+    const kAvd = avg(lineup, p => (p.k_avd !== undefined ? p.k_avd : p.con));
+    const con = avg(lineup, p => p.con);
+    const k9 = avg(pitchers, p => p.k9), h9 = avg(pitchers, p => p.h9);
+
+    // Main reasons, most specific first.
+    const reasons = [];
+    if (last && beaten === pitchers.length - 1 && last.hp <= last.maxHp * 0.25) {
+      const hp = Math.max(0, Math.round(last.hp));
+      reasons.push(tr('why_close', { name: last.name, hp }, `So close: ${last.name}, their last pitcher, had ${hp} HP left.`));
+    }
+    if (hpK >= 45) {
+      reasons.push(tr('why_k', { n: so, hp: hpK, k9, kavd: kAvd }, `Strikeouts did it: ${so} of them took ${hpK} of your 100 HP (they skip the shield). Their staff averages K/9 ${k9} against your K-AVD of ${kAvd}.`));
+    }
+    if (plays.length >= 8 && hits / plays.length < 0.27) {
+      reasons.push(tr('why_bats', { h: hits, pa: plays.length, h9, con }, `The bats went quiet: ${hits} hits in ${plays.length} turns. Their staff averages H/9 ${h9} against your Contact of ${con}.`));
+    }
+    if (bt.teamShieldMax < 45) {
+      reasons.push(tr('why_shield', { shield: bt.teamShieldMax }, `Thin shield: only ${bt.teamShieldMax}. It is the average glove of your fielders, and every out past it hits your HP.`));
+    }
+    if (hpDef >= 20) {
+      reasons.push(tr('why_def', { hp: hpDef }, `Failed defensive plays cost you ${hpDef} HP.`));
+    }
+    if (!reasons.length) reasons.push(tr('why_generic', {}, 'It was an even fight and the dice went their way.'));
+
+    const stat = (label, value) => `<div class="go-why-stat"><b>${value}</b><span>${label}</span></div>`;
+    box.style.display = '';
+    box.innerHTML = `
+      <div class="go-why-title">${tr('why_title', {}, 'WHY YOU LOST')}</div>
+      <ul class="go-why-list">${reasons.slice(0, 3).map(r => `<li>${r}</li>`).join('')}</ul>
+      <div class="go-why-stats">
+        ${stat(tr('why_s_pitchers', {}, 'pitchers beaten'), `${beaten} / ${pitchers.length}`)}
+        ${stat(tr('why_s_line', {}, 'hits / walks / HR'), `${hits} / ${bb} / ${hr}`)}
+        ${stat(tr('why_s_k', {}, 'HP lost to strikeouts'), hpK)}
+        ${stat(tr('why_s_out', {}, 'HP lost to outs'), hpOut + hpDef)}
+        ${stat(tr('why_s_shield', {}, 'absorbed by the shield'), shieldUsed)}
+      </div>`;
+  }
+
   // GAME OVER VIEW
   function triggerGameOver(won, message) {
     if (window.BaseballDex && window.Game && window.Game.roster) {
@@ -11045,6 +11121,7 @@ function initGameModeSelector() {
     el.gameoverTitle.innerText = won ? (typeof window.t==='function'?window.t('gameover.title_won', { defaultValue: "¡CAMPEONATO CONSEGUIDO!" }):"¡CAMPEONATO CONSEGUIDO!") : (typeof window.t==='function'?window.t('gameover.title_lost', { defaultValue: "¡Temporada Terminada!" }):"¡Temporada Terminada!");
     el.gameoverTitle.style.color = won ? "var(--primary-color)" : "var(--danger-color)";
     el.gameoverDesc.innerText = message;
+    renderDefeatBreakdown(won);
 
     // Render game history logs
     el.gameoverHistoryLog.innerHTML = "";

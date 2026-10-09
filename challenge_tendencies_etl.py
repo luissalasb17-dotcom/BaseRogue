@@ -34,8 +34,9 @@ OUT = BASE / "challenge_tendencies.js"
 RT_X = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 115, 125]
 # Robos por 600 PA que corresponden a cada nivel de Velocidad (media real de las cartas)
 SB_BY_SPEED = [1.1, 3.2, 7.0, 12.0, 15.8, 20.5, 25.5, 28.1, 33.9, 37.0, 48.7, 60.0]
+SB_ENGINE_K, SB_ON_FIRST_REF = 0.692, 0.24   # nivel real del motor frente a esa tabla
 ANCHOR_PA = 300.0          # muestra chica: se acerca a 1 (sin tendencia)
-HR_RANGE, SB_RANGE, K_RANGE = (0.15, 1.60), (0.25, 2.50), (0.45, 1.60)
+HR_RANGE, SB_RANGE, K_RANGE = (0.15, 1.60), (0.25, 3.00), (0.45, 1.60)
 BAT_K_RANGE = (0.40, 1.80)
 
 
@@ -51,6 +52,7 @@ def at(table, v):
 
 def main():
     bat_hr, pit_k9, bat_k = engine_table("BAT_HR"), engine_table("PIT_K9"), engine_table("BAT_K")
+    bat_avg, bat_bb, bat_2b, bat_3b = engine_table("BAT_AVG"), engine_table("BAT_BB"), engine_table("BAT_2B"), engine_table("BAT_3B")
 
     cards = pd.read_csv(BASE / "game_cards.csv", low_memory=False)
     b = pd.read_csv(DATA / "Batting.csv", low_memory=False).fillna(0)
@@ -60,11 +62,26 @@ def main():
     y["score"] = y["TB"] + y["BB"] + 0.3 * y["SB"]
     # Ponches: solo cuentan las temporadas donde se anotaron (hay epocas y ligas sin el dato)
     y["PA_K"] = np.where(y["SO"] > 0, y["PA"], 0.0)
-    peak = y.sort_values("score", ascending=False).groupby("playerID").head(7).groupby("playerID")[["PA", "HR", "SB", "SO", "PA_K"]].sum()
+    # Peak = the 7 best seasons by WAR, as on the cards (the offensive score is only the fallback
+    # where there is no WAR). With the score alone Lou Brock's steals came out a quarter short.
+    war = pd.read_csv(DATA / "war_daily_bat.txt", low_memory=False, na_values=["NULL"])
+    war = war.groupby(["player_ID", "year_ID"])["WAR"].sum().reset_index()
+    ids = cards[["playerID", "bbrefID"]].drop_duplicates("playerID")
+    y = y.merge(ids, on="playerID", how="left").merge(war, left_on=["bbrefID", "yearID"], right_on=["player_ID", "year_ID"], how="left")
+    y = y[y["PA"] >= 150]
+    y["rank"] = y["WAR"].fillna(-99) * 1000 + y["score"]
+    peak = y.sort_values("rank", ascending=False).groupby("playerID").head(7).groupby("playerID")[["PA", "HR", "SB", "SO", "PA_K"]].sum()
     c = cards.merge(peak, left_on="playerID", right_index=True, how="left").fillna({"PA": 0, "HR": 0, "SB": 0, "SO": 0, "PA_K": 0})
 
     exp_hr = at(bat_hr, c["power_val"])                      # jonrones por PA que da el motor
-    exp_sb = at(SB_BY_SPEED, c["speed_val"]) / 600.0         # robos por PA que da el motor
+    # Robos por PA que da el motor: dependen de la Velocidad y de cuantas veces llega a primera
+    # (sencillos y boletos). Ajustado contra 144 temporadas de 72 estrellas: sin la parte de
+    # embasarse, a Brock y a Wills (velocidad 125, OBP bajo) el motor les daba 37 y 41 robos.
+    bb_r = at(bat_bb, c["eye_val"]) * 1.04
+    hit_r = (1 - bb_r) * at(bat_avg, c["contact_val"]) * 0.95
+    reg_r = hit_r - exp_hr * 1.03
+    on_first = bb_r + reg_r * (1 - at(bat_2b, c["power_val"]) - at(bat_3b, c["speed_val"]) * 0.68)
+    exp_sb = SB_ENGINE_K * at(SB_BY_SPEED, c["speed_val"]) / 600.0 * (on_first / SB_ON_FIRST_REF)
     hr = ((c["HR"] + ANCHOR_PA * exp_hr) / (c["PA"] + ANCHOR_PA)) / exp_hr
     sb = ((c["SB"] + ANCHOR_PA * exp_sb) / (c["PA"] + ANCHOR_PA)) / exp_sb
     exp_k = at(bat_k, c["k_avoid_val"])                     # ponches por PA que da el motor
@@ -88,7 +105,7 @@ def main():
     print(f"{len(out['bat'])} bateadores, {len(out['pit'])} pitchers -> {OUT.name} ({len(text) / 1024:.0f} KB)")
     print("medias: hr %.2f  sb %.2f  k bateo %.2f  k pitcheo %.2f" % (c["hr_t"].mean(), c["sb_t"].mean(), c["k_t"].mean(), p["k_t"].mean()))
     show = c.set_index("name")
-    for n in ["Ty Cobb", "Honus Wagner", "Nap Lajoie", "Babe Ruth", "Barry Bonds", "Rickey Henderson", "Willie Mays", "Derek Jeter", "Buck Ewing", "Tony Gwynn", "Ernie Banks"]:
+    for n in ["Ty Cobb", "Honus Wagner", "Babe Ruth", "Barry Bonds", "Rickey Henderson", "Lou Brock", "Maury Wills", "Vince Coleman", "Tim Raines", "Willie Mays", "Mark McGwire", "Aaron Judge"]:
         if n in show.index:
             r = show.loc[n]
             r = r.iloc[0] if isinstance(r, pd.DataFrame) else r
