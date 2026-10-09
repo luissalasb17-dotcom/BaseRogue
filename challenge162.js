@@ -283,9 +283,11 @@
     return Object.keys(franchiseNames).filter(c => c !== 'NLB');
   }
 
-  // Weighted by total cards available that decade (batters + pitchers), not just
-  // batters — a decade with plenty of hitters but zero pitchers still isn't a
-  // great pick, so this keeps the roll from favoring lopsided decades.
+  // Every decade of a franchise with enough cards to carry a roster (DECADE_MIN_CARDS, batters
+  // plus pitchers) has the same chance (decision of the user). It used to be weighted by the
+  // number of cards, so the Negro Leagues All-Stars were the 1920s team 42% of the time and the
+  // 1910s one 8%. If no decade reaches the minimum, the old weighted roll decides.
+  const DECADE_MIN_CARDS = 12;
   function pickWeightedDecade(code) {
     const counts = {};
     getBatterPool().filter(p => p.team === code).forEach(p => {
@@ -298,6 +300,8 @@
     });
     const entries = Object.entries(counts);
     if (!entries.length) return 2000;
+    const deep = entries.filter(([, c]) => c >= DECADE_MIN_CARDS);
+    if (deep.length) return parseInt(deep[Math.floor(Math.random() * deep.length)][0], 10);
     const total = entries.reduce((s, [, c]) => s + c, 0);
     let roll = Math.random() * total;
     for (const [d, c] of entries) {
@@ -1002,9 +1006,9 @@
   // League level: everybody here is at his peak, so the tables are scaled to an all-eras league.
   // Reference chosen by the user: AL/NL 1947-2025 all together (.257 / .325 / .399, 4.42 runs,
   // 0.93 HR, 1.58 doubles, 0.21 triples and 0.74 errors per team-game, K 16.4%, ERA 4.02).
-  const PA_SCALE_HR = 0.92, PA_SCALE_K = 1.38, PA_SCALE_BB = 1.04;
+  const PA_SCALE_HR = 0.96, PA_SCALE_K = 1.38, PA_SCALE_BB = 1.04;
   const AVG_PIVOT = 0.265, AVG_SPREAD = 1.08, AVG_SHIFT = 0.010;
-  const PA_SCALE_2B = 1.0, PA_SCALE_3B = 0.68; // share of the non-HR hits that go for two and three bases
+  const PA_SCALE_2B = 0.93, PA_SCALE_3B = 0.68; // share of the non-HR hits that go for two and three bases
   const K_BAT_SPREAD = 0.7, K_PIT_LOW_SPREAD = 0.75, H_PIT_HIGH_SPREAD = 0.3; // 1 = full spread of the tables
   // The pitchers who allow fewer hits than the average one get that edge a little bigger, the
   // same idea as AVG_SPREAD for the hitters: the aces reach their own level (their ERA was
@@ -1033,8 +1037,8 @@
   // sbUp: tried at 1.5 to lift the great base stealers (their chances to run are limited:
   // Rickey Henderson 67 against 91). It did not help them (65) and took steals from everybody
   // else once the league level was put back, so it stays at 1.
-  const TENDENCY_STRENGTH = { hr: 0, hrUp: 1, sb: 1, sbUp: 1, k: 0 };
-  const NO_BAT_TENDENCY = [1, 1, 1];
+  const TENDENCY_STRENGTH = { hr: 0, hrUp: 1, sb: 1, sbUp: 1, k: 0, pitHr: 1, xb: 1 };
+  const NO_BAT_TENDENCY = [1, 1, 1, 1, 1];
   const _strength = (mult, s) => (s <= 0 || !mult ? 1 : (s === 1 ? mult : Math.pow(mult, s)));
   const _batCache = new Map();
   function batTendency(p) {
@@ -1043,15 +1047,26 @@
     if (!raw) return NO_BAT_TENDENCY;
     let out = _batCache.get(p.playerID);
     if (!out) {
-      out = [_strength(raw[0], raw[0] > 1 ? TENDENCY_STRENGTH.hrUp : TENDENCY_STRENGTH.hr), _strength(raw[1], raw[1] > 1 ? TENDENCY_STRENGTH.sbUp : TENDENCY_STRENGTH.sb), _strength(raw[2], TENDENCY_STRENGTH.k)];
+      // [homers, steals, strikeouts, doubles, triples]; the last two measure the hitter against
+      // his own era (see challenge_tendencies_etl.py): the tables alone gave every fast man the
+      // same four triples a season, the league leader included.
+      out = [_strength(raw[0], raw[0] > 1 ? TENDENCY_STRENGTH.hrUp : TENDENCY_STRENGTH.hr), _strength(raw[1], raw[1] > 1 ? TENDENCY_STRENGTH.sbUp : TENDENCY_STRENGTH.sb), _strength(raw[2], TENDENCY_STRENGTH.k),
+        _strength(raw[3], TENDENCY_STRENGTH.xb), _strength(raw[4], TENDENCY_STRENGTH.xb)];
       _batCache.set(p.playerID, out);
     }
     return out;
   }
-  function pitTendency(p) {
+  // Pitcher entry: [strikeouts, homers allowed] (a plain number in old files = strikeouts only).
+  function _pitRaw(p, i) {
     const t = window.ChallengeTendencies;
-    return _strength(t && p && p.playerID && t.pit[p.playerID], TENDENCY_STRENGTH.k);
+    const raw = t && p && p.playerID && t.pit[p.playerID];
+    if (raw === undefined || raw === null || raw === false) return 0;
+    return Array.isArray(raw) ? raw[i] : (i === 0 ? raw : 0);
   }
+  function pitTendency(p) { return _strength(_pitRaw(p, 0), TENDENCY_STRENGTH.k); }
+  // Homers allowed measured fully against the pitcher's own era (see challenge_tendencies_etl.py):
+  // this is about quality, not style, so it is on while the strikeouts stay neutral.
+  function pitHrTendency(p) { return _strength(_pitRaw(p, 1), TENDENCY_STRENGTH.pitHr); }
 
   function simPaOutcome(batter, pitcher, isUserBatting = true) {
     const num = (v, d) => (v !== undefined ? v : d);
@@ -1093,12 +1108,12 @@
     pTotalHit = Math.min(pTotalHit, pInPlay - 0.01);
 
     const clampHR = v => Math.min(Math.max(0.0005, Math.min(0.11, v)), pTotalHit * 0.50);
-    const baseHR = clampHR(rateAt(BAT_HR, pwr) * (rateAt(PIT_HR9, pHR9) / PIT_HR9[4]) * PA_SCALE_HR);
+    const baseHR = clampHR(rateAt(BAT_HR, pwr) * (rateAt(PIT_HR9, pHR9) / PIT_HR9[4]) * pitHrTendency(pitcher) * PA_SCALE_HR);
     const pHR = clampHR(baseHR * batTendency(batter)[0]);
     const pRegularHit = pTotalHit - pHR;
 
-    const share3B = rateAt(BAT_3B, spd) * PA_SCALE_3B;
-    const share2B = rateAt(BAT_2B, pwr) * PA_SCALE_2B;
+    const share3B = rateAt(BAT_3B, spd) * PA_SCALE_3B * (batTendency(batter)[4] || 1);
+    const share2B = rateAt(BAT_2B, pwr) * PA_SCALE_2B * (batTendency(batter)[3] || 1);
     // Part of the power a hitter did not put over the fence stays as extra bases: a quarter of
     // the homers his tendency takes away come back as doubles and triples (more triples for the
     // fast ones), the rest as singles. Moving all of them gave Ty Cobb 68 doubles.
