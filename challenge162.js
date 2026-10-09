@@ -151,6 +151,40 @@
   }
 
   // ── Sabermetric WAR Calculations (Shared across Season & Results) ────────
+  // Fielding runs of a season, from what happened on the field (decision of the user: no fixed
+  // values from the rating). Every ball in play goes to one fielder (s.fc = balls hit to him,
+  // s.fo = the ones he turned into outs; hits he could not reach and his errors are the rest).
+  // His runs are the plays he made above what an average fielder OF HIS POSITION in this league
+  // makes with the same chances, at FIELD_RUN_PER_PLAY each (a hit instead of an out).
+  // Lines without that count (old saves, other modes) fall back to the rating.
+  const FIELD_RUN_PER_PLAY = 0.78;
+  let _fieldRateCache = { stats: null, n: -1, rates: {} };
+  function leagueFieldRates() {
+    const C = window.Challenge162;
+    const stats = C && C.state && C.state.league && C.state.league.stats && C.state.league.stats.bat;
+    if (!stats) return {};
+    const day = C.state.league.day || 0;
+    if (_fieldRateCache.stats === stats && _fieldRateCache.n === day) return _fieldRateCache.rates;
+    const acc = {};
+    Object.values(stats).forEach(x => {
+      if (!x.fc || !x.pos) return;
+      const a = acc[x.pos] || (acc[x.pos] = { fc: 0, fo: 0 });
+      a.fc += x.fc; a.fo += x.fo || 0;
+    });
+    const rates = {};
+    Object.keys(acc).forEach(p => { if (acc[p].fc >= 200) rates[p] = acc[p].fo / acc[p].fc; });
+    _fieldRateCache = { stats, n: day, rates };
+    return rates;
+  }
+  function fieldingRuns(s, pos, defVal, pa) {
+    const P = (pos || 'DH').toUpperCase();
+    if (P === 'DH') return 0;
+    const rates = s.fc ? leagueFieldRates() : {};
+    const rate = rates[s.pos] !== undefined ? rates[s.pos] : rates[P];
+    if (rate === undefined) return (defVal - 50) * 0.16 * (pa / 600.0);
+    return ((s.fo || 0) - s.fc * rate) * FIELD_RUN_PER_PLAY;
+  }
+
   function calcBatterDWAR(s, pos = 'DH', defVal = 50) {
     if (!s) return '0.0';
     const ab = s.ab || 0;
@@ -159,7 +193,7 @@
     if (pa <= 0) return '0.0';
     const posAdjTable = { C: 9.0, SS: 7.0, '2B': 3.0, '3B': 2.0, CF: 2.5, LF: -7.0, RF: -7.0, '1B': -12.0, DH: -15.0 };
     const posAdj = (posAdjTable[(pos || 'DH').toUpperCase()] || 0.0) * (pa / 600.0);
-    const defRuns = (defVal - 50) * 0.16 * (pa / 600.0);
+    const defRuns = fieldingRuns(s, pos, defVal, pa);
     const dwar = (posAdj + defRuns) / 10.0;
     return dwar >= 0 ? `+${dwar.toFixed(1)}` : dwar.toFixed(1);
   }
@@ -185,8 +219,8 @@
     const posAdjTable = { C: 9.0, SS: 7.0, '2B': 3.0, '3B': 2.0, CF: 2.5, LF: -7.0, RF: -7.0, '1B': -12.0, DH: -15.0 };
     const posAdj = (posAdjTable[(pos || 'DH').toUpperCase()] || 0.0) * (pa / 600.0);
 
-    // Fielding value from DEF rating
-    const defRuns = (defVal - 50) * 0.16 * (pa / 600.0);
+    // Fielding value: the plays he made this season (the rating only when there is no count)
+    const defRuns = fieldingRuns(s, pos, defVal, pa);
 
     // Replacement level baseline (20 runs per 600 PA)
     const repRuns = 20.0 * (pa / 600.0);
@@ -923,6 +957,35 @@
   const RUN_ON_OUT = 0.42;      // man on third, under 2 outs: scores on a batted-ball out
   const ADVANCE_ON_OUT = 0.30;  // man on second, third open, under 2 outs: moves up on the out
   const ERROR_WEIGHT = { SS: 22, '3B': 20, '2B': 16, '1B': 10, C: 8, LF: 7, CF: 7, RF: 7 };
+  // Errors follow the glove of each fielder: his share of the chances (ERROR_WEIGHT) times how
+  // his glove compares with an average one. A 50 makes the errors of his position, every point
+  // above or below moves them 1.84% (the slope the team average used to have), between 0.3x and
+  // 2x. The team rate is the sum of its fielders, so a bad shortstop costs more than a bad left
+  // fielder. Before, the team average set the rate and the culprit was drawn by position only.
+  // Long reliever: when the starter is gone before the 6th, the middle reliever with the most
+  // Stamina comes in and stays until he tires, gets hit (4 earned runs) or the game reaches the
+  // late innings close enough for the setup man and the closer. In that role Stamina counts
+  // double (4 + 0.10 x STA fresh batters), so a starter kept in the bullpen can give 3-4
+  // innings; after two or more innings he rests the next day. Before this every reliever
+  // threw one inning and Stamina meant nothing in the bullpen.
+  const LONG_UNTIL_INNING = 6, LONG_FRESH_PER_STA = 0.10, LONG_MAX_ER = 4, LONG_REST_OUTS = 6, LONG_TIRED = 2;
+  // Every ball in play goes to one fielder, drawn by the share of batted balls his position
+  // handles (FIELD_CHANCE). His glove decides what happens there: above 50 he takes hits away
+  // (FIELD_ROB of the hits in his zone per point), below 50 outs fall in for singles (FIELD_MISS
+  // per point). On average this moves the batting average 0.00028 per point of glove, the same
+  // the team average did before, but now it is his play, counted in his line (fc / fo).
+  const FIELD_CHANCE = { SS: 17, '2B': 15, '3B': 12, '1B': 8, C: 3, LF: 13, CF: 18, RF: 14 };
+  const FIELD_ROB = 0.00119, FIELD_MISS = 0.00047;
+  const _sumOf = o => Object.values(o).reduce((t, v) => t + v, 0);
+  const FIELD_CHANCE_SUM = _sumOf(FIELD_CHANCE), ERROR_WEIGHT_SUM = _sumOf(ERROR_WEIGHT);
+  // Clutch of the pitcher (his real rate of runners left on base): with a runner in scoring
+  // position every pitching rating moves CLUTCH_PIT points per point of Clutch above or below
+  // CLUTCH_PIT_CENTER. It did nothing in this mode before.
+  // Clutch hitters: +CLUTCH_BAT to contact, power, eye and K-AVD from the 7th on, within two
+  // runs, with a runner on second or third. For every team.
+  const CLUTCH_BAT = 10, CLUTCH_BAT_INNING = 7, CLUTCH_BAT_MARGIN = 2;
+  const CLUTCH_PIT = 0.3, CLUTCH_PIT_CENTER = 55; // 55.7 is the average Clutch of the innings pitched in the league
+  const ERROR_GLOVE_SLOPE = 0.0184, ERROR_GLOVE_MIN = 0.3, ERROR_GLOVE_MAX = 2.0;
   // Rating -> stat tables: the real peak numbers of the cards at each rating (all eras together),
   // so a player produces the line his rating stands for instead of a flattened one.
   const RT_X = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 115, 125];
@@ -1511,9 +1574,60 @@
     return { ...p, con: sub(p.con), pwr: sub(p.pwr), eye: sub(p.eye), spd: sub(p.spd), k_avd: sub(p.k_avd), _wear: pen };
   }
 
-  function momentumFor(streak) {
+  // Captains (badge of the batter card, lineup or bench) change how fast the streak turns into
+  // momentum: with one, the bonus of a winning streak comes every CAPTAIN_WIN_STEP wins instead
+  // of 3 and the penalty of a losing streak every 4 losses; a second captain only slows the
+  // losing side a bit more (every 5). More than two change nothing: one voice leads, a second
+  // one steadies the room. The cap of +-10 stays. Applies to every team in the league.
+  const CAPTAIN_WIN_STEP = 2, CAPTAIN_LOSS_STEPS = [MOMENTUM_STEP, 4, 5];
+  const isCaptain = p => !!(p && (p.captain || p.is_captain));
+  const isClutchBat = p => !!(p && (p.clutch || p.is_clutch));
+  const countCaptains = cards => (cards || []).filter(isCaptain).length;
+  function momentumStep(streak, captains = 0) {
+    if (!captains) return MOMENTUM_STEP;
+    return (streak || 0) >= 0 ? CAPTAIN_WIN_STEP : CAPTAIN_LOSS_STEPS[Math.min(captains, CAPTAIN_LOSS_STEPS.length - 1)];
+  }
+  function momentumFor(streak, captains = 0) {
     const s = streak || 0;
-    return Math.sign(s) * Math.min(MOMENTUM_CAP, Math.floor(Math.abs(s) / MOMENTUM_STEP));
+    return Math.sign(s) * Math.min(MOMENTUM_CAP, Math.floor(Math.abs(s) / momentumStep(s, captains)));
+  }
+
+  // Team chemistry, ONLY for the team of the user (the rivals do not get it): players who share
+  // a franchise, an era or a country other than the USA play a little better together. Each
+  // player gets +1 to his batting or pitching ratings for every CHEM_TEAM_SIZE teammates of his
+  // franchise (himself included), every CHEM_ERA_SIZE of his era and every CHEM_NATION_SIZE of
+  // his country, with no cap (decision of the user: 25 of one era is +5, 25 of one country +8). The USA does not count as a country: most cards are from
+  // there and the bonus would be free. The country comes from PLAYER_FLAGS_DB (the Dex data).
+  const CHEM_TEAM_SIZE = 3, CHEM_ERA_SIZE = 5, CHEM_NATION_SIZE = 3;
+  const NATION_NAMES = { do: 'Dominican Rep.', ve: 'Venezuela', cu: 'Cuba', pr: 'Puerto Rico', mx: 'Mexico', jp: 'Japan', ca: 'Canada', pa: 'Panama', co: 'Colombia', ni: 'Nicaragua', kr: 'South Korea', cw: 'Curacao', au: 'Australia', tw: 'Taiwan', gb: 'Great Britain', de: 'Germany', ie: 'Ireland', nl: 'Netherlands', bs: 'Bahamas', jm: 'Jamaica', vi: 'Virgin Islands', aw: 'Aruba', br: 'Brazil', hn: 'Honduras' };
+  function nationOf(p) {
+    const db = window.PLAYER_FLAGS_DB || {};
+    return (p && (db[p.playerID] || db[cleanName(p)] || db[p.name])) || '';
+  }
+  const chemKey = p => `${p.playerID || ''}|${cleanName(p)}|${p.year || ''}|${p.h9 !== undefined ? 'P' : 'B'}`;
+  function rosterChemistry(cards) {
+    const list = (cards || []).filter(Boolean);
+    const tally = { team: {}, era: {}, nation: {} };
+    const traits = p => {
+      const n = nationOf(p);
+      return { team: p.team || '', era: p.era && p.era !== 'None' ? p.era : '', nation: n && n !== 'us' ? n : '' };
+    };
+    list.forEach(p => { const t = traits(p); Object.keys(t).forEach(k => { if (t[k]) tally[k][t[k]] = (tally[k][t[k]] || 0) + 1; }); });
+    const size = { team: CHEM_TEAM_SIZE, era: CHEM_ERA_SIZE, nation: CHEM_NATION_SIZE };
+    const bonus = {};
+    list.forEach(p => {
+      const t = traits(p);
+      const b = Object.keys(t).reduce((sum, k) => sum + (t[k] ? Math.floor(tally[k][t[k]] / size[k]) : 0), 0);
+      if (b > 0) bonus[chemKey(p)] = b;
+    });
+    const groups = [];
+    Object.keys(tally).forEach(kind => Object.keys(tally[kind]).forEach(v => {
+      const count = tally[kind][v];
+      const label = kind === 'nation' ? (NATION_NAMES[v] || v.toUpperCase()) : kind === 'era' ? v.replace(/\s*\(.*\)/, '') : v;
+      groups.push({ kind, value: v, label, count, need: size[kind], bonus: Math.floor(count / size[kind]) });
+    }));
+    groups.sort((a, b) => (b.bonus - a.bonus) || (b.count / b.need - a.count / a.need));
+    return { bonus, groups, of: p => bonus[chemKey(p)] || 0 };
   }
 
   function withMomentumBatter(p, m) {
@@ -2400,7 +2514,7 @@
       Object.values(result.bat).forEach(d => {
         if (d.team === USER_TEAM_ID) {
           const s = S.batterStats[d.key];
-          if (s) ['g', 'ab', 'h', 'doubles', 'triples', 'hr', 'rbi', 'bb', 'so', 'r', 'sb', 'cs', 'gidp', 'sf', 'e'].forEach(f => { s[f] = (s[f] || 0) + (d[f] || 0); });
+          if (s) ['g', 'ab', 'h', 'doubles', 'triples', 'hr', 'rbi', 'bb', 'so', 'r', 'sb', 'cs', 'gidp', 'sf', 'e', 'fc', 'fo'].forEach(f => { s[f] = (s[f] || 0) + (d[f] || 0); });
         } else {
           if (!S.oppBatterStats) S.oppBatterStats = {};
           const s = S.oppBatterStats[d.name] || (S.oppBatterStats[d.name] = { name: d.name, team: oppRec.code, ab: 0, h: 0, doubles: 0, triples: 0, hr: 0, rbi: 0, bb: 0, so: 0, r: 0 });
@@ -2474,8 +2588,8 @@
       const name = user.name;
 
       // Streaks and the perfect season
-      if ([10, 20, 30, 50].includes(user.streak)) fire(`ws${user.streak}@${g}`, '🔥', `${user.streak} STRAIGHT WINS`, `${name} have won ${user.streak} in a row. Momentum is at +${momentumFor(user.streak)}.`);
-      if ([8, 12].includes(-user.streak)) fire(`ls${-user.streak}@${g}`, '🧊', `${-user.streak} STRAIGHT LOSSES`, `${name} have dropped ${-user.streak} in a row. Momentum is at −${-momentumFor(user.streak)}.`);
+      if ([10, 20, 30, 50].includes(user.streak)) fire(`ws${user.streak}@${g}`, '🔥', `${user.streak} STRAIGHT WINS`, `${name} have won ${user.streak} in a row. Momentum is at +${momentumFor(user.streak, this._userCaptains(S))}.`);
+      if ([8, 12].includes(-user.streak)) fire(`ls${-user.streak}@${g}`, '🧊', `${-user.streak} STRAIGHT LOSSES`, `${name} have dropped ${-user.streak} in a row. Momentum is at −${-momentumFor(user.streak, this._userCaptains(S))}.`);
       if (S.losses === 0 && [25, 50, 81, 100, 125, 150, 161].includes(g)) fire(`perfect${g}`, '👑', `STILL PERFECT: ${g}-0`, `${name} are ${g}-0. ${SEASON_LENGTH - g} to go for the perfect season.`);
       if (game.hits[1] === 0 && game.innings >= 9) fire(`nohit@${g}`, '🚫', 'NO-HITTER!', `${game.staff.join(' and ')} no-hit the ${game.opp}.`);
 
@@ -2854,7 +2968,7 @@
     _aiSide(teamRec, useMomentum) {
       const team = getFranchiseDecadeTeam(teamRec.code, teamRec.decade);
       const staff = getFranchiseStaff(teamRec.code, teamRec.decade);
-      const m = useMomentum ? momentumFor(teamRec.streak) : 0;
+      const m = useMomentum ? momentumFor(teamRec.streak, countCaptains([...team.lineup, ...getFranchiseBench(teamRec.code, teamRec.decade)])) : 0;
       const gp = teamRec.w + teamRec.l;
       const fielders = team.lineup.filter(p => (p.assignedSlot || p.pos) !== 'DH');
       return {
@@ -2868,22 +2982,51 @@
       };
     },
 
+    // The 25 cards of a roster ({ lineup, bench, pitchers }), for captains and chemistry.
+    _rosterCards(r) {
+      if (!r) return [];
+      return [...Object.values(r.lineup || {}), ...(r.bench || []), ...((r.pitchers && r.pitchers.SP) || []), ...((r.pitchers && r.pitchers.RP) || [])].filter(Boolean);
+    },
+    _userCaptains(S) {
+      return S && S.roster ? countCaptains([...Object.values(S.roster.lineup || {}), ...(S.roster.bench || [])]) : 0;
+    },
+    // Chemistry summary: the groups that already pay and the ones one player short.
+    _chemistryHTML(cards, compact) {
+      const chem = rosterChemistry(cards);
+      const caps = countCaptains(cards);
+      const icon = { team: '🏟', era: '🕰', nation: '🌎' };
+      const on = chem.groups.filter(g => g.bonus > 0);
+      const near = chem.groups.filter(g => g.bonus === 0 && g.need - g.count === 1).slice(0, compact ? 2 : 4);
+      const chip = (g, cls) => `<span class="c162-chem-chip ${cls}">${icon[g.kind]} ${g.label} ×${g.count}${g.bonus ? ` <b>+${g.bonus}</b>` : ` <i>${g.count}/${g.need}</i>`}</span>`;
+      const capChip = caps ? `<span class="c162-chem-chip is-on">👑 ${caps > 1 ? caps + ' captains' : 'Captain'}${compact ? '' : `: momentum +1 every ${CAPTAIN_WIN_STEP} wins, −1 every ${CAPTAIN_LOSS_STEPS[Math.min(caps, 2)]} losses`}</span>` : '';
+      const chips = on.map(g => chip(g, 'is-on')).join('') + capChip + near.map(g => chip(g, 'is-near')).join('');
+      if (compact) return chips ? `<div class="c162-chem c162-chem-compact"><small>CHEMISTRY</small>${chips}</div>` : '';
+      return `<div class="c162-meet-section">🤝 TEAM CHEMISTRY</div>
+        <div class="c162-chem">
+          ${chips || '<span class="c162-chem-none">No group yet.</span>'}
+          <div class="c162-chem-note">Only your team gets this. +1 to the ratings of each player for every ${CHEM_TEAM_SIZE} teammates of his franchise, every ${CHEM_ERA_SIZE} of his era and every ${CHEM_NATION_SIZE} of his country (the USA does not count). No cap: the bigger the group, the bigger the bonus.</div>
+        </div>`;
+    },
+
     _userSide(S, useMomentum) {
-      const m = (useMomentum && S.league) ? momentumFor(S.league.teams[USER_TEAM_ID].streak) : 0;
+      const m = (useMomentum && S.league) ? momentumFor(S.league.teams[USER_TEAM_ID].streak, this._userCaptains(S)) : 0;
+      // Chemistry is not momentum: it is always on, playoffs included.
+      const chem = rosterChemistry(this._rosterCards(S.roster));
       // assignedSlot carries the lineup position into league stats (Silver Slugger / Gold Glove).
       const lineup = S.roster.battingOrder.map(slot => S.roster.lineup[slot] && ({ ...S.roster.lineup[slot], assignedSlot: slot })).filter(Boolean);
       const spList = S.roster.pitchers.SP;
       const rp = (S.roster.pitchers.RP || []).filter(Boolean);
       const closer = rp.find(p => p.role === 'CL') || rp[0];
       const setup = rp.find(p => p.role === 'SETUP') || rp[1];
-      const bullpen = rp.map(p => ({ ...withMomentumPitcher(p, m) || p, role: p === closer ? 'CL' : p === setup ? 'SETUP' : 'RP' }));
+      const bullpen = rp.map(p => ({ ...withMomentumPitcher(p, m + chem.of(p)) || p, role: p === closer ? 'CL' : p === setup ? 'SETUP' : 'RP' }));
       const fielders = lineup.filter(p => (p.assignedSlot || p.pos) !== 'DH');
+      const spToday = spList[S.gamesPlayed % spList.length];
       return {
         id: USER_TEAM_ID, isUser: true,
-        lineup: lineup.map(p => withMomentumBatter(p, m)),
-        bench: (S.roster.bench || []).filter(Boolean).map(p => withMomentumBatter(p, m)),
+        lineup: lineup.map(p => withMomentumBatter(p, m + chem.of(p))),
+        bench: (S.roster.bench || []).filter(Boolean).map(p => withMomentumBatter(p, m + chem.of(p))),
         ironMan: S.ironMan || {},
-        sp: withMomentumPitcher(spList[S.gamesPlayed % spList.length], m),
+        sp: withMomentumPitcher(spToday, m + chem.of(spToday)),
         bullpen,
         def: fielders.length ? fielders.reduce((s, p) => s + (p.def !== undefined ? p.def : (p.defense_val || 50)), 0) / fielders.length : 50,
         gameIdx: S.gamesPlayed
@@ -2892,7 +3035,7 @@
 
     // Reliever picked for a new inning, by role and situation; skips arms that already
     // pitched this game or are resting (pitched on each of the previous two days).
-    _pickReliever(side, gs, inning, lead, day) {
+    _pickReliever(side, gs, inning, lead, day, wantLong) {
       const pen = (this.state.league && this.state.league.pen) || {};
       const available = side.bullpen.filter(p => {
         const k = this._leagueKey(side.id, pitcherUnlockKey(p));
@@ -2906,6 +3049,10 @@
       // Middle relievers: the one who has rested the longest goes first.
       const lastDay = p => { const u = pen[this._leagueKey(side.id, pitcherUnlockKey(p))]; return u ? u.last : -999; };
       const middle = available.filter(p => p.role !== 'CL' && p.role !== 'SETUP').sort((a, b) => lastDay(a) - lastDay(b));
+      if (wantLong && middle.length) {
+        const staOf = p => (p.sta !== undefined ? p.sta : (p.sta_val !== undefined ? p.sta_val : 50));
+        return middle.slice().sort((a, b) => staOf(b) - staOf(a))[0];
+      }
       // The closer is kept for the save: a tie in the ninth goes to the setup man, and the
       // closer comes in from the tenth on. Burning him in ties and then resting him the next
       // day was costing him saves (27-30 for the closer of a team with 35).
@@ -3095,13 +3242,22 @@
           const gem = ps.er === 0 && inning <= 9;
           const tired = this._fatiguePenalty(ps);
           pull = knockedOut || (gem ? tired >= 10 : tired >= 6) || inning > 9;
+        } else if (ps.long) {
+          const lateAndClose = inning >= 8 && lead >= -1 && lead <= 3;
+          pull = this._fatiguePenalty(ps) >= LONG_TIRED || ps.er >= LONG_MAX_ER || lateAndClose || inning > 9;
         } else {
-          pull = true; // relievers work one inning at a time
+          pull = true; // the other relievers work one inning at a time
         }
         if (!pull) return;
-        const next = this._pickReliever(side, gs, inning, lead, day);
+        const wantLong = ps.isStarter && inning <= LONG_UNTIL_INNING;
+        const next = this._pickReliever(side, gs, inning, lead, day, wantLong);
         if (next) {
           const rp = startPitcher(si, next, false);
+          if (wantLong && next.role !== 'CL' && next.role !== 'SETUP') {
+            rp.long = true;
+            const sta = next.sta !== undefined ? next.sta : (next.sta_val !== undefined ? next.sta_val : 50);
+            rp.fresh = 4 + sta * LONG_FRESH_PER_STA;
+          }
           rp.saveSit = inning >= 6 && lead >= 1 && lead <= 3;
           relief[si].push(rp);
         }
@@ -3185,12 +3341,32 @@
 
           const pen = this._fatiguePenalty(ps) - edge;
           const p = ps.p;
-          const eff = pen ? { ...p, h9: p.h9 - pen, k9: p.k9 - pen, bb9: p.bb9 - pen, hr9: p.hr9 - pen } : { ...p };
-          eff._fieldingDef = pitSide.def;
+          const clt = p.clt !== undefined ? p.clt : (p.clu !== undefined ? p.clu : (p.clt_val !== undefined ? p.clt_val : CLUTCH_PIT_CENTER));
+          const adj = ((bases[1] || bases[2]) ? (clt - CLUTCH_PIT_CENTER) * CLUTCH_PIT : 0) - pen;
+          const eff = adj ? { ...p, h9: p.h9 + adj, k9: p.k9 + adj, bb9: p.bb9 + adj, hr9: p.hr9 + adj } : { ...p };
+          eff._fieldingDef = 50; // the gloves act below, one fielder at a time
           const batter = nextBatter(bi, { blowout, inning, outs, margin, onBase: bases.filter(Boolean).length });
           const bl = batterLine(batSide, batter);
           ps.bf++;
-          const outcome = simPaOutcome(batter, eff, batSide.isUser);
+          // Clutch hitters (badge of the card): late, close and with a runner in scoring position.
+          const clutchUp = inning >= CLUTCH_BAT_INNING && Math.abs(margin) <= CLUTCH_BAT_MARGIN && (bases[1] || bases[2]) && isClutchBat(batter);
+          const up = v => (v === undefined ? v : v + CLUTCH_BAT);
+          const atBat = clutchUp ? { ...batter, con: up(batter.con), pwr: up(batter.pwr), eye: up(batter.eye), k_avd: up(batter.k_avd) } : batter;
+          let outcome = simPaOutcome(atBat, eff, batSide.isUser);
+          // The ball in play goes to one fielder and his glove has the last word.
+          let fielder = null, robbed = false;
+          if (outcome === 'OUT' || outcome === '1B' || outcome === '2B' || outcome === '3B') {
+            const fs = pitSide.lineup.filter(f => FIELD_CHANCE[slotOf(f)]);
+            let pick = Math.random() * fs.reduce((t, f) => t + FIELD_CHANCE[slotOf(f)], 0);
+            fielder = fs.find(f => (pick -= FIELD_CHANCE[slotOf(f)]) < 0) || null;
+            if (fielder) {
+              const g = gloveOf(fielder) - 50;
+              if (outcome === 'OUT') { if (g < 0 && Math.random() < -g * FIELD_MISS) outcome = '1B'; }
+              else if (g > 0 && Math.random() < g * FIELD_ROB) { outcome = 'OUT'; robbed = true; }
+            }
+          }
+          const fieldLine = fielder ? batterLine(pitSide, fielder) : null;
+          if (fieldLine) inc(fieldLine, 'fc');
           const t0 = trace ? { outs, bases: slim(), scored, ab: bl.ab, rbi: bl.rbi, er: pl.er, names: [] } : null;
           let detail = null, errBy = null;
           const credit = (scorers, rbi = true, allUnearned = false) => {
@@ -3208,16 +3384,22 @@
             if (ps.saveSit && !ps.blown && after >= 0) { ps.blown = true; inc(pl, 'bs'); }
           };
           if (outcome === 'OUT') {
-            const defv = pitSide.def !== undefined ? pitSide.def : 50;
-            const pErr = Math.max(0.012, Math.min(0.08, ERROR_RATE - (defv - 50) * 0.0007));
+            // The error is of the fielder the ball went to: the rate of his position (its share
+            // of the errors over its share of the chances) times his glove.
+            let pErr = ERROR_RATE;
+            if (fielder) {
+              const pos = slotOf(fielder);
+              pErr = ERROR_RATE * (ERROR_WEIGHT[pos] / ERROR_WEIGHT_SUM) / (FIELD_CHANCE[pos] / FIELD_CHANCE_SUM)
+                * Math.max(ERROR_GLOVE_MIN, Math.min(ERROR_GLOVE_MAX, 1 - (gloveOf(fielder) - 50) * ERROR_GLOVE_SLOPE));
+            }
             const bspd = Math.min(1.0, Math.max(0, batter.spd !== undefined ? batter.spd : 50) / 125.0);
-            if (Math.random() < pErr) {
+            const isError = !robbed && Math.random() < pErr;
+            if (!isError && fieldLine) inc(fieldLine, 'fo');
+            if (isError) {
               // Reached on an error: everybody moves up one base, nothing here is earned.
               bl.ab++;
-              const fielders = pitSide.lineup.filter(f => ERROR_WEIGHT[f.assignedSlot || f.pos]);
-              let pick = Math.random() * fielders.reduce((t, f) => t + ERROR_WEIGHT[f.assignedSlot || f.pos], 0);
-              const culprit = fielders.find(f => (pick -= ERROR_WEIGHT[f.assignedSlot || f.pos]) < 0);
-              if (culprit) inc(batterLine(pitSide, culprit), 'e');
+              const culprit = fielder;
+              if (fieldLine) inc(fieldLine, 'e');
               detail = 'E'; errBy = culprit ? culprit.name : null;
               unearned.add(batter);
               errOuts++;
@@ -3328,7 +3510,7 @@
       if (!L.stats) L.stats = { bat: {}, pit: {} };
       Object.entries(result.bat).forEach(([k, d]) => {
         const s = L.stats.bat[k] || (L.stats.bat[k] = { key: d.key, name: d.name, team: d.team, pos: d.pos, def: d.def, g: 0, ab: 0, h: 0, doubles: 0, triples: 0, hr: 0, rbi: 0, bb: 0, so: 0, r: 0, sb: 0 });
-        ['g', 'ab', 'h', 'doubles', 'triples', 'hr', 'rbi', 'bb', 'so', 'r', 'sb', 'cs', 'gidp', 'sf', 'e'].forEach(f => { s[f] = (s[f] || 0) + (d[f] || 0); });
+        ['g', 'ab', 'h', 'doubles', 'triples', 'hr', 'rbi', 'bb', 'so', 'r', 'sb', 'cs', 'gidp', 'sf', 'e', 'fc', 'fo'].forEach(f => { s[f] = (s[f] || 0) + (d[f] || 0); });
       });
       if (!L.pen) L.pen = {};
       Object.entries(result.pit).forEach(([k, d]) => {
@@ -3336,7 +3518,8 @@
         ['g', 'gs', 'outs', 'h', 'er', 'bb', 'so', 'hr', 'w', 'l', 'sv', 'r', 'cg', 'sho', 'hld', 'bs'].forEach(f => { s[f] = (s[f] || 0) + (d[f] || 0); });
         if (!d.gs) {
           const u = L.pen[k];
-          L.pen[k] = { last: day, run: (u && u.last === day - 1) ? u.run + 1 : 1 };
+          // A long outing (two innings or more) counts as two days of work: he rests tomorrow.
+          L.pen[k] = { last: day, run: Math.max((d.outs || 0) >= LONG_REST_OUTS ? 2 : 1, (u && u.last === day - 1) ? u.run + 1 : 1) };
         }
       });
       // Batter wear: starters add their position's wear, everyone who sat resets.
@@ -5851,6 +6034,7 @@
                 const n = allSlotted.filter(p => (p.rarity || 'Common') === r).length;
                 return `<span class="r-${r.toLowerCase()} ${n ? '' : 'zero'}"><b>${n}</b> ${r}</span>`;
               }).join('')}</div>
+              ${this._chemistryHTML(allSlotted, true)}
               <div class="c162-rb-cols">
                 <div class="c162-rb-col">
                   <div class="c162-rb-title t-lineup"><span>⚡ LINEUP</span><span>${filledLineupCount}/9</span></div>
@@ -6375,7 +6559,9 @@
         ['ROTATION', avg(SP, x => x.ovr)],
         ['BULLPEN', avg(RP, x => x.ovr)]
       ];
-      const teamOvr = avg([...batters, ...SP, ...RP], x => x.ovr);
+      // All 25, bench included: the same number the pack screen shows (it used to leave the
+      // bench out here, so the Team OVR jumped between the two screens).
+      const teamOvr = avg([...batters, ...(p.bench || []).filter(Boolean), ...SP, ...RP], x => x.ovr);
       const ATTRS = [['con', 'CONTACT'], ['pwr', 'POWER'], ['eye', 'EYE'], ['spd', 'SPEED'], ['def', 'GLOVE']];
       const bestTool = b => ATTRS.map(([k, l]) => [l, Number(b[k]) || 0]).sort((x, y) => y[1] - x[1])[0];
       const xFactor = batters.slice().sort((a, b) => (b.ovr || 0) - (a.ovr || 0))[0];
@@ -6454,6 +6640,8 @@
           <div class="c162-meet-cards">${cardsHTML}</div>
 
           ${this._ironPicksHTML(p)}
+
+          ${this._chemistryHTML(this._rosterCards(p))}
 
           <div class="c162-meet-columns">
             <div class="c162-meet-panel">
@@ -7662,14 +7850,16 @@
       const L = this.state && this.state.league;
       if (!L || this.state.gamesPlayed >= SEASON_LENGTH) return '';
       const streak = L.teams[USER_TEAM_ID].streak || 0;
-      const m = momentumFor(streak);
-      const next = MOMENTUM_STEP - (Math.abs(streak) % MOMENTUM_STEP);
+      const caps = this._userCaptains(this.state);
+      const m = momentumFor(streak, caps);
+      const step = momentumStep(streak, caps);
+      const next = step - (Math.abs(streak) % step);
       const more = next === 1 ? (streak >= 0 ? 'next W' : 'next L') : `${next} more ${streak >= 0 ? 'W' : 'L'}`;
       const hint = Math.abs(m) >= MOMENTUM_CAP ? 'max' : `${more}: ${streak >= 0 ? '+' : '−'}${Math.abs(m) + 1} · a ${streak >= 0 ? 'loss' : 'win'} resets it`;
       const cls = m > 0 ? 'up' : m < 0 ? 'down' : '';
       const label = m > 0 ? `🔥 MOMENTUM +${m}` : m < 0 ? `🧊 MOMENTUM −${-m}` : 'MOMENTUM 0';
-      return `<div class="c162-momentum ${cls}" title="Every ${MOMENTUM_STEP} straight wins add +1 to all your ratings and every ${MOMENTUM_STEP} straight losses take 1 away, up to ±${MOMENTUM_CAP}. The streak ending resets it. Applies to every team in the league.">
-        ${label}<span>${m === 0 && streak === 0 ? 'every ' + MOMENTUM_STEP + ' straight wins: +1 to all ratings (max +' + MOMENTUM_CAP + ')' : hint}</span>
+      return `<div class="c162-momentum ${cls}" title="Every ${momentumStep(1, caps)} straight wins add +1 to all your ratings and every ${momentumStep(-1, caps)} straight losses take 1 away, up to ±${MOMENTUM_CAP}${caps ? ' (your captain speeds up the wins and slows down the losses; without one it is every ' + MOMENTUM_STEP + ')' : ''}. The streak ending resets it. Applies to every team in the league.">
+        ${label}<span>${m === 0 && streak === 0 ? (caps ? '👑 ' : '') + 'every ' + step + ' straight wins: +1 to all ratings (max +' + MOMENTUM_CAP + ')' : hint}</span>
       </div>`;
     },
 
