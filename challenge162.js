@@ -1167,7 +1167,11 @@
           if (mask & (1 << k)) continue;
           const v = val[k][si];
           if (v === -Infinity) continue;
-          offer(mask | (1 << k), st.v + 1000 + v, st.pick.concat(k)); // +1000: filling a spot always beats leaving it empty
+          // Filling a spot always beats leaving it empty, and a fielding spot beats the DH: with
+          // the same bonus for both, any glove under 50 scored higher at DH, so the first card
+          // of every draft landed there. With nine or more batters every spot is filled and the
+          // two bonuses add up to the same total, so the final lineup does not change.
+          offer(mask | (1 << k), st.v + (slot === 'DH' ? 970 : 1000) + v, st.pick.concat(k));
         }
       });
       layer = next;
@@ -1450,9 +1454,8 @@
   // Applies to every team in the regular season, the user included.
   // Games a regular plays in a season, normal vs as an Iron Man (measured over full seasons).
   const IRON_GAMES = { C: [135, 154], SS: [151, 159], '2B': [151, 159], CF: [151, 159], '3B': [152, 160], LF: [154, 160], RF: [154, 160], '1B': [156, 161], DH: [158, 161] };
-  const LEGENDARY_PACK_CHANCE = 0.04;
   const PACK_OPTIONS = 3; // cards shown in each pack; the player keeps one
-  const PACK_OPTION_OVR_SPREAD = 2; // how far the two alternatives may be from the pack's roll
+  const PACK_FREE_CARDS = 1; // how many of them ignore the positions the roster still needs
   const MOMENTUM_STEP = 3;
   const MOMENTUM_CAP = 10;
   // Pitcher fatigue (see _freshBatters / _fatiguePenalty)
@@ -1476,6 +1479,18 @@
   const WEAR_CAP = 40;
   const MAX_RESTS_PER_GAME = 2;
   const OUT_OF_POSITION_DEF = 25;
+  // Bench moves during a game (the bench used to play only on rest days and in blowouts):
+  //  - pinch hitter: from the 7th on, in a close game (down by up to PH_MAX_DEFICIT, tied or up
+  //    one), with a man on base or leading off, the best bat left on the bench hits for a
+  //    starter he clearly out-hits (PH_EDGE points of bat) and stays in the game;
+  //  - pinch runner: from the 8th on, tied or down one, a slow runner on first gives way to a
+  //    much faster man;
+  //  - defensive replacement: from the 8th on, protecting a lead of 1-3, the weakest glove on
+  //    the field gives way to a much better one who plays the position.
+  const PH_FROM_INNING = 7, PH_MAX_DEFICIT = 4, PH_EDGE = 6;
+  const PR_FROM_INNING = 8, PR_SLOW = 45, PR_GAIN = 28;
+  const DEF_FROM_INNING = 8, DEF_GAIN = 18;
+  const batValue = p => 0.4 * (p.con !== undefined ? p.con : 50) + 0.35 * (p.pwr !== undefined ? p.pwr : 50) + 0.25 * (p.eye !== undefined ? p.eye : 50);
   // Field positions whose starter can't get a rest day with proper cover: no bench player
   // plays it, and no double switch works (another starter who can play it, whose own spot
   // a bench player can fill).
@@ -1585,11 +1600,13 @@
   }
 
   // Qualifying thresholds scale with games played so races are meaningful all season.
-  function leagueQualifiers(league) {
+  // lg ('AL' / 'NL') keeps only the players of the teams of that league; without it, all 32 teams.
+  function leagueQualifiers(league, lg) {
     const day = Math.max(1, league.day);
     const stats = league.stats || { bat: {}, pit: {} };
-    const bat = Object.values(stats.bat);
-    const pit = Object.values(stats.pit);
+    const inLeague = x => !lg || (league.teams[x.team] && league.teams[x.team].league === lg);
+    const bat = Object.values(stats.bat).filter(inLeague);
+    const pit = Object.values(stats.pit).filter(inLeague);
     return {
       day, bat, pit,
       batQual: bat.filter(b => batterPA(b) >= 3.1 * day),
@@ -1599,8 +1616,10 @@
     };
   }
 
-  function computeAwards(league) {
-    const q = leagueQualifiers(league);
+  // Awards are given per league, as in real baseball (decision of the user): pass 'AL' or 'NL'.
+  const AWARD_LEAGUES = ['AL', 'NL'];
+  function computeAwards(league, lg) {
+    const q = leagueQualifiers(league, lg);
     const war = b => parseFloat(calcBatterWAR(b, b.pos, b.def));
     const dwar = b => parseFloat(calcBatterDWAR(b, b.pos, b.def));
     const awards = {
@@ -2055,19 +2074,22 @@
       }
       S.playoffs.bracket = bracket;
       if (L.stats) {
-        // Freeze the season awards and announce the big ones.
-        const aw = computeAwards(L);
+        // Freeze the season awards of each league and announce the big ones.
         const winner = list => list && list[0] && list[0].x;
-        S.awards = {
-          mvp: winner(aw.mvp), cyYoung: winner(aw.cyYoung), reliever: winner(aw.reliever),
-          platinum: winner(aw.platinum), hrKing: winner(aw.hrKing), battingTitle: winner(aw.battingTitle),
-          silverSlugger: Object.fromEntries(Object.entries(aw.silverSlugger).map(([p, l]) => [p, winner(l)])),
-          goldGlove: Object.fromEntries(Object.entries(aw.goldGlove).map(([p, l]) => [p, winner(l)]))
-        };
         const teamName = id => (L.teams[id] ? L.teams[id].name : id);
-        [['mvp', '🏅 MVP'], ['cyYoung', '🧢 Cy Young'], ['reliever', '🔥 Reliever of the Year'], ['platinum', '💎 Platinum Glove']].forEach(([k, label]) => {
-          const w = S.awards[k];
-          if (w) this._pushHeadline(`${label}: ${w.name} (${teamName(w.team)}).`, w.team === USER_TEAM_ID ? 'user' : 'race');
+        S.awards = {};
+        AWARD_LEAGUES.forEach(awLg => {
+          const aw = computeAwards(L, awLg);
+          const won = S.awards[awLg] = {
+            mvp: winner(aw.mvp), cyYoung: winner(aw.cyYoung), reliever: winner(aw.reliever),
+            platinum: winner(aw.platinum), hrKing: winner(aw.hrKing), battingTitle: winner(aw.battingTitle),
+            silverSlugger: Object.fromEntries(Object.entries(aw.silverSlugger).map(([p, l]) => [p, winner(l)])),
+            goldGlove: Object.fromEntries(Object.entries(aw.goldGlove).map(([p, l]) => [p, winner(l)]))
+          };
+          [['mvp', '🏅 MVP'], ['cyYoung', '🧢 Cy Young'], ['reliever', '🔥 Reliever of the Year'], ['platinum', '💎 Platinum Glove']].forEach(([k, label]) => {
+            const w = won[k];
+            if (w) this._pushHeadline(`${awLg} ${label}: ${w.name} (${teamName(w.team)}).`, w.team === USER_TEAM_ID ? 'user' : 'race');
+          });
         });
       }
       // An old save may already be past round 1: replay the rounds it had won.
@@ -2876,15 +2898,20 @@
         const k = this._leagueKey(side.id, pitcherUnlockKey(p));
         if (gs.usedPitchers.has(k)) return false;
         const u = pen[k];
-        return !(u && u.last === day - 1 && u.run >= 2);
+        // Two days in a row and a reliever rests; the closer can go a third day.
+        return !(u && u.last === day - 1 && u.run >= (p.role === 'CL' ? 3 : 2));
       });
       if (!available.length) return null;
       const byRole = role => available.find(p => p.role === role);
       // Middle relievers: the one who has rested the longest goes first.
       const lastDay = p => { const u = pen[this._leagueKey(side.id, pitcherUnlockKey(p))]; return u ? u.last : -999; };
       const middle = available.filter(p => p.role !== 'CL' && p.role !== 'SETUP').sort((a, b) => lastDay(a) - lastDay(b));
-      const lateClose = lead >= 0 && lead <= 3;
-      if (inning >= 9 && (lateClose || inning > 9)) return byRole('CL') || byRole('SETUP') || middle[0] || available[0];
+      // The closer is kept for the save: a tie in the ninth goes to the setup man, and the
+      // closer comes in from the tenth on. Burning him in ties and then resting him the next
+      // day was costing him saves (27-30 for the closer of a team with 35).
+      const saveSpot = lead >= 1 && lead <= 3;
+      if (inning === 9 && lead === 0) return byRole('SETUP') || middle[0] || byRole('CL') || available[0];
+      if (inning >= 9 && (saveSpot || inning > 9)) return byRole('CL') || byRole('SETUP') || middle[0] || available[0];
       if (inning === 8 && lead >= -1 && lead <= 4) return byRole('SETUP') || middle[0] || byRole('CL');
       return middle[0] || byRole('SETUP') || byRole('CL') || available[0];
     },
@@ -2999,26 +3026,67 @@
         return bat[k];
       };
 
-      // Late blowouts: unused bench players who can cover the position finish the game.
-      const blowoutSubs = sides.map(() => ({}));
-      const nextBatter = (si, blowout) => {
+      // Substitutions change today's lineup in place (it is a copy made for this game): the man
+      // who comes in bats in that spot and plays that position for the rest of the game.
+      const gloveOf = p => (p.def !== undefined ? p.def : (p.defense_val !== undefined ? p.defense_val : 50));
+      const slotOf = p => p.assignedSlot || p.pos || 'DH';
+      const refreshDefense = side => {
+        const fielders = side.lineup.filter(p => slotOf(p) !== 'DH');
+        if (fielders.length) side.def = fielders.reduce((t, p) => t + gloveOf(p), 0) / fielders.length;
+      };
+      const subsMade = sides.map(() => ({ slots: new Set(), def: false }));
+      const bringIn = (si, slot, sub) => {
+        const side = sides[si];
+        const pos = slotOf(side.lineup[slot]);
+        side.benchLeft.splice(side.benchLeft.indexOf(sub), 1);
+        const entering = { ...sub, assignedSlot: pos };
+        if (pos !== 'DH' && !canPlayerFillSlot(sub, pos)) entering.def = OUT_OF_POSITION_DEF;
+        side.lineup[slot] = entering;
+        subsMade[si].slots.add(slot);
+        batterLine(side, entering); // he appears in the game even if he never comes to bat
+        refreshDefense(side);
+        return entering;
+      };
+      const nextBatter = (si, ctx) => {
         const side = sides[si];
         const slot = state[si].idx % side.lineup.length;
         state[si].idx++;
-        const starter = side.lineup[slot];
-        if (!blowout) return starter;
-        if (!(slot in blowoutSubs[si])) {
-          const pos = starter.assignedSlot || starter.pos || 'DH';
+        const due = side.lineup[slot];
+        if (!side.benchLeft.length || subsMade[si].slots.has(slot)) return due;
+        const pos = slotOf(due);
+        // Late blowouts: unused bench players who can cover the position finish the game.
+        if (ctx.blowout) {
           const sub = side.benchLeft.find(b => canPlayerFillSlot(b, pos));
-          if (sub) side.benchLeft.splice(side.benchLeft.indexOf(sub), 1);
-          blowoutSubs[si][slot] = sub ? { ...sub, assignedSlot: pos } : null;
+          return sub ? bringIn(si, slot, sub) : due;
         }
-        return blowoutSubs[si][slot] || starter;
+        // Pinch hitter.
+        if (ctx.inning >= PH_FROM_INNING && ctx.margin >= -PH_MAX_DEFICIT && ctx.margin <= 1 && (ctx.onBase > 0 || ctx.outs === 0)) {
+          const best = side.benchLeft.slice().sort((a, b) => batValue(b) - batValue(a))[0];
+          // A catcher is only hit for when another catcher is left to take over.
+          const covered = pos !== 'C' || side.benchLeft.some(b => b !== best && canPlayerFillSlot(b, 'C')) || canPlayerFillSlot(best, 'C');
+          if (best && covered && batValue(best) - batValue(due) >= PH_EDGE) return bringIn(si, slot, best);
+        }
+        return due;
       };
 
       // Manager decision at the start of each defensive half-inning.
       const managePitcher = (si, inning) => {
         const side = sides[si];
+        // Defensive replacement: one a game, late, protecting a small lead.
+        const leadNow = runs[si] - runs[1 - si];
+        if (inning >= DEF_FROM_INNING && leadNow >= 1 && leadNow <= 3 && !subsMade[si].def && side.benchLeft.length) {
+          let move = null;
+          side.lineup.forEach((p, slot) => {
+            const pos = slotOf(p);
+            if (pos === 'DH' || subsMade[si].slots.has(slot)) return;
+            side.benchLeft.forEach(b => {
+              if (!canPlayerFillSlot(b, pos)) return;
+              const gain = gloveOf(b) - gloveOf(p);
+              if (gain >= DEF_GAIN && (!move || gain > move.gain)) move = { slot, b, gain };
+            });
+          });
+          if (move) { bringIn(si, move.slot, move.b); subsMade[si].def = true; }
+        }
         const ps = state[si].ps;
         const lead = runs[si] - runs[1 - si];
         let pull = false;
@@ -3079,6 +3147,17 @@
           // With one try per at-bat and nobody running five runs up, Rickey Henderson stole 67
           // against 91 and Ty Cobb 54 against 73.
           const margin = runs[bi] + scored - runs[pi];
+          // Pinch runner for a slow man on first, late in a game that is tied or down by one.
+          if (inning >= PR_FROM_INNING && margin >= -1 && margin <= 0 && bases[0] && batSide.benchLeft.length) {
+            const slow = bases[0];
+            const slot = batSide.lineup.findIndex(p => p.name === slow.name);
+            const spdOf = p => (p.spd !== undefined ? p.spd : 50);
+            const fast = batSide.benchLeft.slice().sort((a, b) => spdOf(b) - spdOf(a))[0];
+            if (slot >= 0 && !subsMade[bi].slots.has(slot) && spdOf(slow) <= PR_SLOW && fast && spdOf(fast) - spdOf(slow) >= PR_GAIN
+              && (slotOf(slow) !== 'C' || canPlayerFillSlot(fast, 'C'))) {
+              bases[0] = bringIn(bi, slot, fast);
+            }
+          }
           for (let tries = 0; tries < 2 && outs < 3; tries++) {
             const from = (bases[0] && !bases[1]) ? 0 : ((bases[1] && !bases[2]) ? 1 : -1);
             if (from < 0) break;
@@ -3108,7 +3187,7 @@
           const p = ps.p;
           const eff = pen ? { ...p, h9: p.h9 - pen, k9: p.k9 - pen, bb9: p.bb9 - pen, hr9: p.hr9 - pen } : { ...p };
           eff._fieldingDef = pitSide.def;
-          const batter = nextBatter(bi, blowout);
+          const batter = nextBatter(bi, { blowout, inning, outs, margin, onBase: bases.filter(Boolean).length });
           const bl = batterLine(batSide, batter);
           ps.bf++;
           const outcome = simPaOutcome(batter, eff, batSide.isUser);
@@ -5237,23 +5316,12 @@
         packOpened: false,
         currentCard: null,
         manualSlots: null,
-        schedule: { batters: this._rollPackSchedule(14), pitchers: this._rollPackSchedule(11) }
+        options: null,          // the three cards of the current pack (rolled as soon as it shows up)
+        optionsShown: false,    // the pack has been ripped open
+        dealt: false            // the reveal animation of this pack has already played
       };
       this.showScreen('screen-challenge-pack');
       this.renderPacksDraft();
-    },
-
-    // Each box keeps its guarantees (2 Epic+, 2 Rare+, 2 Uncommon+, the rest any rarity) but in
-    // a random order, so a purple pack can show up at any moment. On top of that every pack has
-    // a small chance of being a Legendary pack.
-    _rollPackSchedule(n) {
-      const tiers = ['Epic', 'Epic', 'Rare', 'Rare', 'Uncommon', 'Uncommon'];
-      while (tiers.length < n) tiers.push(null);
-      for (let i = tiers.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [tiers[i], tiers[j]] = [tiers[j], tiers[i]];
-      }
-      return tiers.map(t => (Math.random() < LEGENDARY_PACK_CHANCE ? 'Legendary' : t));
     },
 
     _getDraftSlotPlayer(slots, kind, key) {
@@ -5323,39 +5391,6 @@
       }
     },
 
-    // Guaranteed Pack Rarity Schedule:
-    // Packs 1-2: Epic or better
-    // Packs 3-4: Rare or better
-    // Packs 5-6: Uncommon or better
-    // Packs 7-8: Common or better (Base guarantee)
-    // Packs 9+: Any Rarity
-    _getPackTierInfo(packIndexZeroBased) {
-      const _t = (key, fallback) => (typeof window.t === 'function' ? window.t(key, fallback) : fallback);
-      const d = this._packDraft;
-      const plan = d && d.schedule && d.schedule[d.stage];
-      if (plan) {
-        const tier = plan[packIndexZeroBased];
-        if (tier === 'Legendary') return { minRarity: 'Legendary', legendary: true, badge: '👑 LEGENDARY PACK', color: '#fde68a', border: '#fbbf24', glow: 'rgba(251,191,36,0.85)' };
-        if (tier === 'Epic') return { minRarity: 'Epic', badge: _t('challenge162.pack_tier_epic', '✨ EPIC OR BETTER'), color: '#c084fc', border: '#a855f7', glow: 'rgba(168,85,247,0.6)' };
-        if (tier === 'Rare') return { minRarity: 'Rare', badge: _t('challenge162.pack_tier_rare', '💎 RARE OR BETTER'), color: '#60a5fa', border: '#3b82f6', glow: 'rgba(59,130,246,0.6)' };
-        if (tier === 'Uncommon') return { minRarity: 'Uncommon', badge: _t('challenge162.pack_tier_uncommon', '🟢 UNCOMMON OR BETTER'), color: '#34d399', border: '#10b981', glow: 'rgba(16,185,129,0.6)' };
-        return { minRarity: null, badge: _t('challenge162.pack_tier_any', '🎲 ANY RARITY'), color: '#ffd700', border: '#eab308', glow: 'rgba(234,179,8,0.5)' };
-      }
-      if (packIndexZeroBased === 0 || packIndexZeroBased === 1) {
-        return { minRarity: 'Epic', badge: _t('challenge162.pack_tier_epic', '✨ EPIC OR BETTER'), color: '#c084fc', border: '#a855f7', glow: 'rgba(168,85,247,0.6)' };
-      }
-      if (packIndexZeroBased === 2 || packIndexZeroBased === 3) {
-        return { minRarity: 'Rare', badge: _t('challenge162.pack_tier_rare', '💎 RARE OR BETTER'), color: '#60a5fa', border: '#3b82f6', glow: 'rgba(59,130,246,0.6)' };
-      }
-      if (packIndexZeroBased === 4 || packIndexZeroBased === 5) {
-        return { minRarity: 'Uncommon', badge: _t('challenge162.pack_tier_uncommon', '🟢 UNCOMMON OR BETTER'), color: '#34d399', border: '#10b981', glow: 'rgba(16,185,129,0.6)' };
-      }
-      if (packIndexZeroBased === 6 || packIndexZeroBased === 7) {
-        return { minRarity: 'Common', badge: _t('challenge162.pack_tier_common', '⚪ COMMON OR BETTER'), color: '#e2e8f0', border: '#94a3b8', glow: 'rgba(148,163,184,0.4)' };
-      }
-      return { minRarity: null, badge: _t('challenge162.pack_tier_any', '🎲 ANY RARITY'), color: '#ffd700', border: '#eab308', glow: 'rgba(234,179,8,0.5)' };
-    },
-
     renderPacksDraft() {
       const container = document.getElementById('challenge162-pack-container');
       if (!container || !this._packDraft) return;
@@ -5408,81 +5443,100 @@
       };
 
       const stageBoxName = isPitchersStage ? _t('challenge162.box_pitchers', 'PITCHERS BOX') : _t('challenge162.box_batters', 'BATTERS BOX');
-      const packTier = this._getPackTierInfo(draft.currentPack);
+      const RAR_META = { Legendary: ['👑', 'LEGENDARY'], Epic: ['💜', 'EPIC'], Rare: ['💎', 'RARE'], Uncommon: ['🟢', 'UNCOMMON'], Common: ['⚪', 'COMMON'] };
+      const rarTier = r => RARITY_TIERS[r] || 1;
+      const sealed = !isCardRevealed && !draft.viewCard && !draft.optionsShown && draft.currentPack < draft.totalPacks;
+      // The pack is rolled the moment it shows up, so its foil can glow with the best card inside.
+      if (sealed && !(draft.options && draft.options.length)) {
+        const rolled = this._rollPackOptions();
+        draft.options = rolled.options;
+        draft.optionNeeds = rolled.missingPos;
+      }
+      const bestRarity = (draft.options || []).reduce((best, c) => (rarTier(c.rarity) > rarTier(best) ? c.rarity : best), 'Common');
+      const showingOptions = Boolean(!isCardRevealed && !draft.viewCard && draft.optionsShown && draft.options && draft.options.length);
+      let reducedMotion = false;
+      try { reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { /* older browsers */ }
 
       // ── Left Column Stage: Sealed Foil Pack OR Revealed 3D Card ──────────
       let leftColumnHTML = '';
 
       // draft.viewCard: a roster row was clicked, so the panel shows that player's card instead
       // of the pack (same card view as a fresh pull, flip included).
-      if (!isCardRevealed && !draft.viewCard && draft.options && draft.options.length) {
+      if (showingOptions) {
         const needs = draft.optionNeeds || [];
-        const gradeOf = v => (typeof getGrade === 'function' ? getGrade(v) : '');
+        const dealing = !draft.dealt && !reducedMotion;
+        // The cards turn over one at a time, lowest rarity first and the best one last, with a
+        // longer wait before the big ones.
+        const order = draft.options.map((c, i) => i).sort((a, b) => (rarTier(draft.options[a].rarity) - rarTier(draft.options[b].rarity)) || (a - b));
+        const flipAt = {};
+        let clock = 620;
+        order.forEach(i => { const t = rarTier(draft.options[i].rarity); clock += t >= 5 ? 1250 : (t === 4 ? 850 : 480); flipAt[i] = clock; });
+        const allDone = clock + 650;
+        draft.revealPlan = dealing ? { flipAt, allDone } : null;
         const tile = (c, i) => {
-          const rar = String(c.rarity || 'Common');
+          const rar = RAR_META[c.rarity] ? c.rarity : 'Common';
           const pit = !!c.role;
           const stats = pit
             ? [['H/9', c.h9], ['K/9', c.k9], ['BB/9', c.bb9], ['HR/9', c.hr9], ['STA', c.sta], ['CLT', c.clt !== undefined ? c.clt : c.clu]]
             : [['CON', c.con], ['PWR', c.pwr], ['EYE', c.eye], ['K/AVD', c.k_avd], ['SPD', c.spd], ['DEF', c.def]];
-          const pos = pit ? (c.role || 'SP') : `${c.pos}${c.sec_pos ? ' / ' + c.sec_pos : ''}`;
           // Only worth pointing out when it sets one card apart from the others.
           const fills = this._packOptionFills(c, needs) && !draft.options.every(o => this._packOptionFills(o, needs));
           const cardHTML = typeof window.createCardHTML === 'function'
             ? window.createCardHTML(c)
             : `<div class="player-card"><div class="card-name">${c.name}</div></div>`;
-          return `<div class="c162-optcard r-${rar.toLowerCase()}" style="animation-delay:${i * 110}ms">
-            <div class="c162-optcard-card" data-pack-view="${i}" title="See the full card">${cardHTML}</div>
-            <div class="c162-optcard-cap"><b>${Math.floor(c.ovr || 50)}</b><span>${pit ? (c.role || 'SP') : c.pos} · ${rar}</span></div>
-            <div class="c162-optcard-stats">${stats.map(([l, v]) => `<span><i>${l}</i><b>${v !== undefined ? Math.round(v) : '—'}</b></span>`).join('')}</div>
-            <div class="c162-optcard-need">${fills ? 'FILLS A HOLE' : ''}</div>
-            <button class="btn c162-opt-pick" data-pack-pick="${i}">✔ PICK</button>
+          return `<div class="c162-oc r-${rar.toLowerCase()}" style="--i:${i};--flip:${flipAt[i]}ms">
+            <div class="c162-oc-ribbon"><i>${RAR_META[rar][0]}</i>${RAR_META[rar][1]}</div>
+            <div class="c162-oc-stage">
+              <div class="c162-oc-aura"></div>
+              <div class="c162-oc-flip">
+                <div class="c162-oc-back"><span>⚾</span><em>BASEROGUE</em></div>
+                <div class="c162-oc-front card-deal-in" data-pack-view="${i}" title="See the full card">${cardHTML}</div>
+              </div>
+              <div class="c162-oc-burst"></div>
+            </div>
+            <div class="c162-oc-info">
+              <div class="c162-oc-cap"><b>${Math.floor(c.ovr || 50)}</b><span>${pit ? (c.role || 'SP') : `${c.pos}${c.sec_pos ? ' · ' + c.sec_pos : ''}`}</span></div>
+              <div class="c162-oc-stats">${stats.map(([l, v]) => `<span><i>${l}</i><b>${v !== undefined ? Math.round(v) : '—'}</b></span>`).join('')}</div>
+              <div class="c162-oc-need">${fills ? '🧩 FILLS A HOLE' : ''}</div>
+              <button class="btn c162-opt-pick" data-pack-pick="${i}">✔ PICK</button>
+            </div>
           </div>`;
         };
         leftColumnHTML = `
-          <div class="c162-opts">
-            <div class="c162-opts-title"><b>${packTier.badge}</b><span>PACK ${draft.currentPack + 1} / ${totalInStage}</span></div>
-            <div class="c162-opts-prompt">✨ PICK ONE OF ${draft.options.length} ✨</div>
-            <div class="c162-opts-row">${draft.options.map(tile).join('')}</div>
-            <div class="c162-opts-hint">Click a card to see it in full before you decide</div>
+          <div class="c162-reveal ${dealing ? 'dealing' : ''} best-${bestRarity.toLowerCase()}" style="--done:${allDone}ms">
+            <div class="c162-reveal-head"><b>🎲 ANY RARITY PACK</b><span>PACK ${draft.currentPack + 1} / ${totalInStage}</span></div>
+            <div class="c162-reveal-row">${draft.options.map(tile).join('')}</div>
+            <div class="c162-reveal-prompt">✨ PICK ONE OF ${draft.options.length} ✨</div>
+            <div class="c162-reveal-hint"><span class="c162-reveal-skip">Click anywhere to skip the reveal ▶</span><span class="c162-reveal-tip">Click a card to see it in full before you decide</span></div>
           </div>`;
-      } else if (!isCardRevealed && !draft.viewCard) {
+        draft.dealt = true;
+      } else if (sealed) {
         const boxLabel = isPitchersStage ? _t('challenge162.box_pitchers', 'PITCHERS BOX') : _t('challenge162.box_batters', 'BATTERS BOX');
         const boxSubtitle = isPitchersStage ? _t('challenge162.pitchers_box_subtitle', '5 Starters (SP) + 6 Relievers') : _t('challenge162.batters_box_subtitle', '9 Starters + 5 Bench');
         leftColumnHTML = `
-          <div style="background:rgba(0,0,0,0.5); border:1px solid rgba(255,215,0,0.3); border-radius:12px; padding:20px; text-align:center; min-height:540px; display:flex; flex-direction:column; justify-content:center; align-items:center;">
-            <div class="dex-foil-pack-wrapper ${packTier.legendary ? 'c162-pack-legendary' : ''}" id="c162-foil-pack-target" style="cursor:pointer; margin: 10px auto;" title="${_t('challenge162.pack_tap_rip', 'TAP THE PACK TO RIP OPEN!')}">
-              <div class="dex-foil-pack" id="c162-foil-pack-inner" style="background:linear-gradient(135deg, #1e293b 0%, #0f172a 40%, #1e1b4b 70%, #311042 100%); border-color:${packTier.border}; box-shadow:0 0 35px ${packTier.glow};">
-                <div class="dex-foil-crimp" id="c162-pack-crimp-top" style="background:repeating-linear-gradient(90deg, ${packTier.border}, ${packTier.border} 3px, #b45309 3px, #b45309 6px);"></div>
-
-                <div style="text-align:center; margin: 24px 0;">
-                  <div style="font-size:42px; filter:drop-shadow(0 0 14px ${packTier.border}); margin-bottom:8px;">📦</div>
-                  <div style="font-family:'Press Start 2P',monospace; font-size:11px; color:#ffd700; text-shadow:0 0 12px rgba(255,215,0,0.8); line-height:1.4;">
-                    ${boxLabel}
-                  </div>
-                  <div style="font-size:9.5px; color:#cbd5e1; margin-top:6px;">
-                    ${boxSubtitle}
-                  </div>
-                  
-                  <!-- Guaranteed Rarity Badge -->
-                  <div style="margin-top:10px; display:inline-block; padding:4px 10px; background:rgba(0,0,0,0.7); border:1px solid ${packTier.border}; border-radius:14px; font-family:'Press Start 2P',monospace; font-size:7.5px; color:${packTier.color}; box-shadow:0 0 10px ${packTier.glow};">
-                    ${packTier.badge}
-                  </div>
-
-                  <div style="display:inline-block; margin-top:8px; padding:4px 10px; background:rgba(0,0,0,0.6); border:1px dashed #ffd700; border-radius:20px; font-family:'Press Start 2P',monospace; font-size:8px; color:#ffd700;">
-                    ${_t('challenge162.pack_num_indicator', `PACK ${packNum} / ${totalInStage}`, { current: packNum, total: totalInStage })}
-                  </div>
+          <div class="c162-sealed best-${bestRarity.toLowerCase()}">
+            <div class="c162-sealed-rays"></div>
+            <div class="c162-pack" id="c162-foil-pack-target" title="${_t('challenge162.pack_tap_rip', 'TAP THE PACK TO RIP OPEN!')}">
+              <div class="c162-pack-foil" id="c162-foil-pack-inner">
+                <div class="c162-pack-top"><div class="c162-pack-crimp"></div></div>
+                <div class="c162-pack-body">
+                  <div class="c162-pack-logo">⚾</div>
+                  <div class="c162-pack-brand">BASEROGUE</div>
+                  <div class="c162-pack-box">${boxLabel}</div>
+                  <div class="c162-pack-sub">${boxSubtitle}</div>
+                  <div class="c162-pack-num">${_t('challenge162.pack_num_indicator', `PACK ${packNum} / ${totalInStage}`, { current: packNum, total: totalInStage })}</div>
                 </div>
-
-                <div class="dex-foil-crimp" id="c162-pack-crimp-bottom" style="background:repeating-linear-gradient(90deg, ${packTier.border}, ${packTier.border} 3px, #b45309 3px, #b45309 6px);"></div>
+                <div class="c162-pack-crimp bottom"></div>
               </div>
+              <div class="c162-pack-flash"></div>
+              <div class="c162-pack-sparks">${Array.from({ length: 12 }, (_, i) => `<i style="--a:${i * 30}deg;--d:${(i % 4) * 0.35}s"></i>`).join('')}</div>
             </div>
-
-            <div style="font-family:'Press Start 2P',monospace; font-size:8.5px; color:${packTier.color}; margin-top:16px; animation:pulse 1.5s infinite;">
-              ${_t('challenge162.pack_rip_prompt', '✨ TAP PACK TO RIP OPEN ✨')}
+            <div class="c162-sealed-cta">${_t('challenge162.pack_rip_prompt', '✨ TAP PACK TO RIP OPEN ✨')}</div>
+            <div class="c162-sealed-odds">
+              <span>3 CARDS · EACH ONE ROLLS ITS OWN RARITY</span>
+              <div><b class="r-legendary">👑 2.5%</b><b class="r-epic">💜 12.5%</b><b class="r-rare">💎 20%</b><b class="r-uncommon">🟢 30%</b><b class="r-common">⚪ 35%</b></div>
             </div>
-            <div style="margin-top:10px; font-size:9.5px; color:#94a3b8; font-family:'Press Start 2P',monospace; line-height:1.4;">
-              ${_t('challenge162.pack_click_to_reveal', 'Click the pack to rip it open: three cards come out and you keep one')}
-            </div>
+            <div class="c162-sealed-hint">The foil glows with the best card inside</div>
           </div>
         `;
       } else {
@@ -5779,7 +5833,7 @@
           </div>
 
           <!-- Main Grid: Left Stage (Pack/Card) + Right Board (Card Deck) -->
-          <div class="c162-pack-layout" style="display:grid; grid-template-columns: ${(!isCardRevealed && !draft.viewCard && draft.options && draft.options.length) ? '540px' : '460px'} 1fr; gap:16px; align-items:start;">
+          <div class="c162-pack-layout" style="display:grid; grid-template-columns: ${showingOptions ? '560px' : '460px'} 1fr; gap:16px; align-items:start;">
             
             <!-- Left Column -->
             ${leftColumnHTML}
@@ -5878,14 +5932,30 @@
       const foilTarget = container.querySelector('#c162-foil-pack-target');
       if (foilTarget) {
         foilTarget.onclick = () => {
-          if (window.BaseballDex && typeof window.BaseballDex.playPackSound === 'function') {
-            window.BaseballDex.playPackSound('Rare');
-          } else if (window.AudioManager && typeof window.AudioManager.play === 'function') {
-            window.AudioManager.play('card_deal');
-          } else if (typeof window.playSound === 'function') {
-            window.playSound('card_flip');
+          if (foilTarget.classList.contains('ripping')) return;
+          foilTarget.classList.add('ripping');
+          let muted = false;
+          try { muted = localStorage.getItem('baserogue_muted') === 'true'; } catch (e) { /* storage unavailable */ }
+          if (!muted) {
+            if (window.BaseballDex && typeof window.BaseballDex.playPackSound === 'function') window.BaseballDex.playPackSound('Common');
+            else if (window.AudioManager && typeof window.AudioManager.play === 'function') window.AudioManager.play('card_deal');
           }
-          this._openPackOptions();
+          // The better the pack, the longer it shakes before it tears.
+          const ripMs = reducedMotion ? 0 : (bestRarity === 'Legendary' ? 1350 : (bestRarity === 'Epic' ? 950 : 620));
+          setTimeout(() => {
+            if (this._packDraft !== draft) return;
+            this._openPackOptions();
+            this.renderPacksDraft();
+            this._playRevealSounds();
+          }, ripMs);
+        };
+      }
+
+      // Click the table (not a card or a button) to skip the reveal.
+      const revealStage = container.querySelector('.c162-reveal.dealing');
+      if (revealStage) {
+        revealStage.onclick = () => {
+          draft.revealSkipped = true;
           this.renderPacksDraft();
         };
       }
@@ -5905,7 +5975,7 @@
         btn.onclick = (e) => {
           e.stopPropagation();
           const card = (draft.options || [])[parseInt(btn.dataset.packView, 10)];
-          if (card) { draft.viewCard = card; this.renderPacksDraft(); }
+          if (card) { draft.revealSkipped = true; draft.viewCard = card; this.renderPacksDraft(); }
         };
       });
 
@@ -6023,35 +6093,27 @@
         SLOTS.forEach(slot => { if (!currentSlots.lineup[slot]) missingPos.push(slot); });
       }
       const activePool = isPitchersStage ? getPitcherPool() : getBatterPool();
-      const currentTier = this._getPackTierInfo(draft.currentPack);
       const keyOf = c => (c.role ? pitcherUnlockKey(c) : batterUnlockKey(c));
       const seen = new Set(draft.usedKeys);
-      // The first card is the pack's roll, exactly as before. The other two are of the same
-      // rarity and within PACK_OPTION_OVR_SPREAD points of it, so the choice is about fit and
-      // style (position, contact or power, starter or reliever) and not about who is plainly
-      // better. With three free rolls and "keep the best", pack teams went from ~75 to ~80 OVR
-      // and from 82-109 wins to 103-136.
-      let first = pickWeightedChallengeDraftCard(activePool, missingPos, seen, currentTier.minRarity);
-      if (!first || seen.has(keyOf(first))) first = activePool.find(c => !seen.has(keyOf(c)));
+      // Every pack is "any rarity" and each of its three cards is drawn on its own from the
+      // whole pool, so each one has the game's own odds: 2.5% Legendary, 12.5% Epic, 20% Rare,
+      // 30% Uncommon, 35% Common (idea of the user). With three draws a pack holds a Legendary
+      // 7% of the time and an Epic or better 39%, and that is why no box guarantees are needed:
+      // measured over 30 drafts the teams win 101 on average, against 98 with the old rule
+      // (guaranteed tiers and three cards of the same rarity within 2 OVR). A FIXED pack rarity
+      // with those odds left teams at 80 wins; "that rarity or better" gave the same 101.
+      // While the roster has holes, two of the three cards can play one of the missing spots and
+      // one is drawn from everybody (PACK_FREE_CARDS). With all three tied to the holes a star
+      // at a position already covered never showed up until the bench packs, so there was never
+      // a "he is better but I already have someone there" choice.
+      const freeAt = new Set();
+      while (freeAt.size < Math.min(PACK_FREE_CARDS, PACK_OPTIONS)) freeAt.add(Math.floor(Math.random() * PACK_OPTIONS));
       const options = [];
-      if (first) {
-        options.push(first);
-        seen.add(keyOf(first));
-        const near = spread => activePool.filter(c => !seen.has(keyOf(c)) && c.rarity === first.rarity && Math.abs((c.ovr || 0) - (first.ovr || 0)) <= spread);
-        while (options.length < PACK_OPTIONS) {
-          let cands = near(PACK_OPTION_OVR_SPREAD);
-          if (!cands.length) cands = near(99);
-          if (!cands.length) break;
-          // Prefer a different position from the cards already on offer, then one the roster needs.
-          const shown = new Set(options.map(o => (o.role ? o.role : o.pos)));
-          const fresh = cands.filter(c => !shown.has(c.role ? c.role : c.pos));
-          const pickFrom = fresh.length ? fresh : cands;
-          const needed = pickFrom.filter(c => this._packOptionFills(c, missingPos));
-          const list = (needed.length && Math.random() < 0.5) ? needed : pickFrom;
-          const card = list[Math.floor(Math.random() * list.length)];
-          seen.add(keyOf(card));
-          options.push(card);
-        }
+      while (options.length < PACK_OPTIONS) {
+        const card = pickWeightedChallengeDraftCard(activePool, freeAt.has(options.length) ? [] : missingPos, seen, null);
+        if (!card || seen.has(keyOf(card))) break;
+        seen.add(keyOf(card));
+        options.push(card);
       }
       return { options, missingPos };
     },
@@ -6073,12 +6135,35 @@
     _openPackOptions() {
       const draft = this._packDraft;
       if (!draft || draft.currentPack >= draft.totalPacks) return;
-      const o = this._rollPackOptions();
-      draft.options = o.options;
-      draft.optionNeeds = o.missingPos;
+      if (!(draft.options && draft.options.length)) {
+        const o = this._rollPackOptions();
+        draft.options = o.options;
+        draft.optionNeeds = o.missingPos;
+      }
+      draft.optionsShown = true;
+      draft.dealt = false;
       draft.packOpened = false;
       draft.currentCard = null;
       draft.viewCard = null;
+    },
+
+    // Rarity sting for each card as it turns over (times come from the reveal plan).
+    _playRevealSounds() {
+      const draft = this._packDraft;
+      const plan = draft && draft.revealPlan;
+      if (!plan) return;
+      let muted = false;
+      try { muted = localStorage.getItem('baserogue_muted') === 'true'; } catch (e) { /* storage unavailable */ }
+      if (muted) return;
+      const pack = draft.currentPack, stage = draft.stage;
+      (draft.options || []).forEach((card, i) => {
+        setTimeout(() => {
+          const d = this._packDraft;
+          if (d !== draft || !d.optionsShown || d.currentPack !== pack || d.stage !== stage || d.revealSkipped) return;
+          if (window.BaseballDex && typeof window.BaseballDex.playPackSound === 'function') window.BaseballDex.playPackSound(card.rarity || 'Common');
+          else if (window.AudioManager && typeof window.AudioManager.play === 'function') window.AudioManager.play('card_deal');
+        }, plan.flipAt[i]);
+      });
     },
 
     // Adds one card of the current pack to the roster: the one the player chose, or (OPEN 5 /
@@ -6094,6 +6179,10 @@
       }
       draft.options = null;
       draft.optionNeeds = null;
+      draft.optionsShown = false;
+      draft.dealt = false;
+      draft.revealPlan = null;
+      draft.revealSkipped = false;
       if (!card) return null;
 
       draft.usedKeys.add(card.role ? pitcherUnlockKey(card) : batterUnlockKey(card));
@@ -7769,7 +7858,6 @@
       const L = S.league;
       if (!L.stats) return '<div class="c162-pr-note">Award races start with the next game.</div>';
       const final = S.gamesPlayed >= SEASON_LENGTH && S.awards;
-      const aw = computeAwards(L);
       const warFmt = v => `${v.toFixed(1)} WAR`;
       const race = (title, list, fmt) => `<div class="c162-ldr-box c162-award-box"><div class="c162-ldr-title">${title}${final ? ' · FINAL' : ''}</div>${this._leaderRows(list, fmt)}</div>`;
       const posTable = (title, byPos, fmt) => `
@@ -7786,21 +7874,30 @@
           }).join('')}
         </div>`;
       const avg3 = v => v.toFixed(3).replace(/^0/, '');
-      return `
-        <div class="c162-pr-note">${final ? 'Final results of the regular season.' : 'Live races across all 32 teams. Winners are decided when the regular season ends.'}</div>
-        <div class="c162-ldr-grid">
-          ${race('🏅 MVP', aw.mvp, warFmt)}
-          ${race('🧢 CY YOUNG', aw.cyYoung, warFmt)}
-          ${race('🔥 RELIEVER OF THE YEAR', aw.reliever, warFmt)}
-          ${race('💎 PLATINUM GLOVE', aw.platinum, v => `${v >= 0 ? '+' : ''}${v.toFixed(1)} dWAR`)}
-          ${race('💣 HOME RUN KING', aw.hrKing, v => `${v} HR`)}
-          ${race('🎯 BATTING TITLE', aw.battingTitle, avg3)}
-        </div>
-        <div class="c162-meet-section">BY POSITION</div>
-        <div class="c162-ldr-grid c162-ldr-grid-2">
-          ${posTable('🥈 SILVER SLUGGER · BEST OPS', aw.silverSlugger, v => `${avg3(v)} OPS`)}
-          ${posTable('🧤 GOLD GLOVE · BEST dWAR', aw.goldGlove, v => `${v >= 0 ? '+' : ''}${v.toFixed(1)} dWAR`)}
+      // One block per league, the league of the user first.
+      const userLg = L.teams[USER_TEAM_ID] ? L.teams[USER_TEAM_ID].league : 'AL';
+      const leagueBlock = lg => {
+        const aw = computeAwards(L, lg);
+        return `
+        <div class="c162-award-league">
+          <div class="c162-award-league-title lg-${lg}">${lg === 'AL' ? 'AMERICAN LEAGUE' : 'NATIONAL LEAGUE'}${lg === userLg ? ' · YOUR LEAGUE' : ''}</div>
+          <div class="c162-ldr-grid">
+            ${race('🏅 MVP', aw.mvp, warFmt)}
+            ${race('🧢 CY YOUNG', aw.cyYoung, warFmt)}
+            ${race('🔥 RELIEVER OF THE YEAR', aw.reliever, warFmt)}
+            ${race('💎 PLATINUM GLOVE', aw.platinum, v => `${v >= 0 ? '+' : ''}${v.toFixed(1)} dWAR`)}
+            ${race('💣 HOME RUN KING', aw.hrKing, v => `${v} HR`)}
+            ${race('🎯 BATTING TITLE', aw.battingTitle, avg3)}
+          </div>
+          <div class="c162-ldr-grid c162-ldr-grid-2">
+            ${posTable('🥈 SILVER SLUGGER · BEST OPS', aw.silverSlugger, v => `${avg3(v)} OPS`)}
+            ${posTable('🧤 GOLD GLOVE · BEST dWAR', aw.goldGlove, v => `${v >= 0 ? '+' : ''}${v.toFixed(1)} dWAR`)}
+          </div>
         </div>`;
+      };
+      return `
+        <div class="c162-pr-note">${final ? 'Final results of the regular season, one set of awards per league.' : 'Live races in each league. Winners are decided when the regular season ends.'}</div>
+        ${[userLg, otherLeague(userLg)].map(leagueBlock).join('')}`;
     },
 
     _resultsAwardsHTML() {
@@ -7808,21 +7905,27 @@
       const L = S.league;
       if (!L || !S.awards) return '';
       const nameOf = x => x ? `${x.name} <small>${x.team === USER_TEAM_ID ? '(YOU)' : '(' + (L.teams[x.team] ? L.teams[x.team].name : x.team) + ')'}</small>` : '—';
-      const all = [S.awards.mvp, S.awards.cyYoung, S.awards.reliever, S.awards.platinum, S.awards.hrKing, S.awards.battingTitle,
-        ...Object.values(S.awards.silverSlugger || {}), ...Object.values(S.awards.goldGlove || {})];
-      const mine = all.filter(x => x && x.team === USER_TEAM_ID).length;
       const cell = (label, x) => `<div class="c162-res-award ${x && x.team === USER_TEAM_ID ? 'is-user' : ''}"><span>${label}</span><b>${nameOf(x)}</b></div>`;
+      // Saves from before the awards were split by league hold one set for all 32 teams.
+      const userLg = L.teams[USER_TEAM_ID] ? L.teams[USER_TEAM_ID].league : 'AL';
+      const sets = (S.awards.AL || S.awards.NL)
+        ? [userLg, otherLeague(userLg)].filter(lg => S.awards[lg]).map(lg => [lg, S.awards[lg]])
+        : [['', S.awards]];
+      const flat = a => [a.mvp, a.cyYoung, a.reliever, a.platinum, a.hrKing, a.battingTitle, ...Object.values(a.silverSlugger || {}), ...Object.values(a.goldGlove || {})];
+      const mine = sets.reduce((n, pair) => n + flat(pair[1]).filter(x => x && x.team === USER_TEAM_ID).length, 0);
       return `
         <details class="c162-results-bracket" open>
           <summary>🏅 SEASON AWARDS · YOUR PLAYERS WON ${mine}</summary>
+          ${sets.map(([lg, a]) => `
+          ${lg ? `<div class="c162-award-league-title lg-${lg}">${lg === 'AL' ? 'AMERICAN LEAGUE' : 'NATIONAL LEAGUE'}${lg === userLg ? ' · YOUR LEAGUE' : ''}</div>` : ''}
           <div class="c162-res-awards">
-            ${cell('MVP', S.awards.mvp)}${cell('CY YOUNG', S.awards.cyYoung)}${cell('RELIEVER OF THE YEAR', S.awards.reliever)}
-            ${cell('PLATINUM GLOVE', S.awards.platinum)}${cell('HOME RUN KING', S.awards.hrKing)}${cell('BATTING TITLE', S.awards.battingTitle)}
+            ${cell('MVP', a.mvp)}${cell('CY YOUNG', a.cyYoung)}${cell('RELIEVER OF THE YEAR', a.reliever)}
+            ${cell('PLATINUM GLOVE', a.platinum)}${cell('HOME RUN KING', a.hrKing)}${cell('BATTING TITLE', a.battingTitle)}
           </div>
           <div class="c162-res-awards c162-res-awards-pos">
-            ${Object.entries(S.awards.silverSlugger || {}).map(([p, x]) => cell(`SILVER SLUGGER ${p}`, x)).join('')}
-            ${Object.entries(S.awards.goldGlove || {}).map(([p, x]) => cell(`GOLD GLOVE ${p}`, x)).join('')}
-          </div>
+            ${Object.entries(a.silverSlugger || {}).map(([p, x]) => cell(`SILVER SLUGGER ${p}`, x)).join('')}
+            ${Object.entries(a.goldGlove || {}).map(([p, x]) => cell(`GOLD GLOVE ${p}`, x)).join('')}
+          </div>`).join('')}
         </details>`;
     },
 

@@ -1560,37 +1560,61 @@
       };
 
       const picks = [];
-      // Rounds 5-8 are all Commons: three random ones looked alike and the choice meant
-      // nothing. Each slot now gives a different reason to pick: a position you still need,
-      // a player of the era you have the most of, and a specialist with one standout tool.
+      // Rounds 5-8 are all Commons: three random ones looked alike and the choice meant nothing.
+      // Now every card fills a position you still need, each one a DIFFERENT position while
+      // three or more are open, and each has its own reason: your era, a standout tool, or the
+      // best OVR of a handful. The first version tagged one card "fills 3B" and could deal
+      // another third baseman right next to it tagged "power", which emptied the first tag of
+      // meaning (reported by the user): now the position is part of every tag.
       if (this.draftRound >= 5 && this.draftRound <= 8) {
         const base = (activeWeighted && activeWeighted.length >= 12 ? activeWeighted : fullWeighted).map(x => x.player);
         const rnd = list => (list.length ? list[Math.floor(Math.random() * list.length)] : null);
+        const shuffled = list => list.map(x => [Math.random(), x]).sort((a, b) => a[0] - b[0]).map(x => x[1]);
         const secOf = p => String(p.sec_pos || '').split(',').map(x => x.trim()).filter(Boolean);
         const free = list => list.filter(p => !picks.some(x => x.name === p.name));
+        const canPlay = (p, pos) => pos === 'DH' || p.pos === pos || secOf(p).includes(pos);
+        // Real positions first; the DH takes anybody, so it is the last one to get a card.
+        const open = shuffled(missingPos).sort((a, b) => (a === 'DH') - (b === 'DH'));
+        const usedPos = [];
+        // First open position without a card yet that has a candidate passing `filter`.
+        const spotFor = filter => {
+          const order = [...open.filter(p => !usedPos.includes(p)), ...open.filter(p => usedPos.includes(p))];
+          for (const pos of order) {
+            const cands = free(base.filter(p => canPlay(p, pos) && filter(p)));
+            if (cands.length) return { pos, cands };
+          }
+          return null;
+        };
         const take = (p, tag) => {
           if (!p) return;
           picks.push({ ...p, draftTag: tag });
+          usedPos.push(tag.pos);
           removeFromList(fullWeighted, p.name);
           if (activeWeighted) removeFromList(activeWeighted, p.name);
         };
-        // 1. A hole: primary position still empty (secondary if nobody has it as primary).
-        let need = free(base.filter(p => missingPos.includes(p.pos)));
-        if (!need.length) need = free(base.filter(p => secOf(p).some(sp => missingPos.includes(sp))));
-        const needPick = rnd(need);
-        if (needPick) take(needPick, { type: 'need', pos: missingPos.includes(needPick.pos) ? needPick.pos : secOf(needPick).find(sp => missingPos.includes(sp)) });
-        // 2. Synergy: the era with the most drafted players (the Build Era wins a tie).
+        // 1. Synergy: the era with the most drafted players (the Build Era wins a tie).
         const eraCount = {};
         this.draftedPlayers.forEach(p => { if (p.era && p.era !== 'None') eraCount[p.era] = (eraCount[p.era] || 0) + 1; });
         const topEra = Object.keys(eraCount).sort((x, y) => (eraCount[y] - eraCount[x]) || ((y === this.buildEra) - (x === this.buildEra)))[0];
-        if (topEra) take(rnd(free(base.filter(p => p.era === topEra))), { type: 'era', era: topEra, count: eraCount[topEra] });
-        // 3. Specialist: one of the best Commons at a single tool (top 8% of what is on offer).
+        const eraSpot = topEra && spotFor(p => p.era === topEra);
+        if (eraSpot) take(rnd(eraSpot.cands), { type: 'era', pos: eraSpot.pos, era: topEra, count: eraCount[topEra] });
+        // 2. Specialist: one of the best Commons at a single tool (top 8% of what is on offer).
         // The tool is drawn first so it is not always K-AVD, where Commons are deepest.
         const TOOLS = ['con', 'pwr', 'eye', 'spd', 'def', 'k_avd'];
         const tool = TOOLS[Math.floor(Math.random() * TOOLS.length)];
-        const ranked = free(base).sort((x, y) => (Number(y[tool]) || 0) - (Number(x[tool]) || 0));
-        const spec = rnd(ranked.slice(0, Math.max(3, Math.round(ranked.length * 0.08))));
-        if (spec) take(spec, { type: 'tool', stat: tool, val: Number(spec[tool]) || 0 });
+        const ranked = base.map(p => Number(p[tool]) || 0).sort((x, y) => y - x);
+        const cutoff = ranked[Math.max(2, Math.round(ranked.length * 0.08))] || 0;
+        const toolSpot = spotFor(p => (Number(p[tool]) || 0) >= cutoff);
+        if (toolSpot) { const sp = rnd(toolSpot.cands); take(sp, { type: 'tool', pos: toolSpot.pos, stat: tool, val: Number(sp[tool]) || 0 }); }
+        // 3. Solid: the best OVR out of six drawn at one more position.
+        const topSpot = spotFor(() => true);
+        if (topSpot) {
+          const best = shuffled(topSpot.cands).slice(0, 6).sort((x, y) => (y.ovr || 0) - (x.ovr || 0))[0];
+          take(best, { type: 'top', pos: topSpot.pos });
+        }
+        // Shown in a fixed order: solid, era, tool.
+        const rank = { top: 0, era: 1, tool: 2 };
+        picks.sort((x, y) => rank[x.draftTag.type] - rank[y.draftTag.type]);
       }
       while (picks.length < 3 && (fullWeighted.length > 0 || (activeWeighted && activeWeighted.length > 0))) {
         const useActive = isStoryYearAware && activeWeighted.length > 0 && Math.random() < 0.95;
@@ -3214,7 +3238,8 @@
       
       const enemyPitchers = enemy.pitchers.map(p => {
         const staVal = p.sta !== undefined ? p.sta : (p.sta_val !== undefined ? p.sta_val : 50);
-        const unifiedHp = calcPitcherHP(staVal);
+        // Rival pitchers get a little more HP to pay for the player's Focus (simulation.js).
+        const unifiedHp = Math.round(calcPitcherHP(staVal) * ((window.FOCUS_RULES && window.FOCUS_RULES.hpComp) || 1));
         return {
           ...p,
           sta: staVal,

@@ -843,13 +843,14 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
         wrapper.style.borderColor = rColor;
         wrapper.style.background = rBg;
 
-        // Rounds 5-8: why this card is on offer (fills a hole / feeds your era / one standout tool).
+        // Rounds 5-8: the position this card fills and why it is on offer (best of a handful /
+        // feeds your era / one standout tool).
         const tag = player.draftTag;
         const TOOL_NAMES = { con: 'CONTACT', pwr: 'POWER', eye: 'EYE', spd: 'SPEED', def: 'GLOVE', k_avd: 'K-AVD' };
-        const tagHTML = !tag ? '' : `<div class="draft-reason draft-reason-${tag.type}">${
-          tag.type === 'need' ? t('draft.reason_need', { pos: tag.pos, defaultValue: `FILLS ${tag.pos}` })
-          : tag.type === 'era' ? t('draft.reason_era', { count: tag.count + 1, defaultValue: `YOUR ERA ×${tag.count + 1}` })
-          : t('draft.reason_tool', { stat: TOOL_NAMES[tag.stat] || tag.stat, val: Math.round(tag.val), defaultValue: `${TOOL_NAMES[tag.stat] || tag.stat} ${Math.round(tag.val)}` })
+        const tagHTML = !tag ? '' : `<div class="draft-reason draft-reason-${tag.type}"><b>${tag.pos}</b>${
+          tag.type === 'era' ? t('draft.reason_era', { count: tag.count + 1, defaultValue: `YOUR ERA ×${tag.count + 1}` })
+          : tag.type === 'tool' ? t('draft.reason_tool', { stat: TOOL_NAMES[tag.stat] || tag.stat, val: Math.round(tag.val), defaultValue: `${TOOL_NAMES[tag.stat] || tag.stat} ${Math.round(tag.val)}` })
+          : t('draft.reason_top', { defaultValue: 'SOLID PICK' })
         }</div>`;
 
         wrapper.innerHTML = `
@@ -3179,7 +3180,7 @@ function initGameModeSelector() {
 
       // Global menu-click sound: any .btn click that isn't a combat/draft-specific button
       // We use a delegated listener on document so we don't need to touch each button.
-      const COMBAT_BTN_IDS = new Set(['btn-roll-dice', 'btn-match-skip-game', 'btn-audio-toggle']);
+      const COMBAT_BTN_IDS = new Set(['btn-roll-dice', 'btn-match-skip-game', 'btn-audio-toggle', 'btn-focus']);
       document.addEventListener('click', (e) => {
         window.AudioManager.unlock(); // ensure context is resumed
         const btn = e.target.closest('.btn');
@@ -4019,6 +4020,13 @@ function initGameModeSelector() {
     document.getElementById('screen-match').addEventListener('click', (e) => {
       if (e.target.closest('#btn-roll-dice')) {
         handleRollDice();
+      }
+      if (e.target.closest('#btn-focus')) {
+        if (activeBattle && !isRolling && !isAutoSimulating) {
+          activeBattle.toggleFocus();
+          if (window.AudioManager) window.AudioManager.play('menu_click');
+          refreshFocusUI();
+        }
       }
       if (e.target.closest('#btn-match-skip-game')) {
         handleSimulateAll();
@@ -7704,6 +7712,9 @@ function initGameModeSelector() {
       <!-- Action bar: ROLL + SIMULATE ALL, wrapped together so it can stick to the
            bottom of the mobile scroll viewport as one unit (see mobile CSS) -->
       <div id="dice-action-bar">
+        <!-- Focus: spend a charge to roll two dice and keep the better one (simulation.js) -->
+        <button id="btn-focus" class="focus-btn" type="button"></button>
+        <div id="focus-readout" class="focus-readout"></div>
         <button id="btn-roll-dice" style="
           font-family:'Press Start 2P',monospace;
           font-size:13px;padding:14px 32px;
@@ -8307,7 +8318,16 @@ function initGameModeSelector() {
     if (btn) btn.disabled = true;
 
     const diceDisplay = document.getElementById('dice-result-display');
-    const finalRoll = Math.floor(Math.random() * 100) + 1;
+    // Focus armed: two dice, the engine keeps the one with the better outcome.
+    const firstRoll = Math.floor(Math.random() * 100) + 1;
+    let focusRolls = null;
+    let finalRoll = firstRoll;
+    if (activeBattle.focusArmed && activeBattle.focusAvailable) {
+      const secondRoll = Math.floor(Math.random() * 100) + 1;
+      finalRoll = activeBattle.resolveFocus(firstRoll, secondRoll);
+      focusRolls = { r1: firstRoll, r2: secondRoll, kept: finalRoll };
+    }
+    refreshFocusUI(focusRolls);
 
     // d100 as two d10s: tens digit + units digit (00/00 reads as 100, never as 0,
     // since finalRoll is always 1-100 — the combined readout below removes any doubt).
@@ -9117,7 +9137,16 @@ function initGameModeSelector() {
         return;
       }
 
-      const finalRoll = Math.floor(Math.random() * 100) + 1;
+      // The auto-play spends Focus with men on base, or late / in trouble (shouldAutoFocus).
+      let finalRoll = Math.floor(Math.random() * 100) + 1;
+      let focusRolls = null;
+      if (activeBattle.focusArmed || activeBattle.shouldAutoFocus()) {
+        const secondRoll = Math.floor(Math.random() * 100) + 1;
+        const firstRoll = finalRoll;
+        finalRoll = activeBattle.resolveFocus(firstRoll, secondRoll);
+        focusRolls = { r1: firstRoll, r2: secondRoll, kept: finalRoll };
+      }
+      refreshFocusUI(focusRolls);
       const tensDigit  = Math.floor(finalRoll / 10) % 10;
       const unitsDigit = finalRoll % 10;
 
@@ -9232,8 +9261,34 @@ function initGameModeSelector() {
     return tier;
   }
 
+  // Focus button: charges left, whether it is armed for the next roll, and what a hit would
+  // add right now (+50% damage per runner on base).
+  function refreshFocusUI(lastRolls) {
+    const btn = document.getElementById('btn-focus');
+    if (!btn) return;
+    const bt = activeBattle;
+    const tr = (key, opts, en) => (typeof window.t === 'function' ? window.t('match.' + key, { ...(opts || {}), defaultValue: en }) : en);
+    const charges = bt ? bt.focusCharges : 0;
+    const max = bt ? bt.focusMax : 0;
+    const armed = !!(bt && bt.focusArmed);
+    const usable = !!(bt && bt.focusAvailable);
+    const bonus = bt ? Math.round(bt.focusRunnerBonus() * 100) : 0;
+    const pips = Array.from({ length: max }, (_, i) => `<span class="focus-pip${i < charges ? ' on' : ''}"></span>`).join('');
+    btn.className = `focus-btn${armed ? ' armed' : ''}${usable ? '' : ' spent'}`;
+    btn.disabled = !usable;
+    btn.innerHTML = `<span class="focus-label">🎯 ${armed ? tr('focus_armed', {}, 'FOCUS ON') : tr('focus', {}, 'FOCUS')}</span><span class="focus-pips">${pips}</span>` +
+      `<span class="focus-desc">${armed
+        ? (bonus > 0 ? tr('focus_desc_bonus', { pct: bonus }, `2 dice, best one counts · a hit does +${bonus}% damage`) : tr('focus_desc_plain', {}, '2 dice, best one counts · no runners, no damage bonus'))
+        : (charges > 0 ? tr('focus_hint', {}, '2 dice, keep the best · +50% hit damage per runner on base') : tr('focus_none', {}, 'no charges left this battle'))}</span>`;
+    const out = document.getElementById('focus-readout');
+    if (out && lastRolls !== undefined) {
+      out.innerHTML = lastRolls ? `🎯 <span class="${lastRolls.kept === lastRolls.r1 ? 'kept' : 'drop'}">${lastRolls.r1}</span> · <span class="${lastRolls.kept === lastRolls.r2 && lastRolls.kept !== lastRolls.r1 ? 'kept' : (lastRolls.kept === lastRolls.r1 ? 'drop' : 'kept')}">${lastRolls.r2}</span> → <b>${lastRolls.kept}</b>` : '';
+    }
+  }
+
   function updateMatchHUD(state, options = {}) {
     if (!state) return;
+    refreshFocusUI();
 
     if (window.AudioManager && typeof window.AudioManager.updateBattleIntensity === 'function') {
       window.AudioManager.updateBattleIntensity(state);

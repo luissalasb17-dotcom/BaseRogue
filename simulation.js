@@ -114,6 +114,19 @@
   };
   window.BATTING_APPROACHES = BATTING_APPROACHES;
 
+  // Focus ("Concentración"): a few charges per battle. Spending one before the roll throws
+  // two dice and keeps the better result, and a hit does +runnerBonus damage for every runner
+  // on base. The runner bonus is what makes WHEN you spend it matter: measured headless, two
+  // dice alone were worth the same in any at-bat, while with the bonus spending it with two
+  // men on is worth ~10 points of win rate more than spending it with the bases empty.
+  // hpComp scales the rival pitchers' HP (game.js). It stays at 1: with 1.15 a player who did
+  // not press the button played a harder game than before Focus existed (23% -> 14% against
+  // a mid rotation), and the user wants ignoring it to cost nothing.
+  const FOCUS_RULES = { charges: 2, runnerBonus: 0.5, hpComp: 1.0 };
+  window.FOCUS_RULES = FOCUS_RULES;
+  // Outcomes from worst to best for the batting side: SO, OUT, BB, 1B, 2B, 3B, HR.
+  const focusRank = (b, r) => (r <= b.bbEnd ? 2 : r <= b.soEnd ? 0 : r <= b.outEnd ? 1 : r <= b.singleEnd ? 3 : r <= b.doubleEnd ? 4 : r <= b.tripleEnd ? 5 : 6);
+
   function calcBoundaries(batter, pitcher, simCtx) {
     const approach = BATTING_APPROACHES[(simCtx && simCtx.approach) || 'normal'] || BATTING_APPROACHES.normal;
     const effCon = batter.con || 50;
@@ -316,6 +329,10 @@
       this.traitIds = new Set(traitIds || []);
 
       this.approach = 'normal'; // batting approach for the next roll: normal | contact | power | patient
+      this.focusMax = FOCUS_RULES.charges;
+      this.focusCharges = FOCUS_RULES.charges;
+      this.focusArmed = false;     // the player pressed FOCUS for the next roll
+      this._focusThisRoll = null;  // set by resolveFocus(), consumed by rollDice()
       // ── Team (player side) vitals ─────────────────────────────────
       this.teamHP    = 100;           // Fixed; strikeouts bite here directly
       this.activeSynergies = this._calculateActiveSynergies(awayTeam.lineup);
@@ -378,6 +395,39 @@
     setApproach(name) {
       this.approach = BATTING_APPROACHES[name] ? name : 'normal';
       return this.approach;
+    }
+
+    // ── Focus ───────────────────────────────────────────────────────
+    get focusAvailable() {
+      return !this.battleOver && this.focusCharges > 0 && !this.pendingDefenseEvent;
+    }
+
+    toggleFocus() {
+      this.focusArmed = this.focusAvailable ? !this.focusArmed : false;
+      return this.focusArmed;
+    }
+
+    /** Extra hit damage (as a fraction) a focused hit would do right now. */
+    focusRunnerBonus() {
+      return FOCUS_RULES.runnerBonus * this.bases.filter(Boolean).length;
+    }
+
+    /** Spends a charge: of the two rolls, returns the one with the better outcome. */
+    resolveFocus(r1, r2) {
+      if (!this.focusAvailable) { this.focusArmed = false; return r1; }
+      const b = this.getBoundaries();
+      const kept = focusRank(b, r2) > focusRank(b, r1) ? r2 : r1;
+      this.focusCharges--;
+      this.focusArmed = false;
+      this._focusThisRoll = { r1, r2, kept, runners: this.bases.filter(Boolean).length };
+      return kept;
+    }
+
+    /** What the auto-play does: spend it with men on base, or late / in trouble. */
+    shouldAutoFocus() {
+      if (!this.focusAvailable) return false;
+      const on = this.bases.filter(Boolean).length;
+      return on >= 2 || (on >= 1 && this.inning >= 2) || this.inning >= 3 || this.teamHP <= 45;
     }
 
     hasTrait(id) {
@@ -1291,6 +1341,20 @@
 
       // Advance to next batter
       this.awayLineupIndex = (this.awayLineupIndex + 1) % this.awayTeam.lineup.length;
+
+      // Focus: two dice were thrown and the better one kept; a hit does more with men on base.
+      const focus = this._focusThisRoll;
+      this._focusThisRoll = null;
+      if (focus) {
+        let bonus = 0;
+        if (['1B', '2B', '3B', 'HR'].includes(eventType) && focus.runners > 0 && pitcherDmg > 0) {
+          bonus = Math.round(pitcherDmg * FOCUS_RULES.runnerBonus * focus.runners);
+          pitcherDmg += bonus;
+        }
+        focus.bonus = bonus;
+        playText = `🎯 ${_t('sim.focus_log', { a: focus.r1, b: focus.r2, kept: focus.kept }, `FOCUS (${focus.r1} / ${focus.r2} → ${focus.kept})`)} ${playText}` +
+          (bonus > 0 ? ` ${_t('sim.focus_bonus', { dmg: bonus, n: focus.runners }, `🎯 +${bonus} damage (${focus.runners} on base).`)}` : '');
+      }
 
       // Log PLAY event first so log order is: Outcome -> KO -> Next Pitcher / Remnant Damage
       this.logEvent('PLAY', playText, eventType, batter.name, teamHpDmg, pitcherDmg, runsThisTurn, didSteal, spdUpgraded, shieldDmg);

@@ -3146,33 +3146,224 @@ span.c162-iron {
 .season-context-card .scc-how { margin: 9px 0 0; font-size: 11px; color: #94a3b8; line-height: 1.45; }
 @media (max-width: 520px) { .season-context-card .scc-leaders { grid-template-columns: 1fr; } .season-context-card .scc-row { grid-template-columns: 1fr; gap: 1px; } }
 
-/* ── Pack draft: pick one of three (real trading cards, dealt side by side) ── */
-.c162-opts { --rb-legendary: #fbbf24; --rb-epic: #c084fc; --rb-rare: #60a5fa; --rb-uncommon: #34d399; --rb-common: #94a3b8;
-  min-height: 540px; display: flex; flex-direction: column; justify-content: center; gap: 12px; padding: 16px 14px 18px;
-  background: radial-gradient(circle at 50% 0%, rgba(30, 41, 59, .75), rgba(0, 0, 0, .6)); border: 1px solid rgba(255, 215, 0, .3); border-radius: 12px; }
-.c162-opts-title { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
-.c162-opts-title b { font-family: 'Press Start 2P', monospace; font-size: 9px; color: #ffd700; }
-.c162-opts-title span { font-family: 'Press Start 2P', monospace; font-size: 7.5px; color: #94a3b8; }
-.c162-opts-prompt { text-align: center; font-family: 'Press Start 2P', monospace; font-size: 11px; color: #ffd700; text-shadow: 0 0 12px rgba(255, 215, 0, .7); }
-.c162-opts-hint { text-align: center; font-size: 11px; color: #64748b; }
-.c162-opts-row { display: flex; justify-content: center; align-items: flex-start; gap: 12px; }
-.c162-optcard { flex: 1 1 0; min-width: 0; max-width: 168px; display: flex; flex-direction: column; align-items: center; gap: 6px; animation: c162OptDeal .5s cubic-bezier(.2, .8, .3, 1.15) both; }
-.c162-optcard-card { display: flex; justify-content: center; cursor: zoom-in; border-radius: 8px; transition: transform .16s ease, box-shadow .16s ease; }
-.c162-optcard-card > * { margin: 0 !important; }
-.c162-optcard:hover .c162-optcard-card { transform: translateY(-8px) scale(1.04); box-shadow: 0 14px 26px rgba(0, 0, 0, .55), 0 0 18px currentColor; }
-.c162-optcard.r-legendary { color: var(--rb-legendary); } .c162-optcard.r-epic { color: var(--rb-epic); }
-.c162-optcard.r-rare { color: var(--rb-rare); } .c162-optcard.r-uncommon { color: var(--rb-uncommon); } .c162-optcard.r-common { color: var(--rb-common); }
-.c162-optcard-cap { display: flex; align-items: baseline; justify-content: center; gap: 6px; width: 100%; min-width: 0; }
-.c162-optcard-cap b { font-family: 'Press Start 2P', monospace; font-size: 14px; }
-.c162-optcard-cap span { font-size: 10.5px; color: #cbd5e1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
-.c162-optcard-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; width: 100%; }
-.c162-optcard-stats span { display: flex; justify-content: space-between; align-items: baseline; gap: 3px; padding: 2px 4px; background: rgba(0, 0, 0, .45); border-radius: 3px; }
-.c162-optcard-stats i { font-style: normal; font-family: 'Press Start 2P', monospace; font-size: 5px; color: #64748b; }
-.c162-optcard-stats b { font-size: 11px; color: #f1f5f9; }
-.c162-optcard-need { height: 12px; font-family: 'Press Start 2P', monospace; font-size: 6px; color: #34d399; }
-.c162-optcard .c162-opt-pick { width: 100%; font-family: 'Press Start 2P', monospace; font-size: 8.5px; padding: 9px 6px; background: linear-gradient(135deg, #ffd700, #f59e0b); color: #000; border: 0; cursor: pointer; }
-@keyframes c162OptDeal { from { transform: translateY(-40px) rotate(-6deg) scale(.7); opacity: 0; } to { transform: none; opacity: 1; } }
-@media (max-width: 768px) { .c162-opts { min-height: 0; } .c162-opts-row { justify-content: flex-start; overflow-x: auto; padding-bottom: 6px; } }
+/* ══════════ 162-0 PACKS: sealed pack → rip → three cards turn over ══════════
+   Every pack is "any rarity"; each of its three cards rolls its own rarity. The foil glows
+   with the best card inside (--rc), the pack shakes longer the better it is (--rip), and the
+   cards turn over one by one, best last (--flip per card, set from challenge162.js). */
+.c162-sealed, .c162-reveal, .c162-oc { --rc: #94a3b8; --glow: 0; }
+.best-uncommon, .c162-oc.r-uncommon { --rc: #34d399; --glow: .35; }
+.best-rare, .c162-oc.r-rare { --rc: #60a5fa; --glow: .55; }
+.best-epic, .c162-oc.r-epic { --rc: #c084fc; --glow: .8; }
+.best-legendary, .c162-oc.r-legendary { --rc: #fbbf24; --glow: 1; }
+.c162-sealed { --rip: 620ms; }
+.c162-sealed.best-epic { --rip: 950ms; }
+.c162-sealed.best-legendary { --rip: 1350ms; }
+
+/* ── Sealed pack ── */
+.c162-sealed {
+  position: relative; min-height: 560px; padding: 20px 16px 18px; overflow: hidden;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+  border-radius: 14px; border: 1px solid color-mix(in srgb, var(--rc) 45%, transparent);
+  background:
+    radial-gradient(ellipse 70% 55% at 50% 40%, color-mix(in srgb, var(--rc) calc(var(--glow) * 26%), transparent), transparent 70%),
+    radial-gradient(circle at 50% 0%, rgba(30, 41, 59, .8), rgba(2, 6, 23, .95));
+}
+.c162-sealed-rays {
+  position: absolute; left: 50%; top: 40%; width: 760px; height: 760px; margin: -380px 0 0 -380px; pointer-events: none;
+  background: repeating-conic-gradient(from 0deg, color-mix(in srgb, var(--rc) 55%, transparent) 0deg 5deg, transparent 5deg 20deg);
+  -webkit-mask-image: radial-gradient(circle, #000 12%, transparent 62%); mask-image: radial-gradient(circle, #000 12%, transparent 62%);
+  opacity: calc((var(--glow) - .5) * .7);
+}
+.c162-pack { position: relative; z-index: 1; cursor: pointer; perspective: 900px; transition: transform .18s ease; }
+.c162-pack:hover { transform: translateY(-6px) scale(1.03); }
+.c162-pack-foil {
+  position: relative; width: 250px; height: 360px; box-sizing: border-box; overflow: hidden;
+  display: flex; flex-direction: column; justify-content: space-between; align-items: stretch;
+  border-radius: 14px; border: 3px solid var(--rc);
+  background:
+    linear-gradient(150deg, color-mix(in srgb, var(--rc) 34%, #0f172a) 0%, #0f172a 38%, #1e1b4b 68%, color-mix(in srgb, var(--rc) 28%, #311042) 100%);
+  box-shadow: 0 0 0 2px #000, 0 0 calc(18px + var(--glow) * 44px) color-mix(in srgb, var(--rc) calc(30% + var(--glow) * 55%), transparent), inset 0 0 22px rgba(255, 255, 255, .16);
+}
+.c162-pack-foil::before {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(105deg, transparent 25%, rgba(255, 255, 255, .28) 45%, rgba(255, 255, 255, .55) 50%, rgba(255, 255, 255, .28) 55%, transparent 75%);
+  background-size: 220% 100%; background-position: 120% 0;
+}
+.c162-pack-top { position: relative; z-index: 2; padding: 14px 14px 0; transform-origin: 0% 100%; }
+.c162-pack-crimp { height: 13px; border-radius: 3px;
+  background: repeating-linear-gradient(90deg, var(--rc), var(--rc) 3px, color-mix(in srgb, var(--rc) 45%, #000) 3px, color-mix(in srgb, var(--rc) 45%, #000) 6px); }
+.c162-pack-crimp.bottom { margin: 0 14px 14px; }
+.c162-pack-body { position: relative; z-index: 1; text-align: center; padding: 0 12px; }
+.c162-pack-logo { font-size: 52px; line-height: 1; filter: drop-shadow(0 0 16px var(--rc)); }
+.c162-pack-brand { margin-top: 10px; font-family: 'Press Start 2P', monospace; font-size: 15px; letter-spacing: 1px; color: #fff;
+  text-shadow: 0 0 14px var(--rc), 2px 2px 0 #000; }
+.c162-pack-box { margin-top: 14px; font-family: 'Press Start 2P', monospace; font-size: 9.5px; color: #fde68a; }
+.c162-pack-sub { margin-top: 6px; font-size: 10.5px; color: #cbd5e1; }
+.c162-pack-num { display: inline-block; margin-top: 14px; padding: 5px 12px; border-radius: 20px; border: 1px dashed color-mix(in srgb, var(--rc) 80%, #fff);
+  background: rgba(0, 0, 0, .55); font-family: 'Press Start 2P', monospace; font-size: 8px; color: #fff; }
+.c162-pack-flash { position: absolute; left: 50%; top: 50%; width: 60px; height: 60px; margin: -30px 0 0 -30px; border-radius: 50%; pointer-events: none; opacity: 0; z-index: 3;
+  background: radial-gradient(circle, #fff 0%, var(--rc) 35%, transparent 70%); }
+.c162-pack-sparks { position: absolute; left: 50%; top: 50%; width: 0; height: 0; pointer-events: none; z-index: 0; }
+.c162-pack-sparks i { position: absolute; left: -3px; top: -3px; width: 6px; height: 6px; border-radius: 50%; background: var(--rc); box-shadow: 0 0 10px var(--rc);
+  opacity: 0; transform: rotate(var(--a)) translateY(-150px); }
+.c162-sealed-cta { position: relative; z-index: 1; font-family: 'Press Start 2P', monospace; font-size: 9px; color: color-mix(in srgb, var(--rc) 70%, #fff); text-shadow: 0 0 10px var(--rc); }
+.c162-sealed-odds { position: relative; z-index: 1; text-align: center; }
+.c162-sealed-odds span { display: block; margin-bottom: 7px; font-family: 'Press Start 2P', monospace; font-size: 6.5px; letter-spacing: .5px; color: #94a3b8; }
+.c162-sealed-odds div { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+.c162-sealed-odds b { padding: 4px 7px; border-radius: 6px; border: 1px solid currentColor; background: rgba(0, 0, 0, .45); font-size: 10.5px; font-weight: 700; white-space: nowrap; }
+.c162-sealed-odds .r-legendary { color: #fbbf24; } .c162-sealed-odds .r-epic { color: #c084fc; } .c162-sealed-odds .r-rare { color: #60a5fa; }
+.c162-sealed-odds .r-uncommon { color: #34d399; } .c162-sealed-odds .r-common { color: #94a3b8; }
+.c162-sealed-hint { position: relative; z-index: 1; font-size: 10.5px; color: #64748b; }
+
+/* ── The three cards ── */
+.c162-reveal {
+  position: relative; min-height: 560px; padding: 16px 14px 18px; overflow: hidden;
+  display: flex; flex-direction: column; justify-content: center; gap: 12px;
+  border-radius: 14px; border: 1px solid color-mix(in srgb, var(--rc) 40%, rgba(255, 215, 0, .25));
+  background:
+    radial-gradient(ellipse 80% 45% at 50% 46%, color-mix(in srgb, var(--rc) calc(var(--glow) * 14%), transparent), transparent 72%),
+    radial-gradient(circle at 50% 0%, rgba(30, 41, 59, .8), rgba(2, 6, 23, .95));
+}
+.c162-reveal::after { content: ''; position: absolute; inset: 0; pointer-events: none; opacity: 0;
+  background: radial-gradient(circle at 50% 46%, color-mix(in srgb, var(--rc) 75%, #fff), transparent 65%); }
+.c162-reveal-head { position: relative; z-index: 1; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.c162-reveal-head b { font-family: 'Press Start 2P', monospace; font-size: 9px; color: #ffd700; }
+.c162-reveal-head span { font-family: 'Press Start 2P', monospace; font-size: 7.5px; color: #94a3b8; }
+.c162-reveal-row { position: relative; z-index: 1; display: flex; justify-content: center; align-items: flex-start; gap: 14px; }
+.c162-reveal-prompt { position: relative; z-index: 1; text-align: center; font-family: 'Press Start 2P', monospace; font-size: 11px; color: #ffd700; text-shadow: 0 0 12px rgba(255, 215, 0, .7); }
+.c162-reveal-hint { position: relative; z-index: 1; text-align: center; font-size: 10.5px; color: #64748b; }
+.c162-reveal-skip { display: none; }
+.c162-reveal.dealing .c162-reveal-hint { display: grid; }
+.c162-reveal.dealing .c162-reveal-hint > span { grid-area: 1 / 1; }
+.c162-reveal.dealing .c162-reveal-skip { display: block; color: #94a3b8; }
+
+.c162-oc { flex: 0 0 auto; width: 164px; display: flex; flex-direction: column; align-items: center; gap: 8px; color: var(--rc); }
+.c162-oc-ribbon { display: inline-flex; align-items: center; gap: 5px; padding: 4px 9px; border-radius: 20px; border: 1px solid var(--rc);
+  background: color-mix(in srgb, var(--rc) 14%, rgba(0, 0, 0, .6)); font-family: 'Press Start 2P', monospace; font-size: 6.5px; letter-spacing: .6px; color: var(--rc); white-space: nowrap; }
+.c162-oc-ribbon i { font-style: normal; font-size: 10px; line-height: 1; }
+.c162-oc.r-epic .c162-oc-ribbon { box-shadow: 0 0 12px color-mix(in srgb, var(--rc) 70%, transparent); }
+.c162-oc.r-legendary .c162-oc-ribbon { color: #1c1300; border-color: #fff7d6; background: linear-gradient(120deg, #f59e0b, #fde68a 45%, #fbbf24 70%, #f59e0b); box-shadow: 0 0 16px rgba(251, 191, 36, .9); }
+.c162-oc-stage { position: relative; display: flex; justify-content: center; perspective: 1000px; }
+.c162-oc-aura { position: absolute; inset: -14px; border-radius: 22px; pointer-events: none; opacity: calc(var(--glow) * .7);
+  background: radial-gradient(ellipse at 50% 50%, var(--rc) 0%, color-mix(in srgb, var(--rc) 35%, transparent) 45%, transparent 72%); filter: blur(9px); }
+.c162-oc.r-legendary .c162-oc-aura { inset: -22px; background:
+  repeating-conic-gradient(from 0deg, rgba(251, 191, 36, .85) 0deg 8deg, transparent 8deg 24deg),
+  radial-gradient(ellipse at 50% 50%, #fbbf24 0%, transparent 70%); filter: blur(7px); border-radius: 50%; }
+.c162-oc-flip { position: relative; transform-style: preserve-3d; transition: transform .16s ease; }
+.c162-oc-front { display: flex; backface-visibility: hidden; -webkit-backface-visibility: hidden; cursor: zoom-in; border-radius: 4px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, .6), 0 0 calc(var(--glow) * 22px) color-mix(in srgb, var(--rc) 80%, transparent); }
+.c162-oc-front.card-deal-in { animation: none; }
+.c162-oc-front > * { margin: 0 !important; }
+.c162-oc-front .player-card { animation: none !important; }
+.c162-oc-back { position: absolute; inset: -3px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+  backface-visibility: hidden; -webkit-backface-visibility: hidden; transform: rotateY(180deg);
+  border-radius: 8px; border: 3px solid #eab308; box-shadow: 0 0 0 2px #000, 0 8px 20px rgba(0, 0, 0, .6);
+  background:
+    repeating-linear-gradient(45deg, rgba(255, 255, 255, .05) 0 6px, transparent 6px 12px),
+    repeating-linear-gradient(-45deg, rgba(255, 255, 255, .05) 0 6px, transparent 6px 12px),
+    linear-gradient(160deg, #1e1b4b, #0f172a 55%, #311042); }
+.c162-oc-back span { font-size: 40px; filter: drop-shadow(0 0 10px rgba(255, 215, 0, .7)); }
+.c162-oc-back em { font-style: normal; font-family: 'Press Start 2P', monospace; font-size: 8px; letter-spacing: 1px; color: #fde68a; }
+.c162-oc-burst { position: absolute; left: 50%; top: 50%; width: 46px; height: 46px; margin: -23px 0 0 -23px; border-radius: 50%; pointer-events: none; opacity: 0;
+  border: 3px solid var(--rc); box-shadow: 0 0 18px var(--rc), inset 0 0 14px var(--rc); }
+.c162-oc.r-common .c162-oc-burst { display: none; }
+.c162-oc:hover .c162-oc-flip { transform: translateY(-8px) scale(1.04); }
+.c162-oc-info { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.c162-oc-cap { display: flex; align-items: baseline; justify-content: center; gap: 7px; width: 100%; min-width: 0; }
+.c162-oc-cap b { font-family: 'Press Start 2P', monospace; font-size: 15px; color: var(--rc); text-shadow: 0 0 calc(var(--glow) * 10px) var(--rc); }
+.c162-oc-cap span { font-size: 10.5px; color: #cbd5e1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.c162-oc-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; width: 100%; }
+.c162-oc-stats span { display: flex; justify-content: space-between; align-items: baseline; gap: 3px; padding: 2px 4px; background: rgba(0, 0, 0, .5); border-radius: 3px; }
+.c162-oc-stats i { font-style: normal; font-family: 'Press Start 2P', monospace; font-size: 5px; color: #64748b; }
+.c162-oc-stats b { font-size: 11px; color: #f1f5f9; }
+.c162-oc-need { height: 12px; font-family: 'Press Start 2P', monospace; font-size: 6px; color: #34d399; }
+.c162-oc .c162-opt-pick { width: 100%; font-family: 'Press Start 2P', monospace; font-size: 8.5px; padding: 10px 6px; border: 0; cursor: pointer; color: #0b1220;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--rc) 85%, #fff), var(--rc)); box-shadow: 0 0 calc(var(--glow) * 14px) color-mix(in srgb, var(--rc) 70%, transparent); }
+.c162-oc.r-common .c162-opt-pick { background: linear-gradient(135deg, #e2e8f0, #94a3b8); }
+
+/* ── Motion (skipped under prefers-reduced-motion; the script also renders the final state) ── */
+@media (prefers-reduced-motion: no-preference) {
+  .c162-sealed-rays { animation: c162Spin 22s linear infinite; }
+  .c162-pack { animation: c162PackFloat 3.2s ease-in-out infinite; }
+  .c162-pack:hover { animation-play-state: paused; }
+  .c162-pack-foil::before { animation: c162Shimmer 2.6s linear infinite; }
+  .c162-sealed.best-rare .c162-pack-foil, .c162-sealed.best-epic .c162-pack-foil, .c162-sealed.best-legendary .c162-pack-foil { animation: c162PackPulse 1.6s ease-in-out infinite; }
+  .c162-sealed.best-legendary .c162-pack-foil { animation-duration: 1s; }
+  .c162-sealed.best-epic .c162-pack-sparks i, .c162-sealed.best-legendary .c162-pack-sparks i { animation: c162Spark 1.4s ease-out infinite; animation-delay: var(--d); }
+  .c162-sealed-cta { animation: c162Blink 1.4s ease-in-out infinite; }
+
+  /* rip: shake (longer for better packs), then the top tears off and the pack flashes */
+  .c162-pack.ripping { animation: none; pointer-events: none; }
+  .c162-pack.ripping .c162-pack-foil { animation: c162PackShake var(--rip) cubic-bezier(.36, .07, .19, .97) both; }
+  .c162-pack.ripping .c162-pack-top { animation: c162Tear .3s ease-in both; animation-delay: calc(var(--rip) - 300ms); }
+  .c162-pack.ripping .c162-pack-flash { animation: c162Flash .36s ease-out both; animation-delay: calc(var(--rip) - 240ms); }
+
+  /* reveal: dealt face down, then each one turns over at its own --flip */
+  .c162-reveal.dealing .c162-oc { animation: c162OcDeal .5s cubic-bezier(.2, .8, .3, 1.12) both; animation-delay: calc(var(--i) * 110ms); }
+  .c162-reveal.dealing .c162-oc-flip { animation: c162OcFlip .62s cubic-bezier(.3, .7, .2, 1) both; animation-delay: var(--flip); }
+  .c162-reveal.dealing .c162-oc.r-epic .c162-oc-stage, .c162-reveal.dealing .c162-oc.r-legendary .c162-oc-stage { animation: c162OcTremble .8s linear both; animation-delay: calc(var(--flip) - 800ms); }
+  .c162-reveal.dealing .c162-oc.r-rare .c162-oc-back, .c162-reveal.dealing .c162-oc.r-epic .c162-oc-back, .c162-reveal.dealing .c162-oc.r-legendary .c162-oc-back { animation: c162OcBackGlow .8s ease-in both; animation-delay: calc(var(--flip) - 800ms); }
+  .c162-reveal.dealing .c162-oc-ribbon { animation: c162OcPop .36s cubic-bezier(.2, .9, .3, 1.4) both; animation-delay: calc(var(--flip) + 300ms); }
+  .c162-reveal.dealing .c162-oc-info { animation: c162OcFade .32s ease-out both; animation-delay: calc(var(--flip) + 380ms); }
+  .c162-reveal.dealing .c162-oc-aura { animation: c162OcAuraIn .5s ease-out both; animation-delay: calc(var(--flip) + 180ms); }
+  .c162-reveal.dealing .c162-oc-burst { animation: c162OcBurst .7s ease-out both; animation-delay: calc(var(--flip) + 240ms); }
+  .c162-reveal.dealing .c162-opt-pick { animation: c162OcEnable .3s ease-out both; animation-delay: var(--done); }
+  .c162-reveal.dealing .c162-reveal-prompt { animation: c162OcFade .4s ease-out both; animation-delay: var(--done); }
+  .c162-reveal.dealing .c162-reveal-tip { animation: c162OcFade .4s ease-out both; animation-delay: var(--done); }
+  .c162-reveal.dealing .c162-reveal-skip { animation: c162OcGone .3s ease-in both; animation-delay: calc(var(--done) - 300ms); }
+  .c162-reveal.dealing.best-epic::after, .c162-reveal.dealing.best-legendary::after { animation: c162RevealFlash .7s ease-out both; animation-delay: calc(var(--done) - 420ms); }
+  .c162-reveal:not(.dealing) .c162-oc.r-epic .c162-oc-aura { animation: c162AuraPulse 2.2s ease-in-out infinite; }
+  .c162-reveal:not(.dealing) .c162-oc.r-legendary .c162-oc-aura { animation: c162Spin 9s linear infinite; }
+}
+@keyframes c162Spin { to { transform: rotate(360deg); } }
+@keyframes c162PackFloat { 0%, 100% { transform: translateY(0) rotate(-1deg); } 50% { transform: translateY(-10px) rotate(1deg); } }
+@keyframes c162Shimmer { from { background-position: 120% 0; } to { background-position: -120% 0; } }
+@keyframes c162PackPulse { 0%, 100% { filter: brightness(1); } 50% { filter: brightness(1.22) saturate(1.25); } }
+@keyframes c162Spark { 0% { opacity: 0; transform: rotate(var(--a)) translateY(-120px) scale(.4); } 25% { opacity: 1; } 100% { opacity: 0; transform: rotate(var(--a)) translateY(-215px) scale(1); } }
+@keyframes c162Blink { 0%, 100% { opacity: 1; } 50% { opacity: .45; } }
+@keyframes c162PackShake {
+  0% { transform: translate(0, 0) rotate(0); } 10% { transform: translate(-3px, 1px) rotate(-1.5deg); } 20% { transform: translate(4px, -1px) rotate(1.5deg); }
+  30% { transform: translate(-5px, 1px) rotate(-2deg); } 40% { transform: translate(5px, 0) rotate(2deg); } 50% { transform: translate(-6px, -1px) rotate(-2.5deg); }
+  60% { transform: translate(6px, 1px) rotate(2.5deg); } 70% { transform: translate(-7px, 0) rotate(-3deg) scale(1.03); } 80% { transform: translate(7px, 0) rotate(3deg) scale(1.05); }
+  90% { transform: translate(0, 0) rotate(0) scale(1.1); filter: brightness(1.7); } 100% { transform: scale(1.16); filter: brightness(2.4); opacity: 0; }
+}
+@keyframes c162Tear { from { transform: none; opacity: 1; } to { transform: translate(-26px, -70px) rotate(-24deg); opacity: 0; } }
+@keyframes c162Flash { from { transform: scale(.4); opacity: .95; } to { transform: scale(13); opacity: 0; } }
+@keyframes c162OcDeal { from { transform: translateY(70px) rotate(-9deg) scale(.55); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes c162OcFlip { 0% { transform: rotateY(180deg); } 55% { transform: rotateY(60deg) scale(1.13); } 100% { transform: rotateY(0deg) scale(1); } }
+@keyframes c162OcTremble {
+  0%, 100% { transform: none; } 12% { transform: translate(-1px, 0) rotate(-.5deg); } 25% { transform: translate(1px, 0) rotate(.5deg); } 37% { transform: translate(-2px, 0) rotate(-1deg); }
+  50% { transform: translate(2px, 0) rotate(1deg); } 62% { transform: translate(-3px, 0) rotate(-1.4deg); } 75% { transform: translate(3px, 0) rotate(1.4deg); } 87% { transform: translate(-3px, -1px) rotate(-1.8deg) scale(1.03); }
+}
+@keyframes c162OcBackGlow { from { border-color: #eab308; box-shadow: 0 0 0 2px #000, 0 8px 20px rgba(0, 0, 0, .6); }
+  to { border-color: var(--rc); box-shadow: 0 0 0 2px #000, 0 0 30px var(--rc), 0 0 60px color-mix(in srgb, var(--rc) 60%, transparent); } }
+@keyframes c162OcPop { from { opacity: 0; transform: translateY(10px) scale(.5); } to { opacity: 1; transform: none; } }
+@keyframes c162OcFade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@keyframes c162OcAuraIn { from { opacity: 0; transform: scale(.5); } to { opacity: calc(var(--glow) * .7); transform: none; } }
+@keyframes c162OcBurst { from { transform: scale(.3); opacity: .95; } to { transform: scale(7); opacity: 0; } }
+@keyframes c162OcEnable { from { opacity: 0; visibility: hidden; transform: translateY(6px); } to { opacity: 1; visibility: visible; transform: none; } }
+@keyframes c162OcGone { from { opacity: 1; } to { opacity: 0; visibility: hidden; } }
+@keyframes c162RevealFlash { from { opacity: .55; } to { opacity: 0; } }
+@keyframes c162AuraPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+@media (max-width: 768px) {
+  .c162-sealed, .c162-reveal { min-height: 0; }
+}
+/* Phones: the three cards stay side by side (the best one must not turn over off screen),
+   so the cards shrink and the six ratings give way: tap a card to see it in full. */
+@media (max-width: 620px) {
+  .c162-reveal { padding: 14px 8px 16px; }
+  .c162-reveal-row { gap: 6px; padding: 12px 0 4px; }
+  .c162-oc { flex: 1 1 0; width: auto; min-width: 0; gap: 6px; }
+  .c162-oc-stage { zoom: .6; }
+  .c162-oc-stats { display: none; }
+  .c162-oc-ribbon { font-size: 5px; padding: 3px 6px; gap: 3px; }
+  .c162-oc-ribbon i { font-size: 8px; }
+  .c162-oc-cap { flex-direction: column; align-items: center; gap: 2px; }
+  .c162-oc-cap b { font-size: 12px; }
+  .c162-oc-cap span { font-size: 9px; max-width: 100%; }
+  .c162-oc .c162-opt-pick { font-size: 7px; padding: 10px 2px; }
+  .c162-reveal-prompt { font-size: 9px; }
+}
 
 /* Draft rounds 5-8: the reason each Common is on offer */
 .draft-reason {
@@ -3190,7 +3381,8 @@ span.c162-iron {
   color: #0b1220;
   background: #94a3b8;
 }
-.draft-reason-need { background: #34d399; }
+.draft-reason-top { background: #34d399; }
+.draft-reason b { display: inline-block; margin-right: 5px; padding: 2px 4px; border-radius: 3px; background: rgba(0, 0, 0, .78); color: #fff; font-weight: 400; }
 .draft-reason-era  { background: #f472b6; }
 .draft-reason-tool { background: #fbbf24; }
 
@@ -3221,3 +3413,48 @@ span.c162-iron {
 }
 .go-why-stat b { display: block; font-size: 15px; color: #fff; white-space: nowrap; }
 .go-why-stat span { font-size: 10px; color: #9ca3af; text-transform: uppercase; letter-spacing: .5px; }
+
+/* Focus button (Quick Play / Story combat) */
+.focus-btn {
+  width: 100%;
+  margin-bottom: 8px;
+  padding: 9px 12px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 4px 10px;
+  align-items: center;
+  text-align: left;
+  font-family: 'Press Start 2P', monospace;
+  color: #fde68a;
+  background: rgba(251, 191, 36, .08);
+  border: 2px solid rgba(251, 191, 36, .55);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: transform .1s, box-shadow .15s, background .15s;
+}
+.focus-btn:hover:not(:disabled) { transform: translateY(-1px); background: rgba(251, 191, 36, .16); }
+.focus-btn .focus-label { font-size: 10px; letter-spacing: .5px; }
+.focus-btn .focus-pips { display: flex; gap: 5px; }
+.focus-btn .focus-pip { width: 11px; height: 11px; border-radius: 50%; border: 2px solid #fbbf24; background: transparent; }
+.focus-btn .focus-pip.on { background: #fbbf24; box-shadow: 0 0 8px rgba(251, 191, 36, .8); }
+.focus-btn .focus-desc { grid-column: 1 / -1; font-family: inherit; font-size: 7px; line-height: 1.5; color: #cbd5e1; letter-spacing: 0; }
+.focus-btn.armed {
+  color: #0b1220;
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  border-color: #fef3c7;
+  box-shadow: 0 0 18px rgba(251, 191, 36, .7);
+}
+.focus-btn.armed .focus-desc { color: #1f2937; }
+.focus-btn.armed .focus-pip { border-color: #0b1220; }
+.focus-btn.armed .focus-pip.on { background: #0b1220; box-shadow: none; }
+.focus-btn.spent { opacity: .45; cursor: default; }
+.focus-readout { min-height: 14px; margin: -2px 0 6px; text-align: center; font-family: 'Press Start 2P', monospace; font-size: 9px; color: #fde68a; }
+.focus-readout .drop { color: #64748b; text-decoration: line-through; }
+.focus-readout .kept, .focus-readout b { color: #fff; }
+
+/* Awards split by league */
+.c162-award-league { margin-top: 18px; }
+.c162-award-league-title { margin: 14px 0 10px; padding: 8px 12px; border-radius: 8px; font-family: 'Press Start 2P', monospace; font-size: 10px; letter-spacing: 1px;
+  color: #e2e8f0; background: rgba(148, 163, 184, .12); border-left: 4px solid #94a3b8; }
+.c162-award-league-title.lg-AL { color: #fecaca; background: rgba(239, 68, 68, .12); border-left-color: #ef4444; }
+.c162-award-league-title.lg-NL { color: #bfdbfe; background: rgba(59, 130, 246, .12); border-left-color: #3b82f6; }
