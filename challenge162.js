@@ -205,14 +205,16 @@
     const k = s.so || 0;
     const sv = s.sv || 0;
 
-    // Replacement baseline against ~4.80 replacement ERA
-    const repRuns = ip * (4.80 / 9.0);
+    // Replacement level = 1.25 x the league ERA (~4.35 since the batting average went up).
+    // It used to be 4.80 with a floor at 0: an average starter was worth ~0.5 and anyone a bit
+    // worse showed 0.0 no matter how bad.
+    const repRuns = ip * (5.45 / 9.0);
     const actualRA = er * 1.05;
     const kBbAdj = (k * 0.020) - (bb * 0.010);
     const isSP = (role || 'SP').toUpperCase() === 'SP';
     const svLeverage = !isSP ? (sv * 0.45) : 0.0;
 
-    const war = Math.max(0.0, (repRuns - actualRA + kBbAdj + svLeverage) / 10.0);
+    const war = (repRuns - actualRA + kBbAdj + svLeverage) / 10.0;
     return war.toFixed(1);
   }
 
@@ -6159,10 +6161,59 @@
     showMeetTheTeam(pending) {
       pending.battingOrder = pending.battingOrder || this._optimizeBattingOrder(pending.lineup);
       pending.teamName = pending.teamName || this._suggestTeamName(this._pendingCards(pending));
+      this._preselectIronMen(pending);
       this._pendingSeason = pending;
       this._meetAnimated = false;
       this.showScreen('screen-challenge-pack');
       this.renderMeetTheTeam();
+    },
+
+    // Iron Men come preselected (the positions that gain the most games, best player first)
+    // so the choice is visible; the user can change them before the season starts.
+    _preselectIronMen(pending) {
+      if (pending.ironMan) return;
+      pending.ironMan = {};
+      (pending.battingOrder || [])
+        .filter(slot => pending.lineup[slot])
+        .map(slot => ({ slot, b: pending.lineup[slot], gain: (IRON_GAMES[slot] || IRON_GAMES.DH)[1] - (IRON_GAMES[slot] || IRON_GAMES.DH)[0] }))
+        .sort((x, y) => y.gain - x.gain || (y.b.ovr || 0) - (x.b.ovr || 0))
+        .slice(0, MAX_IRON_MAN)
+        .forEach(x => { pending.ironMan[batterUnlockKey(x.b)] = true; });
+    },
+
+    // Iron Man picker. Pack teams choose on Meet the Team; the other formats skip that screen
+    // and choose on the League Preview.
+    _ironPicksHTML(p) {
+      const count = Object.keys(p.ironMan || {}).length;
+      return `<div class="c162-meet-section">🛡 IRON MEN · ${count} / ${MAX_IRON_MAN} CHOSEN</div>
+          <div class="c162-pr-note">Tap a player to make him an Iron Man (up to ${MAX_IRON_MAN}). Everyone gets tired from playing every day and has to sit; an Iron Man tires 4 times slower, so he plays almost every game. It pays off most at catcher, shortstop, second base and center field. We picked the best ${MAX_IRON_MAN} for you; change them if you like. Locked once the season starts.</div>
+          <div class="c162-iron-picks">${p.battingOrder.map(slot => {
+            const b = p.lineup[slot];
+            if (!b) return '';
+            const k = batterUnlockKey(b);
+            const on = !!(p.ironMan && p.ironMan[k]);
+            const full = !on && count >= MAX_IRON_MAN;
+            const g = IRON_GAMES[slot] || IRON_GAMES.DH;
+            return `<button class="c162-iron-pick ${on ? 'on' : ''}" data-iron="${k}" ${full ? 'disabled' : ''}>
+              <span class="c162-iron-pos">${slot}</span><b>${b.name}</b>
+              <small>${on ? `plays ~${g[1]} games` : `~${g[0]} games → ~${g[1]} as Iron Man`}</small>
+              <em class="c162-iron-state">${on ? '🛡 IRON MAN ✓' : (full ? 'unpick one first' : '＋ TAP TO PICK')}</em>
+            </button>`;
+          }).join('')}</div>`;
+    },
+
+    _bindIronPicks(container, p, rerender) {
+      container.querySelectorAll('.c162-iron-pick').forEach(btn => {
+        btn.onclick = () => {
+          if (!p.ironMan) p.ironMan = {};
+          const k = btn.dataset.iron;
+          if (p.ironMan[k]) delete p.ironMan[k];
+          else if (Object.keys(p.ironMan).length < MAX_IRON_MAN) p.ironMan[k] = true;
+          const y = window.scrollY;
+          rerender();
+          window.scrollTo(0, y);
+        };
+      });
     },
 
     renderMeetTheTeam() {
@@ -6198,7 +6249,7 @@
       const cardsHTML = batters.map((b, i) => {
         const [tool, val] = bestTool(b);
         return `<div class="c162-meet-card ${anim}" style="--i:${i};">
-          <div class="c162-meet-order">#${i + 1} · ${b._slot}</div>
+          <div class="c162-meet-order">#${i + 1} · ${b._slot}${p.ironMan && p.ironMan[batterUnlockKey(b)] ? ' 🛡' : ''}</div>
           ${window.createCardHTML ? window.createCardHTML(b, b._slot) : b.name}
           <div class="c162-meet-tag" style="color:${getGradeColor(val)};">${tool} ${getGrade(val)}</div>
         </div>`;
@@ -6262,6 +6313,8 @@
           <div class="c162-meet-section">THE STARTING NINE</div>
           <div class="c162-meet-cards">${cardsHTML}</div>
 
+          ${this._ironPicksHTML(p)}
+
           <div class="c162-meet-columns">
             <div class="c162-meet-panel">
               <div class="c162-meet-panel-title"><span>⚾ BATTING ORDER</span><button id="btn-c162-optimize" class="c162-link-btn">⚙ OPTIMIZE</button></div>
@@ -6295,6 +6348,7 @@
           this.renderMeetTheTeam();
         };
       });
+      this._bindIronPicks(container, p, () => this.renderMeetTheTeam());
       container.querySelector('#btn-c162-optimize').onclick = () => {
         p.battingOrder = this._optimizeBattingOrder(p.lineup);
         this.renderMeetTheTeam();
@@ -6340,17 +6394,7 @@
 
     showLeaguePreview(pending) {
       pending.battingOrder = pending.battingOrder || this._optimizeBattingOrder(pending.lineup);
-      // Iron Men come preselected (the positions that gain the most games, best player first)
-      // so the choice is visible; the user can change them before the season starts.
-      if (!pending.ironMan) {
-        pending.ironMan = {};
-        pending.battingOrder
-          .filter(slot => pending.lineup[slot])
-          .map(slot => ({ slot, b: pending.lineup[slot], gain: (IRON_GAMES[slot] || IRON_GAMES.DH)[1] - (IRON_GAMES[slot] || IRON_GAMES.DH)[0] }))
-          .sort((x, y) => y.gain - x.gain || (y.b.ovr || 0) - (x.b.ovr || 0))
-          .slice(0, MAX_IRON_MAN)
-          .forEach(x => { pending.ironMan[batterUnlockKey(x.b)] = true; });
-      }
+      this._preselectIronMen(pending);
       pending.teamName = pending.teamName || this._suggestTeamName(this._pendingCards(pending));
       const strength = this._pendingStrength(pending);
       if (!pending.league) {
@@ -6437,21 +6481,7 @@
           <div class="c162-lg-picks">${leagueCard('AL')}${leagueCard('NL')}</div>
           <div class="c162-pr-note">Top ${PLAYOFF_SEEDS} of each league make the playoffs: 1 plays 4, 2 plays 3, league final, then the World Series. Most of your games are against your own league.</div>
 
-          <div class="c162-meet-section">🛡 IRON MEN · ${Object.keys(p.ironMan || {}).length} / ${MAX_IRON_MAN} CHOSEN</div>
-          <div class="c162-pr-note">Tap a player to make him an Iron Man (up to ${MAX_IRON_MAN}). Everyone gets tired from playing every day and has to sit; an Iron Man tires 4 times slower, so he plays almost every game. It pays off most at catcher, shortstop, second base and center field. We picked the best ${MAX_IRON_MAN} for you; change them if you like. Locked once the season starts.</div>
-          <div class="c162-iron-picks">${p.battingOrder.map(slot => {
-            const b = p.lineup[slot];
-            if (!b) return '';
-            const k = batterUnlockKey(b);
-            const on = !!(p.ironMan && p.ironMan[k]);
-            const full = !on && Object.keys(p.ironMan || {}).length >= MAX_IRON_MAN;
-            const g = IRON_GAMES[slot] || IRON_GAMES.DH;
-            return `<button class="c162-iron-pick ${on ? 'on' : ''}" data-iron="${k}" ${full ? 'disabled' : ''}>
-              <span class="c162-iron-pos">${slot}</span><b>${b.name}</b>
-              <small>${on ? `plays ~${g[1]} games` : `~${g[0]} games → ~${g[1]} as Iron Man`}</small>
-              <em class="c162-iron-state">${on ? '🛡 IRON MAN ✓' : (full ? 'unpick one first' : '＋ TAP TO PICK')}</em>
-            </button>`;
-          }).join('')}</div>
+          ${p.cfg && p.cfg.type === 'packs' ? '' : this._ironPicksHTML(p)}
 
           <div class="c162-meet-section">TEAMS TO WATCH IN THE ${userLg}</div>
           <div class="c162-threats">
@@ -6471,17 +6501,7 @@
       container.querySelectorAll('.c162-lg-pick').forEach(btn => {
         btn.onclick = () => { this._setPendingLeague(btn.dataset.lg); this.renderLeaguePreview(); };
       });
-      container.querySelectorAll('.c162-iron-pick').forEach(btn => {
-        btn.onclick = () => {
-          if (!p.ironMan) p.ironMan = {};
-          const k = btn.dataset.iron;
-          if (p.ironMan[k]) delete p.ironMan[k];
-          else if (Object.keys(p.ironMan).length < MAX_IRON_MAN) p.ironMan[k] = true;
-          const y = window.scrollY;
-          this.renderLeaguePreview();
-          window.scrollTo(0, y);
-        };
-      });
+      this._bindIronPicks(container, p, () => this.renderLeaguePreview());
       const back = container.querySelector('#btn-c162-preview-back');
       if (back) back.onclick = () => this.renderMeetTheTeam();
       container.querySelector('#btn-c162-preview-start').onclick = () => {
