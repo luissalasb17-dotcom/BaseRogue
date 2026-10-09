@@ -3484,3 +3484,28 @@ span.c162-iron {
 .c162-chem-chip i { font-style: normal; color: #94a3b8; margin-left: 2px; }
 .c162-chem-none { font-family: 'Outfit', 'Segoe UI', sans-serif; font-size: 12px; color: #94a3b8; }
 .c162-chem-note { flex-basis: 100%; font-family: 'Outfit', 'Segoe UI', sans-serif; font-size: 11.5px; line-height: 1.35; color: #94a3b8; margin-top: 2px; }
+
+/* Season tables: rows open the Dex card */
+.c162-tr-card { cursor: pointer; }
+.c162-tr-card:hover td { background: rgba(250, 204, 21, .08); }
+
+/* Monthly report (162-0) */
+.c162-month { margin-bottom: 12px; padding: 14px 16px; border-radius: 10px; border: 1px solid rgba(250, 204, 21, .45); background: linear-gradient(180deg, rgba(250, 204, 21, .08), rgba(15, 23, 42, .5)); text-align: left; }
+.c162-month-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; margin-bottom: 10px; }
+.c162-month-head b { font-family: 'Press Start 2P', monospace; font-size: 12px; color: #fde047; letter-spacing: 1px; }
+.c162-month-head span { font-family: 'Outfit', 'Segoe UI', sans-serif; font-size: 13.5px; color: #e2e8f0; }
+.c162-month-nums { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-bottom: 10px; }
+.c162-month-nums > div { padding: 8px 6px; border-radius: 8px; background: rgba(0, 0, 0, .35); text-align: center; }
+.c162-month-nums small { display: block; font-family: 'Press Start 2P', monospace; font-size: 7px; color: #94a3b8; letter-spacing: 1px; }
+.c162-month-nums b { display: block; margin: 5px 0 2px; font-family: 'Press Start 2P', monospace; font-size: 15px; color: #fff; }
+.c162-month-nums i { font-style: normal; font-family: 'Outfit', 'Segoe UI', sans-serif; font-size: 11.5px; color: #94a3b8; }
+.c162-month-line { display: flex; gap: 10px; align-items: baseline; padding: 4px 0; font-family: 'Outfit', 'Segoe UI', sans-serif; font-size: 13px; }
+.c162-month-line span { flex: 0 0 132px; font-family: 'Press Start 2P', monospace; font-size: 7.5px; color: #94a3b8; }
+.c162-month-line b { font-weight: 500; color: #e2e8f0; }
+.c162-month-line.up b { color: #bbf7d0; }
+.c162-month-line.down b { color: #fecaca; }
+.c162-month-moves { margin-top: 10px; padding-top: 10px; border-top: 1px dashed rgba(148, 163, 184, .3); }
+.c162-month-moves small { font-family: 'Press Start 2P', monospace; font-size: 8px; color: #fde047; letter-spacing: 1px; }
+.c162-month-moves p { margin: 6px 0 0; font-family: 'Outfit', 'Segoe UI', sans-serif; font-size: 13px; line-height: 1.4; color: #e2e8f0; }
+.c162-month-moves p.none { color: #94a3b8; }
+@media (max-width: 620px) { .c162-month-nums { grid-template-columns: repeat(2, minmax(0, 1fr)); } .c162-month-line { flex-direction: column; gap: 2px; } .c162-month-line span { flex-basis: auto; } }
