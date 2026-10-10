@@ -1308,13 +1308,18 @@
 
   // The long reliever (LRP) of a bullpen: the middle reliever (not the closer, not the setup
   // man) with the most Stamina. He covers when the starter leaves early and is listed last.
+  // A long man needs the arm for it: LONG_MIN_STA of Stamina (8 of 10 starters have it, 1 of 10
+  // relievers). A bullpen of one-inning arms has no long man: after a short start the innings
+  // are covered one reliever at a time.
+  const LONG_MIN_STA = 55;
+  const CL_NOT_FILLER = true;
   const pitStaOf = p => (p && (p.sta !== undefined ? p.sta : (p.sta_val !== undefined ? p.sta_val : 50))) || 0;
   function bullpenRoles(rpList) {
     const rp = (rpList || []).filter(Boolean);
     const closer = rp.find(p => p.role === 'CL') || rp[0] || null;
     const setup = NO_SETUP ? null : (rp.find(p => p.role === 'SETUP' && p !== closer) || rp.find(p => p !== closer) || null);
     const middle = rp.filter(p => p !== closer && p !== setup);
-    const long = rp.length >= 4 && middle.length ? middle.slice().sort((a, b) => pitStaOf(b) - pitStaOf(a))[0] : null;
+    const long = rp.length >= 4 && middle.length ? (middle.filter(p => pitStaOf(p) >= LONG_MIN_STA).sort((a, b) => pitStaOf(b) - pitStaOf(a))[0] || null) : null;
     return { closer, setup, long };
   }
   // Label of each bullpen spot, in order: CL, SU, RP1.., and LRP for the long man.
@@ -3731,7 +3736,7 @@
       const smart = PEN_TRUST && (side.id === USER_TEAM_ID || MGR_ALL_TEAMS);
       const notCloser = p => p.role !== 'CL' && (NO_SETUP || p.role !== 'SETUP');
       let middle = available.filter(notCloser).sort((a, b) => (isLong(a) - isLong(b)) || (lastDay(a) - lastDay(b)));
-      if (smart && middle.length > 1 && !wantLong) {
+      if (smart && middle.length > 1 && !(wantLong && middle.some(p => pitStaOf(p) >= LONG_MIN_STA))) {
         const decided = Math.abs(lead) >= PEN_DECIDED;
         const close = inning >= 7 && Math.abs(lead) <= 2;
         const mop = p => (p.role === 'MOP' ? 1 : 0);
@@ -3741,8 +3746,8 @@
           if (!close && middle.length >= 3) { const best = middle.shift(); middle.splice(1, 0, best); }
         }
       }
-      if (wantLong && middle.length) {
-        return middle.slice().sort((a, b) => (isLong(b) - isLong(a)) || (pitStaOf(b) - pitStaOf(a)))[0];
+      if (wantLong && middle.some(p => pitStaOf(p) >= LONG_MIN_STA)) {
+        return middle.filter(p => pitStaOf(p) >= LONG_MIN_STA).sort((a, b) => (isLong(b) - isLong(a)) || (pitStaOf(b) - pitStaOf(a)))[0];
       }
       // Fireman: a rested closer (he did not pitch yesterday) comes in for the eighth with a lead
       // of one or two and stays for the ninth. The best arm of the bullpen threw 48 innings on a
@@ -3764,6 +3769,9 @@
       if (inning === 9 && lead === 0) return su() || middle[0] || byRole('CL') || available[0];
       if (inning >= 9 && (saveSpot || inning > 9)) return byRole('CL') || su() || middle[0] || available[0];
       if (inning === 8 && lead >= -1 && lead <= 4) return su() || middle[0] || byRole('CL');
+      // Nobody left but the closer: he is not a filler. He only covers from the seventh on in a
+      // game within three runs; otherwise whoever is pitching stays in (CL_NOT_FILLER).
+      if (CL_NOT_FILLER && !middle.length && !su()) return (inning >= 7 && Math.abs(lead) <= 3) ? (byRole('CL') || null) : null;
       return middle[0] || su() || byRole('CL') || available[0];
     },
 
@@ -4104,7 +4112,7 @@
           const rp = startPitcher(si, next, false);
           if (next.role === 'CL' && inning === 8) rp.fireman = true;
           else if (next.iron && inning >= 7 && Math.abs(lead) <= 3) rp.twoInn = true;
-          if (wantLong && next.role !== 'CL' && (NO_SETUP || next.role !== 'SETUP')) {
+          if (wantLong && next.role !== 'CL' && (NO_SETUP || next.role !== 'SETUP') && pitStaOf(next) >= LONG_MIN_STA) {
             rp.long = true;
             const sta = next.sta !== undefined ? next.sta : (next.sta_val !== undefined ? next.sta_val : 50);
             rp.fresh = (4 + sta * LONG_FRESH_PER_STA) * (next.iron ? IRON_RP_FRESH : 1);
