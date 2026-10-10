@@ -997,7 +997,7 @@
   const STEAL_TRY_POW = 1.25;
   const STEAL_THIRD = 0.22;     // share of those attempts when the runner is on second
   const GREAT_STEALER = 1.2;    // hidden steal tendency from which a runner counts as a great base stealer
-  const ERROR_RATE = 0.038;     // batted-ball outs that turn into an error, for an average defense
+  const ERROR_RATE = 0.041;     // batted-ball outs that turn into an error, for an average defense
   const GIDP_RATE = 0.19;       // batted-ball outs with a man on first and under 2 outs
   const RUN_ON_OUT = 0.42;      // man on third, under 2 outs: scores on a batted-ball out
   const ADVANCE_ON_OUT = 0.30;  // man on second, third open, under 2 outs: moves up on the out
@@ -1093,8 +1093,8 @@
   // League level: everybody here is at his peak, so the tables are scaled to an all-eras league.
   // Reference chosen by the user: AL/NL 1947-2025 all together (.257 / .325 / .399, 4.42 runs,
   // 0.93 HR, 1.58 doubles, 0.21 triples and 0.74 errors per team-game, K 16.4%, ERA 4.02).
-  const PA_SCALE_HR = 0.96, PA_SCALE_K = 1.38, PA_SCALE_BB = 1.04;
-  const AVG_PIVOT = 0.265, AVG_SPREAD = 1.08, AVG_SHIFT = 0.010;
+  const PA_SCALE_HR = 0.92, PA_SCALE_K = 1.45, PA_SCALE_BB = 1.04;
+  const AVG_PIVOT = 0.265, AVG_SPREAD = 1.08, AVG_SHIFT = 0.012;
   const PA_SCALE_2B = 0.93, PA_SCALE_3B = 0.68; // share of the non-HR hits that go for two and three bases
   const K_BAT_SPREAD = 0.7, K_PIT_LOW_SPREAD = 0.75, H_PIT_HIGH_SPREAD = 0.3; // 1 = full spread of the tables
   // The pitchers who allow fewer hits than the average one get that edge a little bigger, the
