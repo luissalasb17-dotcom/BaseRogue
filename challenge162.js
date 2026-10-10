@@ -2991,11 +2991,15 @@
       const moves = report.moves;
       const cardObp = p => 0.325 + (((p.eye || 50) - 50) * 0.5 + ((p.con || 50) - 50) * 0.5) * 0.0016;
       const cardSlg = p => 0.400 + (((p.pwr || 50) - 50) * 0.6 + ((p.con || 50) - 50) * 0.4) * 0.004;
+      // Current form: the last month counts double (season line + the month again), so a starter
+      // who lost his job wins it back sooner when the man who took it cools off, and the other way.
       const estBat = p => {
-        const x = bStat(p), n = pa(x), k = MGR.trustPA;
-        const tb = (x.h || 0) + (x.doubles || 0) + 2 * (x.triples || 0) + 3 * (x.hr || 0);
-        const obp = (((x.h || 0) + (x.bb || 0)) + cardObp(p) * k) / (n + k);
-        const slg = (tb + cardSlg(p) * k) / ((x.ab || 0) + k);
+        const s0 = bStat(p), m0 = bMonth(p), k = MGR.trustPA;
+        const v = key => (s0[key] || 0) + (m0[key] || 0);
+        const n = pa(s0) + pa(m0);
+        const tb = v('h') + v('doubles') + 2 * v('triples') + 3 * v('hr');
+        const obp = ((v('h') + v('bb')) + cardObp(p) * k) / (n + k);
+        const slg = (tb + cardSlg(p) * k) / (v('ab') + k);
         return { obp, slg, ops: obp + slg };
       };
       const cardEra = p => Math.max(2.2, Math.min(5.5, 4.05 - ((p.ovr || 72) - 72) * 0.06));
@@ -3075,11 +3079,22 @@
         R.pitchers.SP[si] = roles.long; R.pitchers.RP[ri] = worst;
         moves.push(`🔁 ${cleanName(roles.long)} (${era(pStat(roles.long)).toFixed(2)} ERA) joins the rotation; ${cleanName(worst)} (${era(pStat(worst)).toFixed(2)}) goes to the bullpen.`);
       }
+      // The order follows current form: the last month counts double, so a starter who was
+      // moved down climbs back when he pitches well again (before, the whole season weighed the
+      // same and the order only changed when there was a new #1: a demoted ace stayed third).
+      // Any starter passes the one ahead of him when he is MGR.aceGap better.
+      const formEra = p => { const x = pStat(p), m = pMonth(p); return (((x.er || 0) + (m.er || 0)) * 9 + cardEra(p) * MGR.trustIP) / (ip(x) + ip(m) + MGR.trustIP); };
       const spNow = R.pitchers.SP.filter(Boolean);
-      const ranked = spNow.slice().sort((a, b) => estEra(a) - estEra(b));
-      if (ranked.length === R.pitchers.SP.length && ranked[0] !== spNow[0] && estEra(spNow[0]) - estEra(ranked[0]) >= MGR.aceGap) {
-        moves.push(`⭐ ${cleanName(ranked[0])} (${era(pStat(ranked[0])).toFixed(2)} ERA) is the new #1 starter.`);
-        R.pitchers.SP = ranked;
+      if (spNow.length === R.pitchers.SP.length) {
+        const order = spNow.slice();
+        for (let pass = 0; pass < order.length; pass++) {
+          for (let i = 0; i + 1 < order.length; i++) {
+            if (formEra(order[i]) - formEra(order[i + 1]) >= MGR.aceGap) { const t = order[i]; order[i] = order[i + 1]; order[i + 1] = t; }
+          }
+        }
+        if (order[0] !== spNow[0]) moves.push(`⭐ ${cleanName(order[0])} (${era(pStat(order[0])).toFixed(2)} ERA, ${era(pMonth(order[0])).toFixed(2)} this month) is the new #1 starter.`);
+        order.forEach((p, i) => { const was = spNow.indexOf(p); if (i > 0 && was - i >= 1) moves.push(`⬆ ${cleanName(p)} (${era(pMonth(p)).toFixed(2)} ERA this month) moves up to #${i + 1} starter.`); });
+        R.pitchers.SP = order;
       }
       // 4. Bullpen: a closer who is blowing games gives the ninth to the setup man.
       const swapPen = (a, b, text) => {
@@ -4684,6 +4699,8 @@
     renderPlayoffLiveGame() {
       const container = document.getElementById('challenge162-playoffs-container');
       if (!container || !this._activePlayoffSim) return;
+      // Same music as a Quick Play battle while a playoff game is on screen.
+      if (window.AudioManager && typeof window.AudioManager.setBGM === 'function') window.AudioManager.setBGM('match');
       const sim = this._activePlayoffSim;
       const game = sim.game;
       const events = game.events;
@@ -4995,6 +5012,24 @@
           const today = x && (x.ab || x.bb) ? `${x.h}-${x.ab}${x.hr ? ` · ${x.hr} HR` : ''}${x.bb ? ` · ${x.bb} BB` : ''}` : '—';
           return `<div class="c162-duel-chip ${!isPreGame && !isFinished && b.name === curEvt.batter.name ? 'up' : ''}"><small>${k + 1} · ${b.pos}</small><b>${b.name}</b><i>${today}</i></div>`;
         }).join('');
+        // Both lineups beside the duel: yours on the left, theirs on the right, with today's
+        // line of each batter (the box score lists whoever is in the game now, subs included).
+        const sideLineup = (mine) => {
+          const team = mine ? live.awayTeam : live.homeTeam;
+          const start = (mine ? game.userLineup : game.oppLineup) || [];
+          const rows = ((team && team.batting && team.batting.length) ? team.batting : start).slice(0, 12);
+          const batting = mine ? topHalf : !topHalf;
+          const pit = mine ? (topHalf ? null : curEvt.pitcher) : (topHalf ? curEvt.pitcher : null);
+          return `<div class="c162-lu ${mine ? 'mine' : 'theirs'} ${batting && !isFinished ? 'batting' : ''}">
+            <div class="c162-lu-title"><b>${mine ? game.awayTeam.name : game.homeTeam.name}</b><span>${isFinished ? 'FINAL' : batting ? '🏏 AT BAT' : '⚾ IN THE FIELD'}</span></div>
+            ${rows.map((x, k) => {
+              const up = batting && !isPreGame && !isFinished && x.name === curEvt.batter.name;
+              const line = (x.ab || x.bb) ? `${x.h || 0}-${x.ab || 0}${x.hr ? ` · ${x.hr} HR` : ''}${x.rbi ? ` · ${x.rbi} RBI` : ''}${x.bb ? ` · ${x.bb} BB` : ''}` : '—';
+              return `<div class="c162-lu-row ${up ? 'up' : ''}"><small>${k < 9 ? k + 1 : '·'}</small><em>${x.pos || ''}</em><b>${x.name}</b><i>${line}</i></div>`;
+            }).join('')}
+            ${pit ? `<div class="c162-lu-pit"><small>P</small><b>${pit.name}</b><i>${pit.line || '0.0 IP'}</i></div>` : ''}
+          </div>`;
+        };
         // Popup of the play just shown.
         const POP = { HR: ['HOME RUN!', 'hr'], '3B': ['TRIPLE!', 'hit'], '2B': ['DOUBLE!', 'hit'], '1B': ['BASE HIT', 'hit'], BB: ['WALK', 'bb'], SO: ['STRIKEOUT!', 'so'], OUT: ['OUT', 'out'], SB: ['STOLEN BASE!', 'hit'], CS: ['CAUGHT STEALING', 'so'] };
         let pop = (!isPreGame && !isFinished && curEvt.outcome) ? (POP[curEvt.outcome] || null) : null;
@@ -5005,12 +5040,17 @@
         if (pop && curEvt.detail === 'SACX') pop = ['BUNT FAILED', 'so'];
         const goodForBatting = pop && ['hr', 'hit', 'bb'].includes(pop[1]);
         const goodForUser = pop && (topHalf ? goodForBatting : !goodForBatting);
+        // The name on the banner is who did it: the pitcher on a strikeout, the batter otherwise.
+        const popWho = pop ? (curEvt.outcome === 'SO' ? curEvt.pitcher.name : curEvt.batter.name) : '';
         const popHTML = pop ? `<div class="c162-pop k-${pop[1]} ${goodForUser ? 'good' : 'bad'}">
+            <small>${goodForUser ? '▲' : '▼'} ${popWho}</small>
             <b>${pop[0]}</b>${curEvt.runsScored ? `<span>+${curEvt.runsScored} ${curEvt.runsScored === 1 ? 'RUN' : 'RUNS'}</span>` : ''}
           </div>` : '';
         const pitTeam = topHalf ? game.homeTeam.name : game.awayTeam.name;
         const batTeam = topHalf ? game.awayTeam.name : game.homeTeam.name;
         tabContentHTML = `
+          <div class="c162-arena">
+          ${sideLineup(true)}
           <div class="c162-duel ${topHalf ? 'user-bats' : 'user-pitches'}">
             <div class="c162-duel-side bat">
               <div class="c162-duel-label ${topHalf ? 'mine' : 'theirs'}">🏏 AT BAT · ${batTeam}</div>
@@ -5020,7 +5060,11 @@
 
             <div class="c162-duel-mid">
               <div class="c162-duel-inning">${isFinished ? 'FINAL' : inningDisplay}</div>
-              <div class="c162-duel-score"><span>${game.awayTeam.name}</span><b>${curUserRuns} - ${curOppRuns}</b><span>${game.homeTeam.name}</span></div>
+              <div class="c162-duel-score">
+                <div class="c162-duel-team ${topHalf && !isFinished ? 'batting' : ''}"><span>${game.awayTeam.name}</span><b>${curUserRuns}</b></div>
+                <i>–</i>
+                <div class="c162-duel-team ${!topHalf && !isFinished ? 'batting' : ''}"><b>${curOppRuns}</b><span>${game.homeTeam.name}</span></div>
+              </div>
               <div class="c162-duel-field">
                 <div class="c162-diamond-canvas">
                   <div class="c162-base-pod base-home"></div>
@@ -5040,10 +5084,7 @@
               <div class="c162-duel-today">${curEvt.pitcher.line || '0.0 IP, 0 H, 0 ER, 0 K'} · <b>${curEvt.pitcher.pitches || 0}</b> pitches</div>
             </div>
           </div>
-
-          <div class="c162-duel-lineup">
-            <div class="c162-duel-lineup-title">${batTeam} · LINEUP</div>
-            <div class="c162-duel-chips">${chips}</div>
+          ${sideLineup(false)}
           </div>
 
           <div class="c162-ticker-box">
@@ -9225,6 +9266,7 @@
     },
 
     renderPlayoffs() {
+      if (window.AudioManager && typeof window.AudioManager.setBGM === 'function') window.AudioManager.setBGM('menu');
       this.stopAutoSim();
       const container = document.getElementById('challenge162-playoffs-container');
       if (!container || !this.state) return;
