@@ -1045,6 +1045,12 @@
   const IRON_BOOST = 5; // rating points for any Iron Man: batting ratings for a batter, pitching ratings for a pitcher
   const ironPitKey = p => `P:${pitcherUnlockKey(p)}`;
   const FIREMAN_MAX_LEAD = 2, FIREMAN_TIRED = 4;
+  const PEN_TRUST = true, PEN_TRUST_IP = 30, PEN_DECIDED = 6; // the user's middle relief by performance (see _pickReliever)
+  // Mop-up man: every month the user's manager names his worst middle reliever (if he is clearly
+  // worse than the best one and above MOP_MIN_ERA). He pitches only when the game is decided or
+  // nobody else is rested; the others share the innings that matter.
+  const PEN_MOP = true, MOP_GAP = 0.60, MOP_MIN_ERA = 4.40;
+  const MOP_SHARE_DECIDED = false; // decided games are shared by rest among all the middle men (false: the mop-up man takes them all)
   const LONG_UNTIL_INNING = 6, LONG_FRESH_PER_STA = 0.10, LONG_MAX_ER = 4, LONG_REST_OUTS = 6, LONG_TIRED = 2;
   // Every ball in play goes to one fielder, drawn by the share of batted balls his position
   // handles (FIELD_CHANCE). His glove decides what happens there: above 50 he takes hits away
@@ -1922,6 +1928,64 @@
     });
   }
 
+  // ── All-Star Game (idea of the user) ───────────────────────────────────────────────────────
+  // The fan vote is open from ALLSTAR_VOTE_FROM to ALLSTAR_DAY. A batter's votes follow what he
+  // is doing this season (WAR so far) and how famous the card is (its OVR), as real ballots do.
+  // On ALLSTAR_DAY each league names 9 starters (the vote leader at each position), 8 reserves
+  // (the best of the rest), 6 starting pitchers and 4 relievers; the game is played and the
+  // players keep a star for the rest of the season.
+  const ALLSTAR_DAY = 90, ALLSTAR_VOTE_FROM = 30;
+  const ALLSTAR_POS = ['C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'DH'];
+  const ALLSTAR_RESERVES = 8, ALLSTAR_SP = 6, ALLSTAR_RP = 4;
+  function allStarBallot(league, lg) {
+    const q = leagueQualifiers(league, lg);
+    const idx = poolIndex();
+    const tName = id => (league.teams[id] ? league.teams[id].name : id);
+    const avg3 = b => (b.ab ? (b.h / b.ab).toFixed(3).replace(/^0/, '') : '.000');
+    const bats = q.batRegular.map(b => {
+      const card = idx.bat.get(b.key) || {};
+      const war = batterWarValue(b, b.pos, b.def);
+      const fame = 1 + Math.max(-0.3, ((card.ovr || 70) - 72) / 45);
+      const votes = Math.max(0, Math.round((war + 1.0) * 420000 * fame * (q.day / ALLSTAR_DAY)));
+      return { k: `${b.team}:${b.key}`, key: b.key, name: b.name, team: b.team, teamName: tName(b.team), pos: ALLSTAR_POS.includes(b.pos) ? b.pos : 'DH', votes, war, ovr: Math.floor(card.ovr || 0), line: `${avg3(b)} · ${b.hr} HR · ${b.rbi} RBI${b.sb >= 10 ? ` · ${b.sb} SB` : ''}` };
+    }).sort((a, b) => b.votes - a.votes);
+    const lgOuts = q.pit.reduce((t, p) => t + (p.outs || 0), 0);
+    const lgEra = lgOuts ? q.pit.reduce((t, p) => t + (p.er || 0), 0) * 27 / lgOuts : 4.0;
+    const era = p => (p.outs ? (p.er * 27 / p.outs).toFixed(2) : '0.00');
+    const pitE = (p, score, line) => ({ k: `${p.team}:${p.key}`, key: p.key, name: p.name, team: p.team, teamName: tName(p.team), score, ovr: Math.floor((idx.pit.get(p.key) || {}).ovr || 0), line });
+    const sp = q.spQual.map(p => pitE(p, pitcherWarValue(p, 'SP') + 0.06 * (p.w || 0) - 0.03 * (p.l || 0), `${p.w}-${p.l} · ${era(p)} ERA · ${p.so} K`)).sort((a, b) => b.score - a.score);
+    const rp = q.rpQual.map(p => pitE(p, reliefPoints(p, lgEra), `${era(p)} ERA · ${p.sv} SV${p.hld ? ` · ${p.hld} HLD` : ''} · ${p.so} K`)).sort((a, b) => b.score - a.score);
+    const byPos = {};
+    ALLSTAR_POS.forEach(pos => { byPos[pos] = bats.filter(b => b.pos === pos); });
+    return { day: q.day, bats, byPos, sp, rp };
+  }
+  function pickAllStars(league, lg) {
+    const B = allStarBallot(league, lg);
+    const taken = new Set();
+    const starters = ALLSTAR_POS.map(pos => { const e = B.byPos[pos].find(x => !taken.has(x.k)); if (e) taken.add(e.k); return e ? { ...e, pos } : null; }).filter(Boolean);
+    const reserves = B.bats.filter(x => !taken.has(x.k)).sort((a, b) => b.war - a.war).slice(0, ALLSTAR_RESERVES);
+    return { starters, reserves, sp: B.sp.slice(0, ALLSTAR_SP), rp: B.rp.slice(0, ALLSTAR_RP) };
+  }
+  function buildAllStar(league) {
+    const rosters = { AL: pickAllStars(league, 'AL'), NL: pickAllStars(league, 'NL') };
+    const bat = {}, pit = {};
+    ['AL', 'NL'].forEach(lg => {
+      rosters[lg].starters.forEach(e => { bat[e.k] = 'S'; });
+      rosters[lg].reserves.forEach(e => { bat[e.k] = 'R'; });
+      rosters[lg].sp.concat(rosters[lg].rp).forEach(e => { pit[e.k] = 'P'; });
+    });
+    // The game itself: the league whose starters are having the better year is a slight favorite.
+    const power = lg => rosters[lg].starters.reduce((t, e) => t + e.war, 0) + rosters[lg].sp.slice(0, 3).reduce((t, e) => t + e.score, 0);
+    const pAL = Math.max(0.3, Math.min(0.7, 0.5 + (power('AL') - power('NL')) * 0.01));
+    const win = Math.random() < pAL ? 'AL' : 'NL';
+    const lose = Math.floor(Math.random() * 6), winR = lose + 1 + Math.floor(Math.random() * 4);
+    const cand = rosters[win].starters.concat(rosters[win].reserves.slice(0, 3));
+    let roll = Math.random() * cand.reduce((t, e) => t + Math.max(1, e.votes), 0), mvp = cand[0];
+    for (const e of cand) { roll -= Math.max(1, e.votes); if (roll <= 0) { mvp = e; break; } }
+    const hits = 2 + Math.floor(Math.random() * 2), hr = Math.random() < 0.6 ? 1 : 0;
+    return { day: league.day, rosters, bat, pit, game: { win, score: win === 'AL' ? [winR, lose] : [lose, winR], mvp: mvp ? { k: mvp.k, name: mvp.name, teamName: mvp.teamName, line: `${hits}-for-4${hr ? ', HR' : ''}, ${1 + hr + Math.floor(Math.random() * 3)} RBI` } : null } };
+  }
+
   window.Challenge162 = {
     unlockedBatters: new Set(),
     unlockedPitchers: new Set(),
@@ -2437,6 +2501,95 @@
       document.body.appendChild(ov);
     },
 
+    // ── All-Star Game ────────────────────────────────────────────────────────────────────
+    _allStarCheckpoint() {
+      const S = this.state, L = S && S.league;
+      if (!L || L.allStar || S.gamesPlayed !== ALLSTAR_DAY) return;
+      L.allStar = buildAllStar(L);
+      S.allStarShown = false;
+      const mine = this._myAllStars();
+      S.pendingAlerts = S.pendingAlerts || [];
+      S.pendingAlerts.push({ icon: '⭐', title: 'ALL-STAR BREAK', text: mine.length ? `${mine.length} of your players made the ${L.teams[USER_TEAM_ID].league} All-Star team: ${mine.map(x => x.name).join(', ')}.` : 'None of your players was selected this year.' });
+      this._pushHeadline(`⭐ All-Star Game: ${L.allStar.game.win} wins ${Math.max(...L.allStar.game.score)}-${Math.min(...L.allStar.game.score)}${L.allStar.game.mvp ? `. MVP: ${L.allStar.game.mvp.name}` : ''}.`, 'league');
+    },
+    _myAllStars() {
+      const L = this.state && this.state.league, A = L && L.allStar;
+      if (!A) return [];
+      const lg = L.teams[USER_TEAM_ID].league, R = A.rosters[lg], out = [];
+      R.starters.forEach(e => { if (e.team === USER_TEAM_ID) out.push({ ...e, role: `STARTER · ${e.pos}` }); });
+      R.reserves.forEach(e => { if (e.team === USER_TEAM_ID) out.push({ ...e, role: 'RESERVE' }); });
+      R.sp.forEach(e => { if (e.team === USER_TEAM_ID) out.push({ ...e, role: 'STARTING PITCHER' }); });
+      R.rp.forEach(e => { if (e.team === USER_TEAM_ID) out.push({ ...e, role: 'RELIEVER' }); });
+      return out;
+    },
+    // Star next to the name of an All-Star (season tables, team rosters).
+    _asTag(kind, teamId, key) {
+      const A = this.state && this.state.league && this.state.league.allStar;
+      const hit = A && (kind === 'pit' ? A.pit : A.bat)[`${teamId}:${key}`];
+      return hit ? ` <span class="c162-as-star" title="All-Star${hit === 'S' ? ' starter' : ''}">★</span>` : '';
+    },
+    _showAllStar() {
+      const S = this.state, L = S && S.league, A = L && L.allStar;
+      if (!A || S.allStarShown !== false) return;
+      S.allStarShown = true;
+      this.save();
+      const mine = this._myAllStars(), lg = L.teams[USER_TEAM_ID].league, g = A.game;
+      const old = document.getElementById('c162-honors-overlay'); if (old) old.remove();
+      const ov = document.createElement('div');
+      ov.id = 'c162-honors-overlay';
+      ov.className = 'c162-tm-overlay';
+      ov.innerHTML = `<div class="c162-honors c162-as-pop">
+        <div class="c162-honors-kicker">DAY ${A.day} · MIDSEASON CLASSIC</div>
+        <div class="c162-honors-title">⭐ ALL-STAR GAME</div>
+        <div class="c162-as-score"><span class="${g.win === 'AL' ? 'w' : ''}">AL <b>${g.score[0]}</b></span><i>–</i><span class="${g.win === 'NL' ? 'w' : ''}"><b>${g.score[1]}</b> NL</span></div>
+        ${g.mvp ? `<div class="c162-honors-sub">MVP: <b>${g.mvp.name}</b> (${g.mvp.teamName}) · ${g.mvp.line}</div>` : ''}
+        <div class="c162-as-mine-title">${mine.length ? `YOUR ${lg} ALL-STARS · ${mine.length}` : 'NO ALL-STARS THIS YEAR'}</div>
+        <div class="c162-honors-list">${mine.length ? mine.map((h, i) => `<div class="c162-honor" style="--i:${i}"><span>⭐</span><div><small>${h.role}${h.votes ? ` · ${h.votes.toLocaleString('en-US')} votes` : ''}</small><b>${h.name}</b><i>${h.line}</i></div></div>`).join('') : `<div class="c162-as-none">The fans and the managers looked elsewhere. There is half a season left to prove them wrong.</div>`}</div>
+        <div class="c162-as-actions">
+          <button class="btn c162-as-see" data-as-rosters>👀 SEE BOTH ROSTERS</button>
+          <button class="btn c162-honors-ok" data-honors-close>▶ CONTINUE</button>
+        </div>
+      </div>`;
+      ov.onclick = e => {
+        if (e.target.closest('[data-as-rosters]')) { ov.remove(); this._ligaTab = 'allstar'; this.stopAutoSim(); this.renderLiga(); return; }
+        if (e.target === ov || e.target.closest('[data-honors-close]')) ov.remove();
+      };
+      document.body.appendChild(ov);
+    },
+    // League screen tab: the fan vote while it is open, the rosters and the game afterwards.
+    _allStarHTML(lgView) {
+      const L = this.state.league, A = L.allStar;
+      const sub = `<div class="c162-tabs c162-subtabs">${['AL', 'NL'].map(lg => `<button class="c162-tab ${lgView === lg ? 'active' : ''}" data-lg="${lg}">${lg === 'AL' ? 'AMERICAN LEAGUE' : 'NATIONAL LEAGUE'}${lg === L.teams[USER_TEAM_ID].league ? ' ★' : ''}</button>`).join('')}</div>`;
+      const mineCls = e => (e.team === USER_TEAM_ID ? ' mine' : '');
+      const fmt = n => n.toLocaleString('en-US');
+      if (!A) {
+        if (L.day < ALLSTAR_VOTE_FROM) return `<div class="c162-as-wait">⭐ The All-Star vote opens on day ${ALLSTAR_VOTE_FROM}. The game is played on day ${ALLSTAR_DAY}.</div>`;
+        const B = allStarBallot(L, lgView);
+        const posCard = pos => {
+          const list = B.byPos[pos].slice(0, 3), top = list[0] ? list[0].votes : 1;
+          return `<div class="c162-as-pos"><h4>${pos}</h4>${list.length ? list.map((e, i) => `<div class="c162-as-cand${i === 0 ? ' lead' : ''}${mineCls(e)}" data-c162-team="${e.team}">
+              <b>${i + 1}. ${e.name}</b><small>${e.teamName} · ${e.line}</small>
+              <div class="c162-as-bar"><i style="width:${Math.max(4, Math.round(e.votes / Math.max(1, top) * 100))}%"></i></div><em>${fmt(e.votes)}</em>
+            </div>`).join('') : '<div class="c162-as-none">No candidates yet.</div>'}</div>`;
+        };
+        const arms = (title, list, n) => `<div class="c162-as-pos"><h4>${title}</h4>${list.slice(0, n).map((e, i) => `<div class="c162-as-cand${mineCls(e)}" data-c162-team="${e.team}"><b>${i + 1}. ${e.name}</b><small>${e.teamName} · ${e.line}</small></div>`).join('') || '<div class="c162-as-none">No candidates yet.</div>'}</div>`;
+        return `${sub}
+          <div class="c162-as-head"><b>⭐ ALL-STAR VOTE · ${lgView}</b><span>${ALLSTAR_DAY - L.day} ${ALLSTAR_DAY - L.day === 1 ? 'game' : 'games'} until the polls close · the leader at each position starts · your players are highlighted</span></div>
+          <div class="c162-as-grid">${ALLSTAR_POS.map(posCard).join('')}</div>
+          <div class="c162-as-head sm"><b>PITCHERS</b><span>picked by the league from the best seasons so far (${ALLSTAR_SP} starters, ${ALLSTAR_RP} relievers)</span></div>
+          <div class="c162-as-grid two">${arms('STARTING PITCHERS', B.sp, ALLSTAR_SP)}${arms('RELIEVERS', B.rp, ALLSTAR_RP)}</div>`;
+      }
+      const R = A.rosters[lgView], g = A.game;
+      const row = (label, e) => `<div class="c162-as-row${mineCls(e)}" data-c162-team="${e.team}"><span>${label}</span><b>${e.name}</b><small>${e.teamName}</small><i>${e.line}</i>${e.votes !== undefined && label !== 'RES' ? `<em>${fmt(e.votes)}</em>` : '<em></em>'}</div>`;
+      return `${sub}
+        <div class="c162-as-final"><small>ALL-STAR GAME · DAY ${A.day}</small><div class="c162-as-score"><span class="${g.win === 'AL' ? 'w' : ''}">AL <b>${g.score[0]}</b></span><i>–</i><span class="${g.win === 'NL' ? 'w' : ''}"><b>${g.score[1]}</b> NL</span></div>${g.mvp ? `<p>MVP: <b>${g.mvp.name}</b> (${g.mvp.teamName}) · ${g.mvp.line}</p>` : ''}</div>
+        <div class="c162-as-rosters">
+          <div><h4>⭐ ${lgView} STARTERS (fan vote)</h4>${R.starters.map(e => row(e.pos, e)).join('')}<h4>RESERVES</h4>${R.reserves.map(e => row('RES', e)).join('')}</div>
+          <div><h4>🔥 STARTING PITCHERS</h4>${R.sp.map(e => row('SP', e)).join('')}<h4>🧯 RELIEVERS</h4>${R.rp.map(e => row('RP', e)).join('')}</div>
+        </div>
+        <div class="c162-pr-note">Click a player to see his team. All-Stars carry a ★ for the rest of the season.</div>`;
+    },
+
     _playoffMatchup(round) {
       const S = this.state;
       const b = S.playoffs && S.playoffs.bracket;
@@ -2766,6 +2919,7 @@
       this._advanceLeagueDay(won);
       this._checkMilestones(S.lastGame);
       this._monthlyCheckpoint();
+      this._allStarCheckpoint();
       if (S.gamesPlayed >= SEASON_LENGTH) this._finishRegularSeason();
       this.save();
       return logEntry;
@@ -3107,7 +3261,7 @@
       const pen = bullpenRoles(R.pitchers.RP.filter(Boolean));
       if (pen.closer && pen.setup && ip(pStat(pen.closer)) >= MGR.penMinIP && ip(pStat(pen.setup)) >= MGR.penMinIP) {
         const cEra = era(pStat(pen.closer)), sEra = era(pStat(pen.setup));
-        const gapPen = estEra(pen.closer) - estEra(pen.setup);
+        const gapPen = formEra(pen.closer) - formEra(pen.setup);
         if (gapPen >= MGR.penGap || (pMonth(pen.closer).bs >= MGR.clMonthBS && gapPen >= MGR.penGapAfterBS)) {
           swapPen(pen.closer, pen.setup, `🔁 ${cleanName(pen.setup)} (${sEra.toFixed(2)} ERA) is the new closer; ${cleanName(pen.closer)} (${cEra.toFixed(2)}, ${pMonth(pen.closer).bs} blown saves this month) moves to the eighth.`);
         }
@@ -3115,9 +3269,25 @@
       const pen2 = bullpenRoles(R.pitchers.RP.filter(Boolean));
       if (pen2.setup && ip(pStat(pen2.setup)) >= MGR.penMinIP) {
         const mid = R.pitchers.RP.filter(p => p && p !== pen2.closer && p !== pen2.setup && p !== pen2.long && ip(pStat(p)) >= MGR.penMinIP)
-          .sort((a, b) => estEra(a) - estEra(b))[0];
-        if (mid && estEra(mid) <= estEra(pen2.setup) - MGR.penGap) {
+          .sort((a, b) => formEra(a) - formEra(b))[0];
+        if (mid && formEra(mid) <= formEra(pen2.setup) - MGR.penGap) {
           swapPen(pen2.setup, mid, `🔁 ${cleanName(mid)} (${era(pStat(mid)).toFixed(2)} ERA) is the new setup man in place of ${cleanName(pen2.setup)} (${era(pStat(pen2.setup)).toFixed(2)}).`);
+        }
+      }
+
+      // 5. Mop-up man: the worst middle reliever, when he is clearly worse than the best one.
+      if (PEN_MOP) {
+        const pen3 = bullpenRoles(R.pitchers.RP.filter(Boolean));
+        const mids = R.pitchers.RP.filter(p => p && p !== pen3.closer && p !== pen3.setup && p !== pen3.long && ip(pStat(p)) >= MGR.penMinIP)
+          .sort((a, b) => formEra(a) - formEra(b));
+        const worstMid = mids[mids.length - 1];
+        const was = S.mopKey || null;
+        const now = (mids.length >= 2 && formEra(worstMid) >= MOP_MIN_ERA && formEra(worstMid) - formEra(mids[0]) >= MOP_GAP) ? pitcherUnlockKey(worstMid) : null;
+        if (now !== was) {
+          const wasP = was && R.pitchers.RP.find(p => p && pitcherUnlockKey(p) === was);
+          if (now) moves.push(`🧹 ${cleanName(worstMid)} (${era(pStat(worstMid)).toFixed(2)} ERA) is now the mop-up man: he pitches when the game is decided.`);
+          else if (wasP) moves.push(`✅ ${cleanName(wasP)} (${era(pStat(wasP)).toFixed(2)} ERA) is back in the regular bullpen mix.`);
+          S.mopKey = now;
         }
       }
 
@@ -3131,11 +3301,12 @@
       const r = this.state && this.state.monthReport;
       if (!r) return '';
       const ord = n => `${n}${n === 1 ? 'st' : n === 2 ? 'nd' : n === 3 ? 'rd' : 'th'}`;
-      const line = (label, text, cls) => (text ? `<div class="c162-month-line ${cls || ''}"><span>${label}</span><b>${text}</b></div>` : '');
+      // "Name: his line" -> a small card with the name on top.
+      const person = (label, text, cls) => { if (!text) return ''; const cut = text.indexOf(': '); return `<div class="c162-month-person ${cls || ''}"><small>${label}</small><b>${cut > 0 ? text.slice(0, cut) : text}</b><i>${cut > 0 ? text.slice(cut + 2) : ''}</i></div>`; };
       return `<div class="c162-month">
         <div class="c162-month-head">
           <b>🗓 ${r.name} REPORT</b>
-          <span>${r.rec[0]}-${r.rec[1]} this month · ${r.total[0]}-${r.total[1]} overall · ${ord(r.rank)} in the ${r.lg}${r.gb ? ` (${r.gb} GB)` : ''}</span>
+          <div class="c162-month-rec ${r.rec[0] > r.rec[1] ? 'good' : r.rec[0] < r.rec[1] ? 'bad' : ''}"><strong>${r.rec[0]}-${r.rec[1]}</strong><span>${r.total[0]}-${r.total[1]} overall · ${ord(r.rank)} in the ${r.lg}${r.gb ? ` (${r.gb} GB)` : ''}</span></div>
         </div>
         <div class="c162-month-nums">
           <div><small>RUNS</small><b>${r.rs}</b><i>scored</i></div>
@@ -3143,10 +3314,11 @@
           <div><small>TEAM AVG</small><b>${r.avg}</b><i>${r.hr} HR · ${r.sb} SB</i></div>
           <div><small>TEAM ERA</small><b>${r.era}</b><i>this month</i></div>
         </div>
-        ${line('🔥 HOT BAT', r.hot, 'up')}${line('🧊 COLD BAT', r.cold, 'down')}${line('⭐ BEST STARTER', r.ace, 'up')}${line('⚠ STRUGGLING', r.shaky, 'down')}
+        <div class="c162-month-people">${person('🔥 HOT BAT', r.hot, 'up')}${person('🧊 COLD BAT', r.cold, 'down')}${person('⭐ BEST STARTER', r.ace, 'up')}${person('⚠ STRUGGLING', r.shaky, 'down')}</div>
         <div class="c162-month-moves">
-          <small>MANAGER'S MOVES</small>
-          ${r.moves.length ? r.moves.map(m => `<p>${m}</p>`).join('') : '<p class="none">No changes: everybody keeps his job.</p>'}
+          <small>MANAGER'S MOVES${r.moves.length ? ` · ${r.moves.length}` : ''}</small>
+          ${r.moves.length ? r.moves.slice(0, 3).map(m => `<p>${m}</p>`).join('') : '<p class="none">No changes: everybody keeps his job.</p>'}
+          ${r.moves.length > 3 ? `<details><summary>+ ${r.moves.length - 3} MORE</summary>${r.moves.slice(3).map(m => `<p>${m}</p>`).join('')}</details>` : ''}
         </div>
       </div>`;
     },
@@ -3475,7 +3647,7 @@
       const { closer, setup, long: longMan } = bullpenRoles(rp);
       const ironP = p => !!(S.ironMan && S.ironMan[ironPitKey(p)]);
       // Every Iron Man plays in better shape, batter or pitcher: the same IRON_BOOST on his ratings.
-      const bullpen = rp.map(p => ({ ...withMomentumPitcher(p, m + chem.of(p) + (ironP(p) ? IRON_BOOST : 0)) || p, role: p === closer ? 'CL' : p === setup ? 'SETUP' : p === longMan ? 'LRP' : 'RP', iron: ironP(p) }));
+      const bullpen = rp.map(p => ({ ...withMomentumPitcher(p, m + chem.of(p) + (ironP(p) ? IRON_BOOST : 0)) || p, role: p === closer ? 'CL' : p === setup ? 'SETUP' : p === longMan ? 'LRP' : (PEN_MOP && S.mopKey && pitcherUnlockKey(p) === S.mopKey) ? 'MOP' : 'RP', iron: ironP(p) }));
       const fielders = lineup.filter(p => (p.assignedSlot || p.pos) !== 'DH');
       const spToday = spList[S.gamesPlayed % spList.length];
       return {
@@ -3514,7 +3686,19 @@
       const lastDay = p => { const u = pen[this._leagueKey(side.id, pitcherUnlockKey(p))]; return u ? u.last : -999; };
       // The long man is kept for long work: he is the last middle reliever used for one inning.
       const isLong = p => (p.role === 'LRP' ? 1 : 0);
-      const middle = available.filter(p => p.role !== 'CL' && p.role !== 'SETUP').sort((a, b) => (isLong(a) - isLong(b)) || (lastDay(a) - lastDay(b)));
+      // The user's manager (the same one who moves the lineup every month) gives the ball to the
+      // middle man he trusts most (PEN_TRUST: season ERA mixed with the card), whoever is rested;
+      // the ones he trusts least pitch when the game is decided (four runs or more either way)
+      // or when nobody else is available. Before, it was only whose turn it was: a 6.13 ERA
+      // threw more innings than anyone. Rivals keep the plain rotation by rest.
+      const trust = p => this._penTrust(side, p);
+      let middle = available.filter(p => p.role !== 'CL' && p.role !== 'SETUP').sort((a, b) => (isLong(a) - isLong(b)) || (lastDay(a) - lastDay(b)));
+      if (PEN_TRUST && side.id === USER_TEAM_ID && middle.length > 1 && !wantLong) {
+        const decided = Math.abs(lead) >= PEN_DECIDED;
+        const mop = p => (p.role === 'MOP' ? 1 : 0);
+        // decided game: the mop-up man first, then the least trusted; otherwise he goes last.
+        middle = middle.slice().sort((a, b) => (decided ? (MOP_SHARE_DECIDED ? lastDay(a) - lastDay(b) : (mop(b) - mop(a)) || (trust(b) - trust(a))) : (mop(a) - mop(b)) || (trust(a) - trust(b))));
+      }
       if (wantLong && middle.length) {
         return middle.slice().sort((a, b) => (isLong(b) - isLong(a)) || (pitStaOf(b) - pitStaOf(a)))[0];
       }
@@ -3538,6 +3722,15 @@
       if (inning >= 9 && (saveSpot || inning > 9)) return byRole('CL') || byRole('SETUP') || middle[0] || available[0];
       if (inning === 8 && lead >= -1 && lead <= 4) return byRole('SETUP') || middle[0] || byRole('CL');
       return middle[0] || byRole('SETUP') || byRole('CL') || available[0];
+    },
+
+    // How much the manager trusts a reliever today: his ERA this season mixed with what his card
+    // says he is (PEN_TRUST_IP innings of track record). Lower is better. Every team uses it.
+    _penTrust(side, p) {
+      const L = this.state && this.state.league;
+      const x = (L && L.stats && L.stats.pit[this._leagueKey(side.id, pitcherUnlockKey(p))]) || {};
+      const card = Math.max(2.2, Math.min(5.5, 4.05 - ((p.ovr || 72) - 72) * 0.06));
+      return ((x.er || 0) * 9 + card * PEN_TRUST_IP) / ((x.outs || 0) / 3 + PEN_TRUST_IP);
     },
 
     _leagueKey(teamId, playerKey) { return `${teamId}:${playerKey}`; },
@@ -5750,7 +5943,7 @@
       }
       const cards = [];
       const rc = p => (RARITY_COLORS && RARITY_COLORS[p.rarity]) || '#94a3b8';
-      const row = (label, p) => { cards.push(p); return `<div class="c162-tm-row" data-tm-card="${cards.length - 1}" style="--rc:${rc(p)}"><span>${label}</span><b>${cleanName(p)}</b><small>${p.year || ''}</small><i>${Math.floor(p.ovr || 0)}</i></div>`; };
+      const row = (label, p) => { cards.push(p); return `<div class="c162-tm-row" data-tm-card="${cards.length - 1}" style="--rc:${rc(p)}"><span>${label}</span><b>${cleanName(p)}${pre ? '' : this._asTag(p.role ? 'pit' : 'bat', teamId, p.role ? pitcherUnlockKey(p) : batterUnlockKey(p))}</b><small>${p.year || ''}</small><i>${Math.floor(p.ovr || 0)}</i></div>`; };
       const avg = list => (list.length ? (list.reduce((x, p) => x + (p.ovr || 0), 0) / list.length).toFixed(1) : '—');
       const penLab = bullpenLabels(RP);
       const stat = (!pre && L.stats && this.state) ? (() => {
@@ -8380,7 +8573,7 @@
         return `<tr class="c162-tr c162-tr-card${i % 2 ? ' c162-tr-alt' : ''}" data-c162-card="L${i}" title="Click to see his card">
           ${td(`<span style="font-family:'Press Start 2P',monospace;font-size:8px;color:#94a3b8;">${i + 1}</span>`, { style: 'text-align:center;' })}
           ${td(`<span class="c162-tag-pos">${slot}</span>`)}
-          ${td(s.name)}
+          ${td(s.name + this._asTag('bat', USER_TEAM_ID, batterUnlockKey(p)))}
           ${td(s.g || 0, { num: true })}
           ${td(this._wearCellHTML(p, true))}
           ${td(s.ab, { num: true })}
@@ -8423,7 +8616,7 @@
         return `<tr class="c162-tr c162-tr-card${(i + 9) % 2 ? ' c162-tr-alt' : ''}" data-c162-card="B${i}" title="Click to see his card">
           ${td(`<span style="font-family:'Press Start 2P',monospace;font-size:7.5px;color:#94a3b8;">BN</span>`, { style: 'text-align:center;' })}
           ${td(`<span class="c162-tag-pos" style="background:rgba(52,211,153,0.15);color:#34d399;border:1px solid rgba(52,211,153,0.4);">BN${i + 1}</span>`)}
-          ${td(s.name)}
+          ${td(s.name + this._asTag('bat', USER_TEAM_ID, batterUnlockKey(p)))}
           ${td(s.g || 0, { num: true })}
           ${td(this._wearCellHTML(p, false))}
           ${td(s.ab, { num: true })}
@@ -8475,7 +8668,7 @@
         const war = calcPitcherWAR(s, roleLabel);
 
         return `<tr class="c162-tr c162-tr-card${i % 2 ? ' c162-tr-alt' : ''}" data-c162-card="P${i}" title="Click to see his card">
-          ${td(s.name)}
+          ${td(s.name + this._asTag('pit', USER_TEAM_ID, pitcherUnlockKey(p)))}
           ${td(roleBadge, { style: 'text-align:center;' })}
           ${td(ipDisplay, { num: true })}
           ${td(s.h, { num: true })}
@@ -8786,6 +8979,7 @@
       if (btnLiga) btnLiga.onclick = () => { this.stopAutoSim(); this.renderLiga(); };
       // A click on a player of the tables opens his Dex card (ratings, career line).
       if (this.state.gamesPlayed >= SEASON_LENGTH) this._showHonors();
+      this._showAllStar();
       container.querySelectorAll('[data-c162-card]').forEach(el => {
         el.onclick = () => {
           const kind = el.dataset.c162Card[0], idx = Number(el.dataset.c162Card.slice(1));
@@ -9126,7 +9320,7 @@
       const tab = this._ligaTab || 'standings';
       const userLg = L.teams[USER_TEAM_ID].league;
       const lgView = this._ligaLeague || userLg;
-      const tabs = [['standings', '🏟️ STANDINGS'], ['power', '📈 POWER RANKINGS'], ['playoffs', '🏆 PLAYOFF PICTURE'], ['leaders', '📊 LEADERS'], ['awards', '🏅 AWARD RACES']];
+      const tabs = [['standings', '🏟️ STANDINGS'], ['power', '📈 POWER RANKINGS'], ['playoffs', '🏆 PLAYOFF PICTURE'], ['leaders', '📊 LEADERS'], ['awards', '🏅 AWARD RACES'], ['allstar', L.allStar ? '⭐ ALL-STARS' : '⭐ ALL-STAR VOTE']];
       container.innerHTML = `
         <div class="c162-liga-header">
           <div class="c162-liga-title">⚾ THE LEAGUE · DAY ${L.day} / ${SEASON_LENGTH}</div>
@@ -9152,6 +9346,8 @@
         body.innerHTML = this._leadersHTML();
       } else if (tab === 'awards') {
         body.innerHTML = this._awardsHTML();
+      } else if (tab === 'allstar') {
+        body.innerHTML = this._allStarHTML(lgView);
       } else {
         this._renderLigaStats(body, true);
       }

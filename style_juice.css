@@ -3839,3 +3839,69 @@ span.c162-iron {
 .c162-arena .c162-duel { grid-template-columns: minmax(0, 1fr) minmax(250px, 1.1fr) minmax(0, 1fr); gap: 12px; }
 .c162-arena .c162-duel-label { white-space: normal; }
 @media (min-width: 900px) { .c162-arena .c162-duel-card { zoom: 1.2; } }
+
+/* ── All-Star Game ── */
+.c162-as-star { color: #fde047; text-shadow: 0 0 8px rgba(250, 204, 21, .8); font-size: 1.05em; }
+.c162-as-pop { border-color: #fde047; background: radial-gradient(ellipse at 50% 0%, rgba(250, 204, 21, .26), #0b1220 62%); }
+.c162-as-score { display: flex; align-items: center; justify-content: center; gap: 14px; margin: 8px 0 10px; font-family: 'Press Start 2P', monospace; font-size: 12px; color: #94a3b8; }
+.c162-as-score b { display: inline-block; min-width: 42px; margin: 0 6px; padding: 8px 6px; border-radius: 8px; font-size: 20px; color: #fff; background: #020409; border: 1px solid rgba(148, 163, 184, .35); }
+.c162-as-score span.w { color: #fde047; } .c162-as-score span.w b { border-color: #facc15; box-shadow: 0 0 14px rgba(250, 204, 21, .5); }
+.c162-as-score i { font-style: normal; color: #64748b; }
+.c162-as-mine-title { margin: 14px 0 8px; font-family: 'Press Start 2P', monospace; font-size: 9px; letter-spacing: 1px; color: #fde047; }
+.c162-as-none { padding: 12px; border-radius: 10px; background: rgba(15, 23, 42, .8); font-family: 'Outfit', 'Segoe UI', sans-serif; font-size: 13.5px; color: #94a3b8; text-align: center; }
+.c162-as-actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 16px; }
+.c162-as-actions .c162-honors-ok { margin-top: 0; }
+.c162-as-see { padding: 12px 16px; font-family: 'Press Start 2P', monospace; font-size: 9px; color: #e2e8f0; background: #1e293b; border: 2px solid rgba(250, 204, 21, .6); }
+.c162-as-wait { padding: 30px 16px; text-align: center; font-family: 'Outfit', 'Segoe UI', sans-serif; font-size: 15px; color: #94a3b8; }
+.c162-as-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; margin: 12px 0 10px; text-align: left; }
+.c162-as-head b { font-family: 'Press Start 2P', monospace; font-size: 12px; color: #fde047; letter-spacing: 1px; }
+.c162-as-head.sm b { font-size: 9.5px; color: #7dd3fc; }
+.c162-as-head span { font-family: 'Outfit', 'Segoe UI', sans-serif; font-size: 13px; color: #94a3b8; }
+.c162-as-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.c162-as-grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.c162-as-pos { padding: 10px; border-radius: 12px; background: linear-gradient(180deg, rgba(14, 22, 40, .92), rgba(4, 8, 18, .92)); border: 1px solid rgba(148, 163, 184, .18); text-align: left; min-width: 0; }
+.c162-as-pos h4 { margin: 0 0 8px; font-family: 'Press Start 2P', monospace; font-size: 9px; color: #7dd3fc; letter-spacing: 1px; }
+.c162-as-cand { position: relative; padding: 7px 8px; margin-bottom: 5px; border-radius: 8px; background: rgba(15, 23, 42, .7); border-left: 3px solid transparent; cursor: pointer; }
+.c162-as-cand.lead { border-left-color: #facc15; background: rgba(250, 204, 21, .1); }
+.c162-as-cand.mine { box-shadow: inset 0 0 0 1px rgba(52, 211, 153, .65); }
+.c162-as-cand b { display: block; font-family: 'Outfit', 'Segoe UI', sans-serif; font-weight: 700; font-size: 13.5px; color: #e2e8f0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.c162-as-cand.mine b { color: #86efac; }
+.c162-as-cand small { display: block; font-family: 'Outfit', 'Segoe UI', sans-serif; font-size: 11.5px; color: #94a3b8; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.c162-as-bar { height: 5px; margin-top: 6px; border-radius: 3px; background: rgba(148, 163, 184, .18); overflow: hidden; }
+.c162-as-bar i { display: block; height: 100%; background: linear-gradient(90deg, #f59e0b, #fde047); }
+.c162-as-cand em { display: block; margin-top: 3px; font-style: normal; font-family: 'Press Start 2P', monospace; font-size: 7px; color: #fde047; }
+.c162-as-final { margin: 12px 0; padding: 14px; border-radius: 14px; text-align: center; border: 1px solid rgba(250, 204, 21, .45); background: radial-gradient(ellipse at 50% -10%, rgba(250, 204, 21, .2), rgba(4, 8, 18, .9) 65%); }
+.c162-as-final small { font-family: 'Press Start 2P', monospace; font-size: 8px; letter-spacing: 2px; color: #94a3b8; }
+.c162-as-final p { margin: 0; font-family: 'Outfit', 'Segoe UI', sans-serif; font-size: 14px; color: #e2e8f0; }
+.c162-as-rosters { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 14px; text-align: left; }
+.c162-as-rosters h4 { margin: 10px 0 6px; font-family: 'Press Start 2P', monospace; font-size: 8.5px; color: #7dd3fc; }
+.c162-as-row { display: grid; grid-template-columns: 30px minmax(0, 1.1fr) minmax(0, 1fr) auto; gap: 2px 8px; align-items: center; padding: 6px 8px; margin-bottom: 3px; border-radius: 7px; background: rgba(15, 23, 42, .7); border-left: 3px solid rgba(250, 204, 21, .5); cursor: pointer; }
+.c162-as-row.mine { border-left-color: #34d399; background: rgba(52, 211, 153, .12); }
+.c162-as-row span { font-family: 'Press Start 2P', monospace; font-size: 7px; color: #94a3b8; }
+.c162-as-row b { font-family: 'Outfit', 'Segoe UI', sans-serif; font-weight: 700; font-size: 13.5px; color: #e2e8f0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.c162-as-row.mine b { color: #86efac; }
+.c162-as-row small { font-family: 'Outfit', 'Segoe UI', sans-serif; font-size: 11.5px; color: #94a3b8; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.c162-as-row i { grid-column: 2 / 4; font-style: normal; font-family: 'Outfit', 'Segoe UI', sans-serif; font-size: 11.5px; color: #cbd5e1; }
+.c162-as-row em { grid-row: 1 / 3; grid-column: 4; font-style: normal; font-family: 'Press Start 2P', monospace; font-size: 7px; color: #fde047; text-align: right; }
+@media (max-width: 760px) { .c162-as-grid { grid-template-columns: 1fr 1fr; } .c162-as-grid.two, .c162-as-rosters { grid-template-columns: 1fr; } }
+@media (max-width: 460px) { .c162-as-grid { grid-template-columns: 1fr; } }
+
+/* ── Monthly report: one glance first, the detail folded ── */
+.c162-month { padding: 0; overflow: hidden; border-radius: 14px; background: linear-gradient(180deg, #0f1a30, #060a14); box-shadow: 0 10px 24px rgba(0, 0, 0, .45); }
+.c162-month-head { margin: 0; padding: 12px 16px; align-items: center; justify-content: space-between; background: linear-gradient(100deg, rgba(250, 204, 21, .2), transparent 65%); border-bottom: 1px solid rgba(250, 204, 21, .25); }
+.c162-month-rec { display: flex; align-items: baseline; gap: 10px; }
+.c162-month-rec strong { font-family: 'Press Start 2P', monospace; font-size: 20px; color: #fff; text-shadow: 0 0 14px rgba(250, 204, 21, .45); }
+.c162-month-rec.good strong { color: #86efac; } .c162-month-rec.bad strong { color: #fca5a5; }
+.c162-month-nums { margin: 0; padding: 12px 16px 4px; }
+.c162-month-nums > div { background: rgba(2, 6, 23, .6); border: 1px solid rgba(148, 163, 184, .16); }
+.c162-month-people { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; padding: 8px 16px 4px; }
+.c162-month-person { padding: 8px 10px; border-radius: 10px; background: rgba(2, 6, 23, .55); border-left: 3px solid #34d399; min-width: 0; }
+.c162-month-person.down { border-left-color: #f87171; }
+.c162-month-person small { display: block; font-family: 'Press Start 2P', monospace; font-size: 7px; letter-spacing: 1px; color: #94a3b8; }
+.c162-month-person b { display: block; margin-top: 5px; font-family: 'Outfit', 'Segoe UI', sans-serif; font-weight: 700; font-size: 14px; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.c162-month-person i { display: block; font-style: normal; font-family: 'Outfit', 'Segoe UI', sans-serif; font-size: 12px; color: #cbd5e1; }
+.c162-month-moves { margin: 8px 0 0; padding: 12px 16px 14px; border-top: 1px solid rgba(148, 163, 184, .16); background: rgba(2, 6, 23, .35); }
+.c162-month-moves p { padding-left: 2px; }
+.c162-month-moves details { margin-top: 6px; }
+.c162-month-moves summary { cursor: pointer; font-family: 'Press Start 2P', monospace; font-size: 7.5px; color: #7dd3fc; letter-spacing: 1px; }
+@media (max-width: 620px) { .c162-month-people { grid-template-columns: 1fr; } .c162-month-rec strong { font-size: 16px; } }
