@@ -164,8 +164,16 @@ def normalizar_por_ambiente(df, col_raw, col_out, col_amb, invert=False, blend=0
 
 
 # ── Longevidad y extremos: pasos comunes a bateadores y pitchers ─────────────────────────────
-LONGEVITY_SEASONS = 12      # segundo pico, mas largo
+LONGEVITY_SEASONS = 15      # segundo pico, mas largo (era 12; decision del usuario junto con quitar la regresion por menos de 7)
 LONGEVITY_WEIGHT  = 0.25    # peso del pico de 12 en el rating final
+# Pruebas (variables de entorno; sin ellas el ETL corre con los valores de arriba): LONG_SEASONS y
+# LONG_WEIGHT cambian el pico largo y su peso, NO_SHORT_PEAK=1 apaga la regresion por tener menos
+# de 7 temporadas en el pico.
+import os as _os
+LONGEVITY_SEASONS = int(_os.environ.get("LONG_SEASONS", LONGEVITY_SEASONS))
+LONGEVITY_WEIGHT = float(_os.environ.get("LONG_WEIGHT", LONGEVITY_WEIGHT))
+NO_SHORT_PEAK = _os.environ.get("NO_SHORT_PEAK", "1") == "1"   # apagada por decision del usuario; NO_SHORT_PEAK=0 la devuelve
+
 EXTREME_TOP_ANCHOR, EXTREME_LOW_ANCHOR = 75.0, 25.0
 RATING_FLOOR, RATING_CEIL = -100.0, 999.0      # los ratings no se recortan (ni arriba ni abajo) hasta ajustar_extremos
 
@@ -1317,6 +1325,25 @@ def paso_7b_ambiente_por_temporada(df, pico_df):
     factor = factor.where(cal["n_n"] >= MIN_NLB_SEASONS_PER_YEAR).interpolate(limit_direction="both")
     s["ip_eq"] = s["ip"] * np.where(nlb_s, s["yearID"].map(factor).fillna(1.0), 1.0)
     b["ip_per_year_eq"] = s["ip_eq"].groupby(s["playerID"]).mean()
+    # PRUEBA (variable de entorno STA_FULL, apagada por defecto): Stamina solo con temporadas completas.
+    # Una temporada es completa si lanzo al menos STA_FULL_SHARE de la carga de un pitcher de tiempo
+    # completo de SU ROL ese anio (percentil 75 de las temporadas de pico de abridores o de relevistas,
+    # suavizado +-2 anios). Una temporada cortada por lesion dice que estuvo lesionado, no que se cansaba.
+    import os as _os
+    _mode = _os.environ.get("STA_FULL", "")
+    if _mode:
+        STA_FULL_SHARE = 0.60
+        _role = s["is_sp_season"].astype(bool)
+        _ref = s.groupby([_role.rename("sp"), "yearID"])["ip_eq"].quantile(0.75).rename("ref").reset_index()
+        _ref["ref"] = _ref.groupby("sp")["ref"].transform(lambda v: v.rolling(5, center=True, min_periods=1).mean())
+        _key = pd.MultiIndex.from_arrays([_role.values, s["yearID"].values])
+        s["ref_load"] = _ref.set_index(["sp", "yearID"])["ref"].reindex(_key).values
+        _full = s[s["ip_eq"] >= STA_FULL_SHARE * s["ref_load"]]
+        _fmean = _full.groupby("playerID")["ip_eq"].mean()
+        _fn = _full.groupby("playerID").size()
+        _use = _fmean.where(_fn >= 2).reindex(b.index).fillna(b["ip_per_year_eq"])
+        b["ip_per_year_eq"] = _use if _mode == "full" else 0.5 * b["ip_per_year_eq"] + 0.5 * _use
+        print("  [STA_FULL=%s] pitchers con Stamina recalculada: %d" % (_mode, int((_fn.reindex(b.index).fillna(0) >= 2).sum())))
     df = df.merge(b, left_on="playerID", right_index=True, how="left")
     for c in rate_cols + ["b_ip"]:
         df[c] = df[c].fillna(df[c].mean())
@@ -1384,6 +1411,8 @@ def paso_10_normalizar_por_era(df):
     # Suavizado Bayesiano Suave (m=1) para muestras cortas de temporadas en el pico (n < 7)
     n_peak = df["total_seasons_in_peak"].fillna(7).clip(lower=1, upper=7)
     weight_seasons = np.minimum(1.0, (n_peak / (n_peak + 1.0)) * (8.0 / 7.0))
+    if NO_SHORT_PEAK:
+        weight_seasons = weight_seasons * 0 + 1.0
     # Se regresa hacia la media de las cartas con pico cercano (+-8 años), no hacia la de una Era fija.
     for col in ["h9_val", "k9_val", "bb9_val", "hr9_val", "clt_val", "sta_val"]:
         group_mean = media_deslizante(df[col], df["peak_year"])

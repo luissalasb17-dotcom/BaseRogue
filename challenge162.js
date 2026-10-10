@@ -212,8 +212,8 @@
     return bb * 0.32 + singles * 0.46 + d * 0.78 + t * 1.05 + hr * 1.40 + (s.sb || 0) * 0.20 - (s.cs || 0) * 0.40 - Math.max(0, s.ab - (s.h || 0)) * 0.27;
   }
 
-  function calcBatterWAR(s, pos = 'DH', defVal = 50) {
-    if (!s) return '0.0';
+  function batterWarValue(s, pos = 'DH', defVal = 50) {
+    if (!s) return 0;
     const ab = s.ab || 0;
     const h = s.h || 0;
     const d = s.doubles || 0;
@@ -224,7 +224,7 @@
     const singles = Math.max(0, h - (d + t + hr));
     const outs = Math.max(0, ab - h);
     const pa = ab + bb;
-    if (pa <= 0) return '0.0';
+    if (pa <= 0) return 0;
 
     // Linear weights wRAA (Wins Above Average runs)
     const wraa = (bb * 0.32) + (singles * 0.46) + (d * 0.78) + (t * 1.05) + (hr * 1.40) + (sb * 0.20) - (outs * 0.27);
@@ -240,14 +240,15 @@
     const repRuns = 20.0 * (pa / 600.0);
 
     const war = (wraa + posAdj + defRuns + repRuns) / 10.0;
-    return war.toFixed(1);
+    return war;
   }
+  function calcBatterWAR(s, pos = 'DH', defVal = 50) { return batterWarValue(s, pos, defVal).toFixed(1); }
 
-  function calcPitcherWAR(s, role = 'SP') {
-    if (!s) return '0.0';
+  function pitcherWarValue(s, role = 'SP') {
+    if (!s) return 0;
     const outs = s.outs || 0;
     const ip = outs / 3.0;
-    if (ip <= 0) return '0.0';
+    if (ip <= 0) return 0;
     const er = s.er || 0;
     const bb = s.bb || 0;
     const k = s.so || 0;
@@ -263,8 +264,9 @@
     const svLeverage = !isSP ? (sv * 0.45) : 0.0;
 
     const war = (repRuns - actualRA + kBbAdj + svLeverage) / 10.0;
-    return war.toFixed(1);
+    return war;
   }
+  function calcPitcherWAR(s, role = 'SP') { return pitcherWarValue(s, role).toFixed(1); }
 
   function buildEnemyPitcherObj(p, role) {
     const staVal = p.sta !== undefined ? p.sta : 50;
@@ -1832,14 +1834,32 @@
 
   // Awards are given per league, as in real baseball (decision of the user): pass 'AL' or 'NL'.
   const AWARD_LEAGUES = ['AL', 'NL'];
+  // Award formulas (reviewed with the user). They start from WAR, as the real votes mostly do,
+  // and add what voters reward on top of it:
+  //  - MVP: WAR plus AWARD_TEAM_WIN for every win of his team over 81 (a star on a 73-win team
+  //    loses a quarter of a win, one on a 100-win team gains half).
+  //  - Cy Young: WAR plus AWARD_CY_WIN per win and minus AWARD_CY_LOSS per loss: between two
+  //    similar seasons the 21-6 beats the 15-8.
+  //  - Reliever of the Year: relief points, not WAR. By WAR a long man with 169 innings and 2
+  //    saves beat every closer; now saves, holds and blown saves count, plus the runs he saved
+  //    against the league ERA.
+  const AWARD_TEAM_WIN = 0.03, AWARD_CY_WIN = 0.06, AWARD_CY_LOSS = 0.03;
+  function reliefPoints(p, lgEra) {
+    const ip = (p.outs || 0) / 3;
+    const saved = ip > 0 ? (lgEra - (p.er || 0) * 9 / ip) * ip / 9 : 0;
+    return (p.sv || 0) * 3 + (p.hld || 0) * 1.5 + (p.w || 0) * 2 - (p.l || 0) * 2 - (p.bs || 0) * 3 + saved * 1.5;
+  }
   function computeAwards(league, lg) {
     const q = leagueQualifiers(league, lg);
-    const war = b => parseFloat(calcBatterWAR(b, b.pos, b.def));
+    const teamOver = x => ((league.teams[x.team] ? league.teams[x.team].w - league.teams[x.team].l : 0) / 2) * (162 / Math.max(1, q.day));
+    const war = b => batterWarValue(b, b.pos, b.def) + AWARD_TEAM_WIN * teamOver(b);
     const dwar = b => parseFloat(calcBatterDWAR(b, b.pos, b.def));
+    const lgOuts = q.pit.reduce((t, p) => t + (p.outs || 0), 0);
+    const lgEra = lgOuts ? q.pit.reduce((t, p) => t + (p.er || 0), 0) * 27 / lgOuts : 4.0;
     const awards = {
       mvp: rankBy(q.batRegular, war, 5),
-      cyYoung: rankBy(q.spQual, p => parseFloat(calcPitcherWAR(p, 'SP')), 5),
-      reliever: rankBy(q.rpQual, p => parseFloat(calcPitcherWAR(p, 'RP')), 5),
+      cyYoung: rankBy(q.spQual, p => pitcherWarValue(p, 'SP') + AWARD_CY_WIN * (p.w || 0) - AWARD_CY_LOSS * (p.l || 0), 5),
+      reliever: rankBy(q.rpQual, p => reliefPoints(p, lgEra), 5),
       platinum: rankBy(q.batRegular.filter(b => b.pos !== 'DH'), dwar, 5),
       hrKing: rankBy(q.bat, b => b.hr, 5),
       battingTitle: rankBy(q.batQual, batterAVG, 5),
@@ -8939,9 +8959,9 @@
         <div class="c162-award-league">
           <div class="c162-award-league-title lg-${lg}">${lg === 'AL' ? 'AMERICAN LEAGUE' : 'NATIONAL LEAGUE'}${lg === userLg ? ' · YOUR LEAGUE' : ''}</div>
           <div class="c162-ldr-grid">
-            ${race('🏅 MVP', aw.mvp, warFmt)}
-            ${race('🧢 CY YOUNG', aw.cyYoung, warFmt)}
-            ${race('🔥 RELIEVER OF THE YEAR', aw.reliever, warFmt)}
+            ${race('🏅 MVP', aw.mvp, v => `${v.toFixed(1)} pts`)}
+            ${race('🧢 CY YOUNG', aw.cyYoung, v => `${v.toFixed(1)} pts`)}
+            ${race('🔥 RELIEVER OF THE YEAR', aw.reliever, v => `${v.toFixed(0)} pts`)}
             ${race('💎 PLATINUM GLOVE', aw.platinum, v => `${v >= 0 ? '+' : ''}${v.toFixed(1)} dWAR`)}
             ${race('💣 HOME RUN KING', aw.hrKing, v => `${v} HR`)}
             ${race('🎯 BATTING TITLE', aw.battingTitle, avg3)}

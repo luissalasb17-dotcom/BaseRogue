@@ -1524,9 +1524,17 @@ def paso_14_velocidad(df):
 
 
 # ── Longevidad y extremos: pasos comunes a bateadores y pitchers ─────────────────────────────
-LONGEVITY_SEASONS = 12      # segundo pico, mas largo
+LONGEVITY_SEASONS = 15      # segundo pico, mas largo (era 12; decision del usuario junto con quitar la regresion por menos de 7)
 DEF_OVR_POS_SHARE = 0.70    # peso del WAR defensivo (posicion incluida) en la defensa que usa el OVR
 LONGEVITY_WEIGHT  = 0.25    # peso del pico de 12 en el rating final
+# Pruebas (variables de entorno; sin ellas el ETL corre con los valores de arriba): LONG_SEASONS y
+# LONG_WEIGHT cambian el pico largo y su peso, NO_SHORT_PEAK=1 apaga la regresion por tener menos
+# de 7 temporadas en el pico.
+import os as _os
+LONGEVITY_SEASONS = int(_os.environ.get("LONG_SEASONS", LONGEVITY_SEASONS))
+LONGEVITY_WEIGHT = float(_os.environ.get("LONG_WEIGHT", LONGEVITY_WEIGHT))
+NO_SHORT_PEAK = _os.environ.get("NO_SHORT_PEAK", "1") == "1"   # apagada por decision del usuario; NO_SHORT_PEAK=0 la devuelve
+
 EXTREME_TOP_ANCHOR, EXTREME_LOW_ANCHOR = 75.0, 25.0
 RATING_FLOOR, RATING_CEIL = -100.0, 999.0      # los ratings no se recortan (ni arriba ni abajo) hasta ajustar_extremos
 
@@ -1634,6 +1642,8 @@ def paso_14b_pocas_temporadas(df):
     df = df.copy()
     n_peak = df["total_seasons_in_peak"].fillna(7).clip(lower=1, upper=7)
     w = np.minimum(1.0, (n_peak / (n_peak + 1.0)) * (8.0 / 7.0))
+    if NO_SHORT_PEAK:
+        w = w * 0 + 1.0
     for col in ["contact_val", "power_val", "eye_val", "k_avoid_val", "speed_val"]:
         df[col] = (w * df[col] + (1.0 - w) * media_deslizante(df[col], df["peak_year"])).round(1)
     return df
@@ -1887,12 +1897,15 @@ def paso_15_equipo_y_exportar(df, batting, teams, franchises, pico_df=None, war_
     # jardineros de las esquinas. Se exporta como def_ovr para que el juego recalcule igual.
     if {"rfield_career", "wardef_career", "defense_base_raw"}.issubset(df.columns):
         rf_, wd_ = df["rfield_career"], df["wardef_career"] * 10.0
-        has_ = rf_.notna() & wd_.notna() & (df["primary_pos"] != "DH")
+        # Los DH entran con sus datos reales (antes quedaban fuera y conservaban la defensa fija de
+        # la carta, ~30: mejor que un mal primera base, que si recibia todo el ajuste por posicion).
+        has_ = rf_.notna() & wd_.notna()
         base_raw = df["defense_base_raw"].astype(float)
         scale_ = 98.0 / max(1.0, float(base_raw.quantile(0.98) - base_raw.min()))
-        cur_ = 0.60 * rf_.fillna(0) + 0.40 * wd_.fillna(0)
+        cur_ = base_raw  # lo que de verdad uso la carta (incluye el valor fijo de los DH puros)
         alt_ = (1.0 - DEF_OVR_POS_SHARE) * rf_.fillna(0) + DEF_OVR_POS_SHARE * wd_.fillna(0)
         df["defense_ovr_val"] = np.where(has_, df["defense_val"] + (alt_ - cur_) * scale_, df["defense_val"]).round(1)
+        # (Se probo un piso de 25 y el usuario lo descarto por artificial.)
         df["defense_ovr_val"] = df["defense_ovr_val"].clip(1.0, 150.0)
         print("  Defensa para el OVR (posicion al %d%%): media por posicion" % int(DEF_OVR_POS_SHARE * 100))
         print(df.groupby("primary_pos")[["defense_val", "defense_ovr_val"]].mean().round(1).to_string())

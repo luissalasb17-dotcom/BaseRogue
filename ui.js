@@ -3210,35 +3210,43 @@ function initGameModeSelector() {
       const raw = h9 * 0.24 + sta * 0.32 + k9 * 0.12 + bb9 * 0.12 + hr9 * 0.10 + clt * 0.10;
       // Pitcher badges (Clutch / Captain) add 2 each, as on the card; the cuts already count them.
       const pitBadge = (p.badge_clutch ? 2 : 0) + (p.badge_captain ? 2 : 0);
-      if (raw <= 43.8) return Math.floor(50.0 + ((raw - 15.0) / 28.8) * 9.9 + pitBadge);
-      if (raw <= 54.2) return Math.floor(60.0 + ((raw - 43.8) / 10.4) * 9.9 + pitBadge);
-      if (raw <= 64.7) return Math.floor(70.0 + ((raw - 54.2) / 10.5) * 9.9 + pitBadge);
-      if (raw <= 80.9) return Math.floor(80.0 + ((raw - 64.7) / 16.2) * 9.9 + pitBadge);
-      return Math.floor(Math.min(99.9, 90.0 + Math.min(9.9, ((raw - 80.9) / 25.0) * 9.9) + pitBadge));
+      if (raw <= 43.4) return Math.floor(50.0 + ((raw - 15.0) / 28.4) * 9.9 + pitBadge);
+      if (raw <= 53.6) return Math.floor(60.0 + ((raw - 43.4) / 10.2) * 9.9 + pitBadge);
+      if (raw <= 64.0) return Math.floor(70.0 + ((raw - 53.6) / 10.4) * 9.9 + pitBadge);
+      if (raw <= 80.3) return Math.floor(80.0 + ((raw - 64.0) / 16.3) * 9.9 + pitBadge);
+      return Math.floor(Math.min(99.9, 90.0 + Math.min(9.9, ((raw - 80.3) / 25.0) * 9.9) + pitBadge));
     }
     const up = p.upgrades || {};
     const hasMods = (up.con || 0) !== 0 || (up.pwr || 0) !== 0 || (up.eye || 0) !== 0 || (up.k_avd || 0) !== 0 || (up.spd || 0) !== 0 || (up.def || 0) !== 0 || p.perm_con || p.perm_pwr || p.perm_eye || p.perm_spd || p.perm_def;
     if (p.ovr !== undefined && !hasMods && p.kavd === undefined) return Math.floor(p.ovr);
 
-    const con = Math.max(1, (p.con !== undefined ? p.con : (p.contact_val !== undefined ? p.contact_val : 50)) + (up.con || 0) + (p.perm_con || 0));
-    const pwr = Math.max(1, (p.pwr !== undefined ? p.pwr : (p.power_val !== undefined ? p.power_val : 50)) + (up.pwr || 0) + (p.perm_pwr || 0));
-    const eye = Math.max(1, (p.eye !== undefined ? p.eye : (p.eye_val !== undefined ? p.eye_val : 50)) + (up.eye || 0) + (p.perm_eye || 0));
-    const kavd = Math.max(1, (p.kavd !== undefined ? p.kavd : (p.k_avd !== undefined ? p.k_avd : (p.k_avoid !== undefined ? p.k_avoid : (p.k_avoid_val !== undefined ? p.k_avoid_val : 50)))) + (up.k_avd || 0) + (p.perm_kavd || 0));
-    const spd = Math.max(1, (p.spd !== undefined ? p.spd : (p.speed_val !== undefined ? p.speed_val : 50)) + (up.spd || 0) + (p.perm_spd || 0));
-    const def = Math.max(1, (p.def !== undefined ? p.def : (p.defense_val !== undefined ? p.defense_val : 50)) + (up.def || 0) + (p.perm_def || 0));
-    // The OVR uses the defense with more weight on the position (def_ovr of the card, lahman_etl_v5.py); upgrades move it the same.
+    // score(1) = with upgrades, score(0) = the bare card. A card that brings its own OVR keeps it as
+    // the anchor and only the difference the upgrades make is added: the recalculation works with
+    // whole ratings and lands one point under the card on a third of them, so a +1 upgrade could
+    // show the OVR going DOWN.
+    const score = (m) => {
+      const con = Math.max(1, (p.con !== undefined ? p.con : (p.contact_val !== undefined ? p.contact_val : 50)) + (up.con || 0) * m + (p.perm_con || 0) * m);
+      const pwr = Math.max(1, (p.pwr !== undefined ? p.pwr : (p.power_val !== undefined ? p.power_val : 50)) + (up.pwr || 0) * m + (p.perm_pwr || 0) * m);
+      const eye = Math.max(1, (p.eye !== undefined ? p.eye : (p.eye_val !== undefined ? p.eye_val : 50)) + (up.eye || 0) * m + (p.perm_eye || 0) * m);
+      const kavd = Math.max(1, (p.kavd !== undefined ? p.kavd : (p.k_avd !== undefined ? p.k_avd : (p.k_avoid !== undefined ? p.k_avoid : (p.k_avoid_val !== undefined ? p.k_avoid_val : 50)))) + (up.k_avd || 0) * m + (p.perm_kavd || 0) * m);
+      const spd = Math.max(1, (p.spd !== undefined ? p.spd : (p.speed_val !== undefined ? p.speed_val : 50)) + (up.spd || 0) * m + (p.perm_spd || 0) * m);
+      const def = Math.max(1, (p.def !== undefined ? p.def : (p.defense_val !== undefined ? p.defense_val : 50)) + (up.def || 0) * m + (p.perm_def || 0) * m);
+      // The OVR uses the defense with more weight on the position (def_ovr of the card, lahman_etl_v5.py); upgrades move it the same.
     const defOvr = def + ((p.def_ovr !== undefined && p.def !== undefined) ? p.def_ovr - p.def : 0);
     const raw = con * 0.26 + pwr * 0.26 + eye * 0.12 + defOvr * 0.16 + spd * 0.10 + kavd * 0.10;
-    // Cut points = pool percentiles of the last lahman_etl_v5.py run (see paso_15); update them if the ETL changes.
-    let base;
-    if (raw <= 35.8) base = 50.0 + ((raw - 10.0) / 25.8) * 9.9;
-    else if (raw <= 44.9) base = 60.0 + ((raw - 35.8) / 9.1) * 9.9;
-    else if (raw <= 55.8) base = 70.0 + ((raw - 44.9) / 10.9) * 9.9;
-    else if (raw <= 73.8) base = 80.0 + ((raw - 55.8) / 18.0) * 9.9;
-    else base = 90.0 + Math.min(9.9, ((raw - 73.8) / 25.0) * 9.9);
-    // Clutch / Captain badges add +2 OVR each, as in the ETL (paso_15).
-    const badge = ((p.clutch || p.is_clutch) ? 2 : 0) + ((p.captain || p.is_captain) ? 2 : 0);
-    return Math.floor(Math.max(50, Math.min(99.9, base + badge)));
+      // Cut points = pool percentiles of the last lahman_etl_v5.py run (see paso_15); update them if the ETL changes.
+      let base;
+      if (raw <= 35.5) base = 50.0 + ((raw - 10.0) / 25.5) * 9.9;
+      else if (raw <= 44.6) base = 60.0 + ((raw - 35.5) / 9.1) * 9.9;
+      else if (raw <= 55.0) base = 70.0 + ((raw - 44.6) / 10.4) * 9.9;
+      else if (raw <= 72.9) base = 80.0 + ((raw - 55.0) / 17.9) * 9.9;
+      else base = 90.0 + Math.min(9.9, ((raw - 72.9) / 25.0) * 9.9);
+      // Clutch / Captain badges add +2 OVR each, as in the ETL (paso_15).
+      const badge = ((p.clutch || p.is_clutch) ? 2 : 0) + ((p.captain || p.is_captain) ? 2 : 0);
+      return base + badge;
+    };
+    const anchored = p.ovr !== undefined && p.kavd === undefined ? Number(p.ovr) + (score(1) - score(0)) : score(1);
+    return Math.floor(Math.max(50, Math.min(99.9, anchored)));
   }
   window.getPlayerOvr = getPlayerOvr;
 
