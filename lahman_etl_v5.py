@@ -1525,6 +1525,7 @@ def paso_14_velocidad(df):
 
 # ── Longevidad y extremos: pasos comunes a bateadores y pitchers ─────────────────────────────
 LONGEVITY_SEASONS = 12      # segundo pico, mas largo
+DEF_OVR_POS_SHARE = 0.70    # peso del WAR defensivo (posicion incluida) en la defensa que usa el OVR
 LONGEVITY_WEIGHT  = 0.25    # peso del pico de 12 en el rating final
 EXTREME_TOP_ANCHOR, EXTREME_LOW_ANCHOR = 75.0, 25.0
 RATING_FLOOR, RATING_CEIL = -100.0, 999.0      # los ratings no se recortan (ni arriba ni abajo) hasta ajustar_extremos
@@ -1878,11 +1879,30 @@ def paso_15_equipo_y_exportar(df, batting, teams, franchises, pico_df=None, war_
     # (decision del usuario tras comparar contra el WAR: la Defensa es lo que mas explica el WAR
     # -29%- y pesaba 12%; habia 24 primeras bases Legendary contra 6 campocortos. Con 16% entran
     # Ozzie Smith, Brooks Robinson, Trammell e Ivan Rodriguez.)
+    # Defensa PARA EL OVR (decision del usuario; la de la carta no cambia). La nota de defensa de
+    # la carta mezcla 60% carreras de fildeo contra su posicion (Rfield) y 40% WAR defensivo, que
+    # es el que trae la dificultad de la posicion: un campocorto medio y un primera base medio
+    # quedaban a solo 15 puntos. Para el OVR la posicion pesa DEF_OVR_POS_SHARE (70%, el "punto
+    # medio" entre lo de hoy y el 100%): suben receptores y campocortos, bajan primeras bases y
+    # jardineros de las esquinas. Se exporta como def_ovr para que el juego recalcule igual.
+    if {"rfield_career", "wardef_career", "defense_base_raw"}.issubset(df.columns):
+        rf_, wd_ = df["rfield_career"], df["wardef_career"] * 10.0
+        has_ = rf_.notna() & wd_.notna() & (df["primary_pos"] != "DH")
+        base_raw = df["defense_base_raw"].astype(float)
+        scale_ = 98.0 / max(1.0, float(base_raw.quantile(0.98) - base_raw.min()))
+        cur_ = 0.60 * rf_.fillna(0) + 0.40 * wd_.fillna(0)
+        alt_ = (1.0 - DEF_OVR_POS_SHARE) * rf_.fillna(0) + DEF_OVR_POS_SHARE * wd_.fillna(0)
+        df["defense_ovr_val"] = np.where(has_, df["defense_val"] + (alt_ - cur_) * scale_, df["defense_val"]).round(1)
+        df["defense_ovr_val"] = df["defense_ovr_val"].clip(1.0, 150.0)
+        print("  Defensa para el OVR (posicion al %d%%): media por posicion" % int(DEF_OVR_POS_SHARE * 100))
+        print(df.groupby("primary_pos")[["defense_val", "defense_ovr_val"]].mean().round(1).to_string())
+    else:
+        df["defense_ovr_val"] = df["defense_val"]
     df["raw_ovr"] = (
         df["contact_val"] * 0.26 +
         df["power_val"]   * 0.26 +
         df["eye_val"]     * 0.12 +
-        df["defense_val"] * 0.16 +
+        df["defense_ovr_val"] * 0.16 +
         df["speed_val"]   * 0.10 +
         df["k_avoid_val"] * 0.10
     )
@@ -1969,7 +1989,7 @@ def paso_15_equipo_y_exportar(df, batting, teams, franchises, pico_df=None, war_
         "career_pa","career_ab","career_h","career_hr","career_sb","career_bb","career_so",
         "seasons","bats",
         "ba","obp","iso","k_rate","bb_rate",
-        "contact_val","power_val","eye_val","k_avoid_val","speed_val","defense_val",
+        "contact_val","power_val","eye_val","k_avoid_val","speed_val","defense_val","defense_ovr_val",
         "con_grade","pow_grade","eye_grade","k_avd_grade","spd_grade","def_grade",
         "avg_attr_score","rarity",
         "is_allstar","is_hof","allstar_selections","gold_gloves","gg_bonus",
@@ -2031,7 +2051,7 @@ def paso_15_equipo_y_exportar(df, batting, teams, franchises, pico_df=None, war_
             f'debut_year: {int(r["debut_year"])}, last_year: {int(r["last_year"])}, '
             f'con: {int(r["contact_val"])}, pwr: {int(r["power_val"])}, '
             f'eye: {int(r["eye_val"])}, k_avd: {int(r["k_avoid_val"])}, spd: {int(r["speed_val"])}, '
-            f'def: {int(r["defense_val"])}, '
+            f'def: {int(r["defense_val"])}, def_ovr: {float(r.get("defense_ovr_val", r["defense_val"])):.1f}, '
             f'con_grade: "{r["con_grade"]}", pwr_grade: "{r["pow_grade"]}", '
             f'eye_grade: "{r["eye_grade"]}", k_avd_grade: "{r["k_avd_grade"]}", '
             f'spd_grade: "{r["spd_grade"]}", def_grade: "{r["def_grade"]}", '

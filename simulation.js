@@ -1466,8 +1466,19 @@
 
     // ── MID-INNING DEFENSE CHALLENGE (Bottom of the Inning Event) ─────────────
     generateMidInningDefenseEvent(forInning) {
-      const defPositions = ['C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF'];
-      const pos = defPositions[Math.floor(Math.random() * defPositions.length)];
+      // The play goes more often to the positions that handle more chances (it used to be one
+      // in eight for everybody): a good glove at shortstop or in center is tested more than one
+      // at first base, which is what makes it worth more.
+      // The catcher is up with the shortstop: few batted balls, but he is in every pitch (steals,
+      // plays at the plate, balls in the dirt) and it is the most demanding glove on the field.
+      // How much defense is worth at each position, from real data: the spread (standard deviation)
+      // of fielding runs per full season among regulars, AL/NL 1947-2025 (Baseball-Reference:
+      // runs_field, and runs_defense for catchers, whose value is in the running game and not in
+      // batted balls). CF 10.1, SS 10.0, 3B 9.7, 2B 9.0, RF 9.0, LF 8.7, C 8.1, 1B 6.8 runs.
+      // Counting only who gets the ball left the catcher at 8% (user: his defense matters more).
+      const DEF_EVENT_WEIGHT = { CF: 14.1, SS: 14.0, '3B': 13.6, '2B': 12.6, RF: 12.6, LF: 12.2, C: 11.3, '1B': 9.5 };
+      let defRoll = Math.random() * Object.values(DEF_EVENT_WEIGHT).reduce((t, v) => t + v, 0);
+      const pos = Object.keys(DEF_EVENT_WEIGHT).find(k => (defRoll -= DEF_EVENT_WEIGHT[k]) < 0) || 'SS';
 
       const scenarioDefs = {
         'C': [

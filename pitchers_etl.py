@@ -1404,9 +1404,26 @@ def paso_10_normalizar_por_era(df):
 # cerrador. Con los pesos planos de antes (20/20/20/15/15/10) el K/9 valia tanto como el H/9:
 # entraban a Legendary pitchers de mucho ponche y poco resultado (Toad Ramsey, ERA+ 123) y
 # relevistas de muestra chica (Booker McDaniel, 385 IP), y quedaban fuera Palmer y Spahn.
-def paso_11_ovr_rareza(df):
+# Insignias de pitchers (decision del usuario; antes solo las tenian los bateadores), con el mismo
+# criterio: Clutch = premios de postemporada y del Juego de Estrellas, Captain = premios de
+# liderazgo mas la lista de capitanes oficiales. Cada una suma BADGE_OVR al OVR.
+CLUTCH_AWARDS = {'Babe Ruth Award', 'ALCS MVP', 'NLCS MVP', 'All-Star Game MVP', 'World Series MVP'}
+CAPTAIN_AWARDS = {'Roberto Clemente Award', 'Lou Gehrig Memorial Award', 'Hutch Award', 'Branch Rickey Award'}
+OFFICIAL_CAPTAIN_PITCHERS = {'guidrro01', 'koufasa01'}
+BADGE_OVR = 2.0
+
+
+def paso_11_ovr_rareza(df, awards=None):
     print("\n  PASO 11: OVR y Rareza (24% H/9, 32% STA, 12% K/9, 12% BB/9, 10% HR/9, 10% CLT)...")
     df = df.copy()
+    if awards is not None and len(awards):
+        df["is_clutch"] = df["playerID"].isin(set(awards[awards["awardID"].isin(CLUTCH_AWARDS)]["playerID"]))
+        df["is_captain"] = df["playerID"].isin(set(awards[awards["awardID"].isin(CAPTAIN_AWARDS)]["playerID"]) | OFFICIAL_CAPTAIN_PITCHERS)
+    else:
+        df["is_clutch"] = False
+        df["is_captain"] = False
+    badge = (df["is_clutch"].astype(int) + df["is_captain"].astype(int)) * BADGE_OVR
+    print(f"  Insignias: Clutch={int(df['is_clutch'].sum())} | Captain={int(df['is_captain'].sum())}")
 
     df["raw_ovr"] = (
         df["h9_val"]  * 0.24 +
@@ -1421,6 +1438,35 @@ def paso_11_ovr_rareza(df):
     p65  = float(df["raw_ovr"].quantile(0.65))
     p85  = float(df["raw_ovr"].quantile(0.85))
     p975 = float(df["raw_ovr"].quantile(0.975))
+    cuts = [p35, p65, p85, p975]
+
+    def ovr_with(c):
+        c35, c65, c85, c975 = c
+        r = df["raw_ovr"].astype(float)
+        res = np.where(r <= c35, 50.0 + ((r - 15.0) / max(0.1, c35 - 15.0)) * 9.9,
+              np.where(r <= c65, 60.0 + ((r - c35) / max(0.1, c65 - c35)) * 9.9,
+              np.where(r <= c85, 70.0 + ((r - c65) / max(0.1, c85 - c65)) * 9.9,
+              np.where(r <= c975, 80.0 + ((r - c85) / max(0.1, c975 - c85)) * 9.9,
+                       90.0 + np.minimum(9.9, ((r - c975) / 25.0) * 9.9)))))
+        return (pd.Series(np.round(res, 1), index=df.index) + badge).clip(50.0, 99.9)  # tope 99.9, como los bateadores
+
+    # Cupo estricto, igual que en bateadores: los cortes se mueven hasta que cada rareza tenga
+    # su parte CONTANDO a quien sube por insignia (si no, las insignias agrandarian el cupo).
+    targets = [(0, 60.0, 0.65), (1, 70.0, 0.35), (2, 80.0, 0.15), (3, 90.0, 0.025)]
+    lo_raw, hi_raw = float(df["raw_ovr"].min()), float(df["raw_ovr"].max())
+    for _ in range(6):
+        for idx, thr, share in reversed(targets):
+            lo, hi = (cuts[idx - 1] + 0.05 if idx else lo_raw), (cuts[idx + 1] - 0.05 if idx < 3 else hi_raw)
+            for _ in range(40):
+                mid = (lo + hi) / 2
+                trial = cuts[:]; trial[idx] = mid
+                if float((ovr_with(trial) >= thr).mean()) > share:
+                    lo = mid   # demasiadas cartas por encima: el corte sube
+                else:
+                    hi = mid
+            cuts[idx] = (lo + hi) / 2
+    p35, p65, p85, p975 = cuts
+    print(f"  Cortes de raw (para el recalculo de OVR del juego): {p35:.1f} / {p65:.1f} / {p85:.1f} / {p975:.1f}")
 
     def map_to_cosmetic_ovr_p(r):
         if r is None or pd.isna(r):
@@ -1438,7 +1484,7 @@ def paso_11_ovr_rareza(df):
             res = 90.0 + min(9.9, ((val - p975) / 25.0) * 9.9)
         return round(res, 1)
 
-    df["ovr"]    = df["raw_ovr"].apply(map_to_cosmetic_ovr_p).clip(50.0, 99.9).round(1)
+    df["ovr"]    = (df["raw_ovr"].apply(map_to_cosmetic_ovr_p) + badge).clip(50.0, 99.9).round(1)
     df["rarity"] = df["ovr"].apply(asignar_rareza)
 
     for col, gcol in [
@@ -1690,7 +1736,7 @@ def paso_12_exportar(df, pitching, teams, franchises, pico_df=None, war_pitch=No
         "h9_grade", "k9_grade", "bb9_grade", "hr9_grade", "sta_grade", "clt_grade", "clu_grade",
         "ovr", "rarity",
         "is_allstar", "is_hof", "allstar_selections",
-        "defense_source",
+        "defense_source", "is_clutch", "is_captain",
     ]
     keep_cols = [c for c in keep_cols if c in df.columns]
     final = df[keep_cols].copy()
@@ -1739,6 +1785,8 @@ def paso_12_exportar(df, pitching, teams, franchises, pico_df=None, war_pitch=No
             f'rarity: "{r["rarity"]}", '
             f'allstars: {int(r["allstar_selections"])}, '
             f'hof: {"true" if r["is_hof"] else "false"}, '
+            f'badge_clutch: {"true" if r.get("is_clutch", False) else "false"}, '
+            f'badge_captain: {"true" if r.get("is_captain", False) else "false"}, '
             f'h9_stat: {float(r.get("peak_h9", 0.0)):.2f}, '
             f'k9_stat: {float(r.get("peak_k9", 0.0)):.2f}, '
             f'bb9_stat: {float(r.get("peak_bb9", 0.0)):.2f}, '
@@ -1837,7 +1885,7 @@ def main():
     eligible, pico_df   = calcular_ratings(7)
     eligible      = paso_10b_longevidad(eligible, eligible12, pico_12)
     eligible      = paso_10c_extremos(eligible)
-    eligible      = paso_11_ovr_rareza(eligible)
+    eligible      = paso_11_ovr_rareza(eligible, awards)
     final         = paso_12_exportar(eligible, pitching, teams, franchises, pico_df, war_pitch, people)
 
     reporte_final(final)

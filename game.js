@@ -501,11 +501,13 @@
     const kavd = (p.k_avd !== undefined ? p.k_avd : (p.k_avoid !== undefined ? p.k_avoid : (p.k_avoid_val !== undefined ? p.k_avoid_val : con))) + ((p.upgrades && p.upgrades.k_avd) || 0);
     const spd = (p.spd || 0) + ((p.upgrades && p.upgrades.spd) || 0);
     const def = (p.def || 0) + ((p.upgrades && p.upgrades.def) || 0);
-    const raw = con * 0.26 + pwr * 0.26 + eye * 0.12 + def * 0.16 + spd * 0.10 + kavd * 0.10;
+    // The OVR uses the defense with more weight on the position (def_ovr of the card, lahman_etl_v5.py); upgrades move it the same.
+    const defOvr = def + ((p.def_ovr !== undefined && p.def !== undefined) ? p.def_ovr - p.def : 0);
+    const raw = con * 0.26 + pwr * 0.26 + eye * 0.12 + defOvr * 0.16 + spd * 0.10 + kavd * 0.10;
     // Cut points = pool percentiles of the last lahman_etl_v5.py run (see paso_15); update them if the ETL changes.
     let base;
-    if (raw <= 35.7) base = 50.0 + ((raw - 10.0) / 25.7) * 9.9;
-    else if (raw <= 44.9) base = 60.0 + ((raw - 35.7) / 9.2) * 9.9;
+    if (raw <= 35.8) base = 50.0 + ((raw - 10.0) / 25.8) * 9.9;
+    else if (raw <= 44.9) base = 60.0 + ((raw - 35.8) / 9.1) * 9.9;
     else if (raw <= 55.8) base = 70.0 + ((raw - 44.9) / 10.9) * 9.9;
     else if (raw <= 73.8) base = 80.0 + ((raw - 55.8) / 18.0) * 9.9;
     else base = 90.0 + Math.min(9.9, ((raw - 73.8) / 25.0) * 9.9);

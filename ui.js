@@ -551,8 +551,8 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
   /** Master render for the 9-round draft. Called every time a pick is made. */
   function getPlayerBadgeIconsHTML(player, slot = null) {
     if (!player) return '';
-    const isClutch = !!(player.clutch || player.is_clutch);
-    const isCaptain = !!(player.captain || player.is_captain);
+    const isClutch = !!(player.clutch || player.is_clutch || player.badge_clutch);
+    const isCaptain = !!(player.captain || player.is_captain || player.badge_captain);
     const isInterEra = !!player.isInterEra;
     const isChallengeWinner = !!(window.Challenge162 && window.Challenge162.isUnlocked(player));
     const isInjured = !!(player.isInjured || (player.upgrades && player.upgrades.con <= -15));
@@ -3208,11 +3208,13 @@ function initGameModeSelector() {
       // Same recipe as pitchers_etl.py (paso_11): 24% H/9, 32% STA, 12% K/9, 12% BB/9, 10% HR/9, 10% CLT.
       // The cut points are the pool percentiles (35 / 65 / 85 / 97.5) of the last ETL run; update them if the ETL changes.
       const raw = h9 * 0.24 + sta * 0.32 + k9 * 0.12 + bb9 * 0.12 + hr9 * 0.10 + clt * 0.10;
-      if (raw <= 43.8) return Math.floor(50.0 + ((raw - 15.0) / 28.8) * 9.9);
-      if (raw <= 54.2) return Math.floor(60.0 + ((raw - 43.8) / 10.4) * 9.9);
-      if (raw <= 64.6) return Math.floor(70.0 + ((raw - 54.2) / 10.4) * 9.9);
-      if (raw <= 79.5) return Math.floor(80.0 + ((raw - 64.6) / 14.9) * 9.9);
-      return Math.floor(90.0 + Math.min(9.9, ((raw - 79.5) / 25.0) * 9.9));
+      // Pitcher badges (Clutch / Captain) add 2 each, as on the card; the cuts already count them.
+      const pitBadge = (p.badge_clutch ? 2 : 0) + (p.badge_captain ? 2 : 0);
+      if (raw <= 43.8) return Math.floor(50.0 + ((raw - 15.0) / 28.8) * 9.9 + pitBadge);
+      if (raw <= 54.2) return Math.floor(60.0 + ((raw - 43.8) / 10.4) * 9.9 + pitBadge);
+      if (raw <= 64.7) return Math.floor(70.0 + ((raw - 54.2) / 10.5) * 9.9 + pitBadge);
+      if (raw <= 80.9) return Math.floor(80.0 + ((raw - 64.7) / 16.2) * 9.9 + pitBadge);
+      return Math.floor(Math.min(99.9, 90.0 + Math.min(9.9, ((raw - 80.9) / 25.0) * 9.9) + pitBadge));
     }
     const up = p.upgrades || {};
     const hasMods = (up.con || 0) !== 0 || (up.pwr || 0) !== 0 || (up.eye || 0) !== 0 || (up.k_avd || 0) !== 0 || (up.spd || 0) !== 0 || (up.def || 0) !== 0 || p.perm_con || p.perm_pwr || p.perm_eye || p.perm_spd || p.perm_def;
@@ -3224,11 +3226,13 @@ function initGameModeSelector() {
     const kavd = Math.max(1, (p.kavd !== undefined ? p.kavd : (p.k_avd !== undefined ? p.k_avd : (p.k_avoid !== undefined ? p.k_avoid : (p.k_avoid_val !== undefined ? p.k_avoid_val : 50)))) + (up.k_avd || 0) + (p.perm_kavd || 0));
     const spd = Math.max(1, (p.spd !== undefined ? p.spd : (p.speed_val !== undefined ? p.speed_val : 50)) + (up.spd || 0) + (p.perm_spd || 0));
     const def = Math.max(1, (p.def !== undefined ? p.def : (p.defense_val !== undefined ? p.defense_val : 50)) + (up.def || 0) + (p.perm_def || 0));
-    const raw = con * 0.26 + pwr * 0.26 + eye * 0.12 + def * 0.16 + spd * 0.10 + kavd * 0.10;
+    // The OVR uses the defense with more weight on the position (def_ovr of the card, lahman_etl_v5.py); upgrades move it the same.
+    const defOvr = def + ((p.def_ovr !== undefined && p.def !== undefined) ? p.def_ovr - p.def : 0);
+    const raw = con * 0.26 + pwr * 0.26 + eye * 0.12 + defOvr * 0.16 + spd * 0.10 + kavd * 0.10;
     // Cut points = pool percentiles of the last lahman_etl_v5.py run (see paso_15); update them if the ETL changes.
     let base;
-    if (raw <= 35.7) base = 50.0 + ((raw - 10.0) / 25.7) * 9.9;
-    else if (raw <= 44.9) base = 60.0 + ((raw - 35.7) / 9.2) * 9.9;
+    if (raw <= 35.8) base = 50.0 + ((raw - 10.0) / 25.8) * 9.9;
+    else if (raw <= 44.9) base = 60.0 + ((raw - 35.8) / 9.1) * 9.9;
     else if (raw <= 55.8) base = 70.0 + ((raw - 44.9) / 10.9) * 9.9;
     else if (raw <= 73.8) base = 80.0 + ((raw - 55.8) / 18.0) * 9.9;
     else base = 90.0 + Math.min(9.9, ((raw - 73.8) / 25.0) * 9.9);
@@ -3524,8 +3528,8 @@ function initGameModeSelector() {
       }
     }
 
-    const isClutch = !!(player.clutch || player.is_clutch);
-    const isCaptain = !!(player.captain || player.is_captain);
+    const isClutch = !!(player.clutch || player.is_clutch || player.badge_clutch);
+    const isCaptain = !!(player.captain || player.is_captain || player.badge_captain);
     const isDoubleBadge = isClutch && isCaptain;
 
     const clutchToolTip = window.t ? window.t('badge.clutch_tooltip', 'Clutch Player: +4% de probabilidad de hit y +4% de HR con corredores en posición de anotar durante la última entrada.') : 'Clutch Player: +4% de probabilidad de hit y +4% de HR con corredores en posición de anotar durante la última entrada.';
