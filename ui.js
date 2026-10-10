@@ -3234,7 +3234,7 @@ function initGameModeSelector() {
       // The OVR uses the defense with more weight on the position (def_ovr of the card, lahman_etl_v5.py); upgrades move it the same.
     const defOvr = def + ((p.def_ovr !== undefined && p.def !== undefined) ? p.def_ovr - p.def : 0);
     // Defense weight by position (DEF_OVR_WEIGHT_BY_POS of lahman_etl_v5.py): 16% on average; what a position weighs less or more goes to the bat.
-    const wDef = ({ CF: 0.1715, SS: 0.1698, '3B': 0.1647, '2B': 0.1528, RF: 0.1528, LF: 0.1477, C: 0.1375, '1B': 0.1154, DH: 0.1154 })[p.pos] || 0.16;
+    const wDef = p.def_w || ({ CF: 0.1715, SS: 0.1698, '3B': 0.1647, '2B': 0.1528, RF: 0.1528, LF: 0.1477, C: 0.1375, '1B': 0.1154, DH: 0.1154 })[p.pos] || 0.16; // def_w: blended by the games he played at each position
     const raw = (con * 0.26 + pwr * 0.26 + eye * 0.12) * (1 + (0.16 - wDef) / 0.64) + defOvr * wDef + spd * 0.10 + kavd * 0.10;
       // Cut points = pool percentiles of the last lahman_etl_v5.py run (see paso_15); update them if the ETL changes.
       let base;

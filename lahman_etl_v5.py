@@ -62,6 +62,12 @@ POS_DISPLAY_MAP = {
 
 LEGEND_POS_OVERRIDES = {}
 
+# Posicion, equipo y era de la carta (decision del usuario): 75% pico de 7 + 25% CARRERA completa
+# (antes 80 / 20). Se probo 25% de pico largo y el usuario lo corrigio: queria carrera.
+# _LONG_PICO solo marca que ya corrio el pico largo (la corrida del pico de 7 es la que cuenta).
+LABEL_PEAK_SHARE = 0.75
+_LONG_PICO = {"off": None, "tot": None}
+
 
 # Sub-eras de Genesis SOLO para el calculo de ratings (priors y normalizacion). La etiqueta de
 # era de la carta, que usa el juego para las sinergias, no cambia. Genesis junta tres epocas
@@ -669,6 +675,23 @@ def paso_6_posicion_bateadores(fielding, fielding_of, appearances=None, pico_df=
     merged_pos["peak_pct"] = merged_pos["peak_pct"].fillna(0.0)
 
     merged_pos["hybrid_score"] = 0.80 * merged_pos["peak_pct"] + 0.20 * merged_pos["career_pct"]
+    _long = _LONG_PICO.get("off")
+    if _long is not None and career_app is not None and not career_app.empty:
+        _la = career_app.merge(_long[["playerID", "yearID"]].drop_duplicates(), on=["playerID", "yearID"], how="inner")
+        _cols = {'G_c': 'C', 'G_1b': '1B', 'G_2b': '2B', 'G_3b': '3B', 'G_ss': 'SS', 'G_lf': 'LF', 'G_cf': 'CF', 'G_rf': 'RF', 'G_dh': 'DH'}
+        _parts = []
+        for _c, _p in _cols.items():
+            if _c in _la.columns:
+                _sub = _la[["playerID", _c]].rename(columns={_c: "long_G"})
+                _sub["long_G"] = pd.to_numeric(_sub["long_G"], errors="coerce").fillna(0)
+                _sub["pos_mapped"] = _p
+                _parts.append(_sub)
+        if _parts:
+            _lg = pd.concat(_parts, ignore_index=True).groupby(["playerID", "pos_mapped"])["long_G"].sum().reset_index()
+            _lg["long_pct"] = _lg["long_G"] / _lg.groupby("playerID")["long_G"].transform("sum").replace(0, np.nan)
+            merged_pos = merged_pos.merge(_lg[["playerID", "pos_mapped", "long_pct"]], on=["playerID", "pos_mapped"], how="left")
+            merged_pos["long_pct"] = merged_pos["long_pct"].fillna(0.0)
+            merged_pos["hybrid_score"] = LABEL_PEAK_SHARE * merged_pos["peak_pct"] + (1 - LABEL_PEAK_SHARE) * merged_pos["career_pct"]
 
     primary = (
         merged_pos.sort_values("hybrid_score", ascending=False)
@@ -717,6 +740,13 @@ def paso_6_posicion_bateadores(fielding, fielding_of, appearances=None, pico_df=
 
     result = primary.merge(career_field, on="playerID", how="left")
     result = result.merge(sec_pos_str, on="playerID", how="left")
+    # Peso de la defensa en el OVR mezclado por los juegos en cada posicion (la misma mezcla
+    # 80% pico / 20% carrera que decide la posicion primaria).
+    _mp = merged_pos[merged_pos["pos_mapped"].isin(DEF_OVR_WEIGHT_BY_POS)].copy()
+    _mp["_w"] = _mp["pos_mapped"].map(DEF_OVR_WEIGHT_BY_POS) * _mp["hybrid_score"]
+    _g = _mp.groupby("playerID").agg(_w=("_w", "sum"), _s=("hybrid_score", "sum"))
+    _g["def_w_blend"] = (_g["_w"] / _g["_s"].replace(0, np.nan))
+    result = result.merge(_g[["def_w_blend"]].reset_index(), on="playerID", how="left")
     result["sec_pos"] = result["sec_pos"].fillna("")
     print(f"  Posicion primaria calculada para {len(result):,} bateadores (secundarias: Campo >= 10% / DH >= 25%)")
     return result
@@ -873,7 +903,7 @@ def paso_8_filtro_ingesta(df, allstar, hof, pure_pitcher_ids, batting):
 # ===========================================================================
 # PASO 9 - ASIGNAR ERA TEMATICA (80% WAR Pico + 20% WAR Carrera por Era)
 # ===========================================================================
-def paso_9_asignar_era(df, war_bat=None, people=None, batting=None):
+def paso_9_asignar_era(df, war_bat=None, people=None, batting=None, pico_df=None):
     """
     Asigna la Era temática usando el mismo sistema 80/20 de WAR que se usa
     para seleccionar el equipo canónico.
@@ -930,6 +960,20 @@ def paso_9_asignar_era(df, war_bat=None, people=None, batting=None):
 
     merged_era = career_era_war.merge(peak_era_war, on=["playerID", "era_label_w"], how="outer").fillna(0.0)
     merged_era["era_score"] = 0.80 * merged_era["peak_war_e"] + 0.20 * merged_era["career_war_e"]
+    _long = _LONG_PICO.get("tot")
+    if _long is not None and pico_df is not None and not pico_df.empty:
+        # Las 7 temporadas exactas del pico (antes: ano central +-3) y el pico largo en vez de la
+        # carrera. Las temporadas de WAR negativo cuentan 0: no le restan a una era.
+        _w = war_merged.copy()
+        _w["WAR"] = _w["WAR"].clip(lower=0)
+        def _by_era(pico, name):
+            yrs = pico[["playerID", "yearID"]].drop_duplicates()
+            m = _w.merge(yrs, left_on=["playerID", "year_ID"], right_on=["playerID", "yearID"], how="inner")
+            return m.groupby(["playerID", "era_label_w"])["WAR"].sum().reset_index(name=name)
+        _car = _w.groupby(["playerID", "era_label_w"])["WAR"].sum().reset_index(name="p15")
+        _e = _by_era(pico_df, "p7").merge(_car, on=["playerID", "era_label_w"], how="outer").fillna(0.0)
+        _e["era_score"] = LABEL_PEAK_SHARE * _e["p7"] + (1 - LABEL_PEAK_SHARE) * _e["p15"]
+        merged_era = _e
 
     best_era = (
         merged_era.sort_values("era_score", ascending=False)
@@ -1763,6 +1807,10 @@ NLB_TEAMS = {
 
 NL_LEAGUES = {'NNL', 'NN2', 'NAL', 'ECL', 'ANL', 'EWL', 'NSL'}
 
+EXPANSION_START = {"COL": 1993, "MIA": 1993, "ARI": 1998, "TB": 1998, "TBR": 1998, "SEA": 1977, "TOR": 1977,
+                   "SDP": 1969, "KCR": 1969, "MIL": 1969, "NYM": 1962, "HOU": 1962, "LAA": 1961, "TEX": 1961}
+
+
 def map_to_canonical_team(row):
     t = str(row.get("canonical_teamID", row.get("team", "UNK"))).strip()
     if t.lower() in ("nan", "none", "null"):
@@ -1788,6 +1836,16 @@ def map_to_canonical_team(row):
         res_team = FRANCHISE_MAP[t]
 
     if res_team:
+        # Codigos repetidos entre epocas: COL fue Columbus (AA, 1883-91) antes que Colorado, KCA los
+        # Athletics de Kansas City antes que los Royals, MIL / NYM equipos del siglo XIX. Quien se
+        # retiro antes de que naciera la franquicia moderna no pudo jugar en ella.
+        start = EXPANSION_START.get(res_team)
+        try:
+            last_y = int(float(row.get("last_year", peak_y) or peak_y))
+        except (TypeError, ValueError):
+            last_y = peak_y
+        if start and last_y < start:
+            return "OAK" if (res_team == "KCR" and last_y >= 1955) else "HIST"
         return res_team
 
     # 2. Iconic Negro League legends
@@ -1848,6 +1906,20 @@ def paso_15_equipo_y_exportar(df, batting, teams, franchises, pico_df=None, war_
             
         merged_franch = career_franch_war.merge(peak_franch_war, on=["playerID", "franch_clean"], how="outer").fillna(0.0)
         merged_franch["franch_score"] = 0.80 * merged_franch["peak_war_f"] + 0.20 * merged_franch["career_war_f"]
+        _long = _LONG_PICO.get("tot")
+        if _long is not None and pico_df is not None and not pico_df.empty:
+            _w = war_merged.copy()
+            _w["WAR"] = _w["WAR"].clip(lower=0)   # una temporada de WAR negativo no le resta a una franquicia
+            def _by_fr(pico, name):
+                yrs = pico[["playerID", "yearID"]].drop_duplicates()
+                m = _w.merge(yrs, left_on=["playerID", "year_ID"], right_on=["playerID", "yearID"], how="inner")
+                return m.groupby(["playerID", "franch_clean"])["WAR"].sum().reset_index(name=name)
+            _car = _w.groupby(["playerID", "franch_clean"])["WAR"].sum().reset_index(name="p15")
+            _f = _by_fr(pico_df, "p7").merge(_car, on=["playerID", "franch_clean"], how="outer").fillna(0.0)
+            _f["franch_score"] = LABEL_PEAK_SHARE * _f["p7"] + (1 - LABEL_PEAK_SHARE) * _f["p15"]
+            # quien no tiene WAR en ninguna temporada de pico conserva la regla anterior
+            _keep = merged_franch[~merged_franch["playerID"].isin(_f[_f["franch_score"] > 0]["playerID"])]
+            merged_franch = pd.concat([_f[_f["playerID"].isin(_f[_f["franch_score"] > 0]["playerID"])], _keep], ignore_index=True)
         
         canonical = (
             merged_franch.sort_values("franch_score", ascending=False)
@@ -1922,6 +1994,10 @@ def paso_15_equipo_y_exportar(df, batting, teams, franchises, pico_df=None, war_
     # menos o de mas en defensa va al bate (contacto, poder y ojo en proporcion). No es un bono:
     # un primera base de buen guante tambien gana menos por el.
     w_def = df["primary_pos"].map(DEF_OVR_WEIGHT_BY_POS).fillna(0.16).astype(float)
+    # Peso por la posicion de la carta (decision del usuario, "por ahora"); DEF_W_BLEND=1 lo mezcla por juegos.
+    if _os.environ.get("DEF_W_BLEND", "0") == "1" and "def_w_blend" in df.columns:
+        w_def = df["def_w_blend"].astype(float).fillna(w_def)
+    df["def_w"] = w_def.round(4)
     bat_f = 1.0 + (0.16 - w_def) / 0.64
     df["raw_ovr"] = (
         (df["contact_val"] * 0.26 +
@@ -2014,7 +2090,7 @@ def paso_15_equipo_y_exportar(df, batting, teams, franchises, pico_df=None, war_
         "career_pa","career_ab","career_h","career_hr","career_sb","career_bb","career_so",
         "seasons","bats",
         "ba","obp","iso","k_rate","bb_rate",
-        "contact_val","power_val","eye_val","k_avoid_val","speed_val","defense_val","defense_ovr_val",
+        "contact_val","power_val","eye_val","k_avoid_val","speed_val","defense_val","defense_ovr_val","def_w",
         "con_grade","pow_grade","eye_grade","k_avd_grade","spd_grade","def_grade",
         "avg_attr_score","rarity",
         "is_allstar","is_hof","allstar_selections","gold_gloves","gg_bonus",
@@ -2076,7 +2152,7 @@ def paso_15_equipo_y_exportar(df, batting, teams, franchises, pico_df=None, war_
             f'debut_year: {int(r["debut_year"])}, last_year: {int(r["last_year"])}, '
             f'con: {int(r["contact_val"])}, pwr: {int(r["power_val"])}, '
             f'eye: {int(r["eye_val"])}, k_avd: {int(r["k_avoid_val"])}, spd: {int(r["speed_val"])}, '
-            f'def: {int(r["defense_val"])}, def_ovr: {float(r.get("defense_ovr_val", r["defense_val"])):.1f}, '
+            f'def: {int(r["defense_val"])}, def_ovr: {float(r.get("defense_ovr_val", r["defense_val"])):.1f}, def_w: {float(r.get("def_w", 0.16)):.4f}, '
             f'con_grade: "{r["con_grade"]}", pwr_grade: "{r["pow_grade"]}", '
             f'eye_grade: "{r["eye_grade"]}", k_avd_grade: "{r["k_avd_grade"]}", '
             f'spd_grade: "{r["spd_grade"]}", def_grade: "{r["def_grade"]}", '
@@ -2187,7 +2263,7 @@ def main():
         hybrid = hybrid.merge(pos_data, on="playerID", how="left")
         hybrid = paso_7_enriquecer_people(hybrid, people)
         el = paso_8_filtro_ingesta(hybrid, allstar, hof, pure_pitcher_ids, batting)
-        el = paso_9_asignar_era(el, war_bat=war_bat, people=people, batting=batting)
+        el = paso_9_asignar_era(el, war_bat=war_bat, people=people, batting=batting, pico_df=pico_tot)
         el = usar_sub_eras_de_calculo(el)
         el = paso_9b_ambiente_por_temporada(el, pico_off)
         el = paso_10_atributos_raw_bateo(el)
@@ -2199,7 +2275,8 @@ def main():
         PEAK_SEASONS = 7
         return el, pico_off, pico_tot
 
-    eligible12, pico_off_12, _ = calcular_ratings(LONGEVITY_SEASONS)
+    eligible12, pico_off_12, pico_tot_12 = calcular_ratings(LONGEVITY_SEASONS)
+    _LONG_PICO["off"], _LONG_PICO["tot"] = pico_off_12, pico_tot_12
     eligible, pico_off_df, pico_tot_df = calcular_ratings(7)
     eligible         = paso_14c_longevidad(eligible, eligible12, pico_off_12)
     eligible         = paso_14d_extremos(eligible)

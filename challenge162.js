@@ -692,6 +692,30 @@
     return _poolIndex;
   }
 
+  // The nine starters and the five reserves are rolled separately, so a reserve could be much
+  // better than the starter at his own position (Bill Dickey 91 behind a 62 at catcher). The
+  // manager now starts the better man: a reserve takes the job at his PRIMARY position (or at
+  // DH) when he is RIVAL_BENCH_GAP or more above the starter, who goes to the bench. Who is on
+  // the roster does not change.
+  const RIVAL_BENCH_GAP = Infinity; // OFF until the user decides: 3 raises rival lineups 71.8 -> 76.1 OVR, 12 -> 74.3
+  function promoteRivalBench(team, bench) {
+    for (let guard = 0; guard < 9; guard++) {
+      let best = null;
+      bench.forEach((b, bi) => team.lineup.forEach((st, li) => {
+        const slot = st.assignedSlot || st.pos;
+        if (slot !== 'DH' && !canPlayerFillPrimary(b, slot)) return;
+        const gain = (b.ovr || 0) - (st.ovr || 0);
+        if (gain >= RIVAL_BENCH_GAP && (!best || gain > best.gain)) best = { bi, li, gain, slot };
+      }));
+      if (!best) break;
+      const out = team.lineup[best.li];
+      team.lineup[best.li] = { ...bench[best.bi], assignedSlot: best.slot };
+      const back = { ...out }; delete back.assignedSlot;
+      bench[best.bi] = back;
+    }
+    team.lineup = optimizeLineupArray(team.lineup);
+  }
+
   function buildLeagueRosters(teams, userCards) {
     const taken = new Set((userCards || []).filter(Boolean).map(personId));
     const out = {};
@@ -701,6 +725,7 @@
       const team = withTeamDepth(t.code, () => buildFranchiseDecadeTeam(t.code, t.decade, taken));
       const staff = withTeamDepth(t.code, () => buildFranchiseStaff(t.code, t.decade, team, taken));
       const bench = withTeamDepth(t.code, () => buildFranchiseBench(t.code, t.decade, team, taken));
+      promoteRivalBench(team, bench);
       out[id] = {
         lineup: team.lineup.map(p => [batterUnlockKey(p), p.assignedSlot]),
         bench: bench.map(batterUnlockKey),
@@ -7251,7 +7276,22 @@
             || open.find(sl => sl !== 'DH' && canPlayerFillSlot(card, sl))
             || (open.includes('DH') ? 'DH' : null);
           const b = firstEmpty(ms.bench);
-          if (spot) ms.lineup[spot] = card;
+          // No free spot he can play: he still takes the job of a clearly worse starter at a
+          // position he plays (or at DH), and that starter goes to the bench. The rest of the
+          // hand-made lineup is not touched. Before, an 88 sat behind a 66 at his own position.
+          let take = null;
+          if (!spot && b !== -1) {
+            SLOTS.forEach(sl => {
+              const cur = ms.lineup[sl];
+              if (!cur) return;
+              const fit = sl === 'DH' ? 0 : (canPlayerFillPrimary(card, sl) ? 0 : (canPlayerFillSlot(card, sl) ? -1.5 : null));
+              if (fit === null) return;
+              const gain = (card.ovr || 50) + fit - (cur.ovr || 50);
+              if (gain >= 1 && (!take || gain > take.gain)) take = { sl, gain };
+            });
+          }
+          if (take) { ms.bench[b] = ms.lineup[take.sl]; ms.lineup[take.sl] = card; }
+          else if (spot) ms.lineup[spot] = card;
           else if (b !== -1) ms.bench[b] = card;
           else if (open.length) ms.lineup[open[0]] = card;
         }
@@ -8389,7 +8429,8 @@
         const ipDec = s.outs / 3;
         const era = ipDec > 0 ? ((s.er * 9) / ipDec).toFixed(2) : '0.00';
         const whip = ipDec > 0 ? ((s.bb + s.h) / ipDec).toFixed(2) : '0.00';
-        const roleBadge = `<span class="c162-tag-role" style="background:${roleBg};">${roleLabel}</span>`;
+        const ironTag = (S.ironMan && S.ironMan[ironPitKey(p)]) ? ' <span class="c162-iron on" title="Iron Man">IM</span>' : '';
+        const roleBadge = `<span class="c162-tag-role" style="background:${roleBg};">${roleLabel}</span>${ironTag}`;
         const war = calcPitcherWAR(s, roleLabel);
 
         return `<tr class="c162-tr c162-tr-card${i % 2 ? ' c162-tr-alt' : ''}" data-c162-card="P${i}" title="Click to see his card">

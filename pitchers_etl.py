@@ -918,7 +918,10 @@ def paso_6_enriquecer_people(df, people):
 
 
 # ── PASO 7: Asignar Era temática (80% WAR Pico + 20% WAR Carrera por Era) ────
-def paso_7_asignar_era(df, war_pit=None, people=None, pitching=None):
+LABEL_PEAK_SHARE = 0.75   # era y equipo de la carta: 75% pico de 7 + 25% carrera (igual que bateadores)
+
+
+def paso_7_asignar_era(df, war_pit=None, people=None, pitching=None, pico_df=None):
     """
     Asigna Era temática usando el mismo sistema 80/20 WAR que batters.
     era_score(era) = 0.80 * WAR_Peak7_en_era + 0.20 * WAR_Career_en_era
@@ -957,6 +960,21 @@ def paso_7_asignar_era(df, war_pit=None, people=None, pitching=None):
 
     merged_era = career_era_war.merge(peak_era_war, on=["playerID", "era_label_w"], how="outer").fillna(0.0)
     merged_era["era_score"] = 0.80 * merged_era["peak_war_e"] + 0.20 * merged_era["career_war_e"]
+    # Igual que en bateadores (decision del usuario): 75% pico de 7 + 25% carrera, con las 7
+    # temporadas exactas del pico (antes: ano central +-3) y el WAR negativo contando 0.
+    if pico_df is not None and not pico_df.empty:
+        _w = war_merged.copy()
+        _w["WAR"] = _w["WAR"].clip(lower=0)
+        _pk = pico_df[["playerID", "yearID"]].drop_duplicates().copy()
+        _pk["orig"] = _pk["playerID"].str.replace("_sp", "").str.replace("_rp", "")
+        _m = _w.merge(_pk, left_on=["playerID", "year_ID"], right_on=["orig", "yearID"], how="inner")
+        _p7 = _m.groupby(["playerID_y", "era_label_w"])["WAR"].sum().reset_index(name="p7").rename(columns={"playerID_y": "playerID"})
+        _car = _w.groupby(["playerID", "era_label_w"])["WAR"].sum().reset_index(name="car")
+        _ids = _pk[["playerID", "orig"]].drop_duplicates()
+        _car = _car.rename(columns={"playerID": "orig"}).merge(_ids, on="orig", how="inner").drop(columns="orig")
+        _e = _p7.merge(_car, on=["playerID", "era_label_w"], how="outer").fillna(0.0)
+        _e["era_score"] = LABEL_PEAK_SHARE * _e["p7"] + (1 - LABEL_PEAK_SHARE) * _e["car"]
+        merged_era = _e
 
     best_era = (
         merged_era.sort_values("era_score", ascending=False)
@@ -1620,6 +1638,10 @@ NLB_TEAMS = {
 
 NL_LEAGUES = {'NNL', 'NN2', 'NAL', 'ECL', 'ANL', 'EWL', 'NSL'}
 
+EXPANSION_START = {"COL": 1993, "MIA": 1993, "ARI": 1998, "TB": 1998, "TBR": 1998, "SEA": 1977, "TOR": 1977,
+                   "SDP": 1969, "KCR": 1969, "MIL": 1969, "NYM": 1962, "HOU": 1962, "LAA": 1961, "TEX": 1961}
+
+
 def map_to_canonical_team(row):
     t = str(row.get("canonical_teamID", row.get("team", "UNK"))).strip()
     if t.lower() in ("nan", "none", "null"):
@@ -1645,6 +1667,16 @@ def map_to_canonical_team(row):
         res_team = FRANCHISE_MAP[t]
 
     if res_team:
+        # Codigos repetidos entre epocas: COL fue Columbus (AA, 1883-91) antes que Colorado, KCA los
+        # Athletics de Kansas City antes que los Royals, MIL / NYM equipos del siglo XIX. Quien se
+        # retiro antes de que naciera la franquicia moderna no pudo jugar en ella.
+        start = EXPANSION_START.get(res_team)
+        try:
+            last_y = int(float(row.get("last_year", peak_y) or peak_y))
+        except (TypeError, ValueError):
+            last_y = peak_y
+        if start and last_y < start:
+            return "OAK" if (res_team == "KCR" and last_y >= 1955) else "HIST"
         return res_team
 
     # 2. Iconic Negro League legends
@@ -1692,6 +1724,7 @@ def paso_12_exportar(df, pitching, teams, franchises, pico_df=None, war_pitch=No
         war_merged["franch_clean"] = war_merged.apply(lambda r: get_franch(r["team_ID"], r.get("lg_ID", "")), axis=1)
         
         # WAR en carrera por franquicia
+        war_merged["WAR"] = pd.to_numeric(war_merged["WAR"], errors="coerce").fillna(0).clip(lower=0)  # el WAR negativo no le resta a una franquicia
         career_franch_war = war_merged.groupby(["playerID", "franch_clean"])["WAR"].sum().reset_index(name="career_war_f")
         
         # WAR en pico 7 por franquicia
@@ -1717,7 +1750,7 @@ def paso_12_exportar(df, pitching, teams, franchises, pico_df=None, war_pitch=No
             career_franch_war = pd.concat([career_franch_war] + dual_careers, ignore_index=True)
 
         merged_franch = career_franch_war.merge(peak_franch_war, on=["playerID", "franch_clean"], how="outer").fillna(0.0)
-        merged_franch["franch_score"] = 0.80 * merged_franch["peak_war_f"] + 0.20 * merged_franch["career_war_f"]
+        merged_franch["franch_score"] = LABEL_PEAK_SHARE * merged_franch["peak_war_f"] + (1 - LABEL_PEAK_SHARE) * merged_franch["career_war_f"]
         
         canonical = (
             merged_franch.sort_values("franch_score", ascending=False)
@@ -1902,7 +1935,7 @@ def main():
         peak, pico = paso_4_pico_pitching(pitching, war_pitch, people)
         el = paso_5_filtro_ingesta(career, peak, allstar, hof, pure_pitchers, pitching)
         el = paso_6_enriquecer_people(el, people)
-        el = paso_7_asignar_era(el, war_pit=war_pitch, people=people, pitching=pitching)
+        el = paso_7_asignar_era(el, war_pit=war_pitch, people=people, pitching=pitching, pico_df=pico)
         el = paso_7b_ambiente_por_temporada(el, pico)
         el = paso_8_atributos_raw(el)
         el = paso_9_fielding_pitchers(el, war_pitch, people)
