@@ -678,7 +678,7 @@ def paso_4_pico_pitching(pitching, war_pitch, people):
     peak["career_sp_dedication"] = peak["career_sp_dedication"].fillna(0.0)
 
     # Fórmula Híbrida 80/20 de Dedicación (80% Pico Ponderado por WAR + 20% Carrera Completa):
-    peak["mean_sp_dedication"] = 0.80 * peak["peak_sp_dedication"] + 0.20 * peak["career_sp_dedication"]
+    peak["mean_sp_dedication"] = LABEL_PEAK_SHARE * peak["peak_sp_dedication"] + (1 - LABEL_PEAK_SHARE) * peak["career_sp_dedication"]
 
     total_season_counts = pico_df.groupby("playerID")["yearID"].count().reset_index(name="total_seasons_in_peak")
     peak = peak.merge(total_season_counts, on="playerID", how="left")

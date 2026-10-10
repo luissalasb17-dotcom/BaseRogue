@@ -697,7 +697,7 @@
   // manager now starts the better man: a reserve takes the job at his PRIMARY position (or at
   // DH) when he is RIVAL_BENCH_GAP or more above the starter, who goes to the bench. Who is on
   // the roster does not change.
-  const RIVAL_BENCH_GAP = Infinity; // OFF until the user decides: 3 raises rival lineups 71.8 -> 76.1 OVR, 12 -> 74.3
+  const RIVAL_BENCH_GAP = 6; // user's call (12 felt like too little)
   function promoteRivalBench(team, bench) {
     for (let guard = 0; guard < 9; guard++) {
       let best = null;
