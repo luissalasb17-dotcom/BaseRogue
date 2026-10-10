@@ -1525,6 +1525,10 @@ def paso_14_velocidad(df):
 
 # ── Longevidad y extremos: pasos comunes a bateadores y pitchers ─────────────────────────────
 LONGEVITY_SEASONS = 15      # segundo pico, mas largo (era 12; decision del usuario junto con quitar la regresion por menos de 7)
+# Carreras de fildeo que separan a los titulares de cada posicion (desvio estandar por temporada,
+# AL/NL 1947-2025); media de las ocho = 9.425. El DH usa el valor de primera base.
+_DEF_SPREAD = {"CF": 10.1, "SS": 10.0, "3B": 9.7, "2B": 9.0, "RF": 9.0, "LF": 8.7, "C": 8.1, "1B": 6.8, "DH": 6.8}
+DEF_OVR_WEIGHT_BY_POS = {p: round(0.16 * v / 9.425, 4) for p, v in _DEF_SPREAD.items()}
 DEF_OVR_POS_SHARE = 0.70    # peso del WAR defensivo (posicion incluida) en la defensa que usa el OVR
 LONGEVITY_WEIGHT  = 0.25    # peso del pico de 12 en el rating final
 # Pruebas (variables de entorno; sin ellas el ETL corre con los valores de arriba): LONG_SEASONS y
@@ -1911,11 +1915,19 @@ def paso_15_equipo_y_exportar(df, batting, teams, franchises, pico_df=None, war_
         print(df.groupby("primary_pos")[["defense_val", "defense_ovr_val"]].mean().round(1).to_string())
     else:
         df["defense_ovr_val"] = df["defense_val"]
+    # Peso de la defensa segun la posicion (decision del usuario, a raiz de Frank Thomas por debajo
+    # de Stovey, Sisler y Palmeiro): el 16% es el peso MEDIO; cada posicion lleva 16 x (cuanto
+    # separa el guante a los titulares de esa posicion / media de las ocho), con el mismo dato real
+    # que usa el evento defensivo (DEF_EVENT_WEIGHT de simulation.js). Lo que una posicion pesa de
+    # menos o de mas en defensa va al bate (contacto, poder y ojo en proporcion). No es un bono:
+    # un primera base de buen guante tambien gana menos por el.
+    w_def = df["primary_pos"].map(DEF_OVR_WEIGHT_BY_POS).fillna(0.16).astype(float)
+    bat_f = 1.0 + (0.16 - w_def) / 0.64
     df["raw_ovr"] = (
-        df["contact_val"] * 0.26 +
-        df["power_val"]   * 0.26 +
-        df["eye_val"]     * 0.12 +
-        df["defense_ovr_val"] * 0.16 +
+        (df["contact_val"] * 0.26 +
+         df["power_val"]   * 0.26 +
+         df["eye_val"]     * 0.12) * bat_f +
+        df["defense_ovr_val"] * w_def +
         df["speed_val"]   * 0.10 +
         df["k_avoid_val"] * 0.10
     )

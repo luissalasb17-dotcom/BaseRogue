@@ -3233,14 +3233,16 @@ function initGameModeSelector() {
       const def = Math.max(1, (p.def !== undefined ? p.def : (p.defense_val !== undefined ? p.defense_val : 50)) + (up.def || 0) * m + (p.perm_def || 0) * m);
       // The OVR uses the defense with more weight on the position (def_ovr of the card, lahman_etl_v5.py); upgrades move it the same.
     const defOvr = def + ((p.def_ovr !== undefined && p.def !== undefined) ? p.def_ovr - p.def : 0);
-    const raw = con * 0.26 + pwr * 0.26 + eye * 0.12 + defOvr * 0.16 + spd * 0.10 + kavd * 0.10;
+    // Defense weight by position (DEF_OVR_WEIGHT_BY_POS of lahman_etl_v5.py): 16% on average; what a position weighs less or more goes to the bat.
+    const wDef = ({ CF: 0.1715, SS: 0.1698, '3B': 0.1647, '2B': 0.1528, RF: 0.1528, LF: 0.1477, C: 0.1375, '1B': 0.1154, DH: 0.1154 })[p.pos] || 0.16;
+    const raw = (con * 0.26 + pwr * 0.26 + eye * 0.12) * (1 + (0.16 - wDef) / 0.64) + defOvr * wDef + spd * 0.10 + kavd * 0.10;
       // Cut points = pool percentiles of the last lahman_etl_v5.py run (see paso_15); update them if the ETL changes.
       let base;
       if (raw <= 35.5) base = 50.0 + ((raw - 10.0) / 25.5) * 9.9;
       else if (raw <= 44.6) base = 60.0 + ((raw - 35.5) / 9.1) * 9.9;
       else if (raw <= 55.0) base = 70.0 + ((raw - 44.6) / 10.4) * 9.9;
-      else if (raw <= 72.9) base = 80.0 + ((raw - 55.0) / 17.9) * 9.9;
-      else base = 90.0 + Math.min(9.9, ((raw - 72.9) / 25.0) * 9.9);
+      else if (raw <= 73.3) base = 80.0 + ((raw - 55.0) / 18.3) * 9.9;
+      else base = 90.0 + Math.min(9.9, ((raw - 73.3) / 25.0) * 9.9);
       // Clutch / Captain badges add +2 OVR each, as in the ETL (paso_15).
       const badge = ((p.clutch || p.is_clutch) ? 2 : 0) + ((p.captain || p.is_captain) ? 2 : 0);
       return base + badge;
