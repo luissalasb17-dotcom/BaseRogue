@@ -736,4 +736,46 @@ Discusión con el usuario para evaluación futura:
    - Para bosses zurdos legendarios (ej. Randy Johnson, Sandy Koufax), premiar estratégicamente alinear bateadores derechos o ambidiestros.
 
 
+## Calibración Estadística de Simulación (MLB 1947–2026), Hobby Packs Draft y Desbloqueo Inmediato
 
+Sesión de calibración y balance del modo **162-0 Challenge**:
+
+1. **Desbloqueo Inmediato del Modo (Challenge 162 & Hobby Draft)**:
+   - **Decisión del usuario**: Acceso total e inmediato sin requerir haber ganado una run previa en el modo Roguelike / Quick Play.
+   - **Implementación**:
+     - `challenge162.js`: `isModeUnlocked()` ahora retorna `true` incondicionalmente.
+     - `index.html`: Se eliminó la clase estática `is-locked`, el icono de candado `🔒` y el atributo `disabled` de `#card-mode-challenge162` y `#btn-select-challenge-mode`, mostrando por defecto `🏆 ARMAR EQUIPO` para evitar parpadeos visuales al cargar.
+
+2. **Hobby Packs Draft (3 cartas por sobre para Usuario y CPU)**:
+   - **Decisión del usuario**: Expandir la apertura de sobres de 2 a **3 cartas por sobre**, manteniendo la posibilidad de rerolls para el jugador.
+   - La CPU también evalúa y selecciona entre 3 cartas por sobre (`PACK_OPTIONS = 3` y `RIVALS_FROM_POOL = 3`), elevando orgánicamente la calidad general de los planteles de la liga sin romper la distribución de rarezas.
+
+3. **Calibración Estadística Completa frente al Promedio Histórico de MLB (1947–2026)**:
+   - Parámetros objetivos de referencia (MLB 1947–2026 integrando temporada 2026):
+     - AVG: ~.257 – .262
+     - Runs/Juego (R/G): ~4.42 – 4.50
+     - HR/Juego: ~0.93 – 0.98
+     - 2B/Juego: ~1.55 – 1.62
+     - 3B/Juego: ~0.19 – 0.22
+     - BB/Juego: ~3.30 – 3.45
+     - SO/Juego: ~6.50 – 6.80
+     - SB/Juego: ~0.58 – 0.65
+     - E/Juego: ~0.72 – 0.78
+     - ERA de Liga: ~4.05 – 4.15
+   - **Ajustes aplicados en `challenge162.js`**:
+     - `PA_SCALE_HR = 1.00`, `PA_SCALE_K = 1.38`, `PA_SCALE_BB = 0.93`.
+     - `AVG_PIVOT = 0.265`, `AVG_SPREAD = 1.08`, `AVG_SHIFT = 0.014`.
+     - `PA_SCALE_2B = 0.90`, `PA_SCALE_3B = 0.58`.
+     - `STEAL_TRY_SCALE = 0.20`, `ERROR_RATE = 0.036`.
+     - Corrido de bases realista (`advanceOnHit`): corredores anotando desde segunda en sencillos y avanzando a 3B desde 1B según velocidad del corredor y profundidad del batazo.
+
+4. **Diagnóstico de Efectividad (ERA) y Comportamiento de Jugadores**:
+   - En simulación de 162 juegos:
+     - Líderes de ERA (Koufax 2.52, Mordecai Brown 2.65, Feller 2.69) y WHIP (1.04) coinciden con temporadas históricas élite.
+     - En rosters de nivel medio (abridores OVR 72–82 como Bauer, Reynolds, Brown, Hoeft), la ERA se ubica de forma consistente entre 3.50 y 4.25, logrando un récord de equipo de ~85–89 victorias.
+     - Si en el futuro se desea bajar la ERA de la liga en ~0.25 puntos adicionales, la recomendación técnica es reducir `PA_SCALE_HR` (a 0.94) y `PA_SCALE_2B` (a 0.85) para moderar el daño de los sluggers legendarios (>60 HR).
+
+5. **Deploy & Distribución**:
+   - Cambios commiteados y subidos a la rama `main` de GitHub (`4c94c17`).
+   - `BaseRogue_itch.zip` regenerado con la versión actualizada para distribución en Itch.io.
+   - Cache busters actualizados en `index.html` (`challenge162.js?v=1791753000003`).
