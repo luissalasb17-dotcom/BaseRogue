@@ -1545,8 +1545,8 @@ def paso_14_velocidad(df):
         sb_max = cuantil_ponderado(sb[qual], w[qual], 0.98)
         xb_max = cuantil_ponderado(xb[qual], w[qual], 0.98)
         m = y == uy
-        sb_c = np.clip(sb[m] / sb_max, None, 2.0) if sb_max > 0 else 0.0
-        xb_c = np.clip(xb[m] / xb_max, None, 2.0) if xb_max > 0 else 0.0
+        sb_c = (sb[m] / sb_max) if sb_max > 0 else 0.0
+        xb_c = (xb[m] / xb_max) if xb_max > 0 else 0.0
         # Mayor peso a SB y Triples/SB para reflejar velocidad pura
         temp[m] = sb_c * 0.45 + xb_c * 0.30 + br[m] * 0.25
     df["speed_raw_temp"] = temp
@@ -1623,7 +1623,10 @@ def ajustar_extremos(v):
     recta, como antes. Los ratings llegan aqui SIN recortar (RATING_FLOOR / RATING_CEIL).
     """
     v = v.astype(float).copy()
-    hi, lo = float(v.max()), float(v.min())
+    # Anclaje de élite al percentil 99.90 (permite que la cúspide histórica de cada rating
+    # comparta el rango 120-125 sin que un solo outlier aislado comprima a los demás)
+    hi = float(v.quantile(0.9990)) if len(v) > 100 else float(v.max())
+    lo = float(v.quantile(0.0010)) if len(v) > 100 else float(v.min())
     if hi > EXTREME_TOP_ANCHOR:
         top = v > EXTREME_TOP_ANCHOR
         T, span = hi - EXTREME_TOP_ANCHOR, 125.0 - EXTREME_TOP_ANCHOR
@@ -1686,7 +1689,7 @@ def paso_14b_pocas_temporadas(df):
     la media de las cartas con pico cercano (+-8 años). Peso propio: 7 temporadas 100%, 5 95%,
     3 86%, 1 57%. La Defensa no entra: es un total acumulado y ya premia el volumen.
     """
-    print("\n  PASO 14b: Regresion por pocas temporadas en el pico...")
+    print("\n  PASO 14b: Regresion por pocas temporadas en el pico y volumen de carrera (K=1,000 PA)...")
     df = df.copy()
     n_peak = df["total_seasons_in_peak"].fillna(7).clip(lower=1, upper=7)
     w = np.minimum(1.0, (n_peak / (n_peak + 1.0)) * (8.0 / 7.0))
@@ -1694,6 +1697,19 @@ def paso_14b_pocas_temporadas(df):
         w = w * 0 + 1.0
     for col in ["contact_val", "power_val", "eye_val", "k_avoid_val", "speed_val"]:
         df[col] = (w * df[col] + (1.0 - w) * media_deslizante(df[col], df["peak_year"])).round(1)
+
+    # ── Regresión Bayesiana por Volumen de Carrera (Confidence Sample Size K = 1,000 PA) ──
+    # Sin multiplicador extra para volumen de PA (volumen raw de apariciones registradas)
+    K_BAT_PA = 1000.0
+    career_pa_raw = df["career_pa"].fillna(0.0).astype(float) if "career_pa" in df.columns else df["career_ab"].fillna(0.0).astype(float) * 1.1
+    eff_career_pa = career_pa_raw
+    vol_w = (eff_career_pa / (eff_career_pa + K_BAT_PA)).clip(0.0, 1.0)
+
+    # Regresión moderada en Contacto, Poder y Ojo hacia la media de la era
+    for col in ["contact_val", "power_val", "eye_val"]:
+        group_mean = media_deslizante(df[col], df["peak_year"])
+        df[col] = (vol_w * df[col] + (1.0 - vol_w) * group_mean).round(1)
+
     return df
 
 
@@ -1987,23 +2003,16 @@ def paso_15_equipo_y_exportar(df, batting, teams, franchises, pico_df=None, war_
         print(df.groupby("primary_pos")[["defense_val", "defense_ovr_val"]].mean().round(1).to_string())
     else:
         df["defense_ovr_val"] = df["defense_val"]
-    # Peso de la defensa segun la posicion (decision del usuario, a raiz de Frank Thomas por debajo
-    # de Stovey, Sisler y Palmeiro): el 16% es el peso MEDIO; cada posicion lleva 16 x (cuanto
-    # separa el guante a los titulares de esa posicion / media de las ocho), con el mismo dato real
-    # que usa el evento defensivo (DEF_EVENT_WEIGHT de simulation.js). Lo que una posicion pesa de
-    # menos o de mas en defensa va al bate (contacto, poder y ojo en proporcion). No es un bono:
-    # un primera base de buen guante tambien gana menos por el.
-    w_def = df["primary_pos"].map(DEF_OVR_WEIGHT_BY_POS).fillna(0.16).astype(float)
-    # Peso por la posicion de la carta (decision del usuario, "por ahora"); DEF_W_BLEND=1 lo mezcla por juegos.
-    if _os.environ.get("DEF_W_BLEND", "0") == "1" and "def_w_blend" in df.columns:
-        w_def = df["def_w_blend"].astype(float).fillna(w_def)
-    df["def_w"] = w_def.round(4)
-    bat_f = 1.0 + (0.16 - w_def) / 0.64
+    # Peso estándar y universal de la defensa en el OVR: 16% uniforme para todos los bateadores.
+    # El OVR refleja limpiamente: 26% CON, 26% PWR, 12% EYE, 16% DEF, 10% SPD, 10% K-AVD.
+    # Elimina multiplicadores artificiales por posición para evitar penalizar la versatilidad de los jugadores.
+    w_def = 0.16
+    df["def_w"] = w_def
     df["raw_ovr"] = (
-        (df["contact_val"] * 0.26 +
-         df["power_val"]   * 0.26 +
-         df["eye_val"]     * 0.12) * bat_f +
-        df["defense_ovr_val"] * w_def +
+        df["contact_val"] * 0.26 +
+        df["power_val"]   * 0.26 +
+        df["eye_val"]     * 0.12 +
+        df["defense_ovr_val"] * 0.16 +
         df["speed_val"]   * 0.10 +
         df["k_avoid_val"] * 0.10
     )

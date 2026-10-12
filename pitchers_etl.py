@@ -214,7 +214,10 @@ def ajustar_extremos(v):
     recta, como antes. Los ratings llegan aqui SIN recortar (RATING_FLOOR / RATING_CEIL).
     """
     v = v.astype(float).copy()
-    hi, lo = float(v.max()), float(v.min())
+    # Anclaje de élite al percentil 99.90 (permite que la cúspide histórica de cada rating
+    # comparta el rango 120-125 sin que un solo outlier aislado comprima a los demás)
+    hi = float(v.quantile(0.9990)) if len(v) > 100 else float(v.max())
+    lo = float(v.quantile(0.0010)) if len(v) > 100 else float(v.min())
     if hi > EXTREME_TOP_ANCHOR:
         top = v > EXTREME_TOP_ANCHOR
         T, span = hi - EXTREME_TOP_ANCHOR, 125.0 - EXTREME_TOP_ANCHOR
@@ -234,7 +237,7 @@ def ajustar_extremos(v):
     return v.clip(1.0, 125.0).round(1)
 
 PIT_RATINGS = ["h9_val", "k9_val", "bb9_val", "hr9_val", "sta_val", "clt_val"]
-MIN_IP_SEASON_SP, MIN_IP_SEASON_RP, NLB_SEASON_FACTOR = 60.0, 25.0, 2.2     # temporada con carga real
+MIN_IP_SEASON_SP, MIN_IP_SEASON_RP, NLB_SEASON_FACTOR = 60.0, 25.0, 2.0     # temporada con carga real (unificado a 2.0 con bateadores)
 
 
 def paso_10b_longevidad(df7, df12, pico12):
@@ -1436,9 +1439,24 @@ def paso_10_normalizar_por_era(df):
         group_mean = media_deslizante(df[col], df["peak_year"])
         df[col] = (weight_seasons * df[col] + (1.0 - weight_seasons) * group_mean).round(1)
 
+    # ── Regresión Bayesiana por Volumen de Carrera (Confidence Sample Size) ──
+    # SP: K = 400.0 IP (equivalente al umbral de entrada de abridor)
+    # RP: K = 200.0 IP (equivalente al umbral de entrada de relevista)
+    # Sin multiplicador extra para volumen de entradas (volumen raw de entradas registradas)
+    is_sp = df["role"] == "SP"
+    career_ip_raw = df["career_ip"].fillna(0.0).astype(float)
+    eff_career_ip = career_ip_raw
+    k_ip = np.where(is_sp, 400.0, 200.0)
+    vol_weight = (eff_career_ip / (eff_career_ip + k_ip)).clip(0.0, 1.0)
+    
+    # Regresión moderada en ratings de resultado/efectividad hacia la media de la era
+    for col in ["h9_val", "k9_val", "bb9_val", "hr9_val", "clt_val"]:
+        group_mean = media_deslizante(df[col], df["peak_year"])
+        df[col] = (vol_weight * df[col] + (1.0 - vol_weight) * group_mean).round(1)
+
     df["clu_val"] = df["clt_val"]
 
-    print("  h9_val, k9_val, bb9_val, hr9_val, sta_val, clt_val normalizados por Era (MLB The Show Suite)")
+    print("  h9_val, k9_val, bb9_val, hr9_val, sta_val, clt_val normalizados y calibrados por volumen (K=400 SP, K=200 RP)")
     return df
 
 

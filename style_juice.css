@@ -3321,6 +3321,7 @@ span.c162-iron {
   .c162-reveal.dealing .c162-oc-burst { animation: c162OcBurst .7s ease-out both; animation-delay: calc(var(--flip) + 240ms); }
   .c162-reveal.dealing .c162-opt-pick { animation: c162OcEnable .3s ease-out both; animation-delay: var(--done); }
   .c162-reveal.dealing .c162-reveal-prompt { animation: c162OcFade .4s ease-out both; animation-delay: var(--done); }
+  .c162-reveal.dealing .c162-reveal-actions { animation: c162OcFade .4s ease-out both; animation-delay: var(--done); }
   .c162-reveal.dealing .c162-reveal-tip { animation: c162OcFade .4s ease-out both; animation-delay: var(--done); }
   .c162-reveal.dealing .c162-reveal-skip { animation: c162OcGone .3s ease-in both; animation-delay: calc(var(--done) - 300ms); }
   .c162-reveal.dealing.best-epic::after, .c162-reveal.dealing.best-legendary::after { animation: c162RevealFlash .7s ease-out both; animation-delay: calc(var(--done) - 420ms); }
@@ -3543,30 +3544,277 @@ span.c162-iron {
 .c162-po-chip i { font-style: normal; font-family: 'Outfit', 'Segoe UI', sans-serif; font-size: 10.5px; color: #64748b; }
 .c162-po-chip.w { border-color: #34d399; } .c162-po-chip.w b { color: #34d399; }
 .c162-po-chip.l { border-color: #f87171; } .c162-po-chip.l b { color: #f87171; }
-.c162-po-chip.next { border-color: #facc15; box-shadow: 0 0 12px rgba(250, 204, 21, .3); } .c162-po-chip.next b { color: #fde047; }
-.c162-po-next { padding: 14px; border-radius: 12px; border: 1px solid rgba(56, 189, 248, .35); background: rgba(2, 6, 23, .6); margin-bottom: 14px; }
-.c162-po-next-title { font-family: 'Press Start 2P', monospace; font-size: 10px; color: #7dd3fc; letter-spacing: 1px; margin-bottom: 10px; }
-.c162-po-matchup { display: grid; grid-template-columns: 1fr auto 1fr; gap: 14px; align-items: start; }
-.c162-po-side small { display: block; font-family: 'Press Start 2P', monospace; font-size: 7.5px; color: #94a3b8; margin-bottom: 6px; }
-.c162-po-vs { align-self: center; font-family: 'Press Start 2P', monospace; font-size: 12px; color: #64748b; }
-.c162-po-sps { display: grid; gap: 6px; }
-.c162-po-sp { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; padding: 8px 10px; border-radius: 8px; text-align: left; cursor: pointer; background: rgba(15, 23, 42, .8); border: 1px solid rgba(148, 163, 184, .3); color: #e2e8f0; }
-.c162-po-sp b { font-family: 'Outfit', 'Segoe UI', sans-serif; font-size: 14px; }
-.c162-po-sp span { font-family: 'Outfit', 'Segoe UI', sans-serif; font-size: 12px; color: #94a3b8; text-align: right; }
-.c162-po-sp i { grid-column: 1 / -1; font-style: normal; font-family: 'Outfit', 'Segoe UI', sans-serif; font-size: 11.5px; color: #86efac; }
-.c162-po-sp.short i { color: #fca5a5; }
-.c162-po-sp.on { border-color: #facc15; background: rgba(250, 204, 21, .12); box-shadow: 0 0 10px rgba(250, 204, 21, .25); }
-.c162-po-sp:disabled { cursor: default; opacity: .6; }
-.c162-po-oppsp { padding: 8px 10px; border-radius: 8px; background: rgba(127, 29, 29, .25); border: 1px solid rgba(248, 113, 113, .4); }
-.c162-po-oppsp b { display: block; font-family: 'Outfit', 'Segoe UI', sans-serif; font-size: 14px; color: #fecaca; }
-.c162-po-oppsp span { font-family: 'Outfit', 'Segoe UI', sans-serif; font-size: 12px; color: #94a3b8; }
-.c162-po-roster { margin-top: 8px; width: 100%; padding: 8px; border-radius: 8px; cursor: pointer; font-family: 'Press Start 2P', monospace; font-size: 7.5px; color: #e2e8f0; background: rgba(148, 163, 184, .12); border: 1px solid rgba(148, 163, 184, .35); }
-.c162-po-opprec { margin-top: 6px; font-family: 'Outfit', 'Segoe UI', sans-serif; font-size: 12px; color: #94a3b8; }
-.c162-po-actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 14px; }
-.c162-po-play { padding: 14px 22px; font-family: 'Press Start 2P', monospace; font-size: 11px; color: #111; background: linear-gradient(135deg, #fde047, #f59e0b); border: 2px solid #fff; }
-.c162-po-quick, .c162-po-box { padding: 14px 16px; font-family: 'Press Start 2P', monospace; font-size: 9px; }
-.c162-po-quick { color: #e2e8f0; background: #334155; }
-.c162-po-hint { margin-top: 10px; text-align: center; font-family: 'Outfit', 'Segoe UI', sans-serif; font-size: 12px; color: #94a3b8; }
+.c162-po-chip.next { border-color: #facc15; box-shadow: 0 0 14px rgba(250, 204, 21, .4); } .c162-po-chip.next b { color: #fde047; }
+
+/* ── Postseason Matchup Hero Stage ── */
+.c162-po-next {
+  padding: 18px 20px;
+  border-radius: 14px;
+  border: 1px solid rgba(250, 204, 21, 0.35);
+  background: radial-gradient(ellipse at 50% 0%, rgba(30, 41, 59, 0.95), rgba(8, 12, 22, 0.98));
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  margin-bottom: 16px;
+}
+.c162-po-next-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 12px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+.c162-po-next-title {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 11px;
+  color: #fde047;
+  letter-spacing: 1px;
+  margin: 0;
+}
+.c162-po-next-badge {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: rgba(56, 189, 248, 0.15);
+  border: 1px solid #38bdf8;
+  color: #7dd3fc;
+}
+.c162-po-matchup {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 16px;
+  align-items: stretch;
+}
+.c162-po-side {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.c162-po-side small {
+  display: block;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  color: #94a3b8;
+  margin-bottom: 8px;
+}
+.c162-po-starter-spotlight {
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(250, 204, 21, 0.4);
+  border-radius: 10px;
+  padding: 12px 14px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+}
+.c162-po-sp-name {
+  font-family: 'Outfit', 'Segoe UI', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: #f8fafc;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.c162-po-sp-stats {
+  display: flex;
+  gap: 12px;
+  margin-top: 4px;
+  font-size: 12px;
+  color: #cbd5e1;
+}
+.c162-po-sp-stats span {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  color: #38bdf8;
+}
+.c162-po-sp-rest {
+  margin-top: 6px;
+  font-size: 11.5px;
+  color: #86efac;
+}
+.c162-po-sp-rest.short {
+  color: #f87171;
+}
+.c162-po-sps-bar {
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+.c162-po-sp-pill {
+  flex: 1 1 auto;
+  min-width: 60px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: rgba(30, 41, 59, 0.7);
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  color: #cbd5e1;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.c162-po-sp-pill:hover {
+  border-color: #facc15;
+  color: #fff;
+}
+.c162-po-sp-pill.on {
+  background: rgba(250, 204, 21, 0.2);
+  border-color: #facc15;
+  color: #fde047;
+  box-shadow: 0 0 10px rgba(250, 204, 21, 0.3);
+}
+.c162-po-sp-pill.short {
+  border-color: rgba(239, 68, 68, 0.5);
+  color: #fca5a5;
+}
+.c162-po-vs-col {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 0 8px;
+}
+.c162-po-vs-emblem {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 14px;
+  color: #64748b;
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.2);
+  margin-bottom: 12px;
+}
+.c162-po-oppsp {
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: rgba(127, 29, 29, 0.25);
+  border: 1px solid rgba(248, 113, 113, 0.45);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+}
+.c162-po-oppsp b {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Outfit', 'Segoe UI', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: #fecaca;
+}
+.c162-po-oppsp span {
+  display: block;
+  font-family: 'Outfit', 'Segoe UI', sans-serif;
+  font-size: 12px;
+  color: #cbd5e1;
+  margin-top: 4px;
+}
+.c162-po-oppsp span i {
+  font-style: normal;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  color: #38bdf8;
+}
+.c162-po-roster {
+  margin-top: 10px;
+  width: 100%;
+  padding: 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7.5px;
+  color: #e2e8f0;
+  background: rgba(148, 163, 184, 0.12);
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  transition: all 0.15s ease;
+}
+.c162-po-roster:hover {
+  background: rgba(148, 163, 184, 0.25);
+  border-color: #38bdf8;
+}
+.c162-po-opprec {
+  margin-top: 6px;
+  font-family: 'Outfit', 'Segoe UI', sans-serif;
+  font-size: 11.5px;
+  color: #94a3b8;
+}
+.c162-po-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 16px;
+}
+.c162-po-play {
+  padding: 13px 24px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 11px;
+  color: #111;
+  background: linear-gradient(135deg, #fde047, #f59e0b);
+  border: 2px solid #fff;
+  border-radius: 6px;
+  box-shadow: 0 0 16px rgba(250, 204, 21, 0.5);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.c162-po-play:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 24px rgba(250, 204, 21, 0.8);
+}
+.c162-po-quick {
+  padding: 13px 18px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 9.5px;
+  color: #e2e8f0;
+  background: #334155;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  cursor: pointer;
+}
+.c162-po-quick:hover {
+  background: #475569;
+  border-color: #fff;
+}
+.c162-po-box {
+  padding: 13px 18px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 9.5px;
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  border-radius: 6px;
+}
+.c162-po-hint {
+  margin-top: 10px;
+  text-align: center;
+  font-family: 'Outfit', 'Segoe UI', sans-serif;
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+/* ── Playoff Sub-Deck Tabs ── */
+.c162-po-subtabs {
+  display: flex;
+  gap: 8px;
+  margin: 16px 0 12px 0;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.12);
+  padding-bottom: 8px;
+}
+.c162-po-tab-btn {
+  padding: 8px 14px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8.5px;
+  color: #94a3b8;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.c162-po-tab-btn:hover {
+  color: #f8fafc;
+  border-color: rgba(255, 255, 255, 0.3);
+}
+.c162-po-tab-btn.active {
+  color: #ffd700;
+  background: rgba(250, 204, 21, 0.15);
+  border-color: #facc15;
+  box-shadow: 0 0 10px rgba(250, 204, 21, 0.25);
+}
 .c162-po-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
 .c162-po-stats h4 { margin: 0 0 6px; font-family: 'Press Start 2P', monospace; font-size: 8px; color: #fde047; }
 .c162-po-stat { display: flex; justify-content: space-between; gap: 10px; padding: 4px 0; border-bottom: 1px solid rgba(148, 163, 184, .12); font-family: 'Outfit', 'Segoe UI', sans-serif; font-size: 12.5px; color: #e2e8f0; }
@@ -4007,18 +4255,65 @@ span.c162-iron {
 .c162-duel-mid .c162-break { width: 100%; margin: 4px 0; padding: 14px 10px; border-left-width: 6px; border-right-width: 6px; }
 .c162-duel-mid .c162-break-title { font-size: 13px; letter-spacing: 1.5px; line-height: 1.4; }
 .c162-duel-mid .c162-break-line, .c162-duel-mid .c162-break-next { font-size: 12.5px; line-height: 1.45; margin-top: 8px; }
-/* game log */
-.c162-log { padding: 8px 10px; border-radius: 10px; background: rgba(4, 8, 18, .55); border: 1px solid rgba(148, 163, 184, .14); text-align: left; }
-.c162-log-title { font-family: 'Press Start 2P', monospace; font-size: 7.5px; letter-spacing: 1px; color: #94a3b8; margin-bottom: 6px; }
-.c162-log-list { max-height: 92px; overflow-y: auto; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2px 14px; }
-.c162-log-row { display: grid; grid-template-columns: 26px minmax(0, 1fr) auto 22px; gap: 6px; align-items: center; padding: 2px 4px; border-radius: 4px; font-family: 'Outfit', 'Segoe UI', sans-serif; font-size: 12px; color: #94a3b8; }
-.c162-log-row small { font-family: 'Press Start 2P', monospace; font-size: 6.5px; color: #64748b; }
-.c162-log-row b { font-weight: 600; color: #cbd5e1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.c162-log-row.mine b { color: #fde68a; }
-.c162-log-row span { font-size: 11px; }
-.c162-log-row.good span { color: #86efac; }
-.c162-log-row em { font-style: normal; font-weight: 700; color: #fde047; text-align: right; }
-.c162-log-row.now { background: rgba(148, 163, 184, .12); }
-.c162-log-empty { grid-column: 1 / -1; font-family: 'Outfit', 'Segoe UI', sans-serif; font-size: 12px; color: #64748b; }
+/* game log - Quick Play CRT retro terminal style */
+.c162-match-log {
+  width: 100%;
+  border: 2px solid var(--jx-line, #22c55e);
+  box-shadow: 0 0 0 2px #000, inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  overflow: hidden;
+  text-align: left;
+}
+.c162-match-log .match-log-header {
+  background: linear-gradient(180deg, rgba(0, 255, 102, 0.16), rgba(0, 0, 0, 0.9));
+  border-bottom: 2px solid var(--primary-color, #00ff66);
+  letter-spacing: 1px;
+}
+.c162-match-log .match-log-content {
+  font-family: 'VT323', monospace;
+  font-size: 19px !important;
+  color: #00ff66 !important;
+  background: linear-gradient(180deg, #010a06, #000) !important;
+  text-shadow: 0 0 3px rgba(0, 255, 102, 0.7);
+  padding: 10px 12px !important;
+  max-height: 160px;
+  overflow-y: auto;
+}
+.c162-log-latest {
+  background: rgba(0, 255, 102, 0.14) !important;
+  border-left-width: 5px !important;
+  box-shadow: inset 0 0 10px rgba(0, 255, 102, 0.2);
+}
 @media (max-width: 1100px) { .c162-arena { grid-template-columns: 1fr 1fr; } .c162-live .c162-sim-stage > div:first-child { margin-top: 0; } }
-@media (max-width: 760px) { .c162-log-list { grid-template-columns: 1fr; } .c162-lu-row i { max-width: 70px; } }
+@media (max-width: 760px) { .c162-match-log .match-log-content { font-size: 16px !important; max-height: 140px; } .c162-lu-row i { max-width: 70px; } }
+
+/* ── Hot / Cold Player Form Badges ── */
+.c162-form-tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  line-height: 1;
+  vertical-align: middle;
+  margin-left: 4px;
+  padding: 1px 3px;
+  border-radius: 4px;
+  cursor: help;
+  user-select: none;
+  transition: transform 0.15s ease, filter 0.15s ease;
+}
+.c162-form-tag:hover {
+  transform: scale(1.25);
+}
+.c162-form-tag.is-hot {
+  background: rgba(239, 68, 68, 0.18);
+  border: 1px solid rgba(239, 68, 68, 0.45);
+  box-shadow: 0 0 6px rgba(239, 68, 68, 0.4);
+  filter: drop-shadow(0 0 3px #f97316);
+}
+.c162-form-tag.is-cold {
+  background: rgba(56, 189, 248, 0.18);
+  border: 1px solid rgba(56, 189, 248, 0.45);
+  box-shadow: 0 0 6px rgba(56, 189, 248, 0.4);
+  filter: drop-shadow(0 0 3px #38bdf8);
+}

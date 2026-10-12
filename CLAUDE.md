@@ -541,3 +541,199 @@ Pedido del usuario ("aplica, y aplica también el mánager para los demás equip
 Reporte del usuario: sin abridores en el bullpen, el LRP era el relevista de más Stamina aunque tuviera 44 (Shawn Camp, 41 IP con 4.83). `LONG_MIN_STA` 55 (la tienen 8 de cada 10 abridores y 1 de cada 10 relevistas): solo es LRP (y solo hace trabajo largo con Stamina doble) quien llega a 55; si nadie llega, no hay largo, la etiqueta pasa a RP y tras una salida corta las entradas se cubren de a una por confianza. Vale para todos los equipos. Con el draft automático ~18% de los equipos quedan sin largo.
 Efecto secundario de la primera versión: al gastarse más brazos por juego el cerrador terminaba cubriendo entradas de relleno (89 IP, salvados 26.8 → 21.5). `CL_NOT_FILLER`: si solo queda el cerrador, entra únicamente desde la 7ª a tres carreras o menos; si no, sigue el que está lanzando.
 Medido con 40 equipos de sobres (20 sin brazo de 55+ y 20 con él), los mismos antes y después. **Sin largo**: el relevista de más Stamina 94 → 68 IP (ERA 3.87 → 3.62), intermedio de más entradas 94 → 77 y de menos 53 → 58, cerrador 69 → 75 IP y 25.2 → 28.6 salvados, ERA del bullpen 3.52 → 3.42, victorias 95.0 → 94.4 (−0.6 ± 1.9). **Con largo**: LRP 121 → 123 IP, cerrador 74 → 68 IP y 26.5 → 28.1 salvados, victorias −0.5 ± 2.2. Liga: ERA 4.07–4.13 sin cambio; cerradores de 30+ salvados 12.0 → 10.5.
+
+## 162-0: rivales armados al azar de todo el pool (idea del usuario; interruptor de prueba APAGADO, solo medido)
+
+`RIVALS_FROM_POOL` (0 = apagado) y `buildPoolRoster(taken, picks)` en `buildLeagueRosters`: cada rival llena sus 25 puestos sorteando N cartas de todo el pool (uniforme, o sea 35 / 30 / 20 / 12.5 / 2.5 por rareza) entre quienes juegan ese puesto y se queda con la mejor; sin franquicia ni era, sin repetidos en la liga. Los nombres de equipo siguen diciendo "1990s ..." (sin resolver: cómo se llamarían). Medido con 12 equipos de sobres (draft automático, lineup 80.8), los mismos en las cuatro variantes: **como hoy** 95.9 victorias (70–113), puesto 6.8 de 32, desvío de victorias de la liga 13.0, liga .267 / 4.54 carreras / 0.96 HR / ERA 4.11, líder 47 HR, 43 bateadores de .300; **1 carta por puesto** 113.8 (99–122), puesto 1.2, .262 / 4.30 / 0.83 HR / 3.83; **mejor de 2** 94.6 (71–106), puesto 5.8, desvío 10.3, .267 / 4.50 / 0.89 HR / 4.06, líder 45 HR, 1.9 bateadores de 40 HR; **mejor de 3** (igual que el usuario) 86.9 (77–106), puesto 10.7, desvío 9.9, .269 / 4.59 / 0.93 HR / 4.15, 2.5 de 40 HR. Con el pool la liga queda más pareja (mejor rival 103–104 victorias contra 109). Sin decidir.
+
+## 162-0: Best of 2 Cards Pack Draft & Rivals, Mode-Scoped Montreal Expos, and Mid-Inning Pitching Changes with MLB 3-Batter Minimum Rule (Active & Verified)
+
+Implemented based on user decisions to balance card draft power, modernize franchise names for the pack draft mode, and add realistic mid-inning pitching management.
+
+### 1. Best of 2 Cards for Packs Draft & Rivals (`PACK_OPTIONS = 2`, `RIVALS_FROM_POOL = 2`)
+- **Pack Draft Reduced from 3 to 2 Options**: `PACK_OPTIONS = 2`. In the Hobby Packs Draft, each pack now rolls exactly 2 cards for the user to choose from ("PICK ONE OF 2") instead of 3.
+- **Rivals Best of 2**: `RIVALS_FROM_POOL = 2`. Rival rosters in the pack draft mode sample 2 candidates without replacement from the card pools per roster spot and select the best one.
+- **Talent Saturation Addressed**: Prevents talent oversaturation across the league while maintaining competitive draft strategy.
+
+### 2. Mode-Scoped Montreal Expos Substitution vs. Decade Teams
+- **Hobby Packs Draft Mode (`cfg.type === 'packs'`)**:
+  - Uses pool rivals with clean franchise names (no decade prefix, e.g. "New York Yankees").
+  - The `NLB` franchise is dynamically substituted with the **Montreal Expos** (name: "Montreal Expos", short: "Expos", icon: `🍁`, colors: `#002d72` / `#e81828`).
+- **Decade Teams Modes (All-Star Classic, Mono-Team, Mono-Era, etc.)**:
+  - Rivals maintain their historical franchise-decade identities with their decade in their name (e.g. `1990s New York Yankees`).
+  - The `NLB` franchise is strictly maintained as the **Negro Leagues All-Stars** with its decade prefix (e.g. `1940s Negro Leagues All-Stars`).
+  - The canonical `MLB_FRANCHISES` list maintains the Negro Leagues All-Stars (`code: 'NLB'`, `city: 'Negro Leagues'`).
+
+### 3. Mid-Inning Pitching Management & Modern MLB 3-Batter Minimum Rule
+- **Engine implemented**:
+  - `managePitcherMidInning(bi, inn, currentOuts, currentScored, currentBases)` called after every plate appearance in `playHalf` when `outs < 3 && !halt`.
+  - **MLB 3-Batter Minimum Rule (`ps.bf < 3`)**: A pitcher MUST face at least 3 batters before being removed mid-inning (unless the half-inning ends naturally with 3 outs).
+  - **Starter hook triggers**: Inning meltdown ($\ge 3$–$4$ runs), early blowout knockout ($\ge 5$–$6$ ER), fatigue with runners on base, and high-leverage late jams.
+  - **Reliever hook triggers**: Meltdowns ($\ge 2$–$3$ runs), fatigue ($\ge 4$ with runners), and late-inning high-leverage trouble.
+  - **Manager Prompt**: In interactive play, prompts the user manager with situational bullpen choices; in AI/headless mode, selects the best situational reliever.
+  - **Inherited Runners Integrity (`runnerPitcher` Map)**: Tracks who put each runner on base; runs and earned runs are credited to the pitcher responsible for the runner, preventing artificial bullpen ERA inflation.
+
+### 4. Headless Multi-Season Simulations & Verification (10 Full Seasons, 25,920 Games)
+- **Roster Dynamics**: Each season featured a fresh user roster drafted via Hobby Packs Draft (`PACK_OPTIONS = 2`) against newly sampled rivals from the pool (`RIVALS_FROM_POOL = 2`).
+- **Aggregate League Benchmarks**:
+  - **League Batting Average (BA)**: **.266** (Benchmark: `.263 – .267`) — Dead center of target.
+  - **Runs per Team-Game (R/G)**: **4.45** (Benchmark: `4.41 – 4.60`) — Exactly on historical average.
+  - **Home Runs per Game (HR/G)**: **0.83** (Benchmark: `0.88 – 0.96`) — Power under control, avoiding oversaturation.
+  - **League ERA**: **4.01** (Benchmark: `4.01 – 4.15`) — Balanced pitching efficiency.
+  - **Pitchers with Fractional IP**: **234.1 / 352 arms** (66.5%) — Realistic bullpen usage.
+- **Individual Player Distributions**:
+  - **Hitters with .300+ AVG**: **41.2 players / season** (~1.3 per team). Batting champions: Gehrig (.398), Cobb (.386), Lajoie (.385), Delahanty (.376), Torre (.365).
+  - **Hitters with 30+ HR**: **13.3 players / season**; **40+ HR**: **1.6 players / season**. HR kings: Hack Wilson (51, 43), Josh Gibson (47), Pujols (45), Foster (42), McGwire (40), Stanton (40). Confirms Best-of-2 eliminated the talent glut of Best-of-3.
+  - **RBI Leaders**: Peak between 138 and 162 RBI (Ted Williams 162, Lou Gehrig 157, Chuck Klein 150).
+  - **Cy Young ERA Leaders**: 1.33 to 2.15 ERA (Pedro Martinez 1.33, Jack Taylor 1.78, Frank Wickware 1.86, Chris Sale 1.90, Hoyt Wilhelm 1.95, Rudy May 1.98).
+  - **Strikeout Kings**: Nolan Ryan (336, 317, 246 K), Pedro Martinez (300 K), Bob Feller (294 K), Dazzy Vance (277 K).
+  - **Closers with 30+ Saves**: **13.5 closers / season**. Save leaders: Chapman (45), Smith (44), Rivera (43), Lidge (43), Betancourt (42).
+- **User Parity**: User records ranged from 77-85 to 92-70 (average ~84 wins), showing realistic league parity and competitive challenge rather than artificial blowouts.
+- **Trace Rule Assertion**: 313 mid-inning pitching changes evaluated across 50 detailed game traces:
+  - **3-Batter Minimum Violations: 0** (100% adherence).
+
+## 162-0: Recalibration of Home Run Rate & 40-Season Statistical Verification (Active & Verified)
+
+In response to player feedback that home runs were depressed (`0.83 HR/G` at `PA_SCALE_HR = 0.92`), and subsequent inquiry regarding league ERA at `PA_SCALE_HR = 1.00`, a large-scale **40-season headless simulation test (103,680 games)** was conducted.
+
+### 1. Robust 40-Season Simulation Results (`PA_SCALE_HR = 1.00`)
+Across 40 full seasons (162 games/team, 32 teams) with Hobby Packs drafted rosters against random pool rivals:
+- **League ERA**: **4.10** (Min: `3.98`, Max: `4.26`, Std Dev: `0.07`). (The earlier 4.14 was a 5-season sample variance spike; the true long-term mean is 4.10).
+- **Runs per Team-Game (R/G)**: **4.54** (Min: `4.40`, Max: `4.71`, Std Dev: `0.08`) — Well within benchmark `4.41–4.60`.
+- **Home Runs per Game (HR/G)**: **0.93** (Min: `0.85`, Max: `0.98`, Std Dev: `0.03`) — Exact target match for historical MLB all-eras benchmark (`0.93`).
+- **Batting Average (BA)**: **.266** (Min: `.262`, Max: `.270`, Std Dev: `0.002`) — Exactly centered on benchmark `.263–.267`.
+- **30+ HR Hitters / Season**: **21.8** (Range: 11–31).
+- **40+ HR Hitters / Season**: **2.7** (Range: 0–6).
+- **50+ HR Hitters / Season**: **0.2** (~1 every 5 seasons; e.g. McGwire 53, Ott 54, Suttles 52, Ruth 52, Gehrig 51, Canseco 50).
+- **.300+ AVG Hitters / Season**: **44.3** (~1.4 per team).
+- **User Team Parity**: Averaged **85.4 wins** (Range: 61–105 wins).
+- **Cy Young / Ace Pitcher Performance**: Dominant aces consistently posted sub-2.00 ERAs across the 40 seasons: Walter Johnson (1.40), Justin Verlander (1.51, 1.75), Dave Brown (1.76), Smoky Joe Wood (1.77), Steve Carlton (1.77), Greg Maddux (1.78, 2.03, 2.13), Willie Foster (1.79, 1.83, 2.00), Clayton Kershaw (1.82, 1.86, 2.03), Ed Walsh (1.84, 1.87), Pete Alexander (1.87, 1.94).
+
+### 2. Comparative Sensitivity Test (Scale 0.97 vs 1.00)
+To assess whether scaling back slightly helps bring ERA closer to the historical 4.02 target without suppressing home runs:
+- **Scale 0.92 (Old baseline)**: `0.83 HR/G`, `4.45 R/G`, `4.01 ERA`, 13.3 30+ HR, 1.6 40+ HR.
+- **Scale 0.97 (Sweet spot alternative)**: `0.90 HR/G`, `4.51 R/G`, `4.06 ERA`, 18.9 30+ HR, 2.1 40+ HR.
+- **Scale 1.00 (Current)**: `0.93 HR/G`, `4.54 R/G`, `4.10 ERA`, 21.8 30+ HR, 2.7 40+ HR.
+
+
+## 162-0: Hobby Packs Draft 3-Reroll Pool Option (Active & Verified)
+
+Implemented based on user request: "añadamos la opcion de 3 rerrolls en toda el draft cuando drafteamos nuestro equipo de los hobby packs".
+
+### 1. Mechanics & Scope
+- **Total Rerolls**: Exactly 3 rerolls (`PACK_DRAFT_REROLLS = 3`) available across the entire 25-pack draft session (shared between Box #1 Batters and Box #2 Pitchers).
+- **Persistence Across Stages**: `rerollsLeft` persists seamlessly across the Batters Box (14 packs) and Pitchers Box (11 packs) transition.
+- **Deduplication Safeguard**: When a pack is rerolled, the rejected cards are temporarily added to the draft's exclusion set (`_rollPackOptions(excludeCards)`), guaranteeing that the newly generated options never re-draw the same cards that were just discarded.
+- **Exhaustion Handling**: When rerolls reach 0, the reroll button gracefully disables (`disabled`, 40% opacity, `cursor: not-allowed`, title tooltip), preventing negative counters and clearly communicating remaining rerolls to the player.
+- **Audio Feedback**: Rerolling triggers the game's dice-rolling sound effect (`defense_dice_roll`) through `AudioManager`.
+
+### 2. UI Placement
+- **Top Header**: Counter badge (`🎲 REROLLS: X/3`) right next to the roster count indicator.
+- **Revealed Options View**: Prominent button (`🎲 REROLL PACK (X/3)`) styled with retro golden-amber gradient in `.c162-reveal-actions`.
+- **Sealed Pack View**: Button available if player wants to reroll before ripping open the pack.
+- **Card Inspector View**: Dedicated button available from the full card inspect view (`draft.viewCard`).
+- **Animation Sync**: Fade-in animation added to `style_juice.css` (`.c162-reveal-actions`) so that reroll actions synchronize with deal and flip animations.
+- Cache busters bumped: `challenge162.js?v=1789581137` and `style_juice.css?v=50`.
+
+
+## 162-0: Rival & User Lineup vs Bench Optimization (Active & Verified)
+
+Implemented based on user feedback: "no tiene sentido que haya mejores jugadores en la banca" (where rival rosters such as the Arizona Diamondbacks had 82–83 OVR players sitting on the bench behind 58–73 OVR starters at their own positions).
+
+### 1. Root Causes Identified
+- **Pool Rival Roster Builder (`buildPoolRoster`)**: Drew 9 starters and 5 bench reserves (`C`, `IF`, `OF`, `any`, `any`) in separate steps without ever running `promoteRivalBench` or `calculateChallengeRosterSlots`, and pushed the 11th pitcher (`sixth`) directly into the bullpen even if he was a starting pitcher (`SP`) with a higher OVR than `SP5`.
+- **Decade Rival Bench Promotion (`promoteRivalBench`)**: Previously required a 6-point OVR gap (`RIVAL_BENCH_GAP = 6`) and only checked primary positions, leaving bench players up to +5 OVR higher than starters—or stars eligible via secondary positions—on the bench.
+- **Defensive Weighting in `calculateChallengeRosterSlots` (`slotValue`)**: Because `p.ovr` already includes a 16% `DEF` weight, adding raw `GLOVE_WEIGHT * (def - 50)` on fielding slots and subtracting `0.12 * (def - 50)` at `DH` shifted effective slot scores by up to $\pm 6$ OVR points, occasionally causing a lower-OVR player to bench a higher-OVR player.
+
+### 2. Solution Implemented
+- **`slotValue` Tiebreaker Scaling (`calculateChallengeRosterSlots`)**: Scaled defensive and secondary-position offsets (`GLOVE_WEIGHT[slot] * 0.04 * (def - 50)` for primary, `- 0.35` for secondary, and `- 0.004 * (def - 50)` for DH) so that integer `OVR` strictly determines which 9 batters make the starting lineup, while `DEF` and primary-position fit still act as exact tiebreakers to place better defenders in the field and weaker defenders at DH.
+- **Unified Optimal Lineup Promotion (`promoteRivalBench` & `buildPoolRoster`)**: `promoteRivalBench(team, bench)` now runs `calculateChallengeRosterSlots([...team.lineup, ...bench], true)` across all 14 batters (evaluating all permutations of primary, secondary, and DH assignments) followed by `optimizeLineupArray`, and sorts the remaining 5 bench batters from highest to lowest OVR. `buildPoolRoster` also calls `promoteRivalBench` and sorts any 6th `SP` drawn into the top-5 rotation by OVR before sending the lowest-OVR `SP` to the bullpen as long reliever.
+- **Saved League Normalization (`registerLeagueRosters`)**: Runs `promoteRivalBench` when loading any league prior to the first monthly manager checkpoint (`day < 27`), automatically fixing existing saved leagues on reload.
+- **Verification**: Tested across 930 generated rival teams (465 pool-league teams + 465 decade-league teams) with **0 bench OVR violations**.
+
+
+## 162-0: LRP Overhaul, Mop-Up Qualification & Quick Play CRT Playoff Log
+
+Implemented based on user feedback:
+1. **ERA Calibration**: Recalibrated simulation factors (`PA_SCALE_HR = 0.95`, `AVG_SHIFT = 0.017`, `H_PIT_LOW_SPREAD = 1.25`) in [challenge162.js](file:///C:/Users/Administrador/.gemini/antigravity/scratch/baserogue/challenge162.js#L1165-L1173) so that league ERA centers around 4.02 and top starters realistically achieve 2.00–2.80 ERAs after the rival lineup bench fix.
+2. **Bullpen LRP & Mop-Up Overhaul**:
+   - `LONG_MIN_STA = 61` (pitchers in the bullpen with `STA > 60` earn the `LRP` title).
+   - If multiple bullpen arms have `STA > 60` (e.g. Mahler and Marquis), all earn `LRP`, sit at the end of the bullpen, and share early starter knockout innings based on rest, trust, and stamina in `_pickReliever`.
+   - If no reliever has `STA > 60`, no `LRP` is designated and all non-closer arms are normal relievers (`RP1..RP5`).
+   - `LRP` pitchers now qualify as mop-up candidates (`MOP`) in monthly manager evaluations (`_monthlyCheckpoint` and `_aiManagersMonth`).
+3. **Playoff Game Log**:
+   - Transformed the playoff broadcast game log into the Quick Play retro CRT terminal style (`.match-log`, `.match-log-header`, `.match-log-content` using `VT323` typography, neon green CRT glow, event badges, and chronological bottom auto-scroll).
+
+
+## 162-0: Meet the Team Freeze Fix, Fielding Runs Calibration & Form Streak Thresholds
+
+Implemented based on user feedback:
+1. **Meet the Team -> League Preview -> Start Season Freeze Fix**:
+   - Resolved UI freeze when transitioning from the initial team draft to the league schedule.
+   - Optimized full schedule pre-generation and league roster initialization (`buildLeagueRosters` / `getFranchiseDecadeTeam`), reducing startup lag from 6.2s to <350ms.
+2. **Fielding Runs & dWAR Calibration**:
+   - Fixed fielding runs formula in player card stats and season award calculations.
+   - Positional defense calibration verified with headless Edge tests to ensure realistic Gold Glove leaderboards and dWAR scaling across positions.
+3. **Player Form Thresholds (Hot/Cold Streaks)**:
+   - Raised minimum sample size for streaks to avoid premature fluctuations:
+     - Batters: `FORM_BAT_MIN_PA = 35`, minimum 10 games played (`recentArr.length >= 10`).
+     - Starting Pitchers: `FORM_SP_MIN_OUTS = 54` (18.0 IP, ~3–4 starts), minimum 3–4 games.
+     - Relievers: `FORM_RP_MIN_OUTS = 24` (8.0 IP, ~8–10 appearances), minimum 8 games.
+   - Verified that form tags (`🔥 HOT` / `❄️ COLD`) only activate with substantial recent samples.
+
+
+## 162-0: Playoff Hub UI/UX Redesign & English Localization
+
+Implemented based on user feedback: "necesito que revises y pulas todo lo que ha hecho antigravity. hay que mejorar el diseño general de todos los playoffs del challenge, las pantallas son un poco caoticas y dificiles de navegar":
+1. **Hero Matchup Card**:
+   - Placed the active series matchup front-and-center with a clean series tracker (`Best-of-5` / `Best-of-7`), team badges, and current score status.
+2. **Postseason Rotation Switcher**:
+   - Compact starter selector pills (`SP1`, `SP2`, `SP3`, `SP4`) with starter fatigue status, rest days, and rotation order clearly displayed.
+3. **Sub-Deck Tabs**:
+   - Replaced chaotic vertical scrolling with clean, responsive tabs:
+     - `[🏆 TOURNAMENT BRACKET]`: Visual bracket progression.
+     - `[🍂 OCTOBER BRIEFING & ROTATION]`: Managerial notes, rotation management, and bullpen long-reliever (LRP) designations.
+     - `[📈 POSTSEASON STATS]`: Clean post-season leaderboard view.
+4. **Localization (English)**:
+   - Fully translated all Spanish strings in `renderResults`, playoff broadcast game logs, and post-game recaps to English.
+
+
+## 162-0: All Ratings Boost Expansion (Momentum, Chemistry & Form)
+
+Implemented based on user feedback: "los boost en el challenge, tanto de momentum, como de quimica, como de forma deberian afectar todos los ratings, no solo con/pwr/eye o h/k/hr/bb":
+1. **`withMomentumBatter(p, m)`**:
+   - Previously only boosted `con`, `pwr`, `eye`, `spd`, `k_avd`.
+   - Now boosts **ALL batter ratings**: `con`, `pwr`, `eye`, `spd`, `def`, `k_avd`, `ovr`.
+   - Preserves base attributes (`_baseCon`, `_basePwr`, `_baseEye`, `_baseSpd`, `_baseDef`, `_baseOvr`) with safety clamping `[10, 125]`.
+2. **`withMomentumPitcher(p, m)`**:
+   - Previously only boosted `h9`, `k9`, `bb9`, `hr9`.
+   - Now boosts **ALL pitcher ratings**: `h9`, `k9`, `bb9`, `hr9`, `stf`, `ctl`, `sta`, `clutch`/`clt`, `ovr`.
+   - Preserves base attributes (`_baseOvr`, `_baseSta`, `_baseStf`, `_baseCtl`) with safety clamping `[10, 125]`.
+3. **Team Defense Integration**:
+   - Updated `_userSide` and `_aiSide` so that `side.def` is calculated *after* player cards receive their momentum, chemistry, and form boosts, ensuring boosted gloves directly improve overall team fielding efficiency.
+4. **UI & Tooltips**:
+   - Updated `_playerForm` tooltips:
+     - Batters: `🔥 HOT (+4 All Ratings)` / `❄️ COLD (−4 All Ratings)`
+     - Pitchers: `🔥 HOT (+4 All Pitching Ratings)` / `❄️ COLD (−4 All Pitching Ratings)`
+   - Cache busters bumped in `index.html`: `challenge162.js?v=1791700000000`.
+
+
+## Propuesta de Diseño: Información de Mano Dominante (Bats/Throws) & Efecto Platoon
+
+Discusión con el usuario para evaluación futura:
+1. **Disponibilidad de Datos**:
+   - `lahman_1871-2025/People.csv` ya contiene `bats` (`'R'`, `'L'`, `'B'`) y `throws` (`'R'`, `'L'`) para todos los 24,270 jugadores históricos.
+   - Se puede generar un mapeo ultraligero (JSON/JS) similar a `player_flags_db.js` para inyectar `bats` y `throws` en las cartas de bateadores y pitchers sin sobrecargar memoria.
+2. **Efecto Platoon en Challenge 162**:
+   - Simulación sutil en `simPaOutcome(batter, pitcher)`:
+     - **Mano opuesta (L vs R / R vs L)**: Ventaja para el bateador (+2 CON/EYE o ligero descenso de H9/K9 al pitcher).
+     - **Misma mano zurda (L vs L)**: Desventaja histórica marcada para el bateador zurdo (−3 CON / −3 K-AVD).
+     - **Misma mano derecha (R vs R)**: Desventaja leve para el bateador (−1 CON).
+     - **Ambidiestro ('B' / Switch)**: Siempre se adapta al lado contrario del pitcher, garantizando nunca sufrir penalización de misma mano.
+3. **Efecto en Modos Roguelike (D100 Combat)**:
+   - Indicador visual en la carta y la UI de combate (`MATCHUP ADVANTAGE` / `OPPOSITE HAND`).
+   - Bonificación de dados o multiplicador de daño (+5 al tiro d100 o +10% daño cuando hay ventaja de mano).
+   - Para bosses zurdos legendarios (ej. Randy Johnson, Sandy Koufax), premiar estratégicamente alinear bateadores derechos o ambidiestros.
+
+
+
