@@ -779,3 +779,27 @@ Sesión de calibración y balance del modo **162-0 Challenge**:
    - Cambios commiteados y subidos a la rama `main` de GitHub (`4c94c17`).
    - `BaseRogue_itch.zip` regenerado con la versión actualizada para distribución en Itch.io.
    - Cache busters actualizados en `index.html` (`challenge162.js?v=1791753000003`).
+
+
+## Discusión de Diseño: Tendencias Ocultas (`ChallengeTendencies`) vs. Pureza de la Escala 125
+
+Análisis y debate con el usuario respecto al funcionamiento de los multiplicadores invisibles en Challenge 162:
+
+1. **Estado Actual (`ChallengeTendencies`)**:
+   - `challenge_tendencies.js` aplica multiplicadores ocultos por jugador:
+     - `hr: 0, hrUp: 1`: No penaliza hacia abajo a jugadores de eras antiguas (Deadball), pero aplica el multiplicador histórico hacia arriba a sluggers élite (ej. McGwire para llegar a 70+ HR).
+     - `sb: 1, sbUp: 1`: Sigue al 100% el hábito real de robos de la carrera del jugador (ej. Rickey Henderson, Vince Coleman con multiplicadores de 1.8x–2.5x).
+   - **Problema identificado / Feedback del usuario**:
+     - Sensación de "caja negra" o desconexión con los atributos visibles de la carta: dos jugadores con idéntico `Power 115` o `Speed 100` pueden tener temporadas drásticamente distintas si uno tiene tendencia oculta y el otro no.
+     - Rompe la expectativa natural de un juego de cartas coleccionables donde "lo que ves en el cartón es lo que juegas".
+
+2. **Evaluación de la Escala Pura 125 (Percentil 99.90)**:
+   - Dado que el motor ya normalizó y estiró los ratings extremos al percentil 99.90 (tope 125):
+     - **Poder 125**: Babe Ruth, Mark McGwire, Josh Gibson, Lou Gehrig, Jimmie Foxx, Barry Bonds (124.5).
+     - **Velocidad 125**: Rickey Henderson, Vince Coleman, Lou Brock, Maury Wills, Joe Morgan.
+   - **Viabilidad matemática de eliminar las tendencias ocultas**:
+     - **Jonrones (Tope 70 HR)**: Con la tabla actual `BAT_HR`, un rating de 125 genera ~51.7 HR esperados en 680 PA (tope ~65 en temporadas calientes). Si se calibra el nodo extremo de `PWR 125` de `0.0760` a `~0.0920`, cualquier carta con 125 de Poder tendrá un promedio de ~62 HR y podrá alcanzar 70–73 HR de manera 100% matemática y transparente, sin favorecer a un nombre sobre otro.
+     - **Robos (Tope 100 SB)**: Con la curva actual, `SPD 125` produce ~70 intentos (~55–60 SB). Ajustando la tasa de intento del extremo 120–125 a ~30–32%, un corredor con 125 de velocidad alcanzará naturalmente 95–105 robos por temporada.
+   - **Consenso de diseño**:
+     - Existe acuerdo en que la transición hacia una escala 100% pura y transparente (donde tener 125 en la carta es la garantía de rendimiento monstruoso sin trucos por detrás) es la dirección más limpia y justa para el juego si se decide dar el paso.
+
