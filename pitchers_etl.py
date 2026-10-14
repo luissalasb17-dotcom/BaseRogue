@@ -29,6 +29,9 @@ import pandas as pd
 from pathlib import Path
 
 DATA_DIR  = Path(__file__).parent / "lahman_1871-2025"
+import os as _os_dd
+if _os_dd.environ.get("LAHMAN_DIR"):  # prueba: otra carpeta de datos (p. ej. sin las ligas no reconocidas por MLB)
+    DATA_DIR = Path(_os_dd.environ["LAHMAN_DIR"])
 OUT_CSV   = Path(__file__).parent / "pitchers_pool.csv"
 OUT_JS    = Path(__file__).parent / "pitchers_pool.js"
 
@@ -804,8 +807,8 @@ def paso_5_filtro_ingesta(career, peak, allstar, hof, pure_pitcher_ids, pitching
 
     # Criterio Unificado de Ingesta para Pitchers por Innings Pitched:
     # 1. Volumen de carrera:
-    #    - SP: MLB >= 400.0 IP | NLB >= 200.0 IP
-    #    - RP: MLB >= 250.0 IP | NLB >= 125.0 IP
+    #    - SP: >= 250.0 IP, RP: >= 125.0 IP, iguales para MLB y Ligas Negras (decision
+    #      del usuario, oct 2026; antes SP 400 / 200 NLB y RP 250 / 125 NLB)
     # 2. Calidad / Estrellato Joven:
     #    - SP: (career_war >= 5.0 OR peak_war >= 5.0) AND (MLB >= 150.0 IP | NLB >= 75.0 IP)
     #    - RP: (career_war >= 3.5 OR peak_war >= 3.5) AND (MLB >= 100.0 IP | NLB >= 50.0 IP)
@@ -823,11 +826,11 @@ def paso_5_filtro_ingesta(career, peak, allstar, hof, pure_pitcher_ids, pitching
         is_nl = r.get("is_nlb", False)
         
         if r["role"] == "SP":
-            vol_threshold = 200.0 if is_nl else 400.0
+            vol_threshold = 250.0  # igual para todas las ligas (decision del usuario, oct 2026)
             qual_ip_thresh = 75.0 if is_nl else 150.0
             return (cip >= vol_threshold) or (((c_war >= 5.0) or (p_war >= 5.0)) and (cip >= qual_ip_thresh))
         else:
-            vol_threshold = 125.0 if is_nl else 250.0
+            vol_threshold = 125.0
             qual_ip_thresh = 50.0 if is_nl else 100.0
             return (cip >= vol_threshold) or (((c_war >= 3.5) or (p_war >= 3.5)) and (cip >= qual_ip_thresh))
 
@@ -1391,7 +1394,7 @@ def paso_10_normalizar_por_era(df):
     # van al 75%, Stamina incluida (decision del usuario: la epoca tambien moldea el estilo del
     # jugador). Antes K/9 y HR/9 iban al 90% y la Stamina al 50%; se dejan las constantes por si
     # se quiere volver a separar.
-    HR9_ERA_BLEND = 0.75
+    HR9_ERA_BLEND = 1.0   # HR/9 al 100% de su epoca (decision del usuario, oct 2026; sin dato oculto en el 162-0)
     K9_ERA_BLEND = 0.75
     df = normalizar_por_ambiente(df, "h9_raw",  "h9_val",  "b_h",   invert=True)
     df = normalizar_por_ambiente(df, "k9_raw",  "k9_val",  "b_k",   invert=False, blend=K9_ERA_BLEND)
@@ -1439,24 +1442,9 @@ def paso_10_normalizar_por_era(df):
         group_mean = media_deslizante(df[col], df["peak_year"])
         df[col] = (weight_seasons * df[col] + (1.0 - weight_seasons) * group_mean).round(1)
 
-    # ── Regresión Bayesiana por Volumen de Carrera (Confidence Sample Size) ──
-    # SP: K = 400.0 IP (equivalente al umbral de entrada de abridor)
-    # RP: K = 200.0 IP (equivalente al umbral de entrada de relevista)
-    # Sin multiplicador extra para volumen de entradas (volumen raw de entradas registradas)
-    is_sp = df["role"] == "SP"
-    career_ip_raw = df["career_ip"].fillna(0.0).astype(float)
-    eff_career_ip = career_ip_raw
-    k_ip = np.where(is_sp, 400.0, 200.0)
-    vol_weight = (eff_career_ip / (eff_career_ip + k_ip)).clip(0.0, 1.0)
-    
-    # Regresión moderada en ratings de resultado/efectividad hacia la media de la era
-    for col in ["h9_val", "k9_val", "bb9_val", "hr9_val", "clt_val"]:
-        group_mean = media_deslizante(df[col], df["peak_year"])
-        df[col] = (vol_weight * df[col] + (1.0 - vol_weight) * group_mean).round(1)
-
     df["clu_val"] = df["clt_val"]
 
-    print("  h9_val, k9_val, bb9_val, hr9_val, sta_val, clt_val normalizados y calibrados por volumen (K=400 SP, K=200 RP)")
+    print("  h9_val, k9_val, bb9_val, hr9_val, sta_val, clt_val normalizados")
     return df
 
 

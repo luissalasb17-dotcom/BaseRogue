@@ -1,6 +1,15 @@
 // BaseRogue Game State Manager
 // Refined for Lineup order controls, Bench removal, and Manager Decisions Events
 
+// A left-handed thrower does not play catcher, second, third or short (player_hands.js), unless
+// his own card lists that position. Every mode asks this before putting a player out of position.
+window.leftyCantPlay = function (p, slot) {
+  if (!p || !slot || ['C', '2B', '3B', 'SS'].indexOf(slot) < 0) return false;
+  if (((window.PlayerHands || {})[p.playerID] || '')[1] !== 'L') return false;
+  const own = ((p.pos || '') + ',' + (p.sec_pos || '')).toUpperCase().split(',').map(function (x) { return x.trim(); });
+  return !(own.indexOf(slot) >= 0 || own.indexOf('IF') >= 0);
+};
+
 (function() {
   const ManagerEventsList = [
     {
@@ -507,11 +516,11 @@
     const raw = con * 0.26 + pwr * 0.26 + eye * 0.12 + defOvr * 0.16 + spd * 0.10 + kavd * 0.10;
     // Cut points = pool percentiles of the last lahman_etl_v5.py run (see paso_15); update them if the ETL changes.
     let base;
-    if (raw <= 37.3) base = 50.0 + ((raw - 10.0) / 27.3) * 9.9;
-    else if (raw <= 44.2) base = 60.0 + ((raw - 37.3) / 6.9) * 9.9;
-    else if (raw <= 53.8) base = 70.0 + ((raw - 44.2) / 9.6) * 9.9;
-    else if (raw <= 72.1) base = 80.0 + ((raw - 53.8) / 18.3) * 9.9;
-    else base = 90.0 + Math.min(9.9, ((raw - 72.1) / 25.0) * 9.9);
+    if (raw <= 34.2) base = 50.0 + ((raw - 10.0) / 24.2) * 9.9;
+    else if (raw <= 43.7) base = 60.0 + ((raw - 34.2) / 9.5) * 9.9;
+    else if (raw <= 54.6) base = 70.0 + ((raw - 43.7) / 10.9) * 9.9;
+    else if (raw <= 74.6) base = 80.0 + ((raw - 54.6) / 20.0) * 9.9;
+    else base = 90.0 + Math.min(9.9, ((raw - 74.6) / 25.0) * 9.9);
     // Clutch / Captain badges add +2 OVR each, as in the ETL (paso_15).
     const badge = ((p.clutch || p.is_clutch) ? 2 : 0) + ((p.captain || p.is_captain) ? 2 : 0);
     return Math.floor(Math.max(50, Math.min(99.9, base + badge)));
@@ -1343,7 +1352,7 @@
         assigned = true;
       }
       if (!assigned) {
-        const emptySlot = slots.find(s => !this.draftRoster[s]);
+        const emptySlot = slots.find(s => !this.draftRoster[s] && !window.leftyCantPlay(instance, s)) || slots.find(s => !this.draftRoster[s]);
         if (emptySlot) this.draftRoster[emptySlot] = instance;
       }
 
@@ -1371,6 +1380,7 @@
         if (slot === 'DH') return ovr - 0.12 * (def - 50);
         if ((p.pos || '').toUpperCase() === slot) return ovr + GLOVE[slot] * (def - 50);
         if (plays(p, slot)) return ovr + GLOVE[slot] * (def * 0.85 - 50) - 1.5;
+        if (window.leftyCantPlay(p, slot)) return ovr - 400; // a lefty arm at C / 2B / 3B / SS: never while anything else fits
         return ovr - 45;
       };
       let layer = new Map([[0, { v: 0, pick: [] }]]);
@@ -1692,7 +1702,7 @@
         }
         // 4. Fallback to any empty slot
         if (!assigned) {
-          const emptySlot = slots.find(s => !this.roster[s]);
+          const emptySlot = slots.find(s => !this.roster[s] && !window.leftyCantPlay(p, s)) || slots.find(s => !this.roster[s]);
           if (emptySlot) {
             this.roster[emptySlot] = p;
             assigned = true;
@@ -1738,7 +1748,7 @@
     // ── LINEUP ASSIGNMENT: assign drafted player to a slot ────────────────────
     assignPlayerToSlot(slotPos, playerIndex) {
       const player = this.draftedPlayers[playerIndex];
-      if (!player) return false;
+      if (!player || window.leftyCantPlay(player, slotPos)) return false;
       this.roster[slotPos] = player;
       return true;
     }
@@ -2489,6 +2499,7 @@
     replaceRosterPlayer(slot, newPlayerData) {
       if (!this.roster[slot]) return false;
       if (this.positionLocks && (this.positionLocks[slot] || 0) > 0) return false;
+      if (window.leftyCantPlay(newPlayerData, slot)) return false;
 
       // Auto-unequip old player's item to backpack
       const oldPlayer = this.roster[slot];
@@ -2631,6 +2642,7 @@
         return {
           name: nameVal,
           cleanName: p.name,
+          playerID: p.playerID || null, // hand (player_hands.js) and platoon
           role: role,
           pos: role,
           hp: hp,

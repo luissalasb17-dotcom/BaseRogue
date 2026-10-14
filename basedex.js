@@ -259,6 +259,23 @@
     return `https://www.baseball-reference.com/search/search.fcgi?search=${encodeURIComponent(searchParam)}`;
   }
 
+  // Bats / throws (player_hands.js), as a short line for the Dex: " · Bats L / Throws R".
+  function handsText(p) {
+    const h = (window.PlayerHands || {})[p && p.playerID];
+    if (!h) return '';
+    const tt = (k, d) => (typeof window.t === 'function' ? window.t(k, d) : d);
+    const ok = c => c === 'R' || c === 'L' || c === 'S';
+    if (!ok(h[0]) && !ok(h[1])) return '';
+    // Scorebook style: "B/T L/R" (bats left, throws right; S = switch hitter).
+    return ` · <span title="${tt('dex.bt_tip', 'Bats / Throws')}">B/T ${ok(h[0]) ? h[0] : '–'}/${ok(h[1]) ? h[1] : '–'}</span>`;
+  }
+  // Small footnote for careers that include independent Black baseball (not listed as major league by MLB).
+  function blackBaseballNote(p) {
+    if (!p || !(window.BlackBaseballIDs || {})[p.playerID]) return '';
+    const txt = typeof window.t === 'function' ? window.t('dex.black_baseball_note', '* Includes Black baseball stats') : '* Includes Black baseball stats';
+    return `<div style="font-size:7.5px;color:#6b7280;text-align:right;margin-top:8px;font-style:italic">${txt}</div>`;
+  }
+
   function getPlayerCareerData(p) {
     if (!p) return { war: '-', mvp: 0, roy: 0, ss: 0, gg: 0, cy: 0, rel: 0, allstars: 0, hof: false, h: '-', hr: '-', rbi: '-', avg: '-', ops: '-', sb: '-', g: '-', ab: '-', w: '-', l: '-', era: '-', so: '-', ip: '-', whip: '-', sv: '-' };
     const cleanName = p.name ? p.name.replace(/\s\(.*?\)$/, '').trim() : '';
@@ -330,6 +347,8 @@
     renderLimit: 200,
     currentRendered: 0,
     getPlayerCareerData,
+    handsText,
+    blackBaseballNote,
     getPlayerFlagHTML,
     getBbrefUrl,
     getGrade,
@@ -1290,7 +1309,7 @@
                     <span>${p.name}</span>
                     ${getPlayerFlagHTML(p)}
                   </h2>
-                  <div style="font-size:11px;color:#9ca3af">${teamFull} — ${p.year} · ${p.role || getPosText(p)}</div>
+                  <div style="font-size:11px;color:#9ca3af">${teamFull} — ${p.year} · ${p.role || getPosText(p)}${handsText(p)}</div>
                 </div>
               
               <div style="text-align:center;margin-bottom:16px">
@@ -1303,7 +1322,7 @@
               ${badgesHtml ? `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px">${badgesHtml}</div>` : ''}
               
               <div style="background:#111827;border-radius:8px;padding:12px">
-                <div style="font-family:'Press Start 2P',monospace;font-size:7.5px;color:#38bdf8;margin-bottom:10px;text-align:center">${(typeof window.t === 'function' ? window.t('dex.career_header', 'CAREER STATS (MLB)') : 'CAREER STATS (MLB)')}</div>
+                <div style="font-family:'Press Start 2P',monospace;font-size:7.5px;color:#38bdf8;margin-bottom:10px;text-align:center">${(typeof window.t === 'function' ? window.t('dex.career_header', 'CAREER STATS (MLB)') : 'CAREER STATS (MLB)')}${(window.BlackBaseballIDs || {})[p.playerID] ? ' *' : ''}</div>
                 
                 <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:8px 10px;text-align:center">
                   ${isPitcher ? (isReliever ? `
@@ -1343,6 +1362,7 @@
                     ? `<div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:10px;padding-top:8px;border-top:1px dashed rgba(255,255,255,0.12)">${pills.join('')}</div>`
                     : '';
                 })()}
+                ${blackBaseballNote(p)}
               </div>
             </div>
 

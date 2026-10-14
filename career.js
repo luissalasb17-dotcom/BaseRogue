@@ -399,11 +399,11 @@
     const wDef = p.def_w || ({ CF: 0.1715, SS: 0.1698, '3B': 0.1647, '2B': 0.1528, RF: 0.1528, LF: 0.1477, C: 0.1375, '1B': 0.1154, DH: 0.1154 })[p.pos] || 0.16; // def_w: blended by the games he played at each position
     const raw = (con * 0.26 + pwr * 0.26 + eye * 0.12) * (1 + (0.16 - wDef) / 0.64) + defOvr * wDef + spd * 0.10 + kavd * 0.10;
     // Cut points = pool percentiles of the last lahman_etl_v5.py run (see paso_15); update them if the ETL changes.
-    if (raw <= 35.5) return Math.floor(50.0 + ((raw - 10.0) / 25.5) * 9.9);
-    if (raw <= 44.6) return Math.floor(60.0 + ((raw - 35.5) / 9.1) * 9.9);
-    if (raw <= 55.0) return Math.floor(70.0 + ((raw - 44.6) / 10.4) * 9.9);
-    if (raw <= 73.3) return Math.floor(80.0 + ((raw - 55.0) / 18.3) * 9.9);
-    return Math.floor(90.0 + Math.min(9.9, ((raw - 73.3) / 25.0) * 9.9));
+    if (raw <= 34.2) return Math.floor(50.0 + ((raw - 10.0) / 24.2) * 9.9);
+    if (raw <= 43.7) return Math.floor(60.0 + ((raw - 34.2) / 9.5) * 9.9);
+    if (raw <= 54.6) return Math.floor(70.0 + ((raw - 43.7) / 10.9) * 9.9);
+    if (raw <= 74.6) return Math.floor(80.0 + ((raw - 54.6) / 20.0) * 9.9);
+    return Math.floor(90.0 + Math.min(9.9, ((raw - 74.6) / 25.0) * 9.9));
   }
 
   // ── OVR-targeted growth ────────────────────────────────────────────────

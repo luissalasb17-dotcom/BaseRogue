@@ -13,6 +13,9 @@ from pathlib import Path
 # Valor tipico de cada componente del poder (HR por PA, ISO, extrabases por PA)
 PWR_SCALE_HR, PWR_SCALE_ISO, PWR_SCALE_XBH = 0.022, 0.135, 0.075
 DATA_DIR = Path(__file__).parent / "lahman_1871-2025"
+import os as _os_dd
+if _os_dd.environ.get("LAHMAN_DIR"):  # prueba: otra carpeta de datos (p. ej. sin las ligas no reconocidas por MLB)
+    DATA_DIR = Path(_os_dd.environ["LAHMAN_DIR"])
 OUT_CSV  = Path(__file__).parent / "game_cards.csv"
 OUT_JS   = Path(__file__).parent / "game_cards_pool.js"
 
@@ -833,8 +836,10 @@ def paso_8_filtro_ingesta(df, allstar, hof, pure_pitcher_ids, batting):
     no_pitchers = df[~df["playerID"].isin(effective_pure_pitchers)].copy()
     print(f"  No-pitchers elegibles: {len(no_pitchers):,}")
 
-    MIN_PA_MLB     = 1000
-    MIN_PA_NLB     = 500
+    # Minimo de entrada = una temporada, igual para todas las ligas (decision del usuario, oct 2026:
+    # "sin consideraciones especiales de calendario para Ligas Negras"). Antes 1,000 PA MLB / 500 PA NLB.
+    MIN_AB_MLB     = 500
+    MIN_AB_NLB     = 500
     MIN_PA_ALLSTAR = 100
     MIN_PA_QUALITY = 350
 
@@ -865,14 +870,14 @@ def paso_8_filtro_ingesta(df, allstar, hof, pure_pitcher_ids, batting):
         no_pitchers['mlb_pa'] = no_pitchers['career_pa']
 
     # Criterio Unificado de Ingesta para Bateadores:
-    # 1. Volumen de carrera: MLB >= 1,000 PA | NLB (oficial o pionero) >= 500 PA
+    # 1. Volumen de carrera: 500 AB para todos (MLB y Ligas Negras)
     # 2. Calidad / Estrellato Joven: (career_war >= 5.0 OR peak_war >= 5.0) AND career_pa >= 350
     # 3. Reconocimiento Histórico: HoF incondicional OR (All-Star AND career_pa >= 100)
     c_war = no_pitchers["career_war"].fillna(0) if "career_war" in no_pitchers.columns else pd.Series(0, index=no_pitchers.index)
     p_war = no_pitchers["peak_war"].fillna(0) if "peak_war" in no_pitchers.columns else pd.Series(0, index=no_pitchers.index)
     
     is_nlb_player = no_pitchers["league_group"] == "NLB"
-    vol_mask = np.where(is_nlb_player, no_pitchers["career_pa"] >= MIN_PA_NLB, no_pitchers["career_pa"] >= MIN_PA_MLB)
+    vol_mask = np.where(is_nlb_player, no_pitchers["career_ab"] >= MIN_AB_NLB, no_pitchers["career_ab"] >= MIN_AB_MLB)
 
     mask = (
         vol_mask |
@@ -1689,7 +1694,7 @@ def paso_14b_pocas_temporadas(df):
     la media de las cartas con pico cercano (+-8 años). Peso propio: 7 temporadas 100%, 5 95%,
     3 86%, 1 57%. La Defensa no entra: es un total acumulado y ya premia el volumen.
     """
-    print("\n  PASO 14b: Regresion por pocas temporadas en el pico y volumen de carrera (K=1,000 PA)...")
+    print("\n  PASO 14b: Regresion por pocas temporadas en el pico...")
     df = df.copy()
     n_peak = df["total_seasons_in_peak"].fillna(7).clip(lower=1, upper=7)
     w = np.minimum(1.0, (n_peak / (n_peak + 1.0)) * (8.0 / 7.0))
@@ -1697,18 +1702,6 @@ def paso_14b_pocas_temporadas(df):
         w = w * 0 + 1.0
     for col in ["contact_val", "power_val", "eye_val", "k_avoid_val", "speed_val"]:
         df[col] = (w * df[col] + (1.0 - w) * media_deslizante(df[col], df["peak_year"])).round(1)
-
-    # ── Regresión Bayesiana por Volumen de Carrera (Confidence Sample Size K = 1,000 PA) ──
-    # Sin multiplicador extra para volumen de PA (volumen raw de apariciones registradas)
-    K_BAT_PA = 1000.0
-    career_pa_raw = df["career_pa"].fillna(0.0).astype(float) if "career_pa" in df.columns else df["career_ab"].fillna(0.0).astype(float) * 1.1
-    eff_career_pa = career_pa_raw
-    vol_w = (eff_career_pa / (eff_career_pa + K_BAT_PA)).clip(0.0, 1.0)
-
-    # Regresión moderada en Contacto, Poder y Ojo hacia la media de la era
-    for col in ["contact_val", "power_val", "eye_val"]:
-        group_mean = media_deslizante(df[col], df["peak_year"])
-        df[col] = (vol_w * df[col] + (1.0 - vol_w) * group_mean).round(1)
 
     return df
 

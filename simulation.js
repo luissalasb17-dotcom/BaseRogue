@@ -127,12 +127,25 @@
   // Outcomes from worst to best for the batting side: SO, OUT, BB, 1B, 2B, 3B, HR.
   const focusRank = (b, r) => (r <= b.bbEnd ? 2 : r <= b.soEnd ? 0 : r <= b.outEnd ? 1 : r <= b.singleEnd ? 3 : r <= b.doubleEnd ? 4 : r <= b.tripleEnd ? 5 : 6);
 
+  // Platoon: the batter's side against the pitcher's arm (player_hands.js), in rating
+  // points on contact, eye, K-AVD and power for that roll. Same table as the 162-0 test.
+  const PLATOON_QP = { on: true, table: { RR: -2.5, RL: 4.5, LR: 3, LL: -10, SR: 1.5, SL: 1.5 } };
+  window.PLATOON_QP = PLATOON_QP;
+  function platoonKeyQP(batter, pitcher) {
+    const H = window.PlayerHands || {};
+    const b = (H[batter && batter.playerID] || '')[0], t = (H[pitcher && pitcher.playerID] || '')[1];
+    return (b && t && b !== '-' && t !== '-') ? b + t : null;
+  }
+  window.platoonKeyQP = platoonKeyQP;
+
   function calcBoundaries(batter, pitcher, simCtx) {
     const approach = BATTING_APPROACHES[(simCtx && simCtx.approach) || 'normal'] || BATTING_APPROACHES.normal;
-    const effCon = batter.con || 50;
-    const effEye = batter.eye || 50;
-    const effKAvd = batter.k_avd !== undefined ? batter.k_avd : (batter.k_avoid !== undefined ? batter.k_avoid : (batter.k_avoid_val !== undefined ? batter.k_avoid_val : effCon));
-    const effPwr = batter.pwr || 50;
+    const pltKey = PLATOON_QP.on ? platoonKeyQP(batter, pitcher) : null;
+    const plt = pltKey ? (PLATOON_QP.table[pltKey] || 0) : 0;
+    const effCon = (batter.con || 50) + plt;
+    const effEye = (batter.eye || 50) + plt;
+    const effKAvd = (batter.k_avd !== undefined ? batter.k_avd : (batter.k_avoid !== undefined ? batter.k_avoid : (batter.k_avoid_val !== undefined ? batter.k_avoid_val : (batter.con || 50)))) + plt;
+    const effPwr = (batter.pwr || 50) + plt;
     const effSpd = batter.spd || 50;
     
     // Pitcher attributes (MLB The Show suite: h9, k9, bb9, hr9, sta, clt/clu)
@@ -1868,6 +1881,7 @@
         spdUpgraded,
         activePitcher: pitcher ? {
           name:   pitcher.name,
+          playerID: pitcher.playerID || null,
           hp:     pitcher.hp,
           maxHp:  pitcher.maxHp,
           index:  this.enemyPitcherIndex,
@@ -1961,6 +1975,7 @@
         pitcherClutchMod: curBounds ? curBounds.pitcherClutchMod : 0,
         activePitcher:   this.activePitcher ? {
           name:   this.activePitcher.name,
+          playerID: this.activePitcher.playerID || null,
           hp:     this.activePitcher.hp,
           maxHp:  this.activePitcher.maxHp,
           index:  this.enemyPitcherIndex,

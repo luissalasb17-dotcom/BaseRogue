@@ -763,6 +763,13 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
           slotRow.style.background = 'rgba(0,0,0,0.2)';
           const sourceSlot = e.dataTransfer.getData('text/plain');
           if (sourceSlot && sourceSlot !== slot) {
+            // A left-handed thrower cannot be moved to catcher, second, third or short.
+            if (window.leftyCantPlay(G.draftRoster[sourceSlot], slot) || window.leftyCantPlay(G.draftRoster[slot], sourceSlot)) {
+              const who = window.leftyCantPlay(G.draftRoster[sourceSlot], slot) ? G.draftRoster[sourceSlot] : G.draftRoster[slot];
+              const msg = `${who.name} throws left-handed: he cannot play ${window.leftyCantPlay(G.draftRoster[sourceSlot], slot) ? slot : sourceSlot}.`;
+              if (typeof window.showToast === 'function') window.showToast(msg); else console.warn(msg);
+              return;
+            }
             const temp = G.draftRoster[slot];
             G.draftRoster[slot] = G.draftRoster[sourceSlot];
             G.draftRoster[sourceSlot] = temp;
@@ -1190,6 +1197,13 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
           slotRow.style.background = 'rgba(0,0,0,0.25)';
           const sourceSlot = e.dataTransfer.getData('text/plain');
           if (sourceSlot && sourceSlot !== slot) {
+            // A left-handed thrower cannot be moved to catcher, second, third or short.
+            if (window.leftyCantPlay(G.draftRoster[sourceSlot], slot) || window.leftyCantPlay(G.draftRoster[slot], sourceSlot)) {
+              const who = window.leftyCantPlay(G.draftRoster[sourceSlot], slot) ? G.draftRoster[sourceSlot] : G.draftRoster[slot];
+              const msg = `${who.name} throws left-handed: he cannot play ${window.leftyCantPlay(G.draftRoster[sourceSlot], slot) ? slot : sourceSlot}.`;
+              if (typeof window.showToast === 'function') window.showToast(msg); else console.warn(msg);
+              return;
+            }
             const temp = G.draftRoster[slot];
             G.draftRoster[slot] = G.draftRoster[sourceSlot];
             G.draftRoster[sourceSlot] = temp;
@@ -3210,11 +3224,11 @@ function initGameModeSelector() {
       const raw = h9 * 0.24 + sta * 0.32 + k9 * 0.12 + bb9 * 0.12 + hr9 * 0.10 + clt * 0.10;
       // Pitcher badges (Clutch / Captain) add 2 each, as on the card; the cuts already count them.
       const pitBadge = (p.badge_clutch ? 2 : 0) + (p.badge_captain ? 2 : 0);
-      if (raw <= 43.4) return Math.floor(50.0 + ((raw - 15.0) / 28.4) * 9.9 + pitBadge);
-      if (raw <= 53.6) return Math.floor(60.0 + ((raw - 43.4) / 10.2) * 9.9 + pitBadge);
-      if (raw <= 64.0) return Math.floor(70.0 + ((raw - 53.6) / 10.4) * 9.9 + pitBadge);
-      if (raw <= 80.3) return Math.floor(80.0 + ((raw - 64.0) / 16.3) * 9.9 + pitBadge);
-      return Math.floor(Math.min(99.9, 90.0 + Math.min(9.9, ((raw - 80.3) / 25.0) * 9.9) + pitBadge));
+      if (raw <= 41.1) return Math.floor(50.0 + ((raw - 15.0) / 26.1) * 9.9 + pitBadge);
+      if (raw <= 52.5) return Math.floor(60.0 + ((raw - 41.1) / 11.4) * 9.9 + pitBadge);
+      if (raw <= 63.8) return Math.floor(70.0 + ((raw - 52.5) / 11.3) * 9.9 + pitBadge);
+      if (raw <= 80.7) return Math.floor(80.0 + ((raw - 63.8) / 16.9) * 9.9 + pitBadge);
+      return Math.floor(Math.min(99.9, 90.0 + Math.min(9.9, ((raw - 80.7) / 25.0) * 9.9) + pitBadge));
     }
     const up = p.upgrades || {};
     const hasMods = (up.con || 0) !== 0 || (up.pwr || 0) !== 0 || (up.eye || 0) !== 0 || (up.k_avd || 0) !== 0 || (up.spd || 0) !== 0 || (up.def || 0) !== 0 || p.perm_con || p.perm_pwr || p.perm_eye || p.perm_spd || p.perm_def;
@@ -3238,11 +3252,11 @@ function initGameModeSelector() {
     const raw = (con * 0.26 + pwr * 0.26 + eye * 0.12) * (1 + (0.16 - wDef) / 0.64) + defOvr * wDef + spd * 0.10 + kavd * 0.10;
       // Cut points = pool percentiles of the last lahman_etl_v5.py run (see paso_15); update them if the ETL changes.
       let base;
-      if (raw <= 35.5) base = 50.0 + ((raw - 10.0) / 25.5) * 9.9;
-      else if (raw <= 44.6) base = 60.0 + ((raw - 35.5) / 9.1) * 9.9;
-      else if (raw <= 55.0) base = 70.0 + ((raw - 44.6) / 10.4) * 9.9;
-      else if (raw <= 73.3) base = 80.0 + ((raw - 55.0) / 18.3) * 9.9;
-      else base = 90.0 + Math.min(9.9, ((raw - 73.3) / 25.0) * 9.9);
+      if (raw <= 34.2) base = 50.0 + ((raw - 10.0) / 24.2) * 9.9;
+      else if (raw <= 43.7) base = 60.0 + ((raw - 34.2) / 9.5) * 9.9;
+      else if (raw <= 54.6) base = 70.0 + ((raw - 43.7) / 10.9) * 9.9;
+      else if (raw <= 74.6) base = 80.0 + ((raw - 54.6) / 20.0) * 9.9;
+      else base = 90.0 + Math.min(9.9, ((raw - 74.6) / 25.0) * 9.9);
       // Clutch / Captain badges add +2 OVR each, as in the ETL (paso_15).
       const badge = ((p.clutch || p.is_clutch) ? 2 : 0) + ((p.captain || p.is_captain) ? 2 : 0);
       return base + badge;
@@ -3616,6 +3630,13 @@ function initGameModeSelector() {
         ${positionWarning}
         <div class="card-footer">
           <span>${teamFranchise}</span>
+          ${(() => {
+            // Bats / throws in the middle of the footer, scorebook style: L/L, R/R, S/R, L/R (player_hands.js).
+            const hh = (window.PlayerHands || {})[player.playerID] || '';
+            const ok = c => c === 'R' || c === 'L' || c === 'S';
+            if (!ok(hh[0]) && !ok(hh[1])) return '';
+            return `<span class="card-trait-badge card-hand" title="Bats / Throws">${ok(hh[0]) ? hh[0] : '–'}/${ok(hh[1]) ? hh[1] : '–'}</span>`;
+          })()}
           <span class="card-stamina-badge ${stamClass}"><i class="fa-solid fa-bolt-lightning"></i> ${stam}</span>
         </div>
       </div>
@@ -7207,6 +7228,23 @@ function initGameModeSelector() {
     const order = window.Game.battingOrder || ['C','1B','2B','3B','SS','LF','CF','RF','DH'];
     const myBatters = order.map(pos => window.Game.roster && window.Game.roster[pos]).filter(Boolean);
     const bCount = Math.max(1, myBatters.length);
+    // Platoon: the arms you are about to face and how your lineup lines up against them.
+    if (window.PLATOON_QP && window.PLATOON_QP.on && window.PlayerHands) {
+      const HH = window.PlayerHands;
+      const arms = (enemy.pitchers || []).map(p => (HH[p.playerID] || '')[1]).filter(x => x === 'R' || x === 'L');
+      const mine = myBatters.map(b => (HH[b.playerID] || '')[0]).filter(x => x === 'R' || x === 'L' || x === 'S');
+      if (arms.length && mine.length) {
+        const cnt = h => mine.filter(x => x === h).length;
+        const lefties = arms.filter(a => a === 'L').length;
+        const same = lefties * cnt('L') + (arms.length - lefties) * cnt('R');
+        const opp = lefties * cnt('R') + (arms.length - lefties) * cnt('L');
+        const verdict = opp > same * 1.25 ? ['#4ade80', 'PLATOON EDGE'] : same > opp * 1.25 ? ['#f87171', 'SAME-HAND TROUBLE'] : ['#9ca3af', 'EVEN'];
+        recordHTML += `
+        <div style="font-size:10.5px;color:#9ca3af;margin-top:3px;">
+          ✋ ARMS: <strong style="color:#e4e4e7;">${arms.map(a => a + 'HP').join(' · ')}</strong> • YOUR BATS: <strong style="color:#e4e4e7;">${cnt('R')} R / ${cnt('L')} L${cnt('S') ? ' / ' + cnt('S') + ' S' : ''}</strong> • <strong style="color:${verdict[0]};">${verdict[1]}</strong>
+        </div>`;
+      }
+    }
 
     // 1. Average of your 9 lineup batters
     const avgCon = myBatters.reduce((acc, b) => acc + (b.con || 50), 0) / bCount;
@@ -9640,6 +9678,24 @@ function initGameModeSelector() {
 
     // Batter card — only flip/re-render when batter actually changes or on initial deal
     const bRosterObj = Object.values(window.Game.roster).find(p => p && p.name === bName);
+    // Platoon: which side the batter hits from against the arm on the mound, and what it is worth.
+    const chip = document.getElementById('platoon-chip');
+    if (chip) {
+      const realPitcher = activeBattle && activeBattle.activePitcher;
+      const Q = window.PLATOON_QP;
+      const key = (Q && Q.on && bRosterObj && realPitcher && typeof window.platoonKeyQP === 'function') ? window.platoonKeyQP(bRosterObj, realPitcher) : null;
+      if (!key) chip.hidden = true;
+      else {
+        const pts = Q.table[key] || 0;
+        const bat = key[0] === 'S' ? t('match.platoon_switch', 'SWITCH') : key[0] === 'L' ? t('match.platoon_lhb', 'LEFTY BAT') : t('match.platoon_rhb', 'RIGHTY BAT');
+        const arm = key[1] === 'L' ? t('match.platoon_lhp', 'LEFTY ARM') : t('match.platoon_rhp', 'RIGHTY ARM');
+        const verdict = pts > 0 ? t('match.platoon_edge', 'PLATOON EDGE') : t('match.platoon_same', 'SAME HAND');
+        chip.hidden = false;
+        chip.className = 'platoon-chip ' + (pts > 0 ? 'good' : 'bad');
+        chip.innerHTML = `<span>✋ ${bat} vs ${arm}</span><strong>${verdict} ${pts > 0 ? '+' : '-'}${Math.abs(pts)}</strong>`;
+        chip.title = t('match.platoon_tip', 'Rating points on contact, power, eye and K-AVD for this at-bat');
+      }
+    }
     if (bRosterObj) {
       const eff = window.Game.getEffectiveStats(bRosterObj, bRosterObj.pos);
       const statsBox = document.getElementById('match-batter-stats-box');
@@ -9693,6 +9749,7 @@ function initGameModeSelector() {
 
         const tempPitcher = {
           name: pitcher.name, pos: pitcher.role || 'SP', role: pitcher.role || 'SP',
+          playerID: pitcher.playerID || (activeBattle && activeBattle.activePitcher && activeBattle.activePitcher.playerID) || null, // hand on the card
           era: pitchEra,
           team: pitchTeam,
           year: pitchYear,
