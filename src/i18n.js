@@ -155,7 +155,7 @@
         "spd": "<strong style=\"color:#38bdf8;\">SPD — Velocidad:</strong> Activa intentos de robo de base en sencillos (+20% daño al pitcher). Además, desde 60 SPD otorga de 10% a 50% de probabilidad (10% + 1% por punto) de estirar sencillos y dobles a bases extra (1B→2B→3B).",
         "def": "<strong style=\"color:#a855f7;\">DEF — Defensa:</strong> Contribuye al <strong>Escudo</strong> del equipo. Cuanto mayor DEF promedio, más escudo tienes disponible para absorber OUTs antes de perder HP.",
         "captain": "<strong style=\"color:#eab308;\">👑 CAPTAIN:</strong> +5 a todos los ratings de sus compañeros de equipo mientras esté en el roster activo.",
-        "clutch": "<strong style=\"color:#ef4444;\">⚡ CLUTCH PLAYER:</strong> +2% de probabilidad de sencillo y doble, +4% de HR con corredores en posición de anotar o durante la última entrada.",
+        "clutch": "<strong style=\"color:#ef4444;\">⚡ OCTOBER HERO:</strong> +2% de probabilidad de sencillo y doble, +4% de HR con corredores en posición de anotar o durante la última entrada.",
         "tooltip": "Guía de Atributos y Estadísticas"
     },
     "mode_select": {
@@ -1429,7 +1429,7 @@
         "cancel": "CANCELAR",
         "rotation_title_5": "ROTACION DE ABRIDORES (ROTATION - 5 CARTAS)",
         "bullpen_title_6": "CUERPO DE RELEVISTAS (BULLPEN - 7 CARTAS)",
-        "pitchers_box_subtitle": "5 Abridores (SP) + 6 Relevistas",
+        "pitchers_box_subtitle": "5 Abridores (SP) + 7 Relevistas",
         "batters_box_subtitle": "9 Titulares + 5 de Banca",
         "card_click_attributes": "🔄 CLIC PARA VER ATRIBUTOS",
         "draft_trading_card": "🎴 CARTA DE DRAFT",
@@ -1584,7 +1584,7 @@
     },
     "badge": {
         "captain_tooltip": "Captain: +5 a todos los ratings de sus compañeros de equipo mientras esté en el roster activo.",
-        "clutch_tooltip": "Clutch Player: +2% de probabilidad de sencillo y doble, +4% de HR con corredores en posición de anotar o durante la última entrada.",
+        "clutch_tooltip": "October Hero: +2% de probabilidad de sencillo y doble, +4% de HR con corredores en posición de anotar o durante la última entrada.",
         "challenge162_tooltip": "Elegible para el 162-0 Challenge: formó parte de un roster que ganó una run completa (Quick Play o Modo Historia).",
         "injury_tooltip": "Lesión: Penalización permanente de -20 en todos los ratings por el resto de la temporada.",
         "interera_label": "VIAJERO EN EL TIEMPO",
@@ -2512,7 +2512,7 @@
         "spd": "<strong style=\"color:#38bdf8;\">SPD — Speed:</strong> Triggers base stealing on 1B and 2B (+20% pitcher damage debuff). Also grants 10% to 50% chance (above 60 SPD) to stretch hits into extra bases (1B➔2B➔3B).",
         "def": "<strong style=\"color:#a855f7;\">DEF — Defense:</strong> Contributes to Team <strong>Shield</strong>. Higher average DEF grants more shield to absorb OUTs before losing team HP.",
         "captain": "<strong style=\"color:#eab308;\">👑 CAPTAIN:</strong> +5 to all attributes (CON, PWR, EYE, K/AVD, SPD, DEF) for all teammates while on the active roster.",
-        "clutch": "<strong style=\"color:#ef4444;\">⚡ CLUTCH PLAYER:</strong> +2% single/double chance, +4% HR chance with runners in scoring position (2B/3B) or during the final inning (Inning 3+ / Extras).",
+        "clutch": "<strong style=\"color:#ef4444;\">⚡ OCTOBER HERO:</strong> +2% single/double chance, +4% HR chance with runners in scoring position (2B/3B) or during the final inning (Inning 3+ / Extras).",
         "tooltip": "Player Ratings & Attribute Guide"
     },
     "mode_select": {
@@ -3777,7 +3777,7 @@
         "cancel": "CANCEL",
         "rotation_title_5": "STARTING ROTATION (ROTATION - 5 CARDS)",
         "bullpen_title_6": "BULLPEN RELIEVERS (BULLPEN - 7 CARDS)",
-        "pitchers_box_subtitle": "5 Starters (SP) + 6 Relievers",
+        "pitchers_box_subtitle": "5 Starters (SP) + 7 Relievers",
         "batters_box_subtitle": "9 Starters + 5 Bench",
         "card_click_attributes": "🔄 CLICK TO VIEW ATTRIBUTES",
         "draft_trading_card": "🎴 DRAFT TRADING CARD",
@@ -3932,7 +3932,7 @@
     },
     "badge": {
         "captain_tooltip": "Captain: +5 to all ratings for teammates while on active roster.",
-        "clutch_tooltip": "Clutch Player: +2% single and double chance, +4% HR chance with runners in scoring position during final inning.",
+        "clutch_tooltip": "October Hero: +2% single and double chance, +4% HR chance with runners in scoring position during final inning.",
         "challenge162_tooltip": "Eligible for the 162-0 Challenge: was part of a roster that won a full run (Quick Play or Story Mode).",
         "injury_tooltip": "Injury: Permanent -20 rating penalty across all stats for the rest of the season.",
         "interera_label": "TIME TRAVELER",

@@ -561,7 +561,7 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
 
     if (!isClutch && !isCaptain && !isInterEra && !isChallengeWinner && !isInjured && lockNodes <= 0) return '';
 
-    const clutchToolTip = window.t ? window.t('badge.clutch_tooltip', 'Clutch Player: +4% de probabilidad de hit y +4% de HR con corredores en posición de anotar durante la última entrada.') : 'Clutch Player: +4% de probabilidad de hit y +4% de HR con corredores en posición de anotar durante la última entrada.';
+    const clutchToolTip = window.t ? window.t('badge.clutch_tooltip', 'October Hero: +4% de probabilidad de hit y +4% de HR con corredores en posición de anotar durante la última entrada.') : 'October Hero: +4% de probabilidad de hit y +4% de HR con corredores en posición de anotar durante la última entrada.';
     const captainToolTip = window.t ? window.t('badge.captain_tooltip', 'Captain: +5 a todos los ratings de sus compañeros de equipo mientras esté en el roster activo.') : 'Captain: +5 a todos los ratings de sus compañeros de equipo mientras esté en el roster activo.';
     const interEraToolTip = window.t ? window.t('badge.interera_tooltip') : 'Fuera de Época: este jugador no estaba activo en la temporada seleccionada — cuenta el doble para su sinergia.';
     const challengeWinnerToolTip = window.t ? window.t('badge.challenge162_tooltip', 'Elegible para el 162-0 Challenge: formó parte de un roster que ganó una run completa (Quick Play o Modo Historia).') : 'Elegible para el 162-0 Challenge: formó parte de un roster que ganó una run completa (Quick Play o Modo Historia).';
@@ -3221,14 +3221,14 @@ function initGameModeSelector() {
       const clt = p.clt !== undefined ? Number(p.clt) : (p.clt_val !== undefined ? Number(p.clt_val) : (p.clu !== undefined ? Number(p.clu) : 50));
       // Same recipe as pitchers_etl.py (paso_11): 24% H/9, 32% STA, 12% K/9, 12% BB/9, 10% HR/9, 10% CLT.
       // The cut points are the pool percentiles (35 / 65 / 85 / 97.5) of the last ETL run; update them if the ETL changes.
-      const raw = h9 * 0.24 + sta * 0.32 + k9 * 0.12 + bb9 * 0.12 + hr9 * 0.10 + clt * 0.10;
+      const raw = h9 * 0.28 + sta * 0.28 + k9 * 0.12 + bb9 * 0.12 + hr9 * 0.10 + clt * 0.10 - 5; // same scale and cuts as batters (pitchers_etl.py PIT_RAW_SHIFT)
       // Pitcher badges (Clutch / Captain) add 2 each, as on the card; the cuts already count them.
       const pitBadge = (p.badge_clutch ? 2 : 0) + (p.badge_captain ? 2 : 0);
-      if (raw <= 41.1) return Math.floor(50.0 + ((raw - 15.0) / 26.1) * 9.9 + pitBadge);
-      if (raw <= 52.5) return Math.floor(60.0 + ((raw - 41.1) / 11.4) * 9.9 + pitBadge);
-      if (raw <= 63.8) return Math.floor(70.0 + ((raw - 52.5) / 11.3) * 9.9 + pitBadge);
-      if (raw <= 80.7) return Math.floor(80.0 + ((raw - 63.8) / 16.9) * 9.9 + pitBadge);
-      return Math.floor(Math.min(99.9, 90.0 + Math.min(9.9, ((raw - 80.7) / 25.0) * 9.9) + pitBadge));
+      if (raw <= 35) return Math.floor(50.0 + ((raw - 10.0) / 25) * 9.9 + pitBadge);
+      if (raw <= 45) return Math.floor(60.0 + ((raw - 35) / 10) * 9.9 + pitBadge);
+      if (raw <= 55) return Math.floor(70.0 + ((raw - 45) / 10) * 9.9 + pitBadge);
+      if (raw <= 75) return Math.floor(80.0 + ((raw - 55) / 20) * 9.9 + pitBadge);
+      return Math.floor(Math.min(99.9, 90.0 + Math.min(9.9, ((raw - 75) / 25.0) * 9.9) + pitBadge));
     }
     const up = p.upgrades || {};
     const hasMods = (up.con || 0) !== 0 || (up.pwr || 0) !== 0 || (up.eye || 0) !== 0 || (up.k_avd || 0) !== 0 || (up.spd || 0) !== 0 || (up.def || 0) !== 0 || p.perm_con || p.perm_pwr || p.perm_eye || p.perm_spd || p.perm_def;
@@ -3248,15 +3248,15 @@ function initGameModeSelector() {
       // The OVR uses the defense with more weight on the position (def_ovr of the card, lahman_etl_v5.py); upgrades move it the same.
     const defOvr = def + ((p.def_ovr !== undefined && p.def !== undefined) ? p.def_ovr - p.def : 0);
     // Defense weight by position (DEF_OVR_WEIGHT_BY_POS of lahman_etl_v5.py): 16% on average; what a position weighs less or more goes to the bat.
-    const wDef = p.def_w || ({ CF: 0.1715, SS: 0.1698, '3B': 0.1647, '2B': 0.1528, RF: 0.1528, LF: 0.1477, C: 0.1375, '1B': 0.1154, DH: 0.1154 })[p.pos] || 0.16; // def_w: blended by the games he played at each position
+    const wDef = p.def_w || ({ CF: 0.17, SS: 0.17, '3B': 0.16, C: 0.16, '2B': 0.15, RF: 0.16, LF: 0.15, '1B': 0.12, DH: 0.11 })[p.pos] || 0.16; // def_w: blended by the games he played at each position
     const raw = (con * 0.26 + pwr * 0.26 + eye * 0.12) * (1 + (0.16 - wDef) / 0.64) + defOvr * wDef + spd * 0.10 + kavd * 0.10;
       // Cut points = pool percentiles of the last lahman_etl_v5.py run (see paso_15); update them if the ETL changes.
       let base;
-      if (raw <= 34.2) base = 50.0 + ((raw - 10.0) / 24.2) * 9.9;
-      else if (raw <= 43.7) base = 60.0 + ((raw - 34.2) / 9.5) * 9.9;
-      else if (raw <= 54.6) base = 70.0 + ((raw - 43.7) / 10.9) * 9.9;
-      else if (raw <= 74.6) base = 80.0 + ((raw - 54.6) / 20.0) * 9.9;
-      else base = 90.0 + Math.min(9.9, ((raw - 74.6) / 25.0) * 9.9);
+      if (raw <= 35) base = 50.0 + ((raw - 10.0) / 25) * 9.9;
+      else if (raw <= 45) base = 60.0 + ((raw - 35) / 10) * 9.9;
+      else if (raw <= 55) base = 70.0 + ((raw - 45) / 10) * 9.9;
+      else if (raw <= 75) base = 80.0 + ((raw - 55) / 20) * 9.9;
+      else base = 90.0 + Math.min(9.9, ((raw - 75) / 25.0) * 9.9);
       // Clutch / Captain badges add +2 OVR each, as in the ETL (paso_15).
       const badge = ((p.clutch || p.is_clutch) ? 2 : 0) + ((p.captain || p.is_captain) ? 2 : 0);
       return base + badge;
@@ -3556,18 +3556,18 @@ function initGameModeSelector() {
     const isCaptain = !!(player.captain || player.is_captain || player.badge_captain);
     const isDoubleBadge = isClutch && isCaptain;
 
-    const clutchToolTip = window.t ? window.t('badge.clutch_tooltip', 'Clutch Player: +4% de probabilidad de hit y +4% de HR con corredores en posición de anotar durante la última entrada.') : 'Clutch Player: +4% de probabilidad de hit y +4% de HR con corredores en posición de anotar durante la última entrada.';
+    const clutchToolTip = window.t ? window.t('badge.clutch_tooltip', 'October Hero: +4% de probabilidad de hit y +4% de HR con corredores en posición de anotar durante la última entrada.') : 'October Hero: +4% de probabilidad de hit y +4% de HR con corredores en posición de anotar durante la última entrada.';
     const captainToolTip = window.t ? window.t('badge.captain_tooltip', 'Captain: +5 a todos los ratings de sus compañeros de equipo mientras esté en el roster activo.') : 'Captain: +5 a todos los ratings de sus compañeros de equipo mientras esté en el roster activo.';
 
     let ribbonHTML = '';
     if (isDoubleBadge) {
       ribbonHTML = `
-        <div class="card-ribbon ribbon-bottom-left ribbon-stagger-1 ribbon-clutch" title="${clutchToolTip}">CLUTCH</div>
+        <div class="card-ribbon ribbon-bottom-left ribbon-stagger-1 ribbon-clutch" title="${clutchToolTip}">OCTOBER</div>
         <div class="card-ribbon ribbon-bottom-left ribbon-stagger-2 ribbon-captain" title="${captainToolTip}">CAPTAIN</div>
       `;
     } else if (isClutch) {
       ribbonHTML = `
-        <div class="card-ribbon ribbon-bottom-left ribbon-clutch" title="${clutchToolTip}">CLUTCH</div>
+        <div class="card-ribbon ribbon-bottom-left ribbon-clutch" title="${clutchToolTip}">OCTOBER</div>
       `;
     } else if (isCaptain) {
       ribbonHTML = `
@@ -3722,7 +3722,7 @@ function initGameModeSelector() {
         ratings_kavd: '<strong style="color:#ec4899;">K/AVD — Evasión de Ponches:</strong> Reduce la zona de ponches (SO) en la tirada del dado. Clave para evitar el daño directo a la salud del equipo que provocan los ponches.',
         ratings_spd: '<strong style="color:#38bdf8;">SPD — Velocidad:</strong> Activa intentos de robo de base en sencillos (+20% daño al pitcher). Además, desde 60 SPD otorga de 5% a 30% de probabilidad de estirar sencillos y dobles a bases extra (1B→2B→3B).',
         ratings_def: '<strong style="color:#a855f7;">DEF — Defensa:</strong> Contribuye al <strong>Escudo</strong> del equipo. Cuanto mayor DEF promedio, más escudo tienes disponible para absorber OUTs antes de perder HP.',
-        ratings_clutch: '<strong style="color:#ef4444;">⚡ CLUTCH PLAYER:</strong> +2% de probabilidad de sencillo y doble, +4% de HR con corredores en posición de anotar o durante la última entrada.',
+        ratings_clutch: '<strong style="color:#ef4444;">⚡ OCTOBER HERO:</strong> +2% de probabilidad de sencillo y doble, +4% de HR con corredores en posición de anotar o durante la última entrada.',
         ratings_captain: '<strong style="color:#eab308;">👑 CAPTAIN:</strong> +5 a todos los ratings de sus compañeros de equipo mientras esté en el roster activo.'
       },
       en: {
@@ -3757,7 +3757,7 @@ function initGameModeSelector() {
         ratings_kavd: '<strong style="color:#ec4899;">K/AVD — Strikeout Avoidance:</strong> Shrinks the Strikeout (SO) zone on dice rolls. Essential for preventing direct team HP damage.',
         ratings_spd: '<strong style="color:#38bdf8;">SPD — Speed:</strong> Triggers base stealing on 1B and 2B (+20% pitcher damage debuff). Also grants 10% to 50% chance (above 60 SPD) to stretch hits into extra bases (1B➔2B➔3B).',
         ratings_def: '<strong style="color:#a855f7;">DEF — Defense:</strong> Contributes to Team <strong>Shield</strong>. Higher average DEF grants more shield to absorb OUTs before losing team HP.',
-        ratings_clutch: '<strong style="color:#ef4444;">⚡ CLUTCH PLAYER:</strong> +2% single/double chance, +4% HR chance with runners in scoring position (2B/3B) or during the final inning (Inning 3+ / Extras).',
+        ratings_clutch: '<strong style="color:#ef4444;">⚡ OCTOBER HERO:</strong> +2% single/double chance, +4% HR chance with runners in scoring position (2B/3B) or during the final inning (Inning 3+ / Extras).',
         ratings_captain: '<strong style="color:#eab308;">👑 CAPTAIN:</strong> +5 to all attributes (CON, PWR, EYE, K/AVD, SPD, DEF) for all teammates while on the active roster.'
       }
     };
@@ -8200,7 +8200,7 @@ function initGameModeSelector() {
     `;
 
     let cleanDetails = details ? details.replace(/🎲 \[\d+\] \[[^\]]+\] /, '').replace(/−/g, '-') : '';
-    cleanDetails = cleanDetails.replace(/⚡\s*¡?CLUTCH PLAYER!?[^—\n]*[—\.]\s*(\(\+[^)]+\)\.?)?\s*/gi, '').replace(/^⚡\s*¡?CLUTCH PLAYER!?[^\.]*\.\s*/gi, '').trim();
+    cleanDetails = cleanDetails.replace(/⚡\s*¡?OCTOBER HERO!?[^—\n]*[—\.]\s*(\(\+[^)]+\)\.?)?\s*/gi, '').replace(/^⚡\s*¡?OCTOBER HERO!?[^\.]*\.\s*/gi, '').trim();
     cleanDetails = cleanDetails.replace(/Anotan 0 carreras\.\s*/gi, '').replace(/0 runs scored\.\s*/gi, '').trim();
     // Shorten long descriptions so popups stay punchy and compact
     cleanDetails = cleanDetails.replace(/conecta rodado y el fildeador comete pifia/gi, 'se embasa por error').replace(/hits a grounder and the fielder commits an error/gi, 'reaches on error');
@@ -9571,7 +9571,7 @@ function initGameModeSelector() {
 
     const clutchSlot = document.getElementById('clutch-banner-slot');
     if (clutchSlot) {
-      clutchSlot.innerHTML = isClutchActive ? `<div class="clutch-active-banner">⚡ ¡CLUTCH PLAYER ACTIVO!</div>` : '';
+      clutchSlot.innerHTML = isClutchActive ? `<div class="clutch-active-banner">⚡ ¡OCTOBER HERO ACTIVO!</div>` : '';
     }
 
     zonesEl.innerHTML = `

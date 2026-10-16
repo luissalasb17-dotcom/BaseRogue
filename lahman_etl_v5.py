@@ -6,6 +6,7 @@ Cambios v5.0: Pico 7 temporadas | 100% Pico (Sin carrera) | Normalizacion OPS+ |
 Uso: pip install pandas numpy && python lahman_etl_v5.py
 """
 
+import os
 import numpy as np
 import pandas as pd
 from pathlib import Path
@@ -461,6 +462,26 @@ def paso_4_pico_batting(batting, war_bat, people):
         return g.head(PEAK_SEASONS)
 
     pico_off_df = bat_yearly.groupby("playerID", group_keys=True).apply(seleccionar_pico_off).reset_index(level=0)
+    # Prueba SPD_PEAK=br (decision pendiente del usuario): la Velocidad mira las temporadas en que el
+    # jugador mejor corria segun Rbaser (runs_br de bbref), no las de su pico de bateo.
+    _spd_peak_br = os.environ.get("SPD_PEAK", "br") == "br" and not war_bat.empty and not people.empty
+    if _spd_peak_br:
+        _w = war_bat.copy()
+        _w["runs_br"] = pd.to_numeric(_w["runs_br"].replace("NULL", np.nan), errors="coerce").fillna(0)
+        _rb = _w.groupby(["player_ID","year_ID"])["runs_br"].sum().reset_index()
+        _rb.columns = ["bbrefID","yearID","runs_br_y"]
+        _rb = _rb.merge(people[["playerID","bbrefID"]].dropna(subset=["bbrefID"]), on="bbrefID", how="left").dropna(subset=["playerID"])
+        _by = bat_yearly.merge(_rb[["playerID","yearID","runs_br_y"]], on=["playerID","yearID"], how="left")
+        _by["runs_br_y"] = _by["runs_br_y"].fillna(-99)
+        # Solo temporadas con volumen (100+ AB) compiten; si no alcanza, las de mas turnos
+        def _sel_run(g):
+            q = g[g["AB"] >= 100]
+            if len(q) < PEAK_SEASONS:
+                q = g.sort_values("AB", ascending=False).head(PEAK_SEASONS)
+            return q.sort_values("runs_br_y", ascending=False).head(PEAK_SEASONS)
+        _pr = _by.groupby("playerID", group_keys=True).apply(_sel_run).reset_index(level=0)
+        _run_peak = _pr.groupby("playerID").agg(run_sb=("SB","sum"), run_cs=("CS_adj","sum"), run_3b=("B3","sum"),
+                                                 run_ab=("AB","sum"), run_pa=("PA_y","sum"), run_br=("runs_br_y", lambda x: x[x > -99].sum())).reset_index()
     pico_tot_df = bat_yearly.groupby("playerID", group_keys=True).apply(seleccionar_pico_tot).reset_index(level=0)
 
     # El peak_year de era es la mediana de las 7 mejores temporadas por WAR Total
@@ -522,6 +543,19 @@ def paso_4_pico_batting(batting, war_bat, people):
     peak["peak_sb_eff"]       = (peak["peak_sb"] + SB_EFF_ANCHOR * sb_eff_tipica) / (sb_att + SB_EFF_ANCHOR)
     peak["peak_sb_vol_log"]   = np.log1p(peak["peak_sb"])
     peak["peak_extra_base_f"] = (peak["peak_sb"] + peak["peak_3b"]) / ab_p
+    if _spd_peak_br:
+        peak = peak.merge(_run_peak, on="playerID", how="left")
+        _ok = peak["run_ab"].fillna(0) > 0
+        _att = peak["run_sb"] + peak["run_cs"]
+        peak.loc[_ok, "peak_sb_eff"] = ((peak["run_sb"] + SB_EFF_ANCHOR * sb_eff_tipica) / (_att + SB_EFF_ANCHOR))[_ok]
+        peak.loc[_ok, "peak_sb_vol_log"] = np.log1p(peak["run_sb"])[_ok]
+        peak.loc[_ok, "peak_extra_base_f"] = ((peak["run_sb"] + peak["run_3b"]) / peak["run_ab"])[_ok]
+        peak["spd_sb"] = peak["run_sb"].where(_ok, peak["peak_sb"])
+        peak["spd_3b"] = peak["run_3b"].where(_ok, peak["peak_3b"])
+        peak["spd_ab"] = peak["run_ab"].where(_ok, peak["peak_ab"])
+        peak["spd_pa"] = peak["run_pa"].where(_ok, peak["peak_pa"])
+        peak["spd_cs"] = peak["run_cs"].where(_ok, peak["peak_cs_adj"])
+        peak["spd_br"] = peak["run_br"].where(_ok, 0.0)
     print(f"  Pico calculado para {len(peak):,} jugadores")
     return peak, pico_off_df, pico_tot_df
 
@@ -559,6 +593,20 @@ def paso_5_hibrido(career, peak):
     vol_max = df["sb_volume_log"].replace(0, np.nan).max()
     vol_max = vol_max if pd.notna(vol_max) and vol_max > 0 else 1.0
     df["sb_score"] = df["sb_efficiency"] * 0.30 + (df["sb_volume_log"] / vol_max) * 0.70
+    # Prueba (SB_RATE=1): el volumen como intentos de robo por vez en primera (sencillos + boletos +
+    # golpeados) del pico, lineal, en vez del logaritmo del total de robos (el logaritmo hacia que 20
+    # robos en siete temporadas valieran casi la mitad que 900).
+    if os.environ.get("SB_RATE", "0") == "1" and "peak_sb" in df.columns:
+        _opp = (df["peak_h"] - df["peak_2b"] - df["peak_3b"] - df["peak_hr"] + df["peak_bb"] + df["peak_hbp"].fillna(0))
+        if os.environ.get("SB_RATE_DEN", "first") == "pa":  # intentos por turno (no castiga al que se embasa mucho)
+            _opp = df["peak_pa"].fillna(0)
+        _att = df["peak_sb"] + df["peak_cs_adj"].fillna(0)
+        # Muestra chica: ancla de SB_RATE_ANCHOR veces en primera hacia la tasa tipica.
+        _A = float(os.environ.get("SB_RATE_ANCHOR", "300" if os.environ.get("SB_RATE_DEN", "first") != "pa" else "600"))
+        _typ = float(_att.sum() / max(1.0, _opp.clip(lower=0).sum()))
+        _rate = ((_att + _A * _typ) / (_opp.clip(lower=0) + _A)).fillna(_typ)
+        _ref = float(_rate[_opp > 300].quantile(0.98)) or 1.0
+        df["sb_score"] = df["sb_efficiency"] * 0.30 + (_rate / _ref).clip(upper=1.3) * 0.70
 
     print(f"  Metricas hibridas para {len(df):,} jugadores")
     return df
@@ -1238,6 +1286,19 @@ def paso_10_atributos_raw_bateo(df):
     b3 = df["peak_3b"].fillna(0)
     bb = df["peak_bb"].fillna(df["career_bb"]).fillna(0)
     so = df["peak_so"].fillna(df["career_so"]).fillna(0)
+    # Prueba (variable de entorno BABIP_REG, 0 = apagado): acerca el BABIP del pico al de la carrera
+    # completa en esa fraccion, para que una temporada con suerte en batazos en juego no infle el
+    # Contacto. Solo donde hay ponches registrados en el pico y en la carrera.
+    _babip_reg = float(os.environ.get("BABIP_REG", "0"))
+    if _babip_reg > 0:
+        _bip = (ab - so - hr)
+        _cab, _ch = df["career_ab"].fillna(0), df["career_h"].fillna(0)
+        _cso, _chr = df["career_so"].fillna(0), df["career_hr"].fillna(0)
+        _cbip = (_cab - _cso - _chr)
+        _ok = (df["peak_pa_so"].fillna(0) >= 0.8 * pa) & (_cso > 0) & (_bip > 50) & (_cbip > 100)
+        _bp = (h - hr) / _bip.where(_bip > 0)
+        _bc = (_ch - _chr) / _cbip.where(_cbip > 0)
+        h = h.where(~_ok, hr + _bip * ((1 - _babip_reg) * _bp + _babip_reg * _bc))
 
     is_nlb = (df["league_group"] == "NLB") if "league_group" in df.columns else False
     # Ancla unica: 1 temporada de titular (600 PA / 540 AB), igual para todas las tasas y
@@ -1305,9 +1366,14 @@ def paso_10_atributos_raw_bateo(df):
     )
 
     # Frecuencia de robos + triples (componente de Velocidad) con el mismo suavizado de 1 temporada.
-    xbf_num = df["peak_sb"].fillna(0) + b3
-    prior_xbf = _prior(xbf_num / ab_nz, ab, era, share, 0.050)
-    df["extra_base_freq"] = (xbf_num + m_ab * prior_xbf) / (ab + m_ab)
+    if "spd_ab" in df.columns:  # SPD_PEAK=br: temporadas de mejor corrido
+        _sab = df["spd_ab"].fillna(ab); xbf_num = df["spd_sb"].fillna(0) + df["spd_3b"].fillna(0)
+        prior_xbf = _prior(xbf_num / _sab.replace(0, np.nan), _sab, era, share, 0.050)
+        df["extra_base_freq"] = (xbf_num + m_ab * prior_xbf) / (_sab + m_ab)
+    else:
+        xbf_num = df["peak_sb"].fillna(0) + b3
+        prior_xbf = _prior(xbf_num / ab_nz, ab, era, share, 0.050)
+        df["extra_base_freq"] = (xbf_num + m_ab * prior_xbf) / (ab + m_ab)
 
     # ── Estimacion de ponches (K/AVD) para Ligas Negras y datos faltantes ──
     # En Ligas Negras mas del 95% de los boxscores no registraban ponches. Para no inflar a los
@@ -1395,7 +1461,7 @@ def paso_11_motor_defensivo(df, war_bat, awards):
         ).reset_index().rename(columns={"player_ID":"bbrefID"})
 
         # Speed peak (7 best seasons by overall WAR)
-        war_sorted_spd = war.sort_values(["player_ID", "WAR"], ascending=[True, False])
+        war_sorted_spd = war.sort_values(["player_ID", "runs_br" if os.environ.get("SPD_PEAK", "br") == "br" else "WAR"], ascending=[True, False])
         war_peak_spd = war_sorted_spd.groupby("player_ID").head(PEAK_SEASONS)
         war_career_spd = war_peak_spd.groupby("player_ID").agg(
             runs_br_peak=("runs_br","sum"),
@@ -1536,6 +1602,8 @@ def paso_14_velocidad(df):
     # asi que el grupo de comparacion es una ventana deslizante: las cartas con pico a
     # +-SPEED_RADIUS años (peso triangular), en vez de la Era fija.
     SPEED_RADIUS = 8
+    # Pesos robo / triples+robos / corrido de bases (prueba: variable de entorno SPD_W="0.45,0.30,0.25")
+    _SPD_W = [float(x) for x in os.environ.get("SPD_W", "0.45,0.30,0.25").split(",")]
     df = df.reset_index(drop=True)
     y = pd.to_numeric(df["peak_year"], errors="coerce").values.astype(float)
     sb = df["sb_score"].fillna(0).values.astype(float)
@@ -1553,7 +1621,31 @@ def paso_14_velocidad(df):
         sb_c = (sb[m] / sb_max) if sb_max > 0 else 0.0
         xb_c = (xb[m] / xb_max) if xb_max > 0 else 0.0
         # Mayor peso a SB y Triples/SB para reflejar velocidad pura
-        temp[m] = sb_c * 0.45 + xb_c * 0.30 + br[m] * 0.25
+        temp[m] = sb_c * _SPD_W[0] + xb_c * _SPD_W[1] + br[m] * _SPD_W[2]
+    # Prueba SPD_V2=1: cada cosa una sola vez y por turno. Rbaser por turno 40%, intentos de robo por
+    # turno 25%, eficiencia 10%, triples por turno 25%; cada parte contra su ventana de epoca
+    # (percentil 2 = 0, percentil 98 = 1) y con ajuste por muestra chica.
+    if os.environ.get("SPD_V2", "0") == "1" and "spd_pa" in df.columns:
+        pa_ = df["spd_pa"].fillna(df.get("peak_pa")).fillna(0).astype(float)
+        ab_ = df["spd_ab"].fillna(0).astype(float)
+        att = (df["spd_sb"].fillna(0) + df["spd_cs"].fillna(0)).astype(float)
+        t_att = float(att.sum() / max(1.0, pa_.sum())); t_3b = float(df["spd_3b"].fillna(0).sum() / max(1.0, ab_.sum()))
+        comp = {
+            "br":  (df["spd_br"].fillna(0).astype(float) / (pa_ + 600.0) * 600.0).values,
+            "att": ((att + 600.0 * t_att) / (pa_ + 600.0)).values,
+            "eff": df["sb_efficiency"].fillna(0.65).astype(float).values,
+            "tri": ((df["spd_3b"].fillna(0).astype(float) + 540.0 * t_3b) / (ab_ + 540.0)).values,
+        }
+        W2 = {"br": 0.40, "att": 0.25, "eff": 0.10, "tri": 0.25}
+        if os.environ.get("SPD_V2_W"):
+            W2 = dict(zip(["br", "att", "eff", "tri"], [float(x) for x in os.environ["SPD_V2_W"].split(",")]))
+        temp = np.zeros(len(df))
+        for uy, w in weights.items():
+            m = y == uy
+            for k, v in comp.items():
+                lo_ = cuantil_ponderado(v[qual], w[qual], 0.02); hi_ = cuantil_ponderado(v[qual], w[qual], 0.98)
+                temp[m] += W2[k] * np.clip((v[m] - lo_) / max(1e-9, hi_ - lo_), -0.5, 2.0)
+        temp = temp - temp.min() + 0.01
     df["speed_raw_temp"] = temp
 
     # Ajuste por dificultad - 75% contra la media de la ventana
@@ -1573,11 +1665,17 @@ def paso_14_velocidad(df):
 
 
 # ── Longevidad y extremos: pasos comunes a bateadores y pitchers ─────────────────────────────
+BAT_RAW_CUTS = (35.0, 45.0, 55.0, 75.0)  # cortes fijos de raw (Uncommon, Rare, Epic, Legendary); ver paso de rareza
 LONGEVITY_SEASONS = 15      # segundo pico, mas largo (era 12; decision del usuario junto con quitar la regresion por menos de 7)
 # Carreras de fildeo que separan a los titulares de cada posicion (desvio estandar por temporada,
 # AL/NL 1947-2025); media de las ocho = 9.425. El DH usa el valor de primera base.
 _DEF_SPREAD = {"CF": 10.1, "SS": 10.0, "3B": 9.7, "2B": 9.0, "RF": 9.0, "LF": 8.7, "C": 8.1, "1B": 6.8, "DH": 6.8}
 DEF_OVR_WEIGHT_BY_POS = {p: round(0.16 * v / 9.425, 4) for p, v in _DEF_SPREAD.items()}
+# Decisiones del usuario (15 oct 2026): el catcher pesa como SS / CF (17%; los datos no miden recibir ni
+# llamar el juego) y el DH 11.5% como el 1B (su "defensa" es el castigo por no fildear).
+# Redondeados a numeros enteros (decision del usuario, 15 oct 2026); catcher 16% (decision de criterio:
+# los datos no miden recibir ni llamar el juego) y DH como el 1B.
+DEF_OVR_WEIGHT_BY_POS.update({"CF": 0.17, "SS": 0.17, "3B": 0.16, "C": 0.16, "2B": 0.15, "RF": 0.16, "LF": 0.15, "1B": 0.12, "DH": 0.11})
 DEF_OVR_POS_SHARE = 0.70    # peso del WAR defensivo (posicion incluida) en la defensa que usa el OVR
 LONGEVITY_WEIGHT  = 0.25    # peso del pico de 12 en el rating final
 # Pruebas (variables de entorno; sin ellas el ETL corre con los valores de arriba): LONG_SEASONS y
@@ -2000,12 +2098,22 @@ def paso_15_equipo_y_exportar(df, batting, teams, franchises, pico_df=None, war_
     # El OVR refleja limpiamente: 26% CON, 26% PWR, 12% EYE, 16% DEF, 10% SPD, 10% K-AVD.
     # Elimina multiplicadores artificiales por posición para evitar penalizar la versatilidad de los jugadores.
     w_def = 0.16
+    # Prueba (DEF_POS=pos | blend): peso de la defensa segun la posicion (carreras de fildeo que
+    # separan a los titulares de cada una), el DH con el 16% comun; "blend" mezcla los pesos de
+    # todas las posiciones que jugo segun su volumen. Lo que la defensa pesa de menos o de mas va al bate.
+    _dp = os.environ.get("DEF_POS", "blend")
+    if _dp in ("pos", "blend"):
+        _wp = dict(DEF_OVR_WEIGHT_BY_POS)
+        w_def = df["primary_pos"].map(_wp).fillna(0.16)
+        if _dp == "blend" and "def_w_blend" in df.columns:
+            w_def = df["def_w_blend"].fillna(w_def)  # tambien los DH: mezcla de todas las posiciones que jugaron (DH incluido)
     df["def_w"] = w_def
+    _bm = 1.0 + (0.16 - w_def) / 0.64
     df["raw_ovr"] = (
-        df["contact_val"] * 0.26 +
-        df["power_val"]   * 0.26 +
-        df["eye_val"]     * 0.12 +
-        df["defense_ovr_val"] * 0.16 +
+        df["contact_val"] * 0.26 * _bm +
+        df["power_val"]   * 0.26 * _bm +
+        df["eye_val"]     * 0.12 * _bm +
+        df["defense_ovr_val"] * w_def +
         df["speed_val"]   * 0.10 +
         df["k_avoid_val"] * 0.10
     )
@@ -2023,7 +2131,7 @@ def paso_15_equipo_y_exportar(df, batting, teams, franchises, pico_df=None, war_
     awards_path = DATA_DIR / "AwardsPlayers.csv"
     if awards_path.exists():
         awards_df = pd.read_csv(awards_path, low_memory=False)
-        clutch_award_ids = {'Babe Ruth Award', 'ALCS MVP', 'NLCS MVP', 'All-Star Game MVP', 'World Series MVP'}
+        clutch_award_ids = {'Babe Ruth Award', 'ALCS MVP', 'NLCS MVP', 'World Series MVP'}  # insignia OCTOBER HERO: solo postemporada (decision del usuario: sin el MVP del Juego de Estrellas)
         captain_award_ids = {'Roberto Clemente Award', 'Lou Gehrig Memorial Award', 'Hutch Award', 'Branch Rickey Award'}
         clutch_pids  = set(awards_df[awards_df['awardID'].isin(clutch_award_ids)]['playerID'].unique())
         captain_pids = set(awards_df[awards_df['awardID'].isin(captain_award_ids)]['playerID'].unique()) | OFFICIAL_CAPTAIN_PIDS
@@ -2037,11 +2145,11 @@ def paso_15_equipo_y_exportar(df, batting, teams, franchises, pico_df=None, war_
 
     # ── OVR con boost de Badges (+2 por badge) & Rareza ─────────────────────
     # Cortes de rareza por percentil del pool (mismo esquema que pitchers_etl.py):
-    # 35% Common, 30% Uncommon, 20% Rare, 12.5% Epic, 2.5% Legendary. Al ser percentiles y no
+    # 35% Common, 30% Uncommon, 20% Rare, 13% Epic, 2% Legendary. Al ser percentiles y no
     # numeros fijos, la distribucion no se desplaza cuando cambia el calculo de atributos.
     # El cupo es estricto e incluye a quien llega por insignia: los cortes se ajustan sobre la
     # nota final (ya con el +2 por badge), no sobre la nota base.
-    RARITY_FLOORS = [(60.0, 0.65), (70.0, 0.35), (80.0, 0.15), (90.0, 0.025)]  # (OVR minimo, % del pool en ese nivel o superior)
+    RARITY_FLOORS = [(60.0, 0.65), (70.0, 0.35), (80.0, 0.15), (90.0, 0.020)]  # (OVR minimo, % del pool en ese nivel o superior)
     raw = df["raw_ovr"].astype(float).fillna(10.0)
     badge_boost = (df["is_clutch"].astype(int) * 2.0) + (df["is_captain"].astype(int) * 2.0)
 
@@ -2055,11 +2163,15 @@ def paso_15_equipo_y_exportar(df, batting, teams, franchises, pico_df=None, war_
         return (np.round(res, 1) + badge_boost).clip(50.0, 99.9).round(1)
 
     cuts = [float(raw.quantile(1.0 - share)) for _, share in RARITY_FLOORS]
+    # Cortes FIJOS de raw (decision del usuario, 15 oct 2026): se calcularon una vez con el cupo
+    # 35 / 30 / 20 / 13 / 2 % y quedan quietos; si entran o salen cartas del pool nadie cambia de
+    # rareza por arrastre. RAW_CUTS_FIXED=0 vuelve al cupo por porcentaje (para recalcularlos).
+    _fixed = os.environ.get("RAW_CUTS_FIXED", "1") != "0" and BAT_RAW_CUTS is not None
     print(f"  Cortes raw_ovr por percentil (sin badges): {[round(c, 1) for c in cuts]}"
           f"  (cortes fijos anteriores: 38.0 / 47.0 / 57.2 / 77.4)")
     # Subir un corte reduce cuantos alcanzan ese nivel: biseccion por corte, de arriba hacia abajo,
     # repetida porque cada corte desplaza levemente el tramo inferior.
-    for _ in range(3):
+    for _ in range(0 if _fixed else 3):
         for k in range(3, -1, -1):
             floor, share = RARITY_FLOORS[k]
             target = int(round(share * len(df)))
@@ -2073,7 +2185,9 @@ def paso_15_equipo_y_exportar(df, batting, teams, franchises, pico_df=None, war_
                 else:
                     hi = mid
             cuts[k] = hi
-    print(f"  Cortes raw_ovr ajustados al cupo con badges: {[round(c, 1) for c in cuts]}")
+    if _fixed:
+        cuts = list(BAT_RAW_CUTS)
+    print(f"  Cortes raw_ovr {'FIJOS' if _fixed else 'ajustados al cupo con badges'}: {[round(c, 2) for c in cuts]}")
 
     df["avg_attr_score"] = cosmetic_scores(cuts)
     df["rarity"]         = df["avg_attr_score"].apply(asignar_rareza)

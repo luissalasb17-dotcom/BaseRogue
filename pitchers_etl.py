@@ -1275,6 +1275,26 @@ def paso_8_atributos_raw(df):
     # 125) y los abridores modernos, que nunca relevan, quedaban en neutro (Cole 61). Dejarlo solo
     # para relevistas subia los relevistas Legendary de 14 a 18.
     df["clt_raw"] = lob_smooth * 100.0
+    # Prueba (CLT_RESID=1): Clutch = corredores dejados en base POR ENCIMA de lo que se espera con su
+    # H/9, BB/9, K/9 y HR/9 (recta ponderada por corredores sobre todas las cartas), con un ancla de
+    # muestra el doble de grande. Asi no repite lo que ya miden los otros ratings.
+    _cr = _os.environ.get("CLT_RESID", "h")
+    if _cr in ("1", "h"):
+        ipz = ip_k.where(ip_k > 0)
+        if _cr == "h":  # solo descuenta lo que explican los hits y jonrones permitidos (el ponche sigue contando)
+            X = np.column_stack([np.ones(len(df)), (h_k / ipz * 9), (hr_k / ipz * 9)])
+        else:
+            X = np.column_stack([np.ones(len(df)), (h_k / ipz * 9), (bb_k / ipz * 9), (so_k / ipz * 9), (hr_k / ipz * 9)])
+        y_ = (num_lob / denom_pos).values
+        w_ = denom_lob.clip(lower=0).values
+        ok = np.isfinite(X).all(1) & np.isfinite(y_) & (w_ > 30)
+        beta = np.linalg.lstsq(X[ok] * np.sqrt(w_[ok])[:, None], y_[ok] * np.sqrt(w_[ok]), rcond=None)[0]
+        exp_ = pd.Series(np.where(np.isfinite(X).all(1), X @ beta, np.nan), index=df.index)
+        exp_ = exp_.fillna(prior_lob)
+        resid = ((num_lob - exp_ * denom_lob) / (denom_lob + 2.0 * m_lob)).fillna(0)
+        _bl = float(_os.environ.get("CLT_BLEND", "0.6"))
+        df["clt_raw"] = (_bl * (prior_lob.mean() + resid).clip(0.55, 0.90) + (1 - _bl) * lob_smooth) * 100.0
+        print("  Clutch residual: coeficientes", np.round(beta, 4))
     df["clu_raw"] = df["clt_raw"]
 
     print("  h9_raw, k9_raw, bb9_raw, hr9_raw, sta_raw, clt_raw calculados con suavizado Bayesiano")
@@ -1448,7 +1468,7 @@ def paso_10_normalizar_por_era(df):
     return df
 
 
-# ── PASO 11: OVR y Rareza (24% H/9, 32% STA, 12% K/9, 12% BB/9, 10% HR/9, 10% CLT) ──
+# ── PASO 11: OVR y Rareza (28% H/9, 28% STA, 12% K/9, 12% BB/9, 10% HR/9, 10% CLT) ──
 # (Antes 28 / 28. Decision del usuario tras comparar contra el WAR: el H/9 es el rating que
 # menos explica el WAR -6%- y la Stamina el que mas -44%-; con 28/28 habia 13 relevistas
 # Legendary, 10 de ellos fuera del top 300 por WAR.)
@@ -1460,14 +1480,20 @@ def paso_10_normalizar_por_era(df):
 # Insignias de pitchers (decision del usuario; antes solo las tenian los bateadores), con el mismo
 # criterio: Clutch = premios de postemporada y del Juego de Estrellas, Captain = premios de
 # liderazgo mas la lista de capitanes oficiales. Cada una suma BADGE_OVR al OVR.
-CLUTCH_AWARDS = {'Babe Ruth Award', 'ALCS MVP', 'NLCS MVP', 'All-Star Game MVP', 'World Series MVP'}
+CLUTCH_AWARDS = {'Babe Ruth Award', 'ALCS MVP', 'NLCS MVP', 'World Series MVP'}  # insignia OCTOBER HERO: solo postemporada
 CAPTAIN_AWARDS = {'Roberto Clemente Award', 'Lou Gehrig Memorial Award', 'Hutch Award', 'Branch Rickey Award'}
 OFFICIAL_CAPTAIN_PITCHERS = {'guidrro01', 'koufasa01'}
 BADGE_OVR = 2.0
 
 
+PIT_RAW_CUTS = (35.0, 45.0, 55.0, 75.0)  # cortes fijos de raw (Uncommon, Rare, Epic, Legendary), los mismos de los bateadores
+# El raw de los pitchers sale 5 puntos mas alto que el de los bateadores (otros ratings, otra mezcla):
+# se le resta para que los dos grupos usen la misma escala y los mismos cortes (decision del usuario).
+PIT_RAW_SHIFT = 5.0
+
+
 def paso_11_ovr_rareza(df, awards=None):
-    print("\n  PASO 11: OVR y Rareza (24% H/9, 32% STA, 12% K/9, 12% BB/9, 10% HR/9, 10% CLT)...")
+    print("\n  PASO 11: OVR y Rareza (28% H/9, 28% STA, 12% K/9, 12% BB/9, 10% HR/9, 10% CLT)...")
     df = df.copy()
     if awards is not None and len(awards):
         df["is_clutch"] = df["playerID"].isin(set(awards[awards["awardID"].isin(CLUTCH_AWARDS)]["playerID"]))
@@ -1479,13 +1505,13 @@ def paso_11_ovr_rareza(df, awards=None):
     print(f"  Insignias: Clutch={int(df['is_clutch'].sum())} | Captain={int(df['is_captain'].sum())}")
 
     df["raw_ovr"] = (
-        df["h9_val"]  * 0.24 +
-        df["sta_val"] * 0.32 +
+        df["h9_val"]  * float(_os.environ.get("W_H9", "0.28")) +
+        df["sta_val"] * float(_os.environ.get("W_STA", "0.28")) +
         df["k9_val"]  * 0.12 +
         df["bb9_val"] * 0.12 +
         df["hr9_val"] * 0.10 +
         df["clt_val"] * 0.10
-    )
+    ) - PIT_RAW_SHIFT
 
     p35  = float(df["raw_ovr"].quantile(0.35))
     p65  = float(df["raw_ovr"].quantile(0.65))
@@ -1496,7 +1522,7 @@ def paso_11_ovr_rareza(df, awards=None):
     def ovr_with(c):
         c35, c65, c85, c975 = c
         r = df["raw_ovr"].astype(float)
-        res = np.where(r <= c35, 50.0 + ((r - 15.0) / max(0.1, c35 - 15.0)) * 9.9,
+        res = np.where(r <= c35, 50.0 + ((r - 10.0) / max(0.1, c35 - 10.0)) * 9.9,
               np.where(r <= c65, 60.0 + ((r - c35) / max(0.1, c65 - c35)) * 9.9,
               np.where(r <= c85, 70.0 + ((r - c65) / max(0.1, c85 - c65)) * 9.9,
               np.where(r <= c975, 80.0 + ((r - c85) / max(0.1, c975 - c85)) * 9.9,
@@ -1505,7 +1531,7 @@ def paso_11_ovr_rareza(df, awards=None):
 
     # Cupo estricto, igual que en bateadores: los cortes se mueven hasta que cada rareza tenga
     # su parte CONTANDO a quien sube por insignia (si no, las insignias agrandarian el cupo).
-    targets = [(0, 60.0, 0.65), (1, 70.0, 0.35), (2, 80.0, 0.15), (3, 90.0, 0.025)]
+    targets = [(0, 60.0, 0.65), (1, 70.0, 0.35), (2, 80.0, 0.15), (3, 90.0, 0.020)]
     lo_raw, hi_raw = float(df["raw_ovr"].min()), float(df["raw_ovr"].max())
     for _ in range(6):
         for idx, thr, share in reversed(targets):
@@ -1518,15 +1544,18 @@ def paso_11_ovr_rareza(df, awards=None):
                 else:
                     hi = mid
             cuts[idx] = (lo + hi) / 2
+    # Cortes FIJOS de raw (decision del usuario, 15 oct 2026); RAW_CUTS_FIXED=0 vuelve al cupo.
+    if _os.environ.get("RAW_CUTS_FIXED", "1") != "0" and PIT_RAW_CUTS is not None:
+        cuts = list(PIT_RAW_CUTS)
     p35, p65, p85, p975 = cuts
-    print(f"  Cortes de raw (para el recalculo de OVR del juego): {p35:.1f} / {p65:.1f} / {p85:.1f} / {p975:.1f}")
+    print(f"  Cortes de raw (para el recalculo de OVR del juego): {p35:.2f} / {p65:.2f} / {p85:.2f} / {p975:.2f}")
 
     def map_to_cosmetic_ovr_p(r):
         if r is None or pd.isna(r):
             return 50.0
         val = float(r)
         if val <= p35:
-            res = 50.0 + ((val - 15.0) / max(0.1, (p35 - 15.0))) * 9.9
+            res = 50.0 + ((val - 10.0) / max(0.1, (p35 - 10.0))) * 9.9
         elif val <= p65:
             res = 60.0 + ((val - p35) / max(0.1, (p65 - p35))) * 9.9
         elif val <= p85:

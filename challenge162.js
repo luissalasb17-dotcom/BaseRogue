@@ -425,21 +425,25 @@
     let remaining = candidates.slice();
     const order = [];
 
-    // 1. #4 Cleanup Hitter: Purest Power & Slugging Monster
-    remaining.sort((a, b) => (b.slgScore * 0.75 + b.pwr * 0.25) - (a.slgScore * 0.75 + a.pwr * 0.25));
-    const cleanUp = remaining.shift();
-
-    // 2. #3 Prime All-Around Hitter: High Contact + High Power (e.g. Griffey, Ruth, Mays)
+    // Traditional order (user, Oct 2026): the best all-around bat hits 3rd, the purest power 4th
+    // (cleanup), a contact / on-base man 2nd, OBP + speed leads off, the next power bat 5th.
+    // 1. #3 Best hitter on the team: contact + power (Aaron, Pujols, Mays)
     remaining.sort((a, b) => b.allAroundSlugger - a.allAroundSlugger);
     const thirdHitter = remaining.shift();
 
-    // 3. #2 Modern Sabermetric Ace: Best overall OPS remaining (e.g. Trout, Judge, Morgan, Bonds)
-    remaining.sort((a, b) => (b.opsScore * 0.70 + b.obpScore * 0.30) - (a.opsScore * 0.70 + a.obpScore * 0.30));
-    const secondHitter = remaining.shift();
+    // 2. #4 Cleanup: the most raw power left (home runs, not singles)
+    remaining.sort((a, b) => (b.pwr * 0.85 + b.eye * 0.15) - (a.pwr * 0.85 + a.eye * 0.15));
+    const cleanUp = remaining.shift();
 
-    // 4. #1 Leadoff: High OBP + Great Speed (e.g. Pete Rose, Rickey Henderson, Tim Raines)
+    // 3. #1 Leadoff: High OBP + Great Speed (e.g. Pete Rose, Rickey Henderson, Tim Raines)
     remaining.sort((a, b) => b.leadoffScore - a.leadoffScore);
     const leadoffHitter = remaining.shift();
+
+    // 4. #2 Contact and on-base: moves runners, rarely strikes out
+    const k_ = x => (x.p.k_avd !== undefined ? x.p.k_avd : 50);
+    remaining.sort((a, b) => (b.con * 0.45 + b.eye * 0.30 + k_(b) * 0.25) - (a.con * 0.45 + a.eye * 0.30 + k_(a) * 0.25));
+    const secondHitter = remaining.shift();
+
 
     // 5. #5 Secondary Slugger / Run Producer
     remaining.sort((a, b) => (b.slgScore * 0.65 + b.opsScore * 0.35) - (a.slgScore * 0.65 + a.opsScore * 0.35));
@@ -689,6 +693,16 @@
   // rosters of the active league; the getters above read from it first.
   const _leagueRosterRegistry = new Map();
   let _poolIndex = null;
+  // The Dex wants the original pool card: the copies the 162-0 plays with (momentum, roles,
+  // bench objects) carry other field names, and the Dex then showed a batter as a pitcher or a
+  // Clutch of 50 (user, Oct 2026). Look the card up by its key and fall back to what we have.
+  function dexCard(card) {
+    if (!card) return card;
+    const idx = poolIndex();
+    const isP = card.h9 !== undefined || card.k9 !== undefined;
+    const asBat = idx.bat.get(batterUnlockKey(card)), asPit = idx.pit.get(pitcherUnlockKey(card));
+    return (isP ? (asPit || asBat) : (asBat || asPit)) || card;
+  }
   function poolIndex() {
     if (!_poolIndex) {
       _poolIndex = { bat: new Map(), pit: new Map() };
@@ -721,10 +735,26 @@
     }
   }
 
+  // Rarity box (user, Oct 2026): most packs have a fixed rarity and a few are "any rarity" (each
+  // option drawn with the game's odds), so a team knows its tiers but there is still some luck.
+  // null = every pack any rarity (the old rule). The rivals are built from the same box.
+  const PACK_MIX = { fixed: { Legendary: 1, Epic: 4, Rare: 6, Uncommon: 6, Common: 3 } }; // + 6 any-rarity packs (user's pick, Oct 2026)
+  function rollBoxSchedule(n) {
+    if (!PACK_MIX) return null;
+    const out = [];
+    Object.entries(PACK_MIX.fixed).forEach(([r, k]) => { for (let i = 0; i < k; i++) out.push(r); });
+    while (out.length < n) out.push('any');
+    for (let i = out.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [out[i], out[j]] = [out[j], out[i]]; }
+    return out.slice(0, n);
+  }
   function buildPoolRoster(taken, picks) {
     const bats = getBatterPool(), pits = getPitcherPool();
+    const box = rollBoxSchedule(26);
+    let boxAt = 0;
     const draw = (pool, ok) => {
-      const free = pool.filter(p => !taken.has(personId(p)) && ok(p));
+      const want = box ? box[boxAt++] : 'any';
+      let free = pool.filter(p => !taken.has(personId(p)) && ok(p));
+      if (want !== 'any') { const same = free.filter(p => (p.rarity || 'Common') === want); if (same.length) free = same; }
       if (!free.length) return null;
       const candidates = [];
       for (let i = 0; i < picks && free.length; i++) {
@@ -1195,15 +1225,19 @@
   // against ordinary pitchers the hitters reproduce their tables (1.00 / 1.02 / 1.00 / 1.01 in
   // hits / HR / K / BB) and against ordinary hitters the pitchers too (within ~3%); what is left
   // in a season is the level of the opponents (every card is a peak).
-  const PIT_EDGE = 1.5; // user, Oct 2026: "la versión suave" (17 starters under 3.00 a season, ERA leader ~2.00)
+  const PIT_EDGE = 1.7; // user, Oct 2026: 1.5 was "la versión suave"; 1.7 after the 26-man rosters and the rarity box (league ERA 4.19 -> 4.11)
   const PA_SCALE_3B = 0.68; // the design table sits above the 1947-2025 triples rate
   function rateAt(ys, v) {
     if (!(v > RT_X[0])) return ys[0];
     for (let n = 1; n < RT_X.length; n++) {
       if (v <= RT_X[n]) return ys[n - 1] + (ys[n] - ys[n - 1]) * (v - RT_X[n - 1]) / (RT_X[n] - RT_X[n - 1]);
     }
-    return ys[ys.length - 1];
+    // Past 125 (a boosted 125 card) the table keeps the slope of its last stretch, so a boost still counts.
+    const k = ys.length - 1, x = Math.min(v, RATING_BOOST_MAX);
+    const out = ys[k] + (ys[k] - ys[k - 1]) * (x - RT_X[k]) / (RT_X[k] - RT_X[k - 1]);
+    return Math.max(ys[k] * 0.5, out); // falling tables (hits / walks / homers allowed) never reach zero
   }
+  const RATING_BOOST_MAX = 150;
   const baaOf = h9 => h9 / (27 + h9);
   // Hidden tendencies (challenge_tendencies.js, built from the real record): how each player
   // used his tools. bat: [homers, steals, strikeouts], pit: strikeouts, each as a multiplier of what the
@@ -1409,6 +1443,7 @@
   // other side. Applied to contact, power, eye and K-AVD of that plate appearance.
   // October (the user's playoff games): the engine stops at the big at-bats and the user rolls
   // the d100 for them, at the plate and on the mound (see bigLeverage in _simLeagueGame).
+  const USER_PROJ_EDGE = 3.5; // wins the user's team adds over its ratings in the preview projection
   const PLATOON_LINEUPS = true; // regular season: platoon nine against the opposing starter (all teams)
   const BIG_LI = 1.25, BIG_PACE = 0.45, BIG_STEP = 0.35, BIG_ROLLS_MAX = 5, CLUTCH_DICE = 1, PLATOON_SWAP_EDGE = 3;
   const PLATOON_ON = true;
@@ -1782,7 +1817,7 @@
   // Applies to every team in the regular season, the user included.
   // Games a regular plays in a season, normal vs as an Iron Man (measured over full seasons).
   const IRON_GAMES = { C: [135, 154], SS: [151, 159], '2B': [151, 159], CF: [151, 159], '3B': [152, 160], LF: [154, 160], RF: [154, 160], '1B': [156, 161], DH: [158, 161] };
-  const PACK_OPTIONS = 2; // cards shown in each pack; the player keeps one
+  const PACK_OPTIONS = 3; // cards shown in each pack; the player keeps one
   const PACK_FREE_CARDS = 1; // how many of them ignore the positions the roster still needs
   const PACK_DRAFT_REROLLS = 3; // total pack rerolls available across the entire 25-pack draft
   const MOMENTUM_STEP = 3;
@@ -1829,6 +1864,43 @@
     return SLOTS.filter(s => s !== 'DH' && lineupMap[s]).filter(s =>
       !bench.some(b => fits(b, s)) &&
       !SLOTS.some(s2 => s2 !== s && fits(lineupMap[s2], s) && bench.some(b => fits(b, s2))));
+  }
+
+  // Depth chart (user, Oct 2026): for every field position, who backs up the starter.
+  //  green  = a bench player whose main position it is, or two or more bench players who can play it;
+  //  yellow = only through a secondary position or a double switch (a starter moves there and a
+  //           bench player takes his spot, the same chains the rest days use);
+  //  red    = nobody: on a rest day a bench player plays it out of position.
+  const DEPTH_POS = ['C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF'];
+  function rosterDepth(lineupMap, bench) {
+    const bn = (bench || []).filter(Boolean);
+    const nm = p => cleanName(p);
+    return DEPTH_POS.map(s => {
+      const starter = lineupMap && lineupMap[s];
+      const prim = bn.filter(b => canPlayerFillPrimary(b, s));
+      const sec = bn.filter(b => !canPlayerFillPrimary(b, s) && canPlayerFillSlot(b, s));
+      const chains = [];
+      SLOTS.forEach(s2 => {
+        const mover = lineupMap && lineupMap[s2];
+        if (s2 === s || !mover || !canPlayerFillSlot(mover, s)) return;
+        const sub = bn.find(b => (s2 === 'DH' || canPlayerFillSlot(b, s2)));
+        if (sub) chains.push(`${nm(mover)} to ${s} + ${nm(sub)} at ${s2}`);
+      });
+      const level = !starter ? 'empty' : (prim.length || prim.length + sec.length >= 2 ? 'ok' : (sec.length || chains.length ? 'mid' : 'none'));
+      const n = prim.length + sec.length;
+      const tip = `${s}: ${starter ? nm(starter) + ' starts' : 'no starter yet'}. `
+        + (prim.length ? `Backup: ${prim.map(nm).join(', ')}. ` : '')
+        + (sec.length ? `Can cover (secondary): ${sec.map(nm).join(', ')}. ` : '')
+        + (!n && chains.length ? `Double switch: ${chains[0]}. ` : '')
+        + (level === 'none' ? 'No backup: a bench player would play it out of position.' : '');
+      return { pos: s, level, n, viaSec: !prim.length && sec.length > 0, chain: !n && chains.length > 0, tip };
+    });
+  }
+  function depthStripHTML(lineupMap, bench) {
+    const rows = rosterDepth(lineupMap, bench);
+    if (!rows.some(r => r.level !== 'empty')) return ''; // nothing to say before the first starter
+    return `<div class="c162-depth"><div class="c162-depth-title">BACKUPS <span><i class="dk-ok"></i>ok <i class="dk-mid"></i>partial <i class="dk-none"></i>none</span></div><div class="c162-depth-grid">${rows.map(r => `
+      <span class="c162-depth-cell d-${r.level}" title="${r.tip.replace(/"/g, '&quot;')}"><b>${r.pos}</b><small>${r.level === 'empty' ? '—' : r.chain ? '↔' : r.n + (r.viaSec ? '*' : '')}</small></span>`).join('')}</div></div>`;
   }
 
   function wearPenalty(f) {
@@ -1933,7 +2005,10 @@
 
   function withMomentumBatter(p, m) {
     if (!p || !m) return p;
-    const add = v => (v === undefined ? v : Math.max(1, Math.min(125, v + m))); // floor 1: with 10, any boost (even a negative one) lifted a rating of 3 to 10
+    // Floor 1 (with 10, any boost, even a negative one, lifted a rating of 3 to 10). No 125 ceiling
+    // (user, Oct 2026: a 125 got nothing from a boost while a 90 got all of it): up to RATING_BOOST_MAX,
+    // and rateAt carries the tables past 125.
+    const add = v => (v === undefined ? v : Math.max(1, Math.min(RATING_BOOST_MAX, v + m)));
     return {
       ...p,
       _baseCon: p._baseCon !== undefined ? p._baseCon : p.con,
@@ -1954,7 +2029,10 @@
 
   function withMomentumPitcher(p, m) {
     if (!p || !m) return p;
-    const add = v => (v === undefined ? v : Math.max(1, Math.min(125, v + m))); // floor 1: with 10, any boost (even a negative one) lifted a rating of 3 to 10
+    // Floor 1 (with 10, any boost, even a negative one, lifted a rating of 3 to 10). No 125 ceiling
+    // (user, Oct 2026: a 125 got nothing from a boost while a 90 got all of it): up to RATING_BOOST_MAX,
+    // and rateAt carries the tables past 125.
+    const add = v => (v === undefined ? v : Math.max(1, Math.min(RATING_BOOST_MAX, v + m)));
     return {
       ...p,
       _baseOvr: p._baseOvr !== undefined ? p._baseOvr : p.ovr,
@@ -2766,183 +2844,77 @@
       ov.id = 'c162-october-transition-overlay';
       ov.className = 'c162-tm-overlay';
 
-      const avg3 = (h, ab) => (ab ? (h / ab).toFixed(3).replace(/^0/, '') : '.000');
+      // October overview (redesigned Oct 2026: calmer, every pitcher with his role, rows clickable).
+      const avg3 = (h, ab) => (ab ? (h / ab).toFixed(3).replace(/^0/, '') : '.---');
       const R = S.roster;
       const bStat = p => (S.batterStats && S.batterStats[batterUnlockKey(p)]) || {};
       const pStat = p => (S.pitcherStats && S.pitcherStats[pitcherUnlockKey(p)]) || {};
-      const octNotes = (P.octoberNotes || []).map(n => `<li style="margin-bottom:6px;color:#f3f4f6;line-height:1.4;">${n}</li>`).join('');
-
-      const octLineupRows = (R && R.battingOrder || SLOTS).slice(0, 9).map((slot, idx) => {
-        const p = R && R.lineup && R.lineup[slot];
-        if (!p) return '';
-        const fTag = this._formTag(USER_TEAM_ID, p, false);
-        const bs = bStat(p);
-        const avg = bs.ab ? avg3(bs.h || 0, bs.ab) : '.---';
-        const hr = bs.hr || 0;
-        const ovrVal = Math.floor(p.ovr || 80);
-        const ovrColor = ovrVal >= 90 ? '#f59e0b' : ovrVal >= 80 ? '#38bdf8' : '#a3e635';
-        return `
-          <div style="display:flex;align-items:center;padding:7px 10px;border-radius:6px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);gap:10px;transition:background 0.15s;">
-            <div style="font-family:'Press Start 2P',monospace;font-size:8.5px;color:#64748b;width:18px;text-align:center;">${idx + 1}</div>
-            <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#38bdf8;background:rgba(56,189,248,0.12);padding:2px 5px;border-radius:4px;border:1px solid rgba(56,189,248,0.25);min-width:28px;text-align:center;">${slot}</div>
-            <div style="flex:1;min-width:0;display:flex;align-items:center;gap:6px;">
-              <span style="font-family:'Outfit','Segoe UI',sans-serif;font-weight:600;font-size:13px;color:#f8fafc;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${cleanName(p)}</span>
-              ${fTag}
-            </div>
-            <div style="display:flex;align-items:center;gap:12px;font-family:'Outfit','Segoe UI',sans-serif;font-size:12px;color:#94a3b8;">
-              <span style="color:#cbd5e1;"><b style="color:#f1f5f9;font-weight:600;">${avg}</b> AVG</span>
-              <span style="color:#cbd5e1;"><b style="color:#f1f5f9;font-weight:600;">${hr}</b> HR</span>
-            </div>
-            <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:${ovrColor};background:rgba(0,0,0,0.4);padding:3px 6px;border-radius:4px;border:1px solid rgba(255,255,255,0.08);min-width:44px;text-align:center;">
-              ${ovrVal}
-            </div>
-          </div>
-        `;
-      }).join('');
-
-      const octStaff = this._playoffRotationCards();
+      const ovrCls = v => (v >= 90 ? 'o-90' : v >= 80 ? 'o-80' : v >= 70 ? 'o-70' : 'o-60');
+      const row = (tag, p, line, kind, tagCls = '') => `
+        <div class="oc-row" data-oct-card="${kind}:${kind === 'P' ? pitcherUnlockKey(p) : batterUnlockKey(p)}" title="See his card">
+          <span class="oc-tag ${tagCls}">${tag}</span>
+          <span class="oc-who"><span class="oc-name">${cleanName(p)}${this._formTag(USER_TEAM_ID, p, kind === 'P')}</span><span class="oc-line">${line}</span></span>
+          <span class="oc-ovr ${ovrCls(Math.floor(p.ovr || 0))}">${Math.floor(p.ovr || 0)}</span>
+        </div>`;
+      const batLine = p => { const s = bStat(p); const pa = (s.ab || 0) + (s.bb || 0); const tb = (s.h || 0) + (s.doubles || 0) + 2 * (s.triples || 0) + 3 * (s.hr || 0);
+        const ops = s.ab ? ((s.h + (s.bb || 0)) / pa + tb / s.ab).toFixed(3).replace(/^0/, '') : '.---';
+        return `<b>${avg3(s.h || 0, s.ab)}</b> · <b>${s.hr || 0}</b> HR · <b>${ops}</b> OPS`; };
+      const pitLine = (p, rp) => { const s = pStat(p); const era = s.outs ? ((s.er * 27) / s.outs).toFixed(2) : '—';
+        return rp ? `<b>${era}</b> ERA · <b>${s.sv || 0}</b> SV · ${((s.outs || 0) / 3).toFixed(0)} IP` : `<b>${era}</b> ERA · ${s.w || 0}-${s.l || 0} · ${((s.outs || 0) / 3).toFixed(0)} IP`; };
+      const order = (R.battingOrder || SLOTS).filter(sl => R.lineup[sl]);
+      const lineupRows = order.map((slot, i) => row(`${i + 1} · ${slot}`, R.lineup[slot], batLine(R.lineup[slot]), 'B')).join('');
+      const benchRows = (R.bench || []).filter(Boolean).map(b => row('BN', b, batLine(b), 'B', 'is-bench')).join('');
+      const rot = this._playoffRotationCards();
       const sp5 = this._playoffFifthStarterCard();
-      const bullpenRP = ((R && R.pitchers && R.pitchers.RP) || []).filter(Boolean);
-      const fullPen = sp5 ? [sp5, ...bullpenRP] : bullpenRP;
-      const octStaffRows = [
-        ...octStaff.map((p, i) => {
-          const fTag = this._formTag(USER_TEAM_ID, p, true);
-          const ps = pStat(p);
-          const era = ps.outs ? ((ps.er * 27) / ps.outs).toFixed(2) : cardBaseEra(p).toFixed(2);
-          const wins = ps.w || 0, losses = ps.l || 0;
-          const ovrVal = Math.floor(p.ovr || 80);
-          const ovrColor = ovrVal >= 90 ? '#f59e0b' : ovrVal >= 80 ? '#38bdf8' : '#a3e635';
-          return `
-            <div style="display:flex;align-items:center;padding:7px 10px;border-radius:6px;background:rgba(168,85,247,0.05);border:1px solid rgba(168,85,247,0.15);gap:10px;">
-              <div style="font-family:'Press Start 2P',monospace;font-size:7.5px;color:#c084fc;background:rgba(168,85,247,0.18);padding:2px 6px;border-radius:4px;border:1px solid rgba(168,85,247,0.3);min-width:42px;text-align:center;">SP ${i + 1}</div>
-              <div style="flex:1;min-width:0;display:flex;align-items:center;gap:6px;">
-                <span style="font-family:'Outfit','Segoe UI',sans-serif;font-weight:600;font-size:13px;color:#f8fafc;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${cleanName(p)}</span>
-                ${fTag}
-              </div>
-              <div style="display:flex;align-items:center;gap:12px;font-family:'Outfit','Segoe UI',sans-serif;font-size:12px;color:#94a3b8;">
-                <span style="color:#cbd5e1;"><b style="color:#f1f5f9;font-weight:600;">${era}</b> ERA</span>
-                <span style="color:#94a3b8;font-size:11px;">${wins}-${losses}</span>
-              </div>
-              <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:${ovrColor};background:rgba(0,0,0,0.4);padding:3px 6px;border-radius:4px;border:1px solid rgba(255,255,255,0.08);min-width:44px;text-align:center;">
-                ${ovrVal}
-              </div>
-            </div>
-          `;
-        }),
-        ...fullPen.slice(0, 5).map(p => {
-          const isFromSP5 = sp5 && pitcherUnlockKey(p) === pitcherUnlockKey(sp5);
-          const fTag = this._formTag(USER_TEAM_ID, p, true);
-          const ps = pStat(p);
-          const era = ps.outs ? ((ps.er * 27) / ps.outs).toFixed(2) : cardBaseEra(p).toFixed(2);
-          const saves = ps.sv || 0;
-          const roleLabel = isFromSP5 ? 'LRP · SP5' : (p.role || 'RP');
-          const ovrVal = Math.floor(p.ovr || 80);
-          const ovrColor = ovrVal >= 90 ? '#f59e0b' : ovrVal >= 80 ? '#38bdf8' : '#a3e635';
-          const badgeBg = isFromSP5 ? 'rgba(245,158,11,0.18)' : 'rgba(56,189,248,0.12)';
-          const badgeBorder = isFromSP5 ? 'rgba(245,158,11,0.4)' : 'rgba(56,189,248,0.25)';
-          const badgeColor = isFromSP5 ? '#fbbf24' : '#38bdf8';
-          return `
-            <div style="display:flex;align-items:center;padding:7px 10px;border-radius:6px;background:${isFromSP5 ? 'rgba(245,158,11,0.06)' : 'rgba(255,255,255,0.02)'};border:1px solid ${isFromSP5 ? 'rgba(245,158,11,0.25)' : 'rgba(255,255,255,0.05)'};gap:10px;">
-              <div style="font-family:'Press Start 2P',monospace;font-size:7px;color:${badgeColor};background:${badgeBg};padding:2px 5px;border-radius:4px;border:1px solid ${badgeBorder};min-width:42px;text-align:center;">${roleLabel}</div>
-              <div style="flex:1;min-width:0;display:flex;align-items:center;gap:6px;">
-                <span style="font-family:'Outfit','Segoe UI',sans-serif;font-weight:600;font-size:13px;color:#f8fafc;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${cleanName(p)}</span>
-                ${fTag}
-              </div>
-              <div style="display:flex;align-items:center;gap:12px;font-family:'Outfit','Segoe UI',sans-serif;font-size:12px;color:#94a3b8;">
-                <span style="color:#cbd5e1;"><b style="color:#f1f5f9;font-weight:600;">${era}</b> ERA</span>
-                ${saves > 0 ? `<span style="color:#38bdf8;font-size:11px;"><b>${saves}</b> SV</span>` : ''}
-              </div>
-              <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:${ovrColor};background:rgba(0,0,0,0.4);padding:3px 6px;border-radius:4px;border:1px solid rgba(255,255,255,0.08);min-width:44px;text-align:center;">
-                ${ovrVal}
-              </div>
-            </div>
-          `;
-        })
+      const pen = ((R.pitchers && R.pitchers.RP) || []).filter(Boolean);
+      const penLabels = bullpenLabels(pen);
+      const rotRows = rot.map((p, i) => row(`SP${i + 1}`, p, pitLine(p, false), 'P', 'is-sp')).join('');
+      const penRows = [
+        ...(sp5 ? [row('LRP', sp5, pitLine(sp5, true) + ' · <i>ex-SP5</i>', 'P', 'is-long')] : []),
+        ...pen.map((p, i) => row(penLabels[i] || 'RP', p, pitLine(p, true), 'P', penLabels[i] === 'CL' ? 'is-cl' : ''))
       ].join('');
+      const notes = (P.octoberNotes || []).map(n => `<li>${n}</li>`).join('');
 
       ov.innerHTML = `
-        <div style="width:min(900px, 95vw);max-height:92vh;overflow-y:auto;background:linear-gradient(180deg, #0d1527 0%, #060a12 100%);border:1px solid rgba(239,68,68,0.5);box-shadow:0 20px 50px rgba(0,0,0,0.8), 0 0 30px rgba(220,38,38,0.2);border-radius:14px;padding:22px 24px;box-sizing:border-box;">
-          
-          <!-- Top Header Banner -->
-          <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.08);padding-bottom:16px;margin-bottom:18px;">
-            <div style="display:flex;align-items:center;gap:12px;">
-              <span style="font-size:26px;filter:drop-shadow(0 2px 8px rgba(239,68,68,0.5));">🍂</span>
-              <div>
-                <div style="font-family:'Press Start 2P',monospace;font-size:11px;color:#fca5a5;letter-spacing:1.5px;text-shadow:0 0 12px rgba(239,68,68,0.7);">
-                  OCTOBER BASEBALL · POSTSEASON OVERVIEW
-                </div>
-                <div style="font-family:'Outfit','Segoe UI',sans-serif;font-size:13px;color:#94a3b8;margin-top:4px;">
-                  High Tension Mode · Rotation trimmed to 4 aces · Peak form lineup tuned
-                </div>
-              </div>
-            </div>
-            <div style="display:flex;align-items:center;gap:8px;">
-              <span style="font-family:'Press Start 2P',monospace;font-size:7.5px;background:rgba(239,68,68,0.18);border:1px solid rgba(239,68,68,0.5);color:#fca5a5;padding:5px 9px;border-radius:4px;letter-spacing:1px;">HIGH TENSION</span>
+        <div class="c162-oct">
+          <div class="oc-head">
+            <div>
+              <div class="oc-kicker">🍂 OCTOBER BASEBALL</div>
+              <div class="oc-title">${this.getUserTeamName()} · ${S.wins}-${S.losses}</div>
+              <div class="oc-sub">Your postseason roster: a 4-man rotation, the 5th starter goes to the pen, lineup and order set by season and current form.</div>
             </div>
           </div>
-
-          <!-- Manager's Briefing Cards -->
-          <div style="background:rgba(15,23,42,0.7);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:14px 16px;margin-bottom:18px;">
-            <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#fbbf24;letter-spacing:1px;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
-              <span>📋</span> MANAGER'S OCTOBER BRIEFING
-            </div>
-            <div style="display:flex;flex-direction:column;gap:8px;">
-              ${(P.octoberNotes || []).map(n => `
-                <div style="font-family:'Outfit','Segoe UI',sans-serif;font-size:13.5px;color:#e2e8f0;line-height:1.5;display:flex;align-items:flex-start;gap:8px;">
-                  <span style="color:#ef4444;font-size:12px;margin-top:2px;">▪</span>
-                  <span>${n}</span>
-                </div>
-              `).join('')}
-            </div>
+          ${notes ? `<ul class="oc-notes">${notes}</ul>` : ''}
+          <div class="oc-grid">
+            <section class="oc-col">
+              <h4>🏏 LINEUP</h4>${lineupRows}
+              <h4 class="oc-sub-h">🛋️ BENCH</h4>${benchRows}
+            </section>
+            <section class="oc-col">
+              <h4>🧢 ROTATION</h4>${rotRows}
+              <h4 class="oc-sub-h">🔥 BULLPEN</h4>${penRows}
+            </section>
           </div>
-
-          <!-- 2 Columns Grid: Lineup (Left) + Pitching Staff (Right) -->
-          <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(360px, 1fr));gap:16px;margin-bottom:20px;">
-            
-            <!-- Left: Lineup -->
-            <div style="background:rgba(15,23,42,0.7);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:14px;">
-              <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.08);padding-bottom:8px;margin-bottom:10px;">
-                <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#fde047;letter-spacing:0.8px;display:flex;align-items:center;gap:6px;">
-                  <span>🏏</span> STARTING LINEUP (1–9)
-                </div>
-                <span style="font-family:'Outfit','Segoe UI',sans-serif;font-size:11px;color:#64748b;">TUNED ORDER</span>
-              </div>
-              <div style="display:flex;flex-direction:column;gap:6px;">
-                ${octLineupRows}
-              </div>
-            </div>
-
-            <!-- Right: Pitching Staff -->
-            <div style="background:rgba(15,23,42,0.7);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:14px;">
-              <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.08);padding-bottom:8px;margin-bottom:10px;">
-                <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#c084fc;letter-spacing:0.8px;display:flex;align-items:center;gap:6px;">
-                  <span>⚾</span> 4-MAN ROTATION & PEN
-                </div>
-                <span style="font-family:'Outfit','Segoe UI',sans-serif;font-size:11px;color:#64748b;">ACES & RELIEVERS</span>
-              </div>
-              <div style="display:flex;flex-direction:column;gap:6px;">
-                ${octStaffRows}
-              </div>
-            </div>
-
+          <div class="oc-actions">
+            <button class="btn oc-close" data-october-close>CLOSE</button>
+            <button class="btn oc-enter" data-october-enter>▶ ENTER THE POSTSEASON</button>
           </div>
-
-          <!-- Bottom Action Buttons -->
-          <div style="display:flex;align-items:center;justify-content:flex-end;gap:12px;border-top:1px solid rgba(255,255,255,0.08);padding-top:16px;">
-            <button class="btn btn-secondary" data-october-close style="padding:11px 18px;font-family:'Press Start 2P',monospace;font-size:8.5px;color:#94a3b8;border:1px solid rgba(255,255,255,0.15);cursor:pointer;border-radius:6px;">
-              CLOSE
-            </button>
-            <button class="btn" data-october-enter style="padding:12px 26px;font-family:'Press Start 2P',monospace;font-size:9.5px;background:linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);border:1px solid #fecaca;color:#fff;box-shadow:0 0 20px rgba(239,68,68,0.5);cursor:pointer;border-radius:6px;letter-spacing:0.8px;">
-              ▶ ENTER OCTOBER POSTSEASON
-            </button>
-          </div>
-
         </div>
       `;
-
+      ov.querySelectorAll('[data-oct-card]').forEach(el => {
+        el.onclick = ev => {
+          ev.stopPropagation();
+          const [kind, key] = [el.dataset.octCard[0], el.dataset.octCard.slice(2)];
+          const bats = [...Object.values(R.lineup || {}), ...(R.bench || [])].filter(Boolean);
+          const pits = [...(R.pitchers.SP || []), ...(R.pitchers.RP || [])].filter(Boolean);
+          const card = kind === 'P' ? pits.find(x => pitcherUnlockKey(x) === key) : bats.find(x => batterUnlockKey(x) === key);
+          if (card && window.BaseballDex && typeof window.BaseballDex.showDetail === 'function') window.BaseballDex.showDetail(dexCard(card));
+        };
+      });
       ov.onclick = e => {
         if (e.target.closest('[data-october-close]')) {
           ov.remove();
+          try { this.renderSeason(); } catch (err) { console.warn(err); } // the tables now show the October order
         } else if (e.target === ov || e.target.closest('[data-october-enter]')) {
           ov.remove();
           this.stopAutoSim();
@@ -3606,7 +3578,8 @@
         const tb = v('h') + v('doubles') + 2 * v('triples') + 3 * v('hr');
         const obp = ((v('h') + v('bb')) + cardObp(p) * k) / (n + k);
         const slg = (tb + cardSlg(p) * k) / (v('ab') + k);
-        return { obp, slg, ops: obp + slg };
+        const hr = (v('hr') + rateAt(BAT_HR, p.pwr || 0) * k) / (n + k);   // home runs per PA: real power for the cleanup spot
+        return { obp, slg, ops: obp + slg, hr };
       };
       const cardEra = p => Math.max(2.2, Math.min(5.5, 4.05 - ((p.ovr || 72) - 72) * 0.06));
       const estEra = p => { const x = pStat(p); return ((x.er || 0) * 9 + cardEra(p) * MGR.trustIP) / (ip(x) + MGR.trustIP); };
@@ -3653,13 +3626,19 @@
       let left = R.battingOrder.filter(sl => R.lineup[sl]).map(perf);
       if (left.length === 9) {
         const take = (list, fn) => { const x = list.slice().sort(fn)[0]; left = left.filter(y => y !== x); return x; };
-        const fast = left.slice().sort((a, b) => (b.p.spd || 0) - (a.p.spd || 0)).slice(0, 5);
         const order = [];
-        order[0] = take(fast, (a, b) => b.obp - a.obp);
+        // Traditional order (user, Oct 2026): best bat 3rd, most home-run power 4th, the best OBP
+        // among the fastest left leads off, the best OBP left 2nd, the next power bat 5th, then by
+        // OPS. The 4th used to be "best slugging", which counts singles and could put a contact
+        // hitter (Jeter) in the cleanup spot; and the leadoff was picked first, so on a slow team
+        // the best hitter ended up leading off.
         order[2] = take(left, (a, b) => b.ops - a.ops);
-        order[3] = take(left, (a, b) => b.slg - a.slg);
+        order[3] = take(left, (a, b) => b.hr - a.hr);
+        const fast = left.slice().sort((a, b) => (b.p.spd || 0) - (a.p.spd || 0)).slice(0, 4);
+        order[0] = take(fast, (a, b) => b.obp - a.obp);
         order[1] = take(left, (a, b) => b.obp - a.obp);
-        left.sort((a, b) => b.ops - a.ops).forEach((x, i) => { order[4 + i] = x; });
+        order[4] = take(left, (a, b) => b.slg - a.slg);
+        left.sort((a, b) => b.ops - a.ops).forEach((x, i) => { order[5 + i] = x; });
         const next = order.map(x => x.slot);
         const before = R.battingOrder.slice();
         const ord = n => ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th'][n];
@@ -5551,7 +5530,8 @@
         const tb = (s0.h || 0) + (s0.doubles || 0) + 2 * (s0.triples || 0) + 3 * (s0.hr || 0);
         const obp = (((s0.h || 0) + (s0.bb || 0)) + cardBaseObp(p) * k) / (n + k) + f.delta * 0.004;
         const slg = (tb + cardBaseSlg(p) * k) / ((s0.ab || 0) + k) + f.delta * 0.008;
-        return { obp, slg, ops: obp + slg };
+        const hr = ((s0.hr || 0) + rateAt(BAT_HR, p.pwr || 0) * k) / (n + k);
+        return { obp, slg, ops: obp + slg, hr };
       };
       const iron = S.ironMan || {};
       const fitsAt = (p, slot) => slot === 'DH' || canPlayerFillSlot(p, slot);
@@ -5577,13 +5557,19 @@
       let left = oldOrder.filter(sl => R.lineup[sl]).map(slot => { const p = R.lineup[slot]; return { slot, p, ...estOctBat(p) }; });
       if (left.length === 9) {
         const take = (list, fn) => { const x = list.slice().sort(fn)[0]; left = left.filter(y => y !== x); return x; };
-        const fast = left.slice().sort((a, b) => (b.p.spd || 0) - (a.p.spd || 0)).slice(0, 5);
         const order = [];
-        order[0] = take(fast, (a, b) => b.obp - a.obp);
+        // Traditional order (user, Oct 2026): best bat 3rd, most home-run power 4th, the best OBP
+        // among the fastest left leads off, the best OBP left 2nd, the next power bat 5th, then by
+        // OPS. The 4th used to be "best slugging", which counts singles and could put a contact
+        // hitter (Jeter) in the cleanup spot; and the leadoff was picked first, so on a slow team
+        // the best hitter ended up leading off.
         order[2] = take(left, (a, b) => b.ops - a.ops);
-        order[3] = take(left, (a, b) => b.slg - a.slg);
+        order[3] = take(left, (a, b) => b.hr - a.hr);
+        const fast = left.slice().sort((a, b) => (b.p.spd || 0) - (a.p.spd || 0)).slice(0, 4);
+        order[0] = take(fast, (a, b) => b.obp - a.obp);
         order[1] = take(left, (a, b) => b.obp - a.obp);
-        left.sort((a, b) => b.ops - a.ops).forEach((x, i) => { order[4 + i] = x; });
+        order[4] = take(left, (a, b) => b.slg - a.slg);
+        left.sort((a, b) => b.ops - a.ops).forEach((x, i) => { order[5 + i] = x; });
         const nextOrder = order.map(x => x.slot);
         if (nextOrder.some((sl, i) => sl !== oldOrder[i])) {
           R.battingOrder = nextOrder;
@@ -6250,7 +6236,7 @@
             const card = s2.game.cards && s2.game.cards[c.dataset.poCard];
             if (!card) return;
             this._poAuto(false);
-            window.BaseballDex.showDetail(card);
+            window.BaseballDex.showDetail(dexCard(card));
             ['btn-modal-shortlist-bottom', 'btn-modal-next-bottom', 'btn-modal-next-back', 'btn-modal-test-batter-bottom'].forEach(id => { const x = document.getElementById(id); if (x) x.style.display = 'none'; });
           }
         });
@@ -6953,7 +6939,7 @@
           const c = (game.cards || {})[decodeURIComponent(el.dataset.poCard)];
           if (c && window.BaseballDex && typeof window.BaseballDex.showDetail === 'function') {
             if (sim.timer) { clearInterval(sim.timer); sim.timer = null; sim.autoPlay = false; }
-            window.BaseballDex.showDetail(c);
+            window.BaseballDex.showDetail(dexCard(c));
           }
         };
       });
@@ -7489,7 +7475,7 @@
         if (e.target === ov || e.target.closest('[data-tm-close]')) { ov.remove(); return; }
         const r = e.target.closest('[data-tm-card]');
         if (r && window.BaseballDex && typeof window.BaseballDex.showDetail === 'function') {
-          window.BaseballDex.showDetail(cards[Number(r.dataset.tmCard)]);
+          window.BaseballDex.showDetail(dexCard(cards[Number(r.dataset.tmCard)]));
           ['btn-modal-shortlist-bottom', 'btn-modal-next-bottom', 'btn-modal-next-back', 'btn-modal-test-batter-bottom'].forEach(id => { const b = document.getElementById(id); if (b) b.style.display = 'none'; });
         }
       };
@@ -8119,10 +8105,67 @@
         options: null,          // the cards of the current pack (rolled as soon as it shows up)
         optionsShown: false,    // the pack has been ripped open
         dealt: false,           // the reveal animation of this pack has already played
-        rerollsLeft: PACK_DRAFT_REROLLS
+        rerollsLeft: PACK_DRAFT_REROLLS,
+        box: rollBoxSchedule(26) // rarity of each of the 26 packs (null = all any rarity)
       };
       this.showScreen('screen-challenge-pack');
       this.renderPacksDraft();
+      this._showBoxIntro();
+    },
+
+    // Opening the hobby box (user, Oct 2026): before the first pack, a sealed box that opens on a
+    // tap and spills its 26 packs by rarity, with what the box holds and how the draft works,
+    // so "LEFT IN THE BOX" makes sense from the start.
+    _showBoxIntro() {
+      const draft = this._packDraft;
+      const host = document.getElementById('screen-challenge-pack');
+      if (!draft || !draft.box || !host) return;
+      const old = document.getElementById('c162-boxintro');
+      if (old) old.remove();
+      const order = ['Legendary', 'Epic', 'Rare', 'Uncommon', 'Common', 'any'];
+      const ICON = { Legendary: '👑', Epic: '💜', Rare: '💎', Uncommon: '🟢', Common: '⚪', any: '🎲' };
+      const NAME = { Legendary: 'LEGENDARY', Epic: 'EPIC', Rare: 'RARE', Uncommon: 'UNCOMMON', Common: 'COMMON', any: 'ANY RARITY' };
+      const count = r => draft.box.filter(x => x === r).length;
+      const packs = order.flatMap(r => Array.from({ length: count(r) }, () => r));
+      const n = packs.length;
+      const packsHTML = packs.map((r, i) => {
+        const a = (i - (n - 1) / 2) * (120 / n); // fan angle
+        return `<i class="bxp t-${r.toLowerCase()}" style="--a:${a.toFixed(1)}deg;--d:${(i * 0.035).toFixed(2)}s"></i>`;
+      }).join('');
+      const legend = order.filter(r => count(r)).map(r => `<div class="bxl t-${r.toLowerCase()}"><b>${ICON[r]} ${count(r)}</b><span>${NAME[r]}</span></div>`).join('');
+      const el = document.createElement('div');
+      el.id = 'c162-boxintro';
+      el.className = 'c162-boxintro';
+      el.innerHTML = `
+        <div class="bx-stage">
+          <div class="bx-title">YOUR HOBBY BOX</div>
+          <div class="bx-box" id="c162-bx-box">
+            <div class="bx-packs">${packsHTML}</div>
+            <div class="bx-lid"><span>BASEROGUE</span><small>HOBBY BOX · ${n} PACKS</small></div>
+            <div class="bx-body"><span>⚾</span><small>ALL-TIME SERIES</small></div>
+          </div>
+          <div class="bx-tap">TAP THE BOX TO OPEN IT</div>
+          <div class="bx-info">
+            <div class="bx-legend">${legend}</div>
+            <ul class="bx-rules">
+              <li><b>${n - count('any')}</b> packs have a <b>fixed rarity</b>; the <b>🎲 ${count('any')}</b> others can hold <b>any rarity</b>, even an extra Legendary.</li>
+              <li><b>14</b> packs of batters first, then <b>12</b> of pitchers, in a shuffled order you discover as you go.</li>
+              <li>Each pack shows <b>${PACK_OPTIONS} cards</b>: keep one. The position is random.</li>
+              <li><b>${PACK_DRAFT_REROLLS} rerolls</b> for the whole box. <b>LEFT IN THE BOX</b> shows what is still to come.</li>
+            </ul>
+            <button class="btn bx-go" id="c162-bx-go">📦 OPEN THE FIRST PACK ➔</button>
+          </div>
+        </div>`;
+      host.appendChild(el);
+      const open = () => {
+        if (el.classList.contains('open')) return;
+        el.classList.add('open');
+        if (window.AudioManager && typeof window.AudioManager.play === 'function') window.AudioManager.play('defense_dice_roll');
+      };
+      el.querySelector('#c162-bx-box').addEventListener('click', open);
+      el.querySelector('.bx-tap').addEventListener('click', open);
+      el.querySelector('#c162-bx-go').addEventListener('click', () => { el.classList.add('closing'); setTimeout(() => el.remove(), 350); });
+      if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) el.classList.add('open');
     },
 
     _getDraftSlotPlayer(slots, kind, key) {
@@ -8205,6 +8248,15 @@
       const isCardRevealed = Boolean(draft.packOpened && draft.currentCard);
       const packNum = isCardRevealed ? draft.currentPack : (draft.currentPack + 1);
       const totalInStage = draft.totalPacks;
+      // Rarity of the pack on the table (PACK_MIX box) and what is left in the box.
+      const boxIdx = (draft.stage === 'pitchers' ? 14 : 0) + draft.currentPack;
+      const packTier = (draft.box && draft.box[Math.min(boxIdx, draft.box.length - 1)]) || 'any';
+      const TIER_ICON = { Legendary: '👑', Epic: '💜', Rare: '💎', Uncommon: '🟢', Common: '⚪', any: '🎲' };
+      const packTierLabel = packTier === 'any' ? '🎲 ANY RARITY PACK' : `${TIER_ICON[packTier]} ${packTier.toUpperCase()} PACK`;
+      const boxLeft = draft.box ? draft.box.slice(boxIdx) : [];
+      const boxLeftHTML = draft.box ? `<div class="c162-box-left">LEFT IN THE BOX: ${['Legendary', 'Epic', 'Rare', 'Uncommon', 'Common', 'any'].map(r => {
+        const n = boxLeft.filter(x => x === r).length; return n ? `<b class="${r === 'any' ? '' : 'r-' + r.toLowerCase()}">${TIER_ICON[r]}${n}</b>` : '';
+      }).join(' ')}</div>` : '';
       const globalCardNum = isPitchersStage ? (14 + packNum) : packNum;
       const isLastPackInStage = isCardRevealed && (draft.currentPack >= totalInStage);
       const isDraftComplete = isPitchersStage && isLastPackInStage;
@@ -8289,6 +8341,13 @@
             : [['CON', c.con], ['PWR', c.pwr], ['EYE', c.eye], ['K/AVD', c.k_avd], ['SPD', c.spd], ['DEF', c.def]];
           // Only worth pointing out when it sets one card apart from the others.
           const fills = this._packOptionFills(c, needs) && !draft.options.every(o => this._packOptionFills(o, needs));
+          let backup = '';
+          if (!pit && !fills && draft.manualSlots) {
+            const ms0 = draft.manualSlots, bn0 = (ms0.bench || []).filter(Boolean);
+            const before = rosterDepth(ms0.lineup, bn0), after = rosterDepth(ms0.lineup, bn0.concat([c]));
+            const fixed = before.filter((r, k) => r.level === 'none' && after[k].level !== 'none').map(r => r.pos);
+            if (fixed.length) backup = `+ BACKUP AT ${fixed.join(' / ')}`;
+          }
           const cardHTML = typeof window.createCardHTML === 'function'
             ? window.createCardHTML(c)
             : `<div class="player-card"><div class="card-name">${c.name}</div></div>`;
@@ -8305,14 +8364,14 @@
             <div class="c162-oc-info">
               <div class="c162-oc-cap"><b>${Math.floor(c.ovr || 50)}</b><span>${pit ? (c.role || 'SP') : `${c.pos}${c.sec_pos ? ' · ' + c.sec_pos : ''}`}</span></div>
               <div class="c162-oc-stats">${stats.map(([l, v]) => `<span><i>${l}</i><b>${v !== undefined ? Math.round(v) : '—'}</b></span>`).join('')}</div>
-              <div class="c162-oc-need">${fills ? '🧩 FILLS A HOLE' : ''}</div>
+              <div class="c162-oc-need">${fills ? '🧩 FILLS A HOLE' : backup}</div>
               <button class="btn c162-opt-pick" data-pack-pick="${i}">✔ PICK</button>
             </div>
           </div>`;
         };
         leftColumnHTML = `
           <div class="c162-reveal ${dealing ? 'dealing' : ''} best-${bestRarity.toLowerCase()}" style="--done:${allDone}ms">
-            <div class="c162-reveal-head"><b>🎲 ANY RARITY PACK</b><span>PACK ${draft.currentPack + 1} / ${totalInStage}</span></div>
+            <div class="c162-reveal-head"><b>${(() => { const r = draft.packRarity || 'any'; return r === 'any' ? '🎲 ANY RARITY PACK' : `${TIER_ICON[r]} ${r.toUpperCase()} PACK`; })()}</b><span>PACK ${draft.currentPack + 1} / ${totalInStage}</span></div>
             <div class="c162-reveal-row">${draft.options.map(tile).join('')}</div>
             <div class="c162-reveal-prompt">✨ PICK ONE OF ${draft.options.length} ✨</div>
             <div class="c162-reveal-actions" style="position:relative; z-index:2; display:flex; justify-content:center; align-items:center; gap:10px; margin: 4px 0 2px 0;">
@@ -8325,9 +8384,9 @@
         draft.dealt = true;
       } else if (sealed) {
         const boxLabel = isPitchersStage ? _t('challenge162.box_pitchers', 'PITCHERS BOX') : _t('challenge162.box_batters', 'BATTERS BOX');
-        const boxSubtitle = isPitchersStage ? _t('challenge162.pitchers_box_subtitle', '5 Starters (SP) + 6 Relievers') : _t('challenge162.batters_box_subtitle', '9 Starters + 5 Bench');
+        const boxSubtitle = isPitchersStage ? _t('challenge162.pitchers_box_subtitle', '5 Starters (SP) + 7 Relievers') : _t('challenge162.batters_box_subtitle', '9 Starters + 5 Bench');
         leftColumnHTML = `
-          <div class="c162-sealed best-${bestRarity.toLowerCase()}">
+          <div class="c162-sealed best-${packTier === 'any' ? 'any' : bestRarity.toLowerCase()}">
             <div class="c162-sealed-rays"></div>
             <div class="c162-pack" id="c162-foil-pack-target" title="${_t('challenge162.pack_tap_rip', 'TAP THE PACK TO RIP OPEN!')}">
               <div class="c162-pack-foil" id="c162-foil-pack-inner">
@@ -8338,6 +8397,7 @@
                   <div class="c162-pack-box">${boxLabel}</div>
                   <div class="c162-pack-sub">${boxSubtitle}</div>
                   <div class="c162-pack-num">${_t('challenge162.pack_num_indicator', `PACK ${packNum} / ${totalInStage}`, { current: packNum, total: totalInStage })}</div>
+                  <div class="c162-pack-tier ${packTier === 'any' ? 'is-any' : 'r-' + packTier.toLowerCase()}">${packTierLabel}</div>
                 </div>
                 <div class="c162-pack-crimp bottom"></div>
               </div>
@@ -8346,10 +8406,13 @@
             </div>
             <div class="c162-sealed-cta">${_t('challenge162.pack_rip_prompt', '✨ TAP PACK TO RIP OPEN ✨')}</div>
             <div class="c162-sealed-odds">
-              <span>${PACK_OPTIONS} CARDS · EACH ONE ROLLS ITS OWN RARITY</span>
-              <div><b class="r-legendary">👑 2.5%</b><b class="r-epic">💜 12.5%</b><b class="r-rare">💎 20%</b><b class="r-uncommon">🟢 30%</b><b class="r-common">⚪ 35%</b></div>
+              ${packTier === 'any'
+                ? `<span>${PACK_OPTIONS} CARDS · EACH ONE ROLLS ITS OWN RARITY</span>
+              <div><b class="r-legendary">👑 2.5%</b><b class="r-epic">💜 12.5%</b><b class="r-rare">💎 20%</b><b class="r-uncommon">🟢 30%</b><b class="r-common">⚪ 35%</b></div>`
+                : `<span>${PACK_OPTIONS} ${packTier.toUpperCase()} CARDS · POSITION AT RANDOM</span>`}
+              ${boxLeftHTML}
             </div>
-            <div class="c162-sealed-hint">The foil glows with the best card inside</div>
+            <div class="c162-sealed-hint">${packTier === 'any' ? 'A rainbow pack: any rarity can come out' : `Every card in this pack is ${packTier}`}</div>
             <div style="margin-top:10px; text-align:center; position:relative; z-index:2;">
               <button id="btn-c162-pack-reroll-sealed" class="btn ${rerollsLeft > 0 ? 'btn-warning' : 'btn-secondary'} c162-pack-reroll-btn" ${rerollsLeft <= 0 ? 'disabled' : ''} style="font-family:'Press Start 2P',monospace; font-size:8px; padding:7px 12px; border-radius:6px; cursor:${rerollsLeft > 0 ? 'pointer' : 'not-allowed'}; ${rerollsLeft > 0 ? 'background:linear-gradient(135deg, #f59e0b, #d97706); color:#fff; border:1px solid #fbbf24; box-shadow:0 0 10px rgba(245,158,11,0.35);' : 'opacity:0.4; color:#94a3b8; border:1px solid #475569;'}" title="${rerollsLeft > 0 ? `Reroll pack (${rerollsLeft} remaining)` : 'No rerolls remaining'}">
                 🎲 ${_t('challenge162.pack_reroll', `REROLL PACK (${rerollsLeft}/${PACK_DRAFT_REROLLS})`, { left: rerollsLeft, total: PACK_DRAFT_REROLLS })}
@@ -8439,7 +8502,7 @@
         const isHof = Boolean(card.hof || card.is_hof || (careerStats && careerStats.hof));
         let badgesHtml = '';
         if (isHof) badgesHtml += '<span style="background:#ffd70022;color:#ffd700;border:1px solid #ffd700;padding:2px 8px;border-radius:4px;font-size:8px">🏆 HOF</span>';
-        if (card.clutch || card.is_clutch || card.badge_clutch) badgesHtml += '<span style="background:#ef444422;color:#ef4444;border:1px solid #ef4444;padding:2px 8px;border-radius:4px;font-size:8px">⚡ CLUTCH</span>';
+        if (card.clutch || card.is_clutch || card.badge_clutch) badgesHtml += '<span style="background:#ef444422;color:#ef4444;border:1px solid #ef4444;padding:2px 8px;border-radius:4px;font-size:8px">⚡ OCTOBER HERO</span>';
         if (card.captain || card.is_captain || card.badge_captain) badgesHtml += '<span style="background:#3b82f622;color:#3b82f6;border:1px solid #3b82f6;padding:2px 8px;border-radius:4px;font-size:8px">👑 CAPTAIN</span>';
 
         let careerStatsBlockHTML = '';
@@ -8682,6 +8745,7 @@
                   ${infieldSlotsHTML}${outfieldSlotsHTML}
                   <div class="c162-rb-title t-bench"><span>🛋️ BENCH</span><span>${filledBenchCount}/5</span></div>
                   ${benchSlotsHTML}
+                  ${depthStripHTML(updatedSlots.lineup, updatedSlots.bench)}
                 </div>
                 <div class="c162-rb-col">
                   <div class="c162-rb-title t-rot"><span>🧢 ROTATION</span><span>${filledSPCount}/5</span></div>
@@ -8781,7 +8845,7 @@
             else if (window.AudioManager && typeof window.AudioManager.play === 'function') window.AudioManager.play('card_deal');
           }
           // The better the pack, the longer it shakes before it tears.
-          const ripMs = reducedMotion ? 0 : (bestRarity === 'Legendary' ? 1350 : (bestRarity === 'Epic' ? 950 : 620));
+          const ripMs = reducedMotion ? 0 : (packTier === 'any' ? 950 : (bestRarity === 'Legendary' ? 1350 : (bestRarity === 'Epic' ? 950 : 620)));
           setTimeout(() => {
             if (this._packDraft !== draft) return;
             this._openPackOptions();
@@ -9000,7 +9064,10 @@
         // roster has two (the user said it was hard to find one and even harder to back him up).
         if (!missingPos.length && draft.pulledBatters.filter(b => canPlayerFillSlot(b, 'C')).length < 2) missingPos.push('C');
       }
-      const activePool = isPitchersStage ? getPitcherPool() : getBatterPool();
+      let activePool = isPitchersStage ? getPitcherPool() : getBatterPool();
+      const packRarity = draft.box ? draft.box[(isPitchersStage ? 14 : 0) + draft.currentPack] : 'any';
+      if (packRarity && packRarity !== 'any') activePool = activePool.filter(p => (p.rarity || 'Common') === packRarity);
+      draft.packRarity = packRarity || 'any';
       const keyOf = c => (c.role ? pitcherUnlockKey(c) : batterUnlockKey(c));
       const seen = new Set(draft.usedKeys);
       if (excludeCards && excludeCards.length) {
@@ -9368,10 +9435,10 @@
           <span class="c162-meet-ovr">${Math.floor(b.ovr || 0)}</span>
         </div>`;
       }).join('');
-      const coverNote = !bench.length ? ''
+      const coverNote = (bench.length ? depthStripHTML(p.lineup, bench) : '') + (!bench.length ? ''
         : uncovered.length
           ? `<div class="c162-meet-warn">⚠ No backup at ${uncovered.join(', ')}: ${uncovered.length > 1 ? 'those starters' : 'that starter'} will sit less often (at −2) and a bench player fills in out of position, with a poor glove.</div>`
-          : `<div class="c162-meet-ok">✓ Every position has a backup for rest days.</div>`;
+          : `<div class="c162-meet-ok">✓ Every position has a backup for rest days.</div>`);
       const penRows = RP.map(x => `
         <div class="c162-meet-row r3">
           <span class="c162-meet-num">${penRole(x)}</span>
@@ -9474,7 +9541,10 @@
       const exp = {};
       Object.keys(L.teams).forEach(id => {
         const f = feat[id] || m;
-        const w = SEASON_LENGTH / 2 + 2.10 * (f[0] - m[0]) + 0.54 * (f[1] - m[1]) + 0.38 * (f[2] - m[2]);
+        // Refit Oct 2026 (448 team-seasons with the new engine). The user's team beats the same
+        // ratings by ~3.5 wins (chemistry, Iron Men, his own lineup and manager calls): the old
+        // preview undersold it in most seasons (user report), so it gets that edge.
+        const w = SEASON_LENGTH / 2 + 2.06 * (f[0] - m[0]) + 0.46 * (f[1] - m[1]) + 0.68 * (f[2] - m[2]) + (id === USER_TEAM_ID ? USER_PROJ_EDGE : 0);
         exp[id] = Math.max(40, Math.min(125, w));
       });
       return exp;
@@ -10190,7 +10260,7 @@
         const war = calcBatterWAR(s, slot, defVal);
         const dwarColor = parseFloat(dwar) > 0 ? '#34d399' : (parseFloat(dwar) < 0 ? '#f87171' : '#94a3b8');
 
-        return `<tr class="c162-tr c162-tr-card${i % 2 ? ' c162-tr-alt' : ''}" data-c162-card="L${i}" title="Click to see his card">
+        return `<tr class="c162-tr c162-tr-card${i % 2 ? ' c162-tr-alt' : ''}" data-c162-card="L:${batterUnlockKey(p)}" title="Click to see his card">
           ${td(`<span style="font-family:'Press Start 2P',monospace;font-size:8px;color:#94a3b8;">${i + 1}</span>`, { style: 'text-align:center;' })}
           ${td(`<span class="c162-tag-pos">${slot}</span>`)}
           ${td(s.name + this._asTag('bat', USER_TEAM_ID, batterUnlockKey(p)) + this._formTag(USER_TEAM_ID, p, false))}
@@ -10233,7 +10303,7 @@
         const war = calcBatterWAR(s, p.pos || 'BN', defVal);
         const dwarColor = parseFloat(dwar) > 0 ? '#34d399' : (parseFloat(dwar) < 0 ? '#f87171' : '#94a3b8');
 
-        return `<tr class="c162-tr c162-tr-card${(i + 9) % 2 ? ' c162-tr-alt' : ''}" data-c162-card="B${i}" title="Click to see his card">
+        return `<tr class="c162-tr c162-tr-card${(i + 9) % 2 ? ' c162-tr-alt' : ''}" data-c162-card="B:${batterUnlockKey(p)}" title="Click to see his card">
           ${td(`<span style="font-family:'Press Start 2P',monospace;font-size:7.5px;color:#94a3b8;">BN</span>`, { style: 'text-align:center;' })}
           ${td(`<span class="c162-tag-pos" style="background:rgba(52,211,153,0.15);color:#34d399;border:1px solid rgba(52,211,153,0.4);">BN${i + 1}</span>`)}
           ${td(s.name + this._asTag('bat', USER_TEAM_ID, batterUnlockKey(p)) + this._formTag(USER_TEAM_ID, p, false))}
@@ -10287,7 +10357,7 @@
         const roleBadge = `<span class="c162-tag-role" style="background:${roleBg};">${roleLabel}</span>${ironTag}`;
         const war = calcPitcherWAR(s, roleLabel);
 
-        return `<tr class="c162-tr c162-tr-card${i % 2 ? ' c162-tr-alt' : ''}" data-c162-card="P${i}" title="Click to see his card">
+        return `<tr class="c162-tr c162-tr-card${i % 2 ? ' c162-tr-alt' : ''}" data-c162-card="P:${pitcherUnlockKey(p)}" title="Click to see his card">
           ${td(s.name + this._asTag('pit', USER_TEAM_ID, pitcherUnlockKey(p)) + this._formTag(USER_TEAM_ID, p, true))}
           ${td(roleBadge, { style: 'text-align:center;' })}
           ${td(ipDisplay, { num: true })}
@@ -10612,12 +10682,16 @@
       this._showAllStar();
       container.querySelectorAll('[data-c162-card]').forEach(el => {
         el.onclick = () => {
-          const kind = el.dataset.c162Card[0], idx = Number(el.dataset.c162Card.slice(1));
+          // By player key, not by row number: the October prep reorders the roster while the table
+          // on screen still shows the old order, and a row number then opened somebody else.
+          const kind = el.dataset.c162Card[0], key = el.dataset.c162Card.slice(2);
           const R = this.state.roster;
-          const card = kind === 'L' ? R.lineup[R.battingOrder[idx]] : kind === 'B' ? (R.bench || [])[idx] : [...(R.pitchers.SP || []), ...(R.pitchers.RP || [])][idx];
+          const bats = [...Object.values(R.lineup || {}), ...(R.bench || [])].filter(Boolean);
+          const pits = [...(R.pitchers.SP || []), ...(R.pitchers.RP || [])].filter(Boolean);
+          const card = kind === 'P' ? pits.find(x => pitcherUnlockKey(x) === key) : bats.find(x => batterUnlockKey(x) === key);
           if (!card || !window.BaseballDex || typeof window.BaseballDex.showDetail !== 'function') return;
           this.stopAutoSim();
-          window.BaseballDex.showDetail(card);
+          window.BaseballDex.showDetail(dexCard(card));
           // Buttons that only make sense inside the Dex (nothing is being opened here).
           ['btn-modal-shortlist-bottom', 'btn-modal-next-bottom', 'btn-modal-next-back', 'btn-modal-test-batter-bottom'].forEach(id => {
             const b = document.getElementById(id);

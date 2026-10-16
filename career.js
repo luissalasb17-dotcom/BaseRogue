@@ -396,14 +396,14 @@
     const con = p.con || 50, pwr = p.pwr || 50, eye = p.eye || 50, spd = p.spd || 50, def = p.def || 50, kavd = p.k_avd || 50;
     const defOvr = def + ((p.def_ovr !== undefined && p.def !== undefined) ? p.def_ovr - p.def : 0);
     // Defense weight by position (DEF_OVR_WEIGHT_BY_POS of lahman_etl_v5.py): 16% on average; what a position weighs less or more goes to the bat.
-    const wDef = p.def_w || ({ CF: 0.1715, SS: 0.1698, '3B': 0.1647, '2B': 0.1528, RF: 0.1528, LF: 0.1477, C: 0.1375, '1B': 0.1154, DH: 0.1154 })[p.pos] || 0.16; // def_w: blended by the games he played at each position
+    const wDef = p.def_w || ({ CF: 0.17, SS: 0.17, '3B': 0.16, C: 0.16, '2B': 0.15, RF: 0.16, LF: 0.15, '1B': 0.12, DH: 0.11 })[p.pos] || 0.16; // def_w: blended by the games he played at each position
     const raw = (con * 0.26 + pwr * 0.26 + eye * 0.12) * (1 + (0.16 - wDef) / 0.64) + defOvr * wDef + spd * 0.10 + kavd * 0.10;
     // Cut points = pool percentiles of the last lahman_etl_v5.py run (see paso_15); update them if the ETL changes.
-    if (raw <= 34.2) return Math.floor(50.0 + ((raw - 10.0) / 24.2) * 9.9);
-    if (raw <= 43.7) return Math.floor(60.0 + ((raw - 34.2) / 9.5) * 9.9);
-    if (raw <= 54.6) return Math.floor(70.0 + ((raw - 43.7) / 10.9) * 9.9);
-    if (raw <= 74.6) return Math.floor(80.0 + ((raw - 54.6) / 20.0) * 9.9);
-    return Math.floor(90.0 + Math.min(9.9, ((raw - 74.6) / 25.0) * 9.9));
+    if (raw <= 35) return Math.floor(50.0 + ((raw - 10.0) / 25) * 9.9);
+    if (raw <= 45) return Math.floor(60.0 + ((raw - 35) / 10) * 9.9);
+    if (raw <= 55) return Math.floor(70.0 + ((raw - 45) / 10) * 9.9);
+    if (raw <= 75) return Math.floor(80.0 + ((raw - 55) / 20) * 9.9);
+    return Math.floor(90.0 + Math.min(9.9, ((raw - 75) / 25.0) * 9.9));
   }
 
   // ── OVR-targeted growth ────────────────────────────────────────────────

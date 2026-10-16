@@ -512,15 +512,16 @@ window.leftyCantPlay = function (p, slot) {
     const def = (p.def || 0) + ((p.upgrades && p.upgrades.def) || 0);
     // The OVR uses the defense with more weight on the position (def_ovr of the card, lahman_etl_v5.py); upgrades move it the same.
     const defOvr = def + ((p.def_ovr !== undefined && p.def !== undefined) ? p.def_ovr - p.def : 0);
-    // Defense weight: uniform 16% across all batters (26% CON, 26% PWR, 12% EYE, 16% DEF, 10% SPD, 10% K-AVD).
-    const raw = con * 0.26 + pwr * 0.26 + eye * 0.12 + defOvr * 0.16 + spd * 0.10 + kavd * 0.10;
+    // Defense weight by position (def_w of the card: blended by the games he played at each position); the rest goes to the bat.
+    const wDef = p.def_w || ({ CF: 0.17, SS: 0.17, '3B': 0.16, C: 0.16, '2B': 0.15, RF: 0.16, LF: 0.15, '1B': 0.12, DH: 0.11 })[p.pos] || 0.16;
+    const raw = (con * 0.26 + pwr * 0.26 + eye * 0.12) * (1 + (0.16 - wDef) / 0.64) + defOvr * wDef + spd * 0.10 + kavd * 0.10;
     // Cut points = pool percentiles of the last lahman_etl_v5.py run (see paso_15); update them if the ETL changes.
     let base;
-    if (raw <= 34.2) base = 50.0 + ((raw - 10.0) / 24.2) * 9.9;
-    else if (raw <= 43.7) base = 60.0 + ((raw - 34.2) / 9.5) * 9.9;
-    else if (raw <= 54.6) base = 70.0 + ((raw - 43.7) / 10.9) * 9.9;
-    else if (raw <= 74.6) base = 80.0 + ((raw - 54.6) / 20.0) * 9.9;
-    else base = 90.0 + Math.min(9.9, ((raw - 74.6) / 25.0) * 9.9);
+    if (raw <= 35) base = 50.0 + ((raw - 10.0) / 25) * 9.9;
+    else if (raw <= 45) base = 60.0 + ((raw - 35) / 10) * 9.9;
+    else if (raw <= 55) base = 70.0 + ((raw - 45) / 10) * 9.9;
+    else if (raw <= 75) base = 80.0 + ((raw - 55) / 20) * 9.9;
+    else base = 90.0 + Math.min(9.9, ((raw - 75) / 25.0) * 9.9);
     // Clutch / Captain badges add +2 OVR each, as in the ETL (paso_15).
     const badge = ((p.clutch || p.is_clutch) ? 2 : 0) + ((p.captain || p.is_captain) ? 2 : 0);
     return Math.floor(Math.max(50, Math.min(99.9, base + badge)));
