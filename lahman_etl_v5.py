@@ -159,9 +159,20 @@ def ajustar_por_ambiente(raw, ambiente, blend=0.75):
     """
     Ajuste por dificultad (estilo OPS+) contra el ambiente de las temporadas del propio jugador:
       factor = 1 + blend * (ambiente_medio_de_todas_las_cartas / ambiente_del_jugador - 1)
+    ENV_RATIO_CAP (variable de entorno; 0 = sin tope): la razon media / ambiente no pasa de ese valor
+    ni baja de su inverso. En epocas donde algo casi no pasaba (jonrones en 1880) un multiplo chico
+    sobre un promedio casi nulo se inflaba al llevarlo a la epoca neutral.
     """
+    import os as _o
     amb = ambiente.replace(0, np.nan)
-    return raw * (1.0 + blend * (amb.mean() / amb - 1.0)).fillna(1.0)
+    ratio = amb.mean() / amb
+    _cap = float(_o.environ.get("ENV_RATIO_CAP", str(ENV_RATIO_CAP_DEFAULT)) or 0)
+    if _cap > 1:
+        ratio = ratio.clip(1.0 / _cap, _cap)
+    return raw * (1.0 + blend * (ratio - 1.0)).fillna(1.0)
+
+
+ENV_RATIO_CAP_DEFAULT = 0  # sin tope (en prueba)
 
 
 def cuantil_ponderado(v, w, q):
@@ -1666,6 +1677,7 @@ def paso_14_velocidad(df):
 
 # ── Longevidad y extremos: pasos comunes a bateadores y pitchers ─────────────────────────────
 BAT_RAW_CUTS = (35.0, 45.0, 55.0, 75.0)  # cortes fijos de raw (Uncommon, Rare, Epic, Legendary); ver paso de rareza
+BAT_RAW_FLOOR = 21.3  # el percentil 1 del raw vale 50 (antes un raw de 10 que nadie tenia; los Common quedaban en 56-59)
 LONGEVITY_SEASONS = 15      # segundo pico, mas largo (era 12; decision del usuario junto con quitar la regresion por menos de 7)
 # Carreras de fildeo que separan a los titulares de cada posicion (desvio estandar por temporada,
 # AL/NL 1947-2025); media de las ocho = 9.425. El DH usa el valor de primera base.
@@ -2155,7 +2167,7 @@ def paso_15_equipo_y_exportar(df, batting, teams, franchises, pico_df=None, war_
 
     def cosmetic_scores(cuts):
         c1, c2, c3, c4 = cuts
-        res = np.where(raw <= c1, 50.0 + ((raw - 10.0) / max(0.1, c1 - 10.0)) * 9.9,
+        res = np.where(raw <= c1, 50.0 + np.maximum(0.0, (raw - BAT_RAW_FLOOR) / max(0.1, c1 - BAT_RAW_FLOOR)) * 9.9,
               np.where(raw <= c2, 60.0 + ((raw - c1) / max(0.1, c2 - c1)) * 9.9,
               np.where(raw <= c3, 70.0 + ((raw - c2) / max(0.1, c3 - c2)) * 9.9,
               np.where(raw <= c4, 80.0 + ((raw - c3) / max(0.1, c4 - c3)) * 9.9,

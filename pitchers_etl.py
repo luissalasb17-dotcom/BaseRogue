@@ -126,12 +126,22 @@ def suavizar_por_anio(tab, radius=2):
 
 def ajustar_por_ambiente(raw, ambiente, blend=0.75):
     """
-    Lleva la tasa de cada pitcher hacia una referencia comun quitando `blend` de la diferencia
-    entre el ambiente de SUS temporadas y el ambiente medio de todas las cartas:
-      factor = 1 + blend * (ambiente_medio / ambiente_del_pitcher - 1)
+    Ajuste por dificultad (estilo OPS+) contra el ambiente de las temporadas del propio jugador:
+      factor = 1 + blend * (ambiente_medio_de_todas_las_cartas / ambiente_del_jugador - 1)
+    ENV_RATIO_CAP (variable de entorno; 0 = sin tope): la razon media / ambiente no pasa de ese valor
+    ni baja de su inverso. En epocas donde algo casi no pasaba (jonrones en 1880) un multiplo chico
+    sobre un promedio casi nulo se inflaba al llevarlo a la epoca neutral.
     """
+    import os as _o
     amb = ambiente.replace(0, np.nan)
-    return raw * (1.0 + blend * (amb.mean() / amb - 1.0)).fillna(1.0)
+    ratio = amb.mean() / amb
+    _cap = float(_o.environ.get("ENV_RATIO_CAP", str(ENV_RATIO_CAP_DEFAULT)) or 0)
+    if _cap > 1:
+        ratio = ratio.clip(1.0 / _cap, _cap)
+    return raw * (1.0 + blend * (ratio - 1.0)).fillna(1.0)
+
+
+ENV_RATIO_CAP_DEFAULT = 0  # sin tope (en prueba)
 
 
 def estimar_por_contemporaneos(adjusted, raw, year, last_year=1888, ref_first_year=1893, radius=4):
@@ -1490,6 +1500,9 @@ PIT_RAW_CUTS = (35.0, 45.0, 55.0, 75.0)  # cortes fijos de raw (Uncommon, Rare, 
 # El raw de los pitchers sale 5 puntos mas alto que el de los bateadores (otros ratings, otra mezcla):
 # se le resta para que los dos grupos usen la misma escala y los mismos cortes (decision del usuario).
 PIT_RAW_SHIFT = 5.0
+# Piso de la escala de los Common (decision del usuario): el percentil 1 del raw vale 50 (antes un raw de
+# 10 que nadie tenia, y casi todos los Common quedaban en 56-59). Solo cambia el numero mostrado.
+PIT_RAW_FLOOR = 16.7
 
 
 def paso_11_ovr_rareza(df, awards=None):
@@ -1522,7 +1535,7 @@ def paso_11_ovr_rareza(df, awards=None):
     def ovr_with(c):
         c35, c65, c85, c975 = c
         r = df["raw_ovr"].astype(float)
-        res = np.where(r <= c35, 50.0 + ((r - 10.0) / max(0.1, c35 - 10.0)) * 9.9,
+        res = np.where(r <= c35, 50.0 + np.maximum(0.0, (r - PIT_RAW_FLOOR) / max(0.1, c35 - PIT_RAW_FLOOR)) * 9.9,
               np.where(r <= c65, 60.0 + ((r - c35) / max(0.1, c65 - c35)) * 9.9,
               np.where(r <= c85, 70.0 + ((r - c65) / max(0.1, c85 - c65)) * 9.9,
               np.where(r <= c975, 80.0 + ((r - c85) / max(0.1, c975 - c85)) * 9.9,
@@ -1555,7 +1568,7 @@ def paso_11_ovr_rareza(df, awards=None):
             return 50.0
         val = float(r)
         if val <= p35:
-            res = 50.0 + ((val - 10.0) / max(0.1, (p35 - 10.0))) * 9.9
+            res = 50.0 + max(0.0, (val - PIT_RAW_FLOOR) / max(0.1, (p35 - PIT_RAW_FLOOR))) * 9.9
         elif val <= p65:
             res = 60.0 + ((val - p35) / max(0.1, (p65 - p35))) * 9.9
         elif val <= p85:

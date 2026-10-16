@@ -399,7 +399,7 @@
     const wDef = p.def_w || ({ CF: 0.17, SS: 0.17, '3B': 0.16, C: 0.16, '2B': 0.15, RF: 0.16, LF: 0.15, '1B': 0.12, DH: 0.11 })[p.pos] || 0.16; // def_w: blended by the games he played at each position
     const raw = (con * 0.26 + pwr * 0.26 + eye * 0.12) * (1 + (0.16 - wDef) / 0.64) + defOvr * wDef + spd * 0.10 + kavd * 0.10;
     // Cut points = pool percentiles of the last lahman_etl_v5.py run (see paso_15); update them if the ETL changes.
-    if (raw <= 35) return Math.floor(50.0 + ((raw - 10.0) / 25) * 9.9);
+    if (raw <= 35) return Math.floor(50.0 + Math.max(0, (raw - 21.3) / 13.7) * 9.9);
     if (raw <= 45) return Math.floor(60.0 + ((raw - 35) / 10) * 9.9);
     if (raw <= 55) return Math.floor(70.0 + ((raw - 45) / 10) * 9.9);
     if (raw <= 75) return Math.floor(80.0 + ((raw - 55) / 20) * 9.9);

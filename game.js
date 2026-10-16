@@ -517,7 +517,7 @@ window.leftyCantPlay = function (p, slot) {
     const raw = (con * 0.26 + pwr * 0.26 + eye * 0.12) * (1 + (0.16 - wDef) / 0.64) + defOvr * wDef + spd * 0.10 + kavd * 0.10;
     // Cut points = pool percentiles of the last lahman_etl_v5.py run (see paso_15); update them if the ETL changes.
     let base;
-    if (raw <= 35) base = 50.0 + ((raw - 10.0) / 25) * 9.9;
+    if (raw <= 35) base = 50.0 + Math.max(0, (raw - 21.3) / 13.7) * 9.9;
     else if (raw <= 45) base = 60.0 + ((raw - 35) / 10) * 9.9;
     else if (raw <= 55) base = 70.0 + ((raw - 45) / 10) * 9.9;
     else if (raw <= 75) base = 80.0 + ((raw - 55) / 20) * 9.9;
@@ -1591,14 +1591,21 @@ window.leftyCantPlay = function (p, slot) {
         const open = shuffled(missingPos).sort((a, b) => (a === 'DH') - (b === 'DH'));
         const usedPos = [];
         // First open position without a card yet that has a candidate passing `filter`.
+        // Players whose MAIN position it is come first; a secondary position only when nobody else fits.
         const spotFor = filter => {
           const order = [...open.filter(p => !usedPos.includes(p)), ...open.filter(p => usedPos.includes(p))];
+          for (const pos of order) {
+            const cands = free(base.filter(p => (pos === 'DH' || p.pos === pos) && filter(p)));
+            if (cands.length) return { pos, cands };
+          }
           for (const pos of order) {
             const cands = free(base.filter(p => canPlay(p, pos) && filter(p)));
             if (cands.length) return { pos, cands };
           }
           return null;
         };
+        // Variety: the best of a few drawn at random, not always the same name.
+        const bestOf = (list, n, key) => shuffled(list).slice(0, n).sort((x, y) => key(y) - key(x))[0];
         const take = (p, tag) => {
           if (!p) return;
           picks.push({ ...p, draftTag: tag });
@@ -1606,25 +1613,49 @@ window.leftyCantPlay = function (p, slot) {
           removeFromList(fullWeighted, p.name);
           if (activeWeighted) removeFromList(activeWeighted, p.name);
         };
-        // 1. Synergy: the era with the most drafted players (the Build Era wins a tie).
+        // Three kinds of decision (user, Oct 2026): a SAFE card (best OVR for a hole), a SYNERGY card
+        // (only when it really moves an era: it activates T1, reaches a new tier, or feeds the
+        // Build Era toward its next tier) and a SPECIALIST (a tool in the top 5% of the Commons,
+        // picked where the team is weakest). Each tag says what you gain.
+        const tierOf = (era, n) => (era === this.buildEra ? this.getEraTier(era, n) : Math.min(1, this.getEraTier(era, n)));
         const eraCount = {};
         this.draftedPlayers.forEach(p => { if (p.era && p.era !== 'None') eraCount[p.era] = (eraCount[p.era] || 0) + 1; });
-        const topEra = Object.keys(eraCount).sort((x, y) => (eraCount[y] - eraCount[x]) || ((y === this.buildEra) - (x === this.buildEra)))[0];
-        const eraSpot = topEra && spotFor(p => p.era === topEra);
-        if (eraSpot) take(rnd(eraSpot.cands), { type: 'era', pos: eraSpot.pos, era: topEra, count: eraCount[topEra] });
-        // 2. Specialist: one of the best Commons at a single tool (top 8% of what is on offer).
-        // The tool is drawn first so it is not always K-AVD, where Commons are deepest.
-        const TOOLS = ['con', 'pwr', 'eye', 'spd', 'def', 'k_avd'];
-        const tool = TOOLS[Math.floor(Math.random() * TOOLS.length)];
-        const ranked = base.map(p => Number(p[tool]) || 0).sort((x, y) => y - x);
-        const cutoff = ranked[Math.max(2, Math.round(ranked.length * 0.08))] || 0;
-        const toolSpot = spotFor(p => (Number(p[tool]) || 0) >= cutoff);
-        if (toolSpot) { const sp = rnd(toolSpot.cands); take(sp, { type: 'tool', pos: toolSpot.pos, stat: tool, val: Number(sp[tool]) || 0 }); }
-        // 3. Solid: the best OVR out of six drawn at one more position.
-        const topSpot = spotFor(() => true);
-        if (topSpot) {
-          const best = shuffled(topSpot.cands).slice(0, 6).sort((x, y) => (y.ovr || 0) - (x.ovr || 0))[0];
-          take(best, { type: 'top', pos: topSpot.pos });
+        const eraWorth = era => {
+          const n = eraCount[era] || 0;
+          if (tierOf(era, n + 1) > tierOf(era, n)) return 3;              // activates or raises a tier
+          if (era === this.buildEra && n + 1 < 8) return 2;               // Build Era on its way to the next tier
+          return 0;                                                       // changes nothing: not a synergy pick
+        };
+        const eras = Object.keys(eraCount).filter(e => eraWorth(e) > 0)
+          .sort((x, y) => (eraWorth(y) - eraWorth(x)) || ((y === this.buildEra) - (x === this.buildEra)) || (eraCount[y] - eraCount[x]));
+        for (const era of eras) {
+          const eraSpot = spotFor(p => p.era === era);
+          if (!eraSpot) continue;
+          const n = eraCount[era];
+          const sp = rnd(eraSpot.cands);
+          take(sp, { type: 'era', pos: eraSpot.pos, sec: eraSpot.pos !== 'DH' && sp.pos !== eraSpot.pos, era, count: n,
+            from: tierOf(era, n), to: tierOf(era, n + 1), build: era === this.buildEra });
+          break;
+        }
+        // Specialist: the tool where the drafted team is weakest; the glove only for C / SS / CF / 2B.
+        const TOOLS = ['con', 'pwr', 'eye', 'spd', 'k_avd', 'def'];
+        const teamAvg = t => { const v = this.draftedPlayers.map(p => Number(p[t]) || 0); return v.length ? v.reduce((a, x) => a + x, 0) / v.length : 50; };
+        const toolOrder = TOOLS.slice().sort((x, y) => teamAvg(x) - teamAvg(y));
+        const cutoffOf = t => { const r = base.map(p => Number(p[t]) || 0).sort((x, y) => y - x); return Math.max(60, r[Math.max(2, Math.round(r.length * 0.05))] || 0); };  // top 5% and never under 60
+        for (const tool of toolOrder) {
+          const cut = cutoffOf(tool);
+          const toolSpot = spotFor(p => (Number(p[tool]) || 0) >= cut && (tool !== 'def' || ['C', 'SS', 'CF', '2B'].includes(p.pos)));
+          if (!toolSpot) continue;
+          const sp = rnd(toolSpot.cands);
+          take(sp, { type: 'tool', pos: toolSpot.pos, sec: toolSpot.pos !== 'DH' && sp.pos !== toolSpot.pos, stat: tool, val: Number(sp[tool]) || 0 });
+          break;
+        }
+        // Safe: the best OVR available at an open position (more than one if no synergy or specialist fits).
+        while (picks.length < 3) {
+          const topSpot = spotFor(() => true);
+          if (!topSpot) break;
+          const best = bestOf(topSpot.cands, 3, x => x.ovr || 0);
+          take(best, { type: 'top', pos: topSpot.pos, sec: topSpot.pos !== 'DH' && best.pos !== topSpot.pos, ovr: best.ovr });
         }
         // Shown in a fixed order: solid, era, tool.
         const rank = { top: 0, era: 1, tool: 2 };

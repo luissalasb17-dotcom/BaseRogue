@@ -4623,3 +4623,13 @@ span.c162-iron {
 .oc-close { font-family: 'Press Start 2P', monospace; font-size: 8px; padding: 10px 16px; background: transparent; color: #94a3b8; border: 1px solid #334155; border-radius: 6px; cursor: pointer; }
 .oc-enter { font-family: 'Press Start 2P', monospace; font-size: 9px; padding: 11px 20px; background: #c2410c; color: #fff; border: 1px solid #fb923c; border-radius: 6px; cursor: pointer; }
 @media (max-width: 760px) { .oc-grid { grid-template-columns: 1fr; } }
+
+/* Draft rounds 5-8: tag with position + reason + what you gain */
+.draft-reason { display: flex !important; align-items: stretch; gap: 0 !important; padding: 0 !important; overflow: hidden; text-align: left; }
+.draft-reason .dr-pos { display: flex; flex-direction: column; justify-content: center; align-items: center; min-width: 30px; padding: 3px 5px; background: rgba(0,0,0,.8); color: #fff; font-size: 9px; }
+.draft-reason .dr-pos i { font-style: normal; font-size: 6px; color: #fbbf24; margin-top: 2px; }
+.draft-reason .dr-txt { display: flex; flex-direction: column; justify-content: center; padding: 3px 6px; line-height: 1.25; }
+.draft-reason .dr-txt b { display: block; margin: 0; padding: 0; background: none; color: inherit; font-size: 8px; font-weight: 400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.draft-reason .dr-txt small { font-family: 'Outfit', 'Segoe UI', sans-serif; font-size: 9px; font-weight: 700; opacity: .8; margin-top: 1px; white-space: normal; line-height: 1.15; }
+.draft-reason { white-space: normal !important; }
+.draft-reason .dr-txt { min-width: 0; }

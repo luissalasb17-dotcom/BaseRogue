@@ -854,11 +854,27 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
         // feeds your era / one standout tool).
         const tag = player.draftTag;
         const TOOL_NAMES = { con: 'CONTACT', pwr: 'POWER', eye: 'EYE', spd: 'SPEED', def: 'GLOVE', k_avd: 'K-AVD' };
-        const tagHTML = !tag ? '' : `<div class="draft-reason draft-reason-${tag.type}"><b>${tag.pos}</b>${
-          tag.type === 'era' ? t('draft.reason_era', { count: tag.count + 1, defaultValue: `YOUR ERA ×${tag.count + 1}` })
-          : tag.type === 'tool' ? t('draft.reason_tool', { stat: TOOL_NAMES[tag.stat] || tag.stat, val: Math.round(tag.val), defaultValue: `${TOOL_NAMES[tag.stat] || tag.stat} ${Math.round(tag.val)}` })
-          : t('draft.reason_top', { defaultValue: 'SOLID PICK' })
-        }</div>`;
+        let tagHTML = '';
+        if (tag) {
+          const eraShort = String(tag.era || '').replace(/\s*\(.*$/, '').replace(/\s+Era$/i, '').toUpperCase();
+          let main, sub, tip;
+          if (tag.type === 'era') {
+            main = t('draft.reason_era', { era: eraShort, n: tag.count + 1, defaultValue: `${eraShort} ×${tag.count + 1}` });
+            sub = tag.to > tag.from ? (tag.from === 0 ? t('draft.reason_era_on', { defaultValue: 'ACTIVATES T1' }) : t('draft.reason_era_up', { tier: tag.to, defaultValue: `REACHES T${tag.to}` }))
+              : t('draft.reason_era_build', { defaultValue: 'BUILD ERA · TOWARD NEXT TIER' });
+            tip = t('draft.reason_era_tip', { era: tag.era, defaultValue: `Adds a player of the ${tag.era}.` });
+          } else if (tag.type === 'tool') {
+            main = t('draft.reason_tool', { stat: TOOL_NAMES[tag.stat] || tag.stat, defaultValue: `ELITE ${TOOL_NAMES[tag.stat] || tag.stat}` });
+            sub = t('draft.reason_tool_sub', { val: Math.round(tag.val), defaultValue: `${Math.round(tag.val)} · TOP 5% OF COMMONS` });
+            tip = t('draft.reason_tool_tip', { defaultValue: 'Weaker overall, but elite at the tool your team lacks most.' });
+          } else {
+            const o = Math.floor(tag.ovr || player.ovr || 0);
+            main = t('draft.reason_top', { defaultValue: 'BEST OVR' });
+            sub = t('draft.reason_top_sub', { ovr: o, defaultValue: `OVR ${o} · TOP OF THE ROUND` });
+            tip = t('draft.reason_top_tip', { defaultValue: 'The highest OVR on offer for this position.' });
+          }
+          tagHTML = `<div class="draft-reason draft-reason-${tag.type}" title="${tip}"><span class="dr-pos">${tag.pos}${tag.sec ? '<i>SEC</i>' : ''}</span><span class="dr-txt"><b>${main}</b><small>${sub}</small></span></div>`;
+        }
 
         wrapper.innerHTML = `
           ${tagHTML}
@@ -3224,7 +3240,7 @@ function initGameModeSelector() {
       const raw = h9 * 0.28 + sta * 0.28 + k9 * 0.12 + bb9 * 0.12 + hr9 * 0.10 + clt * 0.10 - 5; // same scale and cuts as batters (pitchers_etl.py PIT_RAW_SHIFT)
       // Pitcher badges (Clutch / Captain) add 2 each, as on the card; the cuts already count them.
       const pitBadge = (p.badge_clutch ? 2 : 0) + (p.badge_captain ? 2 : 0);
-      if (raw <= 35) return Math.floor(50.0 + ((raw - 10.0) / 25) * 9.9 + pitBadge);
+      if (raw <= 35) return Math.floor(50.0 + Math.max(0, (raw - 16.7) / 18.3) * 9.9 + pitBadge);
       if (raw <= 45) return Math.floor(60.0 + ((raw - 35) / 10) * 9.9 + pitBadge);
       if (raw <= 55) return Math.floor(70.0 + ((raw - 45) / 10) * 9.9 + pitBadge);
       if (raw <= 75) return Math.floor(80.0 + ((raw - 55) / 20) * 9.9 + pitBadge);
@@ -3252,7 +3268,7 @@ function initGameModeSelector() {
     const raw = (con * 0.26 + pwr * 0.26 + eye * 0.12) * (1 + (0.16 - wDef) / 0.64) + defOvr * wDef + spd * 0.10 + kavd * 0.10;
       // Cut points = pool percentiles of the last lahman_etl_v5.py run (see paso_15); update them if the ETL changes.
       let base;
-      if (raw <= 35) base = 50.0 + ((raw - 10.0) / 25) * 9.9;
+      if (raw <= 35) base = 50.0 + Math.max(0, (raw - 21.3) / 13.7) * 9.9;
       else if (raw <= 45) base = 60.0 + ((raw - 35) / 10) * 9.9;
       else if (raw <= 55) base = 70.0 + ((raw - 45) / 10) * 9.9;
       else if (raw <= 75) base = 80.0 + ((raw - 55) / 20) * 9.9;
