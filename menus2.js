@@ -101,7 +101,22 @@
     mark();
   }
 
-  function init() { decorateModeCards(); watchOverlays(); watchDraft(); }
+  // Phones: the map stacks October on top, so the zone you are playing sat at the bottom.
+  // When the map opens, bring the next playable node into view.
+  function watchMap() {
+    const map = document.getElementById('screen-map');
+    if (!map) return;
+    const go = () => {
+      if (map.classList.contains('hidden') || window.innerWidth > 768) return;
+      setTimeout(() => {
+        const node = map.querySelector('.map-node-group.node-is-active');
+        if (node) node.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      }, 120);
+    };
+    new MutationObserver(go).observe(map, { attributes: true, attributeFilter: ['class'] });
+  }
+
+  function init() { decorateModeCards(); watchOverlays(); watchDraft(); watchMap(); }
   // Loaded at the end of <body> but BEFORE the player data scripts, so the menu markup already exists:
   // run now. Waiting for 'load' (megabytes of data) made the mode cards appear bare and then jump.
   if (document.getElementById('card-mode-story')) init();

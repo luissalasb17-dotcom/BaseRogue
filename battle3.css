@@ -300,3 +300,77 @@
   #modal-mid-inning-defense #def-field-radar-card { height: auto !important; aspect-ratio: 300 / 175; grid-row: 4 / span 2; }
   #modal-mid-inning-defense .def3-card { grid-row: 6 / span 6; align-self: center; }
 }
+
+/* ═══════ Phone battle (≤ 768 px): one compact screen, ROLL always under the thumb ═══════ */
+@media (max-width: 768px) {
+  #screen-match .match-arena.bx3 { gap: 6px !important; padding-bottom: 150px !important; }
+  #screen-match #match-header-title { font-size: 9px !important; margin: 0 0 4px !important; }
+
+  /* scoreboard: one tight band */
+  #screen-match .bx3 .scoreboard { padding: 6px 8px !important; }
+  #screen-match .bx3 #scoreboard-inning-text { font-size: 11px !important; padding: 3px 6px !important; margin: 0 0 4px !important; }
+  #screen-match .bx3 .scoreboard-text-panel > div { flex-direction: row !important; flex-wrap: nowrap !important; justify-content: space-around !important; gap: 4px !important; padding: 2px 0 !important; font-size: 10px !important; }
+  #screen-match .bx3 .scoreboard-text-panel { gap: 2px !important; }
+
+  /* the duel: your batter (left) and the pitcher (right), side by side */
+  #screen-match .bx3 .rpg-fight-deck.bx3-deck {
+    display: grid !important; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "plate mound";
+    gap: 8px !important; padding: 8px !important; align-items: start !important;
+  }
+  #screen-match .bx3-deck > .vs-circle { display: none !important; }
+  #screen-match .bx3-plate { grid-area: plate; }
+  #screen-match .bx3-mound { grid-area: mound; }
+  #screen-match .bx3-mound .bx3-row, #screen-match .bx3-plate .bx3-row { flex-direction: column !important; align-items: center !important; padding: 0 !important; gap: 6px !important; }
+  #screen-match .bx3-plate .bx3-tag, #screen-match .bx3-mound .bx3-tag { align-self: center !important; margin: 0 0 4px !important; font-size: 10px !important; padding: 2px 6px !important; }
+  #screen-match .bx3 #arena-pitcher-card-slot, #screen-match .bx3 #arena-batter-card-slot { zoom: .72 !important; }
+  #screen-match .bx3 #arena-pitcher-card-slot .player-card, #screen-match .bx3 #arena-batter-card-slot .player-card { rotate: 0deg; }
+  #screen-match .bx3-pcol { width: 100%; }
+  #screen-match .bx3-mound .bx3-row > div:not(.fight-card-slot),
+  #screen-match .bx3-plate .bx3-pcol > div:first-child {
+    width: 100% !important; min-width: 0 !important; max-width: none !important; padding: 6px 7px !important; text-align: center !important;
+  }
+  #screen-match .bx3 .faceoff-name { font-size: 12px !important; }
+  #screen-match .bx3 #match-batter-stats-box, #screen-match .bx3 #match-pitcher-stats-box { display: none !important; }
+  #screen-match .bx3 #match-pitcher-hp-text { text-align: center !important; font-size: 11px !important; }
+  #screen-match .bx3 #platoon-chip { margin-top: 4px !important; padding: 3px 5px !important; }
+  #screen-match .bx3 #platoon-chip, #screen-match .bx3 #platoon-chip * { font-size: 10px !important; }
+  #screen-match .bx3-pen { justify-content: center !important; margin-top: 4px !important; zoom: .8; }
+  #screen-match .bx3-odds { margin-top: 5px; padding-top: 5px; gap: 3px; }
+  #screen-match .bx3-odds-k { font-size: 9px; }
+  #screen-match .bx3-od { font-size: 8px; padding: 2px 1px 1px; }
+  #screen-match .bx3-od b { font-size: 17px; }
+  #screen-match .bx3-ondeck { font-size: 10px; flex-wrap: wrap; justify-content: center; }
+
+  /* diamond: small, under the duel */
+  #screen-match .bx3-dia { order: 2 !important; max-width: 240px !important; margin: 0 auto !important; }
+  #screen-match .bx3-runner { width: 30px; height: 30px; margin: -20px 0 0 -15px; }
+  #screen-match .bx3 > .bx3-right { order: 3 !important; }
+
+  /* dice tray in flow; its action bar (FOCUS + ROLL + auto) fixed at the bottom of the screen */
+  #screen-match .bx3 #dice-battle-panel { padding: 8px !important; gap: 6px !important; }
+  #screen-match #dice-action-bar {
+    position: fixed !important; left: 0 !important; right: 0 !important; bottom: 0 !important; z-index: 600 !important;
+    margin: 0 !important; border-radius: 12px 12px 0 0 !important; width: auto !important;
+    padding: 8px 10px calc(8px + env(safe-area-inset-bottom, 0px)) !important;
+    display: grid !important; grid-template-columns: auto 1fr; grid-template-areas: "focus roll" "read read" "auto auto"; gap: 6px 8px !important; align-items: center;
+    background: rgba(7, 14, 10, .97) !important; border-top: 2px solid #c9a24a !important; box-shadow: 0 -8px 24px rgba(0,0,0,.7) !important;
+  }
+  #screen-match #dice-action-bar #btn-focus { grid-area: focus; margin: 0 !important; padding: 8px 10px !important; max-width: 128px; }
+  #screen-match #dice-action-bar #btn-focus > *:not(:first-child) { display: none; }
+  #screen-match #dice-action-bar #focus-readout { grid-area: read; margin: 0 !important; }
+  #screen-match #dice-action-bar #btn-roll-dice { grid-area: roll; width: 100% !important; min-height: 50px !important; font-size: 14px !important; padding: 10px !important; }
+  #screen-match #dice-action-bar > :not(#btn-focus):not(#focus-readout):not(#btn-roll-dice) { grid-area: auto; justify-self: center; margin: 0 !important; padding: 4px 14px !important; font-size: 10px !important; min-height: 0 !important; }
+
+  /* lineup: a horizontal strip */
+  #screen-match .bx3-hand { order: 4 !important; justify-content: flex-start !important; overflow-x: auto; flex-wrap: nowrap !important; padding: 10px 4px 4px !important; scrollbar-width: none; }
+  #screen-match .bx3-h { flex: 0 0 56px !important; width: 56px !important; transform: none !important; }
+  #screen-match .bx3-h.cur { transform: translateY(-6px) !important; }
+}
+@media (max-width: 768px) {
+  #screen-match .bx3-plate, #screen-match .bx3-mound, #screen-match .bx3-pcol, #screen-match .bx3-row { min-width: 0 !important; max-width: 100% !important; }
+  #screen-match .bx3-plate .bx3-pcol > div:first-child, #screen-match .bx3-mound .bx3-row > div:not(.fight-card-slot) { overflow: hidden; box-sizing: border-box; }
+  #screen-match .bx3-odrow { gap: 3px; }
+  #screen-match .bx3-od { min-width: 0; }
+  #screen-match .bx3 #match-pitcher-debuff-badge, #screen-match .bx3 #match-pitcher-clutch-badge { font-size: 9px !important; padding: 3px 4px !important; margin-top: 4px !important; white-space: normal !important; }
+  #screen-match .bx3 #match-pitcher-debuff-badge *, #screen-match .bx3 #match-pitcher-clutch-badge * { font-size: 9px !important; }
+}

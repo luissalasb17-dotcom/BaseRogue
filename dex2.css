@@ -145,3 +145,28 @@
   .dx-rar { font-size: 5px; }
   .dx-fav, .dx-c162 { top: 6px; }
 }
+
+/* Phone detail: the 2.0 card on top, the stats sheet below, no 3D flip; tabs fit */
+@media (max-width: 600px) {
+  .dx2-cats { flex-wrap: wrap !important; overflow: visible; gap: 4px !important; }
+  .dx2-cats button { flex: 1 1 auto; font-size: 6.5px !important; padding: 6px 5px !important; }
+  .dx-name { min-height: 0 !important; }
+  #dex-detail-overlay { padding: 8px !important; align-items: flex-start !important; overflow-y: auto !important; }
+  #dex-detail-overlay > div { max-width: 100% !important; }
+  #dex-detail-overlay .dex-flip-card-container { perspective: none !important; min-height: 0 !important; }
+  #dex-detail-overlay .dex-flip-card-inner { transform: none !important; display: flex; flex-direction: column; gap: 10px; }
+  #dex-detail-overlay .dex-card-face { backface-visibility: visible !important; -webkit-backface-visibility: visible !important; }
+  #dex-detail-overlay .dex-card-back { position: relative !important; transform: none !important; order: -1; padding: 14px 10px 18px !important; }
+  #dex-detail-overlay .dex-card-back > div:first-of-type + div { display: none !important; }
+  #dex-detail-overlay .dex-card-back { padding-top: 40px !important; }
+  #dex-detail-overlay .dex-card-back .pc2-clickflip { transform: scale(1.25) !important; margin: 26px 0 30px !important; }
+  #dex-detail-overlay .dex-card-back > div:last-child { display: none; }
+  #dex-detail-overlay .dex-card-front #btn-modal-close-detail { display: none; }
+  #dex-detail-overlay .dex-card-front h2 { font-family: 'Oswald', sans-serif !important; font-size: 20px !important; letter-spacing: .5px; }
+  #dex-detail-overlay .dex-card-front [style*="font-size:7px"], #dex-detail-overlay .dex-card-front [style*="font-size:7.5px"] { font-size: 10px !important; font-family: 'Oswald', sans-serif !important; letter-spacing: .4px; }
+  #dex-detail-overlay .dex-card-front [style*="font-size:8px"] { font-size: 10.5px !important; }
+  #dex-detail-overlay .dex-card-front [style*="font-size:13px"] { font-family: 'VT323', monospace; font-size: 22px !important; }
+  #dex-detail-overlay .dex-card-front [style*="font-size:11px"] { font-size: 13px !important; }
+  #btn-modal-flip-bottom { display: none !important; }
+  #dex-detail-overlay [id$="-bottom"] { font-size: 7px !important; padding: 9px 10px !important; }
+}

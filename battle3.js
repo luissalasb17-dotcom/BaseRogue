@@ -236,6 +236,8 @@
     if (!deck || deck._bx3s) return;
     deck._bx3s = true;
     new MutationObserver(muts => muts.forEach(m => m.addedNodes.forEach(n => {
+      // Phones: the end-of-game card lives in the felt, which scrolls and is transformed; lift it to <body>
+      if (n.classList && n.classList.contains('battle-over-modal') && window.innerWidth <= 768) { document.body.appendChild(n); return; }
       if (!n.dataset || n.dataset.outcome !== 'STEAL') return;
       const third = /third|tercera|3B/i.test(n.textContent);
       const toks = [...document.querySelectorAll('.bx3-runner:not(.gone)')];

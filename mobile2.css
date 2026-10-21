@@ -1,0 +1,93 @@
+/* Phone layer (≤ 768 px): screen space first. Loaded last; presentation only. */
+@media (max-width: 768px) {
+  /* ── Header: logo and icons on one row, the run HUD on one tight row (was 186 px tall) ── */
+  body > header {
+    display: grid !important; grid-template-columns: auto 1fr; grid-template-areas: "logo icons" "hud hud";
+    align-items: center !important; gap: 6px 8px !important; padding: 6px 10px !important;
+  }
+  body > header .logo { grid-area: logo; margin: 0 !important; }
+  body > header .logo img, body > header .logo svg { max-height: 26px !important; width: auto !important; }
+  body > header .logo { font-size: 18px !important; }
+  body > header .header-icon-actions { grid-area: icons; justify-self: end; gap: 4px !important; margin: 0 !important; }
+  body > header .header-icon-actions > * { padding: 5px 8px !important; min-height: 32px; }
+  body > header #game-hud:not(.hidden) {
+    grid-area: hud; display: grid !important; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) !important;
+    gap: 4px !important; margin: 0 !important; width: 100% !important;
+  }
+  body > header #game-hud:not(.hidden) > * {
+    min-width: 0 !important; width: auto !important; margin: 0 !important; padding: 6px 4px !important; min-height: 34px;
+    font-size: 8px !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex !important;
+    align-items: center; justify-content: center; gap: 4px;
+  }
+  body > header #game-hud > * span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  body > header #game-hud .budget, body > header #game-hud .budget * { font-size: 9px !important; }
+}
+
+@media (max-width: 768px) {
+  /* ── Map: locked zones fold to a single line so the playable zone is close ── */
+  #screen-map .zone-locked .zone-subtitle { display: none !important; }
+  #screen-map .zone-locked .zone-header { padding-top: 6px !important; padding-bottom: 6px !important; }
+  #screen-map .zone-locked .zone-name { font-size: 12px !important; }
+}
+
+@media (max-width: 768px) {
+  /* HUD: drop the "Stage:" / "Budget:" words, keep the numbers */
+  body > header #game-hud [data-i18n="hud.budget"], body > header #game-hud [data-i18n="hud.stage"] { display: none !important; }
+  body > header #game-hud #hud-budget-val { font-size: 11px !important; }
+  body > header #game-hud #hud-stage-val { font-size: 8px !important; }
+}
+
+@media (max-width: 768px) {
+  /* ── Defensive trial: fits one phone screen, the catch button always visible ── */
+  #modal-mid-inning-defense { padding: 6px !important; align-items: flex-start !important; }
+  #modal-mid-inning-defense .def-modal-box { padding: 10px 10px 0 !important; margin: 0 auto !important; max-height: calc(100vh - 12px); overflow-y: auto; }
+  #modal-mid-inning-defense #def-modal-inning-badge { font-size: 9px !important; padding: 3px 8px !important; margin-bottom: 4px !important; }
+  #modal-mid-inning-defense #def-modal-title { font-size: 15px !important; margin: 2px 0 !important; line-height: 1.15 !important; }
+  #modal-mid-inning-defense #def-modal-scenario { font-size: 12px !important; margin: 2px 0 6px !important; line-height: 1.3 !important; }
+  #modal-mid-inning-defense #def-field-radar-card { height: auto !important; aspect-ratio: 300 / 175; margin: 0 0 6px !important; }
+  #modal-mid-inning-defense #def-field-speed-tag, #modal-mid-inning-defense #def-field-target-tag { font-size: 9px !important; padding: 2px 5px !important; }
+  #modal-mid-inning-defense #def-field-speed-tag *, #modal-mid-inning-defense #def-field-target-tag * { font-size: 9px !important; }
+  #modal-mid-inning-defense #def-modal-fielder-card { padding: 6px 8px !important; margin-bottom: 6px !important; }
+  #modal-mid-inning-defense #def-modal-fielder-card div { font-size: 12px !important; }
+  #modal-mid-inning-defense #def-modal-hp-status { padding: 5px 8px !important; margin-bottom: 6px !important; }
+  #modal-mid-inning-defense #def-modal-hp-status, #modal-mid-inning-defense #def-modal-hp-status * { font-size: 11px !important; line-height: 1.2 !important; }
+  #modal-mid-inning-defense .def-tactics-selector { gap: 6px !important; margin-bottom: 6px !important; }
+  #modal-mid-inning-defense .def-tactic-card { padding: 6px !important; }
+  #modal-mid-inning-defense .def-tactic-title { font-size: 12px !important; }
+  #modal-mid-inning-defense .def-tactic-desc { font-size: 11px !important; }
+  #modal-mid-inning-defense #def-dice-d100-panel { padding: 6px !important; margin: 4px 0 !important; zoom: .8; }
+  #modal-mid-inning-defense #def-modal-action-zone {
+    position: sticky; bottom: 0; z-index: 3; margin: 0 -10px !important; padding: 8px 10px 10px !important;
+    background: linear-gradient(180deg, rgba(10, 26, 18, 0), rgba(10, 26, 18, .98) 30%);
+  }
+}
+@media (max-width: 768px) {
+  /* once the result is in, the field and the tactics are done: make room for ADVANCE */
+  #modal-mid-inning-defense .def-modal-box:has(#def-modal-result-zone:not(.hidden)) :is(#def-field-radar-card, .def3-card, .def-tactics-selector, #def-modal-hp-status, #def-modal-scenario) { display: none !important; }
+}
+@media (max-width: 768px) {
+  /* end-of-game card: centred on the screen, not inside the scrolled felt */
+  .battle-over-modal { position: fixed !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important;
+    width: calc(100vw - 32px) !important; max-width: 360px !important; z-index: 1200 !important; margin: 0 !important; }
+}
+@media (max-width: 768px) {
+  /* ── Defeat ── */
+  #screen-gameover { padding: 12px 12px 16px !important; }
+  #screen-gameover .go-why-stats { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; gap: 5px !important; }
+  #screen-gameover .go-why-stat b { font-size: 22px !important; }
+  #screen-gameover .go-why-stat span { font-size: 9px !important; letter-spacing: .3px; }
+  #screen-gameover .flex-row { flex-direction: column !important; gap: 14px !important; }
+  #screen-gameover .flex-row > .glass-panel { width: 100% !important; padding: 0 !important; border-right: none !important; }
+  #screen-gameover .flex-row > .glass-panel:last-child { order: -1; text-align: center; }
+  #screen-gameover .flex-row > .glass-panel:last-child > i { font-size: 28px !important; }
+  #screen-gameover .flex-row > .glass-panel:last-child h3 { font-size: 17px !important; }
+}
+@media (max-width: 768px) {
+  /* ── Pre-fight: BATTLE! under the thumb ── */
+  #screen-pre-fight:not(.hidden) { padding-bottom: 170px !important; }
+  #screen-pre-fight:not(.hidden) #btn-pre-fight-start {
+    position: fixed !important; left: 12px !important; right: 12px !important; bottom: calc(80px + env(safe-area-inset-bottom, 0px)) !important;
+    width: auto !important; z-index: 600 !important; min-height: 52px !important; margin: 0 !important;
+    box-shadow: 0 4px 0 #6b4a0c, 0 -6px 24px rgba(0,0,0,.7) !important;
+  }
+}

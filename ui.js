@@ -5277,6 +5277,9 @@ function initGameModeSelector() {
           else if (rawLabel === 'ALL-STAR GAME') translatedLabel = 'ALL-STAR GAME';
           else if (rawLabel === 'CAMPEÓN LIGA') translatedLabel = t('map.node_pennant', 'LEAGUE CHAMPION');
           else if (rawLabel === 'SERIE MUNDIAL') translatedLabel = t('map.node_world_series', 'WORLD SERIES');
+          // Phones: three nodes share ~300 px, so long labels ran into each other ("CLASSIC SERIESCLASSIC SERIES")
+          const MOBILE_SHORT = { match: 'SERIES', mid_boss: 'MID-BOSS', trade: 'TRADE', draft: 'SIGN', event: 'EVENT', train: 'CAGE', rest: 'REST', chest: 'CHEST', gamble: 'LUCK' };
+          if (isMobileMap && !isBossStage && MOBILE_SHORT[node.type]) translatedLabel = MOBILE_SHORT[node.type];
           lbl.textContent = String(translatedLabel).toUpperCase();
           group.appendChild(lbl);
 
