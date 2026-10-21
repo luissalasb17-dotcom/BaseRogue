@@ -8696,7 +8696,7 @@
                 ${_t('challenge162.packs_draft_stage', `📦 HOBBY PACKS DRAFT: {{box}} (PACK {{pack}} OF {{total}})`, { box: stageBoxName, pack: globalCardNum, total: ROSTER_SIZE })}
               </span>
             </div>
-            <div style="display:flex; align-items:center; gap:12px;">
+            <div class="c162-pack-headbtns" style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
               <span style="font-family:'Press Start 2P',monospace; font-size:9.5px; color:${rerollsLeft > 0 ? '#f59e0b' : '#64748b'}; background:rgba(0,0,0,0.35); border:1px solid ${rerollsLeft > 0 ? 'rgba(245,158,11,0.5)' : 'rgba(100,116,139,0.3)'}; border-radius:6px; padding:4px 8px;" title="Rerolls remaining across the entire draft">
                 🎲 REROLLS: ${rerollsLeft}/${PACK_DRAFT_REROLLS}
               </span>
@@ -11681,6 +11681,8 @@
       const viewStatsBtnText = _t('challenge162.view_stats_table', '📊 VIEW SEASON STATS');
       const backMenuBtnText = _t('challenge162.main_menu', 'MAIN MENU');
 
+      // Results 2.0: the header is the front page of the season's last edition (challenge2.css).
+      headerHTML = `<div class="c162-hero ${wonWS ? 'won' : 'lost'}"><div class="c162-hero-mast"><span>THE BASEROGUE GAZETTE</span><span>${S.wins}-${S.losses}</span><span>FINAL EDITION</span></div>${headerHTML}</div>`;
       container.innerHTML = `
         ${headerHTML}
 

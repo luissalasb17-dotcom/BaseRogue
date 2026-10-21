@@ -1,0 +1,814 @@
+/* ═════════ Menus 2.0 (overhaul, Oct 2026) — same language as the 2.0 cards (cards2.css) ═════════
+   Main menu: night stadium, the three modes as big trading cards from three eras
+   (tobacco card / 70s two-tone / chrome refractor), each with a cover star (menus2.js). */
+
+body.on-main-menu {
+  background-image: linear-gradient(180deg, rgba(4, 8, 16, .35) 0%, rgba(4, 8, 16, .82) 78%), url('assets/TEST2.webp') !important;
+  background-position: center 30% !important;
+}
+
+#screen-mode-select {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  max-width: 1080px !important;
+  padding: 10px 20px 40px !important;
+}
+#screen-mode-select .menu-main-logo { max-width: 400px !important; }
+#screen-mode-select .menu-tagline-line { background: linear-gradient(90deg, transparent, rgba(243, 236, 214, .7)) !important; height: 2px !important; }
+#screen-mode-select .menu-tagline-line.line-right { background: linear-gradient(90deg, rgba(243, 236, 214, .7), transparent) !important; }
+#screen-mode-select .menu-tagline { font-family: 'Oswald', sans-serif !important; font-size: 13px !important; letter-spacing: 4px !important; color: #f3ecd6 !important; text-shadow: 0 2px 6px rgba(0, 0, 0, .8) !important; }
+#screen-mode-select .menu-tagline-ver { color: #ffd36a !important; }
+
+#screen-mode-select .mode-grid {
+  display: flex !important; justify-content: center; align-items: flex-end; gap: 34px; flex-wrap: wrap; margin-top: 0;
+}
+
+/* the cards */
+#screen-mode-select .mode-card {
+  width: 268px; min-height: 410px; padding: 10px !important; border-radius: 12px !important;
+  display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start; gap: 8px; text-align: center;
+  border: none !important; overflow: hidden;
+  box-shadow: 0 18px 30px rgba(0, 0, 0, .65), 0 2px 0 rgba(255, 255, 255, .08) inset !important;
+  transition: transform .28s cubic-bezier(.2, .8, .2, 1.2), box-shadow .28s !important;
+  font-family: 'Oswald', sans-serif;
+}
+#screen-mode-select .mode-card:nth-child(1) { transform: rotate(-4deg) translateY(10px); }
+#screen-mode-select .mode-card:nth-child(2) { transform: translateY(-6px); }
+#screen-mode-select .challenge162-card { transform: rotate(4deg) translateY(10px); }
+#screen-mode-select .mode-card:not(.is-locked):hover { transform: rotate(0) translateY(-18px) scale(1.04) !important; box-shadow: 0 30px 44px rgba(0, 0, 0, .75) !important; z-index: 2; }
+#screen-mode-select .mode-card::after {
+  content: '' !important; position: absolute; inset: 0 !important; left: 0 !important; width: auto !important; height: auto !important; transform: none !important;
+  background-image: linear-gradient(160deg, rgba(255,255,255,.35), transparent 40%, rgba(120,90,40,.06)) !important; mix-blend-mode: multiply; opacity: .12; pointer-events: none;
+}
+#screen-mode-select .mode-icon { display: none !important; }
+
+#screen-mode-select .mc-photo { position: relative; border-radius: 4px; padding: 3px; }
+#screen-mode-select .mc-photo img { width: 100%; display: block; aspect-ratio: 4 / 3; object-fit: cover; image-rendering: pixelated; border-radius: 2px; }
+#screen-mode-select .mc-kicker { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; opacity: .8; }
+#screen-mode-select .mode-title { font-size: 26px !important; line-height: 1.05; margin: 0 !important; text-shadow: none !important; letter-spacing: 1px !important; }
+#screen-mode-select .mode-subtitle { font-family: 'Oswald', sans-serif !important; font-size: 12px !important; letter-spacing: 2px !important; margin: 0 !important; }
+#screen-mode-select .mode-desc { font-size: 13px !important; line-height: 1.35 !important; margin: 0 !important; flex: 1; padding: 0 4px; }
+#screen-mode-select .btn-mode {
+  font-family: 'Alfa Slab One', serif !important; font-size: 15px !important; letter-spacing: 1.5px !important; padding: 11px 10px !important;
+  border: none !important; border-radius: 6px !important; cursor: pointer;
+  box-shadow: 0 5px 0 rgba(0, 0, 0, .45), inset 0 2px 0 rgba(255, 255, 255, .45) !important; transition: transform .08s, box-shadow .08s !important;
+}
+#screen-mode-select .btn-mode:active { transform: translateY(4px); box-shadow: 0 1px 0 rgba(0, 0, 0, .45) !important; }
+
+/* Story mode: tobacco-era card, cream stock, sepia star */
+#screen-mode-select .story-card { background: #f4ecd8 !important; color: #3a2817; outline: 1px solid #8d6a43; outline-offset: -6px; }
+#screen-mode-select .story-card .mc-photo { background: #8d6a43; }
+#screen-mode-select .story-card .mode-title { font-family: 'Playfair Display', serif !important; color: #3a2817 !important; }
+#screen-mode-select .story-card .mode-subtitle { color: #8d6a43 !important; }
+#screen-mode-select .story-card .mode-desc { color: #5a3b21 !important; }
+#screen-mode-select .story-card .btn-mode { background: linear-gradient(#5a3b21, #3a2817) !important; color: #f4ecd8 !important; }
+
+/* Quick play: 70s two-tone border */
+#screen-mode-select .quick-card { background: #e8432d !important; color: #fff; border: 9px solid #f2c230 !important; padding: 8px !important; }
+#screen-mode-select .quick-card .mc-photo { background: #fff; }
+#screen-mode-select .quick-card .mode-title { font-family: 'Righteous', sans-serif !important; color: #fff !important; text-shadow: 0 3px 0 #8a1f12 !important; }
+#screen-mode-select .quick-card .mode-subtitle { color: #ffe39a !important; }
+#screen-mode-select .quick-card .mode-desc { color: #fff3e8 !important; }
+#screen-mode-select .quick-card .btn-mode { background: linear-gradient(#fff, #f3e7d3) !important; color: #c41e3a !important; }
+
+/* 162-0: chrome refractor */
+#screen-mode-select .challenge162-card { background: linear-gradient(160deg, #0a1224, #1b2f57 50%, #0a1224) !important; color: #e8f0ff; outline: 1px solid #5aa0ff; outline-offset: -6px; }
+#screen-mode-select .challenge162-card .mc-photo { background: linear-gradient(135deg, #a8791a, #fff1b8 45%, #9c6d10 55%, #f3d27a); }
+#screen-mode-select .challenge162-card .mode-title { font-family: 'Oswald', sans-serif !important; color: #fff !important; background: linear-gradient(90deg, #5aa0ff, #c58bff, #5aa0ff); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+#screen-mode-select .challenge162-card .mode-subtitle { color: #f3d27a !important; }
+#screen-mode-select .challenge162-card .mode-desc { color: #c9d6f2 !important; }
+#screen-mode-select .challenge162-card .btn-mode { background: linear-gradient(#ffe39a, #e0a93a) !important; color: #2a1a0e !important; }
+#screen-mode-select .challenge162-card::before {
+  content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 1; opacity: .5;
+  background: linear-gradient(115deg, transparent 30%, rgba(120, 170, 255, .16) 45%, rgba(200, 140, 255, .14) 55%, transparent 70%);
+  background-size: 250% 100%; animation: mc2Sheen 6s linear infinite;
+}
+@keyframes mc2Sheen { 0% { background-position: 100% 0; } 100% { background-position: -150% 0; } }
+
+/* bottom: Dex and Discord as ticket stubs */
+#screen-mode-select #btn-basedex-menu, #screen-mode-select a[href*="discord"] {
+  font-family: 'Oswald', sans-serif !important; font-size: 14px !important; letter-spacing: 2px; border-radius: 4px !important; padding: 9px 18px !important;
+  border: 2px dashed rgba(42, 26, 14, .45) !important; box-shadow: 0 4px 0 rgba(0, 0, 0, .45) !important;
+}
+#screen-mode-select #btn-basedex-menu { background: #f3ecd6 !important; color: #2a1a0e !important; }
+#screen-mode-select #btn-basedex-menu i { color: #b8862a !important; }
+#screen-mode-select a[href*="discord"] { background: #5865F2 !important; color: #fff !important; border-color: rgba(255, 255, 255, .45) !important; }
+#screen-mode-select a[href*="discord"] i { color: #fff !important; }
+
+@media (max-width: 760px) {
+  #screen-mode-select .mode-card, #screen-mode-select .challenge162-card { transform: none !important; width: 100%; max-width: 320px; min-height: 0; }
+}
+@media (prefers-reduced-motion: reduce) { #screen-mode-select .challenge162-card::before { animation: none; } }
+/* the juice rise-in animation ends on transform:none and would erase the tilt: fade in only */
+#screen-mode-select .mode-grid > .mode-card { animation: mc2In .6s ease-out both !important; }
+@keyframes mc2In { from { opacity: 0; } to { opacity: 1; } }
+/* back to the daytime Polo Grounds background (user) */
+body.on-main-menu {
+  background-image: linear-gradient(180deg, rgba(4, 10, 8, .25) 0%, rgba(4, 10, 8, .7) 80%), url('assets/TEST3.webp') !important;
+  background-position: center bottom !important;
+}
+
+/* ═════════ Map 2.0 (v2, after user review: no cream paper, stadium visible, same family as the side panels) ═════════
+   The panel keeps its stadium photo (style.css). Each zone is a translucent dark glass section; nodes are
+   tokens drawn in renderMap (ui.js) with the neon colour of their type, like the rest of the HUD. */
+#map-nodes-container { gap: 18px !important; }
+#screen-map .zone-wrapper { background: rgba(3, 12, 8, .58) !important; backdrop-filter: blur(3px) !important; }
+#screen-map .zone-wrapper.zone-active { background: rgba(3, 16, 10, .5) !important; }
+#screen-map .zone-wrapper.zone-locked { background: rgba(5, 9, 16, .72) !important; }
+#screen-map .zone-header { gap: 12px; }
+#screen-map .zone-icon { display: none; }
+#screen-map .zone-month {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; width: 50px; height: 50px; flex-shrink: 0;
+  background: #fbf7ec; border: 1.5px solid #3a2817; border-top: 11px solid #c0392b; border-radius: 3px; box-shadow: 2px 3px 0 rgba(0, 0, 0, .55);
+  transform: rotate(-3deg);
+}
+#screen-map .zone-wrapper.zone-locked .zone-month { filter: grayscale(.8) brightness(.75); }
+#screen-map .zone-month b { font-family: 'Alfa Slab One', serif; font-weight: 400; font-size: 15px; color: #2a1a0e; line-height: 1; }
+#screen-map .zone-month i { font-family: 'Oswald', sans-serif; font-style: normal; font-size: 9px; letter-spacing: 1px; color: #8a7a5c; margin-top: 2px; }
+#screen-map .zone-badge {
+  font-family: 'Alfa Slab One', serif !important; font-size: 11px !important; letter-spacing: 1.5px; padding: 5px 10px !important;
+  background: rgba(0, 0, 0, .35) !important; border: 2.5px solid currentColor !important; border-radius: 4px !important; box-shadow: none !important; transform: rotate(-5deg);
+}
+#screen-map .zone-canvas { padding: 6px 10px 14px !important; margin: 0 !important; }
+/* tokens */
+#screen-map .map-node-group { filter: none !important; transition: transform .2s cubic-bezier(.34, 1.56, .64, 1) !important; transform-box: fill-box; transform-origin: center; }
+#screen-map .map-node-group.node-is-active { filter: drop-shadow(0 0 8px var(--ink)) !important; animation: map2Bob 2.4s ease-in-out infinite; }
+#screen-map .map-node-group.node-is-active:hover { filter: drop-shadow(0 0 14px var(--ink)) brightness(1.15) !important; transform: translateY(-4px) scale(1.06); animation: none; }
+#screen-map .map-node-group.node-is-active:hover .node-circle-main { filter: none !important; }
+#screen-map .map-boss.node-is-active .map-rosette { animation: map2Spin 18s linear infinite; transform-box: fill-box; transform-origin: center; }
+@keyframes map2Bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+@keyframes map2Spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  #screen-map .map-node-group.node-is-active, #screen-map .map-boss.node-is-active .map-rosette { animation: none; }
+}
+@media (max-width: 760px) { #screen-map .zone-month { width: 38px; height: 38px; } }
+
+/* ═════════ Pre-fight 2.0: scouting report on the clubhouse table ═════════
+   Night stadium (same as the battle), typed scouting report on cream stock, rarity seal,
+   green manual scoreboard for the head-to-head, brass PLAY BALL button, bullpen on a lineup card. */
+#screen-pre-fight {
+  --cream: #0f1c16; --ink: #f3ecd6; --paper: #f6efdc; --pink: #2a1a0e; --red: #c0392b; --board: #1f3b2a;
+  max-width: 820px !important;
+  background: rgba(4, 10, 16, .86) !important;
+  border: 2px solid rgba(16, 185, 129, .5) !important; border-radius: 6px !important;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, .75) !important; backdrop-filter: none !important;
+}
+#screen-pre-fight::before { display: none !important; }
+
+/* stage: a ticket stub */
+#screen-pre-fight .pre-fight-stage-badge {
+  font-family: 'Oswald', sans-serif !important; font-size: 12px !important; letter-spacing: 2.5px !important; color: var(--pink) !important;
+  background: var(--paper) !important; border: none !important; border-radius: 3px !important; padding: 5px 20px !important; text-shadow: none !important;
+  box-shadow: 0 3px 0 rgba(0, 0, 0, .4) !important;
+  -webkit-mask: radial-gradient(circle 6px at 0 50%, transparent 97%, #000) left / 51% 100% no-repeat, radial-gradient(circle 6px at 100% 50%, transparent 97%, #000) right / 51% 100% no-repeat;
+          mask: radial-gradient(circle 6px at 0 50%, transparent 97%, #000) left / 51% 100% no-repeat, radial-gradient(circle 6px at 100% 50%, transparent 97%, #000) right / 51% 100% no-repeat;
+}
+
+/* the scouting report */
+#screen-pre-fight .pre-fight-scouting-card {
+  background-color: var(--paper) !important; border: none !important; border-radius: 3px !important; color: var(--pink) !important;
+  background-image: none !important; background-size: 100% 19px !important;
+  box-shadow: 0 0 0 1.5px rgba(255, 255, 255, .1), 0 12px 24px rgba(0, 0, 0, .55) !important; position: relative; transform: rotate(-.6deg); overflow: visible !important;
+}
+#screen-pre-fight .pre-fight-scouting-card::after { /* paper clip */
+  content: ''; position: absolute; top: -10px; left: 24px; width: 11px; height: 30px; border: 2.5px solid #aab2bb; border-radius: 7px; border-bottom-color: transparent; transform: rotate(8deg);
+}
+#screen-pre-fight .scouting-card-info, #screen-pre-fight .scouting-card-info * { color: var(--pink) !important; }
+#screen-pre-fight .scouting-card-info div { font-family: 'Special Elite', 'Courier New', monospace !important; font-size: 12px !important; background: transparent !important; border: none !important; }
+#screen-pre-fight .scouting-card-info .scouting-card-header-tag {
+  display: inline-block; font-family: 'Alfa Slab One', serif !important; font-size: 11px !important; letter-spacing: 2px !important; color: var(--red) !important;
+  border: 2px solid var(--red) !important; border-radius: 3px; padding: 2px 8px; transform: rotate(-3deg); margin-bottom: 4px; opacity: .9;
+}
+#screen-pre-fight .scouting-card-info .scouting-card-team-title { font-family: 'Alfa Slab One', serif !important; font-size: 19px !important; text-shadow: none !important; letter-spacing: .3px; }
+#screen-pre-fight .scouting-card-info .scouting-card-era { font-family: 'Oswald', sans-serif !important; font-size: 12px !important; letter-spacing: 2px; color: #6b5a40 !important; }
+#screen-pre-fight .scouting-card-info strong { color: var(--red) !important; }
+
+/* rarity seal + odds */
+#screen-pre-fight .scouting-card-threat-box {
+  background: #fbf7ec !important; border: 1.5px solid #3a2817 !important; border-radius: 4px !important; color: var(--pink) !important; box-shadow: 2px 2px 0 rgba(58, 40, 23, .3) !important;
+}
+#screen-pre-fight .scouting-threat-rarity { font-family: 'Alfa Slab One', serif !important; font-size: 15px !important; letter-spacing: 1.5px; text-shadow: none !important; filter: brightness(.7) saturate(1.3); }
+#screen-pre-fight .scouting-threat-label, #screen-pre-fight .scouting-card-threat-box > div { font-family: 'Oswald', sans-serif !important; color: #5a4a32 !important; font-size: 11.5px !important; letter-spacing: .5px; border-color: rgba(58, 40, 23, .25) !important; }
+#screen-pre-fight .scouting-card-threat-box strong { color: var(--pink) !important; }
+#screen-pre-fight .win-prob-label { font-family: 'Oswald', sans-serif !important; font-size: 10.5px !important; letter-spacing: 1.5px; color: #6b5a40 !important; }
+#screen-pre-fight .win-prob-num { font-family: 'Alfa Slab One', serif !important; font-size: 15px !important; filter: brightness(.75) saturate(1.4); text-shadow: none !important; }
+#screen-pre-fight .win-prob-track { background: #e4d8b8 !important; border: 1px solid #b9ab8a !important; border-radius: 2px !important; height: 7px !important; box-shadow: none !important; }
+
+/* the two cards on felt pads with wooden nameplates */
+#screen-pre-fight .showdown-nav-bar {
+  background: linear-gradient(#7a4f2a, #5a3a1e) !important; border: 1px solid #3a2410 !important; border-radius: 4px !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .2), 0 3px 0 rgba(0, 0, 0, .45) !important;
+}
+#screen-pre-fight .showdown-nav-label { font-family: 'Oswald', sans-serif !important; font-size: 12px !important; letter-spacing: .5px; color: #f6e7c4 !important; text-shadow: 0 1px 0 #f3ecd6; }
+#screen-pre-fight .btn-showdown-nav { background: rgba(0, 0, 0, .3) !important; border: 1px solid rgba(246, 231, 196, .3) !important; color: #f6e7c4 !important; font-family: 'Oswald', sans-serif !important; font-size: 11px !important; }
+#screen-pre-fight .btn-showdown-nav:hover { background: #e8b93a !important; color: var(--pink) !important; transform: none; }
+#screen-pre-fight .showdown-card-slot {
+  width: 166px !important; height: 246px !important; border-radius: 8px !important;
+  background: radial-gradient(ellipse at 50% 40%, #2f6a42, #1b4229 75%); box-shadow: inset 0 0 0 2px rgba(0, 0, 0, .25), inset 0 0 22px rgba(0, 0, 0, .45), 0 6px 14px rgba(0, 0, 0, .5);
+}
+#screen-pre-fight .showdown-side { flex: 0 0 166px !important; width: 166px !important; }
+#screen-pre-fight .pre-fight-showdown { margin: 10px 0 12px !important; }
+#screen-pre-fight .pre-fight-header { margin-bottom: 8px !important; }
+#screen-pre-fight .showdown-card-slot .player-card { transform: scale(.96); }
+#screen-pre-fight .showdown-side-enemy .showdown-card-slot { background: radial-gradient(ellipse at 50% 40%, #6a2f2f, #421b1b 75%); }
+#screen-pre-fight .showdown-card-slot .player-card { box-shadow: 0 8px 16px rgba(0, 0, 0, .55) !important; }
+
+/* center: VS seal, manual scoreboard, PLAY BALL */
+#screen-pre-fight .showdown-center { background: transparent !important; border: none !important; gap: 10px !important; }
+#screen-pre-fight .showdown-vs-badge {
+  font-family: 'Alfa Slab One', serif !important; font-size: 24px !important; color: #2a1a0e !important; text-shadow: none !important; animation: none !important; letter-spacing: 0 !important;
+  width: 58px; height: 58px; display: grid; place-items: center; border-radius: 50% !important; flex-shrink: 0;
+  background: radial-gradient(circle at 35% 30%, #fff1b8, #e8b93a 55%, #a8791a); box-shadow: 0 0 0 3px #3a2410, 0 0 0 6px #e8b93a, 0 8px 16px rgba(0, 0, 0, .6);
+}
+#screen-pre-fight .showdown-stakes-pill { font-family: 'Oswald', sans-serif !important; font-size: 11px !important; letter-spacing: 2.5px !important; color: #f3ecd6 !important; background: transparent !important; border: none !important; }
+#screen-pre-fight .showdown-insights-panel {
+  background: var(--board); border: 3px solid #13261a; border-radius: 5px; padding: 8px !important; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .06), 0 6px 14px rgba(0, 0, 0, .55);
+}
+#screen-pre-fight .matchup-overall-badge { font-family: 'Oswald', sans-serif !important; font-size: 12px !important; letter-spacing: 1.5px !important; background: #0e1d13 !important; border: 1px solid rgba(255, 255, 255, .15) !important; color: #f3ecd6 !important; border-radius: 2px !important; }
+#screen-pre-fight .matchup-overall-badge.edge-hitter { color: #8ff0a4 !important; }
+#screen-pre-fight .matchup-overall-badge.edge-pitcher { color: #ff9a8a !important; }
+#screen-pre-fight .matchup-overall-badge.edge-even { color: #ffe08a !important; }
+#screen-pre-fight .matchup-clash-matrix { background: transparent !important; border: none !important; }
+#screen-pre-fight .clash-row { background: transparent !important; border: none !important; border-bottom: 1px solid rgba(255, 255, 255, .08) !important; border-radius: 0 !important; }
+#screen-pre-fight .clash-col-batter, #screen-pre-fight .clash-col-pitcher { font-family: 'Oswald', sans-serif !important; font-size: 11px !important; letter-spacing: 1px; color: #b9d6c0 !important; }
+#screen-pre-fight .clash-val-b, #screen-pre-fight .clash-val-p {
+  font-family: 'Oswald', sans-serif !important; font-size: 15px !important; color: #fff !important; background: #0b150e; padding: 0 5px; border-radius: 2px; min-width: 30px; text-align: center; text-shadow: none !important;
+}
+#screen-pre-fight .clash-diff-pill { font-family: 'Oswald', sans-serif !important; font-size: 12px !important; border-radius: 2px !important; }
+#screen-pre-fight .matchup-quick-tip { font-family: 'Special Elite', monospace !important; font-size: 11.5px !important; color: #f3ecd6 !important; background: transparent !important; border: none !important; line-height: 1.35; }
+
+#screen-pre-fight .btn-pre-fight-battle {
+  font-family: 'Alfa Slab One', serif !important; font-size: 18px !important; letter-spacing: 1.5px !important; color: #2a1a0e !important;
+  background: linear-gradient(#ffe39a, #e8b93a 55%, #c58d1e) !important; border: none !important; border-radius: 8px !important;
+  box-shadow: 0 6px 0 #7a5410, 0 10px 18px rgba(0, 0, 0, .55), inset 0 2px 0 rgba(255, 255, 255, .6) !important; text-shadow: 0 1px 0 rgba(255, 255, 255, .5) !important;
+  animation: none !important; padding: 12px 18px !important;
+}
+#screen-pre-fight .btn-pre-fight-battle:hover { transform: translateY(-2px); filter: brightness(1.06); }
+#screen-pre-fight .btn-pre-fight-battle:active { transform: translateY(5px); box-shadow: 0 1px 0 #7a5410 !important; }
+#screen-pre-fight .btn-pre-fight-back { font-family: 'Oswald', sans-serif !important; font-size: 12px !important; letter-spacing: 1.5px; background: transparent !important; color: #d9cfb4 !important; border: 1.5px dashed rgba(243, 236, 214, .4) !important; border-radius: 4px !important; }
+#screen-pre-fight .btn-pre-fight-back:hover { color: #fff !important; border-color: #f3ecd6 !important; }
+
+/* bullpen on a lineup card */
+#screen-pre-fight .pre-fight-bullpen-section {
+  background-color: var(--cream) !important; border: none !important; border-radius: 3px !important; padding: 10px 14px !important; transform: rotate(.3deg);
+  background-image: none !important; background-size: 100% 31px !important; background-position: 0 30px !important;
+  box-shadow: 0 0 0 1.5px rgba(255, 255, 255, .1), 0 12px 24px rgba(0, 0, 0, .5) !important;
+}
+#screen-pre-fight .pre-fight-bullpen-title { font-family: 'Alfa Slab One', serif !important; font-size: 13px !important; letter-spacing: 1px; color: var(--ink) !important; text-shadow: none !important; border-bottom: 2px solid var(--red) !important; padding-bottom: 5px; }
+#screen-pre-fight .pre-fight-bullpen-title i { color: var(--red) !important; }
+#screen-pre-fight .pre-fight-row { background: transparent !important; border: none !important; border-radius: 3px !important; padding: 4px 6px !important; box-shadow: none !important; }
+#screen-pre-fight .pre-fight-row:hover { background: rgba(232, 185, 58, .18) !important; transform: none !important; }
+#screen-pre-fight .pre-fight-row.selected-pitcher-row { background: rgba(192, 57, 43, .1) !important; box-shadow: inset 3px 0 0 var(--red) !important; border: none !important; }
+#screen-pre-fight .pre-fight-row .name { font-family: 'Special Elite', monospace !important; font-size: 13px !important; color: var(--ink) !important; text-decoration: none !important; }
+#screen-pre-fight .pre-fight-row span[style*="Press Start"] { font-family: 'Oswald', sans-serif !important; font-size: 11px !important; background: #13241c !important; filter: brightness(.75) saturate(1.3); }
+#screen-pre-fight .pre-fight-row > div:first-child > span:first-child { font-family: 'Oswald', sans-serif !important; font-size: 10.5px !important; color: #fff !important; background: var(--red) !important; border: none !important; }
+#screen-pre-fight .pre-fight-row .hp-text { font-family: 'Oswald', sans-serif !important; font-size: 11px !important; color: #a9b4ac !important; }
+#screen-pre-fight .pre-fight-row .hp-bar-container { background: #1f2e27 !important; border: 1px solid #b9ab8a !important; }
+#screen-pre-fight .pre-fight-row .hp-bar-fill { background: linear-gradient(90deg, #8a2a1f, #c0392b) !important; }
+/* pre-fight: compact center so everything fits without scrolling */
+#screen-pre-fight .showdown-center { gap: 6px !important; padding: 4px 8px !important; }
+#screen-pre-fight .showdown-vs-badge { width: 46px !important; height: 46px !important; font-size: 19px !important; }
+#screen-pre-fight .showdown-insights-panel { padding: 6px !important; gap: 4px !important; }
+#screen-pre-fight .clash-row { padding: 2px 4px !important; min-height: 0 !important; }
+#screen-pre-fight .clash-val-b, #screen-pre-fight .clash-val-p { font-size: 13px !important; }
+#screen-pre-fight .matchup-quick-tip { font-size: 10.5px !important; padding: 2px 0 0 !important; }
+#screen-pre-fight .btn-pre-fight-battle { font-size: 16px !important; padding: 9px 14px !important; }
+#screen-pre-fight .btn-pre-fight-back { padding: 5px 10px !important; }
+#screen-pre-fight { padding: 14px 24px !important; }
+#screen-pre-fight .pre-fight-bullpen-section { padding: 7px 14px !important; }
+#screen-pre-fight .pre-fight-scouting-card { padding-top: 8px !important; padding-bottom: 8px !important; }
+#screen-pre-fight .clash-col-batter, #screen-pre-fight .clash-col-pitcher { white-space: nowrap; }
+
+/* ═════════ Paper & ink layer (menus 2.0) ═════════
+   The roguelike node screens and their pop-ups are built with neon inline styles in ui.js.
+   Inside anything marked .m2-ink, the light neon colours become printer's inks on cream stock,
+   dark boxes become faint paper tints and the pixel font becomes Oswald. Presentation only;
+   menus2.js marks the pop-ups, index.html marks the screens. */
+.m2-ink, .m2-ink * { text-shadow: none !important; }
+.m2-ink [style*="Press Start"] { font-family: 'Oswald', sans-serif !important; letter-spacing: .6px !important; }
+.m2-ink [style*="Outfit"], .m2-ink [style*="sans-serif"]:not([style*="Press Start"]) { font-family: 'Oswald', sans-serif !important; }
+.m2-ink [style*="VT323"] { font-family: 'Special Elite', monospace !important; }
+
+/* the pixel font ran wide: Oswald needs ~1.35x the size to read the same */
+.m2-ink [style*="Press Start"][style*="font-size:7px"], .m2-ink [style*="Press Start"][style*="font-size: 7px"], .m2-ink [style*="Press Start"][style*="font-size:7.5px"], .m2-ink [style*="Press Start"][style*="font-size: 7.5px"], .m2-ink [style*="Press Start"][style*="font-size:8px"], .m2-ink [style*="Press Start"][style*="font-size: 8px"], .m2-ink [style*="Press Start"][style*="font-size:8.5px"], .m2-ink [style*="Press Start"][style*="font-size: 8.5px"] { font-size: 11px !important; }
+.m2-ink [style*="Press Start"][style*="font-size:9px"], .m2-ink [style*="Press Start"][style*="font-size: 9px"], .m2-ink [style*="Press Start"][style*="font-size:9.5px"], .m2-ink [style*="Press Start"][style*="font-size: 9.5px"] { font-size: 12.5px !important; }
+.m2-ink [style*="Press Start"][style*="font-size:10px"], .m2-ink [style*="Press Start"][style*="font-size: 10px"], .m2-ink [style*="Press Start"][style*="font-size:10.5px"], .m2-ink [style*="Press Start"][style*="font-size: 10.5px"], .m2-ink [style*="Press Start"][style*="font-size:11px"], .m2-ink [style*="Press Start"][style*="font-size: 11px"], .m2-ink [style*="Press Start"][style*="font-size:11.5px"], .m2-ink [style*="Press Start"][style*="font-size: 11.5px"] { font-size: 14px !important; }
+.m2-ink [style*="Press Start"][style*="font-size:12px"], .m2-ink [style*="Press Start"][style*="font-size: 12px"], .m2-ink [style*="Press Start"][style*="font-size:12.5px"], .m2-ink [style*="Press Start"][style*="font-size: 12.5px"], .m2-ink [style*="Press Start"][style*="font-size:13px"], .m2-ink [style*="Press Start"][style*="font-size: 13px"] { font-size: 16px !important; }
+.m2-ink [style*="Press Start"][style*="font-size:18px"], .m2-ink [style*="Press Start"][style*="font-size: 18px"], .m2-ink [style*="Press Start"][style*="font-size:20px"], .m2-ink [style*="Press Start"][style*="font-size: 20px"] { font-size: 24px !important; font-family: 'Alfa Slab One', serif !important; }
+/* buttons: printed / brass, colour kept by meaning */
+.m2-ink .btn, .m2-ink button.btn {
+  font-family: 'Alfa Slab One', serif !important; font-size: 13px !important; letter-spacing: 1px !important; font-weight: 400 !important;
+  border: none !important; border-radius: 6px !important; color: #fff !important;
+  background: linear-gradient(#3b2a1a, #f3ecd6) !important; box-shadow: 0 4px 0 rgba(0, 0, 0, .45), inset 0 1px 0 rgba(255, 255, 255, .2) !important;
+}
+.m2-ink .btn[style*="#10b981"], .m2-ink .btn[style*="#22c55e"], .m2-ink .btn[style*="#00ff66"], .m2-ink .btn[style*="#059669"] { background: linear-gradient(#2f8a4a, #6ee7a0) !important; }
+.m2-ink .btn[style*="#ef4444"], .m2-ink .btn[style*="#dc2626"] { background: linear-gradient(#c83a2c, #9b2418) !important; }
+.m2-ink .btn[style*="#facc15"], .m2-ink .btn[style*="#f59e0b"], .m2-ink .btn[style*="#ffd700"], .m2-ink .btn[style*="#d97706"] { background: linear-gradient(#ffe39a, #e8b93a 55%, #c58d1e) !important; color: #2a1a0e !important; box-shadow: 0 4px 0 #7a5410, inset 0 2px 0 rgba(255, 255, 255, .55) !important; }
+.m2-ink .btn[style*="#9333ea"], .m2-ink .btn[style*="#a855f7"], .m2-ink .btn[style*="#7e22ce"], .m2-ink .btn[style*="#8b5cf6"] { background: linear-gradient(#7c3aed, #5b21b6) !important; }
+.m2-ink .btn[style*="#0284c7"], .m2-ink .btn[style*="#38bdf8"] { background: linear-gradient(#2a6fbe, #8ec5ff) !important; }
+.m2-ink .btn.btn-secondary, .m2-ink .btn[style*="#334155"], .m2-ink .btn[style*="background:rgba(255,255,255"] {
+  background: transparent !important; color: #c9d1c9 !important; border: 1.5px dashed rgba(243, 236, 214, .4) !important; box-shadow: none !important;
+}
+.m2-ink .btn:hover:not([disabled]) { filter: brightness(1.08); transform: translateY(-1px); }
+.m2-ink .btn:active:not([disabled]) { transform: translateY(3px); box-shadow: 0 1px 0 rgba(0, 0, 0, .45) !important; }
+.m2-ink .btn[disabled] { filter: grayscale(.8); opacity: .45 !important; }
+
+/* a sheet of cream stock (used by pop-ups and node screens) */
+.m2-sheet {
+  background-color: #0f1c16 !important; background-image: none !important; color: #f3ecd6 !important;
+  border: none !important; border-radius: 4px !important;
+  box-shadow: 0 0 0 1.5px rgba(16, 185, 129, .35), 0 26px 50px rgba(0, 0, 0, .7) !important;
+}
+.m2-overlay { background: radial-gradient(ellipse at center, rgba(30, 20, 10, .78), rgba(5, 4, 3, .94)) !important; backdrop-filter: blur(6px) !important; }
+
+/* ═════════ Node screens: the clubhouse room (event / shop, batting cage, clubhouse rest) ═════════ */
+.m2-room {
+  background: rgba(4, 10, 16, .86) !important;
+  border: 2px solid rgba(16, 185, 129, .5) !important; border-radius: 6px !important; box-shadow: 0 20px 50px rgba(0, 0, 0, .7) !important; backdrop-filter: none !important;
+}
+#screen-event.m2-room > p[style], #screen-train.m2-room > p[style], #screen-rest.m2-room > p { font-family: 'Oswald', sans-serif !important; font-size: 13.5px !important; letter-spacing: .4px; color: #d9cfb4 !important; }
+
+/* event: the front-office memo, then the offers as tickets */
+#screen-event > .glass-panel { background: transparent !important; border: none !important; padding: 0 !important; box-shadow: none !important; }
+#screen-event #event-title, #screen-event #event-desc { background: #13241c; margin: 0 !important; padding: 12px 18px 0 !important; }
+#screen-event #event-title {
+  font-family: 'Alfa Slab One', serif !important; font-size: 19px !important; color: #f3ecd6 !important; border-top: 6px solid #c0392b; border-radius: 3px 3px 0 0;
+  display: flex; align-items: center; transform: rotate(-.4deg); box-shadow: 0 -1px 0 rgba(0, 0, 0, .1);
+}
+#screen-event #event-title span { filter: none !important; }
+#screen-event #event-desc {
+  font-family: 'Special Elite', monospace !important; font-size: 14px !important; color: #e3d9c0 !important; padding-bottom: 14px !important; border-radius: 0 0 3px 3px;
+  transform: rotate(-.4deg); box-shadow: 0 12px 22px rgba(0, 0, 0, .45);
+  background-image: none; background-size: 100% 21px;
+}
+#screen-event .event-store-grid { margin-top: 22px !important; gap: 20px !important; }
+#screen-event .event-store-card {
+  --band: #a9b4ac;
+  background-color: #0f1c16 !important; background-image: none !important; border: none !important; border-radius: 4px !important; color: #f3ecd6;
+  border-top: 9px solid var(--band) !important; box-shadow: 0 0 0 1.5px rgba(255, 255, 255, .1), 0 14px 26px rgba(0, 0, 0, .5) !important;
+  -webkit-mask: radial-gradient(circle 7px at 0 62%, transparent 97%, #000) left / 51% 100% no-repeat, radial-gradient(circle 7px at 100% 62%, transparent 97%, #000) right / 51% 100% no-repeat;
+          mask: radial-gradient(circle 7px at 0 62%, transparent 97%, #000) left / 51% 100% no-repeat, radial-gradient(circle 7px at 100% 62%, transparent 97%, #000) right / 51% 100% no-repeat;
+}
+#screen-event .event-store-card:nth-child(1) { transform: rotate(-1deg); }
+#screen-event .event-store-card:nth-child(3) { transform: rotate(1deg); }
+#screen-event .event-store-card:hover { transform: translateY(-6px) rotate(0); }
+#screen-event .event-store-card-safe { --band: #1f7a3a; }
+#screen-event .event-store-card-risky { --band: #b3261e; }
+#screen-event .event-store-card-reject { --band: #7f8c84; }
+#screen-event .event-store-card [style*="font-size:36px"] { font-size: 40px !important; }
+/* price like a pencilled tag */
+#screen-event .event-store-card > div > div:first-child > span:last-child { font-family: 'Alfa Slab One', serif !important; font-size: 20px !important; font-size-adjust: none; color: #f3ecd6 !important; }
+/* legacy event choice buttons */
+#screen-event .event-choice-btn {
+  background-color: #0f1c16 !important; background-image: none !important; border: none !important; border-left: 7px solid #7f8c84 !important; border-radius: 4px !important;
+  box-shadow: 0 0 0 1.5px rgba(255, 255, 255, .1), 0 10px 18px rgba(0, 0, 0, .45) !important; color: #f3ecd6 !important; text-align: left;
+}
+#screen-event .event-choice-btn.event-choice-risk-safe { border-left-color: #1f7a3a !important; }
+#screen-event .event-choice-btn.event-choice-risk-moderate { border-left-color: #b8860b !important; }
+#screen-event .event-choice-btn.event-choice-risk-high { border-left-color: #b3261e !important; }
+#screen-event .event-choice-btn:hover:not([disabled]) { transform: translateX(4px); }
+
+/* risk tags as rubber stamps (event + cage) */
+.m2-ink .choice-risk-tag {
+  background: transparent !important; border: 2px solid currentColor !important; border-radius: 3px !important; font-family: 'Oswald', sans-serif !important; font-size: 11px !important;
+  font-size-adjust: none; letter-spacing: 1px !important; transform: rotate(-2deg); display: inline-block;
+}
+.m2-ink .choice-risk-safe { color: #6ee7a0 !important; }
+.m2-ink .choice-risk-moderate { color: #ffd36a !important; }
+.m2-ink .choice-risk-high { color: #ff8a7a !important; }
+
+/* batting cage: coaching index cards, tier as the top band (normal / silver / gold foil) */
+#screen-train #training-cards-container { gap: 22px !important; }
+#screen-train .training-card-offer {
+  --band: #7f8c84;
+  background-color: #13241c !important; border: none !important; border-radius: 4px !important; border-top: 9px solid var(--band) !important;
+  background-image: none, linear-gradient(90deg, transparent 22px, rgba(192, 57, 43, .35) 22px, rgba(192, 57, 43, .35) 23px, transparent 23px) !important;
+  background-size: 100% 22px, 100% 100% !important; box-shadow: 0 0 0 1.5px rgba(255, 255, 255, .1), 0 14px 26px rgba(0, 0, 0, .5) !important;
+}
+#screen-train .training-card-offer:nth-child(1) { transform: rotate(-1deg); }
+#screen-train .training-card-offer:nth-child(3) { transform: rotate(1deg); }
+#screen-train .training-card-tier-silver { --band: #8a97a6; }
+#screen-train .training-card-tier-gold { --band: #c99a2e; box-shadow: 0 0 0 2px #e8b93a, 0 0 0 1.5px rgba(255, 255, 255, .1), 0 14px 30px rgba(0, 0, 0, .55), 0 0 26px rgba(232, 185, 58, .35) !important; }
+#screen-train .training-card-offer span[style*="font-weight:bold;font-size:14px"] { font-family: 'Alfa Slab One', serif !important; font-size: 16px !important; }
+#screen-train .training-card-offer [style*="font-size:36px"] { font-size: 40px !important; }
+
+/* clubhouse rest: two choices as cream cards */
+#screen-rest .glass-panel.flex-1 {
+  background-color: #0f1c16 !important; background-image: none !important; border: none !important; border-radius: 4px !important; color: #f3ecd6 !important;
+  box-shadow: 0 0 0 1.5px rgba(255, 255, 255, .1), 0 14px 26px rgba(0, 0, 0, .5) !important; border-top: 9px solid #7e3fb5 !important; backdrop-filter: none !important;
+}
+#screen-rest .glass-panel.flex-1:last-child { border-top-color: #a8791a !important; transform: rotate(.8deg); }
+#screen-rest .glass-panel.flex-1:first-child { transform: rotate(-.8deg); }
+#screen-rest .glass-panel.flex-1 h3 { font-family: 'Alfa Slab One', serif !important; font-size: 18px !important; color: #f3ecd6 !important; }
+#screen-rest .glass-panel.flex-1 p { font-family: 'Oswald', sans-serif !important; font-size: 14px !important; color: #a9b4ac !important; }
+#screen-rest .glass-panel.flex-1 > i { color: #7e3fb5 !important; filter: none !important; }
+#screen-rest .glass-panel.flex-1:last-child > i { color: #a8791a !important; }
+#screen-rest #btn-rest-heal-all { background: linear-gradient(#8a55c4, #6a2fa8) !important; }
+#screen-rest #btn-rest-get-cash { background: linear-gradient(#ffe39a, #e8b93a 55%, #c58d1e) !important; color: #2a1a0e !important; box-shadow: 0 4px 0 #7a5410 !important; }
+
+#screen-event .event-store-grid:has(.event-store-card) { display: grid !important; grid-template-columns: repeat(3, minmax(0, 1fr)) !important; flex-direction: unset !important; }
+@media (max-width: 900px) { #screen-event .event-store-grid:has(.event-store-card) { grid-template-columns: 1fr !important; } }
+#screen-train #training-cards-container { gap: 16px !important; flex-wrap: nowrap !important; }
+#screen-train .training-card-offer { flex: 1 1 0 !important; min-width: 0 !important; max-width: 290px !important; padding-left: 30px !important; }
+@media (max-width: 900px) { #screen-train #training-cards-container { flex-wrap: wrap !important; } #screen-train .training-card-offer { flex-basis: 100% !important; } }
+.m2-ink [style*="color:var(--accent-color)"], .m2-ink [style*="color: var(--accent-color)"] { color: #ffd36a !important; }
+#screen-train .training-card-offer [style*="color:var(--accent-color)"] { font-family: 'Alfa Slab One', serif !important; font-size: 20px !important; color: #f3ecd6 !important; }
+/* buttons that sit on the room itself (not on paper) */
+.m2-room > div > .btn.btn-secondary, .m2-room .btn#btn-train-back-map {
+  background: rgba(20, 12, 6, .55) !important; color: #f3ecd6 !important; border: 1.5px dashed rgba(243, 236, 214, .55) !important; font-family: 'Oswald', sans-serif !important; font-size: 14px !important; letter-spacing: 2px !important;
+}
+/* chest: the trait comes as a gold-framed card */
+.m2-sheet .chest-loot-icon + div { font-family: 'Alfa Slab One', serif !important; font-size: 19px !important; color: #ffd36a !important; }
+.m2-ink .trait-choice-card { background: #13241c !important; border: 2px solid #c99a2e !important; outline: 1px solid #c99a2e; outline-offset: -7px; border-radius: 6px !important; padding: 24px 20px !important; }
+.m2-ink .trait-choice-card > div:nth-child(2) { font-family: 'Alfa Slab One', serif !important; font-size: 17px !important; color: #f3ecd6 !important; }
+.m2-ink .trait-choice-card > div:nth-child(3) { font-family: 'Special Elite', monospace !important; font-size: 13px !important; color: #e3d9c0 !important; }
+
+/* trade deadline: a sports-page wire story, the two real cards side by side */
+.trade-overlay .m2-trade {
+  width: min(560px, 94vw); padding: 18px 22px 20px; text-align: center; color: #f3ecd6;
+  background: #0f1c16; background-image: none;
+  border-radius: 3px; box-shadow: 0 0 0 1.5px rgba(255, 255, 255, .1), 0 26px 50px rgba(0, 0, 0, .7); transform: rotate(-.5deg);
+}
+.m2-trade-mast { font-family: 'Playfair Display', serif; font-weight: 500; font-size: 30px; line-height: 1; letter-spacing: .5px; border-top: 3px double #f3ecd6; border-bottom: 3px double #f3ecd6; padding: 8px 0 6px; text-transform: uppercase; }
+.m2-trade-dek { font-family: 'Special Elite', monospace; font-size: 13px; margin: 10px 0 14px; color: #e3d9c0; }
+.m2-trade-dek b { color: #ff8a7a; }
+.m2-trade-swap { display: flex; align-items: center; justify-content: center; gap: 14px; }
+.m2-trade-side { display: flex; flex-direction: column; align-items: center; gap: 6px; position: relative; }
+.m2-trade-side .player-card { margin: 0 !important; transform: rotate(-2deg); box-shadow: 0 10px 18px rgba(0, 0, 0, .4) !important; }
+.m2-trade-side.get .player-card { transform: rotate(2deg); }
+.m2-trade-stamp { font-family: 'Alfa Slab One', serif; font-size: 13px; letter-spacing: 2px; border: 2.5px solid currentColor; border-radius: 4px; padding: 2px 10px; transform: rotate(-4deg); }
+.m2-trade-side.give .m2-trade-stamp { color: #ff8a7a; }
+.m2-trade-side.get .m2-trade-stamp { color: #6ee7a0; transform: rotate(3deg); }
+.m2-trade-era { font-family: 'Oswald', sans-serif; font-size: 11.5px; letter-spacing: 1px; color: #a9b4ac; text-transform: uppercase; }
+.m2-trade-arrow { font-family: 'Alfa Slab One', serif; font-size: 30px; color: #c4a0ff; }
+.m2-trade-actions { display: flex; gap: 10px; margin-top: 16px; }
+.m2-trade-actions .btn { flex: 1; padding: 11px 8px !important; }
+.m2-trade-actions #btn-trade-accept { flex: 1.3; background: linear-gradient(#7c3aed, #5b21b6) !important; }
+@media (max-width: 520px) { .m2-trade-swap { transform: scale(.82); margin: -24px 0; } }
+.m2-trade .btn { font-family: 'Alfa Slab One', serif !important; font-size: 13px !important; letter-spacing: 1px !important; border-radius: 6px !important; border: none !important; color: #fff !important; box-shadow: 0 4px 0 rgba(0, 0, 0, .45) !important; }
+.m2-trade .btn.btn-secondary { background: transparent !important; color: #c9d1c9 !important; border: 1.5px dashed rgba(243, 236, 214, .4) !important; box-shadow: none !important; }
+/* luck: title in slab, a brass coin */
+.gamble-overlay .gamble-tension-box > div:nth-child(2) { font-family: 'Alfa Slab One', serif !important; font-size: 24px !important; font-weight: 400 !important; }
+.gamble-overlay .gamble-tension-box > div:nth-child(3) { font-family: 'Special Elite', monospace !important; font-size: 13px !important; color: #e3d9c0 !important; }
+.gamble-overlay .gamble-coin {
+  background: radial-gradient(circle at 35% 30%, #fff1b8, #e8b93a 55%, #a8791a) !important; border: 3px solid #7a5410 !important;
+  box-shadow: 0 0 0 3px #e8b93a, 0 8px 16px rgba(0, 0, 0, .45) !important; color: #2a1a0e !important;
+}
+/* risk roulette: a fairground wheel on paper */
+.m2-sheet.roulette-modal .roulette-title { font-family: 'Alfa Slab One', serif !important; font-size: 16px !important; color: #f3ecd6 !important; letter-spacing: .5px; }
+.m2-sheet.roulette-modal .roulette-wheel { filter: saturate(.62) brightness(.88); box-shadow: 0 0 0 5px #3a2410, 0 0 0 9px #e8b93a, 0 10px 20px rgba(0, 0, 0, .45) !important; }
+.m2-sheet.roulette-modal .roulette-center { background: #13241c !important; border: 3px solid #3a2410 !important; }
+.m2-sheet.roulette-modal .roulette-center span { font-family: 'Alfa Slab One', serif !important; color: #f3ecd6 !important; }
+.m2-sheet.roulette-modal .roulette-pointer { color: #f3ecd6 !important; text-shadow: none !important; }
+.m2-sheet.roulette-modal .roulette-status { font-family: 'Special Elite', monospace !important; font-size: 14px !important; color: #e3d9c0 !important; }
+/* result card */
+.m2-sheet:has(#btn-close-retro-result-modal) h3 { font-family: 'Alfa Slab One', serif !important; font-size: 19px !important; color: #f3ecd6 !important; }
+.m2-sheet:has(#btn-close-retro-result-modal) p { font-family: 'Special Elite', monospace !important; font-size: 13.5px !important; color: #e3d9c0 !important; }
+.m2-sheet:has(#btn-close-retro-result-modal) > div:nth-child(2) { background: transparent !important; border-width: 2.5px !important; border-radius: 4px !important; font-family: 'Alfa Slab One', serif !important; font-size: 12px !important; transform: rotate(-3deg); letter-spacing: 1px; filter: brightness(.7) saturate(1.3); }
+.m2-sheet:has(#btn-close-retro-result-modal) > div:first-child { font-size: 56px !important; }
+
+/* ═════════ Mid-run signings (Sign Legend: contracts) and match rewards (a ripped pack) ═════════
+   Same screen as the opening draft; only these two get the 2.0 look (the opening draft is redesigned later). */
+#screen-draft:has(.m2-sign), #screen-draft:has(.m2-reward) {
+  background: rgba(4, 10, 16, .86) !important;
+  border: 2px solid rgba(16, 185, 129, .5) !important; border-radius: 6px !important; box-shadow: 0 20px 50px rgba(0, 0, 0, .7) !important;
+}
+#screen-draft:has(.m2-sign) > p, #screen-draft:has(.m2-reward) > p { font-family: 'Oswald', sans-serif !important; font-size: 13.5px !important; color: #d9cfb4 !important; }
+.m2-sign, .m2-reward { gap: 18px !important; padding-top: 18px !important; }
+.m2-sign .draft-card-option, .m2-reward .draft-card-option { position: relative; }
+
+/* captions under each card: printed on a paper slip */
+.m2-sign .draft-card-caption, .m2-reward .draft-card-caption {
+  background: #0f1c16; border-radius: 3px; padding: 4px 6px 5px; box-shadow: 0 6px 12px rgba(0, 0, 0, .4);
+}
+.m2-sign .draft-card-caption > div:first-child, .m2-reward .draft-card-caption > div:first-child { font-family: 'Alfa Slab One', serif !important; font-size: 13px !important; letter-spacing: 1px; filter: brightness(.7) saturate(1.3); }
+.m2-sign .draft-card-caption > div:last-child, .m2-reward .draft-card-caption > div:last-child { font-family: 'Oswald', sans-serif !important; font-size: 12px !important; color: #c9d1c9 !important; letter-spacing: 1px; }
+.m2-sign .draft-synergy-helper, .m2-reward .draft-synergy-helper { font-family: 'Oswald', sans-serif !important; font-size: 11.5px !important; background: rgba(20, 12, 6, .7) !important; border: 1px solid rgba(243, 236, 214, .25) !important; color: #f3ecd6 !important; border-radius: 3px !important; }
+
+/* Sign Legend: a contract slip with the price on the signature line */
+.m2-sign .draft-card-option > div[style*="Press Start"] {
+  font-family: 'Yellowtail', cursive !important; font-size: 22px !important; color: #8ec5ff !important; font-weight: 400 !important;
+  background: #13241c; width: 100%; border-radius: 3px; padding: 2px 0 0; border-bottom: 1.5px solid #f3ecd6; box-shadow: inset 0 -7px 0 #13241c, 0 6px 12px rgba(0, 0, 0, .4);
+}
+.m2-sign .draft-card-option > .btn, .m2-reward .draft-card-option > .btn {
+  font-family: 'Alfa Slab One', serif !important; font-size: 13px !important; letter-spacing: 1px; color: #2a1a0e !important; border: none !important; border-radius: 6px !important;
+  background: linear-gradient(#ffe39a, #e8b93a 55%, #c58d1e) !important; box-shadow: 0 4px 0 #7a5410, inset 0 2px 0 rgba(255, 255, 255, .55) !important;
+}
+.m2-sign .draft-card-option > .btn.btn-secondary, .m2-reward .draft-card-option > .btn.btn-secondary {
+  background: rgba(20, 12, 6, .55) !important; color: #f3ecd6 !important; border: 1.5px dashed rgba(243, 236, 214, .55) !important; box-shadow: none !important;
+}
+/* the pass column */
+.m2-sign .draft-card-option:last-child, .m2-reward .draft-card-option:last-child { border: 2px dashed rgba(243, 236, 214, .3) !important; background: rgba(20, 12, 6, .35); }
+.m2-sign .draft-card-option:last-child p, .m2-reward .draft-card-option:last-child p { font-family: 'Special Elite', monospace !important; font-size: 12px !important; color: #d9cfb4 !important; }
+
+/* Rewards: the pack you just won, torn open, the cards dealt out of it */
+.m2-reward { position: relative; margin-top: 70px !important; overflow: visible !important; }
+.m2-reward::before {
+  content: 'BASEROGUE  ·  WAX PACK  ·  WIN BONUS'; position: absolute; left: 50%; top: -64px; transform: translateX(-50%) rotate(-1.5deg);
+  width: min(560px, 90%); height: 46px; display: grid; place-items: center;
+  font-family: 'Alfa Slab One', serif; font-size: 15px; letter-spacing: 3px; color: #fff4d6; text-shadow: 0 2px 0 rgba(0, 0, 0, .35);
+  background: repeating-linear-gradient(90deg, rgba(255,255,255,.08) 0 2px, transparent 2px 9px), linear-gradient(180deg, #d63a2b, #a8231a);
+  box-shadow: 0 10px 18px rgba(0, 0, 0, .5);
+  clip-path: polygon(0 0, 100% 0, 100% 78%, 97% 100%, 94% 80%, 90% 100%, 86% 82%, 82% 100%, 78% 80%, 74% 100%, 70% 84%, 66% 100%, 62% 80%, 58% 100%, 54% 82%, 50% 100%, 46% 80%, 42% 100%, 38% 84%, 34% 100%, 30% 80%, 26% 100%, 22% 82%, 18% 100%, 14% 80%, 10% 100%, 6% 82%, 3% 100%, 0 80%);
+}
+.m2-reward .draft-card-option { animation: m2Deal .5s cubic-bezier(.2, .9, .3, 1.2) both; }
+.m2-reward .draft-card-option:nth-child(2) { animation-delay: .12s; }
+.m2-reward .draft-card-option:nth-child(3) { animation-delay: .24s; }
+.m2-reward .draft-card-option:nth-child(4) { animation-delay: .36s; }
+@keyframes m2Deal { from { opacity: 0; transform: translateY(-60px) rotate(-6deg) scale(.9); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .m2-reward .draft-card-option { animation: none; } }
+
+/* boss trait pick: three gold-framed cards on one sheet */
+.m2-sheet:has(.btn-trait-pick) { padding: 24px 26px !important; }
+.m2-sheet:has(.btn-trait-pick) > div:first-child > div:first-child { font-family: 'Alfa Slab One', serif !important; font-size: 22px !important; color: #ffd36a !important; }
+.m2-sheet:has(.btn-trait-pick) > div:first-child > div:last-child { font-family: 'Special Elite', monospace !important; font-size: 13.5px !important; }
+.m2-ink .trait-choice-card:hover { transform: translateY(-5px) rotate(-.5deg) !important; box-shadow: 0 12px 22px rgba(60, 35, 10, .3) !important; }
+/* mid-boss item reward */
+.m2-sheet:has(#btn-midboss-reward-continue) > div:first-child { font-family: 'Alfa Slab One', serif !important; font-size: 20px !important; color: #ffb070 !important; }
+.m2-sheet:has(#btn-midboss-reward-continue) > div:nth-child(3) { background: #13241c !important; border: 2px solid #c2560c !important; outline: 1px solid #c2560c; outline-offset: -7px; border-radius: 6px !important; }
+.m2-sheet:has(#btn-midboss-reward-continue) > div:nth-child(3) > div:nth-child(2) { font-family: 'Alfa Slab One', serif !important; font-size: 17px !important; color: #f3ecd6 !important; }
+.m2-sheet:has(#btn-ack-exhaustion) h2 { font-family: 'Alfa Slab One', serif !important; font-size: 20px !important; }
+
+/* ═════════ Defeat: the morning-after sports page ═════════ */
+#screen-gameover {
+  --news: #0e1813; --newsink: #efe9da;
+  background: var(--news) !important; background-image: none !important;
+  border: none !important; border-radius: 2px !important; color: var(--newsink) !important; padding: 18px 30px 26px !important;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, .4), 0 30px 60px rgba(0, 0, 0, .75) !important; transform: rotate(-.6deg); backdrop-filter: none !important; position: relative;
+}
+#screen-gameover::before {
+  content: 'THE BASEROGUE GAZETTE'; display: block; text-align: center; font-family: 'Playfair Display', serif; font-weight: 500; font-size: 34px; letter-spacing: 1px;
+  border-bottom: 1px solid var(--newsink); padding-bottom: 4px;
+}
+#screen-gameover::after {
+  content: 'SPORTS  ·  FINAL EDITION  ·  5¢'; position: absolute; top: 66px; left: 30px; right: 30px; text-align: center; font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 3px;
+  border-bottom: 3px double var(--newsink); padding: 3px 0 4px;
+}
+#screen-gameover #gameover-title {
+  font-family: 'Playfair Display', serif !important; font-weight: 500 !important; font-size: 52px !important; line-height: 1 !important; letter-spacing: -.5px;
+  color: var(--newsink) !important; text-transform: uppercase; margin: 34px 0 10px !important; text-shadow: none !important;
+}
+#screen-gameover #gameover-desc { font-family: 'Special Elite', monospace !important; font-size: 15px !important; color: #d9d2bf !important; margin-bottom: 8px !important; }
+#screen-gameover #gameover-why { background: transparent !important; border: none !important; box-shadow: none !important; padding: 0 !important; margin: 0 0 16px !important; }
+#screen-gameover #gameover-why .go-why-line {
+  font-family: 'Playfair Display', serif !important; font-style: italic; font-size: 16px !important; color: var(--newsink) !important; opacity: 1 !important;
+  border-top: 1px solid rgba(239, 233, 218, .2); border-bottom: 1px solid rgba(239, 233, 218, .2); padding: 8px 0;
+}
+#screen-gameover .flex-row { gap: 0 !important; align-items: stretch; }
+#screen-gameover .flex-row > .glass-panel { background: transparent !important; border: none !important; box-shadow: none !important; backdrop-filter: none !important; border-radius: 0 !important; color: var(--newsink) !important; }
+#screen-gameover .flex-row > .glass-panel:first-child { border-right: 1px solid rgba(239, 233, 218, .3) !important; padding-right: 22px !important; }
+#screen-gameover .history-title { font-family: 'Oswald', sans-serif !important; font-size: 14px !important; letter-spacing: 3px !important; color: var(--newsink) !important; border-bottom: 2px solid var(--newsink); padding-bottom: 4px; text-shadow: none !important; }
+#screen-gameover .history-title i { color: var(--newsink) !important; }
+#screen-gameover .history-row {
+  background: transparent !important; border: none !important; border-bottom: 1px dotted rgba(239, 233, 218, .3) !important; border-radius: 0 !important; padding: 5px 0 !important;
+  font-family: 'Special Elite', monospace !important; font-size: 13px !important; color: var(--newsink) !important; box-shadow: none !important;
+}
+#screen-gameover .history-row strong { font-family: 'Oswald', sans-serif; letter-spacing: 1px; }
+#screen-gameover .history-row.won strong { color: #6ee7a0 !important; }
+#screen-gameover .history-row.lost strong { color: #ff8a7a !important; }
+#screen-gameover .history-row span[style] { color: #a9b4ac !important; }
+/* the replay box as a classified ad */
+#screen-gameover .flex-row > .glass-panel:last-child { padding-left: 22px !important; }
+#screen-gameover .flex-row > .glass-panel:last-child > i { color: var(--newsink) !important; filter: none !important; font-size: 48px !important; }
+#screen-gameover .flex-row > .glass-panel:last-child h3 { font-family: 'Alfa Slab One', serif !important; font-size: 20px !important; color: var(--newsink) !important; text-shadow: none !important; }
+#screen-gameover .flex-row > .glass-panel:last-child p { font-family: 'Playfair Display', serif !important; font-size: 14px !important; color: #d9d2bf !important; }
+#screen-gameover .btn { font-family: 'Alfa Slab One', serif !important; font-size: 13px !important; letter-spacing: 1px; border-radius: 3px !important; border: 2px solid var(--newsink) !important; box-shadow: 3px 3px 0 var(--newsink) !important; text-shadow: none !important; }
+#screen-gameover #btn-restart-game { background: var(--newsink) !important; color: var(--news) !important; }
+#screen-gameover #btn-gameover-run-summary { background: transparent !important; color: var(--newsink) !important; }
+#screen-gameover .btn:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--newsink) !important; }
+@media (max-width: 760px) {
+  #screen-gameover { transform: none; padding: 14px 16px 20px !important; }
+  #screen-gameover::before { font-size: 22px; }
+  #screen-gameover::after { top: 46px; left: 16px; right: 16px; font-size: 9px; }
+  #screen-gameover #gameover-title { font-size: 34px !important; }
+  #screen-gameover .flex-row > .glass-panel:first-child { border-right: none !important; padding-right: 0 !important; }
+}
+
+/* ═════════ Victory: EXTRA! edition of the Gazette ═════════ */
+#screen-victory {
+  --news: #0e1813; --newsink: #efe9da;
+  background: var(--news) !important; background-image: none !important;
+  border: none !important; border-radius: 2px !important; box-shadow: 0 0 0 2px rgba(16, 185, 129, .4), 0 30px 60px rgba(0, 0, 0, .75) !important; backdrop-filter: none !important;
+  padding: 16px 28px 22px !important;
+}
+#screen-victory > div::before {
+  content: 'THE BASEROGUE GAZETTE'; display: block; text-align: center; font-family: 'Playfair Display', serif; font-weight: 500; font-size: 30px; color: var(--newsink);
+  border-bottom: 3px double var(--newsink); padding-bottom: 4px; margin-bottom: 8px;
+}
+#screen-victory > div > div:first-child { position: relative; margin-bottom: 12px !important; }
+#screen-victory > div > div:first-child::before {
+  content: 'EXTRA!'; position: absolute; left: 0; top: 50%; transform: translateY(-50%) rotate(-6deg); font-family: 'Alfa Slab One', serif; font-size: 16px; letter-spacing: 2px;
+  color: #fff; background: #b3261e; padding: 3px 10px; box-shadow: 2px 2px 0 var(--newsink);
+}
+#screen-victory > div > div:first-child > span { display: none; }
+#screen-victory #victory-title { font-family: 'Playfair Display', serif !important; font-weight: 500 !important; font-size: 40px !important; line-height: 1.05 !important; color: var(--newsink) !important; text-transform: uppercase; }
+#screen-victory #victory-team-showcase-container { background: transparent !important; border: none !important; border-top: 1px solid var(--newsink) !important; border-bottom: 1px solid var(--newsink) !important; border-radius: 0 !important; box-shadow: none !important; padding: 10px 0 !important; }
+#screen-victory #victory-team-showcase-container > div:first-child { font-family: 'Oswald', sans-serif !important; font-size: 14px !important; letter-spacing: 3px !important; color: var(--newsink) !important; }
+#screen-victory .victory-mvp-banner { background: #0f1c16 !important; border: 2px solid var(--newsink) !important; border-radius: 2px !important; box-shadow: 4px 4px 0 var(--newsink) !important; }
+#screen-victory .victory-mvp-banner > div:first-child > span:first-child { filter: none !important; }
+#screen-victory .victory-player-card-btn { background: transparent !important; border: 1px solid rgba(239, 233, 218, .3) !important; border-radius: 2px !important; box-shadow: none !important; }
+#screen-victory .victory-player-card-btn:hover { background: rgba(232, 185, 58, .15) !important; }
+#screen-victory .victory-actions-grid .btn { border-radius: 3px !important; box-shadow: 3px 3px 0 var(--newsink) !important; border: 2px solid var(--newsink) !important; }
+#screen-victory #victory-challenge162-cta { background: #0f1c16 !important; border: 2px dashed var(--newsink) !important; border-radius: 2px !important; }
+#screen-victory > div > div:first-child { padding: 0 96px; }
+#screen-victory #victory-title { font-size: 34px !important; white-space: normal !important; }
+@media (max-width: 760px) {
+  #screen-gameover #gameover-title { font-size: 30px !important; word-break: break-word; white-space: normal !important; }
+  #screen-rest .glass-panel.flex-1, #screen-rest .glass-panel.flex-1:first-child, #screen-rest .glass-panel.flex-1:last-child { transform: none !important; }
+  #screen-victory > div > div:first-child { padding: 26px 0 0; }
+  #screen-victory > div > div:first-child::before { top: 0; transform: rotate(-4deg); }
+  #screen-victory #victory-title { font-size: 24px !important; }
+}
+@media (max-width: 760px) { #screen-rest .flex-row { flex-direction: column !important; gap: 14px !important; } #screen-rest .glass-panel.flex-1 { padding: 18px !important; } }
+
+/* one background only (user): the page already shows the stadium, so panels are plain surfaces */
+
+/* ═════════ Story season pick: the season as a yearbook page (paper accent on the HUD box) ═════════ */
+#modal-season-select .season-context-card {
+  background-color: #0f1c16; background-image: none; background-size: 100% 19px;
+  border: none; border-radius: 3px; color: #f3ecd6; position: relative; transform: rotate(-.6deg);
+  box-shadow: 0 0 0 1.5px rgba(255, 255, 255, .1), 0 12px 24px rgba(0, 0, 0, .55); font-family: 'Special Elite', monospace;
+}
+#modal-season-select .season-context-card::after { content: ''; position: absolute; top: -10px; left: 24px; width: 11px; height: 30px; border: 2.5px solid #aab2bb; border-radius: 7px; border-bottom-color: transparent; transform: rotate(8deg); }
+#modal-season-select .season-context-card .scc-head { border-bottom: 2px solid #c0392b; }
+#modal-season-select .season-context-card .scc-head b { font-family: 'Alfa Slab One', serif; font-size: 24px; color: #f3ecd6; }
+#modal-season-select .season-context-card .scc-head span { font-family: 'Oswald', sans-serif; font-size: 12px; letter-spacing: 1px; color: #a9b4ac; }
+#modal-season-select .season-context-card .scc-row { font-size: 13px; }
+#modal-season-select .season-context-card .scc-row b, #modal-season-select .season-context-card .scc-leaders-title { font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 2px; color: #ff8a7a; }
+#modal-season-select .season-context-card .scc-row span span, #modal-season-select .season-context-card .scc-how { color: #a9b4ac; }
+#modal-season-select .season-context-card .scc-leaders { font-size: 12.5px; }
+#modal-season-select .season-context-card .scc-leaders i { color: #8ec5ff; }
+#modal-season-select .season-context-card .scc-done { color: #6ee7a0; font-family: 'Alfa Slab One', serif; }
+
+/* ═════════ Run intro: an admission ticket ═════════ */
+#modal-run-intro > .glass-panel {
+  background: #0f1c16 !important; border: none !important; border-radius: 4px !important; color: #f3ecd6 !important;
+  box-shadow: 0 0 0 1.5px rgba(255, 255, 255, .1), 0 26px 50px rgba(0, 0, 0, .7) !important; padding: 26px 34px 24px !important; position: relative;
+  -webkit-mask: radial-gradient(circle 12px at 0 50%, transparent 97%, #000) left / 51% 100% no-repeat, radial-gradient(circle 12px at 100% 50%, transparent 97%, #000) right / 51% 100% no-repeat;
+          mask: radial-gradient(circle 12px at 0 50%, transparent 97%, #000) left / 51% 100% no-repeat, radial-gradient(circle 12px at 100% 50%, transparent 97%, #000) right / 51% 100% no-repeat;
+}
+#modal-run-intro > .glass-panel::before {
+  content: 'ADMIT ONE  ·  OPENING DAY'; display: block; font-family: 'Oswald', sans-serif; font-size: 12px; letter-spacing: 4px; color: #ff8a7a;
+  border-bottom: 2px dashed rgba(243, 236, 214, .3); padding-bottom: 8px; margin-bottom: 14px;
+}
+#modal-run-intro > .glass-panel > div:first-child { font-family: 'Alfa Slab One', serif !important; font-size: 26px !important; color: #f3ecd6 !important; text-shadow: none !important; letter-spacing: .5px !important; }
+#modal-run-intro > .glass-panel p { font-family: 'Special Elite', monospace !important; font-size: 14px !important; color: #e3d9c0 !important; }
+#modal-run-intro > .glass-panel label { font-family: 'Oswald', sans-serif !important; font-size: 13px !important; color: #a9b4ac !important; }
+#modal-run-intro #btn-run-intro-start {
+  font-family: 'Alfa Slab One', serif !important; font-size: 18px !important; letter-spacing: 2px !important; color: #2a1a0e !important; text-shadow: none !important;
+  background: linear-gradient(#ffe39a, #e0a93a) !important; border: none !important; border-radius: 8px !important;
+  box-shadow: 0 6px 0 #8a5a12, 0 10px 16px rgba(0, 0, 0, .35), inset 0 2px 0 rgba(255, 255, 255, .6) !important;
+}
+
+/* ═════════ Opening draft: lineup cards and a foil wax pack ═════════ */
+.m2-lineup {
+  background-color: #0f1c16 !important; background-image: none !important; background-size: 100% 30px !important; background-position: 0 34px !important;
+  border: none !important; border-top: 8px solid #c0392b !important; border-radius: 3px !important; padding: 10px 10px 12px !important;
+  box-shadow: 0 0 0 1.5px rgba(255, 255, 255, .1), 0 14px 26px rgba(0, 0, 0, .55) !important; color: #f3ecd6;
+}
+#draft-col-roster.m2-lineup { transform: rotate(-.6deg); }
+#draft-col-order.m2-lineup { transform: rotate(.6deg); }
+.m2-lineup > div:first-child { font-family: 'Alfa Slab One', serif !important; font-size: 14px !important; letter-spacing: 1.5px !important; color: #f3ecd6 !important; }
+.m2-lineup [draggable="true"], .m2-lineup .bo-row { background: transparent !important; border-radius: 2px !important; border-left-width: 4px !important; }
+.m2-lineup [draggable="true"]:hover { background: rgba(232, 185, 58, .18) !important; }
+.m2-lineup [draggable="true"] span, .m2-lineup .bo-row span { font-family: 'Special Elite', monospace !important; font-size: 12.5px !important; }
+.m2-lineup [draggable="true"] span:first-child, .m2-lineup .bo-row span:first-child { font-family: 'Oswald', sans-serif !important; font-size: 12px !important; font-weight: 600; color: #ff8a7a !important; }
+.m2-lineup [style*="color:#374151"], .m2-lineup [style*="color: rgb(55, 65, 81)"] { color: #7f8c84 !important; }
+.m2-lineup .btn { margin-top: 6px; }
+.draft-pack .draft-pack-brand { font-family: 'Alfa Slab One', serif !important; font-size: 16px !important; letter-spacing: 1.5px; text-shadow: 0 2px 0 rgba(0, 0, 0, .55) !important; }
+.draft-pack .draft-pack-tagline { font-family: 'Oswald', sans-serif !important; font-size: 13px !important; letter-spacing: 1.5px; text-transform: uppercase; }
+.draft-pack .draft-pack-open-text { font-family: 'Oswald', sans-serif !important; font-size: 13px !important; letter-spacing: 1px; }
+.draft-pack .draft-pack-badge { font-family: 'Oswald', sans-serif !important; font-size: 12px !important; }
+.draft-pack::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(115deg, transparent 30%, rgba(255, 255, 255, .22) 45%, rgba(255, 255, 255, .05) 55%, transparent 70%); background-size: 250% 100%;
+  animation: m2Foil 3.6s linear infinite;
+}
+@keyframes m2Foil { 0% { background-position: 120% 0; } 100% { background-position: -120% 0; } }
+@media (prefers-reduced-motion: reduce) { .draft-pack::after { animation: none; } }
+#final-lineup-layout > .m2-lineup:first-child { transform: rotate(-.5deg); }
+#final-lineup-layout > .m2-lineup:last-child { transform: rotate(.5deg); }
+.m2-lineup [style*="Press Start"][style*="font-size:9px"], .m2-lineup [style*="Press Start"][style*="font-size: 9px"] { font-size: 12px !important; }
+.m2-lineup .bo-row, .m2-lineup > div > div { border-bottom: 1px solid rgba(243, 236, 214, .08); }
+/* node rooms fill the centre column like the map and the battle do */
+.m2-room, #screen-draft:has(.m2-sign), #screen-draft:has(.m2-reward) { min-height: 100%; box-sizing: border-box; }
+.m2-sheet, .m2-sheet div, .m2-sheet p, .m2-sheet span:not([class*='fa']) { font-family: 'Oswald', sans-serif; letter-spacing: .2px; }
+/* buttons keep their printed text colour (the ink remap must not darken them) */
+.m2-ink .btn.btn[style*="color"] { color: #fff !important; }
+.m2-ink .btn.btn.btn[style*="#facc15"], .m2-ink .btn.btn.btn[style*="#f59e0b"], .m2-ink .btn.btn.btn[style*="#ffd700"], .m2-ink .btn.btn.btn[style*="#d97706"] { color: #2a1a0e !important; }
+.m2-ink .btn.btn.btn-secondary[style*="color"] { color: #c9d1c9 !important; }
+.m2-ink .btn[style*="#ea580c"], .m2-ink .btn[style*="#c2410c"] { background: linear-gradient(#d9661c, #a8460c) !important; }
+
+/* ═════════ 162-0 hub: the four formats as trading cards (same type and finish as the main menu) ═════════ */
+#screen-challenge-hub .c162-mode-card {
+  --mc: #e8b93a;
+  background: linear-gradient(170deg, #12201a, #0a120e) !important; border: none !important; border-top: 9px solid var(--mc) !important; border-radius: 6px !important;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, .06), 0 16px 28px rgba(0, 0, 0, .6) !important; position: relative; transition: transform .25s cubic-bezier(.2, .8, .2, 1.2) !important;
+}
+#screen-challenge-hub .c162-mode-card:nth-child(1) { --mc: #e8b93a; transform: rotate(-1.2deg); }
+#screen-challenge-hub .c162-mode-card:nth-child(2) { --mc: #3a8de0; transform: rotate(.6deg); }
+#screen-challenge-hub .c162-mode-card:nth-child(3) { --mc: #2f9e5a; transform: rotate(-.6deg); }
+#screen-challenge-hub .c162-mode-card:nth-child(4) { --mc: #a35bd6; transform: rotate(1.2deg); }
+#screen-challenge-hub .c162-mode-card:hover { transform: translateY(-8px) rotate(0) !important; }
+#screen-challenge-hub .c162-mode-title { font-family: 'Alfa Slab One', serif !important; font-size: 18px !important; line-height: 1.15 !important; letter-spacing: .3px; text-shadow: none !important; color: #f3ecd6 !important; }
+#screen-challenge-hub .c162-mode-desc { font-family: 'Oswald', sans-serif !important; font-size: 14px !important; line-height: 1.4 !important; color: #cfd8cf !important; }
+#screen-challenge-hub .c162-mode-badge { font-family: 'Oswald', sans-serif !important; font-size: 11px !important; letter-spacing: 2px; background: var(--mc) !important; color: #0a120e !important; border: none !important; border-radius: 2px !important; }
+#screen-challenge-hub .c162-mode-card [style*="Press Start"]:not(.btn) { font-family: 'Oswald', sans-serif !important; font-size: 12px !important; letter-spacing: 1px; }
+#screen-challenge-hub .c162-mode-card .btn {
+  font-family: 'Alfa Slab One', serif !important; font-size: 14px !important; letter-spacing: 1px !important; border-radius: 6px !important;
+  box-shadow: 0 5px 0 rgba(0, 0, 0, .45), inset 0 2px 0 rgba(255, 255, 255, .35) !important; text-shadow: none !important;
+}
+#screen-challenge-hub .c162-records-banner { border-radius: 4px !important; }
+#screen-challenge-hub .c162-records-banner [style*="Press Start"] { font-family: 'Oswald', sans-serif !important; letter-spacing: 1.5px; }
+
+/* ═════════ Defeat 2.0 (the user disliked the first gazette): HUD frame, one clear hierarchy ═════════ */
+#screen-gameover {
+  transform: none !important; border-radius: 10px !important; padding: 16px 26px 22px !important;
+  background: rgba(4, 10, 16, .92) !important; border: 2px solid #10b981 !important;
+  box-shadow: 0 20px 60px rgba(0,0,0,.6), inset 0 0 50px rgba(16,185,129,.05) !important; overflow-x: hidden;
+}
+#screen-gameover::before {
+  content: 'THE BASEROGUE GAZETTE'; font-size: 20px; text-align: left; letter-spacing: .5px; font-weight: 700;
+  border-bottom: 3px double rgba(239,233,218,.5); padding-bottom: 6px; color: #efe9da;
+}
+#screen-gameover::after {
+  content: 'SPORTS · FINAL EDITION'; top: 22px; left: auto; right: 28px; border: none; padding: 0; width: auto;
+  font-size: 11px; letter-spacing: 2.5px; color: #a7c4b4;
+}
+#screen-gameover #gameover-title { font-size: 44px !important; font-weight: 800 !important; margin: 16px 0 4px !important; color: #ff8a7a !important; text-align: left; }
+#screen-gameover #gameover-desc { font-family: 'Oswald', sans-serif !important; font-size: 15px !important; letter-spacing: .3px; color: #cbd5c9 !important; text-align: left; margin-bottom: 14px !important; }
+
+/* Why you lost: a scouting note with a red edge */
+#screen-gameover #gameover-why {
+  background: #0f1c16 !important; border: 1px solid rgba(255,255,255,.08) !important; border-left: 4px solid #ef4444 !important;
+  border-radius: 6px !important; padding: 12px 16px !important; margin: 0 0 18px !important; text-align: left;
+}
+#screen-gameover .go-why-title { font-family: 'Oswald', sans-serif !important; font-size: 12px !important; letter-spacing: 2.5px; color: #ff8a7a !important; margin-bottom: 6px; }
+#screen-gameover .go-why-list { margin: 0 0 12px !important; padding-left: 18px !important; }
+#screen-gameover .go-why-list li { font-family: 'Oswald', sans-serif !important; font-size: 15px !important; line-height: 1.45 !important; color: #efe9da !important; letter-spacing: .2px; }
+#screen-gameover .go-why-stats { display: grid !important; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px !important; }
+#screen-gameover .go-why-stat { background: rgba(0,0,0,.35) !important; border: 1px solid rgba(255,255,255,.06) !important; border-top: 2px solid #c9a24a !important; border-radius: 4px; padding: 6px 4px !important; text-align: center; }
+#screen-gameover .go-why-stat b { display: block; font-family: 'VT323', monospace !important; font-size: 30px !important; line-height: 1 !important; color: #fff6d8 !important; }
+#screen-gameover .go-why-stat span { font-family: 'Oswald', sans-serif !important; font-size: 11px !important; letter-spacing: .8px; color: #a7c4b4 !important; text-transform: uppercase; }
+
+/* Season summary + next season */
+#screen-gameover .flex-row > .glass-panel:first-child { border-right: 1px solid rgba(110,231,160,.2) !important; }
+#screen-gameover .history-title { font-size: 13px !important; color: #6ee7a0 !important; border-bottom-color: rgba(110,231,160,.35) !important; }
+#screen-gameover .history-title i { color: #6ee7a0 !important; }
+#screen-gameover .history-row { font-family: 'Oswald', sans-serif !important; font-size: 14px !important; }
+#screen-gameover .flex-row > .glass-panel:last-child > i { color: #c9a24a !important; font-size: 40px !important; }
+#screen-gameover .flex-row > .glass-panel:last-child h3 { font-family: 'Oswald', sans-serif !important; font-weight: 600; font-size: 22px !important; letter-spacing: 1px; color: #efe9da !important; }
+#screen-gameover .flex-row > .glass-panel:last-child p { font-family: 'Oswald', sans-serif !important; font-size: 14px !important; color: #a7c4b4 !important; }
+#screen-gameover .btn { font-family: 'Oswald', sans-serif !important; font-weight: 600; font-size: 15px !important; letter-spacing: 1.5px !important; border-radius: 6px !important; box-shadow: none !important; }
+#screen-gameover #btn-restart-game {
+  background: linear-gradient(180deg, #ffe58a, #e0b54a 55%, #b8862a) !important; color: #2a1a0e !important;
+  border: 1px solid #8a5f10 !important; box-shadow: 0 3px 0 #6b4a0c, 0 6px 14px rgba(0,0,0,.45) !important;
+}
+#screen-gameover #btn-gameover-run-summary { background: transparent !important; color: #6ee7a0 !important; border: 1.5px solid #10b981 !important; }
+#screen-gameover #btn-gameover-run-summary:hover { background: rgba(16,185,129,.12) !important; }
+#screen-gameover .btn:active { transform: translateY(2px); }
+@media (max-width: 760px) {
+  #screen-gameover::after { display: none; }
+  #screen-gameover #gameover-title { font-size: 30px !important; }
+  #screen-gameover .go-why-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* ═════════ Batting cage offers: foil by tier (Normal plain, Silver metallic, Gold holo) ═════════ */
+#screen-train .training-card-offer { position: relative; overflow: hidden; isolation: isolate; }
+#screen-train .training-card-offer::before, #screen-train .training-card-offer::after { content: ''; position: absolute; inset: 0; pointer-events: none; border-radius: inherit; z-index: 0; }
+#screen-train .training-card-offer > * { position: relative; z-index: 1; }
+#screen-train .training-card-tier-silver {
+  border: 2px solid transparent !important;
+  background:
+    linear-gradient(180deg, #15211c, #0f1915) padding-box,
+    linear-gradient(135deg, #f4f7fb, #8a96a6 25%, #e6ebf2 45%, #7d8899 70%, #f4f7fb) border-box !important;
+  box-shadow: 0 0 0 1px rgba(0,0,0,.6), 0 10px 26px rgba(0,0,0,.55), 0 0 18px rgba(205,215,230,.25) !important;
+}
+#screen-train .training-card-tier-silver::before {
+  background: linear-gradient(115deg, transparent 35%, rgba(230,236,245,.08) 47%, rgba(255,255,255,.16) 50%, rgba(230,236,245,.08) 53%, transparent 65%);
+  background-size: 260% 100%; animation: tcSheen 4.5s ease-in-out infinite;
+}
+#screen-train .training-card-tier-gold {
+  border: 2px solid transparent !important;
+  background:
+    linear-gradient(180deg, #221b0c, #15110a) padding-box,
+    linear-gradient(135deg, #fff1b8, #c9a24a 25%, #fff6d8 45%, #b8862a 70%, #ffe58a) border-box !important;
+  box-shadow: 0 0 0 1px rgba(0,0,0,.6), 0 12px 30px rgba(0,0,0,.6), 0 0 28px rgba(255,211,106,.45) !important;
+}
+#screen-train .training-card-tier-gold::before {
+  background:
+    linear-gradient(115deg, transparent 38%, rgba(255,240,180,.10) 46%, rgba(255,255,255,.18) 50%, rgba(255,240,180,.10) 54%, transparent 62%),
+    conic-gradient(from 0deg at 50% 50%, rgba(255,120,120,.10), rgba(255,220,120,.10), rgba(120,255,170,.10), rgba(120,190,255,.10), rgba(220,140,255,.10), rgba(255,120,120,.10));
+  background-size: 260% 100%, 100% 100%; animation: tcSheen 3.2s ease-in-out infinite; mix-blend-mode: screen;
+}
+#screen-train .training-card-tier-gold::after {
+  background-image:
+    radial-gradient(circle, #fff6d8 0 1.5px, transparent 2px), radial-gradient(circle, #ffe58a 0 1px, transparent 1.5px),
+    radial-gradient(circle, #fff 0 1.2px, transparent 1.8px);
+  background-size: 120px 140px, 90px 110px, 150px 170px; background-position: 12px 20px, 60px 80px, 100px 40px;
+  animation: tcSpark 2.6s ease-in-out infinite; opacity: .7;
+}
+@keyframes tcSheen { 0% { background-position: 160% 0, 0 0; } 60%, 100% { background-position: -60% 0, 0 0; } }
+@keyframes tcSpark { 0%, 100% { opacity: .25; } 50% { opacity: .85; } }
+@media (prefers-reduced-motion: reduce) { .training-card-offer::before, #screen-train .training-card-offer::after { animation: none; } }

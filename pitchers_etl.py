@@ -1514,7 +1514,8 @@ def paso_11_ovr_rareza(df, awards=None):
     else:
         df["is_clutch"] = False
         df["is_captain"] = False
-    badge = (df["is_clutch"].astype(int) + df["is_captain"].astype(int)) * BADGE_OVR
+    # Las insignias de pitchers ya no suman al OVR (decision del usuario); siguen en la carta y en el 162-0.
+    badge = (df["is_clutch"].astype(int) + df["is_captain"].astype(int)) * 0.0
     print(f"  Insignias: Clutch={int(df['is_clutch'].sum())} | Captain={int(df['is_captain'].sum())}")
 
     df["raw_ovr"] = (

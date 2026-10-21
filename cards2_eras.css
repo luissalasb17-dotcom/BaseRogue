@@ -1,0 +1,106 @@
+/* ═════════ 2.0 card — era identities, v2 (after cards2.css) ═════════
+   Each era gets one unmistakable signature taken from real cards of its time, plus the
+   "series" stamp on the photo. --tc = team colour (set on the card by createCardHTML). */
+
+.player-card.pc2.pc2 .pc2-series {
+  position: absolute; right: 4px; bottom: 4px; z-index: 3; font-family: var(--font); font-size: 6.5px; line-height: 1;
+  letter-spacing: .5px; text-transform: uppercase; padding: 2px 3px; border-radius: 2px; background: rgba(0,0,0,.5); color: #fff;
+}
+
+/* GENESIS — cabinet card: dark mount, gilt line, rounded pasted photo, italic serif name */
+.player-card.pc2.pc2.pc2-e-genesis .pc2-front { background: #2b1d10; border: none; box-shadow: inset 0 0 0 4px #2b1d10, inset 0 0 0 5px #c9a24a, inset 0 0 18px rgba(0,0,0,.6); }
+.player-card.pc2.pc2.pc2-e-genesis .pc2-ph { border-radius: 10px; padding: 3px; }
+.player-card.pc2.pc2.pc2-e-genesis.rarity-Common .pc2-ph { background: #e7dcc2; }
+.player-card.pc2.pc2.pc2-e-genesis .pc2-ph img { border-radius: 8px; }
+.player-card.pc2.pc2.pc2-e-genesis .pc2-name { background: none; color: #e9d9b0; font-style: italic; letter-spacing: 1.5px; border-bottom: 1px solid #c9a24a; }
+.player-card.pc2.pc2.pc2-e-genesis .pc2-series { background: none; color: #c9a24a; text-shadow: 0 1px 1px #000; }
+
+/* DEADBALL — tobacco card: cream border, brown hairline frame, caption name between rules */
+.player-card.pc2.pc2.pc2-e-deadball .pc2-front { background: #f6efdc; border: none; box-shadow: inset 0 0 0 4px #fbf7ec, inset 0 0 0 5px #8d6a43, inset 0 0 0 7px #fbf7ec, inset 0 0 0 8px #c9b28a; }
+.player-card.pc2.pc2.pc2-e-deadball .pc2-face { padding: 8px 8px 6px; }
+.player-card.pc2.pc2.pc2-e-deadball .pc2-name { background: none; color: #5a3b21; border-top: 1px solid #8d6a43; border-bottom: 1px solid #8d6a43; letter-spacing: 1.5px; }
+.player-card.pc2.pc2.pc2-e-deadball .pc2-series { background: rgba(244,236,216,.85); color: #5a3b21; }
+
+/* GOLDEN — 30s gum card: painted bold colours, art-deco stripes, skewed slab banner */
+.player-card.pc2.pc2.pc2-e-golden .pc2-front { background: repeating-linear-gradient(135deg, rgba(255,255,255,.07) 0 4px, transparent 4px 9px), #b8322a; border: 2px solid #f0b84a; }
+.player-card.pc2.pc2.pc2-e-golden .pc2-name { background: #f0b84a; color: #1d1a2e; transform: skewX(-8deg); margin: 0 4px; box-shadow: 3px 3px 0 #5a1c12; }
+.player-card.pc2.pc2.pc2-e-golden .pc2-series { background: #1d1a2e; color: #f0b84a; }
+
+/* INTEGRATION — early 50s painted card: white stock, facsimile signature, team-colour box */
+.player-card.pc2.pc2.pc2-e-integration .pc2-front { background: #fbfaf5; border: 1px solid #d8d2c2; }
+.player-card.pc2.pc2.pc2-e-integration .pc2-name { background: none; color: var(--tc); font-family: 'Yellowtail', cursive; font-size: 15px; text-transform: none; letter-spacing: 0; padding: 0 3px; line-height: 1.1; }
+.player-card.pc2.pc2.pc2-e-integration .pc2-name.pc2-n-sm { font-size: 14px; } .player-card.pc2.pc2.pc2-e-integration .pc2-name.pc2-n-xs { font-size: 12.5px; }
+.player-card.pc2.pc2.pc2-e-integration .pc2-pos { background: var(--tc); }
+.player-card.pc2.pc2.pc2-e-integration .pc2-series { background: var(--tc); }
+
+/* EXPANSION — mid-70s two-tone border, white pennant name */
+.player-card.pc2.pc2.pc2-e-expansion .pc2-front { background: linear-gradient(180deg, var(--tc) 0 52%, #f2c230 52% 100%); border: none; padding: 6px; }
+.player-card.pc2.pc2.pc2-e-expansion { --tx: #fff; --rb: rgba(0,0,0,.28); --rt: #fff; --pb: #fff; --pt: var(--tc); }
+.player-card.pc2.pc2.pc2-e-expansion .pc2-name { background: #fff; color: var(--tc); border-radius: 10px; margin: 0 6px; }
+.player-card.pc2.pc2.pc2-e-expansion .pc2-ft, .player-card.pc2.pc2.pc2-e-expansion .pc2-chips { color: #2a1a0e; }
+.player-card.pc2.pc2.pc2-e-expansion .pc2-r { background: rgba(255,255,255,.55); color: #2a1a0e; }
+.player-card.pc2.pc2.pc2-e-expansion .pc2-series { background: #f2c230; color: #2a1a0e; }
+
+/* BIG HAIR — '87 wood grain, white photo edge, angled team-colour name strip */
+.player-card.pc2.pc2.pc2-e-bighair .pc2-ph img { outline: 2px solid #fff; outline-offset: -2px; }
+.player-card.pc2.pc2.pc2-e-bighair .pc2-name { background: var(--tc); color: #fff; clip-path: polygon(0 0, 100% 0, 94% 100%, 0 100%); text-align: left; padding-left: 6px; }
+.player-card.pc2.pc2.pc2-e-bighair .pc2-series { background: #e2c34a; color: #3b2410; }
+
+/* STEROID — 90s premium: full-bleed photo, silver foil body, gold foil block name over the photo */
+.player-card.pc2.pc2.pc2-e-steroid .pc2-ph { margin: -6px -6px 0; border-radius: 6px 6px 0 0; padding: 0 0 3px; }
+.player-card.pc2.pc2.pc2-e-steroid .pc2-ph img { border-radius: 6px 6px 0 0; }
+.player-card.pc2.pc2.pc2-e-steroid .pc2-name { margin-top: -16px; position: relative; z-index: 4; font-style: italic; font-size: 11px; transform: skewX(-10deg); margin-left: 6px; margin-right: 6px; box-shadow: 0 2px 6px rgba(0,0,0,.45); }
+.player-card.pc2.pc2.pc2-e-steroid .pc2-series { bottom: 8px; background: linear-gradient(90deg, #8a98a3, #f4f7f9, #8a98a3); color: #0b2a3a; }
+.player-card.pc2.pc2.pc2-e-steroid .pc2-top { position: relative; z-index: 4; }
+
+/* EFFICIENCY — 2010s flagship: team-colour border, white panel, angled band behind the name */
+.player-card.pc2.pc2.pc2-e-efficiency .pc2-front { background: #fff; border: 4px solid var(--tc); }
+.player-card.pc2.pc2.pc2-e-efficiency .pc2-face { padding: 4px; }
+.player-card.pc2.pc2.pc2-e-efficiency .pc2-name { background: linear-gradient(100deg, var(--tc) 74%, #f28b30 74%); margin: 0 -4px; }
+.player-card.pc2.pc2.pc2-e-efficiency .pc2-pos { background: var(--tc); }
+.player-card.pc2.pc2.pc2-e-efficiency .pc2-series { background: var(--tc); }
+
+/* MODERN — chrome refractor: full-bleed photo, thin caps name with rainbow rule */
+.player-card.pc2.pc2.pc2-e-modern .pc2-ph { margin: -6px -6px 0; border-radius: 6px 6px 0 0; padding: 0 0 3px; }
+.player-card.pc2.pc2.pc2-e-modern .pc2-ph img { border-radius: 6px 6px 0 0; }
+.player-card.pc2.pc2.pc2-e-modern .pc2-top { position: relative; z-index: 4; }
+.player-card.pc2.pc2.pc2-e-modern .pc2-name { background: none; color: #fff; letter-spacing: 2.5px; border-bottom: 2px solid; border-image: linear-gradient(90deg, #5aa0ff, #c58bff, #ffd36a, #5aa0ff) 1; }
+.player-card.pc2.pc2.pc2-e-modern .pc2-series { background: linear-gradient(90deg, #5aa0ff, #c58bff); color: #0a1224; }
+/* full-bleed eras: the name sits on the photo's bottom edge, so the series stamp goes top-left */
+.player-card.pc2.pc2.pc2-e-steroid .pc2-series, .player-card.pc2.pc2.pc2-e-modern .pc2-series { bottom: auto; top: 4px; right: auto; left: 4px; }
+.player-card.pc2.pc2.pc2-e-genesis .pc2-series { color: #f0d283; }
+
+/* ── fixes after the user's review ── */
+/* one series stamp for every era: top-left of the photo, same legible style */
+.player-card.pc2.pc2.pc2 .pc2-series,
+.player-card.pc2.pc2.pc2.pc2-e-steroid .pc2-series, .player-card.pc2.pc2.pc2.pc2-e-modern .pc2-series,
+.player-card.pc2.pc2.pc2.pc2-e-genesis .pc2-series {
+  top: 5px; left: 5px; right: auto; bottom: auto; font-family: 'Oswald', sans-serif; font-size: 7px; letter-spacing: .6px;
+  background: rgba(10, 8, 6, .78); color: #fff6dd; text-shadow: none; padding: 2px 4px; border-radius: 2px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .5);
+}
+/* full-bleed photos go to the sides only, never up under the OVR row */
+.player-card.pc2.pc2.pc2-e-steroid .pc2-ph, .player-card.pc2.pc2.pc2-e-modern .pc2-ph { margin: 0 -6px; border-radius: 0; }
+.player-card.pc2.pc2.pc2-e-steroid .pc2-ph img, .player-card.pc2.pc2.pc2-e-modern .pc2-ph img { border-radius: 0; }
+/* Steroid: the gold name sits on the photo's bottom edge, so the badges move above it */
+.player-card.pc2.pc2.pc2-e-steroid .pc2-badges { bottom: 19px; }
+
+/* Genesis, warmer cabinet card: brown mount with gilt rounded frame, cream photo mat, gold italic name */
+.player-card.pc2.pc2.pc2-e-genesis .pc2-front {
+  background: radial-gradient(ellipse at 50% 30%, #5a3d22, #2e1d0e 75%);
+  box-shadow: inset 0 0 0 3px #2e1d0e, inset 0 0 0 4px #d9b45a, inset 0 0 0 6px #2e1d0e, inset 0 0 0 7px #8a6a2e;
+}
+.player-card.pc2.pc2.pc2-e-genesis .pc2-face { padding: 9px 9px 7px; }
+.player-card.pc2.pc2.pc2-e-genesis .pc2-ph { border-radius: 12px; padding: 3px; }
+.player-card.pc2.pc2.pc2-e-genesis.rarity-Common .pc2-ph, .player-card.pc2.pc2.pc2-e-genesis.rarity-Uncommon .pc2-ph { background: #efe3c4; }
+.player-card.pc2.pc2.pc2-e-genesis .pc2-ph img { border-radius: 10px; filter: sepia(.25) contrast(1.05); }
+.player-card.pc2.pc2.pc2-e-genesis .pc2-name { color: #f0d283; border-bottom: none; text-shadow: 0 1px 0 #000; }
+.player-card.pc2.pc2.pc2-e-genesis .pc2-chips { color: #e9d9b0; }
+.player-card.pc2.pc2.pc2-e-genesis .pc2-r { background: rgba(0, 0, 0, .28); }
+.player-card.pc2.pc2.pc2-e-modern .pc2-ph img { aspect-ratio: 3 / 2; }
+/* user: series stamp bottom-right, badges top-left (all eras) */
+.player-card.pc2.pc2.pc2 .pc2-series,
+.player-card.pc2.pc2.pc2.pc2-e-steroid .pc2-series, .player-card.pc2.pc2.pc2.pc2-e-modern .pc2-series,
+.player-card.pc2.pc2.pc2.pc2-e-genesis .pc2-series { top: auto; left: auto; right: 5px; bottom: 5px; }
+.player-card.pc2.pc2.pc2.pc2-e-steroid .pc2-series { bottom: 19px; }   /* above the gold name that overlaps the photo */
+.player-card.pc2.pc2.pc2 .pc2-badges, .player-card.pc2.pc2.pc2.pc2-e-steroid .pc2-badges { top: 5px; left: 5px; bottom: auto; z-index: 5; }

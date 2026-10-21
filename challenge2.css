@@ -1,0 +1,231 @@
+/* 162-0 Challenge 2.0: same HUD frame as the roguelike (dark panel, green border, pixel titles)
+   plus the battle's baseball objects: green manual scoreboards, brass buttons, scorer's ledgers.
+   Presentation only; loaded after style_juice.css. */
+
+/* ── Frame: every 162-0 screen sits in the same panel over the stadium ── */
+[id^="screen-challenge-"].glass-panel {
+  background: rgba(4, 10, 16, .88) !important;
+  border: 2px solid #10b981 !important;
+  border-radius: 10px !important;
+  box-shadow: 0 0 0 1px rgba(0,0,0,.6), 0 20px 60px rgba(0,0,0,.6), inset 0 0 50px rgba(16,185,129,.05) !important;
+  backdrop-filter: blur(3px);
+}
+
+/* ── Brass for the main action, as in battle (ROLL) and the map ── */
+#screen-challenge-season .c162-season-top-row ~ * .btn-primary,
+[id^="screen-challenge-"] .btn-primary,
+.c162-reveal-actions button {
+  background: linear-gradient(180deg, #ffe58a, #e0b54a 55%, #b8862a) !important;
+  color: #2a1a0e !important; border: 1px solid #8a5f10 !important;
+  box-shadow: 0 3px 0 #6b4a0c, 0 6px 14px rgba(0,0,0,.45) !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,.35) !important;
+}
+[id^="screen-challenge-"] .btn-primary:hover { filter: brightness(1.08); }
+[id^="screen-challenge-"] .btn-primary:active { transform: translateY(2px); box-shadow: 0 1px 0 #6b4a0c !important; }
+
+/* ── Record card = manual scoreboard (green, gold outline, numbers in boxes) ── */
+.c162-record-card {
+  background:
+    repeating-linear-gradient(0deg, rgba(0,0,0,.07) 0 2px, transparent 2px 4px),
+    linear-gradient(180deg, #1d4a32, #133524) !important;
+  border: 2px solid #c9a24a !important; border-radius: 6px !important;
+  box-shadow: inset 0 0 0 3px #0b2418, 0 10px 24px rgba(0,0,0,.55) !important;
+}
+.c162-rec-w, .c162-rec-l {
+  background: #0b1a12; border: 1px solid #2f5a42; border-radius: 3px; padding: 4px 10px;
+  box-shadow: inset 0 2px 6px rgba(0,0,0,.6);
+}
+.c162-rec-w { color: #fff6d8 !important; text-shadow: 0 0 10px rgba(255,236,170,.55) !important; }
+.c162-rec-l { color: #ff8a7a !important; }
+.c162-mode-badge {
+  background: linear-gradient(180deg, #ffe58a, #c9a24a) !important; color: #2a1a0e !important;
+  border: 1px solid #8a5f10 !important; box-shadow: 0 2px 0 #6b4a0c !important;
+}
+
+/* ── Last game: linescore like the stadium board ── */
+.c162-lastgame {
+  background: linear-gradient(180deg, #11261b, #0b1912) !important;
+  border: 1px solid rgba(16,185,129,.45) !important; border-left: 4px solid #10b981 !important;
+  border-radius: 6px !important;
+}
+.c162-lastgame.lost { border-left-color: #ef4444 !important; }
+.c162-linescore {
+  background: #133524 !important; border: 2px solid #c9a24a !important; border-radius: 4px;
+  box-shadow: inset 0 0 0 2px #0b2418;
+}
+.c162-linescore th, .c162-linescore td { color: #fff6d8 !important; font-family: 'VT323', monospace !important; font-size: 17px !important; border-color: rgba(255,255,255,.06) !important; }
+.c162-linescore th { color: #c9e8d6 !important; font-size: 14px !important; }
+.c162-linescore .rhe, .c162-linescore .r { background: rgba(0,0,0,.25) !important; color: #ffe58a !important; }
+
+/* ── Tables = scorer's ledger: dark rows, green ruled header ── */
+.c162-table-wrap { border: 1px solid rgba(16,185,129,.3) !important; border-radius: 6px !important; background: rgba(0,0,0,.25) !important; }
+.c162-th, .c162-table thead th {
+  background: linear-gradient(180deg, #12271c, #0c1b14) !important;
+  border-bottom: 2px solid #10b981 !important; color: #6ee7a0 !important;
+}
+.c162-tr:hover, .c162-tr-card:hover { background: rgba(16,185,129,.1) !important; }
+.c162-tr-alt { background: rgba(255,255,255,.025) !important; }
+.c162-td { border-bottom: 1px solid rgba(110,231,160,.07) !important; }
+.c162-tag-pos, .c162-tag-role {
+  background: #0b1a12 !important; border: 1px solid #2f5a42 !important; color: #6ee7a0 !important; border-radius: 3px !important;
+}
+
+/* ── Panels and side bar ── */
+.c162-main-panel, .c162-sidebar-panel {
+  background: rgba(0,0,0,.25) !important; border: 1px solid rgba(16,185,129,.3) !important; border-radius: 8px !important;
+}
+.c162-mini-standings { background: transparent !important; }
+.c162-mini-title { color: #6ee7a0 !important; border-bottom: 1px dashed rgba(110,231,160,.3) !important; }
+.c162-mini-row.is-user { background: rgba(255,229,138,.1) !important; box-shadow: inset 3px 0 0 #e0b54a; }
+.c162-mini-row.cutline { border-bottom: 1px dashed #c9a24a !important; }
+
+/* Headlines = wire ticker */
+.c162-headline {
+  background: #0f1c16 !important; border: 1px solid rgba(255,255,255,.07) !important; border-left: 3px solid #c9a24a !important;
+  font-family: 'Oswald', sans-serif; letter-spacing: .2px;
+}
+.c162-headline.kind-user { border-left-color: #10b981 !important; }
+.c162-headline-day { font-family: 'Press Start 2P', monospace; color: #c9a24a !important; }
+
+/* Alerts and month report: memo slips on the board */
+.c162-alert {
+  background: linear-gradient(180deg, #1a1408, #120e06) !important;
+  border: 1px solid #c9a24a !important; border-left: 4px solid #e0b54a !important; border-radius: 6px !important;
+}
+.c162-month { background: #0f1c16 !important; border: 1px solid rgba(16,185,129,.4) !important; border-radius: 8px !important; }
+
+/* ── Pack draft board: lineup card slots ── */
+.c162-rb { background: rgba(0,0,0,.25) !important; border: 1px solid rgba(16,185,129,.3) !important; border-radius: 8px !important; }
+.c162-rb .c162-slot-item {
+  background: linear-gradient(90deg, #13241c, #0f1c16) !important; border: 1px solid rgba(255,255,255,.06) !important;
+  border-left: 3px solid var(--rc, #2f5a42) !important; border-radius: 3px !important;
+}
+.c162-rb .c162-slot-item:hover { background: #18301f !important; }
+.c162-depth { background: #0b1612 !important; border: 1px solid rgba(16,185,129,.25) !important; }
+
+/* ── League / playoffs tabs as binder index tabs ── */
+#screen-challenge-liga button[data-tab], #screen-challenge-season button[data-tab],
+.c162-tabs button, .c162-tab {
+  border-radius: 6px 6px 0 0 !important;
+}
+
+/* ── Results ── */
+#screen-challenge-results h1, #screen-challenge-results h2,
+[id^="screen-challenge-"] h2 { text-shadow: 0 0 12px rgba(16,185,129,.35); }
+.c162-linescore td:first-child, .c162-linescore th:first-child { font-family: 'Oswald', sans-serif !important; font-size: 13px !important; text-align: left !important; letter-spacing: .3px; }
+
+/* ── Frame wins over the per-screen rules in style_juice.css (they use the id) ── */
+#screen-challenge-playoffs.glass-panel, #screen-challenge-results.glass-panel,
+#screen-challenge-pack.glass-panel, #screen-challenge-season.glass-panel,
+#screen-challenge-liga.glass-panel, #screen-challenge-roster.glass-panel, #screen-challenge-hub.glass-panel {
+  background: rgba(4, 10, 16, .88) !important; border: 2px solid #10b981 !important; border-radius: 10px !important;
+}
+
+/* ── Playoffs hub: October keeps its gold, but on the game's frame ── */
+.c162-po-head, .c162-ser-banner {
+  background: repeating-linear-gradient(0deg, rgba(0,0,0,.07) 0 2px, transparent 2px 4px), linear-gradient(180deg, #1d4a32, #133524) !important;
+  border: 2px solid #c9a24a !important; box-shadow: inset 0 0 0 3px #0b2418, 0 8px 20px rgba(0,0,0,.5) !important; border-radius: 6px !important;
+}
+.c162-po-intro, .c162-po-next, .c162-bracket, .c162-po-subtab-body {
+  background: rgba(0,0,0,.25) !important; border: 1px solid rgba(16,185,129,.3) !important; border-radius: 8px !important;
+}
+.c162-po-chip { background: #0b1a12 !important; border: 1px solid #2f5a42 !important; }
+.c162-po-chip.next { border-color: #e0b54a !important; box-shadow: 0 0 12px rgba(224,181,74,.35) !important; }
+.c162-po-starter-spotlight { background: #0f1c16 !important; border: 1px solid rgba(16,185,129,.35) !important; }
+.c162-bk-match { background: #0f1c16 !important; border: 1px solid rgba(255,255,255,.08) !important; border-left: 3px solid #2f5a42 !important; }
+.c162-bk-team.is-user { color: #ffe58a !important; }
+.c162-po-tab-btn { border-radius: 6px 6px 0 0 !important; }
+
+/* ── Playoff game: the battle's objects (scoreboard, felt table, brass) ── */
+.oct-ls { background: #133524 !important; border: 2px solid #c9a24a !important; box-shadow: inset 0 0 0 2px #0b2418; border-radius: 4px; }
+.oct-ls td, .oct-ls th { color: #fff6d8 !important; font-family: 'VT323', monospace !important; font-size: 16px !important; line-height: 1 !important; padding-top: 2px !important; padding-bottom: 2px !important; }
+.oct-ls td:first-child, .oct-ls th:first-child { font-family: 'Oswald', sans-serif !important; font-size: 13px !important; letter-spacing: .3px; }
+.oct-ls .tot { color: #ffe58a !important; background: rgba(0,0,0,.25) !important; }
+.oct-ls .now { background: rgba(255,229,138,.12) !important; }
+.oct-stage {
+  background: radial-gradient(ellipse at 50% 40%, rgba(255,255,255,.06), transparent 60%),
+    repeating-linear-gradient(45deg, rgba(0,0,0,.05) 0 2px, transparent 2px 4px), #154a2e !important;
+  border: 6px solid #5a3a1e !important; border-radius: 12px !important;
+  box-shadow: inset 0 0 0 2px #2c1b0c, inset 0 8px 24px rgba(0,0,0,.45), 0 12px 30px rgba(0,0,0,.55) !important;
+}
+.oct-score { background: rgba(0,0,0,.35) !important; border-radius: 6px; }
+.oct-score small { white-space: normal !important; overflow: visible !important; text-overflow: clip !important; max-width: 110px; line-height: 1.1; font-family: 'Oswald', sans-serif; font-size: 12px !important; }
+.oct-big { background: rgba(4,10,16,.82) !important; border: 1px solid #c9a24a !important; border-radius: 6px !important; }
+.oct-lu { background: rgba(0,0,0,.3) !important; border: 1px solid rgba(16,185,129,.3) !important; border-radius: 8px !important; }
+.oct-lu-row.on { background: rgba(255,229,138,.12) !important; box-shadow: inset 3px 0 0 #e0b54a; }
+.oct-wp-bar { border: 1px solid #2c1b0c; }
+.oct-feed { background: rgba(0,0,0,.3) !important; border: 1px solid rgba(16,185,129,.25) !important; border-radius: 8px !important; }
+.oct-btn.main {
+  background: linear-gradient(180deg, #ffe58a, #e0b54a 55%, #b8862a) !important; color: #2a1a0e !important;
+  border: 1px solid #8a5f10 !important; box-shadow: 0 3px 0 #6b4a0c !important;
+}
+
+/* October team overview pop-up: game frame */
+.c162-oct { border: 2px solid #10b981 !important; border-radius: 10px !important; background: rgba(4,10,16,.97) !important; }
+
+/* the play result: a sticker like the battle's, coloured by outcome */
+.oct-play { background: #0f1c16 !important; border: 1px solid rgba(255,255,255,.12) !important; border-left: 5px solid #6ee7a0 !important; border-radius: 4px !important; rotate: -1deg; box-shadow: 0 6px 14px rgba(0,0,0,.5) !important; }
+.oct-play.bad { border-left-color: #ef4444 !important; }
+
+/* ── Results: front page of the season's last edition (dark, like the roguelike's Gazette) ── */
+.c162-hero {
+  margin: 0 auto 12px; max-width: 760px; padding: 10px 18px 14px; text-align: center;
+  background: #0f1c16; border: 1px solid rgba(255,255,255,.1); border-top: 4px double #c9a24a; border-bottom: 4px double #c9a24a;
+  box-shadow: 0 12px 30px rgba(0,0,0,.5);
+}
+.c162-hero-mast {
+  display: flex; justify-content: space-between; align-items: center; gap: 10px;
+  font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 1.5px; color: #a7c4b4;
+  border-bottom: 1px solid rgba(255,255,255,.12); padding-bottom: 6px; margin-bottom: 8px;
+}
+.c162-hero-mast span:first-child { font-family: 'Playfair Display', serif; font-weight: 900; font-size: 16px; letter-spacing: .5px; color: #f3ecd6; }
+.c162-hero-mast span:nth-child(2) { font-family: 'Press Start 2P', monospace; font-size: 10px; color: #ffe58a; }
+.c162-hero > div:last-child { margin-bottom: 0 !important; }
+.c162-hero > div:last-child > div:nth-child(2) {
+  font-family: 'Playfair Display', serif !important; font-weight: 900; font-size: 34px !important; letter-spacing: 0 !important;
+  line-height: 1.05; text-transform: uppercase; text-shadow: none !important; margin: 4px 0 6px !important;
+}
+.c162-hero.lost > div:last-child > div:nth-child(2) { color: #f3ecd6 !important; }
+.c162-hero.won > div:last-child > div:nth-child(2) { color: #ffe58a !important; }
+.c162-hero > div:last-child > div:nth-child(3) {
+  font-family: 'Special Elite', monospace; font-size: 14px !important; color: #cbd5c9 !important;
+}
+.c162-results-story, .c162-po-pathrow { background: #0f1c16 !important; border-left: 3px solid #c9a24a !important; }
+.c162-res-award {
+  background: linear-gradient(180deg, #13241c, #0f1c16) !important; border: 1px solid rgba(255,255,255,.07) !important;
+  border-top: 2px solid #c9a24a !important; border-radius: 4px !important;
+}
+.c162-award-league-title { background: linear-gradient(90deg, rgba(201,162,74,.25), transparent) !important; border-left: 4px solid #c9a24a !important; }
+.c162-ldr-box { background: rgba(0,0,0,.25) !important; border: 1px solid rgba(16,185,129,.3) !important; border-radius: 8px !important; }
+.c162-bk-champ { color: #ffe58a !important; font-family: 'Oswald', sans-serif; letter-spacing: .5px; font-size: 16px !important; }
+
+@media (max-width: 600px) {
+  .c162-hero { padding: 8px 10px 12px; }
+  .c162-hero-mast { font-size: 9px; letter-spacing: .5px; }
+  .c162-hero-mast span:first-child { font-size: 12px; }
+  .c162-hero-mast span:last-child { display: none; }
+  .c162-hero > div:last-child > div:nth-child(2) { font-size: 22px !important; }
+}
+
+/* The roguelike's phone tab bar (Game / Roster / Synergies) has nothing to do in the 162-0 or the Dex */
+body:has([id^="screen-challenge-"].glass-panel:not(.hidden)) #mobile-nav-bar,
+body:has(.dx2-overlay) #mobile-nav-bar { display: none !important; }
+@media (max-width: 600px) { .c162-pack-headbtns { gap: 6px !important; } }
+
+/* Playoffs on phones */
+.c162-po-intro-stars span { font-family: 'Oswald', sans-serif !important; letter-spacing: .3px; }
+@media (max-width: 600px) {
+  .c162-po-subtabs { flex-wrap: wrap !important; }
+  .c162-po-tab-btn { flex: 1 1 auto; min-width: 0; white-space: normal !important; }
+  .c162-po-intro-teams { gap: 6px !important; }
+  .c162-po-intro-teams > div > b { font-size: 12px !important; line-height: 1.25; }
+  .c162-po-intro-teams small { font-family: 'Oswald', sans-serif; font-size: 11px !important; }
+  .c162-po-intro-stars span { font-size: 12px !important; }
+  .c162-po-intro-stars b { font-size: 11px !important; }
+}
+@media (max-width: 620px) {
+  /* phone: the batter-vs-pitcher cards first and at a readable size, then the dice table */
+  .oct-arena .oct-card { order: -2 !important; }
+  .oct-card .card-deal-in { zoom: 1 !important; }
+  .oct-ls td, .oct-ls th { font-size: 14px !important; padding-left: 1px !important; padding-right: 1px !important; }
+}

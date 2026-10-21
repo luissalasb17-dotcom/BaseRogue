@@ -1,0 +1,236 @@
+/* ═════════ 2.0 trading card (markup: createCardHTML in ui.js, art: card_art.js) ═════════
+   One design per era inspired by real cards of that time, generated pixel portrait,
+   rarity shown as the foil of the photo frame and the OVR colour, flip with ↻.
+   Loaded after style.css / style_juice.css; the old per-era rules target classes
+   this card no longer uses (.era-*, .card-name...), and the outer box is reset here. */
+
+.player-card.pc2 {
+  --bg: #1e293b; --tx: #f1f5f9; --nmb: #f1f5f9; --nmt: #0f172a; --rb: rgba(0,0,0,.25); --rt: #f1f5f9;
+  --pb: #0f172a; --pt: #f1f5f9; --font: 'Oswald', sans-serif; --back: #e8e2d2; --btx: #222;
+  --edge: none; --frame: rgba(255,255,255,.25); --ovrc: var(--tx);
+  padding: 0 !important;
+  border: none !important;
+  background: transparent !important;
+  box-shadow: 0 3px 10px rgba(0,0,0,.55) !important;
+  animation: none !important;
+  border-radius: 7px !important;
+  overflow: visible !important;
+  display: block !important;
+  text-align: left !important;
+  font-size: inherit !important;
+}
+.player-card.pc2::before, .player-card.pc2::after { display: none !important; content: none !important; }
+
+.pc2-in { position: absolute; inset: 0; transform-style: preserve-3d; transition: transform .55s cubic-bezier(.3,.7,.2,1); }
+.pc2.pc2-flipped .pc2-in { transform: rotateY(180deg); }
+.pc2-face {
+  position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden;
+  border-radius: 7px; overflow: hidden; box-sizing: border-box; padding: 5px;
+  display: flex; flex-direction: column; gap: 3px;
+  font-family: 'Oswald', sans-serif; font-weight: 500;
+}
+.pc2-front { background: var(--bg); color: var(--tx); border: var(--edge); }
+.pc2-back { transform: rotateY(180deg); background: var(--back); color: var(--btx); gap: 2px; }
+
+/* front */
+.pc2-top { display: flex; justify-content: space-between; align-items: center; height: 15px; }
+.pc2-pos { font-size: 9px; line-height: 1; padding: 2px 4px; border-radius: 2px; background: var(--pb); color: var(--pt); }
+.pc2-ovr { font-family: var(--font); font-size: 16px; line-height: 1; color: var(--ovrc); }
+.pc2-year { font-size: 9px; }
+.pc2-ph { position: relative; padding: 2px; border-radius: 3px; background: var(--frame); }
+.pc2-ph img, .pc2-noimg { width: 100%; display: block; image-rendering: pixelated; border-radius: 2px; aspect-ratio: 4 / 3; object-fit: cover; }
+.pc2-noimg { background: rgba(0,0,0,.25); }
+.pc2-name {
+  font-family: var(--font); font-size: 10px; line-height: 1.25; text-align: center; padding: 2px 3px;
+  background: var(--nmb); color: var(--nmt); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: .3px; text-transform: uppercase;
+}
+.pc2-name.pc2-n-sm { font-size: 9px; }
+.pc2-name.pc2-n-xs { font-size: 8px; letter-spacing: 0; }
+.pc2-chips { display: flex; gap: 3px; justify-content: center; overflow: hidden; height: 12px; }
+.pc2-chip { font-size: 7.5px; line-height: 10px; padding: 0 3px; border: 1px solid currentColor; border-radius: 2px; white-space: nowrap; opacity: .9; }
+.pc2-chip-bad { background: #ef4444; color: #fff; border-color: #ef4444; opacity: 1; }
+.pc2-chip-warn { background: #f59e0b; color: #000; border-color: #f59e0b; opacity: 1; }
+.pc2-rt { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; }
+.pc2-r { display: flex; justify-content: space-between; align-items: baseline; padding: 1px 3px; border-radius: 2px; background: var(--rb); color: var(--rt); font-size: 7.5px; line-height: 12px; }
+.pc2-r b { font-size: 9.5px; font-weight: 500; text-shadow: 0 1px 0 rgba(0,0,0,.45); }
+.pc2-ft { display: flex; justify-content: space-between; align-items: center; font-size: 8.5px; margin-top: auto; }
+.pc2-hand { padding: 0 4px; border: 1px solid currentColor; border-radius: 2px; font-size: 8px; }
+.pc2-sta { font-size: 8.5px; }
+.pc2-sta i { font-size: 7px; }
+.pc2-sta.warning { color: #facc15; } .pc2-sta.low { color: #fb923c; } .pc2-sta.critical { color: #ef4444; }
+.pc2 .card-interera-banner { position: absolute; left: 2px; right: 2px; top: 2px; width: auto; font-size: 6px; padding: 2px; }
+
+/* flip button */
+.pc2-flip {
+  position: absolute; top: 4px; right: 4px; z-index: 6; width: 15px; height: 15px; padding: 0;
+  border: none; border-radius: 50%; background: rgba(0,0,0,.55); color: #fff; font-size: 10px; line-height: 15px;
+  text-align: center; cursor: pointer; opacity: .55; transition: opacity .15s, transform .15s;
+}
+.pc2:hover .pc2-flip { opacity: .95; }
+.pc2-flip:hover { transform: rotate(-90deg); }
+.pc2-flip-back { top: auto; bottom: 5px; right: 5px; }
+
+/* badges: small embroidered-style patches on the photo */
+.pc2-badges { position: absolute; left: 5px; bottom: 5px; display: flex; gap: 2px; z-index: 4; }
+.pc2-badge {
+  width: 17px; height: 19px; display: flex; align-items: center; justify-content: center;
+  clip-path: polygon(50% 0, 100% 18%, 100% 62%, 50% 100%, 0 62%, 0 18%);
+  background: #f3d27a; filter: drop-shadow(0 1px 1px rgba(0,0,0,.6));
+}
+.pc2-badge i {
+  font-style: normal; font-family: 'Oswald', sans-serif; font-size: 6.5px; line-height: 1; letter-spacing: -.2px;
+  width: 13px; height: 15px; display: flex; align-items: center; justify-content: center;
+  clip-path: polygon(50% 0, 100% 18%, 100% 62%, 50% 100%, 0 62%, 0 18%);
+}
+.pc2-badge-oct { background: linear-gradient(135deg, #a8791a, #fff1b8 50%, #a8791a); }
+.pc2-badge-oct i { background: #7a1020; color: #f3d27a; }
+.pc2-badge-cap { background: linear-gradient(135deg, #8a98a3, #f4f7f9 50%, #8a98a3); }
+.pc2-badge-cap i { background: #14213d; color: #f4f7f9; font-size: 8.5px; }
+
+/* paper grain + worn edge (old eras), clean stock for the glossy eras */
+.pc2-tex { position: absolute; inset: 0; pointer-events: none; background-image: var(--pc2-noise); mix-blend-mode: multiply; opacity: .32; z-index: 3; }
+.pc2-wear { position: absolute; inset: 0; pointer-events: none; border-radius: 7px; box-shadow: inset 0 0 0 1px rgba(255,255,255,.14), inset 0 0 12px rgba(0,0,0,.32); z-index: 3; }
+.pc2-e-steroid .pc2-tex, .pc2-e-efficiency .pc2-tex, .pc2-e-modern .pc2-tex { display: none; }
+.pc2-e-steroid .pc2-wear, .pc2-e-efficiency .pc2-wear, .pc2-e-modern .pc2-wear { box-shadow: inset 0 0 0 1px rgba(255,255,255,.2); }
+
+/* rarity: the photo frame is the foil, the OVR takes its colour */
+.player-card.pc2.rarity-Common { --frame: color-mix(in srgb, var(--tx) 22%, transparent); }
+.player-card.pc2.rarity-Uncommon { --frame: #4ade80; --ovrc: #4ade80; }
+.player-card.pc2.rarity-Rare { --frame: linear-gradient(135deg, #9aa6b1, #f4f7f9 45%, #8b97a2 55%, #e3e8ec); --ovrc: #dbe3e8; }
+.player-card.pc2.rarity-Epic { --frame: linear-gradient(135deg, #7b4fd6, #e2c8ff 45%, #6a3fc4 55%, #d3b2ff); --ovrc: #c9a6ff; }
+.player-card.pc2.rarity-Legendary { --frame: linear-gradient(135deg, #a8791a, #fff1b8 45%, #9c6d10 55%, #f3d27a); --ovrc: #f3d27a; }
+.player-card.pc2.pc2-e-deadball.rarity-Uncommon, .player-card.pc2.pc2-e-integration.rarity-Uncommon, .player-card.pc2.pc2-e-efficiency.rarity-Uncommon { --ovrc: #15803d; }
+.player-card.pc2.pc2-e-deadball.rarity-Rare, .player-card.pc2.pc2-e-integration.rarity-Rare, .player-card.pc2.pc2-e-efficiency.rarity-Rare, .player-card.pc2.pc2-e-steroid.rarity-Rare { --ovrc: #475569; }
+.player-card.pc2.pc2-e-deadball.rarity-Epic, .player-card.pc2.pc2-e-integration.rarity-Epic, .player-card.pc2.pc2-e-efficiency.rarity-Epic, .player-card.pc2.pc2-e-steroid.rarity-Epic { --ovrc: #7c3aed; }
+.player-card.pc2.pc2-e-deadball.rarity-Legendary, .player-card.pc2.pc2-e-integration.rarity-Legendary, .player-card.pc2.pc2-e-efficiency.rarity-Legendary, .player-card.pc2.pc2-e-steroid.rarity-Legendary { --ovrc: #a16207; }
+
+/* foil on the photo only, following the cursor (--mx comes from juice.js) */
+.pc2-foil { position: absolute; inset: 2px; pointer-events: none; mix-blend-mode: color-dodge; opacity: 0; transition: opacity .25s; border-radius: 2px; z-index: 2; }
+.player-card.pc2.rarity-Rare .pc2-foil { background: linear-gradient(115deg, transparent calc(var(--mx, 50%) - 25%), #fff calc(var(--mx, 50%)), transparent calc(var(--mx, 50%) + 25%)); }
+.player-card.pc2.rarity-Epic .pc2-foil { background: linear-gradient(115deg, transparent calc(var(--mx, 50%) - 30%), #b06aff calc(var(--mx, 50%) - 10%), #6ae0ff calc(var(--mx, 50%) + 5%), transparent calc(var(--mx, 50%) + 28%)); }
+.player-card.pc2.rarity-Legendary .pc2-foil { background: linear-gradient(115deg, transparent calc(var(--mx, 50%) - 30%), #ffcf5a calc(var(--mx, 50%) - 12%), #fff6c8 var(--mx, 50%), #ffcf5a calc(var(--mx, 50%) + 12%), transparent calc(var(--mx, 50%) + 30%)); }
+.pc2.card-tilt-active.rarity-Rare .pc2-foil { opacity: .3; }
+.pc2.card-tilt-active.rarity-Epic .pc2-foil { opacity: .5; }
+.pc2.card-tilt-active.rarity-Legendary .pc2-foil { opacity: .65; }
+
+/* ambient sparkles on Epic / Legendary photos, always on */
+.pc2-sparks { position: absolute; inset: 2px; pointer-events: none; overflow: hidden; z-index: 2; }
+.pc2-sparks i {
+  position: absolute; width: 3px; height: 3px; background: #fff; opacity: 0;
+  clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+  animation: pc2Twinkle 2.6s ease-in-out infinite;
+}
+.player-card.pc2.rarity-Legendary .pc2-sparks i { width: 5px; height: 5px; background: #fff6c8; }
+.player-card.pc2.rarity-Epic .pc2-sparks i { background: #ead8ff; }
+@keyframes pc2Twinkle { 0%, 100% { opacity: 0; transform: scale(.4); } 45% { opacity: 1; transform: scale(1.3); } 60% { opacity: .2; } }
+@media (prefers-reduced-motion: reduce) { .pc2-sparks i { animation: none; opacity: .6; } .pc2-in { transition: none; } }
+
+/* back */
+.pc2-bh { display: flex; justify-content: space-between; align-items: center; font-size: 9.5px; text-transform: uppercase; padding-right: 2px; }
+.pc2-bh .pc2-ovr { font-size: 13px; color: inherit; }
+.pc2-sub { font-size: 7.5px; line-height: 1.3; opacity: .85; }
+.pc2-lab { font-size: 7px; letter-spacing: .5px; opacity: .65; margin-top: 3px; border-bottom: 1px dotted currentColor; }
+.pc2-nums { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; text-align: center; }
+.pc2-nums div { display: flex; flex-direction: column; font-size: 7px; line-height: 1.15; padding: 1px 0; border: 1px solid color-mix(in srgb, currentColor 25%, transparent); border-radius: 2px; }
+.pc2-nums b { font-size: 11px; font-weight: 500; }
+.pc2-line { font-size: 8px; line-height: 1.3; }
+.pc2-flag { margin-top: 3px; }
+.pc2-flag img { width: 14px !important; height: 10px !important; }
+
+/* ── eras ── */
+.player-card.pc2.pc2-e-genesis { --bg: #2b1d10; --tx: #efe2c3; --nmb: #efe2c3; --nmt: #2b1d10; --rb: #3d2b18; --rt: #efe2c3; --pb: #efe2c3; --pt: #2b1d10; --font: 'Playfair Display', serif; --back: #e7dcc2; --btx: #2b1d10; }
+.pc2-e-genesis .pc2-front { border: 3px solid #c9b48a; }
+.player-card.pc2.pc2-e-deadball { --bg: #f4ecd8; --tx: #3a2817; --nmb: #f4ecd8; --nmt: #5a3b21; --rb: #ebdfc4; --rt: #3a2817; --pb: #5a3b21; --pt: #f4ecd8; --font: 'Playfair Display', serif; --back: #efe6cf; --btx: #3a2817; }
+.pc2-e-deadball .pc2-front { border: 1px solid #8d6a43; }
+.pc2-e-deadball .pc2-name { border-top: 1px solid #8d6a43; border-bottom: 1px solid #8d6a43; }
+.player-card.pc2.pc2-e-golden { --bg: #c0392b; --tx: #fff6dd; --nmb: #f0b84a; --nmt: #5a1c12; --rb: #8e2a1f; --rt: #fff6dd; --pb: #f0b84a; --pt: #5a1c12; --font: 'Alfa Slab One', serif; --back: #f1e3c2; --btx: #5a1c12; }
+.pc2-e-golden .pc2-front { border: 2px solid #f0b84a; }
+.player-card.pc2.pc2-e-integration { --bg: #fbf7ee; --tx: #1c2c55; --nmb: #d9342b; --nmt: #fff; --rb: #eef0f6; --rt: #1c2c55; --pb: #1c2c55; --pt: #fff; --font: 'Alfa Slab One', serif; --back: #c9c4b8; --btx: #1c1c1c; }
+.pc2-e-integration .pc2-front { border: 1px solid #c9c2b0; }
+.player-card.pc2.pc2-e-expansion { --bg: #e8432d; --tx: #fff; --nmb: #fff; --nmt: #c41e3a; --rb: #b8331f; --rt: #fff; --pb: #fff; --pt: #c41e3a; --font: 'Righteous', sans-serif; --back: #d9cdb4; --btx: #7a1020; }
+.pc2-e-expansion .pc2-front { border: 5px solid #f2c230; padding: 3px; }
+.player-card.pc2.pc2-e-bighair { --bg: repeating-linear-gradient(95deg, #6b4423 0 6px, #7d5130 6px 9px, #5c391c 9px 14px); --tx: #f7ead1; --nmb: #e2c34a; --nmt: #0f3d26; --rb: #4a2e15; --rt: #f7ead1; --pb: #e2c34a; --pt: #0f3d26; --font: 'Righteous', sans-serif; --back: #dfe4d0; --btx: #0f3d26; }
+.pc2-e-bighair .pc2-front { border: 2px solid #3b2410; }
+.player-card.pc2.pc2-e-steroid { --bg: linear-gradient(135deg, #c9d3da, #f5f8fa 40%, #aab6bf 60%, #e9eef1); --tx: #0b2a3a; --nmb: linear-gradient(90deg, #b88a2a, #f3d27a, #b88a2a); --nmt: #2b1d05; --rb: rgba(255,255,255,.66); --rt: #0b2a3a; --pb: #0b2a3a; --pt: #e8f3f5; --font: 'Oswald', sans-serif; --back: #eef2f4; --btx: #0b2a3a; }
+.pc2-e-steroid .pc2-front { border: 1px solid #8a98a3; }
+.player-card.pc2.pc2-e-efficiency { --bg: #ffffff; --tx: #0c2340; --nmb: linear-gradient(100deg, #0c2340 72%, #f28b30 72%); --nmt: #fff; --rb: #f0f3f8; --rt: #0c2340; --pb: #f28b30; --pt: #fff; --font: 'Oswald', sans-serif; --back: #ffffff; --btx: #0c2340; }
+.pc2-e-efficiency .pc2-front { border: 1px solid #d5dbe5; }
+.player-card.pc2.pc2-e-modern { --bg: linear-gradient(160deg, #0a1224, #1b2f57 50%, #0a1224); --tx: #e8f0ff; --nmb: linear-gradient(90deg, #5aa0ff, #c58bff, #5aa0ff); --nmt: #0a1224; --rb: rgba(255,255,255,.08); --rt: #e8f0ff; --pb: #5aa0ff; --pt: #0a1224; --font: 'Oswald', sans-serif; --back: #0f1b33; --btx: #e8f0ff; }
+.pc2-e-modern .pc2-front { border: 1px solid #5aa0ff; }
+.pc2-e-modern .pc2-front::after { content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 1; background: linear-gradient(115deg, transparent 30%, rgba(120,170,255,.12) 45%, rgba(200,140,255,.1) 55%, transparent 70%); }
+
+/* the old badge / rarity glows (style.css, up to 4 classes + !important) don't apply to this card */
+.player-card.pc2.pc2.pc2.pc2 { box-shadow: 0 3px 10px rgba(0,0,0,.55) !important; }
+/* lighter grain on cream / white stock, so the paper reads warm and not grey */
+.player-card.pc2.pc2-e-deadball .pc2-tex, .player-card.pc2.pc2-e-integration .pc2-tex,
+.player-card.pc2.pc2-e-golden .pc2-tex, .player-card.pc2.pc2-e-expansion .pc2-tex { opacity: .14; }
+.player-card.pc2 .pc2-back .pc2-tex { opacity: .18; }
+
+/* ── legibility at the real in-game size (152 × 236): bigger type, less on the front ── */
+.player-card.pc2 .pc2-face { padding: 6px; gap: 4px; }
+.player-card.pc2 .pc2-top { height: 18px; }
+.player-card.pc2 .pc2-pos { font-size: 11px; padding: 2px 5px; }
+.player-card.pc2 .pc2-ovr { font-size: 21px; text-shadow: 0 1px 0 rgba(0,0,0,.35); }
+.player-card.pc2 .pc2-year { font-size: 10px; }
+.player-card.pc2 .pc2-name { font-size: 12px; padding: 3px 3px; }
+.player-card.pc2 .pc2-name.pc2-n-sm { font-size: 11px; }
+.player-card.pc2 .pc2-name.pc2-n-xs { font-size: 9.5px; }
+.player-card.pc2 .pc2-chips { height: 13px; }
+.player-card.pc2 .pc2-chip { font-size: 8.5px; line-height: 11px; }
+.player-card.pc2 .pc2-rt { gap: 3px; }
+.player-card.pc2 .pc2-r { font-size: 8.5px; line-height: 15px; padding: 1px 4px; }
+.player-card.pc2 .pc2-r b { font-size: 12px; }
+.player-card.pc2 .pc2-ft { font-size: 10px; }
+.player-card.pc2 .pc2-hand { font-size: 9.5px; }
+.player-card.pc2 .pc2-sta { font-size: 10px; }
+.player-card.pc2 .pc2-tex { opacity: .16; }
+.player-card.pc2.pc2-e-deadball .pc2-tex, .player-card.pc2.pc2-e-integration .pc2-tex,
+.player-card.pc2.pc2-e-golden .pc2-tex, .player-card.pc2.pc2-e-expansion .pc2-tex { opacity: .08; }
+.player-card.pc2 .pc2-back .pc2-tex { opacity: .1; }
+.player-card.pc2 .pc2-bh { font-size: 11px; }
+.player-card.pc2 .pc2-sub { font-size: 8.5px; }
+.player-card.pc2 .pc2-lab { font-size: 8px; }
+.player-card.pc2 .pc2-nums div { font-size: 8px; }
+.player-card.pc2 .pc2-nums b { font-size: 12px; }
+.player-card.pc2 .pc2-line { font-size: 9px; }
+.player-card.pc2 .pc2-ph img, .player-card.pc2 .pc2-noimg { aspect-ratio: 7 / 5; object-position: 50% 40%; }
+.player-card.pc2 .pc2-r b { min-width: 17px; text-align: center; border-radius: 2px; padding: 0 2px; line-height: 13px; font-size: 11px; text-shadow: none; }
+.player-card.pc2 .pc2-r { white-space: nowrap; gap: 2px; padding: 1px 2px 1px 3px; font-size: 8px; letter-spacing: -.2px; }
+.player-card.pc2 .pc2-r b { min-width: 15px; font-size: 10.5px; padding: 0 1px; }
+.player-card.pc2 .pc2-name { flex-shrink: 0; }
+.player-card.pc2 .pc2-chips { flex-shrink: 0; }
+.player-card.pc2 .pc2-front { gap: 3px; }
+/* era + team chips are back on the front (user): photo a bit shorter to make room */
+.player-card.pc2 .pc2-ph img, .player-card.pc2 .pc2-noimg { aspect-ratio: 3 / 2; object-position: 50% 35%; }
+.player-card.pc2 .pc2-top { height: 16px; }
+.player-card.pc2 .pc2-name { padding: 2px 3px; }
+.player-card.pc2 .pc2-r { line-height: 14px; }
+.player-card.pc2 .pc2-bh .pc2-flag { margin: 0 0 0 3px; display: inline-block; vertical-align: 1px; }
+.player-card.pc2 .pc2-bh .pc2-flag img { width: 14px !important; height: 10px !important; box-shadow: none !important; }
+
+/* ── balance like the chat prototype (user): quiet name / OVR, roomy ratings, photo fills the card ── */
+.player-card.pc2 .pc2-face { padding: 6px 6px 5px; }
+.player-card.pc2 .pc2-front { gap: 3px; }
+.player-card.pc2 .pc2-top { height: 15px; }
+.player-card.pc2 .pc2-pos { font-size: 9px; padding: 1px 4px; }
+.player-card.pc2 .pc2-ovr { font-size: 16px; }
+.player-card.pc2 .pc2-year { font-size: 9px; }
+.player-card.pc2 .pc2-ph img, .player-card.pc2 .pc2-noimg { aspect-ratio: 4 / 3; object-position: 50% 40%; }
+.player-card.pc2 .pc2-name { font-size: 10px; padding: 2px 3px; }
+.player-card.pc2 .pc2-name.pc2-n-sm { font-size: 9.5px; }
+.player-card.pc2 .pc2-name.pc2-n-xs { font-size: 8.5px; }
+.player-card.pc2 .pc2-chips { height: 12px; }
+.player-card.pc2 .pc2-chip { font-size: 7.5px; line-height: 10px; }
+.player-card.pc2 .pc2-rt { gap: 2px; }
+.player-card.pc2 .pc2-r { font-size: 9px; line-height: 17px; padding: 0 4px; letter-spacing: 0; }
+.player-card.pc2 .pc2-r b { min-width: 0; padding: 0; background: none !important; font-size: 12.5px; line-height: 17px; text-shadow: 0 0 1px rgba(0,0,0,.9), 0 1px 0 rgba(0,0,0,.7); }
+.player-card.pc2 .pc2-ft { font-size: 9px; }
+.player-card.pc2 .pc2-hand { font-size: 8.5px; }
+.player-card.pc2 .pc2-sta { font-size: 9px; }
+
+/* rarity glow on hover (the old cards had it; user missed it) */
+.player-card.pc2.pc2.pc2.pc2.card-tilt-active { box-shadow: 0 10px 24px rgba(0,0,0,.6) !important; }
+.player-card.pc2.pc2.pc2.pc2.rarity-Uncommon.card-tilt-active { box-shadow: 0 0 14px 2px rgba(74,222,128,.75), 0 10px 24px rgba(0,0,0,.6) !important; }
+.player-card.pc2.pc2.pc2.pc2.rarity-Rare.card-tilt-active { box-shadow: 0 0 16px 3px rgba(96,165,250,.8), 0 10px 24px rgba(0,0,0,.6) !important; }
+.player-card.pc2.pc2.pc2.pc2.rarity-Epic.card-tilt-active { box-shadow: 0 0 20px 4px rgba(192,132,252,.85), 0 10px 24px rgba(0,0,0,.6) !important; }
+.player-card.pc2.pc2.pc2.pc2.rarity-Legendary.card-tilt-active { box-shadow: 0 0 24px 5px rgba(250,204,21,.9), 0 10px 24px rgba(0,0,0,.6) !important; }

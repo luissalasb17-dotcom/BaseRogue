@@ -1084,6 +1084,8 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
   window.getDraftSynergyPrediction = getDraftSynergyPrediction;
   window.setupAndStartMatchSimulation = setupAndStartMatchSimulation;
   window.handleRollDice = handleRollDice;
+  // Battle 2.0 stage (battle3.js) reads the live battle to place runner tokens and the lineup fan; read-only.
+  window.__activeBattle = () => activeBattle;
   window.setupAndShowPreFightScreen = setupAndShowPreFightScreen;
   window.showSuperBossIntroModal = showSuperBossIntroModal;
   window.showZoneBossIntroModal = showZoneBossIntroModal;
@@ -1092,6 +1094,11 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
   window.renderActiveRoster = renderActiveRoster;
   window.closeNodeCompleted = closeNodeCompleted;
   window.triggerTrueVictory = triggerTrueVictory;
+  // test hooks for the 2.0 screens (rewards, defeat)
+  window.setupPostMatchDraftScreen = setupPostMatchDraftScreen;
+  window.triggerGameOver = triggerGameOver;
+  window.showTraitSelectionModal = showTraitSelectionModal;
+  window.showMidBossItemRewardModal = showMidBossItemRewardModal;
   window.startFireworks = startFireworks;
   window.renderMap = renderMap;
 
@@ -3462,6 +3469,7 @@ function initGameModeSelector() {
 
     // Format stats values
     let statLines = "";
+    let ratingList = [];
     if (isPitcher) {
       const h9Val  = player.h9  !== undefined ? player.h9  : (player.h9_val  !== undefined ? player.h9_val  : (player.grt !== undefined ? player.grt : 50));
       const k9Val  = player.k9  !== undefined ? player.k9  : (player.k9_val  !== undefined ? player.k9_val  : (player.stf !== undefined ? player.stf : (player.str !== undefined ? player.str : 50)));
@@ -3470,6 +3478,7 @@ function initGameModeSelector() {
       const staVal = player.sta !== undefined ? player.sta : (player.sta_val !== undefined ? player.sta_val : 65);
       const cltVal = (typeof player.clt === 'number' || (typeof player.clt === 'string' && !isNaN(player.clt))) ? Number(player.clt) : ((typeof player.clt_val === 'number' || (typeof player.clt_val === 'string' && !isNaN(player.clt_val))) ? Number(player.clt_val) : ((typeof player.clu === 'number' || (typeof player.clu === 'string' && !isNaN(player.clu))) ? Number(player.clu) : ((typeof player.clu_val === 'number' || (typeof player.clu_val === 'string' && !isNaN(player.clu_val))) ? Number(player.clu_val) : 50)));
 
+      ratingList = [['H/9', h9Val], ['K/9', k9Val], ['BB/9', bb9Val], ['HR/9', hr9Val], ['STA', staVal], ['CLT', cltVal]];
       const gH9  = getStatGrade(h9Val);
       const gK9  = getStatGrade(k9Val);
       const gBB9 = getStatGrade(bb9Val);
@@ -3512,6 +3521,7 @@ function initGameModeSelector() {
       const spdVal = Math.max(1, (player.spd !== undefined ? player.spd : (player.speed_val !== undefined ? player.speed_val : 45)) + (up.spd || 0) + (player.perm_spd || 0));
       const defVal = Math.max(1, (player.def !== undefined ? player.def : (player.defense_val !== undefined ? player.defense_val : 40)) + (up.def || 0) + (player.perm_def || 0));
 
+      ratingList = [['CON', conVal], ['PWR', pwrVal], ['EYE', eyeVal], ['K-AVD', kavdVal], ['SPD', spdVal], ['DEF', defVal]];
       const gCon = getStatGrade(conVal);
       const gPwr = getStatGrade(pwrVal);
       const gEye = getStatGrade(eyeVal);
@@ -3618,42 +3628,78 @@ function initGameModeSelector() {
 
     const displayPos = player.pos || player.role || (isPitcher ? (player.sta >= 65 ? 'SP' : 'RP') : 'DH');
 
+    // ── 2.0 trading card: era design + generated portrait + rarity foil + flip (card_art.js, cards2.css) ──
+    const eraKey = eraClass.replace('era-', '');
+    const esc = v => String(v == null ? '' : v).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+    const portraitUrl = (window.CardArt && typeof window.CardArt.portrait === 'function') ? window.CardArt.portrait(player, eraKey, isPitcher) : '';
+    const hh = (window.PlayerHands || {})[player.playerID] || '';
+    const okHand = c => c === 'R' || c === 'L' || c === 'S';
+    const handTxt = (okHand(hh[0]) || okHand(hh[1])) ? `${okHand(hh[0]) ? hh[0] : '–'}/${okHand(hh[1]) ? hh[1] : '–'}` : '';
+    const badgePatch = (kind, label, tip) => `<span class="pc2-badge pc2-badge-${kind}" title="${esc(tip)}"><i>${label}</i></span>`;
+    const badgesHTML = (isClutch || isCaptain)
+      ? `<div class="pc2-badges">${isClutch ? badgePatch('oct', 'OCT', clutchToolTip) : ''}${isCaptain ? badgePatch('cap', 'C', captainToolTip) : ''}</div>` : '';
+    const sparks = (rarityLabel === 'Legendary' || rarityLabel === 'Epic')
+      ? `<div class="pc2-sparks">${[0, 1, 2, 3, 4].map(k => `<i style="left:${8 + k * 19}%;top:${12 + (k * 37) % 70}%;animation-delay:${(k * 0.53).toFixed(2)}s"></i>`).join('')}</div>` : '';
+    const chipList = [
+      `<span class="pc2-chip" title="${esc(player.era)}">${getShortEraName(player.era).split(' ')[0]}</span>`,
+      (teamFranchise && teamFranchise !== 'ROOK') ? `<span class="pc2-chip" title="${esc(getFranchiseDisplayName(teamFranchise))}">${teamFranchise}</span>` : '',
+      player.sec_pos ? `<span class="pc2-chip" title="${esc((typeof window.t === 'function' ? window.t('ui.sec_pos_tooltip') : 'Posición Secundaria') + ': ' + player.sec_pos)}">SEC ${esc((() => { const sp = String(player.sec_pos).split(',').map(x => x.trim()).filter(Boolean); return sp.length > 2 ? sp.slice(0, 2).join(',') + '+' : sp.join(','); })())}</span>` : '',
+      isInjured ? `<span class="pc2-chip pc2-chip-bad" title="${esc(window.t ? window.t('badge.injury_tooltip', 'Lesión') : 'Lesión')}">INJ</span>` : '',
+      lockNodes > 0 ? `<span class="pc2-chip pc2-chip-warn" title="${esc(window.t ? window.t('badge.lock_tooltip', { nodes: lockNodes }) : '')}">🔒${lockNodes}</span>` : ''
+    ].join('');
+    const ratingsHTML = ratingList.map(([k, v]) => {
+      const g = getStatGrade(v);
+      return `<div class="pc2-r"><span>${k}</span><b style="color:${g.color}">${g.text}</b></div>`;
+    }).join('');
+    const backNums = ratingList.map(([k, v]) => `<div><span>${k}</span><b>${Math.round(v)}</b></div>`).join('');
+    const yrs = (player.debut_year && player.last_year) ? `${player.debut_year}–${player.last_year}` : '';
+    const badgeNames = [isClutch ? 'October Hero' : '', isCaptain ? 'Captain' : ''].filter(Boolean).join(' · ');
+    const tt = (k, d) => (typeof window.t === 'function' ? window.t(k, { defaultValue: d }) : d);
+
     return `
-      <div class="player-card ${eraClass} rarity-${rarityLabel} ${isClutch ? 'has-clutch' : ''} ${isCaptain ? 'has-captain' : ''}">
-        ${ribbonHTML}
-        ${interEraBannerHTML}
-        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-          <span class="card-position" style="background: #000; color: #fff; padding: 2px 4px; font-weight: bold; font-size: 6px; border: 1px solid rgba(255,255,255,0.1);">${displayPos}</span>
-          <span class="card-ovr" style="font-family: 'Press Start 2P', monospace; font-size: 6px; color: ${ovrGrade.color}; font-weight: bold; background: #000; padding: 2px 4px; border: 1px solid rgba(255,255,255,0.2);">OVR ${Math.floor(ovr)}</span>
-          <span class="card-year" style="font-size: 6px;">${year}</span>
-        </div>
-        ${(() => {
-          const len = cleanName.length;
-          let nameSizeClass = 'name-lg';
-          if (len >= 19) nameSizeClass = 'name-xxs';
-          else if (len >= 16) nameSizeClass = 'name-xs';
-          else if (len >= 14) nameSizeClass = 'name-sm';
-          return `<div class="card-name ${nameSizeClass}" title="${cleanName}">${cleanName}</div>`;
-        })()}
-        <div class="card-traits-box">
-          <span class="card-trait-badge trait-era" title="${player.era}">${getShortEraName(player.era)}</span>
-          ${teamFranchise && teamFranchise !== 'ROOK' ? `<span class="card-trait-badge trait-team" title="${getFranchiseDisplayName(teamFranchise)}">${teamFranchise}</span>` : ''}
-        </div>
-        ${player.sec_pos ? `<div class="card-sec-pos-line" title="${(typeof window.t==="function"?window.t("ui.sec_pos_tooltip")+": "+player.sec_pos:"Posición Secundaria: "+player.sec_pos)}">SEC: ${player.sec_pos}</div>` : ''}
-        <div class="card-stats">
-          ${statLines}
-        </div>
-        ${positionWarning}
-        <div class="card-footer">
-          <span>${teamFranchise}</span>
-          ${(() => {
-            // Bats / throws in the middle of the footer, scorebook style: L/L, R/R, S/R, L/R (player_hands.js).
-            const hh = (window.PlayerHands || {})[player.playerID] || '';
-            const ok = c => c === 'R' || c === 'L' || c === 'S';
-            if (!ok(hh[0]) && !ok(hh[1])) return '';
-            return `<span class="card-trait-badge card-hand" title="Bats / Throws">${ok(hh[0]) ? hh[0] : '–'}/${ok(hh[1]) ? hh[1] : '–'}</span>`;
-          })()}
-          <span class="card-stamina-badge ${stamClass}"><i class="fa-solid fa-bolt-lightning"></i> ${stam}</span>
+      <div style="--tc:${((window.CardArt && window.CardArt.TEAM_COLORS) || {})[String(teamFranchise).toUpperCase()] || '#3a3a3a'}" class="player-card pc2 pc2-e-${eraKey} rarity-${rarityLabel} ${isClutch ? 'has-clutch' : ''} ${isCaptain ? 'has-captain' : ''}"
+           data-pid="${esc(player.playerID || '')}" data-name="${esc(cleanName)}" data-year="${esc(year)}" data-kind="${isPitcher ? 'P' : 'B'}" data-badges="${esc(badgeNames)}">
+        <div class="pc2-in">
+          <div class="pc2-face pc2-front">
+            <div class="pc2-top">
+              <span class="pc2-pos">${displayPos}</span>
+              <span class="pc2-ovr" title="${rarityLabel}">${Math.floor(ovr)}</span>
+              <span class="pc2-year">${year}</span>
+            </div>
+            <div class="pc2-ph">
+              ${portraitUrl ? `<img src="${portraitUrl}" alt="" draggable="false">` : '<div class="pc2-noimg"></div>'}
+              <div class="pc2-foil"></div>
+              ${sparks}
+              ${badgesHTML}
+              ${interEraBannerHTML}
+              <span class="pc2-series">${({ genesis: 'Cabinet Series', deadball: 'Tobacco Series', golden: 'Big League Series', integration: 'Painted Series', expansion: 'Pennant Series', bighair: 'Woodgrain Series', steroid: 'Foil Series', efficiency: 'Flagship Series', modern: 'Chrome Series' })[eraKey] || ''} · ${year}</span>
+              <button type="button" class="pc2-flip" title="${esc(tt('card.flip', 'Flip card'))}" aria-label="${esc(tt('card.flip', 'Flip card'))}">↻</button>
+            </div>
+            ${(() => {
+              const len = cleanName.length;
+              const sz = len >= 19 ? 'pc2-n-xs' : len >= 15 ? 'pc2-n-sm' : '';
+              return `<div class="pc2-name ${sz}" title="${esc(cleanName)}">${cleanName}</div>`;
+            })()}
+            ${chipList ? `<div class="pc2-chips">${chipList}</div>` : ''}
+            <div class="pc2-rt">${ratingsHTML}</div>
+            ${positionWarning}
+            <div class="pc2-ft">
+              <span>${teamFranchise}</span>
+              ${handTxt ? `<span class="pc2-hand" title="Bats / Throws">${handTxt}</span>` : '<span></span>'}
+              <span class="pc2-sta ${stamClass}"><i class="fa-solid fa-bolt-lightning"></i> ${stam}</span>
+            </div>
+            <div class="pc2-tex"></div><div class="pc2-wear"></div>
+          </div>
+          <div class="pc2-face pc2-back">
+            <div class="pc2-bh"><span>${cleanName}</span><span class="pc2-ovr">${Math.floor(ovr)}</span></div>
+            <div class="pc2-sub">${displayPos}${player.sec_pos ? ' · ' + esc(player.sec_pos) : ''} · ${esc(getFranchiseDisplayName(teamFranchise))}${handTxt ? ' · B/T ' + handTxt : ''}</div>
+            <div class="pc2-sub">${rarityLabel} · ${getShortEraName(player.era)}${yrs ? ' · ' + yrs : ''}</div>
+            <div class="pc2-lab">${tt('card.ratings', 'RATINGS')}</div>
+            <div class="pc2-nums">${backNums}</div>
+            <div class="pc2-back-lazy"></div>
+            <button type="button" class="pc2-flip pc2-flip-back" title="${esc(tt('card.flip', 'Flip card'))}" aria-label="${esc(tt('card.flip', 'Flip card'))}">↻</button>
+            <div class="pc2-tex"></div><div class="pc2-wear"></div>
+          </div>
         </div>
       </div>
     `;
@@ -5023,6 +5069,7 @@ function initGameModeSelector() {
       zoneHeader.innerHTML = `
         <div class="zone-header-left">
           <span class="zone-icon">${zoneConfig.bossIcon}</span>
+          <span class="zone-month"><b>${['APR', 'JUL', 'SEP', 'OCT'][zoneIdx]}</b><i>${zoneIdx + 1}/4</i></span>
           <div>
             <div class="zone-name">${zoneHeaderName}</div>
             <div class="zone-subtitle">${subText}</div>
@@ -5093,19 +5140,11 @@ function initGameModeSelector() {
       svg.style.height = 'auto';
       svg.style.aspectRatio = `${SVG_W} / ${SVG_H}`;
 
-      // defs: glow filters
-      const defs = document.createElementNS(svgNS, 'defs');
-      [['glow-active', '#00ff66', 5], ['glow-visited', '#10b981', 3]].forEach(([id, clr, dev]) => {
-        const flt = document.createElementNS(svgNS, 'filter');
-        flt.setAttribute('id', `${id}-z${zoneIdx}`);
-        flt.setAttribute('x', '-50%'); flt.setAttribute('y', '-50%');
-        flt.setAttribute('width', '200%'); flt.setAttribute('height', '200%');
-        const blur = document.createElementNS(svgNS, 'feGaussianBlur');
-        blur.setAttribute('in', 'SourceGraphic'); blur.setAttribute('stdDeviation', dev);
-        flt.appendChild(blur);
-        defs.appendChild(flt);
-      });
-      svg.appendChild(defs);
+      // Map 2.0: nodes are tokens ringed in their type's colour, dashed routes, played games circled
+      // and checked in green; dark glass zones over the stadium (menus2.css).
+      const MAP_INK = Object.fromEntries(Object.entries(NODE_VISUALS).map(([k, v]) => [k, v.color]));
+      const PENCIL = 'rgba(203,213,225,.55)', RED_PENCIL = '#10b981', PAPER = '#06101c';
+      const mk = (tag, attrs) => { const n = document.createElementNS(svgNS, tag); for (const k in attrs) n.setAttribute(k, attrs[k]); return n; };
 
       // ── DRAW PATHS (behind nodes) ────────────────────────────────────
       for (let s = zStart; s < zEnd; s++) {
@@ -5115,55 +5154,24 @@ function initGameModeSelector() {
             const p1 = nodePos[s]?.[node.index];
             const p2 = nodePos[s + 1]?.[targetIdx];
             if (!p1 || !p2) return;
-
             const targetNode = window.Game.map[s + 1]?.[targetIdx];
-            const targetVis  = NODE_VISUALS[targetNode?.type] || NODE_VISUALS.match;
-
             const isVisitedPath = node.visited && targetNode?.visited;
             const isActivePath  = (s + 1 === currentStage) && node.visited;
-
-            // Glow behind active paths
+            const line = mk('line', { x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y, fill: 'none', 'stroke-linecap': 'round' });
             if (isActivePath) {
-              const gp = document.createElementNS(svgNS, 'line');
-              gp.setAttribute('x1', p1.x); gp.setAttribute('y1', p1.y);
-              gp.setAttribute('x2', p2.x); gp.setAttribute('y2', p2.y);
-              gp.setAttribute('stroke', targetVis.color);
-              gp.setAttribute('stroke-width', '8');
-              gp.setAttribute('opacity', '0.5');
-              gp.setAttribute('filter', `url(#glow-active-z${zoneIdx})`);
-              svg.appendChild(gp);
-            } else if (isVisitedPath) {
-              const gp = document.createElementNS(svgNS, 'line');
-              gp.setAttribute('x1', p1.x); gp.setAttribute('y1', p1.y);
-              gp.setAttribute('x2', p2.x); gp.setAttribute('y2', p2.y);
-              gp.setAttribute('stroke', '#10b981');
-              gp.setAttribute('stroke-width', '4');
-              gp.setAttribute('opacity', '0.25');
-              svg.appendChild(gp);
-            }
-
-            // Main line
-            const line = document.createElementNS(svgNS, 'line');
-            line.setAttribute('x1', p1.x); line.setAttribute('y1', p1.y);
-            line.setAttribute('x2', p2.x); line.setAttribute('y2', p2.y);
-            line.setAttribute('fill', 'none');
-            line.setAttribute('stroke-linecap', 'round');
-
-            if (isActivePath) {
-              line.setAttribute('stroke', targetVis.color);
-              line.setAttribute('stroke-width', '4');
-              line.setAttribute('stroke-dasharray', '8,4');
+              line.setAttribute('stroke', MAP_INK[targetNode?.type] || MAP_INK.match);
+              line.setAttribute('stroke-width', '3.5');
+              line.setAttribute('stroke-dasharray', '7,5');
               line.classList.add('path-active-anim');
             } else if (isVisitedPath) {
-              line.setAttribute('stroke', '#10b981');
-              line.setAttribute('stroke-width', '2.5');
-              line.setAttribute('stroke-dasharray', '6,4');
-              line.setAttribute('opacity', '0.6');
+              line.setAttribute('stroke', RED_PENCIL);
+              line.setAttribute('stroke-width', '2.6');
+              line.setAttribute('opacity', '0.85');
             } else {
-              // Future / inactive path: subtle, unobtrusive dark line
-              line.setAttribute('stroke', 'rgba(255, 255, 255, 0.12)');
-              line.setAttribute('stroke-width', '1.5');
-              line.setAttribute('stroke-dasharray', '4,4');
+              line.setAttribute('stroke', PENCIL);
+              line.setAttribute('stroke-width', '1.4');
+              line.setAttribute('stroke-dasharray', '3,5');
+              line.setAttribute('opacity', s + 1 < currentStage ? '0.18' : '0.45');
             }
             svg.appendChild(line);
           });
@@ -5179,170 +5187,80 @@ function initGameModeSelector() {
           const pos = nodePos[s]?.[idx];
           if (!pos) return;
           const vis = NODE_VISUALS[node.type] || NODE_VISUALS.match;
+          const ink = MAP_INK[node.type] || MAP_INK.match;
 
           const isVisited       = node.visited;
-          const isPast          = (s < currentStage);
           const isActive        = (s === currentStage) && activeNextNodeIdxs.includes(idx);
           const isFutureVisible = (s > currentStage) && !isVisited;
+          const state = isActive ? 'active' : (isVisited ? 'visited' : (isFutureVisible ? 'future' : 'past'));
 
-          const group = document.createElementNS(svgNS, 'g');
-          group.setAttribute('class', `map-node-group ${isActive ? 'node-is-active' : (isVisited ? 'node-is-visited' : (isFutureVisible ? 'node-is-future' : 'node-is-past'))}`);
+          const group = mk('g', { class: `map-node-group node-is-${state === 'past' ? 'past' : state}${isBossStage ? ' map-boss' : ''}` });
+          group.style.setProperty('--ink', ink);
           if (isActive) {
             group.setAttribute('data-stage', s);
             group.setAttribute('data-index', idx);
             group.setAttribute('id', `node_${s}_${idx}`);
             group.style.cursor = 'pointer';
           }
+          const R = isBossStage ? NODE_R + 6 : NODE_R;
 
-          // Outer radar & glow pulse for ACTIVE nodes
-          if (isActive) {
-            const radar = document.createElementNS(svgNS, 'circle');
-            radar.setAttribute('cx', pos.x); radar.setAttribute('cy', pos.y);
-            radar.setAttribute('r', isBossStage ? NODE_R + 10 : NODE_R + 6);
-            radar.setAttribute('fill', 'none');
-            radar.setAttribute('stroke', vis.color);
-            radar.setAttribute('stroke-width', '2');
-            radar.classList.add('map-radar-pulse');
-            group.appendChild(radar);
-
-            const glow = document.createElementNS(svgNS, 'circle');
-            glow.setAttribute('cx', pos.x); glow.setAttribute('cy', pos.y);
-            glow.setAttribute('r', isBossStage ? NODE_R + 14 : NODE_R + 9);
-            glow.setAttribute('fill', 'none');
-            glow.setAttribute('stroke', vis.color);
-            glow.setAttribute('stroke-width', '3');
-            glow.setAttribute('stroke-dasharray', '5,3');
-            glow.setAttribute('opacity', '0.9');
-            glow.setAttribute('filter', `url(#glow-active-z${zoneIdx})`);
-            group.appendChild(glow);
+          // Boss: a gold rosette behind the token
+          if (isBossStage) {
+            const pts = [];
+            for (let k = 0; k < 24; k++) {
+              const a = (k / 24) * Math.PI * 2 - Math.PI / 2, rr = k % 2 ? R + 7 : R + 13;
+              pts.push(`${(pos.x + Math.cos(a) * rr).toFixed(1)},${(pos.y + Math.sin(a) * rr).toFixed(1)}`);
+            }
+            group.appendChild(mk('polygon', {
+              points: pts.join(' '),
+              fill: state === 'active' ? '#e8b93a' : (state === 'visited' ? 'rgba(16,185,129,.22)' : 'rgba(201,162,74,.22)'),
+              stroke: state === 'active' ? '#8a5f10' : PENCIL, 'stroke-width': '1.2', 'stroke-opacity': state === 'active' ? '1' : '.5',
+              class: 'map-rosette'
+            }));
           }
 
-          // Ground shadow
-          const nodeRadiusForShadow = isBossStage ? NODE_R + 8 : NODE_R + 3;
-          const shadow = document.createElementNS(svgNS, 'ellipse');
-          shadow.setAttribute('cx', pos.x);
-          shadow.setAttribute('cy', pos.y + nodeRadiusForShadow * 0.72);
-          shadow.setAttribute('rx', nodeRadiusForShadow * 0.85);
-          shadow.setAttribute('ry', nodeRadiusForShadow * 0.26);
-          shadow.setAttribute('fill', 'rgba(0,0,0,0.5)');
-          shadow.style.pointerEvents = 'none';
-          group.appendChild(shadow);
-
-          // Outer Border Circle (Black retro ring)
-          const outerCircle = document.createElementNS(svgNS, 'circle');
-          outerCircle.setAttribute('cx', pos.x); outerCircle.setAttribute('cy', pos.y);
-          outerCircle.setAttribute('r', isBossStage ? NODE_R + 8 : NODE_R + 3);
-          outerCircle.setAttribute('fill', '#000000');
-          outerCircle.setAttribute('stroke', isActive ? vis.color : (isFutureVisible ? 'rgba(255,255,255,0.08)' : (isVisited ? '#10b981' : '#1e293b')));
-          outerCircle.setAttribute('stroke-width', isActive ? '2' : '1');
-          group.appendChild(outerCircle);
-
-          // Node Main Circle
-          const circle = document.createElementNS(svgNS, 'circle');
-          circle.setAttribute('cx', pos.x); circle.setAttribute('cy', pos.y);
-          circle.setAttribute('r', isBossStage ? NODE_R + 5 : NODE_R);
-          circle.setAttribute('class', 'node-circle-main');
-
-          if (isActive) {
-            circle.setAttribute('fill', vis.bg);
-            circle.setAttribute('stroke', vis.color);
-            circle.setAttribute('stroke-width', isBossStage ? '4' : '3');
-          } else if (isFutureVisible) {
-            // Future inactive node: Dark slate background + dimmed muted border
-            circle.setAttribute('fill', isBossStage ? '#181206' : '#0a101d');
-            circle.setAttribute('stroke', isBossStage ? '#854d0e' : (vis.color || '#38bdf8'));
-            circle.setAttribute('stroke-opacity', isBossStage ? '0.6' : '0.35');
-            circle.setAttribute('stroke-width', isBossStage ? '2.5' : '1.5');
-            circle.setAttribute('stroke-dasharray', '4,3');
-          } else if (isVisited) {
-            // Visited node: Dark green tint + emerald border
-            circle.setAttribute('fill', '#051b11');
-            circle.setAttribute('stroke', '#10b981');
-            circle.setAttribute('stroke-width', '2');
+          // Paper token: cream disc + type-colored ring + perforated inner ring (like a ticket stamp)
+          const disc = mk('circle', { cx: pos.x, cy: pos.y, r: R + 2, class: 'node-circle-main' });
+          if (state === 'active') {
+            disc.setAttribute('fill', PAPER); disc.setAttribute('stroke', ink); disc.setAttribute('stroke-width', isBossStage ? '4' : '3.5');
+          } else if (state === 'future') {
+            disc.setAttribute('fill', 'rgba(4,10,18,.78)'); disc.setAttribute('stroke', ink);
+            disc.setAttribute('stroke-width', '1.6'); disc.setAttribute('stroke-dasharray', '3,3'); disc.setAttribute('stroke-opacity', '.6');
+          } else if (state === 'visited') {
+            disc.setAttribute('fill', '#04170e'); disc.setAttribute('stroke', 'rgba(16,185,129,.45)'); disc.setAttribute('stroke-width', '1.5');
           } else {
-            // Past skipped node: Dark disabled
-            circle.setAttribute('fill', '#070a10');
-            circle.setAttribute('stroke', '#1e293b');
-            circle.setAttribute('stroke-width', '1');
-            circle.setAttribute('opacity', '0.4');
+            disc.setAttribute('fill', 'none'); disc.setAttribute('stroke', PENCIL); disc.setAttribute('stroke-width', '1'); disc.setAttribute('opacity', '.25');
           }
-          group.appendChild(circle);
+          group.appendChild(disc);
+          if (state === 'active' || (state === 'future' && isBossStage)) {
+            group.appendChild(mk('circle', { cx: pos.x, cy: pos.y, r: R - 3, fill: 'none', stroke: state === 'active' ? ink : PENCIL, 'stroke-width': '1', 'stroke-dasharray': '2,2.5', opacity: state === 'active' ? '.55' : '.35' }));
+          }
 
-          // Glossy highlight sheen
-          const sheenR = isBossStage ? NODE_R + 5 : NODE_R;
-          const sheen = document.createElementNS(svgNS, 'ellipse');
-          sheen.setAttribute('cx', pos.x - sheenR * 0.32);
-          sheen.setAttribute('cy', pos.y - sheenR * 0.38);
-          sheen.setAttribute('rx', sheenR * 0.55);
-          sheen.setAttribute('ry', sheenR * 0.32);
-          sheen.setAttribute('fill', 'rgba(255,255,255,0.25)');
-          sheen.setAttribute('opacity', isActive ? '1' : (isFutureVisible ? '0.12' : (isVisited ? '0.2' : '0.05')));
-          sheen.style.pointerEvents = 'none';
-          group.appendChild(sheen);
-
-          // Node Font Awesome Icon
-          const iconSize = isBossStage ? 26 : 14;
+          // Icon
+          const iconSize = isBossStage ? 24 : 15;
           const foSize   = isBossStage ? 48 : 32;
-          
-          let iconColor, iconOpacity;
-          if (isActive) {
-            iconColor = vis.color;
-            iconOpacity = '1.0';
-          } else if (isVisited) {
-            iconColor = '#10b981';
-            iconOpacity = '0.85';
-          } else if (isFutureVisible) {
-            // Inactive future: muted icon
-            iconColor = isBossStage ? '#a16207' : (vis.color || '#64748b');
-            iconOpacity = '0.45';
-          } else {
-            iconColor = '#334155';
-            iconOpacity = '0.25';
-          }
-
-          const fo = document.createElementNS(svgNS, 'foreignObject');
-          fo.setAttribute('x', pos.x - foSize / 2);
-          fo.setAttribute('y', pos.y - foSize / 2);
-          fo.setAttribute('width', foSize);
-          fo.setAttribute('height', foSize);
+          const iconColor = state === 'active' || state === 'future' ? ink : (state === 'visited' ? '#10b981' : PENCIL);
+          const iconOpacity = state === 'active' ? 1 : (state === 'past' ? .2 : (state === 'future' ? .55 : .35));
+          const fo = mk('foreignObject', { x: pos.x - foSize / 2, y: pos.y - foSize / 2, width: foSize, height: foSize });
           fo.style.pointerEvents = 'none';
-
-          const iconHtml = isVisited
-            ? `<i class="fa-solid fa-check" style="color:#10b981;font-size:${iconSize}px;"></i>`
-            : `<i class="${vis.iconClass}"></i>`;
-
-          fo.innerHTML = `
-            <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:${iconColor};opacity:${iconOpacity};font-size:${iconSize}px;filter:${isActive ? 'drop-shadow(0 2px 4px rgba(0,0,0,0.9))' : 'none'};">
-              ${iconHtml}
-            </div>
-          `;
+          fo.innerHTML = `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:${iconColor};opacity:${iconOpacity};font-size:${iconSize}px;"><i class="${vis.iconClass}"></i></div>`;
           group.appendChild(fo);
 
-          // Node type label below
-          const lbl = document.createElementNS(svgNS, 'text');
-          lbl.setAttribute('x', pos.x); 
-          lbl.setAttribute('y', pos.y + (isBossStage ? NODE_R + 20 : NODE_R + 15));
-          lbl.setAttribute('text-anchor', 'middle');
-          lbl.setAttribute('font-family', "'VT323', monospace");
-          lbl.setAttribute('font-size', isMobileMap ? '8' : '14');
-
-          if (isActive) {
-            lbl.setAttribute('fill', vis.color);
-            lbl.setAttribute('font-weight', 'bold');
-            lbl.style.filter = `drop-shadow(0 0 6px ${vis.color}88)`;
-          } else if (isVisited) {
-            lbl.setAttribute('fill', '#10b981');
-            lbl.setAttribute('font-weight', 'bold');
-            lbl.setAttribute('opacity', '0.65');
-          } else if (isFutureVisible) {
-            // Future label: clean muted slate
-            lbl.setAttribute('fill', isBossStage ? '#ca8a04' : '#64748b');
-            lbl.setAttribute('font-weight', 'normal');
-            lbl.setAttribute('opacity', '0.75');
-          } else {
-            lbl.setAttribute('fill', '#334155');
-            lbl.setAttribute('opacity', '0.25');
+          // Played: the scorer's red-pencil circle and check
+          if (state === 'visited') {
+            group.appendChild(mk('ellipse', { cx: pos.x, cy: pos.y, rx: R + 5, ry: R + 2, fill: 'none', stroke: RED_PENCIL, 'stroke-width': '2', opacity: '.8', transform: `rotate(-14 ${pos.x} ${pos.y})` }));
+            group.appendChild(mk('path', { d: `M${pos.x - R * .45},${pos.y + R * .05} L${pos.x - R * .1},${pos.y + R * .42} L${pos.x + R * .55},${pos.y - R * .45}`, fill: 'none', stroke: RED_PENCIL, 'stroke-width': '3.2', 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }));
           }
+
+          // Node type label below
+          const lbl = mk('text', {
+            x: pos.x, y: pos.y + R + (isBossStage ? 26 : 17), 'text-anchor': 'middle',
+            'font-family': "'VT323', monospace", 'font-size': isMobileMap ? '9' : (isBossStage ? '17' : '15'),
+            'letter-spacing': '1', 'paint-order': 'stroke', stroke: 'rgba(0,0,0,.85)', 'stroke-width': '3', 'stroke-linejoin': 'round',
+            fill: state === 'active' ? ink : (state === 'visited' ? '#10b981' : '#94a3b8'),
+            'font-weight': state === 'active' || isBossStage ? '700' : '500',
+            opacity: state === 'past' ? '.3' : '1'
+          });
 
           const rawLabel = node.label || vis.label;
           let translatedLabel = rawLabel;
@@ -5359,26 +5277,20 @@ function initGameModeSelector() {
           else if (rawLabel === 'ALL-STAR GAME') translatedLabel = 'ALL-STAR GAME';
           else if (rawLabel === 'CAMPEÓN LIGA') translatedLabel = t('map.node_pennant', 'LEAGUE CHAMPION');
           else if (rawLabel === 'SERIE MUNDIAL') translatedLabel = t('map.node_world_series', 'WORLD SERIES');
-          lbl.textContent = translatedLabel;
+          lbl.textContent = String(translatedLabel).toUpperCase();
           group.appendChild(lbl);
 
           // Click target for active nodes
           if (isActive) {
-            const hit = document.createElementNS(svgNS, 'circle');
-            hit.setAttribute('cx', pos.x); hit.setAttribute('cy', pos.y);
-            hit.setAttribute('r', isBossStage ? NODE_R + 16 : NODE_R + 12);
-            hit.setAttribute('fill', 'transparent');
+            const hit = mk('circle', { cx: pos.x, cy: pos.y, r: isBossStage ? NODE_R + 18 : NODE_R + 12, fill: 'transparent', 'data-stage': s, 'data-index': idx });
             hit.style.cursor = 'pointer';
             hit.classList.add('map-node-visual', 'active-path');
-            hit.setAttribute('data-stage', s);
-            hit.setAttribute('data-index', idx);
             group.appendChild(hit);
           }
 
           svg.appendChild(group);
         });
       }
-
       // ── Wrap SVG in canvas div ───────────────────────────────────────
       const zoneCanvas = document.createElement('div');
       zoneCanvas.className = 'zone-canvas';
@@ -6028,7 +5940,7 @@ function initGameModeSelector() {
     let pool = el.draftOptionsRow || el.starterPool || document.getElementById('starter-selection-pool') || document.getElementById('draft-options-row');
     if (pool) {
       pool.innerHTML = "";
-      pool.className = 'midrun-draft-options flex flex-row flex-nowrap justify-center items-start gap-3 w-full max-w-[1100px] mx-auto py-3 overflow-x-auto';
+      pool.className = 'midrun-draft-options flex flex-row flex-nowrap justify-center items-start gap-3 w-full max-w-[1100px] mx-auto py-3 overflow-x-auto m2-sign';
       pool.style.cssText = '';
     }
     
@@ -6163,18 +6075,18 @@ function initGameModeSelector() {
     let pool = el.draftOptionsRow || el.starterPool || document.getElementById('starter-selection-pool') || document.getElementById('draft-options-row');
     if (pool) {
       pool.innerHTML = "";
-      pool.className = 'midrun-draft-options flex flex-row flex-nowrap justify-center items-start gap-3 w-full max-w-[1100px] mx-auto py-3 overflow-x-auto';
+      pool.className = 'midrun-draft-options flex flex-row flex-nowrap justify-center items-start gap-3 w-full max-w-[1100px] mx-auto py-3 overflow-x-auto m2-reward';
       pool.style.cssText = '';
     }
     
     const titleEl = el.screenDraft.querySelector('h2');
     if (titleEl) {
-      titleEl.innerHTML = `<i class="fa-solid fa-file-signature"></i> ` + t('draft.title');
+      titleEl.innerHTML = `<i class="fa-solid fa-gift"></i> ` + t('draft.reward_title', 'WIN REWARD');
     }
     const descEl = el.screenDraft.querySelector('p');
     if (descEl) {
       descEl.style.display = 'block';
-      descEl.innerText = t('draft.midrun_desc');
+      descEl.innerText = t('draft.reward_desc', 'You won! Take one card from the pack for your roster, or pass.');
     }
 
     const options = window.Game.getPostMatchDraftPicks(isBoss);
@@ -6188,7 +6100,7 @@ function initGameModeSelector() {
       const btnSign = document.createElement('button');
       btnSign.className = "btn";
       btnSign.style.width = "100%";
-      btnSign.innerHTML = t('draft.sign_btn', { cost: 0 });
+      btnSign.innerHTML = t('draft.reward_take_btn', 'TAKE IT');
       btnSign.addEventListener('click', () => {
         currentDraftSelection = player;
         el.swapNewPlayerName.innerHTML = t('draft.swap_new_player', { name: `<span style="color:var(--primary-color);">${player.name}</span>` });
@@ -7036,13 +6948,9 @@ function initGameModeSelector() {
         stats.push({ label: boostLbl, value: `+${gainVal}`, isPositive: true });
       }
     } else {
-      const roll = Math.random();
-      if (roll < (tpl.critChance || 0.15)) {
-        isCrit = true;
-        gainVal = tpl.critVal || Math.round(12 * tier.statMult);
-      } else {
-        gainVal = Math.floor(Math.random() * (tpl.maxVal - tpl.minVal + 1)) + tpl.minVal;
-      }
+      // No "critical" sessions: the gain always stays inside the range the offer shows (user: the
+      // tier of the card is what decides how much a player improves).
+      gainVal = Math.floor(Math.random() * (tpl.maxVal - tpl.minVal + 1)) + tpl.minVal;
 
       if (tpl.stat === 'sta') {
         player.stamina = Math.min(100, player.stamina + gainVal);
@@ -8104,7 +8012,7 @@ function initGameModeSelector() {
         {
           const is3BSteal = (details && (details.includes('3B') || /tercera|third/i.test(details))) || (ev && ev.playText && /tercera|third|3B/i.test(ev.playText));
           title = typeof t === 'function' 
-            ? (is3BSteal ? t('sim.steal_3b_label', { defaultValue: '¡ROBO DE TERCERA BASE! 🏃⚡' }) : t('popup.steal_title', { defaultValue: '¡ROBO DE BASE! 🏃⚡' }))
+            ? (is3BSteal ? (t('sim.steal_3b_label', { defaultValue: '¡ROBO DE TERCERA BASE!' }) + ' 🏃⚡') : t('popup.steal_title', { defaultValue: '¡ROBO DE BASE! 🏃⚡' }))
             : (is3BSteal ? '¡ROBO DE TERCERA BASE! 🏃⚡' : '¡ROBO DE BASE! 🏃⚡');
           color = "#38bdf8";
           icon = "fa-person-running";
@@ -8217,6 +8125,8 @@ function initGameModeSelector() {
 
     let cleanDetails = details ? details.replace(/🎲 \[\d+\] \[[^\]]+\] /, '').replace(/−/g, '-') : '';
     cleanDetails = cleanDetails.replace(/⚡\s*¡?OCTOBER HERO!?[^—\n]*[—\.]\s*(\(\+[^)]+\)\.?)?\s*/gi, '').replace(/^⚡\s*¡?OCTOBER HERO!?[^\.]*\.\s*/gi, '').trim();
+    // A steal popup already says it in the title: drop the repeated lead-in from the body (same for 2B and 3B steals)
+    if (eventType === 'STEAL') cleanDetails = cleanDetails.replace(/^🏃⚡?\s*(?:¡?ROBO DE (?:TERCERA )?BASE!?|STOLEN (?:THIRD )?BASE!?)\s*/i, '').trim();
     cleanDetails = cleanDetails.replace(/Anotan 0 carreras\.\s*/gi, '').replace(/0 runs scored\.\s*/gi, '').trim();
     // Shorten long descriptions so popups stay punchy and compact
     cleanDetails = cleanDetails.replace(/conecta rodado y el fildeador comete pifia/gi, 'se embasa por error').replace(/hits a grounder and the fielder commits an error/gi, 'reaches on error');
@@ -8348,7 +8258,7 @@ function initGameModeSelector() {
       if (ev && ev.spdUpgraded) displayTime = 1300;
       else if (eventType === 'HR') displayTime = 1200;
       else if (eventType === 'KO') displayTime = 1100;
-      else if (eventType === 'STEAL') displayTime = 850;
+      else if (eventType === 'STEAL') displayTime = 1500;
       else displayTime = 900;
     }
 
@@ -8492,7 +8402,7 @@ function initGameModeSelector() {
           if (e && e.spdUpgraded) return 1300;
           if (type === 'HR') return 1200;
           if (type === 'KO' || type === 'KO_PITCHER') return 1100;
-          if (type === 'STEAL') return 850;
+          if (type === 'STEAL') return 1500; // own moment: the user missed steals shown for 850 ms right after the hit
           return 900;
         };
 
@@ -8535,7 +8445,8 @@ function initGameModeSelector() {
 
           const thisDur = getPopupDuration(ev.eventType, ev);
           popupQueue.push({ type: ev.eventType, text: batterText, ev, duration: thisDur, at: cursor });
-          cursor += thisDur + POPUP_GAP;
+          // A steal after the hit gets a visible pause first, so it reads as a second, separate play
+          cursor += thisDur + (hasSteal ? 450 : POPUP_GAP);
 
           if (hasSteal) {
             const stealDur = getPopupDuration('STEAL', ev);
@@ -10458,55 +10369,31 @@ function initGameModeSelector() {
     const curEraTrait = (window.PlayersDB && window.PlayersDB.EraTraits && cur.era) ? window.PlayersDB.EraTraits[cur.era] : null;
     const offEraTrait = (window.PlayersDB && window.PlayersDB.EraTraits && off.era) ? window.PlayersDB.EraTraits[off.era] : null;
 
+    // Trade 2.0: the offer as a sports-page wire story with the two real cards side by side (menus2.css).
     overlay.innerHTML = `
-      <div style="max-width:520px;width:94%;background:#0d0614;border:2px solid #a855f7;border-radius:18px;padding:22px;box-shadow:0 0 40px rgba(168,85,247,0.35);text-align:center;">
-        <div style="font-family:'Press Start 2P',monospace;font-size:11px;color:#c084fc;letter-spacing:1px;margin-bottom:6px;text-shadow:0 0 12px rgba(192,132,252,0.6);">
-          📰 ${t('trade.header', 'TRADE DEADLINE — 31 DE JULIO')} 📰
-        </div>
-        <div style="font-size:11.5px;color:#94a3b8;margin-bottom:18px;">
-          ${t('trade.desc', 'Un equipo rival te ofrece un intercambio directo por tu posición')} <strong style="color:#facc15;">[${slot}]</strong>:
-        </div>
-
-        <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;margin-bottom:18px;">
-          <!-- CURRENT PLAYER (GIVE) -->
-          <div style="background:rgba(255,255,255,0.03);border:1.5px solid ${curRarityColor};border-radius:12px;padding:12px 8px;text-align:center;">
-            <div style="font-size:8.5px;font-weight:bold;color:#ef4444;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">${t('trade.give_label', 'ENTREGAS')}</div>
-            <div style="font-size:12px;font-weight:bold;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${cur.name}">${cur.name}</div>
-            <div style="font-size:9px;color:${curRarityColor};font-weight:bold;margin:3px 0;">${cur.rarity || 'Common'} • OVR ${curOvr}</div>
-            <div style="font-size:8.5px;color:#94a3b8;margin-bottom:6px;">${cur.era || ''}</div>
-            <div style="font-size:8px;color:#cbd5e1;display:grid;grid-template-columns:1fr 1fr;gap:2px;background:rgba(0,0,0,0.3);padding:4px;border-radius:6px;">
-              <div>CON: ${cur.con || 50}</div><div>PWR: ${cur.pwr || 50}</div>
-              <div>EYE: ${cur.eye || 50}</div><div>DEF: ${cur.def || 50}</div>
-            </div>
-            ${curEraTrait ? `<div style="font-size:7.5px;color:#a78bfa;margin-top:4px;">${curEraTrait.name || ''}</div>` : ''}
+      <div class="m2-trade">
+        <div class="m2-trade-mast">${t('trade.header', 'TRADE DEADLINE — 31 DE JULIO')}</div>
+        <div class="m2-trade-dek">${t('trade.desc', 'Un equipo rival te ofrece un intercambio directo por tu posición')} <b>[${slot}]</b></div>
+        <div class="m2-trade-swap">
+          <div class="m2-trade-side give">
+            <div class="m2-trade-stamp">${t('trade.give_label', 'ENTREGAS')}</div>
+            ${createCardHTML(cur, slot)}
+            ${curEraTrait ? `<div class="m2-trade-era">${curEraTrait.name || ''}</div>` : ''}
           </div>
-
-          <div style="font-size:22px;color:#a855f7;font-weight:bold;">➔</div>
-
-          <!-- OFFERED PLAYER (GET) -->
-          <div style="background:rgba(168,85,247,0.08);border:1.5px solid ${offRarityColor};border-radius:12px;padding:12px 8px;text-align:center;box-shadow:0 0 16px rgba(168,85,247,0.2);">
-            <div style="font-size:8.5px;font-weight:bold;color:#22c55e;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">${t('trade.get_label', 'RECIBES')}</div>
-            <div style="font-size:12px;font-weight:bold;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${off.name}">${off.name}</div>
-            <div style="font-size:9px;color:${offRarityColor};font-weight:bold;margin:3px 0;">${off.rarity || 'Common'} • OVR ${offOvr}</div>
-            <div style="font-size:8.5px;color:#94a3b8;margin-bottom:6px;">${off.era || ''}</div>
-            <div style="font-size:8px;color:#cbd5e1;display:grid;grid-template-columns:1fr 1fr;gap:2px;background:rgba(0,0,0,0.3);padding:4px;border-radius:6px;">
-              <div>CON: ${off.con || 50}</div><div>PWR: ${off.pwr || 50}</div>
-              <div>EYE: ${off.eye || 50}</div><div>DEF: ${off.def || 50}</div>
-            </div>
-            ${offEraTrait ? `<div style="font-size:7.5px;color:#a78bfa;margin-top:4px;">${offEraTrait.name || ''}</div>` : ''}
+          <div class="m2-trade-arrow">⇄</div>
+          <div class="m2-trade-side get">
+            <div class="m2-trade-stamp">${t('trade.get_label', 'RECIBES')}</div>
+            ${createCardHTML(off, slot)}
+            ${offEraTrait ? `<div class="m2-trade-era">${offEraTrait.name || ''}</div>` : ''}
           </div>
         </div>
-
-        <div style="display:flex;gap:10px;">
-          <button id="btn-trade-accept" class="btn" style="flex:1.3;background:linear-gradient(135deg,#9333ea,#7e22ce);color:#fff;font-weight:bold;font-size:10.5px;padding:11px 8px;border:1px solid #c084fc;box-shadow:0 0 14px rgba(147,51,234,0.4);">
-            ✨ ${t('trade.accept_btn', 'ACEPTAR TRASPASO')}
-          </button>
-          <button id="btn-trade-decline" class="btn" style="flex:1;background:rgba(255,255,255,0.06);border:1px solid #475569;color:#94a3b8;font-size:10.5px;padding:11px 8px;">
-            ${t('trade.decline_btn', 'RECHAZAR')}
-          </button>
+        <div class="m2-trade-actions">
+          <button id="btn-trade-accept" class="btn">${t('trade.accept_btn', 'ACEPTAR TRASPASO')}</button>
+          <button id="btn-trade-decline" class="btn btn-secondary">${t('trade.decline_btn', 'RECHAZAR')}</button>
         </div>
       </div>
     `;
+    void curOvr; void offOvr; void curRarityColor; void offRarityColor;
 
     document.body.appendChild(overlay);
 

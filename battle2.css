@@ -1,0 +1,227 @@
+/* ═════════ Battle 2.0 (from the proto_battle2 look, applied to the real combat) ═════════
+   Presentation only: every element, id and handler of the combat screen stays as ui.js builds it.
+   The stadium behind (same as the map), a green manual scoreboard, the duel on a felt table with a
+   wooden rail, a leather HP strap, a wooden dice tray with red felt and cream dice, a brass ROLL button,
+   chips for FOCUS and the bullpen, stamped result stickers. Loaded after menus2.css. */
+
+#screen-match {
+  --wood: #6b4423; --wood-d: #3b2210; --felt: #1f5a3a; --felt-d: #0b2414; --cream: #f3ecd6; --ink: #241510; --brass: #e8b93a;
+  background-color: rgba(3, 8, 6, .85) !important;
+  background-image: linear-gradient(180deg, rgba(5, 7, 12, .35) 0%, rgba(5, 7, 12, .8) 70%), url('assets/TEST2.webp') !important;
+  background-size: cover !important; background-position: center 30% !important;
+}
+#screen-match #match-header-title { margin-bottom: 10px !important; }
+
+/* ── manual green scoreboard ── */
+#screen-match .scoreboard {
+  background: #163d2a !important; border: 4px solid #0c2418 !important; outline: 3px solid #c8a24a; outline-offset: 0;
+  border-radius: 3px !important; box-shadow: 0 10px 24px rgba(0, 0, 0, .6), inset 0 0 0 2px #24573c !important;
+  font-family: 'Oswald', sans-serif !important; color: var(--cream) !important; padding: 10px 14px !important;
+}
+#screen-match .scoreboard * { text-shadow: none !important; }
+#screen-match #scoreboard-inning-text {
+  font-family: 'Alfa Slab One', serif !important; font-size: 15px !important; letter-spacing: 3px; color: #ffd36a !important;
+  background: #0e2a1c; border-radius: 2px; padding: 3px 0; box-shadow: inset 0 2px 3px rgba(0, 0, 0, .5); margin-bottom: 10px !important;
+}
+#screen-match .scoreboard-text-panel > div[style*="justify-content: space-around"] { font-family: 'Oswald', sans-serif !important; font-size: 13px !important; letter-spacing: 1.5px; color: #c8e6cf !important; border-color: #24573c !important; }
+#screen-match #score-away-r, #screen-match #score-home-r, #screen-match #score-away-h, #screen-match #score-home-h {
+  display: inline-block; min-width: 30px; font-family: 'Alfa Slab One', serif; font-size: 16px; color: var(--cream) !important;
+  background: #0e2a1c; border-radius: 2px; padding: 0 6px; box-shadow: inset 0 2px 3px rgba(0, 0, 0, .5); margin-left: 4px;
+}
+#screen-match #score-home-r { color: #ff9a8a !important; }
+/* the juice out-lights become bulbs */
+#screen-match .jx-outs i { background: #3a1a12 !important; box-shadow: inset 0 2px 3px rgba(0, 0, 0, .6) !important; border: none !important; border-radius: 50% !important; }
+#screen-match .jx-outs i.on, #screen-match .jx-outs i.lit { background: #ff5a2c !important; box-shadow: 0 0 10px #ff5a2c !important; }
+/* printed diamond with cream bases, lit gold when a runner is on */
+#screen-match #bases-display-row { border-color: #24573c !important; }
+#screen-match #bases-display-row svg { width: 64px !important; height: 64px !important; }
+#screen-match #bases-display-row path { stroke: rgba(240, 230, 200, .55) !important; stroke-dasharray: none !important; fill: rgba(176, 122, 66, .25) !important; }
+#screen-match #bases-display-row rect { fill: rgba(243, 236, 214, .35) !important; stroke: rgba(243, 236, 214, .7) !important; }
+#screen-match #bases-display-row rect.active, #screen-match #bases-display-row rect[style*="fill: rgb(250, 204, 21)"],
+#screen-match #bases-display-row rect[style*="#facc15"], #screen-match #bases-display-row rect[style*="#ffd700"] { fill: #ffd36a !important; stroke: #fff6d8 !important; filter: drop-shadow(0 0 5px #ffd36a) !important; }
+#screen-match #extra-innings-hud-banner { font-family: 'Oswald', sans-serif !important; font-size: 12px !important; background: #5a1a12 !important; border: 2px solid #c0392b !important; border-radius: 2px !important; }
+#screen-match #extra-innings-hud-banner div { font-family: 'Oswald', sans-serif !important; font-size: 11px !important; }
+
+/* ── the table: wooden rail + felt; the batter's card stands on the left, the arm on the mound on the right ── */
+#screen-match .rpg-fight-deck {
+  position: relative; border: none !important; border-radius: 10px 10px 6px 6px !important; padding: 26px 18px 18px !important; margin: 6px 0 !important;
+  background: radial-gradient(ellipse 80% 90% at 50% 0%, var(--felt), #12371f 70%, var(--felt-d)) !important;
+  box-shadow: inset 0 14px 0 var(--wood), inset 0 17px 0 #3a200d, inset 0 22px 18px rgba(0, 0, 0, .45), 0 14px 26px rgba(0, 0, 0, .6) !important;
+}
+#screen-match .rpg-fight-deck::before {
+  content: ''; position: absolute; left: 0; right: 0; top: 0; height: 14px; border-radius: 10px 10px 0 0; pointer-events: none;
+  background: repeating-linear-gradient(90deg, #6b4423 0 9px, #5d3a1d 9px 13px, #77502a 13px 22px); box-shadow: inset 0 2px 0 rgba(255, 220, 160, .25);
+}
+#screen-match .fight-card-slot { border: none !important; background: transparent !important; }
+#screen-match #arena-batter-card-slot .player-card { transform: rotate(-3deg); filter: drop-shadow(0 16px 14px rgba(0, 0, 0, .7)); }
+#screen-match #arena-pitcher-card-slot .player-card { transform: rotate(2.5deg); filter: drop-shadow(0 16px 14px rgba(0, 0, 0, .7)); }
+#screen-match .vs-circle {
+  font-family: 'Alfa Slab One', serif !important; font-size: 20px !important; color: var(--ink) !important; text-shadow: none !important; margin-top: 0 !important;
+  width: 52px; height: 52px; display: grid; place-items: center; border-radius: 50% !important; flex-shrink: 0;
+  background: radial-gradient(circle at 35% 30%, #fff1b8, var(--brass) 55%, #a8791a); box-shadow: 0 0 0 3px #3a2410, 0 0 0 6px var(--brass), 0 8px 16px rgba(0, 0, 0, .6);
+}
+
+/* ── name plaques, the leather HP strap and the bullpen chips ── */
+#screen-match .faceoff-panel {
+  background: linear-gradient(180deg, #5a3a1e, #3b2210) !important; border: 2px solid #1e1006 !important; border-radius: 6px !important;
+  box-shadow: inset 0 1px 0 rgba(255, 220, 160, .25), 0 10px 20px rgba(0, 0, 0, .55) !important;
+}
+#screen-match .faceoff-name { font-family: 'Alfa Slab One', serif !important; font-size: 16px !important; letter-spacing: .5px; color: #f6e7c4 !important; text-shadow: 0 2px 0 rgba(0, 0, 0, .5) !important; }
+#screen-match #match-batter-stats-box, #screen-match #match-pitcher-stats-box { font-family: 'Oswald', sans-serif !important; font-size: 12px !important; letter-spacing: .5px; color: #e9dcb8 !important; text-shadow: none !important; }
+#screen-match .faceoff-panel .hp-bar-container {
+  height: 20px !important; background: #2a1406 !important; border: 2px solid #1e1006 !important; border-radius: 4px !important; position: relative;
+  box-shadow: inset 0 0 0 2px rgba(255, 226, 170, .12), 0 3px 8px rgba(0, 0, 0, .5) !important;
+}
+#screen-match .faceoff-panel .hp-bar-container::after { content: ''; position: absolute; inset: 3px; border: 1px dashed rgba(255, 226, 170, .35); border-radius: 2px; pointer-events: none; }
+#screen-match #match-pitcher-hp-fill { background: linear-gradient(#ff7a5c, #c0392b) !important; border-radius: 2px; }
+#screen-match #match-pitcher-hp-text { font-family: 'Alfa Slab One', serif !important; font-size: 13px !important; scale: 1 !important; color: #ffd8c8 !important; }
+#screen-match #match-pitcher-debuff-badge, #screen-match #match-pitcher-clutch-badge { font-family: 'Oswald', sans-serif !important; font-size: 11px !important; border-radius: 3px !important; }
+#screen-match .faceoff-panel > div[style*="border-top"] { border-color: rgba(255, 226, 170, .2) !important; }
+#screen-match .rotation-badge {
+  width: 40px; height: 40px; display: inline-flex !important; align-items: center; justify-content: center; border-radius: 50% !important;
+  font-family: 'Oswald', sans-serif !important; font-size: 12px !important; color: #3b2a05 !important; background: #c9a24a !important;
+  border: 3px dashed #fff6d8 !important; box-shadow: 0 3px 0 #6b4f12, 0 6px 8px rgba(0, 0, 0, .5) !important; text-shadow: none !important; padding: 0 !important;
+}
+#screen-match .rotation-badge.active { background: #d7261e !important; color: #fff6dd !important; box-shadow: 0 3px 0 #5a0d09, 0 0 12px rgba(255, 90, 44, .6) !important; transform: translateY(-3px); }
+#screen-match .rotation-badge.ko, #screen-match .rotation-badge.defeated, #screen-match .rotation-badge[class*="done"] { filter: grayscale(1) brightness(.6); }
+
+/* ── the dice tray: wooden box, red felt bed, cream dice ── */
+#screen-match #dice-battle-panel {
+  background: #4a2a14 !important; border: none !important; border-radius: 14px !important; margin-top: 0 !important;
+  box-shadow: 0 14px 28px rgba(0, 0, 0, .6), inset 0 0 0 6px var(--wood), inset 0 0 0 8px #3a200d !important; padding: 18px !important;
+}
+#screen-match #team-vitals { background: rgba(0, 0, 0, .3); border: 2px solid rgba(240, 230, 200, .2); border-radius: 8px; padding: 8px 10px; }
+#screen-match #team-vitals span { font-family: 'Oswald', sans-serif !important; font-size: 13px !important; letter-spacing: 1px; text-shadow: none !important; }
+#screen-match #team-vitals > div[style*="height:8px"] { height: 11px !important; background: #2a0f0b !important; border-radius: 3px !important; }
+#screen-match #team-hp-bar { background: linear-gradient(#7af0a0, #2f9e5a) !important; }
+#screen-match #team-shield-bar { background: linear-gradient(#9fd3ff, #3a7ac0) !important; }
+#screen-match #so-chain-display { font-family: 'Oswald', sans-serif !important; font-size: 12px !important; letter-spacing: 1px; color: #ffb48a !important; }
+#screen-match #dice-d100-panel { width: 100%; }
+#screen-match #dice-modal-card {
+  background: radial-gradient(ellipse at 50% 40%, #8c2a26, #5e1714) !important; border: none !important; border-radius: 8px !important;
+  box-shadow: inset 0 6px 14px rgba(0, 0, 0, .65) !important; padding: 16px 10px !important; display: flex; flex-direction: column; align-items: center; gap: 8px;
+}
+#screen-match .d100-die-face {
+  background: linear-gradient(145deg, #fffaf0, #e7dcc4) !important; color: var(--ink) !important; border: 1px solid #b9ab8c !important; border-radius: 8px;
+  font-family: 'Alfa Slab One', serif !important; font-size: 26px !important; text-shadow: none !important;
+}
+#screen-match .d100-die { filter: drop-shadow(0 8px 6px rgba(0, 0, 0, .55)); }
+#screen-match #dice-result-display { font-family: 'Alfa Slab One', serif !important; font-size: 20px !important; color: #ffd36a !important; text-shadow: 0 2px 0 #3a0d08 !important; }
+/* zone ruler printed on the tray lid */
+#screen-match #jx-zone-strip { padding-top: 14px !important; }
+#screen-match .jx-zone-track { height: 18px !important; border: 2px solid var(--ink) !important; border-radius: 3px; box-shadow: 0 0 0 2px #efe6cf !important; overflow: hidden; }
+#screen-match .jx-zone-marker { border-top-color: #ffd36a !important; filter: drop-shadow(0 2px 2px #000) !important; }
+#screen-match .jx-zone-caption { font-family: 'Oswald', sans-serif !important; font-size: 12px !important; letter-spacing: 1px; text-shadow: 0 1px 0 #000 !important; }
+/* luck-zones card */
+#screen-match #zones-panel { background: rgba(0, 0, 0, .3) !important; border: 2px solid rgba(240, 230, 200, .2) !important; border-radius: 8px !important; }
+#screen-match #zones-panel-header { font-family: 'Oswald', sans-serif !important; font-size: 13px !important; letter-spacing: 2px; color: #f3ecd6 !important; text-shadow: none !important; }
+#screen-match #zones-lines, #screen-match #zones-lines * { font-family: 'Oswald', sans-serif !important; text-shadow: none !important; }
+#screen-match #zones-lines .outcome-row { font-size: 12.5px !important; background: transparent !important; border-color: rgba(240, 230, 200, .12) !important; }
+
+/* ── FOCUS as betting chips, the brass ROLL button ── */
+#screen-match .focus-btn {
+  background: rgba(0, 0, 0, .3) !important; border: 2px dashed rgba(255, 246, 216, .45) !important; border-radius: 8px !important; color: #f3ecd6 !important;
+}
+#screen-match .focus-btn .focus-label { font-family: 'Alfa Slab One', serif !important; font-size: 13px !important; letter-spacing: 1px; }
+#screen-match .focus-btn .focus-desc { font-family: 'Oswald', sans-serif !important; font-size: 11.5px !important; color: #e9dcb8 !important; }
+#screen-match .focus-pip { width: 18px !important; height: 18px !important; border-radius: 50% !important; background: #5a3a1e !important; border: 2px dashed #fff6d8 !important; box-shadow: 0 2px 0 #2a1406 !important; }
+#screen-match .focus-pip.on { background: #c9a24a !important; box-shadow: 0 2px 0 #6b4f12, 0 0 8px rgba(255, 211, 106, .5) !important; }
+#screen-match .focus-btn.armed, #screen-match .focus-btn[aria-pressed="true"] { border-color: #ffd36a !important; box-shadow: 0 0 0 2px rgba(255, 211, 106, .35), 0 0 16px rgba(255, 211, 106, .35) !important; }
+#screen-match #btn-roll-dice {
+  font-family: 'Alfa Slab One', serif !important; font-size: 22px !important; letter-spacing: 3px !important; color: #2a1a0e !important;
+  background: linear-gradient(#ffe39a, #e0a93a) !important; border: none !important; border-radius: 10px !important; text-shadow: 0 1px 0 rgba(255, 255, 255, .5) !important;
+  box-shadow: 0 7px 0 #8a5a12, 0 12px 18px rgba(0, 0, 0, .55), inset 0 2px 0 rgba(255, 255, 255, .6) !important; animation: none !important;
+}
+#screen-match #btn-roll-dice:hover:not([disabled]) { filter: brightness(1.06); transform: translateY(-1px); }
+#screen-match #btn-roll-dice:active:not([disabled]) { transform: translateY(5px); box-shadow: 0 2px 0 #8a5a12, 0 6px 10px rgba(0, 0, 0, .5) !important; }
+#screen-match #btn-roll-dice[disabled] { filter: grayscale(.6) brightness(.8); }
+#screen-match #btn-match-skip-game {
+  font-family: 'Oswald', sans-serif !important; font-size: 13px !important; letter-spacing: 2px !important; color: #f3ecd6 !important;
+  background: rgba(0, 0, 0, .3) !important; border: 1.5px dashed rgba(243, 236, 214, .45) !important; box-shadow: none !important; border-radius: 6px !important;
+}
+#screen-match .platoon-chip { font-family: 'Oswald', sans-serif !important; letter-spacing: .5px; }
+
+/* ── game log as the scorer's ledger ── */
+#screen-match .match-log { background: #0f2419 !important; border: 3px solid #0c1a12 !important; outline: 2px solid #c8a24a; border-radius: 3px !important; box-shadow: 0 10px 20px rgba(0, 0, 0, .5) !important; }
+#screen-match .match-log-header { font-family: 'Oswald', sans-serif !important; font-size: 13px !important; letter-spacing: 2px; color: #ffd36a !important; background: #163d2a !important; border-color: #24573c !important; text-shadow: none !important; }
+
+/* ── result: a stamped sticker instead of the TV lower-third ── */
+.outcome-popup-overlay {
+  --oc: #f3ecd6 !important;
+  background: #f3ecd6 !important; border: 4px solid #241510 !important; border-radius: 4px !important; border-left: 4px solid #241510 !important;
+  box-shadow: 8px 8px 0 rgba(0, 0, 0, .55) !important; color: #241510 !important; transform-origin: center;
+}
+.outcome-popup-overlay::before, .outcome-popup-overlay::after { display: none !important; }
+.outcome-popup-overlay * { text-shadow: none !important; }
+.outcome-popup-overlay > div:first-child, .outcome-popup-overlay [style*="Press Start"] { font-family: 'Alfa Slab One', serif !important; letter-spacing: 1.5px; }
+.outcome-popup-overlay [style*="color"]:not(i) { color: #241510 !important; }
+.outcome-popup-overlay i { color: #241510 !important; }
+.outcome-popup-overlay[data-outcome="HR"] { background: #ffd36a !important; }
+.outcome-popup-overlay[data-outcome="1B"], .outcome-popup-overlay[data-outcome="2B"], .outcome-popup-overlay[data-outcome="3B"], .outcome-popup-overlay[data-outcome="DEF_WIN"] { background: #a7e8a0 !important; }
+.outcome-popup-overlay[data-outcome="BB"], .outcome-popup-overlay[data-outcome="STEAL"] { background: #bfe0ff !important; }
+.outcome-popup-overlay[data-outcome="SO"], .outcome-popup-overlay[data-outcome="DEF_LOSE"] { background: #d7261e !important; border-color: #5a0d09 !important; }
+.outcome-popup-overlay[data-outcome="SO"] *, .outcome-popup-overlay[data-outcome="DEF_LOSE"] * { color: #fff6dd !important; }
+.outcome-popup-overlay[data-outcome="E"] { background: #ffe08a !important; }
+
+@media (max-width: 768px) {
+  #screen-match #arena-batter-card-slot .player-card, #screen-match #arena-pitcher-card-slot .player-card { transform: none; }
+  #screen-match #btn-roll-dice { font-size: 17px !important; }
+}
+
+/* ── the defensive play at the end of the half: same table language ── */
+#modal-mid-inning-defense .def-modal-box {
+  background: #163d2a !important; border: 4px solid #0c2418 !important; outline: 3px solid #c8a24a; border-radius: 4px !important;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, .75), inset 0 0 0 2px #24573c !important;
+}
+#modal-mid-inning-defense .def-modal-box * { text-shadow: none !important; }
+#modal-mid-inning-defense .def-scanline-bar { display: none !important; }
+#modal-mid-inning-defense .def-badge-radar { font-family: 'Oswald', sans-serif !important; font-size: 12px !important; letter-spacing: 2px; color: var(--cream, #f3ecd6) !important; background: #0e2a1c !important; border: 1px solid #c8a24a !important; border-radius: 2px !important; box-shadow: none !important; }
+#modal-mid-inning-defense #def-modal-title { font-family: 'Alfa Slab One', serif !important; font-size: 19px !important; color: #ffd36a !important; letter-spacing: .5px; }
+#modal-mid-inning-defense #def-modal-scenario { font-family: 'Special Elite', monospace !important; font-size: 13px !important; color: #e9dcb8 !important; }
+#modal-mid-inning-defense .def-field-radar-card {
+  background: radial-gradient(ellipse 80% 90% at 50% 0%, #1f5a3a, #12371f 70%, #0b2414) !important; border: none !important; border-radius: 8px !important;
+  box-shadow: inset 0 10px 0 #6b4423, inset 0 13px 0 #3a200d, inset 0 18px 14px rgba(0, 0, 0, .45) !important; padding-top: 14px !important;
+}
+#modal-mid-inning-defense .def-trajectory-laser { stroke: #ffd36a !important; }
+#modal-mid-inning-defense .def-fielder-card { background: linear-gradient(180deg, #5a3a1e, #3b2210) !important; border: 2px solid #1e1006 !important; border-radius: 6px !important; box-shadow: inset 0 1px 0 rgba(255, 220, 160, .25) !important; }
+#modal-mid-inning-defense .def-fielder-card * { font-family: 'Oswald', sans-serif !important; }
+#modal-mid-inning-defense .def-fielder-card div:first-child { color: #f6e7c4 !important; }
+#modal-mid-inning-defense .def-tactic-card {
+  background: #f3ecd6 !important; border: none !important; border-top: 7px solid #9b8c6c !important; border-radius: 4px !important; color: #241510 !important;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, .45) !important; opacity: .82;
+}
+#modal-mid-inning-defense .def-tactic-card.active { opacity: 1; border-top-color: #1f7a3a !important; transform: translateY(-3px); box-shadow: 0 0 0 2px #ffd36a, 0 10px 16px rgba(0, 0, 0, .5) !important; }
+#modal-mid-inning-defense #def-tactic-clutch.active { border-top-color: #b3261e !important; }
+#modal-mid-inning-defense .def-tactic-title { font-family: 'Alfa Slab One', serif !important; font-size: 12px !important; color: #241510 !important; }
+#modal-mid-inning-defense .def-tactic-desc { font-family: 'Oswald', sans-serif !important; font-size: 11.5px !important; color: #4a3b28 !important; }
+#modal-mid-inning-defense #def-modal-gauge-zone span { font-family: 'Oswald', sans-serif !important; font-size: 12px !important; letter-spacing: 1px; }
+#modal-mid-inning-defense .def-gauge-wrapper { border: 2px solid #241510 !important; border-radius: 3px !important; box-shadow: 0 0 0 2px #efe6cf !important; }
+#modal-mid-inning-defense .d100-die-face { background: linear-gradient(145deg, #fffaf0, #e7dcc4) !important; color: #241510 !important; border: 1px solid #b9ab8c !important; border-radius: 8px; font-family: 'Alfa Slab One', serif !important; font-size: 26px !important; }
+#modal-mid-inning-defense #def-dice-d100-panel { background: radial-gradient(ellipse at 50% 40%, #8c2a26, #5e1714) !important; border-radius: 8px; padding: 10px; box-shadow: inset 0 6px 14px rgba(0, 0, 0, .65), 0 0 0 5px #6b4423, 0 0 0 7px #3a200d; }
+#modal-mid-inning-defense #def-dice-result-display { font-family: 'Alfa Slab One', serif !important; color: #ffd36a !important; }
+#modal-mid-inning-defense .def-roll-btn {
+  font-family: 'Alfa Slab One', serif !important; font-size: 16px !important; letter-spacing: 1.5px !important; color: #2a1a0e !important;
+  background: linear-gradient(#ffe39a, #e0a93a) !important; border: none !important; border-radius: 10px !important;
+  box-shadow: 0 6px 0 #8a5a12, 0 10px 16px rgba(0, 0, 0, .55), inset 0 2px 0 rgba(255, 255, 255, .6) !important;
+}
+#modal-mid-inning-defense #btn-def-modal-continue { color: #fff !important; }
+.outcome-popup-overlay { rotate: -3deg; padding: 12px 26px !important; }
+.outcome-popup-overlay > div:nth-child(1) { filter: none !important; font-size: 26px !important; margin-bottom: 2px !important; }
+.outcome-popup-overlay > div:nth-child(2) { font-family: 'Alfa Slab One', serif !important; font-size: 28px !important; font-weight: 400 !important; letter-spacing: 1.5px !important; line-height: 1.05; margin-bottom: 6px; }
+.outcome-popup-overlay > div:nth-child(3) { font-family: 'Special Elite', monospace !important; font-size: 13px !important; }
+.outcome-popup-overlay > div:nth-child(4) { font-family: 'Alfa Slab One', serif !important; font-size: 14px !important; letter-spacing: 1px !important; }
+/* keep the right column as tall as before (the log must stay on screen) */
+#screen-match #dice-battle-panel { padding: 12px 14px !important; gap: 8px !important; }
+#screen-match #team-vitals { padding: 6px 10px; gap: 4px !important; }
+#screen-match #dice-modal-card { padding: 8px 10px !important; gap: 4px; }
+#screen-match #jx-zone-strip { padding-top: 8px !important; }
+#screen-match #zones-panel .outcome-row { padding-top: 1px !important; padding-bottom: 1px !important; }
+#screen-match #btn-roll-dice { padding: 10px 20px !important; font-size: 20px !important; }
+#screen-match #btn-match-skip-game { padding: 8px 16px !important; margin-top: 6px !important; }
+#screen-match .focus-btn { padding-top: 5px !important; padding-bottom: 5px !important; }
+/* no cream surfaces (user): plain results and the defensive tactics are dark */
+.outcome-popup-overlay { background: #13241c !important; border-color: #f3ecd6 !important; border-left-color: #f3ecd6 !important; }
+.outcome-popup-overlay:not([data-outcome="HR"]):not([data-outcome="1B"]):not([data-outcome="2B"]):not([data-outcome="3B"]):not([data-outcome="DEF_WIN"]):not([data-outcome="BB"]):not([data-outcome="STEAL"]):not([data-outcome="SO"]):not([data-outcome="DEF_LOSE"]):not([data-outcome="E"]) * { color: #f3ecd6 !important; }
+#modal-mid-inning-defense .def-tactic-card { background: linear-gradient(180deg, #5a3a1e, #3b2210) !important; color: #f6e7c4 !important; }
+#modal-mid-inning-defense .def-tactic-title { color: #f6e7c4 !important; }
+#modal-mid-inning-defense .def-tactic-desc { color: #e0d2b0 !important; }

@@ -1,0 +1,302 @@
+/* Battle 2.0 stage (battle3.js): the real combat laid out like the prototype.
+   Left: hanging scoreboard, printed diamond with runner tokens, scorer's log.
+   Middle: pitcher on the mound (far) facing your batter at the plate (near), on the felt.
+   Right: the dice tray. Bottom: your nine as a fanned hand. Loaded after battle2.css. */
+
+#screen-match .match-arena.bx3 {
+  display: grid !important;
+  grid-template-columns: 270px minmax(0, 1fr) 300px;
+  grid-template-areas: "left deck right" "hand hand hand";
+  gap: 10px !important; align-items: stretch !important;
+}
+#screen-match .bx3 > .bx3-left { grid-area: left; display: flex !important; flex-direction: column !important; gap: 8px !important; min-width: 0; width: auto !important; }
+#screen-match .bx3 > .bx3-deck { grid-area: deck; }
+#screen-match .bx3 > .bx3-right { grid-area: right; display: flex !important; flex-direction: column !important; min-width: 0; width: auto !important; }
+#screen-match .bx3 > .bx3-hand { grid-area: hand; }
+#screen-match .bx3 .bx3-empty { display: none !important; }
+
+/* ── Scoreboard: compact, hangs at the top of the left column ── */
+#screen-match .bx3 .scoreboard { margin: 0 !important; padding: 8px 10px !important; display: block !important; }
+#screen-match .bx3 .scoreboard-text-panel { width: 100% !important; gap: 6px !important; }
+#screen-match .bx3 .scoreboard-text-panel > div { gap: 6px !important; }
+
+/* ── The printed diamond with runner tokens ── */
+#screen-match .bx3-dia {
+  position: relative; aspect-ratio: 1 / .82; border-radius: 10px; overflow: hidden; flex: none;
+  background:
+    radial-gradient(ellipse at 50% 92%, rgba(176,122,66,.55) 0 24%, transparent 25%),
+    repeating-linear-gradient(45deg, rgba(0,0,0,.05) 0 2px, transparent 2px 4px), #1b5a37;
+  border: 5px solid #5a3a1e; box-shadow: inset 0 0 0 2px #2c1b0c, inset 0 6px 18px rgba(0,0,0,.4), 0 8px 18px rgba(0,0,0,.5);
+}
+#screen-match .bx3-dia-field { position: absolute; inset: 4% 10% 4% 10%; }
+#screen-match .bx3 #bases-display-row { position: absolute !important; inset: 0 !important; width: 100% !important; height: 100% !important; margin: 0 !important; padding: 0 !important; border: none !important; background: none !important; display: block !important; }
+#screen-match .bx3 #bases-display-row svg { width: 100% !important; height: 100% !important; }
+#screen-match .bx3 #bases-display-row path { fill: rgba(176,122,66,.45) !important; stroke: rgba(243,236,214,.75) !important; stroke-width: 1.4 !important; }
+#screen-match .bx3-runners { position: absolute; inset: 4% 10% 4% 10%; pointer-events: none; }
+#screen-match .bx3-runner {
+  position: absolute; width: 38px; height: 38px; margin: -26px 0 0 -19px; border-radius: 50%;
+  background: #333 center / cover no-repeat; image-rendering: pixelated;
+  border: 3px solid #fff6d8; box-shadow: 0 0 0 2px #2c1b0c, 0 4px 10px rgba(0,0,0,.6), 0 0 14px rgba(255,211,106,.55);
+  transition: left .55s cubic-bezier(.3,.9,.3,1.1), top .55s cubic-bezier(.3,.9,.3,1.1), opacity .5s;
+}
+#screen-match .bx3-runner.gone { opacity: 0; }
+#screen-match .bx3-dia-tag {
+  position: absolute; left: 50%; bottom: 6px; transform: translateX(-50%); white-space: nowrap;
+  font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 1.2px; color: #c8e6cf;
+  background: rgba(0,0,0,.55); padding: 2px 8px; border-radius: 3px;
+}
+#screen-match .bx3-dia-tag.hot { color: #2a1a0e; background: linear-gradient(180deg, #ffe58a, #c9a24a); }
+
+/* ── Log under the diamond ── */
+#screen-match .bx3 > .bx3-left .match-log { flex: 1 1 0 !important; min-height: 140px !important; margin: 0 !important; display: flex; flex-direction: column; }
+#screen-match .bx3 > .bx3-left .match-log-content { flex: 1 1 0 !important; height: auto !important; max-height: none !important; min-height: 0 !important; }
+
+/* ── Middle: mound and plate on the felt ── */
+#screen-match .bx3 .rpg-fight-deck.bx3-deck {
+  display: flex !important; flex-direction: column !important; justify-content: space-between !important; align-items: stretch !important;
+  gap: 6px !important; padding: 10px 12px !important; margin: 0 !important; min-height: 0 !important; position: relative;
+}
+#screen-match .bx3-deck > .vs-circle { position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) scale(.8) !important; margin: 0 !important; z-index: 3; }
+#screen-match .bx3-tag {
+  align-self: flex-start; font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 2px; color: #c8e6cf;
+  background: rgba(0,0,0,.45); padding: 2px 8px; border-radius: 3px; margin-bottom: 4px;
+}
+#screen-match .bx3-tag.gold { color: #2a1a0e; background: linear-gradient(180deg, #ffe58a, #c9a24a); }
+#screen-match .bx3-mound, #screen-match .bx3-plate { display: flex; flex-direction: column; position: relative; z-index: 2; }
+#screen-match .bx3-row { display: flex; align-items: center; gap: 12px; }
+#screen-match .bx3-mound .bx3-row { flex-direction: row-reverse; justify-content: flex-end; }  /* far side: card on the right */
+#screen-match .bx3-mound .bx3-tag { align-self: flex-end; }
+#screen-match .bx3 #arena-pitcher-card-slot { zoom: .74; flex: none; margin: 0 !important; }
+#screen-match .bx3 #arena-batter-card-slot { zoom: .92; flex: none; margin: 0 !important; }
+#screen-match .bx3 #arena-pitcher-card-slot .player-card { rotate: 2deg; }
+#screen-match .bx3 #arena-batter-card-slot .player-card { rotate: -2deg; }
+#screen-match .bx3-mound .bx3-row > div:not(.fight-card-slot), #screen-match .bx3-plate .bx3-row > div:not(.fight-card-slot) {
+  flex: 1 1 0; min-width: 0; width: auto !important; text-align: left !important;
+  background: linear-gradient(180deg, #6b4423, #4e2f17) !important; border: 1px solid #2c1b0c !important; border-radius: 6px !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 6px 14px rgba(0,0,0,.5) !important; padding: 8px 10px !important;
+}
+#screen-match .bx3-mound .bx3-row > div:not(.fight-card-slot) { text-align: right !important; }
+#screen-match .bx3 #match-pitcher-hp-text { text-align: right !important; }
+#screen-match .bx3 .faceoff-name { font-size: 15px !important; }
+#screen-match .bx3-pen { display: flex !important; justify-content: flex-end !important; gap: 6px !important; margin-top: 6px !important; }
+
+/* ── Right: dice tray fills its column ── */
+#screen-match .bx3 > .bx3-right #dice-container-slot { flex: 1 1 auto; }
+#screen-match .bx3 #dice-battle-panel { margin-top: 0 !important; height: 100%; gap: 10px !important; padding: 12px !important; }
+#screen-match .bx3 #zones-panel:not([open]) + * { margin-top: 0; }
+
+/* ── Bottom: your nine as a fanned hand ── */
+#screen-match .bx3-hand {
+  display: flex; justify-content: center; align-items: flex-end; gap: 4px; padding: 10px 8px 4px; min-height: 92px;
+  border-top: 1px dashed rgba(110,231,160,.25);
+}
+#screen-match .bx3-h {
+  width: 70px; flex: none; transform: translateY(var(--dy, 0)) rotate(var(--rot, 0)); transform-origin: 50% 120%;
+  transition: transform .25s, filter .25s; filter: brightness(.82) saturate(.9);
+  background: linear-gradient(180deg, #13241c, #0e1b15); border: 1px solid rgba(255,255,255,.12); border-radius: 5px; padding: 3px;
+  box-shadow: 0 6px 12px rgba(0,0,0,.55);
+}
+#screen-match .bx3-h-ph { position: relative; aspect-ratio: 4 / 3; border-radius: 3px; background: #1f2937 center / cover no-repeat; image-rendering: pixelated; }
+#screen-match .bx3-h-ord, #screen-match .bx3-h-pos { position: absolute; bottom: 2px; font-family: 'Press Start 2P', monospace; font-size: 6px; background: rgba(0,0,0,.75); padding: 2px 3px; border-radius: 2px; }
+#screen-match .bx3-h-ord { left: 2px; color: #ffe58a; }
+#screen-match .bx3-h-pos { right: 2px; color: #6ee7a0; }
+#screen-match .bx3-h-nm { font-family: 'Oswald', sans-serif; font-size: 11px; text-transform: uppercase; color: #e8f5ee; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+#screen-match .bx3-h.next { filter: none; }
+#screen-match .bx3-h.cur {
+  filter: none; transform: translateY(-14px) rotate(0deg) scale(1.12); z-index: 2;
+  border-color: #e0b54a; box-shadow: 0 0 0 2px #e0b54a, 0 12px 22px rgba(0,0,0,.6), 0 0 18px rgba(224,181,74,.45);
+}
+#screen-match .bx3-h.on { filter: brightness(.6); }
+#screen-match .bx3-h.on::after { content: 'ON BASE'; display: block; text-align: center; font-family: 'Press Start 2P', monospace; font-size: 5px; color: #ffd36a; margin-top: 2px; }
+
+/* ── Smaller screens: stack ── */
+@media (max-width: 1100px) {
+  #screen-match .match-arena.bx3 { grid-template-columns: 1fr; grid-template-areas: "deck" "right" "left" "hand"; }
+  #screen-match .bx3-dia { max-width: 360px; width: 100%; margin: 0 auto; }
+  #screen-match .bx3 > .bx3-left .match-log { min-height: 220px !important; }
+}
+@media (max-width: 620px) {
+  #screen-match .bx3 #arena-pitcher-card-slot { zoom: .62; }
+  #screen-match .bx3 #arena-batter-card-slot { zoom: .74; }
+  #screen-match .bx3-hand { flex-wrap: wrap; gap: 4px; }
+  #screen-match .bx3-h { width: 58px; transform: none; }
+  #screen-match .bx3-h.cur { transform: translateY(-4px) scale(1.05); }
+}
+#screen-match .bx3-dia { width: 100%; align-self: stretch; }
+#screen-match .bx3 .faceoff-name { white-space: normal !important; overflow: visible !important; text-overflow: clip !important; line-height: 1.15 !important; font-size: 14px !important; }
+
+#screen-match .bx3 > .bx3-left .match-log { width: 100% !important; max-width: none !important; }
+/* fit 1600x900 without scrolling the centre column */
+#screen-match .bx3-hand { min-height: 0; padding: 6px 8px 2px; }
+#screen-match .bx3-h { width: 62px; }
+#screen-match .bx3-h.cur { transform: translateY(-10px) rotate(0deg) scale(1.1); }
+#screen-match .match-arena.bx3 { row-gap: 6px !important; }
+#screen-match.glass-panel { padding-bottom: 8px !important; }
+#screen-match #match-header-title { margin-bottom: 6px !important; }
+#screen-match .bx3 #dice-battle-panel { gap: 8px !important; padding: 10px !important; }
+@media (max-width: 1100px) {
+  /* one column: scoreboard, duel, dice, diamond, log, hand */
+  #screen-match .match-arena.bx3 { display: flex !important; flex-direction: column !important; }
+  #screen-match .bx3 > .bx3-left { display: contents !important; }
+  #screen-match .bx3 .scoreboard { order: 0; }
+  #screen-match .bx3 > .bx3-deck { order: 1; }
+  #screen-match .bx3 > .bx3-right { order: 2; }
+  #screen-match .bx3-dia { order: 3; }
+  #screen-match .bx3 .match-log { order: 4; }
+  #screen-match .bx3 > .bx3-hand { order: 5; }
+  #screen-match .bx3 .match-controls { order: 6; }
+}
+
+/* Right of the batter: info + this at-bat's odds + on deck */
+#screen-match .bx3-pcol { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 8px; align-self: stretch; }
+#screen-match .bx3-plate .bx3-pcol > div:first-child { flex: none !important; }
+#screen-match .bx3-odds {
+  flex: 1 1 auto; display: flex; flex-direction: column; gap: 8px; padding: 10px 12px;
+  background: rgba(4,10,16,.78); border: 1px solid #c9a24a; border-radius: 6px; box-shadow: 0 6px 14px rgba(0,0,0,.45);
+}
+#screen-match .bx3-odds-k { font-family: 'Oswald', sans-serif; font-size: 12px; letter-spacing: 2px; color: #ffe58a; }
+#screen-match .bx3-odgrid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+#screen-match .bx3-od { text-align: center; background: #0f1c16; border: 1px solid rgba(255,255,255,.08); border-top: 3px solid currentColor; border-radius: 4px; padding: 6px 2px 5px; }
+#screen-match .bx3-od b { display: block; font-family: 'VT323', monospace; font-size: 30px; line-height: .9; color: #fff6d8; }
+#screen-match .bx3-od span { font-family: 'Oswald', sans-serif; font-size: 10.5px; letter-spacing: .8px; }
+#screen-match .bx3-od.g { color: #6ee7a0; } #screen-match .bx3-od.g2 { color: #a7f3d0; }
+#screen-match .bx3-od.y { color: #ffd36a; } #screen-match .bx3-od.o { color: #ff9f43; } #screen-match .bx3-od.r { color: #ff8a7a; }
+#screen-match .bx3-deckwrap { display: flex; gap: 8px; }
+#screen-match .bx3-deckrow { flex: 1 1 0; min-width: 0; display: grid; grid-template-columns: 30px 1fr auto; grid-template-rows: auto auto; column-gap: 7px; align-items: center; background: #0f1c16; border-radius: 4px; padding: 5px 7px; }
+#screen-match .bx3-deckrow span { grid-column: 2 / 4; font-family: 'Oswald', sans-serif; font-size: 10px; letter-spacing: 1.5px; color: #8fb3a0; }
+#screen-match .bx3-deckrow i { grid-row: 1 / 3; width: 30px; height: 30px; border-radius: 50%; background: #333 center / cover; image-rendering: pixelated; border: 2px solid #c9a24a; }
+#screen-match .bx3-deckrow b { font-family: 'Oswald', sans-serif; font-size: 13px; color: #f1f5ee; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#screen-match .bx3-deckrow em { font-style: normal; font-family: 'Press Start 2P', monospace; font-size: 7px; color: #6ee7a0; }
+
+/* Luck zones: readable */
+#screen-match #zones-panel-header { font-size: 13px !important; }
+#screen-match #zones-lines .outcome-row { font-size: 13px !important; padding: 3px 4px !important; }
+#screen-match #zones-lines .outcome-row-left, #screen-match #zones-lines .outcome-row-right,
+#screen-match #zones-lines .outcome-row-right span { font-family: 'Oswald', sans-serif !important; font-size: 13px !important; letter-spacing: .3px; }
+#screen-match #zones-lines .outcome-probabilities-grid { gap: 10px !important; }
+
+@media (max-width: 620px) {
+  #screen-match .bx3-plate .bx3-row { flex-wrap: wrap; }
+  #screen-match .bx3-pcol { flex-basis: 100%; }
+  #screen-match .bx3-od b { font-size: 22px; }
+  #screen-match .bx3-od span { font-size: 8.5px; }
+  #screen-match .bx3-deckwrap { flex-direction: column; }
+}
+/* VS sits in the gap between mound and plate, not on top of the batter's plaque */
+#screen-match .bx3-deck > .vs-circle { position: static !important; transform: scale(.8) !important; align-self: center !important; margin: -14px 0 !important; flex: none; }
+
+/* No dead wood: plaques sized to their content, each card + plaque pair pulled toward the centre */
+#screen-match .bx3-mound .bx3-row, #screen-match .bx3-plate .bx3-row { justify-content: center !important; gap: 14px; }
+#screen-match .bx3-pcol { flex: 0 1 auto; }
+#screen-match .bx3-mound .bx3-row > div:not(.fight-card-slot),
+#screen-match .bx3-plate .bx3-row > div:not(.fight-card-slot),
+#screen-match .bx3-plate .bx3-pcol > div:first-child { flex: 0 1 auto !important; width: auto !important; min-width: 230px; max-width: 300px; }
+#screen-match .bx3-mound .bx3-row { padding-left: 40px; }       /* far side sits a little right */
+#screen-match .bx3-plate .bx3-row { padding-right: 40px; }      /* near side a little left */
+#screen-match .bx3-plate .bx3-tag { align-self: center; margin-right: 300px; }
+#screen-match .bx3-mound .bx3-tag { align-self: center; margin-left: 300px; }
+#screen-match .bx3 #arena-pitcher-card-slot { zoom: .82; }
+#screen-match .bx3 #arena-batter-card-slot { zoom: 1.0; }
+
+/* Luck zones a touch smaller */
+#screen-match #zones-lines .outcome-row-left, #screen-match #zones-lines .outcome-row-right,
+#screen-match #zones-lines .outcome-row-right span, #screen-match #zones-lines .outcome-row { font-size: 11.5px !important; }
+#screen-match #zones-panel-header { font-size: 12px !important; }
+#screen-match .bx3-pcol { align-self: center !important; }
+#screen-match .bx3-plate .bx3-pcol > div:first-child, #screen-match .bx3-mound .bx3-row > div:not(.fight-card-slot) { height: auto !important; min-height: 0 !important; align-self: center !important; }
+
+/* THIS AT-BAT, folded into the batter's plaque */
+#screen-match .bx3-odds { flex: none; margin-top: 8px; padding: 7px 0 0; background: none; border: none; border-top: 1px dashed rgba(255,236,170,.35); border-radius: 0; box-shadow: none; gap: 5px; }
+#screen-match .bx3-odds-k { font-size: 10px; letter-spacing: 1.8px; color: #ffe58a; }
+#screen-match .bx3-odrow { display: flex; gap: 5px; }
+#screen-match .bx3-od { flex: 1 1 0; display: flex; flex-direction: column; align-items: center; padding: 3px 2px 2px; background: rgba(0,0,0,.35); border: none; border-top: 2px solid currentColor; border-radius: 3px; font-family: 'Oswald', sans-serif; font-size: 9.5px; letter-spacing: .6px; }
+#screen-match .bx3-od b { font-family: 'VT323', monospace; font-size: 22px; line-height: .9; color: #fff6d8; }
+#screen-match .bx3-ondeck { display: flex; align-items: center; gap: 5px; font-family: 'Oswald', sans-serif; font-size: 11px; color: #e9dcc0; }
+#screen-match .bx3-ondeck span { font-size: 9.5px; letter-spacing: 1.2px; color: #c9b58f; }
+#screen-match .bx3-ondeck i { width: 20px; height: 20px; border-radius: 50%; background: #333 center / cover; image-rendering: pixelated; border: 1.5px solid #c9a24a; }
+#screen-match .bx3-ondeck b { font-weight: 600; }
+
+/* Luck zones: labels fit (parentheses trimmed in battle3.js) */
+#screen-match #zones-lines .outcome-row-left { white-space: nowrap; overflow: visible !important; text-overflow: clip !important; }
+
+/* Longer match history: the diamond gives up some height */
+#screen-match .bx3-dia { aspect-ratio: 1 / .66; }
+#screen-match .bx3 > .bx3-left .match-log { min-height: 200px !important; }
+
+/* Era synergy proc: the panel card glows and a banner flashes on the felt */
+.pokelike-syn-card.bx3-proc { animation: bx3Proc 1.8s ease-out; position: relative; z-index: 1; }
+@keyframes bx3Proc {
+  0% { box-shadow: 0 0 0 2px var(--proc), 0 0 26px var(--proc); transform: scale(1.03); filter: brightness(1.35); }
+  60% { box-shadow: 0 0 0 2px var(--proc), 0 0 16px var(--proc); transform: scale(1); filter: brightness(1.1); }
+  100% { box-shadow: 0 0 0 0 transparent; filter: none; }
+}
+#screen-match .bx3-procban {
+  position: absolute; left: 50%; z-index: 6; pointer-events: none; white-space: nowrap;
+  font-family: 'Oswald', sans-serif; font-weight: 600; font-size: 14px; letter-spacing: 1.5px; color: #10140f;
+  background: var(--proc); padding: 5px 14px; border-radius: 3px; rotate: -2deg;
+  box-shadow: 0 0 0 2px #10140f, 0 0 24px var(--proc), 0 8px 18px rgba(0,0,0,.5);
+  animation: bx3Ban 2s ease-out forwards;
+}
+@keyframes bx3Ban {
+  0% { opacity: 0; transform: translate(-50%, 10px) scale(.7); }
+  12% { opacity: 1; transform: translate(-50%, 0) scale(1.08); }
+  25% { transform: translate(-50%, 0) scale(1); }
+  80% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -16px) scale(1); }
+}
+
+/* The runner who just stole pulses on his new base */
+#screen-match .bx3-runner.stole { animation: bx3Stole 1.4s ease-out; }
+@keyframes bx3Stole {
+  0%, 40%, 80% { box-shadow: 0 0 0 2px #2c1b0c, 0 0 0 6px #38bdf8, 0 0 24px #38bdf8; transform: scale(1.25); }
+  20%, 60%, 100% { box-shadow: 0 0 0 2px #2c1b0c, 0 4px 10px rgba(0,0,0,.6), 0 0 14px rgba(255,211,106,.55); transform: scale(1); }
+}
+
+/* Platoon chip (hand matchup) readable inside the batter's plaque */
+#screen-match .bx3 #platoon-chip {
+  display: inline-flex !important; flex-direction: column; gap: 1px; margin-top: 6px !important; padding: 4px 9px !important;
+  background: rgba(0,0,0,.4) !important; border: 1px solid rgba(255,236,170,.25) !important; border-radius: 4px !important;
+}
+#screen-match .bx3 #platoon-chip[hidden] { display: none !important; }
+#screen-match .bx3 #platoon-chip, #screen-match .bx3 #platoon-chip * {
+  font-family: 'Oswald', sans-serif !important; font-size: 12px !important; letter-spacing: .6px !important; line-height: 1.25 !important;
+}
+
+/* ── Defensive trial: two columns (field + your fielder | the play) ── */
+@media (min-width: 900px) {
+  #modal-mid-inning-defense .def-modal-box {
+    max-width: 1020px !important; display: grid !important; column-gap: 22px;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); align-items: start; text-align: left !important;
+  }
+  #modal-mid-inning-defense .def-modal-box > * { grid-column: 2; }
+  #modal-mid-inning-defense .def-scanline-bar,
+  #modal-mid-inning-defense #def-modal-inning-badge,
+  #modal-mid-inning-defense #def-modal-title,
+  #modal-mid-inning-defense #def-modal-scenario { grid-column: 1 / -1; justify-self: center; text-align: center; }
+  #modal-mid-inning-defense #def-field-radar-card { grid-column: 1; grid-row: 4 / span 3; margin: 0 !important; }
+  #modal-mid-inning-defense .def3-card { grid-column: 1; grid-row: 7 / span 5; }
+  #modal-mid-inning-defense #def-modal-walkoff-warning { grid-column: 1 / -1; }
+}
+#modal-mid-inning-defense #def-mini-diamond-svg { width: 100% !important; height: auto !important; max-height: none !important; }
+#modal-mid-inning-defense .def3-card { display: flex; align-items: center; gap: 14px; justify-content: center; margin-top: 10px; }
+#modal-mid-inning-defense .def3-card .player-card { rotate: -2deg; flex: none; }
+#modal-mid-inning-defense .def3-card-tag {
+  writing-mode: vertical-rl; rotate: 180deg; font-family: 'Oswald', sans-serif; font-size: 12px; letter-spacing: 2.5px;
+  color: #2a1a0e; background: linear-gradient(180deg, #ffe58a, #c9a24a); padding: 10px 4px; border-radius: 3px;
+}
+/* bigger small print */
+#modal-mid-inning-defense #def-modal-scenario { font-size: 15px !important; max-width: 760px; }
+#modal-mid-inning-defense #def-modal-fielder-card, #modal-mid-inning-defense #def-modal-fielder-card * { font-family: 'Oswald', sans-serif !important; }
+#modal-mid-inning-defense #def-modal-fielder-card div { font-size: 14px !important; line-height: 1.35 !important; }
+#modal-mid-inning-defense #def-modal-fielder-card div:first-child { font-size: 17px !important; }
+#modal-mid-inning-defense .def-tactic-title { font-size: 14px !important; }
+#modal-mid-inning-defense .def-tactic-desc { font-family: 'Oswald', sans-serif !important; font-size: 13px !important; }
+#modal-mid-inning-defense #def-field-speed-tag, #modal-mid-inning-defense #def-field-target-tag { font-size: 12px !important; }
+#modal-mid-inning-defense #def-field-speed-tag *, #modal-mid-inning-defense #def-field-target-tag * { font-size: 12px !important; }
+#modal-mid-inning-defense #def-modal-hp-status, #modal-mid-inning-defense #def-modal-hp-status * { font-size: 13px !important; }
+#modal-mid-inning-defense #def-gauge-catch-label, #modal-mid-inning-defense #def-gauge-error-label { font-size: 13px !important; }
+@media (max-width: 899px) { #modal-mid-inning-defense .def3-card { display: none; } }
+@media (min-width: 900px) {
+  #modal-mid-inning-defense #def-field-radar-card { height: auto !important; aspect-ratio: 300 / 175; grid-row: 4 / span 2; }
+  #modal-mid-inning-defense .def3-card { grid-row: 6 / span 6; align-self: center; }
+}

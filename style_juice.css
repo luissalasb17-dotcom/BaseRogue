@@ -4633,3 +4633,6 @@ span.c162-iron {
 .draft-reason .dr-txt small { font-family: 'Outfit', 'Segoe UI', sans-serif; font-size: 9px; font-weight: 700; opacity: .8; margin-top: 1px; white-space: normal; line-height: 1.15; }
 .draft-reason { white-space: normal !important; }
 .draft-reason .dr-txt { min-width: 0; }
+
+/* Defeat screen: one plain line */
+#gameover-why .go-why-line { margin: 10px auto 0; max-width: 640px; font-size: 13px; line-height: 1.5; opacity: .85; text-align: center; }

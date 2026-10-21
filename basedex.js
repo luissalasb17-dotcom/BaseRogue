@@ -926,42 +926,35 @@
         const isUnl = this.isUnlocked(p);
         const isFav = this.isShortlisted(p);
         const el = document.createElement('div');
+        // Dex 2.0: each entry is a slab in the binder, with the card's pixel portrait (dex2.css)
+        const pYear = parseInt(p.year, 10) || 2020;
+        const eraKey = pYear <= 1900 ? 'genesis' : pYear <= 1919 ? 'deadball' : pYear <= 1941 ? 'golden' : pYear <= 1960 ? 'integration' : pYear <= 1976 ? 'expansion' : pYear <= 1993 ? 'bighair' : pYear <= 2005 ? 'steroid' : pYear <= 2015 ? 'efficiency' : 'modern';
+        const favHTML = isFav ? `<span class="dx-fav" title="Shortlisted">★</span>` : '';
         if (isUnl) {
           const rColor = RARITY_COLORS[p.rarity] || RARITY_COLORS.Common;
           const isChallengeEligible = !!(window.Challenge162 && window.Challenge162.isUnlocked(p));
-          el.className = 'dex-card unlocked';
-          el.style.cssText = `position: relative; background: #0d1f12; border: 2px solid ${rColor}; border-radius: 8px; padding: 10px 6px; text-align: center; cursor: pointer; transition: transform 0.15s; display: flex; flex-direction: column; justify-content: space-between;`;
-
-          const posLabel = p.role || p.pos || 'P';
-          const subLabel = p.team || '';
-
+          const isPit = this.activeCategory === 'opponents' || !!p.role;
+          const art = (window.CardArt && typeof window.CardArt.portrait === 'function') ? window.CardArt.portrait(p, eraKey, isPit) : '';
+          const tc = ((window.CardArt && window.CardArt.TEAM_COLORS) || {})[String(p.team || '').toUpperCase()] || '#3a3a3a';
+          el.className = `dex-card unlocked dx-r-${(p.rarity || 'Common').toLowerCase()}`;
+          el.style.cssText = `--rc:${rColor};--tc:${tc}`;
           const challenge162Tooltip = (typeof window.t === 'function' ? window.t('dex.challenge162_badge_tooltip', 'Eligible for 162-0 Challenge') : 'Eligible for 162-0 Challenge');
           el.innerHTML = `
-            ${isFav ? `<span title="Shortlisted" style="position:absolute;top:4px;left:4px;font-size:11px;filter:drop-shadow(0 0 4px rgba(255,215,0,0.9));">⭐</span>` : ''}
-            ${isChallengeEligible ? `<span title="${challenge162Tooltip}" style="position:absolute;top:4px;right:4px;font-size:11px;filter:drop-shadow(0 0 3px rgba(255,215,0,0.8));">🏆</span>` : ''}
-            <div>
-              <div style="font-size:7px;color:#00ff66;font-family:'Press Start 2P',monospace;margin-bottom:4px">${posLabel}</div>
-              <div style="font-size:7px;color:#e5e7eb;font-family:'Press Start 2P',monospace;line-height:1.3;word-break:break-word">${p.name}</div>
-              <div style="font-size:6px;color:#9ca3af;margin-top:3px">${subLabel} '${p.year}</div>
-            </div>
-            <div>
-              <div style="font-size:8px;font-weight:bold;color:${rColor};margin-top:4px">OVR ${Math.floor(p.ovr)}</div>
-              <div style="font-size:5px;background:${rColor}22;color:${rColor};padding:1px 4px;border-radius:3px;margin-top:3px;display:inline-block">${p.rarity || 'Common'}</div>
-            </div>
+            ${favHTML}
+            ${isChallengeEligible ? `<span class="dx-c162" title="${challenge162Tooltip}">162</span>` : ''}
+            <div class="dx-photo">${art ? `<img src="${art}" alt="" draggable="false">` : ''}<span class="dx-pos">${p.role || p.pos || 'P'}</span><span class="dx-ovr">${Math.floor(p.ovr)}</span></div>
+            <div class="dx-name">${p.name}</div>
+            <div class="dx-meta"><span>${p.team || ''}</span><span>'${String(p.year).slice(-2)}</span></div>
+            <div class="dx-rar">${p.rarity || 'Common'}</div>
           `;
           el.onclick = () => this.showDetail(p);
-          el.onmouseenter = () => el.style.transform = 'scale(1.05)';
-          el.onmouseleave = () => el.style.transform = 'scale(1)';
         } else {
           el.className = 'dex-card locked';
-          el.style.cssText = `position: relative; background: #111827; border: 2px solid #1f2937; border-radius: 8px; padding: 10px 6px; text-align: center; cursor: default`;
           el.innerHTML = `
-            ${isFav ? `<span title="Shortlisted" style="position:absolute;top:4px;left:4px;font-size:11px;filter:drop-shadow(0 0 4px rgba(255,215,0,0.9));">⭐</span>` : ''}
-            <div style="width:50px;height:50px;background:#1f2937;border-radius:50%;margin:0 auto 6px;display:flex;align-items:center;justify-content:center">
-              <i class="fa-solid fa-user" style="color:#374151;font-size:20px"></i>
-            </div>
-            <div style="font-size:7px;color:#4b5563;font-family:'Press Start 2P',monospace">???</div>
-            <div style="font-size:6px;color:#374151;margin-top:2px">${(typeof window.t === 'function' ? window.t('dex.locked', 'LOCKED') : 'LOCKED')}</div>
+            ${favHTML}
+            <div class="dx-photo"><span class="dx-q">?</span></div>
+            <div class="dx-name">???</div>
+            <div class="dx-meta"><span>${(typeof window.t === 'function' ? window.t('dex.locked', 'LOCKED') : 'LOCKED')}</span></div>
           `;
         }
         grid.appendChild(el);
@@ -986,13 +979,16 @@
       if (this.container) this.close();
 
       this.container = document.createElement('div');
+      this.container.className = 'dx2-overlay';
       this.container.style.cssText = 'position: fixed; inset: 0; z-index: 9000; background: rgba(0,0,0,0.95); display: flex; align-items: center; justify-content: center; padding: 20px;';
       
       const panel = document.createElement('div');
+      panel.className = 'dx2';
       panel.style.cssText = 'width: 100%; max-width: 900px; max-height: 90vh; height: 100%; background: #0a0f1a; border: 3px solid #00ff66; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; position: relative;';
 
       // Header
       const header = document.createElement('div');
+      header.className = 'dx2-head';
       header.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.3)';
       
       const title = document.createElement('h2');
@@ -1044,6 +1040,7 @@
 
       // Top Category Bar: [ LEYENDAS / BATEADORES ] vs [ OPONENTES (PARTIDA RÁPIDA) ] vs [ ⭐ SHORTLIST ]
       const categoryBar = document.createElement('div');
+      categoryBar.className = 'dx2-cats';
       categoryBar.style.cssText = 'display: flex; gap: 8px; justify-content: center; padding: 10px 16px; background: rgba(0,0,0,0.3); border-bottom: 1px solid rgba(255,255,255,0.1); flex-wrap: wrap;';
       
       const btnLeg = document.createElement('button');
@@ -1080,10 +1077,25 @@
       categoryBar.appendChild(btnLeg);
       categoryBar.appendChild(btnOpp);
       categoryBar.appendChild(btnShortlist);
+      // Clear the whole shortlist (asks first; only on the shortlist tab and when it has cards).
+      if (isShortlistActive && this.shortlist.size > 0) {
+        const btnClear = document.createElement('button');
+        btnClear.innerText = typeof window.t === 'function' ? window.t('dex.unshortlist_all', '✖ UNSHORTLIST ALL') : '✖ UNSHORTLIST ALL';
+        btnClear.style.cssText = 'margin-left:auto;padding: 6px 12px; border-radius: 6px; font-family:"Press Start 2P", monospace; font-size: 8px; cursor: pointer; border: 1px solid #f87171; background: rgba(248,113,113,0.1); color: #f87171;';
+        btnClear.onclick = () => {
+          const msg = typeof window.t === 'function' ? window.t('dex.unshortlist_confirm', { n: this.shortlist.size, defaultValue: `Remove all ${this.shortlist.size} cards from your shortlist?` }) : `Remove all ${this.shortlist.size} cards from your shortlist?`;
+          if (!confirm(msg)) return;
+          this.shortlist.clear();
+          this.save();
+          this.renderPanel();
+        };
+        categoryBar.appendChild(btnClear);
+      }
       panel.appendChild(categoryBar);
 
       // Search bar
       const searchContainer = document.createElement('div');
+      searchContainer.className = 'dx2-search';
       searchContainer.style.cssText = 'padding: 10px 16px; border-bottom: 1px solid rgba(255,255,255,0.1);';
       const searchInput = document.createElement('input');
       searchInput.type = 'text';
@@ -1114,6 +1126,7 @@
 
       // Position / Role Filter Tabs (Dedicated Row)
       const posTabsContainer = document.createElement('div');
+      posTabsContainer.className = 'dx2-pos';
       posTabsContainer.style.cssText = 'display: flex; gap: 4px; flex-wrap: wrap; justify-content: center; align-items: center; padding: 6px 12px; border-bottom: 1px solid rgba(255,255,255,0.08); background: rgba(0,0,0,0.25);';
 
       const posLabel = document.createElement('span');
@@ -1148,6 +1161,7 @@
 
       // Era Tabs (Compact & Responsive Wrap)
       const tabsContainer = document.createElement('div');
+      tabsContainer.className = 'dx2-eras';
       tabsContainer.style.cssText = 'display: flex; gap: 4px; flex-wrap: wrap; justify-content: center; padding: 8px 12px; border-bottom: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.15);';
       
       ERA_TABS.forEach(tab => {
@@ -1377,7 +1391,7 @@
                 🎴 DRAFT TRADING CARD
               </div>
 
-              <div style="transform:scale(1.2);margin:15px 0;">
+              <div class="pc2-clickflip" style="transform:scale(1.2);margin:15px 0;">
                 ${draftCardHTML}
               </div>
 

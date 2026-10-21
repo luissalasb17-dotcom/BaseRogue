@@ -1580,7 +1580,9 @@ window.leftyCantPlay = function (p, slot) {
       // best OVR of a handful. The first version tagged one card "fills 3B" and could deal
       // another third baseman right next to it tagged "power", which emptied the first tag of
       // meaning (reported by the user): now the position is part of every tag.
-      if (this.draftRound >= 5 && this.draftRound <= 8) {
+      // Switched off by the user (Oct 2026): rounds 5-8 deal plain weighted Commons again, no reason tags.
+      const DRAFT_REASON_PICKS = false;
+      if (DRAFT_REASON_PICKS && this.draftRound >= 5 && this.draftRound <= 8) {
         const base = (activeWeighted && activeWeighted.length >= 12 ? activeWeighted : fullWeighted).map(x => x.player);
         const rnd = list => (list.length ? list[Math.floor(Math.random() * list.length)] : null);
         const shuffled = list => list.map(x => [Math.random(), x]).sort((a, b) => a[0] - b[0]).map(x => x[1]);
@@ -2343,9 +2345,9 @@ window.leftyCantPlay = function (p, slot) {
         // Map 3 (Zone 2): 100% Legendary guaranteed
         // Map 4 (Zone 3): 100% Legendary guaranteed
         const bossMap = {
-          0: { Rare: 9.0, Epic: 1.0 },
-          1: { Epic: 8.5, Legendary: 1.5 },
-          2: { Legendary: 10.0 },
+          0: { Rare: 10.0 },                 // lowered (user, Oct 2026): the team got too strong too early
+          1: { Rare: 6.0, Epic: 4.0 },
+          2: { Epic: 8.0, Legendary: 2.0 },
           3: { Legendary: 10.0 }
         };
         return bossMap[zone] || bossMap[0];
@@ -2353,9 +2355,9 @@ window.leftyCantPlay = function (p, slot) {
 
       // Regular matches (strictly NO Commons):
       const map = {
-        0: { Uncommon: 7.0, Rare: 2.5, Epic: 0.5, Legendary: 0.0 }, // Zona 0: Opening Day (70% Unc, 25% Rare, 5% Epic)
-        1: { Uncommon: 4.0, Rare: 4.5, Epic: 1.5, Legendary: 0.0 }, // Zona 1: All-Star Break (40% Unc, 45% Rare, 15% Epic)
-        2: { Uncommon: 1.5, Rare: 5.0, Epic: 3.0, Legendary: 0.5 }, // Zona 2: Pennant Chase (15% Unc, 50% Rare, 30% Epic, 5% Leg)
+        0: { Uncommon: 8.0, Rare: 2.0, Epic: 0.0, Legendary: 0.0 }, // Zona 0: Opening Day (70% Unc, 25% Rare, 5% Epic)
+        1: { Uncommon: 6.0, Rare: 3.5, Epic: 0.5, Legendary: 0.0 }, // Zona 1: All-Star Break (40% Unc, 45% Rare, 15% Epic)
+        2: { Uncommon: 3.0, Rare: 5.0, Epic: 2.0, Legendary: 0.0 }, // Zona 2: Pennant Chase (15% Unc, 50% Rare, 30% Epic, 5% Leg)
         3: { Uncommon: 0.5, Rare: 3.5, Epic: 4.5, Legendary: 1.5 }, // Zona 3: Playoffs (5% Unc, 35% Rare, 45% Epic, 15% Leg)
       };
       return map[zone] || map[0];
@@ -2434,14 +2436,14 @@ window.leftyCantPlay = function (p, slot) {
       // Filter allowed rarities by match type and stage
       let allowedRarities = ['Legendary', 'Epic', 'Rare', 'Uncommon'];
       if (isBoss) {
-        if (zone === 0) allowedRarities = ['Epic', 'Rare'];
-        else if (zone === 1) allowedRarities = ['Legendary', 'Epic'];
+        if (zone === 0) allowedRarities = ['Rare'];
+        else if (zone === 1) allowedRarities = ['Epic', 'Rare'];
+        else if (zone === 2) allowedRarities = ['Legendary', 'Epic'];
         else allowedRarities = ['Legendary'];
       } else {
         // Regular matches: Map 1 (zone 0) and Map 2 (zone 1) strictly forbid Legendary
-        if (zone === 0 || zone === 1) {
-          allowedRarities = ['Epic', 'Rare', 'Uncommon'];
-        }
+        if (zone === 0) allowedRarities = ['Rare', 'Uncommon'];
+        else if (zone === 1 || zone === 2) allowedRarities = ['Epic', 'Rare', 'Uncommon'];
       }
 
       const filtered = pool.filter(p => {
