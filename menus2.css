@@ -101,7 +101,7 @@ body.on-main-menu {
 }
 @media (prefers-reduced-motion: reduce) { #screen-mode-select .challenge162-card::before { animation: none; } }
 /* the juice rise-in animation ends on transform:none and would erase the tilt: fade in only */
-#screen-mode-select .mode-grid > .mode-card { animation: mc2In .6s ease-out both !important; }
+#screen-mode-select .mode-grid > .mode-card { animation: mc2In .2s ease-out both !important; }
 @keyframes mc2In { from { opacity: 0; } to { opacity: 1; } }
 /* back to the daytime Polo Grounds background (user) */
 body.on-main-menu {

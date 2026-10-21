@@ -153,15 +153,16 @@ button:focus-visible,
 }
 
 /* ── Screen transitions (class toggled by juice.js) ── */
+/* Short and cheap: the old CRT switch-on (0.34 s, brightness filter on the whole screen) read as a
+   loading hitch on every menu change (user report). Opacity + a small lift only, GPU friendly. */
 @keyframes jx-screen-in {
-  0% { opacity: 0; filter: brightness(2.2) saturate(0.3); }
-  45% { opacity: 1; filter: brightness(1.25) saturate(0.8); }
-  100% { opacity: 1; filter: none; }
+  0% { opacity: 0; transform: translateY(6px); }
+  100% { opacity: 1; transform: none; }
 }
 
 @media (prefers-reduced-motion: no-preference) {
   .jx-screen-in {
-    animation: jx-screen-in 0.34s var(--jx-ease-out);
+    animation: jx-screen-in 0.16s ease-out;
   }
 }
 
@@ -1450,7 +1451,7 @@ body.on-main-menu .main-container {
 
 .dex-test-arena-overlay > .glass-panel {
   margin-top: clamp(14px, 4vh, 48px) !important;
-  animation: jx-screen-in 0.34s var(--jx-ease-out);
+  animation: jx-screen-in 0.16s ease-out;
 }
 
 .dex-test-arena-overlay #zones-lines .outcome-row {

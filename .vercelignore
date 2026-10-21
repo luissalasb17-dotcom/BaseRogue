@@ -1,9 +1,11 @@
-﻿# BaseRogue - Vercel Deployment Exclusions
+# BaseRogue - Vercel Deployment Exclusions
 # Reduce cada despliegue de ~170MB a ~40MB, ahorrando 75%+ de almacenamiento en Vercel
 
 # Base de datos cruda de Lahman y WAR
 lahman_1871-2025/
 *.txt
+# robots.txt must be published: it points Google to the sitemap
+!robots.txt
 
 # Archivos de analisis y datasets intermedios CSV
 *.csv

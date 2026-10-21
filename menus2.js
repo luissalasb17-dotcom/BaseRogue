@@ -102,6 +102,8 @@
   }
 
   function init() { decorateModeCards(); watchOverlays(); watchDraft(); }
-  if (document.readyState === 'complete') init();
-  else window.addEventListener('load', init);
+  // Loaded at the end of <body> but BEFORE the player data scripts, so the menu markup already exists:
+  // run now. Waiting for 'load' (megabytes of data) made the mode cards appear bare and then jump.
+  if (document.getElementById('card-mode-story')) init();
+  else document.addEventListener('DOMContentLoaded', init);
 })();
