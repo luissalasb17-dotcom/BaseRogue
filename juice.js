@@ -432,8 +432,17 @@
   }
 
   // ── Cards: feed the cursor position to the foil / glare layers in CSS ──
+  // Some cards ignore the pointer on purpose (162-0 pack options, playoff duel): find them
+  // through their wrapper so the foil still follows the cursor.
+  function cardUnder(t) {
+    if (!t || !t.closest) return null;
+    const host = t.closest('.c162-oc-front, .c162-duel-card');
+    return t.closest('.player-card') || (host && host.querySelector('.player-card'));
+  }
+  window.__cardUnder = cardUnder;
+
   function onCardPointer(e) {
-    const card = e.target.closest && e.target.closest('.player-card');
+    const card = cardUnder(e.target);
     if (!card) return;
     const r = card.getBoundingClientRect();
     card.style.setProperty('--mx', ((e.clientX - r.left) / r.width * 100).toFixed(1) + '%');

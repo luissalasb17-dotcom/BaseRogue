@@ -735,6 +735,10 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
             </div>
           `;
           slotRow.title = t('draft.drag_to_reorder');
+          // A click (not a drag) opens the player's Dex card.
+          slotRow.addEventListener('click', () => {
+            if (window.BaseballDex && typeof window.BaseballDex.showDetail === 'function') window.BaseballDex.showDetail(player);
+          });
         } else {
           slotRow.innerHTML = `
             <span style="font-family:'Press Start 2P',monospace;font-size:7px;color:#374151;min-width:24px;">${slot}</span>
@@ -878,7 +882,7 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
 
         wrapper.innerHTML = `
           ${tagHTML}
-          <div style="pointer-events:none;">${cardHTML}</div>
+          <div class="draft-card-flipzone">${cardHTML}</div>
           <div class="draft-card-caption" style="text-align:center;width:100%;margin-top:2px;">
             <div style="font-size:10px;color:${rColor};font-weight:bold;">${player.rarity}</div>
             <div style="font-size:9.5px;color:#9ca3af;text-align:center;margin-top:2px;font-family:'Press Start 2P',monospace;">${player.pos} • OVR ${ovr}</div>
@@ -1812,7 +1816,7 @@ function initGameModeSelector() {
       wrapper.style.borderColor = rColor;
       wrapper.style.background = rBg;
       wrapper.innerHTML = `
-        <div style="pointer-events:none;">${cardHTML}</div>
+        <div class="draft-card-flipzone">${cardHTML}</div>
         <div class="draft-card-caption" style="text-align:center;width:100%;">
           <div style="font-size:10px;color:${rColor};font-weight:bold;">${player.rarity}</div>
           <div style="font-size:9.5px;color:#9ca3af;text-align:center;margin-top:2px;">${player.pos || player.role} • OVR ${ovr} (potencial)</div>
@@ -4993,6 +4997,7 @@ function initGameModeSelector() {
   // RENDER VISUAL POKELIKE MAP - Math-based layout (no DOM measurement)
   // RENDER VISUAL POKELIKE MAP - Math-based layout (Ascending bottom-to-top progression)
   function renderMap() {
+    renderEquippedTraits(); // a new run must not keep showing the last run's traits
     el.mapContainer.innerHTML = '';
 
     const currentStage = window.Game.currentStageIndex;
@@ -5335,6 +5340,7 @@ function initGameModeSelector() {
 
   function renderSynergiesAndItems() {
     renderActiveItemBonuses();
+    renderEquippedTraits();
 
     // 1. Synergies (Right Sidebar)
     if (!el.synergiesList) return;
@@ -6024,7 +6030,7 @@ function initGameModeSelector() {
       const ovr    = getPlayerOvr(player);
 
       cardCol.innerHTML = `
-        <div style="pointer-events:none;">${cardHTML}</div>
+        <div class="draft-card-flipzone">${cardHTML}</div>
         <div class="draft-synergy-helper" style="width:100%;">${predictionText}</div>
         <div class="draft-card-caption" style="text-align:center;width:100%;margin-top:2px;">
           <div style="font-size:10px;color:${rColor};font-weight:bold;">${player.rarity}</div>
@@ -6114,7 +6120,7 @@ function initGameModeSelector() {
       const ovr    = getPlayerOvr(player);
 
       cardCol.innerHTML = `
-        <div style="pointer-events:none;">${cardHTML}</div>
+        <div class="draft-card-flipzone">${cardHTML}</div>
         <div class="draft-synergy-helper" style="width:100%;">${predictionText}</div>
         <div class="draft-card-caption" style="text-align:center;width:100%;margin-top:2px;">
           <div style="font-size:10px;color:${rColor};font-weight:bold;">${player.rarity}</div>
@@ -7676,6 +7682,7 @@ function initGameModeSelector() {
             letter-spacing:1px;
           ">–</div>
           <div id="dice-modal-badge" class="mobile-only-modal-el"></div>
+          <button id="btn-dice3d-toggle" class="dice3d-toggle" type="button">🎲 3D DICE: ${window.DiceTable && !window.DiceTable.isEnabled() ? 'OFF' : 'ON'}</button>
         </div>
       </div>
       <!-- Lucky zones panel. Clutch banner lives outside the <details> so it's
@@ -8278,7 +8285,9 @@ function initGameModeSelector() {
     if (!activeBattle || activeBattle.battleOver || isRolling) return;
     isRolling = true;
 
-    const isMobileRoll = (window.innerWidth <= 768);
+    // 3D dice on the duel felt (dice3d.js) when available; otherwise the 2D cubes below.
+    const use3d = !!(window.DiceTable && window.DiceTable.active());
+    const isMobileRoll = (window.innerWidth <= 768) && !use3d;
     const dicePanel = document.getElementById('dice-d100-panel');
     const modalBadge = document.getElementById('dice-modal-badge');
     const modalHeader = document.getElementById('dice-modal-header');
@@ -8343,7 +8352,7 @@ function initGameModeSelector() {
       if (window.AudioManager) window.AudioManager.play('menu_click');
     }, UNITS_TUMBLE_MS);
 
-    diceAnimInterval = setTimeout(() => {
+    const afterDice = () => {
         if (cubeTens) cubeTens.classList.add('die-settled');
         if (window.AudioManager) window.AudioManager.play('menu_click');
         if (diceDisplay) {
@@ -8560,7 +8569,9 @@ function initGameModeSelector() {
             dicePanel.classList.remove('mobile-modal-active', 'mobile-modal-closing');
           }
         }, Math.max(50, cursor + 300));
-    }, TENS_TUMBLE_MS);
+    };
+    if (use3d) window.DiceTable.roll(finalRoll, focusRolls).then(afterDice);
+    else diceAnimInterval = setTimeout(afterDice, TENS_TUMBLE_MS);
   }
 
   function showExtraInningsIntroModal(onClose) {
@@ -9128,6 +9139,7 @@ function initGameModeSelector() {
         finalRoll = activeBattle.resolveFocus(firstRoll, secondRoll);
         focusRolls = { r1: firstRoll, r2: secondRoll, kept: finalRoll };
       }
+      if (window.DiceTable && window.DiceTable.active()) window.DiceTable.snap(finalRoll);
       refreshFocusUI(focusRolls);
       const tensDigit  = Math.floor(finalRoll / 10) % 10;
       const unitsDigit = finalRoll % 10;
@@ -12114,7 +12126,7 @@ function initGameModeSelector() {
     const supportsHoverTilt = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
     if (supportsHoverTilt) {
       document.addEventListener('mousemove', (e) => {
-        const card = e.target.closest('.player-card');
+        const card = window.__cardUnder ? window.__cardUnder(e.target) : e.target.closest('.player-card');
         if (!card) return;
         const rect = card.getBoundingClientRect();
         const px = (e.clientX - rect.left) / rect.width;
@@ -12127,8 +12139,10 @@ function initGameModeSelector() {
       }, { passive: true });
 
       document.addEventListener('mouseout', (e) => {
-        const card = e.target.closest('.player-card');
-        if (!card || card.contains(e.relatedTarget)) return;
+        const card = window.__cardUnder ? window.__cardUnder(e.target) : e.target.closest('.player-card');
+        if (!card) return;
+        const host = card.closest('.c162-oc-front, .c162-duel-card') || card;
+        if (host.contains(e.relatedTarget)) return;
         card.classList.remove('card-tilt-active');
       }, { passive: true });
     }

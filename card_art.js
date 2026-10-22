@@ -198,9 +198,10 @@
         if (card) flip(card);
         return;
       }
-      // Inside the Dex detail view the card itself flips on click.
+      // Inside the Dex detail view and the draft offers the card itself flips on click
+      // (the pick button under it still drafts).
       const card = e.target.closest && e.target.closest('.pc2');
-      if (card && card.closest('.pc2-clickflip')) { e.preventDefault(); e.stopPropagation(); flip(card); }
+      if (card && card.closest('.pc2-clickflip, .draft-card-flipzone')) { e.preventDefault(); e.stopPropagation(); flip(card); }
     }, true);
     // Keep the ↻ press from starting a drag on draggable rosters.
     document.addEventListener('pointerdown', (e) => {
