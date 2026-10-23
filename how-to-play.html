@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>How to Play BaseRogue — Baseball Roguelike Guide, Ratings &amp; Strategy</title>
+  <meta name="description" content="Learn BaseRogue, the free baseball roguelike: d100 at-bats, batter and pitcher ratings, era synergies, Focus and the tactics that win series.">
+  <link rel="canonical" href="https://baserogue.com/how-to-play.html">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://baserogue.com/how-to-play.html">
+  <meta property="og:title" content="How to Play BaseRogue">
+  <meta property="og:description" content="Learn BaseRogue, the free baseball roguelike: d100 at-bats, batter and pitcher ratings, era synergies, Focus and the tactics that win series.">
+  <meta property="og:image" content="https://baserogue.com/assets/logo.webp">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="/assets/logo.webp">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      { "@type": "VideoGame", "@id": "https://baserogue.com/#game", "name": "BaseRogue", "url": "https://baserogue.com/", "image": "https://baserogue.com/assets/logo.webp", "genre": ["Roguelike", "Sports", "Turn-based strategy"], "gamePlatform": ["Web browser", "Mobile browser"], "isAccessibleForFree": true, "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }, "sameAs": ["https://fucknwizz.itch.io/baserogue", "https://discord.gg/Rn3TwU9Gpb"] },
+      { "@type": "BreadcrumbList", "itemListElement": [ { "@type": "ListItem", "position": 1, "name": "BaseRogue", "item": "https://baserogue.com/" }, { "@type": "ListItem", "position": 2, "name": "How to play", "item": "https://baserogue.com/how-to-play.html" } ] },
+      { "@type": "FAQPage", "mainEntity": [{ "@type": "Question", "name": "How do you win a battle in BaseRogue?", "acceptedAnswer": { "@type": "Answer", "text": "Knock out the rival rotation before your team runs out of HP. Every hit damages the pitcher on the mound; strikeouts and outs damage your team. Beat the starter and the relievers behind him to win the series." } }, { "@type": "Question", "name": "What do the batter ratings mean?", "acceptedAnswer": { "@type": "Answer", "text": "CON is contact (singles and batting average), PWR is power (extra-base hits and home runs), EYE is plate discipline (walks), K-AVD is strikeout avoidance, SPD is speed (steals and taking the extra base) and DEF is defense. Pitchers have H/9, K/9, BB/9, HR/9, Stamina and Clutch." } }, { "@type": "Question", "name": "What are era synergies?", "acceptedAnswer": { "@type": "Answer", "text": "Players are grouped by era. Two players of the same era activate its first tier; your chosen Build Era keeps scaling at 4, 6 and 8 players. Examples: Small Ball, Liveball Sluggers, Bash Brothers, Moneyball Analytics and Three True Outcomes." } }, { "@type": "Question", "name": "What is Focus?", "acceptedAnswer": { "@type": "Answer", "text": "A limited charge per battle that rolls two dice and keeps the better result. With runners on base a hit does extra damage, so Focus is worth the most with men on." } }] }
+    ]
+  }
+  </script>
+  <style>
+    :root { --bg: #08110c; --panel: #0f1c16; --ink: #ecf3ee; --mute: #a7c4b4; --green: #10b981; --gold: #e0b54a; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font: 17px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+    main { max-width: 820px; margin: 0 auto; padding: 32px 16px 64px; }
+    header { text-align: center; margin-bottom: 28px; }
+    header img { width: min(320px, 80%); height: auto; }
+    h1 { font-size: clamp(28px, 5vw, 40px); line-height: 1.15; margin: 14px 0 8px; }
+    h2 { font-size: 22px; margin: 36px 0 10px; color: var(--gold); }
+    p, li { color: var(--ink); }
+    .lead { color: var(--mute); font-size: 19px; }
+    .play { display: inline-block; margin: 18px 6px 0; padding: 14px 26px; border-radius: 8px; font-weight: 700; text-decoration: none; }
+    .play.main { background: linear-gradient(180deg, #ffe58a, #c9a24a); color: #2a1a0e; }
+    .play.alt { border: 1.5px solid var(--green); color: #6ee7a0; }
+    section { background: var(--panel); border: 1px solid rgba(16,185,129,.3); border-radius: 10px; padding: 4px 22px 18px; margin-top: 18px; }
+    a { color: #6ee7a0; }
+    dt { font-weight: 700; margin-top: 14px; }
+    dd { margin: 4px 0 0; color: var(--mute); }
+    footer { text-align: center; color: var(--mute); font-size: 14px; margin-top: 40px; }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <img src="/assets/logo.webp" alt="BaseRogue logo" width="640" height="260">
+    <h1>How to play BaseRogue: the baseball roguelike guide</h1>
+    <p class="lead">Ratings, d100 at-bats, era synergies, Focus and the tactics that win series. Everything you need for your first run, and for your hundredth.</p>
+    <a class="play main" href="/">Play free in your browser</a>
+  </header>
+
+  <section>
+    <h2>1. Draft your nine</h2>
+    <p>A run starts with a draft. Each round offers three real players; pick one per position until your lineup is full. Rarity goes from Common to Legendary, but a well-fitted Common at shortstop is often worth more than a star playing out of position: a player away from his natural position loses defense.</p>
+  </section>
+
+  <section>
+    <h2>2. Every at-bat is a d100 roll</h2>
+    <p>Your batter's ratings are compared with the pitcher's, and the result sets the "luck zones" of a 1-100 roll: strikeout, out, walk, single, double, triple and home run. A contact hitter widens the hit zones, a power hitter widens the home-run zone and a strikeout pitcher widens the K zone. You see the zones before you roll.</p>
+    <p>Hits deal damage to the pitcher. Outs and strikeouts deal damage to your team, and a strikeout goes straight through your shield. Knock out the starter and the bullpen to win.</p>
+  </section>
+
+  <section>
+    <h2>3. Ratings explained</h2>
+    <dl>
+      <dt>Batters</dt>
+      <dd>CON (contact), PWR (power), EYE (walks), K-AVD (strikeout avoidance), SPD (speed) and DEF (defense). Ratings run from 1 to 125; 99 is elite and 125 is reserved for the greatest of all time.</dd>
+      <dt>Pitchers</dt>
+      <dd>H/9 (hits allowed), K/9 (strikeouts), BB/9 (walks), HR/9 (home runs allowed), Stamina (how deep he goes) and Clutch (pitching with runners on).</dd>
+      <dt>Era adjustment</dt>
+      <dd>Every card is built from the player's best seven seasons and adjusted for his era, so a Deadball-era hitter and a modern slugger are measured against their own leagues.</dd>
+    </dl>
+  </section>
+
+  <section>
+    <h2>4. Era synergies and the Build Era</h2>
+    <p>Two players from the same era unlock that era's first tier. Pick one era as your Build Era and it keeps scaling at 4, 6 and 8 players. The nine eras: Genesis Chaos, Small Ball, Liveball Sluggers, Five-Tool Legends, Speed &amp; Hustle, AstroTurf Speedsters, Bash Brothers, Moneyball Analytics and Three True Outcomes.</p>
+  </section>
+
+  <section>
+    <h2>5. Tactics that win series</h2>
+    <ul>
+      <li><strong>Save Focus for men on base:</strong> a hit with runners on deals extra damage.</li>
+      <li><strong>Platoon:</strong> lefty batters struggle against lefty pitchers; a lineup with both hands is safer against any rotation.</li>
+      <li><strong>Defensive trials:</strong> when the ball goes to your fielder, a regular play is the safe call; a highlight dive repairs more shield but fails more often.</li>
+      <li><strong>Use the map:</strong> batting cages train ratings, the clubhouse heals, trades fix a weak spot and luck events can swing a run.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>FAQ</h2>
+    <dl>
+      <dt>How do you win a battle in BaseRogue?</dt>
+      <dd>Knock out the rival rotation before your team runs out of HP. Every hit damages the pitcher on the mound; strikeouts and outs damage your team. Beat the starter and the relievers behind him to win the series.</dd>
+      <dt>What do the batter ratings mean?</dt>
+      <dd>CON is contact (singles and batting average), PWR is power (extra-base hits and home runs), EYE is plate discipline (walks), K-AVD is strikeout avoidance, SPD is speed (steals and taking the extra base) and DEF is defense. Pitchers have H/9, K/9, BB/9, HR/9, Stamina and Clutch.</dd>
+      <dt>What are era synergies?</dt>
+      <dd>Players are grouped by era. Two players of the same era activate its first tier; your chosen Build Era keeps scaling at 4, 6 and 8 players. Examples: Small Ball, Liveball Sluggers, Bash Brothers, Moneyball Analytics and Three True Outcomes.</dd>
+      <dt>What is Focus?</dt>
+      <dd>A limited charge per battle that rolls two dice and keeps the better result. With runners on base a hit does extra damage, so Focus is worth the most with men on.</dd>
+    </dl>
+  </section>
+
+  <footer>
+    <p><a href="/">Play BaseRogue</a> · <a href="/about.html">About</a> · <a href="/how-to-play.html">How to play</a> · <a href="/162-0-challenge.html">162-0 Challenge</a> · <a href="/juego-de-beisbol.html">Español</a> · <a href="https://fucknwizz.itch.io/baserogue">itch.io</a> · <a href="https://discord.gg/Rn3TwU9Gpb">Discord</a></p>
+    <p>BaseRogue is a fan-made project and is not affiliated with Major League Baseball.</p>
+  </footer>
+</main>
+</body>
+</html>

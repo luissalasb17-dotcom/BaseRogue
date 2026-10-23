@@ -389,3 +389,28 @@ body.dice3d-on #screen-match #dice-result-display { font-family: 'VT323', monosp
     color: #9fd8b4; border-radius: 5px; padding: 3px 7px; font: 600 10px Oswald, sans-serif; letter-spacing: .5px; }
   #screen-match .bx3-deck .dice3d-mini.off { color: #8a8a8a; border-color: #555; }
 }
+
+/* ── Defensive trial: the dice fall into a small game tray (dice3d.js, host = #def-dice-d100-panel) ── */
+#modal-mid-inning-defense #def-dice-d100-panel {
+  position: relative; overflow: hidden; min-height: 150px; justify-content: center;
+  border-radius: 10px !important; margin: 4px 0 12px !important;
+  background: radial-gradient(ellipse at 50% 45%, #93302b, #5a1512 75%) !important;
+  box-shadow: inset 0 10px 22px rgba(0,0,0,.7), inset 0 -4px 10px rgba(0,0,0,.4),
+              0 0 0 6px #6b4423, 0 0 0 8px #3a200d, 0 10px 18px rgba(0,0,0,.45) !important;
+}
+#modal-mid-inning-defense #def-dice-d100-panel.dice3d-tray-on #def-dice-d100-container { visibility: hidden; }
+#modal-mid-inning-defense #def-dice-d100-panel.dice3d-tray-on #def-dice-result-display {
+  position: absolute; top: 8px; right: 12px; z-index: 7; font-family: 'VT323', monospace !important; font-size: 30px !important;
+}
+@media (min-width: 900px) {
+  /* right column: fielder · HP · tray · tactics · gauge · button · result */
+  #modal-mid-inning-defense #def-modal-fielder-card { order: 1; }
+  #modal-mid-inning-defense #def-modal-hp-status { order: 2; }
+  #modal-mid-inning-defense #def-dice-d100-panel { order: 3; min-height: 170px; }
+  #modal-mid-inning-defense #def-tactics-selector { order: 4; }
+  #modal-mid-inning-defense #def-modal-gauge-zone { order: 5; }
+  #modal-mid-inning-defense #def-modal-action-zone { order: 6; }
+  #modal-mid-inning-defense #def-modal-result-zone { order: 7; }
+  #modal-mid-inning-defense #def-field-radar-card { grid-row: 4 / span 3; }
+  #modal-mid-inning-defense .def3-card { grid-row: 7 / span 6; }
+}

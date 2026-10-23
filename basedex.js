@@ -1268,7 +1268,9 @@
       };
 
       const careerStats = getPlayerCareerData(p);
-      const isPitcher = (this.activeCategory === 'opponents') || p.h9 !== undefined || p.stf !== undefined || p.grt !== undefined || p.pos === 'P' || p.pos === 'SP' || p.pos === 'RP' || p.pos === 'CL';
+      // the Opponents tab only lists pitchers, but showDetail is also called from the 162-0 with a batter
+      // while that tab is still the last one open: never treat a card with batting ratings as a pitcher
+      const isPitcher = (this.activeCategory === 'opponents' && p.con === undefined && p.pwr === undefined) || p.h9 !== undefined || p.stf !== undefined || p.grt !== undefined || p.pos === 'P' || p.pos === 'SP' || p.pos === 'RP' || p.pos === 'CL';
       const isReliever = isPitcher && (
         p.role === 'RP' || p.role === 'CL' || p.pos === 'RP' || p.pos === 'CL' ||
         (careerStats && typeof careerStats.sv === 'number' && careerStats.sv >= 10)

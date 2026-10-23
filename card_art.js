@@ -283,6 +283,9 @@
       keep.forEach(n => back.appendChild(n));
       back.classList.add('bk-on');
       back.querySelectorAll('img').forEach(img => { img.onerror = () => img.remove(); });
+      // long names: shrink to fit the header (again once the flag image has its width)
+      const nm = back.querySelector('.bk-name');
+      if (nm) { fitName(nm); setTimeout(() => fitName(nm), 120); nm.querySelectorAll('img').forEach(img => img.addEventListener('load', () => fitName(nm), { once: true })); }
     });
   }
 
@@ -317,17 +320,21 @@
   // banners with margins / skew, like Golden or Efficiency, are narrower than the card).
   function fitName(el) {
     if (!el.isConnected || !el.clientWidth || el.scrollWidth <= el.clientWidth) return;
+    const back = el.classList.contains('bk-name');
+    const min = back ? 7.5 : 6;
     let fs = parseFloat(getComputedStyle(el).fontSize) || 10;
-    for (let i = 0; i < 14 && el.scrollWidth > el.clientWidth && fs > 6; i++) {
+    for (let i = 0; i < 14 && el.scrollWidth > el.clientWidth && fs > min; i++) {
       fs -= 0.5;
       el.style.setProperty('font-size', fs + 'px', 'important');
       el.style.setProperty('letter-spacing', '0', 'important');
     }
+    // the back header has room for two lines: the very longest names wrap instead of shrinking more
+    if (back && el.scrollWidth > el.clientWidth) { el.style.setProperty('white-space', 'normal', 'important'); el.style.setProperty('line-height', '1.05', 'important'); }
   }
   let fitTimer = null;
   function fitAll() {
     fitTimer = null;
-    document.querySelectorAll('.pc2 .pc2-name').forEach(fitName);
+    document.querySelectorAll('.pc2 .pc2-name, .pc2 .bk-name').forEach(fitName);   // front strip and the back header
   }
   function initFit() {
     const queue = () => { if (!fitTimer) fitTimer = setTimeout(fitAll, 60); };

@@ -8600,6 +8600,7 @@ function initGameModeSelector() {
     }
   }
 
+  window.showMidInningDefenseModal = (e, cb) => showMidInningDefenseModal(e, cb);   // test hook
   function showMidInningDefenseModal(defEvent, onComplete) {
     const modal = document.getElementById('modal-mid-inning-defense');
     if (!modal || !defEvent) {
@@ -8946,7 +8947,7 @@ function initGameModeSelector() {
         if (window.AudioManager) window.AudioManager.play('menu_click');
       }, UNITS_TUMBLE_MS);
 
-      setTimeout(() => {
+      const afterDefDice = () => {
         if (defCubeTens) defCubeTens.classList.add('die-settled');
         
         const result = activeBattle.resolveMidInningDefense(finalRoll, defEvent, isClutch);
@@ -9071,7 +9072,11 @@ function initGameModeSelector() {
             if (onComplete) onComplete();
           };
         }
-      }, TENS_TUMBLE_MS);
+      };
+      // 3D dice fall into the tray of the defensive play when available; else the 2D cubes tumble
+      const defTray = document.getElementById('def-dice-d100-panel');
+      if (window.DiceTable && defTray && window.DiceTable.active(defTray)) window.DiceTable.roll(finalRoll, null, defTray).then(afterDefDice);
+      else setTimeout(afterDefDice, TENS_TUMBLE_MS);
     };
   }
 

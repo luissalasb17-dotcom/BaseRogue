@@ -253,6 +253,8 @@
     modal._bx3 = true;
     const paint = () => {
       if (modal.classList.contains('hidden')) return;
+      // ready the 3D dice in the tray before the roll (hides the 2D cubes)
+      setTimeout(() => { const tray = $('def-dice-d100-panel'); if (window.DiceTable && tray) window.DiceTable.active(tray); }, 80);
       const b = typeof window.__activeBattle === 'function' ? window.__activeBattle() : null;
       const ev = b && b.pendingDefenseEvent;
       const radar = $('def-field-radar-card');

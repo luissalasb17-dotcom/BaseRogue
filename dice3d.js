@@ -122,7 +122,7 @@
   }
 
   // ── scene on the felt ──
-  function build(deck) {
+  function build(deck, tray) {
     const T = window.THREE;
     const M = buildModel(T);
     const canvas = document.createElement('canvas');
@@ -174,7 +174,7 @@
       return { kind, mesh, mats: m };
     });
     G = { T, M, floor, deck, canvas, renderer, scene, camera, key, rim, dice, W: 0, H: 0, k: 30, sim: null, sym: null,
-      playing: false, t0: 0, hitIdx: 0, done: null, glow: 0, glowMats: [], raf: 0 };
+      playing: false, t0: 0, hitIdx: 0, done: null, glow: 0, glowMats: [], raf: 0, tray: !!tray };
     layout();
   }
 
@@ -185,7 +185,7 @@
     if (!W || !Hh) return false;
     if (W === G.W && Hh === G.H) return true;
     G.W = W; G.H = Hh;
-    G.k = Math.max(30, Math.min(46, Math.min(W * 1.5, Hh) / 15));
+    G.k = G.tray ? 36 : Math.max(30, Math.min(46, Math.min(W * 1.5, Hh) / 15));   // the tray is small: slightly bigger dice
     renderer.setSize(W, Hh, false);
     const hw = W / 2 / G.k, hh = Hh / 2 / G.k;
     Object.assign(camera, { left: -hw, right: hw, top: hh, bottom: -hh });
@@ -322,8 +322,8 @@
     applyFrame(Infinity);
     const cb = G.done; G.done = null;
     G.glow = 1; kick();
-    // when they rest on top of the cards, clear them off after a moment
-    fadeLater();
+    // when they rest on top of the cards, clear them off after a moment (the defense tray keeps them)
+    if (!G.tray) fadeLater();
     if (cb) cb();
   }
 
@@ -364,32 +364,36 @@
 
   // ── public API ──
   let broken = false;
-  function active() {
+  // host: the battle felt by default, or another box the dice fall into (the defensive-play tray).
+  // One WebGL scene at a time: switching boxes rebuilds it.
+  const battleDeck = () => document.querySelector('#screen-match:not(.hidden) .bx3-deck');
+  function active(host) {
     if (!enabled || reduced || broken) return false;
-    const deck = document.querySelector('#screen-match:not(.hidden) .bx3-deck');
+    const deck = host || battleDeck();
     if (!deck || !deck.clientWidth) return false;
     if (libsState === 'idle') loadLibs();
     if (libsState !== 'ready') return false;
     if (!G || G.deck !== deck) {
-      if (G) { try { G.renderer.dispose(); G.renderer.forceContextLoss(); } catch (e) {} if (G.canvas) G.canvas.remove(); }
-      build(deck);
+      if (G) { clearTimeout(G.hideT); try { G.renderer.dispose(); G.renderer.forceContextLoss(); } catch (e) {} if (G.canvas) G.canvas.remove(); }
+      build(deck, !!host);
     }
     const ok = layout();
     if (ok) prewarm();
-    document.body.classList.toggle('dice3d-on', ok);
+    if (host) deck.classList.toggle('dice3d-tray-on', ok);
+    else document.body.classList.toggle('dice3d-on', ok);
     return ok;
   }
 
   // Throw the dice; resolves when they rest. focus = { r1, r2, kept } throws two pairs.
-  function roll(target, focus) {
+  function roll(target, focus, host) {
     return new Promise(resolve => {
-      try { rollInner(target, focus, resolve); }
+      try { rollInner(target, focus, resolve, host); }
       catch (e) { console.error('dice3d: falling back to the 2D dice', e); broken = true; document.body.classList.remove('dice3d-on'); resolve(); }
     });
   }
-  function rollInner(target, focus, resolve) {
+  function rollInner(target, focus, resolve, host) {
     {
-      if (!active()) { resolve(); return; }
+      if (!active(host)) { resolve(); return; }
       if (G.playing && G.done) { const prev = G.done; G.done = null; prev(); }
       const targets = focus ? [focus.r1, focus.r2] : [target];
       const n = targets.length * 2;
@@ -406,7 +410,7 @@
       G.glowMats = [0, 1].map(j => G.dice[keptPair * 2 + j].mats[want[keptPair * 2 + j]]);
       G.done = () => {
         if (focus) G.dice.forEach((d, i) => { if (Math.floor(i / 2) !== keptPair) d.mats.forEach(m => { m.opacity = 0.35; }); });
-        showTotal(focus ? focus.kept : target);
+        if (!G.tray) showTotal(focus ? focus.kept : target);
         resolve();
       };
       G.playing = true; G.t0 = performance.now(); G.hitIdx = 0; G.glow = 0;
@@ -461,7 +465,7 @@
   }, 1000);
 
   // A click on the felt while the dice roll skips to the end.
-  document.addEventListener('pointerdown', e => { if (G && G.playing && e.target.closest && e.target.closest('.bx3-deck, #dice-d100-panel')) skip(); }, true);
+  document.addEventListener('pointerdown', e => { if (G && G.playing && e.target.closest && e.target.closest('.bx3-deck, #dice-d100-panel, #def-dice-d100-panel')) skip(); }, true);
   // Start fetching the libraries as soon as a battle screen shows up.
   const warm = setInterval(() => {
     if (!enabled || reduced) return;
@@ -471,6 +475,6 @@
 
   window.DiceTable = { active, roll, snap, skip, setEnabled, isEnabled: () => enabled, state: () => libsState,
     // debug / tests: where the dice are on screen, and step the throw without animation frames
-    debug: () => G && { k: G.k, W: G.W, H: G.H, dice: G.dice.filter(d => d.mesh.visible).map(d => { const v = d.mesh.position.clone().project(G.camera); return [Math.round((v.x + 1) / 2 * G.W), Math.round((1 - v.y) / 2 * G.H)]; }) },
+    debug: () => G && (G.camera.updateMatrixWorld(), true) && { k: G.k, W: G.W, H: G.H, dice: G.dice.filter(d => d.mesh.visible).map(d => { const v = d.mesh.position.clone().project(G.camera); return [Math.round((v.x + 1) / 2 * G.W), Math.round((1 - v.y) / 2 * G.H)]; }) },
     renderAt: ms => { if (G && G.playing) { applyFrame(ms / 1000 * FPS * PLAY_SPEED); render(); } } };
 })();

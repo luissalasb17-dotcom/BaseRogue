@@ -3373,6 +3373,7 @@
 
       S.lastGame = this._buildLastGame(result, ui, oppRec, userHome);
       this._advanceLeagueDay(won);
+      this._s2Record(won, userRuns, oppRuns, oppRec, userHome, result.innings);
       this._checkMilestones(S.lastGame);
       this._monthlyCheckpoint();
       this._allStarCheckpoint();
@@ -10658,13 +10659,13 @@
       const recentGamesTitle = _t('challenge162.season_recent_games', 'RECENT GAMES');
       const noGamesText = _t('challenge162.season_no_games', 'No games played yet');
 
+      // squares played since the last time this screen was drawn pop in (auto sim, sim 1, sim 10)
+      const s2fresh = this._s2Fresh || (this._s2Seen != null && S.gamesPlayed > this._s2Seen && S.gamesPlayed - this._s2Seen <= 40 ? { from: this._s2Seen } : null);
+      this._s2Seen = S.gamesPlayed;
+      container.dataset.month = this._s2Chapter(seasonOver ? SEASON_LENGTH + 1 : S.gamesPlayed + 1).key;
+      container.classList.add('s2');
       container.innerHTML = `
-        <div style="font-family:'Press Start 2P',monospace;font-size:15px;color:var(--challenge162-accent);letter-spacing:1px;margin-bottom:4px;">
-          ${titleText}
-        </div>
-        <div style="font-size:10px;color:#94a3b8;font-family:'Press Start 2P',monospace;letter-spacing:0.5px;margin-bottom:12px;">
-          ${regularSeasonText} &middot; ${gamesCountText}
-        </div>
+        ${this._s2MastheadHTML()}
 
         ${this._alertsHTML()}
         <!-- Top Horizontal Row: [RECORD & MODE BADGE] + [NEXT GAME RIVAL BOX] SIDE-BY-SIDE -->
@@ -10698,8 +10699,8 @@
             ${this._momentumBadgeHTML()}
           </div>
 
-          <!-- Right: Next Game Rival Box (if season in progress) -->
-          ${nextGameHTML}
+          <!-- Right: tonight's game as a broadcast preview -->
+          ${this._s2MatchupHTML() || nextGameHTML}
 
         </div>
 
@@ -10708,11 +10709,13 @@
           <div style="background:linear-gradient(90deg,var(--challenge162-accent),#34d399);height:100%;width:${completedPct}%;transition:width 0.3s ease;"></div>
         </div>
 
-        <div style="margin-bottom:18px;">
+        <div class="s2-actions">
           ${actionHTML}
         </div>
-
-        ${this._lastGameHTML()}
+        ${this._s2Fresh ? this._s2Recap(this._s2Fresh.from) : ''}
+        ${S.league ? `${this._s2CalendarHTML(s2fresh)}
+        <div class="s2-row">${this._s2RaceHTML()}${this._s2BookHTML()}</div>
+        <div class="s2-row2">${this._lastGameHTML()}${this._s2GazetteHTML()}</div>` : this._lastGameHTML()}
         <!-- Two column layout: Left (Tables) + Right (Game Log Feed) -->
         <div class="c162-season-grid">
           <div class="c162-main-panel">
@@ -10811,9 +10814,9 @@
         btnAuto.onpointerdown = (e) => { if (e.button === 0) { e.preventDefault(); this.toggleAutoSim(); } };
         btnAuto.onclick = (e) => { if (e.detail === 0) this.toggleAutoSim(); };
       }
-      if (btn1) btn1.onclick = () => { this.stopAutoSim(); this.simulateGame(); this.renderSeason(); };
-      if (btn10) btn10.onclick = () => { this.stopAutoSim(); this.simulateBatch(10); this.renderSeason(); };
-      if (btnUntil) btnUntil.onclick = () => { this.stopAutoSim(); this.simulateUntilLossOrEnd(); this.renderSeason(); };
+      if (btn1) btn1.onclick = () => this._s2Play(() => this.simulateGame());
+      if (btn10) btn10.onclick = () => this._s2Play(() => this.simulateBatch(10));
+      if (btnUntil) btnUntil.onclick = () => this._s2Play(() => this.simulateUntilLossOrEnd());
       if (btnPlayoffs) btnPlayoffs.onclick = () => {
         this.stopAutoSim();
         if (this.state.playoffs && !this.state.playoffs.transitionShown) {
@@ -10855,6 +10858,335 @@
     // ── League views (standings, power rankings, playoff picture) ─────────
     _ligaTab: 'standings',
     _ligaLeague: null,
+
+    // ══════════ Season 2.0: the season as something you live, not a spreadsheet ══════════
+    // Every game leaves a compact line in S.results (calendar, race chart, The Book):
+    // [won 1/0, our runs, their runs, opponent id, home 1/0, innings, margin over the playoff cut ×2].
+    // Saves from before this existed start with nulls for the games already played.
+    _s2Record(won, us, them, oppRec, home, innings) {
+      const S = this.state, L = S.league;
+      if (!Array.isArray(S.results)) S.results = new Array(Math.max(0, S.gamesPlayed - 1)).fill(null);
+      while (S.results.length < S.gamesPlayed - 1) S.results.push(null);
+      let cut2 = 0;
+      if (L) {
+        const rows = leagueStandings(L, L.teams[USER_TEAM_ID].league);
+        const u = rows.find(t => t.id === USER_TEAM_ID);
+        if (u.rank <= PLAYOFF_SEEDS) { const nx = rows[PLAYOFF_SEEDS]; cut2 = nx ? (u.w - nx.w) + (nx.l - u.l) : 0; }
+        else { const last = rows[PLAYOFF_SEEDS - 1]; cut2 = -((last.w - u.w) + (u.l - last.l)); }
+      }
+      S.results.push([won ? 1 : 0, us, them, oppRec.id, home ? 1 : 0, innings || 9, cut2]);
+    },
+    _s2Results() {
+      const S = this.state;
+      const r = Array.isArray(S.results) ? S.results.slice(0, S.gamesPlayed) : [];
+      while (r.length < S.gamesPlayed) r.unshift(null);
+      return r;
+    },
+
+    // 162 games from April 1 to September 30; the calendar year only gives the weekdays.
+    _s2Date(g) {
+      const d = new Date(2026, 3, 1 + Math.round((Math.max(1, g) - 1) * 182 / 161));
+      const W = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
+      const M = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER'];
+      return { wd: W[d.getDay()], month: M[d.getMonth()], day: d.getDate(), m: d.getMonth() };
+    },
+    _s2Chapter(g) {
+      if (g > SEASON_LENGTH) return { key: 'oct', name: 'OCTOBER AWAITS', note: 'The regular season is in the books.' };
+      const m = this._s2Date(g).m;
+      return [
+        null, null, null,
+        { key: 'apr', name: 'OPENING MONTH', note: 'Fresh grass, cold nights, everybody is undefeated in spirit.' },
+        { key: 'may', name: 'SETTLING IN', note: 'Small samples start turning into who you really are.' },
+        { key: 'jun', name: 'SUMMER HEAT', note: 'The grind begins. Depth starts to matter.' },
+        { key: 'jul', name: 'MIDSUMMER CLASSIC', note: 'All-Star break, trade-deadline air, races take shape.' },
+        { key: 'aug', name: 'THE DOG DAYS', note: 'Tired legs, heavy bullpens. Pretenders fade.' },
+        { key: 'sep', name: 'PENNANT RACE', note: 'Every pitch counts now. Scoreboard watching season.' }
+      ][m] || { key: 'apr', name: 'OPENING MONTH', note: '' };
+    },
+
+    _s2MastheadHTML() {
+      const S = this.state, over = S.gamesPlayed >= SEASON_LENGTH;
+      const g = over ? SEASON_LENGTH : S.gamesPlayed + 1;
+      const d = this._s2Date(g), ch = this._s2Chapter(over ? SEASON_LENGTH + 1 : g);
+      const mode = (S.modeConfig && S.modeConfig.label) || '162-0 CHALLENGE';
+      const userName = S.league ? S.league.teams[USER_TEAM_ID].name : 'Your team';
+      return `<div class="s2-mast">
+        <div class="s2-mast-l"><span class="s2-mode">${mode}</span><span class="s2-team">${userName}</span></div>
+        <div class="s2-mast-c">
+          <div class="s2-date">${over ? 'SEASON COMPLETE' : `${d.wd}, ${d.month} ${d.day}`}</div>
+          <div class="s2-chapter">${ch.name}</div>
+          <div class="s2-chnote">${ch.note}</div>
+        </div>
+        <div class="s2-mast-r"><span class="s2-gameno">${over ? 'FINAL' : `GAME ${g}`}</span><span class="s2-of">OF ${SEASON_LENGTH}</span></div>
+      </div>`;
+    },
+
+    // Rough playoff odds: each team's remaining games drawn from its record, regressed to .500.
+    _s2Odds() {
+      const L = this.state.league;
+      if (!L) return null;
+      const lg = L.teams[USER_TEAM_ID].league, rows = leagueStandings(L, lg);
+      const N = 600, sims = rows.map(t => {
+        const g = t.w + t.l, rem = Math.max(0, SEASON_LENGTH - g), p = (t.w + 20) / (g + 40);
+        return { id: t.id, w: t.w, m: rem * p, sd: Math.sqrt(rem * p * (1 - p)) };
+      });
+      let inn = 0;
+      const gauss = () => { let u = 0, v = 0; while (!u) u = Math.random(); v = Math.random(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); };
+      for (let i = 0; i < N; i++) {
+        const fin = sims.map(s => ({ id: s.id, f: s.w + s.m + s.sd * gauss() + Math.random() * 0.01 }));
+        fin.sort((a, b) => b.f - a.f);
+        if (fin.slice(0, PLAYOFF_SEEDS).some(x => x.id === USER_TEAM_ID)) inn++;
+      }
+      return inn / N;
+    },
+
+    _s2BookHTML() {
+      const S = this.state, L = S.league, R = this._s2Results().filter(Boolean);
+      const g = S.gamesPlayed;
+      if (!L) return '';
+      const sum = (f) => R.reduce((t, r) => t + f(r), 0);
+      const rs = sum(r => r[1]), ra = sum(r => r[2]);
+      const known = R.length;
+      const pyth = known ? (Math.pow(rs, 1.83) / (Math.pow(rs, 1.83) + Math.pow(ra, 1.83) || 1)) : 0.5;
+      const rec = f => { const x = R.filter(f); const w = x.filter(r => r[0]).length; return `${w}-${x.length - w}`; };
+      const pace = g ? Math.round(S.wins / g * SEASON_LENGTH) : 0;
+      const lg = L.teams[USER_TEAM_ID].league, rows = leagueStandings(L, lg), me = rows.find(t => t.id === USER_TEAM_ID);
+      let magic = '';
+      if (g && g < SEASON_LENGTH) {
+        // magic / elimination numbers only once they mean something (inside 40)
+        if (me.rank <= PLAYOFF_SEEDS) { const nx = rows[PLAYOFF_SEEDS]; const m = SEASON_LENGTH + 1 - me.w - (nx ? nx.l : 0); magic = m <= 0 ? '<b>CLINCHED</b>' : m <= 40 ? `<b>${m}</b><small>MAGIC #</small>` : ''; }
+        else { const last = rows[PLAYOFF_SEEDS - 1]; const e = SEASON_LENGTH + 1 - last.w - me.l; magic = e <= 0 ? '<b>OUT</b>' : e <= 40 ? `<b>${e}</b><small>ELIM #</small>` : ''; }
+      }
+      const odds = g && g < SEASON_LENGTH ? this._s2Odds() : null;
+      const oddsTxt = odds === null ? '—' : odds >= 0.995 ? '>99%' : odds <= 0.005 ? '<1%' : `${Math.round(odds * 100)}%`;
+      const diff = rs - ra;
+      // team leaders and where they are headed
+      const bats = [...Object.values(S.roster.lineup || {}), ...(S.roster.bench || [])].filter(Boolean)
+        .map(p => ({ p, s: S.batterStats[batterUnlockKey(p)] || {} }));
+      const pits = [...(S.roster.pitchers.SP || []), ...(S.roster.pitchers.RP || [])].filter(Boolean)
+        .map(p => ({ p, s: S.pitcherStats[pitcherUnlockKey(p)] || {} }));
+      const last = n => String(n || '').split(' ').slice(-1)[0];
+      const hr = bats.slice().sort((a, b) => (b.s.hr || 0) - (a.s.hr || 0))[0];
+      const avgQ = bats.filter(x => (x.s.ab || 0) >= Math.max(10, g * 2.4)).sort((a, b) => (b.s.h / b.s.ab) - (a.s.h / a.s.ab))[0];
+      const sbL = bats.slice().sort((a, b) => (b.s.sb || 0) - (a.s.sb || 0))[0];
+      const kL = pits.slice().sort((a, b) => (b.s.so || 0) - (a.s.so || 0))[0];
+      const pace162 = v => g ? Math.round((v || 0) / g * SEASON_LENGTH) : 0;
+      const tile = (lab, val, sub, cls) => `<div class="s2-tile ${cls || ''}"><small>${lab}</small><b>${val}</b>${sub ? `<i>${sub}</i>` : ''}</div>`;
+      const lead = (lab, who, val, sub) => who ? `<div class="s2-lead"><small>${lab}</small><b>${last(who.s.name || cleanName(who.p))}</b><span>${val}</span>${sub ? `<i>${sub}</i>` : ''}</div>` : '';
+      return `<div class="s2-book">
+        <div class="s2-h">📒 THE BOOK <span>the numbers behind the record</span></div>
+        <div class="s2-tiles">
+          ${tile('RUN DIFF', `${diff > 0 ? '+' : ''}${diff}`, `${rs} scored · ${ra} allowed`, diff > 0 ? 'pos' : diff < 0 ? 'neg' : '')}
+          ${tile('PYTHAG W-L', known ? `${Math.round(pyth * known)}-${known - Math.round(pyth * known)}` : '—', known ? `luck ${(() => { const lw = R.filter(r => r[0]).length - Math.round(pyth * known); return (lw > 0 ? '+' : '') + lw; })()}` : '')}
+          ${tile('1-RUN GAMES', rec(r => Math.abs(r[1] - r[2]) === 1))}
+          ${tile('EXTRAS', rec(r => r[5] > 9))}
+          ${tile('HOME · ROAD', `${rec(r => r[4])} · ${rec(r => !r[4])}`)}
+          ${tile('BLOWOUTS', rec(r => Math.abs(r[1] - r[2]) >= 5), '5+ runs')}
+          ${tile('ON PACE FOR', g ? `${pace}-${SEASON_LENGTH - pace}` : '—')}
+          ${tile('PLAYOFF ODDS', oddsTxt, magic ? '' : '', odds !== null && odds >= 0.5 ? 'pos' : odds !== null && odds < 0.2 ? 'neg' : '')}
+          ${magic ? `<div class="s2-tile s2-magic">${magic}</div>` : ''}
+        </div>
+        <div class="s2-leads">
+          ${lead('HR', hr, hr ? hr.s.hr || 0 : 0, g ? `pace ${pace162(hr && hr.s.hr)}` : '')}
+          ${lead('AVG', avgQ, avgQ ? (avgQ.s.h / avgQ.s.ab).toFixed(3).replace(/^0/, '') : '', '')}
+          ${lead('SB', sbL, sbL ? sbL.s.sb || 0 : 0, g ? `pace ${pace162(sbL && sbL.s.sb)}` : '')}
+          ${lead('K', kL, kL ? kL.s.so || 0 : 0, g ? `pace ${pace162(kL && kL.s.so)}` : '')}
+        </div>
+      </div>`;
+    },
+
+    // The 162 as a calendar: one square per game, a block per month, the All-Star break marked.
+    _s2CalendarHTML(fresh) {
+      const S = this.state, R = this._s2Results(), L = S.league;
+      const names = ['APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPT'];
+      const oppName = id => (L && L.teams[id] ? L.teams[id].name : id || '');
+      const blocks = [];
+      for (let m = 0; m < 6; m++) {
+        const from = m * MONTH_GAMES, to = from + MONTH_GAMES;
+        let w = 0, l = 0;
+        const cells = [];
+        for (let i = from; i < to; i++) {
+          const r = R[i], played = i < S.gamesPlayed;
+          let cls = 'fut', tip = `Game ${i + 1}`;
+          if (played && r) {
+            cls = r[0] ? 'w' : 'l'; r[0] ? w++ : l++;
+            const m2 = Math.abs(r[1] - r[2]);
+            if (m2 >= 5) cls += ' big'; else if (m2 === 1) cls += ' one';
+            tip = `G${i + 1} · ${r[0] ? 'W' : 'L'} ${r[1]}-${r[2]}${r[5] > 9 ? ` (${r[5]})` : ''} ${r[4] ? 'vs' : '@'} ${oppName(r[3])}`;
+          } else if (played) { cls = 'old'; tip = `G${i + 1} · played`; }
+          else if (i === S.gamesPlayed) cls = 'next';
+          const isNew = fresh && played && i >= fresh.from;
+          cells.push(`<i class="s2-c ${cls}${isNew ? ' new' : ''}"${isNew ? ` style="--d:${(i - fresh.from) * 70}ms"` : ''} title="${tip.replace(/"/g, '&quot;')}"></i>${i + 1 === ALLSTAR_DAY ? '<i class="s2-c asg" title="All-Star break">★</i>' : ''}`);
+        }
+        const cur = S.gamesPlayed >= from && S.gamesPlayed < to;
+        blocks.push(`<div class="s2-month${cur ? ' cur' : ''}">
+          <div class="s2-mh"><span>${names[m]}</span><b>${w + l ? `${w}-${l}` : ''}</b></div>
+          <div class="s2-grid">${cells.join('')}</div>
+        </div>`);
+      }
+      return `<div class="s2-cal">
+        <div class="s2-h">🗓 THE SCHEDULE <span>162 games · hover a square for the box line</span>
+          <span class="s2-legend"><i class="s2-c w"></i>W <i class="s2-c l"></i>L <i class="s2-c w big"></i>5+ runs <i class="s2-c w one"></i>1 run</span></div>
+        <div class="s2-months">${blocks.join('')}</div>
+      </div>`;
+    },
+
+    // Pennant race chart: games over .500 and distance to the playoff cut, game by game.
+    _s2RaceHTML() {
+      const S = this.state, R = this._s2Results();
+      const pts = []; let w = 0, l = 0;
+      R.forEach((r, i) => { if (r) { r[0] ? w++ : l++; pts.push({ x: i + 1, o5: w - l, cut: r[6] / 2 }); } });
+      const W = 640, H = 170, padL = 30, padR = 10, padT = 12, padB = 22;
+      if (pts.length < 2) return `<div class="s2-race"><div class="s2-h">📈 THE RACE <span>games over .500 · distance to a playoff spot</span></div><div class="s2-empty">The race chart starts drawing after a couple of games.</div></div>`;
+      const vals = pts.flatMap(p => [p.o5, p.cut]);
+      let lo = Math.min(-4, ...vals), hi = Math.max(4, ...vals);
+      const span = hi - lo; lo -= span * 0.08; hi += span * 0.08;
+      const X = x => padL + (x - 1) / (SEASON_LENGTH - 1) * (W - padL - padR);
+      const Y = v => padT + (hi - v) / (hi - lo) * (H - padT - padB);
+      const path = f => pts.map((p, i) => `${i ? 'L' : 'M'}${X(p.x).toFixed(1)},${Y(f(p)).toFixed(1)}`).join('');
+      const lastP = pts[pts.length - 1];
+      const ticks = [];
+      const step = span > 40 ? 20 : span > 16 ? 10 : 5;
+      for (let v = Math.ceil(lo / step) * step; v <= hi; v += step) ticks.push(`<line x1="${padL}" x2="${W - padR}" y1="${Y(v)}" y2="${Y(v)}" class="g${v === 0 ? ' z' : ''}"/><text x="${padL - 4}" y="${Y(v) + 3}" class="t">${v > 0 ? '+' : ''}${v}</text>`);
+      const months = ['APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP'].map((m, i) => `<text x="${X(i * MONTH_GAMES + 1) + 2}" y="${H - 6}" class="t m">${m}</text><line x1="${X(i * MONTH_GAMES + 1)}" x2="${X(i * MONTH_GAMES + 1)}" y1="${padT}" y2="${H - padB}" class="g v"/>`).join('');
+      const cutTxt = lastP.cut > 0 ? `${lastP.cut} up on the cut` : lastP.cut < 0 ? `${-lastP.cut} back of a spot` : 'on the bubble';
+      return `<div class="s2-race">
+        <div class="s2-h">📈 THE RACE <span><b class="k1">━</b> games over .500 <b class="k2">━</b> vs the playoff cut</span></div>
+        <svg viewBox="0 0 ${W} ${H}" class="s2-svg" preserveAspectRatio="none">
+          ${ticks.join('')}${months}
+          <path d="${path(p => p.cut)}" class="l2"/>
+          <path d="${path(p => p.o5)} L${X(lastP.x).toFixed(1)},${Y(Math.max(lo, Math.min(hi, 0))).toFixed(1)} L${X(pts[0].x).toFixed(1)},${Y(Math.max(lo, Math.min(hi, 0))).toFixed(1)} Z" class="a1"/>
+          <path d="${path(p => p.o5)}" class="l1"/>
+          <circle cx="${X(lastP.x)}" cy="${Y(lastP.o5)}" r="3.5" class="d1"/>
+          <circle cx="${X(lastP.x)}" cy="${Y(lastP.cut)}" r="3" class="d2"/>
+        </svg>
+        <div class="s2-race-foot"><span>${lastP.o5 >= 0 ? '+' : ''}${lastP.o5} over .500</span><span class="${lastP.cut >= 0 ? 'pos' : 'neg'}">${cutTxt}</span></div>
+      </div>`;
+    },
+
+    // Tonight's game as a broadcast preview: both teams, the starters face to face, storylines.
+    _s2MatchupHTML() {
+      const S = this.state, L = S.league;
+      if (!L || S.gamesPlayed >= SEASON_LENGTH) return '';
+      const sched = S.schedule[S.gamesPlayed];
+      const oppRec = L.teams[sched.id] || Object.values(L.teams).find(t => t.code === sched.code);
+      if (!oppRec) return '';
+      const me = L.teams[USER_TEAM_ID];
+      const opp = getFranchiseDecadeTeam(oppRec.code, oppRec.decade);
+      const oppRot = getFranchiseStaff(oppRec.code, oppRec.decade).rotation;
+      const oppSP = oppRot && oppRot.length ? oppRot[(oppRec.w + oppRec.l) % oppRot.length] : opp.pitcher;
+      const spList = S.roster.pitchers.SP || [];
+      const mySP = spList[S.gamesPlayed % spList.length];
+      const home = L.day % 2 === 1;
+      const eraKey = y => { y = parseInt(y, 10) || 2020; return y <= 1900 ? 'genesis' : y <= 1919 ? 'deadball' : y <= 1941 ? 'golden' : y <= 1960 ? 'integration' : y <= 1976 ? 'expansion' : y <= 1993 ? 'bighair' : y <= 2005 ? 'steroid' : y <= 2015 ? 'efficiency' : 'modern'; };
+      const face = p => (window.CardArt && p ? window.CardArt.portrait(p, eraKey(p.year || p.peak_year), true) : '');
+      const ipf = o => `${Math.floor((o || 0) / 3)}.${(o || 0) % 3}`;
+      const line = st => {
+        const ip = (st.outs || 0) / 3;
+        return ip ? `${st.w || 0}-${st.l || 0} · ${(st.er * 9 / ip).toFixed(2)} ERA · ${ipf(st.outs)} IP · ${st.so || 0} K` : 'season debut';
+      };
+      const myLine = line(S.pitcherStats[pitcherUnlockKey(mySP)] || {});
+      const opLine = line((L.stats && L.stats.pit && L.stats.pit[this._leagueKey(oppRec.id, pitcherUnlockKey(oppSP))]) || {});
+      const colors = window.CardArt && window.CardArt.TEAM_COLORS || {};
+      const oc = colors[String(oppRec.code).toUpperCase()] || '#64748b';
+      const strk = t => t.streak > 0 ? `W${t.streak}` : t.streak < 0 ? `L${-t.streak}` : '—';
+      // storylines
+      const R = this._s2Results().filter(Boolean);
+      const h2h = R.filter(r => r[3] === oppRec.id);
+      const stories = [];
+      if (h2h.length) { const hw = h2h.filter(r => r[0]).length; stories.push(`📋 Season series: <b>${hw}-${h2h.length - hw}</b>${hw > h2h.length - hw ? ', you have their number' : hw < h2h.length - hw ? ', they have had your number' : ''}.`); }
+      else stories.push(`📋 First meeting of the year with the ${oppRec.name}.`);
+      if ((me.streak || 0) >= 4) stories.push(`🔥 You ride a <b>${me.streak}-game</b> win streak.`);
+      else if ((me.streak || 0) <= -3) stories.push(`🧊 Losers of <b>${-me.streak}</b> straight: somebody has to stop the bleeding.`);
+      if ((oppRec.streak || 0) >= 4) stories.push(`⚠️ The ${oppRec.name.split(' ').slice(-1)[0]} have won <b>${oppRec.streak}</b> in a row.`);
+      const bats = Object.values(S.roster.lineup || {}).filter(Boolean);
+      const hot = bats.map(p => ({ p, f: this._playerForm(USER_TEAM_ID, p, false) })).filter(x => x.f && x.f.delta > 0).sort((a, b) => b.f.delta - a.f.delta)[0];
+      if (hot) stories.push(`🌶 <b>${cleanName(hot.p)}</b> is swinging a hot bat.`);
+      const g = S.gamesPlayed;
+      if (g >= 20) {
+        const big = bats.map(p => ({ p, s: S.batterStats[batterUnlockKey(p)] || {} })).sort((a, b) => (b.s.hr || 0) - (a.s.hr || 0))[0];
+        const pace = big ? Math.round((big.s.hr || 0) / g * SEASON_LENGTH) : 0;
+        if (pace >= 40) stories.push(`💣 <b>${cleanName(big.p)}</b> is on pace for <b>${pace}</b> home runs.`);
+      }
+      const rows = leagueStandings(L, me.league), mine = rows.find(t => t.id === USER_TEAM_ID);
+      if (g >= 100 && Math.abs(mine.rank - PLAYOFF_SEEDS - 0.5) < 2.5) stories.push(`🎟 Pennant-race game: you sit <b>#${mine.rank}</b> in the ${me.league}, top ${PLAYOFF_SEEDS} go to October.`);
+      const lineupHTML = opp.lineup.slice(0, 9).map((p, i) => `<div class="s2-ol"><span>${i + 1}</span><em>${p.assignedSlot || p.pos}</em><b>${cleanName(p)}${this._formTag(oppRec.id, p, false)}</b><i>${Math.floor(p.ovr || 0)}</i></div>`).join('');
+      return `<div class="s2-match" style="--oc:${oc}">
+        <div class="s2-mtop">
+          <div class="s2-tm me"><small>${home ? 'HOME' : 'AWAY'}</small><b>${me.name}</b><span>${me.w}-${me.l} · ${strk(me)}</span></div>
+          <div class="s2-vs"><span>TONIGHT</span><b>${home ? 'vs' : '@'}</b></div>
+          <div class="s2-tm op"><small>${home ? 'AWAY' : 'HOME'}</small><b>${oppRec.name}</b><span>${oppRec.w}-${oppRec.l} · ${strk(oppRec)}</span></div>
+        </div>
+        <div class="s2-mbody">
+          <div class="s2-duel">
+            <div class="s2-sp"><i style="background-image:url(${face(mySP)})"></i><div><small>YOUR STARTER</small><b>${cleanName(mySP)}${this._formTag(USER_TEAM_ID, mySP, true)}</b><span>${myLine}</span><em>OVR ${Math.floor(mySP.ovr || 0)}</em></div></div>
+            <div class="s2-sp op"><i style="background-image:url(${face(oppSP)})"></i><div><small>THEIR STARTER</small><b>${cleanName(oppSP)}${this._formTag(oppRec.id, oppSP, true)}</b><span>${opLine}</span><em>OVR ${Math.floor(oppSP.ovr || 0)}</em></div></div>
+            <div class="s2-stories">${stories.slice(0, 3).map(s => `<div>${s}</div>`).join('')}</div>
+          </div>
+          <div class="s2-olineup"><small>THEIR NINE</small>${lineupHTML}</div>
+        </div>
+      </div>`;
+    },
+
+    // The BaseRogue Gazette: the day's big story about your club, then the rest of the league.
+    _s2GazetteHTML() {
+      const S = this.state, L = S.league, lg = S.lastGame;
+      if (!L) return '';
+      const me = L.teams[USER_TEAM_ID];
+      const strip = t => String(t).replace(/^[^A-Za-z0-9"'(]+/u, '').trim();
+      let head = '', deck = '';
+      if (lg && lg.game === S.gamesPlayed) {
+        const [a, b] = lg.runs, m = Math.abs(a - b);
+        const oppS = String(lg.opp).split(' ').slice(-1)[0].toUpperCase();
+        const meS = String(me.name).split(' ').slice(-1)[0].toUpperCase();
+        const verb = lg.won ? (m >= 7 ? 'ROUT' : m >= 4 ? 'POUND' : m === 1 ? 'EDGE' : 'TOP') : (m >= 7 ? 'ROUTED BY' : m === 1 ? 'FALL TO' : 'DROP ONE TO');
+        head = `${meS} ${verb} ${oppS} ${Math.max(a, b)}-${Math.min(a, b)}${lg.innings > 9 ? ` IN ${lg.innings}` : ''}`;
+        deck = lg.star ? `${lg.star.name}: ${lg.star.text}.` : '';
+        if (lg.won && (me.streak || 0) >= 5) deck += ` Streak reaches ${me.streak}.`;
+      }
+      const mine = (L.headlines || []).filter(h => h.kind === 'user' && h.day >= L.day - 2).slice(0, 1);
+      if (mine.length && !/went \d+-\d+/.test(mine[0].text)) { deck = head ? `${head}. ${deck}` : deck; head = strip(mine[0].text).toUpperCase(); }
+      if (!head) head = S.gamesPlayed ? `${String(me.name).toUpperCase()} AT ${me.w}-${me.l}` : 'PLAY BALL! OPENING DAY IS HERE';
+      const others = (L.headlines || []).filter(h => !mine.includes(h)).slice(0, 4);
+      const d = this._s2Date(Math.max(1, S.gamesPlayed));
+      return `<div class="s2-gazette">
+        <div class="s2-gz-mast"><span>VOL. CLXII</span><b>The BaseRogue Gazette</b><span>${d.wd.slice(0, 3)} · ${d.month.slice(0, 3)} ${d.day}</span></div>
+        <div class="s2-gz-head">${head}</div>
+        ${deck ? `<div class="s2-gz-deck">${deck}</div>` : ''}
+        <div class="s2-gz-cols">${others.map(h => `<div class="s2-gz-item kind-${h.kind}"><small>DAY ${h.day}</small>${strip(h.text)}</div>`).join('') || '<div class="s2-gz-item">Around the league: quiet so far.</div>'}</div>
+      </div>`;
+    },
+
+    // After "simulate 10" / "until next loss": the new squares fill in one by one and a recap shows.
+    _s2Recap(from) {
+      const S = this.state, R = this._s2Results().slice(from).filter(Boolean);
+      if (R.length < 2) return '';
+      const w = R.filter(r => r[0]).length, rs = R.reduce((t, r) => t + r[1], 0), ra = R.reduce((t, r) => t + r[2], 0);
+      const best = R.reduce((b, r) => (r[1] - r[2] > (b ? b[1] - b[2] : -99) ? r : b), null);
+      return `<div class="s2-recap"><b>${R.length} GAMES · ${w}-${R.length - w}</b><span>outscored ${rs}-${ra}</span>${best ? `<span>best: ${best[1]}-${best[2]}</span>` : ''}<span>now ${S.wins}-${S.losses}</span></div>`;
+    },
+    _s2Play(fn) {
+      const from = this.state.gamesPlayed, w0 = this.state.wins, l0 = this.state.losses;
+      this.stopAutoSim();
+      fn();
+      this._s2Fresh = { from, w0, l0 };
+      this.renderSeason();
+      this._s2Fresh = null;
+      const played = this.state.gamesPlayed - from;
+      if (played <= 0) return;
+      // record counter rolls up to the new numbers
+      const roll = (sel, a, b) => {
+        const el = document.querySelector(sel); if (!el || a === b) return;
+        const t0 = performance.now(), dur = Math.min(1400, 120 * (b - a) + 300);
+        const step = now => { const k = Math.min(1, (now - t0) / dur); el.textContent = String(Math.round(a + (b - a) * k)); if (k < 1) requestAnimationFrame(step); };
+        requestAnimationFrame(step); setTimeout(() => { el.textContent = String(b); }, dur + 60);
+      };
+      roll('#challenge162-season-container .c162-rec-w', w0, this.state.wins);
+      roll('#challenge162-season-container .c162-rec-l', l0, this.state.losses);
+      if (window.AudioManager && typeof window.AudioManager.play === 'function' && played > 1) {
+        for (let i = 0; i < Math.min(played, 12); i++) setTimeout(() => { try { window.AudioManager.play('menu_click'); } catch (e) {} }, i * 70);
+      }
+    },
 
     _teamLabel(t) {
       return t.isUser ? `<strong>${t.name}</strong>` : t.name;
@@ -10910,7 +11242,7 @@
           ${rows}
           <div class="c162-mini-note">Top ${PLAYOFF_SEEDS} of each league make the playoffs</div>
         </div>
-        ${heads ? `<div class="c162-headlines">
+        ${heads && !(this.state && this.state.league && document.querySelector('#challenge162-season-container.s2')) ? `<div class="c162-headlines">
           <div class="c162-mini-title"><span>📰 AROUND THE LEAGUE</span></div>
           ${heads}
         </div>` : ''}`;
