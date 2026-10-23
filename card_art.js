@@ -1,6 +1,7 @@
 // Card art for the 2.0 trading card (createCardHTML in ui.js builds the markup).
-// - Pixel portrait generated from the player id: always the same face for the same
-//   player, printed in two inks (team colour + the paper / ink of the card's era).
+// - Pixel portrait generated from the player id: the same face for the same player
+//   during a session, a new face each time the game is opened (SESSION_SEED),
+//   printed in two inks (team colour + the paper / ink of the card's era).
 //   Two inks on purpose: there is no data on what each player looked like, and a
 //   random skin tone would misrepresent real people.
 // - Flip: the small ↻ button turns any card; inside the Dex detail a click flips it.
@@ -31,7 +32,15 @@
   };
 
   function hexToRgb(h) { const n = parseInt(h.slice(1), 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; }
+  const _mixCache = new Map();
   function mix(a, b, t) {
+    const k = a + b + t, hit = _mixCache.get(k);
+    if (hit) return hit;
+    const v = mixRaw(a, b, t);
+    _mixCache.set(k, v);
+    return v;
+  }
+  function mixRaw(a, b, t) {
     const A = hexToRgb(a), B = hexToRgb(b);
     return '#' + A.map((v, i) => Math.round(v + (B[i] - v) * t).toString(16).padStart(2, '0')).join('');
   }
@@ -39,6 +48,20 @@
   function hash(x) { let h = 2166136261; for (const c of String(x)) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return h; }
 
   const cache = new Map();
+  // One shared canvas; each portrait is painted into a pixel buffer and copied in once.
+  const _rgba = new Map();
+  function rgba(col) {
+    let v = _rgba.get(col);
+    if (!v) {
+      const n = parseInt(col.slice(1, 7), 16);
+      v = [n >> 16 & 255, n >> 8 & 255, n & 255, col.length > 7 ? parseInt(col.slice(7, 9), 16) / 255 : 1];
+      _rgba.set(col, v);
+    }
+    return v;
+  }
+  let _cv = null, _ctx = null, _img = null;
+  // A new set of faces every time the game is opened; within a session each player keeps his face.
+  const SESSION_SEED = (Math.random() * 4294967296) >>> 0;
 
   function portrait(player, eraKey, isPitcher) {
     const team = String(player.team || 'HIST').toUpperCase();
@@ -57,12 +80,17 @@
     else if (eraKey === 'deadball') ac = mix(ac, '#5a3b21', 0.45); // faded lithograph
     const acDark = mix(ac, '#000000', 0.35), acLight = mix(ac, '#ffffff', 0.55);
 
-    const W = 24, H = 18, S = 6;
-    const cv = document.createElement('canvas');
-    cv.width = W * S; cv.height = H * S;
-    const c = cv.getContext('2d');
-    const R = rng(hash(id));
-    const px = (x, y, col) => { c.fillStyle = col; c.fillRect(x * S, y * S, S, S); };
+    const W = 24, H = 18, S = 1;   // drawn at its real pixel size; the CSS scales it up (image-rendering: pixelated)
+    if (!_cv) { _cv = document.createElement('canvas'); _cv.width = W * S; _cv.height = H * S; _ctx = _cv.getContext('2d'); _img = _ctx.createImageData(W, H); }
+    const buf = _img.data;
+    const R = rng(hash(id) ^ SESSION_SEED);
+    const px = (x, y, col) => {
+      if (x < 0 || y < 0 || x >= W || y >= H) return;
+      const [r, g, b, a] = rgba(col), i = (y * W + x) * 4;
+      if (a >= 1) { buf[i] = r; buf[i + 1] = g; buf[i + 2] = b; }
+      else { buf[i] += (r - buf[i]) * a; buf[i + 1] += (g - buf[i + 1]) * a; buf[i + 2] += (b - buf[i + 2]) * a; }
+      buf[i + 3] = 255;
+    };
 
     // Backdrop per era, like the photos / paintings of real cards of that time (the face keeps its two inks).
     const vgrad = (top, bot) => { for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) px(x, y, mix(top, bot, y / (H - 1))); };
@@ -70,7 +98,7 @@
     switch (eraKey) {
       case 'genesis': vgrad('#9a8462', '#4e3c27'); break;                                   // studio backdrop
       case 'deadball': vgrad('#cfdbd2', '#eadfc2'); break;                                  // pale lithograph
-      case 'golden': { const g = GOLDEN_BG[(hash(id + 'bg') >>> 0) % GOLDEN_BG.length];             // flat painted colour
+      case 'golden': { const g = GOLDEN_BG[((hash(id + 'bg') ^ SESSION_SEED) >>> 0) % GOLDEN_BG.length];             // flat painted colour
         vgrad(g, mix(g, '#ffffff', 0.25));
         for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (((x - 12) ** 2) / 70 + ((y - 7) ** 2) / 40 < 1) px(x, y, mix(g, '#ffffff', 0.45)); break; }
       case 'integration': vgrad('#8fb9d6', '#e3edf0'); break;                               // painted sky
@@ -124,7 +152,8 @@
     if (R() < look[2]) for (let y = top + 4; y < ey + 3; y++) { px(cx - hw, y, dk); px(cx + hw, y, dk); }
     if ((eraKey === 'modern' || eraKey === 'efficiency') && R() < 0.25) { px(cx - eg, ey + 1, dk); px(cx + eg, ey + 1, dk); } // eye black
 
-    const url = cv.toDataURL();
+    _ctx.putImageData(_img, 0, 0);
+    const url = _cv.toDataURL();
     cache.set(key, url);
     return url;
   }
@@ -144,21 +173,67 @@
 
   function fmtIp(v) { return v === undefined || v === null || v === '-' ? '-' : String(v); }
 
-  // Fills the lazy part of the back (career line, honours, flag) the first time the card turns.
-  function fillBack(card) {
-    const slot = card.querySelector('.pc2-back-lazy');
-    if (!slot || slot.dataset.done) return;
-    slot.dataset.done = '1';
-    const pid = card.dataset.pid, name = card.dataset.name, isP = card.dataset.kind === 'P';
-    const probe = { playerID: pid || undefined, name, year: card.dataset.year };
-    let cs = null;
-    try { cs = typeof window.getPlayerCareerData === 'function' ? window.getPlayerCareerData(probe) : null; } catch (e) { cs = null; }
-    const t = (k, d) => (typeof window.t === 'function' ? window.t(k, { defaultValue: d }) : d);
-    let line = '';
+  // ── Card back: a bubble-gum card back (card_backs.js: bio + one line averaged from the peaks).
+  // The data file (~1.3 MB) is fetched the first time any card is turned over.
+  let backsState = window.CardBacks ? 'ready' : 'idle';
+  const backsWaiting = [];
+  function withBacks(cb) {
+    if (window.CardBacks) { cb(); return; }
+    backsWaiting.push(cb);
+    if (backsState !== 'idle') return;
+    backsState = 'loading';
+    const s = document.createElement('script');
+    s.src = 'card_backs.js?v=1';
+    const done = () => { backsState = 'ready'; backsWaiting.splice(0).forEach(f => { try { f(); } catch (e) { console.warn('card back', e); } }); };
+    s.onload = done; s.onerror = done;
+    document.head.appendChild(s);
+  }
+  // Maker's line at the foot of the back, one per era (made-up brands, never real ones).
+  const ERA_BACK = {
+    genesis: ['Cabinet Card Co.', 'Photographic studio card'], deadball: ['Old Diamond Tobacco', 'Free with every pack'],
+    golden: ['Big League Gum', 'One slab of gum inside'], integration: ['Painted Stars Gum', 'Collect the whole set'],
+    expansion: ['Pennant Gum Co.', 'Baseball quiz inside'], bighair: ['Woodgrain Gum Co.', 'Wax pack · 15 cards'],
+    steroid: ['Foil Series', 'Premium collector card'], efficiency: ['Flagship Series', 'Official licensed set'],
+    modern: ['Chrome Series', 'Refractor parallel']
+  };
+  const f3 = v => (v == null ? '—' : Number(v).toFixed(3).replace(/^0(?=\.)/, ''));
+  const nz = v => (v == null ? '—' : v);
+  const ipTxt = v => { if (v == null) return '—'; const w = Math.floor(v), f = Math.round((v - w) * 3); return f >= 3 ? String(w + 1) : f ? `${w}.${f}` : String(w); };
+  const htTxt = inch => inch ? `${Math.floor(inch / 12)}'${inch % 12}"` : '—';
+  const yr2 = y => "'" + String(y).slice(-2);
+
+  function backHTML(card, cs, flag) {
+    const d = card.dataset, isP = d.kind === 'P';
+    const pid = d.pid || '';
+    const B = window.CardBacks || {};
+    const row = isP ? (B.pit || {})[pid] : (B.bat || {})[pid];
+    const bio = (B.bio || {})[pid.split('_')[0]];
+    const era = (card.className.match(/pc2-e-(\w+)/) || [])[1] || 'modern';
+    const t = (k, dflt) => (typeof window.t === 'function' ? window.t(k, { defaultValue: dflt }) : dflt);
+    const no = (hash(pid || d.name) >>> 0) % 792 + 1;
+    const cell = (k, v) => `<div><span>${k}</span><b>${v}</b></div>`;
+    let peak = '';
+    if (row) {
+      const span = row[0] === row[1] ? yr2(row[0]) : `${yr2(row[0])}–${yr2(row[1])}`;
+      const cap = isP ? t('card.back_peak_p', 'PEAK · AVERAGE SEASON') : t('card.back_peak_b', 'PEAK · 162-GAME AVERAGE');
+      const g1 = isP
+        ? [['W', row[3]], ['L', row[4]], ['ERA', Number(row[5]).toFixed(2)], ['G', row[6]], ['GS', row[7]], ['SV', row[8]]]
+        : [['AB', row[3]], ['R', row[4]], ['H', row[5]], ['2B', row[6]], ['3B', row[7]], ['HR', row[8]], ['RBI', row[9]]];
+      const g2 = isP
+        ? [['IP', ipTxt(row[9])], ['H', row[10]], ['HR', row[11]], ['BB', row[12]], ['SO', row[13]], ['WHIP', Number(row[14]).toFixed(2)]]
+        : [['SB', row[10]], ['BB', row[12]], ['SO', nz(row[13])], ['AVG', f3(row[14])], ['OBP', f3(row[15])], ['SLG', f3(row[16])], ['FLD', row[17] == null ? '—' : (row[17] > 0 ? '+' : '') + row[17]]];
+      peak = `<div class="bk-box">
+          <div class="bk-cap"><span>${cap}</span><span>${span}</span></div>
+          <div class="bk-grid bk-c${g1.length}">${g1.map(([k, v]) => cell(k, v)).join('')}</div>
+          <div class="bk-grid bk-c${g2.length}">${g2.map(([k, v]) => cell(k, v)).join('')}</div>
+        </div>`;
+    }
+    let career = '';
     if (cs) {
-      line = isP
-        ? `${cs.w ?? '-'}-${cs.l ?? '-'} · ERA ${cs.era ?? '-'} · ${fmtIp(cs.ip)} IP · ${cs.so ?? '-'} K`
+      career = isP
+        ? `${cs.w ?? '-'}-${cs.l ?? '-'} · ${cs.era ?? '-'} ERA · ${fmtIp(cs.ip)} IP · ${cs.so ?? '-'} SO`
         : `${cs.g ?? '-'} G · ${cs.avg ?? '-'} · ${cs.hr ?? '-'} HR · ${cs.sb ?? '-'} SB`;
+      if (cs.war !== undefined && cs.war !== '-') career += ` · ${cs.war} WAR`;
     }
     const honors = [];
     if (cs) {
@@ -170,16 +245,45 @@
       if (cs.roy) honors.push('ROY');
       if (cs.hof) honors.push('Hall of Fame');
     }
-    if (card.dataset.badges) honors.push(card.dataset.badges);
-    let flag = '';
+    if (d.badges) honors.push(d.badges);
+    const rts = (d.rt || '').split('|').filter(Boolean).map(x => { const [k, v] = x.split(' '); return cell(k, v); }).join('');
+    const brand = ERA_BACK[era] || ERA_BACK.modern;
+    const bioLine = bio
+      ? `<b>HT</b> ${htTxt(bio[0])} <b>WT</b> ${bio[1] || '—'}${d.hand ? ` <b>B/T</b> ${d.hand}` : ''}`
+      : (d.hand ? `<b>B/T</b> ${d.hand}` : '');
+    const bornLine = bio && (bio[2] || bio[3]) ? `<b>BORN</b> ${[bio[2], bio[3]].filter(Boolean).join(', ')}` : '';
+    return `
+      <div class="bk-top">
+        <span class="bk-no">${no}</span>
+        <div class="bk-id"><div class="bk-name">${d.name || ''}${flag ? ` <span class="pc2-flag">${flag}</span>` : ''}</div>
+          <div class="bk-team">${d.pos || ''} · ${d.tname || ''}</div></div>
+        <span class="bk-ovr" title="${d.rar || ''}">${d.ovr || ''}</span>
+      </div>
+      ${bioLine ? `<div class="bk-bio">${bioLine}</div>` : ''}
+      ${bornLine ? `<div class="bk-bio">${bornLine}</div>` : ''}
+      ${peak}
+      ${career ? `<div class="bk-sec"><span>${t('card.career', 'CAREER')}</span>${career}</div>` : ''}
+      ${honors.length ? `<div class="bk-sec"><span>${t('card.honors', 'HONORS')}</span>${honors.join(' · ')}</div>` : ''}
+      ${rts ? `<div class="bk-rt">${rts}</div>` : ''}
+      <div class="bk-foot"><span>${brand[0]}</span><span>${brand[1]}</span></div>`;
+  }
+
+  // Builds the back the first time the card turns over.
+  function fillBack(card) {
+    const back = card.querySelector('.pc2-back');
+    if (!back || back.dataset.done) return;
+    back.dataset.done = '1';
+    const probe = { playerID: card.dataset.pid || undefined, name: card.dataset.name, year: card.dataset.year };
+    let cs = null, flag = '';
+    try { cs = typeof window.getPlayerCareerData === 'function' ? window.getPlayerCareerData(probe) : null; } catch (e) { cs = null; }
     try { flag = typeof window.getPlayerFlagHTML === 'function' ? window.getPlayerFlagHTML(probe) : ''; } catch (e) { flag = ''; }
-    slot.innerHTML = `
-      ${line ? `<div class="pc2-lab">${t('card.career', 'CAREER')}${cs && cs.war !== '-' ? ` · WAR ${cs.war}` : ''}</div><div class="pc2-line">${line}</div>` : ''}
-      ${honors.length ? `<div class="pc2-lab">${t('card.honors', 'HONORS')}</div><div class="pc2-line">${honors.join(' · ')}</div>` : ''}
-`;
-    const bh = card.querySelector('.pc2-bh span');
-    if (flag && bh && !bh.querySelector('img')) bh.insertAdjacentHTML('beforeend', ` <span class="pc2-flag">${flag}</span>`);
-    card.querySelectorAll('.pc2-back img').forEach(img => { img.onerror = () => img.remove(); });
+    withBacks(() => {
+      const keep = [...back.querySelectorAll('.pc2-flip, .pc2-tex, .pc2-wear')];
+      back.innerHTML = `<div class="bk">${backHTML(card, cs, flag)}</div>`;
+      keep.forEach(n => back.appendChild(n));
+      back.classList.add('bk-on');
+      back.querySelectorAll('img').forEach(img => { img.onerror = () => img.remove(); });
+    });
   }
 
   function flip(card) {

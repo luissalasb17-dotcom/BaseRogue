@@ -3662,7 +3662,9 @@ function initGameModeSelector() {
 
     return `
       <div style="--tc:${((window.CardArt && window.CardArt.TEAM_COLORS) || {})[String(teamFranchise).toUpperCase()] || '#3a3a3a'}" class="player-card pc2 pc2-e-${eraKey} rarity-${rarityLabel} ${isClutch ? 'has-clutch' : ''} ${isCaptain ? 'has-captain' : ''}"
-           data-pid="${esc(player.playerID || '')}" data-name="${esc(cleanName)}" data-year="${esc(year)}" data-kind="${isPitcher ? 'P' : 'B'}" data-badges="${esc(badgeNames)}">
+           data-pid="${esc(player.playerID || '')}" data-name="${esc(cleanName)}" data-year="${esc(year)}" data-kind="${isPitcher ? 'P' : 'B'}" data-badges="${esc(badgeNames)}"
+           data-pos="${esc(displayPos)}" data-tname="${esc(getFranchiseDisplayName(teamFranchise))}" data-hand="${esc(handTxt)}" data-ovr="${Math.floor(ovr)}" data-rar="${rarityLabel}"
+           data-rt="${esc(ratingList.map(([k, v]) => k + ' ' + Math.round(v)).join('|'))}">
         <div class="pc2-in">
           <div class="pc2-face pc2-front">
             <div class="pc2-top">

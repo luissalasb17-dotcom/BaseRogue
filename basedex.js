@@ -906,6 +906,26 @@
       }
     },
 
+    // Paints each slab's portrait when it comes near the screen, so opening the Dex
+    // or changing a filter does not wait for hundreds of portraits.
+    dexArtObserver() {
+      if (this._artObs) return this._artObs;
+      const paint = el => {
+        const img = el.querySelector('.dx-photo img');
+        if (img && el._dxArt) img.src = el._dxArt();
+        el._dxArt = null;
+      };
+      if (!('IntersectionObserver' in window)) return (this._artObs = { observe: paint });
+      this._artObs = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+          if (!e.isIntersecting) return;
+          this._artObs.unobserve(e.target);
+          paint(e.target);
+        });
+      }, { rootMargin: '300px 0px' });
+      return this._artObs;
+    },
+
     renderMore() {
       const grid = document.getElementById('dex-grid');
       if (!grid) return;
@@ -934,7 +954,9 @@
           const rColor = RARITY_COLORS[p.rarity] || RARITY_COLORS.Common;
           const isChallengeEligible = !!(window.Challenge162 && window.Challenge162.isUnlocked(p));
           const isPit = this.activeCategory === 'opponents' || !!p.role;
-          const art = (window.CardArt && typeof window.CardArt.portrait === 'function') ? window.CardArt.portrait(p, eraKey, isPit) : '';
+          // the portrait is painted only when the slab scrolls into view (see dexArtObserver)
+          const art = (window.CardArt && typeof window.CardArt.portrait === 'function') ? 'lazy' : '';
+          if (art) el._dxArt = () => window.CardArt.portrait(p, eraKey, isPit);
           const tc = ((window.CardArt && window.CardArt.TEAM_COLORS) || {})[String(p.team || '').toUpperCase()] || '#3a3a3a';
           el.className = `dex-card unlocked dx-r-${(p.rarity || 'Common').toLowerCase()}`;
           el.style.cssText = `--rc:${rColor};--tc:${tc}`;
@@ -942,7 +964,7 @@
           el.innerHTML = `
             ${favHTML}
             ${isChallengeEligible ? `<span class="dx-c162" title="${challenge162Tooltip}">162</span>` : ''}
-            <div class="dx-photo">${art ? `<img src="${art}" alt="" draggable="false">` : ''}<span class="dx-pos">${p.role || p.pos || 'P'}</span><span class="dx-ovr">${Math.floor(p.ovr)}</span></div>
+            <div class="dx-photo">${art ? `<img alt="" draggable="false">` : ''}<span class="dx-pos">${p.role || p.pos || 'P'}</span><span class="dx-ovr">${Math.floor(p.ovr)}</span></div>
             <div class="dx-name">${p.name}</div>
             <div class="dx-meta"><span>${p.team || ''}</span><span>'${String(p.year).slice(-2)}</span></div>
             <div class="dx-rar">${p.rarity || 'Common'}</div>
@@ -958,6 +980,7 @@
           `;
         }
         grid.appendChild(el);
+        if (el._dxArt) this.dexArtObserver().observe(el);
       });
 
       this.currentRendered += toRender.length;
@@ -1387,15 +1410,11 @@
                 <button id="btn-modal-close-back" style="background:none;border:none;color:#9ca3af;font-size:22px;cursor:pointer;padding:0 4px;line-height:1;">✕</button>
               </div>
 
-              <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:#ffd700;margin-bottom:14px;letter-spacing:1px;text-align:center;">
-                🎴 DRAFT TRADING CARD
-              </div>
-
-              <div class="pc2-clickflip" style="transform:scale(1.2);margin:15px 0;">
+              <div class="pc2-clickflip pc2-big" style="margin-top:34px !important;">
                 ${draftCardHTML}
               </div>
 
-              <div style="font-size:10px;color:#9ca3af;margin-top:16px;text-align:center;font-family:'Press Start 2P',monospace;line-height:1.4;">
+              <div style="font-size:10px;color:#9ca3af;margin-top:8px;text-align:center;font-family:'Press Start 2P',monospace;line-height:1.4;">
                 ${p.name} · ${p.year}
               </div>
             </div>

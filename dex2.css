@@ -157,9 +157,8 @@
   #dex-detail-overlay .dex-flip-card-inner { transform: none !important; display: flex; flex-direction: column; gap: 10px; }
   #dex-detail-overlay .dex-card-face { backface-visibility: visible !important; -webkit-backface-visibility: visible !important; }
   #dex-detail-overlay .dex-card-back { position: relative !important; transform: none !important; order: -1; padding: 14px 10px 18px !important; }
-  #dex-detail-overlay .dex-card-back > div:first-of-type + div { display: none !important; }
   #dex-detail-overlay .dex-card-back { padding-top: 40px !important; }
-  #dex-detail-overlay .dex-card-back .pc2-clickflip { transform: scale(1.25) !important; margin: 26px 0 30px !important; }
+  #dex-detail-overlay .dex-card-back .pc2-clickflip { transform: none !important; margin: 10px 0 14px !important; }
   #dex-detail-overlay .dex-card-back > div:last-child { display: none; }
   #dex-detail-overlay .dex-card-front #btn-modal-close-detail { display: none; }
   #dex-detail-overlay .dex-card-front h2 { font-family: 'Oswald', sans-serif !important; font-size: 20px !important; letter-spacing: .5px; }
@@ -170,3 +169,6 @@
   #btn-modal-flip-bottom { display: none !important; }
   #dex-detail-overlay [id$="-bottom"] { font-size: 7px !important; padding: 9px 10px !important; }
 }
+
+/* portraits are painted lazily (basedex.js dexArtObserver): no empty-image frame meanwhile */
+.dx-photo img:not([src]) { visibility: hidden; }

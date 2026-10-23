@@ -1932,11 +1932,11 @@
   }
 
   // Team chemistry, ONLY for the team of the user (the rivals do not get it): players who share
-  // a franchise, an era or a country other than the USA play a little better together. Each
-  // player gets +1 to his batting or pitching ratings for every CHEM_TEAM_SIZE teammates of his
-  // franchise (himself included), every CHEM_ERA_SIZE of his era and every CHEM_NATION_SIZE of
-  // his country, with no cap (decision of the user: 25 of one era is +5, 25 of one country +8). The USA does not count as a country: most cards are from
-  // there and the bonus would be free. The country comes from PLAYER_FLAGS_DB (the Dex data).
+  // a franchise, an era or a country other than the USA play a little better together. A group
+  // reaches a tier for every CHEM_TEAM_SIZE teammates of a franchise (himself included), every
+  // CHEM_ERA_SIZE of an era and every CHEM_NATION_SIZE of a country, with no cap; each player gets
+  // the bonus of his groups' tiers (T1 +1, T2 +3, T3 +5: chemTierBonus) to his batting or pitching
+  // ratings. The USA does not count as a country: most cards are from there and the bonus would be free. The country comes from PLAYER_FLAGS_DB (the Dex data).
   const CHEM_TEAM_SIZE = 3, CHEM_ERA_SIZE = 5, CHEM_NATION_SIZE = 3;
   const NATION_NAMES = { do: 'Dominican Rep.', ve: 'Venezuela', cu: 'Cuba', pr: 'Puerto Rico', mx: 'Mexico', jp: 'Japan', ca: 'Canada', pa: 'Panama', co: 'Colombia', ni: 'Nicaragua', kr: 'South Korea', cw: 'Curacao', au: 'Australia', tw: 'Taiwan', gb: 'Great Britain', de: 'Germany', ie: 'Ireland', nl: 'Netherlands', bs: 'Bahamas', jm: 'Jamaica', vi: 'Virgin Islands', aw: 'Aruba', br: 'Brazil', hn: 'Honduras' };
   function nationOf(p) {
@@ -1944,26 +1944,56 @@
     return (p && (db[p.playerID] || db[cleanName(p)] || db[p.name])) || '';
   }
   const chemKey = p => (p ? `${p.playerID || ''}|${cleanName(p)}|${p.year || ''}|${p.h9 !== undefined ? 'P' : 'B'}` : '');
+  const CHEM_SIZE = { team: CHEM_TEAM_SIZE, era: CHEM_ERA_SIZE, nation: CHEM_NATION_SIZE };
+  const CHEM_ICON = { team: '🏟', era: '🕰', nation: '🌎' };
+  function chemTraits(p) {
+    const n = nationOf(p);
+    return { team: p.team || '', era: p.era && p.era !== 'None' ? p.era : '', nation: n && n !== 'us' ? n : '' };
+  }
+  function chemLabel(kind, v) {
+    if (kind === 'team') {
+      if (v === 'NLB') return 'Negro Leagues';
+      if (v === 'HIST') return 'Historic clubs';
+      const fn = (window.PlayersDB && window.PlayersDB.FranchiseNames) || {};
+      return fn[v] || v;
+    }
+    return kind === 'nation' ? (NATION_NAMES[v] || v.toUpperCase()) : v.replace(/\s*\(.*\)/, '').replace(/ Era$/, '');
+  }
+  // Tiers of a chemistry group: T1 at one "size" (3 / 5 / 3), T2 at two, and so on. The bonus grows
+  // faster than the tier (user, Oct 2026): T1 +1, T2 +3, T3 +5, then +2 more per tier.
+  const chemTierBonus = tier => (tier > 0 ? 2 * tier - 1 : 0);
+  function chemTier(kind, count) {
+    const need = CHEM_SIZE[kind];
+    const tier = Math.floor(count / need);
+    return { tier, need, bonus: chemTierBonus(tier), next: (tier + 1) * need, left: (tier + 1) * need - count };
+  }
+  // What one more card would add to the chemistry of a roster: one entry per group it joins.
+  function chemDelta(cards, card) {
+    if (!card) return [];
+    const t = chemTraits(card);
+    return Object.keys(t).filter(k => t[k]).map(kind => {
+      const before = (cards || []).filter(c => c && chemTraits(c)[kind] === t[kind]).length;
+      const after = before + 1;
+      return { kind, value: t[kind], label: chemLabel(kind, t[kind]), before, after,
+        tierUp: chemTier(kind, after).tier > chemTier(kind, before).tier, tier: chemTier(kind, after) };
+    });
+  }
   function rosterChemistry(cards) {
     const list = (cards || []).filter(Boolean);
     const tally = { team: {}, era: {}, nation: {} };
-    const traits = p => {
-      const n = nationOf(p);
-      return { team: p.team || '', era: p.era && p.era !== 'None' ? p.era : '', nation: n && n !== 'us' ? n : '' };
-    };
+    const traits = chemTraits;
     list.forEach(p => { const t = traits(p); Object.keys(t).forEach(k => { if (t[k]) tally[k][t[k]] = (tally[k][t[k]] || 0) + 1; }); });
     const size = { team: CHEM_TEAM_SIZE, era: CHEM_ERA_SIZE, nation: CHEM_NATION_SIZE };
     const bonus = {};
     list.forEach(p => {
       const t = traits(p);
-      const b = Object.keys(t).reduce((sum, k) => sum + (t[k] ? Math.floor(tally[k][t[k]] / size[k]) : 0), 0);
+      const b = Object.keys(t).reduce((sum, k) => sum + (t[k] ? chemTierBonus(Math.floor(tally[k][t[k]] / size[k])) : 0), 0);
       if (b > 0) bonus[chemKey(p)] = b;
     });
     const groups = [];
     Object.keys(tally).forEach(kind => Object.keys(tally[kind]).forEach(v => {
       const count = tally[kind][v];
-      const label = kind === 'nation' ? (NATION_NAMES[v] || v.toUpperCase()) : kind === 'era' ? v.replace(/\s*\(.*\)/, '') : v;
-      groups.push({ kind, value: v, label, count, need: size[kind], bonus: Math.floor(count / size[kind]) });
+      groups.push({ kind, value: v, label: chemLabel(kind, v), count, ...chemTier(kind, count) });
     }));
     groups.sort((a, b) => (b.bonus - a.bonus) || (b.count / b.need - a.count / a.need));
     return { bonus, groups, of: p => (p ? (bonus[chemKey(p)] || 0) : 0) };
@@ -2287,6 +2317,8 @@
     return { day: league.day, rosters, bat, pit, game: { win, score: win === 'AL' ? [winR, lose] : [lose, winR], mvp: mvp ? { k: mvp.k, name: mvp.name, teamName: mvp.teamName, line: `${hits}-for-4${hr ? ', HR' : ''}, ${1 + hr + Math.floor(Math.random() * 3)} RBI` } : null } };
   }
 
+  window.__c162Chem = cards => rosterChemistry(cards); // read-only: tests and the pack draft UI
+  window.__c162ChemDelta = (cards, card) => chemDelta(cards, card);
   window.Challenge162 = {
     unlockedBatters: new Set(),
     unlockedPitchers: new Set(),
@@ -4131,21 +4163,39 @@
     _userCaptains(S) {
       return S && S.roster ? countCaptains(this._rosterCards(S.roster)) : 0;
     },
-    // Chemistry summary: the groups that already pay and the ones one player short.
+    // Chemistry by tiers (T1 at 3 / 5 / 3 of a franchise / era / country, T2 at twice that...):
+    // the groups that pay, how far each is from its next tier, and the ones about to start.
     _chemistryHTML(cards, compact) {
       const chem = rosterChemistry(cards);
       const caps = countCaptains(cards);
-      const icon = { team: '🏟', era: '🕰', nation: '🌎' };
       const on = chem.groups.filter(g => g.bonus > 0);
-      const near = chem.groups.filter(g => g.bonus === 0 && g.need - g.count === 1).slice(0, compact ? 2 : 4);
-      const chip = (g, cls) => `<span class="c162-chem-chip ${cls}">${icon[g.kind]} ${g.label} ×${g.count}${g.bonus ? ` <b>+${g.bonus}</b>` : ` <i>${g.count}/${g.need}</i>`}</span>`;
-      const capChip = caps ? `<span class="c162-chem-chip is-on">👑 ${caps > 1 ? caps + ' captains' : 'Captain'}${compact ? '' : `: momentum +1 every ${CAPTAIN_WIN_STEP} wins, −1 every ${CAPTAIN_LOSS_STEPS[Math.min(caps, 2)]} losses`}</span>` : '';
-      const chips = on.map(g => chip(g, 'is-on')).join('') + capChip + near.map(g => chip(g, 'is-near')).join('');
-      if (compact) return chips ? `<div class="c162-chem c162-chem-compact"><small>CHEMISTRY</small>${chips}</div>` : '';
+      // groups not paying yet but close: a franchise or country with 2, an era with 3+
+      const near = chem.groups.filter(g => g.bonus === 0 && g.left <= (g.kind === 'era' ? 2 : 1))
+        .sort((a, b) => a.left - b.left).slice(0, compact ? 3 : 5);
+      const row = (g) => {
+        const pct = Math.round(((g.count - g.tier * g.need) / g.need) * 100);
+        return `<div class="c162-chem-row ${g.bonus ? 'is-on' : 'is-near'}" title="${g.count} ${g.kind === 'team' ? 'from this franchise' : g.kind === 'era' ? 'from this era' : 'from this country'}: +${g.bonus} to their ratings">
+          <span class="cc-ic">${CHEM_ICON[g.kind]}</span>
+          <span class="cc-name">${g.label}</span>
+          <span class="cc-n">×${g.count}</span>
+          <span class="cc-tier">${g.bonus ? `T${g.tier} <b>+${g.bonus}</b>` : '—'}</span>
+          <span class="cc-bar"><i style="width:${pct}%"></i></span>
+          <span class="cc-next">${g.left} to T${g.tier + 1}</span>
+        </div>`;
+      };
+      const capRow = caps ? `<div class="c162-chem-row is-on is-cap"><span class="cc-ic">👑</span><span class="cc-name">${caps > 1 ? caps + ' captains' : 'Captain'}</span><span class="cc-next cc-wide">momentum +1 every ${CAPTAIN_WIN_STEP} wins · −1 every ${CAPTAIN_LOSS_STEPS[Math.min(caps, 2)]} losses</span></div>` : '';
+      const rows = on.map(row).join('') + capRow + near.map(row).join('');
+      const rule = `T1 at ${CHEM_TEAM_SIZE} of a franchise, ${CHEM_ERA_SIZE} of an era or ${CHEM_NATION_SIZE} of a country (not the USA), T2 at twice that and so on; T1 +1, T2 +3, T3 +5`;
+      if (compact) {
+        return `<div class="c162-chem2 is-compact">
+          <div class="cc-head"><b>🤝 CHEMISTRY</b><small>${rule}</small></div>
+          ${rows || '<div class="c162-chem-none">No group yet: 3 from one franchise, 5 from one era or 3 from one country start a group.</div>'}
+        </div>`;
+      }
       return `<div class="c162-meet-section">🤝 TEAM CHEMISTRY</div>
-        <div class="c162-chem">
-          ${chips || '<span class="c162-chem-none">No group yet.</span>'}
-          <div class="c162-chem-note">Only your team gets this. +1 to the ratings of each player for every ${CHEM_TEAM_SIZE} teammates of his franchise, every ${CHEM_ERA_SIZE} of his era and every ${CHEM_NATION_SIZE} of his country (the USA does not count). No cap: the bigger the group, the bigger the bonus.</div>
+        <div class="c162-chem2">
+          ${rows || '<span class="c162-chem-none">No group yet.</span>'}
+          <div class="c162-chem-note">Only your team gets this. ${rule}, and it adds up across groups with no cap.</div>
         </div>`;
     },
 
@@ -8156,7 +8206,8 @@
             <button class="btn bx-go" id="c162-bx-go">📦 OPEN THE FIRST PACK ➔</button>
           </div>
         </div>`;
-      host.appendChild(el);
+      // on <body>: the screen panel is transformed while it animates in, which would trap a fixed overlay inside it
+      document.body.appendChild(el);
       const open = () => {
         if (el.classList.contains('open')) return;
         el.classList.add('open');
@@ -8322,6 +8373,8 @@
 
       // draft.viewCard: a roster row was clicked, so the panel shows that player's card instead
       // of the pack (same card view as a fresh pull, flip included).
+      // cards already drafted, for the chemistry each option would add
+      const rosterNow = [...draft.pulledBatters, ...draft.pulledPitchers];
       if (showingOptions) {
         const needs = draft.optionNeeds || [];
         const dealing = !draft.dealt && !reducedMotion;
@@ -8360,11 +8413,16 @@
                 <div class="c162-oc-front card-deal-in" data-pack-view="${i}" title="See the full card">${cardHTML}</div>
               </div>
               <div class="c162-oc-burst"></div>
+              ${rar === 'Legendary' || rar === 'Epic' ? `<div class="c162-oc-hype"><b>${rar === 'Legendary' ? 'LEGENDARY!' : 'EPIC!'}</b></div>` : ''}
             </div>
             <div class="c162-oc-info">
               <div class="c162-oc-cap"><b>${Math.floor(c.ovr || 50)}</b><span>${pit ? (c.role || 'SP') : `${c.pos}${c.sec_pos ? ' · ' + c.sec_pos : ''}`}</span></div>
               <div class="c162-oc-stats">${stats.map(([l, v]) => `<span><i>${l}</i><b>${v !== undefined ? Math.round(v) : '—'}</b></span>`).join('')}</div>
               <div class="c162-oc-need">${fills ? '🧩 FILLS A HOLE' : backup}</div>
+              ${(() => {
+                const ds = chemDelta(rosterNow, c).filter(x => x.after >= 2);
+                return ds.length ? `<div class="c162-oc-chem">${ds.map(x => `<span class="${x.tierUp ? 'up' : ''}" title="${x.after} of this ${x.kind === 'team' ? 'franchise' : x.kind === 'era' ? 'era' : 'country'} with him">${CHEM_ICON[x.kind]} ${x.label} ${x.before}→${x.after}${x.tierUp ? ` <b>T${x.tier.tier}!</b>` : ` <i>${x.tier.left} to T${x.tier.tier + 1}</i>`}</span>`).join('')}</div>` : '';
+              })()}
               <button class="btn c162-opt-pick" data-pack-pick="${i}">✔ PICK</button>
             </div>
           </div>`;
@@ -8594,7 +8652,7 @@
                   <div style="font-family:'Press Start 2P',monospace; font-size:9px; color:#ffd700; margin-bottom:14px; letter-spacing:1px; text-align:center;">
                     🎴 DRAFT TRADING CARD
                   </div>
-                  <div style="transform:scale(1.2); margin:15px 0;">
+                  <div class="pc2-big">
                     ${tradingCardHTML}
                   </div>
                   <div style="font-size:10px; color:#9ca3af; margin-top:8px; text-align:center; font-family:'Press Start 2P',monospace;">
@@ -8627,6 +8685,8 @@
       }
 
       // ── Right Column: Visual Card Deck Formation Board ───────────────────
+      const eraOf = y => { y = parseInt(y, 10) || 2020; return y <= 1900 ? 'genesis' : y <= 1919 ? 'deadball' : y <= 1941 ? 'golden' : y <= 1960 ? 'integration' : y <= 1976 ? 'expansion' : y <= 1993 ? 'bighair' : y <= 2005 ? 'steroid' : y <= 2015 ? 'efficiency' : 'modern'; };
+      const faceOf = pl => (window.CardArt ? `<i class="c162-rb-face" style="background-image:url(${window.CardArt.portrait(pl, eraOf(pl.year), !!pl.role)})"></i>` : '');
       const renderCompactSlot = (player, slotLabel, kind, key) => {
         const isCurrentActive = Boolean(
           player && currentCardKey && (player.role ? pitcherUnlockKey(player) : batterUnlockKey(player)) === currentCardKey
@@ -8648,7 +8708,7 @@
                title="${player.name} · ${player.rarity || ''} (${_t('challenge162.drag_to_reorder', 'Drag to swap position')})"
                draggable="true" data-drag-kind="${kind}" data-drag-key="${key}">
             <span class="c162-rb-pos">${slotLabel}</span>
-            <span class="c162-rb-name">${player.name}${outOfPos ? ' <i title="Playing out of position">⚠</i>' : ''}</span>
+            <span class="c162-rb-name">${faceOf(player)}${player.name}${outOfPos ? ' <i title="Playing out of position">⚠</i>' : ''}</span>
             <span class="c162-rb-meta">${meta}</span>
             <span class="c162-rb-ovr">${Math.floor(player.ovr || 50)}</span>
           </div>
@@ -8687,42 +8747,45 @@
 
       const progressPercent = Math.min(100, Math.round((allPulled.length / 26) * 100));
 
-      container.innerHTML = `
-        <div style="max-width: 1400px; width: 98%; margin: 0 auto;">
-          <!-- Top Header -->
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:10px;">
-            <div>
-              <span style="font-family:'Press Start 2P',monospace; font-size:11.5px; color:#ffd700;">
-                ${_t('challenge162.packs_draft_stage', `📦 HOBBY PACKS DRAFT: {{box}} (PACK {{pack}} OF {{total}})`, { box: stageBoxName, pack: globalCardNum, total: ROSTER_SIZE })}
-              </span>
-            </div>
-            <div class="c162-pack-headbtns" style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
-              <span style="font-family:'Press Start 2P',monospace; font-size:9.5px; color:${rerollsLeft > 0 ? '#f59e0b' : '#64748b'}; background:rgba(0,0,0,0.35); border:1px solid ${rerollsLeft > 0 ? 'rgba(245,158,11,0.5)' : 'rgba(100,116,139,0.3)'}; border-radius:6px; padding:4px 8px;" title="Rerolls remaining across the entire draft">
-                🎲 REROLLS: ${rerollsLeft}/${PACK_DRAFT_REROLLS}
-              </span>
-              <span style="font-family:'Press Start 2P',monospace; font-size:10px; color:#00ff66;">
-                ${_t('challenge162.roster_count', 'ROSTER')}: ${allPulled.length}/${ROSTER_SIZE}
-              </span>
-              ${!isDraftComplete ? `
-                <button id="btn-c162-pack-open5" class="btn btn-secondary c162-pack-fast-btn" title="Open the next 5 packs of this box at once">📦 OPEN 5</button>
-                <button id="btn-c162-pack-auto" class="btn c162-pack-fast-btn c162-pack-auto-btn" title="Open every remaining pack and jump to Meet the Team">⚡ AUTO DRAFT</button>
-              ` : ''}
-              <button id="btn-c162-pack-cancel" class="btn btn-secondary" style="padding:6px 12px; font-size:8.5px; font-family:'Press Start 2P',monospace;">
-                ✕ ${_t('challenge162.cancel', 'CANCEL')}
-              </button>
-            </div>
-          </div>
+      // Pack rail: the 26 packs of the box. Opened ones show their rarity; the rest stay sealed
+      // (the order is a surprise), the one on the table glows.
+      const opened = (isPitchersStage ? 14 : 0) + draft.currentPack;
+      const railPack = (i) => {
+        const r = draft.box ? (draft.box[i] || 'any') : 'any';
+        const st = i < opened ? 'is-open' : (i === opened && !isDraftComplete ? 'is-now' : 'is-sealed');
+        const cls = st === 'is-sealed' ? '' : ` t-${String(r).toLowerCase()}`;
+        return `<i class="d2-rp ${st}${cls}" title="${i < opened ? `Pack ${i + 1}: ${r === 'any' ? 'any rarity' : r}` : `Pack ${i + 1}`}"></i>`;
+      };
+      const railHTML = `<div class="d2-rail">
+          <span class="d2-rail-lab">BATTERS</span>${Array.from({ length: 14 }, (_, i) => railPack(i)).join('')}
+          <span class="d2-rail-sep"></span>
+          <span class="d2-rail-lab">PITCHERS</span>${Array.from({ length: 12 }, (_, i) => railPack(14 + i)).join('')}
+        </div>`;
+      const diceHTML = Array.from({ length: PACK_DRAFT_REROLLS }, (_, i) => `<i class="${i < rerollsLeft ? 'on' : ''}">🎲</i>`).join('');
 
-          <!-- Progress Bar -->
-          <div style="width:100%; height:6px; background:rgba(255,255,255,0.08); border-radius:3px; overflow:hidden; margin-bottom:16px;">
-            <div style="width:${progressPercent}%; height:100%; background:linear-gradient(90deg, #38bdf8, #ffd700, #00ff66); transition:width 0.3s ease;"></div>
+      container.innerHTML = `
+        <div class="d2-wrap">
+          <div class="d2-head">
+            <div class="d2-title">
+              <b>HOBBY PACKS DRAFT</b>
+              <small>${stageBoxName} · card ${Math.min(globalCardNum, ROSTER_SIZE)} of ${ROSTER_SIZE}</small>
+            </div>
+            ${railHTML}
+            <div class="d2-tools">
+              <span class="d2-rerolls" title="Rerolls left for the whole box">${diceHTML}<small>REROLLS</small></span>
+              ${!isDraftComplete ? `
+                <button id="btn-c162-pack-open5" class="btn d2-btn" title="Open the next 5 packs of this box at once">📦 OPEN 5</button>
+                <button id="btn-c162-pack-auto" class="btn d2-btn d2-btn-auto" title="Open every remaining pack and jump to Meet the Team">⚡ AUTO DRAFT</button>
+              ` : ''}
+              <button id="btn-c162-pack-cancel" class="btn d2-btn d2-btn-ghost">✕ ${_t('challenge162.cancel', 'CANCEL')}</button>
+            </div>
           </div>
 
           <!-- Main Grid: Left Stage (Pack/Card) + Right Board (Card Deck) -->
-          <div class="c162-pack-layout" style="display:grid; grid-template-columns: ${showingOptions ? '560px' : '460px'} 1fr; gap:16px; align-items:start;">
+          <div class="c162-pack-layout d2-layout ${showingOptions ? 'is-options' : ''}">
             
-            <!-- Left Column -->
-            ${leftColumnHTML}
+            <!-- Left: the table where the packs are opened -->
+            <div class="d2-table">${leftColumnHTML}</div>
 
             <!-- Right Column: roster board, every spot visible at once -->
             <div class="c162-rb">
@@ -8871,8 +8934,14 @@
           const card = (draft.options || [])[parseInt(btn.dataset.packPick, 10)];
           if (!card) return;
           if (window.AudioManager && typeof window.AudioManager.play === 'function') window.AudioManager.play('draft_pick');
+          const fromEl = btn.closest('.c162-oc') && btn.closest('.c162-oc').querySelector('.c162-oc-front');
+          const from = fromEl ? fromEl.getBoundingClientRect() : null;
+          const ghostHTML = fromEl ? fromEl.innerHTML : '';
+          const ups = chemDelta(rosterNow, card).filter(x => x.tierUp);
           this._pullNextPackCard(card);
           this.renderPacksDraft();
+          this._flyToSlot(ghostHTML, from);
+          if (ups.length) this._chemToast(ups);
         };
       });
       container.querySelectorAll('[data-pack-view]').forEach(btn => {
@@ -8948,7 +9017,7 @@
         btnNext.onclick = (e) => {
           e.stopPropagation();
           if (draft.viewCard) { draft.viewCard = null; this.renderPacksDraft(); return; }
-          if (isDraftComplete) this.finishPacksDraftAndStart();
+          if (isDraftComplete) this._showTeamPhoto(() => this.finishPacksDraftAndStart());
           else if (isLastPackInStage) this.renderPacksDraftTransition();
           else {
             draft.packOpened = false;
@@ -8957,6 +9026,85 @@
           }
         };
       }
+    },
+
+    // The picked card flies from the pack to its spot on the roster board, which then flashes.
+    _flyToSlot(html, from) {
+      const row = document.querySelector('#challenge162-pack-container .c162-rb-row.active');
+      if (!row) return;
+      row.classList.add('d2-landed');
+      setTimeout(() => row.classList.remove('d2-landed'), 1200);
+      let reduced = false;
+      try { reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { /* older browsers */ }
+      if (!html || !from || reduced) return;
+      const to = row.getBoundingClientRect();
+      const g = document.createElement('div');
+      g.className = 'd2-ghost';
+      g.innerHTML = html;
+      g.style.cssText = `left:${from.left}px;top:${from.top}px;width:${from.width}px;height:${from.height}px`;
+      document.body.appendChild(g);
+      const dx = to.left + to.width / 2 - (from.left + from.width / 2);
+      const dy = to.top + to.height / 2 - (from.top + from.height / 2);
+      const k = Math.max(0.12, to.height / from.height);
+      requestAnimationFrame(() => {
+        g.style.transform = `translate(${dx}px, ${dy}px) scale(${k}) rotate(-6deg)`;
+        g.style.opacity = '0.15';
+      });
+      setTimeout(() => g.remove(), 700);
+    },
+
+    // A chemistry group reached a new tier with this pick.
+    _chemToast(ups) {
+      const old = document.getElementById('d2-chem-toast');
+      if (old) old.remove();
+      const el = document.createElement('div');
+      el.id = 'd2-chem-toast';
+      el.className = 'd2-chem-toast';
+      el.innerHTML = `<small>CHEMISTRY</small>${ups.map(x => `<div>${CHEM_ICON[x.kind]} <b>${x.label}</b> ×${x.after} · <em>T${x.tier.tier} +${x.tier.bonus}</em></div>`).join('')}`;
+      document.body.appendChild(el);
+      if (window.AudioManager && typeof window.AudioManager.play === 'function') window.AudioManager.play('card_deal');
+      setTimeout(() => el.classList.add('out'), 2400);
+      setTimeout(() => el.remove(), 2900);
+    },
+
+    // End of the draft: a team photo (the nine, the rotation and the closer) with the team OVR
+    // counting up and the chemistry it ended with, before Meet the Team.
+    _showTeamPhoto(next) {
+      const draft = this._packDraft;
+      if (!draft) { next(); return; }
+      const ms = draft.manualSlots || calculateChallengeRosterSlots([...draft.pulledBatters, ...draft.pulledPitchers], true);
+      const cards = [...Object.values(ms.lineup || {}), ...(ms.bench || []), ...(ms.sp || []), ...(ms.rp || [])].filter(Boolean);
+      const ovr = cards.length ? cards.reduce((a, p) => a + (p.ovr || 50), 0) / cards.length : 0;
+      const eraOf = y => { y = parseInt(y, 10) || 2020; return y <= 1900 ? 'genesis' : y <= 1919 ? 'deadball' : y <= 1941 ? 'golden' : y <= 1960 ? 'integration' : y <= 1976 ? 'expansion' : y <= 1993 ? 'bighair' : y <= 2005 ? 'steroid' : y <= 2015 ? 'efficiency' : 'modern'; };
+      const face = (p, lab, i) => p ? `<div class="tp-p r-${String(p.rarity || 'Common').toLowerCase()}" style="--i:${i}">
+          <i style="background-image:url(${window.CardArt ? window.CardArt.portrait(p, eraOf(p.year), !!p.role) : ''})"></i>
+          <b>${cleanName(p)}</b><span>${lab} · ${Math.floor(p.ovr || 50)}</span></div>` : '';
+      const nine = SLOTS.map((sl, i) => face(ms.lineup[sl], sl, i)).join('');
+      const arms = [...(ms.sp || []).map((p, i) => face(p, `SP${i + 1}`, 9 + i)), face((ms.rp || [])[0], 'CL', 14)].join('');
+      const chem = rosterChemistry(cards).groups.filter(g => g.bonus > 0);
+      const el = document.createElement('div');
+      el.className = 'd2-photo';
+      el.innerHTML = `<div class="tp-card">
+          <div class="tp-head"><small>TEAM PHOTO · ${cards.length} PLAYERS</small><b>YOUR CLUB IS SET</b></div>
+          <div class="tp-row">${nine}</div>
+          <div class="tp-row tp-arms">${arms}</div>
+          <div class="tp-foot">
+            <div class="tp-ovr"><small>TEAM OVR</small><b id="tp-ovr">0.0</b></div>
+            <div class="tp-chem">${chem.length ? chem.map(g => `<span>${CHEM_ICON[g.kind]} ${g.label} ×${g.count} <b>T${g.tier} +${g.bonus}</b></span>`).join('') : '<span>No chemistry group</span>'}</div>
+            <button class="btn tp-go">🤝 MEET THE TEAM ▶</button>
+          </div>
+        </div>`;
+      document.body.appendChild(el);
+      const out = el.querySelector('#tp-ovr');
+      const t0 = performance.now();
+      const tick = now => {
+        const k = Math.min(1, (now - t0) / 1400);
+        out.textContent = (ovr * (1 - Math.pow(1 - k, 3))).toFixed(1);
+        if (k < 1) requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+      setTimeout(() => { out.textContent = ovr.toFixed(1); }, 1600); // no animation frames (hidden tab)
+      el.querySelector('.tp-go').onclick = () => { el.remove(); next(); };
     },
 
     finishPacksDraftAndStart() {
@@ -9269,7 +9417,7 @@
           </div>
         </div>`;
       container.querySelector('#btn-c162-montage-continue').onclick = () => {
-        if (draftDone) this.finishPacksDraftAndStart();
+        if (draftDone) this._showTeamPhoto(() => this.finishPacksDraftAndStart());
         else this.renderPacksDraft();
       };
     },

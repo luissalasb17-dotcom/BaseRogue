@@ -615,6 +615,11 @@ def paso_4_pico_pitching(pitching, war_pitch, people):
             gs_ratio = g["GS"] / g["G"].replace(0, np.nan)
             is_relief_season = gs_ratio.fillna(0) < RELIEF_GS_RATIO_THRESHOLD
             relief_mult = np.where(is_relief_season, RELIEF_WAR_BOOST, 1.0)
+            if _os.environ.get("RELIEF_BOOST", "") == "share":
+                # prueba: el boost solo alcanza la parte de relevo de la temporada (por outs)
+                outs = (g["ipouts_start_clean"] + g["ipouts_rel_clean"]).replace(0, np.nan)
+                rel_share = (g["ipouts_rel_clean"] / outs).fillna(pd.Series(np.where(is_relief_season, 1.0, 0.0), index=g.index)).clip(0, 1)
+                relief_mult = 1.0 + (RELIEF_WAR_BOOST - 1.0) * rel_share
             is_nlb_season = (g["lgID"].isin(nl_leagues) if "lgID" in g.columns else False) | (g["teamID"].isin(NLB_TEAMS) if "teamID" in g.columns else False)
             nlb_mult = np.where(is_nlb_season, NLB_WAR_BOOST, 1.0)
             g["war_ranking"] = g["war_rank_base"] * relief_mult * nlb_mult
@@ -649,6 +654,11 @@ def paso_4_pico_pitching(pitching, war_pitch, people):
 
     # Índice de Dedicación Anual en el pico (GS / G en cada temporada)
     pico_df["sp_dedication"] = (pico_df["GS"] / pico_df["G"].replace(0, np.nan)).fillna(0.0)
+    _role_by_outs = _os.environ.get("ROLE_BY", "") == "outs"
+    if _role_by_outs:
+        # prueba: dedicacion = parte de las entradas lanzadas como abridor (no aperturas / juegos)
+        _o = (pico_df["ipouts_start_clean"] + pico_df["ipouts_rel_clean"]).replace(0, np.nan)
+        pico_df["sp_dedication"] = (pico_df["ipouts_start_clean"] / _o).fillna(pico_df["sp_dedication"])
     pico_df["is_sp_season"] = (pico_df["sp_dedication"] >= 0.50)
     sp_season_counts = pico_df.groupby("playerID")["is_sp_season"].sum().reset_index(name="sp_seasons_count")
 
@@ -661,6 +671,9 @@ def paso_4_pico_pitching(pitching, war_pitch, people):
 
     # Dedicación en Carrera (promedio de toda la trayectoria):
     pit_yearly["sp_ded_yearly"] = (pit_yearly["GS"] / pit_yearly["G"].replace(0, np.nan)).fillna(0.0)
+    if _role_by_outs:
+        _o = (pit_yearly["ipouts_start_clean"] + pit_yearly["ipouts_rel_clean"]).replace(0, np.nan)
+        pit_yearly["sp_ded_yearly"] = (pit_yearly["ipouts_start_clean"] / _o).fillna(pit_yearly["sp_ded_yearly"])
     career_ded = pit_yearly.groupby("playerID")["sp_ded_yearly"].mean().reset_index(name="career_sp_dedication")
 
     peak = pico_df.groupby("playerID").agg(

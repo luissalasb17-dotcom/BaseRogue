@@ -1,0 +1,75 @@
+/* Card backs 2.0: bubble-gum card backs, one look per era (card_art.js fills them on the first flip).
+   Cardboard + spot inks like the printed backs of each period; the data comes from card_backs.js. */
+
+.player-card.pc2 .pc2-back.bk-on {
+  padding: 5px; background: var(--bk-paper); color: var(--bk-ink);
+  --bk-head: 'Oswald', sans-serif; --bk-body: 'Oswald', sans-serif;
+}
+.player-card.pc2 .pc2-back.bk-on .pc2-tex { opacity: var(--bk-grain, .22); }
+.pc2-back .bk { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 3px; height: 100%; font-family: 'Oswald', sans-serif; line-height: 1.12; }
+
+/* header: card number, name and team, OVR */
+.pc2-back .bk-top { display: flex; align-items: center; gap: 4px; padding-bottom: 2px; border-bottom: 1.5px solid var(--bk-acc); }
+.pc2-back .bk-no { flex: none; min-width: 18px; height: 18px; padding: 0 2px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--bk-acc); color: var(--bk-paper); font: 700 7px/1 'Oswald', sans-serif; }
+.pc2-back .bk-id { flex: 1; min-width: 0; }
+.pc2-back .bk-name { font: 400 11px/1.05 var(--bk-head); text-transform: uppercase; letter-spacing: .3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  text-shadow: .7px .7px 0 var(--bk-reg, transparent); }
+.pc2-back .bk-name .pc2-flag img { height: 7px; vertical-align: 0; }
+.pc2-back .bk-team { font-size: 7.4px; text-transform: uppercase; opacity: .85; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pc2-back .bk-ovr { flex: none; font: 400 14px/1 var(--bk-head); color: var(--bk-acc); }
+
+.pc2-back .bk-bio { font-size: 7.4px; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pc2-back .bk-bio b { font-weight: 700; color: var(--bk-acc); margin-left: 2px; }
+.pc2-back .bk-bio b:first-child { margin-left: 0; }
+
+/* the peak line: printed stat box */
+.pc2-back .bk-box { margin-top: 1px; border: 1.5px solid var(--bk-acc); border-radius: 2px; background: var(--bk-boxbg, transparent); color: var(--bk-boxink, inherit); }
+.pc2-back .bk-cap { display: flex; justify-content: space-between; padding: 1px 3px; background: var(--bk-acc); color: var(--bk-capink, var(--bk-paper));
+  font: 700 7px/1.25 'Oswald', sans-serif; letter-spacing: .4px; }
+.pc2-back .bk-grid { display: grid; padding: 1px 1px 2px; }
+.pc2-back .bk-grid + .bk-grid { border-top: 1px dotted var(--bk-acc); }
+.pc2-back .bk-c6 { grid-template-columns: repeat(6, 1fr); }
+.pc2-back .bk-c7 { grid-template-columns: repeat(7, 1fr); }
+.pc2-back .bk-grid div { text-align: center; min-width: 0; }
+.pc2-back .bk-grid span { display: block; font-size: 6.2px; letter-spacing: .1px; opacity: .85; }
+.pc2-back .bk-grid b { display: block; font-size: 9px; font-weight: 600; white-space: nowrap; letter-spacing: -.2px; }
+
+.pc2-back .bk-sec { font-size: 7.4px; line-height: 1.25; }
+.pc2-back .bk-sec span { display: block; font-weight: 700; font-size: 6.4px; letter-spacing: .5px; color: var(--bk-acc); }
+
+/* ratings, small, as the game data */
+.pc2-back .bk-rt { margin-top: auto; display: grid; grid-template-columns: repeat(6, 1fr); border-top: 1px solid var(--bk-acc); padding-top: 2px; }
+.pc2-back .bk-rt div { text-align: center; }
+.pc2-back .bk-rt span { display: block; font-size: 6px; opacity: .8; }
+.pc2-back .bk-rt b { display: block; font-size: 9px; font-weight: 700; }
+.pc2-back .bk-foot { display: flex; justify-content: space-between; gap: 4px; font-size: 5.6px; text-transform: uppercase; letter-spacing: .3px; opacity: .7;
+  border-top: 1px dashed var(--bk-acc); padding-top: 1px; margin-bottom: 9px; }
+.pc2-back.bk-on .pc2-flip-back { z-index: 3; }
+
+/* ── one printed look per era ── */
+.player-card.pc2.pc2-e-genesis .pc2-back.bk-on { --bk-paper: #e6d9bb; --bk-ink: #3a2414; --bk-acc: #7a4a1e; --bk-head: 'Playfair Display', serif; --bk-body: 'Special Elite', monospace; --bk-grain: .35;
+  box-shadow: inset 0 0 0 3px #e6d9bb, inset 0 0 0 4px #7a4a1e, inset 0 0 0 6px #e6d9bb, inset 0 0 0 7px #7a4a1e; padding: 9px; }
+.player-card.pc2.pc2-e-deadball .pc2-back.bk-on { --bk-paper: #efe5cb; --bk-ink: #23374f; --bk-acc: #8c2a1e; --bk-head: 'Playfair Display', serif; --bk-body: 'Special Elite', monospace; --bk-grain: .3;
+  box-shadow: inset 0 0 0 3px #efe5cb, inset 0 0 0 4px #23374f; padding: 8px; }
+.player-card.pc2.pc2-e-golden .pc2-back.bk-on { --bk-paper: #f0e1bb; --bk-ink: #1d2a5a; --bk-acc: #c0392b; --bk-head: 'Alfa Slab One', serif; --bk-grain: .28; --bk-reg: rgba(192,57,43,.45); }
+.player-card.pc2.pc2-e-integration .pc2-back.bk-on { --bk-paper: #cdc7b7; --bk-ink: #1b1b1b; --bk-acc: #c8281e; --bk-head: 'Alfa Slab One', serif; --bk-grain: .4; --bk-boxbg: rgba(255,255,255,.35); }
+.player-card.pc2.pc2-e-expansion .pc2-back.bk-on { --bk-paper: #dbc3b5; --bk-ink: #1f4a2a; --bk-acc: #d8661a; --bk-head: 'Righteous', sans-serif; --bk-grain: .42; --bk-reg: rgba(216,102,26,.5); }
+.player-card.pc2.pc2-e-bighair .pc2-back.bk-on { --bk-paper: #c6c0ae; --bk-ink: #13285a; --bk-acc: #13285a; --bk-head: 'Oswald', sans-serif; --bk-grain: .42;
+  --bk-boxbg: #f2c21a; --bk-boxink: #13285a; --bk-capink: #f2c21a; }
+.player-card.pc2.pc2-e-bighair .pc2-back .bk-name { font-weight: 700; }
+.player-card.pc2.pc2-e-steroid .pc2-back.bk-on { --bk-paper: #f1f3f4; --bk-ink: #0b2a3a; --bk-acc: var(--tc, #0b2a3a); --bk-grain: 0;
+  background: linear-gradient(180deg, var(--tc, #0b2a3a) 0 24px, #f1f3f4 24px); }
+.player-card.pc2.pc2-e-steroid .pc2-back .bk-top { color: #fff; border-bottom-color: transparent; }
+.player-card.pc2.pc2-e-steroid .pc2-back .bk-no { background: #fff; color: var(--tc, #0b2a3a); }
+.player-card.pc2.pc2-e-steroid .pc2-back .bk-ovr { color: #f3d27a; }
+.player-card.pc2.pc2-e-efficiency .pc2-back.bk-on { --bk-paper: #ffffff; --bk-ink: #0c2340; --bk-acc: var(--tc, #0c2340); --bk-grain: 0;
+  border-left: 5px solid var(--tc, #0c2340); }
+.player-card.pc2.pc2-e-modern .pc2-back.bk-on { --bk-paper: #eaf0f8; --bk-ink: #0a1630; --bk-acc: #2b5fc4; --bk-grain: 0;
+  background: linear-gradient(160deg, #eaf0f8, #d7e1f0 60%, #eaf0f8); }
+.player-card.pc2.pc2-e-modern .pc2-back .bk-box { border-image: linear-gradient(90deg, #5aa0ff, #c58bff, #5aa0ff) 1; }
+
+/* Big view (Dex detail, pack draft card view): the card is shown larger, laid out at that size so the
+   small print stays sharp (zoom, not a scaled bitmap). */
+.pc2-big { transform: none !important; zoom: 1.62; margin: 4px 0 !important; }
+@media (max-width: 600px) { .pc2-big { zoom: 1.5; } }
