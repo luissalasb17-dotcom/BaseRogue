@@ -104,3 +104,23 @@
 .player-card.pc2.pc2.pc2.pc2-e-genesis .pc2-series { top: auto; left: auto; right: 5px; bottom: 5px; }
 .player-card.pc2.pc2.pc2.pc2-e-steroid .pc2-series { bottom: 19px; }   /* above the gold name that overlaps the photo */
 .player-card.pc2.pc2.pc2 .pc2-badges, .player-card.pc2.pc2.pc2.pc2-e-steroid .pc2-badges { top: 5px; left: 5px; bottom: auto; z-index: 5; }
+
+/* BIG HAIR v2 — lighter honey wood like the real '87 sets: pale tan planks with darker grain
+   streaks and knots, a black hairline round the photo, team-colour name plate. */
+.player-card.pc2.pc2.pc2-e-bighair {
+  --bg:
+    radial-gradient(ellipse 10px 4px at 24% 64%, rgba(80,40,10,.6), rgba(80,40,10,.15) 55%, transparent 72%),
+    radial-gradient(ellipse 7px 3px at 76% 22%, rgba(80,40,10,.5), transparent 70%),
+    repeating-linear-gradient(92deg, transparent 0 7px, rgba(105,55,18,.42) 7px 8px, transparent 8px 13px, rgba(105,55,18,.25) 13px 15px, transparent 15px 23px, rgba(255,226,170,.3) 23px 25px, transparent 25px 31px),
+    repeating-linear-gradient(88deg, rgba(95,48,14,.22) 0 1px, transparent 1px 3px, rgba(95,48,14,.14) 3px 4px, transparent 4px 6px),
+    linear-gradient(90deg, rgba(120,62,20,.18), transparent 30%, rgba(255,220,160,.12) 55%, transparent 75%, rgba(120,62,20,.2)),
+    linear-gradient(180deg, #d9a462 0%, #cd9150 45%, #d49c5a 75%, #c4874a 100%);
+  --tx: #3a2410; --rb: rgba(255,246,226,.82); --rt: #3a2410; --pb: #1c1208; --pt: #f4e3bf; --ovrc: #3a2410;
+}
+.player-card.pc2.pc2.pc2-e-bighair .pc2-front { border: 1.5px solid #8a5a2b; box-shadow: inset 0 0 0 1px rgba(255,240,205,.45), inset 0 0 14px rgba(90,50,15,.35); }
+.player-card.pc2.pc2.pc2-e-bighair .pc2-ph { background: #111; padding: 2px; }
+.player-card.pc2.pc2.pc2-e-bighair .pc2-ph img { outline: none; }
+.player-card.pc2.pc2.pc2-e-bighair .pc2-name { box-shadow: 2px 2px 0 rgba(40,22,8,.55); }
+.player-card.pc2.pc2.pc2-e-bighair .pc2-chip { color: #3a2410; border-color: rgba(58,36,16,.7); background: rgba(255,246,226,.55); }
+.player-card.pc2.pc2.pc2-e-bighair .pc2-ft { color: #3a2410; }
+.player-card.pc2.pc2.pc2-e-bighair .pc2-r b { text-shadow: 0 0 1px #2a1806, 0 0 1px #2a1806; }

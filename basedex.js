@@ -651,6 +651,44 @@
       };
 
       document.body.appendChild(packOverlay);
+
+      // Same 3D foil pack as the draft (draft3d.js): a rainbow "any rarity" pack that shakes longer the
+      // better the card inside. The flat foil pack above stays if the 3D one cannot be drawn.
+      if (window.DraftPack3D) {
+        const tap = typeof window.t === 'function' ? window.t('dex.pack_tap', '✨ TOCA PARA ABRIR ✨') : '✨ TOCA PARA ABRIR ✨';
+        const pack3 = document.createElement('div');
+        pack3.className = 'draft-pack draft-pack--random dex3d-pack';
+        pack3.innerHTML = `<div class="draft-pack-open-prompt"><span class="draft-pack-open-text">${tap}</span></div>`;
+        const target = packOverlay.querySelector('#dex-booster-pack-target');
+        const tier = { Common: 0, Uncommon: 1, Rare: 2, Epic: 3, Legendary: 4 }[randomPlayer.rarity] ?? 2;
+        packOverlay.appendChild(pack3);
+        window.DraftPack3D.mount(pack3, { theme: 'random', tier, badge: 'DEX', tagline: packSubtitle, fine: 'SERIES 2.0  ·  1 PLAYER CARD' });
+        // hide the flat pack right away; bring it back only if the 3D one is not drawn in time
+        // (first open of the session, while three.js loads)
+        if (pack3.classList.contains('d3-pack-live')) target.style.display = 'none';
+        else {
+          target.style.visibility = 'hidden';
+          const swap = setInterval(() => {
+            if (!pack3.isConnected) { clearInterval(swap); return; }
+            if (pack3.classList.contains('d3-pack-live')) { clearInterval(swap); target.style.display = 'none'; }
+          }, 40);
+          setTimeout(() => { clearInterval(swap); if (!pack3.classList.contains('d3-pack-live')) target.style.visibility = ''; }, 1500);
+        }
+        pack3.onclick = () => {
+          if (opened) return;
+          const opening = window.DraftPack3D.open(pack3);
+          if (!opening) { target.style.display = ''; pack3.remove(); doOpen(); return; }
+          opened = true;
+          if (this.activeCategory === 'opponents') this.unlockOpponent(randomPlayer); else this.unlock(randomPlayer);
+          this.updateCounters();
+          if (this.container) this.applyFilters();
+          opening.then(() => {
+            this.playPackSound(randomPlayer.rarity);
+            packOverlay.remove();
+            this.showDetail(randomPlayer, true);
+          });
+        };
+      }
     },
 
     unlockRoster(roster) {

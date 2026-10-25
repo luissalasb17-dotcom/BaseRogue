@@ -812,3 +812,9 @@ body.on-main-menu {
 @keyframes tcSheen { 0% { background-position: 160% 0, 0 0; } 60%, 100% { background-position: -60% 0, 0 0; } }
 @keyframes tcSpark { 0%, 100% { opacity: .25; } 50% { opacity: .85; } }
 @media (prefers-reduced-motion: reduce) { .training-card-offer::before, #screen-train .training-card-offer::after { animation: none; } }
+
+/* draft: same daytime Polo Grounds as the main menu (user) */
+body:has(#screen-draft:not(.hidden)) {
+  background-image: linear-gradient(180deg, rgba(4, 10, 8, .25) 0%, rgba(4, 10, 8, .7) 80%), url('assets/TEST3.webp') !important;
+  background-position: center bottom !important;
+}

@@ -31,6 +31,9 @@
 .pc2-back .bk-grid + .bk-grid { border-top: 1px dotted var(--bk-acc); }
 .pc2-back .bk-c6 { grid-template-columns: repeat(6, 1fr); }
 .pc2-back .bk-c7 { grid-template-columns: repeat(7, 1fr); }
+.pc2-back .bk-c8 { grid-template-columns: repeat(8, 1fr); }
+.pc2-back .bk-c8 b { font-size: 8px; letter-spacing: -.2px; }
+.pc2-back .bk-c8 span { font-size: 5.6px; }
 .pc2-back .bk-grid div { text-align: center; min-width: 0; }
 .pc2-back .bk-grid span { display: block; font-size: 6.2px; letter-spacing: .1px; opacity: .85; }
 .pc2-back .bk-grid b { display: block; font-size: 9px; font-weight: 600; white-space: nowrap; letter-spacing: -.2px; }

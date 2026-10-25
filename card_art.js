@@ -183,7 +183,7 @@
     if (backsState !== 'idle') return;
     backsState = 'loading';
     const s = document.createElement('script');
-    s.src = 'card_backs.js?v=1';
+    s.src = 'card_backs.js?v=2';
     const done = () => { backsState = 'ready'; backsWaiting.splice(0).forEach(f => { try { f(); } catch (e) { console.warn('card back', e); } }); };
     s.onload = done; s.onerror = done;
     document.head.appendChild(s);
@@ -217,11 +217,11 @@
       const span = row[0] === row[1] ? yr2(row[0]) : `${yr2(row[0])}–${yr2(row[1])}`;
       const cap = isP ? t('card.back_peak_p', 'PEAK · AVERAGE SEASON') : t('card.back_peak_b', 'PEAK · 162-GAME AVERAGE');
       const g1 = isP
-        ? [['W', row[3]], ['L', row[4]], ['ERA', Number(row[5]).toFixed(2)], ['G', row[6]], ['GS', row[7]], ['SV', row[8]]]
-        : [['AB', row[3]], ['R', row[4]], ['H', row[5]], ['2B', row[6]], ['3B', row[7]], ['HR', row[8]], ['RBI', row[9]]];
+        ? [['W', row[3]], ['L', row[4]], ['ERA', Number(row[5]).toFixed(2)], ['ERA+', nz(row[15])], ['G', row[6]], ['GS', row[7]], ['SV', row[8]]]
+        : [['AB', row[3]], ['R', row[4]], ['H', row[5]], ['2B', row[6]], ['3B', row[7]], ['HR', row[8]], ['RBI', row[9]], ['WAR', nz(row[19])]];
       const g2 = isP
-        ? [['IP', ipTxt(row[9])], ['H', row[10]], ['HR', row[11]], ['BB', row[12]], ['SO', row[13]], ['WHIP', Number(row[14]).toFixed(2)]]
-        : [['SB', row[10]], ['BB', row[12]], ['SO', nz(row[13])], ['AVG', f3(row[14])], ['OBP', f3(row[15])], ['SLG', f3(row[16])], ['FLD', row[17] == null ? '—' : (row[17] > 0 ? '+' : '') + row[17]]];
+        ? [['IP', ipTxt(row[9])], ['H', row[10]], ['HR', row[11]], ['BB', row[12]], ['SO', row[13]], ['WHIP', Number(row[14]).toFixed(2)], ['WAR', nz(row[16])]]
+        : [['SB', row[10]], ['BB', row[12]], ['SO', nz(row[13])], ['AVG', f3(row[14])], ['OBP', f3(row[15])], ['SLG', f3(row[16])], ['OPS+', nz(row[18])], ['FLD', row[17] == null ? '—' : (row[17] > 0 ? '+' : '') + row[17]]];
       peak = `<div class="bk-box">
           <div class="bk-cap"><span>${cap}</span><span>${span}</span></div>
           <div class="bk-grid bk-c${g1.length}">${g1.map(([k, v]) => cell(k, v)).join('')}</div>

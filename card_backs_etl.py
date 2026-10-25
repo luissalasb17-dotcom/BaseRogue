@@ -57,6 +57,32 @@ def batters(dfs):
     off["n"] = yrs.groupby("playerID").size()
     off["y0"] = yrs.groupby("playerID")["yearID"].min()
     off["y1"] = yrs.groupby("playerID")["yearID"].max()
+    off["war"] = pico_off.groupby("playerID")["war_total"].sum()
+
+    # OPS+: league OBP / SLG of each peak season (Teams.csv, by league; whole year if the league is missing),
+    # weighted by the player's PA that season. No park factor.
+    t = dfs["teams"].copy()
+    tc = ["AB", "H", "2B", "3B", "HR", "BB", "HBP", "SF"]
+    for c in tc:
+        t[c] = pd.to_numeric(t[c], errors="coerce").fillna(0)
+    def lg_line(g):
+        pa = g["AB"] + g["BB"] + g["HBP"] + g["SF"]
+        return pd.Series({"lobp": (g["H"] + g["BB"] + g["HBP"]) / pa if pa else np.nan,
+                          "lslg": (g["H"] + g["2B"] + 2 * g["3B"] + 3 * g["HR"]) / g["AB"] if g["AB"] else np.nan})
+    by_lg = t.groupby(["yearID", "lgID"])[tc].sum().reset_index()
+    by_lg = by_lg.join(by_lg.apply(lg_line, axis=1))
+    by_yr = t.groupby("yearID")[tc].sum().reset_index()
+    by_yr = by_yr.join(by_yr.apply(lg_line, axis=1))
+    lg_of = b.sort_values("AB", ascending=False).drop_duplicates(["playerID", "yearID"])[["playerID", "yearID", "lgID"]]
+    ps = pico_off[["playerID", "yearID", "PA_y"]].merge(lg_of, on=["playerID", "yearID"], how="left")
+    ps = ps.merge(by_lg[["yearID", "lgID", "lobp", "lslg"]], on=["yearID", "lgID"], how="left")
+    ps = ps.merge(by_yr[["yearID", "lobp", "lslg"]].rename(columns={"lobp": "yobp", "lslg": "yslg"}), on="yearID", how="left")
+    ps["lobp"] = ps["lobp"].fillna(ps["yobp"]); ps["lslg"] = ps["lslg"].fillna(ps["yslg"])
+    ps["w"] = pd.to_numeric(ps["PA_y"], errors="coerce").fillna(0)
+    ps["wo"] = ps["w"] * ps["lobp"]; ps["ws"] = ps["w"] * ps["lslg"]
+    lgp = ps.groupby("playerID")[["w", "wo", "ws"]].sum()
+    off["lobp"] = lgp["wo"] / lgp["w"].replace(0, np.nan)
+    off["lslg"] = lgp["ws"] / lgp["w"].replace(0, np.nan)
 
     # legs: stolen-base rate per AB from the baserunning peak, applied to the offence line
     legs = peak.set_index("playerID")
@@ -106,6 +132,8 @@ def batters(dfs):
             round(o["HR"] * k), round(o["RBI"] * k), round(sb_rate * ab * k), round(cs_rate * ab * k),
             round(o["BB"] * k), (round(o["SO"] * k) if o["SO"] >= 0.02 * pa else None),   # sin dato de ponches: None
             round(avg, 3), round(obp, 3), round(slg, 3), None if fld is None else int(fld),
+            (round(100 * (obp / o["lobp"] + slg / o["lslg"] - 1)) if pd.notna(o["lobp"]) and o["lobp"] > 0 else None),
+            (round(float(o["war"]) * k, 1) if pd.notna(o["war"]) else None),
         ]
     return res
 
@@ -117,6 +145,14 @@ def pitchers(dfs):
     agg["n"] = pico.groupby("playerID").size()
     agg["y0"] = pico.groupby("playerID")["yearID"].min()
     agg["y1"] = pico.groupby("playerID")["yearID"].max()
+    agg["war"] = pico.groupby("playerID")["war_season"].sum()
+    # ERA+: league ERA of each season (ERA x ERA+ / 100) weighted by innings; ERA+ = 100 x lgERA / ERA
+    q = pico.copy()
+    q["lgera"] = pd.to_numeric(q["era_y"], errors="coerce") * pd.to_numeric(q["era_plus_y"], errors="coerce") / 100
+    q["ok"] = q["lgera"].notna() & (q["lgera"] > 0)
+    q["wl"] = np.where(q["ok"], q["IPouts"] / 3.0 * q["lgera"], 0)
+    q["er_ok"] = np.where(q["ok"], q["ER"], 0)
+    lg = q.groupby("playerID")[["wl", "er_ok"]].sum()
     cards = pd.read_csv(HERE / "pitchers_pool.csv", usecols=["playerID"])
     res = {}
     for pid in cards["playerID"]:
@@ -135,6 +171,8 @@ def pitchers(dfs):
             int(a["y0"]), int(a["y1"]), n,
             per(a["W"]), per(a["L"]), round(era, 2), per(a["G"]), per(a["GS"]), per(a["SV"]),
             round(ip_s, 1), per(a["H"]), per(a["HR_a"]), per(a["BB"]), per(a["SO"]), round(whip, 2),
+            (round(100 * lg.loc[pid, "wl"] / (9 * lg.loc[pid, "er_ok"] / 1.0)) if pid in lg.index and lg.loc[pid, "er_ok"] > 0 and lg.loc[pid, "wl"] > 0 else None),
+            (round(float(a["war"]) / n, 1) if pd.notna(a["war"]) else None),
         ]
     return res
 
@@ -148,8 +186,8 @@ def main():
     ids = set(bat) | {p.split("_")[0] for p in pit}
     bio = {k: v for k, v in bio.items() if k in ids}
     js = ("// AUTO-GENERADO por card_backs_etl.py - NO EDITAR\n"
-          "// bat: [y0,y1,n, AB,R,H,2B,3B,HR,RBI,SB,CS,BB,SO, AVG,OBP,SLG, FLD]  (promedio de 162 juegos de sus picos)\n"
-          "// pit: [y0,y1,n, W,L,ERA,G,GS,SV,IP,H,HR,BB,SO,WHIP]  (temporada promedio de su pico)\n"
+          "// bat: [y0,y1,n, AB,R,H,2B,3B,HR,RBI,SB,CS,BB,SO, AVG,OBP,SLG, FLD, OPS+, WAR por 162]  (promedio de 162 juegos de sus picos)\n"
+          "// pit: [y0,y1,n, W,L,ERA,G,GS,SV,IP,H,HR,BB,SO,WHIP, ERA+, WAR por temporada]  (temporada promedio de su pico)\n"
           "// bio: [estatura en pulgadas, peso en libras, nacimiento, lugar]\n"
           "window.CardBacks = " + json.dumps({"bat": bat, "pit": pit, "bio": bio}, separators=(",", ":"), ensure_ascii=False) + ";\n")
     OUT.write_text(js, encoding="utf-8")

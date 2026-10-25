@@ -631,6 +631,12 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
       // ── Top header: round progress ──────────────────────────────────────
       const header = document.createElement('div');
       header.style.cssText = 'width:100%;text-align:center;padding:12px 0 16px;';
+      // One small pack per round on the rail above the table: opened, on the table, still sealed.
+      const themeForRound = r => r === 1 ? 'epic_plus' : r === 2 ? 'epic' : r === 3 ? 'rare' : r === 4 ? 'uncommon' : (r >= 5 && r <= 8) ? 'common' : 'random';
+      const packRail = Array.from({ length: 9 }, (_, i) => {
+        const st = i < round - 1 ? 'is-done' : i === round - 1 ? 'is-now' : 'is-sealed';
+        return `<i class="d3-rp d3-rp--${themeForRound(i + 1)} ${st}" title="R${i + 1}"><b>${i + 1}</b></i>`;
+      }).join('');
       const roundDots = Array.from({length:9},(_,i) => {
         let bg;
         if (i < round - 1)      bg = '#10b981';        // picked
@@ -662,21 +668,23 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
       }).join('');
 
       header.innerHTML = `
-        <div style="max-width: 680px; margin: 0 auto 10px; padding: 6px 12px; background: rgba(0, 255, 102, 0.05); border: 1px solid rgba(0, 255, 102, 0.3); border-radius: 8px; font-size: 9px; color: #a7f3d0; line-height: 1.35; text-align: center;">
+        <div class="d3-intro" style="max-width: 680px; margin: 0 auto 10px; padding: 6px 12px; background: rgba(0, 255, 102, 0.05); border: 1px solid rgba(0, 255, 102, 0.3); border-radius: 8px; font-size: 9px; color: #a7f3d0; line-height: 1.35; text-align: center;">
           ${t('menu.intro_desc', { rounds: 9, hp: 100 })}
         </div>
-        <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:${RARITY_COLORS[info.rarities ? info.rarities[0] : 'Legendary']};margin-bottom:8px;letter-spacing:1px;">
+        <div class="d3-round" style="font-family:'Press Start 2P',monospace;font-size:10px;color:${RARITY_COLORS[info.rarities ? info.rarities[0] : 'Legendary']};margin-bottom:8px;letter-spacing:1px;">
           ${t('draft.round_header', { round: round })}
         </div>
-        <div style="display:flex;justify-content:center;gap:6px;align-items:center;margin-bottom:8px;">${roundDots}</div>
+        <div class="d3-rail">${packRail}</div>
+        <div class="d3-dots" style="display:flex;justify-content:center;gap:6px;align-items:center;margin-bottom:8px;">${roundDots}</div>
         <div class="md:hidden" style="display:flex;justify-content:center;gap:4px;flex-wrap:wrap;margin-bottom:10px;">${posTrackerHTML}</div>
-        <div style="display:inline-block;background:${RARITY_BG[info.rarities ? info.rarities[0] : 'Legendary']};
+        <div class="d3-tent" style="display:inline-block;background:${RARITY_BG[info.rarities ? info.rarities[0] : 'Legendary']};
           border:1px solid ${RARITY_COLORS[info.rarities ? info.rarities[0] : 'Legendary']};
           border-radius:20px;padding:4px 14px;font-size:11px;
           color:${RARITY_COLORS[info.rarities ? info.rarities[0] : 'Legendary']};font-weight:bold;">
           ${info.icon} ${t(roundBadgeKey)}
         </div>
       `;
+      header.className = 'd3-head';
       pool.appendChild(header);
 
       // ── 3-column layout: Roster | Pick Cards | Batting Order ───────────
@@ -687,7 +695,7 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
       // ───── LEFT: Fielding Roster Panel ─────────────────────────────────
       const rosterPanel = document.createElement('div');
       rosterPanel.id = 'draft-col-roster';
-      rosterPanel.className = 'draft-col md:col-span-3';
+      rosterPanel.className = 'draft-col md:col-span-3 d3-lineup';
       rosterPanel.style.cssText = 'background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:12px;';
       rosterPanel.innerHTML = `
         <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#9ca3af;margin-bottom:10px;text-align:center;letter-spacing:1px;">
@@ -821,8 +829,12 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
       `;
       cardsRow.appendChild(pack);
       if (window.AudioManager) window.AudioManager.play('menu_click');
+      // 3D foil pack on the felt (draft3d.js); the flat pack above stays as the fallback.
+      if (window.DraftPack3D) window.DraftPack3D.mount(pack, { theme: packTheme, round, tagline: t('draft.pack_tagline_' + packTheme) });
 
       pack.addEventListener('click', () => {
+        const opening3d = window.DraftPack3D && window.DraftPack3D.open(pack);
+        if (opening3d) { opening3d.then(renderPickCards); return; }
         // Tear the pack open with a small particle burst, then hand off to the
         // staggered card deal-in.
         pack.classList.add('pack-tearing');
@@ -901,9 +913,28 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
         wrapper.addEventListener('click', () => {
           if (window.AudioManager) window.AudioManager.play('draft_pick');
           if (window.BaseballDex) window.BaseballDex.unlock(player);
+          const cardEl = wrapper.querySelector('.player-card');
+          const fromRect = cardEl ? cardEl.getBoundingClientRect() : null;
+          const ghost = cardEl ? cardEl.cloneNode(true) : null;
           G.draftPickPlayer(player);
-          if (G.draftRound > 9) G.finishDraftLineup(false); // keeps the positions you chose; sorts the batting order
+          const finishing = G.draftRound > 9;
+          if (finishing) G.finishDraftLineup(false); // keeps the positions you chose; sorts the batting order
           if (window.renderDraftRound) window.renderDraftRound(); else if (typeof renderDraftRound === 'function') renderDraftRound();
+          // The picked card flies from the table to its line on the lineup card.
+          const sameP = q => q && (q === player || (q.name === player.name && (q.playerID || '') === (player.playerID || '')));
+          const slot = !finishing && SLOTS_ORDER.find(s => sameP(G.draftRoster[s]));
+          const row = slot && document.getElementById(`draft-slot-${slot}`);
+          if (ghost && fromRect && row && fromRect.width) {
+            const to = row.getBoundingClientRect();
+            ghost.classList.add('d3-fly');
+            ghost.style.cssText += `;position:fixed;left:${fromRect.left}px;top:${fromRect.top}px;width:${fromRect.width}px;height:${fromRect.height}px;margin:0;z-index:9999;pointer-events:none;`;
+            document.body.appendChild(ghost);
+            const sx = Math.max(0.12, to.height / fromRect.height);
+            const dx = to.left + 18 - fromRect.left - fromRect.width * (1 - sx) / 2;
+            const dy = to.top + to.height / 2 - (fromRect.top + fromRect.height / 2);
+            requestAnimationFrame(() => { ghost.style.transform = `translate(${dx}px, ${dy}px) scale(${sx}) rotate(-8deg)`; ghost.style.opacity = '0.2'; });
+            setTimeout(() => { ghost.remove(); row.classList.add('d3-landed'); }, 560);
+          }
         });
         cardsRow.appendChild(wrapper);
 
@@ -969,7 +1000,7 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
       // ───── RIGHT: Batting Order Panel ──────────────────────────────────
       const orderPanel = document.createElement('div');
       orderPanel.id = 'draft-col-order';
-      orderPanel.className = 'draft-col md:col-span-3';
+      orderPanel.className = 'draft-col md:col-span-3 d3-chalk';
       orderPanel.style.cssText = 'background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:12px;';
       orderPanel.innerHTML = `
         <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#9ca3af;margin-bottom:10px;text-align:center;letter-spacing:1px;">

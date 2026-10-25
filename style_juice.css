@@ -4637,3 +4637,44 @@ span.c162-iron {
 
 /* Defeat screen: one plain line */
 #gameover-why .go-why-line { margin: 10px auto 0; max-width: 640px; font-size: 13px; line-height: 1.5; opacity: .85; text-align: center; }
+/* month report: report on top, the other alerts below, CONTINUE on its own row (user: it looked squeezed) */
+.c162-alerts.has-month { flex-direction: column; align-items: stretch; }
+.c162-alerts.has-month .c162-alerts-list:empty { display: none; }
+.c162-alerts.has-month .c162-alerts-ok { align-self: center; min-width: 220px; font-size: 11px; padding: 12px 22px; }
+
+/* Award votes popup (after SEASON HONORS) */
+.c162-votes { width: min(1100px, 100%); max-height: 92vh; overflow: auto; padding: 20px 18px; border-radius: 16px; text-align: center; border: 2px solid #facc15; background: radial-gradient(ellipse at 50% 0%, rgba(250, 204, 21, .16), #0b1220 65%); box-shadow: 0 0 40px rgba(250, 204, 21, .3); font-family: 'Oswald', sans-serif; }
+.c162-vote-tabs { display: flex; gap: 8px; justify-content: center; margin: 10px 0 12px; flex-wrap: wrap; }
+.c162-vote-tabs button { font: 600 13px 'Oswald', sans-serif; letter-spacing: .5px; padding: 6px 14px; border-radius: 6px; border: 1px solid rgba(16, 185, 129, .5); background: rgba(16, 185, 129, .08); color: #a7f3d0; cursor: pointer; }
+.c162-vote-tabs button.on { background: #10b981; color: #04130c; }
+.c162-vote-lg[hidden] { display: none; }
+.c162-vote-award { text-align: left; margin: 0 0 14px; }
+.c162-vote-award h4 { margin: 0 0 6px; font: 600 14px 'Oswald', sans-serif; letter-spacing: 1px; color: #fde047; border-bottom: 1px solid rgba(250, 204, 21, .3); padding-bottom: 4px; }
+.c162-vote-row { display: flex; align-items: center; gap: 10px; padding: 4px 6px; border-radius: 5px; }
+.c162-vote-award h4 + .c162-vote-row { background: rgba(250, 204, 21, .1); }
+.c162-vote-row.mine, .c162-vote-gg.mine { outline: 1px solid #34d399; background: rgba(52, 211, 153, .12); }
+.vr-rk { width: 18px; color: #94a3b8; font: 400 18px 'VT323', monospace; text-align: center; }
+.vr-who { flex: 1; min-width: 0; }
+.vr-who b { display: block; color: #f3f4f6; font-size: 14px; font-weight: 500; }
+.vr-who small { display: block; color: #94a3b8; font-size: 11.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.vr-pts, .vr-1st { font: 400 22px/1 'VT323', monospace; color: #fde047; text-align: right; min-width: 44px; }
+.vr-1st { color: #a7f3d0; min-width: 34px; }
+.vr-pts small, .vr-1st small { display: block; font: 500 9px 'Oswald', sans-serif; color: #94a3b8; letter-spacing: .5px; }
+.c162-vote-ggs { display: grid; grid-template-columns: repeat(auto-fill, minmax(165px, 1fr)); gap: 6px; }
+.c162-vote-gg { padding: 5px 8px; border-radius: 6px; background: rgba(255, 255, 255, .04); border: 1px solid rgba(255, 255, 255, .08); }
+.c162-vote-gg em { font-style: normal; font-size: 11px; color: #fde047; margin-right: 6px; }
+.c162-vote-gg b { color: #f3f4f6; font-weight: 500; font-size: 13.5px; }
+.c162-vote-gg small { display: block; color: #94a3b8; font-size: 11px; }
+
+/* season + league tabs as one top menu */
+#c162-season-nav .c162-mainnav { margin: 0 0 14px; }
+.c162-mainnav { flex-wrap: wrap; }
+
+/* votes popup: two columns, positions as compact tables */
+.c162-vote-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+.c162-vote-pos { display: flex; align-items: center; gap: 10px; padding: 3px 6px; border-radius: 5px; border-bottom: 1px solid rgba(255, 255, 255, .05); }
+.c162-vote-pos em { width: 26px; font: 600 12px 'Oswald', sans-serif; color: #fde047; font-style: normal; }
+.c162-vote-pos .vr-pts { font-size: 19px; }
+.c162-vote-pos.mine { outline: 1px solid #34d399; background: rgba(52, 211, 153, .12); }
+@media (max-width: 760px) { .c162-vote-cols { grid-template-columns: 1fr; gap: 0; } }
+.c162-vote-cols > div { min-width: 0; }

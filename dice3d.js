@@ -24,6 +24,10 @@
     if (libsState !== 'idle') return;
     libsState = 'loading';
     const load = src => new Promise((ok, bad) => {
+      // three.js may already be on the page (draft3d.js loads the same file)
+      if (src.includes('three') && window.THREE) { ok(); return; }
+      const prior = src.includes('three') && document.querySelector('script[src*="three.min.js"]');
+      if (prior) { let n = 0; const iv = setInterval(() => { if (window.THREE) { clearInterval(iv); ok(); } else if (++n > 200) { clearInterval(iv); bad(new Error(src)); } }, 100); return; }
       const s = document.createElement('script'); s.src = src; s.async = true;
       s.onload = ok; s.onerror = () => bad(new Error(src)); document.head.appendChild(s);
     });

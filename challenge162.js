@@ -195,6 +195,52 @@
     return ((s.fp || 0) - s.fch * rate) * FIELD_RUN_PER_PLAY + arm;
   }
 
+  // League environment for the "+" stats (OPS+, ERA+) and FIP's constant, from every game played
+  // in the league so far. 100 = league average.
+  let _envCache = { n: -1, env: null };
+  function leagueEnv() {
+    const C = window.Challenge162;
+    const L = C && C.state && C.state.league;
+    if (!L || !L.stats) return null;
+    const day = L.day || 0;
+    if (_envCache.n === day && _envCache.L === L) return _envCache.env;
+    const b = { ab: 0, h: 0, d: 0, t: 0, hr: 0, bb: 0 }, p = { outs: 0, er: 0, hr: 0, bb: 0, so: 0 };
+    Object.values(L.stats.bat || {}).forEach(x => { b.ab += x.ab || 0; b.h += x.h || 0; b.d += x.doubles || 0; b.t += x.triples || 0; b.hr += x.hr || 0; b.bb += x.bb || 0; });
+    Object.values(L.stats.pit || {}).forEach(x => { p.outs += x.outs || 0; p.er += x.er || 0; p.hr += x.hr || 0; p.bb += x.bb || 0; p.so += x.so || 0; });
+    let env = null;
+    if (b.ab > 500 && p.outs > 300) {
+      const ip = p.outs / 3, era = p.er * 9 / ip;
+      env = { obp: (b.h + b.bb) / (b.ab + b.bb), slg: (b.h + b.d + 2 * b.t + 3 * b.hr) / b.ab, era,
+        fipC: era - (13 * p.hr + 3 * p.bb - 2 * p.so) / ip };
+    }
+    _envCache = { n: day, L, env };
+    return env;
+  }
+  function calcOpsPlus(s) {
+    const e = leagueEnv(); const pa = (s.ab || 0) + (s.bb || 0);
+    if (!e || !(s.ab > 0)) return '—';
+    const obp = ((s.h || 0) + (s.bb || 0)) / pa, slg = ((s.h || 0) + (s.doubles || 0) + 2 * (s.triples || 0) + 3 * (s.hr || 0)) / s.ab;
+    return Math.round(100 * (obp / e.obp + slg / e.slg - 1));
+  }
+  function calcEraPlus(s) {
+    const e = leagueEnv(); const ip = (s.outs || 0) / 3;
+    if (!e || ip < 1) return '—';
+    if (!(s.er > 0)) return '∞';
+    return Math.round(100 * e.era / (s.er * 9 / ip));
+  }
+  function calcFIP(s, hr) {
+    const e = leagueEnv(); const ip = (s.outs || 0) / 3;
+    if (!e || ip < 1) return '—';
+    return ((13 * (hr || 0) + 3 * (s.bb || 0) - 2 * (s.so || 0)) / ip + e.fipC).toFixed(2);
+  }
+  // Fielding runs of the season (plays made above an average fielder of his position), signed.
+  function calcFieldRuns(s, pos, defVal) {
+    const pa = (s.ab || 0) + (s.bb || 0);
+    if ((pos || 'DH').toUpperCase() === 'DH' || pa <= 0) return '—';
+    const r = Math.round(fieldingRuns(s, pos, defVal, pa));
+    return r > 0 ? `+${r}` : `${r}`;
+  }
+
   function calcBatterDWAR(s, pos = 'DH', defVal = 50) {
     if (!s) return '0.0';
     const ab = s.ab || 0;
@@ -2213,6 +2259,66 @@
     return awards;
   }
 
+  // Award VOTING (user's call: "as the real votes happen"). Each voter scores the candidates the
+  // way real writers do (not only WAR: the slugger on a playoff team gets help, the 20-game winner
+  // too, a glove with a reputation keeps winning) plus his own noise, and fills a ballot:
+  // MVP 10 places (14-9-8-7-6-5-4-3-2-1), Cy Young 5 (7-4-3-2-1), Reliever 3 (5-3-1), Gold Glove
+  // one name per position. The most points wins; the Platinum Glove goes to the best Gold Glove.
+  const VOTERS = 30;
+  const BALLOTS = { mvp: [14, 9, 8, 7, 6, 5, 4, 3, 2, 1], cyYoung: [7, 4, 3, 2, 1], reliever: [5, 3, 1], gold: [1], silver: [1] };
+  const VOTE_NOISE = { mvp: 0.9, cyYoung: 0.7, reliever: 0.8, gold: 0.7, silver: 0.7 };
+  function gauss() { let u = 0, v = 0; while (!u) u = Math.random(); while (!v) v = Math.random(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); }
+  function runVote(cands, score, kind, line) {
+    const base = cands.map(x => ({ x, v: score(x) })).filter(o => Number.isFinite(o.v)).sort((a, b) => b.v - a.v).slice(0, 14);
+    if (!base.length) return [];
+    // The spread of the field sets the noise, so close races stay close and runaways stay runaways.
+    const sd = Math.max(0.6, (base[0].v - base[Math.min(base.length - 1, 5)].v) / 3) * VOTE_NOISE[kind];
+    const pts = base.map(() => 0), firsts = base.map(() => 0), ballot = BALLOTS[kind];
+    for (let v = 0; v < VOTERS; v++) {
+      const order = base.map((o, i) => ({ i, v: o.v + gauss() * sd })).sort((a, b) => b.v - a.v);
+      order.slice(0, ballot.length).forEach((o, r) => { pts[o.i] += ballot[r]; if (r === 0) firsts[o.i]++; });
+    }
+    return base.map((o, i) => ({ x: o.x, pts: pts[i], firsts: firsts[i], line: line(o.x) }))
+      .filter(r => r.pts > 0).sort((a, b) => b.pts - a.pts || b.firsts - a.firsts);
+  }
+  function computeVotes(league, lg, playoffIds) {
+    const q = leagueQualifiers(league, lg);
+    const lgOuts = q.pit.reduce((t, p) => t + (p.outs || 0), 0);
+    const lgEra = lgOuts ? q.pit.reduce((t, p) => t + (p.er || 0), 0) * 27 / lgOuts : 4.0;
+    const team = x => league.teams[x.team] || { w: 81, l: 81 };
+    const era = p => (p.er || 0) * 27 / Math.max(1, p.outs || 0);
+    const avg3 = v => v.toFixed(3).replace(/^0/, '');
+    const fr = b => fieldingRuns(b, b.pos, b.def, batterPA(b));
+    const mvp = runVote(q.batRegular, b => batterWarValue(b, b.pos, b.def)
+      + (b.hr || 0) * 0.04 + (b.rbi || 0) * 0.015 + (batterAVG(b) - 0.270) * 15
+      + (playoffIds.has(b.team) ? 1.5 : 0) + (team(b).w - team(b).l) * 0.01, 'mvp',
+      b => `${avg3(batterAVG(b))} · ${b.hr || 0} HR · ${b.rbi || 0} RBI · ${calcBatterWAR(b, b.pos, b.def)} WAR`);
+    const cyYoung = runVote(q.spQual, p => pitcherWarValue(p, 'SP') + (p.w || 0) * 0.12 - (p.l || 0) * 0.05
+      + (lgEra - era(p)) * 0.8 + (p.so || 0) * 0.006 + (p.outs || 0) / 3 * 0.006, 'cyYoung',
+      p => `${p.w || 0}-${p.l || 0} · ${era(p).toFixed(2)} ERA · ${p.so || 0} K · ${Math.floor((p.outs || 0) / 3)} IP`);
+    const reliever = runVote(q.rpQual, p => reliefPoints(p, lgEra) / 8, 'reliever',
+      p => `${p.sv || 0} SV · ${era(p).toFixed(2)} ERA · ${p.so || 0} K`);
+    // Gold Glove: what he did (fielding runs) + his reputation (the card's glove) − errors, and a
+    // little bat and playing time, as real voters lean.
+    const ggScore = b => fr(b) * 0.12 + ((b.def || 50) - 50) * 0.04 - (b.e || 0) * 0.04 + calcBatRuns(b) * 0.01 + batterPA(b) / 300;
+    const gold = {};
+    SLOTS.forEach(pos => {
+      if (pos === 'DH') return;
+      gold[pos] = runVote(q.batRegular.filter(b => b.pos === pos), ggScore, 'gold',
+        b => `${Math.round(fr(b)) > 0 ? '+' : ''}${Math.round(fr(b))} FLD · ${calcBatterDWAR(b, b.pos, b.def)} dWAR · ${b.e || 0} E`);
+    });
+    const platinum = Object.values(gold).map(l => l[0]).filter(Boolean).sort((a, b) => ggScore(b.x) - ggScore(a.x));
+    // Silver Slugger: one vote per position (DH too). Bat value first, with the eye-catching
+    // numbers voters like (home runs, average).
+    const silver = {};
+    SLOTS.forEach(pos => {
+      silver[pos] = runVote(q.batRegular.filter(b => b.pos === pos),
+        b => calcBatRuns(b) / 8 + (b.hr || 0) * 0.04 + (batterAVG(b) - 0.270) * 12, 'silver',
+        b => `${avg3(batterAVG(b))} · ${b.hr || 0} HR · ${b.rbi || 0} RBI · ${(batterOPS(b)).toFixed(3).replace(/^0/, '')} OPS`);
+    });
+    return { mvp, cyYoung, reliever, gold, platinum, silver };
+  }
+
   // All-MLB Team (asked by the user): the best season at each spot across BOTH leagues, a first
   // and a second team. One C, 1B, 2B, 3B, SS and DH, three outfielders (LF / CF / RF together),
   // five starters and two relievers each. Batters by WAR, pitchers by the Cy Young and Reliever
@@ -2741,8 +2847,26 @@
         const winner = list => list && list[0] && list[0].x;
         const teamName = id => (L.teams[id] ? L.teams[id].name : id);
         S.awards = {};
+        S.awardVotes = {};
+        S.votesShown = false;
+        const playoffIds = new Set([].concat(...AWARD_LEAGUES.map(x => bracket.seeds[x] || [])));
         AWARD_LEAGUES.forEach(awLg => {
           const aw = computeAwards(L, awLg);
+          // The voted awards replace the formula winners (the formula still feeds the live races).
+          const votes = computeVotes(L, awLg, playoffIds);
+          const lite = r => ({ name: r.x.name, team: r.x.team, pts: r.pts, firsts: r.firsts, line: r.line });
+          S.awardVotes[awLg] = {
+            mvp: votes.mvp.slice(0, 10).map(lite), cyYoung: votes.cyYoung.slice(0, 5).map(lite), reliever: votes.reliever.slice(0, 3).map(lite),
+            platinum: votes.platinum.slice(0, 1).map(lite), gold: Object.fromEntries(Object.entries(votes.gold).map(([p, l]) => [p, l.slice(0, 3).map(lite)])),
+            silver: Object.fromEntries(Object.entries(votes.silver).map(([p, l]) => [p, l.slice(0, 3).map(lite)]))
+          };
+          Object.entries(votes.silver).forEach(([p, l]) => { if (l && l[0]) aw.silverSlugger[p] = [{ x: l[0].x }]; });
+          const vw = l => (l && l[0] ? [{ x: l[0].x }] : null);
+          if (vw(votes.mvp)) aw.mvp = vw(votes.mvp);
+          if (vw(votes.cyYoung)) aw.cyYoung = vw(votes.cyYoung);
+          if (vw(votes.reliever)) aw.reliever = vw(votes.reliever);
+          if (vw(votes.platinum)) aw.platinum = vw(votes.platinum);
+          Object.entries(votes.gold).forEach(([p, l]) => { if (vw(l)) aw.goldGlove[p] = vw(l); });
           const won = S.awards[awLg] = {
             mvp: winner(aw.mvp), cyYoung: winner(aw.cyYoung), reliever: winner(aw.reliever),
             platinum: winner(aw.platinum), hrKing: winner(aw.hrKing), battingTitle: winner(aw.battingTitle),
@@ -2827,17 +2951,10 @@
           S.honorsShown = true;
           this.save();
         }
-        if (this.canStartPlayoffs() && !S.playoffs.transitionShown) {
-          this._showOctoberTransitionModal();
-        }
+        this._showVotes();
         return;
       }
-      if (S.honorsShown) {
-        if (this.canStartPlayoffs() && !S.playoffs.transitionShown) {
-          this._showOctoberTransitionModal();
-        }
-        return;
-      }
+      if (S.honorsShown) { this._showVotes(); return; }
       S.honorsShown = true;
       this.save();
       const old = document.getElementById('c162-honors-overlay'); if (old) old.remove();
@@ -2854,10 +2971,66 @@
       ov.onclick = e => {
         if (e.target === ov || e.target.closest('[data-honors-close]')) {
           ov.remove();
-          if (this.canStartPlayoffs() && !S.playoffs.transitionShown) {
-            this._showOctoberTransitionModal();
-          }
+          this._showVotes();
         }
+      };
+      document.body.appendChild(ov);
+    },
+
+    // The award votes of both leagues (yours first), shown once right after the honors popup.
+    _showVotes() {
+      const S = this.state;
+      const goOn = () => { if (this.canStartPlayoffs() && !S.playoffs.transitionShown) this._showOctoberTransitionModal(); };
+      if (!S || !S.awardVotes || S.votesShown) { goOn(); return; }
+      if (document.getElementById('c162-votes-overlay')) return;
+      S.votesShown = true;
+      this.save();
+      const L = S.league, myLg = L.teams[USER_TEAM_ID].league;
+      const lgs = [myLg].concat(AWARD_LEAGUES.filter(x => x !== myLg));
+      const tName = id => (L.teams[id] ? L.teams[id].name : id);
+      const rows = list => list.map((r, i) => `<div class="c162-vote-row${r.team === USER_TEAM_ID ? ' mine' : ''}">
+          <span class="vr-rk">${i + 1}</span><div class="vr-who"><b>${r.name}</b><small>${tName(r.team)} · ${r.line}</small></div>
+          <span class="vr-pts">${r.pts}<small>PTS</small></span><span class="vr-1st">${r.firsts}<small>1ST</small></span></div>`).join('');
+      const block = (title, list) => (list && list.length ? `<div class="c162-vote-award"><h4>${title}</h4>${rows(list)}</div>` : '');
+      const posTable = (title, byPos) => {
+        const rowsHTML = Object.entries(byPos || {}).filter(([, l]) => l && l.length).map(([pos, l]) => `<div class="c162-vote-pos${l[0].team === USER_TEAM_ID ? ' mine' : ''}">
+            <em>${pos}</em><div class="vr-who"><b>${l[0].name}</b><small>${tName(l[0].team)} · ${l[0].line}</small></div><span class="vr-pts">${l[0].pts}<small>OF ${VOTERS}</small></span></div>`).join('');
+        return `<div class="c162-vote-award"><h4>${title}</h4>${rowsHTML}</div>`;
+      };
+      const lgHTML = lg => {
+        const v = S.awardVotes[lg];
+        if (!v) return '';
+        const plat = v.platinum && v.platinum[0];
+        return `<div class="c162-vote-lg" data-vlg="${lg}"${lg === myLg ? '' : ' hidden'}>
+          <div class="c162-vote-cols">
+            <div>${block('🏅 MOST VALUABLE PLAYER', v.mvp)}</div>
+            <div>${block('🧢 CY YOUNG', v.cyYoung)}${block('🔥 RELIEVER OF THE YEAR', v.reliever)}
+              ${plat ? `<div class="c162-vote-award"><h4>💎 PLATINUM GLOVE</h4><div class="c162-vote-row${plat.team === USER_TEAM_ID ? ' mine' : ''}"><span class="vr-rk">💎</span><div class="vr-who"><b>${plat.name}</b><small>${tName(plat.team)} · ${plat.line}</small></div></div></div>` : ''}</div>
+          </div>
+          <div class="c162-vote-cols">
+            <div>${posTable('🧤 GOLD GLOVES', v.gold)}</div>
+            <div>${posTable('🥈 SILVER SLUGGERS', v.silver)}</div>
+          </div>
+        </div>`;
+      };
+      const ov = document.createElement('div');
+      ov.id = 'c162-votes-overlay';
+      ov.className = 'c162-tm-overlay';
+      ov.innerHTML = `<div class="c162-votes">
+        <div class="c162-honors-kicker">${VOTERS} WRITERS PER LEAGUE · BALLOTS COUNTED</div>
+        <div class="c162-honors-title">🗳 THE AWARD VOTES</div>
+        <div class="c162-vote-tabs">${lgs.map(lg => `<button data-vtab="${lg}" class="${lg === myLg ? 'on' : ''}">${lg === 'AL' ? 'AMERICAN' : 'NATIONAL'} LEAGUE</button>`).join('')}</div>
+        ${lgs.map(lgHTML).join('')}
+        <button class="btn c162-honors-ok" data-votes-close>▶ CONTINUE</button>
+      </div>`;
+      ov.onclick = e => {
+        const tab = e.target.closest('[data-vtab]');
+        if (tab) {
+          ov.querySelectorAll('[data-vtab]').forEach(b => b.classList.toggle('on', b === tab));
+          ov.querySelectorAll('[data-vlg]').forEach(d => { d.hidden = d.dataset.vlg !== tab.dataset.vtab; });
+          return;
+        }
+        if (e.target === ov || e.target.closest('[data-votes-close]')) { ov.remove(); goOn(); }
       };
       document.body.appendChild(ov);
     },
@@ -3359,7 +3532,7 @@
       Object.values(result.pit).forEach(d => {
         if (d.team !== USER_TEAM_ID) return;
         const s = S.pitcherStats[d.key];
-        if (s) ['outs', 'h', 'er', 'bb', 'so', 'w', 'l', 'sv', 'g', 'gs', 'r', 'cg', 'sho', 'hld', 'bs'].forEach(f => { s[f] = (s[f] || 0) + (d[f] || 0); });
+        if (s) ['outs', 'h', 'er', 'bb', 'so', 'hr', 'w', 'l', 'sv', 'g', 'gs', 'r', 'cg', 'sho', 'hld', 'bs'].forEach(f => { s[f] = (s[f] || 0) + (d[f] || 0); });
       });
 
       S.gamesPlayed++;
@@ -3758,7 +3931,7 @@
 
       S.monthReport = report;
       S.monthSnap = this._monthSnapshot();
-      S.pendingAlerts.push({ icon: '🗓', title: `${report.name} IS OVER`, text: `${report.rec[0]}-${report.rec[1]} this month, ${report.total[0]}-${report.total[1]} overall.` });
+      S.pendingAlerts.push({ kind: 'month', icon: '🗓', title: `${report.name} IS OVER`, text: `${report.rec[0]}-${report.rec[1]} this month, ${report.total[0]}-${report.total[1]} overall.` });
       this._pushHeadline(`🗓 ${report.name}: ${L.teams[USER_TEAM_ID].name} went ${report.rec[0]}-${report.rec[1]}.`, 'user');
     },
 
@@ -3789,10 +3962,13 @@
     },
 
     _alertsHTML() {
-      const a = (this.state && this.state.pendingAlerts) || [];
-      if (!a.length) return '';
-      return `<div class="c162-alerts">
-        ${this._monthReportHTML()}
+      const all = (this.state && this.state.pendingAlerts) || [];
+      if (!all.length) return '';
+      const month = this._monthReportHTML();
+      // with the month report on screen, its own "JULY IS OVER" line only repeats it
+      const a = month ? all.filter(x => x.kind !== 'month' && !/ IS OVER$/.test(x.title || '')) : all;
+      return `<div class="c162-alerts ${month ? 'has-month' : ''}">
+        ${month}
         <div class="c162-alerts-list">${a.map(x => `<div class="c162-alert"><span class="c162-alert-icon">${x.icon}</span><div><b>${x.title}</b><p>${x.text}</p></div></div>`).join('')}</div>
         <button class="btn c162-alerts-ok" onclick="window.Challenge162.dismissAlerts()">▶ CONTINUE</button>
       </div>`;
@@ -8919,6 +9095,35 @@
         };
       }
 
+      // Same 3D foil pack as the roguelike draft (draft3d.js) on top of the sealed pack; the flat pack
+      // above stays if the 3D one cannot be drawn.
+      if (foilTarget && window.DraftPack3D) {
+        const sealedEl = container.querySelector('.c162-sealed');
+        const theme = packTier === 'any' ? 'random' : ({ Legendary: 'epic_plus', Epic: 'epic', Rare: 'rare', Uncommon: 'uncommon', Common: 'common' }[packTier] || 'random');
+        const tier = { Common: 0, Uncommon: 1, Rare: 2, Epic: 3, Legendary: 4 }[packTier === 'any' ? bestRarity : packTier] ?? 2;
+        const pack3 = document.createElement('div');
+        pack3.className = `draft-pack draft-pack--${theme} c162-pack3d`;
+        foilTarget.after(pack3);
+        window.DraftPack3D.mount(pack3, {
+          theme, tier, badge: `${packNum}/${totalInStage}`,
+          tagline: packTier === 'any' ? 'ANY RARITY PACK' : `${packTier.toUpperCase()} PACK`,
+          fine: `${isPitchersStage ? 'PITCHERS' : 'BATTERS'} BOX  ·  ${PACK_OPTIONS} CARDS`
+        });
+        pack3.onclick = () => {
+          if (foilTarget.classList.contains('ripping')) return;
+          const opening = window.DraftPack3D.open(pack3);
+          if (!opening) { pack3.remove(); foilTarget.onclick(); return; }
+          foilTarget.classList.add('ripping');
+          if (sealedEl) sealedEl.classList.add('c162-opening3d');
+          opening.then(() => {
+            if (this._packDraft !== draft) return;
+            this._openPackOptions();
+            this.renderPacksDraft();
+            this._playRevealSounds();
+          });
+        };
+      }
+
       // Click the table (not a card or a button) to skip the reveal.
       const revealStage = container.querySelector('.c162-reveal.dealing');
       if (revealStage) {
@@ -10406,6 +10611,7 @@
         const ops = (parseFloat(obp) + parseFloat(slg)).toFixed(3).replace(/^0/, '');
         const defVal = p.def !== undefined ? p.def : (p.defense_val !== undefined ? p.defense_val : 50);
         const dwar = calcBatterDWAR(s, slot, defVal);
+        const fld = calcFieldRuns(s, slot, defVal), opsP = calcOpsPlus(s);
         const war = calcBatterWAR(s, slot, defVal);
         const dwarColor = parseFloat(dwar) > 0 ? '#34d399' : (parseFloat(dwar) < 0 ? '#f87171' : '#94a3b8');
 
@@ -10430,6 +10636,8 @@
           ${td(obp, { num: true })}
           ${td(slg, { num: true })}
           ${td(ops, { num: true })}
+          ${td(opsP, { num: true })}
+          ${td(`<span style="color:${String(fld).startsWith('+') ? '#34d399' : String(fld).startsWith('-') ? '#f87171' : '#94a3b8'};">${fld}</span>`, { num: true })}
           ${td(`<span style="color:${dwarColor};font-size:9.5px;">${dwar}</span>`, { num: true })}
           ${td(war, { num: true, accent: true })}
         </tr>`;
@@ -10449,6 +10657,7 @@
         const ops = (parseFloat(obp) + parseFloat(slg)).toFixed(3).replace(/^0/, '');
         const defVal = p.def !== undefined ? p.def : (p.defense_val !== undefined ? p.defense_val : 50);
         const dwar = calcBatterDWAR(s, p.pos || 'BN', defVal);
+        const fld = calcFieldRuns(s, p.pos || 'DH', defVal), opsP = calcOpsPlus(s);
         const war = calcBatterWAR(s, p.pos || 'BN', defVal);
         const dwarColor = parseFloat(dwar) > 0 ? '#34d399' : (parseFloat(dwar) < 0 ? '#f87171' : '#94a3b8');
 
@@ -10473,6 +10682,8 @@
           ${td(obp, { num: true })}
           ${td(slg, { num: true })}
           ${td(ops, { num: true })}
+          ${td(opsP, { num: true })}
+          ${td(`<span style="color:${String(fld).startsWith('+') ? '#34d399' : String(fld).startsWith('-') ? '#f87171' : '#94a3b8'};">${fld}</span>`, { num: true })}
           ${td(`<span style="color:${dwarColor};font-size:9.5px;">${dwar}</span>`, { num: true })}
           ${td(war, { num: true, accent: true })}
         </tr>`;
@@ -10505,6 +10716,8 @@
         const ironTag = (S.ironMan && S.ironMan[ironPitKey(p)]) ? ' <span class="c162-iron on" title="Iron Man">IM</span>' : '';
         const roleBadge = `<span class="c162-tag-role" style="background:${roleBg};">${roleLabel}</span>${ironTag}`;
         const war = calcPitcherWAR(s, roleLabel);
+        const lgLine = (S.league && S.league.stats && S.league.stats.pit && S.league.stats.pit[this._leagueKey(USER_TEAM_ID, k)]) || {};
+        const eraP = calcEraPlus(s), fip = calcFIP(s, s.hr !== undefined ? s.hr : lgLine.hr);
 
         return `<tr class="c162-tr c162-tr-card${i % 2 ? ' c162-tr-alt' : ''}" data-c162-card="P:${pitcherUnlockKey(p)}" title="Click to see his card">
           ${td(s.name + this._asTag('pit', USER_TEAM_ID, pitcherUnlockKey(p)) + this._formTag(USER_TEAM_ID, p, true))}
@@ -10522,6 +10735,8 @@
           ${td(s.cg || 0, { num: true })}
           ${td(whip, { num: true })}
           ${td(era, { num: true })}
+          ${td(eraP, { num: true })}
+          ${td(fip, { num: true })}
           ${td(war, { num: true, accent: true })}
         </tr>`;
       }).join('');
@@ -10747,6 +10962,8 @@
                     <th class="c162-th">OBP</th>
                     <th class="c162-th">SLG</th>
                     <th class="c162-th">OPS</th>
+                    <th class="c162-th" title="OPS+: OPS against this league's average (100 = average)">OPS+</th>
+                    <th class="c162-th" style="color:#34d399;" title="Fielding runs: runs saved with the glove this season, against an average fielder of his position">FLD</th>
                     <th class="c162-th" style="color:#34d399;" title="Defensive WAR">dWAR</th>
                     <th class="c162-th" style="color:var(--challenge162-accent);">WAR</th>
                   </tr></thead>
@@ -10778,6 +10995,8 @@
                     <th class="c162-th" title="Complete games">CG</th>
                     <th class="c162-th">WHIP</th>
                     <th class="c162-th">ERA</th>
+                    <th class="c162-th" title="ERA+: ERA against this league's average (100 = average, higher is better)">ERA+</th>
+                    <th class="c162-th" title="FIP: an ERA built only from strikeouts, walks and home runs, without the defense behind him">FIP</th>
                     <th class="c162-th" style="color:var(--challenge162-accent);">WAR</th>
                   </tr></thead>
                   <tbody>${pitcherRows}</tbody>
@@ -10828,6 +11047,10 @@
       };
       if (btnResults) btnResults.onclick = () => { this.stopAutoSim(); this.state.playoffs.finished = true; this.save(); this.showScreen('screen-challenge-results'); this.renderResults(); };
       if (btnLiga) btnLiga.onclick = () => { this.stopAutoSim(); this.renderLiga(); };
+      if (this.state.league) {
+        const navHost = document.getElementById('c162-season-nav');
+        if (navHost) { navHost.innerHTML = this._seasonNavHTML('season'); this._bindSeasonNav(navHost); }
+      }
       // A click on a player of the tables opens his Dex card (ratings, career line).
       if (this.state.gamesPlayed >= SEASON_LENGTH) this._showHonors();
       this._showAllStar();
@@ -11035,10 +11258,10 @@
     _s2RaceHTML() {
       const S = this.state, R = this._s2Results();
       const pts = []; let w = 0, l = 0;
-      R.forEach((r, i) => { if (r) { r[0] ? w++ : l++; pts.push({ x: i + 1, o5: w - l, cut: r[6] / 2 }); } });
+      R.forEach((r, i) => { if (r) { r[0] ? w++ : l++; pts.push({ x: i + 1, o5: w - l, cut: r[6] / 2, line: (w - l) - r[6] }); } });
       const W = 640, H = 170, padL = 30, padR = 10, padT = 12, padB = 22;
       if (pts.length < 2) return `<div class="s2-race"><div class="s2-h">📈 THE RACE <span>games over .500 · distance to a playoff spot</span></div><div class="s2-empty">The race chart starts drawing after a couple of games.</div></div>`;
-      const vals = pts.flatMap(p => [p.o5, p.cut]);
+      const vals = pts.flatMap(p => [p.o5, p.line]);
       let lo = Math.min(-4, ...vals), hi = Math.max(4, ...vals);
       const span = hi - lo; lo -= span * 0.08; hi += span * 0.08;
       const X = x => padL + (x - 1) / (SEASON_LENGTH - 1) * (W - padL - padR);
@@ -11049,16 +11272,17 @@
       const step = span > 40 ? 20 : span > 16 ? 10 : 5;
       for (let v = Math.ceil(lo / step) * step; v <= hi; v += step) ticks.push(`<line x1="${padL}" x2="${W - padR}" y1="${Y(v)}" y2="${Y(v)}" class="g${v === 0 ? ' z' : ''}"/><text x="${padL - 4}" y="${Y(v) + 3}" class="t">${v > 0 ? '+' : ''}${v}</text>`);
       const months = ['APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP'].map((m, i) => `<text x="${X(i * MONTH_GAMES + 1) + 2}" y="${H - 6}" class="t m">${m}</text><line x1="${X(i * MONTH_GAMES + 1)}" x2="${X(i * MONTH_GAMES + 1)}" y1="${padT}" y2="${H - padB}" class="g v"/>`).join('');
-      const cutTxt = lastP.cut > 0 ? `${lastP.cut} up on the cut` : lastP.cut < 0 ? `${-lastP.cut} back of a spot` : 'on the bubble';
+      const g = v => `${v} game${v === 1 ? '' : 's'}`;
+      const cutTxt = lastP.cut > 0 ? `${g(lastP.cut)} above the playoff line` : lastP.cut < 0 ? `${g(-lastP.cut)} below the playoff line` : 'right on the playoff line';
       return `<div class="s2-race">
-        <div class="s2-h">📈 THE RACE <span><b class="k1">━</b> games over .500 <b class="k2">━</b> vs the playoff cut</span></div>
+        <div class="s2-h">📈 THE RACE <span><b class="k1">━</b> your team <b class="k2">┅</b> the playoff line in your league · both in games over .500</span></div>
         <svg viewBox="0 0 ${W} ${H}" class="s2-svg" preserveAspectRatio="none">
           ${ticks.join('')}${months}
-          <path d="${path(p => p.cut)}" class="l2"/>
+          <path d="${path(p => p.line)}" class="l2"/>
           <path d="${path(p => p.o5)} L${X(lastP.x).toFixed(1)},${Y(Math.max(lo, Math.min(hi, 0))).toFixed(1)} L${X(pts[0].x).toFixed(1)},${Y(Math.max(lo, Math.min(hi, 0))).toFixed(1)} Z" class="a1"/>
           <path d="${path(p => p.o5)}" class="l1"/>
           <circle cx="${X(lastP.x)}" cy="${Y(lastP.o5)}" r="3.5" class="d1"/>
-          <circle cx="${X(lastP.x)}" cy="${Y(lastP.cut)}" r="3" class="d2"/>
+          <circle cx="${X(lastP.x)}" cy="${Y(lastP.line)}" r="3" class="d2"/>
         </svg>
         <div class="s2-race-foot"><span>${lastP.o5 >= 0 ? '+' : ''}${lastP.o5} over .500</span><span class="${lastP.cut >= 0 ? 'pos' : 'neg'}">${cutTxt}</span></div>
       </div>`;
@@ -11415,6 +11639,7 @@
       const L = S.league;
       if (!L.stats) return '<div class="c162-pr-note">Award races start with the next game.</div>';
       const final = S.gamesPlayed >= SEASON_LENGTH && S.awards;
+      // Before the vote the boxes are a race (formula leaders); after it they show the winners.
       const warFmt = v => `${v.toFixed(1)} WAR`;
       const race = (title, list, fmt) => `<div class="c162-ldr-box c162-award-box"><div class="c162-ldr-title">${title}${final ? ' · FINAL' : ''}</div>${this._leaderRows(list, fmt)}</div>`;
       const posTable = (title, byPos, fmt) => `
@@ -11435,6 +11660,29 @@
       const userLg = L.teams[USER_TEAM_ID] ? L.teams[USER_TEAM_ID].league : 'AL';
       const leagueBlock = lg => {
         const aw = computeAwards(L, lg);
+        const V = final && S.awardVotes && S.awardVotes[lg];
+        if (V) {
+          const asRows = l => (l || []).map(r => ({ x: { name: r.name, team: r.team }, v: r.pts }));
+          const voted = (title, l) => `<div class="c162-ldr-box c162-award-box"><div class="c162-ldr-title">${title} · VOTED</div>${this._leaderRows(asRows(l).slice(0, 5), v => `${v} pts`)}</div>`;
+          aw.goldGlove = Object.fromEntries(Object.entries(V.gold || {}).map(([pos, l]) => [pos, (l || []).map(r => ({ x: { name: r.name, team: r.team }, v: r.pts, line: r.line }))]));
+          if (V.silver) aw.silverSlugger = Object.fromEntries(Object.entries(V.silver).map(([pos, l]) => [pos, (l || []).map(r => ({ x: { name: r.name, team: r.team }, v: r.pts }))]));
+          return `
+        <div class="c162-award-league">
+          <div class="c162-award-league-title lg-${lg}">${lg === 'AL' ? 'AMERICAN LEAGUE' : 'NATIONAL LEAGUE'}${lg === userLg ? ' · YOUR LEAGUE' : ''} · WINNERS</div>
+          <div class="c162-ldr-grid">
+            ${voted('🏅 MVP', V.mvp)}
+            ${voted('🧢 CY YOUNG', V.cyYoung)}
+            ${voted('🔥 RELIEVER OF THE YEAR', V.reliever)}
+            <div class="c162-ldr-box c162-award-box"><div class="c162-ldr-title">💎 PLATINUM GLOVE · VOTED</div>${this._leaderRows(asRows(V.platinum), () => 'best glove')}</div>
+            ${race('💣 HOME RUN KING', aw.hrKing, v => `${v} HR`)}
+            ${race('🎯 BATTING TITLE', aw.battingTitle, avg3)}
+          </div>
+          <div class="c162-ldr-grid c162-ldr-grid-2">
+            ${V.silver ? posTable('🥈 SILVER SLUGGER · VOTES OF 30', aw.silverSlugger, v => `${v} votes`) : posTable('🥈 SILVER SLUGGER · BATTING RUNS', aw.silverSlugger, v => `${v >= 0 ? '+' : ''}${v.toFixed(0)} runs`)}
+            ${posTable('🧤 GOLD GLOVE · VOTES OF 30', aw.goldGlove, v => `${v} votes`)}
+          </div>
+        </div>`;
+        }
         return `
         <div class="c162-award-league">
           <div class="c162-award-league-title lg-${lg}">${lg === 'AL' ? 'AMERICAN LEAGUE' : 'NATIONAL LEAGUE'}${lg === userLg ? ' · YOUR LEAGUE' : ''}</div>
@@ -11470,7 +11718,7 @@
       }
       return `
         ${this._statLgTabs()}
-        <div class="c162-pr-note">${final ? 'Final results of the regular season, one set of awards per league.' : 'Live races in each league. Winners are decided when the regular season ends.'}</div>
+        <div class="c162-pr-note">${final ? (S.awardVotes ? 'These are the WINNERS, decided by the vote of 30 voters per league. Home run king and batting title go to the leader.' : 'Final results of the regular season, one set of awards per league.') : 'Live races: who leads today by the numbers. The real winners come from a writers vote when the regular season ends.'}</div>
         ${leagueBlock(view)}`;
     },
 
@@ -11531,6 +11779,25 @@
         </div>`;
     },
 
+    // Top menu of the season screens (asked by the user): the season and every league tab in one row.
+    _seasonNavHTML(active) {
+      const L = this.state && this.state.league;
+      const tabs = [['season', '⚾ SEASON'], ['standings', '🏟️ STANDINGS'], ['power', '📈 POWER RANKINGS'], ['playoffs', '🏆 PLAYOFF PICTURE'],
+        ['leaders', '📊 LEADERS'], ['awards', '🏅 AWARD RACES'], ['allstar', L && L.allStar ? '⭐ ALL-STARS' : '⭐ ALL-STAR VOTE']];
+      return `<div class="c162-tabs c162-mainnav">${tabs.map(([k, label]) => `<button class="c162-tab ${active === k ? 'active' : ''}" data-nav="${k}">${label}</button>`).join('')}</div>`;
+    },
+    _bindSeasonNav(root) {
+      root.querySelectorAll('[data-nav]').forEach(btn => {
+        btn.onclick = () => {
+          this.stopAutoSim();
+          const k = btn.dataset.nav;
+          if (k === 'season') { this.showScreen('screen-challenge-season'); this.renderSeason(); return; }
+          this._ligaTab = k;
+          this.renderLiga();
+        };
+      });
+    },
+
     renderLiga() {
       if (!this.state) return;
       this.showScreen('screen-challenge-liga');
@@ -11546,12 +11813,12 @@
       container.innerHTML = `
         <div class="c162-liga-header">
           <div class="c162-liga-title">⚾ THE LEAGUE · DAY ${L.day} / ${SEASON_LENGTH}</div>
-          <button id="btn-challenge162-liga-back" class="btn btn-secondary" style="padding:6px 12px; font-size:10px;">← SEASON</button>
+          <button id="btn-challenge162-liga-back" class="btn btn-secondary" style="padding:6px 12px; font-size:10px;">← MENU</button>
         </div>
-        <div class="c162-tabs">
-          ${tabs.map(([k, label]) => `<button class="c162-tab ${tab === k ? 'active' : ''}" data-tab="${k}">${label}</button>`).join('')}
-        </div>
+        ${this._seasonNavHTML(tab)}
         <div id="c162-liga-body"></div>`;
+      this._bindSeasonNav(container);
+      void tabs;
       const body = container.querySelector('#c162-liga-body');
       if (tab === 'standings') {
         body.innerHTML = `
@@ -11584,8 +11851,8 @@
       });
       const backBtn = document.getElementById('btn-challenge162-liga-back');
       if (backBtn) backBtn.onclick = () => {
-        this.showScreen('screen-challenge-season');
-        this.renderSeason();
+        const menuBtn = document.getElementById('btn-challenge162-season-back-menu');
+        if (menuBtn) menuBtn.click(); else { this.showScreen('screen-challenge-season'); this.renderSeason(); }
       };
     },
 
