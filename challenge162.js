@@ -8424,28 +8424,34 @@
 
     renderPacksDraftTransition() {
       const container = document.getElementById('challenge162-pack-container');
-      const _t = (key, fallback, params) => (typeof window.t === 'function' ? window.t(key, params) : fallback);
+      // Between the two boxes (redesigned Oct 2026 to match the felt table of the draft): the
+      // batters you drafted laid out on the table, and the sealed pitchers box waiting.
+      const d = this._packDraft || {};
+      const bats = (d.pulledBatters || []).slice();
+      const eraOf = y => { y = parseInt(y, 10) || 2020; return y <= 1900 ? 'genesis' : y <= 1919 ? 'deadball' : y <= 1941 ? 'golden' : y <= 1960 ? 'integration' : y <= 1976 ? 'expansion' : y <= 1993 ? 'bighair' : y <= 2005 ? 'steroid' : y <= 2015 ? 'efficiency' : 'modern'; };
+      const face = pl => (window.CardArt ? `<i style="background-image:url(${window.CardArt.portrait(pl, eraOf(pl.year), false)})"></i>` : '<i></i>');
+      const rar = r => String(r || 'Common').toLowerCase();
+      const ovrAvg = bats.length ? bats.reduce((t, b) => t + (b.ovr || 0), 0) / bats.length : 0;
+      const chips = bats.map((b, i) => `<div class="d2t-bat r-${rar(b.rarity)}" style="--i:${i}">${face(b)}<em>${b.pos || ''}</em><b>${cleanName(b)}</b><span>${Math.floor(b.ovr || 0)}</span></div>`).join('');
+      const packs = Array.from({ length: 12 }, (_, i) => `<span style="--i:${i}"></span>`).join('');
       container.innerHTML = `
-        <div style="max-width: 680px; margin: 30px auto; text-align:center; background:rgba(0,0,0,0.85); border:2px solid #ffd700; border-radius:14px; padding:28px; box-shadow:0 0 40px rgba(255,215,0,0.35);">
-          <div style="font-size:44px; margin-bottom:12px;">⚾</div>
-          <div style="font-family:'Press Start 2P',monospace; font-size:13px; color:#ffd700; margin-bottom:12px; line-height:1.4;">
-            ${_t('challenge162.pack_transition_title', 'BATTERS BOX COMPLETED!')}
+        <div class="d2t">
+          <div class="d2t-head">
+            <small>BOX 1 OF 2 · DONE</small>
+            <h2>BATTERS BOX COMPLETE</h2>
+            <p>${bats.length} bats on the table · team bat OVR <b>${Math.floor(ovrAvg)}</b></p>
           </div>
-          <p style="font-size:12px; color:#e2e8f0; line-height:1.6; margin-bottom:20px;">
-            ${_t('challenge162.pack_transition_desc', 'Your starting lineup of <strong>9 batters</strong> and <strong>5 bench players</strong> are set. Now open the <strong>Pitchers Box (12 Packs)</strong> to draft your 5-man starting rotation (SP1-SP5) and 7-man bullpen (a closer and 6 relievers).')}
-          </p>
-          <div style="display:inline-block; background:rgba(255,215,0,0.1); border:1px solid #ffd700; border-radius:8px; padding:12px 20px; margin-bottom:24px;">
-            <div style="font-family:'Press Start 2P',monospace; font-size:9.5px; color:#ffd700; margin-bottom:4px;">
-              ${_t('challenge162.pack_transition_box2', '📦 BOX #2: PITCHERS HOBBY BOX (11 PACKS)')}
+          <div class="d2-table d2t-table">
+            <div class="d2t-bats">${chips}</div>
+            <div class="d2t-next">
+              <div class="d2t-box"><div class="d2t-lid">PITCHERS</div><div class="d2t-packs">${packs}</div></div>
+              <div class="d2t-info">
+                <small>BOX 2 OF 2</small>
+                <h3>PITCHERS HOBBY BOX</h3>
+                <p>12 packs · 5 starters for the rotation and 7 arms for the bullpen (a closer and 6 relievers).</p>
+                <button id="btn-c162-start-pitchers-box" class="d2t-go">OPEN THE PITCHERS BOX</button>
+              </div>
             </div>
-            <div style="font-size:9.5px; color:#9ca3af;">
-              ${_t('challenge162.pack_transition_box2_sub', '5 Starters (SP) + 6 Bullpen Arms (CL, SU, RP1-RP4)')}
-            </div>
-          </div>
-          <div>
-            <button id="btn-c162-start-pitchers-box" class="btn" style="padding:14px 28px; font-family:'Press Start 2P',monospace; font-size:11px; background:linear-gradient(135deg,#ffd700,#f59e0b); color:#000; border:none; border-radius:8px; cursor:pointer; box-shadow:0 0 20px rgba(255,215,0,0.5); font-weight:bold;">
-              ${_t('challenge162.pack_transition_btn', '📦 OPEN PITCHERS BOX (11 PACKS) ➔')}
-            </button>
           </div>
         </div>
       `;

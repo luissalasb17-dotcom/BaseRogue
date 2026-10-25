@@ -1445,23 +1445,56 @@ def paso_11_motor_defensivo(df, war_bat, awards):
             else:
                 war[col] = 0.0
 
-        # Multiplicador 1.6x para Ligas Negras (runs_defense, WAR_def, runs_br)
-        war.loc[is_nlb, "runs_defense"] = war.loc[is_nlb, "runs_defense"] * 1.6
-        war.loc[is_nlb, "WAR_def"]      = war.loc[is_nlb, "WAR_def"] * 1.6
+        # Calendario de Ligas Negras para la defensa (decision del usuario, oct 2026): las carreras
+        # de fildeo son totales, y una temporada de Ligas Negras tenia 40-80 juegos contra ~154.
+        # Igual que la Stamina de los pitchers, cada temporada se lleva a su equivalente de
+        # calendario completo con un factor por año: juegos medios de un equipo de MLB / de uno de
+        # Ligas Negras ese año (Teams.csv, ±2 años). Antes era un x1.6 fijo para todos los años.
+        # DEF_NLB_SCHED=0 vuelve al x1.6. La velocidad (runs_br) sigue con el x1.6.
+        if os.environ.get("DEF_NLB_SCHED", "1") != "0":
+            tm = pd.read_csv(DATA_DIR / "Teams.csv", usecols=["yearID", "lgID", "G"])
+            tm_nlb = tm["lgID"].isin(NL_LEAGUES | {"WES", "INT", "NAC"})
+            g_m = tm[~tm_nlb & tm["lgID"].isin(["AL", "NL"])].groupby("yearID")["G"].mean()
+            g_n = tm[tm_nlb].groupby("yearID")["G"].mean()
+            yrs = pd.Series(range(1871, 2030))
+            g_m = g_m.reindex(yrs).interpolate(limit_direction="both").rolling(5, center=True, min_periods=1).mean()
+            g_n = g_n.reindex(yrs).rolling(5, center=True, min_periods=1).mean().interpolate(limit_direction="both")
+            sched = (g_m / g_n).clip(1.0, 4.0)
+            sched.index = yrs.values
+            fac = pd.to_numeric(war["year_ID"], errors="coerce").map(sched).fillna(1.6)
+        else:
+            fac = pd.Series(1.6, index=war.index)
+        # La escala de la defensa se sigue midiendo con el x1.6 de antes (columnas *_old), asi
+        # las cartas de MLB no se mueven por el cambio de las de Ligas Negras.
+        war["runs_defense_old"] = war["runs_defense"] * np.where(is_nlb, 1.6, 1.0)
+        war["WAR_def_old"] = war["WAR_def"] * np.where(is_nlb, 1.6, 1.0)
+        war.loc[is_nlb, "runs_defense"] = war.loc[is_nlb, "runs_defense"] * fac[is_nlb]
+        war.loc[is_nlb, "WAR_def"]      = war.loc[is_nlb, "WAR_def"] * fac[is_nlb]
         war.loc[is_nlb, "runs_br"]      = war.loc[is_nlb, "runs_br"] * 1.6
 
         war["runs_defense"] = war["runs_defense"].clip(-80, 80)
+        war["runs_defense_old"] = war["runs_defense_old"].clip(-80, 80)
         
         # Defensive peak (7 best seasons by WAR_def with G >= 81 games threshold)
         if "G" in war.columns:
             war["G"] = pd.to_numeric(war["G"], errors="coerce").fillna(0.0).astype(float)
-            war.loc[is_nlb, "G"] = war.loc[is_nlb, "G"] * 1.6
+            war["G_old"] = war["G"] * np.where(is_nlb, 1.6, 1.0)
+            war["G_raw_nlb"] = np.where(is_nlb, war["G"], 0.0)
+            war["G_raw_all"] = war["G"]
+            war.loc[is_nlb, "G"] = war.loc[is_nlb, "G"] * fac[is_nlb]
             def _filter_def_peak(group):
                 qual = group[group["G"] >= 81]
                 if len(qual) < PEAK_SEASONS:
                     qual = group.sort_values("G", ascending=False).head(PEAK_SEASONS)
                 return qual.sort_values("WAR_def", ascending=False).head(PEAK_SEASONS)
             war_peak_def = war.groupby("player_ID", group_keys=True).apply(_filter_def_peak).reset_index(level=0)
+            # el mismo pico con el calendario viejo (solo para fijar la escala, ver *_old)
+            def _filter_old(group):
+                qual = group[group["G_old"] >= 81]
+                if len(qual) < PEAK_SEASONS:
+                    qual = group.sort_values("G_old", ascending=False).head(PEAK_SEASONS)
+                return qual.sort_values("WAR_def_old", ascending=False).head(PEAK_SEASONS)
+            war_peak_old = war.groupby("player_ID", group_keys=True).apply(_filter_old).reset_index(level=0)
         else:
             war_sorted_def = war.sort_values(["player_ID", "WAR_def"], ascending=[True, False])
             war_peak_def = war_sorted_def.groupby("player_ID").head(PEAK_SEASONS)
@@ -1469,7 +1502,23 @@ def paso_11_motor_defensivo(df, war_bat, awards):
         war_career_def = war_peak_def.groupby("player_ID").agg(
             rfield_career=("runs_defense","sum"),
             wardef_career=("WAR_def","sum"),
+            g_nlb=("G_raw_nlb","sum") if "G_raw_nlb" in war_peak_def.columns else ("runs_defense","size"),
+            g_all=("G_raw_all","sum") if "G_raw_all" in war_peak_def.columns else ("runs_defense","size"),
         ).reset_index().rename(columns={"player_ID":"bbrefID"})
+        # Muestra chica (decision del usuario): llevar a calendario completo tambien agranda el ruido
+        # de pocos juegos. Lo que el calendario agrega se acerca a cero segun los juegos REALES del
+        # pico: peso = juegos / (juegos + DEF_NLB_SHRINK_G). Con 400+ juegos reales casi no se toca.
+        if "g_nlb" in war_career_def.columns:
+            kg = float(os.environ.get("DEF_NLB_SHRINK_G", "100"))
+            share_ = (war_career_def["g_nlb"] / war_career_def["g_all"].replace(0, np.nan)).fillna(0.0)
+            w_ = war_career_def["g_all"] / (war_career_def["g_all"] + kg)
+            keep_ = 1.0 - share_ * (1.0 - w_)
+            war_career_def["rfield_career"] = war_career_def["rfield_career"] * keep_
+            war_career_def["wardef_career"] = war_career_def["wardef_career"] * keep_
+        _po = war_peak_old if "G" in war.columns else war_peak_def
+        war_career_def = war_career_def.merge(_po.groupby("player_ID").agg(
+            rfield_old=("runs_defense_old","sum"), wardef_old=("WAR_def_old","sum"),
+        ).reset_index().rename(columns={"player_ID":"bbrefID"}), on="bbrefID", how="left")
 
         # Speed peak (7 best seasons by overall WAR)
         war_sorted_spd = war.sort_values(["player_ID", "runs_br" if os.environ.get("SPD_PEAK", "br") == "br" else "WAR"], ascending=[True, False])
@@ -1506,8 +1555,13 @@ def paso_11_motor_defensivo(df, war_bat, awards):
 
     df["defense_base_raw"] = np.where(has_war, raw_hybrid, proxy)
     # Stretched Defense Scale: min_raw (Grieve = -68.0) maps to 1.0 DEF base floor, p98 maps to 99.0 base
-    min_def_raw = df["defense_base_raw"].min()
-    p98_def_raw = df["defense_base_raw"].quantile(0.98)
+    # La escala sale solo de las cartas de MLB, asi estirar las Ligas Negras no corre a nadie mas.
+    _old = 0.60 * df["rfield_old"].fillna(0) + 0.40 * (df["wardef_old"].fillna(0) * 10) if "rfield_old" in df.columns else df["defense_base_raw"]
+    _old = np.where(is_dh & (df["rfield_old"].fillna(0) >= -5.0) & (df["rfield_old"].fillna(0) <= 5.0), -35.0, _old) if "rfield_old" in df.columns else _old
+    _old = pd.Series(np.where(has_war, _old, proxy), index=df.index)
+    df["_def_raw_old"] = _old
+    min_def_raw = _old.min()
+    p98_def_raw = _old.quantile(0.98)
     df["defense_val_base"] = (1.0 + ((df["defense_base_raw"] - min_def_raw) / (p98_def_raw - min_def_raw)) * 98.0).clip(1.0, RATING_CEIL).round(1)
     df["defense_source"]   = np.where(has_war, "bbref_war", "lahman_proxy")
 
@@ -1726,7 +1780,12 @@ def _curva_A(T, span):
     return hi
 
 
-def ajustar_extremos(v):
+# Puntas de la defensa fijadas en las del pool antes de llevar las Ligas Negras a calendario completo
+# (oct 2026): si no, los guantes estirados de Ligas Negras corrian la escala de MLB.
+DEF_EXTREME_ANCHORS = (141.0448, 13.0707)
+
+
+def ajustar_extremos(v, ref=None, fixed=None):
     """
     Ultimo paso de TODOS los ratings, igual para todos (decision del usuario): el centro de la
     escala (25 a 75) no se toca; el MEJOR de la historia en cada rating vale 125 y el PEOR vale 1.
@@ -1740,8 +1799,11 @@ def ajustar_extremos(v):
     v = v.astype(float).copy()
     # Anclaje de élite al percentil 99.90 (permite que la cúspide histórica de cada rating
     # comparta el rango 120-125 sin que un solo outlier aislado comprima a los demás)
-    hi = float(v.quantile(0.9990)) if len(v) > 100 else float(v.max())
-    lo = float(v.quantile(0.0010)) if len(v) > 100 else float(v.min())
+    r_ = v if ref is None else v[ref]
+    hi = float(r_.quantile(0.9990)) if len(r_) > 100 else float(r_.max())
+    lo = float(r_.quantile(0.0010)) if len(r_) > 100 else float(r_.min())
+    if fixed is not None:
+        hi, lo = fixed
     if hi > EXTREME_TOP_ANCHOR:
         top = v > EXTREME_TOP_ANCHOR
         T, span = hi - EXTREME_TOP_ANCHOR, 125.0 - EXTREME_TOP_ANCHOR
@@ -1781,8 +1843,11 @@ def paso_14c_longevidad(df7, df12, pico12):
 def paso_14d_extremos(df):
     print("\n  PASO 14d: Extremos (centro 25-75 intacto; el mejor de cada rating = 125, el peor = 1)...")
     df = df.copy()
+    # La defensa ancla sus puntas solo con MLB: las Ligas Negras llevadas a calendario completo
+    # no deben correr la escala de los demas.
+    mlb_ = (df["league_group"] != "NLB") if "league_group" in df.columns else None
     for col in BAT_RATINGS:
-        df[col] = ajustar_extremos(df[col])
+        df[col] = ajustar_extremos(df[col], fixed=DEF_EXTREME_ANCHORS if col == "defense_val" else None)
     return df
 
 
@@ -2096,7 +2161,8 @@ def paso_15_equipo_y_exportar(df, batting, teams, franchises, pico_df=None, war_
         # la carta, ~30: mejor que un mal primera base, que si recibia todo el ajuste por posicion).
         has_ = rf_.notna() & wd_.notna()
         base_raw = df["defense_base_raw"].astype(float)
-        scale_ = 98.0 / max(1.0, float(base_raw.quantile(0.98) - base_raw.min()))
+        sraw_ = df["_def_raw_old"].astype(float) if "_def_raw_old" in df.columns else base_raw
+        scale_ = 98.0 / max(1.0, float(sraw_.quantile(0.98) - sraw_.min()))
         cur_ = base_raw  # lo que de verdad uso la carta (incluye el valor fijo de los DH puros)
         alt_ = (1.0 - DEF_OVR_POS_SHARE) * rf_.fillna(0) + DEF_OVR_POS_SHARE * wd_.fillna(0)
         df["defense_ovr_val"] = np.where(has_, df["defense_val"] + (alt_ - cur_) * scale_, df["defense_val"]).round(1)
