@@ -202,3 +202,15 @@
   #screen-challenge-pack .d2t-head h2 { font-size: 14px; }
 }
 @media (prefers-reduced-motion: reduce) { #screen-challenge-pack .d2t-bat, #screen-challenge-pack .d2t-box, #screen-challenge-pack .d2t-packs span { animation: none; } }
+
+/* chemistry on the pack board: chips under the roster (Oct 2026) */
+.c162-chem2.is-chips .cc-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.c162-chem2 .cc-chip { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 12px; font: 500 12px 'Oswald', sans-serif;
+  color: #cfe8d8; background: rgba(255, 255, 255, .05); border: 1px solid rgba(255, 255, 255, .1); white-space: nowrap; cursor: default; }
+.c162-chem2 .cc-chip.on { background: rgba(16, 185, 129, .14); border-color: rgba(52, 211, 153, .45); color: #e2fbe9; }
+.c162-chem2 .cc-chip.near { opacity: .7; border-style: dashed; }
+.c162-chem2 .cc-chip i { font-style: normal; color: #94a3b8; }
+.c162-chem2 .cc-chip b { color: #34d399; font-weight: 600; }
+.c162-chem2 .cc-chip em { font-style: normal; font-size: 10.5px; color: #94a3b8; }
+.c162-chem2 .cc-chip.cap { border-color: rgba(251, 191, 36, .5); background: rgba(251, 191, 36, .1); }
+#screen-challenge-pack .c162-chem2.is-chips { margin-top: 10px; }

@@ -1272,6 +1272,9 @@
   // hits / HR / K / BB) and against ordinary hitters the pitchers too (within ~3%); what is left
   // in a season is the level of the opponents (every card is a peak).
   const PIT_EDGE = 1.7; // user, Oct 2026: 1.5 was "la versión suave"; 1.7 after the 26-man rosters and the rarity box (league ERA 4.19 -> 4.11)
+  // Same edge, softer on strikeouts and hits: at 1.7 everywhere the aces struck out 430+ and
+  // posted ERAs near 1.3 (Oct 2026 review). Walks and home runs keep 1.7.
+  const PIT_EDGE_K = 1.2, PIT_EDGE_H = 1.6; // H 1.6: league ERA 4.13 -> 4.10 (user, Oct 2026)
   const PA_SCALE_3B = 0.68; // the design table sits above the 1947-2025 triples rate
   function rateAt(ys, v) {
     if (!(v > RT_X[0])) return ys[0];
@@ -1350,13 +1353,13 @@
     const edgeLow = r => (r < 1 ? Math.pow(r, PIT_EDGE) : r), edgeHigh = r => (r > 1 ? Math.pow(r, PIT_EDGE) : r);
     let pBB = rateAt(BAT_BB, eye) * edgeLow(perBF(pitBB, ENV_BB9));
     pBB = Math.max(0.02, Math.min(0.30, pBB));
-    let pSO = rateAt(BAT_K, kAvd) * edgeHigh(perBF(rateAt(PIT_K9, pK9), ENV_K9)) * pitTendency(pitcher) * (batTendency(batter)[2] || 1);
+    let pSO = rateAt(BAT_K, kAvd) * (r => (r > 1 ? Math.pow(r, PIT_EDGE_K) : r))(perBF(rateAt(PIT_K9, pK9), ENV_K9)) * pitTendency(pitcher) * (batTendency(batter)[2] || 1);
     pSO = Math.max(0.015, Math.min(0.45, pSO));
     const pInPlay = Math.max(0.20, 1 - pBB - pSO);
 
     const defEfficiency = (pitcher && pitcher._fieldingDef) !== undefined ? pitcher._fieldingDef : 50;
     const defAdj = (defEfficiency - 50) * 0.00028;
-    const hPit = edgeLow(perBF(pitH, ENV_H9));
+    const hPit = (r => (r < 1 ? Math.pow(r, PIT_EDGE_H) : r))(perBF(pitH, ENV_H9));
     let targetAvg = rateAt(BAT_AVG, con) * hPit - defAdj;
     targetAvg = Math.max(0.12, Math.min(0.42, targetAvg));
     let pTotalHit = (1 - pBB) * targetAvg;
@@ -2289,10 +2292,18 @@
     const era = p => (p.er || 0) * 27 / Math.max(1, p.outs || 0);
     const avg3 = v => v.toFixed(3).replace(/^0/, '');
     const fr = b => fieldingRuns(b, b.pos, b.def, batterPA(b));
-    const mvp = runVote(q.batRegular, b => batterWarValue(b, b.pos, b.def)
-      + (b.hr || 0) * 0.04 + (b.rbi || 0) * 0.015 + (batterAVG(b) - 0.270) * 15
-      + (playoffIds.has(b.team) ? 1.5 : 0) + (team(b).w - team(b).l) * 0.01, 'mvp',
-      b => `${avg3(batterAVG(b))} · ${b.hr || 0} HR · ${b.rbi || 0} RBI · ${calcBatterWAR(b, b.pos, b.def)} WAR`);
+    // Pitchers are on the MVP ballot too (user: "unlikely, but now and then it happens").
+    // Writers lean to everyday players: a starter needs a season far above the rest to get there
+    // (real MVPs: Gibson 1968, Clemens 1986, Verlander 2011, Kershaw 2014), so his WAR counts at
+    // 95%, without the counting-stat bonuses hitters get, plus his wins and ERA against the league.
+    const isPit = x => x && x.outs !== undefined && x.ab === undefined;
+    const mvpScore = x => (isPit(x)
+      ? pitcherWarValue(x, 'SP') * 0.95 + ((x.w || 0) - 15) * 0.12 + (lgEra - era(x)) * 0.6
+      : batterWarValue(x, x.pos, x.def) + (x.hr || 0) * 0.04 + (x.rbi || 0) * 0.015 + (batterAVG(x) - 0.270) * 15)
+      + (playoffIds.has(x.team) ? 1.5 : 0) + (team(x).w - team(x).l) * 0.01;
+    const mvp = runVote(q.batRegular.concat(q.spQual), mvpScore, 'mvp',
+      x => (isPit(x) ? `${x.w || 0}-${x.l || 0} · ${era(x).toFixed(2)} ERA · ${x.so || 0} K · ${pitcherWarValue(x, 'SP').toFixed(1)} WAR`
+        : `${avg3(batterAVG(x))} · ${x.hr || 0} HR · ${x.rbi || 0} RBI · ${calcBatterWAR(x, x.pos, x.def)} WAR`));
     const cyYoung = runVote(q.spQual, p => pitcherWarValue(p, 'SP') + (p.w || 0) * 0.12 - (p.l || 0) * 0.05
       + (lgEra - era(p)) * 0.8 + (p.so || 0) * 0.006 + (p.outs || 0) / 3 * 0.006, 'cyYoung',
       p => `${p.w || 0}-${p.l || 0} · ${era(p).toFixed(2)} ERA · ${p.so || 0} K · ${Math.floor((p.outs || 0) / 3)} IP`);
@@ -2912,7 +2923,7 @@
       const aw = (S.awards && S.awards[lg]) || {};
       const add = (icon, title, x, detail) => { if (mine(x)) out.push({ icon, title, who: x.name, detail: detail || '' }); };
       const avg3 = v => v.toFixed(3).replace(/^0/, '');
-      add('🏅', `${lg} MVP`, aw.mvp, aw.mvp ? `${calcBatterWAR(aw.mvp, aw.mvp.pos, aw.mvp.def)} WAR` : '');
+      add('🏅', `${lg} MVP`, aw.mvp, aw.mvp ? (aw.mvp.outs !== undefined && aw.mvp.ab === undefined ? `${pitcherWarValue(aw.mvp, 'SP').toFixed(1)} WAR on the mound` : `${calcBatterWAR(aw.mvp, aw.mvp.pos, aw.mvp.def)} WAR`) : '');
       add('🧢', `${lg} CY YOUNG`, aw.cyYoung, aw.cyYoung ? `${aw.cyYoung.w}-${aw.cyYoung.l}, ${(aw.cyYoung.er * 27 / Math.max(1, aw.cyYoung.outs)).toFixed(2)} ERA` : '');
       add('🔥', `${lg} RELIEVER OF THE YEAR`, aw.reliever, aw.reliever ? `${aw.reliever.sv || 0} SV, ${(aw.reliever.er * 27 / Math.max(1, aw.reliever.outs)).toFixed(2)} ERA` : '');
       add('💎', `${lg} PLATINUM GLOVE`, aw.platinum, 'best glove in the league');
@@ -4364,9 +4375,14 @@
       const rows = on.map(row).join('') + capRow + near.map(row).join('');
       const rule = `T1 at ${CHEM_TEAM_SIZE} of a franchise, ${CHEM_ERA_SIZE} of an era or ${CHEM_NATION_SIZE} of a country (not the USA), T2 at twice that and so on; T1 +1, T2 +3, T3 +5`;
       if (compact) {
-        return `<div class="c162-chem2 is-compact">
-          <div class="cc-head"><b>🤝 CHEMISTRY</b><small>${rule}</small></div>
-          ${rows || '<div class="c162-chem-none">No group yet: 3 from one franchise, 5 from one era or 3 from one country start a group.</div>'}
+        // Pack draft board (user: the long list pushed the roster down): one chip per group,
+        // active ones first, the rule and the details in the tooltip.
+        const chip = g => `<span class="cc-chip ${g.bonus ? 'on' : 'near'}" title="${g.count} ${g.kind === 'team' ? 'from this franchise' : g.kind === 'era' ? 'from this era' : 'from this country'} · ${g.left} more for T${g.tier + 1}">${CHEM_ICON[g.kind]} ${g.label} <i>×${g.count}</i>${g.bonus ? ` <b>+${g.bonus}</b>` : ` <em>${g.left} to T1</em>`}</span>`;
+        const capChip = caps ? `<span class="cc-chip on cap" title="momentum +1 every ${CAPTAIN_WIN_STEP} wins · −1 every ${CAPTAIN_LOSS_STEPS[Math.min(caps, 2)]} losses">👑 ${caps > 1 ? caps + ' captains' : 'Captain'}</span>` : '';
+        const chips = on.map(chip).join('') + capChip + near.map(chip).join('');
+        return `<div class="c162-chem2 is-compact is-chips">
+          <div class="cc-head" title="${rule}"><b>🤝 CHEMISTRY</b><small>${on.length} active · hover a chip for details</small></div>
+          <div class="cc-chips">${chips || '<span class="c162-chem-none">No group yet: 3 from one franchise, 5 from one era or 3 from one country start a group.</span>'}</div>
         </div>`;
       }
       return `<div class="c162-meet-section">🤝 TEAM CHEMISTRY</div>
@@ -8984,7 +9000,6 @@
                 const n = allSlotted.filter(p => (p.rarity || 'Common') === r).length;
                 return `<span class="r-${r.toLowerCase()} ${n ? '' : 'zero'}"><b>${n}</b> ${r}</span>`;
               }).join('')}</div>
-              ${this._chemistryHTML(allSlotted, true)}
               <div class="c162-rb-cols">
                 <div class="c162-rb-col">
                   <div class="c162-rb-title t-lineup"><span>⚡ LINEUP</span><span>${filledLineupCount}/9</span></div>
@@ -9000,6 +9015,7 @@
                   ${rpSlotsHTML}
                 </div>
               </div>
+              ${this._chemistryHTML(allSlotted, true)}
             </div>
 
           </div>
@@ -9670,15 +9686,60 @@
 
     // Iron Men come preselected (the positions that gain the most games, best player first)
     // so the choice is visible; the user can change them before the season starts.
-    _preselectIronMen(pending) {
-      if (pending.ironMan) return;
+    // What an Iron Man is worth to THIS roster (user's call, Oct 2026: not just the position).
+    // The mark gives a starter games (or innings) that someone else would play: the value is
+    // those extra games times how much worse that someone is. Batters: extra games at his slot
+    // x (his OVR - the backup who would cover his rest days). Pitchers, in the same units (a
+    // pitcher's inning faces about the batters a hitter sees in a game): extra innings x (his
+    // OVR - who would throw them). So a star catcher with a weak backup, a position nobody on
+    // the bench covers, or an ace far above the bullpen rise; a shortstop with a good backup
+    // does not. Returns every candidate with its score and a one-line reason.
+    _ironCandidates(p) {
+      const bench = (p.bench || []).filter(Boolean);
+      const ovr = x => Number(x && x.ovr) || 0;
+      const out = [];
+      (p.battingOrder || SLOTS).forEach(slot => {
+        const b = p.lineup[slot];
+        if (!b) return;
+        const g = IRON_GAMES[slot] || IRON_GAMES.DH;
+        const gain = g[1] - g[0];
+        let backup = null, backupOvr;
+        bench.forEach(x => {
+          if (slot !== 'DH' && (!canPlayerFillSlot(x, slot) || (window.leftyCantPlay && window.leftyCantPlay(x, slot)))) return;
+          const v = ovr(x) - (slot !== 'DH' && x.pos !== slot ? 2 : 0);
+          if (backupOvr === undefined || v > backupOvr) { backup = x; backupOvr = v; }
+        });
+        // Nobody on the bench plays it: a double switch or someone out of position, with a poor glove.
+        if (!backup) backupOvr = bench.length ? Math.max(...bench.map(ovr)) - 8 : 40;
+        const gap = Math.max(0, ovr(b) - backupOvr);
+        out.push({
+          key: batterUnlockKey(b), who: b, slot, score: gain * gap + gain,
+          reason: backup ? `+${gain} games · his backup ${cleanName(backup)} is ${Math.round(gap)} OVR worse`
+                         : `+${gain} games · no backup plays ${slot} (out of position on rest days)`
+        });
+      });
+      const SP = (p.pitchers.SP || []).filter(Boolean), RP = (p.pitchers.RP || []).filter(Boolean);
+      const labels = bullpenLabels(RP);
+      const penAvg = RP.length ? RP.reduce((t, x) => t + ovr(x), 0) / RP.length : 50;
+      SP.forEach((x, i) => {
+        const gap = Math.max(0, ovr(x) - penAvg);
+        out.push({ key: ironPitKey(x), who: x, slot: `SP${i + 1}`, score: 20 * gap,
+          reason: `~+20 innings · the bullpen that would throw them is ${Math.round(gap)} OVR worse` });
+      });
+      RP.forEach((x, i) => {
+        const others = RP.filter(y => y !== x);
+        const oAvg = others.length ? others.reduce((t, y) => t + ovr(y), 0) / others.length : 50;
+        const gap = Math.max(0, ovr(x) - oAvg);
+        out.push({ key: ironPitKey(x), who: x, slot: labels[i] || 'RP', score: 10 * gap,
+          reason: `~+16 innings, but tired arms in close games · the rest of the pen is ${Math.round(gap)} OVR worse` });
+      });
+      return out.sort((a, b) => b.score - a.score);
+    },
+
+    _preselectIronMen(pending, force) {
+      if (pending.ironMan && !force) return;
       pending.ironMan = {};
-      (pending.battingOrder || [])
-        .filter(slot => pending.lineup[slot])
-        .map(slot => ({ slot, b: pending.lineup[slot], gain: (IRON_GAMES[slot] || IRON_GAMES.DH)[1] - (IRON_GAMES[slot] || IRON_GAMES.DH)[0] }))
-        .sort((x, y) => y.gain - x.gain || (y.b.ovr || 0) - (x.b.ovr || 0))
-        .slice(0, MAX_IRON_MAN)
-        .forEach(x => { pending.ironMan[batterUnlockKey(x.b)] = true; });
+      this._ironCandidates(pending).slice(0, MAX_IRON_MAN).forEach(c => { pending.ironMan[c.key] = true; });
     },
 
     // Iron Man picker. Pack teams choose on Meet the Team; the other formats skip that screen
@@ -9725,6 +9786,9 @@
       });
     },
 
+    // Meet the Team (redesigned Oct 2026, in the line of the draft table): the nine on a felt
+    // diamond at their positions with the ace on the mound, an Iron Man shield on every card,
+    // the bench / rotation / bullpen as racks below, and the batting order you can rearrange.
     renderMeetTheTeam() {
       const p = this._pendingSeason;
       const container = document.getElementById('challenge162-pack-container');
@@ -9733,6 +9797,7 @@
       const batters = order.map(s => ({ ...p.lineup[s], _slot: s })).filter(b => b.name);
       const SP = p.pitchers.SP || [];
       const RP = p.pitchers.RP || [];
+      const bench = (p.bench || []).filter(Boolean);
       const avg = (arr, f) => arr.length ? arr.reduce((s, x) => s + (Number(f(x)) || 0), 0) / arr.length : 0;
       const fielders = batters.filter(b => b._slot !== 'DH');
       const grades = [
@@ -9744,108 +9809,127 @@
         ['ROTATION', avg(SP, x => x.ovr)],
         ['BULLPEN', avg(RP, x => x.ovr)]
       ];
-      // All 25, bench included: the same number the pack screen shows (it used to leave the
-      // bench out here, so the Team OVR jumped between the two screens).
-      const teamOvr = avg([...batters, ...(p.bench || []).filter(Boolean), ...SP, ...RP], x => x.ovr);
+      // All 26, bench included: the same number the pack screen shows.
+      const teamOvr = avg([...batters, ...bench, ...SP, ...RP], x => x.ovr);
       const ATTRS = [['con', 'CONTACT'], ['pwr', 'POWER'], ['eye', 'EYE'], ['spd', 'SPEED'], ['def', 'GLOVE']];
       const bestTool = b => ATTRS.map(([k, l]) => [l, Number(b[k]) || 0]).sort((x, y) => y[1] - x[1])[0];
-      const xFactor = batters.slice().sort((a, b) => (b.ovr || 0) - (a.ovr || 0))[0];
-      // Same convention simulateGame() uses: an explicit CL/SETUP role, else RP[0] closes and RP[1] sets up.
       const closer = RP.find(r => r.role === 'CL') || RP[0];
-      const setup = RP.find(r => r.role === 'SETUP') || RP[1];
-      const { longSet } = bullpenRoles(RP);
-      const penRole = x => (x === closer ? 'CL' : x === setup ? 'SU' : (longSet && longSet.has(x)) ? 'LRP' : 'RP');
-      // On re-renders (reordering) the cards are marked as already dealt so ui.js doesn't flip them again.
+      const labels = bullpenLabels(RP);
       const anim = this._meetAnimated ? 'no-anim card-deal-in' : '';
+      const eraOf = y => { y = parseInt(y, 10) || 2020; return y <= 1900 ? 'genesis' : y <= 1919 ? 'deadball' : y <= 1941 ? 'golden' : y <= 1960 ? 'integration' : y <= 1976 ? 'expansion' : y <= 1993 ? 'bighair' : y <= 2005 ? 'steroid' : y <= 2015 ? 'efficiency' : 'modern'; };
+      const face = (x, isP) => (window.CardArt ? `<i class="m3-face" style="background-image:url(${window.CardArt.portrait(x, eraOf(x.year), isP)})"></i>` : '<i class="m3-face"></i>');
+      const rar = x => String(x.rarity || 'Common').toLowerCase();
+      const iron = p.ironMan || {};
+      const ironCount = Object.keys(iron).length;
+      const cands = this._ironCandidates(p);
+      const why = {}; cands.forEach(c => { why[c.key] = c.reason; });
+      const suggested = cands.slice(0, MAX_IRON_MAN).map(c => c.key);
+      const shield = (key, label) => {
+        const on = !!iron[key];
+        const full = !on && ironCount >= MAX_IRON_MAN;
+        return `<button class="c162-iron-pick m3-shield ${on ? 'on' : ''}" data-iron="${key}" ${full ? 'disabled' : ''} title="${on ? 'Iron Man' : full ? 'Unpick one first' : 'Make him an Iron Man'} · ${(why[key] || '').replace(/"/g, '&quot;')}">🛡<span>${on ? 'IRON MAN' : label}</span></button>`;
+      };
 
-      const cardsHTML = batters.map((b, i) => {
+      // The diamond: each player stands where he plays (percent of the field box, which keeps
+      // the field's 1500 x 1040 shape), the ace on the mound and the DH in the dugout.
+      const FIELD_SPOT = { CF: [50, 12.5], LF: [15, 22], RF: [85, 22], SS: [37, 31], '2B': [63, 31],
+        '3B': [22, 53], '1B': [78, 53], P: [50, 55], C: [50, 87.5], DH: [8, 87.5] };
+      const posCell = (b, i) => {
         const [tool, val] = bestTool(b);
-        return `<div class="c162-meet-card ${anim}" style="--i:${i};">
-          <div class="c162-meet-order">#${i + 1} · ${b._slot}${p.ironMan && p.ironMan[batterUnlockKey(b)] ? ' 🛡' : ''}</div>
-          ${window.createCardHTML ? window.createCardHTML(b, b._slot) : b.name}
-          <div class="c162-meet-tag" style="color:${getGradeColor(val)};">${tool} ${getGrade(val)}</div>
+        const k = batterUnlockKey(b);
+        const [px, py] = FIELD_SPOT[b._slot] || [50, 50];
+        return `<div class="m3-pos m3-at-${b._slot} ${anim} ${iron[k] ? 'is-iron' : ''}" style="--i:${i};--x:${px}%;--y:${py}%;">
+          <div class="m3-pos-tag"><b>#${order.indexOf(b._slot) + 1}</b> ${b._slot}</div>
+          <div class="m3-card">${window.createCardHTML ? window.createCardHTML(b, b._slot) : b.name}</div>
+          <div class="m3-pos-foot"><span style="color:${getGradeColor(val)};">${tool} ${getGrade(val)}</span>${shield(k, 'IRON')}</div>
         </div>`;
-      }).join('');
+      };
+      const ace = SP[0];
+      const moundHTML = ace ? `<div class="m3-pos m3-at-P ${anim}" style="--i:9;--x:${FIELD_SPOT.P[0]}%;--y:${FIELD_SPOT.P[1]}%;">
+          <div class="m3-pos-tag"><b>ACE</b> SP1</div>
+          <div class="m3-card">${window.createCardHTML ? window.createCardHTML(ace) : ace.name}</div>
+          <div class="m3-pos-foot"><span>ON THE MOUND</span>${shield(ironPitKey(ace), 'IRON')}</div>
+        </div>` : '';
 
+      const rackRow = (x, label, isP, key, extra) => `<div class="m3-rack-row r-${rar(x)} ${iron[key] ? 'is-iron' : ''}" data-c162-card="${isP ? 'P' : 'B'}:${isP ? pitcherUnlockKey(x) : batterUnlockKey(x)}">
+          <em>${label}</em>${face(x, isP)}<b>${cleanName(x)}</b><small>${extra || ''}</small><span class="m3-ovr">${Math.floor(x.ovr || 0)}</span>
+          ${key ? shield(key, '') : ''}</div>`;
+      const benchRows = bench.map(b => rackRow(b, 'BN', false, null, SLOTS.filter(s => s !== 'DH' && canPlayerFillSlot(b, s)).join(' ') || 'DH')).join('');
+      const rotRows = SP.map((x, i) => `<div class="m3-rot-wrap">${rackRow(x, `SP${i + 1}`, true, ironPitKey(x), `STA ${Math.round(x.sta || 0)}`)}
+          <span class="m3-mv-pair"><button class="c162-mv" data-list="rot" data-i="${i}" data-d="-1" ${i === 0 ? 'disabled' : ''}>▲</button><button class="c162-mv" data-list="rot" data-i="${i}" data-d="1" ${i === SP.length - 1 ? 'disabled' : ''}>▼</button></span></div>`).join('');
+      const penRows = RP.map((x, i) => rackRow(x, labels[i] || 'RP', true, ironPitKey(x), `STA ${Math.round(x.sta || 0)}`)).join('');
       const orderRows = batters.map((b, i) => `
-        <div class="c162-meet-row r6">
-          <span class="c162-meet-num">${i + 1}</span>
-          <span class="c162-meet-pos">${b._slot}</span>
-          <span class="c162-meet-name">${b.name}</span>
-          <span class="c162-meet-ovr">${Math.floor(b.ovr || 0)}</span>
-          <button class="c162-mv" data-list="order" data-i="${i}" data-d="-1" ${i === 0 ? 'disabled' : ''}>▲</button>
-          <button class="c162-mv" data-list="order" data-i="${i}" data-d="1" ${i === batters.length - 1 ? 'disabled' : ''}>▼</button>
+        <div class="m3-order-row ${iron[batterUnlockKey(b)] ? 'is-iron' : ''}">
+          <span class="m3-num">${i + 1}</span><em>${b._slot}</em>${face(b, false)}
+          <b>${cleanName(b)}</b><span class="m3-ovr">${Math.floor(b.ovr || 0)}</span>${shield(batterUnlockKey(b), '')}
+          <span class="m3-mv-pair"><button class="c162-mv" data-list="order" data-i="${i}" data-d="-1" ${i === 0 ? 'disabled' : ''}>▲</button><button class="c162-mv" data-list="order" data-i="${i}" data-d="1" ${i === batters.length - 1 ? 'disabled' : ''}>▼</button></span>
         </div>`).join('');
-      const rotRows = SP.map((x, i) => `
-        <div class="c162-meet-row r5">
-          <span class="c162-meet-num">SP${i + 1}</span>
-          <span class="c162-meet-name">${x.name}</span>
-          <span class="c162-meet-ovr">${Math.floor(x.ovr || 0)}</span>
-          <button class="c162-mv" data-list="rot" data-i="${i}" data-d="-1" ${i === 0 ? 'disabled' : ''}>▲</button>
-          <button class="c162-mv" data-list="rot" data-i="${i}" data-d="1" ${i === SP.length - 1 ? 'disabled' : ''}>▼</button>
-        </div>`).join('');
-      // Bench: who covers rest days, and which positions have no one behind the starter.
-      const bench = (p.bench || []).filter(Boolean);
       const uncovered = rosterCoverGaps(p.lineup, bench);
-      const benchRows = bench.map(b => {
-        const cover = SLOTS.filter(s => s !== 'DH' && canPlayerFillSlot(b, s));
-        return `<div class="c162-meet-row r3">
-          <span class="c162-meet-num">BN</span>
-          <span class="c162-meet-name">${b.name} <small class="c162-meet-cover">${cover.join(' ') || 'DH'}</small></span>
-          <span class="c162-meet-ovr">${Math.floor(b.ovr || 0)}</span>
+      const coverNote = bench.length ? depthStripHTML(p.lineup, bench) + (uncovered.length
+        ? `<div class="m3-note warn">No backup at ${uncovered.join(', ')}: ${uncovered.length > 1 ? 'those starters' : 'that starter'} sit less often and a bench player fills in out of position.</div>`
+        : `<div class="m3-note ok">Every position has a backup for rest days.</div>`) : '';
+
+      // Iron Men: who is chosen and why, and the suggestion.
+      const chosen = cands.filter(c => iron[c.key]);
+      const isSuggested = suggested.length === ironCount && suggested.every(k => iron[k]);
+      const ironHTML = `<div class="m3-iron">
+          <div class="m3-iron-head">
+            <div><b>🛡 IRON MEN · ${ironCount} / ${MAX_IRON_MAN}</b><small>They tire 4 times slower and get +${IRON_BOOST} to their ratings. Tap the shield on any card or row. Locked once the season starts.</small></div>
+            ${isSuggested ? '<span class="m3-iron-tag">★ SUGGESTED</span>' : '<button id="btn-c162-iron-suggest" class="m3-btn">★ USE SUGGESTED</button>'}
+          </div>
+          <div class="m3-iron-list">${chosen.length ? chosen.map(c => `<div class="m3-iron-item"><em>${c.slot}</em>${face(c.who, c.slot.startsWith('SP') || !(c.slot in IRON_GAMES))}<div><b>${cleanName(c.who)}</b><small>${c.reason}</small></div></div>`).join('')
+            : '<div class="m3-note">No Iron Man picked yet.</div>'}</div>
         </div>`;
-      }).join('');
-      const coverNote = (bench.length ? depthStripHTML(p.lineup, bench) : '') + (!bench.length ? ''
-        : uncovered.length
-          ? `<div class="c162-meet-warn">⚠ No backup at ${uncovered.join(', ')}: ${uncovered.length > 1 ? 'those starters' : 'that starter'} will sit less often (at −2) and a bench player fills in out of position, with a poor glove.</div>`
-          : `<div class="c162-meet-ok">✓ Every position has a backup for rest days.</div>`);
-      const penRows = RP.map(x => `
-        <div class="c162-meet-row r3">
-          <span class="c162-meet-num">${penRole(x)}</span>
-          <span class="c162-meet-name">${x.name}</span>
-          <span class="c162-meet-ovr">${Math.floor(x.ovr || 0)}</span>
-        </div>`).join('');
 
       container.innerHTML = `
-        <div class="c162-meet">
-          <div class="c162-meet-hero ${this._meetAnimated ? 'no-anim' : ''}">
-            <div class="c162-meet-kicker">MEET YOUR TEAM</div>
-            <input id="c162-team-name" class="c162-team-name-input" maxlength="28" value="${String(p.teamName).replace(/"/g, '&quot;')}" aria-label="Team name">
-            <div class="c162-meet-ovr-big"><span>TEAM OVR</span><b>${teamOvr.toFixed(1)}</b></div>
-            <div class="c162-meet-grades">
-              ${grades.map(([l, v]) => `<div class="c162-grade-chip"><span>${l}</span><b style="color:${getGradeColor(v)};">${getGrade(v)}</b></div>`).join('')}
+        <div class="m3">
+          <div class="m3-head ${this._meetAnimated ? 'no-anim' : ''}">
+            <div class="m3-title">
+              <small>MEET YOUR TEAM · OPENING DAY ROSTER</small>
+              <input id="c162-team-name" class="m3-name" maxlength="28" value="${String(p.teamName).replace(/"/g, '&quot;')}" aria-label="Team name">
+              <div class="m3-grades">${grades.map(([l, v]) => `<span><small>${l}</small><b style="color:${getGradeColor(v)};">${getGrade(v)}</b></span>`).join('')}</div>
             </div>
-            <div class="c162-meet-spotlight">
-              <div><span>X-FACTOR</span><b>${xFactor ? xFactor.name : '—'}</b></div>
-              <div><span>ACE</span><b>${SP[0] ? SP[0].name : '—'}</b></div>
-              <div><span>CLOSER</span><b>${closer ? closer.name : '—'}</b></div>
-            </div>
+            <div class="m3-ovrbox"><small>TEAM OVR</small><b>${teamOvr.toFixed(1)}</b><span>${[...batters, ...bench, ...SP, ...RP].length} PLAYERS</span></div>
           </div>
 
-          <div class="c162-meet-section">THE STARTING NINE</div>
-          <div class="c162-meet-cards">${cardsHTML}</div>
+          <div class="d2-table m3-field">
+            <svg class="m3-diamond" viewBox="0 0 1500 1040" preserveAspectRatio="none" aria-hidden="true">
+              <path class="g-out" d="M750 770 L105 125 A912 912 0 0 1 1395 125 Z"/>
+              <path class="g-track" d="M105 125 A912 912 0 0 1 1395 125"/>
+              <path class="g-dirt" d="M750 770 L446 466 A430 430 0 0 1 1054 466 Z"/>
+              <path class="g-in" d="M750 715 L925 540 L750 365 L575 540 Z"/>
+              <path class="g-line" d="M750 770 L105 125 M750 770 L1395 125"/>
+              <path class="g-path" d="M750 770 L980 540 L750 310 L520 540 Z"/>
+              <circle class="g-mound" cx="750" cy="560" r="38"/>
+              <rect class="g-base" x="968" y="528" width="24" height="24" transform="rotate(45 980 540)"/>
+              <rect class="g-base" x="738" y="298" width="24" height="24" transform="rotate(45 750 310)"/>
+              <rect class="g-base" x="508" y="528" width="24" height="24" transform="rotate(45 520 540)"/>
+              <path class="g-base" d="M736 762 L764 762 L764 774 L750 786 L736 774 Z"/>
+              <rect class="g-dug" x="18" y="900" width="200" height="110" rx="10"/>
+            </svg>
+            ${batters.map(posCell).join('')}${moundHTML}
+          </div>
 
-          ${this._ironPicksHTML(p)}
+          ${ironHTML}
 
-          ${this._chemistryHTML(this._rosterCards(p))}
-
-          <div class="c162-meet-columns">
-            <div class="c162-meet-panel">
-              <div class="c162-meet-panel-title"><span>⚾ BATTING ORDER</span><button id="btn-c162-optimize" class="c162-link-btn">⚙ OPTIMIZE</button></div>
+          <div class="m3-cols">
+            <div class="m3-panel">
+              <div class="m3-panel-title"><span>⚾ BATTING ORDER</span><button id="btn-c162-optimize" class="m3-btn">⚙ OPTIMIZE</button></div>
               ${orderRows}
-              ${bench.length ? `<div class="c162-meet-panel-title" style="margin-top:10px;"><span>🛋️ BENCH</span><span class="c162-meet-hint">covers rest days</span></div>
-              ${benchRows}${coverNote}` : ''}
+              ${bench.length ? `<div class="m3-panel-title"><span>🛋️ BENCH</span><span class="m3-hint">covers rest days</span></div>${benchRows}${coverNote}` : ''}
             </div>
-            <div class="c162-meet-panel">
-              <div class="c162-meet-panel-title"><span>🧢 ROTATION</span><span class="c162-meet-hint">SP1 opens day 1</span></div>
+            <div class="m3-panel">
+              <div class="m3-panel-title"><span>🧢 ROTATION</span><span class="m3-hint">SP1 opens day 1</span></div>
               ${rotRows}
-              <div class="c162-meet-panel-title" style="margin-top:10px;"><span>🔥 BULLPEN</span></div>
+              <div class="m3-panel-title"><span>🔥 BULLPEN</span><span class="m3-hint">closer ${closer ? cleanName(closer) : '—'}</span></div>
               ${penRows}
             </div>
           </div>
 
-          <div class="c162-meet-actions">
-            <button id="btn-c162-meet-next" class="btn c162-cta">🏟️ LEAGUE PREVIEW ▶</button>
+          ${this._chemistryHTML(this._rosterCards(p), true)}
+
+          <div class="m3-actions">
+            <button id="btn-c162-meet-next" class="d2t-go">LEAGUE PREVIEW ▶</button>
           </div>
         </div>`;
       this._meetAnimated = true;
@@ -9853,19 +9937,57 @@
       const nameInput = container.querySelector('#c162-team-name');
       nameInput.oninput = () => { p.teamName = nameInput.value.trim() || this._suggestTeamName(this._pendingCards(p)); };
       container.querySelectorAll('.c162-mv').forEach(btn => {
-        btn.onclick = () => {
+        btn.onclick = (e) => {
+          e.stopPropagation();
           const i = parseInt(btn.dataset.i, 10), d = parseInt(btn.dataset.d, 10);
           const list = btn.dataset.list === 'order' ? p.battingOrder : p.pitchers.SP;
           const j = i + d;
           if (j < 0 || j >= list.length) return;
           [list[i], list[j]] = [list[j], list[i]];
+          const y = window.scrollY;
           this.renderMeetTheTeam();
+          window.scrollTo(0, y);
         };
       });
       this._bindIronPicks(container, p, () => this.renderMeetTheTeam());
+      const sug = container.querySelector('#btn-c162-iron-suggest');
+      if (sug) sug.onclick = () => { const y = window.scrollY; this._preselectIronMen(p, true); this.renderMeetTheTeam(); window.scrollTo(0, y); };
+      const openDex = card => {
+        if (!card || !window.BaseballDex || !window.BaseballDex.showDetail) return;
+        window.BaseballDex.showDetail(dexCard(card));
+        ['btn-modal-shortlist-bottom', 'btn-modal-next-bottom', 'btn-modal-next-back', 'btn-modal-test-batter-bottom'].forEach(id => { const x = document.getElementById(id); if (x) x.style.display = 'none'; });
+      };
+      container.querySelectorAll('.m3-rack-row[data-c162-card]').forEach(row => {
+        row.onclick = (e) => {
+          if (e.target.closest('button')) return;
+          const [kind, key] = row.dataset.c162Card.split(/:(.+)/);
+          const pool = kind === 'P' ? [...SP, ...RP] : bench;
+          const card = pool.find(x => (kind === 'P' ? pitcherUnlockKey(x) : batterUnlockKey(x)) === key);
+          openDex(card);
+        };
+      });
+      // Click a card on the field or a batting-order row: its Dex page (big card that flips,
+      // ratings and career line). The shields and arrows are buttons and keep their own clicks.
+      
+      container.querySelectorAll('.m3-field .m3-pos').forEach(cell => {
+        const card = cell.querySelector('.m3-card');
+        if (!card) return;
+        card.style.cursor = 'pointer';
+        card.onclick = (e) => {
+          if (e.target.closest('button')) return;
+          const slot = (cell.className.match(/m3-at-(\w+)/) || [])[1];
+          openDex(slot === 'P' ? SP[0] : p.lineup[slot]);
+        };
+      });
+      container.querySelectorAll('.m3-order-row').forEach((row, i) => {
+        row.style.cursor = 'pointer';
+        row.onclick = (e) => { if (!e.target.closest('button')) openDex(p.lineup[order[i]]); };
+      });
       container.querySelector('#btn-c162-optimize').onclick = () => {
         p.battingOrder = this._optimizeBattingOrder(p.lineup);
+        const y = window.scrollY;
         this.renderMeetTheTeam();
+        window.scrollTo(0, y);
       };
       container.querySelector('#btn-c162-meet-next').onclick = () => this.showLeaguePreview(p);
     },
@@ -9934,6 +10056,9 @@
       placeNegroLeagues(L);
     },
 
+    // League Preview (redesigned Oct 2026): the Gazette's season preview. Your projection up top,
+    // the league choice as two big tickets, the contenders to watch, and each league as a column
+    // of projected-wins bars with the playoff line drawn in.
     renderLeaguePreview() {
       const p = this._pendingSeason;
       const container = document.getElementById('challenge162-pack-container');
@@ -9945,77 +10070,99 @@
       const order = Object.keys(L.teams).sort((a, b) => exp[b] - exp[a]);
       const mine = order.filter(id => L.teams[id].league === userLg);
       const myRank = mine.indexOf(USER_TEAM_ID) + 1;
+      const myW = proj(USER_TEAM_ID);
       const threats = mine.filter(id => id !== USER_TEAM_ID).slice(0, 3);
-      const leagueCard = lg => {
-        const top = order.filter(id => L.teams[id].league === lg && id !== USER_TEAM_ID).slice(0, 3);
-        // The user and the Negro Leagues All-Stars always sit in opposite leagues.
+      const isPool = Boolean(L && L.isPoolLeague);
+      const nlbName = isPool ? 'Montreal Expos' : 'Negro Leagues All-Stars';
+      const lgName = lg => (lg === 'AL' ? 'AMERICAN LEAGUE' : 'NATIONAL LEAGUE');
+      const ord = n => n + (['th', 'st', 'nd', 'rd'][(n % 100 - 20) % 10] || ['th', 'st', 'nd', 'rd'][n % 100] || 'th');
+      const verdict = myRank <= 1 ? 'THE TEAM TO BEAT' : myRank <= PLAYOFF_SEEDS ? 'A PLAYOFF TEAM ON PAPER' : myRank <= PLAYOFF_SEEDS + 3 ? 'ON THE BUBBLE' : 'LONG ODDS, BIG DREAMS';
+      const eraOf = y => { y = parseInt(y, 10) || 2020; return y <= 1900 ? 'genesis' : y <= 1919 ? 'deadball' : y <= 1941 ? 'golden' : y <= 1960 ? 'integration' : y <= 1976 ? 'expansion' : y <= 1993 ? 'bighair' : y <= 2005 ? 'steroid' : y <= 2015 ? 'efficiency' : 'modern'; };
+      const face = (x, isP) => (window.CardArt && x ? `<i class="m3-face" style="background-image:url(${window.CardArt.portrait(x, eraOf(x.year), isP)})"></i>` : '<i class="m3-face"></i>');
+      const starOf = id => {
+        const t = L.teams[id];
+        try {
+          const lu = getFranchiseDecadeTeam(t.code, t.decade).lineup || [];
+          const st = getFranchiseStaff(t.code, t.decade).rotation || [];
+          const b = lu.slice().sort((x, y) => (y.ovr || 0) - (x.ovr || 0))[0];
+          const s = st.slice().sort((x, y) => (y.ovr || 0) - (x.ovr || 0))[0];
+          return { b, s };
+        } catch (e) { return {}; }
+      };
+
+      const ticket = lg => {
         const chosen = userLg === lg;
+        const top = order.filter(id => L.teams[id].league === lg && id !== USER_TEAM_ID).slice(0, 3);
         const franchises = Object.values(L.teams).filter(t => !t.isUser && t.id !== NLB_TEAM_ID && t.league === lg).length;
         const nlbHere = L.teams[NLB_TEAM_ID].league === lg;
-        const isPool = Boolean(L && L.isPoolLeague);
-        const nlbName = isPool ? 'Montreal Expos' : 'Negro Leagues All-Stars';
-        const nlbShort = isPool ? 'Expos' : 'All-Stars';
-        return `<button class="c162-lg-pick ${chosen ? 'active' : ''} lg-${lg}" data-lg="${lg}">
-          <span class="c162-lg-pick-name">${lg === 'AL' ? 'AMERICAN LEAGUE' : 'NATIONAL LEAGUE'}${chosen ? ' <span class="c162-lg-pick-badge">✓ YOUR LEAGUE</span>' : ''}</span>
-          <span class="c162-lg-pick-sub">${chosen
-            ? `You play here against ${franchises} franchises${nlbHere ? ` and the ${nlbName}` : ''}.`
-            : `${franchises} franchises${nlbHere ? ` + the ${nlbName}` : ''}. Tap to join instead; the ${nlbShort} would move to the ${otherLeague(lg)}.`}</span>
-          <span class="c162-lg-pick-top">Favorites: ${top.map(id => L.teams[id].name).join(' · ')}</span>
+        return `<button class="c162-lg-pick lp-ticket lg-${lg} ${chosen ? 'active' : ''}" data-lg="${lg}">
+          <span class="lp-ticket-stub">${lg}</span>
+          <span class="lp-ticket-body">
+            <b>${lgName(lg)}</b>
+            <small>${chosen ? `✓ YOUR LEAGUE · ${franchises} franchises${nlbHere ? ` + the ${nlbName}` : ''}` : `${franchises} franchises${nlbHere ? ` + the ${nlbName}` : ''} · tap to play here`}</small>
+            <em>Favorites: ${top.map(id => L.teams[id].name).join(' · ')}</em>
+          </span>
         </button>`;
       };
-      // One column per league (AL left, NL right), each ranked on its own: that is the race
-      // that decides the playoffs.
-      const prColumn = lg => {
+
+      const maxW = Math.max(...order.map(proj)), minW = Math.min(...order.map(proj));
+      const span = Math.max(10, maxW - minW + 6);
+      const column = lg => {
         const ids = order.filter(id => L.teams[id].league === lg);
-        return `<div class="c162-pr-col">
-          <div class="c162-pr-col-title lg-${lg}">${lg === 'AL' ? 'AMERICAN LEAGUE' : 'NATIONAL LEAGUE'}${lg === userLg ? ' · YOUR LEAGUE' : ''}</div>
+        return `<div class="lp-col">
+          <div class="lp-col-title lg-${lg}">${lgName(lg)}${lg === userLg ? ' · YOUR LEAGUE' : ''}</div>
           ${ids.map((id, i) => {
             const t = L.teams[id];
             const w = proj(id);
-            return `<div data-c162-team="${t.id}" title="Click to see the roster" class="c162-pr-row no-move ${t.isUser ? 'is-user' : ''} ${i === PLAYOFF_SEEDS - 1 ? 'cutline' : ''}">
-              <span class="c162-pr-rank">${i + 1}</span>
-              <span class="c162-pr-lg lg-${t.league}">${t.league}</span>
-              <span class="c162-pr-name">${t.name}</span>
-              <span class="c162-pr-rec">${w}-${SEASON_LENGTH - w}</span>
-              <span class="c162-pr-str">${i < PLAYOFF_SEEDS ? 'PLAYOFFS' : ''}</span>
+            const pct = Math.max(6, Math.min(100, ((w - minW + 3) / span) * 100));
+            return `<div data-c162-team="${t.id}" title="Click to see the roster" class="lp-row ${t.isUser ? 'is-user' : ''} ${i < PLAYOFF_SEEDS ? 'in' : ''} ${i === PLAYOFF_SEEDS - 1 ? 'cut' : ''}">
+              <span class="lp-rank">${i + 1}</span>
+              <span class="lp-name">${t.name}</span>
+              <span class="lp-bar"><i style="width:${pct}%"></i></span>
+              <span class="lp-rec">${w}-${SEASON_LENGTH - w}</span>
             </div>`;
           }).join('')}
         </div>`;
       };
-      const rows = prColumn('AL') + prColumn('NL');
 
       container.innerHTML = `
-        <div class="c162-preview">
-          <div class="c162-preview-head">
-            <div>
-              <div class="c162-meet-kicker">LEAGUE PREVIEW · ${SEASON_LENGTH}-GAME SEASON</div>
-              <div class="c162-preview-title">${p.teamName}</div>
-            </div>
-            <div class="c162-preview-proj">
-              <div><span>PROJECTED</span><b>${proj(USER_TEAM_ID)}-${SEASON_LENGTH - proj(USER_TEAM_ID)}</b></div>
-              <div><span>${userLg} RANK</span><b>#${myRank}</b></div>
-              <div><span>GOAL</span><b>162-0</b></div>
+        <div class="lp">
+          <div class="lp-mast">
+            <small>THE BASEROGUE GAZETTE · SEASON PREVIEW · ${SEASON_LENGTH} GAMES</small>
+            <h2>${p.teamName}: ${verdict}</h2>
+            <p>Our projection has them at <b>${myW}-${SEASON_LENGTH - myW}</b>, ${ord(myRank)} in the ${userLg}. The top ${PLAYOFF_SEEDS} of each league go to October. The goal, as always: 162-0.</p>
+            <div class="lp-figs">
+              <span><small>PROJECTED</small><b>${myW}-${SEASON_LENGTH - myW}</b></span>
+              <span><small>${userLg} RANK</small><b>#${myRank}</b></span>
+              <span><small>PLAYOFF LINE</small><b>${proj(mine[PLAYOFF_SEEDS - 1] || mine[mine.length - 1])} W</b></span>
+              <span><small>GOAL</small><b>162-0</b></span>
             </div>
           </div>
 
-          <div class="c162-meet-section">CHOOSE YOUR LEAGUE</div>
-          <div class="c162-lg-picks">${leagueCard('AL')}${leagueCard('NL')}</div>
-          <div class="c162-pr-note">Top ${PLAYOFF_SEEDS} of each league make the playoffs: 1 plays 4, 2 plays 3, league final, then the World Series. Most of your games are against your own league.</div>
+          <div class="lp-sec">CHOOSE YOUR LEAGUE</div>
+          <div class="lp-tickets">${ticket('AL')}${ticket('NL')}</div>
 
           ${p.cfg && p.cfg.type === 'packs' ? '' : this._ironPicksHTML(p)}
 
-          <div class="c162-meet-section">TEAMS TO WATCH IN THE ${userLg}</div>
-          <div class="c162-threats">
-            ${threats.map(id => `<div class="c162-threat"><b>${L.teams[id].name}</b><span>Proj. ${proj(id)}-${SEASON_LENGTH - proj(id)}</span></div>`).join('')}
-          </div>
+          <div class="lp-sec">TEAMS TO WATCH IN THE ${userLg}</div>
+          <div class="lp-threats">${threats.map(id => {
+            const t = L.teams[id];
+            const { b, s } = starOf(id);
+            const w = proj(id);
+            return `<div class="lp-threat" data-c162-team="${t.id}" title="Click to see the roster">
+              <div class="lp-threat-head"><b>${t.name}</b><span>${w}-${SEASON_LENGTH - w}</span></div>
+              ${b ? `<div class="lp-star">${face(b, false)}<div><small>BEST BAT</small><b>${cleanName(b)}</b></div><em>${Math.floor(b.ovr || 0)}</em></div>` : ''}
+              ${s ? `<div class="lp-star">${face(s, true)}<div><small>ACE</small><b>${cleanName(s)}</b></div><em>${Math.floor(s.ovr || 0)}</em></div>` : ''}
+            </div>`;
+          }).join('')}</div>
 
-          <div class="c162-meet-section">PRESEASON POWER RANKINGS</div>
-          <div class="c162-pr-note">Projected records from each roster's lineup, rotation and bullpen. The top ${PLAYOFF_SEEDS} of each league make the playoffs. A season still swings about 8 wins either way: every game is played out pitch by pitch.</div>
-          <div class="c162-pr-leagues">${rows}</div>
+          <div class="lp-sec">PRESEASON POWER RANKINGS</div>
+          <div class="lp-note">Projected records from each roster's lineup, rotation and bullpen; the line marks the playoff cut. A season still swings about 8 wins either way. Click a team to see its roster.</div>
+          <div class="lp-cols">${column('AL')}${column('NL')}</div>
 
-          <div class="c162-meet-actions">
-            ${p.cfg && p.cfg.type === 'packs' ? '<button id="btn-c162-preview-back" class="btn btn-secondary">◀ TEAM</button>' : ''}
-            <button id="btn-c162-preview-start" class="btn c162-cta">⚾ PLAY BALL! START THE SEASON</button>
+          <div class="m3-actions">
+            ${p.cfg && p.cfg.type === 'packs' ? '<button id="btn-c162-preview-back" class="m3-btn">◀ TEAM</button>' : ''}
+            <button id="btn-c162-preview-start" class="d2t-go">⚾ PLAY BALL!</button>
           </div>
         </div>`;
 
