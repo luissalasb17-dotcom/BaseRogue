@@ -194,6 +194,9 @@ def normalize_globally(df, col_raw, col_out):
 # ===========================================================================
 # PASO 1 - CARGA DE TODOS LOS ARCHIVOS DE ENTRADA
 # ===========================================================================
+SEC_CAREER_PCT = 0.04  # share of career games at a position to list it as secondary (user, Oct 2026)
+SEC_MIN_G = 75  # and at least this many career games there
+
 def paso_1_cargar_datos():
     print("=" * 64)
     print("  PASO 1: Cargando archivos de entrada...")
@@ -762,16 +765,16 @@ def paso_6_posicion_bateadores(fielding, fielding_of, appearances=None, pico_df=
     )
 
     # 3. Determinar POSICIONES SECUNDARIAS
-    # - Posiciones de campo: >= 10% Dedicacion (Carrera/Pico) O >= 100 Juegos en Carrera
+    # - Posiciones de campo: >= 5% de los juegos de carrera o >= 10% de los del pico (sin piso
+    #   absoluto de juegos: 100 juegos de novato en RF no hacen jardinero a Miguel Cabrera)
     # - Posicion DH: Umbral selectivo de >= 25% de dedicacion (Carrera/Pico) con al menos 50 juegos
     sec_df = merged_pos.merge(primary[["playerID", "primary_pos"]], on="playerID", how="left")
     sec_df = sec_df[(sec_df["pos_mapped"] != sec_df["primary_pos"]) & (sec_df["pos_mapped"] != "OF")]
 
     is_dh_row = sec_df["pos_mapped"] == "DH"
     field_mask = (~is_dh_row) & (
-        ((sec_df["career_pct"] >= 0.10) & (sec_df["G"] >= 20)) |
-        ((sec_df["peak_pct"] >= 0.10) & (sec_df["peak_G"] >= 15)) |
-        (sec_df["G"] >= 100.0)
+        ((sec_df["career_pct"] >= SEC_CAREER_PCT) & (sec_df["G"] >= SEC_MIN_G)) |
+        ((sec_df["peak_pct"] >= 0.10) & (sec_df["peak_G"] >= 15))
     )
     dh_mask = is_dh_row & (
         ((sec_df["career_pct"] >= 0.25) & (sec_df["G"] >= 50)) |

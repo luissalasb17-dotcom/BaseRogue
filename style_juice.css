@@ -3262,6 +3262,9 @@ span.c162-iron {
    with the lift on hover), and the two faces also swap by visibility at the 90-degree point. */
 .c162-oc-front, .c162-oc-front * { backface-visibility: hidden; -webkit-backface-visibility: hidden; }
 .c162-oc-front .player-card { pointer-events: none; transform: none !important; will-change: auto; filter: none !important; }
+/* ...but the card's own flip turns .pc2-in 180 degrees: it and everything on its faces must stay
+   visible from behind, or the flipped card shows blank. Only the two faces hide their backs. */
+.c162-oc-front .pc2-in, .c162-oc-front .pc2-face * { backface-visibility: visible; -webkit-backface-visibility: visible; }
 .c162-oc-back { position: absolute; inset: -3px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
   backface-visibility: hidden; -webkit-backface-visibility: hidden; transform: rotateY(180deg);
   border-radius: 8px; border: 3px solid #eab308; box-shadow: 0 0 0 2px #000, 0 8px 20px rgba(0, 0, 0, .6);

@@ -35,9 +35,14 @@
 #screen-challenge-pack .m3-pos.no-anim { animation: none; }
 #screen-challenge-pack .m3-pos-tag { font: 500 12px 'Oswald', sans-serif; letter-spacing: 1px; color: #e2fbe9; padding: 1px 10px; border-radius: 10px; background: rgba(0, 0, 0, .5); }
 #screen-challenge-pack .m3-pos-tag b { color: #fde047; font-weight: 600; margin-right: 4px; }
-#screen-challenge-pack .m3-card { zoom: .64; filter: drop-shadow(0 8px 12px rgba(0, 0, 0, .55)); }
+#screen-challenge-pack .m3-card { zoom: .72; filter: drop-shadow(0 8px 12px rgba(0, 0, 0, .55)); transition: transform .16s ease; }
+/* Hover a card to read it: it grows over its neighbours without moving the field. */
+#screen-challenge-pack .m3-pos:has(.m3-card:hover) { z-index: 6; }
+#screen-challenge-pack .m3-card:hover { transform: scale(1.5); }
+#screen-challenge-pack .m3-at-CF .m3-card, #screen-challenge-pack .m3-at-LF .m3-card, #screen-challenge-pack .m3-at-RF .m3-card { transform-origin: 50% 0; }
+#screen-challenge-pack .m3-at-C .m3-card, #screen-challenge-pack .m3-at-DH .m3-card { transform-origin: 50% 100%; }
 #screen-challenge-pack .m3-pos.is-iron .m3-card { filter: drop-shadow(0 0 10px rgba(253, 224, 71, .55)) drop-shadow(0 8px 12px rgba(0, 0, 0, .55)); }
-#screen-challenge-pack .m3-pos-foot { display: flex; align-items: center; gap: 6px; font-size: 11.5px; letter-spacing: .5px; }
+#screen-challenge-pack .m3-pos-foot { position: relative; z-index: 2; display: flex; align-items: center; gap: 6px; font-size: 11.5px; letter-spacing: .5px; }
 #screen-challenge-pack .m3-at-P .m3-pos-foot > span { color: #94a3b8; }
 
 /* ── shields (Iron Man toggles) ── */

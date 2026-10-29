@@ -379,7 +379,7 @@
     if (libsState !== 'ready') return false;
     if (!G || G.deck !== deck) {
       if (G) { clearTimeout(G.hideT); try { G.renderer.dispose(); G.renderer.forceContextLoss(); } catch (e) {} if (G.canvas) G.canvas.remove(); }
-      build(deck, !!host);
+      build(deck, !!host && !deck.classList.contains('dice3d-felt'));   // a felt host behaves like the battle felt
     }
     const ok = layout();
     if (ok) prewarm();
@@ -427,8 +427,8 @@
   }
 
   // Auto-play: no throw, the dice just turn up on the felt with the number.
-  function snap(target) {
-    if (!active()) return;
+  function snap(target, host) {
+    if (!active(host)) return;
     if (G.playing) { G.playing = false; G.done && G.done(); G.done = null; }
     const T = G.T, M = G.M, up = new T.Vector3(0, 1, 0);
     const want = split(target).map(d => M.FACE_VALUE.indexOf(d));
@@ -469,7 +469,7 @@
   }, 1000);
 
   // A click on the felt while the dice roll skips to the end.
-  document.addEventListener('pointerdown', e => { if (G && G.playing && e.target.closest && e.target.closest('.bx3-deck, #dice-d100-panel, #def-dice-d100-panel')) skip(); }, true);
+  document.addEventListener('pointerdown', e => { if (G && G.playing && e.target.closest && e.target.closest('.bx3-deck, #dice-d100-panel, #def-dice-d100-panel, .po3-felt, .po3-tray')) skip(); }, true);
   // Start fetching the libraries as soon as a battle screen shows up.
   const warm = setInterval(() => {
     if (!enabled || reduced) return;

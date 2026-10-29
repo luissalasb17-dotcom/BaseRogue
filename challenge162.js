@@ -1468,6 +1468,14 @@
     return positions.has(slot.toUpperCase());
   }
 
+  // The glove a starter actually brings to the slot he plays: full at his own position, 85% at
+  // a secondary one (the same −15% the card shows), and half anywhere else. Before this a starter dragged to any slot fielded with his full glove.
+  function slotGlove(p, slot) {
+    if (!p || !slot || slot === 'DH' || canPlayerFillPrimary(p, slot)) return p;
+    const d = Number(p.def !== undefined ? p.def : p.defense_val) || 50;
+    return { ...p, def: Math.round(d * (canPlayerFillSlot(p, slot) ? 0.85 : OUT_OF_POSITION_SHARE)) };
+  }
+
   function canPlayerFillPrimary(p, slot) {
     if (!p) return false;
     const raw = (p.pos || p.pos_display || p.primary_pos || '').toUpperCase().trim();
@@ -1891,7 +1899,11 @@
   const WEAR_MAX_PENALTY = 3;
   const WEAR_CAP = 40;
   const MAX_RESTS_PER_GAME = 2;
-  const OUT_OF_POSITION_DEF = 25;
+  const OUT_OF_POSITION_DEF = 25; // legacy floor, kept for old callers
+  // Out of position a fielder keeps half his glove (user, Oct 2026): a 125 glove is still a
+  // 62 anywhere, a 20 drops to 10. The flat 25 lifted bad gloves and flattened great ones.
+  const OUT_OF_POSITION_SHARE = 0.5;
+  const offPosDef = p => Math.round((Number(p && (p.def !== undefined ? p.def : p.defense_val)) || 50) * OUT_OF_POSITION_SHARE);
   const ROSTER_SIZE = 9 + BENCH_SIZE + 5 + ROSTER_RP; // 26
   // Bench moves during a game (the bench used to play only on rest days and in blowouts):
   //  - pinch hitter: from the 7th on, in a close game (down by up to PH_MAX_DEFICIT, tied or up
@@ -4330,7 +4342,7 @@
       const m = useMomentum ? momentumFor(teamRec.streak, countCaptains([...team.lineup, ...getFranchiseBench(teamRec.code, teamRec.decade), ...staff.rotation, ...staff.bullpen])) : 0;
       const gp = teamRec.w + teamRec.l;
       const spRaw = staff.rotation[gp % staff.rotation.length];
-      const boostedLineup = team.lineup.map(p => withMomentumBatter(p, m + this._playerForm(teamRec.id, p, false).delta));
+      const boostedLineup = team.lineup.map(p => slotGlove(withMomentumBatter(p, m + this._playerForm(teamRec.id, p, false).delta), p.assignedSlot));
       const fielders = boostedLineup.filter(p => (p.assignedSlot || p.pos) !== 'DH');
       return {
         id: teamRec.id, isUser: false,
@@ -4409,7 +4421,7 @@
       });
       const spToday = spList[S.gamesPlayed % spList.length];
       const spFd = this._playerForm(USER_TEAM_ID, spToday, true).delta;
-      const boostedLineup = lineup.map(p => withMomentumBatter(p, m + chem.of(p) + this._playerForm(USER_TEAM_ID, p, false).delta + ((S.ironMan && S.ironMan[batterUnlockKey(p)]) ? IRON_BOOST : 0)));
+      const boostedLineup = lineup.map(p => slotGlove(withMomentumBatter(p, m + chem.of(p) + this._playerForm(USER_TEAM_ID, p, false).delta + ((S.ironMan && S.ironMan[batterUnlockKey(p)]) ? IRON_BOOST : 0)), p.assignedSlot));
       const fielders = boostedLineup.filter(p => (p.assignedSlot || p.pos) !== 'DH');
       return {
         id: USER_TEAM_ID, isUser: true,
@@ -4636,7 +4648,7 @@
           const anyone = fresh.find(b => !window.leftyCantPlay(b, slot)); // no lefty arm at C / 2B / 3B / SS
           if (wearPenalty(x.f) >= 2 && anyone) {
             benchLeft.splice(benchLeft.indexOf(anyone), 1);
-            out[x.i] = { ...anyone, assignedSlot: slot, def: OUT_OF_POSITION_DEF };
+            out[x.i] = { ...anyone, assignedSlot: slot, def: offPosDef(anyone) };
             rested.push(batterUnlockKey(x.p));
           }
         });
@@ -4780,7 +4792,7 @@
         const pos = slotOf(side.lineup[slot]);
         side.benchLeft.splice(side.benchLeft.indexOf(sub), 1);
         const entering = { ...sub, assignedSlot: pos };
-        if (pos !== 'DH' && !canPlayerFillSlot(sub, pos)) entering.def = OUT_OF_POSITION_DEF;
+        if (pos !== 'DH' && !canPlayerFillSlot(sub, pos)) entering.def = offPosDef(sub);
         side.lineup[slot] = entering;
         subsMade[si].slots.add(slot);
         batterLine(side, entering); // he appears in the game even if he never comes to bat
@@ -5193,17 +5205,20 @@
           // The strip the user sees is this plate appearance's real odds, with every modifier
           // already in (platoon, clutch, fatigue), so the game stays the same game.
           let big = null;
-          if (opts.roll && !sac && !forcedOutcome && bigRolls < BIG_ROLLS_MAX && !(bigHalf === inning * 2 + bi && (inning < 9 || bigInHalf >= 2))) {
-            const li = bigLeverage(inning, margin, outs, bases);
-            if (li >= Math.max(0.4, BIG_LI + BIG_STEP * (bigRolls - inning * BIG_PACE))) {
+          if (opts.roll && !sac && !forcedOutcome) {
+            // Big at-bats keep their pacing rule; with opts.everyPA (October 2.0) the user rolls
+            // every plate appearance and the big ones are only flagged.
+            const li = bigLeverage(inning, margin, outs, bases), halfKey = inning * 2 + bi;
+            const isBig = bigRolls < BIG_ROLLS_MAX && !(bigHalf === halfKey && (inning < 9 || bigInHalf >= 2)) && li >= Math.max(0.4, BIG_LI + BIG_STEP * (bigRolls - inning * BIG_PACE));
+            if (isBig || opts.everyPA) {
               const zones = simPaOutcome(atBat, eff, batSide.isUser, { zones: true });
               const point = { type: 'roll', mine: batSide.isUser ? 'bat' : 'pit', inning, half: bi === 0 ? 'TOP' : 'BOT', outs, bases: slim(),
-                margin: batSide.isUser ? margin : -margin, batter: batter.name, pitcher: pName(p), zones, li };
+                margin: batSide.isUser ? margin : -margin, batter: batter.name, pitcher: pName(p), zones, li, isBig };
               const a = opts.roll(point);
               if (a === undefined || a === null) { halt = point; break; }
-              bigRolls++; bigInHalf = bigHalf === inning * 2 + bi ? bigInHalf + 1 : 1; bigHalf = inning * 2 + bi;
+              if (isBig) { bigRolls++; bigInHalf = bigHalf === halfKey ? bigInHalf + 1 : 1; bigHalf = halfKey; }
               const own = typeof a === 'object';
-              big = { zones, mine: point.mine, li, u: own ? a.u : null, dice: own ? a.dice : null, clutch: !!(own && a.clutch) };
+              big = { zones, mine: point.mine, li, isBig, u: own ? a.u : null, dice: own ? a.dice : null, n: own ? a.n : null, clutch: !!(own && a.clutch) };
             }
           }
           let outcome = sac ? 'OUT' : (forcedOutcome || simPaOutcome(atBat, eff, batSide.isUser, big && big.u !== null ? { roll: big.u } : undefined));
@@ -5955,7 +5970,7 @@
       const realRandom = Math.random;
       Math.random = mulberry32(pg.seed);
       try {
-        res = this._simLeagueGame(userSide, oppSide, day, { trace, homeFieldIdx: userHosts ? 0 : 1, decide, roll, isPlayoff: true });
+        res = this._simLeagueGame(userSide, oppSide, day, { trace, homeFieldIdx: userHosts ? 0 : 1, decide, roll, isPlayoff: true, everyPA: !!pg.every });
       } finally {
         Math.random = realRandom;
       }
@@ -5993,14 +6008,14 @@
         pg = P.pendingGame = {
           round, n: ser.games.length + 1, gameNo: (P.gameNo || 0) + 1,
           seed: Math.floor(Math.random() * 2147483647) + 1,
-          decisions: [], step: 0, spIdx: st.i, short: st.short, auto: true, quick: !manage,
+          decisions: [], step: 0, spIdx: st.i, short: st.short, auto: true, quick: !manage, every: true,
           plan: { ...this._poPlan() }
         };
         P.pickSP = undefined;
       }
       if ((pg.decisions || []).some(d => !d || typeof d !== 'object')) pg.decisions = []; // answers of the old manager calls
       const game = this._runPlayoffGame(pg, false);
-      this._activePlayoffSim = { game, currentStep: pg.quick ? game.events.length : (pg.step || 0), autoPlay: false, timer: null, finished: false };
+      this._activePlayoffSim = { game, currentStep: (pg.quick || pg.every) ? game.events.length : (pg.step || 0), autoPlay: false, timer: null, finished: false };
       this.save();
       this._activePlayoffTab = 'broadcast';
       this._selectedPlayoffBoxScoreIndex = -1;
@@ -6426,7 +6441,7 @@
       const keys = [];
       for (let k = step - 1; k >= 0 && keys.length < 40; k--) {
         const x = ev[k];
-        if (!(x.runsScored > 0 || x.big || x.detail === 'DP' || x.outcome === 'CS')) continue;
+        if (!(x.runsScored > 0 || (x.big && x.big.isBig !== false) || x.detail === 'DP' || x.outcome === 'CS')) continue;
         const d = wp[k + 1] - wp[k];
         keys.push(`<div class="oct-feed-row ${(x.half === 'TOP') ? 'mine' : 'theirs'}"><i>${x.half === 'TOP' ? '▲' : '▼'}${x.inning}</i><span>${x.big ? '🎲 ' : ''}${esc(this._poPlayText(x))}</span><b>${x.userRuns}-${x.oppRuns}</b><em class="${d >= 0 ? 'up' : 'down'}">${d >= 0 ? '+' : '−'}${Math.round(Math.abs(d) * 100)}%</em></div>`);
       }
@@ -6503,12 +6518,344 @@
       root.classList.toggle('is-ask', !!pending);
     },
 
+    // ── October 2.0: the playoff game on the Quick Play table. Every plate appearance is a d100
+    // roll on the real 162-0 odds (simPaOutcome zones); high is always good for the user (on the
+    // mound the strip is turned around). AUTO rolls for you and stops at the big at-bats. ──
+    _po3Zones(zones, mine) {
+      const list = mine === 'bat' ? zones.slice() : zones.slice().reverse();
+      const NAME = { SO: 'STRIKEOUT', OUT: 'OUT', BB: 'WALK', '1B': 'SINGLE', '2B': 'DOUBLE', '3B': 'TRIPLE', HR: 'HOME RUN' };
+      const BAT = { SO: 'bad2', OUT: 'bad', BB: 'ok', '1B': 'good', '2B': 'good', '3B': 'great', HR: 'great' };
+      const PIT = { HR: 'bad2', '3B': 'bad2', '2B': 'bad', '1B': 'bad', BB: 'bad', OUT: 'good', SO: 'great' };
+      let cum = 0;
+      return list.map(z => {
+        const lo = cum; cum += z.p;
+        const a = Math.ceil(lo * 100 + 0.5), b = Math.min(100, Math.ceil(cum * 100 + 0.5) - 1);
+        return { k: z.k, p: z.p, a, b, name: NAME[z.k] || z.k, cls: (mine === 'bat' ? BAT : PIT)[z.k] || '' };
+      }).filter(z => z.b >= z.a);
+    },
+
+    // Throw the dice for the plate appearance the game is waiting on.
+    _po3Roll(clutch) {
+      const sim = this._activePlayoffSim, pg = this.state && this.state.playoffs.pendingGame;
+      const pt = sim && sim.game.pending;
+      if (!sim || !pg || !pt || pt.type !== 'roll' || sim.rolling) return;
+      if (clutch && pg.decisions.filter(d => d && d.clutch).length >= CLUTCH_DICE) clutch = false;
+      const n1 = 1 + Math.floor(Math.random() * 100), n2 = 1 + Math.floor(Math.random() * 100);
+      const kept = clutch ? Math.max(n1, n2) : n1;
+      const r = (kept - 0.5) / 100;
+      const d = { u: pt.mine === 'bat' ? r : 1 - r, n: kept, dice: clutch ? [n1, n2] : [n1], clutch: !!clutch };
+      const felt = document.querySelector('#challenge162-playoffs-container .po3-felt');
+      const D = window.DiceTable;
+      let has3d = false;
+      try { has3d = !!(D && felt && D.active(felt)); } catch (err) { has3d = false; }
+      sim.rolling = true; sim.sticker = null;
+      this._renderPO3();
+      let wait;
+      if (has3d && sim.fast) { D.snap(kept, felt); wait = new Promise(res => setTimeout(res, 160)); }
+      else if (has3d) wait = D.roll(kept, clutch ? { r1: n1, r2: n2, kept } : null, felt);
+      else { if (window.AudioManager && typeof window.AudioManager.play === 'function') window.AudioManager.play('defense_dice_roll'); wait = new Promise(res => setTimeout(res, sim.fast ? 120 : 520)); }
+      wait.then(() => {
+        if (this._activePlayoffSim !== sim) return;
+        const shown = sim.game.events.length;
+        pg.decisions.push(d);
+        sim.game = this._runPlayoffGame(pg, false);
+        sim.currentStep = sim.game.events.length;
+        pg.step = sim.currentStep;
+        sim.rolling = false; sim.started = true;
+        sim.lastN = { n: kept, dice: d.dice, clutch: d.clutch };
+        sim.sticker = { k: shown, t: Date.now() };
+        if (!sim.game.pending) {
+          sim.holdFinal = true; sim.auto = false;
+          setTimeout(() => { if (this._activePlayoffSim === sim) { sim.holdFinal = false; this._renderPO3(); } }, sim.fast ? 1000 : 2400);
+        }
+        this.save();
+        this._renderPO3();
+        const nx = sim.game.pending;
+        if (sim.auto && nx) {
+          if (nx.isBig) { sim.auto = false; sim.autoStopped = true; this._renderPO3(); }
+          else setTimeout(() => { if (this._activePlayoffSim === sim && sim.auto && !sim.rolling) this._po3Roll(false); }, sim.fast ? 320 : 1100);
+        }
+      });
+    },
+
+    _renderPO3() {
+      const container = document.getElementById('challenge162-playoffs-container');
+      const sim = this._activePlayoffSim;
+      if (!container || !sim) return;
+      if (window.AudioManager && typeof window.AudioManager.setBGM === 'function') window.AudioManager.setBGM('match');
+      const S = this.state, pg = S.playoffs.pendingGame || {};
+      const game = sim.game, ev = game.events, total = ev.length;
+      if (sim.started === undefined) sim.started = (pg.decisions || []).length > 0 || !!pg.quick;
+      const step = total;
+      const pending = game.pending || null;
+      const finished = !pending && !sim.holdFinal;
+      const pre = !sim.started && !!pending;
+      const e = step > 0 ? ev[step - 1] : null;
+      const esc = s => String(s === undefined || s === null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+      const ord = n => `${n}${n % 10 === 1 && n !== 11 ? 'ST' : n % 10 === 2 && n !== 12 ? 'ND' : n % 10 === 3 && n !== 13 ? 'RD' : 'TH'}`;
+      const me = game.awayTeam, them = game.homeTeam;
+      const ERAS = [['Genesis', 'genesis'], ['Deadball', 'deadball'], ['Golden', 'golden'], ['Integration', 'integration'], ['Expansion', 'expansion'], ['Big Hair', 'bighair'], ['Steroid', 'steroid'], ['Efficiency', 'efficiency']];
+      const cardBy = name => game.cards && (game.cards[name] || game.cards[cleanName({ name })]);
+      const face = name => { const c = cardBy(name); if (!c || !window.CardArt) return ''; const er = String(c.era || ''); const f = ERAS.find(x => er.includes(x[0])); return window.CardArt.portrait(c, f ? f[1] : 'modern', false); };
+
+      // where the game stands
+      let inning = 1, half = 'TOP', outs = 0, bases = [null, null, null], uR = 0, oR = 0;
+      if (pending) { inning = pending.inning; half = pending.half; outs = pending.outs; bases = pending.bases || bases; }
+      else if (e) { inning = e.inning; half = e.half; outs = Math.min(3, e.newOuts || 0); bases = e.newBases || bases; }
+      if (e) { uR = e.userRuns; oR = e.oppRuns; }
+      if (!pending) { uR = me.runs; oR = them.runs; }
+      if (finished) bases = [null, null, null];
+      const userBats = half === 'TOP';
+
+      // sounds of the play that just landed
+      if (sim.sticker && this._po3Sound !== sim.sticker.t) {
+        this._po3Sound = sim.sticker.t;
+        const x = ev[sim.sticker.k], A = window.AudioManager;
+        if (x && A && typeof A.play === 'function') A.play(x.outcome === 'HR' ? 'hr' : x.outcome === 'SO' ? 'so' : x.outcome === 'BB' ? 'bb' : ['1B', '2B', '3B'].includes(x.outcome) ? 'hit' : 'out');
+      }
+      if (finished && sim.started && this._po3EndSound !== (game.n || 0) + ':' + total) {
+        this._po3EndSound = (game.n || 0) + ':' + total;
+        const A = window.AudioManager; if (A && typeof A.play === 'function') A.play(game.won ? 'win' : 'lose');
+      }
+
+      // ── scoreboard ──
+      const innings = Math.max(9, game.finalInning || 9, inning);
+      const lineOf = side => {
+        const arr = Array.from({ length: innings }, () => '');
+        ev.forEach(x => { if ((x.half === 'TOP') === (side === 0)) arr[x.inning - 1] = (side === 0 ? x.currentInningAwayRuns : x.currentInningHomeRuns) || 0; });
+        return arr;
+      };
+      const hitsOf = side => (!pending ? (side === 0 ? me.hits : them.hits) : (e ? (side === 0 ? e.userHits : e.oppHits) : 0));
+      const row = (name, side, runs) => `<tr class="${!finished && (side === 0) === userBats ? 'bat' : ''}"><th>${esc(name)}</th>${lineOf(side).map((v, i) => `<td class="${!finished && i === inning - 1 && (side === 0) === userBats ? 'now' : ''}">${v === '' ? '' : v}</td>`).join('')}<td class="t">${runs}</td><td class="t">${hitsOf(side)}</td></tr>`;
+      const bulbs = `<div class="po3-outs">${[0, 1, 2].map(i => `<i class="${outs > i && !finished ? 'on' : ''}"></i>`).join('')}<span>OUTS</span></div>`;
+      const wp = this._poWinProb(game);
+      const wpNow = finished ? (game.won ? 1 : 0) : wp[wp.length - 1];
+      const boardHTML = `<div class="po3-board-in">
+          <div class="po3-inn">${finished ? 'FINAL' : `${userBats ? '▲' : '▼'} ${ord(inning)}`}</div>
+          <table class="po3-ls"><thead><tr><th></th>${Array.from({ length: innings }, (_, i) => `<td>${i + 1}</td>`).join('')}<td class="t">R</td><td class="t">H</td></tr></thead><tbody>${row(me.name, 0, uR)}${row(them.name, 1, oR)}</tbody></table>
+          ${bulbs}
+        </div>
+        <div class="po3-wp"><span>${esc(me.name)} <b>${Math.round(wpNow * 100)}%</b></span><div class="po3-wp-bar"><i style="width:${(wpNow * 100).toFixed(1)}%"></i></div><span><b>${Math.round((1 - wpNow) * 100)}%</b> ${esc(them.name)}</span></div>`;
+
+      // ── who is up ──
+      const lastLine = (name, kind) => { for (let k = step - 1; k >= 0; k--) { const x = ev[k][kind]; if (x && x.name === name && ev[k].outcome !== 'SB' && ev[k].outcome !== 'CS') return x.line; } return kind === 'batter' ? '0-0 today' : '0.0 IP today'; };
+      const curBat = pending ? pending.batter : e ? e.batter.name : '';
+      const curPit = pending ? pending.pitcher : e ? e.pitcher.name : '';
+      const handOf = (name, pit) => { const c = cardBy(name); const h = c && (window.PlayerHands || {})[c.playerID]; const v = h ? h[pit ? 1 : 0] : ''; return v && v !== '-' ? v : ''; };
+      const cardHTML = name => { const c = cardBy(name); return c && typeof window.createCardHTML === 'function' ? window.createCardHTML(c) : `<div class="po3-nocard">${esc(name || '')}</div>`; };
+      const mineTag = userBats ? ['THEIR ARM', 'YOUR BAT'] : ['YOUR ARM', 'THEIR BAT'];
+      const bh = handOf(curBat, false), ph = handOf(curPit, true);
+      const edge = bh === 'S' || bh !== ph;
+      const platoon = (bh && ph) ? `<div class="po3-hand ${edge ? 'edge' : 'same'}">${bh === 'L' ? 'LEFTY' : bh === 'S' ? 'SWITCH' : 'RIGHTY'} BAT vs ${ph === 'L' ? 'LEFTY' : 'RIGHTY'} ARM<b>${edge ? 'PLATOON EDGE' : 'SAME HAND'}</b></div>` : '';
+      const moundPlaque = `<div class="po3-plaque"><small>${mineTag[0]}</small><b>${esc(curPit)}</b><span>${esc(lastLine(curPit, 'pitcher'))}</span></div>`;
+      const platePlaque = `<div class="po3-plaque"><small>${mineTag[1]}</small><b>${esc(curBat)}</b><span>${esc(lastLine(curBat, 'batter'))}</span>${platoon}</div>`;
+
+      // ── the diamond ──
+      const diaHTML = `<svg class="po3-dia-svg" viewBox="0 0 100 100" aria-hidden="true">
+          <path d="M50 84 L84 50 L50 16 L16 50 Z" class="path"/>
+          <rect x="44" y="10" width="12" height="12" transform="rotate(45 50 16)" class="base ${bases[1] ? 'on' : ''}"/>
+          <rect x="78" y="44" width="12" height="12" transform="rotate(45 84 50)" class="base ${bases[0] ? 'on' : ''}"/>
+          <rect x="10" y="44" width="12" height="12" transform="rotate(45 16 50)" class="base ${bases[2] ? 'on' : ''}"/>
+          <rect x="45" y="79" width="10" height="10" transform="rotate(45 50 84)" class="home"/>
+        </svg>`;
+      const onB = bases.filter(Boolean).length;
+      const diaTag = onB === 3 ? 'BASES LOADED' : onB === 0 ? 'BASES EMPTY' : [bases[0] && '1ST', bases[1] && '2ND', bases[2] && '3RD'].filter(Boolean).join(' & ');
+
+      // ── the tray ──
+      const clutchLeft = Math.max(0, CLUTCH_DICE - (pg.decisions || []).filter(d => d && d.clutch).length);
+      let trayHTML = '';
+      if (pending) {
+        const zs = this._po3Zones(pending.zones, pending.mine);
+        const good = zs.filter(z => z.cls === 'good' || z.cls === 'great' || z.cls === 'ok').reduce((t, z) => t + z.p, 0);
+        const lastN = sim.lastN;
+        trayHTML = `<div class="po3-tray-k">${pending.mine === 'bat' ? '⚾ YOU ARE AT THE PLATE' : '🧢 YOU ARE ON THE MOUND'}</div>
+          <div class="po3-read"><b class="${sim.rolling ? 'rolling' : ''}">${sim.rolling ? '··' : lastN ? String(lastN.n).padStart(2, '0') : '--'}</b><small>${lastN && !sim.rolling ? 'LAST ROLL' + (lastN.clutch ? ` · CLUTCH ${lastN.dice.join(' / ')}` : '') : 'D100'}</small></div>
+          <div class="po3-zones"><div class="po3-zones-h"><span>LUCK ZONES</span><b>${pending.mine === 'bat' ? 'REACH BASE' : 'GET THE OUT'} ${Math.round(good * 100)}%</b></div>
+            ${zs.slice().reverse().map(z => `<div class="po3-z ${z.cls}"><i>${z.a === z.b ? z.a : `${z.a}–${z.b}`}</i><span>${z.name}</span><em>${Math.round(z.p * 100)}%</em></div>`).join('')}
+            <div class="po3-zones-f">high rolls are good for you</div>
+          </div>
+          <button class="po3-roll" data-po3="roll" ${sim.rolling || pre ? 'disabled' : ''}>🎲 ROLL</button>
+          <button class="po3-clutch" data-po3="clutch" ${clutchLeft && !sim.rolling && !pre ? '' : 'disabled'}>🎯 CLUTCH ROLL <small>${clutchLeft ? 'two dice, the better counts · 1 a game' : 'used this game'}</small></button>
+          <div class="po3-ctl">
+            <button data-po3="auto" class="${sim.auto ? 'on' : ''}" ${pre ? 'disabled' : ''}>${sim.auto ? '⏸ STOP AUTO' : '▶ AUTO ROLL'}</button>
+            <button data-po3="speed" class="${sim.fast ? 'on' : ''}">${sim.fast ? '⚡ FAST' : '🎲 NORMAL'}</button>
+            <button data-po3="end">⏭ SIM TO END</button>
+          </div>
+          <div class="po3-note">AUTO rolls for you and stops at the big at-bats.</div>`;
+      } else {
+        trayHTML = `<div class="po3-tray-k">GAME OVER</div><div class="po3-read"><b>${uR}-${oR}</b><small>${game.won ? 'WIN' : 'LOSS'}</small></div>`;
+      }
+
+      // ── the felt: banner for big at-bats, the sticker of the play, pre and final overlays ──
+      let banner = '';
+      if (pending && pending.isBig && !pre) {
+        const m = pending.margin;
+        banner = `<div class="po3-bigban"><b>🔥 BIG AT-BAT</b><span>${m > 0 ? `up ${m}` : m < 0 ? `down ${-m}` : 'tie game'} · ${outs} out · ${diaTag.toLowerCase()}${sim.autoStopped ? ' · auto paused: this one is yours' : ''}</span></div>`;
+      }
+      let sticker = '';
+      const sx = sim.sticker && ev[sim.sticker.k];
+      if (sx && !sim.rolling && Date.now() - sim.sticker.t < 4000) {
+        const batGood = ['HR', '3B', '2B', '1B', 'BB', 'SB'].includes(sx.outcome) || sx.detail === 'E' || sx.detail === 'SF';
+        const good = (sx.half === 'TOP') === batGood;
+        const n = sx.runsScored || 0;
+        sticker = `<div class="po3-sticker ${good ? 'good' : 'bad'} ${sx.outcome === 'HR' ? 'hr' : ''} ${sx.outcome === 'SO' ? 'so' : ''}">
+            <b>${this._poPlayLabel(sx)}${sx.outcome === 'HR' || sx.outcome === 'SO' ? '!' : ''}</b><span>${esc(this._poPlayText(sx))}</span>${n ? `<em>+${n} RUN${n > 1 ? 'S' : ''}</em>` : ''}</div>`;
+      }
+      const ser = this._series(), need = SERIES_WINS[ser.round] || 1, ref = this._playoffOpponentRef(ser.round);
+      let overlay = '';
+      if (pre) {
+        const [u0, o0] = ser.wins;
+        const tag = o0 === need - 1 ? '<span class="po3-tag danger">ELIMINATION GAME</span>' : u0 === need - 1 ? `<span class="po3-tag clinch">${ser.round === 2 ? 'ONE WIN FROM THE TITLE' : 'CLINCH GAME'}</span>` : '';
+        overlay = `<div class="po3-ov pre">
+            <div class="po3-ov-k">${SERIES_NAMES[game.round] || 'POSTSEASON'} · GAME ${game.n || 1} · ${game.homeField === 'away' ? 'AT HOME' : 'ON THE ROAD'}</div>
+            ${tag}
+            <div class="po3-ov-vs"><div><i style="background-image:url(${face(game.spName)})"></i><small>YOUR STARTER</small><b>${esc(game.spName)}</b></div><em>VS</em><div><i style="background-image:url(${face(game.oppSpName)})"></i><small>THEIR STARTER</small><b>${esc(game.oppSpName)}</b></div></div>
+            <p>You roll every at-bat, at the plate and on the mound, on the real odds of each matchup. <b>AUTO ROLL</b> plays for you and stops at the big at-bats.</p>
+            <button class="po3-roll" data-po3="start">⚾ PLAY BALL</button>
+          </div>`;
+      } else if (finished) {
+        const story = this._poStory(game);
+        const dec = k => [...me.pitching, ...them.pitching].find(p => p.decision === k);
+        const w = dec('W'), l = dec('L'), sv = dec('SV');
+        const u1 = ser.wins[0] + (game.won ? 1 : 0), o1 = ser.wins[1] + (game.won ? 0 : 1);
+        const done = u1 >= need ? (ser.round === 2 ? 'champs' : 'won') : o1 >= need ? 'out' : '';
+        const head = done === 'champs' ? '🏆 WORLD SERIES CHAMPIONS' : done === 'won' ? `SERIES WON ${u1}-${o1}` : done === 'out' ? 'SEASON OVER' : game.won ? 'WIN' : 'LOSS';
+        const sub = done === 'out' ? `${ref ? ref.name : 'They'} take the series ${o1}-${u1}` : done ? `On to the ${SERIES_NAMES[ser.round + 1] || 'next round'}` : this._seriesStatusText({ round: ser.round, wins: [u1, o1] }, ref ? ref.name : 'They');
+        const t = story.turn;
+        const conf = (done === 'won' || done === 'champs') ? `<div class="po3-confetti">${Array.from({ length: 36 }, (_, i) => `<i style="--x:${(i * 37) % 100}%;--d:${(i % 9) * 0.18}s;--c:${['#ffd36a', '#6ee7a0', '#ff7a5c', '#9fd3ff', '#fff6d8'][i % 5]}"></i>`).join('')}</div>` : '';
+        overlay = `<div class="po3-ov final ${game.won ? 'won' : 'lost'} ${done}">${conf}
+            <div class="po3-ov-k">FINAL${(game.finalInning || 9) > 9 ? ` · ${game.finalInning} INNINGS` : ''} · GAME ${game.n || ''}</div>
+            <div class="po3-ov-head">${head}</div>
+            <div class="po3-ov-score"><span>${esc(me.name)}</span><b>${me.runs}</b><i>–</i><b>${them.runs}</b><span>${esc(them.name)}</span></div>
+            <div class="po3-ov-sub">${esc(sub)}</div>
+            <div class="po3-ov-dec">${w ? `W <b>${esc(w.name)}</b>` : ''}${l ? ` · L <b>${esc(l.name)}</b>` : ''}${sv ? ` · SV <b>${esc(sv.name)}</b>` : ''}</div>
+            <div class="po3-story"><h5>YOUR CHANCE TO WIN, PLAY BY PLAY</h5>${this._poWpChartSVG(story.wp, total)}
+              ${t ? `<div class="po3-story-r"><em>TURNING POINT</em><span>${t.e.half === 'TOP' ? 'Top' : 'Bottom'} ${ord(t.e.inning).toLowerCase()}: ${esc(this._poPlayText(t.e))} <b class="${t.d >= 0 ? 'up' : 'down'}">${t.d >= 0 ? '+' : '−'}${Math.round(Math.abs(t.d) * 100)}%</b></span></div>` : ''}
+              ${story.hero && story.hero.wpa > 0.02 ? `<div class="po3-story-r"><em>PLAYER OF THE GAME</em><span>${esc(story.hero.name)} <b class="up">+${Math.round(story.hero.wpa * 100)}%</b></span></div>` : ''}
+            </div>
+            <button class="po3-roll" data-po3="finish">CONTINUE ▶</button>
+          </div>`;
+      }
+
+      // ── log and the batting team's nine ──
+      const logRows = [];
+      for (let k = step - 1; k >= 0 && logRows.length < 80; k--) {
+        const x = ev[k];
+        const batGood = ['HR', '3B', '2B', '1B', 'BB', 'SB'].includes(x.outcome) || x.detail === 'E' || x.detail === 'SF';
+        const good = (x.half === 'TOP') === batGood;
+        logRows.push(`<div class="po3-lr ${good ? 'g' : 'b'} ${x.runsScored ? 'run' : ''}"><i>${x.half === 'TOP' ? '▲' : '▼'}${x.inning}</i><span>${x.big && x.big.n ? `<em>${x.big.n}</em>` : ''}${x.big && x.big.isBig ? '🔥 ' : ''}${esc(this._poPlayText(x))}</span><b>${x.userRuns}-${x.oppRuns}</b></div>`);
+      }
+      const logHTML = `<h4>GAME LOG</h4><div class="po3-log-in">${logRows.join('') || '<p>First pitch coming up.</p>'}</div>`;
+      const nine = (userBats ? game.userLineup : game.oppLineup) || [];
+      const onSet = new Set(bases.filter(Boolean).map(b => b.name));
+      const fanCard = (nm, i, pos) => `<div class="po3-h ${nm === curBat && !finished ? 'cur' : ''} ${onSet.has(nm) ? 'on' : ''}" style="--rot:${(i - 4) * 2.2}deg;--dy:${Math.abs(i - 4) * 3}px" data-po-card="${esc(nm)}"><div class="po3-h-ph" style="background-image:url(${face(nm)})"><span>${i < 9 ? i + 1 : 'PH'}</span>${pos ? `<em>${esc(pos)}</em>` : ''}</div><div class="po3-h-nm">${esc(String(nm).split(' ').slice(-1)[0])}</div></div>`;
+      const handHTML = `<div class="po3-hand-k">${userBats ? 'YOUR LINEUP' : esc(them.name) + ' LINEUP'}</div><div class="po3-fan">`
+        + nine.map((b, i) => fanCard(b.name, i, b.pos)).join('')
+        + (curBat && !finished && !nine.some(b => b.name === curBat) ? fanCard(curBat, 9, 'PH') : '') + '</div>';
+
+      // build the frame once (the felt keeps the 3D dice canvas)
+      let root = container.querySelector('.po3');
+      if (!root) {
+        container.innerHTML = `<div class="po3">
+            <div class="po3-top"><div data-r="banner"></div><div class="po3-top-btns"><button class="po3-mini" data-po3="box">📊 BOX SCORE</button><button class="po3-mini" data-po3="back">← BACK</button></div></div>
+            <div class="po3-board" data-r="board"></div>
+            <div class="po3-main">
+              <div class="po3-left"><div class="po3-dia"><div data-r="dia"></div><div class="po3-runners"></div><div class="po3-dia-tag" data-r="diatag"></div></div><div class="po3-log" data-r="log"></div></div>
+              <div class="po3-felt dice3d-felt">
+                <div class="po3-mound"><div class="po3-row"><div data-r="mplq"></div><div class="po3-card" data-r="mcard"></div></div></div>
+                <div class="po3-vs">VS</div>
+                <div class="po3-plate"><div class="po3-row"><div class="po3-card" data-r="pcard"></div><div data-r="pplq"></div></div></div>
+                <div class="po3-fx" data-r="banner2"></div>
+                <div class="po3-fx" data-r="sticker"></div>
+                <div class="po3-ovwrap" data-r="ov"></div>
+              </div>
+              <div class="po3-tray" data-r="tray"></div>
+            </div>
+            <div class="po3-handwrap" data-r="hand"></div>
+          </div>`;
+        root = container.querySelector('.po3');
+        root.addEventListener('click', evt => {
+          const s2 = this._activePlayoffSim;
+          if (!s2) return;
+          const b = evt.target.closest('[data-po3]');
+          if (b && !b.disabled) {
+            const a = b.dataset.po3;
+            if (a === 'start') { s2.started = true; this._renderPO3(); }
+            else if (a === 'roll') { s2.autoStopped = false; this._po3Roll(false); }
+            else if (a === 'clutch') { s2.autoStopped = false; this._po3Roll(true); }
+            else if (a === 'auto') { s2.auto = !s2.auto; s2.autoStopped = false; this._renderPO3(); if (s2.auto && !s2.rolling) this._po3Roll(false); }
+            else if (a === 'speed') { s2.fast = !s2.fast; this._renderPO3(); }
+            else if (a === 'end') { s2.auto = false; this.playoffSimRest(); }
+            else if (a === 'finish') this.finishPlayoffGame(s2.game.won, s2.game);
+            else if (a === 'box') { s2.auto = false; this._activePlayoffTab = 'boxscore'; this.renderPlayoffLiveGame(); }
+            else if (a === 'back') {
+              s2.auto = false;
+              const p2 = this.state && this.state.playoffs.pendingGame;
+              if (p2) { p2.step = s2.currentStep; this.save(); }
+              this.showScreen('screen-challenge-playoffs');
+              this.renderPlayoffs();
+            }
+            return;
+          }
+          const c = evt.target.closest('[data-po-card]');
+          if (c && window.BaseballDex && typeof window.BaseballDex.showDetail === 'function') {
+            const g2 = s2.game, card = g2.cards && (g2.cards[c.dataset.poCard] || g2.cards[cleanName({ name: c.dataset.poCard })]);
+            if (!card) return;
+            s2.auto = false;
+            window.BaseballDex.showDetail(dexCard(card));
+            ['btn-modal-shortlist-bottom', 'btn-modal-next-bottom', 'btn-modal-next-back', 'btn-modal-test-batter-bottom'].forEach(id => { const x = document.getElementById(id); if (x) x.style.display = 'none'; });
+          }
+        });
+      }
+      const set = (r, html) => { const el = root.querySelector(`[data-r="${r}"]`); if (el && el._h !== html) { el.innerHTML = html; el._h = html; } };
+      set('banner', this._seriesBannerHTML(game));
+      set('board', boardHTML);
+      set('dia', diaHTML);
+      set('diatag', diaTag);
+      set('log', logHTML);
+      set('mplq', moundPlaque);
+      set('pplq', platePlaque);
+      const setCard = (r, name) => { const el = root.querySelector(`[data-r="${r}"]`); if (el && el.dataset.n !== name) { el.dataset.n = name; el.dataset.poCard = name; el.innerHTML = name ? cardHTML(name) : ''; } };
+      setCard('mcard', curPit);
+      setCard('pcard', curBat);
+      set('banner2', banner);
+      set('sticker', sticker);
+      set('ov', overlay);
+      set('tray', trayHTML);
+      set('hand', handHTML);
+      root.classList.toggle('is-final', finished);
+      root.classList.toggle('is-big', !!(pending && pending.isBig && !pre));
+      root.classList.toggle('me-bat', userBats);
+
+      // runner tokens slide base to base (keyed by name)
+      const rl = root.querySelector('.po3-runners');
+      if (rl) {
+        const XY = [[84, 50], [50, 16], [16, 50]], HOME = [50, 84];
+        const want = {};
+        bases.forEach((b, i) => { if (b) want[b.name] = i; });
+        rl.querySelectorAll('.po3-run').forEach(tk => {
+          if (!(tk.dataset.n in want) && !tk.classList.contains('gone')) { tk.style.left = HOME[0] + '%'; tk.style.top = HOME[1] + '%'; tk.classList.add('gone'); setTimeout(() => tk.remove(), 700); }
+        });
+        Object.entries(want).forEach(([n, i]) => {
+          let tk = [...rl.querySelectorAll('.po3-run')].find(t => t.dataset.n === n && !t.classList.contains('gone'));
+          if (!tk) { tk = document.createElement('div'); tk.className = 'po3-run'; tk.dataset.n = n; tk.style.backgroundImage = `url(${face(n)})`; tk.style.left = HOME[0] + '%'; tk.style.top = HOME[1] + '%'; rl.appendChild(tk); void tk.offsetWidth; }
+          tk.style.left = XY[i][0] + '%'; tk.style.top = XY[i][1] + '%';
+        });
+      }
+      // warm the dice on this felt
+      const felt = root.querySelector('.po3-felt');
+      if (window.DiceTable && felt && pending) { try { window.DiceTable.active(felt); } catch (err) { /* 2D fallback */ } }
+      if (sim.sticker && !this._po3StickerT) {
+        this._po3StickerT = setTimeout(() => { this._po3StickerT = null; if (this._activePlayoffSim === sim && (this._activePlayoffTab || 'broadcast') === 'broadcast' && this.state.playoffs.pendingGame && this.state.playoffs.pendingGame.every) this._renderPO3(); }, 4100);
+      }
+    },
+
     renderPlayoffLiveGame() {
       const container = document.getElementById('challenge162-playoffs-container');
       if (!container || !this._activePlayoffSim) return;
       // The game itself is the October view; the old renderer keeps the box score, lineups and
       // play-by-play tabs.
-      if ((this._activePlayoffTab || 'broadcast') === 'broadcast') return this._renderOctoberGame();
+      if ((this._activePlayoffTab || 'broadcast') === 'broadcast') { const pgx = this.state && this.state.playoffs && this.state.playoffs.pendingGame; return (pgx && pgx.every) ? this._renderPO3() : this._renderOctoberGame(); }
       // Same music as a Quick Play battle while a playoff game is on screen.
       if (window.AudioManager && typeof window.AudioManager.setBGM === 'function') window.AudioManager.setBGM('match');
       const sim = this._activePlayoffSim;
@@ -8609,7 +8956,7 @@
               <div class="c162-oc-aura"></div>
               <div class="c162-oc-flip">
                 <div class="c162-oc-back"><span>⚾</span><em>BASEROGUE</em></div>
-                <div class="c162-oc-front card-deal-in" data-pack-view="${i}" title="See the full card">${cardHTML}</div>
+                <div class="c162-oc-front card-deal-in" data-pack-view="${i}" title="Click to flip the card">${cardHTML}</div>
               </div>
               <div class="c162-oc-burst"></div>
               ${rar === 'Legendary' || rar === 'Epic' ? `<div class="c162-oc-hype"><b>${rar === 'Legendary' ? 'LEGENDARY!' : 'EPIC!'}</b></div>` : ''}
@@ -8636,7 +8983,7 @@
                 🎲 ${_t('challenge162.pack_reroll', `REROLL PACK (${rerollsLeft}/${PACK_DRAFT_REROLLS})`, { left: rerollsLeft, total: PACK_DRAFT_REROLLS })}
               </button>
             </div>
-            <div class="c162-reveal-hint"><span class="c162-reveal-skip">Click anywhere to skip the reveal ▶</span><span class="c162-reveal-tip">Click a card to see it in full before you decide</span></div>
+            <div class="c162-reveal-hint"><span class="c162-reveal-skip">Click anywhere to skip the reveal ▶</span><span class="c162-reveal-tip">Click a card to flip it</span></div>
           </div>`;
         draft.dealt = true;
       } else if (sealed) {
@@ -8670,11 +9017,7 @@
               ${boxLeftHTML}
             </div>
             <div class="c162-sealed-hint">${packTier === 'any' ? 'A rainbow pack: any rarity can come out' : `Every card in this pack is ${packTier}`}</div>
-            <div style="margin-top:10px; text-align:center; position:relative; z-index:2;">
-              <button id="btn-c162-pack-reroll-sealed" class="btn ${rerollsLeft > 0 ? 'btn-warning' : 'btn-secondary'} c162-pack-reroll-btn" ${rerollsLeft <= 0 ? 'disabled' : ''} style="font-family:'Press Start 2P',monospace; font-size:8px; padding:7px 12px; border-radius:6px; cursor:${rerollsLeft > 0 ? 'pointer' : 'not-allowed'}; ${rerollsLeft > 0 ? 'background:linear-gradient(135deg, #f59e0b, #d97706); color:#fff; border:1px solid #fbbf24; box-shadow:0 0 10px rgba(245,158,11,0.35);' : 'opacity:0.4; color:#94a3b8; border:1px solid #475569;'}" title="${rerollsLeft > 0 ? `Reroll pack (${rerollsLeft} remaining)` : 'No rerolls remaining'}">
-                🎲 ${_t('challenge162.pack_reroll', `REROLL PACK (${rerollsLeft}/${PACK_DRAFT_REROLLS})`, { left: rerollsLeft, total: PACK_DRAFT_REROLLS })}
-              </button>
-            </div>
+            
           </div>
         `;
       } else if (draft.viewCard || draft.currentCard) {
@@ -9071,6 +9414,10 @@
             return;
           }
           draft.notice = null;
+          const offPos = (pl, slot) => pl && slot && slot !== 'DH' && SLOTS.includes(slot) && !canPlayerFillSlot(pl, slot);
+          const off = targetKind === 'batter' && offPos(srcPlayer, targetKey) ? [srcPlayer, targetKey]
+            : _dragSource.kind === 'batter' && offPos(dstPlayer, _dragSource.key) ? [dstPlayer, _dragSource.key] : null;
+          if (off) draft.notice = `⚠ ${cleanName(off[0])} does not play ${off[1]}: out of position he keeps half his glove (${offPosDef(off[0])}).`;
           this._setDraftSlotPlayer(ms, _dragSource.kind, _dragSource.key, dstPlayer || null);
           this._setDraftSlotPlayer(ms, targetKind, targetKey, srcPlayer || null);
           _dragSource = null;
@@ -9175,8 +9522,8 @@
       container.querySelectorAll('[data-pack-view]').forEach(btn => {
         btn.onclick = (e) => {
           e.stopPropagation();
-          const card = (draft.options || [])[parseInt(btn.dataset.packView, 10)];
-          if (card) { draft.revealSkipped = true; draft.viewCard = card; this.renderPacksDraft(); }
+          const el = btn.querySelector('.pc2');
+          if (el && window.CardArt) { draft.revealSkipped = true; window.CardArt.flip(el); }
         };
       });
 
@@ -9422,6 +9769,7 @@
       const isPitchersStage = draft.stage === 'pitchers';
       const currentSlots = draft.manualSlots || calculateChallengeRosterSlots([...draft.pulledBatters, ...draft.pulledPitchers], false);
       const missingPos = [];
+      let backupOnly = false;
       if (isPitchersStage) {
         if (currentSlots.sp.filter(x => !x).length > 0) missingPos.push('SP');
         if (currentSlots.rp.filter(x => !x).length > 0) missingPos.push('RP', 'CL', 'CP');
@@ -9438,7 +9786,7 @@
         if (!missingPos.length && !currentSlots.lineup.DH) missingPos.push('DH');
         // Backup catcher: once the nine are set, the packs keep offering a catcher until the
         // roster has two (the user said it was hard to find one and even harder to back him up).
-        if (!missingPos.length && draft.pulledBatters.filter(b => canPlayerFillSlot(b, 'C')).length < 2) missingPos.push('C');
+        if (!missingPos.length && draft.pulledBatters.filter(b => canPlayerFillSlot(b, 'C')).length < 2) { missingPos.push('C'); backupOnly = true; }
       }
       let activePool = isPitchersStage ? getPitcherPool() : getBatterPool();
       const packRarity = draft.box ? draft.box[(isPitchersStage ? 14 : 0) + draft.currentPack] : 'any';
@@ -9462,11 +9810,23 @@
       // one is drawn from everybody (PACK_FREE_CARDS). With all three tied to the holes a star
       // at a position already covered never showed up until the bench packs, so there was never
       // a "he is better but I already have someone there" choice.
+      // Only the backup catcher missing: one card looks for him and the other two are free
+      // (with both tied to it a pack could show three catchers).
+      const nFree = backupOnly ? PACK_OPTIONS - 1 : PACK_FREE_CARDS;
       const freeAt = new Set();
-      while (freeAt.size < Math.min(PACK_FREE_CARDS, PACK_OPTIONS)) freeAt.add(Math.floor(Math.random() * PACK_OPTIONS));
+      while (freeAt.size < Math.min(nFree, PACK_OPTIONS)) freeAt.add(Math.floor(Math.random() * PACK_OPTIONS));
       const options = [];
+      // The cards tied to the holes go to different holes while there are several open: a card
+      // that covers a hole takes it off the list for the next tied card.
+      let holesLeft = missingPos.slice();
       while (options.length < PACK_OPTIONS) {
-        const card = pickWeightedChallengeDraftCard(activePool, freeAt.has(options.length) ? [] : missingPos, seen, null);
+        const tied = !freeAt.has(options.length);
+        const card = pickWeightedChallengeDraftCard(activePool, tied ? (holesLeft.length ? holesLeft : missingPos) : [], seen, null);
+        if (card && tied && !isPitchersStage) {
+          const all = getAllPositionsForPlayer(card);
+          const rest = holesLeft.filter(h => !(h === 'DH' || all.has(h)));
+          if (rest.length) holesLeft = rest;
+        }
         if (!card || seen.has(keyOf(card))) break;
         seen.add(keyOf(card));
         options.push(card);
@@ -9720,18 +10080,26 @@
       });
       const SP = (p.pitchers.SP || []).filter(Boolean), RP = (p.pitchers.RP || []).filter(Boolean);
       const labels = bullpenLabels(RP);
-      const penAvg = RP.length ? RP.reduce((t, x) => t + ovr(x), 0) / RP.length : 50;
+      // Pitchers vs the pen they would take innings from: half OVR, half the pitching ratings
+      // without Stamina. OVR alone made every starter look far better than his bullpen
+      // (Stamina is 28% of a starter's OVR and near zero for relievers), so the top three were
+      // often all starters; the rates alone flip it (relievers' per-inning rates run high).
+      // Measured (20 pack teams x 2 seasons, Oct 2026): 3 starters +2.7 wins, 3 batters +2.1,
+      // the closer alone +0.4, so relievers carry a smaller weight.
+      const n = v => (Number.isFinite(Number(v)) ? Number(v) : 50);
+      const arm = x => 0.5 * ovr(x) + 0.5 * (28 * n(x.h9) + 12 * n(x.k9) + 12 * n(x.bb9) + 10 * n(x.hr9) + 10 * n(x.clt !== undefined ? x.clt : x.clutch)) / 72;
+      const penAvg = RP.length ? RP.reduce((t, x) => t + arm(x), 0) / RP.length : 50;
       SP.forEach((x, i) => {
-        const gap = Math.max(0, ovr(x) - penAvg);
+        const gap = Math.max(0, arm(x) - penAvg);
         out.push({ key: ironPitKey(x), who: x, slot: `SP${i + 1}`, score: 20 * gap,
-          reason: `~+20 innings · the bullpen that would throw them is ${Math.round(gap)} OVR worse` });
+          reason: `~+20 innings · the bullpen that would throw them pitches ${Math.round(gap)} points worse` });
       });
       RP.forEach((x, i) => {
         const others = RP.filter(y => y !== x);
-        const oAvg = others.length ? others.reduce((t, y) => t + ovr(y), 0) / others.length : 50;
-        const gap = Math.max(0, ovr(x) - oAvg);
-        out.push({ key: ironPitKey(x), who: x, slot: labels[i] || 'RP', score: 10 * gap,
-          reason: `~+16 innings, but tired arms in close games · the rest of the pen is ${Math.round(gap)} OVR worse` });
+        const oAvg = others.length ? others.reduce((t, y) => t + arm(y), 0) / others.length : 50;
+        const gap = Math.max(0, arm(x) - oAvg);
+        out.push({ key: ironPitKey(x), who: x, slot: labels[i] || 'RP', score: 4 * gap,
+          reason: `~+16 innings, but tired arms in close games · the rest of the pen pitches ${Math.round(gap)} points worse` });
       });
       return out.sort((a, b) => b.score - a.score);
     },
@@ -9832,8 +10200,8 @@
 
       // The diamond: each player stands where he plays (percent of the field box, which keeps
       // the field's 1500 x 1040 shape), the ace on the mound and the DH in the dugout.
-      const FIELD_SPOT = { CF: [50, 12.5], LF: [15, 22], RF: [85, 22], SS: [37, 31], '2B': [63, 31],
-        '3B': [22, 53], '1B': [78, 53], P: [50, 55], C: [50, 87.5], DH: [8, 87.5] };
+      const FIELD_SPOT = { CF: [50, 13.5], LF: [15, 22.5], RF: [85, 22.5], SS: [36, 32], '2B': [64, 32],
+        '3B': [21, 54], '1B': [79, 54], P: [50, 55.5], C: [50, 86.5], DH: [8, 86.5] };
       const posCell = (b, i) => {
         const [tool, val] = bestTool(b);
         const k = batterUnlockKey(b);
@@ -12258,17 +12626,136 @@
             <p>${penText[lockedPlan.pen || 'normal']}</p>
           </div>
         </div>`;
-      // Series presentation, before its first game.
-      const top3 = list => list.filter(Boolean).slice().sort((a, b) => (b.ovr || 0) - (a.ovr || 0)).slice(0, 3).map(p => `<span>${cleanName(p)} <b>${Math.floor(p.ovr || 0)}</b></span>`).join('');
       const uRec = L.teams[USER_TEAM_ID];
-      const introHTML = (!ser.games.length && !pending) ? `<div class="c162-po-intro r${round}">
-          <div class="c162-po-intro-k">${round === 2 ? '🏆 ' : ''}${SERIES_NAMES[round]} · BEST OF ${need * 2 - 1}</div>
-          <div class="c162-po-intro-teams">
-            <div><b>${uRec.name}</b><small>${uRec.w}-${uRec.l}${P.userSeed ? ` · ${uRec.league} #${P.userSeed} seed` : ''}</small><div class="c162-po-intro-stars">${top3([...uSide.lineup, ...this._playoffRotationCards()])}</div></div>
-            <i>VS</i>
-            <div><b>${ref.name}</b><small>${oppRec.w}-${oppRec.l}${this._playoffUserIsHost(round) ? '' : ' · home field'}</small><div class="c162-po-intro-stars">${top3([...oppSide.lineup, oppSide.sp])}</div></div>
+
+      // ── Hub 2.0 (Oct 2026): the road to the World Series drawn like the Quick Play map, then a
+      // tale-of-the-tape preview of the game with both starters face to face on the felt.
+      const TC = (window.CardArt && window.CardArt.TEAM_COLORS) || {};
+      const oc = TC[String(oppRec.code).toUpperCase()] || '#ef4444';
+      const eraKeyY = y => { y = parseInt(y, 10) || 2020; return y <= 1900 ? 'genesis' : y <= 1919 ? 'deadball' : y <= 1941 ? 'golden' : y <= 1960 ? 'integration' : y <= 1976 ? 'expansion' : y <= 1993 ? 'bighair' : y <= 2005 ? 'steroid' : y <= 2015 ? 'efficiency' : 'modern'; };
+      const face = p => (window.CardArt && p ? window.CardArt.portrait(p, eraKeyY(p.year || p.peak_year), true) : '');
+      const short = nm => String(nm || '').split(' ').slice(-1)[0];
+      const hist = P.history || [];
+      const bk = P.bracket;
+      const myLg = uRec.league;
+      const possible = i => {
+        if (i === 1 && bk && bk.rounds && bk.rounds[0]) {
+          const m = bk.rounds[0].find(x => x.league === myLg && x.a !== USER_TEAM_ID && x.b !== USER_TEAM_ID);
+          if (m) return m.winner ? `vs <b>${short(L.teams[m.winner].name)}</b>` : `${short(L.teams[m.a].name)} or ${short(L.teams[m.b].name)}`;
+        }
+        if (i === 2) return `the ${myLg === 'AL' ? 'NL' : 'AL'} champion`;
+        return 'to be decided';
+      };
+      const pzCards = {};
+      const reg = (k, p) => { pzCards[k] = p; return k; };
+      const ICONS = ['⚾', '🏟️', '🏆'];
+      const roadNodes = SERIES_NAMES.map((nm, i) => {
+        const h = hist.find(x => x.round === i);
+        const st = h ? (h.won ? 'won' : 'lost') : i === round ? 'live' : i < round ? 'won' : 'next';
+        const sub = h ? `${h.won ? 'Beat' : 'Lost to'} ${short(h.opp)} <b>${h.wins[0]}-${h.wins[1]}</b>`
+          : i === round ? `vs <b>${short(ref.name)}</b> · ${ser.wins[0]}-${ser.wins[1]}` : possible(i);
+        return `<div class="pz-node st-${st} r${i}"><div class="pz-dot"><span>${st === 'won' ? '✓' : ICONS[i]}</span>${st === 'live' ? '<i class="pz-here">YOU ARE HERE</i>' : ''}</div>
+          <b>${nm}</b><small>BEST OF ${SERIES_WINS[i] * 2 - 1}</small><em>${sub}</em></div>`;
+      }).join('<div class="pz-link"></div>');
+      const roadHTML = `<div class="pz-road">
+          <div class="pz-month"><small>OCT</small><b>${round === 2 ? 'FALL CLASSIC' : 'ROAD TO THE WORLD SERIES'}</b></div>
+          <div class="pz-path">${roadNodes}<div class="pz-link"></div>
+            <div class="pz-node st-next pz-trophy"><div class="pz-dot"><span>🏆</span></div><b>CHAMPIONS</b><small>THE RING</small><em>win ${SERIES_WINS.reduce((t, x) => t + x, 0) - hist.filter(h => h.won).reduce((t, h) => t + SERIES_WINS[h.round], 0) - ser.wins[0]} more games</em></div>
           </div>
-        </div>` : '';
+        </div>`;
+
+      // Season totals of a team, from the league ledger (falls back to your own sheets).
+      const totals = id => {
+        const T = L.teams[id], g = Math.max(1, (T.w || 0) + (T.l || 0));
+        const b = { ab: 0, h: 0, hr: 0, r: 0 }, q = { outs: 0, er: 0 };
+        const pre = id + ':';
+        Object.entries((L.stats && L.stats.bat) || {}).forEach(([k, x]) => { if (k.startsWith(pre)) { b.ab += x.ab || 0; b.h += x.h || 0; b.hr += x.hr || 0; b.r += x.r || 0; } });
+        Object.entries((L.stats && L.stats.pit) || {}).forEach(([k, x]) => { if (k.startsWith(pre)) { q.outs += x.outs || 0; q.er += x.er || 0; } });
+        if (id === USER_TEAM_ID && !b.ab) {
+          Object.values(S.batterStats || {}).forEach(x => { b.ab += x.ab || 0; b.h += x.h || 0; b.hr += x.hr || 0; b.r += x.r || 0; });
+          Object.values(S.pitcherStats || {}).forEach(x => { q.outs += x.outs || 0; q.er += x.er || 0; });
+        }
+        return { pct: (T.w || 0) / g, avg: b.ab ? b.h / b.ab : 0, hr: b.hr, rpg: b.r / g, era: q.outs ? q.er * 27 / q.outs : 0 };
+      };
+      const avgOvr = a => { a = (a || []).filter(Boolean); return a.length ? a.reduce((t, p) => t + (p.ovr || 0), 0) / a.length : 0; };
+      const oppStaff = getFranchiseStaff(oppRec.code, oppRec.decade);
+      const tm = totals(USER_TEAM_ID), to = totals(ref.id);
+      const tapeRows = [
+        ['LINEUP', avgOvr(uSide.lineup), avgOvr(oppSide.lineup), 1, v => v.toFixed(1)],
+        ['ROTATION', avgOvr(this._playoffRotationCards()), avgOvr(oppStaff.rotation.slice().sort((a, b) => (b.ovr || 0) - (a.ovr || 0)).slice(0, 4)), 1, v => v.toFixed(1)],
+        ['BULLPEN', avgOvr((R && R.pitchers && R.pitchers.RP) || []), avgOvr(oppStaff.bullpen), 1, v => v.toFixed(1)],
+        ['RUNS / GAME', tm.rpg, to.rpg, 1, v => v.toFixed(2)],
+        ['TEAM AVG', tm.avg, to.avg, 1, v => v.toFixed(3).replace(/^0/, '')],
+        ['HOME RUNS', tm.hr, to.hr, 1, v => String(v)],
+        ['TEAM ERA', tm.era, to.era, -1, v => v.toFixed(2)]
+      ];
+      const tapeHTML = tapeRows.map(([lab, a, b, dir, f]) => {
+        const better = dir > 0 ? (a > b ? 0 : a < b ? 1 : -1) : (a < b ? 0 : a > b ? 1 : -1);
+        const share = (a + b) > 0 ? (dir > 0 ? a / (a + b) : b / (a + b)) : 0.5;
+        return `<div class="pz-tr"><b class="${better === 0 ? 'up' : ''}">${f(a)}</b>
+          <div class="pz-bar"><i style="width:${(share * 100).toFixed(1)}%"></i><span>${lab}</span></div>
+          <b class="${better === 1 ? 'up' : ''}">${f(b)}</b></div>`;
+      }).join('');
+      const batLine = (id, p) => {
+        const x = id === USER_TEAM_ID ? (S.batterStats[batterUnlockKey(p)] || {}) : ((L.stats && L.stats.bat && L.stats.bat[this._leagueKey(id, batterUnlockKey(p))]) || {});
+        return x.ab ? `${avg3(x.h || 0, x.ab)} · ${x.hr || 0} HR · ${x.rbi || 0} RBI` : `${p.assignedSlot || p.pos || ''}`;
+      };
+      const watch = (id, list) => list.filter(Boolean).slice().sort((a, b) => (b.ovr || 0) - (a.ovr || 0)).slice(0, 3).map(p => `
+        <div class="pz-w" data-po-card-key="${reg(id + '|' + batterUnlockKey(p), p)}"><i style="background-image:url(${face(p)})"></i>
+          <div><b>${cleanName(p)}${this._formTag(id, p, false)}</b><span>${batLine(id, p)}</span></div><em>${Math.floor(p.ovr || 0)}</em></div>`).join('');
+      const pips = n => Array.from({ length: need }, (_, i) => `<i class="${i < n ? 'on' : ''}"></i>`).join('');
+      const elim = ser.wins[1] === need - 1, clinch = ser.wins[0] === need - 1;
+      const stakes = elim && clinch ? 'WINNER TAKES ALL' : elim ? 'ELIMINATION GAME' : clinch ? 'CLINCH GAME' : '';
+      const leadTxt = ser.wins[0] === ser.wins[1] ? `SERIES TIED ${ser.wins[0]}-${ser.wins[1]}` : ser.wins[0] > ser.wins[1] ? `YOU LEAD ${ser.wins[0]}-${ser.wins[1]}` : `YOU TRAIL ${ser.wins[0]}-${ser.wins[1]}`;
+      const cardOf = p => (window.createCardHTML ? window.createCardHTML(p) : cleanName(p));
+      const prevHTML = last && !ser.games.length ? `<div class="pz-prev">✔ ${last.name}: ${last.won ? 'won' : 'lost'} ${last.wins[0]}-${last.wins[1]} vs the ${last.opp}${last.mvp ? ` · Series MVP <b>${last.mvp.name}</b> (${last.mvp.line})` : ''}</div>` : '';
+      const heroHTML = `
+        ${roadHTML}
+        ${prevHTML}
+        <div class="pz-hero r${round}" style="--oc:${oc}">
+          <div class="pz-kicker">${round === 2 ? '🏆 ' : ''}${SERIES_NAMES[round]} · GAME ${gNo} · ${atHome ? '🏠 AT HOME' : '✈️ ON THE ROAD'}${pending ? ' · IN PROGRESS' : ''}</div>
+          ${stakes ? `<div class="pz-stakes">${stakes}</div>` : ''}
+          <div class="pz-teams">
+            <div class="pz-team me"><small>${P.userSeed ? `${myLg} #${P.userSeed} SEED` : myLg}</small><b>${uRec.name}</b><span>${uRec.w}-${uRec.l}</span><div class="pz-pips">${pips(ser.wins[0])}</div></div>
+            <div class="pz-score"><b>${ser.wins[0]}</b><i>—</i><b>${ser.wins[1]}</b><small>${leadTxt} · BEST OF ${need * 2 - 1}</small></div>
+            <div class="pz-team op"><small>${oppRec.league} · ${this._playoffUserIsHost(round) ? 'ROAD TEAM' : 'HOME FIELD'}</small><b>${ref.name}</b><span>${oppRec.w}-${oppRec.l}</span><div class="pz-pips">${pips(ser.wins[1])}</div></div>
+          </div>
+          <div class="c162-po-chips pz-chips">${gameChips}</div>
+        </div>
+
+        <div class="pz-main">
+          <div class="pz-felt">
+            <div class="pz-duel">
+              <div class="pz-arm me">
+                <div class="pz-arm-tag">YOUR STARTER</div>
+                <div class="pz-card" data-po-card-key="${reg('me|sp', chosenSp.p)}">${cardOf(chosenSp.p)}</div>
+                <div class="pz-plaque"><b>${cleanName(chosenSp.p)}</b>${this._formTag(USER_TEAM_ID, chosenSp.p, true)}<span>${eraOf(chosenSp.p)} ERA · <em class="${chosenSp.short ? 'short' : ''}">${chosenRestTag}</em></span>
+                  <div class="c162-po-sps-bar">${spPillsHTML}</div></div>
+              </div>
+              <div class="pz-center">
+                <div class="pz-vs">VS</div>
+                <button id="challenge162-play-playoff-match" class="btn pz-play">▶ ${pending ? 'RESUME THE GAME' : 'PLAY BALL'}</button>
+                ${pending ? '' : '<button id="challenge162-quick-playoff-match" class="btn pz-quick">⏩ QUICK SIM</button>'}
+                ${(P.boxScores || []).length ? '<button id="challenge162-playoff-view-boxscores-btn" class="btn pz-quick">📊 BOX SCORES</button>' : ''}
+                <div class="pz-hint">Roll every at-bat on the table, at the plate and on the mound.</div>
+              </div>
+              <div class="pz-arm op">
+                <div class="pz-arm-tag">THEIR STARTER</div>
+                <div class="pz-card" data-po-card-key="${reg('op|sp', oppSide.sp)}">${cardOf(oppSide.sp)}</div>
+                <div class="pz-plaque"><b>${cleanName(oppSide.sp)}</b>${this._formTag(ref.id, oppSide.sp, true)}<span>${oppHand === 'L' ? 'LEFTY' : oppHand === 'R' ? 'RIGHTY' : ''}${PLAYOFF_BOOST[round] ? ` · October form +${PLAYOFF_BOOST[round]}` : ''}</span>
+                  <button class="c162-po-roster" data-c162-team="${ref.id}">👀 ${short(ref.name).toUpperCase()} ROSTER</button></div>
+              </div>
+            </div>
+          </div>
+          <div class="pz-side">
+            <div class="pz-box"><div class="pz-box-h"><span>TALE OF THE TAPE</span><em><b class="me">YOU</b> · <b class="op">${short(ref.name).toUpperCase()}</b></em></div>${tapeHTML}</div>
+            <div class="pz-box pz-watch"><div class="pz-box-h"><span>PLAYERS TO WATCH</span></div>
+              <div class="pz-wcol"><small class="me">${short(uRec.name).toUpperCase()}</small>${watch(USER_TEAM_ID, uSide.lineup)}</div>
+              <div class="pz-wcol"><small class="op">${short(ref.name).toUpperCase()}</small>${watch(ref.id, oppSide.lineup)}</div>
+            </div>
+          </div>
+        </div>
+        ${planHTML}`;
 
       container.innerHTML = `
         <div class="c162-po">
@@ -12282,64 +12769,7 @@
               <button id="challenge162-playoff-back-season" class="btn btn-secondary" style="padding:8px 12px;font-size:9px;font-family:'Press Start 2P',monospace;">← REGULAR SEASON</button>
             </div>
           </div>
-          ${last && !ser.games.length ? `<div class="c162-po-prev">✔ ${last.name} won ${last.wins[0]}-${last.wins[1]} over the ${last.opp}${last.mvp ? ` · Series MVP: <b>${last.mvp.name}</b> (${last.mvp.line})` : ''}</div>` : ''}
-          ${introHTML || this._seriesBannerHTML(null)}
-          <div class="c162-po-chips">${gameChips}</div>
-
-          <!-- Hero Showdown Card Front and Center -->
-          <div class="c162-po-next">
-            <div class="c162-po-next-header">
-              <div class="c162-po-next-title">GAME ${gNo} · ${atHome ? '🏠 AT HOME' : '✈️ ON THE ROAD'}${pending ? ' · IN PROGRESS' : ''}</div>
-              <span class="c162-po-next-badge">${ser.wins[0] === ser.wins[1] ? `SERIES TIED ${ser.wins[0]}-${ser.wins[1]}` : (ser.wins[0] > ser.wins[1] ? `YOU LEAD ${ser.wins[0]}-${ser.wins[1]}` : `TRAIL ${ser.wins[1]}-${ser.wins[0]}`)}</span>
-            </div>
-            <div class="c162-po-matchup">
-              <!-- Left: Your Starter Spotlight -->
-              <div class="c162-po-side">
-                <small>YOUR STARTER</small>
-                <div class="c162-po-starter-spotlight">
-                  <div class="c162-po-sp-name">
-                    <b>${cleanName(chosenSp.p)}</b>${this._formTag(USER_TEAM_ID, chosenSp.p, true)}
-                  </div>
-                  <div class="c162-po-sp-stats">
-                    <span>OVR ${Math.floor(chosenSp.p.ovr || 0)}</span>
-                    <span>${eraOf(chosenSp.p)} ERA</span>
-                  </div>
-                  <div class="c162-po-sp-rest ${chosenSp.short ? 'short' : ''}">
-                    ${chosenRestTag}
-                  </div>
-                  <div style="font-size:7.5px;color:#94a3b8;font-family:'Press Start 2P',monospace;margin-top:10px;">
-                    SWITCH ROTATION ARM:
-                  </div>
-                  <div class="c162-po-sps-bar">
-                    ${spPillsHTML}
-                  </div>
-                </div>
-              </div>
-
-              <!-- Center: The Showdown Action Hub -->
-              <div class="c162-po-vs-col">
-                <div class="c162-po-vs-emblem">VS</div>
-                <div class="c162-po-actions">
-                  <button id="challenge162-play-playoff-match" class="btn c162-po-play">▶ ${pending ? 'RESUME THE GAME' : 'PLAY THE GAME'}</button>
-                  ${pending ? '' : '<button id="challenge162-quick-playoff-match" class="btn c162-po-quick">⏩ QUICK SIM</button>'}
-                  ${(P.boxScores || []).length ? '<button id="challenge162-playoff-view-boxscores-btn" class="btn btn-secondary c162-po-box">📊 BOX SCORES</button>' : ''}
-                </div>
-                <div class="c162-po-hint">You roll the dice in the big at-bats, at the plate and on the mound. Quick sim rolls them for you.</div>
-              </div>
-
-              <!-- Right: Opponent Spotlight -->
-              <div class="c162-po-side opp">
-                <small>OPPONENT STARTER</small>
-                <div class="c162-po-oppsp">
-                  <b>${cleanName(oppSide.sp)}${this._formTag(ref.id, oppSide.sp, true)}</b>
-                  <span><i>OVR ${Math.floor(oppSide.sp.ovr || 0)}</i> · H/9 ${Math.round(oppSide.sp.h9)} · K/9 ${Math.round(oppSide.sp.k9)}</span>
-                  <div class="c162-po-opprec">${oppRec.w}-${oppRec.l} in regular season${PLAYOFF_BOOST[round] ? ` · <b>October form: +${PLAYOFF_BOOST[round]}</b>` : ''}</div>
-                  <button class="c162-po-roster" data-c162-team="${ref.id}">👀 SEE ${ref.name.toUpperCase()} ROSTER</button>
-                </div>
-              </div>
-            </div>
-            ${planHTML}
-          </div>
+          ${heroHTML}
 
           <!-- Organized Sub-Deck Tabs -->
           <div class="c162-po-subtabs">
@@ -12380,6 +12810,16 @@
       });
       const btnViewBS = document.getElementById('challenge162-playoff-view-boxscores-btn');
       if (btnViewBS) btnViewBS.onclick = () => this.showPlayoffBoxScoreModal((P.boxScores || []).length - 1);
+      container.querySelectorAll('[data-po-card-key]').forEach(el => {
+        el.style.cursor = 'pointer';
+        el.onclick = (e) => {
+          if (e.target.closest('.pc2-flip, button')) return;
+          const p = pzCards[el.dataset.poCardKey];
+          if (!p || !window.BaseballDex || !window.BaseballDex.showDetail) return;
+          window.BaseballDex.showDetail(dexCard(p));
+          ['btn-modal-shortlist-bottom', 'btn-modal-next-bottom', 'btn-modal-next-back', 'btn-modal-test-batter-bottom'].forEach(id => { const x = document.getElementById(id); if (x) x.style.display = 'none'; });
+        };
+      });
       const btnOverview = document.getElementById('challenge162-playoff-overview-btn');
       if (btnOverview) btnOverview.onclick = () => this._showOctoberTransitionModal(true);
       const backBtn = document.getElementById('challenge162-playoff-back-season');
