@@ -9,7 +9,7 @@
   const D = {
     genesis: [['studio', 1886, 1890, 'Studio Series'], ['litho', 1887, 1890, 'Lithograph Series'], ['champ', 1888, 1890, 'Champions Series'], ['mayo', 1891, 1900, 'Cut Plug Series']],
     deadball: [['gold205', 1909, 1911, 'Gold Series'], ['turkey', 1911, 1913, 'Cabinet Series'], ['cj14', 1914, 1915, 'Candy Series'], ['oval16', 1916, 1919, 'News Series']],
-    golden: [['strip', 1920, 1932, 'Strip Series'], ['goudey', 1933, 1936, 'Painted Series'], ['stars', 1934, 1936, 'Diamond Stars'], ['playball', 1939, 1941, 'Play Ball Series']],
+    golden: [['strip', 1920, 1932, 'Strip Series'], ['goudey', 1933, 1936, 'Painted Series'], ['stars', 1934, 1936, 'Diamond Stars'], ['pb41', 1937, 1941, 'Play Ball Series']],
     integration: [['bw48', 1946, 1948, 'Black & White'], ['flat49', 1949, 1951, 'Poster Series'], ['panel52', 1952, 1955, 'Painted Series'], ['ring59', 1956, 1960, 'Circle Series']],
     expansion: [['classic', 1961, 1965, 'Classic Series'], ['burlap', 1966, 1969, 'Burlap Series'], ['black', 1970, 1972, 'Black Series'], ['psych', 1972, 1974, 'Groovy Series']],
     bighair: [['pennant', 1977, 1983, 'Flag Series'], ['streak', 1984, 1987, 'Streak Series'], ['stripe', 1986, 1990, 'Stripe Series'], ['premium', 1989, 1993, 'Premium Series']],

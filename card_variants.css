@@ -842,3 +842,32 @@
 .player-card.pc2.pc2.pc2.pc2.pc2.pc2-e-integration.pc2-v-ring59 .pgv-sig { bottom: 6px; }
 .player-card.pc2.pc2.pc2.pc2.pc2.pc2-e-integration.pc2-v-ring59 .pgv-59 { margin-top: 3px; }
 .player-card.pc2.pc2.pc2.pc2.pc2.pc2.pc2-e-steroid.pc2-v-metal .pc2-series { top: 25px; right: auto; left: 50%; translate: -50% 0; }
+
+/* golden: Art Deco night-game ticket. Navy stock, gold frame, sunburst in the team color. */
+.player-card.pc2.pc2.pc2.pc2.pc2-e-golden.pc2-v-deco .pc2-front { background: linear-gradient(180deg, transparent 58%, #101a3a 60%), repeating-conic-gradient(from 0deg at 50% 38%, color-mix(in srgb, var(--tc, #c00) 62%, #101a3a) 0 9deg, #101a3a 9deg 18deg); color: #f4e3ad; border: none; box-shadow: inset 0 0 0 2px #d9b24c, inset 0 0 0 4px #101a3a, inset 0 0 0 5px #d9b24c; }
+.player-card.pc2.pc2.pc2.pc2.pc2-e-golden.pc2-v-deco .pc2-face { padding: 8px; }
+.player-card.pc2.pc2.pc2.pc2.pc2-e-golden.pc2-v-deco .pc2-pos { background: #d9b24c; color: #101a3a; border: none; }
+.player-card.pc2.pc2.pc2.pc2.pc2-e-golden.pc2-v-deco .pc2-ovr, .player-card.pc2.pc2.pc2.pc2.pc2-e-golden.pc2-v-deco .pc2-year { color: #f4e3ad; text-shadow: 0 1px 0 #101a3a; }
+.player-card.pc2.pc2.pc2.pc2.pc2-e-golden.pc2-v-deco .pc2-ph { padding: 0; border-radius: 0 !important; box-shadow: 0 0 0 2px #d9b24c, 0 0 0 3px #101a3a; }
+.player-card.pc2.pc2.pc2.pc2.pc2-e-golden.pc2-v-deco .pc2-ph img { border-radius: 0 !important; }
+.player-card.pc2.pc2.pc2.pc2.pc2-e-golden.pc2-v-deco .pc2-name { background: linear-gradient(180deg, #f0d479, #c4962f); color: #101a3a; border: none; transform: none; margin-left: 0; margin-right: 0; text-align: center; box-shadow: 0 1px 0 #101a3a; }
+.player-card.pc2.pc2.pc2.pc2.pc2-e-golden.pc2-v-deco .pc2-rt, .player-card.pc2.pc2.pc2.pc2.pc2-e-golden.pc2-v-deco .pc2-ft { color: #f4e3ad; }
+
+/* golden: 1941 Play Ball feel. Thick white border, bright tinted picture, name in a team-color plate. */
+.player-card.pc2.pc2.pc2.pc2.pc2-e-golden.pc2-v-pb41 .pc2-front { background: #f6f1e4; color: #24211c; border: none; box-shadow: inset 0 0 0 1px #cfc6b0; }
+.player-card.pc2.pc2.pc2.pc2.pc2-e-golden.pc2-v-pb41 .pc2-face { padding: 7px; }
+.player-card.pc2.pc2.pc2.pc2.pc2-e-golden.pc2-v-pb41 .pc2-pos { background: var(--tc, #c00); color: #fff; border: none; }
+.player-card.pc2.pc2.pc2.pc2.pc2-e-golden.pc2-v-pb41 .pc2-ovr, .player-card.pc2.pc2.pc2.pc2.pc2-e-golden.pc2-v-pb41 .pc2-year { color: #24211c; }
+.player-card.pc2.pc2.pc2.pc2.pc2-e-golden.pc2-v-pb41 .pc2-ph { padding: 0; border-radius: 0 !important; box-shadow: none; }
+.player-card.pc2.pc2.pc2.pc2.pc2-e-golden.pc2-v-pb41 .pc2-ph img { border-radius: 0 !important; filter: saturate(1.35) contrast(1.05); }
+.player-card.pc2.pc2.pc2.pc2.pc2-e-golden.pc2-v-pb41 .pc2-name { background: var(--tc, #c00); color: #fff; border: none; transform: none; margin: -2px 0 0; text-align: center; font-family: 'Oswald', sans-serif; letter-spacing: .8px; }
+
+/* premium: like the '89 Upper Deck, the photo starts at the top edge of the white border. */
+.player-card.pc2.pc2.pc2.pc2.pc2-e-bighair.pc2-v-premium .pc2-top { height: 0; min-height: 0; margin: 0; padding: 0; }
+.player-card.pc2.pc2.pc2.pc2.pc2-e-bighair.pc2-v-premium .pc2-ph img { aspect-ratio: 4 / 4.1; }
+
+/* pb41, closer to the original: dark keyline round the picture and a cream ribbon with folded, notched ends. */
+.player-card.pc2.pc2.pc2.pc2.pc2-e-golden.pc2-v-pb41 .pc2-ph { box-shadow: 0 0 0 1px #2a2620; }
+.player-card.pc2.pc2.pc2.pc2.pc2-e-golden.pc2-v-pb41 .pc2-name { position: relative; z-index: 3; margin: -9px -3px 3px; padding: 2px 11px; color: #2a2620; font-family: 'Playfair Display', serif; font-weight: 700; letter-spacing: .4px;
+  background: linear-gradient(90deg, #b9a97f 0 9px, #8d7d58 9px 10px, #f3e8c6 10px calc(100% - 10px), #8d7d58 calc(100% - 10px) calc(100% - 9px), #b9a97f calc(100% - 9px));
+  clip-path: polygon(0 0, 100% 0, calc(100% - 5px) 50%, 100% 100%, 0 100%, 5px 50%); }
