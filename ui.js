@@ -12169,8 +12169,8 @@ function initGameModeSelector() {
         const rect = card.getBoundingClientRect();
         const px = (e.clientX - rect.left) / rect.width;
         const py = (e.clientY - rect.top) / rect.height;
-        const tiltX = (0.5 - py) * 14; // look-toward-cursor tilt, kept subtle
-        const tiltY = (px - 0.5) * 14;
+        const tiltX = (0.5 - py) * 9; // look-toward-cursor tilt, kept subtle (less 3D = sharper text)
+        const tiltY = (px - 0.5) * 9;
         card.style.setProperty('--tilt-x', `${tiltX.toFixed(2)}deg`);
         card.style.setProperty('--tilt-y', `${tiltY.toFixed(2)}deg`);
         card.classList.add('card-tilt-active');

@@ -1,0 +1,108 @@
+/* Big Hair card design mockup (?proto=bighair). Variants: pc2-v-pennant, pc2-v-streak, pc2-v-stripe, pc2-v-premium. */
+#pgen { position: fixed; inset: 0; z-index: 99990; overflow: auto; padding: 18px 22px 40px; background: rgba(6, 10, 8, .96); font-family: 'Oswald', sans-serif; color: #e2fbe9; }
+.pgen-head { display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap; margin-bottom: 14px; }
+.pgen-head b { font: 400 14px 'Press Start 2P', monospace; color: #fde047; }
+.pgen-head span { font-size: 13px; color: #94a3b8; }
+.pgen-x { margin-left: auto; padding: 6px 12px; background: #111; color: #e2fbe9; border: 1px solid #34d399; cursor: pointer; }
+.pgen-row { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 18px; align-items: center; padding: 14px 0; border-top: 1px solid rgba(255, 255, 255, .08); }
+.pgen-lab b { display: block; font: 400 10px 'Press Start 2P', monospace; color: #fde047; line-height: 1.5; }
+.pgen-lab em { display: block; font-style: normal; color: #34d399; margin: 4px 0; }
+.pgen-lab p { margin: 0; font-size: 13px; color: #cbd5e1; line-height: 1.35; }
+.pgen-cards { display: flex; gap: 18px; flex-wrap: wrap; }
+.pgen-cards .pc2 { zoom: 1.35; }
+
+/* common resets: the woodgrain base paints --bg on the front; every variant replaces it */
+.player-card.pc2.pc2.pc2.pc2[class*="pc2-v-"] .pc2-front { box-shadow: none; }
+.player-card.pc2.pc2.pc2.pc2[class*="pc2-v-"] .pc2-name { box-shadow: none; }
+.player-card.pc2.pc2.pc2.pc2[class*="pc2-v-"] .pc2-r b { text-shadow: 0 0 1px #111, 0 0 1px #111; }
+
+/* ── PENNANT (late-70s flagship) ── */
+.player-card.pc2.pc2.pc2.pc2.pc2-v-pennant .pc2-front { background: #f7f4ec; color: #222; border: 1.5px solid #cfc8b6; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-pennant .pc2-face { padding: 7px 7px 6px; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-pennant .pc2-ovr { color: #222; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-pennant .pc2-pos { background: #222; color: #fff; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-pennant .pc2-ph { background: #fff; padding: 0; box-shadow: 0 0 0 1px #bdb5a0; }
+/* Pennant (Topps 1977-81): the felt pennant with the team code and the ball cap with the
+   position hang off the photo; the name, the pennant and the cap all use the 1977 lettering:
+   fat italic letters with a contrasting outline and a stacked 3D shadow. */
+.player-card.pc2.pc2.pc2.pc2.pc2-v-pennant .pc2-top .pc2-pos { visibility: hidden; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-pennant .pc2-ph { overflow: visible; box-shadow: 0 0 0 1px #1b1b1b, 0 0 0 3px var(--tc, #c00); }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-pennant .pc2-ph img { aspect-ratio: 4 / 2.9; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-pennant .pgv-pennant { position: absolute; left: -9px; bottom: -10px; z-index: 4; width: 58%; height: 22px; display: flex; align-items: center;
+  padding-left: 12px; font: italic 400 12px 'Alfa Slab One', serif; letter-spacing: 1px; color: #fff;
+  -webkit-text-stroke: 1px #1b1b1b; paint-order: stroke fill; text-shadow: 1px 1px 0 #1b1b1b, 2px 2px 0 #1b1b1b;
+  background: linear-gradient(90deg, #f5c518 0 8px, #fff 8px 10px, var(--tc, #c00) 10px); clip-path: polygon(0 0, 100% 50%, 0 100%);
+  filter: drop-shadow(1px 0 0 #fff) drop-shadow(-1px 0 0 #fff) drop-shadow(0 1px 0 #fff) drop-shadow(0 -1px 0 #fff) drop-shadow(2px 2px 0 #1b1b1b); }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-pennant .pgv-cap { position: absolute; right: -7px; bottom: -10px; z-index: 4; width: 30px; height: 21px; display: grid; place-items: center; padding-top: 2px;
+  font: italic 400 9px 'Alfa Slab One', serif; color: #fff; -webkit-text-stroke: .8px #1b1b1b; paint-order: stroke fill; text-shadow: 1px 1px 0 #1b1b1b;
+  background: var(--tc, #c00); border-radius: 15px 15px 3px 3px !important; box-shadow: 0 0 0 1.5px #f5c518, 0 0 0 3px #1b1b1b, 3px 3px 0 1px #1b1b1b; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-pennant .pc2-series { bottom: auto; top: 4px; right: 22px; left: auto; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-pennant .pc2-name { margin-top: 13px !important; background: none; border: none; padding-left: 2px; text-align: left; text-transform: uppercase;
+  font: italic 400 12px 'Alfa Slab One', serif; letter-spacing: .5px; color: var(--tc, #c00); -webkit-text-stroke: 1px #f5c518; paint-order: stroke fill;
+  text-shadow: 1px 1px 0 #1b1b1b, 2px 2px 0 #1b1b1b; overflow: visible; }
+/* ── BLACK STREAKS (Donruss '85) ── */
+.player-card.pc2.pc2.pc2.pc2.pc2-v-streak .pc2-front { color: #fff; border: none;
+  background: repeating-linear-gradient(115deg, transparent 0 9px, var(--tc, #c00) 9px 11px, transparent 11px 17px, color-mix(in srgb, var(--tc, #c00) 55%, transparent) 17px 18px, transparent 18px 34px), #0b0b0b; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-streak .pc2-face { padding: 7px 7px 6px; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-streak .pc2-ovr { color: #fff; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-streak .pc2-pos { background: var(--tc, #c00); color: #fff; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-streak .pc2-year { color: #ddd; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-streak .pc2-ph { background: #fff; padding: 2px; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-streak .pc2-name { background: #fff; color: #111; font: 700 10px 'Oswald', sans-serif; letter-spacing: 1px; clip-path: none; text-align: center; padding-left: 3px;
+  border-bottom: 3px solid var(--tc, #c00); }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-streak .pc2-chip { background: #111; color: #eee; border: 1px solid #555; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-streak .pc2-r { background: rgba(0,0,0,.75); color: #eee; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-streak .pc2-ft, .player-card.pc2.pc2.pc2.pc2.pc2-v-streak .pc2-ft * { color: #ddd; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-streak .pc2-series { background: #111; color: #fff; box-shadow: 0 0 0 1px var(--tc, #c00); }
+
+/* ── DIAGONAL STRIPES (Fleer 1988, doubled down): white stock, red-white-blue pinstripes cutting
+   the top-left and bottom-right corners, the name in black italic up top with the position under
+   it, a round team badge top-right, the photo almost borderless, a slanted brand tag on the photo. ── */
+.player-card.pc2.pc2.pc2.pc2.pc2-v-stripe .pc2-front { color: #111; border: 1px solid #ddd;
+  background:
+    linear-gradient(135deg, transparent 0 3%, #d4202a 3% 4.6%, transparent 4.6% 5.6%, #1f4fa3 5.6% 7.4%, transparent 7.4% 8.4%, #d4202a 8.4% 9.4%, transparent 9.4%),
+    linear-gradient(315deg, transparent 0 3%, #d4202a 3% 4.6%, transparent 4.6% 5.6%, #1f4fa3 5.6% 7.4%, transparent 7.4% 8.4%, #d4202a 8.4% 9.4%, transparent 9.4%), #fdfdfd; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-stripe .pc2-face { padding: 6px 9px 6px; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-stripe .pc2-name { order: -2; background: none; color: #111; text-transform: none; text-align: left; padding: 0 30px 0 16px; margin: 1px 0 0;
+  font: italic 700 12px 'Oswald', sans-serif; letter-spacing: .2px; clip-path: none; transform: none; line-height: 1.1; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-stripe .pc2-top { order: -1; height: 11px; padding-left: 16px; justify-content: flex-start; gap: 6px; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-stripe .pc2-pos { background: none; color: #444; padding: 0; font: 500 8px 'Oswald', sans-serif; letter-spacing: 1px; text-transform: uppercase; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-stripe .pc2-year { color: #888; font-size: 8px; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-stripe .pc2-ovr { position: absolute; top: 5px; right: 6px; z-index: 3; width: 26px; height: 26px; border-radius: 50% !important; display: grid; place-items: center;
+  font-size: 12px; color: #fff; background: var(--tc, #1f4fa3); box-shadow: 0 0 0 2px #fff, 0 0 0 3px #bbb; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-stripe .pc2-ph { background: none; padding: 0; margin-top: 2px; box-shadow: 0 0 0 1px #888; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-stripe .pc2-ph img { aspect-ratio: 4 / 3.5; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-stripe .pgv-brand { position: absolute; right: -9px; bottom: 5px; z-index: 3; padding: 1px 12px 1px 8px; font: italic 700 7.5px 'Oswald', sans-serif; letter-spacing: 1px;
+  color: #fff; background: #1f4fa3; border-top: 2px solid #d4202a; transform: skewX(-15deg); }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-stripe .pc2-chip { background: #fff; color: #333; border: 1px solid #bbb; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-stripe .pc2-r { background: #f4f4f4; color: #111; box-shadow: 0 0 0 1px #e4e4e4; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-stripe .pc2-ft, .player-card.pc2.pc2.pc2.pc2.pc2-v-stripe .pc2-ft * { color: #333; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-stripe .pc2-ft { padding-right: 16px; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-stripe .pc2-series { left: 4px; right: auto; background: rgba(17,17,17,.75); color: #fff; }
+
+/* ── PREMIUM HOLOGRAM (Upper Deck 1989): white stock, a bold team-color base path down the right
+   side ending in a home plate that holds the OVR, the position rotated inside it, a hologram in
+   the top corner, name in team color under the photo. ── */
+.player-card.pc2.pc2.pc2.pc2.pc2-v-premium .pc2-front { color: #111; border: none; background: #fdfdfb; box-shadow: inset 0 0 0 1px #e2e2dc; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-premium .pc2-face { padding: 7px 26px 6px 7px; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-premium .pc2-front::before { content: ''; position: absolute; top: 0; right: 0; bottom: 0; width: 20px;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--tc, #c00) 70%, #000), var(--tc, #c00) 40%, color-mix(in srgb, var(--tc, #c00) 80%, #fff)); }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-premium .pc2-top { position: static; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-premium .pc2-ovr { position: absolute; right: 0; bottom: 34px; width: 20px; height: 22px; display: grid; place-items: center; z-index: 3;
+  font-size: 11px; color: #111; background: #fff; clip-path: polygon(0 0, 100% 0, 100% 60%, 50% 100%, 0 60%); }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-premium .pc2-pos { position: absolute; right: 2px; top: 46px; z-index: 3; background: none; color: #fff; font: 700 10px 'Oswald', sans-serif; letter-spacing: 2px;
+  writing-mode: vertical-rl; transform: rotate(180deg); padding: 0; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-premium .pc2-year { position: absolute; right: 3px; top: 8px; z-index: 3; color: #fff; font-size: 8px; writing-mode: vertical-rl; transform: rotate(180deg); }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-premium .pc2-ph { background: none; padding: 0; margin-top: 0; box-shadow: 0 0 0 1px #c9c9c2; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-premium .pc2-ph img { aspect-ratio: 4 / 3.6; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-premium .pgv-holo { position: absolute; right: 4px; bottom: 4px; z-index: 3; width: 20px; height: 14px; border-radius: 2px !important;
+  background: linear-gradient(115deg, #ff7ad9, #7ae0ff 30%, #fff27a 55%, #9dff9a 75%, #c79bff); box-shadow: 0 0 0 1px #fff, 0 1px 4px rgba(0,0,0,.4); }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-premium .pc2-name { background: none; color: color-mix(in srgb, var(--tc, #c00) 80%, #000); font: 700 11px 'Oswald', sans-serif; letter-spacing: 1px;
+  clip-path: none; text-align: left; padding-left: 0; margin-top: 3px; text-transform: none; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-premium .pc2-chips { justify-content: flex-start; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-premium .pc2-chip { background: none; color: #555; border: 1px solid #d4d4cf; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-premium .pc2-rt { grid-template-columns: repeat(3, 1fr); }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-premium .pc2-r { background: #f3f3ef; color: #222; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-premium .pc2-ft, .player-card.pc2.pc2.pc2.pc2.pc2-v-premium .pc2-ft * { color: #555; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-premium .pc2-series { left: 4px; right: auto; background: rgba(17,17,17,.78); color: #fff; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-pennant .pc2-face { padding-top: 5px; gap: 2px; }

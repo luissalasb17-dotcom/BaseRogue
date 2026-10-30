@@ -1,0 +1,111 @@
+/* Expansion card design mockup (?proto=expansion). Variants: pc2-v-inset, pc2-v-burlap, pc2-v-black, pc2-v-psych. */
+#pgen { position: fixed; inset: 0; z-index: 99990; overflow: auto; padding: 18px 22px 40px; background: rgba(6, 10, 8, .96); font-family: 'Oswald', sans-serif; color: #e2fbe9; }
+.pgen-head { display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap; margin-bottom: 14px; }
+.pgen-head b { font: 400 14px 'Press Start 2P', monospace; color: #fde047; }
+.pgen-head span { font-size: 13px; color: #94a3b8; }
+.pgen-x { margin-left: auto; padding: 6px 12px; background: #111; color: #e2fbe9; border: 1px solid #34d399; cursor: pointer; }
+.pgen-row { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 18px; align-items: center; padding: 14px 0; border-top: 1px solid rgba(255, 255, 255, .08); }
+.pgen-lab b { display: block; font: 400 10px 'Press Start 2P', monospace; color: #fde047; line-height: 1.5; }
+.pgen-lab em { display: block; font-style: normal; color: #34d399; margin: 4px 0; }
+.pgen-lab p { margin: 0; font-size: 13px; color: #cbd5e1; line-height: 1.35; }
+.pgen-cards { display: flex; gap: 18px; flex-wrap: wrap; }
+.pgen-cards .pc2 { zoom: 1.35; }
+
+/* common: the two-tone base paints the front and a white pill name; every variant resets it.
+   Simplified after the user's note ("we are overcomplicating it"): each design keeps the card's own
+   layout and changes only the stock, the frame and the name plate, with nothing stacked on the photo. */
+.player-card.pc2.pc2.pc2.pc2[class*="pc2-v-"] .pc2-front { padding: 0; }
+.player-card.pc2.pc2.pc2.pc2[class*="pc2-v-"] .pc2-name { margin: 3px 0 0; border-radius: 0 !important; }
+.player-card.pc2.pc2.pc2.pc2[class*="pc2-v-"] .pc2-r b { text-shadow: 0 0 1px #111, 0 0 1px #111; }
+.pgv-team, .pgv-code { font-style: normal; white-space: nowrap; pointer-events: none; }
+.pgv-team { position: absolute; z-index: 3; }
+
+/* ── CLASSIC (Topps 1961-62, rebuilt from zero): plain white stock, the photo in a thin black frame,
+   and one solid plate under it: the name in white on the team color with the team code on a yellow
+   tab at its right end. ── */
+.player-card.pc2.pc2.pc2.pc2.pc2-v-classic .pc2-front { background: #fbfaf5; color: #1c1c1c; border: none; box-shadow: inset 0 0 0 1px #d6d2c4; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-classic .pc2-face { padding: 6px; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-classic .pc2-pos { background: #1c1c1c; color: #fff; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-classic .pc2-ovr { color: #1c1c1c; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-classic .pc2-year { color: #555; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-classic .pc2-ph { padding: 1px; background: #1c1c1c; border-radius: 0 !important; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-classic .pc2-ph img { border-radius: 0 !important; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-classic .pc2-name { display: flex; justify-content: space-between; align-items: center; padding: 0 0 0 6px; background: var(--tc, #c00); color: #fff;
+  text-align: left; font: 700 10px 'Oswald', sans-serif; letter-spacing: 1px; overflow: hidden; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-classic .pgv-code { flex: 0 0 auto; padding: 2px 6px; background: #f2c230; color: #1c1c1c; font: 700 9px 'Oswald', sans-serif; letter-spacing: 1px; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-classic .pc2-chip { background: #fff; color: #333; border: 1px solid #bbb; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-classic .pc2-r { background: #efece2; color: #1c1c1c; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-classic .pc2-ft, .player-card.pc2.pc2.pc2.pc2.pc2-v-classic .pc2-ft * { color: #333; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-classic .pc2-series { background: rgba(28,28,28,.75); color: #fff; }
+
+/* ── BURLAP (Topps 1968), simplified: woven burlap stock, the photo with rounded corners in a thin
+   cream frame, the name in the team color on a cream plate with the team code at its end. ── */
+.player-card.pc2.pc2.pc2.pc2.pc2-v-burlap .pc2-front { color: #2c2114; border: none;
+  background: repeating-linear-gradient(0deg, rgba(90,62,30,.28) 0 1px, transparent 1px 3px), repeating-linear-gradient(90deg, rgba(90,62,30,.28) 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(45deg, rgba(255,240,210,.12) 0 2px, transparent 2px 5px), #c9ad7f;
+  box-shadow: inset 0 0 0 1px #8a6d42, inset 0 0 16px rgba(80,55,25,.35); }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-burlap .pc2-face { padding: 6px; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-burlap .pc2-pos { background: var(--tc, #c00); color: #fff; border-radius: 8px !important; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-burlap .pc2-ovr { color: #2c2114; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-burlap .pc2-year { color: #4a3a22; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-burlap .pc2-ph { padding: 2px; background: #fbf6ea; border-radius: 8px !important; box-shadow: 0 1px 2px rgba(0,0,0,.35); }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-burlap .pc2-ph img { border-radius: 6px !important; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-burlap .pc2-name { display: flex; justify-content: space-between; align-items: center; padding: 1px 6px; background: #fbf6ea; color: var(--tc, #c00);
+  font: italic 400 11px 'Alfa Slab One', serif; letter-spacing: .5px; text-align: left; border-radius: 8px !important; box-shadow: 0 1px 2px rgba(0,0,0,.25); overflow: hidden; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-burlap .pgv-code { font: 700 8px 'Oswald', sans-serif; font-style: normal; letter-spacing: 1px; color: #4a3a22; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-burlap .pc2-chip { background: rgba(251,246,234,.7); color: #4a3a22; border: 1px solid #8a6d42; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-burlap .pc2-r { background: rgba(251,246,234,.85); color: #2c2114; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-burlap .pc2-ft, .player-card.pc2.pc2.pc2.pc2.pc2-v-burlap .pc2-ft * { color: #2c2114; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-burlap .pc2-series { background: rgba(44,33,20,.78); color: #fbf6ea; }
+
+/* ── BLACK BORDER (Topps 1971), simplified: black stock with a white hairline, the photo in a white
+   frame, the name in lowercase on the black with the position, and the team code in its color. ── */
+.player-card.pc2.pc2.pc2.pc2.pc2-v-black .pc2-front { background: #0d0d0d; color: #fff; border: none; box-shadow: inset 0 0 0 4px #0d0d0d, inset 0 0 0 5px #f2f2f2; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-black .pc2-face { padding: 8px 8px 6px; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-black .pc2-pos { background: none; color: #cfcfcf; padding: 0; letter-spacing: 1px; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-black .pc2-ovr { color: #fff; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-black .pc2-year { color: #9a9a9a; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-black .pc2-ph { padding: 0; background: none; border-radius: 0 !important; box-shadow: 0 0 0 2px #f2f2f2; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-black .pc2-ph img { border-radius: 0 !important; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-black .pc2-name { display: flex; justify-content: space-between; align-items: baseline; margin-top: 4px; padding: 0 1px; background: none; color: #f9d71c;
+  text-transform: lowercase; font: 500 11px 'Oswald', sans-serif; letter-spacing: .3px; text-align: left; overflow: hidden; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-black .pgv-code { font: 700 11px 'Oswald', sans-serif; letter-spacing: 2px; text-transform: uppercase; color: color-mix(in srgb, var(--tc, #c00) 45%, #fff); }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-black .pc2-chip { background: #1a1a1a; color: #ddd; border: 1px solid #444; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-black .pc2-r { background: #1b1b1b; color: #eee; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-black .pc2-ft, .player-card.pc2.pc2.pc2.pc2.pc2-v-black .pc2-ft * { color: #cfcfcf; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-black .pc2-series { background: rgba(0,0,0,.75); color: #fff; }
+
+/* ── PSYCHEDELIC (Topps 1972) ── */
+.player-card.pc2.pc2.pc2.pc2.pc2-v-psych .pc2-front { color: #111; border: none;
+  background: radial-gradient(circle at 50% 30%, color-mix(in srgb, var(--tc, #c00) 55%, #fff) 0 30%, transparent 31%), var(--tc, #c00);
+  box-shadow: inset 0 0 0 3px #fff; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-psych .pc2-face { padding: 6px; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-psych .pc2-pos { background: #fff; color: var(--tc, #c00); }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-psych .pc2-ovr { color: #fff; text-shadow: 2px 2px 0 #111; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-psych .pc2-year { color: #fff; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-psych .pc2-ph { margin-top: 19px; padding: 3px; background: #f9d71c; border-radius: 48% 48% 4px 4px / 30% 30% 4px 4px !important; box-shadow: 0 0 0 2px #ff5fa2, 0 0 0 4px #fff; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-psych .pc2-ph img { border-radius: 46% 46% 3px 3px / 28% 28% 3px 3px !important; aspect-ratio: 4 / 2.4; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-psych .pgv-team { left: 50%; top: -20px; translate: -50% 0; font: 400 14px 'Righteous', sans-serif; letter-spacing: 1px; color: #f9d71c;
+  -webkit-text-stroke: 1.5px #111; paint-order: stroke fill; text-shadow: 2px 2px 0 #ff5fa2, 3px 3px 0 #111; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-psych .pc2-name { margin-top: 4px; background: #fff; color: #111; font: 700 9.5px 'Oswald', sans-serif; letter-spacing: 1px; border-radius: 3px !important; box-shadow: 2px 2px 0 #111; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-psych .pc2-chip { background: #fff; color: #111; border: 1px solid #111; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-psych .pc2-r { background: rgba(255,255,255,.88); color: #111; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-psych .pc2-ft, .player-card.pc2.pc2.pc2.pc2.pc2-v-psych .pc2-ft * { color: #fff; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-psych .pc2-series { bottom: 3px; background: #111; color: #f9d71c; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-psych .pc2-top { height: 12px; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-psych .pc2-ovr { font-size: 13px; }
+
+
+/* ── CLASSIC x 1976 (user's mix): a team-color rim round the whole card inside the white edge,
+   the photo framed in the team color, and a two-band plate: the name on a light tint, the team
+   code in white on the full team color with the position at its left. ── */
+.player-card.pc2.pc2.pc2.pc2.pc2-v-classic .pc2-front { box-shadow: inset 0 0 0 3px #fbfaf5, inset 0 0 0 6px var(--tc, #c00), inset 0 0 0 7px #1c1c1c; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-classic .pc2-face { padding: 9px 9px 7px; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-classic .pc2-ph { padding: 2px; background: var(--tc, #c00); box-shadow: 0 0 0 1px #1c1c1c; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-classic .pc2-ph img { aspect-ratio: 4 / 2.6; }
+
+/* Burlap: long names shrink instead of running into the team code. */
+.player-card.pc2.pc2.pc2.pc2.pc2-v-burlap .pc2-name { gap: 4px; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-burlap .pc2-name.pc2-n-sm { font-size: 9.5px; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-burlap .pc2-name.pc2-n-xs { font-size: 8.5px; letter-spacing: 0; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-burlap .pgv-code { flex: 0 0 auto; }

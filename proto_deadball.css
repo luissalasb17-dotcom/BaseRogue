@@ -1,0 +1,93 @@
+/* Deadball card design mockup (?proto=deadball). */
+#pgen { position: fixed; inset: 0; z-index: 99990; overflow: auto; padding: 18px 22px 40px; background: rgba(6, 10, 8, .96); font-family: 'Oswald', sans-serif; color: #e2fbe9; }
+.pgen-head { display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap; margin-bottom: 14px; }
+.pgen-head b { font: 400 14px 'Press Start 2P', monospace; color: #fde047; }
+.pgen-head span { font-size: 13px; color: #94a3b8; }
+.pgen-x { margin-left: auto; padding: 6px 12px; background: #111; color: #e2fbe9; border: 1px solid #34d399; cursor: pointer; }
+.pgen-row { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 18px; align-items: center; padding: 14px 0; border-top: 1px solid rgba(255, 255, 255, .08); }
+.pgen-lab b { display: block; font: 400 10px 'Press Start 2P', monospace; color: #fde047; line-height: 1.5; }
+.pgen-lab em { display: block; font-style: normal; color: #34d399; margin: 4px 0; }
+.pgen-lab p { margin: 0; font-size: 13px; color: #cbd5e1; line-height: 1.35; }
+.pgen-cards { display: flex; gap: 18px; flex-wrap: wrap; }
+.pgen-cards .pc2 { zoom: 1.35; }
+
+.player-card.pc2.pc2.pc2.pc2[class*="pc2-v-"] .pc2-front { padding: 0; }
+.player-card.pc2.pc2.pc2.pc2[class*="pc2-v-"] .pc2-name { margin: 3px 0 0; border-radius: 0 !important; transform: none; box-shadow: none; }
+.player-card.pc2.pc2.pc2.pc2[class*="pc2-v-"] .pc2-r b { text-shadow: 0 0 1px #111, 0 0 1px #111; }
+.player-card.pc2.pc2.pc2.pc2[class*="pc2-v-"] .pc2-series { top: auto; bottom: 5px; right: 5px; left: auto; }
+.player-card.pc2.pc2.pc2.pc2[class*="pc2-v-"] .pc2-ph, .player-card.pc2.pc2.pc2.pc2[class*="pc2-v-"] .pc2-ph img { border-radius: 0 !important; }
+.pgv-x { font-style: normal; white-space: nowrap; pointer-events: none; }
+
+/* GOLD BORDER (T205) */
+.player-card.pc2.pc2.pc2.pc2.pc2-v-gold205 .pc2-front { color: #2a1a08; border: none; background: linear-gradient(135deg, #f7e7a1, #c9a13b 30%, #f3dc85 50%, #b88a28 75%, #f0d67a);
+  box-shadow: inset 0 0 0 1px #7a5512, inset 0 0 0 5px transparent, inset 0 0 0 6px #7a5512; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-gold205 .pc2-face { padding: 9px; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-gold205 .pc2-ovr, .player-card.pc2.pc2.pc2.pc2.pc2-v-gold205 .pc2-year { color: #3b2507; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-gold205 .pc2-pos { background: #3b2507; color: #f7e7a1; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-gold205 .pc2-ph { padding: 3px; background: #fbf4dc; box-shadow: 0 0 0 1.5px #5c3f0d; overflow: visible; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-gold205 .pc2-ph img { filter: sepia(.25) saturate(.85); }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-gold205 .pgv-notch { position: absolute; z-index: 3; top: -6px; left: 50%; width: 26px; height: 12px; margin-left: -13px; background: #fbf4dc;
+  border: 1.5px solid #5c3f0d; border-bottom: none; border-radius: 13px 13px 0 0 !important; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-gold205 .pc2-name { margin: 5px 10px 0 !important; padding: 2px 6px; background: #fbf4dc; color: #3b2507; font: 700 10px 'Playfair Display', serif; letter-spacing: 1px; text-transform: uppercase;
+  box-shadow: 0 0 0 1.5px #5c3f0d; clip-path: polygon(6px 0, calc(100% - 6px) 0, 100% 50%, calc(100% - 6px) 100%, 6px 100%, 0 50%); }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-gold205 .pc2-chip { background: rgba(251,244,220,.75); color: #3b2507; border: 1px solid #7a5512; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-gold205 .pc2-r { background: rgba(251,244,220,.85); color: #2a1a08; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-gold205 .pc2-ft, .player-card.pc2.pc2.pc2.pc2.pc2-v-gold205 .pc2-ft * { color: #2a1a08; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-gold205 .pc2-series { background: #3b2507; color: #f7e7a1; }
+
+/* CABINET (Turkey Red) */
+.player-card.pc2.pc2.pc2.pc2.pc2-v-turkey .pc2-front { color: #2b2b2b; border: none; background: repeating-linear-gradient(45deg, rgba(0,0,0,.025) 0 2px, transparent 2px 4px), #c9c6bd;
+  box-shadow: inset 0 0 0 1px #8b877c, inset 0 0 18px rgba(0,0,0,.18); }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-turkey .pc2-face { padding: 9px; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-turkey .pc2-ovr, .player-card.pc2.pc2.pc2.pc2.pc2-v-turkey .pc2-year { color: #2b2b2b; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-turkey .pc2-pos { background: #6a1f1a; color: #f2eadb; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-turkey .pc2-ph { padding: 4px; overflow: visible; background: linear-gradient(135deg, #8a6a3a, #3d2a12 40%, #a5834c 60%, #3d2a12);
+  box-shadow: 0 0 0 1px #2a1c08, 0 0 0 4px #e8e3d6, 0 0 0 5px #8b877c, 0 3px 6px rgba(0,0,0,.35); }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-turkey .pc2-ph img { filter: saturate(1.25) contrast(1.05); box-shadow: inset 0 0 0 1px #000; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-turkey .pgv-nail { position: absolute; z-index: 3; top: -10px; left: 50%; margin-left: -3px; width: 6px; height: 6px; border-radius: 50% !important; background: #3d2a12;
+  box-shadow: 0 0 0 1px #c9c6bd; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-turkey .pc2-name { margin: 8px 0 0 !important; background: none; color: #6a1f1a; font: italic 700 11px 'Playfair Display', serif; letter-spacing: .5px; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-turkey .pc2-chip { background: #e8e3d6; color: #2b2b2b; border: 1px solid #8b877c; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-turkey .pc2-r { background: #e8e3d6; color: #2b2b2b; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-turkey .pc2-ft, .player-card.pc2.pc2.pc2.pc2.pc2-v-turkey .pc2-ft * { color: #2b2b2b; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-turkey .pc2-series { background: #6a1f1a; color: #f2eadb; }
+
+/* CANDY RED (Cracker Jack) */
+.player-card.pc2.pc2.pc2.pc2.pc2-v-cj14 .pc2-front { color: #1a1a1a; border: none; background: radial-gradient(ellipse at 50% 30%, #e1342a, #b41e17); box-shadow: inset 0 0 0 1px #6e0f0a; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-cj14 .pc2-face { padding: 6px; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-cj14 .pc2-ovr, .player-card.pc2.pc2.pc2.pc2.pc2-v-cj14 .pc2-year { color: #fff3d6; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-cj14 .pc2-pos { background: #fff3d6; color: #b41e17; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-cj14 .pc2-ph { padding: 0; background: #fff3d6; box-shadow: 0 0 0 1px #6e0f0a; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-cj14 .pc2-ph img { filter: sepia(.15) saturate(1.1); mix-blend-mode: multiply; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-cj14 .pc2-name { display: flex; justify-content: space-between; align-items: baseline; padding: 2px 6px; background: #fff3d6; color: #b41e17;
+  font: 700 10.5px 'Oswald', sans-serif; letter-spacing: 1px; text-transform: uppercase; overflow: hidden; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-cj14 .pgv-code { font: 600 8px 'Oswald', sans-serif; letter-spacing: 1px; color: #1a1a1a; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-cj14 .pc2-chip { background: #fff3d6; color: #b41e17; border: 1px solid #6e0f0a; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-cj14 .pc2-r { background: #fff3d6; color: #1a1a1a; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-cj14 .pc2-ft, .player-card.pc2.pc2.pc2.pc2.pc2-v-cj14 .pc2-ft * { color: #fff3d6; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-cj14 .pc2-series { background: #b41e17; color: #fff3d6; }
+
+/* NEWSPRINT OVAL (Sporting News) */
+.player-card.pc2.pc2.pc2.pc2.pc2-v-oval16 .pc2-front { color: #1b1b1b; border: none; background: repeating-radial-gradient(circle at 20% 30%, rgba(0,0,0,.03) 0 1px, transparent 1px 3px), #efe9d8;
+  box-shadow: inset 0 0 0 1px #b9b09a; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-oval16 .pc2-face { padding: 6px; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-oval16 .pc2-ovr, .player-card.pc2.pc2.pc2.pc2.pc2-v-oval16 .pc2-year { color: #1b1b1b; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-oval16 .pc2-pos { background: #1b1b1b; color: #efe9d8; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-oval16 .pc2-ph { padding: 0; background: #efe9d8; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-oval16 .pc2-ph img { filter: grayscale(1) sepia(.3) contrast(1.1);
+  -webkit-mask-image: radial-gradient(ellipse 46% 50% at 50% 50%, #000 70%, transparent 100%); mask-image: radial-gradient(ellipse 46% 50% at 50% 50%, #000 70%, transparent 100%); }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-oval16 .pc2-name { display: block; padding: 0 0 2px; background: none; color: #1b1b1b; font: 900 12px 'Playfair Display', serif; letter-spacing: .5px; text-transform: uppercase;
+  border-bottom: 2px solid #1b1b1b; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-oval16 .pgv-sub { display: block; font: 600 7px 'Oswald', sans-serif; letter-spacing: 2px; color: #555; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-oval16 .pc2-chip { background: #f7f3e7; color: #333; border: 1px solid #b9b09a; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-oval16 .pc2-r { background: #f7f3e7; color: #1b1b1b; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-oval16 .pc2-ft, .player-card.pc2.pc2.pc2.pc2.pc2-v-oval16 .pc2-ft * { color: #1b1b1b; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-oval16 .pc2-series { background: #1b1b1b; color: #efe9d8; }
+.pgv-notch, .pgv-nail { display: none !important; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-turkey .pc2-ph img { aspect-ratio: 4 / 2.75; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-turkey .pc2-name { margin-top: 7px !important; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-oval16 .pc2-ph img { aspect-ratio: 4 / 2.65; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-oval16 .pc2-name { font-size: 11px; line-height: 1.1; }
+
+/* series stamp: bottom-right of the photo by default (user), moved only where it would hit the name */
+.player-card.pc2.pc2.pc2.pc2[class*="pc2-v-"] .pc2-series { top: auto; bottom: 5px; right: 5px; left: auto; }

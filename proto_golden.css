@@ -1,0 +1,71 @@
+/* Golden card design mockup (?proto=golden). Same rule as Expansion: keep the card layout, change stock, frame and name plate. */
+#pgen { position: fixed; inset: 0; z-index: 99990; overflow: auto; padding: 18px 22px 40px; background: rgba(6, 10, 8, .96); font-family: 'Oswald', sans-serif; color: #e2fbe9; }
+.pgen-head { display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap; margin-bottom: 14px; }
+.pgen-head b { font: 400 14px 'Press Start 2P', monospace; color: #fde047; }
+.pgen-head span { font-size: 13px; color: #94a3b8; }
+.pgen-x { margin-left: auto; padding: 6px 12px; background: #111; color: #e2fbe9; border: 1px solid #34d399; cursor: pointer; }
+.pgen-row { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 18px; align-items: center; padding: 14px 0; border-top: 1px solid rgba(255, 255, 255, .08); }
+.pgen-lab b { display: block; font: 400 10px 'Press Start 2P', monospace; color: #fde047; line-height: 1.5; }
+.pgen-lab em { display: block; font-style: normal; color: #34d399; margin: 4px 0; }
+.pgen-lab p { margin: 0; font-size: 13px; color: #cbd5e1; line-height: 1.35; }
+.pgen-cards { display: flex; gap: 18px; flex-wrap: wrap; }
+.pgen-cards .pc2 { zoom: 1.35; }
+
+.player-card.pc2.pc2.pc2.pc2[class*="pc2-v-"] .pc2-front { padding: 0; }
+.player-card.pc2.pc2.pc2.pc2[class*="pc2-v-"] .pc2-name { margin: 3px 0 0; border-radius: 0 !important; transform: none; box-shadow: none; }
+.player-card.pc2.pc2.pc2.pc2[class*="pc2-v-"] .pc2-r b { text-shadow: 0 0 1px #111, 0 0 1px #111; }
+.pgv-code { font-style: normal; white-space: nowrap; }
+
+/* PAINTED (Goudey 1933) */
+.player-card.pc2.pc2.pc2.pc2.pc2-v-goudey .pc2-front { background: #f7f3e8; color: #1c1c1c; border: none; box-shadow: inset 0 0 0 1px #d8cfb8; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-goudey .pc2-face { padding: 8px; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-goudey .pc2-pos { background: #c8261d; color: #fff; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-goudey .pc2-ovr, .player-card.pc2.pc2.pc2.pc2.pc2-v-goudey .pc2-year { color: #1c1c1c; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-goudey .pc2-ph { padding: 0; background: none; border-radius: 0 !important; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-goudey .pc2-ph img { border-radius: 0 !important; filter: saturate(1.4) contrast(1.05); }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-goudey .pc2-name { background: none; color: #c8261d; font: 400 12px 'Alfa Slab One', serif; letter-spacing: 1px; text-transform: uppercase; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-goudey .pc2-chip { background: #fff; color: #333; border: 1px solid #bbb; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-goudey .pc2-r { background: #ede6d3; color: #1c1c1c; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-goudey .pc2-ft, .player-card.pc2.pc2.pc2.pc2.pc2-v-goudey .pc2-ft * { color: #333; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-goudey .pc2-series { background: rgba(28,28,28,.75); color: #fff; }
+
+/* DIAMOND STARS (1934) */
+.player-card.pc2.pc2.pc2.pc2.pc2-v-stars .pc2-front { background: #efe4c8; color: #2a2418; border: none; box-shadow: inset 0 0 0 3px #efe4c8, inset 0 0 0 4px #2a2418; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-stars .pc2-face { padding: 8px; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-stars .pc2-pos { background: #2a2418; color: #f2c230; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-stars .pc2-ovr, .player-card.pc2.pc2.pc2.pc2.pc2-v-stars .pc2-year { color: #2a2418; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-stars .pc2-ph { padding: 2px; border-radius: 0 !important; background: repeating-conic-gradient(from 0deg at 50% 100%, var(--tc, #c00) 0 8deg, #f2c230 8deg 16deg); }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-stars .pc2-ph { padding: 6px !important; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-stars .pc2-ph img { border-radius: 0 !important; aspect-ratio: 4 / 2.6; box-shadow: 0 0 0 1px #2a2418; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-stars .pc2-name { background: #2a2418; color: #f2c230; font: 700 10px 'Oswald', sans-serif; letter-spacing: 2px; padding: 2px 0; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-stars .pc2-chip { background: #fff8e6; color: #2a2418; border: 1px solid #a08a5a; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-stars .pc2-r { background: #f8f0dc; color: #2a2418; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-stars .pc2-ft, .player-card.pc2.pc2.pc2.pc2.pc2-v-stars .pc2-ft * { color: #2a2418; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-stars .pc2-series { background: #2a2418; color: #f2c230; }
+
+/* PLAY BALL (1939) */
+.player-card.pc2.pc2.pc2.pc2.pc2-v-playball .pc2-front { background: #fdfdfb; color: #111; border: none; box-shadow: inset 0 0 0 1px #ccc; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-playball .pc2-face { padding: 8px; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-playball .pc2-pos { background: #111; color: #fff; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-playball .pc2-ovr, .player-card.pc2.pc2.pc2.pc2.pc2-v-playball .pc2-year { color: #111; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-playball .pc2-ph { padding: 0; background: none; border-radius: 0 !important; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-playball .pc2-ph img { border-radius: 0 !important; filter: grayscale(1) contrast(1.15); }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-playball .pc2-name { display: flex; justify-content: space-between; background: none; color: #111; font: 700 10px 'Oswald', sans-serif; letter-spacing: 1.5px; text-transform: uppercase; padding: 0 1px; border-bottom: 1px solid #111; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-playball .pgv-code { color: #666; font: 600 9px 'Oswald', sans-serif; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-playball .pc2-chip { background: #fff; color: #333; border: 1px solid #bbb; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-playball .pc2-r { background: #f0f0ec; color: #111; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-playball .pc2-ft, .player-card.pc2.pc2.pc2.pc2.pc2-v-playball .pc2-ft * { color: #333; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-playball .pc2-series { background: rgba(0,0,0,.75); color: #fff; }
+
+/* STRIP CARD (1920s strip cards): thin cream paper, the photo printed in one ink (the team color), a plain black frame, the name in serif capitals. */
+.player-card.pc2.pc2.pc2.pc2.pc2-v-strip .pc2-front { background: #f1e8d2; color: #2b2116; border: none; box-shadow: inset 0 0 0 4px #f1e8d2, inset 0 0 0 5px #2b2116; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-strip .pc2-face { padding: 9px; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-strip .pc2-pos { background: none; color: #2b2116; border: 1px solid #2b2116; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-strip .pc2-ovr, .player-card.pc2.pc2.pc2.pc2.pc2-v-strip .pc2-year { color: #2b2116; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-strip .pc2-ph { padding: 0; border-radius: 0 !important; background: color-mix(in srgb, var(--tc, #c00) 75%, #f1e8d2); box-shadow: 0 0 0 1px #2b2116; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-strip .pc2-ph img { border-radius: 0 !important; filter: grayscale(1) contrast(1.2); mix-blend-mode: multiply; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-strip .pc2-name { background: none; color: #2b2116; font: 700 12px 'Playfair Display', serif; letter-spacing: 1px; text-transform: uppercase; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-strip .pc2-chip { background: none; color: #2b2116; border: 1px solid #8a7a5a; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-strip .pc2-r { background: #e8dcc0; color: #2b2116; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-strip .pc2-ft, .player-card.pc2.pc2.pc2.pc2.pc2-v-strip .pc2-ft * { color: #2b2116; }
+.player-card.pc2.pc2.pc2.pc2.pc2-v-strip .pc2-series { background: rgba(43,33,22,.8); color: #f1e8d2; }

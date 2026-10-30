@@ -5126,10 +5126,11 @@ body.workspace-active .main-container {
 @media (prefers-reduced-motion: no-preference) {
   .player-card {
     transition: transform 0.12s ease-out, filter 0.12s ease-out;
-    will-change: transform;
+    /* No will-change and no scale: a layer promoted ahead of time is rasterized once at 1x
+       and then stretched, which blurred the card text on hover (user report, Oct 2026). */
   }
   .player-card.card-tilt-active {
-    transform: perspective(700px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg)) scale(1.035);
+    transform: perspective(900px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
     filter: drop-shadow(0 14px 22px rgba(0, 0, 0, 0.55));
     z-index: 5;
   }
