@@ -175,18 +175,35 @@
 
   // ── Card back: a bubble-gum card back (card_backs.js: bio + one line averaged from the peaks).
   // The data file (~1.3 MB) is fetched the first time any card is turned over.
-  let backsState = window.CardBacks ? 'ready' : 'idle';
+  // Slow or dropped connections (phones): a failed download is retried, and a back only stays built once it has its data.
+  let backsState = window.CardBacks ? 'ready' : 'idle', backsTries = 0;
   const backsWaiting = [];
+  function loadBacks() {
+    if (window.CardBacks || backsState === 'loading') return;
+    backsState = 'loading';
+    const s = document.createElement('script');
+    s.src = 'card_backs.js?v=2' + (backsTries ? '&r=' + backsTries : '');
+    let settled = false;
+    const finish = () => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      backsState = window.CardBacks ? 'ready' : 'idle';
+      if (!window.CardBacks) {
+        s.remove();
+        if (++backsTries < 4) { setTimeout(loadBacks, 1500 * backsTries); return; }
+        backsTries = 0;
+      }
+      backsWaiting.splice(0).forEach(f => { try { f(); } catch (e) { console.warn('card back', e); } });
+    };
+    const timer = setTimeout(finish, 45000);
+    s.onload = finish; s.onerror = finish;
+    document.head.appendChild(s);
+  }
   function withBacks(cb) {
     if (window.CardBacks) { cb(); return; }
     backsWaiting.push(cb);
-    if (backsState !== 'idle') return;
-    backsState = 'loading';
-    const s = document.createElement('script');
-    s.src = 'card_backs.js?v=2';
-    const done = () => { backsState = 'ready'; backsWaiting.splice(0).forEach(f => { try { f(); } catch (e) { console.warn('card back', e); } }); };
-    s.onload = done; s.onerror = done;
-    document.head.appendChild(s);
+    loadBacks();
   }
   // Maker's line at the foot of the back, one per era (made-up brands, never real ones).
   const ERA_BACK = {
@@ -273,11 +290,15 @@
     const back = card.querySelector('.pc2-back');
     if (!back || back.dataset.done) return;
     back.dataset.done = '1';
+    if (!window.CardBacks) back.classList.add('bk-wait');
     const probe = { playerID: card.dataset.pid || undefined, name: card.dataset.name, year: card.dataset.year };
     let cs = null, flag = '';
     try { cs = typeof window.getPlayerCareerData === 'function' ? window.getPlayerCareerData(probe) : null; } catch (e) { cs = null; }
     try { flag = typeof window.getPlayerFlagHTML === 'function' ? window.getPlayerFlagHTML(probe) : ''; } catch (e) { flag = ''; }
     withBacks(() => {
+      back.classList.remove('bk-wait');
+      // still no data: keep the plain back and try again on the next turn
+      if (!window.CardBacks) { delete back.dataset.done; return; }
       const keep = [...back.querySelectorAll('.pc2-flip, .pc2-tex, .pc2-wear')];
       back.innerHTML = `<div class="bk">${backHTML(card, cs, flag)}</div>`;
       keep.forEach(n => back.appendChild(n));
@@ -358,5 +379,8 @@
   if (typeof document !== 'undefined') {
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => { initNoise(); initFlip(); initFit(); });
     else { initNoise(); initFlip(); initFit(); }
+    // Fetched ahead of the first flip, once the game has finished loading.
+    const preload = () => setTimeout(loadBacks, 1500);
+    if (document.readyState === 'complete') preload(); else window.addEventListener('load', preload);
   }
 })();
