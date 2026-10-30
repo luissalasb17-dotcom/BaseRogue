@@ -53,6 +53,11 @@
     if (v === 'psych') add(ph, 'beforeend', `<i class="pgv-team">${team}</i>`);
     if (v === 'oval16') add(nm, 'beforeend', `<i class="pgv-x pgv-sub">${team} · ${pos}</i>`);
     if (v === 'flat49') c.style.setProperty('--fl', FLAT[h % 5]);
+    if (v === 'bw48') {
+      c.style.setProperty('--fl', FLAT[h % 5]);
+      const chips = c.querySelectorAll('.pc2-chip'), full = (chips[1] && chips[1].title) || team;
+      add(nm, 'beforeend', `<i class="pgv-60"><span>${full}</span><span>${pos}</span></i>`);
+    }
     if (v === 'panel52') add(ph, 'beforeend', `<i class="pgv-52"><u><i>${team}</i></u><b>${name}</b><s>${name}</s></i>`);
     if (v === 'ring59') { c.style.setProperty('--pa', PASTEL[h % 5]); add(ph, 'beforeend', `<i class="pgv-sig">${name}</i>`); add(ph, 'afterend', `<i class="pgv-59">${team} · ${pos}</i>`); }
     if (v === 'arc06') add(nm, 'afterbegin', `<i class="pgv-dot">${team}</i>`);
