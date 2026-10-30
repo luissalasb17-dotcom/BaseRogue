@@ -214,3 +214,11 @@
 .c162-chem2 .cc-chip em { font-style: normal; font-size: 10.5px; color: #94a3b8; }
 .c162-chem2 .cc-chip.cap { border-color: rgba(251, 191, 36, .5); background: rgba(251, 191, 36, .1); }
 #screen-challenge-pack .c162-chem2.is-chips { margin-top: 10px; }
+
+/* Bigger cards while choosing from a pack (desktop only). */
+@media (min-width: 1200px) {
+  #screen-challenge-pack .c162-oc { width: 196px; }
+  #screen-challenge-pack .c162-oc-stage { zoom: 1.25; }
+  #screen-challenge-pack .c162-reveal-row { gap: 12px; }
+  #screen-challenge-pack .c162-pack-layout.is-options { grid-template-columns: minmax(0, 670px) minmax(0, 1fr) !important; }
+}
