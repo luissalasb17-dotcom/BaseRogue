@@ -234,3 +234,6 @@
 .player-card.pc2.pc2.pc2.pc2.rarity-Rare.card-tilt-active { box-shadow: 0 0 16px 3px rgba(96,165,250,.8), 0 10px 24px rgba(0,0,0,.6) !important; }
 .player-card.pc2.pc2.pc2.pc2.rarity-Epic.card-tilt-active { box-shadow: 0 0 20px 4px rgba(192,132,252,.85), 0 10px 24px rgba(0,0,0,.6) !important; }
 .player-card.pc2.pc2.pc2.pc2.rarity-Legendary.card-tilt-active { box-shadow: 0 0 24px 5px rgba(250,204,21,.9), 0 10px 24px rgba(0,0,0,.6) !important; }
+
+/* Series stamp removed from every card. */
+.pc2 .pc2-series { display: none !important; }
