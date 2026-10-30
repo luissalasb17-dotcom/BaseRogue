@@ -832,3 +832,13 @@
 .player-card.pc2.pc2.pc2.pc2.pc2-e-efficiency.pc2-v-blackref .pc2-ft .pc2-hand, .player-card.pc2.pc2.pc2.pc2.pc2-e-steroid.pc2-v-metal .pc2-ft .pc2-hand, .player-card.pc2.pc2.pc2.pc2.pc2-e-steroid.pc2-v-club .pc2-ft .pc2-hand { background: #12151b; color: #fff; }
 /* Smoke: the small team line stays readable on the faded photo. */
 .player-card.pc2.pc2.pc2.pc2.pc2-e-modern.pc2-v-smoke16 .pgv-smoke em { margin-top: 1px; text-shadow: 0 0 3px #fff, 0 0 3px #fff; }
+
+/* Series stamp: top of the photo on designs where the bottom would cover the face or the name; clear of the flip button. */
+.player-card.pc2.pc2.pc2.pc2.pc2.pc2-e-efficiency.pc2-v-wave15 .pc2-series,
+.player-card.pc2.pc2.pc2.pc2.pc2.pc2-e-steroid.pc2-v-metal .pc2-series,
+.player-card.pc2.pc2.pc2.pc2.pc2.pc2-e-modern.pc2-v-smoke16 .pc2-series,
+.player-card.pc2.pc2.pc2.pc2.pc2.pc2-e-modern.pc2-v-split20 .pc2-series { top: 5px; bottom: auto; right: 22px; left: auto; translate: none; }
+.player-card.pc2.pc2.pc2.pc2.pc2.pc2-e-steroid:not([class*="pc2-v-"]) .pc2-series { top: 5px; bottom: auto; right: 22px; left: auto; }
+.player-card.pc2.pc2.pc2.pc2.pc2.pc2-e-integration.pc2-v-ring59 .pgv-sig { bottom: 6px; }
+.player-card.pc2.pc2.pc2.pc2.pc2.pc2-e-integration.pc2-v-ring59 .pgv-59 { margin-top: 3px; }
+.player-card.pc2.pc2.pc2.pc2.pc2.pc2.pc2-e-steroid.pc2-v-metal .pc2-series { top: 25px; right: auto; left: 50%; translate: -50% 0; }
