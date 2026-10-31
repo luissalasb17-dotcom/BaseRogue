@@ -1603,8 +1603,41 @@ function renderSeasonConquestUI() {
     selectYear.onchange = renderSeasonContextCard;
   }
   renderSeasonContextCard();
+  renderSeasonPicker();
 }
 window.renderSeasonConquestUI = renderSeasonConquestUI;
+// Story Mode picker: decade tabs and a year grid over the (hidden) select, which stays the source of truth.
+let seasonPickerDecade = null;
+function renderSeasonPicker() {
+  const sel = document.getElementById('select-season-year');
+  if (!sel) return;
+  let box = document.getElementById('season-picker');
+  if (!box) {
+    box = document.createElement('div');
+    box.id = 'season-picker';
+    box.className = 'ss2';
+    sel.insertAdjacentElement('beforebegin', box);
+  }
+  const conquered = getConqueredSeasons();
+  const val = sel.value;
+  const isRand = val === 'random';
+  if (seasonPickerDecade === null) seasonPickerDecade = isRand ? 2020 : Math.floor(+val / 10) * 10;
+  const years = [];
+  for (let y = Math.max(1901, seasonPickerDecade); y <= Math.min(2025, seasonPickerDecade + 9); y++) years.push(y);
+  const decs = [];
+  for (let d = 2020; d >= 1900; d -= 10) decs.push(d);
+  const randLabel = (typeof window.t === 'function' ? window.t('season_select.random', 'Random Season') : 'Random Season').replace(/^\S*\s*/, m => /\w/.test(m) ? m : '');
+  box.innerHTML = `
+    <div class="ss2-board"><b>${isRand ? '????' : val}</b><span>${isRand ? randLabel : getEraNameForYear(val).replace(/\s*\(.*$/, '')}</span></div>
+    <div class="ss2-decs"><button class="ss2-rand ${isRand ? 'on' : ''}" data-rand="1">🎲</button>${decs.map(d => `<button class="${d === seasonPickerDecade ? 'on' : ''}" data-dec="${d}">${d}s</button>`).join('')}</div>
+    <div class="ss2-yrs">${years.map(y => `<button class="${String(y) === val ? 'on' : ''} ${conquered.includes(y) ? 'won' : ''}" data-y="${y}">${y}</button>`).join('')}</div>`;
+  box.querySelectorAll('[data-dec]').forEach(b => b.onclick = () => { seasonPickerDecade = +b.dataset.dec; renderSeasonPicker(); });
+  const pick = v => { sel.value = v; renderSeasonContextCard(); renderSeasonPicker(); };
+  box.querySelectorAll('[data-y]').forEach(b => b.onclick = () => pick(b.dataset.y));
+  box.querySelector('[data-rand]').onclick = () => pick('random');
+}
+window.renderSeasonPicker = renderSeasonPicker;
+
 
 // Context for the year picked in Story Mode: who won it, who had the best record, who led
 // the league (season_context.js, built by season_context_etl.py), and how the campaign
@@ -3676,7 +3709,7 @@ function initGameModeSelector() {
     const sparks = (rarityLabel === 'Legendary' || rarityLabel === 'Epic')
       ? `<div class="pc2-sparks">${[0, 1, 2, 3, 4].map(k => `<i style="left:${8 + k * 19}%;top:${12 + (k * 37) % 70}%;animation-delay:${(k * 0.53).toFixed(2)}s"></i>`).join('')}</div>` : '';
     const chipList = [
-      `<span class="pc2-chip pc2-chip-era pc2-ce-${eraKey}" title="${esc(player.era)}">${esc(String(player.era || '').replace(/\s*\(.*$/, '').replace(/\s+Era$/i, '').replace(/^The\s+/i, ''))}</span>`,
+      `<span class="pc2-chip pc2-chip-era pc2-ce-${eraKey}" title="${esc(player.era)}">${esc(String(player.era || '').replace(/\s*\(.*$/, '').replace(/\s+Era$/i, '').replace(/^The\s+/i, ''))}</span>`,
       player.sec_pos ? `<span class="pc2-chip" title="${esc((typeof window.t === 'function' ? window.t('ui.sec_pos_tooltip') : 'Posición Secundaria') + ': ' + player.sec_pos)}">SEC ${esc((() => { const sp = String(player.sec_pos).split(',').map(x => x.trim()).filter(Boolean); return sp.length > 2 ? sp.slice(0, 2).join(',') + '+' : sp.join(','); })())}</span>` : '',
       isInjured ? `<span class="pc2-chip pc2-chip-bad" title="${esc(window.t ? window.t('badge.injury_tooltip', 'Lesión') : 'Lesión')}">INJ</span>` : '',
       lockNodes > 0 ? `<span class="pc2-chip pc2-chip-warn" title="${esc(window.t ? window.t('badge.lock_tooltip', { nodes: lockNodes }) : '')}">🔒${lockNodes}</span>` : ''
@@ -4580,6 +4613,7 @@ function initGameModeSelector() {
         <div class="popup-year" style="margin-top:12px;border-top:1px dashed rgba(255,255,255,0.15);padding-top:8px;">Peak: ${player.year || player.peak_year || '—'} &nbsp;|&nbsp; ${eraString}</div>
       `;
 
+      dressPlayerPopup(overlay, player, slot, isDraft);
       overlay.classList.remove('hidden');
       const closeBtn = overlay.querySelector('#btn-close-popup');
       if (closeBtn) closeBtn.onclick = () => overlay.classList.add('hidden');
@@ -4790,6 +4824,7 @@ function initGameModeSelector() {
         </div>` : ''}
     `;
 
+    dressPlayerPopup(overlay, player, slot, isDraft);
     overlay.classList.remove('hidden');
     overlay.classList.add('popup-visible');
 
@@ -4833,6 +4868,76 @@ function initGameModeSelector() {
     }, { once: true });
   }
 
+  // Player sheet: his locker (card on the hook, item on the shelf) beside the scout's report, which says what he is
+  // worth today and why. Reuses the nodes built above, so their ids stay. Styles in popup2.css.
+  function dressPlayerPopup(overlay, player, slot, isDraft) {
+    const box = overlay.querySelector('#popup-card-content');
+    if (!box || typeof createCardHTML !== 'function') return;
+    let cardHTML = '';
+    try { cardHTML = createCardHTML(player); } catch (e) { return; }
+
+    const rows = [];
+    box.querySelectorAll('.popup-stat-row').forEach(r => {
+      const v = r.querySelector('.popup-stat-val');
+      rows.push({ label: r.querySelector('.popup-stat-label').textContent, base: parseInt(v.textContent, 10), grade: v.querySelector('.popup-grade').textContent,
+        diff: parseInt((v.querySelector('.stat-diff-bonus, .stat-diff-penalty') || {}).textContent, 10) || 0 });
+    });
+    if (!rows.length) box.querySelectorAll('div[style*="grid-template-columns:1fr 1fr"] > div').forEach(r => {
+      const sp = r.querySelectorAll('span');
+      rows.push({ label: sp[0].textContent, base: parseInt(sp[1].textContent, 10), grade: sp[1].querySelector('small').textContent, diff: 0 });
+    });
+    const tr = r => `<tr><td>${r.label}</td><td>${r.base}</td><td class="${r.diff > 0 ? 'up' : r.diff < 0 ? 'dn' : ''}">${r.diff ? (r.diff > 0 ? '+' : '') + r.diff : '-'}</td><td class="now">${r.base + r.diff}</td><td class="gr"><u>${r.grade}</u></td></tr>`;
+
+    const isBatter = !!box.querySelector('.popup-stat-row');
+    const stam = player.stamina !== undefined ? player.stamina : 100;
+    const stamPen = stam < 25 ? 40 : stam < 50 ? 20 : stam < 75 ? 10 : 0;
+    const notes = [];
+    if (isBatter && !isDraft) {
+      if (stamPen) notes.push(['bad', `Tired. Down ${stamPen} across the board until he rests.`]);
+      const ups = Object.entries(player.upgrades || {}).filter(([, v]) => v > 0).map(([k, v]) => `+${v} ${k.toUpperCase()}`);
+      if (ups.length) notes.push(['good', `Cage work paying off: ${ups.join(', ')}.`]);
+      if (player.equipped_item) notes.push(['good', `Carrying ${player.equipped_item.name}${player.equipped_item.statDesc ? ' (' + player.equipped_item.statDesc + ')' : ''}.`]);
+      const sec = String(player.sec_pos || '').split(',').map(p => p.trim());
+      if (slot && slot !== 'DH' && slot !== player.pos) notes.push(['bad', sec.includes(slot) ? `Not his main spot. Loses 15% of his glove at ${slot}.` : `Out of position at ${slot}.`]);
+    }
+
+    const close = box.querySelector('#btn-close-popup');
+    const item = box.querySelector('.popup-item-slot-container');
+    const syn = box.querySelector('.popup-synergies-summary'), runStats = box.querySelector('.popup-run-stats-row'), swap = box.querySelector('.popup-def-swap-container');
+    const pos = isDraft || !slot ? (player.pos || '') : slot;
+    const team = (typeof getFranchiseDisplayName === 'function' && player.team && player.team !== 'ROOK') ? getFranchiseDisplayName(player.team) : '';
+    const year = player.year || player.peak_year || player.peakYear || '';
+    const era = String(player.era || '').replace(/\s*\(.*$/, '').replace(/\s+Era$/i, '').replace(/^The\s+/i, '');
+    const hands = (window.PlayerHands || {})[player.playerID] || '';
+    const field = (lbl, val, cls) => `<div class="pf-f ${cls || ''}"><span>${lbl}</span><b>${val || '&nbsp;'}</b></div>`;
+    const cond = [['FRESH', stam >= 75], ['WORN', stam >= 50 && stam < 75], ['TIRED', stam >= 25 && stam < 50], ['GASSED', stam < 25]];
+    const lines = notes.length ? notes : [['', isDraft ? 'Worth a long look.' : 'No concerns. Ready to play today.']];
+    box.className = 'pp4';
+    box.innerHTML = `<div class="pp4-locker">
+        <div class="pp4-plate">${player.cleanName || player.name}<small>${pos}${team ? ' · ' + team : ''}</small></div>
+        <div class="pp4-stall"><div class="pc2-clickflip">${cardHTML}</div></div>
+      </div>
+      <div class="pp4-board"><i class="pp4-clip"></i><div class="pp4-paper">
+        <i class="pp4-ring"></i>
+        <div class="pf-head"><div><b>BASEROGUE SCOUTING BUREAU</b><span>PLAYER EVALUATION REPORT</span></div><em>FORM 62-B</em></div>
+        <div class="pf-grid">${field('PLAYER', player.cleanName || player.name, 'w3')}${field('POS', pos)}${field('CLUB', team || '-', 'w2')}${field('ERA', era, 'w2')}${field('PEAK', year)}${field('B / T', hands ? hands[0] + ' / ' + hands[1] : '-')}</div>
+        <table class="pf-tbl"><tr><th>TOOL</th><th>CARD</th><th>+ / -</th><th>TODAY</th><th>GRADE</th></tr>${rows.map(tr).join('')}</table>
+        ${isDraft ? '' : `<div class="pf-cond"><span>CONDITION</span>${cond.map(c => `<label class="${c[1] ? 'on' : ''}"><i></i>${c[0]}</label>`).join('')}<b>${stam}%</b></div>`}
+        <div class="pf-notes"><span>SCOUT'S NOTES</span>${lines.map(n => `<p class="${n[0]}">${n[1]}</p>`).join('')}</div>
+        <div class="pf-sign"><span>SCOUT</span><b>B. Rogue</b></div>
+        <i class="pp4-stamp r-${player.rarity || 'Common'}">${player.rarity || 'Common'}</i>
+      </div></div>
+      <div class="pp4-desk"></div>`;
+    const board = box.querySelector('.pp4-board');
+    if (close) board.prepend(close);
+    const desk = box.querySelector('.pp4-desk');
+    [syn, swap, runStats].forEach(p => { if (p) desk.append(p); });
+    if (!desk.children.length) desk.remove();
+    if (item) { const shelf = document.createElement('div'); shelf.className = 'pp4-shelf'; shelf.append(item); box.querySelector('.pp4-locker').append(shelf); }
+  }
+
+  window.showPlayerCardPopup = showPlayerCardPopup;
+
   // ── BACKPACK EQUIP MODAL: choose an item from backpack to equip on player ──
   function showBackpackEquipModal(targetSlot) {
     const player = window.Game.roster[targetSlot];
@@ -4850,29 +4955,16 @@ function initGameModeSelector() {
     const items = window.Game.itemsInventory || [];
 
     overlay.innerHTML = `
-      <div style="background:#090d16; border:2px solid #38bdf8; border-radius:14px; padding:20px; max-width:440px; width:100%; box-shadow:0 0 30px rgba(0,0,0,0.9), 0 0 15px rgba(56,189,248,0.3); font-family:'Press Start 2P',monospace;">
-        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px dashed rgba(255,255,255,0.2); padding-bottom:10px; margin-bottom:12px;">
-          <span style="font-size:10px; color:#38bdf8;">🎒 ${t('equip.backpack_title', 'MOCHILA DEL CLUB')}</span>
-          <button id="btn-close-backpack-modal" style="background:none; border:none; color:#9ca3af; font-size:16px; cursor:pointer;">&times;</button>
+      <div class="bp2">
+        <div class="bp2-top">
+          <b>${t('equip.backpack_title', 'MOCHILA DEL CLUB')}</b>
+          <span>${t('equip.select_item_to_equip', { player: player.name })}</span>
+          <button id="btn-close-backpack-modal">&times;</button>
         </div>
-        <div style="font-size:8px; color:#cbd5e1; line-height:1.5; margin-bottom:14px; font-family:sans-serif;">
-          ${t('equip.select_item_to_equip', { player: player.name })}
-        </div>
-        <div style="display:flex; flex-direction:column; gap:8px; max-height:260px; overflow-y:auto; padding-right:4px;">
-          ${items.length === 0 ? `
-            <div style="font-size:8.5px; color:#64748b; text-align:center; padding:20px 0; font-family:'Press Start 2P',monospace;">
-              ${t('equip.no_items_in_backpack', 'No tienes ítems disponibles en la mochila.')}
-            </div>
-          ` : items.map((item, idx) => `
-            <button class="backpack-item-pick-btn" data-index="${idx}" style="display:flex; align-items:center; justify-content:space-between; background:rgba(255,255,255,0.04); border:1px solid rgba(56,189,248,0.3); border-radius:8px; padding:10px 12px; cursor:pointer; text-align:left; transition:all 0.15s ease; width:100%;">
-              <div style="display:flex; align-items:center; gap:10px;">
-                <span style="font-size:22px; font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji', sans-serif;">${item.icon || '🎒'}</span>
-                <div>
-                  <div style="font-size:11px; font-weight:bold; color:#38bdf8; font-family:sans-serif;">${item.name}</div>
-                  <div style="font-size:8.5px; color:#94a3b8; margin-top:2px;">${item.statDesc || ''}</div>
-                </div>
-              </div>
-              <span style="font-size:8px; color:#00ff66; font-family:'Press Start 2P',monospace;">EQUIPAR</span>
+        <div class="bp2-in">
+          ${items.length === 0 ? `<div class="bp2-empty">${t('equip.no_items_in_backpack', 'No tienes ítems disponibles en la mochila.')}</div>` : items.map((item, idx) => `
+            <button class="backpack-item-pick-btn bp2-item" data-index="${idx}">
+              <i>${item.icon || '🎒'}</i><b>${item.name}</b><span>${item.statDesc || ''}</span>
             </button>
           `).join('')}
         </div>

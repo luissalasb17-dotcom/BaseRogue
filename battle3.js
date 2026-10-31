@@ -4,7 +4,9 @@
 // views of the live battle: runner tokens on the diamond and the lineup fan. Styles in battle3.css.
 (function () {
   'use strict';
-  const $ = id => document.getElementById(id);
+  // scope: the page, or the Dex's batting-practice overlay while it is open (same ids, same stage)
+  let scope = document, testGet = null;
+  const $ = id => scope.querySelector('#' + id);
   const ERAS = [['Genesis', 'genesis'], ['Deadball', 'deadball'], ['Golden', 'golden'], ['Integration', 'integration'], ['Expansion', 'expansion'], ['Turf', 'bighair'], ['Steroid', 'steroid'], ['Efficiency', 'efficiency']];
   const eraKey = p => { const e = String(p.era || p._era || ''); const f = ERAS.find(x => e.includes(x[0])); return f ? f[1] : 'modern'; };
   const portrait = p => (window.CardArt && p ? window.CardArt.portrait(p, eraKey(p), false) : '');
@@ -18,11 +20,10 @@
   // the batter's plaque as a compact strip.
   const SHOW_ODDS = true;
 
-  let built = false;
   function build() {
     const m = $('screen-match');
     const arena = m && m.querySelector('.match-arena');
-    if (!arena || built) return;
+    if (!arena || m._bx3built) return;
     const left = arena.children[0], right = arena.children[1];
     const deck = m.querySelector('.rpg-fight-deck');
     const board = m.querySelector('.scoreboard');
@@ -34,7 +35,7 @@
     const face = m.querySelector('.faceoff-panel');
     const log = m.querySelector('.match-log');
     if (!left || !right || !deck || !board || !bases || !bSlot || !pSlot || !bInfo || !pInfo || !log) return;
-    built = true;
+    m._bx3built = true;
     arena.classList.add('bx3');
 
     // Left column: the hanging scoreboard, the printed diamond with runner tokens, the scorer's log
@@ -89,10 +90,11 @@
   // ── Live views (read-only) ──
   let sig = '';
   function tick() {
+    if (scope !== document && !scope.isConnected) { scope = document; testGet = null; sig = ''; }
     const m = $('screen-match');
     if (!m || m.classList.contains('hidden')) return;
     build();
-    const b = typeof window.__activeBattle === 'function' ? window.__activeBattle() : null;
+    const b = testGet ? testGet() : (typeof window.__activeBattle === 'function' ? window.__activeBattle() : null);
     if (!b || !b.awayTeam) return;
     const lineup = b.awayTeam.lineup || [];
     const idx = b.awayLineupIndex || 0;
@@ -149,7 +151,7 @@
   }
 
   function paintRunners(onBase) {
-    const layer = document.querySelector('.bx3-runners');
+    const layer = scope.querySelector('.bx3-runners');
     if (!layer) return;
     const toks = [...layer.querySelectorAll('.bx3-runner')];
     toks.forEach(tok => {
@@ -175,9 +177,9 @@
       tok.style.left = BASE_XY[i][0] + '%'; tok.style.top = BASE_XY[i][1] + '%';
     });
     const on = onBase.filter(Boolean).length;
-    const tag = document.querySelector('[data-bx3-mult]');
+    const tag = scope.querySelector('[data-bx3-mult]');
     if (tag) {
-      tag.textContent = on ? `${on} ON · FOCUS HIT +${on * 50}%` : "BASES EMPTY";
+      tag.textContent = on ? (testGet ? `${on} ON BASE` : `${on} ON · FOCUS HIT +${on * 50}%`) : "BASES EMPTY";
       tag.classList.toggle('hot', on > 0);
     }
   }
@@ -218,7 +220,7 @@
       card.style.setProperty('--proc', color);
       clearTimeout(card._bx3t); card._bx3t = setTimeout(() => card.classList.remove('bx3-proc'), 1800);
     }
-    const deck = document.querySelector('.bx3-deck');
+    const deck = scope.querySelector('.bx3-deck');
     if (!deck) return;
     const b = document.createElement('div');
     b.className = 'bx3-procban';
@@ -232,7 +234,7 @@
 
   // A steal popup: the runner token that just stole pulses on its base
   function watchSteals() {
-    const deck = document.querySelector('.bx3-deck');
+    const deck = scope.querySelector('.bx3-deck');
     if (!deck || deck._bx3s) return;
     deck._bx3s = true;
     new MutationObserver(muts => muts.forEach(m => m.addedNodes.forEach(n => {
@@ -240,7 +242,7 @@
       if (n.classList && n.classList.contains('battle-over-modal') && window.innerWidth <= 768) { document.body.appendChild(n); return; }
       if (!n.dataset || n.dataset.outcome !== 'STEAL') return;
       const third = /third|tercera|3B/i.test(n.textContent);
-      const toks = [...document.querySelectorAll('.bx3-runner:not(.gone)')];
+      const toks = [...scope.querySelectorAll('.bx3-runner:not(.gone)')];
       const target = toks.find(tk => Math.abs(parseFloat(tk.style.left) - (third ? BASE_XY[2][0] : BASE_XY[1][0])) < 1 && Math.abs(parseFloat(tk.style.top) - (third ? BASE_XY[2][1] : BASE_XY[1][1])) < 1);
       if (target) { target.classList.remove('stole'); void target.offsetWidth; target.classList.add('stole'); }
     }))).observe(deck, { childList: true });
@@ -269,6 +271,13 @@
     new MutationObserver(paint).observe(modal, { attributes: true, attributeFilter: ['class'] });
     paint();
   }
+
+  // Batting practice (basedex.js): same stage, its own state
+  window.Battle3Test = { start(overlay, get) {
+    scope = overlay; testGet = get; sig = ''; build(); tick();
+    const bar = $('dice-action-bar');   // phones: pinned to the overlay, the panel around it traps position: fixed
+    if (bar && window.innerWidth <= 768) overlay.appendChild(bar);
+  } };
 
   function init() {
     build();

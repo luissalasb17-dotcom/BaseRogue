@@ -3280,8 +3280,8 @@
           if (window.AudioManager) window.AudioManager.play('menu_click');
         }, 550);
 
-        // Tens die settles at 850ms, outcome reveals & popups queue
-        setTimeout(() => {
+        // Tens die settles (or the 3D dice stop rolling), outcome reveals & popups queue
+        const afterDice = () => {
           if (cubeTens) cubeTens.classList.add('die-settled');
           if (window.AudioManager) window.AudioManager.play('menu_click');
 
@@ -3481,7 +3481,10 @@
             }
           }, cursor);
 
-        }, 850);
+        };
+        const felt = overlay.querySelector('.bx3-deck');
+        if (felt && window.DiceTable && window.DiceTable.active(felt)) window.DiceTable.roll(outcome.roll, null, felt).then(afterDice);
+        else setTimeout(afterDice, 850);
       };
 
       // ── SCREEN 2: BATTLE ARENA (EXACT COPY OF QUICK PLAY screen-match) ──────
@@ -3672,6 +3675,12 @@
           </div>
         `;
 
+        if (window.Battle3Test) {
+          window.Battle3Test.start(overlay, () => ({ awayTeam: { lineup: [batter] }, awayLineupIndex: 0, bases: testState.bases, currentBoundaries: () => (typeof window.calcBoundaries === 'function'
+            ? window.calcBoundaries(batter, testState.pitchers[testState.activePitcherIndex], { inning: testState.inning, bases: testState.bases, hasTrait: () => false }) : null) }));
+          const f = overlay.querySelector('.bx3-deck');
+          if (f) { f.classList.add('dice3d-felt'); if (window.DiceTable) window.DiceTable.active(f); }
+        }
         const closeBtn = overlay.querySelector('#btn-combat-close');
         if (closeBtn) closeBtn.onclick = () => overlay.remove();
 

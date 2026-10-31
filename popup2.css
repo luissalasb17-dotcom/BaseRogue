@@ -1,0 +1,83 @@
+/* Player sheet: his locker on the left (card on the hook, gear on the shelf), the scout's form on a clipboard on the right. */
+#popup-card-content.pp4 { display: grid !important; grid-template-columns: 330px minmax(0, 1fr); gap: 16px; align-items: stretch; width: min(980px, 96vw) !important; max-width: none !important; max-height: 96vh; overflow: auto;
+  padding: 0 !important; background: none !important; border: 0 !important; box-shadow: none !important; font-family: 'Oswald', sans-serif; }
+
+/* locker */
+.pp4-locker { display: flex; flex-direction: column; padding: 10px; border-radius: 6px !important; background: repeating-linear-gradient(90deg, #6b4524 0 28px, #5a391d 28px 30px, #724a27 30px 58px, #54351b 58px 60px);
+  box-shadow: 0 16px 40px rgba(0,0,0,.7), inset 0 0 0 2px #2f1d0e; }
+.pp4-plate { align-self: center; max-width: 100%; padding: 4px 16px; text-align: center; border-radius: 3px !important; background: linear-gradient(180deg, #e9cf8d, #b98f3e); color: #2b1c0b; box-shadow: 0 2px 3px rgba(0,0,0,.6), inset 0 0 0 1px #7c5a1f;
+  font: 400 15px/1.15 'Alfa Slab One', serif; letter-spacing: .5px; text-transform: uppercase; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pp4-plate small { display: block; font: 600 10px 'Oswald', sans-serif; letter-spacing: 1.5px; }
+.pp4-stall { position: relative; flex: 1; margin-top: 10px; padding: 26px 0 16px; display: flex; justify-content: center; align-items: center; border-radius: 3px !important;
+  background: linear-gradient(180deg, #17110b, #241a10 70%, #2d2114); box-shadow: inset 0 0 22px #000, inset 0 0 0 2px #2f1d0e; }
+.pp4-stall::before { content: ''; position: absolute; top: 9px; left: 50%; width: 15px; height: 15px; margin-left: -7px; border-radius: 50% !important; background: radial-gradient(circle at 35% 30%, #f2dc9f, #8a6524); box-shadow: 0 2px 3px #000; }
+.pp4-stall .pc2-clickflip { filter: drop-shadow(0 12px 12px rgba(0,0,0,.75)); }
+.pp4-stall .player-card { zoom: 1.45; margin: 0 !important; }
+.pp4-shelf { margin-top: 0; padding: 9px 10px; background: linear-gradient(180deg, #8a5d31, #5f3e20); box-shadow: 0 -3px 6px rgba(0,0,0,.5); color: #fff; }
+.pp4-shelf .popup-item-slot-container { margin: 0 !important; padding: 0 !important; background: none !important; border: 0 !important; }
+.pp4-shelf .popup-item-slot-container > div:first-child { font: 700 12px 'Oswald', sans-serif !important; letter-spacing: 1px; color: #f3dfa8 !important; margin-bottom: 5px !important; }
+.pp4-shelf .popup-item-slot-container > div:last-child { background: rgba(0,0,0,.35) !important; border: 1px dashed rgba(255,255,255,.3) !important; }
+.pp4-shelf div { font-family: 'Oswald', sans-serif !important; font-size: 12.5px !important; color: #f3efe4 !important; }
+.pp4-shelf button { font: 600 12px 'Oswald', sans-serif !important; padding: 5px 11px !important; }
+
+/* scout's report: a pre-printed bureau form on a clipboard, filled in by hand */
+.pp4-board { position: relative; padding: 26px 13px 13px; border-radius: 9px !important; background: linear-gradient(135deg, #6d4a2a, #51351d); box-shadow: 0 16px 40px rgba(0,0,0,.7), inset 0 0 0 1px #8a6236; }
+.pp4-clip { position: absolute; z-index: 3; top: -6px; left: 50%; width: 120px; height: 36px; margin-left: -60px; border-radius: 5px 5px 2px 2px !important; background: linear-gradient(180deg, #e8ebee, #9ba1a7 55%, #6d7379); box-shadow: 0 3px 5px rgba(0,0,0,.55), inset 0 1px 0 #fff; }
+.pp4-board #btn-close-popup { position: absolute; z-index: 4; top: 5px; right: 8px; width: 26px; height: 26px; line-height: 1; color: #f3e7cf; background: none; border: 0; }
+.pp4-paper { position: relative; padding: 24px 22px 14px; overflow: hidden; color: #1f3a5f; background: #f4eedf; box-shadow: 0 2px 4px rgba(0,0,0,.45); font-family: 'Oswald', sans-serif;
+  background-image: linear-gradient(180deg, transparent 49.8%, rgba(120,95,60,.13) 50%, transparent 50.3%), radial-gradient(ellipse at 15% 90%, rgba(150,115,60,.14), transparent 50%), radial-gradient(ellipse at 90% 8%, rgba(150,115,60,.12), transparent 45%); }
+.pp4-ring { position: absolute; right: -28px; bottom: 34px; width: 120px; height: 120px; border-radius: 50% !important; border: 5px solid rgba(110,70,30,.14); box-shadow: inset 0 0 0 1px rgba(110,70,30,.1); pointer-events: none; }
+.pf-head { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 3px double #1f3a5f; padding-bottom: 4px; }
+.pf-head b { display: block; font: 400 16px/1.1 'Alfa Slab One', serif; letter-spacing: .6px; }
+.pf-head span { font-size: 10.5px; letter-spacing: 3px; }
+.pf-head em { font: 400 10px 'Special Elite', monospace; font-style: normal; }
+.pf-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 3px 10px; margin-top: 7px; }
+.pf-f { grid-column: span 1; min-width: 0; border-bottom: 1px solid #1f3a5f; display: flex; align-items: baseline; gap: 5px; }
+.pf-f.w2 { grid-column: span 2; } .pf-f.w3 { grid-column: span 5; }
+.pf-f span { flex: none; font-size: 9px; letter-spacing: .6px; }
+.pf-f b { min-width: 0; font: 600 21px/1 'Caveat', cursive; color: #1646a0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pf-tbl { width: 100%; margin-top: 9px; border-collapse: collapse; border: 1.5px solid #1f3a5f; }
+.pf-tbl th { font-size: 9.5px; letter-spacing: .8px; padding: 2px 8px; text-align: center; color: #f4eedf; background: #1f3a5f; }
+.pf-tbl th:first-child, .pf-tbl td:first-child { text-align: left; }
+.pf-tbl td { padding: 0 8px; text-align: center; border-top: 1px solid rgba(31,58,95,.35); border-left: 1px solid rgba(31,58,95,.2); font: 600 21px/1.05 'Caveat', cursive; color: #1646a0; }
+.pf-tbl td:first-child { font: 600 12px 'Oswald', sans-serif; color: #1f3a5f; letter-spacing: .5px; }
+.pf-tbl td.up { color: #137a3a; } .pf-tbl td.dn { color: #c0271c; }
+.pf-tbl td.now { font-weight: 700; }
+.pf-tbl td.gr u { display: inline-block; min-width: 28px; text-decoration: none; color: #c0271c; border: 1.5px solid #c0271c; border-radius: 50% 46% 52% 48% !important; transform: rotate(-4deg); line-height: .95; }
+.pf-cond { display: flex; align-items: center; gap: 11px; margin-top: 8px; font-size: 10.5px; letter-spacing: .5px; }
+.pf-cond label { display: inline-flex; align-items: center; gap: 4px; }
+.pf-cond label i { position: relative; width: 11px; height: 11px; border: 1px solid #1f3a5f; }
+.pf-cond label.on i::after { content: 'X'; position: absolute; left: 0; top: -9px; font: 700 21px/1 'Caveat', cursive; color: #1646a0; }
+.pf-cond b { margin-left: auto; font: 600 20px/1 'Caveat', cursive; color: #1646a0; }
+.pf-notes { margin-top: 7px; font-size: 10.5px; letter-spacing: .5px; }
+.pf-notes p { margin: 0; min-height: 24px; border-bottom: 1px solid rgba(31,58,95,.35); font: 600 19px/24px 'Caveat', cursive; letter-spacing: 0; color: #1646a0; }
+.pf-notes p.bad { color: #c0271c; }
+.pf-sign { display: flex; justify-content: flex-end; align-items: baseline; gap: 7px; margin-top: 7px; font-size: 9.5px; }
+.pf-sign b { min-width: 110px; font: 400 22px/1 'Yellowtail', cursive; color: #1646a0; border-bottom: 1px solid #1f3a5f; text-align: center; }
+.pp4-stamp { position: absolute; left: 22px; bottom: 11px; padding: 2px 9px; font: 400 15px 'Alfa Slab One', serif; font-style: normal; letter-spacing: 1.5px; text-transform: uppercase; color: #b3261e; border: 2.5px solid #b3261e; border-radius: 4px !important; opacity: .68; transform: rotate(-6deg); }
+
+/* what you can do with him sits on the desk below */
+.pp4-desk { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.pp4-desk > * { margin: 0 !important; padding: 10px 13px !important; min-width: 0; background: rgba(4,10,16,.94) !important; border: 1px solid rgba(16,185,129,.45) !important; border-radius: 7px !important; }
+.pp4-desk .popup-run-stats-row { grid-column: 1 / -1; }
+.pp4-desk > * > div:first-child { font: 700 12px 'Oswald', sans-serif !important; letter-spacing: 1px; color: #e8c766 !important; margin-bottom: 6px !important; }
+.pp4-desk div, .pp4-desk strong, .pp4-desk span { font-family: 'Oswald', sans-serif !important; font-size: 12.5px !important; }
+.pp4-desk select { width: 100%; padding: 6px 8px !important; font: 500 13px 'Oswald', sans-serif !important; }
+.pp4-desk .popup-upgrade-badge { padding: 1px 5px; }
+
+@media (max-width: 800px) {
+  #popup-card-content.pp4 { grid-template-columns: 1fr; }
+  .pp4-stall .player-card { zoom: 1.15; }
+  .pp4-paper { padding: 20px 12px 12px; }
+  .pp4-desk { grid-template-columns: 1fr; }
+}
+@media (max-width: 800px) {
+  #popup-card-content.pp4 { grid-template-columns: minmax(0, 1fr); overflow-x: hidden; }
+  .pp4-locker, .pp4-board, .pp4-paper { min-width: 0; }
+  .pp4-paper { padding-left: 9px; padding-right: 9px; }
+  .pf-tbl th, .pf-tbl td { padding-left: 4px; padding-right: 4px; }
+  .pf-cond { flex-wrap: wrap; gap: 6px 9px; }
+  .pf-grid { grid-template-columns: repeat(3, 1fr); }
+  .pf-f, .pf-f.w2, .pf-f.w3 { grid-column: auto; }
+  .pf-f.w3 { grid-column: 1 / -1; }
+}

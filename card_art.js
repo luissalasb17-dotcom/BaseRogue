@@ -348,7 +348,7 @@
     const cs = getComputedStyle(el), box = el.getBoundingClientRect();
     const k = box.width / (el.offsetWidth || 1);
     const room = box.width - (parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight)) * k;
-    return r.getBoundingClientRect().width > room - 0.5 * k;
+    return r.getBoundingClientRect().width > room + 0.1 * k;
   }
   function fitName(el) {
     if (!el.isConnected || !el.clientWidth || !nameOverflows(el)) return;
