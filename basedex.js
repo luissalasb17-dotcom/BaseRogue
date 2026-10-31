@@ -1569,6 +1569,14 @@
         };
       }
 
+      const nextBtnBack = overlay.querySelector('#btn-modal-next-back');
+      if (nextBtnBack) {
+        nextBtnBack.onclick = (e) => {
+          e.stopPropagation();
+          this.showRandomCard();
+        };
+      }
+
       const closeBtns = overlay.querySelectorAll('#btn-modal-close-detail, #btn-modal-close-back');
       closeBtns.forEach(b => {
         b.onclick = (e) => {

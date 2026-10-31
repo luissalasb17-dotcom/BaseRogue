@@ -48,7 +48,7 @@
     if (v === 'champ') add(ph, 'beforeend', '<i class="pgv-scene"><svg viewBox="0 0 20 20"><circle cx="15" cy="5" r="2.2" fill="#f5efe0" stroke="#7a1f14" stroke-width=".8"/><path d="M3 17 L12 6" stroke="#8a5a2b" stroke-width="2.2" stroke-linecap="round"/></svg></i>');
     if (v === 'mill') add(top, 'beforeend', `<i class="pgv-badge">${team}</i>`);
     if (v === 'pennant') add(ph, 'beforeend', `<i class="pgv-pennant">${team}</i><i class="pgv-cap">${pos}</i>`);
-    if (v === 'premium') add(ph, 'beforeend', '<i class="pgv-holo"></i>');
+    if (v === 'premium') { add(ph, 'beforeend', '<i class="pgv-holo"></i>'); add(front, 'beforeend', '<i class="pgv-dia"><svg viewBox="0 0 20 20"><path d="M10 3 L17 10 L10 17 L3 10 Z" fill="none" stroke="#fff" stroke-width="1.4"/><g fill="#f3d27a"><rect x="8.5" y="1.5" width="3" height="3"/><rect x="15.5" y="8.5" width="3" height="3"/><rect x="1.5" y="8.5" width="3" height="3"/><rect x="8.5" y="15.5" width="3" height="3"/></g></svg></i>'); }
     if (v === 'classic' || v === 'burlap' || v === 'black' || v === 'playball' || v === 'cj14') add(nm, 'beforeend', `<i class="pgv-x pgv-code">${team}</i>`);
     if (v === 'psych') add(ph, 'beforeend', `<i class="pgv-team">${team}</i>`);
     if (v === 'oval16') add(nm, 'beforeend', `<i class="pgv-x pgv-sub">${team} · ${pos}</i>`);
