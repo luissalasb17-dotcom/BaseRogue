@@ -139,3 +139,6 @@
 
 /* Playfair's default old-style digits drop below the line: the 5 and 7 of the rating hit the photo */
 .player-card.pc2 .pc2-ovr, .player-card.pc2 .pc2-year, .player-card.pc2 .bk-ovr { font-variant-numeric: lining-nums; font-feature-settings: 'lnum' 1; }
+
+/* the era chips sit centred on every design */
+.player-card.pc2.pc2.pc2.pc2.pc2.pc2 .pc2-chips { justify-content: center !important; padding-left: 0 !important; padding-right: 0 !important; }
