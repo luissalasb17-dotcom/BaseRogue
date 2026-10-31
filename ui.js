@@ -3710,6 +3710,7 @@ function initGameModeSelector() {
       ? `<div class="pc2-sparks">${[0, 1, 2, 3, 4].map(k => `<i style="left:${8 + k * 19}%;top:${12 + (k * 37) % 70}%;animation-delay:${(k * 0.53).toFixed(2)}s"></i>`).join('')}</div>` : '';
     const chipList = [
       `<span class="pc2-chip pc2-chip-era pc2-ce-${eraKey}" title="${esc(player.era)}">${esc(String(player.era || '').replace(/\s*\(.*$/, '').replace(/\s+Era$/i, '').replace(/^The\s+/i, ''))}</span>`,
+      (teamFranchise && teamFranchise !== 'ROOK') ? `<span class="pc2-chip" title="${esc(getFranchiseDisplayName(teamFranchise))}">${teamFranchise}</span>` : '',
       player.sec_pos ? `<span class="pc2-chip" title="${esc((typeof window.t === 'function' ? window.t('ui.sec_pos_tooltip') : 'Posición Secundaria') + ': ' + player.sec_pos)}">SEC ${esc((() => { const sp = String(player.sec_pos).split(',').map(x => x.trim()).filter(Boolean); return sp.length > 2 ? sp.slice(0, 2).join(',') + '+' : sp.join(','); })())}</span>` : '',
       isInjured ? `<span class="pc2-chip pc2-chip-bad" title="${esc(window.t ? window.t('badge.injury_tooltip', 'Lesión') : 'Lesión')}">INJ</span>` : '',
       lockNodes > 0 ? `<span class="pc2-chip pc2-chip-warn" title="${esc(window.t ? window.t('badge.lock_tooltip', { nodes: lockNodes }) : '')}">🔒${lockNodes}</span>` : ''
