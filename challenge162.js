@@ -12372,8 +12372,7 @@
       });
       const backBtn = document.getElementById('btn-challenge162-liga-back');
       if (backBtn) backBtn.onclick = () => {
-        const menuBtn = document.getElementById('btn-challenge162-season-back-menu');
-        if (menuBtn) menuBtn.click(); else { this.showScreen('screen-challenge-season'); this.renderSeason(); }
+        this.showScreen('screen-challenge-season'); this.renderSeason();
       };
     },
 
