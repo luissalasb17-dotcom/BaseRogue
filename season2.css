@@ -176,3 +176,7 @@
   .s2 .s2-legend { margin-left: 0; }
 }
 @media (prefers-reduced-motion: reduce) { .s2 .s2-c.new, .s2 .s2-recap, .s2[data-month="sep"] .s2-chapter, .s2 .s2-c.next { animation: none; } }
+
+/* late-season tables: wider panel on big screens and tighter cells, so every column stays in view */
+#screen-challenge-season.glass-panel { max-width: 1600px !important; width: 97% !important; }
+#screen-challenge-season .c162-table th, #screen-challenge-season .c162-table td { padding-left: 4px !important; padding-right: 4px !important; }

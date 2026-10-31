@@ -22,3 +22,8 @@
 /* Playfair's digits ride low (the web font ignores lining numerals): lift the rating clear of the photo frame */
 .player-card.pc2.pc2.pc2.pc2.pc2.pc2-e-deadball .pc2-front .pc2-ovr, .player-card.pc2.pc2.pc2.pc2.pc2.pc2-e-genesis .pc2-front .pc2-ovr { font-size: 15px; transform: translateY(-2px); }
 .player-card.pc2.pc2.pc2.pc2.pc2.pc2-e-deadball .pc2-front .pc2-top { margin-bottom: 2px; }
+
+/* Metal: the rating sits on the axis of the arch, whatever the widths of position and year */
+.player-card.pc2.pc2.pc2.pc2.pc2.pc2-e-steroid.pc2-v-metal .pc2-top { display: grid; grid-template-columns: 1fr auto 1fr; }
+.player-card.pc2.pc2.pc2.pc2.pc2.pc2-e-steroid.pc2-v-metal .pc2-top .pc2-pos { justify-self: start; }
+.player-card.pc2.pc2.pc2.pc2.pc2.pc2-e-steroid.pc2-v-metal .pc2-top .pc2-year { justify-self: end; }
