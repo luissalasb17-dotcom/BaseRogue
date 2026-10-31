@@ -124,3 +124,18 @@
 .player-card.pc2.pc2.pc2-e-bighair .pc2-chip { color: #3a2410; border-color: rgba(58,36,16,.7); background: rgba(255,246,226,.55); }
 .player-card.pc2.pc2.pc2-e-bighair .pc2-ft { color: #3a2410; }
 .player-card.pc2.pc2.pc2-e-bighair .pc2-r b { text-shadow: 0 0 1px #2a1806, 0 0 1px #2a1806; }
+
+/* era chip: full name on the era's colour, same on every card design */
+.player-card.pc2.pc2.pc2.pc2.pc2.pc2 .pc2-chip-era { color: #fff !important; border: 0 !important; font-weight: 700; text-shadow: none !important; white-space: nowrap; }
+.player-card.pc2.pc2.pc2.pc2.pc2.pc2 .pc2-ce-genesis { background: #8a6420 !important; }
+.player-card.pc2.pc2.pc2.pc2.pc2.pc2 .pc2-ce-deadball { background: #6e5136 !important; }
+.player-card.pc2.pc2.pc2.pc2.pc2.pc2 .pc2-ce-golden { background: #b98a00 !important; }
+.player-card.pc2.pc2.pc2.pc2.pc2.pc2 .pc2-ce-integration { background: #c8281e !important; }
+.player-card.pc2.pc2.pc2.pc2.pc2.pc2 .pc2-ce-expansion { background: #23805a !important; }
+.player-card.pc2.pc2.pc2.pc2.pc2.pc2 .pc2-ce-bighair { background: #cf2f8a !important; }
+.player-card.pc2.pc2.pc2.pc2.pc2.pc2 .pc2-ce-steroid { background: #d24a20 !important; }
+.player-card.pc2.pc2.pc2.pc2.pc2.pc2 .pc2-ce-efficiency { background: #2474c6 !important; }
+.player-card.pc2.pc2.pc2.pc2.pc2.pc2 .pc2-ce-modern { background: #6f45cf !important; }
+
+/* Playfair's default old-style digits drop below the line: the 5 and 7 of the rating hit the photo */
+.player-card.pc2 .pc2-ovr, .player-card.pc2 .pc2-year, .player-card.pc2 .bk-ovr { font-variant-numeric: lining-nums; font-feature-settings: 'lnum' 1; }

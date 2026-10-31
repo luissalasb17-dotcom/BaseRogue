@@ -791,7 +791,7 @@
         "syn_deadball_1b": "⏳ Small Ball: ¡Sencillo colocado inflige +{{extra}} daño!",
         "syn_deadball_run": "⏳ Small Ball: ¡Manufactura de {{runs}} carrera(s) inflige +{{bonus}} daño de impacto!",
         "syn_smallball": "⏳ Small Ball: ¡Avanzan 2 bases en sencillo!",
-        "syn_bighair": "Sinergia Big Hair",
+        "syn_bighair": "Sinergia Turf",
         "syn_bighair_glove": "🛼 AstroTurf: ¡Guante de Oro reduce daño de out en -50%!",
         "def_success_title": "¡JUGADA DE GUANTE DE ORO!",
         "def_success_desc": "completa una atrapada sensacional (Dado: {{roll}}/{{thresh}})",
@@ -988,8 +988,8 @@
             "lv2": "Expansion: 80% robo; robo cura +20 y hace 10 daño."
         },
         "bighair": {
-            "lv1": "Big Hair: Robos exitosos hacen +15 daño al lanzador.",
-            "lv2": "Big Hair: Robos +30 daño y debuff de 3 turnos al rival."
+            "lv1": "Turf: Robos exitosos hacen +15 daño al lanzador.",
+            "lv2": "Turf: Robos +30 daño y debuff de 3 turnos al rival."
         },
         "steroid": {
             "lv1": "Bash Brothers: Jonrones (HR) hacen +20 daño adicional.",
@@ -3156,7 +3156,7 @@
         "syn_deadball_1b": "⏳ Small Ball: Placed single deals +{{extra}} damage!",
         "syn_deadball_run": "⏳ Small Ball: Manufactured {{runs}} run(s) deal +{{bonus}} impact damage!",
         "syn_smallball": "⏳ Small Ball: Runners advance 2 bases on single!",
-        "syn_bighair": "Big Hair Synergy",
+        "syn_bighair": "Turf Synergy",
         "syn_bighair_glove": "🛼 AstroTurf: Gold Glove cuts out damage by -50%!",
         "def_success_title": "GOLD GLOVE PLAY!",
         "def_success_desc": "makes a sensational defensive play (Roll: {{roll}}/{{thresh}})",
@@ -3353,8 +3353,8 @@
             "lv2": "Expansion: 80% steal; steal heals +20 and deals 10 damage."
         },
         "bighair": {
-            "lv1": "Big Hair: Successful steals deal +15 damage to pitcher.",
-            "lv2": "Big Hair: Steals +30 damage and 3-turn debuff."
+            "lv1": "Turf: Successful steals deal +15 damage to pitcher.",
+            "lv2": "Turf: Steals +30 damage and 3-turn debuff."
         },
         "steroid": {
             "lv1": "Bash Brothers: Home Runs deal +20 extra damage.",

@@ -725,7 +725,7 @@
     "syn_deadball_1b": "⏳ Small Ball: Placed single deals +{{extra}} damage!",
     "syn_deadball_run": "⏳ Small Ball: Manufactured {{runs}} run(s) deal +{{bonus}} impact damage!",
     "syn_smallball": "⏳ Small Ball: Runners advance 2 bases on single!",
-    "syn_bighair": "Big Hair Synergy",
+    "syn_bighair": "Turf Synergy",
     "syn_bighair_glove": "🛼 AstroTurf: Gold Glove cuts out damage by -50%!",
     "def_success_title": "GOLD GLOVE PLAY!",
     "def_success_desc": "makes a sensational defensive play (Roll: {{roll}}/{{thresh}})",
@@ -922,8 +922,8 @@
       "lv2": "Expansion: 80% steal; steal heals +20 and deals 10 damage."
     },
     "bighair": {
-      "lv1": "Big Hair: Successful steals deal +15 damage to pitcher.",
-      "lv2": "Big Hair: Steals +30 damage and 3-turn debuff."
+      "lv1": "Turf: Successful steals deal +15 damage to pitcher.",
+      "lv2": "Turf: Steals +30 damage and 3-turn debuff."
     },
     "steroid": {
       "lv1": "Bash Brothers: Home Runs deal +20 extra damage.",

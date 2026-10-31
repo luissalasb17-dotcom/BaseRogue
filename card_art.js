@@ -339,12 +339,23 @@
 
   // Long names: shrink each name until it fits its strip (the size classes only guess by length;
   // banners with margins / skew, like Golden or Efficiency, are narrower than the card).
+  // scrollWidth rounds: a name a fraction of a pixel too wide reports as fitting but still gets the ellipsis
+  function nameOverflows(el) {
+    if (el.scrollWidth > el.clientWidth) return true;
+    const txt = [...el.childNodes].find(n => n.nodeType === 3 && n.textContent.trim());
+    if (!txt) return false;
+    const r = document.createRange(); r.selectNodeContents(txt);
+    const cs = getComputedStyle(el), box = el.getBoundingClientRect();
+    const k = box.width / (el.offsetWidth || 1);
+    const room = box.width - (parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight)) * k;
+    return r.getBoundingClientRect().width > room - 0.5 * k;
+  }
   function fitName(el) {
-    if (!el.isConnected || !el.clientWidth || el.scrollWidth <= el.clientWidth) return;
+    if (!el.isConnected || !el.clientWidth || !nameOverflows(el)) return;
     const back = el.classList.contains('bk-name');
     const min = back ? 7.5 : 6;
     let fs = parseFloat(getComputedStyle(el).fontSize) || 10;
-    for (let i = 0; i < 14 && el.scrollWidth > el.clientWidth && fs > min; i++) {
+    for (let i = 0; i < 14 && nameOverflows(el) && fs > min; i++) {
       fs -= 0.5;
       el.style.setProperty('font-size', fs + 'px', 'important');
       el.style.setProperty('letter-spacing', '0', 'important');

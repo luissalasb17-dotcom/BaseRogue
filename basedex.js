@@ -7,7 +7,7 @@
     { key: 'Golden Era (1920-1941)', label: 'GOLDEN' },
     { key: 'Integration (1942-1960)', label: 'INTEGRATION' },
     { key: 'Expansion (1961-1976)', label: 'EXPANSION' },
-    { key: 'Big Hair Era (1977-1993)', label: 'BIG HAIR' },
+    { key: 'Turf Era (1977-1993)', label: 'TURF' },
     { key: 'Steroid Era (1994-2005)', label: 'STEROID' },
     { key: 'Efficiency Era (2006-2015)', label: 'EFFICIENCY' },
     { key: 'Modern Era (2016-Pres)', label: 'MODERN' },

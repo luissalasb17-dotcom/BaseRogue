@@ -8,7 +8,7 @@
     GOLDEN: "Golden Era (1920-1941)",
     INTEGRATION: "Integration (1942-1960)",
     EXPANSION: "Expansion (1961-1976)",
-    BIGHAIR: "Big Hair Era (1977-1993)",
+    BIGHAIR: "Turf Era (1977-1993)",
     STEROID: "Steroid Era (1994-2005)",
     EFFICIENCY: "Efficiency Era (2006-2015)",
     MODERN: "Modern Era (2016-Pres)"
@@ -40,7 +40,7 @@
       desc: "T1 (2+): +2 SPD; robos curan +5 Stamina al corredor. T2 (4+): +5 SPD / +2 EYE; robos curan +5 Stamina y aplican +1 turno de fatiga al pitcher rival (+20% daño). T3 (6+): +8 SPD / +4 EYE; robos curan +10 Stamina y aplican +2 turnos de fatiga (+20% daño). T4 (8+): +12 SPD / +6 EYE; robos curan +15 Stamina y aplican +3 turnos de fatiga (+25% daño); y toda la alineación recupera +10 de Stamina extra tras cada victoria (desgaste baja a -10).",
       applyStatBonus: (stats) => {}
     },
-    "Big Hair Era (1977-1993)": {
+    "Turf Era (1977-1993)": {
       name: "AstroTurf Speedsters",
       desc: "T1 (2+): +2 DEF/SPD (+10 Escudo inicial). T2 (4+): +5 DEF/SPD (+20 Escudo); robos infligen +10 daño directo al pitcher. T3 (6+): +8 DEF/SPD (+30 Escudo); robos infligen +15 daño directo al pitcher. T4 (8+): +12 DEF/SPD (+40 Escudo); robos infligen +25 daño directo al pitcher; y outs normales hacen -50% de daño.",
       applyStatBonus: (stats) => {}
@@ -222,7 +222,7 @@
     { name: "Ernie Banks", pos: "SS", era: Eras.INTEGRATION, team: "CHC", year: 1958, con: 82, pwr: 92, eye: 80, spd: 65, def: 88, rarity: "Rare" },
     { name: "Roy Campanella", pos: "C", era: Eras.INTEGRATION, team: "LAD", year: 1953, con: 84, pwr: 88, eye: 82, spd: 42, def: 92, rarity: "Rare" },
 
-    // --- Big Hair Era (1970-1989) ---
+    // --- Turf Era (1970-1989) ---
     { name: "Rickey Henderson", pos: "LF", era: Eras.BIGHAIR, team: "OAK", year: 1982, con: 85, pwr: 60, eye: 96, spd: 99, def: 88, rarity: "Legendary" },
     { name: "Mike Schmidt", pos: "3B", era: Eras.BIGHAIR, team: "PIT", year: 1980, con: 80, pwr: 94, eye: 90, spd: 68, def: 96, rarity: "Epic" },
     { name: "Tony Gwynn", pos: "RF", era: Eras.BIGHAIR, team: "SFG", year: 1987, con: 98, pwr: 48, eye: 90, spd: 82, def: 88, rarity: "Epic" },

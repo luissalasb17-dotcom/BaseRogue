@@ -349,7 +349,7 @@
       // ── Team (player side) vitals ─────────────────────────────────
       this.teamHP    = 100;           // Fixed; strikeouts bite here directly
       this.activeSynergies = this._calculateActiveSynergies(awayTeam.lineup);
-      const bigHairTier = this.activeSynergies['Big Hair Era (1977-1993)'] || 0;
+      const bigHairTier = this.activeSynergies['Turf Era (1977-1993)'] || 0;
       const bigHairShield = bigHairTier === 4 ? 40 : bigHairTier === 3 ? 30 : bigHairTier === 2 ? 20 : bigHairTier === 1 ? 10 : 0;
       this.teamShield = Math.min(100, Math.round((teamShield || 0) + bigHairShield));  // 1:1 with average DEF + AstroTurf Shield (capped at 100)
       this.teamShieldMax = this.teamShield;
@@ -492,7 +492,7 @@
       const goldenTier = this.activeSynergies['Golden Era (1920-1941)'] || 0;
       const integrationTier = this.activeSynergies['Integration (1942-1960)'] || 0;
       const expansionTier = this.activeSynergies['Expansion (1961-1976)'] || 0;
-      const bigHairTier = this.activeSynergies['Big Hair Era (1977-1993)'] || 0;
+      const bigHairTier = this.activeSynergies['Turf Era (1977-1993)'] || 0;
       const steroidTier = this.activeSynergies['Steroid Era (1994-2005)'] || 0;
       const moneyballTier = this.activeSynergies['Efficiency Era (2006-2015)'] || 0;
       const modernTier = this.activeSynergies['Modern Era (2016-Pres)'] || 0;
@@ -529,7 +529,7 @@
         if (eyeBoost > 0) effBatter.eye = (effBatter.eye || 50) + eyeBoost;
       }
 
-      // Big Hair Era (1977-1993): +2/+5/+8/+12 DEF and SPD
+      // Turf Era (1977-1993): +2/+5/+8/+12 DEF and SPD
       if (bigHairTier >= 1) {
         const defSpdBoost = bigHairTier === 4 ? 12 : bigHairTier === 3 ? 8 : bigHairTier === 2 ? 5 : 2;
         effBatter.def = (effBatter.def || 50) + defSpdBoost;
@@ -621,7 +621,7 @@
       const goldenTier = this.activeSynergies['Golden Era (1920-1941)'] || 0;
       const integrationTier = this.activeSynergies['Integration (1942-1960)'] || 0;
       const expansionTier = this.activeSynergies['Expansion (1961-1976)'] || 0;
-      const bigHairTier = this.activeSynergies['Big Hair Era (1977-1993)'] || 0;
+      const bigHairTier = this.activeSynergies['Turf Era (1977-1993)'] || 0;
       const steroidTier = this.activeSynergies['Steroid Era (1994-2005)'] || 0;
       const moneyballTier = this.activeSynergies['Efficiency Era (2006-2015)'] || 0;
       const modernTier = this.activeSynergies['Modern Era (2016-Pres)'] || 0;
@@ -660,7 +660,7 @@
         if (eyeBoost > 0) effBatter.eye = (effBatter.eye || 50) + eyeBoost;
       }
 
-      // Big Hair Era (1977-1993): +2/+5/+8/+12 DEF and SPD
+      // Turf Era (1977-1993): +2/+5/+8/+12 DEF and SPD
       if (bigHairTier >= 1) {
         const defSpdBoost = bigHairTier === 4 ? 12 : bigHairTier === 3 ? 8 : bigHairTier === 2 ? 5 : 2;
         effBatter.def = (effBatter.def || 50) + defSpdBoost;
@@ -847,7 +847,7 @@
           extraStealDmg = 0;
           stealProcMsg = _t('sim.syn_expansion', {}, 'Speed & Hustle');
         }
-        // Big Hair Era (AstroTurf Speedsters): Direct steal damage without complex debuffs
+        // Turf Era (AstroTurf Speedsters): Direct steal damage without complex debuffs
         else if (bigHairTier >= 1) {
           stealChance = Math.min(1.0, stealChance + 0.20);
           extraStealDmg = bigHairTier === 4 ? 25 : bigHairTier === 3 ? 15 : bigHairTier === 2 ? 10 : 0;
@@ -1432,7 +1432,7 @@
         // early_pressure: the first batter of the new inning gets a boost
         if (this.hasTrait('early_pressure')) this.firstBatterOfInningPending = true;
 
-        // Inning shield regeneration: iron_shield trait (+25), Big Hair synergy, and Integration synergy
+        // Inning shield regeneration: iron_shield trait (+25), Turf synergy, and Integration synergy
         let totalShieldRegen = 0;
         let regenReasons = [];
 
@@ -1441,7 +1441,7 @@
           regenReasons.push('🛡️ Escudo de Hierro (+25)');
         }
         const activeSyn = this.activeSynergies || (this._calculateActiveSynergies ? this._calculateActiveSynergies(this.awayTeam.lineup) : {});
-        const bigHairTier = activeSyn ? (activeSyn['Big Hair Era (1977-1993)'] || 0) : 0;
+        const bigHairTier = activeSyn ? (activeSyn['Turf Era (1977-1993)'] || 0) : 0;
         if (bigHairTier >= 1) {
           const bhRegen = bigHairTier === 4 ? 20 : bigHairTier === 3 ? 15 : bigHairTier === 2 ? 10 : 5;
           totalShieldRegen += bhRegen;

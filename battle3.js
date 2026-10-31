@@ -5,7 +5,7 @@
 (function () {
   'use strict';
   const $ = id => document.getElementById(id);
-  const ERAS = [['Genesis', 'genesis'], ['Deadball', 'deadball'], ['Golden', 'golden'], ['Integration', 'integration'], ['Expansion', 'expansion'], ['Big Hair', 'bighair'], ['Steroid', 'steroid'], ['Efficiency', 'efficiency']];
+  const ERAS = [['Genesis', 'genesis'], ['Deadball', 'deadball'], ['Golden', 'golden'], ['Integration', 'integration'], ['Expansion', 'expansion'], ['Turf', 'bighair'], ['Steroid', 'steroid'], ['Efficiency', 'efficiency']];
   const eraKey = p => { const e = String(p.era || p._era || ''); const f = ERAS.find(x => e.includes(x[0])); return f ? f[1] : 'modern'; };
   const portrait = p => (window.CardArt && p ? window.CardArt.portrait(p, eraKey(p), false) : '');
   const esc = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');

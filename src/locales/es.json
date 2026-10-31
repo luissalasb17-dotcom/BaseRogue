@@ -725,7 +725,7 @@
     "syn_deadball_1b": "⏳ Small Ball: ¡Sencillo colocado inflige +{{extra}} daño!",
     "syn_deadball_run": "⏳ Small Ball: ¡Manufactura de {{runs}} carrera(s) inflige +{{bonus}} daño de impacto!",
     "syn_smallball": "⏳ Small Ball: ¡Avanzan 2 bases en sencillo!",
-    "syn_bighair": "Sinergia Big Hair",
+    "syn_bighair": "Sinergia Turf",
     "syn_bighair_glove": "🛼 AstroTurf: ¡Guante de Oro reduce daño de out en -50%!",
     "def_success_title": "¡JUGADA DE GUANTE DE ORO!",
     "def_success_desc": "completa una atrapada sensacional (Dado: {{roll}}/{{thresh}})",
@@ -922,8 +922,8 @@
       "lv2": "Expansion: 80% robo; robo cura +20 y hace 10 daño."
     },
     "bighair": {
-      "lv1": "Big Hair: Robos exitosos hacen +15 daño al lanzador.",
-      "lv2": "Big Hair: Robos +30 daño y debuff de 3 turnos al rival."
+      "lv1": "Turf: Robos exitosos hacen +15 daño al lanzador.",
+      "lv2": "Turf: Robos +30 daño y debuff de 3 turnos al rival."
     },
     "steroid": {
       "lv1": "Bash Brothers: Jonrones (HR) hacen +20 daño adicional.",

@@ -176,8 +176,8 @@ function getEraNameForYear(year) {
   if (y <= 1919) return "Deadball Grit (1901-1919)";
   if (y <= 1941) return "Golden Age (1920-1941)";
   if (y <= 1960) return "Integration Era (1942-1960)";
-  if (y <= 1976) return "Expansion & Turf (1961-1976)";
-  if (y <= 1993) return "Big Hair & Radar (1977-1993)";
+  if (y <= 1976) return "Expansion Boom (1961-1976)";
+  if (y <= 1993) return "Turf & Radar (1977-1993)";
   if (y <= 2005) return "Steroid Sluggers (1994-2005)";
   if (y <= 2015) return "Efficiency & Shift (2006-2015)";
   return "Modern Statcast (2016-2025)";
@@ -3407,7 +3407,7 @@ function initGameModeSelector() {
     if (era.includes("Golden")) return "GOLDEN (1920-1941)";
     if (era.includes("Integration")) return "INTEGRATION (1942-1960)";
     if (era.includes("Expansion")) return "EXPANSION (1961-1976)";
-    if (era.includes("Big Hair")) return "BIG HAIR (1977-1993)";
+    if (era.includes("Turf")) return "TURF (1977-1993)";
     if (era.includes("Steroid")) return "STEROID (1994-2005)";
     if (era.includes("Efficiency")) return "EFFICIENCY (2006-2015)";
     if (era.includes("Modern")) return "MODERN (2016-PRES)";
@@ -3448,7 +3448,7 @@ function initGameModeSelector() {
       "Golden Era (1920-1941)": "era-golden",
       "Integration (1942-1960)": "era-integration",
       "Expansion (1961-1976)": "era-expansion",
-      "Big Hair Era (1977-1993)": "era-bighair",
+      "Turf Era (1977-1993)": "era-bighair",
       "Steroid Era (1994-2005)": "era-steroid",
       "Efficiency Era (2006-2015)": "era-efficiency",
       "Modern Era (2016-Pres)": "era-modern"
@@ -3471,7 +3471,7 @@ function initGameModeSelector() {
       else if (y <= 1941) resolvedEra = "Golden Era (1920-1941)";
       else if (y <= 1960) resolvedEra = "Integration (1942-1960)";
       else if (y <= 1976) resolvedEra = "Expansion (1961-1976)";
-      else if (y <= 1993) resolvedEra = "Big Hair Era (1977-1993)";
+      else if (y <= 1993) resolvedEra = "Turf Era (1977-1993)";
       else if (y <= 2005) resolvedEra = "Steroid Era (1994-2005)";
       else if (y <= 2015) resolvedEra = "Efficiency Era (2006-2015)";
       else resolvedEra = "Modern Era (2016-Pres)";
@@ -3676,8 +3676,7 @@ function initGameModeSelector() {
     const sparks = (rarityLabel === 'Legendary' || rarityLabel === 'Epic')
       ? `<div class="pc2-sparks">${[0, 1, 2, 3, 4].map(k => `<i style="left:${8 + k * 19}%;top:${12 + (k * 37) % 70}%;animation-delay:${(k * 0.53).toFixed(2)}s"></i>`).join('')}</div>` : '';
     const chipList = [
-      `<span class="pc2-chip" title="${esc(player.era)}">${getShortEraName(player.era).split(' ')[0]}</span>`,
-      (teamFranchise && teamFranchise !== 'ROOK') ? `<span class="pc2-chip" title="${esc(getFranchiseDisplayName(teamFranchise))}">${teamFranchise}</span>` : '',
+      `<span class="pc2-chip pc2-chip-era pc2-ce-${eraKey}" title="${esc(player.era)}">${esc(String(player.era || '').replace(/\s*\(.*$/, '').replace(/\s+Era$/i, '').replace(/^The\s+/i, ''))}</span>`,
       player.sec_pos ? `<span class="pc2-chip" title="${esc((typeof window.t === 'function' ? window.t('ui.sec_pos_tooltip') : 'Posición Secundaria') + ': ' + player.sec_pos)}">SEC ${esc((() => { const sp = String(player.sec_pos).split(',').map(x => x.trim()).filter(Boolean); return sp.length > 2 ? sp.slice(0, 2).join(',') + '+' : sp.join(','); })())}</span>` : '',
       isInjured ? `<span class="pc2-chip pc2-chip-bad" title="${esc(window.t ? window.t('badge.injury_tooltip', 'Lesión') : 'Lesión')}">INJ</span>` : '',
       lockNodes > 0 ? `<span class="pc2-chip pc2-chip-warn" title="${esc(window.t ? window.t('badge.lock_tooltip', { nodes: lockNodes }) : '')}">🔒${lockNodes}</span>` : ''
@@ -5410,7 +5409,7 @@ function initGameModeSelector() {
         name: t('eras.syn_name_speed', 'Speed & Hustle (1961-1976)'),
         get tiers() { return [t('eras.speed_d1'), t('eras.speed_d2'), t('eras.speed_d3'), t('eras.speed_d4')]; }
       },
-      "Big Hair Era (1977-1993)": {
+      "Turf Era (1977-1993)": {
         tag: "ASTROTURF",
         color: "#38bdf8",
         name: t('eras.syn_name_astroturf', 'AstroTurf Speedsters (1977-1993)'),
@@ -8220,7 +8219,7 @@ function initGameModeSelector() {
       { key: isEs ? 'LIVEBALL SLUGGERS' : 'LIVEBALL SLUGGERS', regex: /(?:🔥)?\s*(?:Liveball Sluggers|Liveball|Golden Era)[:\s]*([^\|\n]+)/i, color: '#f59e0b', icon: 'fa-fire' },
       { key: isEs ? 'FIVE-TOOL LEGENDS' : 'FIVE-TOOL LEGENDS', regex: /(?:⭐)?\s*(?:Five-Tool Legends|Five-Tool|Integration)[:\s]*([^\|\n]+)/i, color: '#a855f7', icon: 'fa-star' },
       { key: isEs ? 'SPEED & HUSTLE' : 'SPEED & HUSTLE', regex: /(?:🏃)?\s*(?:Speed & Hustle|Expansion|Sinergia Speed & Hustle)[:\s]*([^\|\n]+)/i, color: '#38bdf8', icon: 'fa-bolt' },
-      { key: isEs ? 'ASTROTURF SPEEDSTERS' : 'ASTROTURF SPEEDSTERS', regex: /(?:🛼)?\s*(?:AstroTurf Speedsters|AstroTurf|Big Hair|Sinergia Big Hair)[:\s]*([^\|\n]+)/i, color: '#10b981', icon: 'fa-gauge-high' },
+      { key: isEs ? 'ASTROTURF SPEEDSTERS' : 'ASTROTURF SPEEDSTERS', regex: /(?:🛼)?\s*(?:AstroTurf Speedsters|AstroTurf|Turf|Sinergia Turf)[:\s]*([^\|\n]+)/i, color: '#10b981', icon: 'fa-gauge-high' },
       { key: isEs ? 'BASH BROTHERS' : 'BASH BROTHERS', regex: /(?:💪)?\s*(?:Bash Brothers|Steroid Era)[:\s]*([^\|\n]+)/i, color: '#ef4444', icon: 'fa-dumbbell' },
       { key: isEs ? 'MONEYBALL ANALYTICS' : 'MONEYBALL ANALYTICS', regex: /(?:📊)?\s*(?:Moneyball Analytics|Moneyball|Efficiency Era)[:\s]*([^\|\n]+)/i, color: '#14b8a6', icon: 'fa-chart-pie' },
       { key: isEs ? 'THREE TRUE OUTCOMES' : 'THREE TRUE OUTCOMES', regex: /(?:🚀)?\s*(?:Three True Outcomes|Modern Era)[:\s]*([^\|\n]+)/i, color: '#ec4899', icon: 'fa-rocket' },

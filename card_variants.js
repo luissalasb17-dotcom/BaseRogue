@@ -58,7 +58,7 @@
     if (v === 'flat49') c.style.setProperty('--fl', FLAT[h % 5]);
     if (v === 'bw48') {
       c.style.setProperty('--fl', FLAT[h % 5]);
-      const chips = c.querySelectorAll('.pc2-chip'), full = (chips[1] && chips[1].title) || team;
+      const full = c.dataset.tname || team;
       add(nm, 'beforeend', `<i class="pgv-60"><span>${full}</span><span>${pos}</span></i>`);
     }
     if (v === 'panel52') add(ph, 'beforeend', `<i class="pgv-52"><u><i>${team}</i></u><b>${name}</b><s>${name}</s></i>`);
