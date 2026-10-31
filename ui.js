@@ -3757,7 +3757,7 @@ function initGameModeSelector() {
               ${handTxt ? `<span class="pc2-hand" title="Bats / Throws">${handTxt}</span>` : '<span></span>'}
               <span class="pc2-sta ${stamClass}"><i class="fa-solid fa-bolt-lightning"></i> ${stam}</span>
             </div>
-            <div class="pc2-tex"></div><div class="pc2-wear"></div>
+            <div class="pc2-tex"></div><div class="pc2-wear"></div><i class="pc2-rar"></i>
           </div>
           <div class="pc2-face pc2-back">
             <div class="pc2-bh"><span>${cleanName}</span><span class="pc2-ovr">${Math.floor(ovr)}</span></div>
