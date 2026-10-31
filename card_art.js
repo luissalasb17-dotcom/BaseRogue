@@ -352,16 +352,19 @@
     // the back header has room for two lines: the very longest names wrap instead of shrinking more
     if (back && el.scrollWidth > el.clientWidth) { el.style.setProperty('white-space', 'normal', 'important'); el.style.setProperty('line-height', '1.05', 'important'); }
   }
+  const FIT_SEL = '.pc2 .pc2-name, .pc2 .bk-name, .pc2 .pgv-52 b, .pc2 .pgv-52 s, .pc2 .pgv-wave b, .pc2 .pgv-smoke b, .pc2 .pgv-foil, .pc2 .pgv-split b, .pc2 .pgv-sig';
   let fitTimer = null;
   function fitAll() {
     fitTimer = null;
-    document.querySelectorAll('.pc2 .pc2-name, .pc2 .bk-name').forEach(fitName);   // front strip and the back header
+    document.querySelectorAll(FIT_SEL).forEach(fitName);   // front strip and the back header
   }
   function initFit() {
     const queue = () => { if (!fitTimer) fitTimer = setTimeout(fitAll, 60); };
     new MutationObserver(muts => {
       if (muts.some(m => [...m.addedNodes].some(n => n.nodeType === 1 && (n.matches?.('.pc2, .pc2 *') || n.querySelector?.('.pc2'))))) queue();
     }).observe(document.body, { childList: true, subtree: true });
+    // the design fonts arrive late: a name that fitted in the fallback font may not fit in the real one
+    if (document.fonts) { document.fonts.ready.then(queue); document.fonts.addEventListener('loadingdone', queue); }
     document.addEventListener('transitionend', queue, true);
     document.addEventListener('animationend', queue, true);
     // cards rendered into a hidden screen measure 0 wide: refit when a screen is shown

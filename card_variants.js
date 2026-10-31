@@ -64,13 +64,13 @@
     if (v === 'panel52') add(ph, 'beforeend', `<i class="pgv-52"><u><i>${team}</i></u><b>${name}</b><s>${name}</s></i>`);
     if (v === 'ring59') { c.style.setProperty('--pa', PASTEL[h % 5]); add(ph, 'beforeend', `<i class="pgv-sig">${name}</i>`); add(ph, 'afterend', `<i class="pgv-59">${team} · ${pos}</i>`); }
     if (v === 'arc06') add(nm, 'afterbegin', `<i class="pgv-dot">${team}</i>`);
-    if (v === 'vert07') { add(ph, 'beforeend', `<i class="pgv-bar"><b>${name}</b><em>${team}</em></i>`); const b = ph.querySelector('.pgv-bar b'); if (b) b.style.fontSize = Math.max(6.5, Math.min(11, 130 / Math.max(name.length, 1))) + 'px'; }
+    if (v === 'vert07') { add(ph, 'beforeend', `<i class="pgv-bar"><b>${name}</b><em>${team}</em></i>`); const b = ph.querySelector('.pgv-bar b'); if (b) b.style.fontSize = Math.max(5.5, Math.min(11, 115 / Math.max(name.length, 1))) + 'px'; }
     if (v === 'wave15') add(ph, 'beforeend', `<i class="pgv-wave"><b>${name}</b><em>${team}</em></i>`);
     if (v === 'blackref') add(front, 'beforeend', '<i class="pgv-shine"></i>');
     if (v === 'smoke16') add(ph, 'beforeend', `<i class="pgv-x pgv-smoke"><b>${name}</b><em>${team} · ${pos}</em></i>`);
     if (v === 'split20') add(ph, 'afterend', `<i class="pgv-x pgv-split"><b>${name}</b><em>${team}</em></i>`);
     if (v === 'club' && era === 'modern') add(ph, 'beforeend', `<i class="pgv-x pgv-foil">${name}<small>${team}</small></i>`);
-    if (v === 't24') { add(ph, 'beforeend', `<i class="pgv-x pgv-bt"><u>${team}</u><span><small>${first}</small><b>${last}</b></span></i>`); const b = ph.querySelector('.pgv-bt b'); if (b) b.style.fontSize = Math.max(8, Math.min(14, 72 / Math.max(last.length, 1))) + 'px'; }
+    if (v === 't24') { add(ph, 'beforeend', `<i class="pgv-x pgv-bt"><u>${team}</u><span><small>${first}</small><b>${last}</b></span></i>`); const b = ph.querySelector('.pgv-bt b'); if (b) b.style.fontSize = Math.max(7, Math.min(14, 66 / Math.max(last.length, 1))) + 'px'; }
     const ser = c.querySelector('.pc2-series');
     if (ser) { ser.textContent = pick[3] + ' · ' + c.dataset.year; if (v === 'ring59') { const row = c.querySelector('.pgv-59'); if (row) row.prepend(ser); } }
   }
