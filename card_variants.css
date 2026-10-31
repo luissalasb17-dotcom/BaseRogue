@@ -904,5 +904,4 @@
   -webkit-mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 72%, transparent 100%); mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 72%, transparent 100%); }
 .player-card.pc2.pc2.pc2.pc2.pc2-e-genesis.pc2-v-litho .pc2-ph img { border-radius: 0 !important; image-rendering: auto; filter: url(#pgv-paint) saturate(1.25) contrast(1.12); transform: scale(1.08); }
 .player-card.pc2.pc2.pc2.pc2.pc2-e-genesis.pc2-v-litho .pc2-name { margin-top: 1px; color: #2b2340; }
-.pgv-motto { display: block; font: italic 400 6.5px 'Playfair Display', serif; letter-spacing: .6px; color: #a3261a; text-transform: none; text-align: center; }
 .player-card.pc2.pc2.pc2.pc2.pc2-e-genesis.pc2-v-litho .pc2-chip { border-color: #cbb88f; }
