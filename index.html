@@ -57,7 +57,6 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Outfit:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <script src="https://cdn.tailwindcss.com"></script>
   <script src="src/lib/i18next.min.js"></script>
   <script src="src/i18n.js?v=1789600018"></script>
   
@@ -86,7 +85,6 @@
   <link rel="stylesheet" href="mobile2.css?v=12">
   <link rel="stylesheet" href="popup2.css?v=6">
   <link rel="stylesheet" href="screens2.css?v=4">
-  <link rel="stylesheet" href="proto_battle2.css?v=5">
   <style>
     @keyframes bounce {
       0%, 100% { transform: translateY(0); }
@@ -98,6 +96,8 @@
     }
     #victory-title { animation: pulse-glow 2s ease-in-out infinite; }
   </style>
+  <link rel="stylesheet" href="tailwind_static.css?v=1">
+  <link rel="stylesheet" href="perf_phone.css?v=3">
 </head>
 <body class="on-main-menu">
 
@@ -1434,7 +1434,6 @@
   <script src="players.js?v=1787860520"></script>
   <script src="pitchers_pool.js?v=1791753000018"></script>
   <script src="player_team_history.js?v=3"></script>
-  <script src="opponents_database.js?v=1789487604"></script>
   <script src="season_context.js?v=1"></script>
   <script src="challenge_tendencies.js?v=30"></script>
   <script src="game_cards_pool.js?v=1791753000021"></script>
@@ -1442,30 +1441,20 @@
   <script src="simulation.js?v=1790204013"></script>
   <script src="game.js?v=1790205020"></script>
   <script src="audio.js?v=1787799830"></script>
-  <script src="career_data.js?v=2026_1"></script>
   <script src="career.js?v=1787873086"></script>
-  <script src="player_flags_db.js?v=1787949068"></script>
+  <script src="flags_lite.js?v=1"></script>
   <script src="player_hands.js?v=22"></script>
   <script src="basedex.js?v=1790110017"></script>
   <script src="challenge162.js?v=1791753000102"></script>
   <script src="dynasty.js?v=1787960004"></script>
-  <script src="card_art.js?v=18"></script>
+  <script src="card_art.js?v=19"></script>
   <script src="ui.js?v=1790204097"></script>
-  <script src="juice.js?v=4"></script>
+  <script src="juice.js?v=p1"></script>
   <script src="battle3.js?v=103"></script>
   <script src="card_variants.js?v=12"></script>
-  <script src="proto_battle2.js?v=2"></script>
-  <script src="proto_dice.js?v=4"></script>
-  <script src="proto_genesis.js?v=5"></script>
-  <script src="proto_steroid.js?v=8"></script>
-  <script src="proto_bighair.js?v=12"></script>
-  <script src="proto_expansion.js?v=15"></script>
-  <script src="proto_golden.js?v=2"></script>
-  <script src="proto_integration.js?v=9"></script>
-  <script src="proto_efficiency.js?v=5"></script>
-  <script src="proto_deadball.js?v=3"></script>
-  <script src="proto_modern.js?v=14"></script>
-  <script src="dice3d.js?v=14b"></script>
-  <script src="draft3d.js?v=8"></script>
+  <script src="lazy.js?v=1"></script>
+  <script>if (/[?&]proto=/.test(location.search)) { var pcss = document.createElement('link'); pcss.rel = 'stylesheet'; pcss.href = 'proto_battle2.css?v=5'; document.head.appendChild(pcss); ['proto_battle2.js?v=2','proto_dice.js?v=4','proto_genesis.js?v=5','proto_steroid.js?v=8','proto_bighair.js?v=12','proto_expansion.js?v=15','proto_golden.js?v=2','proto_integration.js?v=9','proto_efficiency.js?v=5','proto_deadball.js?v=3','proto_modern.js?v=14'].forEach(function (f) { document.write('<scr' + 'ipt src="' + f + '"></scr' + 'ipt>'); }); }</script>
+  <script src="dice3d.js?v=p1"></script>
+  <script src="draft3d.js?v=p1"></script>
 </body>
 </html>

@@ -293,9 +293,11 @@
     if (!window.CardBacks) back.classList.add('bk-wait');
     const probe = { playerID: card.dataset.pid || undefined, name: card.dataset.name, year: card.dataset.year };
     let cs = null, flag = '';
-    try { cs = typeof window.getPlayerCareerData === 'function' ? window.getPlayerCareerData(probe) : null; } catch (e) { cs = null; }
     try { flag = typeof window.getPlayerFlagHTML === 'function' ? window.getPlayerFlagHTML(probe) : ''; } catch (e) { flag = ''; }
-    withBacks(() => {
+    // career numbers arrive a moment after startup (lazy.js)
+    const careerReady = window.ensureCareer ? window.ensureCareer() : Promise.resolve();
+    withBacks(() => careerReady.then(() => {
+      try { cs = typeof window.getPlayerCareerData === 'function' ? window.getPlayerCareerData(probe) : null; } catch (e) { cs = null; }
       back.classList.remove('bk-wait');
       // still no data: keep the plain back and try again on the next turn
       if (!window.CardBacks) { delete back.dataset.done; return; }
@@ -307,7 +309,7 @@
       // long names: shrink to fit the header (again once the flag image has its width)
       const nm = back.querySelector('.bk-name');
       if (nm) { fitName(nm); setTimeout(() => fitName(nm), 120); nm.querySelectorAll('img').forEach(img => img.addEventListener('load', () => fitName(nm), { once: true })); }
-    });
+    }));
   }
 
   function flip(card) {

@@ -51,7 +51,7 @@
     try {
       const T = window.THREE;
       const renderer = new T.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'low-power' });
-      renderer.setPixelRatio(Math.min(2, Math.max(1.5, window.devicePixelRatio || 1)));
+      renderer.setPixelRatio(window.innerWidth < 900 ? 1.25 : Math.min(2, Math.max(1.5, window.devicePixelRatio || 1)));
       renderer.setClearColor(0x000000, 0);
       renderer.domElement.className = 'd3-canvas';
       const scene = new T.Scene();

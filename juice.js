@@ -124,7 +124,7 @@
     if (fx.flash) flash(fx.flash);
     if (fx.particles) {
       const origin = fx.hit && pitcherSlot ? centerOf(pitcherSlot) : centerOf(popup);
-      burst(origin.x, origin.y, fx.colors, fx.particles, fx.spread);
+      burst(origin.x, origin.y, fx.colors, window.matchMedia('(max-width: 900px), (pointer: coarse)').matches ? Math.ceil(fx.particles / 3) : fx.particles, fx.spread);
     }
     // Batter card lunges at the pitcher on contact; whoever loses the exchange recoils.
     if (fx.hit && batterSlot && pitcherSlot) {

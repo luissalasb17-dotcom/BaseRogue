@@ -1,0 +1,60 @@
+#lazy-notice { position: fixed; z-index: 100000; left: 50%; bottom: 84px; transform: translateX(-50%); max-width: 92vw; padding: 10px 16px; font: 500 14px 'Oswald', sans-serif; letter-spacing: 1px; color: #ffe08a; text-align: center; background: rgba(4,10,16,.96); border: 1px solid #10b981; border-radius: 6px; }
+
+/* Phones and tablets: the look stays, the effects that repaint the whole screen go */
+@media (max-width: 900px), (pointer: coarse) {
+  *, *::before, *::after { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+  body { background-attachment: scroll !important; }
+  body::after, .jx-mote { display: none !important; animation: none !important; }
+  /* moving foil on every card in view: static shine instead */
+  .player-card::before, .player-card::after, .player-card *::before, .player-card *::after { animation: none !important; }
+  .player-card, .player-card * { filter: none !important; will-change: auto !important; }
+  .player-card [class*="twinkle"], .player-card [class*="spark"] { animation: none !important; }
+  .card-tilt-active { transform: none !important; }
+  /* tap instead of hover; no 300 ms wait and no grey flash */
+  a, button, [role="button"], .player-card { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+  /* lists that are long but mostly off screen */
+  .dx2-slot, .c162-table tr { content-visibility: auto; contain-intrinsic-size: auto 40px; }
+  /* tap targets */
+  button, select, .c162-tabs button { min-height: 40px; }
+  html { -webkit-text-size-adjust: 100%; overscroll-behavior-y: none; }
+  input, select, textarea { font-size: 16px !important; } /* iOS zooms in below 16 px */
+}
+
+/* Comfort on a phone: reachable main button, no long walk through the menu, fingers not cursors */
+@media (max-width: 768px) {
+  body > header .header-icon-actions > * { min-height: 40px !important; min-width: 42px; }
+  button[title], .ratings-info-btn, #ratings-info-btn { min-width: 40px; }
+  #screen-draft button:not(.btn-mode):not([id]) { min-width: 40px; }
+
+  /* mode cards as rows: art, name, one line. The whole row is the button. */
+  .mode-grid { flex-direction: column !important; gap: 10px !important; align-items: stretch !important; }
+  .mode-card { position: relative; display: grid !important; grid-template-columns: 92px minmax(0, 1fr); grid-template-rows: auto auto; column-gap: 12px; align-items: center; width: 100% !important; max-width: none !important; min-height: 0 !important; height: auto !important; padding: 10px !important; transform: none !important; }
+  .mode-card.hidden { display: none !important; }
+  .mode-card .mc-photo { grid-column: 1; grid-row: 1 / 3; width: 92px !important; height: 74px !important; margin: 0 !important; }
+  .mode-card .mode-icon, .mode-card .mc-kicker, .mode-card .mode-desc { display: none !important; }
+  .mode-card .mode-title { grid-column: 2; margin: 0 !important; font-size: 19px !important; text-align: left !important; }
+  .mode-card .mode-subtitle { grid-column: 2; margin: 0 !important; font-size: 13px !important; text-align: left !important; }
+  .mode-card .btn-mode { position: absolute !important; inset: 0; width: 100% !important; height: 100% !important; margin: 0 !important; opacity: 0; z-index: 2; }
+
+  /* the step forward is always at hand */
+  #btn-confirm-final-lineup { position: fixed !important; z-index: 60; left: 12px; right: 12px; bottom: 70px; width: auto !important; margin: 0 !important; }
+  #screen-draft:has(#btn-confirm-final-lineup) { padding-bottom: 76px !important; }
+}
+
+/* 162-0 on a phone: the buttons you press all season stay under the thumb */
+@media (max-width: 768px) {
+  .s2-actions { position: fixed !important; z-index: 70; left: 0; right: 0; bottom: 0; margin: 0 !important; padding: 6px 8px calc(6px + env(safe-area-inset-bottom)) !important; display: grid !important; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 5px; background: rgba(4,10,16,.97); border-top: 1px solid #10b981; }
+  .s2-actions > * { grid-column: 1 / -1; }
+  .s2-actions > button { grid-column: auto; width: 100% !important; min-width: 0; min-height: 46px; margin: 0 !important; padding: 3px 2px !important; font: 500 11.5px/1.1 'Oswald', sans-serif !important; letter-spacing: .3px; white-space: normal !important; }
+  #screen-challenge-season { padding-bottom: 86px !important; }
+
+  #btn-c162-meet-next, #btn-c162-preview-start { position: fixed !important; z-index: 70; left: 12px; right: 12px; bottom: calc(10px + env(safe-area-inset-bottom)); width: auto !important; margin: 0 !important; }
+  #screen-challenge-meet, #screen-challenge-preview, :has(> #btn-c162-meet-next), :has(> #btn-c162-preview-start) { padding-bottom: 70px !important; }
+
+  /* wide tables: the player's name stays while the stats slide */
+  .c162-table th:first-child, .c162-table td:first-child { position: sticky; left: 0; z-index: 2; background: #0a1510; }
+  .c162-table-wrap, .c162-table { -webkit-overflow-scrolling: touch; }
+
+  /* the small flip corner gets a finger-sized hit area */
+  .pc2-flip::after { content: ''; position: absolute; inset: -12px; }
+}
