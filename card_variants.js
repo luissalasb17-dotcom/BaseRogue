@@ -43,7 +43,11 @@
     const parts = name.split(' '), last = parts.pop(), first = parts.join(' ');
     const player = { playerID: c.dataset.pid, name, team };
     c.classList.add('pc2-v-' + v);
-    if (v === 'litho') repaint(c, 'golden', player);
+    if (v === 'litho') {
+      repaint(c, 'golden', player);
+      add(nm, 'beforeend', '<i class="pgv-x pgv-motto">Champions of the Diamond</i>');
+      if (!document.getElementById('pgv-paint-svg')) document.body.insertAdjacentHTML('beforeend', '<svg id="pgv-paint-svg" width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="pgv-paint" x="-5%" y="-5%" width="110%" height="110%"><feGaussianBlur stdDeviation=".75" result="soft"/><feTurbulence type="fractalNoise" baseFrequency=".11" numOctaves="3" seed="4" result="n"/><feDisplacementMap in="soft" in2="n" scale="4"/></filter></svg>');
+    }
     if (v === 'smoke16' || v === 'split20' || v === 't24') repaint(c, 'efficiency', player);
     if (v === 'champ') add(ph, 'beforeend', '<i class="pgv-scene"><svg viewBox="0 0 20 20"><circle cx="15" cy="5" r="2.2" fill="#f5efe0" stroke="#7a1f14" stroke-width=".8"/><path d="M3 17 L12 6" stroke="#8a5a2b" stroke-width="2.2" stroke-linecap="round"/></svg></i>');
     if (v === 'mill') add(top, 'beforeend', `<i class="pgv-badge">${team}</i>`);
