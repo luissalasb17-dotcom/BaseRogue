@@ -463,3 +463,21 @@
 .po3-sta em { font-style: normal; color: #ff9f7a; }
 .po3-conf u { position: relative; } .po3-conf u::after { content: ''; position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: rgba(240,230,200,.6); }
 .po3-conf.pos s { background: #5cc8ff; } .po3-conf.neg s { background: #ff5a4a; } .po3-conf.pos em { color: #5cc8ff; }
+
+/* Broadcast: side retired card and who is next */
+.po3-side { position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%); display: grid; grid-template-columns: minmax(0, .85fr) minmax(0, 1fr); background: linear-gradient(90deg, #07182b, #0d2740); border-top: 3px solid #ffd36a; border-bottom: 3px solid #ffd36a; box-shadow: 0 10px 26px rgba(0,0,0,.6); animation: po3Side .32s cubic-bezier(.2,.9,.3,1); font-family: 'Oswald', sans-serif; color: #eef4f8; }
+@keyframes po3Side { from { opacity: 0; transform: translate(-40px, -50%); } to { opacity: 1; transform: translate(0, -50%); } }
+.po3-side-l { padding: 12px 16px; background: #b3202a; display: flex; flex-direction: column; justify-content: center; }
+.po3-side-l small { font-size: 12px; letter-spacing: 2px; opacity: .9; }
+.po3-side-l b { font: 400 25px/1.1 'Alfa Slab One', serif; letter-spacing: 1px; }
+.po3-side-l span { font-size: 15px; font-weight: 600; margin-top: 3px; } .po3-side-l em { font-style: normal; font-size: 12px; opacity: .9; }
+.po3-side-r { padding: 9px 14px; display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.po3-side-r small { font-size: 11px; letter-spacing: 2px; color: #ffd36a; }
+.po3-side-r div { display: grid; grid-template-columns: 24px minmax(0, 1fr) auto; gap: 7px; align-items: center; }
+.po3-side-r i { width: 24px; height: 24px; background-size: cover; image-rendering: pixelated; }
+.po3-side-r b { font-weight: 500; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .po3-side-r span { font-size: 12px; color: #a9c0d0; }
+.po3-side-r u { margin-top: 3px; text-decoration: none; font-size: 11px; letter-spacing: 1px; color: #a9c0d0; }
+.po3-next { position: absolute; right: 10px; bottom: 10px; display: flex; gap: 12px; padding: 4px 10px; background: rgba(7,24,43,.9); border-left: 3px solid #ffd36a; font: 500 13px 'Oswald', sans-serif; color: #eef4f8; }
+.po3-next small { display: block; font-size: 9px; letter-spacing: 1.5px; color: #ffd36a; }
+@media (max-width: 768px) { .po3-side { grid-template-columns: minmax(0, 1fr); } .po3-side-l b { font-size: 19px; } .po3-next { display: none; } }
+.po3-fx[data-r="side"] { z-index: 30; }

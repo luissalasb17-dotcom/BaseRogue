@@ -1470,8 +1470,7 @@
 
   // The glove a starter actually brings to the slot he plays: full at his own position, 85% at
   // a secondary one (the same −15% the card shows), and half anywhere else. Before this a starter dragged to any slot fielded with his full glove.
-  // What the Iron Man +5 itself is worth in the suggestion's units: per game for a batter, per season for arms.
-  const IRON_BOOST_VALUE = { bat: 1, sp: 170, rp: 30 };
+  const IRON_WORKLOAD = { perGame: 0.25, sp: 2, rp: -10 }; // on the OVR scale: see _ironCandidates
   function slotGlove(p, slot) {
     if (!p || !slot || slot === 'DH' || canPlayerFillPrimary(p, slot)) return p;
     const d = Number(p.def !== undefined ? p.def : p.defense_val) || 50;
@@ -6682,6 +6681,11 @@
       const sim = this._activePlayoffSim, pg = this.state && this.state.playoffs.pendingGame;
       const pt = sim && sim.game.pending;
       if (!sim || !pg || !pt || pt.type !== 'roll' || sim.rolling) return;
+      if (window.DiceTable && window.DiceTable.state() !== 'ready' && window.DiceTable.state() !== 'failed' && !this._po3DiceWaited) {
+        this._po3DiceWaited = true;
+        window.DiceTable.ready(4000).then(() => { this._renderPO3(); this._po3Roll(clutch); });
+        return;
+      }
       if (sim.auto && pg.byHand && (pt.suggest || []).length && !(pg.moves || {})[pt.rollNo]) {
         pt.suggest.forEach(x => this._po3Move(x.m, true));
         return this._po3Roll(clutch);
@@ -6721,7 +6725,7 @@
         const nx = sim.game.pending;
         if (sim.auto && nx) {
           if (nx.isBig) { sim.auto = false; sim.autoStopped = true; this._renderPO3(); }
-          else setTimeout(() => { if (this._activePlayoffSim === sim && sim.auto && !sim.rolling) this._po3Roll(false); }, sim.fast ? 320 : 1100);
+          else { const last = sim.game.events[sim.game.events.length - 1], turned = last && (last.half !== nx.half || last.inning !== nx.inning); setTimeout(() => { if (this._activePlayoffSim === sim && sim.auto && !sim.rolling) this._po3Roll(false); }, turned ? (sim.fast ? 1800 : 5000) : sim.fast ? 320 : 1100); }
         }
       });
     },
@@ -6864,7 +6868,10 @@
       }
       let sticker = '';
       const sx = sim.sticker && ev[sim.sticker.k];
-      if (sx && !sim.rolling && Date.now() - sim.sticker.t < 4000) {
+      // The third out: its play shows briefly, then the broadcast card takes over until the next roll.
+      const sideTurned = !!(pending && e && (pending.inning !== e.inning || pending.half !== e.half));
+      const stickerMs = sideTurned ? 1700 : 4000;
+      if (sx && !sim.rolling && Date.now() - sim.sticker.t < stickerMs) {
         const batGood = ['HR', '3B', '2B', '1B', 'BB', 'SB'].includes(sx.outcome) || sx.detail === 'E' || sx.detail === 'SF';
         const good = (sx.half === 'TOP') === batGood;
         const n = sx.runsScored || 0;
@@ -6907,6 +6914,27 @@
           </div>`;
       }
 
+      // ── who is due up, and the side-retired card ──
+      const nineNow = (userBats ? game.userLineup : game.oppLineup) || [];
+      const dueUp = (() => {
+        if (!pending || !nineNow.length) return [];
+        const at = nineNow.findIndex(b => b.name === curBat);
+        const rest = at < 0 ? [] : [1, 2].map(i => nineNow[(at + i) % nineNow.length]);
+        return [{ name: curBat }, ...rest];
+      })();
+      let sideCard = '';
+      if (sideTurned && !sim.rolling && !pre && !(sx && Date.now() - sim.sticker.t < stickerMs)) {
+        const hEv = ev.filter(x => x.inning === e.inning && x.half === e.half && x.outcome !== 'SB' && x.outcome !== 'CS');
+        const hEvAll = ev.filter(x => x.inning === e.inning && x.half === e.half);
+        const r = hEvAll.reduce((t, x) => t + (x.runsScored || 0), 0), h = hEv.filter(x => ['1B', '2B', '3B', 'HR'].includes(x.outcome)).length;
+        const lob = (e.newBases || []).filter(Boolean).length;
+        sideCard = `<div class="po3-side">
+            <div class="po3-side-l"><small>${e.half === 'TOP' ? 'MIDDLE' : 'END'} OF THE ${ord(e.inning)}</small><b>SIDE RETIRED</b><span>${r} R · ${h} H · ${lob} LOB</span><em>${esc(me.name)} ${uR}, ${esc(them.name)} ${oR}</em></div>
+            <div class="po3-side-r"><small>DUE UP · ${esc(userBats ? me.name : them.name)}</small>${dueUp.map(b => `<div><i style="background-image:url(${face(b.name)})"></i><b>${esc(b.name)}</b><span>${esc(lastLine(b.name, 'batter'))}</span></div>`).join('')}<u>NOW PITCHING: ${esc(curPit)}</u></div>
+          </div>`;
+      }
+      const nextUp = dueUp.length > 1 && !sideCard && !pre ? `<div class="po3-next"><span><small>ON DECK</small>${esc(cleanName({ name: dueUp[1].name }))}</span>${dueUp[2] ? `<span><small>IN THE HOLE</small>${esc(cleanName({ name: dueUp[2].name }))}</span>` : ''}</div>` : '';
+
       // ── log and the batting team's nine ──
       const logRows = [];
       for (let k = step - 1; k >= 0 && logRows.length < 80; k--) {
@@ -6937,6 +6965,8 @@
                 <div class="po3-plate"><div class="po3-row"><div class="po3-card" data-r="pcard"></div><div data-r="pplq"></div></div></div>
                 <div class="po3-fx" data-r="banner2"></div>
                 <div class="po3-fx" data-r="sticker"></div>
+                <div class="po3-fx" data-r="side"></div>
+                <div class="po3-fx" data-r="next"></div>
                 <div class="po3-ovwrap" data-r="ov"></div>
               </div>
               <div class="po3-tray" data-r="tray"></div>
@@ -6990,6 +7020,8 @@
       setCard('pcard', curBat);
       set('banner2', banner);
       set('sticker', sticker);
+      set('side', sideCard);
+      set('next', nextUp);
       set('ov', overlay);
       set('tray', trayHTML);
       set('hand', handHTML);
@@ -7015,8 +7047,10 @@
       // warm the dice on this felt
       const felt = root.querySelector('.po3-felt');
       if (window.DiceTable && felt && pending) { try { window.DiceTable.active(felt); } catch (err) { /* 2D fallback */ } }
-      if (sim.sticker && !this._po3StickerT) {
-        this._po3StickerT = setTimeout(() => { this._po3StickerT = null; if (this._activePlayoffSim === sim && (this._activePlayoffTab || 'broadcast') === 'broadcast' && this.state.playoffs.pendingGame && this.state.playoffs.pendingGame.every) this._renderPO3(); }, 4100);
+      if (sim.sticker && this._po3StickerKey !== sim.sticker.t) {
+        this._po3StickerKey = sim.sticker.t;
+        clearTimeout(this._po3StickerT);
+        this._po3StickerT = setTimeout(() => { if (this._activePlayoffSim === sim && (this._activePlayoffTab || 'broadcast') === 'broadcast' && this.state.playoffs.pendingGame && this.state.playoffs.pendingGame.every) this._renderPO3(); }, stickerMs + 100);
       }
     },
 
@@ -10237,16 +10271,9 @@
 
     // Iron Men come preselected (the positions that gain the most games, best player first)
     // so the choice is visible; the user can change them before the season starts.
-    // What an Iron Man is worth to THIS roster (user's call, Oct 2026: not just the position).
-    // The mark gives a starter games (or innings) that someone else would play: the value is
-    // those extra games times how much worse that someone is. Batters: extra games at his slot
-    // x (his OVR - the backup who would cover his rest days). Pitchers, in the same units (a
-    // pitcher's inning faces about the batters a hitter sees in a game): extra innings x (his
-    // OVR - who would throw them). So a star catcher with a weak backup, a position nobody on
-    // the bench covers, or an ace far above the bullpen rise; a shortstop with a good backup
-    // does not. Returns every candidate with its score and a one-line reason.
+    // Suggested Iron Men: your best players first, a nudge for those who wear down the most.
+    // A reliever gains little from it (the closer alone measured +0.4 wins).
     _ironCandidates(p) {
-      const bench = (p.bench || []).filter(Boolean);
       const ovr = x => Number(x && x.ovr) || 0;
       const out = [];
       (p.battingOrder || SLOTS).forEach(slot => {
@@ -10254,57 +10281,17 @@
         if (!b) return;
         const g = IRON_GAMES[slot] || IRON_GAMES.DH;
         const gain = g[1] - g[0];
-        const fits = (x, s) => s === 'DH' || (canPlayerFillSlot(x, s) && !(window.leftyCantPlay && window.leftyCantPlay(x, s)));
-        const offPos = (x, s) => (s !== 'DH' && x.pos !== s ? 2 : 0);
-        let backup = null, backupOvr, via = null;
-        bench.forEach(x => {
-          if (!fits(x, slot)) return;
-          const v = ovr(x) - offPos(x, slot);
-          if (backupOvr === undefined || v > backupOvr) { backup = x; backupOvr = v; via = null; }
-        });
-        // The same double switch the manager makes on rest days: another starter (the DH too)
-        // slides over and a bench player takes his spot.
-        (p.battingOrder || SLOTS).forEach(s2 => {
-          const m = p.lineup[s2];
-          if (s2 === slot || !m || slot === 'DH' || !fits(m, slot)) return;
-          bench.forEach(x => {
-            if (!fits(x, s2)) return;
-            const v = ovr(x) - offPos(x, s2) - offPos(m, slot);
-            if (backupOvr === undefined || v > backupOvr) { backup = x; backupOvr = v; via = m; }
-          });
-        });
-        // Nobody covers it: someone out of position with half his glove, which costs more than a weak bat.
-        if (!backup) backupOvr = bench.length ? Math.max(...bench.map(ovr)) - 14 : 40;
-        const gap = Math.max(0, ovr(b) - backupOvr);
-        out.push({
-          key: batterUnlockKey(b), who: b, slot, score: gain * gap + gain + IRON_BOOST_VALUE.bat * g[1],
-          reason: !backup ? `+${gain} games · nobody covers ${slot}: on rest days someone plays there out of position`
-            : via ? `+${gain} games · ${cleanName(via)} would slide over and ${cleanName(backup)} comes in, ${Math.round(gap)} OVR worse`
-            : `+${gain} games · his backup ${cleanName(backup)} is ${Math.round(gap)} OVR worse`
-        });
+        out.push({ key: batterUnlockKey(b), who: b, slot, score: ovr(b) + gain * IRON_WORKLOAD.perGame,
+          reason: `+${gain} games · +${IRON_BOOST} ratings` });
       });
-      const SP = (p.pitchers.SP || []).filter(Boolean), RP = (p.pitchers.RP || []).filter(Boolean);
-      const labels = bullpenLabels(RP);
-      // Pitchers vs the pen they would take innings from: half OVR, half the pitching ratings
-      // without Stamina. OVR alone made every starter look far better than his bullpen
-      // (Stamina is 28% of a starter's OVR and near zero for relievers), so the top three were
-      // often all starters; the rates alone flip it (relievers' per-inning rates run high).
-      // Measured (20 pack teams x 2 seasons, Oct 2026): 3 starters +2.7 wins, 3 batters +2.1,
-      // the closer alone +0.4, so relievers carry a smaller weight.
-      const n = v => (Number.isFinite(Number(v)) ? Number(v) : 50);
-      const arm = x => 0.5 * ovr(x) + 0.5 * (28 * n(x.h9) + 12 * n(x.k9) + 12 * n(x.bb9) + 10 * n(x.hr9) + 10 * n(x.clt !== undefined ? x.clt : x.clutch)) / 72;
-      const penAvg = RP.length ? RP.reduce((t, x) => t + arm(x), 0) / RP.length : 50;
-      SP.forEach((x, i) => {
-        const gap = Math.max(0, arm(x) - penAvg);
-        out.push({ key: ironPitKey(x), who: x, slot: `SP${i + 1}`, score: 20 * gap + IRON_BOOST_VALUE.sp,
-          reason: `~+20 innings · the bullpen that would throw them pitches ${Math.round(gap)} points worse` });
+      (p.pitchers.SP || []).filter(Boolean).forEach((x, i) => {
+        out.push({ key: ironPitKey(x), who: x, slot: `SP${i + 1}`, score: ovr(x) + IRON_WORKLOAD.sp,
+          reason: `~+20 innings · +${IRON_BOOST} ratings` });
       });
+      const RP = (p.pitchers.RP || []).filter(Boolean), labels = bullpenLabels(RP);
       RP.forEach((x, i) => {
-        const others = RP.filter(y => y !== x);
-        const oAvg = others.length ? others.reduce((t, y) => t + arm(y), 0) / others.length : 50;
-        const gap = Math.max(0, arm(x) - oAvg);
-        out.push({ key: ironPitKey(x), who: x, slot: labels[i] || 'RP', score: 4 * gap + IRON_BOOST_VALUE.rp,
-          reason: `~+16 innings, but tired arms in close games · the rest of the pen pitches ${Math.round(gap)} points worse` });
+        out.push({ key: ironPitKey(x), who: x, slot: labels[i] || 'RP', score: ovr(x) + IRON_WORKLOAD.rp,
+          reason: `~+16 innings · +${IRON_BOOST} ratings` });
       });
       return out.sort((a, b) => b.score - a.score);
     },
@@ -12581,39 +12568,41 @@
       const eraOf = y => { y = parseInt(y, 10) || 2020; return y <= 1900 ? 'genesis' : y <= 1919 ? 'deadball' : y <= 1941 ? 'golden' : y <= 1960 ? 'integration' : y <= 1976 ? 'expansion' : y <= 1993 ? 'bighair' : y <= 2005 ? 'steroid' : y <= 2015 ? 'efficiency' : 'modern'; };
       const face = (p, isP) => `<i class="rt-face" style="${window.CardArt ? `background-image:url(${window.CardArt.portrait(p, eraOf(p.year), isP)})` : ''}"></i>`;
       const dec = v => v.toFixed(3).replace(/^0/, '');
+      const rar = p => 'r-' + String(p.rarity || 'common').toLowerCase();
       const batCells = (p, slot) => {
         const k = batterUnlockKey(p), s = S.batterStats[k] || {}, ab = s.ab || 0, bb = s.bb || 0, h = s.h || 0;
         const tb = h + (s.doubles || 0) + 2 * (s.triples || 0) + 3 * (s.hr || 0), obp = ab + bb ? (h + bb) / (ab + bb) : 0, slg = ab ? tb / ab : 0;
         const def = p.def !== undefined ? p.def : 50, full = { g: 0, ab: 0, h: 0, doubles: 0, triples: 0, hr: 0, rbi: 0, bb: 0, so: 0, r: 0, sb: 0, ...s };
         return `<td>${s.g || 0}</td><td>${ab}</td><td>${dec(ab ? h / ab : 0)}</td><td>${dec(obp)}</td><td>${dec(slg)}</td><td>${calcOpsPlus(full)}</td><td>${s.hr || 0}</td><td>${s.rbi || 0}</td><td>${s.sb || 0}</td><td>${calcBatterWAR(full, slot || p.pos || 'BN', def)}</td>`;
       };
-      const who = (p, isP) => `<td class="rt-who">${face(p, isP)}<span><b>${cleanName(p)}</b>${this._formTag(USER_TEAM_ID, p, isP)}<small>${Math.floor(p.ovr || 0)} OVR</small></span></td>`;
+      const who = (p, isP) => `<td class="rt-who">${face(p, isP)}<span><b>${cleanName(p)}</b>${this._formTag(USER_TEAM_ID, p, isP)}</span></td><td class="rt-ovr ${rar(p)}">${Math.floor(p.ovr || 0)}</td>`;
       const dd = (x, cls = '') => `class="rt-item ${cls}" draggable="true" data-rt='${JSON.stringify(x)}'`;
-      const batHead = `<tr><th></th><th></th><th class="l">PLAYER</th><th>WEAR</th><th>G</th><th>AB</th><th>AVG</th><th>OBP</th><th>SLG</th><th>OPS+</th><th>HR</th><th>RBI</th><th>SB</th><th>WAR</th></tr>`;
+      const batHead = `<tr><th></th><th></th><th class="l">PLAYER</th><th>OVR</th><th>WEAR</th><th>G</th><th>AB</th><th>AVG</th><th>OBP</th><th>SLG</th><th>OPS+</th><th>HR</th><th>RBI</th><th>SB</th><th>WAR</th></tr>`;
       const order = R.battingOrder.map((sl, i) => { const p = R.lineup[sl]; return !p ? '' : `<tr ${dd({ t: 'L', slot: sl, order: 1 })}><td class="rt-n">${i + 1}</td><td><span class="rt-pos">${sl}</span></td>${who(p, false)}<td>${this._wearCellHTML(p, true)}</td>${batCells(p, sl)}</tr>`; }).join('');
       const bench = (R.bench || []).map((p, i) => !p ? '' : `<tr ${dd({ t: 'B', i })}><td class="rt-n">BN</td><td><span class="rt-pos alt">${p.pos}</span></td>${who(p, false)}<td>${this._wearCellHTML(p, false)}</td>${batCells(p)}</tr>`).join('');
       const pitRow = (p, label, x) => {
         const k = pitcherUnlockKey(p), s = S.pitcherStats[k] || {}, o = s.outs || 0, ip = o / 3, full = { outs: 0, h: 0, er: 0, bb: 0, so: 0, w: 0, l: 0, sv: 0, ...s };
         return `<tr ${dd(x)}><td><span class="rt-pos ${label === 'CL' ? 'cl' : ''}">${label}</span></td>${who(p, true)}<td>${s.w || 0}-${s.l || 0}</td><td>${s.sv || 0}</td><td>${Math.floor(ip)}.${o % 3}</td><td>${ip ? ((s.er || 0) * 9 / ip).toFixed(2) : '—'}</td><td>${ip ? (((s.h || 0) + (s.bb || 0)) / ip).toFixed(2) : '—'}</td><td>${s.so || 0}</td><td>${calcEraPlus(full)}</td><td>${calcPitcherWAR(full, label)}</td><td>${Math.round(pitStaOf(p))}</td></tr>`;
       };
-      const pitHead = `<tr><th></th><th class="l">PITCHER</th><th>W-L</th><th>SV</th><th>IP</th><th>ERA</th><th>WHIP</th><th>K</th><th>ERA+</th><th>WAR</th><th>STA</th></tr>`;
+      const pitHead = `<tr><th></th><th class="l">PITCHER</th><th>OVR</th><th>W-L</th><th>SV</th><th>IP</th><th>ERA</th><th>WHIP</th><th>K</th><th>ERA+</th><th>WAR</th><th>STA</th></tr>`;
       const labels = bullpenLabels(R.pitchers.RP);
-      const spots = { CF: [50, 8], LF: [17, 22], RF: [83, 22], SS: [35, 40], '2B': [65, 40], '3B': [21, 62], '1B': [79, 62], C: [50, 90], DH: [12, 90] };
-      const chips = Object.entries(spots).map(([sl, [x, y]]) => { const p = R.lineup[sl]; return !p ? '' : `<div ${dd({ t: 'L', slot: sl }, 'rt-chip')} style="left:${x}%;top:${y}%">${face(p, false)}<b>${sl}</b><span>${cleanName(p)}</span></div>`; }).join('');
-      const sp = R.pitchers.SP[S.gamesPlayed % R.pitchers.SP.length];
+      const spots = { CF: [50, 13.5], LF: [15, 22.5], RF: [85, 22.5], SS: [36, 32], '2B': [64, 32], '3B': [21, 54], '1B': [79, 54], C: [50, 86.5], DH: [8, 86.5] };
+      const place = (p, label, x, l, t, at) => `<div ${dd(x, 'm3-pos no-anim m3-at-' + at)} style="--x:${l}%;--y:${t}%;"><div class="m3-pos-tag"><b>${label}</b></div><div class="m3-card">${window.createCardHTML ? window.createCardHTML(p) : cleanName(p)}</div></div>`;
+      const spIdx = S.gamesPlayed % R.pitchers.SP.length, sp = R.pitchers.SP[spIdx];
+      const chips = Object.entries(spots).map(([sl, [x, y]]) => { const p = R.lineup[sl], at = R.battingOrder.indexOf(sl) + 1; return p ? place(p, `#${at} ${sl}`, { t: 'L', slot: sl }, x, y, sl) : ''; }).join('') + (sp ? place(sp, 'NEXT START', { t: 'S', i: spIdx }, 50, 55.5, 'P') : '');
+      const fieldSvg = `<svg class="m3-diamond" viewBox="0 0 1500 1040" preserveAspectRatio="none" aria-hidden="true">               <path class="g-out" d="M750 770 L105 125 A912 912 0 0 1 1395 125 Z"/>               <path class="g-track" d="M105 125 A912 912 0 0 1 1395 125"/>               <path class="g-dirt" d="M750 770 L446 466 A430 430 0 0 1 1054 466 Z"/>               <path class="g-in" d="M750 715 L925 540 L750 365 L575 540 Z"/>               <path class="g-line" d="M750 770 L105 125 M750 770 L1395 125"/>               <path class="g-path" d="M750 770 L980 540 L750 310 L520 540 Z"/>               <circle class="g-mound" cx="750" cy="560" r="38"/>               <rect class="g-base" x="968" y="528" width="24" height="24" transform="rotate(45 980 540)"/>               <rect class="g-base" x="738" y="298" width="24" height="24" transform="rotate(45 750 310)"/>               <rect class="g-base" x="508" y="528" width="24" height="24" transform="rotate(45 520 540)"/>               <path class="g-base" d="M736 762 L764 762 L764 774 L750 786 L736 774 Z"/>               <rect class="g-dug" x="18" y="900" width="200" height="110" rx="10"/>             </svg>`;
+      const avgOvr = a => { a = a.filter(Boolean); return a.length ? Math.round(a.reduce((t, x) => t + (x.ovr || 0), 0) / a.length) : 0; };
       const m = this._rosterMsg;
       return `<div class="rt">
         <div class="rt-top">
-          <div class="rt-switch"><button class="${on ? 'on' : ''}" data-rt-mgr="1">AUTO MANAGER ON</button><button class="${on ? '' : 'on off'}" data-rt-mgr="0">OFF</button>
-            <p>${on ? 'He reviews the team every month and may change your moves. Rest days are always automatic.' : 'You run the team. Every month he only suggests moves in the report. Rest days are still automatic.'}</p></div>
-          <div class="rt-next">${S.gamesPlayed < SEASON_LENGTH && sp ? `NEXT START<b>${cleanName(sp)}</b>` : ''}</div>
+          <div class="rt-stats"><div><b>${S.wins}-${S.gamesPlayed - S.wins}</b><small>RECORD</small></div><div><b>${avgOvr(Object.values(R.lineup))}</b><small>LINEUP</small></div><div><b>${avgOvr(R.pitchers.SP)}</b><small>ROTATION</small></div><div><b>${avgOvr(R.pitchers.RP)}</b><small>BULLPEN</small></div></div>
+          <div class="rt-switch"><span>AUTO MANAGER</span><button class="${on ? 'on' : ''}" data-rt-mgr="1">ON</button><button class="${on ? '' : 'on off'}" data-rt-mgr="0">OFF</button>
+            <p>${on ? 'Reviews the team each month and may change your moves.' : 'You run the team. He only suggests moves each month.'}</p></div>
         </div>
-        <div class="rt-hint">Drag a player onto another to swap them, or tap one and then the other.</div>
+        <div class="rt-hint">Drag a player onto another to swap them, or tap one and then the other. Rest days are always automatic.</div>
         ${m ? `<div class="rt-msg ${m.bad ? 'bad' : ''}">${m.text}</div>` : ''}
-        <div class="rt-main">
-          <div class="rt-field">${chips}</div>
-          <div class="rt-side"><div class="rt-title">BATTING ORDER</div><div class="rt-scroll"><table class="rt-t">${batHead}${order}<tr class="rt-sep"><td colspan="14">BENCH</td></tr>${bench}</table></div></div>
-        </div>
+        <div class="d2-table m3-field rt-board">${fieldSvg}${chips}</div>
+        <div class="rt-side"><div class="rt-title">BATTING ORDER</div><div class="rt-scroll"><table class="rt-t">${batHead}${order}<tr class="rt-sep"><td colspan="15">BENCH</td></tr>${bench}</table></div></div>
         ${depthStripHTML(R.lineup, R.bench || [])}
         <div class="rt-pitch">
           <div><div class="rt-title">ROTATION</div><div class="rt-scroll"><table class="rt-t">${pitHead}${R.pitchers.SP.map((p, i) => (p ? pitRow(p, `SP${i + 1}`, { t: 'S', i }) : '')).join('')}</table></div></div>

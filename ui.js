@@ -8408,6 +8408,11 @@ function initGameModeSelector() {
   // ── HANDLE ROLL DICE CLICK ───────────────────────────────────────────────────
   function handleRollDice() {
     if (!activeBattle || activeBattle.battleOver || isRolling) return;
+    if (window.DiceTable && window.DiceTable.state() !== 'ready' && window.DiceTable.state() !== 'failed' && !handleRollDice.waited) {
+      handleRollDice.waited = true;
+      window.DiceTable.ready(4000).then(handleRollDice);
+      return;
+    }
     isRolling = true;
 
     // 3D dice on the duel felt (dice3d.js) when available; otherwise the 2D cubes below.

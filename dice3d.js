@@ -180,6 +180,8 @@
     G = { T, M, floor, deck, canvas, renderer, scene, camera, key, rim, dice, W: 0, H: 0, k: 30, sim: null, sym: null,
       playing: false, t0: 0, hitIdx: 0, done: null, glow: 0, glowMats: [], raf: 0, tray: !!tray };
     layout();
+    // Upload shaders and textures now: otherwise the first throw stalls and is over before it shows.
+    try { G.dice.forEach(d => { d.mesh.visible = true; }); render(); G.dice.forEach(d => { d.mesh.visible = false; }); render(); } catch (e) {}
   }
 
   // Ortho camera tilted 25°: a felt pixel maps to world x = px / k, z = py / (k cos25°).
@@ -471,13 +473,23 @@
   // A click on the felt while the dice roll skips to the end.
   document.addEventListener('pointerdown', e => { if (G && G.playing && e.target.closest && e.target.closest('.bx3-deck, #dice-d100-panel, #def-dice-d100-panel, .po3-felt, .po3-tray')) skip(); }, true);
   // Start fetching the libraries as soon as a battle screen shows up.
-  const warm = setInterval(() => {
-    if (!enabled || reduced) return;
-    if (document.querySelector('#screen-match:not(.hidden)')) { loadLibs(); if (libsState !== 'loading') clearInterval(warm); }
-  }, 800);
+  const warmLibs = () => { if (enabled && !reduced) loadLibs(); };
+  if (document.readyState === 'complete') setTimeout(warmLibs, 1500); else window.addEventListener('load', () => setTimeout(warmLibs, 1500));
+  setInterval(() => {
+    const deck = battleDeck();
+    if (enabled && !reduced && !broken && deck && libsState === 'ready' && (!G || G.deck !== deck)) active();
+  }, 400);
+  // The first roll waits for the libraries if they are still on their way (never more than maxMs).
+  function ready(maxMs) {
+    return new Promise(res => {
+      if (!enabled || reduced || broken) { res(); return; }
+      loadLibs();
+      const t0 = Date.now(), iv = setInterval(() => { if (libsState !== 'loading' || Date.now() - t0 > maxMs) { clearInterval(iv); res(); } }, 50);
+    });
+  }
   document.addEventListener('click', e => { if (e.target.closest && e.target.closest('#btn-dice3d-toggle')) setEnabled(!enabled); });
 
-  window.DiceTable = { active, roll, snap, skip, setEnabled, isEnabled: () => enabled, state: () => libsState,
+  window.DiceTable = { active, roll, snap, skip, setEnabled, ready, isEnabled: () => enabled, state: () => libsState,
     // debug / tests: where the dice are on screen, and step the throw without animation frames
     debug: () => G && (G.camera.updateMatrixWorld(), true) && { k: G.k, W: G.W, H: G.H, dice: G.dice.filter(d => d.mesh.visible).map(d => { const v = d.mesh.position.clone().project(G.camera); return [Math.round((v.x + 1) / 2 * G.W), Math.round((1 - v.y) / 2 * G.H)]; }) },
     renderAt: ms => { if (G && G.playing) { applyFrame(ms / 1000 * FPS * PLAY_SPEED); render(); } } };

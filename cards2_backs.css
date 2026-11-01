@@ -13,7 +13,7 @@
 .pc2-back .bk-no { flex: none; min-width: 18px; height: 18px; padding: 0 2px; border-radius: 50%; display: grid; place-items: center;
   background: var(--bk-acc); color: var(--bk-paper); font: 700 7px/1 'Oswald', sans-serif; }
 .pc2-back .bk-id { flex: 1; min-width: 0; }
-.pc2-back .bk-name { font: 400 11px/1.05 var(--bk-head); text-transform: uppercase; letter-spacing: .3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+.pc2-back .bk-name { font: 400 11px/1.05 var(--bk-head); text-transform: uppercase; letter-spacing: .3px; white-space: normal; overflow: visible;
   text-shadow: .7px .7px 0 var(--bk-reg, transparent); }
 .pc2-back .bk-name .pc2-flag img { height: 7px; vertical-align: 0; }
 .pc2-back .bk-team { font-size: 7.4px; text-transform: uppercase; opacity: .85; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
