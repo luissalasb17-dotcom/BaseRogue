@@ -1884,7 +1884,12 @@
   const MOMENTUM_CAP = 10;
   // Pitcher fatigue (see _freshBatters / _fatiguePenalty)
   const FATIGUE_PER_BATTER = 2;
-  const FATIGUE_MAX = 16;
+  const FATIGUE_MAX = 25;
+  // Confidence (playoffs only, both teams; opts.confidence): starts at 0 with each pitcher, runs from
+  // -CONF_MAX to +CONF_MAX and adds to his four pitching ratings. It falls fast and rises slowly. The
+  // card's Clutch sets how well he handles it: a high Clutch loses less and gains more.
+  const CONF_MAX = 5, CONF_HR = 2, CONF_BB = 1, CONF_ER = 1, CONF_RETIRED = 3;
+  const CONF_CLUTCH_SPAN = 70, CONF_CLUTCH_MAX = 0.5;
   // Batter wear: every start adds wear by position, minus a little natural recovery
   // (net ≈ C 2.2, SS/2B/CF 0.8, 3B 0.7, LF/RF 0.6, 1B 0.45, DH 0.3). Each 10 points
   // costs −1 to CON/PWR/EYE/SPD/K-AVD, up to −3; a day off resets it. Managers rest a
@@ -3278,7 +3283,7 @@
           for (let g = 0; w[0] < need && w[1] < need; g++) {
             const A = this._aiPlayoffSide(L.teams[m.a], g, 0), B = this._aiPlayoffSide(L.teams[m.b], g, 0);
             const aHosts = !!hosts[g % hosts.length];
-            const res = aHosts ? this._simLeagueGame(B, A, SEASON_LENGTH + 20 + round * 10 + g, { homeFieldIdx: 1 }) : this._simLeagueGame(A, B, SEASON_LENGTH + 20 + round * 10 + g, { homeFieldIdx: 1 });
+            const res = aHosts ? this._simLeagueGame(B, A, SEASON_LENGTH + 20 + round * 10 + g, { homeFieldIdx: 1, confidence: true }) : this._simLeagueGame(A, B, SEASON_LENGTH + 20 + round * 10 + g, { homeFieldIdx: 1, confidence: true });
             w[res.winnerId === m.a ? 0 : 1]++;
           }
           m.winner = w[0] > w[1] ? m.a : m.b;
@@ -3799,6 +3804,11 @@
 
       // ── Manager moves: the season so far, mixed with the track record of each card ──
       const moves = report.moves;
+      // Auto manager off: he works on the real roster as usual, then it is put back and what he
+      // did stays as a suggestion the user can take with one button.
+      const mgrOff = S.autoManager === false;
+      const snapRoster = () => ({ lineup: { ...R.lineup }, bench: (R.bench || []).slice(), battingOrder: R.battingOrder.slice(), SP: R.pitchers.SP.slice(), RP: R.pitchers.RP.slice(), roles: R.pitchers.RP.map(p => p && p.role), mopKey: S.mopKey });
+      const keep = mgrOff ? snapRoster() : null;
       const cardObp = p => 0.325 + (((p.eye || 50) - 50) * 0.5 + ((p.con || 50) - 50) * 0.5) * 0.0016;
       const cardSlg = p => 0.400 + (((p.pwr || 50) - 50) * 0.6 + ((p.con || 50) - 50) * 0.4) * 0.004;
       // Current form: the last month counts double (season line + the month again), so a starter
@@ -3955,6 +3965,14 @@
 
       if (MGR_ALL_TEAMS) this._aiManagersMonth();
 
+      if (mgrOff) {
+        if (moves.length) report.proposal = snapRoster();
+        report.advice = true;
+        R.lineup = keep.lineup; R.bench = keep.bench; R.battingOrder = keep.battingOrder; R.pitchers.SP = keep.SP; R.pitchers.RP = keep.RP;
+        R.pitchers.RP.forEach((p, i) => { if (p) p.role = keep.roles[i]; });
+        S.mopKey = keep.mopKey;
+      }
+
       S.monthReport = report;
       S.monthSnap = this._monthSnapshot();
       S.pendingAlerts.push({ kind: 'month', icon: '🗓', title: `${report.name} IS OVER`, text: `${report.rec[0]}-${report.rec[1]} this month, ${report.total[0]}-${report.total[1]} overall.` });
@@ -3980,8 +3998,9 @@
         </div>
         <div class="c162-month-people">${person('🔥 HOT BAT', r.hot, 'up')}${person('🧊 COLD BAT', r.cold, 'down')}${person('⭐ BEST STARTER', r.ace, 'up')}${person('⚠ STRUGGLING', r.shaky, 'down')}</div>
         <div class="c162-month-moves">
-          <small>MANAGER'S MOVES${r.moves.length ? ` · ${r.moves.length}` : ''}</small>
+          <small>${r.advice ? "MANAGER'S SUGGESTIONS" : "MANAGER'S MOVES"}${r.moves.length ? ` · ${r.moves.length}` : ''}</small>
           ${r.moves.length ? r.moves.slice(0, 3).map(m => `<p>${m}</p>`).join('') : '<p class="none">No changes: everybody keeps his job.</p>'}
+          ${r.proposal ? `<button class="c162-month-use" onclick="window.Challenge162._useManagerMoves()">USE ALL OF THESE</button>` : r.used ? '<p class="none">Done: moves applied.</p>' : ''}
           ${r.moves.length > 3 ? `<details><summary>+ ${r.moves.length - 3} MORE</summary>${r.moves.slice(3).map(m => `<p>${m}</p>`).join('')}</details>` : ''}
         </div>
       </div>`;
@@ -4658,7 +4677,7 @@
       // Form (not in the playoffs): a regular at the bottom of the meter gets a day off one game in
       // FORM_REST_EVERY when somebody on the bench plays his position, and a hot reserve starts
       // for a regular who is cold at a position he plays. Iron Men are not sat for this.
-      const Lg = this.state.league, FL = (!side.noRest && Lg && Lg.formLv && Lg.formLv.bat) || null;
+      const Lg = this.state.league, mgrOff = side.isUser && this.state.autoManager === false, FL = (!side.noRest && !mgrOff && Lg && Lg.formLv && Lg.formLv.bat) || null;
       if (FL) {
         const lvOf = p => FL[keyOf(p)] || 0;
         const iron = side.ironMan || {};
@@ -4703,7 +4722,7 @@
         // Platoon nine against today's starter (user, Oct 2026: a real manager sits a weak lefty
         // against a lefty). Every team in the regular season; the playoffs keep their own plan.
         // Iron Men always play; the bench man must play the slot and gain the hand edge.
-        if (PLATOON_LINEUPS && !opts.isPlayoff && !trace) {
+        if (PLATOON_LINEUPS && !opts.isPlayoff && !trace && !(side.isUser && this.state.autoManager === false)) {
           const iron = side.ironMan || {};
           const tmp = { lineup: side.lineup.filter(p => !iron[batterUnlockKey(p)]), bench: side.benchLeft };
           this._platoonSwaps(tmp, sides[1 - i].sp).forEach(sw => {
@@ -4752,6 +4771,10 @@
       const askedPH = new Set(), askedSteal = new Set();
       let askedApproach = 0, askedBunt = 0;
       const isMine = si => !!(opts.decide && sides[si].isUser);
+      // October by hand: the user makes the moves. The manager only suggests them (point.suggest).
+      let rollNo = 0, sugg = [], halfPAs = 0;
+      const byHand = si => !!(sides[si].isUser && opts.manual && opts.manual(rollNo));
+      const suggest = (text, m) => { if (!sugg.some(x => x.text === text)) sugg.push({ text, m }); };
       const pName = p => (p ? (p.cleanName || p.name) : '');
       const ask = point => {
         if (asked >= (opts.maxAsks || 11)) return point.def;
@@ -4766,7 +4789,7 @@
         const k = this._leagueKey(side.id, pitcherUnlockKey(p));
         gs.usedPitchers.add(k);
         if (!pit[k]) pit[k] = { key: pitcherUnlockKey(p), name: p.cleanName || p.name, team: side.id, role: p.role || (isStarter ? 'SP' : 'RP'), g: 1, gs: isStarter ? 1 : 0, outs: 0, h: 0, er: 0, bb: 0, so: 0, hr: 0, w: 0, l: 0, sv: 0 };
-        const ps = { k, p, isStarter, bf: 0, fresh: this._freshBatters(p, isStarter), er: 0, h: 0 };
+        const ps = { k, p, isStarter, bf: 0, fresh: this._freshBatters(p, isStarter), er: 0, h: 0, conf: 0, retired: 0 };
         state[si].pitcher = p;
         state[si].ps = ps;
         if (isStarter) state[si].starterPs = ps;
@@ -4810,7 +4833,7 @@
         if (!side.benchLeft.length || subsMade[si].slots.has(slot)) return due;
         const pos = slotOf(due);
         // Late blowouts: unused bench players who can cover the position finish the game.
-        if (ctx.blowout) {
+        if (ctx.blowout && !byHand(si)) {
           const sub = side.benchLeft.find(b => canPlayerFillSlot(b, pos));
           return sub ? bringIn(si, slot, sub) : due;
         }
@@ -4825,6 +4848,10 @@
           // A catcher is only hit for when another catcher is left to take over.
           const covered = pos !== 'C' || side.benchLeft.some(b => b !== best && canPlayerFillSlot(b, 'C')) || canPlayerFillSlot(best, 'C');
           const edgePH = best ? phValue(best) - phValue(due) : -99;
+          if (byHand(si)) {
+            if (best && covered && edgePH >= PH_EDGE) suggest(`Pinch hit ${pName(best)} for ${pName(due)}`, { t: 'ph', name: best.name });
+            return due;
+          }
           if (isMine(si) && best && covered && edgePH >= 2 && !askedPH.has(slot)) {
             askedPH.add(slot);
             const card = p => `CON ${Math.round(p.con)} · PWR ${Math.round(p.pwr)} · EYE ${Math.round(p.eye)}`;
@@ -4877,7 +4904,8 @@
               if (gain >= DEF_GAIN && (!move || gain > move.gain)) move = { slot, b, gain };
             });
           });
-          if (move) { bringIn(si, move.slot, move.b); subsMade[si].def = true; }
+          if (move && byHand(si)) suggest(`Defense: ${pName(move.b)} in for ${pName(side.lineup[move.slot])} at ${slotOf(side.lineup[move.slot])}`, { t: 'def', slot: move.slot, name: move.b.name });
+          else if (move) { bringIn(si, move.slot, move.b); subsMade[si].def = true; }
         }
         const ps = state[si].ps;
         const lead = runs[si] - runs[1 - si];
@@ -4906,6 +4934,10 @@
         const wantLong = ps.isStarter && inning <= LONG_UNTIL_INNING;
         gs.due = dueBats(1 - si);
         let next = pull ? this._pickReliever(side, gs, inning, lead, day, wantLong) : null;
+        if (byHand(si)) {
+          if (next) suggest(`Pitching change: ${pName(next)} for ${pName(ps.p)}`, { t: 'arm', name: next.name });
+          return;
+        }
         if (isMine(si)) {
           // The user's call: the starter when he is tiring or getting hit, and who gets the ball
           // in the late innings of a close game.
@@ -4987,6 +5019,10 @@
         const wantLong = ps.isStarter && inn <= LONG_UNTIL_INNING;
         gs.due = dueBats(bi);
         let next = this._pickReliever(side, gs, inn, lead, day, wantLong);
+        if (byHand(pi)) {
+          if (next) suggest(`Pitching change: ${pName(next)} for ${pName(ps.p)}`, { t: 'arm', name: next.name });
+          return;
+        }
 
         if (isMine(pi)) {
           const auto = next || this._pickReliever(side, gs, inn, lead, day, wantLong) || avail[0];
@@ -5044,9 +5080,10 @@
             [bi === 0 ? 'currentInningAwayRuns' : 'currentInningHomeRuns']: scored
           });
         };
+        halfPAs = 0;
         while (outs < 3 && !halt) {
-          const ps = state[pi].ps;
-          const pl = pit[ps.k];
+          let ps = state[pi].ps;
+          let pl = pit[ps.k];
 
           // Stolen bases: any runner with the next base open may go, before any pitch to the batter.
           // The great base stealers (real tendency well above their Speed) get what they had in
@@ -5055,6 +5092,29 @@
           // With one try per at-bat and nobody running five runs up, Rickey Henderson stole 67
           // against 91 and Ty Cobb 54 against 73.
           const margin = runs[bi] + scored - runs[pi];
+          // The user's moves for this plate appearance (replayed in order, like the rolls).
+          ((opts.moves && opts.moves(rollNo)) || []).forEach(m => {
+            const take = si => sides[si].benchLeft.find(b => b.name === m.name);
+            if (m.t === 'arm') {
+              const arm = this._availableRelievers(sides[pi], gs, day).find(c => c.name === m.name);
+              if (arm) {
+                insertReliever(pi, arm, false, inning, runs[pi] - (runs[bi] + scored)).scoredAtEntry = scored;
+                ps = state[pi].ps; pl = pit[ps.k];
+              }
+            } else if (m.t === 'ph' && take(bi)) {
+              const slot = state[bi].idx % batSide.lineup.length;
+              bringIn(bi, slot, take(bi));
+            } else if (m.t === 'pr' && take(bi) && bases[m.base]) {
+              const old = bases[m.base], slot = batSide.lineup.findIndex(c => c.name === old.name);
+              if (slot >= 0) {
+                const fast = bringIn(bi, slot, take(bi));
+                bases[m.base] = fast;
+                runnerPitcher.set(fast, runnerPitcher.get(old) || state[pi].ps);
+              }
+            } else if (m.t === 'def' && take(pi)) {
+              bringIn(pi, m.slot, take(pi));
+            }
+          });
           // Pinch runner for a slow man on first, late in a game that is tied or down by one.
           if (inning >= PR_FROM_INNING && margin >= -1 && margin <= 0 && bases[0] && batSide.benchLeft.length) {
             const slow = bases[0];
@@ -5063,9 +5123,12 @@
             const fast = batSide.benchLeft.filter(b => !window.leftyCantPlay(b, slotOf(slow))).sort((a, b) => spdOf(b) - spdOf(a))[0];
             if (slot >= 0 && !subsMade[bi].slots.has(slot) && spdOf(slow) <= PR_SLOW && fast && spdOf(fast) - spdOf(slow) >= PR_GAIN
               && (slotOf(slow) !== 'C' || canPlayerFillSlot(fast, 'C'))) {
-              bases[0] = bringIn(bi, slot, fast);
-              const prevResp = runnerPitcher.get(slow) || state[pi].ps;
-              runnerPitcher.set(fast, prevResp);
+              if (byHand(bi)) suggest(`Pinch run ${pName(fast)} for ${pName(slow)}`, { t: 'pr', base: 0, name: fast.name });
+              else {
+                bases[0] = bringIn(bi, slot, fast);
+                const prevResp = runnerPitcher.get(slow) || state[pi].ps;
+                runnerPitcher.set(fast, prevResp);
+              }
             }
           }
           for (let tries = 0; tries < 2 && outs < 3; tries++) {
@@ -5123,10 +5186,11 @@
           const isPlayoffGame = Boolean(opts.isPlayoff);
           const bigSpot = p.badge_clutch && inning >= CLUTCH_BAT_INNING && Math.abs(margin) <= CLUTCH_BAT_MARGIN;
           const playoffPitchClutch = isPlayoffGame && p.badge_clutch;
-          const adj = ((bases[1] || bases[2]) ? (clt - CLUTCH_PIT_CENTER) * CLUTCH_PIT : 0) + (bigSpot ? CLUTCH_PIT_BADGE : 0) + (playoffPitchClutch ? 5 : 0) - pen;
+          const adj = ((bases[1] || bases[2]) ? (clt - CLUTCH_PIT_CENTER) * CLUTCH_PIT : 0) + (bigSpot ? CLUTCH_PIT_BADGE : 0) + (playoffPitchClutch ? 5 : 0) + (opts.confidence ? ps.conf : 0) - pen;
           const eff = adj ? { ...p, h9: p.h9 + adj, k9: p.k9 + adj, bb9: p.bb9 + adj, hr9: p.hr9 + adj } : { ...p };
           eff._fieldingDef = 50; // the gloves act below, one fielder at a time
           const batter = nextBatter(bi, { blowout, inning, outs, margin, onBase: bases.filter(Boolean).length });
+          halfPAs++;
           if (halt) break;
           const bl = batterLine(batSide, batter);
           ps.bf++;
@@ -5216,14 +5280,27 @@
             if (isBig || opts.everyPA) {
               const zones = simPaOutcome(atBat, eff, batSide.isUser, { zones: true });
               const point = { type: 'roll', mine: batSide.isUser ? 'bat' : 'pit', inning, half: bi === 0 ? 'TOP' : 'BOT', outs, bases: slim(),
-                margin: batSide.isUser ? margin : -margin, batter: batter.name, pitcher: pName(p), zones, li, isBig };
+                margin: batSide.isUser ? margin : -margin, batter: batter.name, pitcher: pName(p), zones, li, isBig, rollNo, suggest: sugg, armBf: ps.bf - 1, armFresh: ps.fresh, armTired: this._fatiguePenalty(ps), armConf: opts.confidence ? ps.conf : null };
+              if (opts.manual) {
+                const us = sides[0].isUser ? 0 : 1, ourPit = state[us].ps;
+                const brief = c => ({ name: c.name, pos: c.assignedSlot || c.pos, sec: c.sec_pos || '', ovr: Math.floor(c.ovr || 0), con: Math.round(c.con), pwr: Math.round(c.pwr), eye: Math.round(c.eye), spd: Math.round(c.spd), def: Math.round(gloveOf(c)) });
+                point.bench = sides[us].benchLeft.map(brief);
+                point.field = sides[us].lineup.map((c, i) => ({ ...brief(c), slot: i }));
+                point.runners = batSide.isUser ? bases.map((r, i) => (r ? { base: i, name: r.name } : null)).filter(Boolean) : [];
+                point.upNext = batSide.isUser ? batter.name : null;
+                point.canArm = !batSide.isUser && (ourPit.bf - 1 >= 3 || halfPAs === 1);
+                point.arms = batSide.isUser ? [] : this._availableRelievers(sides[us], gs, day).map(c => ({ name: c.name, role: c.role || 'RP', ovr: Math.floor(c.ovr || 0), sta: Math.round(c.sta !== undefined ? c.sta : 50), h9: Math.round(c.h9), k9: Math.round(c.k9) }));
+                point.tired = this._fatiguePenalty(ourPit);
+              }
               const a = opts.roll(point);
               if (a === undefined || a === null) { halt = point; break; }
+              rollNo++; sugg = [];
               if (isBig) { bigRolls++; bigInHalf = bigHalf === halfKey ? bigInHalf + 1 : 1; bigHalf = halfKey; }
               const own = typeof a === 'object';
               big = { zones, mine: point.mine, li, isBig, u: own ? a.u : null, dice: own ? a.dice : null, n: own ? a.n : null, clutch: !!(own && a.clutch) };
             }
           }
+          const confOn = bases.some(Boolean), confEr = ps.er;
           let outcome = sac ? 'OUT' : (forcedOutcome || simPaOutcome(atBat, eff, batSide.isUser, big && big.u !== null ? { roll: big.u } : undefined));
           if (window.__PLT && pk && !sac) { const a = window.__PLT[pk] || (window.__PLT[pk] = {}); a[outcome] = (a[outcome] || 0) + 1; }
           // The ball in play goes to one fielder and his glove has the last word.
@@ -5343,6 +5420,15 @@
             if (outcome === '3B') bl.triples++;
             runnerPitcher.set(batter, state[pi].ps);
             credit(advanceOnHit(bases, batter, adv, outs));
+          }
+          if (opts.confidence) {
+            const clt0 = (clt - CLUTCH_PIT_CENTER) / CONF_CLUTCH_SPAN, cf = Math.max(-CONF_CLUTCH_MAX, Math.min(CONF_CLUTCH_MAX, clt0));
+            const gotOut = (outcome === 'OUT' || outcome === 'SO') && detail !== 'E';
+            ps.retired = gotOut ? ps.retired + 1 : 0;
+            const drop = (outcome === 'HR' ? CONF_HR : 0) + (outcome === 'BB' && !forcedOutcome ? CONF_BB : 0) + (ps.er - confEr) * CONF_ER;
+            let gain = outcome === 'SO' && confOn ? 1 : 0;
+            if (gotOut && ps.retired % CONF_RETIRED === 0) gain++;
+            ps.conf = Math.max(-CONF_MAX, Math.min(CONF_MAX, ps.conf + gain * (1 + cf) - drop * (1 - cf)));
           }
           if (trace) {
             const balls = outcome === 'BB' ? 4 : (Math.random() < 0.4 ? 2 : (Math.random() < 0.5 ? 1 : 0));
@@ -5783,6 +5869,9 @@
         P.fifthStarterKey = null;
       }
 
+      // Auto manager off: the four-man rotation stands, the lineup is the user's.
+      if (S.autoManager === false) { P.octoberNotes.push('📋 Auto manager is off: your lineup and batting order stand as you set them.'); return; }
+
       // 2. Lineup & Batting Order reorganization by Season Stats + Current Form
       const estOctBat = p => {
         const s0 = bStat(p), k = MGR.trustPA;
@@ -5973,7 +6062,10 @@
       const realRandom = Math.random;
       Math.random = mulberry32(pg.seed);
       try {
-        res = this._simLeagueGame(userSide, oppSide, day, { trace, homeFieldIdx: userHosts ? 0 : 1, decide, roll, isPlayoff: true, everyPA: !!pg.every });
+        res = this._simLeagueGame(userSide, oppSide, day, { trace, homeFieldIdx: userHosts ? 0 : 1, decide, roll, isPlayoff: true, confidence: true, everyPA: !!pg.every,
+          // By hand only up to the last roll made: SIM TO END hands the rest to the manager.
+          manual: pg.byHand ? (n => !pg.quick || n < (pg.decisions || []).length) : null,
+          moves: pg.byHand ? (n => (pg.moves || {})[n]) : null });
       } finally {
         Math.random = realRandom;
       }
@@ -6011,7 +6103,7 @@
         pg = P.pendingGame = {
           round, n: ser.games.length + 1, gameNo: (P.gameNo || 0) + 1,
           seed: Math.floor(Math.random() * 2147483647) + 1,
-          decisions: [], step: 0, spIdx: st.i, short: st.short, auto: true, quick: !manage, every: true,
+          decisions: [], step: 0, spIdx: st.i, short: st.short, auto: true, quick: !manage, every: true, byHand: true, moves: {},
           plan: { ...this._poPlan() }
         };
         P.pickSP = undefined;
@@ -6537,11 +6629,63 @@
       }).filter(z => z.b >= z.a);
     },
 
+    // A substitution by the user: kept with the rolls, so the game replays the same.
+    _po3Bind() {
+      if (this._po3Bound) return;
+      this._po3Bound = true;
+      document.addEventListener('click', e => {
+        const sim = this._activePlayoffSim;
+        if (!sim || !e.target.closest) return;
+        const old = () => document.querySelectorAll('.po3-moves').forEach(x => x.remove());
+        if (e.target.closest('[data-po3m-open]')) { old(); document.body.insertAdjacentHTML('beforeend', this._po3MovesHTML(sim.game.pending, sim)); return; }
+        if (e.target.closest('[data-po3m-close]')) { old(); return; }
+        const ign = e.target.closest('[data-po3-ign]');
+        if (ign) { sim.ignored.push(ign.dataset.po3Ign); this._renderPO3(); return; }
+        const mv = e.target.closest('[data-po3m]');
+        if (mv) { old(); this._po3Move(JSON.parse(mv.dataset.po3m)); }
+      });
+    },
+
+    _po3Move(m, quiet) {
+      const sim = this._activePlayoffSim, pg = this.state && this.state.playoffs.pendingGame;
+      const pt = sim && sim.game.pending;
+      if (!pt || pt.type !== 'roll') return;
+      pg.moves = pg.moves || {};
+      (pg.moves[pt.rollNo] = pg.moves[pt.rollNo] || []).push(m);
+      sim.movesOpen = false;
+      sim.game = this._runPlayoffGame(pg, false);
+      sim.currentStep = sim.game.events.length;
+      if (!quiet) this._renderPO3();
+    },
+
+    _po3MovesHTML(pt, sim) {
+      const row = (m, title, sub) => `<button class="po3-mv" data-po3m='${JSON.stringify(m).replace(/'/g, '&#39;')}'><b>${title}</b><span>${sub}</span></button>`;
+      const groups = [];
+      if (pt.mine === 'pit') {
+        groups.push(['PITCHING CHANGE' + (pt.tired ? ` · your arm is tired: -${Math.round(pt.tired)} to his ratings` : ''), pt.canArm
+          ? pt.arms.map(a => row({ t: 'arm', name: a.name }, `${a.role} ${a.name}`, `OVR ${a.ovr} · STA ${a.sta} · H/9 ${a.h9} · K/9 ${a.k9}`)).join('') || '<em>Nobody left in the bullpen.</em>'
+          : '<em>He must face 3 batters first.</em>']);
+        const fielders = pt.field.filter(f => f.pos !== 'DH');
+        groups.push(['DEFENSIVE SUB', pt.bench.flatMap(b => fielders.filter(f => (b.pos === f.pos || b.sec.split(',').includes(f.pos)) && b.def > f.def)
+          .map(f => row({ t: 'def', slot: f.slot, name: b.name }, `${b.name} for ${f.name}`, `${f.pos} · glove ${b.def} vs ${f.def}`))).join('') || '<em>No better glove on the bench.</em>']);
+      } else {
+        groups.push([`PINCH HIT FOR ${pt.upNext}`, pt.bench.map(b => row({ t: 'ph', name: b.name }, b.name, `OVR ${b.ovr} · CON ${b.con} · PWR ${b.pwr} · EYE ${b.eye}`)).join('') || '<em>The bench is empty.</em>']);
+        pt.runners.forEach(r => groups.push([`PINCH RUN FOR ${r.name} (${['1ST', '2ND', '3RD'][r.base]})`, pt.bench.map(b => row({ t: 'pr', base: r.base, name: b.name }, b.name, `SPD ${b.spd}`)).join('') || '<em>The bench is empty.</em>']));
+      }
+      return `<div class="po3-moves"><div class="po3-moves-in"><div class="po3-moves-h"><b>MANAGER'S MOVES</b><button data-po3m-close>✕</button></div>
+        <p>Whoever leaves the game cannot come back.</p>
+        ${groups.map(([t, h]) => `<h4>${t}</h4><div class="po3-mv-list">${h}</div>`).join('')}</div></div>`;
+    },
+
     // Throw the dice for the plate appearance the game is waiting on.
     _po3Roll(clutch) {
       const sim = this._activePlayoffSim, pg = this.state && this.state.playoffs.pendingGame;
       const pt = sim && sim.game.pending;
       if (!sim || !pg || !pt || pt.type !== 'roll' || sim.rolling) return;
+      if (sim.auto && pg.byHand && (pt.suggest || []).length && !(pg.moves || {})[pt.rollNo]) {
+        pt.suggest.forEach(x => this._po3Move(x.m, true));
+        return this._po3Roll(clutch);
+      }
       if (clutch && pg.decisions.filter(d => d && d.clutch).length >= CLUTCH_DICE) clutch = false;
       const n1 = 1 + Math.floor(Math.random() * 100), n2 = 1 + Math.floor(Math.random() * 100);
       const kept = clutch ? Math.max(n1, n2) : n1;
@@ -6551,6 +6695,7 @@
       const D = window.DiceTable;
       let has3d = false;
       try { has3d = !!(D && felt && D.active(felt)); } catch (err) { has3d = false; }
+      const rolledZones = this._po3Zones(pt.zones, pt.mine);
       sim.rolling = true; sim.sticker = null;
       this._renderPO3();
       let wait;
@@ -6565,7 +6710,7 @@
         sim.currentStep = sim.game.events.length;
         pg.step = sim.currentStep;
         sim.rolling = false; sim.started = true;
-        sim.lastN = { n: kept, dice: d.dice, clutch: d.clutch };
+        sim.lastN = { n: kept, dice: d.dice, clutch: d.clutch, zones: rolledZones };
         sim.sticker = { k: shown, t: Date.now() };
         if (!sim.game.pending) {
           sim.holdFinal = true; sim.auto = false;
@@ -6650,7 +6795,15 @@
       const bh = handOf(curBat, false), ph = handOf(curPit, true);
       const edge = bh === 'S' || bh !== ph;
       const platoon = (bh && ph) ? `<div class="po3-hand ${edge ? 'edge' : 'same'}">${bh === 'L' ? 'LEFTY' : bh === 'S' ? 'SWITCH' : 'RIGHTY'} BAT vs ${ph === 'L' ? 'LEFTY' : 'RIGHTY'} ARM<b>${edge ? 'PLATOON EDGE' : 'SAME HAND'}</b></div>` : '';
-      const moundPlaque = `<div class="po3-plaque"><small>${mineTag[0]}</small><b>${esc(curPit)}</b><span>${esc(lastLine(curPit, 'pitcher'))}</span></div>`;
+      const moundPlaque = `<div class="po3-plaque"><small>${mineTag[0]}</small><b>${esc(curPit)}</b><span>${esc(lastLine(curPit, 'pitcher'))}</span>${(() => {
+        // Stamina left: full while he is fresh, empty at the fatigue cap (FATIGUE_MAX).
+        if (!pending || pending.armFresh === undefined) return '';
+        const total = pending.armFresh + FATIGUE_MAX / FATIGUE_PER_BATTER, pct = Math.max(0, Math.min(100, 100 * (total - pending.armBf) / total));
+        return `<div class="po3-sta ${pending.armTired >= 6 ? 'low' : pending.armTired > 0 ? 'mid' : ''}" title="${pending.armBf} batters faced${pending.armTired ? ` · tired: -${Math.round(pending.armTired)} to his ratings` : ''}"><i>STAMINA</i><u><s style="width:${pct}%"></s></u>${pending.armTired ? `<em>-${Math.round(pending.armTired)}</em>` : ''}</div>` + (pending.armConf === null || pending.armConf === undefined ? '' : (() => {
+          const c = pending.armConf, n = Math.round(c), w = Math.abs(c) / CONF_MAX * 50;
+          return `<div class="po3-sta po3-conf ${c < 0 ? 'neg' : 'pos'}" title="Confidence: ${n > 0 ? '+' : ''}${n} to his ratings. Home runs, walks and earned runs shake him, outs in a row settle him. High Clutch handles it better."><i>CONFIDENCE</i><u><s style="width:${w}%;${c < 0 ? `margin-left:${50 - w}%` : 'margin-left:50%'}"></s></u><em>${n > 0 ? '+' : ''}${n}</em></div>`;
+        })());
+      })()}</div>`;
       const platePlaque = `<div class="po3-plaque"><small>${mineTag[1]}</small><b>${esc(curBat)}</b><span>${esc(lastLine(curBat, 'batter'))}</span>${platoon}</div>`;
 
       // ── the diamond ──
@@ -6664,6 +6817,7 @@
       const onB = bases.filter(Boolean).length;
       const diaTag = onB === 3 ? 'BASES LOADED' : onB === 0 ? 'BASES EMPTY' : [bases[0] && '1ST', bases[1] && '2ND', bases[2] && '3RD'].filter(Boolean).join(' & ');
 
+      this._po3Bind();
       // ── the tray ──
       const clutchLeft = Math.max(0, CLUTCH_DICE - (pg.decisions || []).filter(d => d && d.clutch).length);
       let trayHTML = '';
@@ -6673,10 +6827,23 @@
         const lastN = sim.lastN;
         trayHTML = `<div class="po3-tray-k">${pending.mine === 'bat' ? '⚾ YOU ARE AT THE PLATE' : '🧢 YOU ARE ON THE MOUND'}</div>
           <div class="po3-read"><b class="${sim.rolling ? 'rolling' : ''}">${sim.rolling ? '··' : lastN ? String(lastN.n).padStart(2, '0') : '--'}</b><small>${lastN && !sim.rolling ? 'LAST ROLL' + (lastN.clutch ? ` · CLUTCH ${lastN.dice.join(' / ')}` : '') : 'D100'}</small></div>
+          ${(() => {
+            // The d100 strip of Quick Play: frozen on the zones of the last roll, with the mark where it fell.
+            const show = lastN && !sim.rolling && lastN.zones ? lastN : null;
+            const list = show ? show.zones : zs;
+            return `<div class="po3-strip">${list.map(z => `<span class="${z.cls}" style="flex:${z.b - z.a + 1}">${z.b - z.a >= 9 ? z.k : ''}</span>`).join('')}${show ? `<u style="left:${show.n - 0.5}%"></u>` : ''}</div>`;
+          })()}
           <div class="po3-zones"><div class="po3-zones-h"><span>LUCK ZONES</span><b>${pending.mine === 'bat' ? 'REACH BASE' : 'GET THE OUT'} ${Math.round(good * 100)}%</b></div>
             ${zs.slice().reverse().map(z => `<div class="po3-z ${z.cls}"><i>${z.a === z.b ? z.a : `${z.a}–${z.b}`}</i><span>${z.name}</span><em>${Math.round(z.p * 100)}%</em></div>`).join('')}
             <div class="po3-zones-f">high rolls are good for you</div>
           </div>
+          ${(() => {
+            if (!pg.byHand || !pending.bench || sim.rolling || pre) return '';
+            sim.ignored = sim.ignored || [];
+            const done = (pg.moves || {})[pending.rollNo];
+            const tips = done ? [] : (pending.suggest || []).filter(x => !sim.ignored.includes(x.text));
+            return tips.map(x => `<div class="po3-tip"><span>📋 ${x.text}</span><button data-po3m='${JSON.stringify(x.m).replace(/'/g, '&#39;')}'>USE IT</button><button data-po3-ign="${x.text.replace(/"/g, '&quot;')}">IGNORE</button></div>`).join('') + `<button class="po3-mvbtn" data-po3m-open>📋 MOVES</button>`;
+          })()}
           <button class="po3-roll" data-po3="roll" ${sim.rolling || pre ? 'disabled' : ''}>🎲 ROLL</button>
           <button class="po3-clutch" data-po3="clutch" ${clutchLeft && !sim.rolling && !pre ? '' : 'disabled'}>🎯 CLUTCH ROLL <small>${clutchLeft ? 'two dice, the better counts · 1 a game' : 'used this game'}</small></button>
           <div class="po3-ctl">
@@ -12339,9 +12506,143 @@
     },
 
     // Top menu of the season screens (asked by the user): the season and every league tab in one row.
+    // ── ROSTER tab: decide here, read the numbers in SEASON. Same data as the season tables. ──
+    _rosterLocked() {
+      const P = this.state && this.state.playoffs;
+      return !!(P && P.pendingGame);
+    },
+    _rosterNote(text, bad) { this._rosterMsg = { text, bad: !!bad }; },
+    // a and b: { t: 'L', slot } starter, { t: 'B', i } bench, { t: 'S', i } rotation, { t: 'R', i } bullpen.
+    // orderOnly: dropped on the batting-order rows, so two starters only swap their turns.
+    _rosterSwap(a, b, orderOnly) {
+      const S = this.state, R = S.roster, name = p => cleanName(p);
+      if (!a || !b || (a.t === b.t && (a.t === 'L' ? a.slot === b.slot : a.i === b.i))) return;
+      if (this._rosterLocked()) { this._rosterNote('A playoff game is under way: moves wait until it ends.', true); return; }
+      const isBat = x => x.t === 'L' || x.t === 'B';
+      if (isBat(a) !== isBat(b)) { this._rosterNote('Batters and pitchers cannot trade places.', true); return; }
+      const lefty = (p, slot) => !!(window.leftyCantPlay && window.leftyCantPlay(p, slot));
+      const LEFTY = 'A left-handed thrower cannot play C, 2B, 3B or SS.';
+      let msg = '';
+      if (isBat(a)) {
+        if (a.t === 'B' && b.t === 'B') { const t = R.bench[a.i]; R.bench[a.i] = R.bench[b.i]; R.bench[b.i] = t; msg = 'Bench order changed.'; }
+        else if (a.t === 'L' && b.t === 'L' && orderOnly) {
+          const o = R.battingOrder, x = o.indexOf(a.slot), y = o.indexOf(b.slot);
+          o[x] = b.slot; o[y] = a.slot;
+          msg = `${name(R.lineup[a.slot])} and ${name(R.lineup[b.slot])} trade turns in the order.`;
+        } else if (a.t === 'L' && b.t === 'L') {
+          const pa = R.lineup[a.slot], pb = R.lineup[b.slot];
+          if (lefty(pa, b.slot) || lefty(pb, a.slot)) { this._rosterNote(LEFTY, true); return; }
+          R.lineup[a.slot] = { ...pb, assignedSlot: a.slot }; R.lineup[b.slot] = { ...pa, assignedSlot: b.slot };
+          const o = R.battingOrder, x = o.indexOf(a.slot), y = o.indexOf(b.slot);
+          o[x] = b.slot; o[y] = a.slot; // each keeps his turn at the plate
+          const off = [[pa, b.slot], [pb, a.slot]].filter(([p, s]) => s !== 'DH' && !canPlayerFillSlot(p, s)).map(([p, s]) => `${name(p)} does not play ${s}: half his glove`);
+          msg = off.length ? `⚠ ${off.join(' · ')}.` : `${name(pa)} moves to ${b.slot}, ${name(pb)} to ${a.slot}.`;
+        } else {
+          const st = a.t === 'L' ? a : b, bn = a.t === 'B' ? a : b, inP = R.bench[bn.i], outP = R.lineup[st.slot];
+          if (lefty(inP, st.slot)) { this._rosterNote(LEFTY, true); return; }
+          R.lineup[st.slot] = { ...inP, assignedSlot: st.slot };
+          const back = { ...outP }; delete back.assignedSlot;
+          R.bench[bn.i] = back;
+          msg = st.slot !== 'DH' && !canPlayerFillSlot(inP, st.slot) ? `⚠ ${name(inP)} does not play ${st.slot}: out of position he keeps half his glove.` : `${name(inP)} starts at ${st.slot}; ${name(outP)} goes to the bench.`;
+        }
+      } else {
+        const list = x => (x.t === 'S' ? R.pitchers.SP : R.pitchers.RP);
+        const pa = list(a)[a.i], pb = list(b)[b.i], cl = bullpenRoles(R.pitchers.RP.filter(Boolean)).closer;
+        // Whoever lands on the closer's spot takes the ninth.
+        const wasA = pa === cl, wasB = pb === cl;
+        list(a)[a.i] = pb; list(b)[b.i] = pa;
+        if (wasA || wasB) {
+          R.pitchers.RP.forEach(p => { if (p && p.role === 'CL') p.role = 'RP'; });
+          const nc = wasA ? (a.t === 'R' ? pb : pa) : (b.t === 'R' ? pa : pb);
+          if (nc) nc.role = 'CL';
+        }
+        if (S.mopKey && [pa, pb].some(p => pitcherUnlockKey(p) === S.mopKey)) S.mopKey = null;
+        msg = `${name(pa)} and ${name(pb)} trade places.`;
+      }
+      if (S.monthReport) delete S.monthReport.proposal; // the suggestion was for the old roster
+      this._rosterNote(msg);
+      this.save();
+    },
+    _useManagerMoves() {
+      const S = this.state, pr = S.monthReport && S.monthReport.proposal;
+      if (!pr) return;
+      const R = S.roster;
+      R.lineup = pr.lineup; R.bench = pr.bench; R.battingOrder = pr.battingOrder;
+      R.pitchers.SP = pr.SP; R.pitchers.RP = pr.RP;
+      R.pitchers.RP.forEach((p, i) => { if (p && pr.roles[i]) p.role = pr.roles[i]; });
+      S.mopKey = pr.mopKey;
+      delete S.monthReport.proposal;
+      S.monthReport.used = true;
+      this.save();
+      this.renderSeason();
+    },
+    _rosterTabHTML() {
+      const S = this.state, R = S.roster, on = S.autoManager !== false;
+      const eraOf = y => { y = parseInt(y, 10) || 2020; return y <= 1900 ? 'genesis' : y <= 1919 ? 'deadball' : y <= 1941 ? 'golden' : y <= 1960 ? 'integration' : y <= 1976 ? 'expansion' : y <= 1993 ? 'bighair' : y <= 2005 ? 'steroid' : y <= 2015 ? 'efficiency' : 'modern'; };
+      const face = (p, isP) => `<i class="rt-face" style="${window.CardArt ? `background-image:url(${window.CardArt.portrait(p, eraOf(p.year), isP)})` : ''}"></i>`;
+      const dec = v => v.toFixed(3).replace(/^0/, '');
+      const batCells = (p, slot) => {
+        const k = batterUnlockKey(p), s = S.batterStats[k] || {}, ab = s.ab || 0, bb = s.bb || 0, h = s.h || 0;
+        const tb = h + (s.doubles || 0) + 2 * (s.triples || 0) + 3 * (s.hr || 0), obp = ab + bb ? (h + bb) / (ab + bb) : 0, slg = ab ? tb / ab : 0;
+        const def = p.def !== undefined ? p.def : 50, full = { g: 0, ab: 0, h: 0, doubles: 0, triples: 0, hr: 0, rbi: 0, bb: 0, so: 0, r: 0, sb: 0, ...s };
+        return `<td>${s.g || 0}</td><td>${ab}</td><td>${dec(ab ? h / ab : 0)}</td><td>${dec(obp)}</td><td>${dec(slg)}</td><td>${calcOpsPlus(full)}</td><td>${s.hr || 0}</td><td>${s.rbi || 0}</td><td>${s.sb || 0}</td><td>${calcBatterWAR(full, slot || p.pos || 'BN', def)}</td>`;
+      };
+      const who = (p, isP) => `<td class="rt-who">${face(p, isP)}<span><b>${cleanName(p)}</b>${this._formTag(USER_TEAM_ID, p, isP)}<small>${Math.floor(p.ovr || 0)} OVR</small></span></td>`;
+      const dd = (x, cls = '') => `class="rt-item ${cls}" draggable="true" data-rt='${JSON.stringify(x)}'`;
+      const batHead = `<tr><th></th><th></th><th class="l">PLAYER</th><th>WEAR</th><th>G</th><th>AB</th><th>AVG</th><th>OBP</th><th>SLG</th><th>OPS+</th><th>HR</th><th>RBI</th><th>SB</th><th>WAR</th></tr>`;
+      const order = R.battingOrder.map((sl, i) => { const p = R.lineup[sl]; return !p ? '' : `<tr ${dd({ t: 'L', slot: sl, order: 1 })}><td class="rt-n">${i + 1}</td><td><span class="rt-pos">${sl}</span></td>${who(p, false)}<td>${this._wearCellHTML(p, true)}</td>${batCells(p, sl)}</tr>`; }).join('');
+      const bench = (R.bench || []).map((p, i) => !p ? '' : `<tr ${dd({ t: 'B', i })}><td class="rt-n">BN</td><td><span class="rt-pos alt">${p.pos}</span></td>${who(p, false)}<td>${this._wearCellHTML(p, false)}</td>${batCells(p)}</tr>`).join('');
+      const pitRow = (p, label, x) => {
+        const k = pitcherUnlockKey(p), s = S.pitcherStats[k] || {}, o = s.outs || 0, ip = o / 3, full = { outs: 0, h: 0, er: 0, bb: 0, so: 0, w: 0, l: 0, sv: 0, ...s };
+        return `<tr ${dd(x)}><td><span class="rt-pos ${label === 'CL' ? 'cl' : ''}">${label}</span></td>${who(p, true)}<td>${s.w || 0}-${s.l || 0}</td><td>${s.sv || 0}</td><td>${Math.floor(ip)}.${o % 3}</td><td>${ip ? ((s.er || 0) * 9 / ip).toFixed(2) : '—'}</td><td>${ip ? (((s.h || 0) + (s.bb || 0)) / ip).toFixed(2) : '—'}</td><td>${s.so || 0}</td><td>${calcEraPlus(full)}</td><td>${calcPitcherWAR(full, label)}</td><td>${Math.round(pitStaOf(p))}</td></tr>`;
+      };
+      const pitHead = `<tr><th></th><th class="l">PITCHER</th><th>W-L</th><th>SV</th><th>IP</th><th>ERA</th><th>WHIP</th><th>K</th><th>ERA+</th><th>WAR</th><th>STA</th></tr>`;
+      const labels = bullpenLabels(R.pitchers.RP);
+      const spots = { CF: [50, 8], LF: [17, 22], RF: [83, 22], SS: [35, 40], '2B': [65, 40], '3B': [21, 62], '1B': [79, 62], C: [50, 90], DH: [12, 90] };
+      const chips = Object.entries(spots).map(([sl, [x, y]]) => { const p = R.lineup[sl]; return !p ? '' : `<div ${dd({ t: 'L', slot: sl }, 'rt-chip')} style="left:${x}%;top:${y}%">${face(p, false)}<b>${sl}</b><span>${cleanName(p)}</span></div>`; }).join('');
+      const sp = R.pitchers.SP[S.gamesPlayed % R.pitchers.SP.length];
+      const m = this._rosterMsg;
+      return `<div class="rt">
+        <div class="rt-top">
+          <div class="rt-switch"><button class="${on ? 'on' : ''}" data-rt-mgr="1">AUTO MANAGER ON</button><button class="${on ? '' : 'on off'}" data-rt-mgr="0">OFF</button>
+            <p>${on ? 'He reviews the team every month and may change your moves. Rest days are always automatic.' : 'You run the team. Every month he only suggests moves in the report. Rest days are still automatic.'}</p></div>
+          <div class="rt-next">${S.gamesPlayed < SEASON_LENGTH && sp ? `NEXT START<b>${cleanName(sp)}</b>` : ''}</div>
+        </div>
+        <div class="rt-hint">Drag a player onto another to swap them, or tap one and then the other.</div>
+        ${m ? `<div class="rt-msg ${m.bad ? 'bad' : ''}">${m.text}</div>` : ''}
+        <div class="rt-main">
+          <div class="rt-field">${chips}</div>
+          <div class="rt-side"><div class="rt-title">BATTING ORDER</div><div class="rt-scroll"><table class="rt-t">${batHead}${order}<tr class="rt-sep"><td colspan="14">BENCH</td></tr>${bench}</table></div></div>
+        </div>
+        ${depthStripHTML(R.lineup, R.bench || [])}
+        <div class="rt-pitch">
+          <div><div class="rt-title">ROTATION</div><div class="rt-scroll"><table class="rt-t">${pitHead}${R.pitchers.SP.map((p, i) => (p ? pitRow(p, `SP${i + 1}`, { t: 'S', i }) : '')).join('')}</table></div></div>
+          <div><div class="rt-title">BULLPEN</div><div class="rt-scroll"><table class="rt-t">${pitHead}${R.pitchers.RP.map((p, i) => (p ? pitRow(p, labels[i], { t: 'R', i }) : '')).join('')}</table></div></div>
+        </div>
+      </div>`;
+    },
+    _bindRosterTab(body) {
+      const again = () => this.renderLiga();
+      const read = el => JSON.parse(el.dataset.rt);
+      const drop = (a, b) => { this._rosterSwap(a, b, !!(a.order && b.order)); again(); };
+      body.querySelectorAll('[data-rt-mgr]').forEach(b => { b.onclick = () => { this.state.autoManager = b.dataset.rtMgr === '1'; this.save(); again(); }; });
+      let picked = null;
+      body.querySelectorAll('.rt-item').forEach(el => {
+        el.ondragstart = e => { e.dataTransfer.setData('text/plain', el.dataset.rt); e.dataTransfer.effectAllowed = 'move'; el.classList.add('rt-drag'); };
+        el.ondragend = () => el.classList.remove('rt-drag');
+        el.ondragover = e => { e.preventDefault(); el.classList.add('rt-over'); };
+        el.ondragleave = () => el.classList.remove('rt-over');
+        el.ondrop = e => { e.preventDefault(); drop(JSON.parse(e.dataTransfer.getData('text/plain')), read(el)); };
+        el.onclick = () => {
+          if (!picked) { picked = read(el); el.classList.add('rt-picked'); return; }
+          const a = picked; picked = null; drop(a, read(el));
+        };
+      });
+    },
+
     _seasonNavHTML(active) {
       const L = this.state && this.state.league;
-      const tabs = [['season', '⚾ SEASON'], ['standings', '🏟️ STANDINGS'], ['power', '📈 POWER RANKINGS'], ['playoffs', '🏆 PLAYOFF PICTURE'],
+      const tabs = [['season', '⚾ SEASON'], ['roster', '📋 ROSTER'], ['standings', '🏟️ STANDINGS'], ['power', '📈 POWER RANKINGS'], ['playoffs', '🏆 PLAYOFF PICTURE'],
         ['leaders', '📊 LEADERS'], ['awards', '🏅 AWARD RACES'], ['allstar', L && L.allStar ? '⭐ ALL-STARS' : '⭐ ALL-STAR VOTE']];
       return `<div class="c162-tabs c162-mainnav">${tabs.map(([k, label]) => `<button class="c162-tab ${active === k ? 'active' : ''}" data-nav="${k}">${label}</button>`).join('')}</div>`;
     },
@@ -12379,6 +12680,14 @@
       this._bindSeasonNav(container);
       void tabs;
       const body = container.querySelector('#c162-liga-body');
+      if (tab === 'roster') {
+        body.innerHTML = this._rosterTabHTML();
+        this._rosterMsg = null;
+        this._bindRosterTab(body);
+        const backR = container.querySelector('#btn-challenge162-liga-back');
+        if (backR) backR.onclick = () => { this.showScreen('screen-challenge-season'); this.renderSeason(); };
+        return;
+      }
       if (tab === 'standings') {
         body.innerHTML = `
           <div class="c162-tabs c162-subtabs">

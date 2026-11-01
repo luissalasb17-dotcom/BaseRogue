@@ -431,3 +431,35 @@
   .pz-card { zoom: .78; }
   .pz-watch { grid-template-columns: 1fr; }
 }
+
+/* d100 strip over the Luck Zones, as in Quick Play: the mark shows where the last roll fell */
+.po3-strip { position: relative; display: flex; height: 18px; margin: 6px 0; border: 2px solid rgba(240,230,200,.35); border-radius: 3px; background: #111; }
+.po3-strip span { min-width: 2px; display: flex; align-items: center; justify-content: center; overflow: hidden; font: 600 10px 'Oswald', sans-serif; color: #10130f; background: #888; }
+.po3-strip span.great { background: #ffd36a; } .po3-strip span.good { background: #6ee7a0; } .po3-strip span.ok { background: #9fd3ff; } .po3-strip span.bad { background: #ff9f7a; } .po3-strip span.bad2 { background: #ff5a4a; }
+.po3-strip u { position: absolute; top: -5px; bottom: -5px; width: 4px; margin-left: -2px; background: #fff; box-shadow: 0 0 6px #fff, 0 0 0 1px #000; animation: po3Mark .35s ease-out; }
+@keyframes po3Mark { from { transform: scaleY(2.2); opacity: 0; } to { transform: none; opacity: 1; } }
+
+/* Manager's moves in the October game: a discreet tip from the bench coach and the moves window */
+.po3-tip { display: flex; align-items: center; gap: 5px; margin: 4px 0; padding: 4px 6px; font: 500 12px/1.2 'Oswald', sans-serif; color: #f3ecd6; background: rgba(0,0,0,.4); border-left: 3px solid #ffd36a; }
+.po3-tip span { flex: 1; min-width: 0; }
+.po3-tip button { padding: 2px 6px; font: 600 10.5px 'Oswald', sans-serif; color: #f3ecd6; background: #13241c; border: 1px solid rgba(240,230,200,.35); cursor: pointer; }
+.po3-mvbtn { width: 100%; margin: 3px 0; padding: 5px; font: 600 13px 'Oswald', sans-serif; letter-spacing: 1px; color: #f3ecd6; background: #13241c; border: 1px solid #34d399; cursor: pointer; }
+.po3-moves { position: fixed; inset: 0; z-index: 9700; display: flex; padding: 16px; overflow: auto; background: rgba(0,0,0,.7); }
+.po3-moves-in { margin: auto; width: min(620px, 100%); padding: 14px 16px; font-family: 'Oswald', sans-serif; color: #f3ecd6; background: rgba(4,10,16,.98); border: 2px solid #10b981; border-radius: 8px; }
+.po3-moves-h { display: flex; justify-content: space-between; } .po3-moves-h b { font: 400 18px 'Alfa Slab One', serif; color: #e8c766; }
+.po3-moves-h button { color: #f3ecd6; background: none; border: 0; font-size: 18px; cursor: pointer; }
+.po3-moves p { margin: 2px 0 8px; font-size: 12.5px; color: #a9b4ac; }
+.po3-moves h4 { margin: 10px 0 4px; font-size: 12.5px; letter-spacing: 1px; color: #34d399; }
+.po3-mv-list em { font-size: 12.5px; color: #a9b4ac; }
+.po3-mv { display: flex; justify-content: space-between; gap: 10px; width: 100%; margin-bottom: 3px; padding: 6px 9px; text-align: left; color: #f3ecd6; background: #13241c; border: 1px solid rgba(255,255,255,.08); cursor: pointer; }
+.po3-mv:hover { border-color: #e8c766; } .po3-mv b { font-weight: 500; font-size: 14px; } .po3-mv span { font-size: 12px; color: #a9b4ac; white-space: nowrap; }
+
+/* Stamina bar of the arm on the mound */
+.po3-sta { display: flex; align-items: center; gap: 5px; margin-top: 4px; font: 600 10px 'Oswald', sans-serif; letter-spacing: .8px; color: #f3dfa8; }
+.po3-sta i { font-style: normal; }
+.po3-sta u { flex: 1; height: 7px; min-width: 70px; text-decoration: none; background: rgba(0,0,0,.5); border: 1px solid rgba(240,230,200,.35); }
+.po3-sta s { display: block; height: 100%; text-decoration: none; background: #34d399; transition: width .3s; }
+.po3-sta.mid s { background: #ffd36a; } .po3-sta.low s { background: #ff5a4a; }
+.po3-sta em { font-style: normal; color: #ff9f7a; }
+.po3-conf u { position: relative; } .po3-conf u::after { content: ''; position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: rgba(240,230,200,.6); }
+.po3-conf.pos s { background: #5cc8ff; } .po3-conf.neg s { background: #ff5a4a; } .po3-conf.pos em { color: #5cc8ff; }

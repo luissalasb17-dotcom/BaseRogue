@@ -229,3 +229,33 @@ body:has(.dx2-overlay) #mobile-nav-bar { display: none !important; }
   .oct-card .card-deal-in { zoom: 1 !important; }
   .oct-ls td, .oct-ls th { font-size: 14px !important; padding-left: 1px !important; padding-right: 1px !important; }
 }
+
+/* ROSTER tab */
+.rt { font-family: 'Oswald', sans-serif; color: #e8efe9; }
+.rt-top { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin: 12px 0 6px; }
+.rt-switch { display: flex; align-items: center; flex-wrap: wrap; }
+.rt-switch button { padding: 7px 12px; font: 600 12px 'Oswald', sans-serif; letter-spacing: 1px; background: #0f1c16; color: #8fa89a; border: 1px solid #2f5d48; cursor: pointer; }
+.rt-switch button.on { background: #1f7a54; color: #fff; } .rt-switch button.on.off { background: #a33; }
+.rt-switch p { margin: 0 0 0 12px; font-size: 13px; color: #b9cabf; max-width: 620px; }
+.rt-next { font-size: 11px; letter-spacing: 1px; color: #8fa89a; text-align: right; } .rt-next b { display: block; font-size: 15px; color: #ffd36a; letter-spacing: 0; }
+.rt-hint { font-size: 12px; color: #8fa89a; margin-bottom: 8px; }
+.rt-msg { padding: 7px 10px; margin-bottom: 8px; border-left: 3px solid #34d399; background: rgba(52,211,153,.1); font-size: 14px; } .rt-msg.bad { border-color: #f87171; background: rgba(248,113,113,.1); }
+.rt-main { display: grid; grid-template-columns: 400px minmax(0, 1fr); gap: 14px; }
+.rt-field { position: relative; min-height: 470px; background: radial-gradient(ellipse at 50% 100%, #2a6a3e 0, #1c5230 60%, #143d24 100%); border: 3px solid #5a3b1e; overflow: hidden; }
+.rt-field::before { content: ''; position: absolute; left: 50%; top: 66%; width: 150px; height: 150px; background: #8a6238; opacity: .75; transform: translate(-50%, -50%) rotate(45deg); }
+.rt-chip { position: absolute; transform: translate(-50%, -50%); width: 88px; padding: 4px 3px; text-align: center; background: rgba(6,14,10,.88); border: 1px solid #4b7a62; }
+.rt-chip b { display: block; font-size: 11px; color: #ffd36a; } .rt-chip span { display: block; font-size: 12px; line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rt-face { display: inline-block; width: 30px; height: 23px; flex: none; background-size: cover; image-rendering: pixelated; border: 1px solid rgba(255,255,255,.25); }
+.rt-title { margin: 6px 0 4px; font: 600 13px 'Oswald', sans-serif; letter-spacing: 1.5px; color: #ffd36a; }
+.rt-scroll { overflow-x: auto; }
+.rt-t { width: 100%; border-collapse: collapse; font-size: 13px; } .rt-t th { padding: 3px 5px; font-size: 11px; font-weight: 500; color: #8fa89a; text-align: right; border-bottom: 1px solid #2f5d48; } .rt-t th.l { text-align: left; }
+.rt-t td { padding: 3px 5px; text-align: right; border-bottom: 1px solid rgba(47,93,72,.4); white-space: nowrap; }
+.rt-item { cursor: grab; } tr.rt-item:hover { background: rgba(255,211,106,.07); }
+.rt-who { text-align: left !important; display: flex; align-items: center; gap: 7px; min-width: 160px; } .rt-who b { font-weight: 500; font-size: 14px; } .rt-who small { display: block; font-size: 11px; color: #8fa89a; }
+.rt-n { color: #ffd36a; text-align: center !important; } .rt-pos { display: inline-block; min-width: 30px; padding: 1px 4px; text-align: center; font-size: 11px; border: 1px solid #4b7a62; } .rt-pos.alt { color: #8fa89a; } .rt-pos.cl { color: #ffd36a; border-color: #ffd36a; }
+.rt-picked, .rt-over { outline: 2px solid #ffd36a; outline-offset: -2px; background: rgba(255,211,106,.14) !important; } .rt-drag { opacity: .45; }
+.rt-pitch { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 8px; }
+.c162-month-use { margin-top: 6px; padding: 6px 12px; font: 600 12px 'Oswald', sans-serif; letter-spacing: 1px; background: linear-gradient(#ffd36a, #c9962c); color: #1a1205; border: 0; cursor: pointer; }
+@media (max-width: 1000px) { .rt-main, .rt-pitch { grid-template-columns: minmax(0, 1fr); } .rt-field { min-height: 420px; max-width: 400px; width: 100%; margin: 0 auto; } .rt-top { flex-direction: column; align-items: flex-start; } .rt-switch p { margin: 6px 0 0; } }
+
+.rt-t .rt-sep td { padding: 9px 5px 3px; text-align: left; font: 600 13px 'Oswald', sans-serif; letter-spacing: 1.5px; color: #ffd36a; }
