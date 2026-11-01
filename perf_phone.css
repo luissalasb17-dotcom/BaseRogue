@@ -58,3 +58,18 @@
   /* the small flip corner gets a finger-sized hit area */
   .pc2-flip::after { content: ''; position: absolute; inset: -12px; }
 }
+
+/* Hobby pack on a phone: big cards you swipe through, like the Quick Play draft */
+@media (max-width: 620px) {
+  .c162-reveal-row { justify-content: flex-start !important; gap: 14px !important; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding: 26px calc(50% - 120px) 8px !important; margin: 0 -8px; }
+  .c162-reveal-row::-webkit-scrollbar { display: none; }
+  .c162-reveal-row > .c162-oc { flex: 0 0 240px !important; width: 240px !important; scroll-snap-align: center; scroll-snap-stop: always; }
+  .c162-oc-stage { zoom: 1.5 !important; }
+  .c162-oc-ribbon { font-size: 8px !important; padding: 5px 10px !important; }
+  .c162-oc-cap { flex-direction: row !important; gap: 8px !important; }
+  .c162-oc-cap b { font-size: 16px !important; }
+  .c162-oc-cap span { font-size: 12px !important; }
+  .c162-oc-stats { display: flex !important; }
+  .c162-oc .c162-opt-pick { min-height: 50px; font-size: 11px !important; }
+  .c162-reveal-prompt::after { content: ' · SWIPE'; }
+}

@@ -1,9 +1,8 @@
-/* Rarity as an edge on top of any era design: the era is the drawing, the rarity is the border. */
+/* Rarity on top of any era design: only a soft inner glow, no coloured border. */
 .pc2-rar { position: absolute; inset: 0; z-index: 9; pointer-events: none; box-sizing: border-box; }
-.player-card.pc2.rarity-Uncommon .pc2-rar { box-shadow: inset 0 0 0 2.5px #27b56a, inset 0 0 0 3px rgba(0,0,0,.35); }
-.player-card.pc2.rarity-Rare .pc2-rar { box-shadow: inset 0 0 0 3px #2b8cf0, inset 0 0 0 3.5px rgba(0,0,0,.35), inset 0 0 9px rgba(43,140,240,.5); }
-.player-card.pc2.rarity-Epic .pc2-rar { border: 4px solid; border-image: linear-gradient(135deg, #6a2bff, #e9d3ff, #7a3cff, #d7b4ff, #6a2bff) 1; box-shadow: inset 0 0 12px rgba(150,80,255,.55); }
-.player-card.pc2.rarity-Legendary .pc2-rar { border: 4px solid; border-image: linear-gradient(135deg, #a8751a, #fff0b0, #d4a22f, #fff6cf, #a8751a) 1; box-shadow: inset 0 0 14px rgba(255,205,80,.65); }
+.player-card.pc2.rarity-Rare .pc2-rar { box-shadow: inset 0 0 9px rgba(43,140,240,.5); }
+.player-card.pc2.rarity-Epic .pc2-rar { box-shadow: inset 0 0 12px rgba(150,80,255,.55); }
+.player-card.pc2.rarity-Legendary .pc2-rar { box-shadow: inset 0 0 14px rgba(255,205,80,.65); }
 
 /* legibility pass over the 45 designs */
 .player-card.pc2 .pc2-r b { -webkit-text-stroke: .2px rgba(0,0,0,.5); }
