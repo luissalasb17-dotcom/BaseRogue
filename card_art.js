@@ -355,7 +355,7 @@
   function fitName(el) {
     if (!el.isConnected || !el.clientWidth || !nameOverflows(el)) return;
     const back = el.classList.contains('bk-name');
-    const min = back ? 7.5 : 6;
+    const min = back ? 7.5 : el.classList.contains('c162-rb-name') ? 9.5 : 6;
     let fs = parseFloat(getComputedStyle(el).fontSize) || 10;
     for (let i = 0; i < 14 && nameOverflows(el) && fs > min; i++) {
       fs -= 0.5;
@@ -365,7 +365,7 @@
     // the back header has room for two lines: the very longest names wrap instead of shrinking more
     if (back && el.scrollWidth > el.clientWidth) { el.style.setProperty('white-space', 'normal', 'important'); el.style.setProperty('line-height', '1.05', 'important'); }
   }
-  const FIT_SEL = '.pc2 .pc2-name, .pc2 .bk-name, .pc2 .pgv-52 b, .pc2 .pgv-52 s, .pc2 .pgv-wave b, .pc2 .pgv-smoke b, .pc2 .pgv-foil, .pc2 .pgv-split b, .pc2 .pgv-sig';
+  const FIT_SEL = '.c162-rb-name, .pc2 .pc2-name, .pc2 .bk-name, .pc2 .pgv-52 b, .pc2 .pgv-52 s, .pc2 .pgv-wave b, .pc2 .pgv-smoke b, .pc2 .pgv-foil, .pc2 .pgv-split b, .pc2 .pgv-sig';
   let fitTimer = null;
   function fitAll() {
     fitTimer = null;

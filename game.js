@@ -1,3 +1,5 @@
+// A main-position DH at the field position he played most: no secondary penalty (his card's glove comes from there).
+window.isDhHome = (p, slot) => !!(p && p.pos === 'DH' && window.DHHomePos && window.DHHomePos[p.playerID] === slot);
 // BaseRogue Game State Manager
 // Refined for Lineup order controls, Bench removal, and Manager Decisions Events
 
@@ -1379,7 +1381,7 @@ window.leftyCantPlay = function (p, slot) {
       const value = (p, slot) => {
         const ovr = p.ovr || 50, def = p.def !== undefined ? p.def : 50;
         if (slot === 'DH') return ovr - 0.12 * (def - 50);
-        if ((p.pos || '').toUpperCase() === slot) return ovr + GLOVE[slot] * (def - 50);
+        if ((p.pos || '').toUpperCase() === slot || window.isDhHome(p, slot)) return ovr + GLOVE[slot] * (def - 50);
         if (plays(p, slot)) return ovr + GLOVE[slot] * (def * 0.85 - 50) - 1.5;
         if (window.leftyCantPlay(p, slot)) return ovr - 400; // a lefty arm at C / 2B / 3B / SS: never while anything else fits
         return ovr - 45;
@@ -2107,7 +2109,7 @@ window.leftyCantPlay = function (p, slot) {
         const secPosArray = player.sec_pos ? player.sec_pos.split(',').map(s => s.trim()) : [];
         if (secPosArray.includes(slotPosition)) {
           // secondary_master: removes the -15% penalty at a Secondary position entirely
-          def = this.hasTrait('secondary_master') ? def : Math.round(def * 0.85);
+          def = (this.hasTrait('secondary_master') || window.isDhHome(player, slotPosition)) ? def : Math.round(def * 0.85);
         } else {
           def = Math.round(def * 0.50); // Out of position: 50% defensive value
         }

@@ -911,3 +911,9 @@
 
 /* Flag design (Turf): keeps its heavy slab, but in solid ink: the offset shadow and stroke made names unreadable */
 .player-card.pc2.pc2.pc2.pc2.pc2-e-bighair.pc2-v-pennant .pc2-name { color: var(--tc, #13285a) !important; -webkit-text-stroke: 0 !important; text-shadow: none !important; letter-spacing: .3px !important; padding-right: 3px; font-size: 11.5px; }
+
+/* Stripe: room for the tails of g, y, j under the script name, without moving the card */
+.player-card.pc2.pc2.pc2.pc2.pc2.pc2-e-bighair.pc2-v-stripe .pc2-name { padding-bottom: 4px; margin-bottom: -4px; }
+
+/* Integration '52: the name panel spans from the left edge of the photo */
+.player-card.pc2.pc2.pc2.pc2.pc2.pc2-e-integration.pc2-v-panel52 .pgv-52 { left: 9px; right: -2px; width: auto; }

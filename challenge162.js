@@ -1470,9 +1470,12 @@
 
   // The glove a starter actually brings to the slot he plays: full at his own position, 85% at
   // a secondary one (the same −15% the card shows), and half anywhere else. Before this a starter dragged to any slot fielded with his full glove.
+  // What the Iron Man +5 itself is worth in the suggestion's units: per game for a batter, per season for arms.
+  const IRON_BOOST_VALUE = { bat: 1, sp: 170, rp: 30 };
   function slotGlove(p, slot) {
     if (!p || !slot || slot === 'DH' || canPlayerFillPrimary(p, slot)) return p;
     const d = Number(p.def !== undefined ? p.def : p.defense_val) || 50;
+    if (window.isDhHome(p, slot)) return p;
     return { ...p, def: Math.round(d * (canPlayerFillSlot(p, slot) ? 0.85 : OUT_OF_POSITION_SHARE)) };
   }
 
@@ -1549,7 +1552,7 @@
     const slotValue = (p, slot) => {
       const ovr = p.ovr || 50, def = gloveOf(p);
       if (slot === 'DH') return ovr - 0.004 * (def - 50);
-      if (canPlayerFillPrimary(p, slot)) return ovr + GLOVE_WEIGHT[slot] * 0.04 * (def - 50);
+      if (canPlayerFillPrimary(p, slot) || window.isDhHome(p, slot)) return ovr + GLOVE_WEIGHT[slot] * 0.04 * (def - 50);
       if (canPlayerFillSlot(p, slot)) return ovr + GLOVE_WEIGHT[slot] * 0.04 * (def * 0.85 - 50) - 0.35;
       if (!allowOutOfPosition) return -Infinity;
       // A left-handed thrower at C / 2B / 3B / SS: never while anybody else can stand there.
@@ -1996,7 +1999,7 @@
   // a franchise, an era or a country other than the USA play a little better together. A group
   // reaches a tier for every CHEM_TEAM_SIZE teammates of a franchise (himself included), every
   // CHEM_ERA_SIZE of an era and every CHEM_NATION_SIZE of a country, with no cap; each player gets
-  // the bonus of his groups' tiers (T1 +1, T2 +3, T3 +5: chemTierBonus) to his batting or pitching
+  // the bonus of his groups' tiers (T1 +1, T2 +3, T3 +6: chemTierBonus) to his batting or pitching
   // ratings. The USA does not count as a country: most cards are from there and the bonus would be free. The country comes from PLAYER_FLAGS_DB (the Dex data).
   const CHEM_TEAM_SIZE = 3, CHEM_ERA_SIZE = 5, CHEM_NATION_SIZE = 3;
   const NATION_NAMES = { do: 'Dominican Rep.', ve: 'Venezuela', cu: 'Cuba', pr: 'Puerto Rico', mx: 'Mexico', jp: 'Japan', ca: 'Canada', pa: 'Panama', co: 'Colombia', ni: 'Nicaragua', kr: 'South Korea', cw: 'Curacao', au: 'Australia', tw: 'Taiwan', gb: 'Great Britain', de: 'Germany', ie: 'Ireland', nl: 'Netherlands', bs: 'Bahamas', jm: 'Jamaica', vi: 'Virgin Islands', aw: 'Aruba', br: 'Brazil', hn: 'Honduras' };
@@ -2021,8 +2024,8 @@
     return kind === 'nation' ? (NATION_NAMES[v] || v.toUpperCase()) : v.replace(/\s*\(.*\)/, '').replace(/ Era$/, '');
   }
   // Tiers of a chemistry group: T1 at one "size" (3 / 5 / 3), T2 at two, and so on. The bonus grows
-  // faster than the tier (user, Oct 2026): T1 +1, T2 +3, T3 +5, then +2 more per tier.
-  const chemTierBonus = tier => (tier > 0 ? 2 * tier - 1 : 0);
+  // faster than the tier (user, Oct 2026): T1 +1, T2 +3, T3 +6, then +2 more per tier.
+  const chemTierBonus = tier => (tier <= 0 ? 0 : tier <= 2 ? 2 * tier - 1 : 2 * tier);
   function chemTier(kind, count) {
     const need = CHEM_SIZE[kind];
     const tier = Math.floor(count / need);
@@ -4385,11 +4388,11 @@
       };
       const capRow = caps ? `<div class="c162-chem-row is-on is-cap"><span class="cc-ic">👑</span><span class="cc-name">${caps > 1 ? caps + ' captains' : 'Captain'}</span><span class="cc-next cc-wide">momentum +1 every ${CAPTAIN_WIN_STEP} wins · −1 every ${CAPTAIN_LOSS_STEPS[Math.min(caps, 2)]} losses</span></div>` : '';
       const rows = on.map(row).join('') + capRow + near.map(row).join('');
-      const rule = `T1 at ${CHEM_TEAM_SIZE} of a franchise, ${CHEM_ERA_SIZE} of an era or ${CHEM_NATION_SIZE} of a country (not the USA), T2 at twice that and so on; T1 +1, T2 +3, T3 +5`;
+      const rule = `T1 at ${CHEM_TEAM_SIZE} of a franchise, ${CHEM_ERA_SIZE} of an era or ${CHEM_NATION_SIZE} of a country (not the USA), T2 at twice that and so on; T1 +1, T2 +3, T3 +6`;
       if (compact) {
         // Pack draft board (user: the long list pushed the roster down): one chip per group,
         // active ones first, the rule and the details in the tooltip.
-        const chip = g => `<span class="cc-chip ${g.bonus ? 'on' : 'near'}" title="${g.count} ${g.kind === 'team' ? 'from this franchise' : g.kind === 'era' ? 'from this era' : 'from this country'} · ${g.left} more for T${g.tier + 1}">${CHEM_ICON[g.kind]} ${g.label} <i>×${g.count}</i>${g.bonus ? ` <b>+${g.bonus}</b>` : ` <em>${g.left} to T1</em>`}</span>`;
+        const chip = g => `<span class="cc-chip ${g.bonus ? 'on' : 'near'}" data-chem-group="${g.kind}:${g.value}" title="${g.count} ${g.kind === 'team' ? 'from this franchise' : g.kind === 'era' ? 'from this era' : 'from this country'} · ${g.left} more for T${g.tier + 1}">${CHEM_ICON[g.kind]} ${g.label} <i>×${g.count}</i>${g.bonus ? ` <b>+${g.bonus}</b>` : ` <em>${g.left} to T1</em>`}</span>`;
         const capChip = caps ? `<span class="cc-chip on cap" title="momentum +1 every ${CAPTAIN_WIN_STEP} wins · −1 every ${CAPTAIN_LOSS_STEPS[Math.min(caps, 2)]} losses">👑 ${caps > 1 ? caps + ' captains' : 'Captain'}</span>` : '';
         const chips = on.map(chip).join('') + capChip + near.map(chip).join('');
         return `<div class="c162-chem2 is-compact is-chips">
@@ -8967,7 +8970,7 @@
               <div class="c162-oc-need">${fills ? '🧩 FILLS A HOLE' : backup}</div>
               ${(() => {
                 const ds = chemDelta(rosterNow, c).filter(x => x.after >= 2);
-                return ds.length ? `<div class="c162-oc-chem">${ds.map(x => `<span class="${x.tierUp ? 'up' : ''}" title="${x.after} of this ${x.kind === 'team' ? 'franchise' : x.kind === 'era' ? 'era' : 'country'} with him">${CHEM_ICON[x.kind]} ${x.label} ${x.before}→${x.after}${x.tierUp ? ` <b>T${x.tier.tier}!</b>` : ` <i>${x.tier.left} to T${x.tier.tier + 1}</i>`}</span>`).join('')}</div>` : '';
+                return ds.length ? `<div class="c162-oc-chem">${ds.map(x => `<span class="${x.tierUp ? 'up' : ''}" title="${x.after} of this ${x.kind === 'team' ? 'franchise' : x.kind === 'era' ? 'era' : 'country'} with him">${CHEM_ICON[x.kind]} ${x.label} ${x.before}→${x.after}${x.tierUp ? ` <b>T${x.tier.tier}: +${x.tier.bonus} to ${x.after} players</b>` : ` <i>${x.tier.left} to T${x.tier.tier + 1}</i>`}</span>`).join('')}</div>` : '';
               })()}
               <button class="btn c162-opt-pick" data-pack-pick="${i}">✔ PICK</button>
             </div>
@@ -9229,6 +9232,13 @@
       // ── Right Column: Visual Card Deck Formation Board ───────────────────
       const eraOf = y => { y = parseInt(y, 10) || 2020; return y <= 1900 ? 'genesis' : y <= 1919 ? 'deadball' : y <= 1941 ? 'golden' : y <= 1960 ? 'integration' : y <= 1976 ? 'expansion' : y <= 1993 ? 'bighair' : y <= 2005 ? 'steroid' : y <= 2015 ? 'efficiency' : 'modern'; };
       const faceOf = pl => (window.CardArt ? `<i class="c162-rb-face" style="background-image:url(${window.CardArt.portrait(pl, eraOf(pl.year), !!pl.role)})"></i>` : '');
+      const rowChem = rosterChemistry(rosterNow);
+      const chemInfo = pl => {
+        const t = chemTraits(pl);
+        const tokens = Object.keys(t).filter(k => t[k]).map(k => `${k}:${t[k]}`);
+        const parts = rowChem.groups.filter(g => g.bonus > 0 && t[g.kind] === g.value);
+        return { tokens: tokens.join('|'), bonus: parts.reduce((n, g) => n + g.bonus, 0), why: parts.map(g => `+${g.bonus} ${g.label}`).join(', ') };
+      };
       const renderCompactSlot = (player, slotLabel, kind, key) => {
         const isCurrentActive = Boolean(
           player && currentCardKey && (player.role ? pitcherUnlockKey(player) : batterUnlockKey(player)) === currentCardKey
@@ -9245,14 +9255,15 @@
         const isBatSlot = kind === 'batter';
         const outOfPos = isBatSlot && slotLabel !== 'DH' && typeof canPlayerFillSlot === 'function' && !canPlayerFillSlot(player, slotLabel);
         const meta = [player.year, player.team].filter(Boolean).join(' · ');
+        const ci = chemInfo(player);
         return `
-          <div class="c162-slot-item c162-rb-row r-${rar} ${isCurrentActive ? 'active' : ''}"
+          <div class="c162-slot-item c162-rb-row r-${rar} ${isCurrentActive ? 'active' : ''}" data-chem="${ci.tokens}"
                title="${player.name} · ${player.rarity || ''} (${_t('challenge162.drag_to_reorder', 'Drag to swap position')})"
                draggable="true" data-drag-kind="${kind}" data-drag-key="${key}">
             <span class="c162-rb-pos">${slotLabel}</span>
             <span class="c162-rb-name">${faceOf(player)}${player.name}${outOfPos ? ' <i title="Playing out of position">⚠</i>' : ''}</span>
             <span class="c162-rb-meta">${meta}</span>
-            <span class="c162-rb-ovr">${Math.floor(player.ovr || 50)}</span>
+            <span class="c162-rb-ovr">${ci.bonus ? `<em class="rb-chem" title="Chemistry: ${ci.why} to his ratings">+${ci.bonus}</em>` : ''}${Math.floor(player.ovr || 50)}</span>
           </div>
         `;
       };
@@ -9516,8 +9527,21 @@
           this._pullNextPackCard(card);
           this.renderPacksDraft();
           this._flyToSlot(ghostHTML, from);
-          if (ups.length) this._chemToast(ups);
+          if (ups.length) {
+            this._chemToast(ups);
+            const burst = ups.map(x => `${x.kind}:${x.value}`);
+            container.querySelectorAll('[data-chem]').forEach(r => {
+              if (r.dataset.chem.split('|').some(t => burst.includes(t))) r.classList.add('chem-burst');
+            });
+          }
         };
+      });
+      // Point at a chemistry chip (tap on a phone): its players light up on the board.
+      const litGroup = g => container.querySelectorAll('[data-chem]').forEach(r => r.classList.toggle('chem-lit', !!g && r.dataset.chem.split('|').includes(g)));
+      container.querySelectorAll('[data-chem-group]').forEach(ch => {
+        ch.onmouseenter = () => litGroup(ch.dataset.chemGroup);
+        ch.onmouseleave = () => litGroup(null);
+        ch.onclick = () => litGroup(ch.dataset.chemGroup);
       });
       container.querySelectorAll('[data-pack-view]').forEach(btn => {
         btn.onclick = (e) => {
@@ -10063,19 +10087,33 @@
         if (!b) return;
         const g = IRON_GAMES[slot] || IRON_GAMES.DH;
         const gain = g[1] - g[0];
-        let backup = null, backupOvr;
+        const fits = (x, s) => s === 'DH' || (canPlayerFillSlot(x, s) && !(window.leftyCantPlay && window.leftyCantPlay(x, s)));
+        const offPos = (x, s) => (s !== 'DH' && x.pos !== s ? 2 : 0);
+        let backup = null, backupOvr, via = null;
         bench.forEach(x => {
-          if (slot !== 'DH' && (!canPlayerFillSlot(x, slot) || (window.leftyCantPlay && window.leftyCantPlay(x, slot)))) return;
-          const v = ovr(x) - (slot !== 'DH' && x.pos !== slot ? 2 : 0);
-          if (backupOvr === undefined || v > backupOvr) { backup = x; backupOvr = v; }
+          if (!fits(x, slot)) return;
+          const v = ovr(x) - offPos(x, slot);
+          if (backupOvr === undefined || v > backupOvr) { backup = x; backupOvr = v; via = null; }
         });
-        // Nobody on the bench plays it: a double switch or someone out of position, with a poor glove.
-        if (!backup) backupOvr = bench.length ? Math.max(...bench.map(ovr)) - 8 : 40;
+        // The same double switch the manager makes on rest days: another starter (the DH too)
+        // slides over and a bench player takes his spot.
+        (p.battingOrder || SLOTS).forEach(s2 => {
+          const m = p.lineup[s2];
+          if (s2 === slot || !m || slot === 'DH' || !fits(m, slot)) return;
+          bench.forEach(x => {
+            if (!fits(x, s2)) return;
+            const v = ovr(x) - offPos(x, s2) - offPos(m, slot);
+            if (backupOvr === undefined || v > backupOvr) { backup = x; backupOvr = v; via = m; }
+          });
+        });
+        // Nobody covers it: someone out of position with half his glove, which costs more than a weak bat.
+        if (!backup) backupOvr = bench.length ? Math.max(...bench.map(ovr)) - 14 : 40;
         const gap = Math.max(0, ovr(b) - backupOvr);
         out.push({
-          key: batterUnlockKey(b), who: b, slot, score: gain * gap + gain,
-          reason: backup ? `+${gain} games · his backup ${cleanName(backup)} is ${Math.round(gap)} OVR worse`
-                         : `+${gain} games · no backup plays ${slot} (out of position on rest days)`
+          key: batterUnlockKey(b), who: b, slot, score: gain * gap + gain + IRON_BOOST_VALUE.bat * g[1],
+          reason: !backup ? `+${gain} games · nobody covers ${slot}: on rest days someone plays there out of position`
+            : via ? `+${gain} games · ${cleanName(via)} would slide over and ${cleanName(backup)} comes in, ${Math.round(gap)} OVR worse`
+            : `+${gain} games · his backup ${cleanName(backup)} is ${Math.round(gap)} OVR worse`
         });
       });
       const SP = (p.pitchers.SP || []).filter(Boolean), RP = (p.pitchers.RP || []).filter(Boolean);
@@ -10091,14 +10129,14 @@
       const penAvg = RP.length ? RP.reduce((t, x) => t + arm(x), 0) / RP.length : 50;
       SP.forEach((x, i) => {
         const gap = Math.max(0, arm(x) - penAvg);
-        out.push({ key: ironPitKey(x), who: x, slot: `SP${i + 1}`, score: 20 * gap,
+        out.push({ key: ironPitKey(x), who: x, slot: `SP${i + 1}`, score: 20 * gap + IRON_BOOST_VALUE.sp,
           reason: `~+20 innings · the bullpen that would throw them pitches ${Math.round(gap)} points worse` });
       });
       RP.forEach((x, i) => {
         const others = RP.filter(y => y !== x);
         const oAvg = others.length ? others.reduce((t, y) => t + arm(y), 0) / others.length : 50;
         const gap = Math.max(0, arm(x) - oAvg);
-        out.push({ key: ironPitKey(x), who: x, slot: labels[i] || 'RP', score: 4 * gap,
+        out.push({ key: ironPitKey(x), who: x, slot: labels[i] || 'RP', score: 4 * gap + IRON_BOOST_VALUE.rp,
           reason: `~+16 innings, but tired arms in close games · the rest of the pen pitches ${Math.round(gap)} points worse` });
       });
       return out.sort((a, b) => b.score - a.score);
