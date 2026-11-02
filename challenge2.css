@@ -365,3 +365,7 @@ body:has(.dx2-overlay) #mobile-nav-bar { display: none !important; }
 @media (max-width: 620px) { .c162-trade-row { flex-wrap: wrap; } .c162-trade-row > div { zoom: .55; } }
 
 .c162-trade-why { display: flex; flex-direction: column; gap: 8px; width: 150px; zoom: 1 !important; font-size: 14px; color: #6ee7a0; text-align: center; }
+
+/* Chemistry chips on the season, roster and playoff screens */
+.c162-chem-season { margin: 6px 0 10px; } .c162-chem-season > small { display: block; margin-bottom: 4px; font: 600 11px 'Oswald', sans-serif; letter-spacing: 2px; color: #ffd36a; }
+.rt-mound-dirt { max-width: 100%; } .rt-mound { overflow: hidden; }

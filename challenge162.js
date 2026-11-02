@@ -886,7 +886,10 @@
   // that fills a need. Benches come from the Common / Uncommon cards, like real benches.
   const RIVAL_DRAFT = 'recipe';
   const SNAKE_DEPTH = 1; // exact pool: the players that fill every roster, no more (user, Nov 2026)
-  function buildSnakeRosters(ids, taken) {
+  const SNAKE_FIELD = ['C', 'SS', '2B', '3B', 'CF', '1B', 'LF', 'RF', 'DH'];
+  const snakeIsPitcher = p => p && p.h9 !== undefined && p.con === undefined;
+  // Exact season pool: one player per field spot and team, bench + DH from any hitter, 5 SP and 7 RP per team.
+  function snakeInit(ids, taken) {
     const n = ids.length, rnd = a => a.slice().sort(() => Math.random() - 0.5);
     const free = p => !taken.has(personId(p));
     const bats = getBatterPool().filter(free), pits = getPitcherPool().filter(free);
@@ -896,55 +899,72 @@
     add(bats, n * (BENCH_SIZE + 1) * SNAKE_DEPTH); // bench + DH: any hitter (few cards are pure DH)
     add(pits.filter(p => p.role === 'SP'), n * 5 * SNAKE_DEPTH);
     add(pits.filter(p => p.role !== 'SP'), n * ROSTER_RP * SNAKE_DEPTH);
-    const isP = p => p.role !== undefined && p.h9 !== undefined;
-    const teams = ids.map(() => ({ slots: {}, bench: [], sp: [], rp: [] }));
-    const left = new Set(pool);
-    const FIELD = ['C', 'SS', '2B', '3B', 'CF', '1B', 'LF', 'RF', 'DH'];
-    const fits = (t, p) => {
-      if (isP(p)) return p.role === 'SP' ? (t.sp.length < 5 ? 'sp' : (t.rp.length < ROSTER_RP ? 'rp' : '')) : (t.rp.length < ROSTER_RP ? 'rp' : '');
-      const open = FIELD.find(sl => !t.slots[sl] && (sl === 'DH' || canPlayerFillPrimary(p, sl)));
-      if (open) return 'L:' + open;
-      return t.bench.length < BENCH_SIZE ? 'bench' : '';
-    };
-    for (let round = 0; round < 26; round++) {
-      const order = round % 2 ? ids.map((_, i) => n - 1 - i) : ids.map((_, i) => i);
-      for (const ti of order) {
-        const t = teams[ti];
-        let best = null, bestSlot = '', bestV = -1;
-        for (const p of left) {
-          const sl = fits(t, p);
-          if (!sl) continue;
-          const v = (p.ovr || 0) - (sl === 'bench' ? 6 : 0);
-          if (v > bestV) { best = p; bestSlot = sl; bestV = v; }
-        }
-        // Exact pool: nobody left who plays an open spot, so take the best player left out of position.
-        if (!best) {
-          const open = FIELD.find(sl => !t.slots[sl]);
-          for (const p of left) { if (!isP(p) && open && (!best || (p.ovr || 0) > (best.ovr || 0))) best = p; }
-          if (best) bestSlot = 'L:' + open;
-        }
-        if (!best) continue;
-        left.delete(best); taken.add(personId(best));
-        if (bestSlot.startsWith('L:')) t.slots[bestSlot.slice(2)] = { ...best, assignedSlot: bestSlot.slice(2) };
-        else if (bestSlot === 'bench') t.bench.push(best);
-        else t[bestSlot].push(best);
-      }
+    return { ids, pool, left: new Set(pool), teams: ids.map(id => ({ id, slots: {}, bench: [], sp: [], rp: [] })), pick: 0, total: n * 26, log: [], taken };
+  }
+  function snakePicker(st) {
+    const n = st.ids.length, round = Math.floor(st.pick / n), k = st.pick % n;
+    return round % 2 ? n - 1 - k : k;
+  }
+  // Where a card would go on this team ('' = no room).
+  function snakeFits(t, p) {
+    if (snakeIsPitcher(p)) return p.role === 'SP' ? (t.sp.length < 5 ? 'sp' : (t.rp.length < ROSTER_RP ? 'rp' : '')) : (t.rp.length < ROSTER_RP ? 'rp' : '');
+    const open = SNAKE_FIELD.find(sl => !t.slots[sl] && (sl === 'DH' || canPlayerFillPrimary(p, sl)));
+    if (open) return 'L:' + open;
+    return t.bench.length < BENCH_SIZE ? 'bench' : '';
+  }
+  function snakeBest(st, t) {
+    let best = null, bestSlot = '', bestV = -1;
+    for (const p of st.left) {
+      const sl = snakeFits(t, p);
+      if (!sl) continue;
+      const v = (p.ovr || 0) - (sl === 'bench' ? 6 : 0);
+      if (v > bestV) { best = p; bestSlot = sl; bestV = v; }
+    }
+    // Exact pool: nobody left who plays an open spot, so take the best player left out of position.
+    if (!best) {
+      const open = SNAKE_FIELD.find(sl => !t.slots[sl]);
+      for (const p of st.left) { if (!snakeIsPitcher(p) && open && (!best || (p.ovr || 0) > (best.ovr || 0))) best = p; }
+      if (best) bestSlot = 'L:' + open;
+    }
+    // Same for the staff: a reliever fills an empty rotation spot (or a starter an empty pen spot).
+    if (!best) {
+      const room = t.sp.length < 5 ? 'sp' : (t.rp.length < ROSTER_RP ? 'rp' : '');
+      if (room) for (const p of st.left) { if (snakeIsPitcher(p) && (!best || (p.ovr || 0) > (best.ovr || 0))) best = p; }
+      if (best) bestSlot = room;
+    }
+    return best ? { p: best, slot: bestSlot } : null;
+  }
+  function snakeTake(st, t, p, slot) {
+    st.left.delete(p); st.taken.add(personId(p));
+    if (slot.startsWith('L:')) t.slots[slot.slice(2)] = { ...p, assignedSlot: slot.slice(2) };
+    else if (slot === 'bench') t.bench.push(p);
+    else t[slot].push(p);
+    st.log.push({ pick: st.pick, team: t.id, key: snakeIsPitcher(p) ? pitcherUnlockKey(p) : batterUnlockKey(p), p, slot });
+    st.pick++;
+  }
+  const me_room = t => (t.sp.length < 5 ? 'sp' : (t.rp.length < ROSTER_RP ? 'rp' : ''));
+  function snakeRoster(t) {
+    const team = { lineup: SNAKE_FIELD.map(sl => t.slots[sl]).filter(Boolean) };
+    promoteRivalBench(team, t.bench);
+    const pen = t.rp.slice().sort((x, y) => (y.ovr || 0) - (x.ovr || 0));
+    return { lineup: team.lineup, bench: t.bench, rotation: t.sp.slice().sort((x, y) => (y.ovr || 0) - (x.ovr || 0)), bullpen: pen.map((p, k) => ({ ...p, role: k === 0 ? 'CL' : 'RP' })) };
+  }
+  function buildSnakeRosters(ids, taken) {
+    const st = snakeInit(ids, taken);
+    while (st.pick < st.total) {
+      const t = st.teams[snakePicker(st)], b = snakeBest(st, t);
+      if (b) snakeTake(st, t, b.p, b.slot); else st.pick++;
     }
     const out = {};
-    ids.forEach((id, i) => {
-      const t = teams[i], team = { lineup: FIELD.map(sl => t.slots[sl]).filter(Boolean) };
-      promoteRivalBench(team, t.bench);
-      const pen = t.rp.sort((x, y) => (y.ovr || 0) - (x.ovr || 0));
-      out[id] = { lineup: team.lineup, bench: t.bench, rotation: t.sp.sort((x, y) => (y.ovr || 0) - (x.ovr || 0)), bullpen: pen.map((p, k) => ({ ...p, role: k === 0 ? 'CL' : 'RP' })) };
-    });
+    st.teams.forEach(t => { out[t.id] = snakeRoster(t); });
     return out;
   }
 
-  function buildLeagueRosters(teams, userCards, isPoolLeague = false) {
+  function buildLeagueRosters(teams, userCards, isPoolLeague = false, preset = null) {
     const taken = new Set((userCards || []).filter(Boolean).map(personId));
     const out = {};
     const targets = RIVAL_DRAFT === 'random' ? rivalRandomBoxes(40) : rivalRecipes();
-    const snake = isPoolLeague && RIVAL_DRAFT === 'snake' ? buildSnakeRosters(Object.keys(teams).filter(id => !teams[id].isUser), taken) : null;
+    const snake = preset || (isPoolLeague && RIVAL_DRAFT === 'snake') ? (preset || buildSnakeRosters(Object.keys(teams).filter(id => !teams[id].isUser), taken)) : null;
     // Shuffled so no franchise always gets first claim on a shared star.
     seededShuffle(Object.keys(teams).filter(id => !teams[id].isUser), Math.random).forEach(id => {
       const t = teams[id];
@@ -1897,13 +1917,13 @@
   // decadeByCode lets a migrated save keep the franchise-decades it already faced.
   // userCards: the user's 25, kept off every rival roster (no player on two teams).
   function createLeague(userLeague, userStrength, userName, decadeByCode, userCards, modeConfig = null) {
-    const isPoolLeague = Boolean(modeConfig && (modeConfig.type === 'packs' || modeConfig.rivalsFromPool) && RIVALS_FROM_POOL > 0);
+    const isPoolLeague = Boolean(modeConfig && (modeConfig.type === 'packs' || modeConfig.type === 'snake' || modeConfig.rivalsFromPool) && RIVALS_FROM_POOL > 0);
     const teams = {};
     [...AL_CODES, ...NL_CODES, NLB_TEAM_ID].forEach(code => {
       const decade = (decadeByCode && decadeByCode[code]) || pickWeightedDecade(code);
       teams[code] = newTeamRecord({ id: code, code, decade, league: code === NLB_TEAM_ID ? null : realLeagueOf(code) });
     });
-    const rosters = buildLeagueRosters(teams, userCards, isPoolLeague);
+    const rosters = buildLeagueRosters(teams, userCards, isPoolLeague, (modeConfig && modeConfig.snakeRosters) || null);
     const league = {
       v: 1,
       seed: Math.floor(Math.random() * 2147483647),
@@ -8756,6 +8776,16 @@
               </button>
             </div>
 
+            <!-- Card: Snake Draft -->
+            <div class="c162-mode-card" style="border-color: rgba(110, 231, 160, 0.45); box-shadow: 0 4px 20px rgba(110, 231, 160, 0.15);">
+              <div>
+                <span class="c162-mode-badge" style="background: rgba(110, 231, 160, 0.2); color: #6ee7a0; border: 1px solid rgba(110, 231, 160, 0.5);">NEW</span>
+                <div class="c162-mode-title" style="color: #6ee7a0;">🐍 SNAKE DRAFT</div>
+                <div class="c162-mode-desc">A real draft: 32 teams, 26 rounds, snake order. The season pool is drawn from every card, your turn is random, and you pick when you're on the clock. A balanced league where your picks make the difference.</div>
+              </div>
+              <button id="btn-start-snake-mode" class="btn" style="width: 100%; margin-top: 14px; padding: 11px 14px; font-size: 10px; font-family: 'Press Start 2P', monospace; background: linear-gradient(135deg, #6ee7a0, #15803d); color: #04140b; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">🐍 START THE DRAFT</button>
+            </div>
+
             <!-- Card 2: All-Star Classic -->
             <div class="c162-mode-card">
               <div>
@@ -8832,6 +8862,9 @@
           this.renderHub();
         }
       };
+
+      const btnSnake = document.getElementById('btn-start-snake-mode');
+      if (btnSnake) btnSnake.onclick = () => this.startSnakeDraftMode();
 
       const btnPacks = document.getElementById('btn-start-packsdraft-mode');
       if (btnPacks) btnPacks.onclick = () => {
@@ -10163,6 +10196,164 @@
       el.querySelector('.tp-go').onclick = () => { el.remove(); next(); };
     },
 
+    // ── SNAKE DRAFT format (user, Nov 2026): an exact season pool drawn from all the cards, 32 teams
+    // draft it in snake order and the user's turn is drawn at random. Rivals take the best card
+    // that fills a need; the user sees every pick and chooses on the clock.
+    startSnakeDraftMode() {
+      this.setModeConfig({ type: 'snake', label: '🐍 SNAKE DRAFT', desc: '32-team snake draft' });
+      const rivals = [...AL_CODES, ...NL_CODES, NLB_TEAM_ID];
+      const ids = [...rivals, USER_TEAM_ID].sort(() => Math.random() - 0.5);
+      const st = snakeInit(ids, new Set());
+      this._snake = { st, filter: 'NEED', fast: false, sortBy: 'ovr' };
+      this.showScreen('screen-challenge-pack');
+      this._snakeRun();
+    },
+    _snakeTeamName(id) {
+      if (id === USER_TEAM_ID) return this.getUserTeamName ? this.getUserTeamName() : 'Your team';
+      if (id === NLB_TEAM_ID) return 'Montreal Expos';
+      const fn = (window.PlayersDB && window.PlayersDB.FranchiseNames) || {};
+      return fn[id] || id;
+    },
+    // Rivals pick until it is the user's turn (one pick per tick so the board can be watched).
+    _snakeRun() {
+      const S = this._snake;
+      if (!S) return;
+      clearTimeout(S.timer);
+      const st = S.st;
+      if (st.pick >= st.total) { this._snakeFinish(); return; }
+      const t = st.teams[snakePicker(st)];
+      if (t.id === USER_TEAM_ID) { this.renderSnakeDraft(); return; }
+      const b = snakeBest(st, t);
+      if (b) snakeTake(st, t, b.p, b.slot); else st.pick++;
+      if (S.fast) { this._snakeRun(); return; }
+      this.renderSnakeDraft();
+      S.timer = setTimeout(() => this._snakeRun(), 140);
+    },
+    _snakePickUser(key) {
+      const S = this._snake, st = S && S.st;
+      if (!st) return;
+      const t = st.teams[snakePicker(st)];
+      if (t.id !== USER_TEAM_ID) return;
+      const p = [...st.left].find(x => (snakeIsPitcher(x) ? pitcherUnlockKey(x) : batterUnlockKey(x)) === key);
+      if (!p) return;
+      let slot = snakeFits(t, p);
+      if (!slot) {
+        if (snakeIsPitcher(p)) {
+          slot = me_room(t);
+          if (!slot) { this._snakeMsg = 'Your pitching staff is full (5 SP + 7 RP).'; this.renderSnakeDraft(); return; }
+        } else {
+        const open = SNAKE_FIELD.find(sl => !t.slots[sl]);
+        if (!open) { this._snakeMsg = 'No room left for another hitter.'; this.renderSnakeDraft(); return; }
+        slot = 'L:' + open;
+        }
+      }
+      this._snakeMsg = null;
+      snakeTake(st, t, p, slot);
+      S.fast = false;
+      this._snakeRun();
+    },
+    _snakeAutoUser() {
+      const S = this._snake, st = S && S.st;
+      if (!st) return;
+      const t = st.teams[snakePicker(st)];
+      if (t.id !== USER_TEAM_ID) return;
+      const b = snakeBest(st, t);
+      if (b) snakeTake(st, t, b.p, b.slot); else st.pick++;
+      this._snakeRun();
+    },
+    _snakeFinish() {
+      const S = this._snake, st = S.st;
+      const out = {};
+      let mine = null;
+      st.teams.forEach(t => { if (t.id === USER_TEAM_ID) mine = t; else out[t.id] = snakeRoster(t); });
+      const cards = [...Object.values(mine.slots), ...mine.bench, ...mine.sp, ...mine.rp].map(p => { const c = { ...p }; delete c.assignedSlot; return c; });
+      const auto = calculateChallengeRosterSlots(cards, true);
+      const lineup = Object.assign({}, auto.lineup);
+      const bench = (auto.bench || []).filter(Boolean);
+      this._snake = null;
+      this.showMeetTheTeam({
+        lineup, bench, pitchers: { SP: (auto.sp || []).filter(Boolean), RP: (auto.rp || []).filter(Boolean) },
+        cfg: { type: 'snake', label: '🐍 SNAKE DRAFT', desc: '32-team snake draft', snakeRosters: out }
+      });
+    },
+    renderSnakeDraft() {
+      const container = document.getElementById('challenge162-pack-container');
+      const S = this._snake;
+      if (!container || !S) return;
+      const st = S.st, n = st.ids.length, round = Math.floor(st.pick / n) + 1;
+      const pickerIdx = snakePicker(st), picker = st.teams[pickerIdx], myTurn = picker && picker.id === USER_TEAM_ID;
+      const me = st.teams.find(t => t.id === USER_TEAM_ID);
+      const myPos = st.ids.indexOf(USER_TEAM_ID) + 1;
+      const eraOf = y => { y = parseInt(y, 10) || 2020; return y <= 1900 ? 'genesis' : y <= 1919 ? 'deadball' : y <= 1941 ? 'golden' : y <= 1960 ? 'integration' : y <= 1976 ? 'expansion' : y <= 1993 ? 'bighair' : y <= 2005 ? 'steroid' : y <= 2015 ? 'efficiency' : 'modern'; };
+      const face = p => (window.CardArt ? `<i class="sd-face" style="background-image:url(${window.CardArt.portrait(p, eraOf(p.year), snakeIsPitcher(p))})"></i>` : '<i class="sd-face"></i>');
+      const rar = p => 'r-' + String(p.rarity || 'common').toLowerCase();
+      const posOf = p => (snakeIsPitcher(p) ? (p.role === 'SP' ? 'SP' : 'RP') : p.pos);
+      const keyOf = p => (snakeIsPitcher(p) ? pitcherUnlockKey(p) : batterUnlockKey(p));
+      // picks until the user's next turn
+      let until = 0;
+      for (let k = st.pick; k < st.total; k++) { const r = Math.floor(k / n), i = k % n; const ti = r % 2 ? n - 1 - i : i; if (st.teams[ti].id === USER_TEAM_ID) break; until++; }
+      const needOpen = SNAKE_FIELD.filter(sl => !me.slots[sl]);
+      const needs = [...needOpen, ...(me.sp.length < 5 ? ['SP'] : []), ...(me.rp.length < ROSTER_RP ? ['RP'] : []), ...(me.bench.length < BENCH_SIZE ? ['BENCH'] : [])];
+      const fil = S.filter;
+      let list = [...st.left];
+      if (fil === 'NEED') list = list.filter(p => snakeFits(me, p));
+      else if (fil === 'SP' || fil === 'RP') list = list.filter(p => snakeIsPitcher(p) && posOf(p) === fil);
+      else if (fil === 'BAT') list = list.filter(p => !snakeIsPitcher(p));
+      else if (fil !== 'ALL') list = list.filter(p => !snakeIsPitcher(p) && (p.pos === fil || canPlayerFillPrimary(p, fil)));
+      list.sort((a, b) => (b.ovr || 0) - (a.ovr || 0));
+      const shown = list.slice(0, 80);
+      const left = [...st.left];
+      const count = r => left.filter(p => (p.rarity || 'Common') === r).length;
+      const chips = ['NEED', 'ALL', 'BAT', 'C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'SP', 'RP'];
+      const board = st.log.slice(-14).reverse().map(x => `<div class="sd-pick ${x.team === USER_TEAM_ID ? 'mine' : ''} ${rar(x.p)}"><small>R${Math.floor(x.pick / n) + 1}·${(x.pick % n) + 1}</small>${face(x.p)}<span><b>${cleanName(x.p)}</b><em>${posOf(x.p)} · ${Math.floor(x.p.ovr || 0)}</em></span><u>${this._snakeTeamName(x.team)}</u></div>`).join('') || '<p class="sd-empty">The draft is about to start.</p>';
+      const slotRow = (label, p) => `<div class="sd-slot ${p ? rar(p) : 'open'}"><b>${label}</b>${p ? `${face(p)}<span>${cleanName(p)}</span><em>${Math.floor(p.ovr || 0)}</em>` : '<span>—</span>'}</div>`;
+      const mineHTML = SNAKE_FIELD.map(sl => slotRow(sl, me.slots[sl])).join('')
+        + Array.from({ length: BENCH_SIZE }, (_, i) => slotRow('BN', me.bench[i])).join('')
+        + Array.from({ length: 5 }, (_, i) => slotRow('SP' + (i + 1), me.sp[i])).join('')
+        + Array.from({ length: ROSTER_RP }, (_, i) => slotRow('RP' + (i + 1), me.rp[i])).join('');
+      container.innerHTML = `<div class="sd">
+        <div class="sd-top">
+          <div><h2>🐍 SNAKE DRAFT</h2><small>32 teams · 26 rounds · an exact pool of ${st.total} players drawn from every card</small></div>
+          <div class="sd-clock ${myTurn ? 'mine' : ''}"><small>ROUND ${Math.min(round, 26)} / 26 · PICK ${st.pick + 1} OF ${st.total}</small><b>${myTurn ? "YOU'RE ON THE CLOCK" : `${this._snakeTeamName(picker ? picker.id : '')} picking`}</b><em>You draft ${myPos}${myPos === 1 ? 'st' : myPos === 2 ? 'nd' : myPos === 3 ? 'rd' : 'th'} in odd rounds, ${n - myPos + 1}${(n - myPos + 1) === 1 ? 'st' : (n - myPos + 1) === 2 ? 'nd' : (n - myPos + 1) === 3 ? 'rd' : 'th'} in even rounds${myTurn ? '' : ` · ${until} picks to your turn`}</em></div>
+          <div class="sd-tools">${myTurn ? '<button data-sd="auto">⚡ AUTO PICK</button>' : '<button data-sd="skip">⏩ SKIP TO MY PICK</button>'}<button data-sd="rest">🤖 AUTO DRAFT REST</button><button data-sd="cancel">✖ CANCEL</button></div>
+        </div>
+        ${this._snakeMsg ? `<div class="sd-msg">${this._snakeMsg}</div>` : ''}
+        <div class="sd-main">
+          <div class="sd-board"><h4>DRAFT BOARD</h4>${board}</div>
+          <div class="sd-pool">
+            <div class="sd-pool-h"><h4>${myTurn ? 'PICK YOUR PLAYER' : 'AVAILABLE PLAYERS'}</h4><span>left: L ${count('Legendary')} · E ${count('Epic')} · R ${count('Rare')} · U ${count('Uncommon')} · C ${count('Common')}</span></div>
+            <div class="sd-chips">${chips.map(c => `<button data-sdf="${c}" class="${fil === c ? 'on' : ''}">${c === 'NEED' ? 'MY NEEDS' : c}</button>`).join('')}</div>
+            <div class="sd-list">${shown.map(p => `<div class="sd-row ${rar(p)} ${myTurn ? 'can' : ''}" data-sdp="${keyOf(p)}">${face(p)}<span><b>${cleanName(p)}</b><small>${p.year || ''} · ${p.team || ''}${!snakeIsPitcher(p) && p.sec_pos ? ` · also ${p.sec_pos}` : ''}</small></span><em class="pos">${posOf(p)}</em><em class="ovr">${Math.floor(p.ovr || 0)}</em><button data-sddex="${keyOf(p)}" title="See the card">🔍</button></div>`).join('') || '<p class="sd-empty">Nobody left in this filter.</p>'}</div>
+          </div>
+          <div class="sd-mine"><h4>YOUR ROSTER · ${26 - needs.length >= 0 ? [...Object.values(me.slots), ...me.bench, ...me.sp, ...me.rp].length : 0} / 26</h4><div class="sd-needs">NEEDS: ${needs.join(' · ') || 'none'}</div>${mineHTML}</div>
+        </div>
+      </div>`;
+      container.onclick = e => {
+        const dex = e.target.closest('[data-sddex]');
+        if (dex) {
+          const p = [...st.left].find(x => keyOf(x) === dex.dataset.sddex);
+          if (p && window.BaseballDex && window.BaseballDex.showDetail) window.BaseballDex.showDetail(dexCard(p));
+          return;
+        }
+        const f = e.target.closest('[data-sdf]');
+        if (f) { S.filter = f.dataset.sdf; this.renderSnakeDraft(); return; }
+        const b = e.target.closest('[data-sd]');
+        if (b) {
+          const a = b.dataset.sd;
+          if (a === 'skip') { S.fast = true; this._snakeRun(); }
+          else if (a === 'auto') this._snakeAutoUser();
+          else if (a === 'rest') {
+            clearTimeout(S.timer);
+            while (st.pick < st.total) { const t = st.teams[snakePicker(st)], bb = snakeBest(st, t); if (bb) snakeTake(st, t, bb.p, bb.slot); else st.pick++; }
+            this._snakeFinish();
+          } else if (a === 'cancel') { clearTimeout(S.timer); this._snake = null; this.renderHub(); }
+          return;
+        }
+        const row = e.target.closest('[data-sdp]');
+        if (row && myTurn) this._snakePickUser(row.dataset.sdp);
+      };
+    },
+
     finishPacksDraftAndStart() {
       if (!this._packDraft) return;
       const allPulled = [...this._packDraft.pulledBatters, ...this._packDraft.pulledPitchers];
@@ -10958,7 +11149,7 @@
           <div class="lp-sec">CHOOSE YOUR LEAGUE</div>
           <div class="lp-tickets">${ticket('AL')}${ticket('NL')}</div>
 
-          ${p.cfg && p.cfg.type === 'packs' ? '' : this._ironPicksHTML(p)}
+          ${p.cfg && (p.cfg.type === 'packs' || p.cfg.type === 'snake') ? '' : this._ironPicksHTML(p)}
 
           <div class="lp-sec">TEAMS TO WATCH IN THE ${userLg}</div>
           <div class="lp-threats">${threats.map(id => {
@@ -10977,7 +11168,7 @@
           <div class="lp-cols">${column('AL')}${column('NL')}</div>
 
           <div class="m3-actions">
-            ${p.cfg && p.cfg.type === 'packs' ? '<button id="btn-c162-preview-back" class="m3-btn">◀ TEAM</button>' : ''}
+            ${p.cfg && (p.cfg.type === 'packs' || p.cfg.type === 'snake') ? '<button id="btn-c162-preview-back" class="m3-btn">◀ TEAM</button>' : ''}
             <button id="btn-c162-preview-start" class="d2t-go">⚾ PLAY BALL!</button>
           </div>
         </div>`;
@@ -11848,9 +12039,12 @@
       this._s2Seen = S.gamesPlayed;
       container.dataset.month = this._s2Chapter(seasonOver ? SEASON_LENGTH + 1 : S.gamesPlayed + 1).key;
       container.classList.add('s2');
+      container.dataset.m = this._mTab || 'game';
+      container.onclickMTab = container.onclickMTab || (container.addEventListener('click', e => { const b = e.target.closest('[data-mtab]'); if (!b) return; this._mTab = b.dataset.mtab; container.dataset.m = this._mTab; container.querySelectorAll('[data-mtab]').forEach(x => x.classList.toggle('on', x === b)); window.scrollTo(0, 0); }), true);
       container.innerHTML = `
         ${this._s2MastheadHTML()}
         ${this._goalsHTML()}
+        ${S.roster ? `<div class="c162-chem-season">${this._chemistryHTML(this._rosterCards(S.roster), true)}</div>` : ''}
 
         ${this._alertsHTML()}
         <!-- Top Horizontal Row: [RECORD & MODE BADGE] + [NEXT GAME RIVAL BOX] SIDE-BY-SIDE -->
@@ -11898,11 +12092,12 @@
           ${actionHTML}
         </div>
         ${this._s2Fresh ? this._s2Recap(this._s2Fresh.from) : ''}
-        ${S.league ? `${this._s2CalendarHTML(s2fresh)}
-        <div class="s2-row">${this._s2RaceHTML()}${this._s2BookHTML()}</div>
-        <div class="s2-row2">${this._lastGameHTML()}${this._s2GazetteHTML()}</div>` : this._lastGameHTML()}
+        <div class="c162-mtabs">${[['game', '⚾ GAME'], ['cal', '📅 CALENDAR'], ['book', '📒 THE BOOK'], ['stats', '📊 STATS']].map(([k, l]) => `<button data-mtab="${k}" class="${(this._mTab || 'game') === k ? 'on' : ''}">${l}</button>`).join('')}</div>
+        ${S.league ? `<div data-m="cal">${this._s2CalendarHTML(s2fresh)}</div>
+        <div class="s2-row"><div data-m="cal">${this._s2RaceHTML()}</div><div data-m="book">${this._s2BookHTML()}</div></div>
+        <div class="s2-row2"><div data-m="game">${this._lastGameHTML()}</div><div data-m="game">${this._s2GazetteHTML()}</div></div>` : `<div data-m="game">${this._lastGameHTML()}</div>`}
         <!-- Two column layout: Left (Tables) + Right (Game Log Feed) -->
-        <div class="c162-season-grid">
+        <div class="c162-season-grid" data-m="stats">
           <div class="c162-main-panel">
             <!-- Batters -->
             <div style="margin-bottom:18px;">
@@ -12885,6 +13080,7 @@
             <p>${on ? 'Reviews the team each month and may change your moves.' : 'You run the team. He only suggests moves each month.'}</p></div>
         </div>
         <div class="rt-hint">Drag a player onto another to swap them, or tap one and then the other. Rest days are always automatic.</div>
+        <div class="c162-chem-season">${this._chemistryHTML(this._rosterCards(R), true)}</div>
         ${m ? `<div class="rt-msg ${m.bad ? 'bad' : ''}">${m.text}</div>` : ''}
         <div class="rt-subs"><button class="${sub === 'lineup' ? 'on' : ''}" data-rt-sub="lineup">⚾ LINEUP</button><button class="${sub === 'pitching' ? 'on' : ''}" data-rt-sub="pitching">🔥 PITCHING STAFF</button></div>
         ${sub === 'lineup' ? `<div class="d2-table m3-field rt-board">${fieldSvg}${chips}</div>
@@ -13397,6 +13593,7 @@
             </div>
           </div>
           ${heroHTML}
+          ${S.roster ? `<div class="c162-chem-season"><small>YOUR CHEMISTRY THIS OCTOBER</small>${this._chemistryHTML(this._rosterCards(S.roster), true)}</div>` : ''}
 
           <!-- Organized Sub-Deck Tabs -->
           <div class="c162-po-subtabs">

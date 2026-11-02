@@ -73,3 +73,27 @@
   .c162-oc .c162-opt-pick { min-height: 50px; font-size: 11px !important; }
   .c162-reveal-prompt::after { content: ' · SWIPE'; }
 }
+
+/* 162-0 season on a phone: one section at a time (GAME / CALENDAR / THE BOOK / STATS), the record and
+   tonight's game always on top, the sim buttons fixed at the bottom. */
+.c162-mtabs { display: none; }
+@media (max-width: 768px) {
+  .c162-mtabs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; position: sticky; top: 0; z-index: 60; margin: 8px 0; padding: 4px; background: rgba(4,10,16,.97); border: 1px solid #24463a; }
+  .c162-mtabs button { min-height: 40px; padding: 2px; font: 600 11px/1.1 'Oswald', sans-serif; letter-spacing: .5px; color: #9db3a6; background: #0f1c16; border: 1px solid #24463a; }
+  .c162-mtabs button.on { color: #1a1205; background: #ffd36a; border-color: #ffd36a; }
+  #challenge162-season-container [data-m] { display: none !important; }
+  #challenge162-season-container[data-m="game"] [data-m="game"],
+  #challenge162-season-container[data-m="cal"] [data-m="cal"],
+  #challenge162-season-container[data-m="book"] [data-m="book"],
+  #challenge162-season-container[data-m="stats"] [data-m="stats"] { display: block !important; }
+  #challenge162-season-container .s2-row, #challenge162-season-container .s2-row2 { display: block !important; }
+  /* league tabs on top: one swipeable line instead of a wall of buttons */
+  .c162-mainnav { display: flex !important; flex-wrap: nowrap !important; overflow-x: auto; gap: 4px !important; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+  .c162-mainnav::-webkit-scrollbar { display: none; }
+  .c162-mainnav .c162-tab { flex: 0 0 auto; white-space: nowrap; }
+}
+@media (max-width: 768px) {
+  /* goals and chemistry only on the GAME section; the tabs come right after the record */
+  #challenge162-season-container:not([data-m="game"]) .c162-goals,
+  #challenge162-season-container:not([data-m="game"]) .c162-chem-season { display: none !important; }
+}
