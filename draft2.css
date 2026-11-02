@@ -278,3 +278,12 @@
 .sd-empty { color: #8fa89a; font-size: 13px; }
 .sd .r-common { --rr: #a9b0ac; } .sd .r-uncommon { --rr: #4ade80; } .sd .r-rare { --rr: #60a5fa; } .sd .r-epic { --rr: #c084fc; } .sd .r-legendary { --rr: #fbbf24; }
 @media (max-width: 1000px) { .sd-top, .sd-main { grid-template-columns: minmax(0, 1fr); } .sd-board { order: 3; max-height: 260px; overflow: auto; } .sd-list { max-height: 420px; } }
+
+/* Snake draft: draft day (sign-up and spot lottery) */
+.sdi-sum { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; text-align: center; margin: 6px 0; }
+.sdi-sum b { display: block; font: 400 26px 'VT323', monospace; color: #e8efe9; } .sdi-sum span { font-size: 10px; letter-spacing: 1px; color: var(--rr); }
+.sdi-note { font-size: 12px; color: #9db3a6; }
+.sdi-ord { display: grid; grid-template-columns: 28px 1fr; gap: 6px; padding: 2px 4px; font-size: 13px; border-bottom: 1px solid rgba(47,93,72,.35); } .sdi-ord b { color: #ffd36a; font: 400 17px 'VT323', monospace; }
+.sdi-ord.mine { background: rgba(255,211,106,.15); color: #ffd36a; font-weight: 600; }
+.sdi-spot { font: 400 30px 'VT323', monospace !important; color: #ffd36a !important; }
+.sdi-how { margin: 0; padding-left: 18px; font-size: 13px; line-height: 1.5; color: #c7d6cc; }

@@ -354,17 +354,6 @@ body:has(.dx2-overlay) #mobile-nav-bar { display: none !important; }
 .c162-book table { width: 100%; font: 400 14px 'Oswald', sans-serif; } .c162-book td { padding: 2px 8px; border-bottom: 1px solid rgba(47,93,72,.4); } .c162-book td:nth-child(2) { color: #ffd36a; text-align: right; }
 .c162-book-h { display: flex; flex-wrap: wrap; gap: 6px 12px; margin-top: 8px; font: 400 13px 'Oswald', sans-serif; color: #b9cabf; }
 
-/* Trade deadline */
-.c162-trade-ov { position: fixed; inset: 0; z-index: 9000; display: flex; overflow: auto; background: rgba(0,0,0,.78); }
-.c162-trade { margin: auto; padding: 16px 20px; max-width: 780px; background: #0a1511; border: 2px solid #34d399; color: #e8efe9; font-family: 'Oswald', sans-serif; }
-.c162-trade h3 { margin: 0; color: #ffd36a; letter-spacing: 2px; } .c162-trade p { margin: 2px 0 10px; font-size: 13px; color: #b9cabf; }
-.c162-trade-row { display: flex; align-items: center; justify-content: center; gap: 14px; padding: 8px 0; border-top: 1px solid #24463a; }
-.c162-trade-row > div { zoom: .72; text-align: center; } .c162-trade-row small { display: block; margin-bottom: 4px; font-size: 15px; color: #ffd36a; } .c162-trade-row em { font-style: normal; font-size: 26px; color: #ffd36a; }
-.c162-trade button { padding: 9px 16px; font: 600 13px 'Oswald', sans-serif; letter-spacing: 1px; color: #1a1205; background: linear-gradient(#ffd36a, #c9962c); border: 0; cursor: pointer; }
-.c162-trade .c162-trade-no { display: block; margin: 10px auto 0; color: #e8efe9; background: #13241c; border: 1px solid #2f5d48; }
-@media (max-width: 620px) { .c162-trade-row { flex-wrap: wrap; } .c162-trade-row > div { zoom: .55; } }
-
-.c162-trade-why { display: flex; flex-direction: column; gap: 8px; width: 150px; zoom: 1 !important; font-size: 14px; color: #6ee7a0; text-align: center; }
 
 /* Chemistry chips on the season, roster and playoff screens */
 .c162-chem-season { margin: 6px 0 10px; } .c162-chem-season > small { display: block; margin-bottom: 4px; font: 600 11px 'Oswald', sans-serif; letter-spacing: 2px; color: #ffd36a; }
