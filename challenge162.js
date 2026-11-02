@@ -22,6 +22,46 @@
   ];
 
   const RECORDS_KEY = 'baserogue_162challenge_records_v1';
+  const TRADE_DAY = 100, TRADE_OFFERS = 3, TRADE_MAX_GAP = 2, TRADE_EDGE = 8, TRADE_AI_DEALS = 4;
+  // Three goals a season (intermediate targets: 162-0 itself is out of reach for almost everyone).
+  const anyBat = (S, f) => Object.values(S.batterStats || {}).some(f);
+  const anyPit = (S, f) => Object.values(S.pitcherStats || {}).some(f);
+  const SEASON_GOALS = {
+    w90: { label: 'Win 90 games', check: S => S.wins >= 90 },
+    w100: { label: 'Win 100 games', check: S => S.wins >= 100 },
+    po: { label: 'Reach the playoffs', check: S => !!(S.playoffs && S.playoffs.unlocked && !S.playoffs.missed) },
+    title: { label: 'Win the World Series', check: S => !!(S.playoffs && S.playoffs.won) },
+    hr45: { label: 'A 45-homer hitter', check: S => anyBat(S, b => (b.hr || 0) >= 45) },
+    avg340: { label: 'A .340 hitter (400+ AB)', check: S => anyBat(S, b => (b.ab || 0) >= 400 && b.h / b.ab >= 0.34) },
+    sb60: { label: 'A 60-steal runner', check: S => anyBat(S, b => (b.sb || 0) >= 60) },
+    k250: { label: 'A 250-strikeout arm', check: S => anyPit(S, p => (p.so || 0) >= 250) },
+    era275: { label: 'A sub-2.75 ERA ace (150+ IP)', check: S => anyPit(S, p => (p.outs || 0) >= 450 && p.er * 27 / p.outs < 2.75) },
+    sv35: { label: 'A 35-save closer', check: S => anyPit(S, p => (p.sv || 0) >= 35) },
+    w20: { label: 'A 20-game winner', check: S => anyPit(S, p => (p.w || 0) >= 20) },
+    streak10: { label: 'Win 10 in a row', check: S => { let n = 0, m = 0; (S.results || []).forEach(r => { n = r && r[0] ? n + 1 : 0; m = Math.max(m, n); }); return m >= 10; } }
+  };
+  function pickSeasonGoals() {
+    const team = ['w90', 'w100', 'po', 'title', 'streak10'], ind = Object.keys(SEASON_GOALS).filter(k => !team.includes(k));
+    const take = (a, n) => a.slice().sort(() => Math.random() - 0.5).slice(0, n);
+    return [...take(team, 1), ...take(ind, 2)];
+  }
+  // All-time bests of the user's teams, kept across seasons.
+  function bookSeason(records, S, wonWS) {
+    const b = records.book || (records.book = {});
+    const name = S.teamName || 'My Team';
+    const up = (k, v, who, low) => { if (v !== null && (!b[k] || (low ? v < b[k].v : v > b[k].v))) b[k] = { v, name: who }; };
+    up('wins', S.wins, name);
+    Object.values(S.batterStats || {}).forEach(p => {
+      up('hr', p.hr || 0, p.name); up('rbi', p.rbi || 0, p.name); up('sb', p.sb || 0, p.name);
+      if ((p.ab || 0) >= 400) up('avg', p.h / p.ab, p.name);
+    });
+    Object.values(S.pitcherStats || {}).forEach(p => {
+      up('w', p.w || 0, p.name); up('so', p.so || 0, p.name); up('sv', p.sv || 0, p.name);
+      if ((p.outs || 0) >= 450) up('era', p.er * 27 / p.outs, p.name, true);
+    });
+    (records.history || (records.history = [])).push({ name, w: S.wins, l: S.losses, won: !!wonWS });
+    records.history = records.history.slice(-50);
+  }
 
   const RARITY_COLORS = {
     Legendary: '#ffd700',
@@ -784,7 +824,7 @@
   // Rarity box (user, Oct 2026): most packs have a fixed rarity and a few are "any rarity" (each
   // option drawn with the game's odds), so a team knows its tiers but there is still some luck.
   // null = every pack any rarity (the old rule). The rivals are built from the same box.
-  const PACK_MIX = { fixed: { Legendary: 1, Epic: 4, Rare: 6, Uncommon: 6, Common: 3 } }; // + 6 any-rarity packs (user's pick, Oct 2026)
+  const PACK_MIX = { fixed: { Legendary: 1, Epic: 3, Rare: 5, Uncommon: 6, Common: 6 } }; // + 6 any-rarity packs (user's pick, Oct 2026)
   function rollBoxSchedule(n) {
     if (!PACK_MIX) return null;
     const out = [];
@@ -793,26 +833,31 @@
     for (let i = out.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [out[i], out[j]] = [out[j], out[i]]; }
     return out.slice(0, n);
   }
-  function buildPoolRoster(taken, picks) {
+  // Rivals are not drafted: each team gets a recipe of rarities by its place in the league (L / E / R / U / C).
+  const RIVAL_RECIPES = [[6, [2, 5, 7, 7, 5]], [10, [1, 4, 6, 8, 7]], [9, [1, 3, 5, 8, 9]], [6, [0, 2, 4, 9, 11]]];
+  // RIVAL_DRAFT 'random': every roster spot rolls its own rarity with the recipes' league-wide odds,
+  // so luck decides who ends up a powerhouse.  L 3.8 / E 13.5 / R 21.2 / U 30.8 / C 30.6 %.
+  const RIVAL_RANDOM_ODDS = [['Legendary', 0.038], ['Epic', 0.135], ['Rare', 0.212], ['Uncommon', 0.308], ['Common', 0.307]];
+  function rivalRandomBoxes(n) {
+    const roll = () => { let r = Math.random(); for (const [k, p] of RIVAL_RANDOM_ODDS) { if ((r -= p) < 0) return k; } return 'Common'; };
+    return Array.from({ length: n }, () => Array.from({ length: 26 }, roll));
+  }
+  function rivalRecipes() {
+    const names = ['Legendary', 'Epic', 'Rare', 'Uncommon', 'Common'], out = [];
+    RIVAL_RECIPES.forEach(([n, r]) => { for (let i = 0; i < n; i++) { const box = []; r.forEach((c, k) => { for (let j = 0; j < c; j++) box.push(names[k]); }); out.push(box.sort(() => Math.random() - 0.5)); } });
+    return out.sort(() => Math.random() - 0.5);
+  }
+  function buildPoolRoster(taken, target) {
     const bats = getBatterPool(), pits = getPitcherPool();
-    const box = rollBoxSchedule(26);
-    let boxAt = 0;
+    // One rarity from the team's recipe per roster spot; the player is drawn at random among those who fit.
     const draw = (pool, ok) => {
-      const want = box ? box[boxAt++] : 'any';
+      const rar = target.pop() || 'Common';
       let free = pool.filter(p => !taken.has(personId(p)) && ok(p));
-      if (want !== 'any') { const same = free.filter(p => (p.rarity || 'Common') === want); if (same.length) free = same; }
-      if (!free.length) return null;
-      const candidates = [];
-      for (let i = 0; i < picks && free.length; i++) {
-        const idx = Math.floor(Math.random() * free.length);
-        candidates.push(free.splice(idx, 1)[0]);
-      }
-      let best = null;
-      for (const c of candidates) {
-        if (!best || (c.ovr || 0) > (best.ovr || 0)) best = c;
-      }
-      if (best) taken.add(personId(best));
-      return best;
+      const same = free.filter(p => (p.rarity || 'Common') === rar);
+      if (same.length) free = same;
+      const pick = free[Math.floor(Math.random() * free.length)];
+      if (pick) taken.add(personId(pick));
+      return pick || null;
     };
     const lineup = ['C', 'SS', '2B', '3B', 'CF', '1B', 'LF', 'RF', 'DH'].map(slot => {
       const p = draw(bats, b => slot === 'DH' || canPlayerFillPrimary(b, slot));
@@ -835,14 +880,76 @@
     return { lineup: team.lineup, bench, rotation, bullpen: pen.map((p, i) => ({ ...p, role: i === 0 ? 'CL' : 'RP' })) };
   }
 
+  // Snake draft (prototype, RIVAL_DRAFT 'snake'): a season pool drawn at random from all the cards,
+  // so its talent has the shape of the whole pool (measured, Nov 2026: the cards' peak WAR spread
+  // matches real AL/NL 1947-2025 starters), then a snake draft where each team takes the best card
+  // that fills a need. Benches come from the Common / Uncommon cards, like real benches.
+  const RIVAL_DRAFT = 'recipe';
+  const SNAKE_DEPTH = 1; // exact pool: the players that fill every roster, no more (user, Nov 2026)
+  function buildSnakeRosters(ids, taken) {
+    const n = ids.length, rnd = a => a.slice().sort(() => Math.random() - 0.5);
+    const free = p => !taken.has(personId(p));
+    const bats = getBatterPool().filter(free), pits = getPitcherPool().filter(free);
+    const pool = [], seen = new Set();
+    const add = (list, k) => { rnd(list).filter(p => !seen.has(personId(p))).slice(0, Math.round(k)).forEach(p => { seen.add(personId(p)); pool.push(p); }); };
+    ['C', 'SS', '2B', '3B', 'CF', '1B', 'LF', 'RF'].forEach(pos => add(bats.filter(b => b.pos === pos), n * SNAKE_DEPTH));
+    add(bats, n * (BENCH_SIZE + 1) * SNAKE_DEPTH); // bench + DH: any hitter (few cards are pure DH)
+    add(pits.filter(p => p.role === 'SP'), n * 5 * SNAKE_DEPTH);
+    add(pits.filter(p => p.role !== 'SP'), n * ROSTER_RP * SNAKE_DEPTH);
+    const isP = p => p.role !== undefined && p.h9 !== undefined;
+    const teams = ids.map(() => ({ slots: {}, bench: [], sp: [], rp: [] }));
+    const left = new Set(pool);
+    const FIELD = ['C', 'SS', '2B', '3B', 'CF', '1B', 'LF', 'RF', 'DH'];
+    const fits = (t, p) => {
+      if (isP(p)) return p.role === 'SP' ? (t.sp.length < 5 ? 'sp' : (t.rp.length < ROSTER_RP ? 'rp' : '')) : (t.rp.length < ROSTER_RP ? 'rp' : '');
+      const open = FIELD.find(sl => !t.slots[sl] && (sl === 'DH' || canPlayerFillPrimary(p, sl)));
+      if (open) return 'L:' + open;
+      return t.bench.length < BENCH_SIZE ? 'bench' : '';
+    };
+    for (let round = 0; round < 26; round++) {
+      const order = round % 2 ? ids.map((_, i) => n - 1 - i) : ids.map((_, i) => i);
+      for (const ti of order) {
+        const t = teams[ti];
+        let best = null, bestSlot = '', bestV = -1;
+        for (const p of left) {
+          const sl = fits(t, p);
+          if (!sl) continue;
+          const v = (p.ovr || 0) - (sl === 'bench' ? 6 : 0);
+          if (v > bestV) { best = p; bestSlot = sl; bestV = v; }
+        }
+        // Exact pool: nobody left who plays an open spot, so take the best player left out of position.
+        if (!best) {
+          const open = FIELD.find(sl => !t.slots[sl]);
+          for (const p of left) { if (!isP(p) && open && (!best || (p.ovr || 0) > (best.ovr || 0))) best = p; }
+          if (best) bestSlot = 'L:' + open;
+        }
+        if (!best) continue;
+        left.delete(best); taken.add(personId(best));
+        if (bestSlot.startsWith('L:')) t.slots[bestSlot.slice(2)] = { ...best, assignedSlot: bestSlot.slice(2) };
+        else if (bestSlot === 'bench') t.bench.push(best);
+        else t[bestSlot].push(best);
+      }
+    }
+    const out = {};
+    ids.forEach((id, i) => {
+      const t = teams[i], team = { lineup: FIELD.map(sl => t.slots[sl]).filter(Boolean) };
+      promoteRivalBench(team, t.bench);
+      const pen = t.rp.sort((x, y) => (y.ovr || 0) - (x.ovr || 0));
+      out[id] = { lineup: team.lineup, bench: t.bench, rotation: t.sp.sort((x, y) => (y.ovr || 0) - (x.ovr || 0)), bullpen: pen.map((p, k) => ({ ...p, role: k === 0 ? 'CL' : 'RP' })) };
+    });
+    return out;
+  }
+
   function buildLeagueRosters(teams, userCards, isPoolLeague = false) {
     const taken = new Set((userCards || []).filter(Boolean).map(personId));
     const out = {};
+    const targets = RIVAL_DRAFT === 'random' ? rivalRandomBoxes(40) : rivalRecipes();
+    const snake = isPoolLeague && RIVAL_DRAFT === 'snake' ? buildSnakeRosters(Object.keys(teams).filter(id => !teams[id].isUser), taken) : null;
     // Shuffled so no franchise always gets first claim on a shared star.
     seededShuffle(Object.keys(teams).filter(id => !teams[id].isUser), Math.random).forEach(id => {
       const t = teams[id];
       if (isPoolLeague && RIVALS_FROM_POOL) {
-        const r = buildPoolRoster(taken, RIVALS_FROM_POOL);
+        const r = snake ? snake[id] : buildPoolRoster(taken, targets.pop() || []);
         out[id] = { lineup: r.lineup.map(p => [batterUnlockKey(p), p.assignedSlot]), bench: r.bench.map(batterUnlockKey), rotation: r.rotation.map(pitcherUnlockKey), bullpen: r.bullpen.map(p => [pitcherUnlockKey(p), p.role]), _promoted: true };
         return;
       }
@@ -1263,7 +1370,7 @@
   const PIT_BB9 = [5.270, 4.710, 4.228, 3.815, 3.433, 3.078, 2.765, 2.508, 2.288, 2.076, 1.743, 1.524];
   const PIT_HR9 = [1.338, 1.206, 1.090, 0.994, 0.893, 0.791, 0.696, 0.607, 0.534, 0.474, 0.366, 0.322];
   // The ordinary opponent both kinds of tables are measured against (AL/NL 1947-2025).
-  const ENV_H9 = 8.833, ENV_K9 = 6.244, ENV_BB9 = 3.316, ENV_HR9 = 0.940;
+  const ENV_H9 = 8.76, ENV_K9 = 5.60, ENV_BB9 = 3.316, ENV_HR9 = 0.885; // ENV_K9 6.244 gave K 14.5%, 5.60 gives 16.4% (user, Nov 2026)
   const ENV_BF9 = 27 + ENV_H9 + ENV_BB9; // batters faced per nine innings
   // Batter and pitcher weigh the same: each rate is the batter's table times how the pitcher's
   // own rate per batter faced compares with the ordinary one. No league scales and no hand-made
@@ -1271,7 +1378,7 @@
   // against ordinary pitchers the hitters reproduce their tables (1.00 / 1.02 / 1.00 / 1.01 in
   // hits / HR / K / BB) and against ordinary hitters the pitchers too (within ~3%); what is left
   // in a season is the level of the opponents (every card is a peak).
-  const PIT_EDGE = 1.7; // user, Oct 2026: 1.5 was "la versión suave"; 1.7 after the 26-man rosters and the rarity box (league ERA 4.19 -> 4.11)
+  const PIT_EDGE = 1.5; // user, Oct 2026: 1.5 was "la versión suave"; 1.7 after the 26-man rosters and the rarity box (league ERA 4.19 -> 4.11)
   // Same edge, softer on strikeouts and hits: at 1.7 everywhere the aces struck out 430+ and
   // posted ERAs near 1.3 (Oct 2026 review). Walks and home runs keep 1.7.
   const PIT_EDGE_K = 1.2, PIT_EDGE_H = 1.6; // H 1.6: league ERA 4.13 -> 4.10 (user, Oct 2026)
@@ -2549,6 +2656,7 @@
       if (!state) return;
       const records = this.getRecords();
       records.completedSeasons = (records.completedSeasons || 0) + 1;
+      bookSeason(records, state, wonWS);
       if (state.wins > (records.maxStreak || 0)) {
         records.maxStreak = state.wins;
       }
@@ -2696,7 +2804,16 @@
     },
     save() {
       if (!this.state) return;
-      try { localStorage.setItem(SAVE_KEY, JSON.stringify(this._serialize())); } catch (e) { /* storage unavailable */ }
+      try { localStorage.setItem(SAVE_KEY, JSON.stringify(this._serialize())); this._saveFailed = false; } catch (e) {
+        // Never lose a season in silence: say so once per failure streak.
+        if (!this._saveFailed) {
+          this._saveFailed = true;
+          const n = document.createElement('div');
+          n.textContent = '⚠ Could not save this season: browser storage is full or blocked. Your progress may be lost if you close the game.';
+          n.style.cssText = 'position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:100000;max-width:90vw;padding:10px 16px;background:#7f1d1d;color:#fff;border:1px solid #fca5a5;font:500 14px Oswald,sans-serif;';
+          document.body.appendChild(n); setTimeout(() => n.remove(), 9000);
+        }
+      }
     },
     load() {
       try {
@@ -3161,6 +3278,143 @@
     },
 
     // ── All-Star Game ────────────────────────────────────────────────────────────────────
+    // ── Trade deadline: one window. A player's season line travels with him, so nothing is lost. ──
+    _moveLine(kind, fromId, toId, key) {
+      const L = this.state.league, S = this.state, a = `${fromId}:${key}`, b = `${toId}:${key}`;
+      const mv = o => { if (o && o[a] !== undefined) { o[b] = o[a]; delete o[a]; } };
+      mv(L.stats[kind]); if (L.form) mv(L.form[kind]); if (L.formLv) mv(L.formLv[kind]);
+      if (kind === 'bat') mv(L.wear); else mv(L.pen);
+      const own = kind === 'bat' ? S.batterStats : S.pitcherStats;
+      if (toId === USER_TEAM_ID) own[key] = { name: '', ...(L.stats[kind][b] || {}), traded: true };
+      if (fromId === USER_TEAM_ID) delete own[key];
+    },
+    _swapRivalKey(r, kind, oldKey, newKey) {
+      if (kind === 'bat') {
+        r.lineup.forEach(x => { if (x[0] === oldKey) x[0] = newKey; });
+        r.bench = r.bench.map(k => (k === oldKey ? newKey : k));
+      } else {
+        r.rotation = r.rotation.map(k => (k === oldKey ? newKey : k));
+        r.bullpen.forEach(x => { if (x[0] === oldKey) x[0] = newKey; });
+      }
+    },
+    _tradeCheckpoint() {
+      const S = this.state, L = S && S.league;
+      if (!L || !L.rosters || S.tradeDone || S.gamesPlayed !== TRADE_DAY) return;
+      S.tradeDone = true;
+      this._aiTrades();
+      S.tradeOffers = this._buildTrades();
+      S.tradeShown = !S.tradeOffers.length;
+      S.pendingAlerts = S.pendingAlerts || [];
+      S.pendingAlerts.push({ icon: '🤝', title: 'TRADE DEADLINE', text: S.tradeOffers.length ? `${S.tradeOffers.length} teams out of the race are calling.` : 'No team called today.', key: 'trade' });
+    },
+    _sellers() {
+      const L = this.state.league;
+      return Object.keys(L.rosters).filter(id => L.teams[id] && !L.teams[id].isUser).sort((a, b) => L.teams[a].w - L.teams[b].w);
+    },
+    _aiTrades() {
+      const L = this.state.league, idx = poolIndex().bat, ids = this._sellers(), n = ids.length;
+      for (let i = 0; i < TRADE_AI_DEALS; i++) {
+        const sell = ids[i], buy = ids[n - 1 - i], rs = L.rosters[sell], rb = L.rosters[buy];
+        if (!rs || !rb) continue;
+        const deal = rb.lineup.map(x => {
+          const mine = idx.get(x[0]), theirs = rs.lineup.find(y => y[1] === x[1]);
+          const other = theirs && idx.get(theirs[0]);
+          return other && mine && other.ovr - mine.ovr >= 2 && other.ovr - mine.ovr <= 8 ? { a: x[0], b: theirs[0], gain: other.ovr - mine.ovr, other } : null;
+        }).filter(Boolean).sort((x, y) => y.gain - x.gain)[0];
+        if (!deal) continue;
+        this._swapRivalKey(rs, 'bat', deal.b, '#'); this._swapRivalKey(rb, 'bat', deal.a, deal.b); this._swapRivalKey(rs, 'bat', '#', deal.a);
+        this._moveLine('bat', sell, buy, deal.b); this._moveLine('bat', buy, sell, deal.a);
+        this._pushHeadline(`🤝 Deadline deal: ${L.teams[buy].name} get ${cleanName(deal.other)} from ${L.teams[sell].name}.`, 'streak');
+      }
+      registerLeagueRosters(L);
+    },
+    _buildTrades() {
+      const S = this.state, L = S.league, R = S.roster, idx = poolIndex(), iron = S.ironMan || {};
+      const offers = [], used = new Set();
+      const fits = (q, p, ok) => ok(q) && Math.abs(q.ovr - p.ovr) <= TRADE_MAX_GAP;
+      const mine = this._userCards(R);
+      const hand = x => { const h = (window.PlayerHands || {})[x.playerID]; return h ? h[1] : ''; };
+      // Why this deal helps YOUR team: no reason, no offer.
+      const whyOf = (w, q) => {
+        const rest = mine.filter(x => x !== w.p);
+        if (q.team !== w.p.team && (rest.filter(x => x.team === q.team).length + 1) % CHEM_TEAM_SIZE === 0) return `+1 chemistry: ${q.team} group levels up`;
+        if (q.era !== w.p.era && (rest.filter(x => x.era === q.era).length + 1) % CHEM_ERA_SIZE === 0) return '+1 chemistry: era group levels up';
+        if (w.kind !== 'bat') {
+          if (w.kind === 'sp' && hand(q) && hand(q) !== hand(w.p) && R.pitchers.SP.filter(x => x !== w.p).every(x => hand(x) === hand(w.p))) return `A ${hand(q) === 'L' ? 'lefty' : 'righty'} to break up your rotation`;
+          if ((q.k9 || 0) >= (w.p.k9 || 0) + TRADE_EDGE) return 'More strikeouts';
+          if ((q.h9 || 0) >= (w.p.h9 || 0) + TRADE_EDGE) return 'Fewer hits allowed';
+          if ((q.sta || 0) >= (w.p.sta || 0) + TRADE_EDGE) return 'More innings';
+          return '';
+        }
+        if ((q.pwr || 0) >= (w.p.pwr || 0) + TRADE_EDGE) return 'More power in the lineup';
+        if ((q.spd || 0) >= (w.p.spd || 0) + TRADE_EDGE) return 'More speed';
+        if ((q.def || 0) >= (w.p.def || 0) + TRADE_EDGE) return `Better glove at ${w.slot}`;
+        if ((q.con || 0) >= (w.p.con || 0) + TRADE_EDGE) return 'More contact';
+        return '';
+      };
+      const wants = SLOTS.map(slot => ({ kind: 'bat', slot, p: R.lineup[slot] })).filter(x => x.p && !iron[batterUnlockKey(x.p)])
+        .concat(R.pitchers.SP.map((p, i) => ({ kind: 'sp', i, p })).filter(x => x.p && !iron[ironPitKey(x.p)]))
+        .concat(R.pitchers.RP.map((p, i) => ({ kind: 'rp', i, p })).filter(x => x.p && !iron[ironPitKey(x.p)]))
+        .sort((a, b) => b.p.ovr - a.p.ovr);
+      // One offer per level of your roster: a star, a middle man, a role player. Every rival can call.
+      const third = Math.ceil(wants.length / 3), shuffle = a => a.slice().sort(() => Math.random() - 0.5);
+      const tiers = [wants.slice(0, third), wants.slice(third, third * 2), wants.slice(third * 2)];
+      const whyKind = t => (t.startsWith('+1') ? 'chem' : t);
+      const usedWhy = new Set();
+      tiers.forEach(tier => {
+        let found = null;
+        for (const w of shuffle(tier)) {
+          for (const id of shuffle(this._sellers())) {
+            if (used.has(id)) continue;
+            const r = L.rosters[id];
+            const pool = w.kind === 'bat' ? [...r.lineup.map(x => x[0]), ...r.bench].map(k => idx.bat.get(k))
+              : (w.kind === 'sp' ? r.rotation : r.bullpen.map(x => x[0])).map(k => idx.pit.get(k));
+            const ok = w.kind === 'bat' ? q => (w.slot === 'DH' || canPlayerFillSlot(q, w.slot)) && !(window.leftyCantPlay && window.leftyCantPlay(q, w.slot)) : () => true;
+            const q = shuffle(pool.filter(x => x && fits(x, w.p, ok) && whyOf(w, x) && !usedWhy.has(whyKind(whyOf(w, x)))))[0];
+            if (q) { found = { w, q, id }; break; }
+          }
+          if (found) break;
+        }
+        if (!found) return;
+        const { w, q, id } = found, why = whyOf(w, q);
+        used.add(id); usedWhy.add(whyKind(why));
+        offers.push({ why, kind: w.kind, slot: w.slot, i: w.i, team: id, give: w.kind === 'bat' ? batterUnlockKey(w.p) : pitcherUnlockKey(w.p), get: w.kind === 'bat' ? batterUnlockKey(q) : pitcherUnlockKey(q) });
+      });
+      return offers;
+    },
+    _acceptTrade(o) {
+      const S = this.state, L = S.league, R = S.roster, idx = poolIndex(), kind = o.kind === 'bat' ? 'bat' : 'pit';
+      const card = (kind === 'bat' ? idx.bat : idx.pit).get(o.get), r = L.rosters[o.team];
+      if (o.kind === 'bat') R.lineup[o.slot] = { ...card, assignedSlot: o.slot };
+      else { const arr = o.kind === 'sp' ? R.pitchers.SP : R.pitchers.RP; arr[o.i] = { ...card, role: arr[o.i].role }; }
+      this._swapRivalKey(r, kind, o.get, o.give);
+      this._moveLine(kind, o.team, USER_TEAM_ID, o.get);
+      this._moveLine(kind, USER_TEAM_ID, o.team, o.give);
+      registerLeagueRosters(L);
+      this._pushHeadline(`🤝 Trade: you land ${cleanName(card)} from ${L.teams[o.team].name}.`, 'user');
+      S.tradeOffers = []; // one deal only
+      S.tradeShown = true;
+      this.save();
+    },
+    _showTrades() {
+      const S = this.state, L = S && S.league;
+      if (!L || S.tradeShown !== false) return;
+      const old = document.getElementById('c162-honors-overlay'); if (old) old.remove();
+      const idx = poolIndex();
+      const cardOf = (k, b) => { const c = (b ? idx.bat : idx.pit).get(k); return c ? window.createCardHTML(c) : ''; };
+      if (!S.tradeOffers.length) { S.tradeShown = true; this.save(); this.renderSeason(); return; }
+      const ov = document.createElement('div');
+      ov.id = 'c162-honors-overlay'; ov.className = 'c162-trade-ov';
+      ov.innerHTML = `<div class="c162-trade"><h3>🤝 TRADE DEADLINE</h3><p>Season lines travel with the player. You can accept only one.</p>
+        ${S.tradeOffers.map((o, n) => { const b = o.kind === 'bat'; return `<div class="c162-trade-row"><div><small>YOU GIVE</small>${cardOf(o.give, b)}</div><em>⇄</em><div><small>${L.teams[o.team].name.toUpperCase()} GIVE</small>${cardOf(o.get, b)}</div><div class="c162-trade-why"><b>${o.why}</b><button data-tr="${n}">ACCEPT</button></div></div>`; }).join('')}
+        <button class="c162-trade-no" data-tr-no>NO DEAL</button></div>`;
+      document.body.appendChild(ov);
+      ov.addEventListener('click', e => {
+        const y = e.target.closest('[data-tr]');
+        if (y) { this._acceptTrade(S.tradeOffers[+y.dataset.tr]); ov.remove(); this.renderSeason(); return; }
+        if (e.target.closest('[data-tr-no]')) { ov.remove(); S.tradeShown = true; this.save(); this.renderSeason(); }
+      });
+    },
     _allStarCheckpoint() {
       const S = this.state, L = S && S.league;
       if (!L || L.allStar || S.gamesPlayed !== ALLSTAR_DAY) return;
@@ -3366,6 +3620,7 @@
       } else {
         this._createLeagueForState(this.state, typeof opts === 'string' ? opts : null);
       }
+      this.state.goals = pickSeasonGoals();
       this.save();
       this.showScreen('screen-challenge-season');
       this.render();
@@ -3580,6 +3835,7 @@
       this._checkMilestones(S.lastGame);
       this._monthlyCheckpoint();
       this._allStarCheckpoint();
+      this._tradeCheckpoint();
       if (S.gamesPlayed >= SEASON_LENGTH) this._finishRegularSeason();
       this.save();
       return logEntry;
@@ -8584,7 +8840,7 @@
 
       const btnAllStar = document.getElementById('btn-start-allstar-mode');
       if (btnAllStar) btnAllStar.onclick = () => {
-        this.setModeConfig({ type: 'all_star', label: '👑 ALL-STAR DREAM TEAM', desc: 'Free Collection' });
+        this.setModeConfig({ type: 'all_star', rivalsFromPool: true, label: '👑 ALL-STAR DREAM TEAM', desc: 'Free Collection' });
         this.startRosterBuilder();
       };
 
@@ -10434,7 +10690,7 @@
       const isSuggested = suggested.length === ironCount && suggested.every(k => iron[k]);
       const ironHTML = `<div class="m3-iron">
           <div class="m3-iron-head">
-            <div><b>🛡 IRON MEN · ${ironCount} / ${MAX_IRON_MAN}</b><small>They tire 4 times slower and get +${IRON_BOOST} to their ratings. Tap the shield on any card or row. Locked once the season starts.</small></div>
+            <div><b>🛡 IRON MEN · ${ironCount} / ${MAX_IRON_MAN}</b><small>+${IRON_BOOST} to their ratings. Batters tire 4 times slower and play more games; pitchers last longer. Tap the shield on any card or row. Locked once the season starts.</small></div>
             ${isSuggested ? '<span class="m3-iron-tag">★ SUGGESTED</span>' : '<button id="btn-c162-iron-suggest" class="m3-btn">★ USE SUGGESTED</button>'}
           </div>
           <div class="m3-iron-list">${chosen.length ? chosen.map(c => `<div class="m3-iron-item"><em>${c.slot}</em>${face(c.who, c.slot.startsWith('SP') || !(c.slot in IRON_GAMES))}<div><b>${cleanName(c.who)}</b><small>${c.reason}</small></div></div>`).join('')
@@ -11594,6 +11850,7 @@
       container.classList.add('s2');
       container.innerHTML = `
         ${this._s2MastheadHTML()}
+        ${this._goalsHTML()}
 
         ${this._alertsHTML()}
         <!-- Top Horizontal Row: [RECORD & MODE BADGE] + [NEXT GAME RIVAL BOX] SIDE-BY-SIDE -->
@@ -11767,6 +12024,7 @@
       // A click on a player of the tables opens his Dex card (ratings, career line).
       if (this.state.gamesPlayed >= SEASON_LENGTH) this._showHonors();
       this._showAllStar();
+      this._showTrades();
       container.querySelectorAll('[data-c162-card]').forEach(el => {
         el.onclick = () => {
           // By player key, not by row number: the October prep reorders the roster while the table
@@ -12488,8 +12746,27 @@
             <summary>🏆 POSTSEASON BRACKET</summary>
             ${this._playoffPictureHTML()}
           </details>` : ''}
+          ${this._goalsHTML()}
+          ${this._recordBookHTML()}
           ${this._resultsAwardsHTML()}
         </div>`;
+    },
+
+    _goalsHTML() {
+      const S = this.state;
+      if (!S || !S.goals || !S.goals.length) return '';
+      const over = S.gamesPlayed >= SEASON_LENGTH && (!S.playoffs || S.playoffs.finished || S.playoffs.missed);
+      return `<div class="c162-goals"><b>SEASON GOALS</b>${S.goals.map(k => { const g = SEASON_GOALS[k]; if (!g) return ''; const v = g.check(S); return `<span class="${v ? 'done' : over ? 'miss' : ''}">${v ? '✓' : over ? '✗' : '○'} ${g.label}</span>`; }).join('')}</div>`;
+    },
+    _recordBookHTML() {
+      const r = this.getRecords(), b = r.book;
+      if (!b) return '';
+      const row = (label, x, f) => (x ? `<tr><td>${label}</td><td>${f ? f(x.v) : x.v}</td><td>${x.name}</td></tr>` : '');
+      const avg = v => v.toFixed(3).replace(/^0/, '');
+      return `<details class="c162-results-bracket c162-book" open><summary>🏛 RECORD BOOK · ${r.completedSeasons || 0} SEASONS · ${r.worldSeriesWins || 0} TITLES</summary>
+        <table>${row('Team wins', b.wins)}${row('Home runs', b.hr)}${row('Batting avg', b.avg, avg)}${row('RBI', b.rbi)}${row('Steals', b.sb)}${row('Pitcher wins', b.w)}${row('Strikeouts', b.so)}${row('ERA', b.era, v => v.toFixed(2))}${row('Saves', b.sv)}</table>
+        ${(r.history || []).length ? `<div class="c162-book-h">${r.history.slice(-10).reverse().map(h => `<span>${h.won ? '🏆' : ''}${h.name} ${h.w}-${h.l}</span>`).join('')}</div>` : ''}
+      </details>`;
     },
 
     // Top menu of the season screens (asked by the user): the season and every league tab in one row.
@@ -12564,7 +12841,7 @@
       this.renderSeason();
     },
     _rosterTabHTML() {
-      const S = this.state, R = S.roster, on = S.autoManager !== false;
+      const S = this.state, R = S.roster, on = S.autoManager !== false; const sub = this._rosterSub || 'lineup';
       const eraOf = y => { y = parseInt(y, 10) || 2020; return y <= 1900 ? 'genesis' : y <= 1919 ? 'deadball' : y <= 1941 ? 'golden' : y <= 1960 ? 'integration' : y <= 1976 ? 'expansion' : y <= 1993 ? 'bighair' : y <= 2005 ? 'steroid' : y <= 2015 ? 'efficiency' : 'modern'; };
       const face = (p, isP) => `<i class="rt-face" style="${window.CardArt ? `background-image:url(${window.CardArt.portrait(p, eraOf(p.year), isP)})` : ''}"></i>`;
       const dec = v => v.toFixed(3).replace(/^0/, '');
@@ -12587,10 +12864,18 @@
       const pitHead = `<tr><th></th><th class="l">PITCHER</th><th>OVR</th><th>W-L</th><th>SV</th><th>IP</th><th>ERA</th><th>WHIP</th><th>K</th><th>ERA+</th><th>WAR</th><th>STA</th></tr>`;
       const labels = bullpenLabels(R.pitchers.RP);
       const spots = { CF: [50, 13.5], LF: [15, 22.5], RF: [85, 22.5], SS: [36, 32], '2B': [64, 32], '3B': [21, 54], '1B': [79, 54], C: [50, 86.5], DH: [8, 86.5] };
-      const place = (p, label, x, l, t, at) => `<div ${dd(x, 'm3-pos no-anim m3-at-' + at)} style="--x:${l}%;--y:${t}%;"><div class="m3-pos-tag"><b>${label}</b></div><div class="m3-card">${window.createCardHTML ? window.createCardHTML(p) : cleanName(p)}</div></div>`;
+      const place = (p, label, x, l, t, at) => `<div ${dd(x, 'm3-pos no-anim m3-at-' + at)} style="--x:${l}%;--y:${t}%;"><div class="m3-pos-tag"><b>${label}</b>${this._formTag(USER_TEAM_ID, p, x.t === 'S' || x.t === 'R')}</div><div class="m3-card">${window.createCardHTML ? window.createCardHTML(p) : cleanName(p)}</div></div>`;
       const spIdx = S.gamesPlayed % R.pitchers.SP.length, sp = R.pitchers.SP[spIdx];
       const chips = Object.entries(spots).map(([sl, [x, y]]) => { const p = R.lineup[sl], at = R.battingOrder.indexOf(sl) + 1; return p ? place(p, `#${at} ${sl}`, { t: 'L', slot: sl }, x, y, sl) : ''; }).join('') + (sp ? place(sp, 'NEXT START', { t: 'S', i: spIdx }, 50, 55.5, 'P') : '');
       const fieldSvg = `<svg class="m3-diamond" viewBox="0 0 1500 1040" preserveAspectRatio="none" aria-hidden="true">               <path class="g-out" d="M750 770 L105 125 A912 912 0 0 1 1395 125 Z"/>               <path class="g-track" d="M105 125 A912 912 0 0 1 1395 125"/>               <path class="g-dirt" d="M750 770 L446 466 A430 430 0 0 1 1054 466 Z"/>               <path class="g-in" d="M750 715 L925 540 L750 365 L575 540 Z"/>               <path class="g-line" d="M750 770 L105 125 M750 770 L1395 125"/>               <path class="g-path" d="M750 770 L980 540 L750 310 L520 540 Z"/>               <circle class="g-mound" cx="750" cy="560" r="38"/>               <rect class="g-base" x="968" y="528" width="24" height="24" transform="rotate(45 980 540)"/>               <rect class="g-base" x="738" y="298" width="24" height="24" transform="rotate(45 750 310)"/>               <rect class="g-base" x="508" y="528" width="24" height="24" transform="rotate(45 520 540)"/>               <path class="g-base" d="M736 762 L764 762 L764 774 L750 786 L736 774 Z"/>               <rect class="g-dug" x="18" y="900" width="200" height="110" rx="10"/>             </svg>`;
+      const penUse = (S.league && S.league.pen) || {}, today = S.league ? S.league.day : 0;
+      const restOf = (p, label) => {
+        const u = penUse[this._leagueKey(USER_TEAM_ID, pitcherUnlockKey(p))];
+        if (!u || u.last !== today - 1) return ['ok', 'Rested'];
+        return u.run >= (label === 'CL' ? 3 : 2) ? ['no', 'Needs the day off'] : ['mid', 'Pitched yesterday'];
+      };
+      const armLine = p => { const t = S.pitcherStats[pitcherUnlockKey(p)] || {}, o = t.outs || 0; return `<b>${cleanName(p)}</b>${t.w || 0}-${t.l || 0} · ${o ? ((t.er || 0) * 27 / o).toFixed(2) : '—'} ERA · ${Math.floor(o / 3)}.${o % 3} IP · ${t.so || 0} K`; };
+      const penOrder = labels.map((_, i) => i).sort((x, y) => { const rank = l => (l === 'LRP' ? 0 : l === 'CL' ? 2 : 1); return rank(labels[x]) - rank(labels[y]) || x - y; }); // long men, middle arms, closer
       const avgOvr = a => { a = a.filter(Boolean); return a.length ? Math.round(a.reduce((t, x) => t + (x.ovr || 0), 0) / a.length) : 0; };
       const m = this._rosterMsg;
       return `<div class="rt">
@@ -12601,19 +12886,26 @@
         </div>
         <div class="rt-hint">Drag a player onto another to swap them, or tap one and then the other. Rest days are always automatic.</div>
         ${m ? `<div class="rt-msg ${m.bad ? 'bad' : ''}">${m.text}</div>` : ''}
-        <div class="d2-table m3-field rt-board">${fieldSvg}${chips}</div>
+        <div class="rt-subs"><button class="${sub === 'lineup' ? 'on' : ''}" data-rt-sub="lineup">⚾ LINEUP</button><button class="${sub === 'pitching' ? 'on' : ''}" data-rt-sub="pitching">🔥 PITCHING STAFF</button></div>
+        ${sub === 'lineup' ? `<div class="d2-table m3-field rt-board">${fieldSvg}${chips}</div>
         <div class="rt-side"><div class="rt-title">BATTING ORDER</div><div class="rt-scroll"><table class="rt-t">${batHead}${order}<tr class="rt-sep"><td colspan="15">BENCH</td></tr>${bench}</table></div></div>
-        ${depthStripHTML(R.lineup, R.bench || [])}
-        <div class="rt-pitch">
-          <div><div class="rt-title">ROTATION</div><div class="rt-scroll"><table class="rt-t">${pitHead}${R.pitchers.SP.map((p, i) => (p ? pitRow(p, `SP${i + 1}`, { t: 'S', i }) : '')).join('')}</table></div></div>
-          <div><div class="rt-title">BULLPEN</div><div class="rt-scroll"><table class="rt-t">${pitHead}${R.pitchers.RP.map((p, i) => (p ? pitRow(p, labels[i], { t: 'R', i }) : '')).join('')}</table></div></div>
+        ${depthStripHTML(R.lineup, R.bench || [])}` : `<div class="d2-table rt-staff">
+          <div class="rt-mound-k">ON THE MOUND · NEXT START</div>
+          <div class="rt-mound">${sp ? place(sp, `SP${spIdx + 1}`, { t: 'S', i: spIdx }, 0, 0, 'S') : ''}${sp ? `<div class="rt-mound-line">${armLine(sp)}</div>` : ''}<div class="rt-mound-dirt"></div></div>
+          <div class="rt-staff-k">NEXT UP IN THE ROTATION</div>
+          <div class="rt-staff-row">${[1, 2, 3, 4].map(n => (spIdx + n) % R.pitchers.SP.length).filter(i => i !== spIdx && R.pitchers.SP[i]).map(i => place(R.pitchers.SP[i], `SP${i + 1}`, { t: 'S', i }, 0, 0, 'S')).join('')}</div>
+          <div class="rt-staff-k">THE BULLPEN</div>
+          <div class="rt-benchwood">${penOrder.map(i => { const p = R.pitchers.RP[i]; return p ? `<div class="rt-penseat ${labels[i] === 'CL' ? 'cl' : ''}"><i class="rt-light ${restOf(p, labels[i])[0]}" title="${restOf(p, labels[i])[1]}"></i>${place(p, labels[i], { t: 'R', i }, 0, 0, 'S')}</div>` : ''; }).join('')}</div>
+          <div class="rt-legend"><span><i class="rt-light ok"></i>rested</span><span><i class="rt-light mid"></i>pitched yesterday</span><span><i class="rt-light no"></i>needs the day off</span></div>
         </div>
+        <div class="rt-side"><div class="rt-title">PITCHING STAFF</div><div class="rt-scroll"><table class="rt-t">${pitHead}${R.pitchers.SP.map((p, i) => (p ? pitRow(p, `SP${i + 1}`, { t: 'S', i }) : '')).join('')}<tr class="rt-sep"><td colspan="12">BULLPEN</td></tr>${R.pitchers.RP.map((p, i) => (p ? pitRow(p, labels[i], { t: 'R', i }) : '')).join('')}</table></div></div>`}
       </div>`;
     },
     _bindRosterTab(body) {
       const again = () => this.renderLiga();
       const read = el => JSON.parse(el.dataset.rt);
       const drop = (a, b) => { this._rosterSwap(a, b, !!(a.order && b.order)); again(); };
+      body.querySelectorAll('[data-rt-sub]').forEach(b => { b.onclick = () => { this._rosterSub = b.dataset.rtSub; again(); }; });
       body.querySelectorAll('[data-rt-mgr]').forEach(b => { b.onclick = () => { this.state.autoManager = b.dataset.rtMgr === '1'; this.save(); again(); }; });
       let picked = null;
       body.querySelectorAll('.rt-item').forEach(el => {
@@ -12623,7 +12915,7 @@
         el.ondragleave = () => el.classList.remove('rt-over');
         el.ondrop = e => { e.preventDefault(); drop(JSON.parse(e.dataTransfer.getData('text/plain')), read(el)); };
         el.onclick = () => {
-          if (!picked) { picked = read(el); el.classList.add('rt-picked'); return; }
+          if (!picked) { picked = read(el); body.querySelectorAll('.rt-item').forEach(x => { if (x.dataset.rt === el.dataset.rt) x.classList.add('rt-picked'); }); return; }
           const a = picked; picked = null; drop(a, read(el));
         };
       });

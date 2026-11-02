@@ -317,3 +317,51 @@ body:has(.dx2-overlay) #mobile-nav-bar { display: none !important; }
 #screen-challenge-liga .m3-pos.rt-picked, #screen-challenge-liga .m3-pos.rt-over { outline: 3px solid #ffd36a; outline-offset: 3px; background: rgba(255,211,106,.12) !important; }
 @media (max-width: 900px) { #screen-challenge-liga .m3-card { zoom: .34; } #screen-challenge-liga .m3-pos-tag { font-size: 9px; padding: 0 4px; } }
 #screen-challenge-liga .rt-board { background: radial-gradient(ellipse at 50% 45%, #1f6b3f 0, #17532f 62%, #103d23 100%); border: 10px solid #6b4423; box-shadow: inset 0 0 0 2px #2c1608, 0 8px 20px rgba(0,0,0,.5); }
+
+/* ROSTER sub-tabs and the pitching staff table */
+.rt-subs { display: flex; gap: 6px; margin-bottom: 10px; }
+.rt-subs button { padding: 8px 18px; font: 600 13px 'Oswald', sans-serif; letter-spacing: 1.5px; color: #9db3a6; background: #0f1c16; border: 1px solid #2f5d48; border-bottom: 3px solid #2f5d48; cursor: pointer; }
+.rt-subs button.on { color: #ffd36a; border-bottom-color: #ffd36a; background: #17302a; }
+#screen-challenge-liga .rt-staff { position: relative; margin-bottom: 12px; padding: 12px 14px 16px; background: radial-gradient(ellipse at 50% 45%, #1f6b3f 0, #17532f 62%, #103d23 100%); border: 10px solid #6b4423; box-shadow: inset 0 0 0 2px #2c1608, 0 8px 20px rgba(0,0,0,.5); }
+.rt-staff-k { margin: 4px 0 6px; font: 600 13px 'Oswald', sans-serif; letter-spacing: 3px; color: #ffd36a; text-align: center; }
+.rt-staff-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-bottom: 10px; }
+#screen-challenge-liga .rt-staff .m3-pos { position: relative; left: auto; top: auto; translate: none; }
+#screen-challenge-liga .rt-staff .m3-card { transform-origin: 50% 50%; }
+
+/* Pitching staff: mound, rotation, bullpen bench */
+#screen-challenge-liga .rt-staff { display: block; margin-bottom: 12px; }
+#screen-challenge-liga .rt-staff .m3-pos { gap: 3px; }
+.rt-mound-k, .rt-staff-k { margin: 6px 0 8px; font: 600 13px 'Oswald', sans-serif; letter-spacing: 3px; color: #ffd36a; text-align: center; }
+.rt-mound { position: relative; display: flex; align-items: center; justify-content: center; gap: 22px; padding: 8px 0 18px; }
+.rt-mound-dirt { position: absolute; left: 50%; bottom: 0; width: 520px; height: 120px; transform: translateX(-50%); border-radius: 50% !important; background: radial-gradient(ellipse, rgba(169,123,75,.75), rgba(169,123,75,0) 70%); z-index: 0; pointer-events: none; }
+.rt-mound-line { position: relative; z-index: 1; padding: 8px 12px; background: rgba(7,14,11,.8); border-left: 3px solid #ffd36a; font: 500 13px 'Oswald', sans-serif; color: #dfe9e2; }
+.rt-mound-line b { display: block; font-size: 17px; color: #fff; }
+#screen-challenge-liga .rt-mound .m3-card { zoom: .95; }
+#screen-challenge-liga .rt-staff .m3-card:hover { transform: none; }
+.rt-staff-row { display: flex; flex-direction: row; flex-wrap: nowrap; justify-content: center; align-items: flex-start; gap: 16px; margin-bottom: 12px; }
+.rt-benchwood { display: flex; justify-content: center; align-items: flex-end; gap: 8px; padding: 10px 10px 16px; background: linear-gradient(180deg, transparent 72%, #8a5a2e 72%, #6b4423 88%, #3f2510 100%); }
+#screen-challenge-liga .rt-benchwood .m3-card { zoom: .6; }
+.rt-penseat { position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.rt-penseat.cl { margin-left: 14px; padding: 4px; border: 2px solid #ffd36a; background: rgba(255,211,106,.1); }
+.rt-light { display: inline-block; width: 11px; height: 11px; border-radius: 50% !important; background: #6b7a72; }
+.rt-light.ok { background: #4ade80; box-shadow: 0 0 6px #4ade80; } .rt-light.mid { background: #fbbf24; box-shadow: 0 0 6px #fbbf24; } .rt-light.no { background: #f87171; box-shadow: 0 0 6px #f87171; }
+.rt-legend { display: flex; justify-content: center; gap: 18px; margin-top: 8px; font: 400 12px 'Oswald', sans-serif; color: #dfe9e2; } .rt-legend i { margin-right: 5px; }
+@media (max-width: 900px) { .rt-staff-row, .rt-benchwood { flex-wrap: wrap; } .rt-mound { flex-direction: column; } #screen-challenge-liga .rt-mound .m3-card { zoom: .6; } #screen-challenge-liga .rt-benchwood .m3-card, #screen-challenge-liga .rt-staff-row .m3-card { zoom: .42; } }
+
+/* Season goals and record book */
+.c162-goals { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin: 6px 0 10px; padding: 7px 12px; background: rgba(8,16,13,.9); border-left: 3px solid #ffd36a; font: 500 13px 'Oswald', sans-serif; color: #c7d6cc; }
+.c162-goals b { font-size: 11px; letter-spacing: 2px; color: #ffd36a; } .c162-goals .done { color: #4ade80; } .c162-goals .miss { color: #f87171; }
+.c162-book table { width: 100%; font: 400 14px 'Oswald', sans-serif; } .c162-book td { padding: 2px 8px; border-bottom: 1px solid rgba(47,93,72,.4); } .c162-book td:nth-child(2) { color: #ffd36a; text-align: right; }
+.c162-book-h { display: flex; flex-wrap: wrap; gap: 6px 12px; margin-top: 8px; font: 400 13px 'Oswald', sans-serif; color: #b9cabf; }
+
+/* Trade deadline */
+.c162-trade-ov { position: fixed; inset: 0; z-index: 9000; display: flex; overflow: auto; background: rgba(0,0,0,.78); }
+.c162-trade { margin: auto; padding: 16px 20px; max-width: 780px; background: #0a1511; border: 2px solid #34d399; color: #e8efe9; font-family: 'Oswald', sans-serif; }
+.c162-trade h3 { margin: 0; color: #ffd36a; letter-spacing: 2px; } .c162-trade p { margin: 2px 0 10px; font-size: 13px; color: #b9cabf; }
+.c162-trade-row { display: flex; align-items: center; justify-content: center; gap: 14px; padding: 8px 0; border-top: 1px solid #24463a; }
+.c162-trade-row > div { zoom: .72; text-align: center; } .c162-trade-row small { display: block; margin-bottom: 4px; font-size: 15px; color: #ffd36a; } .c162-trade-row em { font-style: normal; font-size: 26px; color: #ffd36a; }
+.c162-trade button { padding: 9px 16px; font: 600 13px 'Oswald', sans-serif; letter-spacing: 1px; color: #1a1205; background: linear-gradient(#ffd36a, #c9962c); border: 0; cursor: pointer; }
+.c162-trade .c162-trade-no { display: block; margin: 10px auto 0; color: #e8efe9; background: #13241c; border: 1px solid #2f5d48; }
+@media (max-width: 620px) { .c162-trade-row { flex-wrap: wrap; } .c162-trade-row > div { zoom: .55; } }
+
+.c162-trade-why { display: flex; flex-direction: column; gap: 8px; width: 150px; zoom: 1 !important; font-size: 14px; color: #6ee7a0; text-align: center; }

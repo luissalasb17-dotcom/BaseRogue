@@ -65,6 +65,12 @@ def batters(dfs):
     tc = ["AB", "H", "2B", "3B", "HR", "BB", "HBP", "SF"]
     for c in tc:
         t[c] = pd.to_numeric(t[c], errors="coerce").fillna(0)
+    # Seasons whose team totals are empty (2026 was added with zeroed Teams rows): league line from Batting.csv.
+    zero = t.groupby("yearID")["AB"].sum()
+    zero = set(zero[zero <= 0].index)
+    if zero:
+        fill = b[b["yearID"].isin(zero)].groupby(["yearID", "lgID"])[tc].sum().reset_index()
+        t = pd.concat([t[~t["yearID"].isin(zero)], fill], ignore_index=True)
     def lg_line(g):
         pa = g["AB"] + g["BB"] + g["HBP"] + g["SF"]
         return pd.Series({"lobp": (g["H"] + g["BB"] + g["HBP"]) / pa if pa else np.nan,
