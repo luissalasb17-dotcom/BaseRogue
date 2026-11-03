@@ -26,7 +26,7 @@
   let libs = window.THREE ? 'ready' : 'idle';
   function loadThree() {
     if (libs !== 'idle') return;
-    if (window.THREE) { libs = 'ready'; return; }
+    if (window.THREE) { libs = 'ready'; setTimeout(onReady, 0); return; } // dice3d.js may have loaded it first
     libs = 'loading';
     const already = document.querySelector('script[src*="three.min.js"]');
     if (already) {

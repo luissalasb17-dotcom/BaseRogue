@@ -22,6 +22,7 @@
   ];
 
   const RECORDS_KEY = 'baserogue_162challenge_records_v1';
+  const SHOW_MONO_MODES = false; // Mono-Team / Mono-Era hidden for now (user, Nov 2026)
   // Three goals a season (intermediate targets: 162-0 itself is out of reach for almost everyone).
   const anyBat = (S, f) => Object.values(S.batterStats || {}).some(f);
   const anyPit = (S, f) => Object.values(S.pitcherStats || {}).some(f);
@@ -1394,6 +1395,7 @@
     patient: { eye: 14, pwr: -10, con: 0, k_avd: 0 }
   };
   const CLUTCH_PIT_BADGE = 8;
+  let BIP_MODEL = true, BIP_SCALE = 1.0, BABIP_SKILL = 0.7; // DIPS: a pitcher keeps 70% of his own hit rate on balls in play (user, 2 nov 2026) // hits on balls in play (see simPaOutcome)
   const CLUTCH_PIT = 0.3, CLUTCH_PIT_CENTER = 55; // 55.7 is the average Clutch of the innings pitched in the league
   const ERROR_GLOVE_SLOPE = 0.0184, ERROR_GLOVE_MIN = 0.3, ERROR_GLOVE_MAX = 2.0;
   // Rating -> stat tables: what a card at each rating does against an ordinary opponent, taken
@@ -1426,7 +1428,7 @@
   const PIT_EDGE = 1.5; // user, Oct 2026: 1.5 was "la versión suave"; 1.7 after the 26-man rosters and the rarity box (league ERA 4.19 -> 4.11)
   // Same edge, softer on strikeouts and hits: at 1.7 everywhere the aces struck out 430+ and
   // posted ERAs near 1.3 (Oct 2026 review). Walks and home runs keep 1.7.
-  const PIT_EDGE_K = 1.2, PIT_EDGE_H = 1.6; // H 1.6: league ERA 4.13 -> 4.10 (user, Oct 2026)
+  let PIT_EDGE_K = 1.2, PIT_EDGE_H = 1.6; // H 1.6: league ERA 4.13 -> 4.10 (user, Oct 2026)
   const PA_SCALE_3B = 0.68; // the design table sits above the 1947-2025 triples rate
   function rateAt(ys, v) {
     if (!(v > RT_X[0])) return ys[0];
@@ -1511,16 +1513,39 @@
 
     const defEfficiency = (pitcher && pitcher._fieldingDef) !== undefined ? pitcher._fieldingDef : 50;
     const defAdj = (defEfficiency - 50) * 0.00028;
+    let pTotalHit, baseHR, pHR, pRegularHit;
+    if (BIP_MODEL) {
+      // Balls in play (2 nov 2026): walks, strikeouts and homers come first; the other hits come from the
+      // balls in play times a hit rate on them (BABIP). Each side's BABIP is taken from its own table with
+      // its own walks, strikeouts and homers removed, so a strikeout pitcher now also allows fewer hits
+      // (fewer balls in play), and his H/9 only counts what it says beyond that.
+      const clampHR = v => Math.max(0.0005, Math.min(0.11, v));
+      baseHR = clampHR(rateAt(BAT_HR, pwr) * edgeLow(perBF(rateAt(PIT_HR9, pHR9), ENV_HR9)) * pitHrTendency(pitcher));
+      pHR = clampHR(baseHR * batTendency(batter)[0]);
+      const bBB = rateAt(BAT_BB, eye), bK = rateAt(BAT_K, kAvd), bHR = rateAt(BAT_HR, pwr);
+      const batBabip = Math.max(0.15, ((1 - bBB) * rateAt(BAT_AVG, con) - bHR) / Math.max(0.3, 1 - bBB - bK - bHR));
+      const pitHR9 = rateAt(PIT_HR9, pHR9), pitK9 = rateAt(PIT_K9, pK9);
+      const pBip9 = Math.max(10, bf9 - pitBB - pitK9 - pitHR9), eBip9 = Math.max(10, ENV_BF9 - ENV_BB9 - ENV_K9 - ENV_HR9);
+      const pitBabip = (pitH - pitHR9) / pBip9, envBabip = (ENV_H9 - ENV_HR9) / eBip9;
+      // DIPS: a pitcher owns his strikeouts, walks and homers; what happens to a ball in play is only partly his.
+      // BABIP_SKILL is how much of his own hit rate on balls in play he keeps (the rest is the league's).
+      const ownBabip = envBabip + (pitBabip - envBabip) * BABIP_SKILL;
+      const ratio = (r => (r < 1 ? Math.pow(r, PIT_EDGE_H) : r))(ownBabip / envBabip);
+      const bip = Math.max(0.15, 1 - pBB - pSO - pHR);
+      pRegularHit = Math.max(0.03, Math.min(bip - 0.02, bip * batBabip * ratio * BIP_SCALE - defAdj * (1 - pBB)));
+      pTotalHit = pRegularHit + pHR;
+    } else {
     const hPit = (r => (r < 1 ? Math.pow(r, PIT_EDGE_H) : r))(perBF(pitH, ENV_H9));
     let targetAvg = rateAt(BAT_AVG, con) * hPit - defAdj;
     targetAvg = Math.max(0.12, Math.min(0.42, targetAvg));
-    let pTotalHit = (1 - pBB) * targetAvg;
+    pTotalHit = (1 - pBB) * targetAvg;
     pTotalHit = Math.min(pTotalHit, pInPlay - 0.01);
 
     const clampHR = v => Math.min(Math.max(0.0005, Math.min(0.11, v)), pTotalHit * 0.50);
-    const baseHR = clampHR(rateAt(BAT_HR, pwr) * edgeLow(perBF(rateAt(PIT_HR9, pHR9), ENV_HR9)) * pitHrTendency(pitcher));
-    const pHR = clampHR(baseHR * batTendency(batter)[0]);
-    const pRegularHit = pTotalHit - pHR;
+    baseHR = clampHR(rateAt(BAT_HR, pwr) * edgeLow(perBF(rateAt(PIT_HR9, pHR9), ENV_HR9)) * pitHrTendency(pitcher));
+    pHR = clampHR(baseHR * batTendency(batter)[0]);
+    pRegularHit = pTotalHit - pHR;
+    }
 
     const share3B = rateAt(BAT_3B, spd) * PA_SCALE_3B * (batTendency(batter)[4] || 1);
     const share2B = rateAt(BAT_2B, pwr) * (batTendency(batter)[3] || 1);
@@ -2839,6 +2864,7 @@
     },
 
     _debugSimPaOutcome: simPaOutcome,
+    _debugSetBip(on, scale, edgeH, skill) { BIP_MODEL = on; if (skill !== undefined) BABIP_SKILL = skill; if (scale !== undefined) BIP_SCALE = scale; if (edgeH !== undefined) PIT_EDGE_H = edgeH; },
     _debugGeneratePlayoffEnemyTeam: generatePlayoffEnemyTeam,
     _debugGetFranchiseDecadeTeam: getFranchiseDecadeTeam,
     _debugPickSecondFranchisePitcher: _pickSecondFranchisePitcher,
@@ -4208,6 +4234,7 @@
 
     simulateGame() {
       const S = this.state;
+      if (!S || S.gamesPlayed >= SEASON_LENGTH || (S.schedule && !S.schedule[S.gamesPlayed])) return null; // season already over
       if (S.league) return this._simulateLeagueUserGame();
       const gameIdx = S.gamesPlayed;
       const spList = S.roster.pitchers.SP;
@@ -6601,7 +6628,7 @@
       const lastLine = (name, kind) => { for (let k = step - 1; k >= 0; k--) { const x = ev[k][kind]; if (x && x.name === name && ev[k].outcome !== 'SB' && ev[k].outcome !== 'CS') return x.line; } return kind === 'batter' ? '0-0' : '0.0 IP, 0 H, 0 ER, 0 K'; };
       const myName = userBats ? cur.batter : (pending || e ? cur.pitcher : game.spName);
       const theirName = userBats ? cur.pitcher : cur.batter;
-      const cardOf = name => { const c = game.cards && (game.cards[name] || game.cards[cleanName({ name })]); return c && typeof window.createCardHTML === 'function' ? window.createCardHTML(c) : `<div class="oct-nocard">${esc(name || '')}</div>`; };
+      const cardOf = name => { const c = game.cards && (game.cards[name] || game.cards[cleanName({ name })]); return c && typeof window.createCardHTML === 'function' ? window.createCardHTML(dexCard(c)) : `<div class="oct-nocard">${esc(name || '')}</div>`; };
       const handOf = (name, pit) => { const c = game.cards && game.cards[name]; const h = c && (window.PlayerHands || {})[c.playerID]; const v = h ? h[pit ? 1 : 0] : ''; return v && v !== '-' ? v : ''; };
 
       // lineups at the sides
@@ -6957,7 +6984,7 @@
       const curBat = pending ? pending.batter : e ? e.batter.name : '';
       const curPit = pending ? pending.pitcher : e ? e.pitcher.name : '';
       const handOf = (name, pit) => { const c = cardBy(name); const h = c && (window.PlayerHands || {})[c.playerID]; const v = h ? h[pit ? 1 : 0] : ''; return v && v !== '-' ? v : ''; };
-      const cardHTML = name => { const c = cardBy(name); return c && typeof window.createCardHTML === 'function' ? window.createCardHTML(c) : `<div class="po3-nocard">${esc(name || '')}</div>`; };
+      const cardHTML = name => { const c = cardBy(name); return c && typeof window.createCardHTML === 'function' ? window.createCardHTML(dexCard(c)) : `<div class="po3-nocard">${esc(name || '')}</div>`; };
       const mineTag = userBats ? ['THEIR ARM', 'YOUR BAT'] : ['YOUR ARM', 'THEIR BAT'];
       const bh = handOf(curBat, false), ph = handOf(curPit, true);
       const edge = bh === 'S' || bh !== ph;
@@ -7525,7 +7552,7 @@
         const topHalf = curEvt.half === 'TOP';
         const cardOf = (name, slot) => {
           const c = (game.cards || {})[name];
-          return c && typeof window.createCardHTML === 'function' ? window.createCardHTML(c) : `<div class="c162-duel-nocard"><b>${name}</b><span>${slot || ''}</span></div>`;
+          return c && typeof window.createCardHTML === 'function' ? window.createCardHTML(dexCard(c)) : `<div class="c162-duel-nocard"><b>${name}</b><span>${slot || ''}</span></div>`;
         };
         const live = this._buildLiveBoxScoreSnapshot(game, sim.currentStep, isFinished) || game;
         const lineOf = {};
@@ -7882,7 +7909,7 @@
           </div>
 
           <!-- Tab Main View -->
-          ${awaiting ? this._playoffDecisionHTML(game.pending) : ''}
+          ${awaiting && game.pending && game.pending.options ? this._playoffDecisionHTML(game.pending) : ''}
           ${tabContentHTML}
 
           <!-- Simulation Controls Bar (on the broadcast tab they sit under the diamond) -->
@@ -8610,14 +8637,15 @@
               <span class="c162-record-label">🎴 ${totalColText}</span>
               <span class="c162-record-val" style="color: #38bdf8;">${cardsValStr}</span>
             </div>
-            <div class="c162-record-stat">
+            ${SHOW_MONO_MODES ? `            <div class="c162-record-stat">
               <span class="c162-record-label">⚔️ MONO-TEAM</span>
               <span class="c162-record-val" style="color: #34d399; font-size: 13px;">${clearedFranchises} / ${MLB_FRANCHISES.length} WS</span>
             </div>
             <div class="c162-record-stat">
               <span class="c162-record-label">⏳ MONO-ERA</span>
               <span class="c162-record-val" style="color: #c084fc; font-size: 13px;">${clearedEras} / ${BASEBALL_ERAS.length} WS</span>
-            </div>
+  ` : ''}
+          </div>
           </div>
 
           <!-- Active Season Resume (if any) -->
@@ -8692,7 +8720,7 @@
               </button>
             </div>
 
-            <!-- Card 3: Mono-Team (Clean Pokelike Entry) -->
+            ${SHOW_MONO_MODES ? `            <!-- Card 3: Mono-Team (Clean Pokelike Entry) -->
             <div class="c162-mode-card" style="border-color: rgba(16, 185, 129, 0.4); box-shadow: 0 4px 20px rgba(16, 185, 129, 0.15);">
               <div>
                 <span class="c162-mode-badge" style="background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4);">
@@ -8731,6 +8759,7 @@
                 ⏳ ${selectEraBtn}
               </button>
             </div>
+` : ''}
           </div>
         </div>
       `;
@@ -9325,7 +9354,10 @@
             const ms0 = draft.manualSlots, bn0 = (ms0.bench || []).filter(Boolean);
             const before = rosterDepth(ms0.lineup, bn0), after = rosterDepth(ms0.lineup, bn0.concat([c]));
             const fixed = before.filter((r, k) => r.level === 'none' && after[k].level !== 'none').map(r => r.pos);
-            if (fixed.length) backup = `+ BACKUP AT ${fixed.join(' / ')}`;
+            const direct = fixed.filter(pos => canPlayerFillSlot(c, pos));
+            const viaSwitch = fixed.filter(pos => !canPlayerFillSlot(c, pos));
+            if (direct.length) backup = `+ BACKUP AT ${direct.join(' / ')}`;
+            else if (viaSwitch.length) backup = `+ ${viaSwitch.join(' / ')} VIA SWAP`;
           }
           const cardHTML = typeof window.createCardHTML === 'function'
             ? window.createCardHTML(c)

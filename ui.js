@@ -3312,7 +3312,7 @@ function initGameModeSelector() {
       const clt = p.clt !== undefined ? Number(p.clt) : (p.clt_val !== undefined ? Number(p.clt_val) : (p.clu !== undefined ? Number(p.clu) : 50));
       // Same recipe as pitchers_etl.py (paso_11): 24% H/9, 32% STA, 12% K/9, 12% BB/9, 10% HR/9, 10% CLT.
       // The cut points are the pool percentiles (35 / 65 / 85 / 97.5) of the last ETL run; update them if the ETL changes.
-      const raw = h9 * 0.28 + sta * 0.28 + k9 * 0.12 + bb9 * 0.12 + hr9 * 0.10 + clt * 0.10 - 5; // same scale and cuts as batters (pitchers_etl.py PIT_RAW_SHIFT)
+      const raw = h9 * 0.28 + sta * 0.26 + k9 * 0.12 + bb9 * 0.14 + hr9 * 0.10 + clt * 0.10 - 5; // same scale and cuts as batters (pitchers_etl.py PIT_RAW_SHIFT)
       // Pitcher badges (Clutch / Captain) add 2 each, as on the card; the cuts already count them.
       const pitBadge = (p.badge_clutch ? 2 : 0) + (p.badge_captain ? 2 : 0);
       if (raw <= 35) return Math.floor(50.0 + Math.max(0, (raw - 16.7) / 18.3) * 9.9 + pitBadge);

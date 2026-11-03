@@ -138,6 +138,8 @@
   }
   window.platoonKeyQP = platoonKeyQP;
 
+  const BIP_QP = { on: true, share: 0.30, hitBase: 0.39 }; // even matchup 49 on base / 51 out: offsets BIP so difficulty matches before (user, 2 nov 2026) // balls in play with a real hit rate (user, 2 nov 2026)
+  window.__BIP_QP = BIP_QP;
   function calcBoundaries(batter, pitcher, simCtx) {
     const approach = BATTING_APPROACHES[(simCtx && simCtx.approach) || 'normal'] || BATTING_APPROACHES.normal;
     const pltKey = PLATOON_QP.on ? platoonKeyQP(batter, pitcher) : null;
@@ -195,8 +197,15 @@
     // at-bat that isn't a walk or strikeout is either a hit or an out), instead
     // of Out being whatever's left over after every other category is summed.
     // 3. Total HIT rate (1B, 2B, 3B, HR): Batter Contact vs Pitcher H/9 Hit Suppression (Base 40%, Slope 0.25%)
-    // Even matchup (equal ratings on both sides) = exactly 50/50: BB 10% + HIT 40% on base, SO 18% + OUT 32% out.
-    let pTotalHit = 0.40 + (effCon - pH9) * 0.0025 + approach.hit;
+    // Even matchup (equal ratings on both sides): BB 10% + HIT 39% on base, SO 18% + OUT 33% out (BIP_QP.hitBase).
+    let pTotalHit = BIP_QP.hitBase + (effCon - pH9) * 0.0025 + approach.hit;
+    // Balls in play (BIP_QP.on): the hit chance is a share of the balls in play, not of the whole at-bat, so a
+    // strikeout also takes a would-be hit away (as in real baseball). With even ratings nothing changes:
+    // 72% in play, 40 of those 72 points are hits.
+    // Only the at-bats that walks and strikeouts move in or out of play change, and they change at a real hit rate on
+    // balls in play (BIP_QP.share, ~.30), not at the 40-of-72 the even matchup uses: a strikeout takes away
+    // 0.3 of a hit, and a walk the pitcher avoids becomes an out 7 times out of 10.
+    if (BIP_QP.on) pTotalHit += (pInPlay - (0.90 - 0.18)) * BIP_QP.share;
     pTotalHit = Math.max(0.14, Math.min(0.60, pTotalHit));
     pTotalHit = Math.min(pTotalHit, pInPlay - 0.05); // always leave >=5% Out room within what's in play
 

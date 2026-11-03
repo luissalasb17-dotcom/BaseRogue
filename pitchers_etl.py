@@ -1491,7 +1491,7 @@ def paso_10_normalizar_por_era(df):
     return df
 
 
-# ── PASO 11: OVR y Rareza (28% H/9, 28% STA, 12% K/9, 12% BB/9, 10% HR/9, 10% CLT) ──
+# ── PASO 11: OVR y Rareza (28% H/9, 26% STA, 12% K/9, 14% BB/9, 10% HR/9, 10% CLT) ──
 # (Antes 28 / 28. Decision del usuario tras comparar contra el WAR: el H/9 es el rating que
 # menos explica el WAR -6%- y la Stamina el que mas -44%-; con 28/28 habia 13 relevistas
 # Legendary, 10 de ellos fuera del top 300 por WAR.)
@@ -1519,7 +1519,7 @@ PIT_RAW_FLOOR = 16.7
 
 
 def paso_11_ovr_rareza(df, awards=None):
-    print("\n  PASO 11: OVR y Rareza (28% H/9, 28% STA, 12% K/9, 12% BB/9, 10% HR/9, 10% CLT)...")
+    print("\n  PASO 11: OVR y Rareza (28% H/9, 26% STA, 12% K/9, 14% BB/9, 10% HR/9, 10% CLT)...")
     df = df.copy()
     if awards is not None and len(awards):
         df["is_clutch"] = df["playerID"].isin(set(awards[awards["awardID"].isin(CLUTCH_AWARDS)]["playerID"]))
@@ -1531,13 +1531,24 @@ def paso_11_ovr_rareza(df, awards=None):
     badge = (df["is_clutch"].astype(int) + df["is_captain"].astype(int)) * 0.0
     print(f"  Insignias: Clutch={int(df['is_clutch'].sum())} | Captain={int(df['is_captain'].sum())}")
 
+    # Solo para el OVR (decision del usuario, 2 nov 2026): las tasas de un relevista van mitad la suya y mitad la
+    # de un abridor de su mismo percentil dentro de su rol. Una entrada a maximo esfuerzo permite H/9 y K/9 que un
+    # abridor no alcanza, y eso inflaba la punta (Benitez, K-Rod, Robertson Legendary). La nota de la carta no cambia.
+    # RP_ROLE_MIX=0 lo apaga.
+    rp_mix = float(_os.environ.get("RP_ROLE_MIX", "0.5"))
+    ovr_v = {k: df[k].astype(float).copy() for k in ["h9_val", "k9_val", "bb9_val", "hr9_val", "clt_val"]}
+    if rp_mix > 0:
+        is_sp = df["role"] == "SP"
+        for k in ovr_v:
+            q = df.loc[~is_sp, k].rank(pct=True).clip(0, 1)
+            ovr_v[k].loc[~is_sp] = (1 - rp_mix) * df.loc[~is_sp, k] + rp_mix * np.quantile(df.loc[is_sp, k].astype(float), q)
     df["raw_ovr"] = (
-        df["h9_val"]  * float(_os.environ.get("W_H9", "0.28")) +
-        df["sta_val"] * float(_os.environ.get("W_STA", "0.28")) +
-        df["k9_val"]  * 0.12 +
-        df["bb9_val"] * 0.12 +
-        df["hr9_val"] * 0.10 +
-        df["clt_val"] * 0.10
+        ovr_v["h9_val"]  * float(_os.environ.get("W_H9", "0.28")) +
+        df["sta_val"] * float(_os.environ.get("W_STA", "0.26")) +  # 26 (user, 3 nov 2026: 2 points of STA to BB/9)
+        ovr_v["k9_val"]  * 0.12 +
+        ovr_v["bb9_val"] * 0.14 +
+        ovr_v["hr9_val"] * 0.10 +
+        ovr_v["clt_val"] * 0.10
     ) - PIT_RAW_SHIFT
 
     p35  = float(df["raw_ovr"].quantile(0.35))
