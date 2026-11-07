@@ -1138,11 +1138,19 @@
       categoryBar.appendChild(btnLeg);
       categoryBar.appendChild(btnOpp);
       categoryBar.appendChild(btnShortlist);
+      // Team Preview: build a team on the field from the shortlist (teamboard.js).
+      if (isShortlistActive && window.TeamBoard) {
+        const btnTP = document.createElement('button');
+        btnTP.innerText = '🏟 TEAM PREVIEW';
+        btnTP.style.cssText = 'margin-left:auto;padding: 6px 12px; border-radius: 6px; font-family:"Press Start 2P", monospace; font-size: 8px; cursor: pointer; border: 1px solid #22c55e; background: rgba(34,197,94,0.15); color: #86efac;';
+        btnTP.onclick = () => window.TeamBoard.openPreview();
+        categoryBar.appendChild(btnTP);
+      }
       // Clear the whole shortlist (asks first; only on the shortlist tab and when it has cards).
       if (isShortlistActive && this.shortlist.size > 0) {
         const btnClear = document.createElement('button');
         btnClear.innerText = typeof window.t === 'function' ? window.t('dex.unshortlist_all', '✖ UNSHORTLIST ALL') : '✖ UNSHORTLIST ALL';
-        btnClear.style.cssText = 'margin-left:auto;padding: 6px 12px; border-radius: 6px; font-family:"Press Start 2P", monospace; font-size: 8px; cursor: pointer; border: 1px solid #f87171; background: rgba(248,113,113,0.1); color: #f87171;';
+        btnClear.style.cssText = 'margin-left:6px;padding: 6px 12px; border-radius: 6px; font-family:"Press Start 2P", monospace; font-size: 8px; cursor: pointer; border: 1px solid #f87171; background: rgba(248,113,113,0.1); color: #f87171;';
         btnClear.onclick = () => {
           const msg = typeof window.t === 'function' ? window.t('dex.unshortlist_confirm', { n: this.shortlist.size, defaultValue: `Remove all ${this.shortlist.size} cards from your shortlist?` }) : `Remove all ${this.shortlist.size} cards from your shortlist?`;
           if (!confirm(msg)) return;

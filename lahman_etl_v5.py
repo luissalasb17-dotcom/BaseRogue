@@ -2238,7 +2238,7 @@ def paso_15_equipo_y_exportar(df, batting, teams, franchises, pico_df=None, war_
     # 8 x ese bono en su propio raw (se suma al raw, antes de convertir a OVR).
     # Insignias (decision del usuario, 7 nov 2026): +BADGE_OVR al OVR FINAL, parejo en todas las rarezas
     # (antes +4 al raw, que valia +4 en Rare y ~+1 en Legendary). La rareza sale del OVR final.
-    BADGE_OVR = float(os.environ.get("BADGE_OVR", "0"))
+    BADGE_OVR = float(os.environ.get("BADGE_OVR", "1"))
     badge_boost = ((df["is_captain"].astype(int) + df["is_clutch"].astype(int)) * BADGE_OVR).to_numpy()
 
     def cosmetic_scores(cuts):

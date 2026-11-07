@@ -1556,7 +1556,7 @@ def paso_11_ovr_rareza(df, awards=None):
         ovr_v["hr9_val"] * 0.10 +
         ovr_v["clt_val"] * 0.10
     ) - PIT_RAW_SHIFT  # insignias: +BADGE_OVR al OVR final (abajo), no al raw
-    badge = (df["is_captain"].astype(int) + df["is_clutch"].astype(int)) * float(_os.environ.get("BADGE_OVR", "0"))
+    badge = (df["is_captain"].astype(int) + df["is_clutch"].astype(int)) * float(_os.environ.get("BADGE_OVR", "1"))
 
     p35  = float(df["raw_ovr"].quantile(0.35))
     p65  = float(df["raw_ovr"].quantile(0.65))

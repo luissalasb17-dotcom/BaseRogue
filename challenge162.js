@@ -11415,6 +11415,26 @@
       this.renderRosterBuilder();
     },
 
+    // Team Preview from the Dex (teamboard.js): opens the All-Star Dream Team builder with that roster.
+    // Only cards unlocked for the Challenge pass; the rest are reported back.
+    importPreview(pv) {
+      if (!this.unlockedBatters || !this.unlockedPitchers) this.initUnlocks();
+      this.setModeConfig({ type: 'all_star', rivalsFromPool: true, label: '👑 ALL-STAR DREAM TEAM', desc: 'Free Collection' });
+      this._draftLineup = {}; this._draftBench = []; this._draftPitchers = { SP: [], RP: [] };
+      this._activeSlot = null; this._searchTerm = ''; this._activeFilterPill = 'ALL';
+      const bats = this.getEligibleBatters() || [], pits = this.getEligiblePitchers() || [];
+      const skipped = [];
+      const find = (pool, p) => (p ? pool.find(x => (x.playerID && x.playerID === p.playerID) || (x.name === p.name && x.year === p.year)) : null);
+      const take = (pool, p) => { if (!p) return null; const m = find(pool, p); if (!m) skipped.push(p.name); return m || null; };
+      Object.entries(pv.lineup || {}).forEach(([s, p]) => { const m = take(bats, p); if (m) this._draftLineup[s] = m; });
+      (pv.bench || []).forEach((p, i) => { const m = take(bats, p); if (m) this._draftBench[i] = m; });
+      (pv.SP || []).forEach((p, i) => { const m = take(pits, p); if (m) this._draftPitchers.SP[i] = m; });
+      (pv.RP || []).forEach((p, i) => { const m = take(pits, p); if (m) this._draftPitchers.RP[i] = m; });
+      this.showScreen('screen-challenge-roster');
+      this.renderRosterBuilder();
+      return { skipped };
+    },
+
     startRosterBuilderWithRun(runGame) {
       if (!this.unlockedBatters || !this.unlockedPitchers) {
         this.initUnlocks();
@@ -11593,6 +11613,13 @@
           return this._renderTradingCardHTML(assigned, slot, isActive, 'batter', slot);
         }).join('');
 
+        // the lineup stands on a field (teamboard.js): each slot where that position plays
+        const fieldSlotHTML = {};
+        [...infieldSlots, ...outfieldSlots].forEach(slot => {
+          const isActive = this._activeSlot && this._activeSlot.kind === 'batter' && this._activeSlot.key === slot;
+          fieldSlotHTML[slot] = this._renderTradingCardHTML(this._draftLineup[slot], slot, isActive, 'batter', slot);
+        });
+
         const spSlotsHTML = [0, 1, 2, 3, 4].map(i => {
           const assigned = this._draftPitchers.SP[i];
           const isActive = this._activeSlot && this._activeSlot.kind === 'SP' && this._activeSlot.key === i;
@@ -11637,8 +11664,24 @@
         ];
         const avgOVR = allSlotted.length ? (allSlotted.reduce((acc, p) => acc + (p.ovr || 50), 0) / allSlotted.length).toFixed(1) : '—';
 
-        // Modal Overlay for Card Selection
+        // Card deck at the side (replaces the old pop-up): with a slot picked it lists what fits there,
+        // otherwise the best free cards, and tapping one sends it to the first open spot it fits.
         let modalOverlayHTML = '';
+        let deckPanelHTML = '';
+        const isRelieverCardD = p => (p.role || 'SP').toUpperCase() === 'RP';
+        if (!this._activeSlot) {
+          const term0 = (this._searchTerm || '').toLowerCase();
+          const freeB = eligibleBatters.filter(p => !usedBatterKeys.has(batterUnlockKey(p)));
+          const freeP = eligiblePitchers.filter(p => !usedPitcherKeys.has(pitcherUnlockKey(p)));
+          const all0 = [...freeB.map(p => ['B', p]), ...freeP.map(p => ['P', p])]
+            .filter(([, p]) => !term0 || (p.name && p.name.toLowerCase().includes(term0)) || (p.team && p.team.toLowerCase().includes(term0)))
+            .sort((x, y) => (y[1].ovr || 50) - (x[1].ovr || 50)).slice(0, 90);
+          deckPanelHTML = `<aside class="c162-asdeck">
+              <div class="c162-asdeck-t">🎴 CARDS · TAP ONE TO PLACE IT</div>
+              <input id="challenge162-search-modal" type="text" placeholder="🔍 Search name or team..." value="${this._searchTerm || ''}">
+              <div class="c162-asdeck-grid">${all0.map(([k, p]) => `<div class="c162-candidate-wrap challenge162-candidate-btn" data-kind="${k}" data-name="${encodeURIComponent(p.name)}" data-year="${p.year || ''}">${window.createCardHTML ? window.createCardHTML(p) : p.name}</div>`).join('') || '<div class="c162-asdeck-empty">No free cards match.</div>'}</div>
+            </aside>`;
+        }
         if (this._activeSlot) {
           const isPitcherSlot = this._activeSlot.kind === 'SP' || this._activeSlot.kind === 'RP';
           const slotName = this._activeSlot.kind === 'bench' ? 'DH' : this._activeSlot.key;
@@ -11688,45 +11731,12 @@
           const closeModalText = _t('challenge162.close', '✕ CERRAR');
           const noCardsFoundText = _t('challenge162.no_cards_found', `No se encontraron cartas desbloqueadas para la posición [${slotDisplay}] en este modo.`, { slot: slotDisplay });
 
-          modalOverlayHTML = `
-            <div id="c162-picker-modal-backdrop" class="c162-picker-backdrop" style="position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(8px); z-index: 99999; display: flex; align-items: center; justify-content: center; padding: 14px;">
-              <div class="glass-panel" style="max-width: 960px; width: 100%; max-height: 88vh; display: flex; flex-direction: column; border: 2px solid #ffd700; box-shadow: 0 0 40px rgba(255, 215, 0, 0.4); border-radius: 16px; padding: 18px; position: relative; background: radial-gradient(circle at 50% 0%, #111827 0%, #030712 100%);">
-                
-                <!-- Modal Header -->
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.12); padding-bottom: 10px;">
-                  <div style="display: flex; align-items: center; gap: 8px;">
-                    <span style="font-size: 20px;">🎴</span>
-                    <div>
-                      <div style="font-family: 'Press Start 2P', monospace; font-size: 11px; color: #ffd700;">
-                        ${chooseTitle}
-                      </div>
-                      <div style="font-size: 10px; color: #94a3b8; margin-top: 2px;">
-                        ${availableCountStr}
-                      </div>
-                    </div>
-                  </div>
-                  <button id="btn-challenge162-close-modal" class="btn btn-secondary" style="padding: 6px 12px; font-size: 11px; font-weight: bold; cursor: pointer;">
-                    ${closeModalText}
-                  </button>
-                </div>
-
-                <!-- Search Input -->
-                <div style="margin-bottom: 14px;">
-                  <input id="challenge162-search-modal" type="text" placeholder="${searchPlace}" value="${this._searchTerm || ''}"
-                    style="width: 100%; padding: 10px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.6); color: #fff; font-size: 12px; box-sizing: border-box; font-family: 'Outfit', sans-serif;">
-                </div>
-
-                <!-- Cards Grid -->
-                <div class="c162-gallery-grid" style="flex: 1; overflow-y: auto; max-height: 60vh; padding: 8px 4px 16px 4px;">
-                  ${candidateCardsHTML || `
-                    <div style="width: 100%; color: #94a3af; font-size: 12px; text-align: center; padding: 40px 10px;">
-                      ${noCardsFoundText}
-                    </div>
-                  `}
-                </div>
-              </div>
-            </div>
-          `;
+          deckPanelHTML = `<aside class="c162-asdeck on">
+              <div class="c162-asdeck-t">🎴 ${chooseTitle}<button id="btn-challenge162-close-modal" class="c162-asdeck-x">✕</button></div>
+              <small class="c162-asdeck-sub">${availableCountStr}</small>
+              <input id="challenge162-search-modal" type="text" placeholder="${searchPlace}" value="${this._searchTerm || ''}">
+              <div class="c162-asdeck-grid">${candidateCardsHTML || `<div class="c162-asdeck-empty">${noCardsFoundText}</div>`}</div>
+            </aside>`;
         }
 
         const startSeasonText = _t('challenge162.start_season', 'EMPEZAR TEMPORADA 162-0');
@@ -11774,19 +11784,15 @@
             </div>
           </div>
 
+          <div class="c162-asgrid"><div class="c162-asmain">
           <!-- Section 1: Batting Lineup (9 Cards) -->
           <div class="c162-roster-section">
             <div class="c162-section-header">
               <span>⚾</span> <span>${lineupTitleText}</span>
             </div>
-            <div style="margin-bottom:10px;">
-              <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#94a3af;margin-bottom:8px;text-align:center;">— ${infieldText} —</div>
-              <div class="c162-cards-row">${infieldSlotsHTML}</div>
-            </div>
-            <div>
-              <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#94a3af;margin-bottom:8px;text-align:center;">— ${outfieldDhText} —</div>
-              <div class="c162-cards-row">${outfieldSlotsHTML}</div>
-            </div>
+            ${window.TeamBoard ? window.TeamBoard.fieldHTML(fieldSlotHTML, null, 'c162-asfield') : `
+            <div style="margin-bottom:10px;"><div class="c162-cards-row">${infieldSlotsHTML}</div></div>
+            <div><div class="c162-cards-row">${outfieldSlotsHTML}</div></div>`}
           </div>
 
           <!-- Section 1b: Bench (5 Cards) — they cover rest days -->
@@ -11819,8 +11825,7 @@
             <div class="c162-cards-row">${rpSlotsHTML}</div>
           </div>
 
-          <!-- Candidate Cards Pop-up Modal Overlay -->
-          ${modalOverlayHTML}
+          </div>${deckPanelHTML}</div>
 
           <!-- Start Season CTA -->
           <div style="text-align:center;margin-top:14px;margin-bottom:8px;">
@@ -11852,6 +11857,23 @@
             const name = decodeURIComponent(btn.getAttribute('data-name'));
             const yearStr = btn.getAttribute('data-year');
             const year = yearStr ? parseInt(yearStr, 10) : null;
+            if (!this._activeSlot) {
+              const isP = btn.getAttribute('data-kind') === 'P';
+              const p = (isP ? eligiblePitchers : eligibleBatters).find(x => x.name === name && (!year || x.year === year));
+              if (!p) return;
+              let spot = null;
+              if (isP) {
+                const si = isRelieverCardD(p) ? -1 : [0, 1, 2, 3, 4].find(n => !this._draftPitchers.SP[n]);
+                if (si !== undefined && si >= 0) spot = { kind: 'SP', key: si };
+                else { const ri = Array.from({ length: ROSTER_RP }, (_, n) => n).find(n => !this._draftPitchers.RP[n]); if (ri !== undefined) spot = { kind: 'RP', key: ri }; }
+              } else {
+                const s = [p.pos, ...String(p.sec_pos || '').split(',').map(x => x.trim()), 'DH'].find(x => SLOTS.includes(x) && !this._draftLineup[x] && (x === 'DH' || canPlayerFillSlot(p, x)));
+                if (s) spot = { kind: 'batter', key: s };
+                else { const bi = Array.from({ length: BENCH_SIZE }, (_, n) => n).find(n => !this._draftBench[n]); if (bi !== undefined) spot = { kind: 'bench', key: bi }; }
+              }
+              if (!spot) return;
+              this._activeSlot = spot;
+            }
             const kind = this._activeSlot.kind;
             if (kind === 'batter') {
               const p = eligibleBatters.find(b => b.name === name && (!year || b.year === year));
