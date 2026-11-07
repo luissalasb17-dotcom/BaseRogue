@@ -516,7 +516,8 @@ window.leftyCantPlay = function (p, slot) {
     const defOvr = def + ((p.def_ovr !== undefined && p.def !== undefined) ? p.def_ovr - p.def : 0);
     // Defense weight by position (def_w of the card: blended by the games he played at each position); the rest goes to the bat.
     const wDef = p.def_w || ({ CF: 0.17, SS: 0.17, '3B': 0.16, C: 0.16, '2B': 0.15, RF: 0.16, LF: 0.15, '1B': 0.12, DH: 0.11 })[p.pos] || 0.16;
-    const raw = (con * 0.26 + pwr * 0.26 + eye * 0.12) * (1 + (0.16 - wDef) / 0.64) + defOvr * wDef + spd * 0.10 + kavd * 0.10;
+    // A captain gives +1 to his 8 teammates: worth +8 in his own raw (lahman_etl_v5.py, CAPTAIN_RAW_BONUS).
+    const raw = (con * 0.26 + pwr * 0.26 + eye * 0.12) * (1 + (0.16 - wDef) / 0.64) + defOvr * wDef + spd * 0.10 + kavd * 0.10; // badges: +2 each on the final OVR
     // Cut points = pool percentiles of the last lahman_etl_v5.py run (see paso_15); update them if the ETL changes.
     let base;
     if (raw <= 35) base = 50.0 + Math.max(0, (raw - 21.3) / 13.7) * 9.9;
@@ -524,9 +525,8 @@ window.leftyCantPlay = function (p, slot) {
     else if (raw <= 55) base = 70.0 + ((raw - 45) / 10) * 9.9;
     else if (raw <= 75) base = 80.0 + ((raw - 55) / 20) * 9.9;
     else base = 90.0 + Math.min(9.9, ((raw - 75) / 25.0) * 9.9);
-    // Clutch / Captain badges add +2 OVR each, as in the ETL (paso_15).
-    const badge = ((p.clutch || p.is_clutch) ? 2 : 0) + ((p.captain || p.is_captain) ? 2 : 0);
-    return Math.floor(Math.max(50, Math.min(99.9, base + badge)));
+    base += 2 * (((p.captain || p.is_captain) ? 1 : 0) + ((p.clutch || p.is_clutch) ? 1 : 0));
+    return Math.floor(Math.max(50, Math.min(99.9, base)));
   };
   const _gambleRarityOrder = ['Common', 'Uncommon', 'Rare', 'Epic', 'Legendary'];
 
@@ -2170,7 +2170,7 @@ window.leftyCantPlay = function (p, slot) {
         }
       }
 
-      // Captain Badge: any teammate (not the player itself) with captain === true or is_captain === true gives +5 to all stats
+      // Captain Badge: any teammate (not the player itself) with captain === true or is_captain === true gives +1 to all stats
       // Non-cumulative: multiple captains on the roster still give only +5 total, not stacked.
       const hasCaptainTeammate = Object.values(contextRoster).some(p => {
         if (!p || p === player) return false;
@@ -2179,7 +2179,8 @@ window.leftyCantPlay = function (p, slot) {
         return (p.captain === true || p.is_captain === true);
       });
       if (hasCaptainTeammate) {
-        con += 5; pwr += 5; eye += 5; kavd += 5; spd += 5; def += 5;
+        const cb = window.CAPTAIN_TEAM_BONUS || 1; // +1 to every teammate (decision 4 nov 2026; it was +5); the card's OVR counts it
+        con += cb; pwr += cb; eye += cb; kavd += cb; spd += cb; def += cb;
       }
 
       // legendary_domination: if 2+ Legendary players are in the starting lineup, everyone gets +10 to all stats

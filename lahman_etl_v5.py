@@ -2199,6 +2199,9 @@ def paso_15_equipo_y_exportar(df, batting, teams, franchises, pico_df=None, war_
         df["k_avoid_val"] * 0.10
     )
     # ── Badges: Clutch Player / Captain ─────────────────────────────────────
+    CAPTAIN_TEAM_BONUS = 1
+    PLAYOFF_HERO_RAW = 4.0  # ~ +2 de OVR
+    CAPTAIN_RAW_BONUS = 4.0 * CAPTAIN_TEAM_BONUS  # medido: +1 a los 8 companeros rinde como +4..+8 propios; se usa el bajo
     OFFICIAL_CAPTAIN_PIDS = {
         'gehrilo01', 'munsoth01', 'jeterde01', 'judgeaa01', 'mattido01', 'nettrgr01',
         'randowi01', 'guidrro01', 'yastrca01', 'varitja01', 'ricji01', 'wrighda05',
@@ -2209,20 +2212,19 @@ def paso_15_equipo_y_exportar(df, batting, teams, franchises, pico_df=None, war_
         'bankser01', 'santro01', 'fiskca01', 'thomafr01', 'troutmi01', 'griffke02',
         'suzukic01', 'martied01', 'biggiig01', 'bagweje01', 'altuvjo01', 'delgado01'
     }
-    awards_path = DATA_DIR / "AwardsPlayers.csv"
-    if awards_path.exists():
-        awards_df = pd.read_csv(awards_path, low_memory=False)
-        clutch_award_ids = {'Babe Ruth Award', 'ALCS MVP', 'NLCS MVP', 'World Series MVP'}  # insignia OCTOBER HERO: solo postemporada (decision del usuario: sin el MVP del Juego de Estrellas)
-        captain_award_ids = {'Roberto Clemente Award', 'Lou Gehrig Memorial Award', 'Hutch Award', 'Branch Rickey Award'}
-        clutch_pids  = set(awards_df[awards_df['awardID'].isin(clutch_award_ids)]['playerID'].unique())
-        captain_pids = set(awards_df[awards_df['awardID'].isin(captain_award_ids)]['playerID'].unique()) | OFFICIAL_CAPTAIN_PIDS
-        df['is_clutch']  = df['playerID'].isin(clutch_pids)
-        df['is_captain'] = df['playerID'].isin(captain_pids)
-        print(f"  Badges: Clutch={df['is_clutch'].sum()} | Captain={df['is_captain'].sum()}")
-    else:
-        df['is_clutch']  = False
-        df['is_captain'] = df['playerID'].isin(OFFICIAL_CAPTAIN_PIDS)
-        print(f"  Badges: Clutch={df['is_clutch'].sum()} | Captain={df['is_captain'].sum()}")
+    # Capitanes (decision del usuario, 4 nov 2026): capitanes oficiales de MLB (listas de Wikipedia),
+    # jugadores-manager (Managers.csv, plyrMgr con 60+ juegos dirigidos y 50+ jugados esa temporada)
+    # y lideres de Ligas Negras documentados. Lista en captains_ids.csv. OCTOBER HERO eliminado.
+    _cap_path = Path(__file__).resolve().parent / "captains_ids.csv"
+    captain_pids = set((lambda c: c[c["type"]=="BAT"] if "type" in c else c)(pd.read_csv(_cap_path))["playerID"]) if _cap_path.exists() else set(OFFICIAL_CAPTAIN_PIDS)
+    # PLAYOFF HERO (decision del usuario, 5 nov 2026; reemplaza a OCTOBER HERO): MVP de la Serie Mundial o
+    # Babe Ruth Award (mejor actuacion de la postemporada). Lahman llega a 2023 en el Babe Ruth: se suman a mano
+    # Betts 2024 y Yamamoto 2025 (Baseball Reference). Vale +PLAYOFF_HERO_RAW en el raw (intangible, decision del usuario).
+    _aw = pd.read_csv(DATA_DIR / "AwardsPlayers.csv", low_memory=False)
+    hero_pids = set(_aw[_aw['awardID'].isin({'World Series MVP', 'Babe Ruth Award'})]['playerID']) | {'bettsmo01', 'yamamyo01'}
+    df['is_clutch']  = df['playerID'].isin(hero_pids)
+    df['is_captain'] = df['playerID'].isin(captain_pids)
+    print(f"  Badges: PlayoffHero={df['is_clutch'].sum()} | Captain={df['is_captain'].sum()}")
 
     # ── OVR con boost de Badges (+2 por badge) & Rareza ─────────────────────
     # Cortes de rareza por percentil del pool (mismo esquema que pitchers_etl.py):
@@ -2232,7 +2234,12 @@ def paso_15_equipo_y_exportar(df, batting, teams, franchises, pico_df=None, war_
     # nota final (ya con el +2 por badge), no sobre la nota base.
     RARITY_FLOORS = [(60.0, 0.65), (70.0, 0.35), (80.0, 0.15), (90.0, 0.020)]  # (OVR minimo, % del pool en ese nivel o superior)
     raw = df["raw_ovr"].astype(float).fillna(10.0)
-    badge_boost = (df["is_clutch"].astype(int) * 2.0) + (df["is_captain"].astype(int) * 2.0)
+    # El capitan da +CAPTAIN_TEAM_BONUS a los ratings de sus 8 companeros: vale lo mismo que
+    # 8 x ese bono en su propio raw (se suma al raw, antes de convertir a OVR).
+    # Insignias (decision del usuario, 7 nov 2026): +BADGE_OVR al OVR FINAL, parejo en todas las rarezas
+    # (antes +4 al raw, que valia +4 en Rare y ~+1 en Legendary). La rareza sale del OVR final.
+    BADGE_OVR = float(os.environ.get("BADGE_OVR", "2.0"))
+    badge_boost = ((df["is_captain"].astype(int) + df["is_clutch"].astype(int)) * BADGE_OVR).to_numpy()
 
     def cosmetic_scores(cuts):
         c1, c2, c3, c4 = cuts

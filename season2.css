@@ -180,3 +180,6 @@
 /* late-season tables: wider panel on big screens and tighter cells, so every column stays in view */
 #screen-challenge-season.glass-panel { max-width: 1600px !important; width: 97% !important; }
 #screen-challenge-season .c162-table th, #screen-challenge-season .c162-table td { padding-left: 4px !important; padding-right: 4px !important; }
+.c162-goals .gt{font-style:normal;font:600 10px Oswald,sans-serif;padding:1px 5px;margin-right:5px;border:1px solid #6ee7b7;color:#6ee7b7}
+.c162-goals .gt.h{border-color:#f59e0b;color:#f59e0b}
+.c162-goals small{opacity:.7;font-size:.85em}

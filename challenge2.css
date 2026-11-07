@@ -358,3 +358,60 @@ body:has(.dx2-overlay) #mobile-nav-bar { display: none !important; }
 /* Chemistry chips on the season, roster and playoff screens */
 .c162-chem-season { margin: 6px 0 10px; } .c162-chem-season > small { display: block; margin-bottom: 4px; font: 600 11px 'Oswald', sans-serif; letter-spacing: 2px; color: #ffd36a; }
 .rt-mound-dirt { max-width: 100%; } .rt-mound { overflow: hidden; }
+
+/* Chemistry chip hover on the roster tab: its players light up (rows and field cards) */
+#screen-challenge-liga tr.rt-item.chem-lit { background: rgba(52, 211, 153, .22) !important; box-shadow: inset 0 0 0 1px #34d399; }
+#screen-challenge-liga .chem-on .rt-item:not(.chem-lit) { opacity: .28; transition: opacity .15s; }
+#screen-challenge-liga .m3-pos.rt-item.chem-lit { filter: drop-shadow(0 0 10px rgba(52, 211, 153, .95)); z-index: 5; }
+#screen-challenge-liga .m3-pos.rt-item.chem-lit .m3-pos-tag { background: #065f46; }
+
+/* ── Franchise: protect 10 + league history (Nov 2026) ── */
+.fr-wrap{max-width:1100px;margin:0 auto;padding:14px 16px;color:#e5f5ec;font-family:Oswald,sans-serif}
+.fr-head small{font:600 11px Oswald;letter-spacing:.2em;color:#6ee7b7}
+.fr-head h2{font:20px 'Press Start 2P',monospace;color:#ffd700;margin:6px 0}
+.fr-head p{opacity:.8;font-size:14px;margin:0 0 10px}
+.fr-rewards{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:8px 10px;border:1px solid #f59e0b;background:rgba(245,158,11,.08);margin-bottom:8px;font-size:14px}
+.fr-rewards b{color:#f59e0b;letter-spacing:.1em;margin-right:4px}
+.fr-rewards .g.legendary{color:#ffd700}.fr-rewards .g.epic{color:#c084fc}.fr-rewards .u{color:#60a5fa}
+.fr-count{font-size:15px;margin:6px 0 10px;color:#fca5a5}.fr-count.ok{color:#6ee7b7}
+.fr-cols{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.fr-lab{font:600 12px Oswald;letter-spacing:.2em;color:#6ee7b7;margin-bottom:4px}
+.fr-card{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:6px 10px;margin-bottom:4px;background:#0f1c16;border:1px solid #1f3b2e;border-left:4px solid #6b7280;color:#e5f5ec;cursor:pointer;font-family:Oswald,sans-serif}
+.fr-card b{font:700 18px Oswald;min-width:28px}
+.fr-card span{flex:1;font-size:14px}.fr-card em{font-style:normal;color:#94a3b8;margin-right:4px}
+.fr-card small{display:block;opacity:.65;font-size:12px}
+.fr-card.on{background:#12352a;border-color:#34d399;box-shadow:0 0 0 1px #34d399 inset}
+.fr-card.r-uncommon{border-left-color:#10b981}.fr-card.r-rare{border-left-color:#3b82f6}.fr-card.r-epic{border-left-color:#a855f7}.fr-card.r-legendary{border-left-color:#ffd700}
+.fr-actions{display:flex;gap:10px;justify-content:center;margin-top:14px;flex-wrap:wrap}
+.fr-actions button[disabled]{opacity:.4;cursor:not-allowed}
+.fr-table{font-size:13px;border:1px solid #1f3b2e}
+.fr-tr{display:grid;grid-template-columns:60px 1.2fr 1.2fr 1fr 1.6fr 1.6fr 1.6fr;gap:8px;padding:7px 8px;border-bottom:1px solid #1f3b2e;align-items:start}
+.fr-th{background:#14532d;font-weight:600;letter-spacing:.08em;font-size:11px}
+.fr-tr small{display:block;opacity:.65;font-size:11px}
+.fr-aw>span{display:block}.fr-tr .me{color:#6ee7b7;font-weight:600}.fr-tr .nil{opacity:.4}
+.fr-empty{opacity:.7}
+@media (max-width:768px){.fr-cols{grid-template-columns:1fr}.fr-table{overflow-x:auto}.fr-tr{min-width:900px}}
+.d2-rp.is-boost{outline:2px solid #f59e0b;outline-offset:1px}
+.fr-resume{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 auto 12px;max-width:1000px;padding:10px 14px;border:1px solid #34d399;background:rgba(16,185,129,.1);font-family:Oswald,sans-serif;color:#e5f5ec}
+.fr-resume b{color:#6ee7b7;letter-spacing:.08em}.fr-resume span{flex:1;opacity:.8}
+.sdi-spots{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.sdi-spots button{padding:6px 4px;background:#0f1c16;border:1px solid #34d399;color:#e5f5ec;font:600 14px Oswald,sans-serif;cursor:pointer}
+.sdi-spots button small{display:block;opacity:.6;font-size:10px}
+.sdi-spots button:hover{background:#14532d}
+.fr-card .fr-ten{color:#fbbf24;opacity:.9}
+.fr-tr{grid-template-columns:60px 1.3fr 1.1fr 1fr 2.6fr 1.6fr}
+.fr-lg{display:grid;grid-template-columns:28px 1fr;gap:0 6px;margin-bottom:4px}.fr-lg>b{grid-row:span 3;color:#94a3b8}
+.fr-tr em{font-style:normal;color:#94a3b8;font-size:10px;margin-right:3px}.fr-n{font-style:normal;color:#fbbf24;font-weight:600}
+/* Season report (results) */
+.c162-sreport{background:rgba(4,10,16,.86);border:1px solid #22c55e66;padding:12px 14px;margin:0 0 10px;font-family:Oswald,sans-serif}
+.c162-sreport .sr-verdict{font-size:17px;color:#f3f4f6;margin-bottom:10px}
+.c162-sreport .sr-verdict b{color:#f87171}
+.c162-sreport .sr-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px}
+.c162-sreport .sr-it{border:1px solid #334155;border-top:3px solid #64748b;padding:6px 9px;background:#0f1c16}
+.c162-sreport .sr-it.good{border-top-color:#34d399}.c162-sreport .sr-it.bad{border-top-color:#f87171}
+.c162-sreport .sr-it span{display:block;font-size:11px;color:#9ca3af;letter-spacing:1px}
+.c162-sreport .sr-it b{display:block;font-size:15px;color:#e5e7eb}.c162-sreport .sr-it.good b{color:#34d399}.c162-sreport .sr-it.bad b{color:#f87171}
+.c162-sreport .sr-it small{font-size:12px;color:#cbd5e1}
+.c162-sreport .sr-notes{margin:10px 0 6px 18px;font-size:14px;color:#cbd5e1;list-style:disc}
+.c162-more{margin:0 0 10px}.c162-more>summary{cursor:pointer;font-family:Oswald,sans-serif;font-size:14px;color:#ffd700;padding:8px;border:1px solid #ffd70055;background:rgba(0,0,0,.4);text-align:center}
+.c162-more[open]>summary{margin-bottom:8px}

@@ -4681,3 +4681,5 @@ span.c162-iron {
 .c162-vote-pos.mine { outline: 1px solid #34d399; background: rgba(52, 211, 153, .12); }
 @media (max-width: 760px) { .c162-vote-cols { grid-template-columns: 1fr; gap: 0; } }
 .c162-vote-cols > div { min-width: 0; }
+.bxp.t-sealed { background: repeating-linear-gradient(135deg, #e11d48 0 6px, #f8fafc 6px 12px); }
+.bx-odds-note{font:600 11px Oswald,sans-serif;letter-spacing:.2em;color:#94a3b8;text-align:center;margin:-4px 0 6px}

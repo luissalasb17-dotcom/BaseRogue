@@ -1507,6 +1507,7 @@ CLUTCH_AWARDS = {'Babe Ruth Award', 'ALCS MVP', 'NLCS MVP', 'World Series MVP'} 
 CAPTAIN_AWARDS = {'Roberto Clemente Award', 'Lou Gehrig Memorial Award', 'Hutch Award', 'Branch Rickey Award'}
 OFFICIAL_CAPTAIN_PITCHERS = {'guidrro01', 'koufasa01'}
 BADGE_OVR = 2.0
+CAPTAIN_RAW_BONUS = 4.0  # +1 a los 8 companeros (medido: rinde como +4..+8 de raw propio)
 
 
 PIT_RAW_CUTS = (35.0, 45.0, 55.0, 75.0)  # cortes fijos de raw (Uncommon, Rare, Epic, Legendary), los mismos de los bateadores
@@ -1518,17 +1519,22 @@ PIT_RAW_SHIFT = 5.0
 PIT_RAW_FLOOR = 16.7
 
 
+import pandas as _pd_caps
+from pathlib import Path
+
+
 def paso_11_ovr_rareza(df, awards=None):
     print("\n  PASO 11: OVR y Rareza (28% H/9, 26% STA, 12% K/9, 14% BB/9, 10% HR/9, 10% CLT)...")
     df = df.copy()
-    if awards is not None and len(awards):
-        df["is_clutch"] = df["playerID"].isin(set(awards[awards["awardID"].isin(CLUTCH_AWARDS)]["playerID"]))
-        df["is_captain"] = df["playerID"].isin(set(awards[awards["awardID"].isin(CAPTAIN_AWARDS)]["playerID"]) | OFFICIAL_CAPTAIN_PITCHERS)
-    else:
-        df["is_clutch"] = False
-        df["is_captain"] = False
-    # Las insignias de pitchers ya no suman al OVR (decision del usuario); siguen en la carta y en el 162-0.
-    badge = (df["is_clutch"].astype(int) + df["is_captain"].astype(int)) * 0.0
+    # Capitanes (decision del usuario, 4 nov 2026): misma lista que los bateadores (captains_ids.csv:
+    # capitanes oficiales, jugadores-manager y lideres de Ligas Negras). OCTOBER HERO eliminado.
+    _cp = Path(__file__).resolve().parent / "captains_ids.csv"
+    _caps = set((lambda c: c[c["type"]=="PIT"] if "type" in c else c)(_pd_caps.read_csv(_cp))["playerID"]) if _cp.exists() else set()
+    _base_id = df["playerID"].astype(str).str.replace(r"_(sp|rp)$", "", regex=True)
+    _heroes = set(awards[awards["awardID"].isin({"World Series MVP", "Babe Ruth Award"})]["playerID"]) if awards is not None and len(awards) else set()
+    df["is_clutch"] = _base_id.isin(_heroes | {"bettsmo01", "yamamyo01"})  # PLAYOFF HERO (mismo criterio que bateadores)
+    df["is_captain"] = df["playerID"].astype(str).str.replace(r"_(sp|rp)$", "", regex=True).isin(_caps)
+    badge = 0.0
     print(f"  Insignias: Clutch={int(df['is_clutch'].sum())} | Captain={int(df['is_captain'].sum())}")
 
     # Solo para el OVR (decision del usuario, 2 nov 2026): las tasas de un relevista van mitad la suya y mitad la
@@ -1549,7 +1555,8 @@ def paso_11_ovr_rareza(df, awards=None):
         ovr_v["bb9_val"] * 0.14 +
         ovr_v["hr9_val"] * 0.10 +
         ovr_v["clt_val"] * 0.10
-    ) - PIT_RAW_SHIFT
+    ) - PIT_RAW_SHIFT  # insignias: +BADGE_OVR al OVR final (abajo), no al raw
+    badge = (df["is_captain"].astype(int) + df["is_clutch"].astype(int)) * float(_os.environ.get("BADGE_OVR", "2.0"))
 
     p35  = float(df["raw_ovr"].quantile(0.35))
     p65  = float(df["raw_ovr"].quantile(0.65))

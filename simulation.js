@@ -140,14 +140,18 @@
 
   const BIP_QP = { on: true, share: 0.30, hitBase: 0.39 }; // even matchup 49 on base / 51 out: offsets BIP so difficulty matches before (user, 2 nov 2026) // balls in play with a real hit rate (user, 2 nov 2026)
   window.__BIP_QP = BIP_QP;
+  const PLAYOFF_HERO_QP = 8;
+  window.PLAYOFF_HERO_QP = PLAYOFF_HERO_QP;
   function calcBoundaries(batter, pitcher, simCtx) {
     const approach = BATTING_APPROACHES[(simCtx && simCtx.approach) || 'normal'] || BATTING_APPROACHES.normal;
     const pltKey = PLATOON_QP.on ? platoonKeyQP(batter, pitcher) : null;
     const plt = pltKey ? (PLATOON_QP.table[pltKey] || 0) : 0;
-    const effCon = (batter.con || 50) + plt;
-    const effEye = (batter.eye || 50) + plt;
-    const effKAvd = (batter.k_avd !== undefined ? batter.k_avd : (batter.k_avoid !== undefined ? batter.k_avoid : (batter.k_avoid_val !== undefined ? batter.k_avoid_val : (batter.con || 50)))) + plt;
-    const effPwr = (batter.pwr || 50) + plt;
+    // PLAYOFF HERO (World Series MVP / Babe Ruth Award): +PLAYOFF_HERO_QP to the batting ratings in boss fights.
+    const ph = (simCtx && simCtx.isBossFight && (batter.clutch || batter.is_clutch)) ? PLAYOFF_HERO_QP : 0;
+    const effCon = (batter.con || 50) + plt + ph;
+    const effEye = (batter.eye || 50) + plt + ph;
+    const effKAvd = (batter.k_avd !== undefined ? batter.k_avd : (batter.k_avoid !== undefined ? batter.k_avoid : (batter.k_avoid_val !== undefined ? batter.k_avoid_val : (batter.con || 50)))) + plt + ph;
+    const effPwr = (batter.pwr || 50) + plt + ph;
     const effSpd = batter.spd || 50;
     
     // Pitcher attributes (MLB The Show suite: h9, k9, bb9, hr9, sta, clt/clu)
@@ -231,7 +235,8 @@
     let isClutchActive = false;
     let clutchActualBoosts = { single: 0, double: 0, triple: 0, hr: 0, totalOutPenalty: 0 };
 
-    if ((batter.clutch || batter.is_clutch) && simCtx) {
+    // OCTOBER HERO badge removed (decision 4 nov 2026): this boost is off for every card.
+    if (false && (batter.clutch || batter.is_clutch) && simCtx) {
       const isLastInning = simCtx.inning >= 3;
       const runnersInScoring = !!(simCtx.bases && (simCtx.bases[1] || simCtx.bases[2]));
       if (isLastInning || runnersInScoring) {
