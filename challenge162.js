@@ -1520,6 +1520,10 @@
   const IRON_BOOST = 5; // rating points for any Iron Man: batting ratings for a batter, pitching ratings for a pitcher
   const ironPitKey = p => `P:${pitcherUnlockKey(p)}`;
   const FIREMAN_MAX_LEAD = 2, FIREMAN_TIRED = 4;
+  const HOOK_SOFT = true;
+  const CLOSER_REAL = true;
+  const CL_REAL = { eighth: 0.10, eighthJam: 0.45, bigMult: 2.5, work: 0.75, tieHome: 0.7, tieAway: 0.55, down1: 0.35 };
+  const HOOK = { spBase: -4.6, spTired: 0.7, spEr: 0.9, spEarly: 0.35, spGem: 1.2, spBlow: 0.4, rpBase: -1.6, rpLeft: 0.55, rpEr: 1.4, rpTired: 0.8, rpThin: 2.0 };
   const PEN_HAND = 0.04; // ERA of trust per platoon point of the next three batters against that arm (0 = off)
   const PEN_TRUST = true, PEN_TRUST_IP = 30, PEN_DECIDED = 6; // the user's middle relief by performance (see _pickReliever)
   // Mop-up man: every month the user's manager names his worst middle reliever (if he is clearly
@@ -4757,6 +4761,7 @@
         bench: getFranchiseBench(teamRec.code, teamRec.decade).map(p => withMomentumBatter(p, m + cap(p) + this._playerForm(teamRec.id, p, false).delta)),
         sp: withMomentumPitcher(spRaw, m + cap(spRaw) + this._playerForm(teamRec.id, spRaw, true).delta),
         bullpen: staff.bullpen.map(p => { const x = withMomentumPitcher(p, m + cap(p) + this._playerForm(teamRec.id, p, true).delta); const mopKey = this.state.league && this.state.league.mop && this.state.league.mop[teamRec.id]; return (mopKey && x && x.role !== 'CL' && pitcherUnlockKey(p) === mopKey) ? { ...x, role: 'MOP' } : x; }),
+        spare: staff.rotation.length > 2 ? { ...staff.rotation[(gp + 2) % staff.rotation.length], role: 'RP' } : null,
         def: fielders.length ? fielders.reduce((s, p) => s + (p.def !== undefined ? p.def : 50), 0) / fielders.length : 50,
         gameIdx: gp
       };
@@ -4839,6 +4844,7 @@
         ironMan: S.ironMan || {},
         sp: { ...(withMomentumPitcher(spToday, m + cap(spToday) + chem.of(spToday) + spFd + (ironP(spToday) ? IRON_BOOST : 0)) || spToday), iron: ironP(spToday) },
         bullpen,
+        spare: spList.length > 2 ? { ...spList[(S.gamesPlayed + 2) % spList.length], role: 'RP' } : null,
         def: fielders.length ? fielders.reduce((s, p) => s + (p.def !== undefined ? p.def : (p.defense_val || 50)), 0) / fielders.length : 50,
         gameIdx: S.gamesPlayed
       };
@@ -4848,7 +4854,7 @@
     // pitched this game or are resting (pitched on each of the previous two days).
     _availableRelievers(side, gs, day) {
       const pen = (this.state.league && this.state.league.pen) || {};
-      return side.bullpen.filter(p => {
+      const list = side.bullpen.filter(p => {
         const k = this._leagueKey(side.id, pitcherUnlockKey(p));
         if (gs.usedPitchers.has(k)) return false;
         const u = pen[k];
@@ -4856,6 +4862,10 @@
         // reliever one more than his role allows.
         return !(u && u.last === day - 1 && u.run >= (p.role === 'CL' ? 3 : 2) + (p.iron ? 1 : 0));
       });
+      // Out of relievers: a starter on his throw day comes out of the pen instead of leaving a
+      // spent arm on the mound.
+      if (!list.length && HOOK_SOFT && side.spare && !gs.usedPitchers.has(this._leagueKey(side.id, pitcherUnlockKey(side.spare)))) list.push(side.spare);
+      return list;
     },
 
     _pickReliever(side, gs, inning, lead, day, wantLong) {
@@ -4899,6 +4909,29 @@
       if (wantLong && middle.some(p => pitStaOf(p) >= LONG_MIN_STA)) {
         return middle.filter(p => pitStaOf(p) >= LONG_MIN_STA).sort((a, b) => (lastDay(a) - lastDay(b)) || (trust(a) - trust(b)) || (pitStaOf(b) - pitStaOf(a)))[0];
       }
+      const su = () => (NO_SETUP ? null : byRole('SETUP'));
+      if (CLOSER_REAL) {
+        // The closer as real managers use him (Lahman 1990-2009: 63 games, 33 saves, 54 games
+        // finished, 1.06 IP a game): the ninth with a save, now and then the eighth with men on
+        // or in a big game, a tie at home, and a quiet ninth when he needs the work.
+        const cl = byRole('CL');
+        const rest = cl ? day - lastDay(cl) - 1 : 0;      // days off since he last pitched
+        const big = !!side.noRest;                          // October
+        const isHome = gs.homeId === side.id;
+        const roll = x => Math.random() < x;
+        if (cl) {
+          if (inning === 8 && lead >= 1 && lead <= 3 && (rest >= 1 || big || cl.iron)) {
+            const x = (gs.jam ? CL_REAL.eighthJam : CL_REAL.eighth) * (big ? CL_REAL.bigMult : 1) * (cl.iron ? 2 : 1);
+            if (roll(x)) return cl;
+          }
+          if (inning === 9 && lead >= 4 && lead <= 6 && rest >= 2 && roll(CL_REAL.work)) return cl;
+          if (inning >= 9 && lead === 0 && (isHome ? roll(CL_REAL.tieHome) : (inning >= 10 && roll(CL_REAL.tieAway)))) return cl;
+          if (inning === 9 && lead === -1 && rest >= 3 && roll(CL_REAL.down1)) return cl;
+          if (inning >= 9 && lead >= 1 && lead <= 3) return cl;
+        }
+        if (inning >= 10 && cl && roll(0.5)) return cl;
+        if (inning >= 8) return middle[0] || su() || (inning >= 9 && Math.abs(lead) <= 3 ? cl : null) || (CL_NOT_FILLER ? null : available[0]);
+      } else {
       // Fireman: a rested closer (he did not pitch yesterday) comes in for the eighth with a lead
       // of one or two and stays for the ninth. The best arm of the bullpen threw 48 innings on a
       // 104-win team when he only worked the ninth.
@@ -4915,9 +4948,9 @@
       // closer comes in from the tenth on. Burning him in ties and then resting him the next
       // day was costing him saves (27-30 for the closer of a team with 35).
       const saveSpot = lead >= 1 && lead <= 3;
-      const su = () => (NO_SETUP ? null : byRole('SETUP'));
       if (inning === 9 && lead === 0) return su() || middle[0] || byRole('CL') || available[0];
       if (inning >= 9 && (saveSpot || inning > 9)) return byRole('CL') || su() || middle[0] || available[0];
+      }
       if (inning === 8 && lead >= -1 && lead <= 4) return su() || middle[0] || byRole('CL');
       // Nobody left but the closer: he is not a filler. He only covers from the seventh on in a
       // game within three runs; otherwise whoever is pitching stays in (CL_NOT_FILLER).
@@ -5128,7 +5161,7 @@
       let record = null; // { team, w: pitching line key, l: pitching line key }
       const bat = {};   // leagueKey -> batting line
       const pit = {};   // leagueKey -> pitching line
-      const gs = { usedPitchers: new Set() };
+      const gs = { usedPitchers: new Set(), homeId: home.id };
       const relief = [[], []]; // relief appearances per side, for holds and blown saves
       const inc = (o, f, n = 1) => { o[f] = (o[f] || 0) + n; };
       const state = sides.map(side => ({ idx: 0, pitcher: null, ps: null, starterPs: null }));
@@ -5268,6 +5301,9 @@
           rp.fresh = (4 + sta * LONG_FRESH_PER_STA) * (next.iron ? IRON_RP_FRESH : 1);
         }
         rp.saveSit = inn >= 6 && lead >= 1 && lead <= 3;
+        // Each outing has its own batter budget (his STA, with the day's feel): some go two thirds,
+        // some two innings. HOOK_SOFT: soft, chance-based hooks instead of hard cutoffs.
+        rp.budget = (rp.long ? rp.fresh + 4 : rp.fresh) * (0.75 + Math.random() * 0.5);
         relief[si].push(rp);
         return rp;
       };
@@ -5297,10 +5333,17 @@
         const lead = runs[si] - runs[1 - si];
         let pull = false;
         if (ps.isStarter) {
-          const knockedOut = (inning <= 5 && ps.er >= 4) || (inning <= 7 && ps.er >= 5);
           const gem = ps.er === 0 && inning <= 9;
           const tired = this._fatiguePenalty(ps);
-          pull = knockedOut || (gem ? tired >= 10 : tired >= 6) || inning > 9;
+          if (!HOOK_SOFT) {
+            const knockedOut = (inning <= 5 && ps.er >= 4) || (inning <= 7 && ps.er >= 5);
+            pull = knockedOut || (gem ? tired >= 10 : tired >= 6) || inning > 9;
+          } else {
+            // How the manager feels about his starter, not a rule: tiredness, runs, the inning, the score.
+            const x = HOOK.spBase + HOOK.spTired * tired + HOOK.spEr * Math.max(0, ps.er - 2) + (inning <= 5 ? HOOK.spEarly * ps.er : 0)
+              - (gem ? HOOK.spGem : 0) - (Math.abs(lead) >= 5 ? HOOK.spBlow : 0);
+            pull = inning > 9 || Math.random() < 1 / (1 + Math.exp(-x));
+          }
         } else if (ps.fireman) {
           // The closer who came in for the eighth finishes the game unless he tires or loses the lead.
           pull = this._fatiguePenalty(ps) >= FIREMAN_TIRED || lead <= 0 || inning > 9;
@@ -5314,8 +5357,18 @@
         } else if (pit[ps.k] && pit[ps.k].outs < 3 && ps.bf <= 2 && ps.er === 0 && this._fatiguePenalty(ps) === 0 && !(inning >= 9 && lead >= 1 && lead <= 3)) {
           // Reliever entered mid-inning to put out a fire and recorded 1-2 quick outs with no damage: stays for the next inning
           pull = false;
-        } else {
+        } else if (!HOOK_SOFT) {
           pull = true; // the other relievers work one inning at a time
+        } else {
+          // Another inning if his budget allows it; a save spot goes to the closer; a thin pen
+          // stretches the arm on the mound before burning the next one.
+          const avail = this._availableRelievers(side, gs, day);
+          const clReady = avail.some(p => p.role === 'CL');
+          const saveNext = inning >= 9 && lead >= 1 && lead <= 3 && clReady && ps.p.role !== 'CL';
+          const left = (ps.budget || ps.fresh) - ps.bf;
+          const thin = avail.length <= 2;
+          const x = HOOK.rpBase + HOOK.rpLeft * left - HOOK.rpEr * ps.er - HOOK.rpTired * this._fatiguePenalty(ps) + (thin ? HOOK.rpThin : 0);
+          pull = saveNext || !avail.length ? (saveNext) : Math.random() >= 1 / (1 + Math.exp(-x));
         }
         const wantLong = ps.isStarter && inning <= LONG_UNTIL_INNING;
         gs.due = dueBats(1 - si);
@@ -5400,11 +5453,27 @@
           if (CL_FINISHES && ps.p.role === 'CL' && inn >= 9 && lead > 0 && tired < 8) pullMid = false;
         }
 
+        if (HOOK_SOFT && !ps.isStarter && !(CL_FINISHES && ps.p.role === 'CL' && inn >= 9 && lead > 0)) {
+          // Past his budget with men on, or a bad platoon matchup coming up late in a close game.
+          const over = ps.bf - (ps.budget || ps.fresh);
+          if (!pullMid && over >= 0 && runnersOn >= 1) pullMid = Math.random() < 0.45 + 0.15 * over;
+          if (!pullMid && PLATOON_ON && inn >= 7 && closeGame && runnersOn >= 1) {
+            const nb = dueBats(bi)[0], pts = nb ? (PLATOON[platoonKey(nb, ps.p)] || 0) : 0;
+            if (pts >= 4.5 && avail.some(a => (PLATOON[platoonKey(nb, a)] || 0) <= -2.5)) pullMid = Math.random() < 0.5;
+          }
+        }
+        if (HOOK_SOFT && pullMid) {
+          // Not every manager pulls at the first sign; with a thin pen he waits longer.
+          const thin = avail.length <= 2 && inn <= 7;
+          if (Math.random() > (thin ? 0.35 : 0.85)) pullMid = false;
+        }
         if (!pullMid) return;
 
         const wantLong = ps.isStarter && inn <= LONG_UNTIL_INNING;
         gs.due = dueBats(bi);
+        gs.jam = runnersOn >= 1;
         let next = this._pickReliever(side, gs, inn, lead, day, wantLong);
+        gs.jam = false;
         if (byHand(pi)) {
           if (next) suggest(`Pitching change: ${pName(next)} for ${pName(ps.p)}`, { t: 'arm', name: next.name });
           return;
@@ -6358,7 +6427,8 @@
         lineup: side.lineup.map(p => withMomentumBatter(p, boost)),
         bench: side.bench.map(p => withMomentumBatter(p, boost)),
         sp: withMomentumPitcher(sp, boost + capP(sp) + spFd),
-        bullpen: [...side.bullpen.map(p => ({ ...(withMomentumPitcher(p, boost) || p) })), ...extraLrp]
+        bullpen: [...side.bullpen.map(p => ({ ...(withMomentumPitcher(p, boost) || p) })), ...extraLrp],
+        spare: rot.length > 2 ? { ...rot[(g + 2) % rot.length], role: 'RP' } : null
       };
     },
 
@@ -7152,6 +7222,7 @@
         this._po3Sound = sim.sticker.t;
         const x = ev[sim.sticker.k], A = window.AudioManager;
         if (x && A && typeof A.play === 'function') A.play(x.outcome === 'HR' ? 'hr' : x.outcome === 'SO' ? 'so' : x.outcome === 'BB' ? 'bb' : ['1B', '2B', '3B'].includes(x.outcome) ? 'hit' : 'out');
+        if (x && A && typeof A.play === 'function' && x.runsScored && x.outcome !== 'HR' && x.half === 'TOP') setTimeout(() => A.play('play_ball'), 350);
       }
       if (finished && sim.started && this._po3EndSound !== (game.n || 0) + ':' + total) {
         this._po3EndSound = (game.n || 0) + ':' + total;
@@ -7258,13 +7329,18 @@
       const sx = sim.sticker && ev[sim.sticker.k];
       // The third out: its play shows briefly, then the broadcast card takes over until the next roll.
       const sideTurned = !!(pending && e && (pending.inning !== e.inning || pending.half !== e.half));
-      const stickerMs = sideTurned ? 1700 : 4000;
+      const stickerMs = sideTurned ? ((sim.sticker && ev[sim.sticker.k] && ev[sim.sticker.k].runsScored) ? 3200 : 1700) : ((sim.sticker && ev[sim.sticker.k] && ev[sim.sticker.k].runsScored) ? 5000 : 4000);
       if (sx && !sim.rolling && Date.now() - sim.sticker.t < stickerMs) {
         const batGood = ['HR', '3B', '2B', '1B', 'BB', 'SB'].includes(sx.outcome) || sx.detail === 'E' || sx.detail === 'SF';
         const good = (sx.half === 'TOP') === batGood;
         const n = sx.runsScored || 0;
         sticker = `<div class="po3-sticker ${good ? 'good' : 'bad'} ${sx.outcome === 'HR' ? 'hr' : ''} ${sx.outcome === 'SO' ? 'so' : ''}">
             <b>${this._poPlayLabel(sx)}${sx.outcome === 'HR' || sx.outcome === 'SO' ? '!' : ''}</b><span>${esc(this._poPlayText(sx))}</span>${n ? `<em>+${n} RUN${n > 1 ? 'S' : ''}</em>` : ''}</div>`;
+        if (n) {
+          const who = ((sx.d && sx.d.scored) || []).slice(0, 4).map(esc).join(' · ');
+          const mineRun = sx.half === 'TOP';
+          sticker += `<div class="po3-runfx ${mineRun ? 'mine' : 'theirs'}"><b>${n > 1 ? n + ' RUNS SCORE!' : 'RUN SCORES!'}</b>${who ? `<span>${who} ${n > 1 ? 'cross' : 'crosses'} the plate</span>` : ''}<em>${esc(me.name)} <i>${uR}</i> – <i>${oR}</i> ${esc(them.name)}</em></div>`;
+        }
       }
       const ser = this._series(), need = SERIES_WINS[ser.round] || 1, ref = this._playoffOpponentRef(ser.round);
       let overlay = '';
@@ -9299,6 +9375,7 @@
     // roster and the box only holds the packs for the open spots (14 - kept bats, 12 - kept arms).
     startPacksDraftMode(opts = null) {
       const o = opts || {};
+      if (!o.franchise) this._franchiseReset(); // a new run starts with an empty league history
       this.setModeConfig({ type: 'packs', label: '📦 HOBBY PACKS DRAFT', desc: '26-Pack Universe Draft' });
       const keepBats = (o.keepBats || []).slice(), keepPits = (o.keepPits || []).slice();
       const batPacks = Math.max(0, 14 - keepBats.length), pitPacks = Math.max(0, 12 - keepPits.length);
@@ -10343,6 +10420,7 @@
     // opts (franchise, Nov 2026): { keeps: { teamId: [cards] }, order: [ids worst first] }.
     startSnakeDraftMode(opts = null) {
       const o = opts || {};
+      if (!o.keeps) this._franchiseReset();
       this.setModeConfig({ type: 'snake', label: '🐍 SNAKE DRAFT', desc: '32-team snake draft' });
       const rivals = [...AL_CODES, ...NL_CODES, NLB_TEAM_ID];
       const ids = o.order && o.order.length === rivals.length + 1 ? o.order.slice() : [...rivals, USER_TEAM_ID].sort(() => Math.random() - 0.5);
@@ -10923,6 +11001,7 @@
       pending.battingOrder = pending.battingOrder || this._optimizeBattingOrder(pending.lineup);
       pending.teamName = pending.teamName || (this._franchiseNext && this._franchiseNext.teamName) || this._suggestTeamName(this._pendingCards(pending));
       this._preselectIronMen(pending);
+      pending.viaMeet = true; // Iron Men and the batting order were set in Meet the Team
       this._pendingSeason = pending;
       this._meetAnimated = false;
       this.showScreen('screen-challenge-pack');
@@ -11149,6 +11228,7 @@
           ${this._chemistryHTML(this._rosterCards(p), true)}
 
           <div class="m3-actions">
+            ${p.cfg && p.cfg.type !== 'packs' && p.cfg.type !== 'snake' ? '<button id="btn-c162-meet-edit" class="m3-btn">◀ EDIT ROSTER</button>' : ''}
             <button id="btn-c162-meet-next" class="d2t-go">LEAGUE PREVIEW ▶</button>
           </div>
         </div>`;
@@ -11210,6 +11290,8 @@
         window.scrollTo(0, y);
       };
       container.querySelector('#btn-c162-meet-next').onclick = () => this.showLeaguePreview(p);
+      const edit = container.querySelector('#btn-c162-meet-edit');
+      if (edit) edit.onclick = () => { this.showScreen('screen-challenge-roster'); this.renderRosterBuilder(); };
     },
 
     // Expected wins over the actual 162-day slate, from the same win model the league uses.
@@ -11362,7 +11444,7 @@
           <div class="lp-sec">CHOOSE YOUR LEAGUE</div>
           <div class="lp-tickets">${ticket('AL')}${ticket('NL')}</div>
 
-          ${p.cfg && (p.cfg.type === 'packs' || p.cfg.type === 'snake') ? '' : this._ironPicksHTML(p)}
+          ${(p.viaMeet || (p.cfg && (p.cfg.type === 'packs' || p.cfg.type === 'snake'))) ? '' : this._ironPicksHTML(p)}
 
           <div class="lp-sec">TEAMS TO WATCH IN THE ${userLg}</div>
           <div class="lp-threats">${threats.map(id => {
@@ -11381,7 +11463,7 @@
           <div class="lp-cols">${column('AL')}${column('NL')}</div>
 
           <div class="m3-actions">
-            ${p.cfg && (p.cfg.type === 'packs' || p.cfg.type === 'snake') ? '<button id="btn-c162-preview-back" class="m3-btn">◀ TEAM</button>' : ''}
+            ${(p.viaMeet || (p.cfg && (p.cfg.type === 'packs' || p.cfg.type === 'snake'))) ? '<button id="btn-c162-preview-back" class="m3-btn">◀ TEAM</button>' : ''}
             <button id="btn-c162-preview-start" class="d2t-go">⚾ PLAY BALL!</button>
           </div>
         </div>`;
@@ -11675,9 +11757,11 @@
           const freeP = eligiblePitchers.filter(p => !usedPitcherKeys.has(pitcherUnlockKey(p)));
           const all0 = [...freeB.map(p => ['B', p]), ...freeP.map(p => ['P', p])]
             .filter(([, p]) => !term0 || (p.name && p.name.toLowerCase().includes(term0)) || (p.team && p.team.toLowerCase().includes(term0)))
+            .filter(([k, p]) => { const f = this._deckPos || 'ALL'; if (f === 'ALL') return true; if (f === 'SP') return k === 'P' && !isRelieverCardD(p); if (f === 'RP') return k === 'P' && isRelieverCardD(p); return k === 'B' && (f === 'DH' || canPlayerFillSlot(p, f)); })
             .sort((x, y) => (y[1].ovr || 50) - (x[1].ovr || 50)).slice(0, 90);
           deckPanelHTML = `<aside class="c162-asdeck">
               <div class="c162-asdeck-t">🎴 CARDS · TAP ONE TO PLACE IT</div>
+              <div class="tb-postabs">${['ALL', ...SLOTS, 'SP', 'RP'].map(x => `<button class="${(this._deckPos || 'ALL') === x ? 'on' : ''}" data-deck-pos="${x}">${x}</button>`).join('')}</div>
               <input id="challenge162-search-modal" type="text" placeholder="🔍 Search name or team..." value="${this._searchTerm || ''}">
               <div class="c162-asdeck-grid">${all0.map(([k, p]) => `<div class="c162-candidate-wrap challenge162-candidate-btn" data-kind="${k}" data-name="${encodeURIComponent(p.name)}" data-year="${p.year || ''}">${window.createCardHTML ? window.createCardHTML(p) : p.name}</div>`).join('') || '<div class="c162-asdeck-empty">No free cards match.</div>'}</div>
             </aside>`;
@@ -11930,6 +12014,7 @@
           };
         }
 
+        container.querySelectorAll('[data-deck-pos]').forEach(b => { b.onclick = () => { this._deckPos = b.dataset.deckPos; this.renderRosterBuilder(); }; });
         const btnAutoFill = document.getElementById('btn-challenge162-autofill');
         if (btnAutoFill) btnAutoFill.onclick = () => this.autoFillRoster();
 
@@ -11942,14 +12027,14 @@
         const startBtn = document.getElementById('challenge162-start-season-btn');
         if (startBtn && complete) {
           startBtn.onclick = () => {
-            this.showLeaguePreview({ lineup: this._draftLineup, pitchers: { SP: this._draftPitchers.SP.filter(Boolean), RP: this._draftPitchers.RP.filter(Boolean) }, bench: this._draftBench.filter(Boolean), cfg: this.getModeConfig() });
+            this.showMeetTheTeam({ lineup: Object.assign({}, this._draftLineup), pitchers: { SP: this._draftPitchers.SP.filter(Boolean), RP: this._draftPitchers.RP.filter(Boolean) }, bench: this._draftBench.filter(Boolean), cfg: this.getModeConfig() });
           };
         }
 
         const startTopBtn = document.getElementById('btn-challenge162-start-top');
         if (startTopBtn && complete) {
           startTopBtn.onclick = () => {
-            this.showLeaguePreview({ lineup: this._draftLineup, pitchers: { SP: this._draftPitchers.SP.filter(Boolean), RP: this._draftPitchers.RP.filter(Boolean) }, bench: this._draftBench.filter(Boolean), cfg: this.getModeConfig() });
+            this.showMeetTheTeam({ lineup: Object.assign({}, this._draftLineup), pitchers: { SP: this._draftPitchers.SP.filter(Boolean), RP: this._draftPitchers.RP.filter(Boolean) }, bench: this._draftBench.filter(Boolean), cfg: this.getModeConfig() });
           };
         }
       } catch (err) {
@@ -13191,7 +13276,7 @@
       if (!b) return '';
       const row = (label, x, f) => (x ? `<tr><td>${label}</td><td>${f ? f(x.v) : x.v}</td><td>${x.name}</td></tr>` : '');
       const avg = v => v.toFixed(3).replace(/^0/, '');
-      return `<details class="c162-results-bracket c162-book" open><summary>🏛 RECORD BOOK · ${r.completedSeasons || 0} SEASONS · ${r.worldSeriesWins || 0} TITLES</summary>
+      return `<details class="c162-results-bracket c162-book"><summary>🏛 ALL-TIME RECORD BOOK · EVERY SEASON YOU HAVE PLAYED · ${r.completedSeasons || 0} SEASONS · ${r.worldSeriesWins || 0} TITLES</summary>
         <table>${row('Team wins', b.wins)}${row('Home runs', b.hr)}${row('Batting avg', b.avg, avg)}${row('RBI', b.rbi)}${row('Steals', b.sb)}${row('Pitcher wins', b.w)}${row('Strikeouts', b.so)}${row('ERA', b.era, v => v.toFixed(2))}${row('Saves', b.sv)}</table>
         ${(r.history || []).length ? `<div class="c162-book-h">${r.history.slice(-10).reverse().map(h => `<span>${h.won ? '🏆' : ''}${h.name} ${h.w}-${h.l}</span>`).join('')}</div>` : ''}
       </details>`;
@@ -13899,6 +13984,7 @@
     // per open spot, odds box) for the rest. Nobody ages; the rivals are a fresh league every year.
     // Goals pay only here, in the next box: each medium goal turns a Common/Uncommon pack into a
     // Rare one, the hard goal guarantees an Epic pack, all three make it Legendary.
+    _franchiseReset() { this._franchiseNext = null; try { localStorage.removeItem(FRANCHISE_KEY); } catch (e) { /* storage blocked */ } },
     _franchiseLoad() { try { return JSON.parse(localStorage.getItem(FRANCHISE_KEY) || 'null'); } catch (e) { return null; } },
     _franchiseSave(F) { try { localStorage.setItem(FRANCHISE_KEY, JSON.stringify(F)); } catch (e) { /* storage full */ } },
     _goalRewards(S) {
@@ -14060,7 +14146,9 @@
     },
     // League history (franchise): one row per season; a name that won something before carries its count, e.g. "Pedro Martinez (3)".
     _leagueHistoryHTML() {
-      const F = this._franchiseLoad() || { history: [] };
+      const S0 = this.state;
+      let F = this._franchiseLoad() || { history: [] };
+      if (S0 && !S0.franchiseSeason) F = { history: [] }; // not a franchise: no rows from another run
       const asc = (F.history || []).slice().sort((x, y) => x.season - y.season);
       const seen = {}, tag = (kind, name) => { const k = kind + '|' + name; seen[k] = (seen[k] || 0) + 1; return seen[k] > 1 ? ` <i class="fr-n">(${seen[k]})</i>` : ''; };
       const rows = asc.map(r => {

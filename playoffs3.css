@@ -481,3 +481,15 @@
 .po3-next small { display: block; font-size: 9px; letter-spacing: 1.5px; color: #ffd36a; }
 @media (max-width: 768px) { .po3-side { grid-template-columns: minmax(0, 1fr); } .po3-side-l b { font-size: 19px; } .po3-next { display: none; } }
 .po3-fx[data-r="side"] { z-index: 30; }
+
+/* Run scores: big banner over the felt */
+.po3-runfx{position:absolute;left:50%;top:18%;transform:translateX(-50%);z-index:30;pointer-events:none;text-align:center;padding:14px 34px 12px;border:3px solid #f5c542;background:linear-gradient(180deg,#123f24,#0a2414);box-shadow:0 0 0 4px #0008,0 0 40px rgba(245,197,66,.55);animation:po3RunIn .5s cubic-bezier(.2,1.6,.4,1) both,po3RunGlow 1s ease-in-out .5s 3;white-space:nowrap}
+.po3-runfx.theirs{border-color:#e0533f;background:linear-gradient(180deg,#4a1414,#260909);box-shadow:0 0 0 4px #0008,0 0 40px rgba(224,83,63,.5)}
+.po3-runfx b{display:block;font-family:'Alfa Slab One',serif;font-size:40px;letter-spacing:2px;color:#ffe08a;text-shadow:3px 3px 0 #000}
+.po3-runfx.theirs b{color:#ffb3a6}
+.po3-runfx span{display:block;font-family:Oswald,sans-serif;font-size:15px;color:#e8f3ea;margin-top:2px}
+.po3-runfx em{display:block;font-style:normal;font-family:Oswald,sans-serif;font-size:16px;color:#cfe;margin-top:6px}
+.po3-runfx em i{font-style:normal;font-family:VT323,monospace;font-size:30px;color:#fff;padding:0 4px}
+@keyframes po3RunIn{from{opacity:0;transform:translateX(-50%) scale(.4) rotate(-6deg)}to{opacity:1;transform:translateX(-50%) scale(1) rotate(-2deg)}}
+@keyframes po3RunGlow{50%{filter:brightness(1.35)}}
+@media (max-width:768px){.po3-runfx{top:8%;padding:8px 14px}.po3-runfx b{font-size:24px}.po3-runfx span{font-size:12px}}

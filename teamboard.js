@@ -60,7 +60,23 @@
       const pick = arr => arr.filter(p => { if (!dex || !dex.isShortlisted(p)) return false; const k = keyOf(p); if (seen.has(k)) return false; seen.add(k); return true; });
       return { bats: pick(bats), pits: pick(pits) };
     },
-    byKey() { const { bats, pits } = this.pools(); const m = new Map(); [...bats, ...pits].forEach(p => m.set(keyOf(p), p)); return m; },
+    byKey() {
+      const m = new Map();
+      const bats = (window.PlayersDB && window.PlayersDB.LAHMAN_POOL) || [];
+      const pits = (window.PitchersDB && window.PitchersDB.PITCHERS_POOL) || window.PITCHERS_POOL || [];
+      [...bats, ...pits].forEach(p => { const k = keyOf(p); if (!m.has(k)) m.set(k, p); });
+      return m;
+    },
+    // right click (or long press) on any card: see it big in the middle, like in the Dex
+    zoom(p) {
+      if (!p) return;
+      document.getElementById('tb-zoom')?.remove();
+      const z = document.createElement('div'); z.id = 'tb-zoom';
+      z.innerHTML = `<div class="tb-zoom-card pc2-clickflip">${card(p)}</div><small>Click the card to flip it · click outside to close</small>`;
+      z.onclick = e => { if (!e.target.closest('.tb-zoom-card')) z.remove(); };
+      z.oncontextmenu = e => { e.preventDefault(); z.remove(); };
+      document.body.appendChild(z);
+    },
     used() { const v = this.pv; return new Set([...Object.values(v.lineup), ...v.bench, ...v.SP, ...v.RP].filter(Boolean)); },
     open() {
       this.load();
@@ -146,11 +162,14 @@
       const teamOvr = placed.length ? (placed.reduce((t, p) => t + ovr(p), 0) / placed.length).toFixed(1) : '—';
       let deck = [...bats, ...pits].filter(p => !used.has(keyOf(p)));
       if (this.active) deck = deck.filter(p => this.slotFits(this.active, p));
+      else if (this.pos && this.pos !== 'ALL') deck = deck.filter(p => this.pos === 'SP' ? isPit(p) && String(p.role || 'SP').toUpperCase() !== 'RP'
+        : this.pos === 'RP' ? isPit(p) && String(p.role).toUpperCase() === 'RP' : fits(p, this.pos));
+      const posTabs = this.active ? '' : `<div class="tb-postabs">${['ALL', ...SLOTS, 'SP', 'RP'].map(x => `<button class="${(this.pos || 'ALL') === x ? 'on' : ''}" data-tb-pos="${x}">${x}</button>`).join('')}</div>`;
       deck.sort((a, b) => ovr(b) - ovr(a));
       const deckHTML = deck.length ? deck.map(p => `<div class="tb-deckcard" data-tb-card="${esc(keyOf(p))}">${card(p)}</div>`).join('')
         : `<div class="tb-empty">${this.active ? 'No card in your shortlist fits this spot.' : (bats.length + pits.length ? 'Every shortlisted card is on the board.' : 'Your shortlist is empty: add cards with ⭐ in the Dex.')}</div>`;
       const opts = this.previews.map((p, i) => `<option value="${i}" ${i === this.cur ? 'selected' : ''}>${esc(p.name)}</option>`).join('');
-      const filled = Object.keys(v.lineup).length + [...v.bench, ...v.SP, ...v.RP].filter(Boolean).length;
+      const filled = placed.length;
       ov.innerHTML = `<div class="tb-wrap">
         <div class="tb-head">
           <div class="tb-title"><small>TEAM PREVIEW · FROM YOUR SHORTLIST</small>
@@ -166,7 +185,7 @@
             <button class="tb-btn" data-tb="close">✕ CLOSE</button>
           </div>
         </div>
-        <div class="tb-hint">${this.active ? `Pick a card for <b>${this.active.replace(/^L:/, '').replace(':', ' ')}</b> from the deck on the right, or tap the spot again to cancel.` : 'Tap a spot on the board and then a card, or tap a card and it goes to the first open spot it fits.'}</div>
+        <div class="tb-hint">${this.active ? `Pick a card for <b>${this.active.replace(/^L:/, '').replace(':', ' ')}</b> from the deck on the right, or tap the spot again to cancel.` : 'Tap a spot on the board and then a card, or tap a card and it goes to the first open spot it fits. Right click (long press on phones) a card to see it big.'}</div>
         <div class="tb-body">
           <div class="tb-board">
             ${fieldHTML(slotHTML, mound)}
@@ -174,12 +193,20 @@
             <div class="tb-rack"><div class="tb-rack-t">🧢 ROTATION</div><div class="tb-row">${[1, 2, 3, 4].map(i => this.slotCard(`SP:${i}`, `SP${i + 1}`)).join('')}</div></div>
             <div class="tb-rack"><div class="tb-rack-t">🔥 BULLPEN</div><div class="tb-row">${row('RP', RP_N, i => (i === 0 ? 'CL' : `RP${i}`))}</div></div>
           </div>
-          <div class="tb-deck"><div class="tb-rack-t">⭐ YOUR SHORTLIST · ${deck.length}${this.active ? ' THAT FIT' : ''}</div><div class="tb-deckgrid">${deckHTML}</div></div>
+          <div class="tb-deck"><div class="tb-rack-t">⭐ YOUR SHORTLIST · ${deck.length}${this.active ? ' THAT FIT' : ''}</div>${posTabs}<div class="tb-deckgrid">${deckHTML}</div></div>
         </div>
       </div>`;
       this.bind(ov);
     },
     bind(ov) {
+      const zoomOf = el => { const k = el.dataset.tbCard || (() => { const sl = el.dataset.tbSlot; const [kind, i] = sl.split(':'); return kind === 'L' ? this.pv.lineup[i] : this.pv[kind][+i]; })(); return k ? this._map.get(k) : null; };
+      ov.querySelectorAll('[data-tb-card], .tb-slot.full').forEach(el => {
+        el.oncontextmenu = e => { e.preventDefault(); this.zoom(zoomOf(el)); };
+        let t = null; // long press on phones
+        el.addEventListener('touchstart', () => { t = setTimeout(() => { t = 'fired'; this.zoom(zoomOf(el)); }, 500); }, { passive: true });
+        el.addEventListener('touchend', e => { if (t === 'fired') e.preventDefault(); else clearTimeout(t); t = null; });
+        el.addEventListener('touchmove', () => { if (t && t !== 'fired') clearTimeout(t); t = null; }, { passive: true });
+      });
       ov.querySelectorAll('[data-tb-x]').forEach(b => { b.onclick = e => { e.stopPropagation(); this.remove(b.dataset.tbX); this.render(); }; });
       ov.querySelectorAll('[data-tb-slot]').forEach(b => { b.onclick = e => { if (e.target.closest('.pc2-flip, [data-tb-x]')) return; const s = b.dataset.tbSlot; this.active = this.active === s ? null : s; this.render(); }; });
       ov.querySelectorAll('[data-tb-card]').forEach(b => {
@@ -194,6 +221,7 @@
           this.render();
         };
       });
+      ov.querySelectorAll('[data-tb-pos]').forEach(b => { b.onclick = () => { this.pos = b.dataset.tbPos; this.render(); }; });
       const name = ov.querySelector('#tb-name'); if (name) name.onchange = () => { this.pv.name = name.value.trim() || 'My Dream Team'; this.save(); this.render(); };
       const pick = ov.querySelector('#tb-pick'); if (pick) pick.onchange = () => { this.cur = +pick.value; this.active = null; this.save(); this.render(); };
       ov.querySelectorAll('[data-tb]').forEach(b => {
