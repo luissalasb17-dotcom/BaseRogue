@@ -561,8 +561,8 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
 
     if (!isClutch && !isCaptain && !isInterEra && !isChallengeWinner && !isInjured && lockNodes <= 0) return '';
 
-    const clutchToolTip = window.t ? window.t('badge.clutch_tooltip', 'Playoff Hero (MVP de la Serie Mundial o Babe Ruth Award): +8 a sus ratings en los combates de jefe y en los playoffs del 162-0.') : 'Playoff Hero (MVP de la Serie Mundial o Babe Ruth Award): +8 a sus ratings en los combates de jefe y en los playoffs del 162-0.';
-    const captainToolTip = window.t ? window.t('badge.captain_tooltip', 'Captain: +1 a todos los ratings de sus compañeros mientras esté en el roster (su carta suma +2 de OVR). Capitanes oficiales, jugadores-mánager y líderes de las Ligas Negras.') : 'Captain: +1 a todos los ratings de sus compañeros mientras esté en el roster (su carta suma +2 de OVR). Capitanes oficiales, jugadores-mánager y líderes de las Ligas Negras.';
+    const clutchToolTip = window.t ? window.t('badge.clutch_tooltip', 'Playoff Hero (MVP de la Serie Mundial, de una Serie de Campeonato o Babe Ruth Award): +8 a sus ratings en los combates de jefe y en los playoffs del 162-0.') : 'Playoff Hero (MVP de la Serie Mundial, de una Serie de Campeonato o Babe Ruth Award): +8 a sus ratings en los combates de jefe y en los playoffs del 162-0.';
+    const captainToolTip = window.t ? window.t('badge.captain_tooltip', 'Captain: +1 a todos los ratings de sus compañeros mientras esté en el roster (no cambia su OVR). Capitanes oficiales, jugadores-mánager y líderes de las Ligas Negras.') : 'Captain: +1 a todos los ratings de sus compañeros mientras esté en el roster (no cambia su OVR). Capitanes oficiales, jugadores-mánager y líderes de las Ligas Negras.';
     const interEraToolTip = window.t ? window.t('badge.interera_tooltip') : 'Fuera de Época: este jugador no estaba activo en la temporada seleccionada — cuenta el doble para su sinergia.';
     const challengeWinnerToolTip = window.t ? window.t('badge.challenge162_tooltip', 'Elegible para el 162-0 Challenge: formó parte de un roster que ganó una run completa (Quick Play o Modo Historia).') : 'Elegible para el 162-0 Challenge: formó parte de un roster que ganó una run completa (Quick Play o Modo Historia).';
     const injuryToolTip = window.t ? window.t('badge.injury_tooltip', 'Lesión: Penalización permanente a los ratings por el resto de la temporada.') : 'Lesión: Penalización permanente a los ratings por el resto de la temporada.';
@@ -3314,7 +3314,7 @@ function initGameModeSelector() {
       // The cut points are the pool percentiles (35 / 65 / 85 / 97.5) of the last ETL run; update them if the ETL changes.
       // same scale and cuts as batters (pitchers_etl.py PIT_RAW_SHIFT); a captain is +8 raw (+1 to his 8 teammates)
       const raw = h9 * 0.28 + sta * 0.26 + k9 * 0.12 + bb9 * 0.14 + hr9 * 0.10 + clt * 0.10 - 5; // badges go on the final OVR (+2 each), not the raw
-      const pitBadge = 2 * ((p.badge_captain ? 1 : 0) + (p.badge_clutch ? 1 : 0));
+      const pitBadge = 0; // badges no longer add to the OVR (7 nov 2026)
       if (raw <= 35) return Math.floor(50.0 + Math.max(0, (raw - 16.7) / 18.3) * 9.9 + pitBadge);
       if (raw <= 45) return Math.floor(60.0 + ((raw - 35) / 10) * 9.9 + pitBadge);
       if (raw <= 55) return Math.floor(70.0 + ((raw - 45) / 10) * 9.9 + pitBadge);
@@ -3349,7 +3349,7 @@ function initGameModeSelector() {
       else if (raw <= 55) base = 70.0 + ((raw - 45) / 10) * 9.9;
       else if (raw <= 75) base = 80.0 + ((raw - 55) / 20) * 9.9;
       else base = 90.0 + Math.min(9.9, ((raw - 75) / 25.0) * 9.9);
-      return base + 2 * (((p.captain || p.is_captain) ? 1 : 0) + ((p.clutch || p.is_clutch) ? 1 : 0));
+      return base; // badges no longer add to the OVR
     };
     const anchored = p.ovr !== undefined && p.kavd === undefined ? Number(p.ovr) + (score(1) - score(0)) : score(1);
     return Math.floor(Math.max(50, Math.min(99.9, anchored)));
@@ -3649,8 +3649,8 @@ function initGameModeSelector() {
     const isCaptain = !!(player.captain || player.is_captain || player.badge_captain);
     const isDoubleBadge = isClutch && isCaptain;
 
-    const clutchToolTip = window.t ? window.t('badge.clutch_tooltip', 'Playoff Hero (MVP de la Serie Mundial o Babe Ruth Award): +8 a sus ratings en los combates de jefe y en los playoffs del 162-0.') : 'Playoff Hero (MVP de la Serie Mundial o Babe Ruth Award): +8 a sus ratings en los combates de jefe y en los playoffs del 162-0.';
-    const captainToolTip = window.t ? window.t('badge.captain_tooltip', 'Captain: +1 a todos los ratings de sus compañeros mientras esté en el roster (su carta suma +2 de OVR). Capitanes oficiales, jugadores-mánager y líderes de las Ligas Negras.') : 'Captain: +1 a todos los ratings de sus compañeros mientras esté en el roster (su carta suma +2 de OVR). Capitanes oficiales, jugadores-mánager y líderes de las Ligas Negras.';
+    const clutchToolTip = window.t ? window.t('badge.clutch_tooltip', 'Playoff Hero (MVP de la Serie Mundial, de una Serie de Campeonato o Babe Ruth Award): +8 a sus ratings en los combates de jefe y en los playoffs del 162-0.') : 'Playoff Hero (MVP de la Serie Mundial, de una Serie de Campeonato o Babe Ruth Award): +8 a sus ratings en los combates de jefe y en los playoffs del 162-0.';
+    const captainToolTip = window.t ? window.t('badge.captain_tooltip', 'Captain: +1 a todos los ratings de sus compañeros mientras esté en el roster (no cambia su OVR). Capitanes oficiales, jugadores-mánager y líderes de las Ligas Negras.') : 'Captain: +1 a todos los ratings de sus compañeros mientras esté en el roster (no cambia su OVR). Capitanes oficiales, jugadores-mánager y líderes de las Ligas Negras.';
 
     let ribbonHTML = '';
     if (isDoubleBadge) {
@@ -3704,7 +3704,7 @@ function initGameModeSelector() {
     const handTxt = (okHand(hh[0]) || okHand(hh[1])) ? `${okHand(hh[0]) ? hh[0] : '–'}/${okHand(hh[1]) ? hh[1] : '–'}` : '';
     const badgePatch = (kind, label, tip) => `<span class="pc2-badge pc2-badge-${kind}" title="${esc(tip)}"><i>${label}</i></span>`;
     const badgesHTML = (isClutch || isCaptain)
-      ? `<div class="pc2-badges">${isClutch ? badgePatch('oct', 'OCT', clutchToolTip) : ''}${isCaptain ? badgePatch('cap', 'C', captainToolTip) : ''}</div>` : '';
+      ? `<div class="pc2-badges">${isClutch ? badgePatch('oct', 'PH', clutchToolTip) : ''}${isCaptain ? badgePatch('cap', 'C', captainToolTip) : ''}</div>` : '';
     const sparks = (rarityLabel === 'Legendary' || rarityLabel === 'Epic')
       ? `<div class="pc2-sparks">${[0, 1, 2, 3, 4].map(k => `<i style="left:${8 + k * 19}%;top:${12 + (k * 37) % 70}%;animation-delay:${(k * 0.53).toFixed(2)}s"></i>`).join('')}</div>` : '';
     const chipList = [
@@ -3853,8 +3853,8 @@ function initGameModeSelector() {
         ratings_kavd: '<strong style="color:#ec4899;">K/AVD — Evasión de Ponches:</strong> Reduce la zona de ponches (SO) en la tirada del dado. Clave para evitar el daño directo a la salud del equipo que provocan los ponches.',
         ratings_spd: '<strong style="color:#38bdf8;">SPD — Velocidad:</strong> Activa intentos de robo de base en sencillos (+20% daño al pitcher). Además, desde 60 SPD otorga de 5% a 30% de probabilidad de estirar sencillos y dobles a bases extra (1B→2B→3B).',
         ratings_def: '<strong style="color:#a855f7;">DEF — Defensa:</strong> Contribuye al <strong>Escudo</strong> del equipo. Cuanto mayor DEF promedio, más escudo tienes disponible para absorber OUTs antes de perder HP.',
-        ratings_clutch: '<strong style="color:#ef4444;">⚡ PLAYOFF HERO:</strong> MVP de la Serie Mundial o Babe Ruth Award. +8 a sus ratings en los combates de jefe y en los playoffs del 162-0.',
-        ratings_captain: '<strong style="color:#eab308;">👑 CAPTAIN:</strong> +1 a todos los ratings de sus compañeros mientras esté en el roster (su carta suma +2 de OVR). Capitanes oficiales, jugadores-mánager y líderes de las Ligas Negras.'
+        ratings_clutch: '<strong style="color:#ef4444;">⚡ PLAYOFF HERO:</strong> MVP de la Serie Mundial, de una Serie de Campeonato o Babe Ruth Award. +8 a sus ratings en los combates de jefe y en los playoffs del 162-0.',
+        ratings_captain: '<strong style="color:#eab308;">👑 CAPTAIN:</strong> +1 a todos los ratings de sus compañeros mientras esté en el roster (no cambia su OVR). Capitanes oficiales, jugadores-mánager y líderes de las Ligas Negras.'
       },
       en: {
         btn_lineup: "Lineup",
@@ -3888,8 +3888,8 @@ function initGameModeSelector() {
         ratings_kavd: '<strong style="color:#ec4899;">K/AVD — Strikeout Avoidance:</strong> Shrinks the Strikeout (SO) zone on dice rolls. Essential for preventing direct team HP damage.',
         ratings_spd: '<strong style="color:#38bdf8;">SPD — Speed:</strong> Triggers base stealing on 1B and 2B (+20% pitcher damage debuff). Also grants 10% to 50% chance (above 60 SPD) to stretch hits into extra bases (1B➔2B➔3B).',
         ratings_def: '<strong style="color:#a855f7;">DEF — Defense:</strong> Contributes to Team <strong>Shield</strong>. Higher average DEF grants more shield to absorb OUTs before losing team HP.',
-        ratings_clutch: '<strong style="color:#ef4444;">⚡ PLAYOFF HERO:</strong> World Series MVP or Babe Ruth Award. +8 to his ratings in boss fights and in 162-0 playoff games.',
-        ratings_captain: '<strong style="color:#eab308;">👑 CAPTAIN:</strong> +1 to every rating of all his teammates while on the roster (his card gets +2 OVR). Official team captains, player-managers and Negro Leagues leaders.'
+        ratings_clutch: '<strong style="color:#ef4444;">⚡ PLAYOFF HERO:</strong> World Series MVP, LCS MVP or Babe Ruth Award. +8 to his ratings in boss fights and in 162-0 playoff games.',
+        ratings_captain: '<strong style="color:#eab308;">👑 CAPTAIN:</strong> +1 to every rating of all his teammates while on the roster (does not change his OVR). Official team captains, player-managers and Negro Leagues leaders.'
       }
     };
 

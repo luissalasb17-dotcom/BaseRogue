@@ -142,3 +142,39 @@
 
 /* the era chips sit centred on every design */
 .player-card.pc2.pc2.pc2.pc2.pc2.pc2 .pc2-chips { justify-content: center !important; padding-left: 0 !important; padding-right: 0 !important; }
+
+/* ===== Badges v2 (7 nov 2026): same place and size, finished like part of the card =====
+   Old eras (Genesis..Big Hair): embroidered felt patch in the team colour with a thread rim.
+   Glossy eras (Steroid, Efficiency, Modern): stamped foil with an enamel centre and a gloss line. */
+.player-card.pc2 .pc2-badges { filter: drop-shadow(0 1px 0 rgba(0,0,0,.55)) drop-shadow(0 0 1.5px rgba(0,0,0,.35)); }
+.player-card.pc2 .pc2-badge { filter: none; position: relative; }
+.player-card.pc2 .pc2-badge i {
+  position: relative; font-weight: 700; letter-spacing: 0;
+  text-shadow: 0 .5px 0 rgba(0,0,0,.45);
+  box-shadow: inset 0 0 0 .8px rgba(255,255,255,.18), inset 0 -3px 4px rgba(0,0,0,.35), inset 0 2px 3px rgba(255,255,255,.18);
+}
+/* thread stitch: a dotted ring just inside the rim */
+.player-card.pc2 .pc2-badge i::before {
+  content: ''; position: absolute; inset: 1px;
+  clip-path: polygon(50% 0, 100% 18%, 100% 62%, 50% 100%, 0 62%, 0 18%);
+  background:
+    repeating-linear-gradient(90deg, rgba(255,255,255,.55) 0 1px, transparent 1px 2px) top / 100% .6px no-repeat,
+    repeating-linear-gradient(0deg, rgba(255,255,255,.45) 0 1px, transparent 1px 2px) left / .6px 62% no-repeat,
+    repeating-linear-gradient(0deg, rgba(255,255,255,.45) 0 1px, transparent 1px 2px) right / .6px 62% no-repeat;
+  opacity: .55; pointer-events: none;
+}
+/* vintage felt (default) */
+.player-card.pc2 .pc2-badge-cap { background: linear-gradient(160deg, #efe6cc, #c9bc98); }
+.player-card.pc2 .pc2-badge-cap i { background: radial-gradient(120% 90% at 50% 25%, color-mix(in srgb, var(--tc, #1d3557) 85%, #fff), var(--tc, #1d3557) 70%, color-mix(in srgb, var(--tc, #1d3557) 70%, #000)); color: #f6efdc; }
+.player-card.pc2 .pc2-badge-oct { background: linear-gradient(160deg, #e8c46a, #a77b22); }
+.player-card.pc2 .pc2-badge-oct i { background: radial-gradient(120% 90% at 50% 25%, #a8202e, #7a1020 70%, #4e0812); color: #f3d27a; }
+/* glossy eras: foil rim with a moving sheen + enamel centre */
+.player-card.pc2.pc2-e-steroid .pc2-badge-cap, .player-card.pc2.pc2-e-efficiency .pc2-badge-cap, .player-card.pc2.pc2-e-modern .pc2-badge-cap {
+  background: linear-gradient(115deg, #7f8b95 0%, #f7fafc 35%, #9aa6b0 55%, #e6ecf1 80%, #7f8b95 100%);
+}
+.player-card.pc2.pc2-e-steroid .pc2-badge-oct, .player-card.pc2.pc2-e-efficiency .pc2-badge-oct, .player-card.pc2.pc2-e-modern .pc2-badge-oct {
+  background: linear-gradient(115deg, #9a6d12 0%, #fff0b5 35%, #c8961f 55%, #ffe58a 80%, #9a6d12 100%);
+}
+.player-card.pc2.pc2-e-steroid .pc2-badge i::before, .player-card.pc2.pc2-e-efficiency .pc2-badge i::before, .player-card.pc2.pc2-e-modern .pc2-badge i::before {
+  background: linear-gradient(170deg, rgba(255,255,255,.45) 0 34%, transparent 36%); opacity: .7;
+}

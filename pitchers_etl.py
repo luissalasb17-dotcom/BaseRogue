@@ -1531,7 +1531,7 @@ def paso_11_ovr_rareza(df, awards=None):
     _cp = Path(__file__).resolve().parent / "captains_ids.csv"
     _caps = set((lambda c: c[c["type"]=="PIT"] if "type" in c else c)(_pd_caps.read_csv(_cp))["playerID"]) if _cp.exists() else set()
     _base_id = df["playerID"].astype(str).str.replace(r"_(sp|rp)$", "", regex=True)
-    _heroes = set(awards[awards["awardID"].isin({"World Series MVP", "Babe Ruth Award"})]["playerID"]) if awards is not None and len(awards) else set()
+    _heroes = set(awards[awards["awardID"].isin({"World Series MVP", "Babe Ruth Award", "ALCS MVP", "NLCS MVP"})]["playerID"]) if awards is not None and len(awards) else set()
     df["is_clutch"] = _base_id.isin(_heroes | {"bettsmo01", "yamamyo01"})  # PLAYOFF HERO (mismo criterio que bateadores)
     df["is_captain"] = df["playerID"].astype(str).str.replace(r"_(sp|rp)$", "", regex=True).isin(_caps)
     badge = 0.0
@@ -1556,7 +1556,7 @@ def paso_11_ovr_rareza(df, awards=None):
         ovr_v["hr9_val"] * 0.10 +
         ovr_v["clt_val"] * 0.10
     ) - PIT_RAW_SHIFT  # insignias: +BADGE_OVR al OVR final (abajo), no al raw
-    badge = (df["is_captain"].astype(int) + df["is_clutch"].astype(int)) * float(_os.environ.get("BADGE_OVR", "2.0"))
+    badge = (df["is_captain"].astype(int) + df["is_clutch"].astype(int)) * float(_os.environ.get("BADGE_OVR", "0"))
 
     p35  = float(df["raw_ovr"].quantile(0.35))
     p65  = float(df["raw_ovr"].quantile(0.65))

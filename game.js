@@ -525,7 +525,6 @@ window.leftyCantPlay = function (p, slot) {
     else if (raw <= 55) base = 70.0 + ((raw - 45) / 10) * 9.9;
     else if (raw <= 75) base = 80.0 + ((raw - 55) / 20) * 9.9;
     else base = 90.0 + Math.min(9.9, ((raw - 75) / 25.0) * 9.9);
-    base += 2 * (((p.captain || p.is_captain) ? 1 : 0) + ((p.clutch || p.is_clutch) ? 1 : 0));
     return Math.floor(Math.max(50, Math.min(99.9, base)));
   };
   const _gambleRarityOrder = ['Common', 'Uncommon', 'Rare', 'Epic', 'Legendary'];
