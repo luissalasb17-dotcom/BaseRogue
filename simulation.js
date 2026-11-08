@@ -129,7 +129,7 @@
 
   // Platoon: the batter's side against the pitcher's arm (player_hands.js), in rating
   // points on contact, eye, K-AVD and power for that roll. Same table as the 162-0 test.
-  const PLATOON_QP = { on: true, table: { RR: -2.5, RL: 4.5, LR: 3, LL: -10, SR: 1.5, SL: 1.5 } };
+  const PLATOON_QP = { on: true, table: { RR: -2, RL: 5, LR: 3.5, LL: -9.5, SR: 0, SL: 0 } };
   window.PLATOON_QP = PLATOON_QP;
   function platoonKeyQP(batter, pitcher) {
     const H = window.PlayerHands || {};

@@ -415,3 +415,15 @@ body:has(.dx2-overlay) #mobile-nav-bar { display: none !important; }
 .c162-sreport .sr-notes{margin:10px 0 6px 18px;font-size:14px;color:#cbd5e1;list-style:disc}
 .c162-more{margin:0 0 10px}.c162-more>summary{cursor:pointer;font-family:Oswald,sans-serif;font-size:14px;color:#ffd700;padding:8px;border:1px solid #ffd70055;background:rgba(0,0,0,.4);text-align:center}
 .c162-more[open]>summary{margin-bottom:8px}
+
+/* October roster on the roster screen (Nov 2026) */
+.rt-oct { display: flex; justify-content: space-between; align-items: center; gap: 18px; margin: 10px 0 8px; padding: 12px 16px;
+  background: linear-gradient(180deg, #2a1608, #160c05); border: 1px solid #7a4a1c; border-top: 2px solid #f59e0b; }
+.rt-oct-k { font-family: 'Oswald', sans-serif; font-size: 12px; letter-spacing: .14em; color: #fbbf24; }
+.rt-oct-t { font-family: 'Alfa Slab One', serif; font-size: 22px; color: #fde68a; margin: 2px 0; }
+.rt-oct-s { font-family: 'Oswald', sans-serif; font-size: 14px; color: #e7d3b0; }
+.rt-oct-n { margin: 8px 0 0; padding-left: 18px; font-family: 'Oswald', sans-serif; font-size: 13px; color: #f3e6cc; }
+.rt-oct-n li { margin: 2px 0; }
+.rt-oct-go { flex: none; padding: 12px 18px !important; font-family: 'Oswald', sans-serif !important; font-size: 15px !important; letter-spacing: .06em;
+  background: linear-gradient(180deg, #f7d27a, #c9962c) !important; color: #2a1608 !important; border: 1px solid #8a6216 !important; }
+@media (max-width: 760px) { .rt-oct { flex-direction: column; align-items: stretch; } }

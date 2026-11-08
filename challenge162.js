@@ -1853,7 +1853,8 @@
   const PLATOON_LINEUPS = true; // regular season: platoon nine against the opposing starter (all teams)
   const BIG_LI = 1.25, BIG_PACE = 0.45, BIG_STEP = 0.35, BIG_ROLLS_MAX = 5, CLUTCH_DICE = 1, PLATOON_SWAP_EDGE = 3;
   const PLATOON_ON = true;
-  const PLATOON = { RR: -2.5, RL: 4.5, LR: 3, LL: -10, SR: 1.5, SL: 1.5 }; // measured: RHB .709 vs R, .746 vs L; LHB .763 vs R, .696 vs L
+  const OCT_ROSTER_SCREEN = true; // October roster shown on the roster screen, not the old popup
+  const PLATOON = { RR: -2, RL: 5, LR: 3.5, LL: -9.5, SR: 0, SL: 0 }; // zero over a season (72% of PA vs RHP); same split sizes as before (R 7, L 13); switch hitters 0 (Nov 2026)
   function platoonKey(batter, pitcher) {
     const H = window.PlayerHands || {};
     const b = (H[batter && batter.playerID] || '')[0], t = (H[pitcher && pitcher.playerID] || '')[1];
@@ -2368,7 +2369,8 @@
   // ratings. The USA does not count as a country: most cards are from there and the bonus would be free. The country comes from PLAYER_FLAGS_DB (the Dex data).
   const CHEM_TEAM_SIZE = 3, CHEM_ERA_SIZE = 5, CHEM_NATION_SIZE = 3;
   const NATION_NAMES = { do: 'Dominican Rep.', ve: 'Venezuela', cu: 'Cuba', pr: 'Puerto Rico', mx: 'Mexico', jp: 'Japan', ca: 'Canada', pa: 'Panama', co: 'Colombia', ni: 'Nicaragua', kr: 'South Korea', cw: 'Curacao', au: 'Australia', tw: 'Taiwan', gb: 'Great Britain', de: 'Germany', ie: 'Ireland', nl: 'Netherlands', bs: 'Bahamas', jm: 'Jamaica', vi: 'Virgin Islands', aw: 'Aruba', br: 'Brazil', hn: 'Honduras' };
-  const CHEM_US_BY_STATE = false; // tried by state (Nov 2026): +53% chemistry, California almost free; off
+  const CHEM_US_BY_STATE = true; // Americans by birth state, T1 at CHEM_STATE_SIZE (user, Nov 2026: at 3 it was +50% chemistry and California free; at 5 ~25% of random rosters, mostly CA)
+  const CHEM_STATE_SIZE = 5;
   const US_STATE_NAMES = { AL:'Alabama',AK:'Alaska',AZ:'Arizona',AR:'Arkansas',CA:'California',CO:'Colorado',CT:'Connecticut',DE:'Delaware',DC:'Washington D.C.',FL:'Florida',GA:'Georgia',HI:'Hawaii',ID:'Idaho',IL:'Illinois',IN:'Indiana',IA:'Iowa',KS:'Kansas',KY:'Kentucky',LA:'Louisiana',ME:'Maine',MD:'Maryland',MA:'Massachusetts',MI:'Michigan',MN:'Minnesota',MS:'Mississippi',MO:'Missouri',MT:'Montana',NE:'Nebraska',NV:'Nevada',NH:'New Hampshire',NJ:'New Jersey',NM:'New Mexico',NY:'New York',NC:'North Carolina',ND:'North Dakota',OH:'Ohio',OK:'Oklahoma',OR:'Oregon',PA:'Pennsylvania',RI:'Rhode Island',SC:'South Carolina',SD:'South Dakota',TN:'Tennessee',TX:'Texas',UT:'Utah',VT:'Vermont',VA:'Virginia',WA:'Washington',WV:'West Virginia',WI:'Wisconsin',WY:'Wyoming' };
   function nationOf(p) {
     const db = window.PLAYER_FLAGS_DB || {};
@@ -2397,10 +2399,15 @@
   // Tiers of a chemistry group: T1 at one "size" (3 / 5 / 3), T2 at two, and so on. The bonus grows
   // faster than the tier (user, Oct 2026): T1 +1, T2 +3, T3 +6, then +2 more per tier.
   const chemTierBonus = tier => (tier <= 0 ? 0 : tier <= 2 ? 2 * tier - 1 : 2 * tier);
-  function chemTier(kind, count) {
-    const need = CHEM_SIZE[kind];
-    const tier = Math.floor(count / need);
-    return { tier, need, bonus: chemTierBonus(tier), next: (tier + 1) * need, left: (tier + 1) * need - count };
+  // Each group stops at T3 (user, Nov 2026): a one-club Dream Team got +16 franchise +10 era.
+  const CHEM_MAX_TIER = 3;
+  const chemNeed = (kind, v) => (kind === 'nation' && String(v || '').startsWith('US-') ? CHEM_STATE_SIZE : CHEM_SIZE[kind]);
+  const chemTierOf = (kind, count, v) => Math.min(CHEM_MAX_TIER, Math.floor(count / chemNeed(kind, v)));
+  function chemTier(kind, count, v) {
+    const need = chemNeed(kind, v);
+    const tier = chemTierOf(kind, count, v);
+    const max = tier >= CHEM_MAX_TIER;
+    return { tier, need, max, bonus: chemTierBonus(tier), next: max ? count : (tier + 1) * need, left: max ? 0 : (tier + 1) * need - count };
   }
   // What one more card would add to the chemistry of a roster: one entry per group it joins.
   function chemDelta(cards, card) {
@@ -2410,7 +2417,7 @@
       const before = (cards || []).filter(c => c && chemTraits(c)[kind] === t[kind]).length;
       const after = before + 1;
       return { kind, value: t[kind], label: chemLabel(kind, t[kind]), before, after,
-        tierUp: chemTier(kind, after).tier > chemTier(kind, before).tier, tier: chemTier(kind, after) };
+        tierUp: chemTier(kind, after, t[kind]).tier > chemTier(kind, before, t[kind]).tier, tier: chemTier(kind, after, t[kind]) };
     });
   }
   function rosterChemistry(cards) {
@@ -2422,13 +2429,13 @@
     const bonus = {};
     list.forEach(p => {
       const t = traits(p);
-      const b = Object.keys(t).reduce((sum, k) => sum + (t[k] ? chemTierBonus(Math.floor(tally[k][t[k]] / size[k])) : 0), 0);
+      const b = Object.keys(t).reduce((sum, k) => sum + (t[k] ? chemTierBonus(chemTierOf(k, tally[k][t[k]], t[k])) : 0), 0);
       if (b > 0) bonus[chemKey(p)] = b;
     });
     const groups = [];
     Object.keys(tally).forEach(kind => Object.keys(tally[kind]).forEach(v => {
       const count = tally[kind][v];
-      groups.push({ kind, value: v, label: chemLabel(kind, v), count, ...chemTier(kind, count) });
+      groups.push({ kind, value: v, label: chemLabel(kind, v), count, ...chemTier(kind, count, v) });
     }));
     groups.sort((a, b) => (b.bonus - a.bonus) || (b.count / b.need - a.count / a.need));
     return { bonus, groups, of: p => (p ? (bonus[chemKey(p)] || 0) : 0) };
@@ -3451,6 +3458,8 @@
       P.transitionShown = true;
       this.save();
       this._prepareOctoberPostseason();
+      // October roster (user, Nov 2026): the roster screen in postseason mode instead of a popup.
+      if (OCT_ROSTER_SCREEN) { this.stopAutoSim(); this._ligaTab = 'roster'; this._rosterSub = 'lineup'; this.renderLiga(); return; }
 
       const old = document.getElementById('c162-october-transition-overlay'); if (old) old.remove();
       const ov = document.createElement('div');
@@ -4792,16 +4801,16 @@
           <span class="cc-n">×${g.count}</span>
           <span class="cc-tier">${g.bonus ? `T${g.tier} <b>+${g.bonus}</b>` : '—'}</span>
           <span class="cc-bar"><i style="width:${pct}%"></i></span>
-          <span class="cc-next">${g.left} to T${g.tier + 1}</span>
+          <span class="cc-next">${g.max ? 'T3 MAX' : g.left + ' to T' + (g.tier + 1)}</span>
         </div>`;
       };
       const capRow = caps ? `<div class="c162-chem-row is-on is-cap"><span class="cc-ic">👑</span><span class="cc-name">${caps > 1 ? caps + ' captains' : 'Captain'}</span><span class="cc-next cc-wide">+${CAPTAIN_TEAM_BONUS} to every teammate's ratings</span></div>` : '';
       const rows = on.map(row).join('') + capRow + near.map(row).join('');
-      const rule = `T1 at ${CHEM_TEAM_SIZE} of a franchise, ${CHEM_ERA_SIZE} of an era or ${CHEM_NATION_SIZE} of a country (not the USA), T2 at twice that and so on; T1 +1, T2 +3, T3 +6`;
+      const rule = `T1 at ${CHEM_TEAM_SIZE} of a franchise, ${CHEM_ERA_SIZE} of an era ${CHEM_NATION_SIZE} of a country or ${CHEM_STATE_SIZE} of a US state, T2 at twice that, T3 at three times (the cap); T1 +1, T2 +3, T3 +6`;
       if (compact) {
         // Pack draft board (user: the long list pushed the roster down): one chip per group,
         // active ones first, the rule and the details in the tooltip.
-        const chip = g => `<span class="cc-chip ${g.bonus ? 'on' : 'near'}" data-chem-group="${g.kind}:${g.value}" title="${g.count} ${g.kind === 'team' ? 'from this franchise' : g.kind === 'era' ? 'from this era' : 'from this country'} · ${g.left} more for T${g.tier + 1}">${CHEM_ICON[g.kind]} ${g.label} <i>×${g.count}</i>${g.bonus ? ` <b>+${g.bonus}</b>` : ` <em>${g.left} to T1</em>`}</span>`;
+        const chip = g => `<span class="cc-chip ${g.bonus ? 'on' : 'near'}" data-chem-group="${g.kind}:${g.value}" title="${g.count} ${g.kind === 'team' ? 'from this franchise' : g.kind === 'era' ? 'from this era' : 'from this country'} · ${g.max ? 'T3 is the cap' : g.left + ' more for T' + (g.tier + 1)}">${CHEM_ICON[g.kind]} ${g.label} <i>×${g.count}</i>${g.bonus ? ` <b>+${g.bonus}</b>` : ` <em>${g.left} to T1</em>`}</span>`;
         const capChip = caps ? `<span class="cc-chip on cap" data-chem-group="cap:1" title="+${CAPTAIN_TEAM_BONUS} to every teammate's ratings">👑 ${caps > 1 ? caps + ' captains' : 'Captain'}</span>` : '';
         const chips = on.map(chip).join('') + capChip + near.map(chip).join('');
         return `<div class="c162-chem2 is-compact is-chips">
@@ -9677,7 +9686,7 @@
               <div class="c162-oc-need">${fills ? '🧩 FILLS A HOLE' : backup}</div>
               ${(() => {
                 const ds = chemDelta(rosterNow, c).filter(x => x.after >= 2);
-                return ds.length ? `<div class="c162-oc-chem">${ds.map(x => `<span class="${x.tierUp ? 'up' : ''}" title="${x.after} of this ${x.kind === 'team' ? 'franchise' : x.kind === 'era' ? 'era' : 'country'} with him">${CHEM_ICON[x.kind]} ${x.label} ${x.before}→${x.after}${x.tierUp ? ` <b>T${x.tier.tier}: +${x.tier.bonus} to ${x.after} players</b>` : ` <i>${x.tier.left} to T${x.tier.tier + 1}</i>`}</span>`).join('')}</div>` : '';
+                return ds.length ? `<div class="c162-oc-chem">${ds.map(x => `<span class="${x.tierUp ? 'up' : ''}" title="${x.after} of this ${x.kind === 'team' ? 'franchise' : x.kind === 'era' ? 'era' : 'country'} with him">${CHEM_ICON[x.kind]} ${x.label} ${x.before}→${x.after}${x.tierUp ? ` <b>T${x.tier.tier}: +${x.tier.bonus} to ${x.after} players</b>` : x.tier.max ? ` <i>T3 max</i>` : ` <i>${x.tier.left} to T${x.tier.tier + 1}</i>`}</span>`).join('')}</div>` : '';
               })()}
               <button class="btn c162-opt-pick" data-pack-pick="${i}">✔ PICK</button>
             </div>
@@ -11757,7 +11766,7 @@
           const freeP = eligiblePitchers.filter(p => !usedPitcherKeys.has(pitcherUnlockKey(p)));
           const all0 = [...freeB.map(p => ['B', p]), ...freeP.map(p => ['P', p])]
             .filter(([, p]) => !term0 || (p.name && p.name.toLowerCase().includes(term0)) || (p.team && p.team.toLowerCase().includes(term0)))
-            .filter(([k, p]) => { const f = this._deckPos || 'ALL'; if (f === 'ALL') return true; if (f === 'SP') return k === 'P' && !isRelieverCardD(p); if (f === 'RP') return k === 'P' && isRelieverCardD(p); return k === 'B' && (f === 'DH' || canPlayerFillSlot(p, f)); })
+            .filter(([k, p]) => { const f = this._deckPos || 'ALL'; if (f === 'ALL') return true; if (f === 'SP') return k === 'P' && (!isRelieverCardD(p) || (p.career_gs || 0) >= 1); if (f === 'RP') return k === 'P' && isRelieverCardD(p); return k === 'B' && (f === 'DH' || canPlayerFillSlot(p, f)); })
             .sort((x, y) => (y[1].ovr || 50) - (x[1].ovr || 50)).slice(0, 90);
           deckPanelHTML = `<aside class="c162-asdeck">
               <div class="c162-asdeck-t">🎴 CARDS · TAP ONE TO PLACE IT</div>
@@ -11777,7 +11786,7 @@
           const isRelieverCard = p => (p.role || 'SP').toUpperCase() === 'RP';
           let pool = isPitcherSlot
             ? (this._activeSlot.kind === 'SP'
-              ? eligiblePitchers.filter(p => !isRelieverCard(p))
+              ? eligiblePitchers.filter(p => !isRelieverCard(p) || (p.career_gs || 0) >= 1)
               : eligiblePitchers.slice())
             : (slotName === 'DH' ? eligibleBatters : eligibleBatters.filter(p => {
                 if (p.pos === slotName) return true;
@@ -13297,6 +13306,18 @@
       if (this._rosterLocked()) { this._rosterNote('A playoff game is under way: moves wait until it ends.', true); return; }
       const isBat = x => x.t === 'L' || x.t === 'B';
       if (isBat(a) !== isBat(b)) { this._rosterNote('Batters and pitchers cannot trade places.', true); return; }
+      const octT = x => x.t === 'OS' || x.t === 'O5';
+      if (octT(a) || octT(b)) {
+        const P = S.playoffs;
+        if (!(octT(a) && octT(b))) { this._rosterNote('In October the starters only trade places with each other (the 5th starter works as long man). The bullpen stays as it is.', true); return; }
+        const get = x => (x.t === 'O5' ? P.fifthStarterKey : P.octoberSPKeys[x.i]);
+        const set = (x, k) => { if (x.t === 'O5') P.fifthStarterKey = k; else P.octoberSPKeys[x.i] = k; };
+        const ka = get(a), kb = get(b); set(a, kb); set(b, ka);
+        const nm = k => { const c = (R.pitchers.SP || []).find(q => q && pitcherUnlockKey(q) === k); return c ? name(c) : '?'; };
+        this._rosterNote(`${nm(ka)} and ${nm(kb)} trade places in the October staff.`);
+        this.save();
+        return;
+      }
       const lefty = (p, slot) => !!(window.leftyCantPlay && window.leftyCantPlay(p, slot));
       const LEFTY = 'A left-handed thrower cannot play C, 2B, 3B or SS.';
       let msg = '';
@@ -13380,8 +13401,10 @@
       const labels = bullpenLabels(R.pitchers.RP);
       const spots = { CF: [50, 13.5], LF: [15, 22.5], RF: [85, 22.5], SS: [36, 32], '2B': [64, 32], '3B': [21, 54], '1B': [79, 54], C: [50, 86.5], DH: [8, 86.5] };
       const place = (p, label, x, l, t, at) => `<div ${dd(x, 'm3-pos no-anim m3-at-' + at, p)} style="--x:${l}%;--y:${t}%;"><div class="m3-pos-tag"><b>${label}</b>${this._formTag(USER_TEAM_ID, p, x.t === 'S' || x.t === 'R')}</div><div class="m3-card">${window.createCardHTML ? window.createCardHTML(p) : cleanName(p)}</div></div>`;
-      const spIdx = S.gamesPlayed % R.pitchers.SP.length, sp = R.pitchers.SP[spIdx];
-      const chips = Object.entries(spots).map(([sl, [x, y]]) => { const p = R.lineup[sl], at = R.battingOrder.indexOf(sl) + 1; return p ? place(p, `#${at} ${sl}`, { t: 'L', slot: sl }, x, y, sl) : ''; }).join('') + (sp ? place(sp, 'NEXT START', { t: 'S', i: spIdx }, 50, 55.5, 'P') : '');
+      const P0 = S.playoffs, oct = OCT_ROSTER_SCREEN && !!(P0 && P0.octoberPrepared && !P0.finished && !P0.missed && S.gamesPlayed >= SEASON_LENGTH);
+      const octRot = oct ? this._playoffRotationCards() : [], octFive = oct ? this._playoffFifthStarterCard() : null;
+      const spIdx = oct ? 0 : S.gamesPlayed % R.pitchers.SP.length, sp = oct ? octRot[0] : R.pitchers.SP[spIdx];
+      const chips = Object.entries(spots).map(([sl, [x, y]]) => { const p = R.lineup[sl], at = R.battingOrder.indexOf(sl) + 1; return p ? place(p, `#${at} ${sl}`, { t: 'L', slot: sl }, x, y, sl) : ''; }).join('') + (sp ? place(sp, oct ? 'GAME 1' : 'NEXT START', oct ? { t: 'OS', i: 0 } : { t: 'S', i: spIdx }, 50, 55.5, 'P') : '');
       const fieldSvg = `<svg class="m3-diamond" viewBox="0 0 1500 1040" preserveAspectRatio="none" aria-hidden="true">               <path class="g-out" d="M750 770 L105 125 A912 912 0 0 1 1395 125 Z"/>               <path class="g-track" d="M105 125 A912 912 0 0 1 1395 125"/>               <path class="g-dirt" d="M750 770 L446 466 A430 430 0 0 1 1054 466 Z"/>               <path class="g-in" d="M750 715 L925 540 L750 365 L575 540 Z"/>               <path class="g-line" d="M750 770 L105 125 M750 770 L1395 125"/>               <path class="g-path" d="M750 770 L980 540 L750 310 L520 540 Z"/>               <circle class="g-mound" cx="750" cy="560" r="38"/>               <rect class="g-base" x="968" y="528" width="24" height="24" transform="rotate(45 980 540)"/>               <rect class="g-base" x="738" y="298" width="24" height="24" transform="rotate(45 750 310)"/>               <rect class="g-base" x="508" y="528" width="24" height="24" transform="rotate(45 520 540)"/>               <path class="g-base" d="M736 762 L764 762 L764 774 L750 786 L736 774 Z"/>               <rect class="g-dug" x="18" y="900" width="200" height="110" rx="10"/>             </svg>`;
       const penUse = (S.league && S.league.pen) || {}, today = S.league ? S.league.day : 0;
       const restOf = (p, label) => {
@@ -13393,7 +13416,25 @@
       const penOrder = labels.map((_, i) => i).sort((x, y) => { const rank = l => (l === 'LRP' ? 0 : l === 'CL' ? 2 : 1); return rank(labels[x]) - rank(labels[y]) || x - y; }); // long men, middle arms, closer
       const avgOvr = a => { a = a.filter(Boolean); return a.length ? Math.round(a.reduce((t, x) => t + (x.ovr || 0), 0) / a.length) : 0; };
       const m = this._rosterMsg;
-      return `<div class="rt">
+      const Pn = (S.playoffs && S.playoffs.octoberNotes) || [];
+      const octHead = !oct ? '' : `<div class="rt-oct">
+          <div class="rt-oct-l"><div class="rt-oct-k">🍂 OCTOBER BASEBALL · POSTSEASON ROSTER</div>
+            <div class="rt-oct-t">${this.getUserTeamName()} · ${S.wins}-${S.losses}</div>
+            <div class="rt-oct-s">The same 26 go to the playoffs: a 4-man rotation, the 5th starter joins the pen as a long man, no rest days. Change anything before the first pitch.</div>
+            ${Pn.length ? `<ul class="rt-oct-n">${Pn.map(n => `<li>${n}</li>`).join('')}</ul>` : ''}</div>
+          <button class="btn rt-oct-go" data-rt-enter>${S.playoffs.series && S.playoffs.series.games && S.playoffs.series.games.length || S.playoffs.round > 0 ? '▶ BACK TO THE POSTSEASON' : '▶ ENTER THE POSTSEASON'}</button>
+        </div>`;
+      const octStaff = !oct ? '' : `<div class="d2-table rt-staff">
+          <div class="rt-mound-k">GAME 1 STARTER</div>
+          <div class="rt-mound">${sp ? place(sp, 'SP1', { t: 'OS', i: 0 }, 0, 0, 'S') : ''}${sp ? `<div class="rt-mound-line">${armLine(sp)}</div>` : ''}<div class="rt-mound-dirt"></div></div>
+          <div class="rt-staff-k">OCTOBER ROTATION</div>
+          <div class="rt-staff-row">${octRot.slice(1).map((p, i) => place(p, `SP${i + 2}`, { t: 'OS', i: i + 1 }, 0, 0, 'S')).join('')}</div>
+          <div class="rt-staff-k">THE BULLPEN</div>
+          <div class="rt-benchwood">${octFive ? `<div class="rt-penseat"><i class="rt-light ok" title="Ex-SP5, long man"></i>${place(octFive, 'LRP', { t: 'O5' }, 0, 0, 'S')}</div>` : ''}${penOrder.map(i => { const p = R.pitchers.RP[i]; return p ? `<div class="rt-penseat ${labels[i] === 'CL' ? 'cl' : ''}"><i class="rt-light ok"></i>${place(p, labels[i], { t: 'R', i }, 0, 0, 'S')}</div>` : ''; }).join('')}</div>
+          <div class="rt-legend"><span>Drag starters to change the order; the long man (ex-SP5) can swap in for any of them.</span></div>
+        </div>
+        <div class="rt-side"><div class="rt-title">OCTOBER STAFF</div><div class="rt-scroll"><table class="rt-t">${pitHead}${octRot.map((p, i) => pitRow(p, `SP${i + 1}`, { t: 'OS', i })).join('')}<tr class="rt-sep"><td colspan="12">BULLPEN</td></tr>${octFive ? pitRow(octFive, 'LRP', { t: 'O5' }) : ''}${R.pitchers.RP.map((p, i) => (p ? pitRow(p, labels[i], { t: 'R', i }) : '')).join('')}</table></div></div>`;
+      return `<div class="rt${oct ? ' rt-is-oct' : ''}">${octHead}
         <div class="rt-top">
           <div class="rt-stats"><div><b>${S.wins}-${S.gamesPlayed - S.wins}</b><small>RECORD</small></div><div><b>${avgOvr(Object.values(R.lineup))}</b><small>LINEUP</small></div><div><b>${avgOvr(R.pitchers.SP)}</b><small>ROTATION</small></div><div><b>${avgOvr(R.pitchers.RP)}</b><small>BULLPEN</small></div></div>
           <div class="rt-switch"><span>AUTO MANAGER</span><button class="${on ? 'on' : ''}" data-rt-mgr="1">ON</button><button class="${on ? '' : 'on off'}" data-rt-mgr="0">OFF</button>
@@ -13405,7 +13446,7 @@
         <div class="rt-subs"><button class="${sub === 'lineup' ? 'on' : ''}" data-rt-sub="lineup">⚾ LINEUP</button><button class="${sub === 'pitching' ? 'on' : ''}" data-rt-sub="pitching">🔥 PITCHING STAFF</button></div>
         ${sub === 'lineup' ? `<div class="d2-table m3-field rt-board">${fieldSvg}${chips}</div>
         <div class="rt-side"><div class="rt-title">BATTING ORDER</div><div class="rt-scroll"><table class="rt-t">${batHead}${order}<tr class="rt-sep"><td colspan="15">BENCH</td></tr>${bench}</table></div></div>
-        ${depthStripHTML(R.lineup, R.bench || [])}` : `<div class="d2-table rt-staff">
+        ${depthStripHTML(R.lineup, R.bench || [])}` : oct ? octStaff : `<div class="d2-table rt-staff">
           <div class="rt-mound-k">ON THE MOUND · NEXT START</div>
           <div class="rt-mound">${sp ? place(sp, `SP${spIdx + 1}`, { t: 'S', i: spIdx }, 0, 0, 'S') : ''}${sp ? `<div class="rt-mound-line">${armLine(sp)}</div>` : ''}<div class="rt-mound-dirt"></div></div>
           <div class="rt-staff-k">NEXT UP IN THE ROTATION</div>
@@ -13430,6 +13471,8 @@
         ch.onmouseleave = () => litGroup(null);
         ch.onclick = () => litGroup(ch.dataset.chemGroup);
       });
+      const go = body.querySelector('[data-rt-enter]');
+      if (go) go.onclick = () => { this.stopAutoSim(); this.showScreen('screen-challenge-playoffs'); this.renderPlayoffs(); };
       body.querySelectorAll('[data-rt-mgr]').forEach(b => { b.onclick = () => { this.state.autoManager = b.dataset.rtMgr === '1'; this.save(); again(); }; });
       let picked = null;
       body.querySelectorAll('.rt-item').forEach(el => {

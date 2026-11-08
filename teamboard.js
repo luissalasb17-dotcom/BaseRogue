@@ -22,6 +22,9 @@
 
   const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const isPit = p => !!p && (p.h9 !== undefined || p.role === 'SP' || p.role === 'RP');
+  // Rotation: starters, or relievers with at least one real start (user, Nov 2026)
+  const canStart = p => isPit(p) && (String(p.role || 'SP').toUpperCase() !== 'RP' || (p.career_gs || 0) >= 1);
+  window.canStartCard = canStart;
   const keyOf = p => (p && (p.playerID || `${p.name}_${p.year}`)) || '';
   const secOf = p => String((p && p.sec_pos) || '').split(',').map(s => s.trim()).filter(Boolean);
   const fits = (p, slot) => {
@@ -104,7 +107,7 @@
       const [kind, i] = slot.split(':');
       if (kind === 'L') return fits(p, i);
       if (kind === 'bench') return !isPit(p);
-      if (kind === 'SP') return isPit(p) && String(p.role || 'SP').toUpperCase() !== 'RP';
+      if (kind === 'SP') return canStart(p);
       return isPit(p); // bullpen: any arm
     },
     // first open slot a card fits, used when you tap a card with no slot picked
@@ -162,7 +165,7 @@
       const teamOvr = placed.length ? (placed.reduce((t, p) => t + ovr(p), 0) / placed.length).toFixed(1) : '—';
       let deck = [...bats, ...pits].filter(p => !used.has(keyOf(p)));
       if (this.active) deck = deck.filter(p => this.slotFits(this.active, p));
-      else if (this.pos && this.pos !== 'ALL') deck = deck.filter(p => this.pos === 'SP' ? isPit(p) && String(p.role || 'SP').toUpperCase() !== 'RP'
+      else if (this.pos && this.pos !== 'ALL') deck = deck.filter(p => this.pos === 'SP' ? canStart(p)
         : this.pos === 'RP' ? isPit(p) && String(p.role).toUpperCase() === 'RP' : fits(p, this.pos));
       const posTabs = this.active ? '' : `<div class="tb-postabs">${['ALL', ...SLOTS, 'SP', 'RP'].map(x => `<button class="${(this.pos || 'ALL') === x ? 'on' : ''}" data-tb-pos="${x}">${x}</button>`).join('')}</div>`;
       deck.sort((a, b) => ovr(b) - ovr(a));
