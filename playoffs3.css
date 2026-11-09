@@ -493,3 +493,29 @@
 @keyframes po3RunIn{from{opacity:0;transform:translateX(-50%) scale(.4) rotate(-6deg)}to{opacity:1;transform:translateX(-50%) scale(1) rotate(-2deg)}}
 @keyframes po3RunGlow{50%{filter:brightness(1.35)}}
 @media (max-width:768px){.po3-runfx{top:8%;padding:8px 14px}.po3-runfx b{font-size:24px}.po3-runfx span{font-size:12px}}
+
+/* Playoff hub tabs: series analysis + full stat tables (Nov 2026) */
+.pa { display: grid; gap: 12px; }
+.pa-head { padding: 12px 14px; background: linear-gradient(180deg, #10201a, #0a1511); border: 1px solid #2f5d48; border-top: 2px solid #c9962c; }
+.pa-head b { display: block; font: 700 16px 'Oswald', sans-serif; letter-spacing: .08em; color: #ffd36a; }
+.pa-head span { font: 400 15px 'Oswald', sans-serif; color: #e2e8f0; }
+.pa-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.pa-box { padding: 10px 12px; background: rgba(4,10,16,.6); border: 1px solid #2f5d48; font-family: 'Oswald', sans-serif; color: #e2e8f0; }
+.pa-box h4 { margin: 0 0 8px; font: 600 13px 'Oswald', sans-serif; letter-spacing: .12em; color: #8fa89a; display: flex; justify-content: space-between; }
+.pa-box h4 em { font-style: normal; } .pa-box h4 .me { color: #34d399; } .pa-box h4 .op { color: #f87171; }
+.pa-box p { margin: 0 0 8px; font-size: 14px; } .pa-box ul { margin: 0; padding-left: 18px; font-size: 14px; }
+.pa-edge { display: grid; grid-template-columns: 40px 1fr 40px; align-items: center; padding: 4px 0; border-bottom: 1px solid rgba(47,93,72,.4); }
+.pa-edge b { font: 400 22px 'VT323', monospace; text-align: center; color: #cbd5e1; }
+.pa-edge span { text-align: center; font-size: 13px; letter-spacing: .08em; } .pa-edge span i { display: block; font-style: normal; font-size: 12px; color: #8fa89a; }
+.pa-edge.me b:first-child, .pa-edge.me span i { color: #34d399; } .pa-edge.op b:last-child, .pa-edge.op span i { color: #f87171; }
+.pa-forms { display: flex; flex-wrap: wrap; gap: 6px; }
+.pa-form { padding: 3px 8px; font-size: 13px; border: 1px solid #2f5d48; background: rgba(0,0,0,.3); }
+.pa-form i { font-style: normal; margin-left: 6px; font-size: 11px; color: #8fa89a; }
+.pa-form.hot { border-color: #f59e0b; } .pa-form.cold { border-color: #38bdf8; }
+.pa-none { font-size: 14px; color: #8fa89a; }
+.pa-two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.pt { display: grid; gap: 10px; padding: 10px 12px; background: rgba(4,10,16,.6); border: 1px solid #2f5d48; font-family: 'Oswald', sans-serif; color: #e2e8f0; }
+.pt-title { font: 600 15px 'Oswald', sans-serif; letter-spacing: .1em; color: #ffd36a; }
+.pt .rt-t td.l { text-align: left; } .pt-row { cursor: pointer; } .pt-row:hover td { background: rgba(52,211,153,.08); }
+.pt-note { font-size: 12px; color: #8fa89a; }
+@media (max-width: 760px) { .pa-grid, .pa-two { grid-template-columns: 1fr; } }

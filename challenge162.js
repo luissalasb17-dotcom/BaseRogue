@@ -1517,7 +1517,7 @@
   // Iron Man pitchers (they share the three picks with the batters): a starter stays fresh 15%
   // longer, a reliever 50% longer and can pitch one more day in a row.
   const IRON_SP_FRESH = 1.15, IRON_RP_FRESH = 1.5;
-  const IRON_BOOST = 5; // rating points for any Iron Man: batting ratings for a batter, pitching ratings for a pitcher
+  const IRON_BOOST = 3; // rating points for any Iron Man: batting ratings for a batter, pitching ratings for a pitcher
   const ironPitKey = p => `P:${pitcherUnlockKey(p)}`;
   const FIREMAN_MAX_LEAD = 2, FIREMAN_TIRED = 4;
   const HOOK_SOFT = true;
@@ -2254,6 +2254,21 @@
   const WEAR_MAX_PENALTY = 3;
   const WEAR_CAP = 40;
   const MAX_RESTS_PER_GAME = 2;
+  // Smart rest days (user, Nov 2026). Each day the manager weighs how much a regular needs a day off
+  // (his wear) against what sitting him costs today (how much worse today's cover is: OVR, form and
+  // the hand against the rival starter), with the moment of the season on top. Calibrated against
+  // AL/NL 1995-2025 regulars (games started per 162): C ~132, the rest ~138-151, stars ~8 more than
+  // weak regulars. REST_SMART false = the old rule (sit at -1 when a fresh cover plays the spot).
+  const REST_SMART = true;
+  const REST = {
+    base: 7,          // wear at which an even swap (cover as good as him) gets the day
+    perOvr: 0.32,     // extra wear he plays through per OVR point his cover is worse
+    free: 3.5,        // with cover as good or better today, a day off from this much wear
+    recover: 10,      // a day off takes this much wear away (it used to wipe it all)
+    race: 1.35,       // from game RACE_FROM, a team within RACE_GB of the cut sits its best less
+    settled: 0.55,    // ... and one already in, or out, rests them more
+    raceFrom: 130, raceGb: 5
+  };
   const OUT_OF_POSITION_DEF = 25; // legacy floor, kept for old callers
   // Out of position a fielder keeps half his glove (user, Oct 2026): a 125 glove is still a
   // 62 anywhere, a 20 drops to 10. The flat 25 lifted bad gloves and flattened great ones.
@@ -5056,7 +5071,72 @@
     //      and a fresh bench player takes his spot on the field;
     //   3. at −2, any fresh bench player out of position, with a poor glove that day.
     // The sub always bats in the rested regular's spot in the order.
-    _restLineup(side) {
+    // How hard a team rests its regulars today: 1 normal, more than 1 in a late race, less once settled.
+    _restMood(teamId) {
+      const L = this.state && this.state.league, t = L && L.teams[teamId];
+      if (!t || (t.w + t.l) < REST.raceFrom) return 1;
+      const rows = leagueStandings(L, t.league), cut = rows[PLAYOFF_SEEDS - 1], next = rows[PLAYOFF_SEEDS];
+      const me = rows.find(r => r.id === teamId); if (!me || !cut) return 1;
+      const left = SEASON_LENGTH - (t.w + t.l);
+      const gbCut = ((cut.w - me.w) + (me.l - cut.l)) / 2, aheadNext = next ? ((me.w - next.w) + (next.l - me.l)) / 2 : 99;
+      if (me.rank <= PLAYOFF_SEEDS ? aheadNext > left : gbCut > left) return REST.settled; // clinched or out
+      return (me.rank <= PLAYOFF_SEEDS ? aheadNext : gbCut) <= REST.raceGb ? REST.race : 1;
+    },
+    _restLineup(side, oppSp) {
+      if (REST_SMART && !side.noRest) return this._restLineupSmart(side, oppSp);
+      return this._restLineupOld(side);
+    },
+    _restLineupSmart(side, oppSp) {
+      const L = this.state.league, W = (L && L.wear) || {};
+      const keyOf = p => this._leagueKey(side.id, batterUnlockKey(p));
+      const FL = (L && L.formLv && L.formLv.bat) || {};
+      const val = p => (p.ovr || 0) + (FL[keyOf(p)] || 0) + (PLATOON_ON && oppSp ? (PLATOON[platoonKey(p, oppSp)] || 0) : 0);
+      const mood = this._restMood(side.id);
+      const benchLeft = side.bench.slice(), out = side.lineup.slice(), rested = [];
+      const fresh = () => benchLeft.filter(b => wearPenalty(W[keyOf(b)]) === 0);
+      // Best cover for slot i today: a bench player who plays it, or a double switch.
+      const coverFor = i => {
+        const p = out[i], slot = p.assignedSlot || p.pos || 'DH';
+        let best = null;
+        fresh().forEach(b => { if (slot === 'DH' || canPlayerFillSlot(b, slot)) { const v = val(b); if (!best || v > best.v) best = { v, b }; } });
+        out.forEach((st, j) => {
+          if (j === i || !st || !side.lineup.includes(st)) return;
+          const jSlot = st.assignedSlot || st.pos || 'DH';
+          if (slot !== 'DH' && !canPlayerFillSlot(st, slot)) return;
+          fresh().forEach(b => { if (jSlot === 'DH' || canPlayerFillSlot(b, jSlot)) { const v = val(b) - 1.5; if (!best || v > best.v) best = { v, b, j, jSlot }; } });
+        });
+        return best;
+      };
+      const cands = side.lineup.map((p, i) => {
+        const wear = W[keyOf(p)] || 0, c = coverFor(i);
+        if (!c) return { i, p, wear, c: null, score: wearPenalty(wear) >= 2 ? wear - 20 : -99 };
+        const gap = val(p) - c.v;
+        const need = gap <= 0 ? REST.free : REST.base + REST.perOvr * gap * mood;
+        return { i, p, wear, c, score: wear - need };
+      }).filter(x => x.score >= 0).sort((a, b) => b.score - a.score);
+      cands.forEach(x => {
+        if (rested.length >= MAX_RESTS_PER_GAME || out[x.i] !== x.p) return;
+        const slot = x.p.assignedSlot || x.p.pos || 'DH';
+        const c = x.c && benchLeft.includes(x.c.b) && (x.c.j === undefined || side.lineup.includes(out[x.c.j])) ? x.c : coverFor(x.i);
+        if (c) {
+          benchLeft.splice(benchLeft.indexOf(c.b), 1);
+          if (c.j !== undefined) { out[c.j] = { ...out[c.j], assignedSlot: slot }; out[x.i] = { ...c.b, assignedSlot: c.jSlot }; }
+          else out[x.i] = { ...c.b, assignedSlot: slot };
+          rested.push(batterUnlockKey(x.p));
+        } else if (wearPenalty(x.wear) >= 2) {
+          const anyone = fresh().find(b => !window.leftyCantPlay(b, slot));
+          if (anyone) { benchLeft.splice(benchLeft.indexOf(anyone), 1); out[x.i] = { ...anyone, assignedSlot: slot, def: offPosDef(anyone) }; rested.push(batterUnlockKey(x.p)); }
+        }
+      });
+      const lineup = out.map(p => withWearBatter(p, wearPenalty(W[keyOf(p)])));
+      return {
+        lineup, benchLeft, rested,
+        roster: [...side.lineup, ...side.bench].map(keyOf),
+        iron: Object.keys(side.ironMan || {}).map(k => this._leagueKey(side.id, k)),
+        starts: lineup.map(p => ({ k: keyOf(p), pos: p.assignedSlot || p.pos || 'DH' }))
+      };
+    },
+    _restLineupOld(side) {
       const W = side.noRest ? {} : ((this.state.league && this.state.league.wear) || {});
       const keyOf = p => this._leagueKey(side.id, batterUnlockKey(p));
       const benchLeft = side.bench.slice();
@@ -5143,7 +5223,7 @@
       const hits = [0, 0];
       const line = [[], []]; // runs per inning, for the last-game recap
       const sides = [away, home];
-      const daily = sides.map(side => this._restLineup(side));
+      const daily = sides.map((side, i) => this._restLineup(side, sides[1 - i] && sides[1 - i].sp));
       sides.forEach((side, i) => {
         side.lineup = daily[i].lineup;
         side.benchLeft = daily[i].benchLeft;
@@ -6000,10 +6080,12 @@
         const iron = new Set(w.iron || []);
         w.roster.forEach(k => {
           if (started.has(k)) {
+            if (L.stats && L.stats.bat && L.stats.bat[k]) L.stats.bat[k].gs = (L.stats.bat[k].gs || 0) + 1; // games started
             const add = Math.max(0, (WEAR_BY_POS[started.get(k)] || 0.5) - WEAR_RECOVERY) * (iron.has(k) ? IRON_MAN_WEAR : 1);
             L.wear[k] = Math.min(WEAR_CAP, Math.round(((L.wear[k] || 0) + add) * 100) / 100);
           } else if (L.wear[k]) {
-            delete L.wear[k];
+            const left = REST_SMART ? L.wear[k] - REST.recover : 0;
+            if (left > 0) L.wear[k] = Math.round(left * 100) / 100; else delete L.wear[k];
           }
         });
       });
@@ -8697,6 +8779,21 @@
     },
 
     // Roster of any team of the league, opened from the rankings, the standings or the bracket.
+    // Full stat tables (season-table style) for a roster: rows [label, card]; bf / pf give the stat lines.
+    _poTablesHTML(cards, bf, pf, tag, title, teamId) {
+      const dec = v => v.toFixed(3).replace(/^0/, '');
+      const reg = this._poTblCards || (this._poTblCards = {});
+      const rk = p => { const k = `${tag}:${p.playerID || cleanName(p)}:${p.year || ''}`; reg[k] = p; return k; };
+      const who = (p, pit) => `<td class="l"><b>${cleanName(p)}</b>${this._formTag(teamId || USER_TEAM_ID, p, pit)}</td><td class="rt-ovr r-${String(p.rarity || 'common').toLowerCase()}">${Math.floor(p.ovr || 0)}</td>`;
+      const bRow = ([lab, p]) => { const s = bf(p), ab = s.ab || 0, bb = s.bb || 0, h = s.h || 0, tb = h + (s.doubles || 0) + 2 * (s.triples || 0) + 3 * (s.hr || 0);
+        return `<tr class="pt-row" data-pt-card="${rk(p)}"><td><span class="rt-pos">${lab}</span></td>${who(p, false)}<td>${s.g || 0}</td><td>${ab}</td><td>${h}</td><td>${s.doubles || 0}</td><td>${s.triples || 0}</td><td>${s.hr || 0}</td><td>${s.rbi || 0}</td><td>${s.r || 0}</td><td>${bb}</td><td>${s.so || 0}</td><td>${s.sb || 0}</td><td>${dec(ab ? h / ab : 0)}</td><td>${dec(ab + bb ? (h + bb) / (ab + bb) : 0)}</td><td>${dec(ab ? tb / ab : 0)}</td></tr>`; };
+      const pRow = ([lab, p]) => { const s = pf(p), o = s.outs || 0, ip = o / 3;
+        return `<tr class="pt-row" data-pt-card="${rk(p)}"><td><span class="rt-pos ${lab === 'CL' ? 'cl' : ''}">${lab}</span></td>${who(p, true)}<td>${s.g || 0}</td><td>${s.gs || 0}</td><td>${s.w || 0}-${s.l || 0}</td><td>${s.sv || 0}</td><td>${Math.floor(ip)}.${o % 3}</td><td>${s.h || 0}</td><td>${s.er || 0}</td><td>${s.bb || 0}</td><td>${s.so || 0}</td><td>${ip ? ((s.er || 0) * 9 / ip).toFixed(2) : '—'}</td><td>${ip ? (((s.h || 0) + (s.bb || 0)) / ip).toFixed(2) : '—'}</td></tr>`; };
+      return `<div class="pt"><div class="pt-title">${title}</div>
+        <div class="rt-scroll"><table class="rt-t"><tr><th></th><th class="l">BATTER</th><th>OVR</th><th>G</th><th>AB</th><th>H</th><th>2B</th><th>3B</th><th>HR</th><th>RBI</th><th>R</th><th>BB</th><th>SO</th><th>SB</th><th>AVG</th><th>OBP</th><th>SLG</th></tr>${cards.bat.map(bRow).join('')}</table></div>
+        <div class="rt-scroll"><table class="rt-t"><tr><th></th><th class="l">PITCHER</th><th>OVR</th><th>G</th><th>GS</th><th>W-L</th><th>SV</th><th>IP</th><th>H</th><th>ER</th><th>BB</th><th>SO</th><th>ERA</th><th>WHIP</th></tr>${cards.pit.map(pRow).join('')}</table></div>
+        <div class="pt-note">Tap a player to see his card.</div></div>`;
+    },
     showTeamRoster(teamId) {
       // Before the season starts the league is the pending one (an older finished season may still be loaded).
       const pre = this._pendingSeason && this._pendingSeason.league ? this._pendingSeason : null;
@@ -13952,6 +14049,67 @@
         </div>
         ${planHTML}`;
 
+      // -- Playoff hub tabs (Nov 2026): series analysis, full postseason stats, the rival's roster --
+      const tbl = this._poTablesHTML.bind(this);
+      const myCards = { bat: [], pit: [] };
+      if (R) {
+        (R.battingOrder || SLOTS).forEach(sl => { if (R.lineup[sl]) myCards.bat.push([sl, R.lineup[sl]]); });
+        (R.bench || []).filter(Boolean).forEach(b => myCards.bat.push(['BN', b]));
+        const rot4 = this._playoffRotationCards(), five = this._playoffFifthStarterCard();
+        rot4.forEach((sp, i) => myCards.pit.push([`SP${i + 1}`, sp]));
+        if (five) myCards.pit.push(['LRP', five]);
+        const pl = bullpenLabels((R.pitchers.RP || []).filter(Boolean));
+        (R.pitchers.RP || []).filter(Boolean).forEach((rp, i) => myCards.pit.push([pl[i] || 'RP', rp]));
+      }
+      const pst = P.stats || { bat: {}, pit: {} };
+      const fullStatsHTML = tbl(myCards, p => pst.bat[batterUnlockKey(p)] || {}, p => pst.pit[pitcherUnlockKey(p)] || {}, 'po', 'YOUR POSTSEASON STATS');
+      const oTeam = getFranchiseDecadeTeam(oppRec.code, oppRec.decade), oStaff = getFranchiseStaff(oppRec.code, oppRec.decade);
+      const oCards = { bat: [], pit: [] };
+      (oTeam.lineup || []).forEach(p => oCards.bat.push([p.assignedSlot || p.pos || 'DH', p]));
+      (getFranchiseBench(oppRec.code, oppRec.decade) || []).forEach(p => oCards.bat.push(['BN', p]));
+      const oSorted = (oStaff.rotation || []).slice().sort((a, b) => (b.ovr || 0) - (a.ovr || 0));
+      oSorted.slice(0, 4).forEach((p, i) => oCards.pit.push([`SP${i + 1}`, p]));
+      if (oSorted[4]) oCards.pit.push(['LRP', oSorted[4]]);
+      const oLab = bullpenLabels(oStaff.bullpen || []);
+      (oStaff.bullpen || []).forEach((p, i) => oCards.pit.push([oLab[i] || 'RP', p]));
+      const lgB = p => (L.stats.bat[this._leagueKey(ref.id, batterUnlockKey(p))]) || {};
+      const lgP = p => (L.stats.pit[this._leagueKey(ref.id, pitcherUnlockKey(p))]) || {};
+      const rivalHTML = tbl(oCards, lgB, lgP, 'op', `${ref.name.toUpperCase()} · ${oppRec.w}-${oppRec.l} · REGULAR SEASON STATS`, ref.id);
+
+      // Series analysis: where each side has the edge, the hands, who is hot.
+      const avgR = (list, k) => { list = list.filter(Boolean); return list.length ? list.reduce((a, p) => a + (p[k] || 0), 0) / list.length : 0; };
+      const myNine = myCards.bat.slice(0, 9).map(x => x[1]), opNine = oCards.bat.slice(0, 9).map(x => x[1]);
+      const myRot = myCards.pit.slice(0, 4).map(x => x[1]), opRot = oCards.pit.slice(0, 4).map(x => x[1]);
+      const myPen = myCards.pit.slice(4).map(x => x[1]), opPen = oCards.pit.slice(4).map(x => x[1]);
+      const edges = [
+        ['CONTACT', avgR(myNine, 'con'), avgR(opNine, 'con')], ['POWER', avgR(myNine, 'pwr'), avgR(opNine, 'pwr')],
+        ['EYE', avgR(myNine, 'eye'), avgR(opNine, 'eye')], ['SPEED', avgR(myNine, 'spd'), avgR(opNine, 'spd')],
+        ['DEFENSE', avgR(myNine, 'def'), avgR(opNine, 'def')], ['ROTATION (TOP 4)', avgR(myRot, 'ovr'), avgR(opRot, 'ovr')],
+        ['BULLPEN', avgR(myPen, 'ovr'), avgR(opPen, 'ovr')]
+      ];
+      const edgeRow = ([lab, a, b]) => { const d = a - b, w = Math.abs(d) < 1.5 ? 'even' : d > 0 ? 'me' : 'op';
+        return `<div class="pa-edge ${w}"><b>${a.toFixed(0)}</b><span>${lab}<i>${w === 'even' ? 'EVEN' : w === 'me' ? `YOU +${d.toFixed(0)}` : `THEM +${(-d).toFixed(0)}`}</i></span><b>${b.toFixed(0)}</b></div>`; };
+      const handOfP = (p, pit) => { const v = (HH[p.playerID] || '')[pit ? 1 : 0]; return v && v !== '-' ? v : ''; };
+      const cnt = (list, pit) => { const c = { R: 0, L: 0, S: 0 }; list.forEach(p => { const h = handOfP(p, pit); if (c[h] !== undefined) c[h]++; }); return c; };
+      const myBH = cnt(myNine, false), opBH = cnt(opNine, false), myAH = cnt(myRot, true), opAH = cnt(opRot, true);
+      const handNote = (bats, arms, who) => `${who}: ${bats.R} R / ${bats.L} L / ${bats.S} S bats against ${arms.R} righty and ${arms.L} lefty starters${arms.L >= 2 && bats.L >= 4 ? ' · lots of lefty-on-lefty at-bats' : arms.R >= 3 && bats.L + bats.S >= 5 ? ' · a good platoon edge' : ''}.`;
+      const formList = (teamId, list, pit) => list.map(p => ({ p, f: this._playerForm(teamId, p, pit) })).filter(x => x.f.level);
+      const forms = [...formList(USER_TEAM_ID, myNine, false), ...formList(USER_TEAM_ID, [...myRot, ...myPen], true)].map(x => ({ ...x, me: 1 }))
+        .concat([...formList(ref.id, opNine, false), ...formList(ref.id, [...opRot, ...opPen], true)].map(x => ({ ...x, me: 0 })));
+      const formHTML = forms.length ? forms.map(x => `<span class="pa-form ${x.f.state} ${x.me ? 'me' : 'op'}">${x.f.icon} ${cleanName(x.p)}<i>${x.me ? 'YOU' : short(ref.name).toUpperCase()}</i></span>`).join('') : '<span class="pa-none">Nobody is running hot or cold right now.</span>';
+      const myWins = edges.filter(e => e[1] - e[2] >= 1.5).length, opWins = edges.filter(e => e[2] - e[1] >= 1.5).length;
+      const verdict = myWins > opWins + 1 ? 'On paper this series is yours: protect the edge your roster gives you.' : opWins > myWins + 1 ? `The ${short(ref.name)} are deeper on paper: you need your best arms and a hot bat.` : 'A coin-flip series on paper: the bullpen and the big at-bats will decide it.';
+      const analysisHTML = `<div class="pa">
+        <div class="pa-head"><b>📋 SERIES ANALYSIS</b><span>${verdict}</span></div>
+        <div class="pa-grid">
+          <div class="pa-box"><h4>WHERE THE EDGE IS <em><b class="me">YOU</b> · <b class="op">${short(ref.name).toUpperCase()}</b></em></h4>${edges.map(edgeRow).join('')}</div>
+          <div class="pa-box"><h4>HANDS</h4><p>${handNote(myBH, opAH, 'Your lineup')}</p><p>${handNote(opBH, myAH, 'Their lineup')}</p>
+            <h4>WHO IS HOT</h4><div class="pa-forms">${formHTML}</div></div>
+        </div>
+        ${octNotes ? `<div class="pa-box"><h4>MANAGER'S NOTES</h4><ul>${octNotes}</ul></div>` : ''}
+        <div class="pa-box"><h4>YOUR OCTOBER LINEUP & STAFF</h4><div class="pa-two"><div>${octLineupRows}</div><div>${octStaffRows}</div></div></div>
+      </div>`;
+
       container.innerHTML = `
         <div class="c162-po">
           <div class="c162-po-head">
@@ -13970,13 +14128,15 @@
           <!-- Organized Sub-Deck Tabs -->
           <div class="c162-po-subtabs">
             <button class="c162-po-tab-btn ${activeHubTab === 'bracket' ? 'active' : ''}" data-hubtab="bracket">🏆 TOURNAMENT BRACKET</button>
-            <button class="c162-po-tab-btn ${activeHubTab === 'october' ? 'active' : ''}" data-hubtab="october">🍂 OCTOBER BRIEFING & ROTATION</button>
+            <button class="c162-po-tab-btn ${activeHubTab === 'october' ? 'active' : ''}" data-hubtab="october">📋 SERIES ANALYSIS</button>
             <button class="c162-po-tab-btn ${activeHubTab === 'stats' ? 'active' : ''}" data-hubtab="stats">📈 POSTSEASON STATS</button>
+            <button class="c162-po-tab-btn ${activeHubTab === 'rival' ? 'active' : ''}" data-hubtab="rival">👀 ${short(ref.name).toUpperCase()} ROSTER</button>
           </div>
           <div class="c162-po-subtab-body">
             ${activeHubTab === 'bracket' ? `<div style="background:rgba(0,0,0,0.45);border:1px solid rgba(255,215,0,0.25);border-radius:10px;padding:12px;">${this._playoffPictureHTML()}</div>` : ''}
-            ${activeHubTab === 'october' ? octoberBriefingHTML : ''}
-            ${activeHubTab === 'stats' ? (statsHTML || '<div style="padding:24px;text-align:center;color:#94a3af;font-family:\'Press Start 2P\',monospace;font-size:9px;background:rgba(0,0,0,0.3);border-radius:8px;">No postseason games played yet.</div>') : ''}
+            ${activeHubTab === 'october' ? analysisHTML : ''}
+            ${activeHubTab === 'stats' ? fullStatsHTML : ''}
+            ${activeHubTab === 'rival' ? rivalHTML : ''}
           </div>
         </div>`;
 
@@ -13988,6 +14148,14 @@
         b.onclick = () => {
           P.pickSP = Number(b.dataset.poSp);
           this.renderPlayoffs();
+        };
+      });
+      container.querySelectorAll('[data-pt-card]').forEach(el => {
+        el.onclick = () => {
+          const p = (this._poTblCards || {})[el.dataset.ptCard];
+          if (!p || !window.BaseballDex || !window.BaseballDex.showDetail) return;
+          window.BaseballDex.showDetail(dexCard(p));
+          ['btn-modal-shortlist-bottom', 'btn-modal-next-bottom', 'btn-modal-next-back', 'btn-modal-test-batter-bottom'].forEach(id => { const x = document.getElementById(id); if (x) x.style.display = 'none'; });
         };
       });
       container.querySelectorAll('[data-hubtab]').forEach(b => {
