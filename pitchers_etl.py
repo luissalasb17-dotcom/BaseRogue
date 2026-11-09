@@ -360,7 +360,7 @@ def paso_2_identificar_pitchers_puros(fielding):
     )
     pure_pitchers = set(primary_pos[primary_pos["POS"] == "P"]["playerID"])
     # Incluir variantes duales canónicas y jugadores de dos vías (Ruth, Rogan, Ward, Caruthers, Wood, Ohtani, Dihigo)
-    for dual_id in ["eckerde01_sp", "eckerde01_rp", "smoltjo01_sp", "smoltjo01_rp", "ruthba01", "roganbu99", "wardjo01", "carutbo01", "woodjo02", "ohtansh01", "dihigma99"]:
+    for dual_id in ["eckerde01", "smoltjo01", "ruthba01", "roganbu99", "wardjo01", "carutbo01", "woodjo02", "ohtansh01", "dihigma99"]:
         pure_pitchers.add(dual_id)
     print(f"  {len(pure_pitchers):,} pitchers puros identificados")
     return pure_pitchers
@@ -381,7 +381,7 @@ def paso_3_carrera_pitching(pitching):
 
     # Duplicar stints de carrera para dual pitchers (Eckersley y Smoltz)
     dual_rows = []
-    for orig_id, (sp_id, rp_id) in [("eckerde01", ("eckerde01_sp", "eckerde01_rp")), ("smoltjo01", ("smoltjo01_sp", "smoltjo01_rp"))]:
+    for orig_id, (sp_id, rp_id) in []:
         stints = pit[pit["playerID"] == orig_id].copy()
         stints_sp = stints.copy()
         stints_sp["playerID"] = sp_id
@@ -562,7 +562,7 @@ def paso_4_pico_pitching(pitching, war_pitch, people):
 
     # Duplicar stints de pit_yearly para dual pitchers con filtrado de rol (SP vs RP)
     dual_pit_rows = []
-    for orig_id, (sp_id, rp_id) in [("eckerde01", ("eckerde01_sp", "eckerde01_rp")), ("smoltjo01", ("smoltjo01_sp", "smoltjo01_rp"))]:
+    for orig_id, (sp_id, rp_id) in []:
         stints = pit_yearly[pit_yearly["playerID"] == orig_id].copy()
         stints_sp = stints[stints["GS"] / stints["G"].replace(0, 1) >= 0.50].copy()
         stints_sp["playerID"] = sp_id
@@ -575,7 +575,7 @@ def paso_4_pico_pitching(pitching, war_pitch, people):
     if not war_yearly.empty:
         # Duplicar registros de war_yearly para dual pitchers
         dual_war_rows = []
-        for orig_id, (sp_id, rp_id) in [("eckerde01", ("eckerde01_sp", "eckerde01_rp")), ("smoltjo01", ("smoltjo01_sp", "smoltjo01_rp"))]:
+        for orig_id, (sp_id, rp_id) in []:
             w_rows = war_yearly[war_yearly["playerID"] == orig_id].copy()
             w_sp = w_rows.copy(); w_sp["playerID"] = sp_id
             w_rp = w_rows.copy(); w_rp["playerID"] = rp_id
@@ -717,8 +717,10 @@ def paso_4_pico_pitching(pitching, war_pitch, people):
     peak = peak.merge(career_war_df, on="playerID", how="left")
 
     # Rol por % de Dedicación Híbrida 80/20 (>= 50% => SP, sino RP)
-    is_dual_sp = peak["playerID"].isin(["eckerde01_sp", "smoltjo01_sp"])
-    is_dual_rp = peak["playerID"].isin(["eckerde01_rp", "smoltjo01_rp"])
+    # Una carta por jugador (usuario, nov 2026). Unica excepcion: Eckersley se etiqueta RP a mano;
+    # sus ratings salen de su carrera completa como todos.
+    is_dual_sp = peak["playerID"].isin([])
+    is_dual_rp = peak["playerID"].isin(["eckerde01"])
     peak["role"] = np.where(
         is_dual_sp,
         "SP",
@@ -784,7 +786,7 @@ def paso_5_filtro_ingesta(career, peak, allstar, hof, pure_pitcher_ids, pitching
         hof_ids = set(hof_inducted["playerID"].unique())
 
     # Propagar HoF y All-Star a variantes duales
-    for orig_id, (sp_id, rp_id) in [("eckerde01", ("eckerde01_sp", "eckerde01_rp")), ("smoltjo01", ("smoltjo01_sp", "smoltjo01_rp"))]:
+    for orig_id, (sp_id, rp_id) in []:
         if orig_id in allstar_ids:
             allstar_ids.add(sp_id); allstar_ids.add(rp_id)
         if orig_id in hof_ids:
@@ -815,7 +817,7 @@ def paso_5_filtro_ingesta(career, peak, allstar, hof, pure_pitcher_ids, pitching
         as_copy = allstar.copy()
         # Duplicar selecciones All-Star para dual pitchers
         dual_as = []
-        for orig_id, (sp_id, rp_id) in [("eckerde01", ("eckerde01_sp", "eckerde01_rp")), ("smoltjo01", ("smoltjo01_sp", "smoltjo01_rp"))]:
+        for orig_id, (sp_id, rp_id) in []:
             as_rows = as_copy[as_copy["playerID"] == orig_id].copy()
             as_sp = as_rows.copy(); as_sp["playerID"] = sp_id
             as_rp = as_rows.copy(); as_rp["playerID"] = rp_id
@@ -1820,7 +1822,7 @@ def paso_12_exportar(df, pitching, teams, franchises, pico_df=None, war_pitch=No
             
         # Para dual pitchers en career
         dual_careers = []
-        for orig_id, (sp_id, rp_id) in [("eckerde01", ("eckerde01_sp", "eckerde01_rp")), ("smoltjo01", ("smoltjo01_sp", "smoltjo01_rp"))]:
+        for orig_id, (sp_id, rp_id) in []:
             c_orig = career_franch_war[career_franch_war["playerID"] == orig_id].copy()
             if not c_orig.empty:
                 c_sp = c_orig.copy(); c_sp["playerID"] = sp_id

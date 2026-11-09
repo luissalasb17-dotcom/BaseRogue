@@ -182,7 +182,7 @@
     if (window.CardBacks || backsState === 'loading') return;
     backsState = 'loading';
     const s = document.createElement('script');
-    s.src = 'card_backs.js?v=4' + (backsTries ? '&r=' + backsTries : '');
+    s.src = 'card_backs.js?v=1794189867' + (backsTries ? '&r=' + backsTries : '');
     let settled = false;
     const finish = () => {
       if (settled) return;
