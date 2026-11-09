@@ -455,6 +455,10 @@
       h9: p.h9 !== undefined ? p.h9 : 50, k9: p.k9 !== undefined ? p.k9 : 50,
       bb9: p.bb9 !== undefined ? p.bb9 : 50, hr9: p.hr9 !== undefined ? p.hr9 : 50,
       sta: staVal, stf: p.stf !== undefined ? p.stf : 50, ctl: p.ctl !== undefined ? p.ctl : 50, mov: p.hr9 !== undefined ? p.hr9 : 50,
+      // Clutch and badges travel with the card (bug fixed 9 nov 2026: rival pitchers lost their Clutch,
+      // so the RISP adjustment only ever applied to the user's own staff).
+      clt: p.clt !== undefined ? p.clt : (p.clt_val !== undefined ? p.clt_val : undefined),
+      badge_clutch: !!p.badge_clutch, badge_captain: !!p.badge_captain,
       upgrades: { con: 0, pwr: 0, eye: 0, spd: 0, def: 0, sta: 0 }
     };
   }
@@ -1566,7 +1570,10 @@
   };
   const CLUTCH_PIT_BADGE = 8;
   let BIP_MODEL = true, BIP_SCALE = 1.0, BABIP_SKILL = 0.7; // DIPS: a pitcher keeps 70% of his own hit rate on balls in play (user, 2 nov 2026) // hits on balls in play (see simPaOutcome)
-  const CLUTCH_PIT = 0.3, CLUTCH_PIT_CENTER = 55; // 55.7 is the average Clutch of the innings pitched in the league
+  // Clutch under pressure (user, 9 nov 2026): runner in scoring position OR Late & Close (see the
+  // PA loop). All four pitching ratings move CLUTCH_PIT per point above/below 55. Calibrated so 10
+  // points of Clutch are worth ~0.12 of ERA with the other ratings equal (real careers: ~0.11).
+  const CLUTCH_PIT = 0.45, CLUTCH_PIT_CENTER = 55; // 55.7 is the average Clutch of the innings pitched in the league
   const ERROR_GLOVE_SLOPE = 0.0184, ERROR_GLOVE_MIN = 0.3, ERROR_GLOVE_MAX = 2.0;
   // Rating -> stat tables: what a card at each rating does against an ordinary opponent, taken
   // from the real peak numbers of the cards carried to the AL/NL 1947-2025 league with the same 75%
@@ -5730,7 +5737,13 @@
           const isPlayoffGame = Boolean(opts.isPlayoff);
           const bigSpot = false && p.badge_clutch && inning >= CLUTCH_BAT_INNING && Math.abs(margin) <= CLUTCH_BAT_MARGIN;
           const playoffPitchClutch = isPlayoffGame && p.badge_clutch;
-          const adj = ((bases[1] || bases[2]) ? (clt - CLUTCH_PIT_CENTER) * CLUTCH_PIT : 0) + (bigSpot ? CLUTCH_PIT_BADGE : 0) + (playoffPitchClutch ? PLAYOFF_HERO_BOOST : 0) + (opts.confidence ? ps.conf : 0) - pen;
+          // Pressure (user, 9 nov 2026): a runner in scoring position, OR Late & Close as Baseball
+          // Reference defines it (7th on, the batting team tied, ahead by one, or the tying run at least
+          // on deck). One or the other, never doubled; the Clutch moves all four pitching ratings.
+          const onB = bases.filter(Boolean).length;
+          const lateClose = inning >= 7 && (margin === 0 || margin === 1 || (margin < 0 && -margin <= onB + 2));
+          const pressure = !!(bases[1] || bases[2]) || lateClose;
+          const adj = (pressure ? (clt - CLUTCH_PIT_CENTER) * CLUTCH_PIT : 0) + (bigSpot ? CLUTCH_PIT_BADGE : 0) + (playoffPitchClutch ? PLAYOFF_HERO_BOOST : 0) + (opts.confidence ? ps.conf : 0) - pen;
           const eff = adj ? { ...p, h9: p.h9 + adj, k9: p.k9 + adj, bb9: p.bb9 + adj, hr9: p.hr9 + adj } : { ...p };
           eff._fieldingDef = 50; // the gloves act below, one fielder at a time
           const batter = nextBatter(bi, { blowout, inning, outs, margin, onBase: bases.filter(Boolean).length });
