@@ -183,3 +183,9 @@
 /* the big card does not tilt (with zoom the tilt moved the card under the cursor and clicks missed) */
 #dex-detail-overlay.dx-cardonly .pc2-clickflip .player-card { transform: none !important; }
 #dex-detail-overlay.dx-cardonly .dex-card-back { cursor: pointer; }
+
+/* Not-collected cards: browsable, but dimmed and stamped (user, 10 nov 2026) */
+.dex-card.dx-uncollected .dx-photo img{filter:grayscale(.85) brightness(.75)}
+.dex-card.dx-uncollected{opacity:.78}
+.dex-card.dx-uncollected:hover{opacity:1}
+.dx-notcol{position:absolute;left:50%;top:38%;transform:translate(-50%,-50%) rotate(-12deg);font:700 9px/1 Oswald,sans-serif;letter-spacing:1px;color:#f87171;border:2px solid #f87171;background:rgba(10,10,10,.75);padding:3px 5px;pointer-events:none;white-space:nowrap}

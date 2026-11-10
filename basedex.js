@@ -988,7 +988,8 @@
         const pYear = parseInt(p.year, 10) || 2020;
         const eraKey = pYear <= 1900 ? 'genesis' : pYear <= 1919 ? 'deadball' : pYear <= 1941 ? 'golden' : pYear <= 1960 ? 'integration' : pYear <= 1976 ? 'expansion' : pYear <= 1993 ? 'bighair' : pYear <= 2005 ? 'steroid' : pYear <= 2015 ? 'efficiency' : 'modern';
         const favHTML = isFav ? `<span class="dx-fav" title="Shortlisted">★</span>` : '';
-        if (isUnl) {
+        // every card can be browsed; the ones not collected yet are marked (user, 10 nov 2026)
+        if (true) {
           const rColor = RARITY_COLORS[p.rarity] || RARITY_COLORS.Common;
           const isChallengeEligible = !!(window.Challenge162 && window.Challenge162.isUnlocked(p));
           const isPit = this.activeCategory === 'opponents' || !!p.role;
@@ -996,7 +997,7 @@
           const art = (window.CardArt && typeof window.CardArt.portrait === 'function') ? 'lazy' : '';
           if (art) el._dxArt = () => window.CardArt.portrait(p, eraKey, isPit);
           const tc = ((window.CardArt && window.CardArt.TEAM_COLORS) || {})[String(p.team || '').toUpperCase()] || '#3a3a3a';
-          el.className = `dex-card unlocked dx-r-${(p.rarity || 'Common').toLowerCase()}`;
+          el.className = `dex-card unlocked dx-r-${(p.rarity || 'Common').toLowerCase()}${isUnl ? '' : ' dx-uncollected'}`;
           el.style.cssText = `--rc:${rColor};--tc:${tc}`;
           const challenge162Tooltip = (typeof window.t === 'function' ? window.t('dex.challenge162_badge_tooltip', 'Eligible for 162-0 Challenge') : 'Eligible for 162-0 Challenge');
           el.innerHTML = `
@@ -1006,6 +1007,7 @@
             <div class="dx-name">${p.name}</div>
             <div class="dx-meta"><span>${p.team || ''}</span><span>'${String(p.year).slice(-2)}</span></div>
             <div class="dx-rar">${p.rarity || 'Common'}</div>
+            ${isUnl ? '' : `<span class="dx-notcol" title="Not in your collection yet: you can view it and use it in Team Preview, but not in the All-Star Dream Team">NOT COLLECTED</span>`}
           `;
           el.onclick = () => this.showDetail(p);
         } else {

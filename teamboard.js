@@ -136,12 +136,9 @@
     // Random team (user, 9 nov 2026): every spot that is not locked gets a random card that plays it,
     // drawn from the cards the Challenge can use (so SEND TO ALL-STAR keeps them all). Locked spots stay.
     randomTeam() {
-      const C = window.Challenge162;
-      if (C && !C.unlockedBatters && typeof C.initUnlocks === 'function') C.initUnlocks();
-      let bats = (C && typeof C.getEligibleBatters === 'function' && C.getEligibleBatters()) || [];
-      let pits = (C && typeof C.getEligiblePitchers === 'function' && C.getEligiblePitchers()) || [];
-      if (!bats.length) bats = (window.PlayersDB && window.PlayersDB.LAHMAN_POOL) || [];
-      if (!pits.length) pits = (window.PitchersDB && window.PitchersDB.PITCHERS_POOL) || window.PITCHERS_POOL || [];
+      // the preview can use every card (only the All-Star import requires collected ones)
+      const bats = (window.PlayersDB && window.PlayersDB.LAHMAN_POOL) || [];
+      const pits = (window.PitchersDB && window.PitchersDB.PITCHERS_POOL) || window.PITCHERS_POOL || [];
       const v = this.pv; v.locks = v.locks || {};
       const L = v.locks, used = new Set();
       const keep = (slot, k) => { if (L[slot] && k) { used.add(k); return true; } return false; };
