@@ -172,3 +172,14 @@
 
 /* portraits are painted lazily (basedex.js dexArtObserver): no empty-image frame meanwhile */
 .dx-photo img:not([src]) { visibility: hidden; }
+
+/* Dex detail: only the card (user, 9 nov 2026). The card turns with a click; FLIP button gone. */
+#dex-detail-overlay.dx-cardonly .dex-card-front { display: none !important; }
+#dex-detail-overlay.dx-cardonly .dex-flip-card-container { perspective: none !important; min-height: 0 !important; }
+#dex-detail-overlay.dx-cardonly .dex-flip-card-inner { transform: none !important; }
+#dex-detail-overlay.dx-cardonly .dex-card-back { position: relative !important; transform: none !important; inset: auto !important;
+  backface-visibility: visible !important; -webkit-backface-visibility: visible !important; order: 0 !important; }
+#dex-detail-overlay.dx-cardonly #btn-modal-flip-bottom { display: none !important; }
+/* the big card does not tilt (with zoom the tilt moved the card under the cursor and clicks missed) */
+#dex-detail-overlay.dx-cardonly .pc2-clickflip .player-card { transform: none !important; }
+#dex-detail-overlay.dx-cardonly .dex-card-back { cursor: pointer; }

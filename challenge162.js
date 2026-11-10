@@ -2363,6 +2363,8 @@
   // Captains (decision 4 nov 2026): no longer change the momentum step; they give
   // CAPTAIN_TEAM_BONUS to every teammate's ratings (captainOf), the same rule as Quick Play.
   const CAPTAIN_TEAM_BONUS = 1;
+  const CAPTAIN_MAX = 3;
+  window.CAPTAIN_MAX = CAPTAIN_MAX;
   // PLAYOFF HERO (World Series MVP / Babe Ruth Award): +PLAYOFF_HERO_BOOST to his batting or pitching ratings in every playoff appearance.
   const PLAYOFF_HERO_BOOST = 8;
   window.CAPTAIN_TEAM_BONUS = CAPTAIN_TEAM_BONUS;
@@ -2372,7 +2374,13 @@
     if (!caps.length) return () => 0;
     const keyOf = p => p && (p.playerID || p.name);
     const capKeys = new Set(caps.map(keyOf));
-    return p => (!p ? 0 : (caps.length > 1 || !capKeys.has(keyOf(p))) ? CAPTAIN_TEAM_BONUS : 0);
+    // Captains add up to CAPTAIN_MAX (user, 9 nov 2026): each teammate gets +1 per captain on the roster
+    // other than himself, up to +3.
+    return p => {
+      if (!p) return 0;
+      const others = caps.length - (capKeys.has(keyOf(p)) ? 1 : 0);
+      return Math.min(CAPTAIN_MAX, others) * CAPTAIN_TEAM_BONUS;
+    };
   };
   function momentumStep(streak, captains = 0) {
     return MOMENTUM_STEP;
@@ -2387,7 +2395,7 @@
   // a franchise, an era or a country other than the USA play a little better together. A group
   // reaches a tier for every CHEM_TEAM_SIZE teammates of a franchise (himself included), every
   // CHEM_ERA_SIZE of an era and every CHEM_NATION_SIZE of a country, with no cap; each player gets
-  // the bonus of his groups' tiers (T1 +1, T2 +3, T3 +6: chemTierBonus) to his batting or pitching
+  // the bonus of his groups' tiers (T1 +1, T2 +2, T3 +3: chemTierBonus) to his batting or pitching
   // ratings. The USA does not count as a country: most cards are from there and the bonus would be free. The country comes from PLAYER_FLAGS_DB (the Dex data).
   const CHEM_TEAM_SIZE = 3, CHEM_ERA_SIZE = 5, CHEM_NATION_SIZE = 3;
   const NATION_NAMES = { do: 'Dominican Rep.', ve: 'Venezuela', cu: 'Cuba', pr: 'Puerto Rico', mx: 'Mexico', jp: 'Japan', ca: 'Canada', pa: 'Panama', co: 'Colombia', ni: 'Nicaragua', kr: 'South Korea', cw: 'Curacao', au: 'Australia', tw: 'Taiwan', gb: 'Great Britain', de: 'Germany', ie: 'Ireland', nl: 'Netherlands', bs: 'Bahamas', jm: 'Jamaica', vi: 'Virgin Islands', aw: 'Aruba', br: 'Brazil', hn: 'Honduras' };
@@ -2419,8 +2427,8 @@
     return kind === 'nation' ? (NATION_NAMES[v] || v.toUpperCase()) : v.replace(/\s*\(.*\)/, '').replace(/ Era$/, '');
   }
   // Tiers of a chemistry group: T1 at one "size" (3 / 5 / 3), T2 at two, and so on. The bonus grows
-  // faster than the tier (user, Oct 2026): T1 +1, T2 +3, T3 +6, then +2 more per tier.
-  const chemTierBonus = tier => (tier <= 0 ? 0 : tier <= 2 ? 2 * tier - 1 : 2 * tier);
+  // T1 +1, T2 +2, T3 +3 (user, 9 nov 2026; it was T1 +1, T2 +3, T3 +6).
+  const chemTierBonus = tier => Math.max(0, tier); // T1 +1, T2 +2, T3 +3 (user, 9 nov 2026; was 1 / 3 / 6)
   // Each group stops at T3 (user, Nov 2026): a one-club Dream Team got +16 franchise +10 era.
   const CHEM_MAX_TIER = 3;
   const chemNeed = (kind, v) => (kind === 'nation' && String(v || '').startsWith('US-') ? CHEM_STATE_SIZE : CHEM_SIZE[kind]);
@@ -4826,14 +4834,14 @@
           <span class="cc-next">${g.max ? 'T3 MAX' : g.left + ' to T' + (g.tier + 1)}</span>
         </div>`;
       };
-      const capRow = caps ? `<div class="c162-chem-row is-on is-cap"><span class="cc-ic">👑</span><span class="cc-name">${caps > 1 ? caps + ' captains' : 'Captain'}</span><span class="cc-next cc-wide">+${CAPTAIN_TEAM_BONUS} to every teammate's ratings</span></div>` : '';
+      const capRow = caps ? `<div class="c162-chem-row is-on is-cap"><span class="cc-ic">👑</span><span class="cc-name">${caps > 1 ? caps + ' captains' : 'Captain'}</span><span class="cc-tier"><b>+${Math.min(CAPTAIN_MAX, caps) * CAPTAIN_TEAM_BONUS}</b></span><span class="cc-next cc-wide">+1 per captain to every teammate (max +${CAPTAIN_MAX})</span></div>` : '';
       const rows = on.map(row).join('') + capRow + near.map(row).join('');
-      const rule = `T1 at ${CHEM_TEAM_SIZE} of a franchise, ${CHEM_ERA_SIZE} of an era ${CHEM_NATION_SIZE} of a country or ${CHEM_STATE_SIZE} of a US state, T2 at twice that, T3 at three times (the cap); T1 +1, T2 +3, T3 +6`;
+      const rule = `T1 at ${CHEM_TEAM_SIZE} of a franchise, ${CHEM_ERA_SIZE} of an era ${CHEM_NATION_SIZE} of a country or ${CHEM_STATE_SIZE} of a US state, T2 at twice that, T3 at three times (the cap); T1 +1, T2 +2, T3 +3`;
       if (compact) {
         // Pack draft board (user: the long list pushed the roster down): one chip per group,
         // active ones first, the rule and the details in the tooltip.
         const chip = g => `<span class="cc-chip ${g.bonus ? 'on' : 'near'}" data-chem-group="${g.kind}:${g.value}" title="${g.count} ${g.kind === 'team' ? 'from this franchise' : g.kind === 'era' ? 'from this era' : 'from this country'} · ${g.max ? 'T3 is the cap' : g.left + ' more for T' + (g.tier + 1)}">${CHEM_ICON[g.kind]} ${g.label} <i>×${g.count}</i>${g.bonus ? ` <b>+${g.bonus}</b>` : ` <em>${g.left} to T1</em>`}</span>`;
-        const capChip = caps ? `<span class="cc-chip on cap" data-chem-group="cap:1" title="+${CAPTAIN_TEAM_BONUS} to every teammate's ratings">👑 ${caps > 1 ? caps + ' captains' : 'Captain'}</span>` : '';
+        const capChip = caps ? `<span class="cc-chip on cap" data-chem-group="cap:1" title="+1 per captain to every teammate's ratings (max +${CAPTAIN_MAX}); a captain gets +1 from each of the others">👑 ${caps > 1 ? caps + ' captains' : 'Captain'} +${Math.min(CAPTAIN_MAX, caps) * CAPTAIN_TEAM_BONUS}</span>` : '';
         const chips = on.map(chip).join('') + capChip + near.map(chip).join('');
         return `<div class="c162-chem2 is-compact is-chips">
           <div class="cc-head" title="${rule}"><b>🤝 CHEMISTRY</b><small>${on.length} active · hover a chip for details</small></div>
@@ -10059,11 +10067,14 @@
       const eraOf = y => { y = parseInt(y, 10) || 2020; return y <= 1900 ? 'genesis' : y <= 1919 ? 'deadball' : y <= 1941 ? 'golden' : y <= 1960 ? 'integration' : y <= 1976 ? 'expansion' : y <= 1993 ? 'bighair' : y <= 2005 ? 'steroid' : y <= 2015 ? 'efficiency' : 'modern'; };
       const faceOf = pl => (window.CardArt ? `<i class="c162-rb-face" style="background-image:url(${window.CardArt.portrait(pl, eraOf(pl.year), !!pl.role)})"></i>` : '');
       const rowChem = rosterChemistry(rosterNow);
+      const rowCap = captainOf(rosterNow);
       const chemInfo = pl => {
         const t = chemTraits(pl);
         const tokens = Object.keys(t).filter(k => t[k]).map(k => `${k}:${t[k]}`);
         const parts = rowChem.groups.filter(g => g.bonus > 0 && t[g.kind] === g.value);
-        return { tokens: tokens.join('|'), bonus: parts.reduce((n, g) => n + g.bonus, 0), why: parts.map(g => `+${g.bonus} ${g.label}`).join(', ') };
+        const cap = rowCap(pl);
+        const why = parts.map(g => `+${g.bonus} ${g.label}`).concat(cap ? [`+${cap} captain${cap > 1 ? 's' : ''}`] : []).join(', ');
+        return { tokens: tokens.join('|'), bonus: parts.reduce((n, g) => n + g.bonus, 0) + cap, why };
       };
       const renderCompactSlot = (player, slotLabel, kind, key) => {
         const isCurrentActive = Boolean(
@@ -10089,7 +10100,7 @@
             <span class="c162-rb-pos">${slotLabel}</span>
             <span class="c162-rb-name">${faceOf(player)}${player.name}${outOfPos ? ' <i title="Playing out of position">⚠</i>' : ''}</span>
             <span class="c162-rb-meta">${meta}</span>
-            <span class="c162-rb-ovr">${ci.bonus ? `<em class="rb-chem" title="Chemistry: ${ci.why} to his ratings">+${ci.bonus}</em>` : ''}${Math.floor(player.ovr || 50)}</span>
+            <span class="c162-rb-ovr">${ci.bonus ? `<em class="rb-chem" title="Bonus: ${ci.why} to his ratings">+${ci.bonus}</em>` : ''}${Math.floor(player.ovr || 50)}</span>
           </div>
         `;
       };

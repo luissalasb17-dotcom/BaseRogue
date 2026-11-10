@@ -147,6 +147,25 @@ def batters(dfs):
 def pitchers(dfs):
     _, pico = P.paso_4_pico_pitching(dfs["pitching"], dfs["war_pitch"], dfs["people"])
     cols = ["W", "L", "G", "GS", "SV", "IPouts", "H", "ER", "HR_a", "BB", "SO"]
+    # 162-game average (user, 9 nov 2026): each peak season is scaled to a 162-game schedule with the
+    # average games per team of its league that year (Teams.csv), like Reference's "162 Game Avg".
+    # Negro Leagues seasons of ~60 games count ~2.7x; a 154-game MLB season 1.05x. ERA, WHIP, ERA+ do not change.
+    t = dfs["teams"].copy()
+    t["G"] = pd.to_numeric(t["G"], errors="coerce")
+    lgG = t[t["G"] > 0].groupby(["yearID", "lgID"])["G"].mean()
+    yrG = t[t["G"] > 0].groupby("yearID")["G"].mean()
+    pl = dfs["pitching"].copy()
+    pl["IPouts"] = pd.to_numeric(pl["IPouts"], errors="coerce").fillna(0)
+    lg_of = pl.sort_values("IPouts").groupby(["playerID", "yearID"])["lgID"].last().to_dict()  # league where he pitched most
+    def sched(r):
+        g = lgG.get((r["yearID"], lg_of.get((r["playerID"], r["yearID"]))), np.nan)
+        if not (g > 0): g = yrG.get(r["yearID"], 162)
+        return min(4.0, max(1.0, 162.0 / g)) if g > 0 else 1.0
+    pico = pico.copy()
+    pico["sched_k"] = pico.apply(sched, axis=1)
+    for c in cols:
+        pico[c] = pd.to_numeric(pico[c], errors="coerce").fillna(0) * pico["sched_k"]
+    pico["war_season"] = pd.to_numeric(pico["war_season"], errors="coerce") * pico["sched_k"]
     agg = pico.groupby("playerID")[cols].sum()
     agg["n"] = pico.groupby("playerID").size()
     agg["y0"] = pico.groupby("playerID")["yearID"].min()
@@ -193,7 +212,7 @@ def main():
     bio = {k: v for k, v in bio.items() if k in ids}
     js = ("// AUTO-GENERADO por card_backs_etl.py - NO EDITAR\n"
           "// bat: [y0,y1,n, AB,R,H,2B,3B,HR,RBI,SB,CS,BB,SO, AVG,OBP,SLG, FLD, OPS+, WAR por 162]  (promedio de 162 juegos de sus picos)\n"
-          "// pit: [y0,y1,n, W,L,ERA,G,GS,SV,IP,H,HR,BB,SO,WHIP, ERA+, WAR por temporada]  (temporada promedio de su pico)\n"
+          "// pit: [y0,y1,n, W,L,ERA,G,GS,SV,IP,H,HR,BB,SO,WHIP, ERA+, WAR por temporada]  (promedio de 162 juegos de su pico, cada temporada llevada a 162 juegos)\n"
           "// bio: [estatura en pulgadas, peso en libras, nacimiento, lugar]\n"
           "window.CardBacks = " + json.dumps({"bat": bat, "pit": pit, "bio": bio}, separators=(",", ":"), ensure_ascii=False) + ";\n")
     OUT.write_text(js, encoding="utf-8")

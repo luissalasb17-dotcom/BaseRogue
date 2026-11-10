@@ -2171,15 +2171,16 @@ window.leftyCantPlay = function (p, slot) {
       }
 
       // Captain Badge: any teammate (not the player itself) with captain === true or is_captain === true gives +1 to all stats
-      // Non-cumulative: multiple captains on the roster still give only +5 total, not stacked.
-      const hasCaptainTeammate = Object.values(contextRoster).some(p => {
+      // Stacks: +1 per captain teammate, up to +3.
+      const capMates = Object.values(contextRoster).filter(p => {
         if (!p || p === player) return false;
         if (p.name && player.name && p.name === player.name) return false;
         if (p.id && player.id && p.id === player.id) return false;
         return (p.captain === true || p.is_captain === true);
       });
-      if (hasCaptainTeammate) {
-        const cb = window.CAPTAIN_TEAM_BONUS || 1; // +1 to every teammate (decision 4 nov 2026; it was +5); the card's OVR counts it
+      if (capMates.length) {
+        // +1 per captain teammate, up to +3 (decision 9 nov 2026)
+        const cb = (window.CAPTAIN_TEAM_BONUS || 1) * Math.min(window.CAPTAIN_MAX || 3, capMates.length);
         con += cb; pwr += cb; eye += cb; kavd += cb; spd += cb; def += cb;
       }
 

@@ -26,6 +26,11 @@
 .tb-x { position: absolute; top: 14px; right: -6px; width: 20px; height: 20px; border-radius: 50%; border: 0; background: #b91c1c; color: #fff;
   font-size: 11px; line-height: 20px; cursor: pointer; opacity: 0; transition: opacity .15s; z-index: 4; }
 .tb-slot.full:hover .tb-x { opacity: 1; }
+.tb-lock { position: absolute; top: 14px; left: -6px; width: 22px; height: 22px; border-radius: 50%; border: 1px solid rgba(253,224,71,.5);
+  background: rgba(0,0,0,.7); font-size: 11px; line-height: 20px; cursor: pointer; opacity: 0; transition: opacity .15s; z-index: 4; padding: 0; }
+.tb-slot.full:hover .tb-lock, .tb-slot.locked .tb-lock { opacity: 1; }
+.tb-slot.locked .tb-card { filter: drop-shadow(0 0 10px rgba(253,224,71,.65)); }
+@media (hover: none) { .tb-lock, .tb-x { opacity: 1; } }
 
 /* Team Preview overlay */
 #tb-preview { position: fixed; inset: 0; z-index: 100050; background: rgba(2,8,6,.88); overflow: auto; padding: 14px; }
@@ -103,3 +108,28 @@
 #tb-zoom .tb-zoom-card { zoom: 2.2; cursor: pointer; filter: drop-shadow(0 20px 40px rgba(0,0,0,.7)); }
 #tb-zoom small { font-family: 'Oswald', sans-serif; color: #cbd5e1; font-size: 14px; }
 @media (max-width: 900px) { #tb-zoom .tb-zoom-card { zoom: 1.6; } }
+
+/* Random players mosaic (Team Preview) */
+.tb-mosaic { margin: 6px 0 10px; padding: 8px 10px; background: rgba(0,0,0,.35); border: 1px solid #22c55e44; border-radius: 10px; }
+.tb-mz-head { display: flex; align-items: center; justify-content: space-between; font-family: 'Oswald', sans-serif; color: #fde68a; letter-spacing: 1px; font-size: 13px; margin-bottom: 6px; }
+.tb-mz-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 6px; }
+.tb-mz { position: relative; border: 2px solid #475569; border-radius: 6px; background: #0b1220; padding: 0; cursor: pointer; overflow: hidden; transition: transform .12s, border-color .12s; }
+.tb-mz i { display: block; width: 100%; aspect-ratio: 4 / 3; background-size: cover; background-position: center; image-rendering: pixelated; }
+.tb-mz span { display: block; font-family: 'Oswald', sans-serif; font-size: 10.5px; color: #e5e7eb; padding: 2px 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; background: rgba(0,0,0,.75); }
+.tb-mz:hover { transform: translateY(-2px) scale(1.04); border-color: #fde047; z-index: 2; }
+.tb-mz.r-uncommon { border-color: #22c55e; } .tb-mz.r-rare { border-color: #3b82f6; } .tb-mz.r-epic { border-color: #a855f7; } .tb-mz.r-legendary { border-color: #f59e0b; box-shadow: 0 0 8px rgba(245,158,11,.5); }
+@media (max-width: 900px) { .tb-mz-grid { grid-template-columns: repeat(6, 1fr); } }
+.dx2-mosaic { padding: 6px 16px 0; } .dx2-mosaic .tb-mosaic { margin: 4px 0 2px; }
+
+/* Main menu card wall */
+.mcw { margin: 26px auto 0; max-width: 1060px; }
+.mcw-head { display: flex; align-items: center; justify-content: center; gap: 14px; font-family: 'Oswald', sans-serif; color: #fde68a; letter-spacing: 2px; font-size: 14px; margin-bottom: 8px; }
+.mcw-roll { font-family: 'Oswald', sans-serif; font-size: 13px; letter-spacing: 1px; padding: 5px 12px; border-radius: 16px; border: 1.5px solid #fde047; background: rgba(253,224,71,.12); color: #fde68a; cursor: pointer; }
+.mcw-roll:hover { background: rgba(253,224,71,.25); }
+.mcw-row { display: flex; justify-content: center; align-items: flex-start; padding: 14px 0 24px; }
+.mcw-card { border: 0; background: none; padding: 0; margin: 0 -10px; cursor: pointer; zoom: .74; transform: rotate(var(--r)) translateY(var(--y)); transform-origin: 50% 120%;
+  transition: transform .18s ease, filter .18s ease; filter: drop-shadow(0 10px 14px rgba(0,0,0,.6)); animation: mcwIn .5s both; animation-delay: var(--d); position: relative; }
+.mcw-card:hover { transform: rotate(0deg) translateY(-22px) scale(1.08); z-index: 5; filter: drop-shadow(0 18px 26px rgba(0,0,0,.7)); }
+@keyframes mcwIn { from { opacity: 0; transform: translateY(60px) rotate(0deg); } to { opacity: 1; transform: rotate(var(--r)) translateY(var(--y)); } }
+@media (max-width: 900px) { .mcw-row { justify-content: flex-start; overflow-x: auto; padding: 14px 16px 24px; } .mcw-card { zoom: .62; margin: 0 -6px; flex: 0 0 auto; } }
+@media (prefers-reduced-motion: reduce) { .mcw-card { animation: none; } }

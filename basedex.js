@@ -1291,6 +1291,7 @@
 
       const overlay = document.createElement('div');
       overlay.id = 'dex-detail-overlay';
+      overlay.className = 'dx-cardonly'; // only the card (front / back); the old stats sheet is hidden (user, 9 nov 2026)
       overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px);';
       overlay.onclick = (e) => {
         if (e.target === overlay) overlay.remove();
@@ -1504,6 +1505,16 @@
           this.playCardFlipSound();
         }
       };
+
+      // Card-only view: a click anywhere on the panel (not on its buttons) turns the card
+      const backFace = overlay.querySelector('.dex-card-back');
+      if (backFace && overlay.classList.contains('dx-cardonly')) {
+        backFace.addEventListener('click', e => {
+          if (e.target.closest('button, .pc2')) return; // the card itself flips by card_art.js
+          const c = backFace.querySelector('.pc2');
+          if (c && window.CardArt && window.CardArt.flip) window.CardArt.flip(c);
+        });
+      }
 
       const btnShortlistBottom = overlay.querySelector('#btn-modal-shortlist-bottom');
       if (btnShortlistBottom) {

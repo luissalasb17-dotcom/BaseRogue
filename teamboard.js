@@ -100,6 +100,7 @@
     },
     remove(slot) {
       const v = this.pv, [kind, i] = slot.split(':');
+      if (v.locks) delete v.locks[slot];
       if (kind === 'L') delete v.lineup[i]; else v[kind][+i] = null;
       this.save();
     },
@@ -132,6 +133,62 @@
       for (let i = 0; i < RP_N; i++) if (!v.RP[i]) { const p = free(pits).find(x => String(x.role).toUpperCase() === 'RP') || free(pits)[0]; if (p) { v.RP[i] = keyOf(p); used.add(keyOf(p)); } }
       this.save();
     },
+    // Random team (user, 9 nov 2026): every spot that is not locked gets a random card that plays it,
+    // drawn from the cards the Challenge can use (so SEND TO ALL-STAR keeps them all). Locked spots stay.
+    randomTeam() {
+      const C = window.Challenge162;
+      if (C && !C.unlockedBatters && typeof C.initUnlocks === 'function') C.initUnlocks();
+      let bats = (C && typeof C.getEligibleBatters === 'function' && C.getEligibleBatters()) || [];
+      let pits = (C && typeof C.getEligiblePitchers === 'function' && C.getEligiblePitchers()) || [];
+      if (!bats.length) bats = (window.PlayersDB && window.PlayersDB.LAHMAN_POOL) || [];
+      if (!pits.length) pits = (window.PitchersDB && window.PitchersDB.PITCHERS_POOL) || window.PITCHERS_POOL || [];
+      const v = this.pv; v.locks = v.locks || {};
+      const L = v.locks, used = new Set();
+      const keep = (slot, k) => { if (L[slot] && k) { used.add(k); return true; } return false; };
+      SLOTS.forEach(s => { if (!keep(`L:${s}`, v.lineup[s])) delete v.lineup[s]; });
+      ['bench', 'SP', 'RP'].forEach(l => { v[l] = v[l].map((k, i) => (keep(`${l}:${i}`, k) ? k : null)); });
+      const any = (arr, ok) => { const c = arr.filter(p => !used.has(keyOf(p)) && ok(p)); if (!c.length) return null; const p = c[Math.floor(Math.random() * c.length)]; used.add(keyOf(p)); return keyOf(p); };
+      // field spots: a natural at the spot first (any of them), a secondary only if there is none
+      SLOTS.filter(s => s !== 'DH').sort(() => Math.random() - 0.5).forEach(s => {
+        if (v.lineup[s]) return;
+        v.lineup[s] = any(bats, p => p.pos === s && fits(p, s)) || any(bats, p => fits(p, s));
+      });
+      if (!v.lineup.DH) v.lineup.DH = any(bats, p => !isPit(p));
+      const hasC = () => v.bench.some(k => { const p = k && this.byKey().get(k); return p && (p.pos === 'C' || secOf(p).includes('C')); });
+      for (let i = 0; i < BENCH; i++) if (!v.bench[i]) v.bench[i] = (!hasC() && any(bats, p => p.pos === 'C')) || any(bats, p => !isPit(p));
+      for (let i = 0; i < SP_N; i++) if (!v.SP[i]) v.SP[i] = any(pits, p => String(p.role || 'SP').toUpperCase() !== 'RP');
+      for (let i = 0; i < RP_N; i++) if (!v.RP[i]) v.RP[i] = any(pits, p => String(p.role).toUpperCase() === 'RP');
+      Object.keys(v.lineup).forEach(s => { if (!v.lineup[s]) delete v.lineup[s]; });
+      this.save();
+    },
+    // Mosaic (user, 9 nov 2026): 12 random faces from the whole Challenge pool, like the player wall on
+    // Baseball Reference's home page; 🎲 draws a new dozen, clicking a face opens the player's card.
+    mosaicPool() {
+      const C = window.Challenge162;
+      if (C && !C.unlockedBatters && typeof C.initUnlocks === 'function') C.initUnlocks();
+      let b = (C && typeof C.getEligibleBatters === 'function' && C.getEligibleBatters()) || [];
+      let p = (C && typeof C.getEligiblePitchers === 'function' && C.getEligiblePitchers()) || [];
+      if (!b.length) b = (window.PlayersDB && window.PlayersDB.LAHMAN_POOL) || [];
+      if (!p.length) p = (window.PitchersDB && window.PitchersDB.PITCHERS_POOL) || window.PITCHERS_POOL || [];
+      return b.concat(p);
+    },
+    rollMosaic() {
+      const pool = this.mosaicPool(), out = [], seen = new Set();
+      for (let t = 0; out.length < 12 && t < 200 && pool.length; t++) {
+        const p = pool[Math.floor(Math.random() * pool.length)], k = keyOf(p);
+        if (!seen.has(k)) { seen.add(k); out.push(p); }
+      }
+      this.mosaic = out;
+    },
+    mosaicHTML() {
+      if (!this.mosaic || !this.mosaic.length) this.rollMosaic();
+      const eraOf = y => { y = parseInt(y, 10) || 2020; return y <= 1900 ? 'genesis' : y <= 1919 ? 'deadball' : y <= 1941 ? 'golden' : y <= 1960 ? 'integration' : y <= 1976 ? 'expansion' : y <= 1993 ? 'bighair' : y <= 2005 ? 'steroid' : y <= 2015 ? 'efficiency' : 'modern'; };
+      const face = p => (window.CardArt ? window.CardArt.portrait(p, eraOf(p.year), isPit(p)) : '');
+      const tiles = this.mosaic.map((p, i) => `<button class="tb-mz r-${String(p.rarity || 'Common').toLowerCase()}" data-tb-mz="${i}" title="${esc(p.name)} · ${esc(p.pos || p.role || '')} · ${Math.floor(ovr(p))}">
+          <i style="background-image:url(${face(p)})"></i><span>${esc(p.name)}</span></button>`).join('');
+      return `<div class="tb-mosaic"><div class="tb-mz-head"><span>🎴 RANDOM PLAYERS</span><button class="tb-btn" data-tb="mosaic" title="Draw 12 new players">🎲 REROLL</button></div><div class="tb-mz-grid">${tiles}</div></div>`;
+    },
+    toggleLock(slot) { const v = this.pv; v.locks = v.locks || {}; if (v.locks[slot]) delete v.locks[slot]; else v.locks[slot] = true; this.save(); },
     sendToAllStar() {
       const C = window.Challenge162; if (!C || typeof C.importPreview !== 'function') return;
       const m = this.byKey(), v = this.pv, get = k => (k ? m.get(k) : null);
@@ -151,7 +208,8 @@
       const p = k ? m.get(k) : null;
       const on = this.active === slot;
       if (!p) return `<button class="tb-slot empty ${on ? 'on' : ''}" data-tb-slot="${slot}"><span>${label}</span><i>+</i></button>`;
-      return `<div class="tb-slot full ${on ? 'on' : ''}" data-tb-slot="${slot}"><span class="tb-tag">${label}</span><div class="tb-card">${card(p)}</div><button class="tb-x" data-tb-x="${slot}" title="Remove">✕</button></div>`;
+      const lk = !!(v.locks && v.locks[slot]);
+      return `<div class="tb-slot full ${on ? 'on' : ''} ${lk ? 'locked' : ''}" data-tb-slot="${slot}"><span class="tb-tag">${label}</span><div class="tb-card">${card(p)}</div><button class="tb-lock" data-tb-lock="${slot}" title="${lk ? 'Locked: RANDOM TEAM keeps him (click to unlock)' : 'Lock him so RANDOM TEAM keeps him'}">${lk ? '🔒' : '🔓'}</button><button class="tb-x" data-tb-x="${slot}" title="Remove">✕</button></div>`;
     },
     render() {
       const ov = document.getElementById('tb-preview'); if (!ov) return;
@@ -182,6 +240,7 @@
             <select id="tb-pick" aria-label="Saved previews">${opts}</select>
             <button class="tb-btn" data-tb="new">＋ NEW</button>
             <button class="tb-btn" data-tb="del">🗑 DELETE</button>
+            <button class="tb-btn gold" data-tb="random" title="Fill every spot that is not locked with a random player who plays it">🎲 RANDOM TEAM</button>
             <button class="tb-btn" data-tb="auto">⚡ AUTO-FILL</button>
             <button class="tb-btn" data-tb="clear">CLEAR</button>
             <button class="tb-btn gold" data-tb="send">👑 SEND TO ALL-STAR DREAM TEAM</button>
@@ -211,7 +270,8 @@
         el.addEventListener('touchmove', () => { if (t && t !== 'fired') clearTimeout(t); t = null; }, { passive: true });
       });
       ov.querySelectorAll('[data-tb-x]').forEach(b => { b.onclick = e => { e.stopPropagation(); this.remove(b.dataset.tbX); this.render(); }; });
-      ov.querySelectorAll('[data-tb-slot]').forEach(b => { b.onclick = e => { if (e.target.closest('.pc2-flip, [data-tb-x]')) return; const s = b.dataset.tbSlot; this.active = this.active === s ? null : s; this.render(); }; });
+      ov.querySelectorAll('[data-tb-lock]').forEach(b => { b.onclick = e => { e.stopPropagation(); this.toggleLock(b.dataset.tbLock); this.render(); }; });
+      ov.querySelectorAll('[data-tb-slot]').forEach(b => { b.onclick = e => { if (e.target.closest('.pc2-flip, [data-tb-x], [data-tb-lock]')) return; const s = b.dataset.tbSlot; this.active = this.active === s ? null : s; this.render(); }; });
       ov.querySelectorAll('[data-tb-card]').forEach(b => {
         b.onclick = e => {
           if (e.target.closest('.pc2-flip')) return;
@@ -234,6 +294,7 @@
           if (a === 'new') { this.previews.push(this.blank(`Preview ${this.previews.length + 1}`)); this.cur = this.previews.length - 1; }
           if (a === 'del') { if (!confirm(`Delete "${this.pv.name}"?`)) return; this.previews.splice(this.cur, 1); if (!this.previews.length) this.previews.push(this.blank('My Dream Team')); this.cur = Math.max(0, this.cur - 1); }
           if (a === 'auto') this.autoFill();
+          if (a === 'random') { this.randomTeam(); if (window.AudioManager && window.AudioManager.play) window.AudioManager.play('card_deal'); }
           if (a === 'clear') { const n = this.pv.name; this.previews[this.cur] = this.blank(n); }
           if (a === 'send') return this.sendToAllStar();
           this.active = null; this.save(); this.render();
@@ -243,5 +304,47 @@
     }
   };
 
-  window.TeamBoard = { SLOTS, FIELD_SPOT, FIELD_SVG, fieldHTML, openPreview: () => TP.open(), _tp: TP };
+  // Random players wall (user, 9 nov 2026): mount into any element; 🎲 draws 12 new faces, a click on
+  // a face calls onPick(player). Used at the top of the Dex.
+  function mountMosaic(el, onPick) {
+    if (!el) return;
+    const draw = () => {
+      TP.rollMosaic();
+      el.innerHTML = TP.mosaicHTML().replace('data-tb="mosaic"', 'data-mz-roll="1"');
+      el.querySelector('[data-mz-roll]').onclick = e => { e.stopPropagation(); draw(); if (window.AudioManager && window.AudioManager.play) window.AudioManager.play('card_deal'); };
+      el.querySelectorAll('[data-tb-mz]').forEach(b => { b.onclick = () => (onPick || (p => TP.zoom(p)))(TP.mosaic[+b.dataset.tbMz]); });
+    };
+    if (TP.mosaic && TP.mosaic.length) {
+      el.innerHTML = TP.mosaicHTML().replace('data-tb="mosaic"', 'data-mz-roll="1"');
+      el.querySelector('[data-mz-roll]').onclick = e => { e.stopPropagation(); draw(); };
+      el.querySelectorAll('[data-tb-mz]').forEach(b => { b.onclick = () => (onPick || (p => TP.zoom(p)))(TP.mosaic[+b.dataset.tbMz]); });
+    } else draw();
+  }
+  // Main menu card wall (user, 9 nov 2026): real cards dealt at random from the whole pool, fanned like a
+  // hand on the table; 🎲 deals a new hand, clicking a card opens its Dex page.
+  const WALL_N = 9;
+  function dealWall() {
+    const el = document.getElementById('menu-card-wall');
+    if (!el || typeof window.createCardHTML !== 'function') return false;
+    const pool = TP.mosaicPool();
+    if (!pool.length) return false;
+    const pick = [], seen = new Set();
+    for (let t = 0; pick.length < WALL_N && t < 300; t++) { const p = pool[Math.floor(Math.random() * pool.length)], k = keyOf(p); if (!seen.has(k)) { seen.add(k); pick.push(p); } }
+    const mid = (WALL_N - 1) / 2;
+    el.innerHTML = `<div class="mcw-head"><span>🎴 TODAY'S HAND</span><button class="mcw-roll" type="button" title="Deal a new hand">🎲 DEAL AGAIN</button></div>
+      <div class="mcw-row">${pick.map((p, i) => `<div role="button" tabindex="0" class="mcw-card" data-mcw="${i}" style="--r:${((i - mid) * 3.2).toFixed(1)}deg;--y:${(Math.abs(i - mid) * 5).toFixed(0)}px;--d:${i * 70}ms">${window.createCardHTML(p)}</div>`).join('')}</div>`;
+    el.querySelector('.mcw-roll').onclick = () => { dealWall(); if (window.AudioManager && window.AudioManager.play) window.AudioManager.play('card_deal'); };
+    el.querySelectorAll('[data-mcw]').forEach(b => {
+      b.onclick = e => {
+        if (e.target.closest('.pc2-flip')) return;
+        const p = pick[+b.dataset.mcw];
+        const D = window.BaseballDex;
+        if (D && typeof D.showDetail === 'function') D.showDetail(p); else TP.zoom(p);
+      };
+    });
+    return true;
+  }
+  (function waitWall(n) { if (!dealWall() && n < 60) setTimeout(() => waitWall(n + 1), 500); })(0);
+
+  window.TeamBoard = { mountMosaic, dealWall, SLOTS, FIELD_SPOT, FIELD_SVG, fieldHTML, openPreview: () => TP.open(), _tp: TP };
 })();

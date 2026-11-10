@@ -232,7 +232,7 @@
     let peak = '';
     if (row) {
       const span = row[0] === row[1] ? yr2(row[0]) : `${yr2(row[0])}–${yr2(row[1])}`;
-      const cap = isP ? t('card.back_peak_p', 'PEAK · AVERAGE SEASON') : t('card.back_peak_b', 'PEAK · 162-GAME AVERAGE');
+      const cap = isP ? t('card.back_peak_p', 'PEAK · 162-GAME AVERAGE') : t('card.back_peak_b', 'PEAK · 162-GAME AVERAGE');
       const g1 = isP
         ? [['W', row[3]], ['L', row[4]], ['ERA', Number(row[5]).toFixed(2)], ['ERA+', nz(row[15])], ['G', row[6]], ['GS', row[7]], ['SV', row[8]]]
         : [['AB', row[3]], ['R', row[4]], ['H', row[5]], ['2B', row[6]], ['3B', row[7]], ['HR', row[8]], ['RBI', row[9]], ['WAR', nz(row[19])]];
@@ -251,6 +251,8 @@
         ? `${cs.w ?? '-'}-${cs.l ?? '-'} · ${cs.era ?? '-'} ERA · ${fmtIp(cs.ip)} IP · ${cs.so ?? '-'} SO`
         : `${cs.g ?? '-'} G · ${cs.avg ?? '-'} · ${cs.hr ?? '-'} HR · ${cs.sb ?? '-'} SB`;
       if (cs.war !== undefined && cs.war !== '-') career += ` · ${cs.war} WAR`;
+      // seasons from independent Black baseball (pre-1920 Negro Leagues) are in the line
+      if ((window.BlackBaseballIDs || {})[String(pid || '').split('_')[0]]) career += ' <i title="Includes Black baseball stats (independent Negro Leagues teams not counted as major league)">*</i>';
     }
     const honors = [];
     if (cs) {
