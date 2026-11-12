@@ -1766,6 +1766,13 @@ DEF_OVR_WEIGHT_BY_POS = {p: round(0.16 * v / 9.425, 4) for p, v in _DEF_SPREAD.i
 # Redondeados a numeros enteros (decision del usuario, 15 oct 2026); catcher 16% (decision de criterio:
 # los datos no miden recibir ni llamar el juego) y DH como el 1B.
 DEF_OVR_WEIGHT_BY_POS.update({"CF": 0.17, "SS": 0.17, "3B": 0.16, "C": 0.16, "2B": 0.15, "RF": 0.16, "LF": 0.15, "1B": 0.12, "DH": 0.11})
+# Pesos del OVR (decision del usuario, 12 nov 2026, "V2"): CON 28, PWR 22, EYE 12, DEF 18 de base
+# (la tabla por posicion escalada x 18/16), SPD 10, K-AVD 10. Lo que la posicion no usa en defensa
+# va al bate (contacto, poder, ojo) como antes.
+# Version final (usuario, 12 nov 2026): CON 28, PWR 24, EYE 12, DEF 18 de media, SPD 10, K-AVD 8; defensa
+# por posicion en numeros enteros. Con esto entra Reggie Jackson y se quedan Cabrera, Manny y Ortiz.
+DEF_OVR_WEIGHT_BY_POS.update({"CF": 0.19, "SS": 0.19, "3B": 0.18, "C": 0.18, "RF": 0.18, "2B": 0.17, "LF": 0.17, "1B": 0.14, "DH": 0.12})
+BAT_W = {"con": 0.28, "pwr": 0.24, "eye": 0.12, "def": 0.18, "spd": 0.10, "kavd": 0.08}
 DEF_OVR_POS_SHARE = 0.70    # peso del WAR defensivo (posicion incluida) en la defensa que usa el OVR
 LONGEVITY_WEIGHT  = 0.25    # peso del pico de 12 en el rating final
 # Pruebas (variables de entorno; sin ellas el ETL corre con los valores de arriba): LONG_SEASONS y
@@ -2238,25 +2245,26 @@ def paso_15_equipo_y_exportar(df, batting, teams, franchises, pico_df=None, war_
     # Peso estándar y universal de la defensa en el OVR: 16% uniforme para todos los bateadores.
     # El OVR refleja limpiamente: 26% CON, 26% PWR, 12% EYE, 16% DEF, 10% SPD, 10% K-AVD.
     # Elimina multiplicadores artificiales por posición para evitar penalizar la versatilidad de los jugadores.
-    w_def = 0.16
+    w_def = BAT_W["def"]
     # Prueba (DEF_POS=pos | blend): peso de la defensa segun la posicion (carreras de fildeo que
     # separan a los titulares de cada una), el DH con el 16% comun; "blend" mezcla los pesos de
     # todas las posiciones que jugo segun su volumen. Lo que la defensa pesa de menos o de mas va al bate.
     _dp = os.environ.get("DEF_POS", "blend")
     if _dp in ("pos", "blend"):
         _wp = dict(DEF_OVR_WEIGHT_BY_POS)
-        w_def = df["primary_pos"].map(_wp).fillna(0.16)
+        w_def = df["primary_pos"].map(_wp).fillna(BAT_W["def"])
         if _dp == "blend" and "def_w_blend" in df.columns:
             w_def = df["def_w_blend"].fillna(w_def)  # tambien los DH: mezcla de todas las posiciones que jugaron (DH incluido)
     df["def_w"] = w_def
-    _bm = 1.0 + (0.16 - w_def) / 0.64
+    _bat = BAT_W["con"] + BAT_W["pwr"] + BAT_W["eye"]
+    _bm = 1.0 + (BAT_W["def"] - w_def) / _bat
     df["raw_ovr"] = (
-        df["contact_val"] * 0.26 * _bm +
-        df["power_val"]   * 0.26 * _bm +
-        df["eye_val"]     * 0.12 * _bm +
+        df["contact_val"] * BAT_W["con"] * _bm +
+        df["power_val"]   * BAT_W["pwr"] * _bm +
+        df["eye_val"]     * BAT_W["eye"] * _bm +
         df["defense_ovr_val"] * w_def +
-        df["speed_val"]   * 0.10 +
-        df["k_avoid_val"] * 0.10
+        df["speed_val"]   * BAT_W["spd"] +
+        df["k_avoid_val"] * BAT_W["kavd"]
     )
     # ── Badges: Clutch Player / Captain ─────────────────────────────────────
     CAPTAIN_TEAM_BONUS = 1

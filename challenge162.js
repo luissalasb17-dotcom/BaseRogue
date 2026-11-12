@@ -312,11 +312,14 @@
     const rates = (s && (s.fch || s.fc)) ? leagueFieldRates() : {};
     // A catcher also gets the runners he threw out above what the league's catchers do.
     const arm = (P === 'C' && rates.__cs !== undefined) ? ((s.csa || 0) - ((s.csa || 0) + (s.sba || 0)) * rates.__cs) * CATCHER_CS_RUNS : 0;
+    // Receiving (CATCHER_FRAME): not counted play by play, so it is estimated from his glove and
+    // how much he played (+10 of glove ~ 2.3 runs over a full season, as calibrated in the engine).
+    const frame = P === 'C' ? (defVal - 50) * 0.23 * (pa / 600.0) : 0;
     const rate = rates[s.pos] !== undefined ? rates[s.pos] : rates[P];
-    if (!s.fch || rate === undefined) return priorRuns + arm;
+    if (!s.fch || rate === undefined) return priorRuns + arm + frame;
     // User's call: all of it comes from the season being played. The card's glove only fills in
     // while there is nothing to count (no chances yet, or a position with under 100 in the league).
-    return ((s.fp || 0) - s.fch * rate) * FIELD_RUN_PER_PLAY + arm;
+    return ((s.fp || 0) - s.fch * rate) * FIELD_RUN_PER_PLAY + arm + frame;
   }
 
   // League environment for the "+" stats (OPS+, ERA+) and FIP's constant, from every game played
@@ -1552,6 +1555,14 @@
   // That last split is an estimate; everything else is counted.
   const FIELD_CHANCE = { SS: 19.1, '2B': 18.6, CF: 13.4, '3B': 13.4, '1B': 11.6, RF: 10.6, LF: 10.2, C: 3.1 };
   const FIELD_ROB = 0.00119, FIELD_MISS = 0.00047;
+  // How much a glove point is worth at each position (user, 12 nov 2026). Balls in play still go
+  // where FIELD_CHANCE sends them (real data), but SS / 2B got most of them and a glove there was
+  // worth ~1.4x a glove in the corners; the catcher only had his arm. These multipliers bring the
+  // runs a +10 glove saves in line with the real spread by position (CF / SS 22, 3B 21, 2B / RF / C
+  // 20, LF 19, 1B 15); the catcher gets the rest through receiving (CATCHER_FRAME).
+  const GLOVE_POS_MULT = { SS: 0.72, '2B': 0.72, '3B': 0.76, '1B': 0.88, CF: 1.83, RF: 1.42, LF: 1.52, C: 1.0 };
+  const gloveMult = pos => (window.__GLOVE_OFF ? 1 : (GLOVE_POS_MULT[pos] || 1)); // __GLOVE_OFF: test switch
+  const CATCHER_FRAME = 0.067; // pitching points (K/9 and BB/9) per point of catcher glove over or under 50
   const CATCHER_ARM = 0.002, CATCHER_CS_RUNS = 0.65; // steal success per point of catcher glove; runs of a caught stealing over a steal
   const _sumOf = o => Object.values(o).reduce((t, v) => t + v, 0);
   const FIELD_CHANCE_SUM = _sumOf(FIELD_CHANCE), ERROR_WEIGHT_SUM = _sumOf(ERROR_WEIGHT);
@@ -5753,6 +5764,9 @@
           const pressure = !!(bases[1] || bases[2]) || lateClose;
           const adj = (pressure ? (clt - CLUTCH_PIT_CENTER) * CLUTCH_PIT : 0) + (bigSpot ? CLUTCH_PIT_BADGE : 0) + (playoffPitchClutch ? PLAYOFF_HERO_BOOST : 0) + (opts.confidence ? ps.conf : 0) - pen;
           const eff = adj ? { ...p, h9: p.h9 + adj, k9: p.k9 + adj, bb9: p.bb9 + adj, hr9: p.hr9 + adj } : { ...p };
+          // The catcher receives and calls the game: his glove moves his pitcher's strikeouts and walks.
+          const catcherF = pitSide.lineup.find(c => slotOf(c) === 'C');
+          if (catcherF && CATCHER_FRAME && !window.__GLOVE_OFF) { const fr = (gloveOf(catcherF) - 50) * CATCHER_FRAME; eff.k9 = (eff.k9 ?? 50) + fr; eff.bb9 = (eff.bb9 ?? 50) + fr; }
           eff._fieldingDef = 50; // the gloves act below, one fielder at a time
           const batter = nextBatter(bi, { blowout, inning, outs, margin, onBase: bases.filter(Boolean).length });
           halfPAs++;
@@ -5875,7 +5889,7 @@
             let pick = Math.random() * fs.reduce((t, f) => t + FIELD_CHANCE[slotOf(f)], 0);
             fielder = fs.find(f => (pick -= FIELD_CHANCE[slotOf(f)]) < 0) || null;
             if (fielder) {
-              const g = gloveOf(fielder) - 50;
+              const g = (gloveOf(fielder) - 50) * gloveMult(slotOf(fielder));
               if (outcome === 'OUT') { if (g < 0 && Math.random() < -g * FIELD_MISS) { outcome = '1B'; missed = true; } }
               else if (g > 0 && Math.random() < g * FIELD_ROB) { outcome = 'OUT'; robbed = true; }
             }
@@ -5929,7 +5943,7 @@
             if (fielder) {
               const pos = slotOf(fielder);
               pErr = ERROR_RATE * (ERROR_WEIGHT[pos] / ERROR_WEIGHT_SUM) / (FIELD_CHANCE[pos] / FIELD_CHANCE_SUM)
-                * Math.max(ERROR_GLOVE_MIN, Math.min(ERROR_GLOVE_MAX, 1 - (gloveOf(fielder) - 50) * ERROR_GLOVE_SLOPE));
+                * Math.max(ERROR_GLOVE_MIN, Math.min(ERROR_GLOVE_MAX, 1 - (gloveOf(fielder) - 50) * gloveMult(pos) * ERROR_GLOVE_SLOPE));
             }
             const bspd = Math.min(1.0, Math.max(0, batter.spd !== undefined ? batter.spd : 50) / 125.0);
             const isError = !robbed && Math.random() < pErr;
