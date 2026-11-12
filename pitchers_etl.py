@@ -1642,7 +1642,7 @@ def paso_11_ovr_rareza(df, awards=None):
         df["career_war_adj"] = _bid.map(_adj).fillna(0.0).round(1)
         _rp = df["role"] == "RP"
         _c = np.where(_rp, 25.0, 60.0); _st = np.where(_rp, 6.0, 12.0)
-        _lb = ((df["career_war_adj"] - _c) / _st).clip(-1.0, 2.0)
+        _lb = ((df["career_war_adj"] - _c) / _st).clip(float(_os.environ.get("LB_MIN","0")), 2.0)
         df["longevity_bonus"] = _lb.round(2)
         df["raw_ovr"] = df["raw_ovr"] + _lb
         for _k in ("h9_val", "k9_val", "bb9_val", "hr9_val", "sta_val", "clt_val", "clu_val"):  # respaldado en los ratings
