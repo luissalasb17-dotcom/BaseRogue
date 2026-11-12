@@ -461,7 +461,7 @@
       // Clutch and badges travel with the card (bug fixed 9 nov 2026: rival pitchers lost their Clutch,
       // so the RISP adjustment only ever applied to the user's own staff).
       clt: p.clt !== undefined ? p.clt : (p.clt_val !== undefined ? p.clt_val : undefined),
-      badge_clutch: !!p.badge_clutch, badge_captain: !!p.badge_captain,
+      badge_clutch: !!p.badge_clutch, badge_captain: !!p.badge_captain, badge_workhorse: !!p.badge_workhorse,
       upgrades: { con: 0, pwr: 0, eye: 0, spd: 0, def: 0, sta: 0 }
     };
   }
@@ -1524,6 +1524,10 @@
   // Iron Man pitchers (they share the three picks with the batters): a starter stays fresh 15%
   // longer, a reliever 50% longer and can pitch one more day in a row.
   const IRON_SP_FRESH = 1.15, IRON_RP_FRESH = 1.5;
+  // WORKHORSE badge (12 nov 2026): 15+ full seasons. Batters wear half as fast (stacks with Iron Man),
+  // starters stay fresh 10% longer, relievers can go one more day in a row.
+  const WORKHORSE_WEAR = 0.5, WORKHORSE_SP_FRESH = 1.10;
+  const isWorkhorse = p => !!(p && (p.workhorse || p.is_workhorse || p.badge_workhorse));
   const IRON_BOOST = 3; // rating points for any Iron Man: batting ratings for a batter, pitching ratings for a pitcher
   const ironPitKey = p => `P:${pitcherUnlockKey(p)}`;
   const FIREMAN_MAX_LEAD = 2, FIREMAN_TIRED = 4;
@@ -4709,7 +4713,7 @@
     _freshBatters(p, isStarter) {
       const sta = p.sta !== undefined ? p.sta : (p.sta_val !== undefined ? p.sta_val : 50);
       // An Iron Man pitcher tires more slowly: more batters before his ratings start to drop.
-      return (isStarter ? 12 + sta * 0.15 : 4 + sta * 0.05) * (p.iron ? (isStarter ? IRON_SP_FRESH : IRON_RP_FRESH) : 1);
+      return (isStarter ? 12 + sta * 0.15 : 4 + sta * 0.05) * (p.iron ? (isStarter ? IRON_SP_FRESH : IRON_RP_FRESH) : 1) * (isStarter && isWorkhorse(p) ? WORKHORSE_SP_FRESH : 1);
     },
 
     _fatiguePenalty(ps) {
@@ -4910,7 +4914,7 @@
         const u = pen[k];
         // Two days in a row and a reliever rests; the closer can go a third day, and an Iron Man
         // reliever one more than his role allows.
-        return !(u && u.last === day - 1 && u.run >= (p.role === 'CL' ? 3 : 2) + (p.iron ? 1 : 0));
+        return !(u && u.last === day - 1 && u.run >= (p.role === 'CL' ? 3 : 2) + (p.iron ? 1 : 0) + (isWorkhorse(p) ? 1 : 0));
       });
       // Out of relievers: a starter on his throw day comes out of the pen instead of leaving a
       // spent arm on the mound.
@@ -5159,6 +5163,7 @@
         lineup, benchLeft, rested,
         roster: [...side.lineup, ...side.bench].map(keyOf),
         iron: Object.keys(side.ironMan || {}).map(k => this._leagueKey(side.id, k)),
+        wh: [...side.lineup, ...side.bench].filter(isWorkhorse).map(keyOf),
         starts: lineup.map(p => ({ k: keyOf(p), pos: p.assignedSlot || p.pos || 'DH' }))
       };
     },
@@ -5237,6 +5242,7 @@
         lineup, benchLeft, rested,
         roster: [...side.lineup, ...side.bench].map(keyOf),
         iron: Object.keys(side.ironMan || {}).map(k => this._leagueKey(side.id, k)),
+        wh: [...side.lineup, ...side.bench].filter(isWorkhorse).map(keyOf),
         starts: lineup.map(p => ({ k: keyOf(p), pos: p.assignedSlot || p.pos || 'DH' }))
       };
     },
@@ -6074,7 +6080,7 @@
       return {
         paused: halt,
         runs, innings: played, line, bat, pit, winnerId: sides[wi].id,
-        wear: daily.map((d, i) => ({ team: sides[i].id, roster: d.roster, starts: d.starts, rested: d.rested, iron: d.iron }))
+        wear: daily.map((d, i) => ({ team: sides[i].id, roster: d.roster, starts: d.starts, rested: d.rested, iron: d.iron, wh: d.wh }))
       };
     },
 
@@ -6113,10 +6119,11 @@
       (result.wear || []).forEach(w => {
         const started = new Map(w.starts.map(s => [s.k, s.pos]));
         const iron = new Set(w.iron || []);
+        const wh = new Set(w.wh || []);
         w.roster.forEach(k => {
           if (started.has(k)) {
             if (L.stats && L.stats.bat && L.stats.bat[k]) L.stats.bat[k].gs = (L.stats.bat[k].gs || 0) + 1; // games started
-            const add = Math.max(0, (WEAR_BY_POS[started.get(k)] || 0.5) - WEAR_RECOVERY) * (iron.has(k) ? IRON_MAN_WEAR : 1);
+            const add = Math.max(0, (WEAR_BY_POS[started.get(k)] || 0.5) - WEAR_RECOVERY) * (iron.has(k) ? IRON_MAN_WEAR : 1) * (wh.has(k) ? WORKHORSE_WEAR : 1);
             L.wear[k] = Math.min(WEAR_CAP, Math.round(((L.wear[k] || 0) + add) * 100) / 100);
           } else if (L.wear[k]) {
             const left = REST_SMART ? L.wear[k] - REST.recover : 0;
@@ -9954,6 +9961,7 @@
         let badgesHtml = '';
         if (isHof) badgesHtml += '<span style="background:#ffd70022;color:#ffd700;border:1px solid #ffd700;padding:2px 8px;border-radius:4px;font-size:8px">🏆 HOF</span>';
         if (card.clutch || card.is_clutch || card.badge_clutch) badgesHtml += '<span style="background:#ef444422;color:#ef4444;border:1px solid #ef4444;padding:2px 8px;border-radius:4px;font-size:8px">⚡ PLAYOFF HERO</span>';
+        if (card.workhorse || card.is_workhorse || card.badge_workhorse) badgesHtml += '<span style="background:#a1622422;color:#d6a05a;border:1px solid #d6a05a;padding:2px 8px;border-radius:4px;font-size:8px">🐴 WORKHORSE</span>';
         if (card.captain || card.is_captain || card.badge_captain) badgesHtml += '<span style="background:#3b82f622;color:#3b82f6;border:1px solid #3b82f6;padding:2px 8px;border-radius:4px;font-size:8px">👑 CAPTAIN</span>';
 
         let careerStatsBlockHTML = '';

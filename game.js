@@ -525,7 +525,7 @@ window.leftyCantPlay = function (p, slot) {
     else if (raw <= 55) base = 70.0 + ((raw - 45) / 10) * 9.9;
     else if (raw <= 75) base = 80.0 + ((raw - 55) / 20) * 9.9;
     else base = 90.0 + Math.min(9.9, ((raw - 75) / 25.0) * 9.9);
-    base += ((p.captain || p.is_captain) ? 1 : 0) + ((p.clutch || p.is_clutch) ? 1 : 0); // +1 per badge
+    base += ((p.captain || p.is_captain) ? 1 : 0) + ((p.clutch || p.is_clutch) ? 1 : 0) + ((p.workhorse || p.is_workhorse) ? 1 : 0); // +1 per badge
     return Math.floor(Math.max(50, Math.min(99.9, base)));
   };
   const _gambleRarityOrder = ['Common', 'Uncommon', 'Rare', 'Epic', 'Legendary'];
@@ -3348,7 +3348,8 @@ window.leftyCantPlay = function (p, slot) {
             : (player.stamina !== undefined ? player.stamina : 100);
 
           const isStaminaImmune = staminaImmuneIds.has(player.id || player.name) || (player.equipped_item && player.equipped_item.energy_immune);
-          let actualLoss = staminaLoss;
+          // WORKHORSE badge (12 nov 2026): loses 15 instead of 20 per match (a quarter less).
+          let actualLoss = (player.workhorse || player.is_workhorse || player.badge_workhorse) ? Math.round(staminaLoss * 0.75) : staminaLoss;
           if (player.equipped_item && player.equipped_item.energy_half_loss) {
             actualLoss = Math.round(actualLoss * 0.5);
           }

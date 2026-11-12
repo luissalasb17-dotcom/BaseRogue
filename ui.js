@@ -3314,7 +3314,7 @@ function initGameModeSelector() {
       // The cut points are the pool percentiles (35 / 65 / 85 / 97.5) of the last ETL run; update them if the ETL changes.
       // same scale and cuts as batters (pitchers_etl.py PIT_RAW_SHIFT); a captain is +8 raw (+1 to his 8 teammates)
       const raw = h9 * 0.28 + sta * 0.24 + k9 * 0.14 + bb9 * 0.14 + hr9 * 0.10 + clt * 0.10 - 5; // badges go on the final OVR (+2 each), not the raw
-      const pitBadge = (p.badge_captain ? 1 : 0) + (p.badge_clutch ? 1 : 0); // +1 per badge on the final OVR
+      const pitBadge = (p.badge_captain ? 1 : 0) + (p.badge_clutch ? 1 : 0) + (p.badge_workhorse ? 1 : 0); // +1 per badge on the final OVR
       if (raw <= 35) return Math.floor(50.0 + Math.max(0, (raw - 16.7) / 18.3) * 9.9 + pitBadge);
       if (raw <= 45) return Math.floor(60.0 + ((raw - 35) / 10) * 9.9 + pitBadge);
       if (raw <= 55) return Math.floor(70.0 + ((raw - 45) / 10) * 9.9 + pitBadge);
@@ -3349,7 +3349,7 @@ function initGameModeSelector() {
       else if (raw <= 55) base = 70.0 + ((raw - 45) / 10) * 9.9;
       else if (raw <= 75) base = 80.0 + ((raw - 55) / 20) * 9.9;
       else base = 90.0 + Math.min(9.9, ((raw - 75) / 25.0) * 9.9);
-      return base + ((p.captain || p.is_captain) ? 1 : 0) + ((p.clutch || p.is_clutch) ? 1 : 0); // +1 per badge
+      return base + ((p.captain || p.is_captain) ? 1 : 0) + ((p.clutch || p.is_clutch) ? 1 : 0) + ((p.workhorse || p.is_workhorse) ? 1 : 0); // +1 per badge
     };
     const anchored = p.ovr !== undefined && p.kavd === undefined ? Number(p.ovr) + (score(1) - score(0)) : score(1);
     return Math.floor(Math.max(50, Math.min(99.9, anchored)));
@@ -3647,6 +3647,8 @@ function initGameModeSelector() {
 
     const isClutch = !!(player.clutch || player.is_clutch || player.badge_clutch);
     const isCaptain = !!(player.captain || player.is_captain || player.badge_captain);
+    const isWorkhorse = !!(player.workhorse || player.is_workhorse || player.badge_workhorse);
+    const workhorseToolTip = window.t ? window.t('badge.workhorse_tooltip', 'Workhorse: 15+ full seasons. Tires less (-15 Stamina per match instead of -20; slower wear in the 162-0). +1 OVR.') : 'Workhorse: 15+ full seasons. Tires less (-15 Stamina per match instead of -20; slower wear in the 162-0). +1 OVR.';
     const isDoubleBadge = isClutch && isCaptain;
 
     const clutchToolTip = window.t ? window.t('badge.clutch_tooltip', 'Playoff Hero (MVP de la Serie Mundial, de una Serie de Campeonato o Babe Ruth Award): +8 a sus ratings en los combates de jefe y en los playoffs del 162-0.') : 'Playoff Hero (MVP de la Serie Mundial, de una Serie de Campeonato o Babe Ruth Award): +8 a sus ratings en los combates de jefe y en los playoffs del 162-0.';
@@ -3703,8 +3705,8 @@ function initGameModeSelector() {
     const okHand = c => c === 'R' || c === 'L' || c === 'S';
     const handTxt = (okHand(hh[0]) || okHand(hh[1])) ? `${okHand(hh[0]) ? hh[0] : '–'}/${okHand(hh[1]) ? hh[1] : '–'}` : '';
     const badgePatch = (kind, label, tip) => `<span class="pc2-badge pc2-badge-${kind}" title="${esc(tip)}"><i>${label}</i></span>`;
-    const badgesHTML = (isClutch || isCaptain)
-      ? `<div class="pc2-badges">${isClutch ? badgePatch('oct', 'PH', clutchToolTip) : ''}${isCaptain ? badgePatch('cap', 'C', captainToolTip) : ''}</div>` : '';
+    const badgesHTML = (isClutch || isCaptain || isWorkhorse)
+      ? `<div class="pc2-badges">${isClutch ? badgePatch('oct', 'PH', clutchToolTip) : ''}${isCaptain ? badgePatch('cap', 'C', captainToolTip) : ''}${isWorkhorse ? badgePatch('wh', 'W', workhorseToolTip) : ''}</div>` : '';
     const sparks = (rarityLabel === 'Legendary' || rarityLabel === 'Epic')
       ? `<div class="pc2-sparks">${[0, 1, 2, 3, 4].map(k => `<i style="left:${8 + k * 19}%;top:${12 + (k * 37) % 70}%;animation-delay:${(k * 0.53).toFixed(2)}s"></i>`).join('')}</div>` : '';
     const chipList = [
@@ -3720,7 +3722,7 @@ function initGameModeSelector() {
     }).join('');
     const backNums = ratingList.map(([k, v]) => `<div><span>${k}</span><b>${Math.round(v)}</b></div>`).join('');
     const yrs = (player.debut_year && player.last_year) ? `${player.debut_year}–${player.last_year}` : '';
-    const badgeNames = [isClutch ? 'Playoff Hero' : '', isCaptain ? 'Captain' : ''].filter(Boolean).join(' · ');
+    const badgeNames = [isClutch ? 'Playoff Hero' : '', isCaptain ? 'Captain' : '', isWorkhorse ? 'Workhorse' : ''].filter(Boolean).join(' · ');
     const tt = (k, d) => (typeof window.t === 'function' ? window.t(k, { defaultValue: d }) : d);
 
     return `

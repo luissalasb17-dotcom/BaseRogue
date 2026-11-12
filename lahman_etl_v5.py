@@ -2255,17 +2255,54 @@ def paso_15_equipo_y_exportar(df, batting, teams, franchises, pico_df=None, war_
         w_def = df["primary_pos"].map(_wp).fillna(BAT_W["def"])
         if _dp == "blend" and "def_w_blend" in df.columns:
             w_def = df["def_w_blend"].fillna(w_def)  # tambien los DH: mezcla de todas las posiciones que jugaron (DH incluido)
+    # Prueba DEF_MAX18=1: los pesos por posicion bajan 1 punto (tope 18 en CF/SS) y lo que la
+    # defensa no usa del 18% va SOLO a contacto y poder (el ojo queda fijo en 12%).
+    _max18 = os.environ.get("DEF_MAX18", "0") == "1"
+    if _max18:
+        w_def = (w_def - 0.01).clip(upper=0.18)
     df["def_w"] = w_def
-    _bat = BAT_W["con"] + BAT_W["pwr"] + BAT_W["eye"]
-    _bm = 1.0 + (BAT_W["def"] - w_def) / _bat
+    if _max18:
+        _bat = BAT_W["con"] + BAT_W["pwr"]
+        _bm = 1.0 + (BAT_W["def"] - w_def) / _bat
+        _be = 1.0
+    else:
+        _bat = BAT_W["con"] + BAT_W["pwr"] + BAT_W["eye"]
+        _bm = 1.0 + (BAT_W["def"] - w_def) / _bat
+        _be = _bm
     df["raw_ovr"] = (
         df["contact_val"] * BAT_W["con"] * _bm +
         df["power_val"]   * BAT_W["pwr"] * _bm +
-        df["eye_val"]     * BAT_W["eye"] * _bm +
+        df["eye_val"]     * BAT_W["eye"] * _be +
         df["defense_ovr_val"] * w_def +
         df["speed_val"]   * BAT_W["spd"] +
         df["k_avoid_val"] * BAT_W["kavd"]
     )
+    # ── Longevidad (decision del usuario, 12 nov 2026) ───────────────────────
+    # Los ratings miden calidad por turno; esto premia la carrera larga y productiva. WAR de carrera
+    # de bbref con cada temporada llevada a 162 juegos (Ligas Negras y siglo XIX jugaban calendarios
+    # cortos, tope x3). Bono en el raw: 0 con 60 WAR, +1 por cada 12 mas (tope +2) y -1 por cada 12
+    # menos (tope -1). LONGEVITY_BONUS=0 lo apaga.
+    if os.environ.get("LONGEVITY_BONUS", "1") == "1" and war_bat is not None and people is not None:
+        _wb = war_bat.copy()
+        if "pitcher" in _wb.columns:
+            _wb = _wb[_wb["pitcher"] != "Y"]
+        _wb["WAR"] = pd.to_numeric(_wb["WAR"].replace("NULL", 0), errors="coerce").fillna(0)
+        _tg = teams.groupby(["yearID", "teamIDBR"])["G"].max() if "teamIDBR" in teams.columns else pd.Series(dtype=float)
+        _tg2 = teams.groupby(["yearID", "teamID"])["G"].max()
+        _g = [_tg.get((y, t), _tg2.get((y, t), np.nan)) for y, t in zip(_wb["year_ID"], _wb["team_ID"])]
+        _wb["G"] = pd.Series(_g, index=_wb.index).fillna(_wb["year_ID"].map(teams.groupby("yearID")["G"].median())).fillna(140)
+        _wb["WARadj"] = _wb["WAR"] * (162.0 / _wb["G"]).clip(1.0, 3.0)
+        _adj = _wb.groupby("player_ID")["WARadj"].sum()
+        _bb = df["playerID"].map(people.set_index("playerID")["bbrefID"]) if "bbrefID" in people.columns else df["playerID"]
+        df["career_war_adj"] = _bb.map(_adj).fillna(0.0).round(1)
+        _lb = ((df["career_war_adj"] - 60.0) / 12.0).clip(-1.0, 2.0)
+        df["longevity_bonus"] = _lb.round(2)
+        df["raw_ovr"] = df["raw_ovr"] + _lb
+        # Respaldado en los ratings (decision del usuario): el bono se suma a los seis ratings, asi el
+        # OVR sube exactamente lo mismo (los pesos suman 1) y el juego usa lo que la carta dice.
+        for _c in ("contact_val", "power_val", "eye_val", "defense_val", "defense_ovr_val", "speed_val", "k_avoid_val"):
+            if _c in df.columns:
+                df[_c] = (df[_c] + _lb).clip(1.0, 125.0)
     # ── Badges: Clutch Player / Captain ─────────────────────────────────────
     CAPTAIN_TEAM_BONUS = 1
     PLAYOFF_HERO_RAW = 4.0  # ~ +2 de OVR
@@ -2292,7 +2329,14 @@ def paso_15_equipo_y_exportar(df, batting, teams, franchises, pico_df=None, war_
     hero_pids = set(_aw[_aw['awardID'].isin({'World Series MVP', 'Babe Ruth Award', 'ALCS MVP', 'NLCS MVP'})]['playerID']) | {'bettsmo01', 'yamamyo01'}
     df['is_clutch']  = df['playerID'].isin(hero_pids)
     df['is_captain'] = df['playerID'].isin(captain_pids)
-    print(f"  Badges: PlayoffHero={df['is_clutch'].sum()} | Captain={df['is_captain'].sum()}")
+    # WORKHORSE (decision del usuario, 12 nov 2026): 15+ temporadas completas equivalentes (workhorse_etl.py).
+    # Reemplaza el bono por WAR de carrera (LONGEVITY_BONUS, ahora apagado por defecto).
+    _wh_path = Path(__file__).resolve().parent / "workhorse_ids.csv"
+    _wh = pd.read_csv(_wh_path) if _wh_path.exists() else pd.DataFrame(columns=["playerID", "type", "FS"])
+    _wh = _wh[_wh["type"] == "BAT"].set_index("playerID")["FS"]
+    df['full_seasons'] = df['playerID'].map(_wh).fillna(0.0)
+    df['is_workhorse'] = df['full_seasons'] >= float(os.environ.get("WORKHORSE_MIN", "15"))
+    print(f"  Badges: PlayoffHero={df['is_clutch'].sum()} | Captain={df['is_captain'].sum()} | Workhorse={df['is_workhorse'].sum()}")
 
     # ── OVR con boost de Badges (+2 por badge) & Rareza ─────────────────────
     # Cortes de rareza por percentil del pool (mismo esquema que pitchers_etl.py):
@@ -2307,7 +2351,7 @@ def paso_15_equipo_y_exportar(df, batting, teams, franchises, pico_df=None, war_
     # Insignias (decision del usuario, 7 nov 2026): +BADGE_OVR al OVR FINAL, parejo en todas las rarezas
     # (antes +4 al raw, que valia +4 en Rare y ~+1 en Legendary). La rareza sale del OVR final.
     BADGE_OVR = float(os.environ.get("BADGE_OVR", "1"))
-    badge_boost = ((df["is_captain"].astype(int) + df["is_clutch"].astype(int)) * BADGE_OVR).to_numpy()
+    badge_boost = ((df["is_captain"].astype(int) + df["is_clutch"].astype(int) + df["is_workhorse"].astype(int)) * BADGE_OVR).to_numpy()  # sin tope (decision del usuario)
 
     def cosmetic_scores(cuts):
         c1, c2, c3, c4 = cuts
@@ -2362,12 +2406,12 @@ def paso_15_equipo_y_exportar(df, batting, teams, franchises, pico_df=None, war_
         "career_pa","career_ab","career_h","career_hr","career_sb","career_bb","career_so",
         "seasons","bats",
         "ba","obp","iso","k_rate","bb_rate",
-        "contact_val","power_val","eye_val","k_avoid_val","speed_val","defense_val","defense_ovr_val","def_w",
+        "contact_val","power_val","eye_val","k_avoid_val","speed_val","defense_val","defense_ovr_val","def_w","career_war_adj",
         "con_grade","pow_grade","eye_grade","k_avd_grade","spd_grade","def_grade",
         "avg_attr_score","rarity",
         "is_allstar","is_hof","allstar_selections","gold_gloves","gg_bonus",
         "defense_source",
-        "is_clutch","is_captain",
+        "is_clutch","is_captain","is_workhorse","full_seasons",
     ]
     keep_cols = [c for c in keep_cols if c in df.columns]
     final = df[keep_cols].copy()
@@ -2434,6 +2478,7 @@ def paso_15_equipo_y_exportar(df, batting, teams, franchises, pico_df=None, war_
             f'hof: {"true" if r["is_hof"] else "false"}, '
             f'clutch: {"true" if r.get("is_clutch", False) else "false"}, '
             f'captain: {"true" if r.get("is_captain", False) else "false"}, '
+            f'workhorse: {"true" if r.get("is_workhorse", False) else "false"}, '
             f'def_source: "{r.get("defense_source","lahman_proxy")}" '
             f'}},'
         )

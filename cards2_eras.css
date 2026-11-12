@@ -178,3 +178,11 @@
 .player-card.pc2.pc2-e-steroid .pc2-badge i::before, .player-card.pc2.pc2-e-efficiency .pc2-badge i::before, .player-card.pc2.pc2-e-modern .pc2-badge i::before {
   background: linear-gradient(170deg, rgba(255,255,255,.45) 0 34%, transparent 36%); opacity: .7;
 }
+/* WORKHORSE badge: leather-brown patch (felt in old eras, bronze foil in glossy eras) */
+.pc2-badge-wh { background: linear-gradient(135deg, #7a4a22, #d9a868 50%, #7a4a22); }
+.pc2-badge-wh i { background: #3a2210; color: #f2d7a6; font-size: 8.5px; }
+.player-card.pc2 .pc2-badge-wh { background: linear-gradient(160deg, #e2c9a0, #a7835a); }
+.player-card.pc2 .pc2-badge-wh i { background: radial-gradient(120% 90% at 50% 25%, #8a5a2e, #5e3816 70%, #3a200a); color: #f2d7a6; }
+.player-card.pc2.pc2-e-steroid .pc2-badge-wh, .player-card.pc2.pc2-e-efficiency .pc2-badge-wh, .player-card.pc2.pc2-e-modern .pc2-badge-wh {
+  background: linear-gradient(115deg, #6e4318 0%, #f3cf98 35%, #a8702f 55%, #f0c88a 80%, #6e4318 100%);
+}

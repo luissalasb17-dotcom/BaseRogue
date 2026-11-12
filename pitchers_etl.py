@@ -1335,7 +1335,10 @@ def paso_8_atributos_raw(df):
 
     denom_lob = h_k + bb_k + hbp_k - 1.4 * hr_k
     num_lob   = h_k + bb_k + hbp_k - er_k
-    m_lob     = 150.0 * (m_ip / 250.0)     # misma proporcion que el ancla de entradas
+    # Ancla del Clutch (CLT_K corredores; prueba 12 nov 2026). Medido con Lahman 1920+: el LOB% sobrante
+    # (descontando hits y jonrones) se repite de un ano al otro con r=0.17 y entre mitades de carrera
+    # (~1,170 corredores cada una) con r=0.40 -> hace falta ~1,500 corredores para que la mitad sea talento.
+    m_lob     = float(_os.environ.get("CLT_K", "150")) * (m_ip / 250.0)
     # Mismo esquema que las tasas: prior individual por Era, rol y tiempo de juego en vez de 0.720 global.
     denom_pos = denom_lob.where(denom_lob > 0)
     prior_lob = _prior(num_lob / denom_pos, denom_lob.clip(lower=0))
@@ -1365,7 +1368,7 @@ def paso_8_atributos_raw(df):
         beta = np.linalg.lstsq(X[ok] * np.sqrt(w_[ok])[:, None], y_[ok] * np.sqrt(w_[ok]), rcond=None)[0]
         exp_ = pd.Series(np.where(np.isfinite(X).all(1), X @ beta, np.nan), index=df.index)
         exp_ = exp_.fillna(prior_lob)
-        resid = ((num_lob - exp_ * denom_lob) / (denom_lob + 2.0 * m_lob)).fillna(0)
+        resid = ((num_lob - exp_ * denom_lob) / (denom_lob + (1.0 if _os.environ.get("CLT_K") else 2.0) * m_lob)).fillna(0)
         _bl = float(_os.environ.get("CLT_BLEND", "0.6"))
         df["clt_raw"] = (_bl * (prior_lob.mean() + resid).clip(0.55, 0.90) + (1 - _bl) * lob_smooth) * 100.0
         print("  Clutch residual: coeficientes", np.round(beta, 4))
@@ -1593,8 +1596,14 @@ def paso_11_ovr_rareza(df, awards=None):
     _heroes = set(awards[awards["awardID"].isin({"World Series MVP", "Babe Ruth Award", "ALCS MVP", "NLCS MVP"})]["playerID"]) if awards is not None and len(awards) else set()
     df["is_clutch"] = _base_id.isin(_heroes | {"bettsmo01", "yamamyo01"})  # PLAYOFF HERO (mismo criterio que bateadores)
     df["is_captain"] = df["playerID"].astype(str).str.replace(r"_(sp|rp)$", "", regex=True).isin(_caps)
+    # WORKHORSE (decision del usuario, 12 nov 2026): 15+ temporadas completas equivalentes (workhorse_etl.py).
+    _whp = Path(__file__).resolve().parent / "workhorse_ids.csv"
+    _wh = _pd_caps.read_csv(_whp) if _whp.exists() else _pd_caps.DataFrame(columns=["playerID", "type", "FS"])
+    _wh = _wh[_wh["type"] == "PIT"].set_index("playerID")["FS"]
+    df["full_seasons"] = _base_id.map(_wh).fillna(0.0)
+    df["is_workhorse"] = df["full_seasons"] >= float(_os.environ.get("WORKHORSE_MIN", "15"))
     badge = 0.0
-    print(f"  Insignias: Clutch={int(df['is_clutch'].sum())} | Captain={int(df['is_captain'].sum())}")
+    print(f"  Insignias: Clutch={int(df['is_clutch'].sum())} | Captain={int(df['is_captain'].sum())} | Workhorse={int(df['is_workhorse'].sum())}")
 
     # Solo para el OVR (decision del usuario, 2 nov 2026): las tasas de un relevista van mitad la suya y mitad la
     # de un abridor de su mismo percentil dentro de su rol. Una entrada a maximo esfuerzo permite H/9 y K/9 que un
@@ -1619,7 +1628,27 @@ def paso_11_ovr_rareza(df, awards=None):
         ovr_v["hr9_val"] * 0.10 +
         ovr_v["clt_val"] * 0.10
     ) - PIT_RAW_SHIFT  # insignias: +BADGE_OVR al OVR final (abajo), no al raw
-    badge = (df["is_captain"].astype(int) + df["is_clutch"].astype(int)) * float(_os.environ.get("BADGE_OVR", "1"))
+    # Longevidad por WAR (prueba, LONGEVITY_BONUS=1; mismo esquema que bateadores): WAR de pitcheo de carrera
+    # con cada temporada llevada a 162 juegos (tope x3). Abridores: 0 con 60, +1 cada 12 (tope +2, -1).
+    # Relevistas: 0 con 25, +1 cada 6 (el WAR castiga el rol de relevo).
+    if _os.environ.get("LONGEVITY_BONUS", "1") == "1":
+        _w = _pd_caps.read_csv(DATA_DIR / "war_daily_pitch.txt", na_values="NULL", low_memory=False, usecols=["player_ID", "year_ID", "lg_ID", "WAR"])
+        _t = _pd_caps.read_csv(DATA_DIR / "Teams.csv").groupby(["yearID", "lgID"])["G"].mean()
+        _g = _pd_caps.Series([_t.get((y, l), np.nan) for y, l in zip(_w.year_ID, _w.lg_ID)], index=_w.index)
+        _g = _g.fillna(_w.year_ID.map(_t.groupby(level=0).mean())).fillna(154)
+        _adj = (_w.WAR.fillna(0) * (162.0 / _g).clip(1.0, 3.0)).groupby(_w.player_ID).sum()
+        _pe = _pd_caps.read_csv(DATA_DIR / "People.csv", usecols=["playerID", "bbrefID"]).dropna().set_index("playerID")["bbrefID"]
+        _bid = _base_id.map(_pe).fillna(_base_id)
+        df["career_war_adj"] = _bid.map(_adj).fillna(0.0).round(1)
+        _rp = df["role"] == "RP"
+        _c = np.where(_rp, 25.0, 60.0); _st = np.where(_rp, 6.0, 12.0)
+        _lb = ((df["career_war_adj"] - _c) / _st).clip(-1.0, 2.0)
+        df["longevity_bonus"] = _lb.round(2)
+        df["raw_ovr"] = df["raw_ovr"] + _lb
+        for _k in ("h9_val", "k9_val", "bb9_val", "hr9_val", "sta_val", "clt_val", "clu_val"):  # respaldado en los ratings
+            if _k in df.columns:
+                df[_k] = (df[_k] + _lb).clip(1.0, 125.0)
+    badge = (df["is_captain"].astype(int) + df["is_clutch"].astype(int) + df["is_workhorse"].astype(int)) * float(_os.environ.get("BADGE_OVR", "1"))
 
     p35  = float(df["raw_ovr"].quantile(0.35))
     p65  = float(df["raw_ovr"].quantile(0.65))
@@ -1963,7 +1992,7 @@ def paso_12_exportar(df, pitching, teams, franchises, pico_df=None, war_pitch=No
         "h9_grade", "k9_grade", "bb9_grade", "hr9_grade", "sta_grade", "clt_grade", "clu_grade",
         "ovr", "rarity",
         "is_allstar", "is_hof", "allstar_selections",
-        "defense_source", "is_clutch", "is_captain",
+        "defense_source", "is_clutch", "is_captain", "is_workhorse", "full_seasons",
     ]
     keep_cols = [c for c in keep_cols if c in df.columns]
     final = df[keep_cols].copy()
@@ -2014,6 +2043,7 @@ def paso_12_exportar(df, pitching, teams, franchises, pico_df=None, war_pitch=No
             f'hof: {"true" if r["is_hof"] else "false"}, '
             f'badge_clutch: {"true" if r.get("is_clutch", False) else "false"}, '
             f'badge_captain: {"true" if r.get("is_captain", False) else "false"}, '
+            f'badge_workhorse: {"true" if r.get("is_workhorse", False) else "false"}, '
             f'h9_stat: {float(r.get("peak_h9", 0.0)):.2f}, '
             f'k9_stat: {float(r.get("peak_k9", 0.0)):.2f}, '
             f'bb9_stat: {float(r.get("peak_bb9", 0.0)):.2f}, '
