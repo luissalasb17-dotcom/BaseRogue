@@ -247,10 +247,13 @@
     }
     let career = '';
     if (cs) {
-      career = isP
-        ? `${cs.w ?? '-'}-${cs.l ?? '-'} · ${cs.era ?? '-'} ERA · ${fmtIp(cs.ip)} IP · ${cs.so ?? '-'} SO`
-        : `${cs.g ?? '-'} G · ${cs.avg ?? '-'} · ${cs.hr ?? '-'} HR · ${cs.sb ?? '-'} SB`;
-      if (cs.war !== undefined && cs.war !== '-') career += ` · ${cs.war} WAR`;
+      // Career totals (user, 12 nov 2026: hits, RBI and the rest were missing)
+      const has = v => v !== undefined && v !== null && v !== '-' && v !== '';
+      const ops = v => has(v) ? String(v).replace(/^0(?=\.)/, '') : null;
+      const parts = isP
+        ? [[`${cs.w ?? '-'}-${cs.l ?? '-'}`, 'W-L'], [cs.era, 'ERA'], [cs.g, 'G'], [cs.sv, 'SV'], [has(cs.ip) ? fmtIp(cs.ip) : null, 'IP'], [cs.so, 'SO'], [cs.whip, 'WHIP'], [cs.war, 'WAR']]
+        : [[cs.g, 'G'], [cs.h, 'H'], [cs.hr, 'HR'], [cs.rbi, 'RBI'], [cs.sb, 'SB'], [cs.avg, 'AVG'], [ops(cs.ops), 'OPS'], [cs.war, 'WAR']];
+      career = parts.filter(([v]) => has(v)).map(([v, k]) => `${v} <b>${k}</b>`).join(' · ');
       // seasons from independent Black baseball (pre-1920 Negro Leagues) are in the line
       if ((window.BlackBaseballIDs || {})[String(pid || '').split('_')[0]]) career += ' <i title="Includes Black baseball stats (independent Negro Leagues teams not counted as major league)">*</i>';
     }
@@ -268,7 +271,7 @@
     hn(tt.ring, 'WS Champion'); hn(tt.wsmvp, 'WS MVP'); hn(tt.alcs, 'ALCS MVP'); hn(tt.nlcs, 'NLCS MVP');
     hn(c_.allstars, 'All-Star'); hn(c_.gg, 'Gold Glove'); hn(c_.ss, 'Silver Slugger');
     const car = (B.car || {})[pid.split('_')[0]];
-    const carLine = car ? [car[0] ? `DEBUT ${car[0]}` : '', `${car[1]} ${car[1] === 1 ? 'SEASON' : 'SEASONS'}`, car[2] && car[2].length ? car[2].join(' · ') : ''].filter(Boolean).join(' · ') : '';
+    const carLine = car ? [car[0] ? `DEBUT ${car[0]}` : '', `${car[1]} ${car[1] === 1 ? 'SEASON' : 'SEASONS'}`, car[2] && car[2].length ? (car[2].length > 4 ? car[2].slice(0, 4).join(' · ') + ` +${car[2].length - 4}` : car[2].join(' · ')) : ''].filter(Boolean).join(' · ') : '';
     if (d.badges) String(d.badges).split(/\s*·\s*/).filter(Boolean).forEach(x => honors.push(x));
     const rts = (d.rt || '').split('|').filter(Boolean).map(x => { const [k, v] = x.split(' '); return cell(k, v); }).join('');
     const brand = ERA_BACK[era] || ERA_BACK.modern;
