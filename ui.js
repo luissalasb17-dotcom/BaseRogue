@@ -3648,7 +3648,7 @@ function initGameModeSelector() {
     const isClutch = !!(player.clutch || player.is_clutch || player.badge_clutch);
     const isCaptain = !!(player.captain || player.is_captain || player.badge_captain);
     const isWorkhorse = !!(player.workhorse || player.is_workhorse || player.badge_workhorse);
-    const workhorseToolTip = window.t ? window.t('badge.workhorse_tooltip', 'Workhorse: 15+ full seasons. Tires less (-15 Stamina per match instead of -20; slower wear in the 162-0). +1 OVR.') : 'Workhorse: 15+ full seasons. Tires less (-15 Stamina per match instead of -20; slower wear in the 162-0). +1 OVR.';
+    const workhorseToolTip = window.t ? window.t('badge.workhorse_tooltip', 'Workhorse: loses less Stamina after each game and wears down slower over a season.') : 'Workhorse: tires less.';
     const isDoubleBadge = isClutch && isCaptain;
 
     const clutchToolTip = window.t ? window.t('badge.clutch_tooltip', 'Playoff Hero (MVP de la Serie Mundial, de una Serie de Campeonato o Babe Ruth Award): +8 a sus ratings en los combates de jefe y en los playoffs del 162-0.') : 'Playoff Hero (MVP de la Serie Mundial, de una Serie de Campeonato o Babe Ruth Award): +8 a sus ratings en los combates de jefe y en los playoffs del 162-0.';

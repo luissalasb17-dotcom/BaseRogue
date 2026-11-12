@@ -1595,8 +1595,8 @@
         "your_team_name": "Tu Equipo"
     },
     "badge": {
-        "captain_tooltip": "Captain: +1 a todos los ratings de sus compañeros mientras esté en el roster (vale lo mismo que +8 de raw en su OVR). Capitanes oficiales, jugadores-mánager y líderes de las Ligas Negras.",
-        "clutch_tooltip": "Playoff Hero (MVP de la Serie Mundial, de una Serie de Campeonato o Babe Ruth Award): +8 a sus ratings en los combates de jefe y en los playoffs del 162-0.",
+        "captain_tooltip": "Captain: sus compañeros reciben +1 a todos sus ratings mientras esté en el roster.",
+        "clutch_tooltip": "Playoff Hero: +8 a sus ratings en los combates de jefe y en los playoffs.",
         "challenge162_tooltip": "Elegible para el 162-0 Challenge: formó parte de un roster que ganó una run completa (Quick Play o Modo Historia).",
         "injury_tooltip": "Lesión: Penalización permanente de -20 en todos los ratings por el resto de la temporada.",
         "interera_label": "VIAJERO EN EL TIEMPO",
@@ -3955,8 +3955,8 @@
         "your_team_name": "Your Team"
     },
     "badge": {
-        "captain_tooltip": "Captain: +1 to every teammate’s ratings while on the roster.",
-        "clutch_tooltip": "Playoff Hero (World Series MVP, LCS MVP or Babe Ruth Award): +8 to his ratings in boss fights and 162-0 playoff games.",
+        "captain_tooltip": "Captain: teammates get +1 to all their ratings while he is on the roster.",
+        "clutch_tooltip": "Playoff Hero: +8 to his ratings in boss fights and playoff games.",
         "challenge162_tooltip": "Eligible for the 162-0 Challenge: was part of a roster that won a full run (Quick Play or Story Mode).",
         "injury_tooltip": "Injury: Permanent -20 rating penalty across all stats for the rest of the season.",
         "interera_label": "TIME TRAVELER",

@@ -27,7 +27,7 @@ W_PEAK             = 1.00
 W_CAREER           = 0.00
 W_RFIELD           = 0.60
 W_WARDEF           = 0.40
-GG_BONUS_PER_AWARD = 2
+GG_BONUS_PER_AWARD = float(__import__("os").environ.get("GG_PER", "2"))
 GG_BONUS_MAX       = 32
 
 ERA_THRESHOLDS = [

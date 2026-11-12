@@ -237,3 +237,15 @@
 
 /* Series stamp removed from every card. */
 .pc2 .pc2-series { display: none !important; }
+
+/* foil sobre TODA la carta (Rare+), además del de la foto; suave para no tapar el texto */
+.player-card.pc2 .pc2-front { position: relative; }
+.player-card.pc2.rarity-Rare .pc2-front::before,
+.player-card.pc2.rarity-Epic .pc2-front::before,
+.player-card.pc2.rarity-Legendary .pc2-front::before { content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 6; mix-blend-mode: color-dodge; opacity: 0; transition: opacity .25s; }
+.player-card.pc2.rarity-Rare .pc2-front::before { background: linear-gradient(115deg, transparent calc(var(--mx, 50%) - 22%), rgba(255,255,255,.9) var(--mx, 50%), transparent calc(var(--mx, 50%) + 22%)); }
+.player-card.pc2.rarity-Epic .pc2-front::before { background: linear-gradient(115deg, transparent calc(var(--mx, 50%) - 30%), #b06aff calc(var(--mx, 50%) - 10%), #6ae0ff calc(var(--mx, 50%) + 5%), #ff8ad8 calc(var(--mx, 50%) + 16%), transparent calc(var(--mx, 50%) + 30%)); }
+.player-card.pc2.rarity-Legendary .pc2-front::before { background: linear-gradient(115deg, transparent calc(var(--mx, 50%) - 30%), #ffcf5a calc(var(--mx, 50%) - 12%), #fff6c8 var(--mx, 50%), #ffcf5a calc(var(--mx, 50%) + 12%), transparent calc(var(--mx, 50%) + 30%)); }
+.pc2.card-tilt-active.rarity-Rare .pc2-front::before { opacity: .18; }
+.pc2.card-tilt-active.rarity-Epic .pc2-front::before { opacity: .3; }
+.pc2.card-tilt-active.rarity-Legendary .pc2-front::before { opacity: .38; }
