@@ -7,7 +7,7 @@
   // scope: the page, or the Dex's batting-practice overlay while it is open (same ids, same stage)
   let scope = document, testGet = null;
   const $ = id => scope.querySelector('#' + id);
-  const ERAS = [['Genesis', 'genesis'], ['Deadball', 'deadball'], ['Golden', 'golden'], ['Integration', 'integration'], ['Expansion', 'expansion'], ['Turf', 'bighair'], ['Steroid', 'steroid'], ['Efficiency', 'efficiency']];
+  const ERAS = [['Genesis', 'genesis'], ['Deadball', 'deadball'], ['Golden', 'golden'], ['Integration', 'integration'], ['Expansion', 'expansion'], ['Turf', 'bighair'], ['Steroid', 'steroid'], ['Moneyball', 'efficiency']];
   const eraKey = p => { const e = String(p.era || p._era || ''); const f = ERAS.find(x => e.includes(x[0])); return f ? f[1] : 'modern'; };
   const portrait = p => (window.CardArt && p ? window.CardArt.portrait(p, eraKey(p), false) : '');
   const esc = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');

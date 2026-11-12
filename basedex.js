@@ -9,8 +9,8 @@
     { key: 'Expansion (1961-1976)', label: 'EXPANSION' },
     { key: 'Turf Era (1977-1993)', label: 'TURF' },
     { key: 'Steroid Era (1994-2005)', label: 'STEROID' },
-    { key: 'Efficiency Era (2006-2015)', label: 'EFFICIENCY' },
-    { key: 'Modern Era (2016-Pres)', label: 'MODERN' },
+    { key: 'Moneyball Era (2006-2015)', label: 'MONEYBALL' },
+    { key: 'Statcast Era (2016-Pres)', label: 'STATCAST' },
   ];
 
   const BATTER_POS_TABS = [

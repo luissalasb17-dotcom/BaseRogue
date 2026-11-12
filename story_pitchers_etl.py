@@ -31,8 +31,8 @@ ERA_THRESHOLDS = [
     (1961, 1976, "Expansion (1961-1976)"),
     (1977, 1993, "Turf Era (1977-1993)"),
     (1994, 2005, "Steroid Era (1994-2005)"),
-    (2006, 2015, "Efficiency Era (2006-2015)"),
-    (2016, 9999, "Modern Era (2016-Pres)"),
+    (2006, 2015, "Moneyball Era (2006-2015)"),
+    (2016, 9999, "Statcast Era (2016-Pres)"),
 ]
 
 def assign_era(year):
@@ -40,7 +40,7 @@ def assign_era(year):
     for start, end, label in ERA_THRESHOLDS:
         if start <= y <= end:
             return label
-    return "Modern Era (2016-Pres)"
+    return "Statcast Era (2016-Pres)"
 
 def normalize_series(s, low=1.0, high=99.0):   # misma escala que bateadores y que pitchers_etl.py
     valid = s.dropna()
@@ -179,7 +179,17 @@ def run_story_pitchers_etl():
     lob_smooth = ((num_lob + m_lob * 0.720) / (denom_lob + m_lob)).clip(0.50, 0.95)
     # Sin bono de Leverage Index, igual que pitchers_etl.py: el dato solo existe para apariciones
     # de relevo y premiaba a abridores antiguos que a veces relevaban.
-    df["clt_raw"] = lob_smooth * 100.0
+    # Igual que pitchers_etl.py (CLT_BLEND 0.6): 60% LOB% por encima de lo que explican sus hits y
+    # jonrones permitidos (recta ponderada por corredores), 40% LOB% suavizado.
+    ipz = (df["IPouts"].fillna(0) / 3.0).where(lambda x: x > 0)
+    X = np.column_stack([np.ones(len(df)), (h / ipz * 9), (hr / ipz * 9)])
+    y_ = (num_lob / denom_lob).values
+    w_ = denom_lob.values
+    ok = np.isfinite(X).all(1) & np.isfinite(y_) & (w_ > 30)
+    beta = np.linalg.lstsq(X[ok] * np.sqrt(w_[ok])[:, None], y_[ok] * np.sqrt(w_[ok]), rcond=None)[0]
+    exp_ = pd.Series(np.where(np.isfinite(X).all(1), X @ beta, np.nan), index=df.index).fillna(0.720)
+    resid = ((num_lob - exp_ * denom_lob) / (denom_lob + 2.0 * m_lob)).fillna(0)
+    df["clt_raw"] = (0.6 * (0.720 + resid).clip(0.55, 0.90) + 0.4 * lob_smooth) * 100.0
 
     # Normalización difficulty adjusted per era
     df = normalize_diff_adj(df, "clt_raw", "clt_val")
@@ -187,11 +197,12 @@ def run_story_pitchers_etl():
 
     # 5. Calcular OVR con los mismos pesos que las cartas (pitchers_etl.py): 24 H/9, 32 STA, 12 K/9, 12 BB/9, 10 HR/9, 10 CLT
     print("\n[4/5] Calculando OVR oficial 24/32/12/12/10/10...")
+    # pesos actuales de las cartas: H/9 28, STA 24, K/9 14, BB/9 14, HR/9 10, CLT 10
     df["raw_ovr"] = (
-        df["h9"] * 0.24 +
-        df["sta"] * 0.32 +
-        df["k9"] * 0.12 +
-        df["bb9"] * 0.12 +
+        df["h9"] * 0.28 +
+        df["sta"] * 0.24 +
+        df["k9"] * 0.14 +
+        df["bb9"] * 0.14 +
         df["hr9"] * 0.10 +
         df["clt_val"] * 0.10
     )

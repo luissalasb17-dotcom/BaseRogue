@@ -56,8 +56,8 @@ ERA_THRESHOLDS = [
     (1961, 1976, "Expansion (1961-1976)"),
     (1977, 1993, "Turf Era (1977-1993)"),
     (1994, 2005, "Steroid Era (1994-2005)"),
-    (2006, 2015, "Efficiency Era (2006-2015)"),
-    (2016, 9999, "Modern Era (2016-Pres)"),
+    (2006, 2015, "Moneyball Era (2006-2015)"),
+    (2016, 9999, "Statcast Era (2016-Pres)"),
 ]
 
 GRADE_THRESHOLDS = [
@@ -83,7 +83,7 @@ def assign_era(year):
     for start, end, label in ERA_THRESHOLDS:
         if start <= int(year) <= end:
             return label
-    return "Modern Era (2016-Pres)"
+    return "Statcast Era (2016-Pres)"
 
 
 def to_grade(val):
@@ -132,6 +132,9 @@ def ajustar_por_ambiente(raw, ambiente, blend=0.75):
     ni baja de su inverso. En epocas donde algo casi no pasaba (jonrones en 1880) un multiplo chico
     sobre un promedio casi nulo se inflaba al llevarlo a la epoca neutral.
     """
+    if abs(blend - 0.75) < 1e-9:  # prueba: ERA_BLEND cambia todos los ajustes de epoca del 75% (no el HR/9 al 100%)
+        import os as _ob
+        blend = float(_ob.environ.get("ERA_BLEND", "0.75"))
     import os as _o
     amb = ambiente.replace(0, np.nan)
     ratio = amb.mean() / amb
@@ -191,6 +194,34 @@ EXTREME_TOP_ANCHOR, EXTREME_LOW_ANCHOR = 75.0, 25.0
 RATING_FLOOR, RATING_CEIL = -100.0, 999.0      # los ratings no se recortan (ni arriba ni abajo) hasta ajustar_extremos
 
 
+# Prueba (variable de entorno PEAK_MIX, apagada por defecto): mezcla de varios picos, p. ej.
+# "7:0.4,3:0.2,15:0.2,99:0.2" (99 = carrera completa). El pico largo (>7 y <99) castiga las
+# temporadas que faltan igual que mezclar_longevidad. Sin PEAK_MIX el ETL corre como siempre.
+PEAK_MIX = [(int(a), float(b)) for a, b in (p.split(":") for p in _os.environ.get("PEAK_MIX", "7:0.5,3:0.2,15:0.3").split(",") if p)]
+if _os.environ.get("OUT_DIR"):
+    OUT_CSV = Path(_os.environ["OUT_DIR"]) / OUT_CSV.name
+    OUT_JS = Path(_os.environ["OUT_DIR"]) / OUT_JS.name
+
+
+def mezclar_picos(df7, extra, share_by_n, cols):
+    df = df7.copy()
+    w7 = dict(PEAK_MIX).get(7, 0.0)
+    for col in cols:
+        v7 = df[col].astype(float)
+        floja = float(v7.quantile(0.25))
+        tot = w7 * v7
+        for n, w in PEAK_MIX:
+            if n == 7:
+                continue
+            vn = df["playerID"].map(extra[n].drop_duplicates("playerID").set_index("playerID")[col]).astype(float).fillna(v7)
+            if 7 < n < 99:
+                sh = share_by_n[n]
+                vn = sh * vn + (1.0 - sh) * floja
+            tot = tot + w * vn
+        df[col] = tot.round(1)
+    return df
+
+
 def mezclar_longevidad(v7, v12, share):
     """
     rating = 75% pico de 7 temporadas + 25% pico de 12 temporadas (decision del usuario).
@@ -215,7 +246,7 @@ def _curva_A(T, span):
     return hi
 
 
-def ajustar_extremos(v):
+def ajustar_extremos(v, fixed=None):
     """
     Ultimo paso de TODOS los ratings, igual para todos (decision del usuario): el centro de la
     escala (25 a 75) no se toca; el MEJOR de la historia en cada rating vale 125 y el PEOR vale 1.
@@ -231,6 +262,8 @@ def ajustar_extremos(v):
     # comparta el rango 120-125 sin que un solo outlier aislado comprima a los demás)
     hi = float(v.quantile(0.9990)) if len(v) > 100 else float(v.max())
     lo = float(v.quantile(0.0010)) if len(v) > 100 else float(v.min())
+    if fixed is not None:
+        hi, lo = fixed
     if hi > EXTREME_TOP_ANCHOR:
         top = v > EXTREME_TOP_ANCHOR
         T, span = hi - EXTREME_TOP_ANCHOR, 125.0 - EXTREME_TOP_ANCHOR
@@ -272,7 +305,13 @@ def paso_10c_extremos(df):
     print("\n  PASO 10c: Extremos (centro 25-75 intacto; el mejor de cada rating = 125, el peor = 1)...")
     df = df.copy()
     for col in PIT_RATINGS:
-        df[col] = ajustar_extremos(df[col])
+        fixed = None
+        if col == "sta_val":
+            r_ = df[col].astype(float)
+            print(f"  STA anclas actuales: hi={r_.quantile(0.999):.4f} lo={r_.quantile(0.001):.4f}")
+            if _os_dd.environ.get("STA_ANCHORS"):
+                fixed = tuple(float(x) for x in _os_dd.environ["STA_ANCHORS"].split(","))
+        df[col] = ajustar_extremos(df[col], fixed=fixed)
     df["clu_val"] = df["clt_val"]
     return df
 
@@ -949,6 +988,9 @@ def paso_6_enriquecer_people(df, people):
 
 
 # ── PASO 7: Asignar Era temática (80% WAR Pico + 20% WAR Carrera por Era) ────
+_MIX_PICO = {}   # picos de PEAK_MIX (n -> pico); LABEL_MIX=1 usa 50/20/30 tambien en era y equipo
+LABEL_MIX = _os_dd.environ.get("LABEL_MIX", "1") == "1"   # era de la carta con 50/20/30 (decision del usuario, 11 nov 2026)
+LABEL_TEAM_MIX = _os_dd.environ.get("LABEL_TEAM_MIX", "0") == "1"   # equipo: se queda 75/25 (probado 50/20/30 y carrera completa)
 LABEL_PEAK_SHARE = 0.75   # era y equipo de la carta: 75% pico de 7 + 25% carrera (igual que bateadores)
 
 
@@ -1005,6 +1047,13 @@ def paso_7_asignar_era(df, war_pit=None, people=None, pitching=None, pico_df=Non
         _car = _car.rename(columns={"playerID": "orig"}).merge(_ids, on="orig", how="inner").drop(columns="orig")
         _e = _p7.merge(_car, on=["playerID", "era_label_w"], how="outer").fillna(0.0)
         _e["era_score"] = LABEL_PEAK_SHARE * _e["p7"] + (1 - LABEL_PEAK_SHARE) * _e["car"]
+        if LABEL_MIX and 3 in _MIX_PICO and 15 in _MIX_PICO:
+            def _q(pico, name):
+                k = pico[["playerID", "yearID"]].drop_duplicates()
+                m = _w.merge(k, left_on=["playerID", "year_ID"], right_on=["playerID", "yearID"], how="inner")
+                return m.groupby(["playerID", "era_label_w"])["WAR"].sum().reset_index(name=name)
+            _e = _e.merge(_q(_MIX_PICO[3], "q3"), on=["playerID", "era_label_w"], how="outer").merge(_q(_MIX_PICO[15], "q15"), on=["playerID", "era_label_w"], how="outer").fillna(0.0)
+            _e["era_score"] = 0.5 * _e["p7"] + 0.2 * _e["q3"] + 0.3 * _e["q15"]
         merged_era = _e
 
     best_era = (
@@ -1360,6 +1409,14 @@ def paso_7b_ambiente_por_temporada(df, pico_df):
     w = s["ip"].clip(lower=0.01)
     b = s[rate_cols].mul(w, axis=0).groupby(s["playerID"]).sum().div(w.groupby(s["playerID"]).sum(), axis=0)
     b["b_ip"] = s["b_ip"].groupby(s["playerID"]).mean()
+    # Prueba (STA_ENV=sp): la carga de trabajo se mide solo con temporadas de abridor. Con todas
+    # mezcladas el promedio caia con la cantidad de relevistas (1900: 122 IP, 2010: 58) y un
+    # abridor moderno recibia x1.2-1.4 (Verlander por encima de Bob Gibson).
+    if _os_dd.environ.get("STA_ENV", "sp") == "sp":
+        sp_ = s[s["is_sp_season"].astype(bool)]
+        tsp = suavizar_por_anio(sp_.groupby("yearID")[["ip", "n"]].sum())
+        bsp = (tsp["ip"] / tsp["n"].replace(0, np.nan)).rename("b_ip_sp")
+        b["b_ip"] = s.join(bsp, on="yearID").groupby("playerID")["b_ip_sp"].mean()
 
     # Ponches de Ligas Negras contra su propia liga. En los mismos años sus pitchers ponchaban un
     # 40% mas que los de MLB (4.2-5.0 K/9 contra 2.9-3.7) pero permitian los mismos hits, boletos
@@ -1547,14 +1604,18 @@ def paso_11_ovr_rareza(df, awards=None):
     ovr_v = {k: df[k].astype(float).copy() for k in ["h9_val", "k9_val", "bb9_val", "hr9_val", "clt_val"]}
     if rp_mix > 0:
         is_sp = df["role"] == "SP"
+        # Eckersley: su rol RP esta puesto a mano pero sus tasas salen de toda su carrera (mayormente
+        # de abridor): compararlas contra los relevistas lo castigaba dos veces.
+        if _os.environ.get("ECK_SP_MIX", "1") == "1":
+            is_sp = is_sp | df["playerID"].astype(str).str.startswith("eckerde01")
         for k in ovr_v:
             q = df.loc[~is_sp, k].rank(pct=True).clip(0, 1)
             ovr_v[k].loc[~is_sp] = (1 - rp_mix) * df.loc[~is_sp, k] + rp_mix * np.quantile(df.loc[is_sp, k].astype(float), q)
     df["raw_ovr"] = (
         ovr_v["h9_val"]  * float(_os.environ.get("W_H9", "0.28")) +
-        df["sta_val"] * float(_os.environ.get("W_STA", "0.26")) +  # 26 (user, 3 nov 2026: 2 points of STA to BB/9)
-        ovr_v["k9_val"]  * 0.12 +
-        ovr_v["bb9_val"] * 0.14 +
+        df["sta_val"] * float(_os.environ.get("W_STA", "0.24")) +  # 24 (user, 11 nov 2026; antes 26)
+        ovr_v["k9_val"]  * float(_os.environ.get("W_K9", "0.14")) +
+        ovr_v["bb9_val"] * float(_os.environ.get("W_BB9", "0.14")) +
         ovr_v["hr9_val"] * 0.10 +
         ovr_v["clt_val"] * 0.10
     ) - PIT_RAW_SHIFT  # insignias: +BADGE_OVR al OVR final (abajo), no al raw
@@ -1833,6 +1894,28 @@ def paso_12_exportar(df, pitching, teams, franchises, pico_df=None, war_pitch=No
 
         merged_franch = career_franch_war.merge(peak_franch_war, on=["playerID", "franch_clean"], how="outer").fillna(0.0)
         merged_franch["franch_score"] = LABEL_PEAK_SHARE * merged_franch["peak_war_f"] + (1 - LABEL_PEAK_SHARE) * merged_franch["career_war_f"]
+        if _os_dd.environ.get("TEAM_DUMP") and 3 in _MIX_PICO and 15 in _MIX_PICO:
+            def _qd(pico, name):
+                k = pico[["playerID", "yearID"]].drop_duplicates()
+                m = war_merged.merge(k, left_on=["playerID", "year_ID"], right_on=["playerID", "yearID"], how="inner")
+                return m.groupby(["playerID", "franch_clean"])["WAR"].sum().reset_index(name=name)
+            merged_franch.merge(_qd(_MIX_PICO[3], "q3"), on=["playerID", "franch_clean"], how="outer").merge(_qd(_MIX_PICO[15], "q15"), on=["playerID", "franch_clean"], how="outer").fillna(0.0).to_csv(_os_dd.environ["TEAM_DUMP"], index=False)
+        if LABEL_TEAM_MIX and 3 in _MIX_PICO and 15 in _MIX_PICO:
+            def _qf(pico, name):
+                k = pico[["playerID", "yearID"]].drop_duplicates()
+                m = war_merged.merge(k, left_on=["playerID", "year_ID"], right_on=["playerID", "yearID"], how="inner")
+                return m.groupby(["playerID", "franch_clean"])["WAR"].sum().reset_index(name=name)
+            merged_franch = merged_franch.merge(_qf(_MIX_PICO[3], "q3"), on=["playerID", "franch_clean"], how="outer").merge(_qf(_MIX_PICO[15], "q15"), on=["playerID", "franch_clean"], how="outer").fillna(0.0)
+            merged_franch["franch_score"] = 0.5 * merged_franch["peak_war_f"] + 0.2 * merged_franch["q3"] + 0.3 * merged_franch["q15"]
+        if _os_dd.environ.get("TEAM_MODE", "p7p15") == "p7p15" and 15 in _MIX_PICO:
+            # Equipo de la carta: 50% pico de 7 + 50% pico de 15 (decision del usuario, 11 nov 2026)
+            _k15 = _MIX_PICO[15][["playerID", "yearID"]].drop_duplicates()
+            _m15 = war_merged.merge(_k15, left_on=["playerID", "year_ID"], right_on=["playerID", "yearID"], how="inner")
+            _t15 = _m15.groupby(["playerID", "franch_clean"])["WAR"].sum().reset_index(name="t15")
+            merged_franch = merged_franch.merge(_t15, on=["playerID", "franch_clean"], how="outer").fillna(0.0)
+            merged_franch["franch_score"] = 0.5 * merged_franch["peak_war_f"] + 0.5 * merged_franch["t15"]
+        if _os_dd.environ.get("TEAM_MODE", "") == "career":
+            merged_franch["franch_score"] = merged_franch["career_war_f"]   # WAR de carrera completa en la franquicia
         
         canonical = (
             merged_franch.sort_values("franch_score", ascending=False)
@@ -2026,8 +2109,24 @@ def main():
         return el, pico
 
     eligible12, pico_12 = calcular_ratings(LONGEVITY_SEASONS)
-    eligible, pico_df   = calcular_ratings(7)
-    eligible      = paso_10b_longevidad(eligible, eligible12, pico_12)
+    if PEAK_MIX:
+        extra, shares = {}, {}
+        for n_, _w in PEAK_MIX:
+            if n_ != 7:
+                e_, pc_ = calcular_ratings(n_)
+                extra[n_] = e_
+                _MIX_PICO[n_] = pc_
+                if 7 < n_ < 99:
+                    s_ = pc_[pc_["playerID"].isin(set(e_["playerID"]))]
+                    mn_ = np.where(s_["is_sp_season"].astype(bool), MIN_IP_SEASON_SP, MIN_IP_SEASON_RP) / np.where(s_["is_nlb_y"].astype(bool), NLB_SEASON_FACTOR, 1.0)
+                    shares[n_] = ((s_["IPouts"] / 3.0) >= mn_).groupby(s_["playerID"]).sum()
+        eligible, pico_df = calcular_ratings(7)
+        for n_ in shares:
+            shares[n_] = (eligible["playerID"].map(shares[n_]).fillna(0) / float(n_)).clip(0.0, 1.0)
+        eligible = mezclar_picos(eligible, extra, shares, PIT_RATINGS)
+    else:
+        eligible, pico_df   = calcular_ratings(7)
+        eligible      = paso_10b_longevidad(eligible, eligible12, pico_12)
     eligible      = paso_10c_extremos(eligible)
     eligible      = paso_11_ovr_rareza(eligible, awards)
     final         = paso_12_exportar(eligible, pitching, teams, franchises, pico_df, war_pitch, people)

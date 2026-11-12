@@ -171,7 +171,7 @@
     document.documentElement.style.setProperty('--pc2-noise', `url(${c.toDataURL()})`);
   }
 
-  function fmtIp(v) { return v === undefined || v === null || v === '-' ? '-' : String(v); }
+  function fmtIp(v) { if (v === undefined || v === null || v === '-') return '-'; const n = Number(v); if (!isFinite(n)) return String(v); const o = Math.round(n * 3); return Math.floor(o / 3) + (o % 3 ? '.' + (o % 3) : ''); } // innings in baseball notation (.1 / .2)
 
   // ── Card back: a bubble-gum card back (card_backs.js: bio + one line averaged from the peaks).
   // The data file (~1.3 MB) is fetched the first time any card is turned over.
@@ -182,7 +182,7 @@
     if (window.CardBacks || backsState === 'loading') return;
     backsState = 'loading';
     const s = document.createElement('script');
-    s.src = 'card_backs.js?v=1794189867' + (backsTries ? '&r=' + backsTries : '');
+    s.src = 'card_backs.js?v=9' + (backsTries ? '&r=' + backsTries : '');
     let settled = false;
     const finish = () => {
       if (settled) return;
@@ -254,17 +254,22 @@
       // seasons from independent Black baseball (pre-1920 Negro Leagues) are in the line
       if ((window.BlackBaseballIDs || {})[String(pid || '').split('_')[0]]) career += ' <i title="Includes Black baseball stats (independent Negro Leagues teams not counted as major league)">*</i>';
     }
+    // HONORS: awards and league titles together (user, 11 nov 2026), every count with its "N×"
+    // so "1× HR Leader" never reads as the all-time leader. Titles come from card_backs_etl.py
+    // (tit); batter cards show the batting crowns, pitcher cards the pitching ones.
+    const tt = (B.tit || {})[pid.split('_')[0]] || {};
+    const c_ = cs || {};
     const honors = [];
-    if (cs) {
-      if (cs.mvp) honors.push(`${cs.mvp > 1 ? cs.mvp + '× ' : ''}MVP`);
-      if (cs.cy) honors.push(`${cs.cy > 1 ? cs.cy + '× ' : ''}Cy Young`);
-      if (cs.allstars) honors.push(`${cs.allstars}× All-Star`);
-      if (cs.gg) honors.push(`${cs.gg}× Gold Glove`);
-      if (cs.ss) honors.push(`${cs.ss}× Silver Slugger`);
-      if (cs.roy) honors.push('ROY');
-      if (cs.hof) honors.push('Hall of Fame');
-    }
-    if (d.badges) honors.push(d.badges);
+    const hn = (n, s) => { if (n) honors.push(`<em>${n}×</em> ${s}`); };
+    if (c_.hof) honors.push('Hall of Fame');
+    hn(c_.mvp, 'MVP'); hn(c_.cy, 'Cy Young'); if (c_.roy) honors.push('Rookie of the Year'); hn(c_.rel, 'Reliever of the Year');
+    if (isP) { hn(tt.ptc, 'Pitching Triple Crown'); hn(tt.era, 'ERA Title'); hn(tt.so, 'K Leader'); hn(tt.w, 'Wins Leader'); }
+    else { hn(tt.tc, 'Triple Crown'); hn(tt.bt, 'Batting Title'); hn(tt.hr, 'HR Leader'); }
+    hn(tt.ring, 'WS Champion'); hn(tt.wsmvp, 'WS MVP'); hn(tt.alcs, 'ALCS MVP'); hn(tt.nlcs, 'NLCS MVP');
+    hn(c_.allstars, 'All-Star'); hn(c_.gg, 'Gold Glove'); hn(c_.ss, 'Silver Slugger');
+    const car = (B.car || {})[pid.split('_')[0]];
+    const carLine = car ? [car[0] ? `DEBUT ${car[0]}` : '', `${car[1]} ${car[1] === 1 ? 'SEASON' : 'SEASONS'}`, car[2] && car[2].length ? car[2].join(' · ') : ''].filter(Boolean).join(' · ') : '';
+    if (d.badges) String(d.badges).split(/\s*·\s*/).filter(Boolean).forEach(x => honors.push(x));
     const rts = (d.rt || '').split('|').filter(Boolean).map(x => { const [k, v] = x.split(' '); return cell(k, v); }).join('');
     const brand = ERA_BACK[era] || ERA_BACK.modern;
     const bioLine = bio
@@ -281,8 +286,8 @@
       ${bioLine ? `<div class="bk-bio">${bioLine}</div>` : ''}
       ${bornLine ? `<div class="bk-bio">${bornLine}</div>` : ''}
       ${peak}
-      ${career ? `<div class="bk-sec"><span>${t('card.career', 'CAREER')}</span>${career}</div>` : ''}
-      ${honors.length ? `<div class="bk-sec"><span>${t('card.honors', 'HONORS')}</span>${honors.join(' · ')}</div>` : ''}
+      ${career ? `<div class="bk-sec"><span>${t('card.career', 'CAREER')}${carLine ? `<small class="bk-car">${carLine}</small>` : ''}</span>${career}</div>` : ''}
+      ${honors.length ? `<div class="bk-sec bk-hon"><span>${t('card.honors', 'HONORS')}</span><div class="bk-chips">${honors.map(h => `<i>${h}</i>`).join('')}</div></div>` : ''}
       ${rts ? `<div class="bk-rt">${rts}</div>` : ''}
       <div class="bk-foot"><span>${brand[0]}</span><span>${brand[1]}</span></div>`;
   }

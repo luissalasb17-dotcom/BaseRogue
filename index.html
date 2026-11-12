@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script>/* saved games and collections from before the era was renamed */try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i),v=localStorage.getItem(k);if(v&&v.includes('Big Hair'))localStorage.setItem(k,v.split('Big Hair').join('Turf'));}}catch(e){}</script>
+  <script>/* saved games and collections from before the era was renamed */try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i),v=localStorage.getItem(k);if(!v)continue;let w=v.split('Big Hair').join('Turf').split('Efficiency Era').join('Moneyball Era').split('Modern Era (2016-Pres)').join('Statcast Era (2016-Pres)');if(w!==v)localStorage.setItem(k,w);}}catch(e){}</script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>BaseRogue: Baseball Roguelike — Free Turn-Based Dice Battler</title>
@@ -70,7 +70,7 @@
   <link rel="stylesheet" href="cards2.css?v=14">
   <link rel="stylesheet" href="cards2_eras.css?v=11">
   <link rel="stylesheet" href="teamboard.css?v=1794250364">
-  <link rel="stylesheet" href="cards2_backs.css?v=7">
+  <link rel="stylesheet" href="cards2_backs.css?v=1794429307">
   <link rel="stylesheet" href="card_variants.css?v=27">
   <link rel="stylesheet" href="rarity2.css?v=8">
   <link rel="stylesheet" href="menus2.css?v=29">
@@ -1434,30 +1434,30 @@
   </script>
   <!-- Load Game Scripts -->
   <script src="menus2.js?v=9"></script>
-  <script src="players.js?v=1787860520"></script>
-  <script src="pitchers_pool.js?v=1794189867"></script>
+  <script src="players.js?v=1794426132"></script>
+  <script src="pitchers_pool.js?v=1794446800"></script>
   <script src="player_team_history.js?v=3"></script>
   <script src="season_context.js?v=1"></script>
-  <script src="game_cards_pool.js?v=1791753000028"></script>
+  <script src="game_cards_pool.js?v=1794446800"></script>
   <script src="items_database.js?v=2"></script>
-  <script src="simulation.js?v=1790204022"></script>
+  <script src="simulation.js?v=1794426132"></script>
   <script src="dh_home.js?v=1"></script>
   <script src="game.js?v=1794241533"></script>
   <script src="audio.js?v=1787799830"></script>
   <script src="career.js?v=1787873086"></script>
-  <script src="flags_lite.js?v=1794189867"></script>
+  <script src="flags_lite.js?v=1794446800"></script>
   <script src="player_states.js?v=1"></script>
-  <script src="player_hands.js?v=1794189867"></script>
-  <script src="basedex.js?v=1794260000"></script>
+  <script src="player_hands.js?v=1794446800"></script>
+  <script src="basedex.js?v=1794426132"></script>
   <script src="teamboard.js?v=1794260000"></script>
-  <script src="challenge162.js?v=1794242229"></script>
+  <script src="challenge162.js?v=1794427714"></script>
   <script src="dynasty.js?v=1787960004"></script>
-  <script src="card_art.js?v=1794250643"></script>
-  <script src="ui.js?v=1790204108"></script>
+  <script src="card_art.js?v=1794446800"></script>
+  <script src="ui.js?v=1794432315"></script>
   <script src="juice.js?v=p1"></script>
-  <script src="battle3.js?v=103"></script>
+  <script src="battle3.js?v=1794426132"></script>
   <script src="card_variants.js?v=12"></script>
-  <script src="lazy.js?v=1"></script>
+  <script src="lazy.js?v=7"></script>
   <script>if (/[?&]proto=/.test(location.search)) { var pcss = document.createElement('link'); pcss.rel = 'stylesheet'; pcss.href = 'proto_battle2.css?v=5'; document.head.appendChild(pcss); ['proto_battle2.js?v=2','proto_dice.js?v=4','proto_genesis.js?v=5','proto_steroid.js?v=8','proto_bighair.js?v=12','proto_expansion.js?v=15','proto_golden.js?v=2','proto_integration.js?v=9','proto_efficiency.js?v=5','proto_deadball.js?v=3','proto_modern.js?v=14'].forEach(function (f) { document.write('<scr' + 'ipt src="' + f + '"></scr' + 'ipt>'); }); }</script>
   <script src="dice3d.js?v=p2"></script>
   <script src="draft3d.js?v=p2"></script>

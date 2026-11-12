@@ -179,8 +179,8 @@ function getEraNameForYear(year) {
   if (y <= 1976) return "Expansion Boom (1961-1976)";
   if (y <= 1993) return "Turf & Radar (1977-1993)";
   if (y <= 2005) return "Steroid Sluggers (1994-2005)";
-  if (y <= 2015) return "Efficiency & Shift (2006-2015)";
-  return "Modern Statcast (2016-2025)";
+  if (y <= 2015) return "Moneyball Era (2006-2015)";
+  return "Statcast Era (2016-2025)";
 }
 
 // SEASON ROULETTE ANIMATION INSIDE SEASON SELECTION MODAL
@@ -3313,7 +3313,7 @@ function initGameModeSelector() {
       // Same recipe as pitchers_etl.py (paso_11): 24% H/9, 32% STA, 12% K/9, 12% BB/9, 10% HR/9, 10% CLT.
       // The cut points are the pool percentiles (35 / 65 / 85 / 97.5) of the last ETL run; update them if the ETL changes.
       // same scale and cuts as batters (pitchers_etl.py PIT_RAW_SHIFT); a captain is +8 raw (+1 to his 8 teammates)
-      const raw = h9 * 0.28 + sta * 0.26 + k9 * 0.12 + bb9 * 0.14 + hr9 * 0.10 + clt * 0.10 - 5; // badges go on the final OVR (+2 each), not the raw
+      const raw = h9 * 0.28 + sta * 0.24 + k9 * 0.14 + bb9 * 0.14 + hr9 * 0.10 + clt * 0.10 - 5; // badges go on the final OVR (+2 each), not the raw
       const pitBadge = (p.badge_captain ? 1 : 0) + (p.badge_clutch ? 1 : 0); // +1 per badge on the final OVR
       if (raw <= 35) return Math.floor(50.0 + Math.max(0, (raw - 16.7) / 18.3) * 9.9 + pitBadge);
       if (raw <= 45) return Math.floor(60.0 + ((raw - 35) / 10) * 9.9 + pitBadge);
@@ -3441,8 +3441,8 @@ function initGameModeSelector() {
     if (era.includes("Expansion")) return "EXPANSION (1961-1976)";
     if (era.includes("Turf")) return "TURF (1977-1993)";
     if (era.includes("Steroid")) return "STEROID (1994-2005)";
-    if (era.includes("Efficiency")) return "EFFICIENCY (2006-2015)";
-    if (era.includes("Modern")) return "MODERN (2016-PRES)";
+    if (era.includes("Moneyball")) return "MONEYBALL (2006-2015)";
+    if (era.includes("Statcast")) return "STATCAST (2016-PRES)";
     return era.toUpperCase();
   }
 
@@ -3482,8 +3482,8 @@ function initGameModeSelector() {
       "Expansion (1961-1976)": "era-expansion",
       "Turf Era (1977-1993)": "era-bighair",
       "Steroid Era (1994-2005)": "era-steroid",
-      "Efficiency Era (2006-2015)": "era-efficiency",
-      "Modern Era (2016-Pres)": "era-modern"
+      "Moneyball Era (2006-2015)": "era-efficiency",
+      "Statcast Era (2016-Pres)": "era-modern"
     };
 
     let year = player.year || player._year || player.peak_year_display || player.peak_year || "";
@@ -3505,8 +3505,8 @@ function initGameModeSelector() {
       else if (y <= 1976) resolvedEra = "Expansion (1961-1976)";
       else if (y <= 1993) resolvedEra = "Turf Era (1977-1993)";
       else if (y <= 2005) resolvedEra = "Steroid Era (1994-2005)";
-      else if (y <= 2015) resolvedEra = "Efficiency Era (2006-2015)";
-      else resolvedEra = "Modern Era (2016-Pres)";
+      else if (y <= 2015) resolvedEra = "Moneyball Era (2006-2015)";
+      else resolvedEra = "Statcast Era (2016-Pres)";
       player.era = resolvedEra;
     }
 
@@ -5513,13 +5513,13 @@ function initGameModeSelector() {
         name: t('eras.syn_name_steroid', 'Bash Brothers (1994-2005)'),
         get tiers() { return [t('eras.steroid_d1'), t('eras.steroid_d2'), t('eras.steroid_d3'), t('eras.steroid_d4')]; }
       },
-      "Efficiency Era (2006-2015)": {
+      "Moneyball Era (2006-2015)": {
         tag: "ANALYTICS",
         color: "#6366f1",
         name: t('eras.syn_name_moneyball', 'Moneyball Analytics (2006-2015)'),
         get tiers() { return [t('eras.moneyball_d1'), t('eras.moneyball_d2'), t('eras.moneyball_d3'), t('eras.moneyball_d4')]; }
       },
-      "Modern Era (2016-Pres)": {
+      "Statcast Era (2016-Pres)": {
         tag: "MODERN",
         color: "#f97316",
         name: t('eras.syn_name_tto', 'Three True Outcomes (2016-Pres)'),
@@ -8314,7 +8314,7 @@ function initGameModeSelector() {
       { key: isEs ? 'SPEED & HUSTLE' : 'SPEED & HUSTLE', regex: /(?:🏃)?\s*(?:Speed & Hustle|Expansion|Sinergia Speed & Hustle)[:\s]*([^\|\n]+)/i, color: '#38bdf8', icon: 'fa-bolt' },
       { key: isEs ? 'ASTROTURF SPEEDSTERS' : 'ASTROTURF SPEEDSTERS', regex: /(?:🛼)?\s*(?:AstroTurf Speedsters|AstroTurf|Turf|Sinergia Turf)[:\s]*([^\|\n]+)/i, color: '#10b981', icon: 'fa-gauge-high' },
       { key: isEs ? 'BASH BROTHERS' : 'BASH BROTHERS', regex: /(?:💪)?\s*(?:Bash Brothers|Steroid Era)[:\s]*([^\|\n]+)/i, color: '#ef4444', icon: 'fa-dumbbell' },
-      { key: isEs ? 'MONEYBALL ANALYTICS' : 'MONEYBALL ANALYTICS', regex: /(?:📊)?\s*(?:Moneyball Analytics|Moneyball|Efficiency Era)[:\s]*([^\|\n]+)/i, color: '#14b8a6', icon: 'fa-chart-pie' },
+      { key: isEs ? 'MONEYBALL ANALYTICS' : 'MONEYBALL ANALYTICS', regex: /(?:📊)?\s*(?:Moneyball Analytics|Moneyball|Moneyball Era)[:\s]*([^\|\n]+)/i, color: '#14b8a6', icon: 'fa-chart-pie' },
       { key: isEs ? 'THREE TRUE OUTCOMES' : 'THREE TRUE OUTCOMES', regex: /(?:🚀)?\s*(?:Three True Outcomes|Modern Era)[:\s]*([^\|\n]+)/i, color: '#ec4899', icon: 'fa-rocket' },
       { key: isEs ? 'RESILIENCIA' : 'LEGEND RESILIENCE', regex: /(?:🛡️)?\s*(?:Resiliencia de Leyendas|Legend Resilience)[:\s]*([^\|\n]+)/i, color: '#3b82f6', icon: 'fa-shield-halved' },
       { key: isEs ? 'PRESIÓN TEMPRANA' : 'EARLY PRESSURE', regex: /(?:⚡)?\s*(?:Presión Temprana|Early Pressure)[:\s]*([^\|\n]+)/i, color: '#eab308', icon: 'fa-stopwatch' },

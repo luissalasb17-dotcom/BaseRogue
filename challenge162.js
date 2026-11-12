@@ -244,8 +244,8 @@
     { key: 'Expansion (1961-1976)', label: 'Expansion Era', years: '1961 - 1976', years_es: '1961 - 1976', years_en: '1961 - 1976', desc_es: 'Nuevas franquicias y la era del montículo y los lanzadores.', desc_en: 'New franchises and the dominant era of the pitching mound.', icon: '🏟️', color: '#059669' },
     { key: 'Turf Era (1977-1993)', label: 'Turf Era', years: '1977 - 1993', years_es: '1977 - 1993', years_en: '1977 - 1993', desc_es: 'Años 80, velocidad supersónica, turf artificial y cerradores míticos.', desc_en: '80s baseball, supersonic speed, artificial turf, and elite closers.', icon: '🎸', color: '#dc2626' },
     { key: 'Steroid Era (1994-2005)', label: 'Steroid Era', years: '1994 - 2005', years_es: '1994 - 2005', years_en: '1994 - 2005', desc_es: 'La era de los jonrones titánicos y los récords ofensivos imposibles.', desc_en: 'Colossal home runs and historic offensive slugging records.', icon: '💉', color: '#7c3aed' },
-    { key: 'Efficiency Era (2006-2015)', label: 'Efficiency Era', years: '2006 - 2015', years_es: '2006 - 2015', years_en: '2006 - 2015', desc_es: 'La revolución analítica, Moneyball y relevistas de precisión.', desc_en: 'The analytics revolution, Moneyball, and bullpen specialization.', icon: '💻', color: '#0891b2' },
-    { key: 'Modern Era (2016-Pres)', label: 'Modern Era', years: '2016 - Present', years_es: '2016 - Presente', years_en: '2016 - Present', desc_es: 'Velocidad élite, rotaciones modernas y superestrellas globales.', desc_en: 'Elite velocity, modern rotations, and global superstars.', icon: '🚀', color: '#10b981' }
+    { key: 'Moneyball Era (2006-2015)', label: 'Moneyball Era', years: '2006 - 2015', years_es: '2006 - 2015', years_en: '2006 - 2015', desc_es: 'La revolución analítica, Moneyball y relevistas de precisión.', desc_en: 'The analytics revolution, Moneyball, and bullpen specialization.', icon: '💻', color: '#0891b2' },
+    { key: 'Statcast Era (2016-Pres)', label: 'Statcast Era', years: '2016 - Present', years_es: '2016 - Presente', years_en: '2016 - Present', desc_es: 'Velocidad élite, rotaciones modernas y superestrellas globales.', desc_en: 'Elite velocity, modern rotations, and global superstars.', icon: '🚀', color: '#10b981' }
   ];
 
   function getEraDescription(era) {
@@ -7316,7 +7316,7 @@
       const esc = s => String(s === undefined || s === null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
       const ord = n => `${n}${n % 10 === 1 && n !== 11 ? 'ST' : n % 10 === 2 && n !== 12 ? 'ND' : n % 10 === 3 && n !== 13 ? 'RD' : 'TH'}`;
       const me = game.awayTeam, them = game.homeTeam;
-      const ERAS = [['Genesis', 'genesis'], ['Deadball', 'deadball'], ['Golden', 'golden'], ['Integration', 'integration'], ['Expansion', 'expansion'], ['Turf', 'bighair'], ['Steroid', 'steroid'], ['Efficiency', 'efficiency']];
+      const ERAS = [['Genesis', 'genesis'], ['Deadball', 'deadball'], ['Golden', 'golden'], ['Integration', 'integration'], ['Expansion', 'expansion'], ['Turf', 'bighair'], ['Steroid', 'steroid'], ['Moneyball', 'efficiency']];
       const cardBy = name => game.cards && (game.cards[name] || game.cards[cleanName({ name })]);
       const face = name => { const c = cardBy(name); if (!c || !window.CardArt) return ''; const er = String(c.era || ''); const f = ERAS.find(x => er.includes(x[0])); return window.CardArt.portrait(c, f ? f[1] : 'modern', false); };
 
@@ -10913,7 +10913,19 @@
       let holesLeft = missingPos.slice();
       while (options.length < PACK_OPTIONS) {
         const tied = !freeAt.has(options.length);
-        const card = pickWeightedChallengeDraftCard(activePool, tied ? (holesLeft.length ? holesLeft : missingPos) : [], seen, null);
+        // Only the DH left (user, 11 nov 2026): anybody can bat there, so the tied cards no
+        // longer look for DH-only players (packs showed two pure DHs at once). They come from
+        // every position, the best bat of two draws; pure DHs still show up with their normal odds.
+        const dhOnly = !isPitchersStage && missingPos.length === 1 && missingPos[0] === 'DH';
+        let card;
+        if (tied && dhOnly) {
+          const bat = c => (c.con || 0) + (c.pwr || 0) + (c.eye || 0);
+          const a = pickWeightedChallengeDraftCard(activePool, [], seen, null);
+          const b = a ? pickWeightedChallengeDraftCard(activePool, [], new Set([...seen, keyOf(a)]), null) : null;
+          card = (b && bat(b) > bat(a)) ? b : a;
+        } else {
+          card = pickWeightedChallengeDraftCard(activePool, tied ? (holesLeft.length ? holesLeft : missingPos) : [], seen, null);
+        }
         if (card && tied && !isPitchersStage) {
           const all = getAllPositionsForPlayer(card);
           const rest = holesLeft.filter(h => !(h === 'DH' || all.has(h)));

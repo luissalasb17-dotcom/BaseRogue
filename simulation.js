@@ -508,8 +508,8 @@
       const expansionTier = this.activeSynergies['Expansion (1961-1976)'] || 0;
       const bigHairTier = this.activeSynergies['Turf Era (1977-1993)'] || 0;
       const steroidTier = this.activeSynergies['Steroid Era (1994-2005)'] || 0;
-      const moneyballTier = this.activeSynergies['Efficiency Era (2006-2015)'] || 0;
-      const modernTier = this.activeSynergies['Modern Era (2016-Pres)'] || 0;
+      const moneyballTier = this.activeSynergies['Moneyball Era (2006-2015)'] || 0;
+      const modernTier = this.activeSynergies['Statcast Era (2016-Pres)'] || 0;
 
       // Integration (1942-1960): +2/+4/+7/+10 all stats
       if (integrationTier >= 1) {
@@ -556,13 +556,13 @@
         effBatter.pwr = (effBatter.pwr || 50) + pwrBoost;
       }
 
-      // Efficiency Era (2006-2015): +4/+8/+14/+20 EYE
+      // Moneyball Era (2006-2015): +4/+8/+14/+20 EYE
       if (moneyballTier >= 1) {
         const eyeBoost = moneyballTier === 4 ? 20 : moneyballTier === 3 ? 14 : moneyballTier === 2 ? 8 : 4;
         effBatter.eye = (effBatter.eye || 50) + eyeBoost;
       }
 
-      // Modern Era (2016-Pres): +2/+3/+5/+6 PWR and +0/+2/+4/+6 EYE
+      // Statcast Era (2016-Pres): +2/+3/+5/+6 PWR and +0/+2/+4/+6 EYE
       if (modernTier >= 1) {
         const pwrBoost = modernTier === 4 ? 6 : modernTier === 3 ? 5 : modernTier === 2 ? 3 : 2;
         const eyeBoost = modernTier === 4 ? 6 : modernTier === 3 ? 4 : modernTier === 2 ? 2 : 0;
@@ -637,8 +637,8 @@
       const expansionTier = this.activeSynergies['Expansion (1961-1976)'] || 0;
       const bigHairTier = this.activeSynergies['Turf Era (1977-1993)'] || 0;
       const steroidTier = this.activeSynergies['Steroid Era (1994-2005)'] || 0;
-      const moneyballTier = this.activeSynergies['Efficiency Era (2006-2015)'] || 0;
-      const modernTier = this.activeSynergies['Modern Era (2016-Pres)'] || 0;
+      const moneyballTier = this.activeSynergies['Moneyball Era (2006-2015)'] || 0;
+      const modernTier = this.activeSynergies['Statcast Era (2016-Pres)'] || 0;
 
       let effBatter = { ...batter };
 
@@ -687,13 +687,13 @@
         effBatter.pwr = (effBatter.pwr || 50) + pwrBoost;
       }
 
-      // Efficiency Era (2006-2015): +4/+8/+14/+20 EYE
+      // Moneyball Era (2006-2015): +4/+8/+14/+20 EYE
       if (moneyballTier >= 1) {
         const eyeBoost = moneyballTier === 4 ? 20 : moneyballTier === 3 ? 14 : moneyballTier === 2 ? 8 : 4;
         effBatter.eye = (effBatter.eye || 50) + eyeBoost;
       }
 
-      // Modern Era (2016-Pres): +2/+3/+5/+6 PWR and +0/+2/+4/+6 EYE
+      // Statcast Era (2016-Pres): +2/+3/+5/+6 PWR and +0/+2/+4/+6 EYE
       if (modernTier >= 1) {
         const pwrBoost = modernTier === 4 ? 6 : modernTier === 3 ? 5 : modernTier === 2 ? 3 : 2;
         const eyeBoost = modernTier === 4 ? 6 : modernTier === 3 ? 4 : modernTier === 2 ? 2 : 0;
@@ -806,7 +806,7 @@
         let bbDebuffTurns = 1;
         let bbDebuffMult = 1.20;
 
-        // Efficiency Era (Moneyball) BB boost & Scaled On-Base Fatigue (+5/+15/+25/+40)
+        // Moneyball Era (Moneyball) BB boost & Scaled On-Base Fatigue (+5/+15/+25/+40)
         if (moneyballTier >= 1) {
           const extra = moneyballTier === 4 ? 40 : moneyballTier === 3 ? 25 : moneyballTier === 2 ? 15 : 5;
           bbDebuffTurns = moneyballTier === 4 ? 4 : moneyballTier === 3 ? 3 : moneyballTier === 2 ? 2 : 1;
@@ -1235,7 +1235,7 @@
         this.runs += runsThisTurn;
         pitcherDmg = this._applyDebuffToPitcherDmg(pitcherDmg);
 
-        // Efficiency Era (Moneyball) On-Base Fatigue on Hits (T2: 1 turn, T3/T4: 2 turns)
+        // Moneyball Era (Moneyball) On-Base Fatigue on Hits (T2: 1 turn, T3/T4: 2 turns)
         if (moneyballTier >= 2) {
           const mbTurns = moneyballTier >= 3 ? 2 : 1;
           const mbMult = 1.20;

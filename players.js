@@ -10,8 +10,8 @@
     EXPANSION: "Expansion (1961-1976)",
     BIGHAIR: "Turf Era (1977-1993)",
     STEROID: "Steroid Era (1994-2005)",
-    EFFICIENCY: "Efficiency Era (2006-2015)",
-    MODERN: "Modern Era (2016-Pres)"
+    EFFICIENCY: "Moneyball Era (2006-2015)",
+    MODERN: "Statcast Era (2016-Pres)"
   };
 
   const EraTraits = {
@@ -50,12 +50,12 @@
       desc: "T1 (2+): +10 PWR; Jonrones (HR) +30 daño. T2 (4+): +20 PWR; HR +50 daño y curan +5 Stamina al bateador. T3 (6+): +30 PWR; HR +70 daño y curan +10 Stamina. T4 (8+): +40 PWR; HR +90 daño y curan +15 Stamina.",
       applyStatBonus: (stats) => {}
     },
-    "Efficiency Era (2006-2015)": {
+    "Moneyball Era (2006-2015)": {
       name: "Moneyball Analytics",
       desc: "T1 (2+): Boletos (BB) +15 daño. T2 (4+): BB +25 daño; al embasarte fatigas al rival 1 turno (+20% daño). T3 (6+): BB +35 daño; fatiga 2 turnos; ponches van al Escudo. T4 (8+): BB +45 daño; fatiga 2 turnos; ponches van al Escudo con -50% daño.",
       applyStatBonus: (stats) => {}
     },
-    "Modern Era (2016-Pres)": {
+    "Statcast Era (2016-Pres)": {
       name: "Three True Outcomes",
       desc: "T1 (2+): +10 EYE/PWR; BB +20 daño; Ponche -50% daño al equipo. T2 (4+): +20 EYE/PWR; BB +35 daño; Ponche no incrementa racha. T3 (6+): +30 EYE/PWR; BB +50 daño; HR aplica debuff 3 turnos. T4 (8+): +40 EYE/PWR; BB +65 daño; Ponche hace 0 daño (anulado).",
       applyStatBonus: (stats) => {}

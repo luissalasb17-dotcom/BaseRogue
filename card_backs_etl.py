@@ -202,6 +202,83 @@ def pitchers(dfs):
     return res
 
 
+NON_MAJOR = {"IND", "WES", "EAS", "NAC", "INT"}
+
+
+def titles(dfs_b, dfs_p, ids):
+    """Titulos de cada jugador: lider de bateo y de jonrones, de ERA, ponches y victorias, triple
+    corona, anillos de Serie Mundial (aparecio en el equipo campeon) y MVP de Serie Mundial y de
+    serie de campeonato. Lideres por liga y año en ligas mayores (sin las independientes)."""
+    D = L.DATA_DIR
+    D = Path(D)
+    teams = pd.read_csv(D / "Teams.csv")
+    tg = teams.groupby(["yearID", "lgID"])["G"].max()
+    out = {}
+    def add(pids, k):
+        for p in pids:
+            if p in ids:
+                out.setdefault(p, {}); out[p][k] = out[p].get(k, 0) + 1
+    b = pd.read_csv(D / "Batting.csv")
+    b = b[~b.lgID.isin(NON_MAJOR) & b.lgID.notna()]
+    for c in ["AB", "H", "HR", "BB", "HBP", "SH", "SF"]:
+        b[c] = pd.to_numeric(b.get(c), errors="coerce").fillna(0)
+    g = b.groupby(["playerID", "yearID", "lgID"])[["AB", "H", "HR", "BB", "HBP", "SH", "SF"]].sum().reset_index()
+    g["PA"] = g[["AB", "BB", "HBP", "SH", "SF"]].sum(axis=1)
+    g["q"] = g["PA"] >= 3.1 * g.set_index(["yearID", "lgID"]).index.map(tg).values
+    g["AVG"] = g["H"] / g["AB"].where(g["AB"] > 0)
+    for (y, lg), x in g.groupby(["yearID", "lgID"]):
+        q = x[x.q & (x.AB > 0)]
+        if len(q): add(q[q.AVG == q.AVG.max()].playerID, "bt")
+        if x.HR.max() > 0: add(x[x.HR == x.HR.max()].playerID, "hr")
+    p = pd.read_csv(D / "Pitching.csv")
+    p = p[~p.lgID.isin(NON_MAJOR) & p.lgID.notna()]
+    for c in ["IPouts", "ER", "SO", "W"]:
+        p[c] = pd.to_numeric(p[c], errors="coerce").fillna(0)
+    h = p.groupby(["playerID", "yearID", "lgID"])[["IPouts", "ER", "SO", "W"]].sum().reset_index()
+    h["q"] = h["IPouts"] / 3 >= h.set_index(["yearID", "lgID"]).index.map(tg).values
+    h["ERA"] = h["ER"] * 27 / h["IPouts"].where(h["IPouts"] > 0)
+    for (y, lg), x in h.groupby(["yearID", "lgID"]):
+        q = x[x.q & x.ERA.notna()]
+        if len(q): add(q[q.ERA == q.ERA.min()].playerID, "era")
+        if x.SO.max() > 0: add(x[x.SO == x.SO.max()].playerID, "so")
+        if x.W.max() > 0: add(x[x.W == x.W.max()].playerID, "w")
+    champ = teams[teams.WSWin == "Y"][["yearID", "teamID"]]
+    ap = pd.read_csv(D / "Appearances.csv", usecols=["yearID", "teamID", "playerID", "G_all"])
+    r = ap[ap.G_all.fillna(0) > 0].merge(champ, on=["yearID", "teamID"]).drop_duplicates(["playerID", "yearID"])
+    for pid, n in r.playerID.value_counts().items():
+        if pid in ids: out.setdefault(pid, {})["ring"] = int(n)
+    aw = pd.read_csv(D / "AwardsPlayers.csv")
+    for a, k in [("World Series MVP", "wsmvp"), ("ALCS MVP", "alcs"), ("NLCS MVP", "nlcs"), ("Triple Crown", "tc"), ("Pitching Triple Crown", "ptc")]:
+        add(aw[aw.awardID == a].playerID, k)
+    return out
+
+
+def career_info(ids):
+    """Debut, temporadas jugadas y equipos (en orden, por franquicia, con la sigla de Reference)."""
+    D = Path(L.DATA_DIR)
+    people = pd.read_csv(D / "People.csv", usecols=["playerID", "debut"])
+    teams = pd.read_csv(D / "Teams.csv", usecols=["yearID", "teamID", "franchID", "teamIDBR"])
+    rows = pd.concat([pd.read_csv(D / f, usecols=["playerID", "yearID", "stint", "teamID"]) for f in ("Batting.csv", "Pitching.csv")])
+    rows = rows[rows.playerID.isin(ids)].merge(teams, on=["yearID", "teamID"], how="left").sort_values(["playerID", "yearID", "stint"])
+    deb = dict(zip(people.playerID, people.debut))
+    out = {}
+    for pid, g in rows.groupby("playerID"):
+        # one entry per franchise, in order of arrival, with the abbreviation it used the most
+        order, abbr = [], {}
+        for fr, ab in zip(g.franchID.fillna(g.teamID), g.teamIDBR.fillna(g.teamID)):
+            if fr not in abbr:
+                order.append(fr); abbr[fr] = {}
+            abbr[fr][str(ab)] = abbr[fr].get(str(ab), 0) + 1
+        tl = [max(abbr[f], key=abbr[f].get) for f in order]
+        d = deb.get(pid)
+        if isinstance(d, str) and len(d) >= 10:
+            y, m, dd = d[:10].split("-"); d = f"{int(m)}/{int(dd)}/{y}"
+        else:
+            d = None
+        out[pid] = [d, int(g.yearID.nunique()), tl]
+    return out
+
+
 def main():
     dfs_b = L.paso_1_cargar_datos()
     dfs_p = P.paso_1_cargar_datos()
@@ -210,11 +287,14 @@ def main():
     pit = pitchers(dfs_p)
     ids = set(bat) | {p.split("_")[0] for p in pit}
     bio = {k: v for k, v in bio.items() if k in ids}
+    tit = titles(dfs_b, dfs_p, ids)
+    car = career_info(ids)
     js = ("// AUTO-GENERADO por card_backs_etl.py - NO EDITAR\n"
           "// bat: [y0,y1,n, AB,R,H,2B,3B,HR,RBI,SB,CS,BB,SO, AVG,OBP,SLG, FLD, OPS+, WAR por 162]  (promedio de 162 juegos de sus picos)\n"
           "// pit: [y0,y1,n, W,L,ERA,G,GS,SV,IP,H,HR,BB,SO,WHIP, ERA+, WAR por temporada]  (promedio de 162 juegos de su pico, cada temporada llevada a 162 juegos)\n"
+          "// tit: {bt lider de bateo, hr, era, so, w, ring, wsmvp, lcs, tc, ptc}\n"
           "// bio: [estatura en pulgadas, peso en libras, nacimiento, lugar]\n"
-          "window.CardBacks = " + json.dumps({"bat": bat, "pit": pit, "bio": bio}, separators=(",", ":"), ensure_ascii=False) + ";\n")
+          "window.CardBacks = " + json.dumps({"bat": bat, "pit": pit, "bio": bio, "tit": tit, "car": car}, separators=(",", ":"), ensure_ascii=False) + ";\n")
     OUT.write_text(js, encoding="utf-8")
     print(f"card_backs.js: {len(bat)} bateadores, {len(pit)} pitchers, {len(bio)} fichas, {OUT.stat().st_size/1e6:.2f} MB")
 
