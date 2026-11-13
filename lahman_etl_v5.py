@@ -1567,7 +1567,8 @@ def paso_11_motor_defensivo(df, war_bat, awards):
     print(f"  Motor avanzado: {n_war:,}  |  Proxy Lahman: {n_proxy:,}")
 
     has_war = df["rfield_career"].notna()
-    raw_hybrid = 0.60 * df["rfield_career"].fillna(0) + 0.40 * (df["wardef_career"].fillna(0) * 10)
+    DEF_RF_ONLY = os.environ.get("DEF_RF_ONLY", "0") == "1"  # prueba: DEF de la carta = solo Rfield (habilidad contra su posicion)
+    raw_hybrid = df["rfield_career"].fillna(0) * 1.0 if DEF_RF_ONLY else 0.60 * df["rfield_career"].fillna(0) + 0.40 * (df["wardef_career"].fillna(0) * 10)
     
     # Penalizacion posicional para DH puros (sin entradas defensivas reales)
     is_dh = (df["primary_pos"] == "DH")
@@ -1580,7 +1581,7 @@ def paso_11_motor_defensivo(df, war_bat, awards):
     df["defense_base_raw"] = np.where(has_war, raw_hybrid, proxy)
     # Stretched Defense Scale: min_raw (Grieve = -68.0) maps to 1.0 DEF base floor, p98 maps to 99.0 base
     # La escala sale solo de las cartas de MLB, asi estirar las Ligas Negras no corre a nadie mas.
-    _old = 0.60 * df["rfield_old"].fillna(0) + 0.40 * (df["wardef_old"].fillna(0) * 10) if "rfield_old" in df.columns else df["defense_base_raw"]
+    _old = (df["rfield_old"].fillna(0) if DEF_RF_ONLY else 0.60 * df["rfield_old"].fillna(0) + 0.40 * (df["wardef_old"].fillna(0) * 10)) if "rfield_old" in df.columns else df["defense_base_raw"]
     _old = np.where(is_dh & (df["rfield_old"].fillna(0) >= -5.0) & (df["rfield_old"].fillna(0) <= 5.0), -35.0, _old) if "rfield_old" in df.columns else _old
     _old = pd.Series(np.where(has_war, _old, proxy), index=df.index)
     df["_def_raw_old"] = _old
@@ -1906,7 +1907,7 @@ def paso_14d_extremos(df):
     # no deben correr la escala de los demas.
     mlb_ = (df["league_group"] != "NLB") if "league_group" in df.columns else None
     for col in BAT_RATINGS:
-        df[col] = ajustar_extremos(df[col], fixed=DEF_EXTREME_ANCHORS if col == "defense_val" else None)
+        df[col] = ajustar_extremos(df[col], fixed=DEF_EXTREME_ANCHORS if (col == "defense_val" and os.environ.get("DEF_RF_ONLY", "0") != "1") else None)
     return df
 
 

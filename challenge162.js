@@ -298,11 +298,15 @@ var c162NonStop = window.c162NonStop;
     const acc = {};
     Object.values(stats).forEach(x => {
       if (!x.fch || !x.pos) return;
-      const a = acc[x.pos] || (acc[x.pos] = { fch: 0, fp: 0 });
-      a.fch += x.fch; a.fp += x.fp || 0;
+      const a = acc[x.pos] || (acc[x.pos] = { fch: 0, fp: 0, dpo: 0, dp: 0, arma: 0, armh: 0 });
+      a.fch += x.fch; a.fp += x.fp || 0; a.dpo += x.dpo || 0; a.dp += x.dp || 0; a.arma += x.arma || 0; a.armh += x.armh || 0;
     });
     const rates = {};
-    Object.keys(acc).forEach(p => { if (acc[p].fch >= 100) rates[p] = acc[p].fp / acc[p].fch; });
+    Object.keys(acc).forEach(p => {
+      if (acc[p].fch >= 100) rates[p] = acc[p].fp / acc[p].fch;
+      if (acc[p].dpo >= 100) rates['dp:' + p] = acc[p].dp / acc[p].dpo;
+      if (acc[p].arma >= 100) rates['arm:' + p] = acc[p].armh / acc[p].arma;
+    });
     const run = Object.values(stats).reduce((t, x) => { t.cs += x.csa || 0; t.all += (x.csa || 0) + (x.sba || 0); return t; }, { cs: 0, all: 0 });
     if (run.all >= 100) rates.__cs = run.cs / run.all;
     _fieldRateCache = { stats, n: day, rates };
@@ -319,10 +323,13 @@ var c162NonStop = window.c162NonStop;
     // how much he played (+10 of glove ~ 2.3 runs over a full season, as calibrated in the engine).
     const frame = P === 'C' ? (defVal - 50) * 0.23 * (pa / 600.0) : 0;
     const rate = rates[s.pos] !== undefined ? rates[s.pos] : rates[P];
+    const P2 = s.pos || P;
+    const dpRuns = (s.dpo && rates['dp:' + P2] !== undefined) ? ((s.dp || 0) - s.dpo * rates['dp:' + P2]) * DP_RUNS : 0;
+    const armRuns = (s.arma && rates['arm:' + P2] !== undefined) ? ((s.armh || 0) - s.arma * rates['arm:' + P2]) * ARM_RUNS : 0;
     if (!s.fch || rate === undefined) return priorRuns + arm + frame;
     // User's call: all of it comes from the season being played. The card's glove only fills in
     // while there is nothing to count (no chances yet, or a position with under 100 in the league).
-    return ((s.fp || 0) - s.fch * rate) * FIELD_RUN_PER_PLAY + arm + frame;
+    return ((s.fp || 0) - s.fch * rate) * FIELD_RUN_PER_PLAY + arm + frame + dpRuns + armRuns;
   }
 
   // League environment for the "+" stats (OPS+, ERA+) and FIP's constant, from every game played
@@ -334,14 +341,16 @@ var c162NonStop = window.c162NonStop;
     if (!L || !L.stats) return null;
     const day = L.day || 0;
     if (_envCache.n === day && _envCache.L === L) return _envCache.env;
-    const b = { ab: 0, h: 0, d: 0, t: 0, hr: 0, bb: 0 }, p = { outs: 0, er: 0, hr: 0, bb: 0, so: 0 };
-    Object.values(L.stats.bat || {}).forEach(x => { b.ab += x.ab || 0; b.h += x.h || 0; b.d += x.doubles || 0; b.t += x.triples || 0; b.hr += x.hr || 0; b.bb += x.bb || 0; });
-    Object.values(L.stats.pit || {}).forEach(x => { p.outs += x.outs || 0; p.er += x.er || 0; p.hr += x.hr || 0; p.bb += x.bb || 0; p.so += x.so || 0; });
+    const b = { ab: 0, h: 0, d: 0, t: 0, hr: 0, bb: 0, sb: 0, cs: 0 }, p = { outs: 0, er: 0, r: 0, hr: 0, bb: 0, so: 0 };
+    Object.values(L.stats.bat || {}).forEach(x => { b.ab += x.ab || 0; b.h += x.h || 0; b.d += x.doubles || 0; b.t += x.triples || 0; b.hr += x.hr || 0; b.bb += x.bb || 0; b.sb += x.sb || 0; b.cs += x.cs || 0; });
+    Object.values(L.stats.pit || {}).forEach(x => { p.outs += x.outs || 0; p.er += x.er || 0; p.r += (x.r != null ? x.r : x.er) || 0; p.hr += x.hr || 0; p.bb += x.bb || 0; p.so += x.so || 0; });
     let env = null;
     if (b.ab > 500 && p.outs > 300) {
       const ip = p.outs / 3, era = p.er * 9 / ip;
       env = { obp: (b.h + b.bb) / (b.ab + b.bb), slg: (b.h + b.d + 2 * b.t + 3 * b.hr) / b.ab, era,
-        fipC: era - (13 * p.hr + 3 * p.bb - 2 * p.so) / ip };
+        fipC: era - (13 * p.hr + 3 * p.bb - 2 * p.so) / ip,
+        lwPerPA: batRunsRaw({ ab: b.ab, h: b.h, doubles: b.d, triples: b.t, hr: b.hr, bb: b.bb, sb: b.sb, cs: b.cs }) / (b.ab + b.bb),
+        ra9: p.r * 9 / ip };
     }
     _envCache = { n: day, L, env };
     return env;
@@ -394,6 +403,12 @@ var c162NonStop = window.c162NonStop;
     return bb * 0.32 + singles * 0.46 + d * 0.78 + t * 1.05 + hr * 1.40 + (s.sb || 0) * 0.20 - (s.cs || 0) * 0.40 - Math.max(0, s.ab - (s.h || 0)) * 0.27;
   }
 
+  // Linear-weight runs of a batting line (singles .46, 2B .78, 3B 1.05, HR 1.40, BB .32, SB .20, CS -.42, out -.27).
+  function batRunsRaw(s) {
+    const h = s.h || 0, d = s.doubles || 0, t = s.triples || 0, hr = s.hr || 0;
+    const singles = Math.max(0, h - d - t - hr), outs = Math.max(0, (s.ab || 0) - h);
+    return (s.bb || 0) * 0.32 + singles * 0.46 + d * 0.78 + t * 1.05 + hr * 1.40 + (s.sb || 0) * 0.20 - (s.cs || 0) * 0.42 - outs * 0.27;
+  }
   function batterWarValue(s, pos = 'DH', defVal = 50) {
     if (!s) return 0;
     const ab = s.ab || 0;
@@ -408,8 +423,10 @@ var c162NonStop = window.c162NonStop;
     const pa = ab + bb;
     if (pa <= 0) return 0;
 
-    // Linear weights wRAA (Wins Above Average runs)
-    const wraa = (bb * 0.32) + (singles * 0.46) + (d * 0.78) + (t * 1.05) + (hr * 1.40) + (sb * 0.20) - (outs * 0.27);
+    // Batting runs above the AVERAGE hitter of this simulated league (like real WAR): linear weights
+    // minus what a league-average hitter makes in the same plate appearances. Caught stealing counts.
+    const env = leagueEnv();
+    const wraa = batRunsRaw(s) - (env ? env.lwPerPA : 0.0095) * pa;
 
     // Positional adjustment per 600 PA (runs)
     const posAdjTable = { C: 9.0, SS: 7.0, '2B': 3.0, '3B': 2.0, CF: 2.5, LF: -7.0, RF: -7.0, '1B': -12.0, DH: -15.0 };
@@ -436,16 +453,23 @@ var c162NonStop = window.c162NonStop;
     const k = s.so || 0;
     const sv = s.sv || 0;
 
-    // Replacement level = 1.25 x the league ERA (~4.0 after the 1947-2025 calibration).
-    // It used to be 4.80 with a floor at 0: an average starter was worth ~0.5 and anyone a bit
-    // worse showed 0.0 no matter how bad.
-    const repRuns = ip * (5.13 / 9.0); // 1.25 x the league ERA (4.10 with the Oct 2026 engine, 1947-2025 tables)
-    const actualRA = er * 1.05;
-    const kBbAdj = (k * 0.020) - (bb * 0.010);
-    const isSP = (role || 'SP').toUpperCase() === 'SP';
-    const svLeverage = !isSP ? (sv * 0.45) : 0.0;
-
-    const war = (repRuns - actualRA + kBbAdj + svLeverage) / 10.0;
+    // Like real WAR (Baseball-Reference style): runs allowed (earned and unearned) against a
+    // replacement pitcher of this league. Replacement allows 1.25x the league runs as a starter and
+    // 1.10x as a reliever (relievers face fewer batters, a bad one is easier to find). Relievers'
+    // value is scaled by how much their innings mattered: (leverage + 1) / 2, leverage from saves,
+    // holds and blown saves (a full-time closer ~1.8). No bonus per save or per strikeout.
+    const env = leagueEnv();
+    const lgRA9 = env ? env.ra9 : 4.45;
+    const g = s.g || 0, gs = s.gs != null ? s.gs : null;
+    const isSP = gs != null && g > 0 ? gs / g >= 0.5 : (role || 'SP').toUpperCase() === 'SP';
+    const ra = (s.r != null ? s.r : er * 1.08);
+    let runs = ip * lgRA9 * (isSP ? 1.25 : 1.10) / 9 - ra;
+    if (!isSP && g > 0) {
+      const hi = Math.min(1, ((s.sv || 0) + (s.bs || 0) + 0.6 * (s.hld || 0)) / g);
+      const li = 1 + 0.8 * hi;
+      runs *= (li + 1) / 2;
+    }
+    const war = runs / 10.0;
     return war;
   }
   function calcPitcherWAR(s, role = 'SP') { return pitcherWarValue(s, role).toFixed(1); }
@@ -1169,6 +1193,16 @@ var c162NonStop = window.c162NonStop;
         _promoted: true
       };
     });
+    if (RIVAL_CLOSER_MIX) {
+      const pidx = poolIndex();
+      Object.values(out).forEach(r => {
+        if (!r.bullpen || r.bullpen.length < 2) return;
+        // Real teams: the closer is often the arm with the closing résumé, not always the best one.
+        const score = ([k]) => { const c = pidx.pit.get(k) || {}; return (c.ovr || 0) + 4 * Math.log2(1 + (c.career_sv || 0) / 25) + (Math.random() - 0.5) * 8; };
+        const best = r.bullpen.map(x => [x, score(x)]).sort((a, b) => b[1] - a[1])[0][0];
+        r.bullpen = [best, ...r.bullpen.filter(x => x !== best)].map(([k], i) => [k, i === 0 ? 'CL' : 'RP']);
+      });
+    }
     return out;
   }
 
@@ -1424,9 +1458,19 @@ var c162NonStop = window.c162NonStop;
   // the runners go on contact (RUN_TWO_OUT); the base rates are the league averages of the old rule.
   const RUN_SLOPE = 0.0042, RUN_TWO_OUT = 0.08, RUN_NOT_TWO_OUT = -0.03;
   const RUN_1ST_HOME_ON_2B = 0.46, RUN_2ND_HOME_ON_1B = 0.61, RUN_1ST_TO_3RD_ON_1B = 0.28;
+  // Outfield arm (Nov 2026): when a hit goes to an outfielder, his glove (arm) lowers the chance
+  // the runners take the extra base; each try is counted on his line (arma) and each runner held
+  // (armh), and his season fielding runs credit the runners held above what the league's outfielders do.
+  const ARM_SLOPE = 0.0018, ARM_RUNS = 0.25;
+  let _armCtx = null;
   function runChance(base, runner, outs) {
     const spd = runner && runner.spd !== undefined ? runner.spd : 50;
-    return Math.max(0.05, Math.min(0.95, base + (spd - 50) * RUN_SLOPE + (outs === 2 ? RUN_TWO_OUT : RUN_NOT_TWO_OUT)));
+    return Math.max(0.05, Math.min(0.95, base + (spd - 50) * RUN_SLOPE + (outs === 2 ? RUN_TWO_OUT : RUN_NOT_TWO_OUT) - (_armCtx ? _armCtx.g * ARM_SLOPE : 0)));
+  }
+  function armTry(base, runner, outs) {
+    const go = Math.random() < runChance(base, runner, outs);
+    if (_armCtx && _armCtx.line) { _armCtx.line.arma = (_armCtx.line.arma || 0) + 1; if (!go) _armCtx.line.armh = (_armCtx.line.armh || 0) + 1; }
+    return go;
   }
   function advanceOnHit(bases, batter, basesToAdvance, outs) {
     const scorers = [];
@@ -1459,7 +1503,7 @@ var c162NonStop = window.c162NonStop;
       if (r2) scorers.push(r2);
       bases[0] = null; bases[1] = batter; bases[2] = null;
       if (r1) {
-        if (Math.random() < runChance(RUN_1ST_HOME_ON_2B, r1, outs)) {
+        if (armTry(RUN_1ST_HOME_ON_2B, r1, outs)) {
           scorers.push(r1);
         } else {
           bases[2] = r1;
@@ -1472,14 +1516,14 @@ var c162NonStop = window.c162NonStop;
     if (r3) scorers.push(r3);
     bases[2] = null;
     if (r2) {
-      if (Math.random() < runChance(RUN_2ND_HOME_ON_1B, r2, outs)) {
+      if (armTry(RUN_2ND_HOME_ON_1B, r2, outs)) {
         scorers.push(r2);
       } else {
         bases[2] = r2;
       }
     }
     if (r1) {
-      if (!bases[2] && Math.random() < runChance(RUN_1ST_TO_3RD_ON_1B, r1, outs)) {
+      if (!bases[2] && armTry(RUN_1ST_TO_3RD_ON_1B, r1, outs)) {
         bases[2] = r1;
         bases[1] = null;
       } else {
@@ -1505,7 +1549,22 @@ var c162NonStop = window.c162NonStop;
   const STEAL_THIRD_GREAT = 0.33;
   const GREAT_SPD = 105;        // Speed from which a runner is a great base stealer: runs with a bigger lead, goes for third more, may steal twice
   const ERROR_RATE = 0.046;     // batted-ball outs that turn into an error, for an average defense
-  const GIDP_RATE = 0.22;       // batted-ball outs with a man on first and under 2 outs
+  const GIDP_RATE = 0.22;
+  // Double plays turned (Nov 2026): on a grounder to an infielder with a man on first, the pivot
+  // (the second baseman, or the shortstop when the ball goes to second) turns it more often with a
+  // better glove; each chance (dpo) and each one turned (dp) goes on his line, and his season
+  // fielding runs credit the double plays above what the league's players at his position turn.
+  const DP_GLOVE = 0.004, DP_RUNS = 0.40;
+  function dpTry(side, fielder, base, slotOf, gloveOf, lineOf) {
+    const pos = fielder ? slotOf(fielder) : null;
+    const want = (pos === 'SS' || pos === '3B' || pos === '1B') ? '2B' : pos === '2B' ? 'SS' : null;
+    const pivot = want ? side.lineup.find(f => slotOf(f) === want) : null;
+    let p = base;
+    if (pivot) p *= Math.max(0.6, 1 + (gloveOf(pivot) - 50) * gloveMult(want) * DP_GLOVE);
+    const go = Math.random() < p;
+    if (pivot) { const line = lineOf(pivot); if (line) { line.dpo = (line.dpo || 0) + 1; if (go) line.dp = (line.dp || 0) + 1; } }
+    return go;
+  }       // batted-ball outs with a man on first and under 2 outs
   const RUN_ON_OUT = 0.42;      // man on third, under 2 outs: scores on a batted-ball out
   const RUN_OUT_SLOPE = 0.0025; // both of these also follow the runner's Speed, gradually
   const ADVANCE_ON_OUT = 0.30;  // man on second, third open, under 2 outs: moves up on the out
@@ -1614,7 +1673,10 @@ var c162NonStop = window.c162NonStop;
   // Clutch under pressure (user, 9 nov 2026): runner in scoring position OR Late & Close (see the
   // PA loop). All four pitching ratings move CLUTCH_PIT per point above/below 55. Calibrated so 10
   // points of Clutch are worth ~0.12 of ERA with the other ratings equal (real careers: ~0.11).
-  const CLUTCH_PIT = 0.45, CLUTCH_PIT_CENTER = 55; // 55.7 is the average Clutch of the innings pitched in the league
+  let CLUTCH_PIT = 0.20; const CLUTCH_PIT_CENTER = 55; // was 0.45 with Late & Close too (decision 13 nov 2026: soft, runners in scoring position only)
+  // Test switches (Nov 2026): CLUTCH_RISP_ONLY drops the Late & Close trigger; RIVAL_CLOSER_MIX picks rival closers by OVR + real saves + chance.
+  let CLUTCH_RISP_ONLY = true, RIVAL_CLOSER_MIX = false;
+  window.__c162Tune = o => { if ('clutch' in o) CLUTCH_PIT = o.clutch; if ('rispOnly' in o) CLUTCH_RISP_ONLY = o.rispOnly; if ('closerMix' in o) RIVAL_CLOSER_MIX = o.closerMix; }; // 55.7 is the average Clutch of the innings pitched in the league
   const ERROR_GLOVE_SLOPE = 0.0184, ERROR_GLOVE_MIN = 0.3, ERROR_GLOVE_MAX = 2.0;
   // Rating -> stat tables: what a card at each rating does against an ordinary opponent, taken
   // from the real peak numbers of the cards carried to the AL/NL 1947-2025 league with the same 75%
@@ -3432,45 +3494,44 @@ var c162NonStop = window.c162NonStop;
     _showHonors() {
       const S = this.state;
       if (!S) return;
-      if (!S.honors || !S.honors.length) {
-        if (!S.honorsShown) {
-          S.honorsShown = true;
-          this.save();
-        }
-        this._showVotes();
-        return;
-      }
       if (S.honorsShown) { this._showVotes(); return; }
+      if (document.getElementById('c162-honors-overlay')) return;
       S.honorsShown = true;
       this.save();
-      const old = document.getElementById('c162-honors-overlay'); if (old) old.remove();
+      const H = S.honors || [];
+      const goOn = () => { if (this.canStartPlayoffs() && !S.playoffs.transitionShown) this._showOctoberTransitionModal(); };
       const ov = document.createElement('div');
       ov.id = 'c162-honors-overlay';
       ov.className = 'c162-tm-overlay';
       ov.innerHTML = `<div class="c162-honors">
         <div class="c162-honors-kicker">THE REGULAR SEASON IS OVER</div>
         <div class="c162-honors-title">🏆 SEASON HONORS</div>
-        <div class="c162-honors-sub">${this.getUserTeamName()} · ${S.wins}-${S.losses} · ${S.honors.length} ${S.honors.length === 1 ? 'honor' : 'honors'}</div>
-        <div class="c162-honors-list">${S.honors.map((h, i) => `<div class="c162-honor" style="--i:${i}"><span>${h.icon}</span><div><small>${h.title}</small><b>${h.who}</b>${h.detail ? `<i>${h.detail}</i>` : ''}</div></div>`).join('')}</div>
-        <button class="btn c162-honors-ok" data-honors-close>▶ CONTINUE</button>
+        <div class="c162-honors-sub">${this.getUserTeamName()} · ${S.wins}-${S.losses} · ${H.length ? `${H.length} ${H.length === 1 ? 'honor' : 'honors'}` : 'no awards or league titles this year'}</div>
+        ${H.length ? `<div class="c162-honors-list">${H.map((h, i) => `<div class="c162-honor" style="--i:${i}"><span>${h.icon}</span><div><small>${h.title}</small><b>${h.who}</b>${h.detail ? `<i>${h.detail}</i>` : ''}</div></div>`).join('')}</div>`
+          : `<div class="c162-honors-sub" style="margin:14px 0">None of your players won an award or led the league.</div>`}
+        <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+          ${S.awardVotes ? `<button class="btn btn-secondary c162-honors-ok" data-honors-full>🗳 FULL AWARDS</button>` : ''}
+          <button class="btn c162-honors-ok" data-honors-close>▶ CONTINUE</button>
+        </div>
       </div>`;
       ov.onclick = e => {
+        if (e.target.closest('[data-honors-full]')) { this._showVotes(true); return; }
         if (e.target === ov || e.target.closest('[data-honors-close]')) {
           ov.remove();
-          this._showVotes();
+          S.votesShown = true; this.save();
+          goOn();
         }
       };
       document.body.appendChild(ov);
     },
 
     // The award votes of both leagues (yours first), shown once right after the honors popup.
-    _showVotes() {
+    _showVotes(fromHonors = false) {
       const S = this.state;
-      const goOn = () => { if (this.canStartPlayoffs() && !S.playoffs.transitionShown) this._showOctoberTransitionModal(); };
-      if (!S || !S.awardVotes || S.votesShown) { goOn(); return; }
+      const goOn = () => { if (!fromHonors && this.canStartPlayoffs() && !S.playoffs.transitionShown) this._showOctoberTransitionModal(); };
+      if (!S || !S.awardVotes || (S.votesShown && !fromHonors)) { goOn(); return; }
       if (document.getElementById('c162-votes-overlay')) return;
-      S.votesShown = true;
-      this.save();
+      if (!fromHonors) { S.votesShown = true; this.save(); }
       const L = S.league, myLg = L.teams[USER_TEAM_ID].league;
       const lgs = [myLg].concat(AWARD_LEAGUES.filter(x => x !== myLg));
       const tName = id => (L.teams[id] ? L.teams[id].name : id);
@@ -3507,7 +3568,7 @@ var c162NonStop = window.c162NonStop;
         <div class="c162-honors-title">🗳 THE AWARD VOTES</div>
         <div class="c162-vote-tabs">${lgs.map(lg => `<button data-vtab="${lg}" class="${lg === myLg ? 'on' : ''}">${lg === 'AL' ? 'AMERICAN' : 'NATIONAL'} LEAGUE</button>`).join('')}</div>
         ${lgs.map(lgHTML).join('')}
-        <button class="btn c162-honors-ok" data-votes-close>▶ CONTINUE</button>
+        <button class="btn c162-honors-ok" data-votes-close>${fromHonors ? '◀ BACK' : '▶ CONTINUE'}</button>
       </div>`;
       ov.onclick = e => {
         const tab = e.target.closest('[data-vtab]');
@@ -3670,7 +3731,7 @@ var c162NonStop = window.c162NonStop;
       </div>`;
       ov.onclick = e => {
         if (e.target.closest('[data-as-rosters]')) { ov.remove(); this._ligaTab = 'allstar'; this.stopAutoSim(); this.renderLiga(); return; }
-        if (e.target === ov || e.target.closest('[data-honors-close]')) ov.remove();
+        if (e.target === ov || e.target.closest('[data-honors-close]')) { ov.remove(); if (S.gamesPlayed >= SEASON_LENGTH) this._showHonors(); }
       };
       document.body.appendChild(ov);
     },
@@ -4021,7 +4082,7 @@ var c162NonStop = window.c162NonStop;
       Object.values(result.bat).forEach(d => {
         if (d.team === USER_TEAM_ID) {
           const s = S.batterStats[d.key];
-          if (s) ['g', 'ab', 'h', 'doubles', 'triples', 'hr', 'rbi', 'bb', 'so', 'r', 'sb', 'cs', 'gidp', 'sf', 'e', 'fc', 'fo', 'fch', 'fp', 'sba', 'csa'].forEach(f => { s[f] = (s[f] || 0) + (d[f] || 0); });
+          if (s) ['g', 'ab', 'h', 'doubles', 'triples', 'hr', 'rbi', 'bb', 'so', 'r', 'sb', 'cs', 'gidp', 'sf', 'e', 'fc', 'fo', 'fch', 'fp', 'sba', 'csa', 'dpo', 'dp', 'arma', 'armh'].forEach(f => { s[f] = (s[f] || 0) + (d[f] || 0); });
         } else {
           if (!S.oppBatterStats) S.oppBatterStats = {};
           const s = S.oppBatterStats[d.name] || (S.oppBatterStats[d.name] = { name: d.name, team: oppRec.code, ab: 0, h: 0, doubles: 0, triples: 0, hr: 0, rbi: 0, bb: 0, so: 0, r: 0 });
@@ -5794,7 +5855,7 @@ var c162NonStop = window.c162NonStop;
           // on deck). One or the other, never doubled; the Clutch moves all four pitching ratings.
           const onB = bases.filter(Boolean).length;
           const lateClose = inning >= 7 && (margin === 0 || margin === 1 || (margin < 0 && -margin <= onB + 2));
-          const pressure = !!(bases[1] || bases[2]) || lateClose;
+          const pressure = !!(bases[1] || bases[2]) || (!CLUTCH_RISP_ONLY && lateClose);
           const adj = (pressure ? (clt - CLUTCH_PIT_CENTER) * CLUTCH_PIT : 0) + (bigSpot ? CLUTCH_PIT_BADGE : 0) + (playoffPitchClutch ? PLAYOFF_HERO_BOOST : 0) + (opts.confidence ? ps.conf : 0) - pen;
           const eff = adj ? { ...p, h9: p.h9 + adj, k9: p.k9 + adj, bb9: p.bb9 + adj, hr9: p.hr9 + adj } : { ...p };
           // The catcher receives and calls the game: his glove moves his pitcher's strikeouts and walks.
@@ -5993,7 +6054,7 @@ var c162NonStop = window.c162NonStop;
               bases[2] = bases[1]; bases[1] = bases[0]; bases[0] = batter;
               runnerPitcher.set(batter, state[pi].ps);
               credit([scorer], false, true);
-            } else if (outs < 2 && bases[0] && Math.random() < GIDP_RATE * (1.2 - 0.5 * bspd)) {
+            } else if (outs < 2 && bases[0] && dpTry(pitSide, fielder, GIDP_RATE * (1.2 - 0.5 * bspd), slotOf, gloveOf, f => batterLine(pitSide, f))) {
               // Double play: batter and the man on first are out; the others move up.
               outs += 2; pl.outs += 2; bl.ab++; inc(bl, 'gidp'); detail = 'DP';
               const scorer = outs < 3 ? bases[2] : null;
@@ -6031,7 +6092,11 @@ var c162NonStop = window.c162NonStop;
             if (outcome === '2B') bl.doubles++;
             if (outcome === '3B') bl.triples++;
             runnerPitcher.set(batter, state[pi].ps);
-            credit(advanceOnHit(bases, batter, adv, outs));
+            const ofSlot = fielder ? slotOf(fielder) : null;
+            _armCtx = (ofSlot === 'LF' || ofSlot === 'CF' || ofSlot === 'RF') && adv < 3 ? { g: (gloveOf(fielder) - 50) * gloveMult(ofSlot), line: fieldLine } : null;
+            const sc = advanceOnHit(bases, batter, adv, outs);
+            _armCtx = null;
+            credit(sc);
           }
           if (opts.confidence) {
             const clt0 = (clt - CLUTCH_PIT_CENTER) / CONF_CLUTCH_SPAN, cf = Math.max(-CONF_CLUTCH_MAX, Math.min(CONF_CLUTCH_MAX, clt0));
@@ -6118,7 +6183,7 @@ var c162NonStop = window.c162NonStop;
       if (!L.form) L.form = { bat: {}, pit: {} };
       Object.entries(result.bat).forEach(([k, d]) => {
         const s = L.stats.bat[k] || (L.stats.bat[k] = { key: d.key, name: d.name, team: d.team, pos: d.pos, def: d.def, g: 0, ab: 0, h: 0, doubles: 0, triples: 0, hr: 0, rbi: 0, bb: 0, so: 0, r: 0, sb: 0 });
-        ['g', 'ab', 'h', 'doubles', 'triples', 'hr', 'rbi', 'bb', 'so', 'r', 'sb', 'cs', 'gidp', 'sf', 'e', 'fc', 'fo', 'fch', 'fp', 'sba', 'csa'].forEach(f => { s[f] = (s[f] || 0) + (d[f] || 0); });
+        ['g', 'ab', 'h', 'doubles', 'triples', 'hr', 'rbi', 'bb', 'so', 'r', 'sb', 'cs', 'gidp', 'sf', 'e', 'fc', 'fo', 'fch', 'fp', 'sba', 'csa', 'dpo', 'dp', 'arma', 'armh'].forEach(f => { s[f] = (s[f] || 0) + (d[f] || 0); });
         if ((d.ab || 0) + (d.bb || 0) > 0) {
           const arr = L.form.bat[k] || (L.form.bat[k] = []);
           arr.push({ ab: d.ab || 0, h: d.h || 0, bb: d.bb || 0, doubles: d.doubles || 0, triples: d.triples || 0, hr: d.hr || 0 });
@@ -12803,8 +12868,9 @@ var c162NonStop = window.c162NonStop;
         if (navHost) { navHost.innerHTML = this._seasonNavHTML('season'); this._bindSeasonNav(navHost); }
       }
       // A click on a player of the tables opens his Dex card (ratings, career line).
-      if (this.state.gamesPlayed >= SEASON_LENGTH) this._showHonors();
+      // All-Star first (with NON-STOP it waits until the end); the honors follow when it closes.
       this._showAllStar();
+      if (this.state.gamesPlayed >= SEASON_LENGTH && !document.getElementById('c162-honors-overlay')) this._showHonors();
       const nsBtn = document.getElementById('challenge162-nonstop');
       if (nsBtn) nsBtn.onclick = () => { try { localStorage.setItem('baserogue_c162_nonstop', c162NonStop() ? '0' : '1'); } catch (e) {} this.renderSeason(); };
       container.querySelectorAll('[data-c162-card]').forEach(el => {
