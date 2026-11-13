@@ -397,7 +397,7 @@
     const defOvr = def + ((p.def_ovr !== undefined && p.def !== undefined) ? p.def_ovr - p.def : 0);
     // Defense weight by position (DEF_OVR_WEIGHT_BY_POS of lahman_etl_v5.py): 16% on average; what a position weighs less or more goes to the bat.
     const wDef = p.def_w || ({ CF: 0.19, SS: 0.19, '3B': 0.18, C: 0.18, '2B': 0.17, RF: 0.18, LF: 0.17, '1B': 0.14, DH: 0.12 })[p.pos] || 0.18; // def_w: blended by the games he played at each position
-    const raw = (con * 0.28 + pwr * 0.24 + eye * 0.12) * (1 + (0.18 - wDef) / 0.64) + defOvr * wDef + spd * 0.10 + kavd * 0.08;
+    const raw = (con * 0.28 + pwr * 0.24) * (1 + (0.18 - wDef) / 0.52) + eye * 0.12 + defOvr * wDef + spd * 0.10 + kavd * 0.08;
     // Cut points = pool percentiles of the last lahman_etl_v5.py run (see paso_15); update them if the ETL changes.
     if (raw <= 35) return Math.floor(50.0 + Math.max(0, (raw - 21.3) / 13.7) * 9.9);
     if (raw <= 45) return Math.floor(60.0 + ((raw - 35) / 10) * 9.9);

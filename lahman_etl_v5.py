@@ -2241,6 +2241,10 @@ def paso_15_equipo_y_exportar(df, batting, teams, franchises, pico_df=None, war_
         df["defense_ovr_val"] = np.where(has_, df["defense_val"] + (alt_ - cur_) * scale_, df["defense_val"]).round(1)
         # (Se probo un piso de 25 y el usuario lo descarto por artificial.)
         df["defense_ovr_val"] = df["defense_ovr_val"].clip(1.0, 150.0)
+        # Decision del usuario (13 nov 2026): el OVR usa la MISMA defensa de la carta. La posicion entra
+        # solo por el peso de la defensa por posicion (DEF_OVR_WEIGHT_BY_POS); antes contaba dos veces.
+        if os.environ.get("DEF_OVR_SEPARATE", "0") != "1":
+            df["defense_ovr_val"] = df["defense_val"]
         print("  Defensa para el OVR (posicion al %d%%): media por posicion" % int(DEF_OVR_POS_SHARE * 100))
         print(df.groupby("primary_pos")[["defense_val", "defense_ovr_val"]].mean().round(1).to_string())
     else:
@@ -2269,9 +2273,11 @@ def paso_15_equipo_y_exportar(df, batting, teams, franchises, pico_df=None, war_
         _bm = 1.0 + (BAT_W["def"] - w_def) / _bat
         _be = 1.0
     else:
-        _bat = BAT_W["con"] + BAT_W["pwr"] + BAT_W["eye"]
+        # Lo que la defensa pesa de menos o de mas va SOLO a contacto y poder; el ojo queda fijo en 12%
+        # (decision del usuario, 13 nov 2026; antes se repartia tambien con el ojo).
+        _bat = BAT_W["con"] + BAT_W["pwr"]
         _bm = 1.0 + (BAT_W["def"] - w_def) / _bat
-        _be = _bm
+        _be = 1.0
     df["raw_ovr"] = (
         df["contact_val"] * BAT_W["con"] * _bm +
         df["power_val"]   * BAT_W["pwr"] * _bm +
