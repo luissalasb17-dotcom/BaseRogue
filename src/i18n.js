@@ -154,7 +154,7 @@
         "k_avd": "<strong style=\"color:#ec4899;\">K/AVD — Evasión de Ponches:</strong> Reduce la zona de ponches (SO) en la tirada del dado. Clave para evitar el daño directo a la salud del equipo que provocan los ponches.",
         "spd": "<strong style=\"color:#38bdf8;\">SPD — Velocidad:</strong> Activa intentos de robo de base en sencillos (+20% daño al pitcher). Además, desde 60 SPD otorga de 10% a 50% de probabilidad (10% + 1% por punto) de estirar sencillos y dobles a bases extra (1B→2B→3B).",
         "def": "<strong style=\"color:#a855f7;\">DEF — Defensa:</strong> Contribuye al <strong>Escudo</strong> del equipo. Cuanto mayor DEF promedio, más escudo tienes disponible para absorber OUTs antes de perder HP.",
-        "captain": "<strong style=\"color:#eab308;\">👑 CAPTAIN:</strong> +1 a todos los ratings de sus compañeros mientras esté en el roster (vale lo mismo que +8 de raw en su OVR). Capitanes oficiales, jugadores-mánager y líderes de las Ligas Negras.",
+        "captain": "<strong style=\"color:#eab308;\">👑 CLUBHOUSE LEADER:</strong> +1 a todos los ratings de sus compañeros mientras esté en el roster (su carta suma +1 de OVR). Referentes del vestuario: capitanes, jugadores-mánager y líderes reconocidos.",
         "clutch": "<strong style=\"color:#ef4444;\">⚡ PLAYOFF HERO:</strong> MVP de la Serie Mundial, de una Serie de Campeonato o Babe Ruth Award. +8 a sus ratings en los combates de jefe y en los playoffs del 162-0.",
         "tooltip": "Guía de Atributos y Estadísticas"
     },
@@ -1599,7 +1599,7 @@
         "your_team_name": "Tu Equipo"
     },
     "badge": {
-        "captain_tooltip": "Captain: sus compañeros reciben +1 a todos sus ratings mientras esté en el roster.",
+        "captain_tooltip": "Clubhouse Leader: sus compañeros reciben +1 a todos sus ratings mientras esté en el roster.",
         "clutch_tooltip": "Playoff Hero: +8 a sus ratings en los combates de jefe y en los playoffs.",
         "challenge162_tooltip": "Elegible para el 162-0 Challenge: formó parte de un roster que ganó una run completa (Quick Play o Modo Historia).",
         "injury_tooltip": "Lesión: Penalización permanente de -20 en todos los ratings por el resto de la temporada.",
@@ -2527,7 +2527,7 @@
         "k_avd": "<strong style=\"color:#ec4899;\">K/AVD — Strikeout Avoidance:</strong> Shrinks the Strikeout (SO) zone on dice rolls. Essential for preventing direct team HP damage.",
         "spd": "<strong style=\"color:#38bdf8;\">SPD — Speed:</strong> Triggers base stealing on 1B and 2B (+20% pitcher damage debuff). Also grants 10% to 50% chance (above 60 SPD) to stretch hits into extra bases (1B➔2B➔3B).",
         "def": "<strong style=\"color:#a855f7;\">DEF — Defense:</strong> Contributes to Team <strong>Shield</strong>. Higher average DEF grants more shield to absorb OUTs before losing team HP.",
-        "captain": "<strong style=\"color:#eab308;\">👑 CAPTAIN:</strong> +1 to every rating of all his teammates while on the roster (worth +8 raw in his OVR). Official team captains, player-managers and Negro Leagues leaders.",
+        "captain": "<strong style=\"color:#eab308;\">👑 CLUBHOUSE LEADER:</strong> +1 to every rating of all his teammates while on the roster (his card gets +1 OVR). Clubhouse voices: captains, player-managers and recognized leaders.",
         "clutch": "<strong style=\"color:#ef4444;\">⚡ PLAYOFF HERO:</strong> World Series MVP, LCS MVP or Babe Ruth Award. +8 to his ratings in boss fights and in 162-0 playoff games.",
         "tooltip": "Player Ratings & Attribute Guide"
     },
@@ -3963,7 +3963,7 @@
         "your_team_name": "Your Team"
     },
     "badge": {
-        "captain_tooltip": "Captain: teammates get +1 to all their ratings while he is on the roster.",
+        "captain_tooltip": "Clubhouse Leader: teammates get +1 to all their ratings while he is on the roster.",
         "clutch_tooltip": "Playoff Hero: +8 to his ratings in boss fights and playoff games.",
         "challenge162_tooltip": "Eligible for the 162-0 Challenge: was part of a roster that won a full run (Quick Play or Story Mode).",
         "injury_tooltip": "Injury: Permanent -20 rating penalty across all stats for the rest of the season.",

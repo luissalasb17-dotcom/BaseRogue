@@ -10053,7 +10053,7 @@
         if (isHof) badgesHtml += '<span style="background:#ffd70022;color:#ffd700;border:1px solid #ffd700;padding:2px 8px;border-radius:4px;font-size:8px">🏆 HOF</span>';
         if (card.clutch || card.is_clutch || card.badge_clutch) badgesHtml += '<span style="background:#ef444422;color:#ef4444;border:1px solid #ef4444;padding:2px 8px;border-radius:4px;font-size:8px">⚡ PLAYOFF HERO</span>';
         if (card.workhorse || card.is_workhorse || card.badge_workhorse) badgesHtml += '<span style="background:#a1622422;color:#d6a05a;border:1px solid #d6a05a;padding:2px 8px;border-radius:4px;font-size:8px">🐴 WORKHORSE</span>';
-        if (card.captain || card.is_captain || card.badge_captain) badgesHtml += '<span style="background:#3b82f622;color:#3b82f6;border:1px solid #3b82f6;padding:2px 8px;border-radius:4px;font-size:8px">👑 CAPTAIN</span>';
+        if (card.captain || card.is_captain || card.badge_captain) badgesHtml += '<span style="background:#3b82f622;color:#3b82f6;border:1px solid #3b82f6;padding:2px 8px;border-radius:4px;font-size:8px">👑 CLUBHOUSE LEADER</span>';
 
         let careerStatsBlockHTML = '';
         if (careerStats) {
@@ -10186,7 +10186,7 @@
         const tokens = Object.keys(t).filter(k => t[k]).map(k => `${k}:${t[k]}`);
         const parts = rowChem.groups.filter(g => g.bonus > 0 && t[g.kind] === g.value);
         const cap = rowCap(pl);
-        const why = parts.map(g => `+${g.bonus} ${g.label}`).concat(cap ? [`+${cap} captain${cap > 1 ? 's' : ''}`] : []).join(', ');
+        const why = parts.map(g => `+${g.bonus} ${g.label}`).concat(cap ? [`+${cap} clubhouse leader${cap > 1 ? 's' : ''}`] : []).join(', ');
         return { tokens: tokens.join('|'), bonus: parts.reduce((n, g) => n + g.bonus, 0) + cap, why };
       };
       const renderCompactSlot = (player, slotLabel, kind, key) => {

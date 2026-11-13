@@ -917,3 +917,20 @@
 
 /* Integration '52: the name panel spans from the left edge of the photo */
 .player-card.pc2.pc2.pc2.pc2.pc2.pc2-e-integration.pc2-v-panel52 .pgv-52 { left: 9px; right: -2px; width: auto; }
+
+/* club: the front fills the whole card and the portrait keeps its 4:3 shape (no side crop) */
+.player-card.pc2.pc2.pc2.pc2.pc2.pc2-v-club .pc2-front { height: 100%; box-sizing: border-box; }
+.player-card.pc2.pc2.pc2.pc2.pc2.pc2-v-club .pc2-ph img { height: auto !important; aspect-ratio: 4 / 3 !important; object-fit: cover; }
+.player-card.pc2.pc2.pc2.pc2.pc2.pc2-v-club .pc2-ph::after { background: linear-gradient(180deg, rgba(0,0,0,.45) 0, transparent 14%, transparent 36%, rgba(0,0,0,.85) 50%, #0b0f14 56%) !important; }
+.player-card.pc2.pc2.pc2.pc2.pc2.pc2-v-club .pc2-rt, .player-card.pc2.pc2.pc2.pc2.pc2.pc2-v-club .pc2-ft { margin-top: auto; }
+.player-card.pc2.pc2.pc2.pc2.pc2.pc2-v-club .pc2-ft { margin-top: 4px; }
+
+/* every design: the front face is exactly the card (152 x 236), never shorter or taller */
+.player-card.pc2.pc2.pc2.pc2.pc2 .pc2-front { height: 100% !important; min-height: 0 !important; max-height: 100% !important; box-sizing: border-box; overflow: hidden; }
+
+/* premium: OVR at the top of the team strip (like every other design), year and position below it */
+.player-card.pc2.pc2.pc2.pc2.pc2.pc2-e-bighair.pc2-v-premium .pc2-front .pc2-ovr { top: 3px !important; bottom: auto !important; right: 0 !important; width: 21px; height: 27px; font-size: 13px; padding-bottom: 4px; box-sizing: border-box; }
+.player-card.pc2.pc2.pc2.pc2.pc2.pc2-e-bighair.pc2-v-premium .pc2-year { top: 34px !important; }
+.player-card.pc2.pc2.pc2.pc2.pc2.pc2-e-bighair.pc2-v-premium .pc2-pos { top: 66px !important; }
+/* premium: the team strip is the front's ::before, which Rare+ cards also use for their hover shine (opacity 0): keep the strip visible */
+.player-card.pc2.pc2.pc2.pc2.pc2.pc2-e-bighair.pc2-v-premium .pc2-front::before { opacity: 1 !important; mix-blend-mode: normal !important; z-index: 1 !important; inset: 0 0 0 auto !important; width: 21px !important; transition: none; }
