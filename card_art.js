@@ -282,7 +282,7 @@
     return `
       <div class="bk-top">
         <span class="bk-no">${no}</span>
-        <div class="bk-id"><div class="bk-name" style="font-size:${(d.name || '').length >= 19 ? 8 : (d.name || '').length >= 14 ? 9 : 11}px">${d.name || ''}${flag ? ` <span class="pc2-flag">${flag}</span>` : ''}</div>
+        <div class="bk-id"><div class="bk-name" style="font-size:${(d.name || '').length >= 19 ? 8 : (d.name || '').length >= 14 ? 9 : 11}px">${flag ? (d.name || '').replace(/(\S+)$/, `<span style="white-space:nowrap">$1 <span class="pc2-flag">${flag}</span></span>`) : (d.name || '')}</div>
           <div class="bk-team">${d.pos || ''} · ${d.tname || ''}</div></div>
         <span class="bk-ovr" title="${d.rar || ''}">${d.ovr || ''}</span>
       </div>

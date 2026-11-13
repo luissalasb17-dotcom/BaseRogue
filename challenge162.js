@@ -1,3 +1,5 @@
+window.c162NonStop = function () { try { return localStorage.getItem('baserogue_c162_nonstop') === '1'; } catch (e) { return false; } };
+var c162NonStop = window.c162NonStop;
 // challenge162.js — "162-0 Challenge" game mode.
 // Build a fixed roster from players/pitchers you've already unlocked by winning
 // a Quick Play or Story Mode run, then simulate a 162-game regular season against
@@ -2266,15 +2268,15 @@
     if (team.last10.length > 10) team.last10.shift();
   }
 
-  // Momentum: ±1 to every rating per 3 straight wins (or losses), capped at ±3.
+  // Momentum: ±1 to every rating per 5 straight wins (or losses), no cap (decision 13 nov 2026; was every 3, cap ±10).
   // Applies to every team in the regular season, the user included.
   // Games a regular plays in a season, normal vs as an Iron Man (measured over full seasons).
   const IRON_GAMES = { C: [135, 154], SS: [151, 159], '2B': [151, 159], CF: [151, 159], '3B': [152, 160], LF: [154, 160], RF: [154, 160], '1B': [156, 161], DH: [158, 161] };
   const PACK_OPTIONS = 3; // cards shown in each pack; the player keeps one
   const PACK_FREE_CARDS = 1; // how many of them ignore the positions the roster still needs
   const PACK_DRAFT_REROLLS = 3; // total pack rerolls available across the entire 25-pack draft
-  const MOMENTUM_STEP = 3;
-  const MOMENTUM_CAP = 10;
+  const MOMENTUM_STEP = 5;
+  const MOMENTUM_CAP = Infinity;
   // Pitcher fatigue (see _freshBatters / _fatiguePenalty)
   const FATIGUE_PER_BATTER = 2;
   const FATIGUE_MAX = 25;
@@ -3646,6 +3648,7 @@
     _showAllStar() {
       const S = this.state, L = S && S.league, A = L && L.allStar;
       if (!A || S.allStarShown !== false) return;
+      if (c162NonStop() && S.gamesPlayed < SEASON_LENGTH) return; // shown later, when the sim stops
       S.allStarShown = true;
       this.save();
       const mine = this._myAllStars(), lg = L.teams[USER_TEAM_ID].league, g = A.game;
@@ -6309,7 +6312,7 @@
       const results = [];
       for (let i = 0; i < n && this.state.gamesPlayed < SEASON_LENGTH; i++) {
         results.push(this.simulateGame());
-        if ((this.state.pendingAlerts || []).length) break; // a milestone stops the run
+        if (!c162NonStop() && (this.state.pendingAlerts || []).length) break; // a milestone stops the run (unless NON-STOP)
       }
       return results;
     },
@@ -6318,7 +6321,7 @@
       while (this.state.gamesPlayed < SEASON_LENGTH) {
         const r = this.simulateGame();
         results.push(r);
-        if (!r.won || (this.state.pendingAlerts || []).length) break;
+        if (!r.won || (!c162NonStop() && (this.state.pendingAlerts || []).length)) break;
       }
       return results;
     },
@@ -6340,7 +6343,7 @@
           return;
         }
         this.simulateGame();
-        if ((this.state.pendingAlerts || []).length) this.stopAutoSim();
+        if (!c162NonStop() && (this.state.pendingAlerts || []).length) this.stopAutoSim();
         this.renderSeason();
       }, 120);
       this.renderSeason();
@@ -12551,6 +12554,7 @@
           <button id="challenge162-play-1" class="btn" style="padding:10px 16px;font-size:10px;font-family:'Press Start 2P',monospace;margin:4px;">${sim1Text}</button>
           <button id="challenge162-play-10" class="btn btn-secondary" style="padding:10px 16px;font-size:10px;font-family:'Press Start 2P',monospace;margin:4px;">${sim10Text}</button>
           <button id="challenge162-play-until" class="btn btn-secondary" style="padding:10px 16px;font-size:10px;font-family:'Press Start 2P',monospace;margin:4px;">${simUntilText}</button>
+          <button id="challenge162-nonstop" class="btn btn-secondary" title="ON: monthly reports, All-Star, milestones and manager moves still happen, but the sim does not stop for them" style="padding:10px 12px;font-size:9px;font-family:'Press Start 2P',monospace;margin:4px;${c162NonStop() ? 'background:#facc15;color:#111;border-color:#facc15;' : ''}">${c162NonStop() ? '⏩ NON-STOP: ON' : '⏸ NON-STOP: OFF'}</button>
         `;
       } else if (S.league) {
         this.stopAutoSim();
@@ -12629,7 +12633,7 @@
 
         ${this._alertsHTML()}
         <!-- Top Horizontal Row: [RECORD & MODE BADGE] + [NEXT GAME RIVAL BOX] SIDE-BY-SIDE -->
-        <div class="c162-season-top-row" style="display:flex;justify-content:center;align-items:stretch;gap:14px;flex-wrap:wrap;margin-bottom:14px;max-width:960px;margin-left:auto;margin-right:auto;">
+        <div class="c162-season-top-row" style="display:flex;justify-content:center;align-items:stretch;gap:14px;flex-wrap:wrap;margin-bottom:14px;max-width:1280px;margin-left:auto;margin-right:auto;">
           
           <!-- Left: Record & Mode Summary Card -->
           <div class="c162-record-card" style="flex: 1 1 320px; max-width: 380px; margin: 0; background: radial-gradient(circle at 50% 0%, rgba(15,23,42,0.95) 0%, rgba(8,12,22,0.98) 100%); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; padding: 12px 16px; display: flex; flex-direction: column; justify-content: center; align-items: center; box-shadow: 0 4px 20px rgba(0,0,0,0.4); box-sizing: border-box;">
@@ -12661,6 +12665,7 @@
 
           <!-- Right: tonight's game as a broadcast preview -->
           ${this._s2MatchupHTML() || nextGameHTML}
+          ${S.league ? `<div class="c162-top-standings" style="flex:0 1 280px;min-width:240px;">${this._leagueSidebarHTML()}</div>` : ''}
 
         </div>
 
@@ -12753,7 +12758,7 @@
 
           <!-- Right Sidebar Panel: League race + headlines + Recent Games Feed -->
           <div class="c162-sidebar-panel">
-            ${this._leagueSidebarHTML()}
+            ${S.league ? '' : this._leagueSidebarHTML()}
             <div style="font-size:9.5px;color:#38bdf8;margin-bottom:10px;font-family:'Press Start 2P',monospace;display:flex;align-items:center;justify-content:space-between;">
               <span>📜 ${recentGamesTitle}</span>
               <span style="font-size:8px;color:#9ca3af;font-family:'Outfit',sans-serif;">(${S.gameLog.length})</span>
@@ -12800,6 +12805,8 @@
       // A click on a player of the tables opens his Dex card (ratings, career line).
       if (this.state.gamesPlayed >= SEASON_LENGTH) this._showHonors();
       this._showAllStar();
+      const nsBtn = document.getElementById('challenge162-nonstop');
+      if (nsBtn) nsBtn.onclick = () => { try { localStorage.setItem('baserogue_c162_nonstop', c162NonStop() ? '0' : '1'); } catch (e) {} this.renderSeason(); };
       container.querySelectorAll('[data-c162-card]').forEach(el => {
         el.onclick = () => {
           // By player key, not by row number: the October prep reorders the roster while the table
@@ -13174,8 +13181,8 @@
       const hint = Math.abs(m) >= MOMENTUM_CAP ? 'max' : `${more}: ${streak >= 0 ? '+' : '−'}${Math.abs(m) + 1} · a ${streak >= 0 ? 'loss' : 'win'} resets it`;
       const cls = m > 0 ? 'up' : m < 0 ? 'down' : '';
       const label = m > 0 ? `🔥 MOMENTUM +${m}` : m < 0 ? `🧊 MOMENTUM −${-m}` : 'MOMENTUM 0';
-      return `<div class="c162-momentum ${cls}" title="Every ${momentumStep(1, caps)} straight wins add +1 to all your ratings and every ${momentumStep(-1, caps)} straight losses take 1 away, up to ±${MOMENTUM_CAP}. The streak ending resets it. Applies to every team in the league.">
-        ${label}<span>${m === 0 && streak === 0 ? (caps ? '👑 ' : '') + 'every ' + step + ' straight wins: +1 to all ratings (max +' + MOMENTUM_CAP + ')' : hint}</span>
+      return `<div class="c162-momentum ${cls}" title="Every ${momentumStep(1, caps)} straight wins add +1 to all your ratings and every ${momentumStep(-1, caps)} straight losses take 1 away. The streak ending resets it. Applies to every team in the league.">
+        ${label}<span>${m === 0 && streak === 0 ? (caps ? '👑 ' : '') + 'every ' + step + ' straight wins: +1 to all ratings' : hint}</span>
       </div>`;
     },
 

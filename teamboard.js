@@ -104,6 +104,20 @@
       if (kind === 'L') delete v.lineup[i]; else v[kind][+i] = null;
       this.save();
     },
+    keyAt(slot) { const v = this.pv, [kind, i] = slot.split(':'); return kind === 'L' ? v.lineup[i] : v[kind][+i]; },
+    setAt(slot, k) { const v = this.pv, [kind, i] = slot.split(':'); if (kind === 'L') { if (k) v.lineup[i] = k; else delete v.lineup[i]; } else v[kind][+i] = k || null; },
+    // drag one board card onto another spot: they trade places (batters with batters, arms with arms)
+    swap(a, b) {
+      if (a === b) return false;
+      const ka = this.keyAt(a), kb = this.keyAt(b);
+      const pa = ka && this._map.get(ka), pb = kb && this._map.get(kb);
+      const bat = s => /^(L|bench):/.test(s);
+      if (bat(a) !== bat(b)) return false;
+      if (!bat(a) && ((pa && !this.slotFits(b, pa)) || (pb && !this.slotFits(a, pb)))) return false;
+      this.setAt(a, kb); this.setAt(b, ka);
+      const L = this.pv.locks; if (L) { const la = L[a], lb = L[b]; delete L[a]; delete L[b]; if (la) L[b] = la; if (lb) L[a] = lb; }
+      this.save(); return true;
+    },
     slotFits(slot, p) {
       const [kind, i] = slot.split(':');
       if (kind === 'L') return fits(p, i);
@@ -269,6 +283,12 @@
       ov.querySelectorAll('[data-tb-x]').forEach(b => { b.onclick = e => { e.stopPropagation(); this.remove(b.dataset.tbX); this.render(); }; });
       ov.querySelectorAll('[data-tb-lock]').forEach(b => { b.onclick = e => { e.stopPropagation(); this.toggleLock(b.dataset.tbLock); this.render(); }; });
       ov.querySelectorAll('[data-tb-slot]').forEach(b => { b.onclick = e => { if (e.target.closest('.pc2-flip, [data-tb-x], [data-tb-lock]')) return; const s = b.dataset.tbSlot; this.active = this.active === s ? null : s; this.render(); }; });
+      ov.querySelectorAll('[data-tb-slot]').forEach(b => {
+        if (this.keyAt(b.dataset.tbSlot)) { b.draggable = true; b.ondragstart = e => { e.dataTransfer.setData('text/tb-slot', b.dataset.tbSlot); e.dataTransfer.effectAllowed = 'move'; b.classList.add('tb-dragging'); }; b.ondragend = () => b.classList.remove('tb-dragging'); }
+        b.ondragover = e => { if ([...e.dataTransfer.types].includes('text/tb-slot')) { e.preventDefault(); b.classList.add('tb-dropover'); } };
+        b.ondragleave = () => b.classList.remove('tb-dropover');
+        b.ondrop = e => { e.preventDefault(); b.classList.remove('tb-dropover'); const from = e.dataTransfer.getData('text/tb-slot'); if (from && this.swap(from, b.dataset.tbSlot)) { this.active = null; if (window.AudioManager && window.AudioManager.play) window.AudioManager.play('card_deal'); this.render(); } };
+      });
       ov.querySelectorAll('[data-tb-card]').forEach(b => {
         b.onclick = e => {
           if (e.target.closest('.pc2-flip')) return;

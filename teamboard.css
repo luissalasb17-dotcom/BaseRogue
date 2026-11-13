@@ -106,7 +106,7 @@
 .tb-postabs button.on { background: #fde047; color: #1a1300; border-color: #fde047; }
 #tb-zoom { position: fixed; inset: 0; z-index: 100100; background: rgba(0,0,0,.82); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; }
 #tb-zoom .tb-zoom-card { zoom: 2.2; cursor: pointer; filter: drop-shadow(0 20px 40px rgba(0,0,0,.7)); }
-#tb-zoom small { font-family: 'Oswald', sans-serif; color: #cbd5e1; font-size: 14px; }
+#tb-zoom > small, #tb-zoom > div > small:not(.bk-car) { font-family: 'Oswald', sans-serif; color: #cbd5e1; font-size: 14px; }
 @media (max-width: 900px) { #tb-zoom .tb-zoom-card { zoom: 1.6; } }
 
 /* Random players mosaic (Team Preview) */
@@ -142,3 +142,8 @@
   .mcw-card:hover { transform: none !important; }
 }
 @keyframes mcwInFlat { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: none; } }
+
+/* drag to swap */
+[data-tb-slot][draggable=true] { cursor: grab; }
+.tb-dragging { opacity: .45; }
+.tb-dropover { outline: 2px dashed #fde047; outline-offset: 3px; }
