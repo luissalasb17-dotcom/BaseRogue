@@ -531,7 +531,7 @@ window.leftyCantPlay = function (p, slot) {
     // The OVR uses the defense with more weight on the position (def_ovr of the card, lahman_etl_v5.py); upgrades move it the same.
     const defOvr = def + ((p.def_ovr !== undefined && p.def !== undefined) ? p.def_ovr - p.def : 0);
     // Defense weight by position (def_w of the card: blended by the games he played at each position); the rest goes to the bat.
-    const wDef = p.def_w || ({ CF: 0.19, SS: 0.19, '3B': 0.18, C: 0.18, '2B': 0.17, RF: 0.18, LF: 0.17, '1B': 0.14, DH: 0.12 })[p.pos] || 0.18;
+    const wDef = p.def_w || ({ CF: 0.19, SS: 0.19, '3B': 0.18, C: 0.18, '2B': 0.17, RF: 0.17, LF: 0.17, '1B': 0.13, DH: 0.12 })[p.pos] || 0.18;
     // A captain gives +1 to his 8 teammates: worth +8 in his own raw (lahman_etl_v5.py, CAPTAIN_RAW_BONUS).
     const raw = (con * 0.28 + pwr * 0.24) * (1 + (0.18 - wDef) / 0.52) + eye * 0.12 + defOvr * wDef + spd * 0.10 + kavd * 0.08; // badges: +2 each on the final OVR
     // Cut points = pool percentiles of the last lahman_etl_v5.py run (see paso_15); update them if the ETL changes.

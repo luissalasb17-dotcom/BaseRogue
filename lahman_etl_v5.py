@@ -1772,8 +1772,10 @@ DEF_OVR_WEIGHT_BY_POS.update({"CF": 0.17, "SS": 0.17, "3B": 0.16, "C": 0.16, "2B
 # va al bate (contacto, poder, ojo) como antes.
 # Version final (usuario, 12 nov 2026): CON 28, PWR 24, EYE 12, DEF 18 de media, SPD 10, K-AVD 8; defensa
 # por posicion en numeros enteros. Con esto entra Reggie Jackson y se quedan Cabrera, Manny y Ortiz.
-DEF_OVR_WEIGHT_BY_POS.update({"CF": 0.19, "SS": 0.19, "3B": 0.18, "C": 0.18, "RF": 0.18, "2B": 0.17, "LF": 0.17, "1B": 0.14, "DH": 0.12})
+DEF_OVR_WEIGHT_BY_POS.update({"CF": 0.19, "SS": 0.19, "3B": 0.18, "C": 0.18, "RF": 0.17, "2B": 0.17, "LF": 0.17, "1B": 0.13, "DH": 0.12})  # RF 17 y 1B 13 (usuario, 13 nov 2026: los numeros reales)
 BAT_W = {"con": 0.28, "pwr": 0.24, "eye": 0.12, "def": 0.18, "spd": 0.10, "kavd": 0.08}
+if os.environ.get("DEF_W_1B"): DEF_OVR_WEIGHT_BY_POS["1B"] = float(os.environ["DEF_W_1B"])  # prueba
+if os.environ.get("DEF_W_RF"): DEF_OVR_WEIGHT_BY_POS["RF"] = float(os.environ["DEF_W_RF"])  # prueba
 DEF_OVR_POS_SHARE = 0.70    # peso del WAR defensivo (posicion incluida) en la defensa que usa el OVR
 LONGEVITY_WEIGHT  = 0.25    # peso del pico de 12 en el rating final
 # Pruebas (variables de entorno; sin ellas el ETL corre con los valores de arriba): LONG_SEASONS y
