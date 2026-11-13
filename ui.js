@@ -532,6 +532,7 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
   // Rarity color palette (5 tiers)
   const RARITY_COLORS = {
     Legendary: '#f59e0b',
+    Elite:     '#e11d48',
     Epic:      '#8b5cf6',
     Rare:      '#3b82f6',
     Uncommon:  '#10b981',
@@ -540,6 +541,7 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
 
   const RARITY_BG = {
     Legendary: 'rgba(245,158,11,0.12)',
+    Elite:     'rgba(225,29,72,0.12)',
     Epic:      'rgba(139,92,246,0.12)',
     Rare:      'rgba(59,130,246,0.12)',
     Uncommon:  'rgba(16,185,129,0.12)',
@@ -632,7 +634,8 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
       const header = document.createElement('div');
       header.style.cssText = 'width:100%;text-align:center;padding:12px 0 16px;';
       // One small pack per round on the rail above the table: opened, on the table, still sealed.
-      const themeForRound = r => r === 1 ? 'epic_plus' : r === 2 ? 'epic' : r === 3 ? 'rare' : r === 4 ? 'uncommon' : (r >= 5 && r <= 8) ? 'common' : 'random';
+      // Pack names shared with the 162-0 box (Nov 2026): Premium / Hobby / Retail / Wax / Mystery.
+      const themeForRound = r => r === 1 ? 'hobby' : r <= 4 ? 'retail' : (r >= 5 && r <= 8) ? 'common' : 'random';
       const packRail = Array.from({ length: 9 }, (_, i) => {
         const st = i < round - 1 ? 'is-done' : i === round - 1 ? 'is-now' : 'is-sealed';
         return `<i class="d3-rp d3-rp--${themeForRound(i + 1)} ${st}" title="R${i + 1}"><b>${i + 1}</b></i>`;
@@ -807,13 +810,7 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
       // Round 4 -> uncommon (Emerald Green foil - Guaranteed Uncommon)
       // Rounds 5-8 -> common (Vintage plain wax pack - 4 Common rounds)
       // Round 9 -> random (Rainbow mystery pack - 1 Free round)
-      let packTheme = 'random';
-      if (round === 1) packTheme = 'epic_plus';
-      else if (round === 2) packTheme = 'epic';
-      else if (round === 3) packTheme = 'rare';
-      else if (round === 4) packTheme = 'uncommon';
-      else if (round >= 5 && round <= 8) packTheme = 'common';
-      else packTheme = 'random';
+      const packTheme = themeForRound(round);
 
       const pack = document.createElement('div');
       pack.className = `draft-pack draft-pack--${packTheme}`;
@@ -830,6 +827,12 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
       cardsRow.appendChild(pack);
       if (window.AudioManager) window.AudioManager.play('menu_click');
       // 3D foil pack on the felt (draft3d.js); the flat pack above stays as the fallback.
+      { // the pack glows in the color of the best card inside (same as the 162-0 and the Dex)
+        const RK = { Common: 0, Uncommon: 1, Rare: 2, Epic: 3, Elite: 4, Legendary: 5 };
+        const best = picks.reduce((b, p) => ((RK[p.rarity] || 0) > (RK[b] || 0) ? p.rarity : b), 'Common');
+        pack.dataset.glow = ({ Legendary: '#ffd700', Elite: '#fb3b5c', Epic: '#a855f7', Rare: '#3b82f6', Uncommon: '#10b981', Common: '#6b7280' })[best] || '#6b7280';
+        pack.dataset.glowOp = String({ Common: .2, Uncommon: .3, Rare: .45, Epic: .55, Elite: .65, Legendary: .75 }[best] ?? .3);
+      }
       if (window.DraftPack3D) window.DraftPack3D.mount(pack, { theme: packTheme, round, tagline: t('draft.pack_tagline_' + packTheme) });
 
       pack.addEventListener('click', () => {
@@ -936,6 +939,10 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
             setTimeout(() => { ghost.remove(); row.classList.add('d3-landed'); }, 560);
           }
         });
+        { // rarity call-out on Rare and up, like the 162-0 packs
+          const HY = { Rare: 'RARE!', Epic: 'EPIC!', Elite: 'ELITE!', Legendary: 'LEGENDARY!' }[player.rarity];
+          if (HY) { const hy = document.createElement('div'); hy.className = 'draft-hype r-' + player.rarity.toLowerCase(); hy.style.setProperty('--hd', (dealDelay + 450) + 'ms'); hy.innerHTML = '<b>' + HY + '</b>'; wrapper.style.position = 'relative'; wrapper.appendChild(hy); }
+        }
         cardsRow.appendChild(wrapper);
 
         // Deal this card in from the shuffle stack, staggered so the 3 cards read
@@ -1827,9 +1834,9 @@ function initGameModeSelector() {
     // staggered card deal-in below.
     const rarities = picks.map(p => p.rarity || 'Common');
     let packTheme = 'random';
-    if (rarities.includes('Legendary') || rarities.includes('Epic')) packTheme = 'epic';
-    else if (rarities.includes('Rare')) packTheme = 'rare';
-    else if (rarities.includes('Uncommon')) packTheme = 'uncommon';
+    if (rarities.includes('Legendary') || rarities.includes('Elite') || rarities.includes('Epic')) packTheme = 'premium';
+    else if (rarities.includes('Rare')) packTheme = 'hobby';
+    else if (rarities.includes('Uncommon')) packTheme = 'retail';
     else if (rarities.every(r => r === 'Common')) packTheme = 'common';
     else packTheme = 'random';
 
@@ -3522,7 +3529,8 @@ function initGameModeSelector() {
     // Rarity styles
     let derivedRarity = player.rarity;
     if (!derivedRarity) {
-      if (ovr >= 90) derivedRarity = "Legendary";
+      if (ovr >= 93) derivedRarity = "Legendary";
+      else if (ovr >= 86) derivedRarity = "Elite";
       else if (ovr >= 80) derivedRarity = "Epic";
       else if (ovr >= 70) derivedRarity = "Rare";
       else if (ovr >= 60) derivedRarity = "Uncommon";
@@ -3707,7 +3715,7 @@ function initGameModeSelector() {
     const badgePatch = (kind, label, tip) => `<span class="pc2-badge pc2-badge-${kind}" title="${esc(tip)}"><i>${label}</i></span>`;
     const badgesHTML = (isClutch || isCaptain || isWorkhorse)
       ? `<div class="pc2-badges">${isClutch ? badgePatch('oct', 'PH', clutchToolTip) : ''}${isCaptain ? badgePatch('cap', 'C', captainToolTip) : ''}${isWorkhorse ? badgePatch('wh', 'W', workhorseToolTip) : ''}</div>` : '';
-    const sparks = (rarityLabel === 'Legendary' || rarityLabel === 'Epic')
+    const sparks = (rarityLabel === 'Legendary' || rarityLabel === 'Elite' || rarityLabel === 'Epic')
       ? `<div class="pc2-sparks">${[0, 1, 2, 3, 4].map(k => `<i style="left:${8 + k * 19}%;top:${12 + (k * 37) % 70}%;animation-delay:${(k * 0.53).toFixed(2)}s"></i>`).join('')}</div>` : '';
     const chipList = [
       `<span class="pc2-chip pc2-chip-era pc2-ce-${eraKey}" title="${esc(player.era)}">${esc(String(player.era || '').replace(/\s*\(.*$/, '').replace(/\s+Era$/i, '').replace(/^The\s+/i, ''))}</span>`,
@@ -4563,7 +4571,7 @@ function initGameModeSelector() {
     const eraClass = eraString.toLowerCase().replace(/[^a-z]/g,'').substring(0,8);
     const stam = player.stamina || 100;
     const stamColor = stam < 25 ? '#ef4444' : stam < 50 ? '#f59e0b' : '#00ff66';
-    const rarityColors = { Common: '#94a3b8', Uncommon: '#10b981', Rare: '#38bdf8', Epic: '#c084fc', Legendary: '#ffd700' };
+    const rarityColors = { Common: '#94a3b8', Uncommon: '#10b981', Rare: '#38bdf8', Epic: '#c084fc', Elite: '#fb3b5c', Legendary: '#ffd700' };
     const rarityColor = rarityColors[player.rarity] || '#94a3b8';
 
     const isPitcher = (player.pos === 'P' || player.pos === 'SP' || player.pos === 'RP' || player.pos === 'CL' || player.role === 'SP' || player.role === 'RP' || player.role === 'CL');
@@ -6064,6 +6072,7 @@ function initGameModeSelector() {
   function getPlayerSignCost(player) {
     const r = player ? (player.rarity || 'Common') : 'Common';
     if (r === 'Legendary') return 50;
+    if (r === 'Elite') return 42;
     if (r === 'Epic') return 35;
     if (r === 'Rare') return 20;
     if (r === 'Uncommon') return 10;
@@ -7195,7 +7204,7 @@ function initGameModeSelector() {
     const rarity = enemy.rarity || 'Common';
     const rColor = RARITY_COLORS[rarity] || RARITY_COLORS.Common;
     const rBg = RARITY_BG[rarity] || RARITY_BG.Common;
-    const threatKeyMap = { Common: 'threat_common', Uncommon: 'threat_uncommon', Rare: 'threat_rare', Epic: 'threat_epic', Legendary: 'threat_legendary' };
+    const threatKeyMap = { Common: 'threat_common', Uncommon: 'threat_uncommon', Rare: 'threat_rare', Epic: 'threat_epic', Elite: 'threat_elite', Legendary: 'threat_legendary' };
     const threatLabel = t('pre_fight.' + (threatKeyMap[rarity] || 'threat_common'));
 
     const isStory = window.Game.selectedMode === 'story' && !!enemy.year;
@@ -7447,7 +7456,7 @@ function initGameModeSelector() {
           ...pitcher,
           pos: pitcher.pos || 'P',
           role: pType,
-          rarity: pitcher.rarity || (pOvr >= 90 ? 'Legendary' : (pOvr >= 80 ? 'Epic' : (pOvr >= 70 ? 'Rare' : 'Uncommon')))
+          rarity: pitcher.rarity || (pOvr >= 93 ? 'Legendary' : pOvr >= 86 ? 'Elite' : (pOvr >= 80 ? 'Epic' : (pOvr >= 70 ? 'Rare' : 'Uncommon')))
         };
         pitcherWrap.innerHTML = createCardHTML(pCard, pType);
         pitcherWrap.style.cursor = 'pointer';
@@ -7627,7 +7636,7 @@ function initGameModeSelector() {
             ...p,
             pos: p.pos || 'P',
             role: p.role || pType,
-            rarity: p.rarity || (pOvr >= 90 ? 'Legendary' : (pOvr >= 80 ? 'Epic' : (pOvr >= 70 ? 'Rare' : 'Uncommon')))
+            rarity: p.rarity || (pOvr >= 93 ? 'Legendary' : pOvr >= 86 ? 'Elite' : (pOvr >= 80 ? 'Epic' : (pOvr >= 70 ? 'Rare' : 'Uncommon')))
           };
           showPlayerCardPopup(pitcherCardObj, 'pitcher_preview');
         };
@@ -9816,7 +9825,7 @@ function initGameModeSelector() {
         const pitchEra    = pitcher.era  || pitcher._era  || (enemyTeam ? (enemyTeam.era || enemyTeam._era) : 'Golden Era (1920-1941)');
         const enemyPitcherObj = (enemyTeam && enemyTeam.pitchers) ? enemyTeam.pitchers.find(p => p.name === pitcher.name || (p.cleanName && (p.cleanName === pitcher.name || pitcher.name.includes(p.cleanName)))) : null;
         const resolvedPitcherOvr = pitcher.ovr !== undefined ? pitcher.ovr : (pitcher._ovr !== undefined ? pitcher._ovr : (enemyPitcherObj && enemyPitcherObj.ovr !== undefined ? enemyPitcherObj.ovr : (enemyPitcherObj && enemyPitcherObj._ovr !== undefined ? enemyPitcherObj._ovr : null)));
-        const pitchRarity = pitcher.rarity || pitcher._rarity || (enemyPitcherObj && enemyPitcherObj.rarity) || (resolvedPitcherOvr ? (resolvedPitcherOvr >= 90 ? 'Legendary' : (resolvedPitcherOvr >= 80 ? 'Epic' : (resolvedPitcherOvr >= 70 ? 'Rare' : (resolvedPitcherOvr >= 60 ? 'Uncommon' : 'Common')))) : 'Common');
+        const pitchRarity = pitcher.rarity || pitcher._rarity || (enemyPitcherObj && enemyPitcherObj.rarity) || (resolvedPitcherOvr ? (resolvedPitcherOvr >= 93 ? 'Legendary' : resolvedPitcherOvr >= 86 ? 'Elite' : (resolvedPitcherOvr >= 80 ? 'Epic' : (resolvedPitcherOvr >= 70 ? 'Rare' : (resolvedPitcherOvr >= 60 ? 'Uncommon' : 'Common')))) : 'Common');
 
         const pitchH9  = pitcher.h9  !== undefined ? pitcher.h9  : (pitcher.grt !== undefined ? pitcher.grt : (pitcher.h9_val !== undefined ? pitcher.h9_val : 50));
         const pitchK9  = pitcher.k9  !== undefined ? pitcher.k9  : (pitcher.stf !== undefined ? pitcher.stf : (pitcher.str !== undefined ? pitcher.str : (pitcher.k9_val !== undefined ? pitcher.k9_val : 50)));

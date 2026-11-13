@@ -1,0 +1,38 @@
+/* Elite rarity (Nov 2026): OVR 86-91.9, between Epic (violet) and Legendary (gold).
+   Crimson with a silver edge. Loaded after the other card / UI stylesheets. */
+:root { --rarity-elite: #fb3b5c; }
+
+/* the 2.0 card: crimson-silver photo frame, crimson OVR, foil and sparkles */
+.player-card.pc2.rarity-Elite { --frame: linear-gradient(135deg, #9b1030, #ffd6de 42%, #c0c7cf 50%, #b3123a 58%, #ff8fa6); --ovrc: #ff8fa6; }
+.player-card.pc2.pc2-e-deadball.rarity-Elite, .player-card.pc2.pc2-e-integration.rarity-Elite, .player-card.pc2.pc2-e-efficiency.rarity-Elite, .player-card.pc2.pc2-e-steroid.rarity-Elite { --ovrc: #be123c; }
+.player-card.pc2.rarity-Elite .pc2-foil { background: linear-gradient(115deg, transparent calc(var(--mx, 50%) - 30%), #ff4d6d calc(var(--mx, 50%) - 10%), #e8edf2 var(--mx, 50%), #ff4d6d calc(var(--mx, 50%) + 10%), transparent calc(var(--mx, 50%) + 30%)); }
+.pc2.card-tilt-active.rarity-Elite .pc2-foil { opacity: .58; }
+.player-card.pc2.rarity-Elite .pc2-sparks i { width: 4px; height: 4px; background: #ffe1e7; }
+.player-card.pc2.pc2.pc2.pc2.rarity-Elite.card-tilt-active { box-shadow: 0 0 22px 4px rgba(251,59,92,.85), 0 10px 24px rgba(0,0,0,.6) !important; }
+.player-card.pc2.rarity-Elite .pc2-front::before { content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 6; mix-blend-mode: color-dodge; opacity: 0; transition: opacity .25s;
+  background: linear-gradient(115deg, transparent calc(var(--mx, 50%) - 30%), #ff4d6d calc(var(--mx, 50%) - 10%), #e8edf2 var(--mx, 50%), #ff4d6d calc(var(--mx, 50%) + 12%), transparent calc(var(--mx, 50%) + 30%)); }
+.pc2.card-tilt-active.rarity-Elite .pc2-front::before { opacity: .34; }
+
+/* old-style card fallback */
+.player-card.rarity-Elite:not(.pc2) { border: 3px solid var(--rarity-elite); box-shadow: 0 0 14px var(--rarity-elite), inset 0 0 10px rgba(251,59,92,.25); }
+
+/* chips, rails, lists */
+.r-elite, .c162-rb .r-elite, .c162-sealed-odds .r-elite, .tp-p.r-elite, .c162-pack-tier.r-elite { color: #fb3b5c; }
+.c162-rb { --rb-elite: #fb3b5c; }
+.r-elite { --rr: #fb3b5c; --rc: #fb3b5c; }
+.sd .r-elite { --rr: #fb3b5c; }
+#screen-challenge-pack .d2t-bat.r-elite, #screen-challenge-pack .m3-rack-row.r-elite { --rc: #fb3b5c; }
+.fr-card.r-elite { border-left-color: #fb3b5c; } .fr-rewards .g.elite { color: #fb3b5c; }
+.d2-rp.t-elite { background: linear-gradient(160deg, #ffd6de, #9b1030); border-color: #fb3b5c; }
+.best-elite, .c162-oc.r-elite { --rc: #fb3b5c; --glow: .9; }
+.c162-sealed.best-elite { --rip: 1150ms; }
+.c162-oc.r-elite .c162-oc-ribbon { color: #fff; border-color: #ffd6de; background: linear-gradient(120deg, #9b1030, #ff4d6d 45%, #e8edf2 60%, #be123c); box-shadow: 0 0 14px rgba(251,59,92,.7); }
+.c162-oc.r-elite .c162-oc-aura { background: radial-gradient(circle, rgba(251,59,92,.55), transparent 65%); }
+.c162-oc-hype b { text-shadow: 0 0 10px currentColor; }
+.c162-oc.r-elite .c162-oc-hype b { color: #ff8fa6; }
+
+/* Dex */
+.dx-r-elite { background: linear-gradient(180deg, #2a1016, #150b0e) !important; }
+.dx-r-elite .dx-photo::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(115deg, transparent 35%, rgba(251,59,92,.25) 50%, rgba(232,237,242,.25) 55%, transparent 70%); }
+.dex-card.dx-r-elite { border-top-color: #fb3b5c !important; }
+.c162-oc.r-rare .c162-oc-hype b { color: #60a5fa; }

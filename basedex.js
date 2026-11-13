@@ -63,6 +63,7 @@
 
   const RARITY_COLORS = {
     Legendary: '#ffd700',
+    Elite: '#fb3b5c',
     Epic: '#a855f7',
     Rare: '#3b82f6',
     Uncommon: '#10b981',
@@ -537,7 +538,7 @@
 
         // 2. Chime fanfare based on rarity
         const isLeg = rarity === 'Legendary';
-        const isEpic = rarity === 'Epic';
+        const isEpic = rarity === 'Epic' || rarity === 'Elite';
         const chord = isLeg 
           ? [523.25, 659.25, 783.99, 1046.50, 1318.51] // C Major fanfare
           : (isEpic ? [440.0, 554.37, 659.25, 880.0] : [392.0, 493.88, 587.33, 783.99]);
@@ -557,6 +558,16 @@
           osc.stop(startTime + 0.85);
         });
       } catch (e) {}
+    },
+
+    packHype(rar) {
+      const txt = { Rare: 'RARE!', Epic: 'EPIC!', Elite: 'ELITE!', Legendary: 'LEGENDARY!' }[rar];
+      if (!txt) return;
+      const el = document.createElement('div');
+      el.className = 'dex-hype r-' + rar.toLowerCase();
+      el.innerHTML = '<b>' + txt + '</b>';
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 1700);
     },
 
     showRandomCard() {
@@ -586,7 +597,7 @@
       // Render Interactive Pack Opening Overlay
       const packOverlay = document.createElement('div');
       packOverlay.id = 'dex-pack-overlay';
-      packOverlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:999999;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(8px);';
+      packOverlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:999999;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(3px);';
 
       const packSubtitle = isPitchers ? 'ALL-TIME PITCHERS PACK' : 'ALL-TIME LEGENDS PACK';
 
@@ -641,7 +652,7 @@
 
         setTimeout(() => {
           packOverlay.remove();
-          this.showDetail(randomPlayer, true);
+          this.showDetail(randomPlayer, true); this.packHype(randomPlayer.rarity);
         }, 400);
       };
 
@@ -660,9 +671,11 @@
         pack3.className = 'draft-pack draft-pack--random dex3d-pack';
         pack3.innerHTML = `<div class="draft-pack-open-prompt"><span class="draft-pack-open-text">${tap}</span></div>`;
         const target = packOverlay.querySelector('#dex-booster-pack-target');
-        const tier = { Common: 0, Uncommon: 1, Rare: 2, Epic: 3, Legendary: 4 }[randomPlayer.rarity] ?? 2;
+        const tier = { Common: 0, Uncommon: 1, Rare: 2, Epic: 3, Elite: 3, Legendary: 4 }[randomPlayer.rarity] ?? 2;
         packOverlay.appendChild(pack3);
+        pack3.dataset.glow = ({ Legendary: '#ffd700', Elite: '#fb3b5c', Epic: '#a855f7', Rare: '#3b82f6', Uncommon: '#10b981', Common: '#6b7280' })[randomPlayer.rarity] || '#6b7280'; pack3.dataset.glowOp = String({ Common: .2, Uncommon: .3, Rare: .45, Epic: .55, Elite: .65, Legendary: .75 }[randomPlayer.rarity] ?? .3);
         window.DraftPack3D.mount(pack3, { theme: 'random', tier, badge: 'DEX', tagline: packSubtitle, fine: 'SERIES 2.0  ·  1 PLAYER CARD' });
+        /* glow color set below via dataset */
         // hide the flat pack right away; bring it back only if the 3D one is not drawn in time
         // (first open of the session, while three.js loads)
         if (pack3.classList.contains('d3-pack-live')) target.style.display = 'none';
@@ -680,12 +693,16 @@
           if (!opening) { target.style.display = ''; pack3.remove(); doOpen(); return; }
           opened = true;
           if (this.activeCategory === 'opponents') this.unlockOpponent(randomPlayer); else this.unlock(randomPlayer);
-          this.updateCounters();
-          if (this.container) this.applyFilters();
+          // the album grid behind is rebuilt only after the pack is gone (rebuilding it now blanked it for a moment)
           opening.then(() => {
+            setTimeout(() => { this.updateCounters(); if (this.container) this.applyFilters(); }, 450);
             this.playPackSound(randomPlayer.rarity);
-            packOverlay.remove();
-            this.showDetail(randomPlayer, true);
+            // cross-fade: the card comes up while the pack layer fades out (no hard cut)
+            this.showDetail(randomPlayer, true); this.packHype(randomPlayer.rarity);
+            packOverlay.style.transition = 'opacity .35s ease, backdrop-filter .35s ease';
+            packOverlay.style.pointerEvents = 'none';
+            requestAnimationFrame(() => { packOverlay.style.opacity = '0'; });
+            setTimeout(() => packOverlay.remove(), 400);
           });
         };
       }
@@ -1634,7 +1651,7 @@
       const TEST_DIFFICULTIES = [
         { id: 'rookie',  label: 'ROOKIE BALL',  desc: 'Common arms',      rarities: ['Common'],            color: 'var(--rarity-common)' },
         { id: 'pro',     label: 'BIG LEAGUE',   desc: 'Uncommon & Rare',  rarities: ['Uncommon', 'Rare'],  color: 'var(--rarity-rare)' },
-        { id: 'allstar', label: 'ALL-STAR',     desc: 'Epic staff',       rarities: ['Epic'],              color: 'var(--rarity-epic)' },
+        { id: 'allstar', label: 'ALL-STAR',     desc: 'Epic & Elite staff', rarities: ['Epic', 'Elite'],    color: 'var(--rarity-epic)' },
         { id: 'legends', label: 'HALL OF FAME', desc: 'Legendary aces',   rarities: ['Legendary'],         color: 'var(--rarity-legendary)' },
         { id: 'random',  label: 'RANDOM',       desc: 'Anyone can show up', rarities: null,                color: '#e5e7eb' }
       ];

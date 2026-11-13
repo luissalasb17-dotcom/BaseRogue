@@ -287,3 +287,217 @@
 .sdi-ord.mine { background: rgba(255,211,106,.15); color: #ffd36a; font-weight: 600; }
 .sdi-spot { font: 400 30px 'VT323', monospace !important; color: #ffd36a !important; }
 .sdi-how { margin: 0; padding-left: 18px; font-size: 13px; line-height: 1.5; color: #c7d6cc; }
+
+/* 162-0 pack tiers (Nov 2026): Wax / Retail / Hobby / Premium + Mystery ('any') */
+.d2-rp.t-wax { background: repeating-linear-gradient(135deg, #f4e7c6 0 5px, #c8302b 5px 7px, #f4e7c6 7px 10px, #1e3c7c 10px 11px); border-color: #c9b48a; }
+.d2-rp.t-retail { background: linear-gradient(160deg, #ffd23f 55%, #e63946 55%); border-color: #ffd23f; }
+.d2-rp.t-hobby { background: linear-gradient(160deg, #22345c, #0b1426); border-color: #e9c46a; box-shadow: inset 0 0 0 1px #e9c46a; }
+.d2-rp.t-premium { background: linear-gradient(160deg, #1a1a1a 40%, #d4a017); border-color: #ffd700; box-shadow: 0 0 6px rgba(255,215,0,.6); }
+.bxp.t-wax { background: repeating-linear-gradient(135deg, #f4e7c6 0 6px, #c8302b 6px 9px, #f4e7c6 9px 13px, #1e3c7c 13px 15px); }
+.bxp.t-retail { background: linear-gradient(160deg, #ffd23f 55%, #e63946 55% 75%, #1d3557 75%); }
+.bxp.t-hobby { background: linear-gradient(160deg, #22345c, #0b1426); box-shadow: inset 0 0 0 2px #e9c46a; }
+.bxp.t-premium { background: linear-gradient(160deg, #111 35%, #d4a017 70%, #fff1b0); box-shadow: 0 0 10px #ffd700; }
+.bxl.t-wax { color: #e8d3a2; } .bxl.t-retail { color: #ffd23f; } .bxl.t-hobby { color: #7fa7e8; } .bxl.t-premium { color: #ffd700; }
+.c162-pack-tier.r-wax { color: #e8d3a2; } .c162-pack-tier.r-retail { color: #ffd23f; } .c162-pack-tier.r-hobby { color: #9ec0ff; } .c162-pack-tier.r-premium { color: #ffd700; text-shadow: 0 0 8px rgba(255,215,0,.6); }
+/* flat fallback pack (no WebGL) */
+.c162-sealed.pk-wax .c162-pack-foil { background: repeating-linear-gradient(135deg, #f4e7c6 0 18px, #c8302b 18px 26px, #f4e7c6 26px 34px, #1e3c7c 34px 38px) !important; color: #2a1a0e; }
+.c162-sealed.pk-retail .c162-pack-foil { background: linear-gradient(170deg, #ffd23f 58%, #e63946 58% 78%, #1d3557 78%) !important; }
+.c162-sealed.pk-hobby .c162-pack-foil { background: linear-gradient(180deg, #22345c, #0b1426) !important; box-shadow: inset 0 0 0 3px #e9c46a; }
+.c162-sealed.pk-premium .c162-pack-foil { background: radial-gradient(circle at 50% 40%, #3a2c06, #111 60%) !important; box-shadow: inset 0 0 0 4px #d4a017, 0 0 24px rgba(255,215,0,.5); }
+
+/* box intro v2: the five printed packs fan out, then one tile per kind */
+.c162-boxintro .bx-stage { width: min(760px, 100%); }
+.bxp-art { max-width: none !important; position: absolute; left: -38px; bottom: 0; width: 76px; height: 106px; object-fit: cover; border-radius: 3px; box-shadow: 0 6px 14px rgba(0,0,0,.55);
+  transform-origin: 50% 120%; transform: translateY(40px) rotate(0); opacity: 0; transition: transform .7s cubic-bezier(.2,1.3,.4,1) var(--d), opacity .3s var(--d); }
+.c162-boxintro.open .bxp-art { opacity: 1; transform: rotate(var(--a)) translateY(-96px); }
+.bxp-art.pk-premium { box-shadow: 0 0 18px rgba(255,215,0,.7), 0 6px 14px rgba(0,0,0,.55); z-index: 2; }
+.bx-what { font-family: 'Press Start 2P', monospace; font-size: 9px; color: #94a3b8; letter-spacing: 2px; }
+.bxk-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; width: 100%; }
+.bxk { display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 10px 8px; border-radius: 8px; background: rgba(15,23,42,.85); border: 1px solid #334155; }
+.bxk img { width: 64px; height: 89px; object-fit: cover; border-radius: 3px; box-shadow: 0 4px 10px rgba(0,0,0,.5); }
+.bxk-name { font: 700 16px 'Oswald', sans-serif; letter-spacing: 1.5px; color: #f1f5f9; }
+.bxk-share { font: 700 15px 'Oswald', sans-serif; color: #fde68a; display: flex; flex-direction: column; align-items: center; line-height: 1.1; }
+.bxk-share span { font: 400 11px 'Oswald', sans-serif; color: #94a3b8; }
+.bxk-bar { display: flex; width: 100%; height: 9px; border-radius: 5px; overflow: hidden; background: #1e293b; }
+.bxk-bar i { display: block; height: 100%; }
+.bxk-mostly { font: 400 11.5px/1.25 'Oswald', sans-serif; color: #cbd5e1; text-align: center; min-height: 28px; }
+.bxk.pk-wax { border-color: #a8916a; } .bxk.pk-retail { border-color: #e6b52e; } .bxk.pk-hobby { border-color: #4f8dff; box-shadow: 0 0 10px rgba(79,141,255,.25); }
+.bxk.pk-premium { border-color: #ffd700; box-shadow: 0 0 16px rgba(255,215,0,.35); background: linear-gradient(180deg, rgba(60,45,8,.85), rgba(15,23,42,.9)); }
+.bxk.pk-any { border-color: #f0abfc; }
+.bxk-key { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; font: 400 12px 'Oswald', sans-serif; color: #cbd5e1; }
+.bxk-key i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+@media (max-width: 620px) { .bxk-row { grid-template-columns: repeat(3, 1fr); } .bxp-art { width: 54px; height: 75px; left: -27px; } }
+
+/* 3D hobby box (box3d.js) */
+.bx-3d { display: none; position: relative; width: min(900px, 96vw); height: 380px; cursor: pointer; }
+.bx-3d .bx3d-canvas { position: absolute; inset: 0; display: block; }
+.c162-boxintro.has3d .bx-3d { display: block; }
+.c162-boxintro.has3d .bx-box { display: none; }
+.c162-boxintro.has3d .bx-stage { width: min(860px, 100%); gap: 8px; }
+.c162-boxintro.has3d.opening3d .bx-tap { display: none; }
+@media (max-width: 620px) { .bx-3d { height: 240px; } }
+/* odds shown next to the reroll button */
+.c162-reroll-odds { display:flex; flex-wrap:wrap; gap:4px; font-family:'Oswald',sans-serif; font-size:12px; }
+.c162-reroll-odds b { padding:2px 6px; border-radius:4px; background:rgba(0,0,0,.45); border:1px solid rgba(255,255,255,.12); font-weight:600; }
+
+/* ── hobby box intro v2: a card-shop counter (Nov 2026) ── */
+.c162-boxintro { animation: none; padding: 18px 16px 28px;
+  background: radial-gradient(ellipse at 50% 38%, rgba(10, 22, 16, .55), rgba(2, 6, 4, .96) 75%), url('assets/TEST3.webp') center / cover no-repeat, #04090a; }
+.c162-boxintro .bx-stage { animation: bxRise .45s cubic-bezier(.2, .9, .3, 1) both; gap: 12px; }
+@keyframes bxRise { from { opacity: 0; transform: translateY(18px) scale(.98); } to { opacity: 1; transform: none; } }
+.c162-boxintro .bx-title { display: none; }
+.bx-sign { text-align: center; padding: 10px 26px 12px; border-radius: 10px; background: linear-gradient(180deg, #1c3a2a, #0e2118); border: 3px solid #b8892f;
+  box-shadow: 0 0 0 2px #3a2810, 0 0 26px rgba(253, 230, 138, .22), inset 0 0 18px rgba(0, 0, 0, .5); }
+.bx-sign small { display: block; font: 600 11px 'Oswald', sans-serif; letter-spacing: 4px; color: #a7f3d0; }
+.bx-sign b { display: block; margin: 4px 0 6px; font: 400 30px/1 'Alfa Slab One', serif; color: #fde68a; letter-spacing: 1px; text-shadow: 0 3px 0 #000, 0 0 18px rgba(253, 230, 138, .35); }
+.bx-sign span { display: block; font: 500 12px 'Oswald', sans-serif; letter-spacing: 1.5px; color: #cbd5e1; }
+.bx-mat { position: relative; width: min(940px, 100%); display: flex; flex-direction: column; align-items: center; padding: 14px 10px 10px; border-radius: 16px;
+  background: radial-gradient(ellipse at 50% 45%, #1f5c3a, #0f2f1e 70%); border: 12px solid #5a3a1e;
+  border-image: linear-gradient(160deg, #8a5a2b, #4a2c12 40%, #7a4f26 60%, #3e2410) 1; box-shadow: 0 24px 60px rgba(0, 0, 0, .75), inset 0 0 40px rgba(0, 0, 0, .45); }
+.c162-boxintro .bx-tap { margin-top: 2px; font: 600 13px 'Oswald', sans-serif; letter-spacing: 3px; color: #fde68a; animation: bxTapPulse 1.6s ease-in-out infinite; }
+@keyframes bxTapPulse { 50% { opacity: .45; } }
+.c162-boxintro .bx-info { width: min(940px, 100%); padding: 14px; border-radius: 12px; background: rgba(4, 10, 16, .86); border: 1px solid rgba(52, 211, 153, .35); }
+.c162-boxintro.has3d .bx-3d { height: 340px; width: 100%; }
+@media (max-width: 760px) { .bx-sign b { font-size: 22px; } .c162-boxintro.has3d .bx-3d { height: 260px; } .bx-mat { border-width: 8px; } }
+
+/* ── hobby box intro v3: finer shop, everything on one screen (Nov 2026) ── */
+.c162-boxintro { padding: 12px 16px; }
+.c162-boxintro .bx-stage { gap: 10px; width: min(1000px, 100%); }
+.bx-sign { position: relative; padding: 10px 40px 11px; background: linear-gradient(180deg, #24120a, #120804); border: 4px solid #8a5a2b; border-radius: 12px;
+  box-shadow: 0 0 0 2px #2a1508, 0 10px 30px rgba(0,0,0,.6), 0 0 40px rgba(253,200,90,.18); }
+.bx-sign b { font-size: 26px; margin: 3px 0 5px; }
+.bx-bulbs { position: absolute; inset: 4px; border-radius: 8px; pointer-events: none;
+  background: radial-gradient(circle, #fff3c4 0 2.5px, rgba(255,200,80,.5) 3.5px, transparent 5px) 0 0 / 18px 18px;
+  -webkit-mask: linear-gradient(#000 0 0) top / 100% 9px no-repeat, linear-gradient(#000 0 0) bottom / 100% 9px no-repeat, linear-gradient(#000 0 0) left / 9px 100% no-repeat, linear-gradient(#000 0 0) right / 9px 100% no-repeat;
+          mask: linear-gradient(#000 0 0) top / 100% 9px no-repeat, linear-gradient(#000 0 0) bottom / 100% 9px no-repeat, linear-gradient(#000 0 0) left / 9px 100% no-repeat, linear-gradient(#000 0 0) right / 9px 100% no-repeat; }
+@media (prefers-reduced-motion: no-preference) { .bx-bulbs { animation: bxBulbs 1.1s steps(2) infinite; } }
+@keyframes bxBulbs { 50% { background-position: 9px 9px; } }
+.bx-open { position: absolute; right: -16px; top: -12px; font: italic 400 15px 'Righteous', sans-serif; letter-spacing: 2px; color: #ff6b8b; padding: 2px 9px; border: 2px solid #ff6b8b; border-radius: 8px;
+  background: rgba(20,4,8,.85); text-shadow: 0 0 8px #ff2e5c, 0 0 16px #ff2e5c; box-shadow: 0 0 10px rgba(255,46,92,.6), inset 0 0 8px rgba(255,46,92,.4); transform: rotate(8deg); }
+@media (prefers-reduced-motion: no-preference) { .bx-open { animation: bxNeon 3.2s infinite; } }
+@keyframes bxNeon { 0%, 38%, 42%, 100% { opacity: 1; } 40% { opacity: .35; } }
+.bx-sign small, .bx-sign b, .bx-sign span { position: relative; }
+/* felt mat: shop spotlight, weave, a printed diamond and wordmark */
+.bx-mat { padding: 4px 10px; border-width: 12px;
+  background:
+    radial-gradient(ellipse 55% 60% at 45% 52%, rgba(255,240,200,.16), transparent 70%),
+    radial-gradient(circle at 50% 50%, transparent 0 60%, rgba(0,0,0,.35) 100%),
+    repeating-linear-gradient(45deg, rgba(255,255,255,.018) 0 2px, transparent 2px 5px),
+    radial-gradient(ellipse at 50% 45%, #22663f, #0f2f1e 72%); }
+.bx-mat::before { content: 'BASEROGUE'; position: absolute; left: 50%; bottom: 6px; transform: translateX(-50%); font: 400 40px 'Alfa Slab One', serif; letter-spacing: 6px;
+  color: rgba(255,255,255,.05); pointer-events: none; white-space: nowrap; }
+.bx-mat::after { content: ''; position: absolute; left: 50%; top: 50%; width: 170px; height: 170px; transform: translate(-50%, -46%) rotate(45deg); pointer-events: none; border: 2px solid rgba(255,255,255,.07); }
+.bx-mat .bx-3d { position: relative; z-index: 1; }
+.c162-boxintro.has3d .bx-3d { height: 270px; }
+/* info: compact tiles (pack left, text right), legend in the header line, rules and GO side by side */
+.c162-boxintro .bx-info { width: min(1000px, 100%); padding: 8px 12px 10px; background: linear-gradient(180deg, rgba(36,18,10,.94), rgba(14,7,3,.95)); border: 2px solid #8a5a2b; box-shadow: 0 10px 30px rgba(0,0,0,.55); }
+.bx-whatrow { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 6px; }
+.c162-boxintro .bx-what { font: 600 12px 'Oswald', sans-serif !important; letter-spacing: 4px; color: #fde68a; margin: 0 !important; }
+.c162-boxintro .bxk-key { margin: 0 !important; }
+.c162-boxintro .bxk-row { gap: 8px; }
+.c162-boxintro .bxk { display: grid; grid-template-columns: 44px 1fr; column-gap: 8px; align-items: center; text-align: left; padding: 6px 8px; border-radius: 10px; background: linear-gradient(180deg, #1b130c, #0d0906); }
+.c162-boxintro .bxk img { grid-row: 1 / span 4; height: 60px; width: auto; margin: 0; transition: transform .2s; }
+.c162-boxintro .bxk:hover img { transform: translateY(-3px) rotate(-3deg) scale(1.06); }
+.c162-boxintro .bxk-name { font-size: 14px; margin: 0; }
+.c162-boxintro .bxk-share { font-size: 13px; margin: 0; }
+.c162-boxintro .bxk-share span { display: inline; margin-left: 4px; }
+.c162-boxintro .bxk-bar { margin: 3px 0; }
+.c162-boxintro .bxk-mostly { font-size: 11px; }
+.bx-foot { display: flex; align-items: center; gap: 16px; margin-top: 8px; }
+.c162-boxintro .bx-rules { flex: 1; columns: 2; column-gap: 22px; margin: 0; padding-left: 16px; font-size: 12px; max-width: none; }
+.c162-boxintro .bx-rules li { break-inside: avoid; margin-bottom: 2px; }
+.c162-boxintro .bx-go { flex: none; margin: 0 !important; font: 600 15px 'Oswald', sans-serif !important; letter-spacing: 2px; padding: 11px 22px !important; border-radius: 10px !important; color: #1c1300 !important;
+  background: linear-gradient(180deg, #fde68a, #e0a422) !important; border: 2px solid #7a4f10 !important; box-shadow: 0 4px 0 #6b440d, 0 0 20px rgba(251,191,36,.45) !important; }
+@media (max-width: 900px) {
+  .bx-foot { flex-direction: column; align-items: stretch; } .c162-boxintro .bx-rules { columns: 1; }
+  .c162-boxintro .bxk-row { grid-template-columns: 1fr 1fr; } .bx-open { display: none; } .bx-mat::before { font-size: 26px; }
+  .c162-boxintro.has3d .bx-3d { height: 220px; }
+}
+
+/* ── hobby box intro v4: calmer, polished (Nov 2026) — drops bulbs, neon, mat prints, boxed rules ── */
+.bx-bulbs, .bx-open { display: none !important; }
+.bx-mat::before, .bx-mat::after { content: none !important; }
+.bx-sign { padding: 12px 34px 13px; background: linear-gradient(180deg, #1f1209, #110904); border: 2px solid #b8892f; border-radius: 10px;
+  box-shadow: 0 0 0 4px #1a0e05, 0 0 0 5px rgba(184,137,47,.45), 0 14px 30px rgba(0,0,0,.6); }
+.bx-sign small { color: #c9a86a; letter-spacing: 5px; font-size: 10px; }
+.bx-sign b { color: #f5e2b0; text-shadow: 0 2px 0 #000; }
+.bx-sign span { color: #a8a29e; font-size: 11px; letter-spacing: 2px; }
+.bx-mat { background:
+    radial-gradient(ellipse 50% 60% at 45% 50%, rgba(255,240,200,.10), transparent 70%),
+    radial-gradient(ellipse at 50% 45%, #1f5a39, #0f2c1d 75%); }
+.c162-boxintro .bx-info { background: rgba(14,9,5,.92); border: 1px solid rgba(184,137,47,.5); }
+.c162-boxintro .bx-what { color: #c9a86a; }
+.c162-boxintro .bxk { background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.08) !important; box-shadow: none !important; }
+.c162-boxintro .bxk.pk-premium { border-color: rgba(212,160,23,.6) !important; }
+.c162-boxintro .bxk.pk-hobby { border-color: rgba(79,141,255,.45) !important; }
+.c162-boxintro .bx-rules { background: none !important; border: none !important; padding: 0 0 0 18px !important; color: #cbd5e1; }
+.c162-boxintro .bx-rules li::marker { color: #b8892f; }
+.c162-boxintro .bx-go { box-shadow: 0 3px 0 #6b440d !important; }
+
+/* price tag stuck on the counter next to the sealed box (gone once the box opens) */
+.bx-price { position: absolute; z-index: 2; left: 21%; top: 27%; transform: rotate(-9deg) scale(.85); padding: 6px 12px 7px 20px; text-align: center; pointer-events: none;
+  background: linear-gradient(180deg, #ff8a3d, #f26419); color: #1c0a00; border-radius: 4px 14px 14px 4px;
+  box-shadow: 0 5px 12px rgba(0,0,0,.45), inset 0 0 0 1px rgba(255,255,255,.35); transition: opacity .3s, transform .3s; }
+.bx-price::before { content: ''; position: absolute; left: 6px; top: 50%; width: 7px; height: 7px; margin-top: -3.5px; border-radius: 50%; background: #0f2c1d; box-shadow: inset 0 1px 2px rgba(0,0,0,.6); }
+.bx-price small { display: block; font: 700 9px 'Oswald', sans-serif; letter-spacing: 2px; }
+.bx-price b { display: block; font: 400 30px/1 'Alfa Slab One', serif; color: #fff7ec; text-shadow: 0 2px 0 rgba(90,30,0,.6); }
+.bx-price b sup { font-size: 13px; vertical-align: 13px; margin: 0 1px; }
+.bx-price em { display: block; font: 600 9px 'Oswald', sans-serif; font-style: normal; letter-spacing: 1px; }
+.c162-boxintro.opening3d .bx-price, .c162-boxintro.open .bx-price { opacity: 0; transform: rotate(-9deg) scale(.85) translateY(-10px); }
+@media (max-width: 760px) { .bx-price { left: 4%; top: 6%; transform: rotate(-9deg) scale(.8); } }
+
+/* tiny gag sticker instead of a price tag; the hidden info no longer pushes the box above center */
+.bx-price { padding: 2px 6px 2px 11px !important; border-radius: 2px 7px 7px 2px !important; font: 700 8px 'Oswald', sans-serif; letter-spacing: 1px; color: #3a1500;
+  left: 26% !important; top: 45% !important; transform: rotate(-12deg) !important; box-shadow: 0 2px 4px rgba(0,0,0,.45) !important; opacity: .92; }
+.bx-price::before { left: 4px !important; width: 4px !important; height: 4px !important; margin-top: -2px !important; }
+.c162-boxintro.opening3d .bx-price, .c162-boxintro.open .bx-price { opacity: 0 !important; }
+.c162-boxintro:not(.open) .bx-info { display: none; }
+.c162-boxintro.open .bx-info { animation: bxRise .4s ease-out both; }
+
+/* ── marquee sign done properly: real bulbs on the rim + a hanging neon OPEN (Nov 2026) ── */
+.c162-boxintro .bx-sign { padding: 20px 46px 18px; margin-top: 8px; border-radius: 14px; border: 0;
+  background: linear-gradient(180deg, #3a1410, #1d0907 70%, #150605);
+  box-shadow: inset 0 0 0 3px #c99a3f, inset 0 0 0 6px #2a0d08, inset 0 0 30px rgba(0,0,0,.6), 0 16px 36px rgba(0,0,0,.65), 0 0 50px rgba(255,190,90,.16); }
+.bx-marq { position: absolute; inset: 10px; pointer-events: none; }
+.bx-marq b { position: absolute; width: 7px; height: 7px; margin: -3.5px 0 0 -3.5px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #fffbe8, #ffd36b 55%, #b8741a); box-shadow: 0 0 4px 1px rgba(255,210,110,.85), 0 0 10px rgba(255,180,60,.45); }
+@media (prefers-reduced-motion: no-preference) {
+  .bx-marq b { animation: bxChase 1.2s steps(1) infinite; }
+  .bx-marq b.b { animation-delay: .6s; }
+}
+@keyframes bxChase { 0% { filter: none; opacity: 1; } 50% { filter: brightness(.45) saturate(.6); opacity: .7; box-shadow: none; } }
+.c162-boxintro .bx-sign b { font-size: 28px; color: #ffe9b8; text-shadow: 0 2px 0 #000, 0 0 14px rgba(255,200,110,.35); }
+.c162-boxintro .bx-sign small { color: #e8c37a; }
+.c162-boxintro .bx-sign span { color: #d6c3a1; }
+/* neon OPEN hanging off the right of the sign */
+.bx-neon { position: absolute; left: calc(100% + 22px); top: 26px; padding: 6px 14px 7px; border-radius: 10px; background: rgba(12,4,8,.88);
+  border: 1px solid rgba(255,255,255,.08); box-shadow: 0 8px 18px rgba(0,0,0,.6); }
+.bx-neon i { position: absolute; top: -26px; width: 1px; height: 26px; background: linear-gradient(#000, #555); }
+.bx-neon i:first-child { left: 18%; } .bx-neon i:nth-child(2) { right: 18%; }
+.bx-neon span { display: block; font: 400 26px/1 'Yellowtail', cursive; color: #ffd6e0;
+  text-shadow: 0 0 2px #fff, 0 0 6px #ff3b6b, 0 0 14px #ff2e5c, 0 0 26px #ff2e5c; }
+@media (prefers-reduced-motion: no-preference) { .bx-neon span { animation: bxNeon2 6s infinite; } }
+@keyframes bxNeon2 { 0%, 61%, 64%, 67%, 100% { opacity: 1; } 62%, 66% { opacity: .35; text-shadow: none; } }
+@media (max-width: 1100px) { .bx-neon { display: none; } }
+.bx-price { display: none !important; }
+
+/* ── counter props around the sealed box: chase cards on a stand (left) and a pack rack (right) ── */
+.bx-chase, .bx-rack { position: absolute; z-index: 2; pointer-events: none; transition: opacity .35s, transform .35s; }
+.c162-boxintro.opening3d .bx-chase, .c162-boxintro.open .bx-chase, .c162-boxintro.opening3d .bx-rack, .c162-boxintro.open .bx-rack { opacity: 0; transform: translateY(8px); }
+.bx-chase { left: 3%; top: 50%; translate: 0 -52%; display: flex; flex-direction: column; align-items: center; }
+.bx-chase-cards { display: flex; gap: 0; }
+.bx-chase-c { zoom: .64; transform: rotate(var(--r)); margin: 0 -10px; filter: drop-shadow(0 10px 10px rgba(0,0,0,.5)); }
+.bx-chase-c .player-card { pointer-events: none; }
+.bx-chase-base { margin-top: -4px; padding: 5px 16px; font: 600 10px 'Oswald', sans-serif; letter-spacing: 3px; color: #f5e2b0;
+  background: linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,.04)); border: 1px solid rgba(255,255,255,.25); border-radius: 3px;
+  box-shadow: 0 6px 12px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.3); backdrop-filter: blur(2px); }
+.bx-rack { right: 3%; top: 50%; translate: 0 -50%; display: flex; flex-direction: column; align-items: center; }
+.bx-rack-row { display: flex; gap: 6px; align-items: flex-end; padding: 0 8px; }
+.bx-rack figure { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 3px; transform: rotate(calc((var(--i) - 2) * 3deg)); }
+.bx-rack img { height: 92px; width: auto; max-width: none !important; filter: drop-shadow(0 6px 6px rgba(0,0,0,.5)); }
+.bx-rack figcaption { font: 600 9px 'Oswald', sans-serif; letter-spacing: 1px; color: #d6c3a1; }
+.bx-rack-shelf { width: 100%; margin-top: 4px; padding: 4px 0; text-align: center; font: 600 10px 'Oswald', sans-serif; letter-spacing: 3px; color: #f5e2b0;
+  background: linear-gradient(180deg, #8a5a2b, #4a2c12); border-radius: 2px; box-shadow: 0 6px 12px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.25); }
+@media (prefers-reduced-motion: no-preference) { .bx-chase-c { animation: bxFloat 4s ease-in-out infinite; } .bx-chase-c + .bx-chase-c { animation-delay: -2s; } }
+@keyframes bxFloat { 50% { translate: 0 -4px; } }
+@media (max-width: 1100px) { .bx-chase, .bx-rack { display: none; } }

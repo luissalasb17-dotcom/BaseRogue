@@ -149,6 +149,7 @@
 
   const RARITY_COLORS = {
     Legendary: '#ffd700',
+    Elite: '#fb3b5c',
     Epic: '#a855f7',
     Rare: '#3b82f6',
     Uncommon: '#10b981',
@@ -919,7 +920,29 @@
   // Box by odds (user, Nov 2026): every pack rolls its own rarity with the same average as the fixed box
   // (1 L / 3 E / 5 R / 6 U / 6 C / 5 any in 26), so a box can bring 0, 1, 2+ Legendary packs. PACK_BOX_MODE 'fixed' = old box.
   let PACK_BOX_MODE = 'odds';
-  const PACK_ODDS = { Legendary: 1 / 26, Epic: 3 / 26, Rare: 5 / 26, Uncommon: 6 / 26, Common: 6 / 26, any: 5 / 26 };
+  // Pack tiers (user, Nov 2026): the box no longer holds packs of ONE rarity. Each pack is a tier
+  // (Wax, Retail, Hobby, Premium) or a Mystery pack ('any'), and every card in it rolls its own
+  // rarity with the tier's odds, so any card can come out of any pack: a better pack only tilts
+  // the luck. Odds tuned so the best card of each pack over a box matches the old rarity box
+  // (best of 3 per box C/U/R/E/L 4.4 / 8.4 / 7.4 / 4.6 / 1.2 against 6.2 / 7.2 / 6.7 / 4.6 / 1.4).
+  const PACK_ODDS = { Wax: 0.42, Retail: 0.30, Hobby: 0.09, Premium: 0.03, any: 0.16 };
+  const PACK_TIER_ODDS = {   // per card: Common, Uncommon, Rare, Epic, Elite, Legendary (each pack leans on two rarities)
+    Wax:     [0.60, 0.32, 0.07, 0.01, 0.00, 0.00],
+    Retail:  [0.15, 0.45, 0.33, 0.06, 0.01, 0.00],
+    Hobby:   [0.00, 0.08, 0.35, 0.40, 0.14, 0.03],
+    Premium: [0.00, 0.00, 0.06, 0.24, 0.42, 0.28],
+    any:     [0.35, 0.30, 0.20, 0.09, 0.045, 0.015]
+  };
+  const PACK_TIER_INFO = {
+    Wax:     { icon: '🟫', name: 'WAX PACK', theme: 'common', tier: 0, hint: 'The classic: mostly role players, the odd surprise' },
+    Retail:  { icon: '🟨', name: 'RETAIL PACK', theme: 'retail', tier: 1, hint: 'Store pack: solid players, a shot at a star' },
+    Hobby:   { icon: '🟦', name: 'HOBBY PACK', theme: 'hobby', tier: 2, hint: 'Collector pack: good odds at Rare and Epic' },
+    Premium: { icon: '🟪', name: 'PREMIUM PACK', theme: 'premium', tier: 4, hint: 'The best odds in the box: Elite and Legendary show up often' },
+    any:     { icon: '🎲', name: 'MYSTERY PACK', theme: 'random', tier: 2, hint: 'Rainbow foil: the game odds, anything can happen' }
+  };
+  const PACK_RARS = ['Common', 'Uncommon', 'Rare', 'Epic', 'Elite', 'Legendary'];
+  const isPackTier = k => !!PACK_TIER_ODDS[k];
+  window.__PACK_TIERS = { PACK_ODDS, PACK_TIER_ODDS };
   function rollBoxSchedule(n) {
     if (!PACK_MIX) return null;
     if (PACK_BOX_MODE === 'odds') {
@@ -952,7 +975,8 @@
     const draw = (pool, ok) => {
       const rar = target.pop() || 'Common';
       let free = pool.filter(p => !taken.has(personId(p)) && ok(p));
-      const same = free.filter(p => (p.rarity || 'Common') === rar);
+      // recipes were made with the old 5 tiers: 'Legendary' = OVR 90+, 'Epic' = 80-89.9 (Elite split, Nov 2026)
+      const same = free.filter(p => rar === 'Legendary' ? (p.ovr || 0) >= 90 : rar === 'Epic' ? ((p.ovr || 0) >= 80 && (p.ovr || 0) < 90) : (p.rarity || 'Common') === rar);
       if (same.length) free = same;
       const pick = free[Math.floor(Math.random() * free.length)];
       if (pick) taken.add(personId(pick));
@@ -2025,7 +2049,7 @@
     return { lineup, bench, sp, rp, batters, pitchers };
   }
 
-  const RARITY_TIERS = { 'Common': 1, 'Uncommon': 2, 'Rare': 3, 'Epic': 4, 'Legendary': 5, 'Mythic': 6 };
+  const RARITY_TIERS = { 'Common': 1, 'Uncommon': 2, 'Rare': 3, 'Epic': 4, 'Elite': 5, 'Legendary': 6, 'Mythic': 7 };
 
   function pickWeightedChallengeDraftCard(pool, missingPos, usedKeys, minRarity = null) {
     let available = pool.filter(p => {
@@ -9561,9 +9585,9 @@
       if (!draft || !draft.box || !host) return;
       const old = document.getElementById('c162-boxintro');
       if (old) old.remove();
-      const order = ['Legendary', 'Epic', 'Rare', 'Uncommon', 'Common', 'any'];
-      const ICON = { Legendary: '👑', Epic: '💜', Rare: '💎', Uncommon: '🟢', Common: '⚪', any: '🎲' };
-      const NAME = { Legendary: 'LEGENDARY', Epic: 'EPIC', Rare: 'RARE', Uncommon: 'UNCOMMON', Common: 'COMMON', any: 'ANY RARITY' };
+      const order = ['Premium', 'Hobby', 'Retail', 'Wax', 'any'];
+      const ICON = Object.fromEntries(order.map(k => [k, PACK_TIER_INFO[k].icon]));
+      const NAME = Object.fromEntries(order.map(k => [k, PACK_TIER_INFO[k].name.replace(' PACK', '')]));
       const count = r => draft.box.filter(x => x === r).length;
       const hide = PACK_BOX_MODE === 'odds'; // odds box: what's inside stays a surprise; fan and chips show the odds
       const nBox = draft.box.length;
@@ -9572,36 +9596,79 @@
       const packs = order.flatMap(r => Array.from({ length: shown(r) }, () => r));
       const n = nBox;
       const bp = draft.batPacks === undefined ? 14 : draft.batPacks, pp = draft.pitPacks === undefined ? 12 : draft.pitPacks;
-      const packsHTML = packs.map((r, i) => {
-        const a = (i - (n - 1) / 2) * (120 / n); // fan angle
-        return `<i class="bxp t-${r.toLowerCase()}" style="--a:${a.toFixed(1)}deg;--d:${(i * 0.035).toFixed(2)}s"></i>`;
+      // One printed pack per kind fans out of the box (Wax at the back, Premium in front), and below
+      // each kind gets a tile: its pack, how many come in a box, and what is inside (rarity odds).
+      const art = k => (window.DraftPack3D && window.DraftPack3D.art) ? window.DraftPack3D.art(PACK_TIER_INFO[k].theme, { tagline: PACK_TIER_INFO[k].name, badge: '', fine: '' }) : '';
+      const kinds = ['Wax', 'Retail', 'Hobby', 'Premium', 'any'];
+      const packsHTML = kinds.map((k, i) => {
+        const a = (i - 2) * 22; // fan angle
+        const src = art(k);
+        return src ? `<img class="bxp-art pk-${k.toLowerCase()}" src="${src}" alt="" style="--a:${a}deg;--d:${(i * 0.08).toFixed(2)}s">` : `<i class="bxp t-${k.toLowerCase()}" style="--a:${a}deg;--d:${(i * 0.08).toFixed(2)}s"></i>`;
       }).join('');
-      const legend = order.filter(r => shown(r) || hide).map(r => `<div class="bxl t-${r.toLowerCase()}"><b>${ICON[r]} ${hide ? Math.round(PACK_ODDS[r] * 100) + '%' : count(r)}</b><span>${NAME[r]}</span></div>`).join('');
+      const RCOL = ['#9aa3ad', '#4ade80', '#60a5fa', '#c084fc', '#fb3b5c', '#fbbf24'], RNAME = ['Common', 'Uncommon', 'Rare', 'Epic', 'Elite', 'Legendary'];
+      const legend = `<div class="bxk-row">${kinds.map(k => {
+        const o = PACK_TIER_ODDS[k], inf = PACK_TIER_INFO[k], src = art(k);
+        const bar = o.map((v, i) => v > 0 ? `<i style="flex:${v};background:${RCOL[i]}" title="${RNAME[i]} ${Math.round(v * 1000) / 10}%"></i>` : '').join('');
+        const top2 = o.map((v, i) => [v, i]).sort((a, b) => b[0] - a[0]).slice(0, 2).sort((a, b) => a[1] - b[1]).map(([, i]) => `<b style="color:${RCOL[i]}">${RNAME[i]}</b>`).join(' & ');
+        return `<div class="bxk pk-${k.toLowerCase()}">
+            ${src ? `<img src="${src}" alt="">` : ''}
+            <div class="bxk-name">${inf.name.replace(' PACK', '')}</div>
+            <div class="bxk-share">≈ ${Math.round(PACK_ODDS[k] * nBox)} of ${nBox}<span>${Math.round(PACK_ODDS[k] * 100)}% of packs</span></div>
+            <div class="bxk-bar">${bar}</div>
+            <div class="bxk-mostly">${k === 'any' ? 'Anything goes' : 'Mostly ' + top2}</div>
+          </div>`;
+      }).join('')}</div>`;
+      // counter props while the box is sealed: two chase cards in a stand, and the five kinds of pack on a rack
+      const propsHTML = (() => {
+        let chase = '';
+        try {
+          const all = [...(getBatterPool() || []), ...(getPitcherPool() || [])];
+          const pick = r => { const c = all.filter(p => p.rarity === r); return c.length ? c[Math.floor(Math.random() * c.length)] : null; };
+          const cs = [pick('Elite'), pick('Legendary')].filter(Boolean);
+          if (cs.length && typeof window.createCardHTML === 'function') chase = `<div class="bx-chase"><div class="bx-chase-cards">${cs.map((c, i) => `<div class="bx-chase-c" style="--r:${i ? 6 : -6}deg">${window.createCardHTML(c)}</div>`).join('')}</div><div class="bx-chase-base">CHASE CARDS</div></div>`;
+        } catch (e) { /* no cards yet */ }
+        const rack = kinds.map((k, i) => { const src = art(k); return src ? `<figure style="--i:${i}"><img src="${src}" alt=""><figcaption>${PACK_TIER_INFO[k].name.replace(' PACK', '')}</figcaption></figure>` : ''; }).join('');
+        return `${chase}<div class="bx-rack"><div class="bx-rack-row">${rack}</div><div class="bx-rack-shelf">IN THIS BOX</div></div>`;
+      })();
       const el = document.createElement('div');
       el.id = 'c162-boxintro';
       el.className = 'c162-boxintro';
       el.innerHTML = `
         <div class="bx-stage">
-          <div class="bx-title">YOUR HOBBY BOX</div>
+          <div class="bx-sign"><div class="bx-marq" aria-hidden="true"></div><div class="bx-neon" aria-hidden="true"><i></i><i></i><span>Open</span></div><small>BASEROGUE CARD SHOP</small><b>YOUR HOBBY BOX</b><span>${n} PACKS · ${bp} BATTERS · ${pp} PITCHERS · ${PACK_OPTIONS} CARDS EACH</span></div>
+          <div class="bx-mat">${propsHTML}<div class="bx-3d" id="c162-bx-3d"></div>
           <div class="bx-box" id="c162-bx-box">
             <div class="bx-packs">${packsHTML}</div>
             <div class="bx-lid"><span>BASEROGUE</span><small>HOBBY BOX · ${n} PACKS</small></div>
             <div class="bx-body"><span>⚾</span><small>ALL-TIME SERIES</small></div>
           </div>
+          </div>
           <div class="bx-tap">TAP THE BOX TO OPEN IT</div>
           <div class="bx-info">
-            <div class="bx-legend">${legend}</div>${hide ? '<div class="bx-odds-note">ODDS PER PACK</div>' : ''}
+            <div class="bx-whatrow"><div class="bx-what">WHAT'S IN THE BOX</div><div class="bxk-key">${RNAME.map((nm, i) => `<span><i style="background:${RCOL[i]}"></i>${nm}</span>`).join('')}</div></div>
+            ${legend}
+            <div class="bx-foot">
             <ul class="bx-rules">
-              ${hide ? `<li>Every pack rolls its own rarity: <b>you find out when it hits the table</b>. Some boxes bring a Legendary pack, some bring two, some none.</li>` : `<li><b>${n - count('any')}</b> packs have a <b>fixed rarity</b>; the <b>🎲 ${count('any')}</b> others can hold <b>any rarity</b>, even an extra Legendary.</li>`}
+              ${hide ? `<li>The box mixes the five kinds above at random: you see which one when it hits the table.</li><li>Every card rolls its own rarity, so <b>anything can come out of any pack</b>; a better pack just tilts the odds.</li>` : `<li><b>${n - count('any')}</b> packs have a <b>fixed rarity</b>; the <b>🎲 ${count('any')}</b> others can hold <b>any rarity</b>, even an extra Legendary.</li>`}
               <li><b>${bp}</b> packs of batters first, then <b>${pp}</b> of pitchers.</li>
-              <li>Each pack shows <b>${PACK_OPTIONS} cards</b>: keep one. The position is random.</li>
+              <li>Each pack shows <b>${PACK_OPTIONS} cards</b>: keep one.</li>
               <li><b>${PACK_DRAFT_REROLLS} rerolls</b> for the whole box.${hide ? '' : ' <b>LEFT IN THE BOX</b> shows what is still to come.'}</li>
             </ul>
             <button class="btn bx-go" id="c162-bx-go">📦 OPEN THE FIRST PACK ➔</button>
+            </div>
           </div>
         </div>`;
       // on <body>: the screen panel is transformed while it animates in, which would trap a fixed overlay inside it
       document.body.appendChild(el);
+      // marquee bulbs, one every ~20px around the sign (alternating for a chase)
+      setTimeout(() => {
+        const mq = el.querySelector('.bx-marq'); if (!mq) return;
+        const W = mq.clientWidth, H = mq.clientHeight, step = 20, pts = [];
+        const nx = Math.max(2, Math.round(W / step)), ny = Math.max(2, Math.round(H / step));
+        for (let i = 0; i <= nx; i++) { pts.push([i * W / nx, 0]); pts.push([i * W / nx, H]); }
+        for (let j = 1; j < ny; j++) { pts.push([0, j * H / ny]); pts.push([W, j * H / ny]); }
+        mq.innerHTML = pts.map(([x, y], k) => `<b class="${k % 2 ? 'b' : 'a'}" style="left:${x}px;top:${y}px"></b>`).join('');
+      }, 30);
       const open = () => {
         if (el.classList.contains('open')) return;
         el.classList.add('open');
@@ -9609,7 +9676,24 @@
       };
       el.querySelector('#c162-bx-box').addEventListener('click', open);
       el.querySelector('.bx-tap').addEventListener('click', open);
-      el.querySelector('#c162-bx-go').addEventListener('click', () => { el.classList.add('closing'); setTimeout(() => el.remove(), 350); });
+      el.querySelector('#c162-bx-go').addEventListener('click', () => { if (window.Box3D) window.Box3D.stop(); el.classList.add('closing'); setTimeout(() => el.remove(), 350); });
+      // 3D box (box3d.js): the real packs of this box, shuffled, rise out and fan into a deck.
+      const host3 = el.querySelector('#c162-bx-3d');
+      if (window.Box3D && host3 && !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)) {
+        const themes = draft.box.map(k => (PACK_TIER_INFO[k] || PACK_TIER_INFO.any).theme).sort(() => Math.random() - 0.5);
+        window.Box3D.mount(host3, themes, {
+          onOpen: () => { el.classList.add('opening3d'); if (window.AudioManager && typeof window.AudioManager.play === 'function') window.AudioManager.play('card_deal'); },
+          onDone: () => { el.classList.add('open'); }
+        }).then(ok => {
+          if (!ok || !el.isConnected) return;
+          el.classList.add('has3d');
+          requestAnimationFrame(() => window.Box3D.resize()); setTimeout(() => window.Box3D.resize(), 60);
+          let opened = false;
+          const go3 = () => { if (!opened) { opened = true; window.Box3D.open(); } else window.Box3D.skip(); };
+          host3.addEventListener('click', go3);
+          el.querySelector('.bx-tap').addEventListener('click', go3, true);
+        });
+      }
       if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) el.classList.add('open');
     },
 
@@ -9702,8 +9786,12 @@
       // Rarity of the pack on the table (PACK_MIX box) and what is left in the box.
       const boxIdx = this._packOff(draft) + draft.currentPack;
       const packTier = (draft.box && draft.box[Math.min(boxIdx, draft.box.length - 1)]) || 'any';
-      const TIER_ICON = { Legendary: '👑', Epic: '💜', Rare: '💎', Uncommon: '🟢', Common: '⚪', any: '🎲' };
-      const packTierLabel = (packTier === 'any' ? '🎲 ANY RARITY PACK' : `${TIER_ICON[packTier]} ${packTier.toUpperCase()} PACK`) + ((draft.boosted || []).includes(boxIdx) ? ' · 🎯 GOAL REWARD' : '');
+      const TIER_ICON = { Legendary: '👑', Elite: '♦️', Epic: '💜', Rare: '💎', Uncommon: '🟢', Common: '⚪', any: '🎲', Wax: '🟫', Retail: '🟨', Hobby: '🟦', Premium: '🟪' };
+      const tierInfo = PACK_TIER_INFO[packTier];
+      const packTierLabel = (tierInfo ? `${tierInfo.icon} ${tierInfo.name}` : `${TIER_ICON[packTier]} ${packTier.toUpperCase()} PACK`) + ((draft.boosted || []).includes(boxIdx) ? ' · 🎯 GOAL REWARD' : '');
+      const oddsChips = tierInfo ? (() => { const o = PACK_TIER_ODDS[packTier]; const pc = v => (v * 100 >= 1 ? Math.round(v * 100) : (v * 100).toFixed(1)) + '%';
+        const ch = [['legendary', '👑', 5], ['elite', '♦️', 4], ['epic', '💜', 3], ['rare', '💎', 2], ['uncommon', '🟢', 1], ['common', '⚪', 0]];
+        return ch.filter(([, , i]) => o[i] > 0).map(([c, ic, i]) => `<b class="r-${c}">${ic} ${pc(o[i])}</b>`).join(''); })() : '';
       const boxLeft = draft.box ? draft.box.slice(boxIdx) : [];
       const boxLeftHTML = (draft.box && PACK_BOX_MODE !== 'odds') ? `<div class="c162-box-left">LEFT IN THE BOX: ${['Legendary', 'Epic', 'Rare', 'Uncommon', 'Common', 'any'].map(r => {
         const n = boxLeft.filter(x => x === r).length; return n ? `<b class="${r === 'any' ? '' : 'r-' + r.toLowerCase()}">${TIER_ICON[r]}${n}</b>` : '';
@@ -9752,7 +9840,7 @@
       };
 
       const stageBoxName = isPitchersStage ? _t('challenge162.box_pitchers', 'PITCHERS BOX') : _t('challenge162.box_batters', 'BATTERS BOX');
-      const RAR_META = { Legendary: ['👑', 'LEGENDARY'], Epic: ['💜', 'EPIC'], Rare: ['💎', 'RARE'], Uncommon: ['🟢', 'UNCOMMON'], Common: ['⚪', 'COMMON'] };
+      const RAR_META = { Legendary: ['👑', 'LEGENDARY'], Elite: ['♦️', 'ELITE'], Epic: ['💜', 'EPIC'], Rare: ['💎', 'RARE'], Uncommon: ['🟢', 'UNCOMMON'], Common: ['⚪', 'COMMON'] };
       const rarTier = r => RARITY_TIERS[r] || 1;
       const sealed = !isCardRevealed && !draft.viewCard && !draft.optionsShown && draft.currentPack < draft.totalPacks;
       // The pack is rolled the moment it shows up, so its foil can glow with the best card inside.
@@ -9817,7 +9905,7 @@
                 <div class="c162-oc-front card-deal-in" data-pack-view="${i}" title="Click to flip the card">${cardHTML}</div>
               </div>
               <div class="c162-oc-burst"></div>
-              ${rar === 'Legendary' || rar === 'Epic' ? `<div class="c162-oc-hype"><b>${rar === 'Legendary' ? 'LEGENDARY!' : 'EPIC!'}</b></div>` : ''}
+              ${rar === 'Legendary' || rar === 'Elite' || rar === 'Epic' || rar === 'Rare' ? `<div class="c162-oc-hype"><b>${rar === 'Legendary' ? 'LEGENDARY!' : rar === 'Elite' ? 'ELITE!' : rar === 'Epic' ? 'EPIC!' : 'RARE!'}</b></div>` : ''}
             </div>
             <div class="c162-oc-info">
               <div class="c162-oc-cap"><b>${Math.floor(c.ovr || 50)}</b><span>${pit ? (c.role || 'SP') : `${c.pos}${c.sec_pos ? ' · ' + c.sec_pos : ''}`}</span></div>
@@ -9833,13 +9921,16 @@
         };
         leftColumnHTML = `
           <div class="c162-reveal ${dealing ? 'dealing' : ''} best-${bestRarity.toLowerCase()}" style="--done:${allDone}ms">
-            <div class="c162-reveal-head"><b>${(() => { const r = draft.packRarity || 'any'; return r === 'any' ? '🎲 ANY RARITY PACK' : `${TIER_ICON[r]} ${r.toUpperCase()} PACK`; })()}</b><span>PACK ${draft.currentPack + 1} / ${totalInStage}</span></div>
+            <div class="c162-reveal-head"><b>${(() => { const r = draft.packRarity || 'any'; return PACK_TIER_INFO[r] ? `${PACK_TIER_INFO[r].icon} ${PACK_TIER_INFO[r].name}` : `${TIER_ICON[r]} ${r.toUpperCase()} PACK`; })()}</b><span>PACK ${draft.currentPack + 1} / ${totalInStage}</span></div>
             <div class="c162-reveal-row">${draft.options.map(tile).join('')}</div>
             <div class="c162-reveal-prompt">✨ PICK ONE OF ${draft.options.length} ✨</div>
             <div class="c162-reveal-actions" style="position:relative; z-index:2; display:flex; justify-content:center; align-items:center; gap:10px; margin: 4px 0 2px 0;">
               <button id="btn-c162-pack-reroll" class="btn ${rerollsLeft > 0 ? 'btn-warning' : 'btn-secondary'} c162-pack-reroll-btn" ${rerollsLeft <= 0 ? 'disabled' : ''} style="font-family:'Press Start 2P',monospace; font-size:8.5px; padding:8px 14px; border-radius:6px; cursor:${rerollsLeft > 0 ? 'pointer' : 'not-allowed'}; ${rerollsLeft > 0 ? 'background:linear-gradient(135deg, #f59e0b, #d97706); color:#fff; border:1px solid #fbbf24; box-shadow:0 0 12px rgba(245,158,11,0.45);' : 'opacity:0.4; color:#94a3b8; border:1px solid #475569;'}" title="${rerollsLeft > 0 ? `Reroll pack (${rerollsLeft} remaining)` : 'No rerolls remaining'}">
                 🎲 ${_t('challenge162.pack_reroll', `REROLL PACK (${rerollsLeft}/${PACK_DRAFT_REROLLS})`, { left: rerollsLeft, total: PACK_DRAFT_REROLLS })}
               </button>
+              ${(() => { const o = PACK_TIER_ODDS[draft.packRarity || 'any']; if (!o) return ''; const pc = v => (v * 100 >= 1 ? Math.round(v * 100) : (v * 100).toFixed(1)) + '%';
+                const ch = [['legendary', '👑', 5], ['elite', '♦️', 4], ['epic', '💜', 3], ['rare', '💎', 2], ['uncommon', '🟢', 1], ['common', '⚪', 0]];
+                return `<div class="c162-reroll-odds" title="Odds for each card if you reroll this pack">${ch.filter(([, , i]) => o[i] > 0).map(([c, ic, i]) => `<b class="r-${c}">${ic} ${pc(o[i])}</b>`).join('')}</div>`; })()}
             </div>
             <div class="c162-reveal-hint"><span class="c162-reveal-skip">Click anywhere to skip the reveal ▶</span><span class="c162-reveal-tip">Click a card to flip it</span></div>
           </div>`;
@@ -9848,7 +9939,7 @@
         const boxLabel = isPitchersStage ? _t('challenge162.box_pitchers', 'PITCHERS BOX') : _t('challenge162.box_batters', 'BATTERS BOX');
         const boxSubtitle = isPitchersStage ? _t('challenge162.pitchers_box_subtitle', '5 Starters (SP) + 7 Relievers') : _t('challenge162.batters_box_subtitle', '9 Starters + 5 Bench');
         leftColumnHTML = `
-          <div class="c162-sealed best-${packTier === 'any' ? 'any' : bestRarity.toLowerCase()}">
+          <div class="c162-sealed best-${packTier === 'any' ? 'any' : bestRarity.toLowerCase()} pk-${String(packTier).toLowerCase()}">
             <div class="c162-sealed-rays"></div>
             <div class="c162-pack" id="c162-foil-pack-target" title="${_t('challenge162.pack_tap_rip', 'TAP THE PACK TO RIP OPEN!')}">
               <div class="c162-pack-foil" id="c162-foil-pack-inner">
@@ -9868,13 +9959,13 @@
             </div>
             <div class="c162-sealed-cta">${_t('challenge162.pack_rip_prompt', '✨ TAP PACK TO RIP OPEN ✨')}</div>
             <div class="c162-sealed-odds">
-              ${packTier === 'any'
-                ? `<span>${PACK_OPTIONS} CARDS · EACH ONE ROLLS ITS OWN RARITY</span>
-              <div><b class="r-legendary">👑 2.5%</b><b class="r-epic">💜 12.5%</b><b class="r-rare">💎 20%</b><b class="r-uncommon">🟢 30%</b><b class="r-common">⚪ 35%</b></div>`
+              ${tierInfo
+                ? `<span>${PACK_OPTIONS} CARDS · ODDS PER CARD</span>
+              <div>${oddsChips}</div>`
                 : `<span>${PACK_OPTIONS} ${packTier.toUpperCase()} CARDS · POSITION AT RANDOM</span>`}
               ${boxLeftHTML}
             </div>
-            <div class="c162-sealed-hint">${packTier === 'any' ? 'A rainbow pack: any rarity can come out' : `Every card in this pack is ${packTier}`}</div>
+            <div class="c162-sealed-hint">${tierInfo ? tierInfo.hint : `Every card in this pack is ${packTier}`}</div>
             
           </div>
         `;
@@ -10167,7 +10258,7 @@
         const st = i < opened ? 'is-open' : (i === opened && !isDraftComplete ? 'is-now' : 'is-sealed');
         const cls = st === 'is-sealed' ? '' : ` t-${String(r).toLowerCase()}`;
         const bo = (draft.boosted || []).includes(i);
-        return `<i class="d2-rp ${st}${cls}${bo ? ' is-boost' : ''}" title="${i < opened ? `Pack ${i + 1}: ${r === 'any' ? 'any rarity' : r}` : `Pack ${i + 1}`}${bo ? ' · 🎯 goal reward' : ''}"></i>`;
+        return `<i class="d2-rp ${st}${cls}${bo ? ' is-boost' : ''}" title="${i < opened ? `Pack ${i + 1}: ${PACK_TIER_INFO[r] ? PACK_TIER_INFO[r].name.toLowerCase() : r}` : `Pack ${i + 1}`}${bo ? ' · 🎯 goal reward' : ''}"></i>`;
       };
       const railHTML = `<div class="d2-rail">
           <span class="d2-rail-lab">BATTERS</span>${Array.from({ length: draft.batPacks === undefined ? 14 : draft.batPacks }, (_, i) => railPack(i)).join('')}
@@ -10210,7 +10301,7 @@
                 </div>
                 <div class="c162-rb-ovrbox"><small>${_t('challenge162.team_ovr', 'TEAM OVR')}</small><b>${avgOVR}</b></div>
               </div>
-              <div class="c162-rb-rarity">${['Legendary', 'Epic', 'Rare', 'Uncommon', 'Common'].map(r => {
+              <div class="c162-rb-rarity">${['Legendary', 'Elite', 'Epic', 'Rare', 'Uncommon', 'Common'].map(r => {
                 const n = allSlotted.filter(p => (p.rarity || 'Common') === r).length;
                 return `<span class="r-${r.toLowerCase()} ${n ? '' : 'zero'}"><b>${n}</b> ${r}</span>`;
               }).join('')}</div>
@@ -10325,7 +10416,7 @@
             else if (window.AudioManager && typeof window.AudioManager.play === 'function') window.AudioManager.play('card_deal');
           }
           // The better the pack, the longer it shakes before it tears.
-          const ripMs = reducedMotion ? 0 : (packTier === 'any' ? 950 : (bestRarity === 'Legendary' ? 1350 : (bestRarity === 'Epic' ? 950 : 620)));
+          const ripMs = reducedMotion ? 0 : (bestRarity === 'Legendary' ? 1350 : (bestRarity === 'Elite' || bestRarity === 'Epic' || packTier === 'any' || packTier === 'Premium' ? 950 : 620));
           setTimeout(() => {
             if (this._packDraft !== draft) return;
             this._openPackOptions();
@@ -10339,16 +10430,18 @@
       // above stays if the 3D one cannot be drawn.
       if (foilTarget && window.DraftPack3D) {
         const sealedEl = container.querySelector('.c162-sealed');
-        const theme = packTier === 'any' ? 'random' : ({ Legendary: 'epic_plus', Epic: 'epic', Rare: 'rare', Uncommon: 'uncommon', Common: 'common' }[packTier] || 'random');
-        const tier = { Common: 0, Uncommon: 1, Rare: 2, Epic: 3, Legendary: 4 }[packTier === 'any' ? bestRarity : packTier] ?? 2;
+        const theme = tierInfo ? tierInfo.theme : ({ Legendary: 'epic_plus', Epic: 'epic', Rare: 'rare', Uncommon: 'uncommon', Common: 'common' }[packTier] || 'random');
+        const tier = { Common: 0, Uncommon: 1, Rare: 2, Epic: 3, Elite: 3.5, Legendary: 4 }[bestRarity] ?? 2; // shakes by what is inside
         const pack3 = document.createElement('div');
         pack3.className = `draft-pack draft-pack--${theme} c162-pack3d`;
         foilTarget.after(pack3);
+        pack3.dataset.glow = RARITY_COLORS[bestRarity] || '#94a3b8'; pack3.dataset.glowOp = String({ Common: .2, Uncommon: .3, Rare: .45, Epic: .55, Elite: .65, Legendary: .75 }[bestRarity] ?? .3);
         window.DraftPack3D.mount(pack3, {
           theme, tier, badge: `${packNum}/${totalInStage}`,
-          tagline: packTier === 'any' ? 'ANY RARITY PACK' : `${packTier.toUpperCase()} PACK`,
+          tagline: tierInfo ? tierInfo.name : `${packTier.toUpperCase()} PACK`,
           fine: `${isPitchersStage ? 'PITCHERS' : 'BATTERS'} BOX  ·  ${PACK_OPTIONS} CARDS`
         });
+        /* glow color set below via dataset */
         pack3.onclick = () => {
           if (foilTarget.classList.contains('ripping')) return;
           const opening = window.DraftPack3D.open(pack3);
@@ -10612,7 +10705,7 @@
         </div>
         <div class="sd-main sdi-main">
           <div class="sd-board"><h4>${S.choose && !S.drawn ? 'PICK YOUR SPOT' : S.drawn ? 'DRAFT ORDER · ROUND 1' : 'THE POOL'}</h4>${S.choose && !S.drawn ? `<div class="sdi-spots">${Array.from({ length: n }, (_, i) => `<button data-sdspot="${i}">${ord(i + 1)}<small>then ${ord(n - i)}</small></button>`).join('')}</div>` : S.drawn ? order : `<div class="sdi-sum">
-              <div><b>${count('Legendary')}</b><span class="r-legendary">LEGENDARY</span></div><div><b>${count('Epic')}</b><span class="r-epic">EPIC</span></div><div><b>${count('Rare')}</b><span class="r-rare">RARE</span></div><div><b>${count('Uncommon')}</b><span class="r-uncommon">UNCOMMON</span></div><div><b>${count('Common')}</b><span class="r-common">COMMON</span></div>
+              <div><b>${count('Legendary')}</b><span class="r-legendary">LEGENDARY</span></div><div><b>${count('Elite')}</b><span class="r-elite">ELITE</span></div><div><b>${count('Epic')}</b><span class="r-epic">EPIC</span></div><div><b>${count('Rare')}</b><span class="r-rare">RARE</span></div><div><b>${count('Uncommon')}</b><span class="r-uncommon">UNCOMMON</span></div><div><b>${count('Common')}</b><span class="r-common">COMMON</span></div>
             </div><p class="sdi-note">One player per field spot and team, 6 more hitters each for bench and DH, 5 starters and 7 relievers per team. Every one of them gets drafted.</p>`}</div>
           <div class="sd-pool">
             <div class="sd-pool-h"><h4>SCOUT THE POOL</h4><span>${list.length} players</span></div>
@@ -10761,7 +10854,7 @@
         <div class="sd-main">
           <div class="sd-board"><h4>DRAFT BOARD</h4>${board}</div>
           <div class="sd-pool">
-            <div class="sd-pool-h"><h4>${myTurn ? 'PICK YOUR PLAYER' : 'AVAILABLE PLAYERS'}</h4><span>left: L ${count('Legendary')} · E ${count('Epic')} · R ${count('Rare')} · U ${count('Uncommon')} · C ${count('Common')}</span></div>
+            <div class="sd-pool-h"><h4>${myTurn ? 'PICK YOUR PLAYER' : 'AVAILABLE PLAYERS'}</h4><span>left: L ${count('Legendary')} · EL ${count('Elite')} · E ${count('Epic')} · R ${count('Rare')} · U ${count('Uncommon')} · C ${count('Common')}</span></div>
             <div class="sd-chips">${chips.map(c => `<button data-sdf="${c}" class="${fil === c ? 'on' : ''}">${c === 'NEED' ? 'MY NEEDS' : c}</button>`).join('')}</div>
             <div class="sd-list">${shown.map(p => `<div class="sd-row ${rar(p)} ${myTurn ? 'can' : ''}" data-sdp="${keyOf(p)}">${face(p)}<span><b>${cleanName(p)}</b><small>${p.year || ''} · ${p.team || ''}${!snakeIsPitcher(p) && p.sec_pos ? ` · also ${p.sec_pos}` : ''}</small></span><em class="pos">${posOf(p)}</em><em class="ovr">${Math.floor(p.ovr || 0)}</em><button data-sddex="${keyOf(p)}" title="See the card">🔍</button></div>`).join('') || '<p class="sd-empty">Nobody left in this filter.</p>'}</div>
           </div>
@@ -10904,8 +10997,12 @@
       let activePool = isPitchersStage ? getPitcherPool() : getBatterPool();
       const packRarity = draft.box ? draft.box[this._packOff(draft) + draft.currentPack] : 'any';
       if (draft.banned && draft.banned.size) activePool = activePool.filter(p => !draft.banned.has(personId(p))); // franchise: rivals' protected players
-      if (packRarity && packRarity !== 'any') activePool = activePool.filter(p => (p.rarity || 'Common') === packRarity);
+      const tierOdds = PACK_TIER_ODDS[packRarity || 'any'];
+      if (packRarity && !tierOdds) activePool = activePool.filter(p => (p.rarity || 'Common') === packRarity); // old saved box with a fixed rarity
       draft.packRarity = packRarity || 'any';
+      const fullPool = activePool;
+      const rollRar = () => { let r = Math.random(); for (let i = 0; i < PACK_RARS.length; i++) { if ((r -= tierOdds[i]) < 0) return PACK_RARS[i]; } return 'Common'; };
+      const poolFor = () => { if (!tierOdds) return fullPool; const rar = rollRar(); const f = fullPool.filter(p => (p.rarity || 'Common') === rar); return f.length ? f : fullPool; };
       const keyOf = c => (c.role ? pitcherUnlockKey(c) : batterUnlockKey(c));
       const seen = new Set(draft.usedKeys);
       if (excludeCards && excludeCards.length) {
@@ -10942,11 +11039,12 @@
         let card;
         if (tied && dhOnly) {
           const bat = c => (c.con || 0) + (c.pwr || 0) + (c.eye || 0);
-          const a = pickWeightedChallengeDraftCard(activePool, [], seen, null);
-          const b = a ? pickWeightedChallengeDraftCard(activePool, [], new Set([...seen, keyOf(a)]), null) : null;
+          const pl = poolFor();
+          const a = pickWeightedChallengeDraftCard(pl, [], seen, null);
+          const b = a ? pickWeightedChallengeDraftCard(pl, [], new Set([...seen, keyOf(a)]), null) : null;
           card = (b && bat(b) > bat(a)) ? b : a;
         } else {
-          card = pickWeightedChallengeDraftCard(activePool, tied ? (holesLeft.length ? holesLeft : missingPos) : [], seen, null);
+          card = pickWeightedChallengeDraftCard(poolFor(), tied ? (holesLeft.length ? holesLeft : missingPos) : [], seen, null);
         }
         if (card && tied && !isPitchersStage) {
           const all = getAllPositionsForPlayer(card);
@@ -14264,10 +14362,12 @@
     },
     _applyBoxRewards(box, rw) {
       if (!box || !rw) return { box, boosted: [] };
-      const out = box.slice(), boosted = [], rank = { Legendary: 5, Epic: 4, Rare: 3, any: 2.5, Uncommon: 2, Common: 1 };
+      const out = box.slice(), boosted = [], rank = { Legendary: 5, Elite: 4.5, Epic: 4, Premium: 4, Rare: 3, Hobby: 3, any: 2.5, Uncommon: 2, Retail: 2, Common: 1, Wax: 1 };
+      const tiered = out.some(isPackTier) && !out.some(r => PACK_RARS.includes(r));
+      if (tiered && rw.guaranteed) rw = Object.assign({}, rw, { guaranteed: rw.guaranteed === 'Legendary' ? 'Legendary' : 'Premium' });
       const pickLow = ok => { const c = out.map((r, i) => [r, i]).filter(([r, i]) => ok(r) && !boosted.includes(i)); if (!c.length) return -1; c.sort((a, b) => rank[a[0]] - rank[b[0]] || Math.random() - 0.5); return c[0][1]; };
       if (rw.guaranteed && !out.includes(rw.guaranteed)) { const i = pickLow(r => rank[r] < rank[rw.guaranteed]); if (i >= 0) { out[i] = rw.guaranteed; boosted.push(i); } }
-      for (let n = 0; n < (rw.upgrades || 0); n++) { const i = pickLow(r => r === 'Common' || r === 'Uncommon'); if (i < 0) break; out[i] = 'Rare'; boosted.push(i); }
+      for (let n = 0; n < (rw.upgrades || 0); n++) { const i = pickLow(r => r === 'Common' || r === 'Uncommon' || r === 'Wax' || r === 'Retail'); if (i < 0) break; out[i] = tiered ? 'Hobby' : 'Rare'; boosted.push(i); }
       return { box: out, boosted };
     },
     // One row of the league history per finished season (also for a lone season: the next one reads it).

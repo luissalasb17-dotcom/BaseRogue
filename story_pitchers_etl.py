@@ -68,8 +68,10 @@ def asignar_rareza(ovr):
         v = float(ovr)
     except (ValueError, TypeError):
         v = 50.0
-    if v >= 90.0:
+    if v >= 93.0:
         return "Legendary"
+    elif v >= 86.0:
+        return "Elite"
     elif v >= 80.0:
         return "Epic"
     elif v >= 70.0:

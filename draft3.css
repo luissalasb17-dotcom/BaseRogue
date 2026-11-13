@@ -201,3 +201,41 @@
 .c162-sealed.c162-opening3d .c162-sealed-cta { visibility: hidden; }
 #dex-pack-overlay .dex3d-pack { cursor: pointer; }
 #dex-pack-overlay .dex3d-pack:not(.d3-pack-live) { display: none; }
+.d3-rp--premium { --rp: linear-gradient(160deg, #1a1a1a 35%, #d4a017 75%, #fff1b0); }
+.d3-rp--hobby { --rp: linear-gradient(160deg, #22345c, #0b1426); }
+.d3-rp--retail { --rp: linear-gradient(160deg, #ffd23f 55%, #e63946 55%); }
+
+/* pack tier presentation (Nov 2026): Wax plain, Retail a coloured shadow, Hobby a breathing blue aura,
+   Premium rays + gold sparks behind it */
+.draft-pack.d3-pk-wax .d3-glow { opacity: 0 !important; animation: none !important; }
+.draft-pack.d3-pk-retail .d3-glow { --d3g: #ffd23f; opacity: .28; animation: none; }
+.draft-pack.d3-pk-hobby .d3-glow { --d3g: #4f8dff; opacity: .45; animation: d3Breath 2.2s ease-in-out infinite; }
+.draft-pack.d3-pk-premium .d3-glow { --d3g: #ffcc33; opacity: .65; animation: d3Breath 1.6s ease-in-out infinite; }
+.draft-pack.d3-pk-premium::before {
+  content: '' !important; display: block !important; position: absolute; left: 50%; top: 46%; width: 560px; height: 560px; transform: translate(-50%, -50%);
+  background: repeating-conic-gradient(from 0deg, rgba(255,214,90,.20) 0 7deg, transparent 7deg 22deg);
+  -webkit-mask: radial-gradient(circle, #000 18%, transparent 68%); mask: radial-gradient(circle, #000 18%, transparent 68%);
+  z-index: 0; pointer-events: none; animation: d3Rays 14s linear infinite;
+}
+.draft-pack.d3-pk-premium::after {
+  content: '' !important; display: block !important; position: absolute; inset: -60px; z-index: 3; pointer-events: none;
+  background-image: radial-gradient(2px 2px at 12% 20%, #fff6c8 50%, transparent 52%), radial-gradient(2px 2px at 85% 30%, #ffd700 50%, transparent 52%),
+    radial-gradient(3px 3px at 22% 78%, #ffe9a8 50%, transparent 52%), radial-gradient(2px 2px at 78% 82%, #fff 50%, transparent 52%),
+    radial-gradient(2px 2px at 50% 6%, #ffd700 50%, transparent 52%), radial-gradient(3px 3px at 92% 60%, #fff6c8 50%, transparent 52%),
+    radial-gradient(2px 2px at 6% 55%, #ffd700 50%, transparent 52%);
+  animation: d3Sparks 2.4s ease-in-out infinite;
+}
+@keyframes d3Rays { to { transform: translate(-50%, -50%) rotate(360deg); } }
+@keyframes d3Sparks { 0%, 100% { opacity: .25; transform: translateY(4px); } 50% { opacity: 1; transform: translateY(-6px); } }
+.draft-pack.d3-pk-premium.d3-ripped::before, .draft-pack.d3-pk-premium.d3-ripped::after { opacity: 0; transition: opacity .4s; }
+@media (prefers-reduced-motion: reduce) { .draft-pack.d3-pk-premium::before, .draft-pack.d3-pk-premium::after { animation: none; } }
+
+/* rarity call-out over a dealt draft card (Rare and up) */
+.draft-hype { position: absolute; left: 50%; top: 38%; z-index: 8; pointer-events: none; opacity: 0; transform: translate(-50%, -50%); }
+.draft-hype b { display: block; font: 400 24px/1 'Alfa Slab One', serif; letter-spacing: 1px; white-space: nowrap; color: #fff7d6; -webkit-text-stroke: 1px #7c2d12; text-shadow: 0 0 16px var(--hc, #fbbf24), 0 4px 0 #000; }
+.draft-hype.r-rare { --hc: #60a5fa; } .draft-hype.r-rare b { color: #dbeafe; -webkit-text-stroke-color: #1e3a8a; }
+.draft-hype.r-epic { --hc: #c084fc; } .draft-hype.r-epic b { color: #f3e8ff; -webkit-text-stroke-color: #3b0764; }
+.draft-hype.r-elite { --hc: #fb3b5c; } .draft-hype.r-elite b { color: #ffe1e7; -webkit-text-stroke-color: #881337; }
+@media (prefers-reduced-motion: no-preference) { .draft-hype { animation: dexHype 1.5s cubic-bezier(.2,.9,.3,1.2) var(--hd, 400ms) both; } }
+@keyframes dexHype { 0% { opacity: 0; transform: translate(-50%,-50%) scale(.3) rotate(-8deg); } 22% { opacity: 1; transform: translate(-50%,-50%) scale(1.15) rotate(-4deg); }
+  72% { opacity: 1; transform: translate(-50%,-62%) scale(1) rotate(-4deg); } 100% { opacity: 0; transform: translate(-50%,-85%) scale(.9) rotate(-4deg); } }

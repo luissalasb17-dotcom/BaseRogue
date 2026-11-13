@@ -1,3 +1,19 @@
+// Pack odds shared by the whole game (same table as the 162-0 Hobby Box): per card,
+// Common, Uncommon, Rare, Epic, Elite, Legendary.
+window.PACK_TIER_ODDS_ALL = window.PACK_TIER_ODDS_ALL || {
+  Wax:     [0.60, 0.32, 0.07, 0.01, 0.00, 0.00],
+  Retail:  [0.15, 0.45, 0.33, 0.06, 0.01, 0.00],
+  Hobby:   [0.00, 0.08, 0.35, 0.40, 0.14, 0.03],
+  Premium: [0.00, 0.00, 0.06, 0.24, 0.42, 0.28],
+  any:     [0.35, 0.30, 0.20, 0.09, 0.045, 0.015]
+};
+window.rollPackTierRarity = function (tier) {
+  const T = (window.__PACK_TIERS && window.__PACK_TIERS.PACK_TIER_ODDS) || window.PACK_TIER_ODDS_ALL;
+  const o = T[tier] || T.any, R = ['Common', 'Uncommon', 'Rare', 'Epic', 'Elite', 'Legendary'];
+  let x = Math.random();
+  for (let i = 0; i < o.length; i++) { x -= o[i]; if (x < 0) return R[i]; }
+  return 'Common';
+};
 // A main-position DH at the field position he played most: no secondary penalty (his card's glove comes from there).
 window.isDhHome = (p, slot) => !!(p && p.pos === 'DH' && window.DHHomePos && window.DHHomePos[p.playerID] === slot);
 // BaseRogue Game State Manager
@@ -528,7 +544,7 @@ window.leftyCantPlay = function (p, slot) {
     base += ((p.captain || p.is_captain) ? 1 : 0) + ((p.clutch || p.is_clutch) ? 1 : 0) + ((p.workhorse || p.is_workhorse) ? 1 : 0); // +1 per badge
     return Math.floor(Math.max(50, Math.min(99.9, base)));
   };
-  const _gambleRarityOrder = ['Common', 'Uncommon', 'Rare', 'Epic', 'Legendary'];
+  const _gambleRarityOrder = ['Common', 'Uncommon', 'Rare', 'Epic', 'Elite', 'Legendary'];
 
   const _playsPosition = (p, pos) => {
     if (p.pos === pos) return true;
@@ -621,7 +637,7 @@ window.leftyCantPlay = function (p, slot) {
             });
           }
           if (!worstPos) return { success, resultText: (typeof window.t==='function'?window.t('gamble.scout.no_target'):'No hay roster titular disponible.') };
-          const pick = _pickGambleCandidate(pool, worstPos, ['Legendary'], G);
+          const pick = _pickGambleCandidate(pool, worstPos, ['Legendary', 'Elite'], G);
           if (!pick) return { success, resultText: (typeof window.t==='function'?window.t('gamble.no_player_found', { pos: worstPos }):`No se encontró ningún jugador de ${worstPos} disponible.`) };
           const newInstance = {
             ...pick,
@@ -677,7 +693,7 @@ window.leftyCantPlay = function (p, slot) {
         const success = Math.random() <= _getGambleChance(G, this.chance);
 
         if (success) {
-          const pick = _pickGambleCandidate(pool, worstPos, ['Legendary', 'Epic'], G);
+          const pick = _pickGambleCandidate(pool, worstPos, ['Legendary', 'Elite', 'Epic'], G);
           if (!pick) return { success, resultText: (typeof window.t==='function'?window.t('gamble.no_player_found', { pos: worstPos }):`No se encontró ningún jugador de ${worstPos} disponible.`) };
 
           const newInstance = {
@@ -864,7 +880,7 @@ window.leftyCantPlay = function (p, slot) {
         }
 
         // scout_eye: increases the odds of Epic/Legendary showing up in draft offers (only if that rarity is active/weight > 0)
-        if (rarityBoost && (p.rarity === 'Epic' || p.rarity === 'Legendary') && w > 0) {
+        if (rarityBoost && (p.rarity === 'Epic' || p.rarity === 'Elite' || p.rarity === 'Legendary') && w > 0) {
           w *= 2.5;
         }
         totalWeight += w;
@@ -1496,13 +1512,21 @@ window.leftyCantPlay = function (p, slot) {
 
     // ── DRAFT: return info about the current round's rarity constraints ───
     getDraftRoundInfo() {
+      // Nov 2026: the starting draft opens the same packs as the 162-0, with the same per-card odds
+      // (decision of the user): R1 Hobby, R2-R4 Retail, R5-R8 Wax, R9 Mystery. No Premium here.
       const r = this.draftRound;
-      if (r === 1) return { label: 'ÉPICO O SUPERIOR', labelKey: 'draft.round_1_label', rarities: ['Legendary','Epic'], icon: '💎' };
-      if (r === 2) return { label: 'ÉPICO GARANTIZADO', labelKey: 'draft.round_2_label', rarities: ['Epic'], icon: '🟣' };
-      if (r === 3) return { label: 'RARO GARANTIZADO', labelKey: 'draft.round_rare_label', rarities: ['Rare'], icon: '🔵' };
-      if (r === 4) return { label: 'POCO COMÚN GARANTIZADO', labelKey: 'draft.round_uncommon_label', rarities: ['Uncommon'], icon: '🟢' };
-      if (r >= 5 && r <= 8) return { label: 'COMÚN OBLIGATORIO', labelKey: 'draft.round_common_label', rarities: ['Common'], icon: '⚪' };
-      return { label: 'RONDA LIBRE — CUALQUIER RAREZA', labelKey: 'draft.round_free_label', rarities: null, icon: '🎲' };
+      if (window.__DRAFT_OLD) { // test switch: the old fixed-rarity rounds
+        if (r === 1) return { labelKey: 'draft.round_1_label', rarities: ['Legendary', 'Elite', 'Epic'] };
+        if (r === 2) return { labelKey: 'draft.round_2_label', rarities: ['Epic'] };
+        if (r === 3) return { labelKey: 'draft.round_3_label', rarities: ['Rare'] };
+        if (r === 4) return { labelKey: 'draft.round_4_label', rarities: ['Uncommon'] };
+        if (r <= 8) return { labelKey: 'draft.round_common_label', rarities: ['Common'] };
+        return { labelKey: 'draft.round_free_label', rarities: null };
+      }
+      if (r === 1) return { label: 'HOBBY PACK', labelKey: 'draft.round_tier_hobby', tier: 'Hobby', rarities: null, icon: '🟦' };
+      if (r >= 2 && r <= 4) return { label: 'RETAIL PACK', labelKey: 'draft.round_tier_retail', tier: 'Retail', rarities: null, icon: '🟨' };
+      if (r >= 5 && r <= 8) return { label: 'WAX PACK', labelKey: 'draft.round_tier_wax', tier: 'Wax', rarities: null, icon: '🟫' };
+      return { label: 'MYSTERY PACK', labelKey: 'draft.round_tier_any', tier: 'any', rarities: null, icon: '🎲' };
     }
 
     // ── DRAFT: get 3 random picks for the current round (rarity-filtered) ──
@@ -1665,10 +1689,15 @@ window.leftyCantPlay = function (p, slot) {
         const rank = { top: 0, era: 1, tool: 2 };
         picks.sort((x, y) => rank[x.draftTag.type] - rank[y.draftTag.type]);
       }
+      // each card of the pack rolls its own rarity with the pack's odds, then a player of that rarity
+      const tierRar = info.tier ? () => window.rollPackTierRarity(info.tier) : null;
+      const ofRar = (list, rr) => { if (!rr || !list) return list; const sub = list.filter(x => (x.player.rarity || 'Common') === rr); return sub.length ? sub : list.slice(); };
       while (picks.length < 3 && (fullWeighted.length > 0 || (activeWeighted && activeWeighted.length > 0))) {
         const useActive = isStoryYearAware && activeWeighted.length > 0 && Math.random() < 0.95;
-        let chosen = useActive ? pickWeighted(activeWeighted) : pickWeighted(fullWeighted);
-        if (!chosen) chosen = useActive ? pickWeighted(fullWeighted) : (activeWeighted ? pickWeighted(activeWeighted) : null);
+        const rr = tierRar ? tierRar() : null;
+        const pw = list => (rr ? pickWeighted(ofRar(list, rr)) : pickWeighted(list));
+        let chosen = useActive ? pw(activeWeighted) : pw(fullWeighted);
+        if (!chosen) chosen = useActive ? pw(fullWeighted) : (activeWeighted ? pw(activeWeighted) : null);
         if (!chosen) break;
         if (activeWeighted) removeFromList(activeWeighted, chosen.name);
         removeFromList(fullWeighted, chosen.name);
@@ -2186,7 +2215,7 @@ window.leftyCantPlay = function (p, slot) {
 
       // legendary_domination: if 2+ Legendary players are in the starting lineup, everyone gets +10 to all stats
       if (this.hasTrait('legendary_domination')) {
-        const legendaryCount = Object.values(contextRoster).filter(p => p && !p.isReplacement && p.rarity === 'Legendary').length;
+        const legendaryCount = Object.values(contextRoster).filter(p => p && !p.isReplacement && (p.rarity === 'Legendary' || p.rarity === 'Elite')).length;
         if (legendaryCount >= 2) {
           con += 10; pwr += 10; eye += 10; kavd += 10; spd += 10; def += 10;
         }
@@ -2329,10 +2358,10 @@ window.leftyCantPlay = function (p, slot) {
         : 0;
       // Option A: Smooth, balanced progression (significantly better than normal matches, but gated by zone)
       const map = {
-        0: { Uncommon: 4.5, Rare: 4.5, Epic: 1.0, Legendary: 0.0 }, // Zona 0: Opening Day (45% Unc, 45% Rare, 10% Epic, 0% Leg)
-        1: { Uncommon: 1.5, Rare: 5.0, Epic: 3.0, Legendary: 0.5 }, // Zona 1: All-Star Break (15% Unc, 50% Rare, 30% Epic, 5% Leg)
-        2: { Uncommon: 0.5, Rare: 2.5, Epic: 4.5, Legendary: 2.5 }, // Zona 2: Pennant Chase (5% Unc, 25% Rare, 45% Epic, 25% Leg)
-        3: { Uncommon: 0.0, Rare: 1.0, Epic: 4.0, Legendary: 5.0 }, // Zona 3: Playoffs (0% Unc, 10% Rare, 40% Epic, 50% Leg)
+        0: { Uncommon: 4.5, Rare: 4.5, Epic: 1.0, Elite: 0.0, Legendary: 0.0 },
+        1: { Uncommon: 1.5, Rare: 5.0, Epic: 3.0, Elite: 0.5, Legendary: 0.0 },
+        2: { Uncommon: 0.5, Rare: 2.5, Epic: 4.0, Elite: 2.0, Legendary: 1.0 },
+        3: { Uncommon: 0.0, Rare: 1.0, Epic: 3.0, Elite: 3.0, Legendary: 3.0 },
       };
       return map[zone] || map[0];
     }
@@ -2351,8 +2380,8 @@ window.leftyCantPlay = function (p, slot) {
         const bossMap = {
           0: { Rare: 10.0 },                 // lowered (user, Oct 2026): the team got too strong too early
           1: { Rare: 6.0, Epic: 4.0 },
-          2: { Epic: 8.0, Legendary: 2.0 },
-          3: { Legendary: 10.0 }
+          2: { Epic: 6.0, Elite: 3.0, Legendary: 1.0 },
+          3: { Elite: 5.0, Legendary: 5.0 }
         };
         return bossMap[zone] || bossMap[0];
       }
@@ -2362,7 +2391,7 @@ window.leftyCantPlay = function (p, slot) {
         0: { Uncommon: 8.0, Rare: 2.0, Epic: 0.0, Legendary: 0.0 }, // Zona 0: Opening Day (70% Unc, 25% Rare, 5% Epic)
         1: { Uncommon: 6.0, Rare: 3.5, Epic: 0.5, Legendary: 0.0 }, // Zona 1: All-Star Break (40% Unc, 45% Rare, 15% Epic)
         2: { Uncommon: 3.0, Rare: 5.0, Epic: 2.0, Legendary: 0.0 }, // Zona 2: Pennant Chase (15% Unc, 50% Rare, 30% Epic, 5% Leg)
-        3: { Uncommon: 0.5, Rare: 3.5, Epic: 4.5, Legendary: 1.5 }, // Zona 3: Playoffs (5% Unc, 35% Rare, 45% Epic, 15% Leg)
+        3: { Uncommon: 0.5, Rare: 3.5, Epic: 4.0, Elite: 1.0, Legendary: 1.0 },
       };
       return map[zone] || map[0];
     }
@@ -2376,11 +2405,11 @@ window.leftyCantPlay = function (p, slot) {
       const zone = (typeof this.getZoneForStage === 'function') 
         ? this.getZoneForStage(this.currentStageIndex || 0) 
         : 0;
-      let allowedRarities = ['Legendary', 'Epic', 'Rare', 'Uncommon'];
+      let allowedRarities = ['Legendary', 'Elite', 'Epic', 'Rare', 'Uncommon'];
       if (zone === 0) {
         allowedRarities = ['Epic', 'Rare', 'Uncommon'];
       } else if (zone === 3) {
-        allowedRarities = ['Legendary', 'Epic', 'Rare'];
+        allowedRarities = ['Legendary', 'Elite', 'Epic', 'Rare'];
       }
       const filtered = pool.filter(p =>
         !onRosterNames.has(p.name) && allowedRarities.includes(p.rarity || 'Common')
@@ -2438,12 +2467,12 @@ window.leftyCantPlay = function (p, slot) {
         : 0;
 
       // Filter allowed rarities by match type and stage
-      let allowedRarities = ['Legendary', 'Epic', 'Rare', 'Uncommon'];
+      let allowedRarities = ['Legendary', 'Elite', 'Epic', 'Rare', 'Uncommon'];
       if (isBoss) {
         if (zone === 0) allowedRarities = ['Rare'];
         else if (zone === 1) allowedRarities = ['Epic', 'Rare'];
-        else if (zone === 2) allowedRarities = ['Legendary', 'Epic'];
-        else allowedRarities = ['Legendary'];
+        else if (zone === 2) allowedRarities = ['Legendary', 'Elite', 'Epic'];
+        else allowedRarities = ['Legendary', 'Elite'];
       } else {
         // Regular matches: Map 1 (zone 0) and Map 2 (zone 1) strictly forbid Legendary
         if (zone === 0) allowedRarities = ['Rare', 'Uncommon'];
@@ -2676,7 +2705,7 @@ window.leftyCantPlay = function (p, slot) {
         const yearVal = p.year || p.peak_year_display || p.peak_year || this.selectedSeasonYear || 1990;
         const nameVal = yearVal ? `${p.name} (${yearVal})` : p.name;
         const pitcherOvr = getOvr(p);
-        const resolvedRarity = p.rarity || (pitcherOvr >= 90 ? 'Legendary' : (pitcherOvr >= 80 ? 'Epic' : (pitcherOvr >= 70 ? 'Rare' : (pitcherOvr >= 60 ? 'Uncommon' : 'Common'))));
+        const resolvedRarity = p.rarity || (pitcherOvr >= 93 ? 'Legendary' : pitcherOvr >= 86 ? 'Elite' : (pitcherOvr >= 80 ? 'Epic' : (pitcherOvr >= 70 ? 'Rare' : (pitcherOvr >= 60 ? 'Uncommon' : 'Common'))));
         return {
           name: nameVal,
           cleanName: p.name,
@@ -3134,6 +3163,53 @@ window.leftyCantPlay = function (p, slot) {
         });
       }
 
+      // ── Rivals by pack odds (Nov 2026, decision of the user): every rival pitcher "comes out of a pack"
+      // with the same per-card odds as the rest of the game, instead of a closed OVR window.
+      //   normal: Wax / Retail / Hobby / Premium by zone; mid-boss one pack up (zone 4: Premium, best of 2);
+      //   boss (maps 1-3): that pack, the ace is the best of 3. Map 4 boss and the Super Boss do not change.
+      if (!window.__RIVAL_OLD && stage !== 27) {
+        const zone = stage <= 6 ? 0 : stage <= 13 ? 1 : stage <= 20 ? 2 : 3;
+        const isBossStage = stage === 6 || stage === 13 || stage === 20;
+        const isMid = !!(currentNode && currentNode.type === 'mid_boss');
+        const draw = (tier, role, n) => {
+          let best = null;
+          for (let k = 0; k < (n || 1); k++) {
+            const rr = window.rollPackTierRarity(tier);
+            const cand = fullPool.filter(p => (p.rarity || 'Common') === rr);
+            const pk = pickPitcher(cand.length ? cand : fullPool, role);
+            if (!best || getOvr(pk) > getOvr(best)) best = pk;
+          }
+          return best;
+        };
+        let tier, aceN = 1, kind = 'normal';
+        if (isBossStage) { tier = ['Retail', 'Hobby', 'Premium'][zone]; aceN = 3; kind = 'boss'; }
+        else if (isMid) { if (!window.__MID_UP) { tier = ['Wax', 'Retail', 'Hobby', 'Premium'][zone]; aceN = 2; } else { tier = ['Retail', 'Hobby', 'Premium', 'Premium'][zone]; aceN = zone === 3 ? 2 : 1; } kind = 'mid'; }
+        else { // normal fights ramp inside a zone: the first ones use the previous zone's pack
+          const zStart = [0, 7, 14, 21][zone], early = stage - zStart < 3;
+          const T4 = ['Wax', 'Retail', 'Hobby', 'Premium'];
+          tier = T4[early && !window.__NO_RAMP ? Math.max(0, zone - 1) : zone];
+        }
+        const rpAce = kind === 'boss' && Math.random() < 0.35;
+        const ace = createPitcherObj(draw(tier, rpAce ? 'RP' : 'SP', aceN), rpAce ? 'RP' : 'SP');
+        const midN = kind === 'mid' && (zone === 3 || !window.__MID_UP) ? 2 : 1;
+        const mid = createPitcherObj(draw(tier, null, midN));
+        const other = createPitcherObj(draw(tier, rpAce ? 'SP' : 'RP', midN), rpAce ? 'SP' : 'RP');
+        const rotation = rpAce ? [other, mid, ace] : [ace, mid, other];
+        let top = rotation[0]; rotation.forEach(p => { if (getOvr(p) > getOvr(top)) top = p; });
+        const es = window.i18n && window.i18n.getLanguage() === 'es';
+        return finishEnemy({
+          id: `${kind}_stage_${stage}_${Date.now()}`,
+          name: kind === 'boss' ? `👑 BOSS: ${top.cleanName}` : kind === 'mid' ? `⚡ MID-BOSS: ${top.cleanName}` : `${rotation[0].cleanName} & ${es ? 'Rotación' : 'Rotation'}`,
+          tier: kind === 'boss' ? (zone === 0 ? 'A' : 'S') : kind === 'mid' ? 'A+' : 'B',
+          isBoss: kind === 'boss',
+          ...(kind === 'mid' ? { isMidBoss: true } : {}),
+          pitchers: rotation,
+          _ovr: top.ovr,
+          era: top.era,
+          rarity: top.rarity
+        });
+      }
+
       // Map 1 Boss (Stage 6): Ace 75-79 OVR (Rare Alta), 2 Support 60-69 OVR (Uncommon)
       if (stage === 6) {
         let acePool = fullPool.filter(p => p.rarity === 'Rare' && getOvr(p) >= 75 && getOvr(p) <= 79.9);
@@ -3158,7 +3234,7 @@ window.leftyCantPlay = function (p, slot) {
 
       // Map 2 Boss (Stage 13): Ace 85-89 OVR (Epic Alta), 2 Support 70-79 OVR (Rare)
       if (stage === 13) {
-        let acePool = fullPool.filter(p => p.rarity === 'Epic' && getOvr(p) >= 85 && getOvr(p) <= 89.9);
+        let acePool = fullPool.filter(p => getOvr(p) >= 85 && getOvr(p) <= 89.9);
         if (acePool.length === 0) acePool = fullPool.filter(p => p.rarity === 'Epic');
         let rarePool = fullPool.filter(p => p.rarity === 'Rare' && getOvr(p) >= 70 && getOvr(p) <= 79.9);
         if (rarePool.length === 0) rarePool = fullPool.filter(p => p.rarity === 'Rare');
@@ -3182,7 +3258,7 @@ window.leftyCantPlay = function (p, slot) {
       if (stage === 20) {
         let acePool = fullPool.filter(p => p.rarity === 'Legendary' && getOvr(p) >= 95 && getOvr(p) <= 99.9);
         if (acePool.length === 0) acePool = fullPool.filter(p => p.rarity === 'Legendary');
-        let epicPool = fullPool.filter(p => p.rarity === 'Epic' && getOvr(p) >= 80 && getOvr(p) <= 89.9);
+        let epicPool = fullPool.filter(p => getOvr(p) >= 80 && getOvr(p) <= 89.9);
         if (epicPool.length === 0) epicPool = fullPool.filter(p => p.rarity === 'Epic');
 
         const isRpAce = Math.random() < 0.35 && acePool.some(p => (p.role || '').toUpperCase() === 'RP');
@@ -3204,8 +3280,8 @@ window.leftyCantPlay = function (p, slot) {
       if (stage === 27) {
         let acePool = fullPool.filter(p => p.rarity === 'Legendary' && getOvr(p) >= 95.0);
         if (acePool.length === 0) acePool = fullPool.filter(p => p.rarity === 'Legendary');
-        let supportPool = fullPool.filter(p => p.rarity === 'Legendary' && getOvr(p) >= 90.0 && getOvr(p) < 95.0);
-        if (supportPool.length < 2) supportPool = fullPool.filter(p => p.rarity === 'Legendary');
+        let supportPool = fullPool.filter(p => getOvr(p) >= 90.0 && getOvr(p) < 95.0);
+        if (supportPool.length < 2) supportPool = fullPool.filter(p => p.rarity === 'Legendary' || p.rarity === 'Elite');
 
         const { rotation, highestPitcher } = assembleThreePitcherRotation(acePool, supportPool, 'SP');
 
@@ -3226,8 +3302,9 @@ window.leftyCantPlay = function (p, slot) {
         let midPool, targetRarity;
         if (stage <= 6)        { targetRarity = 'Uncommon';  midPool = fullPool.filter(p => p.rarity === 'Uncommon'); }
         else if (stage <= 13)  { targetRarity = 'Rare';      midPool = fullPool.filter(p => p.rarity === 'Rare'); }
-        else if (stage <= 20)  { targetRarity = 'Epic';      midPool = fullPool.filter(p => p.rarity === 'Epic'); }
-        else                   { targetRarity = 'Legendary'; midPool = fullPool.filter(p => p.rarity === 'Legendary'); }
+        // by OVR so the Elite split (Nov 2026) does not change these fights: 80-89.9 and 90+ as before
+        else if (stage <= 20)  { targetRarity = 'Epic';      midPool = fullPool.filter(p => getOvr(p) >= 80 && getOvr(p) < 90); }
+        else                   { targetRarity = 'Legendary'; midPool = fullPool.filter(p => getOvr(p) >= 90); }
         if (midPool.length === 0) midPool = fullPool;
 
         const { rotation, highestPitcher } = assembleThreePitcherRotation(midPool, midPool, 'SP');
@@ -3555,7 +3632,7 @@ window.leftyCantPlay = function (p, slot) {
 
       const curOvr = (currentPlayer.ovr !== undefined ? currentPlayer.ovr : 75);
       const pos = currentPlayer.pos || offerSlot;
-      const rarityOrder = ['Common', 'Uncommon', 'Rare', 'Epic', 'Legendary'];
+      const rarityOrder = ['Common', 'Uncommon', 'Rare', 'Epic', 'Elite', 'Legendary'];
       const curRarityIdx = rarityOrder.indexOf(currentPlayer.rarity || 'Common');
 
       // Candidate pool:

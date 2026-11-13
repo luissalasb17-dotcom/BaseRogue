@@ -14,7 +14,7 @@
   }
   let career = null, seasons = null;
   window.ensureCareer = () => career || (career = load('career_lite.js?v=1794500021').catch(() => { career = null; }));
-  window.ensureSeasons = () => seasons || (seasons = load('opponents_database.js?v=1794440833').catch(e => { seasons = null; throw e; }));
+  window.ensureSeasons = () => seasons || (seasons = load('opponents_database.js?v=1794500042').catch(e => { seasons = null; throw e; }));
 
   window.addEventListener('load', () => setTimeout(window.ensureCareer, 1200));
 
