@@ -133,3 +133,12 @@
 @keyframes mcwIn { from { opacity: 0; transform: translateY(60px) rotate(0deg); } to { opacity: 1; transform: rotate(var(--r)) translateY(var(--y)); } }
 @media (max-width: 900px) { .mcw-row { justify-content: flex-start; overflow-x: auto; padding: 14px 16px 24px; } .mcw-card { zoom: .62; margin: 0 -6px; flex: 0 0 auto; } }
 @media (prefers-reduced-motion: reduce) { .mcw-card { animation: none; } }
+/* phones: the hand as a neat 3 x 3 grid (no fan, no sideways scroll) */
+@media (max-width: 600px) {
+  .mcw { max-width: 100%; margin-top: 18px; }
+  .mcw-head { flex-direction: column; gap: 6px; font-size: 13px; }
+  .mcw-row { display: grid !important; grid-template-columns: repeat(3, auto); justify-content: center; gap: 8px 6px; overflow: visible !important; padding: 8px 0 16px !important; }
+  .mcw-card { zoom: .6 !important; margin: 0 !important; transform: none !important; animation-name: mcwInFlat; }
+  .mcw-card:hover { transform: none !important; }
+}
+@keyframes mcwInFlat { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: none; } }

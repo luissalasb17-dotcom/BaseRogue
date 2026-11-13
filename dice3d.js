@@ -133,15 +133,17 @@
     canvas.className = 'dice3d-canvas';
     canvas.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:6;';
     deck.appendChild(canvas);
-    const renderer = new T.WebGLRenderer({ canvas, antialias: true, alpha: true });
-    renderer.setPixelRatio(Math.min(window.innerWidth < 900 ? 1.25 : 1.5, window.devicePixelRatio || 1));
-    renderer.shadowMap.enabled = true; renderer.shadowMap.type = T.PCFSoftShadowMap;
+    // phones / touch: no antialias, 1x pixels and hard shadows (the soft ones cost a lot on mobile GPUs)
+    const LITE = window.innerWidth < 900 || (window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
+    const renderer = new T.WebGLRenderer({ canvas, antialias: !LITE, alpha: true, powerPreference: LITE ? 'low-power' : 'default' });
+    renderer.setPixelRatio(LITE ? 1 : Math.min(1.5, window.devicePixelRatio || 1));
+    renderer.shadowMap.enabled = true; renderer.shadowMap.type = LITE ? T.BasicShadowMap : T.PCFSoftShadowMap;
     renderer.outputEncoding = T.sRGBEncoding; renderer.toneMapping = T.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05;
     const scene = new T.Scene();
     const camera = new T.OrthographicCamera(-1, 1, 1, -1, 0.1, 200);
     scene.add(new T.HemisphereLight(0xfff1d6, 0x1a120a, 0.55));
     const key = new T.DirectionalLight(0xffe2b8, 1.5);
-    key.castShadow = true; key.shadow.mapSize.set(1024, 1024); key.shadow.bias = -0.0006; key.shadow.radius = 4;
+    key.castShadow = true; key.shadow.mapSize.set(LITE ? 512 : 1024, LITE ? 512 : 1024); key.shadow.bias = -0.0006; key.shadow.radius = 4;
     scene.add(key); scene.add(key.target);
     const rim = new T.PointLight(0x7fd0ff, 0.35, 60); scene.add(rim);
     // the real CSS felt is the table: only the dice shadows are drawn on it

@@ -97,3 +97,10 @@
   #challenge162-season-container:not([data-m="game"]) .c162-goals,
   #challenge162-season-container:not([data-m="game"]) .c162-chem-season { display: none !important; }
 }
+
+/* battle / batting practice on phones: no backdrop blur or drop-shadow filters over the animated dice canvas */
+@media (max-width: 900px), (pointer: coarse) {
+  #screen-match *, #screen-match, .battle-over-modal, [id*="test"] .match-arena, [id*="test"] .match-arena * { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+  .d100-die, .d100-die-cube { filter: none !important; }
+  body.dice3d-on .d100-die-cube { animation: none !important; }
+}
