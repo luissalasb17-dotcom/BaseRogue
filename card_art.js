@@ -352,8 +352,13 @@
   // Long names: shrink each name until it fits its strip (the size classes only guess by length;
   // banners with margins / skew, like Golden or Efficiency, are narrower than the card).
   // scrollWidth rounds: a name a fraction of a pixel too wide reports as fitting but still gets the ellipsis
+  // Safari measures text ranges inside zoomed cards (the Dex, Today's Hand) in a different scale
+  // than the box, so the range check said "overflows" and shrank names to the minimum. There only
+  // the plain scrollWidth check is used (same units as clientWidth in every browser).
+  const IS_SAFARI = /^((?!chrome|chromium|android|crios|fxios|edg).)*safari/i.test(navigator.userAgent || '');
   function nameOverflows(el) {
     if (el.scrollWidth > el.clientWidth) return true;
+    if (IS_SAFARI) return false;
     const txt = [...el.childNodes].find(n => n.nodeType === 3 && n.textContent.trim());
     if (!txt) return false;
     const r = document.createRange(); r.selectNodeContents(txt);
