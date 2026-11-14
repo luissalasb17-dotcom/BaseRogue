@@ -2963,6 +2963,10 @@ var c162NonStop = window.c162NonStop;
   window.__c162Chem = cards => rosterChemistry(cards); // read-only: tests and the pack draft UI
   window.__c162ChemDelta = (cards, card) => chemDelta(cards, card);
   window.Challenge162 = {
+    // Dex Team Preview (user): the same backups strip and chemistry chips as the pack draft.
+    previewExtras(lineupMap, bench, cards) {
+      try { return depthStripHTML(lineupMap, bench) + (cards.length ? this._chemistryHTML(cards, true) : ''); } catch (e) { return ''; }
+    },
     unlockedBatters: new Set(),
     unlockedPitchers: new Set(),
     state: null,

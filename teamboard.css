@@ -156,3 +156,9 @@
 #tb-preview .tb-x, #tb-preview .tb-lock { min-height: 0 !important; min-width: 0 !important; padding: 0 !important; }
 @media (max-width: 900px) { #tb-preview .tb-x, #tb-preview .tb-lock { width: 18px; height: 18px; line-height: 18px; font-size: 10px; top: 4px; } }
 #tb-preview .tb-slot, #tb-preview .tb-deckcard { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+
+/* Team Preview: backups strip + chemistry chips, kept quiet */
+.tb-extras { margin: 4px 0 2px; opacity: .9; }
+.tb-extras:empty { display: none; }
+.tb-extras .c162-depth { margin: 0 0 4px; padding: 4px 6px; background: rgba(4,10,16,.5); }
+.tb-extras .c162-chem2 { margin: 0; padding: 4px 6px; background: rgba(4,10,16,.5); border: 1px solid #1e293b; border-radius: 6px; }

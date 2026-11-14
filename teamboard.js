@@ -76,8 +76,10 @@
       document.getElementById('tb-zoom')?.remove();
       const z = document.createElement('div'); z.id = 'tb-zoom';
       z.innerHTML = `<div class="tb-zoom-card pc2-clickflip">${card(p)}</div><small>Click the card to flip it · click outside to close</small>`;
-      z.onclick = e => { if (!e.target.closest('.tb-zoom-card')) z.remove(); };
-      z.oncontextmenu = e => { e.preventDefault(); z.remove(); };
+      // the finger that opened it (long press) still sends contextmenu / click on release: ignore them for a moment
+      const born = Date.now(), fresh = () => Date.now() - born < 700;
+      z.onclick = e => { if (fresh()) return; if (!e.target.closest('.tb-zoom-card')) z.remove(); };
+      z.oncontextmenu = e => { e.preventDefault(); if (!fresh()) z.remove(); };
       document.body.appendChild(z);
     },
     used() { const v = this.pv; return new Set([...Object.values(v.lineup), ...v.bench, ...v.SP, ...v.RP].filter(Boolean)); },
@@ -263,6 +265,7 @@
           <div class="tb-board">
             ${fieldHTML(slotHTML, mound)}
             <div class="tb-rack"><div class="tb-rack-t">🛋️ BENCH</div><div class="tb-row">${row('bench', BENCH, i => `BN${i + 1}`)}</div></div>
+            <div class="tb-extras">${(window.Challenge162 && Challenge162.previewExtras) ? Challenge162.previewExtras(Object.fromEntries(SLOTS.map(s => [s, this._map.get(v.lineup[`L:${s}`] || v.lineup[s])]).filter(x => x[1])), v.bench.map(k => k && this._map.get(k)).filter(Boolean), placed) : ''}</div>
             <div class="tb-rack"><div class="tb-rack-t">🧢 ROTATION</div><div class="tb-row">${[1, 2, 3, 4].map(i => this.slotCard(`SP:${i}`, `SP${i + 1}`)).join('')}</div></div>
             <div class="tb-rack"><div class="tb-rack-t">🔥 BULLPEN</div><div class="tb-row">${row('RP', RP_N, i => (i === 0 ? 'CL' : `RP${i}`))}</div></div>
           </div>
