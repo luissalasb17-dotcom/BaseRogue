@@ -2071,7 +2071,9 @@ var c162NonStop = window.c162NonStop;
     const gloveOf = p => (p.def !== undefined ? p.def : (p.defense_val !== undefined ? p.defense_val : 50));
     const slotValue = (p, slot) => {
       const ovr = p.ovr || 50, def = gloveOf(p);
-      if (slot === 'DH') return ovr - 0.004 * (def - 50);
+      // DH wastes a glove (user, Nov 2026: John Ward, a great shortstop, sat at DH): a good glove costs
+      // there up to ~1.5 OVR, enough to send him to the field when someone else can move.
+      if (slot === 'DH') return ovr - 0.02 * Math.max(0, def - 40);
       if (canPlayerFillPrimary(p, slot) || window.isDhHome(p, slot)) return ovr + GLOVE_WEIGHT[slot] * 0.04 * (def - 50);
       if (canPlayerFillSlot(p, slot)) return ovr + GLOVE_WEIGHT[slot] * 0.04 * (def * 0.85 - 50) - 0.35;
       if (!allowOutOfPosition) return -Infinity;
@@ -3047,6 +3049,7 @@ var c162NonStop = window.c162NonStop;
 
   window.__c162Chem = cards => rosterChemistry(cards); // read-only: tests and the pack draft UI
   window.__c162ChemDelta = (cards, card) => chemDelta(cards, card);
+  window.__c162Slots = (cards, fin) => calculateChallengeRosterSlots(cards, fin); // for checks from the console
   window.Challenge162 = {
     // Dex Team Preview (user): the same backups strip and chemistry chips as the pack draft.
     previewExtras(lineupMap, bench, cards) {
