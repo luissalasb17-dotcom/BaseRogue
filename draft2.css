@@ -592,3 +592,11 @@
 .bp-grid.dealt .bp-back { display: none; }
 @media (prefers-reduced-motion: reduce) { .bp-back { display: none; } .bp-card, .bp-burst { animation: none; } }
 @media (max-width: 1100px) { .bp-main { grid-template-columns: 1fr; } }
+.bp-odds-bar { display: flex; flex-wrap: wrap; gap: 4px 10px; margin-top: 5px; font: 12px 'Oswald', sans-serif; color: #cbd5e1; }
+.bp-odds-bar i { display: inline-block; width: 9px; height: 9px; border-radius: 2px; background: var(--c); margin-right: 4px; vertical-align: -1px; }
+.bp-odds-bar b { color: #fff; }
+.bp-card .bp-chem { position: static; margin-top: 4px; max-width: 150px; font-size: 10px; }
+.bpb-sort { font: 11px 'Oswald', sans-serif; color: #fde68a; background: #1e293b; border: 1px solid #fbbf24; border-radius: 4px; padding: 1px 7px; cursor: pointer; }
+.bpb-auto { font: 11px 'Oswald', sans-serif; color: #22c55e; font-style: normal; }
+.bpb.chem-on .bpb-chip:not(.chem-lit) { opacity: .3; }
+.bpb .bpb-chip.chem-lit { outline: 2px solid #22c55e; box-shadow: 0 0 10px #22c55e; }

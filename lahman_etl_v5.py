@@ -802,8 +802,9 @@ def paso_6_posicion_bateadores(fielding, fielding_of, appearances=None, pico_df=
     qual_mask = field_mask | dh_mask
     sec_pos_qual = sec_df[qual_mask]
 
-    sec_pos_str = sec_pos_qual.groupby("playerID")["pos_mapped"].apply(
-        lambda x: ",".join(sorted(list(set(x))))
+    # most games first (user, Nov 2026): the card shows the first two, so they are the main ones
+    sec_pos_str = sec_pos_qual.sort_values("G", ascending=False).groupby("playerID", sort=False)["pos_mapped"].apply(
+        lambda x: ",".join(dict.fromkeys(x))
     ).reset_index().rename(columns={"pos_mapped": "sec_pos"})
 
     career_field = pd.DataFrame(columns=["playerID", "fielding_pct", "range_factor"])

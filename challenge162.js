@@ -1029,11 +1029,69 @@ var c162NonStop = window.c162NonStop;
     return { lineup: team.lineup, bench, rotation, bullpen: pen.map((p, i) => ({ ...p, role: i === 0 ? 'CL' : 'RP' })) };
   }
 
+  // Rivals open the same Hobby Box as the user (user, Nov 2026): 5 packs of 10 with the big-box
+  // odds, keep 5 of each. Their manager takes the best card that fits what is missing (a field
+  // position nobody plays yet, a starter while the rotation is short), with some noise so he is
+  // not perfect (RIVAL_BOX_NOISE OVR points). Roster 14 bats + 11 arms like the user's.
+  const RIVAL_BOX_NOISE = 6;
+  function buildBoxRoster(taken) {
+    const bats = getBatterPool(), pits = getPitcherPool();
+    const box = BIG_PACK_TYPES.slice().sort(() => Math.random() - 0.5);
+    const myB = [], myP = [], capB = 9 + BENCH_SIZE, capP = 5 + ROSTER_RP;
+    const FIELD = ['C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF'];
+    const draw = (pool, rar, ok) => {
+      let free = pool.filter(p => (p.rarity || 'Common') === rar && !taken.has(personId(p)) && ok(p));
+      if (!free.length) free = pool.filter(p => !taken.has(personId(p)) && ok(p));
+      const c = free[Math.floor(Math.random() * free.length)];
+      if (c) taken.add(personId(c));
+      return c || null;
+    };
+    box.forEach(type => {
+      const cards = Array.from({ length: BIG_PACK_CARDS }, () => {
+        const isB = Math.random() < BIG_BAT_SHARE;
+        return draw(isB ? bats : pits, rollBigRarity(type), () => true);
+      }).filter(Boolean);
+      const keep = [];
+      for (let n = 0; n < BIG_PACK_KEEP; n++) {
+        const nb = myB.length + keep.filter(c => !c.role).length, np = myP.length + keep.filter(c => c.role).length;
+        const covered = new Set([...myB, ...keep.filter(c => !c.role)].map(c => c.pos));
+        const sps = [...myP, ...keep.filter(c => c.role)].filter(c => String(c.role).toUpperCase() === 'SP').length;
+        let best = null, bv = -1e9;
+        cards.forEach(c => {
+          if (keep.includes(c)) return;
+          if (c.role ? np >= capP : nb >= capB) return;
+          let v = (c.ovr || 50) + (Math.random() - 0.5) * 2 * (window.__rivalNoise ?? RIVAL_BOX_NOISE);
+          if (!c.role && FIELD.includes(c.pos) && !covered.has(c.pos)) v += 8;
+          if (c.role && String(c.role).toUpperCase() === 'SP' && sps < 5) v += 5;
+          if (v > bv) { bv = v; best = c; }
+        });
+        if (!best) break;
+        keep.push(best);
+      }
+      // the cards left in the pack go back to the pool
+      cards.forEach(c => { if (!keep.includes(c)) taken.delete(personId(c)); });
+      keep.forEach(c => (c.role ? myP : myB).push(c));
+    });
+    // spots still open at the end: Common walk-ons, like the user's box
+    while (myB.length < capB) { const c = draw(bats, 'Common', () => true); if (!c) break; myB.push(c); }
+    while (myP.length < capP) { const sp = myP.filter(c => String(c.role).toUpperCase() === 'SP').length; const c = draw(pits, 'Common', p => (sp < 5) === (String(p.role).toUpperCase() === 'SP')); if (!c) break; myP.push(c); }
+    const rb = calculateChallengeRosterSlots(myB, true);
+    const lineup = SLOTS.map(s => rb.lineup[s] && { ...rb.lineup[s], assignedSlot: s }).filter(Boolean);
+    const inLine = new Set(lineup.map(p => personId(p)));
+    const bench = myB.filter(p => !inLine.has(personId(p))).sort((a, b) => (b.ovr || 0) - (a.ovr || 0));
+    const isSP = p => String(p.role || 'SP').toUpperCase() === 'SP';
+    const spL = myP.filter(isSP).sort((a, b) => (b.ovr || 0) - (a.ovr || 0)), rpL = myP.filter(p => !isSP(p)).sort((a, b) => (b.ovr || 0) - (a.ovr || 0));
+    const rotation = spL.slice(0, 5);
+    while (rotation.length < 5 && rpL.length) rotation.push(rpL.pop());
+    const pen = [...rpL, ...spL.slice(5)];
+    return { lineup, bench, rotation, bullpen: pen.map((p, i) => ({ ...p, role: i === 0 ? 'CL' : 'RP' })) };
+  }
+
   // Snake draft (prototype, RIVAL_DRAFT 'snake'): a season pool drawn at random from all the cards,
   // so its talent has the shape of the whole pool (measured, Nov 2026: the cards' peak WAR spread
   // matches real AL/NL 1947-2025 starters), then a snake draft where each team takes the best card
   // that fills a need. Benches come from the Common / Uncommon cards, like real benches.
-  const RIVAL_DRAFT = 'recipe';
+  const RIVAL_DRAFT = 'box'; // 'box' = rivals open the user's Hobby Box (Nov 2026); 'recipe' = old rarity recipes
   const SNAKE_DEPTH = 1;
   const SNAKE_NOISE = 2, SNAKE_STYLE = 1.5, SNAKE_SCARCE = ['C', 'SS', 'CF', '2B'], SNAKE_SCARCE_BONUS = 2, SNAKE_BENCH_COVER = 3, SNAKE_URGENCY = 4; // exact pool: the players that fill every roster, no more (user, Nov 2026)
   const SNAKE_FIELD = ['C', 'SS', '2B', '3B', 'CF', '1B', 'LF', 'RF', 'DH'];
@@ -1176,7 +1234,7 @@ var c162NonStop = window.c162NonStop;
     seededShuffle(Object.keys(teams).filter(id => !teams[id].isUser), Math.random).forEach(id => {
       const t = teams[id];
       if (isPoolLeague && RIVALS_FROM_POOL) {
-        const r = snake ? snake[id] : buildPoolRoster(taken, targets.pop() || []);
+        const r = snake ? snake[id] : RIVAL_DRAFT === 'box' ? buildBoxRoster(taken) : buildPoolRoster(taken, targets.pop() || []);
         out[id] = { lineup: r.lineup.map(p => [batterUnlockKey(p), p.assignedSlot]), bench: r.bench.map(batterUnlockKey), rotation: r.rotation.map(pitcherUnlockKey), bullpen: r.bullpen.map(p => [pitcherUnlockKey(p), p.role]), _promoted: true };
         if (keepOf(id)) mergeRivalKeep(out[id], keepOf(id), kidx);
         return;
@@ -1709,6 +1767,8 @@ var c162NonStop = window.c162NonStop;
   // Same edge, softer on strikeouts and hits: at 1.7 everywhere the aces struck out 430+ and
   // posted ERAs near 1.3 (Oct 2026 review). Walks and home runs keep 1.7.
   let PIT_EDGE_K = 1.2, PIT_EDGE_H = 1.6; // H 1.6: league ERA 4.13 -> 4.10 (user, Oct 2026)
+  // League level after the rivals started opening their own box (Nov 2026): scales on homers and on hits on balls in play.
+  const CALIB = { hr: 0.96, bip: 0.985 }; // user, Nov 2026 (option C): league ERA 4.26 -> 4.07, HR 1.02 -> 0.97, R/G 4.75 -> 4.55; hitters -3 to 4%
   const PA_SCALE_3B = 0.68; // the design table sits above the 1947-2025 triples rate
   function rateAt(ys, v) {
     if (!(v > RT_X[0])) return ys[0];
@@ -1800,7 +1860,8 @@ var c162NonStop = window.c162NonStop;
       // its own walks, strikeouts and homers removed, so a strikeout pitcher now also allows fewer hits
       // (fewer balls in play), and his H/9 only counts what it says beyond that.
       const clampHR = v => Math.max(0.0005, Math.min(0.11, v));
-      baseHR = clampHR(rateAt(BAT_HR, pwr) * edgeLow(perBF(rateAt(PIT_HR9, pHR9), ENV_HR9)) * pitHrTendency(pitcher));
+      const cal = window.__calib || CALIB;
+      baseHR = clampHR(rateAt(BAT_HR, pwr) * edgeLow(perBF(rateAt(PIT_HR9, pHR9), ENV_HR9)) * pitHrTendency(pitcher) * cal.hr);
       pHR = clampHR(baseHR * batTendency(batter)[0]);
       const bBB = rateAt(BAT_BB, eye), bK = rateAt(BAT_K, kAvd), bHR = rateAt(BAT_HR, pwr);
       const batBabip = Math.max(0.15, ((1 - bBB) * rateAt(BAT_AVG, con) - bHR) / Math.max(0.3, 1 - bBB - bK - bHR));
@@ -1812,7 +1873,7 @@ var c162NonStop = window.c162NonStop;
       const ownBabip = envBabip + (pitBabip - envBabip) * BABIP_SKILL;
       const ratio = (r => (r < 1 ? Math.pow(r, PIT_EDGE_H) : r))(ownBabip / envBabip);
       const bip = Math.max(0.15, 1 - pBB - pSO - pHR);
-      pRegularHit = Math.max(0.03, Math.min(bip - 0.02, bip * batBabip * ratio * BIP_SCALE - defAdj * (1 - pBB)));
+      pRegularHit = Math.max(0.03, Math.min(bip - 0.02, bip * batBabip * ratio * BIP_SCALE * cal.bip - defAdj * (1 - pBB)));
       pTotalHit = pRegularHit + pHR;
     } else {
     const hPit = (r => (r < 1 ? Math.pow(r, PIT_EDGE_H) : r))(perBF(pitH, ENV_H9));
@@ -2340,6 +2401,18 @@ var c162NonStop = window.c162NonStop;
   // Rule A: a card is kept only into a free spot of the 25 (9 field, 5 bench, 5 SP, 6 RP).
   const BIG_PACKS = true;
   const BIG_PACK_TYPES = ['Premium', 'Hobby', 'Retail', 'Wax', 'any'];
+  // Odds of the big box only (user, Nov 2026; the Dex and Quick Play keep PACK_TIER_ODDS):
+  // per card Common, Uncommon, Rare, Epic, Elite, Legendary. about the Mystery odds on average.
+  const BIG_PACK_ODDS = {
+    // the five packs average to the Mystery odds: same total as five Mystery packs, but the good
+    // cards come bunched in the Hobby and the Premium, where only 5 of them can be kept
+    Wax:     [0.70, 0.25, 0.05, 0.00, 0.00, 0.00],
+    Retail:  [0.45, 0.40, 0.10, 0.05, 0.00, 0.00],
+    Hobby:   [0.25, 0.40, 0.20, 0.10, 0.05, 0.00],
+    Premium: [0.00, 0.15, 0.45, 0.25, 0.10, 0.05],
+    any:     [0.35, 0.30, 0.20, 0.10, 0.04, 0.01]
+  };
+  const rollBigRarity = type => { const o = (window.__bigOdds || BIG_PACK_ODDS)[type] || BIG_PACK_ODDS.any; let x = Math.random(); for (let i = 0; i < o.length; i++) { x -= o[i]; if (x < 0) return PACK_RARS[i]; } return 'Common'; };
   const BIG_PACK_CARDS = 10, BIG_PACK_KEEP = 5, BIG_REROLLS = 1, BIG_BAT_SHARE = 0.56;
   const PACK_OPTIONS = 3; // cards shown in each pack; the player keeps one
   const PACK_FREE_CARDS = 1; // how many of them ignore the positions the roster still needs
@@ -9674,15 +9747,15 @@ var c162NonStop = window.c162NonStop;
       const taken = new Set(B.used), bats = getBatterPool(), pits = getPitcherPool();
       const cards = Array.from({ length: BIG_PACK_CARDS }, () => {
         const pool = Math.random() < BIG_BAT_SHARE ? bats : pits;
-        const rar = window.rollPackTierRarity ? window.rollPackTierRarity(type) : 'Common';
+        const rar = rollBigRarity(type);
         let free = pool.filter(p => (p.rarity || 'Common') === rar && !taken.has(personId(p)));
         if (!free.length) free = pool.filter(p => !taken.has(personId(p)));
         const c = free[Math.floor(Math.random() * free.length)];
         if (c) taken.add(personId(c));
         return c;
       }).filter(Boolean);
-      const ord = { Legendary: 0, Elite: 1, Epic: 2, Rare: 3, Uncommon: 4, Common: 5 };
-      cards.sort((a, b) => (ord[a.rarity] ?? 5) - (ord[b.rarity] ?? 5) || (b.ovr || 0) - (a.ovr || 0));
+      // shuffled: the pack does not come sorted (user)
+      for (let i = cards.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [cards[i], cards[j]] = [cards[j], cards[i]]; }
       B.cards = cards; B.sel = [];
     },
     // Puts cards into the free spots of a copy of the board: batters to their position, then a
@@ -9690,6 +9763,26 @@ var c162NonStop = window.c162NonStop;
     // rotation (then the pen), relievers to the pen (then the rotation).
     _bigPlace(slots, cards) {
       const S = { lineup: Object.assign({}, slots.lineup), bench: slots.bench.slice(), sp: slots.sp.slice(), rp: slots.rp.slice() };
+      const ok = [];
+      // Auto-sort (user): until a group is arranged by hand, it is rebuilt with every card in it, so a
+      // better card takes the job and the starter goes to the bench (best nine, rotation by OVR).
+      const ed = (this._big && this._big.edited) || {};
+      const bats = [...Object.values(S.lineup), ...S.bench].filter(Boolean), pits = [...S.sp, ...S.rp].filter(Boolean);
+      const auto = { bat: !ed.bat, pit: !ed.pit };
+      if (auto.bat || auto.pit) {
+        const room = { bat: 9 + BENCH_SIZE - bats.length, pit: 5 + ROSTER_RP - pits.length };
+        const rest = [];
+        cards.forEach(c => { const g = c.role ? 'pit' : 'bat'; if (auto[g] && room[g] > 0) { (g === 'bat' ? bats : pits).push(c); room[g]--; ok.push(true); } else { ok.push(null); rest.push(c); } });
+        if (auto.bat) { const r = calculateChallengeRosterSlots(bats, false); S.lineup = Object.assign({}, r.lineup); S.bench = Array.from({ length: BENCH_SIZE }, (_, i) => (r.bench || [])[i] || null); }
+        if (auto.pit) { const r = calculateChallengeRosterSlots(pits, false); S.sp = Array.from({ length: 5 }, (_, i) => r.sp[i] || null); S.rp = Array.from({ length: ROSTER_RP }, (_, i) => r.rp[i] || null); }
+        const placed = this._bigPlaceManual(S, rest);
+        let k = 0;
+        return { S: placed.S, ok: ok.map(v => (v === null ? placed.ok[k++] : v)) };
+      }
+      return this._bigPlaceManual(S, cards);
+    },
+    _bigPlaceManual(S0, cards) {
+      const S = { lineup: Object.assign({}, S0.lineup), bench: S0.bench.slice(), sp: S0.sp.slice(), rp: S0.rp.slice() };
       const ok = [];
       cards.forEach(c => {
         let done = false;
@@ -9706,13 +9799,49 @@ var c162NonStop = window.c162NonStop;
       });
       return { S, ok };
     },
+    // Reveal sounds (user, Nov 2026): a soft card tick on every flip, the rarity sound on top for
+    // Rare+ right when the face shows (half of the 0.5 s flip), a rising hum in the pause before an
+    // Epic / Elite / Legendary; skipping cancels what is pending and plays only the best card.
+    _bigTone(kind, r) {
+      try {
+        if (window.AudioManager && AudioManager.isMuted && AudioManager.isMuted()) return;
+        const ctx = this._sfxCtx || (this._sfxCtx = new (window.AudioContext || window.webkitAudioContext)());
+        if (ctx.state === 'suspended') ctx.resume();
+        const t = ctx.currentTime, g = ctx.createGain(); g.connect(ctx.destination);
+        if (kind === 'tick') {
+          const len = Math.floor(ctx.sampleRate * 0.04), buf = ctx.createBuffer(1, len, ctx.sampleRate), d = buf.getChannelData(0);
+          for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3);
+          const src = ctx.createBufferSource(), f = ctx.createBiquadFilter();
+          src.buffer = buf; f.type = 'bandpass'; f.frequency.value = 1800 + r * 250; f.Q.value = 0.8;
+          src.connect(f); f.connect(g); g.gain.value = 0.35; src.start(t);
+        } else { // hum: rises for the length of the pause
+          const o = ctx.createOscillator(), dur = 0.45 + (r - 3) * 0.25;
+          o.type = 'triangle'; o.frequency.setValueAtTime(180, t); o.frequency.exponentialRampToValueAtTime(420 + (r - 3) * 160, t + dur);
+          g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.09, t + dur * 0.8); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+          o.connect(g); o.start(t); o.stop(t + dur + 0.02);
+        }
+      } catch (e) { /* no audio */ }
+    },
     _bigRevealSounds(B) {
       const RK = { Common: 0, Uncommon: 1, Rare: 2, Epic: 3, Elite: 4, Legendary: 5 };
+      (B.snd || []).forEach(clearTimeout); B.snd = [];
+      const at = (ms, fn) => B.snd.push(setTimeout(() => { if (this._big === B) fn(); }, ms));
       let tAt = 900 + BIG_PACK_CARDS * 70;
       B.cards.slice().sort((a, b) => (RK[a.rarity] || 0) - (RK[b.rarity] || 0)).forEach(c => {
-        const r = RK[c.rarity] || 0; tAt += r >= 3 ? 520 + (r - 3) * 260 : 170;
-        if (r >= 2) setTimeout(() => { if (this._big === B && window.BaseballDex && BaseballDex.playPackSound) BaseballDex.playPackSound(c.rarity); }, tAt);
+        const r = RK[c.rarity] || 0, pause = r >= 3 ? 520 + (r - 3) * 260 : 170;
+        if (r >= 3) at(tAt + 40, () => this._bigTone('hum', r));
+        tAt += pause;
+        const face = tAt + 250;
+        at(face, () => this._bigTone('tick', r));
+        if (r >= 2) at(face, () => { if (window.BaseballDex && BaseballDex.playPackSound) BaseballDex.playPackSound(c.rarity); });
       });
+    },
+    _bigSkipSounds(B) {
+      (B.snd || []).forEach(clearTimeout); B.snd = [];
+      const RK = { Common: 0, Uncommon: 1, Rare: 2, Epic: 3, Elite: 4, Legendary: 5 };
+      const best = B.cards.slice().sort((a, b) => (RK[b.rarity] || 0) - (RK[a.rarity] || 0))[0];
+      this._bigTone('tick', 2);
+      if (best && (RK[best.rarity] || 0) >= 2 && window.BaseballDex && BaseballDex.playPackSound) BaseballDex.playPackSound(best.rarity);
     },
     _bigFree(slots) {
       const bat = SLOTS.filter(s => !slots.lineup[s]).length + slots.bench.filter(x => !x).length;
@@ -9729,6 +9858,7 @@ var c162NonStop = window.c162NonStop;
       const picked = B.sel.map(i => B.cards[i]);
       B.slots = this._bigPlace(B.slots, picked).S;
       picked.forEach(c => B.used.add(personId(c)));
+      (B.snd || []).forEach(clearTimeout); B.snd = [];
       B.i++; B.open = false; B.dealt = false; B.cards = null; B.sel = []; B.pick = null;
       if (window.AudioManager && AudioManager.play) AudioManager.play('card_deal');
       if (B.i >= B.box.length) { this._bigFinish(); return; }
@@ -9770,6 +9900,7 @@ var c162NonStop = window.c162NonStop;
       if (isPit(a) !== isPit(b)) return false;
       const x = this._bigGet(S, a), y = this._bigGet(S, b);
       this._bigSet(S, a, y); this._bigSet(S, b, x);
+      B.edited = B.edited || {}; B.edited[isPit(a) ? 'pit' : 'bat'] = true;
       return true;
     },
     _bigBoardHTML(S, ghosts) {
@@ -9780,7 +9911,7 @@ var c162NonStop = window.c162NonStop;
         const warn = c && slot && slot !== 'DH' && !canPlayerFillSlot(c, slot);
         const sec = c && slot && slot !== 'DH' && !warn && !canPlayerFillPrimary(c, slot);
         const r = c ? (c.rarity || 'Common').toLowerCase() : '';
-        return `<button draggable="${c && !ghost ? 'true' : 'false'}" class="bpb-chip ${c ? 'r-' + r : 'empty'} ${ghost ? 'ghost' : ''} ${sel ? 'sel' : ''} ${warn ? 'warn' : ''}" data-bpb="${id}" title="${c ? cleanName(c) + ' · ' + (c.role || c.pos) + (warn ? ' · OUT OF POSITION: half his glove' : sec ? ' · secondary position' : '') : 'Empty: ' + label}">
+        return `<button draggable="${c && !ghost ? 'true' : 'false'}" class="bpb-chip ${c ? 'r-' + r : 'empty'} ${ghost ? 'ghost' : ''} ${sel ? 'sel' : ''} ${warn ? 'warn' : ''}" data-bpb="${id}" data-chem="${c ? (() => { const t = chemTraits(c); return Object.keys(t).filter(k => t[k]).map(k => `${k}:${t[k]}`).concat(isCaptain(c) ? ['cap:1'] : []).join('|').replace(/"/g, ''); })() : ''}" title="${c ? cleanName(c) + ' · ' + (c.role || c.pos) + (warn ? ' · OUT OF POSITION: half his glove' : sec ? ' · secondary position' : '') : 'Empty: ' + label}">
           <small>${label}</small>${c ? `<b>${cleanName(c).split(' ').slice(-1)[0]}</b><i>${Math.floor(c.ovr || 0)}${warn ? ' ⚠' : sec ? '*' : ''}</i>` : '<b>—</b>'}</button>`;
       };
       const slotHTML = {}; SLOTS.forEach(s => { slotHTML[s] = chip('L:' + s, s); });
@@ -9789,7 +9920,7 @@ var c162NonStop = window.c162NonStop;
       const row = (k, n, lab) => `<div class="bpb-row">${Array.from({ length: n }, (_, i) => chip(`${k}:${i}`, lab(i))).join('')}</div>`;
       const f = this._bigFree(S);
       return `<div class="bpb">
-        <div class="bpb-top"><b>YOUR TEAM</b><span>${25 - f.bat - f.pit}/25 · open: ${f.bat} bat · ${f.pit} arm</span></div>
+        <div class="bpb-top"><b>YOUR TEAM</b>${(B.edited && (B.edited.bat || B.edited.pit)) ? '<button class="bpb-sort" data-bpb-sort="1" title="Your moves stop the auto-sort; this puts it back">↺ AUTO-SORT</button>' : '<em class="bpb-auto">auto-sorting</em>'}<span>${25 - f.bat - f.pit}/25 · open: ${f.bat} bat · ${f.pit} arm</span></div>
         ${field}
         <div class="bpb-t">🛋️ BENCH</div>${row('bench', BENCH_SIZE, i => 'BN' + (i + 1))}
         <div class="bpb-t">🧢 ROTATION</div><div class="bpb-row">${[1, 2, 3, 4].map(i => chip(`sp:${i}`, 'SP' + (i + 1))).join('')}</div>
@@ -9804,7 +9935,8 @@ var c162NonStop = window.c162NonStop;
       const type = B.box[B.i], info = PACK_TIER_INFO[type] || PACK_TIER_INFO.any;
       const rail = B.box.map((t, k) => { const f = PACK_TIER_INFO[t] || PACK_TIER_INFO.any; return `<span class="bp-rail-p ${k < B.i ? 'done' : k === B.i ? 'cur' : ''} t-${t}" title="${f.name}">${k < B.i ? '✓' : f.icon}<small>${f.name.replace(' PACK', '')}</small></span>`; }).join('');
       const head = `<div class="bp-head">
-          <div class="bp-title"><small>HOBBY BOX · PACK ${B.i + 1} OF ${B.box.length}</small><b>${info.icon} ${info.name}</b><em>${info.hint}</em></div>
+          <div class="bp-title"><small>HOBBY BOX · PACK ${B.i + 1} OF ${B.box.length}</small><b>${info.icon} ${info.name}</b><em>${info.hint}</em>
+            <div class="bp-odds-bar" title="Each card rolls its own rarity with these odds">${(BIG_PACK_ODDS[type] || BIG_PACK_ODDS.any).map((v, k) => v > 0 ? `<span style="--c:${['#9aa3ad', '#4ade80', '#60a5fa', '#c084fc', '#fb3b5c', '#fbbf24'][k]}"><i></i>${PACK_RARS[k]} <b>${Math.round(v * 1000) / 10}%</b></span>` : '').join('')}</div></div>
           <div class="bp-rail">${rail}</div>
           <div class="bp-count"><span>🎲 REROLL <b>${B.rerolls}</b></span></div>
         </div>`;
@@ -9825,7 +9957,10 @@ var c162NonStop = window.c162NonStop;
         const cards = B.cards.map((c, i) => {
           const on = B.sel.includes(i), can = on || (B.sel.length < BIG_PACK_KEEP && this._bigCanPick(c));
           const fl = flipAt[i] || 0;
-          return `<div class="bp-card ${on ? 'on' : ''} ${can ? '' : 'off'} r-${(c.rarity || 'Common').toLowerCase()}" data-bp="${i}" style="--i:${i};--fl:${fl}ms">${window.createCardHTML ? window.createCardHTML(c, c.role || c.pos) : cleanName(c)}<span class="bp-back"></span><span class="bp-burst">${(c.rarity || '').toUpperCase()}!</span><span class="bp-tick">✓ KEEP</span></div>`;
+          const others = [...Object.values(B.slots.lineup), ...B.slots.bench, ...B.slots.sp, ...B.slots.rp, ...B.sel.filter(j => j !== i).map(j => B.cards[j])].filter(Boolean);
+          const ds = chemDelta(others, c).filter(x => x.after >= 2);
+          const chemLine = ds.length ? `<div class="c162-oc-chem bp-chem">${ds.map(x => `<span class="${x.tierUp ? 'up' : ''}" title="${x.after} of this ${x.kind === 'team' ? 'franchise' : x.kind === 'era' ? 'era' : 'country'} with him">${CHEM_ICON[x.kind]} ${x.label} ${x.before}→${x.after}${x.tierUp ? ` <b>T${x.tier.tier} +${x.tier.bonus}</b>` : x.tier.max ? ' <i>T3 max</i>' : ` <i>${x.tier.left} to T${x.tier.tier + 1}</i>`}</span>`).join('')}</div>` : '';
+          return `<div class="bp-card ${on ? 'on' : ''} ${can ? '' : 'off'} r-${(c.rarity || 'Common').toLowerCase()}" data-bp="${i}" style="--i:${i};--fl:${fl}ms">${window.createCardHTML ? window.createCardHTML(c, c.role || c.pos) : cleanName(c)}<span class="bp-back"></span><span class="bp-burst">${(c.rarity || '').toUpperCase()}!</span><span class="bp-tick">✓ KEEP</span>${chemLine}</div>`;
         }).join('');
         const keep = this._bigKeepN();
         body = `<div class="d2-table bp-table"><div class="bp-grid ${B.dealt ? 'dealt' : ''}">${cards}</div></div>
@@ -9855,7 +9990,7 @@ var c162NonStop = window.c162NonStop;
         let lp = null, fired = false;
         d.onclick = e => {
           if (fired) { fired = false; return; }
-          if (B.revealEnd && Date.now() < B.revealEnd) { B.revealEnd = 0; el.querySelector('.bp-grid').classList.add('dealt'); return; }
+          if (B.revealEnd && Date.now() < B.revealEnd) { B.revealEnd = 0; el.querySelector('.bp-grid').classList.add('dealt'); this._bigSkipSounds(B); return; }
           if (e.target.closest('.pc2-flip')) return;
           const at = B.sel.indexOf(i);
           if (at !== -1) B.sel.splice(at, 1);
@@ -9891,11 +10026,17 @@ var c162NonStop = window.c162NonStop;
         let lt = null; b.addEventListener('touchstart', () => { lt = setTimeout(() => { lt = 'f'; zoomIt(); }, 550); }, { passive: true });
         b.addEventListener('touchend', e => { if (lt === 'f') e.preventDefault(); else clearTimeout(lt); lt = null; });
       });
+      // point at a chemistry chip (tap on a phone): its players light up on the board
+      const board = el.querySelector('.bpb');
+      const lit = g => { if (!board) return; board.classList.toggle('chem-on', !!g); board.querySelectorAll('[data-chem]').forEach(r => r.classList.toggle('chem-lit', !!g && r.dataset.chem.split('|').includes(g))); };
+      el.querySelectorAll('.bpb [data-chem-group]').forEach(ch => { ch.onmouseenter = () => lit(ch.dataset.chemGroup); ch.onmouseleave = () => lit(null); ch.onclick = () => lit(ch.dataset.chemGroup); });
+      const so = el.querySelector('[data-bpb-sort]');
+      if (so) so.onclick = () => { B.edited = {}; B.slots = this._bigPlace({ lineup: {}, bench: Array(BENCH_SIZE).fill(null), sp: Array(5).fill(null), rp: Array(ROSTER_RP).fill(null) }, [...Object.values(B.slots.lineup), ...B.slots.bench, ...B.slots.sp, ...B.slots.rp].filter(Boolean)).S; this.renderBigPack(); };
       el.querySelectorAll('[data-bp-act]').forEach(b => {
         b.onclick = () => {
           const a = b.dataset.bpAct;
           if (a === 'ok' && B.sel.length === this._bigKeepN()) this._bigConfirm();
-          else if (a === 'reroll' && B.rerolls > 0) { B.rerolls--; B.dealt = false; this._rollBigPack(); if (window.AudioManager && AudioManager.play) AudioManager.play('defense_dice_roll'); this.renderBigPack(); }
+          else if (a === 'reroll' && B.rerolls > 0) { B.rerolls--; B.dealt = false; (B.snd || []).forEach(clearTimeout); B.snd = []; this._rollBigPack(); if (window.AudioManager && AudioManager.play) AudioManager.play('defense_dice_roll'); this.renderBigPack(); }
         };
       });
     },
@@ -9935,7 +10076,7 @@ var c162NonStop = window.c162NonStop;
       }).join('');
       const RCOL = ['#9aa3ad', '#4ade80', '#60a5fa', '#c084fc', '#fb3b5c', '#fbbf24'], RNAME = ['Common', 'Uncommon', 'Rare', 'Epic', 'Elite', 'Legendary'];
       const legend = `<div class="bxk-row">${kinds.map(k => {
-        const o = PACK_TIER_ODDS[k], inf = PACK_TIER_INFO[k], src = art(k);
+        const o = (big ? BIG_PACK_ODDS : PACK_TIER_ODDS)[k], inf = PACK_TIER_INFO[k], src = art(k);
         const bar = o.map((v, i) => v > 0 ? `<i style="flex:${v};background:${RCOL[i]}" title="${RNAME[i]} ${Math.round(v * 1000) / 10}%"></i>` : '').join('');
         const top2 = o.map((v, i) => [v, i]).sort((a, b) => b[0] - a[0]).slice(0, 2).sort((a, b) => a[1] - b[1]).map(([, i]) => `<b style="color:${RCOL[i]}">${RNAME[i]}</b>`).join(' & ');
         return `<div class="bxk pk-${k.toLowerCase()}">
