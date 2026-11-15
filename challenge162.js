@@ -9667,6 +9667,7 @@ var c162NonStop = window.c162NonStop;
       this.showScreen('screen-challenge-pack');
       this._rollBigPack();
       this.renderBigPack();
+      this._showBoxIntro();
     },
     _rollBigPack() {
       const B = this._big, type = B.box[B.i];
@@ -9704,6 +9705,14 @@ var c162NonStop = window.c162NonStop;
         ok.push(done);
       });
       return { S, ok };
+    },
+    _bigRevealSounds(B) {
+      const RK = { Common: 0, Uncommon: 1, Rare: 2, Epic: 3, Elite: 4, Legendary: 5 };
+      let tAt = 900 + BIG_PACK_CARDS * 70;
+      B.cards.slice().sort((a, b) => (RK[a.rarity] || 0) - (RK[b.rarity] || 0)).forEach(c => {
+        const r = RK[c.rarity] || 0; tAt += r >= 3 ? 520 + (r - 3) * 260 : 170;
+        if (r >= 2) setTimeout(() => { if (this._big === B && window.BaseballDex && BaseballDex.playPackSound) BaseballDex.playPackSound(c.rarity); }, tAt);
+      });
     },
     _bigFree(slots) {
       const bat = SLOTS.filter(s => !slots.lineup[s]).length + slots.bench.filter(x => !x).length;
@@ -9771,7 +9780,7 @@ var c162NonStop = window.c162NonStop;
         const warn = c && slot && slot !== 'DH' && !canPlayerFillSlot(c, slot);
         const sec = c && slot && slot !== 'DH' && !warn && !canPlayerFillPrimary(c, slot);
         const r = c ? (c.rarity || 'Common').toLowerCase() : '';
-        return `<button class="bpb-chip ${c ? 'r-' + r : 'empty'} ${ghost ? 'ghost' : ''} ${sel ? 'sel' : ''} ${warn ? 'warn' : ''}" data-bpb="${id}" title="${c ? cleanName(c) + ' · ' + (c.role || c.pos) + (warn ? ' · OUT OF POSITION: half his glove' : sec ? ' · secondary position' : '') : 'Empty: ' + label}">
+        return `<button draggable="${c && !ghost ? 'true' : 'false'}" class="bpb-chip ${c ? 'r-' + r : 'empty'} ${ghost ? 'ghost' : ''} ${sel ? 'sel' : ''} ${warn ? 'warn' : ''}" data-bpb="${id}" title="${c ? cleanName(c) + ' · ' + (c.role || c.pos) + (warn ? ' · OUT OF POSITION: half his glove' : sec ? ' · secondary position' : '') : 'Empty: ' + label}">
           <small>${label}</small>${c ? `<b>${cleanName(c).split(' ').slice(-1)[0]}</b><i>${Math.floor(c.ovr || 0)}${warn ? ' ⚠' : sec ? '*' : ''}</i>` : '<b>—</b>'}</button>`;
       };
       const slotHTML = {}; SLOTS.forEach(s => { slotHTML[s] = chip('L:' + s, s); });
@@ -9785,7 +9794,8 @@ var c162NonStop = window.c162NonStop;
         <div class="bpb-t">🛋️ BENCH</div>${row('bench', BENCH_SIZE, i => 'BN' + (i + 1))}
         <div class="bpb-t">🧢 ROTATION</div><div class="bpb-row">${[1, 2, 3, 4].map(i => chip(`sp:${i}`, 'SP' + (i + 1))).join('')}</div>
         <div class="bpb-t">🔥 BULLPEN</div>${row('rp', ROSTER_RP, i => (i === 0 ? 'CL' : 'RP' + i))}
-        <div class="bpb-hint">${B.pick ? 'Tap another spot to swap.' : 'Dashed = the cards you are about to keep. Tap two spots to swap them.'}</div>
+        <div class="bpb-extra">${(() => { try { const all = [...Object.values(S.lineup), ...S.bench, ...S.sp, ...S.rp].filter(Boolean); return depthStripHTML(S.lineup, S.bench) + (all.length ? this._chemistryHTML(all, true) : ''); } catch (e) { return ''; } })()}</div>
+        <div class="bpb-hint">${B.pick ? 'Tap another spot to swap.' : 'Dashed = the cards you are about to keep. Drag a player to another spot (or tap two spots) to swap them. Right click a player to see his card.'}</div>
       </div>`;
     },
     renderBigPack() {
@@ -9806,9 +9816,16 @@ var c162NonStop = window.c162NonStop;
           <button class="btn c162-cta bp-open">✂ OPEN THE ${info.name}</button>
           <p class="bp-odds">${BIG_PACK_CARDS} cards, batters and pitchers mixed. Keep ${BIG_PACK_KEEP}.</p></div></div>`;
       } else {
+        // reveal: dealt face down, then flipped one by one from the lowest rarity up (big ones wait longer)
+        const RK = { Common: 0, Uncommon: 1, Rare: 2, Epic: 3, Elite: 4, Legendary: 5 };
+        const flipAt = {}; let tAt = 900 + BIG_PACK_CARDS * 70;
+        B.cards.map((c, i) => i).sort((a, b) => (RK[B.cards[a].rarity] || 0) - (RK[B.cards[b].rarity] || 0)).forEach(i => {
+          const r = RK[B.cards[i].rarity] || 0; tAt += r >= 3 ? 520 + (r - 3) * 260 : 170; flipAt[i] = tAt; });
+        if (!B.dealt) B.revealEnd = Date.now() + tAt + 500;
         const cards = B.cards.map((c, i) => {
           const on = B.sel.includes(i), can = on || (B.sel.length < BIG_PACK_KEEP && this._bigCanPick(c));
-          return `<div class="bp-card ${on ? 'on' : ''} ${can ? '' : 'off'}" data-bp="${i}" style="--i:${i}">${window.createCardHTML ? window.createCardHTML(c, c.role || c.pos) : cleanName(c)}<span class="bp-tick">✓ KEEP</span></div>`;
+          const fl = flipAt[i] || 0;
+          return `<div class="bp-card ${on ? 'on' : ''} ${can ? '' : 'off'} r-${(c.rarity || 'Common').toLowerCase()}" data-bp="${i}" style="--i:${i};--fl:${fl}ms">${window.createCardHTML ? window.createCardHTML(c, c.role || c.pos) : cleanName(c)}<span class="bp-back"></span><span class="bp-burst">${(c.rarity || '').toUpperCase()}!</span><span class="bp-tick">✓ KEEP</span></div>`;
         }).join('');
         const keep = this._bigKeepN();
         body = `<div class="d2-table bp-table"><div class="bp-grid ${B.dealt ? 'dealt' : ''}">${cards}</div></div>
@@ -9817,6 +9834,9 @@ var c162NonStop = window.c162NonStop;
             <button class="btn bp-btn" data-bp-act="reroll" ${B.rerolls ? '' : 'disabled'}>🎲 REROLL PACK (${B.rerolls})</button>
             <button class="btn c162-cta" data-bp-act="ok" ${B.sel.length === keep ? '' : 'disabled'}>${B.i === B.box.length - 1 ? '✔ CLOSE THE BOX' : `✔ KEEP THESE ${keep} ▶`}</button>
           </div>`;
+      }
+      if (B.open && !B.dealt) {
+        this._bigRevealSounds(B);
       }
       if (B.open) B.dealt = true;
       el.innerHTML = `<div class="bp-wrap">${head}<div class="bp-main"><div class="bp-left">${body}</div><div class="bp-right">${this._bigBoardHTML(preview, new Set(ghostCards))}</div></div></div>`;
@@ -9835,6 +9855,7 @@ var c162NonStop = window.c162NonStop;
         let lp = null, fired = false;
         d.onclick = e => {
           if (fired) { fired = false; return; }
+          if (B.revealEnd && Date.now() < B.revealEnd) { B.revealEnd = 0; el.querySelector('.bp-grid').classList.add('dealt'); return; }
           if (e.target.closest('.pc2-flip')) return;
           const at = B.sel.indexOf(i);
           if (at !== -1) B.sel.splice(at, 1);
@@ -9856,7 +9877,19 @@ var c162NonStop = window.c162NonStop;
           else { if (this._bigSwap(B.pick, id) && window.AudioManager && AudioManager.play) AudioManager.play('card_deal'); B.pick = null; }
           this.renderBigPack();
         };
-        b.oncontextmenu = e => { e.preventDefault(); dex(this._bigGet(preview, id)); };
+        // drag a player to another spot (swap; batters with batters, pitchers with pitchers)
+        b.addEventListener('dragstart', e => { e.dataTransfer.setData('text/bpb', id); e.dataTransfer.effectAllowed = 'move'; });
+        b.addEventListener('dragover', e => { e.preventDefault(); b.classList.add('dragover'); });
+        b.addEventListener('dragleave', () => b.classList.remove('dragover'));
+        b.addEventListener('drop', e => {
+          e.preventDefault(); b.classList.remove('dragover');
+          const from = e.dataTransfer.getData('text/bpb');
+          if (from && from !== id && this._bigSwap(from, id)) { B.pick = null; if (window.AudioManager && AudioManager.play) AudioManager.play('card_deal'); this.renderBigPack(); }
+        });
+        const zoomIt = () => { const c = this._bigGet(preview, id); if (!c) return; if (window.TeamBoard && TeamBoard._tp && TeamBoard._tp.zoom) TeamBoard._tp.zoom(c); else dex(c); };
+        b.oncontextmenu = e => { e.preventDefault(); zoomIt(); };
+        let lt = null; b.addEventListener('touchstart', () => { lt = setTimeout(() => { lt = 'f'; zoomIt(); }, 550); }, { passive: true });
+        b.addEventListener('touchend', e => { if (lt === 'f') e.preventDefault(); else clearTimeout(lt); lt = null; });
       });
       el.querySelectorAll('[data-bp-act]').forEach(b => {
         b.onclick = () => {
@@ -9874,7 +9907,8 @@ var c162NonStop = window.c162NonStop;
     // tap and spills its 26 packs by rarity, with what the box holds and how the draft works,
     // so "LEFT IN THE BOX" makes sense from the start.
     _showBoxIntro() {
-      const draft = this._packDraft;
+      const big = !!this._big;
+      const draft = big ? { box: this._big.box } : this._packDraft;
       const host = document.getElementById('screen-challenge-pack');
       if (!draft || !draft.box || !host) return;
       const old = document.getElementById('c162-boxintro');
@@ -9883,7 +9917,7 @@ var c162NonStop = window.c162NonStop;
       const ICON = Object.fromEntries(order.map(k => [k, PACK_TIER_INFO[k].icon]));
       const NAME = Object.fromEntries(order.map(k => [k, PACK_TIER_INFO[k].name.replace(' PACK', '')]));
       const count = r => draft.box.filter(x => x === r).length;
-      const hide = PACK_BOX_MODE === 'odds'; // odds box: what's inside stays a surprise; fan and chips show the odds
+      const hide = !big && PACK_BOX_MODE === 'odds'; // odds box: what's inside stays a surprise; fan and chips show the odds
       const nBox = draft.box.length;
       const oddsN = r => Math.round(PACK_ODDS[r] * nBox);
       const shown = r => (hide ? oddsN(r) : count(r));
@@ -9907,7 +9941,7 @@ var c162NonStop = window.c162NonStop;
         return `<div class="bxk pk-${k.toLowerCase()}">
             ${src ? `<img src="${src}" alt="">` : ''}
             <div class="bxk-name">${inf.name.replace(' PACK', '')}</div>
-            <div class="bxk-share">≈ ${Math.round(PACK_ODDS[k] * nBox)} of ${nBox}<span>${Math.round(PACK_ODDS[k] * 100)}% of packs</span></div>
+            <div class="bxk-share">${big ? `1 of ${nBox}<span>one of each kind</span>` : `≈ ${Math.round(PACK_ODDS[k] * nBox)} of ${nBox}<span>${Math.round(PACK_ODDS[k] * 100)}% of packs</span>`}</div>
             <div class="bxk-bar">${bar}</div>
             <div class="bxk-mostly">${k === 'any' ? 'Anything goes' : 'Mostly ' + top2}</div>
           </div>`;
@@ -9929,7 +9963,7 @@ var c162NonStop = window.c162NonStop;
       el.className = 'c162-boxintro';
       el.innerHTML = `
         <div class="bx-stage">
-          <div class="bx-sign"><div class="bx-marq" aria-hidden="true"></div><div class="bx-neon" aria-hidden="true"><i></i><i></i><span>Open</span></div><small>BASEROGUE CARD SHOP</small><b>YOUR HOBBY BOX</b><span>${n} PACKS · ${bp} BATTERS · ${pp} PITCHERS · ${PACK_OPTIONS} CARDS EACH</span></div>
+          <div class="bx-sign"><div class="bx-marq" aria-hidden="true"></div><div class="bx-neon" aria-hidden="true"><i></i><i></i><span>Open</span></div><small>BASEROGUE CARD SHOP</small><b>YOUR HOBBY BOX</b><span>${big ? `${n} PACKS · ${BIG_PACK_CARDS} CARDS EACH · KEEP ${BIG_PACK_KEEP} OF EACH` : `${n} PACKS · ${bp} BATTERS · ${pp} PITCHERS · ${PACK_OPTIONS} CARDS EACH`}</span></div>
           <div class="bx-mat">${propsHTML}<div class="bx-3d" id="c162-bx-3d"></div>
           <div class="bx-box" id="c162-bx-box">
             <div class="bx-packs">${packsHTML}</div>
@@ -9943,10 +9977,13 @@ var c162NonStop = window.c162NonStop;
             ${legend}
             <div class="bx-foot">
             <ul class="bx-rules">
-              ${hide ? `<li>The box mixes the five kinds above at random: you see which one when it hits the table.</li><li>Every card rolls its own rarity, so <b>anything can come out of any pack</b>; a better pack just tilts the odds.</li>` : `<li><b>${n - count('any')}</b> packs have a <b>fixed rarity</b>; the <b>🎲 ${count('any')}</b> others can hold <b>any rarity</b>, even an extra Legendary.</li>`}
+              ${big ? `<li>One pack of <b>each kind</b>, in random order: you see which one when it hits the table.</li>
+              <li>Every pack has <b>${BIG_PACK_CARDS} cards</b>, batters and pitchers mixed, each with its own rarity roll.</li>
+              <li>Keep <b>${BIG_PACK_KEEP} of each pack</b>. A card needs a free spot on your 25 (9 field, 5 bench, 5 SP, 6 RP): plan the lineup, the rotation and the pen.</li>
+              <li><b>${BIG_REROLLS} reroll</b> for the whole box. Spots still empty at the end get a Common walk-on.</li>` : `${hide ? `<li>The box mixes the five kinds above at random: you see which one when it hits the table.</li><li>Every card rolls its own rarity, so <b>anything can come out of any pack</b>; a better pack just tilts the odds.</li>` : `<li><b>${n - count('any')}</b> packs have a <b>fixed rarity</b>; the <b>🎲 ${count('any')}</b> others can hold <b>any rarity</b>, even an extra Legendary.</li>`}
               <li><b>${bp}</b> packs of batters first, then <b>${pp}</b> of pitchers.</li>
               <li>Each pack shows <b>${PACK_OPTIONS} cards</b>: keep one.</li>
-              <li><b>${PACK_DRAFT_REROLLS} rerolls</b> for the whole box.${hide ? '' : ' <b>LEFT IN THE BOX</b> shows what is still to come.'}</li>
+              <li><b>${PACK_DRAFT_REROLLS} rerolls</b> for the whole box.${hide ? '' : ' <b>LEFT IN THE BOX</b> shows what is still to come.'}</li>`}
             </ul>
             <button class="btn bx-go" id="c162-bx-go">📦 OPEN THE FIRST PACK ➔</button>
             </div>
