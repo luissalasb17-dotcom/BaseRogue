@@ -1034,9 +1034,11 @@ var c162NonStop = window.c162NonStop;
   // position nobody plays yet, a starter while the rotation is short), with some noise so he is
   // not perfect (RIVAL_BOX_NOISE OVR points). Roster 14 bats + 11 arms like the user's.
   const RIVAL_BOX_NOISE = 6;
+  // The rivals' box: the same five packs as the user's (a box without Premium was tried, Nov 2026, and undone).
+  const RIVAL_BOX_TYPES = ['Premium', 'Hobby', 'Retail', 'Wax', 'any'];
   function buildBoxRoster(taken) {
     const bats = getBatterPool(), pits = getPitcherPool();
-    const box = BIG_PACK_TYPES.slice().sort(() => Math.random() - 0.5);
+    const box = (window.__rivalBox || RIVAL_BOX_TYPES).slice().sort(() => Math.random() - 0.5);
     const myB = [], myP = [], capB = 9 + BENCH_SIZE, capP = 5 + ROSTER_RP;
     const FIELD = ['C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF'];
     const draw = (pool, rar, ok) => {
@@ -2412,7 +2414,10 @@ var c162NonStop = window.c162NonStop;
     Premium: [0.00, 0.15, 0.45, 0.25, 0.10, 0.05],
     any:     [0.35, 0.30, 0.20, 0.10, 0.04, 0.01]
   };
-  const rollBigRarity = type => { const o = (window.__bigOdds || BIG_PACK_ODDS)[type] || BIG_PACK_ODDS.any; let x = Math.random(); for (let i = 0; i < o.length; i++) { x -= o[i]; if (x < 0) return PACK_RARS[i]; } return 'Common'; };
+  // The user's box uses the same odds as the rivals' (better odds only for the user were measured,
+  // Nov 2026: 90-94 wins against 85-87, and the user kept them equal).
+  const USER_PACK_ODDS = BIG_PACK_ODDS;
+  const rollBigRarity = (type, table) => { const T = table || (window.__bigOdds || BIG_PACK_ODDS); const o = T[type] || T.any; let x = Math.random(); for (let i = 0; i < o.length; i++) { x -= o[i]; if (x < 0) return PACK_RARS[i]; } return 'Common'; };
   const BIG_PACK_CARDS = 10, BIG_PACK_KEEP = 5, BIG_REROLLS = 1, BIG_BAT_SHARE = 0.56;
   const PACK_OPTIONS = 3; // cards shown in each pack; the player keeps one
   const PACK_FREE_CARDS = 1; // how many of them ignore the positions the roster still needs
@@ -9733,7 +9738,7 @@ var c162NonStop = window.c162NonStop;
     startBigPacksDraft() {
       this._franchiseReset();
       this.setModeConfig({ type: 'packs', label: '📦 HOBBY PACKS DRAFT', desc: 'Hobby Box Draft' });
-      const box = BIG_PACK_TYPES.slice().sort(() => Math.random() - 0.5);
+      const box = BIG_PACK_TYPES.slice(); // fixed order (user, Nov 2026): Premium, Hobby, Retail, Wax, Mystery
       this._big = { box, i: 0, used: new Set(), cards: null, sel: [], open: false, dealt: false, rerolls: BIG_REROLLS, pick: null,
         slots: { lineup: {}, bench: Array(BENCH_SIZE).fill(null), sp: Array(5).fill(null), rp: Array(ROSTER_RP).fill(null) } };
       this._packDraft = null;
@@ -9747,7 +9752,7 @@ var c162NonStop = window.c162NonStop;
       const taken = new Set(B.used), bats = getBatterPool(), pits = getPitcherPool();
       const cards = Array.from({ length: BIG_PACK_CARDS }, () => {
         const pool = Math.random() < BIG_BAT_SHARE ? bats : pits;
-        const rar = rollBigRarity(type);
+        const rar = rollBigRarity(type, window.__userOdds || USER_PACK_ODDS);
         let free = pool.filter(p => (p.rarity || 'Common') === rar && !taken.has(personId(p)));
         if (!free.length) free = pool.filter(p => !taken.has(personId(p)));
         const c = free[Math.floor(Math.random() * free.length)];
@@ -9936,7 +9941,7 @@ var c162NonStop = window.c162NonStop;
       const rail = B.box.map((t, k) => { const f = PACK_TIER_INFO[t] || PACK_TIER_INFO.any; return `<span class="bp-rail-p ${k < B.i ? 'done' : k === B.i ? 'cur' : ''} t-${t}" title="${f.name}">${k < B.i ? '✓' : f.icon}<small>${f.name.replace(' PACK', '')}</small></span>`; }).join('');
       const head = `<div class="bp-head">
           <div class="bp-title"><small>HOBBY BOX · PACK ${B.i + 1} OF ${B.box.length}</small><b>${info.icon} ${info.name}</b><em>${info.hint}</em>
-            <div class="bp-odds-bar" title="Each card rolls its own rarity with these odds">${(BIG_PACK_ODDS[type] || BIG_PACK_ODDS.any).map((v, k) => v > 0 ? `<span style="--c:${['#9aa3ad', '#4ade80', '#60a5fa', '#c084fc', '#fb3b5c', '#fbbf24'][k]}"><i></i>${PACK_RARS[k]} <b>${Math.round(v * 1000) / 10}%</b></span>` : '').join('')}</div></div>
+            <div class="bp-odds-bar" title="Each card rolls its own rarity with these odds">${(USER_PACK_ODDS[type] || USER_PACK_ODDS.any).map((v, k) => v > 0 ? `<span style="--c:${['#9aa3ad', '#4ade80', '#60a5fa', '#c084fc', '#fb3b5c', '#fbbf24'][k]}"><i></i>${PACK_RARS[k]} <b>${Math.round(v * 1000) / 10}%</b></span>` : '').join('')}</div></div>
           <div class="bp-rail">${rail}</div>
           <div class="bp-count"><span>🎲 REROLL <b>${B.rerolls}</b></span></div>
         </div>`;
@@ -10076,7 +10081,7 @@ var c162NonStop = window.c162NonStop;
       }).join('');
       const RCOL = ['#9aa3ad', '#4ade80', '#60a5fa', '#c084fc', '#fb3b5c', '#fbbf24'], RNAME = ['Common', 'Uncommon', 'Rare', 'Epic', 'Elite', 'Legendary'];
       const legend = `<div class="bxk-row">${kinds.map(k => {
-        const o = (big ? BIG_PACK_ODDS : PACK_TIER_ODDS)[k], inf = PACK_TIER_INFO[k], src = art(k);
+        const o = (big ? USER_PACK_ODDS : PACK_TIER_ODDS)[k], inf = PACK_TIER_INFO[k], src = art(k);
         const bar = o.map((v, i) => v > 0 ? `<i style="flex:${v};background:${RCOL[i]}" title="${RNAME[i]} ${Math.round(v * 1000) / 10}%"></i>` : '').join('');
         const top2 = o.map((v, i) => [v, i]).sort((a, b) => b[0] - a[0]).slice(0, 2).sort((a, b) => a[1] - b[1]).map(([, i]) => `<b style="color:${RCOL[i]}">${RNAME[i]}</b>`).join(' & ');
         return `<div class="bxk pk-${k.toLowerCase()}">
@@ -10118,7 +10123,7 @@ var c162NonStop = window.c162NonStop;
             ${legend}
             <div class="bx-foot">
             <ul class="bx-rules">
-              ${big ? `<li>One pack of <b>each kind</b>, in random order: you see which one when it hits the table.</li>
+              ${big ? `<li>One pack of <b>each kind</b>, from the best down: <b>Premium, Hobby, Retail, Wax</b>, and the <b>Mystery</b> last.</li>
               <li>Every pack has <b>${BIG_PACK_CARDS} cards</b>, batters and pitchers mixed, each with its own rarity roll.</li>
               <li>Keep <b>${BIG_PACK_KEEP} of each pack</b>. A card needs a free spot on your 25 (9 field, 5 bench, 5 SP, 6 RP): plan the lineup, the rotation and the pen.</li>
               <li><b>${BIG_REROLLS} reroll</b> for the whole box. Spots still empty at the end get a Common walk-on.</li>` : `${hide ? `<li>The box mixes the five kinds above at random: you see which one when it hits the table.</li><li>Every card rolls its own rarity, so <b>anything can come out of any pack</b>; a better pack just tilts the odds.</li>` : `<li><b>${n - count('any')}</b> packs have a <b>fixed rarity</b>; the <b>🎲 ${count('any')}</b> others can hold <b>any rarity</b>, even an extra Legendary.</li>`}
