@@ -2073,7 +2073,9 @@ var c162NonStop = window.c162NonStop;
       const ovr = p.ovr || 50, def = gloveOf(p);
       // DH wastes a glove (user, Nov 2026: John Ward, a great shortstop, sat at DH): a good glove costs
       // there up to ~1.5 OVR, enough to send him to the field when someone else can move.
-      if (slot === 'DH') return ovr - 0.02 * Math.max(0, def - 40);
+      // ...and the DH is picked by his bat, not his OVR (user, Nov 2026): contact / power / eye
+      // turned into OVR units (fit on the pool: OVR = 0.623 * bat + 42.45, r 0.93).
+      if (slot === 'DH') return 0.623 * (0.4 * (p.con || 50) + 0.35 * (p.pwr || 50) + 0.25 * (p.eye || 50)) + 42.45 - 0.02 * Math.max(0, def - 40);
       if (canPlayerFillPrimary(p, slot) || window.isDhHome(p, slot)) return ovr + GLOVE_WEIGHT[slot] * 0.04 * (def - 50);
       if (canPlayerFillSlot(p, slot)) return ovr + GLOVE_WEIGHT[slot] * 0.04 * (def * 0.85 - 50) - 0.35;
       if (!allowOutOfPosition) return -Infinity;
