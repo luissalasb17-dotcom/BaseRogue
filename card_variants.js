@@ -3,7 +3,7 @@
 // Presentation only: decorates what createCardHTML renders. Styles in card_variants.css.
 (function () {
   'use strict';
-  if (/[?&]proto=/.test(location.search)) return;   // the design mockups decorate their own cards
+  if (/[?&]proto=/.test(location.search) && !/[?&]proto=gallery/.test(location.search)) return;   // the design mockups decorate their own cards
 
   const SEED = (Math.random() * 4294967296) >>> 0;
   const D = {
@@ -35,7 +35,8 @@
     const id = c.dataset.pid || c.dataset.name || '';
     const opts = [null].concat(D[era] || []);
     const h = hash(id + '|' + year);
-    const pick = opts[h % opts.length];
+    const fv = c.dataset.forceV; // gallery: a given design ('' = the plain one)
+    const pick = fv !== undefined ? (opts.find(o => o && o[0] === fv) || null) : opts[h % opts.length];
     if (!pick) return;
     const v = pick[0], name = c.dataset.name || '', pos = c.dataset.pos || '';
     const ft = c.querySelector('.pc2-ft'), team = ((ft && ft.firstElementChild && ft.firstElementChild.textContent) || '').trim();
@@ -75,7 +76,10 @@
     if (ser) { ser.textContent = pick[3] + ' · ' + c.dataset.year; if (v === 'ring59') { const row = c.querySelector('.pgv-59'); if (row) row.prepend(ser); } }
   }
 
-  const scan = root => { if (root.matches && root.matches('.pc2')) decorate(root); if (root.querySelectorAll) root.querySelectorAll('.pc2').forEach(decorate); };
+  // OVR tone: a light or dark halo behind the number, so it reads on any design and background
+  const tone = c => { const o = c.querySelector('.pc2-ovr'); if (!o || o.dataset.tone) return; const m = (getComputedStyle(o).color.match(/[\d.]+/g) || []).map(Number); if (m.length < 3) return; const L = (0.2126 * m[0] + 0.7152 * m[1] + 0.0722 * m[2]) / 255; o.dataset.tone = L < 0.5 ? 'dark' : 'light'; };
+  const both = c => { decorate(c); tone(c); };
+  const scan = root => { if (root.matches && root.matches('.pc2')) both(root); if (root.querySelectorAll) root.querySelectorAll('.pc2').forEach(both); };
   const start = () => {
     scan(document.body);
     new MutationObserver(ms => ms.forEach(m => m.addedNodes.forEach(n => { if (n.nodeType === 1) scan(n); }))).observe(document.body, { childList: true, subtree: true });

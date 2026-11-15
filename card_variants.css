@@ -934,3 +934,20 @@
 .player-card.pc2.pc2.pc2.pc2.pc2.pc2-e-bighair.pc2-v-premium .pc2-pos { top: 66px !important; }
 /* premium: the team strip is the front's ::before, which Rare+ cards also use for their hover shine (opacity 0): keep the strip visible */
 .player-card.pc2.pc2.pc2.pc2.pc2.pc2-e-bighair.pc2-v-premium .pc2-front::before { opacity: 1 !important; mix-blend-mode: normal !important; z-index: 1 !important; inset: 0 0 0 auto !important; width: 21px !important; transition: none; }
+
+/* Every design shows the position top-left and an OVR you can read (user, Nov 2026) */
+/* pennant: the cap with the position goes up to the top-left corner (user) */
+.player-card.pc2.pc2.pc2.pc2.pc2.pc2-e-bighair.pc2-v-pennant .pgv-cap { right: auto !important; bottom: auto !important; left: -7px !important; top: -21px !important; z-index: 7; }
+/* premium: the position in a white tab like the OVR shield, top-left */
+.player-card.pc2.pc2.pc2.pc2.pc2.pc2-e-bighair.pc2-v-premium .pc2-front .pc2-top .pc2-pos { position: absolute !important; top: 4px !important; left: 4px !important; right: auto !important; bottom: auto !important; z-index: 6; transform: none !important; rotate: none !important; writing-mode: horizontal-tb !important;
+  background: #fdfdfb !important; color: color-mix(in srgb, var(--tc, #0a5) 75%, #000) !important; font: 700 10px 'Oswald', sans-serif !important; letter-spacing: .5px !important; padding: 2px 5px !important; border: 1px solid color-mix(in srgb, var(--tc, #0a5) 75%, #000); border-radius: 2px !important; box-shadow: 0 1px 2px rgba(0,0,0,.4); }
+/* vert07: black card, the OVR in light rarity colors */
+.player-card.pc2.pc2.pc2.pc2.pc2.pc2-e-efficiency.pc2-v-vert07 .pc2-ovr { color: #fff !important; text-shadow: 0 1px 2px #000 !important; }
+.player-card.pc2.pc2.pc2.pc2.pc2.pc2-e-efficiency.pc2-v-vert07.rarity-Uncommon .pc2-ovr { color: #4ade80 !important; }
+.player-card.pc2.pc2.pc2.pc2.pc2.pc2-e-efficiency.pc2-v-vert07.rarity-Rare .pc2-ovr { color: #dbe3e8 !important; }
+.player-card.pc2.pc2.pc2.pc2.pc2.pc2-e-efficiency.pc2-v-vert07.rarity-Epic .pc2-ovr { color: #c9a6ff !important; }
+.player-card.pc2.pc2.pc2.pc2.pc2.pc2-e-efficiency.pc2-v-vert07.rarity-Elite .pc2-ovr { color: #fb7185 !important; }
+.player-card.pc2.pc2.pc2.pc2.pc2.pc2-e-efficiency.pc2-v-vert07.rarity-Legendary .pc2-ovr { color: #f3d27a !important; }
+/* halo of the opposite tone behind the OVR (tone set by card_variants.js from its own color) */
+.player-card.pc2 .pc2-ovr[data-tone="dark"] { text-shadow: 0 0 2px rgba(255,248,232,.95), 0 0 4px rgba(255,248,232,.8) !important; }
+.player-card.pc2 .pc2-ovr[data-tone="light"] { text-shadow: 0 0 2px rgba(0,0,0,.95), 0 0 4px rgba(0,0,0,.75) !important; }
