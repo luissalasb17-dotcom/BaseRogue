@@ -852,7 +852,7 @@ var c162NonStop = window.c162NonStop;
   // a backup catcher first, then a middle infielder and an outfielder when the franchise has
   // them, then the best bats left. Same eligibility windows as the starting lineup.
   const BENCH_SIZE = 5;
-  const ROSTER_RP = 7; // 26-man roster like today's MLB (user, Oct 2026): 9 + 5 bench + 5 SP + 7 RP
+  const ROSTER_RP = 6; // 25-man roster (user, Nov 2026; MLB 1968-2019): 9 + 5 bench + 5 SP + 6 RP
   function buildFranchiseBench(code, decade, team, taken) {
     const history = (window.PlayerTeamHistory && window.PlayerTeamHistory.batters) || {};
     const pool = getBatterPool();
@@ -2334,6 +2334,13 @@ var c162NonStop = window.c162NonStop;
   // Applies to every team in the regular season, the user included.
   // Games a regular plays in a season, normal vs as an Iron Man (measured over full seasons).
   const IRON_GAMES = { C: [135, 154], SS: [151, 159], '2B': [151, 159], CF: [151, 159], '3B': [152, 160], LF: [154, 160], RF: [154, 160], '1B': [156, 161], DH: [158, 161] };
+  // Big packs (user, Nov 2026, prototype): the Hobby Box is 5 packs of 10 cards, one of each
+  // type (Premium, Hobby, Retail, Wax, Mystery) in random order; batters and pitchers come mixed,
+  // positions at random, and the player keeps 5 cards of each pack. 1 reroll for the whole box.
+  // Rule A: a card is kept only into a free spot of the 25 (9 field, 5 bench, 5 SP, 6 RP).
+  const BIG_PACKS = true;
+  const BIG_PACK_TYPES = ['Premium', 'Hobby', 'Retail', 'Wax', 'any'];
+  const BIG_PACK_CARDS = 10, BIG_PACK_KEEP = 5, BIG_REROLLS = 1, BIG_BAT_SHARE = 0.56;
   const PACK_OPTIONS = 3; // cards shown in each pack; the player keeps one
   const PACK_FREE_CARDS = 1; // how many of them ignore the positions the roster still needs
   const PACK_DRAFT_REROLLS = 3; // total pack rerolls available across the entire 25-pack draft
@@ -2384,7 +2391,7 @@ var c162NonStop = window.c162NonStop;
   // 62 anywhere, a 20 drops to 10. The flat 25 lifted bad gloves and flattened great ones.
   const OUT_OF_POSITION_SHARE = 0.5;
   const offPosDef = p => Math.round((Number(p && (p.def !== undefined ? p.def : p.defense_val)) || 50) * OUT_OF_POSITION_SHARE);
-  const ROSTER_SIZE = 9 + BENCH_SIZE + 5 + ROSTER_RP; // 26
+  const ROSTER_SIZE = 9 + BENCH_SIZE + 5 + ROSTER_RP; // 25
   // Bench moves during a game (the bench used to play only on rest days and in blowouts):
   //  - pinch hitter: from the 7th on, in a close game (down by up to PH_MAX_DEFICIT, tied or up
   //    one), with a man on base or leading off, the best bat left on the bench hits for a
@@ -9222,7 +9229,7 @@ var c162NonStop = window.c162NonStop;
               <div>
                 <span class="c162-mode-badge" style="background: rgba(110, 231, 160, 0.2); color: #6ee7a0; border: 1px solid rgba(110, 231, 160, 0.5);">NEW</span>
                 <div class="c162-mode-title" style="color: #6ee7a0;">🐍 SNAKE DRAFT</div>
-                <div class="c162-mode-desc">A real draft: 32 teams, 26 rounds, snake order. The season pool is drawn from every card, your turn is random, and you pick when you're on the clock. A balanced league where your picks make the difference.</div>
+                <div class="c162-mode-desc">A real draft: 32 teams, 25 rounds, snake order. The season pool is drawn from every card, your turn is random, and you pick when you're on the clock. A balanced league where your picks make the difference.</div>
               </div>
               <button id="btn-start-snake-mode" class="btn" style="width: 100%; margin-top: 14px; padding: 11px 14px; font-size: 10px; font-family: 'Press Start 2P', monospace; background: linear-gradient(135deg, #6ee7a0, #15803d); color: #04140b; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">🐍 START THE DRAFT</button>
             </div>
@@ -9619,10 +9626,11 @@ var c162NonStop = window.c162NonStop;
     // roster and the box only holds the packs for the open spots (14 - kept bats, 12 - kept arms).
     startPacksDraftMode(opts = null) {
       const o = opts || {};
+      if (BIG_PACKS && !o.franchise) return this.startBigPacksDraft();
       if (!o.franchise) this._franchiseReset(); // a new run starts with an empty league history
-      this.setModeConfig({ type: 'packs', label: '📦 HOBBY PACKS DRAFT', desc: '26-Pack Universe Draft' });
+      this.setModeConfig({ type: 'packs', label: '📦 HOBBY PACKS DRAFT', desc: 'Hobby Box Draft' });
       const keepBats = (o.keepBats || []).slice(), keepPits = (o.keepPits || []).slice();
-      const batPacks = Math.max(0, 14 - keepBats.length), pitPacks = Math.max(0, 12 - keepPits.length);
+      const batPacks = Math.max(0, 14 - keepBats.length), pitPacks = Math.max(0, 11 - keepPits.length);
       this._packDraft = {
         stage: batPacks ? 'batters' : 'pitchers',
         currentPack: 0,
@@ -9645,8 +9653,222 @@ var c162NonStop = window.c162NonStop;
       this.renderPacksDraft();
       this._showBoxIntro();
     },
+    // ── Big packs (5 × 10, keep 5) ─────────────────────────────────────────
+    // Rule A (user, Nov 2026): the roster is 25 spots (9 field, 5 bench, 5 SP, 6 RP); a card can
+    // only be kept if there is a free spot for it. Batters fit any batter spot (out of position
+    // if needed), pitchers any pitching spot. Packs come as they come: no bending.
+    startBigPacksDraft() {
+      this._franchiseReset();
+      this.setModeConfig({ type: 'packs', label: '📦 HOBBY PACKS DRAFT', desc: 'Hobby Box Draft' });
+      const box = BIG_PACK_TYPES.slice().sort(() => Math.random() - 0.5);
+      this._big = { box, i: 0, used: new Set(), cards: null, sel: [], open: false, dealt: false, rerolls: BIG_REROLLS, pick: null,
+        slots: { lineup: {}, bench: Array(BENCH_SIZE).fill(null), sp: Array(5).fill(null), rp: Array(ROSTER_RP).fill(null) } };
+      this._packDraft = null;
+      this.showScreen('screen-challenge-pack');
+      this._rollBigPack();
+      this.renderBigPack();
+    },
+    _rollBigPack() {
+      const B = this._big, type = B.box[B.i];
+      const taken = new Set(B.used), bats = getBatterPool(), pits = getPitcherPool();
+      const cards = Array.from({ length: BIG_PACK_CARDS }, () => {
+        const pool = Math.random() < BIG_BAT_SHARE ? bats : pits;
+        const rar = window.rollPackTierRarity ? window.rollPackTierRarity(type) : 'Common';
+        let free = pool.filter(p => (p.rarity || 'Common') === rar && !taken.has(personId(p)));
+        if (!free.length) free = pool.filter(p => !taken.has(personId(p)));
+        const c = free[Math.floor(Math.random() * free.length)];
+        if (c) taken.add(personId(c));
+        return c;
+      }).filter(Boolean);
+      const ord = { Legendary: 0, Elite: 1, Epic: 2, Rare: 3, Uncommon: 4, Common: 5 };
+      cards.sort((a, b) => (ord[a.rarity] ?? 5) - (ord[b.rarity] ?? 5) || (b.ovr || 0) - (a.ovr || 0));
+      B.cards = cards; B.sel = [];
+    },
+    // Puts cards into the free spots of a copy of the board: batters to their position, then a
+    // secondary one, the DH, the bench and last a field spot out of position; starters to the
+    // rotation (then the pen), relievers to the pen (then the rotation).
+    _bigPlace(slots, cards) {
+      const S = { lineup: Object.assign({}, slots.lineup), bench: slots.bench.slice(), sp: slots.sp.slice(), rp: slots.rp.slice() };
+      const ok = [];
+      cards.forEach(c => {
+        let done = false;
+        if (c.role) {
+          const order = String(c.role).toUpperCase() === 'SP' ? ['sp', 'rp'] : ['rp', 'sp'];
+          for (const k of order) { const j = S[k].indexOf(null); if (j !== -1) { S[k][j] = c; done = true; break; } }
+        } else {
+          const open = SLOTS.filter(s => !S.lineup[s]);
+          const spot = open.find(s => s !== 'DH' && canPlayerFillPrimary(c, s)) || open.find(s => s !== 'DH' && canPlayerFillSlot(c, s)) || (open.includes('DH') ? 'DH' : null);
+          if (spot) { S.lineup[spot] = c; done = true; }
+          else { const j = S.bench.indexOf(null); if (j !== -1) { S.bench[j] = c; done = true; } else if (open.length) { S.lineup[open[0]] = c; done = true; } }
+        }
+        ok.push(done);
+      });
+      return { S, ok };
+    },
+    _bigFree(slots) {
+      const bat = SLOTS.filter(s => !slots.lineup[s]).length + slots.bench.filter(x => !x).length;
+      const pit = slots.sp.filter(x => !x).length + slots.rp.filter(x => !x).length;
+      return { bat, pit };
+    },
+    _bigCanPick(c) {
+      const B = this._big;
+      const f = this._bigFree(this._bigPlace(B.slots, B.sel.map(i => B.cards[i])).S);
+      return c.role ? f.pit > 0 : f.bat > 0;
+    },
+    _bigConfirm() {
+      const B = this._big;
+      const picked = B.sel.map(i => B.cards[i]);
+      B.slots = this._bigPlace(B.slots, picked).S;
+      picked.forEach(c => B.used.add(personId(c)));
+      B.i++; B.open = false; B.dealt = false; B.cards = null; B.sel = []; B.pick = null;
+      if (window.AudioManager && AudioManager.play) AudioManager.play('card_deal');
+      if (B.i >= B.box.length) { this._bigFinish(); return; }
+      this._rollBigPack();
+      this.renderBigPack();
+    },
+    // How many of this pack can still be kept (the last packs may not carry enough of what is open).
+    _bigKeepN() {
+      const B = this._big, f = this._bigFree(B.slots);
+      const nb = B.cards.filter(c => !c.role).length, np = B.cards.length - nb;
+      return Math.min(BIG_PACK_KEEP, Math.min(nb, f.bat) + Math.min(np, f.pit));
+    },
+    _bigFinish() {
+      const B = this._big, s = B.slots;
+      // Spots left empty (the packs ran out of what was open): a Common walk-on fills each one.
+      const taken = new Set(B.used), commons = (pool, ok) => { const f = pool.filter(p => (p.rarity || 'Common') === 'Common' && !taken.has(personId(p)) && ok(p)); const c = f[Math.floor(Math.random() * f.length)]; if (c) taken.add(personId(c)); return c || null; };
+      SLOTS.forEach(sl => { if (!s.lineup[sl]) s.lineup[sl] = commons(getBatterPool(), p => sl === 'DH' || canPlayerFillPrimary(p, sl)); });
+      s.bench = s.bench.map(x => x || commons(getBatterPool(), () => true));
+      s.sp = s.sp.map(x => x || commons(getPitcherPool(), p => String(p.role).toUpperCase() === 'SP'));
+      s.rp = s.rp.map(x => x || commons(getPitcherPool(), p => String(p.role).toUpperCase() !== 'SP'));
+      const bats = [...Object.values(s.lineup), ...s.bench].filter(Boolean), pits = [...s.sp, ...s.rp].filter(Boolean);
+      this._packDraft = { pulledBatters: bats, pulledPitchers: pits, usedKeys: new Set(),
+        manualSlots: { lineup: Object.assign({}, s.lineup), bench: s.bench.slice(), sp: s.sp.slice(), rp: s.rp.slice() } };
+      this._big = null;
+      this._showTeamPhoto(() => this.finishPacksDraftAndStart());
+    },
+    _bigAutoPick() {
+      const B = this._big;
+      B.sel = [];
+      B.cards.map((c, i) => i).sort((a, b) => (B.cards[b].ovr || 0) - (B.cards[a].ovr || 0))
+        .forEach(i => { if (B.sel.length < BIG_PACK_KEEP && this._bigCanPick(B.cards[i])) B.sel.push(i); });
+    },
+    // Board spots: 'L:C' … 'L:DH', 'bench:0', 'sp:0', 'rp:0'.
+    _bigGet(S, id) { const [k, i] = id.split(':'); return k === 'L' ? S.lineup[i] : S[k][+i]; },
+    _bigSet(S, id, v) { const [k, i] = id.split(':'); if (k === 'L') S.lineup[i] = v || null; else S[k][+i] = v || null; },
+    _bigSwap(a, b) {
+      const B = this._big, S = B.slots;
+      const isPit = id => /^(sp|rp):/.test(id);
+      if (isPit(a) !== isPit(b)) return false;
+      const x = this._bigGet(S, a), y = this._bigGet(S, b);
+      this._bigSet(S, a, y); this._bigSet(S, b, x);
+      return true;
+    },
+    _bigBoardHTML(S, ghosts) {
+      const B = this._big;
+      const chip = (id, label) => {
+        const c = this._bigGet(S, id), slot = id.startsWith('L:') ? id.slice(2) : null;
+        const ghost = c && ghosts.has(c), sel = B.pick === id;
+        const warn = c && slot && slot !== 'DH' && !canPlayerFillSlot(c, slot);
+        const sec = c && slot && slot !== 'DH' && !warn && !canPlayerFillPrimary(c, slot);
+        const r = c ? (c.rarity || 'Common').toLowerCase() : '';
+        return `<button class="bpb-chip ${c ? 'r-' + r : 'empty'} ${ghost ? 'ghost' : ''} ${sel ? 'sel' : ''} ${warn ? 'warn' : ''}" data-bpb="${id}" title="${c ? cleanName(c) + ' · ' + (c.role || c.pos) + (warn ? ' · OUT OF POSITION: half his glove' : sec ? ' · secondary position' : '') : 'Empty: ' + label}">
+          <small>${label}</small>${c ? `<b>${cleanName(c).split(' ').slice(-1)[0]}</b><i>${Math.floor(c.ovr || 0)}${warn ? ' ⚠' : sec ? '*' : ''}</i>` : '<b>—</b>'}</button>`;
+      };
+      const slotHTML = {}; SLOTS.forEach(s => { slotHTML[s] = chip('L:' + s, s); });
+      const field = window.TeamBoard && TeamBoard.fieldHTML ? TeamBoard.fieldHTML(slotHTML, chip('sp:0', 'SP1'), 'bpb-field')
+        : `<div class="bpb-row">${SLOTS.map(s => slotHTML[s]).join('')}</div>`;
+      const row = (k, n, lab) => `<div class="bpb-row">${Array.from({ length: n }, (_, i) => chip(`${k}:${i}`, lab(i))).join('')}</div>`;
+      const f = this._bigFree(S);
+      return `<div class="bpb">
+        <div class="bpb-top"><b>YOUR TEAM</b><span>${25 - f.bat - f.pit}/25 · open: ${f.bat} bat · ${f.pit} arm</span></div>
+        ${field}
+        <div class="bpb-t">🛋️ BENCH</div>${row('bench', BENCH_SIZE, i => 'BN' + (i + 1))}
+        <div class="bpb-t">🧢 ROTATION</div><div class="bpb-row">${[1, 2, 3, 4].map(i => chip(`sp:${i}`, 'SP' + (i + 1))).join('')}</div>
+        <div class="bpb-t">🔥 BULLPEN</div>${row('rp', ROSTER_RP, i => (i === 0 ? 'CL' : 'RP' + i))}
+        <div class="bpb-hint">${B.pick ? 'Tap another spot to swap.' : 'Dashed = the cards you are about to keep. Tap two spots to swap them.'}</div>
+      </div>`;
+    },
+    renderBigPack() {
+      const B = this._big, el = document.getElementById('challenge162-pack-container');
+      if (!B || !el) return;
+      const type = B.box[B.i], info = PACK_TIER_INFO[type] || PACK_TIER_INFO.any;
+      const rail = B.box.map((t, k) => { const f = PACK_TIER_INFO[t] || PACK_TIER_INFO.any; return `<span class="bp-rail-p ${k < B.i ? 'done' : k === B.i ? 'cur' : ''} t-${t}" title="${f.name}">${k < B.i ? '✓' : f.icon}<small>${f.name.replace(' PACK', '')}</small></span>`; }).join('');
+      const head = `<div class="bp-head">
+          <div class="bp-title"><small>HOBBY BOX · PACK ${B.i + 1} OF ${B.box.length}</small><b>${info.icon} ${info.name}</b><em>${info.hint}</em></div>
+          <div class="bp-rail">${rail}</div>
+          <div class="bp-count"><span>🎲 REROLL <b>${B.rerolls}</b></span></div>
+        </div>`;
+      const ghostCards = B.open ? B.sel.map(i => B.cards[i]) : [];
+      const preview = this._bigPlace(B.slots, ghostCards).S;
+      let body;
+      if (!B.open) {
+        body = `<div class="d2-table bp-table"><div class="bp-sealed-wrap"><div class="draft-pack draft-pack--${info.theme} bp-pack3d"></div>
+          <button class="btn c162-cta bp-open">✂ OPEN THE ${info.name}</button>
+          <p class="bp-odds">${BIG_PACK_CARDS} cards, batters and pitchers mixed. Keep ${BIG_PACK_KEEP}.</p></div></div>`;
+      } else {
+        const cards = B.cards.map((c, i) => {
+          const on = B.sel.includes(i), can = on || (B.sel.length < BIG_PACK_KEEP && this._bigCanPick(c));
+          return `<div class="bp-card ${on ? 'on' : ''} ${can ? '' : 'off'}" data-bp="${i}" style="--i:${i}">${window.createCardHTML ? window.createCardHTML(c, c.role || c.pos) : cleanName(c)}<span class="bp-tick">✓ KEEP</span></div>`;
+        }).join('');
+        const keep = this._bigKeepN();
+        body = `<div class="d2-table bp-table"><div class="bp-grid ${B.dealt ? 'dealt' : ''}">${cards}</div></div>
+          <div class="bp-actions">
+            <span class="bp-pick">KEEP <b>${B.sel.length}/${keep}</b> <small>tap a card to keep it · right click / long press to see it big</small></span>
+            <button class="btn bp-btn" data-bp-act="reroll" ${B.rerolls ? '' : 'disabled'}>🎲 REROLL PACK (${B.rerolls})</button>
+            <button class="btn c162-cta" data-bp-act="ok" ${B.sel.length === keep ? '' : 'disabled'}>${B.i === B.box.length - 1 ? '✔ CLOSE THE BOX' : `✔ KEEP THESE ${keep} ▶`}</button>
+          </div>`;
+      }
+      if (B.open) B.dealt = true;
+      el.innerHTML = `<div class="bp-wrap">${head}<div class="bp-main"><div class="bp-left">${body}</div><div class="bp-right">${this._bigBoardHTML(preview, new Set(ghostCards))}</div></div></div>`;
+      const openIt = () => { B.open = true; this.renderBigPack(); if (window.AudioManager && AudioManager.play) AudioManager.play('card_deal'); };
+      const ob = el.querySelector('.bp-open'); if (ob) ob.onclick = openIt;
+      const p3 = el.querySelector('.bp-pack3d');
+      if (p3) {
+        if (window.DraftPack3D) {
+          window.DraftPack3D.mount(p3, { theme: info.theme, tier: info.tier, badge: `${B.i + 1}/${B.box.length}`, tagline: info.name, fine: `HOBBY BOX  ·  ${BIG_PACK_CARDS} CARDS  ·  KEEP ${BIG_PACK_KEEP}` });
+          p3.onclick = () => { const op = window.DraftPack3D.open(p3); if (!op) return openIt(); op.then(() => { if (this._big === B) openIt(); }); };
+        } else p3.style.display = 'none';
+      }
+      const dex = c => { if (c && window.BaseballDex && BaseballDex.showDetail) BaseballDex.showDetail(dexCard(c)); };
+      el.querySelectorAll('[data-bp]').forEach(d => {
+        const i = +d.dataset.bp;
+        let lp = null, fired = false;
+        d.onclick = e => {
+          if (fired) { fired = false; return; }
+          if (e.target.closest('.pc2-flip')) return;
+          const at = B.sel.indexOf(i);
+          if (at !== -1) B.sel.splice(at, 1);
+          else if (B.sel.length < BIG_PACK_KEEP && this._bigCanPick(B.cards[i])) B.sel.push(i);
+          else return;
+          this.renderBigPack();
+        };
+        d.oncontextmenu = e => { e.preventDefault(); dex(B.cards[i]); };
+        d.addEventListener('touchstart', () => { lp = setTimeout(() => { fired = true; dex(B.cards[i]); }, 550); }, { passive: true });
+        d.addEventListener('touchend', () => clearTimeout(lp));
+        d.addEventListener('touchmove', () => clearTimeout(lp), { passive: true });
+      });
+      el.querySelectorAll('[data-bpb]').forEach(b => {
+        const id = b.dataset.bpb;
+        b.onclick = () => {
+          const c = this._bigGet(B.slots, id);
+          if (!B.pick) { if (c) B.pick = id; else return; }
+          else if (B.pick === id) B.pick = null;
+          else { if (this._bigSwap(B.pick, id) && window.AudioManager && AudioManager.play) AudioManager.play('card_deal'); B.pick = null; }
+          this.renderBigPack();
+        };
+        b.oncontextmenu = e => { e.preventDefault(); dex(this._bigGet(preview, id)); };
+      });
+      el.querySelectorAll('[data-bp-act]').forEach(b => {
+        b.onclick = () => {
+          const a = b.dataset.bpAct;
+          if (a === 'ok' && B.sel.length === this._bigKeepN()) this._bigConfirm();
+          else if (a === 'reroll' && B.rerolls > 0) { B.rerolls--; B.dealt = false; this._rollBigPack(); if (window.AudioManager && AudioManager.play) AudioManager.play('defense_dice_roll'); this.renderBigPack(); }
+        };
+      });
+    },
+
     _packOff(d) { return (d && d.stage === 'pitchers') ? (d.batPacks === undefined ? 14 : d.batPacks) : 0; },
-    _pitPacks(d) { return d && d.pitPacks !== undefined ? d.pitPacks : 12; },
+    _pitPacks(d) { return d && d.pitPacks !== undefined ? d.pitPacks : 11; },
 
     // Opening the hobby box (user, Oct 2026): before the first pack, a sealed box that opens on a
     // tap and spills its 26 packs by rarity, with what the box holds and how the draft works,
@@ -9667,7 +9889,7 @@ var c162NonStop = window.c162NonStop;
       const shown = r => (hide ? oddsN(r) : count(r));
       const packs = order.flatMap(r => Array.from({ length: shown(r) }, () => r));
       const n = nBox;
-      const bp = draft.batPacks === undefined ? 14 : draft.batPacks, pp = draft.pitPacks === undefined ? 12 : draft.pitPacks;
+      const bp = draft.batPacks === undefined ? 14 : draft.batPacks, pp = draft.pitPacks === undefined ? 11 : draft.pitPacks;
       // One printed pack per kind fans out of the box (Wax at the back, Premium in front), and below
       // each kind gets a tile: its pack, how many come in a box, and what is inside (rarity odds).
       const art = k => (window.DraftPack3D && window.DraftPack3D.art) ? window.DraftPack3D.art(PACK_TIER_INFO[k].theme, { tagline: PACK_TIER_INFO[k].name, badge: '', fine: '' }) : '';
@@ -9821,7 +10043,7 @@ var c162NonStop = window.c162NonStop;
               <div class="d2t-info">
                 <small>BOX 2 OF 2</small>
                 <h3>PITCHERS HOBBY BOX</h3>
-                <p>12 packs · 5 starters for the rotation and 7 arms for the bullpen (a closer and 6 relievers).</p>
+                <p>11 packs · 5 starters for the rotation and 6 arms for the bullpen (a closer and 5 relievers).</p>
                 <button id="btn-c162-start-pitchers-box" class="d2t-go">OPEN THE PITCHERS BOX</button>
               </div>
             </div>
@@ -10778,13 +11000,13 @@ var c162NonStop = window.c162NonStop;
         <div class="sd-main sdi-main">
           <div class="sd-board"><h4>${S.choose && !S.drawn ? 'PICK YOUR SPOT' : S.drawn ? 'DRAFT ORDER · ROUND 1' : 'THE POOL'}</h4>${S.choose && !S.drawn ? `<div class="sdi-spots">${Array.from({ length: n }, (_, i) => `<button data-sdspot="${i}">${ord(i + 1)}<small>then ${ord(n - i)}</small></button>`).join('')}</div>` : S.drawn ? order : `<div class="sdi-sum">
               <div><b>${count('Legendary')}</b><span class="r-legendary">LEGENDARY</span></div><div><b>${count('Elite')}</b><span class="r-elite">ELITE</span></div><div><b>${count('Epic')}</b><span class="r-epic">EPIC</span></div><div><b>${count('Rare')}</b><span class="r-rare">RARE</span></div><div><b>${count('Uncommon')}</b><span class="r-uncommon">UNCOMMON</span></div><div><b>${count('Common')}</b><span class="r-common">COMMON</span></div>
-            </div><p class="sdi-note">One player per field spot and team, 6 more hitters each for bench and DH, 5 starters and 7 relievers per team. Every one of them gets drafted.</p>`}</div>
+            </div><p class="sdi-note">One player per field spot and team, 6 more hitters each for bench and DH, 5 starters and 6 relievers per team. Every one of them gets drafted.</p>`}</div>
           <div class="sd-pool">
             <div class="sd-pool-h"><h4>SCOUT THE POOL</h4><span>${list.length} players</span></div>
             <div class="sd-chips">${chips.map(c => `<button data-sdf="${c}" class="${fil === c ? 'on' : ''}">${c}</button>`).join('')}</div>
             <div class="sd-list">${list.slice(0, 120).map(p => `<div class="sd-row ${rar(p)}">${face(p)}<span><b>${cleanName(p)}</b><small>${p.year || ''} · ${p.team || ''}${!snakeIsPitcher(p) && p.sec_pos ? ` · also ${p.sec_pos}` : ''}</small></span><em class="pos">${posOf(p)}</em><em class="ovr">${Math.floor(p.ovr || 0)}</em><button data-sddex="${keyOf(p)}" title="See the card">🔍</button></div>`).join('')}</div>
           </div>
-          <div class="sd-mine"><h4>HOW IT WORKS</h4><ol class="sdi-how"><li>32 teams, 26 rounds, snake order.</li><li>Rivals take the best player that fills a hole.</li><li>When you're on the clock, pick from what is left. Filters show your needs.</li><li>Your 26: 9 starters, 5 bench, 5 starters, 7 relievers.</li><li>Then Meet the Team and the season.</li></ol></div>
+          <div class="sd-mine"><h4>HOW IT WORKS</h4><ol class="sdi-how"><li>32 teams, 25 rounds, snake order.</li><li>Rivals take the best player that fills a hole.</li><li>When you're on the clock, pick from what is left. Filters show your needs.</li><li>Your 25: 9 starters, 5 bench, 5 starters, 6 relievers.</li><li>Then Meet the Team and the season.</li></ol></div>
         </div>
       </div>`;
       container.onclick = e => {
@@ -11002,7 +11224,7 @@ var c162NonStop = window.c162NonStop;
       this._packDraft = null;
       this.showMeetTheTeam({
         lineup, pitchers, bench: finalBench,
-        cfg: { type: 'packs', label: '📦 HOBBY PACKS DRAFT', desc: '26-Pack Universe Draft', rivalKeep: (this._franchiseNext && this._franchiseNext.rivalKeep) || null }
+        cfg: { type: 'packs', label: '📦 HOBBY PACKS DRAFT', desc: 'Hobby Box Draft', rivalKeep: (this._franchiseNext && this._franchiseNext.rivalKeep) || null }
       });
     },
 
@@ -14545,7 +14767,7 @@ var c162NonStop = window.c162NonStop;
           if (picked.size !== 10) return;
           const keepBats = [...picked].filter(k => k.startsWith('B:')).map(k => idx.bat.get(k.slice(2))).filter(Boolean);
           const keepPits = [...picked].filter(k => k.startsWith('P:')).map(k => idx.pit.get(k.slice(2))).filter(Boolean);
-          const raw = rollBoxSchedule(Math.max(0, 14 - keepBats.length) + Math.max(0, 12 - keepPits.length));
+          const raw = rollBoxSchedule(Math.max(0, 14 - keepBats.length) + Math.max(0, 11 - keepPits.length));
           const { box, boosted } = this._applyBoxRewards(raw, rw);
           F.pending = { season: F.season + 1, keep: [...picked], box, boosted, mode: F.mode || 'packs' };
           F.protectDraft = null;
