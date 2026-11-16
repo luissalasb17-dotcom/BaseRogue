@@ -1733,10 +1733,10 @@ var c162NonStop = window.c162NonStop;
   // Clutch under pressure (user, 9 nov 2026): runner in scoring position OR Late & Close (see the
   // PA loop). All four pitching ratings move CLUTCH_PIT per point above/below 55. Calibrated so 10
   // points of Clutch are worth ~0.12 of ERA with the other ratings equal (real careers: ~0.11).
-  let CLUTCH_PIT = 0.20; const CLUTCH_PIT_CENTER = 55; // was 0.45 with Late & Close too (decision 13 nov 2026: soft, runners in scoring position only)
+  let CLUTCH_PIT = 0.30; const CLUTCH_PIT_CENTER = 55; // 0.30 with the 9th-inning / extras pressure added (user, Nov 2026); // was 0.45 with Late & Close too (decision 13 nov 2026: soft, runners in scoring position only)
   // Test switches (Nov 2026): CLUTCH_RISP_ONLY drops the Late & Close trigger; RIVAL_CLOSER_MIX picks rival closers by OVR + real saves + chance.
-  let CLUTCH_RISP_ONLY = true, RIVAL_CLOSER_MIX = false;
-  window.__c162Tune = o => { if ('clutch' in o) CLUTCH_PIT = o.clutch; if ('rispOnly' in o) CLUTCH_RISP_ONLY = o.rispOnly; if ('closerMix' in o) RIVAL_CLOSER_MIX = o.closerMix; }; // 55.7 is the average Clutch of the innings pitched in the league
+  let CLUTCH_RISP_ONLY = true, RIVAL_CLOSER_MIX = false, CLUTCH_CLOSE_LATE = true;
+  window.__c162Tune = o => { if ('clutch' in o) CLUTCH_PIT = o.clutch; if ('rispOnly' in o) CLUTCH_RISP_ONLY = o.rispOnly; if ('closerMix' in o) RIVAL_CLOSER_MIX = o.closerMix; if ('closeLate' in o) CLUTCH_CLOSE_LATE = o.closeLate; }; // 55.7 is the average Clutch of the innings pitched in the league
   const ERROR_GLOVE_SLOPE = 0.0184, ERROR_GLOVE_MIN = 0.3, ERROR_GLOVE_MAX = 2.0;
   // Rating -> stat tables: what a card at each rating does against an ordinary opponent, taken
   // from the real peak numbers of the cards carried to the AL/NL 1947-2025 league with the same 75%
@@ -1770,7 +1770,7 @@ var c162NonStop = window.c162NonStop;
   // posted ERAs near 1.3 (Oct 2026 review). Walks and home runs keep 1.7.
   let PIT_EDGE_K = 1.2, PIT_EDGE_H = 1.6; // H 1.6: league ERA 4.13 -> 4.10 (user, Oct 2026)
   // League level after the rivals started opening their own box (Nov 2026): scales on homers and on hits on balls in play.
-  const CALIB = { hr: 0.96, bip: 0.985 }; // user, Nov 2026 (option C): league ERA 4.26 -> 4.07, HR 1.02 -> 0.97, R/G 4.75 -> 4.55; hitters -3 to 4%
+  const CALIB = { hr: 0.98, bip: 0.9925 }; // user, Nov 2026: half of option C (C = 0.96 / 0.985: league ERA 4.07; none: 4.25)
   const PA_SCALE_3B = 0.68; // the design table sits above the 1947-2025 triples rate
   function rateAt(ys, v) {
     if (!(v > RT_X[0])) return ys[0];
@@ -5949,7 +5949,9 @@ var c162NonStop = window.c162NonStop;
           // on deck). One or the other, never doubled; the Clutch moves all four pitching ratings.
           const onB = bases.filter(Boolean).length;
           const lateClose = inning >= 7 && (margin === 0 || margin === 1 || (margin < 0 && -margin <= onB + 2));
-          const pressure = !!(bases[1] || bases[2]) || (!CLUTCH_RISP_ONLY && lateClose);
+          // ...and (user, Nov 2026) the 9th inning on in a one-run game either way, or tied (extras too).
+          const closeLate = CLUTCH_CLOSE_LATE && inning >= 9 && Math.abs(margin) <= 1;
+          const pressure = !!(bases[1] || bases[2]) || closeLate || (!CLUTCH_RISP_ONLY && lateClose);
           const adj = (pressure ? (clt - CLUTCH_PIT_CENTER) * CLUTCH_PIT : 0) + (bigSpot ? CLUTCH_PIT_BADGE : 0) + (playoffPitchClutch ? PLAYOFF_HERO_BOOST : 0) + (opts.confidence ? ps.conf : 0) - pen;
           const eff = adj ? { ...p, h9: p.h9 + adj, k9: p.k9 + adj, bb9: p.bb9 + adj, hr9: p.hr9 + adj } : { ...p };
           // The catcher receives and calls the game: his glove moves his pitcher's strikeouts and walks.

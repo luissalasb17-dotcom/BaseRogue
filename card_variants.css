@@ -951,3 +951,5 @@
 /* halo of the opposite tone behind the OVR (tone set by card_variants.js from its own color) */
 .player-card.pc2 .pc2-ovr[data-tone="dark"] { text-shadow: 0 0 2px rgba(255,248,232,.95), 0 0 4px rgba(255,248,232,.8) !important; }
 .player-card.pc2 .pc2-ovr[data-tone="light"] { text-shadow: 0 0 2px rgba(0,0,0,.95), 0 0 4px rgba(0,0,0,.75) !important; }
+/* premium: the badges move below the position tab so it does not cover them */
+.player-card.pc2.pc2.pc2.pc2.pc2.pc2-e-bighair.pc2-v-premium .pc2-badges { top: 26px !important; }

@@ -1645,7 +1645,22 @@ def paso_12_normalizar_por_era(df):
     # parejas en este rating (diferencia entre la era mas alta y la mas baja: 12 puntos al 90%,
     # 24 al 75%).
     KAVD_ERA_BLEND = 0.75
-    k_adjusted = ajustar_por_ambiente(df["k_rate_clean"].astype(float), df["b_k"], KAVD_ERA_BLEND)
+    import os as _okm
+    if _okm.environ.get("KAVD_MODE", "ratio") == "add":
+        # Prueba (Nov 2026): diferencia en puntos contra su liga en vez de proporcion. Ruth (12% con una
+        # liga de ~8%) quedaba como un ponchador de ~25-29% en el ambiente neutral.
+        _amb = df["b_k"].replace(0, np.nan)
+        k_adjusted = (df["k_rate_clean"].astype(float) + KAVD_ERA_BLEND * (_amb.mean() - _amb)).fillna(df["k_rate_clean"].astype(float))
+        # keep the exact distribution of the proportional version (same values, reassigned by rank):
+        # only who sits where changes, so the whole pool's OVR level does not move
+        _ref = ajustar_por_ambiente(df["k_rate_clean"].astype(float), df["b_k"], KAVD_ERA_BLEND)
+        _sorted = np.sort(_ref.dropna().values)
+        _rk = k_adjusted.rank(method="first")
+        _ok = _rk.notna()
+        k_adjusted = k_adjusted.copy()
+        k_adjusted[_ok] = _sorted[(_rk[_ok] - 1).astype(int).clip(0, len(_sorted) - 1).values]
+    else:
+        k_adjusted = ajustar_por_ambiente(df["k_rate_clean"].astype(float), df["b_k"], KAVD_ERA_BLEND)
     df["k_avoid_val"] = normalize_series(-k_adjusted).clip(RATING_FLOOR, RATING_CEIL).round(1)
 
     print("  contact_val, power_val, eye_val, k_avoid_val normalizados contra el ambiente de cada temporada")
