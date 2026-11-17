@@ -600,3 +600,67 @@
 .bpb-auto { font: 11px 'Oswald', sans-serif; color: #22c55e; font-style: normal; }
 .bpb.chem-on .bpb-chip:not(.chem-lit) { opacity: .3; }
 .bpb .bpb-chip.chem-lit { outline: 2px solid #22c55e; box-shadow: 0 0 10px #22c55e; }
+
+/* Snake draft on phones (Nov 2026): clock pinned, pool first, roster as a compact grid, board as a strip */
+@media (max-width: 760px) {
+  .sd-top { gap: 6px; padding: 8px; position: sticky; top: 0; z-index: 20; background: #08100d; }
+  .sd-top > div:first-child { display: none; }
+  .sd-clock { padding: 4px 8px; } .sd-clock b { font-size: 15px; } .sd-clock small, .sd-clock em { font-size: 10.5px; }
+  .sd-tools { flex-direction: row; } .sd-tools button { flex: 1; padding: 8px 2px; font-size: 10.5px; min-height: 36px; }
+  .sd-main { gap: 8px; }
+  .sd-pool { order: 1; } .sd-mine { order: 2; } .sd-board { order: 3; }
+  .sd-pool-h { flex-direction: column; gap: 2px; } .sd-pool-h span { font-size: 10px; }
+  .sd-chips { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; -webkit-overflow-scrolling: touch; }
+  .sd-chips button { flex: none; padding: 7px 10px; font-size: 11px; min-height: 32px; }
+  .sd-list { max-height: 55vh; }
+  .sd-row { grid-template-columns: 30px minmax(0,1fr) 34px 30px 30px; padding: 7px 4px; min-height: 46px; }
+  .sd-row .sd-face { width: 30px; height: 30px; } .sd-row span b { font-size: 14px; } .sd-row small { font-size: 10.5px; }
+  .sd-mine > div:not(.sd-needs), .sd-mine { font-size: 12px; }
+  .sd-mine { display: grid; grid-template-columns: 1fr 1fr; column-gap: 6px; }
+  .sd-mine h4, .sd-mine .sd-needs { grid-column: 1 / -1; }
+  .sd-slot { grid-template-columns: 28px 20px minmax(0,1fr) 22px; gap: 4px; font-size: 12px; } .sd-slot .sd-face { width: 20px; height: 20px; }
+  .sd-board { display: flex; align-items: flex-start; gap: 6px; overflow-x: auto; max-height: none; padding-bottom: 6px; }
+  .sd-board h4 { flex: none; writing-mode: vertical-rl; margin: 0; font-size: 9px; }
+  .sd-board .sd-pick { flex: none; width: 170px; }
+}
+
+/* Snake draft: eras in the pool */
+.sdi-eras { margin-top: 8px; padding: 8px 10px; background: rgba(8,16,13,.9); border: 1px solid #24463a; }
+.sdi-eras > b { font: 400 10px 'Press Start 2P', monospace; color: #6ee7a0; }
+.sdi-eras > div { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.sdi-eras button { padding: 6px 10px; font: 600 12px 'Oswald', sans-serif; letter-spacing: 1px; color: #6b8577; background: #0f1c16; border: 1px solid #2f5d48; cursor: pointer; text-decoration: line-through; }
+.sdi-eras button small { display: block; font-weight: 400; font-size: 10px; letter-spacing: 0; }
+.sdi-eras button.on { color: #1a1205; background: linear-gradient(#ffd36a, #c9962c); border-color: #ffd36a; text-decoration: none; }
+.sdi-eras button:disabled { cursor: default; opacity: .75; }
+.sdi-short { margin: 6px 0 0; color: #f87171; font-size: 13px; } .sdi-ok { margin: 6px 0 0; color: #9db3a6; font-size: 12px; }
+@media (max-width: 760px) { .sdi-eras > div { flex-wrap: nowrap; overflow-x: auto; } .sdi-eras button { flex: none; } }
+.sde { display: flex; justify-content: center; padding: 18px 8px; }
+.sde-card { max-width: 1180px; width: 100%; padding: 20px 22px; background: radial-gradient(ellipse at top, rgba(255,211,106,.08), transparent 60%), rgba(8,16,13,.95); border: 1px solid #2f5d48; text-align: center; }
+.sde-card > small { font: 600 12px 'Oswald', sans-serif; letter-spacing: 3px; color: #6ee7a0; }
+.sde-card h2 { margin: 8px 0 6px; font: 400 22px 'Press Start 2P', monospace; color: #ffd36a; text-shadow: 0 0 18px rgba(255,211,106,.45), 3px 3px 0 #5a3d0a; line-height: 1.4; }
+.sde-card > p { margin: 0 auto 12px; max-width: 720px; color: #c7d6cc; font: 400 15px 'Oswald', sans-serif; } .sde-card > p b { color: #ffd36a; }
+.sde-presets { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-bottom: 14px; }
+.sde-presets button { padding: 7px 12px; font: 600 12px 'Oswald', sans-serif; letter-spacing: 1px; color: #6ee7a0; background: #0f1c16; border: 1px solid #2f5d48; cursor: pointer; transition: .15s; }
+.sde-presets button:hover { border-color: #6ee7a0; } .sde-presets button.on { color: #1a1205; background: #6ee7a0; border-color: #6ee7a0; }
+.sde-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+.sde-era { position: relative; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 12px 10px 10px; text-align: center; cursor: pointer; color: #6b8577; background: #0b1511; border: 2px solid #22362d; filter: grayscale(.85); opacity: .6; transition: .18s; }
+.sde-era:hover { opacity: .9; transform: translateY(-2px); }
+.sde-era.on { filter: none; opacity: 1; color: #e8efe9; border-color: var(--ec); background: linear-gradient(180deg, color-mix(in srgb, var(--ec) 22%, #0b1511), #0b1511 70%); box-shadow: 0 0 16px color-mix(in srgb, var(--ec) 35%, transparent); }
+.sde-era b { font: 400 13px 'Press Start 2P', monospace; color: var(--ec); } .sde-era em { font: 600 12px 'Oswald', sans-serif; font-style: normal; letter-spacing: 1px; }
+.sde-tick { position: absolute; top: 6px; right: 8px; font: 700 15px 'Oswald', sans-serif; color: var(--ec); }
+.sde-faces { display: flex; gap: 4px; margin: 4px 0 1px; } .sde-face { width: 38px; height: 38px; background-size: cover; image-rendering: pixelated; border: 1px solid color-mix(in srgb, var(--ec) 60%, #000); }
+.sde-stars { font: 500 11px 'Oswald', sans-serif; color: #9db3a6; }
+.sde-era p { margin: 2px 0; font: 400 12.5px/1.3 'Oswald', sans-serif; color: #c7d6cc; min-height: 32px; }
+.sde-era u { text-decoration: none; font: 500 11px 'Oswald', sans-serif; color: #8fa89a; }
+.sde-sum { display: grid; grid-template-columns: 1fr auto auto; gap: 10px; align-items: center; margin-top: 14px; padding: 10px 14px; text-align: left; background: #0f1c16; border: 1px solid #ffd36a; }
+.sde-sum.bad { border-color: #f87171; }
+.sde-sum small { display: block; font: 600 10px 'Oswald', sans-serif; letter-spacing: 2px; color: #9db3a6; }
+.sde-sum b { font: 400 26px 'VT323', monospace; color: #ffd36a; } .sde-sum b i { font-size: 16px; color: #9db3a6; }
+.sde-sum em { display: block; font: 400 13px 'Oswald', sans-serif; font-style: normal; color: #c7d6cc; }
+.sde-sum > div:not(:first-child) { text-align: center; padding-left: 12px; border-left: 1px solid #2f5d48; }
+.sde-go { display: flex; justify-content: center; gap: 10px; margin-top: 14px; }
+.sde-cancel { background: #0f1c16 !important; color: #9db3a6 !important; border: 1px solid #2f5d48 !important; box-shadow: none !important; }
+.sdi-eraline { margin: 8px 0 0; font-weight: 600; letter-spacing: 1px; color: #ffd36a; }
+@media (max-width: 760px) { .sde-grid { grid-template-columns: 1fr 1fr; gap: 6px; } .sde-era p { display: none; } .sde-card h2 { font-size: 14px; } .sde-presets { flex-wrap: nowrap; overflow-x: auto; justify-content: flex-start; } .sde-presets button { flex: none; } .sde-sum b { font-size: 20px; } }
+/* 15-card packs (Nov 2026): three rows, a bit smaller so the pack and its buttons fit on one screen */
+@media (min-width: 761px) { .bp-grid { gap: 6px 8px; } .bp-grid .player-card { zoom: .8; } }

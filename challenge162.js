@@ -1029,7 +1029,7 @@ var c162NonStop = window.c162NonStop;
     return { lineup: team.lineup, bench, rotation, bullpen: pen.map((p, i) => ({ ...p, role: i === 0 ? 'CL' : 'RP' })) };
   }
 
-  // Rivals open the same Hobby Box as the user (user, Nov 2026): 5 packs of 10 with the big-box
+  // Rivals open the same Hobby Box as the user (user, Nov 2026): 5 packs of 15 with the big-box
   // odds, keep 5 of each. Their manager takes the best card that fits what is missing (a field
   // position nobody plays yet, a starter while the rotation is short), with some noise so he is
   // not perfect (RIVAL_BOX_NOISE OVR points). Roster 14 bats + 11 arms like the user's.
@@ -1094,29 +1094,68 @@ var c162NonStop = window.c162NonStop;
   // matches real AL/NL 1947-2025 starters), then a snake draft where each team takes the best card
   // that fills a need. Benches come from the Common / Uncommon cards, like real benches.
   const RIVAL_DRAFT = 'box'; // 'box' = rivals open the user's Hobby Box (Nov 2026); 'recipe' = old rarity recipes
-  const SNAKE_DEPTH = 1.5; // pool 1.5x: los jugadores que hacen falta; los peores quedan sin equipo (user, Nov 2026)
+  const SNAKE_DEPTH = 1; // exact pool (user, Nov 2026): 1.5x was tried, but no Common was ever drafted
   const SNAKE_NOISE = 2, SNAKE_STYLE = 1.5, SNAKE_SCARCE = ['C', 'SS', 'CF', '2B'], SNAKE_SCARCE_BONUS = 2, SNAKE_BENCH_COVER = 3, SNAKE_URGENCY = 4; // exact pool: the players that fill every roster, no more (user, Nov 2026)
   const SNAKE_ROSTER = 9 + BENCH_SIZE + 5 + ROSTER_RP; // 25, same as the Hobby Box
   const SNAKE_FIELD = ['C', 'SS', '2B', '3B', 'CF', '1B', 'LF', 'RF', 'DH'];
   const snakeIsPitcher = p => p && p.h9 !== undefined && p.con === undefined;
   // Exact season pool: one player per field spot and team, bench + DH from any hitter, 5 SP and 7 RP per team.
   // keeps (franchise): { teamId: [cards] } already on each team before the draft.
-  function snakeInit(ids, taken, keeps = null) {
+  // Exact pool with the Hobby Box rarity mix (user, Nov 2026): each pool card first rolls its rarity
+  // (C/U/R/E/Elite/L), then a random player of that rarity for that spot. The tables are what the
+  // Hobby Box rosters end up keeping with 15-card packs (320 box rosters measured), per group. null = uniform draw.
+  let SNAKE_RARITY = {
+    bat: [0.102, 0.275, 0.266, 0.225, 0.099, 0.033],
+    sp:  [0.013, 0.111, 0.262, 0.335, 0.199, 0.080],
+    rp:  [0.179, 0.414, 0.264, 0.107, 0.030, 0.006]
+  };
+  function snakeAddByRarity(list, k, seen, pool, kind) {
+    const T = SNAKE_RARITY[kind];
+    const R = ['Common', 'Uncommon', 'Rare', 'Epic', 'Elite', 'Legendary'];
+    const by = {}; R.forEach(r => { by[r] = []; });
+    list.forEach(p => { if (!seen.has(personId(p))) (by[p.rarity] || by.Common).push(p); });
+    for (let i = 0; i < k; i++) {
+      let x = Math.random(), r = 0;
+      while (r < 5 && x >= T[r]) { x -= T[r]; r++; }
+      let j = r; // that rarity empty: nearest one below, then above
+      while (j >= 0 && !by[R[j]].length) j--;
+      if (j < 0) { j = r; while (j < 6 && !by[R[j]].length) j++; }
+      if (j >= 6) return;
+      const arr = by[R[j]], p = arr.splice(Math.floor(Math.random() * arr.length), 1)[0];
+      seen.add(personId(p)); pool.push(p);
+    }
+  }
+  // Eras in the snake pool (user, Nov 2026): the player switches eras on or off before the draft.
+  const SNAKE_ERAS = [['The Genesis Era (1871-1900)', 'GENESIS', '1871-1900'], ['Deadball (1901-1919)', 'DEADBALL', '1901-1919'], ['Golden Era (1920-1941)', 'GOLDEN', '1920-1941'], ['Integration (1942-1960)', 'INTEGRATION', '1942-1960'], ['Expansion (1961-1976)', 'EXPANSION', '1961-1976'], ['Turf Era (1977-1993)', 'TURF', '1977-1993'], ['Steroid Era (1994-2005)', 'STEROID', '1994-2005'], ['Moneyball Era (2006-2015)', 'MONEYBALL', '2006-2015'], ['Statcast Era (2016-Pres)', 'STATCAST', '2016-NOW']];
+  // What an exact pool misses with these eras: [] = it fills every roster.
+  function snakeShort(st) {
+    const n = st.ids.length, out = [];
+    ['C', 'SS', '2B', '3B', 'CF', '1B', 'LF', 'RF'].forEach(pos => { const k = st.pool.filter(p => !snakeIsPitcher(p) && p.pos === pos).length; if (k < n) out.push(`${pos} ${k}/${n}`); });
+    const sp = st.pool.filter(p => snakeIsPitcher(p) && p.role === 'SP').length; if (sp < n * 5) out.push(`SP ${sp}/${n * 5}`);
+    const pt = st.pool.filter(snakeIsPitcher).length; if (pt < n * (5 + ROSTER_RP)) out.push(`pitchers ${pt}/${n * (5 + ROSTER_RP)}`);
+    const bt = st.pool.filter(p => !snakeIsPitcher(p)).length; if (bt < n * (9 + BENCH_SIZE)) out.push(`hitters ${bt}/${n * (9 + BENCH_SIZE)}`);
+    if (st.pool.length < st.total) out.push(`players ${st.pool.length}/${st.total}`);
+    return out;
+  }
+  function snakeInit(ids, taken, keeps = null, eras = null) {
     if (keeps) return snakeInitKeep(ids, taken, keeps);
     const n = ids.length, rnd = a => a.slice().sort(() => Math.random() - 0.5);
-    const free = p => !taken.has(personId(p));
+    const free = p => !taken.has(personId(p)) && (!eras || eras.has(p.era));
     const bats = getBatterPool().filter(free), pits = getPitcherPool().filter(free);
     const pool = [], seen = new Set();
-    const add = (list, k) => { rnd(list).filter(p => !seen.has(personId(p))).slice(0, Math.round(k)).forEach(p => { seen.add(personId(p)); pool.push(p); }); };
+    const add = (list, k, kind = 'bat') => SNAKE_RARITY ? snakeAddByRarity(list, Math.round(k), seen, pool, kind) : rnd(list).filter(p => !seen.has(personId(p))).slice(0, Math.round(k)).forEach(p => { seen.add(personId(p)); pool.push(p); });
     ['C', 'SS', '2B', '3B', 'CF', '1B', 'LF', 'RF'].forEach(pos => add(bats.filter(b => b.pos === pos), n * SNAKE_DEPTH));
     add(bats, n * (BENCH_SIZE + 1) * SNAKE_DEPTH); // bench + DH: any hitter (few cards are pure DH)
     // Staff (user, Nov 2026): 5 starters and 6 relievers per team, plus one pitcher per team of any role.
-    add(pits.filter(p => p.role === 'SP'), n * 5 * SNAKE_DEPTH);
-    add(pits.filter(p => p.role !== 'SP'), n * (ROSTER_RP - 1) * SNAKE_DEPTH);
-    add(pits, n * SNAKE_DEPTH);
+    add(pits.filter(p => p.role === 'SP'), n * 5 * SNAKE_DEPTH, 'sp');
+    add(pits.filter(p => p.role !== 'SP'), n * (ROSTER_RP - 1) * SNAKE_DEPTH, 'rp');
+    add(pits, n * SNAKE_DEPTH, 'rp');
+    // Old eras had almost no relievers: starters fill the bullpen spots that are left.
+    const pitShort = n * (5 + ROSTER_RP) - pool.filter(snakeIsPitcher).length;
+    if (pitShort > 0) add(pits, pitShort, 'sp');
     // Each rival GM leans a little: toward arms or bats (+/- SNAKE_STYLE OVR points), never more.
     const teams = ids.map(id => ({ id, slots: {}, bench: [], sp: [], rp: [], lean: (Math.random() * 2 - 1) * SNAKE_STYLE }));
-    return { ids, pool, left: new Set(pool), teams, pick: 0, total: n * SNAKE_ROSTER, rounds: SNAKE_ROSTER, log: [], taken };
+    return { ids, pool, left: new Set(pool), teams, pick: 0, total: n * SNAKE_ROSTER, rounds: SNAKE_ROSTER, log: [], taken, eras: eras ? [...eras] : null };
   }
   function snakeKeepPlace(t, p) {
     let sl = snakeFits(t, p);
@@ -1132,11 +1171,11 @@ var c162NonStop = window.c162NonStop;
     const free = p => !taken.has(personId(p));
     const bats = getBatterPool().filter(free), pits = getPitcherPool().filter(free);
     const pool = [], seen = new Set();
-    const add = (list, k) => { rnd(list).filter(p => !seen.has(personId(p))).slice(0, Math.round(k * SNAKE_DEPTH)).forEach(p => { seen.add(personId(p)); pool.push(p); }); };
+    const add = (list, k, kind = 'bat') => SNAKE_RARITY ? snakeAddByRarity(list, Math.round(k * SNAKE_DEPTH), seen, pool, kind) : rnd(list).filter(p => !seen.has(personId(p))).slice(0, Math.round(k * SNAKE_DEPTH)).forEach(p => { seen.add(personId(p)); pool.push(p); });
     ['C', 'SS', '2B', '3B', 'CF', '1B', 'LF', 'RF'].forEach(pos => add(bats.filter(b => b.pos === pos), teams.filter(t => !t.slots[pos]).length));
     add(bats, teams.reduce((k, t) => k + (BENCH_SIZE - t.bench.length) + (t.slots.DH ? 0 : 1), 0));
-    add(pits.filter(p => p.role === 'SP'), teams.reduce((k, t) => k + Math.max(0, 5 - t.sp.length), 0));
-    add(pits.filter(p => p.role !== 'SP'), teams.reduce((k, t) => k + Math.max(0, ROSTER_RP - t.rp.length), 0));
+    add(pits.filter(p => p.role === 'SP'), teams.reduce((k, t) => k + Math.max(0, 5 - t.sp.length), 0), 'sp');
+    add(pits.filter(p => p.role !== 'SP'), teams.reduce((k, t) => k + Math.max(0, ROSTER_RP - t.rp.length), 0), 'rp');
     const open = teams.reduce((k, t) => k + SNAKE_ROSTER - (Object.keys(t.slots).length + t.bench.length + t.sp.length + t.rp.length), 0);
     const rounds = Math.ceil(open / n);
     return { ids, pool, left: new Set(pool), teams, pick: 0, total: rounds * n, rounds, log: [], taken };
@@ -2402,7 +2441,7 @@ var c162NonStop = window.c162NonStop;
   // Applies to every team in the regular season, the user included.
   // Games a regular plays in a season, normal vs as an Iron Man (measured over full seasons).
   const IRON_GAMES = { C: [135, 154], SS: [151, 159], '2B': [151, 159], CF: [151, 159], '3B': [152, 160], LF: [154, 160], RF: [154, 160], '1B': [156, 161], DH: [158, 161] };
-  // Big packs (user, Nov 2026, prototype): the Hobby Box is 5 packs of 10 cards, one of each
+  // Big packs (user, Nov 2026, prototype): the Hobby Box is 5 packs of 15 cards, one of each
   // type (Premium, Hobby, Retail, Wax, Mystery) in random order; batters and pitchers come mixed,
   // positions at random, and the player keeps 5 cards of each pack. 1 reroll for the whole box.
   // Rule A: a card is kept only into a free spot of the 25 (9 field, 5 bench, 5 SP, 6 RP).
@@ -2423,7 +2462,7 @@ var c162NonStop = window.c162NonStop;
   // Nov 2026: 90-94 wins against 85-87, and the user kept them equal).
   const USER_PACK_ODDS = BIG_PACK_ODDS;
   const rollBigRarity = (type, table) => { const T = table || (window.__bigOdds || BIG_PACK_ODDS); const o = T[type] || T.any; let x = Math.random(); for (let i = 0; i < o.length; i++) { x -= o[i]; if (x < 0) return PACK_RARS[i]; } return 'Common'; };
-  const BIG_PACK_CARDS = 10, BIG_PACK_KEEP = 5, BIG_REROLLS = 1, BIG_BAT_SHARE = 0.56;
+  const BIG_PACK_CARDS = 15, BIG_PACK_KEEP = 5, BIG_REROLLS = 1, BIG_BAT_SHARE = 0.56;
   const PACK_OPTIONS = 3; // cards shown in each pack; the player keeps one
   const PACK_FREE_CARDS = 1; // how many of them ignore the positions the roster still needs
   const PACK_DRAFT_REROLLS = 3; // total pack rerolls available across the entire 25-pack draft
@@ -9739,7 +9778,7 @@ var c162NonStop = window.c162NonStop;
       this.renderPacksDraft();
       this._showBoxIntro();
     },
-    // ── Big packs (5 × 10, keep 5) ─────────────────────────────────────────
+    // ── Big packs (5 × 15, keep 5) ─────────────────────────────────────────
     // Rule A (user, Nov 2026): the roster is 25 spots (9 field, 5 bench, 5 SP, 6 RP); a card can
     // only be kept if there is a free spot for it. Batters fit any batter spot (out of position
     // if needed), pitchers any pitching spot. Packs come as they come: no bending.
@@ -10733,7 +10772,7 @@ var c162NonStop = window.c162NonStop;
       const filledSPCount = (updatedSlots.sp || []).filter(Boolean).length;
       const filledRPCount = (updatedSlots.rp || []).filter(Boolean).length;
 
-      const progressPercent = Math.min(100, Math.round((allPulled.length / 26) * 100));
+      const progressPercent = Math.min(100, Math.round((allPulled.length / (9 + BENCH_SIZE + 5 + ROSTER_RP)) * 100));
 
       // Pack rail: the 26 packs of the box. Opened ones show their rarity; the rest stay sealed
       // (the order is a surprise), the one on the table glows.
@@ -11157,9 +11196,77 @@ var c162NonStop = window.c162NonStop;
       const st = snakeInit(ids, new Set(), o.keeps || null);
       // Sign-up first: see the pool, then draw your draft spot, then the draft starts.
       // In a franchise the order is last season's standings, worst first (no draw).
-      this._snake = { st, filter: 'ALL', fast: false, stage: 'intro', drawn: !!o.order && !o.choose, choose: !!o.choose, moved: o.moved || null, pace: 'normal', franchise: !!o.keeps };
+      this._snake = { st, eras: new Set(SNAKE_ERAS.map(e => e[0])), filter: 'ALL', fast: false, stage: 'intro', drawn: !!o.order && !o.choose, choose: !!o.choose, moved: o.moved || null, pace: 'normal', franchise: !!o.keeps };
       this.showScreen('screen-challenge-pack');
-      this.renderSnakeIntro();
+      if (o.keeps) this.renderSnakeIntro(); else this.renderSnakeEras();
+    },
+    // Step 1 (user, Nov 2026): choose the eras of the season before seeing the pool.
+    renderSnakeEras() {
+      const container = document.getElementById('challenge162-pack-container');
+      const S = this._snake;
+      if (!container || !S) return;
+      const st = S.st, short = snakeShort(st), all = S.eras.size === SNAKE_ERAS.length;
+      const META = {
+        GENESIS: ['#c9a36b', 'Bare hands, 9-ball walks and aces who threw 600 innings.'],
+        DEADBALL: ['#b07a4a', 'Small ball, spitballs and 10-homer home run kings.'],
+        GOLDEN: ['#e2b23a', 'The ball comes alive: big bats in the majors and the Negro Leagues.'],
+        INTEGRATION: ['#6fa8dc', 'The color line falls. Five-tool legends take over.'],
+        EXPANSION: ['#e06c3c', 'The mound is king: high heat, low scores.'],
+        TURF: ['#3fb27f', 'Speed on carpet: stolen bases, gloves and gaps.'],
+        STEROID: ['#c0c6cf', 'Long balls everywhere and the aces who survived them.'],
+        MONEYBALL: ['#4fd1c5', 'On-base, walks and the numbers revolution.'],
+        STATCAST: ['#c084fc', 'Spin rate, exit velo, 100 mph from the bullpen.']
+      };
+      const PRESETS = [['ALL-TIME', [0, 1, 2, 3, 4, 5, 6, 7, 8]], ['OLD SCHOOL · TO 1941', [0, 1, 2]], ['CLASSIC · TO 1976', [0, 1, 2, 3, 4]], ['POST-WAR · 1942+', [3, 4, 5, 6, 7, 8]], ['THROWBACK · 1942-93', [3, 4, 5]], ['MODERN · 1977+', [5, 6, 7, 8]], ['NEW SCHOOL · 1994+', [6, 7, 8]]];
+      const sameSet = idx => idx.length === S.eras.size && idx.every(i => S.eras.has(SNAKE_ERAS[i][0]));
+      const eraOf = y => { y = parseInt(y, 10) || 2020; return y <= 1900 ? 'genesis' : y <= 1919 ? 'deadball' : y <= 1941 ? 'golden' : y <= 1960 ? 'integration' : y <= 1976 ? 'expansion' : y <= 1993 ? 'bighair' : y <= 2005 ? 'steroid' : y <= 2015 ? 'efficiency' : 'modern'; };
+      if (!S.eraStars) {
+        const pool = [...getBatterPool(), ...getPitcherPool()];
+        S.eraStars = {};
+        SNAKE_ERAS.forEach(([k]) => {
+          const list = pool.filter(p => p.era === k);
+          S.eraStars[k] = { n: list.length, legends: list.filter(p => p.rarity === 'Legendary').length, top: [...list.filter(p => (p.ovr || 0) >= 90).sort(() => Math.random() - 0.5), ...list.filter(p => (p.ovr || 0) < 90).sort((a, b) => (b.ovr || 0) - (a.ovr || 0))].slice(0, 3) };
+        });
+      }
+      const face = p => (window.CardArt ? `<i class="sde-face" style="background-image:url(${window.CardArt.portrait(p, eraOf(p.year), snakeIsPitcher(p))})"></i>` : '');
+      const on = SNAKE_ERAS.filter(e => S.eras.has(e[0]));
+      const years = on.length ? `${on[0][2].split('-')[0]}–${on[on.length - 1][2].split('-')[1].replace('NOW', 'today')}` : '';
+      const gap = on.some((e, i) => i && SNAKE_ERAS.indexOf(e) !== SNAKE_ERAS.indexOf(on[i - 1]) + 1);
+      const totals = on.reduce((a, e) => { const x = S.eraStars[e[0]]; a.n += x.n; a.l += x.legends; return a; }, { n: 0, l: 0 });
+      const vibe = all ? 'Every legend ever printed. Anything goes.' : on.length === 1 ? META[on[0][1]][1] : gap ? 'A time-machine league: worlds that never met, on the same field.' : `${on.length} eras back to back: ${years} baseball.`;
+      container.innerHTML = `<div class="sd sdi sde">
+        <div class="sde-card">
+          <small>🐍 SNAKE DRAFT · STEP 1 OF 2</small>
+          <h2>PICK YOUR BASEBALL UNIVERSE</h2>
+          <p>32 teams, one pool. The eras you switch on decide <b>who exists</b> this season: every team, yours and the 31 rivals, drafts only from them.</p>
+          <div class="sde-presets">${PRESETS.map(([name, idx]) => `<button data-sdp-set="${idx.join(',')}" class="${sameSet(idx) ? 'on' : ''}">${name}</button>`).join('')}</div>
+          <div class="sde-grid">${SNAKE_ERAS.map(([k, name, yrs]) => { const m = META[name], x = S.eraStars[k], is = S.eras.has(k); return `<button data-sdera="${k}" class="sde-era ${is ? 'on' : ''}" style="--ec:${m[0]}">
+              <span class="sde-tick">${is ? '✓' : '+'}</span>
+              <b>${name}</b><em>${yrs}</em>
+              <span class="sde-faces">${x.top.map(face).join('')}</span>
+              <small class="sde-stars">${x.top.map(p => cleanName(p).split(' ').slice(-1)[0]).join(' · ')}</small>
+              <p>${m[1]}</p>
+              <u>${x.n} cards · ${x.legends} legendary</u>
+            </button>`; }).join('')}</div>
+          <div class="sde-sum ${short.length ? 'bad' : ''}">
+            <div><small>YOUR SEASON</small><b>${all ? 'ALL-TIME' : years}${gap ? ' <i>(mixed)</i>' : ''}</b><em>${vibe}</em></div>
+            <div><small>CARDS</small><b>${totals.n}</b></div><div><small>LEGENDARY</small><b>${totals.l}</b></div>
+          </div>
+          ${short.length ? `<p class="sdi-short">⚠ Not enough players to fill 32 rosters: ${short.join(' · ')}. Switch on more eras.</p>` : ''}
+          <div class="sde-go">${short.length ? '' : '<button data-sde="go" class="btn c162-cta">▶ BUILD THE POOL</button>'}<button data-sde="cancel" class="btn sde-cancel">✖ CANCEL</button></div>
+        </div>
+      </div>`;
+      const rebuild = () => { S.st = snakeInit(st.ids, new Set(), null, S.eras.size === SNAKE_ERAS.length ? null : S.eras); this.renderSnakeEras(); };
+      container.onclick = e => {
+        const ps = e.target.closest('[data-sdp-set]');
+        if (ps) { S.eras = new Set(ps.dataset.sdpSet.split(',').map(i => SNAKE_ERAS[+i][0])); rebuild(); return; }
+        const er = e.target.closest('[data-sdera]');
+        if (er) { const k = er.dataset.sdera; if (S.eras.has(k)) { if (S.eras.size > 1) S.eras.delete(k); } else S.eras.add(k); rebuild(); return; }
+        const b = e.target.closest('[data-sde]');
+        if (!b) return;
+        if (b.dataset.sde === 'go' && !snakeShort(S.st).length) this.renderSnakeIntro();
+        else if (b.dataset.sde === 'cancel') { this._snake = null; this.renderHub(); }
+      };
     },
     renderSnakeIntro() {
       const container = document.getElementById('challenge162-pack-container');
@@ -11181,13 +11288,15 @@ var c162NonStop = window.c162NonStop;
       list.sort((a, b) => (b.ovr || 0) - (a.ovr || 0));
       const chips = ['ALL', 'BAT', 'C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'SP', 'RP'];
       const ord = k => k + (k % 10 === 1 && k !== 11 ? 'st' : k % 10 === 2 && k !== 12 ? 'nd' : k % 10 === 3 && k !== 13 ? 'rd' : 'th');
+      const short = snakeShort(st);
       const order = st.ids.map((id, i) => `<div class="sdi-ord ${id === USER_TEAM_ID ? 'mine' : ''}"><b>${i + 1}</b><span>${this._snakeTeamName(id)}</span></div>`).join('');
       container.innerHTML = `<div class="sd sdi">
         <div class="sd-top">
-          <div><h2>🐍 DRAFT DAY</h2><small>32 teams sign up for this season's draft. The pool is set: ${st.total} players drawn from every card. Scout it, then draw your spot.</small></div>
+          <div><h2>🐍 DRAFT DAY</h2><small>32 teams sign up for this season's draft. The pool is set: ${st.pool.length} players drawn from ${S.eras.size === SNAKE_ERAS.length ? 'every era' : 'the eras you picked'}. Scout it, then draw your spot.</small></div>
           <div class="sd-clock ${S.drawn ? 'mine' : ''}"><small>YOUR DRAFT SPOT</small><b class="sdi-spot">${S.drawn ? ord(pos) : '??'}</b><em>${S.drawn ? `${ord(pos)} in odd rounds, ${ord(n - pos + 1)} in even rounds${S.franchise ? ` · set by last season (worst picks first)${S.moved && S.moved[0] !== S.moved[1] ? ` · 🎯 goals moved you up from ${ord(S.moved[0])}` : ''}` : ''}` : S.choose ? '🎯 You hit all three goals: pick your draft spot' : 'Snake order: the turn flips every round'}</em></div>
-          <div class="sd-tools">${S.drawn ? '<button data-sdi="start">▶ START THE DRAFT</button>' : S.choose ? '' : '<button data-sdi="draw">🎲 DRAW MY DRAFT SPOT</button>'}<button data-sdi="cancel">✖ CANCEL</button></div>
+          <div class="sd-tools">${short.length ? '' : S.drawn ? '<button data-sdi="start">▶ START THE DRAFT</button>' : S.choose ? '' : '<button data-sdi="draw">🎲 DRAW MY DRAFT SPOT</button>'}<button data-sdi="cancel">✖ CANCEL</button></div>
         </div>
+        ${S.franchise ? '' : `<p class="sdi-ok sdi-eraline">ERAS: ${S.eras.size === SNAKE_ERAS.length ? 'ALL 9' : SNAKE_ERAS.filter(x => S.eras.has(x[0])).map(x => x[1]).join(' · ')}</p>`}
         <div class="sd-main sdi-main">
           <div class="sd-board"><h4>${S.choose && !S.drawn ? 'PICK YOUR SPOT' : S.drawn ? 'DRAFT ORDER · ROUND 1' : 'THE POOL'}</h4>${S.choose && !S.drawn ? `<div class="sdi-spots">${Array.from({ length: n }, (_, i) => `<button data-sdspot="${i}">${ord(i + 1)}<small>then ${ord(n - i)}</small></button>`).join('')}</div>` : S.drawn ? order : `<div class="sdi-sum">
               <div><b>${count('Legendary')}</b><span class="r-legendary">LEGENDARY</span></div><div><b>${count('Elite')}</b><span class="r-elite">ELITE</span></div><div><b>${count('Epic')}</b><span class="r-epic">EPIC</span></div><div><b>${count('Rare')}</b><span class="r-rare">RARE</span></div><div><b>${count('Uncommon')}</b><span class="r-uncommon">UNCOMMON</span></div><div><b>${count('Common')}</b><span class="r-common">COMMON</span></div>
@@ -11310,7 +11419,7 @@ var c162NonStop = window.c162NonStop;
       // picks until the user's next turn
       let until = 0;
       for (let k = st.pick; k < st.total; k++) { const r = Math.floor(k / n), i = k % n; const ti = r % 2 ? n - 1 - i : i; if (st.teams[ti].id === USER_TEAM_ID) break; until++; }
-      const needOpen = SNAKE_FIELD.filter(sl => !me.slots[sl]);
+      const needOpen = ['C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'DH'].filter(sl => !me.slots[sl]);
       const needs = [...needOpen, ...(me.sp.length < 5 ? ['SP'] : []), ...(me.rp.length < ROSTER_RP ? ['RP'] : []), ...(me.bench.length < BENCH_SIZE ? ['BENCH'] : [])];
       const fil = S.filter;
       let list = [...st.left];
@@ -11325,13 +11434,13 @@ var c162NonStop = window.c162NonStop;
       const chips = ['NEED', 'ALL', 'BAT', 'C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'SP', 'RP'];
       const board = st.log.slice(-14).reverse().map(x => `<div class="sd-pick ${x.team === USER_TEAM_ID ? 'mine' : ''} ${rar(x.p)}"><small>R${Math.floor(x.pick / n) + 1}·${(x.pick % n) + 1}</small>${face(x.p)}<span><b>${cleanName(x.p)}</b><em>${posOf(x.p)} · ${Math.floor(x.p.ovr || 0)}</em></span><u>${this._snakeTeamName(x.team)}</u></div>`).join('') || '<p class="sd-empty">The draft is about to start.</p>';
       const slotRow = (label, p) => `<div class="sd-slot ${p ? rar(p) : 'open'}"><b>${label}</b>${p ? `${face(p)}<span>${cleanName(p)}</span><em>${Math.floor(p.ovr || 0)}</em>` : '<span>—</span>'}</div>`;
-      const mineHTML = SNAKE_FIELD.map(sl => slotRow(sl, me.slots[sl])).join('')
+      const mineHTML = ['C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'DH'].map(sl => slotRow(sl, me.slots[sl])).join('')
         + Array.from({ length: BENCH_SIZE }, (_, i) => slotRow('BN', me.bench[i])).join('')
         + Array.from({ length: 5 }, (_, i) => slotRow('SP' + (i + 1), me.sp[i])).join('')
         + Array.from({ length: ROSTER_RP }, (_, i) => slotRow('RP' + (i + 1), me.rp[i])).join('');
       container.innerHTML = `<div class="sd">
         <div class="sd-top">
-          <div><h2>🐍 SNAKE DRAFT</h2><small>32 teams · ${st.rounds || SNAKE_ROSTER} rounds${S.franchise ? ' · every team kept 10' : ''} · a pool of ${st.pool.length} players for ${st.total} spots, drawn from every card</small></div>
+          <div><h2>🐍 SNAKE DRAFT</h2><small>32 teams · ${st.rounds || SNAKE_ROSTER} rounds${S.franchise ? ' · every team kept 10' : ''} · an exact pool of ${st.pool.length} players with the Hobby Box rarity mix</small></div>
           <div class="sd-clock ${myTurn ? 'mine' : ''}"><small>ROUND ${Math.min(round, st.rounds || SNAKE_ROSTER)} / ${st.rounds || SNAKE_ROSTER} · PICK ${st.pick + 1} OF ${st.total}</small><b>${myTurn ? "YOU'RE ON THE CLOCK" : `${this._snakeTeamName(picker ? picker.id : '')} picking`}</b><em>You draft ${myPos}${myPos === 1 ? 'st' : myPos === 2 ? 'nd' : myPos === 3 ? 'rd' : 'th'} in odd rounds, ${n - myPos + 1}${(n - myPos + 1) === 1 ? 'st' : (n - myPos + 1) === 2 ? 'nd' : (n - myPos + 1) === 3 ? 'rd' : 'th'} in even rounds${myTurn ? '' : ` · ${until} picks to your turn`}</em></div>
           <div class="sd-tools">${myTurn ? '<button data-sd="auto">⚡ AUTO PICK</button>' : '<button data-sd="skip">⏩ SKIP TO MY PICK</button>'}<button data-sd="pace">${S.pace === 'fast' ? '🐇 FAST' : '🐢 NORMAL'}</button><button data-sd="rest">🤖 AUTO DRAFT REST</button><button data-sd="cancel">✖ CANCEL</button></div>
         </div>
@@ -11343,7 +11452,7 @@ var c162NonStop = window.c162NonStop;
             <div class="sd-chips">${chips.map(c => `<button data-sdf="${c}" class="${fil === c ? 'on' : ''}">${c === 'NEED' ? 'MY NEEDS' : c}</button>`).join('')}</div>
             <div class="sd-list">${shown.map(p => `<div class="sd-row ${rar(p)} ${myTurn ? 'can' : ''}" data-sdp="${keyOf(p)}">${face(p)}<span><b>${cleanName(p)}</b><small>${p.year || ''} · ${p.team || ''}${!snakeIsPitcher(p) && p.sec_pos ? ` · also ${p.sec_pos}` : ''}</small></span><em class="pos">${posOf(p)}</em><em class="ovr">${Math.floor(p.ovr || 0)}</em><button data-sddex="${keyOf(p)}" title="See the card">🔍</button></div>`).join('') || '<p class="sd-empty">Nobody left in this filter.</p>'}</div>
           </div>
-          <div class="sd-mine"><h4>YOUR ROSTER · ${26 - needs.length >= 0 ? [...Object.values(me.slots), ...me.bench, ...me.sp, ...me.rp].length : 0} / 26</h4><div class="sd-needs">NEEDS: ${needs.join(' · ') || 'none'}</div>${mineHTML}</div>
+          <div class="sd-mine"><h4>YOUR ROSTER · ${[...Object.values(me.slots), ...me.bench, ...me.sp, ...me.rp].length} / ${SNAKE_ROSTER}</h4><div class="sd-needs">NEEDS: ${needs.join(' · ') || 'none'}</div>${mineHTML}</div>
         </div>
       </div>`;
       container.onclick = e => {
