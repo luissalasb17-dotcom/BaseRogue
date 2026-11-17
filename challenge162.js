@@ -1094,8 +1094,9 @@ var c162NonStop = window.c162NonStop;
   // matches real AL/NL 1947-2025 starters), then a snake draft where each team takes the best card
   // that fills a need. Benches come from the Common / Uncommon cards, like real benches.
   const RIVAL_DRAFT = 'box'; // 'box' = rivals open the user's Hobby Box (Nov 2026); 'recipe' = old rarity recipes
-  const SNAKE_DEPTH = 1;
+  const SNAKE_DEPTH = 1.5; // pool 1.5x: los jugadores que hacen falta; los peores quedan sin equipo (user, Nov 2026)
   const SNAKE_NOISE = 2, SNAKE_STYLE = 1.5, SNAKE_SCARCE = ['C', 'SS', 'CF', '2B'], SNAKE_SCARCE_BONUS = 2, SNAKE_BENCH_COVER = 3, SNAKE_URGENCY = 4; // exact pool: the players that fill every roster, no more (user, Nov 2026)
+  const SNAKE_ROSTER = 9 + BENCH_SIZE + 5 + ROSTER_RP; // 25, same as the Hobby Box
   const SNAKE_FIELD = ['C', 'SS', '2B', '3B', 'CF', '1B', 'LF', 'RF', 'DH'];
   const snakeIsPitcher = p => p && p.h9 !== undefined && p.con === undefined;
   // Exact season pool: one player per field spot and team, bench + DH from any hitter, 5 SP and 7 RP per team.
@@ -1115,7 +1116,7 @@ var c162NonStop = window.c162NonStop;
     add(pits, n * SNAKE_DEPTH);
     // Each rival GM leans a little: toward arms or bats (+/- SNAKE_STYLE OVR points), never more.
     const teams = ids.map(id => ({ id, slots: {}, bench: [], sp: [], rp: [], lean: (Math.random() * 2 - 1) * SNAKE_STYLE }));
-    return { ids, pool, left: new Set(pool), teams, pick: 0, total: n * 26, rounds: 26, log: [], taken };
+    return { ids, pool, left: new Set(pool), teams, pick: 0, total: n * SNAKE_ROSTER, rounds: SNAKE_ROSTER, log: [], taken };
   }
   function snakeKeepPlace(t, p) {
     let sl = snakeFits(t, p);
@@ -1131,12 +1132,12 @@ var c162NonStop = window.c162NonStop;
     const free = p => !taken.has(personId(p));
     const bats = getBatterPool().filter(free), pits = getPitcherPool().filter(free);
     const pool = [], seen = new Set();
-    const add = (list, k) => { rnd(list).filter(p => !seen.has(personId(p))).slice(0, Math.round(k)).forEach(p => { seen.add(personId(p)); pool.push(p); }); };
+    const add = (list, k) => { rnd(list).filter(p => !seen.has(personId(p))).slice(0, Math.round(k * SNAKE_DEPTH)).forEach(p => { seen.add(personId(p)); pool.push(p); }); };
     ['C', 'SS', '2B', '3B', 'CF', '1B', 'LF', 'RF'].forEach(pos => add(bats.filter(b => b.pos === pos), teams.filter(t => !t.slots[pos]).length));
     add(bats, teams.reduce((k, t) => k + (BENCH_SIZE - t.bench.length) + (t.slots.DH ? 0 : 1), 0));
     add(pits.filter(p => p.role === 'SP'), teams.reduce((k, t) => k + Math.max(0, 5 - t.sp.length), 0));
     add(pits.filter(p => p.role !== 'SP'), teams.reduce((k, t) => k + Math.max(0, ROSTER_RP - t.rp.length), 0));
-    const open = teams.reduce((k, t) => k + 26 - (Object.keys(t.slots).length + t.bench.length + t.sp.length + t.rp.length), 0);
+    const open = teams.reduce((k, t) => k + SNAKE_ROSTER - (Object.keys(t.slots).length + t.bench.length + t.sp.length + t.rp.length), 0);
     const rounds = Math.ceil(open / n);
     return { ids, pool, left: new Set(pool), teams, pick: 0, total: rounds * n, rounds, log: [], taken };
   }
@@ -1168,7 +1169,7 @@ var c162NonStop = window.c162NonStop;
       if (good <= need) v += SNAKE_SCARCE_BONUS * Math.min(1, (need - good + 1) / Math.max(1, need));
     }
     const open = SNAKE_FIELD.filter(x => !t.slots[x]).length + Math.max(0, 5 - t.sp.length) + Math.max(0, ROSTER_RP - t.rp.length) + Math.max(0, BENCH_SIZE - t.bench.length);
-    const roundsLeft = (st.rounds || 26) - Math.floor(st.pick / st.ids.length);
+    const roundsLeft = (st.rounds || SNAKE_ROSTER) - Math.floor(st.pick / st.ids.length);
     if (sl !== 'bench' && open >= roundsLeft - 2) v += SNAKE_URGENCY;
     return v;
   }
@@ -1202,7 +1203,7 @@ var c162NonStop = window.c162NonStop;
     st.log.push({ pick: st.pick, team: t.id, key: snakeIsPitcher(p) ? pitcherUnlockKey(p) : batterUnlockKey(p), p, slot });
     st.pick++;
   }
-  const snakeOpen = t => 26 - (Object.keys(t.slots).length + t.bench.length + t.sp.length + t.rp.length);
+  const snakeOpen = t => SNAKE_ROSTER - (Object.keys(t.slots).length + t.bench.length + t.sp.length + t.rp.length);
   const me_room = t => (t.sp.length < 5 ? 'sp' : (t.rp.length < ROSTER_RP ? 'rp' : ''));
   function snakeRoster(t) {
     const team = { lineup: SNAKE_FIELD.map(sl => t.slots[sl]).filter(Boolean) };
@@ -11330,8 +11331,8 @@ var c162NonStop = window.c162NonStop;
         + Array.from({ length: ROSTER_RP }, (_, i) => slotRow('RP' + (i + 1), me.rp[i])).join('');
       container.innerHTML = `<div class="sd">
         <div class="sd-top">
-          <div><h2>🐍 SNAKE DRAFT</h2><small>32 teams · ${st.rounds || 26} rounds${S.franchise ? ' · every team kept 10' : ''} · an exact pool of ${st.total} players drawn from every card</small></div>
-          <div class="sd-clock ${myTurn ? 'mine' : ''}"><small>ROUND ${Math.min(round, st.rounds || 26)} / ${st.rounds || 26} · PICK ${st.pick + 1} OF ${st.total}</small><b>${myTurn ? "YOU'RE ON THE CLOCK" : `${this._snakeTeamName(picker ? picker.id : '')} picking`}</b><em>You draft ${myPos}${myPos === 1 ? 'st' : myPos === 2 ? 'nd' : myPos === 3 ? 'rd' : 'th'} in odd rounds, ${n - myPos + 1}${(n - myPos + 1) === 1 ? 'st' : (n - myPos + 1) === 2 ? 'nd' : (n - myPos + 1) === 3 ? 'rd' : 'th'} in even rounds${myTurn ? '' : ` · ${until} picks to your turn`}</em></div>
+          <div><h2>🐍 SNAKE DRAFT</h2><small>32 teams · ${st.rounds || SNAKE_ROSTER} rounds${S.franchise ? ' · every team kept 10' : ''} · a pool of ${st.pool.length} players for ${st.total} spots, drawn from every card</small></div>
+          <div class="sd-clock ${myTurn ? 'mine' : ''}"><small>ROUND ${Math.min(round, st.rounds || SNAKE_ROSTER)} / ${st.rounds || SNAKE_ROSTER} · PICK ${st.pick + 1} OF ${st.total}</small><b>${myTurn ? "YOU'RE ON THE CLOCK" : `${this._snakeTeamName(picker ? picker.id : '')} picking`}</b><em>You draft ${myPos}${myPos === 1 ? 'st' : myPos === 2 ? 'nd' : myPos === 3 ? 'rd' : 'th'} in odd rounds, ${n - myPos + 1}${(n - myPos + 1) === 1 ? 'st' : (n - myPos + 1) === 2 ? 'nd' : (n - myPos + 1) === 3 ? 'rd' : 'th'} in even rounds${myTurn ? '' : ` · ${until} picks to your turn`}</em></div>
           <div class="sd-tools">${myTurn ? '<button data-sd="auto">⚡ AUTO PICK</button>' : '<button data-sd="skip">⏩ SKIP TO MY PICK</button>'}<button data-sd="pace">${S.pace === 'fast' ? '🐇 FAST' : '🐢 NORMAL'}</button><button data-sd="rest">🤖 AUTO DRAFT REST</button><button data-sd="cancel">✖ CANCEL</button></div>
         </div>
         ${this._snakeMsg ? `<div class="sd-msg">${this._snakeMsg}</div>` : ''}
