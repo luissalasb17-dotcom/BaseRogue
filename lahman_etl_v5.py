@@ -2145,6 +2145,16 @@ def paso_15_equipo_y_exportar(df, batting, teams, franchises, pico_df=None, war_
             return "NLB"
         if tid_str in NLB_TEAMS:
             return "NLB"
+        # Old leagues reuse modern codes in bbref's WAR files (CHI 1914-15 = Chicago Whales of the
+        # Federal League, BAL = Terrapins / AA Orioles, PHI in the AA = Athletics...). Those clubs are
+        # not today's franchises: Federal, Players' and Union Association go to HIST, and in the
+        # American Association / National Association only the clubs that lead to a modern franchise.
+        if lg_str in ("FL", "PL", "UA"):
+            return "HIST"
+        if lg_str == "AA" and tid_str not in ("PIT", "CIN", "STL", "BRO", "BRG"):
+            return "HIST"
+        if lg_str == "NA" and tid_str not in ("BOS",):
+            return "HIST"
         f = team_to_franch.get(tid_str, tid_str)
         if f in NLB_TEAMS:
             return "NLB"

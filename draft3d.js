@@ -664,5 +664,5 @@
     drawFront(c, th, Object.assign({ badge: '', tagline: '', fine: '' }, opts || {}));
     return (artCache[key] = c.toDataURL('image/jpeg', 0.85));
   }
-  window.DraftPack3D = { mount, open, frameAt, art, debug: () => ({ libs, broken, live: !!S, theme: S && S.th }) };
+  window.DraftPack3D = { mount, open, frameAt, art, sound, debug: () => ({ libs, broken, live: !!S, theme: S && S.th }) };
 })();

@@ -664,3 +664,96 @@
 @media (max-width: 760px) { .sde-grid { grid-template-columns: 1fr 1fr; gap: 6px; } .sde-era p { display: none; } .sde-card h2 { font-size: 14px; } .sde-presets { flex-wrap: nowrap; overflow-x: auto; justify-content: flex-start; } .sde-presets button { flex: none; } .sde-sum b { font-size: 20px; } }
 /* 15-card packs (Nov 2026): three rows, a bit smaller so the pack and its buttons fit on one screen */
 @media (min-width: 761px) { .bp-grid { gap: 6px 8px; } .bp-grid .player-card { zoom: .8; } }
+
+/* Hobby Box reveal (Nov 2026): once the box is open the five packs come out big, one by one, in the order you open them */
+.c162-boxintro.open .bx-mat { display: none; }
+.c162-boxintro.open .bx-info { width: min(1240px, 100%); }
+.c162-boxintro .bxk-row { perspective: 900px; }
+.c162-boxintro.open .bxk { position: relative; display: flex !important; flex-direction: column; align-items: center; text-align: center; gap: 6px; padding: 14px 10px 12px;
+  animation: bxkIn .7s cubic-bezier(.2,1.4,.4,1) both; animation-delay: calc(.25s + var(--i) * .38s); }
+.c162-boxintro.open .bxk img { height: 230px; width: auto; grid-row: auto; filter: drop-shadow(0 10px 18px rgba(0,0,0,.6)); animation: bxkFloat 3s ease-in-out infinite; animation-delay: calc(var(--i) * .4s); }
+.c162-boxintro.open .bxk:hover img { transform: translateY(-8px) rotate(-3deg) scale(1.05); }
+.c162-boxintro .bxk-n { font: 400 10px 'Press Start 2P', monospace; color: #fde68a; letter-spacing: 1px; }
+.c162-boxintro.open .bxk-name { font: 400 15px 'Press Start 2P', monospace; letter-spacing: 1px; }
+.c162-boxintro .bxk-burst { position: absolute; inset: 0; pointer-events: none; border-radius: 10px; opacity: 0; background: radial-gradient(circle at 50% 40%, var(--bc, #fff) 0, transparent 60%); }
+.c162-boxintro.open .bxk-burst { animation: bxkBurst .9s ease-out both; animation-delay: calc(.35s + var(--i) * .38s); }
+.c162-boxintro .bxk.pk-wax { --bc: rgba(220,200,160,.8); } .c162-boxintro .bxk.pk-retail { --bc: rgba(255,210,63,.85); } .c162-boxintro .bxk.pk-hobby { --bc: rgba(96,165,250,.9); }
+.c162-boxintro .bxk.pk-premium { --bc: rgba(255,215,0,1); } .c162-boxintro .bxk.pk-any { --bc: rgba(240,171,252,.95); }
+.c162-boxintro.open .bxk.pk-premium { box-shadow: 0 0 26px rgba(255,215,0,.55), inset 0 0 18px rgba(255,215,0,.18); }
+.c162-boxintro.open .bxk.pk-premium img { filter: drop-shadow(0 0 14px rgba(255,215,0,.75)) drop-shadow(0 10px 18px rgba(0,0,0,.6)); }
+.c162-boxintro.open .bxk.pk-any img { filter: drop-shadow(0 0 12px rgba(240,171,252,.7)) drop-shadow(0 10px 18px rgba(0,0,0,.6)); }
+@keyframes bxkIn { 0% { opacity: 0; transform: translateY(120px) rotateY(80deg) scale(.5); } 70% { opacity: 1; transform: translateY(-10px) rotateY(-8deg) scale(1.06); } 100% { opacity: 1; transform: none; } }
+@keyframes bxkBurst { 0% { opacity: 0; transform: scale(.4); } 30% { opacity: 1; } 100% { opacity: 0; transform: scale(1.5); } }
+@keyframes bxkFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+.c162-boxintro.open .bx-foot { animation: bxRise .5s ease-out both; animation-delay: 2.4s; }
+@media (max-width: 760px) { .c162-boxintro.open .bxk img { height: 120px; } .c162-boxintro.open .bxk-name { font-size: 10px; } }
+@media (prefers-reduced-motion: reduce) { .c162-boxintro.open .bxk, .c162-boxintro.open .bxk img, .c162-boxintro.open .bxk-burst, .c162-boxintro.open .bx-foot { animation: none; } }
+
+/* Hobby Box: flat printed pack on the table (replaces the 3D foil pack) */
+.bp-pack2d { cursor: pointer; animation: bpPackFloat 3s ease-in-out infinite; }
+.bp-pack2d img { display: block; height: 330px; width: auto; filter: drop-shadow(0 14px 22px rgba(0,0,0,.6)); transition: transform .2s; }
+.bp-pack2d:hover img { transform: translateY(-6px) rotate(-2deg) scale(1.03); }
+.bp-pack2d.t-Premium img { filter: drop-shadow(0 0 16px rgba(255,215,0,.6)) drop-shadow(0 14px 22px rgba(0,0,0,.6)); }
+.bp-pack2d.t-any img { filter: drop-shadow(0 0 14px rgba(240,171,252,.6)) drop-shadow(0 14px 22px rgba(0,0,0,.6)); }
+.bp-pack2d { position: relative; }
+.bp-pack2d .bp-pk-strip { position: absolute; left: 0; top: 0; clip-path: inset(0 0 84% 0); pointer-events: none; }
+.bp-pack2d .bp-pk-body { clip-path: inset(0 0 0 0); }
+.bp-pack2d.tearing { animation: bpPackShake .42s ease-in-out 1; }
+.bp-pack2d.ripped { animation: none; }
+.bp-pack2d.ripped .bp-pk-strip { animation: bpStripOff .55s cubic-bezier(.3,.6,.4,1) forwards; }
+.bp-pack2d.ripped .bp-pk-body { clip-path: inset(16% 0 0 0); animation: bpBodyDrop .55s .3s ease-in forwards; }
+@keyframes bpStripOff { to { transform: translate(120px, -110px) rotate(38deg); opacity: 0; } }
+@keyframes bpBodyDrop { to { transform: translateY(70px) rotate(-6deg); opacity: 0; } }
+@keyframes bpPackFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+@keyframes bpPackShake { 0%, 100% { transform: rotate(0); } 20% { transform: rotate(-4deg); } 40% { transform: rotate(4deg); } 60% { transform: rotate(-3deg); } 80% { transform: rotate(3deg); } }
+@keyframes bpPackGone { to { transform: translateY(-30px) scale(1.15); opacity: 0; } }
+@media (max-width: 760px) { .bp-pack2d img { height: 230px; } }
+/* Hobby Box board: running team OVR */
+.bpb-ovr { display: inline-flex; flex-direction: column; align-items: center; margin-left: 8px; padding: 2px 10px; background: #0f1c16; border: 1px solid #ffd36a; line-height: 1; }
+.bpb-ovr small { font: 600 9px 'Oswald', sans-serif; letter-spacing: 1.5px; color: #9db3a6; }
+.bpb-ovr b { font: 400 24px 'VT323', monospace; color: #ffd36a; }
+/* Hobby Box board: team needs */
+.bpn { margin: 8px 0 4px; padding: 8px 10px; background: #0f1c16; border: 1px solid #2f5d48; }
+.bpn-h { font: 600 11px 'Oswald', sans-serif; letter-spacing: 2px; color: #6ee7a0; margin-bottom: 6px; }
+.bpn-row { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 6px; }
+.bpn-c { text-align: center; padding: 3px 0; background: rgba(255,255,255,.04); border: 1px solid #24463a; }
+.bpn-c small { display: block; font: 600 9px 'Oswald', sans-serif; letter-spacing: 1.5px; color: #9db3a6; }
+.bpn-c b { font: 400 20px 'VT323', monospace; color: #e8efe9; } .bpn-c.full b { color: #6ee7a0; }
+.bpn-miss { margin-top: 6px; font: 500 12px 'Oswald', sans-serif; color: #9db3a6; } .bpn-miss i { font-style: normal; margin-left: 5px; padding: 1px 6px; color: #fca5a5; border: 1px solid #f87171; }
+.bpn-warn { margin-top: 6px; font: 500 12.5px 'Oswald', sans-serif; color: #fcd34d; }
+.bpn [data-need] { cursor: help; } .bpn [data-need]:hover { border-color: #ffd36a; }
+.bp-needing .bp-card { filter: brightness(.45) saturate(.6); transition: filter .15s; }
+.bp-needing .bp-card.need-hit { filter: none; outline: 3px solid #ffd36a; outline-offset: 2px; box-shadow: 0 0 18px rgba(255,211,106,.55); }
+.bpn .c162-depth { margin: 8px 0 0; padding: 0; background: none; border: 0; }
+.bpn .c162-depth-cell[data-need] { cursor: help; }
+.bpn-miss i.mid { color: #fcd34d; border-color: #f59e0b; } .bpn-miss.ok { color: #6ee7a0; }
+/* Hobby Box: pack + board fit one screen on desktop (user, Nov 2026) */
+@media (min-width: 761px) {
+  .bp-grid .player-card { zoom: .78; }
+  .bpb-hint { display: none; }
+  .bpb-t { margin: 2px 0 1px; line-height: 1.1; }
+  .bpb .bpb-chip { min-height: 30px; padding-top: 1px; padding-bottom: 1px; }
+  .bpb-extra .c162-chem2.is-chips .cc-chips { flex-wrap: nowrap; overflow-x: auto; }
+  .bpb-extra .c162-chem2 > :not(.cc-chips) { margin-bottom: 2px; }
+  .bpn { margin: 4px 0 2px; padding: 6px 8px; }
+}
+@media (min-width: 761px) {
+  .bp-title em { display: none; }
+  .bp-odds-bar span { flex-direction: row !important; align-items: baseline; gap: 4px; }
+  .bp-odds-bar span b { font-size: 18px !important; }
+  .bp-grid .player-card { zoom: .6; }
+  .bpb-field { max-height: 232px; }
+}
+/* bigger pack cards (user, Nov 2026: at 60% they looked too small): the chemistry line sits over
+   the bottom of the card instead of under it, so three rows fit at 70% */
+@media (min-width: 761px) {
+  .bp-grid .player-card { zoom: .78; }
+  .bp-table { padding: 10px 12px; }
+  .bp-grid { gap: 6px 4px; }
+  .bp-card .bp-chem { position: absolute; left: 50%; bottom: 2px; transform: translateX(-50%); margin: 0; max-width: 104px; z-index: 4; background: rgba(6,12,9,.88); padding: 1px 3px; border-radius: 3px; pointer-events: none; }
+}
+/* chemistry on pack cards: a small corner badge (details on hover), gold with ▲ when it moves a group up a tier */
+.bp-chemb { position: absolute; top: -7px; left: -7px; z-index: 4; padding: 1px 5px; font: 600 11px 'Oswald', sans-serif; color: #c7d6cc; background: #0f1c16; border: 1px solid #2f5d48; border-radius: 8px; pointer-events: auto; }
+.bp-chemb.up { color: #1a1205; background: #ffd36a; border-color: #ffd36a; }
+.bpn-miss { font-size: 11.5px; }
+.bpn-miss i { font: 600 11px 'Oswald', sans-serif; letter-spacing: .5px; }

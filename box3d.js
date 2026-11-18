@@ -34,7 +34,7 @@
     if (kind === 'lid') {
       g.font = '64px "Alfa Slab One", serif'; g.lineWidth = 8; g.strokeStyle = '#000'; g.strokeText('BASEROGUE', w / 2, 118); g.fillText('BASEROGUE', w / 2, 118);
       g.font = '700 30px Oswald, sans-serif'; g.fillStyle = '#ffffff'; g.fillText('HOBBY BOX  ·  ALL-TIME SERIES', w / 2, 170);
-      g.font = '600 22px Oswald, sans-serif'; g.fillStyle = '#f5d77a'; g.fillText('26 PACKS  ·  3 CARDS PER PACK', w / 2, 210);
+      g.font = '600 22px Oswald, sans-serif'; g.fillStyle = '#f5d77a'; g.fillText('5 PACKS  ·  15 CARDS PER PACK', w / 2, 210);
     } else {
       g.font = '46px "Alfa Slab One", serif'; g.lineWidth = 6; g.strokeStyle = '#000'; g.strokeText('BASEROGUE', w / 2, 82); g.fillText('BASEROGUE', w / 2, 82);
       g.font = '600 22px Oswald, sans-serif'; g.fillStyle = '#ffffff'; g.fillText('HOBBY BOX', w / 2, 120);

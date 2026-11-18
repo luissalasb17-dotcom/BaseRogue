@@ -995,6 +995,19 @@ var c162NonStop = window.c162NonStop;
     RIVAL_RECIPES.forEach(([n, r]) => { for (let i = 0; i < n; i++) { const box = []; r.forEach((c, k) => { for (let j = 0; j < c; j++) box.push(names[k]); }); out.push(box.sort(() => Math.random() - 0.5)); } });
     return out.sort(() => Math.random() - 0.5);
   }
+  // Real-league rivals (user, Nov 2026): every spot is a player drawn at random from the whole pool,
+  // so a rival has the talent of a real team (lineup ~104 card OPS+, rotation ~106 ERA+) and every
+  // card performs close to its own numbers. The user keeps the Hobby Box (measured: ~110 wins).
+  function rivalUniform(taken) {
+    const bats = getBatterPool(), pits = getPitcherPool();
+    const pick = (pool, ok) => { const free = pool.filter(p => !taken.has(personId(p)) && ok(p)); const c = free[Math.floor(Math.random() * free.length)]; if (c) taken.add(personId(c)); return c || null; };
+    const lineup = ['C', 'SS', '2B', '3B', 'CF', '1B', 'LF', 'RF', 'DH'].map(sl => { const p = pick(bats, b => sl === 'DH' || canPlayerFillPrimary(b, sl)); return p && { ...p, assignedSlot: sl }; }).filter(Boolean);
+    const bench = [pick(bats, b => canPlayerFillPrimary(b, 'C')), pick(bats, b => ['SS', '2B', '3B'].some(x => canPlayerFillPrimary(b, x))), pick(bats, b => ['LF', 'CF', 'RF'].some(x => canPlayerFillPrimary(b, x))), pick(bats, () => true), pick(bats, () => true)].filter(Boolean);
+    const team = { lineup }; promoteRivalBench(team, bench);
+    const rot = [0, 1, 2, 3, 4].map(() => pick(pits, p => p.role === 'SP')).filter(Boolean).sort((a, b) => (b.ovr || 0) - (a.ovr || 0));
+    const pen = Array.from({ length: ROSTER_RP }, () => pick(pits, p => p.role !== 'SP')).filter(Boolean).sort((a, b) => (b.ovr || 0) - (a.ovr || 0));
+    return { lineup: team.lineup, bench, rotation: rot, bullpen: pen.map((p, i) => ({ ...p, role: i === 0 ? 'CL' : 'RP' })) };
+  }
   function buildPoolRoster(taken, target) {
     const bats = getBatterPool(), pits = getPitcherPool();
     // One rarity from the team's recipe per roster spot; the player is drawn at random among those who fit.
@@ -1093,7 +1106,7 @@ var c162NonStop = window.c162NonStop;
   // so its talent has the shape of the whole pool (measured, Nov 2026: the cards' peak WAR spread
   // matches real AL/NL 1947-2025 starters), then a snake draft where each team takes the best card
   // that fills a need. Benches come from the Common / Uncommon cards, like real benches.
-  const RIVAL_DRAFT = 'box'; // 'box' = rivals open the user's Hobby Box (Nov 2026); 'recipe' = old rarity recipes
+  const RIVAL_DRAFT = 'real'; // 'real' = rivals at the level of a real league (user, Nov 2026); 'box' = rivals open the user's Hobby Box; // 'box' = rivals open the user's Hobby Box (Nov 2026); 'recipe' = old rarity recipes
   const SNAKE_DEPTH = 1; // exact pool (user, Nov 2026): 1.5x was tried, but no Common was ever drafted
   const SNAKE_NOISE = 2, SNAKE_STYLE = 1.5, SNAKE_SCARCE = ['C', 'SS', 'CF', '2B'], SNAKE_SCARCE_BONUS = 2, SNAKE_BENCH_COVER = 3, SNAKE_URGENCY = 4; // exact pool: the players that fill every roster, no more (user, Nov 2026)
   const SNAKE_ROSTER = 9 + BENCH_SIZE + 5 + ROSTER_RP; // 25, same as the Hobby Box
@@ -1149,13 +1162,13 @@ var c162NonStop = window.c162NonStop;
     // Staff (user, Nov 2026): 5 starters and 6 relievers per team, plus one pitcher per team of any role.
     add(pits.filter(p => p.role === 'SP'), n * 5 * SNAKE_DEPTH, 'sp');
     add(pits.filter(p => p.role !== 'SP'), n * (ROSTER_RP - 1) * SNAKE_DEPTH, 'rp');
-    add(pits, n * SNAKE_DEPTH, 'rp');
+    add(pits.filter(p => p.role !== 'SP'), n * SNAKE_DEPTH, 'rp'); // the extra pitcher per team is a reliever, so the pool has exactly 5 starters per team
     // Old eras had almost no relievers: starters fill the bullpen spots that are left.
     const pitShort = n * (5 + ROSTER_RP) - pool.filter(snakeIsPitcher).length;
     if (pitShort > 0) add(pits, pitShort, 'sp');
     // Each rival GM leans a little: toward arms or bats (+/- SNAKE_STYLE OVR points), never more.
     const teams = ids.map(id => ({ id, slots: {}, bench: [], sp: [], rp: [], lean: (Math.random() * 2 - 1) * SNAKE_STYLE }));
-    return { ids, pool, left: new Set(pool), teams, pick: 0, total: n * SNAKE_ROSTER, rounds: SNAKE_ROSTER, log: [], taken, eras: eras ? [...eras] : null };
+    return snakeCounters({ ids, pool, left: new Set(pool), teams, pick: 0, total: n * SNAKE_ROSTER, rounds: SNAKE_ROSTER, log: [], taken, eras: eras ? [...eras] : null });
   }
   function snakeKeepPlace(t, p) {
     let sl = snakeFits(t, p);
@@ -1178,7 +1191,7 @@ var c162NonStop = window.c162NonStop;
     add(pits.filter(p => p.role !== 'SP'), teams.reduce((k, t) => k + Math.max(0, ROSTER_RP - t.rp.length), 0), 'rp');
     const open = teams.reduce((k, t) => k + SNAKE_ROSTER - (Object.keys(t.slots).length + t.bench.length + t.sp.length + t.rp.length), 0);
     const rounds = Math.ceil(open / n);
-    return { ids, pool, left: new Set(pool), teams, pick: 0, total: rounds * n, rounds, log: [], taken };
+    return snakeCounters({ ids, pool, left: new Set(pool), teams, pick: 0, total: rounds * n, rounds, log: [], taken });
   }
   function snakePicker(st) {
     const n = st.ids.length, round = Math.floor(st.pick / n), k = st.pick % n;
@@ -1186,7 +1199,13 @@ var c162NonStop = window.c162NonStop;
   }
   // Where a card would go on this team ('' = no room).
   function snakeFits(t, p) {
-    if (snakeIsPitcher(p)) return p.role === 'SP' ? (t.sp.length < 5 ? 'sp' : (t.rp.length < ROSTER_RP ? 'rp' : '')) : (t.rp.length < ROSTER_RP ? 'rp' : '');
+    if (snakeIsPitcher(p)) {
+      // Rival GMs keep 5 starters and the relievers for the bullpen while the pool still has both,
+      // so no team hoards starters in its pen and leaves another with relievers in its rotation.
+      const c = t.ctr, free = !c || t.id === USER_TEAM_ID;
+      if (p.role === 'SP') return t.sp.length < 5 ? 'sp' : (t.rp.length < ROSTER_RP && (free || c.rp <= 0) ? 'rp' : '');
+      return t.rp.length < ROSTER_RP ? 'rp' : (t.sp.length < 5 && (free || c.sp <= 0) ? 'sp' : '');
+    }
     const open = SNAKE_FIELD.find(sl => !t.slots[sl] && (sl === 'DH' || canPlayerFillPrimary(p, sl)));
     if (open) return 'L:' + open;
     return t.bench.length < BENCH_SIZE ? 'bench' : '';
@@ -1234,8 +1253,16 @@ var c162NonStop = window.c162NonStop;
     }
     return best ? { p: best, slot: bestSlot } : null;
   }
+  // Starters and relievers still in the pool (shared by every team, used by snakeFits).
+  function snakeCounters(st) {
+    const ctr = { sp: 0, rp: 0 };
+    st.pool.forEach(p => { if (snakeIsPitcher(p)) ctr[p.role === 'SP' ? 'sp' : 'rp']++; });
+    st.ctr = ctr; st.teams.forEach(t => { t.ctr = ctr; });
+    return st;
+  }
   function snakeTake(st, t, p, slot) {
     st.left.delete(p); st.taken.add(personId(p));
+    if (st.ctr && snakeIsPitcher(p)) st.ctr[p.role === 'SP' ? 'sp' : 'rp']--;
     if (slot.startsWith('L:')) t.slots[slot.slice(2)] = { ...p, assignedSlot: slot.slice(2) };
     else if (slot === 'bench') t.bench.push(p);
     else t[slot].push(p);
@@ -1247,8 +1274,12 @@ var c162NonStop = window.c162NonStop;
   function snakeRoster(t) {
     const team = { lineup: SNAKE_FIELD.map(sl => t.slots[sl]).filter(Boolean) };
     promoteRivalBench(team, t.bench);
-    const pen = t.rp.slice().sort((x, y) => (y.ovr || 0) - (x.ovr || 0));
-    return { lineup: team.lineup, bench: t.bench, rotation: t.sp.slice().sort((x, y) => (y.ovr || 0) - (x.ovr || 0)), bullpen: pen.map((p, k) => ({ ...p, role: k === 0 ? 'CL' : 'RP' })) };
+    // A starter drafted late lands in the bullpen; at the end the best 5 starters form the rotation.
+    const arms = [...t.sp, ...t.rp], isSP = p => String(p.role || '').toUpperCase() === 'SP';
+    const rot = arms.filter(isSP).sort((x, y) => (y.ovr || 0) - (x.ovr || 0)).slice(0, 5);
+    arms.filter(p => !rot.includes(p)).sort((x, y) => (y.ovr || 0) - (x.ovr || 0)).forEach(p => { if (rot.length < 5) rot.push(p); });
+    const pen = arms.filter(p => !rot.includes(p)).sort((x, y) => (y.ovr || 0) - (x.ovr || 0));
+    return { lineup: team.lineup, bench: t.bench, rotation: rot.sort((x, y) => (y.ovr || 0) - (x.ovr || 0)), bullpen: pen.map((p, k) => ({ ...p, role: k === 0 ? 'CL' : 'RP' })) };
   }
   function buildSnakeRosters(ids, taken) {
     const st = snakeInit(ids, taken);
@@ -1276,7 +1307,7 @@ var c162NonStop = window.c162NonStop;
     seededShuffle(Object.keys(teams).filter(id => !teams[id].isUser), Math.random).forEach(id => {
       const t = teams[id];
       if (isPoolLeague && RIVALS_FROM_POOL) {
-        const r = snake ? snake[id] : RIVAL_DRAFT === 'box' ? buildBoxRoster(taken) : buildPoolRoster(taken, targets.pop() || []);
+        const r = snake ? snake[id] : RIVAL_DRAFT === 'real' ? rivalUniform(taken) : RIVAL_DRAFT === 'box' ? buildBoxRoster(taken) : buildPoolRoster(taken, targets.pop() || []);
         out[id] = { lineup: r.lineup.map(p => [batterUnlockKey(p), p.assignedSlot]), bench: r.bench.map(batterUnlockKey), rotation: r.rotation.map(pitcherUnlockKey), bullpen: r.bullpen.map(p => [pitcherUnlockKey(p), p.role]), _promoted: true };
         if (keepOf(id)) mergeRivalKeep(out[id], keepOf(id), kidx);
         return;
@@ -1716,10 +1747,12 @@ var c162NonStop = window.c162NonStop;
   const IRON_BOOST = 3; // rating points for any Iron Man: batting ratings for a batter, pitching ratings for a pitcher
   const ironPitKey = p => `P:${pitcherUnlockKey(p)}`;
   const FIREMAN_MAX_LEAD = 2, FIREMAN_TIRED = 4;
+  // Starter endurance (user, Nov 2026): batters faced before tiring = SP_FRESH_BASE + STA * SP_FRESH_SLOPE.
+  const SP_FRESH_BASE = 12, SP_FRESH_SLOPE = 0.22; // was 0.15 (starts ran 5.2 IP)
   const HOOK_SOFT = true;
   const CLOSER_REAL = true;
   const CL_REAL = { eighth: 0.10, eighthJam: 0.45, bigMult: 2.5, work: 0.75, tieHome: 0.7, tieAway: 0.55, down1: 0.35 };
-  const HOOK = { spBase: -4.6, spTired: 0.7, spEr: 0.9, spEarly: 0.35, spGem: 1.2, spBlow: 0.4, rpBase: -1.6, rpLeft: 0.55, rpEr: 1.4, rpTired: 0.8, rpThin: 2.0 };
+  const HOOK = { spBase: -4.6, spTired: 0.7, spEr: 0.9, spEarly: 0.35, spGem: 1.2, spBlow: 0.4, rpBase: -1.6, rpLeft: 0.55, rpEr: 1.4, rpTired: 0.8, rpThin: 2.0, spLate8: 1.0, spLate9: 1.5 };
   const PEN_HAND = 0.04; // ERA of trust per platoon point of the next three batters against that arm (0 = off)
   const PEN_TRUST = true, PEN_TRUST_IP = 30, PEN_DECIDED = 6; // the user's middle relief by performance (see _pickReliever)
   // Mop-up man: every month the user's manager names his worst middle reliever (if he is clearly
@@ -1805,13 +1838,13 @@ var c162NonStop = window.c162NonStop;
   // against ordinary pitchers the hitters reproduce their tables (1.00 / 1.02 / 1.00 / 1.01 in
   // hits / HR / K / BB) and against ordinary hitters the pitchers too (within ~3%); what is left
   // in a season is the level of the opponents (every card is a peak).
-  const PIT_EDGE = 1.5; // user, Oct 2026: 1.5 was "la versión suave"; 1.7 after the 26-man rosters and the rarity box (league ERA 4.19 -> 4.11)
+  const PIT_EDGE = 1; // off with real-league rivals (user, Nov 2026): every card performs close to its own numbers; was 1.6 // user, Nov 2026, with pure batters: league ERA ~4.18, ~19 starters under 3.00 // user, Oct 2026: 1.5 was "la versión suave"; 1.7 after the 26-man rosters and the rarity box (league ERA 4.19 -> 4.11)
   // Same edge, softer on strikeouts and hits: at 1.7 everywhere the aces struck out 430+ and
   // posted ERAs near 1.3 (Oct 2026 review). Walks and home runs keep 1.7.
-  let PIT_EDGE_K = 1.2, PIT_EDGE_H = 1.6; // H 1.6: league ERA 4.13 -> 4.10 (user, Oct 2026)
+  let PIT_EDGE_K = 1, PIT_EDGE_H = 1; // off (was 1.25 / 1.6) // H 1.6: league ERA 4.13 -> 4.10 (user, Oct 2026)
   // League level after the rivals started opening their own box (Nov 2026): scales on homers and on hits on balls in play.
-  const CALIB = { hr: 0.98, bip: 0.9925 }; // user, Nov 2026: half of option C (C = 0.96 / 0.985: league ERA 4.07; none: 4.25)
-  const PA_SCALE_3B = 0.68; // the design table sits above the 1947-2025 triples rate
+  const CALIB = { hr: 1, bip: 1 }; // batters pure, no calibration (user, Nov 2026); was 0.98 / 0.9925 // user, Nov 2026: half of option C (C = 0.96 / 0.985: league ERA 4.07; none: 4.25)
+  const PA_SCALE_3B = 1; // batters pure (user, Nov 2026); was 0.68 // the design table sits above the 1947-2025 triples rate
   function rateAt(ys, v) {
     if (!(v > RT_X[0])) return ys[0];
     for (let n = 1; n < RT_X.length; n++) {
@@ -2062,7 +2095,7 @@ var c162NonStop = window.c162NonStop;
   // other side. Applied to contact, power, eye and K-AVD of that plate appearance.
   // October (the user's playoff games): the engine stops at the big at-bats and the user rolls
   // the d100 for them, at the plate and on the mound (see bigLeverage in _simLeagueGame).
-  const USER_PROJ_EDGE = 3.5; // wins the user's team adds over its ratings in the preview projection
+  const USER_PROJ_EDGE = 0; // refit Nov 2026 with real-league rivals (47 seasons): the ratings already explain the user's wins // wins the user's team adds over its ratings in the preview projection
   const PLATOON_LINEUPS = true; // regular season: platoon nine against the opposing starter (all teams)
   const BIG_LI = 1.25, BIG_PACE = 0.45, BIG_STEP = 0.35, BIG_ROLLS_MAX = 5, CLUTCH_DICE = 1, PLATOON_SWAP_EDGE = 3;
   const PLATOON_ON = true;
@@ -2091,7 +2124,7 @@ var c162NonStop = window.c162NonStop;
     return (rpList || []).map(p => (!p ? '' : p === closer ? 'CL' : p === setup ? setupLabel : longSet.has(p) ? 'LRP' : `RP${++n}`));
   }
 
-  function calculateChallengeRosterSlots(pulledCards, finalize = false) {
+  function calculateChallengeRosterSlots(pulledCards, finalize = false, noOutOfPosition = false) {
     const batters = pulledCards.filter(c => !c.role).sort((a, b) => (b.ovr || 50) - (a.ovr || 50));
     const pitchers = pulledCards.filter(c => c.role).sort((a, b) => (b.ovr || 50) - (a.ovr || 50));
 
@@ -2104,7 +2137,7 @@ var c162NonStop = window.c162NonStop;
     //  - out of position only when nobody on the roster can play the spot.
     // It used to stop at the first legal assignment by primary position, so a 64 could start in
     // right field while an 81 who also plays there sat on the bench.
-    const allowOutOfPosition = finalize || batters.length >= 9;
+    const allowOutOfPosition = !noOutOfPosition && (finalize || batters.length >= 9);
     const GLOVE_WEIGHT = { C: 0.10, SS: 0.10, CF: 0.10, '2B': 0.08, '3B': 0.06, LF: 0.04, RF: 0.04, '1B': 0.03 };
     const ALL_SLOTS = ['C', 'SS', 'CF', '2B', '3B', '1B', 'LF', 'RF', 'DH'];
     const pool = batters.slice(0, 16); // already sorted by OVR; a draft never has more than 14
@@ -2115,7 +2148,10 @@ var c162NonStop = window.c162NonStop;
       // there up to ~1.5 OVR, enough to send him to the field when someone else can move.
       // ...and the DH is picked by his bat, not his OVR (user, Nov 2026): contact / power / eye
       // turned into OVR units (fit on the pool: OVR = 0.623 * bat + 42.45, r 0.93).
-      if (slot === 'DH') return 0.623 * (0.4 * (p.con || 50) + 0.35 * (p.pwr || 50) + 0.25 * (p.eye || 50)) + 42.45 - 0.02 * Math.max(0, def - 40);
+      // Nov 2026 (user: Hodges, the better glove, sat at DH behind Reilly at 1B): the DH is worth his
+      // OVR minus what his glove adds to it (the OVR weight of defense, ~0.6 OVR per raw point), so
+      // between two hitters the worse glove goes to DH and the better one fields.
+      if (slot === 'DH') return ovr - (p.def_w || 0.16) * 0.62 * (def - 50);
       if (canPlayerFillPrimary(p, slot) || window.isDhHome(p, slot)) return ovr + GLOVE_WEIGHT[slot] * 0.04 * (def - 50);
       if (canPlayerFillSlot(p, slot)) return ovr + GLOVE_WEIGHT[slot] * 0.04 * (def * 0.85 - 50) - 0.35;
       if (!allowOutOfPosition) return -Infinity;
@@ -2151,6 +2187,18 @@ var c162NonStop = window.c162NonStop;
     layer.forEach(st => { if (!best || st.v > best.v) best = st; });
     const taken = new Set();
     (best ? best.pick : []).forEach((k, si) => { if (k >= 0) { lineup[ALL_SLOTS[si]] = pool[k]; taken.add(pool[k]); } });
+    // The DH is the best bat among those not playing the field (user, Nov 2026: Khris Davis, .789
+    // expected OPS, sat behind Ron Hassey, .764, because Hassey's OVR is higher). Bat = the OPS the
+    // engine gives his card (cardBaseObp + cardBaseSlg).
+    {
+      const inField = new Set(Object.entries(lineup).filter(([sl, q]) => sl !== 'DH' && q).map(([, q]) => q));
+      const ops = q => cardBaseObp(q) + cardBaseSlg(q);
+      const cands = batters.filter(q => !inField.has(q));
+      if (cands.length && (lineup.DH || Object.values(lineup).filter(Boolean).length >= 8)) {
+        const bestDh = cands.reduce((a, b) => (ops(b) > ops(a) ? b : a));
+        if (bestDh !== lineup.DH) { if (lineup.DH) taken.delete(lineup.DH); lineup.DH = bestDh; taken.add(bestDh); }
+      }
+    }
     const overflowBatters = batters.filter(p => !taken.has(p));
 
     // ── PASS 5: Bench Reserves (5 Cards) ─────────────────────────────────────
@@ -2566,11 +2614,11 @@ var c162NonStop = window.c162NonStop;
       return { pos: s, level, n, viaSec: !prim.length && sec.length > 0, chain: !n && chains.length > 0, tip };
     });
   }
-  function depthStripHTML(lineupMap, bench) {
+  function depthStripHTML(lineupMap, bench, needAttr = false) {
     const rows = rosterDepth(lineupMap, bench);
     if (!rows.some(r => r.level !== 'empty')) return ''; // nothing to say before the first starter
     return `<div class="c162-depth"><div class="c162-depth-title">BACKUPS <span><i class="dk-ok"></i>ok <i class="dk-mid"></i>partial <i class="dk-none"></i>none</span></div><div class="c162-depth-grid">${rows.map(r => `
-      <span class="c162-depth-cell d-${r.level}" title="${r.tip.replace(/"/g, '&quot;')}"><b>${r.pos}</b><small>${r.level === 'empty' ? '—' : r.chain ? '↔' : r.n + (r.viaSec ? '*' : '')}</small></span>`).join('')}</div></div>`;
+      <span class="c162-depth-cell d-${r.level}"${needAttr ? ` data-need="POS:${r.pos}"` : ''} title="${r.tip.replace(/"/g, '&quot;')}"><b>${r.pos}</b><small>${r.level === 'empty' ? '—' : r.chain ? '↔' : r.n + (r.viaSec ? '*' : '')}</small></span>`).join('')}</div></div>`;
   }
 
   function wearPenalty(f) {
@@ -2718,12 +2766,12 @@ var c162NonStop = window.c162NonStop;
     const eye = p._baseEye !== undefined ? p._baseEye : (p.eye !== undefined ? p.eye : 50);
     // Fitted to what the engine gives a regular (4,200 player-seasons with the Oct 2026 engine:
     // card tables against the cards' own era, no league scales). Refit when the engine changes.
-    return 0.2409 + 0.00088 * con + 0.00075 * eye;
+    return 0.2558 + 0.00095 * con + 0.00081 * eye; // refit Nov 2026: real-league rivals, pure batters, no PIT_EDGE (47 seasons)
   }
   function cardBaseSlg(p) {
     const con = p._baseCon !== undefined ? p._baseCon : (p.con !== undefined ? p.con : 50);
     const pwr = p._basePwr !== undefined ? p._basePwr : (p.pwr !== undefined ? p.pwr : 50);
-    return 0.2496 + 0.0014 * con + 0.00141 * pwr;
+    return 0.2662 + 0.00155 * con + 0.00188 * pwr;
   }
   function cardBaseOps(p) {
     return cardBaseObp(p) + cardBaseSlg(p);
@@ -2734,7 +2782,7 @@ var c162NonStop = window.c162NonStop;
     // (4.05 at OVR 72, the same for both) expected 0.7 of ERA less from the starters than they
     // post, so 40% of them were COLD (-4 to their ratings) and 15% HOT.
     const isRP = Boolean(p.role && p.role !== 'SP');
-    return Math.max(2.00, Math.min(6.00, isRP ? 8.84 - 0.0724 * ovr : 8.53 - 0.0565 * ovr));
+    return Math.max(2.00, Math.min(6.00, isRP ? 8.24 - 0.0620 * ovr : 8.43 - 0.0567 * ovr));
   }
 
   function withMomentumBatter(p, m) {
@@ -4935,7 +4983,7 @@ var c162NonStop = window.c162NonStop;
     _freshBatters(p, isStarter) {
       const sta = p.sta !== undefined ? p.sta : (p.sta_val !== undefined ? p.sta_val : 50);
       // An Iron Man pitcher tires more slowly: more batters before his ratings start to drop.
-      return (isStarter ? 12 + sta * 0.15 : 4 + sta * 0.05) * (p.iron ? (isStarter ? IRON_SP_FRESH : IRON_RP_FRESH) : 1) * (isStarter && isWorkhorse(p) ? WORKHORSE_SP_FRESH : 1);
+      return (isStarter ? SP_FRESH_BASE + sta * SP_FRESH_SLOPE : 4 + sta * 0.05) * (p.iron ? (isStarter ? IRON_SP_FRESH : IRON_RP_FRESH) : 1) * (isStarter && isWorkhorse(p) ? WORKHORSE_SP_FRESH : 1);
     },
 
     _fatiguePenalty(ps) {
@@ -5684,7 +5732,8 @@ var c162NonStop = window.c162NonStop;
           } else {
             // How the manager feels about his starter, not a rule: tiredness, runs, the inning, the score.
             const x = HOOK.spBase + HOOK.spTired * tired + HOOK.spEr * Math.max(0, ps.er - 2) + (inning <= 5 ? HOOK.spEarly * ps.er : 0)
-              - (gem ? HOOK.spGem : 0) - (Math.abs(lead) >= 5 ? HOOK.spBlow : 0);
+              - (gem ? HOOK.spGem : 0) - (Math.abs(lead) >= 5 ? HOOK.spBlow : 0)
+              + (inning >= 8 ? HOOK.spLate8 : 0) + (inning >= 9 ? HOOK.spLate9 : 0);
             pull = inning > 9 || Math.random() < 1 / (1 + Math.exp(-x));
           }
         } else if (ps.fireman) {
@@ -9806,8 +9855,7 @@ var c162NonStop = window.c162NonStop;
         if (c) taken.add(personId(c));
         return c;
       }).filter(Boolean);
-      // shuffled: the pack does not come sorted (user)
-      for (let i = cards.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [cards[i], cards[j]] = [cards[j], cards[i]]; }
+      cards.sort((a, b) => (b.ovr || 0) - (a.ovr || 0)); // best first (user, Nov 2026; was shuffled)
       B.cards = cards; B.sel = [];
     },
     // Puts cards into the free spots of a copy of the board: batters to their position, then a
@@ -9825,7 +9873,14 @@ var c162NonStop = window.c162NonStop;
         const room = { bat: 9 + BENCH_SIZE - bats.length, pit: 5 + ROSTER_RP - pits.length };
         const rest = [];
         cards.forEach(c => { const g = c.role ? 'pit' : 'bat'; if (auto[g] && room[g] > 0) { (g === 'bat' ? bats : pits).push(c); room[g]--; ok.push(true); } else { ok.push(null); rest.push(c); } });
-        if (auto.bat) { const r = calculateChallengeRosterSlots(bats, false); S.lineup = Object.assign({}, r.lineup); S.bench = Array.from({ length: BENCH_SIZE }, (_, i) => (r.bench || [])[i] || null); }
+        if (auto.bat) {
+          // While drafting nobody is put out of position just to fill an empty spot (user, Nov 2026):
+          // the spot stays open; only when the bench is full does a leftover go to an open spot.
+          const r = calculateChallengeRosterSlots(bats, false, true); S.lineup = Object.assign({}, r.lineup); S.bench = Array.from({ length: BENCH_SIZE }, (_, i) => (r.bench || [])[i] || null);
+          const inS = new Set([...Object.values(S.lineup), ...S.bench].filter(Boolean));
+          const left = bats.filter(c => !inS.has(c));
+          if (left.length) { const pl = this._bigPlaceManual(S, left); S.lineup = pl.S.lineup; S.bench = pl.S.bench; }
+        }
         if (auto.pit) { const r = calculateChallengeRosterSlots(pits, false); S.sp = Array.from({ length: 5 }, (_, i) => r.sp[i] || null); S.rp = Array.from({ length: ROSTER_RP }, (_, i) => r.rp[i] || null); }
         const placed = this._bigPlaceManual(S, rest);
         let k = 0;
@@ -9972,14 +10027,40 @@ var c162NonStop = window.c162NonStop;
       const row = (k, n, lab) => `<div class="bpb-row">${Array.from({ length: n }, (_, i) => chip(`${k}:${i}`, lab(i))).join('')}</div>`;
       const f = this._bigFree(S);
       return `<div class="bpb">
-        <div class="bpb-top"><b>YOUR TEAM</b>${(B.edited && (B.edited.bat || B.edited.pit)) ? '<button class="bpb-sort" data-bpb-sort="1" title="Your moves stop the auto-sort; this puts it back">↺ AUTO-SORT</button>' : '<em class="bpb-auto">auto-sorting</em>'}<span>${25 - f.bat - f.pit}/25 · open: ${f.bat} bat · ${f.pit} arm</span></div>
+        <div class="bpb-top"><b>YOUR TEAM</b>${(B.edited && (B.edited.bat || B.edited.pit)) ? '<button class="bpb-sort" data-bpb-sort="1" title="Your moves stop the auto-sort; this puts it back">↺ AUTO-SORT</button>' : '<em class="bpb-auto">auto-sorting</em>'}<span>${25 - f.bat - f.pit}/25 · open: ${f.bat} bat · ${f.pit} arm</span>${(() => { const all = [...Object.values(S.lineup), ...S.bench, ...S.sp, ...S.rp].filter(Boolean); return all.length ? `<div class="bpb-ovr"><small>TEAM OVR</small><b>${(all.reduce((t, c) => t + (c.ovr || 0), 0) / all.length).toFixed(1)}</b></div>` : ''; })()}</div>
         ${field}
         <div class="bpb-t">🛋️ BENCH</div>${row('bench', BENCH_SIZE, i => 'BN' + (i + 1))}
         <div class="bpb-t">🧢 ROTATION</div><div class="bpb-row">${[1, 2, 3, 4].map(i => chip(`sp:${i}`, 'SP' + (i + 1))).join('')}</div>
         <div class="bpb-t">🔥 BULLPEN</div>${row('rp', ROSTER_RP, i => (i === 0 ? 'CL' : 'RP' + i))}
-        <div class="bpb-extra">${(() => { try { const all = [...Object.values(S.lineup), ...S.bench, ...S.sp, ...S.rp].filter(Boolean); return depthStripHTML(S.lineup, S.bench) + (all.length ? this._chemistryHTML(all, true) : ''); } catch (e) { return ''; } })()}</div>
+        ${this._bigNeedsHTML(S)}
+        <div class="bpb-extra">${(() => { try { const all = [...Object.values(S.lineup), ...S.bench, ...S.sp, ...S.rp].filter(Boolean); return all.length ? this._chemistryHTML(all, true) : ''; } catch (e) { return ''; } })()}</div>
         <div class="bpb-hint">${B.pick ? 'Tap another spot to swap.' : 'Dashed = the cards you are about to keep. Drag a player to another spot (or tap two spots) to swap them. Right click a player to see his card.'}</div>
       </div>`;
+    },
+    // Team needs (user, Nov 2026): missing starters, how many arms / bench spots are left, and a
+    // warning when the packs that remain are tight for one side (each pack keeps BIG_PACK_KEEP).
+    _bigNeedsHTML(S) {
+      const B = this._big; if (!B) return '';
+      const missing = SLOTS.filter(sl => !S.lineup[sl]);
+      const sp = S.sp.filter(Boolean).length, rp = S.rp.filter(Boolean).length, bn = S.bench.filter(Boolean).length;
+      const batLeft = missing.length + (BENCH_SIZE - bn), pitLeft = (5 - sp) + (ROSTER_RP - rp);
+      const packsLeft = B.box.length - B.i - (B.open ? 1 : 0);
+      let warn = '';
+      if (packsLeft > 0) {
+        const tight = (n, what) => (n / packsLeft > BIG_PACK_KEEP * 0.7 ? `${what} is short: ${n} still to fill with ${packsLeft} pack${packsLeft > 1 ? 's' : ''} left (about ${Math.ceil(n / packsLeft)} per pack).` : '');
+        warn = tight(pitLeft, 'Pitching') || tight(batLeft, 'Hitting');
+      } else if (batLeft + pitLeft > 0) warn = `Last pack: ${batLeft + pitLeft} spots still open; the empty ones get a Common walk-on.`;
+      const cnt = (lab, have, max) => `<div class="bpn-c ${have >= max ? 'full' : ''}" data-need="${lab}"><small>${lab}</small><b>${have} / ${max}</b></div>`;
+      return `<div class="bpn"><div class="bpn-h">📋 TEAM NEEDS</div>
+        <div class="bpn-row">${cnt('LINEUP', 9 - missing.length, 9)}${cnt('ROTATION', sp, 5)}${cnt('BULLPEN', rp, ROSTER_RP)}${cnt('BENCH', bn, BENCH_SIZE)}</div>
+        ${missing.length ? `<div class="bpn-miss">Missing: ${missing.map(m => `<i data-need="POS:${m}">${m}</i>`).join('')}</div>` : (() => {
+          // lineup full: what the bench still lacks, by group (user, Nov 2026), instead of the full backups strip
+          const dep = rosterDepth(S.lineup, S.bench), lv = Object.fromEntries(dep.map(r => [r.pos, r.level]));
+          const G = [['C', ['C'], 'C'], ['IF', ['1B', '2B', '3B', 'SS'], 'IF'], ['OF', ['LF', 'CF', 'RF'], 'OF']];
+          const chips = G.map(([k, ps, name]) => { const bad = ps.filter(x => lv[x] === 'none'), mid = ps.filter(x => lv[x] === 'mid'); return bad.length ? `<i class="bad" data-need="GRP:${ps.join(',')}" title="No backup at ${bad.join(', ')}">${name}</i>` : mid.length ? `<i class="mid" data-need="GRP:${ps.join(',')}" title="Only partial cover at ${mid.join(', ')}">${name}?</i>` : ''; }).join('');
+          return chips ? `<div class="bpn-miss">Backups needed: ${chips}</div>` : '<div class="bpn-miss ok">Lineup set and every position has a backup.</div>';
+        })()}
+        ${warn ? `<div class="bpn-warn">⚠ ${warn}</div>` : ''}</div>`;
     },
     renderBigPack() {
       const B = this._big, el = document.getElementById('challenge162-pack-container');
@@ -9996,14 +10077,14 @@ var c162NonStop = window.c162NonStop;
       const preview = this._bigPlace(B.slots, ghostCards).S;
       let body;
       if (!B.open) {
-        body = `<div class="d2-table bp-table"><div class="bp-sealed-wrap"><div class="draft-pack draft-pack--${info.theme} bp-pack3d"></div>
+        body = `<div class="d2-table bp-table"><div class="bp-sealed-wrap"><div class="bp-pack2d t-${type}"></div>
           <button class="btn c162-cta bp-open">✂ OPEN THE ${info.name}</button>
           <p class="bp-odds">${BIG_PACK_CARDS} cards, batters and pitchers mixed. Keep ${BIG_PACK_KEEP}.</p></div></div>`;
       } else {
-        // reveal: dealt face down, then flipped one by one from the lowest rarity up (big ones wait longer)
+        // reveal: dealt face down, then flipped one by one from the lowest OVR up (big rarities wait longer)
         const RK = { Common: 0, Uncommon: 1, Rare: 2, Epic: 3, Elite: 4, Legendary: 5 };
         const flipAt = {}; let tAt = 900 + BIG_PACK_CARDS * 70;
-        B.cards.map((c, i) => i).sort((a, b) => (RK[B.cards[a].rarity] || 0) - (RK[B.cards[b].rarity] || 0)).forEach(i => {
+        B.cards.map((c, i) => i).sort((a, b) => (B.cards[a].ovr || 0) - (B.cards[b].ovr || 0)).forEach(i => { // lowest OVR first, the best one last
           const r = RK[B.cards[i].rarity] || 0; tAt += r >= 3 ? 520 + (r - 3) * 260 : 170; flipAt[i] = tAt; });
         if (!B.dealt) B.revealEnd = Date.now() + tAt + 500;
         const cards = B.cards.map((c, i) => {
@@ -10011,7 +10092,8 @@ var c162NonStop = window.c162NonStop;
           const fl = flipAt[i] || 0;
           const others = [...Object.values(B.slots.lineup), ...B.slots.bench, ...B.slots.sp, ...B.slots.rp, ...B.sel.filter(j => j !== i).map(j => B.cards[j])].filter(Boolean);
           const ds = chemDelta(others, c).filter(x => x.after >= 2);
-          const chemLine = ds.length ? `<div class="c162-oc-chem bp-chem">${ds.map(x => `<span class="${x.tierUp ? 'up' : ''}" title="${x.after} of this ${x.kind === 'team' ? 'franchise' : x.kind === 'era' ? 'era' : 'country'} with him">${CHEM_ICON[x.kind]} ${x.label} ${x.before}→${x.after}${x.tierUp ? ` <b>T${x.tier.tier} +${x.tier.bonus}</b>` : x.tier.max ? ' <i>T3 max</i>' : ` <i>${x.tier.left} to T${x.tier.tier + 1}</i>`}</span>`).join('')}</div>` : '';
+          const chemUp = ds.some(x => x.tierUp);
+          const chemLine = ds.length ? `<div class="bp-chemb ${chemUp ? 'up' : ''}" title="${ds.map(x => `${x.label} ${x.before}→${x.after}${x.tierUp ? ` (T${x.tier.tier} +${x.tier.bonus})` : ''}`).join(' · ').replace(/"/g, '')}">${[...new Set(ds.map(x => CHEM_ICON[x.kind]))].join('')}${chemUp ? ' ▲' : ''}</div>` : '';
           return `<div class="bp-card ${on ? 'on' : ''} ${can ? '' : 'off'} r-${(c.rarity || 'Common').toLowerCase()}" data-bp="${i}" style="--i:${i};--fl:${fl}ms">${window.createCardHTML ? window.createCardHTML(c, c.role || c.pos) : cleanName(c)}<span class="bp-back"></span><span class="bp-burst">${(c.rarity || '').toUpperCase()}!</span><span class="bp-tick">✓ KEEP</span>${chemLine}</div>`;
         }).join('');
         const keep = this._bigKeepN();
@@ -10029,13 +10111,37 @@ var c162NonStop = window.c162NonStop;
       el.innerHTML = `<div class="bp-wrap">${head}<div class="bp-main"><div class="bp-left">${body}</div><div class="bp-right">${this._bigBoardHTML(preview, new Set(ghostCards))}</div></div></div>`;
       const openIt = () => { B.open = true; this.renderBigPack(); if (window.AudioManager && AudioManager.play) AudioManager.play('card_deal'); };
       const ob = el.querySelector('.bp-open'); if (ob) ob.onclick = openIt;
-      const p3 = el.querySelector('.bp-pack3d');
-      if (p3) {
-        if (window.DraftPack3D) {
-          window.DraftPack3D.mount(p3, { theme: info.theme, tier: info.tier, badge: `${B.i + 1}/${B.box.length}`, tagline: info.name, fine: `HOBBY BOX  ·  ${BIG_PACK_CARDS} CARDS  ·  KEEP ${BIG_PACK_KEEP}` });
-          p3.onclick = () => { const op = window.DraftPack3D.open(p3); if (!op) return openIt(); op.then(() => { if (this._big === B) openIt(); }); };
-        } else p3.style.display = 'none';
+      // Flat printed pack (user, Nov 2026: the 3D foil with flares looked worse than the box's 2D art)
+      const p2 = el.querySelector('.bp-pack2d');
+      if (p2) {
+        const src = window.DraftPack3D && window.DraftPack3D.art ? window.DraftPack3D.art(info.theme, { tagline: info.name, badge: `${B.i + 1}/${B.box.length}`, fine: '' }) : '';
+        if (src) p2.innerHTML = `<img class="bp-pk-body" src="${src}" alt=""><img class="bp-pk-strip" src="${src}" alt="">`; else p2.style.display = 'none';
+        // 2D rip (user, Nov 2026): it shakes, the top strip tears off and flies away, sparks, then the wrapper drops
+        const tier = { Premium: 3, Hobby: 2, any: 2, Retail: 1, Wax: 0 }[type] || 0;
+        const snd = (k) => { try { if (window.DraftPack3D && window.DraftPack3D.sound) window.DraftPack3D.sound(k, tier); } catch (e) { /* no audio */ } };
+        p2.onclick = () => {
+          if (p2.classList.contains('tearing')) return;
+          p2.classList.add('tearing'); snd('crinkle');
+          setTimeout(() => {
+            p2.classList.add('ripped'); snd('rip');
+            for (let k = 0; k < 10 + tier * 4; k++) { const sp = document.createElement('span'); sp.className = 'd3-spark'; const a = -Math.PI / 2 + (Math.random() - 0.5) * 2.4, d = 60 + Math.random() * (70 + tier * 20); sp.style.setProperty('--sx', `${Math.cos(a) * d}px`); sp.style.setProperty('--sy', `${Math.sin(a) * d}px`); sp.style.setProperty('--sc', Math.random() < 0.5 ? '#ffd36a' : '#ffffff'); sp.style.animationDelay = `${Math.random() * 120}ms`; p2.appendChild(sp); }
+          }, 420 + tier * 80);
+          setTimeout(() => { if (this._big === B) openIt(); }, 1150 + tier * 80);
+        };
       }
+      // Team needs hover (user, Nov 2026): light up the cards of the open pack that fill that need
+      const needFits = (need, c) => {
+        const isSP = c.role && String(c.role).toUpperCase() === 'SP';
+        if (need === 'ROTATION') return isSP; if (need === 'BULLPEN') return !!c.role && !isSP; if (need === 'BENCH') return !c.role;
+        const S0 = B.slots; const miss = SLOTS.filter(sl => !S0.lineup[sl]);
+        const fitsPos = sl => !c.role && (sl === 'DH' || canPlayerFillPrimary(c, sl) || canPlayerFillSlot(c, sl));
+        if (need === 'LINEUP') return miss.some(fitsPos);
+        if (need.startsWith('POS:')) return fitsPos(need.slice(4)); if (need.startsWith('GRP:')) return need.slice(4).split(',').some(fitsPos);
+        return false; };
+      el.querySelectorAll('[data-need]').forEach(n => {
+        n.addEventListener('mouseenter', () => { if (!B.cards || !B.open) return; el.classList.add('bp-needing'); el.querySelectorAll('[data-bp]').forEach(d => d.classList.toggle('need-hit', !!needFits(n.dataset.need, B.cards[+d.dataset.bp]))); });
+        n.addEventListener('mouseleave', () => { el.classList.remove('bp-needing'); el.querySelectorAll('.need-hit').forEach(d => d.classList.remove('need-hit')); });
+      });
       const dex = c => { if (c && window.BaseballDex && BaseballDex.showDetail) BaseballDex.showDetail(dexCard(c)); };
       el.querySelectorAll('[data-bp]').forEach(d => {
         const i = +d.dataset.bp;
@@ -10127,12 +10233,12 @@ var c162NonStop = window.c162NonStop;
         return src ? `<img class="bxp-art pk-${k.toLowerCase()}" src="${src}" alt="" style="--a:${a}deg;--d:${(i * 0.08).toFixed(2)}s">` : `<i class="bxp t-${k.toLowerCase()}" style="--a:${a}deg;--d:${(i * 0.08).toFixed(2)}s"></i>`;
       }).join('');
       const RCOL = ['#9aa3ad', '#4ade80', '#60a5fa', '#c084fc', '#fb3b5c', '#fbbf24'], RNAME = ['Common', 'Uncommon', 'Rare', 'Epic', 'Elite', 'Legendary'];
-      const legend = `<div class="bxk-row">${kinds.map(k => {
+      const legend = `<div class="bxk-row">${(big ? draft.box : kinds).map((k, ki) => {
         const o = (big ? USER_PACK_ODDS : PACK_TIER_ODDS)[k], inf = PACK_TIER_INFO[k], src = art(k);
         const bar = o.map((v, i) => v > 0 ? `<i style="flex:${v};background:${RCOL[i]}" title="${RNAME[i]} ${Math.round(v * 1000) / 10}%"></i>` : '').join('');
         const top2 = o.map((v, i) => [v, i]).sort((a, b) => b[0] - a[0]).slice(0, 2).sort((a, b) => a[1] - b[1]).map(([, i]) => `<b style="color:${RCOL[i]}">${RNAME[i]}</b>`).join(' & ');
-        return `<div class="bxk pk-${k.toLowerCase()}">
-            ${src ? `<img src="${src}" alt="">` : ''}
+        return `<div class="bxk pk-${k.toLowerCase()}" style="--i:${ki}">
+            ${big ? `<small class="bxk-n">PACK ${ki + 1}</small><i class="bxk-burst"></i>` : ''}${src ? `<img src="${src}" alt="">` : ''}
             <div class="bxk-name">${inf.name.replace(' PACK', '')}</div>
             <div class="bxk-share">${big ? `1 of ${nBox}<span>one of each kind</span>` : `≈ ${Math.round(PACK_ODDS[k] * nBox)} of ${nBox}<span>${Math.round(PACK_ODDS[k] * 100)}% of packs</span>`}</div>
             <div class="bxk-bar">${bar}</div>
@@ -10193,9 +10299,12 @@ var c162NonStop = window.c162NonStop;
         for (let j = 1; j < ny; j++) { pts.push([0, j * H / ny]); pts.push([W, j * H / ny]); }
         mq.innerHTML = pts.map(([x, y], k) => `<b class="${k % 2 ? 'b' : 'a'}" style="left:${x}px;top:${y}px"></b>`).join('');
       }, 30);
+      // one sound per pack as it comes out big, the Premium and the Mystery a little louder
+      const revealSfx = () => { if (!big || !window.AudioManager || typeof window.AudioManager.play !== 'function') return; draft.box.forEach((k, i) => setTimeout(() => { if (el.isConnected) { if ((k === 'Premium' || k === 'any') && window.BaseballDex && window.BaseballDex.playPackSound) window.BaseballDex.playPackSound(k === 'Premium' ? 'Legendary' : 'Epic'); else window.AudioManager.play('card_deal'); } }, 350 + i * 380)); };
       const open = () => {
         if (el.classList.contains('open')) return;
         el.classList.add('open');
+        revealSfx();
         if (window.AudioManager && typeof window.AudioManager.play === 'function') window.AudioManager.play('defense_dice_roll');
       };
       el.querySelector('#c162-bx-box').addEventListener('click', open);
@@ -10207,7 +10316,7 @@ var c162NonStop = window.c162NonStop;
         const themes = draft.box.map(k => (PACK_TIER_INFO[k] || PACK_TIER_INFO.any).theme).sort(() => Math.random() - 0.5);
         window.Box3D.mount(host3, themes, {
           onOpen: () => { el.classList.add('opening3d'); if (window.AudioManager && typeof window.AudioManager.play === 'function') window.AudioManager.play('card_deal'); },
-          onDone: () => { el.classList.add('open'); }
+          onDone: () => { el.classList.add('open'); revealSfx(); }
         }).then(ok => {
           if (!ok || !el.isConnected) return;
           el.classList.add('has3d');
@@ -12184,7 +12293,7 @@ var c162NonStop = window.c162NonStop;
         // Refit Oct 2026 (448 team-seasons with the new engine). The user's team beats the same
         // ratings by ~3.5 wins (chemistry, Iron Men, his own lineup and manager calls): the old
         // preview undersold it in most seasons (user report), so it gets that edge.
-        const w = SEASON_LENGTH / 2 + 2.06 * (f[0] - m[0]) + 0.46 * (f[1] - m[1]) + 0.68 * (f[2] - m[2]) + (id === USER_TEAM_ID ? USER_PROJ_EDGE : 0);
+        const w = SEASON_LENGTH / 2 + 2.22 * (f[0] - m[0]) + 0.65 * (f[1] - m[1]) + 0.49 * (f[2] - m[2]) + (id === USER_TEAM_ID ? USER_PROJ_EDGE : 0);
         exp[id] = Math.max(40, Math.min(125, w));
       });
       return exp;

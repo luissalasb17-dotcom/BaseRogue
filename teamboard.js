@@ -8,7 +8,7 @@
   const SLOTS = ['C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'DH'];
   const FIELD_SPOT = { CF: [50, 13.5], LF: [15, 22.5], RF: [85, 22.5], SS: [36, 32], '2B': [64, 32],
     '3B': [21, 54], '1B': [79, 54], P: [50, 55.5], C: [50, 86.5], DH: [8, 86.5] };
-  const BENCH = 5, SP_N = 5, RP_N = 7;
+  const BENCH = 5, SP_N = 5, RP_N = 6; // 25-man roster, same as the Challenge
   const STORE = 'baserogue_dex_previews_v1';
   const FIELD_SVG = `<svg class="tb-diamond" viewBox="0 0 1500 1040" preserveAspectRatio="none" aria-hidden="true">
     <path class="g-out" d="M750 770 L105 125 A912 912 0 0 1 1395 125 Z"/><path class="g-track" d="M105 125 A912 912 0 0 1 1395 125"/>
