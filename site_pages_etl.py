@@ -167,7 +167,8 @@ def write_page(slug, title, desc, h1, lead, groups, intro, faq=None, related=Non
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2{FONTS}" rel="stylesheet">
   <link rel="stylesheet" href="/cards2.css?v=s1">
-  <link rel="stylesheet" href="/cards2_eras.css?v=s2">
+  <link rel="stylesheet" href="/cards2_eras.css?v=12">
+  <link rel="stylesheet" href="/card_variants.css?v=35">
   <link rel="stylesheet" href="/cards2_backs.css?v=s1">
   <link rel="stylesheet" href="/site.css?v=6">
   <script defer src="/_vercel/insights/script.js"></script>
@@ -202,6 +203,7 @@ def write_page(slug, title, desc, h1, lead, groups, intro, faq=None, related=Non
   </footer>
 </main>
 <script src="/card_art.js?v=14"></script>
+<script src="/card_variants.js?v=14"></script>
 <script src="/site.js?v=5"></script>
 </body>
 </html>
@@ -312,6 +314,7 @@ body = f'''<body class="site-post">
   </footer>
 </main>
 <script src="/card_art.js?v=14"></script>
+<script src="/card_variants.js?v=14"></script>
 <script src="/site.js?v=5"></script>
 </body>
 </html>
