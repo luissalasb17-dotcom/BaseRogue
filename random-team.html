@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Random All-Time Baseball Team Generator | BaseRogue</title>
+  <meta name="description" content="Generate a random baseball team from all of history: a player at every position, a five-man rotation and a closer, from 1871 to today. Lock the ones you like and roll again.">
+  <link rel="canonical" href="https://baserogue.com/random-team.html">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://baserogue.com/random-team.html">
+  <meta property="og:title" content="Random all-time baseball team">
+  <meta property="og:description" content="Generate a random baseball team from all of history: a player at every position, a five-man rotation and a closer, from 1871 to today. Lock the ones you like and roll again.">
+  <meta property="og:image" content="https://baserogue.com/assets/logo.webp">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="/assets/logo.webp">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&family=Oswald:wght@400;500;600;700&family=Playfair+Display:wght@500;700&family=Alfa+Slab+One&family=Righteous&family=Yellowtail&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/cards2.css?v=s1">
+  <link rel="stylesheet" href="/cards2_eras.css?v=s2">
+  <link rel="stylesheet" href="/cards2_backs.css?v=s1">
+  <link rel="stylesheet" href="/site.css?v=6">
+  <script defer src="/_vercel/insights/script.js"></script>
+  <script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebApplication", "name": "Random all-time baseball team", "url": "https://baserogue.com/random-team.html", "applicationCategory": "GameApplication", "operatingSystem": "Any (web browser)", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "Generate a random baseball team from all of history: a player at every position, a five-man rotation and a closer, from 1871 to today. Lock the ones you like and roll again."}</script>
+</head>
+<body class="site-post site-tool">
+<main>
+  <header>
+    <a href="/"><img src="/assets/logo.webp" alt="BaseRogue logo" width="640" height="260"></a>
+    <h1>Build a random all-time team</h1>
+    <p class="lead">A player at every position, a rotation and a closer, drawn from all of baseball history. Lock the ones you like and roll the rest.</p>
+  </header>
+  <section class="rt-box">
+    <div class="rp-controls">
+      <label>Era <select id="rt-era"></select></label>
+      <div class="rp-modes"><button class="on" data-rt-level="any">Anyone</button><button data-rt-level="stars">Stars (80+)</button><button data-rt-level="legend">Legends only</button></div>
+      <button id="rt-roll" class="play main">🎲 Roll the team</button>
+    </div>
+    <div class="rt-head"><div class="rt-ovr"><small>TEAM OVR</small><b id="rt-ovr">—</b></div><div><p id="rt-verdict" class="rt-verdict"></p><p id="rt-count" class="rt-count"></p></div></div>
+    <div id="rt-field" class="rt-field"></div>
+    <h2>Rotation and closer</h2>
+    <div id="rt-staff" class="rt-staff"></div>
+  </section>
+  <section>
+    <h2>Play it for real</h2>
+    <p>In BaseRogue's All-Time League you build a team like this one from card packs or a 32-team draft, then play every game of a 162-game season, the All-Star Game and the playoffs. Can your team go 162-0?</p>
+    <a class="play main" href="/">Play BaseRogue free</a> <a class="play alt" href="/random-player.html">Pull a random player</a>
+  </section>
+  <footer>
+    <p><a href="/">Play BaseRogue</a> · <a href="/random-player.html">Random player</a> · <a href="/random-team.html">Random team</a> · <a href="/rankings/">Rankings</a> · <a href="/blog/">Blog</a> · <a href="/all-time-league.html">All-Time League</a></p>
+    <p>BaseRogue is a fan-made project and is not affiliated with Major League Baseball.</p>
+  </footer>
+</main>
+<script src="/site_cards.js?v=1"></script>
+<script src="/player_hands.js?v=1"></script>
+<script src="/card_art.js?v=14"></script>
+<script src="/site.js?v=5"></script>
+<script src="/site_tools.js?v=3"></script>
+</body>
+</html>

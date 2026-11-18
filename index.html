@@ -243,6 +243,15 @@
           <i class="fa-solid fa-circle-info" style="font-size: 13px;"></i>
           <span>ABOUT</span>
         </a>
+        <a href="random-player.html" class="site-tool-link" style="display: inline-flex; align-items: center; gap: 8px; background: rgba(192,132,252,0.12); border: 1.5px solid #c084fc; padding: 8px 16px; border-radius: 20px; color: #e9d5ff; font-family: 'Press Start 2P', monospace; font-size: 8px; text-decoration: none;">
+          <span style="font-size: 13px;">🎴</span>
+          <span>RANDOM PLAYER</span>
+        </a>
+        <a href="random-team.html" class="site-tool-link" style="display: inline-flex; align-items: center; gap: 8px; background: rgba(56,189,248,0.12); border: 1.5px solid #38bdf8; padding: 8px 16px; border-radius: 20px; color: #bae6fd; font-family: 'Press Start 2P', monospace; font-size: 8px; text-decoration: none;">
+          <span style="font-size: 13px;">🎲</span>
+          <span>RANDOM TEAM</span>
+        </a>
+        <script>if (location.protocol === 'file:') document.querySelectorAll('.site-tool-link').forEach(a => { a.href = 'https://baserogue.com/' + a.getAttribute('href'); a.target = '_blank'; });</script>
       </div>
       <!-- Card wall: random real cards, reshuffle with 🎲, click opens the Dex card -->
       <div id="menu-card-wall" class="mcw"></div>
