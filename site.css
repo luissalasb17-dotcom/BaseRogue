@@ -80,3 +80,18 @@ footer p:first-child { font: 400 18px 'VT323', monospace; letter-spacing: .5px; 
   h2 { font-size: 12px; }
 }
 @media (prefers-reduced-motion: reduce) { .site-bg-slot, .site-fan-slot { animation: none; } }
+
+/* Blog */
+.post-cards { display: flex; flex-wrap: wrap; justify-content: center; gap: 22px; margin: 22px 0 8px; }
+.post-card { transform: scale(1.15); margin: 18px 12px; }
+.post-meta { font: 500 13px 'Oswald', sans-serif; letter-spacing: 1px; color: #9db3a6; margin-top: -6px; }
+.post-table { width: 100%; border-collapse: collapse; margin: 14px 0; font: 400 15px 'Oswald', sans-serif; }
+.post-table th, .post-table td { padding: 7px 10px; border-bottom: 1px solid rgba(110,231,160,.18); text-align: right; }
+.post-table th:first-child, .post-table td:first-child { text-align: left; }
+.post-table th { color: #6ee7a0; font-weight: 600; letter-spacing: 1px; }
+.post-list { list-style: none; padding: 0; }
+.post-list li { margin: 0 0 18px; }
+.post-list a { font: 600 20px 'Oswald', sans-serif; color: #ffd36a; text-decoration: none; }
+.post-list p { margin: 4px 0 0; }
+.post-cta { text-align: center; margin: 26px 0 6px; }
+@media (max-width: 600px) { .post-card { transform: none; margin: 4px; } .post-table { font-size: 13px; } }

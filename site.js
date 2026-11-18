@@ -37,6 +37,10 @@
   }
   const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
   function init() {
+    // blog posts: specific cards inside the article (<div class="post-cards" data-cards='[...]'>)
+    document.querySelectorAll('.post-cards[data-cards]').forEach(el => {
+      try { el.innerHTML = JSON.parse(el.dataset.cards).map(p => `<div class="post-card">${card(p)}</div>`).join(''); } catch (e) {}
+    });
     const deck = shuffle(CARDS);
     // the fan under the title: five cards, tilted like the main menu
     const fan = document.querySelector('.site-fan');
