@@ -3176,7 +3176,7 @@ var c162NonStop = window.c162NonStop;
 
       const titleEl = card.querySelector('.mode-title');
       if (titleEl && typeof window.t === 'function') {
-        titleEl.textContent = window.t('mode_select.challenge162_title', '162-0 CHALLENGE');
+        titleEl.textContent = window.t('mode_select.challenge162_title', 'ALL-TIME LEAGUE');
       }
       const subtitleEl = card.querySelector('.mode-subtitle');
       if (subtitleEl && typeof window.t === 'function') {
@@ -3200,8 +3200,8 @@ var c162NonStop = window.c162NonStop;
       } else {
         card.classList.add('is-locked');
         const lockedDesc = typeof window.t === 'function' 
-          ? (window.t('mode_select.challenge162_locked_desc') || '🔒 Modo Bloqueado. Gana tu primera run en Partida Rápida para desbloquear el desafío 162-0.')
-          : '🔒 Modo Bloqueado. Gana tu primera run en Partida Rápida para desbloquear el desafío 162-0.';
+          ? (window.t('mode_select.challenge162_locked_desc') || '🔒 Modo Bloqueado. Gana tu primera run en Partida Rápida para desbloquear la All-Time League.')
+          : '🔒 Modo Bloqueado. Gana tu primera run en Partida Rápida para desbloquear la All-Time League.';
         const lockedBtn = typeof window.t === 'function'
           ? (window.t('mode_select.challenge162_locked_btn') || '🔒 BLOQUEADO (GANA PARTIDA RÁPIDA)')
           : '🔒 BLOQUEADO (GANA PARTIDA RÁPIDA)';
@@ -9276,7 +9276,7 @@ var c162NonStop = window.c162NonStop;
 
       const _t = (key, fallback, params) => (typeof window.t === 'function' ? window.t(key, params) : fallback);
 
-      const hubTitle = _t('challenge162.hub_title', '162-0 CHALLENGE HUB');
+      const hubTitle = _t('challenge162.hub_title', 'ALL-TIME LEAGUE');
       const hubSubtitle = _t('challenge162.hub_subtitle', 'Elige tu formato de temporada regular y postemporada');
       const bestStreakText = _t('challenge162.best_streak', 'MEJOR RACHA');
       const wsText = _t('challenge162.world_series', 'SERIES MUNDIALES');
@@ -9364,7 +9364,7 @@ var c162NonStop = window.c162NonStop;
             <div class="c162-active-run-banner">
               <div>
                 <div style="font-family: 'Press Start 2P', monospace; font-size: 10.5px; color: #10b981;">
-                  ▶ ${_t('challenge162.active_run', `SEASON IN PROGRESS: ${(this.state.modeConfig && this.state.modeConfig.label) || '162-0 CHALLENGE'}`, { mode: (this.state.modeConfig && this.state.modeConfig.label) || '162-0 CHALLENGE' })}
+                  ▶ ${_t('challenge162.active_run', `SEASON IN PROGRESS: ${(this.state.modeConfig && this.state.modeConfig.label) || 'ALL-TIME LEAGUE'}`, { mode: (this.state.modeConfig && this.state.modeConfig.label) || 'ALL-TIME LEAGUE' })}
                 </div>
                 <div style="font-size: 12px; color: #e2e8f0; margin-top: 4px;">
                   ${_t('challenge162.current_record', `Current record: ${this.state.wins} - ${this.state.losses} (${this.state.gamesPlayed}/162 games)`, { wins: this.state.wins, losses: this.state.losses, current: this.state.gamesPlayed, total: 162 })}
@@ -10806,7 +10806,7 @@ var c162NonStop = window.c162NonStop;
                 </button>
               ` : ''}
               <button id="btn-c162-next-pack" class="btn" style="padding:9px 16px; font-family:'Press Start 2P',monospace; font-size:8.5px; background:linear-gradient(135deg,#ffd700,#f59e0b); color:#000; border:none; border-radius:6px; cursor:pointer; font-weight:bold; box-shadow:0 0 15px rgba(255,215,0,0.4);">
-                ${draft.viewCard ? '◀ BACK TO THE DRAFT' : isDraftComplete ? _t('challenge162.finalize_roster', '🚀 FINALIZE ROSTER & START 162-0 ➔') : (isLastPackInStage ? _t('challenge162.open_pitchers_box', '⚾ OPEN PITCHERS BOX ➔') : _t('challenge162.open_next_pack', `📦 OPEN NEXT PACK (${globalCardNum + 1}/${boxTotal}) ➔`, { pack: globalCardNum + 1, total: boxTotal }))}
+                ${draft.viewCard ? '◀ BACK TO THE DRAFT' : isDraftComplete ? _t('challenge162.finalize_roster', '🚀 FINALIZE ROSTER & START THE SEASON ➔') : (isLastPackInStage ? _t('challenge162.open_pitchers_box', '⚾ OPEN PITCHERS BOX ➔') : _t('challenge162.open_next_pack', `📦 OPEN NEXT PACK (${globalCardNum + 1}/${boxTotal}) ➔`, { pack: globalCardNum + 1, total: boxTotal }))}
               </button>
             </div>
           </div>
@@ -12792,7 +12792,7 @@ var c162NonStop = window.c162NonStop;
             </aside>`;
         }
 
-        const startSeasonText = _t('challenge162.start_season', 'EMPEZAR TEMPORADA 162-0');
+        const startSeasonText = _t('challenge162.start_season', 'EMPEZAR LA TEMPORADA');
         const autoFillText = _t('challenge162.autofill', 'AUTO-COMPLETAR');
         const clearRosterText = _t('challenge162.clear_roster', 'VACIAR');
         const hubBtnText = _t('challenge162.hub_btn', 'HUB');
@@ -13317,7 +13317,7 @@ var c162NonStop = window.c162NonStop;
       }
 
       const completedPct = Math.round((S.gamesPlayed / SEASON_LENGTH) * 100);
-      const titleText = _t('challenge162.season_title', '162-0 CHALLENGE');
+      const titleText = _t('challenge162.season_title', 'ALL-TIME LEAGUE');
       const regularSeasonText = _t('challenge162.season_regular', 'REGULAR SEASON');
       const gamesCountText = _t('challenge162.season_games_count', `Game ${S.gamesPlayed} / ${SEASON_LENGTH}`, { current: S.gamesPlayed, total: SEASON_LENGTH });
       const battersTitle = _t('challenge162.season_batters_title', 'BATTERS');
@@ -13344,7 +13344,7 @@ var c162NonStop = window.c162NonStop;
           <div class="c162-record-card" style="flex: 1 1 320px; max-width: 380px; margin: 0; background: radial-gradient(circle at 50% 0%, rgba(15,23,42,0.95) 0%, rgba(8,12,22,0.98) 100%); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; padding: 12px 16px; display: flex; flex-direction: column; justify-content: center; align-items: center; box-shadow: 0 4px 20px rgba(0,0,0,0.4); box-sizing: border-box;">
             <div style="margin-bottom:6px;">
               <span class="c162-mode-badge" style="background:rgba(245,158,11,0.2);color:#ffd700;border:1px solid rgba(245,158,11,0.5);font-size:9.5px;padding:4px 8px;">
-                ${(S.modeConfig && S.modeConfig.label) || '162-0 CHALLENGE'}
+                ${(S.modeConfig && S.modeConfig.label) || 'ALL-TIME LEAGUE'}
               </span>
             </div>
             
@@ -13591,7 +13591,7 @@ var c162NonStop = window.c162NonStop;
       const S = this.state, over = S.gamesPlayed >= SEASON_LENGTH;
       const g = over ? SEASON_LENGTH : S.gamesPlayed + 1;
       const d = this._s2Date(g), ch = this._s2Chapter(over ? SEASON_LENGTH + 1 : g);
-      const mode = (S.modeConfig && S.modeConfig.label) || '162-0 CHALLENGE';
+      const mode = (S.modeConfig && S.modeConfig.label) || 'ALL-TIME LEAGUE';
       const userName = S.league ? S.league.teams[USER_TEAM_ID].name : 'Your team';
       return `<div class="s2-mast">
         <div class="s2-mast-l"><span class="s2-mode">${mode}</span><span class="s2-team">${userName}</span></div>
@@ -15509,7 +15509,7 @@ var c162NonStop = window.c162NonStop;
 
         <div style="text-align:center;margin-bottom:8px;">
           <span class="c162-mode-badge" style="background:rgba(245,158,11,0.2);color:#ffd700;border:1px solid rgba(245,158,11,0.5);font-size:9.5px;padding:4px 10px;">
-            ${(S.modeConfig && S.modeConfig.label) || '162-0 CHALLENGE'}
+            ${(S.modeConfig && S.modeConfig.label) || 'ALL-TIME LEAGUE'}
           </span>
         </div>
 
@@ -15617,7 +15617,7 @@ var c162NonStop = window.c162NonStop;
         btn.onclick = () => {
           if (!this.isModeUnlocked()) {
             if (typeof window.showToast === 'function') {
-              window.showToast('🔒 Completa una run de Partida Rápida para desbloquear el 162-0 Challenge');
+              window.showToast('🔒 Completa una run de Partida Rápida para desbloquear la All-Time League');
             }
             return;
           }

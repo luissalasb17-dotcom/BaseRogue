@@ -1016,7 +1016,7 @@
           const tc = ((window.CardArt && window.CardArt.TEAM_COLORS) || {})[String(p.team || '').toUpperCase()] || '#3a3a3a';
           el.className = `dex-card unlocked dx-r-${(p.rarity || 'Common').toLowerCase()}${isUnl ? '' : ' dx-uncollected'}`;
           el.style.cssText = `--rc:${rColor};--tc:${tc}`;
-          const challenge162Tooltip = (typeof window.t === 'function' ? window.t('dex.challenge162_badge_tooltip', 'Eligible for 162-0 Challenge') : 'Eligible for 162-0 Challenge');
+          const challenge162Tooltip = (typeof window.t === 'function' ? window.t('dex.challenge162_badge_tooltip', 'Eligible for All-Time League') : 'Eligible for All-Time League');
           el.innerHTML = `
             ${favHTML}
             ${isChallengeEligible ? `<span class="dx-c162" title="${challenge162Tooltip}">162</span>` : ''}
@@ -1203,7 +1203,7 @@
 
       const challenge162Toggle = document.createElement('label');
       challenge162Toggle.style.cssText = 'display:flex;align-items:center;gap:6px;margin-top:8px;font-size:10px;color:#ffd700;cursor:pointer;';
-      const challenge162FilterLabel = (typeof window.t === 'function' ? window.t('dex.challenge162_filter', '🏆 162-0 Challenge eligible only') : '🏆 162-0 Challenge eligible only');
+      const challenge162FilterLabel = (typeof window.t === 'function' ? window.t('dex.challenge162_filter', '🏆 All-Time League eligible only') : '🏆 All-Time League eligible only');
       challenge162Toggle.innerHTML = `<input type="checkbox" ${this.challenge162Only ? 'checked' : ''} style="accent-color:#ffd700;cursor:pointer;"> ${challenge162FilterLabel}`;
       challenge162Toggle.querySelector('input').onchange = (e) => {
         this.challenge162Only = e.target.checked;
@@ -1383,7 +1383,7 @@
       if (p.workhorse || p.is_workhorse || p.badge_workhorse) badgesHtml += '<span style="background:#a1622422;color:#d6a05a;border:1px solid #d6a05a;padding:2px 8px;border-radius:4px;font-size:8px">🐴 WORKHORSE</span>';
       if (p.captain || p.is_captain || p.badge_captain) badgesHtml += '<span style="background:#3b82f622;color:#3b82f6;border:1px solid #3b82f6;padding:2px 8px;border-radius:4px;font-size:8px">👑 CLUBHOUSE LEADER</span>';
       if (window.Challenge162 && window.Challenge162.isUnlocked(p)) {
-        const challenge162BadgeLabel = (typeof window.t === 'function' ? window.t('dex.challenge162_badge_label', '🏆 162-0 CHALLENGE') : '🏆 162-0 CHALLENGE');
+        const challenge162BadgeLabel = (typeof window.t === 'function' ? window.t('dex.challenge162_badge_label', '🏆 ALL-TIME LEAGUE') : '🏆 ALL-TIME LEAGUE');
         badgesHtml += `<span style="background:#ffd70022;color:#ffd700;border:1px solid #ffd700;padding:2px 8px;border-radius:4px;font-size:8px">${challenge162BadgeLabel}</span>`;
       }
 

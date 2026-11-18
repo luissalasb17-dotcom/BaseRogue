@@ -563,10 +563,10 @@ window.startSeasonRouletteAnimation = startSeasonRouletteAnimation;
 
     if (!isClutch && !isCaptain && !isInterEra && !isChallengeWinner && !isInjured && lockNodes <= 0) return '';
 
-    const clutchToolTip = window.t ? window.t('badge.clutch_tooltip', 'Playoff Hero (MVP de la Serie Mundial, de una Serie de Campeonato o Babe Ruth Award): +8 a sus ratings en los combates de jefe y en los playoffs del 162-0.') : 'Playoff Hero (MVP de la Serie Mundial, de una Serie de Campeonato o Babe Ruth Award): +8 a sus ratings en los combates de jefe y en los playoffs del 162-0.';
+    const clutchToolTip = window.t ? window.t('badge.clutch_tooltip', 'Playoff Hero (MVP de la Serie Mundial, de una Serie de Campeonato o Babe Ruth Award): +8 a sus ratings en los combates de jefe y en los playoffs de la All-Time League.') : 'Playoff Hero (MVP de la Serie Mundial, de una Serie de Campeonato o Babe Ruth Award): +8 a sus ratings en los combates de jefe y en los playoffs de la All-Time League.';
     const captainToolTip = window.t ? window.t('badge.captain_tooltip', 'Clubhouse Leader: +1 a todos los ratings de sus compañeros mientras esté en el roster (su carta suma +1 de OVR). Referentes del vestuario: capitanes, jugadores-mánager y líderes reconocidos.') : 'Clubhouse Leader: +1 a todos los ratings de sus compañeros mientras esté en el roster (su carta suma +1 de OVR). Referentes del vestuario: capitanes, jugadores-mánager y líderes reconocidos.';
     const interEraToolTip = window.t ? window.t('badge.interera_tooltip') : 'Fuera de Época: este jugador no estaba activo en la temporada seleccionada — cuenta el doble para su sinergia.';
-    const challengeWinnerToolTip = window.t ? window.t('badge.challenge162_tooltip', 'Elegible para el 162-0 Challenge: formó parte de un roster que ganó una run completa (Quick Play o Modo Historia).') : 'Elegible para el 162-0 Challenge: formó parte de un roster que ganó una run completa (Quick Play o Modo Historia).';
+    const challengeWinnerToolTip = window.t ? window.t('badge.challenge162_tooltip', 'Elegible para la All-Time League: formó parte de un roster que ganó una run completa (Quick Play o Modo Historia).') : 'Elegible para la All-Time League: formó parte de un roster que ganó una run completa (Quick Play o Modo Historia).';
     const injuryToolTip = window.t ? window.t('badge.injury_tooltip', 'Lesión: Penalización permanente a los ratings por el resto de la temporada.') : 'Lesión: Penalización permanente a los ratings por el resto de la temporada.';
     const lockToolTip = window.t ? window.t('badge.lock_tooltip', { nodes: lockNodes }) : `Posición Bloqueada: quedan ${lockNodes} nodos para desbloquear`;
 
@@ -3659,7 +3659,7 @@ function initGameModeSelector() {
     const workhorseToolTip = window.t ? window.t('badge.workhorse_tooltip', 'Workhorse: loses less Stamina after each game and wears down slower over a season.') : 'Workhorse: tires less.';
     const isDoubleBadge = isClutch && isCaptain;
 
-    const clutchToolTip = window.t ? window.t('badge.clutch_tooltip', 'Playoff Hero (MVP de la Serie Mundial, de una Serie de Campeonato o Babe Ruth Award): +8 a sus ratings en los combates de jefe y en los playoffs del 162-0.') : 'Playoff Hero (MVP de la Serie Mundial, de una Serie de Campeonato o Babe Ruth Award): +8 a sus ratings en los combates de jefe y en los playoffs del 162-0.';
+    const clutchToolTip = window.t ? window.t('badge.clutch_tooltip', 'Playoff Hero (MVP de la Serie Mundial, de una Serie de Campeonato o Babe Ruth Award): +8 a sus ratings en los combates de jefe y en los playoffs de la All-Time League.') : 'Playoff Hero (MVP de la Serie Mundial, de una Serie de Campeonato o Babe Ruth Award): +8 a sus ratings en los combates de jefe y en los playoffs de la All-Time League.';
     const captainToolTip = window.t ? window.t('badge.captain_tooltip', 'Clubhouse Leader: +1 a todos los ratings de sus compañeros mientras esté en el roster (su carta suma +1 de OVR). Referentes del vestuario: capitanes, jugadores-mánager y líderes reconocidos.') : 'Clubhouse Leader: +1 a todos los ratings de sus compañeros mientras esté en el roster (su carta suma +1 de OVR). Referentes del vestuario: capitanes, jugadores-mánager y líderes reconocidos.';
 
     let ribbonHTML = '';
@@ -3863,7 +3863,7 @@ function initGameModeSelector() {
         ratings_kavd: '<strong style="color:#ec4899;">K/AVD — Evasión de Ponches:</strong> Reduce la zona de ponches (SO) en la tirada del dado. Clave para evitar el daño directo a la salud del equipo que provocan los ponches.',
         ratings_spd: '<strong style="color:#38bdf8;">SPD — Velocidad:</strong> Activa intentos de robo de base en sencillos (+20% daño al pitcher). Además, desde 60 SPD otorga de 5% a 30% de probabilidad de estirar sencillos y dobles a bases extra (1B→2B→3B).',
         ratings_def: '<strong style="color:#a855f7;">DEF — Defensa:</strong> Contribuye al <strong>Escudo</strong> del equipo. Cuanto mayor DEF promedio, más escudo tienes disponible para absorber OUTs antes de perder HP.',
-        ratings_clutch: '<strong style="color:#ef4444;">⚡ PLAYOFF HERO:</strong> MVP de la Serie Mundial, de una Serie de Campeonato o Babe Ruth Award. +8 a sus ratings en los combates de jefe y en los playoffs del 162-0.',
+        ratings_clutch: '<strong style="color:#ef4444;">⚡ PLAYOFF HERO:</strong> MVP de la Serie Mundial, de una Serie de Campeonato o Babe Ruth Award. +8 a sus ratings en los combates de jefe y en los playoffs de la All-Time League.',
         ratings_captain: '<strong style="color:#eab308;">👑 CLUBHOUSE LEADER:</strong> +1 a todos los ratings de sus compañeros mientras esté en el roster (su carta suma +1 de OVR). Referentes del vestuario: capitanes, jugadores-mánager y líderes reconocidos.'
       },
       en: {
@@ -3898,7 +3898,7 @@ function initGameModeSelector() {
         ratings_kavd: '<strong style="color:#ec4899;">K/AVD — Strikeout Avoidance:</strong> Shrinks the Strikeout (SO) zone on dice rolls. Essential for preventing direct team HP damage.',
         ratings_spd: '<strong style="color:#38bdf8;">SPD — Speed:</strong> Triggers base stealing on 1B and 2B (+20% pitcher damage debuff). Also grants 10% to 50% chance (above 60 SPD) to stretch hits into extra bases (1B➔2B➔3B).',
         ratings_def: '<strong style="color:#a855f7;">DEF — Defense:</strong> Contributes to Team <strong>Shield</strong>. Higher average DEF grants more shield to absorb OUTs before losing team HP.',
-        ratings_clutch: '<strong style="color:#ef4444;">⚡ PLAYOFF HERO:</strong> World Series MVP, LCS MVP or Babe Ruth Award. +8 to his ratings in boss fights and in 162-0 playoff games.',
+        ratings_clutch: '<strong style="color:#ef4444;">⚡ PLAYOFF HERO:</strong> World Series MVP, LCS MVP or Babe Ruth Award. +8 to his ratings in boss fights and in All-Time League playoff games.',
         ratings_captain: '<strong style="color:#eab308;">👑 CLUBHOUSE LEADER:</strong> +1 to every rating of all his teammates while on the roster (his card gets +1 OVR). Clubhouse voices: captains, player-managers and recognized leaders.'
       }
     };
@@ -11814,7 +11814,7 @@ function initGameModeSelector() {
 
     if (isQuickMode && wasChallengeLocked) {
       if (typeof window.showToast === 'function') {
-        window.showToast('🏆 ¡MODO 162-0 CHALLENGE DESBLOQUEADO!');
+        window.showToast('🏆 ¡MODO ALL-TIME LEAGUE DESBLOQUEADO!');
       }
     }
 

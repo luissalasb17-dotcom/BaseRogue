@@ -338,11 +338,12 @@
   // the dice sit on the cards: once read, they fade off the felt
   function fadeLater() {
     clearTimeout(G.hideT);
+    const g = G;   // a fade belongs to its own scene: never touch the dice of a newer one (the defense tray)
     G.hideT = setTimeout(() => {
-      if (G.playing) return;
+      if (G !== g || G.playing) return;
       const t0 = performance.now();
       const step = now => {
-        if (G.playing) return;
+        if (G !== g || G.playing) return;
         const k = Math.min(1, (now - t0) / 450);
         G.dice.forEach(d => d.mats.forEach(m => { m.opacity = Math.min(m.opacity, 1 - k); }));
         G.floor.material.opacity = 0.38 * (1 - k);
@@ -382,7 +383,7 @@
     if (libsState === 'idle') loadLibs();
     if (libsState !== 'ready') return false;
     if (!G || G.deck !== deck) {
-      if (G) { clearTimeout(G.hideT); try { G.renderer.dispose(); G.renderer.forceContextLoss(); } catch (e) {} if (G.canvas) G.canvas.remove(); }
+      if (G) { clearTimeout(G.hideT); if (G.raf) cancelAnimationFrame(G.raf); G.playing = false; { const cb = G.done; G.done = null; if (cb) cb(); } try { G.renderer.dispose(); G.renderer.forceContextLoss(); } catch (e) {} if (G.canvas) G.canvas.remove(); }
       build(deck, !!host && !deck.classList.contains('dice3d-felt'));   // a felt host behaves like the battle felt
     }
     const ok = layout();
