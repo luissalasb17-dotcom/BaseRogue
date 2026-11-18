@@ -236,7 +236,7 @@
       const teamOvr = placed.length ? (placed.reduce((t, p) => t + ovr(p), 0) / placed.length).toFixed(1) : '—';
       let deck = [...bats, ...pits].filter(p => !used.has(keyOf(p)));
       if (this.active) deck = deck.filter(p => this.slotFits(this.active, p));
-      else if (this.pos && this.pos !== 'ALL') deck = deck.filter(p => this.pos === 'SP' ? canStart(p)
+      else if (this.pos && this.pos !== 'ALL') deck = deck.filter(p => this.pos === 'SP' ? isPit(p) && String(p.role || 'SP').toUpperCase() !== 'RP'
         : this.pos === 'RP' ? isPit(p) && String(p.role).toUpperCase() === 'RP' : fits(p, this.pos));
       const posTabs = this.active ? '' : `<div class="tb-postabs">${['ALL', ...SLOTS, 'SP', 'RP'].map(x => `<button class="${(this.pos || 'ALL') === x ? 'on' : ''}" data-tb-pos="${x}">${x}</button>`).join('')}</div>`;
       deck.sort((a, b) => ovr(b) - ovr(a));
@@ -248,7 +248,7 @@
         <div class="tb-head">
           <div class="tb-title"><small>TEAM PREVIEW · FROM YOUR SHORTLIST</small>
             <input class="tb-name" id="tb-name" maxlength="28" value="${esc(v.name)}" aria-label="Preview name"></div>
-          <div class="tb-ovr"><small>TEAM OVR</small><b>${teamOvr}</b><span>${filled} / 26</span></div>
+          <div class="tb-ovr"><small>TEAM OVR</small><b>${teamOvr}</b><span>${filled} / 25</span></div>
           <div class="tb-tools">
             <select id="tb-pick" aria-label="Saved previews">${opts}</select>
             <button class="tb-btn" data-tb="new">＋ NEW</button>
