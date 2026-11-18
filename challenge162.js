@@ -1728,7 +1728,7 @@ var c162NonStop = window.c162NonStop;
     orderGain: 0.012, aceGap: 0.25,                               // how much better a new order / a new #1 has to be
     benchGap: 0.055, benchSubPA: 40, benchStarterPA: 80, chainCost: 0.010,          // promotion from the bench (OPS)
     spBadEra: 5.00, spMinIP: 40, longMinIP: 20, spSwapGap: 0.50, longMinSta: 61, // starter <-> long man
-    clMonthBS: 3, penMinIP: 10, penGap: 0.50, penGapAfterBS: 0.25, clGap: 0.50, clBadEra: 4.25  // closer / setup
+    clMonthBS: 3, penMinIP: 10, penGap: 0.50, penGapAfterBS: 0.25, clGap: 0.75, clBadEra: 4.50, clBsEra: 3.75, clCandIP: 20, clCardSlack: 0.40  // closer / setup (user, Nov 2026: harder to lose the ninth)
   };
   // Postseason: real series (best of 3, 5 and 7). The better seed hosts the games marked 1.
   const SERIES_WINS = [2, 3, 4];
@@ -4649,10 +4649,13 @@ var c162NonStop = window.c162NonStop;
         // blown saves in the month) and there is somebody clGap better to take it.
         const nonLongCands = R.pitchers.RP.filter(p => p && p !== pen.closer && !pen.longSet.has(p) && ip(pStat(p)) >= MGR.penMinIP);
         const candPool = nonLongCands.length ? nonLongCands : R.pitchers.RP.filter(p => p && p !== pen.closer && ip(pStat(p)) >= MGR.penMinIP);
-        const cand = candPool.sort((a, b) => formEra(a) - formEra(b))[0];
+        // The new closer needs a real sample (clCandIP) and cannot be a clearly worse pitcher on
+        // his card (clCardSlack): a hot month from a lesser arm does not take the ninth.
+        const cand = candPool.filter(p => ip(pStat(p)) >= MGR.clCandIP && cardEra(p) <= cardEra(pen.closer) + MGR.clCardSlack)
+          .sort((a, b) => formEra(a) - formEra(b))[0];
         if (cand) {
-          const gapPen = formEra(pen.closer) - formEra(cand);
-          if (gapPen >= MGR.clGap && (formEra(pen.closer) >= MGR.clBadEra || pMonth(pen.closer).bs >= MGR.clMonthBS)) {
+          const gapPen = formEra(pen.closer) - formEra(cand), clNow = formEra(pen.closer);
+          if (gapPen >= MGR.clGap && (clNow >= MGR.clBadEra || (pMonth(pen.closer).bs >= MGR.clMonthBS && clNow >= MGR.clBsEra))) {
             swapPen(pen.closer, cand, `🔁 ${cleanName(cand)} (${era(pStat(cand)).toFixed(2)} ERA) is the new closer; ${cleanName(pen.closer)} (${era(pStat(pen.closer)).toFixed(2)}, ${pMonth(pen.closer).bs} blown saves this month) goes back to the group.`);
           }
         }
@@ -5349,7 +5352,8 @@ var c162NonStop = window.c162NonStop;
           const sta = k => pitStaOf(idx.pit.get(k));
           const others = pen.map((e, i) => i).filter(i => i !== ci);
           const longI = others.slice().sort((a, b) => sta(pen[b][0]) - sta(pen[a][0]))[0];
-          const cand = others.filter(i => i !== longI && ipOf(pen[i][0]) >= MGR.penMinIP).sort((a, b) => estEra(pen[a][0]) - estEra(pen[b][0]))[0];
+          const cardOf = k => Math.max(2.2, Math.min(5.5, 4.05 - (((idx.pit.get(k) || {}).ovr || 72) - 72) * 0.06));
+          const cand = others.filter(i => i !== longI && ipOf(pen[i][0]) >= MGR.clCandIP && cardOf(pen[i][0]) <= cardOf(pen[ci][0]) + MGR.clCardSlack).sort((a, b) => estEra(pen[a][0]) - estEra(pen[b][0]))[0];
           if (cand !== undefined && estEra(pen[ci][0]) >= MGR.clBadEra && estEra(pen[ci][0]) - estEra(pen[cand][0]) >= MGR.clGap) { pen[ci][1] = 'RP'; pen[cand][1] = 'CL'; changed = true; }
           // 4. mop-up man (LRPs included)
           const ci2 = pen.findIndex(e => e[1] === 'CL');
@@ -13167,6 +13171,7 @@ var c162NonStop = window.c162NonStop;
         return `<tr class="c162-tr c162-tr-card${i % 2 ? ' c162-tr-alt' : ''}" data-c162-card="P:${pitcherUnlockKey(p)}" title="Click to see his card">
           ${td(s.name + this._asTag('pit', USER_TEAM_ID, pitcherUnlockKey(p)) + this._formTag(USER_TEAM_ID, p, true))}
           ${td(roleBadge, { style: 'text-align:center;' })}
+          ${td(s.gs != null ? s.gs : (lgLine.gs || 0), { num: true })}
           ${td(ipDisplay, { num: true })}
           ${td(s.h, { num: true })}
           ${td(s.er, { num: true })}
@@ -13433,6 +13438,7 @@ var c162NonStop = window.c162NonStop;
                   <thead><tr>
                     <th class="c162-th">${_t('challenge162.table_pitcher', 'PITCHER')}</th>
                     <th class="c162-th">ROLE</th>
+                    <th class="c162-th" title="Games started">GS</th>
                     <th class="c162-th">IP</th>
                     <th class="c162-th">H</th>
                     <th class="c162-th">ER</th>
