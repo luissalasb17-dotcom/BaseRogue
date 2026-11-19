@@ -2538,8 +2538,12 @@ var c162NonStop = window.c162NonStop;
   const IRON_MAN_WEAR = 1 / 4;
   const WEAR_RECOVERY = 0.3;
   const WEAR_PER_POINT = 10;
-  const WEAR_MAX_PENALTY = 3;
-  const WEAR_CAP = 40;
+  // Wear in two stages (user, Nov 2026): the first WEAR_TIRED_MARKS marks cost -1 each to EVERY
+  // rating (bat, speed and glove); past that he is playing hurt and each mark costs WEAR_HURT_STEP more,
+  // up to WEAR_MAX_PENALTY.
+  const WEAR_TIRED_MARKS = 3, WEAR_HURT_STEP = 3;
+  const WEAR_MAX_PENALTY = 15;
+  const WEAR_CAP = 70;
   const MAX_RESTS_PER_GAME = 2;
   // Smart rest days (user, Nov 2026). Each day the manager weighs how much a regular needs a day off
   // (his wear) against what sitting him costs today (how much worse today's cover is: OVR, form and
@@ -2622,13 +2626,15 @@ var c162NonStop = window.c162NonStop;
   }
 
   function wearPenalty(f) {
-    return Math.min(WEAR_MAX_PENALTY, Math.floor((f || 0) / WEAR_PER_POINT));
+    const m = Math.floor((f || 0) / WEAR_PER_POINT);
+    return Math.min(WEAR_MAX_PENALTY, m <= WEAR_TIRED_MARKS ? m : WEAR_TIRED_MARKS + WEAR_HURT_STEP * (m - WEAR_TIRED_MARKS));
   }
 
   function withWearBatter(p, pen) {
     if (!p || !pen) return p;
     const sub = v => (v === undefined ? v : v - pen);
-    return { ...p, con: sub(p.con), pwr: sub(p.pwr), eye: sub(p.eye), spd: sub(p.spd), k_avd: sub(p.k_avd), _wear: pen };
+    return { ...p, con: sub(p.con), pwr: sub(p.pwr), eye: sub(p.eye), spd: sub(p.spd), k_avd: sub(p.k_avd),
+      def: sub(p.def), defense_val: sub(p.defense_val), _wear: pen };
   }
 
   // Captains (badge of the batter card, lineup or bench) change how fast the streak turns into
@@ -5146,7 +5152,11 @@ var c162NonStop = window.c162NonStop;
     _userSide(S, useMomentum) {
       const m = (useMomentum && S.league) ? momentumFor(S.league.teams[USER_TEAM_ID].streak, this._userCaptains(S)) : 0;
       // Chemistry is not momentum: it is always on, playoffs included.
-      const chem = rosterChemistry(this._rosterCards(S.roster));
+      const chem0 = rosterChemistry(this._rosterCards(S.roster));
+      // Test switch (window.__BONUS_CAP): cap on the bonus per player; __CAP_EXCL_CHEM leaves chemistry outside the cap.
+      const BC = window.__BONUS_CAP, EX = !!window.__CAP_EXCL_CHEM;
+      const chem = BC == null ? chem0 : { ...chem0, of: p => 0 };
+      const capB = (p, rest) => BC == null ? rest : (EX ? Math.max(-BC, Math.min(BC, rest)) + chem0.of(p) : Math.max(-BC, Math.min(BC, rest + chem0.of(p))));
       const cap = captainOf(this._rosterCards(S.roster));
       // assignedSlot carries the lineup position into league stats (Silver Slugger / Gold Glove).
       const lineup = S.roster.battingOrder.map(slot => S.roster.lineup[slot] && ({ ...S.roster.lineup[slot], assignedSlot: slot })).filter(Boolean);
@@ -5157,19 +5167,19 @@ var c162NonStop = window.c162NonStop;
       // Every Iron Man plays in better shape, batter or pitcher: the same IRON_BOOST on his ratings.
       const bullpen = rp.map(p => {
         const fd = this._playerForm(USER_TEAM_ID, p, true).delta;
-        return { ...withMomentumPitcher(p, m + cap(p) + chem.of(p) + fd + (ironP(p) ? IRON_BOOST : 0)) || p, role: p === closer ? 'CL' : p === setup ? 'SETUP' : longSet.has(p) ? 'LRP' : (PEN_MOP && S.mopKey && pitcherUnlockKey(p) === S.mopKey) ? 'MOP' : 'RP', iron: ironP(p) };
+        return { ...withMomentumPitcher(p, capB(p, m + cap(p) + chem.of(p) + fd + (ironP(p) ? IRON_BOOST : 0))) || p, role: p === closer ? 'CL' : p === setup ? 'SETUP' : longSet.has(p) ? 'LRP' : (PEN_MOP && S.mopKey && pitcherUnlockKey(p) === S.mopKey) ? 'MOP' : 'RP', iron: ironP(p) };
       });
       const spToday = spList[S.gamesPlayed % spList.length];
       const spFd = this._playerForm(USER_TEAM_ID, spToday, true).delta;
-      const boostedLineup = lineup.map(p => slotGlove(withMomentumBatter(p, m + cap(p) + chem.of(p) + this._playerForm(USER_TEAM_ID, p, false).delta + ((S.ironMan && S.ironMan[batterUnlockKey(p)]) ? IRON_BOOST : 0)), p.assignedSlot));
+      const boostedLineup = lineup.map(p => slotGlove(withMomentumBatter(p, capB(p, m + cap(p) + chem.of(p) + this._playerForm(USER_TEAM_ID, p, false).delta + ((S.ironMan && S.ironMan[batterUnlockKey(p)]) ? IRON_BOOST : 0))), p.assignedSlot));
       const fielders = boostedLineup.filter(p => (p.assignedSlot || p.pos) !== 'DH');
       return {
         id: USER_TEAM_ID, isUser: true,
         // An Iron Man batter also plays in better shape: IRON_BOOST on his batting ratings.
         lineup: boostedLineup,
-        bench: (S.roster.bench || []).filter(Boolean).map(p => withMomentumBatter(p, m + cap(p) + chem.of(p) + this._playerForm(USER_TEAM_ID, p, false).delta)),
+        bench: (S.roster.bench || []).filter(Boolean).map(p => withMomentumBatter(p, capB(p, m + cap(p) + chem.of(p) + this._playerForm(USER_TEAM_ID, p, false).delta))),
         ironMan: S.ironMan || {},
-        sp: { ...(withMomentumPitcher(spToday, m + cap(spToday) + chem.of(spToday) + spFd + (ironP(spToday) ? IRON_BOOST : 0)) || spToday), iron: ironP(spToday) },
+        sp: { ...(withMomentumPitcher(spToday, capB(spToday, m + cap(spToday) + chem.of(spToday) + spFd + (ironP(spToday) ? IRON_BOOST : 0))) || spToday), iron: ironP(spToday) },
         bullpen,
         spare: spList.length > 2 ? { ...spList[(S.gamesPlayed + 2) % spList.length], role: 'RP' } : null,
         def: fielders.length ? fielders.reduce((s, p) => s + (p.def !== undefined ? p.def : (p.defense_val || 50)), 0) / fielders.length : 50,
