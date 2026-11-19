@@ -1753,6 +1753,11 @@ var c162NonStop = window.c162NonStop;
   const CLOSER_REAL = true;
   const CL_REAL = { eighth: 0.10, eighthJam: 0.45, bigMult: 2.5, work: 0.75, tieHome: 0.7, tieAway: 0.55, down1: 0.35 };
   const HOOK = { spBase: -4.6, spTired: 0.7, spEr: 0.9, spEarly: 0.35, spGem: 1.2, spBlow: 0.4, rpBase: -1.6, rpLeft: 0.55, rpEr: 1.4, rpTired: 0.8, rpThin: 2.0, spLate8: 1.0, spLate9: 1.5 };
+  // Save spot with the starter still out there (user, Nov 2026): in the 9th with a 1-3 run lead and the
+  // closer rested, the manager leans to the closer: more the closer the game (perLead per run under 3)
+  // and the better his closer is next to the starter (perOvr per OVR point). Tiredness and a gem
+  // still count through the usual HOOK terms. window.__SAVE_HOOK_OFF turns it off for tests.
+  const SAVE_HOOK = { base: 1.2, perLead: 0.8, perOvr: 0.08 };
   const PEN_HAND = 0.04; // ERA of trust per platoon point of the next three batters against that arm (0 = off)
   const PEN_TRUST = true, PEN_TRUST_IP = 30, PEN_DECIDED = 6; // the user's middle relief by performance (see _pickReliever)
   // Mop-up man: every month the user's manager names his worst middle reliever (if he is clearly
@@ -5189,6 +5194,13 @@ var c162NonStop = window.c162NonStop;
 
     // Reliever picked for a new inning, by role and situation; skips arms that already
     // pitched this game or are resting (pitched on each of the previous two days).
+    _saveHookTerm(side, gs, day, ps, inning, lead) {
+      if (window.__SAVE_HOOK_OFF || inning < 9 || lead < 1 || lead > 3) return 0;
+      const cl = this._availableRelievers(side, gs, day).find(p => p.role === 'CL');
+      if (!cl) return 0;
+      return SAVE_HOOK.base + SAVE_HOOK.perLead * (3 - lead) + SAVE_HOOK.perOvr * ((cl.ovr || 70) - (ps.p.ovr || 70));
+    },
+
     _availableRelievers(side, gs, day) {
       const pen = (this.state.league && this.state.league.pen) || {};
       const list = side.bullpen.filter(p => {
@@ -5747,7 +5759,8 @@ var c162NonStop = window.c162NonStop;
             // How the manager feels about his starter, not a rule: tiredness, runs, the inning, the score.
             const x = HOOK.spBase + HOOK.spTired * tired + HOOK.spEr * Math.max(0, ps.er - 2) + (inning <= 5 ? HOOK.spEarly * ps.er : 0)
               - (gem ? HOOK.spGem : 0) - (Math.abs(lead) >= 5 ? HOOK.spBlow : 0)
-              + (inning >= 8 ? HOOK.spLate8 : 0) + (inning >= 9 ? HOOK.spLate9 : 0);
+              + (inning >= 8 ? HOOK.spLate8 : 0) + (inning >= 9 ? HOOK.spLate9 : 0)
+              + this._saveHookTerm(side, gs, day, ps, inning, lead);
             pull = inning > 9 || Math.random() < 1 / (1 + Math.exp(-x));
           }
         } else if (ps.fireman) {
