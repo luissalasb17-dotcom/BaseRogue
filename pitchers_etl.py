@@ -762,13 +762,17 @@ def paso_4_pico_pitching(pitching, war_pitch, people):
     # sus ratings salen de su carrera completa como todos.
     is_dual_sp = peak["playerID"].isin([])
     is_dual_rp = peak["playerID"].isin(["eckerde01"])
+    _tot = pit_yearly.groupby("playerID")[["G", "GS"]].sum()
+    _car_gs_share = _tot["GS"] / _tot["G"].replace(0, np.nan)
     peak["role"] = np.where(
         is_dual_sp,
         "SP",
         np.where(
             is_dual_rp,
             "RP",
-            np.where(peak["mean_sp_dedication"] >= 0.50, "SP", "RP")
+            # Quien abrio 60%+ de sus juegos de carrera es abridor (usuario, nov 2026): un ano malo de
+            # abridor pesaba casi nada en el pico y una temporada de un juego pesaba igual que una completa.
+            np.where((peak["mean_sp_dedication"] >= 0.50) | (peak["playerID"].map(_car_gs_share).fillna(0) >= 0.60), "SP", "RP")
         )
     )
 
@@ -873,13 +877,14 @@ def paso_5_filtro_ingesta(career, peak, allstar, hof, pure_pitcher_ids, pitching
 
     # Criterio Unificado de Ingesta para Pitchers por Innings Pitched:
     # 1. Volumen de carrera:
-    #    - SP: >= 250.0 IP, RP: >= 125.0 IP, iguales para MLB y Ligas Negras (decision
+    #    - 30 juegos lanzados para todos, MLB y Ligas Negras (nov 2026; decision
     #      del usuario, oct 2026; antes SP 400 / 200 NLB y RP 250 / 125 NLB)
     # 2. Calidad / Estrellato Joven:
-    #    - SP: (career_war >= 5.0 OR peak_war >= 5.0) AND (MLB >= 150.0 IP | NLB >= 75.0 IP)
-    #    - RP: (career_war >= 3.5 OR peak_war >= 3.5) AND (MLB >= 100.0 IP | NLB >= 50.0 IP)
+    #    - SP: (career_war >= 5.0 OR peak_war >= 5.0) AND career_ip >= 150.0
+    #    - RP: (career_war >= 3.5 OR peak_war >= 3.5) AND career_ip >= 100.0
     # 3. Reconocimiento Histórico: HoF incondicional OR (All-Star AND career_ip >= 35.0)
     MIN_IP_ALLSTAR = 35.0
+    MIN_G_VOLUME = 30   # juegos lanzados, igual para todos los roles y ligas (usuario, nov 2026; antes SP 250 IP / RP 125 IP)
 
     def is_eligible(r):
         if r["is_hof"]:
@@ -889,16 +894,14 @@ def paso_5_filtro_ingesta(career, peak, allstar, hof, pure_pitcher_ids, pitching
             return True
         c_war = r.get("career_war", 0) if pd.notna(r.get("career_war")) else 0
         p_war = r.get("peak_war", 0) if pd.notna(r.get("peak_war")) else 0
-        is_nl = r.get("is_nlb", False)
+        cg = r.get("career_g", 0) if pd.notna(r.get("career_g")) else 0
         
         if r["role"] == "SP":
-            vol_threshold = 250.0  # igual para todas las ligas (decision del usuario, oct 2026)
-            qual_ip_thresh = 75.0 if is_nl else 150.0
-            return (cip >= vol_threshold) or (((c_war >= 5.0) or (p_war >= 5.0)) and (cip >= qual_ip_thresh))
+            qual_ip_thresh = 150.0  # igual para todas las ligas (usuario, nov 2026)
+            return (cg >= MIN_G_VOLUME) or (((c_war >= 5.0) or (p_war >= 5.0)) and (cip >= qual_ip_thresh))
         else:
-            vol_threshold = 125.0
-            qual_ip_thresh = 50.0 if is_nl else 100.0
-            return (cip >= vol_threshold) or (((c_war >= 3.5) or (p_war >= 3.5)) and (cip >= qual_ip_thresh))
+            qual_ip_thresh = 100.0
+            return (cg >= MIN_G_VOLUME) or (((c_war >= 3.5) or (p_war >= 3.5)) and (cip >= qual_ip_thresh))
 
     mask = df.apply(is_eligible, axis=1)
     eligible = df[mask].copy()

@@ -919,8 +919,7 @@ def paso_8_filtro_ingesta(df, allstar, hof, pure_pitcher_ids, batting):
 
     # Minimo de entrada = una temporada, igual para todas las ligas (decision del usuario, oct 2026:
     # "sin consideraciones especiales de calendario para Ligas Negras"). Antes 1,000 PA MLB / 500 PA NLB.
-    MIN_AB_MLB     = 500
-    MIN_AB_NLB     = 500
+    MIN_G_VOLUME   = 100   # juegos de carrera, todas las ligas (usuario, nov 2026; antes 500 AB)
     MIN_PA_ALLSTAR = 100
     MIN_PA_QUALITY = 350
 
@@ -951,14 +950,14 @@ def paso_8_filtro_ingesta(df, allstar, hof, pure_pitcher_ids, batting):
         no_pitchers['mlb_pa'] = no_pitchers['career_pa']
 
     # Criterio Unificado de Ingesta para Bateadores:
-    # 1. Volumen de carrera: 500 AB para todos (MLB y Ligas Negras)
+    # 1. Volumen de carrera: 100 juegos para todos (MLB y Ligas Negras)
     # 2. Calidad / Estrellato Joven: (career_war >= 5.0 OR peak_war >= 5.0) AND career_pa >= 350
     # 3. Reconocimiento Histórico: HoF incondicional OR (All-Star AND career_pa >= 100)
     c_war = no_pitchers["career_war"].fillna(0) if "career_war" in no_pitchers.columns else pd.Series(0, index=no_pitchers.index)
     p_war = no_pitchers["peak_war"].fillna(0) if "peak_war" in no_pitchers.columns else pd.Series(0, index=no_pitchers.index)
     
     is_nlb_player = no_pitchers["league_group"] == "NLB"
-    vol_mask = np.where(is_nlb_player, no_pitchers["career_ab"] >= MIN_AB_NLB, no_pitchers["career_ab"] >= MIN_AB_MLB)
+    vol_mask = no_pitchers["career_g"].fillna(0) >= MIN_G_VOLUME
 
     mask = (
         vol_mask |

@@ -1675,7 +1675,7 @@ var c162NonStop = window.c162NonStop;
   const STEAL_TRY_SCALE = 1.0;
   // Steal attempts per plate appearance with the next base open, by the Speed on the card
   // (same grid as the other rating tables, RT_X). It opens at the top so a 125 can steal 90+.
-  const STEAL_TRY = [.004, .012, .026, .047, .074, .105, .140, .180, .225, .265, .325, .385];
+  const STEAL_TRY = [0.0038, 0.0117, 0.0252, 0.0451, 0.0702, 0.0998, 0.1323, 0.1703, 0.2107, 0.2565, 0.3151, 0.385];
   const STEAL_THIRD = 0.22;     // share of those attempts when the runner is on second
   const STEAL_THIRD_GREAT = 0.33;
   const GREAT_SPD = 105;        // Speed from which a runner is a great base stealer: runs with a bigger lead, goes for third more, may steal twice
@@ -1811,7 +1811,7 @@ var c162NonStop = window.c162NonStop;
   // Clutch under pressure (user, 9 nov 2026): runner in scoring position OR Late & Close (see the
   // PA loop). All four pitching ratings move CLUTCH_PIT per point above/below 55. Calibrated so 10
   // points of Clutch are worth ~0.12 of ERA with the other ratings equal (real careers: ~0.11).
-  let CLUTCH_PIT = 0.30; const CLUTCH_PIT_CENTER = 55; // 0.30 with the 9th-inning / extras pressure added (user, Nov 2026); // was 0.45 with Late & Close too (decision 13 nov 2026: soft, runners in scoring position only)
+  let CLUTCH_PIT = 0.30; const CLUTCH_PIT_CENTER = 59; // 0.30 with the 9th-inning / extras pressure added (user, Nov 2026); // was 0.45 with Late & Close too (decision 13 nov 2026: soft, runners in scoring position only)
   // Test switches (Nov 2026): CLUTCH_RISP_ONLY drops the Late & Close trigger; RIVAL_CLOSER_MIX picks rival closers by OVR + real saves + chance.
   let CLUTCH_RISP_ONLY = true, RIVAL_CLOSER_MIX = false, CLUTCH_CLOSE_LATE = true;
   window.__c162Tune = o => { if ('clutch' in o) CLUTCH_PIT = o.clutch; if ('rispOnly' in o) CLUTCH_RISP_ONLY = o.rispOnly; if ('closerMix' in o) RIVAL_CLOSER_MIX = o.closerMix; if ('closeLate' in o) CLUTCH_CLOSE_LATE = o.closeLate; }; // 55.7 is the average Clutch of the innings pitched in the league
@@ -1822,18 +1822,18 @@ var c162NonStop = window.c162NonStop;
   // triples as a share of the non-HR hits), pitchers per nine innings. The user chose 1947-2025 as
   // the neutral era (Oct 2026); the cards' own average era weighed the low-HR / low-K years too much.
   const RT_X = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 115, 125];
-  const BAT_AVG = [0.2235, 0.2381, 0.2511, 0.2620, 0.2721, 0.2817, 0.2910, 0.3012, 0.3105, 0.3214, 0.3435, 0.3591];
-  const BAT_HR = [0.0073, 0.0123, 0.0186, 0.0251, 0.0309, 0.0364, 0.0420, 0.0472, 0.0532, 0.0591, 0.0753, 0.0890];
-  const BAT_K = [0.2461, 0.2198, 0.1931, 0.1696, 0.1477, 0.1278, 0.1101, 0.0949, 0.0814, 0.0695, 0.0539, 0.0462];
-  const BAT_BB = [0.0508, 0.0628, 0.0758, 0.0882, 0.0999, 0.1108, 0.1209, 0.1300, 0.1408, 0.1537, 0.1719, 0.1920];
-  const BAT_2B = [0.1630, 0.1814, 0.1971, 0.2090, 0.2179, 0.2253, 0.2295, 0.2351, 0.2376, 0.2394, 0.2440, 0.2558]; // share of non-HR hits, by power
+  const BAT_AVG = [0.2203, 0.2339, 0.2466, 0.2583, 0.2687, 0.2785, 0.2879, 0.2982, 0.3083, 0.319, 0.3414, 0.3591];
+  const BAT_HR = [0.007, 0.0119, 0.0179, 0.0242, 0.03, 0.0353, 0.0408, 0.0461, 0.0518, 0.0577, 0.0728, 0.089];
+  const BAT_K = [0.2453, 0.2195, 0.1936, 0.1702, 0.1481, 0.1281, 0.1113, 0.0967, 0.0832, 0.0707, 0.0551, 0.0462];
+  const BAT_BB = [0.0508, 0.0626, 0.075, 0.0868, 0.098, 0.1085, 0.1183, 0.1272, 0.1372, 0.1493, 0.168, 0.192];
+  const BAT_2B = [0.162, 0.18, 0.1954, 0.2074, 0.2166, 0.2239, 0.2286, 0.2339, 0.237, 0.239, 0.2433, 0.2558]; // share of non-HR hits, by power
   // Triples keep a design table, steeper than the real averages (those come out almost flat,
   // because Speed mixes steals and triples), so the fast men still lead the league in triples.
-  const BAT_3B = [.014, .020, .027, .034, .040, .046, .052, .058, .065, .073, .085, .093];
-  const PIT_H9 = [10.273, 9.706, 9.235, 8.842, 8.487, 8.134, 7.785, 7.414, 7.008, 6.640, 6.024, 5.448];
-  const PIT_K9 = [4.260, 4.924, 5.563, 6.129, 6.721, 7.251, 7.827, 8.414, 9.031, 9.796, 10.997, 11.884];
-  const PIT_BB9 = [5.270, 4.710, 4.228, 3.815, 3.433, 3.078, 2.765, 2.508, 2.288, 2.076, 1.743, 1.524];
-  const PIT_HR9 = [1.338, 1.206, 1.090, 0.994, 0.893, 0.791, 0.696, 0.607, 0.534, 0.474, 0.366, 0.322];
+  const BAT_3B = [0.0139, 0.0198, 0.0266, 0.0334, 0.0392, 0.045, 0.0507, 0.0565, 0.0628, 0.0713, 0.083, 0.093];
+  const PIT_H9 = [10.4204, 9.9271, 9.4483, 9.0071, 8.6293, 8.2676, 7.9072, 7.5377, 7.1339, 6.7467, 6.1501, 5.448];
+  const PIT_K9 = [4.2706, 4.9227, 5.5438, 6.0868, 6.65, 7.1609, 7.6984, 8.2692, 8.8706, 9.6218, 10.8449, 11.884];
+  const PIT_BB9 = [5.3568, 4.892, 4.4353, 3.9719, 3.5632, 3.1847, 2.853, 2.5928, 2.3518, 2.1242, 1.7775, 1.524];
+  const PIT_HR9 = [1.3596, 1.2403, 1.1322, 1.0241, 0.9217, 0.8192, 0.7192, 0.6359, 0.5548, 0.4945, 0.3861, 0.322];
   // The ordinary opponent both kinds of tables are measured against (AL/NL 1947-2025).
   const ENV_H9 = 8.76, ENV_K9 = 5.60, ENV_BB9 = 3.316, ENV_HR9 = 0.885; // ENV_K9 6.244 gave K 14.5%, 5.60 gives 16.4% (user, Nov 2026)
   const ENV_BF9 = 27 + ENV_H9 + ENV_BB9; // batters faced per nine innings
@@ -2777,12 +2777,12 @@ var c162NonStop = window.c162NonStop;
     const eye = p._baseEye !== undefined ? p._baseEye : (p.eye !== undefined ? p.eye : 50);
     // Fitted to what the engine gives a regular (4,200 player-seasons with the Oct 2026 engine:
     // card tables against the cards' own era, no league scales). Refit when the engine changes.
-    return 0.2558 + 0.00095 * con + 0.00081 * eye; // refit Nov 2026: real-league rivals, pure batters, no PIT_EDGE (47 seasons)
+    return 0.2519 + 0.00095 * con + 0.00081 * eye; // refit Nov 2026: real-league rivals, pure batters, no PIT_EDGE (47 seasons)
   }
   function cardBaseSlg(p) {
     const con = p._baseCon !== undefined ? p._baseCon : (p.con !== undefined ? p.con : 50);
     const pwr = p._basePwr !== undefined ? p._basePwr : (p.pwr !== undefined ? p.pwr : 50);
-    return 0.2662 + 0.00155 * con + 0.00188 * pwr;
+    return 0.2590 + 0.00155 * con + 0.00188 * pwr;
   }
   function cardBaseOps(p) {
     return cardBaseObp(p) + cardBaseSlg(p);
@@ -2793,7 +2793,7 @@ var c162NonStop = window.c162NonStop;
     // (4.05 at OVR 72, the same for both) expected 0.7 of ERA less from the starters than they
     // post, so 40% of them were COLD (-4 to their ratings) and 15% HOT.
     const isRP = Boolean(p.role && p.role !== 'SP');
-    return Math.max(2.00, Math.min(6.00, isRP ? 8.24 - 0.0620 * ovr : 8.43 - 0.0567 * ovr));
+    return Math.max(2.00, Math.min(6.00, isRP ? 8.34 - 0.0620 * ovr : 8.52 - 0.0567 * ovr));
   }
 
   function withMomentumBatter(p, m) {

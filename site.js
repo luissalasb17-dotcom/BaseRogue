@@ -14,7 +14,7 @@
     let career = null;
     window.ensureCareer = () => career || (career = new Promise(ok => {
       const s = document.createElement('script');
-      s.src = '/career_lite.js?v=1794500021'; s.onload = ok; s.onerror = () => { career = null; ok(); };
+      s.src = '/career_lite.js?v=p1'; s.onload = ok; s.onerror = () => { career = null; ok(); };
       document.head.appendChild(s);
     }));
   }

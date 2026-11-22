@@ -202,9 +202,9 @@ def write_page(slug, title, desc, h1, lead, groups, intro, faq=None, related=Non
     <p>BaseRogue is a fan-made project and is not affiliated with Major League Baseball.</p>
   </footer>
 </main>
-<script src="/card_art.js?v=14"></script>
+<script src="/card_art.js?v=15"></script>
 <script src="/card_variants.js?v=14"></script>
-<script src="/site.js?v=5"></script>
+<script src="/site.js?v=6"></script>
 </body>
 </html>
 '''
@@ -313,9 +313,9 @@ body = f'''<body class="site-post">
     <p>BaseRogue is a fan-made project and is not affiliated with Major League Baseball.</p>
   </footer>
 </main>
-<script src="/card_art.js?v=14"></script>
+<script src="/card_art.js?v=15"></script>
 <script src="/card_variants.js?v=14"></script>
-<script src="/site.js?v=5"></script>
+<script src="/site.js?v=6"></script>
 </body>
 </html>
 '''
