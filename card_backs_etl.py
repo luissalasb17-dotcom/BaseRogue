@@ -48,7 +48,11 @@ def batters(dfs):
 
     # offence: Batting rows of the offensive-peak seasons
     b = batting.copy()
-    cols = ["G", "AB", "R", "H", "2B", "3B", "HR", "RBI", "BB", "SO", "HBP", "SF"]
+    # Ligas Negras: ponches anotados a medias (registros incompletos); ahí sigue el corte de 2%.
+    global NLB_IDS
+    NLB_IDS = set(b[b["lgID"].isin(["NNL","ECL","ANL","EWL","NSL","NN2","NAL","EAS","WES","IND","INT","NAC"])]["playerID"])
+    cols = ["G", "AB", "R", "H", "2B", "3B", "HR", "RBI", "BB", "SO", "HBP", "SF", "SOAB"]
+    b["SOAB"] = pd.to_numeric(b["AB"], errors="coerce").fillna(0).where(pd.to_numeric(b["SO"], errors="coerce").notna(), 0)
     for c in cols:
         b[c] = pd.to_numeric(b[c], errors="coerce").fillna(0)
     by = b.groupby(["playerID", "yearID"])[cols].sum().reset_index()
@@ -136,7 +140,7 @@ def batters(dfs):
             int(o["y0"]), int(o["y1"]), int(o["n"]),
             round(ab * k), round(o["R"] * k), round(o["H"] * k), round(o["2B"] * k), round(o["3B"] * k),
             round(o["HR"] * k), round(o["RBI"] * k), round(sb_rate * ab * k), round(cs_rate * ab * k),
-            round(o["BB"] * k), (round(o["SO"] * k) if o["SO"] >= 0.02 * pa else None),   # sin dato de ponches: None
+            round(o["BB"] * k), (round(o["SO"] * ab / o["SOAB"] * k) if o["SOAB"] >= 0.5 * ab and o["SO"] > 0 and (pid not in NLB_IDS or o["SO"] >= 0.02 * pa) else None),   # ponches solo de temporadas con dato (antes: corte de 2% que borraba a Sewell)
             round(avg, 3), round(obp, 3), round(slg, 3), None if fld is None else int(fld),
             (round(100 * (obp / o["lobp"] + slg / o["lslg"] - 1)) if pd.notna(o["lobp"]) and o["lobp"] > 0 else None),
             (round(float(o["war"]) * k, 1) if pd.notna(o["war"]) else None),

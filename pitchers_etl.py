@@ -1648,6 +1648,9 @@ def paso_11_ovr_rareza(df, awards=None):
         _rp = df["role"] == "RP"
         _c = np.where(_rp, 25.0, 60.0); _st = np.where(_rp, 6.0, 12.0)
         _lb = ((df["career_war_adj"] - _c) / _st).clip(float(_os.environ.get("LB_MIN","0")), 2.0)
+        # Bono QUITADO (decision del usuario, 23 nov 2026): contaba dos veces la longevidad (pico de 15 + WORKHORSE).
+        # El WAR de carrera se sigue calculando (columna career_war_adj). LB_SCALE=1 lo devuelve.
+        _lb = _lb * float(_os.environ.get("LB_SCALE", "0"))
         df["longevity_bonus"] = _lb.round(2)
         df["raw_ovr"] = df["raw_ovr"] + _lb
         for _k in ("h9_val", "k9_val", "bb9_val", "hr9_val", "sta_val", "clt_val", "clu_val"):  # respaldado en los ratings

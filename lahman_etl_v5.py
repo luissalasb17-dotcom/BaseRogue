@@ -2336,6 +2336,9 @@ def paso_15_equipo_y_exportar(df, batting, teams, franchises, pico_df=None, war_
         _bb = df["playerID"].map(people.set_index("playerID")["bbrefID"]) if "bbrefID" in people.columns else df["playerID"]
         df["career_war_adj"] = _bb.map(_adj).fillna(0.0).round(1)
         _lb = ((df["career_war_adj"] - 60.0) / 12.0).clip(float(os.environ.get("LB_MIN","0")), 2.0)
+        # Bono QUITADO (decision del usuario, 23 nov 2026): contaba dos veces la longevidad (pico de 15 + WORKHORSE).
+        # El WAR de carrera se sigue calculando (columna career_war_adj). LB_SCALE=1 lo devuelve.
+        _lb = _lb * float(os.environ.get("LB_SCALE", "0"))
         df["longevity_bonus"] = _lb.round(2)
         df["raw_ovr"] = df["raw_ovr"] + _lb
         # Respaldado en los ratings (decision del usuario): el bono se suma a los seis ratings, asi el
