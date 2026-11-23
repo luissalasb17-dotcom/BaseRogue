@@ -999,7 +999,7 @@ var c162NonStop = window.c162NonStop;
   // so a rival has the talent of a real team (lineup ~104 card OPS+, rotation ~106 ERA+) and every
   // card performs close to its own numbers. The user keeps the Hobby Box (measured: ~110 wins).
   // Chance that a rival spot draws a second card and keeps the better one (0 = real league, 1 = best of 2).
-  const RIVAL_SECOND = 0.5;
+  const RIVAL_SECOND = 0.75;
   const RIVAL_SECOND_LOOK = () => (window.__rivalSecond !== undefined ? window.__rivalSecond : RIVAL_SECOND);
   function rivalUniform(taken) {
     const bats = getBatterPool(), pits = getPitcherPool();
