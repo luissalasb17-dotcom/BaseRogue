@@ -1859,7 +1859,9 @@ def _curva_A(T, span):
 
 # Puntas de la defensa fijadas en las del pool antes de llevar las Ligas Negras a calendario completo
 # (oct 2026): si no, los guantes estirados de Ligas Negras corrian la escala de MLB.
-DEF_EXTREME_ANCHORS = (141.0448, 13.0707)
+# Nov 2026: el piso se calcula con el pool actual (con el piso fijo, al ampliar el pool a 100
+# juegos el peor guante quedaba en 3.3 y no en 1).
+DEF_EXTREME_ANCHORS = (None, None)   # Nov 2026: tope y piso al percentil 99.9 / 0.1 como los demas ratings
 
 
 def ajustar_extremos(v, ref=None, fixed=None):
@@ -1880,7 +1882,9 @@ def ajustar_extremos(v, ref=None, fixed=None):
     hi = float(r_.quantile(0.9990)) if len(r_) > 100 else float(r_.max())
     lo = float(r_.quantile(0.0010)) if len(r_) > 100 else float(r_.min())
     if fixed is not None:
-        hi, lo = fixed
+        # fixed = (tope, piso); None en una punta = calcularla con el pool actual.
+        hi = fixed[0] if fixed[0] is not None else hi
+        lo = fixed[1] if fixed[1] is not None else lo
     if hi > EXTREME_TOP_ANCHOR:
         top = v > EXTREME_TOP_ANCHOR
         T, span = hi - EXTREME_TOP_ANCHOR, 125.0 - EXTREME_TOP_ANCHOR
