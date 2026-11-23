@@ -998,9 +998,12 @@ var c162NonStop = window.c162NonStop;
   // Real-league rivals (user, Nov 2026): every spot is a player drawn at random from the whole pool,
   // so a rival has the talent of a real team (lineup ~104 card OPS+, rotation ~106 ERA+) and every
   // card performs close to its own numbers. The user keeps the Hobby Box (measured: ~110 wins).
+  // Chance that a rival spot draws a second card and keeps the better one (0 = real league, 1 = best of 2).
+  const RIVAL_SECOND = 0.5;
+  const RIVAL_SECOND_LOOK = () => (window.__rivalSecond !== undefined ? window.__rivalSecond : RIVAL_SECOND);
   function rivalUniform(taken) {
     const bats = getBatterPool(), pits = getPitcherPool();
-    const pick = (pool, ok) => { const free = pool.filter(p => !taken.has(personId(p)) && ok(p)); const c = free[Math.floor(Math.random() * free.length)]; if (c) taken.add(personId(c)); return c || null; };
+    const pick = (pool, ok) => { const free = pool.filter(p => !taken.has(personId(p)) && ok(p)); const rnd = () => free[Math.floor(Math.random() * free.length)]; let c = rnd(); if (c && Math.random() < RIVAL_SECOND_LOOK()) { const d = rnd(); if (d && (d.ovr || 0) > (c.ovr || 0)) c = d; } if (c) taken.add(personId(c)); return c || null; };
     const lineup = ['C', 'SS', '2B', '3B', 'CF', '1B', 'LF', 'RF', 'DH'].map(sl => { const p = pick(bats, b => sl === 'DH' || canPlayerFillPrimary(b, sl)); return p && { ...p, assignedSlot: sl }; }).filter(Boolean);
     const bench = [pick(bats, b => canPlayerFillPrimary(b, 'C')), pick(bats, b => ['SS', '2B', '3B'].some(x => canPlayerFillPrimary(b, x))), pick(bats, b => ['LF', 'CF', 'RF'].some(x => canPlayerFillPrimary(b, x))), pick(bats, () => true), pick(bats, () => true)].filter(Boolean);
     const team = { lineup }; promoteRivalBench(team, bench);
@@ -1675,11 +1678,11 @@ var c162NonStop = window.c162NonStop;
   const STEAL_TRY_SCALE = 1.0;
   // Steal attempts per plate appearance with the next base open, by the Speed on the card
   // (same grid as the other rating tables, RT_X). It opens at the top so a 125 can steal 90+.
-  const STEAL_TRY = [0.0038, 0.0117, 0.0252, 0.0451, 0.0702, 0.0998, 0.1323, 0.1703, 0.2107, 0.2565, 0.3151, 0.385];
+  const STEAL_TRY = [0.0068, 0.0211, 0.0454, 0.0789, 0.1193, 0.1647, 0.2051, 0.2430, 0.2620, 0.2760, 0.3100, 0.3620]; // raised to 0.58 steals per team-game (real 1947-2025), less at the top so the leader stays near 75 (Nov 2026)
   const STEAL_THIRD = 0.22;     // share of those attempts when the runner is on second
   const STEAL_THIRD_GREAT = 0.33;
   const GREAT_SPD = 105;        // Speed from which a runner is a great base stealer: runs with a bigger lead, goes for third more, may steal twice
-  const ERROR_RATE = 0.046;     // batted-ball outs that turn into an error, for an average defense
+  const ERROR_RATE = 0.039;     // batted-ball outs that turn into an error, for an average defense
   const GIDP_RATE = 0.22;
   // Double plays turned (Nov 2026): on a grounder to an infielder with a man on first, the pivot
   // (the second baseman, or the shortstop when the ball goes to second) turns it more often with a
